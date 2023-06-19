@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '16/06/2023';
+let version_date = '19/06/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -1889,7 +1889,7 @@ function extend(parent, definition) {
   return prototype;
 }
 
-function Color$2() {}
+function Color$1() {}
 
 var darker = 0.7;
 var brighter = 1 / darker;
@@ -2056,7 +2056,7 @@ var named = {
   yellowgreen: 0x9acd32
 };
 
-define(Color$2, color$1, {
+define(Color$1, color, {
   copy(channels) {
     return Object.assign(new this.constructor, this, channels);
   },
@@ -2087,7 +2087,7 @@ function color_formatRgb() {
   return this.rgb().formatRgb();
 }
 
-function color$1(format) {
+function color(format) {
   var m, l;
   format = (format + "").trim().toLowerCase();
   return (m = reHex.exec(format)) ? (l = m[1].length, m = parseInt(m[1], 16), l === 6 ? rgbn(m) // #ff0000
@@ -2116,7 +2116,7 @@ function rgba(r, g, b, a) {
 }
 
 function rgbConvert(o) {
-  if (!(o instanceof Color$2)) o = color$1(o);
+  if (!(o instanceof Color$1)) o = color(o);
   if (!o) return new Rgb;
   o = o.rgb();
   return new Rgb(o.r, o.g, o.b, o.opacity);
@@ -2133,7 +2133,7 @@ function Rgb(r, g, b, opacity) {
   this.opacity = +opacity;
 }
 
-define(Rgb, rgb, extend(Color$2, {
+define(Rgb, rgb, extend(Color$1, {
   brighter(k) {
     k = k == null ? brighter : Math.pow(brighter, k);
     return new Rgb(this.r * k, this.g * k, this.b * k, this.opacity);
@@ -2196,7 +2196,7 @@ function hsla(h, s, l, a) {
 
 function hslConvert(o) {
   if (o instanceof Hsl) return new Hsl(o.h, o.s, o.l, o.opacity);
-  if (!(o instanceof Color$2)) o = color$1(o);
+  if (!(o instanceof Color$1)) o = color(o);
   if (!o) return new Hsl;
   if (o instanceof Hsl) return o;
   o = o.rgb();
@@ -2231,7 +2231,7 @@ function Hsl(h, s, l, opacity) {
   this.opacity = +opacity;
 }
 
-define(Hsl, hsl, extend(Color$2, {
+define(Hsl, hsl, extend(Color$1, {
   brighter(k) {
     k = k == null ? brighter : Math.pow(brighter, k);
     return new Hsl(this.h, this.s, this.l * k, this.opacity);
@@ -2323,7 +2323,7 @@ function Lab(l, a, b, opacity) {
   this.opacity = +opacity;
 }
 
-define(Lab, lab, extend(Color$2, {
+define(Lab, lab, extend(Color$1, {
   brighter(k) {
     return new Lab(this.l + K * (k == null ? 1 : k), this.a, this.b, this.opacity);
   },
@@ -2387,7 +2387,7 @@ function hcl2lab(o) {
   return new Lab(o.l, Math.cos(h) * o.c, Math.sin(h) * o.c, o.opacity);
 }
 
-define(Hcl, hcl, extend(Color$2, {
+define(Hcl, hcl, extend(Color$1, {
   brighter(k) {
     return new Hcl(this.h, this.c, this.l + K * (k == null ? 1 : k), this.opacity);
   },
@@ -2433,7 +2433,7 @@ function Cubehelix(h, s, l, opacity) {
   this.opacity = +opacity;
 }
 
-define(Cubehelix, cubehelix, extend(Color$2, {
+define(Cubehelix, cubehelix, extend(Color$1, {
   brighter(k) {
     k = k == null ? brighter : Math.pow(brighter, k);
     return new Cubehelix(this.h, this.s, this.l * k, this.opacity);
@@ -4506,8 +4506,8 @@ function interpolate$1(a, b) {
   var t = typeof b, c;
   return b == null || t === "boolean" ? constant$1(b)
       : (t === "number" ? interpolateNumber
-      : t === "string" ? ((c = color$1(b)) ? (b = c, interpolateRgb) : interpolateString)
-      : b instanceof color$1 ? interpolateRgb
+      : t === "string" ? ((c = color(b)) ? (b = c, interpolateRgb) : interpolateString)
+      : b instanceof color ? interpolateRgb
       : b instanceof Date ? date$1
       : isNumberArray(b) ? numberArray
       : Array.isArray(b) ? genericArray
@@ -4914,15 +4914,15 @@ function identity$1(x) {
   return x;
 }
 
-var map$1 = Array.prototype.map,
+var map = Array.prototype.map,
     prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
 
 function formatLocale$1(locale) {
-  var group = locale.grouping === undefined || locale.thousands === undefined ? identity$1 : formatGroup(map$1.call(locale.grouping, Number), locale.thousands + ""),
+  var group = locale.grouping === undefined || locale.thousands === undefined ? identity$1 : formatGroup(map.call(locale.grouping, Number), locale.thousands + ""),
       currencyPrefix = locale.currency === undefined ? "" : locale.currency[0] + "",
       currencySuffix = locale.currency === undefined ? "" : locale.currency[1] + "",
       decimal = locale.decimal === undefined ? "." : locale.decimal + "",
-      numerals = locale.numerals === undefined ? identity$1 : formatNumerals(map$1.call(locale.numerals, String)),
+      numerals = locale.numerals === undefined ? identity$1 : formatNumerals(map.call(locale.numerals, String)),
       percent = locale.percent === undefined ? "%" : locale.percent + "",
       minus = locale.minus === undefined ? "−" : locale.minus + "",
       nan = locale.nan === undefined ? "NaN" : locale.nan + "";
@@ -6987,18 +6987,18 @@ function schedule(node, name, id, index, group, timing) {
 }
 
 function init(node, id) {
-  var schedule = get$2(node, id);
+  var schedule = get(node, id);
   if (schedule.state > CREATED) throw new Error("too late; already scheduled");
   return schedule;
 }
 
 function set(node, id) {
-  var schedule = get$2(node, id);
+  var schedule = get(node, id);
   if (schedule.state > STARTED) throw new Error("too late; already running");
   return schedule;
 }
 
-function get$2(node, id) {
+function get(node, id) {
   var schedule = node.__transition;
   if (!schedule || !(schedule = schedule[id])) throw new Error("transition not found");
   return schedule;
@@ -7191,7 +7191,7 @@ function transition_tween(name, value) {
   name += "";
 
   if (arguments.length < 2) {
-    var tween = get$2(this.node(), id).tween;
+    var tween = get(this.node(), id).tween;
     for (var i = 0, n = tween.length, t; i < n; ++i) {
       if ((t = tween[i]).name === name) {
         return t.value;
@@ -7212,15 +7212,15 @@ function tweenValue(transition, name, value) {
   });
 
   return function(node) {
-    return get$2(node, id).value[name];
+    return get(node, id).value[name];
   };
 }
 
 function interpolate(a, b) {
   var c;
   return (typeof b === "number" ? interpolateNumber
-      : b instanceof color$1 ? interpolateRgb
-      : (c = color$1(b)) ? (b = c, interpolateRgb)
+      : b instanceof color ? interpolateRgb
+      : (c = color(b)) ? (b = c, interpolateRgb)
       : interpolateString)(a, b);
 }
 
@@ -7360,7 +7360,7 @@ function transition_delay(value) {
       ? this.each((typeof value === "function"
           ? delayFunction
           : delayConstant)(id, value))
-      : get$2(this.node(), id).delay;
+      : get(this.node(), id).delay;
 }
 
 function durationFunction(id, value) {
@@ -7382,7 +7382,7 @@ function transition_duration(value) {
       ? this.each((typeof value === "function"
           ? durationFunction
           : durationConstant)(id, value))
-      : get$2(this.node(), id).duration;
+      : get(this.node(), id).duration;
 }
 
 function easeConstant(id, value) {
@@ -7397,7 +7397,7 @@ function transition_ease(value) {
 
   return arguments.length
       ? this.each(easeConstant(id, value))
-      : get$2(this.node(), id).ease;
+      : get(this.node(), id).ease;
 }
 
 function easeVarying(id, value) {
@@ -7472,7 +7472,7 @@ function transition_on(name, listener) {
   var id = this._id;
 
   return arguments.length < 2
-      ? get$2(this.node(), id).on.on(name)
+      ? get(this.node(), id).on.on(name)
       : this.each(onFunction(id, name, listener));
 }
 
@@ -7499,7 +7499,7 @@ function transition_select(select) {
       if ((node = group[i]) && (subnode = select.call(node, node.__data__, i, group))) {
         if ("__data__" in node) subnode.__data__ = node.__data__;
         subgroup[i] = subnode;
-        schedule(subgroup[i], name, id, i, subgroup, get$2(node, id));
+        schedule(subgroup[i], name, id, i, subgroup, get(node, id));
       }
     }
   }
@@ -7516,7 +7516,7 @@ function transition_selectAll(select) {
   for (var groups = this._groups, m = groups.length, subgroups = [], parents = [], j = 0; j < m; ++j) {
     for (var group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
       if (node = group[i]) {
-        for (var children = select.call(node, node.__data__, i, group), child, inherit = get$2(node, id), k = 0, l = children.length; k < l; ++k) {
+        for (var children = select.call(node, node.__data__, i, group), child, inherit = get(node, id), k = 0, l = children.length; k < l; ++k) {
           if (child = children[k]) {
             schedule(child, name, id, k, children, inherit);
           }
@@ -7688,7 +7688,7 @@ function transition_transition() {
   for (var groups = this._groups, m = groups.length, j = 0; j < m; ++j) {
     for (var group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
       if (node = group[i]) {
-        var inherit = get$2(node, id0);
+        var inherit = get(node, id0);
         schedule(node, name, id1, i, group, {
           time: inherit.time + inherit.delay + inherit.duration,
           delay: 0,
@@ -10824,12 +10824,12 @@ class TAttFillHandler {
      * @param {selection} svg - top canvas element for pattern storages
      * @param {string} [color_as_svg] - when color is string, interpret as normal SVG color
      * @param {object} [painter] - when specified, used to extract color by index */
-   change(color, pattern, svg, color_as_svg, painter) {
+   change(color$1, pattern, svg, color_as_svg, painter) {
       delete this.pattern_url;
       this.changed = true;
 
-      if ((color !== undefined) && Number.isInteger(parseInt(color)) && !color_as_svg)
-         this.colorindx = parseInt(color);
+      if ((color$1 !== undefined) && Number.isInteger(parseInt(color$1)) && !color_as_svg)
+         this.colorindx = parseInt(color$1);
 
       if ((pattern !== undefined) && Number.isInteger(parseInt(pattern))) {
          this.pattern = parseInt(pattern);
@@ -10858,8 +10858,8 @@ class TAttFillHandler {
       let indx = this.colorindx;
 
       if (color_as_svg) {
-         this.color = color;
-         if (color != 'none') indx = color$1(color).hex().slice(1); // fictional index produced from color code
+         this.color = color$1;
+         if (color$1 != 'none') indx = color(color$1).hex().slice(1); // fictional index produced from color code
       } else {
          this.color = painter ? painter.getColor(indx) : getColor(indx);
       }
@@ -23104,7 +23104,7 @@ function hue2rgb( p, q, t ) {
 
 }
 
-let Color$1 = class Color {
+class Color {
 
 	constructor( r, g, b ) {
 
@@ -23674,11 +23674,11 @@ let Color$1 = class Color {
 
 	}
 
-};
+}
 
-const _color = /*@__PURE__*/ new Color$1();
+const _color = /*@__PURE__*/ new Color();
 
-Color$1.NAMES = _colorKeywords;
+Color.NAMES = _colorKeywords;
 
 const _vector$2 = /*@__PURE__*/ new Vector3();
 const _segCenter = /*@__PURE__*/ new Vector3();
@@ -24506,7 +24506,7 @@ class MeshBasicMaterial extends Material {
 
 		this.type = 'MeshBasicMaterial';
 
-		this.color = new Color$1( 0xffffff ); // emissive
+		this.color = new Color( 0xffffff ); // emissive
 
 		this.map = null;
 
@@ -25404,7 +25404,7 @@ const UniformsLib = {
 
 	common: {
 
-		diffuse: { value: /*@__PURE__*/ new Color$1( 0xffffff ) },
+		diffuse: { value: /*@__PURE__*/ new Color( 0xffffff ) },
 		opacity: { value: 1.0 },
 
 		map: { value: null },
@@ -25507,7 +25507,7 @@ const UniformsLib = {
 		fogDensity: { value: 0.00025 },
 		fogNear: { value: 1 },
 		fogFar: { value: 2000 },
-		fogColor: { value: /*@__PURE__*/ new Color$1( 0xffffff ) }
+		fogColor: { value: /*@__PURE__*/ new Color( 0xffffff ) }
 
 	},
 
@@ -25593,7 +25593,7 @@ const UniformsLib = {
 
 	points: {
 
-		diffuse: { value: /*@__PURE__*/ new Color$1( 0xffffff ) },
+		diffuse: { value: /*@__PURE__*/ new Color( 0xffffff ) },
 		opacity: { value: 1.0 },
 		size: { value: 1.0 },
 		scale: { value: 1.0 },
@@ -25606,7 +25606,7 @@ const UniformsLib = {
 
 	sprite: {
 
-		diffuse: { value: /*@__PURE__*/ new Color$1( 0xffffff ) },
+		diffuse: { value: /*@__PURE__*/ new Color( 0xffffff ) },
 		opacity: { value: 1.0 },
 		center: { value: /*@__PURE__*/ new Vector2( 0.5, 0.5 ) },
 		rotation: { value: 0.0 },
@@ -25652,7 +25652,7 @@ const ShaderLib = {
 			UniformsLib.fog,
 			UniformsLib.lights,
 			{
-				emissive: { value: /*@__PURE__*/ new Color$1( 0x000000 ) }
+				emissive: { value: /*@__PURE__*/ new Color( 0x000000 ) }
 			}
 		] ),
 
@@ -25676,8 +25676,8 @@ const ShaderLib = {
 			UniformsLib.fog,
 			UniformsLib.lights,
 			{
-				emissive: { value: /*@__PURE__*/ new Color$1( 0x000000 ) },
-				specular: { value: /*@__PURE__*/ new Color$1( 0x111111 ) },
+				emissive: { value: /*@__PURE__*/ new Color( 0x000000 ) },
+				specular: { value: /*@__PURE__*/ new Color( 0x111111 ) },
 				shininess: { value: 30 }
 			}
 		] ),
@@ -25703,7 +25703,7 @@ const ShaderLib = {
 			UniformsLib.fog,
 			UniformsLib.lights,
 			{
-				emissive: { value: /*@__PURE__*/ new Color$1( 0x000000 ) },
+				emissive: { value: /*@__PURE__*/ new Color( 0x000000 ) },
 				roughness: { value: 1.0 },
 				metalness: { value: 0.0 },
 				envMapIntensity: { value: 1 } // temporary
@@ -25729,7 +25729,7 @@ const ShaderLib = {
 			UniformsLib.fog,
 			UniformsLib.lights,
 			{
-				emissive: { value: /*@__PURE__*/ new Color$1( 0x000000 ) }
+				emissive: { value: /*@__PURE__*/ new Color( 0x000000 ) }
 			}
 		] ),
 
@@ -25900,7 +25900,7 @@ const ShaderLib = {
 			UniformsLib.lights,
 			UniformsLib.fog,
 			{
-				color: { value: /*@__PURE__*/ new Color$1( 0x00000 ) },
+				color: { value: /*@__PURE__*/ new Color( 0x00000 ) },
 				opacity: { value: 1.0 }
 			},
 		] ),
@@ -25935,7 +25935,7 @@ ShaderLib.physical = {
 			iridescenceThicknessMap: { value: null },
 			iridescenceThicknessMapTransform: { value: /*@__PURE__*/ new Matrix3() },
 			sheen: { value: 0 },
-			sheenColor: { value: /*@__PURE__*/ new Color$1( 0x000000 ) },
+			sheenColor: { value: /*@__PURE__*/ new Color( 0x000000 ) },
 			sheenColorMap: { value: null },
 			sheenColorMapTransform: { value: /*@__PURE__*/ new Matrix3() },
 			sheenRoughness: { value: 1 },
@@ -25950,8 +25950,8 @@ ShaderLib.physical = {
 			thicknessMap: { value: null },
 			thicknessMapTransform: { value: /*@__PURE__*/ new Matrix3() },
 			attenuationDistance: { value: 0 },
-			attenuationColor: { value: /*@__PURE__*/ new Color$1( 0x000000 ) },
-			specularColor: { value: /*@__PURE__*/ new Color$1( 1, 1, 1 ) },
+			attenuationColor: { value: /*@__PURE__*/ new Color( 0x000000 ) },
+			specularColor: { value: /*@__PURE__*/ new Color( 1, 1, 1 ) },
 			specularColorMap: { value: null },
 			specularColorMapTransform: { value: /*@__PURE__*/ new Matrix3() },
 			specularIntensity: { value: 1 },
@@ -25969,7 +25969,7 @@ const _rgb = { r: 0, b: 0, g: 0 };
 
 function WebGLBackground( renderer, cubemaps, cubeuvmaps, state, objects, alpha, premultipliedAlpha ) {
 
-	const clearColor = new Color$1( 0x000000 );
+	const clearColor = new Color( 0x000000 );
 	let clearAlpha = alpha === true ? 0 : 1;
 
 	let planeMesh;
@@ -27957,7 +27957,7 @@ const EXTRA_LOD_SIGMA = [ 0.125, 0.215, 0.35, 0.446, 0.526, 0.582 ];
 const MAX_SAMPLES = 20;
 
 const _flatCamera = /*@__PURE__*/ new OrthographicCamera();
-const _clearColor = /*@__PURE__*/ new Color$1();
+const _clearColor = /*@__PURE__*/ new Color();
 let _oldTarget = null;
 
 // Golden Ratio
@@ -32898,7 +32898,7 @@ function UniformsCache() {
 				case 'DirectionalLight':
 					uniforms = {
 						direction: new Vector3(),
-						color: new Color$1()
+						color: new Color()
 					};
 					break;
 
@@ -32906,7 +32906,7 @@ function UniformsCache() {
 					uniforms = {
 						position: new Vector3(),
 						direction: new Vector3(),
-						color: new Color$1(),
+						color: new Color(),
 						distance: 0,
 						coneCos: 0,
 						penumbraCos: 0,
@@ -32917,7 +32917,7 @@ function UniformsCache() {
 				case 'PointLight':
 					uniforms = {
 						position: new Vector3(),
-						color: new Color$1(),
+						color: new Color(),
 						distance: 0,
 						decay: 0
 					};
@@ -32926,14 +32926,14 @@ function UniformsCache() {
 				case 'HemisphereLight':
 					uniforms = {
 						direction: new Vector3(),
-						skyColor: new Color$1(),
-						groundColor: new Color$1()
+						skyColor: new Color(),
+						groundColor: new Color()
 					};
 					break;
 
 				case 'RectAreaLight':
 					uniforms = {
-						color: new Color$1(),
+						color: new Color(),
 						position: new Vector3(),
 						halfWidth: new Vector3(),
 						halfHeight: new Vector3()
@@ -41980,7 +41980,7 @@ class Fog {
 
 		this.name = '';
 
-		this.color = new Color$1( color );
+		this.color = new Color( color );
 
 		this.near = near;
 		this.far = far;
@@ -42330,7 +42330,7 @@ class LineBasicMaterial extends Material {
 
 		this.type = 'LineBasicMaterial';
 
-		this.color = new Color$1( 0xffffff );
+		this.color = new Color( 0xffffff );
 
 		this.map = null;
 
@@ -42637,7 +42637,7 @@ class PointsMaterial extends Material {
 
 		this.type = 'PointsMaterial';
 
-		this.color = new Color$1( 0xffffff );
+		this.color = new Color( 0xffffff );
 
 		this.map = null;
 
@@ -46760,7 +46760,7 @@ class MeshLambertMaterial extends Material {
 
 		this.type = 'MeshLambertMaterial';
 
-		this.color = new Color$1( 0xffffff ); // diffuse
+		this.color = new Color( 0xffffff ); // diffuse
 
 		this.map = null;
 
@@ -46770,7 +46770,7 @@ class MeshLambertMaterial extends Material {
 		this.aoMap = null;
 		this.aoMapIntensity = 1.0;
 
-		this.emissive = new Color$1( 0x000000 );
+		this.emissive = new Color( 0x000000 );
 		this.emissiveIntensity = 1.0;
 		this.emissiveMap = null;
 
@@ -47270,7 +47270,7 @@ class Light extends Object3D {
 
 		this.type = 'Light';
 
-		this.color = new Color$1( color );
+		this.color = new Color( color );
 		this.intensity = intensity;
 
 	}
@@ -47327,7 +47327,7 @@ class HemisphereLight extends Light {
 		this.position.copy( Object3D.DEFAULT_UP );
 		this.updateMatrix();
 
-		this.groundColor = new Color$1( groundColor );
+		this.groundColor = new Color( groundColor );
 
 	}
 
@@ -48219,7 +48219,7 @@ class ShapePath {
 
 		this.type = 'ShapePath';
 
-		this.color = new Color$1();
+		this.color = new Color();
 
 		this.subPaths = [];
 		this.currentPath = null;
@@ -50487,7 +50487,7 @@ class RenderPass extends Pass {
 		this.clear = true;
 		this.clearDepth = false;
 		this.needsSwap = false;
-		this._oldClearColor = new Color$1();
+		this._oldClearColor = new Color();
 
 	}
 
@@ -50559,7 +50559,7 @@ const LuminosityHighPassShader = {
 		'tDiffuse': { value: null },
 		'luminosityThreshold': { value: 1.0 },
 		'smoothWidth': { value: 1.0 },
-		'defaultColor': { value: new Color$1( 0x000000 ) },
+		'defaultColor': { value: new Color( 0x000000 ) },
 		'defaultOpacity': { value: 0.0 }
 
 	},
@@ -50625,7 +50625,7 @@ class UnrealBloomPass extends Pass {
 		this.resolution = ( resolution !== undefined ) ? new Vector2( resolution.x, resolution.y ) : new Vector2( 256, 256 );
 
 		// create color only once here, reuse it later inside the render function
-		this.clearColor = new Color$1( 0, 0, 0 );
+		this.clearColor = new Color( 0, 0, 0 );
 
 		// render targets
 		this.renderTargetsHorizontal = [];
@@ -50729,7 +50729,7 @@ class UnrealBloomPass extends Pass {
 		this.enabled = true;
 		this.needsSwap = false;
 
-		this._oldClearColor = new Color$1();
+		this._oldClearColor = new Color();
 		this.oldClearAlpha = 1;
 
 		this.basic = new MeshBasicMaterial();
@@ -51031,7 +51031,7 @@ class RenderableFace {
 		this.vertexNormalsModel = [ new Vector3(), new Vector3(), new Vector3() ];
 		this.vertexNormalsLength = 0;
 
-		this.color = new Color$1();
+		this.color = new Color();
 		this.material = null;
 		this.uvs = [ new Vector2(), new Vector2(), new Vector2() ];
 
@@ -51076,7 +51076,7 @@ class RenderableLine {
 		this.v1 = new RenderableVertex();
 		this.v2 = new RenderableVertex();
 
-		this.vertexColors = [ new Color$1(), new Color$1() ];
+		this.vertexColors = [ new Color(), new Color() ];
 		this.material = null;
 
 		this.z = 0;
@@ -51926,12 +51926,12 @@ class SVGRenderer {
 			_clipBox = new Box2(),
 			_elemBox = new Box2(),
 
-			_color = new Color$1(),
-			_diffuseColor = new Color$1(),
-			_ambientLight = new Color$1(),
-			_directionalLights = new Color$1(),
-			_pointLights = new Color$1(),
-			_clearColor = new Color$1(),
+			_color = new Color(),
+			_diffuseColor = new Color(),
+			_ambientLight = new Color(),
+			_directionalLights = new Color(),
+			_pointLights = new Color(),
+			_clearColor = new Color(),
 
 			_vector3 = new Vector3(), // Needed for PointLight
 			_centroid = new Vector3(),
@@ -56583,7 +56583,7 @@ function getColorExec(col, method) {
 
    // for higher color numbers ensure that such color exists
    if (id >= 50) {
-      let c = color$1(col);
+      let c = color(col);
       id = `TColor::GetColor(${c.r},${c.g},${c.b})`;
     }
 
@@ -65360,10 +65360,10 @@ class TPadPainter extends ObjectPainter {
          for (let n = 0; n < arr.length; ++n) {
             let name = arr[n], p = name.indexOf(':');
             if (p > 0) {
-               ListOfColors[parseInt(name.slice(0,p))] = color$1(`rgb(${name.slice(p+1)})`).formatHex();
+               ListOfColors[parseInt(name.slice(0,p))] = color(`rgb(${name.slice(p+1)})`).formatHex();
             } else {
                p = name.indexOf('=');
-               ListOfColors[parseInt(name.slice(0,p))] = color$1(`rgba(${name.slice(p+1)})`).formatHex8();
+               ListOfColors[parseInt(name.slice(0,p))] = color(`rgba(${name.slice(p+1)})`).formatHex8();
             }
          }
 
@@ -70961,16 +70961,17 @@ function buildSurf3D(histo, handle, ilevels, meshFunc, linesFunc) {
        normindx = [],                             // buffer to remember place of vertex for each bin
        arrx = handle.original ? handle.origx : handle.grx,
        arry = handle.original ? handle.origy : handle.gry,
-       i, j, x1, x2, y1, y2, z11, z12, z21, z22;
+       i, j, x1, x2, y1, y2, z11, z12, z21, z22,
+       levels_eps = (levels[levels.length-1] - levels[0]) / levels.length / 1e2;
 
-   function CheckSide(z, level1, level2) {
-      return (z < level1) ? -1 : (z > level2 ? 1 : 0);
+   function CheckSide(z, level1, level2, eps) {
+      return (z < level1 - eps) ? -1 : (z > level2 + eps ? 1 : 0);
    }
 
    function AddLineSegment(x1,y1,z1, x2,y2,z2) {
       if (!handle.dolines) return;
-      let side1 = CheckSide(z1, main_grz_min, main_grz_max),
-          side2 = CheckSide(z2, main_grz_min, main_grz_max);
+      let side1 = CheckSide(z1, main_grz_min, main_grz_max, 0),
+          side2 = CheckSide(z2, main_grz_min, main_grz_max, 0);
       if ((side1 === side2) && (side1 !== 0)) return;
       if (!loop) return ++nsegments;
 
@@ -71037,9 +71038,9 @@ function buildSurf3D(histo, handle, ilevels, meshFunc, linesFunc) {
 
       for (let lvl = 1; lvl < levels.length; ++lvl) {
 
-         let side1 = CheckSide(z1, levels[lvl-1], levels[lvl]),
-             side2 = CheckSide(z2, levels[lvl-1], levels[lvl]),
-             side3 = CheckSide(z3, levels[lvl-1], levels[lvl]),
+         let side1 = CheckSide(z1, levels[lvl-1], levels[lvl], levels_eps),
+             side2 = CheckSide(z2, levels[lvl-1], levels[lvl], levels_eps),
+             side3 = CheckSide(z3, levels[lvl-1], levels[lvl], levels_eps),
              side_sum = side1 + side2 + side3;
 
          // always show top segments
@@ -71150,6 +71151,7 @@ function buildSurf3D(histo, handle, ilevels, meshFunc, linesFunc) {
          for (j = handle.j1; j < handle.j2-1; ++j) {
             y1 = handle.original ? 0.5 * (arry[j] + arry[j+1]) : arry[j];
             y2 = handle.original ? 0.5 * (arry[j+1] + arry[j+2]) : arry[j+1];
+
             z11 = main_grz(histo.getBinContent(i+1, j+1));
             z12 = main_grz(histo.getBinContent(i+1, j+2));
             z21 = main_grz(histo.getBinContent(i+2, j+1));
@@ -74168,7 +74170,7 @@ function highlightBin3D(tip, selfmesh) {
 
    if (tip.use_itself) {
       selfmesh.save_color = selfmesh.material.color;
-      selfmesh.material.color = new Color$1(tip.color);
+      selfmesh.material.color = new Color(tip.color);
       this.tooltip_selfmesh = selfmesh;
       changed = changed_self;
    } else {
@@ -74177,7 +74179,7 @@ function highlightBin3D(tip, selfmesh) {
       const indicies = Box3D.Indexes,
             normals = Box3D.Normals,
             vertices = Box3D.Vertices,
-            color = new Color$1(tip.color ? tip.color : 0xFF0000),
+            color = new Color(tip.color ? tip.color : 0xFF0000),
             opacity = tip.opacity || 1;
 
       let pos, norm;
@@ -75134,7 +75136,7 @@ function drawBinsLego(painter, is_v7 = false) {
          geom2.setAttribute('normal', new BufferAttribute(norm2, 3));
          //geom2.computeVertexNormals();
 
-         const color2 = (rootcolor < 2) ? new Color$1(0xFF0000) : new Color$1(rgb(fcolor).darker(0.5).toString()),
+         const color2 = (rootcolor < 2) ? new Color(0xFF0000) : new Color(rgb(fcolor).darker(0.5).toString()),
                material2 = new MeshBasicMaterial({ color: color2, vertexColors: false }),
                mesh2 = new Mesh(geom2, material2);
          mesh2.face_to_bins_index = face_to_bins_indx2;
@@ -75227,7 +75229,7 @@ function drawBinsLego(painter, is_v7 = false) {
 
    // create boxes
    const lcolor = is_v7 ? painter.v7EvalColor('line_color', 'lightblue') : painter.getColor(histo.fLineColor),
-         material = new LineBasicMaterial({ color: new Color$1(lcolor), linewidth: is_v7 ? painter.v7EvalAttr('line_width', 1) : histo.fLineWidth }),
+         material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: is_v7 ? painter.v7EvalAttr('line_width', 1) : histo.fLineWidth }),
          line = createLineSegments(lpositions, material, uselineindx ? lindicies : null );
 
    /*
@@ -75313,7 +75315,7 @@ function drawBinsError3D(painter, is_v7 = false) {
 
     // create lines
     const lcolor = is_v7 ? painter.v7EvalColor('line_color', 'lightblue') : painter.getColor(histo.fLineColor),
-          material = new LineBasicMaterial({ color: new Color$1(lcolor), linewidth: is_v7 ? painter.v7EvalAttr('line_width', 1) : histo.fLineWidth }),
+          material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: is_v7 ? painter.v7EvalAttr('line_width', 1) : histo.fLineWidth }),
           line = createLineSegments(lpos, material);
 
     line.painter = painter;
@@ -75488,19 +75490,21 @@ function drawBinsSurf3D(painter, is_v7 = false) {
       if (handle.donormals && (lvl === 1))
          RecalculateNormals(geometry.getAttribute('normal').array, normindx);
 
-      let fcolor, material;
+      let color, material;
       if (is_v7) {
-         fcolor = palette ? palette.getColor(lvl-1) : painter.getColor(5);
+         color = palette?.getColor(lvl-1) ?? painter.getColor(5);
       } else if (palette) {
-         fcolor = palette.calcColor(lvl, levels.length);
+         color = palette.calcColor(lvl, levels.length);
       } else {
-         fcolor = histo.fFillColor > 1 ? painter.getColor(histo.fFillColor) : 'white';
-         if ((painter.options.Surf === 14) && (histo.fFillColor < 2)) fcolor = painter.getColor(48);
+         color = histo.fFillColor > 1 ? painter.getColor(histo.fFillColor) : 'white';
+         if ((painter.options.Surf === 14) && (histo.fFillColor < 2)) color = painter.getColor(48);
       }
+
+      if (!color) color = 'white';
       if (painter.options.Surf === 14)
-         material = new MeshLambertMaterial({ color: fcolor, side: DoubleSide, vertexColors: false });
+         material = new MeshLambertMaterial({ color, side: DoubleSide, vertexColors: false });
       else
-         material = new MeshBasicMaterial({ color: fcolor, side: DoubleSide, vertexColors: false });
+         material = new MeshBasicMaterial({ color, side: DoubleSide, vertexColors: false });
 
       let mesh = new Mesh(geometry, material);
 
@@ -75508,14 +75512,16 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
       mesh.painter = painter; // to let use it with context menu
    }, (isgrid, lpos) => {
-      let material;
+      let material, color = painter.getColor(histo.fLineColor) ?? 'white';
+
       if (isgrid) {
          material = (painter.options.Surf === 1)
                       ? new LineDashedMaterial({ color: 0x0, dashSize: 2, gapSize: 2 })
-                      : new LineBasicMaterial({ color: new Color$1(painter.getColor(histo.fLineColor)) });
+                      : new LineBasicMaterial({ color });
       } else {
-         material = new LineBasicMaterial({ color: painter.getColor(histo.fLineColor), linewidth: histo.fLineWidth });
+         material = new LineBasicMaterial({ color, linewidth: histo.fLineWidth });
       }
+
       let line = createLineSegments(lpos, material);
       line.painter = painter;
       main.toplevel.add(line);
@@ -81667,7 +81673,7 @@ class ClonedNodes {
       if (clone.kind === kindShape) {
          let prop = { name: clone.name, nname: clone.name, shape: null, material: null, chlds: null },
              opacity = entry.opacity || 1, col = entry.color || '#0000FF';
-         prop.fillcolor = new Color$1(col[0] == '#' ? col : `rgb(${col})`);
+         prop.fillcolor = new Color(col[0] == '#' ? col : `rgb(${col})`);
          prop.material = new MeshLambertMaterial({ transparent: opacity < 1,
                           opacity, wireframe: false, color: prop.fillcolor,
                           side: FrontSide, vertexColors: false,
@@ -81693,7 +81699,7 @@ class ClonedNodes {
 
          {
             let opacity = Math.min(1, node.fRGBA[3]);
-            prop.fillcolor = new Color$1( node.fRGBA[0], node.fRGBA[1], node.fRGBA[2] );
+            prop.fillcolor = new Color( node.fRGBA[0], node.fRGBA[1], node.fRGBA[2] );
             prop.material = new MeshLambertMaterial({ transparent: opacity < 1,
                                                       opacity, wireframe: false, color: prop.fillcolor,
                                                       side: FrontSide, vertexColors: false, depthWrite: opacity == 1 });
@@ -82699,6 +82705,2390 @@ function getShapeIcon(shape) {
    return 'img_geotube';
 }
 
+/**
+ * lil-gui
+ * https://lil-gui.georgealways.com
+ * @version 0.18.2
+ * @author George Michael Brower
+ * @license MIT
+ */
+
+/**
+ * Base class for all controllers.
+ */
+class Controller {
+
+	constructor( parent, object, property, className, widgetTag = 'div' ) {
+
+		/**
+		 * The GUI that contains this controller.
+		 * @type {GUI}
+		 */
+		this.parent = parent;
+
+		/**
+		 * The object this controller will modify.
+		 * @type {object}
+		 */
+		this.object = object;
+
+		/**
+		 * The name of the property to control.
+		 * @type {string}
+		 */
+		this.property = property;
+
+		/**
+		 * Used to determine if the controller is disabled.
+		 * Use `controller.disable( true|false )` to modify this value
+		 * @type {boolean}
+		 */
+		this._disabled = false;
+
+		/**
+		 * Used to determine if the Controller is hidden.
+		 * Use `controller.show()` or `controller.hide()` to change this.
+		 * @type {boolean}
+		 */
+		this._hidden = false;
+
+		/**
+		 * The value of `object[ property ]` when the controller was created.
+		 * @type {any}
+		 */
+		this.initialValue = this.getValue();
+
+		/**
+		 * The outermost container DOM element for this controller.
+		 * @type {HTMLElement}
+		 */
+		this.domElement = document.createElement( 'div' );
+		this.domElement.classList.add( 'controller' );
+		this.domElement.classList.add( className );
+
+		/**
+		 * The DOM element that contains the controller's name.
+		 * @type {HTMLElement}
+		 */
+		this.$name = document.createElement( 'div' );
+		this.$name.classList.add( 'name' );
+
+		Controller.nextNameID = Controller.nextNameID || 0;
+		this.$name.id = `lil-gui-name-${++Controller.nextNameID}`;
+
+		/**
+		 * The DOM element that contains the controller's "widget" (which differs by controller type).
+		 * @type {HTMLElement}
+		 */
+		this.$widget = document.createElement( widgetTag );
+		this.$widget.classList.add( 'widget' );
+
+		/**
+		 * The DOM element that receives the disabled attribute when using disable()
+		 * @type {HTMLElement}
+		 */
+		this.$disable = this.$widget;
+
+		this.domElement.appendChild( this.$name );
+		this.domElement.appendChild( this.$widget );
+
+		// Don't fire global key events while typing in a controller
+		this.domElement.addEventListener( 'keydown', e => e.stopPropagation() );
+		this.domElement.addEventListener( 'keyup', e => e.stopPropagation() );
+
+		this.parent.children.push( this );
+		this.parent.controllers.push( this );
+
+		this.parent.$children.appendChild( this.domElement );
+
+		this._listenCallback = this._listenCallback.bind( this );
+
+		this.name( property );
+
+	}
+
+	/**
+	 * Sets the name of the controller and its label in the GUI.
+	 * @param {string} name
+	 * @returns {this}
+	 */
+	name( name ) {
+		/**
+		 * The controller's name. Use `controller.name( 'Name' )` to modify this value.
+		 * @type {string}
+		 */
+		this._name = name;
+		this.$name.innerHTML = name;
+		return this;
+	}
+
+	/**
+	 * Pass a function to be called whenever the value is modified by this controller.
+	 * The function receives the new value as its first parameter. The value of `this` will be the
+	 * controller.
+	 *
+	 * For function controllers, the `onChange` callback will be fired on click, after the function
+	 * executes.
+	 * @param {Function} callback
+	 * @returns {this}
+	 * @example
+	 * const controller = gui.add( object, 'property' );
+	 *
+	 * controller.onChange( function( v ) {
+	 * 	console.log( 'The value is now ' + v );
+	 * 	console.assert( this === controller );
+	 * } );
+	 */
+	onChange( callback ) {
+		/**
+		 * Used to access the function bound to `onChange` events. Don't modify this value directly.
+		 * Use the `controller.onChange( callback )` method instead.
+		 * @type {Function}
+		 */
+		this._onChange = callback;
+		return this;
+	}
+
+	/**
+	 * Calls the onChange methods of this controller and its parent GUI.
+	 * @protected
+	 */
+	_callOnChange() {
+
+		this.parent._callOnChange( this );
+
+		if ( this._onChange !== undefined ) {
+			this._onChange.call( this, this.getValue() );
+		}
+
+		this._changed = true;
+
+	}
+
+	/**
+	 * Pass a function to be called after this controller has been modified and loses focus.
+	 * @param {Function} callback
+	 * @returns {this}
+	 * @example
+	 * const controller = gui.add( object, 'property' );
+	 *
+	 * controller.onFinishChange( function( v ) {
+	 * 	console.log( 'Changes complete: ' + v );
+	 * 	console.assert( this === controller );
+	 * } );
+	 */
+	onFinishChange( callback ) {
+		/**
+		 * Used to access the function bound to `onFinishChange` events. Don't modify this value
+		 * directly. Use the `controller.onFinishChange( callback )` method instead.
+		 * @type {Function}
+		 */
+		this._onFinishChange = callback;
+		return this;
+	}
+
+	/**
+	 * Should be called by Controller when its widgets lose focus.
+	 * @protected
+	 */
+	_callOnFinishChange() {
+
+		if ( this._changed ) {
+
+			this.parent._callOnFinishChange( this );
+
+			if ( this._onFinishChange !== undefined ) {
+				this._onFinishChange.call( this, this.getValue() );
+			}
+
+		}
+
+		this._changed = false;
+
+	}
+
+	/**
+	 * Sets the controller back to its initial value.
+	 * @returns {this}
+	 */
+	reset() {
+		this.setValue( this.initialValue );
+		this._callOnFinishChange();
+		return this;
+	}
+
+	/**
+	 * Enables this controller.
+	 * @param {boolean} enabled
+	 * @returns {this}
+	 * @example
+	 * controller.enable();
+	 * controller.enable( false ); // disable
+	 * controller.enable( controller._disabled ); // toggle
+	 */
+	enable( enabled = true ) {
+		return this.disable( !enabled );
+	}
+
+	/**
+	 * Disables this controller.
+	 * @param {boolean} disabled
+	 * @returns {this}
+	 * @example
+	 * controller.disable();
+	 * controller.disable( false ); // enable
+	 * controller.disable( !controller._disabled ); // toggle
+	 */
+	disable( disabled = true ) {
+
+		if ( disabled === this._disabled ) return this;
+
+		this._disabled = disabled;
+
+		this.domElement.classList.toggle( 'disabled', disabled );
+		this.$disable.toggleAttribute( 'disabled', disabled );
+
+		return this;
+
+	}
+
+	/**
+	 * Shows the Controller after it's been hidden.
+	 * @param {boolean} show
+	 * @returns {this}
+	 * @example
+	 * controller.show();
+	 * controller.show( false ); // hide
+	 * controller.show( controller._hidden ); // toggle
+	 */
+	show( show = true ) {
+
+		this._hidden = !show;
+
+		this.domElement.style.display = this._hidden ? 'none' : '';
+
+		return this;
+
+	}
+
+	/**
+	 * Hides the Controller.
+	 * @returns {this}
+	 */
+	hide() {
+		return this.show( false );
+	}
+
+	/**
+	 * Destroys this controller and replaces it with a new option controller. Provided as a more
+	 * descriptive syntax for `gui.add`, but primarily for compatibility with dat.gui.
+	 *
+	 * Use caution, as this method will destroy old references to this controller. It will also
+	 * change controller order if called out of sequence, moving the option controller to the end of
+	 * the GUI.
+	 * @example
+	 * // safe usage
+	 *
+	 * gui.add( object1, 'property' ).options( [ 'a', 'b', 'c' ] );
+	 * gui.add( object2, 'property' );
+	 *
+	 * // danger
+	 *
+	 * const c = gui.add( object1, 'property' );
+	 * gui.add( object2, 'property' );
+	 *
+	 * c.options( [ 'a', 'b', 'c' ] );
+	 * // controller is now at the end of the GUI even though it was added first
+	 *
+	 * assert( c.parent.children.indexOf( c ) === -1 )
+	 * // c references a controller that no longer exists
+	 *
+	 * @param {object|Array} options
+	 * @returns {Controller}
+	 */
+	options( options ) {
+		const controller = this.parent.add( this.object, this.property, options );
+		controller.name( this._name );
+		this.destroy();
+		return controller;
+	}
+
+	/**
+	 * Sets the minimum value. Only works on number controllers.
+	 * @param {number} min
+	 * @returns {this}
+	 */
+	min( min ) {
+		return this;
+	}
+
+	/**
+	 * Sets the maximum value. Only works on number controllers.
+	 * @param {number} max
+	 * @returns {this}
+	 */
+	max( max ) {
+		return this;
+	}
+
+	/**
+	 * Values set by this controller will be rounded to multiples of `step`. Only works on number
+	 * controllers.
+	 * @param {number} step
+	 * @returns {this}
+	 */
+	step( step ) {
+		return this;
+	}
+
+	/**
+	 * Rounds the displayed value to a fixed number of decimals, without affecting the actual value
+	 * like `step()`. Only works on number controllers.
+	 * @example
+	 * gui.add( object, 'property' ).listen().decimals( 4 );
+	 * @param {number} decimals
+	 * @returns {this}
+	 */
+	decimals( decimals ) {
+		return this;
+	}
+
+	/**
+	 * Calls `updateDisplay()` every animation frame. Pass `false` to stop listening.
+	 * @param {boolean} listen
+	 * @returns {this}
+	 */
+	listen( listen = true ) {
+
+		/**
+		 * Used to determine if the controller is currently listening. Don't modify this value
+		 * directly. Use the `controller.listen( true|false )` method instead.
+		 * @type {boolean}
+		 */
+		this._listening = listen;
+
+		if ( this._listenCallbackID !== undefined ) {
+			cancelAnimationFrame( this._listenCallbackID );
+			this._listenCallbackID = undefined;
+		}
+
+		if ( this._listening ) {
+			this._listenCallback();
+		}
+
+		return this;
+
+	}
+
+	_listenCallback() {
+
+		this._listenCallbackID = requestAnimationFrame( this._listenCallback );
+
+		// To prevent framerate loss, make sure the value has changed before updating the display.
+		// Note: save() is used here instead of getValue() only because of ColorController. The !== operator
+		// won't work for color objects or arrays, but ColorController.save() always returns a string.
+
+		const curValue = this.save();
+
+		if ( curValue !== this._listenPrevValue ) {
+			this.updateDisplay();
+		}
+
+		this._listenPrevValue = curValue;
+
+	}
+
+	/**
+	 * Returns `object[ property ]`.
+	 * @returns {any}
+	 */
+	getValue() {
+		return this.object[ this.property ];
+	}
+
+	/**
+	 * Sets the value of `object[ property ]`, invokes any `onChange` handlers and updates the display.
+	 * @param {any} value
+	 * @returns {this}
+	 */
+	setValue( value ) {
+		this.object[ this.property ] = value;
+		this._callOnChange();
+		this.updateDisplay();
+		return this;
+	}
+
+	/**
+	 * Updates the display to keep it in sync with the current value. Useful for updating your
+	 * controllers when their values have been modified outside of the GUI.
+	 * @returns {this}
+	 */
+	updateDisplay() {
+		return this;
+	}
+
+	load( value ) {
+		this.setValue( value );
+		this._callOnFinishChange();
+		return this;
+	}
+
+	save() {
+		return this.getValue();
+	}
+
+	/**
+	 * Destroys this controller and removes it from the parent GUI.
+	 */
+	destroy() {
+		this.listen( false );
+		this.parent.children.splice( this.parent.children.indexOf( this ), 1 );
+		this.parent.controllers.splice( this.parent.controllers.indexOf( this ), 1 );
+		this.parent.$children.removeChild( this.domElement );
+	}
+
+}
+
+class BooleanController extends Controller {
+
+	constructor( parent, object, property ) {
+
+		super( parent, object, property, 'boolean', 'label' );
+
+		this.$input = document.createElement( 'input' );
+		this.$input.setAttribute( 'type', 'checkbox' );
+		this.$input.setAttribute( 'aria-labelledby', this.$name.id );
+
+		this.$widget.appendChild( this.$input );
+
+		this.$input.addEventListener( 'change', () => {
+			this.setValue( this.$input.checked );
+			this._callOnFinishChange();
+		} );
+
+		this.$disable = this.$input;
+
+		this.updateDisplay();
+
+	}
+
+	updateDisplay() {
+		this.$input.checked = this.getValue();
+		return this;
+	}
+
+}
+
+function normalizeColorString( string ) {
+
+	let match, result;
+
+	if ( match = string.match( /(#|0x)?([a-f0-9]{6})/i ) ) {
+
+		result = match[ 2 ];
+
+	} else if ( match = string.match( /rgb\(\s*(\d*)\s*,\s*(\d*)\s*,\s*(\d*)\s*\)/ ) ) {
+
+		result = parseInt( match[ 1 ] ).toString( 16 ).padStart( 2, 0 )
+			+ parseInt( match[ 2 ] ).toString( 16 ).padStart( 2, 0 )
+			+ parseInt( match[ 3 ] ).toString( 16 ).padStart( 2, 0 );
+
+	} else if ( match = string.match( /^#?([a-f0-9])([a-f0-9])([a-f0-9])$/i ) ) {
+
+		result = match[ 1 ] + match[ 1 ] + match[ 2 ] + match[ 2 ] + match[ 3 ] + match[ 3 ];
+
+	}
+
+	if ( result ) {
+		return '#' + result;
+	}
+
+	return false;
+
+}
+
+const STRING = {
+	isPrimitive: true,
+	match: v => typeof v === 'string',
+	fromHexString: normalizeColorString,
+	toHexString: normalizeColorString
+};
+
+const INT = {
+	isPrimitive: true,
+	match: v => typeof v === 'number',
+	fromHexString: string => parseInt( string.substring( 1 ), 16 ),
+	toHexString: value => '#' + value.toString( 16 ).padStart( 6, 0 )
+};
+
+const ARRAY = {
+	isPrimitive: false,
+
+	// The arrow function is here to appease tree shakers like esbuild or webpack.
+	// See https://esbuild.github.io/api/#tree-shaking
+	match: v => Array.isArray( v ),
+
+	fromHexString( string, target, rgbScale = 1 ) {
+
+		const int = INT.fromHexString( string );
+
+		target[ 0 ] = ( int >> 16 & 255 ) / 255 * rgbScale;
+		target[ 1 ] = ( int >> 8 & 255 ) / 255 * rgbScale;
+		target[ 2 ] = ( int & 255 ) / 255 * rgbScale;
+
+	},
+	toHexString( [ r, g, b ], rgbScale = 1 ) {
+
+		rgbScale = 255 / rgbScale;
+
+		const int = ( r * rgbScale ) << 16 ^
+			( g * rgbScale ) << 8 ^
+			( b * rgbScale ) << 0;
+
+		return INT.toHexString( int );
+
+	}
+};
+
+const OBJECT = {
+	isPrimitive: false,
+	match: v => Object( v ) === v,
+	fromHexString( string, target, rgbScale = 1 ) {
+
+		const int = INT.fromHexString( string );
+
+		target.r = ( int >> 16 & 255 ) / 255 * rgbScale;
+		target.g = ( int >> 8 & 255 ) / 255 * rgbScale;
+		target.b = ( int & 255 ) / 255 * rgbScale;
+
+	},
+	toHexString( { r, g, b }, rgbScale = 1 ) {
+
+		rgbScale = 255 / rgbScale;
+
+		const int = ( r * rgbScale ) << 16 ^
+			( g * rgbScale ) << 8 ^
+			( b * rgbScale ) << 0;
+
+		return INT.toHexString( int );
+
+	}
+};
+
+const FORMATS = [ STRING, INT, ARRAY, OBJECT ];
+
+function getColorFormat( value ) {
+	return FORMATS.find( format => format.match( value ) );
+}
+
+class ColorController extends Controller {
+
+	constructor( parent, object, property, rgbScale ) {
+
+		super( parent, object, property, 'color' );
+
+		this.$input = document.createElement( 'input' );
+		this.$input.setAttribute( 'type', 'color' );
+		this.$input.setAttribute( 'tabindex', -1 );
+		this.$input.setAttribute( 'aria-labelledby', this.$name.id );
+
+		this.$text = document.createElement( 'input' );
+		this.$text.setAttribute( 'type', 'text' );
+		this.$text.setAttribute( 'spellcheck', 'false' );
+		this.$text.setAttribute( 'aria-labelledby', this.$name.id );
+
+		this.$display = document.createElement( 'div' );
+		this.$display.classList.add( 'display' );
+
+		this.$display.appendChild( this.$input );
+		this.$widget.appendChild( this.$display );
+		this.$widget.appendChild( this.$text );
+
+		this._format = getColorFormat( this.initialValue );
+		this._rgbScale = rgbScale;
+
+		this._initialValueHexString = this.save();
+		this._textFocused = false;
+
+		this.$input.addEventListener( 'input', () => {
+			this._setValueFromHexString( this.$input.value );
+		} );
+
+		this.$input.addEventListener( 'blur', () => {
+			this._callOnFinishChange();
+		} );
+
+		this.$text.addEventListener( 'input', () => {
+			const tryParse = normalizeColorString( this.$text.value );
+			if ( tryParse ) {
+				this._setValueFromHexString( tryParse );
+			}
+		} );
+
+		this.$text.addEventListener( 'focus', () => {
+			this._textFocused = true;
+			this.$text.select();
+		} );
+
+		this.$text.addEventListener( 'blur', () => {
+			this._textFocused = false;
+			this.updateDisplay();
+			this._callOnFinishChange();
+		} );
+
+		this.$disable = this.$text;
+
+		this.updateDisplay();
+
+	}
+
+	reset() {
+		this._setValueFromHexString( this._initialValueHexString );
+		return this;
+	}
+
+	_setValueFromHexString( value ) {
+
+		if ( this._format.isPrimitive ) {
+
+			const newValue = this._format.fromHexString( value );
+			this.setValue( newValue );
+
+		} else {
+
+			this._format.fromHexString( value, this.getValue(), this._rgbScale );
+			this._callOnChange();
+			this.updateDisplay();
+
+		}
+
+	}
+
+	save() {
+		return this._format.toHexString( this.getValue(), this._rgbScale );
+	}
+
+	load( value ) {
+		this._setValueFromHexString( value );
+		this._callOnFinishChange();
+		return this;
+	}
+
+	updateDisplay() {
+		this.$input.value = this._format.toHexString( this.getValue(), this._rgbScale );
+		if ( !this._textFocused ) {
+			this.$text.value = this.$input.value.substring( 1 );
+		}
+		this.$display.style.backgroundColor = this.$input.value;
+		return this;
+	}
+
+}
+
+class FunctionController extends Controller {
+
+	constructor( parent, object, property ) {
+
+		super( parent, object, property, 'function' );
+
+		// Buttons are the only case where widget contains name
+		this.$button = document.createElement( 'button' );
+		this.$button.appendChild( this.$name );
+		this.$widget.appendChild( this.$button );
+
+		this.$button.addEventListener( 'click', e => {
+			e.preventDefault();
+			this.getValue().call( this.object );
+			this._callOnChange();
+		} );
+
+		// enables :active pseudo class on mobile
+		this.$button.addEventListener( 'touchstart', () => {}, { passive: true } );
+
+		this.$disable = this.$button;
+
+	}
+
+}
+
+class NumberController extends Controller {
+
+	constructor( parent, object, property, min, max, step ) {
+
+		super( parent, object, property, 'number' );
+
+		this._initInput();
+
+		this.min( min );
+		this.max( max );
+
+		const stepExplicit = step !== undefined;
+		this.step( stepExplicit ? step : this._getImplicitStep(), stepExplicit );
+
+		this.updateDisplay();
+
+	}
+
+	decimals( decimals ) {
+		this._decimals = decimals;
+		this.updateDisplay();
+		return this;
+	}
+
+	min( min ) {
+		this._min = min;
+		this._onUpdateMinMax();
+		return this;
+	}
+
+	max( max ) {
+		this._max = max;
+		this._onUpdateMinMax();
+		return this;
+	}
+
+	step( step, explicit = true ) {
+		this._step = step;
+		this._stepExplicit = explicit;
+		return this;
+	}
+
+	updateDisplay() {
+
+		const value = this.getValue();
+
+		if ( this._hasSlider ) {
+
+			let percent = ( value - this._min ) / ( this._max - this._min );
+			percent = Math.max( 0, Math.min( percent, 1 ) );
+
+			this.$fill.style.width = percent * 100 + '%';
+
+		}
+
+		if ( !this._inputFocused ) {
+			this.$input.value = this._decimals === undefined ? value : value.toFixed( this._decimals );
+		}
+
+		return this;
+
+	}
+
+	_initInput() {
+
+		this.$input = document.createElement( 'input' );
+		this.$input.setAttribute( 'type', 'text' );
+		this.$input.setAttribute( 'aria-labelledby', this.$name.id );
+
+		// On touch devices only, use input[type=number] to force a numeric keyboard.
+		// Ideally we could use one input type everywhere, but [type=number] has quirks
+		// on desktop, and [inputmode=decimal] has quirks on iOS.
+		// See https://github.com/georgealways/lil-gui/pull/16
+
+		const isTouch = window.matchMedia( '(pointer: coarse)' ).matches;
+
+		if ( isTouch ) {
+			this.$input.setAttribute( 'type', 'number' );
+			this.$input.setAttribute( 'step', 'any' );
+		}
+
+		this.$widget.appendChild( this.$input );
+
+		this.$disable = this.$input;
+
+		const onInput = () => {
+
+			let value = parseFloat( this.$input.value );
+
+			if ( isNaN( value ) ) return;
+
+			if ( this._stepExplicit ) {
+				value = this._snap( value );
+			}
+
+			this.setValue( this._clamp( value ) );
+
+		};
+
+		// Keys & mouse wheel
+		// ---------------------------------------------------------------------
+
+		const increment = delta => {
+
+			const value = parseFloat( this.$input.value );
+
+			if ( isNaN( value ) ) return;
+
+			this._snapClampSetValue( value + delta );
+
+			// Force the input to updateDisplay when it's focused
+			this.$input.value = this.getValue();
+
+		};
+
+		const onKeyDown = e => {
+			// Using `e.key` instead of `e.code` also catches NumpadEnter
+			if ( e.key === 'Enter' ) {
+				this.$input.blur();
+			}
+			if ( e.code === 'ArrowUp' ) {
+				e.preventDefault();
+				increment( this._step * this._arrowKeyMultiplier( e ) );
+			}
+			if ( e.code === 'ArrowDown' ) {
+				e.preventDefault();
+				increment( this._step * this._arrowKeyMultiplier( e ) * -1 );
+			}
+		};
+
+		const onWheel = e => {
+			if ( this._inputFocused ) {
+				e.preventDefault();
+				increment( this._step * this._normalizeMouseWheel( e ) );
+			}
+		};
+
+		// Vertical drag
+		// ---------------------------------------------------------------------
+
+		let testingForVerticalDrag = false,
+			initClientX,
+			initClientY,
+			prevClientY,
+			initValue,
+			dragDelta;
+
+		// Once the mouse is dragged more than DRAG_THRESH px on any axis, we decide
+		// on the user's intent: horizontal means highlight, vertical means drag.
+		const DRAG_THRESH = 5;
+
+		const onMouseDown = e => {
+
+			initClientX = e.clientX;
+			initClientY = prevClientY = e.clientY;
+			testingForVerticalDrag = true;
+
+			initValue = this.getValue();
+			dragDelta = 0;
+
+			window.addEventListener( 'mousemove', onMouseMove );
+			window.addEventListener( 'mouseup', onMouseUp );
+
+		};
+
+		const onMouseMove = e => {
+
+			if ( testingForVerticalDrag ) {
+
+				const dx = e.clientX - initClientX;
+				const dy = e.clientY - initClientY;
+
+				if ( Math.abs( dy ) > DRAG_THRESH ) {
+
+					e.preventDefault();
+					this.$input.blur();
+					testingForVerticalDrag = false;
+					this._setDraggingStyle( true, 'vertical' );
+
+				} else if ( Math.abs( dx ) > DRAG_THRESH ) {
+
+					onMouseUp();
+
+				}
+
+			}
+
+			// This isn't an else so that the first move counts towards dragDelta
+			if ( !testingForVerticalDrag ) {
+
+				const dy = e.clientY - prevClientY;
+
+				dragDelta -= dy * this._step * this._arrowKeyMultiplier( e );
+
+				// Clamp dragDelta so we don't have 'dead space' after dragging past bounds.
+				// We're okay with the fact that bounds can be undefined here.
+				if ( initValue + dragDelta > this._max ) {
+					dragDelta = this._max - initValue;
+				} else if ( initValue + dragDelta < this._min ) {
+					dragDelta = this._min - initValue;
+				}
+
+				this._snapClampSetValue( initValue + dragDelta );
+
+			}
+
+			prevClientY = e.clientY;
+
+		};
+
+		const onMouseUp = () => {
+			this._setDraggingStyle( false, 'vertical' );
+			this._callOnFinishChange();
+			window.removeEventListener( 'mousemove', onMouseMove );
+			window.removeEventListener( 'mouseup', onMouseUp );
+		};
+
+		// Focus state & onFinishChange
+		// ---------------------------------------------------------------------
+
+		const onFocus = () => {
+			this._inputFocused = true;
+		};
+
+		const onBlur = () => {
+			this._inputFocused = false;
+			this.updateDisplay();
+			this._callOnFinishChange();
+		};
+
+		this.$input.addEventListener( 'input', onInput );
+		this.$input.addEventListener( 'keydown', onKeyDown );
+		this.$input.addEventListener( 'wheel', onWheel, { passive: false } );
+		this.$input.addEventListener( 'mousedown', onMouseDown );
+		this.$input.addEventListener( 'focus', onFocus );
+		this.$input.addEventListener( 'blur', onBlur );
+
+	}
+
+	_initSlider() {
+
+		this._hasSlider = true;
+
+		// Build DOM
+		// ---------------------------------------------------------------------
+
+		this.$slider = document.createElement( 'div' );
+		this.$slider.classList.add( 'slider' );
+
+		this.$fill = document.createElement( 'div' );
+		this.$fill.classList.add( 'fill' );
+
+		this.$slider.appendChild( this.$fill );
+		this.$widget.insertBefore( this.$slider, this.$input );
+
+		this.domElement.classList.add( 'hasSlider' );
+
+		// Map clientX to value
+		// ---------------------------------------------------------------------
+
+		const map = ( v, a, b, c, d ) => {
+			return ( v - a ) / ( b - a ) * ( d - c ) + c;
+		};
+
+		const setValueFromX = clientX => {
+			const rect = this.$slider.getBoundingClientRect();
+			let value = map( clientX, rect.left, rect.right, this._min, this._max );
+			this._snapClampSetValue( value );
+		};
+
+		// Mouse drag
+		// ---------------------------------------------------------------------
+
+		const mouseDown = e => {
+			this._setDraggingStyle( true );
+			setValueFromX( e.clientX );
+			window.addEventListener( 'mousemove', mouseMove );
+			window.addEventListener( 'mouseup', mouseUp );
+		};
+
+		const mouseMove = e => {
+			setValueFromX( e.clientX );
+		};
+
+		const mouseUp = () => {
+			this._callOnFinishChange();
+			this._setDraggingStyle( false );
+			window.removeEventListener( 'mousemove', mouseMove );
+			window.removeEventListener( 'mouseup', mouseUp );
+		};
+
+		// Touch drag
+		// ---------------------------------------------------------------------
+
+		let testingForScroll = false, prevClientX, prevClientY;
+
+		const beginTouchDrag = e => {
+			e.preventDefault();
+			this._setDraggingStyle( true );
+			setValueFromX( e.touches[ 0 ].clientX );
+			testingForScroll = false;
+		};
+
+		const onTouchStart = e => {
+
+			if ( e.touches.length > 1 ) return;
+
+			// If we're in a scrollable container, we should wait for the first
+			// touchmove to see if the user is trying to slide or scroll.
+			if ( this._hasScrollBar ) {
+
+				prevClientX = e.touches[ 0 ].clientX;
+				prevClientY = e.touches[ 0 ].clientY;
+				testingForScroll = true;
+
+			} else {
+
+				// Otherwise, we can set the value straight away on touchstart.
+				beginTouchDrag( e );
+
+			}
+
+			window.addEventListener( 'touchmove', onTouchMove, { passive: false } );
+			window.addEventListener( 'touchend', onTouchEnd );
+
+		};
+
+		const onTouchMove = e => {
+
+			if ( testingForScroll ) {
+
+				const dx = e.touches[ 0 ].clientX - prevClientX;
+				const dy = e.touches[ 0 ].clientY - prevClientY;
+
+				if ( Math.abs( dx ) > Math.abs( dy ) ) {
+
+					// We moved horizontally, set the value and stop checking.
+					beginTouchDrag( e );
+
+				} else {
+
+					// This was, in fact, an attempt to scroll. Abort.
+					window.removeEventListener( 'touchmove', onTouchMove );
+					window.removeEventListener( 'touchend', onTouchEnd );
+
+				}
+
+			} else {
+
+				e.preventDefault();
+				setValueFromX( e.touches[ 0 ].clientX );
+
+			}
+
+		};
+
+		const onTouchEnd = () => {
+			this._callOnFinishChange();
+			this._setDraggingStyle( false );
+			window.removeEventListener( 'touchmove', onTouchMove );
+			window.removeEventListener( 'touchend', onTouchEnd );
+		};
+
+		// Mouse wheel
+		// ---------------------------------------------------------------------
+
+		// We have to use a debounced function to call onFinishChange because
+		// there's no way to tell when the user is "done" mouse-wheeling.
+		const callOnFinishChange = this._callOnFinishChange.bind( this );
+		const WHEEL_DEBOUNCE_TIME = 400;
+		let wheelFinishChangeTimeout;
+
+		const onWheel = e => {
+
+			// ignore vertical wheels if there's a scrollbar
+			const isVertical = Math.abs( e.deltaX ) < Math.abs( e.deltaY );
+			if ( isVertical && this._hasScrollBar ) return;
+
+			e.preventDefault();
+
+			// set value
+			const delta = this._normalizeMouseWheel( e ) * this._step;
+			this._snapClampSetValue( this.getValue() + delta );
+
+			// force the input to updateDisplay when it's focused
+			this.$input.value = this.getValue();
+
+			// debounce onFinishChange
+			clearTimeout( wheelFinishChangeTimeout );
+			wheelFinishChangeTimeout = setTimeout( callOnFinishChange, WHEEL_DEBOUNCE_TIME );
+
+		};
+
+		this.$slider.addEventListener( 'mousedown', mouseDown );
+		this.$slider.addEventListener( 'touchstart', onTouchStart, { passive: false } );
+		this.$slider.addEventListener( 'wheel', onWheel, { passive: false } );
+
+	}
+
+	_setDraggingStyle( active, axis = 'horizontal' ) {
+		if ( this.$slider ) {
+			this.$slider.classList.toggle( 'active', active );
+		}
+		document.body.classList.toggle( 'lil-gui-dragging', active );
+		document.body.classList.toggle( `lil-gui-${axis}`, active );
+	}
+
+	_getImplicitStep() {
+
+		if ( this._hasMin && this._hasMax ) {
+			return ( this._max - this._min ) / 1000;
+		}
+
+		return 0.1;
+
+	}
+
+	_onUpdateMinMax() {
+
+		if ( !this._hasSlider && this._hasMin && this._hasMax ) {
+
+			// If this is the first time we're hearing about min and max
+			// and we haven't explicitly stated what our step is, let's
+			// update that too.
+			if ( !this._stepExplicit ) {
+				this.step( this._getImplicitStep(), false );
+			}
+
+			this._initSlider();
+			this.updateDisplay();
+
+		}
+
+	}
+
+	_normalizeMouseWheel( e ) {
+
+		let { deltaX, deltaY } = e;
+
+		// Safari and Chrome report weird non-integral values for a notched wheel,
+		// but still expose actual lines scrolled via wheelDelta. Notched wheels
+		// should behave the same way as arrow keys.
+		if ( Math.floor( e.deltaY ) !== e.deltaY && e.wheelDelta ) {
+			deltaX = 0;
+			deltaY = -e.wheelDelta / 120;
+			deltaY *= this._stepExplicit ? 1 : 10;
+		}
+
+		const wheel = deltaX + -deltaY;
+
+		return wheel;
+
+	}
+
+	_arrowKeyMultiplier( e ) {
+
+		let mult = this._stepExplicit ? 1 : 10;
+
+		if ( e.shiftKey ) {
+			mult *= 10;
+		} else if ( e.altKey ) {
+			mult /= 10;
+		}
+
+		return mult;
+
+	}
+
+	_snap( value ) {
+
+		// This would be the logical way to do things, but floating point errors.
+		// return Math.round( value / this._step ) * this._step;
+
+		// Using inverse step solves a lot of them, but not all
+		// const inverseStep = 1 / this._step;
+		// return Math.round( value * inverseStep ) / inverseStep;
+
+		// Not happy about this, but haven't seen it break.
+		const r = Math.round( value / this._step ) * this._step;
+		return parseFloat( r.toPrecision( 15 ) );
+
+	}
+
+	_clamp( value ) {
+		// either condition is false if min or max is undefined
+		if ( value < this._min ) value = this._min;
+		if ( value > this._max ) value = this._max;
+		return value;
+	}
+
+	_snapClampSetValue( value ) {
+		this.setValue( this._clamp( this._snap( value ) ) );
+	}
+
+	get _hasScrollBar() {
+		const root = this.parent.root.$children;
+		return root.scrollHeight > root.clientHeight;
+	}
+
+	get _hasMin() {
+		return this._min !== undefined;
+	}
+
+	get _hasMax() {
+		return this._max !== undefined;
+	}
+
+}
+
+class OptionController extends Controller {
+
+	constructor( parent, object, property, options ) {
+
+		super( parent, object, property, 'option' );
+
+		this.$select = document.createElement( 'select' );
+		this.$select.setAttribute( 'aria-labelledby', this.$name.id );
+
+		this.$display = document.createElement( 'div' );
+		this.$display.classList.add( 'display' );
+
+		this._values = Array.isArray( options ) ? options : Object.values( options );
+		this._names = Array.isArray( options ) ? options : Object.keys( options );
+
+		this._names.forEach( name => {
+			const $option = document.createElement( 'option' );
+			$option.innerHTML = name;
+			this.$select.appendChild( $option );
+		} );
+
+		this.$select.addEventListener( 'change', () => {
+			this.setValue( this._values[ this.$select.selectedIndex ] );
+			this._callOnFinishChange();
+		} );
+
+		this.$select.addEventListener( 'focus', () => {
+			this.$display.classList.add( 'focus' );
+		} );
+
+		this.$select.addEventListener( 'blur', () => {
+			this.$display.classList.remove( 'focus' );
+		} );
+
+		this.$widget.appendChild( this.$select );
+		this.$widget.appendChild( this.$display );
+
+		this.$disable = this.$select;
+
+		this.updateDisplay();
+
+	}
+
+	updateDisplay() {
+		const value = this.getValue();
+		const index = this._values.indexOf( value );
+		this.$select.selectedIndex = index;
+		this.$display.innerHTML = index === -1 ? value : this._names[ index ];
+		return this;
+	}
+
+}
+
+class StringController extends Controller {
+
+	constructor( parent, object, property ) {
+
+		super( parent, object, property, 'string' );
+
+		this.$input = document.createElement( 'input' );
+		this.$input.setAttribute( 'type', 'text' );
+		this.$input.setAttribute( 'aria-labelledby', this.$name.id );
+
+		this.$input.addEventListener( 'input', () => {
+			this.setValue( this.$input.value );
+		} );
+
+		this.$input.addEventListener( 'keydown', e => {
+			if ( e.code === 'Enter' ) {
+				this.$input.blur();
+			}
+		} );
+
+		this.$input.addEventListener( 'blur', () => {
+			this._callOnFinishChange();
+		} );
+
+		this.$widget.appendChild( this.$input );
+
+		this.$disable = this.$input;
+
+		this.updateDisplay();
+
+	}
+
+	updateDisplay() {
+		this.$input.value = this.getValue();
+		return this;
+	}
+
+}
+
+const stylesheet = `.lil-gui {
+  font-family: var(--font-family);
+  font-size: var(--font-size);
+  line-height: 1;
+  font-weight: normal;
+  font-style: normal;
+  text-align: left;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  --background-color: #1f1f1f;
+  --text-color: #ebebeb;
+  --title-background-color: #111111;
+  --title-text-color: #ebebeb;
+  --widget-color: #424242;
+  --hover-color: #4f4f4f;
+  --focus-color: #595959;
+  --number-color: #2cc9ff;
+  --string-color: #a2db3c;
+  --font-size: 11px;
+  --input-font-size: 11px;
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-family-mono: Menlo, Monaco, Consolas, "Droid Sans Mono", monospace;
+  --padding: 4px;
+  --spacing: 4px;
+  --widget-height: 20px;
+  --title-height: calc(var(--widget-height) + var(--spacing) * 1.25);
+  --name-width: 45%;
+  --slider-knob-width: 2px;
+  --slider-input-width: 27%;
+  --color-input-width: 27%;
+  --slider-input-min-width: 45px;
+  --color-input-min-width: 45px;
+  --folder-indent: 7px;
+  --widget-padding: 0 0 0 3px;
+  --widget-border-radius: 2px;
+  --checkbox-size: calc(0.75 * var(--widget-height));
+  --scrollbar-width: 5px;
+}
+.lil-gui, .lil-gui * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+.lil-gui.root {
+  width: var(--width, 245px);
+  display: flex;
+  flex-direction: column;
+}
+.lil-gui.root > .title {
+  background: var(--title-background-color);
+  color: var(--title-text-color);
+}
+.lil-gui.root > .children {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.lil-gui.root > .children::-webkit-scrollbar {
+  width: var(--scrollbar-width);
+  height: var(--scrollbar-width);
+  background: var(--background-color);
+}
+.lil-gui.root > .children::-webkit-scrollbar-thumb {
+  border-radius: var(--scrollbar-width);
+  background: var(--focus-color);
+}
+@media (pointer: coarse) {
+  .lil-gui.allow-touch-styles, .lil-gui.allow-touch-styles .lil-gui {
+    --widget-height: 28px;
+    --padding: 6px;
+    --spacing: 6px;
+    --font-size: 13px;
+    --input-font-size: 16px;
+    --folder-indent: 10px;
+    --scrollbar-width: 7px;
+    --slider-input-min-width: 50px;
+    --color-input-min-width: 65px;
+  }
+}
+.lil-gui.force-touch-styles, .lil-gui.force-touch-styles .lil-gui {
+  --widget-height: 28px;
+  --padding: 6px;
+  --spacing: 6px;
+  --font-size: 13px;
+  --input-font-size: 16px;
+  --folder-indent: 10px;
+  --scrollbar-width: 7px;
+  --slider-input-min-width: 50px;
+  --color-input-min-width: 65px;
+}
+.lil-gui.autoPlace {
+  max-height: 100%;
+  position: fixed;
+  top: 0;
+  right: 15px;
+  z-index: 1001;
+}
+
+.lil-gui .controller {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--padding);
+  margin: var(--spacing) 0;
+}
+.lil-gui .controller.disabled {
+  opacity: 0.5;
+}
+.lil-gui .controller.disabled, .lil-gui .controller.disabled * {
+  pointer-events: none !important;
+}
+.lil-gui .controller > .name {
+  min-width: var(--name-width);
+  flex-shrink: 0;
+  white-space: pre;
+  padding-right: var(--spacing);
+  line-height: var(--widget-height);
+}
+.lil-gui .controller .widget {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: var(--widget-height);
+}
+.lil-gui .controller.string input {
+  color: var(--string-color);
+}
+.lil-gui .controller.boolean .widget {
+  cursor: pointer;
+}
+.lil-gui .controller.color .display {
+  width: 100%;
+  height: var(--widget-height);
+  border-radius: var(--widget-border-radius);
+  position: relative;
+}
+@media (hover: hover) {
+  .lil-gui .controller.color .display:hover:before {
+    content: " ";
+    display: block;
+    position: absolute;
+    border-radius: var(--widget-border-radius);
+    border: 1px solid #fff9;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+  }
+}
+.lil-gui .controller.color input[type=color] {
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+.lil-gui .controller.color input[type=text] {
+  margin-left: var(--spacing);
+  font-family: var(--font-family-mono);
+  min-width: var(--color-input-min-width);
+  width: var(--color-input-width);
+  flex-shrink: 0;
+}
+.lil-gui .controller.option select {
+  opacity: 0;
+  position: absolute;
+  width: 100%;
+  max-width: 100%;
+}
+.lil-gui .controller.option .display {
+  position: relative;
+  pointer-events: none;
+  border-radius: var(--widget-border-radius);
+  height: var(--widget-height);
+  line-height: var(--widget-height);
+  max-width: 100%;
+  overflow: hidden;
+  word-break: break-all;
+  padding-left: 0.55em;
+  padding-right: 1.75em;
+  background: var(--widget-color);
+}
+@media (hover: hover) {
+  .lil-gui .controller.option .display.focus {
+    background: var(--focus-color);
+  }
+}
+.lil-gui .controller.option .display.active {
+  background: var(--focus-color);
+}
+.lil-gui .controller.option .display:after {
+  font-family: "lil-gui";
+  content: "↕";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  padding-right: 0.375em;
+}
+.lil-gui .controller.option .widget,
+.lil-gui .controller.option select {
+  cursor: pointer;
+}
+@media (hover: hover) {
+  .lil-gui .controller.option .widget:hover .display {
+    background: var(--hover-color);
+  }
+}
+.lil-gui .controller.number input {
+  color: var(--number-color);
+}
+.lil-gui .controller.number.hasSlider input {
+  margin-left: var(--spacing);
+  width: var(--slider-input-width);
+  min-width: var(--slider-input-min-width);
+  flex-shrink: 0;
+}
+.lil-gui .controller.number .slider {
+  width: 100%;
+  height: var(--widget-height);
+  background-color: var(--widget-color);
+  border-radius: var(--widget-border-radius);
+  padding-right: var(--slider-knob-width);
+  overflow: hidden;
+  cursor: ew-resize;
+  touch-action: pan-y;
+}
+@media (hover: hover) {
+  .lil-gui .controller.number .slider:hover {
+    background-color: var(--hover-color);
+  }
+}
+.lil-gui .controller.number .slider.active {
+  background-color: var(--focus-color);
+}
+.lil-gui .controller.number .slider.active .fill {
+  opacity: 0.95;
+}
+.lil-gui .controller.number .fill {
+  height: 100%;
+  border-right: var(--slider-knob-width) solid var(--number-color);
+  box-sizing: content-box;
+}
+
+.lil-gui-dragging .lil-gui {
+  --hover-color: var(--widget-color);
+}
+.lil-gui-dragging * {
+  cursor: ew-resize !important;
+}
+
+.lil-gui-dragging.lil-gui-vertical * {
+  cursor: ns-resize !important;
+}
+
+.lil-gui .title {
+  height: var(--title-height);
+  line-height: calc(var(--title-height) - 4px);
+  font-weight: 600;
+  padding: 0 var(--padding);
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+  outline: none;
+  text-decoration-skip: objects;
+}
+.lil-gui .title:before {
+  font-family: "lil-gui";
+  content: "▾";
+  padding-right: 2px;
+  display: inline-block;
+}
+.lil-gui .title:active {
+  background: var(--title-background-color);
+  opacity: 0.75;
+}
+@media (hover: hover) {
+  body:not(.lil-gui-dragging) .lil-gui .title:hover {
+    background: var(--title-background-color);
+    opacity: 0.85;
+  }
+  .lil-gui .title:focus {
+    text-decoration: underline var(--focus-color);
+  }
+}
+.lil-gui.root > .title:focus {
+  text-decoration: none !important;
+}
+.lil-gui.closed > .title:before {
+  content: "▸";
+}
+.lil-gui.closed > .children {
+  transform: translateY(-7px);
+  opacity: 0;
+}
+.lil-gui.closed:not(.transition) > .children {
+  display: none;
+}
+.lil-gui.transition > .children {
+  transition-duration: 300ms;
+  transition-property: height, opacity, transform;
+  transition-timing-function: cubic-bezier(0.2, 0.6, 0.35, 1);
+  overflow: hidden;
+  pointer-events: none;
+}
+.lil-gui .children:empty:before {
+  content: "Empty";
+  padding: 0 var(--padding);
+  margin: var(--spacing) 0;
+  display: block;
+  height: var(--widget-height);
+  font-style: italic;
+  line-height: var(--widget-height);
+  opacity: 0.5;
+}
+.lil-gui.root > .children > .lil-gui > .title {
+  border: 0 solid var(--widget-color);
+  border-width: 1px 0;
+  transition: border-color 300ms;
+}
+.lil-gui.root > .children > .lil-gui.closed > .title {
+  border-bottom-color: transparent;
+}
+.lil-gui + .controller {
+  border-top: 1px solid var(--widget-color);
+  margin-top: 0;
+  padding-top: var(--spacing);
+}
+.lil-gui .lil-gui .lil-gui > .title {
+  border: none;
+}
+.lil-gui .lil-gui .lil-gui > .children {
+  border: none;
+  margin-left: var(--folder-indent);
+  border-left: 2px solid var(--widget-color);
+}
+.lil-gui .lil-gui .controller {
+  border: none;
+}
+
+.lil-gui input {
+  -webkit-tap-highlight-color: transparent;
+  border: 0;
+  outline: none;
+  font-family: var(--font-family);
+  font-size: var(--input-font-size);
+  border-radius: var(--widget-border-radius);
+  height: var(--widget-height);
+  background: var(--widget-color);
+  color: var(--text-color);
+  width: 100%;
+}
+@media (hover: hover) {
+  .lil-gui input:hover {
+    background: var(--hover-color);
+  }
+  .lil-gui input:active {
+    background: var(--focus-color);
+  }
+}
+.lil-gui input:disabled {
+  opacity: 1;
+}
+.lil-gui input[type=text],
+.lil-gui input[type=number] {
+  padding: var(--widget-padding);
+}
+.lil-gui input[type=text]:focus,
+.lil-gui input[type=number]:focus {
+  background: var(--focus-color);
+}
+.lil-gui input::-webkit-outer-spin-button,
+.lil-gui input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.lil-gui input[type=number] {
+  -moz-appearance: textfield;
+}
+.lil-gui input[type=checkbox] {
+  appearance: none;
+  -webkit-appearance: none;
+  height: var(--checkbox-size);
+  width: var(--checkbox-size);
+  border-radius: var(--widget-border-radius);
+  text-align: center;
+  cursor: pointer;
+}
+.lil-gui input[type=checkbox]:checked:before {
+  font-family: "lil-gui";
+  content: "✓";
+  font-size: var(--checkbox-size);
+  line-height: var(--checkbox-size);
+}
+@media (hover: hover) {
+  .lil-gui input[type=checkbox]:focus {
+    box-shadow: inset 0 0 0 1px var(--focus-color);
+  }
+}
+.lil-gui button {
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  cursor: pointer;
+  font-family: var(--font-family);
+  font-size: var(--font-size);
+  color: var(--text-color);
+  width: 100%;
+  height: var(--widget-height);
+  text-transform: none;
+  background: var(--widget-color);
+  border-radius: var(--widget-border-radius);
+  border: 1px solid var(--widget-color);
+  text-align: center;
+  line-height: calc(var(--widget-height) - 4px);
+}
+@media (hover: hover) {
+  .lil-gui button:hover {
+    background: var(--hover-color);
+    border-color: var(--hover-color);
+  }
+  .lil-gui button:focus {
+    border-color: var(--focus-color);
+  }
+}
+.lil-gui button:active {
+  background: var(--focus-color);
+}
+
+@font-face {
+  font-family: "lil-gui";
+  src: url("data:application/font-woff;charset=utf-8;base64,d09GRgABAAAAAAUsAAsAAAAACJwAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAABHU1VCAAABCAAAAH4AAADAImwmYE9TLzIAAAGIAAAAPwAAAGBKqH5SY21hcAAAAcgAAAD0AAACrukyyJBnbHlmAAACvAAAAF8AAACEIZpWH2hlYWQAAAMcAAAAJwAAADZfcj2zaGhlYQAAA0QAAAAYAAAAJAC5AHhobXR4AAADXAAAABAAAABMAZAAAGxvY2EAAANsAAAAFAAAACgCEgIybWF4cAAAA4AAAAAeAAAAIAEfABJuYW1lAAADoAAAASIAAAIK9SUU/XBvc3QAAATEAAAAZgAAAJCTcMc2eJxVjbEOgjAURU+hFRBK1dGRL+ALnAiToyMLEzFpnPz/eAshwSa97517c/MwwJmeB9kwPl+0cf5+uGPZXsqPu4nvZabcSZldZ6kfyWnomFY/eScKqZNWupKJO6kXN3K9uCVoL7iInPr1X5baXs3tjuMqCtzEuagm/AAlzQgPAAB4nGNgYRBlnMDAysDAYM/gBiT5oLQBAwuDJAMDEwMrMwNWEJDmmsJwgCFeXZghBcjlZMgFCzOiKOIFAB71Bb8AeJy1kjFuwkAQRZ+DwRAwBtNQRUGKQ8OdKCAWUhAgKLhIuAsVSpWz5Bbkj3dEgYiUIszqWdpZe+Z7/wB1oCYmIoboiwiLT2WjKl/jscrHfGg/pKdMkyklC5Zs2LEfHYpjcRoPzme9MWWmk3dWbK9ObkWkikOetJ554fWyoEsmdSlt+uR0pCJR34b6t/TVg1SY3sYvdf8vuiKrpyaDXDISiegp17p7579Gp3p++y7HPAiY9pmTibljrr85qSidtlg4+l25GLCaS8e6rRxNBmsnERunKbaOObRz7N72ju5vdAjYpBXHgJylOAVsMseDAPEP8LYoUHicY2BiAAEfhiAGJgZWBgZ7RnFRdnVJELCQlBSRlATJMoLV2DK4glSYs6ubq5vbKrJLSbGrgEmovDuDJVhe3VzcXFwNLCOILB/C4IuQ1xTn5FPilBTj5FPmBAB4WwoqAHicY2BkYGAA4sk1sR/j+W2+MnAzpDBgAyEMQUCSg4EJxAEAwUgFHgB4nGNgZGBgSGFggJMhDIwMqEAYAByHATJ4nGNgAIIUNEwmAABl3AGReJxjYAACIQYlBiMGJ3wQAEcQBEV4nGNgZGBgEGZgY2BiAAEQyQWEDAz/wXwGAAsPATIAAHicXdBNSsNAHAXwl35iA0UQXYnMShfS9GPZA7T7LgIu03SSpkwzYTIt1BN4Ak/gKTyAeCxfw39jZkjymzcvAwmAW/wgwHUEGDb36+jQQ3GXGot79L24jxCP4gHzF/EIr4jEIe7wxhOC3g2TMYy4Q7+Lu/SHuEd/ivt4wJd4wPxbPEKMX3GI5+DJFGaSn4qNzk8mcbKSR6xdXdhSzaOZJGtdapd4vVPbi6rP+cL7TGXOHtXKll4bY1Xl7EGnPtp7Xy2n00zyKLVHfkHBa4IcJ2oD3cgggWvt/V/FbDrUlEUJhTn/0azVWbNTNr0Ens8de1tceK9xZmfB1CPjOmPH4kitmvOubcNpmVTN3oFJyjzCvnmrwhJTzqzVj9jiSX911FjeAAB4nG3HMRKCMBBA0f0giiKi4DU8k0V2GWbIZDOh4PoWWvq6J5V8If9NVNQcaDhyouXMhY4rPTcG7jwYmXhKq8Wz+p762aNaeYXom2n3m2dLTVgsrCgFJ7OTmIkYbwIbC6vIB7WmFfAAAA==") format("woff");
+}`;
+
+function _injectStyles( cssContent ) {
+	const injected = document.createElement( 'style' );
+	injected.innerHTML = cssContent;
+	const before = document.querySelector( 'head link[rel=stylesheet], head style' );
+	if ( before ) {
+		document.head.insertBefore( injected, before );
+	} else {
+		document.head.appendChild( injected );
+	}
+}
+
+let stylesInjected = false;
+
+class GUI {
+
+	/**
+	 * Creates a panel that holds controllers.
+	 * @example
+	 * new GUI();
+	 * new GUI( { container: document.getElementById( 'custom' ) } );
+	 *
+	 * @param {object} [options]
+	 * @param {boolean} [options.autoPlace=true]
+	 * Adds the GUI to `document.body` and fixes it to the top right of the page.
+	 *
+	 * @param {HTMLElement} [options.container]
+	 * Adds the GUI to this DOM element. Overrides `autoPlace`.
+	 *
+	 * @param {number} [options.width=245]
+	 * Width of the GUI in pixels, usually set when name labels become too long. Note that you can make
+	 * name labels wider in CSS with `.lil‑gui { ‑‑name‑width: 55% }`
+	 *
+	 * @param {string} [options.title=Controls]
+	 * Name to display in the title bar.
+	 *
+	 * @param {boolean} [options.closeFolders=false]
+	 * Pass `true` to close all folders in this GUI by default.
+	 *
+	 * @param {boolean} [options.injectStyles=true]
+	 * Injects the default stylesheet into the page if this is the first GUI.
+	 * Pass `false` to use your own stylesheet.
+	 *
+	 * @param {number} [options.touchStyles=true]
+	 * Makes controllers larger on touch devices. Pass `false` to disable touch styles.
+	 *
+	 * @param {GUI} [options.parent]
+	 * Adds this GUI as a child in another GUI. Usually this is done for you by `addFolder()`.
+	 *
+	 */
+	constructor( {
+		parent,
+		autoPlace = parent === undefined,
+		container,
+		width,
+		title = 'Controls',
+		closeFolders = false,
+		injectStyles = true,
+		touchStyles = true
+	} = {} ) {
+
+		/**
+		 * The GUI containing this folder, or `undefined` if this is the root GUI.
+		 * @type {GUI}
+		 */
+		this.parent = parent;
+
+		/**
+		 * The top level GUI containing this folder, or `this` if this is the root GUI.
+		 * @type {GUI}
+		 */
+		this.root = parent ? parent.root : this;
+
+		/**
+		 * The list of controllers and folders contained by this GUI.
+		 * @type {Array<GUI|Controller>}
+		 */
+		this.children = [];
+
+		/**
+		 * The list of controllers contained by this GUI.
+		 * @type {Array<Controller>}
+		 */
+		this.controllers = [];
+
+		/**
+		 * The list of folders contained by this GUI.
+		 * @type {Array<GUI>}
+		 */
+		this.folders = [];
+
+		/**
+		 * Used to determine if the GUI is closed. Use `gui.open()` or `gui.close()` to change this.
+		 * @type {boolean}
+		 */
+		this._closed = false;
+
+		/**
+		 * Used to determine if the GUI is hidden. Use `gui.show()` or `gui.hide()` to change this.
+		 * @type {boolean}
+		 */
+		this._hidden = false;
+
+		/**
+		 * The outermost container element.
+		 * @type {HTMLElement}
+		 */
+		this.domElement = document.createElement( 'div' );
+		this.domElement.classList.add( 'lil-gui' );
+
+		/**
+		 * The DOM element that contains the title.
+		 * @type {HTMLElement}
+		 */
+		this.$title = document.createElement( 'div' );
+		this.$title.classList.add( 'title' );
+		this.$title.setAttribute( 'role', 'button' );
+		this.$title.setAttribute( 'aria-expanded', true );
+		this.$title.setAttribute( 'tabindex', 0 );
+
+		this.$title.addEventListener( 'click', () => this.openAnimated( this._closed ) );
+		this.$title.addEventListener( 'keydown', e => {
+			if ( e.code === 'Enter' || e.code === 'Space' ) {
+				e.preventDefault();
+				this.$title.click();
+			}
+		} );
+
+		// enables :active pseudo class on mobile
+		this.$title.addEventListener( 'touchstart', () => {}, { passive: true } );
+
+		/**
+		 * The DOM element that contains children.
+		 * @type {HTMLElement}
+		 */
+		this.$children = document.createElement( 'div' );
+		this.$children.classList.add( 'children' );
+
+		this.domElement.appendChild( this.$title );
+		this.domElement.appendChild( this.$children );
+
+		this.title( title );
+
+		if ( this.parent ) {
+
+			this.parent.children.push( this );
+			this.parent.folders.push( this );
+
+			this.parent.$children.appendChild( this.domElement );
+
+			// Stop the constructor early, everything onward only applies to root GUI's
+			return;
+
+		}
+
+		this.domElement.classList.add( 'root' );
+
+		if ( touchStyles ) {
+			this.domElement.classList.add( 'allow-touch-styles' );
+		}
+
+		// Inject stylesheet if we haven't done that yet
+		if ( !stylesInjected && injectStyles ) {
+			_injectStyles( stylesheet );
+			stylesInjected = true;
+		}
+
+		if ( container ) {
+
+			container.appendChild( this.domElement );
+
+		} else if ( autoPlace ) {
+
+			this.domElement.classList.add( 'autoPlace' );
+			document.body.appendChild( this.domElement );
+
+		}
+
+		if ( width ) {
+			this.domElement.style.setProperty( '--width', width + 'px' );
+		}
+
+		this._closeFolders = closeFolders;
+
+	}
+
+	/**
+	 * Adds a controller to the GUI, inferring controller type using the `typeof` operator.
+	 * @example
+	 * gui.add( object, 'property' );
+	 * gui.add( object, 'number', 0, 100, 1 );
+	 * gui.add( object, 'options', [ 1, 2, 3 ] );
+	 *
+	 * @param {object} object The object the controller will modify.
+	 * @param {string} property Name of the property to control.
+	 * @param {number|object|Array} [$1] Minimum value for number controllers, or the set of
+	 * selectable values for a dropdown.
+	 * @param {number} [max] Maximum value for number controllers.
+	 * @param {number} [step] Step value for number controllers.
+	 * @returns {Controller}
+	 */
+	add( object, property, $1, max, step ) {
+
+		if ( Object( $1 ) === $1 ) {
+
+			return new OptionController( this, object, property, $1 );
+
+		}
+
+		const initialValue = object[ property ];
+
+		switch ( typeof initialValue ) {
+
+			case 'number':
+
+				return new NumberController( this, object, property, $1, max, step );
+
+			case 'boolean':
+
+				return new BooleanController( this, object, property );
+
+			case 'string':
+
+				return new StringController( this, object, property );
+
+			case 'function':
+
+				return new FunctionController( this, object, property );
+
+		}
+
+		console.error( `gui.add failed
+	property:`, property, `
+	object:`, object, `
+	value:`, initialValue );
+
+	}
+
+	/**
+	 * Adds a color controller to the GUI.
+	 * @example
+	 * params = {
+	 * 	cssColor: '#ff00ff',
+	 * 	rgbColor: { r: 0, g: 0.2, b: 0.4 },
+	 * 	customRange: [ 0, 127, 255 ],
+	 * };
+	 *
+	 * gui.addColor( params, 'cssColor' );
+	 * gui.addColor( params, 'rgbColor' );
+	 * gui.addColor( params, 'customRange', 255 );
+	 *
+	 * @param {object} object The object the controller will modify.
+	 * @param {string} property Name of the property to control.
+	 * @param {number} rgbScale Maximum value for a color channel when using an RGB color. You may
+	 * need to set this to 255 if your colors are too bright.
+	 * @returns {Controller}
+	 */
+	addColor( object, property, rgbScale = 1 ) {
+		return new ColorController( this, object, property, rgbScale );
+	}
+
+	/**
+	 * Adds a folder to the GUI, which is just another GUI. This method returns
+	 * the nested GUI so you can add controllers to it.
+	 * @example
+	 * const folder = gui.addFolder( 'Position' );
+	 * folder.add( position, 'x' );
+	 * folder.add( position, 'y' );
+	 * folder.add( position, 'z' );
+	 *
+	 * @param {string} title Name to display in the folder's title bar.
+	 * @returns {GUI}
+	 */
+	addFolder( title ) {
+		const folder = new GUI( { parent: this, title } );
+		if ( this.root._closeFolders ) folder.close();
+		return folder;
+	}
+
+	/**
+	 * Recalls values that were saved with `gui.save()`.
+	 * @param {object} obj
+	 * @param {boolean} recursive Pass false to exclude folders descending from this GUI.
+	 * @returns {this}
+	 */
+	load( obj, recursive = true ) {
+
+		if ( obj.controllers ) {
+
+			this.controllers.forEach( c => {
+
+				if ( c instanceof FunctionController ) return;
+
+				if ( c._name in obj.controllers ) {
+					c.load( obj.controllers[ c._name ] );
+				}
+
+			} );
+
+		}
+
+		if ( recursive && obj.folders ) {
+
+			this.folders.forEach( f => {
+
+				if ( f._title in obj.folders ) {
+					f.load( obj.folders[ f._title ] );
+				}
+
+			} );
+
+		}
+
+		return this;
+
+	}
+
+	/**
+	 * Returns an object mapping controller names to values. The object can be passed to `gui.load()` to
+	 * recall these values.
+	 * @example
+	 * {
+	 * 	controllers: {
+	 * 		prop1: 1,
+	 * 		prop2: 'value',
+	 * 		...
+	 * 	},
+	 * 	folders: {
+	 * 		folderName1: { controllers, folders },
+	 * 		folderName2: { controllers, folders }
+	 * 		...
+	 * 	}
+	 * }
+	 *
+	 * @param {boolean} recursive Pass false to exclude folders descending from this GUI.
+	 * @returns {object}
+	 */
+	save( recursive = true ) {
+
+		const obj = {
+			controllers: {},
+			folders: {}
+		};
+
+		this.controllers.forEach( c => {
+
+			if ( c instanceof FunctionController ) return;
+
+			if ( c._name in obj.controllers ) {
+				throw new Error( `Cannot save GUI with duplicate property "${c._name}"` );
+			}
+
+			obj.controllers[ c._name ] = c.save();
+
+		} );
+
+		if ( recursive ) {
+
+			this.folders.forEach( f => {
+
+				if ( f._title in obj.folders ) {
+					throw new Error( `Cannot save GUI with duplicate folder "${f._title}"` );
+				}
+
+				obj.folders[ f._title ] = f.save();
+
+			} );
+
+		}
+
+		return obj;
+
+	}
+
+	/**
+	 * Opens a GUI or folder. GUI and folders are open by default.
+	 * @param {boolean} open Pass false to close
+	 * @returns {this}
+	 * @example
+	 * gui.open(); // open
+	 * gui.open( false ); // close
+	 * gui.open( gui._closed ); // toggle
+	 */
+	open( open = true ) {
+
+		this._setClosed( !open );
+
+		this.$title.setAttribute( 'aria-expanded', !this._closed );
+		this.domElement.classList.toggle( 'closed', this._closed );
+
+		return this;
+
+	}
+
+	/**
+	 * Closes the GUI.
+	 * @returns {this}
+	 */
+	close() {
+		return this.open( false );
+	}
+
+	_setClosed( closed ) {
+		if ( this._closed === closed ) return;
+		this._closed = closed;
+		this._callOnOpenClose( this );
+	}
+
+	/**
+	 * Shows the GUI after it's been hidden.
+	 * @param {boolean} show
+	 * @returns {this}
+	 * @example
+	 * gui.show();
+	 * gui.show( false ); // hide
+	 * gui.show( gui._hidden ); // toggle
+	 */
+	show( show = true ) {
+
+		this._hidden = !show;
+
+		this.domElement.style.display = this._hidden ? 'none' : '';
+
+		return this;
+
+	}
+
+	/**
+	 * Hides the GUI.
+	 * @returns {this}
+	 */
+	hide() {
+		return this.show( false );
+	}
+
+	openAnimated( open = true ) {
+
+		// set state immediately
+		this._setClosed( !open );
+
+		this.$title.setAttribute( 'aria-expanded', !this._closed );
+
+		// wait for next frame to measure $children
+		requestAnimationFrame( () => {
+
+			// explicitly set initial height for transition
+			const initialHeight = this.$children.clientHeight;
+			this.$children.style.height = initialHeight + 'px';
+
+			this.domElement.classList.add( 'transition' );
+
+			const onTransitionEnd = e => {
+				if ( e.target !== this.$children ) return;
+				this.$children.style.height = '';
+				this.domElement.classList.remove( 'transition' );
+				this.$children.removeEventListener( 'transitionend', onTransitionEnd );
+			};
+
+			this.$children.addEventListener( 'transitionend', onTransitionEnd );
+
+			// todo: this is wrong if children's scrollHeight makes for a gui taller than maxHeight
+			const targetHeight = !open ? 0 : this.$children.scrollHeight;
+
+			this.domElement.classList.toggle( 'closed', !open );
+
+			requestAnimationFrame( () => {
+				this.$children.style.height = targetHeight + 'px';
+			} );
+
+		} );
+
+		return this;
+
+	}
+
+	/**
+	 * Change the title of this GUI.
+	 * @param {string} title
+	 * @returns {this}
+	 */
+	title( title ) {
+		/**
+		 * Current title of the GUI. Use `gui.title( 'Title' )` to modify this value.
+		 * @type {string}
+		 */
+		this._title = title;
+		this.$title.innerHTML = title;
+		return this;
+	}
+
+	/**
+	 * Resets all controllers to their initial values.
+	 * @param {boolean} recursive Pass false to exclude folders descending from this GUI.
+	 * @returns {this}
+	 */
+	reset( recursive = true ) {
+		const controllers = recursive ? this.controllersRecursive() : this.controllers;
+		controllers.forEach( c => c.reset() );
+		return this;
+	}
+
+	/**
+	 * Pass a function to be called whenever a controller in this GUI changes.
+	 * @param {function({object:object, property:string, value:any, controller:Controller})} callback
+	 * @returns {this}
+	 * @example
+	 * gui.onChange( event => {
+	 * 	event.object     // object that was modified
+	 * 	event.property   // string, name of property
+	 * 	event.value      // new value of controller
+	 * 	event.controller // controller that was modified
+	 * } );
+	 */
+	onChange( callback ) {
+		/**
+		 * Used to access the function bound to `onChange` events. Don't modify this value
+		 * directly. Use the `gui.onChange( callback )` method instead.
+		 * @type {Function}
+		 */
+		this._onChange = callback;
+		return this;
+	}
+
+	_callOnChange( controller ) {
+
+		if ( this.parent ) {
+			this.parent._callOnChange( controller );
+		}
+
+		if ( this._onChange !== undefined ) {
+			this._onChange.call( this, {
+				object: controller.object,
+				property: controller.property,
+				value: controller.getValue(),
+				controller
+			} );
+		}
+	}
+
+	/**
+	 * Pass a function to be called whenever a controller in this GUI has finished changing.
+	 * @param {function({object:object, property:string, value:any, controller:Controller})} callback
+	 * @returns {this}
+	 * @example
+	 * gui.onFinishChange( event => {
+	 * 	event.object     // object that was modified
+	 * 	event.property   // string, name of property
+	 * 	event.value      // new value of controller
+	 * 	event.controller // controller that was modified
+	 * } );
+	 */
+	onFinishChange( callback ) {
+		/**
+		 * Used to access the function bound to `onFinishChange` events. Don't modify this value
+		 * directly. Use the `gui.onFinishChange( callback )` method instead.
+		 * @type {Function}
+		 */
+		this._onFinishChange = callback;
+		return this;
+	}
+
+	_callOnFinishChange( controller ) {
+
+		if ( this.parent ) {
+			this.parent._callOnFinishChange( controller );
+		}
+
+		if ( this._onFinishChange !== undefined ) {
+			this._onFinishChange.call( this, {
+				object: controller.object,
+				property: controller.property,
+				value: controller.getValue(),
+				controller
+			} );
+		}
+	}
+
+	/**
+	 * Pass a function to be called when this GUI or its descendants are opened or closed.
+	 * @param {function(GUI)} callback
+	 * @returns {this}
+	 * @example
+	 * gui.onOpenClose( changedGUI => {
+	 * 	console.log( changedGUI._closed );
+	 * } );
+	 */
+	onOpenClose( callback ) {
+		this._onOpenClose = callback;
+		return this;
+	}
+
+	_callOnOpenClose( changedGUI ) {
+		if ( this.parent ) {
+			this.parent._callOnOpenClose( changedGUI );
+		}
+
+		if ( this._onOpenClose !== undefined ) {
+			this._onOpenClose.call( this, changedGUI );
+		}
+	}
+
+	/**
+	 * Destroys all DOM elements and event listeners associated with this GUI
+	 */
+	destroy() {
+
+		if ( this.parent ) {
+			this.parent.children.splice( this.parent.children.indexOf( this ), 1 );
+			this.parent.folders.splice( this.parent.folders.indexOf( this ), 1 );
+		}
+
+		if ( this.domElement.parentElement ) {
+			this.domElement.parentElement.removeChild( this.domElement );
+		}
+
+		Array.from( this.children ).forEach( c => c.destroy() );
+
+	}
+
+	/**
+	 * Returns an array of controllers contained by this GUI and its descendents.
+	 * @returns {Controller[]}
+	 */
+	controllersRecursive() {
+		let controllers = Array.from( this.controllers );
+		this.folders.forEach( f => {
+			controllers = controllers.concat( f.controllersRecursive() );
+		} );
+		return controllers;
+	}
+
+	/**
+	 * Returns an array of folders contained by this GUI and its descendents.
+	 * @returns {GUI[]}
+	 */
+	foldersRecursive() {
+		let folders = Array.from( this.folders );
+		this.folders.forEach( f => {
+			folders = folders.concat( f.foldersRecursive() );
+		} );
+		return folders;
+	}
+
+}
+
 const _ENTIRE_SCENE = 0, _BLOOM_SCENE = 1,
       clTGeoManager = 'TGeoManager', clTEveGeoShapeExtract = 'TEveGeoShapeExtract',
       clTGeoOverlap = 'TGeoOverlap', clTGeoVolumeAssembly = 'TGeoVolumeAssembly',
@@ -83100,9 +85490,9 @@ class GeoDrawingControl extends InteractiveControl {
 
             if (this.bloom) {
                h.layers.enable(_BLOOM_SCENE);
-               h.material.emissive = new Color$1(0x00ff00);
+               h.material.emissive = new Color(0x00ff00);
             } else {
-               h.material.color = new Color$1( col );
+               h.material.color = new Color( col );
                h.material.opacity = 1.;
             }
             let m = new Matrix4();
@@ -83128,9 +85518,9 @@ class GeoDrawingControl extends InteractiveControl {
            };
          if (this.bloom) {
             c.layers.enable(_BLOOM_SCENE);
-            c.material.emissive = new Color$1(0x00ff00);
+            c.material.emissive = new Color(0x00ff00);
          } else {
-            c.material.color = new Color$1( col );
+            c.material.color = new Color( col );
             c.material.opacity = 1.;
          }
 
@@ -83283,7 +85673,7 @@ class TGeoPainter extends ObjectPainter {
          name: 'control',
          title: 'Toggle control UI',
          icon: 'rect',
-         click: () => this.showControlOptions('toggle')
+         click: () => this.showControlGui('toggle')
       }, {
          name: 'enlarge',
          title: 'Enlarge geometry drawing',
@@ -83321,7 +85711,7 @@ class TGeoPainter extends ObjectPainter {
          }
       });
 
-      let bkgr = new Color$1(this.ctrl.background);
+      let bkgr = new Color(this.ctrl.background);
 
       this._toolbar = new Toolbar(this.selectDom(), (bkgr.r + bkgr.g + bkgr.b) < 1);
 
@@ -83612,7 +86002,7 @@ class TGeoPainter extends ObjectPainter {
                if (getColor(col).toUpperCase() === d.part)
                   bckgr = getColor(col);
          }
-         if (bckgr) res.background = '#' + new Color$1(bckgr).getHexString();
+         if (bckgr) res.background = '#' + new Color(bckgr).getHexString();
       }
 
       if (d.check('R3D_', true))
@@ -83763,7 +86153,7 @@ class TGeoPainter extends ObjectPainter {
          this.ctrl.update_browser = !this.ctrl.update_browser;
          if (!this.ctrl.update_browser) this.activateInBrowser([]);
       });
-      menu.addchk(this.ctrl.show_controls, 'Show Controls', () => this.showControlOptions('toggle'));
+      menu.addchk(this.ctrl.show_controls, 'Show Controls', () => this.showControlGui('toggle'));
 
       menu.add('sub:Show axes', () => this.setAxesDraw('toggle'));
       menu.addchk(this.ctrl._axis == 0, 'off', 0, arg => this.setAxesDraw(parseInt(arg)));
@@ -83972,67 +86362,56 @@ class TGeoPainter extends ObjectPainter {
    changedBackground(val) {
       if (val !== undefined)
          this.ctrl.background = val;
-      this._scene.background = new Color$1(this.ctrl.background);
+      this._scene.background = new Color(this.ctrl.background);
       this._renderer.setClearColor(this._scene.background, 1);
       this.render3D(0);
 
       if (this._toolbar) {
-         let bkgr = new Color$1(this.ctrl.background);
+         let bkgr = new Color(this.ctrl.background);
          this._toolbar.changeBrightness((bkgr.r + bkgr.g + bkgr.b) < 1);
       }
    }
 
    /** @summary Display control GUI */
-   showControlOptions(on) {
+   showControlGui(on) {
       // while complete geo drawing can be removed until dat is loaded - just check and ignore callback
       if (!this.ctrl) return;
 
       if (on === 'toggle') {
-         on = !this._datgui;
+         on = !this._gui;
       } else if (on === undefined) {
          on = this.ctrl.show_controls;
       }
 
       this.ctrl.show_controls = on;
 
-      if (this._datgui) {
+      if (this._gui) {
          if (!on) {
-            this._datgui.domElement.remove();
-            this._datgui.destroy();
-            delete this._datgui;
+            this._gui.destroy();
+            delete this._gui;
          }
          return;
       }
 
-      if (on)
-         Promise.resolve().then(function () { return dat_gui; }).then(h => this.buildDatGui(h));
-   }
+      if (!on || !this._renderer)
+         return;
 
-   /** @summary build dat.gui elements
-     * @private */
-   buildDatGui(dat) {
-      // can happen when dat gui loaded after drawing is already cleaned
-      if (!this._renderer) return;
-
-      if (!dat)
-         throw Error('Fail to load dat.gui');
-
-      this._datgui = new dat.GUI({ autoPlace: false, width: Math.min(650, this._renderer.domElement.width / 2) });
 
       let main = this.selectDom();
       if (main.style('position') == 'static')
          main.style('position', 'relative');
 
-      let dom = this._datgui.domElement;
+      this._gui = new GUI({ container: main.node(), closeFolders: true, width: Math.min(650, this._renderer.domElement.width / 2) });
+
+      let dom = this._gui.domElement;
       dom.style.position = 'absolute';
       dom.style.top = 0;
       dom.style.right = 0;
-      main.node().appendChild(dom);
 
-      this._datgui.painter = this;
+      this._gui.painter = this;
 
       if (!this.ctrl.project) {
-         let selection = this._datgui.addFolder('Selection');
+         let selection = this._gui.addFolder('Selection');
 
          if (!this.ctrl.maxnodes)
             this.ctrl.maxnodes = this._clones?.getMaxVisNodes() ?? 10000;
@@ -84061,15 +86440,14 @@ class TGeoPainter extends ObjectPainter {
          if (this.ctrl.projectPos === undefined)
             this.ctrl.projectPos = (bound.min[axis] + bound.max[axis])/2;
 
-         this._datgui.add(this.ctrl, 'projectPos', bound.min[axis], bound.max[axis])
+         this._gui.add(this.ctrl, 'projectPos', bound.min[axis], bound.max[axis])
              .name(axis.toUpperCase() + ' projection')
              .onChange(() => this.startDrawGeometry());
 
       } else {
          // Clipping Options
 
-         let clipFolder = this._datgui.addFolder('Clipping'),
-             clip_handler = () => this.changedClipping(-1);
+         let clipFolder = this._gui.addFolder('Clipping');
 
          for (let naxis = 0; naxis < 3; ++naxis) {
             let cc = this.ctrl.clip[naxis],
@@ -84077,22 +86455,21 @@ class TGeoPainter extends ObjectPainter {
 
             clipFolder.add(cc, 'enabled')
                 .name('Enable ' + axisC)
-                .listen() // react if option changed outside
-                .onChange(clip_handler);
+                .onChange(() => this.changedClipping(-1));
 
             clipFolder.add(cc, 'value', cc.min, cc.max)
                 .name(axisC + ' position')
-                .onChange(this.changedClipping.bind(this, naxis));
+                .onChange(() => this.changedClipping(naxis));
          }
 
          clipFolder.add(this.ctrl, 'clipIntersect').name('Clip intersection')
-                   .listen().onChange(clip_handler);
+                   .onChange(() => this.changedClipping(-1));
 
       }
 
       // Appearance Options
 
-      let appearance = this._datgui.addFolder('Appearance');
+      let appearance = this._gui.addFolder('Appearance');
 
       appearance.add(this.ctrl, 'highlight').name('Highlight Selection')
                 .listen().onChange(() => this.changedHighlight());
@@ -84114,7 +86491,7 @@ class TGeoPainter extends ObjectPainter {
                       .listen().onChange(() => this.changedAutoRotate());
 
       // Camera options
-      let camera = this._datgui.addFolder('Camera'), camcfg = {}, overlaysfg = {};
+      let camera = this._gui.addFolder('Camera'), camcfg = {}, overlaysfg = {};
 
       this.ctrl.cameraKindItems.forEach(i => { camcfg[i.name] = i.value; });
       this.ctrl.cameraOverlayItems.forEach(i => { overlaysfg[i.name] = i.value; });
@@ -84132,7 +86509,7 @@ class TGeoPainter extends ObjectPainter {
 
       // Advanced Options
       if (this._webgl) {
-         let advanced = this._datgui.addFolder('Advanced'), depthcfg = {};
+         let advanced = this._gui.addFolder('Advanced'), depthcfg = {};
          this.ctrl.depthMethodItems.forEach(i => { depthcfg[i.name] = i.value; });
 
          advanced.add(this.ctrl, 'depthTest').name('Depth test')
@@ -84147,7 +86524,7 @@ class TGeoPainter extends ObjectPainter {
 
       // Transformation Options
       if (!this.ctrl.project) {
-         let transform = this._datgui.addFolder('Transform');
+         let transform = this._gui.addFolder('Transform');
          transform.add(this.ctrl, 'trans_z', 0., 3., 0.01)
                      .name('Z axis')
                      .listen().onChange(() => this.changedTransformation());
@@ -84160,7 +86537,7 @@ class TGeoPainter extends ObjectPainter {
          if (this.ctrl.trans_z || this.ctrl.trans_radial) transform.open();
       }
 
-      let blooming = this._datgui.addFolder('Unreal Bloom');
+      let blooming = this._gui.addFolder('Unreal Bloom');
 
       blooming.add(this.ctrl.bloom, 'enabled').name('Enable Blooming')
               .listen().onChange(() => this.changedBloomSettings());
@@ -85247,7 +87624,7 @@ class TGeoPainter extends ObjectPainter {
 
       this._scene.add(this._toplevel);
 
-      this._scene.background = new Color$1(this.ctrl.background);
+      this._scene.background = new Color(this.ctrl.background);
 
       return createRender3D(w, h, render3d, { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true })
         .then(r => {
@@ -87027,9 +89404,9 @@ class TGeoPainter extends ObjectPainter {
 
          let container = this.getExtrasContainer('create', 'overlay');
 
-         let lineMaterial = new LineBasicMaterial({ color: new Color$1('black') }),
-             gridMaterial1 = show_grid ? new LineBasicMaterial({ color: new Color$1(0xbbbbbb) }) : null,
-             gridMaterial2 = show_grid ? new LineDashedMaterial({ color: new Color$1(0xdddddd), dashSize: grid_gap, gapSize: grid_gap }) : null,
+         let lineMaterial = new LineBasicMaterial({ color: new Color('black') }),
+             gridMaterial1 = show_grid ? new LineBasicMaterial({ color: new Color(0xbbbbbb) }) : null,
+             gridMaterial2 = show_grid ? new LineDashedMaterial({ color: new Color(0xdddddd), dashSize: grid_gap, gapSize: grid_gap }) : null,
              textMaterial = new MeshBasicMaterial({ color: 'black', vertexColors: false });
 
          let xticks = x_handle.createTicks();
@@ -87353,8 +89730,8 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Should be called when configuration of particular axis is changed */
-   changedClipping(naxis) {
-      if ((naxis !== undefined) && (naxis >= 0) && this.ctrl.clip[naxis]?.enabled)
+   changedClipping(naxis = -1) {
+      if ((naxis < 0) || this.ctrl.clip[naxis]?.enabled)
          this.updateClipping(false, true);
    }
 
@@ -87543,7 +89920,7 @@ class TGeoPainter extends ObjectPainter {
 
             // if rotation was enabled, do it
             if (this._webgl && this.ctrl.rotate && !this.ctrl.project) this.autorotate(2.5);
-            if (this._webgl && this.ctrl.show_controls && !this.isBatchMode()) this.showControlOptions(true);
+            if (this._webgl && this.ctrl.show_controls && !this.isBatchMode()) this.showControlGui(true);
          }
 
          this.setAsMainPainter();
@@ -87623,7 +90000,7 @@ class TGeoPainter extends ObjectPainter {
          if (this._context_menu)
             this._renderer.domElement.removeEventListener('contextmenu', this._context_menu, false);
 
-         this._datgui?.destroy();
+         this._gui?.destroy();
 
          this._worker?.terminate();
 
@@ -87710,7 +90087,7 @@ class TGeoPainter extends ObjectPainter {
       this.changeStage(stageInit, 'cleanup');
       delete this.drawing_log;
 
-      delete this._datgui;
+      delete this._gui;
       delete this._controls;
       delete this._context_menu;
       delete this._toolbar;
@@ -99754,2537 +102131,6 @@ __proto__: null,
 default: _rollup_plugin_ignore_empty_module_placeholder
 });
 
-/**
- * dat-gui JavaScript Controller Library
- * https://github.com/dataarts/dat.gui
- *
- * Copyright 2011 Data Arts Team, Google Creative Lab
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- */
-
-function ___$insertStyle(css) {
-  if (!css) {
-    return;
-  }
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  var style = document.createElement('style');
-
-  style.setAttribute('type', 'text/css');
-  style.innerHTML = css;
-  document.head.appendChild(style);
-
-  return css;
-}
-
-function colorToString (color, forceCSSHex) {
-  var colorFormat = color.__state.conversionName.toString();
-  var r = Math.round(color.r);
-  var g = Math.round(color.g);
-  var b = Math.round(color.b);
-  var a = color.a;
-  var h = Math.round(color.h);
-  var s = color.s.toFixed(1);
-  var v = color.v.toFixed(1);
-  if (forceCSSHex || colorFormat === 'THREE_CHAR_HEX' || colorFormat === 'SIX_CHAR_HEX') {
-    var str = color.hex.toString(16);
-    while (str.length < 6) {
-      str = '0' + str;
-    }
-    return '#' + str;
-  } else if (colorFormat === 'CSS_RGB') {
-    return 'rgb(' + r + ',' + g + ',' + b + ')';
-  } else if (colorFormat === 'CSS_RGBA') {
-    return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
-  } else if (colorFormat === 'HEX') {
-    return '0x' + color.hex.toString(16);
-  } else if (colorFormat === 'RGB_ARRAY') {
-    return '[' + r + ',' + g + ',' + b + ']';
-  } else if (colorFormat === 'RGBA_ARRAY') {
-    return '[' + r + ',' + g + ',' + b + ',' + a + ']';
-  } else if (colorFormat === 'RGB_OBJ') {
-    return '{r:' + r + ',g:' + g + ',b:' + b + '}';
-  } else if (colorFormat === 'RGBA_OBJ') {
-    return '{r:' + r + ',g:' + g + ',b:' + b + ',a:' + a + '}';
-  } else if (colorFormat === 'HSV_OBJ') {
-    return '{h:' + h + ',s:' + s + ',v:' + v + '}';
-  } else if (colorFormat === 'HSVA_OBJ') {
-    return '{h:' + h + ',s:' + s + ',v:' + v + ',a:' + a + '}';
-  }
-  return 'unknown format';
-}
-
-var ARR_EACH = Array.prototype.forEach;
-var ARR_SLICE = Array.prototype.slice;
-var Common = {
-  BREAK: {},
-  extend: function extend(target) {
-    this.each(ARR_SLICE.call(arguments, 1), function (obj) {
-      var keys = this.isObject(obj) ? Object.keys(obj) : [];
-      keys.forEach(function (key) {
-        if (!this.isUndefined(obj[key])) {
-          target[key] = obj[key];
-        }
-      }.bind(this));
-    }, this);
-    return target;
-  },
-  defaults: function defaults(target) {
-    this.each(ARR_SLICE.call(arguments, 1), function (obj) {
-      var keys = this.isObject(obj) ? Object.keys(obj) : [];
-      keys.forEach(function (key) {
-        if (this.isUndefined(target[key])) {
-          target[key] = obj[key];
-        }
-      }.bind(this));
-    }, this);
-    return target;
-  },
-  compose: function compose() {
-    var toCall = ARR_SLICE.call(arguments);
-    return function () {
-      var args = ARR_SLICE.call(arguments);
-      for (var i = toCall.length - 1; i >= 0; i--) {
-        args = [toCall[i].apply(this, args)];
-      }
-      return args[0];
-    };
-  },
-  each: function each(obj, itr, scope) {
-    if (!obj) {
-      return;
-    }
-    if (ARR_EACH && obj.forEach && obj.forEach === ARR_EACH) {
-      obj.forEach(itr, scope);
-    } else if (obj.length === obj.length + 0) {
-      var key = void 0;
-      var l = void 0;
-      for (key = 0, l = obj.length; key < l; key++) {
-        if (key in obj && itr.call(scope, obj[key], key) === this.BREAK) {
-          return;
-        }
-      }
-    } else {
-      for (var _key in obj) {
-        if (itr.call(scope, obj[_key], _key) === this.BREAK) {
-          return;
-        }
-      }
-    }
-  },
-  defer: function defer(fnc) {
-    setTimeout(fnc, 0);
-  },
-  debounce: function debounce(func, threshold, callImmediately) {
-    var timeout = void 0;
-    return function () {
-      var obj = this;
-      var args = arguments;
-      function delayed() {
-        timeout = null;
-        if (!callImmediately) func.apply(obj, args);
-      }
-      var callNow = callImmediately || !timeout;
-      clearTimeout(timeout);
-      timeout = setTimeout(delayed, threshold);
-      if (callNow) {
-        func.apply(obj, args);
-      }
-    };
-  },
-  toArray: function toArray(obj) {
-    if (obj.toArray) return obj.toArray();
-    return ARR_SLICE.call(obj);
-  },
-  isUndefined: function isUndefined(obj) {
-    return obj === undefined;
-  },
-  isNull: function isNull(obj) {
-    return obj === null;
-  },
-  isNaN: function (_isNaN) {
-    function isNaN(_x) {
-      return _isNaN.apply(this, arguments);
-    }
-    isNaN.toString = function () {
-      return _isNaN.toString();
-    };
-    return isNaN;
-  }(function (obj) {
-    return isNaN(obj);
-  }),
-  isArray: Array.isArray || function (obj) {
-    return obj.constructor === Array;
-  },
-  isObject: function isObject(obj) {
-    return obj === Object(obj);
-  },
-  isNumber: function isNumber(obj) {
-    return obj === obj + 0;
-  },
-  isString: function isString(obj) {
-    return obj === obj + '';
-  },
-  isBoolean: function isBoolean(obj) {
-    return obj === false || obj === true;
-  },
-  isFunction: function isFunction(obj) {
-    return obj instanceof Function;
-  }
-};
-
-var INTERPRETATIONS = [
-{
-  litmus: Common.isString,
-  conversions: {
-    THREE_CHAR_HEX: {
-      read: function read(original) {
-        var test = original.match(/^#([A-F0-9])([A-F0-9])([A-F0-9])$/i);
-        if (test === null) {
-          return false;
-        }
-        return {
-          space: 'HEX',
-          hex: parseInt('0x' + test[1].toString() + test[1].toString() + test[2].toString() + test[2].toString() + test[3].toString() + test[3].toString(), 0)
-        };
-      },
-      write: colorToString
-    },
-    SIX_CHAR_HEX: {
-      read: function read(original) {
-        var test = original.match(/^#([A-F0-9]{6})$/i);
-        if (test === null) {
-          return false;
-        }
-        return {
-          space: 'HEX',
-          hex: parseInt('0x' + test[1].toString(), 0)
-        };
-      },
-      write: colorToString
-    },
-    CSS_RGB: {
-      read: function read(original) {
-        var test = original.match(/^rgb\(\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*\)/);
-        if (test === null) {
-          return false;
-        }
-        return {
-          space: 'RGB',
-          r: parseFloat(test[1]),
-          g: parseFloat(test[2]),
-          b: parseFloat(test[3])
-        };
-      },
-      write: colorToString
-    },
-    CSS_RGBA: {
-      read: function read(original) {
-        var test = original.match(/^rgba\(\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*\)/);
-        if (test === null) {
-          return false;
-        }
-        return {
-          space: 'RGB',
-          r: parseFloat(test[1]),
-          g: parseFloat(test[2]),
-          b: parseFloat(test[3]),
-          a: parseFloat(test[4])
-        };
-      },
-      write: colorToString
-    }
-  }
-},
-{
-  litmus: Common.isNumber,
-  conversions: {
-    HEX: {
-      read: function read(original) {
-        return {
-          space: 'HEX',
-          hex: original,
-          conversionName: 'HEX'
-        };
-      },
-      write: function write(color) {
-        return color.hex;
-      }
-    }
-  }
-},
-{
-  litmus: Common.isArray,
-  conversions: {
-    RGB_ARRAY: {
-      read: function read(original) {
-        if (original.length !== 3) {
-          return false;
-        }
-        return {
-          space: 'RGB',
-          r: original[0],
-          g: original[1],
-          b: original[2]
-        };
-      },
-      write: function write(color) {
-        return [color.r, color.g, color.b];
-      }
-    },
-    RGBA_ARRAY: {
-      read: function read(original) {
-        if (original.length !== 4) return false;
-        return {
-          space: 'RGB',
-          r: original[0],
-          g: original[1],
-          b: original[2],
-          a: original[3]
-        };
-      },
-      write: function write(color) {
-        return [color.r, color.g, color.b, color.a];
-      }
-    }
-  }
-},
-{
-  litmus: Common.isObject,
-  conversions: {
-    RGBA_OBJ: {
-      read: function read(original) {
-        if (Common.isNumber(original.r) && Common.isNumber(original.g) && Common.isNumber(original.b) && Common.isNumber(original.a)) {
-          return {
-            space: 'RGB',
-            r: original.r,
-            g: original.g,
-            b: original.b,
-            a: original.a
-          };
-        }
-        return false;
-      },
-      write: function write(color) {
-        return {
-          r: color.r,
-          g: color.g,
-          b: color.b,
-          a: color.a
-        };
-      }
-    },
-    RGB_OBJ: {
-      read: function read(original) {
-        if (Common.isNumber(original.r) && Common.isNumber(original.g) && Common.isNumber(original.b)) {
-          return {
-            space: 'RGB',
-            r: original.r,
-            g: original.g,
-            b: original.b
-          };
-        }
-        return false;
-      },
-      write: function write(color) {
-        return {
-          r: color.r,
-          g: color.g,
-          b: color.b
-        };
-      }
-    },
-    HSVA_OBJ: {
-      read: function read(original) {
-        if (Common.isNumber(original.h) && Common.isNumber(original.s) && Common.isNumber(original.v) && Common.isNumber(original.a)) {
-          return {
-            space: 'HSV',
-            h: original.h,
-            s: original.s,
-            v: original.v,
-            a: original.a
-          };
-        }
-        return false;
-      },
-      write: function write(color) {
-        return {
-          h: color.h,
-          s: color.s,
-          v: color.v,
-          a: color.a
-        };
-      }
-    },
-    HSV_OBJ: {
-      read: function read(original) {
-        if (Common.isNumber(original.h) && Common.isNumber(original.s) && Common.isNumber(original.v)) {
-          return {
-            space: 'HSV',
-            h: original.h,
-            s: original.s,
-            v: original.v
-          };
-        }
-        return false;
-      },
-      write: function write(color) {
-        return {
-          h: color.h,
-          s: color.s,
-          v: color.v
-        };
-      }
-    }
-  }
-}];
-var result = void 0;
-var toReturn = void 0;
-var interpret = function interpret() {
-  toReturn = false;
-  var original = arguments.length > 1 ? Common.toArray(arguments) : arguments[0];
-  Common.each(INTERPRETATIONS, function (family) {
-    if (family.litmus(original)) {
-      Common.each(family.conversions, function (conversion, conversionName) {
-        result = conversion.read(original);
-        if (toReturn === false && result !== false) {
-          toReturn = result;
-          result.conversionName = conversionName;
-          result.conversion = conversion;
-          return Common.BREAK;
-        }
-      });
-      return Common.BREAK;
-    }
-  });
-  return toReturn;
-};
-
-var tmpComponent = void 0;
-var ColorMath = {
-  hsv_to_rgb: function hsv_to_rgb(h, s, v) {
-    var hi = Math.floor(h / 60) % 6;
-    var f = h / 60 - Math.floor(h / 60);
-    var p = v * (1.0 - s);
-    var q = v * (1.0 - f * s);
-    var t = v * (1.0 - (1.0 - f) * s);
-    var c = [[v, t, p], [q, v, p], [p, v, t], [p, q, v], [t, p, v], [v, p, q]][hi];
-    return {
-      r: c[0] * 255,
-      g: c[1] * 255,
-      b: c[2] * 255
-    };
-  },
-  rgb_to_hsv: function rgb_to_hsv(r, g, b) {
-    var min = Math.min(r, g, b);
-    var max = Math.max(r, g, b);
-    var delta = max - min;
-    var h = void 0;
-    var s = void 0;
-    if (max !== 0) {
-      s = delta / max;
-    } else {
-      return {
-        h: NaN,
-        s: 0,
-        v: 0
-      };
-    }
-    if (r === max) {
-      h = (g - b) / delta;
-    } else if (g === max) {
-      h = 2 + (b - r) / delta;
-    } else {
-      h = 4 + (r - g) / delta;
-    }
-    h /= 6;
-    if (h < 0) {
-      h += 1;
-    }
-    return {
-      h: h * 360,
-      s: s,
-      v: max / 255
-    };
-  },
-  rgb_to_hex: function rgb_to_hex(r, g, b) {
-    var hex = this.hex_with_component(0, 2, r);
-    hex = this.hex_with_component(hex, 1, g);
-    hex = this.hex_with_component(hex, 0, b);
-    return hex;
-  },
-  component_from_hex: function component_from_hex(hex, componentIndex) {
-    return hex >> componentIndex * 8 & 0xFF;
-  },
-  hex_with_component: function hex_with_component(hex, componentIndex, value) {
-    return value << (tmpComponent = componentIndex * 8) | hex & ~(0xFF << tmpComponent);
-  }
-};
-
-var _typeof = typeof Symbol === 'function' && typeof Symbol.iterator === "symbol" ? function (obj) {
-  return typeof obj;
-} : function (obj) {
-  return obj && typeof Symbol === 'function' && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-};
-
-
-
-
-
-
-
-
-
-
-
-var classCallCheck = function (instance, Constructor) {
-  if (!(instance instanceof Constructor)) {
-    throw new TypeError("Cannot call a class as a function");
-  }
-};
-
-var createClass = function () {
-  function defineProperties(target, props) {
-    for (var i = 0; i < props.length; i++) {
-      var descriptor = props[i];
-      descriptor.enumerable = descriptor.enumerable || false;
-      descriptor.configurable = true;
-      if ("value" in descriptor) descriptor.writable = true;
-      Object.defineProperty(target, descriptor.key, descriptor);
-    }
-  }
-
-  return function (Constructor, protoProps, staticProps) {
-    if (protoProps) defineProperties(Constructor.prototype, protoProps);
-    if (staticProps) defineProperties(Constructor, staticProps);
-    return Constructor;
-  };
-}();
-
-
-
-
-
-
-
-var get = function get(object, property, receiver) {
-  if (object === null) object = Function.prototype;
-  var desc = Object.getOwnPropertyDescriptor(object, property);
-
-  if (desc === undefined) {
-    var parent = Object.getPrototypeOf(object);
-
-    if (parent === null) {
-      return undefined;
-    } else {
-      return get(parent, property, receiver);
-    }
-  } else if ("value" in desc) {
-    return desc.value;
-  } else {
-    var getter = desc.get;
-
-    if (getter === undefined) {
-      return undefined;
-    }
-
-    return getter.call(receiver);
-  }
-};
-
-var inherits = function (subClass, superClass) {
-  if (typeof superClass !== 'function' && superClass !== null) {
-    throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
-  }
-
-  subClass.prototype = Object.create(superClass && superClass.prototype, {
-    constructor: {
-      value: subClass,
-      enumerable: false,
-      writable: true,
-      configurable: true
-    }
-  });
-  if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
-};
-
-
-
-
-
-
-
-
-
-
-
-var possibleConstructorReturn = function (self, call) {
-  if (!self) {
-    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-  }
-
-  return call && (typeof call === 'object' || typeof call === 'function') ? call : self;
-};
-
-var Color = function () {
-  function Color() {
-    classCallCheck(this, Color);
-    this.__state = interpret.apply(this, arguments);
-    if (this.__state === false) {
-      throw new Error('Failed to interpret color arguments');
-    }
-    this.__state.a = this.__state.a || 1;
-  }
-  createClass(Color, [{
-    key: 'toString',
-    value: function toString() {
-      return colorToString(this);
-    }
-  }, {
-    key: 'toHexString',
-    value: function toHexString() {
-      return colorToString(this, true);
-    }
-  }, {
-    key: 'toOriginal',
-    value: function toOriginal() {
-      return this.__state.conversion.write(this);
-    }
-  }]);
-  return Color;
-}();
-function defineRGBComponent(target, component, componentHexIndex) {
-  Object.defineProperty(target, component, {
-    get: function get$$1() {
-      if (this.__state.space === 'RGB') {
-        return this.__state[component];
-      }
-      Color.recalculateRGB(this, component, componentHexIndex);
-      return this.__state[component];
-    },
-    set: function set$$1(v) {
-      if (this.__state.space !== 'RGB') {
-        Color.recalculateRGB(this, component, componentHexIndex);
-        this.__state.space = 'RGB';
-      }
-      this.__state[component] = v;
-    }
-  });
-}
-function defineHSVComponent(target, component) {
-  Object.defineProperty(target, component, {
-    get: function get$$1() {
-      if (this.__state.space === 'HSV') {
-        return this.__state[component];
-      }
-      Color.recalculateHSV(this);
-      return this.__state[component];
-    },
-    set: function set$$1(v) {
-      if (this.__state.space !== 'HSV') {
-        Color.recalculateHSV(this);
-        this.__state.space = 'HSV';
-      }
-      this.__state[component] = v;
-    }
-  });
-}
-Color.recalculateRGB = function (color, component, componentHexIndex) {
-  if (color.__state.space === 'HEX') {
-    color.__state[component] = ColorMath.component_from_hex(color.__state.hex, componentHexIndex);
-  } else if (color.__state.space === 'HSV') {
-    Common.extend(color.__state, ColorMath.hsv_to_rgb(color.__state.h, color.__state.s, color.__state.v));
-  } else {
-    throw new Error('Corrupted color state');
-  }
-};
-Color.recalculateHSV = function (color) {
-  var result = ColorMath.rgb_to_hsv(color.r, color.g, color.b);
-  Common.extend(color.__state, {
-    s: result.s,
-    v: result.v
-  });
-  if (!Common.isNaN(result.h)) {
-    color.__state.h = result.h;
-  } else if (Common.isUndefined(color.__state.h)) {
-    color.__state.h = 0;
-  }
-};
-Color.COMPONENTS = ['r', 'g', 'b', 'h', 's', 'v', 'hex', 'a'];
-defineRGBComponent(Color.prototype, 'r', 2);
-defineRGBComponent(Color.prototype, 'g', 1);
-defineRGBComponent(Color.prototype, 'b', 0);
-defineHSVComponent(Color.prototype, 'h');
-defineHSVComponent(Color.prototype, 's');
-defineHSVComponent(Color.prototype, 'v');
-Object.defineProperty(Color.prototype, 'a', {
-  get: function get$$1() {
-    return this.__state.a;
-  },
-  set: function set$$1(v) {
-    this.__state.a = v;
-  }
-});
-Object.defineProperty(Color.prototype, 'hex', {
-  get: function get$$1() {
-    if (this.__state.space !== 'HEX') {
-      this.__state.hex = ColorMath.rgb_to_hex(this.r, this.g, this.b);
-      this.__state.space = 'HEX';
-    }
-    return this.__state.hex;
-  },
-  set: function set$$1(v) {
-    this.__state.space = 'HEX';
-    this.__state.hex = v;
-  }
-});
-
-var Controller = function () {
-  function Controller(object, property) {
-    classCallCheck(this, Controller);
-    this.initialValue = object[property];
-    this.domElement = document.createElement('div');
-    this.object = object;
-    this.property = property;
-    this.__onChange = undefined;
-    this.__onFinishChange = undefined;
-  }
-  createClass(Controller, [{
-    key: 'onChange',
-    value: function onChange(fnc) {
-      this.__onChange = fnc;
-      return this;
-    }
-  }, {
-    key: 'onFinishChange',
-    value: function onFinishChange(fnc) {
-      this.__onFinishChange = fnc;
-      return this;
-    }
-  }, {
-    key: 'setValue',
-    value: function setValue(newValue) {
-      this.object[this.property] = newValue;
-      if (this.__onChange) {
-        this.__onChange.call(this, newValue);
-      }
-      this.updateDisplay();
-      return this;
-    }
-  }, {
-    key: 'getValue',
-    value: function getValue() {
-      return this.object[this.property];
-    }
-  }, {
-    key: 'updateDisplay',
-    value: function updateDisplay() {
-      return this;
-    }
-  }, {
-    key: 'isModified',
-    value: function isModified() {
-      return this.initialValue !== this.getValue();
-    }
-  }]);
-  return Controller;
-}();
-
-var EVENT_MAP = {
-  HTMLEvents: ['change'],
-  MouseEvents: ['click', 'mousemove', 'mousedown', 'mouseup', 'mouseover'],
-  KeyboardEvents: ['keydown']
-};
-var EVENT_MAP_INV = {};
-Common.each(EVENT_MAP, function (v, k) {
-  Common.each(v, function (e) {
-    EVENT_MAP_INV[e] = k;
-  });
-});
-var CSS_VALUE_PIXELS = /(\d+(\.\d+)?)px/;
-function cssValueToPixels(val) {
-  if (val === '0' || Common.isUndefined(val)) {
-    return 0;
-  }
-  var match = val.match(CSS_VALUE_PIXELS);
-  if (!Common.isNull(match)) {
-    return parseFloat(match[1]);
-  }
-  return 0;
-}
-var dom = {
-  makeSelectable: function makeSelectable(elem, selectable) {
-    if (elem === undefined || elem.style === undefined) return;
-    elem.onselectstart = selectable ? function () {
-      return false;
-    } : function () {};
-    elem.style.MozUserSelect = selectable ? 'auto' : 'none';
-    elem.style.KhtmlUserSelect = selectable ? 'auto' : 'none';
-    elem.unselectable = selectable ? 'on' : 'off';
-  },
-  makeFullscreen: function makeFullscreen(elem, hor, vert) {
-    var vertical = vert;
-    var horizontal = hor;
-    if (Common.isUndefined(horizontal)) {
-      horizontal = true;
-    }
-    if (Common.isUndefined(vertical)) {
-      vertical = true;
-    }
-    elem.style.position = 'absolute';
-    if (horizontal) {
-      elem.style.left = 0;
-      elem.style.right = 0;
-    }
-    if (vertical) {
-      elem.style.top = 0;
-      elem.style.bottom = 0;
-    }
-  },
-  fakeEvent: function fakeEvent(elem, eventType, pars, aux) {
-    var params = pars || {};
-    var className = EVENT_MAP_INV[eventType];
-    if (!className) {
-      throw new Error('Event type ' + eventType + ' not supported.');
-    }
-    var evt = document.createEvent(className);
-    switch (className) {
-      case 'MouseEvents':
-        {
-          var clientX = params.x || params.clientX || 0;
-          var clientY = params.y || params.clientY || 0;
-          evt.initMouseEvent(eventType, params.bubbles || false, params.cancelable || true, window, params.clickCount || 1, 0,
-          0,
-          clientX,
-          clientY,
-          false, false, false, false, 0, null);
-          break;
-        }
-      case 'KeyboardEvents':
-        {
-          var init = evt.initKeyboardEvent || evt.initKeyEvent;
-          Common.defaults(params, {
-            cancelable: true,
-            ctrlKey: false,
-            altKey: false,
-            shiftKey: false,
-            metaKey: false,
-            keyCode: undefined,
-            charCode: undefined
-          });
-          init(eventType, params.bubbles || false, params.cancelable, window, params.ctrlKey, params.altKey, params.shiftKey, params.metaKey, params.keyCode, params.charCode);
-          break;
-        }
-      default:
-        {
-          evt.initEvent(eventType, params.bubbles || false, params.cancelable || true);
-          break;
-        }
-    }
-    Common.defaults(evt, aux);
-    elem.dispatchEvent(evt);
-  },
-  bind: function bind(elem, event, func, newBool) {
-    var bool = newBool || false;
-    if (elem.addEventListener) {
-      elem.addEventListener(event, func, bool);
-    } else if (elem.attachEvent) {
-      elem.attachEvent('on' + event, func);
-    }
-    return dom;
-  },
-  unbind: function unbind(elem, event, func, newBool) {
-    var bool = newBool || false;
-    if (elem.removeEventListener) {
-      elem.removeEventListener(event, func, bool);
-    } else if (elem.detachEvent) {
-      elem.detachEvent('on' + event, func);
-    }
-    return dom;
-  },
-  addClass: function addClass(elem, className) {
-    if (elem.className === undefined) {
-      elem.className = className;
-    } else if (elem.className !== className) {
-      var classes = elem.className.split(/ +/);
-      if (classes.indexOf(className) === -1) {
-        classes.push(className);
-        elem.className = classes.join(' ').replace(/^\s+/, '').replace(/\s+$/, '');
-      }
-    }
-    return dom;
-  },
-  removeClass: function removeClass(elem, className) {
-    if (className) {
-      if (elem.className === className) {
-        elem.removeAttribute('class');
-      } else {
-        var classes = elem.className.split(/ +/);
-        var index = classes.indexOf(className);
-        if (index !== -1) {
-          classes.splice(index, 1);
-          elem.className = classes.join(' ');
-        }
-      }
-    } else {
-      elem.className = undefined;
-    }
-    return dom;
-  },
-  hasClass: function hasClass(elem, className) {
-    return new RegExp('(?:^|\\s+)' + className + '(?:\\s+|$)').test(elem.className) || false;
-  },
-  getWidth: function getWidth(elem) {
-    var style = getComputedStyle(elem);
-    return cssValueToPixels(style['border-left-width']) + cssValueToPixels(style['border-right-width']) + cssValueToPixels(style['padding-left']) + cssValueToPixels(style['padding-right']) + cssValueToPixels(style.width);
-  },
-  getHeight: function getHeight(elem) {
-    var style = getComputedStyle(elem);
-    return cssValueToPixels(style['border-top-width']) + cssValueToPixels(style['border-bottom-width']) + cssValueToPixels(style['padding-top']) + cssValueToPixels(style['padding-bottom']) + cssValueToPixels(style.height);
-  },
-  getOffset: function getOffset(el) {
-    var elem = el;
-    var offset = { left: 0, top: 0 };
-    if (elem.offsetParent) {
-      do {
-        offset.left += elem.offsetLeft;
-        offset.top += elem.offsetTop;
-        elem = elem.offsetParent;
-      } while (elem);
-    }
-    return offset;
-  },
-  isActive: function isActive(elem) {
-    return elem === document.activeElement && (elem.type || elem.href);
-  }
-};
-
-var BooleanController = function (_Controller) {
-  inherits(BooleanController, _Controller);
-  function BooleanController(object, property) {
-    classCallCheck(this, BooleanController);
-    var _this2 = possibleConstructorReturn(this, (BooleanController.__proto__ || Object.getPrototypeOf(BooleanController)).call(this, object, property));
-    var _this = _this2;
-    _this2.__prev = _this2.getValue();
-    _this2.__checkbox = document.createElement('input');
-    _this2.__checkbox.setAttribute('type', 'checkbox');
-    function onChange() {
-      _this.setValue(!_this.__prev);
-    }
-    dom.bind(_this2.__checkbox, 'change', onChange, false);
-    _this2.domElement.appendChild(_this2.__checkbox);
-    _this2.updateDisplay();
-    return _this2;
-  }
-  createClass(BooleanController, [{
-    key: 'setValue',
-    value: function setValue(v) {
-      var toReturn = get(BooleanController.prototype.__proto__ || Object.getPrototypeOf(BooleanController.prototype), 'setValue', this).call(this, v);
-      if (this.__onFinishChange) {
-        this.__onFinishChange.call(this, this.getValue());
-      }
-      this.__prev = this.getValue();
-      return toReturn;
-    }
-  }, {
-    key: 'updateDisplay',
-    value: function updateDisplay() {
-      if (this.getValue() === true) {
-        this.__checkbox.setAttribute('checked', 'checked');
-        this.__checkbox.checked = true;
-        this.__prev = true;
-      } else {
-        this.__checkbox.checked = false;
-        this.__prev = false;
-      }
-      return get(BooleanController.prototype.__proto__ || Object.getPrototypeOf(BooleanController.prototype), 'updateDisplay', this).call(this);
-    }
-  }]);
-  return BooleanController;
-}(Controller);
-
-var OptionController = function (_Controller) {
-  inherits(OptionController, _Controller);
-  function OptionController(object, property, opts) {
-    classCallCheck(this, OptionController);
-    var _this2 = possibleConstructorReturn(this, (OptionController.__proto__ || Object.getPrototypeOf(OptionController)).call(this, object, property));
-    var options = opts;
-    var _this = _this2;
-    _this2.__select = document.createElement('select');
-    if (Common.isArray(options)) {
-      var map = {};
-      Common.each(options, function (element) {
-        map[element] = element;
-      });
-      options = map;
-    }
-    Common.each(options, function (value, key) {
-      var opt = document.createElement('option');
-      opt.innerHTML = key;
-      opt.setAttribute('value', value);
-      _this.__select.appendChild(opt);
-    });
-    _this2.updateDisplay();
-    dom.bind(_this2.__select, 'change', function () {
-      var desiredValue = this.options[this.selectedIndex].value;
-      _this.setValue(desiredValue);
-    });
-    _this2.domElement.appendChild(_this2.__select);
-    return _this2;
-  }
-  createClass(OptionController, [{
-    key: 'setValue',
-    value: function setValue(v) {
-      var toReturn = get(OptionController.prototype.__proto__ || Object.getPrototypeOf(OptionController.prototype), 'setValue', this).call(this, v);
-      if (this.__onFinishChange) {
-        this.__onFinishChange.call(this, this.getValue());
-      }
-      return toReturn;
-    }
-  }, {
-    key: 'updateDisplay',
-    value: function updateDisplay() {
-      if (dom.isActive(this.__select)) return this;
-      this.__select.value = this.getValue();
-      return get(OptionController.prototype.__proto__ || Object.getPrototypeOf(OptionController.prototype), 'updateDisplay', this).call(this);
-    }
-  }]);
-  return OptionController;
-}(Controller);
-
-var StringController = function (_Controller) {
-  inherits(StringController, _Controller);
-  function StringController(object, property) {
-    classCallCheck(this, StringController);
-    var _this2 = possibleConstructorReturn(this, (StringController.__proto__ || Object.getPrototypeOf(StringController)).call(this, object, property));
-    var _this = _this2;
-    function onChange() {
-      _this.setValue(_this.__input.value);
-    }
-    function onBlur() {
-      if (_this.__onFinishChange) {
-        _this.__onFinishChange.call(_this, _this.getValue());
-      }
-    }
-    _this2.__input = document.createElement('input');
-    _this2.__input.setAttribute('type', 'text');
-    dom.bind(_this2.__input, 'keyup', onChange);
-    dom.bind(_this2.__input, 'change', onChange);
-    dom.bind(_this2.__input, 'blur', onBlur);
-    dom.bind(_this2.__input, 'keydown', function (e) {
-      if (e.keyCode === 13) {
-        this.blur();
-      }
-    });
-    _this2.updateDisplay();
-    _this2.domElement.appendChild(_this2.__input);
-    return _this2;
-  }
-  createClass(StringController, [{
-    key: 'updateDisplay',
-    value: function updateDisplay() {
-      if (!dom.isActive(this.__input)) {
-        this.__input.value = this.getValue();
-      }
-      return get(StringController.prototype.__proto__ || Object.getPrototypeOf(StringController.prototype), 'updateDisplay', this).call(this);
-    }
-  }]);
-  return StringController;
-}(Controller);
-
-function numDecimals(x) {
-  var _x = x.toString();
-  if (_x.indexOf('.') > -1) {
-    return _x.length - _x.indexOf('.') - 1;
-  }
-  return 0;
-}
-var NumberController = function (_Controller) {
-  inherits(NumberController, _Controller);
-  function NumberController(object, property, params) {
-    classCallCheck(this, NumberController);
-    var _this = possibleConstructorReturn(this, (NumberController.__proto__ || Object.getPrototypeOf(NumberController)).call(this, object, property));
-    var _params = params || {};
-    _this.__min = _params.min;
-    _this.__max = _params.max;
-    _this.__step = _params.step;
-    if (Common.isUndefined(_this.__step)) {
-      if (_this.initialValue === 0) {
-        _this.__impliedStep = 1;
-      } else {
-        _this.__impliedStep = Math.pow(10, Math.floor(Math.log(Math.abs(_this.initialValue)) / Math.LN10)) / 10;
-      }
-    } else {
-      _this.__impliedStep = _this.__step;
-    }
-    _this.__precision = numDecimals(_this.__impliedStep);
-    return _this;
-  }
-  createClass(NumberController, [{
-    key: 'setValue',
-    value: function setValue(v) {
-      var _v = v;
-      if (this.__min !== undefined && _v < this.__min) {
-        _v = this.__min;
-      } else if (this.__max !== undefined && _v > this.__max) {
-        _v = this.__max;
-      }
-      if (this.__step !== undefined && _v % this.__step !== 0) {
-        _v = Math.round(_v / this.__step) * this.__step;
-      }
-      return get(NumberController.prototype.__proto__ || Object.getPrototypeOf(NumberController.prototype), 'setValue', this).call(this, _v);
-    }
-  }, {
-    key: 'min',
-    value: function min(minValue) {
-      this.__min = minValue;
-      return this;
-    }
-  }, {
-    key: 'max',
-    value: function max(maxValue) {
-      this.__max = maxValue;
-      return this;
-    }
-  }, {
-    key: 'step',
-    value: function step(stepValue) {
-      this.__step = stepValue;
-      this.__impliedStep = stepValue;
-      this.__precision = numDecimals(stepValue);
-      return this;
-    }
-  }]);
-  return NumberController;
-}(Controller);
-
-function roundToDecimal(value, decimals) {
-  var tenTo = Math.pow(10, decimals);
-  return Math.round(value * tenTo) / tenTo;
-}
-var NumberControllerBox = function (_NumberController) {
-  inherits(NumberControllerBox, _NumberController);
-  function NumberControllerBox(object, property, params) {
-    classCallCheck(this, NumberControllerBox);
-    var _this2 = possibleConstructorReturn(this, (NumberControllerBox.__proto__ || Object.getPrototypeOf(NumberControllerBox)).call(this, object, property, params));
-    _this2.__truncationSuspended = false;
-    var _this = _this2;
-    var prevY = void 0;
-    function onChange() {
-      var attempted = parseFloat(_this.__input.value);
-      if (!Common.isNaN(attempted)) {
-        _this.setValue(attempted);
-      }
-    }
-    function onFinish() {
-      if (_this.__onFinishChange) {
-        _this.__onFinishChange.call(_this, _this.getValue());
-      }
-    }
-    function onBlur() {
-      onFinish();
-    }
-    function onMouseDrag(e) {
-      var diff = prevY - e.clientY;
-      _this.setValue(_this.getValue() + diff * _this.__impliedStep);
-      prevY = e.clientY;
-    }
-    function onMouseUp() {
-      dom.unbind(window, 'mousemove', onMouseDrag);
-      dom.unbind(window, 'mouseup', onMouseUp);
-      onFinish();
-    }
-    function onMouseDown(e) {
-      dom.bind(window, 'mousemove', onMouseDrag);
-      dom.bind(window, 'mouseup', onMouseUp);
-      prevY = e.clientY;
-    }
-    _this2.__input = document.createElement('input');
-    _this2.__input.setAttribute('type', 'text');
-    dom.bind(_this2.__input, 'change', onChange);
-    dom.bind(_this2.__input, 'blur', onBlur);
-    dom.bind(_this2.__input, 'mousedown', onMouseDown);
-    dom.bind(_this2.__input, 'keydown', function (e) {
-      if (e.keyCode === 13) {
-        _this.__truncationSuspended = true;
-        this.blur();
-        _this.__truncationSuspended = false;
-        onFinish();
-      }
-    });
-    _this2.updateDisplay();
-    _this2.domElement.appendChild(_this2.__input);
-    return _this2;
-  }
-  createClass(NumberControllerBox, [{
-    key: 'updateDisplay',
-    value: function updateDisplay() {
-      this.__input.value = this.__truncationSuspended ? this.getValue() : roundToDecimal(this.getValue(), this.__precision);
-      return get(NumberControllerBox.prototype.__proto__ || Object.getPrototypeOf(NumberControllerBox.prototype), 'updateDisplay', this).call(this);
-    }
-  }]);
-  return NumberControllerBox;
-}(NumberController);
-
-function map(v, i1, i2, o1, o2) {
-  return o1 + (o2 - o1) * ((v - i1) / (i2 - i1));
-}
-var NumberControllerSlider = function (_NumberController) {
-  inherits(NumberControllerSlider, _NumberController);
-  function NumberControllerSlider(object, property, min, max, step) {
-    classCallCheck(this, NumberControllerSlider);
-    var _this2 = possibleConstructorReturn(this, (NumberControllerSlider.__proto__ || Object.getPrototypeOf(NumberControllerSlider)).call(this, object, property, { min: min, max: max, step: step }));
-    var _this = _this2;
-    _this2.__background = document.createElement('div');
-    _this2.__foreground = document.createElement('div');
-    dom.bind(_this2.__background, 'mousedown', onMouseDown);
-    dom.bind(_this2.__background, 'touchstart', onTouchStart);
-    dom.addClass(_this2.__background, 'slider');
-    dom.addClass(_this2.__foreground, 'slider-fg');
-    function onMouseDown(e) {
-      document.activeElement.blur();
-      dom.bind(window, 'mousemove', onMouseDrag);
-      dom.bind(window, 'mouseup', onMouseUp);
-      onMouseDrag(e);
-    }
-    function onMouseDrag(e) {
-      e.preventDefault();
-      var bgRect = _this.__background.getBoundingClientRect();
-      _this.setValue(map(e.clientX, bgRect.left, bgRect.right, _this.__min, _this.__max));
-      return false;
-    }
-    function onMouseUp() {
-      dom.unbind(window, 'mousemove', onMouseDrag);
-      dom.unbind(window, 'mouseup', onMouseUp);
-      if (_this.__onFinishChange) {
-        _this.__onFinishChange.call(_this, _this.getValue());
-      }
-    }
-    function onTouchStart(e) {
-      if (e.touches.length !== 1) {
-        return;
-      }
-      dom.bind(window, 'touchmove', onTouchMove);
-      dom.bind(window, 'touchend', onTouchEnd);
-      onTouchMove(e);
-    }
-    function onTouchMove(e) {
-      var clientX = e.touches[0].clientX;
-      var bgRect = _this.__background.getBoundingClientRect();
-      _this.setValue(map(clientX, bgRect.left, bgRect.right, _this.__min, _this.__max));
-    }
-    function onTouchEnd() {
-      dom.unbind(window, 'touchmove', onTouchMove);
-      dom.unbind(window, 'touchend', onTouchEnd);
-      if (_this.__onFinishChange) {
-        _this.__onFinishChange.call(_this, _this.getValue());
-      }
-    }
-    _this2.updateDisplay();
-    _this2.__background.appendChild(_this2.__foreground);
-    _this2.domElement.appendChild(_this2.__background);
-    return _this2;
-  }
-  createClass(NumberControllerSlider, [{
-    key: 'updateDisplay',
-    value: function updateDisplay() {
-      var pct = (this.getValue() - this.__min) / (this.__max - this.__min);
-      this.__foreground.style.width = pct * 100 + '%';
-      return get(NumberControllerSlider.prototype.__proto__ || Object.getPrototypeOf(NumberControllerSlider.prototype), 'updateDisplay', this).call(this);
-    }
-  }]);
-  return NumberControllerSlider;
-}(NumberController);
-
-var FunctionController = function (_Controller) {
-  inherits(FunctionController, _Controller);
-  function FunctionController(object, property, text) {
-    classCallCheck(this, FunctionController);
-    var _this2 = possibleConstructorReturn(this, (FunctionController.__proto__ || Object.getPrototypeOf(FunctionController)).call(this, object, property));
-    var _this = _this2;
-    _this2.__button = document.createElement('div');
-    _this2.__button.innerHTML = text === undefined ? 'Fire' : text;
-    dom.bind(_this2.__button, 'click', function (e) {
-      e.preventDefault();
-      _this.fire();
-      return false;
-    });
-    dom.addClass(_this2.__button, 'button');
-    _this2.domElement.appendChild(_this2.__button);
-    return _this2;
-  }
-  createClass(FunctionController, [{
-    key: 'fire',
-    value: function fire() {
-      if (this.__onChange) {
-        this.__onChange.call(this);
-      }
-      this.getValue().call(this.object);
-      if (this.__onFinishChange) {
-        this.__onFinishChange.call(this, this.getValue());
-      }
-    }
-  }]);
-  return FunctionController;
-}(Controller);
-
-var ColorController = function (_Controller) {
-  inherits(ColorController, _Controller);
-  function ColorController(object, property) {
-    classCallCheck(this, ColorController);
-    var _this2 = possibleConstructorReturn(this, (ColorController.__proto__ || Object.getPrototypeOf(ColorController)).call(this, object, property));
-    _this2.__color = new Color(_this2.getValue());
-    _this2.__temp = new Color(0);
-    var _this = _this2;
-    _this2.domElement = document.createElement('div');
-    dom.makeSelectable(_this2.domElement, false);
-    _this2.__selector = document.createElement('div');
-    _this2.__selector.className = 'selector';
-    _this2.__saturation_field = document.createElement('div');
-    _this2.__saturation_field.className = 'saturation-field';
-    _this2.__field_knob = document.createElement('div');
-    _this2.__field_knob.className = 'field-knob';
-    _this2.__field_knob_border = '2px solid ';
-    _this2.__hue_knob = document.createElement('div');
-    _this2.__hue_knob.className = 'hue-knob';
-    _this2.__hue_field = document.createElement('div');
-    _this2.__hue_field.className = 'hue-field';
-    _this2.__input = document.createElement('input');
-    _this2.__input.type = 'text';
-    _this2.__input_textShadow = '0 1px 1px ';
-    dom.bind(_this2.__input, 'keydown', function (e) {
-      if (e.keyCode === 13) {
-        onBlur.call(this);
-      }
-    });
-    dom.bind(_this2.__input, 'blur', onBlur);
-    dom.bind(_this2.__selector, 'mousedown', function () {
-      dom.addClass(this, 'drag').bind(window, 'mouseup', function () {
-        dom.removeClass(_this.__selector, 'drag');
-      });
-    });
-    dom.bind(_this2.__selector, 'touchstart', function () {
-      dom.addClass(this, 'drag').bind(window, 'touchend', function () {
-        dom.removeClass(_this.__selector, 'drag');
-      });
-    });
-    var valueField = document.createElement('div');
-    Common.extend(_this2.__selector.style, {
-      width: '122px',
-      height: '102px',
-      padding: '3px',
-      backgroundColor: '#222',
-      boxShadow: '0px 1px 3px rgba(0,0,0,0.3)'
-    });
-    Common.extend(_this2.__field_knob.style, {
-      position: 'absolute',
-      width: '12px',
-      height: '12px',
-      border: _this2.__field_knob_border + (_this2.__color.v < 0.5 ? '#fff' : '#000'),
-      boxShadow: '0px 1px 3px rgba(0,0,0,0.5)',
-      borderRadius: '12px',
-      zIndex: 1
-    });
-    Common.extend(_this2.__hue_knob.style, {
-      position: 'absolute',
-      width: '15px',
-      height: '2px',
-      borderRight: '4px solid #fff',
-      zIndex: 1
-    });
-    Common.extend(_this2.__saturation_field.style, {
-      width: '100px',
-      height: '100px',
-      border: '1px solid #555',
-      marginRight: '3px',
-      display: 'inline-block',
-      cursor: 'pointer'
-    });
-    Common.extend(valueField.style, {
-      width: '100%',
-      height: '100%',
-      background: 'none'
-    });
-    linearGradient(valueField, 'top', 'rgba(0,0,0,0)', '#000');
-    Common.extend(_this2.__hue_field.style, {
-      width: '15px',
-      height: '100px',
-      border: '1px solid #555',
-      cursor: 'ns-resize',
-      position: 'absolute',
-      top: '3px',
-      right: '3px'
-    });
-    hueGradient(_this2.__hue_field);
-    Common.extend(_this2.__input.style, {
-      outline: 'none',
-      textAlign: 'center',
-      color: '#fff',
-      border: 0,
-      fontWeight: 'bold',
-      textShadow: _this2.__input_textShadow + 'rgba(0,0,0,0.7)'
-    });
-    dom.bind(_this2.__saturation_field, 'mousedown', fieldDown);
-    dom.bind(_this2.__saturation_field, 'touchstart', fieldDown);
-    dom.bind(_this2.__field_knob, 'mousedown', fieldDown);
-    dom.bind(_this2.__field_knob, 'touchstart', fieldDown);
-    dom.bind(_this2.__hue_field, 'mousedown', fieldDownH);
-    dom.bind(_this2.__hue_field, 'touchstart', fieldDownH);
-    function fieldDown(e) {
-      setSV(e);
-      dom.bind(window, 'mousemove', setSV);
-      dom.bind(window, 'touchmove', setSV);
-      dom.bind(window, 'mouseup', fieldUpSV);
-      dom.bind(window, 'touchend', fieldUpSV);
-    }
-    function fieldDownH(e) {
-      setH(e);
-      dom.bind(window, 'mousemove', setH);
-      dom.bind(window, 'touchmove', setH);
-      dom.bind(window, 'mouseup', fieldUpH);
-      dom.bind(window, 'touchend', fieldUpH);
-    }
-    function fieldUpSV() {
-      dom.unbind(window, 'mousemove', setSV);
-      dom.unbind(window, 'touchmove', setSV);
-      dom.unbind(window, 'mouseup', fieldUpSV);
-      dom.unbind(window, 'touchend', fieldUpSV);
-      onFinish();
-    }
-    function fieldUpH() {
-      dom.unbind(window, 'mousemove', setH);
-      dom.unbind(window, 'touchmove', setH);
-      dom.unbind(window, 'mouseup', fieldUpH);
-      dom.unbind(window, 'touchend', fieldUpH);
-      onFinish();
-    }
-    function onBlur() {
-      var i = interpret(this.value);
-      if (i !== false) {
-        _this.__color.__state = i;
-        _this.setValue(_this.__color.toOriginal());
-      } else {
-        this.value = _this.__color.toString();
-      }
-    }
-    function onFinish() {
-      if (_this.__onFinishChange) {
-        _this.__onFinishChange.call(_this, _this.__color.toOriginal());
-      }
-    }
-    _this2.__saturation_field.appendChild(valueField);
-    _this2.__selector.appendChild(_this2.__field_knob);
-    _this2.__selector.appendChild(_this2.__saturation_field);
-    _this2.__selector.appendChild(_this2.__hue_field);
-    _this2.__hue_field.appendChild(_this2.__hue_knob);
-    _this2.domElement.appendChild(_this2.__input);
-    _this2.domElement.appendChild(_this2.__selector);
-    _this2.updateDisplay();
-    function setSV(e) {
-      if (e.type.indexOf('touch') === -1) {
-        e.preventDefault();
-      }
-      var fieldRect = _this.__saturation_field.getBoundingClientRect();
-      var _ref = e.touches && e.touches[0] || e,
-          clientX = _ref.clientX,
-          clientY = _ref.clientY;
-      var s = (clientX - fieldRect.left) / (fieldRect.right - fieldRect.left);
-      var v = 1 - (clientY - fieldRect.top) / (fieldRect.bottom - fieldRect.top);
-      if (v > 1) {
-        v = 1;
-      } else if (v < 0) {
-        v = 0;
-      }
-      if (s > 1) {
-        s = 1;
-      } else if (s < 0) {
-        s = 0;
-      }
-      _this.__color.v = v;
-      _this.__color.s = s;
-      _this.setValue(_this.__color.toOriginal());
-      return false;
-    }
-    function setH(e) {
-      if (e.type.indexOf('touch') === -1) {
-        e.preventDefault();
-      }
-      var fieldRect = _this.__hue_field.getBoundingClientRect();
-      var _ref2 = e.touches && e.touches[0] || e,
-          clientY = _ref2.clientY;
-      var h = 1 - (clientY - fieldRect.top) / (fieldRect.bottom - fieldRect.top);
-      if (h > 1) {
-        h = 1;
-      } else if (h < 0) {
-        h = 0;
-      }
-      _this.__color.h = h * 360;
-      _this.setValue(_this.__color.toOriginal());
-      return false;
-    }
-    return _this2;
-  }
-  createClass(ColorController, [{
-    key: 'updateDisplay',
-    value: function updateDisplay() {
-      var i = interpret(this.getValue());
-      if (i !== false) {
-        var mismatch = false;
-        Common.each(Color.COMPONENTS, function (component) {
-          if (!Common.isUndefined(i[component]) && !Common.isUndefined(this.__color.__state[component]) && i[component] !== this.__color.__state[component]) {
-            mismatch = true;
-            return {};
-          }
-        }, this);
-        if (mismatch) {
-          Common.extend(this.__color.__state, i);
-        }
-      }
-      Common.extend(this.__temp.__state, this.__color.__state);
-      this.__temp.a = 1;
-      var flip = this.__color.v < 0.5 || this.__color.s > 0.5 ? 255 : 0;
-      var _flip = 255 - flip;
-      Common.extend(this.__field_knob.style, {
-        marginLeft: 100 * this.__color.s - 7 + 'px',
-        marginTop: 100 * (1 - this.__color.v) - 7 + 'px',
-        backgroundColor: this.__temp.toHexString(),
-        border: this.__field_knob_border + 'rgb(' + flip + ',' + flip + ',' + flip + ')'
-      });
-      this.__hue_knob.style.marginTop = (1 - this.__color.h / 360) * 100 + 'px';
-      this.__temp.s = 1;
-      this.__temp.v = 1;
-      linearGradient(this.__saturation_field, 'left', '#fff', this.__temp.toHexString());
-      this.__input.value = this.__color.toString();
-      Common.extend(this.__input.style, {
-        backgroundColor: this.__color.toHexString(),
-        color: 'rgb(' + flip + ',' + flip + ',' + flip + ')',
-        textShadow: this.__input_textShadow + 'rgba(' + _flip + ',' + _flip + ',' + _flip + ',.7)'
-      });
-    }
-  }]);
-  return ColorController;
-}(Controller);
-var vendors = ['-moz-', '-o-', '-webkit-', '-ms-', ''];
-function linearGradient(elem, x, a, b) {
-  elem.style.background = '';
-  Common.each(vendors, function (vendor) {
-    elem.style.cssText += 'background: ' + vendor + 'linear-gradient(' + x + ', ' + a + ' 0%, ' + b + ' 100%); ';
-  });
-}
-function hueGradient(elem) {
-  elem.style.background = '';
-  elem.style.cssText += 'background: -moz-linear-gradient(top,  #ff0000 0%, #ff00ff 17%, #0000ff 34%, #00ffff 50%, #00ff00 67%, #ffff00 84%, #ff0000 100%);';
-  elem.style.cssText += 'background: -webkit-linear-gradient(top,  #ff0000 0%,#ff00ff 17%,#0000ff 34%,#00ffff 50%,#00ff00 67%,#ffff00 84%,#ff0000 100%);';
-  elem.style.cssText += 'background: -o-linear-gradient(top,  #ff0000 0%,#ff00ff 17%,#0000ff 34%,#00ffff 50%,#00ff00 67%,#ffff00 84%,#ff0000 100%);';
-  elem.style.cssText += 'background: -ms-linear-gradient(top,  #ff0000 0%,#ff00ff 17%,#0000ff 34%,#00ffff 50%,#00ff00 67%,#ffff00 84%,#ff0000 100%);';
-  elem.style.cssText += 'background: linear-gradient(top,  #ff0000 0%,#ff00ff 17%,#0000ff 34%,#00ffff 50%,#00ff00 67%,#ffff00 84%,#ff0000 100%);';
-}
-
-var css = {
-  load: function load(url, indoc) {
-    var doc = indoc || document;
-    var link = doc.createElement('link');
-    link.type = 'text/css';
-    link.rel = 'stylesheet';
-    link.href = url;
-    doc.getElementsByTagName('head')[0].appendChild(link);
-  },
-  inject: function inject(cssContent, indoc) {
-    var doc = indoc || document;
-    var injected = document.createElement('style');
-    injected.type = 'text/css';
-    injected.innerHTML = cssContent;
-    var head = doc.getElementsByTagName('head')[0];
-    try {
-      head.appendChild(injected);
-    } catch (e) {
-    }
-  }
-};
-
-var saveDialogContents = "<div id=\"dg-save\" class=\"dg dialogue\">\n\n  Here's the new load parameter for your <code>GUI</code>'s constructor:\n\n  <textarea id=\"dg-new-constructor\"></textarea>\n\n  <div id=\"dg-save-locally\">\n\n    <input id=\"dg-local-storage\" type=\"checkbox\"/> Automatically save\n    values to <code>localStorage</code> on exit.\n\n    <div id=\"dg-local-explain\">The values saved to <code>localStorage</code> will\n      override those passed to <code>dat.GUI</code>'s constructor. This makes it\n      easier to work incrementally, but <code>localStorage</code> is fragile,\n      and your friends may not see the same values you do.\n\n    </div>\n\n  </div>\n\n</div>";
-
-var ControllerFactory = function ControllerFactory(object, property) {
-  var initialValue = object[property];
-  if (Common.isArray(arguments[2]) || Common.isObject(arguments[2])) {
-    return new OptionController(object, property, arguments[2]);
-  }
-  if (Common.isNumber(initialValue)) {
-    if (Common.isNumber(arguments[2]) && Common.isNumber(arguments[3])) {
-      if (Common.isNumber(arguments[4])) {
-        return new NumberControllerSlider(object, property, arguments[2], arguments[3], arguments[4]);
-      }
-      return new NumberControllerSlider(object, property, arguments[2], arguments[3]);
-    }
-    if (Common.isNumber(arguments[4])) {
-      return new NumberControllerBox(object, property, { min: arguments[2], max: arguments[3], step: arguments[4] });
-    }
-    return new NumberControllerBox(object, property, { min: arguments[2], max: arguments[3] });
-  }
-  if (Common.isString(initialValue)) {
-    return new StringController(object, property);
-  }
-  if (Common.isFunction(initialValue)) {
-    return new FunctionController(object, property, '');
-  }
-  if (Common.isBoolean(initialValue)) {
-    return new BooleanController(object, property);
-  }
-  return null;
-};
-
-function requestAnimationFrame$1(callback) {
-  setTimeout(callback, 1000 / 60);
-}
-var requestAnimationFrame$1$1 = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || requestAnimationFrame$1;
-
-var CenteredDiv = function () {
-  function CenteredDiv() {
-    classCallCheck(this, CenteredDiv);
-    this.backgroundElement = document.createElement('div');
-    Common.extend(this.backgroundElement.style, {
-      backgroundColor: 'rgba(0,0,0,0.8)',
-      top: 0,
-      left: 0,
-      display: 'none',
-      zIndex: '1000',
-      opacity: 0,
-      WebkitTransition: 'opacity 0.2s linear',
-      transition: 'opacity 0.2s linear'
-    });
-    dom.makeFullscreen(this.backgroundElement);
-    this.backgroundElement.style.position = 'fixed';
-    this.domElement = document.createElement('div');
-    Common.extend(this.domElement.style, {
-      position: 'fixed',
-      display: 'none',
-      zIndex: '1001',
-      opacity: 0,
-      WebkitTransition: '-webkit-transform 0.2s ease-out, opacity 0.2s linear',
-      transition: 'transform 0.2s ease-out, opacity 0.2s linear'
-    });
-    document.body.appendChild(this.backgroundElement);
-    document.body.appendChild(this.domElement);
-    var _this = this;
-    dom.bind(this.backgroundElement, 'click', function () {
-      _this.hide();
-    });
-  }
-  createClass(CenteredDiv, [{
-    key: 'show',
-    value: function show() {
-      var _this = this;
-      this.backgroundElement.style.display = 'block';
-      this.domElement.style.display = 'block';
-      this.domElement.style.opacity = 0;
-      this.domElement.style.webkitTransform = 'scale(1.1)';
-      this.layout();
-      Common.defer(function () {
-        _this.backgroundElement.style.opacity = 1;
-        _this.domElement.style.opacity = 1;
-        _this.domElement.style.webkitTransform = 'scale(1)';
-      });
-    }
-  }, {
-    key: 'hide',
-    value: function hide() {
-      var _this = this;
-      var hide = function hide() {
-        _this.domElement.style.display = 'none';
-        _this.backgroundElement.style.display = 'none';
-        dom.unbind(_this.domElement, 'webkitTransitionEnd', hide);
-        dom.unbind(_this.domElement, 'transitionend', hide);
-        dom.unbind(_this.domElement, 'oTransitionEnd', hide);
-      };
-      dom.bind(this.domElement, 'webkitTransitionEnd', hide);
-      dom.bind(this.domElement, 'transitionend', hide);
-      dom.bind(this.domElement, 'oTransitionEnd', hide);
-      this.backgroundElement.style.opacity = 0;
-      this.domElement.style.opacity = 0;
-      this.domElement.style.webkitTransform = 'scale(1.1)';
-    }
-  }, {
-    key: 'layout',
-    value: function layout() {
-      this.domElement.style.left = window.innerWidth / 2 - dom.getWidth(this.domElement) / 2 + 'px';
-      this.domElement.style.top = window.innerHeight / 2 - dom.getHeight(this.domElement) / 2 + 'px';
-    }
-  }]);
-  return CenteredDiv;
-}();
-
-var styleSheet = ___$insertStyle(".dg ul{list-style:none;margin:0;padding:0;width:100%;clear:both}.dg.ac{position:fixed;top:0;left:0;right:0;height:0;z-index:0}.dg:not(.ac) .main{overflow:hidden}.dg.main{-webkit-transition:opacity .1s linear;-o-transition:opacity .1s linear;-moz-transition:opacity .1s linear;transition:opacity .1s linear}.dg.main.taller-than-window{overflow-y:auto}.dg.main.taller-than-window .close-button{opacity:1;margin-top:-1px;border-top:1px solid #2c2c2c}.dg.main ul.closed .close-button{opacity:1 !important}.dg.main:hover .close-button,.dg.main .close-button.drag{opacity:1}.dg.main .close-button{-webkit-transition:opacity .1s linear;-o-transition:opacity .1s linear;-moz-transition:opacity .1s linear;transition:opacity .1s linear;border:0;line-height:19px;height:20px;cursor:pointer;text-align:center;background-color:#000}.dg.main .close-button.close-top{position:relative}.dg.main .close-button.close-bottom{position:absolute}.dg.main .close-button:hover{background-color:#111}.dg.a{float:right;margin-right:15px;overflow-y:visible}.dg.a.has-save>ul.close-top{margin-top:0}.dg.a.has-save>ul.close-bottom{margin-top:27px}.dg.a.has-save>ul.closed{margin-top:0}.dg.a .save-row{top:0;z-index:1002}.dg.a .save-row.close-top{position:relative}.dg.a .save-row.close-bottom{position:fixed}.dg li{-webkit-transition:height .1s ease-out;-o-transition:height .1s ease-out;-moz-transition:height .1s ease-out;transition:height .1s ease-out;-webkit-transition:overflow .1s linear;-o-transition:overflow .1s linear;-moz-transition:overflow .1s linear;transition:overflow .1s linear}.dg li:not(.folder){cursor:auto;height:27px;line-height:27px;padding:0 4px 0 5px}.dg li.folder{padding:0;border-left:4px solid rgba(0,0,0,0)}.dg li.title{cursor:pointer;margin-left:-4px}.dg .closed li:not(.title),.dg .closed ul li,.dg .closed ul li>*{height:0;overflow:hidden;border:0}.dg .cr{clear:both;padding-left:3px;height:27px;overflow:hidden}.dg .property-name{cursor:default;float:left;clear:left;width:40%;overflow:hidden;text-overflow:ellipsis}.dg .cr.function .property-name{width:100%}.dg .c{float:left;width:60%;position:relative}.dg .c input[type=text]{border:0;margin-top:4px;padding:3px;width:100%;float:right}.dg .has-slider input[type=text]{width:30%;margin-left:0}.dg .slider{float:left;width:66%;margin-left:-5px;margin-right:0;height:19px;margin-top:4px}.dg .slider-fg{height:100%}.dg .c input[type=checkbox]{margin-top:7px}.dg .c select{margin-top:5px}.dg .cr.function,.dg .cr.function .property-name,.dg .cr.function *,.dg .cr.boolean,.dg .cr.boolean *{cursor:pointer}.dg .cr.color{overflow:visible}.dg .selector{display:none;position:absolute;margin-left:-9px;margin-top:23px;z-index:10}.dg .c:hover .selector,.dg .selector.drag{display:block}.dg li.save-row{padding:0}.dg li.save-row .button{display:inline-block;padding:0px 6px}.dg.dialogue{background-color:#222;width:460px;padding:15px;font-size:13px;line-height:15px}#dg-new-constructor{padding:10px;color:#222;font-family:Monaco, monospace;font-size:10px;border:0;resize:none;box-shadow:inset 1px 1px 1px #888;word-wrap:break-word;margin:12px 0;display:block;width:440px;overflow-y:scroll;height:100px;position:relative}#dg-local-explain{display:none;font-size:11px;line-height:17px;border-radius:3px;background-color:#333;padding:8px;margin-top:10px}#dg-local-explain code{font-size:10px}#dat-gui-save-locally{display:none}.dg{color:#eee;font:11px 'Lucida Grande', sans-serif;text-shadow:0 -1px 0 #111}.dg.main::-webkit-scrollbar{width:5px;background:#1a1a1a}.dg.main::-webkit-scrollbar-corner{height:0;display:none}.dg.main::-webkit-scrollbar-thumb{border-radius:5px;background:#676767}.dg li:not(.folder){background:#1a1a1a;border-bottom:1px solid #2c2c2c}.dg li.save-row{line-height:25px;background:#dad5cb;border:0}.dg li.save-row select{margin-left:5px;width:108px}.dg li.save-row .button{margin-left:5px;margin-top:1px;border-radius:2px;font-size:9px;line-height:7px;padding:4px 4px 5px 4px;background:#c5bdad;color:#fff;text-shadow:0 1px 0 #b0a58f;box-shadow:0 -1px 0 #b0a58f;cursor:pointer}.dg li.save-row .button.gears{background:#c5bdad url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAANCAYAAAB/9ZQ7AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAQJJREFUeNpiYKAU/P//PwGIC/ApCABiBSAW+I8AClAcgKxQ4T9hoMAEUrxx2QSGN6+egDX+/vWT4e7N82AMYoPAx/evwWoYoSYbACX2s7KxCxzcsezDh3evFoDEBYTEEqycggWAzA9AuUSQQgeYPa9fPv6/YWm/Acx5IPb7ty/fw+QZblw67vDs8R0YHyQhgObx+yAJkBqmG5dPPDh1aPOGR/eugW0G4vlIoTIfyFcA+QekhhHJhPdQxbiAIguMBTQZrPD7108M6roWYDFQiIAAv6Aow/1bFwXgis+f2LUAynwoIaNcz8XNx3Dl7MEJUDGQpx9gtQ8YCueB+D26OECAAQDadt7e46D42QAAAABJRU5ErkJggg==) 2px 1px no-repeat;height:7px;width:8px}.dg li.save-row .button:hover{background-color:#bab19e;box-shadow:0 -1px 0 #b0a58f}.dg li.folder{border-bottom:0}.dg li.title{padding-left:16px;background:#000 url(data:image/gif;base64,R0lGODlhBQAFAJEAAP////Pz8////////yH5BAEAAAIALAAAAAAFAAUAAAIIlI+hKgFxoCgAOw==) 6px 10px no-repeat;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.2)}.dg .closed li.title{background-image:url(data:image/gif;base64,R0lGODlhBQAFAJEAAP////Pz8////////yH5BAEAAAIALAAAAAAFAAUAAAIIlGIWqMCbWAEAOw==)}.dg .cr.boolean{border-left:3px solid #806787}.dg .cr.color{border-left:3px solid}.dg .cr.function{border-left:3px solid #e61d5f}.dg .cr.number{border-left:3px solid #2FA1D6}.dg .cr.number input[type=text]{color:#2FA1D6}.dg .cr.string{border-left:3px solid #1ed36f}.dg .cr.string input[type=text]{color:#1ed36f}.dg .cr.function:hover,.dg .cr.boolean:hover{background:#111}.dg .c input[type=text]{background:#303030;outline:none}.dg .c input[type=text]:hover{background:#3c3c3c}.dg .c input[type=text]:focus{background:#494949;color:#fff}.dg .c .slider{background:#303030;cursor:ew-resize}.dg .c .slider-fg{background:#2FA1D6;max-width:100%}.dg .c .slider:hover{background:#3c3c3c}.dg .c .slider:hover .slider-fg{background:#44abda}\n");
-
-css.inject(styleSheet);
-var CSS_NAMESPACE = 'dg';
-var HIDE_KEY_CODE = 72;
-var CLOSE_BUTTON_HEIGHT = 20;
-var DEFAULT_DEFAULT_PRESET_NAME = 'Default';
-var SUPPORTS_LOCAL_STORAGE = function () {
-  try {
-    return !!window.localStorage;
-  } catch (e) {
-    return false;
-  }
-}();
-var SAVE_DIALOGUE = void 0;
-var autoPlaceVirgin = true;
-var autoPlaceContainer = void 0;
-var hide = false;
-var hideableGuis = [];
-var GUI = function GUI(pars) {
-  var _this = this;
-  var params = pars || {};
-  this.domElement = document.createElement('div');
-  this.__ul = document.createElement('ul');
-  this.domElement.appendChild(this.__ul);
-  dom.addClass(this.domElement, CSS_NAMESPACE);
-  this.__folders = {};
-  this.__controllers = [];
-  this.__rememberedObjects = [];
-  this.__rememberedObjectIndecesToControllers = [];
-  this.__listening = [];
-  params = Common.defaults(params, {
-    closeOnTop: false,
-    autoPlace: true,
-    width: GUI.DEFAULT_WIDTH
-  });
-  params = Common.defaults(params, {
-    resizable: params.autoPlace,
-    hideable: params.autoPlace
-  });
-  if (!Common.isUndefined(params.load)) {
-    if (params.preset) {
-      params.load.preset = params.preset;
-    }
-  } else {
-    params.load = { preset: DEFAULT_DEFAULT_PRESET_NAME };
-  }
-  if (Common.isUndefined(params.parent) && params.hideable) {
-    hideableGuis.push(this);
-  }
-  params.resizable = Common.isUndefined(params.parent) && params.resizable;
-  if (params.autoPlace && Common.isUndefined(params.scrollable)) {
-    params.scrollable = true;
-  }
-  var useLocalStorage = SUPPORTS_LOCAL_STORAGE && localStorage.getItem(getLocalStorageHash(this, 'isLocal')) === 'true';
-  var saveToLocalStorage = void 0;
-  var titleRow = void 0;
-  Object.defineProperties(this,
-  {
-    parent: {
-      get: function get$$1() {
-        return params.parent;
-      }
-    },
-    scrollable: {
-      get: function get$$1() {
-        return params.scrollable;
-      }
-    },
-    autoPlace: {
-      get: function get$$1() {
-        return params.autoPlace;
-      }
-    },
-    closeOnTop: {
-      get: function get$$1() {
-        return params.closeOnTop;
-      }
-    },
-    preset: {
-      get: function get$$1() {
-        if (_this.parent) {
-          return _this.getRoot().preset;
-        }
-        return params.load.preset;
-      },
-      set: function set$$1(v) {
-        if (_this.parent) {
-          _this.getRoot().preset = v;
-        } else {
-          params.load.preset = v;
-        }
-        setPresetSelectIndex(this);
-        _this.revert();
-      }
-    },
-    width: {
-      get: function get$$1() {
-        return params.width;
-      },
-      set: function set$$1(v) {
-        params.width = v;
-        setWidth(_this, v);
-      }
-    },
-    name: {
-      get: function get$$1() {
-        return params.name;
-      },
-      set: function set$$1(v) {
-        params.name = v;
-        if (titleRow) {
-          titleRow.innerHTML = params.name;
-        }
-      }
-    },
-    closed: {
-      get: function get$$1() {
-        return params.closed;
-      },
-      set: function set$$1(v) {
-        params.closed = v;
-        if (params.closed) {
-          dom.addClass(_this.__ul, GUI.CLASS_CLOSED);
-        } else {
-          dom.removeClass(_this.__ul, GUI.CLASS_CLOSED);
-        }
-        this.onResize();
-        if (_this.__closeButton) {
-          _this.__closeButton.innerHTML = v ? GUI.TEXT_OPEN : GUI.TEXT_CLOSED;
-        }
-      }
-    },
-    load: {
-      get: function get$$1() {
-        return params.load;
-      }
-    },
-    useLocalStorage: {
-      get: function get$$1() {
-        return useLocalStorage;
-      },
-      set: function set$$1(bool) {
-        if (SUPPORTS_LOCAL_STORAGE) {
-          useLocalStorage = bool;
-          if (bool) {
-            dom.bind(window, 'unload', saveToLocalStorage);
-          } else {
-            dom.unbind(window, 'unload', saveToLocalStorage);
-          }
-          localStorage.setItem(getLocalStorageHash(_this, 'isLocal'), bool);
-        }
-      }
-    }
-  });
-  if (Common.isUndefined(params.parent)) {
-    this.closed = params.closed || false;
-    dom.addClass(this.domElement, GUI.CLASS_MAIN);
-    dom.makeSelectable(this.domElement, false);
-    if (SUPPORTS_LOCAL_STORAGE) {
-      if (useLocalStorage) {
-        _this.useLocalStorage = true;
-        var savedGui = localStorage.getItem(getLocalStorageHash(this, 'gui'));
-        if (savedGui) {
-          params.load = JSON.parse(savedGui);
-        }
-      }
-    }
-    this.__closeButton = document.createElement('div');
-    this.__closeButton.innerHTML = GUI.TEXT_CLOSED;
-    dom.addClass(this.__closeButton, GUI.CLASS_CLOSE_BUTTON);
-    if (params.closeOnTop) {
-      dom.addClass(this.__closeButton, GUI.CLASS_CLOSE_TOP);
-      this.domElement.insertBefore(this.__closeButton, this.domElement.childNodes[0]);
-    } else {
-      dom.addClass(this.__closeButton, GUI.CLASS_CLOSE_BOTTOM);
-      this.domElement.appendChild(this.__closeButton);
-    }
-    dom.bind(this.__closeButton, 'click', function () {
-      _this.closed = !_this.closed;
-    });
-  } else {
-    if (params.closed === undefined) {
-      params.closed = true;
-    }
-    var titleRowName = document.createTextNode(params.name);
-    dom.addClass(titleRowName, 'controller-name');
-    titleRow = addRow(_this, titleRowName);
-    var onClickTitle = function onClickTitle(e) {
-      e.preventDefault();
-      _this.closed = !_this.closed;
-      return false;
-    };
-    dom.addClass(this.__ul, GUI.CLASS_CLOSED);
-    dom.addClass(titleRow, 'title');
-    dom.bind(titleRow, 'click', onClickTitle);
-    if (!params.closed) {
-      this.closed = false;
-    }
-  }
-  if (params.autoPlace) {
-    if (Common.isUndefined(params.parent)) {
-      if (autoPlaceVirgin) {
-        autoPlaceContainer = document.createElement('div');
-        dom.addClass(autoPlaceContainer, CSS_NAMESPACE);
-        dom.addClass(autoPlaceContainer, GUI.CLASS_AUTO_PLACE_CONTAINER);
-        document.body.appendChild(autoPlaceContainer);
-        autoPlaceVirgin = false;
-      }
-      autoPlaceContainer.appendChild(this.domElement);
-      dom.addClass(this.domElement, GUI.CLASS_AUTO_PLACE);
-    }
-    if (!this.parent) {
-      setWidth(_this, params.width);
-    }
-  }
-  this.__resizeHandler = function () {
-    _this.onResizeDebounced();
-  };
-  dom.bind(window, 'resize', this.__resizeHandler);
-  dom.bind(this.__ul, 'webkitTransitionEnd', this.__resizeHandler);
-  dom.bind(this.__ul, 'transitionend', this.__resizeHandler);
-  dom.bind(this.__ul, 'oTransitionEnd', this.__resizeHandler);
-  this.onResize();
-  if (params.resizable) {
-    addResizeHandle(this);
-  }
-  saveToLocalStorage = function saveToLocalStorage() {
-    if (SUPPORTS_LOCAL_STORAGE && localStorage.getItem(getLocalStorageHash(_this, 'isLocal')) === 'true') {
-      localStorage.setItem(getLocalStorageHash(_this, 'gui'), JSON.stringify(_this.getSaveObject()));
-    }
-  };
-  this.saveToLocalStorageIfPossible = saveToLocalStorage;
-  function resetWidth() {
-    var root = _this.getRoot();
-    root.width += 1;
-    Common.defer(function () {
-      root.width -= 1;
-    });
-  }
-  if (!params.parent) {
-    resetWidth();
-  }
-};
-GUI.toggleHide = function () {
-  hide = !hide;
-  Common.each(hideableGuis, function (gui) {
-    gui.domElement.style.display = hide ? 'none' : '';
-  });
-};
-GUI.CLASS_AUTO_PLACE = 'a';
-GUI.CLASS_AUTO_PLACE_CONTAINER = 'ac';
-GUI.CLASS_MAIN = 'main';
-GUI.CLASS_CONTROLLER_ROW = 'cr';
-GUI.CLASS_TOO_TALL = 'taller-than-window';
-GUI.CLASS_CLOSED = 'closed';
-GUI.CLASS_CLOSE_BUTTON = 'close-button';
-GUI.CLASS_CLOSE_TOP = 'close-top';
-GUI.CLASS_CLOSE_BOTTOM = 'close-bottom';
-GUI.CLASS_DRAG = 'drag';
-GUI.DEFAULT_WIDTH = 245;
-GUI.TEXT_CLOSED = 'Close Controls';
-GUI.TEXT_OPEN = 'Open Controls';
-GUI._keydownHandler = function (e) {
-  if (document.activeElement.type !== 'text' && (e.which === HIDE_KEY_CODE || e.keyCode === HIDE_KEY_CODE)) {
-    GUI.toggleHide();
-  }
-};
-dom.bind(window, 'keydown', GUI._keydownHandler, false);
-Common.extend(GUI.prototype,
-{
-  add: function add(object, property) {
-    return _add(this, object, property, {
-      factoryArgs: Array.prototype.slice.call(arguments, 2)
-    });
-  },
-  addColor: function addColor(object, property) {
-    return _add(this, object, property, {
-      color: true
-    });
-  },
-  remove: function remove(controller) {
-    this.__ul.removeChild(controller.__li);
-    this.__controllers.splice(this.__controllers.indexOf(controller), 1);
-    var _this = this;
-    Common.defer(function () {
-      _this.onResize();
-    });
-  },
-  destroy: function destroy() {
-    if (this.parent) {
-      throw new Error('Only the root GUI should be removed with .destroy(). ' + 'For subfolders, use gui.removeFolder(folder) instead.');
-    }
-    if (this.autoPlace) {
-      autoPlaceContainer.removeChild(this.domElement);
-    }
-    var _this = this;
-    Common.each(this.__folders, function (subfolder) {
-      _this.removeFolder(subfolder);
-    });
-    dom.unbind(window, 'keydown', GUI._keydownHandler, false);
-    removeListeners(this);
-  },
-  addFolder: function addFolder(name) {
-    if (this.__folders[name] !== undefined) {
-      throw new Error('You already have a folder in this GUI by the' + ' name "' + name + '"');
-    }
-    var newGuiParams = { name: name, parent: this };
-    newGuiParams.autoPlace = this.autoPlace;
-    if (this.load &&
-    this.load.folders &&
-    this.load.folders[name]) {
-      newGuiParams.closed = this.load.folders[name].closed;
-      newGuiParams.load = this.load.folders[name];
-    }
-    var gui = new GUI(newGuiParams);
-    this.__folders[name] = gui;
-    var li = addRow(this, gui.domElement);
-    dom.addClass(li, 'folder');
-    return gui;
-  },
-  removeFolder: function removeFolder(folder) {
-    this.__ul.removeChild(folder.domElement.parentElement);
-    delete this.__folders[folder.name];
-    if (this.load &&
-    this.load.folders &&
-    this.load.folders[folder.name]) {
-      delete this.load.folders[folder.name];
-    }
-    removeListeners(folder);
-    var _this = this;
-    Common.each(folder.__folders, function (subfolder) {
-      folder.removeFolder(subfolder);
-    });
-    Common.defer(function () {
-      _this.onResize();
-    });
-  },
-  open: function open() {
-    this.closed = false;
-  },
-  close: function close() {
-    this.closed = true;
-  },
-  hide: function hide() {
-    this.domElement.style.display = 'none';
-  },
-  show: function show() {
-    this.domElement.style.display = '';
-  },
-  onResize: function onResize() {
-    var root = this.getRoot();
-    if (root.scrollable) {
-      var top = dom.getOffset(root.__ul).top;
-      var h = 0;
-      Common.each(root.__ul.childNodes, function (node) {
-        if (!(root.autoPlace && node === root.__save_row)) {
-          h += dom.getHeight(node);
-        }
-      });
-      if (window.innerHeight - top - CLOSE_BUTTON_HEIGHT < h) {
-        dom.addClass(root.domElement, GUI.CLASS_TOO_TALL);
-        root.__ul.style.height = window.innerHeight - top - CLOSE_BUTTON_HEIGHT + 'px';
-      } else {
-        dom.removeClass(root.domElement, GUI.CLASS_TOO_TALL);
-        root.__ul.style.height = 'auto';
-      }
-    }
-    if (root.__resize_handle) {
-      Common.defer(function () {
-        root.__resize_handle.style.height = root.__ul.offsetHeight + 'px';
-      });
-    }
-    if (root.__closeButton) {
-      root.__closeButton.style.width = root.width + 'px';
-    }
-  },
-  onResizeDebounced: Common.debounce(function () {
-    this.onResize();
-  }, 50),
-  remember: function remember() {
-    if (Common.isUndefined(SAVE_DIALOGUE)) {
-      SAVE_DIALOGUE = new CenteredDiv();
-      SAVE_DIALOGUE.domElement.innerHTML = saveDialogContents;
-    }
-    if (this.parent) {
-      throw new Error('You can only call remember on a top level GUI.');
-    }
-    var _this = this;
-    Common.each(Array.prototype.slice.call(arguments), function (object) {
-      if (_this.__rememberedObjects.length === 0) {
-        addSaveMenu(_this);
-      }
-      if (_this.__rememberedObjects.indexOf(object) === -1) {
-        _this.__rememberedObjects.push(object);
-      }
-    });
-    if (this.autoPlace) {
-      setWidth(this, this.width);
-    }
-  },
-  getRoot: function getRoot() {
-    var gui = this;
-    while (gui.parent) {
-      gui = gui.parent;
-    }
-    return gui;
-  },
-  getSaveObject: function getSaveObject() {
-    var toReturn = this.load;
-    toReturn.closed = this.closed;
-    if (this.__rememberedObjects.length > 0) {
-      toReturn.preset = this.preset;
-      if (!toReturn.remembered) {
-        toReturn.remembered = {};
-      }
-      toReturn.remembered[this.preset] = getCurrentPreset(this);
-    }
-    toReturn.folders = {};
-    Common.each(this.__folders, function (element, key) {
-      toReturn.folders[key] = element.getSaveObject();
-    });
-    return toReturn;
-  },
-  save: function save() {
-    if (!this.load.remembered) {
-      this.load.remembered = {};
-    }
-    this.load.remembered[this.preset] = getCurrentPreset(this);
-    markPresetModified(this, false);
-    this.saveToLocalStorageIfPossible();
-  },
-  saveAs: function saveAs(presetName) {
-    if (!this.load.remembered) {
-      this.load.remembered = {};
-      this.load.remembered[DEFAULT_DEFAULT_PRESET_NAME] = getCurrentPreset(this, true);
-    }
-    this.load.remembered[presetName] = getCurrentPreset(this);
-    this.preset = presetName;
-    addPresetOption(this, presetName, true);
-    this.saveToLocalStorageIfPossible();
-  },
-  revert: function revert(gui) {
-    Common.each(this.__controllers, function (controller) {
-      if (!this.getRoot().load.remembered) {
-        controller.setValue(controller.initialValue);
-      } else {
-        recallSavedValue(gui || this.getRoot(), controller);
-      }
-      if (controller.__onFinishChange) {
-        controller.__onFinishChange.call(controller, controller.getValue());
-      }
-    }, this);
-    Common.each(this.__folders, function (folder) {
-      folder.revert(folder);
-    });
-    if (!gui) {
-      markPresetModified(this.getRoot(), false);
-    }
-  },
-  listen: function listen(controller) {
-    var init = this.__listening.length === 0;
-    this.__listening.push(controller);
-    if (init) {
-      updateDisplays(this.__listening);
-    }
-  },
-  updateDisplay: function updateDisplay() {
-    Common.each(this.__controllers, function (controller) {
-      controller.updateDisplay();
-    });
-    Common.each(this.__folders, function (folder) {
-      folder.updateDisplay();
-    });
-  }
-});
-function addRow(gui, newDom, liBefore) {
-  var li = document.createElement('li');
-  if (newDom) {
-    li.appendChild(newDom);
-  }
-  if (liBefore) {
-    gui.__ul.insertBefore(li, liBefore);
-  } else {
-    gui.__ul.appendChild(li);
-  }
-  gui.onResize();
-  return li;
-}
-function removeListeners(gui) {
-  dom.unbind(window, 'resize', gui.__resizeHandler);
-  if (gui.saveToLocalStorageIfPossible) {
-    dom.unbind(window, 'unload', gui.saveToLocalStorageIfPossible);
-  }
-}
-function markPresetModified(gui, modified) {
-  var opt = gui.__preset_select[gui.__preset_select.selectedIndex];
-  if (modified) {
-    opt.innerHTML = opt.value + '*';
-  } else {
-    opt.innerHTML = opt.value;
-  }
-}
-function augmentController(gui, li, controller) {
-  controller.__li = li;
-  controller.__gui = gui;
-  Common.extend(controller, {
-    options: function options(_options) {
-      if (arguments.length > 1) {
-        var nextSibling = controller.__li.nextElementSibling;
-        controller.remove();
-        return _add(gui, controller.object, controller.property, {
-          before: nextSibling,
-          factoryArgs: [Common.toArray(arguments)]
-        });
-      }
-      if (Common.isArray(_options) || Common.isObject(_options)) {
-        var _nextSibling = controller.__li.nextElementSibling;
-        controller.remove();
-        return _add(gui, controller.object, controller.property, {
-          before: _nextSibling,
-          factoryArgs: [_options]
-        });
-      }
-    },
-    name: function name(_name) {
-      controller.__li.firstElementChild.firstElementChild.innerHTML = _name;
-      return controller;
-    },
-    listen: function listen() {
-      controller.__gui.listen(controller);
-      return controller;
-    },
-    remove: function remove() {
-      controller.__gui.remove(controller);
-      return controller;
-    }
-  });
-  if (controller instanceof NumberControllerSlider) {
-    var box = new NumberControllerBox(controller.object, controller.property, { min: controller.__min, max: controller.__max, step: controller.__step });
-    Common.each(['updateDisplay', 'onChange', 'onFinishChange', 'step', 'min', 'max'], function (method) {
-      var pc = controller[method];
-      var pb = box[method];
-      controller[method] = box[method] = function () {
-        var args = Array.prototype.slice.call(arguments);
-        pb.apply(box, args);
-        return pc.apply(controller, args);
-      };
-    });
-    dom.addClass(li, 'has-slider');
-    controller.domElement.insertBefore(box.domElement, controller.domElement.firstElementChild);
-  } else if (controller instanceof NumberControllerBox) {
-    var r = function r(returned) {
-      if (Common.isNumber(controller.__min) && Common.isNumber(controller.__max)) {
-        var oldName = controller.__li.firstElementChild.firstElementChild.innerHTML;
-        var wasListening = controller.__gui.__listening.indexOf(controller) > -1;
-        controller.remove();
-        var newController = _add(gui, controller.object, controller.property, {
-          before: controller.__li.nextElementSibling,
-          factoryArgs: [controller.__min, controller.__max, controller.__step]
-        });
-        newController.name(oldName);
-        if (wasListening) newController.listen();
-        return newController;
-      }
-      return returned;
-    };
-    controller.min = Common.compose(r, controller.min);
-    controller.max = Common.compose(r, controller.max);
-  } else if (controller instanceof BooleanController) {
-    dom.bind(li, 'click', function () {
-      dom.fakeEvent(controller.__checkbox, 'click');
-    });
-    dom.bind(controller.__checkbox, 'click', function (e) {
-      e.stopPropagation();
-    });
-  } else if (controller instanceof FunctionController) {
-    dom.bind(li, 'click', function () {
-      dom.fakeEvent(controller.__button, 'click');
-    });
-    dom.bind(li, 'mouseover', function () {
-      dom.addClass(controller.__button, 'hover');
-    });
-    dom.bind(li, 'mouseout', function () {
-      dom.removeClass(controller.__button, 'hover');
-    });
-  } else if (controller instanceof ColorController) {
-    dom.addClass(li, 'color');
-    controller.updateDisplay = Common.compose(function (val) {
-      li.style.borderLeftColor = controller.__color.toString();
-      return val;
-    }, controller.updateDisplay);
-    controller.updateDisplay();
-  }
-  controller.setValue = Common.compose(function (val) {
-    if (gui.getRoot().__preset_select && controller.isModified()) {
-      markPresetModified(gui.getRoot(), true);
-    }
-    return val;
-  }, controller.setValue);
-}
-function recallSavedValue(gui, controller) {
-  var root = gui.getRoot();
-  var matchedIndex = root.__rememberedObjects.indexOf(controller.object);
-  if (matchedIndex !== -1) {
-    var controllerMap = root.__rememberedObjectIndecesToControllers[matchedIndex];
-    if (controllerMap === undefined) {
-      controllerMap = {};
-      root.__rememberedObjectIndecesToControllers[matchedIndex] = controllerMap;
-    }
-    controllerMap[controller.property] = controller;
-    if (root.load && root.load.remembered) {
-      var presetMap = root.load.remembered;
-      var preset = void 0;
-      if (presetMap[gui.preset]) {
-        preset = presetMap[gui.preset];
-      } else if (presetMap[DEFAULT_DEFAULT_PRESET_NAME]) {
-        preset = presetMap[DEFAULT_DEFAULT_PRESET_NAME];
-      } else {
-        return;
-      }
-      if (preset[matchedIndex] && preset[matchedIndex][controller.property] !== undefined) {
-        var value = preset[matchedIndex][controller.property];
-        controller.initialValue = value;
-        controller.setValue(value);
-      }
-    }
-  }
-}
-function _add(gui, object, property, params) {
-  if (object[property] === undefined) {
-    throw new Error('Object "' + object + '" has no property "' + property + '"');
-  }
-  var controller = void 0;
-  if (params.color) {
-    controller = new ColorController(object, property);
-  } else {
-    var factoryArgs = [object, property].concat(params.factoryArgs);
-    controller = ControllerFactory.apply(gui, factoryArgs);
-  }
-  if (params.before instanceof Controller) {
-    params.before = params.before.__li;
-  }
-  recallSavedValue(gui, controller);
-  dom.addClass(controller.domElement, 'c');
-  var name = document.createElement('span');
-  dom.addClass(name, 'property-name');
-  name.innerHTML = controller.property;
-  var container = document.createElement('div');
-  container.appendChild(name);
-  container.appendChild(controller.domElement);
-  var li = addRow(gui, container, params.before);
-  dom.addClass(li, GUI.CLASS_CONTROLLER_ROW);
-  if (controller instanceof ColorController) {
-    dom.addClass(li, 'color');
-  } else {
-    dom.addClass(li, _typeof(controller.getValue()));
-  }
-  augmentController(gui, li, controller);
-  gui.__controllers.push(controller);
-  return controller;
-}
-function getLocalStorageHash(gui, key) {
-  return document.location.href + '.' + key;
-}
-function addPresetOption(gui, name, setSelected) {
-  var opt = document.createElement('option');
-  opt.innerHTML = name;
-  opt.value = name;
-  gui.__preset_select.appendChild(opt);
-  if (setSelected) {
-    gui.__preset_select.selectedIndex = gui.__preset_select.length - 1;
-  }
-}
-function showHideExplain(gui, explain) {
-  explain.style.display = gui.useLocalStorage ? 'block' : 'none';
-}
-function addSaveMenu(gui) {
-  var div = gui.__save_row = document.createElement('li');
-  dom.addClass(gui.domElement, 'has-save');
-  gui.__ul.insertBefore(div, gui.__ul.firstChild);
-  dom.addClass(div, 'save-row');
-  var gears = document.createElement('span');
-  gears.innerHTML = '&nbsp;';
-  dom.addClass(gears, 'button gears');
-  var button = document.createElement('span');
-  button.innerHTML = 'Save';
-  dom.addClass(button, 'button');
-  dom.addClass(button, 'save');
-  var button2 = document.createElement('span');
-  button2.innerHTML = 'New';
-  dom.addClass(button2, 'button');
-  dom.addClass(button2, 'save-as');
-  var button3 = document.createElement('span');
-  button3.innerHTML = 'Revert';
-  dom.addClass(button3, 'button');
-  dom.addClass(button3, 'revert');
-  var select = gui.__preset_select = document.createElement('select');
-  if (gui.load && gui.load.remembered) {
-    Common.each(gui.load.remembered, function (value, key) {
-      addPresetOption(gui, key, key === gui.preset);
-    });
-  } else {
-    addPresetOption(gui, DEFAULT_DEFAULT_PRESET_NAME, false);
-  }
-  dom.bind(select, 'change', function () {
-    for (var index = 0; index < gui.__preset_select.length; index++) {
-      gui.__preset_select[index].innerHTML = gui.__preset_select[index].value;
-    }
-    gui.preset = this.value;
-  });
-  div.appendChild(select);
-  div.appendChild(gears);
-  div.appendChild(button);
-  div.appendChild(button2);
-  div.appendChild(button3);
-  if (SUPPORTS_LOCAL_STORAGE) {
-    var explain = document.getElementById('dg-local-explain');
-    var localStorageCheckBox = document.getElementById('dg-local-storage');
-    var saveLocally = document.getElementById('dg-save-locally');
-    saveLocally.style.display = 'block';
-    if (localStorage.getItem(getLocalStorageHash(gui, 'isLocal')) === 'true') {
-      localStorageCheckBox.setAttribute('checked', 'checked');
-    }
-    showHideExplain(gui, explain);
-    dom.bind(localStorageCheckBox, 'change', function () {
-      gui.useLocalStorage = !gui.useLocalStorage;
-      showHideExplain(gui, explain);
-    });
-  }
-  var newConstructorTextArea = document.getElementById('dg-new-constructor');
-  dom.bind(newConstructorTextArea, 'keydown', function (e) {
-    if (e.metaKey && (e.which === 67 || e.keyCode === 67)) {
-      SAVE_DIALOGUE.hide();
-    }
-  });
-  dom.bind(gears, 'click', function () {
-    newConstructorTextArea.innerHTML = JSON.stringify(gui.getSaveObject(), undefined, 2);
-    SAVE_DIALOGUE.show();
-    newConstructorTextArea.focus();
-    newConstructorTextArea.select();
-  });
-  dom.bind(button, 'click', function () {
-    gui.save();
-  });
-  dom.bind(button2, 'click', function () {
-    var presetName = prompt('Enter a new preset name.');
-    if (presetName) {
-      gui.saveAs(presetName);
-    }
-  });
-  dom.bind(button3, 'click', function () {
-    gui.revert();
-  });
-}
-function addResizeHandle(gui) {
-  var pmouseX = void 0;
-  gui.__resize_handle = document.createElement('div');
-  Common.extend(gui.__resize_handle.style, {
-    width: '6px',
-    marginLeft: '-3px',
-    height: '200px',
-    cursor: 'ew-resize',
-    position: 'absolute'
-  });
-  function drag(e) {
-    e.preventDefault();
-    gui.width += pmouseX - e.clientX;
-    gui.onResize();
-    pmouseX = e.clientX;
-    return false;
-  }
-  function dragStop() {
-    dom.removeClass(gui.__closeButton, GUI.CLASS_DRAG);
-    dom.unbind(window, 'mousemove', drag);
-    dom.unbind(window, 'mouseup', dragStop);
-  }
-  function dragStart(e) {
-    e.preventDefault();
-    pmouseX = e.clientX;
-    dom.addClass(gui.__closeButton, GUI.CLASS_DRAG);
-    dom.bind(window, 'mousemove', drag);
-    dom.bind(window, 'mouseup', dragStop);
-    return false;
-  }
-  dom.bind(gui.__resize_handle, 'mousedown', dragStart);
-  dom.bind(gui.__closeButton, 'mousedown', dragStart);
-  gui.domElement.insertBefore(gui.__resize_handle, gui.domElement.firstElementChild);
-}
-function setWidth(gui, w) {
-  gui.domElement.style.width = w + 'px';
-  if (gui.__save_row && gui.autoPlace) {
-    gui.__save_row.style.width = w + 'px';
-  }
-  if (gui.__closeButton) {
-    gui.__closeButton.style.width = w + 'px';
-  }
-}
-function getCurrentPreset(gui, useInitialValues) {
-  var toReturn = {};
-  Common.each(gui.__rememberedObjects, function (val, index) {
-    var savedValues = {};
-    var controllerMap = gui.__rememberedObjectIndecesToControllers[index];
-    Common.each(controllerMap, function (controller, property) {
-      savedValues[property] = useInitialValues ? controller.initialValue : controller.getValue();
-    });
-    toReturn[index] = savedValues;
-  });
-  return toReturn;
-}
-function setPresetSelectIndex(gui) {
-  for (var index = 0; index < gui.__preset_select.length; index++) {
-    if (gui.__preset_select[index].value === gui.preset) {
-      gui.__preset_select.selectedIndex = index;
-    }
-  }
-}
-function updateDisplays(controllerArray) {
-  if (controllerArray.length !== 0) {
-    requestAnimationFrame$1$1.call(window, function () {
-      updateDisplays(controllerArray);
-    });
-  }
-  Common.each(controllerArray, function (c) {
-    c.updateDisplay();
-  });
-}
-
-var color = {
-  Color: Color,
-  math: ColorMath,
-  interpret: interpret
-};
-var controllers = {
-  Controller: Controller,
-  BooleanController: BooleanController,
-  OptionController: OptionController,
-  StringController: StringController,
-  NumberController: NumberController,
-  NumberControllerBox: NumberControllerBox,
-  NumberControllerSlider: NumberControllerSlider,
-  FunctionController: FunctionController,
-  ColorController: ColorController
-};
-var dom$1 = { dom: dom };
-var gui = { GUI: GUI };
-var GUI$1 = GUI;
-var index = {
-  color: color,
-  controllers: controllers,
-  dom: dom$1,
-  gui: gui,
-  GUI: GUI$1
-};
-
-var dat_gui = /*#__PURE__*/Object.freeze({
-__proto__: null,
-GUI: GUI$1,
-color: color,
-controllers: controllers,
-default: index,
-dom: dom$1,
-gui: gui
-});
-
 /** @summary Draw TText
   * @private */
 async function drawText$1() {
@@ -103885,7 +103731,7 @@ class TGraph2DPainter extends ObjectPainter {
 
          if (line && (iline > 3) && (line.length == iline)) {
             let lcolor = this.getColor(graph.fLineColor),
-                material = new LineBasicMaterial({ color: new Color$1(lcolor), linewidth: graph.fLineWidth }),
+                material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: graph.fLineWidth }),
                 linemesh = createLineSegments(line, material);
             fp.toplevel.add(linemesh);
 
@@ -103903,7 +103749,7 @@ class TGraph2DPainter extends ObjectPainter {
 
          if (err) {
             let lcolor = this.getColor(graph.fLineColor),
-                material = new LineBasicMaterial({ color: new Color$1(lcolor), linewidth: graph.fLineWidth }),
+                material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: graph.fLineWidth }),
                 errmesh = createLineSegments(err, material);
             fp.toplevel.add(errmesh);
 
