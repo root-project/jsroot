@@ -534,6 +534,7 @@ class TGeoPainter extends ObjectPainter {
          highlight: 0,
          highlight_bloom: 0,
          highlight_scene: 0,
+         highlight_color: '#00ff00',
          bloom_strength: 1.5,
          info: { num_meshes: 0, num_faces: 0, num_shapes: 0 },
          depthTest: true,
@@ -1432,17 +1433,21 @@ class TGeoPainter extends ObjectPainter {
 
       // Appearance Options
 
-      let appearance = this._gui.addFolder('Appearance');
+      let appearance = this._gui.addFolder('Appearance'), strength;
 
       this.ctrl._highlight = !this.ctrl.highlight ? 0 : this.ctrl.highlight_bloom ? 2 : 1;
       appearance.add(this.ctrl, '_highlight', { none: 0, normal: 1, bloom: 2 }).name('Highlight Selection')
-                .listen().onChange(() => this.changedHighlight(this.ctrl._highlight));
+                .listen().onChange(() => {
+                   this.changedHighlight(this.ctrl._highlight);
+                   strength.show(this.ctrl._highlight == 2);
+                });
 
-      appearance.add(this.ctrl, 'bloom_strength', 0, 3).name('Bloom strength')
-               .listen().onChange(() => this.changedHighlight());
+      strength = appearance.add(this.ctrl, 'bloom_strength', 0, 3).name('Bloom strength')
+                               .listen().onChange(() => this.changedHighlight());
 
       appearance.add(this.ctrl, 'transparency', 0, 1, 0.001)
                      .listen().onChange(value => this.changedGlobalTransparency(value));
+      appearance.addColor(this.ctrl, 'highlight_color').name('Color');
 
       appearance.addColor(this.ctrl, 'background').name('Background')
                 .onChange(col => this.changedBackground(col));
@@ -1899,7 +1904,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (active_mesh)
          for (let k = 0; k < active_mesh.length; ++k)
-            get_ctrl(active_mesh[k]).setHighlight(color || 0x00ff00, geo_index);
+            get_ctrl(active_mesh[k]).setHighlight(color || new Color(this.ctrl.highlight_color), geo_index);
 
       this.render3D(0);
 
@@ -4874,7 +4879,7 @@ class TGeoPainter extends ObjectPainter {
 
          this.addOrbitControls();
 
-         if (first_time) {
+         if (first_time && !this.isBatchMode()) {
 
             // after first draw check if highlight can be enabled
             if (this.ctrl.highlight === 0)
@@ -4890,7 +4895,7 @@ class TGeoPainter extends ObjectPainter {
 
             // if rotation was enabled, do it
             if (this._webgl && this.ctrl.rotate && !this.ctrl.project) this.autorotate(2.5);
-            if (this._webgl && this.ctrl.show_controls && !this.isBatchMode()) this.showControlGui(true);
+            if (this._webgl && this.ctrl.show_controls) this.showControlGui(true);
          }
 
          this.setAsMainPainter();
