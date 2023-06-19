@@ -544,6 +544,8 @@ class TGeoPainter extends ObjectPainter {
          light: { kind: 'points', top: false, bottom: false, left: false, right: false, front: false, specular: true, power: 1 },
          trans_radial: 0,
          trans_z: 0,
+         scale: new Vector3(1,1,1),
+         zoom: 1.0, rotatey: 0, rotatez: 0,
          depthMethodItems: [
             { name: 'Default', value: 'dflt' },
             { name: 'Raytraicing', value: 'ray' },
@@ -573,7 +575,15 @@ class TGeoPainter extends ObjectPainter {
             { name: 'Grid background', value: 'gridb' },
             { name: 'Grid foreground', value: 'gridf' }
          ],
-         material: { kind: 'lambert' },
+         camera_kind: 'perspective',
+         camera_overlay: 'gridb',
+         rotate: false,
+         background: '#FFFFFF',
+         can_rotate: true,
+         _axis: 0,
+         instancing: 0,
+         _count: false,
+         material: { kind: 'lambert', transparency: 0, wireframe: false },
          materialKinds: [
             { name: 'MeshLambertMaterial', value: 'lambert' },
             { name: 'MeshBasicMaterial', value: 'basic' }
@@ -856,7 +866,9 @@ class TGeoPainter extends ObjectPainter {
       if (this.superimpose && (opt.indexOf('same') == 0))
          opt = opt.slice(4);
 
-      let res = { _axis: 0, instancing: 0,
+      let res = this.ctrl;
+
+/*      let res = { _axis: 0, instancing: 0,
                   _count: false, wireframe: false,
                    scale: new Vector3(1,1,1), zoom: 1.0, rotatey: 0, rotatez: 0,
                    more: 1, maxfaces: 0,
@@ -865,10 +877,10 @@ class TGeoPainter extends ObjectPainter {
                    highlight: 0, highlight_scene: 0, highlight_bloom: 0,
                    no_screen: false, project: '', projectPos: undefined,
                    is_main: false, tracks: false, showtop: false, can_rotate: true,
-                   camera_kind: 'perspective', camera_overlay: 'gridb',
-                   clipx: false, clipy: false, clipz: false, outline: false,
+                   outline: false,
                    script_name: '', transparency: 0, rotate: false, background: '#FFFFFF',
                    depthMethod: 'dflt', mouse_tmout: 50, trans_radial: 0, trans_z: 0 };
+*/
 
       let macro = opt.indexOf('macro:');
       if (macro >= 0) {
@@ -966,11 +978,11 @@ class TGeoPainter extends ObjectPainter {
 
       if (d.check('CONTROLS') || d.check('CTRL')) res.show_controls = true;
 
-      if (d.check('CLIPXYZ')) res.clipx = res.clipy = res.clipz = true;
-      if (d.check('CLIPX')) res.clipx = true;
-      if (d.check('CLIPY')) res.clipy = true;
-      if (d.check('CLIPZ')) res.clipz = true;
-      if (d.check('CLIP')) res.clipx = res.clipy = res.clipz = true;
+      if (d.check('CLIPXYZ')) res.clip[0].enabled = res.clip[1].enabled = res.clip[2].enabled = true;
+      if (d.check('CLIPX')) res.clip[0].enabled = true;
+      if (d.check('CLIPY')) res.clip[1].enabled = true;
+      if (d.check('CLIPZ')) res.clip[2].enabled = true;
+      if (d.check('CLIP')) res.clip[0].enabled = res.clip[1].enabled = res.clip[2].enabled = true;
 
       if (d.check('PROJX', true)) { res.project = 'x'; if (d.partAsInt(1) > 0) res.projectPos = d.partAsInt(); res.can_rotate = 0; }
       if (d.check('PROJY', true)) { res.project = 'y'; if (d.partAsInt(1) > 0) res.projectPos = d.partAsInt(); res.can_rotate = 0; }
@@ -1001,10 +1013,10 @@ class TGeoPainter extends ObjectPainter {
       if (d.check('COUNT')) res._count = true;
 
       if (d.check('TRANSP',true))
-         res.transparency = d.partAsInt(0,100)/100;
+         res.material.transparency = d.partAsInt(0,100)/100;
 
       if (d.check('OPACITY',true))
-         res.transparency = 1 - d.partAsInt(0,100)/100;
+         res.material.transparency = 1 - d.partAsInt(0,100)/100;
 
       if (d.check('AXISCENTER') || d.check('AXISC') || d.check('AC')) res._axis = 2;
       if (d.check('AXIS') || d.check('A')) res._axis = 1;
@@ -1021,7 +1033,8 @@ class TGeoPainter extends ObjectPainter {
       if (res._yup === undefined)
          res._yup = this.getCanvSvg().empty();
 
-      return res;
+      // let reuse for storing origin options
+      this.options = res;
    }
 
    /** @summary Activate specified items in the browser */
@@ -1113,7 +1126,7 @@ class TGeoPainter extends ObjectPainter {
       if (this.geo_manager)
          menu.addchk(this.ctrl.showtop, 'Show top volume', () => this.setShowTop(!this.ctrl.showtop));
 
-      menu.addchk(this.ctrl.wireframe, 'Wire frame', () => this.toggleWireFrame());
+      menu.addchk(this.ctrl.material.wireframe, 'Wire frame', () => this.toggleWireFrame());
 
       if(!this.getCanvPainter())
          menu.addchk(this.isTooltipAllowed(), 'Show tooltips', () => this.setTooltipAllowed('toggle'));
@@ -1192,7 +1205,7 @@ class TGeoPainter extends ObjectPainter {
    changedGlobalTransparency(transparency, skip_render) {
       let func = isFunc(transparency) ? transparency : null;
       if (func || (transparency === undefined))
-         transparency = this.ctrl.transparency;
+         transparency = this.ctrl.material.transparency;
 
       this._toplevel?.traverse(node => {
          // ignore all kind of extra elements
@@ -1215,23 +1228,13 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Method used to interactively change material kinds */
    changedMaterial() {
 
-      let transparency = this.ctrl.transparency;
-
       this._toplevel?.traverse(node => {
          // ignore all kind of extra elements
-         if ((node.material?.inherentOpacity === undefined) || (node.material?.inherentArgs === undefined))
-            return;
-
-         node.material = createMaterial(this.ctrl.material, node.material.inherentArgs);
-
-         if (transparency) {
-            node.material.opacity = Math.min(1 - (transparency || 0), node.material.inherentOpacity);
-            node.material.depthWrite = node.material.opacity == 1;
-            node.material.transparent = node.material.opacity < 1;
-         }
+         if (node.material?.inherentArgs !== undefined)
+            node.material = createMaterial(this.ctrl.material, node.material.inherentArgs);
       });
 
-      this.render3D(-1);
+      this.render3D();
    }
 
    /** @summary Reset transformation */
@@ -1503,10 +1506,10 @@ class TGeoPainter extends ObjectPainter {
 
       });
 
-      material.add(this.ctrl, 'transparency', 0, 1, 0.001).name('Transparency')
+      material.add(this.ctrl.material, 'transparency', 0, 1, 0.001).name('Transparency')
               .listen().onChange(value => this.changedGlobalTransparency(value));
 
-      material.add(this.ctrl, 'wireframe').name('Wireframe')
+      material.add(this.ctrl.material, 'wireframe').name('Wireframe')
               .listen().onChange(() => this.changedWireFrame());
 
       // Camera options
@@ -3833,7 +3836,6 @@ class TGeoPainter extends ObjectPainter {
          // normally only need when making selection, not used in geo viewer
          // this.geo_clones.setMaxVisNodes(draw_msg.maxvisnodes);
          // this.geo_clones.setVisLevel(draw_msg.vislevel);
-         // parameter need for visualization with transparency
          // TODO: provide from server
          this._clones.maxdepth = 20;
       }
@@ -3917,7 +3919,7 @@ class TGeoPainter extends ObjectPainter {
          if (!this._scene)
             console.log(`Creating clones ${this._clones.nodes.length} takes ${spent} ms uniquevis ${uniquevis}`);
 
-         if (this.options._count)
+         if (this.ctrl._count)
             return this.drawCount(uniquevis, spent);
       }
 
@@ -4747,13 +4749,13 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Toggle wireframe mode */
    toggleWireFrame() {
-      this.ctrl.wireframe = !this.ctrl.wireframe;
+      this.ctrl.material.wireframe = !this.ctrl.material.wireframe;
       this.changedWireFrame();
    }
 
    /** @summary Specify wireframe mode */
    setWireFrame(on) {
-      this.ctrl.wireframe = on ? true : false;
+      this.ctrl.material.wireframe = on ? true : false;
       this.changedWireFrame();
    }
 
@@ -4898,9 +4900,6 @@ class TGeoPainter extends ObjectPainter {
             first_time = true;
             full_redraw = true;
          }
-
-         if (this.ctrl.transparency !== 0)
-            this.changedGlobalTransparency(this.ctrl.transparency, true);
 
          if (first_time)
             this.completeScene();
@@ -5182,11 +5181,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary handle wireframe flag change in GUI
      * @private */
    changedWireFrame() {
-      if (!this._scene) return;
-
-      let on = this.ctrl.wireframe;
-
-      this._scene.traverse(obj => this.accessObjectWireFrame(obj, on));
+      this._scene?.traverse(obj => this.accessObjectWireFrame(obj, this.ctrl.material.wireframe));
 
       this.render3D();
    }
@@ -5418,15 +5413,7 @@ function createGeoPainter(dom, obj, opt) {
 
    let painter = new TGeoPainter(dom, obj);
 
-   painter.options = painter.decodeOptions(opt); // indicator of initialization
-
-   // copy all attributes from options to control
-   Object.assign(painter.ctrl, painter.options);
-
-   // special handling for array of clips
-   painter.ctrl.clip[0].enabled = painter.options.clipx;
-   painter.ctrl.clip[1].enabled = painter.options.clipy;
-   painter.ctrl.clip[2].enabled = painter.options.clipz;
+   painter.decodeOptions(opt); // indicator of initialization
 
    return painter;
 }
@@ -5734,6 +5721,7 @@ function drawAxis3D() {
   * @param {Number} [opt.instancing=-1] - <0 disable use of InstancedMesh, =0 only for large geometries, >0 enforce usage of InstancedMesh
   * @param {boolean} [opt.doubleside=false] - use double-side material
   * @param {boolean} [opt.wireframe=false] - show wireframe for created shapes
+  * @param {boolean} [opt.transparency=0] - make nodes transparent
   * @param {boolean} [opt.dflt_colors=false] - use default ROOT colors
   * @return {object} Object3D with created model
   * @example
@@ -5774,7 +5762,6 @@ function build(obj, opt) {
       // normally only need when making selection, not used in geo viewer
       // this.geo_clones.setMaxVisNodes(draw_msg.maxvisnodes);
       // this.geo_clones.setVisLevel(draw_msg.vislevel);
-      // parameter need for visualization with transparency
       // TODO: provide from server
       clones.maxdepth = 20;
 
@@ -5841,7 +5828,7 @@ function build(obj, opt) {
       visibles = res.lst;
    }
 
-   clones.setMaterialConfig({ kind: 'lambert' });
+   clones.setMaterialConfig({ kind: 'lambert', wireframe: opt.wireframe ?? false, transparency: opt.transparency ?? 0 });
 
    // collect shapes
    let shapes = clones.collectShapes(visibles);

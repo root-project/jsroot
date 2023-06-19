@@ -2281,11 +2281,16 @@ function createMaterial(cfg, args0) {
    if (args.opacity === undefined)
       args.opacity = 1;
 
+   if (cfg.transparency)
+      args.opacity = Math.min(1 - cfg.transparency, args.opacity);
+
    args.wireframe = cfg.wireframe ?? false;
    if (!args.color) args.color = 'red';
    args.side = FrontSide;
    args.transparent = args.opacity < 1;
    args.depthWrite = args.opactity == 1;
+
+
 
    let material;
 
@@ -2296,7 +2301,7 @@ function createMaterial(cfg, args0) {
       material = new MeshLambertMaterial(args);
    }
 
-   material.inherentOpacity = args.opacity;
+   material.inherentOpacity = args0.opacity ?? 1;
    material.inherentArgs = args0;
 
    return material;
