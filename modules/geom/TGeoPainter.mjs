@@ -530,10 +530,12 @@ class TGeoPainter extends ObjectPainter {
          clip: [{ name: 'x', enabled: false, value: 0, min: -100, max: 100 },
                 { name: 'y', enabled: false, value: 0, min: -100, max: 100 },
                 { name: 'z', enabled: false, value: 0, min: -100, max: 100 }],
-         bloom: { enabled: true, strength: 1.5 },
+         _highlight: 0,
+         highlight: 0,
+         highlight_bloom: 0,
+         highlight_scene: 0,
+         bloom_strength: 1.5,
          info: { num_meshes: 0, num_faces: 0, num_shapes: 0 },
-         highlight: false,
-         highlight_scene: false,
          depthTest: true,
          depthMethod: 'dflt',
          select_in_view: false,
@@ -854,11 +856,11 @@ class TGeoPainter extends ObjectPainter {
                    more: 1, maxfaces: 0,
                    vislevel: undefined, maxnodes: undefined, dflt_colors: false,
                    use_worker: false, show_controls: false,
-                   highlight: false, highlight_scene: false, no_screen: false,
-                   project: '', projectPos: undefined,
+                   highlight: 0, highlight_scene: 0, highlight_bloom: 0,
+                   no_screen: false, project: '', projectPos: undefined,
                    is_main: false, tracks: false, showtop: false, can_rotate: true,
                    camera_kind: 'perspective', camera_overlay: 'gridb',
-                   clipx: false, clipy: false, clipz: false, usebloom: true, outline: false,
+                   clipx: false, clipy: false, clipz: false, outline: false,
                    script_name: '', transparency: 0, rotate: false, background: '#FFFFFF',
                    depthMethod: 'dflt', mouse_tmout: 50, trans_radial: 0, trans_z: 0 };
 
@@ -970,17 +972,17 @@ class TGeoPainter extends ObjectPainter {
 
       if (d.check('DFLT_COLORS') || d.check('DFLT')) res.dflt_colors = true;
       d.check('SSAO'); // deprecated
-      if (d.check('NOBLOOM')) res.usebloom = false;
-      if (d.check('BLOOM')) res.usebloom = true;
+      if (d.check('NOBLOOM')) res.highlight_bloom = false;
+      if (d.check('BLOOM')) res.highlight_bloom = true;
       if (d.check('OUTLINE')) res.outline = true;
 
       if (d.check('NOWORKER')) res.use_worker = -1;
       if (d.check('WORKER')) res.use_worker = 1;
 
-      if (d.check('NOHIGHLIGHT') || d.check('NOHIGH')) res.highlight_scene = res.highlight = 0;
+      if (d.check('NOHIGHLIGHT') || d.check('NOHIGH')) res.highlight_scene = res.highlight = false;
       if (d.check('HIGHLIGHT')) res.highlight_scene = res.highlight = true;
-      if (d.check('HSCENEONLY')) { res.highlight_scene = true; res.highlight = 0; }
-      if (d.check('NOHSCENE')) res.highlight_scene = 0;
+      if (d.check('HSCENEONLY')) { res.highlight_scene = true; res.highlight = false; }
+      if (d.check('NOHSCENE')) res.highlight_scene = false;
       if (d.check('HSCENE')) res.highlight_scene = true;
 
       if (d.check('WIREFRAME') || d.check('WIRE')) res.wireframe = true;
@@ -1110,12 +1112,31 @@ class TGeoPainter extends ObjectPainter {
       if(!this.getCanvPainter())
          menu.addchk(this.isTooltipAllowed(), 'Show tooltips', () => this.setTooltipAllowed('toggle'));
 
-      menu.addchk(this.ctrl.highlight, 'Highlight volumes', () => {
-         this.ctrl.highlight = !this.ctrl.highlight;
+      menu.add('sub:Highlight');
+
+      menu.addchk(!this.ctrl.highlight, 'Off', () => {
+         this.ctrl.highlight = false;
+         this.changedHighlight();
       });
-      menu.addchk(this.ctrl.highlight_scene, 'Highlight scene', () => {
-         this.ctrl.highlight_scene = !this.ctrl.highlight_scene;
+      menu.addchk(this.ctrl.highlight && !this.ctrl.highlight_bloom, 'Normal', () => {
+         this.ctrl.highlight = true;
+         this.ctrl.highlight_bloom = false;
+         this.changedHighlight();
       });
+      menu.addchk(this.ctrl.highlight && this.ctrl.highlight_bloom, 'Bloom', () => {
+         this.ctrl.highlight = true;
+         this.ctrl.highlight_bloom = true;
+         this.changedHighlight();
+      });
+
+      menu.add('separator');
+
+      menu.addchk(this.ctrl.highlight_scene, 'Scene', flag => {
+         this.ctrl.highlight_scene = flag;
+         this.changedHighlight();
+      });
+
+      menu.add('endsub:');
 
       menu.add('sub:Camera');
       menu.add('Reset position', () => this.focusCamera());
@@ -1342,7 +1363,8 @@ class TGeoPainter extends ObjectPainter {
       if (main.style('position') == 'static')
          main.style('position', 'relative');
 
-      this._gui = new GUI({ container: main.node(), closeFolders: true, width: Math.min(650, this._renderer.domElement.width / 2) });
+      this._gui = new GUI({ container: main.node(), closeFolders: true, width: Math.min(650, this._renderer.domElement.width / 2),
+                            title: 'Settings' });
 
       let dom = this._gui.domElement;
       dom.style.position = 'absolute';
@@ -1412,8 +1434,12 @@ class TGeoPainter extends ObjectPainter {
 
       let appearance = this._gui.addFolder('Appearance');
 
-      appearance.add(this.ctrl, 'highlight').name('Highlight Selection')
-                .listen().onChange(() => this.changedHighlight());
+      this.ctrl._highlight = !this.ctrl.highlight ? 0 : this.ctrl.highlight_bloom ? 2 : 1;
+      appearance.add(this.ctrl, '_highlight', { none: 0, normal: 1, bloom: 2 }).name('Highlight Selection')
+                .listen().onChange(() => this.changedHighlight(this.ctrl._highlight));
+
+      appearance.add(this.ctrl, 'bloom_strength', 0, 3).name('Bloom strength')
+               .listen().onChange(() => this.changedHighlight());
 
       appearance.add(this.ctrl, 'transparency', 0, 1, 0.001)
                      .listen().onChange(value => this.changedGlobalTransparency(value));
@@ -1478,28 +1504,27 @@ class TGeoPainter extends ObjectPainter {
          if (this.ctrl.trans_z || this.ctrl.trans_radial) transform.open();
       }
 
-      let blooming = this._gui.addFolder('Unreal Bloom');
-
-      blooming.add(this.ctrl.bloom, 'enabled').name('Enable Blooming')
-              .listen().onChange(() => this.changedBloomSettings());
-
-      blooming.add(this.ctrl.bloom, 'strength', 0, 3).name('Strength')
-               .listen().onChange(() => this.changedBloomSettings());
    }
 
-   /** @summary Method called when bloom configuration changed via GUI */
-   changedBloomSettings() {
-      if (this.ctrl.bloom.enabled) {
-         this.createBloom();
-         this._bloomPass.strength = this.ctrl.bloom.strength;
-      } else {
-         this.removeBloom();
+   /** @summary Should be called when configuration of highlight is changed */
+   changedHighlight(arg) {
+      if (arg !== undefined) {
+         this.ctrl.highlight = arg !== 0;
+         if (arg) this.ctrl.highlight_bloom = arg === 2;
       }
 
+      this.ensureBloom();
+
+      if (!this.ctrl.highlight)
+         this.highlightMesh(null);
+
       this._slave_painters?.forEach(p => {
-         Object.assign(p.ctrl.bloom, this.ctrl.bloom);
-         p.changedBloomSettings();
+         p.ctrl.highlight = this.ctrl.highlight;
+         p.ctrl.highlight_bloom = this.ctrl.highlight_bloom;
+         p.ctrl.bloom_strength = this.ctrl.bloom_strength;
+         p.changedHighlight();
       });
+
    }
 
    /** @summary Handle change of can rotate */
@@ -1518,7 +1543,7 @@ class TGeoPainter extends ObjectPainter {
           delete this._controls;
       }
 
-      this.removeBloom();
+      this.ensureBloom(false);
 
       // recreate camera
       this.createCamera();
@@ -1541,30 +1566,32 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary create bloom effect */
-   createBloom() {
-      if (this._bloomPass) return;
+   ensureBloom(on) {
+      if (on === undefined)
+         on = this.ctrl.highlight_bloom;
 
-      this._camera.layers.enable( _BLOOM_SCENE );
-      this._bloomComposer = new EffectComposer( this._renderer );
-      this._bloomComposer.addPass(new RenderPass(this._scene, this._camera));
-      this._bloomPass = new UnrealBloomPass(new Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85);
-      this._bloomPass.threshold = 0;
-      this._bloomPass.strength = this.ctrl.bloom.strength;
-      this._bloomPass.radius = 0;
-      this._bloomPass.renderToScreen = true;
-      this._bloomComposer.addPass( this._bloomPass );
-      this._renderer.autoClear = false;
+      if (on && !this._bloomPass) {
+         this._camera.layers.enable( _BLOOM_SCENE );
+         this._bloomComposer = new EffectComposer(this._renderer);
+         this._bloomComposer.addPass(new RenderPass(this._scene, this._camera));
+         this._bloomPass = new UnrealBloomPass(new Vector2(this._scene_width, this._scene_height), 1.5, 0.4, 0.85);
+         this._bloomPass.threshold = 0;
+         this._bloomPass.radius = 0;
+         this._bloomPass.renderToScreen = true;
+         this._bloomComposer.addPass(this._bloomPass);
+         this._renderer.autoClear = false;
+      } else if (!on && this._bloomPass) {
+         delete this._bloomPass;
+         delete this._bloomComposer;
+         if(this._renderer)
+            this._renderer.autoClear = true;
+         this._camera?.layers.disable( _BLOOM_SCENE);
+      }
+
+      if (this._bloomPass)
+         this._bloomPass.strength = this.ctrl.bloom_strength;
    }
 
-   /** @summary Remove bloom highlight */
-   removeBloom() {
-      if (!this._bloomPass) return;
-      delete this._bloomPass;
-      delete this._bloomComposer;
-      if(this._renderer)
-         this._renderer.autoClear = true;
-      this._camera?.layers.disable( _BLOOM_SCENE);
-   }
 
    /** @summary Show context menu for orbit control
      * @private */
@@ -1822,7 +1849,8 @@ class TGeoPainter extends ObjectPainter {
          active_mesh = active_mesh ? [ active_mesh ] : [];
       }
 
-      if (!active_mesh.length) active_mesh = null;
+      if (!active_mesh.length)
+         active_mesh = null;
 
       if (active_mesh) {
          // check if highlight is disabled for correspondent objects kinds
@@ -1852,7 +1880,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (!curr_mesh && !active_mesh) return false;
 
-      const get_ctrl = mesh => mesh.get_ctrl ? mesh.get_ctrl() : new GeoDrawingControl(mesh, this.ctrl.bloom.enabled);
+      const get_ctrl = mesh => mesh.get_ctrl ? mesh.get_ctrl() : new GeoDrawingControl(mesh, this.ctrl.highlight_bloom);
 
       // check if selections are the same
       if (curr_mesh && active_mesh && (curr_mesh.length == active_mesh.length)) {
@@ -2515,8 +2543,8 @@ class TGeoPainter extends ObjectPainter {
          this.createOutline(this._scene_width, this._scene_height);
       }
 
-      if (this._webgl && this.ctrl.bloom.enabled)
-         this.createBloom();
+      if (this._webgl)
+         this.ensureBloom();
    }
 
    /** @summary Initial scene creation */
@@ -4700,12 +4728,6 @@ class TGeoPainter extends ObjectPainter {
          return this.render3D();
    }
 
-   /** @summary Should be called when configuration of highlight is changed */
-   changedHighlight() {
-      if (!this.ctrl.highlight)
-         this.highlightMesh(null);
-   }
-
    /** @summary Assign clipping attributes to the meshes - supported only for webgl */
    updateClipping(without_render, force_traverse) {
       // do not try clipping with SVG renderer
@@ -4855,12 +4877,16 @@ class TGeoPainter extends ObjectPainter {
          if (first_time) {
 
             // after first draw check if highlight can be enabled
-            if (this.ctrl.highlight === false)
+            if (this.ctrl.highlight === 0)
                this.ctrl.highlight = (this.first_render_tm < 1000);
 
             // also highlight of scene object can be assigned at the first draw
-            if (this.ctrl.highlight_scene === false)
+            if (this.ctrl.highlight_scene === 0)
                this.ctrl.highlight_scene = this.ctrl.highlight;
+
+            // use bloom by default when doing highlight
+            if (this.ctrl.highlight_bloom === 0)
+               this.ctrl.highlight_bloom = this._webgl;
 
             // if rotation was enabled, do it
             if (this._webgl && this.ctrl.rotate && !this.ctrl.project) this.autorotate(2.5);
@@ -4999,7 +5025,7 @@ class TGeoPainter extends ObjectPainter {
       if (!this.superimpose)
          cleanupRender3D(this._renderer);
 
-      this.removeBloom();
+      this.ensureBloom(false);
       delete this._effectComposer;
 
       delete this._scene;
@@ -5338,8 +5364,6 @@ function createGeoPainter(dom, obj, opt) {
 
    // copy all attributes from options to control
    Object.assign(painter.ctrl, painter.options);
-
-   painter.ctrl.bloom.enabled = painter.options.usebloom;
 
    // special handling for array of clips
    painter.ctrl.clip[0].enabled = painter.options.clipx;
