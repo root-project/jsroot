@@ -1188,6 +1188,7 @@ class TGeoPainter extends ObjectPainter {
       let func = isFunc(transparency) ? transparency : null;
       if (func || (transparency === undefined))
          transparency = this.ctrl.transparency;
+
       this._toplevel.traverse(node => {
          if (node?.material?.inherentOpacity !== undefined) {
             let t = func ? func(node) : undefined;
@@ -1195,6 +1196,8 @@ class TGeoPainter extends ObjectPainter {
                node.material.opacity = 1 - t;
             else
                node.material.opacity = Math.min(1 - (transparency || 0), node.material.inherentOpacity);
+
+            node.material.depthWrite = node.material.opacity == 1;
             node.material.transparent = node.material.opacity < 1;
          }
       });
@@ -1364,7 +1367,7 @@ class TGeoPainter extends ObjectPainter {
       if (main.style('position') == 'static')
          main.style('position', 'relative');
 
-      this._gui = new GUI({ container: main.node(), closeFolders: true, width: Math.min(650, this._renderer.domElement.width / 2),
+      this._gui = new GUI({ container: main.node(), closeFolders: true, width: Math.min(300, this._scene_width / 2),
                             title: 'Settings' });
 
       let dom = this._gui.domElement;
@@ -1579,8 +1582,11 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary create bloom effect */
    ensureBloom(on) {
-      if (on === undefined)
+      if (on === undefined) {
+         if (this.ctrl.highlight_bloom === 0)
+             this.ctrl.highlight_bloom = this._webgl;
          on = this.ctrl.highlight_bloom;
+      }
 
       if (on && !this._bloomPass) {
          this._camera.layers.enable( _BLOOM_SCENE );
@@ -4895,10 +4901,6 @@ class TGeoPainter extends ObjectPainter {
             // also highlight of scene object can be assigned at the first draw
             if (this.ctrl.highlight_scene === 0)
                this.ctrl.highlight_scene = this.ctrl.highlight;
-
-            // use bloom by default when doing highlight
-            if (this.ctrl.highlight_bloom === 0)
-               this.ctrl.highlight_bloom = this._webgl;
 
             // if rotation was enabled, do it
             if (this._webgl && this.ctrl.rotate && !this.ctrl.project) this.autorotate(2.5);
