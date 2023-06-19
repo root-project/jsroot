@@ -615,7 +615,7 @@ class TGeoPainter extends ObjectPainter {
          name: 'control',
          title: 'Toggle control UI',
          icon: 'rect',
-         click: () => this.showControlOptions('toggle')
+         click: () => this.showControlGui('toggle')
       }, {
          name: 'enlarge',
          title: 'Enlarge geometry drawing',
@@ -1095,7 +1095,7 @@ class TGeoPainter extends ObjectPainter {
          this.ctrl.update_browser = !this.ctrl.update_browser;
          if (!this.ctrl.update_browser) this.activateInBrowser([]);
       });
-      menu.addchk(this.ctrl.show_controls, 'Show Controls', () => this.showControlOptions('toggle'));
+      menu.addchk(this.ctrl.show_controls, 'Show Controls', () => this.showControlGui('toggle'));
 
       menu.add('sub:Show axes', () => this.setAxesDraw('toggle'));
       menu.addchk(this.ctrl._axis == 0, 'off', 0, arg => this.setAxesDraw(parseInt(arg)));
@@ -1315,52 +1315,45 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Display control GUI */
-   showControlOptions(on) {
+   showControlGui(on) {
       // while complete geo drawing can be removed until dat is loaded - just check and ignore callback
       if (!this.ctrl) return;
 
       if (on === 'toggle') {
-         on = !this._datgui;
+         on = !this._gui;
       } else if (on === undefined) {
          on = this.ctrl.show_controls;
       }
 
       this.ctrl.show_controls = on;
 
-      if (this._datgui) {
+      if (this._gui) {
          if (!on) {
-            this._datgui.domElement.remove();
-            this._datgui.destroy();
-            delete this._datgui;
+            this._gui.destroy();
+            delete this._gui;
          }
          return;
       }
 
-      if (on) this.buildDatGui();
-   }
+      if (!on || !this._renderer)
+         return;
 
-   /** @summary build dat.gui elements
-     * @private */
-   buildDatGui(dat) {
-      // can happen when dat gui loaded after drawing is already cleaned
-      if (!this._renderer) return;
-
-      this._datgui = new GUI({ autoPlace: false, closeFolders: true, width: Math.min(650, this._renderer.domElement.width / 2) });
 
       let main = this.selectDom();
       if (main.style('position') == 'static')
          main.style('position', 'relative');
 
-      let dom = this._datgui.domElement;
+      this._gui = new GUI({ container: main.node(), closeFolders: true, width: Math.min(650, this._renderer.domElement.width / 2) });
+
+      let dom = this._gui.domElement;
       dom.style.position = 'absolute';
       dom.style.top = 0;
       dom.style.right = 0;
-      main.node().appendChild(dom);
 
-      this._datgui.painter = this;
+      this._gui.painter = this;
 
       if (!this.ctrl.project) {
-         let selection = this._datgui.addFolder('Selection');
+         let selection = this._gui.addFolder('Selection');
 
          if (!this.ctrl.maxnodes)
             this.ctrl.maxnodes = this._clones?.getMaxVisNodes() ?? 10000;
@@ -1389,15 +1382,14 @@ class TGeoPainter extends ObjectPainter {
          if (this.ctrl.projectPos === undefined)
             this.ctrl.projectPos = (bound.min[axis] + bound.max[axis])/2;
 
-         this._datgui.add(this.ctrl, 'projectPos', bound.min[axis], bound.max[axis])
+         this._gui.add(this.ctrl, 'projectPos', bound.min[axis], bound.max[axis])
              .name(axis.toUpperCase() + ' projection')
              .onChange(() => this.startDrawGeometry());
 
       } else {
          // Clipping Options
 
-         let clipFolder = this._datgui.addFolder('Clipping'),
-             clip_handler = () => this.changedClipping(-1);
+         let clipFolder = this._gui.addFolder('Clipping');
 
          for (let naxis = 0; naxis < 3; ++naxis) {
             let cc = this.ctrl.clip[naxis],
@@ -1405,22 +1397,21 @@ class TGeoPainter extends ObjectPainter {
 
             clipFolder.add(cc, 'enabled')
                 .name('Enable ' + axisC)
-                .listen() // react if option changed outside
-                .onChange(clip_handler);
+                .onChange(() => this.changedClipping(-1));
 
             clipFolder.add(cc, 'value', cc.min, cc.max)
                 .name(axisC + ' position')
-                .onChange(this.changedClipping.bind(this, naxis));
+                .onChange(() => this.changedClipping(naxis));
          }
 
          clipFolder.add(this.ctrl, 'clipIntersect').name('Clip intersection')
-                   .listen().onChange(clip_handler);
+                   .onChange(() => this.changedClipping(-1));
 
       }
 
       // Appearance Options
 
-      let appearance = this._datgui.addFolder('Appearance');
+      let appearance = this._gui.addFolder('Appearance');
 
       appearance.add(this.ctrl, 'highlight').name('Highlight Selection')
                 .listen().onChange(() => this.changedHighlight());
@@ -1442,7 +1433,7 @@ class TGeoPainter extends ObjectPainter {
                       .listen().onChange(() => this.changedAutoRotate());
 
       // Camera options
-      let camera = this._datgui.addFolder('Camera'), camcfg = {}, overlaysfg = {};
+      let camera = this._gui.addFolder('Camera'), camcfg = {}, overlaysfg = {};
 
       this.ctrl.cameraKindItems.forEach(i => { camcfg[i.name] = i.value; });
       this.ctrl.cameraOverlayItems.forEach(i => { overlaysfg[i.name] = i.value; });
@@ -1460,7 +1451,7 @@ class TGeoPainter extends ObjectPainter {
 
       // Advanced Options
       if (this._webgl) {
-         let advanced = this._datgui.addFolder('Advanced'), depthcfg = {};
+         let advanced = this._gui.addFolder('Advanced'), depthcfg = {};
          this.ctrl.depthMethodItems.forEach(i => { depthcfg[i.name] = i.value; });
 
          advanced.add(this.ctrl, 'depthTest').name('Depth test')
@@ -1475,7 +1466,7 @@ class TGeoPainter extends ObjectPainter {
 
       // Transformation Options
       if (!this.ctrl.project) {
-         let transform = this._datgui.addFolder('Transform');
+         let transform = this._gui.addFolder('Transform');
          transform.add(this.ctrl, 'trans_z', 0., 3., 0.01)
                      .name('Z axis')
                      .listen().onChange(() => this.changedTransformation());
@@ -1488,7 +1479,7 @@ class TGeoPainter extends ObjectPainter {
          if (this.ctrl.trans_z || this.ctrl.trans_radial) transform.open();
       }
 
-      let blooming = this._datgui.addFolder('Unreal Bloom');
+      let blooming = this._gui.addFolder('Unreal Bloom');
 
       blooming.add(this.ctrl.bloom, 'enabled').name('Enable Blooming')
               .listen().onChange(() => this.changedBloomSettings());
@@ -4684,8 +4675,8 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Should be called when configuration of particular axis is changed */
-   changedClipping(naxis) {
-      if ((naxis !== undefined) && (naxis >= 0) && this.ctrl.clip[naxis]?.enabled)
+   changedClipping(naxis = -1) {
+      if ((naxis < 0) || this.ctrl.clip[naxis]?.enabled)
          this.updateClipping(false, true);
    }
 
@@ -4874,7 +4865,7 @@ class TGeoPainter extends ObjectPainter {
 
             // if rotation was enabled, do it
             if (this._webgl && this.ctrl.rotate && !this.ctrl.project) this.autorotate(2.5);
-            if (this._webgl && this.ctrl.show_controls && !this.isBatchMode()) this.showControlOptions(true);
+            if (this._webgl && this.ctrl.show_controls && !this.isBatchMode()) this.showControlGui(true);
          }
 
          this.setAsMainPainter();
@@ -4954,7 +4945,7 @@ class TGeoPainter extends ObjectPainter {
          if (this._context_menu)
             this._renderer.domElement.removeEventListener('contextmenu', this._context_menu, false);
 
-         this._datgui?.destroy();
+         this._gui?.destroy();
 
          this._worker?.terminate();
 
@@ -5041,7 +5032,7 @@ class TGeoPainter extends ObjectPainter {
       this.changeStage(stageInit, 'cleanup');
       delete this.drawing_log;
 
-      delete this._datgui;
+      delete this._gui;
       delete this._controls;
       delete this._context_menu;
       delete this._toolbar;
