@@ -1433,21 +1433,24 @@ class TGeoPainter extends ObjectPainter {
 
       // Appearance Options
 
-      let appearance = this._gui.addFolder('Appearance'), strength;
+      let appearance = this._gui.addFolder('Appearance'), strength, hcolor;
 
       this.ctrl._highlight = !this.ctrl.highlight ? 0 : this.ctrl.highlight_bloom ? 2 : 1;
       appearance.add(this.ctrl, '_highlight', { none: 0, normal: 1, bloom: 2 }).name('Highlight Selection')
                 .listen().onChange(() => {
                    this.changedHighlight(this.ctrl._highlight);
                    strength.show(this.ctrl._highlight == 2);
+                   hcolor.show(this.ctrl._highlight == 1);
                 });
 
+      hcolor = appearance.addColor(this.ctrl, 'highlight_color').name('Hightlight color');
       strength = appearance.add(this.ctrl, 'bloom_strength', 0, 3).name('Bloom strength')
                                .listen().onChange(() => this.changedHighlight());
+      strength.show(this.ctrl._highlight == 2);
+      hcolor.show(this.ctrl._highlight == 1);
 
       appearance.add(this.ctrl, 'transparency', 0, 1, 0.001)
                      .listen().onChange(value => this.changedGlobalTransparency(value));
-      appearance.addColor(this.ctrl, 'highlight_color').name('Color');
 
       appearance.addColor(this.ctrl, 'background').name('Background')
                 .onChange(col => this.changedBackground(col));
@@ -1463,21 +1466,25 @@ class TGeoPainter extends ObjectPainter {
                       .listen().onChange(() => this.changedAutoRotate());
 
       // Camera options
-      let camera = this._gui.addFolder('Camera'), camcfg = {}, overlaysfg = {};
+      let camera = this._gui.addFolder('Camera'), camcfg = {}, overlaysfg = {}, overlay;
 
       this.ctrl.cameraKindItems.forEach(i => { camcfg[i.name] = i.value; });
       this.ctrl.cameraOverlayItems.forEach(i => { overlaysfg[i.name] = i.value; });
 
       camera.add(this.ctrl, 'camera_kind', camcfg)
-            .name('Kind').listen().onChange(() => this.changeCamera());
+            .name('Kind').listen().onChange(() => {
+            overlay.show(this.ctrl.camera_kind.indexOf('ortho') == 0);
+            this.changeCamera();
+      });
 
       camera.add(this.ctrl, 'can_rotate').name('Can rotate')
                 .listen().onChange(() => this.changeCanRotate());
 
       camera.add(this, 'focusCamera').name('Reset position');
 
-      camera.add(this.ctrl, 'camera_overlay', overlaysfg)
-            .name('Overlay').listen().onChange(() => this.changeCamera());
+      overlay = camera.add(this.ctrl, 'camera_overlay', overlaysfg)
+                      .name('Overlay').listen().onChange(() => this.changeCamera());
+      overlay.show(this.ctrl.camera_kind.indexOf('ortho') == 0);
 
       // Advanced Options
       if (this._webgl) {
