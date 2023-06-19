@@ -1397,11 +1397,11 @@ class TGeoPainter extends ObjectPainter {
 
             clipFolder.add(cc, 'enabled')
                 .name('Enable ' + axisC)
-                .onChange(() => this.changedClipping(-1));
+                .listen().onChange(() => this.changedClipping(-1));
 
             clipFolder.add(cc, 'value', cc.min, cc.max)
                 .name(axisC + ' position')
-                .onChange(() => this.changedClipping(naxis));
+                .listen().onChange(() => this.changedClipping(naxis));
          }
 
          clipFolder.add(this.ctrl, 'clipIntersect').name('Clip intersection')
