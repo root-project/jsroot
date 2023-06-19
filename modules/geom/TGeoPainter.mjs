@@ -12,6 +12,7 @@ import { REVISION, DoubleSide, FrontSide,
          PointLight, AmbientLight, HemisphereLight,
          EffectComposer, RenderPass, UnrealBloomPass } from '../three.mjs';
 import { showProgress, injectStyle, ToolbarIcons } from '../gui/utils.mjs';
+import { GUI } from '../gui/lil-gui.mjs';
 import { assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, InteractiveControl, PointsCreator,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind, cleanupRender3D,
@@ -1335,8 +1336,7 @@ class TGeoPainter extends ObjectPainter {
          return;
       }
 
-      if (on)
-         import('../gui/dat.gui.mjs').then(h => this.buildDatGui(h));
+      if (on) this.buildDatGui();
    }
 
    /** @summary build dat.gui elements
@@ -1345,10 +1345,7 @@ class TGeoPainter extends ObjectPainter {
       // can happen when dat gui loaded after drawing is already cleaned
       if (!this._renderer) return;
 
-      if (!dat)
-         throw Error('Fail to load dat.gui');
-
-      this._datgui = new dat.GUI({ autoPlace: false, width: Math.min(650, this._renderer.domElement.width / 2) });
+      this._datgui = new GUI({ autoPlace: false, closeFolders: true, width: Math.min(650, this._renderer.domElement.width / 2) });
 
       let main = this.selectDom();
       if (main.style('position') == 'static')
