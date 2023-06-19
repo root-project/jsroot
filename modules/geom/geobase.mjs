@@ -1,5 +1,5 @@
 import { DoubleSide, FrontSide, Object3D, Box3, Mesh, InstancedMesh, Vector2, Vector3, Matrix4,
-         MeshLambertMaterial, Color, PerspectiveCamera, Frustum, Raycaster,
+         MeshLambertMaterial, MeshBasicMaterial, Color, PerspectiveCamera, Frustum, Raycaster,
          ShapeUtils, BufferGeometry, BufferAttribute } from '../three.mjs';
 import { isObject, isFunc, BIT } from '../core.mjs';
 import { createBufferGeometry, createNormal,
@@ -2271,6 +2271,34 @@ function createFrustum(source) {
    return frustum;
 }
 
+/** @summary Create node material
+  * @private */
+function createMaterial(cfg, args) {
+   if (!cfg) cfg = { kind: 'lambert' };
+
+   if (args.opacity === undefined) args.opacity = 1;
+
+   args.wireframe = false;
+   if (!args.color) args.color = 'red';
+   args.side = FrontSide;
+   args.transparent = args.opacity < 1;
+   args.depthWrite = args.opactity == 1;
+
+   let material;
+
+   if (cfg.kind == 'basic') {
+      material = new MeshBasicMaterial(args);
+   } else {
+      args.vertexColors = false;
+      material = new MeshLambertMaterial(args);
+   }
+
+   material.inherentOpacity = args.opacity;
+
+   return material;
+}
+
+
 /** @summary Compares two stacks.
   * @return {Number} 0 if same, -1 when stack1 < stack2, +1 when stack1 > stack2
   * @private */
@@ -2348,6 +2376,11 @@ class ClonedNodes {
    /** @summary Returns configured maximal number of visible nodes */
    getMaxVisNodes() {
       return this.maxnodes;
+   }
+
+   /** @summary Set material configuration */
+   setMaterialConfig(cfg) {
+      this.material_config = cfg;
    }
 
    /** @summary Insert node into existing array */
@@ -2993,24 +3026,6 @@ class ClonedNodes {
       }
    }
 
-   /** @summary Create node material */
-   createMaterial(args) {
-      if (args.opacity === undefined) args.opacity = 1;
-      args.transparent = args.opacity < 1;
-      args.wireframe = false;
-      if (!args.color) args.color = 'red';
-      args.depthWrite = args.opactity == 1;
-      args.side = FrontSide;
-      args.vertexColors = false;
-
-      let material = new MeshLambertMaterial(args);
-
-      material.inherentOpacity = args.opacity;
-
-      return material;
-   }
-
-
    /** @summary Provide different properties of draw entry nodeid
      * @desc Only if node visible, material will be created */
    getDrawEntryProperties(entry, root_colors) {
@@ -3021,7 +3036,7 @@ class ClonedNodes {
          let prop = { name: clone.name, nname: clone.name, shape: null, material: null, chlds: null },
              opacity = entry.opacity || 1, col = entry.color || '#0000FF';
          prop.fillcolor = new Color(col[0] == '#' ? col : `rgb(${col})`);
-         prop.material = this.createMaterial({ opacity, color: prop.fillcolor });
+         prop.material = createMaterial(this.material_config, { opacity, color: prop.fillcolor });
          return prop;
       }
 
@@ -3042,7 +3057,7 @@ class ClonedNodes {
          if (visible) {
             let opacity = Math.min(1, node.fRGBA[3]);
             prop.fillcolor = new Color(node.fRGBA[0], node.fRGBA[1], node.fRGBA[2]);
-            prop.material = this.createMaterial({ opacity, color: prop.fillcolor });
+            prop.material = createMaterial(this.material_config, { opacity, color: prop.fillcolor });
          }
 
          return prop;
@@ -3086,7 +3101,7 @@ class ClonedNodes {
          if (prop.fillcolor === undefined)
             prop.fillcolor = 'lightgrey';
 
-         prop.material = this.createMaterial({ opacity, color: prop.fillcolor });
+         prop.material = createMaterial(this.material_config, { opacity, color: prop.fillcolor });
       }
 
       return prop;
@@ -4044,5 +4059,5 @@ export { kindGeo, kindEve, kindShape,
          clTGeoBBox, clTGeoCompositeShape,
          geoCfg, geoBITS, ClonedNodes, isSameStack, checkDuplicates, getObjectName, testGeoBit, setGeoBit, toggleGeoBit,
          setInvisibleAll, countNumShapes, getNodeKind, produceRenderOrder, createFlippedGeom, createFlippedMesh, cleanupShape,
-         createGeometry, numGeometryFaces, numGeometryVertices, createServerGeometry,
+         createGeometry, numGeometryFaces, numGeometryVertices, createServerGeometry, createMaterial,
          projectGeometry, countGeometryFaces, createFrustum, createProjectionMatrix, getBoundingBox, provideObjectInfo, getShapeIcon };

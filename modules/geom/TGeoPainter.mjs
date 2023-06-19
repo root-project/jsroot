@@ -572,7 +572,8 @@ class TGeoPainter extends ObjectPainter {
             { name: 'Grid', value: 'grid' },
             { name: 'Grid background', value: 'gridb' },
             { name: 'Grid foreground', value: 'gridf' }
-         ]
+         ],
+         material: { kind: 'lambert' }
       };
 
       this.cleanup(true);
@@ -3787,6 +3788,8 @@ class TGeoPainter extends ObjectPainter {
          this._clones_owner = true;
          this._clones = new ClonedNodes(null, nodes);
          this._clones.name_prefix = this._clones.getNodeName(0);
+         this._clones.setMaterialConfig(this.ctrl.material);
+
          // normally only need when making selection, not used in geo viewer
          // this.geo_clones.setMaxVisNodes(draw_msg.maxvisnodes);
          // this.geo_clones.setVisLevel(draw_msg.vislevel);
@@ -3855,6 +3858,7 @@ class TGeoPainter extends ObjectPainter {
 
          this._clones.setVisLevel(lvl);
          this._clones.setMaxVisNodes(maxnodes, this.ctrl.more);
+         this._clones.setMaterialConfig(this.ctrl.material);
 
          this._clones.name_prefix = name_prefix;
 
@@ -5726,6 +5730,7 @@ function build(obj, opt) {
 
       clones = new ClonedNodes(null, nodes);
       clones.name_prefix = clones.getNodeName(0);
+
       // normally only need when making selection, not used in geo viewer
       // this.geo_clones.setMaxVisNodes(draw_msg.maxvisnodes);
       // this.geo_clones.setVisLevel(draw_msg.vislevel);
@@ -5795,6 +5800,8 @@ function build(obj, opt) {
 
       visibles = res.lst;
    }
+
+   clones.setMaterialConfig({ kind: 'lambert' });
 
    // collect shapes
    let shapes = clones.collectShapes(visibles);
