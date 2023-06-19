@@ -1443,11 +1443,11 @@ class TGeoPainter extends ObjectPainter {
                    hcolor.show(this.ctrl._highlight == 1);
                 });
 
-      hcolor = appearance.addColor(this.ctrl, 'highlight_color').name('Hightlight color');
+      hcolor = appearance.addColor(this.ctrl, 'highlight_color').name('Hightlight color')
+                         .show(this.ctrl._highlight == 1);
       strength = appearance.add(this.ctrl, 'bloom_strength', 0, 3).name('Bloom strength')
-                               .listen().onChange(() => this.changedHighlight());
-      strength.show(this.ctrl._highlight == 2);
-      hcolor.show(this.ctrl._highlight == 1);
+                           .listen().onChange(() => this.changedHighlight())
+                           .show(this.ctrl._highlight == 2);
 
       appearance.add(this.ctrl, 'transparency', 0, 1, 0.001)
                      .listen().onChange(value => this.changedGlobalTransparency(value));
@@ -1483,8 +1483,8 @@ class TGeoPainter extends ObjectPainter {
       camera.add(this, 'focusCamera').name('Reset position');
 
       overlay = camera.add(this.ctrl, 'camera_overlay', overlaysfg)
-                      .name('Overlay').listen().onChange(() => this.changeCamera());
-      overlay.show(this.ctrl.camera_kind.indexOf('ortho') == 0);
+                      .name('Overlay').listen().onChange(() => this.changeCamera())
+                      .show(this.ctrl.camera_kind.indexOf('ortho') == 0);
 
       // Advanced Options
       if (this._webgl) {
