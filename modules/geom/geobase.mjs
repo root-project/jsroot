@@ -2273,12 +2273,15 @@ function createFrustum(source) {
 
 /** @summary Create node material
   * @private */
-function createMaterial(cfg, args) {
+function createMaterial(cfg, args0) {
    if (!cfg) cfg = { kind: 'lambert' };
 
-   if (args.opacity === undefined) args.opacity = 1;
+   let args = Object.assign({}, args0);
 
-   args.wireframe = false;
+   if (args.opacity === undefined)
+      args.opacity = 1;
+
+   args.wireframe = cfg.wireframe ?? false;
    if (!args.color) args.color = 'red';
    args.side = FrontSide;
    args.transparent = args.opacity < 1;
@@ -2294,6 +2297,7 @@ function createMaterial(cfg, args) {
    }
 
    material.inherentOpacity = args.opacity;
+   material.inherentArgs = args0;
 
    return material;
 }

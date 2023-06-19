@@ -27,7 +27,7 @@ import { kindGeo, kindEve,
          clTGeoBBox, clTGeoCompositeShape,
          geoCfg, geoBITS, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit, setInvisibleAll,
          countNumShapes, getNodeKind, produceRenderOrder, createServerGeometry,
-         projectGeometry, countGeometryFaces, createFrustum, createProjectionMatrix,
+         projectGeometry, countGeometryFaces, createMaterial, createFrustum, createProjectionMatrix,
          getBoundingBox, provideObjectInfo, isSameStack, checkDuplicates, getObjectName, cleanupShape, getShapeIcon } from './geobase.mjs';
 
 
@@ -573,7 +573,11 @@ class TGeoPainter extends ObjectPainter {
             { name: 'Grid background', value: 'gridb' },
             { name: 'Grid foreground', value: 'gridf' }
          ],
-         material: { kind: 'lambert' }
+         material: { kind: 'lambert' },
+         materialKinds: [
+            { name: 'MeshLambertMaterial', value: 'lambert' },
+            { name: 'MeshBasicMaterial', value: 'basic' }
+         ]
       };
 
       this.cleanup(true);
@@ -1190,20 +1194,44 @@ class TGeoPainter extends ObjectPainter {
       if (func || (transparency === undefined))
          transparency = this.ctrl.transparency;
 
-      this._toplevel.traverse(node => {
-         if (node?.material?.inherentOpacity !== undefined) {
-            let t = func ? func(node) : undefined;
-            if (t !== undefined)
-               node.material.opacity = 1 - t;
-            else
-               node.material.opacity = Math.min(1 - (transparency || 0), node.material.inherentOpacity);
+      this._toplevel?.traverse(node => {
+         // ignore all kind of extra elements
+         if (node?.material?.inherentOpacity === undefined)
+            return;
 
+         let t = func ? func(node) : undefined;
+         if (t !== undefined)
+            node.material.opacity = 1 - t;
+         else
+            node.material.opacity = Math.min(1 - (transparency || 0), node.material.inherentOpacity);
+
+         node.material.depthWrite = node.material.opacity == 1;
+         node.material.transparent = node.material.opacity < 1;
+      });
+      if (!skip_render)
+         this.render3D(-1);
+   }
+
+   /** @summary Method used to interactively change material kinds */
+   changedMaterial() {
+
+      let transparency = this.ctrl.transparency;
+
+      this._toplevel?.traverse(node => {
+         // ignore all kind of extra elements
+         if ((node.material?.inherentOpacity === undefined) || (node.material?.inherentArgs === undefined))
+            return;
+
+         node.material = createMaterial(this.ctrl.material, node.material.inherentArgs);
+
+         if (transparency) {
+            node.material.opacity = Math.min(1 - (transparency || 0), node.material.inherentOpacity);
             node.material.depthWrite = node.material.opacity == 1;
             node.material.transparent = node.material.opacity < 1;
          }
       });
-      if (!skip_render)
-         this.render3D(-1);
+
+      this.render3D(-1);
    }
 
    /** @summary Reset transformation */
@@ -1453,14 +1481,8 @@ class TGeoPainter extends ObjectPainter {
                            .listen().onChange(() => this.changedHighlight())
                            .show(this.ctrl._highlight == 2);
 
-      appearance.add(this.ctrl, 'transparency', 0, 1, 0.001)
-                     .listen().onChange(value => this.changedGlobalTransparency(value));
-
       appearance.addColor(this.ctrl, 'background').name('Background')
                 .onChange(col => this.changedBackground(col));
-
-      appearance.add(this.ctrl, 'wireframe').name('Wireframe')
-                     .listen().onChange(() => this.changedWireFrame());
 
       appearance.add(this.ctrl, '_axis', { none: 0, side: 1, center: 2 }).name('Axes')
                     .onChange(() => this.changedAxes());
@@ -1468,6 +1490,24 @@ class TGeoPainter extends ObjectPainter {
       if (!this.ctrl.project)
          appearance.add(this.ctrl, 'rotate').name('Autorotate')
                       .listen().onChange(() => this.changedAutoRotate());
+
+      // Material options
+
+      let material = this._gui.addFolder('Material'), materialkindcfg = {};
+      this.ctrl.materialKinds.forEach(i => { materialkindcfg[i.name] = i.value; });
+      material.add(this.ctrl.material, 'kind', materialkindcfg)
+            .name('Kind').listen().onChange(() => {
+
+            this.changedMaterial();
+            this.changedHighlight(); // for some materials bloom will not work
+
+      });
+
+      material.add(this.ctrl, 'transparency', 0, 1, 0.001).name('Transparency')
+              .listen().onChange(value => this.changedGlobalTransparency(value));
+
+      material.add(this.ctrl, 'wireframe').name('Wireframe')
+              .listen().onChange(() => this.changedWireFrame());
 
       // Camera options
       let camera = this._gui.addFolder('Camera'), camcfg = {}, overlaysfg = {}, overlay;
@@ -1586,7 +1626,7 @@ class TGeoPainter extends ObjectPainter {
       if (on === undefined) {
          if (this.ctrl.highlight_bloom === 0)
              this.ctrl.highlight_bloom = this._webgl;
-         on = this.ctrl.highlight_bloom;
+         on = this.ctrl.highlight_bloom && (this.ctrl.material.kind != 'basic');
       }
 
       if (on && !this._bloomPass) {
