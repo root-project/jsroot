@@ -1,5 +1,4 @@
-import { httpRequest, decodeUrl, browser, source_dir,
-         settings, internals, constants, create, clone,
+import { httpRequest, browser, source_dir, settings, internals, constants, create, clone,
          findFunction, isBatchMode, isNodeJs, getDocument, isObject, isFunc, isStr, getPromise,
          prROOT, clTNamed, clTList, clTAxis, clTObjArray, clTPolyMarker3D, clTPolyLine3D,
          clTGeoVolume, clTGeoNode, clTGeoNodeMatrix, nsREX } from '../core.mjs';
@@ -547,6 +546,7 @@ class TGeoPainter extends ObjectPainter {
          depthMethod: 'dflt',
          select_in_view: false,
          update_browser: true,
+         use_fog: false,
          light: { kind: 'points', top: false, bottom: false, left: false, right: false, front: false, specular: true, power: 1 },
          trans_radial: 0,
          trans_z: 0,
@@ -1006,6 +1006,9 @@ class TGeoPainter extends ObjectPainter {
 
       if (d.check('NOWORKER')) res.use_worker = -1;
       if (d.check('WORKER')) res.use_worker = 1;
+
+      if (d.check('NOFOG')) res.use_fog = false;
+      if (d.check('FOG')) res.use_fog = true;
 
       if (d.check('NOHIGHLIGHT') || d.check('NOHIGH')) res.highlight_scene = res.highlight = false;
       if (d.check('HIGHLIGHT')) res.highlight_scene = res.highlight = true;
@@ -1504,6 +1507,9 @@ class TGeoPainter extends ObjectPainter {
          appearance.add(this.ctrl, 'rotate').name('Autorotate')
                       .listen().onChange(() => this.changedAutoRotate());
 
+      appearance.add(this.ctrl, 'use_fog').name('Fog')
+                      .listen().onChange(() => this.changedUseFog());
+
       // Material options
 
       let material = this._gui.addFolder('Material'), materialkindcfg = {};
@@ -1612,6 +1618,13 @@ class TGeoPainter extends ObjectPainter {
          this.ctrl.can_rotate = on;
       if (this._controls)
          this._controls.enableRotate = this.ctrl.can_rotate;
+   }
+
+   /** @summary Change use fog property */
+   changedUseFog() {
+      this._scene.fog = this.ctrl.use_fog ? this._fog : null;
+
+      this.render3D();
    }
 
    /** @summary Handle change of camera kind */
@@ -2660,7 +2673,9 @@ class TGeoPainter extends ObjectPainter {
 
       // three.js 3D drawing
       this._scene = new Scene();
-      this._scene.fog = new Fog(0xffffff, 1, 10000);
+      this._fog = new Fog(0xffffff, 1, 10000);
+      this._scene.fog = this.ctrl.use_fog ? this._fog : null;
+
       this._scene.overrideMaterial = new MeshLambertMaterial({ color: 0x7000ff, vertexColors: false, transparent: true, opacity: 0.2, depthTest: false });
 
       this._scene_width = w;
@@ -2919,8 +2934,8 @@ class TGeoPainter extends ObjectPainter {
 
       this._camera.near = this._overall_size / 350;
       this._camera.far = this._overall_size * 100;
-      this._scene.fog.near = this._overall_size * 2;
-      this._scene.fog.far = this._overall_size * 100;
+      this._fog.near = this._overall_size * 2;
+      this._fog.far = this._overall_size * 100;
 
       if (first_time)
          for (let naxis = 0; naxis < 3; ++naxis) {
@@ -5113,6 +5128,7 @@ class TGeoPainter extends ObjectPainter {
       this._renderer = null;
       this._toplevel = null;
       delete this._full_geom;
+      delete this._fog;
       delete this._camera;
       delete this._camera0pos;
       delete this._lookat;
