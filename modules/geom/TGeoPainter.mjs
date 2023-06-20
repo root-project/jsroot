@@ -1257,11 +1257,12 @@ class TGeoPainter extends ObjectPainter {
 
       this._toplevel?.traverse(node => {
          // ignore all kind of extra elements
-         if (node.material?.inherentArgs !== undefined)
+         if (node.material?.inherentArgs !== undefined) {
             node.material = createMaterial(this.ctrl, node.material.inherentArgs);
+         }
       });
 
-      this.render3D();
+      this.render3D(-1);
    }
 
    /** @summary Change for all materials that property */
