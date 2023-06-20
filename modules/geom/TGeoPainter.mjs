@@ -601,15 +601,19 @@ class TGeoPainter extends ObjectPainter {
          flatShading: false,
          roughness: 0.5,
          metalness: 0.5,
+         shininess: 0,
+         reflectivity: 0.5,
          material_kind: 'lambert',
          materialKinds: [
             { name: 'MeshLambertMaterial', value: 'lambert', emissive: true, props: [{ name: 'flatShading' }] },
             { name: 'MeshBasicMaterial', value: 'basic' },
             { name: 'MeshStandardMaterial', value: 'standard', emissive: true,
-                props: [{ name: 'flatShading' }, { name: 'roughness', min: 0, max: 1, step: 0.001 }, { name: 'metalness', min: 0, max: 1, step: 0.001 }]  },
-            { name: 'MeshPhysicalMaterial', value: 'physical', emissive: true },
-            { name: 'MeshPhongMaterial', value: 'phong', emissive: true },
-            { name: 'MeshNormalMaterial', value: 'normal' },
+                props: [{ name: 'flatShading' }, { name: 'roughness', min: 0, max: 1, step: 0.001 }, { name: 'metalness', min: 0, max: 1, step: 0.001 }] },
+            { name: 'MeshPhysicalMaterial', value: 'physical', emissive: true,
+               props: [{ name: 'flatShading' }, { name: 'roughness', min: 0, max: 1, step: 0.001 }, { name: 'metalness', min: 0, max: 1, step: 0.001 }, { name: 'reflectivity', min: 0, max: 1, step: 0.001 }] },
+            { name: 'MeshPhongMaterial', value: 'phong', emissive: true,
+                props: [{ name: 'flatShading' }, { name: 'shininess', min: 0, max: 100, step: 0.1 }]},
+            { name: 'MeshNormalMaterial', value: 'normal', props: [{ name: 'flatShading' }] },
             { name: 'MeshDepthMaterial', value: 'depth' },
             { name: 'MeshMatcapMaterial', value: 'matcap' },
             { name: 'MeshToonMaterial', value: 'toon' }
@@ -1526,7 +1530,7 @@ class TGeoPainter extends ObjectPainter {
 
       this.ctrl.light._pnts = this.ctrl.light.specular ? 0 : (this.ctrl.light.front ? 1 : 2);
       light_pnts = scene.add(this.ctrl.light, '_pnts', { specular: 0, front: 1, box: 2 })
-                .name('Positions').title('Point lights positions')
+                .name('Positions')
                 .show(this.ctrl.light.kind == 'mix' || this.ctrl.light.kind == 'points')
                 .onChange(v => {
                    this.ctrl.light.specular = (v == 0);

@@ -2299,40 +2299,34 @@ function createMaterial(cfg, args0) {
    } else if (cfg.material_kind == 'depth') {
       delete args.color;
       material = new MeshDepthMaterial(args);
-   } else if (cfg.material_kind == 'depth') {
+   } else if (cfg.material_kind == 'toon') {
       material = new MeshToonMaterial(args);
    } else if (cfg.material_kind == 'matcap') {
       delete args.wireframe;
       material = new MeshMatcapMaterial(args);
    } else if (cfg.material_kind == 'standard') {
-      args.metalness = 0.5;
-      args.roughness = 0.1;
+      args.metalness = cfg.metalness ?? 0.5;
+      args.roughness = cfg.roughness ?? 0.1;
       material = new MeshStandardMaterial(args);
    } else if (cfg.material_kind == 'normal') {
       delete args.color;
       material = new MeshNormalMaterial(args);
    } else if (cfg.material_kind == 'physical') {
-      args.metalness = 0.5;
-      args.roughness = 0.1;
-      args.reflectivity = 0.9;
+      args.metalness = cfg.metalness ?? 0.5;
+      args.roughness = cfg.roughness ?? 0.1;
+      args.reflectivity = cfg.reflectivity ?? 0.5;
+      args.emissive = args.color;
       material = new MeshPhysicalMaterial(args);
    } else if (cfg.material_kind == 'phong') {
-      args.shininess = 0.9;
+      args.shininess = cfg.shininess ?? 0.9;
       material = new MeshPhongMaterial(args);
    } else {
       args.vertexColors = false;
       material = new MeshLambertMaterial(args);
    }
 
-   let prop_list = ['flatShading', 'roughness', 'metalness'];
-
-   prop_list.forEach(name => {
-      if ((cfg[name] !== undefined) && (material[name] !== undefined)) {
-         material[name] = cfg[name];
-         material.needsUpdate = true;
-      }
-   });
-
+   if ((material.flatShading !== undefined) && (cfg.flatShading !== undefined))
+      material.flatShading = cfg.flatShading;
    material.inherentOpacity = args0.opacity ?? 1;
    material.inherentArgs = args0;
 
