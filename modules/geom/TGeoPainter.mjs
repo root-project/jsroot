@@ -603,7 +603,15 @@ class TGeoPainter extends ObjectPainter {
             { name: 'MeshDepthMaterial', value: 'depth' },
             { name: 'MeshMatcapMaterial', value: 'matcap' },
             { name: 'MeshToonMaterial', value: 'toon' }
-         ]
+         ],
+         getMaterialCfg: function() {
+             let cfg;
+             this.materialKinds.forEach(item => {
+                if (item.value === this.material_kind)
+                   cfg = item;
+             });
+             return cfg;
+         }
       };
 
       this.cleanup(true);
@@ -1502,6 +1510,7 @@ class TGeoPainter extends ObjectPainter {
       this.ctrl.materialKinds.forEach(i => { materialkindcfg[i.name] = i.value; });
       material.add(this.ctrl, 'material_kind', materialkindcfg).name('Kind')
               .listen().onChange(() => {
+            this.ensureBloom(false);
             this.changedMaterial();
             this.changedHighlight(); // for some materials bloom will not work
       });
@@ -1511,6 +1520,9 @@ class TGeoPainter extends ObjectPainter {
 
       material.add(this.ctrl, 'wireframe').name('Wireframe')
               .listen().onChange(() => this.changedWireFrame());
+
+      material.add(this, 'showMaterialDocu').name('Docu from threejs.org');
+
 
       // Camera options
       let camera = this._gui.addFolder('Camera'), camcfg = {}, overlaysfg = {}, overlay;
@@ -1563,6 +1575,13 @@ class TGeoPainter extends ObjectPainter {
          if (this.ctrl.trans_z || this.ctrl.trans_radial) transform.open();
       }
 
+   }
+
+   /** @summary show material docu */
+   showMaterialDocu() {
+      let cfg = this.ctrl.getMaterialCfg();
+      if (cfg?.name && typeof window !== 'undefined')
+         window.open('https://threejs.org/docs/index.html#api/en/materials/' + cfg.name, '_blank');
    }
 
    /** @summary Should be called when configuration of highlight is changed */
@@ -1630,13 +1649,8 @@ class TGeoPainter extends ObjectPainter {
       if (on === undefined) {
          if (this.ctrl.highlight_bloom === 0)
              this.ctrl.highlight_bloom = this._webgl;
-         let material_cfg;
-         this.ctrl.materialKinds.forEach(item => {
-            if (item.value === this.ctrl.material_kind)
-               material_cfg = item;
-         });
 
-         on = this.ctrl.highlight && this.ctrl.highlight_bloom && material_cfg?.emissive;
+         on = this.ctrl.highlight && this.ctrl.highlight_bloom && this.ctrl.getMaterialCfg()?.emissive;
       }
 
       if (on && !this._bloomPass) {
@@ -5835,7 +5849,10 @@ function build(obj, opt) {
       visibles = res.lst;
    }
 
-   clones.setConfig({ material_kind: 'lambert', wireframe: opt.wireframe ?? false, transparency: opt.transparency ?? 0 });
+   if (!opt.material_kind)
+      opt.material_kind = 'lambert';
+
+   clones.setConfig(opt);
 
    // collect shapes
    let shapes = clones.collectShapes(visibles);
