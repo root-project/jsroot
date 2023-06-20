@@ -959,6 +959,13 @@ class TGeoPainter extends ObjectPainter {
       if (d.check('ROTY', true)) res.rotatey = d.partAsFloat();
       if (d.check('ROTZ', true)) res.rotatez = d.partAsFloat();
 
+      if (d.check('PHONG')) res.material_kind = 'phong';
+      if (d.check('LAMBERT')) res.material_kind = 'lambert';
+      if (d.check('MATCAP')) res.material_kind = 'matcap';
+      if (d.check('TOON')) res.material_kind = 'toon';
+
+      if (d.check('AMBIENT')) res.light.kind = 'ambient';
+
       const getCamPart = () => {
          let neg = 1;
          if (d.part[0] == 'N') {
