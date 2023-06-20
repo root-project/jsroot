@@ -1743,21 +1743,21 @@ class TGeoPainter extends ObjectPainter {
          if (this.ctrl.highlight_bloom === 0)
              this.ctrl.highlight_bloom = this._webgl;
 
-         on = this.ctrl.highlight && this.ctrl.highlight_bloom && this.ctrl.getMaterialCfg()?.emissive;
+         on = this.ctrl.highlight_bloom && this.ctrl.getMaterialCfg()?.emissive;
       }
 
-      if (on && !this._bloomPass) {
+      if (on && !this._bloomComposer) {
          this._camera.layers.enable(_BLOOM_SCENE);
          this._bloomComposer = new EffectComposer(this._renderer);
          this._bloomComposer.addPass(new RenderPass(this._scene, this._camera));
-         this._bloomPass = new UnrealBloomPass(new Vector2(this._scene_width, this._scene_height), 1.5, 0.4, 0.85);
-         this._bloomPass.threshold = 0;
-         this._bloomPass.radius = 0;
-         this._bloomPass.renderToScreen = true;
-         this._bloomComposer.addPass(this._bloomPass);
+         let pass = new UnrealBloomPass(new Vector2(this._scene_width, this._scene_height), 1.5, 0.4, 0.85);
+         pass.threshold = 0;
+         pass.radius = 0;
+         pass.renderToScreen = true;
+         this._bloomComposer.addPass(pass);
          this._renderer.autoClear = false;
-      } else if (!on && this._bloomPass) {
-         delete this._bloomPass;
+      } else if (!on && this._bloomComposer) {
+         this._bloomComposer.dispose();
          delete this._bloomComposer;
          if(this._renderer)
             this._renderer.autoClear = true;
@@ -1765,8 +1765,8 @@ class TGeoPainter extends ObjectPainter {
          this._camera?.layers.set(_ENTIRE_SCENE);
       }
 
-      if (this._bloomPass)
-         this._bloomPass.strength = this.ctrl.bloom_strength;
+      if (this._bloomComposer?.passes)
+         this._bloomComposer.passes[1].strength = this.ctrl.bloom_strength;
    }
 
 
@@ -2057,7 +2057,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (!curr_mesh && !active_mesh) return false;
 
-      const get_ctrl = mesh => mesh.get_ctrl ? mesh.get_ctrl() : new GeoDrawingControl(mesh, this.ctrl.highlight_bloom);
+      const get_ctrl = mesh => mesh.get_ctrl ? mesh.get_ctrl() : new GeoDrawingControl(mesh, this.ctrl.highlight_bloom && this._bloomComposer);
 
       // check if selections are the same
       if (curr_mesh && active_mesh && (curr_mesh.length == active_mesh.length)) {
