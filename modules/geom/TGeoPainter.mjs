@@ -2934,8 +2934,8 @@ class TGeoPainter extends ObjectPainter {
 
       this._camera.near = this._overall_size / 350;
       this._camera.far = this._overall_size * 100;
-      this._fog.near = this._overall_size * 2;
-      this._fog.far = this._overall_size * 100;
+      this._fog.near = this._overall_size * 0.5;
+      this._fog.far = this._overall_size * 5;
 
       if (first_time)
          for (let naxis = 0; naxis < 3; ++naxis) {
