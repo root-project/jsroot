@@ -1,5 +1,5 @@
 import { select as d3_select } from '../d3.mjs';
-import { HelveticerRegularJson, Font, WebGLRenderer, /*WebGL1Renderer, */ WebGLRenderTarget,
+import { HelveticerRegularJson, Font, WebGLRenderer, WebGLRenderTarget,
          CanvasTexture, TextureLoader,
          BufferGeometry, BufferAttribute, Float32BufferAttribute,
          Vector2, Vector3, Color, Points, PointsMaterial,
@@ -458,8 +458,9 @@ async function createRender3D(width, height, render3d, args) {
          args.context = gl;
          gl.canvas = args.canvas;
 
+         globalThis.WebGLRenderingContext = function() {}; // workaround to prevent crash in three.js constructor
+
          let r = new WebGLRenderer(args);
-         // let r = new WebGL1Renderer(args); // starting from three.js r152
 
          r.jsroot_output = new WebGLRenderTarget(width, height);
          r.setRenderTarget(r.jsroot_output);
