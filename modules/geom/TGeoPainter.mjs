@@ -595,7 +595,10 @@ class TGeoPainter extends ObjectPainter {
          material_kind: 'lambert',
          materialKinds: [
             { name: 'MeshLambertMaterial', value: 'lambert' },
-            { name: 'MeshBasicMaterial', value: 'basic' }
+            { name: 'MeshBasicMaterial', value: 'basic' },
+            { name: 'MeshStandardMaterial', value: 'standard' },
+            { name: 'MeshPhysicalMaterial', value: 'physical' },
+            { name: 'MeshPhongMaterial', value: 'phong' }
          ]
       };
 

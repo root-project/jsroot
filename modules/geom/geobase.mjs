@@ -1,5 +1,6 @@
 import { DoubleSide, FrontSide, Object3D, Box3, Mesh, InstancedMesh, Vector2, Vector3, Matrix4,
-         MeshLambertMaterial, MeshBasicMaterial, Color, PerspectiveCamera, Frustum, Raycaster,
+         MeshLambertMaterial, MeshBasicMaterial, MeshStandardMaterial, MeshPhysicalMaterial, MeshPhongMaterial,
+         Color, PerspectiveCamera, Frustum, Raycaster,
          ShapeUtils, BufferGeometry, BufferAttribute } from '../three.mjs';
 import { isObject, isFunc, BIT } from '../core.mjs';
 import { createBufferGeometry, createNormal,
@@ -2290,12 +2291,22 @@ function createMaterial(cfg, args0) {
    args.transparent = args.opacity < 1;
    args.depthWrite = args.opactity == 1;
 
-
-
    let material;
 
    if (cfg.material_kind == 'basic') {
       material = new MeshBasicMaterial(args);
+   } else if (cfg.material_kind == 'standard') {
+      args.metalness = 0.5;
+      args.roughness = 0.1;
+      material = new MeshStandardMaterial(args);
+   } else if (cfg.material_kind == 'physical') {
+      args.metalness = 0.5;
+      args.roughness = 0.1;
+      args.reflectivity = 0.9;
+      material = new MeshPhysicalMaterial(args);
+   } else if (cfg.material_kind == 'phong') {
+      args.shininess = 0.9;
+      material = new MeshPhongMaterial(args);
    } else {
       args.vertexColors = false;
       material = new MeshLambertMaterial(args);
