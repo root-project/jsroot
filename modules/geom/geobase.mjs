@@ -2274,7 +2274,7 @@ function createFrustum(source) {
 /** @summary Create node material
   * @private */
 function createMaterial(cfg, args0) {
-   if (!cfg) cfg = { kind: 'lambert' };
+   if (!cfg) cfg = { material_kind: 'lambert' };
 
    let args = Object.assign({}, args0);
 
@@ -2294,7 +2294,7 @@ function createMaterial(cfg, args0) {
 
    let material;
 
-   if (cfg.kind == 'basic') {
+   if (cfg.material_kind == 'basic') {
       material = new MeshBasicMaterial(args);
    } else {
       args.vertexColors = false;
@@ -2387,9 +2387,9 @@ class ClonedNodes {
       return this.maxnodes;
    }
 
-   /** @summary Set material configuration */
-   setMaterialConfig(cfg) {
-      this.material_config = cfg;
+   /** @summary Set geo painter configuration - used for material creation */
+   setConfig(cfg) {
+      this._cfg = cfg;
    }
 
    /** @summary Insert node into existing array */
@@ -3045,7 +3045,7 @@ class ClonedNodes {
          let prop = { name: clone.name, nname: clone.name, shape: null, material: null, chlds: null },
              opacity = entry.opacity || 1, col = entry.color || '#0000FF';
          prop.fillcolor = new Color(col[0] == '#' ? col : `rgb(${col})`);
-         prop.material = createMaterial(this.material_config, { opacity, color: prop.fillcolor });
+         prop.material = createMaterial(this._cfg, { opacity, color: prop.fillcolor });
          return prop;
       }
 
@@ -3066,7 +3066,7 @@ class ClonedNodes {
          if (visible) {
             let opacity = Math.min(1, node.fRGBA[3]);
             prop.fillcolor = new Color(node.fRGBA[0], node.fRGBA[1], node.fRGBA[2]);
-            prop.material = createMaterial(this.material_config, { opacity, color: prop.fillcolor });
+            prop.material = createMaterial(this._cfg, { opacity, color: prop.fillcolor });
          }
 
          return prop;
@@ -3110,7 +3110,7 @@ class ClonedNodes {
          if (prop.fillcolor === undefined)
             prop.fillcolor = 'lightgrey';
 
-         prop.material = createMaterial(this.material_config, { opacity, color: prop.fillcolor });
+         prop.material = createMaterial(this._cfg, { opacity, color: prop.fillcolor });
       }
 
       return prop;

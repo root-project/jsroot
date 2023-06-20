@@ -589,7 +589,10 @@ class TGeoPainter extends ObjectPainter {
          _axis: 0,
          instancing: 0,
          _count: false,
-         material: { kind: 'lambert', transparency: 0, wireframe: false },
+         // material properties
+         wireframe: false,
+         transparency: 0,
+         material_kind: 'lambert',
          materialKinds: [
             { name: 'MeshLambertMaterial', value: 'lambert' },
             { name: 'MeshBasicMaterial', value: 'basic' }
@@ -1005,10 +1008,10 @@ class TGeoPainter extends ObjectPainter {
       if (d.check('COUNT')) res._count = true;
 
       if (d.check('TRANSP',true))
-         res.material.transparency = d.partAsInt(0,100)/100;
+         res.transparency = d.partAsInt(0,100)/100;
 
       if (d.check('OPACITY',true))
-         res.material.transparency = 1 - d.partAsInt(0,100)/100;
+         res.transparency = 1 - d.partAsInt(0,100)/100;
 
       if (d.check('AXISCENTER') || d.check('AXISC') || d.check('AC')) res._axis = 2;
       if (d.check('AXIS') || d.check('A')) res._axis = 1;
@@ -1118,7 +1121,7 @@ class TGeoPainter extends ObjectPainter {
       if (this.geo_manager)
          menu.addchk(this.ctrl.showtop, 'Show top volume', () => this.setShowTop(!this.ctrl.showtop));
 
-      menu.addchk(this.ctrl.material.wireframe, 'Wire frame', () => this.toggleWireFrame());
+      menu.addchk(this.ctrl.wireframe, 'Wire frame', () => this.toggleWireFrame());
 
       if(!this.getCanvPainter())
          menu.addchk(this.isTooltipAllowed(), 'Show tooltips', () => this.setTooltipAllowed('toggle'));
@@ -1197,7 +1200,7 @@ class TGeoPainter extends ObjectPainter {
    changedGlobalTransparency(transparency) {
       let func = isFunc(transparency) ? transparency : null;
       if (func || (transparency === undefined))
-         transparency = this.ctrl.material.transparency;
+         transparency = this.ctrl.transparency;
 
       this._toplevel?.traverse(node => {
          // ignore all kind of extra elements
@@ -1223,7 +1226,7 @@ class TGeoPainter extends ObjectPainter {
       this._toplevel?.traverse(node => {
          // ignore all kind of extra elements
          if (node.material?.inherentArgs !== undefined)
-            node.material = createMaterial(this.ctrl.material, node.material.inherentArgs);
+            node.material = createMaterial(this.ctrl, node.material.inherentArgs);
       });
 
       this.render3D();
@@ -1490,18 +1493,16 @@ class TGeoPainter extends ObjectPainter {
 
       let material = this._gui.addFolder('Material'), materialkindcfg = {};
       this.ctrl.materialKinds.forEach(i => { materialkindcfg[i.name] = i.value; });
-      material.add(this.ctrl.material, 'kind', materialkindcfg)
-            .name('Kind').listen().onChange(() => {
-
+      material.add(this.ctrl, 'material_kind', materialkindcfg).name('Kind')
+              .listen().onChange(() => {
             this.changedMaterial();
             this.changedHighlight(); // for some materials bloom will not work
-
       });
 
-      material.add(this.ctrl.material, 'transparency', 0, 1, 0.001).name('Transparency')
+      material.add(this.ctrl, 'transparency', 0, 1, 0.001).name('Transparency')
               .listen().onChange(value => this.changedGlobalTransparency(value));
 
-      material.add(this.ctrl.material, 'wireframe').name('Wireframe')
+      material.add(this.ctrl, 'wireframe').name('Wireframe')
               .listen().onChange(() => this.changedWireFrame());
 
       // Camera options
@@ -1621,7 +1622,7 @@ class TGeoPainter extends ObjectPainter {
       if (on === undefined) {
          if (this.ctrl.highlight_bloom === 0)
              this.ctrl.highlight_bloom = this._webgl;
-         on = this.ctrl.highlight_bloom && (this.ctrl.material.kind != 'basic');
+         on = this.ctrl.highlight_bloom && (this.ctrl.material_kind != 'basic');
       }
 
       if (on && !this._bloomPass) {
@@ -3823,7 +3824,7 @@ class TGeoPainter extends ObjectPainter {
          this._clones_owner = true;
          this._clones = new ClonedNodes(null, nodes);
          this._clones.name_prefix = this._clones.getNodeName(0);
-         this._clones.setMaterialConfig(this.ctrl.material);
+         this._clones.setConfig(this.ctrl);
 
          // normally only need when making selection, not used in geo viewer
          // this.geo_clones.setMaxVisNodes(draw_msg.maxvisnodes);
@@ -3892,7 +3893,7 @@ class TGeoPainter extends ObjectPainter {
 
          this._clones.setVisLevel(lvl);
          this._clones.setMaxVisNodes(maxnodes, this.ctrl.more);
-         this._clones.setMaterialConfig(this.ctrl.material);
+         this._clones.setConfig(this.ctrl);
 
          this._clones.name_prefix = name_prefix;
 
@@ -4741,13 +4742,13 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Toggle wireframe mode */
    toggleWireFrame() {
-      this.ctrl.material.wireframe = !this.ctrl.material.wireframe;
+      this.ctrl.wireframe = !this.ctrl.wireframe;
       this.changedWireFrame();
    }
 
    /** @summary Specify wireframe mode */
    setWireFrame(on) {
-      this.ctrl.material.wireframe = on ? true : false;
+      this.ctrl.wireframe = on ? true : false;
       this.changedWireFrame();
    }
 
@@ -5173,7 +5174,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary handle wireframe flag change in GUI
      * @private */
    changedWireFrame() {
-      this._scene?.traverse(obj => this.accessObjectWireFrame(obj, this.ctrl.material.wireframe));
+      this._scene?.traverse(obj => this.accessObjectWireFrame(obj, this.ctrl.wireframe));
 
       this.render3D();
    }
@@ -5820,7 +5821,7 @@ function build(obj, opt) {
       visibles = res.lst;
    }
 
-   clones.setMaterialConfig({ kind: 'lambert', wireframe: opt.wireframe ?? false, transparency: opt.transparency ?? 0 });
+   clones.setConfig({ material_kind: 'lambert', wireframe: opt.wireframe ?? false, transparency: opt.transparency ?? 0 });
 
    // collect shapes
    let shapes = clones.collectShapes(visibles);
