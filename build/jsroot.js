@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '19/06/2023';
+let version_date = '20/06/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -46750,6 +46750,582 @@ class SphereGeometry extends BufferGeometry {
 
 }
 
+class MeshStandardMaterial extends Material {
+
+	constructor( parameters ) {
+
+		super();
+
+		this.isMeshStandardMaterial = true;
+
+		this.defines = { 'STANDARD': '' };
+
+		this.type = 'MeshStandardMaterial';
+
+		this.color = new Color( 0xffffff ); // diffuse
+		this.roughness = 1.0;
+		this.metalness = 0.0;
+
+		this.map = null;
+
+		this.lightMap = null;
+		this.lightMapIntensity = 1.0;
+
+		this.aoMap = null;
+		this.aoMapIntensity = 1.0;
+
+		this.emissive = new Color( 0x000000 );
+		this.emissiveIntensity = 1.0;
+		this.emissiveMap = null;
+
+		this.bumpMap = null;
+		this.bumpScale = 1;
+
+		this.normalMap = null;
+		this.normalMapType = TangentSpaceNormalMap;
+		this.normalScale = new Vector2( 1, 1 );
+
+		this.displacementMap = null;
+		this.displacementScale = 1;
+		this.displacementBias = 0;
+
+		this.roughnessMap = null;
+
+		this.metalnessMap = null;
+
+		this.alphaMap = null;
+
+		this.envMap = null;
+		this.envMapIntensity = 1.0;
+
+		this.wireframe = false;
+		this.wireframeLinewidth = 1;
+		this.wireframeLinecap = 'round';
+		this.wireframeLinejoin = 'round';
+
+		this.flatShading = false;
+
+		this.fog = true;
+
+		this.setValues( parameters );
+
+	}
+
+	copy( source ) {
+
+		super.copy( source );
+
+		this.defines = { 'STANDARD': '' };
+
+		this.color.copy( source.color );
+		this.roughness = source.roughness;
+		this.metalness = source.metalness;
+
+		this.map = source.map;
+
+		this.lightMap = source.lightMap;
+		this.lightMapIntensity = source.lightMapIntensity;
+
+		this.aoMap = source.aoMap;
+		this.aoMapIntensity = source.aoMapIntensity;
+
+		this.emissive.copy( source.emissive );
+		this.emissiveMap = source.emissiveMap;
+		this.emissiveIntensity = source.emissiveIntensity;
+
+		this.bumpMap = source.bumpMap;
+		this.bumpScale = source.bumpScale;
+
+		this.normalMap = source.normalMap;
+		this.normalMapType = source.normalMapType;
+		this.normalScale.copy( source.normalScale );
+
+		this.displacementMap = source.displacementMap;
+		this.displacementScale = source.displacementScale;
+		this.displacementBias = source.displacementBias;
+
+		this.roughnessMap = source.roughnessMap;
+
+		this.metalnessMap = source.metalnessMap;
+
+		this.alphaMap = source.alphaMap;
+
+		this.envMap = source.envMap;
+		this.envMapIntensity = source.envMapIntensity;
+
+		this.wireframe = source.wireframe;
+		this.wireframeLinewidth = source.wireframeLinewidth;
+		this.wireframeLinecap = source.wireframeLinecap;
+		this.wireframeLinejoin = source.wireframeLinejoin;
+
+		this.flatShading = source.flatShading;
+
+		this.fog = source.fog;
+
+		return this;
+
+	}
+
+}
+
+class MeshPhysicalMaterial extends MeshStandardMaterial {
+
+	constructor( parameters ) {
+
+		super();
+
+		this.isMeshPhysicalMaterial = true;
+
+		this.defines = {
+
+			'STANDARD': '',
+			'PHYSICAL': ''
+
+		};
+
+		this.type = 'MeshPhysicalMaterial';
+
+		this.clearcoatMap = null;
+		this.clearcoatRoughness = 0.0;
+		this.clearcoatRoughnessMap = null;
+		this.clearcoatNormalScale = new Vector2( 1, 1 );
+		this.clearcoatNormalMap = null;
+
+		this.ior = 1.5;
+
+		Object.defineProperty( this, 'reflectivity', {
+			get: function () {
+
+				return ( clamp( 2.5 * ( this.ior - 1 ) / ( this.ior + 1 ), 0, 1 ) );
+
+			},
+			set: function ( reflectivity ) {
+
+				this.ior = ( 1 + 0.4 * reflectivity ) / ( 1 - 0.4 * reflectivity );
+
+			}
+		} );
+
+		this.iridescenceMap = null;
+		this.iridescenceIOR = 1.3;
+		this.iridescenceThicknessRange = [ 100, 400 ];
+		this.iridescenceThicknessMap = null;
+
+		this.sheenColor = new Color( 0x000000 );
+		this.sheenColorMap = null;
+		this.sheenRoughness = 1.0;
+		this.sheenRoughnessMap = null;
+
+		this.transmissionMap = null;
+
+		this.thickness = 0;
+		this.thicknessMap = null;
+		this.attenuationDistance = Infinity;
+		this.attenuationColor = new Color( 1, 1, 1 );
+
+		this.specularIntensity = 1.0;
+		this.specularIntensityMap = null;
+		this.specularColor = new Color( 1, 1, 1 );
+		this.specularColorMap = null;
+
+		this._sheen = 0.0;
+		this._clearcoat = 0;
+		this._iridescence = 0;
+		this._transmission = 0;
+
+		this.setValues( parameters );
+
+	}
+
+	get sheen() {
+
+		return this._sheen;
+
+	}
+
+	set sheen( value ) {
+
+		if ( this._sheen > 0 !== value > 0 ) {
+
+			this.version ++;
+
+		}
+
+		this._sheen = value;
+
+	}
+
+	get clearcoat() {
+
+		return this._clearcoat;
+
+	}
+
+	set clearcoat( value ) {
+
+		if ( this._clearcoat > 0 !== value > 0 ) {
+
+			this.version ++;
+
+		}
+
+		this._clearcoat = value;
+
+	}
+
+	get iridescence() {
+
+		return this._iridescence;
+
+	}
+
+	set iridescence( value ) {
+
+		if ( this._iridescence > 0 !== value > 0 ) {
+
+			this.version ++;
+
+		}
+
+		this._iridescence = value;
+
+	}
+
+	get transmission() {
+
+		return this._transmission;
+
+	}
+
+	set transmission( value ) {
+
+		if ( this._transmission > 0 !== value > 0 ) {
+
+			this.version ++;
+
+		}
+
+		this._transmission = value;
+
+	}
+
+	copy( source ) {
+
+		super.copy( source );
+
+		this.defines = {
+
+			'STANDARD': '',
+			'PHYSICAL': ''
+
+		};
+
+		this.clearcoat = source.clearcoat;
+		this.clearcoatMap = source.clearcoatMap;
+		this.clearcoatRoughness = source.clearcoatRoughness;
+		this.clearcoatRoughnessMap = source.clearcoatRoughnessMap;
+		this.clearcoatNormalMap = source.clearcoatNormalMap;
+		this.clearcoatNormalScale.copy( source.clearcoatNormalScale );
+
+		this.ior = source.ior;
+
+		this.iridescence = source.iridescence;
+		this.iridescenceMap = source.iridescenceMap;
+		this.iridescenceIOR = source.iridescenceIOR;
+		this.iridescenceThicknessRange = [ ...source.iridescenceThicknessRange ];
+		this.iridescenceThicknessMap = source.iridescenceThicknessMap;
+
+		this.sheen = source.sheen;
+		this.sheenColor.copy( source.sheenColor );
+		this.sheenColorMap = source.sheenColorMap;
+		this.sheenRoughness = source.sheenRoughness;
+		this.sheenRoughnessMap = source.sheenRoughnessMap;
+
+		this.transmission = source.transmission;
+		this.transmissionMap = source.transmissionMap;
+
+		this.thickness = source.thickness;
+		this.thicknessMap = source.thicknessMap;
+		this.attenuationDistance = source.attenuationDistance;
+		this.attenuationColor.copy( source.attenuationColor );
+
+		this.specularIntensity = source.specularIntensity;
+		this.specularIntensityMap = source.specularIntensityMap;
+		this.specularColor.copy( source.specularColor );
+		this.specularColorMap = source.specularColorMap;
+
+		return this;
+
+	}
+
+}
+
+class MeshPhongMaterial extends Material {
+
+	constructor( parameters ) {
+
+		super();
+
+		this.isMeshPhongMaterial = true;
+
+		this.type = 'MeshPhongMaterial';
+
+		this.color = new Color( 0xffffff ); // diffuse
+		this.specular = new Color( 0x111111 );
+		this.shininess = 30;
+
+		this.map = null;
+
+		this.lightMap = null;
+		this.lightMapIntensity = 1.0;
+
+		this.aoMap = null;
+		this.aoMapIntensity = 1.0;
+
+		this.emissive = new Color( 0x000000 );
+		this.emissiveIntensity = 1.0;
+		this.emissiveMap = null;
+
+		this.bumpMap = null;
+		this.bumpScale = 1;
+
+		this.normalMap = null;
+		this.normalMapType = TangentSpaceNormalMap;
+		this.normalScale = new Vector2( 1, 1 );
+
+		this.displacementMap = null;
+		this.displacementScale = 1;
+		this.displacementBias = 0;
+
+		this.specularMap = null;
+
+		this.alphaMap = null;
+
+		this.envMap = null;
+		this.combine = MultiplyOperation;
+		this.reflectivity = 1;
+		this.refractionRatio = 0.98;
+
+		this.wireframe = false;
+		this.wireframeLinewidth = 1;
+		this.wireframeLinecap = 'round';
+		this.wireframeLinejoin = 'round';
+
+		this.flatShading = false;
+
+		this.fog = true;
+
+		this.setValues( parameters );
+
+	}
+
+	copy( source ) {
+
+		super.copy( source );
+
+		this.color.copy( source.color );
+		this.specular.copy( source.specular );
+		this.shininess = source.shininess;
+
+		this.map = source.map;
+
+		this.lightMap = source.lightMap;
+		this.lightMapIntensity = source.lightMapIntensity;
+
+		this.aoMap = source.aoMap;
+		this.aoMapIntensity = source.aoMapIntensity;
+
+		this.emissive.copy( source.emissive );
+		this.emissiveMap = source.emissiveMap;
+		this.emissiveIntensity = source.emissiveIntensity;
+
+		this.bumpMap = source.bumpMap;
+		this.bumpScale = source.bumpScale;
+
+		this.normalMap = source.normalMap;
+		this.normalMapType = source.normalMapType;
+		this.normalScale.copy( source.normalScale );
+
+		this.displacementMap = source.displacementMap;
+		this.displacementScale = source.displacementScale;
+		this.displacementBias = source.displacementBias;
+
+		this.specularMap = source.specularMap;
+
+		this.alphaMap = source.alphaMap;
+
+		this.envMap = source.envMap;
+		this.combine = source.combine;
+		this.reflectivity = source.reflectivity;
+		this.refractionRatio = source.refractionRatio;
+
+		this.wireframe = source.wireframe;
+		this.wireframeLinewidth = source.wireframeLinewidth;
+		this.wireframeLinecap = source.wireframeLinecap;
+		this.wireframeLinejoin = source.wireframeLinejoin;
+
+		this.flatShading = source.flatShading;
+
+		this.fog = source.fog;
+
+		return this;
+
+	}
+
+}
+
+class MeshToonMaterial extends Material {
+
+	constructor( parameters ) {
+
+		super();
+
+		this.isMeshToonMaterial = true;
+
+		this.defines = { 'TOON': '' };
+
+		this.type = 'MeshToonMaterial';
+
+		this.color = new Color( 0xffffff );
+
+		this.map = null;
+		this.gradientMap = null;
+
+		this.lightMap = null;
+		this.lightMapIntensity = 1.0;
+
+		this.aoMap = null;
+		this.aoMapIntensity = 1.0;
+
+		this.emissive = new Color( 0x000000 );
+		this.emissiveIntensity = 1.0;
+		this.emissiveMap = null;
+
+		this.bumpMap = null;
+		this.bumpScale = 1;
+
+		this.normalMap = null;
+		this.normalMapType = TangentSpaceNormalMap;
+		this.normalScale = new Vector2( 1, 1 );
+
+		this.displacementMap = null;
+		this.displacementScale = 1;
+		this.displacementBias = 0;
+
+		this.alphaMap = null;
+
+		this.wireframe = false;
+		this.wireframeLinewidth = 1;
+		this.wireframeLinecap = 'round';
+		this.wireframeLinejoin = 'round';
+
+		this.fog = true;
+
+		this.setValues( parameters );
+
+	}
+
+	copy( source ) {
+
+		super.copy( source );
+
+		this.color.copy( source.color );
+
+		this.map = source.map;
+		this.gradientMap = source.gradientMap;
+
+		this.lightMap = source.lightMap;
+		this.lightMapIntensity = source.lightMapIntensity;
+
+		this.aoMap = source.aoMap;
+		this.aoMapIntensity = source.aoMapIntensity;
+
+		this.emissive.copy( source.emissive );
+		this.emissiveMap = source.emissiveMap;
+		this.emissiveIntensity = source.emissiveIntensity;
+
+		this.bumpMap = source.bumpMap;
+		this.bumpScale = source.bumpScale;
+
+		this.normalMap = source.normalMap;
+		this.normalMapType = source.normalMapType;
+		this.normalScale.copy( source.normalScale );
+
+		this.displacementMap = source.displacementMap;
+		this.displacementScale = source.displacementScale;
+		this.displacementBias = source.displacementBias;
+
+		this.alphaMap = source.alphaMap;
+
+		this.wireframe = source.wireframe;
+		this.wireframeLinewidth = source.wireframeLinewidth;
+		this.wireframeLinecap = source.wireframeLinecap;
+		this.wireframeLinejoin = source.wireframeLinejoin;
+
+		this.fog = source.fog;
+
+		return this;
+
+	}
+
+}
+
+class MeshNormalMaterial extends Material {
+
+	constructor( parameters ) {
+
+		super();
+
+		this.isMeshNormalMaterial = true;
+
+		this.type = 'MeshNormalMaterial';
+
+		this.bumpMap = null;
+		this.bumpScale = 1;
+
+		this.normalMap = null;
+		this.normalMapType = TangentSpaceNormalMap;
+		this.normalScale = new Vector2( 1, 1 );
+
+		this.displacementMap = null;
+		this.displacementScale = 1;
+		this.displacementBias = 0;
+
+		this.wireframe = false;
+		this.wireframeLinewidth = 1;
+
+		this.flatShading = false;
+
+		this.setValues( parameters );
+
+	}
+
+	copy( source ) {
+
+		super.copy( source );
+
+		this.bumpMap = source.bumpMap;
+		this.bumpScale = source.bumpScale;
+
+		this.normalMap = source.normalMap;
+		this.normalMapType = source.normalMapType;
+		this.normalScale.copy( source.normalScale );
+
+		this.displacementMap = source.displacementMap;
+		this.displacementScale = source.displacementScale;
+		this.displacementBias = source.displacementBias;
+
+		this.wireframe = source.wireframe;
+		this.wireframeLinewidth = source.wireframeLinewidth;
+
+		this.flatShading = source.flatShading;
+
+		return this;
+
+	}
+
+}
+
 class MeshLambertMaterial extends Material {
 
 	constructor( parameters ) {
@@ -46849,6 +47425,81 @@ class MeshLambertMaterial extends Material {
 		this.wireframeLinewidth = source.wireframeLinewidth;
 		this.wireframeLinecap = source.wireframeLinecap;
 		this.wireframeLinejoin = source.wireframeLinejoin;
+
+		this.flatShading = source.flatShading;
+
+		this.fog = source.fog;
+
+		return this;
+
+	}
+
+}
+
+class MeshMatcapMaterial extends Material {
+
+	constructor( parameters ) {
+
+		super();
+
+		this.isMeshMatcapMaterial = true;
+
+		this.defines = { 'MATCAP': '' };
+
+		this.type = 'MeshMatcapMaterial';
+
+		this.color = new Color( 0xffffff ); // diffuse
+
+		this.matcap = null;
+
+		this.map = null;
+
+		this.bumpMap = null;
+		this.bumpScale = 1;
+
+		this.normalMap = null;
+		this.normalMapType = TangentSpaceNormalMap;
+		this.normalScale = new Vector2( 1, 1 );
+
+		this.displacementMap = null;
+		this.displacementScale = 1;
+		this.displacementBias = 0;
+
+		this.alphaMap = null;
+
+		this.flatShading = false;
+
+		this.fog = true;
+
+		this.setValues( parameters );
+
+	}
+
+
+	copy( source ) {
+
+		super.copy( source );
+
+		this.defines = { 'MATCAP': '' };
+
+		this.color.copy( source.color );
+
+		this.matcap = source.matcap;
+
+		this.map = source.map;
+
+		this.bumpMap = source.bumpMap;
+		this.bumpScale = source.bumpScale;
+
+		this.normalMap = source.normalMap;
+		this.normalMapType = source.normalMapType;
+		this.normalScale.copy( source.normalScale );
+
+		this.displacementMap = source.displacementMap;
+		this.displacementScale = source.displacementScale;
+		this.displacementBias = source.displacementBias;
+
+		this.alphaMap = source.alphaMap;
 
 		this.flatShading = source.flatShading;
 
@@ -80942,6 +81593,67 @@ function createFrustum(source) {
    return frustum;
 }
 
+/** @summary Create node material
+  * @private */
+function createMaterial(cfg, args0) {
+   if (!cfg) cfg = { material_kind: 'lambert' };
+
+   let args = Object.assign({}, args0);
+
+   if (args.opacity === undefined)
+      args.opacity = 1;
+
+   if (cfg.transparency)
+      args.opacity = Math.min(1 - cfg.transparency, args.opacity);
+
+   args.wireframe = cfg.wireframe ?? false;
+   if (!args.color) args.color = 'red';
+   args.side = FrontSide;
+   args.transparent = args.opacity < 1;
+   args.depthWrite = args.opactity == 1;
+
+   let material;
+
+   if (cfg.material_kind == 'basic') {
+      material = new MeshBasicMaterial(args);
+   } else if (cfg.material_kind == 'depth') {
+      delete args.color;
+      material = new MeshDepthMaterial(args);
+   } else if (cfg.material_kind == 'toon') {
+      material = new MeshToonMaterial(args);
+   } else if (cfg.material_kind == 'matcap') {
+      delete args.wireframe;
+      material = new MeshMatcapMaterial(args);
+   } else if (cfg.material_kind == 'standard') {
+      args.metalness = cfg.metalness ?? 0.5;
+      args.roughness = cfg.roughness ?? 0.1;
+      material = new MeshStandardMaterial(args);
+   } else if (cfg.material_kind == 'normal') {
+      delete args.color;
+      material = new MeshNormalMaterial(args);
+   } else if (cfg.material_kind == 'physical') {
+      args.metalness = cfg.metalness ?? 0.5;
+      args.roughness = cfg.roughness ?? 0.1;
+      args.reflectivity = cfg.reflectivity ?? 0.5;
+      args.emissive = args.color;
+      material = new MeshPhysicalMaterial(args);
+   } else if (cfg.material_kind == 'phong') {
+      args.shininess = cfg.shininess ?? 0.9;
+      material = new MeshPhongMaterial(args);
+   } else {
+      args.vertexColors = false;
+      material = new MeshLambertMaterial(args);
+   }
+
+   if ((material.flatShading !== undefined) && (cfg.flatShading !== undefined))
+      material.flatShading = cfg.flatShading;
+   material.inherentOpacity = args0.opacity ?? 1;
+   material.inherentArgs = args0;
+
+   return material;
+}
+
+
 /** @summary Compares two stacks.
   * @return {Number} 0 if same, -1 when stack1 < stack2, +1 when stack1 > stack2
   * @private */
@@ -81019,6 +81731,11 @@ class ClonedNodes {
    /** @summary Returns configured maximal number of visible nodes */
    getMaxVisNodes() {
       return this.maxnodes;
+   }
+
+   /** @summary Set geo painter configuration - used for material creation */
+   setConfig(cfg) {
+      this._cfg = cfg;
    }
 
    /** @summary Insert node into existing array */
@@ -81674,12 +82391,7 @@ class ClonedNodes {
          let prop = { name: clone.name, nname: clone.name, shape: null, material: null, chlds: null },
              opacity = entry.opacity || 1, col = entry.color || '#0000FF';
          prop.fillcolor = new Color(col[0] == '#' ? col : `rgb(${col})`);
-         prop.material = new MeshLambertMaterial({ transparent: opacity < 1,
-                          opacity, wireframe: false, color: prop.fillcolor,
-                          side: FrontSide, vertexColors: false,
-                          depthWrite: opacity == 1 });
-         prop.material.inherentOpacity = opacity;
-
+         prop.material = createMaterial(this._cfg, { opacity, color: prop.fillcolor });
          return prop;
       }
 
@@ -81699,11 +82411,8 @@ class ClonedNodes {
 
          {
             let opacity = Math.min(1, node.fRGBA[3]);
-            prop.fillcolor = new Color( node.fRGBA[0], node.fRGBA[1], node.fRGBA[2] );
-            prop.material = new MeshLambertMaterial({ transparent: opacity < 1,
-                                                      opacity, wireframe: false, color: prop.fillcolor,
-                                                      side: FrontSide, vertexColors: false, depthWrite: opacity == 1 });
-            prop.material.inherentOpacity = opacity;
+            prop.fillcolor = new Color(node.fRGBA[0], node.fRGBA[1], node.fRGBA[2]);
+            prop.material = createMaterial(this._cfg, { opacity, color: prop.fillcolor });
          }
 
          return prop;
@@ -81747,11 +82456,7 @@ class ClonedNodes {
          if (prop.fillcolor === undefined)
             prop.fillcolor = 'lightgrey';
 
-         prop.material = new MeshLambertMaterial({ transparent: opacity < 1,
-                                                   opacity, wireframe: false, color: prop.fillcolor,
-                                                   side: FrontSide, vertexColors: false,
-                                                   depthWrite: opacity == 1 });
-         prop.material.inherentOpacity = opacity;
+         prop.material = createMaterial(this._cfg, { opacity, color: prop.fillcolor });
       }
 
       return prop;
@@ -82635,7 +83340,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
          }
 
       for (let i = 0; i < resort.length; ++i) {
-         resort[i].renderOrder = Math.round( maxorder - (i+1) / (resort.length+1) * (maxorder-minorder));
+         resort[i].renderOrder = Math.round(maxorder - (i+1) / (resort.length + 1) * (maxorder - minorder));
          delete resort[i].$jsroot_index;
          delete resort[i].$jsroot_distance;
       }
@@ -85401,9 +86106,9 @@ class Toolbar {
          '.geo_toolbar_btn path { fill: rgba(0, 31, 95, 0.2); }'+
          '.geo_toolbar_btn path .active, '+
          '.geo_toolbar_btn path:hover { fill: rgba(0, 22, 72, 0.5); }'+
-         '.geo_toolbar_btn_bright path { fill: rgba(255, 224, 160, 0.2); }'+
+         '.geo_toolbar_btn_bright path { fill: rgba(255, 224, 160, 0.8); }'+
          '.geo_toolbar_btn_bright path .active,'+
-         '.geo_toolbar_btn_bright path:hover { fill: rgba(255, 233, 183, 0.5); }', this.element.node());
+         '.geo_toolbar_btn_bright path:hover { fill: rgb(255, 233, 183); }', this.element.node());
    }
 
    /** @summary add buttons */
@@ -85437,10 +86142,9 @@ class Toolbar {
 
    /** @summary change brightness */
    changeBrightness(bright) {
+      this.element?.selectAll(this.bright ? '.geo_toolbar_btn_bright' : '.geo_toolbar_btn')
+                   .attr('class', bright ? 'geo_toolbar_btn_bright' : 'geo_toolbar_btn');
       this.bright = bright;
-      if (this.element)
-         this.element.selectAll(bright ? '.geo_toolbar_btn' : '.geo_toolbar_btn_bright')
-                     .attr('class', !bright ? 'geo_toolbar_btn' : 'geo_toolbar_btn_bright');
    }
 
    /** @summary cleanup toolbar */
@@ -85589,17 +86293,35 @@ class TGeoPainter extends ObjectPainter {
          clip: [{ name: 'x', enabled: false, value: 0, min: -100, max: 100 },
                 { name: 'y', enabled: false, value: 0, min: -100, max: 100 },
                 { name: 'z', enabled: false, value: 0, min: -100, max: 100 }],
-         bloom: { enabled: true, strength: 1.5 },
+         _highlight: 0,
+         highlight: 0,
+         highlight_bloom: 0,
+         highlight_scene: 0,
+         highlight_color: '#00ff00',
+         bloom_strength: 1.5,
+         more: 1,
+         maxfaces: 0,
+         vislevel: undefined,
+         maxnodes: undefined,
+         dflt_colors: false,
+
          info: { num_meshes: 0, num_faces: 0, num_shapes: 0 },
-         highlight: false,
-         highlight_scene: false,
          depthTest: true,
          depthMethod: 'dflt',
          select_in_view: false,
          update_browser: true,
+         use_fog: false,
          light: { kind: 'points', top: false, bottom: false, left: false, right: false, front: false, specular: true, power: 1 },
+         lightKindItems: [
+            { name: 'AmbientLight', value: 'ambient' },
+            { name: 'PointLight', value: 'points' },
+            { name: 'HemisphereLight', value: 'hemisphere' },
+            { name: 'Ambient + Point', value: 'mix' }
+         ],
          trans_radial: 0,
          trans_z: 0,
+         scale: new Vector3(1,1,1),
+         zoom: 1.0, rotatey: 0, rotatez: 0,
          depthMethodItems: [
             { name: 'Default', value: 'dflt' },
             { name: 'Raytraicing', value: 'ray' },
@@ -85628,7 +86350,46 @@ class TGeoPainter extends ObjectPainter {
             { name: 'Grid', value: 'grid' },
             { name: 'Grid background', value: 'gridb' },
             { name: 'Grid foreground', value: 'gridf' }
-         ]
+         ],
+         camera_kind: 'perspective',
+         camera_overlay: 'gridb',
+         rotate: false,
+         background: '#FFFFFF',
+         can_rotate: true,
+         _axis: 0,
+         instancing: 0,
+         _count: false,
+         // material properties
+         wireframe: false,
+         transparency: 0,
+         flatShading: false,
+         roughness: 0.5,
+         metalness: 0.5,
+         shininess: 0,
+         reflectivity: 0.5,
+         material_kind: 'lambert',
+         materialKinds: [
+            { name: 'MeshLambertMaterial', value: 'lambert', emissive: true, props: [{ name: 'flatShading' }] },
+            { name: 'MeshBasicMaterial', value: 'basic' },
+            { name: 'MeshStandardMaterial', value: 'standard', emissive: true,
+                props: [{ name: 'flatShading' }, { name: 'roughness', min: 0, max: 1, step: 0.001 }, { name: 'metalness', min: 0, max: 1, step: 0.001 }] },
+            { name: 'MeshPhysicalMaterial', value: 'physical', emissive: true,
+               props: [{ name: 'flatShading' }, { name: 'roughness', min: 0, max: 1, step: 0.001 }, { name: 'metalness', min: 0, max: 1, step: 0.001 }, { name: 'reflectivity', min: 0, max: 1, step: 0.001 }] },
+            { name: 'MeshPhongMaterial', value: 'phong', emissive: true,
+                props: [{ name: 'flatShading' }, { name: 'shininess', min: 0, max: 100, step: 0.1 }]},
+            { name: 'MeshNormalMaterial', value: 'normal', props: [{ name: 'flatShading' }] },
+            { name: 'MeshDepthMaterial', value: 'depth' },
+            { name: 'MeshMatcapMaterial', value: 'matcap' },
+            { name: 'MeshToonMaterial', value: 'toon' }
+         ],
+         getMaterialCfg: function() {
+             let cfg;
+             this.materialKinds.forEach(item => {
+                if (item.value === this.material_kind)
+                   cfg = item;
+             });
+             return cfg;
+         }
       };
 
       this.cleanup(true);
@@ -85907,19 +86668,7 @@ class TGeoPainter extends ObjectPainter {
       if (this.superimpose && (opt.indexOf('same') == 0))
          opt = opt.slice(4);
 
-      let res = { _axis: 0, instancing: 0,
-                  _count: false, wireframe: false,
-                   scale: new Vector3(1,1,1), zoom: 1.0, rotatey: 0, rotatez: 0,
-                   more: 1, maxfaces: 0,
-                   vislevel: undefined, maxnodes: undefined, dflt_colors: false,
-                   use_worker: false, show_controls: false,
-                   highlight: false, highlight_scene: false, no_screen: false,
-                   project: '', projectPos: undefined,
-                   is_main: false, tracks: false, showtop: false, can_rotate: true,
-                   camera_kind: 'perspective', camera_overlay: 'gridb',
-                   clipx: false, clipy: false, clipz: false, usebloom: true, outline: false,
-                   script_name: '', transparency: 0, rotate: false, background: '#FFFFFF',
-                   depthMethod: 'dflt', mouse_tmout: 50, trans_radial: 0, trans_z: 0 };
+      let res = this.ctrl;
 
       let macro = opt.indexOf('macro:');
       if (macro >= 0) {
@@ -86017,11 +86766,11 @@ class TGeoPainter extends ObjectPainter {
 
       if (d.check('CONTROLS') || d.check('CTRL')) res.show_controls = true;
 
-      if (d.check('CLIPXYZ')) res.clipx = res.clipy = res.clipz = true;
-      if (d.check('CLIPX')) res.clipx = true;
-      if (d.check('CLIPY')) res.clipy = true;
-      if (d.check('CLIPZ')) res.clipz = true;
-      if (d.check('CLIP')) res.clipx = res.clipy = res.clipz = true;
+      if (d.check('CLIPXYZ')) res.clip[0].enabled = res.clip[1].enabled = res.clip[2].enabled = true;
+      if (d.check('CLIPX')) res.clip[0].enabled = true;
+      if (d.check('CLIPY')) res.clip[1].enabled = true;
+      if (d.check('CLIPZ')) res.clip[2].enabled = true;
+      if (d.check('CLIP')) res.clip[0].enabled = res.clip[1].enabled = res.clip[2].enabled = true;
 
       if (d.check('PROJX', true)) { res.project = 'x'; if (d.partAsInt(1) > 0) res.projectPos = d.partAsInt(); res.can_rotate = 0; }
       if (d.check('PROJY', true)) { res.project = 'y'; if (d.partAsInt(1) > 0) res.projectPos = d.partAsInt(); res.can_rotate = 0; }
@@ -86029,17 +86778,20 @@ class TGeoPainter extends ObjectPainter {
 
       if (d.check('DFLT_COLORS') || d.check('DFLT')) res.dflt_colors = true;
       d.check('SSAO'); // deprecated
-      if (d.check('NOBLOOM')) res.usebloom = false;
-      if (d.check('BLOOM')) res.usebloom = true;
+      if (d.check('NOBLOOM')) res.highlight_bloom = false;
+      if (d.check('BLOOM')) res.highlight_bloom = true;
       if (d.check('OUTLINE')) res.outline = true;
 
       if (d.check('NOWORKER')) res.use_worker = -1;
       if (d.check('WORKER')) res.use_worker = 1;
 
-      if (d.check('NOHIGHLIGHT') || d.check('NOHIGH')) res.highlight_scene = res.highlight = 0;
+      if (d.check('NOFOG')) res.use_fog = false;
+      if (d.check('FOG')) res.use_fog = true;
+
+      if (d.check('NOHIGHLIGHT') || d.check('NOHIGH')) res.highlight_scene = res.highlight = false;
       if (d.check('HIGHLIGHT')) res.highlight_scene = res.highlight = true;
-      if (d.check('HSCENEONLY')) { res.highlight_scene = true; res.highlight = 0; }
-      if (d.check('NOHSCENE')) res.highlight_scene = 0;
+      if (d.check('HSCENEONLY')) { res.highlight_scene = true; res.highlight = false; }
+      if (d.check('NOHSCENE')) res.highlight_scene = false;
       if (d.check('HSCENE')) res.highlight_scene = true;
 
       if (d.check('WIREFRAME') || d.check('WIRE')) res.wireframe = true;
@@ -86072,7 +86824,8 @@ class TGeoPainter extends ObjectPainter {
       if (res._yup === undefined)
          res._yup = this.getCanvSvg().empty();
 
-      return res;
+      // let reuse for storing origin options
+      this.options = res;
    }
 
    /** @summary Activate specified items in the browser */
@@ -86169,12 +86922,31 @@ class TGeoPainter extends ObjectPainter {
       if(!this.getCanvPainter())
          menu.addchk(this.isTooltipAllowed(), 'Show tooltips', () => this.setTooltipAllowed('toggle'));
 
-      menu.addchk(this.ctrl.highlight, 'Highlight volumes', () => {
-         this.ctrl.highlight = !this.ctrl.highlight;
+      menu.add('sub:Highlight');
+
+      menu.addchk(!this.ctrl.highlight, 'Off', () => {
+         this.ctrl.highlight = false;
+         this.changedHighlight();
       });
-      menu.addchk(this.ctrl.highlight_scene, 'Highlight scene', () => {
-         this.ctrl.highlight_scene = !this.ctrl.highlight_scene;
+      menu.addchk(this.ctrl.highlight && !this.ctrl.highlight_bloom, 'Normal', () => {
+         this.ctrl.highlight = true;
+         this.ctrl.highlight_bloom = false;
+         this.changedHighlight();
       });
+      menu.addchk(this.ctrl.highlight && this.ctrl.highlight_bloom, 'Bloom', () => {
+         this.ctrl.highlight = true;
+         this.ctrl.highlight_bloom = true;
+         this.changedHighlight();
+      });
+
+      menu.add('separator');
+
+      menu.addchk(this.ctrl.highlight_scene, 'Scene', flag => {
+         this.ctrl.highlight_scene = flag;
+         this.changedHighlight();
+      });
+
+      menu.add('endsub:');
 
       menu.add('sub:Camera');
       menu.add('Reset position', () => this.focusCamera());
@@ -86221,22 +86993,58 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Method used to set transparency for all geometrical shapes
      * @param {number|Function} transparency - one could provide function
      * @param {boolean} [skip_render] - if specified, do not perform rendering */
-   changedGlobalTransparency(transparency, skip_render) {
+   changedGlobalTransparency(transparency) {
       let func = isFunc(transparency) ? transparency : null;
       if (func || (transparency === undefined))
          transparency = this.ctrl.transparency;
-      this._toplevel.traverse(node => {
-         if (node?.material?.inherentOpacity !== undefined) {
-            let t = func ? func(node) : undefined;
-            if (t !== undefined)
-               node.material.opacity = 1 - t;
-            else
-               node.material.opacity = Math.min(1 - (transparency || 0), node.material.inherentOpacity);
-            node.material.transparent = node.material.opacity < 1;
+
+      this._toplevel?.traverse(node => {
+         // ignore all kind of extra elements
+         if (node?.material?.inherentOpacity === undefined)
+            return;
+
+         let t = func ? func(node) : undefined;
+         if (t !== undefined)
+            node.material.opacity = 1 - t;
+         else
+            node.material.opacity = Math.min(1 - (transparency || 0), node.material.inherentOpacity);
+
+         node.material.depthWrite = node.material.opacity == 1;
+         node.material.transparent = node.material.opacity < 1;
+      });
+
+      this.render3D();
+   }
+
+   /** @summary Method used to interactively change material kinds */
+   changedMaterial() {
+
+      this._toplevel?.traverse(node => {
+         // ignore all kind of extra elements
+         if (node.material?.inherentArgs !== undefined)
+            node.material = createMaterial(this.ctrl, node.material.inherentArgs);
+      });
+
+      this.render3D();
+   }
+
+   /** @summary Change for all materials that property */
+   changeMaterialProperty(name) {
+      let value = this.ctrl[name];
+      if (value === undefined)
+         return console.error('No property ', name);
+
+      this._toplevel?.traverse(node => {
+         // ignore all kind of extra elements
+         if (node.material?.inherentArgs === undefined) return;
+
+         if (node.material[name] !== undefined) {
+            node.material[name] = value;
+            node.material.needsUpdate = true;
          }
       });
-      if (!skip_render)
-         this.render3D(-1);
+
+      this.render3D();
    }
 
    /** @summary Reset transformation */
@@ -86401,7 +87209,8 @@ class TGeoPainter extends ObjectPainter {
       if (main.style('position') == 'static')
          main.style('position', 'relative');
 
-      this._gui = new GUI({ container: main.node(), closeFolders: true, width: Math.min(650, this._renderer.domElement.width / 2) });
+      this._gui = new GUI({ container: main.node(), closeFolders: true, width: Math.min(300, this._scene_width / 2),
+                            title: 'Settings' });
 
       let dom = this._gui.domElement;
       dom.style.position = 'absolute';
@@ -86409,6 +87218,12 @@ class TGeoPainter extends ObjectPainter {
       dom.style.right = 0;
 
       this._gui.painter = this;
+
+      const makeLil = items => {
+         let lil = {};
+         items.forEach(i => { lil[i.name] = i.value; });
+         return lil;
+      };
 
       if (!this.ctrl.project) {
          let selection = this._gui.addFolder('Selection');
@@ -86455,11 +87270,11 @@ class TGeoPainter extends ObjectPainter {
 
             clipFolder.add(cc, 'enabled')
                 .name('Enable ' + axisC)
-                .onChange(() => this.changedClipping(-1));
+                .listen().onChange(() => this.changedClipping(-1));
 
             clipFolder.add(cc, 'value', cc.min, cc.max)
                 .name(axisC + ' position')
-                .onChange(() => this.changedClipping(naxis));
+                .listen().onChange(() => this.changedClipping(naxis));
          }
 
          clipFolder.add(this.ctrl, 'clipIntersect').name('Clip intersection')
@@ -86467,21 +87282,54 @@ class TGeoPainter extends ObjectPainter {
 
       }
 
+      // Scene Options
+
+      let scene = this._gui.addFolder('Scene'), light_pnts;
+
+      scene.add(this.ctrl.light, 'kind', makeLil(this.ctrl.lightKindItems)).name('Light')
+           .listen().onChange(() => {
+              light_pnts.show(this.ctrl.light.kind == 'mix' || this.ctrl.light.kind == 'points');
+              this.changedLight();
+           });
+
+      this.ctrl.light._pnts = this.ctrl.light.specular ? 0 : (this.ctrl.light.front ? 1 : 2);
+      light_pnts = scene.add(this.ctrl.light, '_pnts', { specular: 0, front: 1, box: 2 })
+                .name('Positions')
+                .show(this.ctrl.light.kind == 'mix' || this.ctrl.light.kind == 'points')
+                .onChange(v => {
+                   this.ctrl.light.specular = (v == 0);
+                   this.ctrl.light.front = (v == 1);
+                   this.ctrl.light.top = this.ctrl.light.bottom = this.ctrl.light.left = this.ctrl.light.right = (v == 2);
+                   this.changedLight();
+                });
+
+      scene.add(this.ctrl.light, 'power', 0, 10, 0.01).name('Power')
+           .listen().onChange(() => this.changedLight());
+
+      scene.add(this.ctrl, 'use_fog').name('Fog')
+           .listen().onChange(() => this.changedUseFog());
+
+
       // Appearance Options
 
-      let appearance = this._gui.addFolder('Appearance');
+      let appearance = this._gui.addFolder('Appearance'), strength, hcolor;
 
-      appearance.add(this.ctrl, 'highlight').name('Highlight Selection')
-                .listen().onChange(() => this.changedHighlight());
+      this.ctrl._highlight = !this.ctrl.highlight ? 0 : this.ctrl.highlight_bloom ? 2 : 1;
+      appearance.add(this.ctrl, '_highlight', { none: 0, normal: 1, bloom: 2 }).name('Highlight Selection')
+                .listen().onChange(() => {
+                   this.changedHighlight(this.ctrl._highlight);
+                   strength.show(this.ctrl._highlight == 2);
+                   hcolor.show(this.ctrl._highlight == 1);
+                });
 
-      appearance.add(this.ctrl, 'transparency', 0, 1, 0.001)
-                     .listen().onChange(value => this.changedGlobalTransparency(value));
+      hcolor = appearance.addColor(this.ctrl, 'highlight_color').name('Hightlight color')
+                         .show(this.ctrl._highlight == 1);
+      strength = appearance.add(this.ctrl, 'bloom_strength', 0, 3).name('Bloom strength')
+                           .listen().onChange(() => this.changedHighlight())
+                           .show(this.ctrl._highlight == 2);
 
       appearance.addColor(this.ctrl, 'background').name('Background')
                 .onChange(col => this.changedBackground(col));
-
-      appearance.add(this.ctrl, 'wireframe').name('Wireframe')
-                     .listen().onChange(() => this.changedWireFrame());
 
       appearance.add(this.ctrl, '_axis', { none: 0, side: 1, center: 2 }).name('Axes')
                     .onChange(() => this.changedAxes());
@@ -86490,32 +87338,71 @@ class TGeoPainter extends ObjectPainter {
          appearance.add(this.ctrl, 'rotate').name('Autorotate')
                       .listen().onChange(() => this.changedAutoRotate());
 
+      // Material options
+
+      let material = this._gui.addFolder('Material'), material_props = [];
+
+      const addMaterialProp = () => {
+         material_props.forEach(f => f.destroy());
+         material_props = [];
+
+         let props = this.ctrl.getMaterialCfg()?.props;
+         if (!props) return;
+
+         props.forEach(prop => {
+            let f = material.add(this.ctrl, prop.name, prop.min, prop.max, prop.step).onChange(() => {
+               this.changeMaterialProperty(prop.name);
+            });
+            material_props.push(f);
+         });
+      };
+
+      material.add(this.ctrl, 'material_kind', makeLil(this.ctrl.materialKinds)).name('Kind')
+              .listen().onChange(() => {
+            addMaterialProp();
+            this.ensureBloom(false);
+            this.changedMaterial();
+            this.changedHighlight(); // for some materials bloom will not work
+
+      });
+
+      material.add(this.ctrl, 'transparency', 0, 1, 0.001).name('Transparency')
+              .listen().onChange(value => this.changedGlobalTransparency(value));
+
+      material.add(this.ctrl, 'wireframe').name('Wireframe')
+              .listen().onChange(() => this.changedWireFrame());
+
+      material.add(this, 'showMaterialDocu').name('Docu from threejs.org');
+
+      addMaterialProp();
+
+
       // Camera options
-      let camera = this._gui.addFolder('Camera'), camcfg = {}, overlaysfg = {};
+      let camera = this._gui.addFolder('Camera'), overlay;
 
-      this.ctrl.cameraKindItems.forEach(i => { camcfg[i.name] = i.value; });
-      this.ctrl.cameraOverlayItems.forEach(i => { overlaysfg[i.name] = i.value; });
-
-      camera.add(this.ctrl, 'camera_kind', camcfg)
-            .name('Kind').listen().onChange(() => this.changeCamera());
+      camera.add(this.ctrl, 'camera_kind', makeLil(this.ctrl.cameraKindItems))
+            .name('Kind').listen().onChange(() => {
+            overlay.show(this.ctrl.camera_kind.indexOf('ortho') == 0);
+            this.changeCamera();
+      });
 
       camera.add(this.ctrl, 'can_rotate').name('Can rotate')
                 .listen().onChange(() => this.changeCanRotate());
 
       camera.add(this, 'focusCamera').name('Reset position');
 
-      camera.add(this.ctrl, 'camera_overlay', overlaysfg)
-            .name('Overlay').listen().onChange(() => this.changeCamera());
+      overlay = camera.add(this.ctrl, 'camera_overlay', makeLil(this.ctrl.cameraOverlayItems))
+                      .name('Overlay').listen().onChange(() => this.changeCamera())
+                      .show(this.ctrl.camera_kind.indexOf('ortho') == 0);
 
       // Advanced Options
       if (this._webgl) {
-         let advanced = this._gui.addFolder('Advanced'), depthcfg = {};
-         this.ctrl.depthMethodItems.forEach(i => { depthcfg[i.name] = i.value; });
+         let advanced = this._gui.addFolder('Advanced');
 
          advanced.add(this.ctrl, 'depthTest').name('Depth test')
             .listen().onChange(() => this.changedDepthTest());
 
-         advanced.add( this.ctrl, 'depthMethod', depthcfg)
+         advanced.add( this.ctrl, 'depthMethod', makeLil(this.ctrl.depthMethodItems))
              .name('Rendering order')
              .onChange(method => this.changedDepthMethod(method));
 
@@ -86537,28 +87424,35 @@ class TGeoPainter extends ObjectPainter {
          if (this.ctrl.trans_z || this.ctrl.trans_radial) transform.open();
       }
 
-      let blooming = this._gui.addFolder('Unreal Bloom');
-
-      blooming.add(this.ctrl.bloom, 'enabled').name('Enable Blooming')
-              .listen().onChange(() => this.changedBloomSettings());
-
-      blooming.add(this.ctrl.bloom, 'strength', 0, 3).name('Strength')
-               .listen().onChange(() => this.changedBloomSettings());
    }
 
-   /** @summary Method called when bloom configuration changed via GUI */
-   changedBloomSettings() {
-      if (this.ctrl.bloom.enabled) {
-         this.createBloom();
-         this._bloomPass.strength = this.ctrl.bloom.strength;
-      } else {
-         this.removeBloom();
+   /** @summary show material docu */
+   showMaterialDocu() {
+      let cfg = this.ctrl.getMaterialCfg();
+      if (cfg?.name && typeof window !== 'undefined')
+         window.open('https://threejs.org/docs/index.html#api/en/materials/' + cfg.name, '_blank');
+   }
+
+   /** @summary Should be called when configuration of highlight is changed */
+   changedHighlight(arg) {
+      if (arg !== undefined) {
+         this.ctrl.highlight = arg !== 0;
+         if (this.ctrl.highlight)
+            this.ctrl.highlight_bloom = (arg === 2);
       }
 
+      this.ensureBloom();
+
+      if (!this.ctrl.highlight)
+         this.highlightMesh(null);
+
       this._slave_painters?.forEach(p => {
-         Object.assign(p.ctrl.bloom, this.ctrl.bloom);
-         p.changedBloomSettings();
+         p.ctrl.highlight = this.ctrl.highlight;
+         p.ctrl.highlight_bloom = this.ctrl.highlight_bloom;
+         p.ctrl.bloom_strength = this.ctrl.bloom_strength;
+         p.changedHighlight();
       });
+
    }
 
    /** @summary Handle change of can rotate */
@@ -86569,6 +87463,13 @@ class TGeoPainter extends ObjectPainter {
          this._controls.enableRotate = this.ctrl.can_rotate;
    }
 
+   /** @summary Change use fog property */
+   changedUseFog() {
+      this._scene.fog = this.ctrl.use_fog ? this._fog : null;
+
+      this.render3D();
+   }
+
    /** @summary Handle change of camera kind */
    changeCamera() {
       // force control recreation
@@ -86577,7 +87478,7 @@ class TGeoPainter extends ObjectPainter {
           delete this._controls;
       }
 
-      this.removeBloom();
+      this.ensureBloom(false);
 
       // recreate camera
       this.createCamera();
@@ -86600,30 +87501,37 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary create bloom effect */
-   createBloom() {
-      if (this._bloomPass) return;
+   ensureBloom(on) {
+      if (on === undefined) {
+         if (this.ctrl.highlight_bloom === 0)
+             this.ctrl.highlight_bloom = this._webgl;
 
-      this._camera.layers.enable( _BLOOM_SCENE );
-      this._bloomComposer = new EffectComposer( this._renderer );
-      this._bloomComposer.addPass(new RenderPass(this._scene, this._camera));
-      this._bloomPass = new UnrealBloomPass(new Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85);
-      this._bloomPass.threshold = 0;
-      this._bloomPass.strength = this.ctrl.bloom.strength;
-      this._bloomPass.radius = 0;
-      this._bloomPass.renderToScreen = true;
-      this._bloomComposer.addPass( this._bloomPass );
-      this._renderer.autoClear = false;
+         on = this.ctrl.highlight && this.ctrl.highlight_bloom && this.ctrl.getMaterialCfg()?.emissive;
+      }
+
+      if (on && !this._bloomPass) {
+         this._camera.layers.enable(_BLOOM_SCENE);
+         this._bloomComposer = new EffectComposer(this._renderer);
+         this._bloomComposer.addPass(new RenderPass(this._scene, this._camera));
+         this._bloomPass = new UnrealBloomPass(new Vector2(this._scene_width, this._scene_height), 1.5, 0.4, 0.85);
+         this._bloomPass.threshold = 0;
+         this._bloomPass.radius = 0;
+         this._bloomPass.renderToScreen = true;
+         this._bloomComposer.addPass(this._bloomPass);
+         this._renderer.autoClear = false;
+      } else if (!on && this._bloomPass) {
+         delete this._bloomPass;
+         delete this._bloomComposer;
+         if(this._renderer)
+            this._renderer.autoClear = true;
+         this._camera?.layers.disable(_BLOOM_SCENE);
+         this._camera?.layers.set(_ENTIRE_SCENE);
+      }
+
+      if (this._bloomPass)
+         this._bloomPass.strength = this.ctrl.bloom_strength;
    }
 
-   /** @summary Remove bloom highlight */
-   removeBloom() {
-      if (!this._bloomPass) return;
-      delete this._bloomPass;
-      delete this._bloomComposer;
-      if(this._renderer)
-         this._renderer.autoClear = true;
-      this._camera?.layers.disable( _BLOOM_SCENE);
-   }
 
    /** @summary Show context menu for orbit control
      * @private */
@@ -86881,7 +87789,8 @@ class TGeoPainter extends ObjectPainter {
          active_mesh = active_mesh ? [ active_mesh ] : [];
       }
 
-      if (!active_mesh.length) active_mesh = null;
+      if (!active_mesh.length)
+         active_mesh = null;
 
       if (active_mesh) {
          // check if highlight is disabled for correspondent objects kinds
@@ -86911,7 +87820,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (!curr_mesh && !active_mesh) return false;
 
-      const get_ctrl = mesh => mesh.get_ctrl ? mesh.get_ctrl() : new GeoDrawingControl(mesh, this.ctrl.bloom.enabled);
+      const get_ctrl = mesh => mesh.get_ctrl ? mesh.get_ctrl() : new GeoDrawingControl(mesh, this.ctrl.highlight_bloom);
 
       // check if selections are the same
       if (curr_mesh && active_mesh && (curr_mesh.length == active_mesh.length)) {
@@ -86930,7 +87839,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (active_mesh)
          for (let k = 0; k < active_mesh.length; ++k)
-            get_ctrl(active_mesh[k]).setHighlight(color || 0x00ff00, geo_index);
+            get_ctrl(active_mesh[k]).setHighlight(color || new Color(this.ctrl.highlight_color), geo_index);
 
       this.render3D(0);
 
@@ -87504,9 +88413,14 @@ class TGeoPainter extends ObjectPainter {
          switch (this._camera._lights) {
             case 'ambient' : this._camera.add(new AmbientLight(0xefefef, p)); break;
             case 'hemisphere' : this._camera.add(new HemisphereLight(0xffffbb, 0x080820, p)); break;
+            case 'mix': this._camera.add(new AmbientLight(0xefefef, p)); // intentionally without break
+
             default: // 6 point lights
-               for (let n = 0; n < 6; ++n)
-                  this._camera.add(new PointLight(0xefefef, p));
+               for (let n = 0; n < 6; ++n) {
+                  let l = new PointLight(0xefefef, p);
+                  this._camera.add(l);
+                  l._id = n;
+               }
          }
       }
 
@@ -87516,9 +88430,8 @@ class TGeoPainter extends ObjectPainter {
             light.intensity = p;
             continue;
          }
-
          if (!light.isPointLight) continue;
-         switch (k) {
+         switch (light._id) {
             case 0: light.position.set(sizex/5, sizey/5, sizez/5); enabled = this.ctrl.light.specular; break;
             case 1: light.position.set(0, 0, sizez/2); enabled = this.ctrl.light.front; break;
             case 2: light.position.set(0, 2*sizey, 0); enabled = this.ctrl.light.top; break;
@@ -87574,8 +88487,7 @@ class TGeoPainter extends ObjectPainter {
          this.createOutline(this._scene_width, this._scene_height);
       }
 
-      if (this._webgl && this.ctrl.bloom.enabled)
-         this.createBloom();
+      this.ensureBloom();
    }
 
    /** @summary Initial scene creation */
@@ -87608,7 +88520,9 @@ class TGeoPainter extends ObjectPainter {
 
       // three.js 3D drawing
       this._scene = new Scene();
-      this._scene.fog = new Fog(0xffffff, 1, 10000);
+      this._fog = new Fog(0xffffff, 1, 10000);
+      this._scene.fog = this.ctrl.use_fog ? this._fog : null;
+
       this._scene.overrideMaterial = new MeshLambertMaterial({ color: 0x7000ff, vertexColors: false, transparent: true, opacity: 0.2, depthTest: false });
 
       this._scene_width = w;
@@ -87867,8 +88781,8 @@ class TGeoPainter extends ObjectPainter {
 
       this._camera.near = this._overall_size / 350;
       this._camera.far = this._overall_size * 100;
-      this._scene.fog.near = this._overall_size * 2;
-      this._scene.fog.far = this._overall_size * 100;
+      this._fog.near = this._overall_size * 0.5;
+      this._fog.far = this._overall_size * 5;
 
       if (first_time)
          for (let naxis = 0; naxis < 3; ++naxis) {
@@ -88800,10 +89714,11 @@ class TGeoPainter extends ObjectPainter {
          this._clones_owner = true;
          this._clones = new ClonedNodes(null, nodes);
          this._clones.name_prefix = this._clones.getNodeName(0);
+         this._clones.setConfig(this.ctrl);
+
          // normally only need when making selection, not used in geo viewer
          // this.geo_clones.setMaxVisNodes(draw_msg.maxvisnodes);
          // this.geo_clones.setVisLevel(draw_msg.vislevel);
-         // parameter need for visualization with transparency
          // TODO: provide from server
          this._clones.maxdepth = 20;
       }
@@ -88868,6 +89783,7 @@ class TGeoPainter extends ObjectPainter {
 
          this._clones.setVisLevel(lvl);
          this._clones.setMaxVisNodes(maxnodes, this.ctrl.more);
+         this._clones.setConfig(this.ctrl);
 
          this._clones.name_prefix = name_prefix;
 
@@ -88886,7 +89802,7 @@ class TGeoPainter extends ObjectPainter {
          if (!this._scene)
             console.log(`Creating clones ${this._clones.nodes.length} takes ${spent} ms uniquevis ${uniquevis}`);
 
-         if (this.options._count)
+         if (this.ctrl._count)
             return this.drawCount(uniquevis, spent);
       }
 
@@ -89133,10 +90049,10 @@ class TGeoPainter extends ObjectPainter {
          this._effectComposer.render();
       } else if (this._webgl && this._bloomComposer && (this._bloomComposer.passes.length > 0)) {
          this._renderer.clear();
-         this._camera.layers.set( _BLOOM_SCENE );
+         this._camera.layers.set(_BLOOM_SCENE);
          this._bloomComposer.render();
          this._renderer.clearDepth();
-         this._camera.layers.set( _ENTIRE_SCENE );
+         this._camera.layers.set(_ENTIRE_SCENE);
          this._renderer.render(this._scene, this._camera);
       } else {
          this._renderer.render(this._scene, this._camera);
@@ -89756,12 +90672,6 @@ class TGeoPainter extends ObjectPainter {
          return this.render3D();
    }
 
-   /** @summary Should be called when configuration of highlight is changed */
-   changedHighlight() {
-      if (!this.ctrl.highlight)
-         this.highlightMesh(null);
-   }
-
    /** @summary Assign clipping attributes to the meshes - supported only for webgl */
    updateClipping(without_render, force_traverse) {
       // do not try clipping with SVG renderer
@@ -89871,9 +90781,6 @@ class TGeoPainter extends ObjectPainter {
             full_redraw = true;
          }
 
-         if (this.ctrl.transparency !== 0)
-            this.changedGlobalTransparency(this.ctrl.transparency, true);
-
          if (first_time)
             this.completeScene();
 
@@ -89908,19 +90815,19 @@ class TGeoPainter extends ObjectPainter {
 
          this.addOrbitControls();
 
-         if (first_time) {
+         if (first_time && !this.isBatchMode()) {
 
             // after first draw check if highlight can be enabled
-            if (this.ctrl.highlight === false)
+            if (this.ctrl.highlight === 0)
                this.ctrl.highlight = (this.first_render_tm < 1000);
 
             // also highlight of scene object can be assigned at the first draw
-            if (this.ctrl.highlight_scene === false)
+            if (this.ctrl.highlight_scene === 0)
                this.ctrl.highlight_scene = this.ctrl.highlight;
 
             // if rotation was enabled, do it
             if (this._webgl && this.ctrl.rotate && !this.ctrl.project) this.autorotate(2.5);
-            if (this._webgl && this.ctrl.show_controls && !this.isBatchMode()) this.showControlGui(true);
+            if (this._webgl && this.ctrl.show_controls) this.showControlGui(true);
          }
 
          this.setAsMainPainter();
@@ -90055,7 +90962,7 @@ class TGeoPainter extends ObjectPainter {
       if (!this.superimpose)
          cleanupRender3D(this._renderer);
 
-      this.removeBloom();
+      this.ensureBloom(false);
       delete this._effectComposer;
 
       delete this._scene;
@@ -90065,6 +90972,7 @@ class TGeoPainter extends ObjectPainter {
       this._renderer = null;
       this._toplevel = null;
       delete this._full_geom;
+      delete this._fog;
       delete this._camera;
       delete this._camera0pos;
       delete this._lookat;
@@ -90154,11 +91062,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary handle wireframe flag change in GUI
      * @private */
    changedWireFrame() {
-      if (!this._scene) return;
-
-      let on = this.ctrl.wireframe;
-
-      this._scene.traverse(obj => this.accessObjectWireFrame(obj, on));
+      this._scene?.traverse(obj => this.accessObjectWireFrame(obj, this.ctrl.wireframe));
 
       this.render3D();
    }
@@ -90390,17 +91294,7 @@ function createGeoPainter(dom, obj, opt) {
 
    let painter = new TGeoPainter(dom, obj);
 
-   painter.options = painter.decodeOptions(opt); // indicator of initialization
-
-   // copy all attributes from options to control
-   Object.assign(painter.ctrl, painter.options);
-
-   painter.ctrl.bloom.enabled = painter.options.usebloom;
-
-   // special handling for array of clips
-   painter.ctrl.clip[0].enabled = painter.options.clipx;
-   painter.ctrl.clip[1].enabled = painter.options.clipy;
-   painter.ctrl.clip[2].enabled = painter.options.clipz;
+   painter.decodeOptions(opt); // indicator of initialization
 
    return painter;
 }
@@ -90708,6 +91602,7 @@ function drawAxis3D() {
   * @param {Number} [opt.instancing=-1] - <0 disable use of InstancedMesh, =0 only for large geometries, >0 enforce usage of InstancedMesh
   * @param {boolean} [opt.doubleside=false] - use double-side material
   * @param {boolean} [opt.wireframe=false] - show wireframe for created shapes
+  * @param {boolean} [opt.transparency=0] - make nodes transparent
   * @param {boolean} [opt.dflt_colors=false] - use default ROOT colors
   * @return {object} Object3D with created model
   * @example
@@ -90744,10 +91639,10 @@ function build(obj, opt) {
 
       clones = new ClonedNodes(null, nodes);
       clones.name_prefix = clones.getNodeName(0);
+
       // normally only need when making selection, not used in geo viewer
       // this.geo_clones.setMaxVisNodes(draw_msg.maxvisnodes);
       // this.geo_clones.setVisLevel(draw_msg.vislevel);
-      // parameter need for visualization with transparency
       // TODO: provide from server
       clones.maxdepth = 20;
 
@@ -90813,6 +91708,11 @@ function build(obj, opt) {
 
       visibles = res.lst;
    }
+
+   if (!opt.material_kind)
+      opt.material_kind = 'lambert';
+
+   clones.setConfig(opt);
 
    // collect shapes
    let shapes = clones.collectShapes(visibles);

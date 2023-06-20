@@ -4,6 +4,7 @@
 
 1. Correctly implement TH2 projections like MERCATOR or PARABOLIC
 2. Use https://github.com/georgealways/lil-gui/ instead of dat.GUI
+3. Let configure material and scene properties in geo control gui
 
 
 ## Changes in 7.4.0
