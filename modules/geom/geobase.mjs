@@ -1,5 +1,6 @@
 import { DoubleSide, FrontSide, Object3D, Box3, Mesh, InstancedMesh, Vector2, Vector3, Matrix4,
-         MeshLambertMaterial, MeshBasicMaterial, MeshStandardMaterial, MeshPhysicalMaterial, MeshPhongMaterial,
+         MeshLambertMaterial, MeshBasicMaterial, MeshStandardMaterial, MeshNormalMaterial,
+         MeshPhysicalMaterial, MeshPhongMaterial, MeshDepthMaterial, MeshMatcapMaterial, MeshToonMaterial,
          Color, PerspectiveCamera, Frustum, Raycaster,
          ShapeUtils, BufferGeometry, BufferAttribute } from '../three.mjs';
 import { isObject, isFunc, BIT } from '../core.mjs';
@@ -2295,10 +2296,21 @@ function createMaterial(cfg, args0) {
 
    if (cfg.material_kind == 'basic') {
       material = new MeshBasicMaterial(args);
+   } else if (cfg.material_kind == 'depth') {
+      delete args.color;
+      material = new MeshDepthMaterial(args);
+   } else if (cfg.material_kind == 'depth') {
+      material = new MeshToonMaterial(args);
+   } else if (cfg.material_kind == 'matcap') {
+      delete args.wireframe;
+      material = new MeshMatcapMaterial(args);
    } else if (cfg.material_kind == 'standard') {
       args.metalness = 0.5;
       args.roughness = 0.1;
       material = new MeshStandardMaterial(args);
+   } else if (cfg.material_kind == 'normal') {
+      delete args.color;
+      material = new MeshNormalMaterial(args);
    } else if (cfg.material_kind == 'physical') {
       args.metalness = 0.5;
       args.roughness = 0.1;
@@ -4005,7 +4017,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
          }
 
       for (let i = 0; i < resort.length; ++i) {
-         resort[i].renderOrder = Math.round( maxorder - (i+1) / (resort.length+1) * (maxorder-minorder));
+         resort[i].renderOrder = Math.round(maxorder - (i+1) / (resort.length + 1) * (maxorder - minorder));
          delete resort[i].$jsroot_index;
          delete resort[i].$jsroot_distance;
       }

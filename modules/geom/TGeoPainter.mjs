@@ -594,11 +594,15 @@ class TGeoPainter extends ObjectPainter {
          transparency: 0,
          material_kind: 'lambert',
          materialKinds: [
-            { name: 'MeshLambertMaterial', value: 'lambert' },
+            { name: 'MeshLambertMaterial', value: 'lambert', emissive: true },
             { name: 'MeshBasicMaterial', value: 'basic' },
-            { name: 'MeshStandardMaterial', value: 'standard' },
-            { name: 'MeshPhysicalMaterial', value: 'physical' },
-            { name: 'MeshPhongMaterial', value: 'phong' }
+            { name: 'MeshStandardMaterial', value: 'standard', emissive: true },
+            { name: 'MeshPhysicalMaterial', value: 'physical', emissive: true },
+            { name: 'MeshPhongMaterial', value: 'phong', emissive: true },
+            { name: 'MeshNormalMaterial', value: 'normal' },
+            { name: 'MeshDepthMaterial', value: 'depth' },
+            { name: 'MeshMatcapMaterial', value: 'matcap' },
+            { name: 'MeshToonMaterial', value: 'toon' }
          ]
       };
 
@@ -1565,7 +1569,8 @@ class TGeoPainter extends ObjectPainter {
    changedHighlight(arg) {
       if (arg !== undefined) {
          this.ctrl.highlight = arg !== 0;
-         if (arg) this.ctrl.highlight_bloom = arg === 2;
+         if (this.ctrl.highlight)
+            this.ctrl.highlight_bloom = (arg === 2);
       }
 
       this.ensureBloom();
@@ -1625,11 +1630,17 @@ class TGeoPainter extends ObjectPainter {
       if (on === undefined) {
          if (this.ctrl.highlight_bloom === 0)
              this.ctrl.highlight_bloom = this._webgl;
-         on = this.ctrl.highlight_bloom && (this.ctrl.material_kind != 'basic');
+         let material_cfg;
+         this.ctrl.materialKinds.forEach(item => {
+            if (item.value === this.ctrl.material_kind)
+               material_cfg = item;
+         });
+
+         on = this.ctrl.highlight && this.ctrl.highlight_bloom && material_cfg?.emissive;
       }
 
       if (on && !this._bloomPass) {
-         this._camera.layers.enable( _BLOOM_SCENE );
+         this._camera.layers.enable(_BLOOM_SCENE);
          this._bloomComposer = new EffectComposer(this._renderer);
          this._bloomComposer.addPass(new RenderPass(this._scene, this._camera));
          this._bloomPass = new UnrealBloomPass(new Vector2(this._scene_width, this._scene_height), 1.5, 0.4, 0.85);
@@ -1643,7 +1654,8 @@ class TGeoPainter extends ObjectPainter {
          delete this._bloomComposer;
          if(this._renderer)
             this._renderer.autoClear = true;
-         this._camera?.layers.disable( _BLOOM_SCENE);
+         this._camera?.layers.disable(_BLOOM_SCENE);
+         this._camera?.layers.set(_ENTIRE_SCENE);
       }
 
       if (this._bloomPass)
@@ -2601,8 +2613,7 @@ class TGeoPainter extends ObjectPainter {
          this.createOutline(this._scene_width, this._scene_height);
       }
 
-      if (this._webgl)
-         this.ensureBloom();
+      this.ensureBloom();
    }
 
    /** @summary Initial scene creation */
@@ -4162,10 +4173,10 @@ class TGeoPainter extends ObjectPainter {
          this._effectComposer.render();
       } else if (this._webgl && this._bloomComposer && (this._bloomComposer.passes.length > 0)) {
          this._renderer.clear();
-         this._camera.layers.set( _BLOOM_SCENE );
+         this._camera.layers.set(_BLOOM_SCENE);
          this._bloomComposer.render();
          this._renderer.clearDepth();
-         this._camera.layers.set( _ENTIRE_SCENE );
+         this._camera.layers.set(_ENTIRE_SCENE);
          this._renderer.render(this._scene, this._camera);
       } else {
          this._renderer.render(this._scene, this._camera);
