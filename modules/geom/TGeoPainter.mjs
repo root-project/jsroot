@@ -1514,6 +1514,34 @@ class TGeoPainter extends ObjectPainter {
 
       }
 
+      // Scene Options
+
+      let scene = this._gui.addFolder('Scene'), light_pnts;
+
+      scene.add(this.ctrl.light, 'kind', makeLil(this.ctrl.lightKindItems)).name('Light')
+           .listen().onChange(() => {
+              light_pnts.show(this.ctrl.light.kind == 'mix' || this.ctrl.light.kind == 'points');
+              this.changedLight();
+           });
+
+      this.ctrl.light._pnts = this.ctrl.light.specular ? 0 : (this.ctrl.light.front ? 1 : 2);
+      light_pnts = scene.add(this.ctrl.light, '_pnts', { specular: 0, front: 1, box: 2 })
+                .name('Positions').title('Point lights positions')
+                .show(this.ctrl.light.kind == 'mix' || this.ctrl.light.kind == 'points')
+                .onChange(v => {
+                   this.ctrl.light.specular = (v == 0);
+                   this.ctrl.light.front = (v == 1);
+                   this.ctrl.light.top = this.ctrl.light.bottom = this.ctrl.light.left = this.ctrl.light.right = (v == 2);
+                   this.changedLight();
+                });
+
+      scene.add(this.ctrl.light, 'power', 0, 10, 0.01).name('Power')
+           .listen().onChange(() => this.changedLight());
+
+      scene.add(this.ctrl, 'use_fog').name('Fog')
+           .listen().onChange(() => this.changedUseFog());
+
+
       // Appearance Options
 
       let appearance = this._gui.addFolder('Appearance'), strength, hcolor;
@@ -1541,13 +1569,6 @@ class TGeoPainter extends ObjectPainter {
       if (!this.ctrl.project)
          appearance.add(this.ctrl, 'rotate').name('Autorotate')
                       .listen().onChange(() => this.changedAutoRotate());
-
-      appearance.add(this.ctrl, 'use_fog').name('Fog')
-                      .listen().onChange(() => this.changedUseFog());
-
-      appearance.add(this.ctrl.light, 'kind', makeLil(this.ctrl.lightKindItems)).name('Light')
-                      .listen().onChange(() => this.changedLight());
-
 
       // Material options
 
