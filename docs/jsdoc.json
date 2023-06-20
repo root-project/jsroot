@@ -2,7 +2,7 @@
     "source": {
       "include": ["modules"],
       "includePattern": ".mjs$",
-      "excludePattern": "(node_modules|main.mjs|three.mjs|d3.mjs|dat.gui.mjs)"
+      "excludePattern": "(node_modules|main.mjs|three.mjs|d3.mjs|lil-gui.mjs)"
     },
     "sourceType": "module",
     "recurseDepth": 10,
