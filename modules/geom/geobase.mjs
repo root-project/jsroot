@@ -2324,6 +2324,15 @@ function createMaterial(cfg, args0) {
       material = new MeshLambertMaterial(args);
    }
 
+   let prop_list = ['flatShading'];
+
+   prop_list.forEach(name => {
+      if ((cfg[name] !== undefined) && (material[name] !== undefined)) {
+         material[name] = cfg[name];
+         material.needsUpdate = true;
+      }
+   });
+
    material.inherentOpacity = args0.opacity ?? 1;
    material.inherentArgs = args0;
 

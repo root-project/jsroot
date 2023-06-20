@@ -592,9 +592,10 @@ class TGeoPainter extends ObjectPainter {
          // material properties
          wireframe: false,
          transparency: 0,
+         flatShading: false,
          material_kind: 'lambert',
          materialKinds: [
-            { name: 'MeshLambertMaterial', value: 'lambert', emissive: true },
+            { name: 'MeshLambertMaterial', value: 'lambert', emissive: true, props: [{ name: 'flatShading' }] },
             { name: 'MeshBasicMaterial', value: 'basic' },
             { name: 'MeshStandardMaterial', value: 'standard', emissive: true },
             { name: 'MeshPhysicalMaterial', value: 'physical', emissive: true },
@@ -1250,6 +1251,25 @@ class TGeoPainter extends ObjectPainter {
       this.render3D();
    }
 
+   /** @summary Change for all materials that property */
+   changeMaterialProperty(name) {
+      let value = this.ctrl[name];
+      if (value === undefined)
+         return console.error('No property ', name);
+
+      this._toplevel?.traverse(node => {
+         // ignore all kind of extra elements
+         if (node.material?.inherentArgs === undefined) return;
+
+         if (node.material[name] !== undefined) {
+            node.material[name] = value;
+            node.material.needsUpdate = true;
+         }
+      });
+
+      this.render3D();
+   }
+
    /** @summary Reset transformation */
    resetTransformation() {
       this.changedTransformation('reset');
@@ -1512,13 +1532,31 @@ class TGeoPainter extends ObjectPainter {
 
       // Material options
 
-      let material = this._gui.addFolder('Material'), materialkindcfg = {};
+      let material = this._gui.addFolder('Material'), materialkindcfg = {}, material_prop = [];
+
+      const addMaterialProp = () => {
+         material_prop.forEach(i => i.remove());
+         material_prop = [];
+
+         let props = this.ctrl.getMaterialCfg()?.props;
+         if (!props) return;
+
+         props.forEach(prop => {
+            let f = material.add(this.ctrl, prop.name).onChange(() => {
+               this.changeMaterialProperty(prop.name);
+            });
+            material_prop.push(f);
+         });
+      };
+
       this.ctrl.materialKinds.forEach(i => { materialkindcfg[i.name] = i.value; });
       material.add(this.ctrl, 'material_kind', materialkindcfg).name('Kind')
               .listen().onChange(() => {
+            addMaterialProp();
             this.ensureBloom(false);
             this.changedMaterial();
             this.changedHighlight(); // for some materials bloom will not work
+
       });
 
       material.add(this.ctrl, 'transparency', 0, 1, 0.001).name('Transparency')
@@ -1528,6 +1566,8 @@ class TGeoPainter extends ObjectPainter {
               .listen().onChange(() => this.changedWireFrame());
 
       material.add(this, 'showMaterialDocu').name('Docu from threejs.org');
+
+      addMaterialProp();
 
 
       // Camera options
