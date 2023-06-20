@@ -548,6 +548,12 @@ class TGeoPainter extends ObjectPainter {
          update_browser: true,
          use_fog: false,
          light: { kind: 'points', top: false, bottom: false, left: false, right: false, front: false, specular: true, power: 1 },
+         lightKindItems: [
+            { name: 'AmbientLight', value: 'ambient' },
+            { name: 'PointLight', value: 'points' },
+            { name: 'HemisphereLight', value: 'hemisphere' },
+            { name: 'Ambient + Point', value: 'mix' }
+         ],
          trans_radial: 0,
          trans_z: 0,
          scale: new Vector3(1,1,1),
@@ -593,11 +599,14 @@ class TGeoPainter extends ObjectPainter {
          wireframe: false,
          transparency: 0,
          flatShading: false,
+         roughness: 0.5,
+         metalness: 0.5,
          material_kind: 'lambert',
          materialKinds: [
             { name: 'MeshLambertMaterial', value: 'lambert', emissive: true, props: [{ name: 'flatShading' }] },
             { name: 'MeshBasicMaterial', value: 'basic' },
-            { name: 'MeshStandardMaterial', value: 'standard', emissive: true },
+            { name: 'MeshStandardMaterial', value: 'standard', emissive: true,
+                props: [{ name: 'flatShading' }, { name: 'roughness', min: 0, max: 1, step: 0.001 }, { name: 'metalness', min: 0, max: 1, step: 0.001 }]  },
             { name: 'MeshPhysicalMaterial', value: 'physical', emissive: true },
             { name: 'MeshPhongMaterial', value: 'phong', emissive: true },
             { name: 'MeshNormalMaterial', value: 'normal' },
@@ -1442,6 +1451,12 @@ class TGeoPainter extends ObjectPainter {
 
       this._gui.painter = this;
 
+      const makeLil = items => {
+         let lil = {};
+         items.forEach(i => { lil[i.name] = i.value; });
+         return lil;
+      };
+
       if (!this.ctrl.project) {
          let selection = this._gui.addFolder('Selection');
 
@@ -1530,27 +1545,30 @@ class TGeoPainter extends ObjectPainter {
       appearance.add(this.ctrl, 'use_fog').name('Fog')
                       .listen().onChange(() => this.changedUseFog());
 
+      appearance.add(this.ctrl.light, 'kind', makeLil(this.ctrl.lightKindItems)).name('Light')
+                      .listen().onChange(() => this.changedLight());
+
+
       // Material options
 
-      let material = this._gui.addFolder('Material'), materialkindcfg = {}, material_prop = [];
+      let material = this._gui.addFolder('Material'), material_props = [];
 
       const addMaterialProp = () => {
-         material_prop.forEach(i => i.remove());
-         material_prop = [];
+         material_props.forEach(f => f.destroy());
+         material_props = [];
 
          let props = this.ctrl.getMaterialCfg()?.props;
          if (!props) return;
 
          props.forEach(prop => {
-            let f = material.add(this.ctrl, prop.name).onChange(() => {
+            let f = material.add(this.ctrl, prop.name, prop.min, prop.max, prop.step).onChange(() => {
                this.changeMaterialProperty(prop.name);
             });
-            material_prop.push(f);
+            material_props.push(f);
          });
       };
 
-      this.ctrl.materialKinds.forEach(i => { materialkindcfg[i.name] = i.value; });
-      material.add(this.ctrl, 'material_kind', materialkindcfg).name('Kind')
+      material.add(this.ctrl, 'material_kind', makeLil(this.ctrl.materialKinds)).name('Kind')
               .listen().onChange(() => {
             addMaterialProp();
             this.ensureBloom(false);
@@ -1571,12 +1589,9 @@ class TGeoPainter extends ObjectPainter {
 
 
       // Camera options
-      let camera = this._gui.addFolder('Camera'), camcfg = {}, overlaysfg = {}, overlay;
+      let camera = this._gui.addFolder('Camera'), overlay;
 
-      this.ctrl.cameraKindItems.forEach(i => { camcfg[i.name] = i.value; });
-      this.ctrl.cameraOverlayItems.forEach(i => { overlaysfg[i.name] = i.value; });
-
-      camera.add(this.ctrl, 'camera_kind', camcfg)
+      camera.add(this.ctrl, 'camera_kind', makeLil(this.ctrl.cameraKindItems))
             .name('Kind').listen().onChange(() => {
             overlay.show(this.ctrl.camera_kind.indexOf('ortho') == 0);
             this.changeCamera();
@@ -1587,19 +1602,18 @@ class TGeoPainter extends ObjectPainter {
 
       camera.add(this, 'focusCamera').name('Reset position');
 
-      overlay = camera.add(this.ctrl, 'camera_overlay', overlaysfg)
+      overlay = camera.add(this.ctrl, 'camera_overlay', makeLil(this.ctrl.cameraOverlayItems))
                       .name('Overlay').listen().onChange(() => this.changeCamera())
                       .show(this.ctrl.camera_kind.indexOf('ortho') == 0);
 
       // Advanced Options
       if (this._webgl) {
-         let advanced = this._gui.addFolder('Advanced'), depthcfg = {};
-         this.ctrl.depthMethodItems.forEach(i => { depthcfg[i.name] = i.value; });
+         let advanced = this._gui.addFolder('Advanced');
 
          advanced.add(this.ctrl, 'depthTest').name('Depth test')
             .listen().onChange(() => this.changedDepthTest());
 
-         advanced.add( this.ctrl, 'depthMethod', depthcfg)
+         advanced.add( this.ctrl, 'depthMethod', makeLil(this.ctrl.depthMethodItems))
              .name('Rendering order')
              .onChange(method => this.changedDepthMethod(method));
 
@@ -2610,9 +2624,14 @@ class TGeoPainter extends ObjectPainter {
          switch (this._camera._lights) {
             case 'ambient' : this._camera.add(new AmbientLight(0xefefef, p)); break;
             case 'hemisphere' : this._camera.add(new HemisphereLight(0xffffbb, 0x080820, p)); break;
+            case 'mix': this._camera.add(new AmbientLight(0xefefef, p)); // intentionally without break
+
             default: // 6 point lights
-               for (let n = 0; n < 6; ++n)
-                  this._camera.add(new PointLight(0xefefef, p));
+               for (let n = 0; n < 6; ++n) {
+                  let l = new PointLight(0xefefef, p);
+                  this._camera.add(l);
+                  l._id = n;
+               }
          }
       }
 
@@ -2622,9 +2641,8 @@ class TGeoPainter extends ObjectPainter {
             light.intensity = p;
             continue;
          }
-
          if (!light.isPointLight) continue;
-         switch (k) {
+         switch (light._id) {
             case 0: light.position.set(sizex/5, sizey/5, sizez/5); enabled = this.ctrl.light.specular; break;
             case 1: light.position.set(0, 0, sizez/2); enabled = this.ctrl.light.front; break;
             case 2: light.position.set(0, 2*sizey, 0); enabled = this.ctrl.light.top; break;

@@ -2324,7 +2324,7 @@ function createMaterial(cfg, args0) {
       material = new MeshLambertMaterial(args);
    }
 
-   let prop_list = ['flatShading'];
+   let prop_list = ['flatShading', 'roughness', 'metalness'];
 
    prop_list.forEach(name => {
       if ((cfg[name] !== undefined) && (material[name] !== undefined)) {
