@@ -3039,6 +3039,13 @@ class TGeoPainter extends ObjectPainter {
             let sz = cc.max - cc.min;
             cc.max += sz*0.01;
             cc.min -= sz*0.01;
+            if (sz > 100)
+               cc.step = 0.1;
+            else if (sz > 1)
+               cc.step = 0.001;
+            else
+               cc.step = undefined;
+
             if (!cc.value)
                cc.value = (cc.min + cc.max) / 2;
             else if (cc.value < cc.min)
