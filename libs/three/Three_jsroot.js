@@ -138,7 +138,7 @@ export { Color } from './math/Color.js';
 // export { CameraHelper } from './helpers/CameraHelper.js';
 // export { BoxHelper } from './helpers/BoxHelper.js';
 // export { Box3Helper } from './helpers/Box3Helper.js';
-// export { PlaneHelper } from './helpers/PlaneHelper.js';
+export { PlaneHelper } from './helpers/PlaneHelper.js';
 // export { ArrowHelper } from './helpers/ArrowHelper.js';
 // export { AxesHelper } from './helpers/AxesHelper.js';
 export * from './extras/curves/Curves.js';
