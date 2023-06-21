@@ -176,7 +176,7 @@ class RPadPainter extends RObjectPainter {
      * @desc used to find title drawing
      * @private */
    findInPrimitives(objname, objtype) {
-      console.error('findInPrimitives not implemented for RPad');
+      console.warn('findInPrimitives not implemented for RPad');
       return null;
    }
 
