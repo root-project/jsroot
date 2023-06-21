@@ -329,29 +329,25 @@ function getIntersectStack(item) {
 class Toolbar {
 
    /** @summary constructor */
-   constructor(container, bright) {
+   constructor(container, bright, buttons) {
       this.bright = bright;
 
-      this.element = container.append('div').attr('class', 'geo_toolbar_group');
+      this.buttons = buttons;
 
+      this.element = container.append('div').attr('class', 'geo_toolbar_group');
+   }
+
+   /** @summary add buttons */
+   createButtons() {
       injectStyle(
          '.geo_toolbar_group { float: left; box-sizing: border-box; position: relative; bottom: 23px; vertical-align: middle; white-space: nowrap; }'+
          '.geo_toolbar_group:first-child { margin-left: 2px; }'+
          '.geo_toolbar_group a { position: relative; font-size: 16px; padding: 3px 1px; cursor: pointer; line-height: normal; box-sizing: border-box; }'+
-         '.geo_toolbar_group a svg { position: relative; top: 2px; }'+
-         '.geo_toolbar_btn path { fill: rgba(0, 31, 95, 0.2); }'+
-         '.geo_toolbar_btn path .active, '+
-         '.geo_toolbar_btn path:hover { fill: rgba(0, 22, 72, 0.5); }'+
-         '.geo_toolbar_btn_bright path { fill: rgba(255, 224, 160, 0.8); }'+
-         '.geo_toolbar_btn_bright path .active,'+
-         '.geo_toolbar_btn_bright path:hover { fill: rgb(255, 233, 183); }', this.element.node(), 'geo_toolbar_styles');
-   }
+         '.geo_toolbar_group a svg { position: relative; top: 2px; }', this.element.node(), 'geo_toolbar_styles');
 
-   /** @summary add buttons */
-   addButtons(buttons) {
       this.buttonsNames = [];
 
-      buttons.forEach(buttonConfig => {
+      this.buttons.forEach(buttonConfig => {
          let buttonName = buttonConfig.name;
          if (!buttonName)
             throw new Error('must provide button name in button config');
@@ -366,21 +362,21 @@ class Toolbar {
             throw new Error('must provide button click() function in button config');
 
          let button = this.element.append('a')
-                           .attr('class', this.bright ? 'geo_toolbar_btn_bright' : 'geo_toolbar_btn')
                            .attr('rel', 'tooltip')
-                           .attr('data-title', title)
-                           .on('click', buttonConfig.click);
+                           .attr('data-title', title);
 
-         ToolbarIcons.createSVG(button, ToolbarIcons[buttonConfig.icon], 16, title);
+         ToolbarIcons.createSVG(button, ToolbarIcons[buttonConfig.icon], 16, title, this.bright)
+              .on('click', buttonConfig.click);
       });
 
    }
 
    /** @summary change brightness */
    changeBrightness(bright) {
-      this.element?.selectAll(this.bright ? '.geo_toolbar_btn_bright' : '.geo_toolbar_btn')
-                   .attr('class', bright ? 'geo_toolbar_btn_bright' : 'geo_toolbar_btn');
+      if (this.bright == bright) return;
+      this.element.selectAll('a').remove();
       this.bright = bright;
+      this.createButtons();
    }
 
    /** @summary cleanup toolbar */
@@ -718,9 +714,9 @@ class TGeoPainter extends ObjectPainter {
 
       let bkgr = new Color(this.ctrl.background);
 
-      this._toolbar = new Toolbar(this.selectDom(), (bkgr.r + bkgr.g + bkgr.b) < 1);
+      this._toolbar = new Toolbar(this.selectDom(), (bkgr.r + bkgr.g + bkgr.b) < 1, buttonList);
 
-      this._toolbar.addButtons(buttonList);
+      this._toolbar.createButtons();
    }
 
    /** @summary Initialize VR mode */

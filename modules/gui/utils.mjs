@@ -204,7 +204,7 @@ const ToolbarIcons = {
    },
 
    createSVG(group, btn, size, title, arg) {
-      let use_dark = arg === true ? false : settings.DarkMode,
+      let use_dark = (arg === true) || (arg === false) ? arg : settings.DarkMode,
           opacity0 = (arg == 'browser') ? (browser.touches ? 0.2 : 0) : (use_dark ? 0.8 : 0.2),
           svg = group.append('svg:svg')
                      .attr('width', size + 'px')
