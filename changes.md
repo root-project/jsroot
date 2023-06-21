@@ -7,6 +7,7 @@
 3. Let configure material and scene properties in geom control gui
 4. Upgrade three.js r151 -> r153
 5. Let toggle vertical/horizontal flag for color palette via context menu
+6. Provide "Bring to front" menu command for title/stats/palette/legend objects
 
 
 ## Changes in 7.4.0

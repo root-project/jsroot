@@ -1862,6 +1862,8 @@ class THistPainter extends ObjectPainter {
             this.drawColorPalette(this.options.Zscale, false, 'toggle')
                      .then(() => this.processOnlineChange('drawopt'));
          }, 'Toggle palette vertical/horizontal flag');
+
+         menu.add('Bring to front', () => this.getPadPainter()?.findPainterFor(pal)?.bringToFront());
       }
    }
 
