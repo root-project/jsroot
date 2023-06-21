@@ -211,6 +211,7 @@ class THistDrawOptions {
          if (d.part.indexOf('4') >= 0) this.Lego = 14;
          check3dbox = d.part;
          if (d.part.indexOf('Z') >= 0) this.Zscale = true;
+         if (d.part.indexOf('H') >= 0) this.Zvert = false;
       }
 
       if (d.check('R3D_', true))
@@ -220,6 +221,7 @@ class THistDrawOptions {
          this.Surf = d.partAsInt(10, 1);
          check3dbox = d.part;
          if (d.part.indexOf('Z') >= 0) this.Zscale = true;
+         if (d.part.indexOf('H') >= 0) this.Zvert = false;
       }
 
       if (d.check('TF3', true)) check3dbox = d.part;
@@ -231,6 +233,7 @@ class THistDrawOptions {
       if (d.check('CONT', true) && (hdim > 1)) {
          this.Contour = 1;
          if (d.part.indexOf('Z') >= 0) this.Zscale = true;
+         if (d.part.indexOf('H') >= 0) this.Zvert = false;
          if (d.part.indexOf('1') >= 0) this.Contour = 11; else
          if (d.part.indexOf('2') >= 0) this.Contour = 12; else
          if (d.part.indexOf('3') >= 0) this.Contour = 13; else
@@ -378,17 +381,19 @@ class THistDrawOptions {
 
    /** @summary Tries to reconstruct string with hist draw options */
    asString(is_main_hist, pad) {
-      let res = '';
+      let res = '', zopt = '';
+      if (this.Zscale)
+         zopt = this.Zvert ? 'Z' : 'HZ';
       if (this.Mode3D) {
 
          if (this.Lego) {
             res = 'LEGO';
             if (!this.Zero) res += '0';
             if (this.Lego > 10) res += (this.Lego-10);
-            if (this.Zscale) res += 'Z';
+            res += zopt;
          } else if (this.Surf) {
             res = 'SURF' + (this.Surf-10);
-            if (this.Zscale) res += 'Z';
+            res += zopt;
          }
          if (!this.FrontBox) res += 'FB';
          if (!this.BackBox) res += 'BB';
@@ -406,12 +411,12 @@ class THistDrawOptions {
          } else if (this.Color) {
             res = 'COL';
             if (!this.Zero) res += '0';
-            if (this.Zscale) res += (!this.Zvert ? 'HZ' : 'Z');
+            res += zopt;
             if (this.Axis < 0) res += 'A';
          } else if (this.Contour) {
             res = 'CONT';
             if (this.Contour > 10) res += (this.Contour-10);
-            if (this.Zscale) res += 'Z';
+            res += zopt;
          } else if (this.Bar) {
             res = (this.BaseLine === false) ? 'B' : 'B1';
          } else if (this.Mark) {
