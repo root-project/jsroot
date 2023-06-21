@@ -108,16 +108,16 @@ let PadButtonsHandler = {
           x = group.property('leftside') ? getButtonSize(this, 1.25) : 0, y = 0;
 
       if (this._fast_drawing) {
-         ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.circle, getButtonSize(this), 'enlargePad')
+         ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.circle, getButtonSize(this), 'enlargePad', true)
                             .attr('name', 'Enlarge').attr('x', 0).attr('y', 0)
                             .on('click', evnt => this.clickPadButton('enlargePad', evnt));
       } else {
-         ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.rect, getButtonSize(this), 'Toggle tool buttons')
+         ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.rect, getButtonSize(this), 'Toggle tool buttons', true)
                             .attr('name', 'Toggle').attr('x', 0).attr('y', 0)
                             .property('buttons_state', (settings.ToolBar !== 'popup') || browser.touches)
-                            .on('click', evnt => toggleButtonsVisibility(this, 'toggle', evnt))
-                            .on('mouseenter', () => toggleButtonsVisibility(this, 'enable'))
-                            .on('mouseleave', () => toggleButtonsVisibility(this, 'disable'));
+                            .on('click', evnt => toggleButtonsVisibility(this, 'toggle', evnt));
+         ctrl.node()._mouseenter = () => toggleButtonsVisibility(this, 'enable');
+         ctrl.node()._mouseleave = () => toggleButtonsVisibility(this, 'disable');
 
          for (let k = 0; k < this._buttons.length; ++k) {
             let item = this._buttons[k], btn = item.btn;
@@ -128,7 +128,7 @@ let PadButtonsHandler = {
                btn = ToolbarIcons.circle;
 
             let svg = ToolbarIcons.createSVG(group, btn, getButtonSize(this),
-                        item.tooltip + (iscan ? '' : (` on pad ${this.this_pad_name}`)) + (item.keyname ? ` (keyshortcut ${item.keyname})` : ''));
+                        item.tooltip + (iscan ? '' : (` on pad ${this.this_pad_name}`)) + (item.keyname ? ` (keyshortcut ${item.keyname})` : ''), true);
 
             if (group.property('vertical'))
                 svg.attr('x', y).attr('y', x);
@@ -137,12 +137,11 @@ let PadButtonsHandler = {
 
             svg.attr('name', item.funcname)
                .style('display', ctrl.property('buttons_state') ? '' : 'none')
-               .on('mouseenter', () => toggleButtonsVisibility(this, 'enterbtn'))
-               .on('mouseleave', () => toggleButtonsVisibility(this, 'leavebtn'));
+               .attr('key', item.keyname || null)
+               .on('click', evnt => this.clickPadButton(item.funcname, evnt));
 
-            if (item.keyname) svg.attr('key', item.keyname);
-
-            svg.on('click', evnt => this.clickPadButton(item.funcname, evnt));
+            svg.node()._mouseenter = () => toggleButtonsVisibility(this, 'enterbtn');
+            svg.node()._mouseleave = () => toggleButtonsVisibility(this, 'leavebtn');
 
             x += getButtonSize(this, 1.25);
          }

@@ -204,26 +204,37 @@ const ToolbarIcons = {
    },
 
    createSVG(group, btn, size, title, opacity0) {
-      // let color = settings.DarkMode ? 'rgb(255, 224, 160)' : 'steelblue';
-      //injectStyle(`.jsroot_svg_toolbar_btn { fill: ${color}; cursor: pointer; opacity: 0.3; }` +
-      //            '.jsroot_svg_toolbar_btn:hover { opacity: 1.0; }', group.node(), 'jsroot_svg_toolbar_style');
+      let use_dark = settings.DarkMode;
+      if ((opacity0 == 'ignore') || (opacity0 === true)) {
+         use_dark = false;
+         opacity0 = undefined;
+      }
 
       if (opacity0 === undefined)
-         opacity0 = settings.DarkMode ? 0.8 : 0.2;
+         opacity0 = use_dark ? 0.8 : 0.2;
 
       let svg = group.append('svg:svg')
-                     .attr('class', 'jsroot_svg_toolbar_btn')
-                     // .attr('style', 'fill: steelblue; overflow: hidden; cursor: pointer; opacity: 0.3; path:hover { opacity: 1.0 }')
                      .attr('width', size + 'px')
                      .attr('height', size + 'px')
                      .attr('viewBox', '0 0 512 512')
                      .style('overflow', 'hidden')
                      .style('cursor', 'pointer')
-                     .style('fill', settings.DarkMode ? 'rgba(255, 224, 160)' : 'steelblue')
+                     .style('fill', use_dark ? 'rgba(255, 224, 160)' : 'steelblue')
                      .style('opacity', opacity0)
                      .property('opacity0', opacity0)
-                     .on('mouseenter', function() { d3_select(this).style('opacity', settings.DarkMode ? 1 : 0.8); })
-                     .on('mouseleave', function() { d3_select(this).style('opacity', d3_select(this).property('opacity0')); });
+                     .property('opacity1', use_dark ? 1 : 0.8)
+                     .on('mouseenter', function() {
+                        let elem = d3_select(this);
+                        elem.style('opacity', elem.property('opacity1'));
+                        let func = elem.node()._mouseenter;
+                        if (isFunc(func)) func();
+                     })
+                     .on('mouseleave', function() {
+                        let elem = d3_select(this);
+                        elem.style('opacity', elem.property('opacity0'));
+                        let func = elem.node()._mouseleave;
+                        if (isFunc(func)) func();
+                     });
 
       if ('recs' in btn) {
          let rec = {};
