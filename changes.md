@@ -6,6 +6,7 @@
 2. Use https://github.com/georgealways/lil-gui/ instead of dat.GUI
 3. Let configure material and scene properties in geom control gui
 4. Upgrade three.js r151 -> r153
+5. Let toggle vertical/horizontal flag for color palette via context menu
 
 
 ## Changes in 7.4.0

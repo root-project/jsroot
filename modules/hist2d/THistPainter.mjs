@@ -1907,9 +1907,9 @@ class THistPainter extends ObjectPainter {
          pal.$can_move = true;
 
          if (!this.options.Zvert)
-            Object.assign(pal, { fX1NDC: 0.1, fX2NDC: 0.9, fY1NDC: 0.805, fY2NDC: 0.845 });
+            Object.assign(pal, { fX1NDC: gStyle.fPadLeftMargin, fX2NDC: 1 - gStyle.fPadRightMargin, fY1NDC: 1.005 - gStyle.fPadTopMargin, fY2NDC: 1.045 - gStyle.fPadTopMargin });
          else
-            Object.assign(pal, { fX1NDC: 0.905, fX2NDC: 0.945, fY1NDC: 0.1, fY2NDC: 0.9 });
+            Object.assign(pal, { fX1NDC: 1.005 - gStyle.fPadRightMargin, fX2NDC: 1.045 - gStyle.fPadRightMargin, fY1NDC: gStyle.fPadBottomMargin, fY2NDC: 1 - gStyle.fPadTopMargin });
 
          let zaxis = this.getHisto().fZaxis;
 
@@ -1948,7 +1948,7 @@ class THistPainter extends ObjectPainter {
          } else {
             if (can_move == 'toggle') {
                let d = pal.fX2NDC - pal.fX1NDC;
-               pal.fY1NDC = fp.fY1NDC - 0.05;
+               pal.fY1NDC = fp.fY2NDC + 0.005;
                pal.fY2NDC = pal.fY1NDC + d;
             }
 
