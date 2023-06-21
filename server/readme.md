@@ -20,7 +20,7 @@ Can be used to serve JSROOT and ROOT files on localhost httpserver.
 ```
 4. Open ROOT file in JSROOT with the link:
 ```
-     http://localhost:8000/jsroot/?file=files/hsimple.root&item=hpxpy&opt=colz
+     http://localhost:8000/jsroot/?file=../files/hsimple.root&item=hpxpy&opt=colz
 ```
 5. Also test examples.htm and api.htm:
 ```
