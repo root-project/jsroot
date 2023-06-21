@@ -1647,7 +1647,7 @@ class THistPainter extends ObjectPainter {
 
             if ((this.options.Lego == 12) || (this.options.Lego == 14)) {
                menu.addchk(this.options.Zscale, 'Z scale', () => this.toggleColz());
-               if (this.fillPaletteMenu) this.fillPaletteMenu(menu);
+               this.fillPaletteMenu(menu, true);
             }
          }
 
@@ -1838,12 +1838,17 @@ class THistPainter extends ObjectPainter {
    }
 
    /** @summary Fill menu entries for palette */
-   fillPaletteMenu(menu) {
+   fillPaletteMenu(menu, only_palette) {
       menu.addPaletteMenu(this.options.Palette || settings.Palette, arg => {
          this.options.Palette = parseInt(arg);
          this.getHistPalette(true);
          this.redraw(); // redraw histogram
       });
+      if (!only_palette)
+         menu.add('Default position', () => {
+             this.drawColorPalette(this.options.Zscale, false, true)
+                     .then(() => this.processOnlineChange('drawopt'));
+         });
    }
 
    /** @summary draw color palette
@@ -1861,7 +1866,10 @@ class THistPainter extends ObjectPainter {
           pal_painter = pp?.findPainterFor(pal),
           found_in_func = !!pal;
 
-      if (this._can_move_colz) { can_move = true; delete this._can_move_colz; }
+      if (this._can_move_colz) {
+         can_move = true;
+         delete this._can_move_colz;
+      }
 
       if (!pal_painter && !pal && !this.options.Axis) {
          pal_painter = pp?.findPainterFor(undefined, undefined, clTPaletteAxis);
@@ -1889,10 +1897,13 @@ class THistPainter extends ObjectPainter {
 
          pal = create(clTPaletteAxis);
 
-         Object.assign(pal, { fX1NDC: 0.905, fX2NDC: 0.945, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1, $can_move: true });
+         pal.fInit = 1;
+         pal.$can_move = true;
 
          if (!this.options.Zvert)
             Object.assign(pal, { fX1NDC: 0.1, fX2NDC: 0.9, fY1NDC: 0.805, fY2NDC: 0.845 });
+         else
+            Object.assign(pal, { fX1NDC: 0.905, fX2NDC: 0.945, fY1NDC: 0.1, fY2NDC: 0.9 });
 
          let zaxis = this.getHisto().fZaxis;
 
