@@ -3,7 +3,7 @@ import { httpRequest, browser, source_dir, settings, internals, constants, creat
          prROOT, clTNamed, clTList, clTAxis, clTObjArray, clTPolyMarker3D, clTPolyLine3D,
          clTGeoVolume, clTGeoNode, clTGeoNodeMatrix, nsREX } from '../core.mjs';
 import { REVISION, DoubleSide, FrontSide,
-         Color, Vector2, Vector3, Matrix4, Object3D, Box3, Group, Plane,
+         Color, Vector2, Vector3, Matrix4, Object3D, Box3, Group, Plane, PlaneHelper,
          Euler, Quaternion, Mesh, InstancedMesh, MeshLambertMaterial, MeshBasicMaterial,
          LineSegments, LineBasicMaterial, LineDashedMaterial, BufferAttribute,
          TextGeometry, BufferGeometry, BoxGeometry, CircleGeometry, SphereGeometry,
@@ -526,9 +526,10 @@ class TGeoPainter extends ObjectPainter {
       this.drawing_log = 'Init';
       this.ctrl = {
          clipIntersect: true,
-         clip: [{ name: 'x', enabled: false, value: 0, min: -100, max: 100 },
-                { name: 'y', enabled: false, value: 0, min: -100, max: 100 },
-                { name: 'z', enabled: false, value: 0, min: -100, max: 100 }],
+         clipVisualize: false,
+         clip: [{ name: 'x', enabled: false, value: 0, min: -100, max: 100, step: 1 },
+                { name: 'y', enabled: false, value: 0, min: -100, max: 100, step: 1 },
+                { name: 'z', enabled: false, value: 0, min: -100, max: 100, step: 1 }],
          _highlight: 0,
          highlight: 0,
          highlight_bloom: 0,
@@ -1516,7 +1517,7 @@ class TGeoPainter extends ObjectPainter {
                 .name('Enable ' + axisC)
                 .listen().onChange(() => this.changedClipping(-1));
 
-            clipFolder.add(cc, 'value', cc.min, cc.max)
+            clipFolder.add(cc, 'value', cc.min, cc.max, cc.step)
                 .name(axisC + ' position')
                 .listen().onChange(() => this.changedClipping(naxis));
          }
@@ -1524,6 +1525,8 @@ class TGeoPainter extends ObjectPainter {
          clipFolder.add(this.ctrl, 'clipIntersect').name('Clip intersection')
                    .onChange(() => this.changedClipping(-1));
 
+         clipFolder.add(this.ctrl, 'clipVisualize').name('Visualize')
+                   .onChange(() => this.changedClipping(-1));
       }
 
       // Scene Options
@@ -4931,7 +4934,8 @@ class TGeoPainter extends ObjectPainter {
 
       let clip = this.ctrl.clip, panels = [], changed = false,
           clip_constants = [ -1 * clip[0].value, clip[1].value, (this.ctrl._yup ? -1 : 1) * clip[2].value ],
-          clip_cfg = this.ctrl.clipIntersect ? 16 : 0;
+          clip_cfg = this.ctrl.clipIntersect ? 16 : 0,
+          container = this.getExtrasContainer(this.ctrl.clipVisualize ? '' : 'delete', 'clipping');
 
       for (let k = 0; k < 3; ++k) {
          if (clip[k].enabled)
@@ -4942,6 +4946,11 @@ class TGeoPainter extends ObjectPainter {
          }
          if (clip[k].enabled)
             panels.push(this._clipPlanes[k]);
+
+         if (container && clip[k].enabled) {
+            let helper = new PlaneHelper(this._clipPlanes[k], (clip[k].max - clip[k].min));
+            container.add(helper);
+         }
       }
       if (panels.length == 0)
          panels = null;
