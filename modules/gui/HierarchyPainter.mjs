@@ -3727,10 +3727,10 @@ async function drawInspector(dom, obj) {
    painter.fill_context = function(menu, hitem) {
       let sett = getDrawSettings(hitem._kind, 'nosame');
       if (sett.opts)
-         menu.addDrawMenu('nosub:Draw', sett.opts, function(arg) {
-            if (!hitem || !hitem._obj) return;
+         menu.addDrawMenu('nosub:Draw', sett.opts, arg => {
+            if (!hitem?._obj) return;
             let obj = hitem._obj, ddom = this.selectDom().node();
-            if (this.removeInspector) {
+            if (isFunc(this.removeInspector)) {
                ddom = ddom.parentNode;
                this.removeInspector();
                if (arg == 'inspect')
