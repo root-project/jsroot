@@ -1360,7 +1360,7 @@ const FrameInteractive = {
              pnt = { x: tch[0][0], y: tch[0][1], touch: true };
          else if (ms.length === 2)
              pnt = { x: ms[0], y: ms[1], touch: false };
-       } else if ((evnt?.x !== undefined) && (evnt?.y !== undefined)) {
+       } else if ((evnt?.x !== undefined) && (evnt?.y !== undefined) && (evnt?.clientX === undefined)) {
           pnt = evnt;
           let rect = svg_node.getBoundingClientRect();
           evnt  = { clientX: rect.left + pnt.x, clientY: rect.top + pnt.y };
