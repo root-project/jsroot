@@ -591,7 +591,7 @@ class TGeoPainter extends ObjectPainter {
          camera_kind: 'perspective',
          camera_overlay: 'gridb',
          rotate: false,
-         background: '#FFFFFF',
+         background: settings.DarkMode ? '#000000' : '#ffffff',
          can_rotate: true,
          _axis: 0,
          instancing: 0,
@@ -630,6 +630,13 @@ class TGeoPainter extends ObjectPainter {
       };
 
       this.cleanup(true);
+   }
+
+   /** @summary Function callled by framework when dark mode is changed
+     * @private */
+   changeDarkMode() {
+      if ((this.ctrl.background == '#000000') || (this.ctrl.background == '#ffffff'))
+         this.changedBackground(settings.DarkMode ? '#000000' : '#ffffff');
    }
 
    /** @summary Change drawing stage
