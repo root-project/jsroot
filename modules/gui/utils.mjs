@@ -1,4 +1,4 @@
-import { settings, gStyle, isBatchMode, isNodeJs, isObject, isFunc, isStr, source_dir, atob_func, btoa_func } from '../core.mjs';
+import { settings, browser, gStyle, isBatchMode, isNodeJs, isObject, isFunc, isStr, source_dir, atob_func, btoa_func } from '../core.mjs';
 import { select as d3_select, pointer as d3_pointer, drag as d3_drag, color as d3_color } from '../d3.mjs';
 import { BasePainter } from '../base/BasePainter.mjs';
 import { resize } from '../base/ObjectPainter.mjs';
@@ -203,17 +203,10 @@ const ToolbarIcons = {
             'M460.293,256.149H339.237c-28.521,0-51.721,23.199-51.721,51.726v89.915c0,28.504,23.2,51.715,51.721,51.715h121.045   c28.521,0,51.721-23.199,51.721-51.715v-89.915C512.002,279.354,488.802,256.149,460.293,256.149z M465.03,397.784   c0,2.615-2.122,4.736-4.748,4.736H339.237c-2.614,0-4.747-2.121-4.747-4.736v-89.909c0-2.626,2.121-4.753,4.747-4.753h121.045 c2.615,0,4.748,2.116,4.748,4.753V397.784z'
    },
 
-   createSVG(group, btn, size, title, opacity0) {
-      let use_dark = settings.DarkMode;
-      if ((opacity0 == 'ignore') || (opacity0 === true)) {
-         use_dark = false;
-         opacity0 = undefined;
-      }
-
-      if (opacity0 === undefined)
-         opacity0 = use_dark ? 0.8 : 0.2;
-
-      let svg = group.append('svg:svg')
+   createSVG(group, btn, size, title, arg) {
+      let use_dark = arg === true ? false : settings.DarkMode,
+          opacity0 = (arg == 'browser') ? (browser.touches ? 0.2 : 0) : (use_dark ? 0.8 : 0.2),
+          svg = group.append('svg:svg')
                      .attr('width', size + 'px')
                      .attr('height', size + 'px')
                      .attr('viewBox', '0 0 512 512')

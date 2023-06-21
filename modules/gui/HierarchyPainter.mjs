@@ -3433,17 +3433,15 @@ class HierarchyPainter extends BasePainter {
       let btns = this.brlayout?.createBrowserBtns();
       if (!btns) return;
 
-      let opacity0 = browser.touches ? 0.2 : 0;
-
-      ToolbarIcons.createSVG(btns, ToolbarIcons.diamand, 15, 'toggle fix-pos browser', opacity0)
+      ToolbarIcons.createSVG(btns, ToolbarIcons.diamand, 15, 'toggle fix-pos browser', 'browser')
                   .style('margin','3px').on('click', () => this.createBrowser('fix', true));
 
       if (!this.float_browser_disabled)
-         ToolbarIcons.createSVG(btns, ToolbarIcons.circle, 15, 'toggle float browser', opacity0)
+         ToolbarIcons.createSVG(btns, ToolbarIcons.circle, 15, 'toggle float browser', 'browser')
                      .style('margin','3px').on('click', () => this.createBrowser('float', true));
 
       if (!this.status_disabled)
-         ToolbarIcons.createSVG(btns, ToolbarIcons.three_circles, 15, 'toggle status line', opacity0)
+         ToolbarIcons.createSVG(btns, ToolbarIcons.three_circles, 15, 'toggle status line', 'browser')
                      .style('margin','3px').on('click', () => this.createStatusLine(0, 'toggle'));
    }
 

@@ -594,13 +594,13 @@ class RCanvasPainter extends RPadPainter {
 
       let btns = this.brlayout.createBrowserBtns();
 
-      ToolbarIcons.createSVG(btns, ToolbarIcons.diamand, 15, 'toggle fix-pos mode')
+      ToolbarIcons.createSVG(btns, ToolbarIcons.diamand, 15, 'toggle fix-pos mode', 'browser')
                   .style('margin','3px').on('click', () => this.brlayout.toggleKind('fix'));
 
-      ToolbarIcons.createSVG(btns, ToolbarIcons.circle, 15, 'toggle float mode')
+      ToolbarIcons.createSVG(btns, ToolbarIcons.circle, 15, 'toggle float mode', 'browser')
                   .style('margin','3px').on('click', () => this.brlayout.toggleKind('float'));
 
-      ToolbarIcons.createSVG(btns, ToolbarIcons.cross, 15, 'delete GED')
+      ToolbarIcons.createSVG(btns, ToolbarIcons.cross, 15, 'delete GED', 'browser')
                   .style('margin','3px').on('click', () => this.removeGed());
 
       // be aware, that jsroot_browser_hierarchy required for flexible layout that element use full browser area
