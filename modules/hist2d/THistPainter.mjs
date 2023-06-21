@@ -1854,7 +1854,10 @@ class THistPainter extends ObjectPainter {
              this.drawColorPalette(this.options.Zscale, false, true)
                      .then(() => this.processOnlineChange('drawopt'));
          }, 'Set default position for palette');
-         menu.addchk(this.options.Zvert, 'Vertical', flag => {
+
+         let pal = this.findFunction(clTPaletteAxis),
+             is_vert = !pal ? true : pal.fX2NDC - pal.fX1NDC < pal.fY2NDC - pal.fY1NDC;
+         menu.addchk(is_vert, 'Vertical', flag => {
             this.options.Zvert = flag;
             this.drawColorPalette(this.options.Zscale, false, 'toggle')
                      .then(() => this.processOnlineChange('drawopt'));
