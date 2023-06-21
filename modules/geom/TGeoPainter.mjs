@@ -344,7 +344,7 @@ class Toolbar {
          '.geo_toolbar_btn path:hover { fill: rgba(0, 22, 72, 0.5); }'+
          '.geo_toolbar_btn_bright path { fill: rgba(255, 224, 160, 0.8); }'+
          '.geo_toolbar_btn_bright path .active,'+
-         '.geo_toolbar_btn_bright path:hover { fill: rgb(255, 233, 183); }', this.element.node());
+         '.geo_toolbar_btn_bright path:hover { fill: rgb(255, 233, 183); }', this.element.node(), 'geo_toolbar_styles');
    }
 
    /** @summary add buttons */

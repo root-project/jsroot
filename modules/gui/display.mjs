@@ -1287,8 +1287,7 @@ class BrowserLayout {
          `.jsroot_browser_area input { ${input_style} }`+
          `.jsroot_browser_area select { ${input_style} }`+
          `.jsroot_browser_title { font-family: Verdana; font-size: 20px; color: ${title_color}; }`+
-         `.jsroot_browser_btns { pointer-events: all; opacity: 0; display:flex; flex-direction: column; }`+
-         `.jsroot_browser_btns:hover { opacity: 0.3; }`+
+         `.jsroot_browser_btns { pointer-events: all; display: flex; flex-direction: column; }`+
          `.jsroot_browser_area p { margin-top: 5px; margin-bottom: 5px; white-space: nowrap; }`+
          `.jsroot_browser_hierarchy { flex: 1; margin-top: 2px; }`+
          `.jsroot_status_area { background-color: ${bkgr_color}; overflow: hidden; font-size: 12px; font-family: Verdana; pointer-events: all; }`+
@@ -1318,9 +1317,13 @@ class BrowserLayout {
    createBrowserBtns() {
       let br = this.browser();
       if (br.empty()) return;
-      let btns = br.append('div').classed('jsroot_browser_btns', true).classed('jsroot', true);
-      btns.style('position','absolute').style('left','7px').style('top','7px');
-      if (browser.touches) btns.style('opacity','0.2'); // on touch devices should be always visible
+      let btns = br.select('.jsroot_browser_btns');
+      if (btns.empty()) {
+         btns = br.append('div').classed('jsroot_browser_btns', true).classed('jsroot', true);
+         btns.style('position','absolute').style('left','7px').style('top','7px');
+      } else {
+         btns.html('');
+      }
       return btns;
    }
 

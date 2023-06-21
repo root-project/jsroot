@@ -203,15 +203,27 @@ const ToolbarIcons = {
             'M460.293,256.149H339.237c-28.521,0-51.721,23.199-51.721,51.726v89.915c0,28.504,23.2,51.715,51.721,51.715h121.045   c28.521,0,51.721-23.199,51.721-51.715v-89.915C512.002,279.354,488.802,256.149,460.293,256.149z M465.03,397.784   c0,2.615-2.122,4.736-4.748,4.736H339.237c-2.614,0-4.747-2.121-4.747-4.736v-89.909c0-2.626,2.121-4.753,4.747-4.753h121.045 c2.615,0,4.748,2.116,4.748,4.753V397.784z'
    },
 
-   createSVG(group, btn, size, title) {
-      injectStyle('.jsroot_svg_toolbar_btn { fill: steelblue; cursor: pointer; opacity: 0.3; } .jsroot_svg_toolbar_btn:hover { opacity: 1.0; }', group.node());
+   createSVG(group, btn, size, title, opacity0) {
+      // let color = settings.DarkMode ? 'rgb(255, 224, 160)' : 'steelblue';
+      //injectStyle(`.jsroot_svg_toolbar_btn { fill: ${color}; cursor: pointer; opacity: 0.3; }` +
+      //            '.jsroot_svg_toolbar_btn:hover { opacity: 1.0; }', group.node(), 'jsroot_svg_toolbar_style');
+
+      if (opacity0 === undefined)
+         opacity0 = settings.DarkMode ? 0.8 : 0.2;
 
       let svg = group.append('svg:svg')
                      .attr('class', 'jsroot_svg_toolbar_btn')
+                     // .attr('style', 'fill: steelblue; overflow: hidden; cursor: pointer; opacity: 0.3; path:hover { opacity: 1.0 }')
                      .attr('width', size + 'px')
                      .attr('height', size + 'px')
                      .attr('viewBox', '0 0 512 512')
-                     .style('overflow', 'hidden');
+                     .style('overflow', 'hidden')
+                     .style('cursor', 'pointer')
+                     .style('fill', settings.DarkMode ? 'rgba(255, 224, 160)' : 'steelblue')
+                     .style('opacity', opacity0)
+                     .property('opacity0', opacity0)
+                     .on('mouseenter', function() { d3_select(this).style('opacity', settings.DarkMode ? 1 : 0.8); })
+                     .on('mouseleave', function() { d3_select(this).style('opacity', d3_select(this).property('opacity0')); });
 
       if ('recs' in btn) {
          let rec = {};

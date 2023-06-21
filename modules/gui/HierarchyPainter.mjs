@@ -1672,13 +1672,13 @@ class HierarchyPainter extends BasePainter {
             this.refreshHtml();
          } else if (arg == 'dark') {
             this.brlayout?.createStyle();
-            if (this.disp)
-               this.disp.forEachFrame(frame => {
-                  let p = getElementCanvPainter(frame);
-                  if (!p) p = getElementMainPainter(frame);
-                  if (isFunc(p?.changeDarkMode))
-                     p.changeDarkMode();
-               });
+            this.createButtons(); // recreate buttons
+            this.disp?.forEachFrame(frame => {
+               let p = getElementCanvPainter(frame);
+               if (!p) p = getElementMainPainter(frame);
+               if (isFunc(p?.changeDarkMode))
+                  p.changeDarkMode();
+            });
          }
       });
    }
@@ -3421,22 +3421,30 @@ class HierarchyPainter extends BasePainter {
 
       this.brlayout.create(!this.exclude_browser);
 
-      if (!this.exclude_browser) {
-         let btns = this.brlayout.createBrowserBtns();
-
-         ToolbarIcons.createSVG(btns, ToolbarIcons.diamand, 15, 'toggle fix-pos browser')
-                     .style('margin','3px').on('click', () => this.createBrowser('fix', true));
-
-         if (!this.float_browser_disabled)
-            ToolbarIcons.createSVG(btns, ToolbarIcons.circle, 15, 'toggle float browser')
-                        .style('margin','3px').on('click', () => this.createBrowser('float', true));
-
-         if (!this.status_disabled)
-            ToolbarIcons.createSVG(btns, ToolbarIcons.three_circles, 15, 'toggle status line')
-                        .style('margin','3px').on('click', () => this.createStatusLine(0, 'toggle'));
-      }
+      this.createButtons();
 
       this.setDisplay(layout, this.brlayout.drawing_divid());
+   }
+
+   /** @summary Create shortcut buttons */
+   createButtons() {
+      if (this.exclude_browser) return;
+
+      let btns = this.brlayout?.createBrowserBtns();
+      if (!btns) return;
+
+      let opacity0 = browser.touches ? 0.2 : 0;
+
+      ToolbarIcons.createSVG(btns, ToolbarIcons.diamand, 15, 'toggle fix-pos browser', opacity0)
+                  .style('margin','3px').on('click', () => this.createBrowser('fix', true));
+
+      if (!this.float_browser_disabled)
+         ToolbarIcons.createSVG(btns, ToolbarIcons.circle, 15, 'toggle float browser', opacity0)
+                     .style('margin','3px').on('click', () => this.createBrowser('float', true));
+
+      if (!this.status_disabled)
+         ToolbarIcons.createSVG(btns, ToolbarIcons.three_circles, 15, 'toggle status line', opacity0)
+                     .style('margin','3px').on('click', () => this.createStatusLine(0, 'toggle'));
    }
 
    /** @summary Returns trus if status is exists */
