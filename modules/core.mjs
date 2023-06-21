@@ -300,6 +300,10 @@ let gStyle = {
    fPadGridY: false,
    fPadTickX: 0,
    fPadTickY: 0,
+   fPadBorderSize: 2,
+   fPadBorderMode: 0,
+   fCanvasBorderSize: 2,
+   fCanvasBorderMode: 0,
    /** @summary fill color for stat box */
    fStatColor: 0,
    /** @summary fill style for stat box */
@@ -1250,13 +1254,12 @@ function create(typename, target) {
                        fUxmin: 0, fUymin: 0, fUxmax: 0, fUymax: 0, fTheta: 30, fPhi: 30, fAspectRatio: 0,
                        fNumber: 0, fLogx: gStyle.fOptLogx, fLogy: gStyle.fOptLogy, fLogz: gStyle.fOptLogz,
                        fTickx: gStyle.fPadTickX, fTicky: gStyle.fPadTickY,
-                       fPadPaint: 0, fCrosshair: 0, fCrosshairPos: 0, fBorderSize: 2,
-                       fBorderMode: 0, fModified: false,
+                       fPadPaint: 0, fCrosshair: 0, fCrosshairPos: 0, fBorderSize: gStyle.fPadBorderSize,
+                       fBorderMode: gStyle.fPadBorderMode, fModified: false,
                        fGridx: gStyle.fPadGridX, fGridy: gStyle.fPadGridY,
                        fAbsCoord: false, fEditable: true, fFixedAspectRatio: false,
                        fPrimitives: create(clTList), fExecs: null,
                        fName: 'pad', fTitle: 'canvas' });
-
          break;
       case clTAttCanvas:
          extend(obj, { fXBetween: 2, fYBetween: 2, fTitleFromTop: 1.2,
@@ -1269,6 +1272,7 @@ function create(typename, target) {
                        fDoubleBuffer: 0, fRetained: true, fXsizeUser: 0,
                        fYsizeUser: 0, fXsizeReal: 20, fYsizeReal: 10,
                        fWindowTopX: 0, fWindowTopY: 0, fWindowWidth: 0, fWindowHeight: 0,
+                       fBorderSize: gStyle.fCanvasBorderSize, fBorderMode: gStyle.fCanvasBorderMode,
                        fCw: 500, fCh: 300, fCatt: create(clTAttCanvas),
                        kMoveOpaque: true, kResizeOpaque: true, fHighLightColor: 5,
                        fBatch: true, kShowEventStatus: false, kAutoExec: true, kMenuBar: true });
