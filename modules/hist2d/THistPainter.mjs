@@ -1844,11 +1844,17 @@ class THistPainter extends ObjectPainter {
          this.getHistPalette(true);
          this.redraw(); // redraw histogram
       });
-      if (!only_palette)
+      if (!only_palette) {
          menu.add('Default position', () => {
              this.drawColorPalette(this.options.Zscale, false, true)
                      .then(() => this.processOnlineChange('drawopt'));
-         });
+         }, 'Set default position for palette');
+         menu.addchk(this.options.Zvert, 'Vertical', flag => {
+            this.options.Zvert = flag;
+            this.drawColorPalette(this.options.Zscale, false, 'toggle')
+                     .then(() => this.processOnlineChange('drawopt'));
+         }, 'Toggle palette vertical/horizontal flag');
+      }
    }
 
    /** @summary draw color palette
@@ -1867,8 +1873,8 @@ class THistPainter extends ObjectPainter {
           found_in_func = !!pal;
 
       if (this._can_move_colz) {
-         can_move = true;
          delete this._can_move_colz;
+         if (!can_move) can_move = true;
       }
 
       if (!pal_painter && !pal && !this.options.Axis) {
@@ -1925,7 +1931,12 @@ class THistPainter extends ObjectPainter {
       // keep palette width
       if (can_move && fp && pal.$can_move) {
          if (this.options.Zvert) {
-            if (pal.fX1NDC > 0.5) {
+            if (can_move == 'toggle') {
+               let d = pal.fY2NDC - pal.fY1NDC;
+               pal.fX1NDC = fp.fX2NDC + 0.005;
+               pal.fX2NDC = pal.fX1NDC + d;
+            }
+            if (pal.fX1NDC > (fp.fX1NDC + fp.fX2NDC)*0.5) {
                pal.fX2NDC = fp.fX2NDC + 0.005 + (pal.fX2NDC - pal.fX1NDC);
                pal.fX1NDC = fp.fX2NDC + 0.005;
             } else {
@@ -1935,9 +1946,15 @@ class THistPainter extends ObjectPainter {
             pal.fY1NDC = fp.fY1NDC;
             pal.fY2NDC = fp.fY2NDC;
          } else {
+            if (can_move == 'toggle') {
+               let d = pal.fX2NDC - pal.fX1NDC;
+               pal.fY1NDC = fp.fY1NDC - 0.05;
+               pal.fY2NDC = pal.fY1NDC + d;
+            }
+
             pal.fX1NDC = fp.fX1NDC;
             pal.fX2NDC = fp.fX2NDC;
-            if (pal.fY2NDC > 0.5) {
+            if (pal.fY2NDC > (fp.fY1NDC + fp.fY2NDC)*0.5) {
                pal.fY2NDC = fp.fY2NDC + 0.005 + (pal.fY2NDC - pal.fY1NDC);
                pal.fY1NDC = fp.fY2NDC + 0.005;
             } else {
