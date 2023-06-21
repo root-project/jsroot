@@ -8,6 +8,7 @@
 4. Upgrade three.js r151 -> r153
 5. Let toggle vertical/horizontal flag for color palette via context menu
 6. Provide "Bring to front" menu command for title/stats/palette/legend objects
+7. Handle "dark mode" in geom painter - automatically adjust background
 
 
 ## Changes in 7.4.0
