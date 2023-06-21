@@ -2623,13 +2623,13 @@ class TFramePainter extends ObjectPainter {
 
       menu.addchk(this.isTooltipAllowed(), 'Show tooltips', () => this.setTooltipAllowed('toggle'));
       menu.addAttributesMenu(this, alone ? '' : 'Frame ');
-      menu.add('Save to gStyle', function() {
+      menu.add('Save to gStyle', () => {
          gStyle.fPadBottomMargin = this.fY1NDC;
          gStyle.fPadTopMargin = 1 - this.fY2NDC;
          gStyle.fPadLeftMargin = this.fX1NDC;
          gStyle.fPadRightMargin = 1 - this.fX2NDC;
-         if (this.fillatt) this.fillatt.saveToStyle('fFrameFillColor', 'fFrameFillStyle');
-         if (this.lineatt) this.lineatt.saveToStyle('fFrameLineColor', 'fFrameLineWidth', 'fFrameLineStyle');
+         this.fillatt?.saveToStyle('fFrameFillColor', 'fFrameFillStyle');
+         this.lineatt?.saveToStyle('fFrameLineColor', 'fFrameLineWidth', 'fFrameLineStyle');
       }, 'Store frame position and graphical attributes to gStyle');
 
       menu.add('separator');

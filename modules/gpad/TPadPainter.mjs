@@ -1104,11 +1104,9 @@ class TPadPainter extends ObjectPainter {
          menu.add('endsub:');
 
          menu.addAttributesMenu(this);
-         menu.add('Save to gStyle', function() {
-            if (!this.pad)
-               return;
-            if (this.fillatt)
-               this.fillatt.saveToStyle(this.iscan ? 'fCanvasColor' : 'fPadColor');
+         menu.add('Save to gStyle', () => {
+            if (!this.pad) return;
+            this.fillatt?.saveToStyle(this.iscan ? 'fCanvasColor' : 'fPadColor');
             gStyle.fPadGridX = this.pad.fGridX;
             gStyle.fPadGridY = this.pad.fGridX;
             gStyle.fPadTickX = this.pad.fTickx;

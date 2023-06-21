@@ -993,7 +993,7 @@ class TPavePainter extends ObjectPainter {
             gStyle.fStatW = pave.fX2NDC - pave.fX1NDC;
             gStyle.fStatY = pave.fY2NDC;
             gStyle.fStatH = pave.fY2NDC - pave.fY1NDC;
-            if (this.fillatt) this.fillatt.saveToStyle('fStatColor', 'fStatStyle');
+            this.fillatt?.saveToStyle('fStatColor', 'fStatStyle');
             gStyle.fStatTextColor = pave.fTextColor;
             gStyle.fStatFontSize = pave.fTextSize;
             gStyle.fStatFont = pave.fTextFont;
@@ -1080,7 +1080,7 @@ class TPavePainter extends ObjectPainter {
          menu.add('Save to gStyle', () => {
             gStyle.fTitleX = (pave.fX2NDC + pave.fX1NDC)/2;
             gStyle.fTitleY = pave.fY2NDC;
-            if (this.fillatt) this.fillatt.saveToStyle('fTitleColor', 'fTitleStyle');
+            this.fillatt?.saveToStyle('fTitleColor', 'fTitleStyle');
             gStyle.fTitleTextColor = pave.fTextColor;
             gStyle.fTitleFontSize = pave.fTextSize;
             gStyle.fTitleFont = pave.fTextFont;
