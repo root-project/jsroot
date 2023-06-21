@@ -1080,8 +1080,9 @@ class RFramePainter extends RObjectPainter {
 
    /** @summary Fill context menu */
    fillContextMenu(menu, kind, /* obj */) {
-
       // when fill and show context menu, remove all zooming
+
+      if (kind == 'pal') kind = 'z';
 
       if ((kind == 'x') || (kind == 'y') || (kind == 'x2') || (kind == 'y2')) {
          let handle = this[kind+'_handle'];

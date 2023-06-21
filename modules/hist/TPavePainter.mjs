@@ -1093,7 +1093,7 @@ class TPavePainter extends ObjectPainter {
       if (this.z_handle) {
          let fp = this.getFramePainter();
          if (isFunc(fp?.showContextMenu))
-             fp.showContextMenu('z', evnt);
+             fp.showContextMenu('pal', evnt);
       } else {
          showPainterMenu(evnt, this, this.isTitle() ? 'title' : undefined);
       }

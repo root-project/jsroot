@@ -1392,7 +1392,7 @@ const FrameInteractive = {
          if (pnt) frame_corner = (pnt.x > 0) && (pnt.x < 20) && (pnt.y > 0) && (pnt.y < 20);
 
          fp.setLastEventPos(pnt);
-      } else if ((kind == 'x') || (kind == 'y') || (kind == 'z')) {
+      } else if ((kind == 'x') || (kind == 'y') || (kind == 'z') || (kind == 'pal')) {
          exec_painter = this.getMainPainter(true); // histogram painter delivers items for axis menu
 
          if (this.v7_frame && isFunc(exec_painter?.v7EvalAttr))
@@ -2534,9 +2534,12 @@ class TFramePainter extends ObjectPainter {
    fillContextMenu(menu, kind, obj) {
       let main = this.getMainPainter(true),
           pp = this.getPadPainter(),
-          pad = pp?.getRootPad(true);
+          pad = pp?.getRootPad(true),
+          is_pal = kind == 'pal';
+      if (is_pal) kind = 'z';
 
       if ((kind == 'x') || (kind == 'y') || (kind == 'z') || (kind == 'x2') || (kind == 'y2')) {
+
          let faxis = obj || this[kind+'axis'],
              handle = this[`${kind}_handle`];
          menu.add(`header: ${kind.toUpperCase()} axis`);
@@ -2573,8 +2576,8 @@ class TFramePainter extends ObjectPainter {
                this.interactiveRedraw('pad');
          });
 
-         if ((kind === 'z') && main?.options?.Zscale && isFunc(main?.fillPaletteMenu))
-            main.fillPaletteMenu(menu);
+         if ((kind === 'z') && isFunc(main?.fillPaletteMenu))
+            main.fillPaletteMenu(menu, !is_pal);
 
          if ((handle?.kind == 'labels') && (faxis.fNbins > 20))
             menu.add('Find label', () => menu.input('Label id').then(id => {
