@@ -1277,7 +1277,8 @@ class BrowserLayout {
       let bkgr_color = settings.DarkMode ? 'black' : '#E6E6FA',
           title_color = settings.DarkMode ? '#ccc' : 'inherit',
           text_color = settings.DarkMode ? '#ddd' : 'inherit',
-          input_style = settings.DarkMode ? `background-color: #222; color: ${text_color}` : '';
+          input_style = settings.DarkMode ? `background-color: #222; color: ${text_color}` : '',
+          separ_color = settings.DarkMode ? 'grey' : 'azure';
 
       injectStyle(
          `.jsroot_browser { pointer-events: none; position: absolute; left: 0; top: 0; bottom: 0; right:0; margin: 0; border: 0; overflow: hidden; }`+
@@ -1294,9 +1295,9 @@ class BrowserLayout {
          `.jsroot_float_browser { border: solid 3px white; }`+
          `.jsroot_browser_resize { position: absolute; right: 3px; bottom: 3px; margin-bottom: 0px; margin-right: 0px; opacity: 0.5; cursor: se-resize; z-index: 1; }`+
          `.jsroot_status_label { margin: 3px; margin-left: 5px; font-size: 14px; vertical-align: middle; white-space: nowrap; }`+
-         `.jsroot_separator { pointer-events: all; border: 0; margin: 0; padding: 0; }`+
-         `.jsroot_h_separator { cursor: ns-resize; background-color: azure; }`+
-         `.jsroot_v_separator { cursor: ew-resize; background-color: azure; }`, this.main().node(), 'browser_layout_style');
+         `.jsroot_separator { pointer-events: all; border: 0; margin: 0; padding: 0; background-color: ${separ_color}; }`+
+         `.jsroot_h_separator { cursor: ns-resize; }`+
+         `.jsroot_v_separator { cursor: ew-resize; }`, this.main().node(), 'browser_layout_style');
    }
 
    /** @summary method used to create basic elements
