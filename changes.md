@@ -1,5 +1,10 @@
 # JSROOT changelog
 
+## Changes in 7.4.x
+
+1. Fix - context menu position on lego plots
+
+
 ## Changes in 7.4.0
 1. Upgrade d3.js v7.6.1 -> v7.8.4
 2. Upgrade three.js r146 -> r151
