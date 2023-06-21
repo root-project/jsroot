@@ -4704,7 +4704,7 @@ class TGeoPainter extends ObjectPainter {
          let lineMaterial = new LineBasicMaterial({ color }),
              mesh = createLineSegments(buf, lineMaterial);
 
-         mesh._axis_draw = true; // skip from clipping
+         mesh._no_clip = true; // skip from clipping
 
          container.add(mesh);
 
@@ -4718,12 +4718,13 @@ class TGeoPainter extends ObjectPainter {
                mesh.translateX(naxis === 0 ? center[0] : buf[0]);
                mesh.translateY(naxis === 1 ? center[1] : buf[1]);
                mesh.translateZ(naxis === 2 ? center[2] : buf[2]);
+               mesh._no_clip = true;
                container.add(mesh);
            }
 
          let text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size: text_size, height: 0, curveSegments: 5 });
          mesh = new Mesh(text3d, textMaterial);
-         mesh._axis_draw = true; // skip from clipping
+         mesh._no_clip = true; // skip from clipping
 
          function setSideRotation(mesh, normal) {
             mesh._other_side = false;
@@ -4807,7 +4808,7 @@ class TGeoPainter extends ObjectPainter {
          text3d = new TextGeometry(valueToString(box.min[name]), { font: HelveticerRegularFont, size: text_size, height: 0, curveSegments: 5 });
 
          mesh = new Mesh(text3d, textMaterial);
-         mesh._axis_draw = true; // skip from clipping
+         mesh._no_clip = true; // skip from clipping
          textbox = new Box3().setFromObject(mesh);
 
          text3d.translate(-textbox.max.x*0.5, -textbox.max.y/2, 0);
@@ -4949,6 +4950,7 @@ class TGeoPainter extends ObjectPainter {
 
          if (container && clip[k].enabled) {
             let helper = new PlaneHelper(this._clipPlanes[k], (clip[k].max - clip[k].min));
+            helper._no_clip = true;
             container.add(helper);
          }
       }
@@ -4965,7 +4967,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (force_traverse || changed)
          this._scene.traverse(node => {
-            if (!node._axis_draw && node.hasOwnProperty('material') && (node.material?.clippingPlanes !== undefined)) {
+            if (!node._no_clip && node.hasOwnProperty('material') && (node.material?.clippingPlanes !== undefined)) {
 
                if (node.material.clippingPlanes !== panels) {
                   node.material.clipIntersection = ci;
