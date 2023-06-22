@@ -1206,20 +1206,18 @@ class StandaloneMenu extends JSRootMenu {
 
          if (!browser.touches)
          hovArea.addEventListener('mouseenter', () => {
-            let focused = outer.childNodes;
-            focused.forEach(d => {
-               if (d.classList.contains('jsroot_ctxt_focus')) {
-                  d.removeChild(d.getElementsByClassName('jsroot_ctxt_container')[0]);
-                  d.classList.remove('jsroot_ctxt_focus');
+            outer.childNodes.forEach(chld => {
+               if (chld.classList.contains('jsroot_ctxt_focus')) {
+                  chld.removeChild(chld.getElementsByClassName('jsroot_ctxt_container')[0]);
+                  chld.classList.remove('jsroot_ctxt_focus');
                }
             })
-         });
 
-         if (d.sub && !browser.touches)
-            hovArea.addEventListener('mouseenter', () => {
+            if (d.sub) {
                item.classList.add('jsroot_ctxt_focus');
                this._buildContextmenu(d.sub, 0, 0, item);
-            });
+            }
+         });
 
          if (d.func)
             item.addEventListener('click', evnt => {
