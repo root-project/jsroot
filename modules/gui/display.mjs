@@ -301,8 +301,8 @@ class GridDisplay extends MDIDisplay {
       if (!this.simple_layout) {
          injectStyle(
             '.jsroot_vline:after { content:""; position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dotted #ff0000; }'+
-            '.jsroot_hline:after { content:""; position: absolute; left: 0; right: 0; top: 50%; border-top: 1px dotted #ff0000; }'+
-            '.jsroot_separator { pointer-events: all; border: 0; margin: 0; padding: 0; }', dom.node(), 'jsroot_grid_style');
+            '.jsroot_hline:after { content:""; position: absolute; left: 0; right: 0; top: 50%; border-top: 1px dotted #ff0000; }',
+            dom.node(), 'jsroot_grid_style');
          this.createGroup(this, dom, num, arr, sizes, chld_sizes);
       }
    }
@@ -483,7 +483,7 @@ class GridDisplay extends MDIDisplay {
            .classed(handle.vertical ? 'jsroot_hline' : 'jsroot_vline', true)
            .property('handle', handle)
            .property('separator_id', group.id)
-           .style('position', 'absolute')
+           .attr('style', 'pointer-events: all; border: 0; margin: 0; padding: 0; position: absolute')
            .style(handle.vertical ? 'top' : 'left', `calc(${group.position.toFixed(2)}% - 2px)`)
            .style(handle.vertical ? 'width' : 'height', (handle.size?.toFixed(2) || 100)+'%')
            .style(handle.vertical ? 'height' : 'width', '5px')
@@ -498,7 +498,7 @@ class GridDisplay extends MDIDisplay {
 
       // need to get touches events handling in drag
       if (browser.touches && !main.on('touchmove'))
-         main.on('touchmove', function() {});
+         main.on('touchmove', () => {});
    }
 
 
@@ -1304,7 +1304,8 @@ class BrowserLayout {
                         .classed('jsroot_draw_area', true)
                         .style('position','absolute').style('left',0).style('top',0).style('bottom',0).style('right',0);
 
-      if (with_browser) main.append('div').classed('jsroot_browser', true);
+      if (with_browser)
+         main.append('div').classed('jsroot_browser', true);
 
       this.createStyle();
    }
@@ -1747,7 +1748,8 @@ class BrowserLayout {
 
         let vsepar =
            main.append('div')
-               .classed('jsroot_separator', true).classed('jsroot_v_separator', true)
+               .classed('jsroot_separator', true)
+               .classed('jsroot_v_separator', true)
                .style('position', 'absolute').style('top',0).style('bottom',0);
 
         let drag_move = d3_drag().on('start', () => {
