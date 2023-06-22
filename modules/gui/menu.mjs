@@ -1,6 +1,6 @@
 import { settings, browser, gStyle, isObject, isFunc, isStr, clTGaxis } from '../core.mjs';
 import { rgb as d3_rgb, select as d3_select } from '../d3.mjs';
-import { injectStyle, selectgStyle, saveSettings, readSettings, saveStyle, getColorExec } from './utils.mjs';
+import { selectgStyle, saveSettings, readSettings, saveStyle, getColorExec } from './utils.mjs';
 import { getColor } from '../base/colors.mjs';
 import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
 import { getSvgLineStyle } from '../base/TAttLineHandler.mjs';
@@ -1307,31 +1307,29 @@ class StandaloneMenu extends JSRootMenu {
       d3_select(`#${dlg_id}`).remove();
       d3_select(`#${dlg_id}_block`).remove();
 
-      let w = Math.min(args.width || 450, Math.round(0.9*browser.screenWidth));
-
-      let block = d3_select('body').append('div').attr('id', dlg_id+'_block').attr('class', 'jsroot_dialog_block'),
+      let w = Math.min(args.width || 450, Math.round(0.9*browser.screenWidth)),
+          block = d3_select('body').append('div')
+                                   .attr('id', `${dlg_id}_block`)
+                                   .attr('class', 'jsroot_dialog_block')
+                                   .attr('style', 'z-index: 100000; position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.2; background-color: white'),
           element = d3_select('body')
                       .append('div')
-                      .attr('id',dlg_id)
-                      .attr('class', 'jsroot_dialog').style('width', `${w}px`)
+                      .attr('id', dlg_id)
+                      .attr('class', 'jsroot_dialog')
+                      .style('position', 'absolute')
+                      .style('width', `${w}px`)
+                      .style('left', '50%')
+                      .style('top', '50%')
+                      .style('z-index', 100001)
                       .attr('tabindex', '0')
                       .html(
-         `<div class="jsroot_dialog_body">`+
-           `<div class="jsroot_dialog_header">${title}</div>`+
-           `<div class="jsroot_dialog_content">${main_content}</div>`+
-           `<div class="jsroot_dialog_footer">`+
-              `<button class="jsroot_dialog_button">Ok</button>`+
-              (args.btns ? '<button class="jsroot_dialog_button">Cancel</button>' : '') +
-        `</div></div>`);
-
-      injectStyle(
-         `.jsroot_dialog_block { z-index: 100000; position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.2; background-color: white; }`+
-         `.jsroot_dialog { z-index: 100001; position: absolute; left: 50%; top: 50%; }`+
-         `.jsroot_dialog_body { position: relative; left: -50%; top: -50%; border: solid green 3px; padding: 5px; display: flex; flex-flow: column; background-color: white; }`+
-         `.jsroot_dialog_header { flex: 0 1 auto; padding: 5px; }`+
-         `.jsroot_dialog_content { flex: 1 1 auto; padding: 5px; }`+
-         `.jsroot_dialog_footer { flex: 0 1 auto; padding: 5px; }`+
-         `.jsroot_dialog_button { float: right; margin-right: 1em; }`, element.node());
+         `<div style='position: relative; left: -50%; top: -50%; border: solid green 3px; padding: 5px; display: flex; flex-flow: column; background-color: white'>`+
+           `<div style='flex: 0 1 auto; padding: 5px'>${title}</div>`+
+           `<div class='jsroot_dialog_content' style='flex: 1 1 auto; padding: 5px'>${main_content}</div>`+
+           `<div class='jsroot_dialog_footer' style='flex: 0 1 auto; padding: 5px'>`+
+              `<button class='jsroot_dialog_button' style='float: right; margin-right: 1em'>Ok</button>`+
+              (args.btns ? `<button class='jsroot_dialog_button' style='float: right; margin-right: 1em'>Cancel</button>` : '') +
+         `</div></div>`);
 
       return new Promise(resolveFunc => {
          element.on('keyup', evnt => {
