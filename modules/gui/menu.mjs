@@ -1084,8 +1084,7 @@ class StandaloneMenu extends JSRootMenu {
             `.jsroot_ctxt_header { background-color: lightblue; padding: 3px 7px; font-weight: bold; border-bottom: 1px; }`+
             `.jsroot_ctxt_text { margin: 0; padding: 3px 7px; pointer-events: none; white-space: nowrap; }`+
             `.jsroot_ctxt_extraText { margin: 0; padding: 3px 7px; color: rgb(0, 0, 0, 0.6); }`+
-            `.jsroot_ctxt_focus { background-color: rgb(220, 220, 220); }`+
-            `.jsroot_ctxt_item:hover { background-color: rgb(235, 235, 235); }`, this.element);
+            `.jsroot_ctxt_focus { background-color: rgb(220, 220, 220); }`, this.element);
       } else if ((left < 0) && (top == left)) {
          // column
          outer.className = 'jsroot_ctxt_column';
@@ -1127,7 +1126,6 @@ class StandaloneMenu extends JSRootMenu {
          let hovArea = document.createElement('div');
          hovArea.style.width = '100%';
          hovArea.style.height = '100%';
-         hovArea.className = 'jsroot_ctxt_item';
          hovArea.style.display = 'flex';
          hovArea.style.justifyContent = 'space-between';
          hovArea.style.cursor = 'pointer';
@@ -1206,6 +1204,12 @@ class StandaloneMenu extends JSRootMenu {
 
          if (!browser.touches)
          hovArea.addEventListener('mouseenter', () => {
+
+            if (this.prevHovArea)
+               this.prevHovArea.style['background-color'] = null;
+            hovArea.style['background-color'] = 'rgb(235, 235, 235)';
+            this.prevHovArea = hovArea;
+
             outer.childNodes.forEach(chld => {
                if (chld.classList.contains('jsroot_ctxt_focus')) {
                   chld.removeChild(chld.getElementsByClassName('jsroot_ctxt_container')[0]);
