@@ -2632,7 +2632,7 @@ function treeIOTest(tree, args) {
       return cnt;
    }
 
-   let numleaves = collectBranches(tree);
+   let numleaves = collectBranches(tree), selector;
 
    names.push(`Total are ${branches.length} branches with ${numleaves} leaves`);
 
@@ -2641,7 +2641,10 @@ function treeIOTest(tree, args) {
       if (nbr >= branches.length)
          return Promise.resolve(true);
 
-      let selector = new TSelector;
+      if (selector?._break || args._break)
+         return Promise.resolve(true);
+
+      selector = new TSelector;
 
       selector.addBranch(branches[nbr], 'br0');
 
@@ -2688,7 +2691,8 @@ function treeIOTest(tree, args) {
    }
 
    return testBranch(0).then(() => {
-      if (args.showProgress) args.showProgress();
+      if (isFunc(args.showProgress))
+         args.showProgress();
 
       return names;
    });
