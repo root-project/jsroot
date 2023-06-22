@@ -388,7 +388,7 @@ class JSRootMenu {
       }));
       for (let n = 1; n < 11; ++n) {
          let dash = getSvgLineStyle(n),
-             svg = `<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>${n}</text><line x1='30' y1='8' x2='100' y2='8' stroke='black' stroke-width='3' stroke-dasharray='${dash}'></line></svg>`;
+             svg = `<svg width='100' height='14'><text x='2' y='13' style='font-size:12px'>${n}</text><line x1='30' y1='7' x2='100' y2='7' stroke='black' stroke-width='3' stroke-dasharray='${dash}'></line></svg>`;
 
          this.addchk((value == n), svg, n, arg => set_func(parseInt(arg)));
       }
