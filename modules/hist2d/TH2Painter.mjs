@@ -723,8 +723,8 @@ class TH2Painter extends THistPainter {
          this.interactiveRedraw('pad', 'drawopt');
       });
 
-      if (this.options.Color)
-         this.fillPaletteMenu(menu);
+      if (this.options.Color || this.options.Contour || this.options.Surf || this.options.Lego == 12 || this.options.Lego == 14)
+         this.fillPaletteMenu(menu, true);
    }
 
    /** @summary Process click on histogram-defined buttons */
