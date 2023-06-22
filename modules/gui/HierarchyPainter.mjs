@@ -736,18 +736,23 @@ class HierarchyPainter extends BasePainter {
       this.h = null; // hierarchy
       this.with_icons = true;
 
-      if (backgr == '__as_dark_mode__') {
-         this.background = settings.DarkMode ? 'black' : 'white';
-         this.textcolor = settings.DarkMode ? '#eee' : '#111';
-      } else {
+      if (backgr == '__as_dark_mode__')
+         this.setBasicColors();
+      else
          this.background = backgr;
-      }
       this.files_monitoring = !frameid; // by default files monitored when nobrowser option specified
       this.nobrowser = (frameid === null);
 
       // remember only very first instance
       if (!getHPainter())
          setHPainter(this);
+   }
+
+   /** @summary Set basic colors
+     * @private */
+   setBasicColors() {
+      this.background = settings.DarkMode ? 'black' : 'white';
+      this.textcolor = settings.DarkMode ? '#eee' : '#111';
    }
 
    /** @summary Cleanup hierarchy painter
@@ -1671,17 +1676,28 @@ class HierarchyPainter extends BasePainter {
             this.forEachRootFile(folder => keysHierarchy(folder, folder._file.fKeys, folder._file, ''));
             this.refreshHtml();
          } else if (arg == 'dark') {
-            this.brlayout?.createStyle();
-            this.createButtons(); // recreate buttons
-            if (isFunc(this.disp?.changeDarkMode))
-               this.disp.changeDarkMode();
-            this.disp?.forEachFrame(frame => {
-               let p = getElementCanvPainter(frame);
-               if (!p) p = getElementMainPainter(frame);
-               if (isFunc(p?.changeDarkMode))
-                  p.changeDarkMode();
-            });
+            this.changeDarkMode();
          }
+      });
+   }
+
+   /** @summary Handle changes of dark mode
+     * @private */
+   changeDarkMode() {
+      if (this.textcolor) {
+         this.setBasicColors();
+         this.refreshHtml();
+      }
+
+      this.brlayout?.createStyle();
+      this.createButtons(); // recreate buttons
+      if (isFunc(this.disp?.changeDarkMode))
+         this.disp.changeDarkMode();
+      this.disp?.forEachFrame(frame => {
+         let p = getElementCanvPainter(frame);
+         if (!p) p = getElementMainPainter(frame);
+         if (isFunc(p?.changeDarkMode) && (p !== this))
+            p.changeDarkMode();
       });
    }
 
@@ -1689,6 +1705,7 @@ class HierarchyPainter extends BasePainter {
      * @private */
    toggleDarkMode() {
       settings.DarkMode = !settings.DarkMode;
+      this.changeDarkMode();
    }
 
    /** @summary Handle context menu in the hieararchy

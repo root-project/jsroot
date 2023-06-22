@@ -617,9 +617,9 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Function callled by framework when dark mode is changed
      * @private */
-   changeDarkMode() {
+   changeDarkMode(mode) {
       if ((this.ctrl.background == '#000000') || (this.ctrl.background == '#ffffff'))
-         this.changedBackground(settings.DarkMode ? '#000000' : '#ffffff');
+         this.changedBackground((mode ?? settings.DarkMode) ? '#000000' : '#ffffff');
    }
 
    /** @summary Change drawing stage
