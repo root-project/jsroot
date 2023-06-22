@@ -1060,7 +1060,11 @@ class StandaloneMenu extends JSRootMenu {
    _buildContextmenu(menu, left, top, loc) {
 
       let outer = document.createElement('div');
-      outer.className = 'jsroot_ctxt_container';
+
+      const container_style =
+         'position: absolute; top: 0; user-select: none; z-index: 100000; background-color: rgb(250, 250, 250); margin: 0; padding: 0px; width: auto;'+
+         'min-width: 100px; box-shadow: 0px 0px 10px rgb(0, 0, 0, 0.2); border: 3px solid rgb(215, 215, 215); font-family: Arial, helvetica, sans-serif, serif;'+
+         'font-size: 13px; color: rgb(0, 0, 0, 0.8); line-height: 15px;';
 
       //if loc !== document.body then its a submenu, so it needs to have position: relative;
       if (loc === document.body) {
@@ -1069,27 +1073,21 @@ class StandaloneMenu extends JSRootMenu {
          while (deleteElems.length > 0)
             deleteElems[0].parentNode.removeChild(deleteElems[0]);
 
+         outer.className = 'jsroot_ctxt_container';
+         outer.style = container_style;
          outer.style.position = 'fixed';
          outer.style.left = left + 'px';
          outer.style.top = top + 'px';
 
-         injectStyle(
-            `.jsroot_ctxt_container {`+
-            `   position: absolute; top: 0; user-select: none; z-index: 100000; background-color: rgb(250, 250, 250); margin: 0; padding: 0px; width: auto;`+
-            `   min-width: 100px; box-shadow: 0px 0px 10px rgb(0, 0, 0, 0.2); border: 3px solid rgb(215, 215, 215); font-family: Arial, helvetica, sans-serif, serif;`+
-            `   font-size: 13px; color: rgb(0, 0, 0, 0.8); line-height: 15px;`+
-            `}`+
-            `.jsroot_ctxt_column { float: left; }`+
-            `.jsroot_ctxt_divider { width: 85%; margin: 3px auto; border: 1px solid rgb(0, 0, 0, 0.15); }`+
-            `.jsroot_ctxt_header { background-color: lightblue; padding: 3px 7px; font-weight: bold; border-bottom: 1px; }`+
-            `.jsroot_ctxt_text { margin: 0; padding: 3px 7px; pointer-events: none; white-space: nowrap; }`+
-            `.jsroot_ctxt_extraText { margin: 0; padding: 3px 7px; color: rgb(0, 0, 0, 0.6); }`+
-            `.jsroot_ctxt_focus { background-color: rgb(220, 220, 220); }`, this.element);
+         injectStyle('.jsroot_ctxt_focus { background-color: rgb(220, 220, 220); }', this.element);
       } else if ((left < 0) && (top == left)) {
          // column
          outer.className = 'jsroot_ctxt_column';
+         outer.style.float = 'left';
          outer.style.width = (100/-left).toFixed(1) + '%';
       } else {
+         outer.className = 'jsroot_ctxt_container';
+         outer.style = container_style;
          outer.style.left = -loc.offsetLeft + loc.offsetWidth + 'px';
       }
 
@@ -1108,7 +1106,7 @@ class StandaloneMenu extends JSRootMenu {
 
          if (d.divider) {
             let hr = document.createElement('hr');
-            hr.className = 'jsroot_ctxt_divider';
+            hr.style = 'width: 85%; margin: 3px auto; border: 1px solid rgb(0, 0, 0, 0.15)';
             outer.appendChild(hr);
             return;
          }
@@ -1118,7 +1116,7 @@ class StandaloneMenu extends JSRootMenu {
          outer.appendChild(item);
 
          if (d.header) {
-            item.className = 'jsroot_ctxt_header';
+            item.style = 'background-color: lightblue; padding: 3px 7px; font-weight: bold; border-bottom: 1px;';
             item.innerHTML = d.text;
             return;
          }
@@ -1135,7 +1133,7 @@ class StandaloneMenu extends JSRootMenu {
          if (!d.text) d.text = 'item';
 
          let text = document.createElement('div');
-         text.className = 'jsroot_ctxt_text';
+         text.style = 'margin: 0; padding: 3px 7px; pointer-events: none; white-space: nowrap';
 
          if (d.text.indexOf('<svg') >= 0) {
             if (need_check_area) {
@@ -1177,6 +1175,7 @@ class StandaloneMenu extends JSRootMenu {
          if (d.hasOwnProperty('extraText') || d.sub) {
             let extraText = document.createElement('span');
             extraText.className = 'jsroot_ctxt_extraText';
+            extraText.style = 'margin: 0; padding: 3px 7px; color: rgb(0, 0, 0, 0.6);';
             extraText.textContent = d.sub ? '\u25B6' : d.extraText;
             hovArea.appendChild(extraText);
 
@@ -1255,7 +1254,7 @@ class StandaloneMenu extends JSRootMenu {
 
       } else if (outer.className != 'jsroot_ctxt_column') {
 
-         //if its sub-contextmenu
+         // if its sub-contextmenu
          let dimensionsLoc = loc.getBoundingClientRect(), dimensionsOuter = outer.getBoundingClientRect();
 
          //Does sub-contextmenu overflow window width?
