@@ -1673,6 +1673,8 @@ class HierarchyPainter extends BasePainter {
          } else if (arg == 'dark') {
             this.brlayout?.createStyle();
             this.createButtons(); // recreate buttons
+            if (isFunc(this.disp?.changeDarkMode))
+               this.disp.changeDarkMode();
             this.disp?.forEachFrame(frame => {
                let p = getElementCanvPainter(frame);
                if (!p) p = getElementMainPainter(frame);

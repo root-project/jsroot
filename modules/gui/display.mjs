@@ -612,9 +612,14 @@ class TabsDisplay extends MDIDisplay {
 
       labels.selectAll('.jsroot_tabs_label').each(function() {
          let id = d3_select(this).property('frame_id'),
-             is_same = (id == frame_id);
+             is_same = (id == frame_id),
+             active_color = settings.DarkMode ? '#333' : 'white';
+
          if (action == 'activate')
-            d3_select(this).style('background', is_same ? (settings.DarkMode ? 'black' : 'white') : null);
+            d3_select(this).style('background', is_same ? active_color : (settings.DarkMode ? 'black' : '#ddd'))
+                           .style('color', settings.DarkMode ? '#ddd' : 'inherit')
+                           .style('border-color', active_color);
+
          else if ((action == 'close') && is_same)
             this.parentNode.remove();
       });
@@ -622,10 +627,13 @@ class TabsDisplay extends MDIDisplay {
       let selected_frame, other_frame;
 
       main.selectAll('.jsroot_tabs_draw').each(function() {
-         if (d3_select(this).property('frame_id') === frame_id)
+         let match = d3_select(this).property('frame_id') === frame_id;
+         if (match)
             selected_frame = this;
          else
             other_frame = this;
+         if (action == 'activate')
+            d3_select(this).style('background', settings.DarkMode ? 'black' : 'white');
       });
 
       if (!selected_frame) return;
@@ -670,11 +678,7 @@ class TabsDisplay extends MDIDisplay {
          main = top.select('.jsroot_tabs_main');
       }
 
-      let bkgr_color = settings.DarkMode ? 'black' : 'white',
-          lbl_color = settings.DarkMode ? '#111': '#eee',
-          lbl_border = settings.DarkMode ? '#333' : '#ccc',
-          text_color = settings.DarkMode ? '#ddd' : 'inherit',
-          frame_id = this.cnt++, mdi = this, lbl = title;
+      let frame_id = this.cnt++, mdi = this, lbl = title;
 
       if (!lbl || !isStr(lbl)) lbl = `frame_${frame_id}`;
 
@@ -691,9 +695,8 @@ class TabsDisplay extends MDIDisplay {
          .attr('tabindex', 0)
          .append('label')
          .attr('class', 'jsroot_tabs_label')
-         .attr('style', `color: ${text_color}; background: ${lbl_color}; border: 1px solid ${lbl_border}; display: inline-block; font-size: 1rem; left: 1px;`+
+         .attr('style', `border: 1px solid; display: inline-block; font-size: 1rem; left: 1px;`+
                         `margin-left: 3px; padding: 0px 5px 1px 5px; position: relative; vertical-align: bottom;`)
-//         .style('background', 'white')
          .property('frame_id', frame_id)
          .text(lbl)
          .attr('title', title)
@@ -711,12 +714,18 @@ class TabsDisplay extends MDIDisplay {
       let draw_frame = main.append('div')
                            .attr('frame_title', title)
                            .attr('class', 'jsroot_tabs_draw')
-                           .attr('style', `overflow: hidden; background: ${bkgr_color}; position: absolute; top: 0px; bottom: 0px; left: 0px; right: 0px`)
+                           .attr('style', `overflow: hidden; position: absolute; top: 0px; bottom: 0px; left: 0px; right: 0px`)
                            .property('frame_id', frame_id);
 
       this.modifyTabsFrame(frame_id, 'activate');
 
       return this.afterCreateFrame(draw_frame.node());
+   }
+
+   /** @summary Handle changes in dark mode */
+   changeDarkMode() {
+      let frame = this.getActiveFrame();
+      this.modifyTabsFrame(d3_select(frame).property('frame_id'), 'activate');
    }
 
 } // class TabsDisplay
