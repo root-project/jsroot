@@ -302,7 +302,7 @@ class GridDisplay extends MDIDisplay {
          injectStyle(
             '.jsroot_vline:after { content:""; position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dotted #ff0000; }'+
             '.jsroot_hline:after { content:""; position: absolute; left: 0; right: 0; top: 50%; border-top: 1px dotted #ff0000; }'+
-            '.jsroot_separator { pointer-events: all; border: 0; margin: 0; padding: 0; }', dom.node(), 'grid_style');
+            '.jsroot_separator { pointer-events: all; border: 0; margin: 0; padding: 0; }', dom.node(), 'jsroot_grid_style');
          this.createGroup(this, dom, num, arr, sizes, chld_sizes);
       }
    }
@@ -681,7 +681,7 @@ class TabsDisplay extends MDIDisplay {
          `}`+
          `.jsroot_tabs_main { margin: 0; flex: 1 1 0%; position: relative; }`+
          `.jsroot_tabs_main .jsroot_tabs_draw { overflow: hidden; background: ${bkgr_color}; position: absolute; top: 0px; bottom: 0px; left: 0px; right: 0px; }`,
-         dom.node(), 'tabs_style');
+         dom.node(), 'jsroot_tabs_style');
 
       let frame_id = this.cnt++, mdi = this, lbl = title;
 
@@ -927,26 +927,19 @@ class FlexibleDisplay extends MDIDisplay {
           dom = this.selectDom(),
           top = dom.select('.jsroot_flex_top');
 
-      injectStyle(
-         `.jsroot_flex_top { overflow: auto; position: relative; height: 100%; width: 100%; }`+
-         `.jsroot_flex_btn { float: right; padding: 0; width: 1.4em; text-align: center; font-size: 10px; margin-top: 2px; margin-right: 4px; }`+
-         `.jsroot_flex_header { height: 23px; overflow: hidden; background-color: lightblue; }`+
-         `.jsroot_flex_header p { margin: 1px; float: left; font-size: 14px; padding-left: 5px; }`+
-         `.jsroot_flex_draw { overflow: hidden; width: 100%; height: calc(100% - 24px); }`+
-         `.jsroot_flex_frame { border: 1px solid black; box-shadow: 1px 1px 2px 2px #aaa; background: white; }`+
-         `.jsroot_flex_resize { position: absolute; right: 2px; bottom: 2px; overflow: hidden; cursor: nwse-resize; }`+
-         `.jsroot_flex_resizable_helper { border: 2px dotted #00F; }`, dom.node(), 'flex_style');
-
       if (top.empty())
-         top = dom.append('div').classed('jsroot_flex_top', true);
+         top = dom.append('div')
+                  .attr('class', 'jsroot_flex_top')
+                  .attr('style', 'overflow: auto; position: relative; height: 100%; width: 100%');
 
       let w = top.node().clientWidth,
           h = top.node().clientHeight,
           main = top.append('div');
 
-      main.html(`<div class='jsroot_flex_header'><p>${title}</p></div>`+
-                `<div id='${this.frameid}_cont${this.cnt}' class='jsroot_flex_draw'></div>`+
-                `<div class='jsroot_flex_resize'>&#x25FF;</div>`);
+      main.html(`<div class='jsroot_flex_header' style='height: 23px; overflow: hidden; background-color: lightblue'>` +
+                `<p style='margin: 1px; float: left; font-size: 14px; padding-left: 5px'>${title}</p></div>`+
+                `<div id='${this.frameid}_cont${this.cnt}' class='jsroot_flex_draw' style='overflow: hidden; width: 100%; height: calc(100% - 24px); background: white'></div>`+
+                `<div class='jsroot_flex_resize' style='position: absolute; right: 3px; bottom: 1px; overflow: hidden; cursor: nwse-resize'>&#x25FF;</div>`);
 
       main.attr('class', 'jsroot_flex_frame')
          .style('position', 'absolute')
@@ -954,6 +947,8 @@ class FlexibleDisplay extends MDIDisplay {
          .style('top', Math.round(h * (this.cnt % 5)/10) + 'px')
          .style('width', Math.round(w * 0.58) + 'px')
          .style('height', Math.round(h * 0.58) + 'px')
+         .style('border', '1px solid black')
+         .style('box-shadow', '1px 1px 2px 2px #aaa')
          .property('state', 'normal')
          .select('.jsroot_flex_header')
          .on('click', function() { mdi.activateFrame(d3_select(this.parentNode).select('.jsroot_flex_draw').node()); })
@@ -962,7 +957,7 @@ class FlexibleDisplay extends MDIDisplay {
          .enter()
          .append('button')
          .attr('type', 'button')
-         .attr('class', 'jsroot_flex_btn')
+         .attr('style', 'float: right; padding: 0; width: 1.4em; text-align: center; font-size: 10px; margin-top: 2px; margin-right: 4px')
          .attr('title', d => d.t)
          .html(d => d.n)
          .on('click', function() { mdi._clickButton(this); });
@@ -983,9 +978,7 @@ class FlexibleDisplay extends MDIDisplay {
 
          mdi.activateFrame(main.select('.jsroot_flex_draw').node());
 
-         moving_div = top.append('div').classed('jsroot_flex_resizable_helper', true);
-
-         moving_div.attr('style', main.attr('style'));
+         moving_div = top.append('div').attr('style', main.attr('style')).style('border', '2px dotted #00F');
 
          if (main.property('state') == 'min')
             moving_div.style('width', main.node().clientWidth + 'px')
