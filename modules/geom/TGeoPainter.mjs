@@ -331,60 +331,47 @@ class Toolbar {
    /** @summary constructor */
    constructor(container, bright, buttons) {
       this.bright = bright;
-
       this.buttons = buttons;
-
-      this.element = container.append('div').attr('class', 'geo_toolbar_group');
+      this.element = container.append('div').attr('style', 'float: left; box-sizing: border-box; position: relative; bottom: 23px; vertical-align: middle; padding-left: 5px');
    }
 
    /** @summary add buttons */
    createButtons() {
-      injectStyle(
-         '.geo_toolbar_group { float: left; box-sizing: border-box; position: relative; bottom: 23px; vertical-align: middle; white-space: nowrap; }'+
-         '.geo_toolbar_group:first-child { margin-left: 2px; }'+
-         '.geo_toolbar_group a { position: relative; font-size: 16px; padding: 3px 1px; cursor: pointer; line-height: normal; box-sizing: border-box; }'+
-         '.geo_toolbar_group a svg { position: relative; top: 2px; }', this.element.node(), 'geo_toolbar_styles');
-
-      this.buttonsNames = [];
+      let buttonsNames = [];
 
       this.buttons.forEach(buttonConfig => {
          let buttonName = buttonConfig.name;
          if (!buttonName)
             throw new Error('must provide button name in button config');
-         if (this.buttonsNames.indexOf(buttonName) !== -1)
+         if (buttonsNames.indexOf(buttonName) !== -1)
             throw new Error(`button name ${buttonName} is taken`);
 
-         this.buttonsNames.push(buttonName);
+         buttonsNames.push(buttonName);
 
          let title = buttonConfig.title || buttonConfig.name;
 
          if (!isFunc(buttonConfig.click))
             throw new Error('must provide button click() function in button config');
 
-         let button = this.element.append('a')
-                           .attr('rel', 'tooltip')
-                           .attr('data-title', title);
-
-         ToolbarIcons.createSVG(button, ToolbarIcons[buttonConfig.icon], 16, title, this.bright)
-              .on('click', buttonConfig.click);
+         ToolbarIcons.createSVG(this.element, ToolbarIcons[buttonConfig.icon], 16, title, this.bright)
+              .on('click', buttonConfig.click)
+              .style('position', 'relative')
+              .style('padding', '3px 1px');
       });
-
    }
 
    /** @summary change brightness */
    changeBrightness(bright) {
       if (this.bright == bright) return;
-      this.element.selectAll('a').remove();
+      this.element.selectAll('*').remove();
       this.bright = bright;
       this.createButtons();
    }
 
    /** @summary cleanup toolbar */
    cleanup() {
-      if (this.element) {
-         this.element.remove();
-         delete this.element;
-      }
+      this.element?.remove();
+      delete this.element;
    }
 
 } // class ToolBar
