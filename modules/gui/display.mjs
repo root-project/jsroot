@@ -298,13 +298,8 @@ class GridDisplay extends MDIDisplay {
       if (chld_sizes?.length !== num)
          chld_sizes = undefined;
 
-      if (!this.simple_layout) {
-         injectStyle(
-            '.jsroot_vline:after { content:""; position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dotted #ff0000; }'+
-            '.jsroot_hline:after { content:""; position: absolute; left: 0; right: 0; top: 50%; border-top: 1px dotted #ff0000; }',
-            dom.node(), 'jsroot_grid_style');
+      if (!this.simple_layout)
          this.createGroup(this, dom, num, arr, sizes, chld_sizes);
-      }
    }
 
    /** @summary Create frames group
@@ -480,14 +475,16 @@ class GridDisplay extends MDIDisplay {
       let separ = main.append('div');
 
       separ.classed('jsroot_separator', true)
-           .classed(handle.vertical ? 'jsroot_hline' : 'jsroot_vline', true)
            .property('handle', handle)
            .property('separator_id', group.id)
-           .attr('style', 'pointer-events: all; border: 0; margin: 0; padding: 0; position: absolute')
+           .attr('style', 'pointer-events: all; border: 0; margin: 0; padding: 0; position: absolute;')
            .style(handle.vertical ? 'top' : 'left', `calc(${group.position.toFixed(2)}% - 2px)`)
            .style(handle.vertical ? 'width' : 'height', (handle.size?.toFixed(2) || 100)+'%')
            .style(handle.vertical ? 'height' : 'width', '5px')
-           .style('cursor', handle.vertical ? 'ns-resize' : 'ew-resize');
+           .style('cursor', handle.vertical ? 'ns-resize' : 'ew-resize')
+           .append('div').attr('style', 'position: absolute;' + (handle.vertical ?
+                       'left: 0; right: 0; top: 50%; height: 3px; border-top: 1px dotted #ff0000' :
+                       'top: 0; bottom: 0; left: 50%; width: 3px; border-left: 1px dotted #ff0000'));
 
       let pthis = this, drag_move =
         d3_drag().on('start', function() { pthis.handleSeparator(this, 'start'); })
