@@ -12,7 +12,8 @@ import { getRootColors } from '../base/colors.mjs';
   * @param {number} tmout - optional timeout in milliseconds, after message will disappear
   * @private */
 function showProgress(msg, tmout) {
-   if (isBatchMode() || (typeof document === 'undefined')) return;
+   if (isBatchMode() || (typeof document === 'undefined'))
+      return;
    let id = 'jsroot_progressbox',
        box = d3_select('#' + id);
 
@@ -39,7 +40,8 @@ function showProgress(msg, tmout) {
       box.html('');
       box.node().appendChild(msg);
    }
-   injectStyle('#jsroot_progressbox p { font-size: 10px; margin-left: 10px; margin-right: 10px; margin-top: 3px; margin-bottom: 3px; }', box.node());
+
+   box.select('p').attr('style', 'font-size: 10px; margin-left: 10px; margin-right: 10px; margin-top: 3px; margin-bottom: 3px');
 
    if (Number.isFinite(tmout) && (tmout > 0)) {
       box.property('with_timeout', true);
