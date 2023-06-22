@@ -659,9 +659,12 @@ class TabsDisplay extends MDIDisplay {
           top = dom.select('.jsroot_tabs'), labels, main;
 
       if (top.empty()) {
-         top = dom.append('div').classed('jsroot_tabs', true);
-         labels = top.append('div').classed('jsroot_tabs_labels', true);
-         main = top.append('div').classed('jsroot_tabs_main', true);
+         top = dom.append('div').attr('class', 'jsroot_tabs')
+                  .attr('style', 'display: flex; flex-direction: column; position: absolute; overflow: hidden; inset: 0px 0px 0px 0px');
+         labels = top.append('div').attr('class', 'jsroot_tabs_labels')
+                     .attr('style', 'white-space: nowrap; position: relative; overflow-x: auto');
+         main = top.append('div').attr('class', 'jsroot_tabs_main')
+                     .attr('style', 'margin: 0; flex: 1 1 0%; position: relative');
       } else {
          labels = top.select('.jsroot_tabs_labels');
          main = top.select('.jsroot_tabs_main');
@@ -670,20 +673,8 @@ class TabsDisplay extends MDIDisplay {
       let bkgr_color = settings.DarkMode ? 'black' : 'white',
           lbl_color = settings.DarkMode ? '#111': '#eee',
           lbl_border = settings.DarkMode ? '#333' : '#ccc',
-          text_color = settings.DarkMode ? '#ddd' : 'inherit';
-
-      injectStyle(
-         `.jsroot_tabs { display: flex; flex-direction: column; position: absolute; overflow: hidden; inset: 0px 0px 0px 0px; }`+
-         `.jsroot_tabs_labels { white-space: nowrap; position: relative; overflow-x: auto; }`+
-         `.jsroot_tabs_labels .jsroot_tabs_label {`+
-             `color: ${text_color}; background: ${lbl_color}; border: 1px solid ${lbl_border}; display: inline-block; font-size: 1rem; left: 1px;`+
-             `margin-left: 3px; padding: 0px 5px 1px 5px; position: relative; vertical-align: bottom;`+
-         `}`+
-         `.jsroot_tabs_main { margin: 0; flex: 1 1 0%; position: relative; }`+
-         `.jsroot_tabs_main .jsroot_tabs_draw { overflow: hidden; background: ${bkgr_color}; position: absolute; top: 0px; bottom: 0px; left: 0px; right: 0px; }`,
-         dom.node(), 'jsroot_tabs_style');
-
-      let frame_id = this.cnt++, mdi = this, lbl = title;
+          text_color = settings.DarkMode ? '#ddd' : 'inherit',
+          frame_id = this.cnt++, mdi = this, lbl = title;
 
       if (!lbl || !isStr(lbl)) lbl = `frame_${frame_id}`;
 
@@ -700,7 +691,9 @@ class TabsDisplay extends MDIDisplay {
          .attr('tabindex', 0)
          .append('label')
          .attr('class', 'jsroot_tabs_label')
-         .style('background', 'white')
+         .attr('style', `color: ${text_color}; background: ${lbl_color}; border: 1px solid ${lbl_border}; display: inline-block; font-size: 1rem; left: 1px;`+
+                        `margin-left: 3px; padding: 0px 5px 1px 5px; position: relative; vertical-align: bottom;`)
+//         .style('background', 'white')
          .property('frame_id', frame_id)
          .text(lbl)
          .attr('title', title)
@@ -718,6 +711,7 @@ class TabsDisplay extends MDIDisplay {
       let draw_frame = main.append('div')
                            .attr('frame_title', title)
                            .attr('class', 'jsroot_tabs_draw')
+                           .attr('style', `overflow: hidden; background: ${bkgr_color}; position: absolute; top: 0px; bottom: 0px; left: 0px; right: 0px`)
                            .property('frame_id', frame_id);
 
       this.modifyTabsFrame(frame_id, 'activate');
