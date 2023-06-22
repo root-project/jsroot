@@ -1270,8 +1270,7 @@ class BrowserLayout {
       let bkgr_color = settings.DarkMode ? 'black' : '#E6E6FA',
           title_color = settings.DarkMode ? '#ccc' : 'inherit',
           text_color = settings.DarkMode ? '#ddd' : 'inherit',
-          input_style = settings.DarkMode ? `background-color: #222; color: ${text_color}` : '',
-          separ_color = settings.DarkMode ? 'grey' : 'azure';
+          input_style = settings.DarkMode ? `background-color: #222; color: ${text_color}` : '';
 
       injectStyle(
          `.jsroot_browser { pointer-events: none; position: absolute; left: 0; top: 0; bottom: 0; right:0; margin: 0; border: 0; overflow: hidden; }`+
@@ -1286,10 +1285,8 @@ class BrowserLayout {
          `.jsroot_status_area { background-color: ${bkgr_color}; overflow: hidden; font-size: 12px; font-family: Verdana; pointer-events: all; }`+
          `.jsroot_float_browser { border: solid 3px white; }`+
          `.jsroot_browser_resize { position: absolute; right: 3px; bottom: 3px; margin-bottom: 0px; margin-right: 0px; opacity: 0.5; cursor: se-resize; z-index: 1; }`+
-         `.jsroot_status_label { margin: 3px; margin-left: 5px; font-size: 14px; vertical-align: middle; white-space: nowrap; }`+
-         `.jsroot_separator { pointer-events: all; border: 0; margin: 0; padding: 0; background-color: ${separ_color}; }`+
-         `.jsroot_h_separator { cursor: ns-resize; }`+
-         `.jsroot_v_separator { cursor: ew-resize; }`, this.main().node(), 'browser_layout_style');
+         `.jsroot_status_label { margin: 3px; margin-left: 5px; font-size: 14px; vertical-align: middle; white-space: nowrap; }`,
+          this.main().node(), 'browser_layout_style');
    }
 
    /** @summary method used to create basic elements
@@ -1444,9 +1441,10 @@ class BrowserLayout {
           .style('position','absolute').style('left',left_pos).style('height','20px').style('bottom',0).style('right',0)
           .style('margin',0).style('border',0);
 
-      let hsepar = main.insert('div','.jsroot_browser_area')
-                       .classed('jsroot_separator', true).classed('jsroot_h_separator', true)
-                       .style('position','absolute').style('left',left_pos).style('right',0).style('bottom','20px').style('height','5px');
+      let separ_color = settings.DarkMode ? 'grey' : 'azure',
+          hsepar = main.insert('div', '.jsroot_browser_area')
+                       .classed('jsroot_h_separator', true)
+                       .attr('style', `pointer-events: all; border: 0; margin: 0; padding: 0; background-color: ${separ_color}; position: absolute; left: ${left_pos}; right: 0; bottom: 20px; height: 5px; cursor: ns-resize;`);
 
       let drag_move = d3_drag().on('start', () => {
           this._hsepar_move = this._hsepar_position;
@@ -1743,11 +1741,10 @@ class BrowserLayout {
 
         area.style('left', 0).style('top', 0).style('bottom', 0).style('height', null);
 
-        let vsepar =
-           main.append('div')
-               .classed('jsroot_separator', true)
+        let separ_color = settings.DarkMode ? 'grey' : 'azure',
+           vsepar = main.append('div')
                .classed('jsroot_v_separator', true)
-               .style('position', 'absolute').style('top',0).style('bottom',0);
+               .attr('style', `pointer-events: all; border: 0; margin: 0; padding: 0; background-color: ${separ_color}; position: absolute; top: 0; bottom: 0; cursor: ew-resize;`);
 
         let drag_move = d3_drag().on('start', () => {
             this._vsepar_move = this._vsepar_position;
