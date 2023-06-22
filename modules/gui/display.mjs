@@ -1283,9 +1283,7 @@ class BrowserLayout {
          `.jsroot_browser_area p { margin-top: 5px; margin-bottom: 5px; white-space: nowrap; }`+
          `.jsroot_browser_hierarchy { flex: 1; margin-top: 2px; }`+
          `.jsroot_status_area { background-color: ${bkgr_color}; overflow: hidden; font-size: 12px; font-family: Verdana; pointer-events: all; }`+
-         `.jsroot_float_browser { border: solid 3px white; }`+
-         `.jsroot_browser_resize { position: absolute; right: 3px; bottom: 3px; margin-bottom: 0px; margin-right: 0px; opacity: 0.5; cursor: se-resize; z-index: 1; }`+
-         `.jsroot_status_label { margin: 3px; margin-left: 5px; font-size: 14px; vertical-align: middle; white-space: nowrap; }`,
+         `.jsroot_browser_resize { position: absolute; right: 3px; bottom: 3px; margin-bottom: 0px; margin-right: 0px; opacity: 0.5; cursor: se-resize; z-index: 1; }`,
           this.main().node(), 'browser_layout_style');
    }
 
@@ -1309,12 +1307,12 @@ class BrowserLayout {
       let br = this.browser();
       if (br.empty()) return;
       let btns = br.select('.jsroot_browser_btns');
-      if (btns.empty()) {
-         btns = br.append('div').classed('jsroot_browser_btns', true).classed('jsroot', true);
-         btns.style('position','absolute').style('left','7px').style('top','7px');
-      } else {
+      if (btns.empty())
+         btns = br.append('div')
+                  .attr('class', 'jsroot jsroot_browser_btns')
+                  .attr('style', 'position:absolute; left:7px; top: 7px');
+      else
          btns.html('');
-      }
       return btns;
    }
 
@@ -1477,7 +1475,7 @@ class BrowserLayout {
       for (let k = 0; k < 4; ++k)
          d3_select(this.status_layout.getGridFrame(k))
            .attr('title', frame_titles[k]).style('overflow', 'hidden')
-           .append('label').attr('class', 'jsroot_status_label');
+           .append('label').attr('style', 'margin: 3px; margin-left: 5px; font-size: 14px; vertical-align: middle; white-space: nowrap;');
 
       internals.showStatus = this.status_handler = this.showStatus.bind(this);
 
@@ -1678,10 +1676,10 @@ class BrowserLayout {
           area.style('bottom', '0px')
               .style('top', '0px')
               .style('width','').style('height','')
-              .classed('jsroot_float_browser', false);
+              .classed('jsroot_float_browser', false)
+              .style('border', null);
 
-           //jarea.resizable('destroy')
-           //     .draggable('destroy');
+
       } else if (this.browser_kind === 'fix') {
          main.select('.jsroot_v_separator').remove();
          area.style('left', '0px');
@@ -1698,7 +1696,10 @@ class BrowserLayout {
       main.select('.jsroot_browser_title').style('cursor', (kind === 'float') ? 'move' : null);
 
       if (kind === 'float') {
-         area.style('bottom', '40px').classed('jsroot_float_browser', true);
+         area.style('bottom', '40px')
+             .classed('jsroot_float_browser', true)
+             .style('border', 'solid 3px white');
+
         let drag_move = d3_drag().on('start', () => {
            let sl = area.style('left'), st = area.style('top');
            this._float_left = parseInt(sl.slice(0,sl.length-2));
