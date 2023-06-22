@@ -1079,7 +1079,6 @@ class StandaloneMenu extends JSRootMenu {
          outer.style.left = left + 'px';
          outer.style.top = top + 'px';
 
-         injectStyle('.jsroot_ctxt_focus { background-color: rgb(220, 220, 220); }', this.element);
       } else if ((left < 0) && (top == left)) {
          // column
          outer.className = 'jsroot_ctxt_column';
@@ -1172,6 +1171,17 @@ class StandaloneMenu extends JSRootMenu {
 
          hovArea.appendChild(text);
 
+         function changeFocus(item, on) {
+            if (on) {
+               item.classList.add('jsroot_ctxt_focus');
+               item.style['background-color'] = 'rgb(220, 220, 220)';
+            } else if (item.classList.contains('jsroot_ctxt_focus')) {
+               item.style['background-color'] = null;
+               item.classList.remove('jsroot_ctxt_focus');
+               item.querySelector('.jsroot_ctxt_container')?.remove()
+            }
+         }
+
          if (d.hasOwnProperty('extraText') || d.sub) {
             let extraText = document.createElement('span');
             extraText.className = 'jsroot_ctxt_extraText';
@@ -1183,21 +1193,15 @@ class StandaloneMenu extends JSRootMenu {
                extraText.addEventListener('click', evnt => {
                   evnt.preventDefault();
                   evnt.stopPropagation();
-                  let has_focus = item.classList.contains('jsroot_ctxt_focus'),
-                      was_active = item.parentNode.querySelector('.jsroot_ctxt_focus');
+                  let was_active = item.parentNode.querySelector('.jsroot_ctxt_focus');
 
-                  if (has_focus) {
-                     item.querySelector('.jsroot_ctxt_container')?.remove();
-                  } else {
-                     // check other
-                     if (was_active && (was_active !== item)) {
-                        was_active.classList.remove('jsroot_ctxt_focus');
-                        was_active.querySelector('.jsroot_ctxt_container')?.remove();
-                     }
+                  if (was_active)
+                     changeFocus(was_active, false);
 
+                  if (item !== was_active) {
+                     changeFocus(item, true);
                      this._buildContextmenu(d.sub, 0, 0, item);
                   }
-                  item.classList.toggle('jsroot_ctxt_focus');
                });
          }
 
@@ -1209,15 +1213,10 @@ class StandaloneMenu extends JSRootMenu {
             hovArea.style['background-color'] = 'rgb(235, 235, 235)';
             this.prevHovArea = hovArea;
 
-            outer.childNodes.forEach(chld => {
-               if (chld.classList.contains('jsroot_ctxt_focus')) {
-                  chld.removeChild(chld.getElementsByClassName('jsroot_ctxt_container')[0]);
-                  chld.classList.remove('jsroot_ctxt_focus');
-               }
-            })
+            outer.childNodes.forEach(chld => changeFocus(chld, false));
 
             if (d.sub) {
-               item.classList.add('jsroot_ctxt_focus');
+               changeFocus(item, true);
                this._buildContextmenu(d.sub, 0, 0, item);
             }
          });
