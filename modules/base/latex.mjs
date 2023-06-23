@@ -926,7 +926,11 @@ async function loadMathjax() {
          }
       };
 
-      return loadScript(source_dir + (browser.webwindow ? 'mathjax' : '../mathjax/3.2.0') + '/es5/tex-svg.js')
+      let mj_dir = '../mathjax/3.2.0';
+      if (browser.webwindow && source_dir.indexOf('https://root.cern/js') < 0 && source_dir.indexOf('https://jsroot.gsi.de') < 0)
+         mj_dir =  'mathjax';
+
+      return loadScript(source_dir + mj_dir + '/es5/tex-svg.js')
                .catch(() => loadScript('https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-svg.js'))
                .then(() => promise);
    }
