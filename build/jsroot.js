@@ -11661,6 +11661,21 @@ class ObjectPainter extends BasePainter {
       return this.draw_g;
    }
 
+   /** @summary Bring draw element to the front */
+   bringToFront(check_online) {
+      if (!this.draw_g) return;
+      let prnt = this.draw_g.node().parentNode;
+      prnt?.appendChild(this.draw_g.node());
+
+      if (!check_online || !this.snapid) return;
+      let pp = this.getPadPainter();
+      if (!pp?.snapid) return;
+
+      console.log('sending POPOBJ', pp.snapid, this.snapid);
+
+      this.getCanvPainter()?.sendWebsocket('POPOBJ:'+JSON.stringify([pp.snapid.toString(), this.snapid.toString()]));
+   }
+
    /** @summary Canvas main svg element
      * @return {object} d3 selection with canvas svg
      * @protected */
@@ -57900,6 +57915,8 @@ function getColorExec(col, method) {
    return `exec:${method}(${id})`;
 }
 
+const kToFront = '__front__';
+
 /**
  * @summary Abstract class for creating context menu
  *
@@ -59289,6 +59306,10 @@ function showPainterMenu(evnt, painter, kind) {
 
    createMenu$1(evnt, painter).then(menu => {
       painter.fillContextMenu(menu);
+      if ((kind == kToFront) && isFunc(painter.bringToFront)) {
+         menu.add('Bring to front', () => painter.bringToFront(true));
+         kind = undefined;
+      }
       return painter.fillObjectExecMenu(menu, kind);
    }).then(menu => menu.show());
 }
@@ -69355,19 +69376,9 @@ class TPavePainter extends ObjectPainter {
          });
    }
 
-   /** @summary Bring pave painter as last in list of primitives of its parent */
-   bringToFront() {
-      if (!this.draw_g) return;
-      let prnt = this.draw_g.node().parentNode;
-      prnt?.appendChild(this.draw_g.node());
-   }
-
    /** @summary Fill context menu items for the TPave object */
    fillContextMenuItems(menu) {
       let pave = this.getObject();
-
-
-      menu.add('Bring to front', () => this.bringToFront());
 
       if (this.isStats()) {
          menu.add('Default position', () => {
@@ -69477,6 +69488,8 @@ class TPavePainter extends ObjectPainter {
             gStyle.fTitleFont = pave.fTextFont;
          }, 'Store title position and graphical attributes to gStyle');
       }
+
+      menu.add('Bring to front', () => this.bringToFront(!this.isStats() && !this.z_handle));
    }
 
    /** @summary Show pave context menu */
@@ -103876,7 +103889,7 @@ async function drawText$1() {
          };
       }
 
-      assignContextMenu(this);
+      assignContextMenu(this, kToFront);
 
       return this;
    });
@@ -103913,7 +103926,7 @@ function drawPolyLine() {
       elem.call(this.lineatt.func)
           .style('fill', 'none');
 
-   assignContextMenu(this);
+   assignContextMenu(this, kToFront);
 
    addMoveHandler(this);
 
@@ -104035,7 +104048,7 @@ function drawEllipse() {
       .call(this.lineatt.func)
       .call(this.fillatt.func);
 
-   assignContextMenu(this);
+   assignContextMenu(this, kToFront);
 
    addMoveHandler(this);
 
@@ -104153,7 +104166,7 @@ function drawBox$1() {
                  .style('fill', rgb(this.fillatt.color).darker(0.5).formatHex());
    }
 
-   assignContextMenu(this);
+   assignContextMenu(this, kToFront);
 
    addMoveHandler(this);
 
@@ -104215,7 +104228,7 @@ function drawMarker$1() {
           .attr('d', path)
           .call(this.markeratt.func);
 
-   assignContextMenu(this);
+   assignContextMenu(this, kToFront);
 
    addMoveHandler(this);
 
@@ -104258,7 +104271,7 @@ function drawPolyMarker() {
           .attr('d', path)
           .call(this.markeratt.func);
 
-   assignContextMenu(this);
+   assignContextMenu(this, kToFront);
 
    addMoveHandler(this);
 
@@ -108347,7 +108360,7 @@ class TLinePainter extends ObjectPainter {
       this.addExtras(elem);
 
       addMoveHandler(this);
-      assignContextMenu(this);
+      assignContextMenu(this, kToFront);
 
       return this;
    }
