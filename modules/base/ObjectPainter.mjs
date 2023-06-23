@@ -337,8 +337,6 @@ class ObjectPainter extends BasePainter {
       let pp = this.getPadPainter();
       if (!pp?.snapid) return;
 
-      console.log('sending POPOBJ', pp.snapid, this.snapid);
-
       this.getCanvPainter()?.sendWebsocket('POPOBJ:'+JSON.stringify([pp.snapid.toString(), this.snapid.toString()]));
    }
 
