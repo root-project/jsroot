@@ -1,6 +1,6 @@
 # JSROOT changelog
 
-## Changed in dev
+## Changes in dev
 
 1. Correctly implement TH2 projections like MERCATOR or PARABOLIC
 2. Use https://github.com/georgealways/lil-gui/ instead of dat.GUI
