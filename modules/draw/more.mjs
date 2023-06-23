@@ -133,7 +133,7 @@ function drawPolyLine() {
       elem.call(this.lineatt.func)
           .style('fill', 'none');
 
-   assignContextMenu(this);
+   assignContextMenu(this, kToFront);
 
    addMoveHandler(this);
 
@@ -255,7 +255,7 @@ function drawEllipse() {
       .call(this.lineatt.func)
       .call(this.fillatt.func);
 
-   assignContextMenu(this);
+   assignContextMenu(this, kToFront);
 
    addMoveHandler(this);
 
@@ -373,7 +373,7 @@ function drawBox() {
                  .style('fill', d3_rgb(this.fillatt.color).darker(0.5).formatHex());
    }
 
-   assignContextMenu(this);
+   assignContextMenu(this, kToFront);
 
    addMoveHandler(this);
 
@@ -435,7 +435,7 @@ function drawMarker() {
           .attr('d', path)
           .call(this.markeratt.func);
 
-   assignContextMenu(this);
+   assignContextMenu(this, kToFront);
 
    addMoveHandler(this);
 
@@ -478,7 +478,7 @@ function drawPolyMarker() {
           .attr('d', path)
           .call(this.markeratt.func);
 
-   assignContextMenu(this);
+   assignContextMenu(this, kToFront);
 
    addMoveHandler(this);
 
