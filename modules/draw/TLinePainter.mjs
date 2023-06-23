@@ -75,7 +75,7 @@ class TLinePainter extends ObjectPainter {
       this.addExtras(elem);
 
       addMoveHandler(this);
-      assignContextMenu(this);
+      assignContextMenu(this, '__front__');
 
       return this;
    }

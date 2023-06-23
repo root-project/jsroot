@@ -327,6 +327,13 @@ class ObjectPainter extends BasePainter {
       return this.draw_g;
    }
 
+   /** @summary Bring draw element to the front */
+   bringToFront() {
+      if (!this.draw_g) return;
+      let prnt = this.draw_g.node().parentNode;
+      prnt?.appendChild(this.draw_g.node());
+   }
+
    /** @summary Canvas main svg element
      * @return {object} d3 selection with canvas svg
      * @protected */
