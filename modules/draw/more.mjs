@@ -2,7 +2,7 @@ import { BIT, isFunc, clTLatex, clTMathText, clTAnnotation, clTPolyLine } from '
 import { rgb as d3_rgb, select as d3_select } from '../d3.mjs';
 import { BasePainter, makeTranslate } from '../base/BasePainter.mjs';
 import { addMoveHandler } from '../gui/utils.mjs';
-import { assignContextMenu } from '../gui/menu.mjs';
+import { assignContextMenu, kToFront } from '../gui/menu.mjs';
 
 
 /** @summary Draw TText
@@ -96,7 +96,7 @@ async function drawText() {
          };
       }
 
-      assignContextMenu(this);
+      assignContextMenu(this, kToFront);
 
       return this;
    });
