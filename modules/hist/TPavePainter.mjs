@@ -978,8 +978,6 @@ class TPavePainter extends ObjectPainter {
    fillContextMenuItems(menu) {
       let pave = this.getObject();
 
-      menu.add('Bring to front', () => this.bringToFront());
-
       if (this.isStats()) {
          menu.add('Default position', () => {
             pave.fX2NDC = gStyle.fStatX;
@@ -1088,6 +1086,8 @@ class TPavePainter extends ObjectPainter {
             gStyle.fTitleFont = pave.fTextFont;
          }, 'Store title position and graphical attributes to gStyle');
       }
+
+      menu.add('Bring to front', () => this.bringToFront(!this.isStats() && !this.z_handle));
    }
 
    /** @summary Show pave context menu */
