@@ -1398,7 +1398,7 @@ function showPainterMenu(evnt, painter, kind) {
    createMenu(evnt, painter).then(menu => {
       painter.fillContextMenu(menu);
       if ((kind == kToFront) && isFunc(painter.bringToFront)) {
-         menu.add('Bring to front', () => painter.bringToFront());
+         menu.add('Bring to front', () => painter.bringToFront(true));
          kind = undefined;
       }
       return painter.fillObjectExecMenu(menu, kind);

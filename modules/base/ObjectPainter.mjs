@@ -328,10 +328,18 @@ class ObjectPainter extends BasePainter {
    }
 
    /** @summary Bring draw element to the front */
-   bringToFront() {
+   bringToFront(check_online) {
       if (!this.draw_g) return;
       let prnt = this.draw_g.node().parentNode;
       prnt?.appendChild(this.draw_g.node());
+
+      if (!check_online || !this.snapid) return;
+      let pp = this.getPadPainter();
+      if (!pp?.snapid) return;
+
+      console.log('sending POPOBJ', pp.snapid, this.snapid);
+
+      this.getCanvPainter()?.sendWebsocket('POPOBJ:'+JSON.stringify([pp.snapid.toString(), this.snapid.toString()]));
    }
 
    /** @summary Canvas main svg element
