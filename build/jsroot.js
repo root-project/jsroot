@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '21/06/2023';
+let version_date = '23/06/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -9648,7 +9648,11 @@ async function loadMathjax() {
          }
       };
 
-      return loadScript(exports.source_dir + '../mathjax/3.2.0/es5/tex-svg.js')
+      let mj_dir = '../mathjax/3.2.0';
+      if (browser$1.webwindow && exports.source_dir.indexOf('https://root.cern/js') < 0 && exports.source_dir.indexOf('https://jsroot.gsi.de') < 0)
+         mj_dir =  'mathjax';
+
+      return loadScript(exports.source_dir + mj_dir + '/es5/tex-svg.js')
                .catch(() => loadScript('https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-svg.js'))
                .then(() => promise);
    }
@@ -57335,7 +57339,8 @@ tgamma: gamma
   * @param {number} tmout - optional timeout in milliseconds, after message will disappear
   * @private */
 function showProgress(msg, tmout) {
-   if (isBatchMode() || (typeof document === 'undefined')) return;
+   if (isBatchMode() || (typeof document === 'undefined'))
+      return;
    let id = 'jsroot_progressbox',
        box = select('#' + id);
 
@@ -57362,7 +57367,8 @@ function showProgress(msg, tmout) {
       box.html('');
       box.node().appendChild(msg);
    }
-   injectStyle('#jsroot_progressbox p { font-size: 10px; margin-left: 10px; margin-right: 10px; margin-top: 3px; margin-bottom: 3px; }', box.node());
+
+   box.select('p').attr('style', 'font-size: 10px; margin-left: 10px; margin-right: 10px; margin-top: 3px; margin-bottom: 3px');
 
    if (Number.isFinite(tmout) && (tmout > 0)) {
       box.property('with_timeout', true);
@@ -57514,7 +57520,7 @@ const ToolbarIcons = {
    circle: { path: 'M256,256 m-150,0 a150,150 0 1,0 300,0 a150,150 0 1,0 -300,0' },
    three_circles: { path: 'M256,85 m-70,0 a70,70 0 1,0 140,0 a70,70 0 1,0 -140,0  M256,255 m-70,0 a70,70 0 1,0 140,0 a70,70 0 1,0 -140,0  M256,425 m-70,0 a70,70 0 1,0 140,0 a70,70 0 1,0 -140,0 ' },
    diamand: { path: 'M256,0L384,256L256,511L128,256z' },
-   rect: { path: 'M80,80h352v352h-352z' },
+   rect: { path: 'M90,90h352v352h-352z' },
    cross: { path: 'M80,40l176,176l176,-176l40,40l-176,176l176,176l-40,40l-176,-176l-176,176l-40,-40l176,-176l-176,-176z' },
    vrgoggles: { size: '245.82 141.73', path: 'M175.56,111.37c-22.52,0-40.77-18.84-40.77-42.07S153,27.24,175.56,27.24s40.77,18.84,40.77,42.07S198.08,111.37,175.56,111.37ZM26.84,69.31c0-23.23,18.25-42.07,40.77-42.07s40.77,18.84,40.77,42.07-18.26,42.07-40.77,42.07S26.84,92.54,26.84,69.31ZM27.27,0C11.54,0,0,12.34,0,28.58V110.9c0,16.24,11.54,30.83,27.27,30.83H99.57c2.17,0,4.19-1.83,5.4-3.7L116.47,118a8,8,0,0,1,12.52-.18l11.51,20.34c1.2,1.86,3.22,3.61,5.39,3.61h72.29c15.74,0,27.63-14.6,27.63-30.83V28.58C245.82,12.34,233.93,0,218.19,0H27.27Z' },
    th2colorz: { recs: [{ x: 128, y: 486, w: 256, h: 26, f: 'rgb(38,62,168)' }, { y: 461, f: 'rgb(22,82,205)' }, { y: 435, f: 'rgb(16,100,220)' }, { y: 410, f: 'rgb(18,114,217)' }, { y: 384, f: 'rgb(20,129,214)' }, { y: 358, f: 'rgb(14,143,209)' }, { y: 333, f: 'rgb(9,157,204)' }, { y: 307, f: 'rgb(13,167,195)' }, { y: 282, f: 'rgb(30,175,179)' }, { y: 256, f: 'rgb(46,183,164)' }, { y: 230, f: 'rgb(82,186,146)' }, { y: 205, f: 'rgb(116,189,129)' }, { y: 179, f: 'rgb(149,190,113)' }, { y: 154, f: 'rgb(179,189,101)' }, { y: 128, f: 'rgb(209,187,89)' }, { y: 102, f: 'rgb(226,192,75)' }, { y: 77, f: 'rgb(244,198,59)' }, { y: 51, f: 'rgb(253,210,43)' }, { y: 26, f: 'rgb(251,230,29)' }, { y: 0, f: 'rgb(249,249,15)' }] },
@@ -57526,15 +57532,31 @@ const ToolbarIcons = {
             'M460.293,256.149H339.237c-28.521,0-51.721,23.199-51.721,51.726v89.915c0,28.504,23.2,51.715,51.721,51.715h121.045   c28.521,0,51.721-23.199,51.721-51.715v-89.915C512.002,279.354,488.802,256.149,460.293,256.149z M465.03,397.784   c0,2.615-2.122,4.736-4.748,4.736H339.237c-2.614,0-4.747-2.121-4.747-4.736v-89.909c0-2.626,2.121-4.753,4.747-4.753h121.045 c2.615,0,4.748,2.116,4.748,4.753V397.784z'
    },
 
-   createSVG(group, btn, size, title) {
-      injectStyle('.jsroot_svg_toolbar_btn { fill: steelblue; cursor: pointer; opacity: 0.3; } .jsroot_svg_toolbar_btn:hover { opacity: 1.0; }', group.node());
-
-      let svg = group.append('svg:svg')
-                     .attr('class', 'jsroot_svg_toolbar_btn')
+   createSVG(group, btn, size, title, arg) {
+      let use_dark = (arg === true) || (arg === false) ? arg : settings.DarkMode,
+          opacity0 = (arg == 'browser') ? (browser$1.touches ? 0.2 : 0) : (use_dark ? 0.8 : 0.2),
+          svg = group.append('svg:svg')
                      .attr('width', size + 'px')
                      .attr('height', size + 'px')
                      .attr('viewBox', '0 0 512 512')
-                     .style('overflow', 'hidden');
+                     .style('overflow', 'hidden')
+                     .style('cursor', 'pointer')
+                     .style('fill', use_dark ? 'rgba(255, 224, 160)' : 'steelblue')
+                     .style('opacity', opacity0)
+                     .property('opacity0', opacity0)
+                     .property('opacity1', use_dark ? 1 : 0.8)
+                     .on('mouseenter', function() {
+                        let elem = select(this);
+                        elem.style('opacity', elem.property('opacity1'));
+                        let func = elem.node()._mouseenter;
+                        if (isFunc(func)) func();
+                     })
+                     .on('mouseleave', function() {
+                        let elem = select(this);
+                        elem.style('opacity', elem.property('opacity0'));
+                        let func = elem.node()._mouseleave;
+                        if (isFunc(func)) func();
+                     });
 
       if ('recs' in btn) {
          let rec = {};
@@ -58259,7 +58281,7 @@ class JSRootMenu {
       }));
       for (let n = 1; n < 11; ++n) {
          let dash = getSvgLineStyle(n),
-             svg = `<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>${n}</text><line x1='30' y1='8' x2='100' y2='8' stroke='black' stroke-width='3' stroke-dasharray='${dash}'></line></svg>`;
+             svg = `<svg width='100' height='14'><text x='2' y='13' style='font-size:12px'>${n}</text><line x1='30' y1='7' x2='100' y2='7' stroke='black' stroke-width='3' stroke-dasharray='${dash}'></line></svg>`;
 
          this.addchk((value == n), svg, n, arg => set_func(parseInt(arg)));
       }
@@ -58931,7 +58953,11 @@ class StandaloneMenu extends JSRootMenu {
    _buildContextmenu(menu, left, top, loc) {
 
       let outer = document.createElement('div');
-      outer.className = 'jsroot_ctxt_container';
+
+      const container_style =
+         'position: absolute; top: 0; user-select: none; z-index: 100000; background-color: rgb(250, 250, 250); margin: 0; padding: 0px; width: auto;'+
+         'min-width: 100px; box-shadow: 0px 0px 10px rgb(0, 0, 0, 0.2); border: 3px solid rgb(215, 215, 215); font-family: Arial, helvetica, sans-serif, serif;'+
+         'font-size: 13px; color: rgb(0, 0, 0, 0.8); line-height: 15px;';
 
       //if loc !== document.body then its a submenu, so it needs to have position: relative;
       if (loc === document.body) {
@@ -58940,28 +58966,20 @@ class StandaloneMenu extends JSRootMenu {
          while (deleteElems.length > 0)
             deleteElems[0].parentNode.removeChild(deleteElems[0]);
 
+         outer.className = 'jsroot_ctxt_container';
+         outer.style = container_style;
          outer.style.position = 'fixed';
          outer.style.left = left + 'px';
          outer.style.top = top + 'px';
 
-         injectStyle(
-            `.jsroot_ctxt_container {`+
-            `   position: absolute; top: 0; user-select: none; z-index: 100000; background-color: rgb(250, 250, 250); margin: 0; padding: 0px; width: auto;`+
-            `   min-width: 100px; box-shadow: 0px 0px 10px rgb(0, 0, 0, 0.2); border: 3px solid rgb(215, 215, 215); font-family: Arial, helvetica, sans-serif, serif;`+
-            `   font-size: 13px; color: rgb(0, 0, 0, 0.8); line-height: 15px;`+
-            `}`+
-            `.jsroot_ctxt_column { float: left; }`+
-            `.jsroot_ctxt_divider { width: 85%; margin: 3px auto; border: 1px solid rgb(0, 0, 0, 0.15); }`+
-            `.jsroot_ctxt_header { background-color: lightblue; padding: 3px 7px; font-weight: bold; border-bottom: 1px; }`+
-            `.jsroot_ctxt_text { margin: 0; padding: 3px 7px; pointer-events: none; white-space: nowrap; }`+
-            `.jsroot_ctxt_extraText { margin: 0; padding: 3px 7px; color: rgb(0, 0, 0, 0.6); }`+
-            `.jsroot_ctxt_focus { background-color: rgb(220, 220, 220); }`+
-            `.jsroot_ctxt_item:hover { background-color: rgb(235, 235, 235); }`, this.element);
       } else if ((left < 0) && (top == left)) {
          // column
          outer.className = 'jsroot_ctxt_column';
+         outer.style.float = 'left';
          outer.style.width = (100/-left).toFixed(1) + '%';
       } else {
+         outer.className = 'jsroot_ctxt_container';
+         outer.style = container_style;
          outer.style.left = -loc.offsetLeft + loc.offsetWidth + 'px';
       }
 
@@ -58980,7 +58998,7 @@ class StandaloneMenu extends JSRootMenu {
 
          if (d.divider) {
             let hr = document.createElement('hr');
-            hr.className = 'jsroot_ctxt_divider';
+            hr.style = 'width: 85%; margin: 3px auto; border: 1px solid rgb(0, 0, 0, 0.15)';
             outer.appendChild(hr);
             return;
          }
@@ -58990,7 +59008,7 @@ class StandaloneMenu extends JSRootMenu {
          outer.appendChild(item);
 
          if (d.header) {
-            item.className = 'jsroot_ctxt_header';
+            item.style = 'background-color: lightblue; padding: 3px 7px; font-weight: bold; border-bottom: 1px;';
             item.innerHTML = d.text;
             return;
          }
@@ -58998,7 +59016,6 @@ class StandaloneMenu extends JSRootMenu {
          let hovArea = document.createElement('div');
          hovArea.style.width = '100%';
          hovArea.style.height = '100%';
-         hovArea.className = 'jsroot_ctxt_item';
          hovArea.style.display = 'flex';
          hovArea.style.justifyContent = 'space-between';
          hovArea.style.cursor = 'pointer';
@@ -59008,7 +59025,7 @@ class StandaloneMenu extends JSRootMenu {
          if (!d.text) d.text = 'item';
 
          let text = document.createElement('div');
-         text.className = 'jsroot_ctxt_text';
+         text.style = 'margin: 0; padding: 3px 7px; pointer-events: none; white-space: nowrap';
 
          if (d.text.indexOf('<svg') >= 0) {
             if (need_check_area) {
@@ -59047,9 +59064,21 @@ class StandaloneMenu extends JSRootMenu {
 
          hovArea.appendChild(text);
 
+         function changeFocus(item, on) {
+            if (on) {
+               item.classList.add('jsroot_ctxt_focus');
+               item.style['background-color'] = 'rgb(220, 220, 220)';
+            } else if (item.classList.contains('jsroot_ctxt_focus')) {
+               item.style['background-color'] = null;
+               item.classList.remove('jsroot_ctxt_focus');
+               item.querySelector('.jsroot_ctxt_container')?.remove();
+            }
+         }
+
          if (d.hasOwnProperty('extraText') || d.sub) {
             let extraText = document.createElement('span');
             extraText.className = 'jsroot_ctxt_extraText';
+            extraText.style = 'margin: 0; padding: 3px 7px; color: rgb(0, 0, 0, 0.6);';
             extraText.textContent = d.sub ? '\u25B6' : d.extraText;
             hovArea.appendChild(extraText);
 
@@ -59057,40 +59086,33 @@ class StandaloneMenu extends JSRootMenu {
                extraText.addEventListener('click', evnt => {
                   evnt.preventDefault();
                   evnt.stopPropagation();
-                  let has_focus = item.classList.contains('jsroot_ctxt_focus'),
-                      was_active = item.parentNode.querySelector('.jsroot_ctxt_focus');
+                  let was_active = item.parentNode.querySelector('.jsroot_ctxt_focus');
 
-                  if (has_focus) {
-                     item.querySelector('.jsroot_ctxt_container')?.remove();
-                  } else {
-                     // check other
-                     if (was_active && (was_active !== item)) {
-                        was_active.classList.remove('jsroot_ctxt_focus');
-                        was_active.querySelector('.jsroot_ctxt_container')?.remove();
-                     }
+                  if (was_active)
+                     changeFocus(was_active, false);
 
+                  if (item !== was_active) {
+                     changeFocus(item, true);
                      this._buildContextmenu(d.sub, 0, 0, item);
                   }
-                  item.classList.toggle('jsroot_ctxt_focus');
                });
          }
 
          if (!browser$1.touches)
          hovArea.addEventListener('mouseenter', () => {
-            let focused = outer.childNodes;
-            focused.forEach(d => {
-               if (d.classList.contains('jsroot_ctxt_focus')) {
-                  d.removeChild(d.getElementsByClassName('jsroot_ctxt_container')[0]);
-                  d.classList.remove('jsroot_ctxt_focus');
-               }
-            });
-         });
 
-         if (d.sub && !browser$1.touches)
-            hovArea.addEventListener('mouseenter', () => {
-               item.classList.add('jsroot_ctxt_focus');
+            if (this.prevHovArea)
+               this.prevHovArea.style['background-color'] = null;
+            hovArea.style['background-color'] = 'rgb(235, 235, 235)';
+            this.prevHovArea = hovArea;
+
+            outer.childNodes.forEach(chld => changeFocus(chld, false));
+
+            if (d.sub) {
+               changeFocus(item, true);
                this._buildContextmenu(d.sub, 0, 0, item);
-            });
+            }
+         });
 
          if (d.func)
             item.addEventListener('click', evnt => {
@@ -59124,7 +59146,7 @@ class StandaloneMenu extends JSRootMenu {
 
       } else if (outer.className != 'jsroot_ctxt_column') {
 
-         //if its sub-contextmenu
+         // if its sub-contextmenu
          let dimensionsLoc = loc.getBoundingClientRect(), dimensionsOuter = outer.getBoundingClientRect();
 
          //Does sub-contextmenu overflow window width?
@@ -59178,31 +59200,29 @@ class StandaloneMenu extends JSRootMenu {
       select(`#${dlg_id}`).remove();
       select(`#${dlg_id}_block`).remove();
 
-      let w = Math.min(args.width || 450, Math.round(0.9*browser$1.screenWidth));
-
-      let block = select('body').append('div').attr('id', dlg_id+'_block').attr('class', 'jsroot_dialog_block'),
+      let w = Math.min(args.width || 450, Math.round(0.9*browser$1.screenWidth)),
+          block = select('body').append('div')
+                                   .attr('id', `${dlg_id}_block`)
+                                   .attr('class', 'jsroot_dialog_block')
+                                   .attr('style', 'z-index: 100000; position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.2; background-color: white'),
           element = select('body')
                       .append('div')
-                      .attr('id',dlg_id)
-                      .attr('class', 'jsroot_dialog').style('width', `${w}px`)
+                      .attr('id', dlg_id)
+                      .attr('class', 'jsroot_dialog')
+                      .style('position', 'absolute')
+                      .style('width', `${w}px`)
+                      .style('left', '50%')
+                      .style('top', '50%')
+                      .style('z-index', 100001)
                       .attr('tabindex', '0')
                       .html(
-         `<div class="jsroot_dialog_body">`+
-           `<div class="jsroot_dialog_header">${title}</div>`+
-           `<div class="jsroot_dialog_content">${main_content}</div>`+
-           `<div class="jsroot_dialog_footer">`+
-              `<button class="jsroot_dialog_button">Ok</button>`+
-              (args.btns ? '<button class="jsroot_dialog_button">Cancel</button>' : '') +
-        `</div></div>`);
-
-      injectStyle(
-         `.jsroot_dialog_block { z-index: 100000; position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.2; background-color: white; }`+
-         `.jsroot_dialog { z-index: 100001; position: absolute; left: 50%; top: 50%; }`+
-         `.jsroot_dialog_body { position: relative; left: -50%; top: -50%; border: solid green 3px; padding: 5px; display: flex; flex-flow: column; background-color: white; }`+
-         `.jsroot_dialog_header { flex: 0 1 auto; padding: 5px; }`+
-         `.jsroot_dialog_content { flex: 1 1 auto; padding: 5px; }`+
-         `.jsroot_dialog_footer { flex: 0 1 auto; padding: 5px; }`+
-         `.jsroot_dialog_button { float: right; margin-right: 1em; }`, element.node());
+         `<div style='position: relative; left: -50%; top: -50%; border: solid green 3px; padding: 5px; display: flex; flex-flow: column; background-color: white'>`+
+           `<div style='flex: 0 1 auto; padding: 5px'>${title}</div>`+
+           `<div class='jsroot_dialog_content' style='flex: 1 1 auto; padding: 5px'>${main_content}</div>`+
+           `<div class='jsroot_dialog_footer' style='flex: 0 1 auto; padding: 5px'>`+
+              `<button class='jsroot_dialog_button' style='float: right; margin-right: 1em'>Ok</button>`+
+              (args.btns ? `<button class='jsroot_dialog_button' style='float: right; margin-right: 1em'>Cancel</button>` : '') +
+         `</div></div>`);
 
       return new Promise(resolveFunc => {
          element.on('keyup', evnt => {
@@ -63773,13 +63793,8 @@ class GridDisplay extends MDIDisplay {
       if (chld_sizes?.length !== num)
          chld_sizes = undefined;
 
-      if (!this.simple_layout) {
-         injectStyle(
-            '.jsroot_vline:after { content:""; position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dotted #ff0000; }'+
-            '.jsroot_hline:after { content:""; position: absolute; left: 0; right: 0; top: 50%; border-top: 1px dotted #ff0000; }'+
-            '.jsroot_separator { pointer-events: all; border: 0; margin: 0; padding: 0; }', dom.node(), 'grid_style');
+      if (!this.simple_layout)
          this.createGroup(this, dom, num, arr, sizes, chld_sizes);
-      }
    }
 
    /** @summary Create frames group
@@ -63955,14 +63970,16 @@ class GridDisplay extends MDIDisplay {
       let separ = main.append('div');
 
       separ.classed('jsroot_separator', true)
-           .classed(handle.vertical ? 'jsroot_hline' : 'jsroot_vline', true)
            .property('handle', handle)
            .property('separator_id', group.id)
-           .style('position', 'absolute')
+           .attr('style', 'pointer-events: all; border: 0; margin: 0; padding: 0; position: absolute;')
            .style(handle.vertical ? 'top' : 'left', `calc(${group.position.toFixed(2)}% - 2px)`)
            .style(handle.vertical ? 'width' : 'height', (handle.size?.toFixed(2) || 100)+'%')
            .style(handle.vertical ? 'height' : 'width', '5px')
-           .style('cursor', handle.vertical ? 'ns-resize' : 'ew-resize');
+           .style('cursor', handle.vertical ? 'ns-resize' : 'ew-resize')
+           .append('div').attr('style', 'position: absolute;' + (handle.vertical ?
+                       'left: 0; right: 0; top: 50%; height: 3px; border-top: 1px dotted #ff0000' :
+                       'top: 0; bottom: 0; left: 50%; width: 3px; border-left: 1px dotted #ff0000'));
 
       let pthis = this, drag_move =
         drag().on('start', function() { pthis.handleSeparator(this, 'start'); })
@@ -63973,7 +63990,7 @@ class GridDisplay extends MDIDisplay {
 
       // need to get touches events handling in drag
       if (browser$1.touches && !main.on('touchmove'))
-         main.on('touchmove', function() {});
+         main.on('touchmove', () => {});
    }
 
 
@@ -64087,9 +64104,14 @@ class TabsDisplay extends MDIDisplay {
 
       labels.selectAll('.jsroot_tabs_label').each(function() {
          let id = select(this).property('frame_id'),
-             is_same = (id == frame_id);
+             is_same = (id == frame_id),
+             active_color = settings.DarkMode ? '#333' : 'white';
+
          if (action == 'activate')
-            select(this).style('background', is_same ? (settings.DarkMode ? 'black' : 'white') : null);
+            select(this).style('background', is_same ? active_color : (settings.DarkMode ? 'black' : '#ddd'))
+                           .style('color', settings.DarkMode ? '#ddd' : 'inherit')
+                           .style('border-color', active_color);
+
          else if ((action == 'close') && is_same)
             this.parentNode.remove();
       });
@@ -64097,10 +64119,13 @@ class TabsDisplay extends MDIDisplay {
       let selected_frame, other_frame;
 
       main.selectAll('.jsroot_tabs_draw').each(function() {
-         if (select(this).property('frame_id') === frame_id)
+         let match = select(this).property('frame_id') === frame_id;
+         if (match)
             selected_frame = this;
          else
             other_frame = this;
+         if (action == 'activate')
+            select(this).style('background', settings.DarkMode ? 'black' : 'white');
       });
 
       if (!selected_frame) return;
@@ -64134,29 +64159,16 @@ class TabsDisplay extends MDIDisplay {
           top = dom.select('.jsroot_tabs'), labels, main;
 
       if (top.empty()) {
-         top = dom.append('div').classed('jsroot_tabs', true);
-         labels = top.append('div').classed('jsroot_tabs_labels', true);
-         main = top.append('div').classed('jsroot_tabs_main', true);
+         top = dom.append('div').attr('class', 'jsroot_tabs')
+                  .attr('style', 'display: flex; flex-direction: column; position: absolute; overflow: hidden; inset: 0px 0px 0px 0px');
+         labels = top.append('div').attr('class', 'jsroot_tabs_labels')
+                     .attr('style', 'white-space: nowrap; position: relative; overflow-x: auto');
+         main = top.append('div').attr('class', 'jsroot_tabs_main')
+                     .attr('style', 'margin: 0; flex: 1 1 0%; position: relative');
       } else {
          labels = top.select('.jsroot_tabs_labels');
          main = top.select('.jsroot_tabs_main');
       }
-
-      let bkgr_color = settings.DarkMode ? 'black' : 'white',
-          lbl_color = settings.DarkMode ? '#111': '#eee',
-          lbl_border = settings.DarkMode ? '#333' : '#ccc',
-          text_color = settings.DarkMode ? '#ddd' : 'inherit';
-
-      injectStyle(
-         `.jsroot_tabs { display: flex; flex-direction: column; position: absolute; overflow: hidden; inset: 0px 0px 0px 0px; }`+
-         `.jsroot_tabs_labels { white-space: nowrap; position: relative; overflow-x: auto; }`+
-         `.jsroot_tabs_labels .jsroot_tabs_label {`+
-             `color: ${text_color}; background: ${lbl_color}; border: 1px solid ${lbl_border}; display: inline-block; font-size: 1rem; left: 1px;`+
-             `margin-left: 3px; padding: 0px 5px 1px 5px; position: relative; vertical-align: bottom;`+
-         `}`+
-         `.jsroot_tabs_main { margin: 0; flex: 1 1 0%; position: relative; }`+
-         `.jsroot_tabs_main .jsroot_tabs_draw { overflow: hidden; background: ${bkgr_color}; position: absolute; top: 0px; bottom: 0px; left: 0px; right: 0px; }`,
-         dom.node(), 'tabs_style');
 
       let frame_id = this.cnt++, mdi = this, lbl = title;
 
@@ -64175,7 +64187,8 @@ class TabsDisplay extends MDIDisplay {
          .attr('tabindex', 0)
          .append('label')
          .attr('class', 'jsroot_tabs_label')
-         .style('background', 'white')
+         .attr('style', `border: 1px solid; display: inline-block; font-size: 1rem; left: 1px;`+
+                        `margin-left: 3px; padding: 0px 5px 1px 5px; position: relative; vertical-align: bottom;`)
          .property('frame_id', frame_id)
          .text(lbl)
          .attr('title', title)
@@ -64193,11 +64206,18 @@ class TabsDisplay extends MDIDisplay {
       let draw_frame = main.append('div')
                            .attr('frame_title', title)
                            .attr('class', 'jsroot_tabs_draw')
+                           .attr('style', `overflow: hidden; position: absolute; top: 0px; bottom: 0px; left: 0px; right: 0px`)
                            .property('frame_id', frame_id);
 
       this.modifyTabsFrame(frame_id, 'activate');
 
       return this.afterCreateFrame(draw_frame.node());
+   }
+
+   /** @summary Handle changes in dark mode */
+   changeDarkMode() {
+      let frame = this.getActiveFrame();
+      this.modifyTabsFrame(select(frame).property('frame_id'), 'activate');
    }
 
 } // class TabsDisplay
@@ -64402,26 +64422,19 @@ class FlexibleDisplay extends MDIDisplay {
           dom = this.selectDom(),
           top = dom.select('.jsroot_flex_top');
 
-      injectStyle(
-         `.jsroot_flex_top { overflow: auto; position: relative; height: 100%; width: 100%; }`+
-         `.jsroot_flex_btn { float: right; padding: 0; width: 1.4em; text-align: center; font-size: 10px; margin-top: 2px; margin-right: 4px; }`+
-         `.jsroot_flex_header { height: 23px; overflow: hidden; background-color: lightblue; }`+
-         `.jsroot_flex_header p { margin: 1px; float: left; font-size: 14px; padding-left: 5px; }`+
-         `.jsroot_flex_draw { overflow: hidden; width: 100%; height: calc(100% - 24px); }`+
-         `.jsroot_flex_frame { border: 1px solid black; box-shadow: 1px 1px 2px 2px #aaa; background: white; }`+
-         `.jsroot_flex_resize { position: absolute; right: 2px; bottom: 2px; overflow: hidden; cursor: nwse-resize; }`+
-         `.jsroot_flex_resizable_helper { border: 2px dotted #00F; }`, dom.node(), 'flex_style');
-
       if (top.empty())
-         top = dom.append('div').classed('jsroot_flex_top', true);
+         top = dom.append('div')
+                  .attr('class', 'jsroot_flex_top')
+                  .attr('style', 'overflow: auto; position: relative; height: 100%; width: 100%');
 
       let w = top.node().clientWidth,
           h = top.node().clientHeight,
           main = top.append('div');
 
-      main.html(`<div class='jsroot_flex_header'><p>${title}</p></div>`+
-                `<div id='${this.frameid}_cont${this.cnt}' class='jsroot_flex_draw'></div>`+
-                `<div class='jsroot_flex_resize'>&#x25FF;</div>`);
+      main.html(`<div class='jsroot_flex_header' style='height: 23px; overflow: hidden; background-color: lightblue'>` +
+                `<p style='margin: 1px; float: left; font-size: 14px; padding-left: 5px'>${title}</p></div>`+
+                `<div id='${this.frameid}_cont${this.cnt}' class='jsroot_flex_draw' style='overflow: hidden; width: 100%; height: calc(100% - 24px); background: white'></div>`+
+                `<div class='jsroot_flex_resize' style='position: absolute; right: 3px; bottom: 1px; overflow: hidden; cursor: nwse-resize'>&#x25FF;</div>`);
 
       main.attr('class', 'jsroot_flex_frame')
          .style('position', 'absolute')
@@ -64429,6 +64442,8 @@ class FlexibleDisplay extends MDIDisplay {
          .style('top', Math.round(h * (this.cnt % 5)/10) + 'px')
          .style('width', Math.round(w * 0.58) + 'px')
          .style('height', Math.round(h * 0.58) + 'px')
+         .style('border', '1px solid black')
+         .style('box-shadow', '1px 1px 2px 2px #aaa')
          .property('state', 'normal')
          .select('.jsroot_flex_header')
          .on('click', function() { mdi.activateFrame(select(this.parentNode).select('.jsroot_flex_draw').node()); })
@@ -64437,7 +64452,7 @@ class FlexibleDisplay extends MDIDisplay {
          .enter()
          .append('button')
          .attr('type', 'button')
-         .attr('class', 'jsroot_flex_btn')
+         .attr('style', 'float: right; padding: 0; width: 1.4em; text-align: center; font-size: 10px; margin-top: 2px; margin-right: 4px')
          .attr('title', d => d.t)
          .html(d => d.n)
          .on('click', function() { mdi._clickButton(this); });
@@ -64458,9 +64473,7 @@ class FlexibleDisplay extends MDIDisplay {
 
          mdi.activateFrame(main.select('.jsroot_flex_draw').node());
 
-         moving_div = top.append('div').classed('jsroot_flex_resizable_helper', true);
-
-         moving_div.attr('style', main.attr('style'));
+         moving_div = top.append('div').attr('style', main.attr('style')).style('border', '2px dotted #00F');
 
          if (main.property('state') == 'min')
             moving_div.style('width', main.node().clientWidth + 'px')
@@ -64760,17 +64773,12 @@ class BrowserLayout {
          `.jsroot_browser_area input { ${input_style} }`+
          `.jsroot_browser_area select { ${input_style} }`+
          `.jsroot_browser_title { font-family: Verdana; font-size: 20px; color: ${title_color}; }`+
-         `.jsroot_browser_btns { pointer-events: all; opacity: 0; display:flex; flex-direction: column; }`+
-         `.jsroot_browser_btns:hover { opacity: 0.3; }`+
+         `.jsroot_browser_btns { pointer-events: all; display: flex; flex-direction: column; }`+
          `.jsroot_browser_area p { margin-top: 5px; margin-bottom: 5px; white-space: nowrap; }`+
          `.jsroot_browser_hierarchy { flex: 1; margin-top: 2px; }`+
          `.jsroot_status_area { background-color: ${bkgr_color}; overflow: hidden; font-size: 12px; font-family: Verdana; pointer-events: all; }`+
-         `.jsroot_float_browser { border: solid 3px white; }`+
-         `.jsroot_browser_resize { position: absolute; right: 3px; bottom: 3px; margin-bottom: 0px; margin-right: 0px; opacity: 0.5; cursor: se-resize; z-index: 1; }`+
-         `.jsroot_status_label { margin: 3px; margin-left: 5px; font-size: 14px; vertical-align: middle; white-space: nowrap; }`+
-         `.jsroot_separator { pointer-events: all; border: 0; margin: 0; padding: 0; }`+
-         `.jsroot_h_separator { cursor: ns-resize; background-color: azure; }`+
-         `.jsroot_v_separator { cursor: ew-resize; background-color: azure; }`, this.main().node(), 'browser_layout_style');
+         `.jsroot_browser_resize { position: absolute; right: 3px; bottom: 3px; margin-bottom: 0px; margin-right: 0px; opacity: 0.5; cursor: se-resize; z-index: 1; }`,
+          this.main().node(), 'browser_layout_style');
    }
 
    /** @summary method used to create basic elements
@@ -64782,7 +64790,8 @@ class BrowserLayout {
                         .classed('jsroot_draw_area', true)
                         .style('position','absolute').style('left',0).style('top',0).style('bottom',0).style('right',0);
 
-      if (with_browser) main.append('div').classed('jsroot_browser', true);
+      if (with_browser)
+         main.append('div').classed('jsroot_browser', true);
 
       this.createStyle();
    }
@@ -64791,9 +64800,13 @@ class BrowserLayout {
    createBrowserBtns() {
       let br = this.browser();
       if (br.empty()) return;
-      let btns = br.append('div').classed('jsroot_browser_btns', true).classed('jsroot', true);
-      btns.style('position','absolute').style('left','7px').style('top','7px');
-      if (browser$1.touches) btns.style('opacity','0.2'); // on touch devices should be always visible
+      let btns = br.select('.jsroot_browser_btns');
+      if (btns.empty())
+         btns = br.append('div')
+                  .attr('class', 'jsroot jsroot_browser_btns')
+                  .attr('style', 'position:absolute; left:7px; top: 7px');
+      else
+         btns.html('');
       return btns;
    }
 
@@ -64920,9 +64933,10 @@ class BrowserLayout {
           .style('position','absolute').style('left',left_pos).style('height','20px').style('bottom',0).style('right',0)
           .style('margin',0).style('border',0);
 
-      let hsepar = main.insert('div','.jsroot_browser_area')
-                       .classed('jsroot_separator', true).classed('jsroot_h_separator', true)
-                       .style('position','absolute').style('left',left_pos).style('right',0).style('bottom','20px').style('height','5px');
+      let separ_color = settings.DarkMode ? 'grey' : 'azure',
+          hsepar = main.insert('div', '.jsroot_browser_area')
+                       .classed('jsroot_h_separator', true)
+                       .attr('style', `pointer-events: all; border: 0; margin: 0; padding: 0; background-color: ${separ_color}; position: absolute; left: ${left_pos}; right: 0; bottom: 20px; height: 5px; cursor: ns-resize;`);
 
       let drag_move = drag().on('start', () => {
           this._hsepar_move = this._hsepar_position;
@@ -64955,7 +64969,7 @@ class BrowserLayout {
       for (let k = 0; k < 4; ++k)
          select(this.status_layout.getGridFrame(k))
            .attr('title', frame_titles[k]).style('overflow', 'hidden')
-           .append('label').attr('class', 'jsroot_status_label');
+           .append('label').attr('style', 'margin: 3px; margin-left: 5px; font-size: 14px; vertical-align: middle; white-space: nowrap;');
 
       internals.showStatus = this.status_handler = this.showStatus.bind(this);
 
@@ -65156,10 +65170,10 @@ class BrowserLayout {
           area.style('bottom', '0px')
               .style('top', '0px')
               .style('width','').style('height','')
-              .classed('jsroot_float_browser', false);
+              .classed('jsroot_float_browser', false)
+              .style('border', null);
 
-           //jarea.resizable('destroy')
-           //     .draggable('destroy');
+
       } else if (this.browser_kind === 'fix') {
          main.select('.jsroot_v_separator').remove();
          area.style('left', '0px');
@@ -65176,7 +65190,10 @@ class BrowserLayout {
       main.select('.jsroot_browser_title').style('cursor', (kind === 'float') ? 'move' : null);
 
       if (kind === 'float') {
-         area.style('bottom', '40px').classed('jsroot_float_browser', true);
+         area.style('bottom', '40px')
+             .classed('jsroot_float_browser', true)
+             .style('border', 'solid 3px white');
+
         let drag_move = drag().on('start', () => {
            let sl = area.style('left'), st = area.style('top');
            this._float_left = parseInt(sl.slice(0,sl.length-2));
@@ -65219,10 +65236,10 @@ class BrowserLayout {
 
         area.style('left', 0).style('top', 0).style('bottom', 0).style('height', null);
 
-        let vsepar =
-           main.append('div')
-               .classed('jsroot_separator', true).classed('jsroot_v_separator', true)
-               .style('position', 'absolute').style('top',0).style('bottom',0);
+        let separ_color = settings.DarkMode ? 'grey' : 'azure',
+           vsepar = main.append('div')
+               .classed('jsroot_v_separator', true)
+               .attr('style', `pointer-events: all; border: 0; margin: 0; padding: 0; background-color: ${separ_color}; position: absolute; top: 0; bottom: 0; cursor: ew-resize;`);
 
         let drag_move = drag().on('start', () => {
             this._vsepar_move = this._vsepar_position;
@@ -65350,16 +65367,16 @@ let PadButtonsHandler = {
           x = group.property('leftside') ? getButtonSize(this, 1.25) : 0, y = 0;
 
       if (this._fast_drawing) {
-         ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.circle, getButtonSize(this), 'enlargePad')
+         ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.circle, getButtonSize(this), 'enlargePad', false)
                             .attr('name', 'Enlarge').attr('x', 0).attr('y', 0)
                             .on('click', evnt => this.clickPadButton('enlargePad', evnt));
       } else {
-         ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.rect, getButtonSize(this), 'Toggle tool buttons')
+         ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.rect, getButtonSize(this), 'Toggle tool buttons', false)
                             .attr('name', 'Toggle').attr('x', 0).attr('y', 0)
                             .property('buttons_state', (settings.ToolBar !== 'popup') || browser$1.touches)
-                            .on('click', evnt => toggleButtonsVisibility(this, 'toggle', evnt))
-                            .on('mouseenter', () => toggleButtonsVisibility(this, 'enable'))
-                            .on('mouseleave', () => toggleButtonsVisibility(this, 'disable'));
+                            .on('click', evnt => toggleButtonsVisibility(this, 'toggle', evnt));
+         ctrl.node()._mouseenter = () => toggleButtonsVisibility(this, 'enable');
+         ctrl.node()._mouseleave = () => toggleButtonsVisibility(this, 'disable');
 
          for (let k = 0; k < this._buttons.length; ++k) {
             let item = this._buttons[k], btn = item.btn;
@@ -65370,7 +65387,7 @@ let PadButtonsHandler = {
                btn = ToolbarIcons.circle;
 
             let svg = ToolbarIcons.createSVG(group, btn, getButtonSize(this),
-                        item.tooltip + (iscan ? '' : (` on pad ${this.this_pad_name}`)) + (item.keyname ? ` (keyshortcut ${item.keyname})` : ''));
+                        item.tooltip + (iscan ? '' : (` on pad ${this.this_pad_name}`)) + (item.keyname ? ` (keyshortcut ${item.keyname})` : ''), false);
 
             if (group.property('vertical'))
                 svg.attr('x', y).attr('y', x);
@@ -65379,12 +65396,11 @@ let PadButtonsHandler = {
 
             svg.attr('name', item.funcname)
                .style('display', ctrl.property('buttons_state') ? '' : 'none')
-               .on('mouseenter', () => toggleButtonsVisibility(this, 'enterbtn'))
-               .on('mouseleave', () => toggleButtonsVisibility(this, 'leavebtn'));
+               .attr('key', item.keyname || null)
+               .on('click', evnt => this.clickPadButton(item.funcname, evnt));
 
-            if (item.keyname) svg.attr('key', item.keyname);
-
-            svg.on('click', evnt => this.clickPadButton(item.funcname, evnt));
+            svg.node()._mouseenter = () => toggleButtonsVisibility(this, 'enterbtn');
+            svg.node()._mouseleave = () => toggleButtonsVisibility(this, 'leavebtn');
 
             x += getButtonSize(this, 1.25);
          }
@@ -68018,13 +68034,13 @@ class TCanvasPainter extends TPadPainter {
 
       let btns = this.brlayout.createBrowserBtns();
 
-      ToolbarIcons.createSVG(btns, ToolbarIcons.diamand, 15, 'toggle fix-pos mode')
+      ToolbarIcons.createSVG(btns, ToolbarIcons.diamand, 15, 'toggle fix-pos mode', 'browser')
                   .style('margin','3px').on('click', () => this.brlayout.toggleKind('fix'));
 
-      ToolbarIcons.createSVG(btns, ToolbarIcons.circle, 15, 'toggle float mode')
+      ToolbarIcons.createSVG(btns, ToolbarIcons.circle, 15, 'toggle float mode', 'browser')
                   .style('margin','3px').on('click', () => this.brlayout.toggleKind('float'));
 
-      ToolbarIcons.createSVG(btns, ToolbarIcons.cross, 15, 'delete GED')
+      ToolbarIcons.createSVG(btns, ToolbarIcons.cross, 15, 'delete GED', 'browser')
                   .style('margin','3px').on('click', () => this.removeGed());
 
       // be aware, that jsroot_browser_hierarchy required for flexible layout that element use full browser area
@@ -72757,8 +72773,8 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
          this.interactiveRedraw('pad', 'drawopt');
       });
 
-      if (this.options.Color)
-         this.fillPaletteMenu(menu);
+      if (this.options.Color || this.options.Contour || this.options.Surf || this.options.Lego == 12 || this.options.Lego == 14)
+         this.fillPaletteMenu(menu, true);
    }
 
    /** @summary Process click on histogram-defined buttons */
@@ -86787,66 +86803,49 @@ function getIntersectStack(item) {
 class Toolbar {
 
    /** @summary constructor */
-   constructor(container, bright) {
+   constructor(container, bright, buttons) {
       this.bright = bright;
-
-      this.element = container.append('div').attr('class', 'geo_toolbar_group');
-
-      injectStyle(
-         '.geo_toolbar_group { float: left; box-sizing: border-box; position: relative; bottom: 23px; vertical-align: middle; white-space: nowrap; }'+
-         '.geo_toolbar_group:first-child { margin-left: 2px; }'+
-         '.geo_toolbar_group a { position: relative; font-size: 16px; padding: 3px 1px; cursor: pointer; line-height: normal; box-sizing: border-box; }'+
-         '.geo_toolbar_group a svg { position: relative; top: 2px; }'+
-         '.geo_toolbar_btn path { fill: rgba(0, 31, 95, 0.2); }'+
-         '.geo_toolbar_btn path .active, '+
-         '.geo_toolbar_btn path:hover { fill: rgba(0, 22, 72, 0.5); }'+
-         '.geo_toolbar_btn_bright path { fill: rgba(255, 224, 160, 0.8); }'+
-         '.geo_toolbar_btn_bright path .active,'+
-         '.geo_toolbar_btn_bright path:hover { fill: rgb(255, 233, 183); }', this.element.node());
+      this.buttons = buttons;
+      this.element = container.append('div').attr('style', 'float: left; box-sizing: border-box; position: relative; bottom: 23px; vertical-align: middle; padding-left: 5px');
    }
 
    /** @summary add buttons */
-   addButtons(buttons) {
-      this.buttonsNames = [];
+   createButtons() {
+      let buttonsNames = [];
 
-      buttons.forEach(buttonConfig => {
+      this.buttons.forEach(buttonConfig => {
          let buttonName = buttonConfig.name;
          if (!buttonName)
             throw new Error('must provide button name in button config');
-         if (this.buttonsNames.indexOf(buttonName) !== -1)
+         if (buttonsNames.indexOf(buttonName) !== -1)
             throw new Error(`button name ${buttonName} is taken`);
 
-         this.buttonsNames.push(buttonName);
+         buttonsNames.push(buttonName);
 
          let title = buttonConfig.title || buttonConfig.name;
 
          if (!isFunc(buttonConfig.click))
             throw new Error('must provide button click() function in button config');
 
-         let button = this.element.append('a')
-                           .attr('class', this.bright ? 'geo_toolbar_btn_bright' : 'geo_toolbar_btn')
-                           .attr('rel', 'tooltip')
-                           .attr('data-title', title)
-                           .on('click', buttonConfig.click);
-
-         ToolbarIcons.createSVG(button, ToolbarIcons[buttonConfig.icon], 16, title);
+         ToolbarIcons.createSVG(this.element, ToolbarIcons[buttonConfig.icon], 16, title, this.bright)
+              .on('click', buttonConfig.click)
+              .style('position', 'relative')
+              .style('padding', '3px 1px');
       });
-
    }
 
    /** @summary change brightness */
    changeBrightness(bright) {
-      this.element?.selectAll(this.bright ? '.geo_toolbar_btn_bright' : '.geo_toolbar_btn')
-                   .attr('class', bright ? 'geo_toolbar_btn_bright' : 'geo_toolbar_btn');
+      if (this.bright == bright) return;
+      this.element.selectAll('*').remove();
       this.bright = bright;
+      this.createButtons();
    }
 
    /** @summary cleanup toolbar */
    cleanup() {
-      if (this.element) {
-         this.element.remove();
-         delete this.element;
-      }
+      this.element?.remove();
+      delete this.element;
    }
 
 } // class ToolBar
@@ -87092,9 +87091,9 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Function callled by framework when dark mode is changed
      * @private */
-   changeDarkMode() {
+   changeDarkMode(mode) {
       if ((this.ctrl.background == '#000000') || (this.ctrl.background == '#ffffff'))
-         this.changedBackground(settings.DarkMode ? '#000000' : '#ffffff');
+         this.changedBackground((mode ?? settings.DarkMode) ? '#000000' : '#ffffff');
    }
 
    /** @summary Change drawing stage
@@ -87176,9 +87175,9 @@ class TGeoPainter extends ObjectPainter {
 
       let bkgr = new Color(this.ctrl.background);
 
-      this._toolbar = new Toolbar(this.selectDom(), (bkgr.r + bkgr.g + bkgr.b) < 1);
+      this._toolbar = new Toolbar(this.selectDom(), (bkgr.r + bkgr.g + bkgr.b) < 1, buttonList);
 
-      this._toolbar.addButtons(buttonList);
+      this._toolbar.createButtons();
    }
 
    /** @summary Initialize VR mode */
@@ -98933,7 +98932,7 @@ function treeIOTest(tree, args) {
       return cnt;
    }
 
-   let numleaves = collectBranches(tree);
+   let numleaves = collectBranches(tree), selector;
 
    names.push(`Total are ${branches.length} branches with ${numleaves} leaves`);
 
@@ -98942,7 +98941,10 @@ function treeIOTest(tree, args) {
       if (nbr >= branches.length)
          return Promise.resolve(true);
 
-      let selector = new TSelector;
+      if (selector?._break || args._break)
+         return Promise.resolve(true);
+
+      selector = new TSelector;
 
       selector.addBranch(branches[nbr], 'br0');
 
@@ -98989,7 +98991,8 @@ function treeIOTest(tree, args) {
    }
 
    return testBranch(0).then(() => {
-      if (args.showProgress) args.showProgress();
+      if (isFunc(args.showProgress))
+         args.showProgress();
 
       return names;
    });
@@ -99864,7 +99867,7 @@ ${img('class',16,'png','iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA
 ${img('member',16,'png','iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QAvQC9AL1pQtWoAAAAX0lEQVR42mNgAAIVBob/+DADPgBS8GCPBV6M1xCKDcDnBRcoZhgW4D8DBV75v2bLATAmxyC4ZmRMrCFYNfeU9BBvwJwpS8AYWTNZBoAwTDPFBpAciDCDyNFMtXSAFwAAUyq0GRPbbz4AAABMelRYdFNvZnR3YXJlAAB42nPQUNb0zE1MT/VNTM9MzlYw0TPSM1CwtNQ3MNY3MFRILsosLql0yK0sLslM1kst1kspLcjPK9FLzs8FAPO/Eny7iktKAAAAM3pUWHRTaWduYXR1cmUAAHjaS01JNrE0S00zSbU0NEsxMbMwM0xOSjYwNzY3NLRIMjUCAJcdCJ2BHe6SAAAAAElFTkSuQmCC')}
 ${img('tf1',16,'png','iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAADFBMVEX/////AP8/SMz///+Cf5VqAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAAHdElNRQfgCw4QHgSCla+2AAAAL0lEQVQI12MQYAACrAQXiFBoABINCgwMQgwcDAwSDEwMDKmhodMYJjAwaKDrAAEAoRAEjHDJ/uQAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTYtMTEtMTRUMTc6Mjk6MjErMDE6MDDxcSccAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE2LTExLTE0VDE3OjI5OjA1KzAxOjAwNka8zgAAAABJRU5ErkJggg==')}
 ${img('tf2',16,'png','iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAADFBMVEX/////AP8A/wD////pL6WoAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAAHdElNRQfgCw4PNgzGaW1jAAAARUlEQVQI12NgEGDQZAASKkBigQKQ6GhgYBDiYgASIiAigIGBS8iBgUFhEpCnoAEkUkNDQxkagUIMrUDMMAVETAARQI0MAD5GCJ7tAr1aAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE2LTExLTE0VDE2OjUxOjUzKzAxOjAwi1Gz3gAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNi0xMS0xNFQxNjo1MTozNiswMTowMG5bLUIAAAAASUVORK5CYII=')}
-`, node);
+`, node, 'jsroot_hstyle');
 }
 
 /** @summary draw list content
@@ -100521,18 +100524,23 @@ class HierarchyPainter extends BasePainter {
       this.h = null; // hierarchy
       this.with_icons = true;
 
-      if (backgr == '__as_dark_mode__') {
-         this.background = settings.DarkMode ? 'black' : 'white';
-         this.textcolor = settings.DarkMode ? '#eee' : '#111';
-      } else {
+      if (backgr == '__as_dark_mode__')
+         this.setBasicColors();
+      else
          this.background = backgr;
-      }
       this.files_monitoring = !frameid; // by default files monitored when nobrowser option specified
       this.nobrowser = (frameid === null);
 
       // remember only very first instance
       if (!getHPainter())
          setHPainter(this);
+   }
+
+   /** @summary Set basic colors
+     * @private */
+   setBasicColors() {
+      this.background = settings.DarkMode ? 'black' : 'white';
+      this.textcolor = settings.DarkMode ? '#eee' : '#111';
    }
 
    /** @summary Cleanup hierarchy painter
@@ -101454,15 +101462,28 @@ class HierarchyPainter extends BasePainter {
             this.forEachRootFile(folder => keysHierarchy(folder, folder._file.fKeys, folder._file, ''));
             this.refreshHtml();
          } else if (arg == 'dark') {
-            this.brlayout?.createStyle();
-            if (this.disp)
-               this.disp.forEachFrame(frame => {
-                  let p = getElementCanvPainter(frame);
-                  if (!p) p = getElementMainPainter(frame);
-                  if (isFunc(p?.changeDarkMode))
-                     p.changeDarkMode();
-               });
+            this.changeDarkMode();
          }
+      });
+   }
+
+   /** @summary Handle changes of dark mode
+     * @private */
+   changeDarkMode() {
+      if (this.textcolor) {
+         this.setBasicColors();
+         this.refreshHtml();
+      }
+
+      this.brlayout?.createStyle();
+      this.createButtons(); // recreate buttons
+      if (isFunc(this.disp?.changeDarkMode))
+         this.disp.changeDarkMode();
+      this.disp?.forEachFrame(frame => {
+         let p = getElementCanvPainter(frame);
+         if (!p) p = getElementMainPainter(frame);
+         if (isFunc(p?.changeDarkMode) && (p !== this))
+            p.changeDarkMode();
       });
    }
 
@@ -101470,6 +101491,7 @@ class HierarchyPainter extends BasePainter {
      * @private */
    toggleDarkMode() {
       settings.DarkMode = !settings.DarkMode;
+      this.changeDarkMode();
    }
 
    /** @summary Handle context menu in the hieararchy
@@ -103203,22 +103225,28 @@ class HierarchyPainter extends BasePainter {
 
       this.brlayout.create(!this.exclude_browser);
 
-      if (!this.exclude_browser) {
-         let btns = this.brlayout.createBrowserBtns();
-
-         ToolbarIcons.createSVG(btns, ToolbarIcons.diamand, 15, 'toggle fix-pos browser')
-                     .style('margin','3px').on('click', () => this.createBrowser('fix', true));
-
-         if (!this.float_browser_disabled)
-            ToolbarIcons.createSVG(btns, ToolbarIcons.circle, 15, 'toggle float browser')
-                        .style('margin','3px').on('click', () => this.createBrowser('float', true));
-
-         if (!this.status_disabled)
-            ToolbarIcons.createSVG(btns, ToolbarIcons.three_circles, 15, 'toggle status line')
-                        .style('margin','3px').on('click', () => this.createStatusLine(0, 'toggle'));
-      }
+      this.createButtons();
 
       this.setDisplay(layout, this.brlayout.drawing_divid());
+   }
+
+   /** @summary Create shortcut buttons */
+   createButtons() {
+      if (this.exclude_browser) return;
+
+      let btns = this.brlayout?.createBrowserBtns();
+      if (!btns) return;
+
+      ToolbarIcons.createSVG(btns, ToolbarIcons.diamand, 15, 'toggle fix-pos browser', 'browser')
+                  .style('margin','3px').on('click', () => this.createBrowser('fix', true));
+
+      if (!this.float_browser_disabled)
+         ToolbarIcons.createSVG(btns, ToolbarIcons.circle, 15, 'toggle float browser', 'browser')
+                     .style('margin','3px').on('click', () => this.createBrowser('float', true));
+
+      if (!this.status_disabled)
+         ToolbarIcons.createSVG(btns, ToolbarIcons.three_circles, 15, 'toggle status line', 'browser')
+                     .style('margin','3px').on('click', () => this.createStatusLine(0, 'toggle'));
    }
 
    /** @summary Returns trus if status is exists */
@@ -110253,9 +110281,37 @@ __proto__: null,
 TASImagePainter: TASImagePainter
 });
 
-/** @summary Show TTree::Draw progress during processing */
+function treeShowProgress(handle, str) {
+   if (isBatchMode() || (typeof document == 'undefined')) return;
+
+   if (!str)
+      return showProgress();
+
+   let main_box = document.createElement('p'),
+       text_node = document.createTextNode(str);
+
+   main_box.appendChild(text_node);
+   main_box.title = 'Click on element to break';
+
+   main_box.onclick = () => {
+      if (!handle._break) handle._break = 0;
+
+      if (++handle._break < 3) {
+         main_box.title = 'Will break after next I/O operation';
+         return text_node.nodeValue = 'Breaking ... ';
+      }
+      if (isFunc(handle.Abort))
+         handle.Abort();
+      showProgress();
+   };
+
+   showProgress(main_box);
+}
+
+
+/** @summary Show TTree::Draw progress during processing
+  * @private */
 TDrawSelector.prototype.ShowProgress = function(value) {
-   if ((typeof document == 'undefined') || isBatchMode()) return;
 
    if ((value === undefined) || !Number.isFinite(value))
       return showProgress();
@@ -110265,6 +110321,8 @@ TDrawSelector.prototype.ShowProgress = function(value) {
       if (!this.aver_diff) this.aver_diff = diff;
       this.aver_diff = diff * 0.3 + this.aver_diff * 0.7;
    }
+
+   this.last_progress = value;
 
    let ndig = 0;
    if (this.aver_diff <= 0)
@@ -110276,24 +110334,7 @@ TDrawSelector.prototype.ShowProgress = function(value) {
    else if (this.aver_diff < 0.01)
       ndig = 1;
 
-   let main_box = document.createElement('p'),
-      text_node = document.createTextNode('TTree draw ' + (value * 100).toFixed(ndig) + ' %  '),
-      selector = this;
-
-   main_box.appendChild(text_node);
-   main_box.title = 'Click on element to break drawing';
-
-   main_box.onclick = function() {
-      if (++selector._break < 3) {
-         main_box.title = 'Tree draw will break after next I/O operation';
-         return text_node.nodeValue = 'Breaking ... ';
-      }
-      selector.Abort();
-      showProgress();
-   };
-
-   showProgress(main_box);
-   this.last_progress = value;
+   treeShowProgress(this, `TTree draw ${(value * 100).toFixed(ndig)} % `);
 };
 
 /** @summary Draw result of tree drawing
@@ -110703,7 +110744,7 @@ async function drawTree(dom, obj, opt) {
    let pr;
    if (args.expr === 'testio') {
       args.testio = true;
-      args.showProgress = showProgress;
+      args.showProgress = msg => treeShowProgress(args, msg);
       pr = treeIOTest(tree, args);
    } else if (args.expr || args.branch) {
       pr = treeDraw(tree, args);
@@ -116225,13 +116266,13 @@ class RCanvasPainter extends RPadPainter {
 
       let btns = this.brlayout.createBrowserBtns();
 
-      ToolbarIcons.createSVG(btns, ToolbarIcons.diamand, 15, 'toggle fix-pos mode')
+      ToolbarIcons.createSVG(btns, ToolbarIcons.diamand, 15, 'toggle fix-pos mode', 'browser')
                   .style('margin','3px').on('click', () => this.brlayout.toggleKind('fix'));
 
-      ToolbarIcons.createSVG(btns, ToolbarIcons.circle, 15, 'toggle float mode')
+      ToolbarIcons.createSVG(btns, ToolbarIcons.circle, 15, 'toggle float mode', 'browser')
                   .style('margin','3px').on('click', () => this.brlayout.toggleKind('float'));
 
-      ToolbarIcons.createSVG(btns, ToolbarIcons.cross, 15, 'delete GED')
+      ToolbarIcons.createSVG(btns, ToolbarIcons.cross, 15, 'delete GED', 'browser')
                   .style('margin','3px').on('click', () => this.removeGed());
 
       // be aware, that jsroot_browser_hierarchy required for flexible layout that element use full browser area
