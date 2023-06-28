@@ -593,6 +593,10 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       }
 
       if (is_major && lbl && opts.draw) {
+
+         let mod = xticks.get_modifier();
+         if (mod?.fLabText) lbl = mod.fLabText;
+
          let text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size: this.x_handle.labelsFont.size, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
@@ -810,6 +814,9 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       }
 
       if (is_major && lbl && opts.draw) {
+         let mod = yticks.get_modifier();
+         if (mod?.fLabText) lbl = mod.fLabText;
+
          const text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size: this.y_handle.labelsFont.size, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
@@ -916,6 +923,9 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       if (lbl === null) { is_major = false; lbl = ''; }
 
       if (is_major && lbl && opts.draw) {
+         let mod = zticks.get_modifier();
+         if (mod?.fLabText) lbl = mod.fLabText;
+
          let text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size: this.z_handle.labelsFont.size, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
