@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '26/06/2023';
+let version_date = '28/06/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -53774,6 +53774,23 @@ if ( typeof window !== 'undefined' ) {
 
 }
 
+/** @ummary Create three.js Color instance, handles optional opacity
+  * @private */
+function getMaterialArgs(color$1, args) {
+   if (!args || !isObject(args)) args = {};
+
+   if (isStr(color$1) && ((color$1[0] == '#' && (color$1.length === 9)) || (color$1.indexOf('rgba') >= 0))) {
+      let col = color(color$1);
+      args.color = new Color(col.r, col.g, col.b);
+      args.opacity = col.opacity ?? 1;
+      args.transparent = args.opacity < 1;
+   } else {
+      args.color = new Color(color$1);
+   }
+   return args;
+}
+
+
 const HelveticerRegularFont = new Font(HelveticerRegularJson);
 
 function createSVGRenderer(as_is, precision, doc) {
@@ -59891,7 +59908,7 @@ class TAxisPainter extends ObjectPainter {
       if (optionNoopt && this.nticks && (this.kind == 'normal'))
          this.noticksopt = true;
 
-      let handle = { nminor: 0, nmiddle: 0, nmajor: 0, func: this.func, minor: [], middle: [], major: [] }, ticks;
+      let handle = { painter: this, nminor: 0, nmiddle: 0, nmajor: 0, func: this.func, minor: [], middle: [], major: [] }, ticks;
 
       if (this.fixed_ticks) {
          ticks = [];
@@ -59968,6 +59985,10 @@ class TAxisPainter extends ObjectPainter {
       handle.next_major_grpos = function() {
          if (this.nmajor >= this.major.length) return null;
          return this.func(this.major[this.nmajor]);
+      };
+
+      handle.get_modifier = function() {
+         return this.painter.findLabelModifier(this.painter.getObject(), this.nmajor-1, this.major.length);
       };
 
       this.order = 0;
@@ -75704,21 +75725,19 @@ function drawXYZ(toplevel, AxisPainter, opts) {
        zticks = this.z_handle.createTicks(false, true);
 
    function getLineMaterial(handle, kind) {
-      let color = (kind == 'ticks') ? handle.ticksColor : handle.lineatt.color,
+      let col = ((kind == 'ticks') ? handle.ticksColor : handle.lineatt.color) || 'black',
           linewidth = (kind == 'ticks') ? handle.ticksWidth : handle.lineatt.width;
-      if (!color) color = 'black';
-      let name = `${color}_${linewidth}`;
+      let name = `${col}_${linewidth}`;
       if (!lineMaterials[name])
-         lineMaterials[name] = new LineBasicMaterial({ color, linewidth, vertexColors: false });
+         lineMaterials[name] = new LineBasicMaterial(getMaterialArgs(col, { linewidth, vertexColors: false }));
       return lineMaterials[name];
    }
 
-   function getTextMaterial(handle, kind) {
-      let color = (kind == 'title') ? handle.titleFont?.color : handle.labelsFont?.color;
-      if (!color) color = 'black';
-      if (!textMaterials[color])
-         textMaterials[color] = new MeshBasicMaterial({ color, vertexColors: false });
-      return textMaterials[color];
+   function getTextMaterial(handle, kind, custom_color) {
+      let col = custom_color || ((kind == 'title') ? handle.titleFont?.color : handle.labelsFont?.color) || 'black';
+      if (!textMaterials[col])
+         textMaterials[col] = new MeshBasicMaterial(getMaterialArgs(col, { vertexColors: false }));
+      return textMaterials[col];
    }
 
    // main element, where all axis elements are placed
@@ -75740,6 +75759,10 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       }
 
       if (is_major && lbl && opts.draw) {
+
+         let mod = xticks.get_modifier();
+         if (mod?.fLabText) lbl = mod.fLabText;
+
          let text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size: this.x_handle.labelsFont.size, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
@@ -75750,6 +75773,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
          maxtextheight = Math.max(maxtextheight, draw_height);
 
+         if (mod?.fTextColor) text3d.color = this.getColor(mod.fTextColor);
          text3d.grx = grx;
          lbls.push(text3d);
 
@@ -75909,7 +75933,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
             0,          0,           1,  0,
             0,          0,           0,  1);
 
-      let mesh = new Mesh(lbl, getTextMaterial(this.x_handle, lbl.kind));
+      let mesh = new Mesh(lbl, getTextMaterial(this.x_handle, lbl.kind, lbl.color));
       mesh.applyMatrix4(m);
       xcont.add(mesh);
    });
@@ -75934,7 +75958,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
             0,           text_scale, 0, -maxtextheight*text_scale - this.x_handle.ticksSize - lbl.offsety,
             0,           0,         -1, 0,
             0,           0,          0, 1);
-      let mesh = new Mesh(lbl, getTextMaterial(this.x_handle, lbl.kind));
+      let mesh = new Mesh(lbl, getTextMaterial(this.x_handle, lbl.kind, lbl.color));
       mesh.applyMatrix4(m);
       xcont.add(mesh);
    });
@@ -75957,6 +75981,9 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       }
 
       if (is_major && lbl && opts.draw) {
+         let mod = yticks.get_modifier();
+         if (mod?.fLabText) lbl = mod.fLabText;
+
          const text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size: this.y_handle.labelsFont.size, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
@@ -75965,6 +75992,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
          maxtextheight = Math.max(maxtextheight, draw_height);
 
+         if (mod?.fTextColor) text3d.color = this.getColor(mod.fTextColor);
          text3d.gry = gry;
          text3d.offsetx = this.y_handle.labelsOffset + (grmaxx - grminx) * 0.005;
          lbls.push(text3d);
@@ -76014,7 +76042,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
                0, 0,  1, 0,
                0, 0,  0, 1);
 
-         let mesh = new Mesh(lbl, getTextMaterial(this.y_handle, lbl.kind));
+         let mesh = new Mesh(lbl, getTextMaterial(this.y_handle, lbl.kind, lbl.color));
          mesh.applyMatrix4(m);
          ycont.add(mesh);
       });
@@ -76038,7 +76066,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
                0,         0, -1,  0,
                0, 0, 0, 1);
 
-         let mesh = new Mesh(lbl, getTextMaterial(this.y_handle, lbl.kind));
+         let mesh = new Mesh(lbl, getTextMaterial(this.y_handle, lbl.kind, lbl.color));
          mesh.applyMatrix4(m);
          ycont.add(mesh);
       });
@@ -76063,11 +76091,16 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       if (lbl === null) { is_major = false; lbl = ''; }
 
       if (is_major && lbl && opts.draw) {
+         let mod = zticks.get_modifier();
+         if (mod?.fLabText) lbl = mod.fLabText;
+
          let text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size: this.z_handle.labelsFont.size, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
          text3d.translate(-draw_width, -draw_height/2, 0);
+
+        if (mod?.fTextColor) text3d.color = this.getColor(mod.fTextColor);
          text3d.grz = grz;
          lbls.push(text3d);
 
@@ -76463,7 +76496,7 @@ function drawBinsLego(painter, is_v7 = false) {
          fcolor = 'white';
       }
 
-      let material = new MeshBasicMaterial({ color: fcolor, vertexColors: false }),
+      let material = new MeshBasicMaterial(getMaterialArgs(fcolor, { vertexColors: false })),
           mesh = new Mesh(geometry, material);
 
       mesh.face_to_bins_index = face_to_bins_index;
@@ -76612,7 +76645,7 @@ function drawBinsLego(painter, is_v7 = false) {
 
    // create boxes
    const lcolor = is_v7 ? painter.v7EvalColor('line_color', 'lightblue') : painter.getColor(histo.fLineColor),
-         material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: is_v7 ? painter.v7EvalAttr('line_width', 1) : histo.fLineWidth }),
+         material = new LineBasicMaterial(getMaterialArgs(lcolor, { linewidth: is_v7 ? painter.v7EvalAttr('line_width', 1) : histo.fLineWidth })),
          line = createLineSegments(lpositions, material, uselineindx ? lindicies : null );
 
    /*
@@ -76698,7 +76731,7 @@ function drawBinsError3D(painter, is_v7 = false) {
 
     // create lines
     const lcolor = is_v7 ? painter.v7EvalColor('line_color', 'lightblue') : painter.getColor(histo.fLineColor),
-          material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: is_v7 ? painter.v7EvalAttr('line_width', 1) : histo.fLineWidth }),
+          material = new LineBasicMaterial(getMaterialArgs(lcolor, { linewidth: is_v7 ? painter.v7EvalAttr('line_width', 1) : histo.fLineWidth })),
           line = createLineSegments(lpos, material);
 
     line.painter = painter;
@@ -76885,9 +76918,9 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
       if (!color) color = 'white';
       if (painter.options.Surf === 14)
-         material = new MeshLambertMaterial({ color, side: DoubleSide, vertexColors: false });
+         material = new MeshLambertMaterial(getMaterialArgs(color, { side: DoubleSide, vertexColors: false }));
       else
-         material = new MeshBasicMaterial({ color, side: DoubleSide, vertexColors: false });
+         material = new MeshBasicMaterial(getMaterialArgs(color, { side: DoubleSide, vertexColors: false }));
 
       let mesh = new Mesh(geometry, material);
 
@@ -76900,9 +76933,9 @@ function drawBinsSurf3D(painter, is_v7 = false) {
       if (isgrid) {
          material = (painter.options.Surf === 1)
                       ? new LineDashedMaterial({ color: 0x0, dashSize: 2, gapSize: 2 })
-                      : new LineBasicMaterial({ color });
+                      : new LineBasicMaterial(getMaterialArgs(color));
       } else {
-         material = new LineBasicMaterial({ color, linewidth: histo.fLineWidth });
+         material = new LineBasicMaterial(getMaterialArgs(color, { linewidth: histo.fLineWidth }));
       }
 
       let line = createLineSegments(lpos, material);
@@ -76970,7 +77003,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
              geometry.setAttribute('position', new BufferAttribute(pos, 3));
              geometry.setAttribute('normal', new BufferAttribute(norm, 3));
 
-             const material = new MeshBasicMaterial({ color: palette.getColor(colindx), side: DoubleSide, opacity: 0.5, vertexColors: false }),
+             const material = new MeshBasicMaterial(getMaterialArgs(palette.getColor(colindx), { side: DoubleSide, opacity: 0.5, vertexColors: false })),
                    mesh = new Mesh(geometry, material);
              mesh.painter = painter;
              main.toplevel.add(mesh);
@@ -78403,8 +78436,7 @@ function drawTH2PolyLego(painter) {
       geometry.setAttribute('position', new BufferAttribute(pos, 3));
       geometry.computeVertexNormals();
 
-      let color = painter.fPalette.getColor(colindx),
-          material = new MeshBasicMaterial({ color, vertexColors: false }),
+      let material = new MeshBasicMaterial(getMaterialArgs(painter.fPalette.getColor(colindx), { vertexColors: false })),
           mesh = new Mesh(geometry, material);
 
       pmain.toplevel.add(mesh);
@@ -79054,8 +79086,8 @@ class TH3Painter extends THistPainter {
 
          if (use_colors) fillcolor = this.fPalette.getColor(ncol);
 
-         const material = use_lambert ? new MeshLambertMaterial({ color: fillcolor, opacity: use_opacity, transparent: (use_opacity < 1), vertexColors: false })
-                                      : new MeshBasicMaterial({ color: fillcolor, opacity: use_opacity, vertexColors: false }),
+         const material = use_lambert ? new MeshLambertMaterial({ color: fillcolor, opacity: use_opacity, transparent: use_opacity < 1, vertexColors: false })
+                                      : new MeshBasicMaterial({ color: fillcolor, opacity: use_opacity, transparent: use_opacity < 1, vertexColors: false }),
               combined_bins = new Mesh(all_bins_buffgeom, material);
 
          combined_bins.bins = bin_tooltips[nseq];
@@ -111382,6 +111414,8 @@ class RAxisPainter extends RObjectPainter {
          return this.func(this.major[this.nmajor]);
       };
 
+      handle.get_modifier = function() { return null; };
+
       this.order = 0;
       this.ndig = 0;
 
@@ -121180,8 +121214,8 @@ class RH3Painter extends RHistPainter {
 
          if (use_colors) fillcolor = palette.getColor(ncol);
 
-         let material = use_lambert ? new MeshLambertMaterial({ color: fillcolor, opacity: use_opacity, transparent: (use_opacity < 1), vertexColors: false })
-                                    : new MeshBasicMaterial({ color: fillcolor, opacity: use_opacity, vertexColors: false });
+         let material = use_lambert ? new MeshLambertMaterial({ color: fillcolor, opacity: use_opacity, transparent: use_opacity < 1, vertexColors: false })
+                                    : new MeshBasicMaterial({ color: fillcolor, opacity: use_opacity, transparent: use_opacity < 1, vertexColors: false });
 
          let combined_bins = new Mesh(all_bins_buffgeom, material);
 
