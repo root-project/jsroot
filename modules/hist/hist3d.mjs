@@ -1328,7 +1328,7 @@ function drawBinsLego(painter, is_v7 = false) {
          fcolor = 'white';
       }
 
-      let material = new MeshBasicMaterial({ color: fcolor, vertexColors: false }),
+      let material = new MeshBasicMaterial(getMaterialArgs(fcolor, { vertexColors: false })),
           mesh = new Mesh(geometry, material);
 
       mesh.face_to_bins_index = face_to_bins_index;
@@ -1477,7 +1477,7 @@ function drawBinsLego(painter, is_v7 = false) {
 
    // create boxes
    const lcolor = is_v7 ? painter.v7EvalColor('line_color', 'lightblue') : painter.getColor(histo.fLineColor),
-         material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: is_v7 ? painter.v7EvalAttr('line_width', 1) : histo.fLineWidth }),
+         material = new LineBasicMaterial(getMaterialArgs(lcolor, { linewidth: is_v7 ? painter.v7EvalAttr('line_width', 1) : histo.fLineWidth })),
          line = createLineSegments(lpositions, material, uselineindx ? lindicies : null );
 
    /*
@@ -1563,7 +1563,7 @@ function drawBinsError3D(painter, is_v7 = false) {
 
     // create lines
     const lcolor = is_v7 ? painter.v7EvalColor('line_color', 'lightblue') : painter.getColor(histo.fLineColor),
-          material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: is_v7 ? painter.v7EvalAttr('line_width', 1) : histo.fLineWidth }),
+          material = new LineBasicMaterial(getMaterialArgs(lcolor, { linewidth: is_v7 ? painter.v7EvalAttr('line_width', 1) : histo.fLineWidth })),
           line = createLineSegments(lpos, material);
 
     line.painter = painter;
@@ -1750,9 +1750,9 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
       if (!color) color = 'white';
       if (painter.options.Surf === 14)
-         material = new MeshLambertMaterial({ color, side: DoubleSide, vertexColors: false });
+         material = new MeshLambertMaterial(getMaterialArgs(color, { side: DoubleSide, vertexColors: false }));
       else
-         material = new MeshBasicMaterial({ color, side: DoubleSide, vertexColors: false });
+         material = new MeshBasicMaterial(getMaterialArgs(color, { side: DoubleSide, vertexColors: false }));
 
       let mesh = new Mesh(geometry, material);
 
@@ -1835,7 +1835,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
              geometry.setAttribute('position', new BufferAttribute(pos, 3));
              geometry.setAttribute('normal', new BufferAttribute(norm, 3));
 
-             const material = new MeshBasicMaterial({ color: palette.getColor(colindx), side: DoubleSide, opacity: 0.5, vertexColors: false }),
+             const material = new MeshBasicMaterial(getMaterialArgs(palette.getColor(colindx), { side: DoubleSide, opacity: 0.5, vertexColors: false })),
                    mesh = new Mesh(geometry, material);
              mesh.painter = painter;
              main.toplevel.add(mesh);
