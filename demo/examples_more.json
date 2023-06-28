@@ -70,6 +70,7 @@
       { "name": "para", "json": "web6canv/StandAloneaPara.json.gz", "title": "TTree drawing into TParallelCoord object" },
       { "name": "pie", "json": "web6canv/piechart.json.gz", "title": "Testing native TPie painting" },
       { "name": "trans", "json": "web6canv/transparency.json.gz", "title": "Testing with TGraph without axes" },
+      { "name": "ann3d", "json": "web6canv/annotation3d.json.gz", "title": "Output of tutorials/graphs/annotation3d.C with TF2 and custom histogram" },
       { "name": "gaxis2", "json": "web6canv/gaxis2.json.gz", "title": "TGaxis with custom function, output of tutorials/graphics/gaxis2.C macro" }
    ],
    "RCanvas" : [
