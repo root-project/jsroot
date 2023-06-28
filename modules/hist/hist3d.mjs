@@ -566,8 +566,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       return lineMaterials[name];
    }
 
-   function getTextMaterial(handle, kind) {
-      let color = (kind == 'title') ? handle.titleFont?.color : handle.labelsFont?.color;
+   function getTextMaterial(handle, kind, custom_color) {
+      let color = custom_color || ((kind == 'title') ? handle.titleFont?.color : handle.labelsFont?.color);
       if (!color) color = 'black';
       if (!textMaterials[color])
          textMaterials[color] = new MeshBasicMaterial({ color, vertexColors: false });
@@ -607,6 +607,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
          maxtextheight = Math.max(maxtextheight, draw_height);
 
+         if (mod?.fTextColor) text3d.color = this.getColor(mod.fTextColor);
          text3d.grx = grx;
          lbls.push(text3d);
 
@@ -766,7 +767,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
             0,          0,           1,  0,
             0,          0,           0,  1);
 
-      let mesh = new Mesh(lbl, getTextMaterial(this.x_handle, lbl.kind));
+      let mesh = new Mesh(lbl, getTextMaterial(this.x_handle, lbl.kind, lbl.color));
       mesh.applyMatrix4(m);
       xcont.add(mesh);
    });
@@ -791,7 +792,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
             0,           text_scale, 0, -maxtextheight*text_scale - this.x_handle.ticksSize - lbl.offsety,
             0,           0,         -1, 0,
             0,           0,          0, 1);
-      let mesh = new Mesh(lbl, getTextMaterial(this.x_handle, lbl.kind));
+      let mesh = new Mesh(lbl, getTextMaterial(this.x_handle, lbl.kind, lbl.color));
       mesh.applyMatrix4(m);
       xcont.add(mesh);
    });
@@ -825,6 +826,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
          maxtextheight = Math.max(maxtextheight, draw_height);
 
+         if (mod?.fTextColor) text3d.color = this.getColor(mod.fTextColor);
          text3d.gry = gry;
          text3d.offsetx = this.y_handle.labelsOffset + (grmaxx - grminx) * 0.005;
          lbls.push(text3d);
@@ -874,7 +876,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
                0, 0,  1, 0,
                0, 0,  0, 1);
 
-         let mesh = new Mesh(lbl, getTextMaterial(this.y_handle, lbl.kind));
+         let mesh = new Mesh(lbl, getTextMaterial(this.y_handle, lbl.kind, lbl.color));
          mesh.applyMatrix4(m);
          ycont.add(mesh);
       });
@@ -898,7 +900,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
                0,         0, -1,  0,
                0, 0, 0, 1);
 
-         let mesh = new Mesh(lbl, getTextMaterial(this.y_handle, lbl.kind));
+         let mesh = new Mesh(lbl, getTextMaterial(this.y_handle, lbl.kind, lbl.color));
          mesh.applyMatrix4(m);
          ycont.add(mesh);
       });
@@ -931,6 +933,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
          text3d.translate(-draw_width, -draw_height/2, 0);
+
+        if (mod?.fTextColor) text3d.color = this.getColor(mod.fTextColor);
          text3d.grz = grz;
          lbls.push(text3d);
 
