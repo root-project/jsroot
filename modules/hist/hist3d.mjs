@@ -5,7 +5,7 @@ import { REVISION, DoubleSide, Object3D, Color, Vector2, Vector3, Matrix4, Line3
          LineSegments, LineDashedMaterial, LineBasicMaterial,
          TextGeometry, Plane, Scene, PerspectiveCamera, PointLight, ShapeUtils } from '../three.mjs';
 import { assign3DHandler, disposeThreejsObject, createOrbitControl,
-         createLineSegments, Box3D, getColor,
+         createLineSegments, Box3D, getMaterialArgs,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind,
          cleanupRender3D, HelveticerRegularFont, createSVGRenderer, create3DLineMaterial } from '../base/base3d.mjs';
 import { translateLaTeX } from '../base/latex.mjs';
@@ -557,21 +557,19 @@ function drawXYZ(toplevel, AxisPainter, opts) {
        zticks = this.z_handle.createTicks(false, true);
 
    function getLineMaterial(handle, kind) {
-      let color = (kind == 'ticks') ? handle.ticksColor : handle.lineatt.color,
+      let col = ((kind == 'ticks') ? handle.ticksColor : handle.lineatt.color) || 'black',
           linewidth = (kind == 'ticks') ? handle.ticksWidth : handle.lineatt.width;
-      if (!color) color = 'black';
-      let name = `${color}_${linewidth}`;
+      let name = `${col}_${linewidth}`;
       if (!lineMaterials[name])
-         lineMaterials[name] = new LineBasicMaterial({ color, linewidth, vertexColors: false });
+         lineMaterials[name] = new LineBasicMaterial(getMaterialArgs(col, { linewidth, vertexColors: false }));
       return lineMaterials[name];
    }
 
    function getTextMaterial(handle, kind, custom_color) {
-      let color = custom_color || ((kind == 'title') ? handle.titleFont?.color : handle.labelsFont?.color);
-      if (!color) color = 'black';
-      if (!textMaterials[color])
-         textMaterials[color] = new MeshBasicMaterial({ color, vertexColors: false });
-      return textMaterials[color];
+      let col = custom_color || ((kind == 'title') ? handle.titleFont?.color : handle.labelsFont?.color) || 'black';
+      if (!textMaterials[col])
+         textMaterials[col] = new MeshBasicMaterial(getMaterialArgs(col, { vertexColors: false }));
+      return textMaterials[col];
    }
 
    // main element, where all axis elements are placed
@@ -1762,14 +1760,14 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
       mesh.painter = painter; // to let use it with context menu
    }, (isgrid, lpos) => {
-      let material, color = getColor(painter.getColor(histo.fLineColor) ?? 'white');
+      let material, color = painter.getColor(histo.fLineColor) ?? 'white';
 
       if (isgrid) {
          material = (painter.options.Surf === 1)
                       ? new LineDashedMaterial({ color: 0x0, dashSize: 2, gapSize: 2 })
-                      : new LineBasicMaterial({ color });
+                      : new LineBasicMaterial(getMaterialArgs(color));
       } else {
-         material = new LineBasicMaterial({ color, opacity: color.opacity, linewidth: histo.fLineWidth });
+         material = new LineBasicMaterial(getMaterialArgs(color, { linewidth: histo.fLineWidth }));
       }
 
       let line = createLineSegments(lpos, material);

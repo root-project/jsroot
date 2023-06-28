@@ -13,18 +13,18 @@ import { getSvgLineStyle } from './TAttLineHandler.mjs';
 
 /** @ummary Create three.js Color instance, handles optional opacity
   * @private */
-function getColor(arg) {
-   let c;
+function getMaterialArgs(color, args) {
+   if (!args || !isObject(args)) args = {};
 
-   if (isStr(arg) && ((arg[0] == '#' && (arg.length === 9)) || (arg.indexOf('rgba') >= 0))) {
-      let col = d3_color(arg);
-      c = new Color(col.r, col.g, col.b);
-      c.opacity = col.opacity ?? 1;
+   if (isStr(color) && ((color[0] == '#' && (color.length === 9)) || (color.indexOf('rgba') >= 0))) {
+      let col = d3_color(color);
+      args.color = new Color(col.r, col.g, col.b);
+      args.opacity = col.opacity ?? 1;
+      args.transparent = args.opacity < 1;
    } else {
-      c = new Color(arg);
-      c.opacity = 1;
+      args.color = new Color(color);
    }
-   return c;
+   return args;
 }
 
 
@@ -1571,6 +1571,6 @@ function create3DLineMaterial(painter, arg, is_v7 = false) {
 }
 
 export { assign3DHandler, disposeThreejsObject, createOrbitControl,
-         createLineSegments, create3DLineMaterial, Box3D, getColor,
+         createLineSegments, create3DLineMaterial, Box3D, getMaterialArgs,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind, cleanupRender3D,
          HelveticerRegularFont, InteractiveControl, PointsControl, PointsCreator, createSVGRenderer };
