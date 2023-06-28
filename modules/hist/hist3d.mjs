@@ -1,11 +1,11 @@
-import { constants, isFunc, isStr, getDocument } from '../core.mjs';
+import { constants, isFunc, getDocument } from '../core.mjs';
 import { rgb as d3_rgb } from '../d3.mjs';
 import { REVISION, DoubleSide, Object3D, Color, Vector2, Vector3, Matrix4, Line3,
          BufferGeometry, BufferAttribute, Mesh, MeshBasicMaterial, MeshLambertMaterial,
          LineSegments, LineDashedMaterial, LineBasicMaterial,
          TextGeometry, Plane, Scene, PerspectiveCamera, PointLight, ShapeUtils } from '../three.mjs';
 import { assign3DHandler, disposeThreejsObject, createOrbitControl,
-         createLineSegments, Box3D,
+         createLineSegments, Box3D, getColor,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind,
          cleanupRender3D, HelveticerRegularFont, createSVGRenderer, create3DLineMaterial } from '../base/base3d.mjs';
 import { translateLaTeX } from '../base/latex.mjs';
@@ -1758,18 +1758,14 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
       mesh.painter = painter; // to let use it with context menu
    }, (isgrid, lpos) => {
-      let material, color = painter.getColor(histo.fLineColor) ?? 'white';
-
-      // simple workaround for color with transparency
-      if (isStr(color) && color[0] == '#' && (color.length == 9))
-         color = color.slice(0, 7);
+      let material, color = getColor(painter.getColor(histo.fLineColor) ?? 'white');
 
       if (isgrid) {
          material = (painter.options.Surf === 1)
                       ? new LineDashedMaterial({ color: 0x0, dashSize: 2, gapSize: 2 })
                       : new LineBasicMaterial({ color });
       } else {
-         material = new LineBasicMaterial({ color, linewidth: histo.fLineWidth });
+         material = new LineBasicMaterial({ color, opacity: color.opacity, linewidth: histo.fLineWidth });
       }
 
       let line = createLineSegments(lpos, material);
