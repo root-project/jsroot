@@ -1,4 +1,4 @@
-import { constants, isFunc, getDocument } from '../core.mjs';
+import { constants, isFunc, isStr, getDocument } from '../core.mjs';
 import { rgb as d3_rgb } from '../d3.mjs';
 import { REVISION, DoubleSide, Object3D, Color, Vector2, Vector3, Matrix4, Line3,
          BufferGeometry, BufferAttribute, Mesh, MeshBasicMaterial, MeshLambertMaterial,
@@ -1759,6 +1759,10 @@ function drawBinsSurf3D(painter, is_v7 = false) {
       mesh.painter = painter; // to let use it with context menu
    }, (isgrid, lpos) => {
       let material, color = painter.getColor(histo.fLineColor) ?? 'white';
+
+      // simple workaround for color with transparency
+      if (isStr(color) && color[0] == '#' && (color.length == 9))
+         color = color.slice(0, 7);
 
       if (isgrid) {
          material = (painter.options.Surf === 1)
