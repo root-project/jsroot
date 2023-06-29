@@ -1,4 +1,4 @@
-import { settings, create, gStyle, isStr, clTH1I, clTF2 } from '../core.mjs';
+import { settings, create, gStyle, isStr, clTH1D, clTF2 } from '../core.mjs';
 import { DrawOptions, buildSvgCurve } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { TH1Painter } from '../hist2d/TH1Painter.mjs';
@@ -163,10 +163,10 @@ class TF1Painter extends ObjectPainter {
       return res;
    }
 
-   /** @summary Create histogram for axes drawing */
-   createDummyHisto() {
-
-      let xmin = 0, xmax = 1, ymin = 0, ymax = 1,
+   /** @summary Draw histogram for the axes */
+   drawAxesHisto(aopt) {
+      let xmin = 0, xmax = 1, ymin = 0, ymax = 1, histo,
+          tf1 = this.getObject(),
           bins = this.createBins(true);
 
       if (bins?.length) {
@@ -185,12 +185,15 @@ class TF1Painter extends ObjectPainter {
          if (ymin < 0) ymin *= (1 + gStyle.fHistTopMargin);
       }
 
-      let histo = create(clTH1I),
-          tf1 = this.getObject();
+      if (this.webcanv_hist)
+         histo = this.getPadPainter()?.findInPrimitives('Func', clTH1D);
 
-      histo.fName = tf1.fName + '_hist';
+      if (!histo) {
+         histo = create(clTH1D);
+         histo.fName = tf1.fName + '_hist';
+      }
+
       histo.fTitle = tf1.fTitle;
-
       histo.fXaxis.fXmin = xmin;
       histo.fXaxis.fXmax = xmax;
       histo.fYaxis.fXmin = ymin;
@@ -199,7 +202,18 @@ class TF1Painter extends ObjectPainter {
       histo.fMinimum = tf1.fMinimum;
       histo.fMaximum = tf1.fMaximum;
 
-      return histo;
+      return TH1Painter.draw(this.getDom(), histo, aopt).then(hp => {
+         this._hist_painter = hp;
+         return hp;
+      });
+   }
+
+   /** @summary Assign snapid for TF1 painter
+     * @desc Used to assign snapid also for histogram painter */
+   setSnapId(snapid) {
+      this.snapid = snapid;
+      if (this._hist_painter)
+         this._hist_painter.snapid = snapid + '#hist';
    }
 
    updateObject(obj /*, opt */) {
@@ -352,10 +366,16 @@ class TF1Painter extends ObjectPainter {
 
    /** @summary draw TF1 object */
    static async draw(dom, tf1, opt) {
+      console.log('draw TF1 opt', opt);
+
       let painter = new TF1Painter(dom, tf1, opt),
           d = new DrawOptions(opt),
           has_main = !!painter.getMainPainter(),
           aopt = 'AXIS';
+      if (d.check('WEBCANV_HIST')) {
+         console.log('From web canvas');
+         painter.webcanv_hist = true;
+      }
       d.check('SAME'); // just ignore same
       if (d.check('X+')) { aopt += 'X+'; painter.second_x = has_main; }
       if (d.check('Y+')) { aopt += 'Y+'; painter.second_y = has_main; }
@@ -365,7 +385,7 @@ class TF1Painter extends ObjectPainter {
       let pr = Promise.resolve(true);
 
       if (!has_main || painter.second_x || painter.second_y)
-         pr = TH1Painter.draw(dom, painter.createDummyHisto(), aopt);
+         pr = painter.drawAxesHisto(aopt);
 
       return pr.then(() => {
          painter.addToPadPrimitives();
