@@ -1,4 +1,4 @@
-import { createHistogram, kNoStats, settings, clTH2F, isStr } from '../core.mjs';
+import { createHistogram, kNoStats, settings, clTF2, clTH2F, isStr } from '../core.mjs';
 import { TH2Painter } from '../hist/TH2Painter.mjs';
 import { proivdeEvalPar } from '../hist/TF1Painter.mjs';
 import { ObjectPainter, getElementMainPainter } from '../base/ObjectPainter.mjs';
@@ -109,11 +109,27 @@ function createTF2Histogram(func, hist = undefined) {
 
 class TF2Painter extends TH2Painter {
 
+   getObjectName() { return this.tf2?.fName ?? 'func'; }
+
+   /** @summary Returns drawn object class name */
+   getClassName() { return this.tf2?._typename ?? clTF2; }
+
    /** @summary Update histogram */
    updateObject(obj /*, opt*/) {
-      if (!obj || (this.tf2_typename != obj._typename)) return false;
+      if (!obj || (this.tf2?._typename != obj._typename)) return false;
       delete obj.evalPar;
-      createTF2Histogram(obj, this.getHisto());
+      let histo = this.getHisto();
+
+      if (this.webcanv_hist) {
+         let h0 = this.getPadPainter()?.findInPrimitives('Func', clTH2F);
+         if (h0) {
+            histo.fXaxis.fTitle = h0.fXaxis.fTitle;
+            histo.fYaxis.fTitle = h0.fYaxis.fTitle;
+            histo.fZaxis.fTitle = h0.fZaxis.fTitle;
+         }
+      }
+
+      createTF2Histogram(obj, histo);
       return true;
    };
 
@@ -154,7 +170,8 @@ class TF2Painter extends TH2Painter {
 
       let painter = new TF2Painter(dom, hist);
 
-      painter.tf2_typename = tf2._typename;
+      painter.tf2 = tf2;
+      painter.webcanv_hist = webcanv_hist;
 
       return THistPainter._drawHist(painter, opt);
    }

@@ -101,6 +101,9 @@ class ObjectPainter extends BasePainter {
    /** @summary Returns drawn object */
    getObject() { return this.draw_object; }
 
+   /** @summary Returns drawn object name */
+   getObjectName() { return this.getObject()?.fName ?? ''; }
+
    /** @summary Returns drawn object class name */
    getClassName() { return this.getObject()?._typename ?? ''; }
 
@@ -801,12 +804,12 @@ class ObjectPainter extends BasePainter {
    /** @summary Fill context menu for the object
      * @private */
    fillContextMenu(menu) {
-      let name = this.getObject()?.fName || '',
+      let name = this.getObjectName(),
           cl = this.getClassName();
 
       let p = cl.lastIndexOf('::');
       if (p > 0) cl = cl.slice(p+2);
-      let title = cl && name ? `${cl}:${name}` : cl ? cl : name || 'object';
+      let title = (cl && name) ? `${cl}:${name}` : (cl || name || 'object');
 
       menu.add(`header:${title}`);
 

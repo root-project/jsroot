@@ -215,7 +215,6 @@ class TF1Painter extends ObjectPainter {
    /** @summary Draw histogram for the axes */
    drawTF1Axes(aopt) {
       let xmin = 0, xmax = 1, ymin = 0, ymax = 1, histo,
-          tf1 = this.getObject(),
           bins = this.createBins(true);
 
       if (bins?.length) {
