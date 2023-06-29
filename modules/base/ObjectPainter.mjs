@@ -56,7 +56,6 @@ class ObjectPainter extends BasePainter {
      * @private */
    isBatchMode() { return isBatchMode() ? true : (this.getCanvPainter()?.isBatchMode() ?? false); }
 
-
    /** @summary Assign snapid to the painter
     * @desc Identifier used to communicate with server side and identifies object on the server
     * @private */
@@ -357,7 +356,7 @@ class ObjectPainter extends BasePainter {
       if (!pad_name || c.empty()) return c;
 
       let cp = c.property('pad_painter');
-      if (cp && cp.pads_cache && cp.pads_cache[pad_name])
+      if (cp?.pads_cache && cp.pads_cache[pad_name])
          return d3_select(cp.pads_cache[pad_name]);
 
       c = c.select('.primitives_layer .__root_pad_' + pad_name);
