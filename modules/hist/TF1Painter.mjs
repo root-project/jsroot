@@ -193,12 +193,12 @@ class TF1Painter extends ObjectPainter {
          histo.fName = tf1.fName + '_hist';
       }
 
-      histo.fTitle = tf1.fTitle;
       histo.fXaxis.fXmin = xmin;
       histo.fXaxis.fXmax = xmax;
       histo.fYaxis.fXmin = ymin;
       histo.fYaxis.fXmax = ymax;
 
+      histo.fTitle = tf1.fTitle;
       histo.fMinimum = tf1.fMinimum;
       histo.fMaximum = tf1.fMaximum;
 
@@ -221,6 +221,17 @@ class TF1Painter extends ObjectPainter {
       let tf1 = this.getObject();
       Object.assign(tf1, obj);
       delete tf1.evalPar;
+
+      if (this.webcanv_hist && this._hist_painter) {
+         let histo = this.getPadPainter()?.findInPrimitives('Func', clTH1D);
+         if (histo) {
+            histo.fTitle = tf1.fTitle;
+            histo.fMinimum = tf1.fMinimum;
+            histo.fMaximum = tf1.fMaximum;
+            this._hist_painter.updateObject(histo);
+         }
+      }
+
       return true;
    }
 
