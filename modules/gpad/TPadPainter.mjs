@@ -1478,6 +1478,7 @@ class TPadPainter extends ObjectPainter {
          padpainter.addToPadPrimitives(this.this_pad_name);
          padpainter.snapid = snap.fObjectID;
          padpainter.is_active_pad = !!snap.fActive; // enforce boolean flag
+         padpainter._snap_primitives = snap.fPrimitives; // keep list to be able find primitive
          padpainter._readonly = snap.fReadOnly ?? false; // readonly flag
          padpainter._has_execs = snap.fHasExecs ?? false; // are there pad execs, enables some interactive features
 
