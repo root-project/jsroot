@@ -1,6 +1,6 @@
-import { settings, create, gStyle, isStr, clTH1D, clTF2, clTH2F } from '../core.mjs';
-import { DrawOptions, buildSvgCurve } from '../base/BasePainter.mjs';
-import { ObjectPainter } from '../base/ObjectPainter.mjs';
+import { settings, isStr, clTH1D, createHistogram, clTF1, clTF2, kNoStats } from '../core.mjs';
+import { getElementMainPainter } from '../base/ObjectPainter.mjs';
+import { THistPainter } from '../hist2d/THistPainter.mjs';
 import { TH1Painter } from '../hist2d/TH1Painter.mjs';
 import * as jsroot_math from '../base/math.mjs';
 
@@ -72,184 +72,183 @@ function proivdeEvalPar(obj) {
 }
 
 
+/** @summary Create histogram for TF1 drawing
+  * @private */
+function createTF1Histogram(painter, tf1, hist, ignore_zoom) {
+
+   let gxmin = 0, gxmax = 0;
+
+   let main = painter?.getFramePainter();
+
+   if (main && !ignore_zoom) {
+      let gr = main.getGrFuncs(painter.second_x, painter.second_y);
+      gxmin = gr.scale_xmin;
+      gxmax = gr.scale_xmax;
+   }
+
+   let xmin = tf1.fXmin, xmax = tf1.fXmax, logx = false;
+
+   if (gxmin !== gxmax) {
+      if (gxmin > xmin) xmin = gxmin;
+      if (gxmax < xmax) xmax = gxmax;
+   }
+
+   if (main?.logx && (xmin > 0) && (xmax > 0)) {
+      logx = true;
+      xmin = Math.log(xmin);
+      xmax = Math.log(xmax);
+   }
+
+   let np = Math.max(tf1.fNpx, 101),
+       dx = (xmax - xmin) / (np - 1),
+       res = [], iserror = false, plain_scale = false,
+       has_saved_points = tf1.fSave.length > 3,
+       force_use_save = has_saved_points && (ignore_zoom || settings.PreferSavedPoints);
+
+   if (!force_use_save) {
+      plain_scale = !logx;
+
+      if (!tf1.evalPar)
+         proivdeEvalPar(tf1);
+
+      for (let n = 0; n < np; n++) {
+         let x = xmin + n*dx, y = 0;
+         if (logx) x = Math.exp(x);
+         try {
+            y = tf1.evalPar(x);
+         } catch(err) {
+            iserror = true;
+         }
+
+         if (iserror) break;
+
+         if (!Number.isFinite(y))
+            y = 0;
+
+         res.push({ n, x, y });
+      }
+   }
+
+   if (painter)
+      painter._use_saved_points = has_saved_points && (settings.PreferSavedPoints || iserror);
+
+   // in the case there were points have saved and we cannot calculate function
+   // if we don't have the user's function
+   if ((iserror || ignore_zoom || !res.length) && has_saved_points) {
+
+      np = tf1.fSave.length - 2;
+      xmin = tf1.fSave[np];
+      xmax = tf1.fSave[np + 1];
+      res = [];
+      dx = 0;
+      let use_histo = tf1.$histo && (xmin === xmax), bin = 0;
+
+      plain_scale = !use_histo;
+
+      if (use_histo) {
+         xmin = tf1.fSave[--np];
+         bin = tf1.$histo.fXaxis.FindBin(xmin, 0);
+      } else {
+         dx = (xmax - xmin) / (np - 1);
+      }
+
+      for (let n = 0; n < np; ++n) {
+         let x = use_histo ? tf1.$histo.fXaxis.GetBinCenter(bin+n+1) : xmin + dx*n;
+         // check if points need to be displayed at all, keep at least 4-5 points for Bezier curves
+         if ((gxmin !== gxmax) && ((x + 2*dx < gxmin) || (x - 2*dx > gxmax))) continue;
+         let y = tf1.fSave[n];
+
+         if (!Number.isFinite(y))
+            y = 0;
+
+         res.push({ n, x, y });
+      }
+   }
+
+   hist.fName = 'Func';
+   hist.fNbins = np;
+   hist.fXaxis.fXmin = xmin - dx/2;
+   hist.fXaxis.fXmax = xmax + dx/2;
+   hist.fXaxis.fXbins = [];
+
+   if (!plain_scale) {
+      for (let i = 0; i < res.length - 1; ++i) {
+         let dd = res[i+1].x - res[i].x,
+             midx = (res[i+1].x + res[i].x) / 2;
+         if (i == 0)
+            hist.fXaxis.fXbins.push(midx - dd);
+
+         hist.fXaxis.fXbins.push(midx);
+
+         if (i == res.length - 2)
+            hist.fXaxis.fXbins.push(midx + dd);
+      }
+   }
+
+   hist.fArray = new Array(np + 2);
+   for (let i = 0; i < np + 2; ++i)
+      hist.fArray[i] = 0;
+
+   res.forEach(entry => {
+      hist.fArray[entry.n + 1] = entry.y;
+   });
+
+   hist.fName = 'Func';
+   hist.fTitle = tf1.fTitle;
+   hist.fMinimum = tf1.fMinimum;
+   hist.fMaximum = tf1.fMaximum;
+   hist.fLineColor = tf1.fLineColor;
+   hist.fLineStyle = tf1.fLineStyle;
+   hist.fLineWidth = tf1.fLineWidth;
+   hist.fFillColor = tf1.fFillColor;
+   hist.fFillStyle = tf1.fFillStyle;
+   hist.fMarkerColor = tf1.fMarkerColor;
+   hist.fMarkerStyle = tf1.fMarkerStyle;
+   hist.fMarkerSize = tf1.fMarkerSize;
+   hist.fBits |= kNoStats;
+
+   return hist;
+}
+
+
 /**
   * @summary Painter for TF1 object
   *
   * @private
   */
 
-class TF1Painter extends ObjectPainter {
+class TF1Painter extends TH1Painter {
 
-   findSnapHist() {
-      return this.getPadPainter()?.findInPrimitives('Func', clTH1D);
-   }
+   /** @summary Returns drawn object name */
+   getObjectName() { return this.$func?.fName ?? 'func'; }
 
-   /** @summary Draw histogram for axes */
-   drawAxes(histo, aopt) {
+   /** @summary Returns drawn object class name */
+   getClassName() { return this.$func?._typename ?? clTF1; }
 
-      let obj = this.getObject();
+   /** @summary Returns true while function is drawn */
+   isFunc() { return true; }
 
-      histo.fTitle = obj.fTitle;
-      histo.fMinimum = obj.fMinimum;
-      histo.fMaximum = obj.fMaximum;
+   /** @summary Update histogram */
+   updateObject(obj /*, opt*/) {
+      if (!obj || (this.getClassName() != obj._typename)) return false;
+      delete obj.evalPar;
+      let histo = this.getHisto();
 
-      return TH1Painter.draw(this.getDom(), histo, aopt).then(hp => {
-         this._hist_painter = hp;
-         return hp;
-      });
-   }
-
-
-   /** @summary Assign snapid for TF1 painter
-     * @desc Used to assign snapid also for histogram painter */
-   setSnapId(snapid) {
-      this.snapid = snapid;
-      if (this._hist_painter)
-         this._hist_painter.snapid = snapid + '#hist';
-   }
-
-   /** @summary Update function  */
-   updateObject(obj /*, opt */) {
-      if (!this.matchObjectType(obj)) return false;
-      let curr = this.getObject();
-      Object.assign(curr, obj);
-      delete curr.evalPar;
-
-      if (this.webcanv_hist && this._hist_painter) {
-         let histo = this.findSnapHist();
-         if (histo) {
-            histo.fTitle = curr.fTitle;
-            histo.fMinimum = curr.fMinimum;
-            histo.fMaximum = curr.fMaximum;
-            this._hist_painter.updateObject(histo);
+      if (this.webcanv_hist) {
+         let h0 = this.getPadPainter()?.findInPrimitives('Func', clTH1D);
+         if (h0) {
+            histo.fXaxis.fTitle = h0.fXaxis.fTitle;
+            histo.fYaxis.fTitle = h0.fYaxis.fTitle;
+            histo.fZaxis.fTitle = h0.fZaxis.fTitle;
          }
       }
 
+      createTF1Histogram(this, obj, histo);
       return true;
    }
 
-   /** @summary Create bins for TF1 drawing */
-   createBins(ignore_zoom) {
-      let tf1 = this.getObject(),
-          main = this.getFramePainter(),
-          gxmin = 0, gxmax = 0;
+/*
 
-      if (main && !ignore_zoom) {
-         let gr = main.getGrFuncs(this.second_x, this.second_y);
-         gxmin = gr.scale_xmin;
-         gxmax = gr.scale_xmax;
-      }
-
-      let xmin = tf1.fXmin, xmax = tf1.fXmax, logx = false;
-
-      if (gxmin !== gxmax) {
-         if (gxmin > xmin) xmin = gxmin;
-         if (gxmax < xmax) xmax = gxmax;
-      }
-
-      if (main?.logx && (xmin > 0) && (xmax > 0)) {
-         logx = true;
-         xmin = Math.log(xmin);
-         xmax = Math.log(xmax);
-      }
-
-      let np = Math.max(tf1.fNpx, 101),
-          dx = (xmax - xmin) / (np - 1),
-          res = [], iserror = false,
-          has_saved_points = tf1.fSave.length > 3,
-          force_use_save = has_saved_points && (ignore_zoom || settings.PreferSavedPoints);
-
-      if (!force_use_save) {
-         if (!tf1.evalPar)
-            proivdeEvalPar(tf1);
-
-         for (let n = 0; n < np; n++) {
-            let x = xmin + n*dx, y = 0;
-            if (logx) x = Math.exp(x);
-            try {
-               y = tf1.evalPar(x);
-            } catch(err) {
-               iserror = true;
-            }
-
-            if (iserror) break;
-
-            if (Number.isFinite(y))
-               res.push({ x, y });
-         }
-      }
-
-      this._use_saved_points = has_saved_points && (settings.PreferSavedPoints || iserror);
-
-      // in the case there were points have saved and we cannot calculate function
-      // if we don't have the user's function
-      if ((iserror || ignore_zoom || !res.length) && has_saved_points) {
-
-         np = tf1.fSave.length - 2;
-         xmin = tf1.fSave[np];
-         xmax = tf1.fSave[np + 1];
-         res = [];
-         dx = 0;
-         let use_histo = tf1.$histo && (xmin === xmax), bin = 0;
-
-         if (use_histo) {
-            xmin = tf1.fSave[--np];
-            bin = tf1.$histo.fXaxis.FindBin(xmin, 0);
-         } else {
-            dx = (xmax - xmin) / (np-1);
-         }
-
-         for (let n = 0; n < np; ++n) {
-            let x = use_histo ? tf1.$histo.fXaxis.GetBinCenter(bin+n+1) : xmin + dx*n;
-            // check if points need to be displayed at all, keep at least 4-5 points for Bezier curves
-            if ((gxmin !== gxmax) && ((x + 2*dx < gxmin) || (x - 2*dx > gxmax))) continue;
-            let y = tf1.fSave[n];
-
-            if (Number.isFinite(y)) res.push({ x, y });
-         }
-      }
-
-      return res;
-   }
-
-   /** @summary Draw histogram for the axes */
-   drawTF1Axes(aopt) {
-      let xmin = 0, xmax = 1, ymin = 0, ymax = 1, histo,
-          bins = this.createBins(true);
-
-      if (bins?.length) {
-
-         xmin = xmax = bins[0].x;
-         ymin = ymax = bins[0].y;
-
-         bins.forEach(bin => {
-            xmin = Math.min(bin.x, xmin);
-            xmax = Math.max(bin.x, xmax);
-            ymin = Math.min(bin.y, ymin);
-            ymax = Math.max(bin.y, ymax);
-         });
-
-         if (ymax > 0) ymax *= (1 + gStyle.fHistTopMargin);
-         if (ymin < 0) ymin *= (1 + gStyle.fHistTopMargin);
-      }
-
-      if (this.webcanv_hist)
-         histo = this.findSnapHist();
-
-      if (!histo) {
-         histo = create(clTH1D);
-         histo.fName = 'Func';
-      }
-
-      histo.fXaxis.fXmin = xmin;
-      histo.fXaxis.fXmax = xmax;
-      histo.fYaxis.fXmin = ymin;
-      histo.fYaxis.fXmax = ymax;
-
-      return this.drawAxes(histo, aopt);
-   }
-
-   /** @summary Process tooltip event */
    processTooltipEvent(pnt) {
       let cleanup = false;
 
@@ -314,60 +313,7 @@ class TF1Painter extends ObjectPainter {
 
       return res;
    }
-
-   /** @summary Redraw function */
-   redraw() {
-
-      let tf1 = this.getObject(),
-          fp = this.getFramePainter(),
-          h = fp.getFrameHeight(),
-          pmain = this.getMainPainter();
-
-      this.createG(true);
-
-      // recalculate drawing bins when necessary
-      this.bins = this.createBins(false);
-
-      this.createAttLine({ attr: tf1 });
-      this.lineatt.used = false;
-
-      this.createAttFill({ attr: tf1, kind: 1 });
-      this.fillatt.used = false;
-
-      let funcs = fp.getGrFuncs(this.second_x, this.second_y);
-
-      // first calculate graphical coordinates
-      for(let n = 0; n < this.bins.length; ++n) {
-         let bin = this.bins[n];
-         bin.grx = funcs.grx(bin.x);
-         bin.gry = funcs.gry(bin.y);
-      }
-
-      if (this.bins.length > 2) {
-
-         let h0 = h;  // use maximal frame height for filling
-         if (pmain.hmin && (pmain.hmin >= 0)) {
-            h0 = Math.round(funcs.gry(0));
-            if ((h0 > h) || (h0 < 0)) h0 = h;
-         }
-
-         let args = { height: h0, t: 0.1 },
-             path = buildSvgCurve(this.bins, args);
-
-         if (!this.lineatt.empty())
-            this.draw_g.append('svg:path')
-                .attr('class', 'line')
-                .attr('d', path)
-                .style('fill', 'none')
-                .call(this.lineatt.func);
-
-         if (!this.fillatt.empty())
-            this.draw_g.append('svg:path')
-                .attr('class', 'area')
-                .attr('d', path + args.close)
-                .call(this.fillatt.func);
-      }
-   }
+*/
 
    /** @summary Checks if it makes sense to zoom inside specified axis range */
    canZoomInside(axis, min, max) {
@@ -391,28 +337,36 @@ class TF1Painter extends ObjectPainter {
 
    /** @summary draw TF1 object */
    static async draw(dom, tf1, opt) {
-      let painter = new TF1Painter(dom, tf1, opt),
-          d = new DrawOptions(opt),
-          has_main = !!painter.getMainPainter(),
-          aopt = 'AXIS';
-      if (d.check('WEBCANV_HIST'))
-         painter.webcanv_hist = true;
-      d.check('SAME'); // just ignore same
-      if (d.check('X+')) { aopt += 'X+'; painter.second_x = has_main; }
-      if (d.check('Y+')) { aopt += 'Y+'; painter.second_y = has_main; }
-      if (d.check('RX')) aopt += 'RX';
-      if (d.check('RY')) aopt += 'RY';
+     if (!isStr(opt)) opt = '';
+      let p = opt.indexOf(';webcanv_hist'), webcanv_hist = false;
+      if (p >= 0) {
+         webcanv_hist = true;
+         opt = opt.slice(0, p);
+      }
 
-      let pr = Promise.resolve(true);
+      let hist;
 
-      if (!has_main || painter.second_x || painter.second_y)
-         pr = painter.drawTF1Axes(aopt);
+      if (webcanv_hist) {
+         let dummy = new ObjectPainter(dom);
+         hist = dummy.getPadPainter()?.findInPrimitives('Func', clTH1D);
+      }
 
-      return pr.then(() => {
-         painter.addToPadPrimitives();
-         painter.redraw();
-         return painter;
-      });
+      if (!hist) hist = createHistogram(clTH1D, 100);
+
+      if (!opt)
+         opt = !getElementMainPainter(dom) ? "lf" : "lfsame";
+
+      let painter = new TF1Painter(dom, hist);
+
+      painter.$func = tf1;
+      painter.webcanv_hist = webcanv_hist;
+
+      createTF1Histogram(painter, tf1, hist)
+
+
+      console.log('draw TF1 with options', opt);
+
+      return THistPainter._drawHist(painter, opt);
    }
 
 } // class TF1Painter
