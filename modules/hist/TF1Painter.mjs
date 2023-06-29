@@ -71,18 +71,17 @@ function proivdeEvalPar(obj) {
       obj.evalPar = new Function('x', 'return ' + _func).bind(obj);
 }
 
+
 /**
-  * @summary Base class for TF1/TF2 painters
+  * @summary Painter for TF1 object
   *
   * @private
   */
 
-
-class FuncPainter extends ObjectPainter {
+class TF1Painter extends ObjectPainter {
 
    findSnapHist() {
-      let istf2 = this.matchObjectType(clTF2);
-      return this.getPadPainter()?.findInPrimitives('Func', istf2 ? clTH2F : clTH1D);
+      return this.getPadPainter()?.findInPrimitives('Func', clTH1D);
    }
 
    /** @summary Draw histogram for axes */
@@ -128,15 +127,6 @@ class FuncPainter extends ObjectPainter {
 
       return true;
    }
-}
-
-/**
-  * @summary Painter for TF1 object
-  *
-  * @private
-  */
-
-class TF1Painter extends FuncPainter {
 
    /** @summary Create bins for TF1 drawing */
    createBins(ignore_zoom) {

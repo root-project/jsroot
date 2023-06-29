@@ -1,8 +1,10 @@
-import { createHistogram, kNoStats, settings, clTH2F } from '../core.mjs';
+import { createHistogram, kNoStats, settings, clTH2F, isStr } from '../core.mjs';
 import { TH2Painter } from '../hist/TH2Painter.mjs';
 import { proivdeEvalPar } from '../hist/TF1Painter.mjs';
-import { getElementMainPainter } from '../base/ObjectPainter.mjs';
+import { ObjectPainter, getElementMainPainter } from '../base/ObjectPainter.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
+import { THistPainter } from '../hist2d/THistPainter.mjs';
+
 
 
 /** @summary Create histogram for TF2 drawing
@@ -98,44 +100,65 @@ function createTF2Histogram(func, hist = undefined) {
    return hist;
 }
 
-/** @summary draw TF2 object
-  * @desc TF2 always drawn via temporary TH2 object,
-  * therefore there is no special painter class
-  * @private */
-function drawTF2(dom, func, opt) {
 
-   let hist = createTF2Histogram(func);
-   if (!hist) return;
+/**
+  * @summary Painter for TF2 object
+  *
+  * @private
+  */
 
-   let d = new DrawOptions(opt);
+class TF2Painter extends TH2Painter {
 
-   if (d.empty())
-      opt = 'cont3';
-   else if (d.opt === 'SAME')
-      opt = 'cont2 same';
-   else
-      opt = d.opt;
+   /** @summary Update histogram */
+   updateObject(obj /*, opt*/) {
+      if (!obj || (this.tf2_typename != obj._typename)) return false;
+      delete obj.evalPar;
+      createTF2Histogram(obj, this.getHisto());
+      return true;
+   };
 
-   // workaround for old waves.C
-   if (opt == 'SAMECOLORZ' || opt == 'SAMECOLOR' || opt == 'SAMECOLZ') opt = 'SAMECOL';
+   /** @summary draw TF2 object */
+   static async draw(dom, tf2, opt) {
+      if (!isStr(opt)) opt = '';
+      let p = opt.indexOf(';webcanv_hist'), webcanv_hist = false;
+      if (p >= 0) {
+         webcanv_hist = true;
+         opt = opt.slice(0, p);
+      }
 
-   if (opt.indexOf('SAME') == 0)
-      if (!getElementMainPainter(dom))
-         opt = 'A_ADJUST_FRAME_' + opt.slice(4);
+      let d = new DrawOptions(opt);
+      if (d.empty())
+         opt = 'cont3';
+      else if (d.opt === 'SAME')
+         opt = 'cont2 same';
+      else
+         opt = d.opt;
 
-   return TH2Painter.draw(dom, hist, opt).then(hpainter => {
+      // workaround for old waves.C
+      if (opt == 'SAMECOLORZ' || opt == 'SAMECOLOR' || opt == 'SAMECOLZ')
+         opt = 'SAMECOL';
 
-      hpainter.tf2_typename = func._typename;
+      if (opt.indexOf('SAME') == 0)
+         if (!getElementMainPainter(dom))
+            opt = 'A_ADJUST_FRAME_' + opt.slice(4);
 
-      hpainter.updateObject = function(obj /*, opt*/) {
-         if (!obj || (this.tf2_typename != obj._typename)) return false;
-         delete obj.evalPar;
-         createTF2Histogram(obj, this.getHisto());
-         return true;
-      };
+      let hist;
 
-      return hpainter;
-   });
-}
+      if (webcanv_hist) {
+         let dummy = new ObjectPainter(dom);
 
-export { drawTF2 };
+         hist = dummy.getPadPainter()?.findInPrimitives('Func', clTH2F);
+      }
+
+      hist = createTF2Histogram(tf2, hist);
+
+      let painter = new TF2Painter(dom, hist);
+
+      painter.tf2_typename = tf2._typename;
+
+      return THistPainter._drawHist(painter, opt);
+   }
+
+} // class TF2Painter
+
+export { TF2Painter };
