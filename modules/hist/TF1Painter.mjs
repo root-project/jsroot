@@ -88,6 +88,8 @@ function createTF1Histogram(painter, tf1, hist, ignore_zoom) {
 
    let xmin = tf1.fXmin, xmax = tf1.fXmax, logx = false;
 
+   console.log('func', tf1.fTitle, 'min/max', xmin, xmax, 'npx', tf1.fNpx);
+
    if (gxmin !== gxmax) {
       if (gxmin > xmin) xmin = gxmin;
       if (gxmax < xmax) xmax = gxmax;
@@ -99,8 +101,8 @@ function createTF1Histogram(painter, tf1, hist, ignore_zoom) {
       xmax = Math.log(xmax);
    }
 
-   let np = Math.max(tf1.fNpx, 101),
-       dx = (xmax - xmin) / (np - 1),
+   let np = Math.max(tf1.fNpx, 100),
+       dx = (xmax - xmin) / np,
        res = [], iserror = false, plain_scale = false,
        has_saved_points = tf1.fSave.length > 3,
        force_use_save = has_saved_points && (ignore_zoom || settings.PreferSavedPoints);
@@ -112,7 +114,7 @@ function createTF1Histogram(painter, tf1, hist, ignore_zoom) {
          proivdeEvalPar(tf1);
 
       for (let n = 0; n < np; n++) {
-         let x = xmin + n*dx, y = 0;
+         let x = xmin + (n+0.5)*dx, y = 0;
          if (logx) x = Math.exp(x);
          try {
             y = tf1.evalPar(x);
@@ -131,6 +133,8 @@ function createTF1Histogram(painter, tf1, hist, ignore_zoom) {
 
    if (painter)
       painter._use_saved_points = has_saved_points && (settings.PreferSavedPoints || iserror);
+
+   console.log('iserror', iserror, 'saved', tf1.fSave.length);
 
    // in the case there were points have saved and we cannot calculate function
    // if we don't have the user's function
@@ -163,12 +167,19 @@ function createTF1Histogram(painter, tf1, hist, ignore_zoom) {
 
          res.push({ n, x, y });
       }
+
+      // expected range for the histogram
+      if (!use_histo) {
+         xmin -= dx/2;
+         xmax += dx/2;
+      }
+
    }
 
    hist.fName = 'Func';
    hist.fNbins = np;
-   hist.fXaxis.fXmin = xmin - dx/2;
-   hist.fXaxis.fXmax = xmax + dx/2;
+   hist.fXaxis.fXmin = xmin;
+   hist.fXaxis.fXmax = xmax;
    hist.fXaxis.fXbins = [];
 
    if (!plain_scale) {
