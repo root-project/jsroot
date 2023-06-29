@@ -168,12 +168,12 @@ class ObjectPainter extends BasePainter {
      * @desc works via pad painter and only when module was loaded */
    getSupportedDrawOptions() {
       let pp = this.getPadPainter(),
-          obj = this.getObject();
+          cl = this.getClassName();
 
-      if (!obj?._typename || !isFunc(pp?.getObjectDrawSettings))
+      if (!cl || !isFunc(pp?.getObjectDrawSettings))
          return [];
 
-      return pp.getObjectDrawSettings(prROOT + obj._typename, 'nosame')?.opts;
+      return pp.getObjectDrawSettings(prROOT + cl, 'nosame')?.opts;
    }
 
    /** @summary Central place to update objects drawing

@@ -629,6 +629,11 @@ class THistPainter extends ObjectPainter {
       return this.matchObjectType(clTProfile);
    }
 
+   /** @summary Returns true if histogram drawn instead of TF1/TF2 object */
+   isFunc() {
+      return this.$func ? true : false;
+   }
+
    /** @summary Returns true if TH1K */
    isTH1K() {
       return this.matchObjectType('TH1K');
@@ -1594,7 +1599,7 @@ class THistPainter extends ObjectPainter {
           fp = this.getFramePainter();
       if (!histo) return;
 
-      if (this.options.Axis <= 0)
+      if ((this.options.Axis <= 0) && !this.isFunc())
          menu.addchk(this.toggleStat('only-check'), 'Show statbox', () => this.toggleStat());
 
       if (histo.fTitle && this.isMainPainter())

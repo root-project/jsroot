@@ -1042,13 +1042,13 @@ class TH1Painter extends THistPainter {
          this.decodeOptions(arg);
 
          if (this.options.need_fillcol && this.fillatt?.empty())
-            this.fillatt.change(5,1001);
+            this.fillatt.change(5, 1001);
 
          // redraw all objects in pad, inform dependent objects
          this.interactiveRedraw('pad', 'drawopt');
       });
 
-      if (!this.snapid && !this.isTProfile())
+      if (!this.snapid && !this.isTProfile() && !this.isFunc())
          menu.addRebinMenu(sz => this.rebinHist(sz));
    }
 

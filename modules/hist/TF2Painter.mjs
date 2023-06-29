@@ -109,14 +109,14 @@ function createTF2Histogram(func, hist = undefined) {
 
 class TF2Painter extends TH2Painter {
 
-   getObjectName() { return this.tf2?.fName ?? 'func'; }
+   getObjectName() { return this.$func?.fName ?? 'func'; }
 
    /** @summary Returns drawn object class name */
-   getClassName() { return this.tf2?._typename ?? clTF2; }
+   getClassName() { return this.$func?._typename ?? clTF2; }
 
    /** @summary Update histogram */
    updateObject(obj /*, opt*/) {
-      if (!obj || (this.tf2?._typename != obj._typename)) return false;
+      if (!obj || (this.getClassName() != obj._typename)) return false;
       delete obj.evalPar;
       let histo = this.getHisto();
 
@@ -170,7 +170,7 @@ class TF2Painter extends TH2Painter {
 
       let painter = new TF2Painter(dom, hist);
 
-      painter.tf2 = tf2;
+      painter.$func = tf2;
       painter.webcanv_hist = webcanv_hist;
 
       return THistPainter._drawHist(painter, opt);
