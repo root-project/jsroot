@@ -109,10 +109,14 @@ function createTF2Histogram(func, hist = undefined) {
 
 class TF2Painter extends TH2Painter {
 
+   /** @summary Returns drawn object name */
    getObjectName() { return this.$func?.fName ?? 'func'; }
 
    /** @summary Returns drawn object class name */
    getClassName() { return this.$func?._typename ?? clTF2; }
+
+   /** @summary Returns true while function is drawn */
+   isFunc() { return true; }
 
    /** @summary Update histogram */
    updateObject(obj /*, opt*/) {

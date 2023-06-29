@@ -1580,7 +1580,6 @@ class TPadPainter extends ObjectPainter {
       this.is_active_pad = !!snap.fActive; // enforce boolean flag
       this._readonly = snap.fReadOnly ?? false; // readonly flag
       this._snap_primitives = snap.fPrimitives; // keep list to be able find primitive
-      console.log('assign snap primitives', this._snap_primitives.arr?.length, 'to pad', this.this_pad_name);
       this._has_execs = snap.fHasExecs ?? false; // are there pad execs, enables some interactive features
 
       let first = snap.fSnapshot;

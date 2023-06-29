@@ -630,9 +630,7 @@ class THistPainter extends ObjectPainter {
    }
 
    /** @summary Returns true if histogram drawn instead of TF1/TF2 object */
-   isFunc() {
-      return this.$func ? true : false;
-   }
+   isFunc() { return false; }
 
    /** @summary Returns true if TH1K */
    isTH1K() {
