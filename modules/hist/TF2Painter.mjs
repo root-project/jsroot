@@ -21,7 +21,7 @@ class TF2Painter extends TH2Painter {
    getClassName() { return this.$func?._typename ?? clTF2; }
 
    /** @summary Returns true while function is drawn */
-   isFunc() { return true; }
+   isTF1() { return true; }
 
    /** @summary Update histogram */
    updateObject(obj /*, opt*/) {

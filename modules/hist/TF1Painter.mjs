@@ -86,7 +86,7 @@ class TF1Painter extends TH1Painter {
    getClassName() { return this.$func?._typename ?? clTF1; }
 
    /** @summary Returns true while function is drawn */
-   isFunc() { return true; }
+   isTF1() { return true; }
 
    /** @summary Update histogram */
    updateObject(obj /*, opt*/) {
@@ -235,94 +235,20 @@ class TF1Painter extends TH1Painter {
       hist.fBits |= kNoStats;
    }
 
-/*
-
-   processTooltipEvent(pnt) {
-      let cleanup = false;
-
-      if (!pnt || !this.bins || pnt.disabled) {
-         cleanup = true;
-      } else if (!this.bins.length || (pnt.x < this.bins[0].grx) || (pnt.x > this.bins[this.bins.length-1].grx)) {
-         cleanup = true;
-      }
-
-      if (cleanup) {
-         if (this.draw_g)
-            this.draw_g.select('.tooltip_bin').remove();
-         return null;
-      }
-
-      let min = 100000, best = -1, bin;
-
-      for(let n = 0; n < this.bins.length; ++n) {
-         bin = this.bins[n];
-         let dist = Math.abs(bin.grx - pnt.x);
-         if (dist < min) { min = dist; best = n; }
-      }
-
-      bin = this.bins[best];
-
-      let gbin = this.draw_g.select('.tooltip_bin'),
-          radius = this.lineatt.width + 3;
-
-      if (gbin.empty())
-         gbin = this.draw_g.append('svg:circle')
-                           .attr('class', 'tooltip_bin')
-                           .style('pointer-events', 'none')
-                           .attr('r', radius)
-                           .call(this.lineatt.func)
-                           .call(this.fillatt.func);
-
-      let res = { name: this.getObject().fName,
-                  title: this.getObject().fTitle,
-                  x: bin.grx,
-                  y: bin.gry,
-                  color1: this.lineatt.color,
-                  color2: this.fillatt.getFillColor(),
-                  lines: [],
-                  exact: (Math.abs(bin.grx - pnt.x) < radius) && (Math.abs(bin.gry - pnt.y) < radius) };
-
-      res.changed = gbin.property('current_bin') !== best;
-      res.menu = res.exact;
-      res.menu_dist = Math.sqrt((bin.grx - pnt.x)**2 + (bin.gry - pnt.y)**2);
-
-      if (res.changed)
-         gbin.attr('cx', bin.grx)
-             .attr('cy', bin.gry)
-             .property('current_bin', best);
-
-      let name = this.getObjectHint();
-      if (name) res.lines.push(name);
-
-      let pmain = this.getFramePainter(),
-          funcs = pmain?.getGrFuncs(this.second_x, this.second_y);
-      if (funcs)
-         res.lines.push(`x = ${funcs.axisAsText('x',bin.x)} y = ${funcs.axisAsText('y',bin.y)}`);
-
-      return res;
-   }
-*/
-
    /** @summary Checks if it makes sense to zoom inside specified axis range */
    canZoomInside(axis, min, max) {
-      if (axis === 'y') return true;
-
-      if (axis !== 'x') return false;
-
-      let tf1 = this.$func;
-
-      if ((tf1?.fSave.length > 0) && this._use_saved_points) {
+      if ((this.$func?.fSave.length > 0) && this._use_saved_points && (axis == 'x')) {
          // in the case where the points have been saved, useful for example
          // if we don't have the user's function
-         let nb_points = tf1.fNpx,
-             xmin = tf1.fSave[nb_points + 1],
-             xmax = tf1.fSave[nb_points + 2];
+         let nb_points = this.$func.fNpx,
+             xmin = this.$func.fSave[nb_points + 1],
+             xmax = this.$func.fSave[nb_points + 2];
 
          return Math.abs(xmax - xmin) / nb_points < Math.abs(max - min);
       }
 
       // if function calculated, one always could zoom inside
-      return true;
+      return (axis == 'x') || (axis == 'y');
    }
 
    /** @summary draw TF1 object */

@@ -375,7 +375,7 @@ class THistDrawOptions {
           ((this.Surf > 0) || this.Error && (hdim == 2))) this.Mode3D = true;
 
       // default draw options for TF1 is line and fill
-      if (painter.isFunc() && (hdim == 1) && (this.Hist === 1) && !this.Line && !this.Fill && !this.Curve) {
+      if (painter.isTF1() && (hdim == 1) && (this.Hist === 1) && !this.Line && !this.Fill && !this.Curve) {
          this.Hist = false;
          this.Curve = this.Fill = true;
       }
@@ -636,7 +636,7 @@ class THistPainter extends ObjectPainter {
    }
 
    /** @summary Returns true if histogram drawn instead of TF1/TF2 object */
-   isFunc() { return false; }
+   isTF1() { return false; }
 
    /** @summary Returns true if TH1K */
    isTH1K() {
@@ -1601,7 +1601,7 @@ class THistPainter extends ObjectPainter {
           fp = this.getFramePainter();
       if (!histo) return;
 
-      if ((this.options.Axis <= 0) && !this.isFunc())
+      if ((this.options.Axis <= 0) && !this.isTF1())
          menu.addchk(this.toggleStat('only-check'), 'Show statbox', () => this.toggleStat());
 
       if (histo.fTitle && this.isMainPainter())
@@ -2253,7 +2253,7 @@ class THistPainter extends ObjectPainter {
 
       let x2 = axis.GetBinLowEdge(bin+2);
 
-      if (handle.kind === 'time')
+      if ((handle.kind === 'time') || this.isTF1())
          return funcs.axisAsText(name, (x1+x2)/2);
 
       return `[${funcs.axisAsText(name, x1)}, ${funcs.axisAsText(name, x2)})`;
