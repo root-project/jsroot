@@ -1,5 +1,5 @@
 import { settings, isStr, clTH1D, createHistogram, clTF1, clTF2, kNoStats } from '../core.mjs';
-import { getElementMainPainter } from '../base/ObjectPainter.mjs';
+import { getElementMainPainter, ObjectPainter } from '../base/ObjectPainter.mjs';
 import { THistPainter } from '../hist2d/THistPainter.mjs';
 import { TH1Painter } from '../hist2d/TH1Painter.mjs';
 import * as jsroot_math from '../base/math.mjs';
