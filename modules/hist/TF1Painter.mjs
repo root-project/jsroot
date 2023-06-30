@@ -147,6 +147,8 @@ function createTF1Histogram(painter, tf1, hist, ignore_zoom) {
       dx = 0;
       let use_histo = tf1.$histo && (xmin === xmax), bin = 0;
 
+      use_histo = false;
+
       plain_scale = !use_histo;
 
       if (use_histo) {
@@ -364,8 +366,8 @@ class TF1Painter extends TH1Painter {
 
       if (!hist) hist = createHistogram(clTH1D, 100);
 
-      if (!opt)
-         opt = !getElementMainPainter(dom) ? "lf" : "lfsame";
+      if (!opt && getElementMainPainter(dom))
+         opt = "same";
 
       let painter = new TF1Painter(dom, hist);
 

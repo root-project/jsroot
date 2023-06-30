@@ -374,6 +374,12 @@ class THistDrawOptions {
       if ((this.Lego > 0) || (hdim == 3) ||
           ((this.Surf > 0) || this.Error && (hdim == 2))) this.Mode3D = true;
 
+      // default draw options for TF1 is line and fill
+      if (painter.isFunc() && (hdim == 1) && (this.Hist === 1) && !this.Line && !this.Fill && !this.Curve) {
+         this.Hist = false;
+         this.Curve = this.Fill = true;
+      }
+
       //if (this.Surf == 15)
       //   if (this.System == CoordSystem.kPOLAR || this.System == CoordSystem.kCARTESIAN)
       //      this.Surf = 13;
