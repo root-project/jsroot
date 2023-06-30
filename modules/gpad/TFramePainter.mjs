@@ -2486,7 +2486,9 @@ class TFramePainter extends ObjectPainter {
               .attr('viewBox', `0 0 ${w} ${h}`);
 
       if (!this.isBatchMode()) {
-         top_rect.style('pointer-events', 'visibleFill'); // let process mouse events inside frame
+         top_rect.style('pointer-events', 'visibleFill')  // let process mouse events inside frame
+                 .style('cursor', 'default');             // show normal cursor
+         main_svg.style('cursor', 'default');             // show normal cursor
          FrameInteractive.assign(this);
          this.addBasicInteractivity();
       }
