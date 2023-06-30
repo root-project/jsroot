@@ -28,6 +28,9 @@ function proivdeEvalPar(obj) {
         });
    }
 
+   if (!_func)
+      return false;
+
    obj.formulas?.forEach(entry => {
       _func = _func.replaceAll(entry.fName, entry.fTitle);
    });
@@ -69,6 +72,8 @@ function proivdeEvalPar(obj) {
       obj.evalPar = new Function('x', 'y', 'return ' + _func).bind(obj);
    else
       obj.evalPar = new Function('x', 'return ' + _func).bind(obj);
+
+   return true;
 }
 
 /**
@@ -137,13 +142,14 @@ class TF1Painter extends TH1Painter {
           dx = (xmax - xmin) / np,
           res = [], iserror = false, plain_scale = false,
           has_saved_points = tf1.fSave.length > 3,
-          force_use_save = has_saved_points && (ignore_zoom || settings.PreferSavedPoints || !tf1.fTitle);
+          force_use_save = has_saved_points && (ignore_zoom || settings.PreferSavedPoints);
 
       if (!force_use_save) {
-         plain_scale = !logx;
 
-         if (!tf1.evalPar)
-            proivdeEvalPar(tf1);
+         if (!tf1.evalPar && !proivdeEvalPar(tf1))
+            iserror = true;
+
+         plain_scale = !logx;
 
          for (let n = 0; n < np; n++) {
             let x = xmin + (n + 0.5) * dx, y = 0;

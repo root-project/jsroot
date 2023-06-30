@@ -53,7 +53,7 @@ class TF2Painter extends TH2Painter {
           iserr = false, isany = false,
           dx = (func.fXmax - func.fXmin) / npx,
           dy = (func.fYmax - func.fYmin) / npy,
-          use_saved_points = (nsave > 6) && (settings.PreferSavedPoints || !func.fTitle);
+          use_saved_points = (nsave > 6) && settings.PreferSavedPoints;
 
       const ensureBins = (nx, ny) => {
          if (hist.fNcells !== (nx + 2) * (ny + 2)) {
@@ -66,8 +66,8 @@ class TF2Painter extends TH2Painter {
       }
 
       if (!use_saved_points) {
-         if (!func.evalPar)
-            proivdeEvalPar(func);
+         if (!func.evalPar && !proivdeEvalPar(func))
+            iserr = true;
 
          ensureBins(npx, npy);
          hist.fXaxis.fXmin = func.fXmin;
