@@ -1823,6 +1823,12 @@ function ChebyshevN(n, x, c) {
    return x * d1 - d2 + c[0];
 }
 
+/** @summary Chebyshev0 function
+  * @memberof Math */
+function Chebyshev0(x, c0) {
+   return c0;
+}
+
 /** @summary Chebyshev1 function
   * @memberof Math */
 function Chebyshev1(x, c0, c1) {
@@ -2046,8 +2052,8 @@ export {
    gaus, gausn, gausxy, expo,
    Prob, Gaus, BreitWigner, BetaDist, BetaDistI, landau, landaun,
 
-   ChebyshevN, Chebyshev1, Chebyshev2, Chebyshev3, Chebyshev4, Chebyshev5,
-   Chebyshev6, Chebyshev7, Chebyshev8, Chebyshev9, Chebyshev10,
+   ChebyshevN, Chebyshev0, Chebyshev1, Chebyshev2, Chebyshev3, Chebyshev4,
+   Chebyshev5, Chebyshev6, Chebyshev7, Chebyshev8, Chebyshev9, Chebyshev10,
 
    getTEfficiencyBoundaryFunc
 };
