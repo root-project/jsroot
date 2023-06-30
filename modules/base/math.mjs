@@ -1601,8 +1601,12 @@ function Prob(chi2, ndf) {
 
 /** @summary Gaus function
   * @memberof Math */
-function Gaus(x, mean, sigma) {
-   return Math.exp(-0.5 * Math.pow((x-mean) / sigma, 2));
+function Gaus(x, mean, sigma, norm) {
+   if (!sigma) return 1e30;
+   let arg = (x - mean) / sigma;
+   if (arg < -39 || arg > 39) return 0;
+   let res = Math.exp(-0.5*arg*arg);
+   return norm ? res/(2.50662827463100024*sigma) : res; //sqrt(2*Pi)=2.50662827463100024
 }
 
 /** @summary BreitWigner function
