@@ -99,7 +99,7 @@ function createTF1Histogram(painter, tf1, hist, ignore_zoom) {
       xmax = Math.log(xmax);
    }
 
-   console.log('func', tf1.fTitle.slice(0,20), 'min/max', xmin, xmax, logx, 'npx', tf1.fNpx, 'gxmin, gxmax', gxmin, gxmax);
+   // console.log('func', tf1.fTitle.slice(0,20), 'min/max', xmin, xmax, logx, 'npx', tf1.fNpx, 'gxmin, gxmax', gxmin, gxmax);
 
    let np = Math.max(tf1.fNpx, 100),
        dx = (xmax - xmin) / np,
@@ -134,7 +134,7 @@ function createTF1Histogram(painter, tf1, hist, ignore_zoom) {
    if (painter)
       painter._use_saved_points = has_saved_points && (settings.PreferSavedPoints || iserror);
 
-   console.log('iserror', iserror, 'saved', tf1.fSave.length);
+   // console.log('iserror', iserror, 'saved', tf1.fSave.length);
 
    // in the case there were points have saved and we cannot calculate function
    // if we don't have the user's function
@@ -337,6 +337,8 @@ class TF1Painter extends TH1Painter {
 
    /** @summary Checks if it makes sense to zoom inside specified axis range */
    canZoomInside(axis, min, max) {
+      if (axis === 'y') return true;
+
       if (axis !== 'x') return false;
 
       let tf1 = this.$func;
@@ -382,9 +384,6 @@ class TF1Painter extends TH1Painter {
       painter.webcanv_hist = webcanv_hist;
 
       createTF1Histogram(painter, tf1, hist)
-
-
-      console.log('draw TF1 with options', opt);
 
       return THistPainter._drawHist(painter, opt);
    }
