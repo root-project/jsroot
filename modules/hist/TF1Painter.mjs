@@ -71,148 +71,6 @@ function proivdeEvalPar(obj) {
       obj.evalPar = new Function('x', 'return ' + _func).bind(obj);
 }
 
-
-/** @summary Create histogram for TF1 drawing
-  * @private */
-function createTF1Histogram(painter, tf1, hist, ignore_zoom) {
-
-   let gxmin = 0, gxmax = 0;
-
-   let main = painter?.getFramePainter();
-
-   if (main && !ignore_zoom) {
-      let gr = main.getGrFuncs(painter.second_x, painter.second_y);
-      gxmin = gr.scale_xmin;
-      gxmax = gr.scale_xmax;
-   }
-
-   let xmin = tf1.fXmin, xmax = tf1.fXmax, logx = false;
-
-   if (gxmin !== gxmax) {
-      if (gxmin > xmin) xmin = gxmin;
-      if (gxmax < xmax) xmax = gxmax;
-   }
-
-   if (main?.logx && (xmin > 0) && (xmax > 0)) {
-      logx = true;
-      xmin = Math.log(xmin);
-      xmax = Math.log(xmax);
-   }
-
-   // console.log('func', tf1.fTitle.slice(0,20), 'min/max', xmin, xmax, logx, 'npx', tf1.fNpx, 'gxmin, gxmax', gxmin, gxmax);
-
-   let np = Math.max(tf1.fNpx, 100),
-       dx = (xmax - xmin) / np,
-       res = [], iserror = false, plain_scale = false,
-       has_saved_points = tf1.fSave.length > 3,
-       force_use_save = has_saved_points && (ignore_zoom || settings.PreferSavedPoints);
-
-   if (!force_use_save) {
-      plain_scale = !logx;
-
-      if (!tf1.evalPar)
-         proivdeEvalPar(tf1);
-
-      for (let n = 0; n < np; n++) {
-         let x = xmin + (n + 0.5) * dx, y = 0;
-         if (logx) x = Math.exp(x);
-         try {
-            y = tf1.evalPar(x);
-         } catch(err) {
-            iserror = true;
-         }
-
-         if (iserror) break;
-
-         if (!Number.isFinite(y))
-            y = 0;
-
-         res.push({ n, x, y });
-      }
-   }
-
-   if (painter)
-      painter._use_saved_points = false;
-
-   // in the case there were points have saved and we cannot calculate function
-   // if we don't have the user's function
-   if ((iserror || ignore_zoom || !res.length) && has_saved_points) {
-
-      np = tf1.fSave.length - 2;
-      xmin = tf1.fSave[np];
-      xmax = tf1.fSave[np + 1];
-      res = [];
-      dx = (xmax - xmin) / (np - 1);
-
-      for (let n = 0; n < np; ++n) {
-         let x = xmin + dx*n,
-             y = tf1.fSave[n];
-         if (!Number.isFinite(y)) y = 0;
-         res.push({ n, x, y });
-      }
-
-      // expected range for the histogram
-      xmin -= dx/2;
-      xmax += dx/2;
-      plain_scale = true;
-
-      if (painter)
-         painter._use_saved_points = true;
-   }
-
-   hist.fName = 'Func';
-   hist.fNbins = np;
-   hist.fXaxis.fXmin = xmin;
-   hist.fXaxis.fXmax = xmax;
-   hist.fXaxis.fXbins = [];
-   hist.fXaxis.fNbins = np;
-
-   if (!plain_scale) {
-      for (let i = 0; i < res.length - 1; ++i) {
-         let dd = res[i+1].x - res[i].x,
-             midx = (res[i+1].x + res[i].x) / 2;
-         if (i == 0) {
-            hist.fXaxis.fXmin = midx - dd;
-            hist.fXaxis.fXbins.push(midx - dd);
-         }
-
-         hist.fXaxis.fXbins.push(midx);
-
-         if (i == res.length - 2) {
-            hist.fXaxis.fXmax = midx + dd;
-            hist.fXaxis.fXbins.push(midx + dd);
-         }
-      }
-
-      console.log('not plain scale nbins', hist.fXaxis.fNbins, 'num array', hist.fXaxis.fXbins.length, hist.fXaxis.fXbins[np-1], hist.fXaxis.fXbins[np]);
-   }
-
-   hist.fArray = new Array(np + 2);
-   for (let i = 0; i < np + 2; ++i)
-      hist.fArray[i] = 0;
-
-   res.forEach(entry => {
-      hist.fArray[entry.n + 1] = entry.y;
-   });
-
-   hist.fName = 'Func';
-   hist.fTitle = tf1.fTitle;
-   hist.fMinimum = tf1.fMinimum;
-   hist.fMaximum = tf1.fMaximum;
-   hist.fLineColor = tf1.fLineColor;
-   hist.fLineStyle = tf1.fLineStyle;
-   hist.fLineWidth = tf1.fLineWidth;
-   hist.fFillColor = tf1.fFillColor;
-   hist.fFillStyle = tf1.fFillStyle;
-   hist.fMarkerColor = tf1.fMarkerColor;
-   hist.fMarkerStyle = tf1.fMarkerStyle;
-   hist.fMarkerSize = tf1.fMarkerSize;
-   hist.fBits |= kNoStats;
-
-   return hist;
-}
-
-
 /**
   * @summary Painter for TF1 object
   *
@@ -245,8 +103,136 @@ class TF1Painter extends TH1Painter {
          }
       }
 
-      createTF1Histogram(this, obj, histo);
+      this.createTF1Histogram(obj, histo);
       return true;
+   }
+
+   /** @summary Create histogram for TF1 drawing
+     * @private */
+   createTF1Histogram(tf1, hist, ignore_zoom) {
+
+      let gxmin = 0, gxmax = 0,
+          main = this.getFramePainter();
+
+      if (main && !ignore_zoom) {
+         let gr = main.getGrFuncs(this.second_x, this.second_y);
+         gxmin = gr.scale_xmin;
+         gxmax = gr.scale_xmax;
+      }
+
+      let xmin = tf1.fXmin, xmax = tf1.fXmax, logx = false;
+
+      if (gxmin !== gxmax) {
+         if (gxmin > xmin) xmin = gxmin;
+         if (gxmax < xmax) xmax = gxmax;
+      }
+
+      if (main?.logx && (xmin > 0) && (xmax > 0)) {
+         logx = true;
+         xmin = Math.log(xmin);
+         xmax = Math.log(xmax);
+      }
+
+      let np = Math.max(tf1.fNpx, 100),
+          dx = (xmax - xmin) / np,
+          res = [], iserror = false, plain_scale = false,
+          has_saved_points = tf1.fSave.length > 3,
+          force_use_save = has_saved_points && (ignore_zoom || settings.PreferSavedPoints);
+
+      if (!force_use_save) {
+         plain_scale = !logx;
+
+         if (!tf1.evalPar)
+            proivdeEvalPar(tf1);
+
+         for (let n = 0; n < np; n++) {
+            let x = xmin + (n + 0.5) * dx, y = 0;
+            if (logx) x = Math.exp(x);
+            try {
+               y = tf1.evalPar(x);
+            } catch(err) {
+               iserror = true;
+            }
+
+            if (iserror) break;
+
+            if (!Number.isFinite(y))
+               y = 0;
+
+            res.push({ n, x, y });
+         }
+      }
+
+      this._use_saved_points = (iserror || ignore_zoom || !res.length) && has_saved_points;
+
+      // in the case there were points have saved and we cannot calculate function
+      // if we don't have the user's function
+      if (this._use_saved_points) {
+
+         np = tf1.fSave.length - 2;
+         xmin = tf1.fSave[np];
+         xmax = tf1.fSave[np + 1];
+         res = [];
+         dx = (xmax - xmin) / (np - 1);
+
+         for (let n = 0; n < np; ++n) {
+            let x = xmin + dx*n,
+                y = tf1.fSave[n];
+            if (!Number.isFinite(y)) y = 0;
+            res.push({ n, x, y });
+         }
+
+         // expected range for the histogram
+         xmin -= dx/2;
+         xmax += dx/2;
+         plain_scale = true;
+      }
+
+      hist.fName = 'Func';
+      hist.fXaxis.fXmin = xmin;
+      hist.fXaxis.fXmax = xmax;
+      hist.fXaxis.fXbins = [];
+      hist.fXaxis.fNbins = np;
+
+      if (!plain_scale) {
+         for (let i = 0; i < res.length - 1; ++i) {
+            let dd = res[i+1].x - res[i].x,
+                midx = (res[i+1].x + res[i].x) / 2;
+            if (i == 0) {
+               hist.fXaxis.fXmin = midx - dd;
+               hist.fXaxis.fXbins.push(midx - dd);
+            }
+
+            hist.fXaxis.fXbins.push(midx);
+
+            if (i == res.length - 2) {
+               hist.fXaxis.fXmax = midx + dd;
+               hist.fXaxis.fXbins.push(midx + dd);
+            }
+         }
+      }
+
+      hist.fNcells = np + 2;
+      hist.fArray = new Float64Array(hist.fNcells);
+      hist.fArray.fill(0);
+
+      res.forEach(entry => {
+         hist.fArray[entry.n + 1] = entry.y;
+      });
+
+      hist.fName = 'Func';
+      hist.fTitle = tf1.fTitle;
+      hist.fMinimum = tf1.fMinimum;
+      hist.fMaximum = tf1.fMaximum;
+      hist.fLineColor = tf1.fLineColor;
+      hist.fLineStyle = tf1.fLineStyle;
+      hist.fLineWidth = tf1.fLineWidth;
+      hist.fFillColor = tf1.fFillColor;
+      hist.fFillStyle = tf1.fFillStyle;
+      hist.fMarkerColor = tf1.fMarkerColor;
+      hist.fMarkerStyle = tf1.fMarkerStyle;
+      hist.fMarkerSize = tf1.fMarkerSize;
+      hist.fBits |= kNoStats;
    }
 
 /*
@@ -365,7 +351,7 @@ class TF1Painter extends TH1Painter {
       painter.$func = tf1;
       painter.webcanv_hist = webcanv_hist;
 
-      createTF1Histogram(painter, tf1, hist)
+      painter.createTF1Histogram(tf1, hist)
 
       return THistPainter._drawHist(painter, opt);
    }
