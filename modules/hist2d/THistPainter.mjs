@@ -1417,8 +1417,6 @@ class THistPainter extends ObjectPainter {
       if (!do_draw)
          return this.drawNextFunction(indx+1, only_extra);
 
-      func.$histo = histo; // required to draw TF1 correctly
-
       let promise = TPavePainter.canDraw(func) ? TPavePainter.draw(this.getDom(), func, opt)
                                                : pp.drawObject(this.getDom(), func, opt);
 

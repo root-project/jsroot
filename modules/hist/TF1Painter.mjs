@@ -114,7 +114,7 @@ function createTF1Histogram(painter, tf1, hist, ignore_zoom) {
          proivdeEvalPar(tf1);
 
       for (let n = 0; n < np; n++) {
-         let x = xmin + (n+0.5)*dx, y = 0;
+         let x = xmin + (n + 0.5) * dx, y = 0;
          if (logx) x = Math.exp(x);
          try {
             y = tf1.evalPar(x);
@@ -132,9 +132,7 @@ function createTF1Histogram(painter, tf1, hist, ignore_zoom) {
    }
 
    if (painter)
-      painter._use_saved_points = has_saved_points && (settings.PreferSavedPoints || iserror);
-
-   // console.log('iserror', iserror, 'saved', tf1.fSave.length);
+      painter._use_saved_points = false;
 
    // in the case there were points have saved and we cannot calculate function
    // if we don't have the user's function
@@ -144,38 +142,22 @@ function createTF1Histogram(painter, tf1, hist, ignore_zoom) {
       xmin = tf1.fSave[np];
       xmax = tf1.fSave[np + 1];
       res = [];
-      dx = 0;
-      let use_histo = tf1.$histo && (xmin === xmax), bin = 0;
-
-      use_histo = false;
-
-      plain_scale = !use_histo;
-
-      if (use_histo) {
-         xmin = tf1.fSave[--np];
-         bin = tf1.$histo.fXaxis.FindBin(xmin, 0);
-      } else {
-         dx = (xmax - xmin) / (np - 1);
-      }
+      dx = (xmax - xmin) / (np - 1);
 
       for (let n = 0; n < np; ++n) {
-         let x = use_histo ? tf1.$histo.fXaxis.GetBinCenter(bin+n+1) : xmin + dx*n;
-         // check if points need to be displayed at all, keep at least 4-5 points for Bezier curves
-         if ((gxmin !== gxmax) && ((x + 2*dx < gxmin) || (x - 2*dx > gxmax))) continue;
-         let y = tf1.fSave[n];
-
-         if (!Number.isFinite(y))
-            y = 0;
-
+         let x = xmin + dx*n,
+             y = tf1.fSave[n];
+         if (!Number.isFinite(y)) y = 0;
          res.push({ n, x, y });
       }
 
       // expected range for the histogram
-      if (!use_histo) {
-         xmin -= dx/2;
-         xmax += dx/2;
-      }
+      xmin -= dx/2;
+      xmax += dx/2;
+      plain_scale = true;
 
+      if (painter)
+         painter._use_saved_points = true;
    }
 
    hist.fName = 'Func';
