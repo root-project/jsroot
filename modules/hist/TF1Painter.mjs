@@ -137,7 +137,7 @@ class TF1Painter extends TH1Painter {
           dx = (xmax - xmin) / np,
           res = [], iserror = false, plain_scale = false,
           has_saved_points = tf1.fSave.length > 3,
-          force_use_save = has_saved_points && (ignore_zoom || settings.PreferSavedPoints);
+          force_use_save = has_saved_points && (ignore_zoom || settings.PreferSavedPoints || !tf1.fTitle);
 
       if (!force_use_save) {
          plain_scale = !logx;
@@ -192,7 +192,6 @@ class TF1Painter extends TH1Painter {
       hist.fXaxis.fXmin = xmin;
       hist.fXaxis.fXmax = xmax;
       hist.fXaxis.fXbins = [];
-      hist.fXaxis.fNbins = np;
 
       if (!plain_scale) {
          for (let i = 0; i < res.length - 1; ++i) {
@@ -212,9 +211,12 @@ class TF1Painter extends TH1Painter {
          }
       }
 
-      hist.fNcells = np + 2;
-      hist.fArray = new Float64Array(hist.fNcells);
-      hist.fArray.fill(0);
+      if (hist.fNcells != np + 2) {
+         hist.fNcells = np + 2;
+         hist.fArray = new Float64Array(hist.fNcells);
+         hist.fArray.fill(0);
+         hist.fXaxis.fNbins = np;
+      }
 
       res.forEach(entry => {
          hist.fArray[entry.n + 1] = entry.y;
