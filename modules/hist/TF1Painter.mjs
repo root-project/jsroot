@@ -88,8 +88,6 @@ function createTF1Histogram(painter, tf1, hist, ignore_zoom) {
 
    let xmin = tf1.fXmin, xmax = tf1.fXmax, logx = false;
 
-   console.log('func', tf1.fTitle, 'min/max', xmin, xmax, 'npx', tf1.fNpx);
-
    if (gxmin !== gxmax) {
       if (gxmin > xmin) xmin = gxmin;
       if (gxmax < xmax) xmax = gxmax;
@@ -100,6 +98,8 @@ function createTF1Histogram(painter, tf1, hist, ignore_zoom) {
       xmin = Math.log(xmin);
       xmax = Math.log(xmax);
    }
+
+   console.log('func', tf1.fTitle.slice(0,20), 'min/max', xmin, xmax, logx, 'npx', tf1.fNpx, 'gxmin, gxmax', gxmin, gxmax);
 
    let np = Math.max(tf1.fNpx, 100),
        dx = (xmax - xmin) / np,
@@ -183,19 +183,26 @@ function createTF1Histogram(painter, tf1, hist, ignore_zoom) {
    hist.fXaxis.fXmin = xmin;
    hist.fXaxis.fXmax = xmax;
    hist.fXaxis.fXbins = [];
+   hist.fXaxis.fNbins = np;
 
    if (!plain_scale) {
       for (let i = 0; i < res.length - 1; ++i) {
          let dd = res[i+1].x - res[i].x,
              midx = (res[i+1].x + res[i].x) / 2;
-         if (i == 0)
+         if (i == 0) {
+            hist.fXaxis.fXmin = midx - dd;
             hist.fXaxis.fXbins.push(midx - dd);
+         }
 
          hist.fXaxis.fXbins.push(midx);
 
-         if (i == res.length - 2)
+         if (i == res.length - 2) {
+            hist.fXaxis.fXmax = midx + dd;
             hist.fXaxis.fXbins.push(midx + dd);
+         }
       }
+
+      console.log('not plain scale nbins', hist.fXaxis.fNbins, 'num array', hist.fXaxis.fXbins.length, hist.fXaxis.fXbins[np-1], hist.fXaxis.fXbins[np]);
    }
 
    hist.fArray = new Array(np + 2);
@@ -332,9 +339,9 @@ class TF1Painter extends TH1Painter {
    canZoomInside(axis, min, max) {
       if (axis !== 'x') return false;
 
-      let tf1 = this.getObject();
+      let tf1 = this.$func;
 
-      if ((tf1.fSave.length > 0) && this._use_saved_points) {
+      if ((tf1?.fSave.length > 0) && this._use_saved_points) {
          // in the case where the points have been saved, useful for example
          // if we don't have the user's function
          let nb_points = tf1.fNpx,
