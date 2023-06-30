@@ -370,6 +370,14 @@ class ObjectPainter extends BasePainter {
       return c;
    }
 
+   /** @summary Provides identifier on server for requested sublement */
+   getSnapId(subelem) {
+      if (!this.snapid)
+         return '';
+
+      return this.snapid.toString() + (subelem ? '#'+subelem : '');
+   }
+
    /** @summary Method selects immediate layer under canvas/pad main element
      * @param {string} name - layer name, exits 'primitives_layer', 'btns_layer', 'info_layer'
      * @param {string} [pad_name] - pad name; current pad name  used by default
@@ -1317,8 +1325,8 @@ class ObjectPainter extends BasePainter {
              let exec = item.fExec.slice(0, item.fExec.length-1) + args + ')';
              if (cp?.v7canvas)
                 cp.submitExec(execp, exec, kind);
-             else if (cp)
-                cp.sendWebsocket(`OBJEXEC:${item.$execid}:${exec}`);
+             else
+                cp?.sendWebsocket(`OBJEXEC:${item.$execid}:${exec}`);
          });
       }
 
@@ -1368,8 +1376,7 @@ class ObjectPainter extends BasePainter {
          _resolveFunc(_menu);
       };
 
-      let reqid = this.snapid;
-      if (kind) reqid += '#' + kind; // use # to separate object id from member specifier like 'x' or 'z'
+      let reqid = this.getSnapId(kind);
 
       menu._got_menu = false;
 

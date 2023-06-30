@@ -1671,6 +1671,21 @@ class THistPainter extends ObjectPainter {
          menu.add('Let update zoom', () => fp.zoomChangedInteractive('reset'));
    }
 
+   /** @summary Returns snap id for object or subelement
+     * @private */
+   getSnapId(subelem) {
+      if (!this.snapid)
+         return '';
+      let res = this.snapid.toString();
+      if (subelem) {
+         res += '#';
+         if (this.isTF1() && (subelem == 'x' || subelem == 'y' || subelem == 'z'))
+             res += 'hist#';
+         res += subelem;
+      }
+      return res;
+   }
+
    /** @summary Auto zoom into histogram non-empty range
      * @abstract */
    autoZoom() {}
