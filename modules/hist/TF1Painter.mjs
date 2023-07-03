@@ -114,35 +114,28 @@ class TF1Painter extends TH1Painter {
 
    /** @summary Create histogram for TF1 drawing
      * @private */
-   createTF1Histogram(tf1, hist, ignore_zoom) {
+   createTF1Histogram(tf1, hist) {
 
-      let gxmin = 0, gxmax = 0,
-          main = this.getFramePainter();
+      let fp = this.getFramePainter(),
+          xmin = tf1.fXmin, xmax = tf1.fXmax, logx = false;
 
-      if (main && !ignore_zoom) {
-         let gr = main.getGrFuncs(this.second_x, this.second_y);
-         gxmin = gr.scale_xmin;
-         gxmax = gr.scale_xmax;
+      if (fp) {
+         let gr = fp.getGrFuncs(this.second_x, this.second_y);
+         if (gr.scale_xmin > xmin) xmin = gr.scale_xmin;
+         if (gr.scale_xmax < xmax) xmax = gr.scale_xmax;
+         logx = fp.logx;
       }
 
-      let xmin = tf1.fXmin, xmax = tf1.fXmax, logx = false;
-
-      if (gxmin !== gxmax) {
-         if (gxmin > xmin) xmin = gxmin;
-         if (gxmax < xmax) xmax = gxmax;
-      }
-
-      if (main?.logx && (xmin > 0) && (xmax > 0)) {
-         logx = true;
-         xmin = Math.log(xmin);
-         xmax = Math.log(xmax);
+      if (logx) {
+         xmin = (xmin > 0) ? Math.log(xmin) : -5;
+         xmax = (xmax > 0) ? Math.log(xmax) : 0;
       }
 
       let np = Math.max(tf1.fNpx, 100),
           dx = (xmax - xmin) / np,
           res = [], iserror = false, plain_scale = false,
           has_saved_points = tf1.fSave.length > 3,
-          force_use_save = has_saved_points && (ignore_zoom || settings.PreferSavedPoints);
+          force_use_save = has_saved_points && settings.PreferSavedPoints;
 
       if (!force_use_save) {
 
@@ -169,7 +162,7 @@ class TF1Painter extends TH1Painter {
          }
       }
 
-      this._use_saved_points = (iserror || ignore_zoom || !res.length) && has_saved_points;
+      this._use_saved_points = (iserror || !res.length) && has_saved_points;
 
       // in the case there were points have saved and we cannot calculate function
       // if we don't have the user's function
