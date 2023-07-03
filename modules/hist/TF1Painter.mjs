@@ -161,10 +161,7 @@ class TF1Painter extends TH1Painter {
          if (gr.scale_xmax < xmax) xmax = gr.scale_xmax;
       }
 
-      let np = Math.max(tf1.fNpx, 100),
-          iserror = false,
-          has_saved_points = tf1.fSave.length > 3,
-          force_use_save = has_saved_points && settings.PreferSavedPoints;
+      this._use_saved_points = (tf1.fSave.length > 3) && settings.PreferSavedPoints;
 
       const ensureBins = num => {
          if (hist.fNcells !== num + 2) {
@@ -176,7 +173,9 @@ class TF1Painter extends TH1Painter {
          hist.fXaxis.fXbins = [];
       };
 
-      if (!force_use_save) {
+      if (!this._use_saved_points) {
+
+         let np = Math.max(tf1.fNpx, 100), iserror = false;
 
          if (!tf1.evalPar && !proivdeEvalPar(tf1))
             iserror = true;
@@ -190,7 +189,7 @@ class TF1Painter extends TH1Painter {
             hist.fXaxis.fXmax = xmax;
          }
 
-         for (let n = 0; n < np; n++) {
+         for (let n = 0; (n < np) && !iserror; n++) {
             let x = hist.fXaxis.GetBinCenter(n + 1), y = 0;
             try {
                y = tf1.evalPar(x);
@@ -198,22 +197,19 @@ class TF1Painter extends TH1Painter {
                iserror = true;
             }
 
-            if (iserror) break;
-
-            if (!Number.isFinite(y))
-               y = 0;
-
-            hist.setBinContent(n + 1, y);
+            if (!iserror)
+               hist.setBinContent(n + 1, Number.isFinite(y) ? y : 0);
          }
-      }
 
-      this._use_saved_points = iserror && has_saved_points;
+         if (iserror && (tf1.fSave.length > 3))
+            this._use_saved_points = true;
+      }
 
       // in the case there were points have saved and we cannot calculate function
       // if we don't have the user's function
       if (this._use_saved_points) {
 
-         np = tf1.fSave.length - 2;
+         let np = tf1.fSave.length - 2;
          ensureBins(np);
          xmin = tf1.fSave[np];
          xmax = tf1.fSave[np + 1];

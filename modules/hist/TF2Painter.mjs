@@ -74,12 +74,6 @@ class TF2Painter extends TH2Painter {
          if (gr.scale_ymax < ymax) ymax = gr.scale_ymax;
       }
 
-      this._log_scales = (logx ? 1 : 0) | (logy ? 2 : 0);
-
-      let npx = Math.max(func.fNpx, 2),
-          npy = Math.max(func.fNpy, 2),
-          iserr = false, isany = false;
-
       const ensureBins = (nx, ny) => {
          if (hist.fNcells !== (nx + 2) * (ny + 2)) {
             hist.fNcells = (nx + 2) * (ny + 2);
@@ -93,8 +87,12 @@ class TF2Painter extends TH2Painter {
       };
 
       if (!this._use_saved_points) {
+         let npx = Math.max(func.fNpx, 20),
+             npy = Math.max(func.fNpy, 20),
+             iserror = false;
+
          if (!func.evalPar && !proivdeEvalPar(func))
-            iserr = true;
+            iserror = true;
 
          ensureBins(npx, npy);
          hist.fXaxis.fXmin = xmin;
@@ -107,8 +105,8 @@ class TF2Painter extends TH2Painter {
          if (logy)
             produceTAxisLogScale(hist.fYaxis, npy, ymin, ymax);
 
-         for (let j = 0; (j < npy) && !iserr; ++j)
-            for (let i = 0; (i < npx) && !iserr; ++i) {
+         for (let j = 0; (j < npy) && !iserror; ++j)
+            for (let i = 0; (i < npx) && !iserror; ++i) {
 
                let x = hist.fXaxis.GetBinCenter(i+1),
                    y = hist.fYaxis.GetBinCenter(j+1),
@@ -117,23 +115,21 @@ class TF2Painter extends TH2Painter {
                try {
                   z = func.evalPar(x, y);
                } catch {
-                  iserr = true;
+                  iserror = true;
                }
 
-               if (!iserr && Number.isFinite(z)) {
-                  isany = true;
-                  hist.setBinContent(hist.getBin(i + 1, j + 1), z);
-               }
+               if (!iserror)
+                  hist.setBinContent(hist.getBin(i + 1, j + 1), Number.isFinite(z) ? z : 0);
             }
 
-         if ((iserr || !isany) && (nsave > 6))
+         if (iserror && (nsave > 6))
             this._use_saved_points = true;
       }
 
       if (this._use_saved_points) {
-         npx = Math.round(func.fSave[nsave-2]);
-         npy = Math.round(func.fSave[nsave-1]);
-         let dx = (func.fSave[nsave-5] - func.fSave[nsave-6]) / npx,
+         let npx = Math.round(func.fSave[nsave-2]),
+             npy = Math.round(func.fSave[nsave-1]),
+             dx = (func.fSave[nsave-5] - func.fSave[nsave-6]) / npx,
              dy = (func.fSave[nsave-3] - func.fSave[nsave-4]) / npy;
 
          ensureBins(npx+1, npy+1);
