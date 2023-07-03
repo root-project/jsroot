@@ -43,15 +43,9 @@ class TF2Painter extends TH2Painter {
    /** @summary Redraw TF2
      * @private */
    redraw(reason) {
-
-      if (this._log_scales !== undefined) {
-         let pad = this.getPadPainter()?.getRootPad(true),
-             log_scales = (pad?.fLogx ? 1 : 0) | (pad?.fLogy ? 2 : 0);
-
-         if ((this._log_scales !== log_scales) && !this._use_saved_points) {
-            this.createTF2Histogram(this.$func, this.getHisto());
-            this.scanContent();
-         }
+      if (!this._use_saved_points && (reason == 'logx' || reason == 'logy' || reason == 'zoom')) {
+         this.createTF2Histogram(this.$func, this.getHisto());
+         this.scanContent();
       }
 
       return super.redraw(reason);

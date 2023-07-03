@@ -138,14 +138,9 @@ class TF1Painter extends TH1Painter {
    /** @summary Redraw TF1
      * @private */
    redraw(reason) {
-      if (this._log_scales !== undefined) {
-         let pad = this.getPadPainter()?.getRootPad(true),
-             log_scales = (pad?.fLogx ? 1 : 0);
-
-         if ((this._log_scales !== log_scales) && !this._use_saved_points) {
-            this.createTF1Histogram(this.$func, this.getHisto());
-            this.scanContent();
-         }
+      if (!this._use_saved_points && (reason == 'logx' || reason == 'zoom')) {
+         this.createTF1Histogram(this.$func, this.getHisto());
+         this.scanContent();
       }
 
       return super.redraw(reason);
@@ -165,8 +160,6 @@ class TF1Painter extends TH1Painter {
          if (gr.scale_xmin > xmin) xmin = gr.scale_xmin;
          if (gr.scale_xmax < xmax) xmax = gr.scale_xmax;
       }
-
-      this._log_scales = (logx ? 1 : 0);
 
       let np = Math.max(tf1.fNpx, 100),
           iserror = false,
