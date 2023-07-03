@@ -38,16 +38,41 @@ class TF2Painter extends TH2Painter {
          }
       }
 
+      this.$func = obj;
       this.createTF2Histogram(obj, histo);
+      this.scanContent();
       return true;
-   };
+   }
+
+   /** @summary Redraw TF2
+     * @private */
+   redraw(reason) {
+
+      if (this._log_scales !== undefined) {
+         let pad = this.getPadPainter()?.getRootPad(true),
+             log_scales = (pad?.fLogx ? 1 : 0) | (pad?.fLogy ? 2 : 0);
+
+         if ((this._log_scales !== log_scales) && !this._use_saved_points) {
+            this.createTF2Histogram(this.$func, this.getHisto());
+            this.scanContent();
+         }
+      }
+
+      return super.redraw(reason);
+   }
 
    /** @summary Create histogram for TF2 drawing
      * @private */
    createTF2Histogram(func, hist = undefined) {
       let nsave = func.fSave.length;
-      if ((nsave > 6) && (nsave !== (func.fSave[nsave-2]+1)*(func.fSave[nsave-1]+1) + 6)) nsave = 0;
-      let fp = this.getFramePainter(), logx = false, logy = false,
+      if ((nsave > 6) && (nsave !== (func.fSave[nsave-2]+1)*(func.fSave[nsave-1]+1) + 6))
+         nsave = 0;
+
+      this._use_saved_points = (nsave > 6) && settings.PreferSavedPoints;
+
+      let fp = this.getFramePainter(),
+          pad = this.getPadPainter()?.getRootPad(true),
+          logx = pad?.fLogx, logy = pad?.fLogy,
           xmin = func.fXmin, xmax = func.fXmax,
           ymin = func.fYmin, ymax = func.fYmax;
 
@@ -57,13 +82,13 @@ class TF2Painter extends TH2Painter {
          if (gr.scale_xmax < xmax) xmax = gr.scale_xmax;
          if (gr.scale_ymin > ymin) ymin = gr.scale_ymin;
          if (gr.scale_ymax < ymax) ymax = gr.scale_ymax;
-         logx = fp.logx; logy = fp.logy;
       }
+
+      this._log_scales = (logx ? 1 : 0) | (logy ? 2 : 0);
 
       let npx = Math.max(func.fNpx, 2),
           npy = Math.max(func.fNpy, 2),
-          iserr = false, isany = false,
-          use_saved_points = (nsave > 6) && settings.PreferSavedPoints;
+          iserr = false, isany = false;
 
       const ensureBins = (nx, ny) => {
          if (hist.fNcells !== (nx + 2) * (ny + 2)) {
@@ -76,13 +101,22 @@ class TF2Painter extends TH2Painter {
          hist.fYaxis.fNbins = ny;
          hist.fYaxis.fXbins = [];
       }, makeLogScale = (axis, num, min, max) => {
-         let lmin = min > 0 ? Math.log(min) : -10,
-             lmax = max > 0 ? Math.log(max) : -5;
+         let lmin, lmax;
+
+         if (max > 0) {
+            lmax = Math.log(max);
+            lmin = min > 0 ? Math.log(min) : lmax - 5;
+         } else {
+            lmax = -10;
+            lmax = -15;
+         }
          for (let i = 0; i <= num; ++i)
             axis.fXbins.push(Math.exp(lmin + i / num * (lmax - lmin)));
+         axis.fXmin = Math.exp(lmin);
+         axis.fXmax = Math.exp(lmax);
       };
 
-      if (!use_saved_points) {
+      if (!this._use_saved_points) {
          if (!func.evalPar && !proivdeEvalPar(func))
             iserr = true;
 
@@ -117,10 +151,10 @@ class TF2Painter extends TH2Painter {
             }
 
          if ((iserr || !isany) && (nsave > 6))
-            use_saved_points = true;
+            this._use_saved_points = true;
       }
 
-      if (use_saved_points) {
+      if (this._use_saved_points) {
          npx = Math.round(func.fSave[nsave-2]);
          npy = Math.round(func.fSave[nsave-1]);
          let dx = (func.fSave[nsave-5] - func.fSave[nsave-6]) / npx,
@@ -131,7 +165,6 @@ class TF2Painter extends TH2Painter {
          hist.fXaxis.fXmax = func.fSave[nsave-5] + dx/2;
          hist.fYaxis.fXmin = func.fSave[nsave-4] - dy/2;
          hist.fYaxis.fXmax = func.fSave[nsave-3] + dy/2;
-
 
          for (let k = 0, j = 0; j <= npy; ++j)
             for (let i = 0; i <= npx; ++i)
