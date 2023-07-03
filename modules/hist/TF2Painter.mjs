@@ -47,12 +47,22 @@ class TF2Painter extends TH2Painter {
    createTF2Histogram(func, hist = undefined) {
       let nsave = func.fSave.length;
       if ((nsave > 6) && (nsave !== (func.fSave[nsave-2]+1)*(func.fSave[nsave-1]+1) + 6)) nsave = 0;
+      let fp = this.getFramePainter(), logx = false, logy = false,
+          xmin = func.fXmin, xmax = func.fXmax,
+          ymin = func.fYmin, ymax = func.fYmax;
+
+      if (fp) {
+         let gr = fp.getGrFuncs(this.second_x, this.second_y);
+         if (gr.scale_xmin > xmin) xmin = gr.scale_xmin;
+         if (gr.scale_xmax < xmax) xmax = gr.scale_xmax;
+         if (gr.scale_ymin > ymin) ymin = gr.scale_ymin;
+         if (gr.scale_ymax < ymax) ymax = gr.scale_ymax;
+         logx = fp.logx; logy = fp.logy;
+      }
 
       let npx = Math.max(func.fNpx, 2),
           npy = Math.max(func.fNpy, 2),
           iserr = false, isany = false,
-          dx = (func.fXmax - func.fXmin) / npx,
-          dy = (func.fYmax - func.fYmin) / npy,
           use_saved_points = (nsave > 6) && settings.PreferSavedPoints;
 
       const ensureBins = (nx, ny) => {
@@ -62,24 +72,36 @@ class TF2Painter extends TH2Painter {
             hist.fArray.fill(0);
          }
          hist.fXaxis.fNbins = nx;
+         hist.fXaxis.fXbins = [];
          hist.fYaxis.fNbins = ny;
-      }
+         hist.fYaxis.fXbins = [];
+      }, makeLogScale = (axis, num, min, max) => {
+         let lmin = min > 0 ? Math.log(min) : -10,
+             lmax = max > 0 ? Math.log(max) : -5;
+         for (let i = 0; i <= num; ++i)
+            axis.fXbins.push(Math.exp(lmin + i / num * (lmax - lmin)));
+      };
 
       if (!use_saved_points) {
          if (!func.evalPar && !proivdeEvalPar(func))
             iserr = true;
 
          ensureBins(npx, npy);
-         hist.fXaxis.fXmin = func.fXmin;
-         hist.fXaxis.fXmax = func.fXmax;
-         hist.fYaxis.fXmin = func.fYmin;
-         hist.fYaxis.fXmax = func.fYmax;
+         hist.fXaxis.fXmin = xmin;
+         hist.fXaxis.fXmax = xmax;
+         hist.fYaxis.fXmin = ymin;
+         hist.fYaxis.fXmax = ymax;
+
+         if (logx)
+            makeLogScale(hist.fXaxis, npx, xmin, xmax);
+         if (logy)
+            makeLogScale(hist.fYaxis, npy, ymin, ymax);
 
          for (let j = 0; (j < npy) && !iserr; ++j)
             for (let i = 0; (i < npx) && !iserr; ++i) {
 
-               let x = func.fXmin + (i + 0.5) * dx,
-                   y = func.fYmin + (j + 0.5) * dy,
+               let x = hist.fXaxis.GetBinCenter(i+1),
+                   y = hist.fYaxis.GetBinCenter(j+1),
                    z = 0;
 
                try {
@@ -89,7 +111,6 @@ class TF2Painter extends TH2Painter {
                }
 
                if (!iserr && Number.isFinite(z)) {
-                  if (!hist) hist = createHistogram(clTH2F, npx, npy);
                   isany = true;
                   hist.setBinContent(hist.getBin(i + 1, j + 1), z);
                }
@@ -102,14 +123,15 @@ class TF2Painter extends TH2Painter {
       if (use_saved_points) {
          npx = Math.round(func.fSave[nsave-2]);
          npy = Math.round(func.fSave[nsave-1]);
-         dx = (func.fSave[nsave-5] - func.fSave[nsave-6]) / npx;
-         dy = (func.fSave[nsave-3] - func.fSave[nsave-4]) / npy;
+         let dx = (func.fSave[nsave-5] - func.fSave[nsave-6]) / npx,
+             dy = (func.fSave[nsave-3] - func.fSave[nsave-4]) / npy;
 
          ensureBins(npx+1, npy+1);
          hist.fXaxis.fXmin = func.fSave[nsave-6] - dx/2;
          hist.fXaxis.fXmax = func.fSave[nsave-5] + dx/2;
          hist.fYaxis.fXmin = func.fSave[nsave-4] - dy/2;
          hist.fYaxis.fXmax = func.fSave[nsave-3] + dy/2;
+
 
          for (let k = 0, j = 0; j <= npy; ++j)
             for (let i = 0; i <= npx; ++i)
