@@ -126,15 +126,29 @@ class TF1Painter extends TH1Painter {
 
       if (this.webcanv_hist) {
          let h0 = this.getPadPainter()?.findInPrimitives('Func', clTH1D);
-         if (h0) {
-            histo.fXaxis.fTitle = h0.fXaxis.fTitle;
-            histo.fYaxis.fTitle = h0.fYaxis.fTitle;
-            histo.fZaxis.fTitle = h0.fZaxis.fTitle;
+         if (h0) this.updateAxes(histo, h0, this.getFramePainter());
+      }
+
+      this.$func = obj;
+      this.createTF1Histogram(obj, histo);
+      this.scanContent();
+      return true;
+   }
+
+   /** @summary Redraw TF1
+     * @private */
+   redraw(reason) {
+      if (this._log_scales !== undefined) {
+         let pad = this.getPadPainter()?.getRootPad(true),
+             log_scales = (pad?.fLogx ? 1 : 0);
+
+         if ((this._log_scales !== log_scales) && !this._use_saved_points) {
+            this.createTF1Histogram(this.$func, this.getHisto());
+            this.scanContent();
          }
       }
 
-      this.createTF1Histogram(obj, histo);
-      return true;
+      return super.redraw(reason);
    }
 
    /** @summary Create histogram for TF1 drawing

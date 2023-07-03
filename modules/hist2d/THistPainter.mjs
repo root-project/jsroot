@@ -8,35 +8,6 @@ import { TPavePainter } from '../hist/TPavePainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
 
-/** @summary Copy TAxis attributes
-  * @private */
-
-function copyTAxisMembers(tgt, src, copy_zoom) {
-   tgt.fTitle = src.fTitle;
-   tgt.fLabels = src.fLabels;
-   tgt.fXmin = src.fXmin;
-   tgt.fXmax = src.fXmax;
-   tgt.fTimeDisplay = src.fTimeDisplay;
-   tgt.fTimeFormat = src.fTimeFormat;
-   tgt.fAxisColor = src.fAxisColor;
-   tgt.fLabelColor = src.fLabelColor;
-   tgt.fLabelFont = src.fLabelFont;
-   tgt.fLabelOffset = src.fLabelOffset;
-   tgt.fLabelSize = src.fLabelSize;
-   tgt.fNdivisions = src.fNdivisions;
-   tgt.fTickLength = src.fTickLength;
-   tgt.fTitleColor = src.fTitleColor;
-   tgt.fTitleFont = src.fTitleFont;
-   tgt.fTitleOffset = src.fTitleOffset;
-   tgt.fTitleSize = src.fTitleSize;
-   if (copy_zoom) {
-      tgt.fFirst = src.fFirst;
-      tgt.fLast = src.fLast;
-      tgt.fBits = src.fBits;
-   }
-};
-
-
 const CoordSystem = { kCARTESIAN: 1, kPOLAR: 2, kCYLINDRICAL: 3, kSPHERICAL: 4, kRAPIDITY: 5 };
 
 
@@ -825,6 +796,39 @@ class THistPainter extends ObjectPainter {
        }, 'objects');
    }
 
+   /** @summary Update axes attributes in target histogram
+     * @private */
+   updateAxes(tgt_histo, src_histo, fp) {
+      const copyTAxisMembers = (tgt, src, copy_zoom) => {
+         tgt.fTitle = src.fTitle;
+         tgt.fLabels = src.fLabels;
+         tgt.fXmin = src.fXmin;
+         tgt.fXmax = src.fXmax;
+         tgt.fTimeDisplay = src.fTimeDisplay;
+         tgt.fTimeFormat = src.fTimeFormat;
+         tgt.fAxisColor = src.fAxisColor;
+         tgt.fLabelColor = src.fLabelColor;
+         tgt.fLabelFont = src.fLabelFont;
+         tgt.fLabelOffset = src.fLabelOffset;
+         tgt.fLabelSize = src.fLabelSize;
+         tgt.fNdivisions = src.fNdivisions;
+         tgt.fTickLength = src.fTickLength;
+         tgt.fTitleColor = src.fTitleColor;
+         tgt.fTitleFont = src.fTitleFont;
+         tgt.fTitleOffset = src.fTitleOffset;
+         tgt.fTitleSize = src.fTitleSize;
+         if (copy_zoom) {
+            tgt.fFirst = src.fFirst;
+            tgt.fLast = src.fLast;
+            tgt.fBits = src.fBits;
+         }
+      };
+
+      copyTAxisMembers(tgt_histo.fXaxis, src_histo.fXaxis, this.snapid && !fp?.zoomChangedInteractive('x'));
+      copyTAxisMembers(tgt_histo.fYaxis, src_histo.fYaxis, this.snapid && !fp?.zoomChangedInteractive('y'));
+      copyTAxisMembers(tgt_histo.fZaxis, src_histo.fZaxis, this.snapid && !fp?.zoomChangedInteractive('z'));
+   }
+
    /** @summary Update histogram object
      * @param obj - new histogram instance
      * @param opt - new drawing option (optional)
@@ -881,9 +885,7 @@ class THistPainter extends ObjectPainter {
             }
          }
 
-         copyTAxisMembers(histo.fXaxis, obj.fXaxis, this.snapid && !fp?.zoomChangedInteractive('x'));
-         copyTAxisMembers(histo.fYaxis, obj.fYaxis, this.snapid && !fp?.zoomChangedInteractive('y'));
-         copyTAxisMembers(histo.fZaxis, obj.fZaxis, this.snapid && !fp?.zoomChangedInteractive('z'));
+         this.updateAxes(histo, obj, fp);
 
          histo.fArray = obj.fArray;
          histo.fNcells = obj.fNcells;
@@ -2316,4 +2318,4 @@ class THistPainter extends ObjectPainter {
 
 } // class THistPainter
 
-export { THistPainter, kNoZoom, HistContour, copyTAxisMembers };
+export { THistPainter, kNoZoom, HistContour };

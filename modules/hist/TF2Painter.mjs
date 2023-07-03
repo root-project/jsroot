@@ -3,7 +3,7 @@ import { TH2Painter } from '../hist/TH2Painter.mjs';
 import { proivdeEvalPar, produceTAxisLogScale } from '../hist/TF1Painter.mjs';
 import { ObjectPainter, getElementMainPainter } from '../base/ObjectPainter.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
-import { THistPainter, copyTAxisMembers } from '../hist2d/THistPainter.mjs';
+import { THistPainter } from '../hist2d/THistPainter.mjs';
 
 
 /**
@@ -30,13 +30,8 @@ class TF2Painter extends TH2Painter {
       let histo = this.getHisto();
 
       if (this.webcanv_hist) {
-         let h0 = this.getPadPainter()?.findInPrimitives('Func', clTH2F),
-             fp = this.getFramePainter();
-         if (h0) {
-            copyTAxisMembers(histo.fXaxis, h0.fXaxis, this.snapid && !fp?.zoomChangedInteractive('x'));
-            copyTAxisMembers(histo.fYaxis, h0.fYaxis, this.snapid && !fp?.zoomChangedInteractive('y'));
-            copyTAxisMembers(histo.fZaxis, h0.fZaxis, this.snapid && !fp?.zoomChangedInteractive('z'));
-         }
+         let h0 = this.getPadPainter()?.findInPrimitives('Func', clTH2F);
+         if (h0) this.updateAxes(histo, h0, this.getFramePainter());
       }
 
       this.$func = obj;
