@@ -8,6 +8,9 @@ import { TPavePainter } from '../hist/TPavePainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
 
+/** @summary Copy TAxis attributes
+  * @private */
+
 function copyTAxisMembers(tgt, src, copy_zoom) {
    tgt.fTitle = src.fTitle;
    tgt.fLabels = src.fLabels;

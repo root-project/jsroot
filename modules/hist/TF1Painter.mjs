@@ -5,6 +5,9 @@ import { TH1Painter } from '../hist2d/TH1Painter.mjs';
 import * as jsroot_math from '../base/math.mjs';
 
 
+/** @summary Assign `evalPar` function for TF1 object
+  * @private */
+
 function proivdeEvalPar(obj) {
 
    obj._math = jsroot_math;
@@ -76,6 +79,28 @@ function proivdeEvalPar(obj) {
    return true;
 }
 
+
+/** @summary Create log scale for axis bins
+  * @private */
+function produceTAxisLogScale(axis, num, min, max) {
+   let lmin, lmax;
+
+   if (max > 0) {
+      lmax = Math.log(max);
+      lmin = min > 0 ? Math.log(min) : lmax - 5;
+   } else {
+      lmax = -10;
+      lmax = -15;
+   }
+
+   axis.fNbins = num;
+   axis.fXbins = new Array(num + 1);
+   for (let i = 0; i <= num; ++i)
+      axis.fXbins[i] = Math.exp(lmin + i / num * (lmax - lmin));
+   axis.fXmin = Math.exp(lmin);
+   axis.fXmax = Math.exp(lmax);
+}
+
 /**
   * @summary Painter for TF1 object
   *
@@ -117,36 +142,49 @@ class TF1Painter extends TH1Painter {
    createTF1Histogram(tf1, hist) {
 
       let fp = this.getFramePainter(),
-          xmin = tf1.fXmin, xmax = tf1.fXmax, logx = false;
+          pad = this.getPadPainter()?.getRootPad(true),
+          logx = pad?.fLogx,
+          xmin = tf1.fXmin, xmax = tf1.fXmax;
 
       if (fp) {
          let gr = fp.getGrFuncs(this.second_x, this.second_y);
          if (gr.scale_xmin > xmin) xmin = gr.scale_xmin;
          if (gr.scale_xmax < xmax) xmax = gr.scale_xmax;
-         logx = fp.logx;
       }
 
-      if (logx) {
-         xmin = (xmin > 0) ? Math.log(xmin) : -5;
-         xmax = (xmax > 0) ? Math.log(xmax) : 0;
-      }
+      this._log_scales = (logx ? 1 : 0);
 
       let np = Math.max(tf1.fNpx, 100),
-          dx = (xmax - xmin) / np,
-          res = [], iserror = false, plain_scale = false,
+          iserror = false,
           has_saved_points = tf1.fSave.length > 3,
           force_use_save = has_saved_points && settings.PreferSavedPoints;
+
+      const ensureBins = num => {
+         if (hist.fNcells !== num + 2) {
+            hist.fNcells = num + 2;
+            hist.fArray = new Float32Array(hist.fNcells);
+            hist.fArray.fill(0);
+         }
+         hist.fXaxis.fNbins = num;
+         hist.fXaxis.fXbins = [];
+      };
 
       if (!force_use_save) {
 
          if (!tf1.evalPar && !proivdeEvalPar(tf1))
             iserror = true;
 
-         plain_scale = !logx;
+         ensureBins(np);
+
+         if (logx) {
+            produceTAxisLogScale(hist.fXaxis, np, xmin, xmax);
+         } else {
+            hist.fXaxis.fXmin = xmin;
+            hist.fXaxis.fXmax = xmax;
+         }
 
          for (let n = 0; n < np; n++) {
-            let x = xmin + (n + 0.5) * dx, y = 0;
-            if (logx) x = Math.exp(x);
+            let x = hist.fXaxis.GetBinCenter(n + 1), y = 0;
             try {
                y = tf1.evalPar(x);
             } catch(err) {
@@ -158,68 +196,29 @@ class TF1Painter extends TH1Painter {
             if (!Number.isFinite(y))
                y = 0;
 
-            res.push({ n, x, y });
+            hist.setBinContent(n + 1, y);
          }
       }
 
-      this._use_saved_points = (iserror || !res.length) && has_saved_points;
+      this._use_saved_points = iserror && has_saved_points;
 
       // in the case there were points have saved and we cannot calculate function
       // if we don't have the user's function
       if (this._use_saved_points) {
 
          np = tf1.fSave.length - 2;
+         ensureBins(np);
          xmin = tf1.fSave[np];
          xmax = tf1.fSave[np + 1];
-         res = [];
-         dx = (xmax - xmin) / (np - 1);
 
-         for (let n = 0; n < np; ++n) {
-            let x = xmin + dx*n,
-                y = tf1.fSave[n];
-            if (!Number.isFinite(y)) y = 0;
-            res.push({ n, x, y });
-         }
+         let dx = (xmax - xmin) / (np - 1);
+         // extend range while saved values are for bin center
+         hist.fXaxis.fXmin = xmin - dx/2;
+         hist.fXaxis.fXmax = xmax + dx/2;
 
-         // expected range for the histogram
-         xmin -= dx/2;
-         xmax += dx/2;
-         plain_scale = true;
+         for (let n = 0; n < np; ++n)
+            hist.setBinContent(n + 1, tf1.fSave[n]);
       }
-
-      hist.fName = 'Func';
-      hist.fXaxis.fXmin = xmin;
-      hist.fXaxis.fXmax = xmax;
-      hist.fXaxis.fXbins = [];
-
-      if (!plain_scale) {
-         for (let i = 0; i < res.length - 1; ++i) {
-            let dd = res[i+1].x - res[i].x,
-                midx = (res[i+1].x + res[i].x) / 2;
-            if (i == 0) {
-               hist.fXaxis.fXmin = midx - dd;
-               hist.fXaxis.fXbins.push(midx - dd);
-            }
-
-            hist.fXaxis.fXbins.push(midx);
-
-            if (i == res.length - 2) {
-               hist.fXaxis.fXmax = midx + dd;
-               hist.fXaxis.fXbins.push(midx + dd);
-            }
-         }
-      }
-
-      if (hist.fNcells != np + 2) {
-         hist.fNcells = np + 2;
-         hist.fArray = new Float64Array(hist.fNcells);
-         hist.fArray.fill(0);
-         hist.fXaxis.fNbins = np;
-      }
-
-      res.forEach(entry => {
-         hist.fArray[entry.n + 1] = entry.y;
-      });
 
       hist.fName = 'Func';
       hist.fTitle = tf1.fTitle;
@@ -285,4 +284,4 @@ class TF1Painter extends TH1Painter {
 
 } // class TF1Painter
 
-export { TF1Painter, proivdeEvalPar };
+export { TF1Painter, proivdeEvalPar, produceTAxisLogScale };

@@ -1,6 +1,6 @@
 import { createHistogram, kNoStats, settings, clTF2, clTH2F, isStr } from '../core.mjs';
 import { TH2Painter } from '../hist/TH2Painter.mjs';
-import { proivdeEvalPar } from '../hist/TF1Painter.mjs';
+import { proivdeEvalPar, produceTAxisLogScale } from '../hist/TF1Painter.mjs';
 import { ObjectPainter, getElementMainPainter } from '../base/ObjectPainter.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
 import { THistPainter, copyTAxisMembers } from '../hist2d/THistPainter.mjs';
@@ -101,20 +101,6 @@ class TF2Painter extends TH2Painter {
          hist.fXaxis.fXbins = [];
          hist.fYaxis.fNbins = ny;
          hist.fYaxis.fXbins = [];
-      }, makeLogScale = (axis, num, min, max) => {
-         let lmin, lmax;
-
-         if (max > 0) {
-            lmax = Math.log(max);
-            lmin = min > 0 ? Math.log(min) : lmax - 5;
-         } else {
-            lmax = -10;
-            lmax = -15;
-         }
-         for (let i = 0; i <= num; ++i)
-            axis.fXbins.push(Math.exp(lmin + i / num * (lmax - lmin)));
-         axis.fXmin = Math.exp(lmin);
-         axis.fXmax = Math.exp(lmax);
       };
 
       if (!this._use_saved_points) {
@@ -128,9 +114,9 @@ class TF2Painter extends TH2Painter {
          hist.fYaxis.fXmax = ymax;
 
          if (logx)
-            makeLogScale(hist.fXaxis, npx, xmin, xmax);
+            produceTAxisLogScale(hist.fXaxis, npx, xmin, xmax);
          if (logy)
-            makeLogScale(hist.fYaxis, npy, ymin, ymax);
+            produceTAxisLogScale(hist.fYaxis, npy, ymin, ymax);
 
          for (let j = 0; (j < npy) && !iserr; ++j)
             for (let i = 0; (i < npx) && !iserr; ++i) {
