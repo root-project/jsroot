@@ -154,12 +154,12 @@ class TF1Painter extends TH1Painter {
       let fp = this.getFramePainter(),
           pad = this.getPadPainter()?.getRootPad(true),
           logx = pad?.fLogx,
-          xmin = tf1.fXmin, xmax = tf1.fXmax;
+          xmin = tf1.fXmin, xmax = tf1.fXmax,
+          gr = fp?.getGrFuncs(this.second_x, this.second_y);
 
-      if (fp) {
-         let gr = fp.getGrFuncs(this.second_x, this.second_y);
-         if (gr.scale_xmin > xmin) xmin = gr.scale_xmin;
-         if (gr.scale_xmax < xmax) xmax = gr.scale_xmax;
+     if (gr?.zoom_xmin !== gr?.zoom_xmax) {
+         xmin = Math.min(xmin, gr.zoom_xmin);
+         xmax = Math.max(xmax, gr.zoom_xmax);
       }
 
       this._use_saved_points = (tf1.fSave.length > 3) && (settings.PreferSavedPoints || this.force_saved);
@@ -265,12 +265,11 @@ class TF1Painter extends TH1Painter {
          this.xmin = Math.min(this.xmin, func.fSave[np] - dx/2);
          this.xmax = Math.max(this.xmax, func.fSave[np+1] + dx/2);
 
-      } else if (func) {
+      }
+      if (func) {
          this.xmin = Math.min(this.xmin, func.fXmin);
          this.xmax = Math.max(this.xmax, func.fXmax);
       }
-
-      console.log('range xmin/max', this.xmin, this.xmax)
    }
 
    /** @summary Checks if it makes sense to zoom inside specified axis range */

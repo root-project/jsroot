@@ -64,14 +64,17 @@ class TF2Painter extends TH2Painter {
           pad = this.getPadPainter()?.getRootPad(true),
           logx = pad?.fLogx, logy = pad?.fLogy,
           xmin = func.fXmin, xmax = func.fXmax,
-          ymin = func.fYmin, ymax = func.fYmax;
+          ymin = func.fYmin, ymax = func.fYmax,
+          gr = fp?.getGrFuncs(this.second_x, this.second_y);
 
-      if (fp) {
-         let gr = fp.getGrFuncs(this.second_x, this.second_y);
-         if (gr.scale_xmin > xmin) xmin = gr.scale_xmin;
-         if (gr.scale_xmax < xmax) xmax = gr.scale_xmax;
-         if (gr.scale_ymin > ymin) ymin = gr.scale_ymin;
-         if (gr.scale_ymax < ymax) ymax = gr.scale_ymax;
+     if (gr?.zoom_xmin !== gr?.zoom_xmax) {
+         xmin = Math.min(xmin, gr.zoom_xmin);
+         xmax = Math.max(xmax, gr.zoom_xmax);
+      }
+
+     if (gr?.zoom_ymin !== gr?.zoom_ymax) {
+         ymin = Math.min(ymin, gr.zoom_ymin);
+         ymax = Math.max(ymax, gr.zoom_ymax);
       }
 
       const ensureBins = (nx, ny) => {
@@ -184,7 +187,8 @@ class TF2Painter extends TH2Painter {
          this.ymin = Math.min(this.ymin, func.fSave[nsave-4] - dy/2);
          this.ymax = Math.max(this.ymax, func.fSave[nsave-3] + dy/2);
 
-      } else if (func) {
+      }
+      if (func) {
          this.xmin = Math.min(this.xmin, func.fXmin);
          this.xmax = Math.max(this.xmax, func.fXmax);
          this.ymin = Math.min(this.ymin, func.fYmin);
