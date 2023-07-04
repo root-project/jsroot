@@ -330,7 +330,6 @@ class TF1Painter extends TH1Painter {
       opt.fcust = this._fail_eval ? 'func_fail' : '';
    }
 
-
    /** @summary draw TF1 object */
    static async draw(dom, tf1, opt) {
      if (!isStr(opt)) opt = '';

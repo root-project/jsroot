@@ -86,6 +86,8 @@ class TF2Painter extends TH2Painter {
          hist.fYaxis.fXbins = [];
       };
 
+      delete this._fail_eval;
+
       if (!this._use_saved_points) {
          let npx = Math.max(func.fNpx, 20),
              npy = Math.max(func.fNpy, 20),
@@ -122,6 +124,9 @@ class TF2Painter extends TH2Painter {
                   hist.setBinContent(hist.getBin(i + 1, j + 1), Number.isFinite(z) ? z : 0);
             }
 
+         if (iserror)
+            this._fail_eval = true;
+
          if (iserror && (nsave > 6))
             this._use_saved_points = true;
       }
@@ -139,8 +144,10 @@ class TF2Painter extends TH2Painter {
          hist.fYaxis.fXmax = func.fSave[nsave-3] + dy/2;
 
          for (let k = 0, j = 0; j <= npy; ++j)
-            for (let i = 0; i <= npx; ++i)
-               hist.setBinContent(hist.getBin(i+1,j+1), func.fSave[k++]);
+            for (let i = 0; i <= npx; ++i) {
+               let z = func.fSave[k++];
+               hist.setBinContent(hist.getBin(i+1,j+1), Number.isFinite(z) ? z : 0);
+            }
       }
 
       hist.fName = 'Func';
@@ -218,6 +225,13 @@ class TF2Painter extends TH2Painter {
             .call(this.lineatt?.func)
 
       return res;
+   }
+
+   /** @summary fill information for TWebCanvas
+     * @private */
+   fillWebObjectOptions(opt) {
+      // mark that saved points are used or evaluation failed
+      opt.fcust = this._fail_eval ? 'func_fail' : '';
    }
 
    /** @summary draw TF2 object */
