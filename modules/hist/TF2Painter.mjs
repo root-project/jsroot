@@ -1,8 +1,8 @@
-import { createHistogram, kNoStats, settings, clTF2, clTH2F, isStr } from '../core.mjs';
+import { createHistogram, kNoStats, settings, gStyle, clTF2, clTH2F, isStr, isFunc } from '../core.mjs';
 import { TH2Painter } from '../hist/TH2Painter.mjs';
 import { proivdeEvalPar, produceTAxisLogScale } from '../hist/TF1Painter.mjs';
 import { ObjectPainter, getElementMainPainter } from '../base/ObjectPainter.mjs';
-import { DrawOptions } from '../base/BasePainter.mjs';
+import { DrawOptions, floatToString } from '../base/BasePainter.mjs';
 import { THistPainter } from '../hist2d/THistPainter.mjs';
 
 
@@ -159,6 +159,63 @@ class TF2Painter extends TH2Painter {
       hist.fBits |= kNoStats;
 
       return hist;
+   }
+
+   /** @summary retrurn tooltips for TF2 */
+   getTF2Tooltips(pnt) {
+
+      let lines = [ this.getObjectHint() ],
+          funcs = this.getFramePainter()?.getGrFuncs(this.options.second_x, this.options.second_y);
+
+      if (!funcs || !isFunc(this.$func?.evalPar)) {
+         lines.push('grx = ' + pnt.x, 'gry = ' + pnt.y);
+         return lines;
+      }
+
+      let x = funcs.revertAxis('x', pnt.x),
+          y = funcs.revertAxis('y', pnt.y),
+          z = 0, iserror = false;
+
+       try {
+          z = this.$func.evalPar(x, y);
+       } catch {
+          iserror = true;
+       }
+
+      lines.push('x = ' + funcs.axisAsText('x', x),
+                 'y = ' + funcs.axisAsText('y', y),
+                 'value = ' + (iserror ? '<fail>' : floatToString(z, gStyle.fStatFormat)));
+      return lines;
+   }
+
+   /** @summary process tooltip event for TF2 object */
+   processTooltipEvent(pnt) {
+      if (this._use_saved_points)
+         return super.processTooltipEvent(pnt);
+
+      let ttrect = this.draw_g?.select('.tooltip_bin');
+
+      if (!this.draw_g || !pnt) {
+         ttrect?.remove();
+         return null;
+      }
+
+      let res = { name: this.$func?.fName, title: this.$func?.fTitle,
+                  x: pnt.x, y: pnt.y,
+                  color1: this.lineatt?.color ?? 'green',
+                  color2: this.fillatt?.getFillColorAlt('blue') ?? 'blue',
+                  lines: this.getTF2Tooltips(pnt), exact: true, menu: true };
+
+      if (ttrect.empty())
+         ttrect = this.draw_g.append('svg:path')
+                             .attr('class', 'tooltip_bin')
+                             .style('pointer-events', 'none')
+                             .style('fill', 'none');
+
+      ttrect.attr('d', `M${pnt.x-3},${pnt.y-3}v6h6v-6z`)
+            .call(this.lineatt?.func)
+
+      return res;
    }
 
    /** @summary draw TF2 object */
