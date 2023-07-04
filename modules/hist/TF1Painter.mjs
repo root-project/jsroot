@@ -220,7 +220,7 @@ class TF1Painter extends TH1Painter {
          xmin = tf1.fSave[np];
          xmax = tf1.fSave[np + 1];
 
-         let dx = (xmax - xmin) / (np - 1);
+         let dx = (xmax - xmin) / (np - 2); // np-2 due to arithmetic in the TF1 class
          // extend range while saved values are for bin center
          hist.fXaxis.fXmin = xmin - dx/2;
          hist.fXaxis.fXmax = xmax + dx/2;

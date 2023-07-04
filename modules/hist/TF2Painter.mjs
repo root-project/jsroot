@@ -58,7 +58,7 @@ class TF2Painter extends TH2Painter {
       if ((nsave > 6) && (nsave !== (func.fSave[nsave-2]+1)*(func.fSave[nsave-1]+1) + 6))
          nsave = 0;
 
-      this._use_saved_points = (nsave > 6) && settings.PreferSavedPoints;
+      this._use_saved_points = (nsave > 6) && (settings.PreferSavedPoints || this.force_saved);
 
       let fp = this.getFramePainter(),
           pad = this.getPadPainter()?.getRootPad(true),
@@ -134,8 +134,8 @@ class TF2Painter extends TH2Painter {
       if (this._use_saved_points) {
          let npx = Math.round(func.fSave[nsave-2]),
              npy = Math.round(func.fSave[nsave-1]),
-             dx = (func.fSave[nsave-5] - func.fSave[nsave-6]) / npx,
-             dy = (func.fSave[nsave-3] - func.fSave[nsave-4]) / npy;
+             dx = (func.fSave[nsave-5] - func.fSave[nsave-6]) / (npx - 1),
+             dy = (func.fSave[nsave-3] - func.fSave[nsave-4]) / (npy - 1);
 
          ensureBins(npx+1, npy+1);
          hist.fXaxis.fXmin = func.fSave[nsave-6] - dx/2;
@@ -237,11 +237,17 @@ class TF2Painter extends TH2Painter {
    /** @summary draw TF2 object */
    static async draw(dom, tf2, opt) {
       if (!isStr(opt)) opt = '';
-      let p = opt.indexOf(';webcanv_hist'), webcanv_hist = false;
+      let p = opt.indexOf(';webcanv_hist'), webcanv_hist = false, force_saved = false;
       if (p >= 0) {
          webcanv_hist = true;
          opt = opt.slice(0, p);
       }
+      p = opt.indexOf(';force_saved');
+      if (p >= 0) {
+         force_saved = true;
+         opt = opt.slice(0, p);
+      }
+
 
       let d = new DrawOptions(opt);
       if (d.empty())
@@ -273,6 +279,7 @@ class TF2Painter extends TH2Painter {
 
       painter.$func = tf2;
       painter.webcanv_hist = webcanv_hist;
+      painter.force_saved = force_saved;
       painter.createTF2Histogram(tf2, hist);
 
       return THistPainter._drawHist(painter, opt);
