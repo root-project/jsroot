@@ -48,6 +48,7 @@ function addDragHandler(_painter, arg) {
       function addElement(cursor, d) {
          let clname = 'js_' + cursor.replace(/[-]/g, '_'),
              elem = group.select('.' + clname);
+         if (arg.cleanup) return elem.remove();
          if (elem.empty()) elem = group.append('path').classed(clname, true);
          elem.style('opacity', 0).style('cursor', cursor).attr('d', d);
          if (handler) elem.call(handler);
@@ -124,15 +125,16 @@ function addDragHandler(_painter, arg) {
       return change_size || change_pos;
    };
 
-   let drag_move = d3_drag().subject(Object);
+   let drag_move = d3_drag().subject(Object),
+       drag_move_off = d3_drag().subject(Object);
+
+   drag_move_off.on('start', null).on('drag', null).on('end', null);
 
    drag_move
       .on('start', function(evnt) {
+         console.log('handling start');
          if (detectRightButton(evnt.sourceEvent) || drag_kind) return;
-         if (isFunc(arg.is_disabled) && arg.is_disabled('move')) {
-            arg.getDrawG().style('cursor', null);
-            return;
-         }
+         if (isFunc(arg.is_disabled) && arg.is_disabled('move')) return;
 
          closeMenu(); // close menu
          setPainterTooltipEnabled(painter, false); // disable tooltip
@@ -270,7 +272,7 @@ function addDragHandler(_painter, arg) {
       });
 
    if (!arg.only_resize)
-      arg.getDrawG().style('cursor', 'move').call(drag_move);
+      arg.getDrawG().style('cursor', arg.cleanup ? null : 'move').call(arg.cleanup ? drag_move_off : drag_move);
 
    if (!arg.only_move)
       makeResizeElements(arg.getDrawG(), drag_resize);
