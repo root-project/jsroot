@@ -129,10 +129,12 @@ function addDragHandler(_painter, arg) {
    drag_move
       .on('start', function(evnt) {
          if (detectRightButton(evnt.sourceEvent) || drag_kind) return;
-         if (isFunc(arg.is_disabled) && arg.is_disabled('move')) return;
+         if (isFunc(arg.is_disabled) && arg.is_disabled('move')) {
+            arg.getDrawG().style('cursor', null);
+            return;
+         }
 
          closeMenu(); // close menu
-
          setPainterTooltipEnabled(painter, false); // disable tooltip
 
          evnt.sourceEvent.preventDefault();
@@ -201,10 +203,11 @@ function addDragHandler(_painter, arg) {
          if (detectRightButton(evnt.sourceEvent) || drag_kind) return;
          if (isFunc(arg.is_disabled) && arg.is_disabled('resize')) return;
 
+         closeMenu(); // close menu
+         setPainterTooltipEnabled(painter, false); // disable tooltip
+
          evnt.sourceEvent.stopPropagation();
          evnt.sourceEvent.preventDefault();
-
-         setPainterTooltipEnabled(painter, false); // disable tooltip
 
          let pad_rect = arg.pad_rect ?? pp.getPadRect(), handle = {
             x: arg.x, y: arg.y, width: arg.width, height: arg.height,
