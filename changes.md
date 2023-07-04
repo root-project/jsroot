@@ -3,6 +3,7 @@
 ## Changes in 7.4.x
 
 1. Fix - context menu position on lego plots
+2. Fix - properly add interactive resize elements
 
 
 ## Changes in 7.4.0

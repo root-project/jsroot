@@ -1,4 +1,4 @@
-// https://root.cern/js/ v7.4.0
+// https://root.cern/js/ v7.4.1
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -7,11 +7,11 @@ typeof define === 'function' && define.amd ? define(['exports'], factory) :
 
 /** @summary version id
   * @desc For the JSROOT release the string in format 'major.minor.patch' like '7.0.0' */
-let version_id = '7.4.0';
+let version_id = '7.4.x';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '15/06/2023';
+let version_date = '4/07/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -62895,8 +62895,12 @@ function Prob(chi2, ndf) {
 
 /** @summary Gaus function
   * @memberof Math */
-function Gaus(x, mean, sigma) {
-   return Math.exp(-0.5 * Math.pow((x-mean) / sigma, 2));
+function Gaus(x, mean, sigma, norm) {
+   if (!sigma) return 1e30;
+   let arg = (x - mean) / sigma;
+   if (arg < -39 || arg > 39) return 0;
+   let res = Math.exp(-0.5*arg*arg);
+   return norm ? res/(2.50662827463100024*sigma) : res; //sqrt(2*Pi)=2.50662827463100024
 }
 
 /** @summary BreitWigner function
@@ -63121,6 +63125,12 @@ function ChebyshevN(n, x, c) {
    return x * d1 - d2 + c[0];
 }
 
+/** @summary Chebyshev0 function
+  * @memberof Math */
+function Chebyshev0(x, c0) {
+   return c0;
+}
+
 /** @summary Chebyshev1 function
   * @memberof Math */
 function Chebyshev1(x, c0, c1) {
@@ -63329,6 +63339,7 @@ BetaDist: BetaDist,
 BetaDistI: BetaDistI,
 BetaIncomplete: BetaIncomplete,
 BreitWigner: BreitWigner,
+Chebyshev0: Chebyshev0,
 Chebyshev1: Chebyshev1,
 Chebyshev10: Chebyshev10,
 Chebyshev2: Chebyshev2,
@@ -65409,7 +65420,7 @@ function addDragHandler(_painter, arg) {
    function makeResizeElements(group, handler) {
       function addElement(cursor, d) {
          let clname = 'js_' + cursor.replace(/[-]/g, '_'),
-             elem = group.select('.' + clname);
+             elem = group.selectChild('.' + clname);
          if (elem.empty()) elem = group.append('path').classed(clname, true);
          elem.style('opacity', 0).style('cursor', cursor).attr('d', d);
          if (handler) elem.call(handler);
@@ -65981,6 +65992,7 @@ const FrameInteractive = {
 
       if (!this._frame_rotate && !this._frame_fixpos)
          addDragHandler(this, { obj: this, x: this._frame_x, y: this._frame_y, width: this.getFrameWidth(), height: this.getFrameHeight(),
+                                is_disabled: kind => { return (kind == 'move') && this.mode3d; },
                                 only_resize: true, minwidth: 20, minheight: 20, redraw: () => this.sizeChanged() });
 
       let main_svg = this.draw_g.select('.main_layer');
@@ -66721,7 +66733,7 @@ const FrameInteractive = {
              pnt = { x: tch[0][0], y: tch[0][1], touch: true };
          else if (ms.length === 2)
              pnt = { x: ms[0], y: ms[1], touch: false };
-       } else if ((evnt?.x !== undefined) && (evnt?.y !== undefined)) {
+       } else if ((evnt?.x !== undefined) && (evnt?.y !== undefined) && (evnt?.clientX === undefined)) {
           pnt = evnt;
           let rect = svg_node.getBoundingClientRect();
           evnt  = { clientX: rect.left + pnt.x, clientY: rect.top + pnt.y };
@@ -68071,7 +68083,7 @@ class TFramePainter extends ObjectPainter {
               (!this.y_handle?.log_min_nz && ymin < logminfactorY*this.ymax) || (ymin < this.y_handle?.log_min_nz)))
             { ymin = this.ymin; cnt++; }
          if (ymax >= this.ymax) { ymax = this.ymax; cnt++; }
-         if (cnt === 2) { zoom_y = false; unzoom_y = true; }
+         if ((cnt === 2) && (this.scales_ndim !== 1)) { zoom_y = false; unzoom_y = true; }
       } else {
          unzoom_y = (ymin === ymax) && (ymin === 0);
       }
@@ -68080,7 +68092,7 @@ class TFramePainter extends ObjectPainter {
          let cnt = 0;
          if (zmin <= this.zmin) { zmin = this.zmin; cnt++; }
          if (zmax >= this.zmax) { zmax = this.zmax; cnt++; }
-         if (cnt === 2) { zoom_z = false; unzoom_z = true; }
+         if ((cnt === 2) && (this.scales_ndim > 2)) { zoom_z = false; unzoom_z = true; }
       } else {
          unzoom_z = (zmin === zmax) && (zmin === 0);
       }
@@ -70739,7 +70751,8 @@ class TPadPainter extends ObjectPainter {
       if (!this.iscan && !is_batch)
          addDragHandler(this, {
             x, y, width: w, height: h, no_transform: true,
-            is_disabled: kind => svg_can.property('pad_enlarged') || this.btns_active_flag || (this._disable_dragging && kind == 'move'),
+            is_disabled: kind => svg_can.property('pad_enlarged') || this.btns_active_flag
+                            || (kind == 'move' && (this._disable_dragging || this.getFramePainter()?.mode3d)),
             getDrawG: () => this.svg_this_pad(),
             pad_rect: { width, height },
             minwidth: 20, minheight: 20,
@@ -71519,6 +71532,7 @@ class TPadPainter extends ObjectPainter {
          padpainter.addToPadPrimitives(this.this_pad_name);
          padpainter.snapid = snap.fObjectID;
          padpainter.is_active_pad = !!snap.fActive; // enforce boolean flag
+         padpainter._snap_primitives = snap.fPrimitives; // keep list to be able find primitive
          padpainter._readonly = snap.fReadOnly ?? false; // readonly flag
          padpainter._has_execs = snap.fHasExecs ?? false; // are there pad execs, enables some interactive features
 
@@ -86985,9 +86999,9 @@ class Toolbar {
          '.geo_toolbar_btn path { fill: rgba(0, 31, 95, 0.2); }'+
          '.geo_toolbar_btn path .active, '+
          '.geo_toolbar_btn path:hover { fill: rgba(0, 22, 72, 0.5); }'+
-         '.geo_toolbar_btn_bright path { fill: rgba(255, 224, 160, 0.2); }'+
+         '.geo_toolbar_btn_bright path { fill: rgba(255, 224, 160, 0.8); }'+
          '.geo_toolbar_btn_bright path .active,'+
-         '.geo_toolbar_btn_bright path:hover { fill: rgba(255, 233, 183, 0.5); }', this.element.node());
+         '.geo_toolbar_btn_bright path:hover { fill: rgb(255, 233, 183); }', this.element.node());
    }
 
    /** @summary add buttons */
@@ -99286,10 +99300,14 @@ function treeHierarchy(node, obj) {
       return true;
    }
 
+   // protect against corrupted TTree objects
+   if (obj.fBranches === undefined)
+      return false;
+
    node._childs = [];
    node._tree = obj;  // set reference, will be used later by TTree::Draw
 
-   for (let i = 0; i < obj.fBranches.arr.length; ++i)
+   for (let i = 0; i < obj.fBranches.arr?.length; ++i)
       createBranchItem(node, obj.fBranches.arr[i], obj);
 
    return true;
@@ -107636,6 +107654,8 @@ async function drawPolyLine3D() {
    let lines = createLineSegments(pnts, create3DLineMaterial(this, line));
 
    fp.toplevel.add(lines);
+
+   fp.render3D(100);
 
    return true;
 }
