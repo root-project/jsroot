@@ -55,17 +55,17 @@ function addDragHandler(_painter, arg) {
       }
 
       addElement('nw-resize', 'M2,2h15v-5h-20v20h5Z');
-      addElement('ne-resize', `M${arg.width - 2},2h-15v-5h20v20h-5 Z`);
-      addElement('sw-resize', `M2,${arg.height - 2}h15v5h-20v-20h5Z`);
-      addElement('se-resize', `M${arg.width - 2},${arg.height - 2}h-15v5h20v-20h-5Z`);
+      addElement('ne-resize', `M${arg.width-2},2h-15v-5h20v20h-5 Z`);
+      addElement('sw-resize', `M2,${arg.height-2}h15v5h-20v-20h5Z`);
+      addElement('se-resize', `M${arg.width-2},${arg.height-2}h-15v5h20v-20h-5Z`);
 
       if (!arg.no_change_x) {
-         addElement('w-resize', `M-3,18h5v${Math.max(0, arg.height - 2 * 18)}h-5Z`);
-         addElement('e-resize', `M${arg.width + 3},18h-5v${Math.max(0, arg.height - 2 * 18)}h5Z`);
+         addElement('w-resize', `M-3,18h5v${Math.max(0, arg.height-2*18)}h-5Z`);
+         addElement('e-resize', `M${arg.width+3},18h-5v${Math.max(0, arg.height-2*18)}h5Z`);
       }
       if (!arg.no_change_y) {
-         addElement('n-resize', `M18,-3v5h${Math.max(0, arg.width - 2 * 18)}v-5Z`);
-         addElement('s-resize', `M18,${arg.height + 3}v-5h${Math.max(0, arg.width - 2 * 18)}v5Z`);
+         addElement('n-resize', `M18,-3v5h${Math.max(0, arg.width-2*18)}v-5Z`);
+         addElement('s-resize', `M18,${arg.height+3}v-5h${Math.max(0, arg.width-2*18)}v5Z`);
       }
    }
 
