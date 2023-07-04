@@ -132,7 +132,6 @@ function addDragHandler(_painter, arg) {
 
    drag_move
       .on('start', function(evnt) {
-         console.log('handling start');
          if (detectRightButton(evnt.sourceEvent) || drag_kind) return;
          if (isFunc(arg.is_disabled) && arg.is_disabled('move')) return;
 
