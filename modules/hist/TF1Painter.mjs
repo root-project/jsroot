@@ -162,7 +162,7 @@ class TF1Painter extends TH1Painter {
          if (gr.scale_xmax < xmax) xmax = gr.scale_xmax;
       }
 
-      this._use_saved_points = (tf1.fSave.length > 3) && settings.PreferSavedPoints;
+      this._use_saved_points = (tf1.fSave.length > 3) && (settings.PreferSavedPoints || this.force_saved);
 
       const ensureBins = num => {
          if (hist.fNcells !== num + 2) {
@@ -173,6 +173,8 @@ class TF1Painter extends TH1Painter {
          hist.fXaxis.fNbins = num;
          hist.fXaxis.fXbins = [];
       };
+
+      delete this._fail_eval;
 
       if (!this._use_saved_points) {
 
@@ -202,6 +204,9 @@ class TF1Painter extends TH1Painter {
                hist.setBinContent(n + 1, Number.isFinite(y) ? y : 0);
          }
 
+         if (iserror)
+            this._fail_eval = true;
+
          if (iserror && (tf1.fSave.length > 3))
             this._use_saved_points = true;
       }
@@ -220,8 +225,10 @@ class TF1Painter extends TH1Painter {
          hist.fXaxis.fXmin = xmin - dx/2;
          hist.fXaxis.fXmax = xmax + dx/2;
 
-         for (let n = 0; n < np; ++n)
-            hist.setBinContent(n + 1, tf1.fSave[n]);
+         for (let n = 0; n < np; ++n) {
+            let y = tf1.fSave[n];
+            hist.setBinContent(n + 1, Number.isFinite(y) ? y : 0);
+         }
       }
 
       hist.fName = 'Func';
@@ -316,13 +323,25 @@ class TF1Painter extends TH1Painter {
       return res;
    }
 
+   /** @summary fill information for TWebCanvas
+     * @private */
+   fillWebObjectOptions(opt) {
+      // mark that saved points are used or evaluation failed
+      opt.fcust = this._fail_eval ? 'func_fail' : '';
+   }
+
 
    /** @summary draw TF1 object */
    static async draw(dom, tf1, opt) {
      if (!isStr(opt)) opt = '';
-      let p = opt.indexOf(';webcanv_hist'), webcanv_hist = false;
+      let p = opt.indexOf(';webcanv_hist'), webcanv_hist = false, force_saved = false;
       if (p >= 0) {
          webcanv_hist = true;
+         opt = opt.slice(0, p);
+      }
+      p = opt.indexOf(';force_saved');
+      if (p >= 0) {
+         force_saved = true;
          opt = opt.slice(0, p);
       }
 
@@ -342,6 +361,7 @@ class TF1Painter extends TH1Painter {
 
       painter.$func = tf1;
       painter.webcanv_hist = webcanv_hist;
+      painter.force_saved = force_saved;
 
       painter.createTF1Histogram(tf1, hist)
 
