@@ -207,12 +207,14 @@ class TF2Painter extends TH2Painter {
                   lines: this.getTF2Tooltips(pnt), exact: true, menu: true };
 
       if (ttrect.empty())
-         ttrect = this.draw_g.append('svg:path')
+         ttrect = this.draw_g.append('svg:circle')
                              .attr('class', 'tooltip_bin')
                              .style('pointer-events', 'none')
-                             .style('fill', 'none');
+                             .style('fill', 'none')
+                             .attr('r', (this.lineatt?.width ?? 1) + 4);
 
-      ttrect.attr('d', `M${pnt.x-3},${pnt.y-3}v6h6v-6z`)
+      ttrect.attr('cx', pnt.x)
+            .attr('cy', pnt.y)
             .call(this.lineatt?.func)
 
       return res;
