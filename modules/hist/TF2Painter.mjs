@@ -168,6 +168,30 @@ class TF2Painter extends TH2Painter {
       return hist;
    }
 
+   extractAxesProperties(ndim) {
+      super.extractAxesProperties(ndim);
+
+      let func = this.$func, nsave = func?.fSave.length ?? 0;
+
+      if (nsave > 6 && this._use_saved_points) {
+         let npx = Math.round(func.fSave[nsave-2]),
+             npy = Math.round(func.fSave[nsave-1]),
+             dx = (func.fSave[nsave-5] - func.fSave[nsave-6]) / (npx - 1),
+             dy = (func.fSave[nsave-3] - func.fSave[nsave-4]) / (npy - 1);
+
+         this.xmin = Math.min(this.xmin, func.fSave[nsave-6] - dx/2);
+         this.xmax = Math.max(this.xmax, func.fSave[nsave-5] + dx/2);
+         this.ymin = Math.min(this.ymin, func.fSave[nsave-4] - dy/2);
+         this.ymax = Math.max(this.ymax, func.fSave[nsave-3] + dy/2);
+
+      } else if (func) {
+         this.xmin = Math.min(this.xmin, func.fXmin);
+         this.xmax = Math.max(this.xmax, func.fXmax);
+         this.ymin = Math.min(this.ymin, func.fYmin);
+         this.ymax = Math.max(this.ymax, func.fYmax);
+      }
+   }
+
    /** @summary retrurn tooltips for TF2 */
    getTF2Tooltips(pnt) {
 

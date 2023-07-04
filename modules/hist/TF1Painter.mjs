@@ -216,10 +216,17 @@ class TF1Painter extends TH1Painter {
       if (this._use_saved_points) {
 
          let np = tf1.fSave.length - 2;
-         ensureBins(np);
          xmin = tf1.fSave[np];
          xmax = tf1.fSave[np + 1];
 
+         if (xmin === xmax) {
+            xmin = tf1.fSave[--np];
+            console.error('Very special stored values, see TF1.cxx', xmin, xmax );
+         }
+
+         ensureBins(np);
+
+         // TODO: try to detect such situation, should not happen with TWebCanvas
          let dx = (xmax - xmin) / (np - 2); // np-2 due to arithmetic in the TF1 class
          // extend range while saved values are for bin center
          hist.fXaxis.fXmin = xmin - dx/2;
@@ -244,6 +251,26 @@ class TF1Painter extends TH1Painter {
       hist.fMarkerStyle = tf1.fMarkerStyle;
       hist.fMarkerSize = tf1.fMarkerSize;
       hist.fBits |= kNoStats;
+   }
+
+   extractAxesProperties(ndim) {
+      super.extractAxesProperties(ndim);
+
+      let func = this.$func, nsave = func?.fSave.length ?? 0;
+
+      if (nsave > 3 && this._use_saved_points) {
+         let np = nsave - 2,
+             dx = (func.fSave[np+1] - func.fSave[np]) / (np - 2);
+
+         this.xmin = Math.min(this.xmin, func.fSave[np] - dx/2);
+         this.xmax = Math.max(this.xmax, func.fSave[np+1] + dx/2);
+
+      } else if (func) {
+         this.xmin = Math.min(this.xmin, func.fXmin);
+         this.xmax = Math.max(this.xmax, func.fXmax);
+      }
+
+      console.log('range xmin/max', this.xmin, this.xmax)
    }
 
    /** @summary Checks if it makes sense to zoom inside specified axis range */
