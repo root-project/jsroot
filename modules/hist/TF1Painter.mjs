@@ -1,4 +1,5 @@
-import { settings, isStr, clTH1D, createHistogram, clTF1, clTF2, kNoStats } from '../core.mjs';
+import { settings, gStyle, isStr, isFunc, clTH1D, createHistogram, clTF1, clTF2, kNoStats } from '../core.mjs';
+import { floatToString } from '../base/BasePainter.mjs';
 import { getElementMainPainter, ObjectPainter } from '../base/ObjectPainter.mjs';
 import { THistPainter } from '../hist2d/THistPainter.mjs';
 import { TH1Painter } from '../hist2d/TH1Painter.mjs';
@@ -253,6 +254,68 @@ class TF1Painter extends TH1Painter {
       // if function calculated, one always could zoom inside
       return (axis == 'x') || (axis == 'y');
    }
+
+      /** @summary retrurn tooltips for TF2 */
+   getTF1Tooltips(pnt) {
+      delete this.$tmp_tooltip;
+      let lines = [ this.getObjectHint() ],
+          funcs = this.getFramePainter()?.getGrFuncs(this.options.second_x, this.options.second_y);
+
+      if (!funcs || !isFunc(this.$func?.evalPar)) {
+         lines.push('grx = ' + pnt.x, 'gry = ' + pnt.y);
+         return lines;
+      }
+
+      let x = funcs.revertAxis('x', pnt.x),
+          y = 0, gry = 0, iserror = false;
+
+       try {
+          y = this.$func.evalPar(x);
+          gry = Math.round(funcs.gry(y));
+       } catch {
+          iserror = true;
+       }
+
+      lines.push('x = ' + funcs.axisAsText('x', x),
+                 'value = ' + (iserror ? '<fail>' : floatToString(y, gStyle.fStatFormat)));
+
+      if (!iserror)
+         this.$tmp_tooltip = { y, gry };
+      return lines;
+   }
+
+   /** @summary process tooltip event for TF1 object */
+   processTooltipEvent(pnt) {
+      if (this._use_saved_points)
+         return super.processTooltipEvent(pnt);
+
+      let ttrect = this.draw_g?.select('.tooltip_bin');
+
+      if (!this.draw_g || !pnt) {
+         ttrect?.remove();
+         return null;
+      }
+
+      let res = { name: this.$func?.fName, title: this.$func?.fTitle,
+                  x: pnt.x, y: pnt.y,
+                  color1: this.lineatt?.color ?? 'green',
+                  color2: this.fillatt?.getFillColorAlt('blue') ?? 'blue',
+                  lines: this.getTF1Tooltips(pnt), exact: true, menu: true };
+
+      if (ttrect.empty())
+         ttrect = this.draw_g.append('svg:circle')
+                             .attr('class', 'tooltip_bin')
+                             .style('pointer-events', 'none')
+                             .style('fill', 'none')
+                             .attr('r', (this.lineatt?.width ?? 1) + 4);
+
+      ttrect.attr('cx', pnt.x)
+            .attr('cy', this.$tmp_tooltip.gry ?? pnt.y)
+            .call(this.lineatt?.func)
+
+      return res;
+   }
+
 
    /** @summary draw TF1 object */
    static async draw(dom, tf1, opt) {
