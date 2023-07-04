@@ -780,7 +780,7 @@ class TPadPainter extends ObjectPainter {
       addDragHandler(this, {
          cleanup, // do cleanup to let assign new handlers later on
          x: this._pad_x, y: this._pad_y, width: this._pad_width, height: this._pad_height, no_transform: true,
-         only_resize: !cleanup && (this._disable_dragging || this.getFramePainter()?.mode3d),
+         only_resize: true, // !cleanup && (this._disable_dragging || this.getFramePainter()?.mode3d),
          is_disabled: kind => svg_can.property('pad_enlarged') || this.btns_active_flag
                          || (kind == 'move' && (this._disable_dragging || this.getFramePainter()?.mode3d)),
          getDrawG: () => this.svg_this_pad(),
