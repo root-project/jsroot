@@ -1491,7 +1491,7 @@ class ObjectPainter extends BasePainter {
 
       let frame = this.getFrameSvg();
       if (frame.empty()) return null;
-      let layer = frame.select('.main_layer');
+      let layer = frame.selectChild('.main_layer');
       if (layer.empty()) return null;
 
       let pos = d3_pointer(evnt, layer.node()),
