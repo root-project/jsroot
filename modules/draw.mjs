@@ -45,7 +45,7 @@ const drawFuncs = { lst: [
    { name: clTMathText, sameas: clTLatex },
    { name: clTText, sameas: clTLatex },
    { name: clTAnnotation, sameas: clTLatex },
-   { name: /^TH1/, icon: 'img_histo1d', class: () => import('./hist/TH1Painter.mjs').then(h => h.TH1Painter), opt: ';hist;P;P0;E;E1;E2;E3;E4;E1X0;L;LF2;B;B1;A;TEXT;LEGO;same', ctrl: 'l' },
+   { name: /^TH1/, icon: 'img_histo1d', class: () => import('./hist/TH1Painter.mjs').then(h => h.TH1Painter), opt: ';hist;P;P0;E;E1;E2;E3;E4;E1X0;L;LF2;C;B;B1;A;TEXT;LEGO;same', ctrl: 'l' },
    { name: clTProfile, icon: 'img_profile', class: () => import('./hist/TH1Painter.mjs').then(h => h.TH1Painter), opt: ';E0;E1;E2;p;AH;hist' },
    { name: clTH2Poly, icon: 'img_histo2d', class: () => import('./hist/TH2Painter.mjs').then(h => h.TH2Painter), opt: ';COL;COL0;COLZ;LCOL;LCOL0;LCOLZ;LEGO;TEXT;same', expand_item: 'fBins', theonly: true },
    { name: 'TProfile2Poly', sameas: clTH2Poly },
