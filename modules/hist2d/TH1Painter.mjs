@@ -817,7 +817,7 @@ class TH1Painter extends THistPainter {
    processTooltipEvent(pnt) {
       if (!pnt || !this.draw_content || !this.draw_g || this.options.Mode3D) {
          if (this.draw_g)
-            this.draw_g.select('.tooltip_bin').remove();
+            this.draw_g.selectChild('.tooltip_bin').remove();
          return null;
       }
 
@@ -974,7 +974,7 @@ class TH1Painter extends THistPainter {
             findbin = null; // exclude empty bin if empty bins suppressed
       }
 
-      let ttrect = this.draw_g.select('.tooltip_bin');
+      let ttrect = this.draw_g.selectChild('.tooltip_bin');
 
       if ((findbin === null) || ((gry2 <= 0) || (gry1 >= height))) {
          ttrect.remove();
