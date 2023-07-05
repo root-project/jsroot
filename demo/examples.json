@@ -5,6 +5,7 @@
      { "name": "*H", "opt":"*H", "title": "draw stars and histogram itself" },
      { "opt": "L", "title": "draw histogram as line" },
      { "name": "LF2", "opt":"LF2,fill_blue", "title": "draw histogram as line with filled area" },
+     { "opt": "C", "title": "draw histogram as curve" },
      { "name": "B", "item": "hpx;1", "opt":"B,fill_red", "title": "draw histogram as bar chart" },
      { "opt": "A", "item": "hpx;1", "title": "disables axes drawing" },
      { "opt": "E" },
