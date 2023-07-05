@@ -459,7 +459,7 @@ class TH1Painter extends THistPainter {
           path_fill = null, path_err = null, path_marker = null, path_line = null,
           hints_err = null, hints_marker = null, hsz = 5,
           do_marker = false, do_err = false,
-          dend = 0, dlw = 0, my, yerr1, yerr2, bincont, binerr, mx1, mx2, midx, mmx1, mmx2,
+          dend = 0, dlw = 0, my, yerr1, yerr2, bincont, binerr, mx1, mx2, midx, lx, ly, mmx1, mmx2,
           text_col, text_angle, text_size;
 
       if (show_errors && !show_markers && (histo.fMarkerStyle > 1))
@@ -577,8 +577,17 @@ class TH1Painter extends THistPainter {
                }
             }
 
-            if (show_line && (path_line !== null))
-               path_line += ((path_line.length === 0) ? 'M' : 'L') + `${midx},${my}`;
+            if (show_line && (path_line !== null)) {
+               if (path_line.length == 0)
+                  path_line = `M${midx},${my}`;
+               else if (lx == midx)
+                  path_line += `v${my-ly}`;
+               else if (ly == my)
+                  path_line += `h${midx-lx}`;
+               else
+                  path_line += `l${midx-lx},${my-ly}`;
+               lx = midx; ly = my;
+            }
 
             if (draw_markers) {
                if ((my >= -yerr1) && (my <= height + yerr2)) {
