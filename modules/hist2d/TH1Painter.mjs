@@ -453,12 +453,13 @@ class TH1Painter extends THistPainter {
           exclude_zero = !this.options.Zero,
           show_errors = this.options.Error,
           show_markers = this.options.Mark,
-          show_line = this.options.Line || this.options.Curve,
+          show_line = this.options.Line,
+          show_curve = this.options.Curve,
           show_text = this.options.Text,
           text_profile = show_text && (this.options.TextKind == 'E') && this.isTProfile() && histo.fBinEntries,
-          path_fill = null, path_err = null, path_marker = null, path_line = null,
+          path_fill = null, path_err = null, path_marker = null, path_line = '',
           hints_err = null, hints_marker = null, hsz = 5,
-          do_marker = false, do_err = false,
+          do_marker = false, do_err = false, grpnts = [],
           dend = 0, dlw = 0, my, yerr1, yerr2, bincont, binerr, mx1, mx2, midx, lx, ly, mmx1, mmx2,
           text_col, text_angle, text_size;
 
@@ -473,8 +474,6 @@ class TH1Painter extends THistPainter {
          hints_err = want_tooltip ? '' : null;
          do_err = true;
       }
-
-      if (show_line) path_line = '';
 
       dlw = this.lineatt.width + gStyle.fEndErrorSize;
       if (this.options.ErrorKind === 1)
@@ -498,7 +497,7 @@ class TH1Painter extends THistPainter {
       }
 
       let draw_markers = show_errors || show_markers,
-          draw_any_but_hist = draw_markers || show_text || show_line,
+          draw_any_but_hist = draw_markers || show_text || show_line || show_curve,
           draw_hist = this.options.Hist && (!this.lineatt.empty() || !this.fillatt.empty());
 
       if (!draw_hist && !draw_any_but_hist)
@@ -577,7 +576,7 @@ class TH1Painter extends THistPainter {
                }
             }
 
-            if (show_line && (path_line !== null)) {
+            if (show_line) {
                if (path_line.length == 0)
                   path_line = `M${midx},${my}`;
                else if (lx == midx)
@@ -587,7 +586,8 @@ class TH1Painter extends THistPainter {
                else
                   path_line += `l${midx-lx},${my-ly}`;
                lx = midx; ly = my;
-            }
+            } else if (show_curve)
+               grpnts.push({ grx: (mx1 + mx2) / 2, gry: funcs.gry(bincont) });
 
             if (draw_markers) {
                if ((my >= -yerr1) && (my <= height + yerr2)) {
@@ -707,7 +707,7 @@ class TH1Painter extends THistPainter {
          }
       }
 
-      let fill_for_interactive = want_tooltip && this.fillatt.empty() && draw_hist && !draw_markers && !show_line,
+      let fill_for_interactive = want_tooltip && this.fillatt.empty() && draw_hist && !draw_markers && !show_line && !show_curve,
           h0 = height + 3;
       if (!fill_for_interactive) {
          let gry0 = Math.round(funcs.gry(0));
@@ -718,7 +718,7 @@ class TH1Painter extends THistPainter {
       }
       let close_path = `L${currx},${h0}H${startx}Z`;
 
-      if (draw_markers || show_line) {
+      if (draw_markers || show_line || show_curve) {
          if (path_fill)
             this.draw_g.append('svg:path')
                        .attr('d', path_fill)
@@ -736,6 +736,17 @@ class TH1Painter extends THistPainter {
                    .style('pointer-events', this.isBatchMode() ? null : 'visibleFill');
 
          if (path_line) {
+            if (!this.fillatt.empty() && !draw_hist)
+               this.draw_g.append('svg:path')
+                     .attr('d', path_line + close_path)
+                     .call(this.fillatt.func);
+
+            this.draw_g.append('svg:path')
+                   .attr('d', path_line)
+                   .style('fill', 'none')
+                   .call(this.lineatt.func);
+         } else if (grpnts.length) {
+            path_line = buildSvgCurve(grpnts);
             if (!this.fillatt.empty() && !draw_hist)
                this.draw_g.append('svg:path')
                      .attr('d', path_line + close_path)
