@@ -2031,7 +2031,7 @@ class HierarchyPainter extends BasePainter {
       }).on('drop', function(ev) {
          d3_select(this).classed('jsroot_drag_area', false);
          let itemname = ev.dataTransfer.getData('item');
-         if (itemname) h.dropItem(itemname, this.getAttribute('id'));
+         if (itemname) h.dropItem(itemname, this);
       });
    }
 
