@@ -11,7 +11,7 @@ let version_id = '7.4.x';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '4/07/2023';
+let version_date = '5/07/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -102022,7 +102022,7 @@ class HierarchyPainter extends BasePainter {
       }).on('drop', function(ev) {
          select(this).classed('jsroot_drag_area', false);
          let itemname = ev.dataTransfer.getData('item');
-         if (itemname) h.dropItem(itemname, this.getAttribute('id'));
+         if (itemname) h.dropItem(itemname, this);
       });
    }
 

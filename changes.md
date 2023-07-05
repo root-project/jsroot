@@ -4,6 +4,7 @@
 
 1. Fix - context menu position on lego plots
 2. Fix - properly add interactive resize elements
+3. Fix - drag and drop handling on tabs layout
 
 
 ## Changes in 7.4.0
