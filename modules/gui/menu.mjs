@@ -1330,8 +1330,8 @@ class StandaloneMenu extends JSRootMenu {
            `<div style='flex: 0 1 auto; padding: 5px'>${title}</div>`+
            `<div class='jsroot_dialog_content' style='flex: 1 1 auto; padding: 5px'>${main_content}</div>`+
            `<div class='jsroot_dialog_footer' style='flex: 0 1 auto; padding: 5px'>`+
-              `<button class='jsroot_dialog_button' style='float: right; margin-right: 1em'>Ok</button>`+
-              (args.btns ? `<button class='jsroot_dialog_button' style='float: right; margin-right: 1em'>Cancel</button>` : '') +
+              `<button class='jsroot_dialog_button' style='float: right; width: fit-content; margin-right: 1em'>Ok</button>`+
+              (args.btns ? `<button class='jsroot_dialog_button' style='float: right; width: fit-content; margin-right: 1em'>Cancel</button>` : '') +
          `</div></div>`);
 
       return new Promise(resolveFunc => {
