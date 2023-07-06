@@ -1131,6 +1131,40 @@ function assignFrame3DMethods(fpainter) {
 }
 
 
+function convertBuf(painter, pos) {
+   if (painter.options.isCartesian() || !painter.options.isCylindrical())
+      return pos;
+   let fp = painter.getFramePainter(),
+       grminx = -fp.size_x3d, grmaxx = fp.size_x3d,
+       grminy = -fp.size_y3d, grmaxy = fp.size_y3d,
+       grminz = 0, grmaxz = 2*fp.size_z3d;
+
+   for (let i = 0; i < pos.length; i += 3) {
+      let angle = (pos[i] - grminx) / (grmaxx - grminx) * 2 * Math.PI,
+          radius = grminz + (0.5 + (pos[i + 2] - grminz) / (grmaxz - grminz) / 2) * (grmaxz - grminz);
+
+      pos[i] = Math.cos(angle) * radius;
+      pos[i+2] = Math.sin(angle) * radius;
+   }
+
+   return pos;
+}
+
+function createLegoGeom(painter, positions, normals) {
+   let geometry = new BufferGeometry();
+   if (painter.options.isCartesian()) {
+      geometry.setAttribute('position', new BufferAttribute(positions, 3));
+      geometry.setAttribute('normal', new BufferAttribute(normals, 3));
+   } else {
+      convertBuf(painter, positions);
+      geometry.setAttribute('position', new BufferAttribute(positions, 3));
+      geometry.computeVertexNormals();
+   }
+
+   return geometry;
+}
+
+
 /** @summary Draw histograms in 3D mode
   * @private */
 function drawBinsLego(painter, is_v7 = false) {
@@ -1321,12 +1355,8 @@ function drawBinsLego(painter, is_v7 = false) {
          }
       }
 
-      let geometry = new BufferGeometry();
-      geometry.setAttribute('position', new BufferAttribute(positions, 3));
-      geometry.setAttribute('normal', new BufferAttribute(normals, 3));
-      // geometry.computeVertexNormals();
-
-      let rootcolor = is_v7 ? 3 : histo.fFillColor,
+      let geometry = createLegoGeom(painter, positions, normals),
+          rootcolor = is_v7 ? 3 : histo.fFillColor,
           fcolor = painter.getColor(rootcolor);
 
       if (palette) {
@@ -1387,12 +1417,8 @@ function drawBinsLego(painter, is_v7 = false) {
       main.toplevel.add(mesh);
 
       if (num2vertices > 0) {
-         const geom2 = new BufferGeometry();
-         geom2.setAttribute('position', new BufferAttribute(pos2, 3));
-         geom2.setAttribute('normal', new BufferAttribute(norm2, 3));
-         //geom2.computeVertexNormals();
-
-         const color2 = (rootcolor < 2) ? new Color(0xFF0000) : new Color(d3_rgb(fcolor).darker(0.5).toString()),
+         const geom2 = createLegoGeom(painter, pos2, norm2),
+               color2 = (rootcolor < 2) ? new Color(0xFF0000) : new Color(d3_rgb(fcolor).darker(0.5).toString()),
                material2 = new MeshBasicMaterial({ color: color2, vertexColors: false }),
                mesh2 = new Mesh(geom2, material2);
          mesh2.face_to_bins_index = face_to_bins_indx2;
@@ -1486,7 +1512,7 @@ function drawBinsLego(painter, is_v7 = false) {
    // create boxes
    const lcolor = is_v7 ? painter.v7EvalColor('line_color', 'lightblue') : painter.getColor(histo.fLineColor),
          material = new LineBasicMaterial(getMaterialArgs(lcolor, { linewidth: is_v7 ? painter.v7EvalAttr('line_width', 1) : histo.fLineWidth })),
-         line = createLineSegments(lpositions, material, uselineindx ? lindicies : null );
+         line = createLineSegments(convertBuf(painter, lpositions), material, uselineindx ? lindicies : null);
 
    /*
    line.painter = painter;
