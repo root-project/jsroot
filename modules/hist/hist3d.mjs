@@ -775,7 +775,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       xcont.add(mesh);
    });
 
-   if (opts.zoom) xcont.add(createZoomMesh('x', this.size_x3d));
+   if (opts.zoom && opts.anydraw)
+      xcont.add(createZoomMesh('x', this.size_x3d));
    top.add(xcont);
 
    xcont = new Object3D();
@@ -910,7 +911,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          ycont.add(mesh);
       });
       ycont.xyid = 1;
-      if (opts.zoom) ycont.add(createZoomMesh('y', this.size_y3d));
+      if (opts.zoom && opts.anydraw)
+         ycont.add(createZoomMesh('y', this.size_y3d));
       top.add(ycont);
    }
 
