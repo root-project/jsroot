@@ -79,6 +79,7 @@
      { "opt": "circ0", "title": "Black and white circular plot" },
      { "opt": "circ2", "title": "Circular plot with line width depending from content" },
      { "opt": "chord", "title": "Chord diagram as it is implemented by d3.js, see https://observablehq.com/@d3/chord-diagram" },
+     { "name": "cyl", "opt": "lego2;cyl", "title": "Cylyndrical coordinates for lego plots" },
      { "name": "autozoom", "opt": "col;autozoom", "title": "Automatically zoom into non-empty content" },
      { "name": "box", "json": "hbox.json.gz", "opt": "box", "title": "boxes, area proportional to bin content" },
      { "name": "box1", "json": "hbox.json.gz", "opt": "box1", "title": "boxes, area proportional to bin content" },
