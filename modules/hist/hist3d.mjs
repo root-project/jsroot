@@ -801,7 +801,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    });
 
    xcont.xyid = 4;
-   if (opts.zoom) xcont.add(createZoomMesh('x', this.size_x3d));
+   if (opts.zoom && opts.drawany)
+      xcont.add(createZoomMesh('x', this.size_x3d));
    top.add(xcont);
 
    lbls = []; text_scale = 1; maxtextheight = 0; ticks = [];
@@ -885,7 +886,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       });
 
       ycont.xyid = 3;
-      if (opts.zoom) ycont.add(createZoomMesh('y', this.size_y3d));
+      if (opts.zoom && opts.drawany)
+         ycont.add(createZoomMesh('y', this.size_y3d));
       top.add(ycont);
 
       ycont = new Object3D();
@@ -1035,7 +1037,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
       if (opts.draw && zticksline)
          zcont[n].add(n == 0 ? zticksline : new LineSegments(zticksline.geometry, zticksline.material));
-      if (opts.zoom)
+      if (opts.zoom && opts.drawany)
          zcont[n].add(createZoomMesh('z', this.size_z3d, opts.use_y_for_z));
 
       zcont[n].zid = n + 2;
