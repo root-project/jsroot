@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '5/07/2023';
+let version_date = '6/07/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -58033,7 +58033,7 @@ class JSRootMenu {
 
    /** @summary Add draw sub-menu with draw options
      * @protected */
-   addDrawMenu(top_name, opts, call_back) {
+   addDrawMenu(top_name, opts, call_back, title) {
       if (!opts || !opts.length)
          return;
 
@@ -58050,10 +58050,11 @@ class JSRootMenu {
          return;
       }
 
-      if (!without_sub) this.add('sub:' + top_name, () => {
-         let opt = isFunc(this.painter?.getDrawOpt) ? this.painter.getDrawOpt() : opts[0];
-         this.input('Provide draw option', opt, 'text').then(call_back);
-      });
+      if (!without_sub)
+         this.add('sub:' + top_name, () => {
+            let opt = isFunc(this.painter?.getDrawOpt) ? this.painter.getDrawOpt() : opts[0];
+            this.input('Provide draw option', opt, 'text').then(call_back);
+         }, title);
 
       for (let i = 0; i < opts.length; ++i) {
          let name = opts[i] || (this._use_plain_text ? '<dflt>' : '&lt;dflt&gt;'),
@@ -58076,7 +58077,8 @@ class JSRootMenu {
             i = group-1;
          }
       }
-      if (!without_sub) this.add('endsub:');
+      if (!without_sub)
+         this.add('endsub:');
    }
 
    /** @summary Add color selection menu entries
@@ -99278,8 +99280,8 @@ const clTGraph2D = 'TGraph2D', clTH2Poly = 'TH2Poly', clTEllipse = 'TEllipse',
 
 // list of registered draw functions
 const drawFuncs = { lst: [
-   { name: clTCanvas, icon: 'img_canvas', class: () => Promise.resolve().then(function () { return TCanvasPainter$1; }).then(h => h.TCanvasPainter), opt: ';grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz', expand_item: 'fPrimitives' },
-   { name: clTPad, icon: 'img_canvas', class: () => Promise.resolve().then(function () { return TPadPainter$1; }).then(h => h.TPadPainter), opt: ';grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz', expand_item: 'fPrimitives' },
+   { name: clTCanvas, icon: 'img_canvas', class: () => Promise.resolve().then(function () { return TCanvasPainter$1; }).then(h => h.TCanvasPainter), opt: ';grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz', expand_item: 'fPrimitives', noappend: true },
+   { name: clTPad, icon: 'img_canvas', class: () => Promise.resolve().then(function () { return TPadPainter$1; }).then(h => h.TPadPainter), opt: ';grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz', expand_item: 'fPrimitives', noappend: true },
    { name: 'TSlider', icon: 'img_canvas', class: () => Promise.resolve().then(function () { return TPadPainter$1; }).then(h => h.TPadPainter) },
    { name: clTButton, icon: 'img_canvas', class: () => Promise.resolve().then(function () { return TPadPainter$1; }).then(h => h.TPadPainter) },
    { name: 'TFrame', icon: 'img_frame', draw: () => Promise.resolve().then(function () { return TCanvasPainter$1; }).then(h => h.drawTFrame) },
@@ -99358,7 +99360,7 @@ const drawFuncs = { lst: [
    { name: 'TEveGeoShapeExtract', sameas: clTGeoVolume, opt: ';more;all;count;projx;projz;wire;dflt' },
    { name: nsREX+'REveGeoShapeExtract', sameas: clTGeoVolume, opt: ';more;all;count;projx;projz;wire;dflt' },
    { name: 'TGeoOverlap', sameas: clTGeoVolume, opt: ';more;all;count;projx;projz;wire;dflt', dflt: 'dflt', ctrl: 'expand' },
-   { name: 'TGeoManager', sameas: clTGeoVolume, opt: ';more;all;count;projx;projz;wire;tracks;no_screen;dflt', dflt: 'expand', ctrl: 'dflt' },
+   { name: 'TGeoManager', sameas: clTGeoVolume, opt: ';more;all;count;projx;projz;wire;tracks;no_screen;dflt', dflt: 'expand', ctrl: 'dflt', noappend: true },
    { name: 'TGeoVolumeAssembly', sameas: clTGeoVolume, /* icon: 'img_geoassembly', */ opt: ';more;all;count' },
    { name: /^TGeo/, class: () => import_geo().then(h => h.TGeoPainter), get_expand: () => import_geo().then(h => h.expandGeoObject), opt: ';more;all;axis;compa;count;projx;projz;wire;no_screen;dflt', dflt: 'dflt', ctrl: 'expand' },
    { name: 'TAxis3D', icon: 'img_graph', draw: () => import_geo().then(h => h.drawAxis3D), direct: true },
@@ -99506,6 +99508,7 @@ function getDrawSettings(kind, selector) {
       if (!h) break;
       if (!res.handle) res.handle = h;
       if (h.noinspect) noinspect = true;
+      if (h.noappend) res.noappend = true;
       if (h.expand || h.get_expand || h.expand_item || h.can_expand) canexpand = true;
       if (!h.func && !h.class && !h.draw) break;
       isany = true;
@@ -99513,7 +99516,10 @@ function getDrawSettings(kind, selector) {
       let opts = h.opt.split(';');
       for (let i = 0; i < opts.length; ++i) {
          opts[i] = opts[i].toLowerCase();
-         if ((selector.indexOf('nosame') >= 0) && (opts[i].indexOf('same') == 0)) continue;
+         if (opts[i].indexOf('same') == 0) {
+            res.has_same = true;
+            if (selector.indexOf('nosame') >= 0) continue;
+         }
 
          if (res.opts === null) res.opts = [];
          if (res.opts.indexOf(opts[i]) < 0) res.opts.push(opts[i]);
@@ -101731,8 +101737,16 @@ class HierarchyPainter extends BasePainter {
                   sett.opts.unshift('');
             }
 
-            if (sett.opts)
-               menu.addDrawMenu('Draw', sett.opts, arg => this.display(itemname, arg));
+            if (sett.opts) {
+               menu.addDrawMenu('Draw', sett.opts, arg => this.display(itemname, arg),
+                                'Draw item in the new frame');
+
+               let active_frame = this.disp?.getActiveFrame();
+
+               if (!sett.noappend && active_frame && (getElementCanvPainter(active_frame) || getElementMainPainter(active_frame)))
+                  menu.addDrawMenu('Superimpose', sett.opts, arg => this.dropItem(itemname, active_frame, arg),
+                                   'Superimpose item with drawing on active frame');
+            }
 
             if (fileprop && sett.opts && !fileprop.localfile) {
                let filepath = qualifyURL(fileprop.fileurl);
@@ -101750,7 +101764,8 @@ class HierarchyPainter extends BasePainter {
                   arg0 += '&with_credentials';
 
                menu.addDrawMenu('Draw in new tab', sett.opts,
-                                arg => window.open(`${exports.source_dir}?${arg0}&${filepath}&opt=${arg}`));
+                                arg => window.open(`${exports.source_dir}?${arg0}&${filepath}&opt=${arg}`),
+                                'Draw item in the new browser tab or window');
             }
 
             if ((sett.expand || sett.get_expand) && !('_childs' in hitem) && (hitem._more || !('_more' in hitem)))
@@ -101978,7 +101993,7 @@ class HierarchyPainter extends BasePainter {
       }).on('drop', function(ev) {
          select(this).classed('jsroot_drag_area', false);
          let itemname = ev.dataTransfer.getData('item');
-         if (itemname) h.dropItem(itemname, this.getAttribute('id'));
+         if (itemname) h.dropItem(itemname, this);
       });
    }
 
@@ -102833,9 +102848,10 @@ class HierarchyPainter extends BasePainter {
                                               (this.isMonitoring() ? `&monitoring=${this.getMonitoringInterval()}` : '') +
                                               (arg ? `&opt=${arg}` : '')));
 
-      if (sett.opts && (sett.opts.length > 0) && root_type && (node._can_draw !== false))
+      if (sett.opts?.length && root_type && (node._can_draw !== false))
          menu.addDrawMenu('Draw as png', sett.opts,
-                           arg => window.open(onlineprop.server + onlineprop.itemname + '/root.png?w=600&h=400' + (arg ? '&opt=' + arg : '')));
+                           arg => window.open(onlineprop.server + onlineprop.itemname + '/root.png?w=600&h=400' + (arg ? '&opt=' + arg : '')),
+                           'Request PNG image from the server');
 
       if ('_player' in node)
          menu.add('Player', () => this.player(itemname));

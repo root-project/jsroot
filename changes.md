@@ -10,6 +10,7 @@
 6. Provide "Bring to front" menu command for different objects like pave, box, marker, ...
 7. Handle "dark mode" in geom painter - automatically adjust background
 8. Change `TF1` and `TF2` drawing - always convert into histogram, support TWebCanvas, handle log scales
+9. Add "Superimpose" context menu item in hierarchy - let select draw option when append item to pad
 
 
 ## Changes in 7.4.0
