@@ -68021,6 +68021,14 @@ class TCanvasPainter extends TPadPainter {
          let that = msg.slice(5),
              on = (that[that.length-1] == '1');
          this.showSection(that.slice(0,that.length-2), on);
+      } else if (msg.slice(0,5) == 'CTRL:') {
+         let obj = parse(msg.slice(5));
+         if ((obj?.title !== undefined) && (typeof document !== 'undefined'))
+            document.title = obj.title;
+         if (obj.x && obj.y && typeof window !== 'undefined')
+            window.moveTo(obj.x, obj.y);
+         if (obj.w && obj.h && typeof window !== 'undefined')
+            window.resizeTo(obj.w, obj.h);
       } else if (msg.slice(0,5) == 'EDIT:') {
          let obj_painter = this.findSnap(msg.slice(5));
          console.log(`GET EDIT ${msg.slice(5)} found ${!!obj_painter}`);
@@ -69892,6 +69900,10 @@ class THistDrawOptions {
               _pmc: false, _plc: false, _pfc: false, need_fillcol: false,
               minimum: kNoZoom, maximum: kNoZoom, ymin: 0, ymax: 0, cutg: null, IgnoreMainScale: false });
    }
+
+   isCartesian() { return this.System == CoordSystem.kCARTESIAN; }
+
+   isCylindrical() { return this.System == CoordSystem.kCYLINDRICAL; }
 
    /** @summary Base on sumw2 values (re)set some bacis draw options, only for 1dim hist */
    decodeSumw2(histo, force) {
@@ -75709,6 +75721,11 @@ function set3DOptions(hopt) {
 function drawXYZ(toplevel, AxisPainter, opts) {
    if (!opts) opts = {};
 
+   if (opts.drawany === false)
+      opts.draw = false;
+   else
+      opts.drawany = true;
+
    let grminx = -this.size_x3d, grmaxx = this.size_x3d,
        grminy = -this.size_y3d, grmaxy = this.size_y3d,
        grminz = 0, grmaxz = 2*this.size_z3d,
@@ -76000,7 +76017,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       xcont.add(mesh);
    });
 
-   if (opts.zoom) xcont.add(createZoomMesh('x', this.size_x3d));
+   if (opts.zoom && opts.anydraw)
+      xcont.add(createZoomMesh('x', this.size_x3d));
    top.add(xcont);
 
    xcont = new Object3D();
@@ -76026,7 +76044,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    });
 
    xcont.xyid = 4;
-   if (opts.zoom) xcont.add(createZoomMesh('x', this.size_x3d));
+   if (opts.zoom && opts.drawany)
+      xcont.add(createZoomMesh('x', this.size_x3d));
    top.add(xcont);
 
    lbls = []; text_scale = 1; maxtextheight = 0; ticks = [];
@@ -76110,7 +76129,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       });
 
       ycont.xyid = 3;
-      if (opts.zoom) ycont.add(createZoomMesh('y', this.size_y3d));
+      if (opts.zoom && opts.drawany)
+         ycont.add(createZoomMesh('y', this.size_y3d));
       top.add(ycont);
 
       ycont = new Object3D();
@@ -76133,7 +76153,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          ycont.add(mesh);
       });
       ycont.xyid = 1;
-      if (opts.zoom) ycont.add(createZoomMesh('y', this.size_y3d));
+      if (opts.zoom && opts.anydraw)
+         ycont.add(createZoomMesh('y', this.size_y3d));
       top.add(ycont);
    }
 
@@ -76141,7 +76162,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
    let zgridx = null, zgridy = null, lastmajorz = null, maxzlblwidth = 0;
 
-   if (this.size_z3d) {
+   if (this.size_z3d && opts.drawany) {
       zgridx = []; zgridy = [];
    }
 
@@ -76260,7 +76281,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
       if (opts.draw && zticksline)
          zcont[n].add(n == 0 ? zticksline : new LineSegments(zticksline.geometry, zticksline.material));
-      if (opts.zoom)
+      if (opts.zoom && opts.drawany)
          zcont[n].add(createZoomMesh('z', this.size_z3d, opts.use_y_for_z));
 
       zcont[n].zid = n + 2;
@@ -76278,6 +76299,9 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
    zcont[3].position.set(grminx,grminy,0);
    zcont[3].rotation.z = -3/4*Math.PI;
+
+   if (!opts.drawany)
+      return;
 
    let linex_material = getLineMaterial(this.x_handle),
        linex_geom = createLineSegments([grminx,0,0, grmaxx,0,0], linex_material, null, true);
@@ -76353,6 +76377,55 @@ function assignFrame3DMethods(fpainter) {
 }
 
 
+function convertBuf(painter, pos) {
+   if (painter.options.isCartesian() || !painter.options.isCylindrical())
+      return pos;
+   let fp = painter.getFramePainter(),
+       grminx = -fp.size_x3d, grmaxx = fp.size_x3d;
+       -fp.size_y3d; fp.size_y3d;
+       let grminz = 0, grmaxz = 2*fp.size_z3d;
+
+   for (let i = 0; i < pos.length; i += 3) {
+      let angle = (pos[i] - grminx) / (grmaxx - grminx) * 2 * Math.PI,
+          radius = 0.5 + (pos[i + 2] - grminz)/(grmaxz - grminz)/2;
+
+      pos[i] = Math.cos(angle) * radius * fp.size_x3d;
+      pos[i+2] = (0.5 + Math.sin(angle) * radius) * fp.size_x3d;
+   }
+
+   return pos;
+}
+
+function convertTip(painter, tip) {
+   if (painter.options.isCartesian() || !painter.options.isCylindrical())
+      return;
+
+   let pos = [tip.x1, tip.y1, tip.z1, tip.x2, tip.y2, tip.z2];
+   convertBuf(painter, pos);
+
+   tip.x1 = Math.min(pos[0], pos[3]);
+   tip.x2 = Math.max(pos[0], pos[3]);
+   tip.y1 = Math.min(pos[1], pos[4]);
+   tip.y2 = Math.max(pos[1], pos[4]);
+   tip.z1 = Math.min(pos[2], pos[5]);
+   tip.z2 = Math.max(pos[2], pos[5]);
+}
+
+function createLegoGeom(painter, positions, normals) {
+   let geometry = new BufferGeometry();
+   if (painter.options.isCartesian()) {
+      geometry.setAttribute('position', new BufferAttribute(positions, 3));
+      geometry.setAttribute('normal', new BufferAttribute(normals, 3));
+   } else {
+      convertBuf(painter, positions);
+      geometry.setAttribute('position', new BufferAttribute(positions, 3));
+      geometry.computeVertexNormals();
+   }
+
+   return geometry;
+}
+
+
 /** @summary Draw histograms in 3D mode
   * @private */
 function drawBinsLego(painter, is_v7 = false) {
@@ -76376,7 +76449,8 @@ function drawBinsLego(painter, is_v7 = false) {
          histo = painter.getHisto(),
          basehisto = histo ? histo.$baseh : null,
          split_faces = (painter.options.Lego === 11) || (painter.options.Lego === 13), // split each layer on two parts
-         use16indx = (histo.getBin(i2, j2) < 0xFFFF); // if bin ID fit into 16 bit, use smaller arrays for intersect indexes
+         use16indx = (histo.getBin(i2, j2) < 0xFFFF), // if bin ID fit into 16 bit, use smaller arrays for intersect indexes
+         side = painter.options.isCartesian() ? FrontSide : DoubleSide;
 
    if ((i1 >= i2) || (j1 >= j2)) return;
 
@@ -76543,12 +76617,8 @@ function drawBinsLego(painter, is_v7 = false) {
          }
       }
 
-      let geometry = new BufferGeometry();
-      geometry.setAttribute('position', new BufferAttribute(positions, 3));
-      geometry.setAttribute('normal', new BufferAttribute(normals, 3));
-      // geometry.computeVertexNormals();
-
-      let rootcolor = is_v7 ? 3 : histo.fFillColor,
+      let geometry = createLegoGeom(painter, positions, normals),
+          rootcolor = is_v7 ? 3 : histo.fFillColor,
           fcolor = painter.getColor(rootcolor);
 
       if (palette) {
@@ -76558,7 +76628,7 @@ function drawBinsLego(painter, is_v7 = false) {
          fcolor = 'white';
       }
 
-      let material = new MeshBasicMaterial(getMaterialArgs(fcolor, { vertexColors: false })),
+      let material = new MeshBasicMaterial(getMaterialArgs(fcolor, { vertexColors: false, side })),
           mesh = new Mesh(geometry, material);
 
       mesh.face_to_bins_index = face_to_bins_index;
@@ -76599,6 +76669,8 @@ function drawBinsLego(painter, is_v7 = false) {
          tip.z1 = main.grz(Math.max(this.zmin, binz1));
          tip.z2 = main.grz(Math.min(this.zmax, binz2));
 
+         convertTip(p, tip);
+
          tip.color = this.tip_color;
 
          if (p.is_projection && (p.getDimension() == 2)) tip.$painter = p; // used only for projections
@@ -76609,13 +76681,9 @@ function drawBinsLego(painter, is_v7 = false) {
       main.toplevel.add(mesh);
 
       if (num2vertices > 0) {
-         const geom2 = new BufferGeometry();
-         geom2.setAttribute('position', new BufferAttribute(pos2, 3));
-         geom2.setAttribute('normal', new BufferAttribute(norm2, 3));
-         //geom2.computeVertexNormals();
-
-         const color2 = (rootcolor < 2) ? new Color(0xFF0000) : new Color(rgb(fcolor).darker(0.5).toString()),
-               material2 = new MeshBasicMaterial({ color: color2, vertexColors: false }),
+         const geom2 = createLegoGeom(painter, pos2, norm2),
+               color2 = (rootcolor < 2) ? new Color(0xFF0000) : new Color(rgb(fcolor).darker(0.5).toString()),
+               material2 = new MeshBasicMaterial({ color: color2, vertexColors: false, side }),
                mesh2 = new Mesh(geom2, material2);
          mesh2.face_to_bins_index = face_to_bins_indx2;
          mesh2.painter = painter;
@@ -76708,7 +76776,7 @@ function drawBinsLego(painter, is_v7 = false) {
    // create boxes
    const lcolor = is_v7 ? painter.v7EvalColor('line_color', 'lightblue') : painter.getColor(histo.fLineColor),
          material = new LineBasicMaterial(getMaterialArgs(lcolor, { linewidth: is_v7 ? painter.v7EvalAttr('line_width', 1) : histo.fLineWidth })),
-         line = createLineSegments(lpositions, material, uselineindx ? lindicies : null );
+         line = createLineSegments(convertBuf(painter, lpositions), material, uselineindx ? lindicies : null);
 
    /*
    line.painter = painter;
@@ -78329,7 +78397,8 @@ class TH1Painter extends TH1Painter$2 {
             pr = main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale).then(() => {
                main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0, this);
                main.set3DOptions(this.options);
-               main.drawXYZ(main.toplevel, TAxisPainter, { use_y_for_z: true, zmult, zoom: settings.Zooming, ndim: 1, draw: this.options.Axis !== -1 });
+               main.drawXYZ(main.toplevel, TAxisPainter, { use_y_for_z: true, zmult, zoom: settings.Zooming, ndim: 1,
+                  draw: (this.options.Axis !== -1), drawany: this.options.isCartesian() });
             });
          }
 
@@ -78596,7 +78665,8 @@ class TH2Painter extends TH2Painter$2 {
                main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax, this);
                main.set3DOptions(this.options);
                main.drawXYZ(main.toplevel, TAxisPainter, { zmult, zoom: settings.Zooming, ndim: 2,
-                  draw: this.options.Axis !== -1, reverse_x: this.options.RevX, reverse_y: this.options.RevY });
+                  draw: this.options.Axis !== -1, drawany: this.options.isCartesian(),
+                  reverse_x: this.options.RevX, reverse_y: this.options.RevY });
             });
          }
 
@@ -79240,7 +79310,8 @@ class TH3Painter extends THistPainter {
          pr = main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale).then(() => {
             main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax, this);
             main.set3DOptions(this.options);
-            main.drawXYZ(main.toplevel, TAxisPainter, { zoom: settings.Zooming, ndim: 3, draw: this.options.Axis !== -1 });
+            main.drawXYZ(main.toplevel, TAxisPainter, { zoom: settings.Zooming, ndim: 3,
+                   draw: this.options.Axis !== -1, drawany: this.options.isCartesian() });
             return this.draw3DBins();
          }).then(() => {
             main.render3D();

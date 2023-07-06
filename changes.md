@@ -11,6 +11,7 @@
 7. Handle "dark mode" in geom painter - automatically adjust background
 8. Change `TF1` and `TF2` drawing - always convert into histogram, support TWebCanvas, handle log scales
 9. Add "Superimpose" menu command in hierarchy - let select draw option when append item to pad
+10. Support "cyl" coordiantes with lego plots
 
 
 ## Changes in 7.4.1
