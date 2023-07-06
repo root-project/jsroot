@@ -1145,10 +1145,10 @@ function convertBuf(painter, pos) {
 
    for (let i = 0; i < pos.length; i += 3) {
       let angle = (pos[i] - grminx) / (grmaxx - grminx) * 2 * Math.PI,
-          radius = grminz + (0.5 + (pos[i + 2] - grminz) / (grmaxz - grminz) / 2) * (grmaxz - grminz);
+          radius = 0.5 + (pos[i + 2] - grminz)/(grmaxz - grminz)/2;
 
-      pos[i] = Math.cos(angle) * radius;
-      pos[i+2] = Math.sin(angle) * radius;
+      pos[i] = Math.cos(angle) * radius * fp.size_x3d;
+      pos[i+2] = (0.5 + Math.sin(angle) * radius) * fp.size_x3d;
    }
 
    return pos;
