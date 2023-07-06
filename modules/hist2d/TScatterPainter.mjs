@@ -110,7 +110,7 @@ class TScatterPainter extends TGraphPainter {
          let pnt = this.bins[i],
              grx = funcs.grx(pnt.x),
              gry = funcs.gry(pnt.y),
-             size = scatter.fScale * ((scatter.fSize[i] - mins) / (maxs - mins)),
+             size = (scatter.fScale ?? scatter.fMaxMarkerSize) * ((scatter.fSize[i] - mins) / (maxs - mins)),
              color = this.fContour.getPaletteColor(this.fPalette, scatter.fColor[i]);
 
           let handle = new TAttMarkerHandler({ color, size, style: scatter.fMarkerStyle });
