@@ -1804,8 +1804,14 @@ class HierarchyPainter extends BasePainter {
                   sett.opts.unshift('');
             }
 
-            if (sett.opts)
+            if (sett.opts) {
                menu.addDrawMenu('Draw', sett.opts, arg => this.display(itemname, arg));
+
+               let active_frame = this.disp?.getActiveFrame();
+
+               if (!sett.noappend && active_frame && (getElementCanvPainter(active_frame) || getElementMainPainter(active_frame)))
+                  menu.addDrawMenu('Drop', sett.opts, arg => this.dropItem(itemname, active_frame, arg));
+            }
 
             if (fileprop && sett.opts && !fileprop.localfile) {
                let filepath = qualifyURL(fileprop.fileurl);
