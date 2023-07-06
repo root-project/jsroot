@@ -479,6 +479,11 @@ function set3DOptions(hopt) {
 function drawXYZ(toplevel, AxisPainter, opts) {
    if (!opts) opts = {};
 
+   if (opts.drawany === false)
+      opts.draw = false;
+   else
+      opts.drawany = true;
+
    let grminx = -this.size_x3d, grmaxx = this.size_x3d,
        grminy = -this.size_y3d, grmaxy = this.size_y3d,
        grminz = 0, grmaxz = 2*this.size_z3d,
@@ -911,7 +916,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
    let zgridx = null, zgridy = null, lastmajorz = null, maxzlblwidth = 0;
 
-   if (this.size_z3d) {
+   if (this.size_z3d && opts.drawany) {
       zgridx = []; zgridy = [];
    }
 
@@ -1048,6 +1053,9 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
    zcont[3].position.set(grminx,grminy,0);
    zcont[3].rotation.z = -3/4*Math.PI;
+
+   if (!opts.drawany)
+      return;
 
    let linex_material = getLineMaterial(this.x_handle),
        linex_geom = createLineSegments([grminx,0,0, grmaxx,0,0], linex_material, null, true);

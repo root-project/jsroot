@@ -45,6 +45,10 @@ class THistDrawOptions {
               minimum: kNoZoom, maximum: kNoZoom, ymin: 0, ymax: 0, cutg: null, IgnoreMainScale: false });
    }
 
+   isCartesian() { return this.System == CoordSystem.kCARTESIAN; }
+
+   isCylindrical() { return this.System == CoordSystem.kCYLINDRICAL; }
+
    /** @summary Base on sumw2 values (re)set some bacis draw options, only for 1dim hist */
    decodeSumw2(histo, force) {
       let len = histo.fSumw2?.length ?? 0, isany = false;
