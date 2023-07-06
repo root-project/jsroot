@@ -1331,7 +1331,7 @@ class StandaloneMenu extends JSRootMenu {
          `.jsroot_dialog_header { flex: 0 1 auto; padding: 5px; }`+
          `.jsroot_dialog_content { flex: 1 1 auto; padding: 5px; }`+
          `.jsroot_dialog_footer { flex: 0 1 auto; padding: 5px; }`+
-         `.jsroot_dialog_button { float: right; margin-right: 1em; }`, element.node());
+         `.jsroot_dialog_button { float: right; width: fit-content; margin-right: 1em; }`, element.node());
 
       return new Promise(resolveFunc => {
          element.on('keyup', evnt => {
