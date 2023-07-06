@@ -7,11 +7,11 @@ typeof define === 'function' && define.amd ? define(['exports'], factory) :
 
 /** @summary version id
   * @desc For the JSROOT release the string in format 'major.minor.patch' like '7.0.0' */
-let version_id = '7.4.x';
+let version_id = '7.4.1';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '5/07/2023';
+let version_date = '6/07/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -65304,7 +65304,7 @@ class StandaloneMenu extends JSRootMenu {
          `.jsroot_dialog_header { flex: 0 1 auto; padding: 5px; }`+
          `.jsroot_dialog_content { flex: 1 1 auto; padding: 5px; }`+
          `.jsroot_dialog_footer { flex: 0 1 auto; padding: 5px; }`+
-         `.jsroot_dialog_button { float: right; margin-right: 1em; }`, element.node());
+         `.jsroot_dialog_button { float: right; width: fit-content; margin-right: 1em; }`, element.node());
 
       return new Promise(resolveFunc => {
          element.on('keyup', evnt => {

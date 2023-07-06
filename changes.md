@@ -1,10 +1,12 @@
 # JSROOT changelog
 
-## Changes in 7.4.x
+## Changes in 7.4.1
 
 1. Fix - context menu position on lego plots
-2. Fix - properly add interactive resize elements
-3. Fix - drag and drop handling on tabs layout
+2. Fix - add missing math functions Chebyshev0 and normalized Gaus
+3. Fix - correctly render TPolyLine3D
+4. Fix - properly add interactive resize elements for paves and frame
+5. Fix - drag and drop handling on tabs layout
 
 
 ## Changes in 7.4.0
