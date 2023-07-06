@@ -1,6 +1,6 @@
 import { constants, isFunc, getDocument } from '../core.mjs';
 import { rgb as d3_rgb } from '../d3.mjs';
-import { REVISION, DoubleSide, Object3D, Color, Vector2, Vector3, Matrix4, Line3,
+import { REVISION, FrontSide, DoubleSide, Object3D, Color, Vector2, Vector3, Matrix4, Line3,
          BufferGeometry, BufferAttribute, Mesh, MeshBasicMaterial, MeshLambertMaterial,
          LineSegments, LineDashedMaterial, LineBasicMaterial,
          TextGeometry, Plane, Scene, PerspectiveCamera, PointLight, ShapeUtils } from '../three.mjs';
@@ -1152,6 +1152,21 @@ function convertBuf(painter, pos) {
    return pos;
 }
 
+function convertTip(painter, tip) {
+   if (painter.options.isCartesian() || !painter.options.isCylindrical())
+      return;
+
+   let pos = [tip.x1, tip.y1, tip.z1, tip.x2, tip.y2, tip.z2];
+   convertBuf(painter, pos);
+
+   tip.x1 = Math.min(pos[0], pos[3]);
+   tip.x2 = Math.max(pos[0], pos[3]);
+   tip.y1 = Math.min(pos[1], pos[4]);
+   tip.y2 = Math.max(pos[1], pos[4]);
+   tip.z1 = Math.min(pos[2], pos[5]);
+   tip.z2 = Math.max(pos[2], pos[5]);
+}
+
 function createLegoGeom(painter, positions, normals) {
    let geometry = new BufferGeometry();
    if (painter.options.isCartesian()) {
@@ -1190,7 +1205,8 @@ function drawBinsLego(painter, is_v7 = false) {
          histo = painter.getHisto(),
          basehisto = histo ? histo.$baseh : null,
          split_faces = (painter.options.Lego === 11) || (painter.options.Lego === 13), // split each layer on two parts
-         use16indx = (histo.getBin(i2, j2) < 0xFFFF); // if bin ID fit into 16 bit, use smaller arrays for intersect indexes
+         use16indx = (histo.getBin(i2, j2) < 0xFFFF), // if bin ID fit into 16 bit, use smaller arrays for intersect indexes
+         side = painter.options.isCartesian() ? FrontSide : DoubleSide;
 
    if ((i1 >= i2) || (j1 >= j2)) return;
 
@@ -1368,7 +1384,7 @@ function drawBinsLego(painter, is_v7 = false) {
          fcolor = 'white';
       }
 
-      let material = new MeshBasicMaterial(getMaterialArgs(fcolor, { vertexColors: false })),
+      let material = new MeshBasicMaterial(getMaterialArgs(fcolor, { vertexColors: false, side })),
           mesh = new Mesh(geometry, material);
 
       mesh.face_to_bins_index = face_to_bins_index;
@@ -1409,6 +1425,8 @@ function drawBinsLego(painter, is_v7 = false) {
          tip.z1 = main.grz(Math.max(this.zmin, binz1));
          tip.z2 = main.grz(Math.min(this.zmax, binz2));
 
+         convertTip(p, tip);
+
          tip.color = this.tip_color;
 
          if (p.is_projection && (p.getDimension() == 2)) tip.$painter = p; // used only for projections
@@ -1421,7 +1439,7 @@ function drawBinsLego(painter, is_v7 = false) {
       if (num2vertices > 0) {
          const geom2 = createLegoGeom(painter, pos2, norm2),
                color2 = (rootcolor < 2) ? new Color(0xFF0000) : new Color(d3_rgb(fcolor).darker(0.5).toString()),
-               material2 = new MeshBasicMaterial({ color: color2, vertexColors: false }),
+               material2 = new MeshBasicMaterial({ color: color2, vertexColors: false, side }),
                mesh2 = new Mesh(geom2, material2);
          mesh2.face_to_bins_index = face_to_bins_indx2;
          mesh2.painter = painter;
