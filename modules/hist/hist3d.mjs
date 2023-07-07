@@ -413,7 +413,8 @@ function render3D(tmout) {
    if (this.first_render_tm === 0) {
       this.first_render_tm = tm2.getTime() - tm1.getTime();
       this.enable_highlight = (this.first_render_tm < 1200) && this.isTooltipAllowed();
-      console.log(`three.js r${REVISION}, first render tm = ${this.first_render_tm}`);
+      if (this.first_render_tm > 500)
+         console.log(`three.js r${REVISION}, first render tm = ${this.first_render_tm}`);
    }
 
    if (this.processRender3D)
