@@ -1,6 +1,6 @@
 import { constants, isFunc, getDocument } from '../core.mjs';
 import { rgb as d3_rgb } from '../d3.mjs';
-import { REVISION, FrontSide, DoubleSide, Object3D, Color, Vector2, Vector3, Matrix4, Line3,
+import { REVISION, DoubleSide, Object3D, Color, Vector2, Vector3, Matrix4, Line3,
          BufferGeometry, BufferAttribute, Mesh, MeshBasicMaterial, MeshLambertMaterial,
          LineSegments, LineDashedMaterial, LineBasicMaterial,
          TextGeometry, Plane, Scene, PerspectiveCamera, PointLight, ShapeUtils } from '../three.mjs';
@@ -427,7 +427,7 @@ function highlightBin3D(tip, selfmesh) {
          const geom = new BufferGeometry();
          geom.setAttribute('position', new BufferAttribute(pos, 3));
          geom.setAttribute('normal', new BufferAttribute(norm, 3));
-         const material = new MeshBasicMaterial({ color, opacity, vertexColors: false, side: DoubleSide });
+         const material = new MeshBasicMaterial({ color, opacity, vertexColors: false });
          tooltip_mesh = new Mesh(geom, material);
       } else {
          pos = tooltip_mesh.geometry.attributes.position.array;
@@ -1150,7 +1150,7 @@ function convertBuf(painter, pos) {
        grminz = 0, grmaxz = 2*fp.size_z3d;
 
    for (let i = 0; i < pos.length; i += 3) {
-      let angle = (pos[i] - grminx) / (grmaxx - grminx) * 2 * Math.PI,
+      let angle = -(pos[i] - grminx) / (grmaxx - grminx) * 2 * Math.PI,
           radius = 0.5 + (pos[i + 2] - grminz)/(grmaxz - grminz)/2;
 
       pos[i] = Math.cos(angle) * radius * fp.size_x3d;
@@ -1198,8 +1198,7 @@ function drawBinsLego(painter, is_v7 = false) {
          histo = painter.getHisto(),
          basehisto = histo ? histo.$baseh : null,
          split_faces = (painter.options.Lego === 11) || (painter.options.Lego === 13), // split each layer on two parts
-         use16indx = (histo.getBin(i2, j2) < 0xFFFF), // if bin ID fit into 16 bit, use smaller arrays for intersect indexes
-         side = painter.options.System === kCARTESIAN ? FrontSide : DoubleSide;
+         use16indx = (histo.getBin(i2, j2) < 0xFFFF); // if bin ID fit into 16 bit, use smaller arrays for intersect indexes
 
    if ((i1 >= i2) || (j1 >= j2)) return;
 
@@ -1377,7 +1376,7 @@ function drawBinsLego(painter, is_v7 = false) {
          fcolor = 'white';
       }
 
-      let material = new MeshBasicMaterial(getMaterialArgs(fcolor, { vertexColors: false, side })),
+      let material = new MeshBasicMaterial(getMaterialArgs(fcolor, { vertexColors: false })),
           mesh = new Mesh(geometry, material);
 
       mesh.face_to_bins_index = face_to_bins_index;
@@ -1430,7 +1429,7 @@ function drawBinsLego(painter, is_v7 = false) {
       if (num2vertices > 0) {
          const geom2 = createLegoGeom(painter, pos2, norm2),
                color2 = (rootcolor < 2) ? new Color(0xFF0000) : new Color(d3_rgb(fcolor).darker(0.5).toString()),
-               material2 = new MeshBasicMaterial({ color: color2, vertexColors: false, side }),
+               material2 = new MeshBasicMaterial({ color: color2, vertexColors: false }),
                mesh2 = new Mesh(geom2, material2);
          mesh2.face_to_bins_index = face_to_bins_indx2;
          mesh2.painter = painter;
