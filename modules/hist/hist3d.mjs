@@ -69,15 +69,19 @@ function testAxisVisibility(camera, toplevel, fb, bb) {
 }
 
 
-function convertBuf(painter, pos) {
+function convertLegoBuf(painter, pos, binsx, binsy) {
    if (painter.options.System === kCARTESIAN)
       return pos;
-   let fp = painter.getFramePainter();
+   let fp = painter.getFramePainter(), kx = 1/fp.size_x3d, ky = 1/fp.size_y3d;
+   if (binsx && binsy) {
+      kx *= binsx/(binsx-1);
+      ky *= binsy/(binsy-1);
+   }
 
    if (painter.options.System === kPOLAR)
       for (let i = 0; i < pos.length; i += 3) {
-         let angle = (1 - pos[i] / fp.size_x3d) * Math.PI,
-             radius = 0.5 + pos[i + 1]/2/fp.size_y3d;
+         let angle = (1 - pos[i] * kx) * Math.PI,
+             radius = 0.5 + 0.5 * pos[i + 1] * ky;
 
          pos[i] = Math.cos(angle) * radius * fp.size_x3d;
          pos[i+1] = Math.sin(angle) * radius * fp.size_y3d;
@@ -85,7 +89,7 @@ function convertBuf(painter, pos) {
 
    else if (painter.options.System === kCYLINDRICAL)
       for (let i = 0; i < pos.length; i += 3) {
-         let angle = (1 - pos[i] / fp.size_x3d) * Math.PI,
+         let angle = (1 - pos[i] * kx) * Math.PI,
              radius = 0.5 + pos[i + 2]/fp.size_z3d/4;
 
          pos[i] = Math.cos(angle) * radius * fp.size_x3d;
@@ -94,8 +98,8 @@ function convertBuf(painter, pos) {
 
    else if (painter.options.System === kSPHERICAL)
       for (let i = 0; i < pos.length; i += 3) {
-         let phi = (1 + pos[i] / fp.size_x3d) * Math.PI,
-             theta = pos[i+1] / fp.size_y3d * Math.PI,
+         let phi = (1 + pos[i] * kx) * Math.PI,
+             theta = pos[i+1] * ky * Math.PI,
              radius = 0.5 + pos[i+2]/fp.size_z3d/4;
 
          pos[i] = radius * Math.cos(theta) * Math.cos(phi) * fp.size_x3d;
@@ -105,8 +109,8 @@ function convertBuf(painter, pos) {
 
    else if (painter.options.System === kRAPIDITY)
       for (let i = 0; i < pos.length; i += 3) {
-         let phi = (1 - pos[i] / fp.size_x3d) * Math.PI,
-             theta = pos[i+1] / fp.size_y3d * Math.PI,
+         let phi = (1 - pos[i] * kx) * Math.PI,
+             theta = pos[i+1] * ky * Math.PI,
              radius = 0.5 + pos[i+2]/fp.size_z3d/4;
 
          pos[i] = radius * Math.cos(phi) * fp.size_x3d;
@@ -117,7 +121,7 @@ function convertBuf(painter, pos) {
    return pos;
 }
 
-function createLegoGeom(painter, positions, normals) {
+function createLegoGeom(painter, positions, normals, binsx, binsy) {
    let geometry = new BufferGeometry();
    if (painter.options.System === kCARTESIAN) {
       geometry.setAttribute('position', new BufferAttribute(positions, 3));
@@ -126,7 +130,7 @@ function createLegoGeom(painter, positions, normals) {
       else
          geometry.computeVertexNormals();
    } else {
-      convertBuf(painter, positions);
+      convertLegoBuf(painter, positions, binsx, binsy);
       geometry.setAttribute('position', new BufferAttribute(positions, 3));
       geometry.computeVertexNormals();
    }
@@ -524,7 +528,7 @@ function highlightBin3D(tip, selfmesh) {
       this.toplevel.add(tooltip_mesh);
 
       if (tip.$painter?.options.System !== kCARTESIAN) {
-         convertBuf(tip.$painter, pos);
+         convertLegoBuf(tip.$painter, pos);
          tooltip_mesh.geometry.computeVertexNormals();
       }
    }
@@ -1554,7 +1558,7 @@ function drawBinsLego(painter, is_v7 = false) {
    // create boxes
    const lcolor = is_v7 ? painter.v7EvalColor('line_color', 'lightblue') : painter.getColor(histo.fLineColor),
          material = new LineBasicMaterial(getMaterialArgs(lcolor, { linewidth: is_v7 ? painter.v7EvalAttr('line_width', 1) : histo.fLineWidth })),
-         line = createLineSegments(convertBuf(painter, lpositions), material, uselineindx ? lindicies : null);
+         line = createLineSegments(convertLegoBuf(painter, lpositions), material, uselineindx ? lindicies : null);
 
    /*
    line.painter = painter;
@@ -1778,7 +1782,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
    handle.grz_max = main_grz_max;
 
    buildSurf3D(histo, handle, ilevels, (lvl, pos, normindx) => {
-      let geometry = createLegoGeom(painter, pos),
+      let geometry = createLegoGeom(painter, pos, null, handle.i2 - handle.i1, handle.j2 - handle.j1),
           normals = geometry.getAttribute('normal').array;
 
       // recalculate normals
@@ -1843,7 +1847,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
          material = new LineBasicMaterial(getMaterialArgs(color, { linewidth: histo.fLineWidth }));
       }
 
-      let line = createLineSegments(convertBuf(painter, lpos), material);
+      let line = createLineSegments(convertLegoBuf(painter, lpos, handle.i2 - handle.i1, handle.j2 - handle.j1), material);
       line.painter = painter;
       main.toplevel.add(line);
    });
@@ -1904,7 +1908,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
                 }
              }
 
-             const geometry = createLegoGeom(painter, pos, norm),
+             const geometry = createLegoGeom(painter, pos, norm, handle.i2 - handle.i1, handle.j2 - handle.j1),
                    material = new MeshBasicMaterial(getMaterialArgs(palette.getColor(colindx), { side: DoubleSide, opacity: 0.5, vertexColors: false })),
                    mesh = new Mesh(geometry, material);
              mesh.painter = painter;
