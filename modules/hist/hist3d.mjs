@@ -80,19 +80,30 @@ function convertBuf(painter, pos) {
    if (painter.options.System === kPOLAR)
       for (let i = 0; i < pos.length; i += 3) {
          let angle = -(pos[i] - grminx) / (grmaxx - grminx) * 2 * Math.PI,
-             radius =  (pos[i + 1] - grminy)/(grmaxy - grminy);
+             radius = (pos[i + 1] - grminy)/(grmaxy - grminy);
 
          pos[i] = Math.cos(angle) * radius * fp.size_x3d;
          pos[i+1] = Math.sin(angle) * radius * fp.size_y3d;
       }
 
-   if (painter.options.System === kCYLINDRICAL)
+   else if (painter.options.System === kCYLINDRICAL)
       for (let i = 0; i < pos.length; i += 3) {
          let angle = -(pos[i] - grminx) / (grmaxx - grminx) * 2 * Math.PI,
              radius = 0.5 + (pos[i + 2] - grminz)/(grmaxz - grminz)/2;
 
          pos[i] = Math.cos(angle) * radius * fp.size_x3d;
          pos[i+2] = (0.5 + Math.sin(angle) * radius) * fp.size_z3d;
+      }
+
+   else if (painter.options.System === kSPHERICAL)
+      for (let i = 0; i < pos.length; i += 3) {
+         let phi = (pos[i] - grminx) / (grmaxx - grminx) * 2 * Math.PI,
+             theta = pos[i+1] / fp.size_y3d * Math.PI,
+             radius = 0.5 + pos[i+2]/fp.size_z3d/4;
+
+         pos[i] = radius * Math.cos(theta) * Math.cos(phi) * fp.size_x3d;
+         pos[i+1] = radius * Math.cos(theta) * Math.sin(phi) * fp.size_y3d;
+         pos[i+2] = radius * Math.sin(theta) * 2 * fp.size_z3d;
       }
 
    return pos;
