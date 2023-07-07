@@ -2300,36 +2300,20 @@ class TFramePainter extends ObjectPainter {
       delete this.grx;
       delete this.gry;
       delete this.grz;
-
-      if (this.x_handle) {
-         this.x_handle.cleanup();
-         delete this.x_handle;
-      }
-
-      if (this.y_handle) {
-         this.y_handle.cleanup();
-         delete this.y_handle;
-      }
-
-      if (this.z_handle) {
-         this.z_handle.cleanup();
-         delete this.z_handle;
-      }
-
-      // these are drawing of second axes
       delete this.grx2;
       delete this.gry2;
 
-      if (this.x2_handle) {
-         this.x2_handle.cleanup();
-         delete this.x2_handle;
-      }
+      this.x_handle?.cleanup();
+      this.y_handle?.cleanup();
+      this.z_handle?.cleanup();
+      this.x2_handle?.cleanup();
+      this.y2_handle?.cleanup();
 
-      if (this.y2_handle) {
-         this.y2_handle.cleanup();
-         delete this.y2_handle;
-      }
-
+      delete this.x_handle;
+      delete this.y_handle;
+      delete this.z_handle;
+      delete this.x2_handle;
+      delete this.y2_handle;
    }
 
    /** @summary remove all axes drawings */

@@ -578,10 +578,8 @@ class RFramePainter extends RObjectPainter {
    cleanXY() {
       // remove all axes drawings
       let clean = (name,grname) => {
-         if (this[name]) {
-            this[name].cleanup();
-            delete this[name];
-         }
+         this[name]?.cleanup();
+         delete this[name];
          delete this[grname];
       };
 
