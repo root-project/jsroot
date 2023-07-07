@@ -36,7 +36,8 @@
      { "name": "symlog5", "opt": "col,symlogx5,symlogy5", "file": "hsimple.root", "item": "hpxpy;1", "title": "symlog scale with 1e-5 factor for constant" },
      { "name": "greek", "opt": "lego2;xtitle:x=%23alpha%23pm%23sigma;ytitle:y=%23beta%23pm%23sigma;ztitle:z=%23gamma%23pm%23sigma", "file": "hsimple.root", "item": "hpxpy;1", "title": "Greek letters on lego plot" },
      { "name": "3dscale", "opt": "lego2_x3dsc50_y3dsc200", "file": "hsimple.root", "item": "hpxpy;1", "title": "change x/y/z axis scale ratio in lego plots" },
-     { "name": "movepalette", "file": "movepalette.root", "item": "c1;1", "title": "output of movepalette.C macro with vertical and horizontal palette" }
+     { "name": "movepalette", "file": "movepalette.root", "item": "c1;1", "title": "output of movepalette.C macro with vertical and horizontal palette" },
+     { "name": "mollweide", "asurl": true, "file": "tutorials_graphics.root", "item": "earth/[2]/[0]", "opt": "mollweide;htitle:Mollweide", "title": "Example of Mollweide projection" }
    ],
    "Candle" : [
      { "name": "c1", "opt": "candle1", "file": "hsimple.root", "item": "hpxpy;1", "title": "candle1 option for TH2 classes" },
