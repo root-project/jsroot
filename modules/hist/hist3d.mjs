@@ -527,7 +527,7 @@ function highlightBin3D(tip, selfmesh) {
       this.tooltip_mesh = tooltip_mesh;
       this.toplevel.add(tooltip_mesh);
 
-      if (tip.$painter?.options.System !== kCARTESIAN) {
+      if (tip.$painter && tip.$painter.options.System !== kCARTESIAN) {
          convertLegoBuf(tip.$painter, pos);
          tooltip_mesh.geometry.computeVertexNormals();
       }

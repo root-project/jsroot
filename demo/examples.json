@@ -112,7 +112,8 @@
       { "name": "tprofile2poly", "file": "tprofile2poly.root", "item": "c2", "title": "Example of TProfile2Poly class, see $ROOTSYS/tutorials/hist/tprofile2polyRealistic.C output" }
    ],
    "TH3" : [
-     { "opt": "", "file": "histpainter6.root", "item": "draw_th3_scat;1" },
+     { "opt": "", "file": "histpainter6.root", "item": "draw_th3_scat;1", "title": "Default TH3 draw option" },
+     { "opt": "scat", "file": "histpainter6.root", "item": "draw_th3_scat;1/h3scat", "title": "Scatter plot" },
      { "opt": "box", "file": "histpainter6.root", "item": "draw_th3_box;1/h3box" },
      { "name": "box2", "file": "hsimple.root", "item": "ntuple", "opt": "px:py:pz;hbins:15;drawopt:box2", "title": "use colors" },
      { "name": "box3", "file": "hsimple.root", "item": "ntuple", "opt": "px:py:pz;hbins:15;drawopt:box3", "title": "use colors" },
