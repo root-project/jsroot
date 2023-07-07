@@ -9,6 +9,7 @@ import { assign3DHandler, disposeThreejsObject, createOrbitControl,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind,
          cleanupRender3D, HelveticerRegularFont, createSVGRenderer, create3DLineMaterial } from '../base/base3d.mjs';
 import { translateLaTeX } from '../base/latex.mjs';
+import { kCARTESIAN, kPOLAR, kCYLINDRICAL, kSPHERICAL, kRAPIDITY } from '../hist2d/THistPainter.mjs';
 import { buildHist2dContour, buildSurf3D } from '../hist2d/TH2Painter.mjs';
 
 
@@ -1136,7 +1137,7 @@ function assignFrame3DMethods(fpainter) {
 
 
 function convertBuf(painter, pos) {
-   if (painter.options.isCartesian() || !painter.options.isCylindrical())
+   if (painter.options.System === kCARTESIAN || painter.options.System !== kCYLINDRICAL)
       return pos;
    let fp = painter.getFramePainter(),
        grminx = -fp.size_x3d, grmaxx = fp.size_x3d,
@@ -1155,7 +1156,7 @@ function convertBuf(painter, pos) {
 }
 
 function convertTip(painter, tip) {
-   if (painter.options.isCartesian() || !painter.options.isCylindrical())
+   if (painter.options.System === kCARTESIAN || painter.options.System !== kCYLINDRICAL)
       return;
 
    let pos = [tip.x1, tip.y1, tip.z1, tip.x2, tip.y2, tip.z2];
@@ -1171,7 +1172,7 @@ function convertTip(painter, tip) {
 
 function createLegoGeom(painter, positions, normals) {
    let geometry = new BufferGeometry();
-   if (painter.options.isCartesian()) {
+   if (painter.options.System === kCARTESIAN) {
       geometry.setAttribute('position', new BufferAttribute(positions, 3));
       geometry.setAttribute('normal', new BufferAttribute(normals, 3));
    } else {
@@ -1208,7 +1209,7 @@ function drawBinsLego(painter, is_v7 = false) {
          basehisto = histo ? histo.$baseh : null,
          split_faces = (painter.options.Lego === 11) || (painter.options.Lego === 13), // split each layer on two parts
          use16indx = (histo.getBin(i2, j2) < 0xFFFF), // if bin ID fit into 16 bit, use smaller arrays for intersect indexes
-         side = painter.options.isCartesian() ? FrontSide : DoubleSide;
+         side = painter.options.System === kCARTESIAN ? FrontSide : DoubleSide;
 
    if ((i1 >= i2) || (j1 >= j2)) return;
 

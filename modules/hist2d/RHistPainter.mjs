@@ -199,7 +199,7 @@ class RHistPainter extends RObjectPainter {
 
    /** @summary Decode options */
    decodeOptions(/*opt*/) {
-      if (!this.options) this.options = { Hist : 1 };
+      if (!this.options) this.options = { Hist: 1, System: 1 };
    }
 
    /** @summary Copy draw options from other painter */
