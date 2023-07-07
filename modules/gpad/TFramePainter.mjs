@@ -2324,9 +2324,8 @@ class TFramePainter extends ObjectPainter {
       this.x2_handle?.removeG();
       this.y2_handle?.removeG();
 
-      let g = this.getG();
-      g?.selectChild('.grid_layer').selectAll('*').remove();
-      g?.selectChild('.axis_layer').selectAll('*').remove();
+      this.draw_g?.selectChild('.grid_layer').selectAll('*').remove();
+      this.draw_g?.selectChild('.axis_layer').selectAll('*').remove();
       this.axes_drawn = false;
    }
 
