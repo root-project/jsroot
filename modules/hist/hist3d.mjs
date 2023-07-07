@@ -68,6 +68,51 @@ function testAxisVisibility(camera, toplevel, fb, bb) {
    }
 }
 
+
+function convertBuf(painter, pos) {
+   if (painter.options.System === kCARTESIAN)
+      return pos;
+   let fp = painter.getFramePainter(),
+       grminx = -fp.size_x3d, grmaxx = fp.size_x3d,
+       grminy = -fp.size_y3d, grmaxy = fp.size_y3d,
+       grminz = 0, grmaxz = 2*fp.size_z3d;
+
+   if (painter.options.System === kPOLAR)
+      for (let i = 0; i < pos.length; i += 3) {
+         let angle = -(pos[i] - grminx) / (grmaxx - grminx) * 2 * Math.PI,
+             radius =  (pos[i + 1] - grminy)/(grmaxy - grminy);
+
+         pos[i] = Math.cos(angle) * radius * fp.size_x3d;
+         pos[i+1] = Math.sin(angle) * radius * fp.size_y3d;
+      }
+
+   if (painter.options.System === kCYLINDRICAL)
+      for (let i = 0; i < pos.length; i += 3) {
+         let angle = -(pos[i] - grminx) / (grmaxx - grminx) * 2 * Math.PI,
+             radius = 0.5 + (pos[i + 2] - grminz)/(grmaxz - grminz)/2;
+
+         pos[i] = Math.cos(angle) * radius * fp.size_x3d;
+         pos[i+2] = (0.5 + Math.sin(angle) * radius) * fp.size_z3d;
+      }
+
+   return pos;
+}
+
+function createLegoGeom(painter, positions, normals) {
+   let geometry = new BufferGeometry();
+   if (painter.options.System === kCARTESIAN) {
+      geometry.setAttribute('position', new BufferAttribute(positions, 3));
+      geometry.setAttribute('normal', new BufferAttribute(normals, 3));
+   } else {
+      convertBuf(painter, positions);
+      geometry.setAttribute('position', new BufferAttribute(positions, 3));
+      geometry.computeVertexNormals();
+   }
+
+   return geometry;
+}
+
+
 /** @summary Set default camera position
   * @private */
 function setCameraPosition(fp, first_time) {
@@ -1139,41 +1184,6 @@ function convert3DtoPadNDC(x, y, z) {
 function assignFrame3DMethods(fpainter) {
    Object.assign(fpainter, { create3DScene, render3D, resize3D, highlightBin3D, set3DOptions, drawXYZ, convert3DtoPadNDC });
 }
-
-
-function convertBuf(painter, pos) {
-   if (painter.options.System === kCARTESIAN || painter.options.System !== kCYLINDRICAL)
-      return pos;
-   let fp = painter.getFramePainter(),
-       grminx = -fp.size_x3d, grmaxx = fp.size_x3d,
-       grminy = -fp.size_y3d, grmaxy = fp.size_y3d,
-       grminz = 0, grmaxz = 2*fp.size_z3d;
-
-   for (let i = 0; i < pos.length; i += 3) {
-      let angle = -(pos[i] - grminx) / (grmaxx - grminx) * 2 * Math.PI,
-          radius = 0.5 + (pos[i + 2] - grminz)/(grmaxz - grminz)/2;
-
-      pos[i] = Math.cos(angle) * radius * fp.size_x3d;
-      pos[i+2] = (0.5 + Math.sin(angle) * radius) * fp.size_x3d;
-   }
-
-   return pos;
-}
-
-function createLegoGeom(painter, positions, normals) {
-   let geometry = new BufferGeometry();
-   if (painter.options.System === kCARTESIAN) {
-      geometry.setAttribute('position', new BufferAttribute(positions, 3));
-      geometry.setAttribute('normal', new BufferAttribute(normals, 3));
-   } else {
-      convertBuf(painter, positions);
-      geometry.setAttribute('position', new BufferAttribute(positions, 3));
-      geometry.computeVertexNormals();
-   }
-
-   return geometry;
-}
-
 
 /** @summary Draw histograms in 3D mode
   * @private */
