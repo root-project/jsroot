@@ -103,6 +103,17 @@ function convertBuf(painter, pos) {
          pos[i+2] = (1 + radius * Math.sin(theta)) * fp.size_z3d;
       }
 
+   else if (painter.options.System === kRAPIDITY)
+      for (let i = 0; i < pos.length; i += 3) {
+         let phi = (1 - pos[i] / fp.size_x3d) * Math.PI,
+             theta = pos[i+1] / fp.size_y3d * Math.PI,
+             radius = 0.5 + pos[i+2]/fp.size_z3d/4;
+
+         pos[i] = radius * Math.cos(phi) * fp.size_x3d;
+         pos[i+1] = radius * Math.sin(theta) / Math.cos(theta) * fp.size_y3d / 2;
+         pos[i+2] = (1 + radius * Math.sin(phi)) * fp.size_z3d;
+      }
+
    return pos;
 }
 
