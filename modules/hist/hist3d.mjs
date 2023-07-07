@@ -427,7 +427,7 @@ function highlightBin3D(tip, selfmesh) {
          const geom = new BufferGeometry();
          geom.setAttribute('position', new BufferAttribute(pos, 3));
          geom.setAttribute('normal', new BufferAttribute(norm, 3));
-         const material = new MeshBasicMaterial({ color: color, opacity: opacity, vertexColors: false });
+         const material = new MeshBasicMaterial({ color, opacity, vertexColors: false, side: DoubleSide });
          tooltip_mesh = new Mesh(geom, material);
       } else {
          pos = tooltip_mesh.geometry.attributes.position.array;
@@ -455,11 +455,16 @@ function highlightBin3D(tip, selfmesh) {
       }
       this.tooltip_mesh = tooltip_mesh;
       this.toplevel.add(tooltip_mesh);
+
+      if (tip.$painter?.options.System !== kCARTESIAN) {
+         convertBuf(tip.$painter, pos);
+         tooltip_mesh.geometry.computeVertexNormals();
+      }
    }
 
    if (changed) this.render3D();
 
-   if (changed && isFunc(tip.$painter?.redrawProjection))
+   if (changed && tip.$projection && isFunc(tip.$painter?.redrawProjection))
       tip.$painter.redrawProjection(tip.ix-1, tip.ix, tip.iy-1, tip.iy);
 
    if (changed && mainp?.getObject())
@@ -1155,21 +1160,6 @@ function convertBuf(painter, pos) {
    return pos;
 }
 
-function convertTip(painter, tip) {
-   if (painter.options.System === kCARTESIAN || painter.options.System !== kCYLINDRICAL)
-      return;
-
-   let pos = [tip.x1, tip.y1, tip.z1, tip.x2, tip.y2, tip.z2];
-   convertBuf(painter, pos);
-
-   tip.x1 = Math.min(pos[0], pos[3]);
-   tip.x2 = Math.max(pos[0], pos[3]);
-   tip.y1 = Math.min(pos[1], pos[4]);
-   tip.y2 = Math.max(pos[1], pos[4]);
-   tip.z1 = Math.min(pos[2], pos[5]);
-   tip.z2 = Math.max(pos[2], pos[5]);
-}
-
 function createLegoGeom(painter, positions, normals) {
    let geometry = new BufferGeometry();
    if (painter.options.System === kCARTESIAN) {
@@ -1428,11 +1418,9 @@ function drawBinsLego(painter, is_v7 = false) {
          tip.z1 = main.grz(Math.max(this.zmin, binz1));
          tip.z2 = main.grz(Math.min(this.zmax, binz2));
 
-         convertTip(p, tip);
-
          tip.color = this.tip_color;
-
-         if (p.is_projection && (p.getDimension() == 2)) tip.$painter = p; // used only for projections
+         tip.$painter = p;
+         tip.$projection = p.is_projection && (p.getDimension() == 2);
 
          return tip;
       };
