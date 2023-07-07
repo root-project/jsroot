@@ -354,7 +354,7 @@ class TGraphPolarPainter extends ObjectPainter {
 
       this.draw_g.attr('transform', main.draw_g.attr('transform'));
 
-      let mpath = '', epath = '', lpath = '', bins = [];
+      let mpath = '', epath = '', bins = [];
 
       for (let n = 0; n < graph.fNpoints; ++n) {
 
@@ -376,24 +376,23 @@ class TGraphPolarPainter extends ObjectPainter {
          if (this.options.mark)
             mpath += this.markeratt.create(pos.grx, pos.gry);
 
-         if (this.options.line || this.options.fill) {
-            lpath += (lpath ? 'L' : 'M') + pos.grx + ',' + pos.gry;
-         }
-
-         if (this.options.curve)
+         if (this.options.curve || this.options.line || this.options.fill)
             bins.push(pos);
       }
 
-      if (this.options.fill && lpath)
-         this.draw_g.append('svg:path')
-             .attr('d', lpath + 'Z')
-             .call(this.fillatt.func);
+      if ((this.options.fill || this.options.line) && bins.length) {
+         let lpath = buildSvgCurve(bins, { line: true });
+         if (this.options.fill)
+            this.draw_g.append('svg:path')
+                .attr('d', lpath + 'Z')
+                .call(this.fillatt.func);
 
-      if (this.options.line && lpath)
-         this.draw_g.append('svg:path')
-             .attr('d', lpath)
-             .style('fill', 'none')
-             .call(this.lineatt.func);
+         if (this.options.line)
+            this.draw_g.append('svg:path')
+                .attr('d', lpath)
+                .style('fill', 'none')
+                .call(this.lineatt.func);
+      }
 
       if (this.options.curve && bins.length)
          this.draw_g.append('svg:path')
