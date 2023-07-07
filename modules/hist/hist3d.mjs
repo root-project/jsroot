@@ -1773,44 +1773,43 @@ function drawBinsSurf3D(painter, is_v7 = false) {
       levels = [main_grz_min, main_grz_max]; // just cut top/bottom parts
    }
 
-   function RecalculateNormals(arr, normindx) {
-      for (let ii = handle.i1; ii < handle.i2; ++ii) {
-         for (let jj = handle.j1; jj < handle.j2; ++jj) {
-            let bin = ((ii-handle.i1) * (handle.j2-handle.j1) + (jj-handle.j1)) * 8;
-
-            if (normindx[bin] === -1) continue; // nothing there
-
-            let beg = (normindx[bin]  >= 0) ? bin : bin+9+normindx[bin],
-                end = bin+8, sumx = 0, sumy = 0, sumz = 0;
-
-            for (let kk = beg; kk < end; ++kk) {
-               let indx = normindx[kk];
-               if (indx < 0) return console.error('FAILURE in NORMALS RECALCULATIONS');
-               sumx+=arr[indx];
-               sumy+=arr[indx+1];
-               sumz+=arr[indx+2];
-            }
-
-            sumx = sumx/(end-beg); sumy = sumy/(end-beg); sumz = sumz/(end-beg);
-
-            for (let kk = beg; kk < end; ++kk) {
-               let indx = normindx[kk];
-               arr[indx] = sumx;
-               arr[indx+1] = sumy;
-               arr[indx+2] = sumz;
-            }
-         }
-      }
-   }
-
    handle.grz = main_grz;
    handle.grz_min = main_grz_min;
    handle.grz_max = main_grz_max;
 
    buildSurf3D(histo, handle, ilevels, (lvl, pos, normindx) => {
-      let geometry = createLegoGeom(painter, pos);
+      let geometry = createLegoGeom(painter, pos),
+          normals = geometry.getAttribute('normal').array;
+
+      // recalculate normals
       if (handle.donormals && (lvl === 1))
-         RecalculateNormals(geometry.getAttribute('normal').array, normindx);
+         for (let ii = handle.i1; ii < handle.i2; ++ii) {
+            for (let jj = handle.j1; jj < handle.j2; ++jj) {
+               let bin = ((ii-handle.i1) * (handle.j2 - handle.j1) + (jj - handle.j1)) * 8;
+
+               if (normindx[bin] === -1) continue; // nothing there
+
+               let beg = (normindx[bin]  >= 0) ? bin : bin+9+normindx[bin],
+                   end = bin+8, sumx = 0, sumy = 0, sumz = 0;
+
+               for (let kk = beg; kk < end; ++kk) {
+                  let indx = normindx[kk];
+                  if (indx < 0) return console.error('FAILURE in NORMALS RECALCULATIONS');
+                  sumx += normals[indx];
+                  sumy += normals[indx+1];
+                  sumz += normals[indx+2];
+               }
+
+               sumx = sumx/(end-beg); sumy = sumy/(end-beg); sumz = sumz/(end-beg);
+
+               for (let kk = beg; kk < end; ++kk) {
+                  let indx = normindx[kk];
+                  normals[indx] = sumx;
+                  normals[indx+1] = sumy;
+                  normals[indx+2] = sumz;
+               }
+            }
+         }
 
       let color, material;
       if (is_v7) {
