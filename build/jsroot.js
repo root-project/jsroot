@@ -11618,10 +11618,8 @@ class ObjectPainter extends BasePainter {
      * @desc generic method to delete all graphical elements, associated with the painter
      * @protected */
    removeG() {
-      if (this.draw_g) {
-         this.draw_g.remove();
-         delete this.draw_g;
-      }
+      this.draw_g?.remove();
+      delete this.draw_g;
    }
 
    /** @summary Returns created <g> element used for object drawing
@@ -62940,36 +62938,20 @@ class TFramePainter extends ObjectPainter {
       delete this.grx;
       delete this.gry;
       delete this.grz;
-
-      if (this.x_handle) {
-         this.x_handle.cleanup();
-         delete this.x_handle;
-      }
-
-      if (this.y_handle) {
-         this.y_handle.cleanup();
-         delete this.y_handle;
-      }
-
-      if (this.z_handle) {
-         this.z_handle.cleanup();
-         delete this.z_handle;
-      }
-
-      // these are drawing of second axes
       delete this.grx2;
       delete this.gry2;
 
-      if (this.x2_handle) {
-         this.x2_handle.cleanup();
-         delete this.x2_handle;
-      }
+      this.x_handle?.cleanup();
+      this.y_handle?.cleanup();
+      this.z_handle?.cleanup();
+      this.x2_handle?.cleanup();
+      this.y2_handle?.cleanup();
 
-      if (this.y2_handle) {
-         this.y2_handle.cleanup();
-         delete this.y2_handle;
-      }
-
+      delete this.x_handle;
+      delete this.y_handle;
+      delete this.z_handle;
+      delete this.x2_handle;
+      delete this.y2_handle;
    }
 
    /** @summary remove all axes drawings */
@@ -62980,9 +62962,8 @@ class TFramePainter extends ObjectPainter {
       this.x2_handle?.removeG();
       this.y2_handle?.removeG();
 
-      let g = this.getG();
-      g?.selectChild('.grid_layer').selectAll('*').remove();
-      g?.selectChild('.axis_layer').selectAll('*').remove();
+      this.draw_g?.selectChild('.grid_layer').selectAll('*').remove();
+      this.draw_g?.selectChild('.axis_layer').selectAll('*').remove();
       this.axes_drawn = false;
    }
 
@@ -75654,7 +75635,8 @@ function render3D(tmout) {
    if (this.first_render_tm === 0) {
       this.first_render_tm = tm2.getTime() - tm1.getTime();
       this.enable_highlight = (this.first_render_tm < 1200) && this.isTooltipAllowed();
-      console.log(`three.js r${REVISION}, first render tm = ${this.first_render_tm}`);
+      if (this.first_render_tm > 500)
+         console.log(`three.js r${REVISION}, first render tm = ${this.first_render_tm}`);
    }
 
    if (this.processRender3D)
@@ -76665,11 +76647,6 @@ function drawBinsLego(painter, is_v7 = false) {
       mesh.handle = handle;
 
       mesh.tooltip = function(intersect) {
-         if (!Number.isInteger(intersect.faceIndex)) {
-            console.error(`faceIndex not provided, three.js version ${REVISION}`);
-            return null;
-         }
-
          if ((intersect.faceIndex < 0) || (intersect.faceIndex >= this.face_to_bins_index.length)) return null;
 
          const p = this.painter,
@@ -76894,11 +76871,6 @@ function drawBinsError3D(painter, is_v7 = false) {
     line.tip_color = (histo.fLineColor === 3) ? 0xFF0000 : 0x00FF00;
 
     line.tooltip = function(intersect) {
-       if (!Number.isInteger(intersect.index)) {
-          console.error(`segment index not provided, three.js version ${REVISION}`);
-          return null;
-       }
-
        let pos = Math.floor(intersect.index / 6);
        if ((pos < 0) || (pos >= this.intersect_index.length)) return null;
        let p = this.painter,
@@ -78971,11 +78943,6 @@ class TH3Painter extends THistPainter {
          mesh.tip_color = histo.fMarkerColor === 3 ? 0xFF0000 : 0x00FF00;
 
          mesh.tooltip = function(intersect) {
-            if (!Number.isInteger(intersect.index)) {
-               console.error(`intersect.index not provided, three.js version ${REVISION}`);
-               return null;
-            }
-
             let indx = Math.floor(intersect.index / this.nvertex);
             if ((indx < 0) || (indx >= this.bins.length)) return null;
 
@@ -79272,10 +79239,6 @@ class TH3Painter extends THistPainter {
          combined_bins.use_scale = use_scale;
 
          combined_bins.tooltip = function(intersect) {
-            if (!Number.isInteger(intersect.faceIndex)) {
-               console.error(`intersect.faceIndex not provided, three.js version ${REVISION}`);
-               return null;
-            }
             let indx = Math.floor(intersect.faceIndex / this.bins_faces);
             if ((indx < 0) || (indx >= this.bins.length)) return null;
 
@@ -91008,7 +90971,8 @@ class TGeoPainter extends ObjectPainter {
 
       if ((this.first_render_tm === 0) && (measure === true)) {
          this.first_render_tm = tm2.getTime() - tm1.getTime();
-         console.log(`three.js r${REVISION}, first render tm = ${this.first_render_tm}`);
+         if (this.first_render_tm > 500)
+            console.log(`three.js r${REVISION}, first render tm = ${this.first_render_tm}`);
       }
 
       afterRender3D(this._renderer);
@@ -105058,10 +105022,6 @@ async function drawPolyMarker3D$1() {
       fp.toplevel.add(mesh);
 
       mesh.tooltip = function(intersect) {
-         if (!Number.isInteger(intersect.index)) {
-            console.error(`intersect.index not provided, three.js version ${REVISION}`);
-            return null;
-         }
          let indx = Math.floor(intersect.index / this.nvertex);
          if ((indx < 0) || (indx >= this.index.length)) return null;
 
@@ -105462,11 +105422,6 @@ class TGraph2DPainter extends ObjectPainter {
 
    /** @summary Function handles tooltips in the mesh */
    graph2DTooltip(intersect) {
-      if (!Number.isInteger(intersect.index)) {
-         console.error(`intersect.index not provided, three.js version ${REVISION}`);
-         return null;
-      }
-
       let indx = Math.floor(intersect.index / this.nvertex);
       if ((indx < 0) || (indx >= this.index.length)) return null;
       let sqr = v => v*v;
@@ -105743,21 +105698,18 @@ class TGraphPolargramPainter extends ObjectPainter {
 
    /** @summary Translate coordinates */
    translate(angle, radius, keep_float) {
-      let _rx = this.r(radius), _ry = _rx/this.szx*this.szy,
-          pos = {
-            x: _rx * Math.cos(-angle - this.angle),
-            y: _ry * Math.sin(-angle - this.angle),
-            rx: _rx,
-            ry: _ry
-         };
+      let rx = this.r(radius),
+          ry = rx/this.szx*this.szy,
+          grx = rx * Math.cos(-angle - this.angle),
+          gry = ry * Math.sin(-angle - this.angle);
 
       if (!keep_float) {
-         pos.x = Math.round(pos.x);
-         pos.y = Math.round(pos.y);
-         pos.rx = Math.round(pos.rx);
-         pos.ry = Math.round(pos.ry);
+         grx = Math.round(grx);
+         gry = Math.round(gry);
+         rx = Math.round(rx);
+         ry = Math.round(ry);
       }
-      return pos;
+      return { grx, gry, rx, ry };
    }
 
    /** @summary format label for radius ticks */
@@ -106075,7 +106027,7 @@ class TGraphPolarPainter extends ObjectPainter {
 
       this.draw_g.attr('transform', main.draw_g.attr('transform'));
 
-      let mpath = '', epath = '', lpath = '', bins = [];
+      let mpath = '', epath = '', bins = [];
 
       for (let n = 0; n < graph.fNpoints; ++n) {
 
@@ -106084,40 +106036,36 @@ class TGraphPolarPainter extends ObjectPainter {
          if (this.options.err) {
             let pos1 = main.translate(graph.fX[n], graph.fY[n] - graph.fEY[n]),
                 pos2 = main.translate(graph.fX[n], graph.fY[n] + graph.fEY[n]);
-            epath += `M${pos1.x},${pos1.y}L${pos2.x},${pos2.y}`;
+            epath += `M${pos1.grx},${pos1.gry}L${pos2.grx},${pos2.gry}`;
 
             pos1 = main.translate(graph.fX[n] + graph.fEX[n], graph.fY[n]);
             pos2 = main.translate(graph.fX[n] - graph.fEX[n], graph.fY[n]);
 
-            epath += `M${pos1.x},${pos1.y}A${pos2.rx},${pos2.ry},0,0,1,${pos2.x},${pos2.y}`;
+            epath += `M${pos1.grx},${pos1.gry}A${pos2.rx},${pos2.ry},0,0,1,${pos2.grx},${pos2.gry}`;
          }
 
          let pos = main.translate(graph.fX[n], graph.fY[n]);
 
          if (this.options.mark)
-            mpath += this.markeratt.create(pos.x, pos.y);
+            mpath += this.markeratt.create(pos.grx, pos.gry);
 
-         if (this.options.line || this.options.fill) {
-            lpath += (lpath ? 'L' : 'M') + pos.x + ',' + pos.y;
-         }
-
-         if (this.options.curve) {
-            pos.grx = pos.x;
-            pos.gry = pos.y;
+         if (this.options.curve || this.options.line || this.options.fill)
             bins.push(pos);
-         }
       }
 
-      if (this.options.fill && lpath)
-         this.draw_g.append('svg:path')
-             .attr('d', lpath + 'Z')
-             .call(this.fillatt.func);
+      if ((this.options.fill || this.options.line) && bins.length) {
+         let lpath = buildSvgCurve(bins, { line: true });
+         if (this.options.fill)
+            this.draw_g.append('svg:path')
+                .attr('d', lpath + 'Z')
+                .call(this.fillatt.func);
 
-      if (this.options.line && lpath)
-         this.draw_g.append('svg:path')
-             .attr('d', lpath)
-             .style('fill', 'none')
-             .call(this.lineatt.func);
+         if (this.options.line)
+            this.draw_g.append('svg:path')
+                .attr('d', lpath)
+                .style('fill', 'none')
+                .call(this.lineatt.func);
+      }
 
       if (this.options.curve && bins.length)
          this.draw_g.append('svg:path')
@@ -113204,10 +113152,8 @@ class RFramePainter extends RObjectPainter {
    cleanXY() {
       // remove all axes drawings
       let clean = (name,grname) => {
-         if (this[name]) {
-            this[name].cleanup();
-            delete this[name];
-         }
+         this[name]?.cleanup();
+         delete this[name];
          delete this[grname];
       };
 
@@ -119057,7 +119003,7 @@ let RH1Painter$2 = class RH1Painter extends RHistPainter {
 
       let left = handle.i1, right = handle.i2, di = handle.stepi,
           histo = this.getHisto(), xaxis = this.getAxis('x'),
-          i, x, grx, y, yerr, gry1, gry2,
+          i, x, grx, y, yerr, gry,
           bins1 = [], bins2 = [];
 
       for (i = left; i < right; i += di) {
@@ -119069,11 +119015,11 @@ let RH1Painter$2 = class RH1Painter extends RHistPainter {
          yerr = histo.getBinError(i+1);
          if (funcs.logy && (y-yerr < funcs.scale_ymin)) continue;
 
-         gry1 = Math.round(funcs.gry(y + yerr));
-         gry2 = Math.round(funcs.gry(y - yerr));
+         gry = Math.round(funcs.gry(y + yerr));
+         bins1.push({grx, gry});
 
-         bins1.push({grx: grx, gry: gry1});
-         bins2.unshift({grx: grx, gry: gry2});
+         gry = Math.round(funcs.gry(y - yerr));
+         bins2.unshift({grx, gry});
       }
 
       let path1 = buildSvgCurve(bins1, { line: this.options.ErrorKind !== 4 }),
@@ -121332,11 +121278,6 @@ class RH3Painter extends RHistPainter {
          mesh.tip_color = 0x00FF00;
 
          mesh.tooltip = function(intersect) {
-            if (!Number.isInteger(intersect.index)) {
-               console.error(`intersect.index not provided, three.js version ${REVISION}`);
-               return null;
-            }
-
             let indx = Math.floor(intersect.index / this.nvertex);
             if ((indx < 0) || (indx >= this.bins.length)) return null;
 
@@ -121617,10 +121558,6 @@ class RH3Painter extends RHistPainter {
          combined_bins.use_scale = use_scale;
 
          combined_bins.tooltip = function(intersect) {
-            if (!Number.isInteger(intersect.faceIndex)) {
-               console.error(`intersect.faceIndex not provided, three.js version ${REVISION}`);
-               return null;
-            }
             let indx = Math.floor(intersect.faceIndex / this.bins_faces);
             if ((indx < 0) || (indx >= this.bins.length)) return null;
 
