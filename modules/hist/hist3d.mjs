@@ -17,7 +17,7 @@ import { buildHist2dContour, buildSurf3D } from '../hist2d/TH2Painter.mjs';
   * @private */
 function testAxisVisibility(camera, toplevel, fb, bb) {
    let top;
-   if (toplevel && toplevel.children)
+   if (toplevel?.children)
       for (let n = 0; n < toplevel.children.length; ++n) {
          top = toplevel.children[n];
          if (top.axis_draw) break;
@@ -121,7 +121,10 @@ function createLegoGeom(painter, positions, normals) {
    let geometry = new BufferGeometry();
    if (painter.options.System === kCARTESIAN) {
       geometry.setAttribute('position', new BufferAttribute(positions, 3));
-      geometry.setAttribute('normal', new BufferAttribute(normals, 3));
+      if (normals)
+         geometry.setAttribute('normal', new BufferAttribute(normals, 3));
+      else
+         geometry.computeVertexNormals();
    } else {
       convertBuf(painter, positions);
       geometry.setAttribute('position', new BufferAttribute(positions, 3));
@@ -1778,9 +1781,9 @@ function drawBinsSurf3D(painter, is_v7 = false) {
             if (normindx[bin] === -1) continue; // nothing there
 
             let beg = (normindx[bin]  >= 0) ? bin : bin+9+normindx[bin],
-                end = bin+8, sumx=0, sumy = 0, sumz = 0;
+                end = bin+8, sumx = 0, sumy = 0, sumz = 0;
 
-            for (let kk=beg;kk<end;++kk) {
+            for (let kk = beg; kk < end; ++kk) {
                let indx = normindx[kk];
                if (indx < 0) return console.error('FAILURE in NORMALS RECALCULATIONS');
                sumx+=arr[indx];
@@ -1790,7 +1793,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
             sumx = sumx/(end-beg); sumy = sumy/(end-beg); sumz = sumz/(end-beg);
 
-            for (let kk=beg;kk<end;++kk) {
+            for (let kk = beg; kk < end; ++kk) {
                let indx = normindx[kk];
                arr[indx] = sumx;
                arr[indx+1] = sumy;
@@ -1805,9 +1808,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
    handle.grz_max = main_grz_max;
 
    buildSurf3D(histo, handle, ilevels, (lvl, pos, normindx) => {
-      let geometry = new BufferGeometry();
-      geometry.setAttribute('position', new BufferAttribute(pos, 3));
-      geometry.computeVertexNormals();
+      let geometry = createLegoGeom(painter, pos);
       if (handle.donormals && (lvl === 1))
          RecalculateNormals(geometry.getAttribute('normal').array, normindx);
 
@@ -1843,7 +1844,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
          material = new LineBasicMaterial(getMaterialArgs(color, { linewidth: histo.fLineWidth }));
       }
 
-      let line = createLineSegments(lpos, material);
+      let line = createLineSegments(convertBuf(painter, lpos), material);
       line.painter = painter;
       main.toplevel.add(line);
    });
@@ -1904,11 +1905,8 @@ function drawBinsSurf3D(painter, is_v7 = false) {
                 }
              }
 
-             const geometry = new BufferGeometry();
-             geometry.setAttribute('position', new BufferAttribute(pos, 3));
-             geometry.setAttribute('normal', new BufferAttribute(norm, 3));
-
-             const material = new MeshBasicMaterial(getMaterialArgs(palette.getColor(colindx), { side: DoubleSide, opacity: 0.5, vertexColors: false })),
+             const geometry = createLegoGeom(painter, pos, norm),
+                   material = new MeshBasicMaterial(getMaterialArgs(palette.getColor(colindx), { side: DoubleSide, opacity: 0.5, vertexColors: false })),
                    mesh = new Mesh(geometry, material);
              mesh.painter = painter;
              main.toplevel.add(mesh);
