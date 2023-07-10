@@ -1,3 +1,7 @@
+/** @module draw
+  * @desc Functions and classes provided from io.mjs module
+  */
+
 import { createHttpRequest, BIT, loadScript, internals, settings, browser,
          create, getMethods, addMethods, isNodeJs, isObject, isFunc, isStr,
          clTObject, clTNamed, clTString, clTObjString, clTList, clTMap, clTObjArray, clTClonesArray,
