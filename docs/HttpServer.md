@@ -625,7 +625,7 @@ public:
    TUserHandler(const char *name, const char *title) : THttpWSHandler(name, title) {}
 
    // provide custom HTML page when open correspondent address
-   TString GetDefaultPageContent() override { return ''; }
+   TString GetDefaultPageContent() override { return "file:ws.htm"; }
 
    Bool_t ProcessWS(THttpCallArg *arg) override;
 };
@@ -676,5 +676,5 @@ serv->Register(handler);
 ```
 
 After that web socket connection can be established with the address `ws://host_name:8080/name1/root.websocket`
-Example client code can be found in `$ROOTSYS/tutorials/http/ws.htm` file. Actually, custom HTML page for
-websocket handler can be specified with `TUserHandler::GetDefaultPageContent()` method returning `"file:ws.htm"`.
+Example client code can be found in `$ROOTSYS/tutorials/http/ws.htm` file. Custom HTML page for
+websocket handler is specified with `TUserHandler::GetDefaultPageContent()` method returning `"file:ws.htm"`.
