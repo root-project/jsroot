@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '7/07/2023';
+let version_date = '10/07/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -8283,7 +8283,7 @@ class BasePainter {
           layout_selector = (layout == 'simple') ? '' : res.property('layout_selector');
 
       if (layout_selector)
-         res = res.selectChild(layout_selector);
+         res = res.select(layout_selector);
 
       // one could redirect here
       if (!is_direct && !res.empty() && use_enlarge)
@@ -60649,6 +60649,8 @@ class TAxisPainter extends ObjectPainter {
 
 const logminfactorX = 0.0001, logminfactorY = 3e-4;
 
+/** @summary Configure tooltip enable flag for painter
+  * @private */
 function setPainterTooltipEnabled(painter, on) {
    if (!painter) return;
 
@@ -60660,6 +60662,50 @@ function setPainterTooltipEnabled(painter, on) {
    // this is 3D control object
    if (isFunc(painter.control?.setTooltipEnabled))
       painter.control.setTooltipEnabled(on);
+}
+
+/** @summary Returns coordinates transformation func
+  * @private */
+function getEarthProjectionFunc(id) {
+   switch (id) {
+      // Aitoff2xy
+      case 1: return (l, b) => {
+         const DegToRad = Math.PI/180,
+               alpha2 = (l/2)*DegToRad,
+               delta  = b*DegToRad,
+               r2     = Math.sqrt(2),
+               f      = 2*r2/Math.PI,
+               cdec   = Math.cos(delta),
+               denom  = Math.sqrt(1. + cdec*Math.cos(alpha2));
+         return {
+            x: cdec*Math.sin(alpha2)*2.*r2/denom/f/DegToRad,
+            y: Math.sin(delta)*r2/denom/f/DegToRad
+         };
+      };
+      // mercator
+      case 2: return (l, b) => { return { x: l, y: Math.log(Math.tan((Math.PI/2 + b/180*Math.PI)/2)) }; };
+      // sinusoidal
+      case 3: return (l, b) => { return { x: l*Math.cos(b/180*Math.PI), y: b } };
+      // parabolic
+      case 4: return (l, b) => { return { x: l*(2.*Math.cos(2*b/180*Math.PI/3) - 1), y: 180*Math.sin(b/180*Math.PI/3) }; };
+      // Mollweide projection
+      case 5: return (l, b) => {
+         const theta0 = b*Math.PI/180;
+         let theta = theta0, num, den;
+         for (let i = 0; i < 100; i++) {
+            num = 2 * theta + Math.sin(2 * theta) - Math.PI * Math.sin(theta0);
+            den = 4 * (Math.cos(theta)**2);
+            theta -= num / den;
+            if (Math.abs(num / den) < 1e-4) break;
+         }
+
+         return {
+            x: l * Math.cos(theta),
+            y: 90 * Math.sin(theta)
+         };
+      };
+
+   }
 }
 
 // global, allow single drag at once
@@ -62220,32 +62266,7 @@ class TFramePainter extends ObjectPainter {
    getLastEventPos() { return this.fLastEventPnt; }
 
    /** @summary Returns coordinates transformation func */
-   getProjectionFunc() {
-      switch (this.projection) {
-         // Aitoff2xy
-         case 1: return (l, b) => {
-            const DegToRad = Math.PI/180,
-                  alpha2 = (l/2)*DegToRad,
-                  delta  = b*DegToRad,
-                  r2     = Math.sqrt(2),
-                  f      = 2*r2/Math.PI,
-                  cdec   = Math.cos(delta),
-                  denom  = Math.sqrt(1. + cdec*Math.cos(alpha2));
-            return {
-               x: cdec*Math.sin(alpha2)*2.*r2/denom/f/DegToRad,
-               y: Math.sin(delta)*r2/denom/f/DegToRad
-            };
-         };
-         // mercator
-         case 2: return (l, b) => { return { x: l, y: Math.log(Math.tan((Math.PI/2 + b/180*Math.PI)/2)) }; };
-         // sinusoidal
-         case 3: return (l, b) => { return { x: l*Math.cos(b/180*Math.PI), y: b } };
-         // parabolic
-         case 4: return (l, b) => { return { x: l*(2.*Math.cos(2*b/180*Math.PI/3) - 1), y: 180*Math.sin(b/180*Math.PI/3) }; };
-         // Mollweide projection
-         case 5:  return (l, b) => { return { x: l*Math.cos(b/180*Math.PI), y: 90*Math.sin(b/180*Math.PI) }; };
-      }
-   }
+   getProjectionFunc() { return getEarthProjectionFunc(this.projection); }
 
    /** @summary Rcalculate frame ranges using specified projection functions */
    recalculateRange(Proj, change_x, change_y) {
@@ -71951,9 +71972,9 @@ class THistPainter extends ObjectPainter {
       if (this.options.Mode3D) {
          if (!this.options.Surf && !this.options.Lego && !this.options.Error) {
             if ((this.nbinsx >= 50) || (this.nbinsy >= 50))
-               this.options.Lego = this.options.Color ? 14 : 13;
+               this.options.Lego = this.options.Scat ? 13 : 14;
             else
-               this.options.Lego = this.options.Color ? 12 : 1;
+               this.options.Lego = this.options.Scat ? 1 : 12;
 
             this.options.Zero = false; // do not show zeros by default
          }
@@ -72916,6 +72937,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
          this.options.Color = true;
       } else {
          this.options.Color = !this.options.Color;
+         this.options.Scat = !this.options.Color;
       }
 
       this._can_move_colz = true; // indicate that next redraw can move Z scale
@@ -112648,30 +112670,7 @@ class RFramePainter extends RObjectPainter {
    }
 
    /** @summary Returns coordinates transformation func */
-   getProjectionFunc() {
-      switch (this.projection) {
-         // Aitoff2xy
-         case 1: return (l, b) => {
-            const DegToRad = Math.PI/180,
-                  alpha2 = (l/2)*DegToRad,
-                  delta  = b*DegToRad,
-                  r2     = Math.sqrt(2),
-                  f      = 2*r2/Math.PI,
-                  cdec   = Math.cos(delta),
-                  denom  = Math.sqrt(1. + cdec*Math.cos(alpha2));
-            return {
-               x: cdec*Math.sin(alpha2)*2.*r2/denom/f/DegToRad,
-               y: Math.sin(delta)*r2/denom/f/DegToRad
-            };
-         };
-         // mercator
-         case 2: return (l, b) => { return { x: l, y: Math.log(Math.tan((Math.PI/2 + b/180*Math.PI)/2)) }; };
-         // sinusoidal
-         case 3: return (l, b) => { return { x: l*Math.cos(b/180*Math.PI), y: b } };
-         // parabolic
-         case 4: return (l, b) => { return { x: l*(2.*Math.cos(2*b/180*Math.PI/3) - 1), y: 180*Math.sin(b/180*Math.PI/3) }; };
-      }
-   }
+   getProjectionFunc() { return getEarthProjectionFunc(this.projection); }
 
    /** @summary Rcalculate frame ranges using specified projection functions
      * @desc Not yet used in v7 */
