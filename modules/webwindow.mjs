@@ -1,7 +1,3 @@
-/** @module draw
-  * @desc Functions and classes provided from webwindow.mjs module
-  */
-
 import { httpRequest, createHttpRequest, loadScript, decodeUrl,
          browser, setBatchMode, isBatchMode, isObject, isFunc, isStr, btoa_func } from './core.mjs';
 import { closeCurrentWindow, showProgress, loadOpenui5 } from './gui/utils.mjs';

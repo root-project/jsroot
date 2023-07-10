@@ -1,7 +1,3 @@
-/** @module draw
-  * @desc Functions provided from draw.mjs module
-  */
-
 import { select as d3_select } from './d3.mjs';
 import { loadScript, findFunction, internals, getPromise, isNodeJs, isObject, isFunc, isStr, _ensureJSROOT,
          prROOT, clTObjString, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
@@ -15,6 +11,7 @@ import { clTBranchFunc } from './tree.mjs';
 import { BasePainter, compressSVG, svgToImage, _loadJSDOM } from './base/BasePainter.mjs';
 import { ObjectPainter, cleanup, drawRawText, getElementCanvPainter, getElementMainPainter } from './base/ObjectPainter.mjs';
 import { TPadPainter, clTButton } from './gpad/TPadPainter.mjs';
+
 
 async function import_more() { return import('./draw/more.mjs'); }
 

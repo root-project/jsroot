@@ -1,7 +1,3 @@
-/** @module draw
-  * @desc Functions and classes provided from gui.mjs module
-  */
-
 import { decodeUrl, settings, constants, gStyle, internals, findFunction, parse, isFunc, isStr, isObject } from './core.mjs';
 import { select as d3_select } from './d3.mjs';
 import { HierarchyPainter } from './gui/HierarchyPainter.mjs';

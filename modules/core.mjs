@@ -1,6 +1,3 @@
-/** @module core
-  * @desc Functions and classes which are provided from core.mjs module
-  */
 
 /** @summary version id
   * @desc For the JSROOT release the string in format 'major.minor.patch' like '7.0.0' */
@@ -993,7 +990,6 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
   * @param {string} kind - kind of requested data
   * @param {string} [post_data] - data submitted with post kind of request
   * @return {Promise} Promise for requested data, result type depends from the kind
-  * @function httpRequest
   * @example
   * import { httpRequest } from 'https://root.cern/js/latest/modules/core.mjs';
   * httpRequest('https://root.cern/js/files/thstack.json.gz', 'object')
