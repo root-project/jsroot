@@ -11,6 +11,8 @@ import { detectRightButton } from '../gui/utils.mjs';
 
 const logminfactorX = 0.0001, logminfactorY = 3e-4;
 
+/** @summary Configure tooltip enable flag for painter
+  * @private */
 function setPainterTooltipEnabled(painter, on) {
    if (!painter) return;
 
@@ -67,7 +69,6 @@ function getEarthProjectionFunc(id) {
 
    }
 }
-
 
 // global, allow single drag at once
 let drag_rect = null, drag_kind = '', drag_painter = null;
