@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '10/07/2023';
+let version_date = '11/07/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -60690,11 +60690,15 @@ function getEarthProjectionFunc(id) {
       case 4: return (l, b) => { return { x: l*(2.*Math.cos(2*b/180*Math.PI/3) - 1), y: 180*Math.sin(b/180*Math.PI/3) }; };
       // Mollweide projection
       case 5: return (l, b) => {
-         const theta0 = b*Math.PI/180;
+         const theta0 = b * Math.PI/180;
          let theta = theta0, num, den;
          for (let i = 0; i < 100; i++) {
             num = 2 * theta + Math.sin(2 * theta) - Math.PI * Math.sin(theta0);
             den = 4 * (Math.cos(theta)**2);
+            if (den < 1e-20) {
+               theta = theta0;
+               break;
+            }
             theta -= num / den;
             if (Math.abs(num / den) < 1e-4) break;
          }
@@ -67815,6 +67819,8 @@ class TCanvasPainter extends TPadPainter {
 
       if (!this.proj_painter[kind]) {
 
+         this.proj_painter[kind] = 'init';
+
          let canv = create$1(clTCanvas),
              pad = this.pad,
              main = this.getFramePainter(), drawopt;
@@ -67837,11 +67843,14 @@ class TCanvasPainter extends TPadPainter {
 
          canv.fPrimitives.Add(hist, hopt);
 
-         let promise = this.drawInUI5ProjectionArea
+         let promise = isFunc(this.drawInUI5ProjectionArea)
                        ? this.drawInUI5ProjectionArea(canv, drawopt, kind)
                        : this.drawInSidePanel(canv, drawopt, kind);
 
          return promise.then(painter => { this.proj_painter[kind] = painter; return painter; });
+      } else if (isStr(this.proj_painter[kind])) {
+         console.log('Not ready with first painting', kind);
+         return true;
       }
 
       this.proj_painter[kind].getMainPainter()?.updateObject(hist, hopt);
@@ -72858,6 +72867,11 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
       if ((method.fName == 'SetShowProjectionX') || (method.fName == 'SetShowProjectionY')) {
          this.toggleProjection(method.fName[17], args && parseInt(args) ? parseInt(args) : 1);
+         return true;
+      }
+
+      if (method.fName == 'SetShowProjectionXY') {
+         this.toggleProjection('X' + args.replaceAll(',','_Y'));
          return true;
       }
 
