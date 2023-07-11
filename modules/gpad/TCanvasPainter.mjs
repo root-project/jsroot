@@ -199,7 +199,7 @@ class TCanvasPainter extends TPadPainter {
 
          canv.fPrimitives.Add(hist, hopt);
 
-         let promise = this.drawInUI5ProjectionArea
+         let promise = isFunc(this.drawInUI5ProjectionArea)
                        ? this.drawInUI5ProjectionArea(canv, drawopt, kind)
                        : this.drawInSidePanel(canv, drawopt, kind);
 
