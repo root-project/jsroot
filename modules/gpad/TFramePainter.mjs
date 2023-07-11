@@ -57,12 +57,12 @@ function getEarthProjectionFunc(id) {
          for (let i = 0; i < 100; i++) {
             num = 2 * theta + Math.sin(2 * theta) - Math.PI * Math.sin(theta0);
             den = 4 * (Math.cos(theta)**2);
-            theta -= num / den;
-            if (Math.abs(num / den) < 1e-4) break;
-            if (Math.isnan(theta)) {
+            if (den < 1e-20) {
                theta = theta0;
                break;
             }
+            theta -= num / den;
+            if (Math.abs(num / den) < 1e-4) break;
          }
 
          return {
