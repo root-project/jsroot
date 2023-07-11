@@ -691,6 +691,11 @@ class TH2Painter extends THistPainter {
          return true;
       }
 
+      if (method.fName == 'SetShowProjectionXY') {
+         this.toggleProjection('X' + args.replaceAll(',','_Y'));
+         return true;
+      }
+
       return false;
    }
 
