@@ -424,25 +424,9 @@ class TH1Painter extends THistPainter {
                  .call(this.fillatt.func);
    }
 
-   /** @summary Draw TH1 bins in SVG element
+   /** @summary Draw TH1 as hist/line/curve
      * @return Promise or scalar value */
-   draw1DBins() {
-
-      this.createHistDrawAttributes();
-
-      let pmain = this.getFramePainter(),
-          funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
-          width = pmain.getFrameWidth(), height = pmain.getFrameHeight();
-
-      if (!this.draw_content || (width <= 0) || (height <= 0))
-          return this.removeG();
-
-      if (this.options.Bar)
-         return this.drawBars(height, pmain, funcs);
-
-      if ((this.options.ErrorKind === 3) || (this.options.ErrorKind === 4))
-         return this.drawFilledErrors(funcs);
-
+   drawNormal(funcs, width, height) {
       let left = this.getSelectIndex('x', 'left', -1),
           right = this.getSelectIndex('x', 'right', 2),
           histo = this.getHisto(),
@@ -779,6 +763,27 @@ class TH1Painter extends THistPainter {
 
       if (show_text)
          return this.finishTextDrawing();
+   }
+
+   /** @summary Draw TH1 bins in SVG element
+     * @return Promise or scalar value */
+   draw1DBins() {
+      this.createHistDrawAttributes();
+
+      let pmain = this.getFramePainter(),
+          funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
+          width = pmain.getFrameWidth(), height = pmain.getFrameHeight();
+
+      if (!this.draw_content || (width <= 0) || (height <= 0))
+          return this.removeG();
+
+      if (this.options.Bar)
+         return this.drawBars(height, pmain, funcs);
+
+      if ((this.options.ErrorKind === 3) || (this.options.ErrorKind === 4))
+         return this.drawFilledErrors(funcs);
+
+      return this.drawNormal(funcs, width, height);
    }
 
    /** @summary Provide text information (tooltips) for histogram bin */
