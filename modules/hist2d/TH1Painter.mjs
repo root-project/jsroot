@@ -441,7 +441,7 @@ class TH1Painter extends THistPainter {
          return this.drawBars(height, pmain, funcs);
 
       if ((this.options.ErrorKind === 3) || (this.options.ErrorKind === 4))
-         return this.drawFilledErrors(pmain, funcs);
+         return this.drawFilledErrors(funcs);
 
       let left = this.getSelectIndex('x', 'left', -1),
           right = this.getSelectIndex('x', 'right', 2),
