@@ -12,6 +12,7 @@
      { "opt": "E0", "title": "draw errors, also for empty bins" },
      { "opt": "E1" },
      { "opt": "E1X0", "title": "draw error markers, without horizontal part" },
+     { "name": "E1B", "opt":"E1B,fill_19", "title": "draw histogram as bar chart and e1 errors" },
      { "opt": "P", "title": "draw as markers" },
      { "opt": "P0", "title": "draw as markers, suppress empty bins" },
      { "name": "pE2", "opt": "pE2_fill_11", "title": "draw as marker, fill error area with grey color" },
