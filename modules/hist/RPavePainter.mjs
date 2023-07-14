@@ -1,5 +1,5 @@
 import { settings, isFunc, isStr, gStyle, nsREX } from '../core.mjs';
-import { floatToString, makeTranslateG } from '../base/BasePainter.mjs';
+import { floatToString, makeTranslate } from '../base/BasePainter.mjs';
 import { RObjectPainter } from '../base/RObjectPainter.mjs';
 import { ensureRCanvas } from '../gpad/RCanvasPainter.mjs';
 import { addDragHandler } from '../gpad/TFramePainter.mjs';
@@ -66,7 +66,7 @@ class RPavePainter extends RObjectPainter {
             pave_y = fr.y + offsety;
       }
 
-      makeTranslateG(this.draw_g, pave_x, pave_y);
+      makeTranslate(this.draw_g, pave_x, pave_y);
 
       this.draw_g.append('svg:rect')
                  .attr('x', 0)

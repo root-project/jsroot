@@ -1,6 +1,6 @@
 import { BIT, isFunc, clTLatex, clTMathText, clTAnnotation, clTPolyLine } from '../core.mjs';
 import { rgb as d3_rgb, select as d3_select } from '../d3.mjs';
-import { BasePainter, makeTranslateG } from '../base/BasePainter.mjs';
+import { BasePainter, makeTranslate } from '../base/BasePainter.mjs';
 import { addMoveHandler } from '../gui/utils.mjs';
 import { assignContextMenu, kToFront } from '../gui/menu.mjs';
 
@@ -72,7 +72,7 @@ async function drawText() {
          this.moveDrag = function(dx, dy) {
             this.pos_dx += dx;
             this.pos_dy += dy;
-            makeTranslateG(this.draw_g, this.pos_dx, this.pos_dy);
+            makeTranslate(this.draw_g, this.pos_dx, this.pos_dy);
         }
 
       if (!this.moveEnd)
@@ -92,7 +92,7 @@ async function drawText() {
             let pos = main.convert3DtoPadNDC(text.fX, text.fY, text.fZ),
                 new_x = this.axisToSvg('x', pos.x, true),
                 new_y = this.axisToSvg('y', pos.y, true);
-            makeTranslateG(this.draw_g, new_x - this.pos_x, new_y - this.pos_y);
+            makeTranslate(this.draw_g, new_x - this.pos_x, new_y - this.pos_y);
          };
       }
 
@@ -144,7 +144,7 @@ function drawPolyLine() {
    this.moveDrag = function (dx,dy) {
       this.dx += dx;
       this.dy += dy;
-      makeTranslateG(this.draw_g.select('path'), this.dx, this.dy);
+      makeTranslate(this.draw_g.select('path'), this.dx, this.dy);
    }
 
    this.moveEnd = function(not_changed) {
@@ -254,7 +254,7 @@ function drawEllipse() {
       .call(this.lineatt.func)
       .call(this.fillatt.func);
 
-   makeTranslateG(this.draw_g.select('path'), x, y);
+   makeTranslate(this.draw_g.select('path'), x, y);
 
    assignContextMenu(this, kToFront);
 
@@ -263,7 +263,7 @@ function drawEllipse() {
    this.moveDrag = function (dx,dy) {
       this.x += dx;
       this.y += dy;
-      makeTranslateG(this.draw_g.select('path'), this.x, this.y);
+      makeTranslate(this.draw_g.select('path'), this.x, this.y);
    }
 
    this.moveEnd = function (not_changed) {
@@ -288,7 +288,7 @@ function drawPie() {
        rx = this.axisToSvg('x', pie.fX + pie.fRadius) - xc,
        ry = this.axisToSvg('y', pie.fY + pie.fRadius) - yc;
 
-   makeTranslateG(this.draw_g, xc, yc);
+   makeTranslate(this.draw_g, xc, yc);
 
    // Draw the slices
    let nb = pie.fPieSlices.length, total = 0,
@@ -446,7 +446,7 @@ function drawMarker() {
    this.moveDrag = function (dx,dy) {
       this.dx += dx;
       this.dy += dy;
-      makeTranslateG(this.draw_g.select('path'), this.dx, this.dy);
+      makeTranslate(this.draw_g.select('path'), this.dx, this.dy);
    }
 
    this.moveEnd = function(not_changed) {
@@ -489,7 +489,7 @@ function drawPolyMarker() {
    this.moveDrag = function (dx,dy) {
       this.dx += dx;
       this.dy += dy;
-      makeTranslateG(this.draw_g.select('path'), this.dx, this.dy);
+      makeTranslate(this.draw_g.select('path'), this.dx, this.dy);
    }
 
    this.moveEnd = function(not_changed) {

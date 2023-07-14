@@ -1,5 +1,5 @@
 import { loadScript, settings, isNodeJs, isStr, source_dir, browser } from '../core.mjs';
-import { getElementRect, _loadJSDOM, makeTranslate, makeTranslateG  } from './BasePainter.mjs';
+import { getElementRect, _loadJSDOM, makeTranslate  } from './BasePainter.mjs';
 import { FontHandler } from './FontHandler.mjs';
 
 
@@ -334,7 +334,7 @@ function parseLatex(node, arg, label, curr) {
       x = Math.round(x);
       y = Math.round(y);
 
-      makeTranslateG(pos.g, x, y);
+      makeTranslate(pos.g, x, y);
       pos.rect.x1 += x;
       pos.rect.x2 += x;
       pos.rect.y1 += y;
@@ -354,7 +354,7 @@ function parseLatex(node, arg, label, curr) {
       if ((nelements == 1) && !label && !curr.x && !curr.y)
          return gg;
 
-      return makeTranslateG(gg.append('svg:g'), curr.x, curr.y);
+      return makeTranslate(gg.append('svg:g'), curr.x, curr.y);
    };
 
    const extractSubLabel = (check_first, lbrace, rbrace) => {

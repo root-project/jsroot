@@ -1,5 +1,5 @@
 import { select as d3_select } from '../d3.mjs';
-import { settings, internals, isNodeJs, isFunc, isStr, btoa_func } from '../core.mjs';
+import { settings, internals, isNodeJs, isFunc, isStr, isObject, btoa_func } from '../core.mjs';
 
 
 /** @summary Returns visible rect of element
@@ -693,17 +693,12 @@ async function _loadJSDOM() {
 /** @summary Return translate string for transform attribute of some svg element
   * @return string or null if x and y are zeros
   * @private */
-function makeTranslate(x,y) {
-   if (y) return `translate(${x},${y})`;
-   if (x) return `translate(${x})`;
-   return null;
-}
-
-/** @summary Create translate expression and set to the element
-  * @return element itself
-  * @private */
-function makeTranslateG(g,x,y) {
-   return g.attr('transform', makeTranslate(x,y));
+function makeTranslate(g, x, y) {
+   if (!isObject(g)) {
+      y = x; x = g; g = null;
+   }
+   let res = y ? `translate(${x},${y})` : (x ? `translate(${x})` : null);
+   return g ? g.attr('transform', res) : res;
 }
 
 
@@ -784,4 +779,4 @@ async function svgToImage(svg, image_format, as_buffer) {
 
 export { getElementRect, getAbsPosInCanvas,
          DrawOptions, TRandom, floatToString, buildSvgCurve, compressSVG,
-         BasePainter, _loadJSDOM, makeTranslate, makeTranslateG, addHighlightStyle, svgToImage };
+         BasePainter, _loadJSDOM, makeTranslate, addHighlightStyle, svgToImage };

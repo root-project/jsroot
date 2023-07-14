@@ -74,7 +74,7 @@ let PadButtonsHandler = {
          btns_y = height - sz0;
       }
 
-      btns.attr('transform', makeTranslate(btns_x,btns_y));
+      makeTranslate(btns, btns_x, btns_y);
    },
 
    findPadButton(keyname) {
@@ -572,9 +572,9 @@ class TPadPainter extends ObjectPainter {
              posy = Math.round(rect.height * (1 - gStyle.fDateY));
          if (!is_batch && (posx < 25)) posx = 25;
          if (gStyle.fOptDate > 1) date.setTime(gStyle.fOptDate*1000);
-         dt.attr('transform', makeTranslate(posx, posy))
-           .style('text-anchor', 'start')
-           .text(date.toLocaleString('en-GB'));
+         makeTranslate(dt, posx, posy)
+            .style('text-anchor', 'start')
+            .text(date.toLocaleString('en-GB'));
       }
 
       if (!gStyle.fOptFile || !this.getItemName())
@@ -594,12 +594,10 @@ class TPadPainter extends ObjectPainter {
          df.remove();
       } else {
          if (df.empty()) df = info.append('text').attr('class', 'canvas_item');
-         let rect = this.getPadRect(),
-             posx = Math.round(rect.width * (1 - gStyle.fDateX)),
-             posy = Math.round(rect.height * (1 - gStyle.fDateY));
-         df.attr('transform', makeTranslate(posx, posy))
-           .style('text-anchor', 'end')
-           .text(item_name);
+         let rect = this.getPadRect();
+         makeTranslate(df, Math.round(rect.width * (1 - gStyle.fDateX)), Math.round(rect.height * (1 - gStyle.fDateY)))
+            .style('text-anchor', 'end')
+            .text(item_name);
       }
    }
 

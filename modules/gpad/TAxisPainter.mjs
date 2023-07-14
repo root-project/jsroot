@@ -2,7 +2,7 @@ import { gStyle, settings, constants, clTAxis, clTGaxis } from '../core.mjs';
 import { select as d3_select, drag as d3_drag, timeFormat as d3_timeFormat,
          scaleTime as d3_scaleTime, scaleSymlog as d3_scaleSymlog,
          scaleLog as d3_scaleLog, scaleLinear as d3_scaleLinear } from '../d3.mjs';
-import { floatToString, makeTranslateG, addHighlightStyle } from '../base/BasePainter.mjs';
+import { floatToString, makeTranslate, addHighlightStyle } from '../base/BasePainter.mjs';
 import { ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
 import { FontHandler } from '../base/FontHandler.mjs';
 
@@ -807,7 +807,7 @@ class TAxisPainter extends ObjectPainter {
 
          if (sign_0 === (vertical ? (set_x > 0) : (set_y > 0))) {
             new_x = set_x; new_y = set_y; curr_indx = besti;
-            makeTranslateG(title_g, new_x, new_y);
+            makeTranslate(title_g, new_x, new_y);
          }
 
       }).on('end', evnt => {
@@ -1280,7 +1280,7 @@ class TAxisPainter extends ObjectPainter {
          if (title_g) {
             if (!this.titleOffset && this.vertical && labelsMaxWidth)
                title_shift_x = Math.round(-side * (labelsMaxWidth + 0.7*this.offsetScaling*this.titleSize));
-            makeTranslateG(title_g, title_shift_x, title_shift_y);
+            makeTranslate(title_g, title_shift_x, title_shift_y);
             title_g.property('shift_x', title_shift_x)
                    .property('shift_y', title_shift_y);
          }
