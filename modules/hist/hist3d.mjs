@@ -50,8 +50,8 @@ function createTextGeometry(lbl, size) {
       translate() {
          if (this.geom) {
             // special workaround for path elements, while 3d font is exact height, keep some space on the top
-            let dy = this.kind == 'path' ? this.font_size*0.002 : 0;
-            this.geom.translate(this.x, this.y + dy);
+            // let dy = this.kind == 'path' ? this.font_size*0.002 : 0;
+            this.geom.translate(this.x, this.y);
          }
          this.childs.forEach(chld => {
             chld.x += this.x;
@@ -83,6 +83,10 @@ function createTextGeometry(lbl, size) {
             let arr = value.slice(value.indexOf('(')+1, value.lastIndexOf(')')).split(',');
             this.x += arr[0] ? Number.parseInt(arr[0])*0.01 : 0;
             this.y -= arr[1] ? Number.parseInt(arr[1])*0.01 : 0;
+         } else if ((name == 'x') && (this.kind == 'text')) {
+            this.x += Number.parseInt(value)*0.01;
+         } else if ((name == 'y') && (this.kind == 'text')) {
+            this.y -= Number.parseInt(value)*0.01;
          } else if ((name == 'd') && (this.kind == 'path')) {
             if (get() != 'M') return console.error('Not starts with M');
             let x1 = getN(true), y1 = getN(), next, pnts = [];
@@ -130,7 +134,7 @@ function createTextGeometry(lbl, size) {
    };
 
    let painter = null, node = new TextParseWrapper,
-       arg = { font_size, latex: 1, x: 0, y: 0, text: lbl, align: [ 'start', 'top'], fast: true, font: { size: font_size, isMonospace: () => false, aver_width: 0.8 } };
+       arg = { font_size, latex: 1, x: 0, y: 0, text: lbl, align: [ 'start', 'top'], fast: true, font: { size: font_size, isMonospace: () => false, aver_width: 0.9 } };
 
    produceLatex(painter, node, arg);
 
