@@ -8,12 +8,45 @@ import { assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, Box3D, getMaterialArgs,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind,
          cleanupRender3D, HelveticerRegularFont, createSVGRenderer, create3DLineMaterial } from '../base/base3d.mjs';
-import { translateLaTeX } from '../base/latex.mjs';
+import { isPlainText, translateLaTeX, produceLatex } from '../base/latex.mjs';
 import { kCARTESIAN, kPOLAR, kCYLINDRICAL, kSPHERICAL, kRAPIDITY } from '../hist2d/THistPainter.mjs';
 import { buildHist2dContour, buildSurf3D } from '../hist2d/TH2Painter.mjs';
 
 
 function createTextGeometry(lbl, size) {
+   if (isPlainText(lbl))
+      return new TextGeometry(translateLaTeX(lbl), { font: HelveticerRegularFont, size, height: 0, curveSegments: 5 });
+   console.log('not plain text', lbl);
+
+   class TextParseWrapper {
+
+      constructor(is_text) {
+         this.is_text = is_text ?? false;
+      }
+
+      append(kind) {
+         if (kind == 'svg:g')
+            return new TextParseWrapper;
+         if (kind == 'svg:text')
+            return new TextParseWrapper(true);
+      }
+
+      attr(name, value) {
+         console.log(`set attr ${name} = ${value}`);
+      }
+
+      text(v) {
+         if (this.is_text)
+            console.log('add text', v);
+      }
+
+   };
+
+   let painter = null, node = new TextParseWrapper,
+       arg = { font_size: size, latex: 1, x: 0, y: 0, text: lbl, align: [ 'start', 'top'], fast: true, font: { size, isMonospace: () => false  } };
+
+   produceLatex(painter, node, arg);
+
    return new TextGeometry(translateLaTeX(lbl), { font: HelveticerRegularFont, size, height: 0, curveSegments: 5 });
 }
 
