@@ -137,11 +137,10 @@ function drawPolyLine() {
 
    addMoveHandler(this);
 
-   this.dx = 0;
-   this.dy = 0;
+   this.dx = this.dy = 0;
    this.isndc = isndc;
 
-   this.moveDrag = function (dx,dy) {
+   this.moveDrag = function(dx,dy) {
       this.dx += dx;
       this.dy += dy;
       makeTranslate(this.draw_g.select('path'), this.dx, this.dy);
@@ -257,13 +256,13 @@ function drawEllipse() {
 
    addMoveHandler(this);
 
-   this.moveDrag = function (dx,dy) {
+   this.moveDrag = function(dx,dy) {
       this.x += dx;
       this.y += dy;
       makeTranslate(this.draw_g.select('path'), this.x, this.y);
    }
 
-   this.moveEnd = function (not_changed) {
+   this.moveEnd = function(not_changed) {
       if (not_changed) return;
       let ellipse = this.getObject();
       ellipse.fX1 = this.svgToAxis('x', this.x);
@@ -375,7 +374,7 @@ function drawBox() {
 
    addMoveHandler(this);
 
-   this.moveStart = function (x,y) {
+   this.moveStart = function(x,y) {
       let ww = Math.abs(this.x2 - this.x1), hh = Math.abs(this.y1 - this.y2);
 
       this.c_x1 = Math.abs(x - this.x2) > ww*0.1;
@@ -388,7 +387,7 @@ function drawBox() {
          this.c_x1 = this.c_x2 = false;
    }
 
-   this.moveDrag = function (dx,dy) {
+   this.moveDrag = function(dx,dy) {
       if (this.c_x1) this.x1 += dx;
       if (this.c_x2) this.x2 += dx;
       if (this.c_y1) this.y1 += dy;
@@ -400,7 +399,7 @@ function drawBox() {
       pathes.forEach((path, i) => d3_select(nodes[i]).attr('d', path));
    }
 
-   this.moveEnd = function (not_changed) {
+   this.moveEnd = function(not_changed) {
       if (not_changed) return;
       let box = this.getObject(), exec = '';
       if (this.c_x1) { box.fX1 = this.svgToAxis('x', this.x1); exec += `SetX1(${box.fX1});;`; }
@@ -437,10 +436,9 @@ function drawMarker() {
 
    addMoveHandler(this);
 
-   this.dx = 0;
-   this.dy = 0;
+   this.dx = this.dy = 0;
 
-   this.moveDrag = function (dx,dy) {
+   this.moveDrag = function(dx,dy) {
       this.dx += dx;
       this.dy += dy;
       makeTranslate(this.draw_g.select('path'), this.dx, this.dy);
@@ -480,10 +478,9 @@ function drawPolyMarker() {
 
    addMoveHandler(this);
 
-   this.dx = 0;
-   this.dy = 0;
+   this.dx = this.dy = 0;
 
-   this.moveDrag = function (dx,dy) {
+   this.moveDrag = function(dx,dy) {
       this.dx += dx;
       this.dy += dy;
       makeTranslate(this.draw_g.select('path'), this.dx, this.dy);
