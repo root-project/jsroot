@@ -699,6 +699,14 @@ function makeTranslate(x,y) {
    return null;
 }
 
+/** @summary Create translate expression and set to the element
+  * @return element itself
+  * @private */
+function makeTranslateG(g,x,y) {
+   return g.attr('transform', makeTranslate(x,y));
+}
+
+
 /** @summary Configure special style used for highlight or dragging elements
   * @private */
 function addHighlightStyle(elem, drag) {
@@ -776,4 +784,4 @@ async function svgToImage(svg, image_format, as_buffer) {
 
 export { getElementRect, getAbsPosInCanvas,
          DrawOptions, TRandom, floatToString, buildSvgCurve, compressSVG,
-         BasePainter, _loadJSDOM, makeTranslate, addHighlightStyle, svgToImage };
+         BasePainter, _loadJSDOM, makeTranslate, makeTranslateG, addHighlightStyle, svgToImage };

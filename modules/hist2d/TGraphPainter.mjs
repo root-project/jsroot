@@ -644,7 +644,7 @@ class TGraphPainter extends ObjectPainter {
                        .enter()
                        .append('svg:g')
                        .attr('class', 'grpoint')
-                       .attr('transform', d => makeTranslate(d.grx1,d.gry1));
+                       .attr('transform', d => makeTranslate(d.grx1, d.gry1));
       }
 
       if (options.Bar) {
