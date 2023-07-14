@@ -13,6 +13,10 @@ import { kCARTESIAN, kPOLAR, kCYLINDRICAL, kSPHERICAL, kRAPIDITY } from '../hist
 import { buildHist2dContour, buildSurf3D } from '../hist2d/TH2Painter.mjs';
 
 
+function createTextGeometry(lbl, size) {
+   return new TextGeometry(translateLaTeX(lbl), { font: HelveticerRegularFont, size, height: 0, curveSegments: 5 });
+}
+
 /** @summary Text 3d axis visibility
   * @private */
 function testAxisVisibility(camera, toplevel, fb, bb) {
@@ -678,7 +682,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          let mod = xticks.get_modifier();
          if (mod?.fLabText) lbl = mod.fLabText;
 
-         let text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size: this.x_handle.labelsFont.size, height: 0, curveSegments: 5 });
+         let text3d = createTextGeometry(lbl, this.x_handle.labelsFont.size);
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
@@ -709,7 +713,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    }
 
    if (this.x_handle.fTitle && opts.draw) {
-      const text3d = new TextGeometry(translateLaTeX(this.x_handle.fTitle), { font: HelveticerRegularFont, size: this.x_handle.titleFont.size, height: 0, curveSegments: 5 });
+      const text3d = createTextGeometry(this.x_handle.fTitle, this.x_handle.titleFont.size);
       text3d.computeBoundingBox();
       text3d.center = this.x_handle.titleCenter;
       text3d.opposite = this.x_handle.titleOpposite;
@@ -853,7 +857,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       xcont.add(mesh);
    });
 
-   if (opts.zoom && opts.anydraw)
+   if (opts.zoom && opts.drawany)
       xcont.add(createZoomMesh('x', this.size_x3d));
    top.add(xcont);
 
@@ -901,7 +905,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          let mod = yticks.get_modifier();
          if (mod?.fLabText) lbl = mod.fLabText;
 
-         const text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size: this.y_handle.labelsFont.size, height: 0, curveSegments: 5 });
+         const text3d = createTextGeometry(lbl, this.y_handle.labelsFont.size);
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
@@ -929,7 +933,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    }
 
    if (this.y_handle.fTitle && opts.draw) {
-      const text3d = new TextGeometry(translateLaTeX(this.y_handle.fTitle), { font: HelveticerRegularFont, size: this.y_handle.titleFont.size, height: 0, curveSegments: 5 });
+      const text3d = createTextGeometry(this.y_handle.fTitle, this.y_handle.titleFont.size);
       text3d.computeBoundingBox();
       text3d.center = this.y_handle.titleCenter;
       text3d.opposite = this.y_handle.titleOpposite;
@@ -989,7 +993,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          ycont.add(mesh);
       });
       ycont.xyid = 1;
-      if (opts.zoom && opts.anydraw)
+      if (opts.zoom && opts.drawany)
          ycont.add(createZoomMesh('y', this.size_y3d));
       top.add(ycont);
    }
@@ -1013,7 +1017,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          let mod = zticks.get_modifier();
          if (mod?.fLabText) lbl = mod.fLabText;
 
-         let text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size: this.z_handle.labelsFont.size, height: 0, curveSegments: 5 });
+         let text3d = createTextGeometry(lbl, this.z_handle.labelsFont.size);
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
@@ -1099,7 +1103,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       });
 
       if (this.z_handle.fTitle && opts.draw) {
-         let text3d = new TextGeometry(translateLaTeX(this.z_handle.fTitle), { font: HelveticerRegularFont, size: this.z_handle.titleFont.size, height: 0, curveSegments: 5 });
+         let text3d = createTextGeometry(this.z_handle.fTitle, this.z_handle.titleFont.size);
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              posz = this.z_handle.titleCenter ? (grmaxz + grminz - draw_width)/2 : (this.z_handle.titleOpposite ? grminz : grmaxz - draw_width);
