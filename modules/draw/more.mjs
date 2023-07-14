@@ -248,13 +248,10 @@ function drawEllipse() {
    this.x = x;
    this.y = y;
 
-   this.draw_g
-      .append('svg:path')
+   makeTranslate(this.draw_g.append('svg:path'), x, y)
       .attr('d', path)
       .call(this.lineatt.func)
       .call(this.fillatt.func);
-
-   makeTranslate(this.draw_g.select('path'), x, y);
 
    assignContextMenu(this, kToFront);
 
