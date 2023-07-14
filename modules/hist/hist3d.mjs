@@ -1,4 +1,4 @@
-import { constants, isFunc, getDocument } from '../core.mjs';
+import { constants, isFunc, isStr, getDocument } from '../core.mjs';
 import { rgb as d3_rgb } from '../d3.mjs';
 import { REVISION, DoubleSide, Object3D, Color, Vector2, Vector3, Matrix4, Line3,
          BufferGeometry, BufferAttribute, Mesh, MeshBasicMaterial, MeshLambertMaterial,
@@ -17,44 +17,117 @@ function createTextGeometry(lbl, size) {
    if (isPlainText(lbl))
       return new TextGeometry(translateLaTeX(lbl), { font: HelveticerRegularFont, size, height: 0, curveSegments: 5 });
 
-   let font_size = size * 100, geoms = [], lastgeom;
+   let font_size = size * 100, geoms = [], stroke_width = 5;
 
    class TextParseWrapper {
 
-      constructor(is_text) {
-         this.is_text = is_text ?? false;
+      constructor(kind, parent) {
+         this.kind = kind ?? 'g';
+         this.childs = [];
+         this.x = 0;
+         this.y = 0;
+         this.font_size = parent?.font_size ?? font_size;
+         parent?.childs.push(this);
       }
 
       append(kind) {
          if (kind == 'svg:g')
-            return new TextParseWrapper;
+            return new TextParseWrapper('g', this);
          if (kind == 'svg:text')
-            return new TextParseWrapper(true);
+            return new TextParseWrapper('text', this);
+         if (kind == 'svg:path')
+            return new TextParseWrapper('path', this);
+         console.log('should create', kind);
+      }
+
+      style(name, value) {
+         // console.log(`style ${name} = ${value}`);
+         if ((name == 'stroke-width') && value)
+            stroke_width = Number.parseInt(value);
+         return this;
+      }
+
+      translate() {
+         if (this.geom) {
+            // special workaround for path elements, while 3d font is exact height, keep some space on the top
+            let dy = this.kind == 'path' ? this.font_size*0.002 : 0;
+            this.geom.translate(this.x, this.y + dy);
+         }
+         this.childs.forEach(chld => {
+            chld.x += this.x;
+            chld.y += this.y;
+            chld.translate();
+         });
       }
 
       attr(name, value) {
-         if (value)
-            console.log(`set attr ${name} = ${value}`);
-         if ((name == 'font_size') && value) {
-            font_size = Number.parseInt(value);
-         } else if ((name == 'transform') && value && lastgeom) {
-            let arr = value.slice(value.indexOf('(')+1, value.lastIndexOf(')')).split(','),
-                x = arr[0] ? Number.parseInt(arr[0])*0.01 : 0,
-                y = arr[1] ? Number.parseInt(arr[1])*0.01 : 0;
-            lastgeom.translate(x, -y, 0);
+         // console.log(`attr ${name} = ${value}`);
+
+         const get = () => {
+                  if (!value) return '';
+                  let res = value[0];
+                  value = value.slice(1);
+                  return res;
+               }, getN = (skip) => {
+                  let p = 0;
+                  while (((value[p] >= '0') && (value[p] <= '9')) || (value[p] == '-')) p++;
+                  let res = Number.parseInt(value.slice(0, p));
+                  value = value.slice(p);
+                  if (skip) get();
+                  return res;
+               };
+
+         if ((name == 'font-size') && value) {
+            this.font_size = Number.parseInt(value);
+         } else if ((name == 'transform') && isStr(value) && (value.indexOf('translate') == 0)) {
+            let arr = value.slice(value.indexOf('(')+1, value.lastIndexOf(')')).split(',');
+            this.x += arr[0] ? Number.parseInt(arr[0])*0.01 : 0;
+            this.y -= arr[1] ? Number.parseInt(arr[1])*0.01 : 0;
+         } else if ((name == 'd') && (this.kind == 'path')) {
+            if (get() != 'M') return console.error('Not starts with M');
+            let x1 = getN(true), y1 = getN(), next, pnts = [];
+
+            while (next = get()) {
+               let x2 = x1, y2 = y1;
+               switch(next) {
+                   case 'L': x2 = getN(true); y2 = getN(); break;
+                   case 'l': x2 += getN(true); y2 += getN(); break;
+                   case 'H': x2 = getN(); break;
+                   case 'h': x2 += getN(); break;
+                   case 'V': y2 = getN(); break;
+                   case 'v': y2 += getN(); break;
+                   default: console.log('not supported operator', next);
+               }
+
+               let angle = Math.atan2(y2-y1, x2-x1),
+                   dx = 0.5 * stroke_width * Math.sin(angle),
+                   dy = -0.5 * stroke_width * Math.cos(angle);
+
+               pnts.push(x1-dx, y1-dy, 0, x2-dx, y2-dy, 0, x2+dx, y2+dy, 0, x1-dx, y1-dy, 0, x2+dx, y2+dy, 0, x1+dx, y1+dy, 0);
+
+               x1 = x2; y1 = y2;
+            }
+
+            let pos = new Float32Array(pnts);
+
+            this.geom = new BufferGeometry();
+            this.geom.setAttribute('position', new BufferAttribute(pos, 3));
+            this.geom.scale(0.01, -0.01, 0.01);
+            this.geom.computeVertexNormals();
+
+            geoms.push(this.geom);
          }
+         return this;
       }
 
       text(v) {
-         if (this.is_text) {
-            lastgeom = new TextGeometry(v, { font: HelveticerRegularFont, size: font_size/100, height: 0, curveSegments: 5 });
-            geoms.push(lastgeom);
+         if (this.kind == 'text') {
+            this.geom = new TextGeometry(v, { font: HelveticerRegularFont, size: 0.01*this.font_size, height: 0, curveSegments: 5 });
+            geoms.push(this.geom);
          };
       }
 
    };
-
-   console.log('not plain text', lbl, 'size', size);
 
    let painter = null, node = new TextParseWrapper,
        arg = { font_size, latex: 1, x: 0, y: 0, text: lbl, align: [ 'start', 'top'], fast: true, font: { size: font_size, isMonospace: () => false, aver_width: 0.8 } };
@@ -63,6 +136,8 @@ function createTextGeometry(lbl, size) {
 
    if (!geoms)
       return new TextGeometry(translateLaTeX(lbl), { font: HelveticerRegularFont, size, height: 0, curveSegments: 5 });
+
+   node.translate(); // apply translate attribute
 
    if (geoms.length == 1)
       return geoms[0];
@@ -80,7 +155,7 @@ function createTextGeometry(lbl, size) {
       let p1 = geom.getAttribute('position').array,
           n1 = geom.getAttribute('normal').array;
       for (let i = 0; i < p1.length; ++i, ++indx) {
-         pos[indx] = p1[i];
+         pos[indx] = i % 3 == 2 ? 0 : p1[i]; // z is NaN sometime
          norm[indx] = n1[i];
       }
    });
