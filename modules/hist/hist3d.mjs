@@ -16,7 +16,8 @@ import { buildHist2dContour, buildSurf3D } from '../hist2d/TH2Painter.mjs';
 function createTextGeometry(lbl, size) {
    if (isPlainText(lbl))
       return new TextGeometry(translateLaTeX(lbl), { font: HelveticerRegularFont, size, height: 0, curveSegments: 5 });
-   console.log('not plain text', lbl);
+
+   let font_size = size * 100, geoms = [], lastgeom;
 
    class TextParseWrapper {
 
@@ -32,22 +33,62 @@ function createTextGeometry(lbl, size) {
       }
 
       attr(name, value) {
-         console.log(`set attr ${name} = ${value}`);
+         if (value)
+            console.log(`set attr ${name} = ${value}`);
+         if ((name == 'font_size') && value) {
+            font_size = Number.parseInt(value);
+         } else if ((name == 'transform') && value && lastgeom) {
+            let arr = value.slice(value.indexOf('(')+1, value.lastIndexOf(')')).split(','),
+                x = arr[0] ? Number.parseInt(arr[0])*0.01 : 0,
+                y = arr[1] ? Number.parseInt(arr[1])*0.01 : 0;
+            lastgeom.translate(x, -y, 0);
+         }
       }
 
       text(v) {
-         if (this.is_text)
-            console.log('add text', v);
+         if (this.is_text) {
+            lastgeom = new TextGeometry(v, { font: HelveticerRegularFont, size: font_size/100, height: 0, curveSegments: 5 });
+            geoms.push(lastgeom);
+         };
       }
 
    };
 
+   console.log('not plain text', lbl, 'size', size);
+
    let painter = null, node = new TextParseWrapper,
-       arg = { font_size: size, latex: 1, x: 0, y: 0, text: lbl, align: [ 'start', 'top'], fast: true, font: { size, isMonospace: () => false  } };
+       arg = { font_size, latex: 1, x: 0, y: 0, text: lbl, align: [ 'start', 'top'], fast: true, font: { size: font_size, isMonospace: () => false, aver_width: 0.8 } };
 
    produceLatex(painter, node, arg);
 
-   return new TextGeometry(translateLaTeX(lbl), { font: HelveticerRegularFont, size, height: 0, curveSegments: 5 });
+   if (!geoms)
+      return new TextGeometry(translateLaTeX(lbl), { font: HelveticerRegularFont, size, height: 0, curveSegments: 5 });
+
+   if (geoms.length == 1)
+      return geoms[0];
+
+   let total_size = 0;
+   geoms.forEach(geom => {
+      total_size += geom.getAttribute('position').array.length;
+   });
+
+   let pos = new Float32Array(total_size),
+       norm = new Float32Array(total_size),
+       indx = 0;
+
+   geoms.forEach(geom => {
+      let p1 = geom.getAttribute('position').array,
+          n1 = geom.getAttribute('normal').array;
+      for (let i = 0; i < p1.length; ++i, ++indx) {
+         pos[indx] = p1[i];
+         norm[indx] = n1[i];
+      }
+   });
+
+   let fullgeom = new BufferGeometry();
+   fullgeom.setAttribute('position', new BufferAttribute(pos, 3));
+   fullgeom.setAttribute('normal', new BufferAttribute(norm, 3));
+   return fullgeom;
 }
 
 /** @summary Text 3d axis visibility
