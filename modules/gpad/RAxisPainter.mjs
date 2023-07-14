@@ -718,7 +718,7 @@ class RAxisPainter extends RObjectPainter {
       return this.finishTextDrawing(label_g).then(() => {
 
         if (lbls_tilt)
-           label_g.selectAll('text').each(function () {
+           label_g.selectAll('text').each(function() {
                let txt = d3_select(this), tr = txt.attr('transform');
                txt.attr('transform', tr + ' rotate(25)').style('text-anchor', 'start');
            });

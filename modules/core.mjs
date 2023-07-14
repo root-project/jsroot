@@ -1443,8 +1443,8 @@ function getMethods(typename, obj) {
    // Therefore when methods requested for given object, check also that basic methods are there
    if ((typename == clTObject) || (typename == clTNamed) || (obj?.fBits !== undefined))
       if (typeof m.TestBit === 'undefined') {
-         m.TestBit = function (f) { return (this.fBits & f) != 0; };
-         m.InvertBit = function (f) { this.fBits = this.fBits ^ (f & 0xffffff); };
+         m.TestBit = function(f) { return (this.fBits & f) != 0; };
+         m.InvertBit = function(f) { this.fBits = this.fBits ^ (f & 0xffffff); };
       }
 
    if (has_methods) return m;

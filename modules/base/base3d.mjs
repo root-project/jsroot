@@ -104,7 +104,7 @@ function createSVGRenderer(as_is, precision, doc) {
 
    rndr.originalRender = rndr.render;
 
-   rndr.render = function (scene, camera) {
+   rndr.render = function(scene, camera) {
       let originalDocument = globalThis.document;
       if (isNodeJs())
          globalThis.document = this.doc_wrapper;
