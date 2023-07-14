@@ -1448,8 +1448,8 @@ function getMethods(typename, obj) {
    // Therefore when methods requested for given object, check also that basic methods are there
    if ((typename == clTObject) || (typename == clTNamed) || (obj?.fBits !== undefined))
       if (typeof m.TestBit === 'undefined') {
-         m.TestBit = function (f) { return (this.fBits & f) != 0; };
-         m.InvertBit = function (f) { this.fBits = this.fBits ^ (f & 0xffffff); };
+         m.TestBit = function(f) { return (this.fBits & f) != 0; };
+         m.InvertBit = function(f) { this.fBits = this.fBits ^ (f & 0xffffff); };
       }
 
    if (has_methods) return m;
@@ -8519,11 +8519,14 @@ async function _loadJSDOM() {
 /** @summary Return translate string for transform attribute of some svg element
   * @return string or null if x and y are zeros
   * @private */
-function makeTranslate(x,y) {
-   if (y) return `translate(${x},${y})`;
-   if (x) return `translate(${x})`;
-   return null;
+function makeTranslate(g, x, y) {
+   if (!isObject(g)) {
+      y = x; x = g; g = null;
+   }
+   let res = y ? `translate(${x},${y})` : (x ? `translate(${x})` : null);
+   return g ? g.attr('transform', res) : res;
 }
+
 
 /** @summary Configure special style used for highlight or dragging elements
   * @private */
@@ -9069,7 +9072,7 @@ function parseLatex(node, arg, label, curr) {
       x = Math.round(x);
       y = Math.round(y);
 
-      pos.g.attr('transform', makeTranslate(x, y));
+      makeTranslate(pos.g, x, y);
       pos.rect.x1 += x;
       pos.rect.x2 += x;
       pos.rect.y1 += y;
@@ -9089,9 +9092,7 @@ function parseLatex(node, arg, label, curr) {
       if ((nelements == 1) && !label && !curr.x && !curr.y)
          return gg;
 
-      gg = gg.append('svg:g');
-
-      return gg.attr('transform', makeTranslate(curr.x, curr.y));
+      return makeTranslate(gg.append('svg:g'), curr.x, curr.y);
    };
 
    const extractSubLabel = (check_first, lbrace, rbrace) => {
@@ -9138,11 +9139,12 @@ function parseLatex(node, arg, label, curr) {
       return sublabel;
    };
 
-   const createPath = (gg, dofill) => {
+   const createPath = (gg, d, dofill) => {
       return gg.append('svg:path')
                .style('stroke', dofill ? 'none' : (curr.color || arg.color))
                .style('stroke-width', dofill ? null : Math.max(1, Math.round(curr.fsize*(curr.font.weight ? 0.1 : 0.07))))
-               .style('fill', dofill ? (curr.color || arg.color) : 'none');
+               .style('fill', dofill ? (curr.color || arg.color) : 'none')
+               .attr('d', d ?? null);
    };
 
    const createSubPos = fscale => {
@@ -9264,15 +9266,15 @@ function parseLatex(node, arg, label, curr) {
          positionGNode(subpos, xpos, 0, true);
 
          switch(found.name) {
-            case '#check{': createPath(gg).attr('d',`M${w2},${y1-dy}L${w5},${y1}L${w8},${y1-dy}`); break;
-            case '#acute{': createPath(gg).attr('d',`M${w5},${y1}l${dy},${-dy}`); break;
-            case '#grave{': createPath(gg).attr('d',`M${w5},${y1}l${-dy},${-dy}`); break;
-            case '#dot{': createPath(gg, true).attr('d',`M${w5-dy2},${y1}${dot}`); break;
-            case '#ddot{': createPath(gg, true).attr('d',`M${w5-3*dy2},${y1}${dot} M${w5+dy2},${y1}${dot}`); break;
-            case '#tilde{': createPath(gg).attr('d',`M${w2},${y1} a${w3},${dy},0,0,1,${w3},0 a${w3},${dy},0,0,0,${w3},0`); break;
-            case '#slash{': createPath(gg).attr('d',`M${w},${y1}L0,${Math.round(subpos.rect.y2)}`); break;
-            case '#vec{': createPath(gg).attr('d',`M${w2},${y1}H${w8}M${w8-dy},${y1-dy}l${dy},${dy}l${-dy},${dy}`); break;
-            default: createPath(gg).attr('d',`M${w2},${y1}L${w5},${y1-dy}L${w8},${y1}`); // #hat{
+            case '#check{': createPath(gg, `M${w2},${y1-dy}L${w5},${y1}L${w8},${y1-dy}`); break;
+            case '#acute{': createPath(gg, `M${w5},${y1}l${dy},${-dy}`); break;
+            case '#grave{': createPath(gg, `M${w5},${y1}l${-dy},${-dy}`); break;
+            case '#dot{': createPath(gg, `M${w5-dy2},${y1}${dot}`, true); break;
+            case '#ddot{': createPath(gg, `M${w5-3*dy2},${y1}${dot} M${w5+dy2},${y1}${dot}`, true); break;
+            case '#tilde{': createPath(gg, `M${w2},${y1} a${w3},${dy},0,0,1,${w3},0 a${w3},${dy},0,0,0,${w3},0`); break;
+            case '#slash{': createPath(gg, `M${w},${y1}L0,${Math.round(subpos.rect.y2)}`); break;
+            case '#vec{': createPath(gg, `M${w2},${y1}H${w8}M${w8-dy},${y1-dy}l${dy},${dy}l${-dy},${dy}`); break;
+            default: createPath(gg, `M${w2},${y1}L${w5},${y1-dy}L${w8},${y1}`); // #hat{
          }
 
          shiftX(subpos.rect.width);
@@ -53868,7 +53870,7 @@ function createSVGRenderer(as_is, precision, doc) {
 
    rndr.originalRender = rndr.render;
 
-   rndr.render = function (scene, camera) {
+   rndr.render = function(scene, camera) {
       let originalDocument = globalThis.document;
       if (isNodeJs())
          globalThis.document = this.doc_wrapper;
@@ -54134,7 +54136,7 @@ let Handling3DDrawings = {
             if (elem.empty())
                elem = svg.insert('g', '.primitives_layer').attr('class', size.clname);
 
-            elem.attr('transform', makeTranslate(size.x, size.y));
+            makeTranslate(elem, size.x, size.y);
 
          } else {
 
@@ -60162,7 +60164,7 @@ class TAxisPainter extends ObjectPainter {
 
          if (sign_0 === (vertical ? (set_x > 0) : (set_y > 0))) {
             new_x = set_x; new_y = set_y; curr_indx = besti;
-            title_g.attr('transform', makeTranslate(new_x, new_y));
+            makeTranslate(title_g, new_x, new_y);
          }
 
       }).on('end', evnt => {
@@ -60634,10 +60636,9 @@ class TAxisPainter extends ObjectPainter {
 
          if (title_g) {
             if (!this.titleOffset && this.vertical && labelsMaxWidth)
-              title_shift_x = Math.round(-side * (labelsMaxWidth + 0.7*this.offsetScaling*this.titleSize));
-
-            title_g.attr('transform', makeTranslate(title_shift_x, title_shift_y))
-                   .property('shift_x', title_shift_x)
+               title_shift_x = Math.round(-side * (labelsMaxWidth + 0.7*this.offsetScaling*this.titleSize));
+            makeTranslate(title_g, title_shift_x, title_shift_y);
+            title_g.property('shift_x', title_shift_x)
                    .property('shift_y', title_shift_y);
          }
 
@@ -60781,7 +60782,7 @@ function addDragHandler(_painter, arg) {
       arg.x = newx; arg.y = newy; arg.width = newwidth; arg.height = newheight;
 
       if (!arg.no_transform)
-         draw_g.attr('transform', makeTranslate(newx, newy));
+         makeTranslate(draw_g, newx, newy);
 
       setPainterTooltipEnabled(painter, true);
 
@@ -65412,7 +65413,7 @@ let PadButtonsHandler = {
          btns_y = height - sz0;
       }
 
-      btns.attr('transform', makeTranslate(btns_x,btns_y));
+      makeTranslate(btns, btns_x, btns_y);
    },
 
    findPadButton(keyname) {
@@ -65910,9 +65911,9 @@ class TPadPainter extends ObjectPainter {
              posy = Math.round(rect.height * (1 - gStyle.fDateY));
          if (!is_batch && (posx < 25)) posx = 25;
          if (gStyle.fOptDate > 1) date.setTime(gStyle.fOptDate*1000);
-         dt.attr('transform', makeTranslate(posx, posy))
-           .style('text-anchor', 'start')
-           .text(date.toLocaleString('en-GB'));
+         makeTranslate(dt, posx, posy)
+            .style('text-anchor', 'start')
+            .text(date.toLocaleString('en-GB'));
       }
 
       if (!gStyle.fOptFile || !this.getItemName())
@@ -65932,12 +65933,10 @@ class TPadPainter extends ObjectPainter {
          df.remove();
       } else {
          if (df.empty()) df = info.append('text').attr('class', 'canvas_item');
-         let rect = this.getPadRect(),
-             posx = Math.round(rect.width * (1 - gStyle.fDateX)),
-             posy = Math.round(rect.height * (1 - gStyle.fDateY));
-         df.attr('transform', makeTranslate(posx, posy))
-           .style('text-anchor', 'end')
-           .text(item_name);
+         let rect = this.getPadRect();
+         makeTranslate(df, Math.round(rect.width * (1 - gStyle.fDateX)), Math.round(rect.height * (1 - gStyle.fDateY)))
+            .style('text-anchor', 'end')
+            .text(item_name);
       }
    }
 
@@ -68704,7 +68703,7 @@ class TPavePainter extends ObjectPainter {
          width = Math.round((pt.fX2NDC - pt.fX1NDC) * pad_rect.width);
          height = Math.round((pt.fY2NDC - pt.fY1NDC) * pad_rect.height);
 
-         this.draw_g.attr('transform', makeTranslate(this._pave_x, this._pave_y));
+         makeTranslate(this.draw_g, this._pave_x, this._pave_y);
 
          this.createAttLine({ attr: pt, width: (brd > 0) ? pt.fLineWidth : 0 });
 
@@ -68726,8 +68725,8 @@ class TPavePainter extends ObjectPainter {
                                       .call(this.fillatt.func)
                                       .call(this.lineatt.func);
 
-            let text_g = this.draw_g.append('svg:g')
-                                    .attr('transform', makeTranslate(Math.round(width/4), Math.round(height/4)));
+            let text_g = this.draw_g.append('svg:g');
+            makeTranslate(text_g, Math.round(width/4), Math.round(height/4));
 
             return this.drawPaveText(w2, h2, arg, text_g);
          } else {
@@ -69366,7 +69365,7 @@ class TPavePainter extends ObjectPainter {
 
                if (shift > 0) {
                   this._pave_x -= shift;
-                  this.draw_g.attr('transform', makeTranslate(this._pave_x, this._pave_y));
+                  makeTranslate(this.draw_g, this._pave_x, this._pave_y);
                   palette.fX1NDC -= shift/width;
                   palette.fX2NDC -= shift/width;
                }
@@ -69374,7 +69373,7 @@ class TPavePainter extends ObjectPainter {
                let shift = Math.round((1.05 - gStyle.fTitleY)*height) - rect.y;
                if (shift > 0) {
                   this._pave_y += shift;
-                  this.draw_g.attr('transform', makeTranslate(this._pave_x, this._pave_y));
+                  makeTranslate(this.draw_g, this._pave_x, this._pave_y);
                   palette.fY1NDC -= shift/height;
                   palette.fY2NDC -= shift/height;
                }
@@ -74629,7 +74628,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
       this.createG();
 
-      this.draw_g.attr('transform', makeTranslate(Math.round(rect.x + rect.width/2), Math.round(rect.y + rect.height/2)));
+      makeTranslate(this.draw_g, Math.round(rect.x + rect.width/2), Math.round(rect.y + rect.height/2));
 
       let nbins = Math.min(this.nbinsx, this.nbinsy);
 
@@ -74765,7 +74764,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
       this.createG();
 
-      this.draw_g.attr('transform', makeTranslate(Math.round(rect.x + rect.width/2), Math.round(rect.y + rect.height/2)));
+      makeTranslate(this.draw_g, Math.round(rect.x + rect.width/2), Math.round(rect.y + rect.height/2));
 
       const chord$1 = chord()
          .padAngle(10 / innerRadius)
@@ -75271,7 +75270,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
 }; // class TH2Painter
 
-function createTextGeometry(lbl, size) {
+function createTextGeometry(painter, lbl, size) {
    if (isPlainText(lbl))
       return new TextGeometry(translateLaTeX(lbl), { font: HelveticerRegularFont, size, height: 0, curveSegments: 5 });
 
@@ -75309,7 +75308,7 @@ function createTextGeometry(lbl, size) {
          if (this.geom) {
             // special workaround for path elements, while 3d font is exact height, keep some space on the top
             // let dy = this.kind == 'path' ? this.font_size*0.002 : 0;
-            this.geom.translate(this.x, this.y);
+            this.geom.translate(this.x, this.y, 0);
          }
          this.childs.forEach(chld => {
             chld.x += this.x;
@@ -75384,12 +75383,12 @@ function createTextGeometry(lbl, size) {
 
       text(v) {
          if (this.kind == 'text') {
-            this.geom = new TextGeometry(v, { font: HelveticerRegularFont, size: 0.01*this.font_size, height: 0, curveSegments: 5 });
+            this.geom = new TextGeometry(v, { font: HelveticerRegularFont, size: Math.round(0.01*this.font_size), height: 0, curveSegments: 5 });
             geoms.push(this.geom);
          }      }
 
    }
-   let painter = null, node = new TextParseWrapper,
+   let node = new TextParseWrapper,
        arg = { font_size, latex: 1, x: 0, y: 0, text: lbl, align: [ 'start', 'top'], fast: true, font: { size: font_size, isMonospace: () => false, aver_width: 0.9 } };
 
    produceLatex(painter, node, arg);
@@ -75397,7 +75396,7 @@ function createTextGeometry(lbl, size) {
    if (!geoms)
       return new TextGeometry(translateLaTeX(lbl), { font: HelveticerRegularFont, size, height: 0, curveSegments: 5 });
 
-   node.translate(); // apply translate attribute
+   node.translate(); // apply translate attributes
 
    if (geoms.length == 1)
       return geoms[0];
@@ -75415,7 +75414,7 @@ function createTextGeometry(lbl, size) {
       let p1 = geom.getAttribute('position').array,
           n1 = geom.getAttribute('normal').array;
       for (let i = 0; i < p1.length; ++i, ++indx) {
-         pos[indx] = i % 3 == 2 ? 0 : p1[i]; // z is NaN sometime
+         pos[indx] = p1[i];
          norm[indx] = n1[i];
       }
    });
@@ -76091,7 +76090,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          let mod = xticks.get_modifier();
          if (mod?.fLabText) lbl = mod.fLabText;
 
-         let text3d = createTextGeometry(lbl, this.x_handle.labelsFont.size);
+         let text3d = createTextGeometry(this, lbl, this.x_handle.labelsFont.size);
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
@@ -76122,7 +76121,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    }
 
    if (this.x_handle.fTitle && opts.draw) {
-      const text3d = createTextGeometry(this.x_handle.fTitle, this.x_handle.titleFont.size);
+      const text3d = createTextGeometry(this, this.x_handle.fTitle, this.x_handle.titleFont.size);
       text3d.computeBoundingBox();
       text3d.center = this.x_handle.titleCenter;
       text3d.opposite = this.x_handle.titleOpposite;
@@ -76314,7 +76313,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          let mod = yticks.get_modifier();
          if (mod?.fLabText) lbl = mod.fLabText;
 
-         const text3d = createTextGeometry(lbl, this.y_handle.labelsFont.size);
+         const text3d = createTextGeometry(this, lbl, this.y_handle.labelsFont.size);
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
@@ -76342,7 +76341,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    }
 
    if (this.y_handle.fTitle && opts.draw) {
-      const text3d = createTextGeometry(this.y_handle.fTitle, this.y_handle.titleFont.size);
+      const text3d = createTextGeometry(this, this.y_handle.fTitle, this.y_handle.titleFont.size);
       text3d.computeBoundingBox();
       text3d.center = this.y_handle.titleCenter;
       text3d.opposite = this.y_handle.titleOpposite;
@@ -76426,7 +76425,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          let mod = zticks.get_modifier();
          if (mod?.fLabText) lbl = mod.fLabText;
 
-         let text3d = createTextGeometry(lbl, this.z_handle.labelsFont.size);
+         let text3d = createTextGeometry(this, lbl, this.z_handle.labelsFont.size);
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
@@ -76512,7 +76511,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       });
 
       if (this.z_handle.fTitle && opts.draw) {
-         let text3d = createTextGeometry(this.z_handle.fTitle, this.z_handle.titleFont.size);
+         let text3d = createTextGeometry(this, this.z_handle.fTitle, this.z_handle.titleFont.size);
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              posz = this.z_handle.titleCenter ? (grmaxz + grminz - draw_width)/2 : (this.z_handle.titleOpposite ? grminz : grmaxz - draw_width);
@@ -104257,7 +104256,7 @@ async function drawText$1() {
          this.moveDrag = function(dx, dy) {
             this.pos_dx += dx;
             this.pos_dy += dy;
-            this.draw_g.attr('transform', makeTranslate(this.pos_dx, this.pos_dy));
+            makeTranslate(this.draw_g, this.pos_dx, this.pos_dy);
         };
 
       if (!this.moveEnd)
@@ -104277,7 +104276,7 @@ async function drawText$1() {
             let pos = main.convert3DtoPadNDC(text.fX, text.fY, text.fZ),
                 new_x = this.axisToSvg('x', pos.x, true),
                 new_y = this.axisToSvg('y', pos.y, true);
-            this.draw_g.attr('transform', makeTranslate(new_x - this.pos_x, new_y - this.pos_y));
+            makeTranslate(this.draw_g, new_x - this.pos_x, new_y - this.pos_y);
          };
       }
 
@@ -104322,14 +104321,13 @@ function drawPolyLine() {
 
    addMoveHandler(this);
 
-   this.dx = 0;
-   this.dy = 0;
+   this.dx = this.dy = 0;
    this.isndc = isndc;
 
-   this.moveDrag = function (dx,dy) {
+   this.moveDrag = function(dx,dy) {
       this.dx += dx;
       this.dy += dy;
-      this.draw_g.select('path').attr('transform', makeTranslate(this.dx, this.dy));
+      makeTranslate(this.draw_g.select('path'), this.dx, this.dy);
    };
 
    this.moveEnd = function(not_changed) {
@@ -104433,9 +104431,7 @@ function drawEllipse() {
    this.x = x;
    this.y = y;
 
-   this.draw_g
-      .append('svg:path')
-      .attr('transform', makeTranslate(x, y))
+   makeTranslate(this.draw_g.append('svg:path'), x, y)
       .attr('d', path)
       .call(this.lineatt.func)
       .call(this.fillatt.func);
@@ -104444,13 +104440,13 @@ function drawEllipse() {
 
    addMoveHandler(this);
 
-   this.moveDrag = function (dx,dy) {
+   this.moveDrag = function(dx,dy) {
       this.x += dx;
       this.y += dy;
-      this.draw_g.select('path').attr('transform', makeTranslate(this.x, this.y));
+      makeTranslate(this.draw_g.select('path'), this.x, this.y);
    };
 
-   this.moveEnd = function (not_changed) {
+   this.moveEnd = function(not_changed) {
       if (not_changed) return;
       let ellipse = this.getObject();
       ellipse.fX1 = this.svgToAxis('x', this.x);
@@ -104472,7 +104468,7 @@ function drawPie() {
        rx = this.axisToSvg('x', pie.fX + pie.fRadius) - xc,
        ry = this.axisToSvg('y', pie.fY + pie.fRadius) - yc;
 
-   this.draw_g.attr('transform', makeTranslate(xc, yc));
+   makeTranslate(this.draw_g, xc, yc);
 
    // Draw the slices
    let nb = pie.fPieSlices.length, total = 0,
@@ -104562,7 +104558,7 @@ function drawBox$1() {
 
    addMoveHandler(this);
 
-   this.moveStart = function (x,y) {
+   this.moveStart = function(x,y) {
       let ww = Math.abs(this.x2 - this.x1), hh = Math.abs(this.y1 - this.y2);
 
       this.c_x1 = Math.abs(x - this.x2) > ww*0.1;
@@ -104575,7 +104571,7 @@ function drawBox$1() {
          this.c_x1 = this.c_x2 = false;
    };
 
-   this.moveDrag = function (dx,dy) {
+   this.moveDrag = function(dx,dy) {
       if (this.c_x1) this.x1 += dx;
       if (this.c_x2) this.x2 += dx;
       if (this.c_y1) this.y1 += dy;
@@ -104587,7 +104583,7 @@ function drawBox$1() {
       pathes.forEach((path, i) => select(nodes[i]).attr('d', path));
    };
 
-   this.moveEnd = function (not_changed) {
+   this.moveEnd = function(not_changed) {
       if (not_changed) return;
       let box = this.getObject(), exec = '';
       if (this.c_x1) { box.fX1 = this.svgToAxis('x', this.x1); exec += `SetX1(${box.fX1});;`; }
@@ -104624,13 +104620,12 @@ function drawMarker$1() {
 
    addMoveHandler(this);
 
-   this.dx = 0;
-   this.dy = 0;
+   this.dx = this.dy = 0;
 
-   this.moveDrag = function (dx,dy) {
+   this.moveDrag = function(dx,dy) {
       this.dx += dx;
       this.dy += dy;
-      this.draw_g.select('path').attr('transform', makeTranslate(this.dx, this.dy));
+      makeTranslate(this.draw_g.select('path'), this.dx, this.dy);
    };
 
    this.moveEnd = function(not_changed) {
@@ -104667,13 +104662,12 @@ function drawPolyMarker() {
 
    addMoveHandler(this);
 
-   this.dx = 0;
-   this.dy = 0;
+   this.dx = this.dy = 0;
 
-   this.moveDrag = function (dx,dy) {
+   this.moveDrag = function(dx,dy) {
       this.dx += dx;
       this.dy += dy;
-      this.draw_g.select('path').attr('transform', makeTranslate(this.dx, this.dy));
+      makeTranslate(this.draw_g.select('path'), this.dx, this.dy);
    };
 
    this.moveEnd = function(not_changed) {
@@ -106011,7 +106005,7 @@ class TGraphPolargramPainter extends ObjectPainter {
 
       this.createG();
 
-      this.draw_g.attr('transform', makeTranslate(Math.round(rect.x + rect.width/2), Math.round(rect.y + rect.height/2)));
+      makeTranslate(this.draw_g, Math.round(rect.x + rect.width/2), Math.round(rect.y + rect.height/2));
       this.szx = rect.szx;
       this.szy = rect.szy;
 
@@ -107038,7 +107032,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
                        .enter()
                        .append('svg:g')
                        .attr('class', 'grpoint')
-                       .attr('transform', d => makeTranslate(d.grx1,d.gry1));
+                       .attr('transform', d => makeTranslate(d.grx1, d.gry1));
       }
 
       if (options.Bar) {
@@ -107661,7 +107655,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
       this.pos_dy += dy;
 
       if (this.move_binindx === undefined) {
-         this.draw_g.attr('transform', makeTranslate(this.pos_dx,this.pos_dy));
+         makeTranslate(this.draw_g, this.pos_dx, this.pos_dy);
       } else if (this.move_funcs && this.move_bin) {
          this.move_bin.x = this.move_funcs.revertAxis('x', this.move_x0 + this.pos_dx);
          this.move_bin.y = this.move_funcs.revertAxis('y', this.move_y0 + this.pos_dy);
@@ -110243,7 +110237,7 @@ class TGaxisPainter extends TAxisPainter {
    moveDrag(dx, dy) {
       this.gaxis_x += dx;
       this.gaxis_y += dy;
-      this.getG().attr('transform', makeTranslate(this.gaxis_x, this.gaxis_y));
+      makeTranslate(this.getG(), this.gaxis_x, this.gaxis_y);
    }
 
    /** @summary Drag end handle */
@@ -112154,7 +112148,7 @@ class RAxisPainter extends RObjectPainter {
                }
 
                new_x = set_x; new_y = set_y; curr_indx = besti;
-               title_g.attr('transform', makeTranslate(new_x, new_y));
+               makeTranslate(title_g, new_x, new_y);
 
           }).on('end', evnt => {
                if (!drag_rect) return;
@@ -112384,7 +112378,7 @@ class RAxisPainter extends RObjectPainter {
       return this.finishTextDrawing(label_g).then(() => {
 
         if (lbls_tilt)
-           label_g.selectAll('text').each(function () {
+           label_g.selectAll('text').each(function() {
                let txt = select(this), tr = txt.attr('transform');
                txt.attr('transform', tr + ' rotate(25)').style('text-anchor', 'start');
            });
@@ -112448,10 +112442,10 @@ class RAxisPainter extends RObjectPainter {
                          text: this.fTitle, draw_g: title_g });
       }
 
-      title_g.attr('transform', makeTranslate(title_shift_x, title_shift_y))
-             .property('basepos', title_basepos)
-             .property('shift_x', title_shift_x)
-             .property('shift_y', title_shift_y);
+      makeTranslate(title_g, title_shift_x, title_shift_y)
+                   .property('basepos', title_basepos)
+                   .property('shift_x', title_shift_x)
+                   .property('shift_y', title_shift_y);
 
       this.addTitleDrag(title_g, side);
 
@@ -116990,7 +116984,7 @@ function drawRFrameTitle(reason, drag) {
 
    this.createG();
 
-   this.draw_g.attr('transform', makeTranslate(fx, Math.round(fy-title_margin-title_height)));
+   makeTranslate(this.draw_g, fx, Math.round(fy-title_margin-title_height));
 
    let arg = { x: title_width/2, y: title_height/2, text: title.fText, latex: 1 };
 
@@ -117370,7 +117364,7 @@ class RPalettePainter extends RObjectPainter {
           }
 
           // x,y,width,height attributes used for drag functionality
-          this.draw_g.attr('transform', makeTranslate(palette_x, palette_y));
+          makeTranslate(this.draw_g, palette_x, palette_y);
       }
 
       let g_btns = this.draw_g.selectChild('.colbtns');
@@ -117621,7 +117615,7 @@ class RPavePainter extends RObjectPainter {
             pave_y = fr.y + offsety;
       }
 
-      this.draw_g.attr('transform', makeTranslate(pave_x,pave_y));
+      makeTranslate(this.draw_g, pave_x, pave_y);
 
       this.draw_g.append('svg:rect')
                  .attr('x', 0)
