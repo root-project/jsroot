@@ -1293,20 +1293,8 @@ class TPadPainter extends ObjectPainter {
                clearTimeout(this._resize_tmout);
             this._resize_tmout = setTimeout(() => {
                delete this._resize_tmout;
-               if (!this.pad) return;
-               let cw = this.getPadWidth(), ch = this.getPadHeight(),
-                   wx = window.screenLeft, wy = window.screenTop,
-                   ww = window.outerWidth, wh = window.outerHeight;
-               if ((cw > 0) && (ch > 0) && ((this.pad.fCw != cw) || (this.pad.fCh != ch))) {
-                  this.pad.fCw = cw;
-                  this.pad.fCh = ch;
-                  this.pad.fWindowTopX = wx;
-                  this.pad.fWindowTopY = wy;
-                  this.pad.fWindowWidth = ww;
-                  this.pad.fWindowHeight = wh;
-                  console.log(`RESIZED:[${cw},${ch},${wx},${wy},${ww},${wh}]`);
-                  this.sendWebsocket(`RESIZED:[${cw},${ch},${wx},${wy},${ww},${wh}]`);
-               }
+               if (isFunc(this.sendResized))
+                  this.sendResized();
             }, 1000); // long enough delay to prevent multiple occurence
          }
 

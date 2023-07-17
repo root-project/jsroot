@@ -393,13 +393,19 @@ class TCanvasPainter extends TPadPainter {
              on = (that[that.length-1] == '1');
          this.showSection(that.slice(0,that.length-2), on);
       } else if (msg.slice(0,5) == 'CTRL:') {
-         let obj = parse(msg.slice(5));
+         let obj = parse(msg.slice(5)), resized = false;
          if ((obj?.title !== undefined) && (typeof document !== 'undefined'))
             document.title = obj.title;
-         if (obj.x && obj.y && typeof window !== 'undefined')
+         if (obj.x && obj.y && typeof window !== 'undefined') {
             window.moveTo(obj.x, obj.y);
-         if (obj.w && obj.h && typeof window !== 'undefined')
+            resized = true;
+         }
+         if (obj.w && obj.h && typeof window !== 'undefined') {
             window.resizeTo(obj.w, obj.h);
+            resized = true;
+         }
+         if (resized)
+            this.sendResized(true);
       } else if (msg.slice(0,5) == 'EDIT:') {
          let obj_painter = this.findSnap(msg.slice(5));
          console.log(`GET EDIT ${msg.slice(5)} found ${!!obj_painter}`);
@@ -410,6 +416,28 @@ class TCanvasPainter extends TPadPainter {
       } else {
          console.log(`unrecognized msg ${msg}`);
       }
+   }
+
+   /** @summary Send RESIZED message to cleint to inform about changes in canvas/window geometry
+     * @private */
+   sendResized(force) {
+      if (!this.pad)
+         return;
+      let cw = this.getPadWidth(), ch = this.getPadHeight(),
+          wx = window.screenLeft, wy = window.screenTop,
+          ww = window.outerWidth, wh = window.outerHeight;
+      if (!force) {
+         force = (cw > 0) && (ch > 0) && ((this.pad.fCw != cw) || (this.pad.fCh != ch));
+         if (force) {
+            this.pad.fCw = cw;
+            this.pad.fCh = ch;
+         }
+      }
+      if (force) {
+         console.log(`RESIZED:[${cw},${ch},${wx},${wy},${ww},${wh}]`);
+         this.sendWebsocket(`RESIZED:[${cw},${ch},${wx},${wy},${ww},${wh}]`);
+       }
+
    }
 
    /** @summary Handle pad button click event */
