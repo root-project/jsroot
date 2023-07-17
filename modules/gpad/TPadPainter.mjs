@@ -1294,12 +1294,18 @@ class TPadPainter extends ObjectPainter {
             this._resize_tmout = setTimeout(() => {
                delete this._resize_tmout;
                if (!this.pad) return;
-               let cw = this.getPadWidth(), ch = this.getPadHeight();
+               let cw = this.getPadWidth(), ch = this.getPadHeight(),
+                   wx = window.screenLeft, wy = window.screenTop,
+                   ww = window.outerWidth, wh = window.outerHeight;
                if ((cw > 0) && (ch > 0) && ((this.pad.fCw != cw) || (this.pad.fCh != ch))) {
                   this.pad.fCw = cw;
                   this.pad.fCh = ch;
-                  console.log(`RESIZED:[${cw},${ch}]`);
-                  this.sendWebsocket(`RESIZED:[${cw},${ch}]`);
+                  this.pad.fWindowTopX = wx;
+                  this.pad.fWindowTopY = wy;
+                  this.pad.fWindowWidth = ww;
+                  this.pad.fWindowHeight = wh;
+                  console.log(`RESIZED:[${cw},${ch},${wx},${wy},${ww},${wh}]`);
+                  this.sendWebsocket(`RESIZED:[${cw},${ch},${wx},${wy},${ww},${wh}]`);
                }
             }, 1000); // long enough delay to prevent multiple occurence
          }
@@ -1807,7 +1813,7 @@ class TPadPainter extends ObjectPainter {
       if (this.snapid) {
          elem = { _typename: 'TWebPadOptions', snapid: this.snapid.toString(),
                   active: !!this.is_active_pad,
-                  cw: 0, ch: 0,
+                  cw: 0, ch: 0, w: [],
                   bits: 0, primitives: [],
                   logx: this.pad.fLogx, logy: this.pad.fLogy, logz: this.pad.fLogz,
                   gridx: this.pad.fGridx, gridy: this.pad.fGridy,
@@ -1821,6 +1827,7 @@ class TPadPainter extends ObjectPainter {
             elem.bits = this.getStatusBits();
             elem.cw = this.getPadWidth();
             elem.ch = this.getPadHeight();
+            elem.w = [ window.screenLeft, window.screenTop, window.outerWidth, window.outerHeight ];
          } else if (cp) {
             let cw = cp.getPadWidth(), ch = cp.getPadHeight(), rect = this.getPadRect();
             elem.cw = cw;
