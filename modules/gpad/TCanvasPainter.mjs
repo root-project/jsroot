@@ -356,11 +356,9 @@ class TCanvasPainter extends TPadPainter {
          this.syncDraw(true)
              .then(() => {
                 if (!this.snapid)
-                   this.resizeBrowser(snap.fSnapshot.fWindowWidth, snap.fSnapshot.fWindowHeight, true);
+                   this.resizeBrowser(snap.fSnapshot.fWindowWidth, snap.fSnapshot.fWindowHeight);
                 if (!this.snapid && isFunc(this.setFixedCanvasSize))
                    this._online_fixed_size = this.setFixedCanvasSize(snap.fSnapshot.fCw, snap.fSnapshot.fCh, snap.fFixedSize);
-                // if (!this.snapid)
-                //   this.ensureBrowserSize(snap.fSnapshot.fCw, snap.fSnapshot.fCh, !this.snapid);
              })
              .then(() => this.redrawPadSnap(snap))
              .then(() => {
@@ -408,7 +406,7 @@ class TCanvasPainter extends TPadPainter {
             resized = true;
          }
          if (obj.w && obj.h) {
-            this.resizeBrowser(Number.parseInt(obj.w), Number.parseInt(obj.h), true);
+            this.resizeBrowser(Number.parseInt(obj.w), Number.parseInt(obj.h));
             resized = true;
          }
          if (obj.cw && obj.ch && obj.fixed_size && isFunc(this.setFixedCanvasSize)) {
@@ -782,29 +780,16 @@ class TCanvasPainter extends TPadPainter {
       return res;
    }
 
-   /** @summary resize browser window to get requested canvas sizes */
-   resizeBrowser(argW, argH, as_is) {
-      if (!argW || !argH || this.isBatchMode() || this.embed_canvas || this.batch_mode)
-         return;
+   /** @summary resize browser window */
+   resizeBrowser(fullW, fullH) {
+      if (!fullW || !fullH || this.isBatchMode() || this.embed_canvas || this.batch_mode)
+         return false;
 
-      let fullW = 0, fullH = 0;
-      if (as_is) {
-         fullW = argW; fullH = argH;
-      } else {
-         let rect = getElementRect(this.selectDom('origin'));
-         if (!rect.width || !rect.height) return;
-         if ((rect.width == argW) && (rect.height == canvH)) return;
-         fullW = window.innerWidth - rect.width + argW;
-         fullH = window.innerHeight - rect.height + argH;
-      }
-
-      if ((fullW > 0) && (fullH > 0)) {
-         if (this._websocket)
-            this._websocket.resizeWindow(fullW, fullH);
-         else if (isFunc(window?.resizeTo))
-            window.resizeTo(fullW, fullH);
-         return true;
-      }
+      if (this._websocket)
+         this._websocket.resizeWindow(fullW, fullH);
+      else if (isFunc(window?.resizeTo))
+         window.resizeTo(fullW, fullH);
+      return true;
    }
 
    /** @summary draw TCanvas */
