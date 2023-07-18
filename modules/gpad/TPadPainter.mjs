@@ -1284,7 +1284,9 @@ class TPadPainter extends ObjectPainter {
              return getPromise(this.painters[indx].redraw(force ? 'redraw' : 'resize')).then(() => redrawNext(indx+1));
           };
 
-      return sync_promise.then(() => this.ensureBrowserSize(this.pad?.fCw, this.pad?.fCh)).then(() => {
+      // return sync_promise.then(() => this.ensureBrowserSize(this.pad?.fCw, this.pad?.fCh)).then(() => {
+
+      return sync_promise.then(() => {
 
          changed = this.createCanvasSvg(force ? 2 : 1, size);
 
@@ -1546,6 +1548,8 @@ class TPadPainter extends ObjectPainter {
      * @desc Actively used for the first canvas drawing or after intentional layout resize when browser should be adjusted
      * @private */
    ensureBrowserSize(canvW, canvH, condition) {
+      console.log('ENSURE browser size', canvW, canvH, condition);
+
       if (this.enforceCanvasSize)
          condition = true;
 
