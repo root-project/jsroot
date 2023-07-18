@@ -354,7 +354,14 @@ class TCanvasPainter extends TPadPainter {
              snap = parse(msg.slice(p1+1));
 
          this.syncDraw(true)
-             .then(() => this.ensureBrowserSize(snap.fSnapshot.fCw, snap.fSnapshot.fCh, !this.snapid))
+             .then(() => {
+                if (!this.snapid)
+                   this.resizeBrowser(snap.fSnapshot.fWindowWidth, snap.fSnapshot.fWindowHeight, true);
+                if (!this.snapid && isFunc(this.setFixedCanvasSize))
+                   this._online_fixed_size = this.setFixedCanvasSize(snap.fSnapshot.fCw, snap.fSnapshot.fCh, snap.fFixedSize);
+                // if (!this.snapid)
+                //   this.ensureBrowserSize(snap.fSnapshot.fCw, snap.fSnapshot.fCh, !this.snapid);
+             })
              .then(() => this.redrawPadSnap(snap))
              .then(() => {
                 this.completeCanvasSnapDrawing();
@@ -400,10 +407,15 @@ class TCanvasPainter extends TPadPainter {
             window.moveTo(obj.x, obj.y);
             resized = true;
          }
-         if (obj.w && obj.h && typeof window !== 'undefined') {
-            window.resizeTo(obj.w, obj.h);
+         if (obj.w && obj.h) {
+            this.resizeBrowser(Number.parseInt(obj.w), Number.parseInt(obj.h), true);
             resized = true;
          }
+         if (obj.cw && obj.ch && obj.fixed_size && isFunc(this.setFixedCanvasSize)) {
+            this._online_fixed_size = this.setFixedCanvasSize(Number.parseInt(obj.cw), Number.parseInt(obj.ch), true);
+            resized = true;
+         }
+
          if (resized)
             this.sendResized(true);
       } else if (msg.slice(0,5) == 'EDIT:') {
@@ -418,14 +430,15 @@ class TCanvasPainter extends TPadPainter {
       }
    }
 
-   /** @summary Send RESIZED message to cleint to inform about changes in canvas/window geometry
+   /** @summary Send RESIZED message to client to inform about changes in canvas/window geometry
      * @private */
    sendResized(force) {
       if (!this.pad)
          return;
       let cw = this.getPadWidth(), ch = this.getPadHeight(),
           wx = window.screenLeft, wy = window.screenTop,
-          ww = window.outerWidth, wh = window.outerHeight;
+          ww = window.outerWidth, wh = window.outerHeight,
+          fixed = this._online_fixed_size ? 1 : 0;
       if (!force) {
          force = (cw > 0) && (ch > 0) && ((this.pad.fCw != cw) || (this.pad.fCh != ch));
          if (force) {
@@ -433,11 +446,8 @@ class TCanvasPainter extends TPadPainter {
             this.pad.fCh = ch;
          }
       }
-      if (force) {
-         console.log(`RESIZED:[${cw},${ch},${wx},${wy},${ww},${wh}]`);
-         this.sendWebsocket(`RESIZED:[${cw},${ch},${wx},${wy},${ww},${wh}]`);
-       }
-
+      if (force)
+         this.sendWebsocket(`RESIZED:${JSON.stringify([wx,wy,ww,wh,cw,ch,fixed])}`);
    }
 
    /** @summary Handle pad button click event */
@@ -773,17 +783,22 @@ class TCanvasPainter extends TPadPainter {
    }
 
    /** @summary resize browser window to get requested canvas sizes */
-   resizeBrowser(canvW, canvH) {
-      if (!canvW || !canvH || this.isBatchMode() || this.embed_canvas || this.batch_mode)
+   resizeBrowser(argW, argH, as_is) {
+      if (!argW || !argH || this.isBatchMode() || this.embed_canvas || this.batch_mode)
          return;
 
-      let rect = getElementRect(this.selectDom('origin'));
-      if (!rect.width || !rect.height) return;
+      let fullW = 0, fullH = 0;
+      if (as_is) {
+         fullW = argW; fullH = argH;
+      } else {
+         let rect = getElementRect(this.selectDom('origin'));
+         if (!rect.width || !rect.height) return;
+         if ((rect.width == argW) && (rect.height == canvH)) return;
+         fullW = window.innerWidth - rect.width + argW;
+         fullH = window.innerHeight - rect.height + argH;
+      }
 
-      let fullW = window.innerWidth - rect.width + canvW,
-          fullH = window.innerHeight - rect.height + canvH;
-
-      if ((fullW > 0) && (fullH > 0) && ((rect.width != canvW) || (rect.height != canvH))) {
+      if ((fullW > 0) && (fullH > 0)) {
          if (this._websocket)
             this._websocket.resizeWindow(fullW, fullH);
          else if (isFunc(window?.resizeTo))
