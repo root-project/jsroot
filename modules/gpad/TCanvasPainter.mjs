@@ -783,13 +783,9 @@ class TCanvasPainter extends TPadPainter {
    /** @summary resize browser window */
    resizeBrowser(fullW, fullH) {
       if (!fullW || !fullH || this.isBatchMode() || this.embed_canvas || this.batch_mode)
-         return false;
+         return;
 
-      if (this._websocket)
-         this._websocket.resizeWindow(fullW, fullH);
-      else if (isFunc(window?.resizeTo))
-         window.resizeTo(fullW, fullH);
-      return true;
+      this._websocket?.resizeWindow(fullW, fullH);
    }
 
    /** @summary draw TCanvas */

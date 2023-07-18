@@ -655,12 +655,8 @@ class RCanvasPainter extends RPadPainter {
    /** @summary resize browser window to get requested canvas sizes */
    resizeBrowser(fullW, fullH) {
       if (!fullW || !fullH || this.isBatchMode() || this.embed_canvas || this.batch_mode)
-         return false;
-      if (this._websocket)
-         this._websocket.resizeWindow(fullW, fullH);
-      else if (isFunc(window?.resizeTo))
-         window.resizeTo(fullW, fullH);
-      return true;
+         return;
+      this._websocket?.resizeWindow(fullW, fullH);
    }
 
    /** @summary draw RCanvas object */
