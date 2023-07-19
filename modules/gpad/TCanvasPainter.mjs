@@ -703,7 +703,7 @@ class TCanvasPainter extends TPadPainter {
       }
 
       if (msg) {
-         console.log(`Sending ${msg.length} ${msg.slice(0,40)}`);
+         // console.log(`Sending ${msg.length} ${msg.slice(0,40)}`);
          this._websocket.send(msg);
       } else {
          console.log(`Unprocessed changes ${kind} for painter of ${painter?.getObject()?._typename} subelem ${subelem}`);
