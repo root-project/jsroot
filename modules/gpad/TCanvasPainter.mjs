@@ -392,10 +392,6 @@ class TCanvasPainter extends TPadPainter {
              hist = parse(msg.slice(7));
          this.websocketTimeout(`proj${kind}`, 'reset');
          this.drawProjection(kind, hist);
-      } else if (msg.slice(0,5) == 'SHOW:') {
-         let that = msg.slice(5),
-             on = (that[that.length-1] == '1');
-         this.showSection(that.slice(0,that.length-2), on);
       } else if (msg.slice(0,5) == 'CTRL:') {
          let ctrl = parse(msg.slice(5)), resized = false;
          if ((ctrl?.title !== undefined) && (typeof document !== 'undefined'))
@@ -427,12 +423,6 @@ class TCanvasPainter extends TPadPainter {
 
          if (resized)
             this.sendResized(true);
-      } else if (msg.slice(0,5) == 'EDIT:') {
-         let obj_painter = this.findSnap(msg.slice(5));
-         if (obj_painter)
-            this.showSection('Editor', true)
-                .then(() => this.producePadEvent('select', obj_painter.getPadPainter(), obj_painter));
-
       } else {
          console.log(`unrecognized msg ${msg}`);
       }
