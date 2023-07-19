@@ -421,6 +421,13 @@ class TCanvasPainter extends TPadPainter {
                    .then(() => this.producePadEvent('select', obj_painter.getPadPainter(), obj_painter));
          }
 
+         if (ctrl.winstate && typeof window !== 'undefined') {
+            if (ctrl.winstate == 'iconify')
+               window.blur();
+            else
+               window.focus();
+         }
+
          if (resized)
             this.sendResized(true);
       } else {
