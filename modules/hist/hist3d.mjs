@@ -3,7 +3,7 @@ import { rgb as d3_rgb } from '../d3.mjs';
 import { REVISION, DoubleSide, Object3D, Color, Vector2, Vector3, Matrix4, Line3,
          BufferGeometry, BufferAttribute, Mesh, MeshBasicMaterial, MeshLambertMaterial,
          LineSegments, LineDashedMaterial, LineBasicMaterial,
-         TextGeometry, Plane, Scene, PerspectiveCamera, PointLight, ShapeUtils } from '../three.mjs';
+         TextGeometry, Plane, Scene, PerspectiveCamera, OrthographicCamera, PointLight, ShapeUtils } from '../three.mjs';
 import { assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, Box3D, getMaterialArgs,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind,
@@ -415,17 +415,22 @@ function create3DScene(render3d, x3dscale, y3dscale) {
    this.scene_x = sz.x ?? 0;
    this.scene_y = sz.y ?? 0;
 
-   this.camera = new PerspectiveCamera(45, this.scene_width / this.scene_height, 1, 40*this.size_z3d);
+   if (this.othographic) {
+      this.camera = new OrthographicCamera(-this.scene_width/2, this.scene_width/2, this.scene_height/2, -this.scene_height/2, 1, 40*this.size_z3d);
+      this.camera.up.set(0,0,1);
+   } else {
+      this.camera = new PerspectiveCamera(45, this.scene_width / this.scene_height, 1, 40*this.size_z3d);
+      this.camera.up.set(0,0,1);
+   }
 
    this.camera_Phi = 30;
    this.camera_Theta = 30;
 
    this.pointLight = new PointLight(0xffffff,1);
-   this.camera.add(this.pointLight);
    this.pointLight.position.set(this.size_x3d/2, this.size_y3d/2, this.size_z3d/2);
+   this.camera.add(this.pointLight);
    this.lookat = new Vector3(0,0,0.8*this.size_z3d);
-   this.camera.up = new Vector3(0,0,1);
-   this.scene.add( this.camera );
+   this.scene.add(this.camera);
 
    setCameraPosition(this, true);
 
