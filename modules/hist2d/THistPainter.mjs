@@ -30,7 +30,7 @@ class THistDrawOptions {
               Mark: false, Same: false, Scat: false, ScatCoef: 1., Func: true,
               Arrow: false, Box: false, BoxStyle: 0,
               Text: false, TextAngle: 0, TextKind: '', Char: 0, Color: false, Contour: 0, Cjust: false,
-              Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
+              Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0, Ortho: false,
               Spec: false, Pie: false, List: false, Zscale: false, Zvert: true, PadPalette: false,
               Candle: '', Violin: '', Scaled: null, Circular: 0,
               GLBox: 0, GLColor: false, Project: '', System: kCARTESIAN,
@@ -126,6 +126,8 @@ class THistDrawOptions {
 
       if (d.check('X3DSC', true)) this.x3dscale = d.partAsInt(0, 100) / 100;
       if (d.check('Y3DSC', true)) this.y3dscale = d.partAsInt(0, 100) / 100;
+
+      if (d.check('ORTHO')) this.Ortho = true;
 
       let lx = 0, ly = 0, check3dbox = '', check3d = (hdim == 3);
       if (d.check('LOG2XY')) lx = ly = 2;
@@ -1657,7 +1659,7 @@ class THistPainter extends ObjectPainter {
                main.options.BackBox = !main.options.BackBox;
                fp.render3D();
             });
-            menu.addchk(fp.camera?.isOrthographicCamera, 'Othographic camera', flag => fp.changeCamera(flag));
+            menu.addchk(fp.camera?.isOrthographicCamera, 'Othographic camera', flag => fp.change3DCamera(flag));
          }
 
          if (this.draw_content) {

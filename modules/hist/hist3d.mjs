@@ -301,27 +301,29 @@ function createLegoGeom(painter, positions, normals, binsx, binsy) {
 function setCameraPosition(fp, first_time) {
    let pad = fp.getPadPainter().getRootPad(true),
        max3dx = Math.max(0.75*fp.size_x3d, fp.size_z3d),
-       max3dy = Math.max(0.75*fp.size_y3d, fp.size_z3d);
+       max3dy = Math.max(0.75*fp.size_y3d, fp.size_z3d),
+       k = fp.camera.isOrthographicCamera ? 0.5 : 1;
 
    if (first_time) {
       if (max3dx === max3dy)
-         fp.camera.position.set(-1.6*max3dx, -3.5*max3dy, 1.4*fp.size_z3d);
+         fp.camera.position.set(-1.6*max3dx*k, -3.5*max3dy*k, 1.4*fp.size_z3d);
       else if (max3dx > max3dy)
-         fp.camera.position.set(-2*max3dx, -3.5*max3dy, 1.4*fp.size_z3d);
+         fp.camera.position.set(-2*max3dx*k, -3.5*max3dy*k, 1.4*fp.size_z3d);
       else
-         fp.camera.position.set(-3.5*max3dx, -2*max3dy, 1.4*fp.size_z3d);
+         fp.camera.position.set(-3.5*max3dx*k, -2*max3dy*k, 1.4*fp.size_z3d);
    }
 
    if (pad && (first_time || !fp.zoomChangedInteractive()))
       if (Number.isFinite(pad.fTheta) && Number.isFinite(pad.fPhi) && ((pad.fTheta !== fp.camera_Theta) || (pad.fPhi !== fp.camera_Phi))) {
+         console.log('set angle', k);
          fp.camera_Phi = pad.fPhi;
          fp.camera_Theta = pad.fTheta;
          max3dx = 3*Math.max(fp.size_x3d, fp.size_z3d);
          max3dy = 3*Math.max(fp.size_y3d, fp.size_z3d);
          let phi = (270-pad.fPhi)/180*Math.PI, theta = (pad.fTheta-10)/180*Math.PI;
-         fp.camera.position.set(max3dx*Math.cos(phi)*Math.cos(theta),
-                                max3dy*Math.sin(phi)*Math.cos(theta),
-                                fp.size_z3d + (max3dx+max3dy)*0.5*Math.sin(theta));
+         fp.camera.position.set(max3dx*Math.cos(phi)*Math.cos(theta)*k,
+                                max3dy*Math.sin(phi)*Math.cos(theta)*k,
+                                fp.size_z3d + (max3dx+max3dy)*0.5*Math.sin(theta))*k;
          first_time = true;
       }
 
@@ -422,7 +424,7 @@ function create3DControl(fp) {
 /** @summary Create all necessary components for 3D drawings in frame painter
   * @return {Promise} when render3d !== -1
   * @private */
-function create3DScene(render3d, x3dscale, y3dscale) {
+function create3DScene(render3d, x3dscale, y3dscale, orthographic) {
 
    if (render3d === -1) {
 
@@ -508,26 +510,9 @@ function create3DScene(render3d, x3dscale, y3dscale) {
    this.camera_Phi = 30;
    this.camera_Theta = 30;
 
-   create3DCamera(this);
+   create3DCamera(this, orthographic);
 
    setCameraPosition(this, true);
-
-   this.changeCamera = kind => {
-      let has_control = false;
-      if (this.control) {
-          this.control.cleanup();
-          delete this.control;
-          has_control = true;
-      }
-
-      create3DCamera(this, kind);
-      setCameraPosition(this, true);
-
-      if (has_control)
-         create3DControl(this);
-
-      this.render3D();
-   };
 
    return createRender3D(this.scene_width, this.scene_height, render3d).then(r => {
 
@@ -545,6 +530,26 @@ function create3DScene(render3d, x3dscale, y3dscale) {
       return this;
    });
 }
+
+/** @summary Change camera kind in frame painter
+  * @private */
+function change3DCamera(orthographic) {
+   let has_control = false;
+   if (this.control) {
+       this.control.cleanup();
+       delete this.control;
+       has_control = true;
+   }
+
+   create3DCamera(this, orthographic);
+   setCameraPosition(this, true);
+
+   if (has_control)
+      create3DControl(this);
+
+   this.render3D();
+}
+
 
 /** @summary call 3D rendering of the frame
   * @param {number} tmout - specifies delay, after which actual rendering will be invoked
@@ -1401,7 +1406,7 @@ function convert3DtoPadNDC(x, y, z) {
 /** @summary Assign 3D methods for frame painter
   * @private */
 function assignFrame3DMethods(fpainter) {
-   Object.assign(fpainter, { create3DScene, render3D, resize3D, highlightBin3D, set3DOptions, drawXYZ, convert3DtoPadNDC });
+   Object.assign(fpainter, { create3DScene, render3D, resize3D, change3DCamera, highlightBin3D, set3DOptions, drawXYZ, convert3DtoPadNDC });
 }
 
 /** @summary Draw histograms in 3D mode
