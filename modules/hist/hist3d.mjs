@@ -329,6 +329,96 @@ function setCameraPosition(fp, first_time) {
       fp.camera.lookAt(fp.lookat);
 }
 
+function create3DCamera(fp, orthographic) {
+   if (fp.camera) {
+      fp.scene.remove(fp.camera);
+      disposeThreejsObject(fp.camera);
+      delete fp.camera;
+   }
+
+   if (orthographic) {
+      fp.camera = new OrthographicCamera(-fp.scene_width/2, fp.scene_width/2, fp.scene_height/2, -fp.scene_height/2, 1, 40*fp.size_z3d);
+      fp.camera.up.set(0,0,1);
+   } else {
+      fp.camera = new PerspectiveCamera(45, fp.scene_width / fp.scene_height, 1, 40*fp.size_z3d);
+      fp.camera.up.set(0,0,1);
+   }
+
+   fp.pointLight = new PointLight(0xffffff,1);
+   fp.pointLight.position.set(fp.size_x3d/2, fp.size_y3d/2, fp.size_z3d/2);
+   fp.camera.add(fp.pointLight);
+   fp.lookat = new Vector3(0,0,0.8*fp.size_z3d);
+   fp.scene.add(fp.camera);
+}
+
+function create3DControl(fp) {
+
+   fp.control = createOrbitControl(fp, fp.camera, fp.scene, fp.renderer, fp.lookat);
+
+   let frame_painter = fp, obj_painter = fp.getMainPainter();
+
+   fp.control.processMouseMove = function(intersects) {
+
+      let tip = null, mesh = null, zoom_mesh = null;
+
+      for (let i = 0; i < intersects.length; ++i) {
+         if (isFunc(intersects[i].object?.tooltip)) {
+            tip = intersects[i].object.tooltip(intersects[i]);
+            if (tip) { mesh = intersects[i].object; break; }
+         } else if (intersects[i].object?.zoom && !zoom_mesh) {
+            zoom_mesh = intersects[i].object;
+         }
+      }
+
+      if (tip && !tip.use_itself) {
+         let delta_x = 1e-4*frame_painter.size_x3d,
+             delta_y = 1e-4*frame_painter.size_y3d,
+             delta_z = 1e-4*frame_painter.size_z3d;
+         if ((tip.x1 > tip.x2) || (tip.y1 > tip.y2) || (tip.z1 > tip.z2)) console.warn('check 3D hints coordinates');
+         tip.x1 -= delta_x; tip.x2 += delta_x;
+         tip.y1 -= delta_y; tip.y2 += delta_y;
+         tip.z1 -= delta_z; tip.z2 += delta_z;
+      }
+
+      frame_painter.highlightBin3D(tip, mesh);
+
+      if (!tip && zoom_mesh && isFunc(frame_painter.get3dZoomCoord)) {
+         let pnt = zoom_mesh.globalIntersect(this.raycaster),
+             axis_name = zoom_mesh.zoom,
+             axis_value = frame_painter.get3dZoomCoord(pnt, axis_name);
+
+         if ((axis_name === 'z') && zoom_mesh.use_y_for_z) axis_name = 'y';
+
+         return { name: axis_name,
+                  title: 'axis object',
+                  line: axis_name + ' : ' + frame_painter.axisAsText(axis_name, axis_value),
+                  only_status: true };
+      }
+
+      return tip?.lines ? tip : '';
+   };
+
+   fp.control.processMouseLeave = function() {
+      frame_painter.highlightBin3D(null);
+   };
+
+   fp.control.contextMenu = function(pos, intersects) {
+      let kind = 'painter', p = obj_painter;
+      if (intersects)
+         for (let n = 0; n < intersects.length; ++n) {
+            let mesh = intersects[n].object;
+            if (mesh.zoom) { kind = mesh.zoom; p = null; break; }
+            if (isFunc(mesh.painter?.fillContextMenu)) {
+               p = mesh.painter; break;
+            }
+         }
+
+      let fp = obj_painter.getFramePainter();
+      if (isFunc(fp?.showContextMenu))
+         fp.showContextMenu(kind, pos, p);
+   };
+}
+
 /** @summary Create all necessary components for 3D drawings in frame painter
   * @return {Promise} when render3d !== -1
   * @private */
@@ -415,24 +505,29 @@ function create3DScene(render3d, x3dscale, y3dscale) {
    this.scene_x = sz.x ?? 0;
    this.scene_y = sz.y ?? 0;
 
-   if (this.othographic) {
-      this.camera = new OrthographicCamera(-this.scene_width/2, this.scene_width/2, this.scene_height/2, -this.scene_height/2, 1, 40*this.size_z3d);
-      this.camera.up.set(0,0,1);
-   } else {
-      this.camera = new PerspectiveCamera(45, this.scene_width / this.scene_height, 1, 40*this.size_z3d);
-      this.camera.up.set(0,0,1);
-   }
-
    this.camera_Phi = 30;
    this.camera_Theta = 30;
 
-   this.pointLight = new PointLight(0xffffff,1);
-   this.pointLight.position.set(this.size_x3d/2, this.size_y3d/2, this.size_z3d/2);
-   this.camera.add(this.pointLight);
-   this.lookat = new Vector3(0,0,0.8*this.size_z3d);
-   this.scene.add(this.camera);
+   create3DCamera(this);
 
    setCameraPosition(this, true);
+
+   this.changeCamera = kind => {
+      let has_control = false;
+      if (this.control) {
+          this.control.cleanup();
+          delete this.control;
+          has_control = true;
+      }
+
+      create3DCamera(this, kind);
+      setCameraPosition(this, true);
+
+      if (has_control)
+         create3DControl(this);
+
+      this.render3D();
+   };
 
    return createRender3D(this.scene_width, this.scene_height, render3d).then(r => {
 
@@ -444,73 +539,8 @@ function create3DScene(render3d, x3dscale, y3dscale) {
       this.first_render_tm = 0;
       this.enable_highlight = false;
 
-      if (this.isBatchMode() || !this.webgl)
-         return this;
-
-      this.control = createOrbitControl(this, this.camera, this.scene, this.renderer, this.lookat);
-
-      let frame_painter = this, obj_painter = this.getMainPainter();
-
-      this.control.processMouseMove = function(intersects) {
-
-         let tip = null, mesh = null, zoom_mesh = null;
-
-         for (let i = 0; i < intersects.length; ++i) {
-            if (isFunc(intersects[i].object?.tooltip)) {
-               tip = intersects[i].object.tooltip(intersects[i]);
-               if (tip) { mesh = intersects[i].object; break; }
-            } else if (intersects[i].object?.zoom && !zoom_mesh) {
-               zoom_mesh = intersects[i].object;
-            }
-         }
-
-         if (tip && !tip.use_itself) {
-            let delta_x = 1e-4*frame_painter.size_x3d,
-                delta_y = 1e-4*frame_painter.size_y3d,
-                delta_z = 1e-4*frame_painter.size_z3d;
-            if ((tip.x1 > tip.x2) || (tip.y1 > tip.y2) || (tip.z1 > tip.z2)) console.warn('check 3D hints coordinates');
-            tip.x1 -= delta_x; tip.x2 += delta_x;
-            tip.y1 -= delta_y; tip.y2 += delta_y;
-            tip.z1 -= delta_z; tip.z2 += delta_z;
-         }
-
-         frame_painter.highlightBin3D(tip, mesh);
-
-         if (!tip && zoom_mesh && isFunc(frame_painter.get3dZoomCoord)) {
-            let pnt = zoom_mesh.globalIntersect(this.raycaster),
-                axis_name = zoom_mesh.zoom,
-                axis_value = frame_painter.get3dZoomCoord(pnt, axis_name);
-
-            if ((axis_name === 'z') && zoom_mesh.use_y_for_z) axis_name = 'y';
-
-            return { name: axis_name,
-                     title: 'axis object',
-                     line: axis_name + ' : ' + frame_painter.axisAsText(axis_name, axis_value),
-                     only_status: true };
-         }
-
-         return tip?.lines ? tip : '';
-      };
-
-      this.control.processMouseLeave = function() {
-         frame_painter.highlightBin3D(null);
-      };
-
-      this.control.contextMenu = function(pos, intersects) {
-         let kind = 'painter', p = obj_painter;
-         if (intersects)
-            for (let n = 0; n < intersects.length; ++n) {
-               let mesh = intersects[n].object;
-               if (mesh.zoom) { kind = mesh.zoom; p = null; break; }
-               if (isFunc(mesh.painter?.fillContextMenu)) {
-                  p = mesh.painter; break;
-               }
-            }
-
-         let fp = obj_painter.getFramePainter();
-         if (isFunc(fp?.showContextMenu))
-            fp.showContextMenu(kind, pos, p);
-      };
+      if (!this.isBatchMode() && this.webgl)
+         create3DControl(this);
 
       return this;
    });

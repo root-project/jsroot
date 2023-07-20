@@ -1657,6 +1657,7 @@ class THistPainter extends ObjectPainter {
                main.options.BackBox = !main.options.BackBox;
                fp.render3D();
             });
+            menu.addchk(fp.camera?.isOrthographicCamera, 'Othographic camera', flag => fp.changeCamera(flag));
          }
 
          if (this.draw_content) {
