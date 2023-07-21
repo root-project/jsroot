@@ -84,6 +84,7 @@
      { "name": "cyl", "opt": "lego2;cyl", "title": "Cylindrical coordinates for lego plots" },
      { "name": "sph", "opt": "lego2;sph", "title": "Sphere coordinates for lego plots" },
      { "name": "psr", "opt": "lego2;psr", "title": "Rapidity coordinates for lego plots" },
+     { "name": "ortho", "opt": "lego2;ortho", "title": "Orthographic camera for 3D plots - lego and surface" },
      { "name": "autozoom", "opt": "col;autozoom", "title": "Automatically zoom into non-empty content" },
      { "name": "box", "json": "hbox.json.gz", "opt": "box", "title": "boxes, area proportional to bin content" },
      { "name": "box1", "json": "hbox.json.gz", "opt": "box1", "title": "boxes, area proportional to bin content" },

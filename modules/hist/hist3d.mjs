@@ -295,6 +295,26 @@ function createLegoGeom(painter, positions, normals, binsx, binsy) {
    return geometry;
 }
 
+function create3DCamera(fp, orthographic) {
+   if (fp.camera) {
+      fp.scene.remove(fp.camera);
+      disposeThreejsObject(fp.camera);
+      delete fp.camera;
+   }
+
+   if (orthographic)
+      fp.camera = new OrthographicCamera(-fp.scene_width/2, fp.scene_width/2, fp.scene_height/2, -fp.scene_height/2, 0.001, 40*fp.size_z3d);
+   else
+      fp.camera = new PerspectiveCamera(45, fp.scene_width / fp.scene_height, 1, 40*fp.size_z3d);
+
+   fp.camera.up.set(0,0,1);
+
+   fp.pointLight = new PointLight(0xffffff,1);
+   fp.pointLight.position.set(fp.size_x3d/2, fp.size_y3d/2, fp.size_z3d/2);
+   fp.camera.add(fp.pointLight);
+   fp.lookat = new Vector3(0,0,0.8*fp.size_z3d);
+   fp.scene.add(fp.camera);
+}
 
 /** @summary Set default camera position
   * @private */
@@ -311,13 +331,15 @@ function setCameraPosition(fp, first_time) {
          fp.camera.position.set(-2*max3dx*k, -3.5*max3dy*k, 1.4*fp.size_z3d);
       else
          fp.camera.position.set(-3.5*max3dx*k, -2*max3dy*k, 1.4*fp.size_z3d);
+      if (fp.camera.isOrthographicCamera)
+         fp.camera.zoom = 1.7;
    }
 
    if (pad && (first_time || !fp.zoomChangedInteractive()))
       if (Number.isFinite(pad.fTheta) && Number.isFinite(pad.fPhi) && ((pad.fTheta !== fp.camera_Theta) || (pad.fPhi !== fp.camera_Phi))) {
-         console.log('set angle', k);
          fp.camera_Phi = pad.fPhi;
          fp.camera_Theta = pad.fTheta;
+         console.log('set angle');
          max3dx = 3*Math.max(fp.size_x3d, fp.size_z3d);
          max3dy = 3*Math.max(fp.size_y3d, fp.size_z3d);
          let phi = (270-pad.fPhi)/180*Math.PI, theta = (pad.fTheta-10)/180*Math.PI;
@@ -329,28 +351,6 @@ function setCameraPosition(fp, first_time) {
 
    if (first_time)
       fp.camera.lookAt(fp.lookat);
-}
-
-function create3DCamera(fp, orthographic) {
-   if (fp.camera) {
-      fp.scene.remove(fp.camera);
-      disposeThreejsObject(fp.camera);
-      delete fp.camera;
-   }
-
-   if (orthographic) {
-      fp.camera = new OrthographicCamera(-fp.scene_width/2, fp.scene_width/2, fp.scene_height/2, -fp.scene_height/2, 1, 40*fp.size_z3d);
-      fp.camera.up.set(0,0,1);
-   } else {
-      fp.camera = new PerspectiveCamera(45, fp.scene_width / fp.scene_height, 1, 40*fp.size_z3d);
-      fp.camera.up.set(0,0,1);
-   }
-
-   fp.pointLight = new PointLight(0xffffff,1);
-   fp.pointLight.position.set(fp.size_x3d/2, fp.size_y3d/2, fp.size_z3d/2);
-   fp.camera.add(fp.pointLight);
-   fp.lookat = new Vector3(0,0,0.8*fp.size_z3d);
-   fp.scene.add(fp.camera);
 }
 
 function create3DControl(fp) {
@@ -419,6 +419,8 @@ function create3DControl(fp) {
       if (isFunc(fp?.showContextMenu))
          fp.showContextMenu(kind, pos, p);
    };
+
+   fp.control.reset();
 }
 
 /** @summary Create all necessary components for 3D drawings in frame painter
