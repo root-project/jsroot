@@ -1748,7 +1748,7 @@ class THistPainter extends ObjectPainter {
       cntr.configIndicies(this.options.Zero ? -1 : 0, (cntr.colzmin != 0) || !this.options.Zero || this.isTH2Poly() ? 0 : -1);
 
       let fp = this.getFramePainter();
-      if ((this.getDimension() < 3) && fp) {
+      if (fp && (this.getDimension() < 3) && !fp.mode3d) {
          fp.zmin = cntr.colzmin;
          fp.zmax = cntr.colzmax;
       }
