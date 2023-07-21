@@ -3165,7 +3165,6 @@ class TGeoPainter extends ObjectPainter {
             this._camera.top  = m + szx / screen_ratio / 2;
             this._camera.bottom = m - szx / screen_ratio / 2;
          }
-
       }
 
       this._camera.lookAt(this._lookat);
