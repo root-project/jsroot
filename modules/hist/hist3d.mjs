@@ -438,8 +438,6 @@ function create3DControl(fp) {
       if (isFunc(fp?.showContextMenu))
          fp.showContextMenu(kind, pos, p);
    };
-
-   // fp.control.reset();
 }
 
 /** @summary Create all necessary components for 3D drawings in frame painter

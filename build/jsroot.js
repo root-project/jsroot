@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '19/07/2023';
+let version_date = '21/07/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -69877,7 +69877,7 @@ class THistDrawOptions {
               Mark: false, Same: false, Scat: false, ScatCoef: 1., Func: true,
               Arrow: false, Box: false, BoxStyle: 0,
               Text: false, TextAngle: 0, TextKind: '', Char: 0, Color: false, Contour: 0, Cjust: false,
-              Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
+              Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0, Ortho: false,
               Spec: false, Pie: false, List: false, Zscale: false, Zvert: true, PadPalette: false,
               Candle: '', Violin: '', Scaled: null, Circular: 0,
               GLBox: 0, GLColor: false, Project: '', System: kCARTESIAN,
@@ -69973,6 +69973,8 @@ class THistDrawOptions {
 
       if (d.check('X3DSC', true)) this.x3dscale = d.partAsInt(0, 100) / 100;
       if (d.check('Y3DSC', true)) this.y3dscale = d.partAsInt(0, 100) / 100;
+
+      if (d.check('ORTHO')) this.Ortho = true;
 
       let lx = 0, ly = 0, check3dbox = '', check3d = (hdim == 3);
       if (d.check('LOG2XY')) lx = ly = 2;
@@ -71504,6 +71506,7 @@ class THistPainter extends ObjectPainter {
                main.options.BackBox = !main.options.BackBox;
                fp.render3D();
             });
+            menu.addchk(fp.camera?.isOrthographicCamera, 'Othographic camera', flag => fp.change3DCamera(flag));
          }
 
          if (this.draw_content) {
@@ -75529,44 +75532,155 @@ function createLegoGeom(painter, positions, normals, binsx, binsy) {
    return geometry;
 }
 
+function create3DCamera(fp, orthographic) {
+   if (fp.camera) {
+      fp.scene.remove(fp.camera);
+      disposeThreejsObject(fp.camera);
+      delete fp.camera;
+   }
+
+   if (orthographic)
+      fp.camera = new OrthographicCamera(-fp.scene_width/2, fp.scene_width/2, fp.scene_height/2, -fp.scene_height/2, 0.001, 40*fp.size_z3d);
+   else
+      fp.camera = new PerspectiveCamera(45, fp.scene_width / fp.scene_height, 1, 40*fp.size_z3d);
+
+   fp.camera.up.set(0,0,1);
+
+   fp.pointLight = new PointLight(0xffffff,1);
+   fp.pointLight.position.set(fp.size_x3d/2, fp.size_y3d/2, fp.size_z3d/2);
+   fp.camera.add(fp.pointLight);
+   fp.lookat = new Vector3(0,0,0.8*fp.size_z3d);
+   fp.scene.add(fp.camera);
+}
 
 /** @summary Set default camera position
   * @private */
 function setCameraPosition(fp, first_time) {
    let pad = fp.getPadPainter().getRootPad(true),
        max3dx = Math.max(0.75*fp.size_x3d, fp.size_z3d),
-       max3dy = Math.max(0.75*fp.size_y3d, fp.size_z3d);
+       max3dy = Math.max(0.75*fp.size_y3d, fp.size_z3d),
+       k = fp.camera.isOrthographicCamera ? 0.5 : 1;
 
    if (first_time) {
       if (max3dx === max3dy)
-         fp.camera.position.set(-1.6*max3dx, -3.5*max3dy, 1.4*fp.size_z3d);
+         fp.camera.position.set(-1.6*max3dx*k, -3.5*max3dy*k, 1.4*fp.size_z3d);
       else if (max3dx > max3dy)
-         fp.camera.position.set(-2*max3dx, -3.5*max3dy, 1.4*fp.size_z3d);
+         fp.camera.position.set(-2*max3dx*k, -3.5*max3dy*k, 1.4*fp.size_z3d);
       else
-         fp.camera.position.set(-3.5*max3dx, -2*max3dy, 1.4*fp.size_z3d);
+         fp.camera.position.set(-3.5*max3dx*k, -2*max3dy*k, 1.4*fp.size_z3d);
+      if (fp.camera.isOrthographicCamera && fp.scene_width > 5 && fp.scene_height > 5)
+         fp.camera.zoom = (isNodeJs() ? 3 : 5) * fp.scene_height / fp.scene_width;
    }
 
    if (pad && (first_time || !fp.zoomChangedInteractive()))
       if (Number.isFinite(pad.fTheta) && Number.isFinite(pad.fPhi) && ((pad.fTheta !== fp.camera_Theta) || (pad.fPhi !== fp.camera_Phi))) {
          fp.camera_Phi = pad.fPhi;
          fp.camera_Theta = pad.fTheta;
+         console.log('set angle');
          max3dx = 3*Math.max(fp.size_x3d, fp.size_z3d);
          max3dy = 3*Math.max(fp.size_y3d, fp.size_z3d);
          let phi = (270-pad.fPhi)/180*Math.PI, theta = (pad.fTheta-10)/180*Math.PI;
-         fp.camera.position.set(max3dx*Math.cos(phi)*Math.cos(theta),
-                                max3dy*Math.sin(phi)*Math.cos(theta),
-                                fp.size_z3d + (max3dx+max3dy)*0.5*Math.sin(theta));
+         fp.camera.position.set(max3dx*Math.cos(phi)*Math.cos(theta)*k,
+                                max3dy*Math.sin(phi)*Math.cos(theta)*k,
+                                fp.size_z3d + (max3dx+max3dy)*0.5*Math.sin(theta))*k;
          first_time = true;
       }
 
    if (first_time)
       fp.camera.lookAt(fp.lookat);
+
+   if (first_time && fp.camera.isOrthographicCamera && fp.scene_width && fp.scene_height) {
+      let screen_ratio = fp.scene_width / fp.scene_height,
+          szx = fp.camera.right - fp.camera.left, szy = fp.camera.top - fp.camera.bottom;
+
+      if (screen_ratio > szx / szy) {
+         // screen wider than actual geometry
+         let m = (fp.camera.right + fp.camera.left) / 2;
+         fp.camera.left = m - szy * screen_ratio / 2;
+         fp.camera.right = m + szy * screen_ratio / 2;
+      } else {
+         // screen heigher than actual geometry
+         let m = (fp.camera.top + fp.camera.bottom) / 2;
+         fp.camera.top  = m + szx / screen_ratio / 2;
+         fp.camera.bottom = m - szx / screen_ratio / 2;
+      }
+    }
+
+    fp.camera.updateProjectionMatrix();
+}
+
+function create3DControl(fp) {
+
+   fp.control = createOrbitControl(fp, fp.camera, fp.scene, fp.renderer, fp.lookat);
+
+   let frame_painter = fp, obj_painter = fp.getMainPainter();
+
+   fp.control.processMouseMove = function(intersects) {
+
+      let tip = null, mesh = null, zoom_mesh = null;
+
+      for (let i = 0; i < intersects.length; ++i) {
+         if (isFunc(intersects[i].object?.tooltip)) {
+            tip = intersects[i].object.tooltip(intersects[i]);
+            if (tip) { mesh = intersects[i].object; break; }
+         } else if (intersects[i].object?.zoom && !zoom_mesh) {
+            zoom_mesh = intersects[i].object;
+         }
+      }
+
+      if (tip && !tip.use_itself) {
+         let delta_x = 1e-4*frame_painter.size_x3d,
+             delta_y = 1e-4*frame_painter.size_y3d,
+             delta_z = 1e-4*frame_painter.size_z3d;
+         if ((tip.x1 > tip.x2) || (tip.y1 > tip.y2) || (tip.z1 > tip.z2)) console.warn('check 3D hints coordinates');
+         tip.x1 -= delta_x; tip.x2 += delta_x;
+         tip.y1 -= delta_y; tip.y2 += delta_y;
+         tip.z1 -= delta_z; tip.z2 += delta_z;
+      }
+
+      frame_painter.highlightBin3D(tip, mesh);
+
+      if (!tip && zoom_mesh && isFunc(frame_painter.get3dZoomCoord)) {
+         let pnt = zoom_mesh.globalIntersect(this.raycaster),
+             axis_name = zoom_mesh.zoom,
+             axis_value = frame_painter.get3dZoomCoord(pnt, axis_name);
+
+         if ((axis_name === 'z') && zoom_mesh.use_y_for_z) axis_name = 'y';
+
+         return { name: axis_name,
+                  title: 'axis object',
+                  line: axis_name + ' : ' + frame_painter.axisAsText(axis_name, axis_value),
+                  only_status: true };
+      }
+
+      return tip?.lines ? tip : '';
+   };
+
+   fp.control.processMouseLeave = function() {
+      frame_painter.highlightBin3D(null);
+   };
+
+   fp.control.contextMenu = function(pos, intersects) {
+      let kind = 'painter', p = obj_painter;
+      if (intersects)
+         for (let n = 0; n < intersects.length; ++n) {
+            let mesh = intersects[n].object;
+            if (mesh.zoom) { kind = mesh.zoom; p = null; break; }
+            if (isFunc(mesh.painter?.fillContextMenu)) {
+               p = mesh.painter; break;
+            }
+         }
+
+      let fp = obj_painter.getFramePainter();
+      if (isFunc(fp?.showContextMenu))
+         fp.showContextMenu(kind, pos, p);
+   };
 }
 
 /** @summary Create all necessary components for 3D drawings in frame painter
   * @return {Promise} when render3d !== -1
   * @private */
-function create3DScene(render3d, x3dscale, y3dscale) {
+function create3DScene(render3d, x3dscale, y3dscale, orthographic) {
 
    if (render3d === -1) {
 
@@ -75649,17 +75763,10 @@ function create3DScene(render3d, x3dscale, y3dscale) {
    this.scene_x = sz.x ?? 0;
    this.scene_y = sz.y ?? 0;
 
-   this.camera = new PerspectiveCamera(45, this.scene_width / this.scene_height, 1, 40*this.size_z3d);
-
    this.camera_Phi = 30;
    this.camera_Theta = 30;
 
-   this.pointLight = new PointLight(0xffffff,1);
-   this.camera.add(this.pointLight);
-   this.pointLight.position.set(this.size_x3d/2, this.size_y3d/2, this.size_z3d/2);
-   this.lookat = new Vector3(0,0,0.8*this.size_z3d);
-   this.camera.up = new Vector3(0,0,1);
-   this.scene.add( this.camera );
+   create3DCamera(this, orthographic);
 
    setCameraPosition(this, true);
 
@@ -75673,77 +75780,32 @@ function create3DScene(render3d, x3dscale, y3dscale) {
       this.first_render_tm = 0;
       this.enable_highlight = false;
 
-      if (this.isBatchMode() || !this.webgl)
-         return this;
-
-      this.control = createOrbitControl(this, this.camera, this.scene, this.renderer, this.lookat);
-
-      let frame_painter = this, obj_painter = this.getMainPainter();
-
-      this.control.processMouseMove = function(intersects) {
-
-         let tip = null, mesh = null, zoom_mesh = null;
-
-         for (let i = 0; i < intersects.length; ++i) {
-            if (isFunc(intersects[i].object?.tooltip)) {
-               tip = intersects[i].object.tooltip(intersects[i]);
-               if (tip) { mesh = intersects[i].object; break; }
-            } else if (intersects[i].object?.zoom && !zoom_mesh) {
-               zoom_mesh = intersects[i].object;
-            }
-         }
-
-         if (tip && !tip.use_itself) {
-            let delta_x = 1e-4*frame_painter.size_x3d,
-                delta_y = 1e-4*frame_painter.size_y3d,
-                delta_z = 1e-4*frame_painter.size_z3d;
-            if ((tip.x1 > tip.x2) || (tip.y1 > tip.y2) || (tip.z1 > tip.z2)) console.warn('check 3D hints coordinates');
-            tip.x1 -= delta_x; tip.x2 += delta_x;
-            tip.y1 -= delta_y; tip.y2 += delta_y;
-            tip.z1 -= delta_z; tip.z2 += delta_z;
-         }
-
-         frame_painter.highlightBin3D(tip, mesh);
-
-         if (!tip && zoom_mesh && isFunc(frame_painter.get3dZoomCoord)) {
-            let pnt = zoom_mesh.globalIntersect(this.raycaster),
-                axis_name = zoom_mesh.zoom,
-                axis_value = frame_painter.get3dZoomCoord(pnt, axis_name);
-
-            if ((axis_name === 'z') && zoom_mesh.use_y_for_z) axis_name = 'y';
-
-            return { name: axis_name,
-                     title: 'axis object',
-                     line: axis_name + ' : ' + frame_painter.axisAsText(axis_name, axis_value),
-                     only_status: true };
-         }
-
-         return tip?.lines ? tip : '';
-      };
-
-      this.control.processMouseLeave = function() {
-         frame_painter.highlightBin3D(null);
-      };
-
-      this.control.contextMenu = function(pos, intersects) {
-         let kind = 'painter', p = obj_painter;
-         if (intersects)
-            for (let n = 0; n < intersects.length; ++n) {
-               let mesh = intersects[n].object;
-               if (mesh.zoom) { kind = mesh.zoom; p = null; break; }
-               if (isFunc(mesh.painter?.fillContextMenu)) {
-                  p = mesh.painter; break;
-               }
-            }
-
-         let fp = obj_painter.getFramePainter();
-         if (isFunc(fp?.showContextMenu))
-            fp.showContextMenu(kind, pos, p);
-      };
+      if (!this.isBatchMode() && this.webgl)
+         create3DControl(this);
 
       return this;
    });
 }
+
+/** @summary Change camera kind in frame painter
+  * @private */
+function change3DCamera(orthographic) {
+   let has_control = false;
+   if (this.control) {
+       this.control.cleanup();
+       delete this.control;
+       has_control = true;
+   }
+
+   create3DCamera(this, orthographic);
+   setCameraPosition(this, true);
+
+   if (has_control)
+      create3DControl(this);
+
+   this.render3D();
+}
+
 
 /** @summary call 3D rendering of the frame
   * @param {number} tmout - specifies delay, after which actual rendering will be invoked
@@ -76600,7 +76662,7 @@ function convert3DtoPadNDC(x, y, z) {
 /** @summary Assign 3D methods for frame painter
   * @private */
 function assignFrame3DMethods(fpainter) {
-   Object.assign(fpainter, { create3DScene, render3D, resize3D, highlightBin3D, set3DOptions, drawXYZ, convert3DtoPadNDC });
+   Object.assign(fpainter, { create3DScene, render3D, resize3D, change3DCamera, highlightBin3D, set3DOptions, drawXYZ, convert3DtoPadNDC });
 }
 
 /** @summary Draw histograms in 3D mode
@@ -78555,7 +78617,7 @@ class TH1Painter extends TH1Painter$2 {
 
          if (is_main) {
             assignFrame3DMethods(main);
-            pr = main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale).then(() => {
+            pr = main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale, this.options.Ortho).then(() => {
                main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0, this);
                main.set3DOptions(this.options);
                main.drawXYZ(main.toplevel, TAxisPainter, { use_y_for_z: true, zmult, zoom: settings.Zooming, ndim: 1,
@@ -78822,7 +78884,7 @@ class TH2Painter extends TH2Painter$2 {
 
          if (is_main) {
             assignFrame3DMethods(main);
-            pr = main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale).then(() => {
+            pr = main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale, this.options.Ortho).then(() => {
                main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax, this);
                main.set3DOptions(this.options);
                main.drawXYZ(main.toplevel, TAxisPainter, { zmult, zoom: settings.Zooming, ndim: 2,
@@ -79461,7 +79523,7 @@ class TH3Painter extends THistPainter {
 
       } else {
          assignFrame3DMethods(main);
-         pr = main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale).then(() => {
+         pr = main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale, this.options.Ortho).then(() => {
             main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax, this);
             main.set3DOptions(this.options);
             main.drawXYZ(main.toplevel, TAxisPainter, { zoom: settings.Zooming, ndim: 3,
@@ -89987,7 +90049,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (this._camera.isOrthographicCamera && this.isOrthoCamera() && this._scene_width && this._scene_height) {
          let screen_ratio = this._scene_width / this._scene_height,
-             szx = (this._camera.right - this._camera.left), szy = this._camera.top - this._camera.bottom;
+             szx = this._camera.right - this._camera.left, szy = this._camera.top - this._camera.bottom;
 
          if (screen_ratio > szx / szy) {
             // screen wider than actual geometry
@@ -90000,7 +90062,6 @@ class TGeoPainter extends ObjectPainter {
             this._camera.top  = m + szx / screen_ratio / 2;
             this._camera.bottom = m - szx / screen_ratio / 2;
          }
-
       }
 
       this._camera.lookAt(this._lookat);
