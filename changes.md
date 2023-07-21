@@ -1,5 +1,10 @@
 # JSROOT changelog
 
+## Changes in 7.4.x
+
+1. Fix - unzoom z on lego2 plots
+
+
 ## Changes in 7.4.1
 
 1. Fix - context menu position on lego plots
