@@ -1,4 +1,4 @@
-import { constants, isFunc, isStr, getDocument } from '../core.mjs';
+import { constants, isFunc, isStr, getDocument, isNodeJs } from '../core.mjs';
 import { rgb as d3_rgb } from '../d3.mjs';
 import { REVISION, DoubleSide, Object3D, Color, Vector2, Vector3, Matrix4, Line3,
          BufferGeometry, BufferAttribute, Mesh, MeshBasicMaterial, MeshLambertMaterial,
@@ -331,8 +331,8 @@ function setCameraPosition(fp, first_time) {
          fp.camera.position.set(-2*max3dx*k, -3.5*max3dy*k, 1.4*fp.size_z3d);
       else
          fp.camera.position.set(-3.5*max3dx*k, -2*max3dy*k, 1.4*fp.size_z3d);
-      if (fp.camera.isOrthographicCamera)
-         fp.camera.zoom = 1.7;
+      if (fp.camera.isOrthographicCamera && fp.scene_width > 5 && fp.scene_height > 5)
+         fp.camera.zoom = (isNodeJs() ? 3 : 5) * fp.scene_height / fp.scene_width;
    }
 
    if (pad && (first_time || !fp.zoomChangedInteractive()))
@@ -351,6 +351,25 @@ function setCameraPosition(fp, first_time) {
 
    if (first_time)
       fp.camera.lookAt(fp.lookat);
+
+   if (first_time && fp.camera.isOrthographicCamera && fp.scene_width && fp.scene_height) {
+      let screen_ratio = fp.scene_width / fp.scene_height,
+          szx = fp.camera.right - fp.camera.left, szy = fp.camera.top - fp.camera.bottom;
+
+      if (screen_ratio > szx / szy) {
+         // screen wider than actual geometry
+         let m = (fp.camera.right + fp.camera.left) / 2;
+         fp.camera.left = m - szy * screen_ratio / 2;
+         fp.camera.right = m + szy * screen_ratio / 2;
+      } else {
+         // screen heigher than actual geometry
+         let m = (fp.camera.top + fp.camera.bottom) / 2;
+         fp.camera.top  = m + szx / screen_ratio / 2;
+         fp.camera.bottom = m - szx / screen_ratio / 2;
+      }
+    }
+
+    fp.camera.updateProjectionMatrix();
 }
 
 function create3DControl(fp) {
@@ -420,7 +439,7 @@ function create3DControl(fp) {
          fp.showContextMenu(kind, pos, p);
    };
 
-   fp.control.reset();
+   // fp.control.reset();
 }
 
 /** @summary Create all necessary components for 3D drawings in frame painter
