@@ -197,30 +197,39 @@ function testAxisVisibility(camera, toplevel, fb, bb) {
    if ((pos.x >= 0) && (pos.y >= 0)) qudrant = 3;
    if ((pos.x >= 0) && (pos.y < 0)) qudrant = 4;
 
-   let testvisible = (id, range) => {
-      if (id <= qudrant) id+=4;
+   const testVisible = (id, range) => {
+      if (id <= qudrant) id += 4;
       return (id > qudrant) && (id < qudrant+range);
+   }, handleZoomMesh = obj3d => {
+      for (let k = 0; k < obj3d.children?.length; ++k)
+         if (obj3d.children[k].zoom !== undefined)
+            obj3d.children[k].zoom_disabled = !obj3d.visible;
    };
 
    for (let n = 0; n < top.children.length; ++n) {
       let chld = top.children[n];
-      if (chld.grid) chld.visible = bb && testvisible(chld.grid, 3); else
-      if (chld.zid) chld.visible = testvisible(chld.zid, 2); else
-      if (chld.xyid) chld.visible = testvisible(chld.xyid, 3); else
-      if (chld.xyboxid) {
+      if (chld.grid)
+         chld.visible = bb && testVisible(chld.grid, 3);
+      else if (chld.zid) {
+         chld.visible = testVisible(chld.zid, 2);
+         handleZoomMesh(chld);
+      } else if (chld.xyid) {
+         chld.visible = testVisible(chld.xyid, 3);
+         handleZoomMesh(chld);
+      } else if (chld.xyboxid) {
          let range = 5, shift = 0;
          if (bb && !fb) { range = 3; shift = -2; } else
          if (fb && !bb) range = 3; else
          if (!fb && !bb) range = (chld.bottom ? 3 : 0);
-         chld.visible = testvisible(chld.xyboxid + shift, range);
+         chld.visible = testVisible(chld.xyboxid + shift, range);
          if (!chld.visible && chld.bottom && bb)
-            chld.visible = testvisible(chld.xyboxid, 3);
+            chld.visible = testVisible(chld.xyboxid, 3);
       } else if (chld.zboxid) {
          let range = 2, shift = 0;
          if (fb && bb) range = 5; else
          if (bb && !fb) range = 4; else
          if (!bb && fb) { shift = -2; range = 4; }
-         chld.visible = testvisible(chld.zboxid + shift, range);
+         chld.visible = testVisible(chld.zboxid + shift, range);
       }
    }
 }
@@ -1333,6 +1342,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
       if (opts.draw && zticksline)
          zcont[n].add(n == 0 ? zticksline : new LineSegments(zticksline.geometry, zticksline.material));
+
       if (opts.zoom && opts.drawany)
          zcont[n].add(createZoomMesh('z', this.size_z3d, opts.use_y_for_z));
 
@@ -1637,7 +1647,7 @@ function drawBinsLego(painter, is_v7 = false) {
       mesh.zmin = axis_zmin;
       mesh.zmax = axis_zmax;
       mesh.baseline = (painter.options.BaseLine !== false) ? painter.options.BaseLine : (painter.options.Zero ? axis_zmin : 0);
-      mesh.tip_color = (rootcolor===3) ? 0xFF0000 : 0x00FF00;
+      mesh.tip_color = (rootcolor=== 3) ? 0xFF0000 : 0x00FF00;
       mesh.handle = handle;
 
       mesh.tooltip = function(intersect) {
