@@ -127,6 +127,7 @@ class THistDrawOptions {
       if (d.check('X3DSC', true)) this.x3dscale = d.partAsInt(0, 100) / 100;
       if (d.check('Y3DSC', true)) this.y3dscale = d.partAsInt(0, 100) / 100;
 
+      if (d.check('PERSPECTIVE') || d.check('PERSP')) this.Ortho = false;
       if (d.check('ORTHO')) this.Ortho = true;
 
       let lx = 0, ly = 0, check3dbox = '', check3d = (hdim == 3);
