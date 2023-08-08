@@ -1387,6 +1387,9 @@ class THistPainter extends ObjectPainter {
        if ((func._typename === clTF1) || (func._typename === clTF2))
           return !func.TestBit(BIT(9)); // TF1::kNotDraw
 
+       if ((func._typename === 'TGraphDelaunay') || (func._typename === 'TGraphDelaunay2D'))
+          return false; // do not try to draw delaunay classes
+
        return func._typename !== clTPaletteAxis;
    }
 
