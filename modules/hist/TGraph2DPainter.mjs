@@ -23,14 +23,13 @@ function getMin(arr) {
 
 function TMath_Sort(np, values, indicies, down) {
    let arr = new Array(np);
-   for (let i = 0; i < np; ++y)
+   for (let i = 0; i < np; ++i)
       arr[i] = { v: values[i], i };
 
    arr.sort((a,b) => { return a.v < b.v ? -1 : (a.v > b.v ? 1 : 0); });
 
-   for (let i = 0; i < np; ++y) {
+   for (let i = 0; i < np; ++i)
       indicies[i] = arr[i].i;
-   }
 }
 
 class TGraphDelaunay {
@@ -65,17 +64,23 @@ constructor(g) {
    this.SetMaxIter();
 }
 
+
+Initialize()
+{
+   if (!this.fInit) {
+      this.CreateTrianglesDataStructure();
+      this.FindHull();
+      this.fInit = true;
+   }
+}
+
 ComputeZ(x, y)
 {
    // Initialise the Delaunay algorithm if needed.
    // CreateTrianglesDataStructure computes fXoffset, fYoffset,
    // fXScaleFactor and fYScaleFactor;
    // needed in this function.
-   if (!this.fInit) {
-      this.CreateTrianglesDataStructure();
-      this.FindHull();
-      this.fInit = true;
-   }
+   this.Initialize();
 
    // Find the z value corresponding to the point (x,y).
    let xx = (x+this.fXoffset)*this.fXScaleFactor;
@@ -130,8 +135,8 @@ Enclose(t1, t2, t3, e)
 {
    let x = [ this.fXN[t1], this.fXN[t2], this.fXN[t3], this.fXN[t1] ];
    let y = [ this.fYN[t1], this.fYN[t2], this.fYN[t3], this.fYN[t1] ];
-   let xp   = fXN[e];
-   let yp   = fYN[e];
+   let xp = this.fXN[e];
+   let yp = this.fYN[e];
 
    // return TMath::IsInside(xp, yp, 4, x, y);
    let i = 0, j = x.length - 1, oddNodes = false;
@@ -197,6 +202,8 @@ FindAllTriangles()
    let t1,t2,pa,na,ma,pb,nb,mb,p1=0,p2=0,m,n,p3=0;
    let s = [false, false, false];
    let alittlebit = 0.0001;
+
+   this.Initialize();
 
    // start with a point that is guaranteed to be inside the hull (the
    // centre of the hull). The starting point is shifted "a little bit"
@@ -500,11 +507,7 @@ Interpolate(xx, yy)
    let dx1,dx2,dx3,dy1,dy2,dy3,u,v,dxz = [0,0,0], dyz = [0,0,0];
 
    // initialise the Delaunay algorithm if needed
-   if (!this.fInit) {
-      this.CreateTrianglesDataStructure();
-      this.FindHull();
-      this.fInit = true;
-   }
+   this.Initialize();
 
    // create vectors needed for sorting
    if (!this.fOrder) {
@@ -843,7 +846,7 @@ Interpolate(xx, yy)
 /// Defines the number of triangles tested for a Delaunay triangle
 /// (number of iterations) before abandoning the search
 
-SetMaxIter(n)
+SetMaxIter(n = 100000)
 {
    this.fAllTri  = false;
    this.fMaxIter = n;
@@ -879,6 +882,7 @@ class TGraph2DPainter extends ObjectPainter {
       let res = this.options;
 
       res.Color = d.check('COL');
+      res.Triangles = d.check('TRI1');
       res.Line = d.check('LINE');
       res.Error = d.check('ERR') && (this.matchObjectType(clTGraph2DErrors) || this.matchObjectType(clTGraph2DAsymmErrors));
       res.Circles = d.check('P0');
@@ -1001,6 +1005,13 @@ class TGraph2DPainter extends ObjectPainter {
       };
    }
 
+   drawTriangles(graph) {
+      let dulaunay = new TGraphDelaunay(graph);
+      dulaunay.FindAllTriangles();
+      console.log('found triangles', dulaunay.fNdt);
+
+   }
+
    /** @summary Actual drawing of TGraph2D object
      * @return {Promise} for drawing ready */
    async redraw() {
@@ -1012,6 +1023,10 @@ class TGraph2DPainter extends ObjectPainter {
 
       if (!graph || !main || !fp || !fp.mode3d)
          return this;
+
+      if (this.options.Triangles) {
+         this.drawTriangles(graph);
+      }
 
       let countSelected = (zmin, zmax) => {
          let cnt = 0;
