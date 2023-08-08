@@ -285,7 +285,8 @@
       { "name": "pcol", "item": "pcol", "title": "example of TGraph2D, color options" },
       { "opt": "err",  "item": "cerr", "title": "example of TGraph2DErrors, errors drawing" },
       { "opt": "asymm",  "item": "asymm", "title": "example of TGraph2DAsymmErrors" },
-      { "opt": "line",  "item": "line", "title": "line drawing with TGraph2D" }
+      { "opt": "line",  "item": "line", "title": "line drawing with TGraph2D" },
+      { "name": "tri1", "asurl": true, "file": "graph2d.root", "item": "cerr/[0]", "opt": "tri1", "title": "Drawing triangles using Delaunay algorithm" }
    ],
    "TEfficiency" : [
       { "name": "docu1", "file": "efficiency.root", "item": "eff1", "title": "TEfficiency example from documentation" },
