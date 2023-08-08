@@ -16,6 +16,7 @@
 12. Support "mollweide" projection for TH2
 13. Basic latex support when drawing axes labels and titles in 3D
 14. Support orthographic camera for lego and surface plots
+15. Implement "delaunay" plots for TGraph2D
 
 
 ## Changes in 7.4.1
