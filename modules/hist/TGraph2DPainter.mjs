@@ -4,6 +4,7 @@ import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
 import { TH2Painter } from './TH2Painter.mjs';
+import { setHistTitle } from '../hist2d/TH1Painter.mjs';
 import { Triangles3DHandler } from '../hist2d/TH2Painter.mjs';
 import { createLineSegments, PointsCreator, getMaterialArgs } from '../base/base3d.mjs';
 import { createLegoGeom } from './hist3d.mjs';
@@ -968,7 +969,7 @@ class TGraph2DPainter extends ObjectPainter {
 
       let histo = createHistogram(clTH2I, 10, 10);
       histo.fName = graph.fName + '_h';
-      histo.fTitle = graph.fTitle;
+      setHistTitle(histo, graph.fTitle);
       histo.fXaxis.fXmin = uxmin;
       histo.fXaxis.fXmax = uxmax;
       histo.fYaxis.fXmin = uymin;
