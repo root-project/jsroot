@@ -4,6 +4,7 @@ import { proivdeEvalPar, produceTAxisLogScale } from '../hist/TF1Painter.mjs';
 import { ObjectPainter, getElementMainPainter } from '../base/ObjectPainter.mjs';
 import { DrawOptions, floatToString } from '../base/BasePainter.mjs';
 import { THistPainter } from '../hist2d/THistPainter.mjs';
+import { setHistTitle } from '../hist2d/TH1Painter.mjs';
 
 
 /**
@@ -154,7 +155,7 @@ class TF2Painter extends TH2Painter {
       }
 
       hist.fName = 'Func';
-      hist.fTitle = func.fTitle;
+      setHistTitle(hist, func.fTitle);
       hist.fMinimum = func.fMinimum;
       hist.fMaximum = func.fMaximum;
       //fHistogram->SetContour(fContour.fN, levels);

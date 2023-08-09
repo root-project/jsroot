@@ -1,6 +1,7 @@
 import { clone, create, createHistogram, isFunc, gStyle, clTList, clTH1I, clTH2, clTH2I, kNoZoom } from '../core.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
+import { setHistTitle } from '../hist2d/TH1Painter.mjs';
 import { TH1Painter } from './TH1Painter.mjs';
 import { TH2Painter } from './TH2Painter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
@@ -284,7 +285,7 @@ class THStackPainter extends ObjectPainter {
 
       if (!numhistos) {
          let histo = createHistogram(clTH1I, 100);
-         histo.fTitle = stack.fTitle;
+         setHistTitle(histo, stack.fTitle);
          return histo;
       }
 

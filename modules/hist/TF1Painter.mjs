@@ -2,7 +2,7 @@ import { settings, gStyle, isStr, isFunc, clTH1D, createHistogram, clTF1, clTF2,
 import { floatToString } from '../base/BasePainter.mjs';
 import { getElementMainPainter, ObjectPainter } from '../base/ObjectPainter.mjs';
 import { THistPainter } from '../hist2d/THistPainter.mjs';
-import { TH1Painter } from '../hist2d/TH1Painter.mjs';
+import { TH1Painter, setHistTitle } from '../hist2d/TH1Painter.mjs';
 import * as jsroot_math from '../base/math.mjs';
 
 
@@ -239,7 +239,7 @@ class TF1Painter extends TH1Painter {
       }
 
       hist.fName = 'Func';
-      hist.fTitle = tf1.fTitle;
+      setHistTitle(hist, tf1.fTitle);
       hist.fMinimum = tf1.fMinimum;
       hist.fMaximum = tf1.fMaximum;
       hist.fLineColor = tf1.fLineColor;
