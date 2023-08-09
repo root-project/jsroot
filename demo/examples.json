@@ -287,6 +287,7 @@
       { "opt": "asymm",  "item": "asymm", "title": "example of TGraph2DAsymmErrors" },
       { "opt": "line",  "item": "line", "title": "line drawing with TGraph2D" },
       { "opt": "tri1", "asurl": true, "item": "pcol/[0]", "title": "Drawing colored triangles and mesh using Delaunay algorithm" },
+      { "opt": "tri1z", "asurl": true, "item": "pcol/[0]", "title": "Drawing color palette in addtion to triangles and mesh" },
       { "opt": "tri2", "asurl": true, "item": "pcol/[0]", "title": "Drawing colored triangles using Delaunay algorithm" },
       { "opt": "triw", "asurl": true, "item": "pcol/[0]", "title": "Drawing triangles mesh using Delaunay algorithm" },
       { "opt": "p0", "asurl": true, "item": "pcol/[0]", "title": "Drawing as circles" },

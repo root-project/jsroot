@@ -885,8 +885,8 @@ class TGraph2DPainter extends ObjectPainter {
       if (d.check('TRI1'))
          res.Triangles = 11; // wireframe and colors
       else if (d.check('TRI2'))
-         res.Triangles = 10; // only
-      else if (d.check('TRIW'))
+         res.Triangles = 10; // only color triangles
+      else if (d.check('TRIW') || d.check('TRI'))
          res.Triangles = 1;
       else
          res.Triangles = 0;
@@ -908,6 +908,9 @@ class TGraph2DPainter extends ObjectPainter {
             res.Markers = true;
       }
       if (!res.Markers) res.Color = false;
+
+      if (res.Color || res.Triangles >= 10)
+         res.Zscale = d.check('Z');
 
       this.storeDrawOpt(opt);
    }
@@ -1286,12 +1289,13 @@ class TGraph2DPainter extends ObjectPainter {
       let painter = new TGraph2DPainter(dom, gr);
       painter.decodeOptions(opt, gr);
 
-      let promise = Promise.resolve(true);
+      let promise = Promise.resolve(null);
 
       if (!painter.getMainPainter()) {
          if (!gr.fHistogram)
             gr.fHistogram = painter.createHistogram();
-         promise = TH2Painter.draw(dom, gr.fHistogram, 'lego;axis');
+
+         promise = TH2Painter.draw(dom, gr.fHistogram, painter.options.Zscale ? 'lego2z;axis' : 'lego2;axis');
          painter.ownhisto = true;
       }
 

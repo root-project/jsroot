@@ -3068,7 +3068,7 @@ class TH2Painter extends THistPainter {
 
       this.clear3DScene();
 
-      let need_palette = this.options.Zscale && (this.options.Color || this.options.Contour);
+      let need_palette = this.options.Zscale && (this.options.Color || this.options.Contour || this.options.Axis);
 
       // draw new palette, resize frame if required
       return this.drawColorPalette(need_palette, true).then(pp => {

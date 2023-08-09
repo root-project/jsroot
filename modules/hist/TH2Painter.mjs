@@ -260,6 +260,9 @@ class TH2Painter extends TH2Painter2D {
                      drawBinsError3D(this);
                   else
                      drawBinsLego(this);
+               } else if (this.options.Axis && this.options.Zscale) {
+                  this.getContourLevels();
+                  this.getHistPalette();
                }
                main.render3D();
                this.updateStatWebCanvas();
@@ -270,7 +273,7 @@ class TH2Painter extends TH2Painter2D {
       //  (re)draw palette by resize while canvas may change dimension
       if (is_main)
          pr = pr.then(() => this.drawColorPalette(this.options.Zscale && ((this.options.Lego == 12) || (this.options.Lego == 14) ||
-                                     (this.options.Surf == 11) || (this.options.Surf == 12)))).then(() => this.drawHistTitle());
+                                                  (this.options.Surf == 11) || (this.options.Surf == 12)))).then(() => this.drawHistTitle());
 
       return pr.then(() => this);
    }
