@@ -276,7 +276,6 @@ class TF2Painter extends TH2Painter {
          opt = opt.slice(0, p);
       }
 
-
       let d = new DrawOptions(opt);
       if (d.empty())
          opt = 'cont3';
