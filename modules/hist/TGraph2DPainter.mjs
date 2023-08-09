@@ -1036,16 +1036,20 @@ class TGraph2DPainter extends ObjectPainter {
 
          for (let t = 0; t < dulaunay.fNdt; ++t) {
             let points = [ dulaunay.fPTried[t], dulaunay.fNTried[t], dulaunay.fMTried[t] ],
-                coord = [];
+                coord = [], use_triangle = true;
             for (let i = 0; i < 3; ++i) {
-               let pnt = points[i];
-               coord.push(fp.grx(graph.fX[pnt-1]),  fp.gry(graph.fY[pnt-1]), main_grz(graph.fZ[pnt-1]));
+               let pnt = points[i] - 1;
+               coord.push(fp.grx(graph.fX[pnt]),  fp.gry(graph.fY[pnt]), main_grz(graph.fZ[pnt]));
+
+                if ((graph.fX[pnt] < fp.scale_xmin) || (graph.fX[pnt] > fp.scale_xmax) ||
+                    (graph.fY[pnt] < fp.scale_ymin) || (graph.fY[pnt] > fp.scale_ymax))
+                  use_triangle = false;
             }
 
-            if (do_faces)
+            if (do_faces && use_triangle)
                triangles.addMainTriangle(...coord);
 
-            if (do_lines) {
+            if (do_lines && use_triangle) {
                triangles.addLineSegment(coord[0],coord[1],coord[2], coord[3],coord[4],coord[5]);
 
                triangles.addLineSegment(coord[3],coord[4],coord[5], coord[6],coord[7],coord[8]);
