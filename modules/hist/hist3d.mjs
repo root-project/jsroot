@@ -2134,4 +2134,4 @@ function drawBinsSurf3D(painter, is_v7 = false) {
    }
 }
 
-export { assignFrame3DMethods, drawBinsLego, drawBinsError3D, drawBinsContour3D, drawBinsSurf3D, createLegoGeom };
+export { assignFrame3DMethods, drawBinsLego, drawBinsError3D, drawBinsContour3D, drawBinsSurf3D, convertLegoBuf, createLegoGeom };

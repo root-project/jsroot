@@ -6,7 +6,7 @@ import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
 import { TH2Painter } from './TH2Painter.mjs';
 import { Triangles3DHandler } from '../hist2d/TH2Painter.mjs';
 import { createLineSegments, PointsCreator, getMaterialArgs } from '../base/base3d.mjs';
-import { createLegoGeom } from './hist3d.mjs';
+import { convertLegoBuf, createLegoGeom } from './hist3d.mjs';
 
 function getMax(arr) {
    let v = arr[0];
@@ -1026,68 +1026,51 @@ class TGraph2DPainter extends ObjectPainter {
       dulaunay.FindAllTriangles();
       if (!dulaunay.fNdt) return;
 
-      let main_grz = !fp.logz ? fp.grz : value => (value < axis_zmin) ? -0.1 : fp.grz(value);
+      let main_grz = !fp.logz ? fp.grz : value => (value < axis_zmin) ? -0.1 : fp.grz(value),
+          do_faces = this.options.Triangles >= 10,
+          do_lines = this.options.Triangles % 10 === 1,
+          triangles = new Triangles3DHandler(levels, main_grz, 0, 2*fp.size_z3d, do_lines);
 
-      if (this.options.Triangles >= 10) {
-         console.log('levels', levels[0], levels[1]);
-
-         let h = new Triangles3DHandler(levels, main_grz, 0, 2*fp.size_z3d);
-
-         for (h.loop = 0; h.loop < 2; ++h.loop) {
-            h.createBuffers();
-
-            for (let t = 0; t < dulaunay.fNdt; ++t) {
-               let points = [ dulaunay.fPTried[t], dulaunay.fNTried[t], dulaunay.fMTried[t] ],
-                   coord = [];
-               for (let i = 0; i < 3; ++i) {
-                  let pnt = points[i];
-                  coord.push(fp.grx(graph.fX[pnt-1]),  fp.gry(graph.fY[pnt-1]), main_grz(graph.fZ[pnt-1]));
-               }
-
-               h.addMainTriangle(...coord);
-            }
-         }
-
-         h.callFuncs((lvl, pos) => {
-            let geometry = createLegoGeom(this.getMainPainter(), pos, null, 100, 100),
-                color = palette.calcColor(lvl, levels.length),
-                material = new MeshBasicMaterial(getMaterialArgs(color, { side: DoubleSide, vertexColors: false }));
-
-            let mesh = new Mesh(geometry, material);
-
-            fp.toplevel.add(mesh);
-
-            mesh.painter = this; // to let use it with context menu
-         });
-      }
-
-      if (this.options.Triangles % 10 === 1) {
-         let arr = new Float32Array(dulaunay.fNdt * 6 * 3), i = 0;
+      for (triangles.loop = 0; triangles.loop < 2; ++triangles.loop) {
+         triangles.createBuffers();
 
          for (let t = 0; t < dulaunay.fNdt; ++t) {
-            let p = dulaunay.fPTried[t],
-                n = dulaunay.fNTried[t],
-                m = dulaunay.fMTried[t];
+            let points = [ dulaunay.fPTried[t], dulaunay.fNTried[t], dulaunay.fMTried[t] ],
+                coord = [];
+            for (let i = 0; i < 3; ++i) {
+               let pnt = points[i];
+               coord.push(fp.grx(graph.fX[pnt-1]),  fp.gry(graph.fY[pnt-1]), main_grz(graph.fZ[pnt-1]));
+            }
 
-            let points = [p, n, n, m, m, p];
-            for (let k = 0; k < points.length; ++k) {
-               let pnt = points[k];
-               if ((pnt < 1) || (pnt > graph.fX.length))
-                  console.error(`dulaunay point ${pnt} out of range ${graph.fX.length}`);
+            if (do_faces)
+               triangles.addMainTriangle(...coord);
 
-               arr[i++] = fp.grx(graph.fX[pnt-1]);
-               arr[i++] = fp.gry(graph.fY[pnt-1]);
-               arr[i++] = main_grz(graph.fZ[pnt-1]);
+            if (do_lines) {
+               triangles.addLineSegment(coord[0],coord[1],coord[2], coord[3],coord[4],coord[5]);
+
+               triangles.addLineSegment(coord[3],coord[4],coord[5], coord[6],coord[7],coord[8]);
+
+               triangles.addLineSegment(coord[6],coord[7],coord[8], coord[0],coord[1],coord[2]);
             }
          }
-
-         let lcolor = this.getColor(graph.fLineColor),
-             material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: graph.fLineWidth }),
-             linemesh = createLineSegments(arr, material);
-         fp.toplevel.add(linemesh);
       }
 
+      triangles.callFuncs((lvl, pos) => {
+         let geometry = createLegoGeom(this.getMainPainter(), pos, null, 100, 100),
+             color = palette.calcColor(lvl, levels.length),
+             material = new MeshBasicMaterial(getMaterialArgs(color, { side: DoubleSide, vertexColors: false }));
 
+         let mesh = new Mesh(geometry, material);
+
+         fp.toplevel.add(mesh);
+
+         mesh.painter = this; // to let use it with context menu
+      }, (isgrid, lpos) => {
+         let lcolor = this.getColor(graph.fLineColor),
+              material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: graph.fLineWidth }),
+              linemesh = createLineSegments(convertLegoBuf(this.getMainPainter(), lpos, 100, 100), material);
+         fp.toplevel.add(linemesh);
+      });
    }
 
    /** @summary Actual drawing of TGraph2D object
