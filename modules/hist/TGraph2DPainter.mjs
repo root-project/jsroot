@@ -883,13 +883,20 @@ class TGraph2DPainter extends ObjectPainter {
       let res = this.options;
 
       res.Color = d.check('COL');
-      res.Triangles = d.check('TRI1');
+      if (d.check('TRI1'))
+         res.Triangles = 11; // wireframe and colors
+      else if (d.check('TRI2'))
+         res.Triangles = 10; // only
+      else if (d.check('TRIW'))
+         res.Triangles = 1;
+      else
+         res.Triangles = 0;
       res.Line = d.check('LINE');
       res.Error = d.check('ERR') && (this.matchObjectType(clTGraph2DErrors) || this.matchObjectType(clTGraph2DAsymmErrors));
       res.Circles = d.check('P0');
       res.Markers = d.check('P');
 
-      if (!res.Markers && !res.Error && !res.Circles && !res.Line) {
+      if (!res.Markers && !res.Error && !res.Circles && !res.Line && !res.Triangles) {
          if ((gr.fMarkerSize == 1) && (gr.fMarkerStyle == 1))
             res.Circles = true;
          else
@@ -1011,60 +1018,66 @@ class TGraph2DPainter extends ObjectPainter {
       dulaunay.FindAllTriangles();
       if (!dulaunay.fNdt) return;
 
-      let arr = new Float32Array(dulaunay.fNdt * 6 * 3), i = 0;
-
       let main_grz = !fp.logz ? fp.grz : value => (value < axis_zmin) ? -0.1 : fp.grz(value);
 
-      let h = new Triangles3DHandler(levels, main_grz, 0, 2*fp.size_z3d);
+      if (this.options.Triangles >= 10) {
+         let h = new Triangles3DHandler(levels, main_grz, 0, 2*fp.size_z3d);
 
-      for (let t = 0; t < dulaunay.fNdt; ++t) {
-         let p = dulaunay.fPTried[t],
-             n = dulaunay.fNTried[t],
-             m = dulaunay.fMTried[t];
+         for (h.loop = 0; h.loop < 2; ++h.loop) {
+            h.createBuffers();
 
-         let points = [p, n, n, m, m, p];
-         for (let k = 0; k < points.length; ++k) {
-            let pnt = points[k];
-            if ((pnt < 1) || (pnt > graph.fX.length))
-               console.error(`dulaunay point ${pnt} out of range ${graph.fX.length}`);
+            for (let t = 0; t < dulaunay.fNdt; ++t) {
+               let points = [ dulaunay.fPTried[t], dulaunay.fNTried[t], dulaunay.fMTried[t] ],
+                   coord = [];
+               for (let i = 0; i < 3; ++i) {
+                  let pnt = points[i];
+                  coord.push(fp.grx(graph.fX[pnt-1]),  fp.gry(graph.fY[pnt-1]), main_grz(graph.fZ[pnt-1]));
+               }
 
-            arr[i++] = fp.grx(graph.fX[pnt-1]);
-            arr[i++] = fp.gry(graph.fY[pnt-1]);
-            arr[i++] = main_grz(graph.fZ[pnt-1]);
+               h.addMainTriangle(...coord);
+            }
          }
+
+         h.callFuncs((lvl, pos) => {
+            let geometry = createLegoGeom(this.getMainPainter(), pos, null, 100, 100),
+                color = palette.calcColor(lvl, levels.length),
+                material = new MeshBasicMaterial(getMaterialArgs(color, { side: DoubleSide, vertexColors: false }));
+
+            let mesh = new Mesh(geometry, material);
+
+            fp.toplevel.add(mesh);
+
+            mesh.painter = this; // to let use it with context menu
+         });
       }
 
-      let lcolor = this.getColor(graph.fLineColor),
-          material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: graph.fLineWidth }),
-          linemesh = createLineSegments(arr, material);
-      fp.toplevel.add(linemesh);
-
-      for (h.loop = 0; h.loop < 2; ++h.loop) {
-         h.createBuffers();
+      if (this.options.Triangles % 10 === 1) {
+         let arr = new Float32Array(dulaunay.fNdt * 6 * 3), i = 0;
 
          for (let t = 0; t < dulaunay.fNdt; ++t) {
-            let points = [ dulaunay.fPTried[t], dulaunay.fNTried[t], dulaunay.fMTried[t] ],
-                coord = [];
-            for (let i = 0; i < 3; ++i) {
-               let pnt = points[i];
-               coord.push(fp.grx(graph.fX[pnt-1]),  fp.gry(graph.fY[pnt-1]), main_grz(graph.fZ[pnt-1]));
-            }
+            let p = dulaunay.fPTried[t],
+                n = dulaunay.fNTried[t],
+                m = dulaunay.fMTried[t];
 
-            h.addMainTriangle(...coord);
+            let points = [p, n, n, m, m, p];
+            for (let k = 0; k < points.length; ++k) {
+               let pnt = points[k];
+               if ((pnt < 1) || (pnt > graph.fX.length))
+                  console.error(`dulaunay point ${pnt} out of range ${graph.fX.length}`);
+
+               arr[i++] = fp.grx(graph.fX[pnt-1]);
+               arr[i++] = fp.gry(graph.fY[pnt-1]);
+               arr[i++] = main_grz(graph.fZ[pnt-1]);
+            }
          }
+
+         let lcolor = this.getColor(graph.fLineColor),
+             material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: graph.fLineWidth }),
+             linemesh = createLineSegments(arr, material);
+         fp.toplevel.add(linemesh);
       }
 
-      h.callFuncs((lvl, pos) => {
-         let geometry = createLegoGeom(this.getMainPainter(), pos, null, 100, 100),
-             color = palette.calcColor(lvl, levels.length),
-             material = new MeshBasicMaterial(getMaterialArgs(color, { side: DoubleSide, vertexColors: false }));
 
-         let mesh = new Mesh(geometry, material);
-
-         fp.toplevel.add(mesh);
-
-         mesh.painter = this; // to let use it with context menu
-      });
    }
 
    /** @summary Actual drawing of TGraph2D object
