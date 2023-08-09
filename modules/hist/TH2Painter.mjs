@@ -261,7 +261,7 @@ class TH2Painter extends TH2Painter2D {
                   else
                      drawBinsLego(this);
                } else if (this.options.Axis && this.options.Zscale) {
-                  this.getContourLevels();
+                  this.getContourLevels(true);
                   this.getHistPalette();
                }
                main.render3D();
