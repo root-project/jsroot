@@ -323,7 +323,7 @@ class Triangles3DHandler {
          lpos[lindx] = x2; lpos[lindx+1] = y2; lpos[lindx+2] = z2; lindx+=3;
       }
 
-      this.addCrossingPoint = function(xx1,yy1,zz1, xx2,yy2,zz2, crossz, with_grid) {
+      function addCrossingPoint(xx1,yy1,zz1, xx2,yy2,zz2, crossz, with_grid) {
          if (pntindx >= pntbuf.length)
             console.log('more than 6 points???');
 
@@ -344,14 +344,14 @@ class Triangles3DHandler {
             gridpnts[gridcnt] = pntbuf[pntindx];
             gridpnts[gridcnt+1] = pntbuf[pntindx+1];
             gridpnts[gridcnt+2] = pntbuf[pntindx+2];
-            gridcnt+=3;
+            gridcnt += 3;
          }
 
          pntindx += shift;
          lastpart = part;
-      }
+      };
 
-      this.rememberVertex = function(indx, handle, ii,jj) {
+      function rememberVertex(indx, handle, ii,jj) {
          let bin = ((ii-handle.i1) * (handle.j2-handle.j1) + (jj-handle.j1))*8;
 
          if (normindx[bin] >= 0)
@@ -409,8 +409,8 @@ class Triangles3DHandler {
             if (side1 !== side2) {
                // order is important, should move from 1->2 point, checked via lastpart
                lastpart = 0;
-               if ((side1 < 0) || (side2 < 0)) this.addCrossingPoint(x1,y1,z1, x2,y2,z2, levels[lvl-1]);
-               if ((side1 > 0) || (side2 > 0)) this.addCrossingPoint(x1,y1,z1, x2,y2,z2, levels[lvl], true);
+               if ((side1 < 0) || (side2 < 0)) addCrossingPoint(x1,y1,z1, x2,y2,z2, levels[lvl-1]);
+               if ((side1 > 0) || (side2 > 0)) addCrossingPoint(x1,y1,z1, x2,y2,z2, levels[lvl], true);
             }
 
             if (side2 === 0) { pntbuf[pntindx] = x2; pntbuf[pntindx+1] = y2; pntbuf[pntindx+2] = z2; pntindx += 3; }
@@ -418,8 +418,8 @@ class Triangles3DHandler {
             if (side2 !== side3) {
                // order is important, should move from 2->3 point, checked via lastpart
                lastpart = 0;
-               if ((side2 < 0) || (side3 < 0)) this.addCrossingPoint(x2,y2,z2, x3,y3,z3, levels[lvl-1]);
-               if ((side2 > 0) || (side3 > 0)) this.addCrossingPoint(x2,y2,z2, x3,y3,z3, levels[lvl], true);
+               if ((side2 < 0) || (side3 < 0)) addCrossingPoint(x2,y2,z2, x3,y3,z3, levels[lvl-1]);
+               if ((side2 > 0) || (side3 > 0)) addCrossingPoint(x2,y2,z2, x3,y3,z3, levels[lvl], true);
             }
 
             if (side3 === 0) { pntbuf[pntindx] = x3; pntbuf[pntindx+1] = y3; pntbuf[pntindx+2] = z3; pntindx += 3; }
@@ -427,8 +427,8 @@ class Triangles3DHandler {
             if (side3 !== side1) {
                // order is important, should move from 3->1 point, checked via lastpart
                lastpart = 0;
-               if ((side3 < 0) || (side1 < 0)) this.addCrossingPoint(x3,y3,z3, x1,y1,z1, levels[lvl-1]);
-               if ((side3 > 0) || (side1 > 0)) this.addCrossingPoint(x3,y3,z3, x1,y1,z1, levels[lvl], true);
+               if ((side3 < 0) || (side1 < 0)) addCrossingPoint(x3,y3,z3, x1,y1,z1, levels[lvl-1]);
+               if ((side3 > 0) || (side1 > 0)) addCrossingPoint(x3,y3,z3, x1,y1,z1, levels[lvl], true);
             }
 
             if (pntindx === 0) continue;
@@ -444,9 +444,9 @@ class Triangles3DHandler {
 
             let buf = posbuf[lvl], s = posbufindx[lvl];
             if (this.donormals && (pntindx === 9)) {
-               this.rememberVertex(s, handle, i, j);
-               this.rememberVertex(s+3, handle, i+1, is_first ? j+1 : j);
-               this.rememberVertex(s+6, handle, is_first ? i : i+1, j+1);
+               rememberVertex(s, handle, i, j);
+               rememberVertex(s+3, handle, i+1, is_first ? j+1 : j);
+               rememberVertex(s+6, handle, is_first ? i : i+1, j+1);
             }
 
             for (let k1 = 3; k1 < pntindx - 3; k1 += 3) {
