@@ -1029,6 +1029,8 @@ class TGraph2DPainter extends ObjectPainter {
       let main_grz = !fp.logz ? fp.grz : value => (value < axis_zmin) ? -0.1 : fp.grz(value);
 
       if (this.options.Triangles >= 10) {
+         console.log('levels', levels[0], levels[1]);
+
          let h = new Triangles3DHandler(levels, main_grz, 0, 2*fp.size_z3d);
 
          for (h.loop = 0; h.loop < 2; ++h.loop) {
@@ -1135,7 +1137,7 @@ class TGraph2DPainter extends ObjectPainter {
       if (fp.usesvg) scale *= 0.3;
 
       if (this.options.Color || this.options.Triangles) {
-         levels = main.getContourLevels();
+         levels = main.getContourLevels(true);
          palette = main.getHistPalette();
       }
 

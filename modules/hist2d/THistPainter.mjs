@@ -1861,8 +1861,8 @@ class THistPainter extends ObjectPainter {
    }
 
    /** @summary Return levels from contour object */
-   getContourLevels() {
-      return this.getContour().getLevels();
+   getContourLevels(force_recreate) {
+      return this.getContour(force_recreate).getLevels();
    }
 
    /** @summary Returns color palette associated with histogram
