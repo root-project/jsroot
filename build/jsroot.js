@@ -1360,6 +1360,23 @@ function createHistogram(typename, nbinsx, nbinsy, nbinsz) {
    return histo;
 }
 
+/** @summary Set histogram title
+ * @desc Title may include axes titles, provided with ';' symbol like "Title;x;y;z" */
+
+function setHistogramTitle(histo, title) {
+   if (!histo) return;
+   if (title.indexOf(';') < 0) {
+      histo.fTitle = title;
+   } else {
+      let arr = title.split(';');
+      histo.fTitle = arr[0];
+      if (arr.length > 1) histo.fXaxis.fTitle = arr[1];
+      if (arr.length > 2) histo.fYaxis.fTitle = arr[2];
+      if (arr.length > 3) histo.fZaxis.fTitle = arr[3];
+   }
+}
+
+
 /** @summary Creates TPolyLine object
   * @param {number} npoints - number of points
   * @param {boolean} [use_int32] - use Int32Array type for points, default is Float32Array */
@@ -1873,6 +1890,7 @@ parseMulti: parseMulti,
 prROOT: prROOT,
 registerMethods: registerMethods,
 setBatchMode: setBatchMode,
+setHistogramTitle: setHistogramTitle,
 settings: settings,
 get source_dir () { return exports.source_dir; },
 toJSON: toJSON,
@@ -73075,7 +73093,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
          // Paint histogram axis only
          this.draw_content = false;
       } else {
-         this.draw_content = (this.gmaxbin > 0);
+         this.draw_content = this.gmaxbin > 0;
          if (!this.draw_content  && this.options.Zero && this.isTH2Poly()) {
             this.draw_content = true;
             this.options.Line = 1;
@@ -78609,26 +78627,6 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
    }
 
 }; // class TH1Painter
-
-
-/**
- * @summary Set histogram title
- * @desc If provided, also change axes title
- * @private
- */
-
-function setHistTitle(histo, title) {
-   if (!histo) return;
-   if (title.indexOf(';') < 0) {
-      histo.fTitle = title;
-   } else {
-      let arr = title.split(';');
-      histo.fTitle = arr[0];
-      if (arr.length > 1) histo.fXaxis.fTitle = arr[1];
-      if (arr.length > 2) histo.fYaxis.fTitle = arr[2];
-      if (arr.length > 3) histo.fZaxis.fTitle = arr[3];
-   }
-}
 
 /** @summary Draw 1-D histogram in 3D
   * @private */
@@ -105082,7 +105080,7 @@ class THStackPainter extends ObjectPainter {
 
       if (!numhistos) {
          let histo = createHistogram(clTH1I, 100);
-         histo.fTitle = stack.fTitle;
+         setHistogramTitle(histo, stack.fTitle);
          return histo;
       }
 
@@ -106553,7 +106551,7 @@ class TGraph2DPainter extends ObjectPainter {
 
       let histo = createHistogram(clTH2I, 10, 10);
       histo.fName = graph.fName + '_h';
-      histo.fTitle = graph.fTitle;
+      setHistogramTitle(histo, graph.fTitle);
       histo.fXaxis.fXmin = uxmin;
       histo.fXaxis.fXmax = uxmax;
       histo.fYaxis.fXmin = uymin;
@@ -107752,7 +107750,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
       if (graph.fMaximum != kNoZoom) maximum = graph.fMaximum;
       if ((minimum < 0) && (ymin >= 0)) minimum = (1 - margin)*ymin;
 
-      setHistTitle(histo, this.getObject().fTitle);
+      setHistogramTitle(histo, this.getObject().fTitle);
 
       if (set_x) {
          histo.fXaxis.fXmin = uxmin;
@@ -109199,7 +109197,7 @@ class TF1Painter extends TH1Painter$2 {
       }
 
       hist.fName = 'Func';
-      hist.fTitle = tf1.fTitle;
+      setHistogramTitle(hist, tf1.fTitle);
       hist.fMinimum = tf1.fMinimum;
       hist.fMaximum = tf1.fMaximum;
       hist.fLineColor = tf1.fLineColor;
@@ -110651,7 +110649,7 @@ class TF2Painter extends TH2Painter {
       }
 
       hist.fName = 'Func';
-      hist.fTitle = func.fTitle;
+      setHistogramTitle(hist, func.fTitle);
       hist.fMinimum = func.fMinimum;
       hist.fMaximum = func.fMaximum;
       //fHistogram->SetContour(fContour.fN, levels);
@@ -123074,6 +123072,7 @@ exports.selectActivePad = selectActivePad;
 exports.setBatchMode = setBatchMode;
 exports.setDefaultDrawOpt = setDefaultDrawOpt;
 exports.setHPainter = setHPainter;
+exports.setHistogramTitle = setHistogramTitle;
 exports.setSaveFile = setSaveFile;
 exports.settings = settings;
 exports.svgToImage = svgToImage;
