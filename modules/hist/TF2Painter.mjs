@@ -1,10 +1,9 @@
-import { createHistogram, kNoStats, settings, gStyle, clTF2, clTH2F, isStr, isFunc } from '../core.mjs';
+import { createHistogram, setHistogramTitle, kNoStats, settings, gStyle, clTF2, clTH2F, isStr, isFunc } from '../core.mjs';
 import { TH2Painter } from '../hist/TH2Painter.mjs';
 import { proivdeEvalPar, produceTAxisLogScale } from '../hist/TF1Painter.mjs';
 import { ObjectPainter, getElementMainPainter } from '../base/ObjectPainter.mjs';
 import { DrawOptions, floatToString } from '../base/BasePainter.mjs';
 import { THistPainter } from '../hist2d/THistPainter.mjs';
-import { setHistTitle } from '../hist2d/TH1Painter.mjs';
 
 
 /**
@@ -155,7 +154,7 @@ class TF2Painter extends TH2Painter {
       }
 
       hist.fName = 'Func';
-      setHistTitle(hist, func.fTitle);
+      setHistogramTitle(hist, func.fTitle);
       hist.fMinimum = func.fMinimum;
       hist.fMaximum = func.fMaximum;
       //fHistogram->SetContour(fContour.fN, levels);

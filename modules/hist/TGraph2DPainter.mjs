@@ -1,10 +1,9 @@
-import { settings, createHistogram, kNoZoom, clTH2I, clTGraph2DErrors, clTGraph2DAsymmErrors, kNoStats } from '../core.mjs';
+import { settings, createHistogram, setHistogramTitle, kNoZoom, clTH2I, clTGraph2DErrors, clTGraph2DAsymmErrors, kNoStats } from '../core.mjs';
 import { Color, DoubleSide, LineBasicMaterial, MeshBasicMaterial, Mesh } from '../three.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
 import { TH2Painter } from './TH2Painter.mjs';
-import { setHistTitle } from '../hist2d/TH1Painter.mjs';
 import { Triangles3DHandler } from '../hist2d/TH2Painter.mjs';
 import { createLineSegments, PointsCreator, getMaterialArgs } from '../base/base3d.mjs';
 import { createLegoGeom } from './hist3d.mjs';
@@ -969,7 +968,7 @@ class TGraph2DPainter extends ObjectPainter {
 
       let histo = createHistogram(clTH2I, 10, 10);
       histo.fName = graph.fName + '_h';
-      setHistTitle(histo, graph.fTitle);
+      setHistogramTitle(histo, graph.fTitle);
       histo.fXaxis.fXmin = uxmin;
       histo.fXaxis.fXmax = uxmax;
       histo.fYaxis.fXmin = uymin;
