@@ -882,7 +882,6 @@ class TGraph2DPainter extends ObjectPainter {
 
       let res = this.options;
 
-      res.Color = d.check('COL');
       if (d.check('TRI1'))
          res.Triangles = 11; // wireframe and colors
       else if (d.check('TRI2'))
@@ -893,8 +892,14 @@ class TGraph2DPainter extends ObjectPainter {
          res.Triangles = 0;
       res.Line = d.check('LINE');
       res.Error = d.check('ERR') && (this.matchObjectType(clTGraph2DErrors) || this.matchObjectType(clTGraph2DAsymmErrors));
-      res.Circles = d.check('P0');
-      res.Markers = d.check('P');
+
+      if (d.check('P0COL')) {
+         res.Color = res.Circles = res.Markers = true;
+      } else {
+         res.Color = d.check('COL');
+         res.Circles = d.check('P0');
+         res.Markers = d.check('P');
+      }
 
       if (!res.Markers && !res.Error && !res.Circles && !res.Line && !res.Triangles) {
          if ((gr.fMarkerSize == 1) && (gr.fMarkerStyle == 1))
@@ -1251,9 +1256,8 @@ class TGraph2DPainter extends ObjectPainter {
          if (pnts) {
             let fcolor = 'blue';
 
-            if (!this.options.Circles)
-               fcolor = palette ? palette.calcColor(lvl, levels.length)
-                                : this.getColor(graph.fMarkerColor);
+            if (!this.options.Circles || this.options.Color)
+               fcolor = palette ? palette.calcColor(lvl, levels.length) : this.getColor(graph.fMarkerColor);
 
             let pr = pnts.createPoints({ color: fcolor, style: this.options.Circles ? 4 : graph.fMarkerStyle }).then(mesh => {
                mesh.graph = graph;
