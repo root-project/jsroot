@@ -250,10 +250,20 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
 /** @summary Handle 3D triangles with color levels */
 
 class Triangles3DHandler {
-   constructor(levels, dolines, donormals, dogrid, grz_min, grz_max) {
-      Object.assign(this, { levels, dolines, donormals, dogrid, grz_min, grz_max });
+   constructor(ilevels, grz, grz_min, grz_max, dolines, donormals, dogrid) {
 
-      this.levels_eps = (levels[levels.length-1] - levels[0]) / levels.length / 1e2;
+      if (ilevels) {
+         // recalculate levels into graphical coordinates
+         this.levels = new Float32Array(ilevels.length);
+         for (let ll = 0; ll < ilevels.length; ++ll)
+            this.levels[ll] = grz(ilevels[ll]);
+      } else {
+         this.levels = [grz_min, grz_max]; // just cut top/bottom parts
+      }
+
+      Object.assign(this, { grz_min, grz_max, dolines, donormals, dogrid });
+
+      this.levels_eps = (this.levels[this.levels.length-1] - this.levels[0]) / this.levels.length / 1e2;
       this.loop = 0;
       this.nfaces = []; this.pos = []; this.indx = [];    // buffers for faces
       this.nsegments = 0; this.lpos = null; this.lindx = 0;  // buffer for lines
@@ -271,6 +281,8 @@ class Triangles3DHandler {
    }
 
    createBuffers() {
+      if (!this.loop) return;
+
       for (let lvl = 1; lvl < this.levels.length; ++lvl)
          if (this.nfaces[lvl]) {
             this.pos[lvl] = new Float32Array(this.nfaces[lvl] * 9);
@@ -474,28 +486,17 @@ class Triangles3DHandler {
   * @desc Make it indepependent from three.js to be able reuse it for 2d case
   * @private */
 function buildSurf3D(histo, handle, ilevels, meshFunc, linesFunc) {
-   let main_grz = handle.grz,
-       levels;
-
-   if (ilevels) {
-      // recalculate levels into graphical coordinates
-      levels = new Float32Array(ilevels.length);
-      for (let ll = 0; ll < ilevels.length; ++ll)
-         levels[ll] = main_grz(ilevels[ll]);
-   } else {
-      levels = [handle.grz_min, handle.grz_max]; // just cut top/bottom parts
-   }
+   let main_grz = handle.grz;
 
    let arrx = handle.original ? handle.origx : handle.grx,
        arry = handle.original ? handle.origy : handle.gry,
        i, j, x1, x2, y1, y2, z11, z12, z21, z22,
-       triangles = new Triangles3DHandler(levels, handle.dolines, handle.donormals, handle.dogrid, handle.grz_min, handle.grz_max);
+       triangles = new Triangles3DHandler(ilevels, handle.grz, handle.grz_min, handle.grz_max, handle.dolines, handle.donormals, handle.dogrid);
 
    triangles.createNormIndex(handle);
 
    for (triangles.loop = 0; triangles.loop < 2; ++triangles.loop) {
-      if (triangles.loop)
-         triangles.createBuffers();
+      triangles.createBuffers();
 
       for (i = handle.i1;i < handle.i2-1; ++i) {
          x1 = handle.original ? 0.5 * (arrx[i] + arrx[i+1]) : arrx[i];
@@ -3121,4 +3122,4 @@ class TH2Painter extends THistPainter {
 
 } // class TH2Painter
 
-export { TH2Painter, buildHist2dContour, buildSurf3D };
+export { TH2Painter, buildHist2dContour, buildSurf3D, Triangles3DHandler };
