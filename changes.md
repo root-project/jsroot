@@ -1,14 +1,13 @@
 # JSROOT changelog
 
-## Changes in 7.4.x
-
+## Changes in 7.4.2
 1. Fix - unzoom z on lego2 plots
 2. Fix - browsing TLists with nullptr inside
 3. Fix - check NaN values when performing TTree::Draw()
+4. Fix - support standard log function in TF1/TF2
 
 
 ## Changes in 7.4.1
-
 1. Fix - context menu position on lego plots
 2. Fix - add missing math functions Chebyshev0 and normalized Gaus
 3. Fix - correctly render TPolyLine3D

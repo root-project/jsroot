@@ -7,7 +7,7 @@ typeof define === 'function' && define.amd ? define(['exports'], factory) :
 
 /** @summary version id
   * @desc For the JSROOT release the string in format 'major.minor.patch' like '7.0.0' */
-let version_id = '7.4.x';
+let version_id = '7.4.2';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
@@ -110322,6 +110322,7 @@ function proivdeEvalPar(obj) {
                 .replace(/\b(cos)\b/gi, 'Math.cos')
                 .replace(/\b(tan)\b/gi, 'Math.tan')
                 .replace(/\b(exp)\b/gi, 'Math.exp')
+                .replace(/\b(log)\b/gi, 'Math.log')
                 .replace(/\b(log10)\b/gi, 'Math.log10')
                 .replace(/\b(pow)\b/gi, 'Math.pow')
                 .replace(/pi/g, 'Math.PI');
