@@ -1,4 +1,4 @@
-// https://root.cern/js/ v7.4.1
+// https://root.cern/js/ v7.4.2
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -7,11 +7,11 @@ typeof define === 'function' && define.amd ? define(['exports'], factory) :
 
 /** @summary version id
   * @desc For the JSROOT release the string in format 'major.minor.patch' like '7.0.0' */
-let version_id = '7.4.1';
+let version_id = '7.4.x';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '6/07/2023';
+let version_date = '10/08/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -71012,7 +71012,7 @@ class TPadPainter extends ObjectPainter {
          return this.syncDraw(true).then(() => this.drawPrimitives(0));
       }
 
-      if (indx >= this._num_primitives) {
+      if (!this.pad || (indx >= this._num_primitives)) {
          if (this._start_tm) {
             let spenttm = new Date().getTime() - this._start_tm;
             if (spenttm > 1000) console.log(`Canvas ${this.pad?.fName || '---'} drawing took ${(spenttm*1e-3).toFixed(2)}s`);
@@ -76299,7 +76299,7 @@ class THistPainter extends ObjectPainter {
       cntr.configIndicies(this.options.Zero ? -1 : 0, (cntr.colzmin != 0) || !this.options.Zero || this.isTH2Poly() ? 0 : -1);
 
       let fp = this.getFramePainter();
-      if ((this.getDimension() < 3) && fp) {
+      if (fp && (this.getDimension() < 3) && !fp.mode3d) {
          fp.zmin = cntr.colzmin;
          fp.zmax = cntr.colzmax;
       }
@@ -77237,7 +77237,7 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
          return this.drawBars(height, pmain, funcs);
 
       if ((this.options.ErrorKind === 3) || (this.options.ErrorKind === 4))
-         return this.drawFilledErrors(pmain, funcs);
+         return this.drawFilledErrors(funcs);
 
       let left = this.getSelectIndex('x', 'left', -1),
           right = this.getSelectIndex('x', 'right', 2),
@@ -97520,11 +97520,19 @@ class TDrawSelector extends TSelector {
          res.max = this.hist_args[axisid * 3 + 2];
       } else {
 
-         res.min = res.max = arr[0];
+         let is_any = false;
          for (let i = 1; i < arr.length; ++i) {
-            res.min = Math.min(res.min, arr[i]);
-            res.max = Math.max(res.max, arr[i]);
+            let v = arr[i];
+            if (!Number.isFinite(v)) continue;
+            if (is_any) {
+               res.min = Math.min(res.min, v);
+               res.max = Math.max(res.max, v);
+            } else {
+               res.min = res.max = v;
+               is_any = true;
+            }
          }
+         if (!is_any) { res.min = 0; res.max = 1; }
 
          if (this.hist_nbins)
             nbins = res.nbins = this.hist_nbins;
@@ -100190,43 +100198,47 @@ function listHierarchy(folder, lst) {
 
    folder._childs = [];
    for (let i = 0; i < lst.arr.length; ++i) {
-      let obj = ismap ? lst.arr[i].first : lst.arr[i],
-          item = !obj?._typename ? {
+      let obj = ismap ? lst.arr[i].first : lst.arr[i], item;
+      if (!obj?._typename) {
+         item = {
             _name: i.toString(),
             _kind: prROOT + 'NULL',
             _title: 'NULL',
             _value: 'null',
             _obj: null
-          } : {
+          };
+      } else {
+         item =  {
             _name: obj.fName || obj.name,
             _kind: prROOT + obj._typename,
             _title: `${obj.fTitle || ''} type:${obj._typename}`,
             _obj: obj
-          };
+         };
 
-        switch(obj._typename) {
-           case clTColor: item._value = getRGBfromTColor(obj); break;
-           case clTText:
-           case clTLatex: item._value = obj.fTitle; break;
-           case clTObjString: item._value = obj.fString; break;
-           default: if (lst.opt && lst.opt[i] && lst.opt[i].length) item._value = lst.opt[i];
-        }
+         switch(obj._typename) {
+            case clTColor: item._value = getRGBfromTColor(obj); break;
+            case clTText:
+            case clTLatex: item._value = obj.fTitle; break;
+            case clTObjString: item._value = obj.fString; break;
+            default: if (lst.opt && lst.opt[i] && lst.opt[i].length) item._value = lst.opt[i];
+         }
 
-        if (do_context && canDrawHandle(obj._typename)) item._direct_context = true;
+         if (do_context && canDrawHandle(obj._typename)) item._direct_context = true;
 
-        // if name is integer value, it should match array index
-        if (!item._name || (Number.isInteger(parseInt(item._name)) && (parseInt(item._name) !== i))
-            || (lst.arr.indexOf(obj) < i)) {
-           item._name = i.toString();
-        } else {
-           // if there are several such names, add cycle number to the item name
-           let indx = names.indexOf(obj.fName);
-           if ((indx >= 0) && (cnt[indx] > 1)) {
-              item._cycle = cycle[indx]++;
-              item._keyname = item._name;
-              item._name = item._keyname + ';' + item._cycle;
-           }
-        }
+         // if name is integer value, it should match array index
+         if (!item._name || (Number.isInteger(parseInt(item._name)) && (parseInt(item._name) !== i))
+             || (lst.arr.indexOf(obj) < i)) {
+            item._name = i.toString();
+         } else {
+            // if there are several such names, add cycle number to the item name
+            let indx = names.indexOf(obj.fName);
+            if ((indx >= 0) && (cnt[indx] > 1)) {
+               item._cycle = cycle[indx]++;
+               item._keyname = item._name;
+               item._name = item._keyname + ';' + item._cycle;
+            }
+         }
+      }
 
       folder._childs.push(item);
    }
@@ -110964,7 +110976,7 @@ class TScatterPainter extends TGraphPainter$1 {
          let pnt = this.bins[i],
              grx = funcs.grx(pnt.x),
              gry = funcs.gry(pnt.y),
-             size = scatter.fScale * ((scatter.fSize[i] - mins) / (maxs - mins)),
+             size = (scatter.fScale ?? scatter.fMaxMarkerSize) * ((scatter.fSize[i] - mins) / (maxs - mins)),
              color = this.fContour.getPaletteColor(this.fPalette, scatter.fColor[i]);
 
           let handle = new TAttMarkerHandler({ color, size, style: scatter.fMarkerStyle });
