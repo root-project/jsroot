@@ -1629,7 +1629,7 @@ async function treeProcess(tree, selector, args) {
       // console.log(`Add branch ${branch.fName}`);
 
       item = {
-         branch: branch,
+         branch,
          tgt: target_object, // used target object - can be differ for object members
          name: target_name,
          index: -1, // index in the list of read branches
@@ -1651,14 +1651,14 @@ async function treeProcess(tree, selector, args) {
          staged_prev: 0, // entry limit of previous I/O request
          staged_now: 0, // entry limit of current I/O request
          progress_showtm: 0, // last time when progress was showed
-         GetBasketEntry(k) {
+         getBasketEntry(k) {
             if (!this.branch || (k > this.branch.fMaxBaskets)) return 0;
             let res = (k < this.branch.fMaxBaskets) ? this.branch.fBasketEntry[k] : 0;
             if (res) return res;
             let bskt = (k > 0) ? this.branch.fBaskets.arr[k - 1] : null;
             return bskt ? (this.branch.fBasketEntry[k - 1] + bskt.fNevBuf) : 0;
          },
-         GetTarget(tgtobj) {
+         getTarget(tgtobj) {
             // returns target object which should be used for the branch reading
             if (!this.tgt) return tgtobj;
             for (let k = 0; k < this.tgt.length; ++k) {
@@ -1668,7 +1668,7 @@ async function treeProcess(tree, selector, args) {
             }
             return tgtobj;
          },
-         GetEntry(entry) {
+         getEntry(entry) {
             // This should be equivalent to TBranch::GetEntry() method
             let shift = entry - this.first_entry, off;
             if (!this.branch.TestBit(kDoNotUseBufferMap))
@@ -1682,12 +1682,12 @@ async function treeProcess(tree, selector, args) {
             }
             this.raw.locate(off - this.raw.raw_shift);
 
-            // this.member.func(this.raw, this.GetTarget(tgtobj));
+            // this.member.func(this.raw, this.getTarget(tgtobj));
          }
       };
 
       // last basket can be stored directly with the branch
-      while (item.GetBasketEntry(item.numbaskets + 1)) item.numbaskets++;
+      while (item.getBasketEntry(item.numbaskets + 1)) item.numbaskets++;
 
       // check all counters if we
       let nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0,
@@ -2164,7 +2164,7 @@ async function treeProcess(tree, selector, args) {
 
       if ((item.numentries !== item0.numentries) || (item.numbaskets !== item0.numbaskets)) handle.simple_read = false;
       for (let n = 0; n < item.numbaskets; ++n)
-         if (item.GetBasketEntry(n) !== item0.GetBasketEntry(n))
+         if (item.getBasketEntry(n) !== item0.getBasketEntry(n))
             handle.simple_read = false;
    }
 
@@ -2365,11 +2365,11 @@ async function treeProcess(tree, selector, args) {
                let k = elem.staged_basket++;
 
                // no need to read more baskets, process_max is not included
-               if (elem.GetBasketEntry(k) >= handle.process_max) break;
+               if (elem.getBasketEntry(k) >= handle.process_max) break;
 
                // check which baskets need to be read
                if (elem.first_readentry < 0) {
-                  let lmt = elem.GetBasketEntry(k + 1),
+                  let lmt = elem.getBasketEntry(k + 1),
                      not_needed = (lmt <= handle.process_min);
 
                   //for (let d=0;d<elem.ascounter.length;++d) {
@@ -2381,7 +2381,7 @@ async function treeProcess(tree, selector, args) {
 
                   elem.curr_basket = k; // basket where reading will start
 
-                  elem.first_readentry = elem.GetBasketEntry(k); // remember which entry will be read first
+                  elem.first_readentry = elem.getBasketEntry(k); // remember which entry will be read first
                }
 
                // check if basket already loaded in the branch
@@ -2414,7 +2414,7 @@ async function treeProcess(tree, selector, args) {
                   isany = true;
                }
 
-               elem.staged_entry = elem.GetBasketEntry(k + 1);
+               elem.staged_entry = elem.getBasketEntry(k + 1);
 
                min_staged = Math.min(min_staged, elem.staged_entry);
 
@@ -2502,7 +2502,7 @@ async function treeProcess(tree, selector, args) {
                elem.raw = bitem.raw;
                elem.basket = bitem.bskt_obj;
                // elem.nev = bitem.fNevBuf; // number of entries in raw buffer
-               elem.first_entry = elem.GetBasketEntry(bitem.basket);
+               elem.first_entry = elem.getBasketEntry(bitem.basket);
 
                bitem.raw = null; // remove reference on raw buffer
                bitem.branch = null; // remove reference on the branch
@@ -2526,7 +2526,7 @@ async function treeProcess(tree, selector, args) {
             for (n = 0; n < handle.arr.length; ++n) {
                elem = handle.arr[n];
 
-               elem.GetEntry(handle.current_entry);
+               elem.getEntry(handle.current_entry);
 
                elem.arrmember.arrlength = loopentries;
                elem.arrmember.func(elem.raw, handle.selector.tgtarr);
@@ -2548,9 +2548,9 @@ async function treeProcess(tree, selector, args) {
                   elem = handle.arr[n];
 
                   // locate buffer offset at proper place
-                  elem.GetEntry(handle.current_entry);
+                  elem.getEntry(handle.current_entry);
 
-                  elem.member.func(elem.raw, elem.GetTarget(handle.selector.tgtobj));
+                  elem.member.func(elem.raw, elem.getTarget(handle.selector.tgtobj));
                }
 
                handle.selector.Process(handle.current_entry);
