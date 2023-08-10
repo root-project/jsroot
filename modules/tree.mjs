@@ -1061,8 +1061,8 @@ class TDrawSelector extends TSelector {
       res.k = res.nbins / (res.max - res.min);
 
       res.GetBin = function(value) {
-         const bin = this.lbls?.indexOf(value) ?? Math.floor((value - this.min) * this.k);
-         return (bin < 0) ? 0 : ((bin > this.nbins) ? this.nbins + 1 : bin + 1);
+         const bin = this.lbls?.indexOf(value) ?? Number.isFinite(value) ? Math.floor((value - this.min) * this.k) : this.nbins + 1;
+         return bin < 0 ? 0 : ((bin > this.nbins) ? this.nbins + 1 : bin + 1);
       };
 
       return res;
@@ -1237,7 +1237,7 @@ class TDrawSelector extends TSelector {
    /** @summary Fill 2D histogram */
    fill2DHistogram(xvalue, yvalue, weight) {
       let xbin = this.x.GetBin(xvalue),
-         ybin = this.y.GetBin(yvalue);
+          ybin = this.y.GetBin(yvalue);
 
       this.hist.fArray[xbin + (this.x.nbins + 2) * ybin] += weight;
       if (!this.x.lbls && !this.y.lbls) {
