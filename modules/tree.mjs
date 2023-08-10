@@ -1015,11 +1015,19 @@ class TDrawSelector extends TSelector {
          res.max = this.hist_args[axisid * 3 + 2];
       } else {
 
-         res.min = res.max = arr[0];
+         let is_any = false;
          for (let i = 1; i < arr.length; ++i) {
-            res.min = Math.min(res.min, arr[i]);
-            res.max = Math.max(res.max, arr[i]);
+            let v = arr[i];
+            if (!Number.isFinite(v)) continue;
+            if (is_any) {
+               res.min = Math.min(res.min, v);
+               res.max = Math.max(res.max, v);
+            } else {
+               res.min = res.max = v;
+               is_any = true;
+            }
          }
+         if (!is_any) { res.min = 0; res.max = 1; }
 
          if (this.hist_nbins)
             nbins = res.nbins = this.hist_nbins;
