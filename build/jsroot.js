@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '9/08/2023';
+let version_date = '10/08/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -97780,11 +97780,19 @@ class TDrawSelector extends TSelector {
          res.max = this.hist_args[axisid * 3 + 2];
       } else {
 
-         res.min = res.max = arr[0];
+         let is_any = false;
          for (let i = 1; i < arr.length; ++i) {
-            res.min = Math.min(res.min, arr[i]);
-            res.max = Math.max(res.max, arr[i]);
+            let v = arr[i];
+            if (!Number.isFinite(v)) continue;
+            if (is_any) {
+               res.min = Math.min(res.min, v);
+               res.max = Math.max(res.max, v);
+            } else {
+               res.min = res.max = v;
+               is_any = true;
+            }
          }
+         if (!is_any) { res.min = 0; res.max = 1; }
 
          if (this.hist_nbins)
             nbins = res.nbins = this.hist_nbins;
@@ -97818,8 +97826,8 @@ class TDrawSelector extends TSelector {
       res.k = res.nbins / (res.max - res.min);
 
       res.GetBin = function(value) {
-         const bin = this.lbls?.indexOf(value) ?? Math.floor((value - this.min) * this.k);
-         return (bin < 0) ? 0 : ((bin > this.nbins) ? this.nbins + 1 : bin + 1);
+         const bin = this.lbls?.indexOf(value) ?? Number.isFinite(value) ? Math.floor((value - this.min) * this.k) : this.nbins + 1;
+         return bin < 0 ? 0 : ((bin > this.nbins) ? this.nbins + 1 : bin + 1);
       };
 
       return res;
@@ -97984,7 +97992,7 @@ class TDrawSelector extends TSelector {
       let bin = this.x.GetBin(xvalue);
       this.hist.fArray[bin] += weight;
 
-      if (!this.x.lbls) {
+      if (!this.x.lbls && Number.isFinite(xvalue)) {
          this.hist.fTsumw += weight;
          this.hist.fTsumwx += weight * xvalue;
          this.hist.fTsumwx2 += weight * xvalue * xvalue;
@@ -97994,10 +98002,10 @@ class TDrawSelector extends TSelector {
    /** @summary Fill 2D histogram */
    fill2DHistogram(xvalue, yvalue, weight) {
       let xbin = this.x.GetBin(xvalue),
-         ybin = this.y.GetBin(yvalue);
+          ybin = this.y.GetBin(yvalue);
 
       this.hist.fArray[xbin + (this.x.nbins + 2) * ybin] += weight;
-      if (!this.x.lbls && !this.y.lbls) {
+      if (!this.x.lbls && !this.y.lbls && Number.isFinite(xvalue) && Number.isFinite(yvalue)) {
          this.hist.fTsumw += weight;
          this.hist.fTsumwx += weight * xvalue;
          this.hist.fTsumwy += weight * yvalue;
@@ -98010,11 +98018,11 @@ class TDrawSelector extends TSelector {
    /** @summary Fill 3D histogram */
    fill3DHistogram(xvalue, yvalue, zvalue, weight) {
       let xbin = this.x.GetBin(xvalue),
-         ybin = this.y.GetBin(yvalue),
-         zbin = this.z.GetBin(zvalue);
+          ybin = this.y.GetBin(yvalue),
+          zbin = this.z.GetBin(zvalue);
 
       this.hist.fArray[xbin + (this.x.nbins + 2) * (ybin + (this.y.nbins + 2) * zbin)] += weight;
-      if (!this.x.lbls && !this.y.lbls && !this.z.lbls) {
+      if (!this.x.lbls && !this.y.lbls && !this.z.lbls && Number.isFinite(xvalue) && Number.isFinite(yvalue) && Number.isFinite(zvalue)) {
          this.hist.fTsumw += weight;
          this.hist.fTsumwx += weight * xvalue;
          this.hist.fTsumwy += weight * yvalue;
@@ -100458,43 +100466,47 @@ function listHierarchy(folder, lst) {
 
    folder._childs = [];
    for (let i = 0; i < lst.arr.length; ++i) {
-      let obj = ismap ? lst.arr[i].first : lst.arr[i],
-          item = !obj?._typename ? {
+      let obj = ismap ? lst.arr[i].first : lst.arr[i], item;
+      if (!obj?._typename) {
+         item = {
             _name: i.toString(),
             _kind: prROOT + 'NULL',
             _title: 'NULL',
             _value: 'null',
             _obj: null
-          } : {
+          };
+      } else {
+         item =  {
             _name: obj.fName || obj.name,
             _kind: prROOT + obj._typename,
             _title: `${obj.fTitle || ''} type:${obj._typename}`,
             _obj: obj
-          };
+         };
 
-        switch(obj._typename) {
-           case clTColor: item._value = getRGBfromTColor(obj); break;
-           case clTText:
-           case clTLatex: item._value = obj.fTitle; break;
-           case clTObjString: item._value = obj.fString; break;
-           default: if (lst.opt && lst.opt[i] && lst.opt[i].length) item._value = lst.opt[i];
-        }
+         switch(obj._typename) {
+            case clTColor: item._value = getRGBfromTColor(obj); break;
+            case clTText:
+            case clTLatex: item._value = obj.fTitle; break;
+            case clTObjString: item._value = obj.fString; break;
+            default: if (lst.opt && lst.opt[i] && lst.opt[i].length) item._value = lst.opt[i];
+         }
 
-        if (do_context && canDrawHandle(obj._typename)) item._direct_context = true;
+         if (do_context && canDrawHandle(obj._typename)) item._direct_context = true;
 
-        // if name is integer value, it should match array index
-        if (!item._name || (Number.isInteger(parseInt(item._name)) && (parseInt(item._name) !== i))
-            || (lst.arr.indexOf(obj) < i)) {
-           item._name = i.toString();
-        } else {
-           // if there are several such names, add cycle number to the item name
-           let indx = names.indexOf(obj.fName);
-           if ((indx >= 0) && (cnt[indx] > 1)) {
-              item._cycle = cycle[indx]++;
-              item._keyname = item._name;
-              item._name = item._keyname + ';' + item._cycle;
-           }
-        }
+         // if name is integer value, it should match array index
+         if (!item._name || (Number.isInteger(parseInt(item._name)) && (parseInt(item._name) !== i))
+             || (lst.arr.indexOf(obj) < i)) {
+            item._name = i.toString();
+         } else {
+            // if there are several such names, add cycle number to the item name
+            let indx = names.indexOf(obj.fName);
+            if ((indx >= 0) && (cnt[indx] > 1)) {
+               item._cycle = cycle[indx]++;
+               item._keyname = item._name;
+               item._name = item._keyname + ';' + item._cycle;
+            }
+         }
+      }
 
       folder._childs.push(item);
    }
