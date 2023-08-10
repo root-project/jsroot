@@ -4,7 +4,7 @@
 
 1. Fix - unzoom z on lego2 plots
 2. Fix - browsing TLists with nullptr inside
-3. Fix - check NaN values when creating histogram for TTree::Draw()
+3. Fix - check NaN values when performing TTree::Draw()
 
 
 ## Changes in 7.4.1
