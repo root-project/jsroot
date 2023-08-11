@@ -384,6 +384,7 @@ let gStyle = {
    fCandleBoxRange: 0.5,
    fCandleScaled: false,
    fViolinScaled: true,
+   fOrthoCamera: false,
    fXAxisExpXOffset: 0,
    fXAxisExpYOffset: 0,
    fYAxisExpXOffset: 0,
@@ -58724,7 +58725,6 @@ class JSRootMenu {
       addStyleIntField('Log X', 'fOptLogx', ['off', 'on', 'log 2']);
       addStyleIntField('Log Y', 'fOptLogy', ['off', 'on', 'log 2']);
       addStyleIntField('Log Z', 'fOptLogz', ['off', 'on', 'log 2']);
-      this.addchk(gStyle.fOptTitle == 1, 'Hist title', flag => { gStyle.fOptTitle = flag ? 1 : 0; });
       this.add('endsub:');
 
       this.add('sub:Frame');
@@ -58778,6 +58778,8 @@ class JSRootMenu {
       this.add('endsub:');
 
       this.add('sub:Histogram');
+      this.addchk(gStyle.fOptTitle == 1, 'Hist title', flag => { gStyle.fOptTitle = flag ? 1 : 0; });
+      this.addchk(gStyle.fOrthoCamera, 'Orthographic camera', flag => { gStyle.fOrthoCamera = flag; });
       this.addchk(gStyle.fHistMinimumZero, 'Base0', flag => { gStyle.fHistMinimumZero = flag; }, 'when true, BAR and LEGO drawing using base = 0');
       this.add('Text format', () => this.input('Paint text format', gStyle.fPaintTextFormat).then(fmt => { gStyle.fPaintTextFormat = fmt; }));
       this.add('Time offset', () => this.input('Time offset in seconds, default is 788918400 for 1/1/1995', gStyle.fTimeOffset, 'int').then(ofset => { gStyle.fTimeOffset = ofset; }));
@@ -69896,7 +69898,7 @@ class THistDrawOptions {
               Mark: false, Same: false, Scat: false, ScatCoef: 1., Func: true,
               Arrow: false, Box: false, BoxStyle: 0,
               Text: false, TextAngle: 0, TextKind: '', Char: 0, Color: false, Contour: 0, Cjust: false,
-              Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0, Ortho: false,
+              Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0, Ortho: gStyle.fOrthoCamera,
               Spec: false, Pie: false, List: false, Zscale: false, Zvert: true, PadPalette: false,
               Candle: '', Violin: '', Scaled: null, Circular: 0,
               GLBox: 0, GLColor: false, Project: '', System: kCARTESIAN,
