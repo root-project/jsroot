@@ -75618,7 +75618,7 @@ function create3DCamera(fp, orthographic) {
    fp.pointLight = new PointLight(0xffffff,1);
    fp.pointLight.position.set(fp.size_x3d/2, fp.size_y3d/2, fp.size_z3d/2);
    fp.camera.add(fp.pointLight);
-   fp.lookat = new Vector3(0,0,0.8*fp.size_z3d);
+   fp.lookat = new Vector3(0,0,orthographic ? fp.size_z3d : 0.8*fp.size_z3d);
    fp.scene.add(fp.camera);
 }
 
@@ -75627,19 +75627,20 @@ function create3DCamera(fp, orthographic) {
 function setCameraPosition(fp, first_time) {
    let pad = fp.getPadPainter().getRootPad(true),
        max3dx = Math.max(0.75*fp.size_x3d, fp.size_z3d),
-       max3dy = Math.max(0.75*fp.size_y3d, fp.size_z3d),
-       k = fp.camera.isOrthographicCamera ? 0.5 : 1;
+       max3dy = Math.max(0.75*fp.size_y3d, fp.size_z3d);
 
    if (first_time) {
       if (max3dx === max3dy)
-         fp.camera.position.set(-1.6*max3dx*k, -3.5*max3dy*k, 1.4*fp.size_z3d);
+         fp.camera.position.set(-1.6*max3dx, -3.5*max3dy, 1.4*fp.size_z3d);
       else if (max3dx > max3dy)
-         fp.camera.position.set(-2*max3dx*k, -3.5*max3dy*k, 1.4*fp.size_z3d);
+         fp.camera.position.set(-2*max3dx, -3.5*max3dy, 1.4*fp.size_z3d);
       else
-         fp.camera.position.set(-3.5*max3dx*k, -2*max3dy*k, 1.4*fp.size_z3d);
-      if (fp.camera.isOrthographicCamera && fp.scene_width > 5 && fp.scene_height > 5)
-         fp.camera.zoom = (isNodeJs() ? 3 : 5) * fp.scene_height / fp.scene_width;
+         fp.camera.position.set(-3.5*max3dx, -2*max3dy, 1.4*fp.size_z3d);
+      if (fp.camera.isOrthographicCamera)
+         fp.camera.zoom = 2.5;
    }
+
+   console.log('zoom', fp.camera.zoom);
 
    if (pad && (first_time || !fp.zoomChangedInteractive()))
       if (Number.isFinite(pad.fTheta) && Number.isFinite(pad.fPhi) && ((pad.fTheta !== fp.camera_Theta) || (pad.fPhi !== fp.camera_Phi))) {
@@ -75648,9 +75649,9 @@ function setCameraPosition(fp, first_time) {
          max3dx = 3*Math.max(fp.size_x3d, fp.size_z3d);
          max3dy = 3*Math.max(fp.size_y3d, fp.size_z3d);
          let phi = (270-pad.fPhi)/180*Math.PI, theta = (pad.fTheta-10)/180*Math.PI;
-         fp.camera.position.set(max3dx*Math.cos(phi)*Math.cos(theta)*k,
-                                max3dy*Math.sin(phi)*Math.cos(theta)*k,
-                                fp.size_z3d + (max3dx+max3dy)*0.5*Math.sin(theta))*k;
+         fp.camera.position.set(max3dx*Math.cos(phi)*Math.cos(theta),
+                                max3dy*Math.sin(phi)*Math.cos(theta),
+                                fp.size_z3d + (max3dx+max3dy)*0.5*Math.sin(theta));
          first_time = true;
       }
 
