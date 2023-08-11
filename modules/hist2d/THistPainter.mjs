@@ -70,7 +70,7 @@ class THistDrawOptions {
       if (this.Mode3D)
          return this.Lego === 12 || this.Lego === 14 || this.Surf === 11 || this.Surf === 12;
 
-      if (this.Color || this.Contour)
+      if (this.Color || this.Contour || this.Axis)
          return true;
 
       return !this.Scat && !this.Box && !this.Arrow && !this.Proj && !this.Candle && !this.Violin && !this.Text;
