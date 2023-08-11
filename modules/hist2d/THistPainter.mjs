@@ -62,6 +62,20 @@ class THistDrawOptions {
          this.Zero = isany ? 0 : 1;
    }
 
+   /** @summary Is palette can be used with current draw options */
+   canHavePalette() {
+      if (this.ndim !== 2)
+         return false;
+
+      if (this.Mode3D)
+         return this.Lego === 12 || this.Lego === 14 || this.Surf === 11 || this.Surf === 12;
+
+      if (this.Color || this.Contour)
+         return true;
+
+      return !this.Scat && !this.Box && !this.Arrow && !this.Proj && !this.Candle && !this.Violin && !this.Text;
+   }
+
    /** @summary Decode histogram draw options */
    decode(opt, hdim, histo, pp, pad, painter) {
       this.orginal = opt; // will be overwritten by storeDrawOpt call
@@ -2102,10 +2116,7 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Toggle color z palette drawing */
    toggleColz() {
-      let can_toggle = this.options.Mode3D ? (this.options.Lego === 12 || this.options.Lego === 14 || this.options.Surf === 11 || this.options.Surf === 12) :
-                       this.options.Color || this.options.Contour;
-
-      if (can_toggle) {
+      if (this.options.canHavePalette()) {
          this.options.Zscale = !this.options.Zscale;
          return this.drawColorPalette(this.options.Zscale, false, true)
                     .then(() => this.processOnlineChange('drawopt'));
