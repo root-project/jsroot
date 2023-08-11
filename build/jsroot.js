@@ -75609,7 +75609,7 @@ function create3DCamera(fp, orthographic) {
    }
 
    if (orthographic)
-      fp.camera = new OrthographicCamera(-fp.scene_width/2, fp.scene_width/2, fp.scene_height/2, -fp.scene_height/2, 0.001, 40*fp.size_z3d);
+      fp.camera = new OrthographicCamera(-1.3*fp.size_x3d, 1.3*fp.size_x3d, 2.3*fp.size_z3d, -0.7*fp.size_z3d, 0.001, 40*fp.size_z3d);
    else
       fp.camera = new PerspectiveCamera(45, fp.scene_width / fp.scene_height, 1, 40*fp.size_z3d);
 
@@ -75618,7 +75618,7 @@ function create3DCamera(fp, orthographic) {
    fp.pointLight = new PointLight(0xffffff,1);
    fp.pointLight.position.set(fp.size_x3d/2, fp.size_y3d/2, fp.size_z3d/2);
    fp.camera.add(fp.pointLight);
-   fp.lookat = new Vector3(0,0,orthographic ? fp.size_z3d : 0.8*fp.size_z3d);
+   fp.lookat = new Vector3(0,0,orthographic ? 0.3*fp.size_z3d : 0.8*fp.size_z3d);
    fp.scene.add(fp.camera);
 }
 
@@ -75627,17 +75627,16 @@ function create3DCamera(fp, orthographic) {
 function setCameraPosition(fp, first_time) {
    let pad = fp.getPadPainter().getRootPad(true),
        max3dx = Math.max(0.75*fp.size_x3d, fp.size_z3d),
-       max3dy = Math.max(0.75*fp.size_y3d, fp.size_z3d);
+       max3dy = Math.max(0.75*fp.size_y3d, fp.size_z3d),
+       kz = fp.camera.isOrthographicCamera ? 1 : 1.4;
 
    if (first_time) {
       if (max3dx === max3dy)
-         fp.camera.position.set(-1.6*max3dx, -3.5*max3dy, 1.4*fp.size_z3d);
+         fp.camera.position.set(-1.6*max3dx, -3.5*max3dy, kz*fp.size_z3d);
       else if (max3dx > max3dy)
-         fp.camera.position.set(-2*max3dx, -3.5*max3dy, 1.4*fp.size_z3d);
+         fp.camera.position.set(-2*max3dx, -3.5*max3dy, kz*fp.size_z3d);
       else
-         fp.camera.position.set(-3.5*max3dx, -2*max3dy, 1.4*fp.size_z3d);
-      if (fp.camera.isOrthographicCamera)
-         fp.camera.zoom = 2.5;
+         fp.camera.position.set(-3.5*max3dx, -2*max3dy, kz*fp.size_z3d);
    }
 
    if (pad && (first_time || !fp.zoomChangedInteractive()))
@@ -75649,7 +75648,7 @@ function setCameraPosition(fp, first_time) {
          let phi = (270-pad.fPhi)/180*Math.PI, theta = (pad.fTheta-10)/180*Math.PI;
          fp.camera.position.set(max3dx*Math.cos(phi)*Math.cos(theta),
                                 max3dy*Math.sin(phi)*Math.cos(theta),
-                                fp.size_z3d + (max3dx+max3dy)*0.5*Math.sin(theta));
+                                fp.size_z3d + (kz-0.9)*(max3dx+max3dy)*Math.sin(theta));
          first_time = true;
       }
 
