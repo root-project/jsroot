@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '10/08/2023';
+let version_date = '11/08/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -68172,7 +68172,7 @@ class TCanvasPainter extends TPadPainter {
 
             select('#ged_placeholder').text('');
 
-            sap.ui.define(['sap/ui/model/json/JSONModel', 'sap/ui/core/mvc/XMLView'], (JSONModel,XMLView) => {
+            sap.ui.require(['sap/ui/model/json/JSONModel', 'sap/ui/core/mvc/XMLView'], (JSONModel,XMLView) => {
 
                let oModel = new JSONModel({ handle: null });
 
@@ -69926,6 +69926,20 @@ class THistDrawOptions {
 
       if (Number.isInteger(this.Zero) || force)
          this.Zero = isany ? 0 : 1;
+   }
+
+   /** @summary Is palette can be used with current draw options */
+   canHavePalette() {
+      if (this.ndim !== 2)
+         return false;
+
+      if (this.Mode3D)
+         return this.Lego === 12 || this.Lego === 14 || this.Surf === 11 || this.Surf === 12;
+
+      if (this.Color || this.Contour || this.Axis)
+         return true;
+
+      return !this.Scat && !this.Box && !this.Arrow && !this.Proj && !this.Candle && !this.Violin && !this.Text;
    }
 
    /** @summary Decode histogram draw options */
@@ -71968,10 +71982,7 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Toggle color z palette drawing */
    toggleColz() {
-      let can_toggle = this.options.Mode3D ? (this.options.Lego === 12 || this.options.Lego === 14 || this.options.Surf === 11 || this.options.Surf === 12) :
-                       this.options.Color || this.options.Contour;
-
-      if (can_toggle) {
+      if (this.options.canHavePalette()) {
          this.options.Zscale = !this.options.Zscale;
          return this.drawColorPalette(this.options.Zscale, false, true)
                     .then(() => this.processOnlineChange('drawopt'));
@@ -75245,7 +75256,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
       this.clear3DScene();
 
-      let need_palette = this.options.Zscale && (this.options.Color || this.options.Contour || this.options.Axis);
+      let need_palette = this.options.Zscale && this.options.canHavePalette();
 
       // draw new palette, resize frame if required
       return this.drawColorPalette(need_palette, true).then(pp => {
@@ -98394,7 +98405,7 @@ async function treeProcess(tree, selector, args) {
       // console.log(`Add branch ${branch.fName}`);
 
       item = {
-         branch: branch,
+         branch,
          tgt: target_object, // used target object - can be differ for object members
          name: target_name,
          index: -1, // index in the list of read branches
@@ -98416,14 +98427,14 @@ async function treeProcess(tree, selector, args) {
          staged_prev: 0, // entry limit of previous I/O request
          staged_now: 0, // entry limit of current I/O request
          progress_showtm: 0, // last time when progress was showed
-         GetBasketEntry(k) {
+         getBasketEntry(k) {
             if (!this.branch || (k > this.branch.fMaxBaskets)) return 0;
             let res = (k < this.branch.fMaxBaskets) ? this.branch.fBasketEntry[k] : 0;
             if (res) return res;
             let bskt = (k > 0) ? this.branch.fBaskets.arr[k - 1] : null;
             return bskt ? (this.branch.fBasketEntry[k - 1] + bskt.fNevBuf) : 0;
          },
-         GetTarget(tgtobj) {
+         getTarget(tgtobj) {
             // returns target object which should be used for the branch reading
             if (!this.tgt) return tgtobj;
             for (let k = 0; k < this.tgt.length; ++k) {
@@ -98433,7 +98444,7 @@ async function treeProcess(tree, selector, args) {
             }
             return tgtobj;
          },
-         GetEntry(entry) {
+         getEntry(entry) {
             // This should be equivalent to TBranch::GetEntry() method
             let shift = entry - this.first_entry, off;
             if (!this.branch.TestBit(kDoNotUseBufferMap))
@@ -98447,12 +98458,12 @@ async function treeProcess(tree, selector, args) {
             }
             this.raw.locate(off - this.raw.raw_shift);
 
-            // this.member.func(this.raw, this.GetTarget(tgtobj));
+            // this.member.func(this.raw, this.getTarget(tgtobj));
          }
       };
 
       // last basket can be stored directly with the branch
-      while (item.GetBasketEntry(item.numbaskets + 1)) item.numbaskets++;
+      while (item.getBasketEntry(item.numbaskets + 1)) item.numbaskets++;
 
       // check all counters if we
       let nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0,
@@ -98929,7 +98940,7 @@ async function treeProcess(tree, selector, args) {
 
       if ((item.numentries !== item0.numentries) || (item.numbaskets !== item0.numbaskets)) handle.simple_read = false;
       for (let n = 0; n < item.numbaskets; ++n)
-         if (item.GetBasketEntry(n) !== item0.GetBasketEntry(n))
+         if (item.getBasketEntry(n) !== item0.getBasketEntry(n))
             handle.simple_read = false;
    }
 
@@ -99130,11 +99141,11 @@ async function treeProcess(tree, selector, args) {
                let k = elem.staged_basket++;
 
                // no need to read more baskets, process_max is not included
-               if (elem.GetBasketEntry(k) >= handle.process_max) break;
+               if (elem.getBasketEntry(k) >= handle.process_max) break;
 
                // check which baskets need to be read
                if (elem.first_readentry < 0) {
-                  let lmt = elem.GetBasketEntry(k + 1),
+                  let lmt = elem.getBasketEntry(k + 1),
                      not_needed = (lmt <= handle.process_min);
 
                   //for (let d=0;d<elem.ascounter.length;++d) {
@@ -99146,7 +99157,7 @@ async function treeProcess(tree, selector, args) {
 
                   elem.curr_basket = k; // basket where reading will start
 
-                  elem.first_readentry = elem.GetBasketEntry(k); // remember which entry will be read first
+                  elem.first_readentry = elem.getBasketEntry(k); // remember which entry will be read first
                }
 
                // check if basket already loaded in the branch
@@ -99179,7 +99190,7 @@ async function treeProcess(tree, selector, args) {
                   isany = true;
                }
 
-               elem.staged_entry = elem.GetBasketEntry(k + 1);
+               elem.staged_entry = elem.getBasketEntry(k + 1);
 
                min_staged = Math.min(min_staged, elem.staged_entry);
 
@@ -99267,7 +99278,7 @@ async function treeProcess(tree, selector, args) {
                elem.raw = bitem.raw;
                elem.basket = bitem.bskt_obj;
                // elem.nev = bitem.fNevBuf; // number of entries in raw buffer
-               elem.first_entry = elem.GetBasketEntry(bitem.basket);
+               elem.first_entry = elem.getBasketEntry(bitem.basket);
 
                bitem.raw = null; // remove reference on raw buffer
                bitem.branch = null; // remove reference on the branch
@@ -99291,7 +99302,7 @@ async function treeProcess(tree, selector, args) {
             for (n = 0; n < handle.arr.length; ++n) {
                elem = handle.arr[n];
 
-               elem.GetEntry(handle.current_entry);
+               elem.getEntry(handle.current_entry);
 
                elem.arrmember.arrlength = loopentries;
                elem.arrmember.func(elem.raw, handle.selector.tgtarr);
@@ -99313,9 +99324,9 @@ async function treeProcess(tree, selector, args) {
                   elem = handle.arr[n];
 
                   // locate buffer offset at proper place
-                  elem.GetEntry(handle.current_entry);
+                  elem.getEntry(handle.current_entry);
 
-                  elem.member.func(elem.raw, elem.GetTarget(handle.selector.tgtobj));
+                  elem.member.func(elem.raw, elem.getTarget(handle.selector.tgtobj));
                }
 
                handle.selector.Process(handle.current_entry);
@@ -109014,6 +109025,7 @@ function proivdeEvalPar(obj) {
                 .replace(/\b(cos)\b/gi, 'Math.cos')
                 .replace(/\b(tan)\b/gi, 'Math.tan')
                 .replace(/\b(exp)\b/gi, 'Math.exp')
+                .replace(/\b(log)\b/gi, 'Math.log')
                 .replace(/\b(log10)\b/gi, 'Math.log10')
                 .replace(/\b(pow)\b/gi, 'Math.pow')
                 .replace(/pi/g, 'Math.PI');
@@ -117813,7 +117825,7 @@ class RCanvasPainter extends RPadPainter {
 
             select('#ged_placeholder').text('');
 
-            sap.ui.define(['sap/ui/model/json/JSONModel', 'sap/ui/core/mvc/XMLView'], (JSONModel,XMLView) => {
+            sap.ui.require(['sap/ui/model/json/JSONModel', 'sap/ui/core/mvc/XMLView'], (JSONModel,XMLView) => {
 
                let oModel = new JSONModel({ handle: null });
 
