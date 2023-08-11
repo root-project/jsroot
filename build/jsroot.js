@@ -75640,8 +75640,6 @@ function setCameraPosition(fp, first_time) {
          fp.camera.zoom = 2.5;
    }
 
-   console.log('zoom', fp.camera.zoom);
-
    if (pad && (first_time || !fp.zoomChangedInteractive()))
       if (Number.isFinite(pad.fTheta) && Number.isFinite(pad.fPhi) && ((pad.fTheta !== fp.camera_Theta) || (pad.fPhi !== fp.camera_Phi))) {
          fp.camera_Phi = pad.fPhi;
