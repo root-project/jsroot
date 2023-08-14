@@ -62726,7 +62726,7 @@ class TFramePainter extends ObjectPainter {
      * @desc Called immediately after axes drawing */
    drawGrids() {
 
-      let layer = this.getFrameSvg().selectChild('.grid_layer');
+      let layer = this.getFrameSvg().selectChild('.axis_layer');
 
       layer.selectAll('.xgrid').remove();
       layer.selectAll('.ygrid').remove();
@@ -63009,7 +63009,6 @@ class TFramePainter extends ObjectPainter {
       this.x2_handle?.removeG();
       this.y2_handle?.removeG();
 
-      this.draw_g?.selectChild('.grid_layer').selectAll('*').remove();
       this.draw_g?.selectChild('.axis_layer').selectAll('*').remove();
       this.axes_drawn = false;
    }
@@ -63127,9 +63126,6 @@ class TFramePainter extends ObjectPainter {
             this.draw_g.append('svg:title').text('');
 
          top_rect = this.draw_g.append('svg:path');
-
-         // append for the moment three layers - for drawing and axis
-         this.draw_g.append('svg:g').attr('class','grid_layer');
 
          main_svg = this.draw_g.append('svg:svg')
                            .attr('class','main_layer')
@@ -113917,7 +113913,7 @@ class RFramePainter extends RObjectPainter {
    /** @summary Draw axes grids
      * @desc Called immediately after axes drawing */
    drawGrids() {
-      let layer = this.getFrameSvg().selectChild('.grid_layer');
+      let layer = this.getFrameSvg().selectChild('.axis_layer');
 
       layer.selectAll('.xgrid').remove();
       layer.selectAll('.ygrid').remove();
@@ -114370,7 +114366,6 @@ class RFramePainter extends RObjectPainter {
    cleanupAxes() {
       this.cleanXY();
 
-      this.draw_g?.selectChild('.grid_layer').selectAll('*').remove();
       this.draw_g?.selectChild('.axis_layer').selectAll('*').remove();
       this.axes_drawn = false;
    }
@@ -114492,9 +114487,6 @@ class RFramePainter extends RObjectPainter {
             this.draw_g.append('svg:title').text('');
 
          top_rect = this.draw_g.append('svg:rect');
-
-         // append for the moment three layers - for drawing and axis
-         this.draw_g.append('svg:g').attr('class','grid_layer');
 
          main_svg = this.draw_g.append('svg:svg')
                            .attr('class','main_layer')
