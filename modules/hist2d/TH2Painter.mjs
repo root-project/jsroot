@@ -1500,7 +1500,7 @@ class TH2Painter extends THistPainter {
          }
          if (bin.fContent === 0) {
             if (!this.options.Zero && !draw_lines) continue;
-            colindx = 0; // make dummy fill color to draw only line
+            // colindx = 0; // contrary to TH2 col drawing always fill bin with the color
          }
 
          // check if bin outside visible range
