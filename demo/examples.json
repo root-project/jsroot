@@ -108,6 +108,7 @@
       { "name": "honeycomb", "file": "th2poly.root", "item": "honeycomb;1", "opt": "l,col" },
       { "opt": "lego", "file": "th2poly.root", "item": "boxes;1" },
       { "opt": "col0z", "title": "suppress empty bins with 0 option" },
+      { "opt": "col0zl", "title": "draw lines and suppress empty bins with 0 option" },
       { "name": "europe", "item": "europe;1", "opt": "", "title": "Europe map (relatively old)" },
       { "name": "usa", "item": "usa;1", "opt": "l,col,pal50", "title": "USA map" },
       { "name": "fibonacci", "file": "tutorials_hist.root", "item": "Fibonacci",  "title": "Macro outputs from $ROOTSYS/tutorials/hist/Fibonacci.C" },
