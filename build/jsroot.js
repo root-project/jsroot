@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '11/08/2023';
+let version_date = '14/08/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -73690,10 +73690,8 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
             if (!draw_lines) continue;
             colindx = 0;
          }
-         if (bin.fContent === 0) {
-            if (!this.options.Zero && !draw_lines) continue;
-            colindx = 0; // make dummy fill color to draw only line
-         }
+         // contrary to TH2 col drawing always, empty bins not drawn only when Zero option is specified
+         if ((bin.fContent === 0) && !this.options.Zero) continue;
 
          // check if bin outside visible range
          if ((bin.fXmin > funcs.scale_xmax) || (bin.fXmax < funcs.scale_xmin) ||
