@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in 7.4.x
+1. Fix - correctly use GMT specifier in time format
+
+
 ## Changes in 7.4.2
 1. Fix - unzoom z on lego2 plots
 2. Fix - browsing TLists with nullptr inside
