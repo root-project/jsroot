@@ -59421,7 +59421,6 @@ function getTimeOffset(axis) {
    sof = sof.toUpperCase();
 
    if (sof.indexOf('GMT') == 0) {
-      offset += dt.getTimezoneOffset() * 60000;
       sof = sof.slice(4).trim();
       if (sof.length > 3) {
          let p = 0, sign = 1000;
@@ -59433,6 +59432,12 @@ function getTimeOffset(axis) {
    return offset;
 }
 
+/** @summary Return true when GMT option configured in time format
+  * @private */
+function getTimeGMT(axis) {
+   let fmt = axis?.fTimeFormat ?? '';
+   return (fmt.indexOf('gmt') > 0) || (fmt.indexOf('GMT') > 0);
+}
 
 /** @summary Tries to choose time format for provided time interval
   * @private */
@@ -59781,6 +59786,7 @@ class TAxisPainter extends ObjectPainter {
       if (opts.time_scale || axis.fTimeDisplay) {
          this.kind = 'time';
          this.timeoffset = getTimeOffset(axis);
+         this.timegmt = getTimeGMT(axis);
       } else if (opts.axis_func) {
          this.kind = 'func';
       } else {
@@ -59872,9 +59878,9 @@ class TAxisPainter extends ObjectPainter {
          if (!tf1 || (scale_range < 0.1 * (this.full_max - this.full_min)))
             tf1 = chooseTimeFormat(scale_range / this.nticks, true);
 
-         this.tfunc1 = this.tfunc2 = timeFormat(tf1);
+         this.tfunc1 = this.tfunc2 = this.timegmt ? utcFormat(tf1) : timeFormat(tf1);
          if (tf2 !== tf1)
-            this.tfunc2 = timeFormat(tf2);
+            this.tfunc2 = this.timegmt ? utcFormat(tf2) : timeFormat(tf2);
 
          this.format = this.formatTime;
 
