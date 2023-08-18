@@ -572,10 +572,10 @@ class TGraphDelaunay {
                }
                ntris_tried++;
                // check the points aren't colinear
-               d1 = Math.sqrt((this.fXN[p]-this.fXN[n])*(this.fXN[p]-this.fXN[n])+(this.fYN[p]-this.fYN[n])*(this.fYN[p]-this.fYN[n]));
-               d2 = Math.sqrt((this.fXN[p]-this.fXN[m])*(this.fXN[p]-this.fXN[m])+(this.fYN[p]-this.fYN[m])*(this.fYN[p]-this.fYN[m]));
-               d3 = Math.sqrt((this.fXN[n]-this.fXN[m])*(this.fXN[n]-this.fXN[m])+(this.fYN[n]-this.fYN[m])*(this.fYN[n]-this.fYN[m]));
-               if ((d1+d2<=d3) || (d1+d3<=d2) || (d2+d3<=d1))
+               d1 = Math.sqrt((this.fXN[p]-this.fXN[n])**2+(this.fYN[p]-this.fYN[n])**2);
+               d2 = Math.sqrt((this.fXN[p]-this.fXN[m])**2+(this.fYN[p]-this.fYN[m])**2);
+               d3 = Math.sqrt((this.fXN[n]-this.fXN[m])**2+(this.fYN[n]-this.fYN[m])**2);
+               if ((d1+d2 <= d3) || (d1+d3 <= d2) || (d2+d3 <= d1))
                   continue;
 
                // does the triangle enclose the point?
