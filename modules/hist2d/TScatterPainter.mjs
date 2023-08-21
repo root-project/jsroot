@@ -93,8 +93,10 @@ class TScatterPainter extends TGraphPainter {
           maxs = Math.max(maxs, scatter.fSize[i]);
       }
 
-      if (maxc <= minc) maxc = minc + 1;
-      if (maxs <= mins) maxs = mins + 1;
+      if (maxc <= minc)
+         maxc = minc < 0 ? 0.9*minc : (minc > 0 ? 1.1*minc : 1);
+      if (maxs <= mins)
+         maxs = mins > 0 ? 0.9*mins : (mins > 0 ? 1.1*mins : 1);
 
       let scale = (scatter.fMaxMarkerSize - scatter.fMinMarkerSize) / (maxs - mins);
 
