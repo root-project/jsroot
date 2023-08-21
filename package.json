@@ -33,12 +33,14 @@
   ],
   "dependencies": {
     "canvas": "^2.11.2",
-    "gl": "^6.0.2",
     "jsdom": "^22.1.0",
     "mathjax": "3.2.2",
     "tmp": "^0.2.1",
     "xhr2": "^0.2.1",
     "zstd-codec": "^0.1.4"
+  },
+  "devDependencies": {
+    "gl": "^6.0.2"
   },
   "repository": {
     "type": "git",
