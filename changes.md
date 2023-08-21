@@ -18,6 +18,7 @@
 15. Implement "tri1", "tri2", "triw" draw options for TGraph2D with Delaunay algorithm
 16. Draw axes grids in front of objects - making it equivalent to original ROOT
 17. Fix very old problem of correct use of GMT time format
+18. Put `gl` in "devDependencies" of package.json. One can skip it installation with `npm i --production`.
 
 
 ## Changes in 7.4.2

@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '17/08/2023';
+let version_date = '21/08/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -54253,7 +54253,7 @@ async function createRender3D(width, height, render3d, args) {
          args.canvas.addEventListener = () => {}; // dummy
          args.canvas.removeEventListener = () => {}; // dummy
          args.canvas.style = {};
-         return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; });
+         return Promise.resolve().then(function () { return index; });
       }).then(node_gl => {
          let gl = node_gl.default(width, height, { preserveDrawingBuffer: true });
          if (!gl) throw(Error('Fail to create headless-gl'));
@@ -104301,6 +104301,17 @@ __proto__: null,
 default: _rollup_plugin_ignore_empty_module_placeholder
 });
 
+if (typeof WebGLRenderingContext !== 'undefined') {
+  module.exports = require('./src/javascript/browser-index');
+} else {
+  module.exports = require('./src/javascript/node-index');
+}
+module.exports.WebGLRenderingContext = require('./src/javascript/webgl-rendering-context').WebGLRenderingContext;
+
+var index = /*#__PURE__*/Object.freeze({
+__proto__: null
+});
+
 /** @summary Draw TText
   * @private */
 async function drawText$1() {
@@ -105695,13 +105706,13 @@ class TGraphDelaunay {
       this.Initialize();
 
       // Find the z value corresponding to the point (x,y).
-      let xx = (x+this.fXoffset)*this.fXScaleFactor;
-      let yy = (y+this.fYoffset)*this.fYScaleFactor;
-      let zz = this.Interpolate(xx, yy);
+      let xx = (x+this.fXoffset)*this.fXScaleFactor,
+          yy = (y+this.fYoffset)*this.fYScaleFactor,
+          zz = this.Interpolate(xx, yy);
 
       // Wrong zeros may appear when points sit on a regular grid.
       // The following line try to avoid this problem.
-      if (zz==0) zz = this.Interpolate(xx+0.0001, yy);
+      if (zz == 0) zz = this.Interpolate(xx+0.0001, yy);
 
       return zz;
    }
@@ -105745,13 +105756,11 @@ class TGraphDelaunay {
 
    Enclose(t1, t2, t3, e)
    {
-      let x = [ this.fXN[t1], this.fXN[t2], this.fXN[t3], this.fXN[t1] ];
-      let y = [ this.fYN[t1], this.fYN[t2], this.fYN[t3], this.fYN[t1] ];
-      let xp = this.fXN[e];
-      let yp = this.fYN[e];
-
-      // return TMath::IsInside(xp, yp, 4, x, y);
-      let i = 0, j = x.length - 1, oddNodes = false;
+      let x = [ this.fXN[t1], this.fXN[t2], this.fXN[t3], this.fXN[t1] ],
+          y = [ this.fYN[t1], this.fYN[t2], this.fYN[t3], this.fYN[t1] ],
+          xp = this.fXN[e],
+          yp = this.fYN[e],
+          i = 0, j = x.length - 1, oddNodes = false;
 
       for (; i < x.length; ++i) {
          if ((y[i]<yp && y[j]>=yp) || (y[j]<yp && y[i]>=yp)) {
@@ -105773,8 +105782,7 @@ class TGraphDelaunay {
 
    FileIt(p, n, m)
    {
-      let swap;
-      let tmp, ps = p, ns = n, ms = m;
+      let swap, tmp, ps = p, ns = n, ms = m;
 
       // order the vertices before storing them
       do {
@@ -105809,11 +105817,11 @@ class TGraphDelaunay {
 
       this.fAllTri = true;
 
-      let xcntr,ycntr,xm,ym,xx,yy;
-      let sx,sy,nx,ny,mx,my,mdotn,nn,a;
-      let t1,t2,pa,na,ma,pb,nb,mb,p1=0,p2=0,m,n,p3=0;
-      let s = [false, false, false];
-      let alittlebit = 0.0001;
+      let xcntr,ycntr,xm,ym,xx,yy,
+          sx,sy,nx,ny,mx,my,mdotn,nn,a,
+          t1,t2,pa,na,ma,pb,nb,mb,p1=0,p2=0,m,n,p3=0,
+          s = [false, false, false],
+          alittlebit = 0.0001;
 
       this.Initialize();
 
@@ -105824,8 +105832,8 @@ class TGraphDelaunay {
       xcntr = 0;
       ycntr = 0;
       for (n=1; n<=this.fNhull; n++) {
-         xcntr = xcntr+this.fXN[this.fHullPoints[n-1]];
-         ycntr = ycntr+this.fYN[this.fHullPoints[n-1]];
+         xcntr += this.fXN[this.fHullPoints[n-1]];
+         ycntr += this.fYN[this.fHullPoints[n-1]];
       }
       xcntr = xcntr/this.fNhull+alittlebit;
       ycntr = ycntr/this.fNhull+alittlebit;
@@ -105965,11 +105973,10 @@ class TGraphDelaunay {
 
    InHull(e, x)
    {
-      let n1,n2,n,m,ntry;
-      let lastdphi,dd1,dd2,dx1,dx2,dx3,dy1,dy2,dy3;
-      let u,v,vNv1,vNv2,phi1,phi2,dphi,xx,yy;
-
-      let deTinhull = false;
+      let n1,n2,n,m,ntry,
+          lastdphi,dd1,dd2,dx1,dx2,dx3,dy1,dy2,dy3,
+          u,v,vNv1,vNv2,phi1,phi2,dphi,xx,yy,
+          deTinhull = false;
 
       xx = this.fXN[e];
       yy = this.fYN[e];
@@ -106070,10 +106077,8 @@ class TGraphDelaunay {
 
    InterpolateOnPlane(TI1, TI2, TI3, e)
    {
-      let tmp, swap;
-      let x1,x2,x3,y1,y2,y3,f1,f2,f3,u,v,w;
-
-      let t1 = TI1, t2 = TI2, t3 = TI3;
+      let tmp, swap, x1,x2,x3,y1,y2,y3,f1,f2,f3,u,v,w,
+          t1 = TI1, t2 = TI2, t3 = TI3;
 
       // order the vertices
       do {
@@ -106106,17 +106111,15 @@ class TGraphDelaunay {
 
    Interpolate(xx, yy)
    {
-      let thevalue;
-
-      let it, ntris_tried, p, n, m;
-      let i,j,k,l,z,f,d,o1,o2,a,b,t1,t2,t3;
-      let ndegen=0,degen=0,fdegen=0,o1degen=0,o2degen=0;
-      let vxN,vyN;
-      let d1,d2,d3,c1,c2,dko1,dko2,dfo1;
-      let dfo2,sin_sum,cfo1k,co2o1k,co2o1f;
-
-      let shouldbein;
-      let dx1,dx2,dx3,dy1,dy2,dy3,u,v,dxz = [0,0,0], dyz = [0,0,0];
+      let thevalue,
+          it, ntris_tried, p, n, m,
+          i,j,k,l,z,f,d,o1,o2,a,b,t1,t2,t3,
+          ndegen = 0, degen = 0, fdegen = 0, o1degen = 0, o2degen = 0,
+          vxN,vyN,
+          d1,d2,d3,c1,c2,dko1,dko2,dfo1,
+          dfo2,sin_sum,cfo1k,co2o1k,co2o1f,
+          shouldbein,
+          dx1,dx2,dx3,dy1,dy2,dy3,u,v,dxz = [0,0,0], dyz = [0,0,0];
 
       // initialise the Delaunay algorithm if needed
       this.Initialize();
@@ -106138,7 +106141,7 @@ class TGraphDelaunay {
       ntris_tried = 0;
 
       // no point in proceeding if xx or yy are silly
-      if ((xx>this.fXNmax) || (xx<this.fXNmin) || (yy>this.fYNmax) || (yy<this.fYNmin))
+      if ((xx > this.fXNmax) || (xx < this.fXNmin) || (yy > this.fYNmax) || (yy < this.fYNmin))
          return thevalue;
 
       // check existing Delaunay triangles for a good one
@@ -106191,10 +106194,10 @@ class TGraphDelaunay {
                }
                ntris_tried++;
                // check the points aren't colinear
-               d1 = Math.sqrt((this.fXN[p]-this.fXN[n])*(this.fXN[p]-this.fXN[n])+(this.fYN[p]-this.fYN[n])*(this.fYN[p]-this.fYN[n]));
-               d2 = Math.sqrt((this.fXN[p]-this.fXN[m])*(this.fXN[p]-this.fXN[m])+(this.fYN[p]-this.fYN[m])*(this.fYN[p]-this.fYN[m]));
-               d3 = Math.sqrt((this.fXN[n]-this.fXN[m])*(this.fXN[n]-this.fXN[m])+(this.fYN[n]-this.fYN[m])*(this.fYN[n]-this.fYN[m]));
-               if ((d1+d2<=d3) || (d1+d3<=d2) || (d2+d3<=d1))
+               d1 = Math.sqrt((this.fXN[p]-this.fXN[n])**2+(this.fYN[p]-this.fYN[n])**2);
+               d2 = Math.sqrt((this.fXN[p]-this.fXN[m])**2+(this.fYN[p]-this.fYN[m])**2);
+               d3 = Math.sqrt((this.fXN[n]-this.fXN[m])**2+(this.fYN[n]-this.fYN[m])**2);
+               if ((d1+d2 <= d3) || (d1+d3 <= d2) || (d2+d3 <= d1))
                   continue;
 
                // does the triangle enclose the point?
@@ -109657,44 +109660,53 @@ class TScatterPainter extends TGraphPainter$1 {
    async drawGraph() {
       let fpainter = this.get_main(),
           hpainter = this.getMainPainter(),
-          scatter = this.getObject();
+          scatter = this.getObject(),
+          scale = 1, offset = 0;
       if (!fpainter || !hpainter || !scatter) return;
 
-      let pal = this.getPalette();
-      if (pal)
-         pal.$main_painter = this;
 
-      if (!this.fPalette) {
-         let pp = this.getPadPainter();
-         if (isFunc(pp?.getCustomPalette))
-            this.fPalette = pp.getCustomPalette();
+      if (scatter.fColor) {
+         let pal = this.getPalette();
+         if (pal)
+            pal.$main_painter = this;
+
+         if (!this.fPalette) {
+            let pp = this.getPadPainter();
+            if (isFunc(pp?.getCustomPalette))
+               this.fPalette = pp.getCustomPalette();
+         }
+         if (!this.fPalette)
+            this.fPalette = getColorPalette(this.options.Palette);
+
+         let minc = scatter.fColor[0], maxc = scatter.fColor[0];
+         for (let i = 1; i < scatter.fColor.length; ++i) {
+             minc = Math.min(minc, scatter.fColor[i]);
+             maxc = Math.max(maxc, scatter.fColor[i]);
+         }
+         if (maxc <= minc)
+            maxc = minc < 0 ? 0.9*minc : (minc > 0 ? 1.1*minc : 1);
+         this.fContour = new HistContour(minc, maxc);
+         this.fContour.createNormal(30);
+         this.fContour.configIndicies(0, 0);
+
+         fpainter.zmin = minc;
+         fpainter.zmax = maxc;
       }
-      if (!this.fPalette)
-         this.fPalette = getColorPalette(this.options.Palette);
 
-      let minc = scatter.fColor[0], maxc = scatter.fColor[0],
-          mins = scatter.fSize[0], maxs = scatter.fSize[0];
-      for (let i = 1; i < scatter.fColor.length; ++i) {
-          minc = Math.min(minc, scatter.fColor[i]);
-          maxc = Math.max(maxc, scatter.fColor[i]);
+      if (scatter.fSize) {
+         let mins = scatter.fSize[0], maxs = scatter.fSize[0];
+
+         for (let i = 1; i < scatter.fSize.length; ++i) {
+             mins = Math.min(mins, scatter.fSize[i]);
+             maxs = Math.max(maxs, scatter.fSize[i]);
+         }
+
+         if (maxs <= mins)
+            maxs = mins > 0 ? 0.9*mins : (mins > 0 ? 1.1*mins : 1);
+
+         scale = (scatter.fMaxMarkerSize - scatter.fMinMarkerSize) / (maxs - mins);
+         offset = mins;
       }
-
-      for (let i = 1; i < scatter.fSize.length; ++i) {
-          mins = Math.min(mins, scatter.fSize[i]);
-          maxs = Math.max(maxs, scatter.fSize[i]);
-      }
-
-      if (maxc <= minc) maxc = minc + 1;
-      if (maxs <= mins) maxs = mins + 1;
-
-      let scale = (scatter.fMaxMarkerSize - scatter.fMinMarkerSize) / (maxs - mins);
-
-      fpainter.zmin = minc;
-      fpainter.zmax = maxc;
-
-      this.fContour = new HistContour(minc, maxc);
-      this.fContour.createNormal(30);
-      this.fContour.configIndicies(0, 0);
 
       this.createG(!fpainter.pad_layer);
 
@@ -109704,10 +109716,9 @@ class TScatterPainter extends TGraphPainter$1 {
          let pnt = this.bins[i],
              grx = funcs.grx(pnt.x),
              gry = funcs.gry(pnt.y),
-             size = scatter.fMinMarkerSize + scale * (scatter.fSize[i] - mins),
-             color = this.fContour.getPaletteColor(this.fPalette, scatter.fColor[i]);
-
-          let handle = new TAttMarkerHandler({ color, size, style: scatter.fMarkerStyle });
+             size = scatter.fSize ? scatter.fMinMarkerSize + scale * (scatter.fSize[i] - offset) : scatter.fMarkerSize,
+             color = scatter.fColor ? this.fContour.getPaletteColor(this.fPalette, scatter.fColor[i]) : this.getColor(scatter.fMarkerColor),
+             handle = new TAttMarkerHandler({ color, size, style: scatter.fMarkerStyle });
 
           this.draw_g.append('svg:path')
                      .attr('d', handle.create(grx, gry))
