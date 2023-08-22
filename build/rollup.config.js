@@ -6,7 +6,7 @@ import ascii from "rollup-plugin-ascii";
 import ignore from 'rollup-plugin-ignore';
 import meta from '../package.json' assert {type: 'json'};
 
-const ignore_modules = ['fs', 'zlib'];
+const ignore_modules = ['fs', 'zlib', 'gl'];
 
 const importMetaUrlPolyfill = `(typeof document === 'undefined' && typeof location === 'undefined' ? undefined : typeof document === 'undefined' ? location.href : (document.currentScript && document.currentScript.src || new URL('jsroot.js', document.baseURI).href));`;
 
