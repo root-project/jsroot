@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '21/08/2023';
+let version_date = '22/08/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -54253,7 +54253,7 @@ async function createRender3D(width, height, render3d, args) {
          args.canvas.addEventListener = () => {}; // dummy
          args.canvas.removeEventListener = () => {}; // dummy
          args.canvas.style = {};
-         return Promise.resolve().then(function () { return index; });
+         return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; });
       }).then(node_gl => {
          let gl = node_gl.default(width, height, { preserveDrawingBuffer: true });
          if (!gl) throw(Error('Fail to create headless-gl'));
@@ -104299,17 +104299,6 @@ var _rollup_plugin_ignore_empty_module_placeholder = {};
 var _rollup_plugin_ignore_empty_module_placeholder$1 = /*#__PURE__*/Object.freeze({
 __proto__: null,
 default: _rollup_plugin_ignore_empty_module_placeholder
-});
-
-if (typeof WebGLRenderingContext !== 'undefined') {
-  module.exports = require('./src/javascript/browser-index');
-} else {
-  module.exports = require('./src/javascript/node-index');
-}
-module.exports.WebGLRenderingContext = require('./src/javascript/webgl-rendering-context').WebGLRenderingContext;
-
-var index = /*#__PURE__*/Object.freeze({
-__proto__: null
 });
 
 /** @summary Draw TText
