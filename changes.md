@@ -19,6 +19,7 @@
 16. Draw axes grids in front of objects - making it equivalent to original ROOT
 17. Fix very old problem of correct use of GMT time format
 18. Put `gl` in "devDependencies" of package.json. One can skip it installation with `npm i --production`.
+19. Add support of `TPaveClass`
 
 
 ## Changes in 7.4.2

@@ -11,7 +11,7 @@ let version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '23/08/2023';
+let version_date = '24/08/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -1014,7 +1014,7 @@ const prROOT = 'ROOT.', clTObject = 'TObject', clTNamed = 'TNamed', clTString = 
       clTGraph2DErrors = 'TGraph2DErrors', clTGraph2DAsymmErrors = 'TGraph2DAsymmErrors',
       clTGraphPolar = 'TGraphPolar', clTGraphPolargram = 'TGraphPolargram', clTGraphTime = 'TGraphTime',
       clTPave = 'TPave', clTPaveText = 'TPaveText', clTPaveStats = 'TPaveStats', clTPavesText = 'TPavesText',
-      clTPaveLabel = 'TPaveLabel', clTDiamond = 'TDiamond',
+      clTPaveLabel = 'TPaveLabel', clTPaveClass = 'TPaveClass', clTDiamond = 'TDiamond',
       clTLegend = 'TLegend', clTLegendEntry = 'TLegendEntry',
       clTPaletteAxis = 'TPaletteAxis', clTImagePalette = 'TImagePalette',
       clTText = 'TText', clTLatex = 'TLatex', clTMathText = 'TMathText', clTAnnotation = 'TAnnotation',
@@ -1844,6 +1844,7 @@ clTObject: clTObject,
 clTPad: clTPad,
 clTPaletteAxis: clTPaletteAxis,
 clTPave: clTPave,
+clTPaveClass: clTPaveClass,
 clTPaveLabel: clTPaveLabel,
 clTPaveStats: clTPaveStats,
 clTPaveText: clTPaveText,
@@ -69896,6 +69897,7 @@ class TPavePainter extends ObjectPainter {
             pave.fNpaves = obj.fNpaves;
             return true;
          case clTPaveLabel:
+         case clTPaveClass:
             pave.fLabel = obj.fLabel;
             return true;
          case clTPaveStats:
@@ -69945,7 +69947,7 @@ class TPavePainter extends ObjectPainter {
    /** @summary Returns true if object is supported */
    static canDraw(obj) {
       let typ = obj?._typename;
-      return typ == clTPave || typ == clTPaveLabel || typ == clTPaveStats || typ == clTPaveText ||
+      return typ == clTPave || typ == clTPaveLabel || typ == clTPaveClass || typ == clTPaveStats || typ == clTPaveText ||
              typ == clTPavesText || typ == clTDiamond || typ == clTLegend || typ == clTPaletteAxis;
    }
 
@@ -69998,6 +70000,7 @@ class TPavePainter extends ObjectPainter {
 
          switch (pave._typename) {
             case clTPaveLabel:
+            case clTPaveClass:
                painter.paveDrawFunc = painter.drawPaveLabel;
                break;
             case clTPaveStats:
@@ -99838,6 +99841,7 @@ const drawFuncs = { lst: [
    { name: clTPavesText, sameas: clTPave },
    { name: clTPaveStats, sameas: clTPave },
    { name: clTPaveLabel, sameas: clTPave },
+   { name: clTPaveClass, sameas: clTPave },
    { name: clTDiamond, sameas: clTPave },
    { name: clTLegend, icon: 'img_pavelabel', sameas: clTPave },
    { name: clTPaletteAxis, icon: 'img_colz', sameas: clTPave },
@@ -123207,6 +123211,7 @@ exports.clTObject = clTObject;
 exports.clTPad = clTPad;
 exports.clTPaletteAxis = clTPaletteAxis;
 exports.clTPave = clTPave;
+exports.clTPaveClass = clTPaveClass;
 exports.clTPaveLabel = clTPaveLabel;
 exports.clTPaveStats = clTPaveStats;
 exports.clTPaveText = clTPaveText;
