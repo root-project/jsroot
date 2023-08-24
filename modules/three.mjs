@@ -46535,11 +46535,10 @@ class OrbitControls extends EventDispatcher {
 		};
 
 		this.resetOrthoPanZoom = function () {
-			panOffset.set(0,0,0);
-			scope.object.zoom = 1;
-			scope.object.updateProjectionMatrix();
-			zoomChanged = true;
-		};
+         panOffset.set(0,0,0);
+         scope.object.zoom = 1;
+         scope.object.updateProjectionMatrix();
+      };
 
 		// this method is exposed, but perhaps it would be better if we can make it private...
 		this.update = function () {
