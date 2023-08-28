@@ -1002,7 +1002,8 @@ async function httpRequest(url, kind, post_data) {
    });
 }
 
-const prROOT = 'ROOT.', clTObject = 'TObject', clTNamed = 'TNamed', clTKey = 'TKey', clTString = 'TString', clTObjString = 'TObjString',
+const prROOT = 'ROOT.', clTObject = 'TObject', clTNamed = 'TNamed', clTString = 'TString', clTObjString = 'TObjString',
+      clTKey = 'TKey', clTFile = 'TFile',
       clTList = 'TList', clTHashList = 'THashList', clTMap = 'TMap', clTObjArray = 'TObjArray', clTClonesArray = 'TClonesArray',
       clTAttLine = 'TAttLine', clTAttFill = 'TAttFill', clTAttMarker = 'TAttMarker', clTAttText = 'TAttText',
       clTHStack = 'THStack', clTGraph = 'TGraph', clTMultiGraph = 'TMultiGraph', clTCutG = 'TCutG',
@@ -1783,7 +1784,9 @@ async function _ensureJSROOT() {
 
 export { version_id, version_date, version, source_dir, isNodeJs, isBatchMode, setBatchMode,
          browser, internals, constants, settings, gStyle, atob_func, btoa_func, prROOT,
-         clTObject, clTNamed, clTKey, clTString, clTObjString, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
+         clTObject, clTNamed, clTString, clTObjString,
+         clTKey, clTFile,
+         clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
          clTAttLine, clTAttFill, clTAttMarker, clTAttText,
          clTPave, clTPaveText, clTPavesText, clTPaveStats, clTPaveLabel, clTPaveClass, clTDiamond,
          clTLegend, clTLegendEntry, clTPaletteAxis, clTImagePalette, clTText, clTLatex, clTMathText, clTAnnotation, clTMultiGraph,

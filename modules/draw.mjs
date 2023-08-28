@@ -1,6 +1,6 @@
 import { select as d3_select } from './d3.mjs';
 import { loadScript, findFunction, internals, getPromise, isNodeJs, isObject, isFunc, isStr, _ensureJSROOT,
-         prROOT, clTObjString, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
+         prROOT, clTObjString, clTFile, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
          clTPave, clTPaveText, clTPavesText, clTPaveStats, clTPaveLabel, clTPaveClass, clTDiamond, clTLegend, clTPaletteAxis,
          clTText, clTLine, clTBox, clTLatex, clTMathText, clTAnnotation, clTMultiGraph, clTH2, clTF1, clTF2, clTProfile, clTProfile2D,
          clTColor, clTHStack, clTGraph, clTGraph2DErrors, clTGraph2DAsymmErrors,
@@ -129,7 +129,7 @@ const drawFuncs = { lst: [
    { name: clTClonesArray, sameas: clTList },
    { name: clTMap, sameas: clTList },
    { name: clTColor, icon: 'img_color' },
-   { name: 'TFile', icon: 'img_file', noinspect: true },
+   { name: clTFile, icon: 'img_file', noinspect: true },
    { name: 'TMemFile', icon: 'img_file', noinspect: true },
    { name: clTStyle, icon: 'img_question', noexpand: true },
    { name: 'Session', icon: 'img_globe' },

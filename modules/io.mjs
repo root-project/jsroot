@@ -1,6 +1,6 @@
 import { createHttpRequest, BIT, loadScript, internals, settings, browser,
          create, getMethods, addMethods, isNodeJs, isObject, isFunc, isStr,
-         clTObject, clTNamed, clTKey, clTString, clTObjString, clTList, clTMap, clTObjArray, clTClonesArray,
+         clTObject, clTNamed, clTString, clTObjString, clTKey, clTFile, clTList, clTMap, clTObjArray, clTClonesArray,
          clTAttLine, clTAttFill, clTAttMarker, clTStyle, clTImagePalette,
          clTPad, clTCanvas, clTAttCanvas, clTPolyMarker3D, clTF1, clTF2 } from './core.mjs';
 
@@ -668,7 +668,7 @@ function getTypeId(typname, norecursion) {
   * @private  */
 function createStreamerElement(name, typename, file) {
    const elem = {
-      _typename: 'TStreamerElement', fName: name, fTypeName: typename,
+      _typename: clTStreamerElement, fName: name, fTypeName: typename,
       fType: 0, fSize: 0, fArrayLength: 0, fArrayDim: 0, fMaxIndex: [0, 0, 0, 0, 0],
       fXmin: 0, fXmax: 0, fFactor: 0
    };
@@ -2687,7 +2687,7 @@ class TDirectory {
 class TFile {
 
    constructor(url) {
-      this._typename = 'TFile';
+      this._typename = clTFile;
       this.fEND = 0;
       this.fFullURL = url;
       this.fURL = url;
