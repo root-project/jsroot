@@ -15,6 +15,10 @@ import { TPadPainter, clTButton } from './gpad/TPadPainter.mjs';
 
 async function import_more() { return import('./draw/more.mjs'); }
 
+async function import_tree() { return import('./draw/TTree.mjs'); }
+
+async function import_h() { return import('./gui/HierarchyPainter.mjs'); }
+
 async function import_geo() {
    return import('./geom/TGeoPainter.mjs').then(geo => {
       let handle = getDrawHandle(prROOT + 'TGeoVolumeAssembly');
@@ -75,7 +79,7 @@ const drawFuncs = { lst: [
    { name: 'RooPlot', icon: 'img_canvas', func: drawRooPlot },
    { name: 'TRatioPlot', icon: 'img_mgraph', class: () => import('./draw/TRatioPlotPainter.mjs').then(h => h.TRatioPlotPainter), opt: '' },
    { name: clTMultiGraph, icon: 'img_mgraph', class: () => import('./hist/TMultiGraphPainter.mjs').then(h => h.TMultiGraphPainter), opt: ';l;p;3d', expand_item: 'fGraphs' },
-   { name: clTStreamerInfoList, icon: 'img_question', draw: () => import('./gui/HierarchyPainter.mjs').then(h => h.drawStreamerInfo) },
+   { name: clTStreamerInfoList, icon: 'img_question', draw: () => import_h().then(h => h.drawStreamerInfo) },
    { name: 'TWebPainting', icon: 'img_graph', class: () => import('./draw/TWebPaintingPainter.mjs').then(h => h.TWebPaintingPainter) },
    { name: clTCanvasWebSnapshot, icon: 'img_canvas', draw: () => import('./gpad/TCanvasPainter.mjs').then(h => h.drawTPadSnapshot) },
    { name: 'TPadWebSnapshot', sameas: clTCanvasWebSnapshot },
@@ -115,15 +119,15 @@ const drawFuncs = { lst: [
    { name: 'TAxis3D', icon: 'img_graph', draw: () => import_geo().then(h => h.drawAxis3D), direct: true },
    // these are not draw functions, but provide extra info about correspondent classes
    { name: 'kind:Command', icon: 'img_execute', execute: true },
-   { name: 'TFolder', icon: 'img_folder', icon2: 'img_folderopen', noinspect: true, get_expand: () => import('./gui/HierarchyPainter.mjs').then(h => h.folderHierarchy) },
-   { name: 'TTask', icon: 'img_task', get_expand: () => import('./gui/HierarchyPainter.mjs').then(h => h.taskHierarchy), for_derived: true },
-   { name: clTTree, icon: 'img_tree', get_expand: () => import('./tree.mjs').then(h => h.treeHierarchy), draw: () => import('./draw/TTree.mjs').then(h => h.drawTree), dflt: 'expand', opt: 'player;testio', shift: 'inspect' },
+   { name: 'TFolder', icon: 'img_folder', icon2: 'img_folderopen', noinspect: true, get_expand: () => import_h().then(h => h.folderHierarchy) },
+   { name: 'TTask', icon: 'img_task', get_expand: () => import_h().then(h => h.taskHierarchy), for_derived: true },
+   { name: clTTree, icon: 'img_tree', get_expand: () => import('./tree.mjs').then(h => h.treeHierarchy), draw: () => import_tree().then(h => h.drawTree), dflt: 'expand', opt: 'player;testio', shift: 'inspect' },
    { name: 'TNtuple', sameas: clTTree },
    { name: 'TNtupleD', sameas: clTTree },
-   { name: clTBranchFunc, icon: 'img_leaf_method', draw: () => import('./draw/TTree.mjs').then(h => h.drawTree), opt: ';dump', noinspect: true },
-   { name: /^TBranch/, icon: 'img_branch', draw: () => import('./draw/TTree.mjs').then(h => h.drawTree), dflt: 'expand', opt: ';dump', ctrl: 'dump', shift: 'inspect', ignore_online: true, always_draw: true },
-   { name: /^TLeaf/, icon: 'img_leaf', noexpand: true, draw: () => import('./draw/TTree.mjs').then(h => h.drawTree), opt: ';dump', ctrl: 'dump', ignore_online: true, always_draw: true },
-   { name: clTList, icon: 'img_list', draw: () => import('./gui/HierarchyPainter.mjs').then(h => h.drawList), get_expand: () => import('./gui/HierarchyPainter.mjs').then(h => h.listHierarchy), dflt: 'expand' },
+   { name: clTBranchFunc, icon: 'img_leaf_method', draw: () => import_tree().then(h => h.drawTree), opt: ';dump', noinspect: true },
+   { name: /^TBranch/, icon: 'img_branch', draw: () => import_tree().then(h => h.drawTree), dflt: 'expand', opt: ';dump', ctrl: 'dump', shift: 'inspect', ignore_online: true, always_draw: true },
+   { name: /^TLeaf/, icon: 'img_leaf', noexpand: true, draw: () => import_tree().then(h => h.drawTree), opt: ';dump', ctrl: 'dump', ignore_online: true, always_draw: true },
+   { name: clTList, icon: 'img_list', draw: () => import_h().then(h => h.drawList), get_expand: () => import_h().then(h => h.listHierarchy), dflt: 'expand' },
    { name: clTHashList, sameas: clTList },
    { name: clTObjArray, sameas: clTList },
    { name: clTClonesArray, sameas: clTList },
@@ -323,7 +327,7 @@ async function draw(dom, obj, opt) {
       return Promise.reject(Error('not an object in draw call'));
 
    if (opt == 'inspect')
-      return import('./gui/HierarchyPainter.mjs').then(h => h.drawInspector(dom, obj));
+      return import_h().then(h => h.drawInspector(dom, obj));
 
    let handle, type_info;
    if ('_typename' in obj) {
@@ -333,7 +337,7 @@ async function draw(dom, obj, opt) {
       type_info = 'kind ' + obj._kind;
       handle = getDrawHandle(obj._kind, opt);
    } else
-      return import('./gui/HierarchyPainter.mjs').then(h => h.drawInspector(dom, obj));
+      return import_h().then(h => h.drawInspector(dom, obj));
 
    // this is case of unsupported class, close it normally
    if (!handle)
