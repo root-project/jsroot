@@ -290,11 +290,10 @@ function getTreeBranch(tree, id) {
    if (!Number.isInteger(id)) return;
    let res, seq = 0;
    function scan(obj) {
-      if (obj?.fBranches)
-         obj.fBranches.arr.forEach(br => {
-            if (seq++ === id) res = br;
-            if (!res) scan(br);
-         });
+      obj?.fBranches?.arr.forEach(br => {
+         if (seq++ === id) res = br;
+         if (!res) scan(br);
+      });
    }
 
    scan(tree);
@@ -2730,10 +2729,10 @@ function treeHierarchy(node, obj) {
       branch.$tree = tree; // keep tree pointer, later do it more smart
 
       let subitem = {
-            _name: ClearName(branch.fName),
-            _kind: prROOT + branch._typename,
-            _title: branch.fTitle,
-            _obj: branch
+         _name: ClearName(branch.fName),
+         _kind: prROOT + branch._typename,
+         _title: branch.fTitle,
+         _obj: branch
       };
 
       if (!node._childs) node._childs = [];
