@@ -29,9 +29,9 @@ const clTGraph2D = 'TGraph2D', clTH2Poly = 'TH2Poly', clTEllipse = 'TEllipse',
 // list of registered draw functions
 const drawFuncs = { lst: [
    { name: clTCanvas, icon: 'img_canvas', class: () => import('./gpad/TCanvasPainter.mjs').then(h => h.TCanvasPainter), opt: ';grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz', expand_item: 'fPrimitives', noappend: true },
-   { name: clTPad, icon: 'img_canvas', class: () => import('./gpad/TPadPainter.mjs').then(h => h.TPadPainter), opt: ';grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz', expand_item: 'fPrimitives', noappend: true },
-   { name: 'TSlider', icon: 'img_canvas', class: () => import('./gpad/TPadPainter.mjs').then(h => h.TPadPainter) },
-   { name: clTButton, icon: 'img_canvas', class: () => import('./gpad/TPadPainter.mjs').then(h => h.TPadPainter) },
+   { name: clTPad, icon: 'img_canvas', func: TPadPainter.draw, opt: ';grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz', expand_item: 'fPrimitives', noappend: true },
+   { name: 'TSlider', icon: 'img_canvas', func: TPadPainter.draw },
+   { name: clTButton, icon: 'img_canvas', func: TPadPainter.draw },
    { name: 'TFrame', icon: 'img_frame', draw: () => import('./gpad/TCanvasPainter.mjs').then(h => h.drawTFrame) },
    { name: clTPave, icon: 'img_pavetext', class: () => import('./hist/TPavePainter.mjs').then(h => h.TPavePainter) },
    { name: clTPaveText, sameas: clTPave },
