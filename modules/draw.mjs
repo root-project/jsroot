@@ -15,6 +15,8 @@ import { TPadPainter, clTButton } from './gpad/TPadPainter.mjs';
 
 async function import_more() { return import('./draw/more.mjs'); }
 
+async function import_canvas() { return import('./gpad/TCanvasPainter.mjs'); }
+
 async function import_tree() { return import('./draw/TTree.mjs'); }
 
 async function import_h() { return import('./gui/HierarchyPainter.mjs'); }
@@ -32,11 +34,11 @@ const clTGraph2D = 'TGraph2D', clTH2Poly = 'TH2Poly', clTEllipse = 'TEllipse',
 
 // list of registered draw functions
 const drawFuncs = { lst: [
-   { name: clTCanvas, icon: 'img_canvas', class: () => import('./gpad/TCanvasPainter.mjs').then(h => h.TCanvasPainter), opt: ';grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz', expand_item: 'fPrimitives', noappend: true },
+   { name: clTCanvas, icon: 'img_canvas', class: () => import_canvas().then(h => h.TCanvasPainter), opt: ';grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz', expand_item: 'fPrimitives', noappend: true },
    { name: clTPad, icon: 'img_canvas', func: TPadPainter.draw, opt: ';grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz', expand_item: 'fPrimitives', noappend: true },
    { name: 'TSlider', icon: 'img_canvas', func: TPadPainter.draw },
    { name: clTButton, icon: 'img_canvas', func: TPadPainter.draw },
-   { name: 'TFrame', icon: 'img_frame', draw: () => import('./gpad/TCanvasPainter.mjs').then(h => h.drawTFrame) },
+   { name: 'TFrame', icon: 'img_frame', draw: () => import_canvas().then(h => h.drawTFrame) },
    { name: clTPave, icon: 'img_pavetext', class: () => import('./hist/TPavePainter.mjs').then(h => h.TPavePainter) },
    { name: clTPaveText, sameas: clTPave },
    { name: clTPavesText, sameas: clTPave },
@@ -81,7 +83,7 @@ const drawFuncs = { lst: [
    { name: clTMultiGraph, icon: 'img_mgraph', class: () => import('./hist/TMultiGraphPainter.mjs').then(h => h.TMultiGraphPainter), opt: ';l;p;3d', expand_item: 'fGraphs' },
    { name: clTStreamerInfoList, icon: 'img_question', draw: () => import_h().then(h => h.drawStreamerInfo) },
    { name: 'TWebPainting', icon: 'img_graph', class: () => import('./draw/TWebPaintingPainter.mjs').then(h => h.TWebPaintingPainter) },
-   { name: clTCanvasWebSnapshot, icon: 'img_canvas', draw: () => import('./gpad/TCanvasPainter.mjs').then(h => h.drawTPadSnapshot) },
+   { name: clTCanvasWebSnapshot, icon: 'img_canvas', draw: () => import_canvas().then(h => h.drawTPadSnapshot) },
    { name: 'TPadWebSnapshot', sameas: clTCanvasWebSnapshot },
    { name: 'kind:Text', icon: 'img_text', func: drawRawText },
    { name: clTObjString, icon: 'img_text', func: drawRawText },
@@ -361,7 +363,7 @@ async function draw(dom, obj, opt) {
       return Promise.reject(Error(`Function not specified to draw object ${type_info}`));
    }
 
-    function performDraw() {
+   function performDraw() {
       let promise, painter;
       if (handle.direct == 'v7') {
          promise = import('./gpad/RCanvasPainter.mjs').then(v7h => {
@@ -372,9 +374,8 @@ async function draw(dom, obj, opt) {
       } else if (handle.direct) {
          painter = new ObjectPainter(dom, obj, opt);
          painter.redraw = handle.func;
-         promise = import('./gpad/TCanvasPainter.mjs')
-                           .then(v6h => v6h.ensureTCanvas(painter, handle.frame || false))
-                           .then(() => painter.redraw());
+         promise = import_canvas().then(v6h => v6h.ensureTCanvas(painter, handle.frame || false))
+                                  .then(() => painter.redraw());
       } else {
          promise = getPromise(handle.func(dom, obj, opt));
       }
