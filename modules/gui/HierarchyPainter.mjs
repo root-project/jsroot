@@ -1,7 +1,7 @@
 import { version, gStyle, httpRequest, create, createHttpRequest, loadScript, decodeUrl,
          source_dir, settings, internals, browser, findFunction,
          isArrayProto, isRootCollection, isBatchMode, isNodeJs, isObject, isFunc, isStr, _ensureJSROOT,
-         prROOT, clTList, clTMap, clTObjString, clTText, clTLatex, clTColor, clTStyle } from '../core.mjs';
+         prROOT, clTList, clTMap, clTKey, clTObjString, clTText, clTLatex, clTColor, clTStyle } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { openFile, clTStreamerInfoList, clTDirectory, clTDirectoryFile, nameStreamerInfo, addUserStreamer } from '../io.mjs';
 import { getRGBfromTColor } from '../base/colors.mjs';
@@ -1547,7 +1547,7 @@ class HierarchyPainter extends BasePainter {
       }
 
       if (!place) place = 'item';
-      let selector = (hitem._kind == prROOT + 'TKey' && hitem._more) ? 'noinspect' : '',
+      let selector = (hitem._kind == prROOT + clTKey && hitem._more) ? 'noinspect' : '',
           sett = getDrawSettings(hitem._kind, selector), handle = sett.handle;
 
       if (place == 'icon') {

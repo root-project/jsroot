@@ -1,13 +1,13 @@
 import { createHttpRequest, BIT, loadScript, internals, settings, browser,
          create, getMethods, addMethods, isNodeJs, isObject, isFunc, isStr,
-         clTObject, clTNamed, clTString, clTObjString, clTList, clTMap, clTObjArray, clTClonesArray,
+         clTObject, clTNamed, clTKey, clTString, clTObjString, clTList, clTMap, clTObjArray, clTClonesArray,
          clTAttLine, clTAttFill, clTAttMarker, clTStyle, clTImagePalette,
          clTPad, clTCanvas, clTAttCanvas, clTPolyMarker3D, clTF1, clTF2 } from './core.mjs';
 
 const clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObject',
       clTStreamerSTL = 'TStreamerSTL', clTStreamerInfoList = 'TStreamerInfoList',
       clTDirectory = 'TDirectory', clTDirectoryFile = 'TDirectoryFile',
-      clTQObject = 'TQObject', clTBasket = 'TBasket',
+      clTQObject = 'TQObject', clTBasket = 'TBasket', clTDatime = 'TDatime',
       nameStreamerInfo = 'StreamerInfo',
 
       kChar = 1, kShort = 2, kInt = 3, kLong = 4, kFloat = 5, kCounter = 6,
@@ -516,7 +516,7 @@ const DirectStreamers = {
       key.fNbytes = buf.ntoi4();
       key.fVersion = buf.ntoi2();
       key.fObjlen = buf.ntou4();
-      key.fDatime = buf.classStreamer({}, 'TDatime');
+      key.fDatime = buf.classStreamer({}, clTDatime);
       key.fKeylen = buf.ntou2();
       key.fCycle = buf.ntou2();
       if (key.fVersion > 1000) {
@@ -533,8 +533,8 @@ const DirectStreamers = {
 
    TDirectory(buf, dir) {
       const version = buf.ntou2();
-      dir.fDatimeC = buf.classStreamer({}, 'TDatime');
-      dir.fDatimeM = buf.classStreamer({}, 'TDatime');
+      dir.fDatimeC = buf.classStreamer({}, clTDatime);
+      dir.fDatimeM = buf.classStreamer({}, clTDatime);
       dir.fNbytesKeys = buf.ntou4();
       dir.fNbytesName = buf.ntou4();
       dir.fSeekDir = (version > 1000) ? buf.ntou8() : buf.ntou4();
@@ -544,7 +544,7 @@ const DirectStreamers = {
    },
 
    TBasket(buf, obj) {
-      buf.classStreamer(obj, 'TKey');
+      buf.classStreamer(obj, clTKey);
       const ver = buf.readVersion();
       obj.fBufferSize = buf.ntoi4();
       obj.fNevBufSize = buf.ntoi4();
@@ -2454,7 +2454,7 @@ class TBuffer {
    /** @summary read TKey data */
    readTKey(key) {
       if (!key) key = {};
-      this.classStreamer(key, 'TKey');
+      this.classStreamer(key, clTKey);
       let name = key.fName.replace(/['"]/g, '');
       if (name !== key.fName) {
          key.fRealName = key.fName;
