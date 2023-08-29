@@ -2078,45 +2078,37 @@ class TFramePainter extends ObjectPainter {
           grid_style = gStyle.fGridStyle;
 
       // add a grid on x axis, if the option is set
-      if (pad?.fGridx && this.x_handle) {
-         let gridx = '';
-         for (let n = 0; n < this.x_handle.ticks.length; ++n)
-            if (this.swap_xy)
-               gridx += `M0,${this.x_handle.ticks[n]}h${w}`;
-            else
-               gridx += `M${this.x_handle.ticks[n]},0v${h}`;
-
+      if (pad?.fGridx && this.x_handle?.ticks) {
          let colid = (gStyle.fGridColor > 0) ? gStyle.fGridColor : (this.getAxis('x')?.fAxisColor ?? 1),
-             grid_color = this.getColor(colid) || 'black';
+             gridx = '';
 
-         if (gridx)
-           layer.append('svg:path')
-                .attr('class', 'xgrid')
-                .attr('d', gridx)
-                .style('stroke', grid_color)
-                .style('stroke-width', gStyle.fGridWidth)
-                .style('stroke-dasharray', getSvgLineStyle(grid_style));
+         this.x_handle.ticks.forEach(pos => {
+            gridx += this.swap_xy ? `M0,${pos}h${w}` : `M${pos},0v${h}`;
+         });
+
+         layer.append('svg:path')
+              .attr('class', 'xgrid')
+              .attr('d', gridx)
+              .style('stroke', this.getColor(colid) || 'black')
+              .style('stroke-width', gStyle.fGridWidth)
+              .style('stroke-dasharray', getSvgLineStyle(grid_style));
       }
 
       // add a grid on y axis, if the option is set
-      if (pad?.fGridy && this.y_handle) {
-         let gridy = '';
-         for (let n = 0; n < this.y_handle.ticks.length; ++n)
-            if (this.swap_xy)
-               gridy += `M${this.y_handle.ticks[n]},0v${h}`;
-            else
-               gridy += `M0,${this.y_handle.ticks[n]}h${w}`;
-
+      if (pad?.fGridy && this.y_handle?.ticks) {
          let colid = (gStyle.fGridColor > 0) ? gStyle.fGridColor : (this.getAxis('y')?.fAxisColor ?? 1),
-             grid_color = this.getColor(colid) || 'black';
+             gridy = '';
 
-         if (gridy)
-           layer.append('svg:path')
-                .attr('class', 'ygrid')
-                .attr('d', gridy)
-                .style('stroke', grid_color)
-                .style('stroke-width', gStyle.fGridWidth)
-                .style('stroke-dasharray', getSvgLineStyle(grid_style));
+         this.y_handle.ticks.forEach(pos => {
+            gridy += this.swap_xy ? `M${pos},0v${h}` : `M0,${pos}h${w}`;
+         });
+
+         layer.append('svg:path')
+              .attr('class', 'ygrid')
+              .attr('d', gridy)
+              .style('stroke', this.getColor(colid) || 'black')
+              .style('stroke-width', gStyle.fGridWidth)
+              .style('stroke-dasharray', getSvgLineStyle(grid_style));
       }
    }
 
@@ -2696,15 +2688,15 @@ class TFramePainter extends ObjectPainter {
       this._dblclick_handler = isFunc(handler) ? handler : null;
    }
 
-    /** @summary Function can be used for zooming into specified range
-      * @desc if both limits for each axis 0 (like xmin == xmax == 0), axis will be unzoomed
-      * @param {number} xmin
-      * @param {number} xmax
-      * @param {number} [ymin]
-      * @param {number} [ymax]
-      * @param {number} [zmin]
-      * @param {number} [zmax]
-      * @return {Promise} with boolean flag if zoom operation was performed */
+   /** @summary Function can be used for zooming into specified range
+     * @desc if both limits for each axis 0 (like xmin == xmax == 0), axis will be unzoomed
+     * @param {number} xmin
+     * @param {number} xmax
+     * @param {number} [ymin]
+     * @param {number} [ymax]
+     * @param {number} [zmin]
+     * @param {number} [zmax]
+     * @return {Promise} with boolean flag if zoom operation was performed */
    async zoom(xmin, xmax, ymin, ymax, zmin, zmax) {
 
       if (xmin === 'x') { xmin = xmax; xmax = ymin; ymin = undefined; } else
