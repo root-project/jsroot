@@ -88,7 +88,7 @@ class RHistPainter extends RObjectPainter {
             assignRAxisMethods(histo.fAxes._1);
             assignRAxisMethods(histo.fAxes._2);
             histo.getBin = function(x, y, z) { return (x-1) + this.fAxes._0.GetNumBins()*(y-1) + this.fAxes._0.GetNumBins()*this.fAxes._1.GetNumBins()*(z-1); }
-            // FIXME: all normal ROOT methods uses indx+1 logic, but RHist has no underflow/overflow bins now
+            // all normal ROOT methods uses indx+1 logic, but RHist has no underflow/overflow bins now
             histo.getBinContent = function(x, y, z) { return this.fStatistics.fBinContent[this.getBin(x, y, z)]; }
             histo.getBinError = function(x, y, z) {
                let bin = this.getBin(x, y, z);
@@ -100,7 +100,7 @@ class RHistPainter extends RObjectPainter {
             assignRAxisMethods(histo.fAxes._0);
             assignRAxisMethods(histo.fAxes._1);
             histo.getBin = function(x, y) { return (x-1) + this.fAxes._0.GetNumBins()*(y-1); }
-            // FIXME: all normal ROOT methods uses indx+1 logic, but RHist has no underflow/overflow bins now
+            // all normal ROOT methods uses indx+1 logic, but RHist has no underflow/overflow bins now
             histo.getBinContent = function(x, y) { return this.fStatistics.fBinContent[this.getBin(x, y)]; }
             histo.getBinError = function(x, y) {
                let bin = this.getBin(x, y);
@@ -111,7 +111,7 @@ class RHistPainter extends RObjectPainter {
          } else {
             assignRAxisMethods(histo.fAxes._0);
             histo.getBin = function(x) { return x-1; }
-            // FIXME: all normal ROOT methods uses indx+1 logic, but RHist has no underflow/overflow bins now
+            // all normal ROOT methods uses indx+1 logic, but RHist has no underflow/overflow bins now
             histo.getBinContent = function(x) { return this.fStatistics.fBinContent[x-1]; }
             histo.getBinError = function(x) {
                if (this.fStatistics.fSumWeightsSquared)
