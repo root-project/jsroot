@@ -64,13 +64,11 @@ function getEarthProjectionFunc(id) {
             theta -= num / den;
             if (Math.abs(num / den) < 1e-4) break;
          }
-
          return {
             x: l * Math.cos(theta),
             y: 90 * Math.sin(theta)
          };
       };
-
    }
 }
 
@@ -389,8 +387,8 @@ const TooltipHandler = {
          let hint = hints[n];
          if (!hint) continue;
 
-         if (hint.painter && (hint.user_info !== undefined))
-            hint.painter.provideUserTooltip(hint.user_info);
+         if (hint.user_info !== undefined)
+            hint.painter?.provideUserTooltip(hint.user_info);
 
          if (!hint.lines || (hint.lines.length === 0)) {
             hints[n] = null;
@@ -879,13 +877,10 @@ const FrameInteractive = {
       if (evnt.buttons === this._shifting_buttons) {
          let frame = this.getFrameSvg(),
              pos = d3_pointer(evnt, frame.node()),
-             main_svg = this.draw_g.selectChild('.main_layer');
-         let dx = pos0[0] - pos[0],
-             dy = pos0[1] - pos[1],
+             main_svg = this.draw_g.selectChild('.main_layer'),
+             dx = pos0[0] - pos[0],
+             dy = (this.scales_ndim === 1) ? 0 : pos0[1] - pos[1],
              w = this.getFrameWidth(), h = this.getFrameHeight();
-
-         if (this.scales_ndim === 1)
-            dy = 0;
 
          this._shifting_dx = dx;
          this._shifting_dy = dy;
@@ -917,7 +912,6 @@ const FrameInteractive = {
           xmax = gr.revertAxis('x', this._shifting_dx + w),
           ymin = gr.revertAxis('y', this._shifting_dy + h),
           ymax = gr.revertAxis('y', this._shifting_dy);
-
 
       main_svg.attr('viewBox', `0 0 ${w} ${h}`);
 
@@ -1007,7 +1001,7 @@ const FrameInteractive = {
 
       let handle = (this.zoom_kind == 2) ? this.x_handle : this.y_handle;
 
-      if (!handle || !isFunc(handle.processLabelsMove) || !this.zoom_lastpos) return;
+      if (!isFunc(handle?.processLabelsMove) || !this.zoom_lastpos) return;
 
       if (handle.processLabelsMove('start', this.zoom_lastpos))
          this.zoom_labels = handle;
@@ -1436,7 +1430,7 @@ const FrameInteractive = {
             let hints = pp.processPadTooltipEvent(pnt), bestdist = 1000;
             for (let n = 0; n < hints.length; ++n)
                if (hints[n]?.menu) {
-                  let dist = ('menu_dist' in hints[n]) ? hints[n].menu_dist : 7;
+                  let dist = hints[n].menu_dist ?? 7;
                   if (dist < bestdist) { sel = hints[n].painter; bestdist = dist; }
                }
          }
@@ -1508,13 +1502,12 @@ const FrameInteractive = {
       try {
         pos = d3_pointers(evnt, frame.node())[0];
       } catch(err) {
-        pos = [0,0];
+        pos = [0, 0];
         if (evnt?.changedTouches)
            pos = [ evnt.changedTouches[0].clientX, evnt.changedTouches[0].clientY ];
       }
 
-      let dx = pos0[0] - pos[0],
-          dy = pos0[1] - pos[1],
+      let dx = pos0[0] - pos[0], dy = pos0[1] - pos[1],
           w = this.getFrameWidth(), h = this.getFrameHeight();
 
       if (this.scales_ndim === 1)
@@ -1551,7 +1544,8 @@ const FrameInteractive = {
    clearInteractiveElements() {
       closeMenu();
       this.zoom_kind = 0;
-      if (this.zoom_rect) { this.zoom_rect.remove(); delete this.zoom_rect; }
+      this.zoom_rect?.remove();
+      delete this.zoom_rect;
       delete this.zoom_curr;
       delete this.zoom_origin;
       delete this.zoom_lastpos;
@@ -2001,13 +1995,13 @@ class TFramePainter extends ObjectPainter {
       if (!use_x2 && !use_y2) return this;
 
       return {
-         use_x2: use_x2,
+         use_x2,
          grx: use_x2 ? this.grx2 : this.grx,
          logx: this.logx,
          x_handle: use_x2 ? this.x2_handle : this.x_handle,
          scale_xmin: use_x2 ? this.scale_x2min : this.scale_xmin,
          scale_xmax: use_x2 ? this.scale_x2max : this.scale_xmax,
-         use_y2: use_y2,
+         use_y2,
          gry: use_y2 ? this.gry2 : this.gry,
          logy: this.logy,
          y_handle: use_y2 ? this.y2_handle : this.y_handle,
