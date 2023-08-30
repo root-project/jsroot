@@ -23,6 +23,7 @@ module.exports = {
       "no-multi-spaces": "off",
       "no-multiple-empty-lines": "off",
       "object-property-newline": "off",
-      "promise/param-names": ["warn", { resolvePattern: "^resolve*", rejectPattern: "^reject*" } ]
+      "promise/param-names": ["warn", { resolvePattern: "^resolve*", rejectPattern: "^reject*" } ],
+      "no-new-func": "off"
   }
 };
