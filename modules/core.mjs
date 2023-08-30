@@ -1597,18 +1597,18 @@ function getMethods(typename, obj) {
       }
    }
 
-   if (typename.indexOf(clTProfile) == 0) {
-      if (typename.indexOf(clTProfile2D) == 0) {
+   if (typename.indexOf(clTProfile) === 0) {
+      if (typename.indexOf(clTProfile2D) === 0) {
          m.getBin = function(x, y) { return (x + (this.fXaxis.fNbins+2) * y); }
          m.getBinContent = function(x, y) {
-            let bin = this.getBin(x, y);
+            const bin = this.getBin(x, y);
             if (bin < 0 || bin >= this.fNcells) return 0;
             if (this.fBinEntries[bin] < 1e-300) return 0;
             if (!this.fArray) return 0;
             return this.fArray[bin]/this.fBinEntries[bin];
          }
          m.getBinEntries = function(x, y) {
-            let bin = this.getBin(x, y);
+            const bin = this.getBin(x, y);
             if (bin < 0 || bin >= this.fNcells) return 0;
             return this.fBinEntries[bin];
          }
@@ -1623,29 +1623,28 @@ function getMethods(typename, obj) {
       }
       m.getBinEffectiveEntries = function(bin) {
          if (bin < 0 || bin >= this.fNcells) return 0;
-         let sumOfWeights = this.fBinEntries[bin];
-         if ( !this.fBinSumw2 || this.fBinSumw2.length != this.fNcells) {
+         const sumOfWeights = this.fBinEntries[bin];
+         if (!this.fBinSumw2 || this.fBinSumw2.length !== this.fNcells)
             // this can happen  when reading an old file
             return sumOfWeights;
-         }
-         let sumOfWeightsSquare = this.fBinSumw2[bin];
+         const sumOfWeightsSquare = this.fBinSumw2[bin];
          return (sumOfWeightsSquare > 0) ? sumOfWeights * sumOfWeights / sumOfWeightsSquare : 0;
       }
       m.getBinError = function(bin) {
          if (bin < 0 || bin >= this.fNcells) return 0;
-         let cont = this.fArray[bin],               // sum of bin w *y
-             sum  = this.fBinEntries[bin],          // sum of bin weights
-             err2 = this.fSumw2[bin],               // sum of bin w * y^2
-             neff = this.getBinEffectiveEntries(bin);  // (sum of w)^2 / (sum of w^2)
+         const cont = this.fArray[bin],               // sum of bin w *y
+               sum  = this.fBinEntries[bin],          // sum of bin weights
+               err2 = this.fSumw2[bin],               // sum of bin w * y^2
+               neff = this.getBinEffectiveEntries(bin);  // (sum of w)^2 / (sum of w^2)
          if (sum < 1e-300) return 0;                  // for empty bins
          const EErrorType = { kERRORMEAN: 0, kERRORSPREAD: 1, kERRORSPREADI: 2, kERRORSPREADG: 3 };
          // case the values y are gaussian distributed y +/- sigma and w = 1/sigma^2
          if (this.fErrorMode === EErrorType.kERRORSPREADG)
             return 1.0/Math.sqrt(sum);
          // compute variance in y (eprim2) and standard deviation in y (eprim)
-         let contsum = cont/sum, eprim = Math.sqrt(Math.abs(err2/sum - contsum**2));
+         const contsum = cont/sum, eprim = Math.sqrt(Math.abs(err2/sum - contsum**2));
          if (this.fErrorMode === EErrorType.kERRORSPREADI) {
-            if (eprim != 0) return eprim/Math.sqrt(neff);
+            if (eprim !== 0) return eprim/Math.sqrt(neff);
             // in case content y is an integer (so each my has an error +/- 1/sqrt(12)
             // when the std(y) is zero
             return 1.0/Math.sqrt(12*neff);
@@ -1754,7 +1753,7 @@ function getPromise(obj) { return isPromise(obj) ? obj : Promise.resolve(obj); }
 /** @summary Ensure global JSROOT and v6 support methods
   * @private */
 async function _ensureJSROOT() {
-   let pr = globalThis.JSROOT ? Promise.resolve(true) : loadScript(source_dir + 'scripts/JSRoot.core.js');
+   const pr = globalThis.JSROOT ? Promise.resolve(true) : loadScript(source_dir + 'scripts/JSRoot.core.js');
 
    return pr.then(() => {
       if (globalThis.JSROOT?._complete_loading)
