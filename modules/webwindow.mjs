@@ -344,7 +344,7 @@ class WebWindowHandle {
          const front = this.msgqueue.shift();
          this.invokeReceiver(false, 'onWebsocketMsg', front.msg, front.len);
       }
-      if (this.msgqueue.length == 0)
+      if (this.msgqueue.length === 0)
          delete this.msgqueue;
       delete this._loop_msgqueue;
    }
@@ -458,7 +458,7 @@ class WebWindowHandle {
       if (this.master)
          return this.master.createChannel();
 
-      let channel = new WebWindowHandle('channel', this.credits);
+      const channel = new WebWindowHandle('channel', this.credits);
       channel.wait_first_recv = true; // first received message via the channel is confirmation of established connection
 
       if (!this.channels) {
@@ -494,12 +494,11 @@ class WebWindowHandle {
       if (!relative_path || !this.kind || !this.href) return this.href;
 
       let addr = this.href;
-      if (relative_path.indexOf('../') == 0) {
-         let ddd = addr.lastIndexOf('/',addr.length-2);
-         addr = addr.slice(0,ddd) + relative_path.slice(2);
-      } else {
+      if (relative_path.indexOf('../') === 0) {
+         const ddd = addr.lastIndexOf('/', addr.length-2);
+         addr = addr.slice(0, ddd) + relative_path.slice(2);
+      } else
          addr += relative_path;
-      }
 
       return addr;
    }
@@ -507,7 +506,6 @@ class WebWindowHandle {
    /** @summary Create configured socket for current object.
      * @private */
    connect(href) {
-
       this.close();
       if (!href && this.href) href = this.href;
 
@@ -518,8 +516,7 @@ class WebWindowHandle {
       }
 
       const retry_open = first_time => {
-
-         if (this.state != 0) return;
+         if (this.state !== 0) return;
 
          if (!first_time) console.log(`try connect window again ${new Date().toString()}`);
 
@@ -542,7 +539,7 @@ class WebWindowHandle {
 
          let path = href;
 
-         if (this.kind == 'file') {
+         if (this.kind === 'file') {
             path += 'root.filedump';
             this._websocket = new FileDumpSocket(this);
             console.log(`configure protocol log ${path}`);
@@ -563,8 +560,7 @@ class WebWindowHandle {
             if (ntry > 2) showProgress();
             this.state = 1;
 
-            let key = this.key || '';
-
+            const key = this.key || '';
             this.send(`READY=${key}`, 0); // need to confirm connection
             this.invokeReceiver(false, 'onWebsocketOpened');
          };
@@ -573,13 +569,12 @@ class WebWindowHandle {
             let msg = e.data;
 
             if (this.next_binary) {
-
-               let binchid = this.next_binary;
+               const binchid = this.next_binary;
                delete this.next_binary;
 
                if (msg instanceof Blob) {
                   // convert Blob object to BufferArray
-                  let reader = new FileReader, qitem = this.reserveQueueItem();
+                  const reader = new FileReader(), qitem = this.reserveQueueItem();
                   // The file's text will be printed here
                   reader.onload = event => this.markQueueItemDone(qitem, event.target.result, 0);
                   reader.readAsArrayBuffer(msg, e.offset || 0);
@@ -594,37 +589,36 @@ class WebWindowHandle {
             if (!isStr(msg))
                return console.log(`unsupported message kind: ${typeof msg}`);
 
-            let i1 = msg.indexOf(':'),
-               credit = parseInt(msg.slice(0, i1)),
-               i2 = msg.indexOf(':', i1 + 1),
-               // cansend = parseInt(msg.slice(i1 + 1, i2)),  // TODO: take into account when sending messages
-               i3 = msg.indexOf(':', i2 + 1),
-               chid = parseInt(msg.slice(i2 + 1, i3));
+            const i1 = msg.indexOf(':'),
+                  credit = parseInt(msg.slice(0, i1)),
+                  i2 = msg.indexOf(':', i1 + 1),
+                  // cansend = parseInt(msg.slice(i1 + 1, i2)),  // TODO: take into account when sending messages
+                  i3 = msg.indexOf(':', i2 + 1),
+                  chid = parseInt(msg.slice(i2 + 1, i3));
 
             this.ackn++;            // count number of received packets,
             this.cansend += credit; // how many packets client can send
 
             msg = msg.slice(i3 + 1);
 
-            if (chid == 0) {
+            if (chid === 0) {
                console.log(`GET chid=0 message ${msg}`);
-               if (msg == 'CLOSE') {
+               if (msg === 'CLOSE') {
                   this.close(true); // force closing of socket
                   this.invokeReceiver(true, 'onWebsocketClosed');
-               } else if (msg.indexOf('NEW_KEY=') == 0) {
-                  let newkey = msg.slice(8);
+               } else if (msg.indexOf('NEW_KEY=') === 0) {
+                  const newkey = msg.slice(8);
                   this.close(true);
                   if (typeof sessionStorage !== 'undefined')
                      sessionStorage.setItem('RWebWindow_Key', newkey);
                   location.reload(true);
                }
-            } else if (msg == '$$binary$$') {
+            } else if (msg === '$$binary$$')
                this.next_binary = chid;
-            } else if (msg == '$$nullbinary$$') {
+            else if (msg === '$$nullbinary$$')
                this.provideData(chid, new ArrayBuffer(0), 0);
-            } else {
+            else
                this.provideData(chid, msg);
-            }
 
             if (this.ackn > 7)
                this.send('READY', 0); // send dummy message to server
@@ -650,7 +644,6 @@ class WebWindowHandle {
          // only in interactive mode try to reconnect
          if (!isBatchMode())
             setTimeout(retry_open, 3000); // after 3 seconds try again
-
       } // retry_open
 
       retry_open(true); // call for the first time
@@ -670,11 +663,10 @@ class WebWindowHandle {
      * WARNING - only call when you know that you are doing
      * @private */
    addReloadKeyHandler() {
+      if (this.kind === 'file') return;
 
-      if (this.kind == 'file') return;
-
-      window.addEventListener( 'keydown', evnt => {
-         if (((evnt.key == 'R') || (evnt.key == 'r')) && evnt.ctrlKey) {
+      window.addEventListener('keydown', evnt => {
+         if (((evnt.key === 'R') || (evnt.key === 'r')) && evnt.ctrlKey) {
             evnt.stopPropagation();
             evnt.preventDefault();
             console.log('Prevent Ctrl-R propogation - ask reload RWebWindow!');
@@ -695,7 +687,6 @@ class WebWindowHandle {
   * @param {string} [arg.href] - URL to RWebWindow, using window.location.href by default
   * @return {Promise} for ready-to-use {@link WebWindowHandle} instance  */
 async function connectWebWindow(arg) {
-
    // mark that jsroot used with RWebWindow
    browser.webwindow = true;
 
@@ -704,7 +695,8 @@ async function connectWebWindow(arg) {
    else if (!isObject(arg))
       arg = {};
 
-   let d = decodeUrl(), new_key;
+   const d = decodeUrl();
+   let new_key;
 
    if (typeof sessionStorage !== 'undefined') {
       new_key = sessionStorage.getItem('RWebWindow_Key');
@@ -719,9 +711,9 @@ async function connectWebWindow(arg) {
    if (!arg.platform)
       arg.platform = d.get('platform');
 
-   if (arg.platform == 'qt5')
+   if (arg.platform === 'qt5')
       browser.qt5 = true;
-   else if (arg.platform == 'cef3')
+   else if (arg.platform === 'cef3')
       browser.cef3 = true;
 
    if (arg.batch === undefined)
@@ -750,8 +742,8 @@ async function connectWebWindow(arg) {
    // only for debug purposes
    // arg.socket_kind = 'longpoll';
 
-   let main = new Promise(resolveFunc => {
-      let handle = new WebWindowHandle(arg.socket_kind, arg.credits);
+   const main = new Promise(resolveFunc => {
+      const handle = new WebWindowHandle(arg.socket_kind, arg.credits);
       handle.setUserArgs(arg.user_args);
       if (arg.href) handle.setHRef(arg.href); // apply href now  while connect can be called from other place
 
@@ -777,7 +769,7 @@ async function connectWebWindow(arg) {
          onWebsocketOpened() {}, // dummy function when websocket connected
 
          onWebsocketMsg(handle, msg) {
-            if (msg.indexOf(arg.first_recv) != 0)
+            if (msg.indexOf(arg.first_recv) !== 0)
                return handle.close();
             handle.first_msg = msg.slice(arg.first_recv.length);
             resolveFunc(handle);
