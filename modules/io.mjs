@@ -2024,8 +2024,8 @@ function LZ4_uncompress(input, output, sIdx, eIdx) {
   * @private */
 async function R__unzip(arr, tgtsize, noalert, src_shift) {
    const HDRSIZE = 9, totallen = arr.byteLength,
-        getChar = o => String.fromCharCode(arr.getUint8(o)),
-        getCode = o => arr.getUint8(o);
+         checkChar = (o, symb) => { return String.fromCharCode(arr.getUint8(o)) === symb; },
+         getCode = o => arr.getUint8(o);
 
    let curr = src_shift || 0, fullres = 0, tgtbuf = null;
 
@@ -2038,11 +2038,11 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
             return Promise.resolve(null);
          }
 
-         if (getChar(curr) == 'Z' && getChar(curr + 1) == 'L' && getCode(curr + 2) == 8) { fmt = 'new'; off = 2; } else
-         if (getChar(curr) == 'C' && getChar(curr + 1) == 'S' && getCode(curr + 2) == 8) { fmt = 'old'; off = 0; } else
-         if (getChar(curr) == 'X' && getChar(curr + 1) == 'Z' && getCode(curr + 2) == 0) fmt = 'LZMA'; else
-         if (getChar(curr) == 'Z' && getChar(curr + 1) == 'S' && getCode(curr + 2) == 1) fmt = 'ZSTD'; else
-         if (getChar(curr) == 'L' && getChar(curr + 1) == '4') { fmt = 'LZ4'; off = 0; CHKSUM = 8; }
+         if (checkChar(curr, 'Z') && checkChar(curr+1, 'L') && getCode(curr + 2) === 8) { fmt = 'new'; off = 2; } else
+         if (checkChar(curr, 'C') && checkChar(curr+1, 'S') && getCode(curr + 2) === 8) { fmt = 'old'; off = 0; } else
+         if (checkChar(curr, 'X') && checkChar(curr+1, 'Z') && getCode(curr + 2) === 0) fmt = 'LZMA'; else
+         if (checkChar(curr, 'Z') && checkChar(curr+1, 'S') && getCode(curr + 2) === 1) fmt = 'ZSTD'; else
+         if (checkChar(curr, 'L') && checkChar(curr+1, '4')) { fmt = 'LZ4'; off = 0; CHKSUM = 8; }
 
          /*   C H E C K   H E A D E R   */
          if ((fmt !== 'new') && (fmt !== 'old') && (fmt !== 'LZ4') && (fmt !== 'ZSTD')) {
@@ -2058,14 +2058,9 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
                return new Promise((resolveFunc, rejectFunc) => {
                   ZstdCodec.run(zstd => {
                      // const simple = new zstd.Simple();
-                     const streaming = new zstd.Streaming();
-
-                     // const data2 = simple.decompress(uint8arr);
-                     const data2 = streaming.decompress(uint8arr);
-
-                     // console.log(`tgtsize ${tgtsize} zstd size ${data2.length} offset ${data2.byteOffset} rawlen ${data2.buffer.byteLength}`);
-
-                     const reslen = data2.length;
+                     const streaming = new zstd.Streaming(),
+                           data2 = streaming.decompress(uint8arr),
+                           reslen = data2.length;
 
                      if (data2.byteOffset !== 0)
                         return rejectFunc(Error('ZSTD result with byteOffset != 0'));
@@ -2076,9 +2071,9 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
 
                      // need to copy data while zstd does not provide simple way of doing it
                      if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
-                     let tgt8arr = new Uint8Array(tgtbuf, fullres);
+                     const tgt8arr = new Uint8Array(tgtbuf, fullres);
 
-                     for(let i = 0; i < reslen; ++i)
+                     for (let i = 0; i < reslen; ++i)
                         tgt8arr[i] = data2[i];
 
                      fullres += reslen;
@@ -2086,21 +2081,22 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
                      resolveFunc(true);
                   });
                });
-            };
+            },
 
-            let promise = isNodeJs() ? import('zstd-codec').then(handle => handleZsdt(handle.ZstdCodec))
-                                        : loadScript('../../zstd/zstd-codec.min.js')
-                                             .catch(() => loadScript('https://root.cern/js/zstd/zstd-codec.min.js'))
-                                             .then(() => handleZsdt(ZstdCodec));
+            promise = isNodeJs()
+                        ? import('zstd-codec').then(handle => handleZsdt(handle.ZstdCodec))
+                        : loadScript('../../zstd/zstd-codec.min.js')
+                          .catch(() => loadScript('https://root.cern/js/zstd/zstd-codec.min.js'))
+                          // eslint-disable-next-line no-undef
+                         .then(() => handleZsdt(ZstdCodec));
             return promise.then(() => nextPortion());
          }
 
          //  place for unpacking
          if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
 
-         let tgt8arr = new Uint8Array(tgtbuf, fullres);
-
-         const reslen = (fmt === 'LZ4') ? LZ4_uncompress(uint8arr, tgt8arr) : ZIP_inflate(uint8arr, tgt8arr);
+         const tgt8arr = new Uint8Array(tgtbuf, fullres),
+               reslen = (fmt === 'LZ4') ? LZ4_uncompress(uint8arr, tgt8arr) : ZIP_inflate(uint8arr, tgt8arr);
          if (reslen <= 0) break;
 
          fullres += reslen;
