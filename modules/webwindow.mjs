@@ -68,16 +68,17 @@ class LongPollSocket {
             // after the 'bin:' there is length of optional text argument like 'bin:14  :optional_text'
             // and immedaitely after text binary data. Server sends binary data so, that offset should be multiple of 8
 
-            let str = '', i = 0, u8Arr = new Uint8Array(res), offset = u8Arr.length;
+            const u8Arr = new Uint8Array(res);
+            let str = '', i = 0, offset = u8Arr.length;
             if (offset < 4) {
                if (!browser.qt5) console.error(`longpoll got short message in raw mode ${offset}`);
                return this.handle.processRequest(null);
             }
 
             while (i < 4) str += String.fromCharCode(u8Arr[i++]);
-            if (str != 'txt:') {
+            if (str !== 'txt:') {
                str = '';
-               while ((i < offset) && (String.fromCharCode(u8Arr[i]) != ':'))
+               while ((i < offset) && (String.fromCharCode(u8Arr[i]) !== ':'))
                   str += String.fromCharCode(u8Arr[i++]);
                ++i;
                offset = i + parseInt(str.trim());
@@ -87,32 +88,33 @@ class LongPollSocket {
             while (i < offset) str += String.fromCharCode(u8Arr[i++]);
 
             if (str) {
-               if (str == '<<nope>>')
+               if (str === '<<nope>>')
                   this.handle.processRequest(-1111);
                else
                    this.handle.processRequest(str);
             }
             if (offset < u8Arr.length)
                this.handle.processRequest(res, offset);
-         } else if (this.getResponseHeader('Content-Type') == 'application/x-binary') {
+         } else if (this.getResponseHeader('Content-Type') === 'application/x-binary') {
             // binary reply with optional header
-            let extra_hdr = this.getResponseHeader('LongpollHeader');
+            const extra_hdr = this.getResponseHeader('LongpollHeader');
             if (extra_hdr) this.handle.processRequest(extra_hdr);
             this.handle.processRequest(res, 0);
          } else {
             // text reply
             if (res && !isStr(res)) {
-               let str = '', u8Arr = new Uint8Array(res);
+               let str = '';
+               const u8Arr = new Uint8Array(res);
                for (let i = 0; i < u8Arr.length; ++i)
                   str += String.fromCharCode(u8Arr[i]);
                res = str;
             }
-            if (res == '<<nope>>')
+            if (res === '<<nope>>')
                this.handle.processRequest(-1111);
             else
                this.handle.processRequest(res);
          }
-      }, function(/*err,status*/) {
+      }, function(/* err, status */) {
          this.handle.processRequest(null, 'error');
       }, true).then(req => {
          req.handle = this;
@@ -127,13 +129,12 @@ class LongPollSocket {
       if (res === null) {
          if (isFunc(this.onerror))
             this.onerror('receive data with connid ' + (this.connid || '---'));
-         if ((_offset == 'error') && isFunc(this.onclose))
+         if ((_offset === 'error') && isFunc(this.onclose))
             this.onclose('force_close');
          this.connid = null;
          return;
-      } else if (res === -1111) {
+      } else if (res === -1111)
          res = '';
-      }
 
       let dummy_tmout = 5;
 
@@ -199,7 +200,7 @@ class FileDumpSocket {
 
    /** @summary Emulate send - just cound operation */
    send(/* str */) {
-      if (this.protocol[this.cnt] == 'send') {
+      if (this.protocol[this.cnt] === 'send') {
          this.cnt++;
          setTimeout(() => this.nextOperation(), 10);
       }
@@ -212,18 +213,17 @@ class FileDumpSocket {
    nextOperation() {
       // when file request running - just ignore
       if (this.wait_for_file) return;
-      let fname = this.protocol[this.cnt];
+      const fname = this.protocol[this.cnt];
 
       if (!fname) return;
-      if (fname == 'send') return; // waiting for send
+      if (fname === 'send') return; // waiting for send
       this.wait_for_file = true;
       this.cnt++;
       httpRequest(fname, (fname.indexOf('.bin') > 0 ? 'buf' : 'text')).then(res => {
          this.wait_for_file = false;
          if (!res) return;
-         let chid = 1, p = fname.indexOf('_ch');
-         if (p > 0)
-            chid = Number.parseInt(fname.slice(p+3, fname.indexOf('.', p)));
+         const p = fname.indexOf('_ch'),
+               chid = (p > 0) ? Number.parseInt(fname.slice(p+3, fname.indexOf('.', p))) : 1;
          if (isFunc(this.receiver.provideData))
             this.receiver.provideData(chid, res, 0);
          setTimeout(() => this.nextOperation(), 10);
@@ -285,7 +285,7 @@ class WebWindowHandle {
          this.receiver[method](this, arg, arg2);
 
       if (brdcst && this.channels) {
-         let ks = Object.keys(this.channels);
+         const ks = Object.keys(this.channels);
          for (let n = 0; n < ks.length; ++n)
             this.channels[ks[n]].invokeReceiver(false, method, arg, arg2);
       }
@@ -321,7 +321,7 @@ class WebWindowHandle {
     * @private */
    reserveQueueItem() {
       if (!this.msgqueue) this.msgqueue = [];
-      let item = { ready: false, msg: null, len: 0 };
+      const item = { ready: false, msg: null, len: 0 };
       this.msgqueue.push(item);
       return item;
    }
@@ -341,7 +341,7 @@ class WebWindowHandle {
       if (this._loop_msgqueue || !this.msgqueue) return;
       this._loop_msgqueue = true;
       while ((this.msgqueue.length > 0) && this.msgqueue[0].ready) {
-         let front = this.msgqueue.shift();
+         const front = this.msgqueue.shift();
          this.invokeReceiver(false, 'onWebsocketMsg', front.msg, front.len);
       }
       if (this.msgqueue.length == 0)
@@ -392,7 +392,7 @@ class WebWindowHandle {
 
       if (this.cansend <= 0) console.error(`should be queued before sending cansend: ${this.cansend}`);
 
-      let prefix = `${this.ackn}:${this.cansend}:${chid}:`;
+      const prefix = `${this.ackn}:${this.cansend}:${chid}:`;
       this.ackn = 0;
       this.cansend--; // decrease number of allowed send packets
 
@@ -431,9 +431,8 @@ class WebWindowHandle {
          for (let k = 0; k < msg.length; ++k)
             this.provideData(chid, isStr(msg[k]) ? msg[k] : JSON.stringify(msg[k]), -1);
          this.processQueue();
-      } else if (msg) {
+      } else if (msg)
          this.provideData(chid, isStr(msg) ? msg : JSON.stringify(msg));
-      }
    }
 
    /** @summary Send keep-alive message.
@@ -457,7 +456,7 @@ class WebWindowHandle {
      * @private */
    createChannel() {
       if (this.master)
-         return master.createChannel();
+         return this.master.createChannel();
 
       let channel = new WebWindowHandle('channel', this.credits);
       channel.wait_first_recv = true; // first received message via the channel is confirmation of established connection
