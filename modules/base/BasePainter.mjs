@@ -385,13 +385,13 @@ function buildSvgCurve(p, args) {
   * @desc removes extra info or empty elements
   * @private */
 function compressSVG(svg) {
-   svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g, 'url(#$1)')        // decode all URL
-            .replace(/ class=\"\w*\"/g, '')                                // remove all classes
-            .replace(/ pad=\"\w*\"/g, '')                                  // remove all pad ids
-            .replace(/ title=\"\"/g, '')                                   // remove all empty titles
-            .replace(/<g objname=\"\w*\" objtype=\"\w*\"/g, '<g')          // remove object ids
-            .replace(/<g transform=\"translate\(\d+\,\d+\)\"><\/g>/g, '')  // remove all empty groups with transform
-            .replace(/<g><\/g>/g, '');                                     // remove all empty groups
+   svg = svg.replace(/url\(&quot;#(\w+)&quot;\)/g, 'url(#$1)')         // decode all URL
+            .replace(/ class="\w*"/g, '')                              // remove all classes
+            .replace(/ pad="\w*"/g, '')                                // remove all pad ids
+            .replace(/ title=""/g, '')                                 // remove all empty titles
+            .replace(/<g objname="\w*" objtype="\w*"/g, '<g')          // remove object ids
+            .replace(/<g transform="translate\(\d+,\d+\)"><\/g>/g, '') // remove all empty groups with transform
+            .replace(/<g><\/g>/g, '');                                 // remove all empty groups
 
    // remove all empty frame svgs, typically appears in 3D drawings, maybe should be improved in frame painter itself
    svg = svg.replace(/<svg x="0" y="0" overflow="hidden" width="\d+" height="\d+" viewBox="0 0 \d+ \d+"><\/svg>/g, '');
