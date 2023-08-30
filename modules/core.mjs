@@ -834,7 +834,7 @@ function decodeUrl(url) {
 
       if ((eq < 0) && (firstq < 0)) {
          res.opts[url.slice(0,pos)] = '';
-      } if (eq > 0) {
+      } else if (eq > 0) {
          let val = url.slice(eq+1, pos);
          if (((val[0] === "'") || (val[0] === '"')) && (val[0] === val[val.length-1])) val = val.slice(1, val.length-1);
          res.opts[url.slice(0,eq)] = val;
