@@ -1,16 +1,16 @@
 
 /** @summary version id
   * @desc For the JSROOT release the string in format 'major.minor.patch' like '7.0.0' */
-let version_id = 'dev';
+const version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '28/08/2023';
+const version_date = '28/08/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
   * Like '7.0.0 14/04/2022' */
-let version = version_id + ' ' + version_date;
+const version = version_id + ' ' + version_date;
 
 /** @summary Location of JSROOT modules
   * @desc Automatically detected and used to dynamically load other modules
@@ -19,11 +19,11 @@ let source_dir = '';
 
 /** @summary Is node.js flag
   * @private */
-let nodejs = !!((typeof process == 'object') && isObject(process.versions) && process.versions.node && process.versions.v8);
+const nodejs = !!((typeof process == 'object') && isObject(process.versions) && process.versions.node && process.versions.v8);
 
 /** @summary internal data
   * @private */
-let internals = {
+const internals = {
    id_counter: 1          ///< unique id contner, starts from 1
 };
 
@@ -1680,7 +1680,7 @@ function getMethods(typename, obj) {
       }
    }
 
-   if (typename == clTAxis) {
+   if (typename === clTAxis) {
       m.GetBinLowEdge = function(bin) {
          if (this.fNbins <= 0) return 0;
          if ((this.fXbins.length > 0) && (bin > 0) && (bin <= this.fNbins)) return this.fXbins[bin-1];
