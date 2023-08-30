@@ -1,11 +1,10 @@
-
 /** @summary version id
   * @desc For the JSROOT release the string in format 'major.minor.patch' like '7.0.0' */
 const version_id = 'dev';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-const version_date = '28/08/2023';
+const version_date = '29/08/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -19,12 +18,12 @@ let source_dir = '';
 
 /** @summary Is node.js flag
   * @private */
-const nodejs = !!((typeof process == 'object') && isObject(process.versions) && process.versions.node && process.versions.v8);
+const nodejs = !!((typeof process === 'object') && isObject(process.versions) && process.versions.node && process.versions.v8);
 
 /** @summary internal data
   * @private */
 const internals = {
-   id_counter: 1          ///< unique id contner, starts from 1
+   id_counter: 1          // unique id counter, starts from 1
 };
 
 const src = import.meta?.url;
@@ -63,7 +62,7 @@ const btoa_func = isNodeJs() ? str => Buffer.from(str,'latin1').toString('base64
 
 /** @summary browser detection flags
   * @private */
-let browser = { isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false, screenWidth: 1200 };
+const browser = { isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false, screenWidth: 1200 };
 
 if ((typeof document !== 'undefined') && (typeof window !== 'undefined') && (typeof navigator !== 'undefined')) {
    browser.isFirefox = navigator.userAgent.indexOf('Firefox') >= 0;
@@ -89,7 +88,7 @@ function isArrayProto(proto) {
 
 /** @desc Specialized JSROOT constants, used in {@link settings}
   * @namespace */
-let constants = {
+const constants = {
    /** @summary Kind of 3D rendering, used for {@link settings.Render3D}
      * @namespace */
    Render3D: {
@@ -145,7 +144,7 @@ let constants = {
       fromString(s) {
          if (!s || !isStr(s))
             return this.Normal;
-         switch(s){
+         switch (s) {
             case 'off': return this.Off;
             case 'symbols': return this.Symbols;
             case 'normal':
@@ -159,7 +158,7 @@ let constants = {
             case 'alwaysmath':
             case 'alwaysmathjax': return this.AlwaysMathJax;
          }
-         let code = parseInt(s);
+         const code = parseInt(s);
          return (Number.isInteger(code) && (code >= this.Off) && (code <= this.AlwaysMathJax)) ? code : this.Normal;
       }
    }
@@ -167,7 +166,7 @@ let constants = {
 
 /** @desc Global JSROOT settings
   * @namespace */
-let settings = {
+const settings = {
    /** @summary Render of 3D drawing methods, see {@link constants.Render3D} for possible values */
    Render3D: constants.Render3D.Default,
    /** @summary 3D drawing methods in batch mode, see {@link constants.Render3D} for possible values */
@@ -272,7 +271,7 @@ let settings = {
   * @desc Includes default draw styles, can be changed after loading of JSRoot.core.js
   * or can be load from the file providing style=itemname in the URL
   * See [TStyle docu]{@link https://root.cern/doc/master/classTStyle.html} 'Private attributes' section for more detailed info about each value */
-let gStyle = {
+const gStyle = {
    fName: 'Modern',
    /** @summary Default log x scale */
    fOptLogx: 0,
@@ -395,7 +394,7 @@ function getDocument() {
       return internals.nodejs_document;
    if (typeof document !== 'undefined')
       return document;
-   if (typeof window == 'object')
+   if (typeof window === 'object')
       return window.document;
    return undefined;
 }
@@ -419,16 +418,16 @@ async function injectCode(code) {
 
    if (typeof document !== 'undefined') {
       // check if code already loaded - to avoid duplication
-      let scripts = document.getElementsByTagName('script');
+      const scripts = document.getElementsByTagName('script');
       for (let n = 0; n < scripts.length; ++n)
          if (scripts[n].innerHTML == code)
             return true;
 
-      let promise = code.indexOf('JSROOT.require') >= 0 ? _ensureJSROOT() : Promise.resolve(true);
+      const promise = code.indexOf('JSROOT.require') >= 0 ? _ensureJSROOT() : Promise.resolve(true);
 
       return promise.then(() => {
          return new Promise(resolve => {
-            let element = document.createElement('script');
+            const element = document.createElement('script');
             element.setAttribute('type', 'text/javascript');
             element.innerHTML = code;
             document.head.appendChild(element);
@@ -451,10 +450,11 @@ async function loadScript(url) {
       url = url.split(';');
 
    if (!isStr(url)) {
-      let scripts = url, loadNext = () => {
+      const scripts = url;
+      function loadNext() {
          if (!scripts.length) return true;
          return loadScript(scripts.shift()).then(loadNext, loadNext);
-      };
+      }
       return loadNext();
    }
 
@@ -465,42 +465,42 @@ async function loadScript(url) {
       url = source_dir + url;
    }
 
-   let element, isstyle = url.indexOf('.css') > 0;
+   const isstyle = url.indexOf('.css') > 0;
 
    if (nodejs) {
       if (isstyle)
          return null;
-      if ((url.indexOf('http:') == 0) || (url.indexOf('https:') == 0))
+      if ((url.indexOf('http:') === 0) || (url.indexOf('https:') === 0))
          return httpRequest(url, 'text').then(code => injectCode(code));
 
       // local files, read and use it
-      if (url.indexOf('./') == 0)
+      if (url.indexOf('./') === 0)
          return import('fs').then(fs => injectCode(fs.readFileSync(url)));
 
       return import(/* webpackIgnore: true */ url);
    }
 
    const match_url = src => {
-      if (src == url) return true;
-      let indx = src.indexOf(url);
-      return (indx > 0) && (indx + url.length == src.length) && (src[indx-1] == '/');
+      if (src === url) return true;
+      const indx = src.indexOf(url);
+      return (indx > 0) && (indx + url.length === src.length) && (src[indx-1] === '/');
    };
 
    if (isstyle) {
-      let styles = document.getElementsByTagName('link');
+      const styles = document.getElementsByTagName('link');
       for (let n = 0; n < styles.length; ++n) {
          if (!styles[n].href || (styles[n].type !== 'text/css') || (styles[n].rel !== 'stylesheet')) continue;
          if (match_url(styles[n].href))
             return true;
       }
-
    } else {
-      let scripts = document.getElementsByTagName('script');
+      const scripts = document.getElementsByTagName('script');
       for (let n = 0; n < scripts.length; ++n)
          if (match_url(scripts[n].src))
             return true;
    }
 
+   let element;
    if (isstyle) {
       element = document.createElement('link');
       element.setAttribute('rel', 'stylesheet');
