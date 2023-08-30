@@ -16,7 +16,7 @@ import { getSvgLineStyle } from './TAttLineHandler.mjs';
 function getMaterialArgs(color, args) {
    if (!args || !isObject(args)) args = {};
 
-   if (isStr(color) && ((color[0] == '#' && (color.length === 9)) || (color.indexOf('rgba') >= 0))) {
+   if (isStr(color) && (((color[0] === '#') && (color.length === 9)) || (color.indexOf('rgba') >= 0))) {
       const col = d3_color(color);
       args.color = new Color(col.r, col.g, col.b);
       args.opacity = col.opacity ?? 1;
@@ -538,21 +538,20 @@ function beforeRender3D(renderer) {
   * @desc used together with SVG or node.js image rendering
   * @private */
 function afterRender3D(renderer) {
+   const rc = constants.Render3D;
 
-   let rc = constants.Render3D;
-
-   if (renderer.jsroot_render3d == rc.WebGL)
+   if (renderer.jsroot_render3d === rc.WebGL)
       return;
 
-   if (renderer.jsroot_render3d == rc.SVG) {
+   if (renderer.jsroot_render3d === rc.SVG) {
       // case of SVGRenderer
       renderer.fillTargetSVG(renderer.jsroot_dom);
    } else if (isNodeJs()) {
       // this is WebGL rendering in node.js
-      let canvas = renderer.domElement,
-         context = canvas.getContext('2d');
+      const canvas = renderer.domElement,
+            context = canvas.getContext('2d'),
+            pixels = new Uint8Array(4 * canvas.width * canvas.height);
 
-      let pixels = new Uint8Array(4 * canvas.width * canvas.height);
       renderer.readRenderTargetPixels(renderer.jsroot_output, 0, 0, canvas.width, canvas.height, pixels);
 
       // small code to flip Y scale
@@ -565,17 +564,16 @@ function afterRender3D(renderer) {
          indx2 -= 4 * canvas.width;
       }
 
-      let imageData = context.createImageData(canvas.width, canvas.height);
+      const imageData = context.createImageData(canvas.width, canvas.height);
       imageData.data.set(pixels);
       context.putImageData(imageData, 0, 0);
 
-      let format = 'image/' + renderer.jsroot_image_format,
-          dataUrl = canvas.toDataURL(format);
+      const format = 'image/' + renderer.jsroot_image_format,
+            dataUrl = canvas.toDataURL(format);
 
       renderer.jsroot_dom.setAttribute('href', dataUrl);
-
    } else {
-      let dataUrl = renderer.domElement.toDataURL('image/' + renderer.jsroot_image_format);
+      const dataUrl = renderer.domElement.toDataURL('image/' + renderer.jsroot_image_format);
       renderer.jsroot_dom.setAttribute('href', dataUrl);
    }
 }
@@ -597,7 +595,7 @@ class TooltipFor3D {
       this.tt = null;
       this.cont = null;
       this.lastlbl = '';
-      this.parent = prnt ? prnt : document.body;
+      this.parent = prnt || document.body;
       this.canvas = canvas; // we need canvas to recalculate mouse events
       this.abspos = !prnt;
    }
@@ -614,7 +612,7 @@ class TooltipFor3D {
      * @desc can be used to process it later when event is gone */
    extract_pos(e) {
       if (isObject(e) && (e.u !== undefined) && (e.l !== undefined)) return e;
-      let res = { u: 0, l: 0 };
+      const res = { u: 0, l: 0 };
       if (this.abspos) {
          res.l = e.pageX;
          res.u = e.pageY;
@@ -622,7 +620,6 @@ class TooltipFor3D {
          res.l = e.offsetX;
          res.u = e.offsetY;
       }
-
       return res;
    }
 
@@ -630,13 +627,12 @@ class TooltipFor3D {
      * @desc event is delivered from canvas,
      * but position should be calculated relative to the element where tooltip is placed */
    pos(e) {
-
       if (!this.tt) return;
 
-      let pos = this.extract_pos(e);
+      const pos = this.extract_pos(e);
       if (!this.abspos) {
-         let rect1 = this.parent.getBoundingClientRect(),
-             rect2 = this.canvas.getBoundingClientRect();
+         const rect1 = this.parent.getBoundingClientRect(),
+               rect2 = this.canvas.getBoundingClientRect();
 
          if ((rect1.left !== undefined) && (rect2.left!== undefined))
             pos.l += (rect2.left-rect1.left);
@@ -654,14 +650,14 @@ class TooltipFor3D {
          // all absolute coordinates calculated relative to such node
          let abs_parent = this.parent;
          while (abs_parent) {
-            let style = getComputedStyle(abs_parent);
+            const style = getComputedStyle(abs_parent);
             if (!style || (style.position !== 'static')) break;
-            if (!abs_parent.parentNode || (abs_parent.parentNode.nodeType != 1)) break;
+            if (!abs_parent.parentNode || (abs_parent.parentNode.nodeType !== 1)) break;
             abs_parent = abs_parent.parentNode;
          }
 
          if (abs_parent && (abs_parent !== this.parent)) {
-            let rect0 = abs_parent.getBoundingClientRect();
+            const rect0 = abs_parent.getBoundingClientRect();
             pos.l += (rect1.left - rect0.left);
             pos.u += (rect1.top - rect0.top);
          }
@@ -672,15 +668,15 @@ class TooltipFor3D {
    }
 
    /** @summary Show tooltip */
-   show(v /*, mouse_pos, status_func*/) {
+   show(v /* , mouse_pos, status_func */) {
       if (!v) return this.hide();
 
       if (isObject(v) && (v.lines || v.line)) {
          if (v.only_status) return this.hide();
 
-         if (v.line) {
+         if (v.line)
             v = v.line;
-         } else {
+         else {
             let res = v.lines[0];
             for (let n = 1; n < v.lines.length; ++n)
                res += '<br/>' + v.lines[n];
@@ -718,10 +714,10 @@ class TooltipFor3D {
 /** @summary Create OrbitControls for painter
   * @private */
 function createOrbitControl(painter, camera, scene, renderer, lookat) {
+   const enable_zoom = settings.Zooming && settings.ZoomMouse,
+         enable_select = isFunc(painter.processMouseClick);
 
-   let control = null,
-       enable_zoom = settings.Zooming && settings.ZoomMouse,
-       enable_select = isFunc(painter.processMouseClick);
+   let control = null;
 
    function control_mousedown(evnt) {
       if (!control) return;
@@ -755,7 +751,6 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       if (!control) return;
 
       if (control.mouse_zoom_mesh && control.mouse_zoom_mesh.point2 && control.painter.get3dZoomCoord) {
-
          let kind = control.mouse_zoom_mesh.object.zoom,
              pos1 = control.painter.get3dZoomCoord(control.mouse_zoom_mesh.point, kind),
              pos2 = control.painter.get3dZoomCoord(control.mouse_zoom_mesh.point2, kind);
@@ -766,9 +761,8 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
          if ((kind === 'z') && control.mouse_zoom_mesh.object.use_y_for_z) kind = 'y';
 
          // try to zoom
-         if (pos1 < pos2)
-           if (control.painter.zoom(kind, pos1, pos2))
-              control.mouse_zoom_mesh = null;
+         if ((pos1 < pos2) && control.painter.zoom(kind, pos1, pos2))
+            control.mouse_zoom_mesh = null;
       }
 
       // if selection was drawn, it should be removed and picture rendered again
@@ -776,17 +770,16 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
          control.removeZoomMesh();
 
       // only left-button is considered
-      //if ((evnt.button!==undefined) && (evnt.button !== 0)) return;
-      //if ((evnt.buttons!==undefined) && (evnt.buttons !== 1)) return;
+      // if ((evnt.button!==undefined) && (evnt.button !== 0)) return;
+      // if ((evnt.buttons!==undefined) && (evnt.buttons !== 1)) return;
 
       if (control.enable_select && control.mouse_select_pnt) {
-
-         let pnt = control.getMousePos(evnt, {}),
-             same_pnt = (pnt.x == control.mouse_select_pnt.x) && (pnt.y == control.mouse_select_pnt.y);
+         const pnt = control.getMousePos(evnt, {}),
+               same_pnt = (pnt.x === control.mouse_select_pnt.x) && (pnt.y === control.mouse_select_pnt.y);
          delete control.mouse_select_pnt;
 
          if (same_pnt) {
-            let intersects = control.getMouseIntersects(pnt);
+            const intersects = control.getMouseIntersects(pnt);
             control.painter.processMouseClick(pnt, intersects, evnt);
          }
       }
@@ -801,7 +794,6 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       if (!control) return;
 
       // try to handle zoom extra
-
       if (render3DFired(control.painter) || control.mouse_zoom_mesh) {
          evnt.preventDefault();
          evnt.stopPropagation();
@@ -809,7 +801,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
          return; // already fired redraw, do not react on the mouse wheel
       }
 
-      let intersect = control.detectZoomMesh(evnt);
+      const intersect = control.detectZoomMesh(evnt);
       if (!intersect) return;
 
       evnt.preventDefault();
@@ -818,8 +810,8 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
 
       if (isFunc(control.painter?.analyzeMouseWheelEvent)) {
          let kind = intersect.object.zoom,
-             position = intersect.point[kind],
-             item = { name: kind, ignore: false };
+             position = intersect.point[kind];
+         const item = { name: kind, ignore: false };
 
          // z changes from 0..2*size_z3d, others -size_x3d..+size_x3d
          switch (kind) {
@@ -874,7 +866,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
    control.cursor_changed = false;
    control.control_changed = false;
    control.control_active = false;
-   control.mouse_ctxt = { x:0, y: 0, on: false };
+   control.mouse_ctxt = { x: 0, y: 0, on: false };
    control.enable_zoom = enable_zoom;
    control.enable_select = enable_select;
 
@@ -929,12 +921,12 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       // domElement gives correct coordinate with canvas render, but isn't always right for webgl renderer
       if (!this.renderer) return [];
 
-      let sz = (this.renderer instanceof SVGRenderer) ? this.renderer.domElement : this.renderer.getSize(new Vector2()),
-          pnt = { x: mouse.x / sz.width * 2 - 1, y: -mouse.y / sz.height * 2 + 1 };
+      const sz = (this.renderer instanceof SVGRenderer) ? this.renderer.domElement : this.renderer.getSize(new Vector2()),
+            pnt = { x: mouse.x / sz.width * 2 - 1, y: -mouse.y / sz.height * 2 + 1 };
 
       this.camera.updateMatrix();
       this.camera.updateMatrixWorld();
-      this.raycaster.setFromCamera( pnt, this.camera );
+      this.raycaster.setFromCamera(pnt, this.camera);
       let intersects = this.raycaster.intersectObjects(this.scene.children, true);
 
       // painter may want to filter intersects
@@ -945,46 +937,50 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
    }
 
    control.detectZoomMesh = function(evnt) {
-      let mouse = this.getMousePos(evnt, {}),
-          intersects = this.getMouseIntersects(mouse);
-      if (intersects)
-         for (let n = 0; n < intersects.length; ++n)
+      const mouse = this.getMousePos(evnt, {}),
+            intersects = this.getMouseIntersects(mouse);
+      if (intersects) {
+         for (let n = 0; n < intersects.length; ++n) {
             if (intersects[n].object.zoom && !intersects[n].object.zoom_disabled)
                return intersects[n];
+         }
+      }
 
       return null;
    }
 
    control.getInfoAtMousePosition = function(mouse_pos) {
-      let intersects = this.getMouseIntersects(mouse_pos),
-          tip = null, painter = null;
+      const intersects = this.getMouseIntersects(mouse_pos);
+      let tip = null, painter = null;
 
-      for (let i = 0; i < intersects.length; ++i)
+      for (let i = 0; i < intersects.length; ++i) {
          if (intersects[i].object.tooltip) {
             tip = intersects[i].object.tooltip(intersects[i]);
             painter = intersects[i].object.painter;
             break;
+         }
       }
 
-      if (tip && painter)
+      if (tip && painter) {
          return { obj: painter.getObject(),  name: painter.getObject().fName,
                   bin: tip.bin, cont: tip.value,
                   binx: tip.ix, biny: tip.iy, binz: tip.iz,
                   grx: (tip.x1+tip.x2)/2, gry: (tip.y1+tip.y2)/2, grz: (tip.z1+tip.z2)/2 };
+      }
    }
 
    control.processDblClick = function(evnt) {
       // first check if zoom mesh clicked
-      let zoom_intersect = this.detectZoomMesh(evnt);
+      const zoom_intersect = this.detectZoomMesh(evnt);
       if (zoom_intersect && this.painter) {
          this.painter.unzoom(zoom_intersect.object.use_y_for_z ? 'y' : zoom_intersect.object.zoom);
          return;
       }
 
       // then check if double-click handler assigned
-      let fp = this.painter?.getFramePainter();
+      const fp = this.painter?.getFramePainter();
       if (isFunc(fp?._dblclick_handler)) {
-         let info = this.getInfoAtMousePosition(this.getMousePos(evnt, {}));
+         const info = this.getInfoAtMousePosition(this.getMousePos(evnt, {}));
          if (info) {
             fp._dblclick_handler(info);
             return;
@@ -1063,14 +1059,15 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       if (this.mouse_zoom_mesh) {
          // when working with zoom mesh, need special handling
 
-         let zoom2 = this.detectZoomMesh(evnt),
-             pnt2 = (zoom2?.object === this.mouse_zoom_mesh.object) ? zoom2.point : this.mouse_zoom_mesh.object.globalIntersect(this.raycaster);
+         const zoom2 = this.detectZoomMesh(evnt),
+               pnt2 = (zoom2?.object === this.mouse_zoom_mesh.object) ? zoom2.point : this.mouse_zoom_mesh.object.globalIntersect(this.raycaster);
 
          if (pnt2) this.mouse_zoom_mesh.point2 = pnt2;
 
-         if (pnt2 && this.painter.enable_highlight)
+         if (pnt2 && this.painter.enable_highlight) {
             if (this.mouse_zoom_mesh.object.showSelection(this.mouse_zoom_mesh.point, pnt2))
                this.painter.render3D(0);
+         }
 
          this.tooltip.hide();
          return;
@@ -1098,16 +1095,16 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       delete this.tmout_handle;
       if (!this.painter) return; // protect when cleanup
 
-      let mouse = this.tmout_mouse,
-          intersects = this.getMouseIntersects(mouse),
-          tip = this.processMouseMove(intersects);
+      const mouse = this.tmout_mouse,
+            intersects = this.getMouseIntersects(mouse),
+            tip = this.processMouseMove(intersects);
 
       if (tip) {
          let name = '', title = '', coord = '', info = '';
          if (mouse) coord = mouse.x.toFixed(0) + ',' + mouse.y.toFixed(0);
-         if (isStr(tip)) {
+         if (isStr(tip))
             info = tip;
-         } else {
+         else {
             name = tip.name; title = tip.title;
             if (tip.line) info = tip.line; else
             if (tip.lines) { info = tip.lines.slice(1).join(' '); name = tip.lines[0]; }
@@ -1123,10 +1120,12 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
          this.tooltip.pos(this.tmout_ttpos);
       } else {
          this.tooltip.hide();
-         if (intersects)
-            for (let n = 0; n < intersects.length; ++n)
+         if (intersects) {
+            for (let n = 0; n < intersects.length; ++n) {
                if (intersects[n].object.zoom && !intersects[n].object.zoom_disabled)
                   this.cursor_changed = true;
+            }
+         }
       }
 
       document.body.style.cursor = this.cursor_changed ? 'pointer' : 'auto';
@@ -1161,10 +1160,10 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
    control.processClick = function(mouse_pos, kind) {
       delete this.single_click_tm;
 
-      if (kind == 1) {
-         let fp = this.painter?.getFramePainter();
+      if (kind === 1) {
+         const fp = this.painter?.getFramePainter();
          if (isFunc(fp?._click_handler)) {
-            let info = this.getInfoAtMousePosition(mouse_pos);
+            const info = this.getInfoAtMousePosition(mouse_pos);
             if (info) {
                fp._click_handler(info);
                return;
@@ -1173,23 +1172,23 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       }
 
       // method assigned in the Eve7 and used for object selection
-      if ((kind == 2) && isFunc(this.processSingleClick)) {
-         let intersects = this.getMouseIntersects(mouse_pos);
+      if ((kind === 2) && isFunc(this.processSingleClick)) {
+         const intersects = this.getMouseIntersects(mouse_pos);
          this.processSingleClick(intersects);
       }
    };
 
    control.lstn_click = function(evnt) {
       // ignore right-mouse click
-      if (evnt.detail == 2) return;
+      if (evnt.detail === 2) return;
 
       if (this.single_click_tm) {
          clearTimeout(this.single_click_tm);
          delete this.single_click_tm;
       }
 
-      let kind = 0, fp = this.painter?.getFramePainter();
-      if (isFunc(fp?._click_handler))
+      let kind = 0;
+      if (isFunc(this.painter?.getFramePainter()?._click_handler))
          kind = 1; // user click handler
       else if (this.processSingleClick && this.painter?.options?.mouse_click)
          kind = 2;  // eve7 click handler
@@ -1263,24 +1262,22 @@ function disposeThreejsObject(obj, only_childs) {
   * @desc If required, calculates lineDistance attribute for dashed geometries
   * @private */
 function createLineSegments(arr, material, index = undefined, only_geometry = false) {
-
-   let geom = new BufferGeometry();
+   const geom = new BufferGeometry();
 
    geom.setAttribute('position', arr instanceof Float32Array ? new BufferAttribute(arr, 3) : new Float32BufferAttribute(arr, 3));
    if (index) geom.setIndex(new BufferAttribute(index, 1));
 
    if (material.isLineDashedMaterial) {
-
-      let v1 = new Vector3(),
-          v2 = new Vector3(),
-          d = 0, distances = null;
+      const v1 = new Vector3(),
+            v2 = new Vector3();
+      let d = 0, distances = null;
 
       if (index) {
          distances = new Float32Array(index.length);
          for (let n = 0; n < index.length; n += 2) {
-            let i1 = index[n], i2 = index[n+1];
-            v1.set(arr[i1],arr[i1+1],arr[i1+2]);
-            v2.set(arr[i2],arr[i2+1],arr[i2+2]);
+            const i1 = index[n], i2 = index[n+1];
+            v1.set(arr[i1], arr[i1+1], arr[i1+2]);
+            v2.set(arr[i2], arr[i2+1], arr[i2+2]);
             distances[n] = d;
             d += v2.distanceTo(v1);
             distances[n+1] = d;
@@ -1304,26 +1301,28 @@ function createLineSegments(arr, material, index = undefined, only_geometry = fa
 /** @summary Help structures for calculating Box mesh
   * @private */
 const Box3D = {
-    Vertices: [ new Vector3(1, 1, 1), new Vector3(1, 1, 0),
-                new Vector3(1, 0, 1), new Vector3(1, 0, 0),
-                new Vector3(0, 1, 0), new Vector3(0, 1, 1),
-                new Vector3(0, 0, 0), new Vector3(0, 0, 1) ],
-    Indexes: [ 0,2,1, 2,3,1, 4,6,5, 6,7,5, 4,5,1, 5,0,1, 7,6,2, 6,3,2, 5,7,0, 7,2,0, 1,3,4, 3,6,4 ],
-    Normals: [ 1,0,0, -1,0,0, 0,1,0, 0,-1,0, 0,0,1, 0,0,-1 ],
+    Vertices: [new Vector3(1, 1, 1), new Vector3(1, 1, 0),
+               new Vector3(1, 0, 1), new Vector3(1, 0, 0),
+               new Vector3(0, 1, 0), new Vector3(0, 1, 1),
+               new Vector3(0, 0, 0), new Vector3(0, 0, 1)],
+    Indexes: [0, 2, 1,  2, 3, 1,  4, 6, 5,  6, 7, 5,  4, 5, 1,  5, 0, 1,
+              7, 6, 2,  6, 3, 2,  5, 7, 0,  7, 2, 0,  1, 3, 4,  3, 6, 4],
+    Normals: [1, 0, 0,  -1, 0, 0,  0, 1, 0,  0, -1, 0,  0, 0, 1,  0, 0, -1],
     Segments: [0, 2, 2, 7, 7, 5, 5, 0, 1, 3, 3, 6, 6, 4, 4, 1, 1, 0, 3, 2, 6, 7, 4, 5],  // segments addresses Vertices
     MeshSegments: undefined
 };
 
 // these segments address vertices from the mesh, we can use positions from box mesh
 Box3D.MeshSegments = (function() {
-   let box3d = Box3D,
-       arr = new Int32Array(box3d.Segments.length);
+   const arr = new Int32Array(Box3D.Segments.length);
 
    for (let n = 0; n < arr.length; ++n) {
-      for (let k = 0; k < box3d.Indexes.length; ++k)
-         if (box3d.Segments[n] === box3d.Indexes[k]) {
-            arr[n] = k; break;
+      for (let k = 0; k < Box3D.Indexes.length; ++k) {
+         if (Box3D.Segments[n] === Box3D.Indexes[k]) {
+            arr[n] = k;
+            break;
          }
+      }
    }
    return arr;
 })();
@@ -1337,11 +1336,13 @@ Box3D.MeshSegments = (function() {
  */
 
 class InteractiveControl {
+
    cleanup() {}
-   extractIndex(/*intersect*/) {}
-   setSelected(/*col, indx*/) {}
-   setHighlight(/*col, indx*/) {}
-   checkHighlightIndex(/*indx*/) {}
+   extractIndex(/* intersect */) {}
+   setSelected(/* col, indx */) {}
+   setHighlight(/* col, indx */) {}
+   checkHighlightIndex(/* indx */) {}
+
 } // class InteractiveControl
 
 
@@ -1375,8 +1376,8 @@ class PointsControl extends InteractiveControl {
 
    /** @summary set selection */
    setSelected(col, indx) {
-      let m = this.mesh;
-      if ((m.select_col == col) && (m.select_indx == indx)) {
+      const m = this.mesh;
+      if ((m.select_col === col) && (m.select_indx === indx)) {
          col = null; indx = undefined;
       }
       m.select_col = col;
@@ -1387,7 +1388,7 @@ class PointsControl extends InteractiveControl {
 
    /** @summary set highlight */
    setHighlight(col, indx) {
-      let m = this.mesh;
+      const m = this.mesh;
       m.h_index = indx;
       if (col)
          this.createSpecial(col, indx);
@@ -1398,7 +1399,7 @@ class PointsControl extends InteractiveControl {
 
    /** @summary create special object */
    createSpecial(color, index) {
-      let m = this.mesh;
+      const m = this.mesh;
       if (!color) {
          if (m.js_special) {
             m.remove(m.js_special);
@@ -1409,9 +1410,9 @@ class PointsControl extends InteractiveControl {
       }
 
       if (!m.js_special) {
-         let geom = new BufferGeometry();
+         const geom = new BufferGeometry();
          geom.setAttribute('position', m.geometry.getAttribute('position'));
-         let material = new PointsMaterial({ size: m.material.size*2, color });
+         const material = new PointsMaterial({ size: m.material.size*2, color });
          material.sizeAttenuation = m.material.sizeAttenuation;
 
          m.js_special = new Points(geom, material);
@@ -1440,7 +1441,7 @@ class PointsCreator {
      * @param {number} [scale=1] - scale factor */
    constructor(size, iswebgl, scale) {
       this.webgl = (iswebgl === undefined) ? true : iswebgl;
-      this.scale = scale || 1.;
+      this.scale = scale || 1;
 
       this.pos = new Float32Array(size*3);
       this.geom = new BufferGeometry();
@@ -1449,7 +1450,7 @@ class PointsCreator {
    }
 
    /** @summary Add point */
-   addPoint(x,y,z) {
+   addPoint(x, y, z) {
       this.pos[this.indx]   = x;
       this.pos[this.indx+1] = y;
       this.pos[this.indx+2] = z;
@@ -1458,7 +1459,6 @@ class PointsCreator {
 
    /** @summary Create points */
    createPoints(args) {
-
       if (!isObject(args))
          args = { color: args };
       if (!args.color)
@@ -1472,16 +1472,15 @@ class PointsCreator {
       if (args.style === 6) k = 0.5; else
       if (args.style === 7) k = 0.7;
 
-      let makePoints = texture => {
-         let material_args = { size: 3*this.scale*k };
+      const makePoints = texture => {
+         const material_args = { size: 3*this.scale*k };
          if (texture) {
             material_args.map = texture;
             material_args.transparent = true;
-         } else {
+         } else
             material_args.color = args.color || 'black';
-         }
 
-         let pnts = new Points(this.geom, new PointsMaterial(material_args));
+         const pnts = new Points(this.geom, new PointsMaterial(material_args));
          pnts.nvertex = 1;
          return pnts;
       };
@@ -1489,17 +1488,17 @@ class PointsCreator {
       // this is plain creation of points, no need for texture loading
 
       if (k !== 1) {
-         let res = makePoints();
+         const res = makePoints();
          return this.noPromise ? res : Promise.resolve(res);
       }
 
-      let handler = new TAttMarkerHandler({ style: args.style, color: args.color, size: 7 }),
-          w = handler.fill ? 1 : 7,
-          imgdata = `<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">` +
-                    `<path d="${handler.create(32,32)}" style="stroke: ${handler.getStrokeColor()}; stroke-width: ${w}; fill: ${handler.getFillColor()}"></path>`+
-                    `</svg>`,
-          dataUrl = 'data:image/svg+xml;charset=utf8,' + (isNodeJs() ? imgdata : encodeURIComponent(imgdata)),
-          promise;
+      const handler = new TAttMarkerHandler({ style: args.style, color: args.color, size: 7 }),
+            w = handler.fill ? 1 : 7,
+            imgdata = '<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">' +
+                      `<path d="${handler.create(32, 32)}" style="stroke: ${handler.getStrokeColor()}; stroke-width: ${w}; fill: ${handler.getFillColor()}"></path>`+
+                      '</svg>',
+            dataUrl = 'data:image/svg+xml;charset=utf8,' + (isNodeJs() ? imgdata : encodeURIComponent(imgdata));
+      let promise;
 
       if (isNodeJs()) {
          promise = import('canvas').then(handle => handle.default.loadImage(dataUrl).then(img => {
@@ -1513,7 +1512,8 @@ class PointsCreator {
          return makePoints(new TextureLoader().load(dataUrl));
       } else {
          promise = new Promise((resolveFunc, rejectFunc) => {
-            let loader = new TextureLoader();
+            const loader = new TextureLoader();
+            // eslint-disable-next-line prefer-promise-reject-errors
             loader.load(dataUrl, res => resolveFunc(res), undefined, () => rejectFunc());
          });
       }
@@ -1541,13 +1541,11 @@ function create3DLineMaterial(painter, arg, is_v7 = false) {
       lwidth = arg.fLineWidth;
    }
 
-   let style = lstyle ? getSvgLineStyle(lstyle) : '',
-       dash = style ? style.split(',') : [], material;
-
-   if (dash && dash.length >= 2)
-      material = new LineDashedMaterial({ color, dashSize: parseInt(dash[0]), gapSize: parseInt(dash[1]) });
-   else
-      material = new LineBasicMaterial({ color });
+   const style = lstyle ? getSvgLineStyle(lstyle) : '',
+         dash = style ? style.split(',') : [],
+         material = (dash && dash.length >= 2)
+            ? new LineDashedMaterial({ color, dashSize: parseInt(dash[0]), gapSize: parseInt(dash[1]) })
+            : new LineBasicMaterial({ color });
 
    if (lwidth && (lwidth > 1)) material.linewidth = lwidth;
 
