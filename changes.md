@@ -2,6 +2,8 @@
 
 ## Changes in 7.4.x
 1. Fix - correctly use GMT specifier in time format
+2. Fix - missing else in decodeUrl
+3. Fix - add missing browser import
 
 
 ## Changes in 7.4.2

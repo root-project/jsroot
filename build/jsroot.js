@@ -7,11 +7,11 @@ typeof define === 'function' && define.amd ? define(['exports'], factory) :
 
 /** @summary version id
   * @desc For the JSROOT release the string in format 'major.minor.patch' like '7.0.0' */
-let version_id = '7.4.2';
+let version_id = '7.4.x';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '10/08/2023';
+let version_date = '30/08/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -70,17 +70,17 @@ const btoa_func = isNodeJs() ? str => Buffer.from(str,'latin1').toString('base64
 
 /** @summary browser detection flags
   * @private */
-let browser$1 = { isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false, screenWidth: 1200 };
+let browser = { isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false, screenWidth: 1200 };
 
 if ((typeof document !== 'undefined') && (typeof window !== 'undefined') && (typeof navigator !== 'undefined')) {
-   browser$1.isFirefox = navigator.userAgent.indexOf('Firefox') >= 0;
-   browser$1.isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
-   browser$1.isChrome = !!window.chrome;
-   browser$1.isChromeHeadless = navigator.userAgent.indexOf('HeadlessChrome') >= 0;
-   browser$1.chromeVersion = (browser$1.isChrome || browser$1.isChromeHeadless) ? parseInt(navigator.userAgent.match(/Chrom(?:e|ium)\/([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/)[1]) : 0;
-   browser$1.isWin = navigator.userAgent.indexOf('Windows') >= 0;
-   browser$1.touches = ('ontouchend' in document); // identify if touch events are supported
-   browser$1.screenWidth = window.screen?.width ?? 1200;
+   browser.isFirefox = navigator.userAgent.indexOf('Firefox') >= 0;
+   browser.isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
+   browser.isChrome = !!window.chrome;
+   browser.isChromeHeadless = navigator.userAgent.indexOf('HeadlessChrome') >= 0;
+   browser.chromeVersion = (browser.isChrome || browser.isChromeHeadless) ? parseInt(navigator.userAgent.match(/Chrom(?:e|ium)\/([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/)[1]) : 0;
+   browser.isWin = navigator.userAgent.indexOf('Windows') >= 0;
+   browser.touches = ('ontouchend' in document); // identify if touch events are supported
+   browser.screenWidth = window.screen?.width ?? 1200;
 }
 
 /** @summary Check if prototype string match to array (typed on untyped)
@@ -196,7 +196,7 @@ let settings = {
    /** @summary Zooming on touch devices */
    ZoomTouch: !nodejs,
    /** @summary Enables move and resize of elements like statbox, title, pave, colz  */
-   MoveResize: !browser$1.touches && !nodejs,
+   MoveResize: !browser.touches && !nodejs,
    /** @summary Configures keybord key press handling
      * @desc Can be disabled to prevent keys heandling in complex HTML layouts
      * @default true */
@@ -839,7 +839,7 @@ function decodeUrl(url) {
 
       if ((eq < 0) && (firstq < 0)) {
          res.opts[url.slice(0,pos)] = '';
-      } if (eq > 0) {
+      } else if (eq > 0) {
          let val = url.slice(eq+1, pos);
          if (((val[0] === "'") || (val[0] === '"')) && (val[0] === val[val.length-1])) val = val.slice(1, val.length-1);
          res.opts[url.slice(0,eq)] = val;
@@ -916,7 +916,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
 
          if (this.readyState != 4) return;
 
-         if ((this.status != 200) && (this.status != 206) && !browser$1.qt5 &&
+         if ((this.status != 200) && (this.status != 206) && !browser.qt5 &&
              // in these special cases browsers not always set status
              !((this.status == 0) && ((url.indexOf('file://') == 0) || (url.indexOf('blob:') == 0)))) {
                return this.error_callback(Error(`Fail to load url ${url}`), this.status);
@@ -1772,7 +1772,7 @@ BIT: BIT,
 _ensureJSROOT: _ensureJSROOT,
 addMethods: addMethods,
 atob_func: atob_func,
-browser: browser$1,
+browser: browser,
 btoa_func: btoa_func,
 clTAnnotation: clTAnnotation,
 clTAttCanvas: clTAttCanvas,
@@ -56705,9 +56705,9 @@ let Handling3DDrawings = {
             can3d = constants$1.Embed3D.EmbedSVG;
          else if (settings.Embed3D != constants$1.Embed3D.Default)
             can3d = settings.Embed3D;
-         else if (browser$1.isFirefox)
+         else if (browser.isFirefox)
             can3d = constants$1.Embed3D.Embed;
-         else if (browser$1.chromeVersion > 95)
+         else if (browser.chromeVersion > 95)
          // version 96 works partially, 97 works fine
             can3d = constants$1.Embed3D.Embed;
          else
@@ -57029,7 +57029,7 @@ function cleanupRender3D(renderer) {
           ext.destroy();
    } else {
       // suppress warnings in Chrome about lost webgl context, not required in firefox
-      if (browser$1.isChrome && isFunc(renderer.forceContextLoss))
+      if (browser.isChrome && isFunc(renderer.forceContextLoss))
          renderer.forceContextLoss();
 
       if (isFunc(renderer.dispose))
@@ -60052,7 +60052,6 @@ function getTimeOffset(axis) {
    sof = sof.toUpperCase();
 
    if (sof.indexOf('GMT') == 0) {
-      offset += dt.getTimezoneOffset() * 60000;
       sof = sof.slice(4).trim();
       if (sof.length > 3) {
          let p = 0, sign = 1000;
@@ -60064,6 +60063,12 @@ function getTimeOffset(axis) {
    return offset;
 }
 
+/** @summary Return true when GMT option configured in time format
+  * @private */
+function getTimeGMT(axis) {
+   let fmt = axis?.fTimeFormat ?? '';
+   return (fmt.indexOf('gmt') > 0) || (fmt.indexOf('GMT') > 0);
+}
 
 /** @summary Tries to choose time format for provided time interval
   * @private */
@@ -60412,6 +60417,7 @@ class TAxisPainter extends ObjectPainter {
       if (opts.time_scale || axis.fTimeDisplay) {
          this.kind = 'time';
          this.timeoffset = getTimeOffset(axis);
+         this.timegmt = getTimeGMT(axis);
       } else if (opts.axis_func) {
          this.kind = 'func';
       } else {
@@ -60503,9 +60509,9 @@ class TAxisPainter extends ObjectPainter {
          if (!tf1 || (scale_range < 0.1 * (this.full_max - this.full_min)))
             tf1 = chooseTimeFormat(scale_range / this.nticks, true);
 
-         this.tfunc1 = this.tfunc2 = timeFormat(tf1);
+         this.tfunc1 = this.tfunc2 = this.timegmt ? utcFormat(tf1) : timeFormat(tf1);
          if (tf2 !== tf1)
-            this.tfunc2 = timeFormat(tf2);
+            this.tfunc2 = this.timegmt ? utcFormat(tf2) : timeFormat(tf2);
 
          this.format = this.formatTime;
 
@@ -65155,7 +65161,7 @@ class StandaloneMenu extends JSRootMenu {
             extraText.textContent = d.sub ? '\u25B6' : d.extraText;
             hovArea.appendChild(extraText);
 
-            if (d.sub && browser$1.touches)
+            if (d.sub && browser.touches)
                extraText.addEventListener('click', evnt => {
                   evnt.preventDefault();
                   evnt.stopPropagation();
@@ -65177,7 +65183,7 @@ class StandaloneMenu extends JSRootMenu {
                });
          }
 
-         if (!browser$1.touches)
+         if (!browser.touches)
          hovArea.addEventListener('mouseenter', () => {
             let focused = outer.childNodes;
             focused.forEach(d => {
@@ -65188,7 +65194,7 @@ class StandaloneMenu extends JSRootMenu {
             });
          });
 
-         if (d.sub && !browser$1.touches)
+         if (d.sub && !browser.touches)
             hovArea.addEventListener('mouseenter', () => {
                item.classList.add('jsroot_ctxt_focus');
                this._buildContextmenu(d.sub, 0, 0, item);
@@ -65280,7 +65286,7 @@ class StandaloneMenu extends JSRootMenu {
       select(`#${dlg_id}`).remove();
       select(`#${dlg_id}_block`).remove();
 
-      let w = Math.min(args.width || 450, Math.round(0.9*browser$1.screenWidth));
+      let w = Math.min(args.width || 450, Math.round(0.9*browser.screenWidth));
 
       let block = select('body').append('div').attr('id', dlg_id+'_block').attr('class', 'jsroot_dialog_block'),
           element = select('body')
@@ -66012,7 +66018,7 @@ const FrameInteractive = {
                  .on('mousemove', mouse_handler)
                  .on('mouseleave', close_handler);
 
-         if (browser$1.touches) {
+         if (browser.touches) {
             let touch_handler = handlers_set ? this.processFrameTooltipEvent.bind(this, { handler: true, touch: true }) : null;
 
             main_svg.on('touchstart', touch_handler)
@@ -66083,11 +66089,11 @@ const FrameInteractive = {
             svg.on('wheel', evnt => this.mouseWheel(evnt));
       }
 
-      if (browser$1.touches && ((settings.Zooming && settings.ZoomTouch && !this.projection) || settings.ContextMenu))
+      if (browser.touches && ((settings.Zooming && settings.ZoomTouch && !this.projection) || settings.ContextMenu))
          svg.on('touchstart', evnt => this.startTouchZoom(evnt));
 
       if (settings.ContextMenu) {
-         if (browser$1.touches) {
+         if (browser.touches) {
             svg_x.on('touchstart', evnt => this.startSingleTouchHandling('x', evnt));
             svg_y.on('touchstart', evnt => this.startSingleTouchHandling('y', evnt));
          }
@@ -68784,7 +68790,7 @@ class GridDisplay extends MDIDisplay {
       separ.call(drag_move).on('dblclick', function() { pthis.handleSeparator(this, 'restore'); });
 
       // need to get touches events handling in drag
-      if (browser$1.touches && !main.on('touchmove'))
+      if (browser.touches && !main.on('touchmove'))
          main.on('touchmove', function() {});
    }
 
@@ -69605,7 +69611,7 @@ class BrowserLayout {
       if (br.empty()) return;
       let btns = br.append('div').classed('jsroot_browser_btns', true).classed('jsroot', true);
       btns.style('position','absolute').style('left','7px').style('top','7px');
-      if (browser$1.touches) btns.style('opacity','0.2'); // on touch devices should be always visible
+      if (browser.touches) btns.style('opacity','0.2'); // on touch devices should be always visible
       return btns;
    }
 
@@ -69751,7 +69757,7 @@ class BrowserLayout {
       hsepar.call(drag_move);
 
       // need to get touches events handling in drag
-      if (browser$1.touches && !main.on('touchmove'))
+      if (browser.touches && !main.on('touchmove'))
          main.on('touchmove', () => {});
 
       if (!height || isStr(height)) height = this.last_hsepar_height || 20;
@@ -70052,7 +70058,7 @@ class BrowserLayout {
         vsepar.call(drag_move);
 
         // need to get touches events handling in drag
-        if (browser$1.touches && !main.on('touchmove'))
+        if (browser.touches && !main.on('touchmove'))
            main.on('touchmove', () => {});
 
         this.adjustSeparators(250, null, true, true);
@@ -70168,7 +70174,7 @@ let PadButtonsHandler = {
       } else {
          ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.rect, getButtonSize(this), 'Toggle tool buttons')
                             .attr('name', 'Toggle').attr('x', 0).attr('y', 0)
-                            .property('buttons_state', (settings.ToolBar !== 'popup') || browser$1.touches)
+                            .property('buttons_state', (settings.ToolBar !== 'popup') || browser.touches)
                             .on('click', evnt => toggleButtonsVisibility(this, 'toggle', evnt))
                             .on('mouseenter', () => toggleButtonsVisibility(this, 'enable'))
                             .on('mouseleave', () => toggleButtonsVisibility(this, 'disable'));
@@ -73463,7 +73469,7 @@ class TPavePainter extends ObjectPainter {
          addDragHandler(this, { obj: pt, x: this._pave_x, y: this._pave_y, width, height,
                                 minwidth: 10, minheight: 20, canselect: true,
                         redraw: () => { this.moved_interactive = true; this.interactiveRedraw(false, 'pave_moved'); this.drawPave(); },
-                        ctxmenu: browser$1.touches && settings.ContextMenu && this.UseContextMenu });
+                        ctxmenu: browser.touches && settings.ContextMenu && this.UseContextMenu });
 
          if (this.UseContextMenu && settings.ContextMenu)
              this.draw_g.on('contextmenu', evnt => this.paveContextMenu(evnt));
@@ -87122,7 +87128,7 @@ class GeoDrawingControl extends InteractiveControl {
             c.material.opacity = 1.;
          }
 
-         if (c.hightlightWidthScale && !browser$1.isWin)
+         if (c.hightlightWidthScale && !browser.isWin)
             c.material.linewidth = c.origin.width * c.hightlightWidthScale;
          if (c.highlightScale)
             c.material.size = c.origin.size * c.highlightScale;
@@ -88880,7 +88886,7 @@ class TGeoPainter extends ObjectPainter {
 
          // here we decide if we need worker for the drawings
          // main reason - too large geometry and large time to scan all camera positions
-         let need_worker = !this.isBatchMode() && browser$1.isChrome && ((numvis > 10000) || (matrix && (this._clones.scanVisible() > 1e5)));
+         let need_worker = !this.isBatchMode() && browser.isChrome && ((numvis > 10000) || (matrix && (this._clones.scanVisible() > 1e5)));
 
          // worker does not work when starting from file system
          if (need_worker && exports.source_dir.indexOf('file://') == 0) {
@@ -90276,7 +90282,7 @@ class TGeoPainter extends ObjectPainter {
    drawGeoTrack(track, itemname) {
       if (!track?.fNpoints) return false;
 
-      let linewidth = browser$1.isWin ? 1 : (track.fLineWidth || 1), // line width not supported on windows
+      let linewidth = browser.isWin ? 1 : (track.fLineWidth || 1), // line width not supported on windows
           color = getColor(track.fLineColor) || '#ff00ff',
           npoints = Math.round(track.fNpoints/4), // each track point has [x,y,z,t] coordinate
           buf = new Float32Array((npoints-1)*6),
@@ -90315,7 +90321,7 @@ class TGeoPainter extends ObjectPainter {
    drawPolyLine(line, itemname) {
       if (!line) return false;
 
-      let linewidth = browser$1.isWin ? 1 : (line.fLineWidth || 1),
+      let linewidth = browser.isWin ? 1 : (line.fLineWidth || 1),
           color = getColor(line.fLineColor) || '#ff00ff',
           npoints = line.fN,
           fP = line.fP,
@@ -90352,7 +90358,7 @@ class TGeoPainter extends ObjectPainter {
    drawEveTrack(track, itemname) {
       if (!track || (track.fN <= 0)) return false;
 
-      let linewidth = browser$1.isWin ? 1 : (track.fLineWidth || 1),
+      let linewidth = browser.isWin ? 1 : (track.fLineWidth || 1),
           color = getColor(track.fLineColor) || '#ff00ff',
           buf = new Float32Array((track.fN-1)*6), pos = 0,
           projv = this.ctrl.projectPos,
@@ -90988,7 +90994,7 @@ class TGeoPainter extends ObjectPainter {
       // send initialization message with clones
       this._worker.postMessage({
          init: true,   // indicate init command for worker
-         browser: browser$1,
+         browser,
          tm0: new Date().getTime(),
          vislevel: this._clones.getVisLevel(),
          maxvisnodes: this._clones.getMaxVisNodes(),
@@ -95539,7 +95545,7 @@ class TFile {
                }
             }
 
-            const kind = browser$1.isFirefox ? first_req.getResponseHeader('Server') : '';
+            const kind = browser.isFirefox ? first_req.getResponseHeader('Server') : '';
             if (isStr(kind) && kind.indexOf('SimpleHTTP') == 0) {
                file.fMaxRanges = 1;
                file.fUseStampPar = false;
@@ -103261,7 +103267,7 @@ class HierarchyPainter extends BasePainter {
          browser_configured = true;
       }
 
-      if (!browser_configured && (browser$1.screenWidth <= 640))
+      if (!browser_configured && (browser.screenWidth <= 640))
          browser_kind = 'float';
 
       this.no_select = GetOption('noselect');
@@ -117750,7 +117756,7 @@ class LongPollSocket {
          this.connid = 'close';
          reqmode = 'text;sync'; // use sync mode to close connection before browser window closed
       } else if ((this.connid === null) || (typeof this.connid !== 'number')) {
-         if (!browser$1.qt5) console.error('No connection');
+         if (!browser.qt5) console.error('No connection');
          return;
       } else {
          url += '?connection=' + this.connid;
@@ -117785,7 +117791,7 @@ class LongPollSocket {
 
             let str = '', i = 0, u8Arr = new Uint8Array(res), offset = u8Arr.length;
             if (offset < 4) {
-               if (!browser$1.qt5) console.error(`longpoll got short message in raw mode ${offset}`);
+               if (!browser.qt5) console.error(`longpoll got short message in raw mode ${offset}`);
                return this.handle.processRequest(null);
             }
 
@@ -118162,7 +118168,7 @@ class WebWindowHandle {
    /** @summary Request server to resize window
      * @desc For local displays like CEF or qt5 only server can do this */
    resizeWindow(w, h) {
-      if (browser$1.qt5 || browser$1.cef3)
+      if (browser.qt5 || browser.cef3)
          this.send(`RESIZE=${w},${h}`, 0);
       else if (isFunc(window?.resizeTo))
          window.resizeTo(w, h);
@@ -124378,7 +124384,7 @@ exports.addDrawFunc = addDrawFunc;
 exports.addHighlightStyle = addHighlightStyle;
 exports.addMethods = addMethods;
 exports.atob_func = atob_func;
-exports.browser = browser$1;
+exports.browser = browser;
 exports.btoa_func = btoa_func;
 exports.buildGUI = buildGUI;
 exports.buildSvgCurve = buildSvgCurve;
