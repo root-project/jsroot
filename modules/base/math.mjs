@@ -1515,8 +1515,8 @@ function tdistribution_cdf(x, r, x0 = 0) {
 /** @summary tdistribution_pdf function
   * @memberof Math */
 function tdistribution_pdf(x, r, x0 = 0) {
-   return (Math.exp (lgamma((r + 1.0)/2.0) - lgamma(r/2.0)) / Math.sqrt (M_PI * r))
-          * Math.pow ((1.0 + (x-x0)*(x-x0)/r), -(r + 1.0)/2.0);
+   return (Math.exp(lgamma((r + 1.0)/2.0) - lgamma(r/2.0)) / Math.sqrt(M_PI * r))
+          * Math.pow((1.0 + (x-x0)*(x-x0)/r), -(r + 1.0)/2.0);
 }
 
 /** @summary exponential_cdf_c function
@@ -1539,7 +1539,7 @@ function chisquared_pdf(x, r, x0 = 0) {
    // let return inf for case x  = x0 and treat special case of r = 2 otherwise will return nan
    if (x == x0 && a == 0) return 0.5;
 
-   return Math.exp ((r/2 - 1) * Math.log((x-x0)/2) - (x-x0)/2 - lgamma(r/2))/2;
+   return Math.exp((r/2 - 1) * Math.log((x-x0)/2) - (x-x0)/2 - lgamma(r/2))/2;
 }
 
 /** @summary Probability density function of the F-distribution.
@@ -1559,7 +1559,7 @@ function fdistribution_pdf(x, n, m, x0 = 0) {
 function fdistribution_cdf_c(x, n, m, x0 = 0) {
    if (n < 0 || m < 0) return Number.NaN;
 
-   let z = m / (m + n * (x - x0));
+   const z = m / (m + n * (x - x0));
    // fox z->1 and large a and b IB looses precision use complement function
    if (z > 0.9 && n > 1 && m > 1) return 1. - fdistribution_cdf(x, n, m, x0);
 
@@ -1639,20 +1639,21 @@ function LaplaceDistI(x, alpha = 0, beta = 1) {
 function Student(T, ndf) {
    if (ndf < 1) return 0;
 
-   let r   = ndf,
-       rh  = 0.5*r,
-       rh1 = rh + 0.5,
-       denom = Math.sqrt(r*Math.PI)*gamma(rh)*Math.pow(1+T*T/r, rh1);
+   const r   = ndf,
+         rh  = 0.5*r,
+         rh1 = rh + 0.5,
+         denom = Math.sqrt(r*Math.PI)*gamma(rh)*Math.pow(1+T*T/r, rh1);
    return gamma(rh1)/denom;
 }
 
 /** @summary cumulative distribution function of Student's
   * @memberof Math */
 function StudentI(T, ndf) {
-   let r = ndf;
+   const r = ndf;
 
-   return (T > 0) ? (1 - 0.5*BetaIncomplete((r/(r + T*T)), r*0.5, 0.5))
-                  :  0.5*BetaIncomplete((r/(r + T*T)), r*0.5, 0.5);
+   return (T > 0)
+     ? (1 - 0.5*BetaIncomplete((r/(r + T*T)), r*0.5, 0.5))
+     :  0.5*BetaIncomplete((r/(r + T*T)), r*0.5, 0.5);
 }
 
 /** @summary LogNormal function
@@ -1667,7 +1668,7 @@ function LogNormal(x, sigma, theta = 0, m = 1) {
 function BetaDist(x, p, q) {
    if ((x < 0) || (x > 1) || (p <= 0) || (q <= 0))
      return 0;
-   let beta = Beta(p, q);
+   const beta = Beta(p, q);
    return Math.pow(x, p-1) * Math.pow(1-x, q-1) / beta;
 }
 
@@ -1721,13 +1722,13 @@ function crystalball_function(x, alpha, n, sigma, mean = 0) {
    if (sigma < 0.)     return 0.;
    let z = (x - mean)/sigma;
    if (alpha < 0) z = -z;
-   let abs_alpha = Math.abs(alpha);
-   if (z  > - abs_alpha)
-      return Math.exp(- 0.5 * z * z);
-   let nDivAlpha = n/abs_alpha,
-       AA =  Math.exp(-0.5*abs_alpha*abs_alpha),
-       B = nDivAlpha - abs_alpha,
-       arg = nDivAlpha/(B-z);
+   const abs_alpha = Math.abs(alpha);
+   if (z  > -abs_alpha)
+      return Math.exp(-0.5 * z * z);
+   const nDivAlpha = n/abs_alpha,
+         AA =  Math.exp(-0.5*abs_alpha*abs_alpha),
+         B = nDivAlpha - abs_alpha,
+         arg = nDivAlpha/(B-z);
   return AA * Math.pow(arg,n);
 }
 
@@ -1736,10 +1737,10 @@ function crystalball_function(x, alpha, n, sigma, mean = 0) {
 function crystalball_pdf(x, alpha, n, sigma, mean = 0) {
    if (sigma < 0.) return 0.;
    if (n <= 1) return Number.NaN;  // pdf is not normalized for n <=1
-   let abs_alpha = Math.abs(alpha),
-       C = n/abs_alpha * 1./(n-1.) * Math.exp(-alpha*alpha/2.),
-       D = Math.sqrt(M_PI/2.)*(1.+erf(abs_alpha/Math.sqrt(2.))),
-       N = 1./(sigma*(C+D));
+   const abs_alpha = Math.abs(alpha),
+         C = n/abs_alpha * 1./(n-1.) * Math.exp(-alpha*alpha/2.),
+         D = Math.sqrt(M_PI/2.)*(1.+erf(abs_alpha/Math.sqrt(2.))),
+         N = 1./(sigma*(C+D));
    return N * crystalball_function(x,alpha,n,sigma,mean);
 }
 
@@ -1748,32 +1749,29 @@ function crystalball_pdf(x, alpha, n, sigma, mean = 0) {
 function crystalball_integral(x, alpha, n, sigma, mean = 0) {
    if (sigma == 0) return 0;
    if (alpha == 0) return 0.;
-   let useLog = (n == 1.0),
-       z = (x-mean)/sigma;
-   if (alpha < 0 ) z = -z;
+   const useLog = (n == 1.0),
+         abs_alpha = Math.abs(alpha);
 
-   let abs_alpha = Math.abs(alpha),
-       intgaus = 0., intpow  = 0.;
+   let z = (x-mean)/sigma, intgaus = 0., intpow  = 0.;
+   if (alpha < 0 ) z = -z;
 
    const sqrtpiover2 = Math.sqrt(M_PI/2.),
          sqrt2pi = Math.sqrt( 2.*M_PI),
          oneoversqrt2 = 1./Math.sqrt(2.);
    if (z <= -abs_alpha) {
-      let A = Math.pow(n/abs_alpha,n) * Math.exp(-0.5 * alpha*alpha),
-          B = n/abs_alpha - abs_alpha;
+      const A = Math.pow(n/abs_alpha,n) * Math.exp(-0.5 * alpha*alpha),
+            B = n/abs_alpha - abs_alpha;
 
       if (!useLog) {
-         let C = (n/abs_alpha) * (1./(n-1)) * Math.exp(-alpha*alpha/2.);
-         intpow  = C - A /(n-1.) * Math.pow(B-z,-n+1) ;
+         const C = (n/abs_alpha) * (1./(n-1)) * Math.exp(-alpha*alpha/2.);
+         intpow  = C - A /(n-1.) * Math.pow(B-z,-n+1);
       }
       else {
          // for n=1 the primitive of 1/x is log(x)
-         intpow = -A * Math.log( n / abs_alpha ) + A * Math.log( B -z );
+         intpow = -A * Math.log( n / abs_alpha ) + A * Math.log(B - z);
       }
       intgaus = sqrtpiover2*(1. + erf(abs_alpha*oneoversqrt2));
-   }
-   else
-   {
+   } else {
       intgaus = normal_cdf_c(z, 1);
       intgaus *= sqrt2pi;
       intpow  = 0;
@@ -1787,11 +1785,11 @@ function crystalball_cdf(x, alpha, n, sigma, mean = 0) {
    if (n <= 1.)
       return Number.NaN;
 
-   let abs_alpha = Math.abs(alpha),
-       C = n/abs_alpha * 1./(n-1.) * Math.exp(-alpha*alpha/2.),
-       D = Math.sqrt(M_PI/2.)*(1. + erf(abs_alpha/Math.sqrt(2.))),
-       totIntegral = sigma*(C+D),
-       integral = crystalball_integral(x,alpha,n,sigma,mean);
+   const abs_alpha = Math.abs(alpha),
+         C = n/abs_alpha * 1./(n-1.) * Math.exp(-alpha*alpha/2.),
+         D = Math.sqrt(M_PI/2.)*(1. + erf(abs_alpha/Math.sqrt(2.))),
+         totIntegral = sigma*(C+D),
+         integral = crystalball_integral(x,alpha,n,sigma,mean);
 
    return (alpha > 0) ? 1. - integral/totIntegral : integral/totIntegral;
 }
@@ -1802,11 +1800,11 @@ function crystalball_cdf_c(x, alpha, n, sigma, mean = 0) {
    if (n <= 1.)
       return Number.NaN;
 
-   let abs_alpha = Math.abs(alpha),
-       C = n/abs_alpha * 1./(n-1.) * Math.exp(-alpha*alpha/2.),
-       D = Math.sqrt(M_PI/2.)*(1. + erf(abs_alpha/Math.sqrt(2.))),
-       totIntegral = sigma*(C+D),
-       integral = crystalball_integral(x,alpha,n,sigma,mean);
+   const abs_alpha = Math.abs(alpha),
+         C = n/abs_alpha * 1./(n-1.) * Math.exp(-alpha*alpha/2.),
+         D = Math.sqrt(M_PI/2.)*(1. + erf(abs_alpha/Math.sqrt(2.))),
+         totIntegral = sigma*(C+D),
+         integral = crystalball_integral(x,alpha,n,sigma,mean);
 
    return (alpha > 0) ? integral/totIntegral : 1. - (integral/totIntegral);
 }
@@ -1814,10 +1812,11 @@ function crystalball_cdf_c(x, alpha, n, sigma, mean = 0) {
 /** @summary ChebyshevN function
   * @memberof Math */
 function ChebyshevN(n, x, c) {
-   let d1 = 0.0, d2 = 0.0, y2 = 2.0 * x;
+   let d1 = 0.0, d2 = 0.0;
+   const y2 = 2.0 * x;
 
    for (let i = n; i >= 1; i--) {
-      let temp = d1;
+      const temp = d1;
       d1 = y2 * d1 - d2 + c[i];
       d2 = temp;
    }
@@ -1896,7 +1895,7 @@ function Chebyshev10(x, ...args) {
 /** @summary Caluclate ClopperPearson
   * @memberof Math */
 function eff_ClopperPearson(total,passed,level,bUpper) {
-   let alpha = (1.0 - level) / 2;
+   const alpha = (1.0 - level) / 2;
    if (bUpper)
       return ((passed == total) ? 1.0 : beta_quantile(1 - alpha,passed + 1,total-passed));
 
@@ -1908,10 +1907,10 @@ function eff_ClopperPearson(total,passed,level,bUpper) {
 function eff_Normal(total,passed,level,bUpper) {
    if (total == 0) return bUpper ? 1 : 0;
 
-   let alpha = (1.0 - level)/2,
-       average = passed / total,
-       sigma = Math.sqrt(average * (1 - average) / total),
-       delta = normal_quantile(1 - alpha, sigma);
+   const alpha = (1.0 - level)/2,
+         average = passed / total,
+         sigma = Math.sqrt(average * (1 - average) / total),
+         delta = normal_quantile(1 - alpha, sigma);
 
    if (bUpper)
       return ((average + delta) > 1) ? 1.0 : (average + delta);
@@ -1922,12 +1921,12 @@ function eff_Normal(total,passed,level,bUpper) {
 /** @summary Calculates the boundaries for the frequentist Wilson interval
   * @memberof Math */
 function eff_Wilson(total,passed,level,bUpper) {
-   let alpha = (1.0 - level)/2;
+   const alpha = (1.0 - level)/2;
    if (total == 0) return bUpper ? 1 : 0;
-   let average = passed / total,
-       kappa = normal_quantile(1 - alpha,1),
-       mode = (passed + 0.5 * kappa * kappa) / (total + kappa * kappa),
-       delta = kappa / (total + kappa*kappa) * Math.sqrt(total * average * (1 - average) + kappa * kappa / 4);
+   const average = passed / total,
+         kappa = normal_quantile(1 - alpha,1),
+         mode = (passed + 0.5 * kappa * kappa) / (total + kappa * kappa),
+         delta = kappa / (total + kappa*kappa) * Math.sqrt(total * average * (1 - average) + kappa * kappa / 4);
 
    if (bUpper)
       return ((mode + delta) > 1) ? 1.0 : (mode + delta);
@@ -1938,10 +1937,10 @@ function eff_Wilson(total,passed,level,bUpper) {
 /** @summary Calculates the boundaries for the frequentist Agresti-Coull interval
   * @memberof Math */
 function eff_AgrestiCoull(total,passed,level,bUpper) {
-   let alpha = (1.0 - level)/2,
-       kappa = normal_quantile(1 - alpha,1),
-       mode = (passed + 0.5 * kappa * kappa) / (total + kappa * kappa),
-       delta = kappa * Math.sqrt(mode * (1 - mode) / (total + kappa * kappa));
+   const alpha = (1.0 - level)/2,
+         kappa = normal_quantile(1 - alpha,1),
+         mode = (passed + 0.5 * kappa * kappa) / (total + kappa * kappa),
+         delta = kappa * Math.sqrt(mode * (1 - mode) / (total + kappa * kappa));
 
   if (bUpper)
      return ((mode + delta) > 1) ? 1.0 : (mode + delta);
@@ -1957,23 +1956,23 @@ function eff_MidPInterval(total,passed,level,bUpper) {
 
    // treat special case for 0<passed<1
    // do a linear interpolation of the upper limit values
-   if ( passed > 0 && passed < 1) {
-      let p0 = eff_MidPInterval(total, 0.0, level, bUpper);
-      let p1 = eff_MidPInterval(total, 1.0, level, bUpper);
+   if (passed > 0 && passed < 1) {
+      const p0 = eff_MidPInterval(total, 0.0, level, bUpper),
+            p1 = eff_MidPInterval(total, 1.0, level, bUpper);
       p = (p1 - p0) * passed + p0;
       return p;
    }
 
    while (Math.abs(pmax - pmin) > tol) {
       p = (pmin + pmax)/2;
-      //double v = 0.5 * ROOT::Math::binomial_pdf(int(passed), p, int(total));
+      // double v = 0.5 * ROOT::Math::binomial_pdf(int(passed), p, int(total));
       // make it work for non integer using the binomial - beta relationship
       let v = 0.5 * beta_pdf(p, passed+1., total-passed+1)/(total+1);
-      //if (passed > 0) v += ROOT::Math::binomial_cdf(int(passed - 1), p, int(total));
+      // if (passed > 0) v += ROOT::Math::binomial_cdf(int(passed - 1), p, int(total));
       // compute the binomial cdf at passed -1
       if ( (passed-1) >= 0) v += beta_cdf_c(p, passed, total-passed+1);
 
-      let vmin = bUpper ? alpha_min : 1.- alpha_min;
+      const vmin = bUpper ? alpha_min : 1.- alpha_min;
       if (v > vmin)
          pmin = p;
       else
@@ -1986,8 +1985,8 @@ function eff_MidPInterval(total,passed,level,bUpper) {
 /** @summary for a central confidence interval for a Beta distribution
   * @memberof Math */
 function eff_Bayesian(total,passed,level,bUpper,alpha,beta) {
-   let  a = passed + alpha,
-        b = total - passed + beta;
+   const  a = passed + alpha,
+          b = total - passed + beta;
    if (bUpper) {
       if ((a > 0) && (b > 0))
          return beta_quantile((1+level)/2,a,b);
@@ -2004,15 +2003,15 @@ function eff_Bayesian(total,passed,level,bUpper,alpha,beta) {
 /** @summary Return function to calculate boundary of TEfficiency
   * @memberof Math */
 function getTEfficiencyBoundaryFunc(option, isbayessian) {
-   const  kFCP = 0,       ///< Clopper-Pearson interval (recommended by PDG)
-          kFNormal = 1,   ///< Normal approximation
-          kFWilson = 2,   ///< Wilson interval
-          kFAC = 3,       ///< Agresti-Coull interval
-          kFFC = 4,       ///< Feldman-Cousins interval, too complicated for JavaScript
-          // kBJeffrey = 5,  ///< Jeffrey interval (Prior ~ Beta(0.5,0.5)
-          // kBUniform = 6,  ///< Prior ~ Uniform = Beta(1,1)
-          // kBBayesian = 7, ///< User specified Prior ~ Beta(fBeta_alpha,fBeta_beta)
-          kMidP = 8;      ///< Mid-P Lancaster interval
+   const  kFCP = 0,       // Clopper-Pearson interval (recommended by PDG)
+          kFNormal = 1,   // Normal approximation
+          kFWilson = 2,   // Wilson interval
+          kFAC = 3,       // Agresti-Coull interval
+          kFFC = 4,       // Feldman-Cousins interval, too complicated for JavaScript
+          // kBJeffrey = 5,  // Jeffrey interval (Prior ~ Beta(0.5,0.5)
+          // kBUniform = 6,  // Prior ~ Uniform = Beta(1,1)
+          // kBBayesian = 7, // User specified Prior ~ Beta(fBeta_alpha,fBeta_beta)
+          kMidP = 8;      // Mid-P Lancaster interval
 
    if (isbayessian)
       return eff_Bayesian;
