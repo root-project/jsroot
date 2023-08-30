@@ -78,7 +78,7 @@
   "scripts": {
     "build": "rollup -c build/rollup.config.js",
     "doc": "jsdoc -c docs/jsdoc.json -R docs/main.md  && jsdoc -c docs/jsdoc.json -p -d docs/jsdocfull -R docs/main.md",
-    "check": "eslint modules/*.mjs"
+    "check": "eslint modules/core.mjs modules/draw.mjs modules/gui.mjs modules/io.mjs modules/main.mjs modules/tree.mjs modules/webwindow.mjs"
   },
   "keywords": [
     "ROOT",
