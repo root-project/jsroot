@@ -4,7 +4,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '29/08/2023',
+version_date = '30/08/2023',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -882,7 +882,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
       if (settings.WithCredentials)
          xhr.withCredentials = true;
 
-      if (settings.HandleWrongHttpResponse && (method == 'GET') && isFunc(xhr.addEventListener))
+      if (settings.HandleWrongHttpResponse && (method === 'GET') && isFunc(xhr.addEventListener)) {
          xhr.addEventListener('progress', function(oEvent) {
             if (oEvent.lengthComputable && this.expected_size && (oEvent.loaded > this.expected_size)) {
                this.did_abort = true;
@@ -890,13 +890,13 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
                this.error_callback(Error(`Server sends more bytes ${oEvent.loaded} than expected ${this.expected_size}. Abort I/O operation`), 598);
             }
          }.bind(xhr));
+      }
 
       xhr.onreadystatechange = function() {
-
          if (this.did_abort) return;
 
          if ((this.readyState === 2) && this.expected_size) {
-            let len = parseInt(this.getResponseHeader('Content-Length'));
+            const len = parseInt(this.getResponseHeader('Content-Length'));
             if (Number.isInteger(len) && (len > this.expected_size) && !settings.HandleWrongHttpResponse) {
                this.did_abort = true;
                this.abort();
@@ -904,23 +904,23 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
             }
          }
 
-         if (this.readyState != 4) return;
+         if (this.readyState !== 4) return;
 
-         if ((this.status != 200) && (this.status != 206) && !browser.qt5 &&
+         if ((this.status !== 200) && (this.status !== 206) && !browser.qt5 &&
              // in these special cases browsers not always set status
-             !((this.status == 0) && ((url.indexOf('file://') == 0) || (url.indexOf('blob:') == 0)))) {
+             !((this.status === 0) && ((url.indexOf('file://') === 0) || (url.indexOf('blob:') === 0))))
                return this.error_callback(Error(`Fail to load url ${url}`), this.status);
-         }
 
-         if (this.nodejs_checkzip && (this.getResponseHeader('content-encoding') == 'gzip'))
+         if (this.nodejs_checkzip && (this.getResponseHeader('content-encoding') === 'gzip')) {
             // special handling of gzipped JSON objects in Node.js
             return import('zlib').then(handle => {
-                let res = handle.unzipSync(Buffer.from(this.response)),
-                    obj = JSON.parse(res); // zlib returns Buffer, use JSON to parse it
+                const res = handle.unzipSync(Buffer.from(this.response)),
+                      obj = JSON.parse(res); // zlib returns Buffer, use JSON to parse it
                return this.http_callback(parse(obj));
             });
+         }
 
-         switch(this.kind) {
+         switch (this.kind) {
             case 'xml': return this.http_callback(this.responseXML);
             case 'text': return this.http_callback(this.responseText);
             case 'object': return this.http_callback(parse(this.responseText));
@@ -932,13 +932,12 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
          if (this.responseType === undefined)
             return this.http_callback(this.responseText);
 
-         if ((this.kind == 'bin') && ('byteLength' in this.response)) {
+         if ((this.kind === 'bin') && ('byteLength' in this.response)) {
             // if string representation in requested - provide it
-
-            let filecontent = '', u8Arr = new Uint8Array(this.response);
+            const u8Arr = new Uint8Array(this.response);
+            let filecontent = '';
             for (let i = 0; i < u8Arr.length; ++i)
                filecontent += String.fromCharCode(u8Arr[i]);
-
             return this.http_callback(filecontent);
          }
 
@@ -947,10 +946,10 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
 
       xhr.open(method, url, is_async);
 
-      if ((kind == 'bin') || (kind == 'buf'))
+      if ((kind === 'bin') || (kind === 'buf'))
          xhr.responseType = 'arraybuffer';
 
-      if (nodejs && (method == 'GET') && (kind === 'object') && (url.indexOf('.json.gz') > 0)) {
+      if (nodejs && (method === 'GET') && (kind === 'object') && (url.indexOf('.json.gz') > 0)) {
          xhr.nodejs_checkzip = true;
          xhr.responseType = 'arraybuffer';
       }
@@ -961,10 +960,11 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
    if (isNodeJs()) {
       if (!use_promise)
          throw Error('Not allowed to create http requests in node.js without promise');
+      // eslint-disable-next-line new-cap
       return import('xhr2').then(h => configureXhr(new h.default()));
    }
 
-   let xhr = configureXhr(new XMLHttpRequest());
+   const xhr = configureXhr(new XMLHttpRequest());
    return use_promise ? Promise.resolve(xhr) : xhr;
 }
 
@@ -989,8 +989,8 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
   *       .then(obj => console.log(`Get object of type ${obj._typename}`))
   *       .catch(err => console.error(err.message)); */
 async function httpRequest(url, kind, post_data) {
-   return new Promise((accept, reject) => {
-      createHttpRequest(url, kind, accept, reject, true).then(xhr => xhr.send(post_data || null));
+   return new Promise((resolve, reject) => {
+      createHttpRequest(url, kind, resolve, reject, true).then(xhr => xhr.send(post_data || null));
    });
 }
 
@@ -1026,7 +1026,7 @@ const prROOT = 'ROOT.', clTObject = 'TObject', clTNamed = 'TNamed', clTString = 
   * obj.fName = 'name';
   * obj.fTitle = 'title'; */
 function create(typename, target) {
-   let obj = target || {};
+   const obj = target || {};
 
    switch (typename) {
       case clTObject:
@@ -1047,7 +1047,7 @@ function create(typename, target) {
       case clTAxis:
          create(clTNamed, obj);
          create(clTAttAxis, obj);
-         extend(obj, { fNbins: 1, fXmin: 0, fXmax: 1, fXbins : [], fFirst: 0, fLast: 0,
+         extend(obj, { fNbins: 1, fXmin: 0, fXmax: 1, fXbins: [], fFirst: 0, fLast: 0,
                        fBits2: 0, fTimeDisplay: false, fTimeFormat: '', fLabels: null, fModLabs: null });
          break;
       case clTAttLine:
@@ -1057,7 +1057,7 @@ function create(typename, target) {
          extend(obj, { fFillColor: 0, fFillStyle: 0 });
          break;
       case clTAttMarker:
-         extend(obj, { fMarkerColor: 1, fMarkerStyle: 1, fMarkerSize: 1. });
+         extend(obj, { fMarkerColor: 1, fMarkerStyle: 1, fMarkerSize: 1 });
          break;
       case clTLine:
          create(clTObject, obj);
@@ -1072,7 +1072,7 @@ function create(typename, target) {
          break;
       case clTPave:
          create(clTBox, obj);
-         extend(obj, { fX1NDC : 0., fY1NDC: 0, fX2NDC: 1, fY2NDC: 1,
+         extend(obj, { fX1NDC: 0, fY1NDC: 0, fX2NDC: 1, fY2NDC: 1,
                        fBorderSize: 0, fInit: 1, fShadowColor: 1,
                        fCornerRadius: 0, fOption: 'brNDC', fName: 'title' });
          break;
@@ -1132,9 +1132,9 @@ function create(typename, target) {
                        fXaxis: create(clTAxis), fYaxis: create(clTAxis), fZaxis: create(clTAxis),
                        fFillColor: gStyle.fHistFillColor, fFillStyle: gStyle.fHistFillStyle,
                        fLineColor: gStyle.fHistLineColor, fLineStyle: gStyle.fHistLineStyle, fLineWidth: gStyle.fHistLineWidth,
-                       fBarOffset: 0, fBarWidth: 1000, fEntries: 0.,
-                       fTsumw: 0., fTsumw2: 0., fTsumwx: 0., fTsumwx2: 0.,
-                       fMaximum: kNoZoom, fMinimum: kNoZoom, fNormFactor: 0., fContour: [],
+                       fBarOffset: 0, fBarWidth: 1000, fEntries: 0,
+                       fTsumw: 0, fTsumw2: 0, fTsumwx: 0, fTsumwx2: 0,
+                       fMaximum: kNoZoom, fMinimum: kNoZoom, fNormFactor: 0, fContour: [],
                        fSumw2: [], fOption: '', fFunctions: create(clTList),
                        fBufferSize: 0, fBuffer: [], fBinStatErrOpt: 0, fStatOverflows: 2 });
          break;
@@ -1149,7 +1149,7 @@ function create(typename, target) {
          break;
       case clTH2:
          create(clTH1, obj);
-         extend(obj, { fScalefactor: 1., fTsumwy: 0.,  fTsumwy2: 0, fTsumwxy: 0 });
+         extend(obj, { fScalefactor: 1, fTsumwy: 0,  fTsumwy2: 0, fTsumwxy: 0 });
          break;
       case clTH2I:
       case 'TH2L64':
@@ -1162,7 +1162,7 @@ function create(typename, target) {
          break;
       case clTH3:
          create(clTH1, obj);
-         extend(obj, { fTsumwy: 0.,  fTsumwy2: 0, fTsumwz: 0.,  fTsumwz2: 0, fTsumwxy: 0, fTsumwxz: 0, fTsumwyz: 0 });
+         extend(obj, { fTsumwy: 0,  fTsumwy2: 0, fTsumwz: 0,  fTsumwz2: 0, fTsumwxy: 0, fTsumwxz: 0, fTsumwyz: 0 });
          break;
       case 'TH3I':
       case 'TH3L64':
@@ -1187,7 +1187,7 @@ function create(typename, target) {
          break;
       case 'TGraphAsymmErrors':
          create(clTGraph, obj);
-         extend(obj, { fEXlow: [], fEXhigh: [], fEYlow: [], fEYhigh: []});
+         extend(obj, { fEXlow: [], fEXhigh: [], fEYlow: [], fEYhigh: [] });
          break;
       case clTMultiGraph:
          create(clTNamed, obj);
@@ -1323,7 +1323,7 @@ function create(typename, target) {
   * h1.fYaxis.fTitle = 'yaxis';
   * h1.fXaxis.fLabelSize = 0.02; */
 function createHistogram(typename, nbinsx, nbinsy, nbinsz) {
-   let histo = create(typename);
+   const histo = create(typename);
    if (!histo.fXaxis || !histo.fYaxis || !histo.fZaxis) return null;
    histo.fName = 'hist'; histo.fTitle = 'title';
    if (nbinsx) extend(histo.fXaxis, { fNbins: nbinsx, fXmin: 0, fXmax: nbinsx });
@@ -1354,10 +1354,10 @@ function createHistogram(typename, nbinsx, nbinsy, nbinsz) {
 
 function setHistogramTitle(histo, title) {
    if (!histo) return;
-   if (title.indexOf(';') < 0) {
+   if (title.indexOf(';') < 0)
       histo.fTitle = title;
-   } else {
-      let arr = title.split(';');
+   else {
+      const arr = title.split(';');
       histo.fTitle = arr[0];
       if (arr.length > 1) histo.fXaxis.fTitle = arr[1];
       if (arr.length > 2) histo.fYaxis.fTitle = arr[2];
@@ -1370,7 +1370,7 @@ function setHistogramTitle(histo, title) {
   * @param {number} npoints - number of points
   * @param {boolean} [use_int32] - use Int32Array type for points, default is Float32Array */
 function createTPolyLine(npoints, use_int32) {
-   let poly = create(clTPolyLine);
+   const poly = create(clTPolyLine);
    if (npoints) {
       poly.fN = npoints;
       if (use_int32) {
@@ -1389,13 +1389,13 @@ function createTPolyLine(npoints, use_int32) {
   * @param {array} [xpts] - array with X coordinates
   * @param {array} [ypts] - array with Y coordinates */
 function createTGraph(npoints, xpts, ypts) {
-   let graph = extend(create(clTGraph), { fBits: 0x408, fName: 'graph', fTitle: 'title' });
+   const graph = extend(create(clTGraph), { fBits: 0x408, fName: 'graph', fTitle: 'title' });
 
    if (npoints > 0) {
       graph.fMaxSize = graph.fNpoints = npoints;
 
-      const usex = isObject(xpts) && (xpts.length === npoints);
-      const usey = isObject(ypts) && (ypts.length === npoints);
+      const usex = isObject(xpts) && (xpts.length === npoints),
+            usey = isObject(ypts) && (ypts.length === npoints);
 
       for (let i = 0; i < npoints; ++i) {
          graph.fX.push(usex ? xpts[i] : i/npoints);
@@ -1416,7 +1416,7 @@ function createTGraph(npoints, xpts, ypts) {
   * let h3 = createHistogram('TH1F', nbinsx);
   * let stack = createTHStack(h1, h2, h3); */
 function createTHStack() {
-   let stack = create(clTHStack);
+   const stack = create(clTHStack);
    for (let i = 0; i < arguments.length; ++i)
       stack.fHists.Add(arguments[i], '');
    return stack;
@@ -1431,7 +1431,7 @@ function createTHStack() {
   * let gr3 = createTGraph(100);
   * let mgr = createTMultiGraph(gr1, gr2, gr3); */
 function createTMultiGraph() {
-   let mgraph = create(clTMultiGraph);
+   const mgraph = create(clTMultiGraph);
    for (let i = 0; i < arguments.length; ++i)
        mgraph.fGraphs.Add(arguments[i], '');
    return mgraph;
@@ -1444,19 +1444,18 @@ const methodsCache = {};
 /** @summary Returns methods for given typename
   * @private */
 function getMethods(typename, obj) {
-
-   let m = methodsCache[typename],
-       has_methods = (m !== undefined);
-
+   let m = methodsCache[typename];
+   const has_methods = (m !== undefined);
    if (!has_methods) m = {};
 
    // Due to binary I/O such TObject methods may not be set for derived classes
    // Therefore when methods requested for given object, check also that basic methods are there
-   if ((typename == clTObject) || (typename == clTNamed) || (obj?.fBits !== undefined))
+   if ((typename === clTObject) || (typename === clTNamed) || (obj?.fBits !== undefined)) {
       if (typeof m.TestBit === 'undefined') {
-         m.TestBit = function(f) { return (this.fBits & f) != 0; };
+         m.TestBit = function(f) { return (this.fBits & f) !== 0; };
          m.InvertBit = function(f) { this.fBits = this.fBits ^ (f & 0xffffff); };
       }
+   }
 
    if (has_methods) return m;
 
@@ -1465,11 +1464,11 @@ function getMethods(typename, obj) {
          this.arr = [];
          this.opt = [];
       }
-      m.Add = function(obj,opt) {
+      m.Add = function(obj, opt) {
          this.arr.push(obj);
          this.opt.push(isStr(opt) ? opt : '');
       }
-      m.AddFirst = function(obj,opt) {
+      m.AddFirst = function(obj, opt) {
          this.arr.unshift(obj);
          this.opt.unshift(isStr(opt) ? opt : '');
       }
@@ -1481,7 +1480,7 @@ function getMethods(typename, obj) {
 
    if ((typename === clTPaveText) || (typename === clTPaveStats)) {
       m.AddText = function(txt) {
-         let line = create(clTLatex);
+         const line = create(clTLatex);
          line.fTitle = txt;
          line.fTextAlign = this.fTextAlign;
          this.fLines.Add(line);
@@ -1491,7 +1490,7 @@ function getMethods(typename, obj) {
       }
    }
 
-   if ((typename.indexOf(clTF1) == 0) || (typename === clTF2)) {
+   if ((typename.indexOf(clTF1) === 0) || (typename === clTF2)) {
       m.addFormula = function(obj) {
          if (!obj) return;
          if (this.formulas === undefined) this.formulas = [];
@@ -1502,11 +1501,12 @@ function getMethods(typename, obj) {
          if (this.fParams?.fParNames)
             return this.fParams.fParNames[n];
          if (this.fFormula?.fParams) {
-            for (let k = 0, arr = this.fFormula.fParams; k < arr.length; ++k)
-               if(arr[k].second == n)
+            for (let k = 0, arr = this.fFormula.fParams; k < arr.length; ++k) {
+               if (arr[k].second === n)
                   return arr[k].first;
+            }
          }
-         return (this.fNames && this.fNames[n]) ? this.fNames[n] : 'p'+n;
+         return (this.fNames && this.fNames[n]) ? this.fNames[n] : `p${n}`;
       }
       m.GetParValue = function(n) {
          if (this.fParams?.fParameters) return this.fParams.fParameters[n];
@@ -1522,25 +1522,25 @@ function getMethods(typename, obj) {
       }
    }
 
-   if (((typename.indexOf(clTGraph) == 0) || (typename == clTCutG)) && (typename != clTGraphPolargram) && (typename != clTGraphTime)) {
+   if (((typename.indexOf(clTGraph) === 0) || (typename === clTCutG)) && (typename !== clTGraphPolargram) && (typename !== clTGraphTime)) {
       // check if point inside figure specified by the TGraph
-      m.IsInside = function(xp,yp) {
-         let i = 0, j = this.fNpoints - 1, x = this.fX, y = this.fY, oddNodes = false;
+      m.IsInside = function(xp, yp) {
+         const x = this.fX, y = this.fY;
+         let i = 0, j = this.fNpoints - 1, oddNodes = false;
 
          for (; i < this.fNpoints; ++i) {
-            if ((y[i]<yp && y[j]>=yp) || (y[j]<yp && y[i]>=yp)) {
-               if (x[i]+(yp-y[i])/(y[j]-y[i])*(x[j]-x[i])<xp) {
+            if ((y[i] < yp && y[j] >= yp) || (y[j] < yp && y[i] >= yp)) {
+               if (x[i] + (yp - y[i])/(y[j] - y[i])*(x[j] - x[i]) < xp)
                   oddNodes = !oddNodes;
-               }
             }
-            j=i;
+            j = i;
          }
 
          return oddNodes;
       }
    }
 
-   if (typename.indexOf(clTH1) == 0 || typename.indexOf(clTH2) == 0 || typename.indexOf(clTH3) == 0) {
+   if (typename.indexOf(clTH1) === 0 || typename.indexOf(clTH2) === 0 || typename.indexOf(clTH3) === 0) {
       m.getBinError = function(bin) {
          //   -*-*-*-*-*Return value of error associated to bin number bin*-*-*-*-*
          //    if the sum of squares of weights has been defined (via Sumw2),
@@ -1561,50 +1561,38 @@ function getMethods(typename, obj) {
       }
    }
 
-   if (typename.indexOf(clTH1) == 0) {
+   if (typename.indexOf(clTH1) === 0) {
       m.getBin = function(x) { return x; }
       m.getBinContent = function(bin) { return this.fArray[bin]; }
       m.Fill = function(x, weight) {
-         let axis = this.fXaxis,
-             bin = 1 + Math.floor((x - axis.fXmin) / (axis.fXmax - axis.fXmin) * axis.fNbins);
-         if (bin < 0) bin = 0; else
-         if (bin > axis.fNbins + 1) bin = axis.fNbins + 1;
-         this.fArray[bin] += (weight === undefined) ? 1 : weight;
+         const a = this.fXaxis,
+               bin = Math.max(0, 1 + Math.min(a.fNbins, Math.floor((x - a.fXmin) / (a.fXmax - a.fXmin) * a.fNbins)));
+         this.fArray[bin] += weight ?? 1;
          this.fEntries++;
       }
    }
 
-   if (typename.indexOf(clTH2) == 0) {
+   if (typename.indexOf(clTH2) === 0) {
       m.getBin = function(x, y) { return (x + (this.fXaxis.fNbins+2) * y); }
       m.getBinContent = function(x, y) { return this.fArray[this.getBin(x, y)]; }
       m.Fill = function(x, y, weight) {
-         let axis1 = this.fXaxis, axis2 = this.fYaxis,
-             bin1 = 1 + Math.floor((x - axis1.fXmin) / (axis1.fXmax - axis1.fXmin) * axis1.fNbins),
-             bin2 = 1 + Math.floor((y - axis2.fXmin) / (axis2.fXmax - axis2.fXmin) * axis2.fNbins);
-         if (bin1 < 0) bin1 = 0; else
-         if (bin1 > axis1.fNbins + 1) bin1 = axis1.fNbins + 1;
-         if (bin2 < 0) bin2 = 0; else
-         if (bin2 > axis2.fNbins + 1) bin2 = axis2.fNbins + 1;
-         this.fArray[bin1 + (axis1.fNbins+2)*bin2] += (weight === undefined) ? 1 : weight;
+         const a1 = this.fXaxis, a2 = this.fYaxis,
+               bin1 = Math.max(0, 1 + Math.min(a1.fNbins, Math.floor((x - a1.fXmin) / (a1.fXmax - a1.fXmin) * a1.fNbins))),
+               bin2 = Math.max(0, 1 + Math.min(a2.fNbins, Math.floor((y - a2.fXmin) / (a2.fXmax - a2.fXmin) * a2.fNbins)));
+         this.fArray[bin1 + (a1.fNbins + 2)*bin2] += weight ?? 1;
          this.fEntries++;
       }
    }
 
-   if (typename.indexOf(clTH3) == 0) {
+   if (typename.indexOf(clTH3) === 0) {
       m.getBin = function(x, y, z) { return (x + (this.fXaxis.fNbins+2) * (y + (this.fYaxis.fNbins+2) * z)); }
       m.getBinContent = function(x, y, z) { return this.fArray[this.getBin(x, y, z)]; }
       m.Fill = function(x, y, z, weight) {
-         let axis1 = this.fXaxis, axis2 = this.fYaxis, axis3 = this.fZaxis,
-             bin1 = 1 + Math.floor((x - axis1.fXmin) / (axis1.fXmax - axis1.fXmin) * axis1.fNbins),
-             bin2 = 1 + Math.floor((y - axis2.fXmin) / (axis2.fXmax - axis2.fXmin) * axis2.fNbins),
-             bin3 = 1 + Math.floor((z - axis3.fXmin) / (axis3.fXmax - axis3.fXmin) * axis3.fNbins);
-         if (bin1 < 0) bin1 = 0; else
-         if (bin1 > axis1.fNbins + 1) bin1 = axis1.fNbins + 1;
-         if (bin2 < 0) bin2 = 0; else
-         if (bin2 > axis2.fNbins + 1) bin2 = axis2.fNbins + 1;
-         if (bin3 < 0) bin3 = 0; else
-         if (bin3 > axis3.fNbins + 1) bin3 = axis3.fNbins + 1;
-         this.fArray[bin1 + (axis1.fNbins+2)* (bin2+(axis2.fNbins+2)*bin3)] += (weight === undefined) ? 1 : weight;
+         const a1 = this.fXaxis, a2 = this.fYaxis, a3 = this.fZaxis,
+               bin1 = Math.max(0, 1 + Math.min(a1.fNbins, Math.floor((x - a1.fXmin) / (a1.fXmax - a1.fXmin) * a1.fNbins))),
+               bin2 = Math.max(0, 1 + Math.min(a2.fNbins, Math.floor((y - a2.fXmin) / (a2.fXmax - a2.fXmin) * a2.fNbins))),
+               bin3 = Math.max(0, 1 + Math.min(a3.fNbins, Math.floor((z - a3.fXmin) / (a3.fXmax - a3.fXmin) * a3.fNbins)));
+         this.fArray[bin1 + (a1.fNbins + 2) * (bin2 + (a2.fNbins + 2)*bin3)] += weight ?? 1;
          this.fEntries++;
       }
    }
