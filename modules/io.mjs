@@ -777,7 +777,7 @@ function getPairStreamer(si, typname, file) {
   * @desc used for reading of data
   * @private */
 function createMemberStreamer(element, file) {
-   let member = {
+   const member = {
       name: element.fName, type: element.fType,
       fArrayLength: element.fArrayLength,
       fArrayDim: element.fArrayDim,
@@ -827,7 +827,7 @@ function createMemberStreamer(element, file) {
       case kULong:
          member.func = function(buf, obj) { obj[this.name] = buf.ntou8(); }; break;
       case kBool:
-         member.func = function(buf, obj) { obj[this.name] = buf.ntou1() != 0; }; break;
+         member.func = function(buf, obj) { obj[this.name] = buf.ntou1() !== 0; }; break;
       case kOffsetL + kBool:
       case kOffsetL + kInt:
       case kOffsetL + kCounter:
@@ -899,36 +899,37 @@ function createMemberStreamer(element, file) {
       case kOffsetL + kDouble32:
       case kOffsetP + kDouble32:
          member.double32 = true;
+      // eslint-disable-next-line no-fallthrough
       case kFloat16:
       case kOffsetL + kFloat16:
       case kOffsetP + kFloat16:
          if (element.fFactor !== 0) {
-            member.factor = 1. / element.fFactor;
+            member.factor = 1 / element.fFactor;
             member.min = element.fXmin;
             member.read = function(buf) { return buf.ntou4() * this.factor + this.min; };
          } else
-            if ((element.fXmin === 0) && member.double32) {
+            if ((element.fXmin === 0) && member.double32)
                member.read = function(buf) { return buf.ntof(); };
-            } else {
+            else {
                member.nbits = Math.round(element.fXmin);
                if (member.nbits === 0) member.nbits = 12;
                member.dv = new DataView(new ArrayBuffer(8), 0); // used to cast from uint32 to float32
                member.read = function(buf) {
-                  let theExp = buf.ntou1(), theMan = buf.ntou2();
+                  const theExp = buf.ntou1(), theMan = buf.ntou2();
                   this.dv.setUint32(0, (theExp << 23) | ((theMan & ((1 << (this.nbits + 1)) - 1)) << (23 - this.nbits)));
                   return ((1 << (this.nbits + 1) & theMan) ? -1 : 1) * this.dv.getFloat32(0);
                };
             }
 
          member.readarr = function(buf, len) {
-            let arr = this.double32 ? new Float64Array(len) : new Float32Array(len);
+            const arr = this.double32 ? new Float64Array(len) : new Float32Array(len);
             for (let n = 0; n < len; ++n) arr[n] = this.read(buf);
             return arr;
          }
 
-         if (member.type < kOffsetL) {
-            member.func = function(buf, obj) { obj[this.name] = this.read(buf); }
-         } else
+         if (member.type < kOffsetL)
+            member.func = function(buf, obj) { obj[this.name] = this.read(buf); };
+         else
             if (member.type > kOffsetP) {
                member.cntname = element.fCountName;
                member.func = function(buf, obj) {
@@ -959,7 +960,7 @@ function createMemberStreamer(element, file) {
       case kObjectp:
       case kObject: {
          let classname = (element.fTypeName === 'BASE') ? element.fName : element.fTypeName;
-         if (classname[classname.length - 1] == '*')
+         if (classname[classname.length - 1] === '*')
             classname = classname.slice(0, classname.length - 1);
 
          const arrkind = getArrayKind(classname);
@@ -967,9 +968,9 @@ function createMemberStreamer(element, file) {
          if (arrkind > 0) {
             member.arrkind = arrkind;
             member.func = function(buf, obj) { obj[this.name] = buf.readFastArray(buf.ntou4(), this.arrkind); };
-         } else if (arrkind === 0) {
+         } else if (arrkind === 0)
             member.func = function(buf, obj) { obj[this.name] = buf.readTString(); };
-         } else {
+         else {
             member.classname = classname;
 
             if (element.fArrayLength > 1) {
@@ -989,7 +990,7 @@ function createMemberStreamer(element, file) {
       case kOffsetL + kAnyp:
       case kOffsetL + kObjectp: {
          let classname = element.fTypeName;
-         if (classname[classname.length - 1] == '*')
+         if (classname[classname.length - 1] === '*')
             classname = classname.slice(0, classname.length - 1);
 
          member.arrkind = getArrayKind(classname);
@@ -1046,9 +1047,9 @@ function createMemberStreamer(element, file) {
             member.isptrptr = false;
          }
 
-         if (member.isptrptr) {
-            member.readitem = function(buf) { return buf.readObjectAny(); }
-         } else {
+         if (member.isptrptr)
+            member.readitem = function(buf) { return buf.readObjectAny(); };
+         else {
             member.arrkind = getArrayKind(member.typename);
             if (member.arrkind > 0)
                member.readitem = function(buf) { return buf.readFastArray(buf.ntou4(), this.arrkind); }
@@ -1061,7 +1062,7 @@ function createMemberStreamer(element, file) {
          if (member.readitem !== undefined) {
             member.read_loop = function(buf, cnt) {
                return buf.readNdimArray(this, (buf2, member2) => {
-                  let itemarr = new Array(cnt);
+                  const itemarr = new Array(cnt);
                   for (let i = 0; i < cnt; ++i)
                      itemarr[i] = member2.readitem(buf2);
                   return itemarr;
@@ -1078,7 +1079,7 @@ function createMemberStreamer(element, file) {
                const ver = buf.readVersion(), sz0 = obj[this.stl_size], res = new Array(sz0);
 
                for (let loop0 = 0; loop0 < sz0; ++loop0) {
-                  let cnt = obj[this.cntname][loop0];
+                  const cnt = obj[this.cntname][loop0];
                   res[loop0] = this.read_loop(buf, cnt);
                }
                obj[this.name] = buf.checkByteCount(ver, this.typename) ? res : null;
@@ -1093,13 +1094,12 @@ function createMemberStreamer(element, file) {
                      arr = obj[this.name0]; // objects array where reading is done
 
                for (let loop0 = 0; loop0 < arr.length; ++loop0) {
-                  let obj1 = this.get(arr, loop0), cnt = obj1[this.cntname];
+                  const obj1 = this.get(arr, loop0), cnt = obj1[this.cntname];
                   obj1[this.name] = this.read_loop(buf, cnt);
                }
 
                buf.checkByteCount(ver, this.typename);
             }
-
          } else {
             console.error(`fail to provide function for ${element.fName} (${element.fTypeName})  typ = ${element.fType}`);
             member.func = function(buf, obj) {
@@ -1114,18 +1114,16 @@ function createMemberStreamer(element, file) {
       case kStreamer: {
          member.typename = element.fTypeName;
 
-         let stl = (element.fSTLtype || 0) % 40;
-
+         const stl = (element.fSTLtype || 0) % 40;
          if ((element._typename === 'TStreamerSTLstring') ||
-            (member.typename == 'string') || (member.typename == 'string*')) {
+            (member.typename === 'string') || (member.typename === 'string*'))
             member.readelem = buf => buf.readTString();
-         } else if ((stl === kSTLvector) || (stl === kSTLlist) ||
+         else if ((stl === kSTLvector) || (stl === kSTLlist) ||
                     (stl === kSTLdeque) || (stl === kSTLset) || (stl === kSTLmultiset)) {
-            let p1 = member.typename.indexOf('<'),
-                p2 = member.typename.lastIndexOf('>');
+            const p1 = member.typename.indexOf('<'),
+                  p2 = member.typename.lastIndexOf('>');
 
             member.conttype = member.typename.slice(p1 + 1, p2).trim();
-
             member.typeid = getTypeId(member.conttype);
             if ((member.typeid < 0) && file.fBasicTypes[member.conttype]) {
                member.typeid = file.fBasicTypes[member.conttype];
@@ -1157,9 +1155,7 @@ function createMemberStreamer(element, file) {
                member.readelem = readVectorElement;
 
                if (!member.isptr && (member.arrkind < 0)) {
-
-                  let subelem = createStreamerElement('temp', member.conttype);
-
+                  const subelem = createStreamerElement('temp', member.conttype);
                   if (subelem.fType === kStreamer) {
                      subelem.$fictional = true;
                      member.submember = createMemberStreamer(subelem, file);
@@ -1184,9 +1180,8 @@ function createMemberStreamer(element, file) {
             }
 
             if (member.streamer) member.readelem = readMapElement;
-         } else if (stl === kSTLbitset) {
-            member.readelem = (buf/*, obj*/) => buf.readFastArray(buf.ntou4(), kBool);
-         }
+         } else if (stl === kSTLbitset)
+            member.readelem = (buf /* , obj */) => buf.readFastArray(buf.ntou4(), kBool);
 
          if (!member.readelem) {
             console.error(`failed to create streamer for element ${member.typename} ${member.name} element ${element._typename} STL type ${element.fSTLtype}`);
@@ -1197,7 +1192,6 @@ function createMemberStreamer(element, file) {
             }
          } else
             if (!element.$fictional) {
-
                member.read_version = function(buf, cnt) {
                   if (cnt === 0) return null;
                   const ver = buf.readVersion();
@@ -1224,8 +1218,8 @@ function createMemberStreamer(element, file) {
                member.branch_func = function(buf, obj) {
                   // special function to read data from STL branch
                   const cnt = obj[this.stl_size],
-                        ver = this.read_version(buf, cnt);
-                  let arr = new Array(cnt);
+                        ver = this.read_version(buf, cnt),
+                        arr = new Array(cnt);
 
                   for (let n = 0; n < cnt; ++n)
                      arr[n] = buf.readNdimArray(this, (buf2, member2) => member2.readelem(buf2));
@@ -1246,12 +1240,11 @@ function createMemberStreamer(element, file) {
                   // objects already preallocated and only appropriate member must be set
                   // see code in JSRoot.tree.js for reference
 
-                  let arr = obj[this.name0]; // objects array where reading is done
-
-                  const ver = this.read_version(buf, arr.length);
+                  const arr = obj[this.name0], // objects array where reading is done
+                        ver = this.read_version(buf, arr.length);
 
                   for (let n = 0; n < arr.length; ++n) {
-                     let obj1 = this.get(arr, n);
+                     const obj1 = this.get(arr, n);
                      obj1[this.name] = buf.readNdimArray(this, (buf2, member2) => member2.readelem(buf2));
                   }
 
@@ -1264,7 +1257,7 @@ function createMemberStreamer(element, file) {
       default:
          console.error(`fail to provide function for ${element.fName} (${element.fTypeName})  typ = ${element.fType}`);
 
-         member.func = function(/*buf, obj*/) {};  // do nothing, fix in the future
+         member.func = function(/* buf, obj */) {};  // do nothing, fix in the future
    }
 
    return member;
@@ -1278,7 +1271,7 @@ function getArrayKind(type_name) {
    if ((type_name === clTString) || (type_name === 'string') ||
       (CustomStreamers[type_name] === clTString)) return 0;
    if ((type_name.length < 7) || (type_name.indexOf('TArray') !== 0)) return -1;
-   if (type_name.length == 7)
+   if (type_name.length === 7) {
       switch (type_name[6]) {
          case 'I': return kInt;
          case 'D': return kDouble;
@@ -1288,8 +1281,9 @@ function getArrayKind(type_name) {
          case 'L': return kLong;
          default: return -1;
       }
+   }
 
-   return type_name == 'TArrayL64' ? kLong64 : -1;
+   return type_name === 'TArrayL64' ? kLong64 : -1;
 }
 
 /** @summary Let directly assign methods when doing I/O
@@ -1297,16 +1291,14 @@ function getArrayKind(type_name) {
 function addClassMethods(clname, streamer) {
    if (streamer === null) return streamer;
 
-   let methods = getMethods(clname);
+   const methods = getMethods(clname);
 
-   if (methods)
-      for (let key in methods)
-         if (isFunc(methods[key]) || (key.indexOf('_') == 0))
-            streamer.push({
-               name: key,
-               method: methods[key],
-               func(buf, obj) { obj[this.name] = this.method; }
-            });
+   if (methods) {
+      for (const key in methods) {
+         if (isFunc(methods[key]) || (key.indexOf('_') === 0))
+            streamer.push({ name: key, method: methods[key], func(buf, obj) { obj[this.name] = this.method; } });
+      }
+   }
 
    return streamer;
 }
