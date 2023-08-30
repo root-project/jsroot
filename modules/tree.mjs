@@ -2543,16 +2543,15 @@ async function treeProcess(tree, selector, args) {
   * @param {function} [args.progress=undefined] - function called during histogram accumulation with obj argument
   * @return {Promise} with produced object  */
 async function treeDraw(tree, args) {
-
    if (isStr(args)) args = { expr: args };
 
    if (!isStr(args.expr)) args.expr = '';
 
-   let selector = new TDrawSelector();
+   const selector = new TDrawSelector();
 
    if (args.branch) {
       if (!selector.drawOnlyBranch(tree, args.branch, args.expr, args))
-        return Promise.reject(Error('Fail to create draw expression ${args.expr} for branch ${args.branch.fName}'));
+        return Promise.reject(Error(`Fail to create draw expression ${args.expr} for branch ${args.branch.fName}`));
    } else {
       if (!selector.parseDrawExpression(tree, args))
           return Promise.reject(Error(`Fail to create draw expression ${args.expr}`));
@@ -2567,7 +2566,7 @@ async function treeDraw(tree, args) {
   * @desc Used when 'testio' draw option for TTree is specified
   * @private */
 function treeIOTest(tree, args) {
-   let branches = [], names = [], nchilds = [];
+   const branches = [], names = [], nchilds = [];
 
    function collectBranches(obj, prntname = '') {
       if (!obj?.fBranches) return 0;
@@ -2575,35 +2574,34 @@ function treeIOTest(tree, args) {
       let cnt = 0;
 
       for (let n = 0; n < obj.fBranches.arr.length; ++n) {
-         let br = obj.fBranches.arr[n],
-             name = (prntname ? prntname + '/' : '') + br.fName;
+         const br = obj.fBranches.arr[n],
+               name = (prntname ? prntname + '/' : '') + br.fName;
          branches.push(br);
          names.push(name);
          nchilds.push(0);
-         let pos = nchilds.length - 1;
-         cnt += br.fLeaves ? br.fLeaves.arr.length : 0;
-         let nchld = collectBranches(br, name);
+         const pos = nchilds.length - 1;
+         cnt += (br.fLeaves?.arr?.length ?? 0);
+         const nchld = collectBranches(br, name);
 
          cnt += nchld;
          nchilds[pos] = nchld;
-
       }
       return cnt;
    }
 
-   let numleaves = collectBranches(tree), selector;
+   const numleaves = collectBranches(tree);
+   let selector;
 
    names.push(`Total are ${branches.length} branches with ${numleaves} leaves`);
 
    function testBranch(nbr) {
-
       if (nbr >= branches.length)
          return Promise.resolve(true);
 
       if (selector?._break || args._break)
          return Promise.resolve(true);
 
-      selector = new TSelector;
+      selector = new TSelector();
 
       selector.addBranch(branches[nbr], 'br0');
 
@@ -2619,26 +2617,22 @@ function treeIOTest(tree, args) {
          names[nbr] = res + ' ' + names[nbr];
       }
 
-      let br = branches[nbr],
-          object_class = getBranchObjectClass(br, tree),
-          num = br.fEntries,
-          skip_branch = (!br.fLeaves || (br.fLeaves.arr.length === 0));
-
-      if (object_class) skip_branch = (nchilds[nbr] > 100);
+      const br = branches[nbr],
+            object_class = getBranchObjectClass(br, tree),
+            num = br.fEntries,
+            skip_branch = object_class ? (nchilds[nbr] > 100) : (!br.fLeaves || (br.fLeaves.arr.length === 0));
 
       if (skip_branch || (num <= 0))
          return testBranch(nbr+1);
 
-      let drawargs = { numentries: 10 },
-          first = br.fFirstEntry || 0,
-          last = br.fEntryNumber || (first + num);
+      const drawargs = { numentries: 10 },
+            first = br.fFirstEntry || 0,
+            last = br.fEntryNumber || (first + num);
 
-      if (num < drawargs.numentries) {
+      if (num < drawargs.numentries)
          drawargs.numentries = num;
-      } else {
-         // select randomly first entry to test I/O
-         drawargs.firstentry = first + Math.round((last - first - drawargs.numentries) * Math.random());
-      }
+      else
+         drawargs.firstentry = first + Math.round((last - first - drawargs.numentries) * Math.random()); // select randomly
 
       // keep console output for debug purposes
       console.log(`test branch ${br.fName} first ${drawargs.firstentry || 0} num ${drawargs.numentries}`);
@@ -2657,21 +2651,19 @@ function treeIOTest(tree, args) {
    });
 }
 
-
 /** @summary Create hierarchy of TTree object
   * @private */
 function treeHierarchy(node, obj) {
-
    function createBranchItem(node, branch, tree, parent_branch) {
       if (!node || !branch) return false;
 
-      let nb_branches = branch.fBranches ? branch.fBranches.arr.length : 0,
-          nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0;
+      const nb_branches = branch.fBranches ? branch.fBranches.arr.length : 0,
+            nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0;
 
       function ClearName(arg) {
-         let pos = arg.indexOf('[');
+         const pos = arg.indexOf('[');
          if (pos > 0) arg = arg.slice(0, pos);
-         if (parent_branch && arg.indexOf(parent_branch.fName) == 0) {
+         if (parent_branch && arg.indexOf(parent_branch.fName) === 0) {
             arg = arg.slice(parent_branch.fName.length);
             if (arg[0] === '.') arg = arg.slice(1);
          }
@@ -2680,7 +2672,7 @@ function treeHierarchy(node, obj) {
 
       branch.$tree = tree; // keep tree pointer, later do it more smart
 
-      let subitem = {
+      const subitem = {
          _name: ClearName(branch.fName),
          _kind: prROOT + branch._typename,
          _title: branch.fTitle,
@@ -2718,14 +2710,14 @@ function treeHierarchy(node, obj) {
             for (let i = 0; i < bobj.fBranches.arr.length; ++i)
                createBranchItem(bnode, bobj.fBranches.arr[i], bobj.$tree, bobj);
 
-            let object_class = getBranchObjectClass(bobj, bobj.$tree, true),
-                methods = object_class ? getMethods(object_class) : null;
+            const object_class = getBranchObjectClass(bobj, bobj.$tree, true),
+                  methods = object_class ? getMethods(object_class) : null;
 
-            if (methods && (bobj.fBranches.arr.length > 0))
-               for (let key in methods) {
+            if (methods && (bobj.fBranches.arr.length > 0)) {
+               for (const key in methods) {
                   if (!isFunc(methods[key])) continue;
-                  let s = methods[key].toString();
-                  if ((s.indexOf('return') > 0) && (s.indexOf('function ()') == 0))
+                  const s = methods[key].toString();
+                  if ((s.indexOf('return') > 0) && (s.indexOf('function ()') === 0)) {
                      bnode._childs.push({
                         _name: key+'()',
                         _title: `function ${key} of class ${object_class}`,
@@ -2733,8 +2725,9 @@ function treeHierarchy(node, obj) {
                         _obj: { _typename: clTBranchFunc, branch: bobj, func: key },
                         _more: false
                      });
-
+                  }
                }
+            }
 
             return true;
          }
@@ -2746,7 +2739,7 @@ function treeHierarchy(node, obj) {
          subitem._childs = [];
          for (let j = 0; j < nb_leaves; ++j) {
             branch.fLeaves.arr[j].$branch = branch; // keep branch pointer for drawing
-            let leafitem = {
+            const leafitem = {
                _name : ClearName(branch.fLeaves.arr[j].fName),
                _kind : prROOT + branch.fLeaves.arr[j]._typename,
                _obj: branch.fLeaves.arr[j]
