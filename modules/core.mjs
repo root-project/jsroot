@@ -164,12 +164,11 @@ const constants = {
          return (Number.isInteger(code) && (code >= this.Off) && (code <= this.AlwaysMathJax)) ? code : this.Normal;
       }
    }
-};
-
+},
 
 /** @desc Global JSROOT settings
   * @namespace */
-const settings = {
+settings = {
    /** @summary Render of 3D drawing methods, see {@link constants.Render3D} for possible values */
    Render3D: constants.Render3D.Default,
    /** @summary 3D drawing methods in batch mode, see {@link constants.Render3D} for possible values */
@@ -266,15 +265,14 @@ const settings = {
    DarkMode: false,
    /** @summary Prefer to use saved points in TF1/TF2, avoids eval() and Function() when possible */
    PreferSavedPoints: false
-};
-
+},
 
 /** @namespace
   * @summary Insiance of TStyle object like in ROOT
   * @desc Includes default draw styles, can be changed after loading of JSRoot.core.js
   * or can be load from the file providing style=itemname in the URL
   * See [TStyle docu]{@link https://root.cern/doc/master/classTStyle.html} 'Private attributes' section for more detailed info about each value */
-const gStyle = {
+gStyle = {
    fName: 'Modern',
    /** @summary Default log x scale */
    fOptLogx: 0,
@@ -454,8 +452,7 @@ async function loadScript(url) {
       url = url.split(';');
 
    if (!isStr(url)) {
-      const scripts = url;
-      function loadNext() {
+      const scripts = url, loadNext = () => {
          if (!scripts.length) return true;
          return loadScript(scripts.shift()).then(loadNext, loadNext);
       }
@@ -615,21 +612,21 @@ function parse(json) {
 
       if (typeof value !== 'object') return;
 
-      let proto = Object.prototype.toString.apply(value);
+      const proto = Object.prototype.toString.apply(value);
 
       // scan array - it can contain other objects
       if (isArrayProto(proto) > 0) {
           for (let i = 0; i < value.length; ++i) {
-             let res = unref_value(value[i]);
+             const res = unref_value(value[i]);
              if (res !== undefined) value[i] = res;
           }
           return;
       }
 
-      let ks = Object.keys(value), len = ks.length;
+      const ks = Object.keys(value), len = ks.length;
 
       if ((newfmt !== false) && (len === 1) && (ks[0] === '$ref')) {
-         const ref = parseInt(value['$ref']);
+         const ref = parseInt(value.$ref);
          if (!Number.isInteger(ref) || (ref < 0) || (ref >= map.length)) return;
          newfmt = true;
          return map[ref];
@@ -656,29 +653,27 @@ function parse(json) {
 
          if (value.b !== undefined) {
             // base64 coding
-
-            let buf = atob_func(value.b);
-
+            const buf = atob_func(value.b);
             if (arr.buffer) {
-               let dv = new DataView(arr.buffer, value.o || 0),
-                   len = Math.min(buf.length, dv.byteLength);
+               const dv = new DataView(arr.buffer, value.o || 0),
+                     len = Math.min(buf.length, dv.byteLength);
                for (let k = 0; k < len; ++k)
                   dv.setUint8(k, buf.charCodeAt(k));
-            } else {
+            } else
                throw new Error('base64 coding supported only for native arrays with binary data');
-            }
          } else {
             // compressed coding
             let nkey = 2, p = 0;
             while (nkey < len) {
-               if (ks[nkey][0] == 'p') p = value[ks[nkey++]]; // position
+               if (ks[nkey][0] === 'p') p = value[ks[nkey++]]; // position
                if (ks[nkey][0] !== 'v') throw new Error(`Unexpected member ${ks[nkey]} in array decoding`);
-               let v = value[ks[nkey++]]; // value
+               const v = value[ks[nkey++]]; // value
                if (typeof v === 'object') {
-                  for (let k = 0; k < v.length; ++k) arr[p++] = v[k];
+                  for (let k = 0; k < v.length; ++k)
+                     arr[p++] = v[k];
                } else {
                   arr[p++] = v;
-                  if ((nkey < len) && (ks[nkey][0] == 'n')) {
+                  if ((nkey < len) && (ks[nkey][0] === 'n')) {
                      let cnt = value[ks[nkey++]]; // counter
                      while (--cnt) arr[p++] = v;
                   }
@@ -691,12 +686,12 @@ function parse(json) {
 
       if ((newfmt !== false) && (len === 3) && (ks[0] === '$pair') && (ks[1] === 'first') && (ks[2] === 'second')) {
          newfmt = true;
-         let f1 = unref_value(value.first),
-             s1 = unref_value(value.second);
+         const f1 = unref_value(value.first),
+               s1 = unref_value(value.second);
          if (f1 !== undefined) value.first = f1;
          if (s1 !== undefined) value.second = s1;
-         value._typename = value['$pair'];
-         delete value['$pair'];
+         value._typename = value.$pair;
+         delete value.$pair;
          return; // pair object is not counted in the objects map
       }
 
@@ -710,8 +705,7 @@ function parse(json) {
       if (value._typename) addMethods(value);
 
       for (let k = 0; k < len; ++k) {
-         const i = ks[k],
-              res = unref_value(value[i]);
+         const i = ks[k], res = unref_value(value[i]);
          if (res !== undefined) value[i] = res;
       }
    };
@@ -727,10 +721,11 @@ function parse(json) {
   * @return {Array} array of parsed elements */
 function parseMulti(json) {
    if (!json) return null;
-   let arr = JSON.parse(json);
-   if (arr && arr.length)
+   const arr = JSON.parse(json);
+   if (arr?.length) {
       for (let i = 0; i < arr.length; ++i)
          arr[i] = parse(arr[i]);
+   }
    return arr;
 }
 
@@ -749,28 +744,27 @@ function parseMulti(json) {
 function toJSON(obj, spacing) {
    if (!isObject(obj)) return '';
 
-   let map = []; // map of stored objects
-
-   const copy_value = value => {
+   const map = [], // map of stored objects
+   copy_value = value => {
       if (isFunc(value)) return undefined;
 
       if ((value === undefined) || (value === null) || !isObject(value)) return value;
 
       // typed array need to be converted into normal array, otherwise looks strange
       if (isArrayProto(Object.prototype.toString.apply(value)) > 0) {
-         let arr = new Array(value.length);
+         const arr = new Array(value.length);
          for (let i = 0; i < value.length; ++i)
             arr[i] = copy_value(value[i]);
          return arr;
       }
 
       // this is how reference is code
-      let refid = map.indexOf(value);
+      const refid = map.indexOf(value);
       if (refid >= 0) return { $ref: refid };
 
-      let ks = Object.keys(value), len = ks.length, tgt = {};
+      const ks = Object.keys(value), len = ks.length, tgt = {};
 
-      if ((len == 3) && (ks[0] === '$pair') && (ks[1] === 'first') && (ks[2] === 'second')) {
+      if ((len === 3) && (ks[0] === '$pair') && (ks[1] === 'first') && (ks[2] === 'second')) {
          // special handling of pair objects which does not included into objects map
          tgt.$pair = value.$pair;
          tgt.first = copy_value(value.first);
@@ -781,15 +775,14 @@ function toJSON(obj, spacing) {
       map.push(value);
 
       for (let k = 0; k < len; ++k) {
-         let name = ks[k];
-         if (name && (name[0] != '$'))
+         const name = ks[k];
+         if (name && (name[0] !== '$'))
             tgt[name] = copy_value(value[name]);
       }
 
       return tgt;
-   };
-
-   let tgt = copy_value(obj);
+   },
+   tgt = copy_value(obj);
 
    return JSON.stringify(tgt, null, spacing);
 }
@@ -806,10 +799,10 @@ function toJSON(obj, spacing) {
   * console.log(`Get opt2 ${d.get('opt2')}`);     // '3'
   * console.log(`Get opt3 ${d.get('opt3','-')}`); // '-' */
 function decodeUrl(url) {
-   let res = {
+   const res = {
       opts: {},
       has(opt) { return this.opts[opt] !== undefined; },
-      get(opt,dflt) { let v = this.opts[opt]; return v !== undefined ? v : dflt; }
+      get(opt, dflt) { const v = this.opts[opt]; return v !== undefined ? v : dflt; }
    };
 
    if (!url || !isStr(url)) {
@@ -818,32 +811,31 @@ function decodeUrl(url) {
    }
    res.url = url;
 
-   let p1 = url.indexOf('?');
+   const p1 = url.indexOf('?');
    if (p1 < 0) return res;
    url = decodeURI(url.slice(p1+1));
 
    while (url) {
-
       // try to correctly handle quotes in the URL
       let pos = 0, nq = 0, eq = -1, firstq = -1;
       while ((pos < url.length) && ((nq !== 0) || ((url[pos] !== '&') && (url[pos] !== '#')))) {
          switch (url[pos]) {
-            case "'": if (nq >= 0) nq = (nq+1)%2; if (firstq < 0) firstq = pos; break;
-            case '"': if (nq <= 0) nq = (nq-1)%2; if (firstq < 0) firstq = pos; break;
+            case '\'': if (nq >= 0) nq = (nq+1) % 2; if (firstq < 0) firstq = pos; break;
+            case '"': if (nq <= 0) nq = (nq-1) % 2; if (firstq < 0) firstq = pos; break;
             case '=': if ((firstq < 0) && (eq < 0)) eq = pos; break;
          }
          pos++;
       }
 
-      if ((eq < 0) && (firstq < 0)) {
-         res.opts[url.slice(0,pos)] = '';
-      } if (eq > 0) {
-         let val = url.slice(eq+1, pos);
-         if (((val[0] === "'") || (val[0] === '"')) && (val[0] === val[val.length-1])) val = val.slice(1, val.length-1);
-         res.opts[url.slice(0,eq)] = val;
+      if ((eq < 0) && (firstq < 0))
+         res.opts[url.slice(0, pos)] = '';
+      else if (eq > 0) {
+         let val = url.slice(eq + 1, pos);
+         if (((val[0] === '\'') || (val[0] === '"')) && (val[0] === val[val.length-1])) val = val.slice(1, val.length-1);
+         res.opts[url.slice(0, eq)] = val;
       }
 
-      if ((pos >= url.length) || (url[pos] == '#')) break;
+      if ((pos >= url.length) || (url[pos] === '#')) break;
 
       url = url.slice(pos+1);
    }
@@ -856,7 +848,8 @@ function decodeUrl(url) {
 function findFunction(name) {
    if (isFunc(name)) return name;
    if (!isStr(name)) return null;
-   let names = name.split('.'), elem = globalThis;
+   const names = name.split('.');
+   let elem = globalThis;
 
    for (let n = 0; elem && (n < names.length); ++n)
       elem = elem[names[n]];
@@ -864,19 +857,18 @@ function findFunction(name) {
    return isFunc(elem) ? elem : null;
 }
 
-
 /** @summary Method to create http request, without promise can be used only in browser environment
   * @private */
 function createHttpRequest(url, kind, user_accept_callback, user_reject_callback, use_promise) {
-
    function configureXhr(xhr) {
       xhr.http_callback = isFunc(user_accept_callback) ? user_accept_callback.bind(xhr) : () => {};
       xhr.error_callback = isFunc(user_reject_callback) ? user_reject_callback.bind(xhr) : function(err) { console.warn(err.message); this.http_callback(null); }.bind(xhr);
 
       if (!kind) kind = 'buf';
 
-      let method = 'GET', is_async = true, p = kind.indexOf(';sync');
-      if (p > 0) { kind = kind.slice(0,p); is_async = false; }
+      let method = 'GET', is_async = true;
+      const p = kind.indexOf(';sync');
+      if (p > 0) { kind = kind.slice(0, p); is_async = false; }
       switch (kind) {
          case 'head': method = 'HEAD'; break;
          case 'posttext': method = 'POST'; kind = 'text'; break;
