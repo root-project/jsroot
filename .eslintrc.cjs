@@ -18,7 +18,11 @@ module.exports = {
       "semi": "off",
       "object-curly-newline": "off",
       "curly": ["warn", "multi-or-nest"],
+      "one-var": ["warn", "consecutive"],
       "space-infix-ops": "off",
-      "no-multi-spaces": "off"
+      "no-multi-spaces": "off",
+      "no-multiple-empty-lines": "off",
+      "object-property-newline": "off",
+      "promise/param-names": ["warn", { resolvePattern: "^resolve*", rejectPattern: "^reject*" } ]
   }
 };

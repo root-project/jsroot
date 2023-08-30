@@ -1,36 +1,38 @@
 /** @summary version id
   * @desc For the JSROOT release the string in format 'major.minor.patch' like '7.0.0' */
-const version_id = 'dev';
+const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-const version_date = '29/08/2023';
+version_date = '29/08/2023',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
   * Like '7.0.0 14/04/2022' */
-const version = version_id + ' ' + version_date;
+version = version_id + ' ' + version_date,
+
+/** @summary Is node.js flag
+  * @private */
+nodejs = !!((typeof process === 'object') && isObject(process.versions) && process.versions.node && process.versions.v8),
+
+/** @summary internal data
+  * @private */
+internals = {
+   /** @summary unique id counter, starts from 1 */
+   id_counter: 1
+};
 
 /** @summary Location of JSROOT modules
   * @desc Automatically detected and used to dynamically load other modules
   * @private */
 let source_dir = '';
 
-/** @summary Is node.js flag
-  * @private */
-const nodejs = !!((typeof process === 'object') && isObject(process.versions) && process.versions.node && process.versions.v8);
+const _src = import.meta?.url;
 
-/** @summary internal data
-  * @private */
-const internals = {
-   id_counter: 1          // unique id counter, starts from 1
-};
-
-const src = import.meta?.url;
-if (src && isStr(src)) {
-   const pos = src.indexOf('modules/core.mjs');
+if (_src && isStr(_src)) {
+   const pos = _src.indexOf('modules/core.mjs');
    if (pos >= 0) {
-      source_dir = src.slice(0, pos);
+      source_dir = _src.slice(0, pos);
       console.log(`Set jsroot source_dir to ${source_dir}, ${version}`);
    } else {
       console.log(`jsroot bundle, ${version}`);
@@ -54,15 +56,15 @@ function isNodeJs() { return nodejs; }
 
 /** @summary atob function in all environments
   * @private */
-const atob_func = isNodeJs() ? str => Buffer.from(str,'base64').toString('latin1') : globalThis?.atob;
+const atob_func = isNodeJs() ? str => Buffer.from(str, 'base64').toString('latin1') : globalThis?.atob,
 
 /** @summary btoa function in all environments
   * @private */
-const btoa_func = isNodeJs() ? str => Buffer.from(str,'latin1').toString('base64') : globalThis?.btoa;
+btoa_func = isNodeJs() ? str => Buffer.from(str, 'latin1').toString('base64') : globalThis?.btoa,
 
 /** @summary browser detection flags
   * @private */
-const browser = { isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false, screenWidth: 1200 };
+browser = { isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false, screenWidth: 1200 };
 
 if ((typeof document !== 'undefined') && (typeof window !== 'undefined') && (typeof navigator !== 'undefined')) {
    browser.isFirefox = navigator.userAgent.indexOf('Firefox') >= 0;
@@ -79,11 +81,11 @@ if ((typeof document !== 'undefined') && (typeof window !== 'undefined') && (typ
   * @return {Number} 0 - not array, 1 - regular array, 2 - typed array
   * @private */
 function isArrayProto(proto) {
-    if ((proto.length < 14) || (proto.indexOf('[object ') != 0)) return 0;
-    let p = proto.indexOf('Array]');
-    if ((p < 0) || (p != proto.length - 6)) return 0;
+    if ((proto.length < 14) || (proto.indexOf('[object ') !== 0)) return 0;
+    const p = proto.indexOf('Array]');
+    if ((p < 0) || (p !== proto.length - 6)) return 0;
     // plain array has only '[object Array]', typed array type name inside
-    return proto.length == 14 ? 1 : 2;
+    return proto.length === 14 ? 1 : 2;
 }
 
 /** @desc Specialized JSROOT constants, used in {@link settings}
@@ -101,7 +103,7 @@ const constants = {
       /** @summary Use SVG rendering, slow, inprecise and not interactive, nor recommendet */
       SVG: 3,
       fromString(s) {
-         if ((s === 'webgl') || (s == 'gl')) return this.WebGL;
+         if ((s === 'webgl') || (s === 'gl')) return this.WebGL;
          if (s === 'img') return this.WebGLImage;
          if (s === 'svg') return this.SVG;
          return this.Default;
@@ -163,6 +165,7 @@ const constants = {
       }
    }
 };
+
 
 /** @desc Global JSROOT settings
   * @namespace */
@@ -419,9 +422,10 @@ async function injectCode(code) {
    if (typeof document !== 'undefined') {
       // check if code already loaded - to avoid duplication
       const scripts = document.getElementsByTagName('script');
-      for (let n = 0; n < scripts.length; ++n)
-         if (scripts[n].innerHTML == code)
+      for (let n = 0; n < scripts.length; ++n) {
+         if (scripts[n].innerHTML === code)
             return true;
+      }
 
       const promise = code.indexOf('JSROOT.require') >= 0 ? _ensureJSROOT() : Promise.resolve(true);
 
@@ -460,7 +464,7 @@ async function loadScript(url) {
 
    if (url.indexOf('$$$') === 0) {
       url = url.slice(3);
-      if ((url.indexOf('style/') == 0) && (url.indexOf('.css') < 0))
+      if ((url.indexOf('style/') === 0) && (url.indexOf('.css') < 0))
          url += '.css';
       url = source_dir + url;
    }
@@ -495,9 +499,10 @@ async function loadScript(url) {
       }
    } else {
       const scripts = document.getElementsByTagName('script');
-      for (let n = 0; n < scripts.length; ++n)
+      for (let n = 0; n < scripts.length; ++n) {
          if (match_url(scripts[n].src))
             return true;
+      }
    }
 
    let element;
@@ -531,32 +536,28 @@ function BIT(n) { return 1 << n; }
 function clone(src, map, nofunc) {
    if (!src) return null;
 
-   if (!map) {
-      map = { obj: [], clones: [], nofunc: nofunc };
-   } else {
+   if (!map)
+      map = { obj: [], clones: [], nofunc };
+   else {
       const i = map.obj.indexOf(src);
       if (i >= 0) return map.clones[i];
    }
 
-   let arr_kind = isArrayProto(Object.prototype.toString.apply(src));
+   const arr_kind = isArrayProto(Object.prototype.toString.apply(src));
 
    // process normal array
-   if (arr_kind == 1) {
-      let tgt = [];
+   if (arr_kind === 1) {
+      const tgt = [];
       map.obj.push(src);
       map.clones.push(tgt);
       for (let i = 0; i < src.length; ++i)
-         if (isObject(src[i]))
-            tgt.push(clone(src[i], map));
-         else
-            tgt.push(src[i]);
-
+         tgt.push(isObject(src[i]) ? clone(src[i], map) : src[i]);
       return tgt;
    }
 
    // process typed array
-   if (arr_kind == 2) {
-      let tgt = [];
+   if (arr_kind === 2) {
+      const tgt = [];
       map.obj.push(src);
       map.clones.push(tgt);
       for (let i = 0; i < src.length; ++i)
@@ -565,11 +566,11 @@ function clone(src, map, nofunc) {
       return tgt;
    }
 
-   let tgt = {};
+   const tgt = {};
    map.obj.push(src);
    map.clones.push(tgt);
 
-   for (let k in src) {
+   for (const k in src) {
       if (isObject(src[k]))
          tgt[k] = clone(src[k], map);
       else if (!map.nofunc || !isFunc(src[k]))
@@ -596,18 +597,17 @@ function addMethods(obj, typename) {
   * @param {object|string} json  object where references will be replaced
   * @return {object} parsed object */
 function parse(json) {
-
    if (!json) return null;
 
-   let obj = isStr(json) ? JSON.parse(json) : json,
-       map = [], newfmt = undefined;
+   const obj = isStr(json) ? JSON.parse(json) : json, map = [];
+   let newfmt;
 
    const unref_value = value => {
       if ((value === null) || (value === undefined)) return;
 
       if (isStr(value)) {
          if (newfmt || (value.length < 6) || (value.indexOf('$ref:') !== 0)) return;
-         let ref = parseInt(value.slice(5));
+         const ref = parseInt(value.slice(5));
          if (!Number.isInteger(ref) || (ref < 0) || (ref >= map.length)) return;
          newfmt = false;
          return map[ref];
