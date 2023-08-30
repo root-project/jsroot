@@ -23,17 +23,18 @@ async function import_h() { return import('./gui/HierarchyPainter.mjs'); }
 
 async function import_geo() {
    return import('./geom/TGeoPainter.mjs').then(geo => {
-      let handle = getDrawHandle(prROOT + 'TGeoVolumeAssembly');
+      const handle = getDrawHandle(prROOT + 'TGeoVolumeAssembly');
       if (handle) handle.icon = 'img_geoassembly';
       return geo;
    });
 }
 
 const clTGraph2D = 'TGraph2D', clTH2Poly = 'TH2Poly', clTEllipse = 'TEllipse',
-      clTSpline3 = 'TSpline3', clTTree = 'TTree', clTCanvasWebSnapshot = 'TCanvasWebSnapshot';
+      clTSpline3 = 'TSpline3', clTTree = 'TTree', clTCanvasWebSnapshot = 'TCanvasWebSnapshot',
 
-// list of registered draw functions
-const drawFuncs = { lst: [
+/** @summary list of registered draw functions
+  * @private */
+drawFuncs = { lst: [
    { name: clTCanvas, icon: 'img_canvas', class: () => import_canvas().then(h => h.TCanvasPainter), opt: ';grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz', expand_item: 'fPrimitives', noappend: true },
    { name: clTPad, icon: 'img_canvas', func: TPadPainter.draw, opt: ';grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz', expand_item: 'fPrimitives', noappend: true },
    { name: 'TSlider', icon: 'img_canvas', func: TPadPainter.draw },
@@ -187,7 +188,6 @@ function addDrawFunc(args) {
   * or just sequence id
   * @private */
 function getDrawHandle(kind, selector) {
-
    if (!isStr(kind)) return null;
    if (selector === '') selector = null;
 
@@ -196,21 +196,22 @@ function getDrawHandle(kind, selector) {
    if ((selector === null) && (kind in drawFuncs.cache))
       return drawFuncs.cache[kind];
 
-   let search = (kind.indexOf(prROOT) == 0) ? kind.slice(5) : `kind:${kind}`, counter = 0;
+   const search = (kind.indexOf(prROOT) === 0) ? kind.slice(5) : `kind:${kind}`;
+   let counter = 0;
    for (let i = 0; i < drawFuncs.lst.length; ++i) {
-      let h = drawFuncs.lst[i];
+      const h = drawFuncs.lst[i];
       if (isStr(h.name)) {
-         if (h.name != search) continue;
-      } else {
-         if (!search.match(h.name)) continue;
-      }
+         if (h.name !== search) continue;
+      } else if (!search.match(h.name))
+         continue;
 
       if (h.sameas) {
-         let hs = getDrawHandle(prROOT + h.sameas, selector);
+         const hs = getDrawHandle(prROOT + h.sameas, selector);
          if (hs) {
-            for (let key in hs)
+            for (const key in hs) {
                if (h[key] === undefined)
                   h[key] = hs[key];
+            }
             delete h.sameas;
          }
          return h;
@@ -224,17 +225,16 @@ function getDrawHandle(kind, selector) {
          if (!first) first = h;
          // if drawoption specified, check it present in the list
 
-         if (selector == '::expand') {
+         if (selector === '::expand') {
             if (('expand' in h) || ('expand_item' in h)) return h;
          } else if ('opt' in h) {
-            let opts = h.opt.split(';');
+            const opts = h.opt.split(';');
             for (let j = 0; j < opts.length; ++j)
                opts[j] = opts[j].toLowerCase();
             if (opts.indexOf(selector.toLowerCase()) >= 0) return h;
          }
-      } else if (selector === counter) {
+      } else if (selector === counter)
          return h;
-      }
       ++counter;
    }
 
@@ -247,19 +247,19 @@ function canDrawHandle(h) {
    if (isStr(h))
       h = getDrawHandle(h);
    if (!isObject(h)) return false;
-   return h.func || h.class || h.draw || h.draw_field ? true : false;
+   return h.func || h.class || h.draw || h.draw_field;
 }
 
 /** @summary Provide draw settings for specified class or kind
   * @private */
 function getDrawSettings(kind, selector) {
-   let res = { opts: null, inspect: false, expand: false, draw: false, handle: null };
+   const res = { opts: null, inspect: false, expand: false, draw: false, handle: null };
    if (!isStr(kind)) return res;
    let isany = false, noinspect = false, canexpand = false;
    if (!isStr(selector)) selector = '';
 
    for (let cnt = 0; cnt < 1000; ++cnt) {
-      let h = getDrawHandle(kind, cnt);
+      const h = getDrawHandle(kind, cnt);
       if (!h) break;
       if (!res.handle) res.handle = h;
       if (h.noinspect) noinspect = true;
@@ -268,10 +268,10 @@ function getDrawSettings(kind, selector) {
       if (!h.func && !h.class && !h.draw) break;
       isany = true;
       if (!('opt' in h)) continue;
-      let opts = h.opt.split(';');
+      const opts = h.opt.split(';');
       for (let i = 0; i < opts.length; ++i) {
          opts[i] = opts[i].toLowerCase();
-         if (opts[i].indexOf('same') == 0) {
+         if (opts[i].indexOf('same') === 0) {
             res.has_same = true;
             if (selector.indexOf('nosame') >= 0) continue;
          }
@@ -287,7 +287,7 @@ function getDrawSettings(kind, selector) {
    if (isany && (res.opts === null)) res.opts = [''];
 
    // if no any handle found, let inspect ROOT-based objects
-   if (!isany && (kind.indexOf(prROOT) == 0) && !noinspect) res.opts = [];
+   if (!isany && (kind.indexOf(prROOT) === 0) && !noinspect) res.opts = [];
 
    if (!noinspect && res.opts)
       res.opts.push('inspect');
@@ -305,7 +305,7 @@ function getDrawSettings(kind, selector) {
   setDefaultDrawOpt('TH1', 'text');
   setDefaultDrawOpt('TH2', 'col');  */
 function setDefaultDrawOpt(classname, opt) {
-   let handle = getDrawHandle(prROOT + classname, 0);
+   const handle = getDrawHandle(prROOT + classname, 0);
    if (handle)
       handle.dflt = opt;
 }
@@ -324,11 +324,10 @@ function setDefaultDrawOpt(classname, opt) {
   * let obj = await file.readObject('hpxpy;1');
   * await draw('drawing', obj, 'colz;logx;gridx;gridy'); */
 async function draw(dom, obj, opt) {
-
    if (!isObject(obj))
       return Promise.reject(Error('not an object in draw call'));
 
-   if (opt == 'inspect')
+   if (opt === 'inspect')
       return import_h().then(h => h.drawInspector(dom, obj));
 
    let handle, type_info;
@@ -353,8 +352,7 @@ async function draw(dom, obj, opt) {
 
    if (!canDrawHandle(handle)) {
       if (opt && (opt.indexOf('same') >= 0)) {
-
-         let main_painter = getElementMainPainter(dom);
+         const main_painter = getElementMainPainter(dom);
 
          if (isFunc(main_painter?.performDrop))
             return main_painter.performDrop(obj, '', null, opt);
@@ -365,7 +363,7 @@ async function draw(dom, obj, opt) {
 
    function performDraw() {
       let promise, painter;
-      if (handle.direct == 'v7') {
+      if (handle.direct === 'v7') {
          promise = import('./gpad/RCanvasPainter.mjs').then(v7h => {
             painter = new v7h.RObjectPainter(dom, obj, opt, handle.csstype);
             painter.redraw = handle.func;
@@ -376,9 +374,8 @@ async function draw(dom, obj, opt) {
          painter.redraw = handle.func;
          promise = import_canvas().then(v6h => v6h.ensureTCanvas(painter, handle.frame || false))
                                   .then(() => painter.redraw());
-      } else {
+      } else
          promise = getPromise(handle.func(dom, obj, opt));
-      }
 
       return promise.then(p => {
          if (!painter) painter = p;
@@ -402,14 +399,15 @@ async function draw(dom, obj, opt) {
    } else if (isFunc(handle.draw)) {
       // draw function without special class
       promise = handle.draw().then(h => { handle.func = h; });
-   } else if (!handle.func || !isStr(handle.func)) {
+   } else if (!handle.func || !isStr(handle.func))
       return Promise.reject(Error(`Draw function or class not specified to draw ${type_info}`));
-   } else if (!handle.prereq && !handle.script) {
+   else if (!handle.prereq && !handle.script)
       return Promise.reject(Error(`Prerequicities to load ${handle.func} are not specified`));
-   } else {
-
-      let init_promise = internals.ignore_v6 ? Promise.resolve(true) : _ensureJSROOT().then(v6 => {
-         let pr = handle.prereq ? v6.require(handle.prereq) : Promise.resolve(true);
+   else {
+      const init_promise = internals.ignore_v6
+         ? Promise.resolve(true)
+         : _ensureJSROOT().then(v6 => {
+         const pr = handle.prereq ? v6.require(handle.prereq) : Promise.resolve(true);
          return pr.then(() => {
             if (handle.script)
                return loadScript(handle.script);
@@ -417,8 +415,7 @@ async function draw(dom, obj, opt) {
       });
 
       promise = init_promise.then(() => {
-         let func = findFunction(handle.func);
-
+         const func = findFunction(handle.func);
          if (!isFunc(func))
             return Promise.reject(Error(`Fail to find function ${handle.func} after loading ${handle.prereq || handle.script}`));
 
@@ -449,11 +446,11 @@ async function draw(dom, obj, opt) {
   *    redraw('drawing', obj, 'colz');
   * }, 1000); */
 async function redraw(dom, obj, opt) {
-
    if (!isObject(obj))
       return Promise.reject(Error('not an object in redraw'));
 
-   let can_painter = getElementCanvPainter(dom), handle, res_painter = null, redraw_res;
+   const can_painter = getElementCanvPainter(dom);
+   let handle, res_painter = null, redraw_res;
    if (obj._typename)
       handle = getDrawHandle(prROOT + obj._typename);
    if (handle?.draw_field && obj[handle.draw_field])
@@ -465,7 +462,7 @@ async function redraw(dom, obj, opt) {
          if (redraw_res) res_painter = can_painter;
       } else {
          for (let i = 0; i < can_painter.painters.length; ++i) {
-            let painter = can_painter.painters[i];
+            const painter = can_painter.painters[i];
             if (painter.matchObjectType(obj._typename)) {
                redraw_res = painter.redrawObject(obj, opt);
                if (redraw_res) {
@@ -476,7 +473,7 @@ async function redraw(dom, obj, opt) {
          }
       }
    } else {
-      let top = new BasePainter(dom).getTopPainter();
+      const top = new BasePainter(dom).getTopPainter();
       // base painter do not have this method, if it there use it
       // it can be object painter here or can be specially introduce method to handling redraw!
       if (isFunc(top?.redrawObject)) {
@@ -505,7 +502,7 @@ function addStreamerInfosForPainter(lst) {
 
       for (let j = 0; j < si.fElements.arr.length; ++j) {
          // extract streamer info for each class member
-         let element = si.fElements.arr[j];
+         const element = si.fElements.arr[j];
          if (element.fTypeName !== 'BASE') continue;
 
          let handle = getDrawHandle(prROOT + element.fName);
@@ -513,12 +510,14 @@ function addStreamerInfosForPainter(lst) {
             handle = null;
 
          // now try find that base class of base in the list
-         if (handle === null)
-            for (let k = 0; k < lst.arr.length; ++k)
+         if (handle === null) {
+            for (let k = 0; k < lst.arr.length; ++k) {
                if (lst.arr[k].fName === element.fName) {
                   handle = checkBaseClasses(lst.arr[k], lvl + 1);
                   break;
                }
+            }
+         }
 
          if (handle?.for_derived)
             return handle;
@@ -529,9 +528,9 @@ function addStreamerInfosForPainter(lst) {
    lst.arr.forEach(si => {
       if (getDrawHandle(prROOT + si.fName) !== null) return;
 
-      let handle = checkBaseClasses(si, 0);
+      const handle = checkBaseClasses(si, 0);
       if (handle) {
-         let newhandle = Object.assign({}, handle);
+         const newhandle = Object.assign({}, handle);
          // delete newhandle.for_derived; // should we disable?
          newhandle.name = si.fName;
          addDrawFunc(newhandle);
@@ -570,17 +569,16 @@ async function makeImage(args) {
    if (!args.height)
       args.height = 800;
 
-   if (args.use_canvas_size && (args.object?._typename == clTCanvas) && args.object.fCw && args.object.fCh) {
+   if (args.use_canvas_size && (args.object?._typename === clTCanvas) && args.object.fCw && args.object.fCh) {
       args.width = args.object?.fCw;
       args.height = args.object?.fCh;
    }
 
    async function build(main) {
-
       main.attr('width', args.width).attr('height', args.height)
           .style('width', args.width + 'px').style('height', args.height + 'px')
           .property('_batch_mode', true)
-          .property('_batch_format', args.format != 'svg' ? args.format : null);
+          .property('_batch_format', args.format !== 'svg' ? args.format : null);
 
       function complete(res) {
          cleanup(main.node());
@@ -589,17 +587,16 @@ async function makeImage(args) {
       }
 
       return draw(main.node(), args.object, args.option || '').then(() => {
-
-         if (args.format != 'svg') {
-            let only_img = main.select('svg').selectChild('image');
+         if (args.format !== 'svg') {
+            const only_img = main.select('svg').selectChild('image');
             if (!only_img.empty()) {
-               let href = only_img.attr('href');
+               const href = only_img.attr('href');
 
                if (args.as_buffer) {
-                  let p = href.indexOf('base64,'),
-                      str = atob_func(href.slice(p + 7)),
-                      buf = new ArrayBuffer(str.length),
-                      bufView = new Uint8Array(buf);
+                  const p = href.indexOf('base64,'),
+                        str = atob_func(href.slice(p + 7)),
+                        buf = new ArrayBuffer(str.length),
+                        bufView = new Uint8Array(buf);
                   for (let i = 0; i < str.length; i++)
                      bufView[i] = str.charCodeAt(i);
                   return isNodeJs() ? Buffer.from(buf) : buf;
@@ -616,23 +613,23 @@ async function makeImage(args) {
 
          function clear_element() {
             const elem = d3_select(this);
-            if (elem.style('display') == 'none') elem.remove();
-         };
+            if (elem.style('display') === 'none') elem.remove();
+         }
 
          main.selectAll('g.root_frame').each(clear_element);
          main.selectAll('svg').each(clear_element);
 
-         let svg = compressSVG(main.html());
-
-         if (args.format == 'svg')
+         const svg = compressSVG(main.html());
+         if (args.format === 'svg')
             return complete(svg);
 
          return svgToImage(svg, args.format, args.as_buffer).then(complete);
       });
    }
 
-   return isNodeJs() ? _loadJSDOM().then(handle => build(handle.body.append('div')))
-                     : build(d3_select('body').append('div').style('display', 'none'));
+   return isNodeJs()
+          ? _loadJSDOM().then(handle => build(handle.body.append('div')))
+          : build(d3_select('body').append('div').style('display', 'none'));
 }
 
 
@@ -662,7 +659,7 @@ internals.addDrawFunc = addDrawFunc;
 
 function assignPadPainterDraw(PadPainterClass) {
    PadPainterClass.prototype.drawObject = async (...args) =>
-      draw(...args).catch(err => { console.log(err?.message ?? err); return null; } );
+      draw(...args).catch(err => { console.log(err?.message ?? err); return null; });
    PadPainterClass.prototype.getObjectDrawSettings = getDrawSettings;
 }
 
@@ -674,7 +671,7 @@ async function init_v7(arg) {
    return import('./gpad/RCanvasPainter.mjs').then(h => {
       // only now one can draw primitives in the canvas
       assignPadPainterDraw(h.RPadPainter);
-      switch(arg) {
+      switch (arg) {
          case 'more': return import('./draw/v7more.mjs');
          case 'pave': return import('./hist/RPavePainter.mjs');
          case 'rh1': return import('./hist/RH1Painter.mjs');
@@ -692,13 +689,10 @@ internals.addStreamerInfosForPainter = addStreamerInfosForPainter;
 /** @summary Draw TRooPlot
   * @private */
 async function drawRooPlot(dom, plot) {
-
-   return draw(dom, plot._hist, 'hist').then(hp => {
-      let arr = [];
-
+   return draw(dom, plot._hist, 'hist').then(async hp => {
+      const arr = [];
       for (let i = 0; i < plot._items.arr.length; ++i)
          arr.push(draw(dom, plot._items.arr[i], plot._items.opt[i]));
-
       return Promise.all(arr).then(() => hp);
    });
 }
