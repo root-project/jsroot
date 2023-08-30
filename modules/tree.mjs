@@ -95,6 +95,7 @@ class TSelector {
     * @abstract
     * @param {boolean} res - true if all data were correctly processed */
    Terminate(/* res */) {}
+
 } // class TSelector
 
 // =================================================================
@@ -241,6 +242,7 @@ class ArrayIterator {
       this.cnt = -1;
       this.value = 0;
    }
+
 } // class ArrayIterator
 
 
@@ -2740,8 +2742,8 @@ function treeHierarchy(node, obj) {
          for (let j = 0; j < nb_leaves; ++j) {
             branch.fLeaves.arr[j].$branch = branch; // keep branch pointer for drawing
             const leafitem = {
-               _name : ClearName(branch.fLeaves.arr[j].fName),
-               _kind : prROOT + branch.fLeaves.arr[j]._typename,
+               _name: ClearName(branch.fLeaves.arr[j].fName),
+               _kind: prROOT + branch.fLeaves.arr[j]._typename,
                _obj: branch.fLeaves.arr[j]
             }
             subitem._childs.push(leafitem);
