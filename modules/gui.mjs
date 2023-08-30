@@ -1,4 +1,4 @@
-import { decodeUrl, settings, constants, gStyle, internals, findFunction, parse, isFunc, isStr, isObject } from './core.mjs';
+import { decodeUrl, settings, constants, gStyle, internals, browser, findFunction, parse, isFunc, isStr, isObject } from './core.mjs';
 import { select as d3_select } from './d3.mjs';
 import { HierarchyPainter } from './gui/HierarchyPainter.mjs';
 import { readSettings, readStyle } from './gui/utils.mjs';
