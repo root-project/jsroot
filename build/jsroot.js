@@ -7,36 +7,38 @@ typeof define === 'function' && define.amd ? define(['exports'], factory) :
 
 /** @summary version id
   * @desc For the JSROOT release the string in format 'major.minor.patch' like '7.0.0' */
-let version_id = 'dev';
+const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '24/08/2023';
+version_date = '30/08/2023',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
   * Like '7.0.0 14/04/2022' */
-let version = version_id + ' ' + version_date;
+version = version_id + ' ' + version_date,
+
+/** @summary Is node.js flag
+  * @private */
+nodejs = !!((typeof process === 'object') && isObject(process.versions) && process.versions.node && process.versions.v8),
+
+/** @summary internal data
+  * @private */
+internals = {
+   /** @summary unique id counter, starts from 1 */
+   id_counter: 1
+};
 
 /** @summary Location of JSROOT modules
   * @desc Automatically detected and used to dynamically load other modules
   * @private */
 exports.source_dir = '';
 
-/** @summary Is node.js flag
-  * @private */
-let nodejs = !!((typeof process == 'object') && isObject(process.versions) && process.versions.node && process.versions.v8);
-
-/** @summary internal data
-  * @private */
-let internals = {
-   id_counter: 1          ///< unique id contner, starts from 1
-};
-
-const src = (typeof document === 'undefined' && typeof location === 'undefined' ? undefined : typeof document === 'undefined' ? location.href : (document.currentScript && document.currentScript.src || new URL('jsroot.js', document.baseURI).href));if (src && isStr(src)) {
-   const pos = src.indexOf('modules/core.mjs');
+const _src = (typeof document === 'undefined' && typeof location === 'undefined' ? undefined : typeof document === 'undefined' ? location.href : (document.currentScript && document.currentScript.src || new URL('jsroot.js', document.baseURI).href));
+if (_src && isStr(_src)) {
+   const pos = _src.indexOf('modules/core.mjs');
    if (pos >= 0) {
-      exports.source_dir = src.slice(0, pos);
+      exports.source_dir = _src.slice(0, pos);
       console.log(`Set jsroot source_dir to ${exports.source_dir}, ${version}`);
    } else {
       console.log(`jsroot bundle, ${version}`);
@@ -60,41 +62,41 @@ function isNodeJs() { return nodejs; }
 
 /** @summary atob function in all environments
   * @private */
-const atob_func = isNodeJs() ? str => Buffer.from(str,'base64').toString('latin1') : globalThis?.atob;
+const atob_func = isNodeJs() ? str => Buffer.from(str, 'base64').toString('latin1') : globalThis?.atob,
 
 /** @summary btoa function in all environments
   * @private */
-const btoa_func = isNodeJs() ? str => Buffer.from(str,'latin1').toString('base64') : globalThis?.btoa;
+btoa_func = isNodeJs() ? str => Buffer.from(str, 'latin1').toString('base64') : globalThis?.btoa,
 
 /** @summary browser detection flags
   * @private */
-let browser$1 = { isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false, screenWidth: 1200 };
+browser = { isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false, screenWidth: 1200 };
 
 if ((typeof document !== 'undefined') && (typeof window !== 'undefined') && (typeof navigator !== 'undefined')) {
-   browser$1.isFirefox = navigator.userAgent.indexOf('Firefox') >= 0;
-   browser$1.isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
-   browser$1.isChrome = !!window.chrome;
-   browser$1.isChromeHeadless = navigator.userAgent.indexOf('HeadlessChrome') >= 0;
-   browser$1.chromeVersion = (browser$1.isChrome || browser$1.isChromeHeadless) ? parseInt(navigator.userAgent.match(/Chrom(?:e|ium)\/([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/)[1]) : 0;
-   browser$1.isWin = navigator.userAgent.indexOf('Windows') >= 0;
-   browser$1.touches = ('ontouchend' in document); // identify if touch events are supported
-   browser$1.screenWidth = window.screen?.width ?? 1200;
+   browser.isFirefox = navigator.userAgent.indexOf('Firefox') >= 0;
+   browser.isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
+   browser.isChrome = !!window.chrome;
+   browser.isChromeHeadless = navigator.userAgent.indexOf('HeadlessChrome') >= 0;
+   browser.chromeVersion = (browser.isChrome || browser.isChromeHeadless) ? parseInt(navigator.userAgent.match(/Chrom(?:e|ium)\/([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/)[1]) : 0;
+   browser.isWin = navigator.userAgent.indexOf('Windows') >= 0;
+   browser.touches = ('ontouchend' in document); // identify if touch events are supported
+   browser.screenWidth = window.screen?.width ?? 1200;
 }
 
 /** @summary Check if prototype string match to array (typed on untyped)
   * @return {Number} 0 - not array, 1 - regular array, 2 - typed array
   * @private */
 function isArrayProto(proto) {
-    if ((proto.length < 14) || (proto.indexOf('[object ') != 0)) return 0;
-    let p = proto.indexOf('Array]');
-    if ((p < 0) || (p != proto.length - 6)) return 0;
+    if ((proto.length < 14) || (proto.indexOf('[object ') !== 0)) return 0;
+    const p = proto.indexOf('Array]');
+    if ((p < 0) || (p !== proto.length - 6)) return 0;
     // plain array has only '[object Array]', typed array type name inside
-    return proto.length == 14 ? 1 : 2;
+    return proto.length === 14 ? 1 : 2;
 }
 
 /** @desc Specialized JSROOT constants, used in {@link settings}
   * @namespace */
-let constants$1 = {
+const constants$1 = {
    /** @summary Kind of 3D rendering, used for {@link settings.Render3D}
      * @namespace */
    Render3D: {
@@ -107,7 +109,7 @@ let constants$1 = {
       /** @summary Use SVG rendering, slow, inprecise and not interactive, nor recommendet */
       SVG: 3,
       fromString(s) {
-         if ((s === 'webgl') || (s == 'gl')) return this.WebGL;
+         if ((s === 'webgl') || (s === 'gl')) return this.WebGL;
          if (s === 'img') return this.WebGLImage;
          if (s === 'svg') return this.SVG;
          return this.Default;
@@ -150,7 +152,7 @@ let constants$1 = {
       fromString(s) {
          if (!s || !isStr(s))
             return this.Normal;
-         switch(s){
+         switch (s) {
             case 'off': return this.Off;
             case 'symbols': return this.Symbols;
             case 'normal':
@@ -164,15 +166,15 @@ let constants$1 = {
             case 'alwaysmath':
             case 'alwaysmathjax': return this.AlwaysMathJax;
          }
-         let code = parseInt(s);
+         const code = parseInt(s);
          return (Number.isInteger(code) && (code >= this.Off) && (code <= this.AlwaysMathJax)) ? code : this.Normal;
       }
    }
-};
+},
 
 /** @desc Global JSROOT settings
   * @namespace */
-let settings = {
+settings = {
    /** @summary Render of 3D drawing methods, see {@link constants.Render3D} for possible values */
    Render3D: constants$1.Render3D.Default,
    /** @summary 3D drawing methods in batch mode, see {@link constants.Render3D} for possible values */
@@ -194,7 +196,7 @@ let settings = {
    /** @summary Zooming on touch devices */
    ZoomTouch: !nodejs,
    /** @summary Enables move and resize of elements like statbox, title, pave, colz  */
-   MoveResize: !browser$1.touches && !nodejs,
+   MoveResize: !browser.touches && !nodejs,
    /** @summary Configures keybord key press handling
      * @desc Can be disabled to prevent keys heandling in complex HTML layouts
      * @default true */
@@ -269,15 +271,14 @@ let settings = {
    DarkMode: false,
    /** @summary Prefer to use saved points in TF1/TF2, avoids eval() and Function() when possible */
    PreferSavedPoints: false
-};
-
+},
 
 /** @namespace
   * @summary Insiance of TStyle object like in ROOT
   * @desc Includes default draw styles, can be changed after loading of JSRoot.core.js
   * or can be load from the file providing style=itemname in the URL
   * See [TStyle docu]{@link https://root.cern/doc/master/classTStyle.html} 'Private attributes' section for more detailed info about each value */
-let gStyle = {
+gStyle = {
    fName: 'Modern',
    /** @summary Default log x scale */
    fOptLogx: 0,
@@ -400,7 +401,7 @@ function getDocument() {
       return internals.nodejs_document;
    if (typeof document !== 'undefined')
       return document;
-   if (typeof window == 'object')
+   if (typeof window === 'object')
       return window.document;
    return undefined;
 }
@@ -424,16 +425,17 @@ async function injectCode(code) {
 
    if (typeof document !== 'undefined') {
       // check if code already loaded - to avoid duplication
-      let scripts = document.getElementsByTagName('script');
-      for (let n = 0; n < scripts.length; ++n)
-         if (scripts[n].innerHTML == code)
+      const scripts = document.getElementsByTagName('script');
+      for (let n = 0; n < scripts.length; ++n) {
+         if (scripts[n].innerHTML === code)
             return true;
+      }
 
-      let promise = code.indexOf('JSROOT.require') >= 0 ? _ensureJSROOT() : Promise.resolve(true);
+      const promise = code.indexOf('JSROOT.require') >= 0 ? _ensureJSROOT() : Promise.resolve(true);
 
       return promise.then(() => {
          return new Promise(resolve => {
-            let element = document.createElement('script');
+            const element = document.createElement('script');
             element.setAttribute('type', 'text/javascript');
             element.innerHTML = code;
             document.head.appendChild(element);
@@ -456,7 +458,7 @@ async function loadScript(url) {
       url = url.split(';');
 
    if (!isStr(url)) {
-      let scripts = url, loadNext = () => {
+      const scripts = url, loadNext = () => {
          if (!scripts.length) return true;
          return loadScript(scripts.shift()).then(loadNext, loadNext);
       };
@@ -465,47 +467,48 @@ async function loadScript(url) {
 
    if (url.indexOf('$$$') === 0) {
       url = url.slice(3);
-      if ((url.indexOf('style/') == 0) && (url.indexOf('.css') < 0))
+      if ((url.indexOf('style/') === 0) && (url.indexOf('.css') < 0))
          url += '.css';
       url = exports.source_dir + url;
    }
 
-   let element, isstyle = url.indexOf('.css') > 0;
+   const isstyle = url.indexOf('.css') > 0;
 
    if (nodejs) {
       if (isstyle)
          return null;
-      if ((url.indexOf('http:') == 0) || (url.indexOf('https:') == 0))
+      if ((url.indexOf('http:') === 0) || (url.indexOf('https:') === 0))
          return httpRequest(url, 'text').then(code => injectCode(code));
 
       // local files, read and use it
-      if (url.indexOf('./') == 0)
+      if (url.indexOf('./') === 0)
          return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(fs => injectCode(fs.readFileSync(url)));
 
       return import(/* webpackIgnore: true */ url);
    }
 
    const match_url = src => {
-      if (src == url) return true;
-      let indx = src.indexOf(url);
-      return (indx > 0) && (indx + url.length == src.length) && (src[indx-1] == '/');
+      if (src === url) return true;
+      const indx = src.indexOf(url);
+      return (indx > 0) && (indx + url.length === src.length) && (src[indx-1] === '/');
    };
 
    if (isstyle) {
-      let styles = document.getElementsByTagName('link');
+      const styles = document.getElementsByTagName('link');
       for (let n = 0; n < styles.length; ++n) {
          if (!styles[n].href || (styles[n].type !== 'text/css') || (styles[n].rel !== 'stylesheet')) continue;
          if (match_url(styles[n].href))
             return true;
       }
-
    } else {
-      let scripts = document.getElementsByTagName('script');
-      for (let n = 0; n < scripts.length; ++n)
+      const scripts = document.getElementsByTagName('script');
+      for (let n = 0; n < scripts.length; ++n) {
          if (match_url(scripts[n].src))
             return true;
+      }
    }
 
+   let element;
    if (isstyle) {
       element = document.createElement('link');
       element.setAttribute('rel', 'stylesheet');
@@ -536,32 +539,28 @@ function BIT(n) { return 1 << n; }
 function clone(src, map, nofunc) {
    if (!src) return null;
 
-   if (!map) {
-      map = { obj: [], clones: [], nofunc: nofunc };
-   } else {
+   if (!map)
+      map = { obj: [], clones: [], nofunc };
+   else {
       const i = map.obj.indexOf(src);
       if (i >= 0) return map.clones[i];
    }
 
-   let arr_kind = isArrayProto(Object.prototype.toString.apply(src));
+   const arr_kind = isArrayProto(Object.prototype.toString.apply(src));
 
    // process normal array
-   if (arr_kind == 1) {
-      let tgt = [];
+   if (arr_kind === 1) {
+      const tgt = [];
       map.obj.push(src);
       map.clones.push(tgt);
       for (let i = 0; i < src.length; ++i)
-         if (isObject(src[i]))
-            tgt.push(clone(src[i], map));
-         else
-            tgt.push(src[i]);
-
+         tgt.push(isObject(src[i]) ? clone(src[i], map) : src[i]);
       return tgt;
    }
 
    // process typed array
-   if (arr_kind == 2) {
-      let tgt = [];
+   if (arr_kind === 2) {
+      const tgt = [];
       map.obj.push(src);
       map.clones.push(tgt);
       for (let i = 0; i < src.length; ++i)
@@ -570,11 +569,11 @@ function clone(src, map, nofunc) {
       return tgt;
    }
 
-   let tgt = {};
+   const tgt = {};
    map.obj.push(src);
    map.clones.push(tgt);
 
-   for (let k in src) {
+   for (const k in src) {
       if (isObject(src[k]))
          tgt[k] = clone(src[k], map);
       else if (!map.nofunc || !isFunc(src[k]))
@@ -601,18 +600,17 @@ function addMethods(obj, typename) {
   * @param {object|string} json  object where references will be replaced
   * @return {object} parsed object */
 function parse(json) {
-
    if (!json) return null;
 
-   let obj = isStr(json) ? JSON.parse(json) : json,
-       map = [], newfmt = undefined;
+   const obj = isStr(json) ? JSON.parse(json) : json, map = [];
+   let newfmt;
 
    const unref_value = value => {
       if ((value === null) || (value === undefined)) return;
 
       if (isStr(value)) {
          if (newfmt || (value.length < 6) || (value.indexOf('$ref:') !== 0)) return;
-         let ref = parseInt(value.slice(5));
+         const ref = parseInt(value.slice(5));
          if (!Number.isInteger(ref) || (ref < 0) || (ref >= map.length)) return;
          newfmt = false;
          return map[ref];
@@ -620,21 +618,21 @@ function parse(json) {
 
       if (typeof value !== 'object') return;
 
-      let proto = Object.prototype.toString.apply(value);
+      const proto = Object.prototype.toString.apply(value);
 
       // scan array - it can contain other objects
       if (isArrayProto(proto) > 0) {
           for (let i = 0; i < value.length; ++i) {
-             let res = unref_value(value[i]);
+             const res = unref_value(value[i]);
              if (res !== undefined) value[i] = res;
           }
           return;
       }
 
-      let ks = Object.keys(value), len = ks.length;
+      const ks = Object.keys(value), len = ks.length;
 
       if ((newfmt !== false) && (len === 1) && (ks[0] === '$ref')) {
-         const ref = parseInt(value['$ref']);
+         const ref = parseInt(value.$ref);
          if (!Number.isInteger(ref) || (ref < 0) || (ref >= map.length)) return;
          newfmt = true;
          return map[ref];
@@ -661,29 +659,27 @@ function parse(json) {
 
          if (value.b !== undefined) {
             // base64 coding
-
-            let buf = atob_func(value.b);
-
+            const buf = atob_func(value.b);
             if (arr.buffer) {
-               let dv = new DataView(arr.buffer, value.o || 0),
-                   len = Math.min(buf.length, dv.byteLength);
+               const dv = new DataView(arr.buffer, value.o || 0),
+                     len = Math.min(buf.length, dv.byteLength);
                for (let k = 0; k < len; ++k)
                   dv.setUint8(k, buf.charCodeAt(k));
-            } else {
+            } else
                throw new Error('base64 coding supported only for native arrays with binary data');
-            }
          } else {
             // compressed coding
             let nkey = 2, p = 0;
             while (nkey < len) {
-               if (ks[nkey][0] == 'p') p = value[ks[nkey++]]; // position
+               if (ks[nkey][0] === 'p') p = value[ks[nkey++]]; // position
                if (ks[nkey][0] !== 'v') throw new Error(`Unexpected member ${ks[nkey]} in array decoding`);
-               let v = value[ks[nkey++]]; // value
+               const v = value[ks[nkey++]]; // value
                if (typeof v === 'object') {
-                  for (let k = 0; k < v.length; ++k) arr[p++] = v[k];
+                  for (let k = 0; k < v.length; ++k)
+                     arr[p++] = v[k];
                } else {
                   arr[p++] = v;
-                  if ((nkey < len) && (ks[nkey][0] == 'n')) {
+                  if ((nkey < len) && (ks[nkey][0] === 'n')) {
                      let cnt = value[ks[nkey++]]; // counter
                      while (--cnt) arr[p++] = v;
                   }
@@ -696,12 +692,12 @@ function parse(json) {
 
       if ((newfmt !== false) && (len === 3) && (ks[0] === '$pair') && (ks[1] === 'first') && (ks[2] === 'second')) {
          newfmt = true;
-         let f1 = unref_value(value.first),
-             s1 = unref_value(value.second);
+         const f1 = unref_value(value.first),
+               s1 = unref_value(value.second);
          if (f1 !== undefined) value.first = f1;
          if (s1 !== undefined) value.second = s1;
-         value._typename = value['$pair'];
-         delete value['$pair'];
+         value._typename = value.$pair;
+         delete value.$pair;
          return; // pair object is not counted in the objects map
       }
 
@@ -715,8 +711,7 @@ function parse(json) {
       if (value._typename) addMethods(value);
 
       for (let k = 0; k < len; ++k) {
-         const i = ks[k],
-              res = unref_value(value[i]);
+         const i = ks[k], res = unref_value(value[i]);
          if (res !== undefined) value[i] = res;
       }
    };
@@ -732,10 +727,11 @@ function parse(json) {
   * @return {Array} array of parsed elements */
 function parseMulti(json) {
    if (!json) return null;
-   let arr = JSON.parse(json);
-   if (arr && arr.length)
+   const arr = JSON.parse(json);
+   if (arr?.length) {
       for (let i = 0; i < arr.length; ++i)
          arr[i] = parse(arr[i]);
+   }
    return arr;
 }
 
@@ -754,28 +750,27 @@ function parseMulti(json) {
 function toJSON(obj, spacing) {
    if (!isObject(obj)) return '';
 
-   let map = []; // map of stored objects
-
-   const copy_value = value => {
+   const map = [], // map of stored objects
+   copy_value = value => {
       if (isFunc(value)) return undefined;
 
       if ((value === undefined) || (value === null) || !isObject(value)) return value;
 
       // typed array need to be converted into normal array, otherwise looks strange
       if (isArrayProto(Object.prototype.toString.apply(value)) > 0) {
-         let arr = new Array(value.length);
+         const arr = new Array(value.length);
          for (let i = 0; i < value.length; ++i)
             arr[i] = copy_value(value[i]);
          return arr;
       }
 
       // this is how reference is code
-      let refid = map.indexOf(value);
+      const refid = map.indexOf(value);
       if (refid >= 0) return { $ref: refid };
 
-      let ks = Object.keys(value), len = ks.length, tgt = {};
+      const ks = Object.keys(value), len = ks.length, tgt = {};
 
-      if ((len == 3) && (ks[0] === '$pair') && (ks[1] === 'first') && (ks[2] === 'second')) {
+      if ((len === 3) && (ks[0] === '$pair') && (ks[1] === 'first') && (ks[2] === 'second')) {
          // special handling of pair objects which does not included into objects map
          tgt.$pair = value.$pair;
          tgt.first = copy_value(value.first);
@@ -786,15 +781,14 @@ function toJSON(obj, spacing) {
       map.push(value);
 
       for (let k = 0; k < len; ++k) {
-         let name = ks[k];
-         if (name && (name[0] != '$'))
+         const name = ks[k];
+         if (name && (name[0] !== '$'))
             tgt[name] = copy_value(value[name]);
       }
 
       return tgt;
-   };
-
-   let tgt = copy_value(obj);
+   },
+   tgt = copy_value(obj);
 
    return JSON.stringify(tgt, null, spacing);
 }
@@ -811,10 +805,10 @@ function toJSON(obj, spacing) {
   * console.log(`Get opt2 ${d.get('opt2')}`);     // '3'
   * console.log(`Get opt3 ${d.get('opt3','-')}`); // '-' */
 function decodeUrl(url) {
-   let res = {
+   const res = {
       opts: {},
       has(opt) { return this.opts[opt] !== undefined; },
-      get(opt,dflt) { let v = this.opts[opt]; return v !== undefined ? v : dflt; }
+      get(opt, dflt) { const v = this.opts[opt]; return v !== undefined ? v : dflt; }
    };
 
    if (!url || !isStr(url)) {
@@ -823,32 +817,31 @@ function decodeUrl(url) {
    }
    res.url = url;
 
-   let p1 = url.indexOf('?');
+   const p1 = url.indexOf('?');
    if (p1 < 0) return res;
    url = decodeURI(url.slice(p1+1));
 
    while (url) {
-
       // try to correctly handle quotes in the URL
       let pos = 0, nq = 0, eq = -1, firstq = -1;
       while ((pos < url.length) && ((nq !== 0) || ((url[pos] !== '&') && (url[pos] !== '#')))) {
          switch (url[pos]) {
-            case "'": if (nq >= 0) nq = (nq+1)%2; if (firstq < 0) firstq = pos; break;
-            case '"': if (nq <= 0) nq = (nq-1)%2; if (firstq < 0) firstq = pos; break;
+            case '\'': if (nq >= 0) nq = (nq+1) % 2; if (firstq < 0) firstq = pos; break;
+            case '"': if (nq <= 0) nq = (nq-1) % 2; if (firstq < 0) firstq = pos; break;
             case '=': if ((firstq < 0) && (eq < 0)) eq = pos; break;
          }
          pos++;
       }
 
-      if ((eq < 0) && (firstq < 0)) {
-         res.opts[url.slice(0,pos)] = '';
-      } if (eq > 0) {
-         let val = url.slice(eq+1, pos);
-         if (((val[0] === "'") || (val[0] === '"')) && (val[0] === val[val.length-1])) val = val.slice(1, val.length-1);
-         res.opts[url.slice(0,eq)] = val;
+      if ((eq < 0) && (firstq < 0))
+         res.opts[url.slice(0, pos)] = '';
+      else if (eq > 0) {
+         let val = url.slice(eq + 1, pos);
+         if (((val[0] === '\'') || (val[0] === '"')) && (val[0] === val[val.length-1])) val = val.slice(1, val.length-1);
+         res.opts[url.slice(0, eq)] = val;
       }
 
-      if ((pos >= url.length) || (url[pos] == '#')) break;
+      if ((pos >= url.length) || (url[pos] === '#')) break;
 
       url = url.slice(pos+1);
    }
@@ -861,7 +854,8 @@ function decodeUrl(url) {
 function findFunction(name) {
    if (isFunc(name)) return name;
    if (!isStr(name)) return null;
-   let names = name.split('.'), elem = globalThis;
+   const names = name.split('.');
+   let elem = globalThis;
 
    for (let n = 0; elem && (n < names.length); ++n)
       elem = elem[names[n]];
@@ -869,19 +863,18 @@ function findFunction(name) {
    return isFunc(elem) ? elem : null;
 }
 
-
 /** @summary Method to create http request, without promise can be used only in browser environment
   * @private */
 function createHttpRequest(url, kind, user_accept_callback, user_reject_callback, use_promise) {
-
    function configureXhr(xhr) {
       xhr.http_callback = isFunc(user_accept_callback) ? user_accept_callback.bind(xhr) : () => {};
       xhr.error_callback = isFunc(user_reject_callback) ? user_reject_callback.bind(xhr) : function(err) { console.warn(err.message); this.http_callback(null); }.bind(xhr);
 
       if (!kind) kind = 'buf';
 
-      let method = 'GET', is_async = true, p = kind.indexOf(';sync');
-      if (p > 0) { kind = kind.slice(0,p); is_async = false; }
+      let method = 'GET', is_async = true;
+      const p = kind.indexOf(';sync');
+      if (p > 0) { kind = kind.slice(0, p); is_async = false; }
       switch (kind) {
          case 'head': method = 'HEAD'; break;
          case 'posttext': method = 'POST'; kind = 'text'; break;
@@ -895,7 +888,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
       if (settings.WithCredentials)
          xhr.withCredentials = true;
 
-      if (settings.HandleWrongHttpResponse && (method == 'GET') && isFunc(xhr.addEventListener))
+      if (settings.HandleWrongHttpResponse && (method === 'GET') && isFunc(xhr.addEventListener)) {
          xhr.addEventListener('progress', function(oEvent) {
             if (oEvent.lengthComputable && this.expected_size && (oEvent.loaded > this.expected_size)) {
                this.did_abort = true;
@@ -903,13 +896,13 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
                this.error_callback(Error(`Server sends more bytes ${oEvent.loaded} than expected ${this.expected_size}. Abort I/O operation`), 598);
             }
          }.bind(xhr));
+      }
 
       xhr.onreadystatechange = function() {
-
          if (this.did_abort) return;
 
          if ((this.readyState === 2) && this.expected_size) {
-            let len = parseInt(this.getResponseHeader('Content-Length'));
+            const len = parseInt(this.getResponseHeader('Content-Length'));
             if (Number.isInteger(len) && (len > this.expected_size) && !settings.HandleWrongHttpResponse) {
                this.did_abort = true;
                this.abort();
@@ -917,23 +910,23 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
             }
          }
 
-         if (this.readyState != 4) return;
+         if (this.readyState !== 4) return;
 
-         if ((this.status != 200) && (this.status != 206) && !browser$1.qt5 &&
+         if ((this.status !== 200) && (this.status !== 206) && !browser.qt5 &&
              // in these special cases browsers not always set status
-             !((this.status == 0) && ((url.indexOf('file://') == 0) || (url.indexOf('blob:') == 0)))) {
+             !((this.status === 0) && ((url.indexOf('file://') === 0) || (url.indexOf('blob:') === 0))))
                return this.error_callback(Error(`Fail to load url ${url}`), this.status);
-         }
 
-         if (this.nodejs_checkzip && (this.getResponseHeader('content-encoding') == 'gzip'))
+         if (this.nodejs_checkzip && (this.getResponseHeader('content-encoding') === 'gzip')) {
             // special handling of gzipped JSON objects in Node.js
             return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(handle => {
-                let res = handle.unzipSync(Buffer.from(this.response)),
-                    obj = JSON.parse(res); // zlib returns Buffer, use JSON to parse it
+                const res = handle.unzipSync(Buffer.from(this.response)),
+                      obj = JSON.parse(res); // zlib returns Buffer, use JSON to parse it
                return this.http_callback(parse(obj));
             });
+         }
 
-         switch(this.kind) {
+         switch (this.kind) {
             case 'xml': return this.http_callback(this.responseXML);
             case 'text': return this.http_callback(this.responseText);
             case 'object': return this.http_callback(parse(this.responseText));
@@ -945,13 +938,12 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
          if (this.responseType === undefined)
             return this.http_callback(this.responseText);
 
-         if ((this.kind == 'bin') && ('byteLength' in this.response)) {
+         if ((this.kind === 'bin') && ('byteLength' in this.response)) {
             // if string representation in requested - provide it
-
-            let filecontent = '', u8Arr = new Uint8Array(this.response);
+            const u8Arr = new Uint8Array(this.response);
+            let filecontent = '';
             for (let i = 0; i < u8Arr.length; ++i)
                filecontent += String.fromCharCode(u8Arr[i]);
-
             return this.http_callback(filecontent);
          }
 
@@ -960,10 +952,10 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
 
       xhr.open(method, url, is_async);
 
-      if ((kind == 'bin') || (kind == 'buf'))
+      if ((kind === 'bin') || (kind === 'buf'))
          xhr.responseType = 'arraybuffer';
 
-      if (nodejs && (method == 'GET') && (kind === 'object') && (url.indexOf('.json.gz') > 0)) {
+      if (nodejs && (method === 'GET') && (kind === 'object') && (url.indexOf('.json.gz') > 0)) {
          xhr.nodejs_checkzip = true;
          xhr.responseType = 'arraybuffer';
       }
@@ -974,10 +966,11 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
    if (isNodeJs()) {
       if (!use_promise)
          throw Error('Not allowed to create http requests in node.js without promise');
+      // eslint-disable-next-line new-cap
       return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(h => configureXhr(new h.default()));
    }
 
-   let xhr = configureXhr(new XMLHttpRequest());
+   const xhr = configureXhr(new XMLHttpRequest());
    return use_promise ? Promise.resolve(xhr) : xhr;
 }
 
@@ -1002,12 +995,13 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
   *       .then(obj => console.log(`Get object of type ${obj._typename}`))
   *       .catch(err => console.error(err.message)); */
 async function httpRequest(url, kind, post_data) {
-   return new Promise((accept, reject) => {
-      createHttpRequest(url, kind, accept, reject, true).then(xhr => xhr.send(post_data || null));
+   return new Promise((resolve, reject) => {
+      createHttpRequest(url, kind, resolve, reject, true).then(xhr => xhr.send(post_data || null));
    });
 }
 
 const prROOT = 'ROOT.', clTObject = 'TObject', clTNamed = 'TNamed', clTString = 'TString', clTObjString = 'TObjString',
+      clTKey = 'TKey', clTFile = 'TFile',
       clTList = 'TList', clTHashList = 'THashList', clTMap = 'TMap', clTObjArray = 'TObjArray', clTClonesArray = 'TClonesArray',
       clTAttLine = 'TAttLine', clTAttFill = 'TAttFill', clTAttMarker = 'TAttMarker', clTAttText = 'TAttText',
       clTHStack = 'THStack', clTGraph = 'TGraph', clTMultiGraph = 'TMultiGraph', clTCutG = 'TCutG',
@@ -1038,7 +1032,7 @@ const prROOT = 'ROOT.', clTObject = 'TObject', clTNamed = 'TNamed', clTString = 
   * obj.fName = 'name';
   * obj.fTitle = 'title'; */
 function create$1(typename, target) {
-   let obj = target || {};
+   const obj = target || {};
 
    switch (typename) {
       case clTObject:
@@ -1059,7 +1053,7 @@ function create$1(typename, target) {
       case clTAxis:
          create$1(clTNamed, obj);
          create$1(clTAttAxis, obj);
-         extend$1(obj, { fNbins: 1, fXmin: 0, fXmax: 1, fXbins : [], fFirst: 0, fLast: 0,
+         extend$1(obj, { fNbins: 1, fXmin: 0, fXmax: 1, fXbins: [], fFirst: 0, fLast: 0,
                        fBits2: 0, fTimeDisplay: false, fTimeFormat: '', fLabels: null, fModLabs: null });
          break;
       case clTAttLine:
@@ -1069,7 +1063,7 @@ function create$1(typename, target) {
          extend$1(obj, { fFillColor: 0, fFillStyle: 0 });
          break;
       case clTAttMarker:
-         extend$1(obj, { fMarkerColor: 1, fMarkerStyle: 1, fMarkerSize: 1. });
+         extend$1(obj, { fMarkerColor: 1, fMarkerStyle: 1, fMarkerSize: 1 });
          break;
       case clTLine:
          create$1(clTObject, obj);
@@ -1084,7 +1078,7 @@ function create$1(typename, target) {
          break;
       case clTPave:
          create$1(clTBox, obj);
-         extend$1(obj, { fX1NDC : 0., fY1NDC: 0, fX2NDC: 1, fY2NDC: 1,
+         extend$1(obj, { fX1NDC: 0, fY1NDC: 0, fX2NDC: 1, fY2NDC: 1,
                        fBorderSize: 0, fInit: 1, fShadowColor: 1,
                        fCornerRadius: 0, fOption: 'brNDC', fName: 'title' });
          break;
@@ -1144,9 +1138,9 @@ function create$1(typename, target) {
                        fXaxis: create$1(clTAxis), fYaxis: create$1(clTAxis), fZaxis: create$1(clTAxis),
                        fFillColor: gStyle.fHistFillColor, fFillStyle: gStyle.fHistFillStyle,
                        fLineColor: gStyle.fHistLineColor, fLineStyle: gStyle.fHistLineStyle, fLineWidth: gStyle.fHistLineWidth,
-                       fBarOffset: 0, fBarWidth: 1000, fEntries: 0.,
-                       fTsumw: 0., fTsumw2: 0., fTsumwx: 0., fTsumwx2: 0.,
-                       fMaximum: kNoZoom, fMinimum: kNoZoom, fNormFactor: 0., fContour: [],
+                       fBarOffset: 0, fBarWidth: 1000, fEntries: 0,
+                       fTsumw: 0, fTsumw2: 0, fTsumwx: 0, fTsumwx2: 0,
+                       fMaximum: kNoZoom, fMinimum: kNoZoom, fNormFactor: 0, fContour: [],
                        fSumw2: [], fOption: '', fFunctions: create$1(clTList),
                        fBufferSize: 0, fBuffer: [], fBinStatErrOpt: 0, fStatOverflows: 2 });
          break;
@@ -1161,7 +1155,7 @@ function create$1(typename, target) {
          break;
       case clTH2:
          create$1(clTH1, obj);
-         extend$1(obj, { fScalefactor: 1., fTsumwy: 0.,  fTsumwy2: 0, fTsumwxy: 0 });
+         extend$1(obj, { fScalefactor: 1, fTsumwy: 0,  fTsumwy2: 0, fTsumwxy: 0 });
          break;
       case clTH2I:
       case 'TH2L64':
@@ -1174,7 +1168,7 @@ function create$1(typename, target) {
          break;
       case clTH3:
          create$1(clTH1, obj);
-         extend$1(obj, { fTsumwy: 0.,  fTsumwy2: 0, fTsumwz: 0.,  fTsumwz2: 0, fTsumwxy: 0, fTsumwxz: 0, fTsumwyz: 0 });
+         extend$1(obj, { fTsumwy: 0,  fTsumwy2: 0, fTsumwz: 0,  fTsumwz2: 0, fTsumwxy: 0, fTsumwxz: 0, fTsumwyz: 0 });
          break;
       case 'TH3I':
       case 'TH3L64':
@@ -1199,7 +1193,7 @@ function create$1(typename, target) {
          break;
       case 'TGraphAsymmErrors':
          create$1(clTGraph, obj);
-         extend$1(obj, { fEXlow: [], fEXhigh: [], fEYlow: [], fEYhigh: []});
+         extend$1(obj, { fEXlow: [], fEXhigh: [], fEYlow: [], fEYhigh: [] });
          break;
       case clTMultiGraph:
          create$1(clTNamed, obj);
@@ -1335,7 +1329,7 @@ function create$1(typename, target) {
   * h1.fYaxis.fTitle = 'yaxis';
   * h1.fXaxis.fLabelSize = 0.02; */
 function createHistogram(typename, nbinsx, nbinsy, nbinsz) {
-   let histo = create$1(typename);
+   const histo = create$1(typename);
    if (!histo.fXaxis || !histo.fYaxis || !histo.fZaxis) return null;
    histo.fName = 'hist'; histo.fTitle = 'title';
    if (nbinsx) extend$1(histo.fXaxis, { fNbins: nbinsx, fXmin: 0, fXmax: nbinsx });
@@ -1366,10 +1360,10 @@ function createHistogram(typename, nbinsx, nbinsy, nbinsz) {
 
 function setHistogramTitle(histo, title) {
    if (!histo) return;
-   if (title.indexOf(';') < 0) {
+   if (title.indexOf(';') < 0)
       histo.fTitle = title;
-   } else {
-      let arr = title.split(';');
+   else {
+      const arr = title.split(';');
       histo.fTitle = arr[0];
       if (arr.length > 1) histo.fXaxis.fTitle = arr[1];
       if (arr.length > 2) histo.fYaxis.fTitle = arr[2];
@@ -1382,7 +1376,7 @@ function setHistogramTitle(histo, title) {
   * @param {number} npoints - number of points
   * @param {boolean} [use_int32] - use Int32Array type for points, default is Float32Array */
 function createTPolyLine(npoints, use_int32) {
-   let poly = create$1(clTPolyLine);
+   const poly = create$1(clTPolyLine);
    if (npoints) {
       poly.fN = npoints;
       if (use_int32) {
@@ -1401,13 +1395,13 @@ function createTPolyLine(npoints, use_int32) {
   * @param {array} [xpts] - array with X coordinates
   * @param {array} [ypts] - array with Y coordinates */
 function createTGraph(npoints, xpts, ypts) {
-   let graph = extend$1(create$1(clTGraph), { fBits: 0x408, fName: 'graph', fTitle: 'title' });
+   const graph = extend$1(create$1(clTGraph), { fBits: 0x408, fName: 'graph', fTitle: 'title' });
 
    if (npoints > 0) {
       graph.fMaxSize = graph.fNpoints = npoints;
 
-      const usex = isObject(xpts) && (xpts.length === npoints);
-      const usey = isObject(ypts) && (ypts.length === npoints);
+      const usex = isObject(xpts) && (xpts.length === npoints),
+            usey = isObject(ypts) && (ypts.length === npoints);
 
       for (let i = 0; i < npoints; ++i) {
          graph.fX.push(usex ? xpts[i] : i/npoints);
@@ -1428,7 +1422,7 @@ function createTGraph(npoints, xpts, ypts) {
   * let h3 = createHistogram('TH1F', nbinsx);
   * let stack = createTHStack(h1, h2, h3); */
 function createTHStack() {
-   let stack = create$1(clTHStack);
+   const stack = create$1(clTHStack);
    for (let i = 0; i < arguments.length; ++i)
       stack.fHists.Add(arguments[i], '');
    return stack;
@@ -1443,7 +1437,7 @@ function createTHStack() {
   * let gr3 = createTGraph(100);
   * let mgr = createTMultiGraph(gr1, gr2, gr3); */
 function createTMultiGraph() {
-   let mgraph = create$1(clTMultiGraph);
+   const mgraph = create$1(clTMultiGraph);
    for (let i = 0; i < arguments.length; ++i)
        mgraph.fGraphs.Add(arguments[i], '');
    return mgraph;
@@ -1456,19 +1450,18 @@ const methodsCache = {};
 /** @summary Returns methods for given typename
   * @private */
 function getMethods(typename, obj) {
-
-   let m = methodsCache[typename],
-       has_methods = (m !== undefined);
-
+   let m = methodsCache[typename];
+   const has_methods = (m !== undefined);
    if (!has_methods) m = {};
 
    // Due to binary I/O such TObject methods may not be set for derived classes
    // Therefore when methods requested for given object, check also that basic methods are there
-   if ((typename == clTObject) || (typename == clTNamed) || (obj?.fBits !== undefined))
+   if ((typename === clTObject) || (typename === clTNamed) || (obj?.fBits !== undefined)) {
       if (typeof m.TestBit === 'undefined') {
-         m.TestBit = function(f) { return (this.fBits & f) != 0; };
+         m.TestBit = function(f) { return (this.fBits & f) !== 0; };
          m.InvertBit = function(f) { this.fBits = this.fBits ^ (f & 0xffffff); };
       }
+   }
 
    if (has_methods) return m;
 
@@ -1477,11 +1470,11 @@ function getMethods(typename, obj) {
          this.arr = [];
          this.opt = [];
       };
-      m.Add = function(obj,opt) {
+      m.Add = function(obj, opt) {
          this.arr.push(obj);
          this.opt.push(isStr(opt) ? opt : '');
       };
-      m.AddFirst = function(obj,opt) {
+      m.AddFirst = function(obj, opt) {
          this.arr.unshift(obj);
          this.opt.unshift(isStr(opt) ? opt : '');
       };
@@ -1493,7 +1486,7 @@ function getMethods(typename, obj) {
 
    if ((typename === clTPaveText) || (typename === clTPaveStats)) {
       m.AddText = function(txt) {
-         let line = create$1(clTLatex);
+         const line = create$1(clTLatex);
          line.fTitle = txt;
          line.fTextAlign = this.fTextAlign;
          this.fLines.Add(line);
@@ -1503,7 +1496,7 @@ function getMethods(typename, obj) {
       };
    }
 
-   if ((typename.indexOf(clTF1) == 0) || (typename === clTF2)) {
+   if ((typename.indexOf(clTF1) === 0) || (typename === clTF2)) {
       m.addFormula = function(obj) {
          if (!obj) return;
          if (this.formulas === undefined) this.formulas = [];
@@ -1514,11 +1507,12 @@ function getMethods(typename, obj) {
          if (this.fParams?.fParNames)
             return this.fParams.fParNames[n];
          if (this.fFormula?.fParams) {
-            for (let k = 0, arr = this.fFormula.fParams; k < arr.length; ++k)
-               if(arr[k].second == n)
+            for (let k = 0, arr = this.fFormula.fParams; k < arr.length; ++k) {
+               if (arr[k].second === n)
                   return arr[k].first;
+            }
          }
-         return (this.fNames && this.fNames[n]) ? this.fNames[n] : 'p'+n;
+         return (this.fNames && this.fNames[n]) ? this.fNames[n] : `p${n}`;
       };
       m.GetParValue = function(n) {
          if (this.fParams?.fParameters) return this.fParams.fParameters[n];
@@ -1534,25 +1528,25 @@ function getMethods(typename, obj) {
       };
    }
 
-   if (((typename.indexOf(clTGraph) == 0) || (typename == clTCutG)) && (typename != clTGraphPolargram) && (typename != clTGraphTime)) {
+   if (((typename.indexOf(clTGraph) === 0) || (typename === clTCutG)) && (typename !== clTGraphPolargram) && (typename !== clTGraphTime)) {
       // check if point inside figure specified by the TGraph
-      m.IsInside = function(xp,yp) {
-         let i = 0, j = this.fNpoints - 1, x = this.fX, y = this.fY, oddNodes = false;
+      m.IsInside = function(xp, yp) {
+         const x = this.fX, y = this.fY;
+         let i = 0, j = this.fNpoints - 1, oddNodes = false;
 
          for (; i < this.fNpoints; ++i) {
-            if ((y[i]<yp && y[j]>=yp) || (y[j]<yp && y[i]>=yp)) {
-               if (x[i]+(yp-y[i])/(y[j]-y[i])*(x[j]-x[i])<xp) {
+            if ((y[i] < yp && y[j] >= yp) || (y[j] < yp && y[i] >= yp)) {
+               if (x[i] + (yp - y[i])/(y[j] - y[i])*(x[j] - x[i]) < xp)
                   oddNodes = !oddNodes;
-               }
             }
-            j=i;
+            j = i;
          }
 
          return oddNodes;
       };
    }
 
-   if (typename.indexOf(clTH1) == 0 || typename.indexOf(clTH2) == 0 || typename.indexOf(clTH3) == 0) {
+   if (typename.indexOf(clTH1) === 0 || typename.indexOf(clTH2) === 0 || typename.indexOf(clTH3) === 0) {
       m.getBinError = function(bin) {
          //   -*-*-*-*-*Return value of error associated to bin number bin*-*-*-*-*
          //    if the sum of squares of weights has been defined (via Sumw2),
@@ -1573,66 +1567,54 @@ function getMethods(typename, obj) {
       };
    }
 
-   if (typename.indexOf(clTH1) == 0) {
+   if (typename.indexOf(clTH1) === 0) {
       m.getBin = function(x) { return x; };
       m.getBinContent = function(bin) { return this.fArray[bin]; };
       m.Fill = function(x, weight) {
-         let axis = this.fXaxis,
-             bin = 1 + Math.floor((x - axis.fXmin) / (axis.fXmax - axis.fXmin) * axis.fNbins);
-         if (bin < 0) bin = 0; else
-         if (bin > axis.fNbins + 1) bin = axis.fNbins + 1;
-         this.fArray[bin] += (weight === undefined) ? 1 : weight;
+         const a = this.fXaxis,
+               bin = Math.max(0, 1 + Math.min(a.fNbins, Math.floor((x - a.fXmin) / (a.fXmax - a.fXmin) * a.fNbins)));
+         this.fArray[bin] += weight ?? 1;
          this.fEntries++;
       };
    }
 
-   if (typename.indexOf(clTH2) == 0) {
+   if (typename.indexOf(clTH2) === 0) {
       m.getBin = function(x, y) { return (x + (this.fXaxis.fNbins+2) * y); };
       m.getBinContent = function(x, y) { return this.fArray[this.getBin(x, y)]; };
       m.Fill = function(x, y, weight) {
-         let axis1 = this.fXaxis, axis2 = this.fYaxis,
-             bin1 = 1 + Math.floor((x - axis1.fXmin) / (axis1.fXmax - axis1.fXmin) * axis1.fNbins),
-             bin2 = 1 + Math.floor((y - axis2.fXmin) / (axis2.fXmax - axis2.fXmin) * axis2.fNbins);
-         if (bin1 < 0) bin1 = 0; else
-         if (bin1 > axis1.fNbins + 1) bin1 = axis1.fNbins + 1;
-         if (bin2 < 0) bin2 = 0; else
-         if (bin2 > axis2.fNbins + 1) bin2 = axis2.fNbins + 1;
-         this.fArray[bin1 + (axis1.fNbins+2)*bin2] += (weight === undefined) ? 1 : weight;
+         const a1 = this.fXaxis, a2 = this.fYaxis,
+               bin1 = Math.max(0, 1 + Math.min(a1.fNbins, Math.floor((x - a1.fXmin) / (a1.fXmax - a1.fXmin) * a1.fNbins))),
+               bin2 = Math.max(0, 1 + Math.min(a2.fNbins, Math.floor((y - a2.fXmin) / (a2.fXmax - a2.fXmin) * a2.fNbins)));
+         this.fArray[bin1 + (a1.fNbins + 2)*bin2] += weight ?? 1;
          this.fEntries++;
       };
    }
 
-   if (typename.indexOf(clTH3) == 0) {
+   if (typename.indexOf(clTH3) === 0) {
       m.getBin = function(x, y, z) { return (x + (this.fXaxis.fNbins+2) * (y + (this.fYaxis.fNbins+2) * z)); };
       m.getBinContent = function(x, y, z) { return this.fArray[this.getBin(x, y, z)]; };
       m.Fill = function(x, y, z, weight) {
-         let axis1 = this.fXaxis, axis2 = this.fYaxis, axis3 = this.fZaxis,
-             bin1 = 1 + Math.floor((x - axis1.fXmin) / (axis1.fXmax - axis1.fXmin) * axis1.fNbins),
-             bin2 = 1 + Math.floor((y - axis2.fXmin) / (axis2.fXmax - axis2.fXmin) * axis2.fNbins),
-             bin3 = 1 + Math.floor((z - axis3.fXmin) / (axis3.fXmax - axis3.fXmin) * axis3.fNbins);
-         if (bin1 < 0) bin1 = 0; else
-         if (bin1 > axis1.fNbins + 1) bin1 = axis1.fNbins + 1;
-         if (bin2 < 0) bin2 = 0; else
-         if (bin2 > axis2.fNbins + 1) bin2 = axis2.fNbins + 1;
-         if (bin3 < 0) bin3 = 0; else
-         if (bin3 > axis3.fNbins + 1) bin3 = axis3.fNbins + 1;
-         this.fArray[bin1 + (axis1.fNbins+2)* (bin2+(axis2.fNbins+2)*bin3)] += (weight === undefined) ? 1 : weight;
+         const a1 = this.fXaxis, a2 = this.fYaxis, a3 = this.fZaxis,
+               bin1 = Math.max(0, 1 + Math.min(a1.fNbins, Math.floor((x - a1.fXmin) / (a1.fXmax - a1.fXmin) * a1.fNbins))),
+               bin2 = Math.max(0, 1 + Math.min(a2.fNbins, Math.floor((y - a2.fXmin) / (a2.fXmax - a2.fXmin) * a2.fNbins))),
+               bin3 = Math.max(0, 1 + Math.min(a3.fNbins, Math.floor((z - a3.fXmin) / (a3.fXmax - a3.fXmin) * a3.fNbins)));
+         this.fArray[bin1 + (a1.fNbins + 2) * (bin2 + (a2.fNbins + 2)*bin3)] += weight ?? 1;
          this.fEntries++;
       };
    }
 
-   if (typename.indexOf(clTProfile) == 0) {
-      if (typename.indexOf(clTProfile2D) == 0) {
+   if (typename.indexOf(clTProfile) === 0) {
+      if (typename.indexOf(clTProfile2D) === 0) {
          m.getBin = function(x, y) { return (x + (this.fXaxis.fNbins+2) * y); };
          m.getBinContent = function(x, y) {
-            let bin = this.getBin(x, y);
+            const bin = this.getBin(x, y);
             if (bin < 0 || bin >= this.fNcells) return 0;
             if (this.fBinEntries[bin] < 1e-300) return 0;
             if (!this.fArray) return 0;
             return this.fArray[bin]/this.fBinEntries[bin];
          };
          m.getBinEntries = function(x, y) {
-            let bin = this.getBin(x, y);
+            const bin = this.getBin(x, y);
             if (bin < 0 || bin >= this.fNcells) return 0;
             return this.fBinEntries[bin];
          };
@@ -1647,29 +1629,28 @@ function getMethods(typename, obj) {
       }
       m.getBinEffectiveEntries = function(bin) {
          if (bin < 0 || bin >= this.fNcells) return 0;
-         let sumOfWeights = this.fBinEntries[bin];
-         if ( !this.fBinSumw2 || this.fBinSumw2.length != this.fNcells) {
+         const sumOfWeights = this.fBinEntries[bin];
+         if (!this.fBinSumw2 || this.fBinSumw2.length !== this.fNcells)
             // this can happen  when reading an old file
             return sumOfWeights;
-         }
-         let sumOfWeightsSquare = this.fBinSumw2[bin];
+         const sumOfWeightsSquare = this.fBinSumw2[bin];
          return (sumOfWeightsSquare > 0) ? sumOfWeights * sumOfWeights / sumOfWeightsSquare : 0;
       };
       m.getBinError = function(bin) {
          if (bin < 0 || bin >= this.fNcells) return 0;
-         let cont = this.fArray[bin],               // sum of bin w *y
-             sum  = this.fBinEntries[bin],          // sum of bin weights
-             err2 = this.fSumw2[bin],               // sum of bin w * y^2
-             neff = this.getBinEffectiveEntries(bin);  // (sum of w)^2 / (sum of w^2)
+         const cont = this.fArray[bin],               // sum of bin w *y
+               sum  = this.fBinEntries[bin],          // sum of bin weights
+               err2 = this.fSumw2[bin],               // sum of bin w * y^2
+               neff = this.getBinEffectiveEntries(bin);  // (sum of w)^2 / (sum of w^2)
          if (sum < 1e-300) return 0;                  // for empty bins
          const EErrorType = { kERRORMEAN: 0, kERRORSPREAD: 1, kERRORSPREADI: 2, kERRORSPREADG: 3 };
          // case the values y are gaussian distributed y +/- sigma and w = 1/sigma^2
          if (this.fErrorMode === EErrorType.kERRORSPREADG)
             return 1.0/Math.sqrt(sum);
          // compute variance in y (eprim2) and standard deviation in y (eprim)
-         let contsum = cont/sum, eprim = Math.sqrt(Math.abs(err2/sum - contsum**2));
+         const contsum = cont/sum, eprim = Math.sqrt(Math.abs(err2/sum - contsum**2));
          if (this.fErrorMode === EErrorType.kERRORSPREADI) {
-            if (eprim != 0) return eprim/Math.sqrt(neff);
+            if (eprim !== 0) return eprim/Math.sqrt(neff);
             // in case content y is an integer (so each my has an error +/- 1/sqrt(12)
             // when the std(y) is zero
             return 1.0/Math.sqrt(12*neff);
@@ -1684,7 +1665,7 @@ function getMethods(typename, obj) {
       };
    }
 
-   if (typename == clTAxis) {
+   if (typename === clTAxis) {
       m.GetBinLowEdge = function(bin) {
          if (this.fNbins <= 0) return 0;
          if ((this.fXbins.length > 0) && (bin > 0) && (bin <= this.fNbins)) return this.fXbins[bin-1];
@@ -1778,7 +1759,7 @@ function getPromise(obj) { return isPromise(obj) ? obj : Promise.resolve(obj); }
 /** @summary Ensure global JSROOT and v6 support methods
   * @private */
 async function _ensureJSROOT() {
-   let pr = globalThis.JSROOT ? Promise.resolve(true) : loadScript(exports.source_dir + 'scripts/JSRoot.core.js');
+   const pr = globalThis.JSROOT ? Promise.resolve(true) : loadScript(exports.source_dir + 'scripts/JSRoot.core.js');
 
    return pr.then(() => {
       if (globalThis.JSROOT?._complete_loading)
@@ -1792,7 +1773,7 @@ BIT: BIT,
 _ensureJSROOT: _ensureJSROOT,
 addMethods: addMethods,
 atob_func: atob_func,
-browser: browser$1,
+browser: browser,
 btoa_func: btoa_func,
 clTAnnotation: clTAnnotation,
 clTAttCanvas: clTAttCanvas,
@@ -1809,6 +1790,7 @@ clTCutG: clTCutG,
 clTDiamond: clTDiamond,
 clTF1: clTF1,
 clTF2: clTF2,
+clTFile: clTFile,
 clTGaxis: clTGaxis,
 clTGeoNode: clTGeoNode,
 clTGeoNodeMatrix: clTGeoNodeMatrix,
@@ -1829,6 +1811,7 @@ clTH3: clTH3,
 clTHStack: clTHStack,
 clTHashList: clTHashList,
 clTImagePalette: clTImagePalette,
+clTKey: clTKey,
 clTLatex: clTLatex,
 clTLegend: clTLegend,
 clTLegendEntry: clTLegendEntry,
@@ -9684,7 +9667,7 @@ async function loadMathjax() {
       };
 
       let mj_dir = '../mathjax/3.2.0';
-      if (browser$1.webwindow && exports.source_dir.indexOf('https://root.cern/js') < 0 && exports.source_dir.indexOf('https://jsroot.gsi.de') < 0)
+      if (browser.webwindow && exports.source_dir.indexOf('https://root.cern/js') < 0 && exports.source_dir.indexOf('https://jsroot.gsi.de') < 0)
          mj_dir =  'mathjax';
 
       return loadScript(exports.source_dir + mj_dir + '/es5/tex-svg.js')
@@ -54192,9 +54175,9 @@ let Handling3DDrawings = {
             can3d = constants$1.Embed3D.EmbedSVG;
          else if (settings.Embed3D != constants$1.Embed3D.Default)
             can3d = settings.Embed3D;
-         else if (browser$1.isFirefox)
+         else if (browser.isFirefox)
             can3d = constants$1.Embed3D.Embed;
-         else if (browser$1.chromeVersion > 95)
+         else if (browser.chromeVersion > 95)
          // version 96 works partially, 97 works fine
             can3d = constants$1.Embed3D.Embed;
          else
@@ -54517,7 +54500,7 @@ function cleanupRender3D(renderer) {
           ext.destroy();
    } else {
       // suppress warnings in Chrome about lost webgl context, not required in firefox
-      if (browser$1.isChrome && isFunc(renderer.forceContextLoss))
+      if (browser.isChrome && isFunc(renderer.forceContextLoss))
          renderer.forceContextLoss();
 
       if (isFunc(renderer.dispose))
@@ -57807,7 +57790,7 @@ const ToolbarIcons = {
 
    createSVG(group, btn, size, title, arg) {
       let use_dark = (arg === true) || (arg === false) ? arg : settings.DarkMode,
-          opacity0 = (arg == 'browser') ? (browser$1.touches ? 0.2 : 0) : (use_dark ? 0.8 : 0.2),
+          opacity0 = (arg == 'browser') ? (browser.touches ? 0.2 : 0) : (use_dark ? 0.8 : 0.2),
           svg = group.append('svg:svg')
                      .attr('width', size + 'px')
                      .attr('height', size + 'px')
@@ -59360,7 +59343,7 @@ class StandaloneMenu extends JSRootMenu {
             extraText.textContent = d.sub ? '\u25B6' : d.extraText;
             hovArea.appendChild(extraText);
 
-            if (d.sub && browser$1.touches)
+            if (d.sub && browser.touches)
                extraText.addEventListener('click', evnt => {
                   evnt.preventDefault();
                   evnt.stopPropagation();
@@ -59376,7 +59359,7 @@ class StandaloneMenu extends JSRootMenu {
                });
          }
 
-         if (!browser$1.touches)
+         if (!browser.touches)
          hovArea.addEventListener('mouseenter', () => {
 
             if (this.prevHovArea)
@@ -59478,7 +59461,7 @@ class StandaloneMenu extends JSRootMenu {
       select(`#${dlg_id}`).remove();
       select(`#${dlg_id}_block`).remove();
 
-      let w = Math.min(args.width || 450, Math.round(0.9*browser$1.screenWidth)),
+      let w = Math.min(args.width || 450, Math.round(0.9*browser.screenWidth)),
           block = select('body').append('div')
                                    .attr('id', `${dlg_id}_block`)
                                    .attr('class', 'jsroot_dialog_block')
@@ -59874,7 +59857,7 @@ const AxisPainterMethods = {
       if ((dmin > 0) && (dmin < 1)) {
          if (this.log) {
             let factor = (item.min > 0) ? Math.log10(item.max/item.min) : 2;
-            if (factor>10) factor = 10; else if (factor < 0.01) factor = 0.01;
+            if (factor > 10) factor = 10; else if (factor < 0.01) factor = 0.01;
             item.min = item.min / Math.pow(10, factor*delta_left*dmin);
             item.max = item.max * Math.pow(10, factor*delta_right*(1-dmin));
          } else if ((delta_left === -delta_right) && !item.reverse) {
@@ -60935,13 +60918,11 @@ function getEarthProjectionFunc(id) {
             theta -= num / den;
             if (Math.abs(num / den) < 1e-4) break;
          }
-
          return {
             x: l * Math.cos(theta),
             y: 90 * Math.sin(theta)
          };
       };
-
    }
 }
 
@@ -61260,8 +61241,8 @@ const TooltipHandler = {
          let hint = hints[n];
          if (!hint) continue;
 
-         if (hint.painter && (hint.user_info !== undefined))
-            hint.painter.provideUserTooltip(hint.user_info);
+         if (hint.user_info !== undefined)
+            hint.painter?.provideUserTooltip(hint.user_info);
 
          if (!hint.lines || (hint.lines.length === 0)) {
             hints[n] = null;
@@ -61565,7 +61546,7 @@ const FrameInteractive = {
                  .on('mousemove', mouse_handler)
                  .on('mouseleave', close_handler);
 
-         if (browser$1.touches) {
+         if (browser.touches) {
             let touch_handler = handlers_set ? this.processFrameTooltipEvent.bind(this, { handler: true, touch: true }) : null;
 
             main_svg.on('touchstart', touch_handler)
@@ -61636,11 +61617,11 @@ const FrameInteractive = {
             svg.on('wheel', evnt => this.mouseWheel(evnt));
       }
 
-      if (browser$1.touches && ((settings.Zooming && settings.ZoomTouch) || settings.ContextMenu))
+      if (browser.touches && ((settings.Zooming && settings.ZoomTouch) || settings.ContextMenu))
          svg.on('touchstart', evnt => this.startTouchZoom(evnt));
 
       if (settings.ContextMenu) {
-         if (browser$1.touches) {
+         if (browser.touches) {
             svg_x.on('touchstart', evnt => this.startSingleTouchHandling('x', evnt));
             svg_y.on('touchstart', evnt => this.startSingleTouchHandling('y', evnt));
          }
@@ -61750,13 +61731,10 @@ const FrameInteractive = {
       if (evnt.buttons === this._shifting_buttons) {
          let frame = this.getFrameSvg(),
              pos = pointer(evnt, frame.node()),
-             main_svg = this.draw_g.selectChild('.main_layer');
-         let dx = pos0[0] - pos[0],
-             dy = pos0[1] - pos[1],
+             main_svg = this.draw_g.selectChild('.main_layer'),
+             dx = pos0[0] - pos[0],
+             dy = (this.scales_ndim === 1) ? 0 : pos0[1] - pos[1],
              w = this.getFrameWidth(), h = this.getFrameHeight();
-
-         if (this.scales_ndim === 1)
-            dy = 0;
 
          this._shifting_dx = dx;
          this._shifting_dy = dy;
@@ -61788,7 +61766,6 @@ const FrameInteractive = {
           xmax = gr.revertAxis('x', this._shifting_dx + w),
           ymin = gr.revertAxis('y', this._shifting_dy + h),
           ymax = gr.revertAxis('y', this._shifting_dy);
-
 
       main_svg.attr('viewBox', `0 0 ${w} ${h}`);
 
@@ -61878,7 +61855,7 @@ const FrameInteractive = {
 
       let handle = (this.zoom_kind == 2) ? this.x_handle : this.y_handle;
 
-      if (!handle || !isFunc(handle.processLabelsMove) || !this.zoom_lastpos) return;
+      if (!isFunc(handle?.processLabelsMove) || !this.zoom_lastpos) return;
 
       if (handle.processLabelsMove('start', this.zoom_lastpos))
          this.zoom_labels = handle;
@@ -62307,7 +62284,7 @@ const FrameInteractive = {
             let hints = pp.processPadTooltipEvent(pnt), bestdist = 1000;
             for (let n = 0; n < hints.length; ++n)
                if (hints[n]?.menu) {
-                  let dist = ('menu_dist' in hints[n]) ? hints[n].menu_dist : 7;
+                  let dist = hints[n].menu_dist ?? 7;
                   if (dist < bestdist) { sel = hints[n].painter; bestdist = dist; }
                }
          }
@@ -62379,13 +62356,12 @@ const FrameInteractive = {
       try {
         pos = pointers(evnt, frame.node())[0];
       } catch(err) {
-        pos = [0,0];
+        pos = [0, 0];
         if (evnt?.changedTouches)
            pos = [ evnt.changedTouches[0].clientX, evnt.changedTouches[0].clientY ];
       }
 
-      let dx = pos0[0] - pos[0],
-          dy = pos0[1] - pos[1],
+      let dx = pos0[0] - pos[0], dy = pos0[1] - pos[1],
           w = this.getFrameWidth(), h = this.getFrameHeight();
 
       if (this.scales_ndim === 1)
@@ -62422,7 +62398,8 @@ const FrameInteractive = {
    clearInteractiveElements() {
       closeMenu();
       this.zoom_kind = 0;
-      if (this.zoom_rect) { this.zoom_rect.remove(); delete this.zoom_rect; }
+      this.zoom_rect?.remove();
+      delete this.zoom_rect;
       delete this.zoom_curr;
       delete this.zoom_origin;
       delete this.zoom_lastpos;
@@ -62872,13 +62849,13 @@ class TFramePainter extends ObjectPainter {
       if (!use_x2 && !use_y2) return this;
 
       return {
-         use_x2: use_x2,
+         use_x2,
          grx: use_x2 ? this.grx2 : this.grx,
          logx: this.logx,
          x_handle: use_x2 ? this.x2_handle : this.x_handle,
          scale_xmin: use_x2 ? this.scale_x2min : this.scale_xmin,
          scale_xmax: use_x2 ? this.scale_x2max : this.scale_xmax,
-         use_y2: use_y2,
+         use_y2,
          gry: use_y2 ? this.gry2 : this.gry,
          logy: this.logy,
          y_handle: use_y2 ? this.y2_handle : this.y_handle,
@@ -62949,45 +62926,37 @@ class TFramePainter extends ObjectPainter {
           grid_style = gStyle.fGridStyle;
 
       // add a grid on x axis, if the option is set
-      if (pad?.fGridx && this.x_handle) {
-         let gridx = '';
-         for (let n = 0; n < this.x_handle.ticks.length; ++n)
-            if (this.swap_xy)
-               gridx += `M0,${this.x_handle.ticks[n]}h${w}`;
-            else
-               gridx += `M${this.x_handle.ticks[n]},0v${h}`;
-
+      if (pad?.fGridx && this.x_handle?.ticks) {
          let colid = (gStyle.fGridColor > 0) ? gStyle.fGridColor : (this.getAxis('x')?.fAxisColor ?? 1),
-             grid_color = this.getColor(colid) || 'black';
+             gridx = '';
 
-         if (gridx)
-           layer.append('svg:path')
-                .attr('class', 'xgrid')
-                .attr('d', gridx)
-                .style('stroke', grid_color)
-                .style('stroke-width', gStyle.fGridWidth)
-                .style('stroke-dasharray', getSvgLineStyle(grid_style));
+         this.x_handle.ticks.forEach(pos => {
+            gridx += this.swap_xy ? `M0,${pos}h${w}` : `M${pos},0v${h}`;
+         });
+
+         layer.append('svg:path')
+              .attr('class', 'xgrid')
+              .attr('d', gridx)
+              .style('stroke', this.getColor(colid) || 'black')
+              .style('stroke-width', gStyle.fGridWidth)
+              .style('stroke-dasharray', getSvgLineStyle(grid_style));
       }
 
       // add a grid on y axis, if the option is set
-      if (pad?.fGridy && this.y_handle) {
-         let gridy = '';
-         for (let n = 0; n < this.y_handle.ticks.length; ++n)
-            if (this.swap_xy)
-               gridy += `M${this.y_handle.ticks[n]},0v${h}`;
-            else
-               gridy += `M0,${this.y_handle.ticks[n]}h${w}`;
-
+      if (pad?.fGridy && this.y_handle?.ticks) {
          let colid = (gStyle.fGridColor > 0) ? gStyle.fGridColor : (this.getAxis('y')?.fAxisColor ?? 1),
-             grid_color = this.getColor(colid) || 'black';
+             gridy = '';
 
-         if (gridy)
-           layer.append('svg:path')
-                .attr('class', 'ygrid')
-                .attr('d', gridy)
-                .style('stroke', grid_color)
-                .style('stroke-width', gStyle.fGridWidth)
-                .style('stroke-dasharray', getSvgLineStyle(grid_style));
+         this.y_handle.ticks.forEach(pos => {
+            gridy += this.swap_xy ? `M${pos},0v${h}` : `M0,${pos}h${w}`;
+         });
+
+         layer.append('svg:path')
+              .attr('class', 'ygrid')
+              .attr('d', gridy)
+              .style('stroke', this.getColor(colid) || 'black')
+              .style('stroke-width', gStyle.fGridWidth)
+              .style('stroke-dasharray', getSvgLineStyle(grid_style));
       }
    }
 
@@ -63567,15 +63536,15 @@ class TFramePainter extends ObjectPainter {
       this._dblclick_handler = isFunc(handler) ? handler : null;
    }
 
-    /** @summary Function can be used for zooming into specified range
-      * @desc if both limits for each axis 0 (like xmin == xmax == 0), axis will be unzoomed
-      * @param {number} xmin
-      * @param {number} xmax
-      * @param {number} [ymin]
-      * @param {number} [ymax]
-      * @param {number} [zmin]
-      * @param {number} [zmax]
-      * @return {Promise} with boolean flag if zoom operation was performed */
+   /** @summary Function can be used for zooming into specified range
+     * @desc if both limits for each axis 0 (like xmin == xmax == 0), axis will be unzoomed
+     * @param {number} xmin
+     * @param {number} xmax
+     * @param {number} [ymin]
+     * @param {number} [ymax]
+     * @param {number} [zmin]
+     * @param {number} [zmax]
+     * @return {Promise} with boolean flag if zoom operation was performed */
    async zoom(xmin, xmax, ymin, ymax, zmin, zmax) {
 
       if (xmin === 'x') { xmin = xmax; xmax = ymin; ymin = undefined; } else
@@ -64297,7 +64266,7 @@ class GridDisplay extends MDIDisplay {
       separ.call(drag_move).on('dblclick', function() { pthis.handleSeparator(this, 'restore'); });
 
       // need to get touches events handling in drag
-      if (browser$1.touches && !main.on('touchmove'))
+      if (browser.touches && !main.on('touchmove'))
          main.on('touchmove', () => {});
    }
 
@@ -65261,7 +65230,7 @@ class BrowserLayout {
       hsepar.call(drag_move);
 
       // need to get touches events handling in drag
-      if (browser$1.touches && !main.on('touchmove'))
+      if (browser.touches && !main.on('touchmove'))
          main.on('touchmove', () => {});
 
       if (!height || isStr(height)) height = this.last_hsepar_height || 20;
@@ -65565,7 +65534,7 @@ class BrowserLayout {
         vsepar.call(drag_move);
 
         // need to get touches events handling in drag
-        if (browser$1.touches && !main.on('touchmove'))
+        if (browser.touches && !main.on('touchmove'))
            main.on('touchmove', () => {});
 
         this.adjustSeparators(250, null, true, true);
@@ -65681,7 +65650,7 @@ let PadButtonsHandler = {
       } else {
          ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.rect, getButtonSize(this), 'Toggle tool buttons', false)
                             .attr('name', 'Toggle').attr('x', 0).attr('y', 0)
-                            .property('buttons_state', (settings.ToolBar !== 'popup') || browser$1.touches)
+                            .property('buttons_state', (settings.ToolBar !== 'popup') || browser.touches)
                             .on('click', evnt => toggleButtonsVisibility(this, 'toggle', evnt));
          ctrl.node()._mouseenter = () => toggleButtonsVisibility(this, 'enable');
          ctrl.node()._mouseleave = () => toggleButtonsVisibility(this, 'disable');
@@ -67817,13 +67786,6 @@ class TPadPainter extends ObjectPainter {
 
 } // class TPadPainter
 
-var TPadPainter$1 = /*#__PURE__*/Object.freeze({
-__proto__: null,
-PadButtonsHandler: PadButtonsHandler,
-TPadPainter: TPadPainter,
-clTButton: clTButton
-});
-
 /** @summary direct draw of TFrame object,
   * @desc pad or canvas should already exist
   * @private */
@@ -68985,7 +68947,7 @@ class TPavePainter extends ObjectPainter {
          addDragHandler(this, { obj: pt, x: this._pave_x, y: this._pave_y, width, height,
                                 minwidth: 10, minheight: 20, canselect: true,
                         redraw: () => { this.moved_interactive = true; this.interactiveRedraw(false, 'pave_moved'); this.drawPave(); },
-                        ctxmenu: browser$1.touches && settings.ContextMenu && this.UseContextMenu });
+                        ctxmenu: browser.touches && settings.ContextMenu && this.UseContextMenu });
 
          if (this.UseContextMenu && settings.ContextMenu)
              this.draw_g.on('contextmenu', evnt => this.paveContextMenu(evnt));
@@ -87601,7 +87563,7 @@ class GeoDrawingControl extends InteractiveControl {
             c.material.opacity = 1.;
          }
 
-         if (c.hightlightWidthScale && !browser$1.isWin)
+         if (c.hightlightWidthScale && !browser.isWin)
             c.material.linewidth = c.origin.width * c.hightlightWidthScale;
          if (c.highlightScale)
             c.material.size = c.origin.size * c.highlightScale;
@@ -89424,7 +89386,7 @@ class TGeoPainter extends ObjectPainter {
 
          // here we decide if we need worker for the drawings
          // main reason - too large geometry and large time to scan all camera positions
-         let need_worker = !this.isBatchMode() && browser$1.isChrome && ((numvis > 10000) || (matrix && (this._clones.scanVisible() > 1e5)));
+         let need_worker = !this.isBatchMode() && browser.isChrome && ((numvis > 10000) || (matrix && (this._clones.scanVisible() > 1e5)));
 
          // worker does not work when starting from file system
          if (need_worker && exports.source_dir.indexOf('file://') == 0) {
@@ -90791,7 +90753,7 @@ class TGeoPainter extends ObjectPainter {
    drawGeoTrack(track, itemname) {
       if (!track?.fNpoints) return false;
 
-      let linewidth = browser$1.isWin ? 1 : (track.fLineWidth || 1), // line width not supported on windows
+      let linewidth = browser.isWin ? 1 : (track.fLineWidth || 1), // line width not supported on windows
           color = getColor(track.fLineColor) || '#ff00ff',
           npoints = Math.round(track.fNpoints/4), // each track point has [x,y,z,t] coordinate
           buf = new Float32Array((npoints-1)*6),
@@ -90830,7 +90792,7 @@ class TGeoPainter extends ObjectPainter {
    drawPolyLine(line, itemname) {
       if (!line) return false;
 
-      let linewidth = browser$1.isWin ? 1 : (line.fLineWidth || 1),
+      let linewidth = browser.isWin ? 1 : (line.fLineWidth || 1),
           color = getColor(line.fLineColor) || '#ff00ff',
           npoints = line.fN,
           fP = line.fP,
@@ -90867,7 +90829,7 @@ class TGeoPainter extends ObjectPainter {
    drawEveTrack(track, itemname) {
       if (!track || (track.fN <= 0)) return false;
 
-      let linewidth = browser$1.isWin ? 1 : (track.fLineWidth || 1),
+      let linewidth = browser.isWin ? 1 : (track.fLineWidth || 1),
           color = getColor(track.fLineColor) || '#ff00ff',
           buf = new Float32Array((track.fN-1)*6), pos = 0,
           projv = this.ctrl.projectPos,
@@ -91506,7 +91468,7 @@ class TGeoPainter extends ObjectPainter {
       // send initialization message with clones
       this._worker.postMessage({
          init: true,   // indicate init command for worker
-         browser: browser$1,
+         browser,
          tm0: new Date().getTime(),
          vislevel: this._clones.getVisLevel(),
          maxvisnodes: this._clones.getMaxVisNodes(),
@@ -93166,7 +93128,7 @@ produceRenderOrder: produceRenderOrder
 const clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObject',
       clTStreamerSTL = 'TStreamerSTL', clTStreamerInfoList = 'TStreamerInfoList',
       clTDirectory = 'TDirectory', clTDirectoryFile = 'TDirectoryFile',
-      clTQObject = 'TQObject', clTBasket = 'TBasket',
+      clTQObject = 'TQObject', clTBasket = 'TBasket', clTDatime = 'TDatime',
       nameStreamerInfo = 'StreamerInfo',
 
       kChar = 1, kShort = 2, kInt = 3, kLong = 4, kFloat = 5, kCounter = 6,
@@ -93205,7 +93167,7 @@ const clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObj
       StlNames = ['', 'vector', 'list', 'deque', 'map', 'multimap', 'set', 'multiset', 'bitset'],
 
       // TObject bits
-      kIsReferenced = BIT(4), kHasUUID = BIT(5);
+      kIsReferenced = BIT(4), kHasUUID = BIT(5),
 
 
 /** @summary Custom streamers for root classes
@@ -93213,14 +93175,14 @@ const clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObj
   * or alias (classname) which can be used to read that function
   * or list of read functions
   * @private */
-const CustomStreamers = {
+CustomStreamers = {
    TObject(buf, obj) {
       obj.fUniqueID = buf.ntou4();
       obj.fBits = buf.ntou4();
       if (obj.fBits & kIsReferenced) buf.ntou2(); // skip pid
    },
 
-   TNamed: [ {
+   TNamed: [{
       basename: clTObject, base: 1, func(buf, obj) {
          if (!obj._typename) obj._typename = clTNamed;
          buf.classStreamer(obj, clTObject);
@@ -93230,7 +93192,7 @@ const CustomStreamers = {
      { name: 'fTitle', func(buf, obj) { obj.fTitle = buf.readTString(); } }
    ],
 
-   TObjString: [ {
+   TObjString: [{
       basename: clTObject, base: 1, func(buf, obj) {
          if (!obj._typename) obj._typename = clTObjString;
          buf.classStreamer(obj, clTObject);
@@ -93246,8 +93208,8 @@ const CustomStreamers = {
       const ver = buf.last_read_version;
       if (ver > 2) buf.classStreamer(list, clTObject);
       if (ver > 1) list.name = buf.readTString();
-      let classv = buf.readTString(), clv = 0,
-          pos = classv.lastIndexOf(';');
+      let classv = buf.readTString(), clv = 0;
+      const pos = classv.lastIndexOf(';');
 
       if (pos > 0) {
          clv = parseInt(classv.slice(pos + 1));
@@ -93264,17 +93226,18 @@ const CustomStreamers = {
       let streamer = buf.fFile.getStreamer(classv, { val: clv });
       streamer = buf.fFile.getSplittedStreamer(streamer);
 
-      if (!streamer) {
+      if (!streamer)
          console.log(`Cannot get member-wise streamer for ${classv}:${clv}`);
-      } else {
+      else {
          // create objects
          for (let n = 0; n < nobjects; ++n)
             list.arr[n] = { _typename: classv };
 
          // call streamer for all objects member-wise
-         for (let k = 0; k < streamer.length; ++k)
+         for (let k = 0; k < streamer.length; ++k) {
             for (let n = 0; n < nobjects; ++n)
                streamer[k].func(buf, list.arr[n]);
+         }
       }
    },
 
@@ -93289,7 +93252,7 @@ const CustomStreamers = {
       const nobjects = buf.ntou4();
       // create objects
       for (let n = 0; n < nobjects; ++n) {
-         let obj = { _typename: 'TPair' };
+         const obj = { _typename: 'TPair' };
          obj.first = buf.readObjectAny();
          obj.second = buf.readObjectAny();
          if (obj.first) map.arr.push(obj);
@@ -93315,7 +93278,7 @@ const CustomStreamers = {
       const nobj = buf.ntoi4();
       obj.fLast = nobj - 1;
       obj.fLowerBound = buf.ntoi4();
-      /*const pidf = */ buf.ntou2();
+      /* const pidf = */ buf.ntou2();
       obj.fUIDs = buf.readFastArray(nobj, kUInt);
    },
 
@@ -93395,10 +93358,10 @@ const CustomStreamers = {
       element.fSize = buf.ntou4();
       element.fArrayLength = buf.ntou4();
       element.fArrayDim = buf.ntou4();
-      element.fMaxIndex = buf.readFastArray((ver == 1) ? buf.ntou4() : 5, kUInt);
+      element.fMaxIndex = buf.readFastArray((ver === 1) ? buf.ntou4() : 5, kUInt);
       element.fTypeName = buf.readTString();
 
-      if ((element.fType === kUChar) && ((element.fTypeName == 'Bool_t') || (element.fTypeName == 'bool')))
+      if ((element.fType === kUChar) && ((element.fTypeName === 'Bool_t') || (element.fTypeName === 'bool')))
          element.fType = kBool;
 
       element.fXmin = element.fXmax = element.fFactor = 0;
@@ -93407,26 +93370,26 @@ const CustomStreamers = {
          element.fXmax = buf.ntod();
          element.fFactor = buf.ntod();
       } else if ((ver > 3) && (element.fBits & BIT(6))) { // kHasRange
-
          let p1 = element.fTitle.indexOf('[');
-         if ((p1 >= 0) && (element.fType > kOffsetP)) p1 = element.fTitle.indexOf('[', p1 + 1);
-         let p2 = element.fTitle.indexOf(']', p1 + 1);
+         if ((p1 >= 0) && (element.fType > kOffsetP))
+            p1 = element.fTitle.indexOf('[', p1 + 1);
+         const p2 = element.fTitle.indexOf(']', p1 + 1);
 
          if ((p1 >= 0) && (p2 >= p1 + 2)) {
-
-            let arr = element.fTitle.slice(p1+1, p2).split(','), nbits = 32;
+            const arr = element.fTitle.slice(p1+1, p2).split(',');
+            let nbits = 32;
             if (!arr || arr.length < 2)
                throw new Error(`Problem to decode range setting from streamer element title ${element.fTitle}`);
 
             if (arr.length === 3) nbits = parseInt(arr[2]);
             if (!Number.isInteger(nbits) || (nbits < 2) || (nbits > 32)) nbits = 32;
 
-            let parse_range = val => {
+            const parse_range = val => {
                if (!val) return 0;
                if (val.indexOf('pi') < 0) return parseFloat(val);
                val = val.trim();
-               let sign = 1.;
-               if (val[0] == '-') { sign = -1; val = val.slice(1); }
+               let sign = 1;
+               if (val[0] === '-') { sign = -1; val = val.slice(1); }
                switch (val) {
                   case '2pi':
                   case '2*pi':
@@ -93441,7 +93404,7 @@ const CustomStreamers = {
             element.fXmax = parse_range(arr[1]);
 
             // avoid usage of 1 << nbits, while only works up to 32 bits
-            let bigint = ((nbits >= 0) && (nbits < 32)) ? Math.pow(2, nbits) : 0xffffffff;
+            const bigint = ((nbits >= 0) && (nbits < 32)) ? Math.pow(2, nbits) : 0xffffffff;
             if (element.fXmin < element.fXmax)
                element.fFactor = bigint / (element.fXmax - element.fXmin);
             else if (nbits < 15)
@@ -93532,17 +93495,17 @@ const CustomStreamers = {
    RooRealVar(buf, obj) {
       const v = buf.last_read_version;
       buf.classStreamer(obj, 'RooAbsRealLValue');
-      if (v == 1) { buf.ntod(); buf.ntod(); buf.ntoi4(); } // skip fitMin, fitMax, fitBins
+      if (v === 1) { buf.ntod(); buf.ntod(); buf.ntoi4(); } // skip fitMin, fitMax, fitBins
       obj._error = buf.ntod();
       obj._asymErrLo = buf.ntod();
       obj._asymErrHi = buf.ntod();
       if (v >= 2) obj._binning = buf.readObjectAny();
-      if (v == 3) obj._sharedProp = buf.readObjectAny();
+      if (v === 3) obj._sharedProp = buf.readObjectAny();
       if (v >= 4) obj._sharedProp = buf.classStreamer({}, 'RooRealVarSharedProperties');
    },
 
    RooAbsBinning(buf, obj) {
-      buf.classStreamer(obj, (buf.last_read_version == 1) ? clTObject : clTNamed);
+      buf.classStreamer(obj, (buf.last_read_version === 1) ? clTObject : clTNamed);
       buf.classStreamer(obj, 'RooPrintable');
    },
 
@@ -93552,10 +93515,10 @@ const CustomStreamers = {
       obj._sharedProp = (v === 1) ? buf.readObjectAny() : buf.classStreamer({}, 'RooCategorySharedProperties');
    },
 
-   'RooWorkspace::CodeRepo': (buf /*, obj*/) => {
-      const sz = (buf.last_read_version == 2) ? 3 : 2;
+   'RooWorkspace::CodeRepo': (buf /* , obj */) => {
+      const sz = (buf.last_read_version === 2) ? 3 : 2;
       for (let i = 0; i < sz; ++i) {
-         let cnt = buf.ntoi4() * ((i == 0) ? 4 : 3);
+         let cnt = buf.ntoi4() * ((i === 0) ? 4 : 3);
          while (cnt--) buf.readTString();
       }
    },
@@ -93588,17 +93551,17 @@ const CustomStreamers = {
    TAttImage: [
       { name: 'fImageQuality', func(buf, obj) { obj.fImageQuality = buf.ntoi4(); } },
       { name: 'fImageCompression', func(buf, obj) { obj.fImageCompression = buf.ntou4(); } },
-      { name: 'fConstRatio', func(buf, obj) { obj.fConstRatio = (buf.ntou1() != 0); } },
+      { name: 'fConstRatio', func(buf, obj) { obj.fConstRatio = (buf.ntou1() !== 0); } },
       { name: 'fPalette', func(buf, obj) { obj.fPalette = buf.classStreamer({}, clTImagePalette); } }
    ],
 
    TASImage(buf, obj) {
-      if ((buf.last_read_version == 1) && (buf.fFile.fVersion > 0) && (buf.fFile.fVersion < 50000))
+      if ((buf.last_read_version === 1) && (buf.fFile.fVersion > 0) && (buf.fFile.fVersion < 50000))
          return console.warn('old TASImage version - not yet supported');
 
       buf.classStreamer(obj, clTNamed);
 
-      if (buf.ntou1() != 0) {
+      if (buf.ntou1() !== 0) {
          const size = buf.ntoi4();
          obj.fPngBuf = buf.readFastArray(size, kUChar);
       } else {
@@ -93620,9 +93583,8 @@ const CustomStreamers = {
          buf.classStreamer(obj, clTAttFill);
          obj.fRadLength = buf.ntof();
          obj.fInterLength = buf.ntof();
-      } else {
+      } else
          obj.fRadLength = obj.fInterLength = 0;
-      }
    },
 
    TMixture(buf, obj) {
@@ -93675,7 +93637,7 @@ const DirectStreamers = {
       key.fNbytes = buf.ntoi4();
       key.fVersion = buf.ntoi2();
       key.fObjlen = buf.ntou4();
-      key.fDatime = buf.classStreamer({}, 'TDatime');
+      key.fDatime = buf.classStreamer({}, clTDatime);
       key.fKeylen = buf.ntou2();
       key.fCycle = buf.ntou2();
       if (key.fVersion > 1000) {
@@ -93692,8 +93654,8 @@ const DirectStreamers = {
 
    TDirectory(buf, dir) {
       const version = buf.ntou2();
-      dir.fDatimeC = buf.classStreamer({}, 'TDatime');
-      dir.fDatimeM = buf.classStreamer({}, 'TDatime');
+      dir.fDatimeC = buf.classStreamer({}, clTDatime);
+      dir.fDatimeM = buf.classStreamer({}, clTDatime);
       dir.fNbytesKeys = buf.ntou4();
       dir.fNbytesName = buf.ntou4();
       dir.fSeekDir = (version > 1000) ? buf.ntou8() : buf.ntou4();
@@ -93703,7 +93665,7 @@ const DirectStreamers = {
    },
 
    TBasket(buf, obj) {
-      buf.classStreamer(obj, 'TKey');
+      buf.classStreamer(obj, clTKey);
       const ver = buf.readVersion();
       obj.fBufferSize = buf.ntoi4();
       obj.fNevBufSize = buf.ntoi4();
@@ -93714,12 +93676,13 @@ const DirectStreamers = {
 
       if (flag === 0) return;
 
-      if ((flag % 10) != 2) {
+      if ((flag % 10) !== 2) {
          if (obj.fNevBuf) {
             obj.fEntryOffset = buf.readFastArray(buf.ntoi4(), kInt);
-            if ((20 < flag) && (flag < 40))
+            if ((flag > 20) && (flag < 40)) {
                for (let i = 0, kDisplacementMask = 0xFF000000; i < obj.fNevBuf; ++i)
                   obj.fEntryOffset[i] &= ~kDisplacementMask;
+            }
          }
 
          if (flag > 40)
@@ -93732,8 +93695,7 @@ const DirectStreamers = {
 
          if (sz > obj.fKeylen) {
             // buffer includes again complete TKey data - exclude it
-            let blob = buf.extract([buf.o + obj.fKeylen, sz - obj.fKeylen]);
-
+            const blob = buf.extract([buf.o + obj.fKeylen, sz - obj.fKeylen]);
             obj.fBufferRef = new TBuffer(blob, 0, buf.fFile, sz - obj.fKeylen);
             obj.fBufferRef.fTagOffset = obj.fKeylen;
          }
@@ -93753,19 +93715,21 @@ const DirectStreamers = {
    'TMatrixTSym<float>': (buf, obj) => {
       buf.classStreamer(obj, 'TMatrixTBase<float>');
       obj.fElements = new Float32Array(obj.fNelems);
-      let arr = buf.readFastArray((obj.fNrows * (obj.fNcols + 1)) / 2, kFloat), cnt = 0;
-      for (let i = 0; i < obj.fNrows; ++i)
+      const arr = buf.readFastArray((obj.fNrows * (obj.fNcols + 1)) / 2, kFloat);
+      for (let i = 0, cnt = 0; i < obj.fNrows; ++i) {
          for (let j = i; j < obj.fNcols; ++j)
             obj.fElements[j * obj.fNcols + i] = obj.fElements[i * obj.fNcols + j] = arr[cnt++];
+      }
    },
 
    'TMatrixTSym<double>': (buf, obj) => {
       buf.classStreamer(obj, 'TMatrixTBase<double>');
       obj.fElements = new Float64Array(obj.fNelems);
-      let arr = buf.readFastArray((obj.fNrows * (obj.fNcols + 1)) / 2, kDouble), cnt = 0;
-      for (let i = 0; i < obj.fNrows; ++i)
+      const arr = buf.readFastArray((obj.fNrows * (obj.fNcols + 1)) / 2, kDouble);
+      for (let i = 0, cnt = 0; i < obj.fNrows; ++i) {
          for (let j = i; j < obj.fNcols; ++j)
             obj.fElements[j * obj.fNcols + i] = obj.fElements[i * obj.fNcols + j] = arr[cnt++];
+      }
    }
 };
 
@@ -93816,7 +93780,7 @@ function getTypeId(typname, norecursion) {
    }
 
    if (!norecursion) {
-      let replace = CustomStreamers[typname];
+      const replace = CustomStreamers[typname];
       if (isStr(replace)) return getTypeId(replace, true);
    }
 
@@ -93827,7 +93791,7 @@ function getTypeId(typname, norecursion) {
   * @private  */
 function createStreamerElement(name, typename, file) {
    const elem = {
-      _typename: 'TStreamerElement', fName: name, fTypeName: typename,
+      _typename: clTStreamerElement, fName: name, fTypeName: typename,
       fType: 0, fSize: 0, fArrayLength: 0, fArrayDim: 0, fMaxIndex: [0, 0, 0, 0, 0],
       fXmin: 0, fXmax: 0, fFactor: 0
    };
@@ -93844,12 +93808,15 @@ function createStreamerElement(name, typename, file) {
    if (elem.fType > 0) return elem; // basic type
 
    // check if there are STL containers
-   let stltype = kNotSTL, pos = typename.indexOf('<');
-   if ((pos > 0) && (typename.indexOf('>') > pos + 2))
-      for (let stl = 1; stl < StlNames.length; ++stl)
+   const pos = typename.indexOf('<');
+   let stltype = kNotSTL;
+   if ((pos > 0) && (typename.indexOf('>') > pos + 2)) {
+      for (let stl = 1; stl < StlNames.length; ++stl) {
          if (typename.slice(0, pos) === StlNames[stl]) {
             stltype = stl; break;
          }
+      }
+   }
 
    if (stltype !== kNotSTL) {
       elem._typename = clTStreamerSTL;
@@ -93864,7 +93831,7 @@ function createStreamerElement(name, typename, file) {
    if (isptr)
       elem.fTypeName = typename = typename.slice(0, typename.length - 1);
 
-   if (getArrayKind(typename) == 0) {
+   if (getArrayKind(typename) === 0) {
       elem.fType = kTString;
       return elem;
    }
@@ -93884,7 +93851,8 @@ function getPairStreamer(si, typname, file) {
       si = file.findStreamerInfo(typname);
 
       if (!si) {
-         let p1 = typname.indexOf('<'), p2 = typname.lastIndexOf('>');
+         let p1 = typname.indexOf('<');
+         const p2 = typname.lastIndexOf('>');
          function GetNextName() {
             let res = '', p = p1 + 1, cnt = 0;
             while ((p < p2) && (cnt >= 0)) {
@@ -93905,8 +93873,7 @@ function getPairStreamer(si, typname, file) {
       }
    }
 
-   let streamer = file.getStreamer(typname, null, si);
-
+   const streamer = file.getStreamer(typname, null, si);
    if (!streamer) return null;
 
    if (streamer.length !== 2) {
@@ -93914,13 +93881,14 @@ function getPairStreamer(si, typname, file) {
       return null;
    }
 
-   for (let nn = 0; nn < 2; ++nn)
+   for (let nn = 0; nn < 2; ++nn) {
       if (streamer[nn].readelem && !streamer[nn].pair_name) {
-         streamer[nn].pair_name = (nn == 0) ? 'first' : 'second';
+         streamer[nn].pair_name = (nn === 0) ? 'first' : 'second';
          streamer[nn].func = function(buf, obj) {
             obj[this.pair_name] = this.readelem(buf);
          };
       }
+   }
 
    return streamer;
 }
@@ -93930,7 +93898,7 @@ function getPairStreamer(si, typname, file) {
   * @desc used for reading of data
   * @private */
 function createMemberStreamer(element, file) {
-   let member = {
+   const member = {
       name: element.fName, type: element.fType,
       fArrayLength: element.fArrayLength,
       fArrayDim: element.fArrayDim,
@@ -93980,7 +93948,7 @@ function createMemberStreamer(element, file) {
       case kULong:
          member.func = function(buf, obj) { obj[this.name] = buf.ntou8(); }; break;
       case kBool:
-         member.func = function(buf, obj) { obj[this.name] = buf.ntou1() != 0; }; break;
+         member.func = function(buf, obj) { obj[this.name] = buf.ntou1() !== 0; }; break;
       case kOffsetL + kBool:
       case kOffsetL + kInt:
       case kOffsetL + kCounter:
@@ -94052,36 +94020,37 @@ function createMemberStreamer(element, file) {
       case kOffsetL + kDouble32:
       case kOffsetP + kDouble32:
          member.double32 = true;
+      // eslint-disable-next-line no-fallthrough
       case kFloat16:
       case kOffsetL + kFloat16:
       case kOffsetP + kFloat16:
          if (element.fFactor !== 0) {
-            member.factor = 1. / element.fFactor;
+            member.factor = 1 / element.fFactor;
             member.min = element.fXmin;
             member.read = function(buf) { return buf.ntou4() * this.factor + this.min; };
          } else
-            if ((element.fXmin === 0) && member.double32) {
+            if ((element.fXmin === 0) && member.double32)
                member.read = function(buf) { return buf.ntof(); };
-            } else {
+            else {
                member.nbits = Math.round(element.fXmin);
                if (member.nbits === 0) member.nbits = 12;
                member.dv = new DataView(new ArrayBuffer(8), 0); // used to cast from uint32 to float32
                member.read = function(buf) {
-                  let theExp = buf.ntou1(), theMan = buf.ntou2();
+                  const theExp = buf.ntou1(), theMan = buf.ntou2();
                   this.dv.setUint32(0, (theExp << 23) | ((theMan & ((1 << (this.nbits + 1)) - 1)) << (23 - this.nbits)));
                   return ((1 << (this.nbits + 1) & theMan) ? -1 : 1) * this.dv.getFloat32(0);
                };
             }
 
          member.readarr = function(buf, len) {
-            let arr = this.double32 ? new Float64Array(len) : new Float32Array(len);
+            const arr = this.double32 ? new Float64Array(len) : new Float32Array(len);
             for (let n = 0; n < len; ++n) arr[n] = this.read(buf);
             return arr;
          };
 
-         if (member.type < kOffsetL) {
+         if (member.type < kOffsetL)
             member.func = function(buf, obj) { obj[this.name] = this.read(buf); };
-         } else
+         else
             if (member.type > kOffsetP) {
                member.cntname = element.fCountName;
                member.func = function(buf, obj) {
@@ -94112,7 +94081,7 @@ function createMemberStreamer(element, file) {
       case kObjectp:
       case kObject: {
          let classname = (element.fTypeName === 'BASE') ? element.fName : element.fTypeName;
-         if (classname[classname.length - 1] == '*')
+         if (classname[classname.length - 1] === '*')
             classname = classname.slice(0, classname.length - 1);
 
          const arrkind = getArrayKind(classname);
@@ -94120,9 +94089,9 @@ function createMemberStreamer(element, file) {
          if (arrkind > 0) {
             member.arrkind = arrkind;
             member.func = function(buf, obj) { obj[this.name] = buf.readFastArray(buf.ntou4(), this.arrkind); };
-         } else if (arrkind === 0) {
+         } else if (arrkind === 0)
             member.func = function(buf, obj) { obj[this.name] = buf.readTString(); };
-         } else {
+         else {
             member.classname = classname;
 
             if (element.fArrayLength > 1) {
@@ -94142,7 +94111,7 @@ function createMemberStreamer(element, file) {
       case kOffsetL + kAnyp:
       case kOffsetL + kObjectp: {
          let classname = element.fTypeName;
-         if (classname[classname.length - 1] == '*')
+         if (classname[classname.length - 1] === '*')
             classname = classname.slice(0, classname.length - 1);
 
          member.arrkind = getArrayKind(classname);
@@ -94199,9 +94168,9 @@ function createMemberStreamer(element, file) {
             member.isptrptr = false;
          }
 
-         if (member.isptrptr) {
+         if (member.isptrptr)
             member.readitem = function(buf) { return buf.readObjectAny(); };
-         } else {
+         else {
             member.arrkind = getArrayKind(member.typename);
             if (member.arrkind > 0)
                member.readitem = function(buf) { return buf.readFastArray(buf.ntou4(), this.arrkind); };
@@ -94214,7 +94183,7 @@ function createMemberStreamer(element, file) {
          if (member.readitem !== undefined) {
             member.read_loop = function(buf, cnt) {
                return buf.readNdimArray(this, (buf2, member2) => {
-                  let itemarr = new Array(cnt);
+                  const itemarr = new Array(cnt);
                   for (let i = 0; i < cnt; ++i)
                      itemarr[i] = member2.readitem(buf2);
                   return itemarr;
@@ -94231,7 +94200,7 @@ function createMemberStreamer(element, file) {
                const ver = buf.readVersion(), sz0 = obj[this.stl_size], res = new Array(sz0);
 
                for (let loop0 = 0; loop0 < sz0; ++loop0) {
-                  let cnt = obj[this.cntname][loop0];
+                  const cnt = obj[this.cntname][loop0];
                   res[loop0] = this.read_loop(buf, cnt);
                }
                obj[this.name] = buf.checkByteCount(ver, this.typename) ? res : null;
@@ -94246,13 +94215,12 @@ function createMemberStreamer(element, file) {
                      arr = obj[this.name0]; // objects array where reading is done
 
                for (let loop0 = 0; loop0 < arr.length; ++loop0) {
-                  let obj1 = this.get(arr, loop0), cnt = obj1[this.cntname];
+                  const obj1 = this.get(arr, loop0), cnt = obj1[this.cntname];
                   obj1[this.name] = this.read_loop(buf, cnt);
                }
 
                buf.checkByteCount(ver, this.typename);
             };
-
          } else {
             console.error(`fail to provide function for ${element.fName} (${element.fTypeName})  typ = ${element.fType}`);
             member.func = function(buf, obj) {
@@ -94267,18 +94235,16 @@ function createMemberStreamer(element, file) {
       case kStreamer: {
          member.typename = element.fTypeName;
 
-         let stl = (element.fSTLtype || 0) % 40;
-
+         const stl = (element.fSTLtype || 0) % 40;
          if ((element._typename === 'TStreamerSTLstring') ||
-            (member.typename == 'string') || (member.typename == 'string*')) {
+            (member.typename === 'string') || (member.typename === 'string*'))
             member.readelem = buf => buf.readTString();
-         } else if ((stl === kSTLvector) || (stl === kSTLlist) ||
+         else if ((stl === kSTLvector) || (stl === kSTLlist) ||
                     (stl === kSTLdeque) || (stl === kSTLset) || (stl === kSTLmultiset)) {
-            let p1 = member.typename.indexOf('<'),
-                p2 = member.typename.lastIndexOf('>');
+            const p1 = member.typename.indexOf('<'),
+                  p2 = member.typename.lastIndexOf('>');
 
             member.conttype = member.typename.slice(p1 + 1, p2).trim();
-
             member.typeid = getTypeId(member.conttype);
             if ((member.typeid < 0) && file.fBasicTypes[member.conttype]) {
                member.typeid = file.fBasicTypes[member.conttype];
@@ -94310,9 +94276,7 @@ function createMemberStreamer(element, file) {
                member.readelem = readVectorElement;
 
                if (!member.isptr && (member.arrkind < 0)) {
-
-                  let subelem = createStreamerElement('temp', member.conttype);
-
+                  const subelem = createStreamerElement('temp', member.conttype);
                   if (subelem.fType === kStreamer) {
                      subelem.$fictional = true;
                      member.submember = createMemberStreamer(subelem, file);
@@ -94337,9 +94301,8 @@ function createMemberStreamer(element, file) {
             }
 
             if (member.streamer) member.readelem = readMapElement;
-         } else if (stl === kSTLbitset) {
-            member.readelem = (buf/*, obj*/) => buf.readFastArray(buf.ntou4(), kBool);
-         }
+         } else if (stl === kSTLbitset)
+            member.readelem = (buf /* , obj */) => buf.readFastArray(buf.ntou4(), kBool);
 
          if (!member.readelem) {
             console.error(`failed to create streamer for element ${member.typename} ${member.name} element ${element._typename} STL type ${element.fSTLtype}`);
@@ -94350,7 +94313,6 @@ function createMemberStreamer(element, file) {
             };
          } else
             if (!element.$fictional) {
-
                member.read_version = function(buf, cnt) {
                   if (cnt === 0) return null;
                   const ver = buf.readVersion();
@@ -94377,8 +94339,8 @@ function createMemberStreamer(element, file) {
                member.branch_func = function(buf, obj) {
                   // special function to read data from STL branch
                   const cnt = obj[this.stl_size],
-                        ver = this.read_version(buf, cnt);
-                  let arr = new Array(cnt);
+                        ver = this.read_version(buf, cnt),
+                        arr = new Array(cnt);
 
                   for (let n = 0; n < cnt; ++n)
                      arr[n] = buf.readNdimArray(this, (buf2, member2) => member2.readelem(buf2));
@@ -94399,12 +94361,11 @@ function createMemberStreamer(element, file) {
                   // objects already preallocated and only appropriate member must be set
                   // see code in JSRoot.tree.js for reference
 
-                  let arr = obj[this.name0]; // objects array where reading is done
-
-                  const ver = this.read_version(buf, arr.length);
+                  const arr = obj[this.name0], // objects array where reading is done
+                        ver = this.read_version(buf, arr.length);
 
                   for (let n = 0; n < arr.length; ++n) {
-                     let obj1 = this.get(arr, n);
+                     const obj1 = this.get(arr, n);
                      obj1[this.name] = buf.readNdimArray(this, (buf2, member2) => member2.readelem(buf2));
                   }
 
@@ -94417,7 +94378,7 @@ function createMemberStreamer(element, file) {
       default:
          console.error(`fail to provide function for ${element.fName} (${element.fTypeName})  typ = ${element.fType}`);
 
-         member.func = function(/*buf, obj*/) {};  // do nothing, fix in the future
+         member.func = function(/* buf, obj */) {};  // do nothing, fix in the future
    }
 
    return member;
@@ -94431,7 +94392,7 @@ function getArrayKind(type_name) {
    if ((type_name === clTString) || (type_name === 'string') ||
       (CustomStreamers[type_name] === clTString)) return 0;
    if ((type_name.length < 7) || (type_name.indexOf('TArray') !== 0)) return -1;
-   if (type_name.length == 7)
+   if (type_name.length === 7) {
       switch (type_name[6]) {
          case 'I': return kInt;
          case 'D': return kDouble;
@@ -94441,8 +94402,9 @@ function getArrayKind(type_name) {
          case 'L': return kLong;
          default: return -1;
       }
+   }
 
-   return type_name == 'TArrayL64' ? kLong64 : -1;
+   return type_name === 'TArrayL64' ? kLong64 : -1;
 }
 
 /** @summary Let directly assign methods when doing I/O
@@ -94450,16 +94412,14 @@ function getArrayKind(type_name) {
 function addClassMethods(clname, streamer) {
    if (streamer === null) return streamer;
 
-   let methods = getMethods(clname);
+   const methods = getMethods(clname);
 
-   if (methods)
-      for (let key in methods)
-         if (isFunc(methods[key]) || (key.indexOf('_') == 0))
-            streamer.push({
-               name: key,
-               method: methods[key],
-               func(buf, obj) { obj[this.name] = this.method; }
-            });
+   if (methods) {
+      for (const key in methods) {
+         if (isFunc(methods[key]) || (key.indexOf('_') === 0))
+            streamer.push({ name: key, method: methods[key], func(buf, obj) { obj[this.name] = this.method; } });
+      }
+   }
 
    return streamer;
 }
@@ -94472,10 +94432,10 @@ function addClassMethods(clname, streamer) {
  */
 
 /* constant parameters */
-const zip_WSIZE = 32768;       // Sliding Window size
+const zip_WSIZE = 32768,       // Sliding Window size
 
 /* constant tables (inflate) */
-const zip_MASK_BITS = [
+zip_MASK_BITS = [
    0x0000,
    0x0001, 0x0003, 0x0007, 0x000f, 0x001f, 0x003f, 0x007f, 0x00ff,
    0x01ff, 0x03ff, 0x07ff, 0x0fff, 0x1fff, 0x3fff, 0x7fff, 0xffff],
@@ -94514,10 +94474,11 @@ const zip_MASK_BITS = [
 //    zip_INBUF_EXTRA = 64,     // Extra buffer
 
 function ZIP_inflate(arr, tgt) {
-
    /* variables (inflate) */
-   let zip_slide = new Array(2 * zip_WSIZE),
-       zip_wp = 0,                // current position in slide
+   const zip_slide = new Array(2 * zip_WSIZE),
+         zip_inflate_data = arr,
+         zip_inflate_datalen = arr.byteLength;
+   let zip_wp = 0,                // current position in slide
        zip_fixed_tl = null,      // inflate static
        zip_fixed_td,             // inflate static
        zip_fixed_bl, zip_fixed_bd,   // inflate static
@@ -94529,8 +94490,6 @@ function ZIP_inflate(arr, tgt) {
        zip_copy_dist = 0,
        zip_tl = null, zip_td,    // literal/length and distance decoder tables
        zip_bl, zip_bd,           // number of bits decoded by tl and td
-       zip_inflate_data = arr,
-       zip_inflate_datalen = arr.byteLength,
        zip_inflate_pos = 0;
 
    function zip_NEEDBITS(n) {
@@ -94551,13 +94510,12 @@ function ZIP_inflate(arr, tgt) {
    }
 
    /* objects (inflate) */
-   function zip_HuftBuild(b,     // code lengths in bits (all assumed <= BMAX)
+   function ZIP_HuftBuild(b,     // code lengths in bits (all assumed <= BMAX)
                           n,     // number of codes (assumed <= N_MAX)
                           s,     // number of simple-valued codes (0..s-1)
                           d,     // list of base values for non-simple codes
                           e,     // list of extra bits for non-simple codes
-                          mm ) { // maximum lookup bits
-
+                          mm) {  // maximum lookup bits
       this.status = 0;     // 0: success, 1: incomplete table, 2: bad input
       this.root = null;    // (zip_HuftList) starting table
       this.m = 0;          // maximum lookup bits, returns actual
@@ -94572,18 +94530,17 @@ function ZIP_inflate(arr, tgt) {
       decoded. */
 
       const BMAX = 16,      // maximum bit length of any code
-            N_MAX = 288;    // maximum number of codes in any set
-      let c = Array(BMAX+1).fill(0),  // bit length count table
-          lx = Array(BMAX+1).fill(0), // stack of bits per table
-          u = Array(BMAX).fill(null), // zip_HuftNode[BMAX][]  table stack
-          v = Array(N_MAX).fill(0), // values in order of bit length
-          x = Array(BMAX+1).fill(0),// bit offsets, then code stack
-          r = { e: 0, b: 0, n: 0, t: null }, // new zip_HuftNode(), // table entry for structure assignment
-          rr = null, // temporary variable, use in assignment
-          el = (n > 256) ? b[256] : BMAX, // set length of EOB code, if any
+            N_MAX = 288,    // maximum number of codes in any set
+            c = Array(BMAX+1).fill(0),  // bit length count table
+            lx = Array(BMAX+1).fill(0), // stack of bits per table
+            u = Array(BMAX).fill(null), // zip_HuftNode[BMAX][]  table stack
+            v = Array(N_MAX).fill(0), // values in order of bit length
+            x = Array(BMAX+1).fill(0), // bit offsets, then code stack
+            r = { e: 0, b: 0, n: 0, t: null }, // new zip_HuftNode(), // table entry for structure assignment
+            el = (n > 256) ? b[256] : BMAX; // set length of EOB code, if any
+       let rr = null, // temporary variable, use in assignment
           a,         // counter for codes of length k
           f,         // i repeats in table every f entries
-          g,         // maximum code length
           h,         // table level
           j,         // counter
           k,         // number of bits in current code
@@ -94599,11 +94556,11 @@ function ZIP_inflate(arr, tgt) {
           i = n;         // counter, current code
 
       // Generate counts for each bit length
-      do {
+      do
          c[p[pidx++]]++; // assume all entries <= BMAX
-      } while (--i > 0);
+      while (--i > 0);
 
-      if (c[0] == n) {   // null input--all zero length codes
+      if (c[0] === n) {   // null input--all zero length codes
          this.root = null;
          this.m = 0;
          this.status = 0;
@@ -94612,15 +94569,15 @@ function ZIP_inflate(arr, tgt) {
 
       // Find minimum and maximum length, bound *m by those
       for (j = 1; j <= BMAX; ++j)
-         if (c[j] != 0)
-            break;
+         if (c[j] !== 0) break;
+
       k = j;         // minimum code length
       if (mm < j)
          mm = j;
-      for (i = BMAX; i != 0; --i)
-         if (c[i] != 0)
-            break;
-      g = i;         // maximum code length
+      for (i = BMAX; i !== 0; --i)
+         if (c[i] !== 0) break;
+
+      const g = i;         // maximum code length
       if (mm > i)
          mm = i;
 
@@ -94651,7 +94608,7 @@ function ZIP_inflate(arr, tgt) {
       p = b; pidx = 0;
       i = 0;
       do {
-         if ((j = p[pidx++]) != 0)
+         if ((j = p[pidx++]) !== 0)
             v[x[j]++] = i;
       } while (++i < n);
       n = x[g];         // set n to length of v
@@ -94741,14 +94698,13 @@ function ZIP_inflate(arr, tgt) {
             }
 
             // backwards increment the k-bit code i
-            for (j = 1 << (k - 1); (i & j) != 0; j >>= 1)
+            for (j = 1 << (k - 1); (i & j) !== 0; j >>= 1)
                i ^= j;
             i ^= j;
 
             // backup over finished tables
-            while ((i & ((1 << w) - 1)) != x[h]) {
+            while ((i & ((1 << w) - 1)) !== x[h])
                w -= lx[h--];      // don't need to update q
-            }
          }
       }
 
@@ -94756,7 +94712,7 @@ function ZIP_inflate(arr, tgt) {
       this.m = lx[1];
 
       /* Return true (1) if we were given an incomplete table */
-      this.status = ((y != 0 && g != 1) ? 1 : 0);
+      this.status = ((y !== 0 && g !== 1) ? 1 : 0);
      /* end of constructor */
 
       return this;
@@ -94765,7 +94721,7 @@ function ZIP_inflate(arr, tgt) {
    /* routines (inflate) */
 
    function zip_inflate_codes(buff, off, size) {
-      if (size == 0) return 0;
+      if (size === 0) return 0;
 
       /* inflate (decompress) the codes in a deflated (compressed) block.
          Return an error code or zero if it all goes ok. */
@@ -94780,7 +94736,7 @@ function ZIP_inflate(arr, tgt) {
          t = zip_tl.list[zip_GETBITS(zip_bl)];
          e = t.e;
          while (e > 16) {
-            if (e == 99)
+            if (e === 99)
                return -1;
             zip_DUMPBITS(t.b);
             e -= 16;
@@ -94790,16 +94746,16 @@ function ZIP_inflate(arr, tgt) {
          }
          zip_DUMPBITS(t.b);
 
-         if (e == 16) {     // then it's a literal
+         if (e === 16) {     // then it's a literal
             zip_wp &= zip_WSIZE - 1;
             buff[off + n++] = zip_slide[zip_wp++] = t.n;
-            if (n == size)
+            if (n === size)
                return size;
             continue;
          }
 
          // exit if end of block
-         if (e == 15)
+         if (e === 15)
             break;
 
          // it's an EOB or a length
@@ -94815,7 +94771,7 @@ function ZIP_inflate(arr, tgt) {
          e = t.e;
 
          while (e > 16) {
-            if (e == 99)
+            if (e === 99)
                return -1;
             zip_DUMPBITS(t.b);
             e -= 16;
@@ -94836,7 +94792,7 @@ function ZIP_inflate(arr, tgt) {
             buff[off + n++] = zip_slide[zip_wp++] = zip_slide[zip_copy_dist++];
          }
 
-         if (n == size)
+         if (n === size)
             return size;
       }
 
@@ -94856,7 +94812,7 @@ function ZIP_inflate(arr, tgt) {
       n = zip_GETBITS(16);
       zip_DUMPBITS(16);
       zip_NEEDBITS(16);
-      if (n != ((~zip_bit_buf) & 0xffff))
+      if (n !== ((~zip_bit_buf) & 0xffff))
          return -1;        // error in compressed data
       zip_DUMPBITS(16);
 
@@ -94872,7 +94828,7 @@ function ZIP_inflate(arr, tgt) {
          zip_DUMPBITS(8);
       }
 
-      if (zip_copy_leng == 0)
+      if (zip_copy_leng === 0)
          zip_method = -1; // done
       return n;
    }
@@ -94884,14 +94840,13 @@ function ZIP_inflate(arr, tgt) {
 
       // if first time, set up tables for fixed blocks
       if (zip_fixed_tl == null) {
-
          // literal table
-         let l = Array(288).fill(8, 0, 144).fill(9, 144, 256).fill(7, 256, 280).fill(8, 280, 288);
+         const l = Array(288).fill(8, 0, 144).fill(9, 144, 256).fill(7, 256, 280).fill(8, 280, 288);
          // make a complete, but wrong code set
          zip_fixed_bl = 7;
 
-         let h = new zip_HuftBuild(l, 288, 257, zip_cplens, zip_cplext, zip_fixed_bl);
-         if (h.status != 0)
+         let h = new ZIP_HuftBuild(l, 288, 257, zip_cplens, zip_cplext, zip_fixed_bl);
+         if (h.status !== 0)
             throw new Error('HufBuild error: ' + h.status);
          zip_fixed_tl = h.root;
          zip_fixed_bl = h.m;
@@ -94900,7 +94855,7 @@ function ZIP_inflate(arr, tgt) {
          l.fill(5, 0, 30); // make an incomplete code set
          zip_fixed_bd = 5;
 
-         h = new zip_HuftBuild(l, 30, 0, zip_cpdist, zip_cpdext, zip_fixed_bd);
+         h = new ZIP_HuftBuild(l, 30, 0, zip_cpdist, zip_cpdext, zip_fixed_bd);
          if (h.status > 1) {
             zip_fixed_tl = null;
             throw new Error('HufBuild error: '+h.status);
@@ -94918,12 +94873,11 @@ function ZIP_inflate(arr, tgt) {
 
    function zip_inflate_dynamic(buff, off, size) {
       // decompress an inflated type 2 (dynamic Huffman codes) block.
-      let i,j,    // temporary variables
+      let i, j,  // temporary variables
           l,     // last length
-          n,     // number of lengths to get
           t,     // (zip_HuftNode) literal/length code table
-          h,     // (zip_HuftBuild)
-          ll = new Array(286+30).fill(0); // literal/length and distance code lengths
+          h;     // (ZIP_HuftBuild)
+      const ll = new Array(286+30).fill(0); // literal/length and distance code lengths
 
       // read in table lengths
       zip_NEEDBITS(5);
@@ -94949,15 +94903,15 @@ function ZIP_inflate(arr, tgt) {
 
       // build decoding table for trees--single level, 7 bit lookup
       zip_bl = 7;
-      h = new zip_HuftBuild(ll, 19, 19, null, null, zip_bl);
-      if (h.status != 0)
+      h = new ZIP_HuftBuild(ll, 19, 19, null, null, zip_bl);
+      if (h.status !== 0)
          return -1;  // incomplete code set
 
       zip_tl = h.root;
       zip_bl = h.m;
 
       // read in literal and distance code lengths
-      n = nl + nd;
+      const n = nl + nd;   // number of lengths to get
       i = l = 0;
       while (i < n) {
          zip_NEEDBITS(zip_bl);
@@ -94967,7 +94921,7 @@ function ZIP_inflate(arr, tgt) {
          j = t.n;
          if (j < 16) // length of code in bits (0..15)
             ll[i++] = l = j; // save last length in l
-         else if (j == 16) {   // repeat last length 3 to 6 times
+         else if (j === 16) {   // repeat last length 3 to 6 times
             zip_NEEDBITS(2);
             j = 3 + zip_GETBITS(2);
             zip_DUMPBITS(2);
@@ -94975,7 +94929,7 @@ function ZIP_inflate(arr, tgt) {
                return -1;
             while (j-- > 0)
                ll[i++] = l;
-         } else if (j == 17) { // 3 to 10 zero length codes
+         } else if (j === 17) { // 3 to 10 zero length codes
             zip_NEEDBITS(3);
             j = 3 + zip_GETBITS(3);
             zip_DUMPBITS(3);
@@ -94998,10 +94952,10 @@ function ZIP_inflate(arr, tgt) {
 
       // build the decoding tables for literal/length and distance codes
       zip_bl = 9; // zip_lbits;
-      h = new zip_HuftBuild(ll, nl, 257, zip_cplens, zip_cplext, zip_bl);
-      if (zip_bl == 0)  // no literals or lengths
+      h = new ZIP_HuftBuild(ll, nl, 257, zip_cplens, zip_cplext, zip_bl);
+      if (zip_bl === 0)  // no literals or lengths
          h.status = 1;
-      if (h.status != 0) {
+      if (h.status !== 0) {
          // if (h.status == 1); // **incomplete literal tree**
          return -1;     // incomplete code set
       }
@@ -95011,18 +94965,18 @@ function ZIP_inflate(arr, tgt) {
       for (i = 0; i < nd; ++i)
          ll[i] = ll[i + nl];
       zip_bd = 6; // zip_dbits;
-      h = new zip_HuftBuild(ll, nd, 0, zip_cpdist, zip_cpdext, zip_bd);
+      h = new ZIP_HuftBuild(ll, nd, 0, zip_cpdist, zip_cpdext, zip_bd);
       zip_td = h.root;
       zip_bd = h.m;
 
-      if (zip_bd == 0 && nl > 257) {   // lengths but no distances
+      if (zip_bd === 0 && nl > 257) {   // lengths but no distances
          // **incomplete distance tree**
          return -1;
       }
 
-      //if (h.status == 1); // **incomplete distance tree**
+      // if (h.status == 1); // **incomplete distance tree**
 
-      if (h.status != 0)
+      if (h.status !== 0)
          return -1;
 
       // decompress until an end-of-block code
@@ -95034,11 +94988,11 @@ function ZIP_inflate(arr, tgt) {
       let n = 0, i;
 
       while (n < size) {
-         if (zip_eof && zip_method == -1)
+         if (zip_eof && zip_method === -1)
             return n;
 
          if (zip_copy_leng > 0) {
-            if (zip_method != 0 /*zip_STORED_BLOCK*/) {
+            if (zip_method !== 0 /* zip_STORED_BLOCK */) {
                // STATIC_TREES or DYN_TREES
                while (zip_copy_leng > 0 && n < size) {
                   --zip_copy_leng;
@@ -95055,20 +95009,20 @@ function ZIP_inflate(arr, tgt) {
                   buff[off + n++] = zip_slide[zip_wp++] = zip_GETBITS(8);
                   zip_DUMPBITS(8);
                }
-               if (zip_copy_leng == 0)
+               if (zip_copy_leng === 0)
                   zip_method = -1; // done
             }
-            if (n == size)
+            if (n === size)
                return n;
          }
 
-         if (zip_method == -1) {
+         if (zip_method === -1) {
             if (zip_eof)
                break;
 
             // read in last block bit
             zip_NEEDBITS(1);
-            if (zip_GETBITS(1) != 0)
+            if (zip_GETBITS(1) !== 0)
                zip_eof = true;
             zip_DUMPBITS(1);
 
@@ -95104,7 +95058,7 @@ function ZIP_inflate(arr, tgt) {
                break;
          }
 
-         if (i == -1)
+         if (i === -1)
             return zip_eof ? 0 : -1;
          n += i;
       }
@@ -95112,9 +95066,8 @@ function ZIP_inflate(arr, tgt) {
    }
 
    let i, cnt = 0;
-   while ((i = zip_inflate_internal(tgt, cnt, Math.min(1024, tgt.byteLength-cnt))) > 0) {
+   while ((i = zip_inflate_internal(tgt, cnt, Math.min(1024, tgt.byteLength-cnt))) > 0)
       cnt += i;
-   }
 
    return cnt;
 } // function ZIP_inflate
@@ -95141,8 +95094,9 @@ function LZ4_uncompress(input, output, sIdx, eIdx) {
    sIdx = sIdx || 0;
    eIdx = eIdx || (input.length - sIdx);
    // Process each sequence in the incoming data
-   for (let i = sIdx, n = eIdx, j = 0; i < n;) {
-      let token = input[i++];
+   let j = 0;
+   for (let i = sIdx, n = eIdx; i < n;) {
+      const token = input[i++];
 
       // Literals
       let literals_length = (token >> 4);
@@ -95155,7 +95109,7 @@ function LZ4_uncompress(input, output, sIdx, eIdx) {
          }
 
          // Copy the literals
-         let end = i + literals_length;
+         const end = i + literals_length;
          while (i < end) output[j++] = input[i++];
 
          // End of buffer?
@@ -95190,17 +95144,14 @@ function LZ4_uncompress(input, output, sIdx, eIdx) {
   * @return {Promise} with unzipped content
   * @private */
 async function R__unzip(arr, tgtsize, noalert, src_shift) {
-
    const HDRSIZE = 9, totallen = arr.byteLength,
-        getChar = o => String.fromCharCode(arr.getUint8(o)),
-        getCode = o => arr.getUint8(o);
+         checkChar = (o, symb) => { return String.fromCharCode(arr.getUint8(o)) === symb; },
+         getCode = o => arr.getUint8(o);
 
    let curr = src_shift || 0, fullres = 0, tgtbuf = null;
 
    const nextPortion = () => {
-
       while (fullres < tgtsize) {
-
          let fmt = 'unknown', off = 0, CHKSUM = 0;
 
          if (curr + HDRSIZE >= totallen) {
@@ -95208,11 +95159,11 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
             return Promise.resolve(null);
          }
 
-         if (getChar(curr) == 'Z' && getChar(curr + 1) == 'L' && getCode(curr + 2) == 8) { fmt = 'new'; off = 2; } else
-         if (getChar(curr) == 'C' && getChar(curr + 1) == 'S' && getCode(curr + 2) == 8) { fmt = 'old'; off = 0; } else
-         if (getChar(curr) == 'X' && getChar(curr + 1) == 'Z' && getCode(curr + 2) == 0) fmt = 'LZMA'; else
-         if (getChar(curr) == 'Z' && getChar(curr + 1) == 'S' && getCode(curr + 2) == 1) fmt = 'ZSTD'; else
-         if (getChar(curr) == 'L' && getChar(curr + 1) == '4') { fmt = 'LZ4'; off = 0; CHKSUM = 8; }
+         if (checkChar(curr, 'Z') && checkChar(curr+1, 'L') && getCode(curr + 2) === 8) { fmt = 'new'; off = 2; } else
+         if (checkChar(curr, 'C') && checkChar(curr+1, 'S') && getCode(curr + 2) === 8) { fmt = 'old'; off = 0; } else
+         if (checkChar(curr, 'X') && checkChar(curr+1, 'Z') && getCode(curr + 2) === 0) fmt = 'LZMA'; else
+         if (checkChar(curr, 'Z') && checkChar(curr+1, 'S') && getCode(curr + 2) === 1) fmt = 'ZSTD'; else
+         if (checkChar(curr, 'L') && checkChar(curr+1, '4')) { fmt = 'LZ4'; off = 0; CHKSUM = 8; }
 
          /*   C H E C K   H E A D E R   */
          if ((fmt !== 'new') && (fmt !== 'old') && (fmt !== 'LZ4') && (fmt !== 'ZSTD')) {
@@ -95225,32 +95176,25 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
 
          if (fmt === 'ZSTD') {
             const handleZsdt = ZstdCodec => {
-
                return new Promise((resolveFunc, rejectFunc) => {
-
                   ZstdCodec.run(zstd => {
                      // const simple = new zstd.Simple();
-                     const streaming = new zstd.Streaming();
-
-                     // const data2 = simple.decompress(uint8arr);
-                     const data2 = streaming.decompress(uint8arr);
-
-                     // console.log(`tgtsize ${tgtsize} zstd size ${data2.length} offset ${data2.byteOffset} rawlen ${data2.buffer.byteLength}`);
-
-                     const reslen = data2.length;
+                     const streaming = new zstd.Streaming(),
+                           data2 = streaming.decompress(uint8arr),
+                           reslen = data2.length;
 
                      if (data2.byteOffset !== 0)
                         return rejectFunc(Error('ZSTD result with byteOffset != 0'));
 
                      // shortcut when exactly required data unpacked
-                     //if ((tgtsize == reslen) && data2.buffer)
-                     //   resolveFunc(new DataView(data2.buffer));
+                     // if ((tgtsize == reslen) && data2.buffer)
+                     //    resolveFunc(new DataView(data2.buffer));
 
                      // need to copy data while zstd does not provide simple way of doing it
                      if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
-                     let tgt8arr = new Uint8Array(tgtbuf, fullres);
+                     const tgt8arr = new Uint8Array(tgtbuf, fullres);
 
-                     for(let i = 0; i < reslen; ++i)
+                     for (let i = 0; i < reslen; ++i)
                         tgt8arr[i] = data2[i];
 
                      fullres += reslen;
@@ -95258,21 +95202,22 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
                      resolveFunc(true);
                   });
                });
-            };
+            },
 
-            let promise = isNodeJs() ? Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(handle => handleZsdt(handle.ZstdCodec))
-                                        : loadScript('../../zstd/zstd-codec.min.js')
-                                             .catch(() => loadScript('https://root.cern/js/zstd/zstd-codec.min.js'))
-                                             .then(() => handleZsdt(ZstdCodec));
+            promise = isNodeJs()
+                        ? Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(handle => handleZsdt(handle.ZstdCodec))
+                        : loadScript('../../zstd/zstd-codec.min.js')
+                          .catch(() => loadScript('https://root.cern/js/zstd/zstd-codec.min.js'))
+                          // eslint-disable-next-line no-undef
+                         .then(() => handleZsdt(ZstdCodec));
             return promise.then(() => nextPortion());
          }
 
          //  place for unpacking
          if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
 
-         let tgt8arr = new Uint8Array(tgtbuf, fullres);
-
-         const reslen = (fmt === 'LZ4') ? LZ4_uncompress(uint8arr, tgt8arr) : ZIP_inflate(uint8arr, tgt8arr);
+         const tgt8arr = new Uint8Array(tgtbuf, fullres),
+               reslen = (fmt === 'LZ4') ? LZ4_uncompress(uint8arr, tgt8arr) : ZIP_inflate(uint8arr, tgt8arr);
          if (reslen <= 0) break;
 
          fullres += reslen;
@@ -95298,6 +95243,7 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
   */
 
 class TBuffer {
+
    constructor(arr, pos, file, length) {
       this._typename = 'TBuffer';
       this.arr = arr;
@@ -95340,7 +95286,7 @@ class TBuffer {
 
    /** @summary  read class version from I/O buffer */
    readVersion() {
-      let ver = {}, bytecnt = this.ntou4(); // byte count
+      const ver = {}, bytecnt = this.ntou4(); // byte count
 
       if (bytecnt & kByteCountMask)
          ver.bytecnt = bytecnt - kByteCountMask - 2; // one can check between Read version and end of streamer
@@ -95357,9 +95303,8 @@ class TBuffer {
             // console.error(`Fail to find streamer info with check sum ${ver.checksum} version ${ver.val}`);
             this.o -= 4; // not found checksum in the list
             delete ver.checksum; // remove checksum
-         } else {
+         } else
             this.last_read_checksum = ver.checksum;
-         }
       }
       return ver;
    }
@@ -95380,22 +95325,23 @@ class TBuffer {
    readTString() {
       let len = this.ntou1();
       // large strings
-      if (len == 255) len = this.ntou4();
-      if (len == 0) return '';
+      if (len === 255) len = this.ntou4();
+      if (len === 0) return '';
 
       const pos = this.o;
       this.o += len;
 
-      return (this.codeAt(pos) == 0) ? '' : this.substring(pos, pos + len);
+      return (this.codeAt(pos) === 0) ? '' : this.substring(pos, pos + len);
    }
 
     /** @summary read Char_t array as string
       * @desc string either contains all symbols or until 0 symbol */
    readFastString(n) {
       let res = '', code, closed = false;
+      // eslint-disable-next-line no-unmodified-loop-condition
       for (let i = 0; (n < 0) || (i < n); ++i) {
          code = this.ntou1();
-         if (code == 0) { closed = true; if (n < 0) break; }
+         if (code === 0) { closed = true; if (n < 0) break; }
          if (!closed) res += String.fromCharCode(code);
       }
 
@@ -95533,7 +95479,6 @@ class TBuffer {
       }
 
       this.o = o;
-
       return array;
    }
 
@@ -95549,8 +95494,7 @@ class TBuffer {
       if (!this.arr || !this.arr.buffer || !this.canExtract(place)) return null;
       if (place.length === 2) return new DataView(this.arr.buffer, this.arr.byteOffset + place[0], place[1]);
 
-      let res = new Array(place.length / 2);
-
+      const res = new Array(place.length / 2);
       for (let n = 0; n < place.length; n += 2)
          res[n / 2] = new DataView(this.arr.buffer, this.arr.byteOffset + place[n], place[n + 1]);
 
@@ -95585,17 +95529,18 @@ class TBuffer {
       } else if (ndim === 2) {
          res = new Array(maxindx[0]);
          for (let n = 0; n < maxindx[0]; ++n) {
-            let res2 = new Array(maxindx[1]);
+            const res2 = new Array(maxindx[1]);
             for (let k = 0; k < maxindx[1]; ++k)
                res2[k] = func(this, handle);
             res[n] = res2;
          }
       } else {
-         let indx = [], arr = [], k;
-         for (k = 0; k < ndim; ++k) { indx[k] = 0; arr[k] = []; }
+         const indx = new Array(ndim).fill(0), arr = new Array(ndim);
+         for (let k = 0; k < ndim; ++k)
+            arr[k] = [];
          res = arr[0];
          while (indx[0] < maxindx[0]) {
-            k = ndim - 1;
+            let k = ndim - 1;
             arr[k].push(func(this, handle));
             ++indx[k];
             while ((indx[k] === maxindx[k]) && (k > 0)) {
@@ -95613,8 +95558,8 @@ class TBuffer {
    /** @summary read TKey data */
    readTKey(key) {
       if (!key) key = {};
-      this.classStreamer(key, 'TKey');
-      let name = key.fName.replace(/['"]/g, '');
+      this.classStreamer(key, clTKey);
+      const name = key.fName.replace(/['"]/g, '');
       if (name !== key.fName) {
          key.fRealName = key.fName;
          key.fName = name;
@@ -95626,7 +95571,6 @@ class TBuffer {
      * @desc this is remaining part of TBasket streamer to decode fEntryOffset
      * after unzipping of the TBasket data */
    readBasketEntryOffset(basket, offset) {
-
       this.locate(basket.fLast - offset);
 
       if (this.remain() <= 0) {
@@ -95658,17 +95602,16 @@ class TBuffer {
       const classInfo = { name: -1 }, bcnt = this.ntou4(), startpos = this.o;
       let tag;
 
-      if (!(bcnt & kByteCountMask) || (bcnt == kNewClassTag)) {
+      if (!(bcnt & kByteCountMask) || (bcnt === kNewClassTag))
          tag = bcnt;
-         // bcnt = 0;
-      } else {
+      else
          tag = this.ntou4();
-      }
+
       if (!(tag & kClassMask)) {
          classInfo.objtag = tag + this.fDisplacement; // indicate that we have deal with objects tag
          return classInfo;
       }
-      if (tag == kNewClassTag) {
+      if (tag === kNewClassTag) {
          // got a new class description followed by a new object
          classInfo.name = this.readFastString(-1);
 
@@ -95700,9 +95643,9 @@ class TBuffer {
       const arrkind = getArrayKind(clRef.name);
       let obj;
 
-      if (arrkind === 0) {
+      if (arrkind === 0)
          obj = this.readTString();
-      } else if (arrkind > 0) {
+      else if (arrkind > 0) {
          // reading array, can map array only afterwards
          obj = this.readFastArray(this.ntou4(), arrkind);
          this.mapObject(objtag, obj);
@@ -95718,7 +95661,6 @@ class TBuffer {
 
    /** @summary Invoke streamer for specified class  */
    classStreamer(obj, classname) {
-
       if (obj._typename === undefined) obj._typename = classname;
 
       const direct = DirectStreamers[classname];
@@ -95731,16 +95673,12 @@ class TBuffer {
             streamer = this.fFile.getStreamer(classname, ver);
 
       if (streamer !== null) {
-
          const len = streamer.length;
-
          for (let n = 0; n < len; ++n)
             streamer[n].func(this, obj);
-
       } else {
          // just skip bytes belonging to not-recognized object
          // console.warn(`skip object ${classname}`);
-
          addMethods(obj);
       }
 
@@ -95772,13 +95710,12 @@ class TDirectory {
 
    /** @summary retrieve a key by its name and cycle in the list of keys */
    getKey(keyname, cycle, only_direct) {
-
-      if (typeof cycle != 'number') cycle = -1;
+      if (typeof cycle !== 'number') cycle = -1;
       let bestkey = null;
       for (let i = 0; i < this.fKeys.length; ++i) {
          const key = this.fKeys[i];
          if (!key || (key.fName !== keyname)) continue;
-         if (key.fCycle == cycle) { bestkey = key; break; }
+         if (key.fCycle === cycle) { bestkey = key; break; }
          if ((cycle < 0) && (!bestkey || (key.fCycle > bestkey.fCycle))) bestkey = key;
       }
       if (bestkey)
@@ -95787,13 +95724,14 @@ class TDirectory {
       let pos = keyname.lastIndexOf('/');
       // try to handle situation when object name contains slashed (bad practice anyway)
       while (pos > 0) {
-         let dirname = keyname.slice(0, pos),
-             subname = keyname.slice(pos+1),
-             dirkey = this.getKey(dirname, undefined, true);
+         const dirname = keyname.slice(0, pos),
+               subname = keyname.slice(pos+1),
+               dirkey = this.getKey(dirname, undefined, true);
 
-         if (dirkey && !only_direct && (dirkey.fClassName.indexOf(clTDirectory) == 0))
+         if (dirkey && !only_direct && (dirkey.fClassName.indexOf(clTDirectory) === 0)) {
             return this.fFile.readObject(this.dir_name + '/' + dirname, 1)
                              .then(newdir => newdir.getKey(subname, cycle));
+         }
 
          pos = keyname.lastIndexOf('/', pos-1);
       }
@@ -95812,7 +95750,6 @@ class TDirectory {
    /** @summary Read list of keys in directory
      * @return {Promise} with TDirectory object */
    async readKeys(objbuf) {
-
       objbuf.classStreamer(this, clTDirectory);
 
       if ((this.fSeekKeys <= 0) || (this.fNbytesKeys <= 0))
@@ -95846,14 +95783,14 @@ class TDirectory {
 class TFile {
 
    constructor(url) {
-      this._typename = 'TFile';
+      this._typename = clTFile;
       this.fEND = 0;
       this.fFullURL = url;
       this.fURL = url;
       // when disabled ('+' at the end of file name), complete file content read with single operation
       this.fAcceptRanges = true;
       // use additional time stamp parameter for file name to avoid browser caching problem
-      this.fUseStampPar = settings.UseStamp ? 'stamp=' + (new Date).getTime() : false;
+      this.fUseStampPar = settings.UseStamp ? 'stamp=' + (new Date()).getTime() : false;
       this.fFileContent = null; // this can be full or partial content of the file (if ranges are not supported or if 1K header read from file)
       // stored as TBuffer instance
       this.fMaxRanges = settings.MaxRanges || 200; // maximal number of file ranges requested at once
@@ -95885,7 +95822,7 @@ class TFile {
          this.fUseStampPar = false;
       }
 
-      if (this.fURL.indexOf('file://') == 0) {
+      if (this.fURL.indexOf('file://') === 0) {
          this.fUseStampPar = false;
          this.fAcceptRanges = false;
       }
@@ -95912,15 +95849,20 @@ class TFile {
     * @return {Promise} with read buffers
     * @private */
    async readBuffer(place, filename, progress_callback) {
-
       if ((this.fFileContent !== null) && !filename && (!this.fAcceptRanges || this.fFileContent.canExtract(place)))
          return this.fFileContent.extract(place);
 
-      let file = this, fileurl = file.fURL, resolveFunc, rejectFunc,
-          promise = new Promise((resolve,reject) => { resolveFunc = resolve; rejectFunc = reject; }),
-          first = 0, last = 0, blobs = [], // array of requested segments
+      let resolveFunc, rejectFunc;
+
+      const file = this, first_block = (place[0] === 0) && (place.length === 2),
+            blobs = [], // array of requested segments
+            promise = new Promise((resolve, reject) => { resolveFunc = resolve; rejectFunc = reject; });
+
+      let fileurl = file.fURL,
+          first = 0, last = 0,
+          // eslint-disable-next-line prefer-const
           read_callback, first_req,
-          first_block = (place[0] === 0) && (place.length === 2), first_block_retry = false;
+          first_block_retry = false;
 
       if (isStr(filename) && filename) {
          const pos = fileurl.lastIndexOf('/');
@@ -95928,7 +95870,6 @@ class TFile {
       }
 
       function send_new_request(increment) {
-
          if (increment) {
             first = last;
             last = Math.min(first + file.fMaxRanges * 2, place.length);
@@ -95952,7 +95893,6 @@ class TFile {
             totalsz = Math.max(totalsz, 1e7);
 
          return createHttpRequest(fullurl, 'buf', read_callback, undefined, true).then(xhr => {
-
             if (file.fAcceptRanges) {
                xhr.setRequestHeader('Range', ranges);
                xhr.expected_size = Math.max(Math.round(1.1 * totalsz), totalsz + 200); // 200 if offset for the potential gzip
@@ -95967,17 +95907,16 @@ class TFile {
                }
                if (!sum_total) sum_total = 1;
 
-               let progress_offest = sum1 / sum_total, progress_this = (sum2 - sum1) / sum_total;
+               const progress_offest = sum1 / sum_total, progress_this = (sum2 - sum1) / sum_total;
                xhr.addEventListener('progress', oEvent => {
                   if (oEvent.lengthComputable)
                      progress_callback(progress_offest + progress_this * oEvent.loaded / oEvent.total);
                });
             } else if (first_block_retry && isFunc(xhr.addEventListener)) {
                xhr.addEventListener('progress', oEvent => {
-                  if (!oEvent.total) {
-                     console.warn(`Fail to get file size information`);
-                     // xhr.abort();
-                  } else if (oEvent.total > 5e7) {
+                  if (!oEvent.total)
+                     console.warn('Fail to get file size information');
+                  else if (oEvent.total > 5e7) {
                      console.error(`Try to load very large file ${oEvent.total} at once - abort`);
                      xhr.abort();
                   }
@@ -95990,7 +95929,6 @@ class TFile {
       }
 
       read_callback = function(res) {
-
          if (!res && first_block) {
             // if fail to read file with stamp parameter, try once again without it
             if (file.fUseStampPar) {
@@ -96015,8 +95953,8 @@ class TFile {
                }
             }
 
-            const kind = browser$1.isFirefox ? first_req.getResponseHeader('Server') : '';
-            if (isStr(kind) && kind.indexOf('SimpleHTTP') == 0) {
+            const kind = browser.isFirefox ? first_req.getResponseHeader('Server') : '';
+            if (isStr(kind) && kind.indexOf('SimpleHTTP') === 0) {
                file.fMaxRanges = 1;
                file.fUseStampPar = false;
             }
@@ -96057,24 +95995,25 @@ class TFile {
 
          // if only single segment requested, return result as is
          if (last - first === 2) {
-            let b = new DataView(res);
+            const b = new DataView(res);
             if (place.length === 2) return resolveFunc(b);
             blobs.push(b);
             return send_new_request(true);
          }
 
          // object to access response data
-         let hdr = this.getResponseHeader('Content-Type'),
-            ismulti = isStr(hdr) && (hdr.indexOf('multipart') >= 0),
-            view = new DataView(res);
+         const hdr = this.getResponseHeader('Content-Type'),
+               ismulti = isStr(hdr) && (hdr.indexOf('multipart') >= 0),
+               view = new DataView(res);
 
          if (!ismulti) {
             // server may returns simple buffer, which combines all segments together
 
-            let hdr_range = this.getResponseHeader('Content-Range'), segm_start = 0, segm_last = -1;
+            const hdr_range = this.getResponseHeader('Content-Range');
+            let segm_start = 0, segm_last = -1;
 
             if (isStr(hdr_range) && hdr_range.indexOf('bytes') >= 0) {
-               let parts = hdr_range.slice(hdr_range.indexOf('bytes') + 6).split(/[\s-\/]+/);
+               const parts = hdr_range.slice(hdr_range.indexOf('bytes') + 6).split(/[\s-/]+/);
                if (parts.length === 3) {
                   segm_start = parseInt(parts[0]);
                   segm_last = parseInt(parts[1]);
@@ -96085,9 +96024,10 @@ class TFile {
             }
 
             let canbe_single_segment = (segm_start <= segm_last);
-            for (let n = first; n < last; n += 2)
+            for (let n = first; n < last; n += 2) {
                if ((place[n] < segm_start) || (place[n] + place[n + 1] - 1 > segm_last))
                   canbe_single_segment = false;
+            }
 
             if (canbe_single_segment) {
                for (let n = first; n < last; n += 2)
@@ -96106,18 +96046,17 @@ class TFile {
 
          // multipart messages requires special handling
 
-         let indx = hdr.indexOf('boundary='), boundary = '', n = first, o = 0;
+         const indx = hdr.indexOf('boundary=');
+         let boundary = '', n = first, o = 0;
          if (indx > 0) {
             boundary = hdr.slice(indx + 9);
-            if ((boundary[0] == '"') && (boundary[boundary.length - 1] == '"'))
+            if ((boundary[0] === '"') && (boundary[boundary.length - 1] === '"'))
                boundary = boundary.slice(1, boundary.length - 1);
             boundary = '--' + boundary;
-         } else {
+         } else
             console.error('Did not found boundary id in the response header');
-         }
 
          while (n < last) {
-
             let code1, code2 = view.getUint8(o), nline = 0, line = '',
                finish_header = false, segm_start = 0, segm_last = -1;
 
@@ -96125,35 +96064,32 @@ class TFile {
                code1 = code2;
                code2 = view.getUint8(o + 1);
 
-               if (((code1 == 13) && (code2 == 10)) || (code1 == 10)) {
-
-                  if ((line.length > 2) && (line.slice(0, 2) == '--') && (line !== boundary))
+               if (((code1 === 13) && (code2 === 10)) || (code1 === 10)) {
+                  if ((line.length > 2) && (line.slice(0, 2) === '--') && (line !== boundary))
                      return rejectFunc(Error(`Decode multipart message, expect boundary ${boundary} got ${line}`));
 
                   line = line.toLowerCase();
 
                   if ((line.indexOf('content-range') >= 0) && (line.indexOf('bytes') > 0)) {
-                     let parts = line.slice(line.indexOf('bytes') + 6).split(/[\s-\/]+/);
+                     const parts = line.slice(line.indexOf('bytes') + 6).split(/[\s-/]+/);
                      if (parts.length === 3) {
                         segm_start = parseInt(parts[0]);
                         segm_last = parseInt(parts[1]);
                         if (!Number.isInteger(segm_start) || !Number.isInteger(segm_last) || (segm_start > segm_last)) {
                            segm_start = 0; segm_last = -1;
                         }
-                     } else {
+                     } else
                         console.error(`Fail to decode content-range ${line} ${parts}`);
-                     }
                   }
 
                   if ((nline > 1) && (line.length === 0)) finish_header = true;
 
                   nline++; line = '';
-                  if (code1 != 10) {
+                  if (code1 !== 10) {
                      o++; code2 = view.getUint8(o + 1);
                   }
-               } else {
+               } else
                   line += String.fromCharCode(code1);
-               }
                o++;
             }
 
@@ -96188,7 +96124,6 @@ class TFile {
     * @desc Function only can be used for already read directories, which are preserved in the memory
     * @private */
    getDir(dirname, cycle) {
-
       if ((cycle === undefined) && isStr(dirname)) {
          const pos = dirname.lastIndexOf(';');
          if (pos > 0) { cycle = parseInt(dirname.slice(pos + 1)); dirname = dirname.slice(0, pos); }
@@ -96196,7 +96131,7 @@ class TFile {
 
       for (let j = 0; j < this.fDirectories.length; ++j) {
          const dir = this.fDirectories[j];
-         if (dir.dir_name != dirname) continue;
+         if (dir.dir_name !== dirname) continue;
          if ((cycle !== undefined) && (dir.dir_cycle !== cycle)) continue;
          return dir;
       }
@@ -96207,13 +96142,12 @@ class TFile {
     * @desc If only_direct not specified, returns Promise while key keys must be read first from the directory
     * @private */
    getKey(keyname, cycle, only_direct) {
-
-      if (typeof cycle != 'number') cycle = -1;
+      if (typeof cycle !== 'number') cycle = -1;
       let bestkey = null;
       for (let i = 0; i < this.fKeys.length; ++i) {
          const key = this.fKeys[i];
          if (!key || (key.fName !== keyname)) continue;
-         if (key.fCycle == cycle) { bestkey = key; break; }
+         if (key.fCycle === cycle) { bestkey = key; break; }
          if ((cycle < 0) && (!bestkey || (key.fCycle > bestkey.fCycle))) bestkey = key;
       }
       if (bestkey)
@@ -96222,14 +96156,14 @@ class TFile {
       let pos = keyname.lastIndexOf('/');
       // try to handle situation when object name contains slashes (bad practice anyway)
       while (pos > 0) {
-         let dirname = keyname.slice(0, pos),
-             subname = keyname.slice(pos + 1),
-             dir = this.getDir(dirname);
+         const dirname = keyname.slice(0, pos),
+               subname = keyname.slice(pos + 1),
+               dir = this.getDir(dirname);
 
          if (dir) return dir.getKey(subname, cycle, only_direct);
 
-         let dirkey = this.getKey(dirname, undefined, true);
-         if (dirkey && !only_direct && (dirkey.fClassName.indexOf(clTDirectory) == 0))
+         const dirkey = this.getKey(dirname, undefined, true);
+         if (dirkey && !only_direct && (dirkey.fClassName.indexOf(clTDirectory) === 0))
             return this.readObject(dirname).then(newdir => newdir.getKey(subname, cycle));
 
          pos = keyname.lastIndexOf('/', pos - 1);
@@ -96241,21 +96175,18 @@ class TFile {
    /** @summary Read and inflate object buffer described by its key
     * @private */
    async readObjBuffer(key) {
-
       return this.readBuffer([key.fSeekKey + key.fKeylen, key.fNbytes - key.fKeylen]).then(blob1 => {
-
          if (key.fObjlen <= key.fNbytes - key.fKeylen) {
-            let buf = new TBuffer(blob1, 0, this);
+            const buf = new TBuffer(blob1, 0, this);
             buf.fTagOffset = key.fKeylen;
             return buf;
          }
 
          return R__unzip(blob1, key.fObjlen).then(objbuf => {
             if (!objbuf) return Promise.reject(Error('Fail to UNZIP buffer'));
-            let buf = new TBuffer(objbuf, 0, this);
+            const buf = new TBuffer(objbuf, 0, this);
             buf.fTagOffset = key.fKeylen;
             return buf;
-
          });
       });
    }
@@ -96271,29 +96202,27 @@ class TFile {
      * let obj = await f.readObject('hpxpy;1');
      * console.log(`Read object of type ${obj._typename}`); */
    async readObject(obj_name, cycle, only_dir) {
-
-      let pos = obj_name.lastIndexOf(';');
+      const pos = obj_name.lastIndexOf(';');
       if (pos > 0) {
          cycle = parseInt(obj_name.slice(pos + 1));
          obj_name = obj_name.slice(0, pos);
       }
 
-      if (typeof cycle != 'number') cycle = -1;
+      if (typeof cycle !== 'number') cycle = -1;
       // remove leading slashes
-      while (obj_name.length && (obj_name[0] == '/')) obj_name = obj_name.slice(1);
+      while (obj_name.length && (obj_name[0] === '/')) obj_name = obj_name.slice(1);
 
       // one uses Promises while in some cases we need to
       // read sub-directory to get list of keys
       // in such situation calls are asynchrone
       return this.getKey(obj_name, cycle).then(key => {
-
-         if ((obj_name == nameStreamerInfo) && (key.fClassName == clTList))
+         if ((obj_name === nameStreamerInfo) && (key.fClassName === clTList))
             return this.fStreamerInfos;
 
          let isdir = false;
 
-         if ((key.fClassName == clTDirectory || key.fClassName == clTDirectoryFile)) {
-            let dir = this.getDir(obj_name, cycle);
+         if ((key.fClassName === clTDirectory || key.fClassName === clTDirectoryFile)) {
+            const dir = this.getDir(obj_name, cycle);
             if (dir) return dir;
             isdir = true;
          }
@@ -96302,14 +96231,13 @@ class TFile {
             return Promise.reject(Error(`Key ${obj_name} is not directory}`));
 
          return this.readObjBuffer(key).then(buf => {
-
             if (isdir) {
-               let dir = new TDirectory(this, obj_name, cycle);
+               const dir = new TDirectory(this, obj_name, cycle);
                dir.fTitle = key.fTitle;
                return dir.readKeys(buf);
             }
 
-            let obj = {};
+            const obj = {};
             buf.mapObject(1, obj); // tag object itself with id == 1
             buf.classStreamer(obj, key.fClassName);
 
@@ -96324,12 +96252,11 @@ class TFile {
    /** @summary read formulas from the file and add them to TF1/TF2 objects
      * @private */
    async _readFormulas(tf1) {
-
-      let arr = [];
-
-      for (let indx = 0; indx < this.fKeys.length; ++indx)
-         if (this.fKeys[indx].fClassName == 'TFormula')
+      const arr = [];
+      for (let indx = 0; indx < this.fKeys.length; ++indx) {
+         if (this.fKeys[indx].fClassName === 'TFormula')
             arr.push(this.readObject(this.fKeys[indx].fName, this.fKeys[indx].fCycle));
+      }
 
       return Promise.all(arr).then(formulas => {
          formulas.forEach(obj => tf1.addFormula(obj));
@@ -96342,7 +96269,7 @@ class TFile {
    extractStreamerInfos(buf) {
       if (!buf) return;
 
-      let lst = {};
+      const lst = {};
       buf.mapObject(1, lst);
       buf.classStreamer(lst, clTList);
 
@@ -96354,30 +96281,32 @@ class TFile {
          internals.addStreamerInfosForPainter(lst);
 
       for (let k = 0; k < lst.arr.length; ++k) {
-         let si = lst.arr[k];
+         const si = lst.arr[k];
          if (!si.fElements) continue;
          for (let l = 0; l < si.fElements.arr.length; ++l) {
-            let elem = si.fElements.arr[l];
-
+            const elem = si.fElements.arr[l];
             if (!elem.fTypeName || !elem.fType) continue;
 
             let typ = elem.fType, typname = elem.fTypeName;
 
             if (typ >= 60) {
-               if ((typ === kStreamer) && (elem._typename == clTStreamerSTL) && elem.fSTLtype && elem.fCtype && (elem.fCtype < 20)) {
-                  let prefix = (StlNames[elem.fSTLtype] || 'undef') + '<';
-                  if ((typname.indexOf(prefix) === 0) && (typname[typname.length - 1] == '>')) {
+               if ((typ === kStreamer) && (elem._typename === clTStreamerSTL) && elem.fSTLtype && elem.fCtype && (elem.fCtype < 20)) {
+                  const prefix = (StlNames[elem.fSTLtype] || 'undef') + '<';
+                  if ((typname.indexOf(prefix) === 0) && (typname[typname.length - 1] === '>')) {
                      typ = elem.fCtype;
                      typname = typname.slice(prefix.length, typname.length - 1).trim();
 
-                     if ((elem.fSTLtype === kSTLmap) || (elem.fSTLtype === kSTLmultimap))
-                        if (typname.indexOf(',') > 0) typname = typname.slice(0, typname.indexOf(',')).trim();
-                        else continue;
+                     if ((elem.fSTLtype === kSTLmap) || (elem.fSTLtype === kSTLmultimap)) {
+                        if (typname.indexOf(',') > 0)
+                           typname = typname.slice(0, typname.indexOf(',')).trim();
+                        else
+                           continue;
+                     }
                   }
                }
                if (typ >= 60) continue;
             } else {
-               if ((typ > 20) && (typname[typname.length - 1] == '*')) typname = typname.slice(0, typname.length - 1);
+               if ((typ > 20) && (typname[typname.length - 1] === '*')) typname = typname.slice(0, typname.length - 1);
                typ = typ % 20;
             }
 
@@ -96396,11 +96325,9 @@ class TFile {
    /** @summary Read file keys
      * @private */
    async readKeys() {
-
       // with the first readbuffer we read bigger amount to create header cache
       return this.readBuffer([0, 1024]).then(blob => {
-         let buf = new TBuffer(blob, 0, this);
-
+         const buf = new TBuffer(blob, 0, this);
          if (buf.substring(0, 4) !== 'root')
             return Promise.reject(Error(`Not a ROOT file ${this.fURL}`));
 
@@ -96408,7 +96335,7 @@ class TFile {
 
          this.fVersion = buf.ntou4();
          this.fBEGIN = buf.ntou4();
-         if (this.fVersion < 1000000) { //small file
+         if (this.fVersion < 1000000) { // small file
             this.fEND = buf.ntou4();
             this.fSeekFree = buf.ntou4();
             this.fNbytesFree = buf.ntou4();
@@ -96438,7 +96365,7 @@ class TFile {
          if (!this.fNbytesName || this.fNbytesName > 100000)
             return Promise.reject(Error(`Cannot read directory info of the file ${this.fURL}`));
 
-         //*-*-------------Read directory info
+         // *-*-------------Read directory info
          let nbytes = this.fNbytesName + 22;
          nbytes += 4;  // fDatimeC.Sizeof();
          nbytes += 4;  // fDatimeM.Sizeof();
@@ -96449,8 +96376,7 @@ class TFile {
          // this part typically read from the header, no need to optimize
          return this.readBuffer([this.fBEGIN, Math.max(300, nbytes)]);
       }).then(blob3 => {
-
-         let buf3 = new TBuffer(blob3, 0, this);
+         const buf3 = new TBuffer(blob3, 0, this);
 
          // keep only title from TKey data
          this.fTitle = buf3.readTKey().fTitle;
@@ -96466,7 +96392,6 @@ class TFile {
          // read with same request keys and streamer infos
          return this.readBuffer([this.fSeekKeys, this.fNbytesKeys, this.fSeekInfo, this.fNbytesInfo]);
       }).then(blobs => {
-
          const buf4 = new TBuffer(blobs[0], 0, this);
 
          buf4.readTKey(); //
@@ -96515,13 +96440,15 @@ class TFile {
 
          for (let i = 0; i < len; ++i) {
             si = arr[i];
-            if (si.fCheckSum === checksum)
-               return cache[checksum] = si;
+            if (si.fCheckSum === checksum) {
+               cache[checksum] = si;
+               return si;
+            }
          }
          cache[checksum] = null; // checksum didnot found, do not try again
       } else {
          for (let i = 0; i < len; ++i) {
-            let si = arr[i];
+            const si = arr[i];
             if ((si.fName === clname) && ((si.fClassVersion === clversion) || (clversion === undefined))) return si;
          }
       }
@@ -96533,9 +96460,8 @@ class TFile {
      * @desc From the list of streamers or generate it from the streamer infos and add it to the list
      * @private */
    getStreamer(clname, ver, s_i) {
-
       // these are special cases, which are handled separately
-      if (clname == clTQObject || clname == clTBasket) return null;
+      if (clname === clTQObject || clname === clTBasket) return null;
 
       let streamer, fullname = clname;
 
@@ -96545,7 +96471,7 @@ class TFile {
          if (streamer !== undefined) return streamer;
       }
 
-      let custom = CustomStreamers[clname];
+      const custom = CustomStreamers[clname];
 
       // one can define in the user streamers just aliases
       if (isStr(custom))
@@ -96575,15 +96501,17 @@ class TFile {
       }
 
       // special handling for TStyle which has duplicated member name fLineStyle
-      if ((s_i.fName == clTStyle) && s_i.fElements)
+      if ((s_i.fName === clTStyle) && s_i.fElements) {
          s_i.fElements.arr.forEach(elem => {
-            if (elem.fName == 'fLineStyle') elem.fName = 'fLineStyles'; // like in ROOT JSON now
+            if (elem.fName === 'fLineStyle') elem.fName = 'fLineStyles'; // like in ROOT JSON now
          });
+      }
 
       // for each entry in streamer info produce member function
-      if (s_i.fElements)
+      if (s_i.fElements) {
          for (let j = 0; j < s_i.fElements.arr.length; ++j)
             streamer.push(createMemberStreamer(s_i.fElements.arr[j], this));
+      }
 
       this.fStreamers[fullname] = streamer;
 
@@ -96598,14 +96526,14 @@ class TFile {
       if (!tgt) tgt = [];
 
       for (let n = 0; n < streamer.length; ++n) {
-         let elem = streamer[n];
+         const elem = streamer[n];
 
          if (elem.base === undefined) {
             tgt.push(elem);
             continue;
          }
 
-         if (elem.basename == clTObject) {
+         if (elem.basename === clTObject) {
             tgt.push({
                func(buf, obj) {
                   buf.ntoi2(); // read version, why it here??
@@ -96617,14 +96545,14 @@ class TFile {
             continue;
          }
 
-         let ver = { val: elem.base };
+         const ver = { val: elem.base };
 
          if (ver.val === 4294967295) {
             // this is -1 and indicates foreign class, need more workarounds
             ver.val = 1; // need to search version 1 - that happens when several versions of foreign class exists ???
          }
 
-         let parent = this.getStreamer(elem.basename, ver);
+         const parent = this.getStreamer(elem.basename, ver);
          if (parent) this.getSplittedStreamer(parent, tgt);
       }
 
@@ -96647,22 +96575,18 @@ class TFile {
 /** @summary Function to read vector element in the streamer
   * @private */
 function readVectorElement(buf) {
-
    if (this.member_wise) {
-
-      const n = buf.ntou4();
-      let streamer = null, ver = this.stl_version;
+      const n = buf.ntou4(), ver = this.stl_version;
+      let streamer = null;
 
       if (n === 0) return []; // for empty vector no need to search split streamers
 
-      if (n > 1000000) {
+      if (n > 1000000)
          throw new Error(`member-wise streaming of ${this.conttype} num ${n} member ${this.name}`);
-         // return [];
-      }
 
-      if ((ver.val === this.member_ver) && (ver.checksum === this.member_checksum)) {
+      if ((ver.val === this.member_ver) && (ver.checksum === this.member_checksum))
          streamer = this.member_streamer;
-      } else {
+      else {
          streamer = buf.fFile.getStreamer(this.conttype, ver);
 
          this.member_streamer = streamer = buf.fFile.getSplittedStreamer(streamer);
@@ -96670,18 +96594,19 @@ function readVectorElement(buf) {
          this.member_checksum = ver.checksum;
       }
 
-      let res = new Array(n), i, k, member;
+      const res = new Array(n);
+      let i, k, member;
 
       for (i = 0; i < n; ++i)
          res[i] = { _typename: this.conttype }; // create objects
-      if (!streamer) {
+      if (!streamer)
          console.error(`Fail to create split streamer for ${this.conttype} need to read ${n} objects version ${ver}`);
-      } else {
+      else {
          for (k = 0; k < streamer.length; ++k) {
             member = streamer[k];
-            if (member.split_func) {
+            if (member.split_func)
                member.split_func(buf, res, n);
-            } else {
+            else {
                for (i = 0; i < n; ++i)
                   member.func(buf, res[i]);
             }
@@ -96690,22 +96615,24 @@ function readVectorElement(buf) {
       return res;
    }
 
-   const n = buf.ntou4();
-   let res = new Array(n), i = 0;
+   const n = buf.ntou4(), res = new Array(n);
+   let i = 0;
 
-   if (n > 200000) { console.error(`vector streaming for ${this.conttype} at ${n}`); return res; }
-
-   if (this.arrkind > 0) {
-      while (i < n) res[i++] = buf.readFastArray(buf.ntou4(), this.arrkind);
-   } else if (this.arrkind === 0) {
-      while (i < n) res[i++] = buf.readTString();
-   } else if (this.isptr) {
-      while (i < n) res[i++] = buf.readObjectAny();
-   } else if (this.submember) {
-      while (i < n) res[i++] = this.submember.readelem(buf);
-   } else {
-      while (i < n) res[i++] = buf.classStreamer({}, this.conttype);
+   if (n > 200000) {
+      console.error(`vector streaming for ${this.conttype} at ${n}`);
+      return res;
    }
+
+   if (this.arrkind > 0)
+      while (i < n) res[i++] = buf.readFastArray(buf.ntou4(), this.arrkind);
+   else if (this.arrkind === 0)
+      while (i < n) res[i++] = buf.readTString();
+   else if (this.isptr)
+      while (i < n) res[i++] = buf.readObjectAny();
+   else if (this.submember)
+      while (i < n) res[i++] = this.submember.readelem(buf);
+   else
+      while (i < n) res[i++] = buf.classStreamer({}, this.conttype);
 
    return res;
 }
@@ -96721,10 +96648,9 @@ function readMapElement(buf) {
       const ver = this.stl_version;
 
       if (this.si) {
-         let si = buf.fFile.findStreamerInfo(this.pairtype, ver.val, ver.checksum);
+         const si = buf.fFile.findStreamerInfo(this.pairtype, ver.val, ver.checksum);
 
          if (this.si !== si) {
-
             streamer = getPairStreamer(si, this.pairtype, buf.fFile);
             if (!streamer || streamer.length !== 2) {
                console.log(`Fail to produce streamer for ${this.pairtype}`);
@@ -96734,25 +96660,25 @@ function readMapElement(buf) {
       }
    }
 
-   const n = buf.ntoi4();
-   let i, res = new Array(n);
+   const n = buf.ntoi4(), res = new Array(n);
    if (this.member_wise && (buf.remain() >= 6)) {
-      if (buf.ntoi2() == kStreamedMemberWise)
+      if (buf.ntoi2() === kStreamedMemberWise)
          buf.shift(4);
       else
          buf.shift(-2); // rewind
    }
 
-   for (i = 0; i < n; ++i) {
+   for (let i = 0; i < n; ++i) {
       res[i] = { _typename: this.pairtype };
       streamer[0].func(buf, res[i]);
       if (!this.member_wise) streamer[1].func(buf, res[i]);
    }
 
    // due-to member-wise streaming second element read after first is completed
-   if (this.member_wise)
-      for (i = 0; i < n; ++i)
+   if (this.member_wise) {
+      for (let i = 0; i < n; ++i)
          streamer[1].func(buf, res[i]);
+   }
 
    return res;
 }
@@ -96786,16 +96712,17 @@ class TLocalFile extends TFile {
    /** @summary read buffer from local file
      * @return {Promise} with read data */
    async readBuffer(place, filename /*, progress_callback */) {
-      let file = this.fLocalFile;
+      const file = this.fLocalFile;
 
       return new Promise((resolve, reject) => {
          if (filename)
             return reject(Error(`Cannot access other local file ${filename}`));
 
-         let reader = new FileReader(), cnt = 0, blobs = [];
+         const reader = new FileReader(), blobs = [];
+         let cnt = 0;
 
          reader.onload = function(evnt) {
-            let res = new DataView(evnt.target.result);
+            const res = new DataView(evnt.target.result);
             if (place.length === 2) return resolve(res);
 
             blobs.push(res);
@@ -96819,6 +96746,7 @@ class TLocalFile extends TFile {
   */
 
 class TNodejsFile extends TFile {
+
    constructor(filename) {
       super(null);
       this.fUseStampPar = false;
@@ -96832,22 +96760,18 @@ class TNodejsFile extends TFile {
      * @return {Promise} after file keys are read */
    async _open() {
       return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(fs => {
-
          this.fs = fs;
 
-         return new Promise((resolve,reject) =>
+         return new Promise((resolve, reject) =>
 
             this.fs.open(this.fFileName, 'r', (status, fd) => {
                if (status) {
                   console.log(status.message);
                   return reject(Error(`Not possible to open ${this.fFileName} inside node.js`));
                }
-               let stats = this.fs.fstatSync(fd);
-
+               const stats = this.fs.fstatSync(fd);
                this.fEND = stats.size;
-
                this.fd = fd;
-
                this.readKeys().then(resolve).catch(reject);
             })
          );
@@ -96864,13 +96788,13 @@ class TNodejsFile extends TFile {
          if (!this.fs || !this.fd)
             return reject(Error(`File is not opened ${this.fFileName}`));
 
-         let cnt = 0, blobs = [];
+         const blobs = [];
+         let cnt = 0;
 
-         let readfunc = (err, bytesRead, buf) => {
-
-            let res = new DataView(buf.buffer, buf.byteOffset, place[cnt + 1]);
+         // eslint-disable-next-line n/handle-callback-err
+         const readfunc = (err, bytesRead, buf) => {
+            const res = new DataView(buf.buffer, buf.byteOffset, place[cnt + 1]);
             if (place.length === 2) return resolve(res);
-
             blobs.push(res);
             cnt += 2;
             if (cnt >= place.length) return resolve(blobs);
@@ -96899,12 +96823,9 @@ class TNodejsFile extends TFile {
 class FileProxy {
 
    async openFile() { return false; }
-
    getFileName() { return ''; }
-
    getFileSize() { return 0; }
-
-   async readBuffer(/*pos, sz*/) { return null; }
+   async readBuffer(/* pos, sz */) { return null; }
 
 } // class FileProxy
 
@@ -96932,7 +96853,7 @@ class TProxyFile extends TFile {
          this.fEND = this.proxy.getFileSize();
          this.fFullURL = this.fURL = this.fFileName = this.proxy.getFileName();
          if (isStr(this.fFileName)) {
-            let p = this.fFileName.lastIndexOf('/');
+            const p = this.fFileName.lastIndexOf('/');
             if ((p > 0) && (p < this.fFileName.length - 4))
                this.fFileName = this.fFileName.slice(p+1);
          }
@@ -96949,10 +96870,10 @@ class TProxyFile extends TFile {
       if (!this.proxy)
          return Promise.reject(Error(`File is not opened ${this.fFileName}`));
 
-      if (place.length == 2)
+      if (place.length === 2)
          return this.proxy.readBuffer(place[0], place[1]);
 
-      let arr = [];
+      const arr = [];
       for (let k = 0; k < place.length; k+=2)
          arr.push(this.proxy.readBuffer(place[k], place[k+1]));
       return Promise.all(arr);
@@ -96976,11 +96897,10 @@ class TProxyFile extends TFile {
   * let f = await openFile('https://root.cern/js/files/hsimple.root');
   * console.log(`Open file ${f.getFileName()}`); */
 function openFile(arg) {
-
    let file;
 
    if (isNodeJs() && isStr(arg)) {
-      if (arg.indexOf('file://') == 0)
+      if (arg.indexOf('file://') === 0)
          file = new TNodejsFile(arg.slice(7));
       else if (arg.indexOf('http') !== 0)
          file = new TNodejsFile(arg);
@@ -97105,13 +97025,12 @@ class TSelector {
 function checkArrayPrototype(arr, check_content) {
    if (!isObject(arr)) return 0;
 
-   let arr_kind = isArrayProto(Object.prototype.toString.apply(arr));
-
-   if (!check_content || (arr_kind != 1)) return arr_kind;
+   const arr_kind = isArrayProto(Object.prototype.toString.apply(arr));
+   if (!check_content || (arr_kind !== 1)) return arr_kind;
 
    let typ, plain = true;
    for (let k = 0; k < arr.length; ++k) {
-      let sub = typeof arr[k];
+      const sub = typeof arr[k];
       if (!typ) typ = sub;
       if (sub !== typ) { plain = false; break; }
       if (isObject(sub) && checkArrayPrototype(arr[k])) { plain = false; break; }
@@ -97148,43 +97067,44 @@ class ArrayIterator {
       let obj, typ, cnt = this.cnt;
 
       if (cnt >= 0) {
-
          if (++this.fastindx < this.fastlimit) {
             this.value = this.fastarr[this.fastindx];
             return true;
          }
 
          while (--cnt >= 0) {
-            if ((this.select[cnt] === undefined) && (++this.indx[cnt] < this.arr[cnt].length)) break;
+            if ((this.select[cnt] === undefined) && (++this.indx[cnt] < this.arr[cnt].length))
+               break;
          }
          if (cnt < 0) return false;
       }
 
       while (true) {
-
          obj = (cnt < 0) ? this.object : (this.arr[cnt])[this.indx[cnt]];
 
          typ = obj ? typeof obj : 'any';
 
          if (typ === 'object') {
             if (obj._typename !== undefined) {
-               if (isRootCollection(obj)) { obj = obj.arr; typ = 'array'; }
-               else typ = 'any';
-            } else if (Number.isInteger(obj.length) && (checkArrayPrototype(obj) > 0)) {
+               if (isRootCollection(obj)) {
+                  obj = obj.arr;
+                  typ = 'array';
+               } else
+                  typ = 'any';
+            } else if (Number.isInteger(obj.length) && (checkArrayPrototype(obj) > 0))
                typ = 'array';
-            } else {
+            else
                typ = 'any';
-            }
          }
 
-         if (this.select[cnt + 1] == '$self$') {
+         if (this.select[cnt + 1] === '$self$') {
             this.value = obj;
             this.fastindx = this.fastlimit = 0;
             this.cnt = cnt + 1;
             return true;
          }
 
-         if ((typ == 'any') && isStr(this.select[cnt + 1])) {
+         if ((typ === 'any') && isStr(this.select[cnt + 1])) {
             // this is extraction of the member from arbitrary class
             this.arr[++cnt] = obj;
             this.indx[cnt] = this.select[cnt]; // use member name as index
@@ -97212,7 +97132,6 @@ class ArrayIterator {
                   }
             }
          } else {
-
             if (cnt < 0) return false;
 
             this.value = obj;
@@ -97220,9 +97139,8 @@ class ArrayIterator {
                this.fastarr = this.arr[cnt];
                this.fastindx = this.indx[cnt];
                this.fastlimit = this.fastarr.length;
-            } else {
+            } else
                this.fastindx = this.fastlimit = 0; // no any iteration on that level
-            }
 
             this.cnt = cnt;
             return true;
@@ -97248,7 +97166,6 @@ class ArrayIterator {
 /** @summary return class name of the object, stored in the branch
   * @private */
 function getBranchObjectClass(branch, tree, with_clones = false, with_leafs = false) {
-
    if (!branch || (branch._typename !== clTBranchElement)) return '';
 
    if ((branch.fType === kLeafNode) && (branch.fID === -2) && (branch.fStreamerType === -1)) {
@@ -97259,8 +97176,7 @@ function getBranchObjectClass(branch, tree, with_clones = false, with_leafs = fa
    if (with_clones && branch.fClonesName && ((branch.fType === kClonesNode) || (branch.fType === kSTLNode)))
       return branch.fClonesName;
 
-   let s_elem = findBrachStreamerElement(branch, tree.$file);
-
+   const s_elem = findBrachStreamerElement(branch, tree.$file);
    if ((branch.fType === kBaseClassNode) && s_elem && (s_elem.fTypeName === 'BASE'))
       return s_elem.fName;
 
@@ -97287,11 +97203,10 @@ function getTreeBranch(tree, id) {
    if (!Number.isInteger(id)) return;
    let res, seq = 0;
    function scan(obj) {
-      if (obj?.fBranches)
-         obj.fBranches.arr.forEach(br => {
-            if (seq++ === id) res = br;
-            if (!res) scan(br);
-         });
+      obj?.fBranches?.arr.forEach(br => {
+         if (seq++ === id) res = br;
+         if (!res) scan(br);
+      });
    }
 
    scan(tree);
@@ -97305,13 +97220,12 @@ function getTreeBranch(tree, id) {
   * @return {Object} with 'branch' and 'rest' members
   * @private */
 function findBranchComplex(tree, name, lst = undefined, only_search = false) {
-
    let top_search = false, search = name, res = null;
 
    if (!lst) {
       top_search = true;
       lst = tree.fBranches;
-      let pos = search.indexOf('[');
+      const pos = search.indexOf('[');
       if (pos > 0) search = search.slice(0, pos);
    }
 
@@ -97319,12 +97233,12 @@ function findBranchComplex(tree, name, lst = undefined, only_search = false) {
 
    for (let n = 0; n < lst.arr.length; ++n) {
       let brname = lst.arr[n].fName;
-      if (brname[brname.length - 1] == ']')
+      if (brname[brname.length - 1] === ']')
          brname = brname.slice(0, brname.indexOf('['));
 
       // special case when branch name includes STL map name
       if ((search.indexOf(brname) !== 0) && (brname.indexOf('<') > 0)) {
-         let p1 = brname.indexOf('<'), p2 = brname.lastIndexOf('>');
+         const p1 = brname.indexOf('<'), p2 = brname.lastIndexOf('>');
          brname = brname.slice(0, p1) + brname.slice(p2 + 1);
       }
 
@@ -97347,10 +97261,10 @@ function findBranchComplex(tree, name, lst = undefined, only_search = false) {
       break;
    }
 
-   if (top_search && !only_search && !res && (search.indexOf('br_') == 0)) {
+   if (top_search && !only_search && !res && (search.indexOf('br_') === 0)) {
       let p = 3;
       while ((p < search.length) && (search[p] >= '0') && (search[p] <= '9')) ++p;
-      let br = (p > 3) ? getTreeBranch(tree, parseInt(search.slice(3,p))) : null;
+      const br = (p > 3) ? getTreeBranch(tree, parseInt(search.slice(3, p))) : null;
       if (br) res = { branch: br, rest: search.slice(p) };
    }
 
@@ -97367,10 +97281,26 @@ function findBranchComplex(tree, name, lst = undefined, only_search = false) {
   * @return {Object} found branch
   * @private */
 function findBranch(tree, name) {
-   let res = findBranchComplex(tree, name, tree.fBranches, true);
+   const res = findBranchComplex(tree, name, tree.fBranches, true);
    return (!res || res.rest) ? null : res.branch;
 }
 
+
+/** @summary Returns number of branches in the TTree
+  * @desc Checks also sub-branches in the branches
+  * @return {number} number of branches
+  * @private
+function getNumBranches(tree) {
+   function count(obj) {
+      if (!obj?.fBranches) return 0;
+      let nchld = 0;
+      obj.fBranches.arr.forEach(sub => { nchld += count(sub); });
+      return obj.fBranches.arr.length + nchld;
+   }
+
+   return count(tree);
+}
+*/
 
 /**
  * @summary object with single variable in TTree::Draw expression
@@ -97397,7 +97327,6 @@ class TDrawVariable {
    /** @summary Parse variable
      * @desc when only_branch specified, its placed in the front of the expression */
    parse(tree, selector, code, only_branch, branch_mode) {
-
       const is_start_symbol = symb => {
          if ((symb >= 'A') && (symb <= 'Z')) return true;
          if ((symb >= 'a') && (symb <= 'z')) return true;
@@ -97414,7 +97343,6 @@ class TDrawVariable {
 
       let pos = 0, pos2 = 0, br = null;
       while ((pos < code.length) || only_branch) {
-
          let arriter = [];
 
          if (only_branch) {
@@ -97424,7 +97352,7 @@ class TDrawVariable {
             // first try to find branch
             pos2 = pos;
             while ((pos2 < code.length) && (is_next_symbol(code[pos2]) || code[pos2] === '.')) pos2++;
-            if (code[pos2] == '$') {
+            if (code[pos2] === '$') {
                let repl = '';
                switch (code.slice(pos, pos2)) {
                   case 'LocalEntry':
@@ -97458,8 +97386,7 @@ class TDrawVariable {
 
          // now extract all levels of iterators
          while (pos2 < code.length) {
-
-            if ((code[pos2] === '@') && (code.slice(pos2, pos2 + 5) == '@size') && (arriter.length == 0)) {
+            if ((code[pos2] === '@') && (code.slice(pos2, pos2 + 5) === '@size') && (arriter.length === 0)) {
                pos2 += 5;
                branch_mode = true;
                break;
@@ -97467,7 +97394,7 @@ class TDrawVariable {
 
             if (code[pos2] === '.') {
                // this is object member
-               let prev = ++pos2;
+               const prev = ++pos2;
 
                if ((code[prev] === '@') && (code.slice(prev, prev + 5) === '@size')) {
                   arriter.push('$size$');
@@ -97483,16 +97410,17 @@ class TDrawVariable {
                while ((pos2 < code.length) && is_next_symbol(code[pos2])) pos2++;
 
                // this is looks like function call - do not need to extract member with
-               if (code[pos2] == '(') { pos2 = prev - 1; break; }
+               if (code[pos2] === '(') { pos2 = prev - 1; break; }
 
                // this is selection of member, but probably we need to activate iterator for ROOT collection
                if ((arriter.length === 0) && br) {
                   // TODO: if selected member is simple data type - no need to make other checks - just break here
-                  if ((br.fType === kClonesNode) || (br.fType === kSTLNode)) {
+                  if ((br.fType === kClonesNode) || (br.fType === kSTLNode))
                      arriter.push(undefined);
-                  } else {
-                     let objclass = getBranchObjectClass(br, tree, false, true);
-                     if (objclass && isRootCollection(null, objclass)) arriter.push(undefined);
+                  else {
+                     const objclass = getBranchObjectClass(br, tree, false, true);
+                     if (objclass && isRootCollection(null, objclass))
+                        arriter.push(undefined);
                   }
                }
                arriter.push(code.slice(prev, pos2));
@@ -97502,14 +97430,15 @@ class TDrawVariable {
             if (code[pos2] !== '[') break;
 
             // simple []
-            if (code[pos2 + 1] == ']') { arriter.push(undefined); pos2 += 2; continue; }
+            if (code[pos2 + 1] === ']') { arriter.push(undefined); pos2 += 2; continue; }
 
-            let prev = pos2++, cnt = 0;
-            while ((pos2 < code.length) && ((code[pos2] != ']') || (cnt > 0))) {
-               if (code[pos2] == '[') cnt++; else if (code[pos2] == ']') cnt--;
+            const prev = pos2++;
+            let cnt = 0;
+            while ((pos2 < code.length) && ((code[pos2] !== ']') || (cnt > 0))) {
+               if (code[pos2] === '[') cnt++; else if (code[pos2] === ']') cnt--;
                pos2++;
             }
-            let sub = code.slice(prev + 1, pos2);
+            const sub = code.slice(prev + 1, pos2);
             switch (sub) {
                case '':
                case '$all$': arriter.push(undefined); break;
@@ -97517,11 +97446,11 @@ class TDrawVariable {
                case '$size$': arriter.push('$size$'); break;
                case '$first$': arriter.push(0); break;
                default:
-                  if (Number.isInteger(parseInt(sub))) {
+                  if (Number.isInteger(parseInt(sub)))
                      arriter.push(parseInt(sub));
-                  } else {
+                  else {
                      // try to compile code as draw variable
-                     let subvar = new TDrawVariable(this.globals);
+                     const subvar = new TDrawVariable(this.globals);
                      if (!subvar.parse(tree, selector, sub)) return false;
                      arriter.push(subvar);
                   }
@@ -97529,8 +97458,10 @@ class TDrawVariable {
             pos2++;
          }
 
-         if (arriter.length === 0) arriter = undefined; else
-            if ((arriter.length === 1) && (arriter[0] === undefined)) arriter = true;
+         if (arriter.length === 0)
+            arriter = undefined;
+         else if ((arriter.length === 1) && (arriter[0] === undefined))
+            arriter = true;
 
          let indx = selector.indexOfBranch(br);
          if (indx < 0) indx = selector.addBranch(br, undefined, branch_mode);
@@ -97547,10 +97478,8 @@ class TDrawVariable {
             return true;
          }
 
-         let replace = 'arg.var' + (this.branches.length - 1);
-
+         const replace = 'arg.var' + (this.branches.length - 1);
          code = code.slice(0, pos) + replace + code.slice(pos2);
-
          pos = pos + replace.length;
       }
 
@@ -97571,19 +97500,19 @@ class TDrawVariable {
    /** @summary Produce variable
      * @desc after reading tree braches into the object, calculate variable value */
    produce(obj) {
-
       this.length = 1;
       this.isarray = false;
 
       if (this.is_dummy()) {
-         this.value = 1.; // used as dummy weight variable
+         this.value = 1; // used as dummy weight variable
          this.kind = 'number';
          return;
       }
 
-      let arg = { $globals: this.globals, $math: jsroot_math }, usearrlen = -1, arrs = [];
+      const arg = { $globals: this.globals, $math: jsroot_math }, arrs = [];
+      let usearrlen = -1;
       for (let n = 0; n < this.branches.length; ++n) {
-         let name = 'var' + n;
+         const name = `var${n}`;
          arg[name] = obj[this.branches[n]];
 
          // try to check if branch is array and need to be iterated
@@ -97598,7 +97527,7 @@ class TDrawVariable {
             // plain array, can be used as is
             arrs[n] = arg[name];
          } else {
-            let iter = new ArrayIterator(arg[name], this.brarray[n], obj);
+            const iter = new ArrayIterator(arg[name], this.brarray[n], obj);
             arrs[n] = [];
             while (iter.next()) arrs[n].push(iter.value);
          }
@@ -97611,7 +97540,7 @@ class TDrawVariable {
          return;
       }
 
-      if (usearrlen == 0) {
+      if (usearrlen === 0) {
          // empty array - no any histogram should be filled
          this.length = 0;
          this.value = 0;
@@ -97621,14 +97550,15 @@ class TDrawVariable {
       this.length = usearrlen;
       this.isarray = true;
 
-      if (this.direct_branch) {
+      if (this.direct_branch)
          this.value = arrs[0]; // just use array
-      } else {
+      else {
          this.value = new Array(usearrlen);
 
          for (let k = 0; k < usearrlen; ++k) {
             for (let n = 0; n < this.branches.length; ++n) {
-               if (arrs[n]) arg['var' + n] = arrs[n][k];
+               if (arrs[n])
+                  arg[`var${n}`] = arrs[n][k];
             }
             this.value[k] = this.func(arg);
          }
@@ -97683,17 +97613,16 @@ class TDrawSelector extends TSelector {
 
    /** @summary Parse parameters */
    parseParameters(tree, args, expr) {
-
       if (!expr || !isStr(expr)) return '';
 
       // parse parameters which defined at the end as expression;par1name:par1value;par2name:par2value
       let pos = expr.lastIndexOf(';');
       while (pos >= 0) {
-         let parname = expr.slice(pos + 1), parvalue = undefined;
+         let parname = expr.slice(pos + 1), parvalue;
          expr = expr.slice(0, pos);
          pos = expr.lastIndexOf(';');
 
-         let separ = parname.indexOf(':');
+         const separ = parname.indexOf(':');
          if (separ > 0) { parvalue = parname.slice(separ + 1); parname = parname.slice(0, separ); }
 
          let intvalue = parseInt(parvalue);
@@ -97762,14 +97691,14 @@ class TDrawSelector extends TSelector {
             this.hist_name = harg.slice(0, pos);
             harg = harg.slice(pos);
          }
-         if (harg === 'dump') {
+         if (harg === 'dump')
             args.dump = true;
-         } else if (harg.indexOf('Graph') == 0) {
+         else if (harg.indexOf('Graph') === 0)
             args.graph = true;
-         } else if (pos < 0) {
+         else if (pos < 0) {
             this.want_hist = true;
             this.hist_name = harg;
-         } else if ((harg[0] == '(') && (harg[harg.length - 1] == ')')) {
+         } else if ((harg[0] === '(') && (harg[harg.length - 1] === ')')) {
             this.want_hist = true;
             harg = harg.slice(1, harg.length - 1).split(',');
             let isok = true;
@@ -97792,7 +97721,6 @@ class TDrawSelector extends TSelector {
 
    /** @summary Parse draw expression */
    parseDrawExpression(tree, args) {
-
       // parse complete expression
       let expr = this.parseParameters(tree, args, args.expr), cut = '';
 
@@ -97800,9 +97728,9 @@ class TDrawSelector extends TSelector {
       this.hist_title = `drawing '${expr}' from ${tree.fName}`;
 
       let pos = 0;
-      if (args.cut) {
+      if (args.cut)
          cut = args.cut;
-      } else {
+      else {
          pos = expr.replace(/TMath::/g, 'TMath__').lastIndexOf('::'); // avoid confusion due-to :: in the namespace
          if (pos > 0) {
             cut = expr.slice(pos + 2).trim();
@@ -97814,7 +97742,8 @@ class TDrawSelector extends TSelector {
       args.parse_cut = cut;
 
       // let names = expr.split(':'); // to allow usage of ? operator, we need to handle : as well
-      let names = [], nbr1 = 0, nbr2 = 0, prev = 0;
+      const names = [];
+      let nbr1 = 0, nbr2 = 0, prev = 0;
       for (pos = 0; pos < expr.length; ++pos) {
          switch (expr[pos]) {
             case '(': nbr1++; break;
@@ -97822,7 +97751,7 @@ class TDrawSelector extends TSelector {
             case '[': nbr2++; break;
             case ']': nbr2--; break;
             case ':':
-               if (expr[pos + 1] == ':') { pos++; continue; }
+               if (expr[pos + 1] === ':') { pos++; continue; }
                if (!nbr1 && !nbr2 && (pos > prev)) names.push(expr.slice(prev, pos));
                prev = pos + 1;
                break;
@@ -97856,7 +97785,8 @@ class TDrawSelector extends TSelector {
       this.monitoring = args.monitoring;
 
       // force TPolyMarker3D drawing for 3D case
-      if ((this.ndim == 3) && !this.want_hist && !args.dump) args.graph = true;
+      if ((this.ndim === 3) && !this.want_hist && !args.dump)
+         args.graph = true;
 
       this.graph = args.graph;
 
@@ -97872,7 +97802,7 @@ class TDrawSelector extends TSelector {
    drawOnlyBranch(tree, branch, expr, args) {
       this.ndim = 1;
 
-      if (expr.indexOf('dump') == 0) expr = ';' + expr;
+      if (expr.indexOf('dump') === 0) expr = ';' + expr;
 
       expr = this.parseParameters(tree, args, expr);
 
@@ -97884,7 +97814,6 @@ class TDrawSelector extends TSelector {
       }
 
       if (this.dump_values) {
-
          this.hist = []; // array of dump objects
 
          this.leaf = args.leaf;
@@ -97920,14 +97849,14 @@ class TDrawSelector extends TSelector {
    }
 
    /** @summary Show progress */
-   ShowProgress(/*value*/) {}
+   ShowProgress(/* value */) {}
 
    /** @summary Get bins for bits histogram */
    getBitsBins(nbits, res) {
       res.nbins = res.max = nbits;
       res.fLabels = create$1(clTHashList);
       for (let k = 0; k < nbits; ++k) {
-         let s = create$1(clTObjString);
+         const s = create$1(clTObjString);
          s.fString = k.toString();
          s.fUniqueID = k + 1;
          res.fLabels.Add(s);
@@ -97937,12 +97866,10 @@ class TDrawSelector extends TSelector {
 
    /** @summary Get min.max bins */
    getMinMaxBins(axisid, nbins) {
-
-      let res = { min: 0, max: 0, nbins: nbins, k: 1., fLabels: null, title: '' };
-
+      const res = { min: 0, max: 0, nbins, k: 1, fLabels: null, title: '' };
       if (axisid >= this.ndim) return res;
 
-      let arr = this.vars[axisid].buf;
+      const arr = this.vars[axisid].buf;
 
       res.title = this.vars[axisid].code || '';
 
@@ -97961,7 +97888,7 @@ class TDrawSelector extends TSelector {
                this.fill1DHistogram = this.fillTBitsHistogram;
                if (maxbits % 8) maxbits = (maxbits & 0xfff0) + 8;
 
-               if ((this.hist_name === 'bits') && (this.hist_args.length == 1) && this.hist_args[0])
+               if ((this.hist_name === 'bits') && (this.hist_args.length === 1) && this.hist_args[0])
                   maxbits = this.hist_args[0];
 
                return this.getBitsBins(maxbits, res);
@@ -97972,16 +97899,17 @@ class TDrawSelector extends TSelector {
       if (this.vars[axisid].kind === 'string') {
          res.lbls = []; // all labels
 
-         for (let k = 0; k < arr.length; ++k)
+         for (let k = 0; k < arr.length; ++k) {
             if (res.lbls.indexOf(arr[k]) < 0)
                res.lbls.push(arr[k]);
+         }
 
          res.lbls.sort();
          res.max = res.nbins = res.lbls.length;
 
          res.fLabels = create$1(clTHashList);
          for (let k = 0; k < res.lbls.length; ++k) {
-            let s = create$1(clTObjString);
+            const s = create$1(clTObjString);
             s.fString = res.lbls[k];
             s.fUniqueID = k + 1;
             if (s.fString === '') s.fString = '<empty>';
@@ -97995,10 +97923,9 @@ class TDrawSelector extends TSelector {
          res.min = this.hist_args[axisid * 3 + 1];
          res.max = this.hist_args[axisid * 3 + 2];
       } else {
-
          let is_any = false;
          for (let i = 1; i < arr.length; ++i) {
-            let v = arr[i];
+            const v = arr[i];
             if (!Number.isFinite(v)) continue;
             if (is_any) {
                res.min = Math.min(res.min, v);
@@ -98014,9 +97941,10 @@ class TDrawSelector extends TSelector {
             nbins = res.nbins = this.hist_nbins;
 
          res.isinteger = (Math.round(res.min) === res.min) && (Math.round(res.max) === res.max);
-         if (res.isinteger)
+         if (res.isinteger) {
             for (let k = 0; k < arr.length; ++k)
                if (arr[k] !== Math.round(arr[k])) { res.isinteger = false; break; }
+         }
 
          if (res.isinteger) {
             res.min = Math.round(res.min);
@@ -98026,7 +97954,8 @@ class TDrawSelector extends TSelector {
                res.max += 2;
                res.nbins = Math.round(res.max - res.min);
             } else {
-               let range = (res.max - res.min + 2), step = Math.floor(range / nbins);
+               const range = (res.max - res.min + 2);
+               let step = Math.floor(range / nbins);
                while (step * nbins < range) step++;
                res.max = res.min + nbins * step;
             }
@@ -98034,9 +97963,8 @@ class TDrawSelector extends TSelector {
             res.max = res.min;
             if (Math.abs(res.min) < 100) { res.min -= 1; res.max += 1; } else
                if (res.min > 0) { res.min *= 0.9; res.max *= 1.1; } else { res.min *= 1.1; res.max *= 0.9; }
-         } else {
+         } else
             res.max += (res.max - res.min) / res.nbins;
-         }
       }
 
       res.k = res.nbins / (res.max - res.min);
@@ -98053,10 +97981,10 @@ class TDrawSelector extends TSelector {
    createHistogram(nbins, set_hist = false) {
       if (!nbins) nbins = 20;
 
-      let x = this.getMinMaxBins(0, nbins),
-          y = this.getMinMaxBins(1, nbins),
-          z = this.getMinMaxBins(2, nbins),
-          hist = null;
+      const x = this.getMinMaxBins(0, nbins),
+            y = this.getMinMaxBins(1, nbins),
+            z = this.getMinMaxBins(2, nbins);
+      let hist = null;
 
       switch (this.ndim) {
          case 1: hist = createHistogram(clTH1 + this.htype, x.nbins); break;
@@ -98082,16 +98010,15 @@ class TDrawSelector extends TSelector {
       hist.fName = this.hist_name;
       hist.fTitle = this.hist_title;
       hist.fOption = this.histo_drawopt;
-      hist.$custom_stat = (this.hist_name == '$htemp') ? 111110 : 111111;
+      hist.$custom_stat = (this.hist_name === '$htemp') ? 111110 : 111111;
 
       if (set_hist) {
          this.hist = hist;
          this.x = x;
          this.y = y;
          this.z = z;
-      } else {
+      } else
          hist.fBits = hist.fBits | kNoStats;
-      }
 
       return hist;
    }
@@ -98107,23 +98034,24 @@ class TDrawSelector extends TSelector {
          // reassign fill method
          this.fill1DHistogram = this.fill2DHistogram = this.fill3DHistogram = this.dumpValues;
       } else if (this.graph) {
-         let N = this.vars[0].buf.length, res = null;
+         const N = this.vars[0].buf.length;
+         let res = null;
 
-         if (this.ndim == 1) {
+         if (this.ndim === 1) {
             // A 1-dimensional graph will just have the x axis as an index
             res = createTGraph(N, Array.from(Array(N).keys()), this.vars[0].buf);
             res.fName = 'Graph';
             res.fTitle = this.hist_title;
-         } else if (this.ndim == 2) {
+         } else if (this.ndim === 2) {
             res = createTGraph(N, this.vars[0].buf, this.vars[1].buf);
             res.fName = 'Graph';
             res.fTitle = this.hist_title;
             delete this.vars[1].buf;
-         } else if (this.ndim == 3) {
+         } else if (this.ndim === 3) {
             res = create$1(clTPolyMarker3D);
             res.fN = N;
             res.fLastPoint = N - 1;
-            let arr = new Array(N*3);
+            const arr = new Array(N*3);
             for (let k = 0; k< N; ++k) {
                arr[k*3] = this.vars[0].buf[k];
                arr[k*3+1] = this.vars[1].buf[k];
@@ -98137,32 +98065,31 @@ class TDrawSelector extends TSelector {
          }
 
          this.hist = res;
-
       } else {
-         let nbins = [ 200, 50, 20 ];
+         const nbins = [200, 50, 20];
          this.createHistogram(nbins[this.ndim], true);
       }
 
-      let var0 = this.vars[0].buf, cut = this.cut.buf, len = var0.length;
+      const var0 = this.vars[0].buf, cut = this.cut.buf, len = var0.length;
 
       if (!this.graph) {
          switch (this.ndim) {
             case 1: {
                for (let n = 0; n < len; ++n)
-                  this.fill1DHistogram(var0[n], cut ? cut[n] : 1.);
+                  this.fill1DHistogram(var0[n], cut ? cut[n] : 1);
                break;
             }
             case 2: {
-               let var1 = this.vars[1].buf;
+               const var1 = this.vars[1].buf;
                for (let n = 0; n < len; ++n)
-                  this.fill2DHistogram(var0[n], var1[n], cut ? cut[n] : 1.);
+                  this.fill2DHistogram(var0[n], var1[n], cut ? cut[n] : 1);
                delete this.vars[1].buf;
                break;
             }
             case 3: {
-               let var1 = this.vars[1].buf, var2 = this.vars[2].buf;
+               const var1 = this.vars[1].buf, var2 = this.vars[2].buf;
                for (let n = 0; n < len; ++n)
-                  this.fill3DHistogram(var0[n], var1[n], var2[n], cut ? cut[n] : 1.);
+                  this.fill3DHistogram(var0[n], var1[n], var2[n], cut ? cut[n] : 1);
                delete this.vars[1].buf;
                delete this.vars[2].buf;
                break;
@@ -98205,7 +98132,7 @@ class TDrawSelector extends TSelector {
 
    /** @summary Fill 1D histogram */
    fill1DHistogram(xvalue, weight) {
-      let bin = this.x.GetBin(xvalue);
+      const bin = this.x.GetBin(xvalue);
       this.hist.fArray[bin] += weight;
 
       if (!this.x.lbls && Number.isFinite(xvalue)) {
@@ -98217,8 +98144,8 @@ class TDrawSelector extends TSelector {
 
    /** @summary Fill 2D histogram */
    fill2DHistogram(xvalue, yvalue, weight) {
-      let xbin = this.x.GetBin(xvalue),
-          ybin = this.y.GetBin(yvalue);
+      const xbin = this.x.GetBin(xvalue),
+            ybin = this.y.GetBin(yvalue);
 
       this.hist.fArray[xbin + (this.x.nbins + 2) * ybin] += weight;
       if (!this.x.lbls && !this.y.lbls && Number.isFinite(xvalue) && Number.isFinite(yvalue)) {
@@ -98233,9 +98160,9 @@ class TDrawSelector extends TSelector {
 
    /** @summary Fill 3D histogram */
    fill3DHistogram(xvalue, yvalue, zvalue, weight) {
-      let xbin = this.x.GetBin(xvalue),
-          ybin = this.y.GetBin(yvalue),
-          zbin = this.z.GetBin(zvalue);
+      const xbin = this.x.GetBin(xvalue),
+            ybin = this.y.GetBin(yvalue),
+            zbin = this.z.GetBin(zvalue);
 
       this.hist.fArray[xbin + (this.x.nbins + 2) * (ybin + (this.y.nbins + 2) * zbin)] += weight;
       if (!this.x.lbls && !this.y.lbls && !this.z.lbls && Number.isFinite(xvalue) && Number.isFinite(yvalue) && Number.isFinite(zvalue)) {
@@ -98273,13 +98200,12 @@ class TDrawSelector extends TSelector {
 
     /** @summary function used when all branches can be read as array
       * @desc most typical usage - histogramming of single branch */
-   ProcessArraysFunc(/*entry*/) {
-
+   ProcessArraysFunc(/* entry */) {
       if (this.arr_limit || this.graph) {
-         let var0 = this.vars[0],
-             var1 = this.vars[1],
-             var2 = this.vars[2],
-             len = this.tgtarr.br0.length;
+         const var0 = this.vars[0],
+               var1 = this.vars[1],
+               var2 = this.vars[2],
+               len = this.tgtarr.br0.length;
          if ((var0.buf.length === 0) && (len >= this.arr_limit) && !this.graph) {
             // special use case - first array large enough to create histogram directly base on it
             var0.buf = this.tgtarr.br0;
@@ -98301,23 +98227,23 @@ class TDrawSelector extends TSelector {
             this.arr_limit = 0;
          }
       } else {
-         let br0 = this.tgtarr.br0, len = br0.length;
+         const br0 = this.tgtarr.br0, len = br0.length;
          switch (this.ndim) {
             case 1: {
                for (let k = 0; k < len; ++k)
-                  this.fill1DHistogram(br0[k], 1.);
+                  this.fill1DHistogram(br0[k], 1);
                break;
             }
             case 2: {
-               let br1 = this.tgtarr.br1;
+               const br1 = this.tgtarr.br1;
                for (let k = 0; k < len; ++k)
-                  this.fill2DHistogram(br0[k], br1[k], 1.);
+                  this.fill2DHistogram(br0[k], br1[k], 1);
                break;
             }
             case 3: {
-               let br1 = this.tgtarr.br1, br2 = this.tgtarr.br2;
+               const br1 = this.tgtarr.br1, br2 = this.tgtarr.br2;
                for (let k = 0; k < len; ++k)
-                  this.fill3DHistogram(br0[k], br1[k], br2[k], 1.);
+                  this.fill3DHistogram(br0[k], br1[k], br2[k], 1);
                break;
             }
          }
@@ -98326,23 +98252,19 @@ class TDrawSelector extends TSelector {
 
    /** @summary simple dump of the branch - no need to analyze something */
    ProcessDump(/* entry */) {
-
-      let res = this.leaf ? this.tgtobj.br0[this.leaf] : this.tgtobj.br0;
+      const res = this.leaf ? this.tgtobj.br0[this.leaf] : this.tgtobj.br0;
 
       if (res && this.copy_fields) {
-         if (checkArrayPrototype(res) === 0) {
+         if (checkArrayPrototype(res) === 0)
             this.hist.push(Object.assign({}, res));
-         } else {
+         else
             this.hist.push(res);
-         }
-      } else {
+      } else
          this.hist.push(res);
-      }
    }
 
    /** @summary Normal TSelector Process handler */
    Process(entry) {
-
       this.globals.entry = entry; // can be used in any expression
 
       this.cut.produce(this.tgtobj);
@@ -98351,7 +98273,7 @@ class TDrawSelector extends TSelector {
       for (let n = 0; n < this.ndim; ++n)
          this.vars[n].produce(this.tgtobj);
 
-      let var0 = this.vars[0], var1 = this.vars[1], var2 = this.vars[2], cut = this.cut;
+      const var0 = this.vars[0], var1 = this.vars[1], var2 = this.vars[2], cut = this.cut;
 
       if (this.graph || this.arr_limit) {
          switch (this.ndim) {
@@ -98362,22 +98284,25 @@ class TDrawSelector extends TSelector {
                }
                break;
             case 2:
-               for (let n0 = 0; n0 < var0.length; ++n0)
+               for (let n0 = 0; n0 < var0.length; ++n0) {
                   for (let n1 = 0; n1 < var1.length; ++n1) {
                      var0.buf.push(var0.get(n0));
                      var1.buf.push(var1.get(n1));
                      cut.buf?.push(cut.value);
                   }
+               }
                break;
             case 3:
-               for (let n0 = 0; n0 < var0.length; ++n0)
-                  for (let n1 = 0; n1 < var1.length; ++n1)
+               for (let n0 = 0; n0 < var0.length; ++n0) {
+                  for (let n1 = 0; n1 < var1.length; ++n1) {
                      for (let n2 = 0; n2 < var2.length; ++n2) {
                         var0.buf.push(var0.get(n0));
                         var1.buf.push(var1.get(n1));
                         var2.buf.push(var2.get(n2));
                         cut.buf?.push(cut.value);
                      }
+                  }
+               }
                break;
          }
          if (!this.graph && (var0.buf.length >= this.arr_limit)) {
@@ -98391,21 +98316,24 @@ class TDrawSelector extends TSelector {
                   this.fill1DHistogram(var0.get(n0), cut.value);
                break;
             case 2:
-               for (let n0 = 0; n0 < var0.length; ++n0)
+               for (let n0 = 0; n0 < var0.length; ++n0) {
                   for (let n1 = 0; n1 < var1.length; ++n1)
                      this.fill2DHistogram(var0.get(n0), var1.get(n1), cut.value);
+               }
                break;
             case 3:
-               for (let n0 = 0; n0 < var0.length; ++n0)
-                  for (let n1 = 0; n1 < var1.length; ++n1)
+               for (let n0 = 0; n0 < var0.length; ++n0) {
+                  for (let n1 = 0; n1 < var1.length; ++n1) {
                      for (let n2 = 0; n2 < var2.length; ++n2)
                         this.fill3DHistogram(var0.get(n0), var1.get(n1), var2.get(n2), cut.value);
+                  }
+               }
                break;
          }
       }
 
       if (this.monitoring && this.hist && !this.dump_values) {
-         let now = new Date().getTime();
+         const now = new Date().getTime();
          if (now - this.lasttm > this.monitoring) {
             this.lasttm = now;
             if (this.progress_callback)
@@ -98434,8 +98362,8 @@ class TDrawSelector extends TSelector {
 function findBrachStreamerElement(branch, file) {
    if (!branch || !file || (branch._typename !== clTBranchElement) || (branch.fID < 0) || (branch.fStreamerType < 0)) return null;
 
-   let s_i = file.findStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum),
-      arr = (s_i && s_i.fElements) ? s_i.fElements.arr : null;
+   const s_i = file.findStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum),
+         arr = (s_i && s_i.fElements) ? s_i.fElements.arr : null;
    if (!arr) return null;
 
    let match_name = branch.fName,
@@ -98450,8 +98378,8 @@ function findBrachStreamerElement(branch, file) {
       if (elem.fType === branch.fStreamerType) return true;
       if ((elem.fType === kBool) && (branch.fStreamerType === kUChar)) return true;
       if (((branch.fStreamerType === kSTL) || (branch.fStreamerType === kSTL + kOffsetL) ||
-         (branch.fStreamerType === kSTLp) || (branch.fStreamerType === kSTLp + kOffsetL))
-         && (elem.fType === kStreamer)) return true;
+           (branch.fStreamerType === kSTLp) || (branch.fStreamerType === kSTLp + kOffsetL)) &&
+          (elem.fType === kStreamer)) return true;
       console.warn(`Should match element ${elem.fType} with branch ${branch.fStreamerType}`);
       return false;
    }
@@ -98460,9 +98388,10 @@ function findBrachStreamerElement(branch, file) {
    if (match_elem(arr[branch.fID]))
       return arr[branch.fID];
 
-   for (let k = 0; k < arr.length; ++k)
+   for (let k = 0; k < arr.length; ++k) {
       if ((k !== branch.fID) && match_elem(arr[k]))
          return arr[k];
+   }
 
    console.error(`Did not found/match element for branch ${branch.fName} class ${branch.fClassName}`);
 
@@ -98472,14 +98401,14 @@ function findBrachStreamerElement(branch, file) {
 /** @summary return type name of given member in the class
   * @private */
 function defineMemberTypeName(file, parent_class, member_name) {
-   let s_i = file.findStreamerInfo(parent_class),
-       arr = s_i?.fElements?.arr,
-       elem = null;
+   const s_i = file.findStreamerInfo(parent_class),
+         arr = s_i?.fElements?.arr;
    if (!arr) return '';
 
+   let elem = null;
    for (let k = 0; k < arr.length; ++k) {
       if (arr[k].fTypeName === 'BASE') {
-         let res = defineMemberTypeName(file, arr[k].fName, member_name);
+         const res = defineMemberTypeName(file, arr[k].fName, member_name);
          if (res) return res;
       } else
          if (arr[k].fName === member_name) { elem = arr[k]; break; }
@@ -98497,13 +98426,12 @@ function defineMemberTypeName(file, parent_class, member_name) {
 /** @summary create fast list to assign all methods to the object
   * @private */
 function makeMethodsList(typename) {
-   let methods = getMethods(typename);
-
-   let res = {
+   const methods = getMethods(typename),
+   res = {
       names: [],
       values: [],
       Create() {
-         let obj = {};
+         const obj = {};
          for (let n = 0; n < this.names.length; ++n)
             obj[this.names[n]] = this.values[n];
          return obj;
@@ -98512,7 +98440,7 @@ function makeMethodsList(typename) {
 
    res.names.push('_typename');
    res.values.push(typename);
-   for (let key in methods) {
+   for (const key in methods) {
       res.names.push(key);
       res.values.push(methods[key]);
    }
@@ -98523,9 +98451,10 @@ function makeMethodsList(typename) {
   * @private */
 function detectBranchMemberClass(brlst, prefix, start) {
    let clname = '';
-   for (let kk = (start || 0); kk < brlst.arr.length; ++kk)
+   for (let kk = (start || 0); kk < brlst.arr.length; ++kk) {
       if ((brlst.arr[kk].fName.indexOf(prefix) === 0) && brlst.arr[kk].fClassName)
          clname = brlst.arr[kk].fClassName;
+   }
    return clname;
 }
 
@@ -98549,15 +98478,13 @@ async function treeProcess(tree, selector, args) {
    const handle = {
       tree, // keep tree reference
       file: tree.$file, // keep file reference
-      selector: selector, // reference on selector
+      selector, // reference on selector
       arr: [], // list of branches
       curr: -1,  // current entry ID
       current_entry: -1, // current processed entry
       simple_read: true, // all baskets in all used branches are in sync,
       process_arrays: true // one can process all branches as arrays
-   };
-
-   const createLeafElem = (leaf, name) => {
+   }, createLeafElem = (leaf, name) => {
       // function creates TStreamerElement which corresponds to the elementary leaf
       let datakind = 0;
       switch (leaf._typename) {
@@ -98572,11 +98499,11 @@ async function treeProcess(tree, selector, args) {
          default: return null;
       }
       return createStreamerElement(name || leaf.fName, datakind);
-
    }, findInHandle = branch => {
-      for (let k = 0; k < handle.arr.length; ++k)
+      for (let k = 0; k < handle.arr.length; ++k) {
          if (handle.arr[k].branch === branch)
              return handle.arr[k];
+      }
       return null;
    };
 
@@ -98634,16 +98561,16 @@ async function treeProcess(tree, selector, args) {
          progress_showtm: 0, // last time when progress was showed
          getBasketEntry(k) {
             if (!this.branch || (k > this.branch.fMaxBaskets)) return 0;
-            let res = (k < this.branch.fMaxBaskets) ? this.branch.fBasketEntry[k] : 0;
+            const res = (k < this.branch.fMaxBaskets) ? this.branch.fBasketEntry[k] : 0;
             if (res) return res;
-            let bskt = (k > 0) ? this.branch.fBaskets.arr[k - 1] : null;
+            const bskt = (k > 0) ? this.branch.fBaskets.arr[k - 1] : null;
             return bskt ? (this.branch.fBasketEntry[k - 1] + bskt.fNevBuf) : 0;
          },
          getTarget(tgtobj) {
             // returns target object which should be used for the branch reading
             if (!this.tgt) return tgtobj;
             for (let k = 0; k < this.tgt.length; ++k) {
-               let sub = this.tgt[k];
+               const sub = this.tgt[k];
                if (!tgtobj[sub.name]) tgtobj[sub.name] = sub.lst.Create();
                tgtobj = tgtobj[sub.name];
             }
@@ -98651,16 +98578,16 @@ async function treeProcess(tree, selector, args) {
          },
          getEntry(entry) {
             // This should be equivalent to TBranch::GetEntry() method
-            let shift = entry - this.first_entry, off;
+            const shift = entry - this.first_entry;
+            let off;
             if (!this.branch.TestBit(kDoNotUseBufferMap))
                this.raw.clearObjectMap();
             if (this.basket.fEntryOffset) {
                off = this.basket.fEntryOffset[shift];
                if (this.basket.fDisplacement)
                   this.raw.fDisplacement = this.basket.fDisplacement[shift];
-            } else {
+            } else
                off = this.basket.fKeylen + this.basket.fNevBufSize * shift;
-            }
             this.raw.locate(off - this.raw.raw_shift);
 
             // this.member.func(this.raw, this.getTarget(tgtobj));
@@ -98671,16 +98598,15 @@ async function treeProcess(tree, selector, args) {
       while (item.getBasketEntry(item.numbaskets + 1)) item.numbaskets++;
 
       // check all counters if we
-      let nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0,
-         leaf = (nb_leaves > 0) ? branch.fLeaves.arr[0] : null,
-         elem = null, // TStreamerElement used to create reader
-         member = null, // member for actual reading of the branch
-         is_brelem = (branch._typename === clTBranchElement),
-         child_scan = 0, // scan child branches after main branch is appended
-         item_cnt = null, item_cnt2 = null, object_class = '';
+      const nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0,
+            leaf = (nb_leaves > 0) ? branch.fLeaves.arr[0] : null,
+            is_brelem = (branch._typename === clTBranchElement);
+      let elem = null, // TStreamerElement used to create reader
+          member = null, // member for actual reading of the branch
+          child_scan = 0, // scan child branches after main branch is appended
+          item_cnt = null, item_cnt2 = null, object_class = '';
 
       if (branch.fBranchCount) {
-
          item_cnt = findInHandle(branch.fBranchCount);
 
          if (!item_cnt)
@@ -98693,15 +98619,17 @@ async function treeProcess(tree, selector, args) {
          if (!BranchCount2 && (branch.fBranchCount.fStreamerType === kSTL) &&
             ((branch.fStreamerType === kStreamLoop) || (branch.fStreamerType === kOffsetL + kStreamLoop))) {
             // special case when count member from kStreamLoop not assigned as fBranchCount2
-            let elemd = findBrachStreamerElement(branch, handle.file),
-               arrd = branch.fBranchCount.fBranches.arr;
+            const elemd = findBrachStreamerElement(branch, handle.file),
+                  arrd = branch.fBranchCount.fBranches.arr;
 
-            if (elemd && elemd.fCountName && arrd)
-               for (let k = 0; k < arrd.length; ++k)
+            if (elemd?.fCountName && arrd) {
+               for (let k = 0; k < arrd.length; ++k) {
                   if (arrd[k].fName === branch.fBranchCount.fName + '.' + elemd.fCountName) {
                      BranchCount2 = arrd[k];
                      break;
                   }
+               }
+            }
 
             if (!BranchCount2) console.error('Did not found branch for second counter of kStreamLoop element');
          }
@@ -98714,7 +98642,7 @@ async function treeProcess(tree, selector, args) {
             if (!item_cnt2) { console.error(`Cannot add counter branch2 ${BranchCount2.fName}`); return null; }
          }
       } else if (nb_leaves === 1 && leaf && leaf.fLeafCount) {
-         let br_cnt = findBranch(handle.tree, leaf.fLeafCount.fName);
+         const br_cnt = findBranch(handle.tree, leaf.fLeafCount.fName);
 
          if (br_cnt) {
             item_cnt = findInHandle(br_cnt);
@@ -98730,11 +98658,11 @@ async function treeProcess(tree, selector, args) {
 
          let match_prefix = branch.fName;
          if (match_prefix[match_prefix.length - 1] === '.') match_prefix = match_prefix.slice(0, match_prefix.length - 1);
-         if (isStr(read_mode) && (read_mode[0] == '.')) match_prefix += read_mode;
+         if (isStr(read_mode) && (read_mode[0] === '.')) match_prefix += read_mode;
          match_prefix += '.';
 
          for (let k = 0; k < lst.arr.length; ++k) {
-            let br = lst.arr[k];
+            const br = lst.arr[k];
             if ((chld_kind > 0) && (br.fType !== chld_kind)) continue;
 
             if (br.fType === kBaseClassNode) {
@@ -98742,8 +98670,8 @@ async function treeProcess(tree, selector, args) {
                continue;
             }
 
-            let elem = findBrachStreamerElement(br, handle.file);
-            if (elem && (elem.fTypeName === 'BASE')) {
+            const elem = findBrachStreamerElement(br, handle.file);
+            if (elem?.fTypeName === 'BASE') {
                // if branch is data of base class, map it to original target
                if (br.fTotBytes && !AddBranchForReading(br, target_object, target_name, read_mode)) return false;
                if (!ScanBranches(br.fBranches, master_target, chld_kind)) return false;
@@ -98752,11 +98680,10 @@ async function treeProcess(tree, selector, args) {
 
             let subname = br.fName, chld_direct = 1;
 
-            if (br.fName.indexOf(match_prefix) === 0) {
+            if (br.fName.indexOf(match_prefix) === 0)
                subname = subname.slice(match_prefix.length);
-            } else {
-               if (chld_kind > 0) continue; // for defined children names prefix must be present
-            }
+            else if (chld_kind > 0)
+               continue; // for defined children names prefix must be present
 
             let p = subname.indexOf('[');
             if (p > 0) subname = subname.slice(0, p);
@@ -98765,7 +98692,7 @@ async function treeProcess(tree, selector, args) {
 
             if (chld_kind > 0) {
                chld_direct = '$child$';
-               let pp = subname.indexOf('.');
+               const pp = subname.indexOf('.');
                if (pp > 0) chld_direct = detectBranchMemberClass(lst, branch.fName + '.' + subname.slice(0, pp + 1), k) || clTObject;
             }
 
@@ -98786,9 +98713,7 @@ async function treeProcess(tree, selector, args) {
                obj[this.name] = buf.classStreamer({}, clname);
             }
          };
-
       } else if ((branch.fType === kClonesNode) || (branch.fType === kSTLNode)) {
-
          elem = createStreamerElement(target_name, kInt);
 
          if (!read_mode || (isStr(read_mode) && (read_mode[0] === '.')) || (read_mode === 1)) {
@@ -98799,10 +98724,11 @@ async function treeProcess(tree, selector, args) {
                conttype: branch.fClonesName || clTObject,
                reallocate: args.reallocate_objects,
                func(buf, obj) {
-                  let size = buf.ntoi4(), n = 0, arr = obj[this.name];
-                  if (!arr || this.reallocate) {
+                  const size = buf.ntoi4();
+                  let n = 0, arr = obj[this.name];
+                  if (!arr || this.reallocate)
                      arr = obj[this.name] = new Array(size);
-                  } else {
+                  else {
                      n = arr.length;
                      arr.length = size; // reallocate array
                   }
@@ -98823,9 +98749,7 @@ async function treeProcess(tree, selector, args) {
 
             child_scan = (branch.fType === kClonesNode) ? kClonesMemberNode : kSTLMemberNode;
          }
-
       } else if ((object_class = getBranchObjectClass(branch, handle.tree))) {
-
          if (read_mode === true) {
             console.warn(`Object branch ${object_class} can not have data to be read directly`);
             return null;
@@ -98833,7 +98757,7 @@ async function treeProcess(tree, selector, args) {
 
          handle.process_arrays = false;
 
-         let newtgt = new Array(target_object ? (target_object.length + 1) : 1);
+         const newtgt = new Array(target_object ? (target_object.length + 1) : 1);
          for (let l = 0; l < newtgt.length - 1; ++l)
             newtgt[l] = target_object[l];
          newtgt[newtgt.length - 1] = { name: target_name, lst: makeMethodsList(object_class) };
@@ -98841,59 +98765,54 @@ async function treeProcess(tree, selector, args) {
          if (!ScanBranches(branch.fBranches, newtgt, 0)) return null;
 
          return item; // this kind of branch does not have baskets and not need to be read
-
-      } else if (is_brelem && (nb_leaves === 1) && (leaf.fName === branch.fName) && (branch.fID == -1)) {
-
+      } else if (is_brelem && (nb_leaves === 1) && (leaf.fName === branch.fName) && (branch.fID === -1)) {
          elem = createStreamerElement(target_name, branch.fClassName);
 
          if (elem.fType === kAny) {
-
-            let streamer = handle.file.getStreamer(branch.fClassName, { val: branch.fClassVersion, checksum: branch.fCheckSum });
+            const streamer = handle.file.getStreamer(branch.fClassName, { val: branch.fClassVersion, checksum: branch.fCheckSum });
             if (!streamer) {
                elem = null;
                console.warn('not found streamer!');
-             } else
+             } else {
                member = {
                   name: target_name,
                   typename: branch.fClassName,
                   streamer,
                   func(buf, obj) {
-                     let res = { _typename: this.typename };
+                     const res = { _typename: this.typename };
                      for (let n = 0; n < this.streamer.length; ++n)
                         this.streamer[n].func(buf, res);
                      obj[this.name] = res;
                   }
                };
+            }
          }
 
          // elem.fType = kAnyP;
 
          // only STL containers here
          // if (!elem.fSTLtype) elem = null;
-
       } else if (is_brelem && (nb_leaves <= 1)) {
-
          elem = findBrachStreamerElement(branch, handle.file);
 
          // this is basic type - can try to solve problem differently
          if (!elem && branch.fStreamerType && (branch.fStreamerType < 20))
             elem = createStreamerElement(target_name, branch.fStreamerType);
-
       } else if (nb_leaves === 1) {
          // no special constrains for the leaf names
 
          elem = createLeafElem(leaf, target_name);
-
       } else if ((branch._typename === 'TBranch') && (nb_leaves > 1)) {
          // branch with many elementary leaves
 
-         let leaves = new Array(nb_leaves), isok = true;
+         const leaves = new Array(nb_leaves);
+         let isok = true;
          for (let l = 0; l < nb_leaves; ++l) {
             leaves[l] = createMemberStreamer(createLeafElem(branch.fLeaves.arr[l]), handle.file);
             if (!leaves[l]) isok = false;
          }
 
-         if (isok)
+         if (isok) {
             member = {
                name: target_name,
                leaves,
@@ -98904,6 +98823,7 @@ async function treeProcess(tree, selector, args) {
                      this.leaves[l++].func(buf, tgt);
                }
             };
+         }
       }
 
       if (!elem && !member) {
@@ -98924,10 +98844,9 @@ async function treeProcess(tree, selector, args) {
       }
 
       if (item_cnt && isStr(read_mode)) {
-
          member.name0 = item_cnt.name;
 
-         let snames = target_name.split('.');
+         const snames = target_name.split('.');
 
          if (snames.length === 1) {
             // no point in the name - just plain array of objects
@@ -98962,7 +98881,7 @@ async function treeProcess(tree, selector, args) {
             let parent_class = branch.fParentName; // unfortunately, without version
 
             for (let k = 0; k < snames.length; ++k) {
-               let chld_class = defineMemberTypeName(handle.file, parent_class, snames[k]);
+               const chld_class = defineMemberTypeName(handle.file, parent_class, snames[k]);
                member.smethods[k] = makeMethodsList(chld_class || 'AbstractClass');
                parent_class = chld_class;
             }
@@ -98987,14 +98906,13 @@ async function treeProcess(tree, selector, args) {
             member.func0 = member.func;
 
             member.func = function(buf, obj) {
-               let arr = obj[this.name0], n = 0; // objects array where reading is done
+               const arr = obj[this.name0]; // objects array where reading is done
+               let n = 0;
                while (n < arr.length)
                   this.func0(buf, this.get(arr, n++)); // read all individual object with standard functions
             };
          }
-
       } else if (item_cnt) {
-
          handle.process_arrays = false;
 
          if ((elem.fType === kDouble32) || (elem.fType === kFloat16)) {
@@ -99004,19 +98922,17 @@ async function treeProcess(tree, selector, args) {
             member.func = function(buf, obj) {
                obj[this.name] = this.readarr(buf, obj[this.stl_size]);
             };
-
          } else if (((elem.fType === kOffsetP + kDouble32) || (elem.fType === kOffsetP + kFloat16)) && branch.fBranchCount2) {
             // special handling for variable arrays of compressed floats in branch - not tested
 
             member.stl_size = item_cnt.name;
             member.arr_size = item_cnt2.name;
             member.func = function(buf, obj) {
-               let sz0 = obj[this.stl_size], sz1 = obj[this.arr_size], arr = new Array(sz0);
+               const sz0 = obj[this.stl_size], sz1 = obj[this.arr_size], arr = new Array(sz0);
                for (let n = 0; n < sz0; ++n)
                   arr[n] = (buf.ntou1() === 1) ? this.readarr(buf, sz1[n]) : [];
                obj[this.name] = arr;
             };
-
          } else if (((elem.fType > 0) && (elem.fType < kOffsetL)) || (elem.fType === kTString) ||
                     (((elem.fType > kOffsetP) && (elem.fType < kOffsetP + kOffsetL)) && branch.fBranchCount2)) {
             // special handling of simple arrays
@@ -99033,18 +98949,15 @@ async function treeProcess(tree, selector, args) {
                member.type -= kOffsetP;
                member.arr_size = item_cnt2.name;
                member.func = function(buf, obj) {
-                  let sz0 = obj[this.stl_size], sz1 = obj[this.arr_size], arr = new Array(sz0);
+                  const sz0 = obj[this.stl_size], sz1 = obj[this.arr_size], arr = new Array(sz0);
                   for (let n = 0; n < sz0; ++n)
                      arr[n] = (buf.ntou1() === 1) ? buf.readFastArray(sz1[n], this.type) : [];
                   obj[this.name] = arr;
                };
             }
-
-         } else if ((elem.fType > kOffsetP) && (elem.fType < kOffsetP + kOffsetL) && member.cntname) {
-
+         } else if ((elem.fType > kOffsetP) && (elem.fType < kOffsetP + kOffsetL) && member.cntname)
             member.cntname = item_cnt.name;
-
-         } else if (elem.fType == kStreamer) {
+         else if (elem.fType === kStreamer) {
             // with streamers one need to extend existing array
 
             if (item_cnt2)
@@ -99053,38 +98966,33 @@ async function treeProcess(tree, selector, args) {
             // function provided by normal I/O
             member.func = member.branch_func;
             member.stl_size = item_cnt.name;
-
          } else if ((elem.fType === kStreamLoop) || (elem.fType === kOffsetL + kStreamLoop)) {
             if (item_cnt2) {
                // special solution for kStreamLoop
                member.stl_size = item_cnt.name;
                member.cntname = item_cnt2.name;
                member.func = member.branch_func; // this is special function, provided by base I/O
-            } else {
+            } else
                member.cntname = item_cnt.name;
-            }
          } else {
-
             member.name = '$stl_member';
 
             let loop_size_name;
-
             if (item_cnt2) {
                if (member.cntname) {
                   loop_size_name = item_cnt2.name;
                   member.cntname = '$loop_size';
-               } else {
+               } else
                   throw new Error('Second branch counter not used - very BAD');
-               }
             }
 
-            let stlmember = {
+            const stlmember = {
                name: target_name,
                stl_size: item_cnt.name,
                loop_size: loop_size_name,
                member0: member,
                func(buf, obj) {
-                  let cnt = obj[this.stl_size], arr = new Array(cnt);
+                  const cnt = obj[this.stl_size], arr = new Array(cnt);
                   for (let n = 0; n < cnt; ++n) {
                      if (this.loop_size) obj.$loop_size = obj[this.loop_size][n];
                      this.member0.func(buf, obj);
@@ -99128,8 +99036,7 @@ async function treeProcess(tree, selector, args) {
 
    // main loop to add all branches from selector for reading
    for (let nn = 0; nn < selector.numBranches(); ++nn) {
-
-      let item = AddBranchForReading(selector.getBranch(nn), undefined, selector.nameOfBranch(nn), selector._directs[nn]);
+      const item = AddBranchForReading(selector.getBranch(nn), undefined, selector.nameOfBranch(nn), selector._directs[nn]);
 
       if (!item) {
          selector.Terminate(false);
@@ -99140,21 +99047,21 @@ async function treeProcess(tree, selector, args) {
    // check if simple reading can be performed and there are direct data in branch
 
    for (let h = 1; (h < handle.arr.length) && handle.simple_read; ++h) {
-
-      let item = handle.arr[h], item0 = handle.arr[0];
+      const item = handle.arr[h], item0 = handle.arr[0];
 
       if ((item.numentries !== item0.numentries) || (item.numbaskets !== item0.numbaskets)) handle.simple_read = false;
-      for (let n = 0; n < item.numbaskets; ++n)
+      for (let n = 0; n < item.numbaskets; ++n) {
          if (item.getBasketEntry(n) !== item0.getBasketEntry(n))
             handle.simple_read = false;
+      }
    }
 
    // now calculate entries range
 
    handle.firstentry = handle.lastentry = 0;
    for (let nn = 0; nn < handle.arr.length; ++nn) {
-      let branch = handle.arr[nn].branch,
-          e1 = branch.fFirstEntry ?? (branch.fBasketBytes[0] ? branch.fBasketEntry[0] : 0);
+      const branch = handle.arr[nn].branch,
+            e1 = branch.fFirstEntry ?? (branch.fBasketBytes[0] ? branch.fBasketEntry[0] : 0);
       handle.firstentry = Math.max(handle.firstentry, e1);
       handle.lastentry = (nn === 0) ? (e1 + branch.fEntries) : Math.min(handle.lastentry, e1 + branch.fEntries);
    }
@@ -99175,7 +99082,7 @@ async function treeProcess(tree, selector, args) {
    handle.current_entry = handle.staged_now = handle.process_min;
 
    if (Number.isInteger(args.numentries) && (args.numentries > 0)) {
-      let max = handle.process_min + args.numentries;
+      const max = handle.process_min + args.numentries;
       if (max < handle.process_max) handle.process_max = max;
    }
 
@@ -99184,7 +99091,7 @@ async function treeProcess(tree, selector, args) {
       // only strictly-matched tree structure can be used for that
 
       for (let k = 0; k < handle.arr.length; ++k) {
-         let elem = handle.arr[k];
+         const elem = handle.arr[k];
          if ((elem.type <= 0) || (elem.type >= kOffsetL) || (elem.type === kCharStar))
             handle.process_arrays = false;
       }
@@ -99195,8 +99102,8 @@ async function treeProcess(tree, selector, args) {
          selector.tgtarr = {}; // object with arrays
 
          for (let nn = 0; nn < handle.arr.length; ++nn) {
-            let item = handle.arr[nn],
-               elem = createStreamerElement(item.name, item.type);
+            const item = handle.arr[nn],
+                  elem = createStreamerElement(item.name, item.type);
 
             elem.fType = item.type + kOffsetL;
             elem.fArrayLength = 10;
@@ -99206,22 +99113,21 @@ async function treeProcess(tree, selector, args) {
             item.arrmember = createMemberStreamer(elem, handle.file);
          }
       }
-   } else {
+   } else
       handle.process_arrays = false;
-   }
 
    /** read basket with tree data, selecting different files */
    function ReadBaskets(bitems) {
-
       function ExtractPlaces() {
          // extract places to read and define file name
 
-         let places = [], filename = '';
+         const places = [];
+         let filename = '';
 
          for (let n = 0; n < bitems.length; ++n) {
             if (bitems[n].done) continue;
 
-            let branch = bitems[n].branch;
+            const branch = bitems[n].branch;
 
             if (places.length === 0)
                filename = branch.fFileName;
@@ -99237,19 +99143,15 @@ async function treeProcess(tree, selector, args) {
       }
 
       function ReadProgress(value) {
-
          if ((handle.staged_prev === handle.staged_now) ||
             (handle.process_max <= handle.process_min)) return;
 
-         let tm = new Date().getTime();
-
+         const tm = new Date().getTime();
          if (tm - handle.progress_showtm < 500) return; // no need to show very often
-
          handle.progress_showtm = tm;
 
-         let portion = (handle.staged_prev + value * (handle.staged_now - handle.staged_prev)) /
-                       (handle.process_max - handle.process_min);
-
+         const portion = (handle.staged_prev + value * (handle.staged_now - handle.staged_prev)) /
+                         (handle.process_max - handle.process_min);
          handle.selector.ShowProgress(portion);
       }
 
@@ -99257,19 +99159,18 @@ async function treeProcess(tree, selector, args) {
          if (!blobs || ((places.length > 2) && (blobs.length * 2 !== places.length)))
             return Promise.resolve(null);
 
-         if (places.length == 2) blobs = [ blobs ];
+         if (places.length === 2) blobs = [blobs];
 
          function DoProcessing(k) {
-
             for (; k < bitems.length; ++k) {
                if (!bitems[k].selected) continue;
 
                bitems[k].selected = false;
                bitems[k].done = true;
 
-               let blob = blobs.shift(),
-                  buf = new TBuffer(blob, 0, handle.file),
-                  basket = buf.classStreamer({}, clTBasket);
+               const blob = blobs.shift();
+               let buf = new TBuffer(blob, 0, handle.file);
+               const basket = buf.classStreamer({}, clTBasket);
 
                if (basket.fNbytes !== bitems[k].branch.fBasketBytes[bitems[k].basket])
                   console.error(`mismatch in read basket sizes ${basket.fNbytes} != ${bitems[k].branch.fBasketBytes[bitems[k].basket]}`);
@@ -99292,14 +99193,12 @@ async function treeProcess(tree, selector, args) {
 
                // unpack data and create new blob
                return R__unzip(blob, basket.fObjlen, false, buf.o).then(objblob => {
-
                   if (objblob) {
                      buf = new TBuffer(objblob, 0, handle.file);
                      buf.raw_shift = basket.fKeylen;
                      buf.fTagOffset = basket.fKeylen;
-                  } else {
+                  } else
                      throw new Error('FAIL TO UNPACK');
-                  }
 
                   bitems[k].raw = buf; // here already unpacked buffer
 
@@ -99310,8 +99209,7 @@ async function treeProcess(tree, selector, args) {
                });
             }
 
-            let req = ExtractPlaces();
-
+            const req = ExtractPlaces();
             if (req)
                return handle.file.readBuffer(req.places, req.filename, ReadProgress).then(blobs => ProcessBlobs(blobs)).catch(() => { return null; });
 
@@ -99321,7 +99219,7 @@ async function treeProcess(tree, selector, args) {
           return DoProcessing(0);
       }
 
-      let req = ExtractPlaces();
+      const req = ExtractPlaces();
 
       // extract places where to read
       if (req)
@@ -99331,32 +99229,31 @@ async function treeProcess(tree, selector, args) {
    }
 
    function ReadNextBaskets() {
-
-      let totalsz = 0, bitems = [], isany = true, is_direct = false, min_staged = handle.process_max;
+      const bitems = [];
+      let totalsz = 0, isany = true, is_direct = false, min_staged = handle.process_max;
 
       while ((totalsz < 1e6) && isany) {
          isany = false;
          // very important, loop over branches in reverse order
          // let check counter branch after reading of normal branch is prepared
          for (let n = handle.arr.length - 1; n >= 0; --n) {
-            let elem = handle.arr[n];
+            const elem = handle.arr[n];
 
             while (elem.staged_basket < elem.numbaskets) {
-
-               let k = elem.staged_basket++;
+               const k = elem.staged_basket++;
 
                // no need to read more baskets, process_max is not included
                if (elem.getBasketEntry(k) >= handle.process_max) break;
 
                // check which baskets need to be read
                if (elem.first_readentry < 0) {
-                  let lmt = elem.getBasketEntry(k + 1),
-                     not_needed = (lmt <= handle.process_min);
+                  const lmt = elem.getBasketEntry(k + 1),
+                        not_needed = (lmt <= handle.process_min);
 
-                  //for (let d=0;d<elem.ascounter.length;++d) {
-                  //   let dep = handle.arr[elem.ascounter[d]]; // dependent element
-                  //   if (dep.first_readentry < lmt) not_needed = false; // check that counter provide required data
-                  //}
+                  // for (let d=0;d<elem.ascounter.length;++d) {
+                  //    let dep = handle.arr[elem.ascounter[d]]; // dependent element
+                  //    if (dep.first_readentry < lmt) not_needed = false; // check that counter provide required data
+                  // }
 
                   if (not_needed) continue; // if that basket not required, check next
 
@@ -99367,14 +99264,12 @@ async function treeProcess(tree, selector, args) {
 
                // check if basket already loaded in the branch
 
-               let bitem = {
+               const bitem = {
                   id: n, // to find which element we are reading
                   branch: elem.branch,
                   basket: k,
                   raw: null // here should be result
-               };
-
-               let bskt = elem.branch.fBaskets.arr[k];
+               }, bskt = elem.branch.fBaskets.arr[k];
                if (bskt) {
                   bitem.raw = bskt.fBufferRef;
                   if (bitem.raw)
@@ -99445,12 +99340,10 @@ async function treeProcess(tree, selector, args) {
       let isanyprocessed = false;
 
       while (true) {
-
          let loopentries = 100000000, n, elem;
 
          // first loop used to check if all required data exists
          for (n = 0; n < handle.arr.length; ++n) {
-
             elem = handle.arr[n];
 
             if (!elem.raw || !elem.basket || (elem.first_entry + elem.basket.fNevBuf <= handle.current_entry)) {
@@ -99458,7 +99351,7 @@ async function treeProcess(tree, selector, args) {
                delete elem.basket;
 
                if ((elem.curr_basket >= elem.numbaskets)) {
-                  if (n == 0) {
+                  if (n === 0) {
                      handle.selector.Terminate(true);
                      return resolveFunc(handle.selector);
                   }
@@ -99466,7 +99359,7 @@ async function treeProcess(tree, selector, args) {
                }
 
                // this is single response from the tree, includes branch, bakset number, raw data
-               let bitem = elem.baskets[elem.curr_basket];
+               const bitem = elem.baskets[elem.curr_basket];
 
                // basket not read
                if (!bitem) {
@@ -99520,11 +99413,9 @@ async function treeProcess(tree, selector, args) {
             handle.current_entry += loopentries;
 
             isanyprocessed = true;
-         } else
-
+         } else {
             // main processing loop
             while (loopentries--) {
-
                for (n = 0; n < handle.arr.length; ++n) {
                   elem = handle.arr[n];
 
@@ -99540,6 +99431,7 @@ async function treeProcess(tree, selector, args) {
 
                isanyprocessed = true;
             }
+         }
 
          if (handle.current_entry >= handle.process_max) {
             handle.selector.Terminate(true);
@@ -99549,7 +99441,6 @@ async function treeProcess(tree, selector, args) {
    }
 
    return new Promise((resolve, reject) => {
-
       resolveFunc = resolve;
       rejectFunc = reject;
 
@@ -99557,9 +99448,7 @@ async function treeProcess(tree, selector, args) {
       handle.selector.Begin(tree);
 
       ReadNextBaskets();
-
    });
-
 }
 
 /** @summary implementation of TTree::Draw
@@ -99573,16 +99462,15 @@ async function treeProcess(tree, selector, args) {
   * @param {function} [args.progress=undefined] - function called during histogram accumulation with obj argument
   * @return {Promise} with produced object  */
 async function treeDraw(tree, args) {
-
    if (isStr(args)) args = { expr: args };
 
    if (!isStr(args.expr)) args.expr = '';
 
-   let selector = new TDrawSelector();
+   const selector = new TDrawSelector();
 
    if (args.branch) {
       if (!selector.drawOnlyBranch(tree, args.branch, args.expr, args))
-        return Promise.reject(Error('Fail to create draw expression ${args.expr} for branch ${args.branch.fName}'));
+        return Promise.reject(Error(`Fail to create draw expression ${args.expr} for branch ${args.branch.fName}`));
    } else {
       if (!selector.parseDrawExpression(tree, args))
           return Promise.reject(Error(`Fail to create draw expression ${args.expr}`));
@@ -99597,7 +99485,7 @@ async function treeDraw(tree, args) {
   * @desc Used when 'testio' draw option for TTree is specified
   * @private */
 function treeIOTest(tree, args) {
-   let branches = [], names = [], nchilds = [];
+   const branches = [], names = [], nchilds = [];
 
    function collectBranches(obj, prntname = '') {
       if (!obj?.fBranches) return 0;
@@ -99605,35 +99493,34 @@ function treeIOTest(tree, args) {
       let cnt = 0;
 
       for (let n = 0; n < obj.fBranches.arr.length; ++n) {
-         let br = obj.fBranches.arr[n],
-             name = (prntname ? prntname + '/' : '') + br.fName;
+         const br = obj.fBranches.arr[n],
+               name = (prntname ? prntname + '/' : '') + br.fName;
          branches.push(br);
          names.push(name);
          nchilds.push(0);
-         let pos = nchilds.length - 1;
-         cnt += br.fLeaves ? br.fLeaves.arr.length : 0;
-         let nchld = collectBranches(br, name);
+         const pos = nchilds.length - 1;
+         cnt += (br.fLeaves?.arr?.length ?? 0);
+         const nchld = collectBranches(br, name);
 
          cnt += nchld;
          nchilds[pos] = nchld;
-
       }
       return cnt;
    }
 
-   let numleaves = collectBranches(tree), selector;
+   const numleaves = collectBranches(tree);
+   let selector;
 
    names.push(`Total are ${branches.length} branches with ${numleaves} leaves`);
 
    function testBranch(nbr) {
-
       if (nbr >= branches.length)
          return Promise.resolve(true);
 
       if (selector?._break || args._break)
          return Promise.resolve(true);
 
-      selector = new TSelector;
+      selector = new TSelector();
 
       selector.addBranch(branches[nbr], 'br0');
 
@@ -99649,26 +99536,22 @@ function treeIOTest(tree, args) {
          names[nbr] = res + ' ' + names[nbr];
       };
 
-      let br = branches[nbr],
-          object_class = getBranchObjectClass(br, tree),
-          num = br.fEntries,
-          skip_branch = (!br.fLeaves || (br.fLeaves.arr.length === 0));
-
-      if (object_class) skip_branch = (nchilds[nbr] > 100);
+      const br = branches[nbr],
+            object_class = getBranchObjectClass(br, tree),
+            num = br.fEntries,
+            skip_branch = object_class ? (nchilds[nbr] > 100) : (!br.fLeaves || (br.fLeaves.arr.length === 0));
 
       if (skip_branch || (num <= 0))
          return testBranch(nbr+1);
 
-      let drawargs = { numentries: 10 },
-          first = br.fFirstEntry || 0,
-          last = br.fEntryNumber || (first + num);
+      const drawargs = { numentries: 10 },
+            first = br.fFirstEntry || 0,
+            last = br.fEntryNumber || (first + num);
 
-      if (num < drawargs.numentries) {
+      if (num < drawargs.numentries)
          drawargs.numentries = num;
-      } else {
-         // select randomly first entry to test I/O
-         drawargs.firstentry = first + Math.round((last - first - drawargs.numentries) * Math.random());
-      }
+      else
+         drawargs.firstentry = first + Math.round((last - first - drawargs.numentries) * Math.random()); // select randomly
 
       // keep console output for debug purposes
       console.log(`test branch ${br.fName} first ${drawargs.firstentry || 0} num ${drawargs.numentries}`);
@@ -99687,21 +99570,19 @@ function treeIOTest(tree, args) {
    });
 }
 
-
 /** @summary Create hierarchy of TTree object
   * @private */
 function treeHierarchy(node, obj) {
-
    function createBranchItem(node, branch, tree, parent_branch) {
       if (!node || !branch) return false;
 
-      let nb_branches = branch.fBranches ? branch.fBranches.arr.length : 0,
-          nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0;
+      const nb_branches = branch.fBranches ? branch.fBranches.arr.length : 0,
+            nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0;
 
       function ClearName(arg) {
-         let pos = arg.indexOf('[');
+         const pos = arg.indexOf('[');
          if (pos > 0) arg = arg.slice(0, pos);
-         if (parent_branch && arg.indexOf(parent_branch.fName) == 0) {
+         if (parent_branch && arg.indexOf(parent_branch.fName) === 0) {
             arg = arg.slice(parent_branch.fName.length);
             if (arg[0] === '.') arg = arg.slice(1);
          }
@@ -99710,11 +99591,11 @@ function treeHierarchy(node, obj) {
 
       branch.$tree = tree; // keep tree pointer, later do it more smart
 
-      let subitem = {
-            _name: ClearName(branch.fName),
-            _kind: prROOT + branch._typename,
-            _title: branch.fTitle,
-            _obj: branch
+      const subitem = {
+         _name: ClearName(branch.fName),
+         _kind: prROOT + branch._typename,
+         _title: branch.fTitle,
+         _obj: branch
       };
 
       if (!node._childs) node._childs = [];
@@ -99748,14 +99629,14 @@ function treeHierarchy(node, obj) {
             for (let i = 0; i < bobj.fBranches.arr.length; ++i)
                createBranchItem(bnode, bobj.fBranches.arr[i], bobj.$tree, bobj);
 
-            let object_class = getBranchObjectClass(bobj, bobj.$tree, true),
-                methods = object_class ? getMethods(object_class) : null;
+            const object_class = getBranchObjectClass(bobj, bobj.$tree, true),
+                  methods = object_class ? getMethods(object_class) : null;
 
-            if (methods && (bobj.fBranches.arr.length > 0))
-               for (let key in methods) {
+            if (methods && (bobj.fBranches.arr.length > 0)) {
+               for (const key in methods) {
                   if (!isFunc(methods[key])) continue;
-                  let s = methods[key].toString();
-                  if ((s.indexOf('return') > 0) && (s.indexOf('function ()') == 0))
+                  const s = methods[key].toString();
+                  if ((s.indexOf('return') > 0) && (s.indexOf('function ()') === 0)) {
                      bnode._childs.push({
                         _name: key+'()',
                         _title: `function ${key} of class ${object_class}`,
@@ -99763,8 +99644,9 @@ function treeHierarchy(node, obj) {
                         _obj: { _typename: clTBranchFunc, branch: bobj, func: key },
                         _more: false
                      });
-
+                  }
                }
+            }
 
             return true;
          };
@@ -99776,9 +99658,9 @@ function treeHierarchy(node, obj) {
          subitem._childs = [];
          for (let j = 0; j < nb_leaves; ++j) {
             branch.fLeaves.arr[j].$branch = branch; // keep branch pointer for drawing
-            let leafitem = {
-               _name : ClearName(branch.fLeaves.arr[j].fName),
-               _kind : prROOT + branch.fLeaves.arr[j]._typename,
+            const leafitem = {
+               _name: ClearName(branch.fLeaves.arr[j].fName),
+               _kind: prROOT + branch.fLeaves.arr[j]._typename,
                _obj: branch.fLeaves.arr[j]
             };
             subitem._childs.push(leafitem);
@@ -99817,24 +99699,31 @@ treeProcess: treeProcess
 
 async function import_more() { return Promise.resolve().then(function () { return more; }); }
 
+async function import_canvas() { return Promise.resolve().then(function () { return TCanvasPainter$1; }); }
+
+async function import_tree() { return Promise.resolve().then(function () { return TTree; }); }
+
+async function import_h() { return Promise.resolve().then(function () { return HierarchyPainter$1; }); }
+
 async function import_geo() {
    return Promise.resolve().then(function () { return TGeoPainter$1; }).then(geo => {
-      let handle = getDrawHandle(prROOT + 'TGeoVolumeAssembly');
+      const handle = getDrawHandle(prROOT + 'TGeoVolumeAssembly');
       if (handle) handle.icon = 'img_geoassembly';
       return geo;
    });
 }
 
 const clTGraph2D = 'TGraph2D', clTH2Poly = 'TH2Poly', clTEllipse = 'TEllipse',
-      clTSpline3 = 'TSpline3', clTTree = 'TTree', clTCanvasWebSnapshot = 'TCanvasWebSnapshot';
+      clTSpline3 = 'TSpline3', clTTree = 'TTree', clTCanvasWebSnapshot = 'TCanvasWebSnapshot',
 
-// list of registered draw functions
-const drawFuncs = { lst: [
-   { name: clTCanvas, icon: 'img_canvas', class: () => Promise.resolve().then(function () { return TCanvasPainter$1; }).then(h => h.TCanvasPainter), opt: ';grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz', expand_item: 'fPrimitives', noappend: true },
-   { name: clTPad, icon: 'img_canvas', class: () => Promise.resolve().then(function () { return TPadPainter$1; }).then(h => h.TPadPainter), opt: ';grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz', expand_item: 'fPrimitives', noappend: true },
-   { name: 'TSlider', icon: 'img_canvas', class: () => Promise.resolve().then(function () { return TPadPainter$1; }).then(h => h.TPadPainter) },
-   { name: clTButton, icon: 'img_canvas', class: () => Promise.resolve().then(function () { return TPadPainter$1; }).then(h => h.TPadPainter) },
-   { name: 'TFrame', icon: 'img_frame', draw: () => Promise.resolve().then(function () { return TCanvasPainter$1; }).then(h => h.drawTFrame) },
+/** @summary list of registered draw functions
+  * @private */
+drawFuncs = { lst: [
+   { name: clTCanvas, icon: 'img_canvas', class: () => import_canvas().then(h => h.TCanvasPainter), opt: ';grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz', expand_item: 'fPrimitives', noappend: true },
+   { name: clTPad, icon: 'img_canvas', func: TPadPainter.draw, opt: ';grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz', expand_item: 'fPrimitives', noappend: true },
+   { name: 'TSlider', icon: 'img_canvas', func: TPadPainter.draw },
+   { name: clTButton, icon: 'img_canvas', func: TPadPainter.draw },
+   { name: 'TFrame', icon: 'img_frame', draw: () => import_canvas().then(h => h.drawTFrame) },
    { name: clTPave, icon: 'img_pavetext', class: () => Promise.resolve().then(function () { return TPavePainter$1; }).then(h => h.TPavePainter) },
    { name: clTPaveText, sameas: clTPave },
    { name: clTPavesText, sameas: clTPave },
@@ -99877,9 +99766,9 @@ const drawFuncs = { lst: [
    { name: 'RooPlot', icon: 'img_canvas', func: drawRooPlot },
    { name: 'TRatioPlot', icon: 'img_mgraph', class: () => Promise.resolve().then(function () { return TRatioPlotPainter$1; }).then(h => h.TRatioPlotPainter), opt: '' },
    { name: clTMultiGraph, icon: 'img_mgraph', class: () => Promise.resolve().then(function () { return TMultiGraphPainter$1; }).then(h => h.TMultiGraphPainter), opt: ';l;p;3d', expand_item: 'fGraphs' },
-   { name: clTStreamerInfoList, icon: 'img_question', draw: () => Promise.resolve().then(function () { return HierarchyPainter$1; }).then(h => h.drawStreamerInfo) },
+   { name: clTStreamerInfoList, icon: 'img_question', draw: () => import_h().then(h => h.drawStreamerInfo) },
    { name: 'TWebPainting', icon: 'img_graph', class: () => Promise.resolve().then(function () { return TWebPaintingPainter$1; }).then(h => h.TWebPaintingPainter) },
-   { name: clTCanvasWebSnapshot, icon: 'img_canvas', draw: () => Promise.resolve().then(function () { return TCanvasPainter$1; }).then(h => h.drawTPadSnapshot) },
+   { name: clTCanvasWebSnapshot, icon: 'img_canvas', draw: () => import_canvas().then(h => h.drawTPadSnapshot) },
    { name: 'TPadWebSnapshot', sameas: clTCanvasWebSnapshot },
    { name: 'kind:Text', icon: 'img_text', func: drawRawText },
    { name: clTObjString, icon: 'img_text', func: drawRawText },
@@ -99917,21 +99806,21 @@ const drawFuncs = { lst: [
    { name: 'TAxis3D', icon: 'img_graph', draw: () => import_geo().then(h => h.drawAxis3D), direct: true },
    // these are not draw functions, but provide extra info about correspondent classes
    { name: 'kind:Command', icon: 'img_execute', execute: true },
-   { name: 'TFolder', icon: 'img_folder', icon2: 'img_folderopen', noinspect: true, get_expand: () => Promise.resolve().then(function () { return HierarchyPainter$1; }).then(h => h.folderHierarchy) },
-   { name: 'TTask', icon: 'img_task', get_expand: () => Promise.resolve().then(function () { return HierarchyPainter$1; }).then(h => h.taskHierarchy), for_derived: true },
-   { name: clTTree, icon: 'img_tree', get_expand: () => Promise.resolve().then(function () { return tree; }).then(h => h.treeHierarchy), draw: () => Promise.resolve().then(function () { return TTree; }).then(h => h.drawTree), dflt: 'expand', opt: 'player;testio', shift: 'inspect' },
+   { name: 'TFolder', icon: 'img_folder', icon2: 'img_folderopen', noinspect: true, get_expand: () => import_h().then(h => h.folderHierarchy) },
+   { name: 'TTask', icon: 'img_task', get_expand: () => import_h().then(h => h.taskHierarchy), for_derived: true },
+   { name: clTTree, icon: 'img_tree', get_expand: () => Promise.resolve().then(function () { return tree; }).then(h => h.treeHierarchy), draw: () => import_tree().then(h => h.drawTree), dflt: 'expand', opt: 'player;testio', shift: 'inspect' },
    { name: 'TNtuple', sameas: clTTree },
    { name: 'TNtupleD', sameas: clTTree },
-   { name: clTBranchFunc, icon: 'img_leaf_method', draw: () => Promise.resolve().then(function () { return TTree; }).then(h => h.drawTree), opt: ';dump', noinspect: true },
-   { name: /^TBranch/, icon: 'img_branch', draw: () => Promise.resolve().then(function () { return TTree; }).then(h => h.drawTree), dflt: 'expand', opt: ';dump', ctrl: 'dump', shift: 'inspect', ignore_online: true, always_draw: true },
-   { name: /^TLeaf/, icon: 'img_leaf', noexpand: true, draw: () => Promise.resolve().then(function () { return TTree; }).then(h => h.drawTree), opt: ';dump', ctrl: 'dump', ignore_online: true, always_draw: true },
-   { name: clTList, icon: 'img_list', draw: () => Promise.resolve().then(function () { return HierarchyPainter$1; }).then(h => h.drawList), get_expand: () => Promise.resolve().then(function () { return HierarchyPainter$1; }).then(h => h.listHierarchy), dflt: 'expand' },
+   { name: clTBranchFunc, icon: 'img_leaf_method', draw: () => import_tree().then(h => h.drawTree), opt: ';dump', noinspect: true },
+   { name: /^TBranch/, icon: 'img_branch', draw: () => import_tree().then(h => h.drawTree), dflt: 'expand', opt: ';dump', ctrl: 'dump', shift: 'inspect', ignore_online: true, always_draw: true },
+   { name: /^TLeaf/, icon: 'img_leaf', noexpand: true, draw: () => import_tree().then(h => h.drawTree), opt: ';dump', ctrl: 'dump', ignore_online: true, always_draw: true },
+   { name: clTList, icon: 'img_list', draw: () => import_h().then(h => h.drawList), get_expand: () => import_h().then(h => h.listHierarchy), dflt: 'expand' },
    { name: clTHashList, sameas: clTList },
    { name: clTObjArray, sameas: clTList },
    { name: clTClonesArray, sameas: clTList },
    { name: clTMap, sameas: clTList },
    { name: clTColor, icon: 'img_color' },
-   { name: 'TFile', icon: 'img_file', noinspect: true },
+   { name: clTFile, icon: 'img_file', noinspect: true },
    { name: 'TMemFile', icon: 'img_file', noinspect: true },
    { name: clTStyle, icon: 'img_question', noexpand: true },
    { name: 'Session', icon: 'img_globe' },
@@ -99983,7 +99872,6 @@ function addDrawFunc(args) {
   * or just sequence id
   * @private */
 function getDrawHandle(kind, selector) {
-
    if (!isStr(kind)) return null;
    if (selector === '') selector = null;
 
@@ -99992,21 +99880,22 @@ function getDrawHandle(kind, selector) {
    if ((selector === null) && (kind in drawFuncs.cache))
       return drawFuncs.cache[kind];
 
-   let search = (kind.indexOf(prROOT) == 0) ? kind.slice(5) : `kind:${kind}`, counter = 0;
+   const search = (kind.indexOf(prROOT) === 0) ? kind.slice(5) : `kind:${kind}`;
+   let counter = 0;
    for (let i = 0; i < drawFuncs.lst.length; ++i) {
-      let h = drawFuncs.lst[i];
+      const h = drawFuncs.lst[i];
       if (isStr(h.name)) {
-         if (h.name != search) continue;
-      } else {
-         if (!search.match(h.name)) continue;
-      }
+         if (h.name !== search) continue;
+      } else if (!search.match(h.name))
+         continue;
 
       if (h.sameas) {
-         let hs = getDrawHandle(prROOT + h.sameas, selector);
+         const hs = getDrawHandle(prROOT + h.sameas, selector);
          if (hs) {
-            for (let key in hs)
+            for (const key in hs) {
                if (h[key] === undefined)
                   h[key] = hs[key];
+            }
             delete h.sameas;
          }
          return h;
@@ -100020,17 +99909,16 @@ function getDrawHandle(kind, selector) {
          if (!first) first = h;
          // if drawoption specified, check it present in the list
 
-         if (selector == '::expand') {
+         if (selector === '::expand') {
             if (('expand' in h) || ('expand_item' in h)) return h;
          } else if ('opt' in h) {
-            let opts = h.opt.split(';');
+            const opts = h.opt.split(';');
             for (let j = 0; j < opts.length; ++j)
                opts[j] = opts[j].toLowerCase();
             if (opts.indexOf(selector.toLowerCase()) >= 0) return h;
          }
-      } else if (selector === counter) {
+      } else if (selector === counter)
          return h;
-      }
       ++counter;
    }
 
@@ -100043,19 +99931,19 @@ function canDrawHandle(h) {
    if (isStr(h))
       h = getDrawHandle(h);
    if (!isObject(h)) return false;
-   return h.func || h.class || h.draw || h.draw_field ? true : false;
+   return h.func || h.class || h.draw || h.draw_field;
 }
 
 /** @summary Provide draw settings for specified class or kind
   * @private */
 function getDrawSettings(kind, selector) {
-   let res = { opts: null, inspect: false, expand: false, draw: false, handle: null };
+   const res = { opts: null, inspect: false, expand: false, draw: false, handle: null };
    if (!isStr(kind)) return res;
    let isany = false, noinspect = false, canexpand = false;
    if (!isStr(selector)) selector = '';
 
    for (let cnt = 0; cnt < 1000; ++cnt) {
-      let h = getDrawHandle(kind, cnt);
+      const h = getDrawHandle(kind, cnt);
       if (!h) break;
       if (!res.handle) res.handle = h;
       if (h.noinspect) noinspect = true;
@@ -100064,10 +99952,10 @@ function getDrawSettings(kind, selector) {
       if (!h.func && !h.class && !h.draw) break;
       isany = true;
       if (!('opt' in h)) continue;
-      let opts = h.opt.split(';');
+      const opts = h.opt.split(';');
       for (let i = 0; i < opts.length; ++i) {
          opts[i] = opts[i].toLowerCase();
-         if (opts[i].indexOf('same') == 0) {
+         if (opts[i].indexOf('same') === 0) {
             res.has_same = true;
             if (selector.indexOf('nosame') >= 0) continue;
          }
@@ -100083,7 +99971,7 @@ function getDrawSettings(kind, selector) {
    if (isany && (res.opts === null)) res.opts = [''];
 
    // if no any handle found, let inspect ROOT-based objects
-   if (!isany && (kind.indexOf(prROOT) == 0) && !noinspect) res.opts = [];
+   if (!isany && (kind.indexOf(prROOT) === 0) && !noinspect) res.opts = [];
 
    if (!noinspect && res.opts)
       res.opts.push('inspect');
@@ -100101,7 +99989,7 @@ function getDrawSettings(kind, selector) {
   setDefaultDrawOpt('TH1', 'text');
   setDefaultDrawOpt('TH2', 'col');  */
 function setDefaultDrawOpt(classname, opt) {
-   let handle = getDrawHandle(prROOT + classname, 0);
+   const handle = getDrawHandle(prROOT + classname, 0);
    if (handle)
       handle.dflt = opt;
 }
@@ -100120,12 +100008,11 @@ function setDefaultDrawOpt(classname, opt) {
   * let obj = await file.readObject('hpxpy;1');
   * await draw('drawing', obj, 'colz;logx;gridx;gridy'); */
 async function draw(dom, obj, opt) {
-
    if (!isObject(obj))
       return Promise.reject(Error('not an object in draw call'));
 
-   if (opt == 'inspect')
-      return Promise.resolve().then(function () { return HierarchyPainter$1; }).then(h => h.drawInspector(dom, obj));
+   if (opt === 'inspect')
+      return import_h().then(h => h.drawInspector(dom, obj));
 
    let handle, type_info;
    if ('_typename' in obj) {
@@ -100135,7 +100022,7 @@ async function draw(dom, obj, opt) {
       type_info = 'kind ' + obj._kind;
       handle = getDrawHandle(obj._kind, opt);
    } else
-      return Promise.resolve().then(function () { return HierarchyPainter$1; }).then(h => h.drawInspector(dom, obj));
+      return import_h().then(h => h.drawInspector(dom, obj));
 
    // this is case of unsupported class, close it normally
    if (!handle)
@@ -100149,8 +100036,7 @@ async function draw(dom, obj, opt) {
 
    if (!canDrawHandle(handle)) {
       if (opt && (opt.indexOf('same') >= 0)) {
-
-         let main_painter = getElementMainPainter(dom);
+         const main_painter = getElementMainPainter(dom);
 
          if (isFunc(main_painter?.performDrop))
             return main_painter.performDrop(obj, '', null, opt);
@@ -100159,9 +100045,9 @@ async function draw(dom, obj, opt) {
       return Promise.reject(Error(`Function not specified to draw object ${type_info}`));
    }
 
-    function performDraw() {
+   function performDraw() {
       let promise, painter;
-      if (handle.direct == 'v7') {
+      if (handle.direct === 'v7') {
          promise = Promise.resolve().then(function () { return RCanvasPainter$1; }).then(v7h => {
             painter = new v7h.RObjectPainter(dom, obj, opt, handle.csstype);
             painter.redraw = handle.func;
@@ -100170,12 +100056,10 @@ async function draw(dom, obj, opt) {
       } else if (handle.direct) {
          painter = new ObjectPainter(dom, obj, opt);
          painter.redraw = handle.func;
-         promise = Promise.resolve().then(function () { return TCanvasPainter$1; })
-                           .then(v6h => v6h.ensureTCanvas(painter, handle.frame || false))
-                           .then(() => painter.redraw());
-      } else {
+         promise = import_canvas().then(v6h => v6h.ensureTCanvas(painter, handle.frame || false))
+                                  .then(() => painter.redraw());
+      } else
          promise = getPromise(handle.func(dom, obj, opt));
-      }
 
       return promise.then(p => {
          if (!painter) painter = p;
@@ -100199,14 +100083,15 @@ async function draw(dom, obj, opt) {
    } else if (isFunc(handle.draw)) {
       // draw function without special class
       promise = handle.draw().then(h => { handle.func = h; });
-   } else if (!handle.func || !isStr(handle.func)) {
+   } else if (!handle.func || !isStr(handle.func))
       return Promise.reject(Error(`Draw function or class not specified to draw ${type_info}`));
-   } else if (!handle.prereq && !handle.script) {
+   else if (!handle.prereq && !handle.script)
       return Promise.reject(Error(`Prerequicities to load ${handle.func} are not specified`));
-   } else {
-
-      let init_promise = internals.ignore_v6 ? Promise.resolve(true) : _ensureJSROOT().then(v6 => {
-         let pr = handle.prereq ? v6.require(handle.prereq) : Promise.resolve(true);
+   else {
+      const init_promise = internals.ignore_v6
+         ? Promise.resolve(true)
+         : _ensureJSROOT().then(v6 => {
+         const pr = handle.prereq ? v6.require(handle.prereq) : Promise.resolve(true);
          return pr.then(() => {
             if (handle.script)
                return loadScript(handle.script);
@@ -100214,8 +100099,7 @@ async function draw(dom, obj, opt) {
       });
 
       promise = init_promise.then(() => {
-         let func = findFunction(handle.func);
-
+         const func = findFunction(handle.func);
          if (!isFunc(func))
             return Promise.reject(Error(`Fail to find function ${handle.func} after loading ${handle.prereq || handle.script}`));
 
@@ -100246,11 +100130,11 @@ async function draw(dom, obj, opt) {
   *    redraw('drawing', obj, 'colz');
   * }, 1000); */
 async function redraw(dom, obj, opt) {
-
    if (!isObject(obj))
       return Promise.reject(Error('not an object in redraw'));
 
-   let can_painter = getElementCanvPainter(dom), handle, res_painter = null, redraw_res;
+   const can_painter = getElementCanvPainter(dom);
+   let handle, res_painter = null, redraw_res;
    if (obj._typename)
       handle = getDrawHandle(prROOT + obj._typename);
    if (handle?.draw_field && obj[handle.draw_field])
@@ -100262,7 +100146,7 @@ async function redraw(dom, obj, opt) {
          if (redraw_res) res_painter = can_painter;
       } else {
          for (let i = 0; i < can_painter.painters.length; ++i) {
-            let painter = can_painter.painters[i];
+            const painter = can_painter.painters[i];
             if (painter.matchObjectType(obj._typename)) {
                redraw_res = painter.redrawObject(obj, opt);
                if (redraw_res) {
@@ -100273,7 +100157,7 @@ async function redraw(dom, obj, opt) {
          }
       }
    } else {
-      let top = new BasePainter(dom).getTopPainter();
+      const top = new BasePainter(dom).getTopPainter();
       // base painter do not have this method, if it there use it
       // it can be object painter here or can be specially introduce method to handling redraw!
       if (isFunc(top?.redrawObject)) {
@@ -100302,7 +100186,7 @@ function addStreamerInfosForPainter(lst) {
 
       for (let j = 0; j < si.fElements.arr.length; ++j) {
          // extract streamer info for each class member
-         let element = si.fElements.arr[j];
+         const element = si.fElements.arr[j];
          if (element.fTypeName !== 'BASE') continue;
 
          let handle = getDrawHandle(prROOT + element.fName);
@@ -100310,12 +100194,14 @@ function addStreamerInfosForPainter(lst) {
             handle = null;
 
          // now try find that base class of base in the list
-         if (handle === null)
-            for (let k = 0; k < lst.arr.length; ++k)
+         if (handle === null) {
+            for (let k = 0; k < lst.arr.length; ++k) {
                if (lst.arr[k].fName === element.fName) {
                   handle = checkBaseClasses(lst.arr[k], lvl + 1);
                   break;
                }
+            }
+         }
 
          if (handle?.for_derived)
             return handle;
@@ -100326,9 +100212,9 @@ function addStreamerInfosForPainter(lst) {
    lst.arr.forEach(si => {
       if (getDrawHandle(prROOT + si.fName) !== null) return;
 
-      let handle = checkBaseClasses(si, 0);
+      const handle = checkBaseClasses(si, 0);
       if (handle) {
-         let newhandle = Object.assign({}, handle);
+         const newhandle = Object.assign({}, handle);
          // delete newhandle.for_derived; // should we disable?
          newhandle.name = si.fName;
          addDrawFunc(newhandle);
@@ -100367,17 +100253,16 @@ async function makeImage(args) {
    if (!args.height)
       args.height = 800;
 
-   if (args.use_canvas_size && (args.object?._typename == clTCanvas) && args.object.fCw && args.object.fCh) {
+   if (args.use_canvas_size && (args.object?._typename === clTCanvas) && args.object.fCw && args.object.fCh) {
       args.width = args.object?.fCw;
       args.height = args.object?.fCh;
    }
 
    async function build(main) {
-
       main.attr('width', args.width).attr('height', args.height)
           .style('width', args.width + 'px').style('height', args.height + 'px')
           .property('_batch_mode', true)
-          .property('_batch_format', args.format != 'svg' ? args.format : null);
+          .property('_batch_format', args.format !== 'svg' ? args.format : null);
 
       function complete(res) {
          cleanup(main.node());
@@ -100386,17 +100271,16 @@ async function makeImage(args) {
       }
 
       return draw(main.node(), args.object, args.option || '').then(() => {
-
-         if (args.format != 'svg') {
-            let only_img = main.select('svg').selectChild('image');
+         if (args.format !== 'svg') {
+            const only_img = main.select('svg').selectChild('image');
             if (!only_img.empty()) {
-               let href = only_img.attr('href');
+               const href = only_img.attr('href');
 
                if (args.as_buffer) {
-                  let p = href.indexOf('base64,'),
-                      str = atob_func(href.slice(p + 7)),
-                      buf = new ArrayBuffer(str.length),
-                      bufView = new Uint8Array(buf);
+                  const p = href.indexOf('base64,'),
+                        str = atob_func(href.slice(p + 7)),
+                        buf = new ArrayBuffer(str.length),
+                        bufView = new Uint8Array(buf);
                   for (let i = 0; i < str.length; i++)
                      bufView[i] = str.charCodeAt(i);
                   return isNodeJs() ? Buffer.from(buf) : buf;
@@ -100413,22 +100297,23 @@ async function makeImage(args) {
 
          function clear_element() {
             const elem = select(this);
-            if (elem.style('display') == 'none') elem.remove();
+            if (elem.style('display') === 'none') elem.remove();
          }
+
          main.selectAll('g.root_frame').each(clear_element);
          main.selectAll('svg').each(clear_element);
 
-         let svg = compressSVG(main.html());
-
-         if (args.format == 'svg')
+         const svg = compressSVG(main.html());
+         if (args.format === 'svg')
             return complete(svg);
 
          return svgToImage(svg, args.format, args.as_buffer).then(complete);
       });
    }
 
-   return isNodeJs() ? _loadJSDOM().then(handle => build(handle.body.append('div')))
-                     : build(select('body').append('div').style('display', 'none'));
+   return isNodeJs()
+          ? _loadJSDOM().then(handle => build(handle.body.append('div')))
+          : build(select('body').append('div').style('display', 'none'));
 }
 
 
@@ -100458,7 +100343,7 @@ internals.addDrawFunc = addDrawFunc;
 
 function assignPadPainterDraw(PadPainterClass) {
    PadPainterClass.prototype.drawObject = async (...args) =>
-      draw(...args).catch(err => { console.log(err?.message ?? err); return null; } );
+      draw(...args).catch(err => { console.log(err?.message ?? err); return null; });
    PadPainterClass.prototype.getObjectDrawSettings = getDrawSettings;
 }
 
@@ -100470,7 +100355,7 @@ async function init_v7(arg) {
    return Promise.resolve().then(function () { return RCanvasPainter$1; }).then(h => {
       // only now one can draw primitives in the canvas
       assignPadPainterDraw(h.RPadPainter);
-      switch(arg) {
+      switch (arg) {
          case 'more': return Promise.resolve().then(function () { return v7more; });
          case 'pave': return Promise.resolve().then(function () { return RPavePainter$1; });
          case 'rh1': return Promise.resolve().then(function () { return RH1Painter$1; });
@@ -100488,13 +100373,10 @@ internals.addStreamerInfosForPainter = addStreamerInfosForPainter;
 /** @summary Draw TRooPlot
   * @private */
 async function drawRooPlot(dom, plot) {
-
-   return draw(dom, plot._hist, 'hist').then(hp => {
-      let arr = [];
-
+   return draw(dom, plot._hist, 'hist').then(async hp => {
+      const arr = [];
       for (let i = 0; i < plot._items.arr.length; ++i)
          arr.push(draw(dom, plot._items.arr[i], plot._items.opt[i]));
-
       return Promise.all(arr).then(() => hp);
    });
 }
@@ -101199,7 +101081,7 @@ function canExpandHandle(handle) {
    return handle?.expand || handle?.get_expand || handle?.expand_item;
 }
 
-const kindTFile = prROOT + 'TFile';
+const kindTFile = prROOT + clTFile;
 
 /**
   * @summary Painter of hierarchical structures
@@ -102031,7 +101913,7 @@ class HierarchyPainter extends BasePainter {
       }
 
       if (!place) place = 'item';
-      let selector = (hitem._kind == prROOT + 'TKey' && hitem._more) ? 'noinspect' : '',
+      let selector = (hitem._kind == prROOT + clTKey && hitem._more) ? 'noinspect' : '',
           sett = getDrawSettings(hitem._kind, selector), handle = sett.handle;
 
       if (place == 'icon') {
@@ -103776,7 +103658,7 @@ class HierarchyPainter extends BasePainter {
          browser_configured = true;
       }
 
-      if (!browser_configured && (browser$1.screenWidth <= 640))
+      if (!browser_configured && (browser.screenWidth <= 640))
          browser_kind = 'float';
 
       this.no_select = GetOption('noselect');
@@ -104292,17 +104174,16 @@ taskHierarchy: taskHierarchy
 /** @summary Read style and settings from URL
   * @private */
 function readStyleFromURL(url) {
-
    // first try to read settings from coockies
    readSettings();
    readStyle();
 
-   let d = decodeUrl(url);
+   const d = decodeUrl(url);
 
    function get_bool(name, field) {
       if (d.has(name)) {
-         let val = d.get(name);
-         settings[field] = (val != '0') && (val != 'false') && (val != 'off');
+         const val = d.get(name);
+         settings[field] = (val !== '0') && (val !== 'false') && (val !== 'off');
       }
    }
 
@@ -104339,31 +104220,32 @@ function readStyleFromURL(url) {
    if (inter === 'nomenu')
       settings.ContextMenu = false;
    else if (inter !== undefined) {
-      if (!inter || (inter == '1'))
+      if (!inter || (inter === '1'))
          inter = '111111';
-      else if (inter == '0')
+      else if (inter === '0')
          inter = '000000';
       if (inter.length === 6) {
-         switch(inter[0]) {
+         switch (inter[0]) {
             case '0': settings.ToolBar = false; break;
             case '1': settings.ToolBar = 'popup'; break;
             case '2': settings.ToolBar = true; break;
          }
          inter = inter.slice(1);
       }
-      if (inter.length == 5) {
+      if (inter.length === 5) {
          settings.Tooltip = parseInt(inter[0]);
-         settings.ContextMenu = (inter[1] != '0');
-         settings.Zooming = (inter[2] != '0');
-         settings.MoveResize = (inter[3] != '0');
-         settings.DragAndDrop = (inter[4] != '0');
+         settings.ContextMenu = (inter[1] !== '0');
+         settings.Zooming = (inter[2] !== '0');
+         settings.MoveResize = (inter[3] !== '0');
+         settings.DragAndDrop = (inter[4] !== '0');
       }
    }
 
    get_bool('tooltip', 'Tooltip');
 
-   let mathjax = d.get('mathjax', null), latex = d.get('latex', null);
-   if ((mathjax !== null) && (mathjax != '0') && (latex === null))
+   const mathjax = d.get('mathjax', null);
+   let latex = d.get('latex', null);
+   if ((mathjax !== null) && (mathjax !== '0') && (latex === null))
       latex = 'math';
    if (latex !== null)
       settings.Latex = constants$1.Latex.fromString(latex);
@@ -104374,7 +104256,8 @@ function readStyleFromURL(url) {
    if (d.has('adjframe')) settings.CanAdjustFrame = true;
 
    if (d.has('toolbar')) {
-      let toolbar = d.get('toolbar', ''), val = null;
+      const toolbar = d.get('toolbar', '');
+      let val = null;
       if (toolbar.indexOf('popup') >= 0) val = 'popup';
       if (toolbar.indexOf('left') >= 0) { settings.ToolBarSide = 'left'; val = 'popup'; }
       if (toolbar.indexOf('right') >= 0) { settings.ToolBarSide = 'right'; val = 'popup'; }
@@ -104390,11 +104273,11 @@ function readStyleFromURL(url) {
       settings.DragGraphs = false;
 
    if (d.has('palette')) {
-      let palette = parseInt(d.get('palette'));
+      const palette = parseInt(d.get('palette'));
       if (Number.isInteger(palette) && (palette > 0) && (palette < 113)) settings.Palette = palette;
    }
 
-   let render3d = d.get('render3d'), embed3d = d.get('embed3d'), geosegm = d.get('geosegm');
+   const render3d = d.get('render3d'), embed3d = d.get('embed3d'), geosegm = d.get('geosegm');
    if (render3d) settings.Render3D = constants$1.Render3D.fromString(render3d);
    if (embed3d) settings.Embed3D = constants$1.Embed3D.fromString(embed3d);
    if (geosegm) settings.GeoGradPerSegm = Math.max(2, parseInt(geosegm));
@@ -104404,10 +104287,10 @@ function readStyleFromURL(url) {
 
    function get_int_style(name, field, dflt) {
       if (!d.has(name)) return;
-      let val = d.get(name);
-      if (!val || (val == 'true') || (val == 'on'))
+      const val = d.get(name);
+      if (!val || (val === 'true') || (val === 'on'))
          gStyle[field] = dflt;
-      else if ((val == 'false') || (val == 'off'))
+      else if ((val === 'false') || (val === 'off'))
          gStyle[field] = 0;
       else
          gStyle[field] = parseInt(val);
@@ -104434,19 +104317,19 @@ function readStyleFromURL(url) {
   * import { buildGUI } from 'https://root.cern/js/latest/modules/gui.mjs';
   * buildGUI('guiDiv'); */
 async function buildGUI(gui_element, gui_kind = '') {
-   let myDiv = select(isStr(gui_element) ? `#${gui_element}` : gui_element);
+   const myDiv = select(isStr(gui_element) ? `#${gui_element}` : gui_element);
    if (myDiv.empty())
       return Promise.reject(Error('no div for gui found'));
 
    myDiv.html(''); // clear element
 
-   let d = decodeUrl(), online = (gui_kind == 'online'), nobrowser = false, drawing = false;
+   const d = decodeUrl();
+   let online = (gui_kind === 'online'), nobrowser = false, drawing = false;
 
-   if (gui_kind == 'draw') {
+   if (gui_kind === 'draw')
       online = drawing = nobrowser = true;
-   } else if ((gui_kind == 'nobrowser') || d.has('nobrowser') || (myDiv.attr('nobrowser') && myDiv.attr('nobrowser') !== 'false')) {
+   else if ((gui_kind === 'nobrowser') || d.has('nobrowser') || (myDiv.attr('nobrowser') && myDiv.attr('nobrowser') !== 'false'))
       nobrowser = true;
-   }
 
    if (myDiv.attr('ignoreurl') === 'true')
       settings.IgnoreUrlOptions = true;
@@ -104457,20 +104340,19 @@ async function buildGUI(gui_element, gui_kind = '') {
       let guisize = d.get('divsize');
       if (guisize) {
          guisize = guisize.split('x');
-         if (guisize.length != 2) guisize = null;
+         if (guisize.length !== 2) guisize = null;
       }
 
-      if (guisize) {
-         myDiv.style('position','relative').style('width', guisize[0] + 'px').style('height', guisize[1] + 'px');
-      } else {
-         select('html').style('height','100%');
-         select('body').style('min-height','100%').style('margin',0).style('overflow','hidden');
-         myDiv.style('position','absolute').style('inset','0px').style('padding','1px');
+      if (guisize)
+         myDiv.style('position', 'relative').style('width', guisize[0] + 'px').style('height', guisize[1] + 'px');
+      else {
+         select('html').style('height', '100%');
+         select('body').style('min-height', '100%').style('margin', 0).style('overflow', 'hidden');
+         myDiv.style('position', 'absolute').style('inset', '0px').style('padding', '1px');
       }
    }
 
-   let hpainter = new HierarchyPainter('root', null);
-
+   const hpainter = new HierarchyPainter('root', null);
    if (online) hpainter.is_online = drawing ? 'draw' : 'online';
    if (drawing) hpainter.exclude_browser = true;
    hpainter.start_without_browser = nobrowser;
@@ -104480,9 +104362,8 @@ async function buildGUI(gui_element, gui_kind = '') {
          return hpainter.initializeBrowser();
       if (!drawing)
          return;
-      let obj, func = internals.getCachedObject || findFunction('GetCachedObject');
-      if (isFunc(func))
-         obj = parse(func());
+      const func = internals.getCachedObject || findFunction('GetCachedObject'),
+            obj = isFunc(func) ? parse(func()) : undefined;
       if (isObject(obj))
          hpainter._cached_draw_object = obj;
       let opt = d.get('opt', '');
@@ -105028,6 +104909,2168 @@ drawPolyMarker: drawPolyMarker,
 drawText: drawText$1
 });
 
+const kNotEditable = BIT(18),   // bit set if graph is non editable
+      clTGraphErrors = 'TGraphErrors',
+      clTGraphAsymmErrors = 'TGraphAsymmErrors',
+      clTGraphBentErrors = 'TGraphBentErrors',
+      clTGraphMultiErrors = 'TGraphMultiErrors';
+
+/**
+ * @summary Painter for TGraph object.
+ *
+ * @private
+ */
+
+
+let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
+
+   constructor(dom, graph) {
+      super(dom, graph);
+      this.axes_draw = false; // indicate if graph histogram was drawn for axes
+      this.bins = null;
+      this.xmin = this.ymin = this.xmax = this.ymax = 0;
+      this.wheel_zoomy = true;
+      this.is_bent = (graph._typename == clTGraphBentErrors);
+      this.has_errors = (graph._typename == clTGraphErrors) ||
+                        (graph._typename == clTGraphMultiErrors) ||
+                        (graph._typename == clTGraphAsymmErrors) ||
+                         this.is_bent || graph._typename.match(/^RooHist/);
+   }
+
+   /** @summary Return drawn graph object */
+   getGraph() { return this.getObject(); }
+
+   /** @summary Return histogram object used for axis drawings */
+   getHistogram() { return this.getObject()?.fHistogram; }
+
+   /** @summary Set histogram object to graph */
+   setHistogram(histo) {
+      let obj = this.getObject();
+      if (obj) obj.fHistogram = histo;
+   }
+
+   /** @summary Redraw graph
+     * @desc may redraw histogram which was used to draw axes
+     * @return {Promise} for ready */
+   async redraw() {
+      let promise = Promise.resolve(true);
+
+      if (this.$redraw_hist) {
+         delete this.$redraw_hist;
+         let hist_painter = this.getMainPainter();
+         if (hist_painter?.$secondary && this.axes_draw)
+            promise = hist_painter.redraw();
+      }
+
+      return promise.then(() => this.drawGraph());
+   }
+
+   /** @summary Cleanup graph painter */
+   cleanup() {
+      delete this.interactive_bin; // break mouse handling
+      delete this.bins;
+      super.cleanup();
+   }
+
+   /** @summary Returns object if this drawing TGraphMultiErrors object */
+   get_gme() {
+      let graph = this.getGraph();
+      return graph?._typename == clTGraphMultiErrors ? graph : null;
+   }
+
+   /** @summary Decode options */
+   decodeOptions(opt, first_time) {
+
+      if (isStr(opt) && (opt.indexOf('same ') == 0))
+         opt = opt.slice(5);
+
+      let graph = this.getGraph(),
+          is_gme = !!this.get_gme(),
+          blocks_gme = [],
+          has_main = first_time ? !!this.getMainPainter() : !this.axes_draw;
+
+      if (!this.options) this.options = {};
+
+      // decode main draw options for the graph
+      const decodeBlock = (d, res) => {
+         Object.assign(res, { Line: 0, Curve: 0, Rect: 0, Mark: 0, Bar: 0, OutRange: 0, EF:0, Fill: 0, MainError: 1, Ends: 1, ScaleErrX: 1 });
+
+         if (is_gme && d.check('S=', true)) res.ScaleErrX = d.partAsFloat();
+
+         if (d.check('L')) res.Line = 1;
+         if (d.check('F')) res.Fill = 1;
+         if (d.check('CC')) res.Curve = 2; // draw all points without reduction
+         if (d.check('C')) res.Curve = 1;
+         if (d.check('*')) res.Mark = 103;
+         if (d.check('P0')) res.Mark = 104;
+         if (d.check('P')) res.Mark = 1;
+         if (d.check('B')) { res.Bar = 1; res.Errors = 0; }
+         if (d.check('Z')) { res.Errors = 1; res.Ends = 0; }
+         if (d.check('||')) { res.Errors = 1; res.MainError = 0; res.Ends = 1; }
+         if (d.check('[]')) { res.Errors = 1; res.MainError = 0; res.Ends = 2; }
+         if (d.check('|>')) { res.Errors = 1; res.Ends = 3; }
+         if (d.check('>')) { res.Errors = 1; res.Ends = 4; }
+         if (d.check('0')) { res.Mark = 1; res.Errors = 1; res.OutRange = 1; }
+         if (d.check('1')) { if (res.Bar == 1) res.Bar = 2; }
+         if (d.check('2')) { res.Rect = 1; res.Errors = 0; }
+         if (d.check('3')) { res.EF = 1; res.Errors = 0; }
+         if (d.check('4')) { res.EF = 2; res.Errors = 0; }
+         if (d.check('5')) { res.Rect = 2; res.Errors = 0; }
+         if (d.check('X')) res.Errors = 0;
+      };
+
+      Object.assign(this.options, { Axis: '', NoOpt: 0, PadStats: false, PadPalette: false, original: opt, second_x: false, second_y: false, individual_styles: false });
+
+      if (is_gme && opt) {
+         if (opt.indexOf(';') > 0) {
+            blocks_gme = opt.split(';');
+            opt = blocks_gme.shift();
+         } else if (opt.indexOf('_') > 0) {
+            blocks_gme = opt.split('_');
+            opt = blocks_gme.shift();
+         }
+      }
+
+      let res = this.options,
+          d = new DrawOptions(opt);
+
+      // check pad options first
+      res.PadStats = d.check('USE_PAD_STATS');
+      res.PadPalette = d.check('USE_PAD_PALETTE');
+
+      let hopt = '';
+      PadDrawOptions.forEach(name => { if (d.check(name)) hopt += ';' + name; });
+      if (d.check('XAXIS_', true)) hopt += ';XAXIS_' + d.part;
+      if (d.check('YAXIS_', true)) hopt += ';YAXIS_' + d.part;
+
+      if (d.empty()) {
+         res.original = has_main ? 'lp' : 'alp';
+         d = new DrawOptions(res.original);
+      }
+
+      if (d.check('NOOPT')) res.NoOpt = 1;
+
+      if (d.check('POS3D_', true)) res.pos3d = d.partAsInt() - 0.5;
+
+      res._pfc = d.check('PFC');
+      res._plc = d.check('PLC');
+      res._pmc = d.check('PMC');
+
+      if (d.check('A')) res.Axis = d.check('I') ? 'A' : 'AXIS'; // I means invisible axis
+      if (d.check('X+')) { res.Axis += 'X+'; res.second_x = has_main; }
+      if (d.check('Y+')) { res.Axis += 'Y+'; res.second_y = has_main; }
+      if (d.check('RX')) res.Axis += 'RX';
+      if (d.check('RY')) res.Axis += 'RY';
+
+      if (is_gme) {
+         res.blocks = [];
+         res.skip_errors_x0 = res.skip_errors_y0 = false;
+         if (d.check('X0')) res.skip_errors_x0 = true;
+         if (d.check('Y0')) res.skip_errors_y0 = true;
+      }
+
+      decodeBlock(d, res);
+
+      if (is_gme) {
+         if (d.check('S')) res.individual_styles = true;
+      }
+
+      // if (d.check('E')) res.Errors = 1; // E option only defined for TGraphPolar
+
+      if (res.Errors === undefined)
+         res.Errors = this.has_errors && (!is_gme || !blocks_gme.length) ? 1 : 0;
+
+      // special case - one could use svg:path to draw many pixels (
+      if ((res.Mark == 1) && (graph.fMarkerStyle == 1)) res.Mark = 101;
+
+      // if no drawing option is selected and if opt == '' nothing is done.
+      if (res.Line + res.Fill + res.Curve + res.Mark + res.Bar + res.EF + res.Rect + res.Errors == 0) {
+         if (d.empty()) res.Line = 1;
+      }
+
+      if (this.matchObjectType(clTGraphErrors)) {
+         let len = graph.fEX.length, m = 0;
+         for (let k = 0; k < len; ++k)
+            m = Math.max(m, graph.fEX[k], graph.fEY[k]);
+         if (m < 1e-100)
+            res.Errors = 0;
+      }
+
+      this._cutg = this.matchObjectType(clTCutG);
+      this._cutg_lastsame = this._cutg && (graph.fNpoints > 3) &&
+                            (graph.fX[0] == graph.fX[graph.fNpoints-1]) && (graph.fY[0] == graph.fY[graph.fNpoints-1]);
+
+      if (!res.Axis) {
+         // check if axis should be drawn
+         // either graph drawn directly or
+         // graph is first object in list of primitives
+         let pad = this.getPadPainter()?.getRootPad(true);
+         if (!pad || (pad?.fPrimitives?.arr[0] === this.getObject())) res.Axis = 'AXIS';
+      } else if (res.Axis.indexOf('A') < 0) {
+         res.Axis = 'AXIS,' + res.Axis;
+      }
+
+      res.Axis += hopt;
+
+      for (let bl = 0; bl < blocks_gme.length; ++bl) {
+         let subd = new DrawOptions(blocks_gme[bl]), subres = {};
+         decodeBlock(subd, subres);
+         subres.skip_errors_x0 = res.skip_errors_x0;
+         subres.skip_errors_y0 = res.skip_errors_y0;
+         res.blocks.push(subres);
+      }
+   }
+
+   /** @summary Extract errors for TGraphMultiErrors */
+   extractGmeErrors(nblock) {
+      if (!this.bins) return;
+      let gr = this.getGraph();
+      this.bins.forEach(bin => {
+         bin.eylow  = gr.fEyL[nblock][bin.indx];
+         bin.eyhigh = gr.fEyH[nblock][bin.indx];
+      });
+   }
+
+   /** @summary Create bins for TF1 drawing */
+   createBins() {
+      let gr = this.getGraph();
+      if (!gr) return;
+
+      let kind = 0, npoints = gr.fNpoints;
+      if (this._cutg && this._cutg_lastsame)
+         npoints--;
+
+      if (gr._typename == clTGraphErrors)
+         kind = 1;
+      else if (gr._typename == clTGraphMultiErrors)
+         kind = 2;
+      else if (gr._typename == clTGraphAsymmErrors || gr._typename == clTGraphBentErrors || gr._typename.match(/^RooHist/))
+         kind = 3;
+
+      this.bins = new Array(npoints);
+
+      for (let p = 0; p < npoints; ++p) {
+         let bin = this.bins[p] = { x: gr.fX[p], y: gr.fY[p], indx: p };
+         switch(kind) {
+            case 1:
+               bin.exlow = bin.exhigh = gr.fEX[p];
+               bin.eylow = bin.eyhigh = gr.fEY[p];
+               break;
+            case 2:
+               bin.exlow  = gr.fExL[p];
+               bin.exhigh = gr.fExH[p];
+               bin.eylow  = gr.fEyL[0][p];
+               bin.eyhigh = gr.fEyH[0][p];
+               break;
+            case 3:
+               bin.exlow  = gr.fEXlow[p];
+               bin.exhigh = gr.fEXhigh[p];
+               bin.eylow  = gr.fEYlow[p];
+               bin.eyhigh = gr.fEYhigh[p];
+               break;
+         }
+
+         if (p === 0) {
+            this.xmin = this.xmax = bin.x;
+            this.ymin = this.ymax = bin.y;
+         }
+
+         if (kind > 0) {
+            this.xmin = Math.min(this.xmin, bin.x - bin.exlow, bin.x + bin.exhigh);
+            this.xmax = Math.max(this.xmax, bin.x - bin.exlow, bin.x + bin.exhigh);
+            this.ymin = Math.min(this.ymin, bin.y - bin.eylow, bin.y + bin.eyhigh);
+            this.ymax = Math.max(this.ymax, bin.y - bin.eylow, bin.y + bin.eyhigh);
+         } else {
+            this.xmin = Math.min(this.xmin, bin.x);
+            this.xmax = Math.max(this.xmax, bin.x);
+            this.ymin = Math.min(this.ymin, bin.y);
+            this.ymax = Math.max(this.ymax, bin.y);
+         }
+      }
+   }
+
+   /** @summary Return margins for histogram ranges */
+   getHistRangeMargin() { return 0.1; }
+
+   /** @summary Create histogram for graph
+     * @desc graph bins should be created when calling this function
+     * @param {boolean} [set_x] - set X axis range
+     * @param {boolean} [set_y] - set Y axis range */
+   createHistogram(set_x, set_y) {
+      if (!set_x && !set_y)
+         set_x = set_y = true;
+
+      let xmin = this.xmin, xmax = this.xmax, ymin = this.ymin, ymax = this.ymax, margin = this.getHistRangeMargin();
+
+      if (xmin >= xmax) xmax = xmin + 1;
+      if (ymin >= ymax) ymax = ymin + 1;
+      let dx = (xmax - xmin) * margin, dy = (ymax - ymin) * margin,
+          uxmin = xmin - dx, uxmax = xmax + dx,
+          minimum = ymin - dy, maximum = ymax + dy;
+
+      if (!this._not_adjust_hrange) {
+         if ((uxmin < 0) && (xmin >= 0))
+            uxmin = xmin * (1 - margin);
+         if ((uxmax > 0) && (xmax <= 0))
+            uxmax = 0;
+      }
+
+      let graph = this.getGraph(),
+          histo = this.getHistogram(),
+          minimum0 = minimum, maximum0 = maximum;
+
+      if (!histo) {
+         histo = this._need_2dhist ? createHistogram(clTH2I, 30, 30) : createHistogram(clTH1I, 100);
+         histo.fName = graph.fName + '_h';
+         histo.fBits = histo.fBits | kNoStats;
+         this._own_histogram = true;
+         this.setHistogram(histo);
+      } else if ((histo.fMaximum != kNoZoom) && (histo.fMinimum != kNoZoom)) {
+         minimum = histo.fMinimum;
+         maximum = histo.fMaximum;
+      }
+
+      if (graph.fMinimum != kNoZoom) minimum = ymin = graph.fMinimum;
+      if (graph.fMaximum != kNoZoom) maximum = graph.fMaximum;
+      if ((minimum < 0) && (ymin >= 0)) minimum = (1 - margin)*ymin;
+
+      setHistogramTitle(histo, this.getObject().fTitle);
+
+      if (set_x) {
+         histo.fXaxis.fXmin = uxmin;
+         histo.fXaxis.fXmax = uxmax;
+      }
+
+      if (set_y) {
+         histo.fYaxis.fXmin = Math.min(minimum0, minimum);
+         histo.fYaxis.fXmax = Math.max(maximum0, maximum);
+         histo.fMinimum = minimum;
+         histo.fMaximum = maximum;
+      }
+
+      return histo;
+   }
+
+   /** @summary Check if user range can be unzommed
+     * @desc Used when graph points covers larger range than provided histogram */
+   unzoomUserRange(dox, doy /*, doz*/) {
+      let graph = this.getGraph();
+      if (this._own_histogram || !graph) return false;
+
+      let histo = this.getHistogram();
+
+      dox = dox && histo && ((histo.fXaxis.fXmin > this.xmin) || (histo.fXaxis.fXmax < this.xmax));
+      doy = doy && histo && ((histo.fYaxis.fXmin > this.ymin) || (histo.fYaxis.fXmax < this.ymax));
+      if (!dox && !doy) return false;
+
+      this.createHistogram(dox, doy);
+      this.getMainPainter()?.extractAxesProperties(1); // just to enforce ranges extraction
+
+      return true;
+   }
+
+   /** @summary Returns true if graph drawing can be optimize */
+   canOptimize() {
+      return (settings.OptimizeDraw > 0) && !this.options.NoOpt;
+   }
+
+   /** @summary Returns optimized bins - if optimization enabled */
+   optimizeBins(maxpnt, filter_func) {
+      if ((this.bins.length < 30) && !filter_func)
+         return this.bins;
+
+      let selbins = null;
+      if (isFunc(filter_func)) {
+         for (let n = 0; n < this.bins.length; ++n) {
+            if (filter_func(this.bins[n],n)) {
+               if (!selbins) selbins = (n == 0) ? [] : this.bins.slice(0, n);
+            } else {
+               if (selbins) selbins.push(this.bins[n]);
+            }
+         }
+      }
+      if (!selbins) selbins = this.bins;
+
+      if (!maxpnt) maxpnt = 500000;
+
+      if ((selbins.length < maxpnt) || !this.canOptimize()) return selbins;
+      let step = Math.floor(selbins.length / maxpnt);
+      if (step < 2) step = 2;
+      let optbins = [];
+      for (let n = 0; n < selbins.length; n+=step)
+         optbins.push(selbins[n]);
+
+      return optbins;
+   }
+
+   /** @summary Returns tooltip for specified bin */
+   getTooltips(d) {
+      let pmain = this.get_main(), lines = [],
+          funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
+          gme = this.get_gme();
+
+      lines.push(this.getObjectHint());
+
+      if (d && funcs) {
+         if (d.indx !== undefined)
+            lines.push('p = ' + d.indx);
+         lines.push('x = ' + funcs.axisAsText('x', d.x), 'y = ' + funcs.axisAsText('y', d.y));
+         if (gme)
+            lines.push('error x = -' + funcs.axisAsText('x', gme.fExL[d.indx]) + '/+' + funcs.axisAsText('x', gme.fExH[d.indx]));
+         else if (this.options.Errors && (funcs.x_handle.kind == 'normal') && (d.exlow || d.exhigh))
+            lines.push('error x = -' + funcs.axisAsText('x', d.exlow) + '/+' + funcs.axisAsText('x', d.exhigh));
+
+         if (gme) {
+            for (let ny = 0; ny < gme.fNYErrors; ++ny)
+               lines.push(`error y${ny} = -${funcs.axisAsText('y', gme.fEyL[ny][d.indx])}/+${funcs.axisAsText('y', gme.fEyH[ny][d.indx])}`);
+         } else if ((this.options.Errors || (this.options.EF > 0)) && (funcs.y_handle.kind == 'normal') && (d.eylow || d.eyhigh))
+            lines.push('error y = -' + funcs.axisAsText('y', d.eylow) + '/+' + funcs.axisAsText('y', d.eyhigh));
+
+      }
+      return lines;
+   }
+
+   /** @summary Provide frame painter for graph
+     * @desc If not exists, emulate its behaviour */
+   get_main() {
+      let pmain = this.getFramePainter();
+
+      if (pmain?.grx && pmain?.gry) return pmain;
+
+      // FIXME: check if needed, can be removed easily
+      let pp = this.getPadPainter(),
+          rect = pp?.getPadRect() || { width: 800, height: 600 };
+
+      pmain = {
+          pad_layer: true,
+          pad: pp?.getRootPad(true),
+          pw: rect.width,
+          ph: rect.height,
+          fX1NDC: 0.1, fX2NDC: 0.9, fY1NDC: 0.1, fY2NDC: 0.9,
+          getFrameWidth() { return this.pw; },
+          getFrameHeight() { return this.ph; },
+          grx(value) {
+             if (this.pad.fLogx)
+                value = (value > 0) ? Math.log10(value) : this.pad.fUxmin;
+             else
+                value = (value - this.pad.fX1) / (this.pad.fX2 - this.pad.fX1);
+             return value * this.pw;
+          },
+          gry(value) {
+             if (this.pad.fLogy)
+                value = (value > 0) ? Math.log10(value) : this.pad.fUymin;
+             else
+                value = (value - this.pad.fY1) / (this.pad.fY2 - this.pad.fY1);
+             return (1 - value) * this.ph;
+          },
+          revertAxis(name, v) {
+            if (name == 'x')
+               return v / this.pw * (this.pad.fX2 - this.pad.fX1) + this.pad.fX1;
+            if (name == 'y')
+               return (1 - v / this.ph) * (this.pad.fY2 - this.pad.fY1) + this.pad.fY1;
+            return v;
+          },
+          getGrFuncs() { return this; }
+      };
+
+      return pmain.pad ? pmain : null;
+   }
+
+   /** @summary append exclusion area to created path */
+   appendExclusion(is_curve, path, drawbins, excl_width) {
+      let extrabins = [];
+      for (let n = drawbins.length-1; n >= 0; --n) {
+         let bin = drawbins[n],
+             dlen = Math.sqrt(bin.dgrx**2 + bin.dgry**2);
+         // shift point
+         bin.grx += excl_width*bin.dgry/dlen;
+         bin.gry -= excl_width*bin.dgrx/dlen;
+         extrabins.push(bin);
+      }
+
+      let path2 = buildSvgCurve(extrabins, { cmd: 'L', line: !is_curve });
+
+      this.draw_g.append('svg:path')
+                 .attr('d', path + path2 + 'Z')
+                 .call(this.fillatt.func)
+                 .style('opacity', 0.75);
+   }
+
+   /** @summary draw TGraph bins with specified options
+     * @desc Can be called several times */
+   drawBins(funcs, options, draw_g, w, h, lineatt, fillatt, main_block) {
+      let graph = this.getGraph(),
+          excl_width = 0, drawbins = null;
+
+      if (main_block && lineatt.excl_side) {
+         excl_width = lineatt.excl_width;
+         if ((lineatt.width > 0) && !options.Line && !options.Curve) options.Line = 1;
+      }
+
+      if (options.EF) {
+         drawbins = this.optimizeBins((options.EF > 1) ? 20000 : 0);
+
+         // build lower part
+         for (let n = 0; n < drawbins.length; ++n) {
+            let bin = drawbins[n];
+            bin.grx = funcs.grx(bin.x);
+            bin.gry = funcs.gry(bin.y - bin.eylow);
+         }
+
+         let path1 = buildSvgCurve(drawbins, { line: options.EF < 2, qubic: true }),
+             bins2 = [];
+
+         for (let n = drawbins.length-1; n >= 0; --n) {
+            let bin = drawbins[n];
+            bin.gry = funcs.gry(bin.y + bin.eyhigh);
+            bins2.push(bin);
+         }
+
+         // build upper part (in reverse direction)
+         let path2 = buildSvgCurve(bins2, { line: options.EF < 2, cmd: 'L', qubic: true });
+
+         draw_g.append('svg:path')
+               .attr('d', path1 + path2 + 'Z')
+               .call(fillatt.func);
+         if (main_block)
+            this.draw_kind = 'lines';
+      }
+
+      if (options.Line || options.Fill) {
+
+         let close_symbol = '';
+         if (this._cutg) {
+            close_symbol = 'Z';
+            if (!options.original) options.Fill = 1;
+         }
+
+         if (options.Fill) {
+            close_symbol = 'Z'; // always close area if we want to fill it
+            excl_width = 0;
+         }
+
+         if (!drawbins) drawbins = this.optimizeBins(0);
+
+         for (let n = 0; n < drawbins.length; ++n) {
+            let bin = drawbins[n];
+            bin.grx = funcs.grx(bin.x);
+            bin.gry = funcs.gry(bin.y);
+         }
+
+         let path = buildSvgCurve(drawbins, {line: true, calc: excl_width });
+
+         if (excl_width)
+             this.appendExclusion(false, path, drawbins, excl_width);
+
+         let elem = draw_g.append('svg:path').attr('d', path + close_symbol);
+         if (options.Line)
+            elem.call(lineatt.func);
+
+         if (options.Fill)
+            elem.call(fillatt.func);
+         else
+            elem.style('fill', 'none');
+
+         if (main_block)
+            this.draw_kind = 'lines';
+      }
+
+      if (options.Curve) {
+         let curvebins = drawbins;
+         if ((this.draw_kind != 'lines') || !curvebins || ((options.Curve == 1) && (curvebins.length > 20000))) {
+            curvebins = this.optimizeBins((options.Curve == 1) ? 20000 : 0);
+            for (let n = 0; n < curvebins.length; ++n) {
+               let bin = curvebins[n];
+               bin.grx = funcs.grx(bin.x);
+               bin.gry = funcs.gry(bin.y);
+            }
+         }
+
+         let path = buildSvgCurve(curvebins, { qubic: !excl_width } );
+         if (excl_width)
+            this.appendExclusion(true, path, curvebins, excl_width);
+
+         draw_g.append('svg:path')
+               .attr('d', path)
+               .call(lineatt.func)
+               .style('fill', 'none');
+         if (main_block)
+            this.draw_kind = 'lines'; // handled same way as lines
+      }
+
+      let nodes = null;
+
+      if (options.Errors || options.Rect || options.Bar) {
+
+         drawbins = this.optimizeBins(5000, (pnt,i) => {
+
+            let grx = funcs.grx(pnt.x);
+
+            // when drawing bars, take all points
+            if (!options.Bar && ((grx < 0) || (grx > w))) return true;
+
+            let gry = funcs.gry(pnt.y);
+
+            if (!options.Bar && !options.OutRange && ((gry < 0) || (gry > h))) return true;
+
+            pnt.grx1 = Math.round(grx);
+            pnt.gry1 = Math.round(gry);
+
+            if (this.has_errors) {
+               pnt.grx0 = Math.round(funcs.grx(pnt.x - options.ScaleErrX*pnt.exlow) - grx);
+               pnt.grx2 = Math.round(funcs.grx(pnt.x + options.ScaleErrX*pnt.exhigh) - grx);
+               pnt.gry0 = Math.round(funcs.gry(pnt.y - pnt.eylow) - gry);
+               pnt.gry2 = Math.round(funcs.gry(pnt.y + pnt.eyhigh) - gry);
+
+               if (this.is_bent) {
+                  pnt.grdx0 = Math.round(funcs.gry(pnt.y + graph.fEXlowd[i]) - gry);
+                  pnt.grdx2 = Math.round(funcs.gry(pnt.y + graph.fEXhighd[i]) - gry);
+                  pnt.grdy0 = Math.round(funcs.grx(pnt.x + graph.fEYlowd[i]) - grx);
+                  pnt.grdy2 = Math.round(funcs.grx(pnt.x + graph.fEYhighd[i]) - grx);
+               } else {
+                  pnt.grdx0 = pnt.grdx2 = pnt.grdy0 = pnt.grdy2 = 0;
+               }
+            }
+
+            return false;
+         });
+
+         if (main_block)
+            this.draw_kind = 'nodes';
+
+         nodes = draw_g.selectAll('.grpoint')
+                       .data(drawbins)
+                       .enter()
+                       .append('svg:g')
+                       .attr('class', 'grpoint')
+                       .attr('transform', d => makeTranslate(d.grx1, d.gry1));
+      }
+
+      if (options.Bar) {
+         // calculate bar width
+         for (let i = 1; i < drawbins.length-1; ++i)
+            drawbins[i].width = Math.max(2, (drawbins[i+1].grx1 - drawbins[i-1].grx1) / 2 - 2);
+
+         // first and last bins
+         switch (drawbins.length) {
+            case 0: break;
+            case 1: drawbins[0].width = w/4; break; // pathologic case of single bin
+            case 2: drawbins[0].width = drawbins[1].width = (drawbins[1].grx1-drawbins[0].grx1)/2; break;
+            default:
+               drawbins[0].width = drawbins[1].width;
+               drawbins[drawbins.length-1].width = drawbins[drawbins.length-2].width;
+         }
+
+         let yy0 = Math.round(funcs.gry(0)), usefill = fillatt;
+
+         if (main_block) {
+            let fp = this.getFramePainter(),
+                fpcol = fp?.fillatt && !fp?.fillatt.empty() ? fp.fillatt.getFillColor() : -1;
+            if (fpcol === fillatt.getFillColor())
+               usefill = new TAttFillHandler({ color: fpcol == 'white' ? 1 : 0, pattern: 1001 });
+         }
+
+         nodes.append('svg:path')
+              .attr('d', d => {
+                 d.bar = true; // element drawn as bar
+                 let dx = Math.round(-d.width/2),
+                     dw = Math.round(d.width),
+                     dy = (options.Bar !== 1) ? 0 : ((d.gry1 > yy0) ? yy0-d.gry1 : 0),
+                     dh = (options.Bar !== 1) ? (h > d.gry1 ? h - d.gry1 : 0) : Math.abs(yy0 - d.gry1);
+                 return `M${dx},${dy}h${dw}v${dh}h${-dw}z`;
+              })
+            .call(usefill.func);
+      }
+
+      if (options.Rect) {
+         nodes.filter(d => (d.exlow > 0) && (d.exhigh > 0) && (d.eylow > 0) && (d.eyhigh > 0))
+           .append('svg:path')
+           .attr('d', d => {
+               d.rect = true;
+               return `M${d.grx0},${d.gry0}H${d.grx2}V${d.gry2}H${d.grx0}Z`;
+            })
+           .call(fillatt.func)
+           .call(options.Rect === 2 ? lineatt.func : () => {});
+      }
+
+      this.error_size = 0;
+
+      if (options.Errors) {
+         // to show end of error markers, use line width attribute
+         let lw = lineatt.width + gStyle.fEndErrorSize, bb = 0,
+             vv = options.Ends ? `m0,${lw}v${-2*lw}` : '',
+             hh = options.Ends ? `m${lw},0h${-2*lw}` : '',
+             vleft = vv, vright = vv, htop = hh, hbottom = hh;
+
+         const mainLine = (dx,dy) => {
+            if (!options.MainError) return `M${dx},${dy}`;
+            let res = 'M0,0';
+            if (dx) return res + (dy ? `L${dx},${dy}` : `H${dx}`);
+            return dy ? res + `V${dy}` : res;
+         };
+
+         switch (options.Ends) {
+            case 2:  // option []
+               bb = Math.max(lineatt.width+1, Math.round(lw*0.66));
+               vleft = `m${bb},${lw}h${-bb}v${-2*lw}h${bb}`;
+               vright = `m${-bb},${lw}h${bb}v${-2*lw}h${-bb}`;
+               htop = `m${-lw},${bb}v${-bb}h${2*lw}v${bb}`;
+               hbottom = `m${-lw},${-bb}v${bb}h${2*lw}v${-bb}`;
+               break;
+            case 3: // option |>
+               lw = Math.max(lw, Math.round(graph.fMarkerSize*8*0.66));
+               bb = Math.max(lineatt.width+1, Math.round(lw*0.66));
+               vleft = `l${bb},${lw}v${-2*lw}l${-bb},${lw}`;
+               vright = `l${-bb},${lw}v${-2*lw}l${bb},${lw}`;
+               htop = `l${-lw},${bb}h${2*lw}l${-lw},${-bb}`;
+               hbottom = `l${-lw},${-bb}h${2*lw}l${-lw},${bb}`;
+               break;
+            case 4: // option >
+               lw = Math.max(lw, Math.round(graph.fMarkerSize*8*0.66));
+               bb = Math.max(lineatt.width+1, Math.round(lw*0.66));
+               vleft = `l${bb},${lw}m0,${-2*lw}l${-bb},${lw}`;
+               vright = `l${-bb},${lw}m0,${-2*lw}l${bb},${lw}`;
+               htop = `l${-lw},${bb}m${2*lw},0l${-lw},${-bb}`;
+               hbottom = `l${-lw},${-bb}m${2*lw},0l${-lw},${bb}`;
+               break;
+         }
+
+         this.error_size = lw;
+
+         lw = Math.floor((lineatt.width-1)/2); // one should take into account half of end-cup line width
+
+         let visible = nodes.filter(d => (d.exlow > 0) || (d.exhigh > 0) || (d.eylow > 0) || (d.eyhigh > 0));
+         if (options.skip_errors_x0 || options.skip_errors_y0)
+            visible = visible.filter(d => ((d.x != 0) || !options.skip_errors_x0) && ((d.y != 0) || !options.skip_errors_y0));
+
+         if (!this.isBatchMode() && settings.Tooltip && main_block)
+            visible.append('svg:path')
+                   .style('fill', 'none')
+                   .style('pointer-events', 'visibleFill')
+                   .attr('d', d => `M${d.grx0},${d.gry0}h${d.grx2-d.grx0}v${d.gry2-d.gry0}h${d.grx0-d.grx2}z`);
+
+         visible.append('svg:path')
+             .call(lineatt.func)
+             .style('fill', 'none')
+             .attr('d', d => {
+                d.error = true;
+                return ((d.exlow > 0)  ? mainLine(d.grx0+lw, d.grdx0) + vleft : '') +
+                       ((d.exhigh > 0) ? mainLine(d.grx2-lw, d.grdx2) + vright : '') +
+                       ((d.eylow > 0)  ? mainLine(d.grdy0, d.gry0-lw) + hbottom : '') +
+                       ((d.eyhigh > 0) ? mainLine(d.grdy2, d.gry2+lw) + htop : '');
+              });
+      }
+
+      if (options.Mark) {
+         // for tooltips use markers only if nodes were not created
+         this.createAttMarker({ attr: graph, style: options.Mark - 100 });
+
+         this.marker_size = this.markeratt.getFullSize();
+
+         this.markeratt.resetPos();
+
+         let path = '', pnt, grx, gry,
+             want_tooltip = !this.isBatchMode() && settings.Tooltip && (!this.markeratt.fill || (this.marker_size < 7)) && !nodes && main_block,
+             hints_marker = '', hsz = Math.max(5, Math.round(this.marker_size*0.7)),
+             maxnummarker = 1000000 / (this.markeratt.getMarkerLength() + 7), step = 1; // let produce SVG at maximum 1MB
+
+         if (!drawbins)
+            drawbins = this.optimizeBins(maxnummarker);
+         else if (this.canOptimize() && (drawbins.length > 1.5*maxnummarker))
+            step = Math.min(2, Math.round(drawbins.length/maxnummarker));
+
+         for (let n = 0; n < drawbins.length; n += step) {
+            pnt = drawbins[n];
+            grx = funcs.grx(pnt.x);
+            if ((grx > -this.marker_size) && (grx < w + this.marker_size)) {
+               gry = funcs.gry(pnt.y);
+               if ((gry > -this.marker_size) && (gry < h + this.marker_size)) {
+                  path += this.markeratt.create(grx, gry);
+                  if (want_tooltip) hints_marker += `M${grx-hsz},${gry-hsz}h${2*hsz}v${2*hsz}h${-2*hsz}z`;
+               }
+            }
+         }
+
+         if (path) {
+            draw_g.append('svg:path')
+                  .attr('d', path)
+                  .call(this.markeratt.func);
+            if ((nodes === null) && (this.draw_kind == 'none') && main_block)
+               this.draw_kind = (options.Mark == 101) ? 'path' : 'mark';
+         }
+         if (want_tooltip && hints_marker)
+            draw_g.append('svg:path')
+                  .attr('d', hints_marker)
+                  .style('fill', 'none')
+                  .style('pointer-events', 'visibleFill');
+      }
+   }
+
+   /** @summary append TGraphQQ part */
+   appendQQ(funcs, graph) {
+      let xqmin = Math.max(funcs.scale_xmin, graph.fXq1),
+          xqmax = Math.min(funcs.scale_xmax, graph.fXq2),
+          yqmin = Math.max(funcs.scale_ymin, graph.fYq1),
+          yqmax = Math.min(funcs.scale_ymax, graph.fYq2),
+          path2 = '',
+          makeLine = (x1,y1,x2,y2) => `M${funcs.grx(x1)},${funcs.gry(y1)}L${funcs.grx(x2)},${funcs.gry(y2)}`,
+          yxmin = (graph.fYq2 - graph.fYq1)*(funcs.scale_xmin-graph.fXq1)/(graph.fXq2-graph.fXq1) + graph.fYq1,
+          yxmax = (graph.fYq2-graph.fYq1)*(funcs.scale_xmax-graph.fXq1)/(graph.fXq2-graph.fXq1) + graph.fYq1;
+
+      if (yxmin < funcs.scale_ymin) {
+         let xymin = (graph.fXq2 - graph.fXq1)*(funcs.scale_ymin-graph.fYq1)/(graph.fYq2-graph.fYq1) + graph.fXq1;
+         path2 = makeLine(xymin, funcs.scale_ymin, xqmin, yqmin);
+      } else {
+         path2 = makeLine(funcs.scale_xmin, yxmin, xqmin, yqmin);
+      }
+
+      if (yxmax > funcs.scale_ymax) {
+         let xymax = (graph.fXq2-graph.fXq1)*(funcs.scale_ymax-graph.fYq1)/(graph.fYq2-graph.fYq1) + graph.fXq1;
+         path2 += makeLine(xqmax, yqmax, xymax, funcs.scale_ymax);
+      } else {
+         path2 += makeLine(xqmax, yqmax, funcs.scale_xmax, yxmax);
+      }
+
+      let latt1 = new TAttLineHandler({ style: 1, width: 1, color: 'black' }),
+          latt2 = new TAttLineHandler({ style: 2, width: 1, color: 'black' });
+
+      this.draw_g.append('path')
+                 .attr('d', makeLine(xqmin,yqmin,xqmax,yqmax))
+                 .call(latt1.func)
+                 .style('fill', 'none');
+
+      this.draw_g.append('path')
+                 .attr('d', path2)
+                 .call(latt2.func)
+                 .style('fill', 'none');
+   }
+
+   drawBins3D(/*fp, graph*/) {
+      console.log('Load ./hist/TGraphPainter.mjs to draw graph in 3D');
+   }
+
+   /** @summary draw TGraph */
+   drawGraph() {
+
+      let pmain = this.get_main(),
+          graph = this.getGraph();
+      if (!pmain) return;
+
+      // special mode for TMultiGraph 3d drawing
+      if (this.options.pos3d)
+         return this.drawBins3D(pmain, graph);
+
+      let is_gme = !!this.get_gme(),
+          funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
+          w = pmain.getFrameWidth(),
+          h = pmain.getFrameHeight();
+
+      this.createG(!pmain.pad_layer);
+
+      if (this.options._pfc || this.options._plc || this.options._pmc) {
+         let mp = this.getMainPainter();
+         if (isFunc(mp?.createAutoColor)) {
+            let icolor = mp.createAutoColor();
+            if (this.options._pfc) { graph.fFillColor = icolor; delete this.fillatt; }
+            if (this.options._plc) { graph.fLineColor = icolor; delete this.lineatt; }
+            if (this.options._pmc) { graph.fMarkerColor = icolor; delete this.markeratt; }
+            this.options._pfc = this.options._plc = this.options._pmc = false;
+         }
+      }
+
+      this.createAttLine({ attr: graph, can_excl: true });
+      this.createAttFill({ attr: graph });
+
+      this.fillatt.used = false; // mark used only when really used
+
+      this.draw_kind = 'none'; // indicate if special svg:g were created for each bin
+      this.marker_size = 0; // indicate if markers are drawn
+      let draw_g = is_gme ? this.draw_g.append('svg:g') : this.draw_g;
+
+      this.drawBins(funcs, this.options, draw_g, w, h, this.lineatt, this.fillatt, true);
+
+      if (graph._typename == 'TGraphQQ')
+         this.appendQQ(funcs, graph);
+
+      if (is_gme) {
+         for (let k = 0; k < graph.fNYErrors; ++k) {
+            let lineatt = this.lineatt, fillatt = this.fillatt;
+            if (this.options.individual_styles) {
+               lineatt = new TAttLineHandler({ attr: graph.fAttLine[k], std: false });
+               fillatt = new TAttFillHandler({ attr: graph.fAttFill[k], std: false, svg: this.getCanvSvg() });
+            }
+            let sub_g = this.draw_g.append('svg:g'),
+                options = (k < this.options.blocks.length) ? this.options.blocks[k] : this.options;
+            this.extractGmeErrors(k);
+            this.drawBins(funcs, options, sub_g, w, h, lineatt, fillatt);
+         }
+         this.extractGmeErrors(0); // ensure that first block kept at the end
+      }
+
+      if (!this.isBatchMode()) {
+         addMoveHandler(this, this.testEditable());
+         assignContextMenu(this);
+      }
+   }
+
+   /** @summary Provide tooltip at specified point */
+   extractTooltip(pnt) {
+      if (!pnt) return null;
+
+      if ((this.draw_kind == 'lines') || (this.draw_kind == 'path') || (this.draw_kind == 'mark'))
+         return this.extractTooltipForPath(pnt);
+
+      if (this.draw_kind != 'nodes') return null;
+
+      let pmain = this.get_main(),
+          height = pmain.getFrameHeight(),
+          esz = this.error_size,
+          isbar1 = (this.options.Bar === 1),
+          funcs = isbar1 ? pmain.getGrFuncs(this.options.second_x, this.options.second_y) : null,
+          findbin = null, best_dist2 = 1e10, best = null,
+          msize = this.marker_size ? Math.round(this.marker_size/2 + 1.5) : 0;
+
+      this.draw_g.selectAll('.grpoint').each(function() {
+         let d = select(this).datum();
+         if (d === undefined) return;
+         let dist2 = (pnt.x - d.grx1) ** 2;
+         if (pnt.nproc === 1) dist2 += (pnt.y - d.gry1) ** 2;
+         if (dist2 >= best_dist2) return;
+
+         let rect;
+
+         if (d.error || d.rect || d.marker) {
+            rect = { x1: Math.min(-esz, d.grx0, -msize),
+                     x2: Math.max(esz, d.grx2, msize),
+                     y1: Math.min(-esz, d.gry2, -msize),
+                     y2: Math.max(esz, d.gry0, msize) };
+         } else if (d.bar) {
+             rect = { x1: -d.width/2, x2: d.width/2, y1: 0, y2: height - d.gry1 };
+
+             if (isbar1) {
+                let yy0 = funcs.gry(0);
+                rect.y1 = (d.gry1 > yy0) ? yy0-d.gry1 : 0;
+                rect.y2 = (d.gry1 > yy0) ? 0 : yy0-d.gry1;
+             }
+          } else {
+             rect = { x1: -5, x2: 5, y1: -5, y2: 5 };
+          }
+          let matchx = (pnt.x >= d.grx1 + rect.x1) && (pnt.x <= d.grx1 + rect.x2),
+              matchy = (pnt.y >= d.gry1 + rect.y1) && (pnt.y <= d.gry1 + rect.y2);
+
+          if (matchx && (matchy || (pnt.nproc > 1))) {
+             best_dist2 = dist2;
+             findbin = this;
+             best = rect;
+             best.exact = /* matchx && */ matchy;
+          }
+       });
+
+      if (findbin === null) return null;
+
+      let d = select(findbin).datum(),
+          gr = this.getGraph(),
+          res = { name: gr.fName, title: gr.fTitle,
+                  x: d.grx1, y: d.gry1,
+                  color1: this.lineatt.color,
+                  lines: this.getTooltips(d),
+                  rect: best, d3bin: findbin };
+
+       res.user_info = { obj: gr, name: gr.fName, bin: d.indx, cont: d.y, grx: d.grx1, gry: d.gry1 };
+
+      if (this.fillatt?.used && !this.fillatt?.empty())
+         res.color2 = this.fillatt.getFillColor();
+
+      if (best.exact) res.exact = true;
+      res.menu = res.exact; // activate menu only when exactly locate bin
+      res.menu_dist = 3; // distance always fixed
+      res.bin = d;
+      res.binindx = d.indx;
+
+      return res;
+   }
+
+   /** @summary Show tooltip */
+   showTooltip(hint) {
+
+      let ttrect = this.draw_g?.selectChild('.tooltip_bin');
+
+      if (!hint || !this.draw_g) {
+         ttrect?.remove();
+         return;
+      }
+
+      if (hint.usepath)
+         return this.showTooltipForPath(hint);
+
+      let d = select(hint.d3bin).datum();
+
+      if (ttrect.empty())
+         ttrect = this.draw_g.append('svg:rect')
+                             .attr('class', 'tooltip_bin')
+                             .style('pointer-events', 'none')
+                             .call(addHighlightStyle);
+
+      hint.changed = ttrect.property('current_bin') !== hint.d3bin;
+
+      if (hint.changed)
+         ttrect.attr('x', d.grx1 + hint.rect.x1)
+               .attr('width', hint.rect.x2 - hint.rect.x1)
+               .attr('y', d.gry1 + hint.rect.y1)
+               .attr('height', hint.rect.y2 - hint.rect.y1)
+               .style('opacity', '0.3')
+               .property('current_bin', hint.d3bin);
+   }
+
+   /** @summary Process tooltip event */
+   processTooltipEvent(pnt) {
+      let hint = this.extractTooltip(pnt);
+      if (!pnt || !pnt.disabled) this.showTooltip(hint);
+      return hint;
+   }
+
+   /** @summary Find best bin index for specified point */
+   findBestBin(pnt) {
+      if (!this.bins) return null;
+
+      let islines = (this.draw_kind == 'lines'),
+          bestindx = -1,
+          bestbin = null,
+          bestdist = 1e10,
+          funcs = this.get_main().getGrFuncs(this.options.second_x, this.options.second_y),
+          dist, grx, gry, n, bin;
+
+      for (n = 0; n < this.bins.length; ++n) {
+         bin = this.bins[n];
+
+         grx = funcs.grx(bin.x);
+         gry = funcs.gry(bin.y);
+
+         dist = (pnt.x-grx)**2 + (pnt.y-gry)**2;
+
+         if (dist < bestdist) {
+            bestdist = dist;
+            bestbin = bin;
+            bestindx = n;
+         }
+      }
+
+      // check last point
+      if ((bestdist > 100) && islines) bestbin = null;
+
+      let radius = Math.max(this.lineatt.width + 3, 4);
+
+      if (this.marker_size > 0) radius = Math.max(this.marker_size, radius);
+
+      if (bestbin)
+         bestdist = Math.sqrt((pnt.x-funcs.grx(bestbin.x))**2 + (pnt.y-funcs.gry(bestbin.y))**2);
+
+      if (!islines && (bestdist > radius)) bestbin = null;
+
+      if (!bestbin) bestindx = -1;
+
+      let res = { bin: bestbin, indx: bestindx, dist: bestdist, radius: Math.round(radius) };
+
+      if (!bestbin && islines) {
+
+         bestdist = 1e10;
+
+         const IsInside = (x, x1, x2) => ((x1 >= x) && (x >= x2)) || ((x1 <= x) && (x <= x2));
+
+         let bin0 = this.bins[0], grx0 = funcs.grx(bin0.x), gry0, posy = 0;
+         for (n = 1; n < this.bins.length; ++n) {
+            bin = this.bins[n];
+            grx = funcs.grx(bin.x);
+
+            if (IsInside(pnt.x, grx0, grx)) {
+               // if inside interval, check Y distance
+               gry0 = funcs.gry(bin0.y);
+               gry = funcs.gry(bin.y);
+
+               if (Math.abs(grx - grx0) < 1) {
+                  // very close x - check only y
+                  posy = pnt.y;
+                  dist = IsInside(pnt.y, gry0, gry) ? 0 : Math.min(Math.abs(pnt.y-gry0), Math.abs(pnt.y-gry));
+               } else {
+                  posy = gry0 + (pnt.x - grx0) / (grx - grx0) * (gry - gry0);
+                  dist = Math.abs(posy - pnt.y);
+               }
+
+               if (dist < bestdist) {
+                  bestdist = dist;
+                  res.linex = pnt.x;
+                  res.liney = posy;
+               }
+            }
+
+            bin0 = bin;
+            grx0 = grx;
+         }
+
+         if (bestdist < radius*0.5) {
+            res.linedist = bestdist;
+            res.closeline = true;
+         }
+      }
+
+      return res;
+   }
+
+   /** @summary Check editable flag for TGraph
+     * @desc if arg specified changes or toggles editable flag */
+   testEditable(arg) {
+      let obj = this.getGraph();
+      if (!obj) return false;
+      if ((arg == 'toggle') || ((arg !== undefined) && (!arg != obj.TestBit(kNotEditable))))
+         obj.InvertBit(kNotEditable);
+      return !obj.TestBit(kNotEditable);
+   }
+
+   /** @summary Provide tooltip at specified point for path-based drawing */
+   extractTooltipForPath(pnt) {
+
+      if (this.bins === null) return null;
+
+      let best = this.findBestBin(pnt);
+
+      if (!best || (!best.bin && !best.closeline)) return null;
+
+      let islines = (this.draw_kind == 'lines'),
+          ismark = (this.draw_kind == 'mark'),
+          pmain = this.get_main(),
+          funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
+          gr = this.getGraph(),
+          res = { name: gr.fName, title: gr.fTitle,
+                  x: best.bin ? funcs.grx(best.bin.x) : best.linex,
+                  y: best.bin ? funcs.gry(best.bin.y) : best.liney,
+                  color1: this.lineatt.color,
+                  lines: this.getTooltips(best.bin),
+                  usepath: true };
+
+      res.user_info = { obj: gr, name: gr.fName, bin: 0, cont: 0, grx: res.x, gry: res.y };
+
+      res.ismark = ismark;
+      res.islines = islines;
+
+      if (best.closeline) {
+         res.menu = res.exact = true;
+         res.menu_dist = best.linedist;
+      } else if (best.bin) {
+         if (this.options.EF && islines) {
+            res.gry1 = funcs.gry(best.bin.y - best.bin.eylow);
+            res.gry2 = funcs.gry(best.bin.y + best.bin.eyhigh);
+         } else {
+            res.gry1 = res.gry2 = funcs.gry(best.bin.y);
+         }
+
+         res.binindx = best.indx;
+         res.bin = best.bin;
+         res.radius = best.radius;
+         res.user_info.bin = best.indx;
+         res.user_info.cont = best.bin.y;
+
+         res.exact = (Math.abs(pnt.x - res.x) <= best.radius) &&
+            ((Math.abs(pnt.y - res.gry1) <= best.radius) || (Math.abs(pnt.y - res.gry2) <= best.radius));
+
+         res.menu = res.exact;
+         res.menu_dist = Math.sqrt((pnt.x-res.x)**2 + Math.min(Math.abs(pnt.y-res.gry1), Math.abs(pnt.y-res.gry2))**2);
+      }
+
+      if (this.fillatt?.used && !this.fillatt?.empty())
+         res.color2 = this.fillatt.getFillColor();
+
+      if (!islines) {
+         res.color1 = this.getColor(gr.fMarkerColor);
+         if (!res.color2) res.color2 = res.color1;
+      }
+
+      return res;
+   }
+
+   /** @summary Show tooltip for path drawing */
+   showTooltipForPath(hint) {
+
+      let ttbin = this.draw_g?.selectChild('.tooltip_bin');
+
+      if (!hint?.bin || !this.draw_g) {
+         ttbin?.remove();
+         return;
+      }
+
+      if (ttbin.empty())
+         ttbin = this.draw_g.append('svg:g').attr('class', 'tooltip_bin');
+
+      hint.changed = ttbin.property('current_bin') !== hint.bin;
+
+      if (hint.changed) {
+         ttbin.selectAll('*').remove(); // first delete all children
+         ttbin.property('current_bin', hint.bin);
+
+         if (hint.ismark) {
+            ttbin.append('svg:rect')
+                 .style('pointer-events', 'none')
+                 .call(addHighlightStyle)
+                 .style('opacity', '0.3')
+                 .attr('x', Math.round(hint.x - hint.radius))
+                 .attr('y', Math.round(hint.y - hint.radius))
+                 .attr('width', 2*hint.radius)
+                 .attr('height', 2*hint.radius);
+         } else {
+            ttbin.append('svg:circle').attr('cy', Math.round(hint.gry1));
+            if (Math.abs(hint.gry1-hint.gry2) > 1)
+               ttbin.append('svg:circle').attr('cy', Math.round(hint.gry2));
+
+            let elem = ttbin.selectAll('circle')
+                            .attr('r', hint.radius)
+                            .attr('cx', Math.round(hint.x));
+
+            if (!hint.islines) {
+               elem.style('stroke', hint.color1 == 'black' ? 'green' : 'black').style('fill','none');
+            } else {
+               if (this.options.Line || this.options.Curve)
+                  elem.call(this.lineatt.func);
+               else
+                  elem.style('stroke','black');
+               if (this.options.Fill)
+                  elem.call(this.fillatt.func);
+               else
+                  elem.style('fill','none');
+            }
+         }
+      }
+   }
+
+   /** @summary Check if graph moving is enabled */
+   moveEnabled() {
+      return this.testEditable();
+   }
+
+   /** @summary Start moving of TGraph */
+   moveStart(x,y) {
+      this.pos_dx = this.pos_dy = 0;
+      this.move_funcs = this.get_main().getGrFuncs(this.options.second_x, this.options.second_y);
+      let hint = this.extractTooltip({x, y});
+      if (hint && hint.exact && (hint.binindx !== undefined)) {
+         this.move_binindx = hint.binindx;
+         this.move_bin = hint.bin;
+         this.move_x0 = this.move_funcs.grx(this.move_bin.x);
+         this.move_y0 = this.move_funcs.gry(this.move_bin.y);
+      } else {
+         delete this.move_binindx;
+      }
+   }
+
+   /** @summary Perform moving */
+   moveDrag(dx,dy) {
+      this.pos_dx += dx;
+      this.pos_dy += dy;
+
+      if (this.move_binindx === undefined) {
+         makeTranslate(this.draw_g, this.pos_dx, this.pos_dy);
+      } else if (this.move_funcs && this.move_bin) {
+         this.move_bin.x = this.move_funcs.revertAxis('x', this.move_x0 + this.pos_dx);
+         this.move_bin.y = this.move_funcs.revertAxis('y', this.move_y0 + this.pos_dy);
+         this.drawGraph();
+      }
+   }
+
+   /** @summary Complete moving */
+   moveEnd(not_changed) {
+      let exec = '', graph = this.getGraph(), last = graph?.fNpoints-1;
+
+      const changeBin = bin => {
+         exec += `SetPoint(${bin.indx},${bin.x},${bin.y});;`;
+         graph.fX[bin.indx] = bin.x;
+         graph.fY[bin.indx] = bin.y;
+         if ((bin.indx == 0) && this._cutg_lastsame) {
+            exec += `SetPoint(${last},${bin.x},${bin.y});;`;
+            graph.fX[last] = bin.x;
+            graph.fY[last] = bin.y;
+         }
+      };
+
+      if (this.move_binindx === undefined) {
+         this.draw_g.attr('transform', null);
+
+         if (this.move_funcs && this.bins && !not_changed) {
+
+            for (let k = 0; k < this.bins.length; ++k) {
+               let bin = this.bins[k];
+               bin.x = this.move_funcs.revertAxis('x', this.move_funcs.grx(bin.x) + this.pos_dx);
+               bin.y = this.move_funcs.revertAxis('y', this.move_funcs.gry(bin.y) + this.pos_dy);
+               changeBin(bin);
+            }
+            if (graph.$redraw_pad)
+               this.redrawPad();
+            else
+               this.drawGraph();
+         }
+      } else {
+         changeBin(this.move_bin);
+         delete this.move_binindx;
+         if (graph.$redraw_pad)
+            this.redrawPad();
+      }
+
+      delete this.move_funcs;
+
+      if (exec && !not_changed)
+         this.submitCanvExec(exec);
+   }
+
+   /** @summary Fill context menu */
+   fillContextMenuItems(menu) {
+      if (!this.snapid)
+         menu.addchk(this.testEditable(), 'Editable', () => { this.testEditable('toggle'); this.drawGraph(); });
+   }
+
+   /** @summary Execute menu command
+     * @private */
+   executeMenuCommand(method, args) {
+      if (super.executeMenuCommand(method, args)) return true;
+
+      let canp = this.getCanvPainter(), pmain = this.get_main();
+
+      if ((method.fName == 'RemovePoint') || (method.fName == 'InsertPoint')) {
+         if (!canp || canp._readonly) return true; // ignore function
+
+         let pnt = isFunc(pmain?.getLastEventPos) ? pmain.getLastEventPos() : null,
+             hint = this.extractTooltip(pnt);
+
+         if (method.fName == 'InsertPoint') {
+            if (pnt) {
+               let funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
+                   userx = funcs.revertAxis('x', pnt.x) ?? 0,
+                   usery = funcs.revertAxis('y', pnt.y) ?? 0;
+               this.submitCanvExec(`AddPoint(${userx.toFixed(3)}, ${usery.toFixed(3)})`, method.$execid);
+            }
+         } else if (method.$execid && (hint?.binindx !== undefined)) {
+            this.submitCanvExec(`RemovePoint(${hint.binindx})`, method.$execid);
+         }
+
+         return true; // call is processed
+      }
+
+      return false;
+   }
+
+   /** @summary Update object members
+     * @private */
+   _updateMembers(graph, obj) {
+      graph.fBits = obj.fBits;
+      graph.fTitle = obj.fTitle;
+      graph.fX = obj.fX;
+      graph.fY = obj.fY;
+      graph.fNpoints = obj.fNpoints;
+      graph.fMinimum = obj.fMinimum;
+      graph.fMaximum = obj.fMaximum;
+   }
+
+   /** @summary Update TGraph object */
+   updateObject(obj, opt) {
+      if (!this.matchObjectType(obj)) return false;
+
+      if (opt && (opt != this.options.original))
+         this.decodeOptions(opt);
+
+      this._updateMembers(this.getObject(), obj);
+
+      this.createBins();
+
+      delete this.$redraw_hist;
+
+      // if our own histogram was used as axis drawing, we need update histogram as well
+      if (this.axes_draw) {
+         let histo = this.createHistogram(),
+             hist_painter = this.getMainPainter();
+         if (hist_painter?.$secondary) {
+            hist_painter.updateObject(histo, this.options.Axis);
+            this.$redraw_hist = true;
+         }
+      }
+
+      return true;
+   }
+
+   /** @summary Checks if it makes sense to zoom inside specified axis range
+     * @desc allow to zoom TGraph only when at least one point in the range */
+   canZoomInside(axis, min, max) {
+      let gr = this.getGraph();
+      if (!gr || (axis !== (this.options.pos3d ? 'y' : 'x'))) return false;
+
+      for (let n = 0; n < gr.fNpoints; ++n)
+         if ((min < gr.fX[n]) && (gr.fX[n] < max)) return true;
+
+      return false;
+   }
+
+   /** @summary Process click on graph-defined buttons */
+   clickButton(funcname) {
+      if (funcname !== 'ToggleZoom') return false;
+
+      let main = this.getFramePainter();
+      if (!main) return false;
+
+      if ((this.xmin === this.xmax) && (this.ymin === this.ymax)) return false;
+
+      main.zoom(this.xmin, this.xmax, this.ymin, this.ymax);
+
+      return true;
+   }
+
+   /** @summary Find TF1/TF2 in TGraph list of functions */
+   findFunc() {
+      return this.getGraph()?.fFunctions?.arr?.find(func => (func._typename == clTF1) || (func._typename == clTF2));
+   }
+
+   /** @summary Find stat box in TGraph list of functions */
+   findStat() {
+      return this.getGraph()?.fFunctions?.arr?.find(func => (func._typename == clTPaveStats) && (func.fName == 'stats'));
+   }
+
+   /** @summary Create stat box */
+   createStat() {
+      let func = this.findFunc();
+      if (!func) return null;
+
+      let stats = this.findStat();
+      if (stats) return stats;
+
+      // do not create stats box when drawing canvas
+      if (this.getCanvPainter()?.normal_canvas || this.options.PadStats) return null;
+
+      this.create_stats = true;
+
+      const st = gStyle;
+
+      stats = create$1(clTPaveStats);
+      Object.assign(stats, { fName: 'stats', fOptStat: 0, fOptFit: st.fOptFit || 111, fBorderSize: 1 });
+
+      stats.fX1NDC = st.fStatX - st.fStatW;
+      stats.fY1NDC = st.fStatY - st.fStatH;
+      stats.fX2NDC = st.fStatX;
+      stats.fY2NDC = st.fStatY;
+
+      stats.fFillColor = st.fStatColor;
+      stats.fFillStyle = st.fStatStyle;
+
+      stats.fTextAngle = 0;
+      stats.fTextSize = st.fStatFontSize; // 9 ??
+      stats.fTextAlign = 12;
+      stats.fTextColor = st.fStatTextColor;
+      stats.fTextFont = st.fStatFont;
+
+      stats.AddText(func.fName);
+
+      // while TF1 was found, one can be sure that stats is existing
+      this.getGraph().fFunctions.Add(stats);
+
+      return stats;
+   }
+
+   /** @summary Fill statistic */
+   fillStatistic(stat, dostat, dofit) {
+
+      // cannot fill stats without func
+      let func = this.findFunc();
+
+      if (!func || !dofit || !this.create_stats) return false;
+
+      stat.clearPave();
+
+      stat.fillFunctionStat(func, dofit);
+
+      return true;
+   }
+
+   /** @summary method draws next function from the functions list
+     * @return {Promise} */
+   async drawNextFunction(indx) {
+
+      let graph = this.getGraph();
+
+      if (indx >= (graph?.fFunctions?.arr?.length || 0))
+         return this;
+
+      let func = graph.fFunctions.arr[indx],
+          opt = graph.fFunctions.opt[indx];
+
+      //  required for stats filling
+      // TODO: use weak reference (via pad list of painters and any kind of string)
+      func.$main_painter = this;
+
+      return this.getPadPainter().drawObject(this.getDom(), func, opt).then(() => this.drawNextFunction(indx+1));
+   }
+
+   /** @summary Draw axis histogram
+     * @private */
+   async drawAxisHisto() {
+      let histo = this.createHistogram();
+      return TH1Painter$2.draw(this.getDom(), histo, this.options.Axis);
+   }
+
+   /** @summary Draw TGraph
+     * @private */
+   static async _drawGraph(painter, opt) {
+      painter.decodeOptions(opt, true);
+      painter.createBins();
+      painter.createStat();
+      let graph = painter.getGraph();
+      if (!settings.DragGraphs && graph && !graph.TestBit(kNotEditable))
+         graph.InvertBit(kNotEditable);
+
+      let promise = Promise.resolve();
+
+      if ((!painter.getMainPainter() || painter.options.second_x || painter.options.second_y) && painter.options.Axis)
+         promise = painter.drawAxisHisto().then(hist_painter => {
+            if (!hist_painter) return;
+            painter.axes_draw = true;
+            if (!painter._own_histogram)
+               painter.$primary = true;
+            hist_painter.$secondary = 'hist';
+         });
+
+      return promise.then(() => {
+         painter.addToPadPrimitives();
+         return painter.drawGraph();
+      }).then(() => painter.drawNextFunction(0));
+   }
+
+   static async draw(dom, graph, opt) {
+      return TGraphPainter._drawGraph(new TGraphPainter(dom, graph), opt);
+   }
+
+}; // class TGraphPainter
+
+var TGraphPainter$2 = /*#__PURE__*/Object.freeze({
+__proto__: null,
+TGraphPainter: TGraphPainter$1,
+clTGraphAsymmErrors: clTGraphAsymmErrors
+});
+
+class TGraphPainter extends TGraphPainter$1 {
+
+   /** @summary Draw TGraph points in 3D
+     * @private */
+   drawBins3D(fp, graph) {
+
+      if (!fp.mode3d || !fp.grx || !fp.gry || !fp.grz || !fp.toplevel)
+         return console.log('Frame painter missing base 3d elements');
+
+      if (fp.zoom_xmin != fp.zoom_xmax)
+        if ((this.options.pos3d < fp.zoom_xmin) || (this.options.pos3d > fp.zoom_xmax)) return;
+
+      let drawbins = this.optimizeBins(1000),
+          first = 0, last = drawbins.length-1;
+
+      if (fp.zoom_ymin != fp.zoom_ymax) {
+         while ((first < last) && (drawbins[first].x < fp.zoom_ymin)) first++;
+         while ((first < last) && (drawbins[last].x > fp.zoom_ymax)) last--;
+      }
+
+      if (first == last) return;
+
+      let pnts = [], grx = fp.grx(this.options.pos3d),
+          p0 = drawbins[first];
+
+      for (let n = first + 1; n <= last; ++n) {
+         let p1 = drawbins[n];
+         pnts.push(grx, fp.gry(p0.x), fp.grz(p0.y),
+                   grx, fp.gry(p1.x), fp.grz(p1.y));
+         p0 = p1;
+      }
+
+      let lines = createLineSegments(pnts, create3DLineMaterial(this, graph));
+
+      fp.toplevel.add(lines);
+
+      fp.render3D(100);
+   }
+
+   /** @summary Draw axis histogram
+     * @private */
+   async drawAxisHisto() {
+      return TH1Painter.draw(this.getDom(), this.createHistogram(), this.options.Axis);
+   }
+
+   static async draw(dom, graph, opt) {
+      return TGraphPainter._drawGraph(new TGraphPainter(dom, graph), opt);
+   }
+
+} // class TGraphPainter
+
+/** @summary direct draw function for TPolyMarker3D object
+  * @private */
+async function drawPolyMarker3D$1() {
+
+   let fp = this.$fp || this.getFramePainter();
+
+   delete this.$fp;
+
+   if (!isObject(fp) || !fp.grx || !fp.gry || !fp.grz)
+      return this;
+
+   let poly = this.getObject(), step = 1, sizelimit = 50000, numselect = 0, fP = poly.fP;
+
+   for (let i = 0; i < fP.length; i += 3) {
+      if ((fP[i] < fp.scale_xmin) || (fP[i] > fp.scale_xmax) ||
+          (fP[i+1] < fp.scale_ymin) || (fP[i+1] > fp.scale_ymax) ||
+          (fP[i+2] < fp.scale_zmin) || (fP[i+2] > fp.scale_zmax)) continue;
+      ++numselect;
+   }
+
+   if ((settings.OptimizeDraw > 0) && (numselect > sizelimit)) {
+      step = Math.floor(numselect/sizelimit);
+      if (step <= 2) step = 2;
+   }
+
+   let size = Math.floor(numselect/step),
+       pnts = new PointsCreator(size, fp.webgl, fp.size_x3d/100),
+       index = new Int32Array(size),
+       select = 0, icnt = 0;
+
+   for (let i = 0; i < fP.length; i += 3) {
+
+      if ((fP[i] < fp.scale_xmin) || (fP[i] > fp.scale_xmax) ||
+          (fP[i+1] < fp.scale_ymin) || (fP[i+1] > fp.scale_ymax) ||
+          (fP[i+2] < fp.scale_zmin) || (fP[i+2] > fp.scale_zmax)) continue;
+
+      if (step > 1) {
+         select = (select+1) % step;
+         if (select !== 0) continue;
+      }
+
+      index[icnt++] = i;
+
+      pnts.addPoint(fp.grx(fP[i]), fp.gry(fP[i+1]), fp.grz(fP[i+2]));
+   }
+
+   return pnts.createPoints({ color: this.getColor(poly.fMarkerColor), style: poly.fMarkerStyle }).then(mesh => {
+
+      mesh.tip_color = (poly.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
+      mesh.tip_name = poly.fName || 'Poly3D';
+      mesh.poly = poly;
+      mesh.painter = fp;
+      mesh.scale0 = 0.7*pnts.scale;
+      mesh.index = index;
+
+      fp.toplevel.add(mesh);
+
+      mesh.tooltip = function(intersect) {
+         let indx = Math.floor(intersect.index / this.nvertex);
+         if ((indx < 0) || (indx >= this.index.length)) return null;
+
+         indx = this.index[indx];
+
+         let p = this.painter,
+             grx = p.grx(this.poly.fP[indx]),
+             gry = p.gry(this.poly.fP[indx+1]),
+             grz = p.grz(this.poly.fP[indx+2]);
+
+         return  {
+            x1: grx - this.scale0,
+            x2: grx + this.scale0,
+            y1: gry - this.scale0,
+            y2: gry + this.scale0,
+            z1: grz - this.scale0,
+            z2: grz + this.scale0,
+            color: this.tip_color,
+            lines: [ this.tip_name,
+                     'pnt: ' + indx/3,
+                     'x: ' + p.axisAsText('x', this.poly.fP[indx]),
+                     'y: ' + p.axisAsText('y', this.poly.fP[indx+1]),
+                     'z: ' + p.axisAsText('z', this.poly.fP[indx+2])
+                   ]
+         };
+      };
+
+      fp.render3D(100); // set timeout to be able draw other points
+
+      return this;
+   });
+}
+
+function treeShowProgress(handle, str) {
+   if (isBatchMode() || (typeof document == 'undefined')) return;
+
+   if (!str)
+      return showProgress();
+
+   let main_box = document.createElement('p'),
+       text_node = document.createTextNode(str);
+
+   main_box.appendChild(text_node);
+   main_box.title = 'Click on element to break';
+
+   main_box.onclick = () => {
+      if (!handle._break) handle._break = 0;
+
+      if (++handle._break < 3) {
+         main_box.title = 'Will break after next I/O operation';
+         return text_node.nodeValue = 'Breaking ... ';
+      }
+      if (isFunc(handle.Abort))
+         handle.Abort();
+      showProgress();
+   };
+
+   showProgress(main_box);
+}
+
+
+/** @summary Show TTree::Draw progress during processing
+  * @private */
+TDrawSelector.prototype.ShowProgress = function(value) {
+
+   if ((value === undefined) || !Number.isFinite(value))
+      return showProgress();
+
+   if (this.last_progress !== value) {
+      let diff = value - this.last_progress;
+      if (!this.aver_diff) this.aver_diff = diff;
+      this.aver_diff = diff * 0.3 + this.aver_diff * 0.7;
+   }
+
+   this.last_progress = value;
+
+   let ndig = 0;
+   if (this.aver_diff <= 0)
+      ndig = 0;
+   else if (this.aver_diff < 0.0001)
+      ndig = 3;
+   else if (this.aver_diff < 0.001)
+      ndig = 2;
+   else if (this.aver_diff < 0.01)
+      ndig = 1;
+
+   treeShowProgress(this, `TTree draw ${(value * 100).toFixed(ndig)} % `);
+};
+
+/** @summary Draw result of tree drawing
+  * @private */
+async function drawTreeDrawResult(dom, obj, opt) {
+
+   let typ = obj?._typename;
+
+   if (!typ || !isStr(typ))
+      return Promise.reject(Error(`Object without type cannot be draw with TTree`));
+
+   if (typ.indexOf(clTH1) == 0)
+      return TH1Painter.draw(dom, obj, opt);
+   if (typ.indexOf(clTH2) == 0)
+      return TH2Painter.draw(dom, obj, opt);
+   if (typ.indexOf(clTH3) == 0)
+      return TH3Painter.draw(dom, obj, opt);
+   if (typ.indexOf(clTGraph) == 0)
+      return TGraphPainter.draw(dom, obj, opt);
+   if ((typ == clTPolyMarker3D) && obj.$hist) {
+      return TH3Painter.draw(dom, obj.$hist, opt).then(() => {
+         let p2 = new ObjectPainter(dom, obj, opt);
+         p2.addToPadPrimitives();
+         p2.redraw = drawPolyMarker3D$1;
+         return p2.redraw();
+      });
+   }
+
+   return Promise.reject(Error(`Object of type ${typ} cannot be draw with TTree`));
+}
+
+
+/** @summary Handle callback function with progress of tree draw
+  * @private */
+async function treeDrawProgress(obj, final) {
+
+   // no need to update drawing if previous is not yet completed
+   if (!final && !this.last_pr)
+      return;
+
+   if (this.dump || this.testio) {
+      if (!final) return;
+      if (isBatchMode()) {
+         let painter = new BasePainter(this.drawid);
+         painter.selectDom().property('_json_object_', obj);
+         return painter;
+      }
+      if (isFunc(internals.drawInspector))
+         return internals.drawInspector(this.drawid, obj);
+      let str = create$1(clTObjString);
+      str.fString = toJSON(obj, 2);
+      return drawRawText(this.drawid, str);
+   }
+
+   // complex logic with intermediate update
+   // while TTree reading not synchronized with drawing,
+   // next portion can appear before previous is drawn
+   // critical is last drawing which should wait for previous one
+   // therefore last_pr is kept as inidication that promise is not yet processed
+
+   if (!this.last_pr) this.last_pr = Promise.resolve(true);
+
+    return this.last_pr.then(() => {
+       if (this.obj_painter)
+          this.last_pr = this.obj_painter.redrawObject(obj).then(() => this.obj_painter);
+       else
+          this.last_pr = drawTreeDrawResult(this.drawid, obj).then(p => {
+             this.obj_painter = p;
+             if (!final) this.last_pr = null;
+             return p; // return painter for histogram
+          });
+
+       return final ? this.last_pr : null;
+   });
+}
+
+
+/** @summary Create painter to perform tree drawing on server side
+  * @private */
+function createTreePlayer(player) {
+
+   player.draw_first = true;
+
+   player.configureOnline = function(itemname, url, askey, root_version, expr) {
+      this.setItemName(itemname, '', this);
+      this.url = url;
+      this.root_version = root_version;
+      this.askey = askey;
+      this.draw_expr = expr;
+   };
+
+   player.configureTree = function(tree) {
+      this.local_tree = tree;
+   };
+
+   player.showExtraButtons = function(args) {
+      let main = this.selectDom(),
+         numentries = this.local_tree?.fEntries || 0;
+
+      main.select('.treedraw_more').remove(); // remove more button first
+
+      main.select('.treedraw_buttons').node().innerHTML +=
+          'Cut: <input class="treedraw_cut ui-corner-all ui-widget" style="width:8em;margin-left:5px" title="cut expression"></input>'+
+          'Opt: <input class="treedraw_opt ui-corner-all ui-widget" style="width:5em;margin-left:5px" title="histogram draw options"></input>'+
+          `Num: <input class="treedraw_number" type='number' min="0" max="${numentries}" step="1000" style="width:7em;margin-left:5px" title="number of entries to process (default all)"></input>`+
+          `First: <input class="treedraw_first" type='number' min="0" max="${numentries}" step="1000" style="width:7em;margin-left:5px" title="first entry to process (default first)"></input>`+
+          '<button class="treedraw_clear" title="Clear drawing">Clear</button>';
+
+      main.select('.treedraw_exe').on('click', () => this.performDraw());
+      main.select('.treedraw_cut').property('value', args?.parse_cut || '').on('change', () => this.performDraw());
+      main.select('.treedraw_opt').property('value', args?.drawopt || '').on('change', () => this.performDraw());
+      main.select('.treedraw_number').attr('value', args?.numentries || ''); // .on('change', () => this.performDraw());
+      main.select('.treedraw_first').attr('value', args?.firstentry || ''); // .on('change', () => this.performDraw());
+      main.select('.treedraw_clear').on('click', () => cleanup(this.drawid));
+   };
+
+   player.showPlayer = function(args) {
+
+      let main = this.selectDom();
+
+      this.drawid = 'jsroot_tree_player_' + internals.id_counter++ + '_draw';
+
+      let show_extra = args?.parse_cut || args?.numentries || args?.firstentry;
+
+      main.html('<div style="display:flex; flex-flow:column; height:100%; width:100%;">'+
+                   '<div class="treedraw_buttons" style="flex: 0 1 auto;margin-top:0.2em;">' +
+                      '<button class="treedraw_exe" title="Execute draw expression" style="margin-left:0.5em">Draw</button>' +
+                      'Expr:<input class="treedraw_varexp treedraw_varexp_info" style="width:12em;margin-left:5px" title="draw expression"></input>'+
+                      '<label class="treedraw_varexp_info">\u24D8</label>' +
+                     '<button class="treedraw_more">More</button>' +
+                   '</div>' +
+                   '<div style="flex: 0 1 auto"><hr/></div>' +
+                   `<div id="${this.drawid}" style="flex: 1 1 auto; overflow:hidden;"></div>` +
+                '</div>');
+
+      // only when main html element created, one can set painter
+      // ObjectPainter allow such usage of methods from BasePainter
+      this.setTopPainter();
+
+      if (this.local_tree)
+         main.select('.treedraw_buttons')
+             .attr('title', 'Tree draw player for: ' + this.local_tree.fName);
+      main.select('.treedraw_exe').on('click', () => this.performDraw());
+      main.select('.treedraw_varexp')
+          .attr('value', args?.parse_expr || this.draw_expr || 'px:py')
+          .on('change', () => this.performDraw());
+      main.select('.treedraw_varexp_info')
+          .attr('title', 'Example of valid draw expressions:\n' +
+                         '  px - 1-dim draw\n' +
+                         '  px:py - 2-dim draw\n' +
+                         '  px:py:pz - 3-dim draw\n' +
+                         '  px+py:px-py - use any expressions\n' +
+                         '  px:py>>Graph - create and draw TGraph\n' +
+                         '  px:py>>dump - dump extracted variables\n' +
+                         '  px:py>>h(50,-5,5,50,-5,5) - custom histogram\n' +
+                         '  px:py;hbins:100 - custom number of bins');
+
+      if (show_extra)
+         this.showExtraButtons(args);
+      else
+         main.select('.treedraw_more').on('click', () => this.showExtraButtons(args));
+
+      this.checkResize();
+
+      registerForResize(this);
+   };
+
+   player.getValue = function(sel) {
+      const elem = this.selectDom().select(sel);
+      if (elem.empty()) return;
+      const val = elem.property('value');
+      if (val !== undefined) return val;
+      return elem.attr('value');
+   };
+
+   player.performLocalDraw = function() {
+      if (!this.local_tree) return;
+
+      const frame = this.selectDom(),
+            args = { expr: this.getValue('.treedraw_varexp') };
+
+      if (frame.select('.treedraw_more').empty()) {
+         args.cut = this.getValue('.treedraw_cut');
+         if (!args.cut) delete args.cut;
+
+         args.drawopt = this.getValue('.treedraw_opt');
+         if (args.drawopt === 'dump') { args.dump = true; args.drawopt = ''; }
+         if (!args.drawopt) delete args.drawopt;
+
+         args.numentries = parseInt(this.getValue('.treedraw_number'));
+         if (!Number.isInteger(args.numentries)) delete args.numentries;
+
+         args.firstentry = parseInt(this.getValue('.treedraw_first'));
+         if (!Number.isInteger(args.firstentry)) delete args.firstentry;
+      }
+
+      /* if (args.drawopt) */ cleanup(this.drawid);
+
+      args.drawid = this.drawid;
+
+      args.progress = treeDrawProgress.bind(args);
+
+      treeDraw(this.local_tree, args).then(obj => args.progress(obj, true));
+   };
+
+   player.getDrawOpt = function() {
+      let res = 'player',
+          expr = this.getValue('.treedraw_varexp');
+      if (expr) res += ':' + expr;
+      return res;
+   };
+
+   player.performDraw = function() {
+
+      if (this.local_tree)
+         return this.performLocalDraw();
+
+      let frame = this.selectDom(),
+          url = this.url + '/exe.json.gz?compact=3&method=Draw',
+          expr = this.getValue('.treedraw_varexp'),
+          hname = 'h_tree_draw', option = '',
+          pos = expr.indexOf('>>');
+
+      if (pos < 0) {
+         expr += `>>${hname}`;
+      } else {
+         hname = expr.slice(pos+2);
+         if (hname[0] == '+') hname = hname.slice(1);
+         let pos2 = hname.indexOf('(');
+         if (pos2 > 0) hname = hname.slice(0, pos2);
+      }
+
+      if (frame.select('.treedraw_more').empty()) {
+         let cut = this.getValue('.treedraw_cut'),
+             nentries = this.getValue('.treedraw_number'),
+             firstentry = this.getValue('.treedraw_first');
+
+         option = this.getValue('.treedraw_opt');
+
+         url += `&prototype="const char*,const char*,Option_t*,Long64_t,Long64_t"&varexp="${expr}"&selection="${cut}"`;
+
+         // provide all optional arguments - default value kMaxEntries not works properly in ROOT6
+         if (!nentries) nentries = 'TTree::kMaxEntries'; // kMaxEntries available since ROOT 6.05/03
+         if (!firstentry) firstentry = '0';
+         url += `&option="${option}"&nentries=${nentries}&firstentry=${firstentry}`;
+      } else {
+         url += `&prototype="Option_t*"&opt="${expr}"`;
+      }
+      url += `&_ret_object_=${hname}`;
+
+      const submitDrawRequest = () => {
+         httpRequest(url, 'object').then(res => {
+            cleanup(this.drawid);
+            drawTreeDrawResult(this.drawid, res, option);
+         });
+      };
+
+      this.draw_expr = expr;
+
+      if (this.askey) {
+         // first let read tree from the file
+         this.askey = false;
+         httpRequest(this.url + '/root.json.gz?compact=3', 'text').then(submitDrawRequest);
+      } else {
+         submitDrawRequest();
+      }
+   };
+
+   player.checkResize = function(/*arg*/) {
+      resize(this.drawid);
+   };
+
+   return player;
+}
+
+
+/** @summary function used with THttpServer to assign player for the TTree object
+  * @private */
+function drawTreePlayer(hpainter, itemname, askey, asleaf) {
+
+   let item = hpainter.findItem(itemname),
+       top = hpainter.getTopOnlineItem(item),
+       expr = '', leaf_cnt = 0;
+   if (!item || !top) return null;
+
+   if (asleaf) {
+      expr = item._name;
+      while (item && !item._ttree) item = item._parent;
+      if (!item) return null;
+      itemname = hpainter.itemFullName(item);
+   }
+
+   let url = hpainter.getOnlineItemUrl(itemname);
+   if (!url) return null;
+
+   let root_version = top._root_version || 400129; // by default use version number 6-27-01
+
+   let mdi = hpainter.getDisplay();
+   if (!mdi) return null;
+
+   let frame = mdi.findFrame(itemname, true);
+   if (!frame) return null;
+
+   let divid = select(frame).attr('id'),
+       player = new BasePainter(divid);
+
+   if (item._childs && !asleaf)
+      for (let n = 0; n < item._childs.length; ++n) {
+         let leaf = item._childs[n];
+         if (leaf && leaf._kind && (leaf._kind.indexOf(prROOT + 'TLeaf') == 0) && (leaf_cnt < 2)) {
+            if (leaf_cnt++ > 0) expr += ':';
+            expr += leaf._name;
+         }
+      }
+
+   createTreePlayer(player);
+   player.configureOnline(itemname, url, askey, root_version, expr);
+   player.showPlayer();
+
+   return player;
+}
+
+/** @summary function used with THttpServer when tree is not yet loaded
+  * @private */
+function drawTreePlayerKey(hpainter, itemname) {
+   return drawTreePlayer(hpainter, itemname, true);
+}
+
+/** @summary function used with THttpServer when tree is not yet loaded
+  * @private */
+function drawLeafPlayer(hpainter, itemname) {
+   return drawTreePlayer(hpainter, itemname, false, true);
+}
+
+/** @summary function called from draw()
+  * @desc just envelope for real TTree::Draw method which do the main job
+  * Can be also used for the branch and leaf object
+  * @private */
+async function drawTree(dom, obj, opt) {
+
+   let tree = obj, args = opt;
+
+   if (obj._typename == clTBranchFunc) {
+      // fictional object, created only in browser
+      args = { expr: `.${obj.func}()`, branch: obj.branch };
+      if (opt && opt.indexOf('dump') == 0)
+         args.expr += '>>' + opt;
+      else if (opt)
+         args.expr += opt;
+      tree = obj.branch.$tree;
+   } else if (obj.$branch) {
+      // this is drawing of the single leaf from the branch
+      args = { expr: `.${obj.fName}${opt || ''}`, branch: obj.$branch };
+      if ((args.branch.fType === kClonesNode) || (args.branch.fType === kSTLNode)) {
+         // special case of size
+         args.expr = opt;
+         args.direct_branch = true;
+      }
+
+      tree = obj.$branch.$tree;
+   } else if (obj.$tree) {
+      // this is drawing of the branch
+
+      // if generic object tried to be drawn without specifying any options, it will be just dump
+      if (!opt && obj.fStreamerType && (obj.fStreamerType !== kTString) &&
+          (obj.fStreamerType >= kObject) && (obj.fStreamerType <= kAnyP)) opt = 'dump';
+
+      args = { expr: opt, branch: obj };
+      tree = obj.$tree;
+   } else {
+      if (!args) args = 'player';
+      if (isStr(args)) args = { expr: args };
+   }
+
+   if (!tree)
+      throw Error('No TTree object available for TTree::Draw');
+
+   if (isStr(args.expr)) {
+      let p = args.expr.indexOf('player');
+      if (p == 0) {
+         args.player = true;
+         args.expr = args.expr.slice(6);
+         if (args.expr[0] == ':') args.expr = args.expr.slice(1);
+      } else if ((p >= 0) && (p == args.expr.length-6)) {
+         args.player = true;
+         args.expr = args.expr.slice(0, p);
+         if ((p > 0) && (args.expr[p-1] == ';')) args.expr = args.expr.slice(0, p-1);
+      }
+   }
+
+   let painter;
+
+   if (args.player) {
+      painter = new ObjectPainter(dom, obj, opt);
+      createTreePlayer(painter);
+      painter.configureTree(tree);
+      painter.showPlayer(args);
+      args.drawid = painter.drawid;
+   } else {
+      args.drawid = dom;
+   }
+
+   // use in result handling same function as for progress handling
+
+   args.progress = treeDrawProgress.bind(args);
+
+   let pr;
+   if (args.expr === 'testio') {
+      args.testio = true;
+      args.showProgress = msg => treeShowProgress(args, msg);
+      pr = treeIOTest(tree, args);
+   } else if (args.expr || args.branch) {
+      pr = treeDraw(tree, args);
+   } else
+      return painter;
+
+   return pr.then(res => args.progress(res, true));
+}
+
+var TTree = /*#__PURE__*/Object.freeze({
+__proto__: null,
+drawLeafPlayer: drawLeafPlayer,
+drawTree: drawTree,
+drawTreePlayer: drawTreePlayer,
+drawTreePlayerKey: drawTreePlayerKey
+});
+
 /**
  * @summary Painter class for THStack
  *
@@ -105459,97 +107502,6 @@ var THStackPainter$1 = /*#__PURE__*/Object.freeze({
 __proto__: null,
 THStackPainter: THStackPainter
 });
-
-/** @summary direct draw function for TPolyMarker3D object
-  * @private */
-async function drawPolyMarker3D$1() {
-
-   let fp = this.$fp || this.getFramePainter();
-
-   delete this.$fp;
-
-   if (!isObject(fp) || !fp.grx || !fp.gry || !fp.grz)
-      return this;
-
-   let poly = this.getObject(), step = 1, sizelimit = 50000, numselect = 0, fP = poly.fP;
-
-   for (let i = 0; i < fP.length; i += 3) {
-      if ((fP[i] < fp.scale_xmin) || (fP[i] > fp.scale_xmax) ||
-          (fP[i+1] < fp.scale_ymin) || (fP[i+1] > fp.scale_ymax) ||
-          (fP[i+2] < fp.scale_zmin) || (fP[i+2] > fp.scale_zmax)) continue;
-      ++numselect;
-   }
-
-   if ((settings.OptimizeDraw > 0) && (numselect > sizelimit)) {
-      step = Math.floor(numselect/sizelimit);
-      if (step <= 2) step = 2;
-   }
-
-   let size = Math.floor(numselect/step),
-       pnts = new PointsCreator(size, fp.webgl, fp.size_x3d/100),
-       index = new Int32Array(size),
-       select = 0, icnt = 0;
-
-   for (let i = 0; i < fP.length; i += 3) {
-
-      if ((fP[i] < fp.scale_xmin) || (fP[i] > fp.scale_xmax) ||
-          (fP[i+1] < fp.scale_ymin) || (fP[i+1] > fp.scale_ymax) ||
-          (fP[i+2] < fp.scale_zmin) || (fP[i+2] > fp.scale_zmax)) continue;
-
-      if (step > 1) {
-         select = (select+1) % step;
-         if (select !== 0) continue;
-      }
-
-      index[icnt++] = i;
-
-      pnts.addPoint(fp.grx(fP[i]), fp.gry(fP[i+1]), fp.grz(fP[i+2]));
-   }
-
-   return pnts.createPoints({ color: this.getColor(poly.fMarkerColor), style: poly.fMarkerStyle }).then(mesh => {
-
-      mesh.tip_color = (poly.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
-      mesh.tip_name = poly.fName || 'Poly3D';
-      mesh.poly = poly;
-      mesh.painter = fp;
-      mesh.scale0 = 0.7*pnts.scale;
-      mesh.index = index;
-
-      fp.toplevel.add(mesh);
-
-      mesh.tooltip = function(intersect) {
-         let indx = Math.floor(intersect.index / this.nvertex);
-         if ((indx < 0) || (indx >= this.index.length)) return null;
-
-         indx = this.index[indx];
-
-         let p = this.painter,
-             grx = p.grx(this.poly.fP[indx]),
-             gry = p.gry(this.poly.fP[indx+1]),
-             grz = p.grz(this.poly.fP[indx+2]);
-
-         return  {
-            x1: grx - this.scale0,
-            x2: grx + this.scale0,
-            y1: gry - this.scale0,
-            y2: gry + this.scale0,
-            z1: grz - this.scale0,
-            z2: grz + this.scale0,
-            color: this.tip_color,
-            lines: [ this.tip_name,
-                     'pnt: ' + indx/3,
-                     'x: ' + p.axisAsText('x', this.poly.fP[indx]),
-                     'y: ' + p.axisAsText('y', this.poly.fP[indx+1]),
-                     'z: ' + p.axisAsText('z', this.poly.fP[indx+2])
-                   ]
-         };
-      };
-
-      fp.render3D(100); // set timeout to be able draw other points
-
-      return this;
-   });
-}
 
 /** @summary Prepare frame painter for 3D drawing
   * @private */
@@ -107632,1545 +109584,6 @@ TGraphPolarPainter: TGraphPolarPainter,
 TGraphPolargramPainter: TGraphPolargramPainter
 });
 
-const kNotEditable = BIT(18),   // bit set if graph is non editable
-      clTGraphErrors = 'TGraphErrors',
-      clTGraphAsymmErrors = 'TGraphAsymmErrors',
-      clTGraphBentErrors = 'TGraphBentErrors',
-      clTGraphMultiErrors = 'TGraphMultiErrors';
-
-/**
- * @summary Painter for TGraph object.
- *
- * @private
- */
-
-
-let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
-
-   constructor(dom, graph) {
-      super(dom, graph);
-      this.axes_draw = false; // indicate if graph histogram was drawn for axes
-      this.bins = null;
-      this.xmin = this.ymin = this.xmax = this.ymax = 0;
-      this.wheel_zoomy = true;
-      this.is_bent = (graph._typename == clTGraphBentErrors);
-      this.has_errors = (graph._typename == clTGraphErrors) ||
-                        (graph._typename == clTGraphMultiErrors) ||
-                        (graph._typename == clTGraphAsymmErrors) ||
-                         this.is_bent || graph._typename.match(/^RooHist/);
-   }
-
-   /** @summary Return drawn graph object */
-   getGraph() { return this.getObject(); }
-
-   /** @summary Return histogram object used for axis drawings */
-   getHistogram() { return this.getObject()?.fHistogram; }
-
-   /** @summary Set histogram object to graph */
-   setHistogram(histo) {
-      let obj = this.getObject();
-      if (obj) obj.fHistogram = histo;
-   }
-
-   /** @summary Redraw graph
-     * @desc may redraw histogram which was used to draw axes
-     * @return {Promise} for ready */
-   async redraw() {
-      let promise = Promise.resolve(true);
-
-      if (this.$redraw_hist) {
-         delete this.$redraw_hist;
-         let hist_painter = this.getMainPainter();
-         if (hist_painter?.$secondary && this.axes_draw)
-            promise = hist_painter.redraw();
-      }
-
-      return promise.then(() => this.drawGraph());
-   }
-
-   /** @summary Cleanup graph painter */
-   cleanup() {
-      delete this.interactive_bin; // break mouse handling
-      delete this.bins;
-      super.cleanup();
-   }
-
-   /** @summary Returns object if this drawing TGraphMultiErrors object */
-   get_gme() {
-      let graph = this.getGraph();
-      return graph?._typename == clTGraphMultiErrors ? graph : null;
-   }
-
-   /** @summary Decode options */
-   decodeOptions(opt, first_time) {
-
-      if (isStr(opt) && (opt.indexOf('same ') == 0))
-         opt = opt.slice(5);
-
-      let graph = this.getGraph(),
-          is_gme = !!this.get_gme(),
-          blocks_gme = [],
-          has_main = first_time ? !!this.getMainPainter() : !this.axes_draw;
-
-      if (!this.options) this.options = {};
-
-      // decode main draw options for the graph
-      const decodeBlock = (d, res) => {
-         Object.assign(res, { Line: 0, Curve: 0, Rect: 0, Mark: 0, Bar: 0, OutRange: 0, EF:0, Fill: 0, MainError: 1, Ends: 1, ScaleErrX: 1 });
-
-         if (is_gme && d.check('S=', true)) res.ScaleErrX = d.partAsFloat();
-
-         if (d.check('L')) res.Line = 1;
-         if (d.check('F')) res.Fill = 1;
-         if (d.check('CC')) res.Curve = 2; // draw all points without reduction
-         if (d.check('C')) res.Curve = 1;
-         if (d.check('*')) res.Mark = 103;
-         if (d.check('P0')) res.Mark = 104;
-         if (d.check('P')) res.Mark = 1;
-         if (d.check('B')) { res.Bar = 1; res.Errors = 0; }
-         if (d.check('Z')) { res.Errors = 1; res.Ends = 0; }
-         if (d.check('||')) { res.Errors = 1; res.MainError = 0; res.Ends = 1; }
-         if (d.check('[]')) { res.Errors = 1; res.MainError = 0; res.Ends = 2; }
-         if (d.check('|>')) { res.Errors = 1; res.Ends = 3; }
-         if (d.check('>')) { res.Errors = 1; res.Ends = 4; }
-         if (d.check('0')) { res.Mark = 1; res.Errors = 1; res.OutRange = 1; }
-         if (d.check('1')) { if (res.Bar == 1) res.Bar = 2; }
-         if (d.check('2')) { res.Rect = 1; res.Errors = 0; }
-         if (d.check('3')) { res.EF = 1; res.Errors = 0; }
-         if (d.check('4')) { res.EF = 2; res.Errors = 0; }
-         if (d.check('5')) { res.Rect = 2; res.Errors = 0; }
-         if (d.check('X')) res.Errors = 0;
-      };
-
-      Object.assign(this.options, { Axis: '', NoOpt: 0, PadStats: false, PadPalette: false, original: opt, second_x: false, second_y: false, individual_styles: false });
-
-      if (is_gme && opt) {
-         if (opt.indexOf(';') > 0) {
-            blocks_gme = opt.split(';');
-            opt = blocks_gme.shift();
-         } else if (opt.indexOf('_') > 0) {
-            blocks_gme = opt.split('_');
-            opt = blocks_gme.shift();
-         }
-      }
-
-      let res = this.options,
-          d = new DrawOptions(opt);
-
-      // check pad options first
-      res.PadStats = d.check('USE_PAD_STATS');
-      res.PadPalette = d.check('USE_PAD_PALETTE');
-
-      let hopt = '';
-      PadDrawOptions.forEach(name => { if (d.check(name)) hopt += ';' + name; });
-      if (d.check('XAXIS_', true)) hopt += ';XAXIS_' + d.part;
-      if (d.check('YAXIS_', true)) hopt += ';YAXIS_' + d.part;
-
-      if (d.empty()) {
-         res.original = has_main ? 'lp' : 'alp';
-         d = new DrawOptions(res.original);
-      }
-
-      if (d.check('NOOPT')) res.NoOpt = 1;
-
-      if (d.check('POS3D_', true)) res.pos3d = d.partAsInt() - 0.5;
-
-      res._pfc = d.check('PFC');
-      res._plc = d.check('PLC');
-      res._pmc = d.check('PMC');
-
-      if (d.check('A')) res.Axis = d.check('I') ? 'A' : 'AXIS'; // I means invisible axis
-      if (d.check('X+')) { res.Axis += 'X+'; res.second_x = has_main; }
-      if (d.check('Y+')) { res.Axis += 'Y+'; res.second_y = has_main; }
-      if (d.check('RX')) res.Axis += 'RX';
-      if (d.check('RY')) res.Axis += 'RY';
-
-      if (is_gme) {
-         res.blocks = [];
-         res.skip_errors_x0 = res.skip_errors_y0 = false;
-         if (d.check('X0')) res.skip_errors_x0 = true;
-         if (d.check('Y0')) res.skip_errors_y0 = true;
-      }
-
-      decodeBlock(d, res);
-
-      if (is_gme) {
-         if (d.check('S')) res.individual_styles = true;
-      }
-
-      // if (d.check('E')) res.Errors = 1; // E option only defined for TGraphPolar
-
-      if (res.Errors === undefined)
-         res.Errors = this.has_errors && (!is_gme || !blocks_gme.length) ? 1 : 0;
-
-      // special case - one could use svg:path to draw many pixels (
-      if ((res.Mark == 1) && (graph.fMarkerStyle == 1)) res.Mark = 101;
-
-      // if no drawing option is selected and if opt == '' nothing is done.
-      if (res.Line + res.Fill + res.Curve + res.Mark + res.Bar + res.EF + res.Rect + res.Errors == 0) {
-         if (d.empty()) res.Line = 1;
-      }
-
-      if (this.matchObjectType(clTGraphErrors)) {
-         let len = graph.fEX.length, m = 0;
-         for (let k = 0; k < len; ++k)
-            m = Math.max(m, graph.fEX[k], graph.fEY[k]);
-         if (m < 1e-100)
-            res.Errors = 0;
-      }
-
-      this._cutg = this.matchObjectType(clTCutG);
-      this._cutg_lastsame = this._cutg && (graph.fNpoints > 3) &&
-                            (graph.fX[0] == graph.fX[graph.fNpoints-1]) && (graph.fY[0] == graph.fY[graph.fNpoints-1]);
-
-      if (!res.Axis) {
-         // check if axis should be drawn
-         // either graph drawn directly or
-         // graph is first object in list of primitives
-         let pad = this.getPadPainter()?.getRootPad(true);
-         if (!pad || (pad?.fPrimitives?.arr[0] === this.getObject())) res.Axis = 'AXIS';
-      } else if (res.Axis.indexOf('A') < 0) {
-         res.Axis = 'AXIS,' + res.Axis;
-      }
-
-      res.Axis += hopt;
-
-      for (let bl = 0; bl < blocks_gme.length; ++bl) {
-         let subd = new DrawOptions(blocks_gme[bl]), subres = {};
-         decodeBlock(subd, subres);
-         subres.skip_errors_x0 = res.skip_errors_x0;
-         subres.skip_errors_y0 = res.skip_errors_y0;
-         res.blocks.push(subres);
-      }
-   }
-
-   /** @summary Extract errors for TGraphMultiErrors */
-   extractGmeErrors(nblock) {
-      if (!this.bins) return;
-      let gr = this.getGraph();
-      this.bins.forEach(bin => {
-         bin.eylow  = gr.fEyL[nblock][bin.indx];
-         bin.eyhigh = gr.fEyH[nblock][bin.indx];
-      });
-   }
-
-   /** @summary Create bins for TF1 drawing */
-   createBins() {
-      let gr = this.getGraph();
-      if (!gr) return;
-
-      let kind = 0, npoints = gr.fNpoints;
-      if (this._cutg && this._cutg_lastsame)
-         npoints--;
-
-      if (gr._typename == clTGraphErrors)
-         kind = 1;
-      else if (gr._typename == clTGraphMultiErrors)
-         kind = 2;
-      else if (gr._typename == clTGraphAsymmErrors || gr._typename == clTGraphBentErrors || gr._typename.match(/^RooHist/))
-         kind = 3;
-
-      this.bins = new Array(npoints);
-
-      for (let p = 0; p < npoints; ++p) {
-         let bin = this.bins[p] = { x: gr.fX[p], y: gr.fY[p], indx: p };
-         switch(kind) {
-            case 1:
-               bin.exlow = bin.exhigh = gr.fEX[p];
-               bin.eylow = bin.eyhigh = gr.fEY[p];
-               break;
-            case 2:
-               bin.exlow  = gr.fExL[p];
-               bin.exhigh = gr.fExH[p];
-               bin.eylow  = gr.fEyL[0][p];
-               bin.eyhigh = gr.fEyH[0][p];
-               break;
-            case 3:
-               bin.exlow  = gr.fEXlow[p];
-               bin.exhigh = gr.fEXhigh[p];
-               bin.eylow  = gr.fEYlow[p];
-               bin.eyhigh = gr.fEYhigh[p];
-               break;
-         }
-
-         if (p === 0) {
-            this.xmin = this.xmax = bin.x;
-            this.ymin = this.ymax = bin.y;
-         }
-
-         if (kind > 0) {
-            this.xmin = Math.min(this.xmin, bin.x - bin.exlow, bin.x + bin.exhigh);
-            this.xmax = Math.max(this.xmax, bin.x - bin.exlow, bin.x + bin.exhigh);
-            this.ymin = Math.min(this.ymin, bin.y - bin.eylow, bin.y + bin.eyhigh);
-            this.ymax = Math.max(this.ymax, bin.y - bin.eylow, bin.y + bin.eyhigh);
-         } else {
-            this.xmin = Math.min(this.xmin, bin.x);
-            this.xmax = Math.max(this.xmax, bin.x);
-            this.ymin = Math.min(this.ymin, bin.y);
-            this.ymax = Math.max(this.ymax, bin.y);
-         }
-      }
-   }
-
-   /** @summary Return margins for histogram ranges */
-   getHistRangeMargin() { return 0.1; }
-
-   /** @summary Create histogram for graph
-     * @desc graph bins should be created when calling this function
-     * @param {boolean} [set_x] - set X axis range
-     * @param {boolean} [set_y] - set Y axis range */
-   createHistogram(set_x, set_y) {
-      if (!set_x && !set_y)
-         set_x = set_y = true;
-
-      let xmin = this.xmin, xmax = this.xmax, ymin = this.ymin, ymax = this.ymax, margin = this.getHistRangeMargin();
-
-      if (xmin >= xmax) xmax = xmin + 1;
-      if (ymin >= ymax) ymax = ymin + 1;
-      let dx = (xmax - xmin) * margin, dy = (ymax - ymin) * margin,
-          uxmin = xmin - dx, uxmax = xmax + dx,
-          minimum = ymin - dy, maximum = ymax + dy;
-
-      if (!this._not_adjust_hrange) {
-         if ((uxmin < 0) && (xmin >= 0))
-            uxmin = xmin * (1 - margin);
-         if ((uxmax > 0) && (xmax <= 0))
-            uxmax = 0;
-      }
-
-      let graph = this.getGraph(),
-          histo = this.getHistogram(),
-          minimum0 = minimum, maximum0 = maximum;
-
-      if (!histo) {
-         histo = this._need_2dhist ? createHistogram(clTH2I, 30, 30) : createHistogram(clTH1I, 100);
-         histo.fName = graph.fName + '_h';
-         histo.fBits = histo.fBits | kNoStats;
-         this._own_histogram = true;
-         this.setHistogram(histo);
-      } else if ((histo.fMaximum != kNoZoom) && (histo.fMinimum != kNoZoom)) {
-         minimum = histo.fMinimum;
-         maximum = histo.fMaximum;
-      }
-
-      if (graph.fMinimum != kNoZoom) minimum = ymin = graph.fMinimum;
-      if (graph.fMaximum != kNoZoom) maximum = graph.fMaximum;
-      if ((minimum < 0) && (ymin >= 0)) minimum = (1 - margin)*ymin;
-
-      setHistogramTitle(histo, this.getObject().fTitle);
-
-      if (set_x) {
-         histo.fXaxis.fXmin = uxmin;
-         histo.fXaxis.fXmax = uxmax;
-      }
-
-      if (set_y) {
-         histo.fYaxis.fXmin = Math.min(minimum0, minimum);
-         histo.fYaxis.fXmax = Math.max(maximum0, maximum);
-         histo.fMinimum = minimum;
-         histo.fMaximum = maximum;
-      }
-
-      return histo;
-   }
-
-   /** @summary Check if user range can be unzommed
-     * @desc Used when graph points covers larger range than provided histogram */
-   unzoomUserRange(dox, doy /*, doz*/) {
-      let graph = this.getGraph();
-      if (this._own_histogram || !graph) return false;
-
-      let histo = this.getHistogram();
-
-      dox = dox && histo && ((histo.fXaxis.fXmin > this.xmin) || (histo.fXaxis.fXmax < this.xmax));
-      doy = doy && histo && ((histo.fYaxis.fXmin > this.ymin) || (histo.fYaxis.fXmax < this.ymax));
-      if (!dox && !doy) return false;
-
-      this.createHistogram(dox, doy);
-      this.getMainPainter()?.extractAxesProperties(1); // just to enforce ranges extraction
-
-      return true;
-   }
-
-   /** @summary Returns true if graph drawing can be optimize */
-   canOptimize() {
-      return (settings.OptimizeDraw > 0) && !this.options.NoOpt;
-   }
-
-   /** @summary Returns optimized bins - if optimization enabled */
-   optimizeBins(maxpnt, filter_func) {
-      if ((this.bins.length < 30) && !filter_func)
-         return this.bins;
-
-      let selbins = null;
-      if (isFunc(filter_func)) {
-         for (let n = 0; n < this.bins.length; ++n) {
-            if (filter_func(this.bins[n],n)) {
-               if (!selbins) selbins = (n == 0) ? [] : this.bins.slice(0, n);
-            } else {
-               if (selbins) selbins.push(this.bins[n]);
-            }
-         }
-      }
-      if (!selbins) selbins = this.bins;
-
-      if (!maxpnt) maxpnt = 500000;
-
-      if ((selbins.length < maxpnt) || !this.canOptimize()) return selbins;
-      let step = Math.floor(selbins.length / maxpnt);
-      if (step < 2) step = 2;
-      let optbins = [];
-      for (let n = 0; n < selbins.length; n+=step)
-         optbins.push(selbins[n]);
-
-      return optbins;
-   }
-
-   /** @summary Returns tooltip for specified bin */
-   getTooltips(d) {
-      let pmain = this.get_main(), lines = [],
-          funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
-          gme = this.get_gme();
-
-      lines.push(this.getObjectHint());
-
-      if (d && funcs) {
-         if (d.indx !== undefined)
-            lines.push('p = ' + d.indx);
-         lines.push('x = ' + funcs.axisAsText('x', d.x), 'y = ' + funcs.axisAsText('y', d.y));
-         if (gme)
-            lines.push('error x = -' + funcs.axisAsText('x', gme.fExL[d.indx]) + '/+' + funcs.axisAsText('x', gme.fExH[d.indx]));
-         else if (this.options.Errors && (funcs.x_handle.kind == 'normal') && (d.exlow || d.exhigh))
-            lines.push('error x = -' + funcs.axisAsText('x', d.exlow) + '/+' + funcs.axisAsText('x', d.exhigh));
-
-         if (gme) {
-            for (let ny = 0; ny < gme.fNYErrors; ++ny)
-               lines.push(`error y${ny} = -${funcs.axisAsText('y', gme.fEyL[ny][d.indx])}/+${funcs.axisAsText('y', gme.fEyH[ny][d.indx])}`);
-         } else if ((this.options.Errors || (this.options.EF > 0)) && (funcs.y_handle.kind == 'normal') && (d.eylow || d.eyhigh))
-            lines.push('error y = -' + funcs.axisAsText('y', d.eylow) + '/+' + funcs.axisAsText('y', d.eyhigh));
-
-      }
-      return lines;
-   }
-
-   /** @summary Provide frame painter for graph
-     * @desc If not exists, emulate its behaviour */
-   get_main() {
-      let pmain = this.getFramePainter();
-
-      if (pmain?.grx && pmain?.gry) return pmain;
-
-      // FIXME: check if needed, can be removed easily
-      let pp = this.getPadPainter(),
-          rect = pp?.getPadRect() || { width: 800, height: 600 };
-
-      pmain = {
-          pad_layer: true,
-          pad: pp?.getRootPad(true),
-          pw: rect.width,
-          ph: rect.height,
-          fX1NDC: 0.1, fX2NDC: 0.9, fY1NDC: 0.1, fY2NDC: 0.9,
-          getFrameWidth() { return this.pw; },
-          getFrameHeight() { return this.ph; },
-          grx(value) {
-             if (this.pad.fLogx)
-                value = (value > 0) ? Math.log10(value) : this.pad.fUxmin;
-             else
-                value = (value - this.pad.fX1) / (this.pad.fX2 - this.pad.fX1);
-             return value * this.pw;
-          },
-          gry(value) {
-             if (this.pad.fLogy)
-                value = (value > 0) ? Math.log10(value) : this.pad.fUymin;
-             else
-                value = (value - this.pad.fY1) / (this.pad.fY2 - this.pad.fY1);
-             return (1 - value) * this.ph;
-          },
-          revertAxis(name, v) {
-            if (name == 'x')
-               return v / this.pw * (this.pad.fX2 - this.pad.fX1) + this.pad.fX1;
-            if (name == 'y')
-               return (1 - v / this.ph) * (this.pad.fY2 - this.pad.fY1) + this.pad.fY1;
-            return v;
-          },
-          getGrFuncs() { return this; }
-      };
-
-      return pmain.pad ? pmain : null;
-   }
-
-   /** @summary append exclusion area to created path */
-   appendExclusion(is_curve, path, drawbins, excl_width) {
-      let extrabins = [];
-      for (let n = drawbins.length-1; n >= 0; --n) {
-         let bin = drawbins[n],
-             dlen = Math.sqrt(bin.dgrx**2 + bin.dgry**2);
-         // shift point
-         bin.grx += excl_width*bin.dgry/dlen;
-         bin.gry -= excl_width*bin.dgrx/dlen;
-         extrabins.push(bin);
-      }
-
-      let path2 = buildSvgCurve(extrabins, { cmd: 'L', line: !is_curve });
-
-      this.draw_g.append('svg:path')
-                 .attr('d', path + path2 + 'Z')
-                 .call(this.fillatt.func)
-                 .style('opacity', 0.75);
-   }
-
-   /** @summary draw TGraph bins with specified options
-     * @desc Can be called several times */
-   drawBins(funcs, options, draw_g, w, h, lineatt, fillatt, main_block) {
-      let graph = this.getGraph(),
-          excl_width = 0, drawbins = null;
-
-      if (main_block && lineatt.excl_side) {
-         excl_width = lineatt.excl_width;
-         if ((lineatt.width > 0) && !options.Line && !options.Curve) options.Line = 1;
-      }
-
-      if (options.EF) {
-         drawbins = this.optimizeBins((options.EF > 1) ? 20000 : 0);
-
-         // build lower part
-         for (let n = 0; n < drawbins.length; ++n) {
-            let bin = drawbins[n];
-            bin.grx = funcs.grx(bin.x);
-            bin.gry = funcs.gry(bin.y - bin.eylow);
-         }
-
-         let path1 = buildSvgCurve(drawbins, { line: options.EF < 2, qubic: true }),
-             bins2 = [];
-
-         for (let n = drawbins.length-1; n >= 0; --n) {
-            let bin = drawbins[n];
-            bin.gry = funcs.gry(bin.y + bin.eyhigh);
-            bins2.push(bin);
-         }
-
-         // build upper part (in reverse direction)
-         let path2 = buildSvgCurve(bins2, { line: options.EF < 2, cmd: 'L', qubic: true });
-
-         draw_g.append('svg:path')
-               .attr('d', path1 + path2 + 'Z')
-               .call(fillatt.func);
-         if (main_block)
-            this.draw_kind = 'lines';
-      }
-
-      if (options.Line || options.Fill) {
-
-         let close_symbol = '';
-         if (this._cutg) {
-            close_symbol = 'Z';
-            if (!options.original) options.Fill = 1;
-         }
-
-         if (options.Fill) {
-            close_symbol = 'Z'; // always close area if we want to fill it
-            excl_width = 0;
-         }
-
-         if (!drawbins) drawbins = this.optimizeBins(0);
-
-         for (let n = 0; n < drawbins.length; ++n) {
-            let bin = drawbins[n];
-            bin.grx = funcs.grx(bin.x);
-            bin.gry = funcs.gry(bin.y);
-         }
-
-         let path = buildSvgCurve(drawbins, {line: true, calc: excl_width });
-
-         if (excl_width)
-             this.appendExclusion(false, path, drawbins, excl_width);
-
-         let elem = draw_g.append('svg:path').attr('d', path + close_symbol);
-         if (options.Line)
-            elem.call(lineatt.func);
-
-         if (options.Fill)
-            elem.call(fillatt.func);
-         else
-            elem.style('fill', 'none');
-
-         if (main_block)
-            this.draw_kind = 'lines';
-      }
-
-      if (options.Curve) {
-         let curvebins = drawbins;
-         if ((this.draw_kind != 'lines') || !curvebins || ((options.Curve == 1) && (curvebins.length > 20000))) {
-            curvebins = this.optimizeBins((options.Curve == 1) ? 20000 : 0);
-            for (let n = 0; n < curvebins.length; ++n) {
-               let bin = curvebins[n];
-               bin.grx = funcs.grx(bin.x);
-               bin.gry = funcs.gry(bin.y);
-            }
-         }
-
-         let path = buildSvgCurve(curvebins, { qubic: !excl_width } );
-         if (excl_width)
-            this.appendExclusion(true, path, curvebins, excl_width);
-
-         draw_g.append('svg:path')
-               .attr('d', path)
-               .call(lineatt.func)
-               .style('fill', 'none');
-         if (main_block)
-            this.draw_kind = 'lines'; // handled same way as lines
-      }
-
-      let nodes = null;
-
-      if (options.Errors || options.Rect || options.Bar) {
-
-         drawbins = this.optimizeBins(5000, (pnt,i) => {
-
-            let grx = funcs.grx(pnt.x);
-
-            // when drawing bars, take all points
-            if (!options.Bar && ((grx < 0) || (grx > w))) return true;
-
-            let gry = funcs.gry(pnt.y);
-
-            if (!options.Bar && !options.OutRange && ((gry < 0) || (gry > h))) return true;
-
-            pnt.grx1 = Math.round(grx);
-            pnt.gry1 = Math.round(gry);
-
-            if (this.has_errors) {
-               pnt.grx0 = Math.round(funcs.grx(pnt.x - options.ScaleErrX*pnt.exlow) - grx);
-               pnt.grx2 = Math.round(funcs.grx(pnt.x + options.ScaleErrX*pnt.exhigh) - grx);
-               pnt.gry0 = Math.round(funcs.gry(pnt.y - pnt.eylow) - gry);
-               pnt.gry2 = Math.round(funcs.gry(pnt.y + pnt.eyhigh) - gry);
-
-               if (this.is_bent) {
-                  pnt.grdx0 = Math.round(funcs.gry(pnt.y + graph.fEXlowd[i]) - gry);
-                  pnt.grdx2 = Math.round(funcs.gry(pnt.y + graph.fEXhighd[i]) - gry);
-                  pnt.grdy0 = Math.round(funcs.grx(pnt.x + graph.fEYlowd[i]) - grx);
-                  pnt.grdy2 = Math.round(funcs.grx(pnt.x + graph.fEYhighd[i]) - grx);
-               } else {
-                  pnt.grdx0 = pnt.grdx2 = pnt.grdy0 = pnt.grdy2 = 0;
-               }
-            }
-
-            return false;
-         });
-
-         if (main_block)
-            this.draw_kind = 'nodes';
-
-         nodes = draw_g.selectAll('.grpoint')
-                       .data(drawbins)
-                       .enter()
-                       .append('svg:g')
-                       .attr('class', 'grpoint')
-                       .attr('transform', d => makeTranslate(d.grx1, d.gry1));
-      }
-
-      if (options.Bar) {
-         // calculate bar width
-         for (let i = 1; i < drawbins.length-1; ++i)
-            drawbins[i].width = Math.max(2, (drawbins[i+1].grx1 - drawbins[i-1].grx1) / 2 - 2);
-
-         // first and last bins
-         switch (drawbins.length) {
-            case 0: break;
-            case 1: drawbins[0].width = w/4; break; // pathologic case of single bin
-            case 2: drawbins[0].width = drawbins[1].width = (drawbins[1].grx1-drawbins[0].grx1)/2; break;
-            default:
-               drawbins[0].width = drawbins[1].width;
-               drawbins[drawbins.length-1].width = drawbins[drawbins.length-2].width;
-         }
-
-         let yy0 = Math.round(funcs.gry(0)), usefill = fillatt;
-
-         if (main_block) {
-            let fp = this.getFramePainter(),
-                fpcol = fp?.fillatt && !fp?.fillatt.empty() ? fp.fillatt.getFillColor() : -1;
-            if (fpcol === fillatt.getFillColor())
-               usefill = new TAttFillHandler({ color: fpcol == 'white' ? 1 : 0, pattern: 1001 });
-         }
-
-         nodes.append('svg:path')
-              .attr('d', d => {
-                 d.bar = true; // element drawn as bar
-                 let dx = Math.round(-d.width/2),
-                     dw = Math.round(d.width),
-                     dy = (options.Bar !== 1) ? 0 : ((d.gry1 > yy0) ? yy0-d.gry1 : 0),
-                     dh = (options.Bar !== 1) ? (h > d.gry1 ? h - d.gry1 : 0) : Math.abs(yy0 - d.gry1);
-                 return `M${dx},${dy}h${dw}v${dh}h${-dw}z`;
-              })
-            .call(usefill.func);
-      }
-
-      if (options.Rect) {
-         nodes.filter(d => (d.exlow > 0) && (d.exhigh > 0) && (d.eylow > 0) && (d.eyhigh > 0))
-           .append('svg:path')
-           .attr('d', d => {
-               d.rect = true;
-               return `M${d.grx0},${d.gry0}H${d.grx2}V${d.gry2}H${d.grx0}Z`;
-            })
-           .call(fillatt.func)
-           .call(options.Rect === 2 ? lineatt.func : () => {});
-      }
-
-      this.error_size = 0;
-
-      if (options.Errors) {
-         // to show end of error markers, use line width attribute
-         let lw = lineatt.width + gStyle.fEndErrorSize, bb = 0,
-             vv = options.Ends ? `m0,${lw}v${-2*lw}` : '',
-             hh = options.Ends ? `m${lw},0h${-2*lw}` : '',
-             vleft = vv, vright = vv, htop = hh, hbottom = hh;
-
-         const mainLine = (dx,dy) => {
-            if (!options.MainError) return `M${dx},${dy}`;
-            let res = 'M0,0';
-            if (dx) return res + (dy ? `L${dx},${dy}` : `H${dx}`);
-            return dy ? res + `V${dy}` : res;
-         };
-
-         switch (options.Ends) {
-            case 2:  // option []
-               bb = Math.max(lineatt.width+1, Math.round(lw*0.66));
-               vleft = `m${bb},${lw}h${-bb}v${-2*lw}h${bb}`;
-               vright = `m${-bb},${lw}h${bb}v${-2*lw}h${-bb}`;
-               htop = `m${-lw},${bb}v${-bb}h${2*lw}v${bb}`;
-               hbottom = `m${-lw},${-bb}v${bb}h${2*lw}v${-bb}`;
-               break;
-            case 3: // option |>
-               lw = Math.max(lw, Math.round(graph.fMarkerSize*8*0.66));
-               bb = Math.max(lineatt.width+1, Math.round(lw*0.66));
-               vleft = `l${bb},${lw}v${-2*lw}l${-bb},${lw}`;
-               vright = `l${-bb},${lw}v${-2*lw}l${bb},${lw}`;
-               htop = `l${-lw},${bb}h${2*lw}l${-lw},${-bb}`;
-               hbottom = `l${-lw},${-bb}h${2*lw}l${-lw},${bb}`;
-               break;
-            case 4: // option >
-               lw = Math.max(lw, Math.round(graph.fMarkerSize*8*0.66));
-               bb = Math.max(lineatt.width+1, Math.round(lw*0.66));
-               vleft = `l${bb},${lw}m0,${-2*lw}l${-bb},${lw}`;
-               vright = `l${-bb},${lw}m0,${-2*lw}l${bb},${lw}`;
-               htop = `l${-lw},${bb}m${2*lw},0l${-lw},${-bb}`;
-               hbottom = `l${-lw},${-bb}m${2*lw},0l${-lw},${bb}`;
-               break;
-         }
-
-         this.error_size = lw;
-
-         lw = Math.floor((lineatt.width-1)/2); // one should take into account half of end-cup line width
-
-         let visible = nodes.filter(d => (d.exlow > 0) || (d.exhigh > 0) || (d.eylow > 0) || (d.eyhigh > 0));
-         if (options.skip_errors_x0 || options.skip_errors_y0)
-            visible = visible.filter(d => ((d.x != 0) || !options.skip_errors_x0) && ((d.y != 0) || !options.skip_errors_y0));
-
-         if (!this.isBatchMode() && settings.Tooltip && main_block)
-            visible.append('svg:path')
-                   .style('fill', 'none')
-                   .style('pointer-events', 'visibleFill')
-                   .attr('d', d => `M${d.grx0},${d.gry0}h${d.grx2-d.grx0}v${d.gry2-d.gry0}h${d.grx0-d.grx2}z`);
-
-         visible.append('svg:path')
-             .call(lineatt.func)
-             .style('fill', 'none')
-             .attr('d', d => {
-                d.error = true;
-                return ((d.exlow > 0)  ? mainLine(d.grx0+lw, d.grdx0) + vleft : '') +
-                       ((d.exhigh > 0) ? mainLine(d.grx2-lw, d.grdx2) + vright : '') +
-                       ((d.eylow > 0)  ? mainLine(d.grdy0, d.gry0-lw) + hbottom : '') +
-                       ((d.eyhigh > 0) ? mainLine(d.grdy2, d.gry2+lw) + htop : '');
-              });
-      }
-
-      if (options.Mark) {
-         // for tooltips use markers only if nodes were not created
-         this.createAttMarker({ attr: graph, style: options.Mark - 100 });
-
-         this.marker_size = this.markeratt.getFullSize();
-
-         this.markeratt.resetPos();
-
-         let path = '', pnt, grx, gry,
-             want_tooltip = !this.isBatchMode() && settings.Tooltip && (!this.markeratt.fill || (this.marker_size < 7)) && !nodes && main_block,
-             hints_marker = '', hsz = Math.max(5, Math.round(this.marker_size*0.7)),
-             maxnummarker = 1000000 / (this.markeratt.getMarkerLength() + 7), step = 1; // let produce SVG at maximum 1MB
-
-         if (!drawbins)
-            drawbins = this.optimizeBins(maxnummarker);
-         else if (this.canOptimize() && (drawbins.length > 1.5*maxnummarker))
-            step = Math.min(2, Math.round(drawbins.length/maxnummarker));
-
-         for (let n = 0; n < drawbins.length; n += step) {
-            pnt = drawbins[n];
-            grx = funcs.grx(pnt.x);
-            if ((grx > -this.marker_size) && (grx < w + this.marker_size)) {
-               gry = funcs.gry(pnt.y);
-               if ((gry > -this.marker_size) && (gry < h + this.marker_size)) {
-                  path += this.markeratt.create(grx, gry);
-                  if (want_tooltip) hints_marker += `M${grx-hsz},${gry-hsz}h${2*hsz}v${2*hsz}h${-2*hsz}z`;
-               }
-            }
-         }
-
-         if (path) {
-            draw_g.append('svg:path')
-                  .attr('d', path)
-                  .call(this.markeratt.func);
-            if ((nodes === null) && (this.draw_kind == 'none') && main_block)
-               this.draw_kind = (options.Mark == 101) ? 'path' : 'mark';
-         }
-         if (want_tooltip && hints_marker)
-            draw_g.append('svg:path')
-                  .attr('d', hints_marker)
-                  .style('fill', 'none')
-                  .style('pointer-events', 'visibleFill');
-      }
-   }
-
-   /** @summary append TGraphQQ part */
-   appendQQ(funcs, graph) {
-      let xqmin = Math.max(funcs.scale_xmin, graph.fXq1),
-          xqmax = Math.min(funcs.scale_xmax, graph.fXq2),
-          yqmin = Math.max(funcs.scale_ymin, graph.fYq1),
-          yqmax = Math.min(funcs.scale_ymax, graph.fYq2),
-          path2 = '',
-          makeLine = (x1,y1,x2,y2) => `M${funcs.grx(x1)},${funcs.gry(y1)}L${funcs.grx(x2)},${funcs.gry(y2)}`,
-          yxmin = (graph.fYq2 - graph.fYq1)*(funcs.scale_xmin-graph.fXq1)/(graph.fXq2-graph.fXq1) + graph.fYq1,
-          yxmax = (graph.fYq2-graph.fYq1)*(funcs.scale_xmax-graph.fXq1)/(graph.fXq2-graph.fXq1) + graph.fYq1;
-
-      if (yxmin < funcs.scale_ymin) {
-         let xymin = (graph.fXq2 - graph.fXq1)*(funcs.scale_ymin-graph.fYq1)/(graph.fYq2-graph.fYq1) + graph.fXq1;
-         path2 = makeLine(xymin, funcs.scale_ymin, xqmin, yqmin);
-      } else {
-         path2 = makeLine(funcs.scale_xmin, yxmin, xqmin, yqmin);
-      }
-
-      if (yxmax > funcs.scale_ymax) {
-         let xymax = (graph.fXq2-graph.fXq1)*(funcs.scale_ymax-graph.fYq1)/(graph.fYq2-graph.fYq1) + graph.fXq1;
-         path2 += makeLine(xqmax, yqmax, xymax, funcs.scale_ymax);
-      } else {
-         path2 += makeLine(xqmax, yqmax, funcs.scale_xmax, yxmax);
-      }
-
-      let latt1 = new TAttLineHandler({ style: 1, width: 1, color: 'black' }),
-          latt2 = new TAttLineHandler({ style: 2, width: 1, color: 'black' });
-
-      this.draw_g.append('path')
-                 .attr('d', makeLine(xqmin,yqmin,xqmax,yqmax))
-                 .call(latt1.func)
-                 .style('fill', 'none');
-
-      this.draw_g.append('path')
-                 .attr('d', path2)
-                 .call(latt2.func)
-                 .style('fill', 'none');
-   }
-
-   drawBins3D(/*fp, graph*/) {
-      console.log('Load ./hist/TGraphPainter.mjs to draw graph in 3D');
-   }
-
-   /** @summary draw TGraph */
-   drawGraph() {
-
-      let pmain = this.get_main(),
-          graph = this.getGraph();
-      if (!pmain) return;
-
-      // special mode for TMultiGraph 3d drawing
-      if (this.options.pos3d)
-         return this.drawBins3D(pmain, graph);
-
-      let is_gme = !!this.get_gme(),
-          funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
-          w = pmain.getFrameWidth(),
-          h = pmain.getFrameHeight();
-
-      this.createG(!pmain.pad_layer);
-
-      if (this.options._pfc || this.options._plc || this.options._pmc) {
-         let mp = this.getMainPainter();
-         if (isFunc(mp?.createAutoColor)) {
-            let icolor = mp.createAutoColor();
-            if (this.options._pfc) { graph.fFillColor = icolor; delete this.fillatt; }
-            if (this.options._plc) { graph.fLineColor = icolor; delete this.lineatt; }
-            if (this.options._pmc) { graph.fMarkerColor = icolor; delete this.markeratt; }
-            this.options._pfc = this.options._plc = this.options._pmc = false;
-         }
-      }
-
-      this.createAttLine({ attr: graph, can_excl: true });
-      this.createAttFill({ attr: graph });
-
-      this.fillatt.used = false; // mark used only when really used
-
-      this.draw_kind = 'none'; // indicate if special svg:g were created for each bin
-      this.marker_size = 0; // indicate if markers are drawn
-      let draw_g = is_gme ? this.draw_g.append('svg:g') : this.draw_g;
-
-      this.drawBins(funcs, this.options, draw_g, w, h, this.lineatt, this.fillatt, true);
-
-      if (graph._typename == 'TGraphQQ')
-         this.appendQQ(funcs, graph);
-
-      if (is_gme) {
-         for (let k = 0; k < graph.fNYErrors; ++k) {
-            let lineatt = this.lineatt, fillatt = this.fillatt;
-            if (this.options.individual_styles) {
-               lineatt = new TAttLineHandler({ attr: graph.fAttLine[k], std: false });
-               fillatt = new TAttFillHandler({ attr: graph.fAttFill[k], std: false, svg: this.getCanvSvg() });
-            }
-            let sub_g = this.draw_g.append('svg:g'),
-                options = (k < this.options.blocks.length) ? this.options.blocks[k] : this.options;
-            this.extractGmeErrors(k);
-            this.drawBins(funcs, options, sub_g, w, h, lineatt, fillatt);
-         }
-         this.extractGmeErrors(0); // ensure that first block kept at the end
-      }
-
-      if (!this.isBatchMode()) {
-         addMoveHandler(this, this.testEditable());
-         assignContextMenu(this);
-      }
-   }
-
-   /** @summary Provide tooltip at specified point */
-   extractTooltip(pnt) {
-      if (!pnt) return null;
-
-      if ((this.draw_kind == 'lines') || (this.draw_kind == 'path') || (this.draw_kind == 'mark'))
-         return this.extractTooltipForPath(pnt);
-
-      if (this.draw_kind != 'nodes') return null;
-
-      let pmain = this.get_main(),
-          height = pmain.getFrameHeight(),
-          esz = this.error_size,
-          isbar1 = (this.options.Bar === 1),
-          funcs = isbar1 ? pmain.getGrFuncs(this.options.second_x, this.options.second_y) : null,
-          findbin = null, best_dist2 = 1e10, best = null,
-          msize = this.marker_size ? Math.round(this.marker_size/2 + 1.5) : 0;
-
-      this.draw_g.selectAll('.grpoint').each(function() {
-         let d = select(this).datum();
-         if (d === undefined) return;
-         let dist2 = (pnt.x - d.grx1) ** 2;
-         if (pnt.nproc === 1) dist2 += (pnt.y - d.gry1) ** 2;
-         if (dist2 >= best_dist2) return;
-
-         let rect;
-
-         if (d.error || d.rect || d.marker) {
-            rect = { x1: Math.min(-esz, d.grx0, -msize),
-                     x2: Math.max(esz, d.grx2, msize),
-                     y1: Math.min(-esz, d.gry2, -msize),
-                     y2: Math.max(esz, d.gry0, msize) };
-         } else if (d.bar) {
-             rect = { x1: -d.width/2, x2: d.width/2, y1: 0, y2: height - d.gry1 };
-
-             if (isbar1) {
-                let yy0 = funcs.gry(0);
-                rect.y1 = (d.gry1 > yy0) ? yy0-d.gry1 : 0;
-                rect.y2 = (d.gry1 > yy0) ? 0 : yy0-d.gry1;
-             }
-          } else {
-             rect = { x1: -5, x2: 5, y1: -5, y2: 5 };
-          }
-          let matchx = (pnt.x >= d.grx1 + rect.x1) && (pnt.x <= d.grx1 + rect.x2),
-              matchy = (pnt.y >= d.gry1 + rect.y1) && (pnt.y <= d.gry1 + rect.y2);
-
-          if (matchx && (matchy || (pnt.nproc > 1))) {
-             best_dist2 = dist2;
-             findbin = this;
-             best = rect;
-             best.exact = /* matchx && */ matchy;
-          }
-       });
-
-      if (findbin === null) return null;
-
-      let d = select(findbin).datum(),
-          gr = this.getGraph(),
-          res = { name: gr.fName, title: gr.fTitle,
-                  x: d.grx1, y: d.gry1,
-                  color1: this.lineatt.color,
-                  lines: this.getTooltips(d),
-                  rect: best, d3bin: findbin };
-
-       res.user_info = { obj: gr, name: gr.fName, bin: d.indx, cont: d.y, grx: d.grx1, gry: d.gry1 };
-
-      if (this.fillatt?.used && !this.fillatt?.empty())
-         res.color2 = this.fillatt.getFillColor();
-
-      if (best.exact) res.exact = true;
-      res.menu = res.exact; // activate menu only when exactly locate bin
-      res.menu_dist = 3; // distance always fixed
-      res.bin = d;
-      res.binindx = d.indx;
-
-      return res;
-   }
-
-   /** @summary Show tooltip */
-   showTooltip(hint) {
-
-      let ttrect = this.draw_g?.selectChild('.tooltip_bin');
-
-      if (!hint || !this.draw_g) {
-         ttrect?.remove();
-         return;
-      }
-
-      if (hint.usepath)
-         return this.showTooltipForPath(hint);
-
-      let d = select(hint.d3bin).datum();
-
-      if (ttrect.empty())
-         ttrect = this.draw_g.append('svg:rect')
-                             .attr('class', 'tooltip_bin')
-                             .style('pointer-events', 'none')
-                             .call(addHighlightStyle);
-
-      hint.changed = ttrect.property('current_bin') !== hint.d3bin;
-
-      if (hint.changed)
-         ttrect.attr('x', d.grx1 + hint.rect.x1)
-               .attr('width', hint.rect.x2 - hint.rect.x1)
-               .attr('y', d.gry1 + hint.rect.y1)
-               .attr('height', hint.rect.y2 - hint.rect.y1)
-               .style('opacity', '0.3')
-               .property('current_bin', hint.d3bin);
-   }
-
-   /** @summary Process tooltip event */
-   processTooltipEvent(pnt) {
-      let hint = this.extractTooltip(pnt);
-      if (!pnt || !pnt.disabled) this.showTooltip(hint);
-      return hint;
-   }
-
-   /** @summary Find best bin index for specified point */
-   findBestBin(pnt) {
-      if (!this.bins) return null;
-
-      let islines = (this.draw_kind == 'lines'),
-          bestindx = -1,
-          bestbin = null,
-          bestdist = 1e10,
-          funcs = this.get_main().getGrFuncs(this.options.second_x, this.options.second_y),
-          dist, grx, gry, n, bin;
-
-      for (n = 0; n < this.bins.length; ++n) {
-         bin = this.bins[n];
-
-         grx = funcs.grx(bin.x);
-         gry = funcs.gry(bin.y);
-
-         dist = (pnt.x-grx)**2 + (pnt.y-gry)**2;
-
-         if (dist < bestdist) {
-            bestdist = dist;
-            bestbin = bin;
-            bestindx = n;
-         }
-      }
-
-      // check last point
-      if ((bestdist > 100) && islines) bestbin = null;
-
-      let radius = Math.max(this.lineatt.width + 3, 4);
-
-      if (this.marker_size > 0) radius = Math.max(this.marker_size, radius);
-
-      if (bestbin)
-         bestdist = Math.sqrt((pnt.x-funcs.grx(bestbin.x))**2 + (pnt.y-funcs.gry(bestbin.y))**2);
-
-      if (!islines && (bestdist > radius)) bestbin = null;
-
-      if (!bestbin) bestindx = -1;
-
-      let res = { bin: bestbin, indx: bestindx, dist: bestdist, radius: Math.round(radius) };
-
-      if (!bestbin && islines) {
-
-         bestdist = 1e10;
-
-         const IsInside = (x, x1, x2) => ((x1 >= x) && (x >= x2)) || ((x1 <= x) && (x <= x2));
-
-         let bin0 = this.bins[0], grx0 = funcs.grx(bin0.x), gry0, posy = 0;
-         for (n = 1; n < this.bins.length; ++n) {
-            bin = this.bins[n];
-            grx = funcs.grx(bin.x);
-
-            if (IsInside(pnt.x, grx0, grx)) {
-               // if inside interval, check Y distance
-               gry0 = funcs.gry(bin0.y);
-               gry = funcs.gry(bin.y);
-
-               if (Math.abs(grx - grx0) < 1) {
-                  // very close x - check only y
-                  posy = pnt.y;
-                  dist = IsInside(pnt.y, gry0, gry) ? 0 : Math.min(Math.abs(pnt.y-gry0), Math.abs(pnt.y-gry));
-               } else {
-                  posy = gry0 + (pnt.x - grx0) / (grx - grx0) * (gry - gry0);
-                  dist = Math.abs(posy - pnt.y);
-               }
-
-               if (dist < bestdist) {
-                  bestdist = dist;
-                  res.linex = pnt.x;
-                  res.liney = posy;
-               }
-            }
-
-            bin0 = bin;
-            grx0 = grx;
-         }
-
-         if (bestdist < radius*0.5) {
-            res.linedist = bestdist;
-            res.closeline = true;
-         }
-      }
-
-      return res;
-   }
-
-   /** @summary Check editable flag for TGraph
-     * @desc if arg specified changes or toggles editable flag */
-   testEditable(arg) {
-      let obj = this.getGraph();
-      if (!obj) return false;
-      if ((arg == 'toggle') || ((arg !== undefined) && (!arg != obj.TestBit(kNotEditable))))
-         obj.InvertBit(kNotEditable);
-      return !obj.TestBit(kNotEditable);
-   }
-
-   /** @summary Provide tooltip at specified point for path-based drawing */
-   extractTooltipForPath(pnt) {
-
-      if (this.bins === null) return null;
-
-      let best = this.findBestBin(pnt);
-
-      if (!best || (!best.bin && !best.closeline)) return null;
-
-      let islines = (this.draw_kind == 'lines'),
-          ismark = (this.draw_kind == 'mark'),
-          pmain = this.get_main(),
-          funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
-          gr = this.getGraph(),
-          res = { name: gr.fName, title: gr.fTitle,
-                  x: best.bin ? funcs.grx(best.bin.x) : best.linex,
-                  y: best.bin ? funcs.gry(best.bin.y) : best.liney,
-                  color1: this.lineatt.color,
-                  lines: this.getTooltips(best.bin),
-                  usepath: true };
-
-      res.user_info = { obj: gr, name: gr.fName, bin: 0, cont: 0, grx: res.x, gry: res.y };
-
-      res.ismark = ismark;
-      res.islines = islines;
-
-      if (best.closeline) {
-         res.menu = res.exact = true;
-         res.menu_dist = best.linedist;
-      } else if (best.bin) {
-         if (this.options.EF && islines) {
-            res.gry1 = funcs.gry(best.bin.y - best.bin.eylow);
-            res.gry2 = funcs.gry(best.bin.y + best.bin.eyhigh);
-         } else {
-            res.gry1 = res.gry2 = funcs.gry(best.bin.y);
-         }
-
-         res.binindx = best.indx;
-         res.bin = best.bin;
-         res.radius = best.radius;
-         res.user_info.bin = best.indx;
-         res.user_info.cont = best.bin.y;
-
-         res.exact = (Math.abs(pnt.x - res.x) <= best.radius) &&
-            ((Math.abs(pnt.y - res.gry1) <= best.radius) || (Math.abs(pnt.y - res.gry2) <= best.radius));
-
-         res.menu = res.exact;
-         res.menu_dist = Math.sqrt((pnt.x-res.x)**2 + Math.min(Math.abs(pnt.y-res.gry1), Math.abs(pnt.y-res.gry2))**2);
-      }
-
-      if (this.fillatt?.used && !this.fillatt?.empty())
-         res.color2 = this.fillatt.getFillColor();
-
-      if (!islines) {
-         res.color1 = this.getColor(gr.fMarkerColor);
-         if (!res.color2) res.color2 = res.color1;
-      }
-
-      return res;
-   }
-
-   /** @summary Show tooltip for path drawing */
-   showTooltipForPath(hint) {
-
-      let ttbin = this.draw_g?.selectChild('.tooltip_bin');
-
-      if (!hint?.bin || !this.draw_g) {
-         ttbin?.remove();
-         return;
-      }
-
-      if (ttbin.empty())
-         ttbin = this.draw_g.append('svg:g').attr('class', 'tooltip_bin');
-
-      hint.changed = ttbin.property('current_bin') !== hint.bin;
-
-      if (hint.changed) {
-         ttbin.selectAll('*').remove(); // first delete all children
-         ttbin.property('current_bin', hint.bin);
-
-         if (hint.ismark) {
-            ttbin.append('svg:rect')
-                 .style('pointer-events', 'none')
-                 .call(addHighlightStyle)
-                 .style('opacity', '0.3')
-                 .attr('x', Math.round(hint.x - hint.radius))
-                 .attr('y', Math.round(hint.y - hint.radius))
-                 .attr('width', 2*hint.radius)
-                 .attr('height', 2*hint.radius);
-         } else {
-            ttbin.append('svg:circle').attr('cy', Math.round(hint.gry1));
-            if (Math.abs(hint.gry1-hint.gry2) > 1)
-               ttbin.append('svg:circle').attr('cy', Math.round(hint.gry2));
-
-            let elem = ttbin.selectAll('circle')
-                            .attr('r', hint.radius)
-                            .attr('cx', Math.round(hint.x));
-
-            if (!hint.islines) {
-               elem.style('stroke', hint.color1 == 'black' ? 'green' : 'black').style('fill','none');
-            } else {
-               if (this.options.Line || this.options.Curve)
-                  elem.call(this.lineatt.func);
-               else
-                  elem.style('stroke','black');
-               if (this.options.Fill)
-                  elem.call(this.fillatt.func);
-               else
-                  elem.style('fill','none');
-            }
-         }
-      }
-   }
-
-   /** @summary Check if graph moving is enabled */
-   moveEnabled() {
-      return this.testEditable();
-   }
-
-   /** @summary Start moving of TGraph */
-   moveStart(x,y) {
-      this.pos_dx = this.pos_dy = 0;
-      this.move_funcs = this.get_main().getGrFuncs(this.options.second_x, this.options.second_y);
-      let hint = this.extractTooltip({x, y});
-      if (hint && hint.exact && (hint.binindx !== undefined)) {
-         this.move_binindx = hint.binindx;
-         this.move_bin = hint.bin;
-         this.move_x0 = this.move_funcs.grx(this.move_bin.x);
-         this.move_y0 = this.move_funcs.gry(this.move_bin.y);
-      } else {
-         delete this.move_binindx;
-      }
-   }
-
-   /** @summary Perform moving */
-   moveDrag(dx,dy) {
-      this.pos_dx += dx;
-      this.pos_dy += dy;
-
-      if (this.move_binindx === undefined) {
-         makeTranslate(this.draw_g, this.pos_dx, this.pos_dy);
-      } else if (this.move_funcs && this.move_bin) {
-         this.move_bin.x = this.move_funcs.revertAxis('x', this.move_x0 + this.pos_dx);
-         this.move_bin.y = this.move_funcs.revertAxis('y', this.move_y0 + this.pos_dy);
-         this.drawGraph();
-      }
-   }
-
-   /** @summary Complete moving */
-   moveEnd(not_changed) {
-      let exec = '', graph = this.getGraph(), last = graph?.fNpoints-1;
-
-      const changeBin = bin => {
-         exec += `SetPoint(${bin.indx},${bin.x},${bin.y});;`;
-         graph.fX[bin.indx] = bin.x;
-         graph.fY[bin.indx] = bin.y;
-         if ((bin.indx == 0) && this._cutg_lastsame) {
-            exec += `SetPoint(${last},${bin.x},${bin.y});;`;
-            graph.fX[last] = bin.x;
-            graph.fY[last] = bin.y;
-         }
-      };
-
-      if (this.move_binindx === undefined) {
-         this.draw_g.attr('transform', null);
-
-         if (this.move_funcs && this.bins && !not_changed) {
-
-            for (let k = 0; k < this.bins.length; ++k) {
-               let bin = this.bins[k];
-               bin.x = this.move_funcs.revertAxis('x', this.move_funcs.grx(bin.x) + this.pos_dx);
-               bin.y = this.move_funcs.revertAxis('y', this.move_funcs.gry(bin.y) + this.pos_dy);
-               changeBin(bin);
-            }
-            if (graph.$redraw_pad)
-               this.redrawPad();
-            else
-               this.drawGraph();
-         }
-      } else {
-         changeBin(this.move_bin);
-         delete this.move_binindx;
-         if (graph.$redraw_pad)
-            this.redrawPad();
-      }
-
-      delete this.move_funcs;
-
-      if (exec && !not_changed)
-         this.submitCanvExec(exec);
-   }
-
-   /** @summary Fill context menu */
-   fillContextMenuItems(menu) {
-      if (!this.snapid)
-         menu.addchk(this.testEditable(), 'Editable', () => { this.testEditable('toggle'); this.drawGraph(); });
-   }
-
-   /** @summary Execute menu command
-     * @private */
-   executeMenuCommand(method, args) {
-      if (super.executeMenuCommand(method, args)) return true;
-
-      let canp = this.getCanvPainter(), pmain = this.get_main();
-
-      if ((method.fName == 'RemovePoint') || (method.fName == 'InsertPoint')) {
-         if (!canp || canp._readonly) return true; // ignore function
-
-         let pnt = isFunc(pmain?.getLastEventPos) ? pmain.getLastEventPos() : null,
-             hint = this.extractTooltip(pnt);
-
-         if (method.fName == 'InsertPoint') {
-            if (pnt) {
-               let funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
-                   userx = funcs.revertAxis('x', pnt.x) ?? 0,
-                   usery = funcs.revertAxis('y', pnt.y) ?? 0;
-               this.submitCanvExec(`AddPoint(${userx.toFixed(3)}, ${usery.toFixed(3)})`, method.$execid);
-            }
-         } else if (method.$execid && (hint?.binindx !== undefined)) {
-            this.submitCanvExec(`RemovePoint(${hint.binindx})`, method.$execid);
-         }
-
-         return true; // call is processed
-      }
-
-      return false;
-   }
-
-   /** @summary Update object members
-     * @private */
-   _updateMembers(graph, obj) {
-      graph.fBits = obj.fBits;
-      graph.fTitle = obj.fTitle;
-      graph.fX = obj.fX;
-      graph.fY = obj.fY;
-      graph.fNpoints = obj.fNpoints;
-      graph.fMinimum = obj.fMinimum;
-      graph.fMaximum = obj.fMaximum;
-   }
-
-   /** @summary Update TGraph object */
-   updateObject(obj, opt) {
-      if (!this.matchObjectType(obj)) return false;
-
-      if (opt && (opt != this.options.original))
-         this.decodeOptions(opt);
-
-      this._updateMembers(this.getObject(), obj);
-
-      this.createBins();
-
-      delete this.$redraw_hist;
-
-      // if our own histogram was used as axis drawing, we need update histogram as well
-      if (this.axes_draw) {
-         let histo = this.createHistogram(),
-             hist_painter = this.getMainPainter();
-         if (hist_painter?.$secondary) {
-            hist_painter.updateObject(histo, this.options.Axis);
-            this.$redraw_hist = true;
-         }
-      }
-
-      return true;
-   }
-
-   /** @summary Checks if it makes sense to zoom inside specified axis range
-     * @desc allow to zoom TGraph only when at least one point in the range */
-   canZoomInside(axis, min, max) {
-      let gr = this.getGraph();
-      if (!gr || (axis !== (this.options.pos3d ? 'y' : 'x'))) return false;
-
-      for (let n = 0; n < gr.fNpoints; ++n)
-         if ((min < gr.fX[n]) && (gr.fX[n] < max)) return true;
-
-      return false;
-   }
-
-   /** @summary Process click on graph-defined buttons */
-   clickButton(funcname) {
-      if (funcname !== 'ToggleZoom') return false;
-
-      let main = this.getFramePainter();
-      if (!main) return false;
-
-      if ((this.xmin === this.xmax) && (this.ymin === this.ymax)) return false;
-
-      main.zoom(this.xmin, this.xmax, this.ymin, this.ymax);
-
-      return true;
-   }
-
-   /** @summary Find TF1/TF2 in TGraph list of functions */
-   findFunc() {
-      return this.getGraph()?.fFunctions?.arr?.find(func => (func._typename == clTF1) || (func._typename == clTF2));
-   }
-
-   /** @summary Find stat box in TGraph list of functions */
-   findStat() {
-      return this.getGraph()?.fFunctions?.arr?.find(func => (func._typename == clTPaveStats) && (func.fName == 'stats'));
-   }
-
-   /** @summary Create stat box */
-   createStat() {
-      let func = this.findFunc();
-      if (!func) return null;
-
-      let stats = this.findStat();
-      if (stats) return stats;
-
-      // do not create stats box when drawing canvas
-      if (this.getCanvPainter()?.normal_canvas || this.options.PadStats) return null;
-
-      this.create_stats = true;
-
-      const st = gStyle;
-
-      stats = create$1(clTPaveStats);
-      Object.assign(stats, { fName: 'stats', fOptStat: 0, fOptFit: st.fOptFit || 111, fBorderSize: 1 });
-
-      stats.fX1NDC = st.fStatX - st.fStatW;
-      stats.fY1NDC = st.fStatY - st.fStatH;
-      stats.fX2NDC = st.fStatX;
-      stats.fY2NDC = st.fStatY;
-
-      stats.fFillColor = st.fStatColor;
-      stats.fFillStyle = st.fStatStyle;
-
-      stats.fTextAngle = 0;
-      stats.fTextSize = st.fStatFontSize; // 9 ??
-      stats.fTextAlign = 12;
-      stats.fTextColor = st.fStatTextColor;
-      stats.fTextFont = st.fStatFont;
-
-      stats.AddText(func.fName);
-
-      // while TF1 was found, one can be sure that stats is existing
-      this.getGraph().fFunctions.Add(stats);
-
-      return stats;
-   }
-
-   /** @summary Fill statistic */
-   fillStatistic(stat, dostat, dofit) {
-
-      // cannot fill stats without func
-      let func = this.findFunc();
-
-      if (!func || !dofit || !this.create_stats) return false;
-
-      stat.clearPave();
-
-      stat.fillFunctionStat(func, dofit);
-
-      return true;
-   }
-
-   /** @summary method draws next function from the functions list
-     * @return {Promise} */
-   async drawNextFunction(indx) {
-
-      let graph = this.getGraph();
-
-      if (indx >= (graph?.fFunctions?.arr?.length || 0))
-         return this;
-
-      let func = graph.fFunctions.arr[indx],
-          opt = graph.fFunctions.opt[indx];
-
-      //  required for stats filling
-      // TODO: use weak reference (via pad list of painters and any kind of string)
-      func.$main_painter = this;
-
-      return this.getPadPainter().drawObject(this.getDom(), func, opt).then(() => this.drawNextFunction(indx+1));
-   }
-
-   /** @summary Draw axis histogram
-     * @private */
-   async drawAxisHisto() {
-      let histo = this.createHistogram();
-      return TH1Painter$2.draw(this.getDom(), histo, this.options.Axis);
-   }
-
-   /** @summary Draw TGraph
-     * @private */
-   static async _drawGraph(painter, opt) {
-      painter.decodeOptions(opt, true);
-      painter.createBins();
-      painter.createStat();
-      let graph = painter.getGraph();
-      if (!settings.DragGraphs && graph && !graph.TestBit(kNotEditable))
-         graph.InvertBit(kNotEditable);
-
-      let promise = Promise.resolve();
-
-      if ((!painter.getMainPainter() || painter.options.second_x || painter.options.second_y) && painter.options.Axis)
-         promise = painter.drawAxisHisto().then(hist_painter => {
-            if (!hist_painter) return;
-            painter.axes_draw = true;
-            if (!painter._own_histogram)
-               painter.$primary = true;
-            hist_painter.$secondary = 'hist';
-         });
-
-      return promise.then(() => {
-         painter.addToPadPrimitives();
-         return painter.drawGraph();
-      }).then(() => painter.drawNextFunction(0));
-   }
-
-   static async draw(dom, graph, opt) {
-      return TGraphPainter._drawGraph(new TGraphPainter(dom, graph), opt);
-   }
-
-}; // class TGraphPainter
-
-var TGraphPainter$2 = /*#__PURE__*/Object.freeze({
-__proto__: null,
-TGraphPainter: TGraphPainter$1,
-clTGraphAsymmErrors: clTGraphAsymmErrors
-});
-
 /** @summary Assign `evalPar` function for TF1 object
   * @private */
 
@@ -110467,57 +110880,6 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
    }
 
 }; // class TMultiGraphPainter
-
-class TGraphPainter extends TGraphPainter$1 {
-
-   /** @summary Draw TGraph points in 3D
-     * @private */
-   drawBins3D(fp, graph) {
-
-      if (!fp.mode3d || !fp.grx || !fp.gry || !fp.grz || !fp.toplevel)
-         return console.log('Frame painter missing base 3d elements');
-
-      if (fp.zoom_xmin != fp.zoom_xmax)
-        if ((this.options.pos3d < fp.zoom_xmin) || (this.options.pos3d > fp.zoom_xmax)) return;
-
-      let drawbins = this.optimizeBins(1000),
-          first = 0, last = drawbins.length-1;
-
-      if (fp.zoom_ymin != fp.zoom_ymax) {
-         while ((first < last) && (drawbins[first].x < fp.zoom_ymin)) first++;
-         while ((first < last) && (drawbins[last].x > fp.zoom_ymax)) last--;
-      }
-
-      if (first == last) return;
-
-      let pnts = [], grx = fp.grx(this.options.pos3d),
-          p0 = drawbins[first];
-
-      for (let n = first + 1; n <= last; ++n) {
-         let p1 = drawbins[n];
-         pnts.push(grx, fp.gry(p0.x), fp.grz(p0.y),
-                   grx, fp.gry(p1.x), fp.grz(p1.y));
-         p0 = p1;
-      }
-
-      let lines = createLineSegments(pnts, create3DLineMaterial(this, graph));
-
-      fp.toplevel.add(lines);
-
-      fp.render3D(100);
-   }
-
-   /** @summary Draw axis histogram
-     * @private */
-   async drawAxisHisto() {
-      return TH1Painter.draw(this.getDom(), this.createHistogram(), this.options.Axis);
-   }
-
-   static async draw(dom, graph, opt) {
-      return TGraphPainter._drawGraph(new TGraphPainter(dom, graph), opt);
-   }
-
-} // class TGraphPainter
 
 class TMultiGraphPainter extends TMultiGraphPainter$2 {
 
@@ -112103,487 +112465,6 @@ class TASImagePainter extends ObjectPainter {
 var TASImagePainter$1 = /*#__PURE__*/Object.freeze({
 __proto__: null,
 TASImagePainter: TASImagePainter
-});
-
-function treeShowProgress(handle, str) {
-   if (isBatchMode() || (typeof document == 'undefined')) return;
-
-   if (!str)
-      return showProgress();
-
-   let main_box = document.createElement('p'),
-       text_node = document.createTextNode(str);
-
-   main_box.appendChild(text_node);
-   main_box.title = 'Click on element to break';
-
-   main_box.onclick = () => {
-      if (!handle._break) handle._break = 0;
-
-      if (++handle._break < 3) {
-         main_box.title = 'Will break after next I/O operation';
-         return text_node.nodeValue = 'Breaking ... ';
-      }
-      if (isFunc(handle.Abort))
-         handle.Abort();
-      showProgress();
-   };
-
-   showProgress(main_box);
-}
-
-
-/** @summary Show TTree::Draw progress during processing
-  * @private */
-TDrawSelector.prototype.ShowProgress = function(value) {
-
-   if ((value === undefined) || !Number.isFinite(value))
-      return showProgress();
-
-   if (this.last_progress !== value) {
-      let diff = value - this.last_progress;
-      if (!this.aver_diff) this.aver_diff = diff;
-      this.aver_diff = diff * 0.3 + this.aver_diff * 0.7;
-   }
-
-   this.last_progress = value;
-
-   let ndig = 0;
-   if (this.aver_diff <= 0)
-      ndig = 0;
-   else if (this.aver_diff < 0.0001)
-      ndig = 3;
-   else if (this.aver_diff < 0.001)
-      ndig = 2;
-   else if (this.aver_diff < 0.01)
-      ndig = 1;
-
-   treeShowProgress(this, `TTree draw ${(value * 100).toFixed(ndig)} % `);
-};
-
-/** @summary Draw result of tree drawing
-  * @private */
-async function drawTreeDrawResult(dom, obj, opt) {
-
-   let typ = obj?._typename;
-
-   if (!typ || !isStr(typ))
-      return Promise.reject(Error(`Object without type cannot be draw with TTree`));
-
-   if (typ.indexOf(clTH1) == 0)
-      return TH1Painter.draw(dom, obj, opt);
-   if (typ.indexOf(clTH2) == 0)
-      return TH2Painter.draw(dom, obj, opt);
-   if (typ.indexOf(clTH3) == 0)
-      return TH3Painter.draw(dom, obj, opt);
-   if (typ.indexOf(clTGraph) == 0)
-      return TGraphPainter.draw(dom, obj, opt);
-   if ((typ == clTPolyMarker3D) && obj.$hist) {
-      return TH3Painter.draw(dom, obj.$hist, opt).then(() => {
-         let p2 = new ObjectPainter(dom, obj, opt);
-         p2.addToPadPrimitives();
-         p2.redraw = drawPolyMarker3D$1;
-         return p2.redraw();
-      });
-   }
-
-   return Promise.reject(Error(`Object of type ${typ} cannot be draw with TTree`));
-}
-
-
-/** @summary Handle callback function with progress of tree draw
-  * @private */
-async function treeDrawProgress(obj, final) {
-
-   // no need to update drawing if previous is not yet completed
-   if (!final && !this.last_pr)
-      return;
-
-   if (this.dump || this.testio) {
-      if (!final) return;
-      if (isBatchMode()) {
-         let painter = new BasePainter(this.drawid);
-         painter.selectDom().property('_json_object_', obj);
-         return painter;
-      }
-      if (isFunc(internals.drawInspector))
-         return internals.drawInspector(this.drawid, obj);
-      let str = create$1(clTObjString);
-      str.fString = toJSON(obj, 2);
-      return drawRawText(this.drawid, str);
-   }
-
-   // complex logic with intermediate update
-   // while TTree reading not synchronized with drawing,
-   // next portion can appear before previous is drawn
-   // critical is last drawing which should wait for previous one
-   // therefore last_pr is kept as inidication that promise is not yet processed
-
-   if (!this.last_pr) this.last_pr = Promise.resolve(true);
-
-    return this.last_pr.then(() => {
-       if (this.obj_painter)
-          this.last_pr = this.obj_painter.redrawObject(obj).then(() => this.obj_painter);
-       else
-          this.last_pr = drawTreeDrawResult(this.drawid, obj).then(p => {
-             this.obj_painter = p;
-             if (!final) this.last_pr = null;
-             return p; // return painter for histogram
-          });
-
-       return final ? this.last_pr : null;
-   });
-}
-
-
-/** @summary Create painter to perform tree drawing on server side
-  * @private */
-function createTreePlayer(player) {
-
-   player.draw_first = true;
-
-   player.configureOnline = function(itemname, url, askey, root_version, expr) {
-      this.setItemName(itemname, '', this);
-      this.url = url;
-      this.root_version = root_version;
-      this.askey = askey;
-      this.draw_expr = expr;
-   };
-
-   player.configureTree = function(tree) {
-      this.local_tree = tree;
-   };
-
-   player.showExtraButtons = function(args) {
-      let main = this.selectDom(),
-         numentries = this.local_tree?.fEntries || 0;
-
-      main.select('.treedraw_more').remove(); // remove more button first
-
-      main.select('.treedraw_buttons').node().innerHTML +=
-          'Cut: <input class="treedraw_cut ui-corner-all ui-widget" style="width:8em;margin-left:5px" title="cut expression"></input>'+
-          'Opt: <input class="treedraw_opt ui-corner-all ui-widget" style="width:5em;margin-left:5px" title="histogram draw options"></input>'+
-          `Num: <input class="treedraw_number" type='number' min="0" max="${numentries}" step="1000" style="width:7em;margin-left:5px" title="number of entries to process (default all)"></input>`+
-          `First: <input class="treedraw_first" type='number' min="0" max="${numentries}" step="1000" style="width:7em;margin-left:5px" title="first entry to process (default first)"></input>`+
-          '<button class="treedraw_clear" title="Clear drawing">Clear</button>';
-
-      main.select('.treedraw_exe').on('click', () => this.performDraw());
-      main.select('.treedraw_cut').property('value', args?.parse_cut || '').on('change', () => this.performDraw());
-      main.select('.treedraw_opt').property('value', args?.drawopt || '').on('change', () => this.performDraw());
-      main.select('.treedraw_number').attr('value', args?.numentries || ''); // .on('change', () => this.performDraw());
-      main.select('.treedraw_first').attr('value', args?.firstentry || ''); // .on('change', () => this.performDraw());
-      main.select('.treedraw_clear').on('click', () => cleanup(this.drawid));
-   };
-
-   player.showPlayer = function(args) {
-
-      let main = this.selectDom();
-
-      this.drawid = 'jsroot_tree_player_' + internals.id_counter++ + '_draw';
-
-      let show_extra = args?.parse_cut || args?.numentries || args?.firstentry;
-
-      main.html('<div style="display:flex; flex-flow:column; height:100%; width:100%;">'+
-                   '<div class="treedraw_buttons" style="flex: 0 1 auto;margin-top:0.2em;">' +
-                      '<button class="treedraw_exe" title="Execute draw expression" style="margin-left:0.5em">Draw</button>' +
-                      'Expr:<input class="treedraw_varexp treedraw_varexp_info" style="width:12em;margin-left:5px" title="draw expression"></input>'+
-                      '<label class="treedraw_varexp_info">\u24D8</label>' +
-                     '<button class="treedraw_more">More</button>' +
-                   '</div>' +
-                   '<div style="flex: 0 1 auto"><hr/></div>' +
-                   `<div id="${this.drawid}" style="flex: 1 1 auto; overflow:hidden;"></div>` +
-                '</div>');
-
-      // only when main html element created, one can set painter
-      // ObjectPainter allow such usage of methods from BasePainter
-      this.setTopPainter();
-
-      if (this.local_tree)
-         main.select('.treedraw_buttons')
-             .attr('title', 'Tree draw player for: ' + this.local_tree.fName);
-      main.select('.treedraw_exe').on('click', () => this.performDraw());
-      main.select('.treedraw_varexp')
-          .attr('value', args?.parse_expr || this.draw_expr || 'px:py')
-          .on('change', () => this.performDraw());
-      main.select('.treedraw_varexp_info')
-          .attr('title', 'Example of valid draw expressions:\n' +
-                         '  px - 1-dim draw\n' +
-                         '  px:py - 2-dim draw\n' +
-                         '  px:py:pz - 3-dim draw\n' +
-                         '  px+py:px-py - use any expressions\n' +
-                         '  px:py>>Graph - create and draw TGraph\n' +
-                         '  px:py>>dump - dump extracted variables\n' +
-                         '  px:py>>h(50,-5,5,50,-5,5) - custom histogram\n' +
-                         '  px:py;hbins:100 - custom number of bins');
-
-      if (show_extra)
-         this.showExtraButtons(args);
-      else
-         main.select('.treedraw_more').on('click', () => this.showExtraButtons(args));
-
-      this.checkResize();
-
-      registerForResize(this);
-   };
-
-   player.getValue = function(sel) {
-      const elem = this.selectDom().select(sel);
-      if (elem.empty()) return;
-      const val = elem.property('value');
-      if (val !== undefined) return val;
-      return elem.attr('value');
-   };
-
-   player.performLocalDraw = function() {
-      if (!this.local_tree) return;
-
-      const frame = this.selectDom(),
-            args = { expr: this.getValue('.treedraw_varexp') };
-
-      if (frame.select('.treedraw_more').empty()) {
-         args.cut = this.getValue('.treedraw_cut');
-         if (!args.cut) delete args.cut;
-
-         args.drawopt = this.getValue('.treedraw_opt');
-         if (args.drawopt === 'dump') { args.dump = true; args.drawopt = ''; }
-         if (!args.drawopt) delete args.drawopt;
-
-         args.numentries = parseInt(this.getValue('.treedraw_number'));
-         if (!Number.isInteger(args.numentries)) delete args.numentries;
-
-         args.firstentry = parseInt(this.getValue('.treedraw_first'));
-         if (!Number.isInteger(args.firstentry)) delete args.firstentry;
-      }
-
-      /* if (args.drawopt) */ cleanup(this.drawid);
-
-      args.drawid = this.drawid;
-
-      args.progress = treeDrawProgress.bind(args);
-
-      treeDraw(this.local_tree, args).then(obj => args.progress(obj, true));
-   };
-
-   player.getDrawOpt = function() {
-      let res = 'player',
-          expr = this.getValue('.treedraw_varexp');
-      if (expr) res += ':' + expr;
-      return res;
-   };
-
-   player.performDraw = function() {
-
-      if (this.local_tree)
-         return this.performLocalDraw();
-
-      let frame = this.selectDom(),
-          url = this.url + '/exe.json.gz?compact=3&method=Draw',
-          expr = this.getValue('.treedraw_varexp'),
-          hname = 'h_tree_draw', option = '',
-          pos = expr.indexOf('>>');
-
-      if (pos < 0) {
-         expr += `>>${hname}`;
-      } else {
-         hname = expr.slice(pos+2);
-         if (hname[0] == '+') hname = hname.slice(1);
-         let pos2 = hname.indexOf('(');
-         if (pos2 > 0) hname = hname.slice(0, pos2);
-      }
-
-      if (frame.select('.treedraw_more').empty()) {
-         let cut = this.getValue('.treedraw_cut'),
-             nentries = this.getValue('.treedraw_number'),
-             firstentry = this.getValue('.treedraw_first');
-
-         option = this.getValue('.treedraw_opt');
-
-         url += `&prototype="const char*,const char*,Option_t*,Long64_t,Long64_t"&varexp="${expr}"&selection="${cut}"`;
-
-         // provide all optional arguments - default value kMaxEntries not works properly in ROOT6
-         if (!nentries) nentries = 'TTree::kMaxEntries'; // kMaxEntries available since ROOT 6.05/03
-         if (!firstentry) firstentry = '0';
-         url += `&option="${option}"&nentries=${nentries}&firstentry=${firstentry}`;
-      } else {
-         url += `&prototype="Option_t*"&opt="${expr}"`;
-      }
-      url += `&_ret_object_=${hname}`;
-
-      const submitDrawRequest = () => {
-         httpRequest(url, 'object').then(res => {
-            cleanup(this.drawid);
-            drawTreeDrawResult(this.drawid, res, option);
-         });
-      };
-
-      this.draw_expr = expr;
-
-      if (this.askey) {
-         // first let read tree from the file
-         this.askey = false;
-         httpRequest(this.url + '/root.json.gz?compact=3', 'text').then(submitDrawRequest);
-      } else {
-         submitDrawRequest();
-      }
-   };
-
-   player.checkResize = function(/*arg*/) {
-      resize(this.drawid);
-   };
-
-   return player;
-}
-
-
-/** @summary function used with THttpServer to assign player for the TTree object
-  * @private */
-function drawTreePlayer(hpainter, itemname, askey, asleaf) {
-
-   let item = hpainter.findItem(itemname),
-       top = hpainter.getTopOnlineItem(item),
-       expr = '', leaf_cnt = 0;
-   if (!item || !top) return null;
-
-   if (asleaf) {
-      expr = item._name;
-      while (item && !item._ttree) item = item._parent;
-      if (!item) return null;
-      itemname = hpainter.itemFullName(item);
-   }
-
-   let url = hpainter.getOnlineItemUrl(itemname);
-   if (!url) return null;
-
-   let root_version = top._root_version || 400129; // by default use version number 6-27-01
-
-   let mdi = hpainter.getDisplay();
-   if (!mdi) return null;
-
-   let frame = mdi.findFrame(itemname, true);
-   if (!frame) return null;
-
-   let divid = select(frame).attr('id'),
-       player = new BasePainter(divid);
-
-   if (item._childs && !asleaf)
-      for (let n = 0; n < item._childs.length; ++n) {
-         let leaf = item._childs[n];
-         if (leaf && leaf._kind && (leaf._kind.indexOf(prROOT + 'TLeaf') == 0) && (leaf_cnt < 2)) {
-            if (leaf_cnt++ > 0) expr += ':';
-            expr += leaf._name;
-         }
-      }
-
-   createTreePlayer(player);
-   player.configureOnline(itemname, url, askey, root_version, expr);
-   player.showPlayer();
-
-   return player;
-}
-
-/** @summary function used with THttpServer when tree is not yet loaded
-  * @private */
-function drawTreePlayerKey(hpainter, itemname) {
-   return drawTreePlayer(hpainter, itemname, true);
-}
-
-/** @summary function used with THttpServer when tree is not yet loaded
-  * @private */
-function drawLeafPlayer(hpainter, itemname) {
-   return drawTreePlayer(hpainter, itemname, false, true);
-}
-
-/** @summary function called from draw()
-  * @desc just envelope for real TTree::Draw method which do the main job
-  * Can be also used for the branch and leaf object
-  * @private */
-async function drawTree(dom, obj, opt) {
-
-   let tree = obj, args = opt;
-
-   if (obj._typename == clTBranchFunc) {
-      // fictional object, created only in browser
-      args = { expr: `.${obj.func}()`, branch: obj.branch };
-      if (opt && opt.indexOf('dump') == 0)
-         args.expr += '>>' + opt;
-      else if (opt)
-         args.expr += opt;
-      tree = obj.branch.$tree;
-   } else if (obj.$branch) {
-      // this is drawing of the single leaf from the branch
-      args = { expr: `.${obj.fName}${opt || ''}`, branch: obj.$branch };
-      if ((args.branch.fType === kClonesNode) || (args.branch.fType === kSTLNode)) {
-         // special case of size
-         args.expr = opt;
-         args.direct_branch = true;
-      }
-
-      tree = obj.$branch.$tree;
-   } else if (obj.$tree) {
-      // this is drawing of the branch
-
-      // if generic object tried to be drawn without specifying any options, it will be just dump
-      if (!opt && obj.fStreamerType && (obj.fStreamerType !== kTString) &&
-          (obj.fStreamerType >= kObject) && (obj.fStreamerType <= kAnyP)) opt = 'dump';
-
-      args = { expr: opt, branch: obj };
-      tree = obj.$tree;
-   } else {
-      if (!args) args = 'player';
-      if (isStr(args)) args = { expr: args };
-   }
-
-   if (!tree)
-      throw Error('No TTree object available for TTree::Draw');
-
-   if (isStr(args.expr)) {
-      let p = args.expr.indexOf('player');
-      if (p == 0) {
-         args.player = true;
-         args.expr = args.expr.slice(6);
-         if (args.expr[0] == ':') args.expr = args.expr.slice(1);
-      } else if ((p >= 0) && (p == args.expr.length-6)) {
-         args.player = true;
-         args.expr = args.expr.slice(0, p);
-         if ((p > 0) && (args.expr[p-1] == ';')) args.expr = args.expr.slice(0, p-1);
-      }
-   }
-
-   let painter;
-
-   if (args.player) {
-      painter = new ObjectPainter(dom, obj, opt);
-      createTreePlayer(painter);
-      painter.configureTree(tree);
-      painter.showPlayer(args);
-      args.drawid = painter.drawid;
-   } else {
-      args.drawid = dom;
-   }
-
-   // use in result handling same function as for progress handling
-
-   args.progress = treeDrawProgress.bind(args);
-
-   let pr;
-   if (args.expr === 'testio') {
-      args.testio = true;
-      args.showProgress = msg => treeShowProgress(args, msg);
-      pr = treeIOTest(tree, args);
-   } else if (args.expr || args.branch) {
-      pr = treeDraw(tree, args);
-   } else
-      return painter;
-
-   return pr.then(res => args.progress(res, true));
-}
-
-var TTree = /*#__PURE__*/Object.freeze({
-__proto__: null,
-drawLeafPlayer: drawLeafPlayer,
-drawTree: drawTree,
-drawTreePlayer: drawTreePlayer,
-drawTreePlayerKey: drawTreePlayerKey
 });
 
 const kNormal = 1, /* kLessTraffic = 2, */ kOffline = 3;
@@ -116778,7 +116659,7 @@ class LongPollSocket {
          this.connid = 'close';
          reqmode = 'text;sync'; // use sync mode to close connection before browser window closed
       } else if ((this.connid === null) || (typeof this.connid !== 'number')) {
-         if (!browser$1.qt5) console.error('No connection');
+         if (!browser.qt5) console.error('No connection');
          return;
       } else {
          url += '?connection=' + this.connid;
@@ -116811,16 +116692,17 @@ class LongPollSocket {
             // after the 'bin:' there is length of optional text argument like 'bin:14  :optional_text'
             // and immedaitely after text binary data. Server sends binary data so, that offset should be multiple of 8
 
-            let str = '', i = 0, u8Arr = new Uint8Array(res), offset = u8Arr.length;
+            const u8Arr = new Uint8Array(res);
+            let str = '', i = 0, offset = u8Arr.length;
             if (offset < 4) {
-               if (!browser$1.qt5) console.error(`longpoll got short message in raw mode ${offset}`);
+               if (!browser.qt5) console.error(`longpoll got short message in raw mode ${offset}`);
                return this.handle.processRequest(null);
             }
 
             while (i < 4) str += String.fromCharCode(u8Arr[i++]);
-            if (str != 'txt:') {
+            if (str !== 'txt:') {
                str = '';
-               while ((i < offset) && (String.fromCharCode(u8Arr[i]) != ':'))
+               while ((i < offset) && (String.fromCharCode(u8Arr[i]) !== ':'))
                   str += String.fromCharCode(u8Arr[i++]);
                ++i;
                offset = i + parseInt(str.trim());
@@ -116830,32 +116712,33 @@ class LongPollSocket {
             while (i < offset) str += String.fromCharCode(u8Arr[i++]);
 
             if (str) {
-               if (str == '<<nope>>')
+               if (str === '<<nope>>')
                   this.handle.processRequest(-1111);
                else
                    this.handle.processRequest(str);
             }
             if (offset < u8Arr.length)
                this.handle.processRequest(res, offset);
-         } else if (this.getResponseHeader('Content-Type') == 'application/x-binary') {
+         } else if (this.getResponseHeader('Content-Type') === 'application/x-binary') {
             // binary reply with optional header
-            let extra_hdr = this.getResponseHeader('LongpollHeader');
+            const extra_hdr = this.getResponseHeader('LongpollHeader');
             if (extra_hdr) this.handle.processRequest(extra_hdr);
             this.handle.processRequest(res, 0);
          } else {
             // text reply
             if (res && !isStr(res)) {
-               let str = '', u8Arr = new Uint8Array(res);
+               let str = '';
+               const u8Arr = new Uint8Array(res);
                for (let i = 0; i < u8Arr.length; ++i)
                   str += String.fromCharCode(u8Arr[i]);
                res = str;
             }
-            if (res == '<<nope>>')
+            if (res === '<<nope>>')
                this.handle.processRequest(-1111);
             else
                this.handle.processRequest(res);
          }
-      }, function(/*err,status*/) {
+      }, function(/* err, status */) {
          this.handle.processRequest(null, 'error');
       }, true).then(req => {
          req.handle = this;
@@ -116870,13 +116753,12 @@ class LongPollSocket {
       if (res === null) {
          if (isFunc(this.onerror))
             this.onerror('receive data with connid ' + (this.connid || '---'));
-         if ((_offset == 'error') && isFunc(this.onclose))
+         if ((_offset === 'error') && isFunc(this.onclose))
             this.onclose('force_close');
          this.connid = null;
          return;
-      } else if (res === -1111) {
+      } else if (res === -1111)
          res = '';
-      }
 
       let dummy_tmout = 5;
 
@@ -116942,7 +116824,7 @@ class FileDumpSocket {
 
    /** @summary Emulate send - just cound operation */
    send(/* str */) {
-      if (this.protocol[this.cnt] == 'send') {
+      if (this.protocol[this.cnt] === 'send') {
          this.cnt++;
          setTimeout(() => this.nextOperation(), 10);
       }
@@ -116955,18 +116837,17 @@ class FileDumpSocket {
    nextOperation() {
       // when file request running - just ignore
       if (this.wait_for_file) return;
-      let fname = this.protocol[this.cnt];
+      const fname = this.protocol[this.cnt];
 
       if (!fname) return;
-      if (fname == 'send') return; // waiting for send
+      if (fname === 'send') return; // waiting for send
       this.wait_for_file = true;
       this.cnt++;
       httpRequest(fname, (fname.indexOf('.bin') > 0 ? 'buf' : 'text')).then(res => {
          this.wait_for_file = false;
          if (!res) return;
-         let chid = 1, p = fname.indexOf('_ch');
-         if (p > 0)
-            chid = Number.parseInt(fname.slice(p+3, fname.indexOf('.', p)));
+         const p = fname.indexOf('_ch'),
+               chid = (p > 0) ? Number.parseInt(fname.slice(p+3, fname.indexOf('.', p))) : 1;
          if (isFunc(this.receiver.provideData))
             this.receiver.provideData(chid, res, 0);
          setTimeout(() => this.nextOperation(), 10);
@@ -117028,7 +116909,7 @@ class WebWindowHandle {
          this.receiver[method](this, arg, arg2);
 
       if (brdcst && this.channels) {
-         let ks = Object.keys(this.channels);
+         const ks = Object.keys(this.channels);
          for (let n = 0; n < ks.length; ++n)
             this.channels[ks[n]].invokeReceiver(false, method, arg, arg2);
       }
@@ -117064,7 +116945,7 @@ class WebWindowHandle {
     * @private */
    reserveQueueItem() {
       if (!this.msgqueue) this.msgqueue = [];
-      let item = { ready: false, msg: null, len: 0 };
+      const item = { ready: false, msg: null, len: 0 };
       this.msgqueue.push(item);
       return item;
    }
@@ -117084,10 +116965,10 @@ class WebWindowHandle {
       if (this._loop_msgqueue || !this.msgqueue) return;
       this._loop_msgqueue = true;
       while ((this.msgqueue.length > 0) && this.msgqueue[0].ready) {
-         let front = this.msgqueue.shift();
+         const front = this.msgqueue.shift();
          this.invokeReceiver(false, 'onWebsocketMsg', front.msg, front.len);
       }
-      if (this.msgqueue.length == 0)
+      if (this.msgqueue.length === 0)
          delete this.msgqueue;
       delete this._loop_msgqueue;
    }
@@ -117135,7 +117016,7 @@ class WebWindowHandle {
 
       if (this.cansend <= 0) console.error(`should be queued before sending cansend: ${this.cansend}`);
 
-      let prefix = `${this.ackn}:${this.cansend}:${chid}:`;
+      const prefix = `${this.ackn}:${this.cansend}:${chid}:`;
       this.ackn = 0;
       this.cansend--; // decrease number of allowed send packets
 
@@ -117174,9 +117055,8 @@ class WebWindowHandle {
          for (let k = 0; k < msg.length; ++k)
             this.provideData(chid, isStr(msg[k]) ? msg[k] : JSON.stringify(msg[k]), -1);
          this.processQueue();
-      } else if (msg) {
+      } else if (msg)
          this.provideData(chid, isStr(msg) ? msg : JSON.stringify(msg));
-      }
    }
 
    /** @summary Send keep-alive message.
@@ -117190,7 +117070,7 @@ class WebWindowHandle {
    /** @summary Request server to resize window
      * @desc For local displays like CEF or qt5 only server can do this */
    resizeWindow(w, h) {
-      if (browser$1.qt5 || browser$1.cef3)
+      if (browser.qt5 || browser.cef3)
          this.send(`RESIZE=${w},${h}`, 0);
       else if ((typeof window !== 'undefined') && isFunc(window?.resizeTo))
          window.resizeTo(w, h);
@@ -117200,9 +117080,9 @@ class WebWindowHandle {
      * @private */
    createChannel() {
       if (this.master)
-         return master.createChannel();
+         return this.master.createChannel();
 
-      let channel = new WebWindowHandle('channel', this.credits);
+      const channel = new WebWindowHandle('channel', this.credits);
       channel.wait_first_recv = true; // first received message via the channel is confirmation of established connection
 
       if (!this.channels) {
@@ -117238,12 +117118,11 @@ class WebWindowHandle {
       if (!relative_path || !this.kind || !this.href) return this.href;
 
       let addr = this.href;
-      if (relative_path.indexOf('../') == 0) {
-         let ddd = addr.lastIndexOf('/',addr.length-2);
-         addr = addr.slice(0,ddd) + relative_path.slice(2);
-      } else {
+      if (relative_path.indexOf('../') === 0) {
+         const ddd = addr.lastIndexOf('/', addr.length-2);
+         addr = addr.slice(0, ddd) + relative_path.slice(2);
+      } else
          addr += relative_path;
-      }
 
       return addr;
    }
@@ -117251,7 +117130,6 @@ class WebWindowHandle {
    /** @summary Create configured socket for current object.
      * @private */
    connect(href) {
-
       this.close();
       if (!href && this.href) href = this.href;
 
@@ -117262,8 +117140,7 @@ class WebWindowHandle {
       }
 
       const retry_open = first_time => {
-
-         if (this.state != 0) return;
+         if (this.state !== 0) return;
 
          if (!first_time) console.log(`try connect window again ${new Date().toString()}`);
 
@@ -117286,7 +117163,7 @@ class WebWindowHandle {
 
          let path = href;
 
-         if (this.kind == 'file') {
+         if (this.kind === 'file') {
             path += 'root.filedump';
             this._websocket = new FileDumpSocket(this);
             console.log(`configure protocol log ${path}`);
@@ -117307,8 +117184,7 @@ class WebWindowHandle {
             if (ntry > 2) showProgress();
             this.state = 1;
 
-            let key = this.key || '';
-
+            const key = this.key || '';
             this.send(`READY=${key}`, 0); // need to confirm connection
             this.invokeReceiver(false, 'onWebsocketOpened');
          };
@@ -117317,13 +117193,12 @@ class WebWindowHandle {
             let msg = e.data;
 
             if (this.next_binary) {
-
-               let binchid = this.next_binary;
+               const binchid = this.next_binary;
                delete this.next_binary;
 
                if (msg instanceof Blob) {
                   // convert Blob object to BufferArray
-                  let reader = new FileReader, qitem = this.reserveQueueItem();
+                  const reader = new FileReader(), qitem = this.reserveQueueItem();
                   // The file's text will be printed here
                   reader.onload = event => this.markQueueItemDone(qitem, event.target.result, 0);
                   reader.readAsArrayBuffer(msg, e.offset || 0);
@@ -117338,37 +117213,36 @@ class WebWindowHandle {
             if (!isStr(msg))
                return console.log(`unsupported message kind: ${typeof msg}`);
 
-            let i1 = msg.indexOf(':'),
-               credit = parseInt(msg.slice(0, i1)),
-               i2 = msg.indexOf(':', i1 + 1),
-               // cansend = parseInt(msg.slice(i1 + 1, i2)),  // TODO: take into account when sending messages
-               i3 = msg.indexOf(':', i2 + 1),
-               chid = parseInt(msg.slice(i2 + 1, i3));
+            const i1 = msg.indexOf(':'),
+                  credit = parseInt(msg.slice(0, i1)),
+                  i2 = msg.indexOf(':', i1 + 1),
+                  // cansend = parseInt(msg.slice(i1 + 1, i2)),  // TODO: take into account when sending messages
+                  i3 = msg.indexOf(':', i2 + 1),
+                  chid = parseInt(msg.slice(i2 + 1, i3));
 
             this.ackn++;            // count number of received packets,
             this.cansend += credit; // how many packets client can send
 
             msg = msg.slice(i3 + 1);
 
-            if (chid == 0) {
+            if (chid === 0) {
                console.log(`GET chid=0 message ${msg}`);
-               if (msg == 'CLOSE') {
+               if (msg === 'CLOSE') {
                   this.close(true); // force closing of socket
                   this.invokeReceiver(true, 'onWebsocketClosed');
-               } else if (msg.indexOf('NEW_KEY=') == 0) {
-                  let newkey = msg.slice(8);
+               } else if (msg.indexOf('NEW_KEY=') === 0) {
+                  const newkey = msg.slice(8);
                   this.close(true);
                   if (typeof sessionStorage !== 'undefined')
                      sessionStorage.setItem('RWebWindow_Key', newkey);
                   location.reload(true);
                }
-            } else if (msg == '$$binary$$') {
+            } else if (msg === '$$binary$$')
                this.next_binary = chid;
-            } else if (msg == '$$nullbinary$$') {
+            else if (msg === '$$nullbinary$$')
                this.provideData(chid, new ArrayBuffer(0), 0);
-            } else {
+            else
                this.provideData(chid, msg);
-            }
 
             if (this.ackn > 7)
                this.send('READY', 0); // send dummy message to server
@@ -117394,7 +117268,6 @@ class WebWindowHandle {
          // only in interactive mode try to reconnect
          if (!isBatchMode())
             setTimeout(retry_open, 3000); // after 3 seconds try again
-
       }; // retry_open
 
       retry_open(true); // call for the first time
@@ -117414,11 +117287,10 @@ class WebWindowHandle {
      * WARNING - only call when you know that you are doing
      * @private */
    addReloadKeyHandler() {
+      if (this.kind === 'file') return;
 
-      if (this.kind == 'file') return;
-
-      window.addEventListener( 'keydown', evnt => {
-         if (((evnt.key == 'R') || (evnt.key == 'r')) && evnt.ctrlKey) {
+      window.addEventListener('keydown', evnt => {
+         if (((evnt.key === 'R') || (evnt.key === 'r')) && evnt.ctrlKey) {
             evnt.stopPropagation();
             evnt.preventDefault();
             console.log('Prevent Ctrl-R propogation - ask reload RWebWindow!');
@@ -119313,7 +119185,7 @@ class RHistPainter extends RObjectPainter {
             assignRAxisMethods(histo.fAxes._1);
             assignRAxisMethods(histo.fAxes._2);
             histo.getBin = function(x, y, z) { return (x-1) + this.fAxes._0.GetNumBins()*(y-1) + this.fAxes._0.GetNumBins()*this.fAxes._1.GetNumBins()*(z-1); };
-            // FIXME: all normal ROOT methods uses indx+1 logic, but RHist has no underflow/overflow bins now
+            // all normal ROOT methods uses indx+1 logic, but RHist has no underflow/overflow bins now
             histo.getBinContent = function(x, y, z) { return this.fStatistics.fBinContent[this.getBin(x, y, z)]; };
             histo.getBinError = function(x, y, z) {
                let bin = this.getBin(x, y, z);
@@ -119325,7 +119197,7 @@ class RHistPainter extends RObjectPainter {
             assignRAxisMethods(histo.fAxes._0);
             assignRAxisMethods(histo.fAxes._1);
             histo.getBin = function(x, y) { return (x-1) + this.fAxes._0.GetNumBins()*(y-1); };
-            // FIXME: all normal ROOT methods uses indx+1 logic, but RHist has no underflow/overflow bins now
+            // all normal ROOT methods uses indx+1 logic, but RHist has no underflow/overflow bins now
             histo.getBinContent = function(x, y) { return this.fStatistics.fBinContent[this.getBin(x, y)]; };
             histo.getBinError = function(x, y) {
                let bin = this.getBin(x, y);
@@ -119336,7 +119208,7 @@ class RHistPainter extends RObjectPainter {
          } else {
             assignRAxisMethods(histo.fAxes._0);
             histo.getBin = function(x) { return x-1; };
-            // FIXME: all normal ROOT methods uses indx+1 logic, but RHist has no underflow/overflow bins now
+            // all normal ROOT methods uses indx+1 logic, but RHist has no underflow/overflow bins now
             histo.getBinContent = function(x) { return this.fStatistics.fBinContent[x-1]; };
             histo.getBinError = function(x) {
                if (this.fStatistics.fSumWeightsSquared)
@@ -123156,7 +123028,7 @@ exports.addDrawFunc = addDrawFunc;
 exports.addHighlightStyle = addHighlightStyle;
 exports.addMethods = addMethods;
 exports.atob_func = atob_func;
-exports.browser = browser$1;
+exports.browser = browser;
 exports.btoa_func = btoa_func;
 exports.buildGUI = buildGUI;
 exports.buildSvgCurve = buildSvgCurve;
@@ -123175,6 +123047,7 @@ exports.clTCutG = clTCutG;
 exports.clTDiamond = clTDiamond;
 exports.clTF1 = clTF1;
 exports.clTF2 = clTF2;
+exports.clTFile = clTFile;
 exports.clTGaxis = clTGaxis;
 exports.clTGeoNode = clTGeoNode;
 exports.clTGeoNodeMatrix = clTGeoNodeMatrix;
@@ -123195,6 +123068,7 @@ exports.clTH3 = clTH3;
 exports.clTHStack = clTHStack;
 exports.clTHashList = clTHashList;
 exports.clTImagePalette = clTImagePalette;
+exports.clTKey = clTKey;
 exports.clTLatex = clTLatex;
 exports.clTLegend = clTLegend;
 exports.clTLegendEntry = clTLegendEntry;

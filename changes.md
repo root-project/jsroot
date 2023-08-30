@@ -20,6 +20,7 @@
 17. Fix very old problem of correct use of GMT time format
 18. Put `gl` in "devDependencies" of package.json. One can skip it installation with `npm i --production`.
 19. Add support of `TPaveClass`
+20. Use eslint for static code checking
 
 
 ## Changes in 7.4.2
