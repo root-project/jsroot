@@ -154,7 +154,7 @@ function stirf(x) {
       -2.29549961613378126380E-4,
       -2.68132617805781232825E-3,
       3.47222221605458667310E-3,
-      8.33333333333482257126E-2,
+      8.33333333333482257126E-2
    ], SQTPI = Math.sqrt(2*Math.PI);
 
    w = 1.0/x;
@@ -267,9 +267,9 @@ function erf(x) {
       4.59432382970980127987E3,
       2.26290000613890934246E4,
       4.92673942608635921086E4
-   ];
+   ],
 
-   let z = x * x;
+   z = x * x;
 
    return x * Polynomialeval(z, erfT, 4) / Polynomial1eval(z, erfU, 5);
 }
@@ -278,7 +278,7 @@ function erf(x) {
   * @memberof Math */
 function lognormal_cdf_c(x, m, s, x0) {
    if (x0 === undefined) x0 = 0;
-   let z = (Math.log((x-x0))-m)/(s*kSqrt2);
+   const z = (Math.log((x-x0))-m)/(s*kSqrt2);
    if (z > 1.)  return 0.5*erfc(z);
    else         return 0.5*(1.0 - erf(z));
 }
@@ -286,7 +286,7 @@ function lognormal_cdf_c(x, m, s, x0) {
 /** @summary lognormal_cdf_c function
   * @memberof Math */
 function lognormal_cdf(x, m, s, x0 = 0) {
-   let z = (Math.log((x-x0))-m)/(s*kSqrt2);
+   const z = (Math.log((x-x0))-m)/(s*kSqrt2);
    if (z < -1.) return 0.5*erfc(-z);
    else         return 0.5*(1.0 + erf(z));
 }
@@ -294,7 +294,7 @@ function lognormal_cdf(x, m, s, x0 = 0) {
 /** @summary normal_cdf_c function
   * @memberof Math */
 function normal_cdf_c(x, sigma, x0 = 0) {
-   let z = (x-x0)/(sigma*kSqrt2);
+   const z = (x-x0)/(sigma*kSqrt2);
    if (z > 1.)  return 0.5*erfc(z);
    else         return 0.5*(1.-erf(z));
 }
@@ -319,7 +319,7 @@ function lognormal_pdf(x, m, s, x0 = 0) {
 /** @summary normal pdf
   * @memberof Math */
 function normal_pdf(x, sigma = 1, x0 = 0) {
-   let  tmp = (x-x0)/sigma;
+   const tmp = (x-x0)/sigma;
    return (1.0/(Math.sqrt(2 * M_PI) * Math.abs(sigma))) * Math.exp(-tmp*tmp/2);
 }
 
@@ -365,16 +365,14 @@ function gamma(x) {
    }
 
    z = 1.0;
-   while( x >= 3.0 )
-   {
+   while ( x >= 3.0 ) {
       x -= 1.0;
       z *= x;
    }
 
   let small = false;
 
-   while(( x < 0.0 ) && !small)
-   {
+   while (( x < 0.0 ) && !small) {
       if ( x > -1.E-9 )
          small = true;
       else {
@@ -383,8 +381,7 @@ function gamma(x) {
       }
    }
 
-   while(( x < 2.0 ) && !small)
-   {
+   while (( x < 2.0 ) && !small) {
       if ( x < 1.e-9 )
          small = true;
       else {
@@ -419,7 +416,7 @@ function gamma(x) {
       3.58236398605498653373E-2,
       -2.34591795718243348568E-1,
       7.14304917030273074085E-2,
-      1.00000000000000000320E0 ];
+      1.00000000000000000320E0];
 
    x -= 2.0;
    p = Polynomialeval( x, P, 6 );
@@ -490,7 +487,7 @@ function ndtri(y0) {
          6.79019408009981274425E-9
    ], s2pi = 2.50662827463100050242e0, dd = 0.13533528323661269189;
 
-   let code = 1, y = y0, x, z, y2, x0, x1;
+   let code = 1, y = y0, x, y2, x1;
 
    if (y > (1.0 - dd)) {
       y = 1.0 - y;
@@ -504,8 +501,8 @@ function ndtri(y0) {
       return x;
    }
    x = Math.sqrt(-2.0 * Math.log(y));
-   x0 = x - Math.log(x)/x;
-   z = 1.0/x;
+   const x0 = x - Math.log(x)/x,
+         z = 1.0/x;
    if ( x < 8.0 )
       x1 = z * Polynomialeval( z, P1, 8 )/ Polynomial1eval( z, Q1, 8 );
    else
@@ -525,7 +522,7 @@ function normal_quantile(z, sigma) {
 /** @summary normal_quantile_c function
   * @memberof Math */
 function normal_quantile_c(z, sigma) {
-   return - sigma * ndtri(z);
+   return -sigma * ndtri(z);
 }
 
 /** @summary igamc function
@@ -583,7 +580,7 @@ function igamc(a,x) {
          qkm2 *= kBiginv;
          qkm1 *= kBiginv;
       }
-   } while( t > kMACHEP );
+   } while ( t > kMACHEP );
 
    return ans * ax;
 }
@@ -591,7 +588,6 @@ function igamc(a,x) {
 /** @summary igam function
   * @memberof Math */
 function igam(a, x) {
-
    // LM: for negative values returns 1.0 instead of zero
    // This is correct if a is a negative integer since Gamma(-n) = +/- inf
    if (a <= 0) return 1.0;
@@ -615,7 +611,7 @@ function igam(a, x) {
       r += 1.0;
       c *= x/r;
       ans += c;
-   } while( c/ans > kMACHEP );
+   } while ( c/ans > kMACHEP );
 
    return ans * ax/a;
 }
@@ -635,8 +631,8 @@ function igami(a, y0) {
    if (y0 >= 1) {
       return 0;
    }
-   const kMAXNUM = Number.MAX_VALUE;
-   let x0 = kMAXNUM, x1 = 0, x, yl = 0, yh = 1, y, d, lgm, dithresh = 5.0 * kMACHEP, i, dir;
+   const kMAXNUM = Number.MAX_VALUE, dithresh = 5.0 * kMACHEP;
+   let x0 = kMAXNUM, x1 = 0, x, yl = 0, yh = 1, y, d, lgm, i, dir;
 
    /* approximation to inverse function */
    d = 1.0/(9.0*a);
@@ -645,7 +641,7 @@ function igami(a, y0) {
 
    lgm = lgam(a);
 
-   for( i=0; i<10; ++i ) {
+   for ( i=0; i<10; ++i ) {
       if ( x > x0 || x < x1 )
          break;
       y = igamc(a,x);
@@ -689,7 +685,7 @@ function igami(a, y0) {
    d = 0.5;
    dir = 0;
 
-   for( i=0; i<400; ++i ) {
+   for ( i=0; i<400; ++i ) {
       x = x1  +  d * (x0 - x1);
       y = igamc( a, x );
       lgm = (x0 - x1)/(x1 + x0);
@@ -923,7 +919,7 @@ function incbcf(a,b,x) {
          qkm1 *= kBig;
       }
    }
-   while( ++n < 300 );
+   while ( ++n < 300 );
 
 // cdone:
    return ans;
@@ -932,9 +928,12 @@ function incbcf(a,b,x) {
 /** @summary Continued fraction expansion #2 for incomplete beta integral
   * @memberof Math */
 function incbd(a,b,x) {
+   const z = x / (1.0-x),
+         thresh = 3.0 * kMACHEP;
+
    let xk, pk, pkm1, pkm2, qk, qkm1, qkm2,
        k1, k2, k3, k4, k5, k6, k7, k8,
-       r, t, ans, z, thresh, n;
+       r, t, ans, n;
 
    k1 = a;
    k2 = b - 1.0;
@@ -942,21 +941,17 @@ function incbd(a,b,x) {
    k4 = a + 1.0;
    k5 = 1.0;
    k6 = a + b;
-   k7 = a + 1.0;;
+   k7 = a + 1.0;
    k8 = a + 2.0;
 
    pkm2 = 0.0;
    qkm2 = 1.0;
    pkm1 = 1.0;
    qkm1 = 1.0;
-   z = x / (1.0-x);
    ans = 1.0;
    r = 1.0;
    n = 0;
-   thresh = 3.0 * kMACHEP;
-   do
-   {
-
+   do {
       xk = -( z * k1 * k2 )/( k3 * k4 );
       pk = pkm1 +  pkm2 * xk;
       qk = qkm1 +  qkm2 * xk;
@@ -1008,26 +1003,25 @@ function incbd(a,b,x) {
          qkm1 *= kBig;
       }
    }
-   while( ++n < 300 );
-//cdone:
+   while ( ++n < 300 );
+// cdone:
    return ans;
 }
 
 /** @summary ROOT::Math::Cephes::pseries
   * @memberof Math */
 function pseries(a,b,x) {
-   let s, t, u, v, n, t1, z, ai;
+   let s, t, u, v, n;
 
-   ai = 1.0 / a;
+   const ai = 1.0 / a;
    u = (1.0 - b) * x;
    v = u / (a + 1.0);
-   t1 = v;
+   const t1 = v;
    t = u;
    n = 2.0;
    s = 0.0;
-   z = kMACHEP * ai;
-   while( Math.abs(v) > z )
-   {
+   const z = kMACHEP * ai;
+   while ( Math.abs(v) > z ) {
       u = (n - b) * x / n;
       t *= u;
       v = t / (a + n);
@@ -1096,13 +1090,11 @@ function incbet(aa,bb,xx) {
       x = xx;
    }
 
-   if ( flag == 1 && (b * x) <= 1.0 && x <= 0.95)
-   {
+   if ( flag == 1 && (b * x) <= 1.0 && x <= 0.95) {
       t = pseries(a, b, x);
       // goto done;
    } else {
-
-   /* Choose expansion for better convergence. */
+      /* Choose expansion for better convergence. */
       y = x * (a+b-2.0) - (a-1.0);
       if ( y < 0.0 )
          w = incbcf( a, b, x );
@@ -1134,10 +1126,9 @@ function incbet(aa,bb,xx) {
       }
    }
 
-//done:
+// done:
 
-   if ( flag == 1 )
-   {
+   if (flag == 1) {
       if ( t <= kMACHEP )
          t = 1.0 - kMACHEP;
       else
@@ -1149,8 +1140,8 @@ function incbet(aa,bb,xx) {
 /** @summary copy of ROOT::Math::Cephes::incbi
   * @memberof Math */
 function incbi(aa,bb,yy0) {
-   let a, b, y0, d, y, x, x0, x1, lgm, yp, di, dithresh, yl, yh, xt;
-   let i, rflg, dir, nflg, ihalve = true;
+   let a, b, y0, d, y, x, x0, x1, lgm, yp, di, dithresh, yl, yh, xt,
+       i, rflg, dir, nflg, ihalve = true;
 
    // check the domain
    if (aa <= 0) {
@@ -1240,14 +1231,12 @@ function incbi(aa,bb,yy0) {
 
   // endless loop until coverage
   while (mainloop-- > 0) {
-
    /* Resort to interval halving if not close enough. */
    // ihalve:
-      while(ihalve) {
-
+      if (ihalve) {
          dir = 0;
          di = 0.5;
-         for( i=0; i<100; i++ )
+         for ( i=0; i<100; i++ )
          {
             if ( i != 0 )
             {
@@ -1333,18 +1322,17 @@ function incbi(aa,bb,yy0) {
                dir -= 1;
             }
          }
-         //math_error( 'incbi', PLOSS );
+         // math_error( 'incbi', PLOSS );
          if ( x0 >= 1.0 ) {
             x = 1.0 - kMACHEP;
-            return process_done(); //goto done;
+            return process_done(); // goto done;
          }
          if ( x <= 0.0 ) {
-            //math_error( 'incbi', UNDERFLOW );
+            // math_error( 'incbi', UNDERFLOW );
             x = 0.0;
-            return process_done(); //goto done;
+            return process_done(); // goto done;
          }
          break; // if here, break ihalve
-
       } // end of ihalve
 
       ihalve = true; // enter loop next time
@@ -1352,11 +1340,11 @@ function incbi(aa,bb,yy0) {
    // newt:
 
       if ( nflg )
-         return process_done(); //goto done;
+         return process_done(); // goto done;
       nflg = 1;
       lgm = lgam(a+b) - lgam(a) - lgam(b);
 
-      for( i=0; i<8; i++ )
+      for ( i=0; i<8; i++ )
       {
          /* Compute the function at this point. */
          if ( i != 0 )
@@ -1411,9 +1399,8 @@ function incbi(aa,bb,yy0) {
          if ( Math.abs(d/x) < 128.0 * kMACHEP )
             return process_done(); // goto done;
       }
-   /* Did not converge.  */
+      /* Did not converge.  */
       dithresh = 256.0 * kMACHEP;
-
    } // endless loop instead of // goto ihalve;
 
 // done:
@@ -1492,7 +1479,7 @@ function cauchy_pdf(x, b = 1, x0 = 0) {
 /** @summary gaussian_pdf function
   * @memberof Math */
 function gaussian_pdf(x, sigma = 1, x0 = 0) {
-   let tmp = (x-x0)/sigma;
+   const tmp = (x-x0)/sigma;
    return (1.0/(Math.sqrt(2 * M_PI) * Math.abs(sigma))) * Math.exp(-tmp*tmp/2);
 }
 
@@ -1512,16 +1499,16 @@ function gamma_pdf(x, alpha, theta, x0 = 0) {
 /** @summary tdistribution_cdf_c function
   * @memberof Math */
 function tdistribution_cdf_c(x, r, x0 = 0) {
-   let p    = x - x0,
-       sign = (p > 0) ? 1. : -1;
+   const p    = x - x0,
+         sign = (p > 0) ? 1. : -1;
    return .5 - .5*inc_beta(p*p/(r + p*p), .5, .5*r)*sign;
 }
 
 /** @summary tdistribution_cdf function
   * @memberof Math */
 function tdistribution_cdf(x, r, x0 = 0) {
-   let p    = x - x0,
-       sign = (p > 0) ? 1. : -1;
+   const p    = x - x0,
+         sign = (p > 0) ? 1. : -1;
    return  .5 + .5*inc_beta(p*p/(r + p*p), .5, .5*r)*sign;
 }
 
