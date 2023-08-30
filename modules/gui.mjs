@@ -1,4 +1,4 @@
-import { decodeUrl, settings, constants, gStyle, internals, findFunction, parse, isFunc, isStr, isObject } from './core.mjs';
+import { decodeUrl, settings, constants, gStyle, internals, browser, findFunction, parse, isFunc, isStr, isObject } from './core.mjs';
 import { select as d3_select } from './d3.mjs';
 import { HierarchyPainter } from './gui/HierarchyPainter.mjs';
 import { readSettings, readStyle } from './gui/utils.mjs';
@@ -7,7 +7,6 @@ import { readSettings, readStyle } from './gui/utils.mjs';
 /** @summary Read style and settings from URL
   * @private */
 function readStyleFromURL(url) {
-
    // first try to read settings from coockies
    readSettings();
    readStyle();
@@ -16,8 +15,8 @@ function readStyleFromURL(url) {
 
    function get_bool(name, field) {
       if (d.has(name)) {
-         let val = d.get(name);
-         settings[field] = (val != '0') && (val != 'false') && (val != 'off');
+         const val = d.get(name);
+         settings[field] = (val !== '0') && (val !== 'false') && (val !== 'off');
       }
    }
 
@@ -54,31 +53,32 @@ function readStyleFromURL(url) {
    if (inter === 'nomenu')
       settings.ContextMenu = false;
    else if (inter !== undefined) {
-      if (!inter || (inter == '1'))
+      if (!inter || (inter === '1'))
          inter = '111111';
-      else if (inter == '0')
+      else if (inter === '0')
          inter = '000000';
       if (inter.length === 6) {
-         switch(inter[0]) {
+         switch (inter[0]) {
             case '0': settings.ToolBar = false; break;
             case '1': settings.ToolBar = 'popup'; break;
             case '2': settings.ToolBar = true; break;
          }
          inter = inter.slice(1);
       }
-      if (inter.length == 5) {
+      if (inter.length === 5) {
          settings.Tooltip = parseInt(inter[0]);
-         settings.ContextMenu = (inter[1] != '0');
-         settings.Zooming = (inter[2] != '0');
-         settings.MoveResize = (inter[3] != '0');
-         settings.DragAndDrop = (inter[4] != '0');
+         settings.ContextMenu = (inter[1] !== '0');
+         settings.Zooming = (inter[2] !== '0');
+         settings.MoveResize = (inter[3] !== '0');
+         settings.DragAndDrop = (inter[4] !== '0');
       }
    }
 
    get_bool('tooltip', 'Tooltip');
 
-   let mathjax = d.get('mathjax', null), latex = d.get('latex', null);
-   if ((mathjax !== null) && (mathjax != '0') && (latex === null))
+   const mathjax = d.get('mathjax', null);
+   let latex = d.get('latex', null);
+   if ((mathjax !== null) && (mathjax !== '0') && (latex === null))
       latex = 'math';
    if (latex !== null)
       settings.Latex = constants.Latex.fromString(latex);
