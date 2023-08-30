@@ -1577,7 +1577,7 @@ function ZIP_inflate(arr, tgt) {
             }
 
             // backwards increment the k-bit code i
-            for (j = 1 << (k - 1); (i & j) != 0; j >>= 1)
+            for (j = 1 << (k - 1); (i & j) !== 0; j >>= 1)
                i ^= j;
             i ^= j;
 
@@ -2564,7 +2564,6 @@ class TBuffer {
 
       return obj;
    }
-
 } // class TBuffer
 
 // ==============================================================================
@@ -2925,7 +2924,7 @@ class TFile {
          let boundary = '', n = first, o = 0;
          if (indx > 0) {
             boundary = hdr.slice(indx + 9);
-            if ((boundary[0] == '"') && (boundary[boundary.length - 1] === '"'))
+            if ((boundary[0] === '"') && (boundary[boundary.length - 1] === '"'))
                boundary = boundary.slice(1, boundary.length - 1);
             boundary = '--' + boundary;
          } else
@@ -3038,7 +3037,7 @@ class TFile {
          if (dir) return dir.getKey(subname, cycle, only_direct);
 
          const dirkey = this.getKey(dirname, undefined, true);
-         if (dirkey && !only_direct && (dirkey.fClassName.indexOf(clTDirectory) == 0))
+         if (dirkey && !only_direct && (dirkey.fClassName.indexOf(clTDirectory) === 0))
             return this.readObject(dirname).then(newdir => newdir.getKey(subname, cycle));
 
          pos = keyname.lastIndexOf('/', pos - 1);
@@ -3181,7 +3180,7 @@ class TFile {
                }
                if (typ >= 60) continue;
             } else {
-               if ((typ > 20) && (typname[typname.length - 1] == '*')) typname = typname.slice(0, typname.length - 1);
+               if ((typ > 20) && (typname[typname.length - 1] === '*')) typname = typname.slice(0, typname.length - 1);
                typ = typ % 20;
             }
 
@@ -3346,7 +3345,7 @@ class TFile {
          if (streamer !== undefined) return streamer;
       }
 
-      let custom = CustomStreamers[clname];
+      const custom = CustomStreamers[clname];
 
       // one can define in the user streamers just aliases
       if (isStr(custom))
@@ -3376,15 +3375,17 @@ class TFile {
       }
 
       // special handling for TStyle which has duplicated member name fLineStyle
-      if ((s_i.fName == clTStyle) && s_i.fElements)
+      if ((s_i.fName === clTStyle) && s_i.fElements) {
          s_i.fElements.arr.forEach(elem => {
-            if (elem.fName == 'fLineStyle') elem.fName = 'fLineStyles'; // like in ROOT JSON now
+            if (elem.fName === 'fLineStyle') elem.fName = 'fLineStyles'; // like in ROOT JSON now
          });
+      }
 
       // for each entry in streamer info produce member function
-      if (s_i.fElements)
+      if (s_i.fElements) {
          for (let j = 0; j < s_i.fElements.arr.length; ++j)
             streamer.push(createMemberStreamer(s_i.fElements.arr[j], this));
+      }
 
       this.fStreamers[fullname] = streamer;
 
@@ -3399,14 +3400,14 @@ class TFile {
       if (!tgt) tgt = [];
 
       for (let n = 0; n < streamer.length; ++n) {
-         let elem = streamer[n];
+         const elem = streamer[n];
 
          if (elem.base === undefined) {
             tgt.push(elem);
             continue;
          }
 
-         if (elem.basename == clTObject) {
+         if (elem.basename === clTObject) {
             tgt.push({
                func(buf, obj) {
                   buf.ntoi2(); // read version, why it here??
@@ -3418,14 +3419,14 @@ class TFile {
             continue;
          }
 
-         let ver = { val: elem.base };
+         const ver = { val: elem.base };
 
          if (ver.val === 4294967295) {
             // this is -1 and indicates foreign class, need more workarounds
             ver.val = 1; // need to search version 1 - that happens when several versions of foreign class exists ???
          }
 
-         let parent = this.getStreamer(elem.basename, ver);
+         const parent = this.getStreamer(elem.basename, ver);
          if (parent) this.getSplittedStreamer(parent, tgt);
       }
 
@@ -3442,7 +3443,6 @@ class TFile {
       this.fNbytesInfo = 0;
       this.fTagOffset = 0;
    }
-
 } // class TFile
 
 
@@ -3474,16 +3474,14 @@ class TFile {
   * httpRequest('http://localhost:8080/Files/job1.root/hpx/root.json', 'object')
   *            .then(histo => console.log(`Get histogram with title = ${histo.fTitle}`)); */
 function reconstructObject(class_name, obj_rawdata, sinfo_rawdata) {
+   const file = new TFile(),
+         buf1 = new TBuffer(sinfo_rawdata, 0, file),
+         buf2 = new TBuffer(obj_rawdata, 0, file),
+         obj = {};
 
-   let file = new TFile;
-   let buf = new TBuffer(sinfo_rawdata, 0, file);
-   file.extractStreamerInfos(buf);
-
-   let obj = {};
-
-   buf = new TBuffer(obj_rawdata, 0, file);
-   buf.mapObject(obj, 1);
-   buf.classStreamer(obj, class_name);
+   file.extractStreamerInfos(buf1);
+   buf2.mapObject(obj, 1);
+   buf2.classStreamer(obj, class_name);
 
    return obj;
 }
@@ -3491,22 +3489,18 @@ function reconstructObject(class_name, obj_rawdata, sinfo_rawdata) {
 /** @summary Function to read vector element in the streamer
   * @private */
 function readVectorElement(buf) {
-
    if (this.member_wise) {
-
-      const n = buf.ntou4();
-      let streamer = null, ver = this.stl_version;
+      const n = buf.ntou4(), ver = this.stl_version;
+      let streamer = null;
 
       if (n === 0) return []; // for empty vector no need to search split streamers
 
-      if (n > 1000000) {
+      if (n > 1000000)
          throw new Error(`member-wise streaming of ${this.conttype} num ${n} member ${this.name}`);
-         // return [];
-      }
 
-      if ((ver.val === this.member_ver) && (ver.checksum === this.member_checksum)) {
+      if ((ver.val === this.member_ver) && (ver.checksum === this.member_checksum))
          streamer = this.member_streamer;
-      } else {
+      else {
          streamer = buf.fFile.getStreamer(this.conttype, ver);
 
          this.member_streamer = streamer = buf.fFile.getSplittedStreamer(streamer);
@@ -3514,18 +3508,19 @@ function readVectorElement(buf) {
          this.member_checksum = ver.checksum;
       }
 
-      let res = new Array(n), i, k, member;
+      const res = new Array(n);
+      let i, k, member;
 
       for (i = 0; i < n; ++i)
          res[i] = { _typename: this.conttype }; // create objects
-      if (!streamer) {
+      if (!streamer)
          console.error(`Fail to create split streamer for ${this.conttype} need to read ${n} objects version ${ver}`);
-      } else {
+      else {
          for (k = 0; k < streamer.length; ++k) {
             member = streamer[k];
-            if (member.split_func) {
+            if (member.split_func)
                member.split_func(buf, res, n);
-            } else {
+            else {
                for (i = 0; i < n; ++i)
                   member.func(buf, res[i]);
             }
@@ -3534,22 +3529,24 @@ function readVectorElement(buf) {
       return res;
    }
 
-   const n = buf.ntou4();
-   let res = new Array(n), i = 0;
+   const n = buf.ntou4(), res = new Array(n);
+   let i = 0;
 
-   if (n > 200000) { console.error(`vector streaming for ${this.conttype} at ${n}`); return res; }
-
-   if (this.arrkind > 0) {
-      while (i < n) res[i++] = buf.readFastArray(buf.ntou4(), this.arrkind);
-   } else if (this.arrkind === 0) {
-      while (i < n) res[i++] = buf.readTString();
-   } else if (this.isptr) {
-      while (i < n) res[i++] = buf.readObjectAny();
-   } else if (this.submember) {
-      while (i < n) res[i++] = this.submember.readelem(buf);
-   } else {
-      while (i < n) res[i++] = buf.classStreamer({}, this.conttype);
+   if (n > 200000) {
+      console.error(`vector streaming for ${this.conttype} at ${n}`);
+      return res;
    }
+
+   if (this.arrkind > 0)
+      while (i < n) res[i++] = buf.readFastArray(buf.ntou4(), this.arrkind);
+   else if (this.arrkind === 0)
+      while (i < n) res[i++] = buf.readTString();
+   else if (this.isptr)
+      while (i < n) res[i++] = buf.readObjectAny();
+   else if (this.submember)
+      while (i < n) res[i++] = this.submember.readelem(buf);
+   else
+      while (i < n) res[i++] = buf.classStreamer({}, this.conttype);
 
    return res;
 }
@@ -3565,10 +3562,9 @@ function readMapElement(buf) {
       const ver = this.stl_version;
 
       if (this.si) {
-         let si = buf.fFile.findStreamerInfo(this.pairtype, ver.val, ver.checksum);
+         const si = buf.fFile.findStreamerInfo(this.pairtype, ver.val, ver.checksum);
 
          if (this.si !== si) {
-
             streamer = getPairStreamer(si, this.pairtype, buf.fFile);
             if (!streamer || streamer.length !== 2) {
                console.log(`Fail to produce streamer for ${this.pairtype}`);
@@ -3578,25 +3574,25 @@ function readMapElement(buf) {
       }
    }
 
-   const n = buf.ntoi4();
-   let i, res = new Array(n);
+   const n = buf.ntoi4(), res = new Array(n)
    if (this.member_wise && (buf.remain() >= 6)) {
-      if (buf.ntoi2() == kStreamedMemberWise)
+      if (buf.ntoi2() === kStreamedMemberWise)
          buf.shift(4);
       else
          buf.shift(-2); // rewind
    }
 
-   for (i = 0; i < n; ++i) {
+   for (let i = 0; i < n; ++i) {
       res[i] = { _typename: this.pairtype };
       streamer[0].func(buf, res[i]);
       if (!this.member_wise) streamer[1].func(buf, res[i]);
    }
 
    // due-to member-wise streaming second element read after first is completed
-   if (this.member_wise)
-      for (i = 0; i < n; ++i)
+   if (this.member_wise) {
+      for (let i = 0; i < n; ++i)
          streamer[1].func(buf, res[i]);
+   }
 
    return res;
 }
@@ -3612,7 +3608,6 @@ function readMapElement(buf) {
   */
 
 class TLocalFile extends TFile {
-
    constructor(file) {
       super(null);
       this.fUseStampPar = false;
@@ -3630,16 +3625,17 @@ class TLocalFile extends TFile {
    /** @summary read buffer from local file
      * @return {Promise} with read data */
    async readBuffer(place, filename /*, progress_callback */) {
-      let file = this.fLocalFile;
+      const file = this.fLocalFile;
 
       return new Promise((resolve, reject) => {
          if (filename)
             return reject(Error(`Cannot access other local file ${filename}`));
 
-         let reader = new FileReader(), cnt = 0, blobs = [];
+         const reader = new FileReader(), blobs = [];
+         let cnt = 0;
 
          reader.onload = function(evnt) {
-            let res = new DataView(evnt.target.result);
+            const res = new DataView(evnt.target.result);
             if (place.length === 2) return resolve(res);
 
             blobs.push(res);
@@ -3651,7 +3647,6 @@ class TLocalFile extends TFile {
          reader.readAsArrayBuffer(file.slice(place[0], place[0] + place[1]));
       });
    }
-
 } // class TLocalFile
 
 /**
@@ -3676,22 +3671,18 @@ class TNodejsFile extends TFile {
      * @return {Promise} after file keys are read */
    async _open() {
       return import('fs').then(fs => {
-
          this.fs = fs;
 
-         return new Promise((resolve,reject) =>
+         return new Promise((resolve, reject) =>
 
             this.fs.open(this.fFileName, 'r', (status, fd) => {
                if (status) {
                   console.log(status.message);
                   return reject(Error(`Not possible to open ${this.fFileName} inside node.js`));
                }
-               let stats = this.fs.fstatSync(fd);
-
+               const stats = this.fs.fstatSync(fd);
                this.fEND = stats.size;
-
                this.fd = fd;
-
                this.readKeys().then(resolve).catch(reject);
             })
          );
@@ -3708,13 +3699,13 @@ class TNodejsFile extends TFile {
          if (!this.fs || !this.fd)
             return reject(Error(`File is not opened ${this.fFileName}`));
 
-         let cnt = 0, blobs = [];
+         const blobs = [];
+         let cnt = 0;
 
-         let readfunc = (err, bytesRead, buf) => {
-
-            let res = new DataView(buf.buffer, buf.byteOffset, place[cnt + 1]);
+         // eslint-disable-next-line n/handle-callback-err
+         const readfunc = (err, bytesRead, buf) => {
+            const res = new DataView(buf.buffer, buf.byteOffset, place[cnt + 1]);
             if (place.length === 2) return resolve(res);
-
             blobs.push(res);
             cnt += 2;
             if (cnt >= place.length) return resolve(blobs);
@@ -3724,7 +3715,6 @@ class TNodejsFile extends TFile {
          this.fs.read(this.fd, Buffer.alloc(place[1]), 0, place[1], place[0], readfunc);
       });
    }
-
 } // class TNodejsFile
 
 /**
@@ -3741,15 +3731,10 @@ class TNodejsFile extends TFile {
   */
 
 class FileProxy {
-
    async openFile() { return false; }
-
    getFileName() { return ''; }
-
    getFileSize() { return 0; }
-
-   async readBuffer(/*pos, sz*/) { return null; }
-
+   async readBuffer(/* pos, sz */) { return null; }
 } // class FileProxy
 
 /**
@@ -3761,7 +3746,6 @@ class FileProxy {
   */
 
 class TProxyFile extends TFile {
-
    constructor(proxy) {
       super(null);
       this.fUseStampPar = false;
@@ -3776,7 +3760,7 @@ class TProxyFile extends TFile {
          this.fEND = this.proxy.getFileSize();
          this.fFullURL = this.fURL = this.fFileName = this.proxy.getFileName();
          if (isStr(this.fFileName)) {
-            let p = this.fFileName.lastIndexOf('/');
+            const p = this.fFileName.lastIndexOf('/');
             if ((p > 0) && (p < this.fFileName.length - 4))
                this.fFileName = this.fFileName.slice(p+1);
          }
@@ -3793,15 +3777,14 @@ class TProxyFile extends TFile {
       if (!this.proxy)
          return Promise.reject(Error(`File is not opened ${this.fFileName}`));
 
-      if (place.length == 2)
+      if (place.length === 2)
          return this.proxy.readBuffer(place[0], place[1]);
 
-      let arr = [];
+      const arr = [];
       for (let k = 0; k < place.length; k+=2)
          arr.push(this.proxy.readBuffer(place[k], place[k+1]));
       return Promise.all(arr);
    }
-
 } // class TProxyFile
 
 
@@ -3820,11 +3803,10 @@ class TProxyFile extends TFile {
   * let f = await openFile('https://root.cern/js/files/hsimple.root');
   * console.log(`Open file ${f.getFileName()}`); */
 function openFile(arg) {
-
    let file;
 
    if (isNodeJs() && isStr(arg)) {
-      if (arg.indexOf('file://') == 0)
+      if (arg.indexOf('file://') === 0)
          file = new TNodejsFile(arg.slice(7));
       else if (arg.indexOf('http') !== 0)
          file = new TNodejsFile(arg);
