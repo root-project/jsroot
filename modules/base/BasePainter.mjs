@@ -435,27 +435,25 @@ class BasePainter {
      * @param {string} [is_direct] - if 'origin' specified, returns original element even if actual drawing moved to some other place
      * @return {object} d3.select object for main element for drawing */
    selectDom(is_direct) {
-
       if (!this.divid) return d3_select(null);
 
       let res = this._selected_main;
       if (!res) {
          if (isStr(this.divid)) {
             let id = this.divid;
-            if (id[0] != '#') id = '#' + id;
+            if (id[0] !== '#') id = '#' + id;
             res = d3_select(id);
             if (!res.empty()) this.divid = res.node();
-         } else {
+         } else
             res = d3_select(this.divid);
-         }
          this._selected_main = res;
       }
 
       if (!res || res.empty() || (is_direct === 'origin')) return res;
 
-      let use_enlarge = res.property('use_enlarge'),
-          layout = res.property('layout') || 'simple',
-          layout_selector = (layout == 'simple') ? '' : res.property('layout_selector');
+      const use_enlarge = res.property('use_enlarge'),
+            layout = res.property('layout') || 'simple',
+            layout_selector = (layout === 'simple') ? '' : res.property('layout_selector');
 
       if (layout_selector)
          res = res.select(layout_selector);
@@ -470,11 +468,11 @@ class BasePainter {
    /** @summary Access/change top painter
      * @private */
    _accessTopPainter(on) {
-      let chld = this.selectDom().node()?.firstChild;
+      const chld = this.selectDom().node()?.firstChild;
       if (!chld) return null;
-      if (on === true) {
+      if (on === true)
          chld.painter = this;
-      } else if (on === false)
+      else if (on === false)
          delete chld.painter;
       return chld.painter;
    }
@@ -502,7 +500,7 @@ class BasePainter {
      * @desc Removes all visible elements and all internal data */
    cleanup(keep_origin) {
       this.clearTopPainter();
-      let origin = this.selectDom('origin');
+      const origin = this.selectDom('origin');
       if (!origin.empty() && !keep_origin) origin.html('');
       this.divid = null;
       delete this._selected_main;
@@ -526,21 +524,21 @@ class BasePainter {
      * @return size of area when main div is drawn
      * @private */
    testMainResize(check_level, new_size, height_factor) {
+      const enlarge = this.enlargeMain('state'),
+            origin = this.selectDom('origin'),
+            main = this.selectDom(),
+            lmt = 5; // minimal size
 
-      let enlarge = this.enlargeMain('state'),
-          origin = this.selectDom('origin'),
-          main = this.selectDom(),
-          lmt = 5; // minimal size
-
-      if ((enlarge !== 'on') && new_size?.width && new_size?.height)
+      if ((enlarge !== 'on') && new_size?.width && new_size?.height) {
          origin.style('width', new_size.width + 'px')
                .style('height', new_size.height + 'px');
+      }
 
-      let rect_origin = getElementRect(origin, true),
-          can_resize = origin.attr('can_resize'),
-          do_resize = false;
+      const rect_origin = getElementRect(origin, true),
+            can_resize = origin.attr('can_resize');
+      let do_resize = false;
 
-      if (can_resize == 'height')
+      if (can_resize === 'height')
          if (height_factor && Math.abs(rect_origin.width * height_factor - rect_origin.height) > 0.1 * rect_origin.width) do_resize = true;
 
       if (((rect_origin.height <= lmt) || (rect_origin.width <= lmt)) &&
@@ -552,23 +550,21 @@ class BasePainter {
          if (rect_origin.width > lmt) {
             height_factor = height_factor || 0.66;
             origin.style('height', Math.round(rect_origin.width * height_factor) + 'px');
-         } else if (can_resize !== 'height') {
+         } else if (can_resize !== 'height')
             origin.style('width', '200px').style('height', '100px');
-         }
       }
 
-      let rect = getElementRect(main),
-          old_h = main.property('_jsroot_height'),
-          old_w = main.property('_jsroot_width');
+      const rect = getElementRect(main),
+            old_h = main.property('_jsroot_height'),
+            old_w = main.property('_jsroot_width');
 
       rect.changed = false;
 
       if (old_h && old_w && (old_h > 0) && (old_w > 0)) {
          if ((old_h !== rect.height) || (old_w !== rect.width))
             rect.changed = (check_level > 1) || (rect.width / old_w < 0.99) || (rect.width / old_w > 1.01) || (rect.height / old_h < 0.99) || (rect.height / old_h > 1.01);
-      } else {
+      } else
          rect.changed = true;
-      }
 
       if (rect.changed)
          main.property('_jsroot_height', rect.height).property('_jsroot_width', rect.width);
@@ -593,15 +589,14 @@ class BasePainter {
      * if action not specified, just return possibility to enlarge main div
      * @protected */
    enlargeMain(action, skip_warning) {
-
-      let main = this.selectDom(true),
-          origin = this.selectDom('origin');
+      const main = this.selectDom(true),
+            origin = this.selectDom('origin');
 
       if (main.empty() || !settings.CanEnlarge || (origin.property('can_enlarge') === false)) return false;
 
       if ((action === undefined) || (action === 'verify')) return true;
 
-      let state = origin.property('use_enlarge') ? 'on' : 'off';
+      const state = origin.property('use_enlarge') ? 'on' : 'off';
 
       if (action === 'state') return state;
 
@@ -617,17 +612,18 @@ class BasePainter {
             .attr('id', 'jsroot_enlarge_div')
             .attr('style', 'position: fixed; margin: 0px; border: 0px; padding: 0px; inset: 1px; background: white; opacity: 0.95; z-index: 100; overflow: hidden;');
 
-         let rect1 = getElementRect(main),
-             rect2 = getElementRect(enlarge);
+         const rect1 = getElementRect(main),
+               rect2 = getElementRect(enlarge);
 
          // if new enlarge area not big enough, do not do it
-         if ((rect2.width <= rect1.width) || (rect2.height <= rect1.height))
+         if ((rect2.width <= rect1.width) || (rect2.height <= rect1.height)) {
             if (rect2.width * rect2.height < rect1.width * rect1.height) {
                if (!skip_warning)
                   console.log(`Enlarged area ${rect2.width} x ${rect2.height} smaller then original drawing ${rect1.width} x ${rect1.height}`);
                enlarge.remove();
                return false;
             }
+         }
 
          while (main.node().childNodes.length > 0)
             enlarge.node().appendChild(main.node().firstChild);
@@ -637,7 +633,6 @@ class BasePainter {
          return true;
       }
       if ((action === false) && (state !== 'off')) {
-
          while (enlarge.node() && enlarge.node().childNodes.length > 0)
             main.node().appendChild(enlarge.node().firstChild);
 
@@ -680,11 +675,10 @@ class BasePainter {
   * @private */
 async function _loadJSDOM() {
    return import('jsdom').then(handle => {
-
       if (!internals.nodejs_window) {
          internals.nodejs_window = (new handle.JSDOM('<!DOCTYPE html>hello')).window;
          internals.nodejs_document = internals.nodejs_window.document; // used with three.js
-         internals.nodejs_body = d3_select(internals.nodejs_document).select('body'); //get d3 handle for body
+         internals.nodejs_body = d3_select(internals.nodejs_document).select('body'); // get d3 handle for body
       }
 
       return { JSDOM: handle.JSDOM, doc: internals.nodejs_document, body: internals.nodejs_body };
@@ -698,7 +692,7 @@ function makeTranslate(g, x, y) {
    if (!isObject(g)) {
       y = x; x = g; g = null;
    }
-   let res = y ? `translate(${x},${y})` : (x ? `translate(${x})` : null);
+   const res = y ? `translate(${x},${y})` : (x ? `translate(${x})` : null);
    return g ? g.attr('transform', res) : res;
 }
 
@@ -706,13 +700,14 @@ function makeTranslate(g, x, y) {
 /** @summary Configure special style used for highlight or dragging elements
   * @private */
 function addHighlightStyle(elem, drag) {
-   if (drag)
+   if (drag) {
       elem.style('stroke', 'steelblue')
           .style('fill-opacity', '0.1');
-   else
+   } else {
       elem.style('stroke', '#4572A7')
           .style('fill', '#4572A7')
           .style('opacity', '0');
+   }
 }
 
 /** @summary Create image based on SVG
@@ -722,8 +717,7 @@ function addHighlightStyle(elem, drag) {
   * @return {Promise} with produced image in base64 form or as Buffer (or canvas when no image_format specified)
   * @private */
 async function svgToImage(svg, image_format, as_buffer) {
-
-   if (image_format == 'svg')
+   if (image_format === 'svg')
       return svg;
 
    if (!isNodeJs()) {
@@ -739,9 +733,8 @@ async function svgToImage(svg, image_format, as_buffer) {
 
    const img_src = 'data:image/svg+xml;base64,' + btoa_func(svg);
 
-   if (isNodeJs())
+   if (isNodeJs()) {
       return import('canvas').then(async handle => {
-
          return handle.default.loadImage(img_src).then(img => {
             const canvas = handle.default.createCanvas(img.width, img.height);
 
@@ -752,13 +745,13 @@ async function svgToImage(svg, image_format, as_buffer) {
             return image_format ? canvas.toDataURL('image/' + image_format) : canvas;
          });
       });
+   }
 
    return new Promise(resolveFunc => {
-
       const image = document.createElement('img');
 
       image.onload = function() {
-         let canvas = document.createElement('canvas');
+         const canvas = document.createElement('canvas');
          canvas.width = image.width;
          canvas.height = image.height;
 
