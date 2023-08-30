@@ -14,7 +14,7 @@ function getElementRect(elem, sizearg) {
    if (!elem || elem.empty())
       return { x: 0, y: 0, width: 0, height: 0 };
 
-   if ((isNodeJs() && (sizearg != 'bbox')) || elem.property('_batch_mode'))
+   if ((isNodeJs() && (sizearg !== 'bbox')) || elem.property('_batch_mode'))
       return { x: 0, y: 0, width: parseInt(elem.attr('width')), height: parseInt(elem.attr('height')) };
 
    const styleValue = name => {
@@ -25,10 +25,10 @@ function getElementRect(elem, sizearg) {
    };
 
    let rect = elem.node().getBoundingClientRect();
-   if ((sizearg == 'bbox') && (parseFloat(rect.width) > 0))
+   if ((sizearg === 'bbox') && (parseFloat(rect.width) > 0))
       rect = elem.node().getBBox();
 
-   let res = { x: 0, y: 0, width: parseInt(rect.width), height: parseInt(rect.height) };
+   const res = { x: 0, y: 0, width: parseInt(rect.width), height: parseInt(rect.height) };
    if (rect.left !== undefined) {
       res.x = parseInt(rect.left);
       res.y = parseInt(rect.top);
@@ -37,7 +37,7 @@ function getElementRect(elem, sizearg) {
       res.y = parseInt(rect.y);
    }
 
-   if ((sizearg === undefined) || (sizearg == 'nopadding')) {
+   if ((sizearg === undefined) || (sizearg === 'nopadding')) {
       // this is size exclude padding area
       res.width -= styleValue('padding-left') + styleValue('padding-right');
       res.height -= styleValue('padding-top') + styleValue('padding-bottom');
@@ -50,8 +50,10 @@ function getElementRect(elem, sizearg) {
 /** @summary Calculate absolute position of provided element in canvas
   * @private */
 function getAbsPosInCanvas(sel, pos) {
-   while (pos && !sel.empty() && !sel.classed('root_canvas')) {
-      let cl = sel.attr('class');
+   if (!pos) return pos;
+
+   while (!sel.empty() && !sel.classed('root_canvas')) {
+      const cl = sel.attr('class');
       if (cl && ((cl.indexOf('root_frame') >= 0) || (cl.indexOf('__root_pad_') >= 0))) {
          pos.x += sel.property('draw_x') || 0;
          pos.y += sel.property('draw_y') || 0;
@@ -72,24 +74,23 @@ function floatToString(value, fmt, ret_fmt) {
    if (!fmt) fmt = '6.4g';
 
    fmt = fmt.trim();
-   let len = fmt.length;
+   const len = fmt.length;
    if (len < 2)
       return ret_fmt ? [value.toFixed(4), '6.4f'] : value.toFixed(4);
-   let last = fmt[len-1];
-   fmt = fmt.slice(0,len-1);
+   const last = fmt[len-1];
+   fmt = fmt.slice(0, len-1);
    let isexp, prec = fmt.indexOf('.');
    prec = (prec < 0) ? 4 : parseInt(fmt.slice(prec+1));
    if (!Number.isInteger(prec) || (prec <= 0)) prec = 4;
 
    let significance = false;
-   if ((last == 'e') || (last == 'E')) { isexp = true; } else
-   if (last == 'Q') { isexp = true; significance = true; } else
-   if ((last == 'f') || (last == 'F')) { isexp = false; } else
-   if (last == 'W') { isexp = false; significance = true; } else
-   if ((last == 'g') || (last == 'G')) {
-      let se = floatToString(value, fmt+'Q', true),
-          sg = floatToString(value, fmt+'W', true);
-
+   if ((last === 'e') || (last === 'E')) isexp = true; else
+   if (last === 'Q') { isexp = true; significance = true; } else
+   if ((last === 'f') || (last === 'F')) isexp = false; else
+   if (last === 'W') { isexp = false; significance = true; } else
+   if ((last === 'g') || (last === 'G')) {
+      const se = floatToString(value, fmt+'Q', true);
+      let sg = floatToString(value, fmt+'W', true);
       if (se[0].length < sg[0].length) sg = se;
       return ret_fmt ? sg : sg[0];
    } else {
@@ -102,27 +103,25 @@ function floatToString(value, fmt, ret_fmt) {
       if (significance) prec--;
       if (prec < 0) prec = 0;
 
-      let se = value.toExponential(prec);
-
+      const se = value.toExponential(prec);
       return ret_fmt ? [se, `5.${prec}e`] : se;
    }
 
    let sg = value.toFixed(prec);
 
    if (significance) {
-
       // when using fixed representation, one could get 0
       if (value && (Number(sg) === 0) && (prec > 0)) {
          prec = 20; sg = value.toFixed(prec);
       }
 
       let l = 0;
-      while ((l < sg.length) && (sg[l] == '0' || sg[l] == '-' || sg[l] == '.')) l++;
+      while ((l < sg.length) && (sg[l] === '0' || sg[l] === '-' || sg[l] === '.')) l++;
 
       let diff = sg.length - l - prec;
       if (sg.indexOf('.') > l) diff--;
 
-      if (diff != 0) {
+      if (diff !== 0) {
          prec -= diff;
          if (prec < 0)
             prec = 0;
@@ -148,7 +147,7 @@ class DrawOptions {
    /** @summary Returns true if remaining options are empty or contain only seperators symbols. */
    empty() {
       if (this.opt.length === 0) return true;
-      return this.opt.replace(/[ ;_,]/g, '').length == 0;
+      return this.opt.replace(/[ ;_,]/g, '').length === 0;
    }
 
    /** @summary Returns remaining part of the draw options. */
@@ -156,7 +155,7 @@ class DrawOptions {
 
    /** @summary Checks if given option exists */
    check(name, postpart) {
-      let pos = this.opt.indexOf(name);
+      const pos = this.opt.indexOf(name);
       if (pos < 0) return false;
       this.opt = this.opt.slice(0, pos) + this.opt.slice(pos + name.length);
       this.part = '';
@@ -173,12 +172,13 @@ class DrawOptions {
 
    /** @summary Returns remaining part of found option as integer. */
    partAsInt(offset, dflt) {
-      let mult = 1, last = this.part ? this.part[this.part.length - 1] : '';
-      if (last == 'K')
+      let mult = 1;
+      const last = this.part ? this.part[this.part.length - 1] : '';
+      if (last === 'K')
          mult = 1e3;
-      else if (last == 'M')
+      else if (last === 'M')
          mult = 1e6;
-      else if (last == 'G')
+      else if (last === 'G')
          mult = 1e9;
       let val = this.part.replace(/^\D+/g, '');
       val = val ? parseInt(val, 10) : Number.NaN;
@@ -197,9 +197,11 @@ class DrawOptions {
 /** @summary Simple random generator with controlled seed
   * @private */
 class TRandom {
+
    constructor(i) {
       if (i !== undefined) this.seed(i);
    }
+
    /** @summary Seed simple random generator */
    seed(i) {
       i = Math.abs(i);
@@ -210,6 +212,7 @@ class TRandom {
       this.m_w = Math.round(i);
       this.m_z = 987654321;
    }
+
    /** @summary Produce random value between 0 and 1 */
    random() {
       if (this.m_z === undefined) return Math.random();
@@ -219,6 +222,7 @@ class TRandom {
       result /= 4294967296;
       return result + 0.5;
    }
+
 } // class TRandom
 
 
@@ -226,7 +230,6 @@ class TRandom {
   * @desc Reuse code from https://stackoverflow.com/questions/62855310
   * @private */
 function buildSvgCurve(p, args) {
-
    if (!args)
       args = {};
    if (!args.line)
@@ -251,9 +254,9 @@ function buildSvgCurve(p, args) {
    }
 
    const end_point = (pnt1, pnt2, sign) => {
-      let len = Math.sqrt((pnt2.gry - pnt1.gry)**2 + (pnt2.grx - pnt1.grx)**2) * args.t,
-          a2 = Math.atan2(pnt2.dgry, pnt2.dgrx),
-          a1 = Math.atan2(sign*(pnt2.gry - pnt1.gry), sign*(pnt2.grx - pnt1.grx));
+      const len = Math.sqrt((pnt2.gry - pnt1.gry)**2 + (pnt2.grx - pnt1.grx)**2) * args.t,
+            a2 = Math.atan2(pnt2.dgry, pnt2.dgrx),
+            a1 = Math.atan2(sign*(pnt2.gry - pnt1.gry), sign*(pnt2.grx - pnt1.grx));
 
       pnt1.dgrx = len * Math.cos(2*a1 - a2);
       pnt1.dgry = len * Math.sin(2*a1 - a2);
@@ -261,10 +264,10 @@ function buildSvgCurve(p, args) {
       if (!args.ndig || (Math.round(val) === val))
          return val.toFixed(0);
       let s = val.toFixed(args.ndig), p = s.length-1;
-      while (s[p] == '0') p--;
-      if (s[p] == '.') p--;
+      while (s[p] === '0') p--;
+      if (s[p] === '.') p--;
       s = s.slice(0, p+1);
-      return (s == '-0') ? '0' : s;
+      return (s === '-0') ? '0' : s;
    };
 
    if (args.calc) {
@@ -274,9 +277,9 @@ function buildSvgCurve(p, args) {
       }
 
       if (npnts > 2) {
-         end_point(p[0], p[1], 1.);
+         end_point(p[0], p[1], 1);
          end_point(p[npnts - 1], p[npnts - 2], -1);
-      } else if (p.length == 2) {
+      } else if (p.length === 2) {
          p[0].dgrx = (p[1].grx - p[0].grx) * args.t;
          p[0].dgry = (p[1].gry - p[0].gry) * args.t;
          p[1].dgrx = -p[0].dgrx;
@@ -311,9 +314,9 @@ function buildSvgCurve(p, args) {
       };
 
       for (let n = 1; n < npnts; ++n) {
-         let bin = p[n],
-             dx = Math.round(bin.grx) - currx,
-             dy = Math.round(bin.gry) - curry;
+         const bin = p[n],
+               dx = Math.round(bin.grx) - currx,
+               dy = Math.round(bin.gry) - curry;
          if (dx && dy) {
             flush();
             path += `l${dx},${dy}`;
@@ -328,17 +331,16 @@ function buildSvgCurve(p, args) {
       }
 
       flush();
-
    } else {
       // build line with trying optimize many vertical moves
       let currx = Math.round(p[0].grx), curry = Math.round(p[0].gry),
           cminy = curry, cmaxy = curry, prevy = curry;
 
       for (let n = 1; n < npnts; ++n) {
-         let bin = p[n],
-             lastx = Math.round(bin.grx),
-             lasty = Math.round(bin.gry),
-             dx = lastx - currx;
+         const bin = p[n],
+               lastx = Math.round(bin.grx),
+               lasty = Math.round(bin.gry),
+               dx = lastx - currx;
          if (dx === 0) {
             // if X not change, just remember amplitude and
             cminy = Math.min(cminy, lasty);
@@ -348,14 +350,14 @@ function buildSvgCurve(p, args) {
          }
 
          if (cminy !== cmaxy) {
-            if (cminy != curry)
+            if (cminy !== curry)
                path += `v${cminy-curry}`;
             path += `v${cmaxy-cminy}`;
-            if (cmaxy != prevy)
+            if (cmaxy !== prevy)
                path += `v${prevy-cmaxy}`;
             curry = prevy;
          }
-         let dy = lasty - curry;
+         const dy = lasty - curry;
          if (dy)
             path += `l${dx},${dy}`;
          else
@@ -364,11 +366,11 @@ function buildSvgCurve(p, args) {
          prevy = cminy = cmaxy = lasty;
       }
 
-      if (cminy != cmaxy) {
-         if (cminy != curry)
+      if (cminy !== cmaxy) {
+         if (cminy !== curry)
             path += `v${cminy-curry}`;
          path += `v${cmaxy-cminy}`;
-         if (cmaxy != prevy)
+         if (cmaxy !== prevy)
             path += `v${prevy-cmaxy}`;
       }
    }
@@ -383,7 +385,6 @@ function buildSvgCurve(p, args) {
   * @desc removes extra info or empty elements
   * @private */
 function compressSVG(svg) {
-
    svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g, 'url(#$1)')        // decode all URL
             .replace(/ class=\"\w*\"/g, '')                                // remove all classes
             .replace(/ pad=\"\w*\"/g, '')                                  // remove all pad ids
@@ -393,7 +394,7 @@ function compressSVG(svg) {
             .replace(/<g><\/g>/g, '');                                     // remove all empty groups
 
    // remove all empty frame svgs, typically appears in 3D drawings, maybe should be improved in frame painter itself
-   svg = svg.replace(/<svg x=\"0\" y=\"0\" overflow=\"hidden\" width=\"\d+\" height=\"\d+\" viewBox=\"0 0 \d+ \d+\"><\/svg>/g, '');
+   svg = svg.replace(/<svg x="0" y="0" overflow="hidden" width="\d+" height="\d+" viewBox="0 0 \d+ \d+"><\/svg>/g, '');
 
    return svg;
 }
