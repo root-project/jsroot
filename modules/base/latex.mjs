@@ -362,20 +362,21 @@ function parseLatex(node, arg, label, curr) {
    },
 
    extractSubLabel = (check_first, lbrace, rbrace) => {
-      let pos = 0, n = 1, err = false, extra_braces = false;
+      let pos = 0, n = 1, extra_braces = false;
       if (!lbrace) lbrace = '{';
       if (!rbrace) rbrace = '}';
 
       const match = br => (pos + br.length <= label.length) && (label.slice(pos, pos+br.length) === br);
 
       if (check_first) {
-         if (!match(lbrace))
-            err = true;
-         else
+         if (!match(lbrace)) {
+            console.log(`not starting with ${lbrace} in ${label}`);
+            return -1;
+         } else
             label = label.slice(lbrace.length);
       }
 
-      while (!err && (n !== 0) && (pos < label.length)) {
+      while ((n !== 0) && (pos < label.length)) {
          if (match(lbrace)) {
             n++;
             pos += lbrace.length;
@@ -391,7 +392,7 @@ function parseLatex(node, arg, label, curr) {
             }
          } else pos++;
       }
-      if ((n !== 0) || err) {
+      if (n !== 0) {
          console.log(`mismatch with open ${lbrace} and closing ${rbrace} in ${label}`);
          return -1;
       }
@@ -403,17 +404,17 @@ function parseLatex(node, arg, label, curr) {
       label = label.slice(pos);
 
       return sublabel;
-   };
+   },
 
-   const createPath = (gg, d, dofill) => {
+   createPath = (gg, d, dofill) => {
       return gg.append('svg:path')
                .style('stroke', dofill ? 'none' : (curr.color || arg.color))
                .style('stroke-width', dofill ? null : Math.max(1, Math.round(curr.fsize*(curr.font.weight ? 0.1 : 0.07))))
                .style('fill', dofill ? (curr.color || arg.color) : 'none')
                .attr('d', d ?? null);
-   };
+   },
 
-   const createSubPos = fscale => {
+   createSubPos = fscale => {
       return { lvl: curr.lvl + 1, x: 0, y: 0, fsize: curr.fsize*(fscale || 1), color: curr.color, font: curr.font, parent: curr, painter: curr.painter };
    };
 
