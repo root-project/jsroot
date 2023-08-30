@@ -17,16 +17,14 @@ function getMaterialArgs(color, args) {
    if (!args || !isObject(args)) args = {};
 
    if (isStr(color) && ((color[0] == '#' && (color.length === 9)) || (color.indexOf('rgba') >= 0))) {
-      let col = d3_color(color);
+      const col = d3_color(color);
       args.color = new Color(col.r, col.g, col.b);
       args.opacity = col.opacity ?? 1;
       args.transparent = args.opacity < 1;
-   } else {
+   } else
       args.color = new Color(color);
-   }
    return args;
 }
-
 
 const HelveticerRegularFont = new Font(HelveticerRegularJson);
 
@@ -34,38 +32,38 @@ function createSVGRenderer(as_is, precision, doc) {
    if (as_is) {
       if (doc !== undefined)
          globalThis.docuemnt = doc;
-      let rndr = new SVGRenderer();
+      const rndr = new SVGRenderer();
       rndr.setPrecision(precision);
       return rndr;
    }
 
    const excl_style1 = ';stroke-opacity:1;stroke-width:1;stroke-linecap:round',
-         excl_style2 = ';fill-opacity:1';
-
-   let doc_wrapper = {
+         excl_style2 = ';fill-opacity:1',
+   doc_wrapper = {
      svg_attr: {},
      svg_style: {},
      path_attr: {},
      accPath: '',
      createElementNS(ns, kind) {
-        if (kind == 'path')
+        if (kind === 'path') {
            return {
               _wrapper: this,
               setAttribute(name, value) {
                  // cut useless fill-opacity:1 at the end of many SVG attributes
-                 if ((name == 'style') && value) {
-                    let pos1 = value.indexOf(excl_style1);
-                    if ((pos1 >= 0) && (pos1 == value.length - excl_style1.length))
+                 if ((name === 'style') && value) {
+                    const pos1 = value.indexOf(excl_style1);
+                    if ((pos1 >= 0) && (pos1 === value.length - excl_style1.length))
                        value = value.slice(0, value.length - excl_style1.length);
-                    let pos2 = value.indexOf(excl_style2);
-                    if ((pos2 >= 0) && (pos2 == value.length - excl_style2.length))
+                    const pos2 = value.indexOf(excl_style2);
+                    if ((pos2 >= 0) && (pos2 === value.length - excl_style2.length))
                        value = value.slice(0, value.length - excl_style2.length);
                  }
                  this._wrapper.path_attr[name] = value;
               }
            }
+        }
 
-        if (kind != 'svg') {
+        if (kind !== 'svg') {
            console.error(`not supported element for SVGRenderer ${kind}`);
            return null;
         }
@@ -78,7 +76,7 @@ function createSVGRenderer(as_is, precision, doc) {
               this._wrapper.svg_attr[name] = value;
            },
            appendChild(node) {
-              this._wrapper.accPath += `<path style="${this._wrapper.path_attr['style']}" d="${this._wrapper.path_attr['d']}"/>`;
+              this._wrapper.accPath += `<path style="${this._wrapper.path_attr.style}" d="${this._wrapper.path_attr.d}"/>`;
               this._wrapper.path_attr = {};
            },
            removeChild(node) {
@@ -95,7 +93,7 @@ function createSVGRenderer(as_is, precision, doc) {
       globalThis.document = doc_wrapper;
    }
 
-   let rndr = new SVGRenderer();
+   const rndr = new SVGRenderer();
 
    if (isNodeJs())
       globalThis.document = originalDocument;
@@ -105,7 +103,7 @@ function createSVGRenderer(as_is, precision, doc) {
    rndr.originalRender = rndr.render;
 
    rndr.render = function(scene, camera) {
-      let originalDocument = globalThis.document;
+      const originalDocument = globalThis.document;
       if (isNodeJs())
          globalThis.document = this.doc_wrapper;
 
@@ -120,28 +118,25 @@ function createSVGRenderer(as_is, precision, doc) {
    }
 
    rndr.makeOuterHTML = function() {
-
-      let wrap = this.doc_wrapper,
-         _textSizeAttr = `viewBox="${wrap.svg_attr['viewBox']}" width="${wrap.svg_attr['width']}" height="${wrap.svg_attr['height']}"`,
-         _textClearAttr = wrap.svg_style.backgroundColor ? ` style="background:${wrap.svg_style.backgroundColor}"` : '';
+      const wrap = this.doc_wrapper,
+           _textSizeAttr = `viewBox="${wrap.svg_attr.viewBox}" width="${wrap.svg_attr.width}" height="${wrap.svg_attr.height}"`,
+           _textClearAttr = wrap.svg_style.backgroundColor ? ` style="background:${wrap.svg_style.backgroundColor}"` : '';
 
       return `<svg xmlns="http://www.w3.org/2000/svg" ${_textSizeAttr}${_textClearAttr}>${wrap.accPath}</svg>`;
    }
 
    rndr.fillTargetSVG = function(svg) {
-
       if (isNodeJs()) {
+         const wrap = this.doc_wrapper;
 
-         let wrap = this.doc_wrapper;
-
-         svg.setAttribute('viewBox', wrap.svg_attr['viewBox']);
-         svg.setAttribute('width', wrap.svg_attr['width']);
-         svg.setAttribute('height', wrap.svg_attr['height']);
+         svg.setAttribute('viewBox', wrap.svg_attr.viewBox);
+         svg.setAttribute('width', wrap.svg_attr.width);
+         svg.setAttribute('height', wrap.svg_attr.height);
          svg.style.background = wrap.svg_style.backgroundColor || '';
 
          svg.innerHTML = wrap.accPath;
       } else {
-         let src = this.domElement;
+         const src = this.domElement;
 
          svg.setAttribute('viewBox', src.getAttribute('viewBox'));
          svg.setAttribute('width', src.getAttribute('width'));
@@ -149,11 +144,10 @@ function createSVGRenderer(as_is, precision, doc) {
          svg.style.background = src.style.backgroundColor;
 
          while (src.firstChild) {
-            let elem = src.firstChild;
+            const elem = src.firstChild;
             src.removeChild(elem);
             svg.appendChild(elem);
          }
-
       }
    }
 
@@ -173,26 +167,26 @@ function getRender3DKind(render3d, is_batch) {
       is_batch = isBatchMode();
 
    if (!render3d) render3d = is_batch ? settings.Render3DBatch : settings.Render3D;
-   let rc = constants.Render3D;
+   const rc = constants.Render3D;
 
-   if (render3d == rc.Default) render3d = is_batch ? rc.WebGLImage : rc.WebGL;
-   if (is_batch && (render3d == rc.WebGL)) render3d = rc.WebGLImage;
+   if (render3d === rc.Default) render3d = is_batch ? rc.WebGLImage : rc.WebGL;
+   if (is_batch && (render3d === rc.WebGL)) render3d = rc.WebGLImage;
 
    return render3d;
 }
 
-let Handling3DDrawings = {
+const Handling3DDrawings = {
 
    /** @summary Access current 3d mode
      * @param {string} [new_value] - when specified, set new 3d mode
      * @return current value
      * @private */
    access3dKind(new_value) {
-      let svg = this.getPadSvg();
+      const svg = this.getPadSvg();
       if (svg.empty()) return -1;
 
       // returns kind of currently created 3d canvas
-      let kind = svg.property('can3d');
+      const kind = svg.property('can3d');
       if (new_value !== undefined) svg.property('can3d', new_value);
       return ((kind === null) || (kind === undefined)) ? -1 : kind;
    },
@@ -200,15 +194,14 @@ let Handling3DDrawings = {
    /** @summary Returns size which availble for 3D drawing.
      * @desc One uses frame sizes for the 3D drawing - like TH2/TH3 objects
      * @private */
-   getSizeFor3d(can3d, render3d) {
-
+   getSizeFor3d(can3d /*, render3d */) {
       if (can3d === undefined) {
          // analyze which render/embed mode can be used
          can3d = getRender3DKind();
          // all non-webgl elements can be embedded into SVG as is
          if (can3d !== constants.Render3D.WebGL)
             can3d = constants.Embed3D.EmbedSVG;
-         else if (settings.Embed3D != constants.Embed3D.Default)
+         else if (settings.Embed3D !== constants.Embed3D.Default)
             can3d = settings.Embed3D;
          else if (browser.isFirefox)
             can3d = constants.Embed3D.Embed;
@@ -219,14 +212,13 @@ let Handling3DDrawings = {
             can3d = constants.Embed3D.Overlay;
       }
 
-      let pad = this.getPadSvg(),
-          clname = 'draw3d_' + (this.getPadName() || 'canvas');
+      const pad = this.getPadSvg(),
+            clname = 'draw3d_' + (this.getPadName() || 'canvas');
 
       if (pad.empty()) {
          // this is a case when object drawn without canvas
 
-         let rect = getElementRect(this.selectDom());
-
+         const rect = getElementRect(this.selectDom());
          if ((rect.height < 10) && (rect.width > 10)) {
             rect.height = Math.round(0.66 * rect.width);
             this.selectDom().style('height', rect.height + 'px');
@@ -235,11 +227,12 @@ let Handling3DDrawings = {
          return rect;
       }
 
-      let fp = this.getFramePainter(), pp = this.getPadPainter(), size;
+      const fp = this.getFramePainter(), pp = this.getPadPainter();
+      let size;
 
-      if (fp?.mode3d && (can3d > 0)) {
+      if (fp?.mode3d && (can3d > 0))
          size = fp.getFrameRect();
-      } else {
+      else {
          let elem = (can3d > 0) ? pad : this.getCanvSvg();
          size = { x: 0, y: 0, width: elem.property('draw_width'), height: elem.property('draw_height') };
          if (Number.isNaN(size.width) || Number.isNaN(size.height)) {
@@ -255,10 +248,10 @@ let Handling3DDrawings = {
       size.clname = clname;
       size.can3d = can3d;
 
-      let rect = pp?.getPadRect();
+      const rect = pp?.getPadRect();
       if (rect) {
          // while 3D canvas uses area also for the axis labels, extend area relative to normal frame
-         let dx = Math.round(size.width*0.07), dy = Math.round(size.height*0.05);
+         const dx = Math.round(size.width*0.07), dy = Math.round(size.height*0.05);
 
          size.x = Math.max(0, size.x-dx);
          size.y = Math.max(0, size.y-dy);
@@ -276,11 +269,11 @@ let Handling3DDrawings = {
      * @return can3d value - how webgl canvas was placed
      * @private */
    clear3dCanvas() {
-      let can3d = this.access3dKind(null);
+      const can3d = this.access3dKind(null);
       if (can3d < 0) {
          // remove first child from main element - if it is canvas
-         let main = this.selectDom().node(),
-             chld = main?.firstChild;
+         const main = this.selectDom().node();
+         let chld = main?.firstChild;
 
          if (chld && !chld.$jsroot)
             chld = chld.nextSibling;
@@ -292,8 +285,7 @@ let Handling3DDrawings = {
          return can3d;
       }
 
-      let size = this.getSizeFor3d(can3d);
-
+      const size = this.getSizeFor3d(can3d);
       if (size.can3d === 0) {
          d3_select(this.getCanvSvg().node().nextSibling).remove(); // remove html5 canvas
          this.getCanvSvg().style('display', null); // show SVG canvas
@@ -310,13 +302,12 @@ let Handling3DDrawings = {
    /** @summary Add 3D canvas
      * @private */
    add3dCanvas(size, canv, webgl) {
-
       if (!canv || (size.can3d < -1)) return;
 
       if (size.can3d === -1) {
          // case when 3D object drawn without canvas
 
-         let main = this.selectDom().node();
+         const main = this.selectDom().node();
          if (main !== null) {
             main.appendChild(canv);
             canv.painter = this;
@@ -341,8 +332,7 @@ let Handling3DDrawings = {
          // first hide normal frame
          this.getFrameSvg().style('display', 'none');
 
-         let elem = this.apply3dSize(size);
-
+         const elem = this.apply3dSize(size);
          elem.attr('title', '').node().appendChild(canv);
       }
    },
@@ -350,19 +340,17 @@ let Handling3DDrawings = {
    /** @summary Apply size to 3D elements
      * @private */
    apply3dSize(size, onlyget) {
-
       if (size.can3d < 0)
          return d3_select(null);
 
       let elem;
 
       if (size.can3d > 1) {
-
          elem = this.getLayerSvg(size.clname);
          if (onlyget)
             return elem;
 
-         let svg = this.getPadSvg();
+         const svg = this.getPadSvg();
 
          if (size.can3d === constants.Embed3D.EmbedSVG) {
             // this is SVG mode or image mode - just create group to hold element
@@ -371,9 +359,7 @@ let Handling3DDrawings = {
                elem = svg.insert('g', '.primitives_layer').attr('class', size.clname);
 
             makeTranslate(elem, size.x, size.y);
-
          } else {
-
             if (elem.empty())
                elem = svg.insert('foreignObject', '.primitives_layer').attr('class', size.clname);
 
@@ -384,7 +370,6 @@ let Handling3DDrawings = {
                 .attr('viewBox', `0 0 ${size.width} ${size.height}`)
                 .attr('preserveAspectRatio', 'xMidYMid');
          }
-
       } else {
          let prnt = this.getCanvSvg().node().parentNode;
 
@@ -395,15 +380,16 @@ let Handling3DDrawings = {
          // force redraw by resize
          this.getCanvSvg().property('redraw_by_resize', true);
 
-         if (elem.empty())
+         if (elem.empty()) {
             elem = d3_select(prnt).append('div').attr('class', size.clname)
                                   .style('user-select', 'none');
+         }
 
          // our position inside canvas, but to set 'absolute' position we should use
          // canvas element offset relative to first parent with non-static position
          // now try to use getBoundingClientRect - it should be more precise
 
-         let pos0 = prnt.getBoundingClientRect();
+         const pos0 = prnt.getBoundingClientRect();
 
          while (prnt) {
             if (prnt === document) { prnt = null; break; }
@@ -415,9 +401,9 @@ let Handling3DDrawings = {
             prnt = prnt.parentNode;
          }
 
-         let pos1 = prnt?.getBoundingClientRect() ?? { top: 0, left: 0 },
-             offx = Math.round(pos0.left - pos1.left),
-             offy = Math.round(pos0.top - pos1.top);
+         const pos1 = prnt?.getBoundingClientRect() ?? { top: 0, left: 0 },
+               offx = Math.round(pos0.left - pos1.left),
+               offy = Math.round(pos0.top - pos1.top);
 
          elem.style('position', 'absolute').style('left', (size.x + offx) + 'px').style('top', (size.y + offy) + 'px').style('width', size.width + 'px').style('height', size.height + 'px');
       }
@@ -443,23 +429,21 @@ function assign3DHandler(painter) {
   * @return {Promise} with renderer object
   * @private */
 async function createRender3D(width, height, render3d, args) {
-
-   let rc = constants.Render3D, promise, doc = getDocument();
+   const rc = constants.Render3D, doc = getDocument();
 
    render3d = getRender3DKind(render3d);
 
    if (!args) args = { antialias: true, alpha: true };
 
-   if (render3d == rc.WebGL) {
+   let promise;
+
+   if (render3d === rc.WebGL) {
       // interactive WebGL Rendering
       promise = Promise.resolve(new WebGLRenderer(args));
-
-   } else if (render3d == rc.SVG) {
+   } else if (render3d === rc.SVG) {
       // SVG rendering
-      let r = createSVGRenderer(false, 0, doc);
-
+      const r = createSVGRenderer(false, 0, doc);
       r.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
-
       promise = Promise.resolve(r);
    } else if (isNodeJs()) {
       // try to use WebGL inside node.js - need to create headless context
@@ -470,15 +454,14 @@ async function createRender3D(width, height, render3d, args) {
          args.canvas.style = {};
          return import('gl');
       }).then(node_gl => {
-         let gl = node_gl.default(width, height, { preserveDrawingBuffer: true });
-         if (!gl) throw(Error('Fail to create headless-gl'));
+         const gl = node_gl.default(width, height, { preserveDrawingBuffer: true });
+         if (!gl) throw Error('Fail to create headless-gl');
          args.context = gl;
          gl.canvas = args.canvas;
 
          globalThis.WebGLRenderingContext = function() {}; // workaround to prevent crash in three.js constructor
 
-         let r = new WebGLRenderer(args);
-
+         const r = new WebGLRenderer(args);
          r.jsroot_output = new WebGLRenderTarget(width, height);
          r.setRenderTarget(r.jsroot_output);
          r.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'image');
@@ -486,7 +469,7 @@ async function createRender3D(width, height, render3d, args) {
       });
    } else {
       // rendering with WebGL directly into svg image
-      let r = new WebGLRenderer(args);
+      const r = new WebGLRenderer(args);
       r.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'image');
       promise = Promise.resolve(r);
    }
@@ -529,8 +512,8 @@ function cleanupRender3D(renderer) {
    if (!renderer) return;
 
    if (isNodeJs()) {
-      let ctxt = isFunc(renderer.getContext) ? renderer.getContext() : null,
-          ext = ctxt?.getExtension('STACKGL_destroy_context');
+      const ctxt = isFunc(renderer.getContext) ? renderer.getContext() : null,
+            ext = ctxt?.getExtension('STACKGL_destroy_context');
       if (isFunc(ext?.destroy))
           ext.destroy();
    } else {
