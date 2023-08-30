@@ -1414,7 +1414,7 @@ function ZIP_inflate(arr, tgt) {
             lx = Array(BMAX+1).fill(0), // stack of bits per table
             u = Array(BMAX).fill(null), // zip_HuftNode[BMAX][]  table stack
             v = Array(N_MAX).fill(0), // values in order of bit length
-            x = Array(BMAX+1).fill(0),// bit offsets, then code stack
+            x = Array(BMAX+1).fill(0), // bit offsets, then code stack
             r = { e: 0, b: 0, n: 0, t: null }, // new zip_HuftNode(), // table entry for structure assignment
             el = (n > 256) ? b[256] : BMAX; // set length of EOB code, if any
        let rr = null, // temporary variable, use in assignment
@@ -2164,7 +2164,7 @@ class TBuffer {
 
    /** @summary  read class version from I/O buffer */
    readVersion() {
-      let ver = {}, bytecnt = this.ntou4(); // byte count
+      const ver = {}, bytecnt = this.ntou4(); // byte count
 
       if (bytecnt & kByteCountMask)
          ver.bytecnt = bytecnt - kByteCountMask - 2; // one can check between Read version and end of streamer
@@ -2181,9 +2181,8 @@ class TBuffer {
             // console.error(`Fail to find streamer info with check sum ${ver.checksum} version ${ver.val}`);
             this.o -= 4; // not found checksum in the list
             delete ver.checksum; // remove checksum
-         } else {
+         } else
             this.last_read_checksum = ver.checksum;
-         }
       }
       return ver;
    }
@@ -2204,22 +2203,23 @@ class TBuffer {
    readTString() {
       let len = this.ntou1();
       // large strings
-      if (len == 255) len = this.ntou4();
-      if (len == 0) return '';
+      if (len === 255) len = this.ntou4();
+      if (len === 0) return '';
 
       const pos = this.o;
       this.o += len;
 
-      return (this.codeAt(pos) == 0) ? '' : this.substring(pos, pos + len);
+      return (this.codeAt(pos) === 0) ? '' : this.substring(pos, pos + len);
    }
 
     /** @summary read Char_t array as string
       * @desc string either contains all symbols or until 0 symbol */
    readFastString(n) {
       let res = '', code, closed = false;
+      // eslint-disable-next-line no-unmodified-loop-condition
       for (let i = 0; (n < 0) || (i < n); ++i) {
          code = this.ntou1();
-         if (code == 0) { closed = true; if (n < 0) break; }
+         if (code === 0) { closed = true; if (n < 0) break; }
          if (!closed) res += String.fromCharCode(code);
       }
 
@@ -2357,7 +2357,6 @@ class TBuffer {
       }
 
       this.o = o;
-
       return array;
    }
 
@@ -2373,8 +2372,7 @@ class TBuffer {
       if (!this.arr || !this.arr.buffer || !this.canExtract(place)) return null;
       if (place.length === 2) return new DataView(this.arr.buffer, this.arr.byteOffset + place[0], place[1]);
 
-      let res = new Array(place.length / 2);
-
+      const res = new Array(place.length / 2);
       for (let n = 0; n < place.length; n += 2)
          res[n / 2] = new DataView(this.arr.buffer, this.arr.byteOffset + place[n], place[n + 1]);
 
@@ -2409,17 +2407,18 @@ class TBuffer {
       } else if (ndim === 2) {
          res = new Array(maxindx[0]);
          for (let n = 0; n < maxindx[0]; ++n) {
-            let res2 = new Array(maxindx[1]);
+            const res2 = new Array(maxindx[1]);
             for (let k = 0; k < maxindx[1]; ++k)
                res2[k] = func(this, handle);
             res[n] = res2;
          }
       } else {
-         let indx = [], arr = [], k;
-         for (k = 0; k < ndim; ++k) { indx[k] = 0; arr[k] = []; }
+         const indx = new Array(ndim).fill(0), arr = new Array(ndim);
+         for (let k = 0; k < ndim; ++k)
+            arr[k] = [];
          res = arr[0];
          while (indx[0] < maxindx[0]) {
-            k = ndim - 1;
+            let k = ndim - 1;
             arr[k].push(func(this, handle));
             ++indx[k];
             while ((indx[k] === maxindx[k]) && (k > 0)) {
@@ -2438,7 +2437,7 @@ class TBuffer {
    readTKey(key) {
       if (!key) key = {};
       this.classStreamer(key, clTKey);
-      let name = key.fName.replace(/['"]/g, '');
+      const name = key.fName.replace(/['"]/g, '');
       if (name !== key.fName) {
          key.fRealName = key.fName;
          key.fName = name;
@@ -2450,7 +2449,6 @@ class TBuffer {
      * @desc this is remaining part of TBasket streamer to decode fEntryOffset
      * after unzipping of the TBasket data */
    readBasketEntryOffset(basket, offset) {
-
       this.locate(basket.fLast - offset);
 
       if (this.remain() <= 0) {
@@ -2482,17 +2480,16 @@ class TBuffer {
       const classInfo = { name: -1 }, bcnt = this.ntou4(), startpos = this.o;
       let tag;
 
-      if (!(bcnt & kByteCountMask) || (bcnt == kNewClassTag)) {
+      if (!(bcnt & kByteCountMask) || (bcnt === kNewClassTag))
          tag = bcnt;
-         // bcnt = 0;
-      } else {
+      else
          tag = this.ntou4();
-      }
+
       if (!(tag & kClassMask)) {
          classInfo.objtag = tag + this.fDisplacement; // indicate that we have deal with objects tag
          return classInfo;
       }
-      if (tag == kNewClassTag) {
+      if (tag === kNewClassTag) {
          // got a new class description followed by a new object
          classInfo.name = this.readFastString(-1);
 
@@ -2524,9 +2521,9 @@ class TBuffer {
       const arrkind = getArrayKind(clRef.name);
       let obj;
 
-      if (arrkind === 0) {
+      if (arrkind === 0)
          obj = this.readTString();
-      } else if (arrkind > 0) {
+      else if (arrkind > 0) {
          // reading array, can map array only afterwards
          obj = this.readFastArray(this.ntou4(), arrkind);
          this.mapObject(objtag, obj);
@@ -2542,7 +2539,6 @@ class TBuffer {
 
    /** @summary Invoke streamer for specified class  */
    classStreamer(obj, classname) {
-
       if (obj._typename === undefined) obj._typename = classname;
 
       const direct = DirectStreamers[classname];
@@ -2555,16 +2551,12 @@ class TBuffer {
             streamer = this.fFile.getStreamer(classname, ver);
 
       if (streamer !== null) {
-
          const len = streamer.length;
-
          for (let n = 0; n < len; ++n)
             streamer[n].func(this, obj);
-
       } else {
          // just skip bytes belonging to not-recognized object
          // console.warn(`skip object ${classname}`);
-
          addMethods(obj);
       }
 
@@ -2584,7 +2576,6 @@ class TBuffer {
   */
 
 class TDirectory {
-
    /** @summary constructor */
    constructor(file, dirname, cycle) {
       this.fFile = file;
@@ -2596,13 +2587,12 @@ class TDirectory {
 
    /** @summary retrieve a key by its name and cycle in the list of keys */
    getKey(keyname, cycle, only_direct) {
-
-      if (typeof cycle != 'number') cycle = -1;
+      if (typeof cycle !== 'number') cycle = -1;
       let bestkey = null;
       for (let i = 0; i < this.fKeys.length; ++i) {
          const key = this.fKeys[i];
          if (!key || (key.fName !== keyname)) continue;
-         if (key.fCycle == cycle) { bestkey = key; break; }
+         if (key.fCycle === cycle) { bestkey = key; break; }
          if ((cycle < 0) && (!bestkey || (key.fCycle > bestkey.fCycle))) bestkey = key;
       }
       if (bestkey)
@@ -2611,13 +2601,14 @@ class TDirectory {
       let pos = keyname.lastIndexOf('/');
       // try to handle situation when object name contains slashed (bad practice anyway)
       while (pos > 0) {
-         let dirname = keyname.slice(0, pos),
-             subname = keyname.slice(pos+1),
-             dirkey = this.getKey(dirname, undefined, true);
+         const dirname = keyname.slice(0, pos),
+               subname = keyname.slice(pos+1),
+               dirkey = this.getKey(dirname, undefined, true);
 
-         if (dirkey && !only_direct && (dirkey.fClassName.indexOf(clTDirectory) == 0))
+         if (dirkey && !only_direct && (dirkey.fClassName.indexOf(clTDirectory) === 0)) {
             return this.fFile.readObject(this.dir_name + '/' + dirname, 1)
                              .then(newdir => newdir.getKey(subname, cycle));
+         }
 
          pos = keyname.lastIndexOf('/', pos-1);
       }
@@ -2636,7 +2627,6 @@ class TDirectory {
    /** @summary Read list of keys in directory
      * @return {Promise} with TDirectory object */
    async readKeys(objbuf) {
-
       objbuf.classStreamer(this, clTDirectory);
 
       if ((this.fSeekKeys <= 0) || (this.fNbytesKeys <= 0))
@@ -2658,7 +2648,6 @@ class TDirectory {
          return this;
       });
    }
-
 } // class TDirectory
 
 /**
@@ -2668,7 +2657,6 @@ class TDirectory {
   */
 
 class TFile {
-
    constructor(url) {
       this._typename = clTFile;
       this.fEND = 0;
@@ -2677,7 +2665,7 @@ class TFile {
       // when disabled ('+' at the end of file name), complete file content read with single operation
       this.fAcceptRanges = true;
       // use additional time stamp parameter for file name to avoid browser caching problem
-      this.fUseStampPar = settings.UseStamp ? 'stamp=' + (new Date).getTime() : false;
+      this.fUseStampPar = settings.UseStamp ? 'stamp=' + (new Date()).getTime() : false;
       this.fFileContent = null; // this can be full or partial content of the file (if ranges are not supported or if 1K header read from file)
       // stored as TBuffer instance
       this.fMaxRanges = settings.MaxRanges || 200; // maximal number of file ranges requested at once
@@ -2709,7 +2697,7 @@ class TFile {
          this.fUseStampPar = false;
       }
 
-      if (this.fURL.indexOf('file://') == 0) {
+      if (this.fURL.indexOf('file://') === 0) {
          this.fUseStampPar = false;
          this.fAcceptRanges = false;
       }
@@ -2736,15 +2724,20 @@ class TFile {
     * @return {Promise} with read buffers
     * @private */
    async readBuffer(place, filename, progress_callback) {
-
       if ((this.fFileContent !== null) && !filename && (!this.fAcceptRanges || this.fFileContent.canExtract(place)))
          return this.fFileContent.extract(place);
 
-      let file = this, fileurl = file.fURL, resolveFunc, rejectFunc,
-          promise = new Promise((resolve,reject) => { resolveFunc = resolve; rejectFunc = reject; }),
-          first = 0, last = 0, blobs = [], // array of requested segments
+      let resolveFunc, rejectFunc;
+
+      const file = this, first_block = (place[0] === 0) && (place.length === 2),
+            blobs = [], // array of requested segments
+            promise = new Promise((resolve, reject) => { resolveFunc = resolve; rejectFunc = reject; });
+
+      let fileurl = file.fURL,
+          first = 0, last = 0,
+          // eslint-disable-next-line prefer-const
           read_callback, first_req,
-          first_block = (place[0] === 0) && (place.length === 2), first_block_retry = false;
+          first_block_retry = false;
 
       if (isStr(filename) && filename) {
          const pos = fileurl.lastIndexOf('/');
@@ -2752,7 +2745,6 @@ class TFile {
       }
 
       function send_new_request(increment) {
-
          if (increment) {
             first = last;
             last = Math.min(first + file.fMaxRanges * 2, place.length);
@@ -2776,7 +2768,6 @@ class TFile {
             totalsz = Math.max(totalsz, 1e7);
 
          return createHttpRequest(fullurl, 'buf', read_callback, undefined, true).then(xhr => {
-
             if (file.fAcceptRanges) {
                xhr.setRequestHeader('Range', ranges);
                xhr.expected_size = Math.max(Math.round(1.1 * totalsz), totalsz + 200); // 200 if offset for the potential gzip
@@ -2791,17 +2782,16 @@ class TFile {
                }
                if (!sum_total) sum_total = 1;
 
-               let progress_offest = sum1 / sum_total, progress_this = (sum2 - sum1) / sum_total;
+               const progress_offest = sum1 / sum_total, progress_this = (sum2 - sum1) / sum_total;
                xhr.addEventListener('progress', oEvent => {
                   if (oEvent.lengthComputable)
                      progress_callback(progress_offest + progress_this * oEvent.loaded / oEvent.total);
                });
             } else if (first_block_retry && isFunc(xhr.addEventListener)) {
                xhr.addEventListener('progress', oEvent => {
-                  if (!oEvent.total) {
-                     console.warn(`Fail to get file size information`);
-                     // xhr.abort();
-                  } else if (oEvent.total > 5e7) {
+                  if (!oEvent.total)
+                     console.warn('Fail to get file size information');
+                  else if (oEvent.total > 5e7) {
                      console.error(`Try to load very large file ${oEvent.total} at once - abort`);
                      xhr.abort();
                   }
@@ -2814,7 +2804,6 @@ class TFile {
       }
 
       read_callback = function(res) {
-
          if (!res && first_block) {
             // if fail to read file with stamp parameter, try once again without it
             if (file.fUseStampPar) {
@@ -2840,7 +2829,7 @@ class TFile {
             }
 
             const kind = browser.isFirefox ? first_req.getResponseHeader('Server') : '';
-            if (isStr(kind) && kind.indexOf('SimpleHTTP') == 0) {
+            if (isStr(kind) && kind.indexOf('SimpleHTTP') === 0) {
                file.fMaxRanges = 1;
                file.fUseStampPar = false;
             }
@@ -2881,24 +2870,25 @@ class TFile {
 
          // if only single segment requested, return result as is
          if (last - first === 2) {
-            let b = new DataView(res);
+            const b = new DataView(res);
             if (place.length === 2) return resolveFunc(b);
             blobs.push(b);
             return send_new_request(true);
          }
 
          // object to access response data
-         let hdr = this.getResponseHeader('Content-Type'),
-            ismulti = isStr(hdr) && (hdr.indexOf('multipart') >= 0),
-            view = new DataView(res);
+         const hdr = this.getResponseHeader('Content-Type'),
+               ismulti = isStr(hdr) && (hdr.indexOf('multipart') >= 0),
+               view = new DataView(res);
 
          if (!ismulti) {
             // server may returns simple buffer, which combines all segments together
 
-            let hdr_range = this.getResponseHeader('Content-Range'), segm_start = 0, segm_last = -1;
+            const hdr_range = this.getResponseHeader('Content-Range');
+            let segm_start = 0, segm_last = -1;
 
             if (isStr(hdr_range) && hdr_range.indexOf('bytes') >= 0) {
-               let parts = hdr_range.slice(hdr_range.indexOf('bytes') + 6).split(/[\s-\/]+/);
+               const parts = hdr_range.slice(hdr_range.indexOf('bytes') + 6).split(/[\s-/]+/);
                if (parts.length === 3) {
                   segm_start = parseInt(parts[0]);
                   segm_last = parseInt(parts[1]);
@@ -2909,9 +2899,10 @@ class TFile {
             }
 
             let canbe_single_segment = (segm_start <= segm_last);
-            for (let n = first; n < last; n += 2)
+            for (let n = first; n < last; n += 2) {
                if ((place[n] < segm_start) || (place[n] + place[n + 1] - 1 > segm_last))
                   canbe_single_segment = false;
+            }
 
             if (canbe_single_segment) {
                for (let n = first; n < last; n += 2)
@@ -2930,18 +2921,17 @@ class TFile {
 
          // multipart messages requires special handling
 
-         let indx = hdr.indexOf('boundary='), boundary = '', n = first, o = 0;
+         const indx = hdr.indexOf('boundary=');
+         let boundary = '', n = first, o = 0;
          if (indx > 0) {
             boundary = hdr.slice(indx + 9);
-            if ((boundary[0] == '"') && (boundary[boundary.length - 1] == '"'))
+            if ((boundary[0] == '"') && (boundary[boundary.length - 1] === '"'))
                boundary = boundary.slice(1, boundary.length - 1);
             boundary = '--' + boundary;
-         } else {
+         } else
             console.error('Did not found boundary id in the response header');
-         }
 
          while (n < last) {
-
             let code1, code2 = view.getUint8(o), nline = 0, line = '',
                finish_header = false, segm_start = 0, segm_last = -1;
 
@@ -2949,35 +2939,32 @@ class TFile {
                code1 = code2;
                code2 = view.getUint8(o + 1);
 
-               if (((code1 == 13) && (code2 == 10)) || (code1 == 10)) {
-
-                  if ((line.length > 2) && (line.slice(0, 2) == '--') && (line !== boundary))
+               if (((code1 === 13) && (code2 === 10)) || (code1 === 10)) {
+                  if ((line.length > 2) && (line.slice(0, 2) === '--') && (line !== boundary))
                      return rejectFunc(Error(`Decode multipart message, expect boundary ${boundary} got ${line}`));
 
                   line = line.toLowerCase();
 
                   if ((line.indexOf('content-range') >= 0) && (line.indexOf('bytes') > 0)) {
-                     let parts = line.slice(line.indexOf('bytes') + 6).split(/[\s-\/]+/);
+                     const parts = line.slice(line.indexOf('bytes') + 6).split(/[\s-/]+/);
                      if (parts.length === 3) {
                         segm_start = parseInt(parts[0]);
                         segm_last = parseInt(parts[1]);
                         if (!Number.isInteger(segm_start) || !Number.isInteger(segm_last) || (segm_start > segm_last)) {
                            segm_start = 0; segm_last = -1;
                         }
-                     } else {
+                     } else
                         console.error(`Fail to decode content-range ${line} ${parts}`);
-                     }
                   }
 
                   if ((nline > 1) && (line.length === 0)) finish_header = true;
 
                   nline++; line = '';
-                  if (code1 != 10) {
+                  if (code1 !== 10) {
                      o++; code2 = view.getUint8(o + 1);
                   }
-               } else {
+               } else
                   line += String.fromCharCode(code1);
-               }
                o++;
             }
 
@@ -3012,7 +2999,6 @@ class TFile {
     * @desc Function only can be used for already read directories, which are preserved in the memory
     * @private */
    getDir(dirname, cycle) {
-
       if ((cycle === undefined) && isStr(dirname)) {
          const pos = dirname.lastIndexOf(';');
          if (pos > 0) { cycle = parseInt(dirname.slice(pos + 1)); dirname = dirname.slice(0, pos); }
@@ -3020,7 +3006,7 @@ class TFile {
 
       for (let j = 0; j < this.fDirectories.length; ++j) {
          const dir = this.fDirectories[j];
-         if (dir.dir_name != dirname) continue;
+         if (dir.dir_name !== dirname) continue;
          if ((cycle !== undefined) && (dir.dir_cycle !== cycle)) continue;
          return dir;
       }
@@ -3031,13 +3017,12 @@ class TFile {
     * @desc If only_direct not specified, returns Promise while key keys must be read first from the directory
     * @private */
    getKey(keyname, cycle, only_direct) {
-
-      if (typeof cycle != 'number') cycle = -1;
+      if (typeof cycle !== 'number') cycle = -1;
       let bestkey = null;
       for (let i = 0; i < this.fKeys.length; ++i) {
          const key = this.fKeys[i];
          if (!key || (key.fName !== keyname)) continue;
-         if (key.fCycle == cycle) { bestkey = key; break; }
+         if (key.fCycle === cycle) { bestkey = key; break; }
          if ((cycle < 0) && (!bestkey || (key.fCycle > bestkey.fCycle))) bestkey = key;
       }
       if (bestkey)
@@ -3046,13 +3031,13 @@ class TFile {
       let pos = keyname.lastIndexOf('/');
       // try to handle situation when object name contains slashes (bad practice anyway)
       while (pos > 0) {
-         let dirname = keyname.slice(0, pos),
-             subname = keyname.slice(pos + 1),
-             dir = this.getDir(dirname);
+         const dirname = keyname.slice(0, pos),
+               subname = keyname.slice(pos + 1),
+               dir = this.getDir(dirname);
 
          if (dir) return dir.getKey(subname, cycle, only_direct);
 
-         let dirkey = this.getKey(dirname, undefined, true);
+         const dirkey = this.getKey(dirname, undefined, true);
          if (dirkey && !only_direct && (dirkey.fClassName.indexOf(clTDirectory) == 0))
             return this.readObject(dirname).then(newdir => newdir.getKey(subname, cycle));
 
@@ -3065,21 +3050,18 @@ class TFile {
    /** @summary Read and inflate object buffer described by its key
     * @private */
    async readObjBuffer(key) {
-
       return this.readBuffer([key.fSeekKey + key.fKeylen, key.fNbytes - key.fKeylen]).then(blob1 => {
-
          if (key.fObjlen <= key.fNbytes - key.fKeylen) {
-            let buf = new TBuffer(blob1, 0, this);
+            const buf = new TBuffer(blob1, 0, this);
             buf.fTagOffset = key.fKeylen;
             return buf;
          }
 
          return R__unzip(blob1, key.fObjlen).then(objbuf => {
             if (!objbuf) return Promise.reject(Error('Fail to UNZIP buffer'));
-            let buf = new TBuffer(objbuf, 0, this);
+            const buf = new TBuffer(objbuf, 0, this);
             buf.fTagOffset = key.fKeylen;
             return buf;
-
          });
       });
    }
@@ -3095,29 +3077,27 @@ class TFile {
      * let obj = await f.readObject('hpxpy;1');
      * console.log(`Read object of type ${obj._typename}`); */
    async readObject(obj_name, cycle, only_dir) {
-
-      let pos = obj_name.lastIndexOf(';');
+      const pos = obj_name.lastIndexOf(';');
       if (pos > 0) {
          cycle = parseInt(obj_name.slice(pos + 1));
          obj_name = obj_name.slice(0, pos);
       }
 
-      if (typeof cycle != 'number') cycle = -1;
+      if (typeof cycle !== 'number') cycle = -1;
       // remove leading slashes
-      while (obj_name.length && (obj_name[0] == '/')) obj_name = obj_name.slice(1);
+      while (obj_name.length && (obj_name[0] === '/')) obj_name = obj_name.slice(1);
 
       // one uses Promises while in some cases we need to
       // read sub-directory to get list of keys
       // in such situation calls are asynchrone
       return this.getKey(obj_name, cycle).then(key => {
-
-         if ((obj_name == nameStreamerInfo) && (key.fClassName == clTList))
+         if ((obj_name === nameStreamerInfo) && (key.fClassName === clTList))
             return this.fStreamerInfos;
 
          let isdir = false;
 
-         if ((key.fClassName == clTDirectory || key.fClassName == clTDirectoryFile)) {
-            let dir = this.getDir(obj_name, cycle);
+         if ((key.fClassName === clTDirectory || key.fClassName === clTDirectoryFile)) {
+            const dir = this.getDir(obj_name, cycle);
             if (dir) return dir;
             isdir = true;
          }
@@ -3126,14 +3106,13 @@ class TFile {
             return Promise.reject(Error(`Key ${obj_name} is not directory}`));
 
          return this.readObjBuffer(key).then(buf => {
-
             if (isdir) {
-               let dir = new TDirectory(this, obj_name, cycle);
+               const dir = new TDirectory(this, obj_name, cycle);
                dir.fTitle = key.fTitle;
                return dir.readKeys(buf);
             }
 
-            let obj = {};
+            const obj = {};
             buf.mapObject(1, obj); // tag object itself with id == 1
             buf.classStreamer(obj, key.fClassName);
 
@@ -3148,12 +3127,11 @@ class TFile {
    /** @summary read formulas from the file and add them to TF1/TF2 objects
      * @private */
    async _readFormulas(tf1) {
-
-      let arr = [];
-
-      for (let indx = 0; indx < this.fKeys.length; ++indx)
-         if (this.fKeys[indx].fClassName == 'TFormula')
+      const arr = [];
+      for (let indx = 0; indx < this.fKeys.length; ++indx) {
+         if (this.fKeys[indx].fClassName === 'TFormula')
             arr.push(this.readObject(this.fKeys[indx].fName, this.fKeys[indx].fCycle));
+      }
 
       return Promise.all(arr).then(formulas => {
          formulas.forEach(obj => tf1.addFormula(obj));
@@ -3166,7 +3144,7 @@ class TFile {
    extractStreamerInfos(buf) {
       if (!buf) return;
 
-      let lst = {};
+      const lst = {};
       buf.mapObject(1, lst);
       buf.classStreamer(lst, clTList);
 
@@ -3178,25 +3156,27 @@ class TFile {
          internals.addStreamerInfosForPainter(lst);
 
       for (let k = 0; k < lst.arr.length; ++k) {
-         let si = lst.arr[k];
+         const si = lst.arr[k];
          if (!si.fElements) continue;
          for (let l = 0; l < si.fElements.arr.length; ++l) {
-            let elem = si.fElements.arr[l];
-
+            const elem = si.fElements.arr[l];
             if (!elem.fTypeName || !elem.fType) continue;
 
             let typ = elem.fType, typname = elem.fTypeName;
 
             if (typ >= 60) {
-               if ((typ === kStreamer) && (elem._typename == clTStreamerSTL) && elem.fSTLtype && elem.fCtype && (elem.fCtype < 20)) {
-                  let prefix = (StlNames[elem.fSTLtype] || 'undef') + '<';
-                  if ((typname.indexOf(prefix) === 0) && (typname[typname.length - 1] == '>')) {
+               if ((typ === kStreamer) && (elem._typename === clTStreamerSTL) && elem.fSTLtype && elem.fCtype && (elem.fCtype < 20)) {
+                  const prefix = (StlNames[elem.fSTLtype] || 'undef') + '<';
+                  if ((typname.indexOf(prefix) === 0) && (typname[typname.length - 1] === '>')) {
                      typ = elem.fCtype;
                      typname = typname.slice(prefix.length, typname.length - 1).trim();
 
-                     if ((elem.fSTLtype === kSTLmap) || (elem.fSTLtype === kSTLmultimap))
-                        if (typname.indexOf(',') > 0) typname = typname.slice(0, typname.indexOf(',')).trim();
-                        else continue;
+                     if ((elem.fSTLtype === kSTLmap) || (elem.fSTLtype === kSTLmultimap)) {
+                        if (typname.indexOf(',') > 0)
+                           typname = typname.slice(0, typname.indexOf(',')).trim();
+                        else
+                           continue;
+                     }
                   }
                }
                if (typ >= 60) continue;
@@ -3220,11 +3200,9 @@ class TFile {
    /** @summary Read file keys
      * @private */
    async readKeys() {
-
       // with the first readbuffer we read bigger amount to create header cache
       return this.readBuffer([0, 1024]).then(blob => {
-         let buf = new TBuffer(blob, 0, this);
-
+         const buf = new TBuffer(blob, 0, this);
          if (buf.substring(0, 4) !== 'root')
             return Promise.reject(Error(`Not a ROOT file ${this.fURL}`));
 
@@ -3232,7 +3210,7 @@ class TFile {
 
          this.fVersion = buf.ntou4();
          this.fBEGIN = buf.ntou4();
-         if (this.fVersion < 1000000) { //small file
+         if (this.fVersion < 1000000) { // small file
             this.fEND = buf.ntou4();
             this.fSeekFree = buf.ntou4();
             this.fNbytesFree = buf.ntou4();
@@ -3262,7 +3240,7 @@ class TFile {
          if (!this.fNbytesName || this.fNbytesName > 100000)
             return Promise.reject(Error(`Cannot read directory info of the file ${this.fURL}`));
 
-         //*-*-------------Read directory info
+         // *-*-------------Read directory info
          let nbytes = this.fNbytesName + 22;
          nbytes += 4;  // fDatimeC.Sizeof();
          nbytes += 4;  // fDatimeM.Sizeof();
@@ -3273,8 +3251,7 @@ class TFile {
          // this part typically read from the header, no need to optimize
          return this.readBuffer([this.fBEGIN, Math.max(300, nbytes)]);
       }).then(blob3 => {
-
-         let buf3 = new TBuffer(blob3, 0, this);
+         const buf3 = new TBuffer(blob3, 0, this);
 
          // keep only title from TKey data
          this.fTitle = buf3.readTKey().fTitle;
@@ -3290,7 +3267,6 @@ class TFile {
          // read with same request keys and streamer infos
          return this.readBuffer([this.fSeekKeys, this.fNbytesKeys, this.fSeekInfo, this.fNbytesInfo]);
       }).then(blobs => {
-
          const buf4 = new TBuffer(blobs[0], 0, this);
 
          buf4.readTKey(); //
@@ -3339,13 +3315,15 @@ class TFile {
 
          for (let i = 0; i < len; ++i) {
             si = arr[i];
-            if (si.fCheckSum === checksum)
-               return cache[checksum] = si;
+            if (si.fCheckSum === checksum) {
+               cache[checksum] = si;
+               return si;
+            }
          }
          cache[checksum] = null; // checksum didnot found, do not try again
       } else {
          for (let i = 0; i < len; ++i) {
-            let si = arr[i];
+            const si = arr[i];
             if ((si.fName === clname) && ((si.fClassVersion === clversion) || (clversion === undefined))) return si;
          }
       }
@@ -3357,9 +3335,8 @@ class TFile {
      * @desc From the list of streamers or generate it from the streamer infos and add it to the list
      * @private */
    getStreamer(clname, ver, s_i) {
-
       // these are special cases, which are handled separately
-      if (clname == clTQObject || clname == clTBasket) return null;
+      if (clname === clTQObject || clname === clTBasket) return null;
 
       let streamer, fullname = clname;
 
