@@ -24,6 +24,7 @@ module.exports = {
       "no-multiple-empty-lines": "off",
       "object-property-newline": "off",
       "promise/param-names": ["warn", { resolvePattern: "^resolve*", rejectPattern: "^reject*" } ],
-      "no-new-func": "off"
+      "no-new-func": "off",
+      "padded-blocks": ["warn", { "blocks": "never", "classes": "always", "switches": "never" }]
   }
 };
