@@ -2601,7 +2601,7 @@ async function treeDraw(tree, args) {
 
    if (args.branch) {
       if (!selector.drawOnlyBranch(tree, args.branch, args.expr, args))
-        return Promise.reject(Error('Fail to create draw expression ${args.expr} for branch ${args.branch.fName}'));
+        return Promise.reject(Error(`Fail to create draw expression ${args.expr} for branch ${args.branch.fName}`));
    } else {
       if (!selector.parseDrawExpression(tree, args))
           return Promise.reject(Error(`Fail to create draw expression ${args.expr}`));
