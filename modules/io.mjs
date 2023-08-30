@@ -237,10 +237,10 @@ CustomStreamers = {
       element.fSize = buf.ntou4();
       element.fArrayLength = buf.ntou4();
       element.fArrayDim = buf.ntou4();
-      element.fMaxIndex = buf.readFastArray((ver == 1) ? buf.ntou4() : 5, kUInt);
+      element.fMaxIndex = buf.readFastArray((ver === 1) ? buf.ntou4() : 5, kUInt);
       element.fTypeName = buf.readTString();
 
-      if ((element.fType === kUChar) && ((element.fTypeName == 'Bool_t') || (element.fTypeName == 'bool')))
+      if ((element.fType === kUChar) && ((element.fTypeName === 'Bool_t') || (element.fTypeName === 'bool')))
          element.fType = kBool;
 
       element.fXmin = element.fXmax = element.fFactor = 0;
@@ -384,7 +384,7 @@ CustomStreamers = {
    },
 
    RooAbsBinning(buf, obj) {
-      buf.classStreamer(obj, (buf.last_read_version == 1) ? clTObject : clTNamed);
+      buf.classStreamer(obj, (buf.last_read_version === 1) ? clTObject : clTNamed);
       buf.classStreamer(obj, 'RooPrintable');
    },
 
@@ -1311,10 +1311,10 @@ function addClassMethods(clname, streamer) {
  */
 
 /* constant parameters */
-const zip_WSIZE = 32768;       // Sliding Window size
+const zip_WSIZE = 32768,       // Sliding Window size
 
 /* constant tables (inflate) */
-const zip_MASK_BITS = [
+zip_MASK_BITS = [
    0x0000,
    0x0001, 0x0003, 0x0007, 0x000f, 0x001f, 0x003f, 0x007f, 0x00ff,
    0x01ff, 0x03ff, 0x07ff, 0x0fff, 0x1fff, 0x3fff, 0x7fff, 0xffff],
@@ -1353,10 +1353,11 @@ const zip_MASK_BITS = [
 //    zip_INBUF_EXTRA = 64,     // Extra buffer
 
 function ZIP_inflate(arr, tgt) {
-
    /* variables (inflate) */
-   let zip_slide = new Array(2 * zip_WSIZE),
-       zip_wp = 0,                // current position in slide
+   const zip_slide = new Array(2 * zip_WSIZE),
+         zip_inflate_data = arr,
+         zip_inflate_datalen = arr.byteLength;
+   let zip_wp = 0,                // current position in slide
        zip_fixed_tl = null,      // inflate static
        zip_fixed_td,             // inflate static
        zip_fixed_bl, zip_fixed_bd,   // inflate static
@@ -1368,8 +1369,6 @@ function ZIP_inflate(arr, tgt) {
        zip_copy_dist = 0,
        zip_tl = null, zip_td,    // literal/length and distance decoder tables
        zip_bl, zip_bd,           // number of bits decoded by tl and td
-       zip_inflate_data = arr,
-       zip_inflate_datalen = arr.byteLength,
        zip_inflate_pos = 0;
 
    function zip_NEEDBITS(n) {
@@ -1390,13 +1389,12 @@ function ZIP_inflate(arr, tgt) {
    }
 
    /* objects (inflate) */
-   function zip_HuftBuild(b,     // code lengths in bits (all assumed <= BMAX)
+   function ZIP_HuftBuild(b,     // code lengths in bits (all assumed <= BMAX)
                           n,     // number of codes (assumed <= N_MAX)
                           s,     // number of simple-valued codes (0..s-1)
                           d,     // list of base values for non-simple codes
                           e,     // list of extra bits for non-simple codes
-                          mm ) { // maximum lookup bits
-
+                          mm) {  // maximum lookup bits
       this.status = 0;     // 0: success, 1: incomplete table, 2: bad input
       this.root = null;    // (zip_HuftList) starting table
       this.m = 0;          // maximum lookup bits, returns actual
@@ -1411,18 +1409,17 @@ function ZIP_inflate(arr, tgt) {
       decoded. */
 
       const BMAX = 16,      // maximum bit length of any code
-            N_MAX = 288;    // maximum number of codes in any set
-      let c = Array(BMAX+1).fill(0),  // bit length count table
-          lx = Array(BMAX+1).fill(0), // stack of bits per table
-          u = Array(BMAX).fill(null), // zip_HuftNode[BMAX][]  table stack
-          v = Array(N_MAX).fill(0), // values in order of bit length
-          x = Array(BMAX+1).fill(0),// bit offsets, then code stack
-          r = { e: 0, b: 0, n: 0, t: null }, // new zip_HuftNode(), // table entry for structure assignment
-          rr = null, // temporary variable, use in assignment
-          el = (n > 256) ? b[256] : BMAX, // set length of EOB code, if any
+            N_MAX = 288,    // maximum number of codes in any set
+            c = Array(BMAX+1).fill(0),  // bit length count table
+            lx = Array(BMAX+1).fill(0), // stack of bits per table
+            u = Array(BMAX).fill(null), // zip_HuftNode[BMAX][]  table stack
+            v = Array(N_MAX).fill(0), // values in order of bit length
+            x = Array(BMAX+1).fill(0),// bit offsets, then code stack
+            r = { e: 0, b: 0, n: 0, t: null }, // new zip_HuftNode(), // table entry for structure assignment
+            el = (n > 256) ? b[256] : BMAX; // set length of EOB code, if any
+       let rr = null, // temporary variable, use in assignment
           a,         // counter for codes of length k
           f,         // i repeats in table every f entries
-          g,         // maximum code length
           h,         // table level
           j,         // counter
           k,         // number of bits in current code
@@ -1438,11 +1435,11 @@ function ZIP_inflate(arr, tgt) {
           i = n;         // counter, current code
 
       // Generate counts for each bit length
-      do {
+      do
          c[p[pidx++]]++; // assume all entries <= BMAX
-      } while (--i > 0);
+      while (--i > 0);
 
-      if (c[0] == n) {   // null input--all zero length codes
+      if (c[0] === n) {   // null input--all zero length codes
          this.root = null;
          this.m = 0;
          this.status = 0;
@@ -1451,15 +1448,15 @@ function ZIP_inflate(arr, tgt) {
 
       // Find minimum and maximum length, bound *m by those
       for (j = 1; j <= BMAX; ++j)
-         if (c[j] != 0)
-            break;
+         if (c[j] !== 0) break;
+
       k = j;         // minimum code length
       if (mm < j)
          mm = j;
-      for (i = BMAX; i != 0; --i)
-         if (c[i] != 0)
-            break;
-      g = i;         // maximum code length
+      for (i = BMAX; i !== 0; --i)
+         if (c[i] !== 0) break;
+
+      const g = i;         // maximum code length
       if (mm > i)
          mm = i;
 
@@ -1490,7 +1487,7 @@ function ZIP_inflate(arr, tgt) {
       p = b; pidx = 0;
       i = 0;
       do {
-         if ((j = p[pidx++]) != 0)
+         if ((j = p[pidx++]) !== 0)
             v[x[j]++] = i;
       } while (++i < n);
       n = x[g];         // set n to length of v
@@ -1585,9 +1582,8 @@ function ZIP_inflate(arr, tgt) {
             i ^= j;
 
             // backup over finished tables
-            while ((i & ((1 << w) - 1)) != x[h]) {
+            while ((i & ((1 << w) - 1)) !== x[h])
                w -= lx[h--];      // don't need to update q
-            }
          }
       }
 
@@ -1595,7 +1591,7 @@ function ZIP_inflate(arr, tgt) {
       this.m = lx[1];
 
       /* Return true (1) if we were given an incomplete table */
-      this.status = ((y != 0 && g != 1) ? 1 : 0);
+      this.status = ((y !== 0 && g !== 1) ? 1 : 0);
      /* end of constructor */
 
       return this;
@@ -1604,7 +1600,7 @@ function ZIP_inflate(arr, tgt) {
    /* routines (inflate) */
 
    function zip_inflate_codes(buff, off, size) {
-      if (size == 0) return 0;
+      if (size === 0) return 0;
 
       /* inflate (decompress) the codes in a deflated (compressed) block.
          Return an error code or zero if it all goes ok. */
@@ -1619,7 +1615,7 @@ function ZIP_inflate(arr, tgt) {
          t = zip_tl.list[zip_GETBITS(zip_bl)];
          e = t.e;
          while (e > 16) {
-            if (e == 99)
+            if (e === 99)
                return -1;
             zip_DUMPBITS(t.b);
             e -= 16;
@@ -1629,16 +1625,16 @@ function ZIP_inflate(arr, tgt) {
          }
          zip_DUMPBITS(t.b);
 
-         if (e == 16) {     // then it's a literal
+         if (e === 16) {     // then it's a literal
             zip_wp &= zip_WSIZE - 1;
             buff[off + n++] = zip_slide[zip_wp++] = t.n;
-            if (n == size)
+            if (n === size)
                return size;
             continue;
          }
 
          // exit if end of block
-         if (e == 15)
+         if (e === 15)
             break;
 
          // it's an EOB or a length
@@ -1654,7 +1650,7 @@ function ZIP_inflate(arr, tgt) {
          e = t.e;
 
          while (e > 16) {
-            if (e == 99)
+            if (e === 99)
                return -1;
             zip_DUMPBITS(t.b);
             e -= 16;
@@ -1675,7 +1671,7 @@ function ZIP_inflate(arr, tgt) {
             buff[off + n++] = zip_slide[zip_wp++] = zip_slide[zip_copy_dist++];
          }
 
-         if (n == size)
+         if (n === size)
             return size;
       }
 
@@ -1695,7 +1691,7 @@ function ZIP_inflate(arr, tgt) {
       n = zip_GETBITS(16);
       zip_DUMPBITS(16);
       zip_NEEDBITS(16);
-      if (n != ((~zip_bit_buf) & 0xffff))
+      if (n !== ((~zip_bit_buf) & 0xffff))
          return -1;        // error in compressed data
       zip_DUMPBITS(16);
 
@@ -1711,7 +1707,7 @@ function ZIP_inflate(arr, tgt) {
          zip_DUMPBITS(8);
       }
 
-      if (zip_copy_leng == 0)
+      if (zip_copy_leng === 0)
          zip_method = -1; // done
       return n;
    }
@@ -1723,14 +1719,13 @@ function ZIP_inflate(arr, tgt) {
 
       // if first time, set up tables for fixed blocks
       if (zip_fixed_tl == null) {
-
          // literal table
-         let l = Array(288).fill(8, 0, 144).fill(9, 144, 256).fill(7, 256, 280).fill(8, 280, 288);
+         const l = Array(288).fill(8, 0, 144).fill(9, 144, 256).fill(7, 256, 280).fill(8, 280, 288);
          // make a complete, but wrong code set
          zip_fixed_bl = 7;
 
-         let h = new zip_HuftBuild(l, 288, 257, zip_cplens, zip_cplext, zip_fixed_bl);
-         if (h.status != 0)
+         let h = new ZIP_HuftBuild(l, 288, 257, zip_cplens, zip_cplext, zip_fixed_bl);
+         if (h.status !== 0)
             throw new Error('HufBuild error: ' + h.status);
          zip_fixed_tl = h.root;
          zip_fixed_bl = h.m;
@@ -1739,7 +1734,7 @@ function ZIP_inflate(arr, tgt) {
          l.fill(5, 0, 30); // make an incomplete code set
          zip_fixed_bd = 5;
 
-         h = new zip_HuftBuild(l, 30, 0, zip_cpdist, zip_cpdext, zip_fixed_bd);
+         h = new ZIP_HuftBuild(l, 30, 0, zip_cpdist, zip_cpdext, zip_fixed_bd);
          if (h.status > 1) {
             zip_fixed_tl = null;
             throw new Error('HufBuild error: '+h.status);
@@ -1757,12 +1752,11 @@ function ZIP_inflate(arr, tgt) {
 
    function zip_inflate_dynamic(buff, off, size) {
       // decompress an inflated type 2 (dynamic Huffman codes) block.
-      let i,j,    // temporary variables
+      let i, j,  // temporary variables
           l,     // last length
-          n,     // number of lengths to get
           t,     // (zip_HuftNode) literal/length code table
-          h,     // (zip_HuftBuild)
-          ll = new Array(286+30).fill(0); // literal/length and distance code lengths
+          h;     // (ZIP_HuftBuild)
+      const ll = new Array(286+30).fill(0); // literal/length and distance code lengths
 
       // read in table lengths
       zip_NEEDBITS(5);
@@ -1788,15 +1782,15 @@ function ZIP_inflate(arr, tgt) {
 
       // build decoding table for trees--single level, 7 bit lookup
       zip_bl = 7;
-      h = new zip_HuftBuild(ll, 19, 19, null, null, zip_bl);
-      if (h.status != 0)
+      h = new ZIP_HuftBuild(ll, 19, 19, null, null, zip_bl);
+      if (h.status !== 0)
          return -1;  // incomplete code set
 
       zip_tl = h.root;
       zip_bl = h.m;
 
       // read in literal and distance code lengths
-      n = nl + nd;
+      const n = nl + nd;   // number of lengths to get
       i = l = 0;
       while (i < n) {
          zip_NEEDBITS(zip_bl);
@@ -1806,7 +1800,7 @@ function ZIP_inflate(arr, tgt) {
          j = t.n;
          if (j < 16) // length of code in bits (0..15)
             ll[i++] = l = j; // save last length in l
-         else if (j == 16) {   // repeat last length 3 to 6 times
+         else if (j === 16) {   // repeat last length 3 to 6 times
             zip_NEEDBITS(2);
             j = 3 + zip_GETBITS(2);
             zip_DUMPBITS(2);
@@ -1814,7 +1808,7 @@ function ZIP_inflate(arr, tgt) {
                return -1;
             while (j-- > 0)
                ll[i++] = l;
-         } else if (j == 17) { // 3 to 10 zero length codes
+         } else if (j === 17) { // 3 to 10 zero length codes
             zip_NEEDBITS(3);
             j = 3 + zip_GETBITS(3);
             zip_DUMPBITS(3);
@@ -1837,10 +1831,10 @@ function ZIP_inflate(arr, tgt) {
 
       // build the decoding tables for literal/length and distance codes
       zip_bl = 9; // zip_lbits;
-      h = new zip_HuftBuild(ll, nl, 257, zip_cplens, zip_cplext, zip_bl);
-      if (zip_bl == 0)  // no literals or lengths
+      h = new ZIP_HuftBuild(ll, nl, 257, zip_cplens, zip_cplext, zip_bl);
+      if (zip_bl === 0)  // no literals or lengths
          h.status = 1;
-      if (h.status != 0) {
+      if (h.status !== 0) {
          // if (h.status == 1); // **incomplete literal tree**
          return -1;     // incomplete code set
       }
@@ -1850,18 +1844,18 @@ function ZIP_inflate(arr, tgt) {
       for (i = 0; i < nd; ++i)
          ll[i] = ll[i + nl];
       zip_bd = 6; // zip_dbits;
-      h = new zip_HuftBuild(ll, nd, 0, zip_cpdist, zip_cpdext, zip_bd);
+      h = new ZIP_HuftBuild(ll, nd, 0, zip_cpdist, zip_cpdext, zip_bd);
       zip_td = h.root;
       zip_bd = h.m;
 
-      if (zip_bd == 0 && nl > 257) {   // lengths but no distances
+      if (zip_bd === 0 && nl > 257) {   // lengths but no distances
          // **incomplete distance tree**
          return -1;
       }
 
-      //if (h.status == 1); // **incomplete distance tree**
+      // if (h.status == 1); // **incomplete distance tree**
 
-      if (h.status != 0)
+      if (h.status !== 0)
          return -1;
 
       // decompress until an end-of-block code
@@ -1873,11 +1867,11 @@ function ZIP_inflate(arr, tgt) {
       let n = 0, i;
 
       while (n < size) {
-         if (zip_eof && zip_method == -1)
+         if (zip_eof && zip_method === -1)
             return n;
 
          if (zip_copy_leng > 0) {
-            if (zip_method != 0 /*zip_STORED_BLOCK*/) {
+            if (zip_method !== 0 /* zip_STORED_BLOCK */) {
                // STATIC_TREES or DYN_TREES
                while (zip_copy_leng > 0 && n < size) {
                   --zip_copy_leng;
@@ -1894,20 +1888,20 @@ function ZIP_inflate(arr, tgt) {
                   buff[off + n++] = zip_slide[zip_wp++] = zip_GETBITS(8);
                   zip_DUMPBITS(8);
                }
-               if (zip_copy_leng == 0)
+               if (zip_copy_leng === 0)
                   zip_method = -1; // done
             }
-            if (n == size)
+            if (n === size)
                return n;
          }
 
-         if (zip_method == -1) {
+         if (zip_method === -1) {
             if (zip_eof)
                break;
 
             // read in last block bit
             zip_NEEDBITS(1);
-            if (zip_GETBITS(1) != 0)
+            if (zip_GETBITS(1) !== 0)
                zip_eof = true;
             zip_DUMPBITS(1);
 
@@ -1943,7 +1937,7 @@ function ZIP_inflate(arr, tgt) {
                break;
          }
 
-         if (i == -1)
+         if (i === -1)
             return zip_eof ? 0 : -1;
          n += i;
       }
@@ -1951,9 +1945,8 @@ function ZIP_inflate(arr, tgt) {
    }
 
    let i, cnt = 0;
-   while ((i = zip_inflate_internal(tgt, cnt, Math.min(1024, tgt.byteLength-cnt))) > 0) {
+   while ((i = zip_inflate_internal(tgt, cnt, Math.min(1024, tgt.byteLength-cnt))) > 0)
       cnt += i;
-   }
 
    return cnt;
 } // function ZIP_inflate
@@ -1980,8 +1973,9 @@ function LZ4_uncompress(input, output, sIdx, eIdx) {
    sIdx = sIdx || 0;
    eIdx = eIdx || (input.length - sIdx);
    // Process each sequence in the incoming data
-   for (let i = sIdx, n = eIdx, j = 0; i < n;) {
-      let token = input[i++];
+   let j = 0;
+   for (let i = sIdx, n = eIdx; i < n;) {
+      const token = input[i++];
 
       // Literals
       let literals_length = (token >> 4);
@@ -1994,7 +1988,7 @@ function LZ4_uncompress(input, output, sIdx, eIdx) {
          }
 
          // Copy the literals
-         let end = i + literals_length;
+         const end = i + literals_length;
          while (i < end) output[j++] = input[i++];
 
          // End of buffer?
@@ -2029,7 +2023,6 @@ function LZ4_uncompress(input, output, sIdx, eIdx) {
   * @return {Promise} with unzipped content
   * @private */
 async function R__unzip(arr, tgtsize, noalert, src_shift) {
-
    const HDRSIZE = 9, totallen = arr.byteLength,
         getChar = o => String.fromCharCode(arr.getUint8(o)),
         getCode = o => arr.getUint8(o);
@@ -2037,9 +2030,7 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
    let curr = src_shift || 0, fullres = 0, tgtbuf = null;
 
    const nextPortion = () => {
-
       while (fullres < tgtsize) {
-
          let fmt = 'unknown', off = 0, CHKSUM = 0;
 
          if (curr + HDRSIZE >= totallen) {
@@ -2064,9 +2055,7 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
 
          if (fmt === 'ZSTD') {
             const handleZsdt = ZstdCodec => {
-
                return new Promise((resolveFunc, rejectFunc) => {
-
                   ZstdCodec.run(zstd => {
                      // const simple = new zstd.Simple();
                      const streaming = new zstd.Streaming();
@@ -2082,8 +2071,8 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
                         return rejectFunc(Error('ZSTD result with byteOffset != 0'));
 
                      // shortcut when exactly required data unpacked
-                     //if ((tgtsize == reslen) && data2.buffer)
-                     //   resolveFunc(new DataView(data2.buffer));
+                     // if ((tgtsize == reslen) && data2.buffer)
+                     //    resolveFunc(new DataView(data2.buffer));
 
                      // need to copy data while zstd does not provide simple way of doing it
                      if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
