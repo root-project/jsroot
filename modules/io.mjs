@@ -2122,6 +2122,7 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
   */
 
 class TBuffer {
+
    constructor(arr, pos, file, length) {
       this._typename = 'TBuffer';
       this.arr = arr;
@@ -2564,6 +2565,7 @@ class TBuffer {
 
       return obj;
    }
+
 } // class TBuffer
 
 // ==============================================================================
@@ -2575,6 +2577,7 @@ class TBuffer {
   */
 
 class TDirectory {
+
    /** @summary constructor */
    constructor(file, dirname, cycle) {
       this.fFile = file;
@@ -2647,6 +2650,7 @@ class TDirectory {
          return this;
       });
    }
+
 } // class TDirectory
 
 /**
@@ -2656,6 +2660,7 @@ class TDirectory {
   */
 
 class TFile {
+
    constructor(url) {
       this._typename = clTFile;
       this.fEND = 0;
@@ -3443,6 +3448,7 @@ class TFile {
       this.fNbytesInfo = 0;
       this.fTagOffset = 0;
    }
+
 } // class TFile
 
 
@@ -3608,6 +3614,7 @@ function readMapElement(buf) {
   */
 
 class TLocalFile extends TFile {
+
    constructor(file) {
       super(null);
       this.fUseStampPar = false;
@@ -3647,6 +3654,7 @@ class TLocalFile extends TFile {
          reader.readAsArrayBuffer(file.slice(place[0], place[0] + place[1]));
       });
    }
+
 } // class TLocalFile
 
 /**
@@ -3658,6 +3666,7 @@ class TLocalFile extends TFile {
   */
 
 class TNodejsFile extends TFile {
+
    constructor(filename) {
       super(null);
       this.fUseStampPar = false;
@@ -3715,6 +3724,7 @@ class TNodejsFile extends TFile {
          this.fs.read(this.fd, Buffer.alloc(place[1]), 0, place[1], place[0], readfunc);
       });
    }
+
 } // class TNodejsFile
 
 /**
@@ -3731,10 +3741,12 @@ class TNodejsFile extends TFile {
   */
 
 class FileProxy {
+
    async openFile() { return false; }
    getFileName() { return ''; }
    getFileSize() { return 0; }
    async readBuffer(/* pos, sz */) { return null; }
+
 } // class FileProxy
 
 /**
@@ -3746,6 +3758,7 @@ class FileProxy {
   */
 
 class TProxyFile extends TFile {
+
    constructor(proxy) {
       super(null);
       this.fUseStampPar = false;
@@ -3785,6 +3798,7 @@ class TProxyFile extends TFile {
          arr.push(this.proxy.readBuffer(place[k], place[k+1]));
       return Promise.all(arr);
    }
+
 } // class TProxyFile
 
 

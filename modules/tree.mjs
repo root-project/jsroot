@@ -29,6 +29,7 @@ const kLeafNode = 0, kBaseClassNode = 1, kObjectNode = 2, kClonesNode = 3,
  */
 
 class TSelector {
+
    /** @summary constructor */
    constructor() {
       this._branches = []; // list of branches to read
@@ -107,7 +108,7 @@ function checkArrayPrototype(arr, check_content) {
    if (!isObject(arr)) return 0;
 
    const arr_kind = isArrayProto(Object.prototype.toString.apply(arr));
-   if (!check_content || (arr_kind != 1)) return arr_kind;
+   if (!check_content || (arr_kind !== 1)) return arr_kind;
 
    let typ, plain = true;
    for (let k = 0; k < arr.length; ++k) {
@@ -127,6 +128,7 @@ function checkArrayPrototype(arr, check_content) {
  */
 
 class ArrayIterator {
+
    /** @summary constructor */
    constructor(arr, select, tgtobj) {
       this.object = arr;
@@ -388,6 +390,7 @@ function getNumBranches(tree) {
  */
 
 class TDrawVariable {
+
    /** @summary constructor */
    constructor (globals) {
       this.globals = globals;
@@ -488,7 +491,7 @@ class TDrawVariable {
                while ((pos2 < code.length) && is_next_symbol(code[pos2])) pos2++;
 
                // this is looks like function call - do not need to extract member with
-               if (code[pos2] == '(') { pos2 = prev - 1; break; }
+               if (code[pos2] === '(') { pos2 = prev - 1; break; }
 
                // this is selection of member, but probably we need to activate iterator for ROOT collection
                if ((arriter.length === 0) && br) {
@@ -650,6 +653,7 @@ class TDrawVariable {
 
    /** @summary Append array to the buffer */
    appendArray(tgtarr) { this.buf = this.buf.concat(tgtarr[this.branches[0]]); }
+
 } // class TDrawVariable
 
 
@@ -660,6 +664,7 @@ class TDrawVariable {
  */
 
 class TDrawSelector extends TSelector {
+
    /** @summary constructor */
    constructor() {
       super();
@@ -769,7 +774,7 @@ class TDrawSelector extends TSelector {
          }
          if (harg === 'dump')
             args.dump = true;
-         else if (harg.indexOf('Graph') == 0)
+         else if (harg.indexOf('Graph') === 0)
             args.graph = true;
          else if (pos < 0) {
             this.want_hist = true;
@@ -818,7 +823,8 @@ class TDrawSelector extends TSelector {
       args.parse_cut = cut;
 
       // let names = expr.split(':'); // to allow usage of ? operator, we need to handle : as well
-      let names = [], nbr1 = 0, nbr2 = 0, prev = 0;
+      const names = [];
+      let nbr1 = 0, nbr2 = 0, prev = 0;
       for (pos = 0; pos < expr.length; ++pos) {
          switch (expr[pos]) {
             case '(': nbr1++; break;
@@ -877,7 +883,7 @@ class TDrawSelector extends TSelector {
    drawOnlyBranch(tree, branch, expr, args) {
       this.ndim = 1;
 
-      if (expr.indexOf('dump') == 0) expr = ';' + expr;
+      if (expr.indexOf('dump') === 0) expr = ';' + expr;
 
       expr = this.parseParameters(tree, args, expr);
 
@@ -1327,23 +1333,19 @@ class TDrawSelector extends TSelector {
 
    /** @summary simple dump of the branch - no need to analyze something */
    ProcessDump(/* entry */) {
-
-      let res = this.leaf ? this.tgtobj.br0[this.leaf] : this.tgtobj.br0;
+      const res = this.leaf ? this.tgtobj.br0[this.leaf] : this.tgtobj.br0;
 
       if (res && this.copy_fields) {
-         if (checkArrayPrototype(res) === 0) {
+         if (checkArrayPrototype(res) === 0)
             this.hist.push(Object.assign({}, res));
-         } else {
+         else
             this.hist.push(res);
-         }
-      } else {
+      } else
          this.hist.push(res);
-      }
    }
 
    /** @summary Normal TSelector Process handler */
    Process(entry) {
-
       this.globals.entry = entry; // can be used in any expression
 
       this.cut.produce(this.tgtobj);
@@ -1352,7 +1354,7 @@ class TDrawSelector extends TSelector {
       for (let n = 0; n < this.ndim; ++n)
          this.vars[n].produce(this.tgtobj);
 
-      let var0 = this.vars[0], var1 = this.vars[1], var2 = this.vars[2], cut = this.cut;
+      const var0 = this.vars[0], var1 = this.vars[1], var2 = this.vars[2], cut = this.cut;
 
       if (this.graph || this.arr_limit) {
          switch (this.ndim) {
@@ -1363,22 +1365,25 @@ class TDrawSelector extends TSelector {
                }
                break;
             case 2:
-               for (let n0 = 0; n0 < var0.length; ++n0)
+               for (let n0 = 0; n0 < var0.length; ++n0) {
                   for (let n1 = 0; n1 < var1.length; ++n1) {
                      var0.buf.push(var0.get(n0));
                      var1.buf.push(var1.get(n1));
                      cut.buf?.push(cut.value);
                   }
+               }
                break;
             case 3:
-               for (let n0 = 0; n0 < var0.length; ++n0)
-                  for (let n1 = 0; n1 < var1.length; ++n1)
+               for (let n0 = 0; n0 < var0.length; ++n0) {
+                  for (let n1 = 0; n1 < var1.length; ++n1) {
                      for (let n2 = 0; n2 < var2.length; ++n2) {
                         var0.buf.push(var0.get(n0));
                         var1.buf.push(var1.get(n1));
                         var2.buf.push(var2.get(n2));
                         cut.buf?.push(cut.value);
                      }
+                  }
+               }
                break;
          }
          if (!this.graph && (var0.buf.length >= this.arr_limit)) {
@@ -1392,21 +1397,24 @@ class TDrawSelector extends TSelector {
                   this.fill1DHistogram(var0.get(n0), cut.value);
                break;
             case 2:
-               for (let n0 = 0; n0 < var0.length; ++n0)
+               for (let n0 = 0; n0 < var0.length; ++n0) {
                   for (let n1 = 0; n1 < var1.length; ++n1)
                      this.fill2DHistogram(var0.get(n0), var1.get(n1), cut.value);
+               }
                break;
             case 3:
-               for (let n0 = 0; n0 < var0.length; ++n0)
-                  for (let n1 = 0; n1 < var1.length; ++n1)
+               for (let n0 = 0; n0 < var0.length; ++n0) {
+                  for (let n1 = 0; n1 < var1.length; ++n1) {
                      for (let n2 = 0; n2 < var2.length; ++n2)
                         this.fill3DHistogram(var0.get(n0), var1.get(n1), var2.get(n2), cut.value);
+                  }
+               }
                break;
          }
       }
 
       if (this.monitoring && this.hist && !this.dump_values) {
-         let now = new Date().getTime();
+         const now = new Date().getTime();
          if (now - this.lasttm > this.monitoring) {
             this.lasttm = now;
             if (this.progress_callback)
@@ -1435,8 +1443,8 @@ class TDrawSelector extends TSelector {
 function findBrachStreamerElement(branch, file) {
    if (!branch || !file || (branch._typename !== clTBranchElement) || (branch.fID < 0) || (branch.fStreamerType < 0)) return null;
 
-   let s_i = file.findStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum),
-      arr = (s_i && s_i.fElements) ? s_i.fElements.arr : null;
+   const s_i = file.findStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum),
+         arr = (s_i && s_i.fElements) ? s_i.fElements.arr : null;
    if (!arr) return null;
 
    let match_name = branch.fName,
