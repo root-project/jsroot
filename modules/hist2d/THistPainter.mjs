@@ -103,14 +103,34 @@ class THistDrawOptions {
 
       if (d.check('PAL', true)) this.Palette = d.partAsInt();
       // this is zooming of histo content
-      if (d.check('MINIMUM:', true)) { this.ominimum = true; this.minimum = parseFloat(d.part); }
-                                else { this.ominimum = false; this.minimum = histo.fMinimum; }
-      if (d.check('MAXIMUM:', true)) { this.omaximum = true; this.maximum = parseFloat(d.part); }
-                                else { this.omaximum = false; this.maximum = histo.fMaximum; }
-      if (d.check('HMIN:', true)) { this.ohmin = true; this.hmin = parseFloat(d.part); }
-                             else { this.ohmin = false; delete this.hmin; }
-      if (d.check('HMAX:', true)) { this.ohmax = true; this.hmax = parseFloat(d.part); }
-                             else { this.ohmax = false; delete this.hmax; }
+      if (d.check('MINIMUM:', true)) {
+         this.ominimum = true;
+         this.minimum = parseFloat(d.part);
+      } else {
+         this.ominimum = false;
+         this.minimum = histo.fMinimum;
+      }
+      if (d.check('MAXIMUM:', true)) {
+         this.omaximum = true;
+         this.maximum = parseFloat(d.part);
+      } else {
+         this.omaximum = false;
+         this.maximum = histo.fMaximum;
+      }
+      if (d.check('HMIN:', true)) {
+         this.ohmin = true;
+         this.hmin = parseFloat(d.part);
+      } else {
+         this.ohmin = false;
+         delete this.hmin;
+      }
+      if (d.check('HMAX:', true)) {
+         this.ohmax = true;
+         this.hmax = parseFloat(d.part);
+      } else {
+         this.ohmax = false;
+         delete this.hmax;
+      }
 
       // let configure histogram titles - only for debug purposes
       if (d.check('HTITLE:', true)) histo.fTitle = decodeURIComponent(d.part.toLowerCase());
@@ -165,9 +185,12 @@ class THistDrawOptions {
       d.getColor = function() {
          this.color = this.partAsInt(1) - 1;
          if (this.color >= 0) return true;
-         for (let col = 0; col < 8; ++col)
-            if (getColor(col).toUpperCase() === this.part)
-               { this.color = col; return true; }
+         for (let col = 0; col < 8; ++col) {
+            if (getColor(col).toUpperCase() === this.part) {
+               this.color = col;
+               return true;
+            }
+         }
          return false;
       };
 
@@ -705,7 +728,7 @@ class THistPainter extends ObjectPainter {
           pad = pp?.getRootPad(true);
 
       if (!this.options)
-         this.options = new THistDrawOptions;
+         this.options = new THistDrawOptions();
       else
          this.options.reset();
 
@@ -1444,8 +1467,9 @@ class THistPainter extends ObjectPainter {
       if (!do_draw)
          return this.drawNextFunction(indx+1, only_extra);
 
-      let promise = TPavePainter.canDraw(func) ? TPavePainter.draw(this.getDom(), func, opt)
-                                               : pp.drawObject(this.getDom(), func, opt);
+      let promise = TPavePainter.canDraw(func)
+            ? TPavePainter.draw(this.getDom(), func, opt)
+            : pp.drawObject(this.getDom(), func, opt);
 
       return promise.then(painter => {
          if (isObject(painter)) {
@@ -2166,26 +2190,22 @@ class THistPainter extends ObjectPainter {
       res.grx = new Float32Array(res.i2+1);
       res.gry = new Float32Array(res.j2+1);
 
-      if (typeof histo.fBarOffset == 'number' && typeof histo.fBarWidth == 'number'
-           && (histo.fBarOffset || histo.fBarWidth !== 1000)) {
-             if (histo.fBarOffset <= 1000) {
+      if ((typeof histo.fBarOffset === 'number') && (typeof histo.fBarWidth === 'number') &&
+           (histo.fBarOffset || histo.fBarWidth !== 1000)) {
+             if (histo.fBarOffset <= 1000)
                 res.xbar1 = res.ybar1 = 0.001*histo.fBarOffset;
-             } else if (histo.fBarOffset <= 3000) {
+             else if (histo.fBarOffset <= 3000)
                 res.xbar1 = 0.001*(histo.fBarOffset-2000);
-             } else if (histo.fBarOffset <= 5000) {
+             else if (histo.fBarOffset <= 5000)
                 res.ybar1 = 0.001*(histo.fBarOffset-4000);
-             }
 
              if (histo.fBarWidth <= 1000) {
-                res.xbar2 = Math.min(1., res.xbar1 + 0.001*histo.fBarWidth);
-                res.ybar2 = Math.min(1., res.ybar1 + 0.001*histo.fBarWidth);
-             } else if (histo.fBarWidth <= 3000) {
-                res.xbar2 = Math.min(1., res.xbar1 + 0.001*(histo.fBarWidth-2000));
-                // res.ybar2 = res.ybar1 + 1;
-             } else if (histo.fBarWidth <= 5000) {
-                // res.xbar2 = res.xbar1 + 1;
-                res.ybar2 = Math.min(1., res.ybar1 + 0.001*(histo.fBarWidth-4000));
-             }
+                res.xbar2 = Math.min(1, res.xbar1 + 0.001*histo.fBarWidth);
+                res.ybar2 = Math.min(1, res.ybar1 + 0.001*histo.fBarWidth);
+             } else if (histo.fBarWidth <= 3000)
+                res.xbar2 = Math.min(1, res.xbar1 + 0.001*(histo.fBarWidth-2000));
+             else if (histo.fBarWidth <= 5000)
+                res.ybar2 = Math.min(1, res.ybar1 + 0.001*(histo.fBarWidth-4000));
          }
 
       if (args.original) {
@@ -2303,11 +2323,8 @@ class THistPainter extends ObjectPainter {
    /** @summary generic draw function for histograms
      * @private */
    static async _drawHist(painter, opt) {
-
       return ensureTCanvas(painter).then(() => {
-
          painter.setAsMainPainter();
-
          painter.decodeOptions(opt);
 
          if (painter.isTH2Poly()) {
@@ -2317,7 +2334,7 @@ class THistPainter extends ObjectPainter {
                painter.options.Color = true; // default is color
          }
 
-         painter.checkPadRange(/*!painter.options.Mode3D && */ (painter.options.Contour != 14));
+         painter.checkPadRange(/* !painter.options.Mode3D && */ (painter.options.Contour != 14));
 
          painter.scanContent();
 

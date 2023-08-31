@@ -52,8 +52,9 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
            l = m;
       }
       return l;
-   },  LevelSearch = nlevels < 10 ? LinearSearch : BinarySearch
-    ,  PaintContourLine = (elev1, icont1, x1, y1,  elev2, icont2, x2, y2) => {
+   },
+   LevelSearch = nlevels < 10 ? LinearSearch : BinarySearch,
+   PaintContourLine = (elev1, icont1, x1, y1,  elev2, icont2, x2, y2) => {
       /* Double_t *xarr, Double_t *yarr, Int_t *itarr, Double_t *levels */
       let vert = (x1 === x2),
           tlen = vert ? (y2 - y1) : (x2 - x1),
@@ -275,7 +276,7 @@ class Triangles3DHandler {
 
       function checkSide(z, level1, level2, eps) {
          return (z < level1 - eps) ? -1 : (z > level2 + eps ? 1 : 0);
-      };
+      }
 
       this.createNormIndex = function(handle) {
           // for each bin maximal 8 points reserved
@@ -349,7 +350,7 @@ class Triangles3DHandler {
 
          pntindx += shift;
          lastpart = part;
-      };
+      }
 
       function rememberVertex(indx, handle, ii,jj) {
          let bin = ((ii-handle.i1) * (handle.j2-handle.j1) + (jj-handle.j1))*8;
@@ -360,7 +361,7 @@ class Triangles3DHandler {
          let pos = bin + 8 + normindx[bin]; // position where write index
          normindx[bin]--;
          normindx[pos] = indx; // at this moment index can be overwritten, means all 8 position are there
-      };
+      }
 
       this.addMainTriangle = function(x1,y1,z1, x2,y2,z2, x3,y3,z3, is_first, handle, i, j) {
 
@@ -1337,10 +1338,11 @@ class TH2Painter extends THistPainter {
          iminus--;
          while ((iminus < iplus - 1) && !pnt1)
             pnt1 = get_intersect(++iminus, 1);
+         if (!pnt1) return '';
          iplus++;
-         while ((iminus < iplus - 1) && pnt1 && !pnt2)
+         while ((iminus < iplus - 1) && !pnt2)
             pnt2 = get_intersect(--iplus, -1);
-         if (!pnt1 || !pnt2) return '';
+         if (!pnt2) return '';
 
          // TODO: now side is always same direction, could be that side should be checked more precise
 
@@ -1541,11 +1543,10 @@ class TH2Painter extends THistPainter {
             bin = textbins[i];
 
             if (!this.options.TextKind) {
-               text = (Math.round(bin.fContent) === bin.fContent) ? bin.fContent.toString() :
-                          floatToString(bin.fContent, gStyle.fPaintTextFormat);
+               text = (Math.round(bin.fContent) === bin.fContent) ? bin.fContent.toString() : floatToString(bin.fContent, gStyle.fPaintTextFormat);
             } else {
                text = bin.fPoly?.fName;
-               if (!text || (text == 'Graph'))
+               if (!text || (text === 'Graph'))
                   text = bin.fNumber.toString();
             }
 
@@ -1594,20 +1595,18 @@ class TH2Painter extends THistPainter {
             if (profile2d)
                binz = histo.getBinEntries(i+1, j+1);
 
-            let text = (binz === Math.round(binz)) ? binz.toString() :
-                         floatToString(binz, gStyle.fPaintTextFormat);
+            let text = (binz === Math.round(binz)) ? binz.toString() : floatToString(binz, gStyle.fPaintTextFormat);
 
             if (show_err) {
                let errz = histo.getBinError(histo.getBin(i+1,j+1)),
-                   lble = (errz === Math.round(errz)) ? errz.toString() :
-                            floatToString(errz, gStyle.fPaintTextFormat);
+                   lble = (errz === Math.round(errz)) ? errz.toString() : floatToString(errz, gStyle.fPaintTextFormat);
                if (this.options.TextLine)
                   text += '\xB1' + lble;
                else
                   text = `#splitline{${text}}{#pm${lble}}`;
             }
 
-            if (rotate /*|| (histo.fMarkerSize !== 1)*/) {
+            if (rotate /* || (histo.fMarkerSize !== 1) */) {
                x = Math.round(handle.grx[i] + binw*0.5);
                y = Math.round(handle.gry[j+1] + binh*(0.5 + text_offset));
                width = height = 0;
@@ -1775,8 +1774,8 @@ class TH2Painter extends THistPainter {
                      phh = Math.round(hh*0.1),
                      side1 = `M${xx},${yy}h${ww}l${-pww},${phh}h${2*pww-ww}v${hh-2*phh}l${-pww},${phh}z`,
                      side2 = `M${xx+ww},${yy+hh}v${-hh}l${-pww},${phh}v${hh-2*phh}h${2*pww-ww}l${-pww},${phh}z`;
-               if (binz < 0) { btn2 += side1; btn1 += side2; }
-                        else { btn1 += side1; btn2 += side2; }
+               btn1 += (binz < 0) ? side2 : side1;
+               btn2 += (binz < 0) ? side1 : side2;
             }
          }
       }
@@ -2270,7 +2269,7 @@ class TH2Painter extends THistPainter {
           test_cutg = this.options.cutg,
           colPaths = [], currx = [], curry = [], cell_w = [], cell_h = [],
           colindx, cmd1, cmd2, i, j, binz, cw, ch, factor = 1.,
-          scale = this.options.ScatCoef * ((this.gmaxbin) > 2000 ? 2000. / this.gmaxbin : 1.),
+          scale = this.options.ScatCoef * ((this.gmaxbin) > 2000 ? 2000 / this.gmaxbin : 1),
           rnd = new TRandom(handle.sumz);
 
       handle.ScatterPlot = true;
@@ -2667,8 +2666,7 @@ class TH2Painter extends THistPainter {
       group.select('text')
          .attr('font-weight', 'bold')
          .text(function(d) {
-            return this.getAttribute('text-anchor') === 'end'
-               ? `↑ ${labels[d.index]}` : `${labels[d.index]} ↓`;
+            return this.getAttribute('text-anchor') === 'end' ? `↑ ${labels[d.index]}` : `${labels[d.index]} ↓`;
          });
 
       this.draw_g.append('g')
@@ -2683,7 +2681,6 @@ class TH2Painter extends THistPainter {
          .text(d => `${formatValue(d.source.value)} ${labels[d.target.index]} → ${labels[d.source.index]}${d.source.index === d.target.index ? '' : `\n${formatValue(d.target.value)} ${labels[d.source.index]} → ${labels[d.target.index]}`}`);
 
       return true;
-
    }
 
    /** @summary Provide text information (tooltips) for histogram bin */
@@ -2710,13 +2707,14 @@ class TH2Painter extends THistPainter {
 
    /** @summary Provide text information (tooltips) for candle bin */
    getCandleTooltips(p) {
-      let pmain = this.getFramePainter(),
-          funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
-          histo = this.getHisto();
+      const pmain = this.getFramePainter(),
+            funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
+            histo = this.getHisto();
 
       return [this.getObjectHint(),
-              p.swapXY ? 'y = ' + funcs.axisAsText('y', histo.fYaxis.GetBinLowEdge(p.bin+1))
-                       : 'x = ' + funcs.axisAsText('x', histo.fXaxis.GetBinLowEdge(p.bin+1)),
+              p.swapXY
+                 ? 'y = ' + funcs.axisAsText('y', histo.fYaxis.GetBinLowEdge(p.bin+1))
+                 : 'x = ' + funcs.axisAsText('x', histo.fXaxis.GetBinLowEdge(p.bin+1)),
               'm-25%  = ' + floatToString(p.fBoxDown, gStyle.fStatFormat),
               'median = ' + floatToString(p.fMedian, gStyle.fStatFormat),
               'm+25%  = ' + floatToString(p.fBoxUp, gStyle.fStatFormat)];
@@ -2724,7 +2722,6 @@ class TH2Painter extends THistPainter {
 
    /** @summary Provide text information (tooltips) for poly bin */
    getPolyBinTooltips(binindx, realx, realy) {
-
       let histo = this.getHisto(),
           bin = histo.fBins.arr[binindx],
           pmain = this.getFramePainter(),
@@ -2846,14 +2843,13 @@ class TH2Painter extends THistPainter {
                         .property('current_bin', foundindx);
          }
 
-         if (res.changed)
+         if (res.changed) {
             res.user_info = { obj: histo, name: histo.fName,
                               bin: foundindx,
                               cont: bin.fContent,
                               grx: pnt.x, gry: pnt.y };
-
+         }
          return res;
-
       } else if (h.candle) {
          // process tooltips for candle
 
@@ -2861,8 +2857,9 @@ class TH2Painter extends THistPainter {
 
          for (i = 0; i < h.candle.length; ++i) {
             p = h.candle[i];
-            match = p.swapXY ? ((p.x1 <= pnt.y) && (pnt.y <= p.x2) && (p.yy1 >= pnt.x) && (pnt.x >= p.yy2))
-                             : ((p.x1 <= pnt.x) && (pnt.x <= p.x2) && (p.yy1 <= pnt.y) && (pnt.y <= p.yy2));
+            match = p.swapXY
+                      ? ((p.x1 <= pnt.y) && (pnt.y <= p.x2) && (p.yy1 >= pnt.x) && (pnt.x >= p.yy2))
+                      : ((p.x1 <= pnt.x) && (pnt.x <= p.x2) && (p.yy1 <= pnt.y) && (pnt.y <= p.yy2));
             if (match) break;
          }
 
@@ -2982,24 +2979,35 @@ class TH2Painter extends THistPainter {
          ttrect.remove();
          res.changed = true;
       } else {
-         if (ttrect.empty())
+         if (ttrect.empty()) {
             ttrect = this.draw_g.append('svg:path')
                                 .attr('class', 'tooltip_bin')
                                 .style('pointer-events', 'none')
                                 .call(addHighlightStyle);
+         }
 
          let binid = i*10000 + j, path;
 
          if (this.is_projection) {
-            let pwx = this.projection_widthX || 1, ddx = (pwx - 1) / 2;
+            const pwx = this.projection_widthX || 1, ddx = (pwx - 1) / 2;
             if ((this.is_projection.indexOf('X')) >= 0 && (pwx > 1)) {
-               if (j2+ddx >= h.j2) { j2 = Math.min(Math.round(j2+ddx), h.j2); j1 = Math.max(j2-pwx, h.j1); }
-                              else { j1 = Math.max(Math.round(j1-ddx), h.j1); j2 = Math.min(j1+pwx, h.j2); }
+               if (j2+ddx >= h.j2) {
+                  j2 = Math.min(Math.round(j2+ddx), h.j2);
+                  j1 = Math.max(j2-pwx, h.j1);
+               } else {
+                  j1 = Math.max(Math.round(j1-ddx), h.j1);
+                  j2 = Math.min(j1+pwx, h.j2);
+               }
             }
-            let pwy = this.projection_widthY || 1, ddy = (pwy - 1) / 2;
+            const pwy = this.projection_widthY || 1, ddy = (pwy - 1) / 2;
             if ((this.is_projection.indexOf('Y')) >= 0 && (pwy > 1)) {
-               if (i2+ddy >= h.i2) { i2 = Math.min(Math.round(i2+ddy), h.i2); i1 = Math.max(i2-pwy, h.i1); }
-                              else { i1 = Math.max(Math.round(i1-ddy), h.i1); i2 = Math.min(i1+pwy, h.i2); }
+               if (i2+ddy >= h.i2) {
+                  i2 = Math.min(Math.round(i2+ddy), h.i2);
+                  i1 = Math.max(i2-pwy, h.i1);
+               } else {
+                  i1 = Math.max(Math.round(i1-ddy), h.i1);
+                  i2 = Math.min(i1+pwy, h.i2);
+               }
             }
          }
 
