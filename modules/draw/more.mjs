@@ -8,19 +8,20 @@ import { assignContextMenu, kToFront } from '../gui/menu.mjs';
 /** @summary Draw TText
   * @private */
 async function drawText() {
-   let text = this.getObject(),
-       pp = this.getPadPainter(),
-       w = pp.getPadWidth(),
+   const text = this.getObject(),
+         pp = this.getPadPainter(),
+         main = this.getFramePainter();
+   let w = pp.getPadWidth(),
        h = pp.getPadHeight(),
        pos_x = text.fX, pos_y = text.fY,
        use_frame = false,
-       fact = 1., main = this.getFramePainter(),
+       fact = 1,
        annot = this.matchObjectType(clTAnnotation);
 
    this.createAttText({ attr: text });
 
    if (annot && main?.mode3d && isFunc(main?.convert3DtoPadNDC)) {
-      let pos = main.convert3DtoPadNDC(text.fX, text.fY, text.fZ);
+      const pos = main.convert3DtoPadNDC(text.fX, text.fY, text.fZ);
       pos_x = pos.x;
       pos_y = pos.y;
       this.isndc = true;
@@ -49,12 +50,12 @@ async function drawText() {
    this.pos_x = this.axisToSvg('x', pos_x, this.isndc);
    this.pos_y = this.axisToSvg('y', pos_y, this.isndc);
 
-   let arg = this.textatt.createArg({ x: this.pos_x, y: this.pos_y, text: text.fTitle, latex: 0 });
+   const arg = this.textatt.createArg({ x: this.pos_x, y: this.pos_y, text: text.fTitle, latex: 0 });
 
-   if ((text._typename == clTLatex) || annot) {
+   if ((text._typename === clTLatex) || annot) {
       arg.latex = 1;
       fact = 0.9;
-   } else if (text._typename == clTMathText) {
+   } else if (text._typename === clTMathText) {
       arg.latex = 2;
       fact = 0.8;
    }
@@ -68,30 +69,32 @@ async function drawText() {
 
       this.pos_dx = this.pos_dy = 0;
 
-      if (!this.moveDrag)
+      if (!this.moveDrag) {
          this.moveDrag = function(dx, dy) {
             this.pos_dx += dx;
             this.pos_dy += dy;
             makeTranslate(this.draw_g, this.pos_dx, this.pos_dy);
-        }
+         }
+      }
 
-      if (!this.moveEnd)
+      if (!this.moveEnd) {
          this.moveEnd = function(not_changed) {
             if (not_changed) return;
-            let text = this.getObject();
+            const text = this.getObject();
             text.fX = this.svgToAxis('x', this.pos_x + this.pos_dx, this.isndc);
             text.fY = this.svgToAxis('y', this.pos_y + this.pos_dy, this.isndc);
             this.submitCanvExec(`SetX(${text.fX});;SetY(${text.fY});;`);
          }
+      }
 
-      if (annot != '3d') {
+      if (annot !== '3d')
          addMoveHandler(this);
-      } else {
+      else {
          main.processRender3D = true;
          this.handleRender3D = () => {
-            let pos = main.convert3DtoPadNDC(text.fX, text.fY, text.fZ),
-                new_x = this.axisToSvg('x', pos.x, true),
-                new_y = this.axisToSvg('y', pos.y, true);
+            const pos = main.convert3DtoPadNDC(text.fX, text.fY, text.fZ),
+                  new_x = this.axisToSvg('x', pos.x, true),
+                  new_y = this.axisToSvg('y', pos.y, true);
             makeTranslate(this.draw_g, new_x - this.pos_x, new_y - this.pos_y);
          };
       }
@@ -106,32 +109,31 @@ async function drawText() {
 /** @summary Draw TPolyLine
   * @private */
 function drawPolyLine() {
-
    this.createG();
 
-   let polyline = this.getObject(),
-       kPolyLineNDC = BIT(14),
-       isndc = polyline.TestBit(kPolyLineNDC),
-       opt = this.getDrawOpt() || polyline.fOption,
-       dofill = (polyline._typename == clTPolyLine) && ((opt == 'f') || (opt == 'F')),
-       cmd = '', func = this.getAxisToSvgFunc(isndc);
+   const polyline = this.getObject(),
+         kPolyLineNDC = BIT(14),
+         isndc = polyline.TestBit(kPolyLineNDC),
+         opt = this.getDrawOpt() || polyline.fOption,
+         dofill = (polyline._typename === clTPolyLine) && ((opt === 'f') || (opt === 'F')),
+         func = this.getAxisToSvgFunc(isndc);
 
    this.createAttLine({ attr: polyline });
    this.createAttFill({ attr: polyline });
 
+   let cmd = '';
    for (let n = 0; n <= polyline.fLastPoint; ++n)
       cmd += `${n>0?'L':'M'}${func.x(polyline.fX[n])},${func.y(polyline.fY[n])}`;
 
    if (dofill)
       cmd += 'Z';
 
-   let elem = this.draw_g.append('svg:path').attr('d', cmd);
+   const elem = this.draw_g.append('svg:path').attr('d', cmd);
 
    if (dofill)
       elem.call(this.fillatt.func);
    else
-      elem.call(this.lineatt.func)
-          .style('fill', 'none');
+      elem.call(this.lineatt.func).style('fill', 'none');
 
    assignContextMenu(this, kToFront);
 
@@ -140,7 +142,7 @@ function drawPolyLine() {
    this.dx = this.dy = 0;
    this.isndc = isndc;
 
-   this.moveDrag = function(dx,dy) {
+   this.moveDrag = function(dx, dy) {
       this.dx += dx;
       this.dy += dy;
       makeTranslate(this.draw_g.select('path'), this.dx, this.dy);
@@ -148,13 +150,13 @@ function drawPolyLine() {
 
    this.moveEnd = function(not_changed) {
       if (not_changed) return;
-      let polyline = this.getObject(),
-          func = this.getAxisToSvgFunc(this.isndc),
-          exec = '';
+      const polyline = this.getObject(),
+            func = this.getAxisToSvgFunc(this.isndc);
+      let exec = '';
 
       for (let n = 0; n <= polyline.fLastPoint; ++n) {
-         let x = this.svgToAxis('x', func.x(polyline.fX[n]) + this.dx, this.isndc),
-             y = this.svgToAxis('y', func.y(polyline.fY[n]) + this.dy, this.isndc);
+         const x = this.svgToAxis('x', func.x(polyline.fX[n]) + this.dx, this.isndc),
+               y = this.svgToAxis('y', func.y(polyline.fY[n]) + this.dy, this.isndc);
          polyline.fX[n] = x;
          polyline.fY[n] = y;
          exec += `SetPoint(${n},${x},${y});;`;
@@ -168,74 +170,72 @@ function drawPolyLine() {
 /** @summary Draw TEllipse
   * @private */
 function drawEllipse() {
-
-   let ellipse = this.getObject();
+   const ellipse = this.getObject(),
+         closed_ellipse = (ellipse.fPhimin === 0) && (ellipse.fPhimax === 360),
+         is_crown = (ellipse._typename === 'TCrown');
 
    this.createAttLine({ attr: ellipse });
    this.createAttFill({ attr: ellipse });
 
    this.createG();
 
-   let funcs = this.getAxisToSvgFunc(),
-       x = funcs.x(ellipse.fX1),
-       y = funcs.y(ellipse.fY1),
-       rx = funcs.x(ellipse.fX1 + ellipse.fR1) - x,
-       ry = y - funcs.y(ellipse.fY1 + ellipse.fR2),
-       path = '', closed_ellipse = (ellipse.fPhimin == 0) && (ellipse.fPhimax == 360);
+   const funcs = this.getAxisToSvgFunc(),
+         x = funcs.x(ellipse.fX1),
+         y = funcs.y(ellipse.fY1),
+         rx = is_crown && (ellipse.fR1 <= 0) ? (funcs.x(ellipse.fX1 + ellipse.fR2) - x) : (funcs.x(ellipse.fX1 + ellipse.fR1) - x),
+         ry = y - funcs.y(ellipse.fY1 + ellipse.fR2);
 
-   // handle same as ellipse with equal radius
-   if ((ellipse._typename == 'TCrown') && (ellipse.fR1 <= 0))
-      rx = funcs.x(ellipse.fX1 + ellipse.fR2) - x;
+   let path = '';
 
-   if ((ellipse._typename == 'TCrown') && (ellipse.fR1 > 0)) {
-      let rx1 = rx, ry2 = ry,
-          ry1 = y - funcs.y(ellipse.fY1 + ellipse.fR1),
-          rx2 = funcs.x(ellipse.fX1 + ellipse.fR2) - x;
+   if (is_crown && (ellipse.fR1 > 0)) {
+      const rx1 = rx, ry2 = ry,
+            ry1 = y - funcs.y(ellipse.fY1 + ellipse.fR1),
+            rx2 = funcs.x(ellipse.fX1 + ellipse.fR2) - x;
 
       if (closed_ellipse) {
          path = `M${-rx1},0A${rx1},${ry1},0,1,0,${rx1},0A${rx1},${ry1},0,1,0,${-rx1},0` +
                 `M${-rx2},0A${rx2},${ry2},0,1,0,${rx2},0A${rx2},${ry2},0,1,0,${-rx2},0`;
       } else {
-         let large_arc = (ellipse.fPhimax-ellipse.fPhimin>=180) ? 1 : 0,
-             a1 = ellipse.fPhimin*Math.PI/180, a2 = ellipse.fPhimax*Math.PI/180,
-             dx1 = Math.round(rx1*Math.cos(a1)), dy1 = Math.round(ry1*Math.sin(a1)),
-             dx2 = Math.round(rx1*Math.cos(a2)), dy2 = Math.round(ry1*Math.sin(a2)),
-             dx3 = Math.round(rx2*Math.cos(a1)), dy3 = Math.round(ry2*Math.sin(a1)),
-             dx4 = Math.round(rx2*Math.cos(a2)), dy4 = Math.round(ry2*Math.sin(a2));
+         const large_arc = (ellipse.fPhimax-ellipse.fPhimin>=180) ? 1 : 0,
+               a1 = ellipse.fPhimin*Math.PI/180, a2 = ellipse.fPhimax*Math.PI/180,
+               dx1 = Math.round(rx1*Math.cos(a1)), dy1 = Math.round(ry1*Math.sin(a1)),
+               dx2 = Math.round(rx1*Math.cos(a2)), dy2 = Math.round(ry1*Math.sin(a2)),
+               dx3 = Math.round(rx2*Math.cos(a1)), dy3 = Math.round(ry2*Math.sin(a1)),
+               dx4 = Math.round(rx2*Math.cos(a2)), dy4 = Math.round(ry2*Math.sin(a2));
 
          path = `M${dx2},${dy2}A${rx1},${ry1},0,${large_arc},0,${dx1},${dy1}` +
                 `L${dx3},${dy3}A${rx2},${ry2},0,${large_arc},1,${dx4},${dy4}Z`;
       }
-   } else if (ellipse.fTheta == 0) {
-      if (closed_ellipse) {
+   } else if (ellipse.fTheta === 0) {
+      if (closed_ellipse)
          path = `M${-rx},0A${rx},${ry},0,1,0,${rx},0A${rx},${ry},0,1,0,${-rx},0Z`;
-      } else {
-         let x1 = Math.round(rx * Math.cos(ellipse.fPhimin*Math.PI/180)),
-             y1 = Math.round(ry * Math.sin(ellipse.fPhimin*Math.PI/180)),
-             x2 = Math.round(rx * Math.cos(ellipse.fPhimax*Math.PI/180)),
-             y2 = Math.round(ry * Math.sin(ellipse.fPhimax*Math.PI/180));
+      else {
+         const x1 = Math.round(rx * Math.cos(ellipse.fPhimin*Math.PI/180)),
+               y1 = Math.round(ry * Math.sin(ellipse.fPhimin*Math.PI/180)),
+               x2 = Math.round(rx * Math.cos(ellipse.fPhimax*Math.PI/180)),
+               y2 = Math.round(ry * Math.sin(ellipse.fPhimax*Math.PI/180));
          path = `M0,0L${x1},${y1}A${rx},${ry},0,1,1,${x2},${y2}Z`;
       }
    } else {
-     let ct = Math.cos(ellipse.fTheta*Math.PI/180),
-         st = Math.sin(ellipse.fTheta*Math.PI/180),
-         phi1 = ellipse.fPhimin*Math.PI/180,
-         phi2 = ellipse.fPhimax*Math.PI/180,
-         np = 200,
-         dphi = (phi2-phi1) / (np - (closed_ellipse ? 0 : 1)),
-         lastx = 0, lasty = 0;
+     const ct = Math.cos(ellipse.fTheta*Math.PI/180),
+           st = Math.sin(ellipse.fTheta*Math.PI/180),
+           phi1 = ellipse.fPhimin*Math.PI/180,
+           phi2 = ellipse.fPhimax*Math.PI/180,
+           np = 200,
+           dphi = (phi2-phi1) / (np - (closed_ellipse ? 0 : 1));
+     let lastx = 0, lasty = 0;
      if (!closed_ellipse) path = 'M0,0';
      for (let n = 0; n < np; ++n) {
-         let angle = phi1 + n*dphi,
-             dx = ellipse.fR1 * Math.cos(angle),
-             dy = ellipse.fR2 * Math.sin(angle),
-             px = funcs.x(ellipse.fX1 + dx*ct - dy*st) - x,
-             py = funcs.y(ellipse.fY1 + dx*st + dy*ct) - y;
+         const angle = phi1 + n*dphi,
+               dx = ellipse.fR1 * Math.cos(angle),
+               dy = ellipse.fR2 * Math.sin(angle),
+               px = funcs.x(ellipse.fX1 + dx*ct - dy*st) - x,
+               py = funcs.y(ellipse.fY1 + dx*st + dy*ct) - y;
          if (!path)
             path = `M${px},${py}`;
-         else if (lastx == px)
+         else if (lastx === px)
             path += `v${py-lasty}`;
-         else if (lasty == py)
+         else if (lasty === py)
             path += `h${px-lastx}`;
          else
             path += `l${px-lastx},${py-lasty}`;
@@ -256,7 +256,7 @@ function drawEllipse() {
 
    addMoveHandler(this);
 
-   this.moveDrag = function(dx,dy) {
+   this.moveDrag = function(dx, dy) {
       this.x += dx;
       this.y += dy;
       makeTranslate(this.draw_g.select('path'), this.x, this.y);
@@ -264,7 +264,7 @@ function drawEllipse() {
 
    this.moveEnd = function(not_changed) {
       if (not_changed) return;
-      let ellipse = this.getObject();
+      const ellipse = this.getObject();
       ellipse.fX1 = this.svgToAxis('x', this.x);
       ellipse.fY1 = this.svgToAxis('y', this.y);
       this.submitCanvExec(`SetX1(${ellipse.fX1});;SetY1(${ellipse.fY1});;Notify();;`);
