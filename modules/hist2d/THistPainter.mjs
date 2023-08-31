@@ -390,8 +390,8 @@ class THistDrawOptions {
       if (this.Color && d.check('1')) this.Zero = false;
 
       // flag identifies 3D drawing mode for histogram
-      if ((this.Lego > 0) || (hdim == 3) ||
-          ((this.Surf > 0) || this.Error && (hdim == 2))) this.Mode3D = true;
+      if ((this.Lego > 0) || (hdim === 3) ||
+          (((this.Surf > 0) || this.Error) && (hdim === 2))) this.Mode3D = true;
 
       // default draw options for TF1 is line and fill
       if (painter.isTF1() && (hdim == 1) && (this.Hist === 1) && !this.Line && !this.Fill && !this.Curve) {
