@@ -2707,7 +2707,7 @@ class TFramePainter extends ObjectPainter {
       if (zoom_y) {
          let cnt = 0;
          if ((ymin <= this.ymin) || (!this.ymin && this.logy &&
-              (!this.y_handle?.log_min_nz && ymin < logminfactorY*this.ymax) || (ymin < this.y_handle?.log_min_nz)))
+              ((!this.y_handle?.log_min_nz && ymin < logminfactorY*this.ymax) || (ymin < this.y_handle?.log_min_nz))))
             { ymin = this.ymin; cnt++; }
          if (ymax >= this.ymax) { ymax = this.ymax; cnt++; }
          if ((cnt === 2) && (this.scales_ndim !== 1)) { zoom_y = false; unzoom_y = true; }
