@@ -173,14 +173,15 @@ function createTextGeometry(painter, lbl, size) {
 
 /** @summary Text 3d axis visibility
   * @private */
-function testAxisVisibility(camera, toplevel, fb, bb) {
+function testAxisVisibility(camera, toplevel, fb = false, bb = false) {
    let top;
-   if (toplevel?.children)
+   if (toplevel?.children) {
       for (let n = 0; n < toplevel.children.length; ++n) {
          top = toplevel.children[n];
          if (top.axis_draw) break;
          top = undefined;
       }
+   }
 
    if (!top) return;
 
@@ -618,18 +619,16 @@ function render3D(tmout) {
 
    beforeRender3D(this.renderer);
 
-   let tm1 = new Date();
+   const tm1 = new Date();
 
-   if (!this.opt3d) this.opt3d = { FrontBox: true, BackBox: true };
-
-   testAxisVisibility(this.camera, this.toplevel, this.opt3d.FrontBox, this.opt3d.BackBox);
+   testAxisVisibility(this.camera, this.toplevel, this.opt3d?.FrontBox, this.opt3d?.BackBox);
 
    // do rendering, most consuming time
    this.renderer.render(this.scene, this.camera);
 
    afterRender3D(this.renderer);
 
-   let tm2 = new Date();
+   const tm2 = new Date();
 
    if (this.first_render_tm === 0) {
       this.first_render_tm = tm2.getTime() - tm1.getTime();
@@ -638,11 +637,12 @@ function render3D(tmout) {
          console.log(`three.js r${REVISION}, first render tm = ${this.first_render_tm}`);
    }
 
-   if (this.processRender3D)
+   if (this.processRender3D) {
       this.getPadPainter()?.painters?.forEach(objp => {
          if (isFunc(objp.handleRender3D))
             objp.handleRender3D();
       });
+   }
 }
 
 /** @summary Check is 3D drawing need to be resized
@@ -760,11 +760,12 @@ function highlightBin3D(tip, selfmesh) {
    if (changed && tip.$projection && isFunc(tip.$painter?.redrawProjection))
       tip.$painter.redrawProjection(tip.ix-1, tip.ix, tip.iy-1, tip.iy);
 
-   if (changed && mainp?.getObject())
+   if (changed && mainp?.getObject()) {
       mainp.provideUserTooltip({ obj: mainp.getObject(),  name: mainp.getObject().fName,
                                  bin: tip.bin, cont: tip.value,
                                  binx: tip.ix, biny: tip.iy, binz: tip.iz,
                                  grx: (tip.x1+tip.x2)/2, gry: (tip.y1+tip.y2)/2, grz: (tip.z1+tip.z2)/2 });
+   }
 }
 
 /** @summary Set options used for 3D drawings
