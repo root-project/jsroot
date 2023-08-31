@@ -301,7 +301,7 @@ function drawPie() {
    for (let n = 0; n < nb; n++) {
       let slice = pie.fPieSlices[n];
 
-      this.createAttLine({ attr: slice }),
+      this.createAttLine({ attr: slice });
       this.createAttFill({ attr: slice });
 
       af += slice.fValue/total*2*Math.PI;
@@ -323,7 +323,7 @@ function drawBox() {
        opt = this.getDrawOpt(),
        draw_line = (opt.toUpperCase().indexOf('L') >= 0);
 
-   this.createAttLine({ attr: box }),
+   this.createAttLine({ attr: box });
    this.createAttFill({ attr: box });
 
    // if box filled, contour line drawn only with 'L' draw option:
