@@ -21,6 +21,7 @@ module.exports = {
       "eqeqeq": "warn",
       "spaced-comment": "warn",
       "array-bracket-spacing": "warn",
+      "key-spacing": "warn",
       "semi": "off",
       "object-curly-newline": "off",
       "curly": ["warn", "multi-or-nest"],
