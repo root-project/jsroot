@@ -696,7 +696,6 @@ class RH3Painter extends RHistPainter {
 
    /** @summary Fill histogram context menu */
    fillHistContextMenu(menu) {
-
       let opts = this.getSupportedDrawOptions();
 
       menu.addDrawMenu('Draw with', opts, arg => {
@@ -711,14 +710,13 @@ class RH3Painter extends RHistPainter {
 
    /** @summary draw RH3 object */
   static async draw(dom, histo /*, opt*/) {
-      let painter = new RH3Painter(dom, histo);
+      const painter = new RH3Painter(dom, histo);
       painter.mode3d = true;
 
       return ensureRCanvas(painter, '3d').then(() => {
-
          painter.setAsMainPainter();
 
-         painter.options = { Box: 0, Scatter: false, Sphere: 0, Color: false, minimum: kNoZoom, maximum: kNoZoom };
+         painter.options = { Box: 0, Scatter: false, Sphere: 0, Color: false, minimum: kNoZoom, maximum: kNoZoom, FrontBox: false, BackBox: false };
 
          let kind = painter.v7EvalAttr('kind', ''),
              sub = painter.v7EvalAttr('sub', 0),

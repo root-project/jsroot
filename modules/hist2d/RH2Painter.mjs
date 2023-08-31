@@ -1142,9 +1142,8 @@ class RH2Painter extends RHistPainter {
 
    /** @summary Draw histogram using painter instance
      * @private */
-   static async _draw(painter /*, opt*/) {
+   static async _draw(painter /* , opt */) {
       return ensureRCanvas(painter).then(() => {
-
          painter.setAsMainPainter();
 
          painter.options = { Hist: false, Error: false, Zero: false, Mark: false,
@@ -1152,7 +1151,8 @@ class RH2Painter extends RHistPainter {
                              Text: true, TextAngle: 0, TextKind: '',
                              BaseLine: false, Mode3D: false, AutoColor: 0,
                              Color: false, Scat: false, ScatCoef: 1, Box: false, BoxStyle: 0, Arrow: false, Contour: 0, Proj: 0,
-                             BarOffset: 0., BarWidth: 1., minimum: kNoZoom, maximum: kNoZoom };
+                             BarOffset: 0, BarWidth: 1, minimum: kNoZoom, maximum: kNoZoom,
+                             FrontBox: false, BackBox: false };
 
          let kind = painter.v7EvalAttr('kind', ''),
              sub = painter.v7EvalAttr('sub', 0),
@@ -1160,7 +1160,7 @@ class RH2Painter extends RHistPainter {
 
          o.Text = painter.v7EvalAttr('drawtext', false);
 
-         switch(kind) {
+         switch (kind) {
             case 'lego': o.Lego = sub > 0 ? 10+sub : 12; o.Mode3D = true; break;
             case 'surf': o.Surf = sub > 0 ? 10+sub : 1; o.Mode3D = true; break;
             case 'box': o.Box = true; o.BoxStyle = 10 + sub; break;

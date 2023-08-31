@@ -5,7 +5,7 @@ import { RObjectPainter } from '../base/RObjectPainter.mjs';
 /** @summary assign methods for the RAxis objects
   * @private */
 function assignRAxisMethods(axis) {
-   if ((axis._typename == `${nsREX}RAxisEquidistant`) || (axis._typename == `${nsREX}RAxisLabels`)) {
+   if ((axis._typename === `${nsREX}RAxisEquidistant`) || (axis._typename === `${nsREX}RAxisLabels`)) {
       if (axis.fInvBinWidth === 0) {
          axis.$dummy = true;
          axis.fInvBinWidth = 1;
@@ -153,8 +153,6 @@ class RHistPainter extends RObjectPainter {
 
                histo.getBinContent = function(x, y, z) { return this.fBinContent[this.getBin0(x, y, z)]; }
                histo.getBinError = function(x, y, z) { return Math.sqrt(Math.abs(this.getBinContent(x, y, z))); }
-
-
             } else if (histo.fAxes.length == 2) {
                assignRAxisMethods(histo.fAxes[0]);
                assignRAxisMethods(histo.fAxes[1]);
@@ -198,18 +196,18 @@ class RHistPainter extends RObjectPainter {
    }
 
    /** @summary Decode options */
-   decodeOptions(/*opt*/) {
+   decodeOptions(/* opt */) {
       if (!this.options) this.options = { Hist: 1, System: 1 };
    }
 
    /** @summary Copy draw options from other painter */
    copyOptionsFrom(src) {
       if (src === this) return;
-      let o = this.options, o0 = src.options;
+      const o = this.options, o0 = src.options;
       o.Mode3D = o0.Mode3D;
    }
 
-   /** @summary copy draw options to all other histograms in the pad*/
+   /** @summary copy draw options to all other histograms in the pad */
    copyOptionsToOthers() {
       this.forEachPainter(painter => {
          if ((painter !== this) && isFunc(painter.copyOptionsFrom))
@@ -239,7 +237,7 @@ class RHistPainter extends RObjectPainter {
 
    /** @summary Scan histogram content
      * @abstract */
-   scanContent(/*when_axis_changed*/) {
+   scanContent(/* when_axis_changed */) {
       // function will be called once new histogram or
       // new histogram content is assigned
       // one should find min,max,nbins, maxcontent values
@@ -296,9 +294,9 @@ class RHistPainter extends RObjectPainter {
    }
 
    /** @summary update histogram object */
-   updateObject(obj /*, opt*/) {
+   updateObject(obj /* , opt */) {
 
-      let origin = this.getObject();
+      const origin = this.getObject();
 
       if (obj !== origin) {
 
@@ -376,8 +374,7 @@ class RHistPainter extends RObjectPainter {
    /** @summary Extract axes ranges and bins numbers
      * @desc Also here ensured that all axes objects got their necessary methods */
    extractAxesProperties(ndim) {
-
-      let histo = this.getHisto();
+      const histo = this.getHisto();
       if (!histo) return;
 
       this.nbinsx = this.nbinsy = this.nbinsz = 0;
@@ -404,9 +401,9 @@ class RHistPainter extends RObjectPainter {
    addInteractivity() {
       // only first painter in list allowed to add interactive functionality to the frame
 
-      let ismain = this.isMainPainter(),
-          second_axis = this.options.second_x || this.options.second_y,
-          fp = ismain || second_axis ? this.getFramePainter() : null;
+      const ismain = this.isMainPainter(),
+            second_axis = this.options.second_x || this.options.second_y,
+            fp = ismain || second_axis ? this.getFramePainter() : null;
       return fp?.addInteractivity(!ismain && second_axis) ?? true;
    }
 
@@ -416,10 +413,8 @@ class RHistPainter extends RObjectPainter {
          return console.error('Get item when display normal histogram');
 
       if (req.reqid === this.current_item_reqid) {
-
-         if (reply !== null) {
+         if (reply !== null)
             this.updateDisplayItem(this.getObject(), reply.item);
-         }
 
          req.resolveFunc(true);
       }
@@ -428,20 +423,18 @@ class RHistPainter extends RObjectPainter {
    /** @summary Special method to request bins from server if existing data insufficient
      * @return {Promise} when ready */
    async drawingBins(reason) {
-
       let is_axes_zoomed = false;
-      if (reason && isStr(reason) && (reason.indexOf('zoom') == 0)) {
+      if (reason && isStr(reason) && (reason.indexOf('zoom') === 0)) {
          if (reason.indexOf('0') > 0) is_axes_zoomed = true;
          if ((this.getDimension() > 1) && (reason.indexOf('1') > 0)) is_axes_zoomed = true;
          if ((this.getDimension() > 2) && (reason.indexOf('2') > 0)) is_axes_zoomed = true;
       }
 
       if (this.isDisplayItem() && is_axes_zoomed && this.v7NormalMode()) {
-
-         let handle = this.prepareDraw({ only_indexes: true });
+         const handle = this.prepareDraw({ only_indexes: true });
 
          // submit request if histogram data not enough for display
-         if (handle.incomplete)
+         if (handle.incomplete) {
             return new Promise(resolveFunc => {
                // use empty kind to always submit request
                let req = this.v7SubmitRequest('', { _typename: `${nsREX}RHistDrawableBase::RRequest` },
@@ -450,10 +443,10 @@ class RHistPainter extends RObjectPainter {
                   this.current_item_reqid = req.reqid; // ignore all previous requests, only this one will be processed
                   req.resolveFunc = resolveFunc;
                   setTimeout(this.processItemReply.bind(this, null, req), 1000); // after 1 s draw something that we can
-               } else {
+               } else
                   resolveFunc(true);
-               }
             });
+         }
       }
 
       return true;
@@ -661,9 +654,8 @@ class RHistPainter extends RObjectPainter {
                this.redrawPad();
             });
 
-            if ((this.options.Lego == 12) || (this.options.Lego == 14)) {
+            if ((this.options.Lego === 12) || (this.options.Lego === 14))
                this.fillPaletteMenu(menu);
-            }
          }
 
          if (isFunc(main.control?.reset))
@@ -710,7 +702,6 @@ class RHistPainter extends RObjectPainter {
 
    /** @summary Calculate histogram inidicies and axes values for each visible bin */
    prepareDraw(args) {
-
       if (!args) args = { rounding: true, extra: 0, middle: 0 };
 
       if (args.extra === undefined) args.extra = 0;

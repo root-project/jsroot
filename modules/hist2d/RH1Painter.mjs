@@ -953,7 +953,6 @@ class RH1Painter extends RHistPainter {
 
    static async _draw(painter, opt) {
       return ensureRCanvas(painter).then(() => {
-
          painter.setAsMainPainter();
 
          painter.options = { Hist: false, Bar: false, BarStyle: 0,
@@ -961,7 +960,8 @@ class RH1Painter extends RHistPainter {
                              Zero: false, Mark: false,
                              Line: false, Fill: false, Lego: 0, Surf: 0,
                              Text: false, TextAngle: 0, TextKind: '', AutoColor: 0,
-                             BarOffset: 0., BarWidth: 1., BaseLine: false, Mode3D: false };
+                             BarOffset: 0, BarWidth: 1, BaseLine: false,
+                             Mode3D: false, FrontBox: false, BackBox: false };
 
          let d = new DrawOptions(opt);
          if (d.check('R3D_', true))
