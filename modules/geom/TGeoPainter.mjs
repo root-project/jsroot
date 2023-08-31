@@ -3862,7 +3862,7 @@ class TGeoPainter extends ObjectPainter {
 
             SetMaxVisNodes: limit => {
                if (!this.ctrl.maxnodes)
-                  this.ctrl.maxnodes = pasrseInt(limit) || 0;
+                  this.ctrl.maxnodes = parseInt(limit) || 0;
             },
 
             SetVisLevel: limit => {
