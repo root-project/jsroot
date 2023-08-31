@@ -275,19 +275,19 @@ function drawEllipse() {
 /** @summary Draw TPie
   * @private */
 function drawPie() {
-   let pie = this.getObject();
-
    this.createG();
 
-   let xc = this.axisToSvg('x', pie.fX),
-       yc = this.axisToSvg('y', pie.fY),
-       rx = this.axisToSvg('x', pie.fX + pie.fRadius) - xc,
-       ry = this.axisToSvg('y', pie.fY + pie.fRadius) - yc;
+   const pie = this.getObject(),
+         nb = pie.fPieSlices.length,
+         xc = this.axisToSvg('x', pie.fX),
+         yc = this.axisToSvg('y', pie.fY),
+         rx = this.axisToSvg('x', pie.fX + pie.fRadius) - xc,
+         ry = this.axisToSvg('y', pie.fY + pie.fRadius) - yc;
 
    makeTranslate(this.draw_g, xc, yc);
 
    // Draw the slices
-   let nb = pie.fPieSlices.length, total = 0,
+   let total = 0,
        af = (pie.fAngularOffset*Math.PI)/180,
        x1 = Math.round(rx*Math.cos(af)),
        y1 = Math.round(ry*Math.sin(af));
@@ -296,13 +296,14 @@ function drawPie() {
       total += pie.fPieSlices[n].fValue;
 
    for (let n = 0; n < nb; n++) {
-      let slice = pie.fPieSlices[n];
+      const slice = pie.fPieSlices[n];
 
-      this.createAttLine({ attr: slice }),
+      this.createAttLine({ attr: slice });
       this.createAttFill({ attr: slice });
 
       af += slice.fValue/total*2*Math.PI;
-      let x2 = Math.round(rx*Math.cos(af)), y2 = Math.round(ry*Math.sin(af));
+      const x2 = Math.round(rx*Math.cos(af)),
+            y2 = Math.round(ry*Math.sin(af));
 
       this.draw_g
           .append('svg:path')
@@ -316,11 +317,11 @@ function drawPie() {
 /** @summary Draw TBox
   * @private */
 function drawBox() {
-   let box = this.getObject(),
-       opt = this.getDrawOpt(),
-       draw_line = (opt.toUpperCase().indexOf('L') >= 0);
+   const box = this.getObject(),
+         opt = this.getDrawOpt(),
+         draw_line = (opt.toUpperCase().indexOf('L') >= 0);
 
-   this.createAttLine({ attr: box }),
+   this.createAttLine({ attr: box });
    this.createAttFill({ attr: box });
 
    // if box filled, contour line drawn only with 'L' draw option:
@@ -337,20 +338,19 @@ function drawBox() {
    this.borderSize = box.fBorderSize;
 
    this.getPathes = () => {
-      let xx = Math.min(this.x1, this.x2), yy = Math.min(this.y1, this.y2),
-          ww = Math.abs(this.x2 - this.x1), hh = Math.abs(this.y1 - this.y2);
-
-      let path = `M${xx},${yy}h${ww}v${hh}h${-ww}z`;
+      const xx = Math.min(this.x1, this.x2), yy = Math.min(this.y1, this.y2),
+            ww = Math.abs(this.x2 - this.x1), hh = Math.abs(this.y1 - this.y2),
+            path = `M${xx},${yy}h${ww}v${hh}h${-ww}z`;
       if (!this.borderMode)
          return [path];
-      let pww = this.borderSize, phh = this.borderSize,
-          side1 = `M${xx},${yy}h${ww}l${-pww},${phh}h${2*pww-ww}v${hh-2*phh}l${-pww},${phh}z`,
-          side2 = `M${xx+ww},${yy+hh}v${-hh}l${-pww},${phh}v${hh-2*phh}h${2*pww-ww}l${-pww},${phh}z`;
+      const pww = this.borderSize, phh = this.borderSize,
+            side1 = `M${xx},${yy}h${ww}l${-pww},${phh}h${2*pww-ww}v${hh-2*phh}l${-pww},${phh}z`,
+            side2 = `M${xx+ww},${yy+hh}v${-hh}l${-pww},${phh}v${hh-2*phh}h${2*pww-ww}l${-pww},${phh}z`;
 
       return (this.borderMode > 0) ? [path, side1, side2] : [path, side2, side1];
    }
 
-   let paths = this.getPathes();
+   const paths = this.getPathes();
 
    this.draw_g
        .append('svg:path')
@@ -374,34 +374,35 @@ function drawBox() {
 
    addMoveHandler(this);
 
-   this.moveStart = function(x,y) {
-      let ww = Math.abs(this.x2 - this.x1), hh = Math.abs(this.y1 - this.y2);
+   this.moveStart = function(x, y) {
+      const ww = Math.abs(this.x2 - this.x1), hh = Math.abs(this.y1 - this.y2);
 
       this.c_x1 = Math.abs(x - this.x2) > ww*0.1;
       this.c_x2 = Math.abs(x - this.x1) > ww*0.1;
       this.c_y1 = Math.abs(y - this.y2) > hh*0.1;
       this.c_y2 = Math.abs(y - this.y1) > hh*0.1;
-      if (this.c_x1 != this.c_x2 && this.c_y1 && this.c_y2)
+      if (this.c_x1 !== this.c_x2 && this.c_y1 && this.c_y2)
          this.c_y1 = this.c_y2 = false;
-      if (this.c_y1 != this.c_y2 && this.c_x1 && this.c_x2)
+      if (this.c_y1 !== this.c_y2 && this.c_x1 && this.c_x2)
          this.c_x1 = this.c_x2 = false;
    }
 
-   this.moveDrag = function(dx,dy) {
+   this.moveDrag = function(dx, dy) {
       if (this.c_x1) this.x1 += dx;
       if (this.c_x2) this.x2 += dx;
       if (this.c_y1) this.y1 += dy;
       if (this.c_y2) this.y2 += dy;
 
-      let nodes = this.draw_g.selectAll('path').nodes(),
-          pathes = this.getPathes();
+      const nodes = this.draw_g.selectAll('path').nodes(),
+            pathes = this.getPathes();
 
       pathes.forEach((path, i) => d3_select(nodes[i]).attr('d', path));
    }
 
    this.moveEnd = function(not_changed) {
       if (not_changed) return;
-      let box = this.getObject(), exec = '';
+      const box = this.getObject();
+      let exec = '';
       if (this.c_x1) { box.fX1 = this.svgToAxis('x', this.x1); exec += `SetX1(${box.fX1});;`; }
       if (this.c_x2) { box.fX2 = this.svgToAxis('x', this.x2); exec += `SetX2(${box.fX2});;`; }
       if (this.c_y1) { box.fY1 = this.svgToAxis('y', this.y1); exec += `SetY1(${box.fY1});;`; }
