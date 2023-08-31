@@ -3619,7 +3619,7 @@ function readMapElement(buf) {
    let i, res = new Array(n);
    if (this.member_wise && (buf.remain() >= 6)) {
       if (buf.ntoi2() == kStreamedMemberWise)
-         buf.shift(4);
+         buf.shift(4); // skip checksum
       else
          buf.shift(-2); // rewind
    }
@@ -3631,9 +3631,16 @@ function readMapElement(buf) {
    }
 
    // due-to member-wise streaming second element read after first is completed
-   if (this.member_wise)
+   if (this.member_wise) {
+      if (buf.remain() >= 6) {
+         if (buf.ntoi2() == kStreamedMemberWise)
+            buf.shift(4); // skip checksum
+         else
+            buf.shift(-2); // rewind
+      }
       for (i = 0; i < n; ++i)
          streamer[1].func(buf, res[i]);
+   }
 
    return res;
 }
