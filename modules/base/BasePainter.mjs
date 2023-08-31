@@ -191,6 +191,7 @@ class DrawOptions {
       val = val ? parseFloat(val) : Number.NaN;
       return !Number.isFinite(val) ? (dflt || 0) : val + (offset || 0);
    }
+
 } // class DrawOptions
 
 
@@ -725,7 +726,7 @@ async function svgToImage(svg, image_format, as_buffer) {
       const doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
       svg = encodeURIComponent(doctype + svg);
       svg = svg.replace(/%([0-9A-F]{2})/g, (match, p1) => {
-          let c = String.fromCharCode('0x'+p1);
+          const c = String.fromCharCode('0x'+p1);
           return c === '%' ? '%25' : c;
       });
       svg = decodeURIComponent(svg);

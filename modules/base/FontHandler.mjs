@@ -58,7 +58,7 @@ class FontHandler {
          this.aver_width = this.weight ? 0.58 : 0.55;
       }
 
-      if ((this.name == 'Symbol') || (this.name == 'Wingdings')) {
+      if ((this.name === 'Symbol') || (this.name === 'Wingdings')) {
          this.isSymbol = this.name;
          this.name = 'Times New Roman';
       } else
