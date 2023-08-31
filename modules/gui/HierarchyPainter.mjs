@@ -2436,15 +2436,14 @@ class HierarchyPainter extends BasePainter {
      * @param {String} itemname - item name
      * @return {Promise} when ready */
    async expandItem(itemname, d3cont, silent) {
-      let hitem = this.findItem(itemname), hpainter = this;
+      const hitem = this.findItem(itemname), hpainter = this;
 
       if (!hitem && d3cont)
          return;
 
-      async function doExpandItem(_item, _obj){
-
+      async function doExpandItem(_item, _obj) {
          if (isStr(_item._expand))
-            _item._expand = findFunction(item._expand);
+            _item._expand = findFunction(_item._expand);
 
          if (!isFunc(_item._expand)) {
             let handle = getDrawHandle(_item._kind, '::expand');
