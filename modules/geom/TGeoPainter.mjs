@@ -4962,7 +4962,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (force_traverse || changed)
          this._scene.traverse(node => {
-            if (!node._no_clip && node.hasOwnProperty('material') && (node.material?.clippingPlanes !== undefined)) {
+            if (!node._no_clip && (node.material?.clippingPlanes !== undefined)) {
 
                if (node.material.clippingPlanes !== panels) {
                   node.material.clipIntersection = ci;
@@ -5304,7 +5304,7 @@ class TGeoPainter extends ObjectPainter {
      * @return undefined when wireframe cannot be accessed
      * @private */
    accessObjectWireFrame(obj, on) {
-      if (!obj.hasOwnProperty('material')) return;
+      if (!obj?.material) return;
 
       if ((on !== undefined) && obj.stack)
          obj.material.wireframe = on;

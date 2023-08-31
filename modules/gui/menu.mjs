@@ -1170,7 +1170,6 @@ class StandaloneMenu extends JSRootMenu {
             else
                sub.textContent = d.text;
             text.appendChild(sub);
-
          }
 
          hovArea.appendChild(text);
@@ -1186,7 +1185,7 @@ class StandaloneMenu extends JSRootMenu {
             }
          }
 
-         if (d.hasOwnProperty('extraText') || d.sub) {
+         if (d.extraText || d.sub) {
             let extraText = document.createElement('span');
             extraText.className = 'jsroot_ctxt_extraText';
             extraText.style = 'margin: 0; padding: 3px 7px; color: rgb(0, 0, 0, 0.6);';
