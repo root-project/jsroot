@@ -11,7 +11,7 @@ let version_id = '7.4.x';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '30/08/2023';
+let version_date = '31/08/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -96268,7 +96268,7 @@ function readMapElement(buf) {
    let i, res = new Array(n);
    if (this.member_wise && (buf.remain() >= 6)) {
       if (buf.ntoi2() == kStreamedMemberWise)
-         buf.shift(4);
+         buf.shift(4); // skip checksum
       else
          buf.shift(-2); // rewind
    }
@@ -96280,9 +96280,16 @@ function readMapElement(buf) {
    }
 
    // due-to member-wise streaming second element read after first is completed
-   if (this.member_wise)
+   if (this.member_wise) {
+      if (buf.remain() >= 6) {
+         if (buf.ntoi2() == kStreamedMemberWise)
+            buf.shift(4); // skip checksum
+         else
+            buf.shift(-2); // rewind
+      }
       for (i = 0; i < n; ++i)
          streamer[1].func(buf, res[i]);
+   }
 
    return res;
 }
@@ -99112,7 +99119,7 @@ async function treeDraw(tree, args) {
 
    if (args.branch) {
       if (!selector.drawOnlyBranch(tree, args.branch, args.expr, args))
-        return Promise.reject(Error('Fail to create draw expression ${args.expr} for branch ${args.branch.fName}'));
+        return Promise.reject(Error(`Fail to create draw expression ${args.expr} for branch ${args.branch.fName}`));
    } else {
       if (!selector.parseDrawExpression(tree, args))
           return Promise.reject(Error(`Fail to create draw expression ${args.expr}`));
@@ -118178,7 +118185,7 @@ class WebWindowHandle {
      * @private */
    createChannel() {
       if (this.master)
-         return master.createChannel();
+         return this.master.createChannel();
 
       let channel = new WebWindowHandle('channel', this.credits);
       channel.wait_first_recv = true; // first received message via the channel is confirmation of established connection

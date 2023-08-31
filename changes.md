@@ -2,8 +2,8 @@
 
 ## Changes in 7.4.x
 1. Fix - correctly use GMT specifier in time format
-2. Fix - missing else in decodeUrl
-3. Fix - add missing browser import
+2. Fix - logical error in decodeUrl
+3. Fix - member-wise streaming of std::map   #262
 
 
 ## Changes in 7.4.2
