@@ -17,7 +17,8 @@ function createTextGeometry(painter, lbl, size) {
    if (isPlainText(lbl))
       return new TextGeometry(translateLaTeX(lbl), { font: HelveticerRegularFont, size, height: 0, curveSegments: 5 });
 
-   let font_size = size * 100, geoms = [], stroke_width = 5;
+   const font_size = size * 100, geoms = [];
+   let stroke_width = 5;
 
    class TextParseWrapper {
 
@@ -77,23 +78,24 @@ function createTextGeometry(painter, lbl, size) {
                   return res;
                };
 
-         if ((name == 'font-size') && value) {
+         if ((name == 'font-size') && value)
             this.font_size = Number.parseInt(value);
-         } else if ((name == 'transform') && isStr(value) && (value.indexOf('translate') == 0)) {
-            let arr = value.slice(value.indexOf('(')+1, value.lastIndexOf(')')).split(',');
+         else if ((name === 'transform') && isStr(value) && (value.indexOf('translate') === 0)) {
+            const arr = value.slice(value.indexOf('(')+1, value.lastIndexOf(')')).split(',');
             this.x += arr[0] ? Number.parseInt(arr[0])*0.01 : 0;
             this.y -= arr[1] ? Number.parseInt(arr[1])*0.01 : 0;
-         } else if ((name == 'x') && (this.kind == 'text')) {
+         } else if ((name === 'x') && (this.kind === 'text'))
             this.x += Number.parseInt(value)*0.01;
-         } else if ((name == 'y') && (this.kind == 'text')) {
+         else if ((name === 'y') && (this.kind === 'text'))
             this.y -= Number.parseInt(value)*0.01;
-         } else if ((name == 'd') && (this.kind == 'path')) {
-            if (get() != 'M') return console.error('Not starts with M');
-            let x1 = getN(true), y1 = getN(), next, pnts = [];
+         else if ((name === 'd') && (this.kind === 'path')) {
+            if (get() !== 'M') return console.error('Not starts with M');
+            const pnts = [];
+            let x1 = getN(true), y1 = getN(), next;
 
-            while (next = get()) {
+            while ((next = get())) {
                let x2 = x1, y2 = y1;
-               switch(next) {
+               switch (next) {
                    case 'L': x2 = getN(true); y2 = getN(); break;
                    case 'l': x2 += getN(true); y2 += getN(); break;
                    case 'H': x2 = getN(); break;
@@ -103,9 +105,9 @@ function createTextGeometry(painter, lbl, size) {
                    default: console.log('not supported operator', next);
                }
 
-               let angle = Math.atan2(y2-y1, x2-x1),
-                   dx = 0.5 * stroke_width * Math.sin(angle),
-                   dy = -0.5 * stroke_width * Math.cos(angle);
+               const angle = Math.atan2(y2-y1, x2-x1),
+                     dx = 0.5 * stroke_width * Math.sin(angle),
+                     dy = -0.5 * stroke_width * Math.cos(angle);
 
                pnts.push(x1-dx, y1-dy, 0, x2-dx, y2-dy, 0, x2+dx, y2+dy, 0, x1-dx, y1-dy, 0, x2+dx, y2+dy, 0, x1+dx, y1+dy, 0);
 
@@ -128,12 +130,11 @@ function createTextGeometry(painter, lbl, size) {
          if (this.kind == 'text') {
             this.geom = new TextGeometry(v, { font: HelveticerRegularFont, size: Math.round(0.01*this.font_size), height: 0, curveSegments: 5 });
             geoms.push(this.geom);
-         };
+         }
       }
+   }
 
-   };
-
-   let node = new TextParseWrapper,
+   let node = new TextParseWrapper(),
        arg = { font_size, latex: 1, x: 0, y: 0, text: lbl, align: [ 'start', 'top'], fast: true, font: { size: font_size, isMonospace: () => false, aver_width: 0.9 } };
 
    produceLatex(painter, node, arg);
@@ -189,9 +190,6 @@ function testAxisVisibility(camera, toplevel, fb, bb) {
       return;
    }
 
-   fb = fb ? true : false;
-   bb = bb ? true : false;
-
    let qudrant = 1, pos = camera.position;
    if ((pos.x < 0) && (pos.y >= 0)) qudrant = 2;
    if ((pos.x >= 0) && (pos.y >= 0)) qudrant = 3;
@@ -201,13 +199,14 @@ function testAxisVisibility(camera, toplevel, fb, bb) {
       if (id <= qudrant) id += 4;
       return (id > qudrant) && (id < qudrant+range);
    }, handleZoomMesh = obj3d => {
-      for (let k = 0; k < obj3d.children?.length; ++k)
+      for (let k = 0; k < obj3d.children?.length; ++k) {
          if (obj3d.children[k].zoom !== undefined)
             obj3d.children[k].zoom_disabled = !obj3d.visible;
+      }
    };
 
    for (let n = 0; n < top.children.length; ++n) {
-      let chld = top.children[n];
+      const chld = top.children[n];
       if (chld.grid)
          chld.visible = bb && testVisible(chld.grid, 3);
       else if (chld.zid) {
