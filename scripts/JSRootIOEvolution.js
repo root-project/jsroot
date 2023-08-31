@@ -3027,9 +3027,16 @@
       }
 
       // due-to member-wise streaming second element read after first is completed
-      if (this.member_wise)
+      if (this.member_wise) {
+         if (buf.remain() >= 6) {
+            if (buf.ntoi2() == JSROOT.IO.kStreamedMemberWise)
+               buf.shift(4);
+            else
+               buf.shift(-2); // rewind
+         }
          for (i=0;i<n;++i)
             streamer[1].func(buf, res[i]);
+      }
 
       return res;
    }
