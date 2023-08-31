@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '30/08/2023',
+version_date = '31/08/2023',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -7843,7 +7843,7 @@ function getElementRect(elem, sizearg) {
    if (!elem || elem.empty())
       return { x: 0, y: 0, width: 0, height: 0 };
 
-   if ((isNodeJs() && (sizearg != 'bbox')) || elem.property('_batch_mode'))
+   if ((isNodeJs() && (sizearg !== 'bbox')) || elem.property('_batch_mode'))
       return { x: 0, y: 0, width: parseInt(elem.attr('width')), height: parseInt(elem.attr('height')) };
 
    const styleValue = name => {
@@ -7854,10 +7854,10 @@ function getElementRect(elem, sizearg) {
    };
 
    let rect = elem.node().getBoundingClientRect();
-   if ((sizearg == 'bbox') && (parseFloat(rect.width) > 0))
+   if ((sizearg === 'bbox') && (parseFloat(rect.width) > 0))
       rect = elem.node().getBBox();
 
-   let res = { x: 0, y: 0, width: parseInt(rect.width), height: parseInt(rect.height) };
+   const res = { x: 0, y: 0, width: parseInt(rect.width), height: parseInt(rect.height) };
    if (rect.left !== undefined) {
       res.x = parseInt(rect.left);
       res.y = parseInt(rect.top);
@@ -7866,7 +7866,7 @@ function getElementRect(elem, sizearg) {
       res.y = parseInt(rect.y);
    }
 
-   if ((sizearg === undefined) || (sizearg == 'nopadding')) {
+   if ((sizearg === undefined) || (sizearg === 'nopadding')) {
       // this is size exclude padding area
       res.width -= styleValue('padding-left') + styleValue('padding-right');
       res.height -= styleValue('padding-top') + styleValue('padding-bottom');
@@ -7879,8 +7879,10 @@ function getElementRect(elem, sizearg) {
 /** @summary Calculate absolute position of provided element in canvas
   * @private */
 function getAbsPosInCanvas(sel, pos) {
-   while (pos && !sel.empty() && !sel.classed('root_canvas')) {
-      let cl = sel.attr('class');
+   if (!pos) return pos;
+
+   while (!sel.empty() && !sel.classed('root_canvas')) {
+      const cl = sel.attr('class');
       if (cl && ((cl.indexOf('root_frame') >= 0) || (cl.indexOf('__root_pad_') >= 0))) {
          pos.x += sel.property('draw_x') || 0;
          pos.y += sel.property('draw_y') || 0;
@@ -7901,24 +7903,23 @@ function floatToString(value, fmt, ret_fmt) {
    if (!fmt) fmt = '6.4g';
 
    fmt = fmt.trim();
-   let len = fmt.length;
+   const len = fmt.length;
    if (len < 2)
       return ret_fmt ? [value.toFixed(4), '6.4f'] : value.toFixed(4);
-   let last = fmt[len-1];
-   fmt = fmt.slice(0,len-1);
+   const last = fmt[len-1];
+   fmt = fmt.slice(0, len-1);
    let isexp, prec = fmt.indexOf('.');
    prec = (prec < 0) ? 4 : parseInt(fmt.slice(prec+1));
    if (!Number.isInteger(prec) || (prec <= 0)) prec = 4;
 
    let significance = false;
-   if ((last == 'e') || (last == 'E')) { isexp = true; } else
-   if (last == 'Q') { isexp = true; significance = true; } else
-   if ((last == 'f') || (last == 'F')) { isexp = false; } else
-   if (last == 'W') { isexp = false; significance = true; } else
-   if ((last == 'g') || (last == 'G')) {
-      let se = floatToString(value, fmt+'Q', true),
-          sg = floatToString(value, fmt+'W', true);
-
+   if ((last === 'e') || (last === 'E')) isexp = true; else
+   if (last === 'Q') { isexp = true; significance = true; } else
+   if ((last === 'f') || (last === 'F')) isexp = false; else
+   if (last === 'W') { isexp = false; significance = true; } else
+   if ((last === 'g') || (last === 'G')) {
+      const se = floatToString(value, fmt+'Q', true);
+      let sg = floatToString(value, fmt+'W', true);
       if (se[0].length < sg[0].length) sg = se;
       return ret_fmt ? sg : sg[0];
    } else {
@@ -7931,27 +7932,25 @@ function floatToString(value, fmt, ret_fmt) {
       if (significance) prec--;
       if (prec < 0) prec = 0;
 
-      let se = value.toExponential(prec);
-
+      const se = value.toExponential(prec);
       return ret_fmt ? [se, `5.${prec}e`] : se;
    }
 
    let sg = value.toFixed(prec);
 
    if (significance) {
-
       // when using fixed representation, one could get 0
       if (value && (Number(sg) === 0) && (prec > 0)) {
          prec = 20; sg = value.toFixed(prec);
       }
 
       let l = 0;
-      while ((l < sg.length) && (sg[l] == '0' || sg[l] == '-' || sg[l] == '.')) l++;
+      while ((l < sg.length) && (sg[l] === '0' || sg[l] === '-' || sg[l] === '.')) l++;
 
       let diff = sg.length - l - prec;
       if (sg.indexOf('.') > l) diff--;
 
-      if (diff != 0) {
+      if (diff !== 0) {
          prec -= diff;
          if (prec < 0)
             prec = 0;
@@ -7977,7 +7976,7 @@ class DrawOptions {
    /** @summary Returns true if remaining options are empty or contain only seperators symbols. */
    empty() {
       if (this.opt.length === 0) return true;
-      return this.opt.replace(/[ ;_,]/g, '').length == 0;
+      return this.opt.replace(/[ ;_,]/g, '').length === 0;
    }
 
    /** @summary Returns remaining part of the draw options. */
@@ -7985,7 +7984,7 @@ class DrawOptions {
 
    /** @summary Checks if given option exists */
    check(name, postpart) {
-      let pos = this.opt.indexOf(name);
+      const pos = this.opt.indexOf(name);
       if (pos < 0) return false;
       this.opt = this.opt.slice(0, pos) + this.opt.slice(pos + name.length);
       this.part = '';
@@ -8002,12 +8001,13 @@ class DrawOptions {
 
    /** @summary Returns remaining part of found option as integer. */
    partAsInt(offset, dflt) {
-      let mult = 1, last = this.part ? this.part[this.part.length - 1] : '';
-      if (last == 'K')
+      let mult = 1;
+      const last = this.part ? this.part[this.part.length - 1] : '';
+      if (last === 'K')
          mult = 1e3;
-      else if (last == 'M')
+      else if (last === 'M')
          mult = 1e6;
-      else if (last == 'G')
+      else if (last === 'G')
          mult = 1e9;
       let val = this.part.replace(/^\D+/g, '');
       val = val ? parseInt(val, 10) : Number.NaN;
@@ -8026,9 +8026,11 @@ class DrawOptions {
 /** @summary Simple random generator with controlled seed
   * @private */
 class TRandom {
+
    constructor(i) {
       if (i !== undefined) this.seed(i);
    }
+
    /** @summary Seed simple random generator */
    seed(i) {
       i = Math.abs(i);
@@ -8039,6 +8041,7 @@ class TRandom {
       this.m_w = Math.round(i);
       this.m_z = 987654321;
    }
+
    /** @summary Produce random value between 0 and 1 */
    random() {
       if (this.m_z === undefined) return Math.random();
@@ -8048,6 +8051,7 @@ class TRandom {
       result /= 4294967296;
       return result + 0.5;
    }
+
 } // class TRandom
 
 
@@ -8055,7 +8059,6 @@ class TRandom {
   * @desc Reuse code from https://stackoverflow.com/questions/62855310
   * @private */
 function buildSvgCurve(p, args) {
-
    if (!args)
       args = {};
    if (!args.line)
@@ -8080,9 +8083,9 @@ function buildSvgCurve(p, args) {
    }
 
    const end_point = (pnt1, pnt2, sign) => {
-      let len = Math.sqrt((pnt2.gry - pnt1.gry)**2 + (pnt2.grx - pnt1.grx)**2) * args.t,
-          a2 = Math.atan2(pnt2.dgry, pnt2.dgrx),
-          a1 = Math.atan2(sign*(pnt2.gry - pnt1.gry), sign*(pnt2.grx - pnt1.grx));
+      const len = Math.sqrt((pnt2.gry - pnt1.gry)**2 + (pnt2.grx - pnt1.grx)**2) * args.t,
+            a2 = Math.atan2(pnt2.dgry, pnt2.dgrx),
+            a1 = Math.atan2(sign*(pnt2.gry - pnt1.gry), sign*(pnt2.grx - pnt1.grx));
 
       pnt1.dgrx = len * Math.cos(2*a1 - a2);
       pnt1.dgry = len * Math.sin(2*a1 - a2);
@@ -8090,10 +8093,10 @@ function buildSvgCurve(p, args) {
       if (!args.ndig || (Math.round(val) === val))
          return val.toFixed(0);
       let s = val.toFixed(args.ndig), p = s.length-1;
-      while (s[p] == '0') p--;
-      if (s[p] == '.') p--;
+      while (s[p] === '0') p--;
+      if (s[p] === '.') p--;
       s = s.slice(0, p+1);
-      return (s == '-0') ? '0' : s;
+      return (s === '-0') ? '0' : s;
    };
 
    if (args.calc) {
@@ -8103,9 +8106,9 @@ function buildSvgCurve(p, args) {
       }
 
       if (npnts > 2) {
-         end_point(p[0], p[1], 1.);
+         end_point(p[0], p[1], 1);
          end_point(p[npnts - 1], p[npnts - 2], -1);
-      } else if (p.length == 2) {
+      } else if (p.length === 2) {
          p[0].dgrx = (p[1].grx - p[0].grx) * args.t;
          p[0].dgry = (p[1].gry - p[0].gry) * args.t;
          p[1].dgrx = -p[0].dgrx;
@@ -8140,9 +8143,9 @@ function buildSvgCurve(p, args) {
       };
 
       for (let n = 1; n < npnts; ++n) {
-         let bin = p[n],
-             dx = Math.round(bin.grx) - currx,
-             dy = Math.round(bin.gry) - curry;
+         const bin = p[n],
+               dx = Math.round(bin.grx) - currx,
+               dy = Math.round(bin.gry) - curry;
          if (dx && dy) {
             flush();
             path += `l${dx},${dy}`;
@@ -8157,17 +8160,16 @@ function buildSvgCurve(p, args) {
       }
 
       flush();
-
    } else {
       // build line with trying optimize many vertical moves
       let currx = Math.round(p[0].grx), curry = Math.round(p[0].gry),
           cminy = curry, cmaxy = curry, prevy = curry;
 
       for (let n = 1; n < npnts; ++n) {
-         let bin = p[n],
-             lastx = Math.round(bin.grx),
-             lasty = Math.round(bin.gry),
-             dx = lastx - currx;
+         const bin = p[n],
+               lastx = Math.round(bin.grx),
+               lasty = Math.round(bin.gry),
+               dx = lastx - currx;
          if (dx === 0) {
             // if X not change, just remember amplitude and
             cminy = Math.min(cminy, lasty);
@@ -8177,14 +8179,14 @@ function buildSvgCurve(p, args) {
          }
 
          if (cminy !== cmaxy) {
-            if (cminy != curry)
+            if (cminy !== curry)
                path += `v${cminy-curry}`;
             path += `v${cmaxy-cminy}`;
-            if (cmaxy != prevy)
+            if (cmaxy !== prevy)
                path += `v${prevy-cmaxy}`;
             curry = prevy;
          }
-         let dy = lasty - curry;
+         const dy = lasty - curry;
          if (dy)
             path += `l${dx},${dy}`;
          else
@@ -8193,11 +8195,11 @@ function buildSvgCurve(p, args) {
          prevy = cminy = cmaxy = lasty;
       }
 
-      if (cminy != cmaxy) {
-         if (cminy != curry)
+      if (cminy !== cmaxy) {
+         if (cminy !== curry)
             path += `v${cminy-curry}`;
          path += `v${cmaxy-cminy}`;
-         if (cmaxy != prevy)
+         if (cmaxy !== prevy)
             path += `v${prevy-cmaxy}`;
       }
    }
@@ -8212,17 +8214,16 @@ function buildSvgCurve(p, args) {
   * @desc removes extra info or empty elements
   * @private */
 function compressSVG(svg) {
-
-   svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g, 'url(#$1)')        // decode all URL
-            .replace(/ class=\"\w*\"/g, '')                                // remove all classes
-            .replace(/ pad=\"\w*\"/g, '')                                  // remove all pad ids
-            .replace(/ title=\"\"/g, '')                                   // remove all empty titles
-            .replace(/<g objname=\"\w*\" objtype=\"\w*\"/g, '<g')          // remove object ids
-            .replace(/<g transform=\"translate\(\d+\,\d+\)\"><\/g>/g, '')  // remove all empty groups with transform
-            .replace(/<g><\/g>/g, '');                                     // remove all empty groups
+   svg = svg.replace(/url\(&quot;#(\w+)&quot;\)/g, 'url(#$1)')         // decode all URL
+            .replace(/ class="\w*"/g, '')                              // remove all classes
+            .replace(/ pad="\w*"/g, '')                                // remove all pad ids
+            .replace(/ title=""/g, '')                                 // remove all empty titles
+            .replace(/<g objname="\w*" objtype="\w*"/g, '<g')          // remove object ids
+            .replace(/<g transform="translate\(\d+,\d+\)"><\/g>/g, '') // remove all empty groups with transform
+            .replace(/<g><\/g>/g, '');                                 // remove all empty groups
 
    // remove all empty frame svgs, typically appears in 3D drawings, maybe should be improved in frame painter itself
-   svg = svg.replace(/<svg x=\"0\" y=\"0\" overflow=\"hidden\" width=\"\d+\" height=\"\d+\" viewBox=\"0 0 \d+ \d+\"><\/svg>/g, '');
+   svg = svg.replace(/<svg x="0" y="0" overflow="hidden" width="\d+" height="\d+" viewBox="0 0 \d+ \d+"><\/svg>/g, '');
 
    return svg;
 }
@@ -8263,27 +8264,25 @@ class BasePainter {
      * @param {string} [is_direct] - if 'origin' specified, returns original element even if actual drawing moved to some other place
      * @return {object} d3.select object for main element for drawing */
    selectDom(is_direct) {
-
       if (!this.divid) return select(null);
 
       let res = this._selected_main;
       if (!res) {
          if (isStr(this.divid)) {
             let id = this.divid;
-            if (id[0] != '#') id = '#' + id;
+            if (id[0] !== '#') id = '#' + id;
             res = select(id);
             if (!res.empty()) this.divid = res.node();
-         } else {
+         } else
             res = select(this.divid);
-         }
          this._selected_main = res;
       }
 
       if (!res || res.empty() || (is_direct === 'origin')) return res;
 
-      let use_enlarge = res.property('use_enlarge'),
-          layout = res.property('layout') || 'simple',
-          layout_selector = (layout == 'simple') ? '' : res.property('layout_selector');
+      const use_enlarge = res.property('use_enlarge'),
+            layout = res.property('layout') || 'simple',
+            layout_selector = (layout === 'simple') ? '' : res.property('layout_selector');
 
       if (layout_selector)
          res = res.select(layout_selector);
@@ -8298,11 +8297,11 @@ class BasePainter {
    /** @summary Access/change top painter
      * @private */
    _accessTopPainter(on) {
-      let chld = this.selectDom().node()?.firstChild;
+      const chld = this.selectDom().node()?.firstChild;
       if (!chld) return null;
-      if (on === true) {
+      if (on === true)
          chld.painter = this;
-      } else if (on === false)
+      else if (on === false)
          delete chld.painter;
       return chld.painter;
    }
@@ -8330,7 +8329,7 @@ class BasePainter {
      * @desc Removes all visible elements and all internal data */
    cleanup(keep_origin) {
       this.clearTopPainter();
-      let origin = this.selectDom('origin');
+      const origin = this.selectDom('origin');
       if (!origin.empty() && !keep_origin) origin.html('');
       this.divid = null;
       delete this._selected_main;
@@ -8354,21 +8353,21 @@ class BasePainter {
      * @return size of area when main div is drawn
      * @private */
    testMainResize(check_level, new_size, height_factor) {
+      const enlarge = this.enlargeMain('state'),
+            origin = this.selectDom('origin'),
+            main = this.selectDom(),
+            lmt = 5; // minimal size
 
-      let enlarge = this.enlargeMain('state'),
-          origin = this.selectDom('origin'),
-          main = this.selectDom(),
-          lmt = 5; // minimal size
-
-      if ((enlarge !== 'on') && new_size?.width && new_size?.height)
+      if ((enlarge !== 'on') && new_size?.width && new_size?.height) {
          origin.style('width', new_size.width + 'px')
                .style('height', new_size.height + 'px');
+      }
 
-      let rect_origin = getElementRect(origin, true),
-          can_resize = origin.attr('can_resize'),
-          do_resize = false;
+      const rect_origin = getElementRect(origin, true),
+            can_resize = origin.attr('can_resize');
+      let do_resize = false;
 
-      if (can_resize == 'height')
+      if (can_resize === 'height')
          if (height_factor && Math.abs(rect_origin.width * height_factor - rect_origin.height) > 0.1 * rect_origin.width) do_resize = true;
 
       if (((rect_origin.height <= lmt) || (rect_origin.width <= lmt)) &&
@@ -8380,23 +8379,21 @@ class BasePainter {
          if (rect_origin.width > lmt) {
             height_factor = height_factor || 0.66;
             origin.style('height', Math.round(rect_origin.width * height_factor) + 'px');
-         } else if (can_resize !== 'height') {
+         } else if (can_resize !== 'height')
             origin.style('width', '200px').style('height', '100px');
-         }
       }
 
-      let rect = getElementRect(main),
-          old_h = main.property('_jsroot_height'),
-          old_w = main.property('_jsroot_width');
+      const rect = getElementRect(main),
+            old_h = main.property('_jsroot_height'),
+            old_w = main.property('_jsroot_width');
 
       rect.changed = false;
 
       if (old_h && old_w && (old_h > 0) && (old_w > 0)) {
          if ((old_h !== rect.height) || (old_w !== rect.width))
             rect.changed = (check_level > 1) || (rect.width / old_w < 0.99) || (rect.width / old_w > 1.01) || (rect.height / old_h < 0.99) || (rect.height / old_h > 1.01);
-      } else {
+      } else
          rect.changed = true;
-      }
 
       if (rect.changed)
          main.property('_jsroot_height', rect.height).property('_jsroot_width', rect.width);
@@ -8421,15 +8418,14 @@ class BasePainter {
      * if action not specified, just return possibility to enlarge main div
      * @protected */
    enlargeMain(action, skip_warning) {
-
-      let main = this.selectDom(true),
-          origin = this.selectDom('origin');
+      const main = this.selectDom(true),
+            origin = this.selectDom('origin');
 
       if (main.empty() || !settings.CanEnlarge || (origin.property('can_enlarge') === false)) return false;
 
       if ((action === undefined) || (action === 'verify')) return true;
 
-      let state = origin.property('use_enlarge') ? 'on' : 'off';
+      const state = origin.property('use_enlarge') ? 'on' : 'off';
 
       if (action === 'state') return state;
 
@@ -8445,17 +8441,18 @@ class BasePainter {
             .attr('id', 'jsroot_enlarge_div')
             .attr('style', 'position: fixed; margin: 0px; border: 0px; padding: 0px; inset: 1px; background: white; opacity: 0.95; z-index: 100; overflow: hidden;');
 
-         let rect1 = getElementRect(main),
-             rect2 = getElementRect(enlarge);
+         const rect1 = getElementRect(main),
+               rect2 = getElementRect(enlarge);
 
          // if new enlarge area not big enough, do not do it
-         if ((rect2.width <= rect1.width) || (rect2.height <= rect1.height))
+         if ((rect2.width <= rect1.width) || (rect2.height <= rect1.height)) {
             if (rect2.width * rect2.height < rect1.width * rect1.height) {
                if (!skip_warning)
                   console.log(`Enlarged area ${rect2.width} x ${rect2.height} smaller then original drawing ${rect1.width} x ${rect1.height}`);
                enlarge.remove();
                return false;
             }
+         }
 
          while (main.node().childNodes.length > 0)
             enlarge.node().appendChild(main.node().firstChild);
@@ -8465,7 +8462,6 @@ class BasePainter {
          return true;
       }
       if ((action === false) && (state !== 'off')) {
-
          while (enlarge.node() && enlarge.node().childNodes.length > 0)
             main.node().appendChild(enlarge.node().firstChild);
 
@@ -8508,11 +8504,10 @@ class BasePainter {
   * @private */
 async function _loadJSDOM() {
    return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(handle => {
-
       if (!internals.nodejs_window) {
          internals.nodejs_window = (new handle.JSDOM('<!DOCTYPE html>hello')).window;
          internals.nodejs_document = internals.nodejs_window.document; // used with three.js
-         internals.nodejs_body = select(internals.nodejs_document).select('body'); //get d3 handle for body
+         internals.nodejs_body = select(internals.nodejs_document).select('body'); // get d3 handle for body
       }
 
       return { JSDOM: handle.JSDOM, doc: internals.nodejs_document, body: internals.nodejs_body };
@@ -8526,7 +8521,7 @@ function makeTranslate(g, x, y) {
    if (!isObject(g)) {
       y = x; x = g; g = null;
    }
-   let res = y ? `translate(${x},${y})` : (x ? `translate(${x})` : null);
+   const res = y ? `translate(${x},${y})` : (x ? `translate(${x})` : null);
    return g ? g.attr('transform', res) : res;
 }
 
@@ -8534,13 +8529,14 @@ function makeTranslate(g, x, y) {
 /** @summary Configure special style used for highlight or dragging elements
   * @private */
 function addHighlightStyle(elem, drag) {
-   if (drag)
+   if (drag) {
       elem.style('stroke', 'steelblue')
           .style('fill-opacity', '0.1');
-   else
+   } else {
       elem.style('stroke', '#4572A7')
           .style('fill', '#4572A7')
           .style('opacity', '0');
+   }
 }
 
 /** @summary Create image based on SVG
@@ -8550,8 +8546,7 @@ function addHighlightStyle(elem, drag) {
   * @return {Promise} with produced image in base64 form or as Buffer (or canvas when no image_format specified)
   * @private */
 async function svgToImage(svg, image_format, as_buffer) {
-
-   if (image_format == 'svg')
+   if (image_format === 'svg')
       return svg;
 
    if (!isNodeJs()) {
@@ -8567,9 +8562,8 @@ async function svgToImage(svg, image_format, as_buffer) {
 
    const img_src = 'data:image/svg+xml;base64,' + btoa_func(svg);
 
-   if (isNodeJs())
+   if (isNodeJs()) {
       return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(async handle => {
-
          return handle.default.loadImage(img_src).then(img => {
             const canvas = handle.default.createCanvas(img.width, img.height);
 
@@ -8580,13 +8574,13 @@ async function svgToImage(svg, image_format, as_buffer) {
             return image_format ? canvas.toDataURL('image/' + image_format) : canvas;
          });
       });
+   }
 
    return new Promise(resolveFunc => {
-
       const image = document.createElement('img');
 
       image.onload = function() {
-         let canvas = document.createElement('canvas');
+         const canvas = document.createElement('canvas');
          canvas.width = image.width;
          canvas.height = image.height;
 
@@ -8611,16 +8605,14 @@ const root_fonts = ['Arial', 'iTimes New Roman',
       'oArial', 'bArial', 'boArial', 'Courier New',
       'oCourier New', 'bCourier New', 'boCourier New',
       'Symbol', 'Times New Roman', 'Wingdings', 'iSymbol',
-      'Verdana', 'iVerdana', 'bVerdana', 'biVerdana'];
-
-
+      'Verdana', 'iVerdana', 'bVerdana', 'biVerdana'],
 // taken from symbols.html, counted only for letters and digits
-const root_fonts_aver_width = [0.5778,0.5314,
+root_fonts_aver_width = [0.5778, 0.5314,
       0.5809, 0.5540, 0.5778,
-      0.5783,0.6034,0.6030,0.6003,
-      0.6004,0.6003,0.6005,
-      0.5521,0.5521,0.5664,0.5314,
-      0.5664,0.5495,0.5748,0.5578];
+      0.5783, 0.6034, 0.6030, 0.6003,
+      0.6004, 0.6003, 0.6005,
+      0.5521, 0.5521, 0.5664, 0.5314,
+      0.5664, 0.5495, 0.5748, 0.5578];
 
 /**
  * @summary Helper class for font handling
@@ -8644,9 +8636,8 @@ class FontHandler {
       this.scale = scale;
 
       if (fontIndex !== null) {
-
-         let indx = Math.floor(fontIndex / 10),
-             fontName = root_fonts[indx] || 'Arial';
+         const indx = Math.floor(fontIndex / 10);
+         let fontName = root_fonts[indx] || 'Arial';
 
          while (fontName) {
             if (fontName[0] === 'b')
@@ -8672,9 +8663,8 @@ class FontHandler {
       if ((this.name == 'Symbol') || (this.name == 'Wingdings')) {
          this.isSymbol = this.name;
          this.name = 'Times New Roman';
-      } else {
+      } else
          this.isSymbol = '';
-      }
 
       this.func = this.setFont.bind(this);
    }
@@ -8682,9 +8672,10 @@ class FontHandler {
    /** @summary Assigns font-related attributes */
    setFont(selection, arg) {
       selection.attr('font-family', this.name);
-      if (arg != 'without-size')
+      if (arg !== 'without-size') {
          selection.attr('font-size', this.size)
                   .attr('xml:space', 'preserve');
+      }
       selection.attr('font-weight', this.weight || null);
       selection.attr('font-style', this.style || null);
    }
@@ -8724,8 +8715,8 @@ class FontHandler {
    /** @summary Returns true in case of monospace font
      * @private */
    isMonospace() {
-      let n = this.name.toLowerCase();
-      return (n.indexOf('courier') == 0) || (n == 'monospace') || (n == 'monaco');
+      const n = this.name.toLowerCase();
+      return (n.indexOf('courier') === 0) || (n === 'monospace') || (n === 'monaco');
    }
 
    /** @summary Return full font declaration which can be set as font property like '12pt Arial bold'
@@ -8922,37 +8913,39 @@ const symbols_map = {
    '#left': '',
    '#right': '',
    '{}': ''
-};
+},
 
 /** @summary Create a single regex to detect any symbol to replace
   * @private */
-const symbolsRegexCache = new RegExp('(' + Object.keys(symbols_map).join('|').replace(/\\\{/g, '{').replace(/\\\}/g, '}') + ')', 'g');
+symbolsRegexCache = new RegExp('(' + Object.keys(symbols_map).join('|').replace(/\\\{/g, '{').replace(/\\\}/g, '}') + ')', 'g'),
 
 /** @summary Simple replacement of latex letters
   * @private */
-const translateLaTeX = str => {
-   while ((str.length > 2) && (str[0] == '{') && (str[str.length - 1] == '}'))
+translateLaTeX = str => {
+   while ((str.length > 2) && (str[0] === '{') && (str[str.length - 1] === '}'))
       str = str.slice(1, str.length - 1);
 
    return str.replace(symbolsRegexCache, ch => symbols_map[ch]).replace(/\{\}/g, '');
-};
+},
 
 // array with relative width of base symbols from range 32..126
-const base_symbols_width = [453,535,661,973,955,1448,1242,324,593,596,778,1011,431,570,468,492,947,885,947,947,947,947,947,947,947,947,511,495,980,1010,987,893,1624,1185,1147,1193,1216,1080,1028,1270,1274,531,910,1177,1004,1521,1252,1276,1111,1276,1164,1056,1073,1215,1159,1596,1150,1124,1065,540,591,540,837,874,572,929,972,879,973,901,569,967,973,453,458,903,453,1477,973,970,972,976,638,846,548,973,870,1285,884,864,835,656,430,656,1069];
+// eslint-disable-next-line
+base_symbols_width = [453,535,661,973,955,1448,1242,324,593,596,778,1011,431,570,468,492,947,885,947,947,947,947,947,947,947,947,511,495,980,1010,987,893,1624,1185,1147,1193,1216,1080,1028,1270,1274,531,910,1177,1004,1521,1252,1276,1111,1276,1164,1056,1073,1215,1159,1596,1150,1124,1065,540,591,540,837,874,572,929,972,879,973,901,569,967,973,453,458,903,453,1477,973,970,972,976,638,846,548,973,870,1285,884,864,835,656,430,656,1069],
 
-const extra_symbols_width = {945:1002,946:996,967:917,948:953,949:834,966:1149,947:847,951:989,953:516,954:951,955:913,956:1003,957:862,959:967,960:1070,952:954,961:973,963:1017,964:797,965:944,982:1354,969:1359,958:803,968:1232,950:825,913:1194,914:1153,935:1162,916:1178,917:1086,934:1358,915:1016,919:1275,921:539,977:995,922:1189,923:1170,924:1523,925:1253,927:1281,928:1281,920:1285,929:1102,931:1041,932:1069,933:1135,962:848,937:1279,926:1092,936:1334,918:1067,978:1154,8730:986,8804:940,8260:476,8734:1453,402:811,9827:1170,9830:931,9829:1067,9824:965,8596:1768,8592:1761,8593:895,8594:1761,8595:895,710:695,177:955,8243:680,8805:947,215:995,8733:1124,8706:916,8226:626,247:977,8800:969,8801:1031,8776:976,8230:1552,175:883,8629:1454,8501:1095,8465:1002,8476:1490,8472:1493,8855:1417,8853:1417,8709:1205,8745:1276,8746:1404,8839:1426,8835:1426,8836:1426,8838:1426,8834:1426,8747:480,8712:1426,8713:1426,8736:1608,8711:1551,174:1339,169:1339,8482:1469,8719:1364,729:522,172:1033,8743:1383,8744:1383,8660:1768,8656:1496,8657:1447,8658:1496,8659:1447,8721:1182,9115:882,9144:1000,9117:882,8970:749,9127:1322,9128:1322,8491:1150,229:929,8704:1397,8707:1170,8901:524,183:519,10003:1477,732:692,295:984,9725:1780,9744:1581,8741:737,8869:1390,8857:1421};
+// eslint-disable-next-line
+extra_symbols_width = {945:1002,946:996,967:917,948:953,949:834,966:1149,947:847,951:989,953:516,954:951,955:913,956:1003,957:862,959:967,960:1070,952:954,961:973,963:1017,964:797,965:944,982:1354,969:1359,958:803,968:1232,950:825,913:1194,914:1153,935:1162,916:1178,917:1086,934:1358,915:1016,919:1275,921:539,977:995,922:1189,923:1170,924:1523,925:1253,927:1281,928:1281,920:1285,929:1102,931:1041,932:1069,933:1135,962:848,937:1279,926:1092,936:1334,918:1067,978:1154,8730:986,8804:940,8260:476,8734:1453,402:811,9827:1170,9830:931,9829:1067,9824:965,8596:1768,8592:1761,8593:895,8594:1761,8595:895,710:695,177:955,8243:680,8805:947,215:995,8733:1124,8706:916,8226:626,247:977,8800:969,8801:1031,8776:976,8230:1552,175:883,8629:1454,8501:1095,8465:1002,8476:1490,8472:1493,8855:1417,8853:1417,8709:1205,8745:1276,8746:1404,8839:1426,8835:1426,8836:1426,8838:1426,8834:1426,8747:480,8712:1426,8713:1426,8736:1608,8711:1551,174:1339,169:1339,8482:1469,8719:1364,729:522,172:1033,8743:1383,8744:1383,8660:1768,8656:1496,8657:1447,8658:1496,8659:1447,8721:1182,9115:882,9144:1000,9117:882,8970:749,9127:1322,9128:1322,8491:1150,229:929,8704:1397,8707:1170,8901:524,183:519,10003:1477,732:692,295:984,9725:1780,9744:1581,8741:737,8869:1390,8857:1421};
 
 /** @ummary Calculate approximate labels width
   * @private */
 function approximateLabelWidth(label, font, fsize) {
-   let len = label.length,
-       symbol_width = (fsize || font.size) * font.aver_width;
+   const len = label.length,
+         symbol_width = (fsize || font.size) * font.aver_width;
    if (font.isMonospace())
       return len * symbol_width;
 
    let sum = 0;
    for (let i = 0; i < len; ++i) {
-      let code = label.charCodeAt(i);
+      const code = label.charCodeAt(i);
       if ((code >= 32) && (code < 127))
          sum += base_symbols_width[code - 32];
       else
@@ -9004,16 +8997,19 @@ const latex_features = [
 ];
 
 // taken from: https://sites.math.washington.edu/~marshall/cxseminar/symbol.htm, starts from 33
+// eslint-disable-next-line
 const symbolsMap = [0,8704,0,8707,0,0,8717,0,0,8727,0,0,8722,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8773,913,914,935,916,917,934,915,919,921,977,922,923,924,925,927,928,920,929,931,932,933,962,937,926,936,918,0,8756,0,8869,0,0,945,946,967,948,949,966,947,951,953,981,954,955,956,957,959,960,952,961,963,964,965,982,969,958,968,950,0,402,0,8764,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,978,8242,8804,8260,8734,0,9827,9830,9829,9824,8596,8592,8593,8594,8595,0,0,8243,8805,0,8733,8706,8729,0,8800,8801,8776,8230,0,0,8629,8501,8465,8476,8472,8855,8853,8709,8745,8746,8835,8839,8836,8834,8838,8712,8713,8736,8711,0,0,8482,8719,8730,8901,0,8743,8744,8660,8656,8657,8658,8659,9674,9001,0,0,8482,8721,0,0,0,0,0,0,0,0,0,0,8364,9002,8747,8992,0,8993];
 
 // taken from http://www.alanwood.net/demos/wingdings.html, starts from 33
+// eslint-disable-next-line
 const wingdingsMap = [128393,9986,9985,128083,128365,128366,128367,128383,9990,128386,128387,128234,128235,128236,128237,128193,128194,128196,128463,128464,128452,8987,128430,128432,128434,128435,128436,128427,128428,9991,9997,128398,9996,128076,128077,128078,9756,9758,9757,9759,128400,9786,128528,9785,128163,9760,127987,127985,9992,9788,128167,10052,128326,10014,128328,10016,10017,9770,9775,2384,9784,9800,9801,9802,9803,9804,9805,9806,9807,9808,9809,9810,9811,128624,128629,9679,128318,9632,9633,128912,10065,10066,11047,10731,9670,10070,11045,8999,11193,8984,127989,127990,128630,128631,0,9450,9312,9313,9314,9315,9316,9317,9318,9319,9320,9321,9471,10102,10103,10104,10105,10106,10107,10108,10109,10110,10111,128610,128608,128609,128611,128606,128604,128605,128607,183,8226,9642,9898,128902,128904,9673,9678,128319,9642,9723,128962,10022,9733,10038,10036,10041,10037,11216,8982,10209,8977,11217,10026,10032,128336,128337,128338,128339,128340,128341,128342,128343,128344,128345,128346,128347,11184,11185,11186,11187,11188,11189,11190,11191,128618,128619,128597,128596,128599,128598,128592,128593,128594,128595,9003,8998,11160,11162,11161,11163,11144,11146,11145,11147,129128,129130,129129,129131,129132,129133,129135,129134,129144,129146,129145,129147,129148,129149,129151,129150,8678,8680,8679,8681,11012,8691,11008,11009,11011,11010,129196,129197,128502,10004,128503,128505];
 
 function replaceSymbols(s, kind) {
-   let res = '', m = kind == 'Wingdings' ? wingdingsMap : symbolsMap;
+   const m = (kind === 'Wingdings') ? wingdingsMap : symbolsMap;
+   let res = '';
    for (let k = 0; k < s.length; ++k) {
-      let code = s.charCodeAt(k),
-          new_code = (code > 32) ? m[code-33] : 0;
+      const code = s.charCodeAt(k),
+            new_code = (code > 32) ? m[code-33] : 0;
       res += String.fromCodePoint(new_code || code);
    }
    return res;
@@ -9041,17 +9037,16 @@ function isPlainText(txt) {
   * @desc use <text> together with normal <path> elements
   * @private */
 function parseLatex(node, arg, label, curr) {
-
    let nelements = 0;
 
-   const currG = () => { if (!curr.g) curr.g = node.append('svg:g'); return curr.g; };
+   const currG = () => { if (!curr.g) curr.g = node.append('svg:g'); return curr.g; },
 
-   const shiftX = dx => { curr.x += Math.round(dx); };
+   shiftX = dx => { curr.x += Math.round(dx); },
 
-   const extendPosition = (x1, y1, x2, y2) => {
-      if (!curr.rect) {
+   extendPosition = (x1, y1, x2, y2) => {
+      if (!curr.rect)
          curr.rect = { x1, y1, x2, y2 };
-      } else {
+      else {
          curr.rect.x1 = Math.min(curr.rect.x1, x1);
          curr.rect.y1 = Math.min(curr.rect.y1, y1);
          curr.rect.x2 = Math.max(curr.rect.x2, x2);
@@ -9063,15 +9058,15 @@ function parseLatex(node, arg, label, curr) {
 
       if (!curr.parent)
          arg.text_rect = curr.rect;
-   };
+   },
 
-   const addSpaces = nspaces => {
+   addSpaces = nspaces => {
       extendPosition(curr.x, curr.y, curr.x + nspaces * curr.fsize * 0.4, curr.y);
       shiftX(nspaces * curr.fsize * 0.4);
-   };
+   },
 
    /** Position pos.g node which directly attached to curr.g and uses curr.g coordinates */
-   const positionGNode = (pos, x, y, inside_gg) => {
+   positionGNode = (pos, x, y, inside_gg) => {
       x = Math.round(x);
       y = Math.round(y);
 
@@ -9085,41 +9080,42 @@ function parseLatex(node, arg, label, curr) {
          extendPosition(curr.x + pos.rect.x1, curr.y + pos.rect.y1, curr.x + pos.rect.x2, curr.y + pos.rect.y2);
       else
          extendPosition(pos.rect.x1, pos.rect.y1, pos.rect.x2, pos.rect.y2);
-   };
+   },
 
    /** Create special sub-container for elements like sqrt or braces  */
-   const createGG = () => {
-      let gg = currG();
+   createGG = () => {
+      const gg = currG();
 
       // this is indicator that gg element will be the only one, one can use directly main container
-      if ((nelements == 1) && !label && !curr.x && !curr.y)
+      if ((nelements === 1) && !label && !curr.x && !curr.y)
          return gg;
 
       return makeTranslate(gg.append('svg:g'), curr.x, curr.y);
-   };
+   },
 
-   const extractSubLabel = (check_first, lbrace, rbrace) => {
-      let pos = 0, n = 1, err = false, extra_braces = false;
+   extractSubLabel = (check_first, lbrace, rbrace) => {
+      let pos = 0, n = 1, extra_braces = false;
       if (!lbrace) lbrace = '{';
       if (!rbrace) rbrace = '}';
 
-      const match = br => (pos + br.length <= label.length) && (label.slice(pos, pos+br.length) == br);
+      const match = br => (pos + br.length <= label.length) && (label.slice(pos, pos+br.length) === br);
 
       if (check_first) {
-         if(!match(lbrace))
-            err = true;
-         else
+         if (!match(lbrace)) {
+            console.log(`not starting with ${lbrace} in ${label}`);
+            return -1;
+         } else
             label = label.slice(lbrace.length);
       }
 
-      while (!err && (n != 0) && (pos < label.length)) {
+      while ((n !== 0) && (pos < label.length)) {
          if (match(lbrace)) {
             n++;
             pos += lbrace.length;
          } else if (match(rbrace)) {
             n--;
             pos += rbrace.length;
-            if ((n == 0) && (typeof check_first == 'string') && match(check_first+lbrace)) {
+            if ((n === 0) && (typeof check_first === 'string') && match(check_first + lbrace)) {
                // handle special case like a^{b}^{2} should mean a^{b^{2}}
                n++;
                pos += lbrace.length + check_first.length;
@@ -9128,7 +9124,7 @@ function parseLatex(node, arg, label, curr) {
             }
          } else pos++;
       }
-      if ((n != 0) || err) {
+      if (n !== 0) {
          console.log(`mismatch with open ${lbrace} and closing ${rbrace} in ${label}`);
          return -1;
       }
@@ -9140,39 +9136,37 @@ function parseLatex(node, arg, label, curr) {
       label = label.slice(pos);
 
       return sublabel;
-   };
+   },
 
-   const createPath = (gg, d, dofill) => {
+   createPath = (gg, d, dofill) => {
       return gg.append('svg:path')
                .style('stroke', dofill ? 'none' : (curr.color || arg.color))
                .style('stroke-width', dofill ? null : Math.max(1, Math.round(curr.fsize*(curr.font.weight ? 0.1 : 0.07))))
                .style('fill', dofill ? (curr.color || arg.color) : 'none')
                .attr('d', d ?? null);
-   };
+   },
 
-   const createSubPos = fscale => {
+   createSubPos = fscale => {
       return { lvl: curr.lvl + 1, x: 0, y: 0, fsize: curr.fsize*(fscale || 1), color: curr.color, font: curr.font, parent: curr, painter: curr.painter };
    };
 
    while (label) {
-
       let best = label.length, found = null;
 
       for (let n = 0; n < latex_features.length; ++n) {
-         let pos = label.indexOf(latex_features[n].name);
+         const pos = label.indexOf(latex_features[n].name);
          if ((pos >= 0) && (pos < best)) { best = pos; found = latex_features[n]; }
       }
 
       if (best > 0) {
-
-         let alone = (best == label.length) && (nelements == 0) && !found;
+         const alone = (best === label.length) && (nelements === 0) && !found;
 
          nelements++;
 
          let s = translateLaTeX(label.slice(0, best)),
              nbeginspaces = 0, nendspaces = 0;
 
-         while ((nbeginspaces < s.length) && (s[nbeginspaces] == ' '))
+         while ((nbeginspaces < s.length) && (s[nbeginspaces] === ' '))
             nbeginspaces++;
 
          if (nbeginspaces > 0) {
@@ -9180,7 +9174,7 @@ function parseLatex(node, arg, label, curr) {
             s = s.slice(nbeginspaces);
          }
 
-         while ((nendspaces < s.length) && (s[s.length - 1 - nendspaces] == ' '))
+         while ((nendspaces < s.length) && (s[s.length - 1 - nendspaces] === ' '))
             nendspaces++;
 
          if (nendspaces > 0)
@@ -9188,8 +9182,8 @@ function parseLatex(node, arg, label, curr) {
 
          if (s || alone) {
             // if single text element created, place it directly in the node
-            let g = curr.g || (alone ? node : currG()),
-                elem = g.append('svg:text');
+            const g = curr.g || (alone ? node : currG()),
+                  elem = g.append('svg:text');
 
             if (alone && !curr.g) curr.g = elem;
 
@@ -9215,8 +9209,9 @@ function parseLatex(node, arg, label, curr) {
             else
                elem.text(s);
 
-            let rect = !isNodeJs() && !settings.ApproxTextSize && !arg.fast ? getElementRect(elem, 'nopadding') :
-                          { height: curr.fsize * 1.2, width: approximateLabelWidth(s, curr.font, curr.fsize) };
+            const rect = !isNodeJs() && !settings.ApproxTextSize && !arg.fast
+                          ? getElementRect(elem, 'nopadding')
+                          : { height: curr.fsize * 1.2, width: approximateLabelWidth(s, curr.font, curr.fsize) };
 
             if (curr.x) elem.attr('x', curr.x);
             if (curr.y) elem.attr('y', curr.y);
@@ -9230,9 +9225,8 @@ function parseLatex(node, arg, label, curr) {
                elem.attr('text-decoration', curr.deco);
                delete curr.deco; // inform that decoration was applied
             }
-         } else {
+         } else
             addSpaces(nendspaces);
-         }
       }
 
       if (!found) return true;
@@ -9243,19 +9237,19 @@ function parseLatex(node, arg, label, curr) {
       nelements++;
 
       if (found.accent) {
-         let sublabel = extractSubLabel();
+         const sublabel = extractSubLabel();
          if (sublabel === -1) return false;
 
-         let gg = createGG(),
-             subpos = createSubPos();
+         const gg = createGG(),
+               subpos = createSubPos();
 
          parseLatex(gg, arg, sublabel, subpos);
 
-         let minw = curr.fsize * 0.6, xpos = 0,
-             w = subpos.rect.width,
-             y1 = Math.round(subpos.rect.y1),
-             dy2 = Math.round(curr.fsize*0.1), dy = dy2*2,
-             dot = `a${dy2},${dy2},0,0,1,${dy},0a${dy2},${dy2},0,0,1,${-dy},0z`;
+         const minw = curr.fsize * 0.6,
+               y1 = Math.round(subpos.rect.y1),
+               dy2 = Math.round(curr.fsize*0.1), dy = dy2*2,
+               dot = `a${dy2},${dy2},0,0,1,${dy},0a${dy2},${dy2},0,0,1,${-dy},0z`;
+         let xpos = 0, w = subpos.rect.width;
 
          // shift symbol when it is too small
          if (found.hasw && (w < minw)) {
@@ -9263,12 +9257,12 @@ function parseLatex(node, arg, label, curr) {
             xpos = (minw - subpos.rect.width) / 2;
          }
 
-         let w5 = Math.round(w*0.5), w3 = Math.round(w*0.3), w2 = w5-w3, w8 = w5+w3;
+         const w5 = Math.round(w*0.5), w3 = Math.round(w*0.3), w2 = w5-w3, w8 = w5+w3;
          w = w5*2;
 
          positionGNode(subpos, xpos, 0, true);
 
-         switch(found.name) {
+         switch (found.name) {
             case '#check{': createPath(gg, `M${w2},${y1-dy}L${w5},${y1}L${w8},${y1-dy}`); break;
             case '#acute{': createPath(gg, `M${w5},${y1}l${dy},${-dy}`); break;
             case '#grave{': createPath(gg, `M${w5},${y1}l${-dy},${-dy}`); break;
@@ -9286,26 +9280,25 @@ function parseLatex(node, arg, label, curr) {
       }
 
       if (found.twolines) {
-
          curr.twolines = true;
 
-         let line1 = extractSubLabel(), line2 = extractSubLabel(true);
+         const line1 = extractSubLabel(), line2 = extractSubLabel(true);
          if ((line1 === -1) || (line2 === -1)) return false;
 
-         let gg = createGG(),
-             fscale = (curr.parent && curr.parent.twolines) ? 0.7 : 1,
-             subpos1 = createSubPos(fscale);
+         const gg = createGG(),
+               fscale = (curr.parent && curr.parent.twolines) ? 0.7 : 1,
+               subpos1 = createSubPos(fscale);
 
          parseLatex(gg, arg, line1, subpos1);
 
-         let path = (found.twolines == 'line') ? createPath(gg) : null,
-             subpos2 = createSubPos(fscale);
+         const path = (found.twolines === 'line') ? createPath(gg) : null,
+               subpos2 = createSubPos(fscale);
 
          parseLatex(gg, arg, line2, subpos2);
 
-         let w = Math.max(subpos1.rect.width, subpos2.rect.width),
-             dw = subpos1.rect.width - subpos2.rect.width,
-             dy = -curr.fsize*0.35; // approximate position of middle line
+         const w = Math.max(subpos1.rect.width, subpos2.rect.width),
+               dw = subpos1.rect.width - subpos2.rect.width,
+               dy = -curr.fsize*0.35; // approximate position of middle line
 
          positionGNode(subpos1, (dw < 0 ? -dw/2 : 0), dy - subpos1.rect.y2, true);
 
@@ -9321,25 +9314,25 @@ function parseLatex(node, arg, label, curr) {
       }
 
       const extractLowUp = name => {
-         let res = {};
+         const res = {};
          if (name) {
             res[name] = extractSubLabel();
             if (res[name] === -1) return false;
          }
 
          while (label) {
-            if (label[0] == '_') {
+            if (label[0] === '_') {
                label = label.slice(1);
                res.low = !res.low ? extractSubLabel('_') : -1;
                if (res.low === -1) {
                   console.log(`error with ${found.name} low limit`);
                   return false;
                }
-            } else if (label[0] == '^') {
+            } else if (label[0] === '^') {
                label = label.slice(1);
                res.up = !res.up ? extractSubLabel('^') : -1;
                if (res.up === -1) {
-                  console.log(`error with ${found.name} upper limit ` + label);
+                  console.log(`error with ${found.name} upper limit ${label}`);
                   return false;
                }
             } else break;
@@ -9351,8 +9344,8 @@ function parseLatex(node, arg, label, curr) {
          const subs = extractLowUp(found.low_up);
          if (!subs) return false;
 
-         let pos_up, pos_low,
-             x = curr.x, y1 = -curr.fsize, y2 = 0.25*curr.fsize, w1 = 0, w2 = 0;
+         const x = curr.x, y1 = -curr.fsize, y2 = 0.25*curr.fsize;
+         let pos_up, pos_low, w1 = 0, w2 = 0;
 
          if (subs.up) {
             pos_up = createSubPos(0.6);
@@ -9374,7 +9367,7 @@ function parseLatex(node, arg, label, curr) {
             w2 = pos_low.rect.width;
          }
 
-         shiftX(Math.max(w1,w2));
+         shiftX(Math.max(w1, w2));
 
          continue;
       }
@@ -9382,29 +9375,30 @@ function parseLatex(node, arg, label, curr) {
       if (found.special) {
          // this is sum and integral, now make fix height, later can adjust to right-content size
 
-         let subs = extractLowUp() || {},
-             gg = createGG(), path = createPath(gg),
-             h = Math.round(curr.fsize*1.7), w = Math.round(curr.fsize), r = Math.round(h*0.1), x_up, x_low;
+         const subs = extractLowUp() || {},
+               gg = createGG(), path = createPath(gg),
+               h = Math.round(curr.fsize*1.7), w = Math.round(curr.fsize), r = Math.round(h*0.1);
+          let x_up, x_low;
 
-         if (found.name == '#sum') {
+         if (found.name === '#sum') {
             x_up = x_low = w/2;
-            path.attr('d',`M${w},${Math.round(-0.75*h)}h${-w}l${Math.round(0.4*w)},${Math.round(0.3*h)}l${Math.round(-0.4*w)},${Math.round(0.7*h)}h${w}`);
+            path.attr('d', `M${w},${Math.round(-0.75*h)}h${-w}l${Math.round(0.4*w)},${Math.round(0.3*h)}l${Math.round(-0.4*w)},${Math.round(0.7*h)}h${w}`);
          } else {
             x_up = 3*r; x_low = r;
-            path.attr('d',`M0,${Math.round(0.25*h-r)}a${r},${r},0,0,0,${2*r},0v${2*r-h}a${r},${r},0,1,1,${2*r},0`);
+            path.attr('d', `M0,${Math.round(0.25*h-r)}a${r},${r},0,0,0,${2*r},0v${2*r-h}a${r},${r},0,1,1,${2*r},0`);
             // path.attr('transform','skewX(-3)'); could use skewX for italic-like style
          }
 
          extendPosition(curr.x, curr.y - 0.6*h, curr.x + w, curr.y + 0.4*h);
 
          if (subs.low) {
-            let subpos1 = createSubPos(0.6);
+            const subpos1 = createSubPos(0.6);
             parseLatex(gg, arg, subs.low, subpos1);
             positionGNode(subpos1, (x_low - subpos1.rect.width/2), 0.25*h - subpos1.rect.y1, true);
          }
 
          if (subs.up) {
-            let subpos2 = createSubPos(0.6);
+            const subpos2 = createSubPos(0.6);
             parseLatex(gg, arg, subs.up, subpos2);
             positionGNode(subpos2, (x_up - subpos2.rect.width/2), -0.75*h - subpos2.rect.y2, true);
          }
@@ -9415,35 +9409,36 @@ function parseLatex(node, arg, label, curr) {
       }
 
       if (found.braces) {
-         let rbrace = found.right, lbrace = rbrace ? found.name : '{',
-             sublabel = extractSubLabel(false, lbrace, rbrace),
-             gg = createGG(),
-             subpos = createSubPos(),
-             path1 = createPath(gg);
+         const rbrace = found.right,
+               lbrace = rbrace ? found.name : '{',
+               sublabel = extractSubLabel(false, lbrace, rbrace),
+               gg = createGG(),
+               subpos = createSubPos(),
+               path1 = createPath(gg);
 
          parseLatex(gg, arg, sublabel, subpos);
 
-         let path2 = createPath(gg),
-             w = Math.max(2, Math.round(curr.fsize*0.2)),
-             r = subpos.rect, dy = Math.round(r.y2 - r.y1),
-             r_y1 = Math.round(r.y1), r_width = Math.round(r.width);
+         const path2 = createPath(gg),
+               w = Math.max(2, Math.round(curr.fsize*0.2)),
+               r = subpos.rect, dy = Math.round(r.y2 - r.y1),
+               r_y1 = Math.round(r.y1), r_width = Math.round(r.width);
 
          switch (found.braces) {
             case '||':
-               path1.attr('d',`M${w},${r_y1}v${dy}`);
-               path2.attr('d',`M${3*w+r_width},${r_y1}v${dy}`);
+               path1.attr('d', `M${w},${r_y1}v${dy}`);
+               path2.attr('d', `M${3*w+r_width},${r_y1}v${dy}`);
                break;
             case '[]':
-               path1.attr('d',`M${2*w},${r_y1}h${-w}v${dy}h${w}`);
-               path2.attr('d',`M${2*w+r_width},${r_y1}h${w}v${dy}h${-w}`);
+               path1.attr('d', `M${2*w},${r_y1}h${-w}v${dy}h${w}`);
+               path2.attr('d', `M${2*w+r_width},${r_y1}h${w}v${dy}h${-w}`);
                break;
             case '{}':
-               path1.attr('d',`M${2*w},${r_y1}a${w},${w},0,0,0,${-w},${w}v${dy/2-2*w}a${w},${w},0,0,1,${-w},${w}a${w},${w},0,0,1,${w},${w}v${dy/2-2*w}a${w},${w},0,0,0,${w},${w}`);
-               path2.attr('d',`M${2*w+r_width},${r_y1}a${w},${w},0,0,1,${w},${w}v${dy/2-2*w}a${w},${w},0,0,0,${w},${w}a${w},${w},0,0,0,${-w},${w}v${dy/2-2*w}a${w},${w},0,0,1,${-w},${w}`);
+               path1.attr('d', `M${2*w},${r_y1}a${w},${w},0,0,0,${-w},${w}v${dy/2-2*w}a${w},${w},0,0,1,${-w},${w}a${w},${w},0,0,1,${w},${w}v${dy/2-2*w}a${w},${w},0,0,0,${w},${w}`);
+               path2.attr('d', `M${2*w+r_width},${r_y1}a${w},${w},0,0,1,${w},${w}v${dy/2-2*w}a${w},${w},0,0,0,${w},${w}a${w},${w},0,0,0,${-w},${w}v${dy/2-2*w}a${w},${w},0,0,1,${-w},${w}`);
                break;
             default: // ()
-               path1.attr('d',`M${w},${r_y1}a${4*dy},${4*dy},0,0,0,0,${dy}`);
-               path2.attr('d',`M${3*w+r_width},${r_y1}a${4*dy},${4*dy},0,0,1,0,${dy}`);
+               path1.attr('d', `M${w},${r_y1}a${4*dy},${4*dy},0,0,0,0,${dy}`);
+               path2.attr('d', `M${3*w+r_width},${r_y1}a${4*dy},${4*dy},0,0,1,0,${dy}`);
          }
 
          positionGNode(subpos, 2*w, 0, true);
@@ -9456,22 +9451,21 @@ function parseLatex(node, arg, label, curr) {
       }
 
       if (found.deco) {
-         let sublabel = extractSubLabel(),
-             gg = createGG(),
-             subpos = createSubPos();
+         const sublabel = extractSubLabel(),
+               gg = createGG(),
+               subpos = createSubPos();
 
          subpos.deco = found.deco;
 
          parseLatex(gg, arg, sublabel, subpos);
 
-         let r = subpos.rect;
-
+         const r = subpos.rect;
          if (subpos.deco) {
-            let path = createPath(gg), r_width = Math.round(r.width);
-            switch(subpos.deco) {
-               case 'underline': path.attr('d',`M0,${Math.round(r.y2)}h${r_width}`); break;
-               case 'overline': path.attr('d',`M0,${Math.round(r.y1)}h${r_width}`); break;
-               case 'line-through': path.attr('d',`M0,${Math.round(0.45*r.y1+0.55*r.y2)}h${r_width}`); break;
+            const path = createPath(gg), r_width = Math.round(r.width);
+            switch (subpos.deco) {
+               case 'underline': path.attr('d', `M0,${Math.round(r.y2)}h${r_width}`); break;
+               case 'overline': path.attr('d', `M0,${Math.round(r.y1)}h${r_width}`); break;
+               case 'line-through': path.attr('d', `M0,${Math.round(0.45*r.y1+0.55*r.y2)}h${r_width}`); break;
             }
          }
 
@@ -9482,13 +9476,13 @@ function parseLatex(node, arg, label, curr) {
          continue;
       }
 
-      if (found.name == '#bf{' || found.name == '#it{') {
-         let sublabel = extractSubLabel();
+      if (found.name === '#bf{' || found.name === '#it{') {
+         const sublabel = extractSubLabel();
          if (sublabel === -1) return false;
 
-         let subpos = createSubPos();
+         const subpos = createSubPos();
 
-         if (found.name == '#bf{')
+         if (found.name === '#bf{')
             subpos.bold = !subpos.bold;
          else
             subpos.italic = !subpos.italic;
@@ -9505,29 +9499,29 @@ function parseLatex(node, arg, label, curr) {
       let foundarg = 0;
 
       if (found.arg) {
-         let pos = label.indexOf(']{');
+         const pos = label.indexOf(']{');
          if (pos < 0) { console.log('missing argument for ', found.name); return false; }
          foundarg = label.slice(0, pos);
-         if (found.arg == 'int') {
+         if (found.arg === 'int') {
             foundarg = parseInt(foundarg);
             if (!Number.isInteger(foundarg)) { console.log('wrong int argument', label.slice(0, pos)); return false; }
-         } else if (found.arg == 'float') {
+         } else if (found.arg === 'float') {
             foundarg = parseFloat(foundarg);
             if (!Number.isFinite(foundarg)) { console.log('wrong float argument', label.slice(0, pos)); return false; }
          }
          label = label.slice(pos + 2);
       }
 
-      if ((found.name == '#kern[') || (found.name == '#lower[')) {
-         let sublabel = extractSubLabel();
+      if ((found.name === '#kern[') || (found.name === '#lower[')) {
+         const sublabel = extractSubLabel();
          if (sublabel === -1) return false;
 
-         let subpos = createSubPos();
+         const subpos = createSubPos();
 
          parseLatex(currG(), arg, sublabel, subpos);
 
          let shiftx = 0, shifty = 0;
-         if (found.name == 'kern[') shiftx = foundarg; else shifty = foundarg;
+         if (found.name === 'kern[') shiftx = foundarg; else shifty = foundarg;
 
          positionGNode(subpos, curr.x + shiftx * subpos.rect.width, curr.y + shifty * subpos.rect.height);
 
@@ -9536,16 +9530,15 @@ function parseLatex(node, arg, label, curr) {
          continue;
       }
 
-      if ((found.name == '#color[') || (found.name == '#scale[') || (found.name == '#font[')) {
-
-         let sublabel = extractSubLabel();
+      if ((found.name === '#color[') || (found.name === '#scale[') || (found.name === '#font[')) {
+         const sublabel = extractSubLabel();
          if (sublabel === -1) return false;
 
-         let subpos = createSubPos();
+         const subpos = createSubPos();
 
-         if (found.name == '#color[')
+         if (found.name === '#color[')
             subpos.color = curr.painter.getColor(foundarg);
-         else if (found.name == '#font[') {
+         else if (found.name === '#font[') {
             subpos.font = new FontHandler(foundarg);
             subpos.ufont = true; // mark that custom font is applied
          } else
@@ -9561,10 +9554,11 @@ function parseLatex(node, arg, label, curr) {
       }
 
      if (found.sqrt) {
-         let sublabel = extractSubLabel();
+         const sublabel = extractSubLabel();
          if (sublabel === -1) return false;
 
-         let gg = createGG(), subpos0, subpos = createSubPos();
+         const gg = createGG(), subpos = createSubPos();
+         let subpos0;
 
          if (found.arg) {
             subpos0 = createSubPos(0.7);
@@ -9572,15 +9566,15 @@ function parseLatex(node, arg, label, curr) {
          }
 
          // placeholder for the sqrt sign
-         let path = createPath(gg);
+         const path = createPath(gg);
 
          parseLatex(gg, arg, sublabel, subpos);
 
-         let r = subpos.rect,
-             h = Math.round(r.height),
-             h1 = Math.round(r.height*0.1),
-             w = Math.round(r.width), midy = Math.round((r.y1 + r.y2)/2),
-             f2 = Math.round(curr.fsize*0.2), r_y2 = Math.round(r.y2);
+         const r = subpos.rect,
+               h = Math.round(r.height),
+               h1 = Math.round(r.height*0.1),
+               w = Math.round(r.width), midy = Math.round((r.y1 + r.y2)/2),
+               f2 = Math.round(curr.fsize*0.2), r_y2 = Math.round(r.y2);
 
          if (subpos0)
             positionGNode(subpos0, 0, midy - subpos0.fsize*0.3, true);
@@ -9595,7 +9589,6 @@ function parseLatex(node, arg, label, curr) {
 
          continue;
      }
-
    }
 
    return true;
@@ -9605,9 +9598,7 @@ function parseLatex(node, arg, label, curr) {
   * @desc use <text> together with normal <path> elements
   * @private */
 function produceLatex(painter, node, arg) {
-
-   let pos = { lvl: 0, g: node, x: 0, y: 0, dx: 0, dy: -0.1, fsize: arg.font_size, font: arg.font, parent: null, painter };
-
+   const pos = { lvl: 0, g: node, x: 0, y: 0, dx: 0, dy: -0.1, fsize: arg.font_size, font: arg.font, parent: null, painter };
    return parseLatex(node, arg, arg.text, pos);
 }
 
@@ -9617,25 +9608,25 @@ let _mj_loading;
   * @desc one need not only to load script but wait for initialization
   * @private */
 async function loadMathjax() {
-   let loading = _mj_loading !== undefined;
+   const loading = _mj_loading !== undefined;
 
-   if (!loading && (typeof globalThis.MathJax != 'undefined'))
+   if (!loading && (typeof globalThis.MathJax !== 'undefined'))
       return globalThis.MathJax;
 
    if (!loading) _mj_loading = [];
 
-   let promise = new Promise(resolve => { _mj_loading ? _mj_loading.push(resolve) : resolve(globalThis.MathJax); });
+   const promise = new Promise(resolve => { _mj_loading ? _mj_loading.push(resolve) : resolve(globalThis.MathJax); });
 
    if (loading) return promise;
 
-   let svg = {
+   const svg = {
        scale: 1,                      // global scaling factor for all expressions
-       minScale: .5,                  // smallest scaling factor to use
+       minScale: 0.5,                 // smallest scaling factor to use
        mtextInheritFont: false,       // true to make mtext elements use surrounding font
        merrorInheritFont: true,       // true to make merror text use surrounding font
        mathmlSpacing: false,          // true for MathML spacing rules, false for TeX rules
        skipAttributes: {},            // RFDa and other attributes NOT to copy to the output
-       exFactor: .5,                  // default size of ex in em units
+       exFactor: 0.5,                 // default size of ex in em units
        displayAlign: 'center',        // default for indentalign when set to 'auto'
        displayIndent: '0',            // default for indentshift when set to 'auto'
        fontCache: 'local',            // or 'global' or 'none'
@@ -9653,13 +9644,14 @@ async function loadMathjax() {
             load: ['[tex]/color', '[tex]/upgreek', '[tex]/mathtools', '[tex]/physics']
          },
          tex: {
-            packages: {'[+]': ['color', 'upgreek', 'mathtools', 'physics']}
+            packages: { '[+]': ['color', 'upgreek', 'mathtools', 'physics'] }
          },
          svg,
          startup: {
             ready() {
+               // eslint-disable-next-line no-undef
                MathJax.startup.defaultReady();
-               let arr = _mj_loading;
+               const arr = _mj_loading;
                _mj_loading = undefined;
                arr.forEach(func => func(globalThis.MathJax));
             }
@@ -9687,7 +9679,7 @@ async function loadMathjax() {
             load: ['input/tex', 'output/svg', '[tex]/color', '[tex]/upgreek', '[tex]/mathtools', '[tex]/physics']
           },
           tex: {
-             packages: {'[+]': ['color', 'upgreek', 'mathtools', 'physics']}
+             packages: { '[+]': ['color', 'upgreek', 'mathtools', 'physics'] }
           },
           svg,
           config: {
@@ -9696,21 +9688,23 @@ async function loadMathjax() {
           startup: {
              typeset: false,
              ready() {
-                MathJax.startup.registerConstructor('jsdomAdaptor', () => {
-                   return new MathJax._.adaptors.HTMLAdaptor.HTMLAdaptor(new MathJax.config.config.JSDOM().window);
+                // eslint-disable-next-line no-undef
+                const mj = MathJax;
+
+                mj.startup.registerConstructor('jsdomAdaptor', () => {
+                   return new mj._.adaptors.HTMLAdaptor.HTMLAdaptor(new mj.config.config.JSDOM().window);
                 });
-                MathJax.startup.useAdaptor('jsdomAdaptor', true);
-                MathJax.startup.defaultReady();
-                let arr = _mj_loading;
+                mj.startup.useAdaptor('jsdomAdaptor', true);
+                mj.startup.defaultReady();
+                const arr = _mj_loading;
                 _mj_loading = undefined;
-                arr.forEach(func => func(MathJax));
+                arr.forEach(func => func(mj));
              }
           }
       });
 
       return promise;
    });
-
 }
 
 const math_symbols_map = {
@@ -9737,7 +9731,7 @@ const math_symbols_map = {
       '#doublequote': '"',
       '#plus': '+',
       '#minus': '-',
-      '#\/': '/',
+      '#/': '/',
       '#upoint': '.',
       '#aa': '\\mathring{a}',
       '#AA': '\\mathring{A}',
@@ -9781,149 +9775,149 @@ const math_symbols_map = {
       '#{': '\\lbrace',
       '#}': '\\rbrace',
       ' ': '\\;'
- };
+},
 
- const mathjax_remap = {
-   'upDelta': 'Updelta',
-   'upGamma': 'Upgamma',
-   'upLambda': 'Uplambda',
-   'upOmega': 'Upomega',
-   'upPhi': 'Upphi',
-   'upPi': 'Uppi',
-   'upPsi': 'Uppsi',
-   'upSigma': 'Upsigma',
-   'upTheta': 'Uptheta',
-   'upUpsilon': 'Upupsilon',
-   'upXi': 'Upxi',
-   'notcong': 'ncong',
-   'notgeq': 'ngeq',
-   'notgr': 'ngtr',
-   'notless': 'nless',
-   'notleq': 'nleq',
-   'notsucc': 'nsucc',
-   'notprec': 'nprec',
-   'notsubseteq': 'nsubseteq',
-   'notsupseteq': 'nsupseteq',
-   'openclubsuit': 'clubsuit',
-   'openspadesuit': 'spadesuit',
-   'dasharrow': 'dashrightarrow',
-   'comp': 'circ',
-   'iiintop': 'iiint',
-   'iintop': 'iint',
-   'ointop': 'oint'
- };
+mathjax_remap = {
+   upDelta: 'Updelta',
+   upGamma: 'Upgamma',
+   upLambda: 'Uplambda',
+   upOmega: 'Upomega',
+   upPhi: 'Upphi',
+   upPi: 'Uppi',
+   upPsi: 'Uppsi',
+   upSigma: 'Upsigma',
+   upTheta: 'Uptheta',
+   upUpsilon: 'Upupsilon',
+   upXi: 'Upxi',
+   notcong: 'ncong',
+   notgeq: 'ngeq',
+   notgr: 'ngtr',
+   notless: 'nless',
+   notleq: 'nleq',
+   notsucc: 'nsucc',
+   notprec: 'nprec',
+   notsubseteq: 'nsubseteq',
+   notsupseteq: 'nsupseteq',
+   openclubsuit: 'clubsuit',
+   openspadesuit: 'spadesuit',
+   dasharrow: 'dashrightarrow',
+   comp: 'circ',
+   iiintop: 'iiint',
+   iintop: 'iint',
+   ointop: 'oint'
+},
 
- const mathjax_unicode = {
-   'Digamma': 0x3DC,
-   'upDigamma': 0x3DC,
-   'digamma': 0x3DD,
-   'updigamma': 0x3DD,
-   'Koppa': 0x3DE,
-   'koppa': 0x3DF,
-   'upkoppa': 0x3DF,
-   'upKoppa': 0x3DE,
-   'VarKoppa': 0x3D8,
-   'upVarKoppa': 0x3D8,
-   'varkoppa': 0x3D9,
-   'upvarkoppa': 0x3D9,
-   'varkappa': 0x3BA, // not found archaic kappa - use normal
-   'upvarkappa': 0x3BA,
-   'varbeta': 0x3D0, // not found archaic beta - use normal
-   'upvarbeta': 0x3D0,
-   'Sampi': 0x3E0,
-   'upSampi': 0x3E0,
-   'sampi': 0x3E1,
-   'upsampi': 0x3E1,
-   'Stigma': 0x3DA,
-   'upStigma': 0x3DA,
-   'stigma': 0x3DB,
-   'upstigma': 0x3DB,
-   'San': 0x3FA,
-   'upSan': 0x3FA,
-   'san': 0x3FB,
-   'upsan': 0x3FB,
-   'Sho': 0x3F7,
-   'upSho': 0x3F7,
-   'sho': 0x3F8,
-   'upsho': 0x3F8,
-   'P': 0xB6,
-   'aa': 0xB0,
-   'bulletdashcirc': 0x22B7,
-   'circdashbullet': 0x22B6,
-   'downuparrows': 0x21F5,
-   'updownarrows': 0x21C5,
-   'dashdownarrow': 0x21E3,
-   'dashuparrow': 0x21E1,
-   'complement': 0x2201,
-   'dbar': 0x18C,
-   'ddddot': 0x22EF,
-   'dddot': 0x22EF,
-   'ddots': 0x22F1,
-   'defineequal': 0x225D,
-   'defineeq': 0x225D,
-   'downdownharpoons': 0x2965,
-   'downupharpoons': 0x296F,
-   'updownharpoons': 0x296E,
-   'upupharpoons': 0x2963,
-   'hateq': 0x2259,
-   'ldbrack': 0x27E6,
-   'rdbrack': 0x27E7,
-   'leadsfrom': 0x219C,
-   'leftsquigarrow': 0x21DC,
-   'lightning': 0x2607,
-   'napprox': 0x2249,
-   'nasymp': 0x226D,
-   'nequiv': 0x2262,
-   'nsimeq': 0x2244,
-   'nsubseteq': 0x2288,
-   'nsubset': 0x2284,
-   'notapprox': 0x2249,
-   'notasymp': 0x226D,
-   'notequiv': 0x2262,
-   'notni': 0x220C,
-   'notsimeq': 0x2244,
-   'notsubseteq': 0x2288,
-   'notsubset': 0x2284,
-   'notsupseteq': 0x2289,
-   'notsupset': 0x2285,
-   'nsupset': 0x2285,
-   'setdif': 0x2216,
-   'simarrow': 0x2972,
-   't': 0x2040,
-   'u': 0x2C7,
-   'v': 0x2C7,
-   'undercurvearrowright': 0x293B,
-   'updbar': 0x18C,
-   'wwbar': 0x2015,
-   'awointop': 0x2232,
-   'awoint': 0x2233,
-   'barintop': 0x2A1C,
-   'barint': 0x2A1B,
-   'cwintop': 0x2231, // no opposite direction, use same
-   'cwint': 0x2231,
-   'cwointop': 0x2233,
-   'cwoint': 0x2232,
-   'oiiintop': 0x2230,
-   'oiiint': 0x2230,
-   'oiintop': 0x222F,
-   'oiint': 0x222F,
-   'slashintop': 0x2A0F,
-   'slashint': 0x2A0F
- };
+mathjax_unicode = {
+   Digamma: 0x3DC,
+   upDigamma: 0x3DC,
+   digamma: 0x3DD,
+   updigamma: 0x3DD,
+   Koppa: 0x3DE,
+   koppa: 0x3DF,
+   upkoppa: 0x3DF,
+   upKoppa: 0x3DE,
+   VarKoppa: 0x3D8,
+   upVarKoppa: 0x3D8,
+   varkoppa: 0x3D9,
+   upvarkoppa: 0x3D9,
+   varkappa: 0x3BA, // not found archaic kappa - use normal
+   upvarkappa: 0x3BA,
+   varbeta: 0x3D0, // not found archaic beta - use normal
+   upvarbeta: 0x3D0,
+   Sampi: 0x3E0,
+   upSampi: 0x3E0,
+   sampi: 0x3E1,
+   upsampi: 0x3E1,
+   Stigma: 0x3DA,
+   upStigma: 0x3DA,
+   stigma: 0x3DB,
+   upstigma: 0x3DB,
+   San: 0x3FA,
+   upSan: 0x3FA,
+   san: 0x3FB,
+   upsan: 0x3FB,
+   Sho: 0x3F7,
+   upSho: 0x3F7,
+   sho: 0x3F8,
+   upsho: 0x3F8,
+   P: 0xB6,
+   aa: 0xB0,
+   bulletdashcirc: 0x22B7,
+   circdashbullet: 0x22B6,
+   downuparrows: 0x21F5,
+   updownarrows: 0x21C5,
+   dashdownarrow: 0x21E3,
+   dashuparrow: 0x21E1,
+   complement: 0x2201,
+   dbar: 0x18C,
+   ddddot: 0x22EF,
+   dddot: 0x22EF,
+   ddots: 0x22F1,
+   defineequal: 0x225D,
+   defineeq: 0x225D,
+   downdownharpoons: 0x2965,
+   downupharpoons: 0x296F,
+   updownharpoons: 0x296E,
+   upupharpoons: 0x2963,
+   hateq: 0x2259,
+   ldbrack: 0x27E6,
+   rdbrack: 0x27E7,
+   leadsfrom: 0x219C,
+   leftsquigarrow: 0x21DC,
+   lightning: 0x2607,
+   napprox: 0x2249,
+   nasymp: 0x226D,
+   nequiv: 0x2262,
+   nsimeq: 0x2244,
+   nsubseteq: 0x2288,
+   nsubset: 0x2284,
+   notapprox: 0x2249,
+   notasymp: 0x226D,
+   notequiv: 0x2262,
+   notni: 0x220C,
+   notsimeq: 0x2244,
+   notsubseteq: 0x2288,
+   notsubset: 0x2284,
+   notsupseteq: 0x2289,
+   notsupset: 0x2285,
+   nsupset: 0x2285,
+   setdif: 0x2216,
+   simarrow: 0x2972,
+   t: 0x2040,
+   u: 0x2C7,
+   v: 0x2C7,
+   undercurvearrowright: 0x293B,
+   updbar: 0x18C,
+   wwbar: 0x2015,
+   awointop: 0x2232,
+   awoint: 0x2233,
+   barintop: 0x2A1C,
+   barint: 0x2A1B,
+   cwintop: 0x2231, // no opposite direction, use same
+   cwint: 0x2231,
+   cwointop: 0x2233,
+   cwoint: 0x2232,
+   oiiintop: 0x2230,
+   oiiint: 0x2230,
+   oiintop: 0x222F,
+   oiint: 0x222F,
+   slashintop: 0x2A0F,
+   slashint: 0x2A0F
+},
 
-const mathjax_asis = ['"', "'", '`', '=', '~'];
+mathjax_asis = ['"', '\'', '`', '=', '~'];
 
 /** @summary Function translates ROOT TLatex into MathJax format
   * @private */
 function translateMath(str, kind, color, painter) {
-
-   if (kind != 2) {
-      for (let x in math_symbols_map)
+   if (kind !== 2) {
+      for (const x in math_symbols_map)
          str = str.replace(new RegExp(x, 'g'), math_symbols_map[x]);
 
-      for (let x in symbols_map)
+      for (const x in symbols_map) {
          if (x.length > 2)
             str = str.replace(new RegExp(x, 'g'), '\\' + x.slice(1));
+      }
 
       // replace all #color[]{} occurances
       let clean = '', first = true;
@@ -9931,8 +9925,8 @@ function translateMath(str, kind, color, painter) {
          let p = str.indexOf('#color[');
          if ((p < 0) && first) { clean = str; break; }
          first = false;
-         if (p != 0) {
-            let norm = (p < 0) ? str : str.slice(0, p);
+         if (p !== 0) {
+            const norm = (p < 0) ? str : str.slice(0, p);
             clean += norm;
             if (p < 0) break;
          }
@@ -9940,17 +9934,21 @@ function translateMath(str, kind, color, painter) {
          str = str.slice(p + 7);
          p = str.indexOf(']{');
          if (p <= 0) break;
-         let colindx = parseInt(str.slice(0, p));
+         const colindx = parseInt(str.slice(0, p));
          if (!Number.isInteger(colindx)) break;
-         let col = painter.getColor(colindx), cnt = 1;
+         const col = painter.getColor(colindx);
+         let cnt = 1;
          str = str.slice(p + 2);
          p = -1;
          while (cnt && (++p < str.length)) {
-            if (str[p] == '{') cnt++; else if (str[p] == '}') cnt--;
+            if (str[p] === '{')
+               cnt++;
+            else if (str[p] === '}')
+               cnt--;
          }
-         if (cnt != 0) break;
+         if (cnt !== 0) break;
 
-         let part = str.slice(0, p);
+         const part = str.slice(0, p);
          str = str.slice(p + 1);
          if (part)
             clean += `\\color{${col}}{${part}}`;
@@ -9958,33 +9956,33 @@ function translateMath(str, kind, color, painter) {
 
       str = clean;
    } else {
-      if (str == '\\^') str = '\\unicode{0x5E}';
-      if (str == '\\vec') str = '\\unicode{0x2192}';
+      if (str === '\\^') str = '\\unicode{0x5E}';
+      if (str === '\\vec') str = '\\unicode{0x2192}';
       str = str.replace(/\\\./g, '\\unicode{0x2E}').replace(/\\\^/g, '\\hat');
-      for (let x in mathjax_unicode)
+      for (const x in mathjax_unicode)
          str = str.replace(new RegExp(`\\\\\\b${x}\\b`, 'g'), `\\unicode{0x${mathjax_unicode[x].toString(16)}}`);
-      for(let x in mathjax_asis)
+      for (const x in mathjax_asis)
          str = str.replace(new RegExp(`(\\\\${mathjax_asis[x]})`, 'g'), `\\unicode{0x${mathjax_asis[x].charCodeAt(0).toString(16)}}`);
-      for (let x in mathjax_remap)
+      for (const x in mathjax_remap)
          str = str.replace(new RegExp(`\\\\\\b${x}\\b`, 'g'), `\\${mathjax_remap[x]}`);
    }
 
    if (!isStr(color)) return str;
 
    // MathJax SVG converter use colors in normal form
-   //if (color.indexOf('rgb(') >= 0)
-   //   color = color.replace(/rgb/g, '[RGB]')
-   //                .replace(/\(/g, '{')
-   //                .replace(/\)/g, '}');
+   // if (color.indexOf('rgb(') >= 0)
+   //    color = color.replace(/rgb/g, '[RGB]')
+   //                 .replace(/\(/g, '{')
+   //                 .replace(/\)/g, '}');
    return `\\color{${color}}{${str}}`;
 }
 
 /** @summary Workaround to fix size attributes in MathJax SVG
   * @private */
 function repairMathJaxSvgSize(painter, mj_node, svg, arg) {
-   let transform = value => {
+   const transform = value => {
       if (!value || !isStr(value) || (value.length < 3)) return null;
-      let p = value.indexOf('ex');
+      const p = value.indexOf('ex');
       if ((p < 0) || (p !== value.length - 2)) return null;
       value = parseFloat(value.slice(0, p));
       return Number.isFinite(value) ? value * arg.font.size * 0.5 : null;
@@ -9994,12 +9992,11 @@ function repairMathJaxSvgSize(painter, mj_node, svg, arg) {
        height = transform(svg.getAttribute('height')),
        valign = svg.getAttribute('style');
 
-   if (valign && (valign.length > 18) && valign.indexOf('vertical-align:') == 0) {
-      let p = valign.indexOf('ex;');
-      valign = ((p > 0) && (p == valign.length - 3)) ? transform(valign.slice(16, valign.length - 1)) : null;
-   } else {
+   if (valign && (valign.length > 18) && valign.indexOf('vertical-align:') === 0) {
+      const p = valign.indexOf('ex;');
+      valign = ((p > 0) && (p === valign.length - 3)) ? transform(valign.slice(16, valign.length - 1)) : null;
+   } else
       valign = null;
-   }
 
    width = (!width || (width <= 0.5)) ? 1 : Math.round(width);
    height = (!height || (height <= 0.5)) ? 1 : Math.round(height);
@@ -10009,7 +10006,7 @@ function repairMathJaxSvgSize(painter, mj_node, svg, arg) {
    svg.removeAttribute('style');
 
    if (!isNodeJs()) {
-      let box = getElementRect(mj_node, 'bbox');
+      const box = getElementRect(mj_node, 'bbox');
       width = 1.05 * box.width; height = 1.05 * box.height;
    }
 
@@ -10026,40 +10023,41 @@ function applyAttributesToMathJax(painter, mj_node, svg, arg, font_size, svg_fac
        mh = parseInt(svg.attr('height'));
 
    if (Number.isInteger(mh) && Number.isInteger(mw)) {
-      if (svg_factor > 0.) {
+      if (svg_factor > 0) {
          mw = mw / svg_factor;
          mh = mh / svg_factor;
          svg.attr('width', Math.round(mw)).attr('height', Math.round(mh));
       }
    } else {
-      let box = getElementRect(mj_node, 'bbox'); // sizes before rotation
+      const box = getElementRect(mj_node, 'bbox'); // sizes before rotation
       mw = box.width || mw || 100;
       mh = box.height || mh || 10;
    }
 
-   if ((svg_factor > 0.) && arg.valign) arg.valign = arg.valign / svg_factor;
+   if ((svg_factor > 0) && arg.valign) arg.valign = arg.valign / svg_factor;
 
    if (arg.valign === null) arg.valign = (font_size - mh) / 2;
 
-   let sign = { x: 1, y: 1 }, nx = 'x', ny = 'y';
-   if (arg.rotate == 180) {
+   const sign = { x: 1, y: 1 };
+   let nx = 'x', ny = 'y';
+   if (arg.rotate === 180)
       sign.x = sign.y = -1;
-   } else if ((arg.rotate == 270) || (arg.rotate == 90)) {
-      sign.x = (arg.rotate == 270) ? -1 : 1;
+   else if ((arg.rotate === 270) || (arg.rotate === 90)) {
+      sign.x = (arg.rotate === 270) ? -1 : 1;
       sign.y = -sign.x;
       nx = 'y'; ny = 'x'; // replace names to which align applied
    }
 
-   if (arg.align[0] == 'middle')
+   if (arg.align[0] === 'middle')
       arg[nx] += sign.x * (arg.width - mw) / 2;
-   else if (arg.align[0] == 'end')
+   else if (arg.align[0] === 'end')
       arg[nx] += sign.x * (arg.width - mw);
 
-   if (arg.align[1] == 'middle')
+   if (arg.align[1] === 'middle')
       arg[ny] += sign.y * (arg.height - mh) / 2;
-   else if (arg.align[1] == 'bottom')
+   else if (arg.align[1] === 'bottom')
       arg[ny] += sign.y * (arg.height - mh);
-   else if (arg.align[1] == 'bottom-base')
+   else if (arg.align[1] === 'bottom-base')
       arg[ny] += sign.y * (arg.height - mh - arg.valign);
 
    let trans = makeTranslate(arg.x, arg.y) || '';
@@ -10074,14 +10072,14 @@ function applyAttributesToMathJax(painter, mj_node, svg, arg, font_size, svg_fac
 /** @summary Produce text with MathJax
   * @private */
 async function produceMathjax(painter, mj_node, arg) {
-   let mtext = translateMath(arg.text, arg.latex, arg.color, painter),
-       options = { em: arg.font.size, ex: arg.font.size/2, family: arg.font.name, scale: 1, containerWidth: -1, lineWidth: 100000 };
+   const mtext = translateMath(arg.text, arg.latex, arg.color, painter),
+         options = { em: arg.font.size, ex: arg.font.size/2, family: arg.font.name, scale: 1, containerWidth: -1, lineWidth: 100000 };
 
    return loadMathjax()
           .then(mj => mj.tex2svgPromise(mtext, options))
           .then(elem => {
               // when adding element to new node, it will be removed from original parent
-              let svg = elem.querySelector('svg');
+              const svg = elem.querySelector('svg');
 
               mj_node.append(() => svg);
 
@@ -10100,9 +10098,9 @@ async function typesetMathjax(node) {
 
 /** @summary Covert value between 0 and 1 into hex, used for colors coding
   * @private */
-function toHex(num,scale) {
-   let s = Math.round(num*(scale || 255)).toString(16);
-   return s.length == 1 ? '0'+s : s;
+function toHex(num, scale) {
+   const s = Math.round(num*(scale || 255)).toString(16);
+   return s.length === 1 ? '0'+s : s;
 }
 
 /** @summary list of global root colors
@@ -10112,7 +10110,7 @@ let gbl_colors_list = [];
 /** @summary Generates all root colors, used also in jstests to reset colors
   * @private */
 function createRootColors() {
-   let colorMap = ['white', 'black', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan', '#59d454', '#5954d9', 'white'];
+   const colorMap = ['white', 'black', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan', '#59d454', '#5954d9', 'white'];
    colorMap[110] = 'white';
 
    const moreCol = [
@@ -10128,10 +10126,10 @@ function createRootColors() {
       { n: 920, s: 'cdcdcd9a9a9a666666333333' }];
 
    moreCol.forEach(entry => {
-      let s = entry.s;
+      const s = entry.s;
       for (let n = 0; n < s.length; n += 6) {
-         let num = entry.n + n / 6;
-         colorMap[num] = '#' + s.slice(n,n+6);
+         const num = entry.n + n / 6;
+         colorMap[num] = '#' + s.slice(n, n+6);
       }
    });
 
@@ -10147,10 +10145,10 @@ function getRootColors() {
 /** @summary Produces rgb code for TColor object
   * @private */
 function getRGBfromTColor(col) {
-   if (col?._typename != clTColor) return null;
+   if (col?._typename !== clTColor) return null;
 
    let rgb = '#' + toHex(col.fRed) + toHex(col.fGreen) + toHex(col.fBlue);
-   if ((col.fAlpha !== undefined) && (col.fAlpha !== 1.))
+   if ((col.fAlpha !== undefined) && (col.fAlpha !== 1))
       rgb += toHex(col.fAlpha);
 
    switch (rgb) {
@@ -10182,17 +10180,18 @@ function extendRootColors(jsarr, objarr) {
    if (objarr._typename && objarr.arr) {
       rgb_array = [];
       for (let n = 0; n < objarr.arr.length; ++n) {
-         let col = objarr.arr[n];
-         if (col?._typename != clTColor) continue;
+         const col = objarr.arr[n];
+         if (col?._typename !== clTColor) continue;
 
          if ((col.fNumber >= 0) && (col.fNumber <= 10000))
             rgb_array[col.fNumber] = getRGBfromTColor(col);
       }
    }
 
-   for (let n = 0; n < rgb_array.length; ++n)
-      if (rgb_array[n] && (jsarr[n] != rgb_array[n]))
+   for (let n = 0; n < rgb_array.length; ++n) {
+      if (rgb_array[n] && (jsarr[n] !== rgb_array[n]))
          jsarr[n] = rgb_array[n];
+   }
 
    return jsarr;
 }
@@ -10218,9 +10217,10 @@ function getColor(indx) {
   * @private */
 function findColor(name) {
    if (!name) return -1;
-   for (let indx = 0; indx < gbl_colors_list.length; ++indx)
-      if (gbl_colors_list[indx] == name)
+   for (let indx = 0; indx < gbl_colors_list.length; ++indx) {
+      if (gbl_colors_list[indx] === name)
          return indx;
+   }
    return -1;
 }
 
@@ -10231,7 +10231,7 @@ function findColor(name) {
   * @private */
 function addColor(rgb, lst) {
    if (!lst) lst = gbl_colors_list;
-   let indx = lst.indexOf(rgb);
+   const indx = lst.indexOf(rgb);
    if (indx >= 0) return indx;
    lst.push(rgb);
    return lst.length-1;
@@ -10252,7 +10252,7 @@ class ColorPalette {
 
    /** @summary Returns color index which correspond to contour index of provided length */
    calcColorIndex(i, len) {
-      let plen = this.palette.length, theColor = Math.floor((i + 0.99) * plen / (len - 1));
+      const plen = this.palette.length, theColor = Math.floor((i + 0.99) * plen / (len - 1));
       return (theColor > plen - 1) ? plen - 1 : theColor;
     }
 
@@ -10291,13 +10291,16 @@ function createDefaultPalette() {
 }
 
 function createGrayPalette() {
-   let palette = [];
+   const palette = [];
    for (let i = 0; i < 50; ++i) {
       const code = toHex((i+2)/60);
       palette.push('#'+code+code+code);
    }
    return new ColorPalette(palette);
 }
+
+/* eslint-disable comma-spacing */
+
 
 /** @summary Create color palette
   * @private */
@@ -10306,8 +10309,9 @@ function getColorPalette(id) {
    if ((id > 0) && (id < 10)) return createGrayPalette();
    if (id < 51) return createDefaultPalette();
    if (id > 113) id = 57;
-   let rgb, stops = [0,0.125,0.25,0.375,0.5,0.625,0.75,0.875,1];
-   switch(id) {
+   const stops = [0,0.125,0.25,0.375,0.5,0.625,0.75,0.875,1];
+   let rgb;
+   switch (id) {
       // Deep Sea
       case 51: rgb = [[0,9,13,17,24,32,27,25,29],[0,0,0,2,37,74,113,160,221],[28,42,59,78,98,129,154,184,221]]; break;
       // Grey Scale
@@ -10321,7 +10325,7 @@ function getColorPalette(id) {
       // Inverted Dark Body Radiator
       case 56: rgb = [[242,234,237,230,212,156,99,45,0],[243,238,238,168,101,45,0,0,0],[230,95,11,8,9,3,1,1,0]]; break;
       // Bird (default, keep float for backward compatibility)
-      case 57: rgb = [[ 53.091,15.096,19.89,5.916,45.951,135.1755,208.743,253.878,248.982],[42.432,91.7745,128.5455,163.6845,183.039,191.046,186.864,200.481,250.716],[134.9715,221.442,213.8175,201.807,163.8375,118.881,89.2245,50.184,13.7445]]; break;
+      case 57: rgb = [[53.091,15.096,19.89,5.916,45.951,135.1755,208.743,253.878,248.982],[42.432,91.7745,128.5455,163.6845,183.039,191.046,186.864,200.481,250.716],[134.9715,221.442,213.8175,201.807,163.8375,118.881,89.2245,50.184,13.7445]]; break;
       // Cubehelix
       case 58: rgb = [[0,24,2,54,176,236,202,194,255],[0,29,92,129,117,120,176,236,255],[0,68,80,34,57,172,252,245,255]]; break;
       // Green Red Violet
@@ -10355,7 +10359,7 @@ function getColorPalette(id) {
       // CMYK
       case 73: rgb = [[61,99,136,181,213,225,198,136,24],[149,140,96,83,132,178,190,135,22],[214,203,168,135,110,100,111,113,22]]; break;
       // Candy
-      case 74: rgb = [[76,120,156,183,197,180,162,154,140],[34,35,42,69,102,137,164,188,197],[ 64,69,78,105,142,177,205,217,198]]; break;
+      case 74: rgb = [[76,120,156,183,197,180,162,154,140],[34,35,42,69,102,137,164,188,197],[64,69,78,105,142,177,205,217,198]]; break;
       // Cherry
       case 75: rgb = [[37,102,157,188,196,214,223,235,251],[37,29,25,37,67,91,132,185,251],[37,32,33,45,66,98,137,187,251]]; break;
       // Coffee
@@ -10365,13 +10369,13 @@ function getColorPalette(id) {
       // Dark Terrain
       case 78: rgb = [[0,41,62,79,90,87,99,140,228],[0,57,81,93,85,70,71,125,228],[95,91,91,82,60,43,44,112,228]]; break;
       // Fall
-      case 79: rgb = [[49,59,72,88,114,141,176,205,222],[78,72,66,57,59,75,106,142,173],[ 78,55,46,40,39,39,40,41,47]]; break;
+      case 79: rgb = [[49,59,72,88,114,141,176,205,222],[78,72,66,57,59,75,106,142,173],[78,55,46,40,39,39,40,41,47]]; break;
       // Fruit Punch
       case 80: rgb = [[243,222,201,185,165,158,166,187,219],[94,108,132,135,125,96,68,51,61],[7,9,12,19,45,89,118,146,118]]; break;
       // Fuchsia
       case 81: rgb = [[19,44,74,105,137,166,194,206,220],[19,28,40,55,82,110,159,181,220],[19,42,68,96,129,157,188,203,220]]; break;
       // Grey Yellow
-      case 82: rgb = [[33,44,70,99,140,165,199,211,216],[ 38,50,76,105,140,165,191,189,167],[ 55,67,97,124,140,166,163,129,52]]; break;
+      case 82: rgb = [[33,44,70,99,140,165,199,211,216],[38,50,76,105,140,165,191,189,167],[55,67,97,124,140,166,163,129,52]]; break;
       // Green Brown Terrain
       case 83: rgb = [[0,33,73,124,136,152,159,171,223],[0,43,92,124,134,126,121,144,223],[0,43,68,76,73,64,72,114,223]]; break;
       // Green Pink
@@ -10393,7 +10397,7 @@ function getColorPalette(id) {
       // Pearl
       case 92: rgb = [[225,183,162,135,115,111,119,145,211],[205,177,166,135,124,117,117,132,172],[186,165,155,135,126,130,150,178,226]]; break;
       // Pigeon
-      case 93: rgb = [[39,43,59,63,80,116,153,177,223],[39,43,59,74,91,114,139,165,223],[ 39,50,59,70,85,115,151,176,223]]; break;
+      case 93: rgb = [[39,43,59,63,80,116,153,177,223],[39,43,59,74,91,114,139,165,223],[39,50,59,70,85,115,151,176,223]]; break;
       // Plum
       case 94: rgb = [[0,38,60,76,84,89,101,128,204],[0,10,15,23,35,57,83,123,199],[0,11,22,40,63,86,97,94,85]]; break;
       // Red Blue
@@ -10409,7 +10413,7 @@ function getColorPalette(id) {
       // Solar
       case 100: rgb = [[99,116,154,174,200,196,201,201,230],[0,0,8,32,58,83,119,136,173],[5,6,7,9,9,14,17,19,24]]; break;
       // South West
-      case 101: rgb = [[82,106,126,141,155,163,142,107,66],[ 62,44,69,107,135,152,149,132,119],[39,25,31,60,73,68,49,72,188]]; break;
+      case 101: rgb = [[82,106,126,141,155,163,142,107,66],[62,44,69,107,135,152,149,132,119],[39,25,31,60,73,68,49,72,188]]; break;
       // Starry Night
       case 102: rgb = [[18,29,44,72,116,158,184,208,221],[27,46,71,105,146,177,189,190,183],[39,55,80,108,130,133,124,100,76]]; break;
       // Sunset
@@ -10443,9 +10447,9 @@ function getColorPalette(id) {
        // create the colors...
        const nColorsGradient = Math.round(Math.floor(NColors*stops[g]) - Math.floor(NColors*stops[g-1]));
        for (let c = 0; c < nColorsGradient; c++) {
-          const col = '#' + toHex(Red[g-1] + c * (Red[g] - Red[g-1]) / nColorsGradient, 1)
-                          + toHex(Green[g-1] + c * (Green[g] - Green[g-1]) / nColorsGradient, 1)
-                          + toHex(Blue[g-1] + c * (Blue[g] - Blue[g-1]) / nColorsGradient, 1);
+          const col = '#' + toHex(Red[g-1] + c * (Red[g] - Red[g-1]) / nColorsGradient, 1) +
+                          toHex(Green[g-1] + c * (Green[g] - Green[g-1]) / nColorsGradient, 1) +
+                          toHex(Blue[g-1] + c * (Blue[g] - Blue[g-1]) / nColorsGradient, 1);
           palette.push(col);
        }
     }
@@ -53981,17 +53985,15 @@ if ( typeof window !== 'undefined' ) {
 function getMaterialArgs(color$1, args) {
    if (!args || !isObject(args)) args = {};
 
-   if (isStr(color$1) && ((color$1[0] == '#' && (color$1.length === 9)) || (color$1.indexOf('rgba') >= 0))) {
-      let col = color(color$1);
+   if (isStr(color$1) && (((color$1[0] === '#') && (color$1.length === 9)) || (color$1.indexOf('rgba') >= 0))) {
+      const col = color(color$1);
       args.color = new Color(col.r, col.g, col.b);
       args.opacity = col.opacity ?? 1;
       args.transparent = args.opacity < 1;
-   } else {
+   } else
       args.color = new Color(color$1);
-   }
    return args;
 }
-
 
 const HelveticerRegularFont = new Font(HelveticerRegularJson);
 
@@ -53999,38 +54001,38 @@ function createSVGRenderer(as_is, precision, doc) {
    if (as_is) {
       if (doc !== undefined)
          globalThis.docuemnt = doc;
-      let rndr = new SVGRenderer();
+      const rndr = new SVGRenderer();
       rndr.setPrecision(precision);
       return rndr;
    }
 
    const excl_style1 = ';stroke-opacity:1;stroke-width:1;stroke-linecap:round',
-         excl_style2 = ';fill-opacity:1';
-
-   let doc_wrapper = {
+         excl_style2 = ';fill-opacity:1',
+   doc_wrapper = {
      svg_attr: {},
      svg_style: {},
      path_attr: {},
      accPath: '',
      createElementNS(ns, kind) {
-        if (kind == 'path')
+        if (kind === 'path') {
            return {
               _wrapper: this,
               setAttribute(name, value) {
                  // cut useless fill-opacity:1 at the end of many SVG attributes
-                 if ((name == 'style') && value) {
-                    let pos1 = value.indexOf(excl_style1);
-                    if ((pos1 >= 0) && (pos1 == value.length - excl_style1.length))
+                 if ((name === 'style') && value) {
+                    const pos1 = value.indexOf(excl_style1);
+                    if ((pos1 >= 0) && (pos1 === value.length - excl_style1.length))
                        value = value.slice(0, value.length - excl_style1.length);
-                    let pos2 = value.indexOf(excl_style2);
-                    if ((pos2 >= 0) && (pos2 == value.length - excl_style2.length))
+                    const pos2 = value.indexOf(excl_style2);
+                    if ((pos2 >= 0) && (pos2 === value.length - excl_style2.length))
                        value = value.slice(0, value.length - excl_style2.length);
                  }
                  this._wrapper.path_attr[name] = value;
               }
            }
+        }
 
-        if (kind != 'svg') {
+        if (kind !== 'svg') {
            console.error(`not supported element for SVGRenderer ${kind}`);
            return null;
         }
@@ -54043,7 +54045,7 @@ function createSVGRenderer(as_is, precision, doc) {
               this._wrapper.svg_attr[name] = value;
            },
            appendChild(node) {
-              this._wrapper.accPath += `<path style="${this._wrapper.path_attr['style']}" d="${this._wrapper.path_attr['d']}"/>`;
+              this._wrapper.accPath += `<path style="${this._wrapper.path_attr.style}" d="${this._wrapper.path_attr.d}"/>`;
               this._wrapper.path_attr = {};
            },
            removeChild(node) {
@@ -54060,7 +54062,7 @@ function createSVGRenderer(as_is, precision, doc) {
       globalThis.document = doc_wrapper;
    }
 
-   let rndr = new SVGRenderer();
+   const rndr = new SVGRenderer();
 
    if (isNodeJs())
       globalThis.document = originalDocument;
@@ -54070,7 +54072,7 @@ function createSVGRenderer(as_is, precision, doc) {
    rndr.originalRender = rndr.render;
 
    rndr.render = function(scene, camera) {
-      let originalDocument = globalThis.document;
+      const originalDocument = globalThis.document;
       if (isNodeJs())
          globalThis.document = this.doc_wrapper;
 
@@ -54085,28 +54087,25 @@ function createSVGRenderer(as_is, precision, doc) {
    };
 
    rndr.makeOuterHTML = function() {
-
-      let wrap = this.doc_wrapper,
-         _textSizeAttr = `viewBox="${wrap.svg_attr['viewBox']}" width="${wrap.svg_attr['width']}" height="${wrap.svg_attr['height']}"`,
-         _textClearAttr = wrap.svg_style.backgroundColor ? ` style="background:${wrap.svg_style.backgroundColor}"` : '';
+      const wrap = this.doc_wrapper,
+           _textSizeAttr = `viewBox="${wrap.svg_attr.viewBox}" width="${wrap.svg_attr.width}" height="${wrap.svg_attr.height}"`,
+           _textClearAttr = wrap.svg_style.backgroundColor ? ` style="background:${wrap.svg_style.backgroundColor}"` : '';
 
       return `<svg xmlns="http://www.w3.org/2000/svg" ${_textSizeAttr}${_textClearAttr}>${wrap.accPath}</svg>`;
    };
 
    rndr.fillTargetSVG = function(svg) {
-
       if (isNodeJs()) {
+         const wrap = this.doc_wrapper;
 
-         let wrap = this.doc_wrapper;
-
-         svg.setAttribute('viewBox', wrap.svg_attr['viewBox']);
-         svg.setAttribute('width', wrap.svg_attr['width']);
-         svg.setAttribute('height', wrap.svg_attr['height']);
+         svg.setAttribute('viewBox', wrap.svg_attr.viewBox);
+         svg.setAttribute('width', wrap.svg_attr.width);
+         svg.setAttribute('height', wrap.svg_attr.height);
          svg.style.background = wrap.svg_style.backgroundColor || '';
 
          svg.innerHTML = wrap.accPath;
       } else {
-         let src = this.domElement;
+         const src = this.domElement;
 
          svg.setAttribute('viewBox', src.getAttribute('viewBox'));
          svg.setAttribute('width', src.getAttribute('width'));
@@ -54114,11 +54113,10 @@ function createSVGRenderer(as_is, precision, doc) {
          svg.style.background = src.style.backgroundColor;
 
          while (src.firstChild) {
-            let elem = src.firstChild;
+            const elem = src.firstChild;
             src.removeChild(elem);
             svg.appendChild(elem);
          }
-
       }
    };
 
@@ -54138,26 +54136,26 @@ function getRender3DKind(render3d, is_batch) {
       is_batch = isBatchMode();
 
    if (!render3d) render3d = is_batch ? settings.Render3DBatch : settings.Render3D;
-   let rc = constants$1.Render3D;
+   const rc = constants$1.Render3D;
 
-   if (render3d == rc.Default) render3d = is_batch ? rc.WebGLImage : rc.WebGL;
-   if (is_batch && (render3d == rc.WebGL)) render3d = rc.WebGLImage;
+   if (render3d === rc.Default) render3d = is_batch ? rc.WebGLImage : rc.WebGL;
+   if (is_batch && (render3d === rc.WebGL)) render3d = rc.WebGLImage;
 
    return render3d;
 }
 
-let Handling3DDrawings = {
+const Handling3DDrawings = {
 
    /** @summary Access current 3d mode
      * @param {string} [new_value] - when specified, set new 3d mode
      * @return current value
      * @private */
    access3dKind(new_value) {
-      let svg = this.getPadSvg();
+      const svg = this.getPadSvg();
       if (svg.empty()) return -1;
 
       // returns kind of currently created 3d canvas
-      let kind = svg.property('can3d');
+      const kind = svg.property('can3d');
       if (new_value !== undefined) svg.property('can3d', new_value);
       return ((kind === null) || (kind === undefined)) ? -1 : kind;
    },
@@ -54165,15 +54163,14 @@ let Handling3DDrawings = {
    /** @summary Returns size which availble for 3D drawing.
      * @desc One uses frame sizes for the 3D drawing - like TH2/TH3 objects
      * @private */
-   getSizeFor3d(can3d, render3d) {
-
+   getSizeFor3d(can3d /*, render3d */) {
       if (can3d === undefined) {
          // analyze which render/embed mode can be used
          can3d = getRender3DKind();
          // all non-webgl elements can be embedded into SVG as is
          if (can3d !== constants$1.Render3D.WebGL)
             can3d = constants$1.Embed3D.EmbedSVG;
-         else if (settings.Embed3D != constants$1.Embed3D.Default)
+         else if (settings.Embed3D !== constants$1.Embed3D.Default)
             can3d = settings.Embed3D;
          else if (browser.isFirefox)
             can3d = constants$1.Embed3D.Embed;
@@ -54184,14 +54181,13 @@ let Handling3DDrawings = {
             can3d = constants$1.Embed3D.Overlay;
       }
 
-      let pad = this.getPadSvg(),
-          clname = 'draw3d_' + (this.getPadName() || 'canvas');
+      const pad = this.getPadSvg(),
+            clname = 'draw3d_' + (this.getPadName() || 'canvas');
 
       if (pad.empty()) {
          // this is a case when object drawn without canvas
 
-         let rect = getElementRect(this.selectDom());
-
+         const rect = getElementRect(this.selectDom());
          if ((rect.height < 10) && (rect.width > 10)) {
             rect.height = Math.round(0.66 * rect.width);
             this.selectDom().style('height', rect.height + 'px');
@@ -54200,11 +54196,12 @@ let Handling3DDrawings = {
          return rect;
       }
 
-      let fp = this.getFramePainter(), pp = this.getPadPainter(), size;
+      const fp = this.getFramePainter(), pp = this.getPadPainter();
+      let size;
 
-      if (fp?.mode3d && (can3d > 0)) {
+      if (fp?.mode3d && (can3d > 0))
          size = fp.getFrameRect();
-      } else {
+      else {
          let elem = (can3d > 0) ? pad : this.getCanvSvg();
          size = { x: 0, y: 0, width: elem.property('draw_width'), height: elem.property('draw_height') };
          if (Number.isNaN(size.width) || Number.isNaN(size.height)) {
@@ -54220,10 +54217,10 @@ let Handling3DDrawings = {
       size.clname = clname;
       size.can3d = can3d;
 
-      let rect = pp?.getPadRect();
+      const rect = pp?.getPadRect();
       if (rect) {
          // while 3D canvas uses area also for the axis labels, extend area relative to normal frame
-         let dx = Math.round(size.width*0.07), dy = Math.round(size.height*0.05);
+         const dx = Math.round(size.width*0.07), dy = Math.round(size.height*0.05);
 
          size.x = Math.max(0, size.x-dx);
          size.y = Math.max(0, size.y-dy);
@@ -54241,11 +54238,11 @@ let Handling3DDrawings = {
      * @return can3d value - how webgl canvas was placed
      * @private */
    clear3dCanvas() {
-      let can3d = this.access3dKind(null);
+      const can3d = this.access3dKind(null);
       if (can3d < 0) {
          // remove first child from main element - if it is canvas
-         let main = this.selectDom().node(),
-             chld = main?.firstChild;
+         const main = this.selectDom().node();
+         let chld = main?.firstChild;
 
          if (chld && !chld.$jsroot)
             chld = chld.nextSibling;
@@ -54257,8 +54254,7 @@ let Handling3DDrawings = {
          return can3d;
       }
 
-      let size = this.getSizeFor3d(can3d);
-
+      const size = this.getSizeFor3d(can3d);
       if (size.can3d === 0) {
          select(this.getCanvSvg().node().nextSibling).remove(); // remove html5 canvas
          this.getCanvSvg().style('display', null); // show SVG canvas
@@ -54275,13 +54271,12 @@ let Handling3DDrawings = {
    /** @summary Add 3D canvas
      * @private */
    add3dCanvas(size, canv, webgl) {
-
       if (!canv || (size.can3d < -1)) return;
 
       if (size.can3d === -1) {
          // case when 3D object drawn without canvas
 
-         let main = this.selectDom().node();
+         const main = this.selectDom().node();
          if (main !== null) {
             main.appendChild(canv);
             canv.painter = this;
@@ -54306,8 +54301,7 @@ let Handling3DDrawings = {
          // first hide normal frame
          this.getFrameSvg().style('display', 'none');
 
-         let elem = this.apply3dSize(size);
-
+         const elem = this.apply3dSize(size);
          elem.attr('title', '').node().appendChild(canv);
       }
    },
@@ -54315,19 +54309,17 @@ let Handling3DDrawings = {
    /** @summary Apply size to 3D elements
      * @private */
    apply3dSize(size, onlyget) {
-
       if (size.can3d < 0)
          return select(null);
 
       let elem;
 
       if (size.can3d > 1) {
-
          elem = this.getLayerSvg(size.clname);
          if (onlyget)
             return elem;
 
-         let svg = this.getPadSvg();
+         const svg = this.getPadSvg();
 
          if (size.can3d === constants$1.Embed3D.EmbedSVG) {
             // this is SVG mode or image mode - just create group to hold element
@@ -54336,9 +54328,7 @@ let Handling3DDrawings = {
                elem = svg.insert('g', '.primitives_layer').attr('class', size.clname);
 
             makeTranslate(elem, size.x, size.y);
-
          } else {
-
             if (elem.empty())
                elem = svg.insert('foreignObject', '.primitives_layer').attr('class', size.clname);
 
@@ -54349,7 +54339,6 @@ let Handling3DDrawings = {
                 .attr('viewBox', `0 0 ${size.width} ${size.height}`)
                 .attr('preserveAspectRatio', 'xMidYMid');
          }
-
       } else {
          let prnt = this.getCanvSvg().node().parentNode;
 
@@ -54360,15 +54349,16 @@ let Handling3DDrawings = {
          // force redraw by resize
          this.getCanvSvg().property('redraw_by_resize', true);
 
-         if (elem.empty())
+         if (elem.empty()) {
             elem = select(prnt).append('div').attr('class', size.clname)
                                   .style('user-select', 'none');
+         }
 
          // our position inside canvas, but to set 'absolute' position we should use
          // canvas element offset relative to first parent with non-static position
          // now try to use getBoundingClientRect - it should be more precise
 
-         let pos0 = prnt.getBoundingClientRect();
+         const pos0 = prnt.getBoundingClientRect();
 
          while (prnt) {
             if (prnt === document) { prnt = null; break; }
@@ -54380,9 +54370,9 @@ let Handling3DDrawings = {
             prnt = prnt.parentNode;
          }
 
-         let pos1 = prnt?.getBoundingClientRect() ?? { top: 0, left: 0 },
-             offx = Math.round(pos0.left - pos1.left),
-             offy = Math.round(pos0.top - pos1.top);
+         const pos1 = prnt?.getBoundingClientRect() ?? { top: 0, left: 0 },
+               offx = Math.round(pos0.left - pos1.left),
+               offy = Math.round(pos0.top - pos1.top);
 
          elem.style('position', 'absolute').style('left', (size.x + offx) + 'px').style('top', (size.y + offy) + 'px').style('width', size.width + 'px').style('height', size.height + 'px');
       }
@@ -54408,23 +54398,21 @@ function assign3DHandler(painter) {
   * @return {Promise} with renderer object
   * @private */
 async function createRender3D(width, height, render3d, args) {
-
-   let rc = constants$1.Render3D, promise, doc = getDocument();
+   const rc = constants$1.Render3D, doc = getDocument();
 
    render3d = getRender3DKind(render3d);
 
    if (!args) args = { antialias: true, alpha: true };
 
-   if (render3d == rc.WebGL) {
+   let promise;
+
+   if (render3d === rc.WebGL) {
       // interactive WebGL Rendering
       promise = Promise.resolve(new WebGLRenderer(args));
-
-   } else if (render3d == rc.SVG) {
+   } else if (render3d === rc.SVG) {
       // SVG rendering
-      let r = createSVGRenderer(false, 0, doc);
-
+      const r = createSVGRenderer(false, 0, doc);
       r.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
-
       promise = Promise.resolve(r);
    } else if (isNodeJs()) {
       // try to use WebGL inside node.js - need to create headless context
@@ -54435,15 +54423,14 @@ async function createRender3D(width, height, render3d, args) {
          args.canvas.style = {};
          return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; });
       }).then(node_gl => {
-         let gl = node_gl.default(width, height, { preserveDrawingBuffer: true });
-         if (!gl) throw(Error('Fail to create headless-gl'));
+         const gl = node_gl.default(width, height, { preserveDrawingBuffer: true });
+         if (!gl) throw Error('Fail to create headless-gl');
          args.context = gl;
          gl.canvas = args.canvas;
 
          globalThis.WebGLRenderingContext = function() {}; // workaround to prevent crash in three.js constructor
 
-         let r = new WebGLRenderer(args);
-
+         const r = new WebGLRenderer(args);
          r.jsroot_output = new WebGLRenderTarget(width, height);
          r.setRenderTarget(r.jsroot_output);
          r.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'image');
@@ -54451,7 +54438,7 @@ async function createRender3D(width, height, render3d, args) {
       });
    } else {
       // rendering with WebGL directly into svg image
-      let r = new WebGLRenderer(args);
+      const r = new WebGLRenderer(args);
       r.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'image');
       promise = Promise.resolve(r);
    }
@@ -54494,8 +54481,8 @@ function cleanupRender3D(renderer) {
    if (!renderer) return;
 
    if (isNodeJs()) {
-      let ctxt = isFunc(renderer.getContext) ? renderer.getContext() : null,
-          ext = ctxt?.getExtension('STACKGL_destroy_context');
+      const ctxt = isFunc(renderer.getContext) ? renderer.getContext() : null,
+            ext = ctxt?.getExtension('STACKGL_destroy_context');
       if (isFunc(ext?.destroy))
           ext.destroy();
    } else {
@@ -54520,21 +54507,20 @@ function beforeRender3D(renderer) {
   * @desc used together with SVG or node.js image rendering
   * @private */
 function afterRender3D(renderer) {
+   const rc = constants$1.Render3D;
 
-   let rc = constants$1.Render3D;
-
-   if (renderer.jsroot_render3d == rc.WebGL)
+   if (renderer.jsroot_render3d === rc.WebGL)
       return;
 
-   if (renderer.jsroot_render3d == rc.SVG) {
+   if (renderer.jsroot_render3d === rc.SVG) {
       // case of SVGRenderer
       renderer.fillTargetSVG(renderer.jsroot_dom);
    } else if (isNodeJs()) {
       // this is WebGL rendering in node.js
-      let canvas = renderer.domElement,
-         context = canvas.getContext('2d');
+      const canvas = renderer.domElement,
+            context = canvas.getContext('2d'),
+            pixels = new Uint8Array(4 * canvas.width * canvas.height);
 
-      let pixels = new Uint8Array(4 * canvas.width * canvas.height);
       renderer.readRenderTargetPixels(renderer.jsroot_output, 0, 0, canvas.width, canvas.height, pixels);
 
       // small code to flip Y scale
@@ -54547,17 +54533,16 @@ function afterRender3D(renderer) {
          indx2 -= 4 * canvas.width;
       }
 
-      let imageData = context.createImageData(canvas.width, canvas.height);
+      const imageData = context.createImageData(canvas.width, canvas.height);
       imageData.data.set(pixels);
       context.putImageData(imageData, 0, 0);
 
-      let format = 'image/' + renderer.jsroot_image_format,
-          dataUrl = canvas.toDataURL(format);
+      const format = 'image/' + renderer.jsroot_image_format,
+            dataUrl = canvas.toDataURL(format);
 
       renderer.jsroot_dom.setAttribute('href', dataUrl);
-
    } else {
-      let dataUrl = renderer.domElement.toDataURL('image/' + renderer.jsroot_image_format);
+      const dataUrl = renderer.domElement.toDataURL('image/' + renderer.jsroot_image_format);
       renderer.jsroot_dom.setAttribute('href', dataUrl);
    }
 }
@@ -54579,7 +54564,7 @@ class TooltipFor3D {
       this.tt = null;
       this.cont = null;
       this.lastlbl = '';
-      this.parent = prnt ? prnt : document.body;
+      this.parent = prnt || document.body;
       this.canvas = canvas; // we need canvas to recalculate mouse events
       this.abspos = !prnt;
    }
@@ -54596,7 +54581,7 @@ class TooltipFor3D {
      * @desc can be used to process it later when event is gone */
    extract_pos(e) {
       if (isObject(e) && (e.u !== undefined) && (e.l !== undefined)) return e;
-      let res = { u: 0, l: 0 };
+      const res = { u: 0, l: 0 };
       if (this.abspos) {
          res.l = e.pageX;
          res.u = e.pageY;
@@ -54604,7 +54589,6 @@ class TooltipFor3D {
          res.l = e.offsetX;
          res.u = e.offsetY;
       }
-
       return res;
    }
 
@@ -54612,13 +54596,12 @@ class TooltipFor3D {
      * @desc event is delivered from canvas,
      * but position should be calculated relative to the element where tooltip is placed */
    pos(e) {
-
       if (!this.tt) return;
 
-      let pos = this.extract_pos(e);
+      const pos = this.extract_pos(e);
       if (!this.abspos) {
-         let rect1 = this.parent.getBoundingClientRect(),
-             rect2 = this.canvas.getBoundingClientRect();
+         const rect1 = this.parent.getBoundingClientRect(),
+               rect2 = this.canvas.getBoundingClientRect();
 
          if ((rect1.left !== undefined) && (rect2.left!== undefined))
             pos.l += (rect2.left-rect1.left);
@@ -54636,14 +54619,14 @@ class TooltipFor3D {
          // all absolute coordinates calculated relative to such node
          let abs_parent = this.parent;
          while (abs_parent) {
-            let style = getComputedStyle(abs_parent);
+            const style = getComputedStyle(abs_parent);
             if (!style || (style.position !== 'static')) break;
-            if (!abs_parent.parentNode || (abs_parent.parentNode.nodeType != 1)) break;
+            if (!abs_parent.parentNode || (abs_parent.parentNode.nodeType !== 1)) break;
             abs_parent = abs_parent.parentNode;
          }
 
          if (abs_parent && (abs_parent !== this.parent)) {
-            let rect0 = abs_parent.getBoundingClientRect();
+            const rect0 = abs_parent.getBoundingClientRect();
             pos.l += (rect1.left - rect0.left);
             pos.u += (rect1.top - rect0.top);
          }
@@ -54654,15 +54637,15 @@ class TooltipFor3D {
    }
 
    /** @summary Show tooltip */
-   show(v /*, mouse_pos, status_func*/) {
+   show(v /* , mouse_pos, status_func */) {
       if (!v) return this.hide();
 
       if (isObject(v) && (v.lines || v.line)) {
          if (v.only_status) return this.hide();
 
-         if (v.line) {
+         if (v.line)
             v = v.line;
-         } else {
+         else {
             let res = v.lines[0];
             for (let n = 1; n < v.lines.length; ++n)
                res += '<br/>' + v.lines[n];
@@ -54700,10 +54683,10 @@ class TooltipFor3D {
 /** @summary Create OrbitControls for painter
   * @private */
 function createOrbitControl(painter, camera, scene, renderer, lookat) {
+   const enable_zoom = settings.Zooming && settings.ZoomMouse,
+         enable_select = isFunc(painter.processMouseClick);
 
-   let control = null,
-       enable_zoom = settings.Zooming && settings.ZoomMouse,
-       enable_select = isFunc(painter.processMouseClick);
+   let control = null;
 
    function control_mousedown(evnt) {
       if (!control) return;
@@ -54737,7 +54720,6 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       if (!control) return;
 
       if (control.mouse_zoom_mesh && control.mouse_zoom_mesh.point2 && control.painter.get3dZoomCoord) {
-
          let kind = control.mouse_zoom_mesh.object.zoom,
              pos1 = control.painter.get3dZoomCoord(control.mouse_zoom_mesh.point, kind),
              pos2 = control.painter.get3dZoomCoord(control.mouse_zoom_mesh.point2, kind);
@@ -54748,9 +54730,8 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
          if ((kind === 'z') && control.mouse_zoom_mesh.object.use_y_for_z) kind = 'y';
 
          // try to zoom
-         if (pos1 < pos2)
-           if (control.painter.zoom(kind, pos1, pos2))
-              control.mouse_zoom_mesh = null;
+         if ((pos1 < pos2) && control.painter.zoom(kind, pos1, pos2))
+            control.mouse_zoom_mesh = null;
       }
 
       // if selection was drawn, it should be removed and picture rendered again
@@ -54758,17 +54739,16 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
          control.removeZoomMesh();
 
       // only left-button is considered
-      //if ((evnt.button!==undefined) && (evnt.button !== 0)) return;
-      //if ((evnt.buttons!==undefined) && (evnt.buttons !== 1)) return;
+      // if ((evnt.button!==undefined) && (evnt.button !== 0)) return;
+      // if ((evnt.buttons!==undefined) && (evnt.buttons !== 1)) return;
 
       if (control.enable_select && control.mouse_select_pnt) {
-
-         let pnt = control.getMousePos(evnt, {}),
-             same_pnt = (pnt.x == control.mouse_select_pnt.x) && (pnt.y == control.mouse_select_pnt.y);
+         const pnt = control.getMousePos(evnt, {}),
+               same_pnt = (pnt.x === control.mouse_select_pnt.x) && (pnt.y === control.mouse_select_pnt.y);
          delete control.mouse_select_pnt;
 
          if (same_pnt) {
-            let intersects = control.getMouseIntersects(pnt);
+            const intersects = control.getMouseIntersects(pnt);
             control.painter.processMouseClick(pnt, intersects, evnt);
          }
       }
@@ -54783,7 +54763,6 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       if (!control) return;
 
       // try to handle zoom extra
-
       if (render3DFired(control.painter) || control.mouse_zoom_mesh) {
          evnt.preventDefault();
          evnt.stopPropagation();
@@ -54791,7 +54770,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
          return; // already fired redraw, do not react on the mouse wheel
       }
 
-      let intersect = control.detectZoomMesh(evnt);
+      const intersect = control.detectZoomMesh(evnt);
       if (!intersect) return;
 
       evnt.preventDefault();
@@ -54800,8 +54779,8 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
 
       if (isFunc(control.painter?.analyzeMouseWheelEvent)) {
          let kind = intersect.object.zoom,
-             position = intersect.point[kind],
-             item = { name: kind, ignore: false };
+             position = intersect.point[kind];
+         const item = { name: kind, ignore: false };
 
          // z changes from 0..2*size_z3d, others -size_x3d..+size_x3d
          switch (kind) {
@@ -54856,7 +54835,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
    control.cursor_changed = false;
    control.control_changed = false;
    control.control_active = false;
-   control.mouse_ctxt = { x:0, y: 0, on: false };
+   control.mouse_ctxt = { x: 0, y: 0, on: false };
    control.enable_zoom = enable_zoom;
    control.enable_select = enable_select;
 
@@ -54911,12 +54890,12 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       // domElement gives correct coordinate with canvas render, but isn't always right for webgl renderer
       if (!this.renderer) return [];
 
-      let sz = (this.renderer instanceof SVGRenderer) ? this.renderer.domElement : this.renderer.getSize(new Vector2()),
-          pnt = { x: mouse.x / sz.width * 2 - 1, y: -mouse.y / sz.height * 2 + 1 };
+      const sz = (this.renderer instanceof SVGRenderer) ? this.renderer.domElement : this.renderer.getSize(new Vector2()),
+            pnt = { x: mouse.x / sz.width * 2 - 1, y: -mouse.y / sz.height * 2 + 1 };
 
       this.camera.updateMatrix();
       this.camera.updateMatrixWorld();
-      this.raycaster.setFromCamera( pnt, this.camera );
+      this.raycaster.setFromCamera(pnt, this.camera);
       let intersects = this.raycaster.intersectObjects(this.scene.children, true);
 
       // painter may want to filter intersects
@@ -54927,46 +54906,50 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
    };
 
    control.detectZoomMesh = function(evnt) {
-      let mouse = this.getMousePos(evnt, {}),
-          intersects = this.getMouseIntersects(mouse);
-      if (intersects)
-         for (let n = 0; n < intersects.length; ++n)
+      const mouse = this.getMousePos(evnt, {}),
+            intersects = this.getMouseIntersects(mouse);
+      if (intersects) {
+         for (let n = 0; n < intersects.length; ++n) {
             if (intersects[n].object.zoom && !intersects[n].object.zoom_disabled)
                return intersects[n];
+         }
+      }
 
       return null;
    };
 
    control.getInfoAtMousePosition = function(mouse_pos) {
-      let intersects = this.getMouseIntersects(mouse_pos),
-          tip = null, painter = null;
+      const intersects = this.getMouseIntersects(mouse_pos);
+      let tip = null, painter = null;
 
-      for (let i = 0; i < intersects.length; ++i)
+      for (let i = 0; i < intersects.length; ++i) {
          if (intersects[i].object.tooltip) {
             tip = intersects[i].object.tooltip(intersects[i]);
             painter = intersects[i].object.painter;
             break;
+         }
       }
 
-      if (tip && painter)
+      if (tip && painter) {
          return { obj: painter.getObject(),  name: painter.getObject().fName,
                   bin: tip.bin, cont: tip.value,
                   binx: tip.ix, biny: tip.iy, binz: tip.iz,
                   grx: (tip.x1+tip.x2)/2, gry: (tip.y1+tip.y2)/2, grz: (tip.z1+tip.z2)/2 };
+      }
    };
 
    control.processDblClick = function(evnt) {
       // first check if zoom mesh clicked
-      let zoom_intersect = this.detectZoomMesh(evnt);
+      const zoom_intersect = this.detectZoomMesh(evnt);
       if (zoom_intersect && this.painter) {
          this.painter.unzoom(zoom_intersect.object.use_y_for_z ? 'y' : zoom_intersect.object.zoom);
          return;
       }
 
       // then check if double-click handler assigned
-      let fp = this.painter?.getFramePainter();
+      const fp = this.painter?.getFramePainter();
       if (isFunc(fp?._dblclick_handler)) {
-         let info = this.getInfoAtMousePosition(this.getMousePos(evnt, {}));
+         const info = this.getInfoAtMousePosition(this.getMousePos(evnt, {}));
          if (info) {
             fp._dblclick_handler(info);
             return;
@@ -55045,14 +55028,15 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       if (this.mouse_zoom_mesh) {
          // when working with zoom mesh, need special handling
 
-         let zoom2 = this.detectZoomMesh(evnt),
-             pnt2 = (zoom2?.object === this.mouse_zoom_mesh.object) ? zoom2.point : this.mouse_zoom_mesh.object.globalIntersect(this.raycaster);
+         const zoom2 = this.detectZoomMesh(evnt),
+               pnt2 = (zoom2?.object === this.mouse_zoom_mesh.object) ? zoom2.point : this.mouse_zoom_mesh.object.globalIntersect(this.raycaster);
 
          if (pnt2) this.mouse_zoom_mesh.point2 = pnt2;
 
-         if (pnt2 && this.painter.enable_highlight)
+         if (pnt2 && this.painter.enable_highlight) {
             if (this.mouse_zoom_mesh.object.showSelection(this.mouse_zoom_mesh.point, pnt2))
                this.painter.render3D(0);
+         }
 
          this.tooltip.hide();
          return;
@@ -55080,16 +55064,16 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       delete this.tmout_handle;
       if (!this.painter) return; // protect when cleanup
 
-      let mouse = this.tmout_mouse,
-          intersects = this.getMouseIntersects(mouse),
-          tip = this.processMouseMove(intersects);
+      const mouse = this.tmout_mouse,
+            intersects = this.getMouseIntersects(mouse),
+            tip = this.processMouseMove(intersects);
 
       if (tip) {
          let name = '', title = '', coord = '', info = '';
          if (mouse) coord = mouse.x.toFixed(0) + ',' + mouse.y.toFixed(0);
-         if (isStr(tip)) {
+         if (isStr(tip))
             info = tip;
-         } else {
+         else {
             name = tip.name; title = tip.title;
             if (tip.line) info = tip.line; else
             if (tip.lines) { info = tip.lines.slice(1).join(' '); name = tip.lines[0]; }
@@ -55105,10 +55089,12 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
          this.tooltip.pos(this.tmout_ttpos);
       } else {
          this.tooltip.hide();
-         if (intersects)
-            for (let n = 0; n < intersects.length; ++n)
+         if (intersects) {
+            for (let n = 0; n < intersects.length; ++n) {
                if (intersects[n].object.zoom && !intersects[n].object.zoom_disabled)
                   this.cursor_changed = true;
+            }
+         }
       }
 
       document.body.style.cursor = this.cursor_changed ? 'pointer' : 'auto';
@@ -55143,10 +55129,10 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
    control.processClick = function(mouse_pos, kind) {
       delete this.single_click_tm;
 
-      if (kind == 1) {
-         let fp = this.painter?.getFramePainter();
+      if (kind === 1) {
+         const fp = this.painter?.getFramePainter();
          if (isFunc(fp?._click_handler)) {
-            let info = this.getInfoAtMousePosition(mouse_pos);
+            const info = this.getInfoAtMousePosition(mouse_pos);
             if (info) {
                fp._click_handler(info);
                return;
@@ -55155,23 +55141,23 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       }
 
       // method assigned in the Eve7 and used for object selection
-      if ((kind == 2) && isFunc(this.processSingleClick)) {
-         let intersects = this.getMouseIntersects(mouse_pos);
+      if ((kind === 2) && isFunc(this.processSingleClick)) {
+         const intersects = this.getMouseIntersects(mouse_pos);
          this.processSingleClick(intersects);
       }
    };
 
    control.lstn_click = function(evnt) {
       // ignore right-mouse click
-      if (evnt.detail == 2) return;
+      if (evnt.detail === 2) return;
 
       if (this.single_click_tm) {
          clearTimeout(this.single_click_tm);
          delete this.single_click_tm;
       }
 
-      let kind = 0, fp = this.painter?.getFramePainter();
-      if (isFunc(fp?._click_handler))
+      let kind = 0;
+      if (isFunc(this.painter?.getFramePainter()?._click_handler))
          kind = 1; // user click handler
       else if (this.processSingleClick && this.painter?.options?.mouse_click)
          kind = 2;  // eve7 click handler
@@ -55245,24 +55231,22 @@ function disposeThreejsObject(obj, only_childs) {
   * @desc If required, calculates lineDistance attribute for dashed geometries
   * @private */
 function createLineSegments(arr, material, index = undefined, only_geometry = false) {
-
-   let geom = new BufferGeometry();
+   const geom = new BufferGeometry();
 
    geom.setAttribute('position', arr instanceof Float32Array ? new BufferAttribute(arr, 3) : new Float32BufferAttribute(arr, 3));
    if (index) geom.setIndex(new BufferAttribute(index, 1));
 
    if (material.isLineDashedMaterial) {
-
-      let v1 = new Vector3(),
-          v2 = new Vector3(),
-          d = 0, distances = null;
+      const v1 = new Vector3(),
+            v2 = new Vector3();
+      let d = 0, distances = null;
 
       if (index) {
          distances = new Float32Array(index.length);
          for (let n = 0; n < index.length; n += 2) {
-            let i1 = index[n], i2 = index[n+1];
-            v1.set(arr[i1],arr[i1+1],arr[i1+2]);
-            v2.set(arr[i2],arr[i2+1],arr[i2+2]);
+            const i1 = index[n], i2 = index[n+1];
+            v1.set(arr[i1], arr[i1+1], arr[i1+2]);
+            v2.set(arr[i2], arr[i2+1], arr[i2+2]);
             distances[n] = d;
             d += v2.distanceTo(v1);
             distances[n+1] = d;
@@ -55286,26 +55270,28 @@ function createLineSegments(arr, material, index = undefined, only_geometry = fa
 /** @summary Help structures for calculating Box mesh
   * @private */
 const Box3D = {
-    Vertices: [ new Vector3(1, 1, 1), new Vector3(1, 1, 0),
-                new Vector3(1, 0, 1), new Vector3(1, 0, 0),
-                new Vector3(0, 1, 0), new Vector3(0, 1, 1),
-                new Vector3(0, 0, 0), new Vector3(0, 0, 1) ],
-    Indexes: [ 0,2,1, 2,3,1, 4,6,5, 6,7,5, 4,5,1, 5,0,1, 7,6,2, 6,3,2, 5,7,0, 7,2,0, 1,3,4, 3,6,4 ],
-    Normals: [ 1,0,0, -1,0,0, 0,1,0, 0,-1,0, 0,0,1, 0,0,-1 ],
+    Vertices: [new Vector3(1, 1, 1), new Vector3(1, 1, 0),
+               new Vector3(1, 0, 1), new Vector3(1, 0, 0),
+               new Vector3(0, 1, 0), new Vector3(0, 1, 1),
+               new Vector3(0, 0, 0), new Vector3(0, 0, 1)],
+    Indexes: [0, 2, 1,  2, 3, 1,  4, 6, 5,  6, 7, 5,  4, 5, 1,  5, 0, 1,
+              7, 6, 2,  6, 3, 2,  5, 7, 0,  7, 2, 0,  1, 3, 4,  3, 6, 4],
+    Normals: [1, 0, 0,  -1, 0, 0,  0, 1, 0,  0, -1, 0,  0, 0, 1,  0, 0, -1],
     Segments: [0, 2, 2, 7, 7, 5, 5, 0, 1, 3, 3, 6, 6, 4, 4, 1, 1, 0, 3, 2, 6, 7, 4, 5],  // segments addresses Vertices
     MeshSegments: undefined
 };
 
 // these segments address vertices from the mesh, we can use positions from box mesh
 Box3D.MeshSegments = (function() {
-   let box3d = Box3D,
-       arr = new Int32Array(box3d.Segments.length);
+   const arr = new Int32Array(Box3D.Segments.length);
 
    for (let n = 0; n < arr.length; ++n) {
-      for (let k = 0; k < box3d.Indexes.length; ++k)
-         if (box3d.Segments[n] === box3d.Indexes[k]) {
-            arr[n] = k; break;
+      for (let k = 0; k < Box3D.Indexes.length; ++k) {
+         if (Box3D.Segments[n] === Box3D.Indexes[k]) {
+            arr[n] = k;
+            break;
          }
+      }
    }
    return arr;
 })();
@@ -55319,11 +55305,13 @@ Box3D.MeshSegments = (function() {
  */
 
 class InteractiveControl {
+
    cleanup() {}
-   extractIndex(/*intersect*/) {}
-   setSelected(/*col, indx*/) {}
-   setHighlight(/*col, indx*/) {}
-   checkHighlightIndex(/*indx*/) {}
+   extractIndex(/* intersect */) {}
+   setSelected(/* col, indx */) {}
+   setHighlight(/* col, indx */) {}
+   checkHighlightIndex(/* indx */) {}
+
 } // class InteractiveControl
 
 
@@ -55341,7 +55329,7 @@ class PointsCreator {
      * @param {number} [scale=1] - scale factor */
    constructor(size, iswebgl, scale) {
       this.webgl = (iswebgl === undefined) ? true : iswebgl;
-      this.scale = scale || 1.;
+      this.scale = scale || 1;
 
       this.pos = new Float32Array(size*3);
       this.geom = new BufferGeometry();
@@ -55350,7 +55338,7 @@ class PointsCreator {
    }
 
    /** @summary Add point */
-   addPoint(x,y,z) {
+   addPoint(x, y, z) {
       this.pos[this.indx]   = x;
       this.pos[this.indx+1] = y;
       this.pos[this.indx+2] = z;
@@ -55359,7 +55347,6 @@ class PointsCreator {
 
    /** @summary Create points */
    createPoints(args) {
-
       if (!isObject(args))
          args = { color: args };
       if (!args.color)
@@ -55373,16 +55360,15 @@ class PointsCreator {
       if (args.style === 6) k = 0.5; else
       if (args.style === 7) k = 0.7;
 
-      let makePoints = texture => {
-         let material_args = { size: 3*this.scale*k };
+      const makePoints = texture => {
+         const material_args = { size: 3*this.scale*k };
          if (texture) {
             material_args.map = texture;
             material_args.transparent = true;
-         } else {
+         } else
             material_args.color = args.color || 'black';
-         }
 
-         let pnts = new Points(this.geom, new PointsMaterial(material_args));
+         const pnts = new Points(this.geom, new PointsMaterial(material_args));
          pnts.nvertex = 1;
          return pnts;
       };
@@ -55390,17 +55376,17 @@ class PointsCreator {
       // this is plain creation of points, no need for texture loading
 
       if (k !== 1) {
-         let res = makePoints();
+         const res = makePoints();
          return this.noPromise ? res : Promise.resolve(res);
       }
 
-      let handler = new TAttMarkerHandler({ style: args.style, color: args.color, size: 7 }),
-          w = handler.fill ? 1 : 7,
-          imgdata = `<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">` +
-                    `<path d="${handler.create(32,32)}" style="stroke: ${handler.getStrokeColor()}; stroke-width: ${w}; fill: ${handler.getFillColor()}"></path>`+
-                    `</svg>`,
-          dataUrl = 'data:image/svg+xml;charset=utf8,' + (isNodeJs() ? imgdata : encodeURIComponent(imgdata)),
-          promise;
+      const handler = new TAttMarkerHandler({ style: args.style, color: args.color, size: 7 }),
+            w = handler.fill ? 1 : 7,
+            imgdata = '<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">' +
+                      `<path d="${handler.create(32, 32)}" style="stroke: ${handler.getStrokeColor()}; stroke-width: ${w}; fill: ${handler.getFillColor()}"></path>`+
+                      '</svg>',
+            dataUrl = 'data:image/svg+xml;charset=utf8,' + (isNodeJs() ? imgdata : encodeURIComponent(imgdata));
+      let promise;
 
       if (isNodeJs()) {
          promise = Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(handle => handle.default.loadImage(dataUrl).then(img => {
@@ -55414,7 +55400,8 @@ class PointsCreator {
          return makePoints(new TextureLoader().load(dataUrl));
       } else {
          promise = new Promise((resolveFunc, rejectFunc) => {
-            let loader = new TextureLoader();
+            const loader = new TextureLoader();
+            // eslint-disable-next-line prefer-promise-reject-errors
             loader.load(dataUrl, res => resolveFunc(res), undefined, () => rejectFunc());
          });
       }
@@ -55442,13 +55429,11 @@ function create3DLineMaterial(painter, arg, is_v7 = false) {
       lwidth = arg.fLineWidth;
    }
 
-   let style = lstyle ? getSvgLineStyle(lstyle) : '',
-       dash = style ? style.split(',') : [], material;
-
-   if (dash && dash.length >= 2)
-      material = new LineDashedMaterial({ color, dashSize: parseInt(dash[0]), gapSize: parseInt(dash[1]) });
-   else
-      material = new LineBasicMaterial({ color });
+   const style = lstyle ? getSvgLineStyle(lstyle) : '',
+         dash = style ? style.split(',') : [],
+         material = (dash && dash.length >= 2)
+            ? new LineDashedMaterial({ color, dashSize: parseInt(dash[0]), gapSize: parseInt(dash[1]) })
+            : new LineBasicMaterial({ color });
 
    if (lwidth && (lwidth > 1)) material.linewidth = lwidth;
 
@@ -55460,6 +55445,19 @@ function create3DLineMaterial(painter, arg, is_v7 = false) {
  * Also all these functions can be used with TFormula calcualtions
  * @namespace Math
  */
+
+/* eslint-disable no-loss-of-precision */
+/* eslint-disable space-in-parens */
+/* eslint-disable curly */
+/* eslint-disable operator-linebreak */
+/* eslint-disable no-floating-decimal */
+/* eslint-disable brace-style */
+/* eslint-disable comma-spacing */
+
+// this can be improved later
+
+/* eslint-disable no-unreachable-loop */
+/* eslint-disable eqeqeq */
 
 const kMACHEP  = 1.11022302462515654042363166809e-16,
       kMINLOG  = -708.396418532264078748994506896,
@@ -55532,7 +55530,7 @@ function lgam(x) {
       q = -x;
       w = lgam(q);
       p = Math.floor(q);
-      if ( p==q )//_unur_FP_same(p,q)
+      if ( p === q ) // _unur_FP_same(p,q)
          return Number.POSITIVE_INFINITY;
       z = q - p;
       if ( z > 0.5 ) {
@@ -55564,7 +55562,7 @@ function lgam(x) {
       if ( z < 0.0 ) {
          z = -z;
       }
-      if ( u == 2.0 )
+      if ( u === 2.0 )
          return Math.log(z);
       p -= 2.0;
       x = x + p;
@@ -55598,7 +55596,7 @@ function stirf(x) {
       -2.29549961613378126380E-4,
       -2.68132617805781232825E-3,
       3.47222221605458667310E-3,
-      8.33333333333482257126E-2,
+      8.33333333333482257126E-2
    ], SQTPI = Math.sqrt(2*Math.PI);
 
    w = 1.0/x;
@@ -55607,7 +55605,7 @@ function stirf(x) {
 
 /*   #define kMAXSTIR kMAXLOG/log(kMAXLOG)  */
 
-   if( x > kMAXSTIR )
+   if ( x > kMAXSTIR )
    { /* Avoid overflow in pow() */
       v = Math.pow( x, 0.5 * x - 0.25 );
       y = v * (v / y);
@@ -55660,22 +55658,22 @@ function erfc(a) {
 
    let p,q,x,y,z;
 
-   if( a < 0.0 )
+   if ( a < 0.0 )
       x = -a;
    else
       x = a;
 
-   if( x < 1.0 )
+   if ( x < 1.0 )
       return 1.0 - erf(a);
 
    z = -a * a;
 
-   if(z < -kMAXLOG)
+   if (z < -kMAXLOG)
       return (a < 0) ? 2.0 : 0.0;
 
    z = Math.exp(z);
 
-   if( x < 8.0 ) {
+   if ( x < 8.0 ) {
       p = Polynomialeval( x, erfP, 8 );
       q = Polynomial1eval( x, erfQ, 8 );
    } else {
@@ -55684,10 +55682,10 @@ function erfc(a) {
    }
    y = (z * p)/q;
 
-   if(a < 0)
+   if (a < 0)
       y = 2.0 - y;
 
-   if(y == 0)
+   if (y == 0)
       return (a < 0) ? 2.0 : 0.0;
 
    return y;
@@ -55696,7 +55694,7 @@ function erfc(a) {
 /** @summary error function
   * @memberof Math */
 function erf(x) {
-   if(Math.abs(x) > 1.0)
+   if (Math.abs(x) > 1.0)
       return 1.0 - erfc(x);
 
    const erfT = [
@@ -55711,9 +55709,9 @@ function erf(x) {
       4.59432382970980127987E3,
       2.26290000613890934246E4,
       4.92673942608635921086E4
-   ];
+   ],
 
-   let z = x * x;
+   z = x * x;
 
    return x * Polynomialeval(z, erfT, 4) / Polynomial1eval(z, erfU, 5);
 }
@@ -55722,7 +55720,7 @@ function erf(x) {
   * @memberof Math */
 function lognormal_cdf_c(x, m, s, x0) {
    if (x0 === undefined) x0 = 0;
-   let z = (Math.log((x-x0))-m)/(s*kSqrt2);
+   const z = (Math.log((x-x0))-m)/(s*kSqrt2);
    if (z > 1.)  return 0.5*erfc(z);
    else         return 0.5*(1.0 - erf(z));
 }
@@ -55730,7 +55728,7 @@ function lognormal_cdf_c(x, m, s, x0) {
 /** @summary lognormal_cdf_c function
   * @memberof Math */
 function lognormal_cdf(x, m, s, x0 = 0) {
-   let z = (Math.log((x-x0))-m)/(s*kSqrt2);
+   const z = (Math.log((x-x0))-m)/(s*kSqrt2);
    if (z < -1.) return 0.5*erfc(-z);
    else         return 0.5*(1.0 + erf(z));
 }
@@ -55738,7 +55736,7 @@ function lognormal_cdf(x, m, s, x0 = 0) {
 /** @summary normal_cdf_c function
   * @memberof Math */
 function normal_cdf_c(x, sigma, x0 = 0) {
-   let z = (x-x0)/(sigma*kSqrt2);
+   const z = (x-x0)/(sigma*kSqrt2);
    if (z > 1.)  return 0.5*erfc(z);
    else         return 0.5*(1.-erf(z));
 }
@@ -55746,7 +55744,7 @@ function normal_cdf_c(x, sigma, x0 = 0) {
 /** @summary normal_cdf function
   * @memberof Math */
 function normal_cdf(x, sigma, x0 = 0) {
-   let z = (x-x0)/(sigma*kSqrt2);
+   const z = (x-x0)/(sigma*kSqrt2);
    if (z < -1.) return 0.5*erfc(-z);
    else         return 0.5*(1.0 + erf(z));
 }
@@ -55756,14 +55754,14 @@ function normal_cdf(x, sigma, x0 = 0) {
 function lognormal_pdf(x, m, s, x0 = 0) {
    if ((x-x0) <= 0)
       return 0.0;
-   let tmp = (Math.log((x-x0)) - m)/s;
+   const tmp = (Math.log((x-x0)) - m)/s;
    return 1.0 / ((x-x0) * Math.abs(s) * Math.sqrt(2 * M_PI)) * Math.exp(-(tmp * tmp) /2);
 }
 
 /** @summary normal pdf
   * @memberof Math */
 function normal_pdf(x, sigma = 1, x0 = 0) {
-   let  tmp = (x-x0)/sigma;
+   const tmp = (x-x0)/sigma;
    return (1.0/(Math.sqrt(2 * M_PI) * Math.abs(sigma))) * Math.exp(-tmp*tmp/2);
 }
 
@@ -55777,24 +55775,24 @@ function gamma(x) {
 
    q = Math.abs(x);
 
-   if( q > 33.0 )
+   if ( q > 33.0 )
    {
-      if( x < 0.0 )
+      if ( x < 0.0 )
       {
          p = Math.floor(q);
-         if( p == q )
+         if ( p == q )
             return Number.POSITIVE_INFINITY;
          i = Math.round(p);
-         if( (i & 1) == 0 )
+         if ( (i & 1) == 0 )
             sgngam = -1;
          z = q - p;
-         if( z > 0.5 )
+         if ( z > 0.5 )
          {
             p += 1.0;
             z = q - p;
          }
          z = q * Math.sin(Math.PI * z);
-         if( z == 0 )
+         if ( z == 0 )
          {
             return sgngam > 0 ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
          }
@@ -55809,17 +55807,15 @@ function gamma(x) {
    }
 
    z = 1.0;
-   while( x >= 3.0 )
-   {
+   while ( x >= 3.0 ) {
       x -= 1.0;
       z *= x;
    }
 
   let small = false;
 
-   while(( x < 0.0 ) && !small)
-   {
-      if( x > -1.E-9 )
+   while (( x < 0.0 ) && !small) {
+      if ( x > -1.E-9 )
          small = true;
       else {
          z /= x;
@@ -55827,9 +55823,8 @@ function gamma(x) {
       }
    }
 
-   while(( x < 2.0 ) && !small)
-   {
-      if( x < 1.e-9 )
+   while (( x < 2.0 ) && !small) {
+      if ( x < 1.e-9 )
          small = true;
       else {
          z /= x;
@@ -55838,13 +55833,13 @@ function gamma(x) {
    }
 
    if (small) {
-      if( x == 0 )
+      if ( x == 0 )
          return Number.POSITIVE_INFINITY;
       else
          return z/((1.0 + 0.5772156649015329 * x) * x);
    }
 
-   if( x == 2.0 )
+   if ( x == 2.0 )
       return z;
 
    const P = [
@@ -55863,7 +55858,7 @@ function gamma(x) {
       3.58236398605498653373E-2,
       -2.34591795718243348568E-1,
       7.14304917030273074085E-2,
-      1.00000000000000000320E0 ];
+      1.00000000000000000320E0];
 
    x -= 2.0;
    p = Polynomialeval( x, P, 6 );
@@ -55934,7 +55929,7 @@ function ndtri(y0) {
          6.79019408009981274425E-9
    ], s2pi = 2.50662827463100050242e0, dd = 0.13533528323661269189;
 
-   let code = 1, y = y0, x, z, y2, x0, x1;
+   let code = 1, y = y0, x, y2, x1;
 
    if (y > (1.0 - dd)) {
       y = 1.0 - y;
@@ -55948,8 +55943,8 @@ function ndtri(y0) {
       return x;
    }
    x = Math.sqrt(-2.0 * Math.log(y));
-   x0 = x - Math.log(x)/x;
-   z = 1.0/x;
+   const x0 = x - Math.log(x)/x,
+         z = 1.0/x;
    if ( x < 8.0 )
       x1 = z * Polynomialeval( z, P1, 8 )/ Polynomial1eval( z, Q1, 8 );
    else
@@ -55969,7 +55964,7 @@ function normal_quantile(z, sigma) {
 /** @summary normal_quantile_c function
   * @memberof Math */
 function normal_quantile_c(z, sigma) {
-   return - sigma * ndtri(z);
+   return -sigma * ndtri(z);
 }
 
 /** @summary igamc function
@@ -55981,11 +55976,11 @@ function igamc(a,x) {
 
    if (x <= 0) return 1.0;
 
-   if((x < 1.0) || (x < a))
+   if ((x < 1.0) || (x < a))
       return (1.0 - igam(a,x));
 
    let ax = a * Math.log(x) - x - lgam(a);
-   if( ax < -kMAXLOG )
+   if ( ax < -kMAXLOG )
       return 0.0;
 
    ax = Math.exp(ax);
@@ -56008,7 +56003,7 @@ function igamc(a,x) {
       yc = y * c;
       pk = pkm1 * z  -  pkm2 * yc;
       qk = qkm1 * z  -  qkm2 * yc;
-      if(qk)
+      if (qk)
       {
          r = pk/qk;
          t = Math.abs( (ans - r)/r );
@@ -56020,14 +56015,14 @@ function igamc(a,x) {
       pkm1 = pk;
       qkm2 = qkm1;
       qkm1 = qk;
-      if( Math.abs(pk) > kBig )
+      if ( Math.abs(pk) > kBig )
       {
          pkm2 *= kBiginv;
          pkm1 *= kBiginv;
          qkm2 *= kBiginv;
          qkm1 *= kBiginv;
       }
-   } while( t > kMACHEP );
+   } while ( t > kMACHEP );
 
    return ans * ax;
 }
@@ -56035,7 +56030,6 @@ function igamc(a,x) {
 /** @summary igam function
   * @memberof Math */
 function igam(a, x) {
-
    // LM: for negative values returns 1.0 instead of zero
    // This is correct if a is a negative integer since Gamma(-n) = +/- inf
    if (a <= 0) return 1.0;
@@ -56047,7 +56041,7 @@ function igam(a, x) {
 
    /* Compute  x**a * exp(-x) / gamma(a)  */
    let ax = a * Math.log(x) - x - lgam(a);
-   if( ax < -kMAXLOG )
+   if ( ax < -kMAXLOG )
       return 0.0;
 
    ax = Math.exp(ax);
@@ -56059,7 +56053,7 @@ function igam(a, x) {
       r += 1.0;
       c *= x/r;
       ans += c;
-   } while( c/ans > kMACHEP );
+   } while ( c/ans > kMACHEP );
 
    return ans * ax/a;
 }
@@ -56079,8 +56073,8 @@ function igami(a, y0) {
    if (y0 >= 1) {
       return 0;
    }
-   const kMAXNUM = Number.MAX_VALUE;
-   let x0 = kMAXNUM, x1 = 0, x, yl = 0, yh = 1, y, d, lgm, dithresh = 5.0 * kMACHEP, i, dir;
+   const kMAXNUM = Number.MAX_VALUE, dithresh = 5.0 * kMACHEP;
+   let x0 = kMAXNUM, x1 = 0, x, yl = 0, yh = 1, y, d, lgm, i, dir;
 
    /* approximation to inverse function */
    d = 1.0/(9.0*a);
@@ -56089,7 +56083,7 @@ function igami(a, y0) {
 
    lgm = lgam(a);
 
-   for( i=0; i<10; ++i ) {
+   for ( i=0; i<10; ++i ) {
       if ( x > x0 || x < x1 )
          break;
       y = igamc(a,x);
@@ -56133,7 +56127,7 @@ function igami(a, y0) {
    d = 0.5;
    dir = 0;
 
-   for( i=0; i<400; ++i ) {
+   for ( i=0; i<400; ++i ) {
       x = x1  +  d * (x0 - x1);
       y = igamc( a, x );
       lgm = (x0 - x1)/(x1 + x0);
@@ -56203,26 +56197,26 @@ function landau_pdf(x, xi, x0 = 0) {
       ue  = Math.exp(-1/u);
       us  = Math.sqrt(u);
       denlan = 0.3989422803*(ue/us)*(1+(a1[0]+(a1[1]+a1[2]*u)*u)*u);
-   } else if(v < -1) {
+   } else if (v < -1) {
       u   = Math.exp(-v-1);
       denlan = Math.exp(-u)*Math.sqrt(u)*
          (p1[0]+(p1[1]+(p1[2]+(p1[3]+p1[4]*v)*v)*v)*v)/
          (q1[0]+(q1[1]+(q1[2]+(q1[3]+q1[4]*v)*v)*v)*v);
-   } else if(v < 1) {
+   } else if (v < 1) {
       denlan = (p2[0]+(p2[1]+(p2[2]+(p2[3]+p2[4]*v)*v)*v)*v)/
          (q2[0]+(q2[1]+(q2[2]+(q2[3]+q2[4]*v)*v)*v)*v);
-   } else if(v < 5) {
+   } else if (v < 5) {
       denlan = (p3[0]+(p3[1]+(p3[2]+(p3[3]+p3[4]*v)*v)*v)*v)/
          (q3[0]+(q3[1]+(q3[2]+(q3[3]+q3[4]*v)*v)*v)*v);
-   } else if(v < 12) {
+   } else if (v < 12) {
       u   = 1/v;
       denlan = u*u*(p4[0]+(p4[1]+(p4[2]+(p4[3]+p4[4]*u)*u)*u)*u)/
          (q4[0]+(q4[1]+(q4[2]+(q4[3]+q4[4]*u)*u)*u)*u);
-   } else if(v < 50) {
+   } else if (v < 50) {
       u   = 1/v;
       denlan = u*u*(p5[0]+(p5[1]+(p5[2]+(p5[3]+p5[4]*u)*u)*u)*u)/
          (q5[0]+(q5[1]+(q5[2]+(q5[3]+q5[4]*u)*u)*u)*u);
-   } else if(v < 300) {
+   } else if (v < 300) {
       u   = 1/v;
       denlan = u*u*(p6[0]+(p6[1]+(p6[2]+(p6[3]+p6[4]*u)*u)*u)*u)/
          (q6[0]+(q6[1]+(q6[2]+(q6[3]+q6[4]*u)*u)*u)*u);
@@ -56295,7 +56289,8 @@ function chisquared_cdf_c(x,r,x0 = 0) {
 function incbcf(a,b,x) {
    let xk, pk, pkm1, pkm2, qk, qkm1, qkm2,
        k1, k2, k3, k4, k5, k6, k7, k8,
-       r, t, ans, thresh, n;
+       r, t, ans, n;
+   const thresh = 3.0 * kMACHEP;
 
    k1 = a;
    k2 = a + b;
@@ -56313,10 +56308,8 @@ function incbcf(a,b,x) {
    ans = 1.0;
    r = 1.0;
    n = 0;
-   thresh = 3.0 * kMACHEP;
-   do
-   {
 
+   do {
       xk = -( x * k1 * k2 )/( k3 * k4 );
       pk = pkm1 +  pkm2 * xk;
       qk = qkm1 +  qkm2 * xk;
@@ -56333,9 +56326,9 @@ function incbcf(a,b,x) {
       qkm2 = qkm1;
       qkm1 = qk;
 
-      if( qk !=0 )
+      if ( qk !=0 )
          r = pk/qk;
-      if( r != 0 )
+      if ( r != 0 )
       {
          t = Math.abs( (ans - r)/r );
          ans = r;
@@ -56343,7 +56336,7 @@ function incbcf(a,b,x) {
       else
          t = 1.0;
 
-      if( t < thresh )
+      if ( t < thresh )
          break; // goto cdone;
 
       k1 += 1.0;
@@ -56355,20 +56348,20 @@ function incbcf(a,b,x) {
       k7 += 2.0;
       k8 += 2.0;
 
-      if((Math.abs(qk) + Math.abs(pk)) > kBig) {
+      if ((Math.abs(qk) + Math.abs(pk)) > kBig) {
          pkm2 *= kBiginv;
          pkm1 *= kBiginv;
          qkm2 *= kBiginv;
          qkm1 *= kBiginv;
       }
-      if((Math.abs(qk) < kBiginv) || (Math.abs(pk) < kBiginv)) {
+      if ((Math.abs(qk) < kBiginv) || (Math.abs(pk) < kBiginv)) {
          pkm2 *= kBig;
          pkm1 *= kBig;
          qkm2 *= kBig;
          qkm1 *= kBig;
       }
    }
-   while( ++n < 300 );
+   while ( ++n < 300 );
 
 // cdone:
    return ans;
@@ -56377,9 +56370,12 @@ function incbcf(a,b,x) {
 /** @summary Continued fraction expansion #2 for incomplete beta integral
   * @memberof Math */
 function incbd(a,b,x) {
+   const z = x / (1.0-x),
+         thresh = 3.0 * kMACHEP;
+
    let xk, pk, pkm1, pkm2, qk, qkm1, qkm2,
        k1, k2, k3, k4, k5, k6, k7, k8,
-       r, t, ans, z, thresh, n;
+       r, t, ans, n;
 
    k1 = a;
    k2 = b - 1.0;
@@ -56387,20 +56383,17 @@ function incbd(a,b,x) {
    k4 = a + 1.0;
    k5 = 1.0;
    k6 = a + b;
-   k7 = a + 1.0;   k8 = a + 2.0;
+   k7 = a + 1.0;
+   k8 = a + 2.0;
 
    pkm2 = 0.0;
    qkm2 = 1.0;
    pkm1 = 1.0;
    qkm1 = 1.0;
-   z = x / (1.0-x);
    ans = 1.0;
    r = 1.0;
    n = 0;
-   thresh = 3.0 * kMACHEP;
-   do
-   {
-
+   do {
       xk = -( z * k1 * k2 )/( k3 * k4 );
       pk = pkm1 +  pkm2 * xk;
       qk = qkm1 +  qkm2 * xk;
@@ -56417,9 +56410,9 @@ function incbd(a,b,x) {
       qkm2 = qkm1;
       qkm1 = qk;
 
-      if( qk != 0 )
+      if ( qk != 0 )
          r = pk/qk;
-      if( r != 0 )
+      if ( r != 0 )
       {
          t = Math.abs( (ans - r)/r );
          ans = r;
@@ -56427,7 +56420,7 @@ function incbd(a,b,x) {
       else
          t = 1.0;
 
-      if( t < thresh )
+      if ( t < thresh )
          break; // goto cdone;
 
       k1 += 1.0;
@@ -56452,26 +56445,25 @@ function incbd(a,b,x) {
          qkm1 *= kBig;
       }
    }
-   while( ++n < 300 );
-//cdone:
+   while ( ++n < 300 );
+// cdone:
    return ans;
 }
 
 /** @summary ROOT::Math::Cephes::pseries
   * @memberof Math */
 function pseries(a,b,x) {
-   let s, t, u, v, n, t1, z, ai;
+   let s, t, u, v, n;
 
-   ai = 1.0 / a;
+   const ai = 1.0 / a;
    u = (1.0 - b) * x;
    v = u / (a + 1.0);
-   t1 = v;
+   const t1 = v;
    t = u;
    n = 2.0;
    s = 0.0;
-   z = kMACHEP * ai;
-   while( Math.abs(v) > z )
-   {
+   const z = kMACHEP * ai;
+   while ( Math.abs(v) > z ) {
       u = (n - b) * x / n;
       t *= u;
       v = t / (a + n);
@@ -56482,7 +56474,7 @@ function pseries(a,b,x) {
    s += ai;
 
    u = a * Math.log(x);
-   if( (a+b) < kMAXSTIR && Math.abs(u) < kMAXLOG )
+   if ( (a+b) < kMAXSTIR && Math.abs(u) < kMAXLOG )
    {
       t = gamma(a+b) / (gamma(a)*gamma(b));
       s = s * t * Math.pow(x,a);
@@ -56490,7 +56482,7 @@ function pseries(a,b,x) {
    else
    {
       t = lgam(a+b) - lgam(a) - lgam(b) + u + Math.log(s);
-      if( t < kMINLOG )
+      if ( t < kMINLOG )
          s = 0.0;
       else
          s = Math.exp(t);
@@ -56503,7 +56495,7 @@ function pseries(a,b,x) {
 function incbet(aa,bb,xx) {
    let a, b, t, x, xc, w, y, flag;
 
-   if( aa <= 0.0 || bb <= 0.0 )
+   if ( aa <= 0.0 || bb <= 0.0 )
       return 0.0;
 
    // LM: changed: for X > 1 return 1.
@@ -56513,7 +56505,7 @@ function incbet(aa,bb,xx) {
    flag = 0;
 
 /* - to test if that way is better for large b/  (comment out from Cephes version)
-   if( (bb * xx) <= 1.0 && xx <= 0.95)
+   if ( (bb * xx) <= 1.0 && xx <= 0.95)
    {
    t = pseries(aa, bb, xx);
    goto done;
@@ -56524,7 +56516,7 @@ function incbet(aa,bb,xx) {
 
 /* Reverse a and b if x is greater than the mean. */
 /* aa,bb > 1 -> sharp rise at x=aa/(aa+bb) */
-   if(xx > (aa/(aa+bb)))
+   if (xx > (aa/(aa+bb)))
    {
       flag = 1;
       a = bb;
@@ -56540,15 +56532,13 @@ function incbet(aa,bb,xx) {
       x = xx;
    }
 
-   if( flag == 1 && (b * x) <= 1.0 && x <= 0.95)
-   {
+   if ( flag == 1 && (b * x) <= 1.0 && x <= 0.95) {
       t = pseries(a, b, x);
       // goto done;
    } else {
-
-   /* Choose expansion for better convergence. */
+      /* Choose expansion for better convergence. */
       y = x * (a+b-2.0) - (a-1.0);
-      if( y < 0.0 )
+      if ( y < 0.0 )
          w = incbcf( a, b, x );
       else
          w = incbd( a, b, x ) / xc;
@@ -56559,7 +56549,7 @@ function incbet(aa,bb,xx) {
 
       y = a * Math.log(x);
       t = b * Math.log(xc);
-      if( (a+b) < kMAXSTIR && Math.abs(y) < kMAXLOG && Math.abs(t) < kMAXLOG )
+      if ( (a+b) < kMAXSTIR && Math.abs(y) < kMAXLOG && Math.abs(t) < kMAXLOG )
       {
          t = Math.pow(xc,b);
          t *= Math.pow(x,a);
@@ -56571,18 +56561,17 @@ function incbet(aa,bb,xx) {
       /* Resort to logarithms.  */
          y += t + lgam(a+b) - lgam(a) - lgam(b);
          y += Math.log(w/a);
-         if( y < kMINLOG )
+         if ( y < kMINLOG )
             t = 0.0;
          else
             t = Math.exp(y);
       }
    }
 
-//done:
+// done:
 
-   if( flag == 1 )
-   {
-      if( t <= kMACHEP )
+   if (flag == 1) {
+      if ( t <= kMACHEP )
          t = 1.0 - kMACHEP;
       else
          t = 1.0 - t;
@@ -56593,8 +56582,8 @@ function incbet(aa,bb,xx) {
 /** @summary copy of ROOT::Math::Cephes::incbi
   * @memberof Math */
 function incbi(aa,bb,yy0) {
-   let a, b, y0, d, y, x, x0, x1, lgm, yp, di, dithresh, yl, yh, xt;
-   let i, rflg, dir, nflg, ihalve = true;
+   let a, b, y0, d, y, x, x0, x1, lgm, yp, di, dithresh, yl, yh, xt,
+       i, rflg, dir, nflg, ihalve = true;
 
    // check the domain
    if (aa <= 0) {
@@ -56607,8 +56596,8 @@ function incbi(aa,bb,yy0) {
    }
 
    const process_done = () => {
-      if( rflg ) {
-         if( x <= kMACHEP )
+      if ( rflg ) {
+         if ( x <= kMACHEP )
             x = 1.0 - kMACHEP;
          else
             x = 1.0 - x;
@@ -56617,9 +56606,9 @@ function incbi(aa,bb,yy0) {
    };
 
    i = 0;
-   if( yy0 <= 0 )
+   if ( yy0 <= 0 )
       return 0.0;
-   if( yy0 >= 1.0 )
+   if ( yy0 >= 1.0 )
       return 1.0;
    x0 = 0.0;
    yl = 0.0;
@@ -56627,7 +56616,7 @@ function incbi(aa,bb,yy0) {
    yh = 1.0;
    nflg = 0;
 
-   if( aa <= 1.0 || bb <= 1.0 )
+   if ( aa <= 1.0 || bb <= 1.0 )
    {
       dithresh = 1.0e-6;
       rflg = 0;
@@ -56645,7 +56634,7 @@ function incbi(aa,bb,yy0) {
 
       yp = -ndtri(yy0);
 
-      if( yy0 > 0.5 )
+      if ( yy0 > 0.5 )
       {
          rflg = 1;
          a = bb;
@@ -56667,8 +56656,7 @@ function incbi(aa,bb,yy0) {
          - (1.0/(2.0*b-1.0) - 1.0/(2.0*a-1.0))
          * (lgm + 5.0/6.0 - 2.0/(3.0*x));
       d = 2.0 * d;
-      if( d < kMINLOG )
-      {
+      if ( d < kMINLOG ) {
          // x = 1.0;
          // goto under;
          x = 0.0;
@@ -56677,7 +56665,7 @@ function incbi(aa,bb,yy0) {
       x = a/(a + b * Math.exp(d));
       y = incbet( a, b, x );
       yp = (y - y0)/y0;
-      if( Math.abs(yp) < 0.2 )
+      if ( Math.abs(yp) < 0.2 )
          ihalve = false; // instead goto newt; exclude ihalve for the first time
    }
 
@@ -56685,54 +56673,52 @@ function incbi(aa,bb,yy0) {
 
   // endless loop until coverage
   while (mainloop-- > 0) {
-
    /* Resort to interval halving if not close enough. */
    // ihalve:
-      while(ihalve) {
-
+      if (ihalve) {
          dir = 0;
          di = 0.5;
-         for( i=0; i<100; i++ )
+         for ( i=0; i<100; i++ )
          {
-            if( i != 0 )
+            if ( i != 0 )
             {
                x = x0  +  di * (x1 - x0);
-               if( x == 1.0 )
+               if ( x == 1.0 )
                   x = 1.0 - kMACHEP;
-               if( x == 0.0 )
+               if ( x == 0.0 )
                {
                   di = 0.5;
                   x = x0  +  di * (x1 - x0);
-                  if( x == 0.0 )
+                  if ( x == 0.0 )
                      return process_done(); // goto under;
                }
                y = incbet( a, b, x );
                yp = (x1 - x0)/(x1 + x0);
-               if( Math.abs(yp) < dithresh )
+               if ( Math.abs(yp) < dithresh )
                   break; // goto newt;
                yp = (y-y0)/y0;
-               if( Math.abs(yp) < dithresh )
+               if ( Math.abs(yp) < dithresh )
                   break; // goto newt;
             }
-            if( y < y0 )
+            if ( y < y0 )
             {
                x0 = x;
                yl = y;
-               if( dir < 0 )
+               if ( dir < 0 )
                {
                   dir = 0;
                   di = 0.5;
                }
-               else if( dir > 3 )
+               else if ( dir > 3 )
                   di = 1.0 - (1.0 - di) * (1.0 - di);
-               else if( dir > 1 )
+               else if ( dir > 1 )
                   di = 0.5 * di + 0.5;
                else
                   di = (y0 - y)/(yh - yl);
                dir += 1;
-               if( x0 > 0.75 )
+               if ( x0 > 0.75 )
                {
-                  if( rflg == 1 )
+                  if ( rflg == 1 )
                   {
                      rflg = 0;
                      a = aa;
@@ -56758,65 +56744,64 @@ function incbi(aa,bb,yy0) {
             else
             {
                x1 = x;
-               if( rflg == 1 && x1 < kMACHEP )
+               if ( rflg == 1 && x1 < kMACHEP )
                {
                   x = 0.0;
                   return process_done(); // goto done;
                }
                yh = y;
-               if( dir > 0 )
+               if ( dir > 0 )
                {
                   dir = 0;
                   di = 0.5;
                }
-               else if( dir < -3 )
+               else if ( dir < -3 )
                   di = di * di;
-               else if( dir < -1 )
+               else if ( dir < -1 )
                   di = 0.5 * di;
                else
                   di = (y - y0)/(yh - yl);
                dir -= 1;
             }
          }
-         //math_error( 'incbi', PLOSS );
-         if( x0 >= 1.0 ) {
+         // math_error( 'incbi', PLOSS );
+         if ( x0 >= 1.0 ) {
             x = 1.0 - kMACHEP;
-            return process_done(); //goto done;
+            return process_done(); // goto done;
          }
-         if( x <= 0.0 ) {
-            //math_error( 'incbi', UNDERFLOW );
+         if ( x <= 0.0 ) {
+            // math_error( 'incbi', UNDERFLOW );
             x = 0.0;
-            return process_done(); //goto done;
+            return process_done(); // goto done;
          }
          break; // if here, break ihalve
-
       } // end of ihalve
 
       ihalve = true; // enter loop next time
 
    // newt:
 
-      if( nflg )
-         return process_done(); //goto done;
+      if ( nflg )
+         return process_done(); // goto done;
       nflg = 1;
       lgm = lgam(a+b) - lgam(a) - lgam(b);
 
-      for( i=0; i<8; i++ )
+      for ( i=0; i<8; i++ )
       {
          /* Compute the function at this point. */
-         if( i != 0 )
+         if ( i != 0 )
             y = incbet(a,b,x);
-         if( y < yl )
+         if ( y < yl )
          {
             x = x0;
             y = yl;
          }
-         else if( y > yh )
+         else if ( y > yh )
          {
             x = x1;
             y = yh;
          }
-         else if( y < y0 )
+         else if ( y < y0 )
          {
             x0 = x;
             yl = y;
@@ -56826,39 +56811,38 @@ function incbi(aa,bb,yy0) {
             x1 = x;
             yh = y;
          }
-         if( x == 1.0 || x == 0.0 )
+         if ( x == 1.0 || x == 0.0 )
             break;
          /* Compute the derivative of the function at this point. */
          d = (a - 1.0) * Math.log(x) + (b - 1.0) * Math.log(1.0-x) + lgm;
-         if( d < kMINLOG )
+         if ( d < kMINLOG )
             return process_done(); // goto done;
-         if( d > kMAXLOG )
+         if ( d > kMAXLOG )
             break;
          d = Math.exp(d);
          /* Compute the step to the next approximation of x. */
          d = (y - y0)/d;
          xt = x - d;
-         if( xt <= x0 )
+         if ( xt <= x0 )
          {
             y = (x - x0) / (x1 - x0);
             xt = x0 + 0.5 * y * (x - x0);
-            if( xt <= 0.0 )
+            if ( xt <= 0.0 )
                break;
          }
-         if( xt >= x1 )
+         if ( xt >= x1 )
          {
             y = (x1 - x) / (x1 - x0);
             xt = x1 - 0.5 * y * (x1 - x);
-            if( xt >= 1.0 )
+            if ( xt >= 1.0 )
                break;
          }
          x = xt;
-         if( Math.abs(d/x) < 128.0 * kMACHEP )
+         if ( Math.abs(d/x) < 128.0 * kMACHEP )
             return process_done(); // goto done;
       }
-   /* Did not converge.  */
+      /* Did not converge.  */
       dithresh = 256.0 * kMACHEP;
-
    } // endless loop instead of // goto ihalve;
 
 // done:
@@ -56937,7 +56921,7 @@ function cauchy_pdf(x, b = 1, x0 = 0) {
 /** @summary gaussian_pdf function
   * @memberof Math */
 function gaussian_pdf(x, sigma = 1, x0 = 0) {
-   let tmp = (x-x0)/sigma;
+   const tmp = (x-x0)/sigma;
    return (1.0/(Math.sqrt(2 * M_PI) * Math.abs(sigma))) * Math.exp(-tmp*tmp/2);
 }
 
@@ -56957,24 +56941,24 @@ function gamma_pdf(x, alpha, theta, x0 = 0) {
 /** @summary tdistribution_cdf_c function
   * @memberof Math */
 function tdistribution_cdf_c(x, r, x0 = 0) {
-   let p    = x - x0,
-       sign = (p > 0) ? 1. : -1;
+   const p    = x - x0,
+         sign = (p > 0) ? 1. : -1;
    return .5 - .5*inc_beta(p*p/(r + p*p), .5, .5*r)*sign;
 }
 
 /** @summary tdistribution_cdf function
   * @memberof Math */
 function tdistribution_cdf(x, r, x0 = 0) {
-   let p    = x - x0,
-       sign = (p > 0) ? 1. : -1;
+   const p    = x - x0,
+         sign = (p > 0) ? 1. : -1;
    return  .5 + .5*inc_beta(p*p/(r + p*p), .5, .5*r)*sign;
 }
 
 /** @summary tdistribution_pdf function
   * @memberof Math */
 function tdistribution_pdf(x, r, x0 = 0) {
-   return (Math.exp (lgamma((r + 1.0)/2.0) - lgamma(r/2.0)) / Math.sqrt (M_PI * r))
-          * Math.pow ((1.0 + (x-x0)*(x-x0)/r), -(r + 1.0)/2.0);
+   return (Math.exp(lgamma((r + 1.0)/2.0) - lgamma(r/2.0)) / Math.sqrt(M_PI * r))
+          * Math.pow((1.0 + (x-x0)*(x-x0)/r), -(r + 1.0)/2.0);
 }
 
 /** @summary exponential_cdf_c function
@@ -56997,7 +56981,7 @@ function chisquared_pdf(x, r, x0 = 0) {
    // let return inf for case x  = x0 and treat special case of r = 2 otherwise will return nan
    if (x == x0 && a == 0) return 0.5;
 
-   return Math.exp ((r/2 - 1) * Math.log((x-x0)/2) - (x-x0)/2 - lgamma(r/2))/2;
+   return Math.exp((r/2 - 1) * Math.log((x-x0)/2) - (x-x0)/2 - lgamma(r/2))/2;
 }
 
 /** @summary Probability density function of the F-distribution.
@@ -57017,7 +57001,7 @@ function fdistribution_pdf(x, n, m, x0 = 0) {
 function fdistribution_cdf_c(x, n, m, x0 = 0) {
    if (n < 0 || m < 0) return Number.NaN;
 
-   let z = m / (m + n * (x - x0));
+   const z = m / (m + n * (x - x0));
    // fox z->1 and large a and b IB looses precision use complement function
    if (z > 0.9 && n > 1 && m > 1) return 1. - fdistribution_cdf(x, n, m, x0);
 
@@ -57030,7 +57014,7 @@ function fdistribution_cdf_c(x, n, m, x0 = 0) {
 function fdistribution_cdf(x, n, m, x0 = 0) {
    if (n < 0 || m < 0) return Number.NaN;
 
-   let z = n * (x - x0) / (m + n * (x - x0));
+   const z = n * (x - x0) / (m + n * (x - x0));
    // fox z->1 and large a and b IB looses precision use complement function
    if (z > 0.9 && n > 1 && m > 1)
       return 1. - fdistribution_cdf_c(x, n, m, x0);
@@ -57055,10 +57039,10 @@ function Prob(chi2, ndf) {
   * @memberof Math */
 function Gaus(x, mean, sigma, norm) {
    if (!sigma) return 1e30;
-   let arg = (x - mean) / sigma;
+   const arg = (x - mean) / sigma;
    if (arg < -39 || arg > 39) return 0;
-   let res = Math.exp(-0.5*arg*arg);
-   return norm ? res/(2.50662827463100024*sigma) : res; //sqrt(2*Pi)=2.50662827463100024
+   const res = Math.exp(-0.5*arg*arg);
+   return norm ? res/(2.50662827463100024*sigma) : res; // sqrt(2*Pi)=2.50662827463100024
 }
 
 /** @summary BreitWigner function
@@ -57097,20 +57081,21 @@ function LaplaceDistI(x, alpha = 0, beta = 1) {
 function Student(T, ndf) {
    if (ndf < 1) return 0;
 
-   let r   = ndf,
-       rh  = 0.5*r,
-       rh1 = rh + 0.5,
-       denom = Math.sqrt(r*Math.PI)*gamma(rh)*Math.pow(1+T*T/r, rh1);
+   const r   = ndf,
+         rh  = 0.5*r,
+         rh1 = rh + 0.5,
+         denom = Math.sqrt(r*Math.PI)*gamma(rh)*Math.pow(1+T*T/r, rh1);
    return gamma(rh1)/denom;
 }
 
 /** @summary cumulative distribution function of Student's
   * @memberof Math */
 function StudentI(T, ndf) {
-   let r = ndf;
+   const r = ndf;
 
-   return (T > 0) ? (1 - 0.5*BetaIncomplete((r/(r + T*T)), r*0.5, 0.5))
-                  :  0.5*BetaIncomplete((r/(r + T*T)), r*0.5, 0.5);
+   return (T > 0)
+     ? (1 - 0.5*BetaIncomplete((r/(r + T*T)), r*0.5, 0.5))
+     :  0.5*BetaIncomplete((r/(r + T*T)), r*0.5, 0.5);
 }
 
 /** @summary LogNormal function
@@ -57125,7 +57110,7 @@ function LogNormal(x, sigma, theta = 0, m = 1) {
 function BetaDist(x, p, q) {
    if ((x < 0) || (x > 1) || (p <= 0) || (q <= 0))
      return 0;
-   let beta = Beta(p, q);
+   const beta = Beta(p, q);
    return Math.pow(x, p-1) * Math.pow(1-x, q-1) / beta;
 }
 
@@ -57179,13 +57164,13 @@ function crystalball_function(x, alpha, n, sigma, mean = 0) {
    if (sigma < 0.)     return 0.;
    let z = (x - mean)/sigma;
    if (alpha < 0) z = -z;
-   let abs_alpha = Math.abs(alpha);
-   if (z  > - abs_alpha)
-      return Math.exp(- 0.5 * z * z);
-   let nDivAlpha = n/abs_alpha,
-       AA =  Math.exp(-0.5*abs_alpha*abs_alpha),
-       B = nDivAlpha - abs_alpha,
-       arg = nDivAlpha/(B-z);
+   const abs_alpha = Math.abs(alpha);
+   if (z  > -abs_alpha)
+      return Math.exp(-0.5 * z * z);
+   const nDivAlpha = n/abs_alpha,
+         AA =  Math.exp(-0.5*abs_alpha*abs_alpha),
+         B = nDivAlpha - abs_alpha,
+         arg = nDivAlpha/(B-z);
   return AA * Math.pow(arg,n);
 }
 
@@ -57194,10 +57179,10 @@ function crystalball_function(x, alpha, n, sigma, mean = 0) {
 function crystalball_pdf(x, alpha, n, sigma, mean = 0) {
    if (sigma < 0.) return 0.;
    if (n <= 1) return Number.NaN;  // pdf is not normalized for n <=1
-   let abs_alpha = Math.abs(alpha),
-       C = n/abs_alpha * 1./(n-1.) * Math.exp(-alpha*alpha/2.),
-       D = Math.sqrt(M_PI/2.)*(1.+erf(abs_alpha/Math.sqrt(2.))),
-       N = 1./(sigma*(C+D));
+   const abs_alpha = Math.abs(alpha),
+         C = n/abs_alpha * 1./(n-1.) * Math.exp(-alpha*alpha/2.),
+         D = Math.sqrt(M_PI/2.)*(1.+erf(abs_alpha/Math.sqrt(2.))),
+         N = 1./(sigma*(C+D));
    return N * crystalball_function(x,alpha,n,sigma,mean);
 }
 
@@ -57206,32 +57191,29 @@ function crystalball_pdf(x, alpha, n, sigma, mean = 0) {
 function crystalball_integral(x, alpha, n, sigma, mean = 0) {
    if (sigma == 0) return 0;
    if (alpha == 0) return 0.;
-   let useLog = (n == 1.0),
-       z = (x-mean)/sigma;
-   if (alpha < 0 ) z = -z;
+   const useLog = (n == 1.0),
+         abs_alpha = Math.abs(alpha);
 
-   let abs_alpha = Math.abs(alpha),
-       intgaus = 0., intpow  = 0.;
+   let z = (x-mean)/sigma, intgaus = 0., intpow  = 0.;
+   if (alpha < 0 ) z = -z;
 
    const sqrtpiover2 = Math.sqrt(M_PI/2.),
          sqrt2pi = Math.sqrt( 2.*M_PI),
          oneoversqrt2 = 1./Math.sqrt(2.);
    if (z <= -abs_alpha) {
-      let A = Math.pow(n/abs_alpha,n) * Math.exp(-0.5 * alpha*alpha),
-          B = n/abs_alpha - abs_alpha;
+      const A = Math.pow(n/abs_alpha,n) * Math.exp(-0.5 * alpha*alpha),
+            B = n/abs_alpha - abs_alpha;
 
       if (!useLog) {
-         let C = (n/abs_alpha) * (1./(n-1)) * Math.exp(-alpha*alpha/2.);
-         intpow  = C - A /(n-1.) * Math.pow(B-z,-n+1) ;
+         const C = (n/abs_alpha) * (1./(n-1)) * Math.exp(-alpha*alpha/2.);
+         intpow  = C - A /(n-1.) * Math.pow(B-z,-n+1);
       }
       else {
          // for n=1 the primitive of 1/x is log(x)
-         intpow = -A * Math.log( n / abs_alpha ) + A * Math.log( B -z );
+         intpow = -A * Math.log( n / abs_alpha ) + A * Math.log(B - z);
       }
       intgaus = sqrtpiover2*(1. + erf(abs_alpha*oneoversqrt2));
-   }
-   else
-   {
+   } else {
       intgaus = normal_cdf_c(z, 1);
       intgaus *= sqrt2pi;
       intpow  = 0;
@@ -57245,11 +57227,11 @@ function crystalball_cdf(x, alpha, n, sigma, mean = 0) {
    if (n <= 1.)
       return Number.NaN;
 
-   let abs_alpha = Math.abs(alpha),
-       C = n/abs_alpha * 1./(n-1.) * Math.exp(-alpha*alpha/2.),
-       D = Math.sqrt(M_PI/2.)*(1. + erf(abs_alpha/Math.sqrt(2.))),
-       totIntegral = sigma*(C+D),
-       integral = crystalball_integral(x,alpha,n,sigma,mean);
+   const abs_alpha = Math.abs(alpha),
+         C = n/abs_alpha * 1./(n-1.) * Math.exp(-alpha*alpha/2.),
+         D = Math.sqrt(M_PI/2.)*(1. + erf(abs_alpha/Math.sqrt(2.))),
+         totIntegral = sigma*(C+D),
+         integral = crystalball_integral(x,alpha,n,sigma,mean);
 
    return (alpha > 0) ? 1. - integral/totIntegral : integral/totIntegral;
 }
@@ -57260,11 +57242,11 @@ function crystalball_cdf_c(x, alpha, n, sigma, mean = 0) {
    if (n <= 1.)
       return Number.NaN;
 
-   let abs_alpha = Math.abs(alpha),
-       C = n/abs_alpha * 1./(n-1.) * Math.exp(-alpha*alpha/2.),
-       D = Math.sqrt(M_PI/2.)*(1. + erf(abs_alpha/Math.sqrt(2.))),
-       totIntegral = sigma*(C+D),
-       integral = crystalball_integral(x,alpha,n,sigma,mean);
+   const abs_alpha = Math.abs(alpha),
+         C = n/abs_alpha * 1./(n-1.) * Math.exp(-alpha*alpha/2.),
+         D = Math.sqrt(M_PI/2.)*(1. + erf(abs_alpha/Math.sqrt(2.))),
+         totIntegral = sigma*(C+D),
+         integral = crystalball_integral(x,alpha,n,sigma,mean);
 
    return (alpha > 0) ? integral/totIntegral : 1. - (integral/totIntegral);
 }
@@ -57272,10 +57254,11 @@ function crystalball_cdf_c(x, alpha, n, sigma, mean = 0) {
 /** @summary ChebyshevN function
   * @memberof Math */
 function ChebyshevN(n, x, c) {
-   let d1 = 0.0, d2 = 0.0, y2 = 2.0 * x;
+   let d1 = 0.0, d2 = 0.0;
+   const y2 = 2.0 * x;
 
    for (let i = n; i >= 1; i--) {
-      let temp = d1;
+      const temp = d1;
       d1 = y2 * d1 - d2 + c[i];
       d2 = temp;
    }
@@ -57354,8 +57337,8 @@ function Chebyshev10(x, ...args) {
 /** @summary Caluclate ClopperPearson
   * @memberof Math */
 function eff_ClopperPearson(total,passed,level,bUpper) {
-   let alpha = (1.0 - level) / 2;
-   if(bUpper)
+   const alpha = (1.0 - level) / 2;
+   if (bUpper)
       return ((passed == total) ? 1.0 : beta_quantile(1 - alpha,passed + 1,total-passed));
 
    return ((passed == 0) ? 0.0 : beta_quantile(alpha,passed,total-passed+1.0));
@@ -57366,12 +57349,12 @@ function eff_ClopperPearson(total,passed,level,bUpper) {
 function eff_Normal(total,passed,level,bUpper) {
    if (total == 0) return bUpper ? 1 : 0;
 
-   let alpha = (1.0 - level)/2,
-       average = passed / total,
-       sigma = Math.sqrt(average * (1 - average) / total),
-       delta = normal_quantile(1 - alpha, sigma);
+   const alpha = (1.0 - level)/2,
+         average = passed / total,
+         sigma = Math.sqrt(average * (1 - average) / total),
+         delta = normal_quantile(1 - alpha, sigma);
 
-   if(bUpper)
+   if (bUpper)
       return ((average + delta) > 1) ? 1.0 : (average + delta);
 
    return ((average - delta) < 0) ? 0.0 : (average - delta);
@@ -57380,14 +57363,14 @@ function eff_Normal(total,passed,level,bUpper) {
 /** @summary Calculates the boundaries for the frequentist Wilson interval
   * @memberof Math */
 function eff_Wilson(total,passed,level,bUpper) {
-   let alpha = (1.0 - level)/2;
+   const alpha = (1.0 - level)/2;
    if (total == 0) return bUpper ? 1 : 0;
-   let average = passed / total,
-       kappa = normal_quantile(1 - alpha,1),
-       mode = (passed + 0.5 * kappa * kappa) / (total + kappa * kappa),
-       delta = kappa / (total + kappa*kappa) * Math.sqrt(total * average * (1 - average) + kappa * kappa / 4);
+   const average = passed / total,
+         kappa = normal_quantile(1 - alpha,1),
+         mode = (passed + 0.5 * kappa * kappa) / (total + kappa * kappa),
+         delta = kappa / (total + kappa*kappa) * Math.sqrt(total * average * (1 - average) + kappa * kappa / 4);
 
-   if(bUpper)
+   if (bUpper)
       return ((mode + delta) > 1) ? 1.0 : (mode + delta);
 
    return ((mode - delta) < 0) ? 0.0 : (mode - delta);
@@ -57396,12 +57379,12 @@ function eff_Wilson(total,passed,level,bUpper) {
 /** @summary Calculates the boundaries for the frequentist Agresti-Coull interval
   * @memberof Math */
 function eff_AgrestiCoull(total,passed,level,bUpper) {
-   let alpha = (1.0 - level)/2,
-       kappa = normal_quantile(1 - alpha,1),
-       mode = (passed + 0.5 * kappa * kappa) / (total + kappa * kappa),
-       delta = kappa * Math.sqrt(mode * (1 - mode) / (total + kappa * kappa));
+   const alpha = (1.0 - level)/2,
+         kappa = normal_quantile(1 - alpha,1),
+         mode = (passed + 0.5 * kappa * kappa) / (total + kappa * kappa),
+         delta = kappa * Math.sqrt(mode * (1 - mode) / (total + kappa * kappa));
 
-  if(bUpper)
+  if (bUpper)
      return ((mode + delta) > 1) ? 1.0 : (mode + delta);
 
   return ((mode - delta) < 0) ? 0.0 : (mode - delta);
@@ -57415,23 +57398,23 @@ function eff_MidPInterval(total,passed,level,bUpper) {
 
    // treat special case for 0<passed<1
    // do a linear interpolation of the upper limit values
-   if ( passed > 0 && passed < 1) {
-      let p0 = eff_MidPInterval(total, 0.0, level, bUpper);
-      let p1 = eff_MidPInterval(total, 1.0, level, bUpper);
+   if (passed > 0 && passed < 1) {
+      const p0 = eff_MidPInterval(total, 0.0, level, bUpper),
+            p1 = eff_MidPInterval(total, 1.0, level, bUpper);
       p = (p1 - p0) * passed + p0;
       return p;
    }
 
    while (Math.abs(pmax - pmin) > tol) {
       p = (pmin + pmax)/2;
-      //double v = 0.5 * ROOT::Math::binomial_pdf(int(passed), p, int(total));
+      // double v = 0.5 * ROOT::Math::binomial_pdf(int(passed), p, int(total));
       // make it work for non integer using the binomial - beta relationship
       let v = 0.5 * beta_pdf(p, passed+1., total-passed+1)/(total+1);
-      //if (passed > 0) v += ROOT::Math::binomial_cdf(int(passed - 1), p, int(total));
+      // if (passed > 0) v += ROOT::Math::binomial_cdf(int(passed - 1), p, int(total));
       // compute the binomial cdf at passed -1
       if ( (passed-1) >= 0) v += beta_cdf_c(p, passed, total-passed+1);
 
-      let vmin = bUpper ? alpha_min : 1.- alpha_min;
+      const vmin = bUpper ? alpha_min : 1.- alpha_min;
       if (v > vmin)
          pmin = p;
       else
@@ -57444,15 +57427,15 @@ function eff_MidPInterval(total,passed,level,bUpper) {
 /** @summary for a central confidence interval for a Beta distribution
   * @memberof Math */
 function eff_Bayesian(total,passed,level,bUpper,alpha,beta) {
-   let  a = passed + alpha,
-        b = total - passed + beta;
-   if(bUpper) {
-      if((a > 0) && (b > 0))
+   const  a = passed + alpha,
+          b = total - passed + beta;
+   if (bUpper) {
+      if ((a > 0) && (b > 0))
          return beta_quantile((1+level)/2,a,b);
       else
          return 1;
    } else {
-      if((a > 0) && (b > 0))
+      if ((a > 0) && (b > 0))
          return beta_quantile((1-level)/2,a,b);
       else
          return 0;
@@ -57462,15 +57445,15 @@ function eff_Bayesian(total,passed,level,bUpper,alpha,beta) {
 /** @summary Return function to calculate boundary of TEfficiency
   * @memberof Math */
 function getTEfficiencyBoundaryFunc(option, isbayessian) {
-   const  kFCP = 0,       ///< Clopper-Pearson interval (recommended by PDG)
-          kFNormal = 1,   ///< Normal approximation
-          kFWilson = 2,   ///< Wilson interval
-          kFAC = 3,       ///< Agresti-Coull interval
-          kFFC = 4,       ///< Feldman-Cousins interval, too complicated for JavaScript
-          // kBJeffrey = 5,  ///< Jeffrey interval (Prior ~ Beta(0.5,0.5)
-          // kBUniform = 6,  ///< Prior ~ Uniform = Beta(1,1)
-          // kBBayesian = 7, ///< User specified Prior ~ Beta(fBeta_alpha,fBeta_beta)
-          kMidP = 8;      ///< Mid-P Lancaster interval
+   const  kFCP = 0,       // Clopper-Pearson interval (recommended by PDG)
+          kFNormal = 1,   // Normal approximation
+          kFWilson = 2,   // Wilson interval
+          kFAC = 3,       // Agresti-Coull interval
+          kFFC = 4,       // Feldman-Cousins interval, too complicated for JavaScript
+          // kBJeffrey = 5,  // Jeffrey interval (Prior ~ Beta(0.5,0.5)
+          // kBUniform = 6,  // Prior ~ Uniform = Beta(1,1)
+          // kBBayesian = 7, // User specified Prior ~ Beta(fBeta_alpha,fBeta_beta)
+          kMidP = 8;      // Mid-P Lancaster interval
 
    if (isbayessian)
       return eff_Bayesian;
@@ -96663,7 +96646,7 @@ function readMapElement(buf) {
    const n = buf.ntoi4(), res = new Array(n);
    if (this.member_wise && (buf.remain() >= 6)) {
       if (buf.ntoi2() === kStreamedMemberWise)
-         buf.shift(4);
+         buf.shift(4); // skip checksum
       else
          buf.shift(-2); // rewind
    }
@@ -96676,6 +96659,12 @@ function readMapElement(buf) {
 
    // due-to member-wise streaming second element read after first is completed
    if (this.member_wise) {
+      if (buf.remain() >= 6) {
+         if (buf.ntoi2() === kStreamedMemberWise)
+            buf.shift(4);  // skip checksum
+         else
+            buf.shift(-2);  // rewind
+      }
       for (let i = 0; i < n; ++i)
          streamer[1].func(buf, res[i]);
    }

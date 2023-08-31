@@ -21,6 +21,7 @@
 18. Put `gl` in "devDependencies" of package.json. One can skip it installation with `npm i --production`.
 19. Add support of `TPaveClass`
 20. Use eslint for static code checking
+21. Fix member-wise streaming of std::map   #262
 
 
 ## Changes in 7.4.2
