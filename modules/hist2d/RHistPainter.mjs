@@ -75,7 +75,7 @@ class RHistPainter extends RObjectPainter {
 
    /** @summary Returns true if RHistDisplayItem is used */
    isDisplayItem() {
-      return this.getObject()?.fAxes ? true : false;
+      return this.getObject()?.fAxes;
    }
 
    /** @summary get histogram */
@@ -795,17 +795,18 @@ class RHistPainter extends RObjectPainter {
       if (hdim === 1) {
          res.gry[0] = funcs.gry(0);
          res.gry[1] = funcs.gry(1);
-      } else
-      for (j = res.j1; j <= res.j2; ++j) {
-         y = yaxis.GetBinCoord(j + args.middle);
-         if (funcs.logy && (y <= 0)) { res.j1 = j+1; continue; }
-         if (res.origy) res.origy[j] = y;
-         res.gry[j] = funcs.gry(y);
-         if (args.rounding) res.gry[j] = Math.round(res.gry[j]);
+      } else {
+         for (j = res.j1; j <= res.j2; ++j) {
+            y = yaxis.GetBinCoord(j + args.middle);
+            if (funcs.logy && (y <= 0)) { res.j1 = j+1; continue; }
+            if (res.origy) res.origy[j] = y;
+            res.gry[j] = funcs.gry(y);
+            if (args.rounding) res.gry[j] = Math.round(res.gry[j]);
 
-         if (args.use3d) {
-            if (res.gry[j] < -pmain.size_y3d) { res.j1 = j; res.gry[j] = -pmain.size_y3d; }
-            if (res.gry[j] > pmain.size_y3d) { res.j2 = j; res.gry[j] = pmain.size_y3d; }
+            if (args.use3d) {
+               if (res.gry[j] < -pmain.size_y3d) { res.j1 = j; res.gry[j] = -pmain.size_y3d; }
+               if (res.gry[j] > pmain.size_y3d) { res.j2 = j; res.gry[j] = pmain.size_y3d; }
+            }
          }
       }
 
@@ -815,8 +816,10 @@ class RHistPainter extends RObjectPainter {
       }
 
       // copy last valid value to higher indicies
-      while ((hdim > 1) && (j < res.j2 + res.stepj + 1))
-         res.gry[j++] = res.gry[res.j2];
+      if (hdim > 1) {
+         while (j < res.j2 + res.stepj + 1)
+            res.gry[j++] = res.gry[res.j2];
+      }
 
       //  find min/max values in selected range
       this.maxbin = this.minbin = this.minposbin = null;
@@ -833,9 +836,9 @@ class RHistPainter extends RObjectPainter {
                if ((binz > 0) && ((binz < res.min) || (res.min === 0))) res.min = binz;
                binz = binz/binarea;
             }
-            if (this.maxbin === null) {
+            if (this.maxbin === null)
                this.maxbin = this.minbin = binz;
-            } else {
+            else {
                this.maxbin = Math.max(this.maxbin, binz);
                this.minbin = Math.min(this.minbin, binz);
             }

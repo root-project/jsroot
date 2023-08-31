@@ -82,19 +82,25 @@ class RH1Painter extends RHistPainter {
 
       this.ymin_nz = hmin_nz; // value can be used to show optimal log scale
 
-      if ((this.nbinsx == 0) || ((Math.abs(hmin) < 1e-300 && Math.abs(hmax) < 1e-300))) {
+      if ((this.nbinsx === 0) || ((Math.abs(hmin) < 1e-300 && Math.abs(hmax) < 1e-300)))
          this.draw_content = false;
-      } else {
+      else
          this.draw_content = true;
-      }
 
       if (this.draw_content) {
          if (hmin >= hmax) {
-            if (hmin == 0) { this.ymin = 0; this.ymax = 1; }
-            else if (hmin < 0) { this.ymin = 2 * hmin; this.ymax = 0; }
-            else { this.ymin = 0; this.ymax = hmin * 2; }
+            if (hmin === 0) {
+               this.ymin = 0;
+               this.ymax = 1;
+            } else if (hmin < 0) {
+               this.ymin = 2 * hmin;
+               this.ymax = 0;
+            } else {
+               this.ymin = 0;
+               this.ymax = hmin * 2;
+            }
          } else {
-            let dy = (hmax - hmin) * 0.05;
+            const dy = (hmax - hmin) * 0.05;
             this.ymin = hmin - dy;
             if ((this.ymin < 0) && (hmin >= 0)) this.ymin = 0;
             this.ymax = hmax + dy;
