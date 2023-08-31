@@ -1018,7 +1018,7 @@ class TGraph2DPainter extends ObjectPainter {
       dulaunay.FindAllTriangles();
       if (!dulaunay.fNdt) return;
 
-      let main_grz = !fp.logz ? fp.grz : value => (value < axis_zmin) ? -0.1 : fp.grz(value),
+      let main_grz = !fp.logz ? fp.grz : value => (value < fp.scale_zmin) ? -0.1 : fp.grz(value),
           do_faces = this.options.Triangles >= 10,
           do_lines = this.options.Triangles % 10 === 1,
           triangles = new Triangles3DHandler(levels, main_grz, 0, 2*fp.size_z3d, do_lines);
