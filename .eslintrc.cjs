@@ -15,6 +15,7 @@ module.exports = {
       "indent": "off",
       "camelcase": "off",
       "space-before-function-paren": "off",
+      "comma-spacing": "warn",
       "semi": "off",
       "object-curly-newline": "off",
       "curly": ["warn", "multi-or-nest"],

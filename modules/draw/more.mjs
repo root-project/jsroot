@@ -164,7 +164,6 @@ function drawPolyLine() {
       this.submitCanvExec(exec + 'Notify();;');
       this.redraw();
    }
-
 }
 
 /** @summary Draw TEllipse
@@ -269,7 +268,6 @@ function drawEllipse() {
       ellipse.fY1 = this.svgToAxis('y', this.y);
       this.submitCanvExec(`SetX1(${ellipse.fX1});;SetY1(${ellipse.fY1});;Notify();;`);
    }
-
 }
 
 /** @summary Draw TPie
@@ -409,7 +407,6 @@ function drawBox() {
       if (this.c_y2) { box.fY2 = this.svgToAxis('y', this.y2); exec += `SetY2(${box.fY2});;`; }
       this.submitCanvExec(exec + 'Notify();;');
    }
-
 }
 
 /** @summary Draw TMarker
@@ -424,14 +421,15 @@ function drawMarker() {
 
    this.createG();
 
-   let x = this.axisToSvg('x', marker.fX, this.isndc),
-       y = this.axisToSvg('y', marker.fY, this.isndc),
-       path = this.markeratt.create(x, y);
+   const x = this.axisToSvg('x', marker.fX, this.isndc),
+         y = this.axisToSvg('y', marker.fY, this.isndc),
+         path = this.markeratt.create(x, y);
 
-   if (path)
+   if (path) {
       this.draw_g.append('svg:path')
           .attr('d', path)
           .call(this.markeratt.func);
+   }
 
    assignContextMenu(this, kToFront);
 
@@ -439,7 +437,7 @@ function drawMarker() {
 
    this.dx = this.dy = 0;
 
-   this.moveDrag = function(dx,dy) {
+   this.moveDrag = function(dx, dy) {
       this.dx += dx;
       this.dy += dy;
       makeTranslate(this.draw_g.select('path'), this.dx, this.dy);
@@ -447,7 +445,7 @@ function drawMarker() {
 
    this.moveEnd = function(not_changed) {
       if (not_changed) return;
-      let marker = this.getObject();
+      const marker = this.getObject();
       marker.fX = this.svgToAxis('x', this.axisToSvg('x', marker.fX, this.isndc) + this.dx, this.isndc);
       marker.fY = this.svgToAxis('y', this.axisToSvg('y', marker.fY, this.isndc) + this.dy, this.isndc);
       this.submitCanvExec(`SetX(${marker.fX});;SetY(${marker.fY});;Notify();;`);
@@ -458,22 +456,22 @@ function drawMarker() {
 /** @summary Draw TPolyMarker
   * @private */
 function drawPolyMarker() {
-
-   let poly = this.getObject(),
-       path = '',
-       func = this.getAxisToSvgFunc();
+   const poly = this.getObject(),
+         func = this.getAxisToSvgFunc();
 
    this.createAttMarker({ attr: poly });
 
    this.createG();
 
+   let path = '';
    for (let n = 0; n <= poly.fLastPoint; ++n)
       path += this.markeratt.create(func.x(poly.fX[n]), func.y(poly.fY[n]));
 
-   if (path)
+   if (path) {
       this.draw_g.append('svg:path')
           .attr('d', path)
           .call(this.markeratt.func);
+   }
 
    assignContextMenu(this, kToFront);
 
@@ -481,7 +479,7 @@ function drawPolyMarker() {
 
    this.dx = this.dy = 0;
 
-   this.moveDrag = function(dx,dy) {
+   this.moveDrag = function(dx, dy) {
       this.dx += dx;
       this.dy += dy;
       makeTranslate(this.draw_g.select('path'), this.dx, this.dy);
@@ -489,13 +487,13 @@ function drawPolyMarker() {
 
    this.moveEnd = function(not_changed) {
       if (not_changed) return;
-      let poly = this.getObject(),
-          func = this.getAxisToSvgFunc(),
-          exec = '';
+      const poly = this.getObject(),
+            func = this.getAxisToSvgFunc();
 
+      let exec = '';
       for (let n = 0; n <= poly.fLastPoint; ++n) {
-         let x = this.svgToAxis('x', func.x(poly.fX[n]) + this.dx),
-             y = this.svgToAxis('y', func.y(poly.fY[n]) + this.dy);
+         const x = this.svgToAxis('x', func.x(poly.fX[n]) + this.dx),
+               y = this.svgToAxis('y', func.y(poly.fY[n]) + this.dy);
          poly.fX[n] = x;
          poly.fY[n] = y;
          exec += `SetPoint(${n},${x},${y});;`;
@@ -503,19 +501,18 @@ function drawPolyMarker() {
       this.submitCanvExec(exec + 'Notify();;');
       this.redraw();
    }
-
 }
 
 /** @summary Draw JS image
   * @private */
 function drawJSImage(dom, obj, opt) {
-   let painter = new BasePainter(dom),
-       main = painter.selectDom(),
-       img = main.append('img').attr('src', obj.fName).attr('title', obj.fTitle || obj.fName);
+   const painter = new BasePainter(dom),
+         main = painter.selectDom(),
+         img = main.append('img').attr('src', obj.fName).attr('title', obj.fTitle || obj.fName);
 
-   if (opt && opt.indexOf('scale') >= 0) {
-      img.style('width','100%').style('height','100%');
-   } else if (opt && opt.indexOf('center') >= 0) {
+   if (opt && opt.indexOf('scale') >= 0)
+      img.style('width', '100%').style('height', '100%');
+   else if (opt && opt.indexOf('center') >= 0) {
       main.style('position', 'relative');
       img.attr('style', 'margin: 0; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);');
    }
