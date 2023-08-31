@@ -46,7 +46,8 @@ TDrawSelector.prototype.ShowProgress = function(value) {
    main_box.onclick = function() {
       if (++selector._break < 3) {
          main_box.title = 'Tree draw will break after next I/O operation';
-         return text_node.nodeValue = 'Breaking ... ';
+         text_node.nodeValue = 'Breaking ... ';
+         return;
       }
       selector.Abort();
       showProgress();

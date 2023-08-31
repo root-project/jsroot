@@ -264,7 +264,7 @@ class TSplinePainter extends ObjectPainter {
       if (axis !== 'x') return false;
 
       // spline can always be calculated and therefore one can zoom inside
-      return this.getObject() ? true : false;
+      return this.getObject();
    }
 
    /** @summary Decode options for TSpline drawing */
