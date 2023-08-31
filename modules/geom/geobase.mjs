@@ -3150,11 +3150,11 @@ class ClonedNodes {
       let node = this.nodes[0], three_prnt = toplevel, draw_depth = 0,
           force = isObject(options) || (options === 'force');
 
-      for(let lvl = 0; lvl <= stack.length; ++lvl) {
+      for (let lvl = 0; lvl <= stack.length; ++lvl) {
          let nchld = (lvl > 0) ? stack[lvl-1] : 0,
              // extract current node
              child = (lvl > 0) ? this.nodes[node.chlds[nchld]] : node,
-             obj3d = undefined;
+             obj3d;
          if (!child) {
             console.error(`Wrong stack ${JSON.stringify(stack)} for nodes at level ${lvl}, node.id ${node.id}, numnodes ${this.nodes.length}, nchld ${nchld}, numchilds ${node.chlds.length}, chldid ${node.chlds[nchld]}`);
             return null;
@@ -3325,7 +3325,7 @@ class ClonedNodes {
             instance.entries.push(entry);
             max_entries = Math.max(max_entries, instance.entries.length);
          } else {
-            shape.instances.push({ nodeid: entry.nodeid, entries: [ entry ]});
+            shape.instances.push({ nodeid: entry.nodeid, entries: [ entry ] });
          }
       }
 
@@ -3831,8 +3831,8 @@ function getBoundingBox(node, box3, local_coordinates) {
 
       node.geometry.computeBoundingBox();
 
-      for ( let i = 0; i < node.count; i ++ ) {
-         node.getMatrixAt( i, m );
+      for (let i = 0; i < node.count; i++) {
+         node.getMatrixAt(i, m);
          b.copy( node.geometry.boundingBox ).applyMatrix4( m );
          box3.union( b );
       }

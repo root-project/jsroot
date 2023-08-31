@@ -823,7 +823,7 @@ class TGeoPainter extends ObjectPainter {
       this._previousCameraRotation = this._camera.rotation.clone();
       this._vrDisplay.requestPresent([{ source: this._renderer.domElement }]).then(() => {
          this._previousCameraNear = this._camera.near;
-         this._dolly.position.set(this._camera.position.x/4, - this._camera.position.y/8, - this._camera.position.z/4);
+         this._dolly.position.set(this._camera.position.x/4, -this._camera.position.y/8, -this._camera.position.z/4);
          this._camera.position.set(0,0,0);
          this._dolly.add(this._camera);
          this._camera.near = 0.1;
