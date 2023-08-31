@@ -648,7 +648,7 @@ class TGraphDelaunay {
                            // on a common circle' situation. It is a sign something could be
                            // wrong though, especially if the two coincident points have
                            // different fZ's. If they don't then this is harmless.
-                           Warning("Interpolate", "Two of these three points are coincident %d %d %d",a,b,z);
+                           console.warn(`Interpolate Two of these three points are coincident ${a} ${b} ${z}`);
                         }
                      } else {
                         if (((this.fYN[z]-this.fYN[a])*(this.fYN[z]-this.fYN[b])) < 0) {
