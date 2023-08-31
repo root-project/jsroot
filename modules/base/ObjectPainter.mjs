@@ -517,7 +517,7 @@ class ObjectPainter extends BasePainter {
       if (layer.empty()) return layer;
       let node = layer.node().firstChild;
       while (node) {
-         let elem = d3_select(node);
+         const elem = d3_select(node);
          if (elem.classed('root_frame')) return elem;
          node = node.nextSibling;
       }
@@ -539,7 +539,7 @@ class ObjectPainter extends BasePainter {
    getMainPainter(not_store) {
       let res = this._main_painter;
       if (!res) {
-         let pp = this.getPadPainter();
+         const pp = this.getPadPainter();
          res = pp ? pp.getMainPainter() : this.getTopPainter();
          if (!res) res = null;
          if (!not_store)
@@ -557,10 +557,10 @@ class ObjectPainter extends BasePainter {
      * Should not be used by pad/canvas painters, but rather by objects which are drawing axis
      * @protected */
    setAsMainPainter(force) {
-      let pp = this.getPadPainter();
+      const pp = this.getPadPainter();
       if (!pp)
-         this.setTopPainter(); //fallback on BasePainter method
-       else
+         this.setTopPainter(); // fallback on BasePainter method
+      else
          pp.setMainPainter(this, force);
    }
 
@@ -570,7 +570,7 @@ class ObjectPainter extends BasePainter {
      * @protected */
    addToPadPrimitives(pad_name) {
       if (pad_name !== undefined) this.setPadName(pad_name);
-      let pp = this.getPadPainter(pad_name); // important - pad_name must be here, otherwise PadPainter class confuses itself
+      const pp = this.getPadPainter(pad_name); // important - pad_name must be here, otherwise PadPainter class confuses itself
 
       if (!pp || (pp === this)) return false;
 
@@ -586,11 +586,10 @@ class ObjectPainter extends BasePainter {
    /** @summary Remove painter from pad list of painters
      * @protected */
    removeFromPadPrimitives() {
-      let pp = this.getPadPainter();
-
+      const pp = this.getPadPainter();
       if (!pp || (pp === this)) return false;
 
-      let k = pp.painters.indexOf(this);
+      const k = pp.painters.indexOf(this);
       if (k >= 0) pp.painters.splice(k, 1);
       return true;
    }
@@ -713,10 +712,10 @@ class ObjectPainter extends BasePainter {
    forEachPainter(userfunc, kind) {
       // iterate over all painters from pad list
       let pp = this.getPadPainter();
-      if (pp) {
+      if (pp)
          pp.forEachPainterInPad(userfunc, kind);
-      } else {
-         let painter = this.getTopPainter();
+      else {
+         const painter = this.getTopPainter();
          if (painter && (kind !== 'pads')) userfunc(painter);
       }
    }
@@ -726,19 +725,18 @@ class ObjectPainter extends BasePainter {
      * @return {Promise} when completed
      * @private */
    async interactiveRedraw(arg, info, subelem) {
-
       let reason, res;
-      if (isStr(info) && (info.indexOf('exec:') != 0))
+      if (isStr(info) && (info.indexOf('exec:') !== 0))
          reason = info;
 
-      if (arg == 'pad')
+      if (arg === 'pad')
          res = this.redrawPad(reason);
       else if (arg !== false)
          res = this.redraw(reason);
 
       return getPromise(res).then(() => {
          // inform GED that something changes
-         let canp = this.getCanvPainter();
+         const canp = this.getCanvPainter();
 
          if (isFunc(canp?.producePadEvent))
             canp.producePadEvent('redraw', this.getPadPainter(), this, null, subelem);
@@ -762,8 +760,7 @@ class ObjectPainter extends BasePainter {
    /** @summary execute selected menu command, either locally or remotely
      * @private */
    executeMenuCommand(method) {
-
-      if (method.fName == 'Inspect')
+      if (method.fName === 'Inspect')
          // primitve inspector, keep it here
          return this.showInspector();
 
@@ -779,7 +776,7 @@ class ObjectPainter extends BasePainter {
    submitCanvExec(exec, snapid) {
       if (!exec || !isStr(exec)) return;
 
-      let canp = this.getCanvPainter();
+      const canp = this.getCanvPainter();
       if (isFunc(canp?.submitExec))
          canp.submitExec(this, exec, snapid);
    }
@@ -801,16 +798,15 @@ class ObjectPainter extends BasePainter {
    /** @summary Fill context menu for the object
      * @private */
    fillContextMenu(menu) {
-      let name = this.getObjectName(),
-          cl = this.getClassName();
-
-      let p = cl.lastIndexOf('::');
+      const name = this.getObjectName();
+      let cl = this.getClassName(),
+          p = cl.lastIndexOf('::');
       if (p > 0) cl = cl.slice(p+2);
-      let title = (cl && name) ? `${cl}:${name}` : (cl || name || 'object');
+      const title = (cl && name) ? `${cl}:${name}` : (cl || name || 'object');
 
       menu.add(`header:${title}`);
 
-      let size0 = menu.size();
+      const size0 = menu.size();
 
       if (isFunc(this.fillContextMenuItems))
          this.fillContextMenuItems(menu);
@@ -837,7 +833,7 @@ class ObjectPainter extends BasePainter {
       if (this.enlargeMain('state') === 'on') return false;
 
       if ((name === undefined) && (title === undefined)) {
-         let obj = this.getObject();
+         const obj = this.getObject();
          if (!obj) return;
          name = this.getItemName() || obj.fName;
          title = obj.fTitle || obj._typename;
@@ -865,18 +861,17 @@ class ObjectPainter extends BasePainter {
      * @param {number} [max_font_size] - maximal font size, used when text can be scaled
      * @protected */
    startTextDrawing(font_face, font_size, draw_g, max_font_size) {
-
       if (!draw_g) draw_g = this.draw_g;
       if (!draw_g || draw_g.empty()) return;
 
-      let font = (font_size === 'font') ? font_face : new FontHandler(font_face, font_size);
+      const font = (font_size === 'font') ? font_face : new FontHandler(font_face, font_size);
 
       draw_g.call(font.func);
 
       draw_g.property('draw_text_completed', false) // indicate that draw operations submitted
-            .property('all_args',[]) // array of all submitted args, makes easier to analyze them
+            .property('all_args', []) // array of all submitted args, makes easier to analyze them
             .property('text_font', font)
-            .property('text_factor', 0.)
+            .property('text_factor', 0)
             .property('max_text_width', 0) // keep maximal text width, use it later
             .property('max_font_size', max_font_size)
             .property('_fast_drawing', this.getPadPainter()?._fast_drawing ?? false);
@@ -900,7 +895,6 @@ class ObjectPainter extends BasePainter {
    /** @summary Analyze if all text draw operations are completed
      * @private */
    _checkAllTextDrawing(draw_g, resolveFunc, try_optimize) {
-
       let all_args = draw_g.property('all_args'), missing = 0;
       if (!all_args) {
          console.log('Text drawing is finished - why calling _checkAllTextDrawing?????');
@@ -920,10 +914,10 @@ class ObjectPainter extends BasePainter {
       draw_g.property('all_args', null); // clear all_args property
 
       // adjust font size (if there are normal text)
-      let f = draw_g.property('text_factor'),
-          font = draw_g.property('text_font'),
-          max_sz = draw_g.property('max_font_size'),
-          font_size = font.size, any_text = false, only_text = true;
+      const f = draw_g.property('text_factor'),
+            font = draw_g.property('text_font'),
+            max_sz = draw_g.property('max_font_size');
+      let font_size = font.size, any_text = false, only_text = true;
 
       if ((f > 0) && ((f < 0.9) || (f > 1)))
          font.size = Math.max(1, Math.floor(font.size / f));
@@ -931,20 +925,19 @@ class ObjectPainter extends BasePainter {
       if (max_sz && (font.size > max_sz))
          font.size = max_sz;
 
-      if (font.size != font_size) {
+      if (font.size !== font_size) {
          draw_g.call(font.func);
          font_size = font.size;
       }
 
       all_args.forEach(arg => {
          if (arg.mj_node && arg.applyAttributesToMathJax) {
-            let svg = arg.mj_node.select('svg'); // MathJax svg
+            const svg = arg.mj_node.select('svg'); // MathJax svg
             arg.applyAttributesToMathJax(this, arg.mj_node, svg, arg, font_size, f);
             delete arg.mj_node; // remove reference
             only_text = false;
-         } else if (arg.txt_g) {
+         } else if (arg.txt_g)
             only_text = false;
-         }
       });
 
       if (!resolveFunc) {
@@ -954,7 +947,7 @@ class ObjectPainter extends BasePainter {
          delete draw_g.node().try_optimize;
       }
 
-      let optimize_arr = (try_optimize && only_text) ? [] : null;
+      const optimize_arr = (try_optimize && only_text) ? [] : null;
 
       // now process text and latex drawings
       all_args.forEach(arg => {
@@ -968,9 +961,8 @@ class ObjectPainter extends BasePainter {
             txt = arg.txt_g;
             delete arg.txt_g;
             is_txt = false;
-         } else {
+         } else
             return;
-         }
 
          txt.attr('visibility', null);
 
@@ -978,23 +970,22 @@ class ObjectPainter extends BasePainter {
 
          if (arg.width) {
             // adjust x position when scale into specified rectangle
-            if (arg.align[0] == 'middle')
+            if (arg.align[0] === 'middle')
                arg.x += arg.width / 2;
-             else if (arg.align[0] == 'end')
+             else if (arg.align[0] === 'end')
                 arg.x += arg.width;
          }
 
          if (arg.height) {
             if (arg.align[1].indexOf('bottom') === 0)
                arg.y += arg.height;
-            else if (arg.align[1] == 'middle')
+            else if (arg.align[1] === 'middle')
                arg.y += arg.height / 2;
          }
 
          let dx = 0, dy = 0;
 
          if (is_txt) {
-
             // handle simple text drawing
 
             if (isNodeJs()) {
@@ -1006,43 +997,40 @@ class ObjectPainter extends BasePainter {
 
             if (arg.plain) {
                txt.attr('text-anchor', arg.align[0]);
-               if (arg.align[1] == 'top') {
+               if (arg.align[1] === 'top')
                   txt.attr('dy', '.8em');
-               } else if (arg.align[1] == 'middle') {
+               else if (arg.align[1] === 'middle') {
                   if (isNodeJs()) txt.attr('dy', '.4em');
                              else txt.attr('dominant-baseline', 'middle');
                }
             } else {
                txt.attr('text-anchor', 'start');
-               dx = ((arg.align[0] == 'middle') ? -0.5 : ((arg.align[0] == 'end') ? -1 : 0)) * arg.box.width;
-               dy = ((arg.align[1] == 'top') ? (arg.top_shift || 1) : (arg.align[1] == 'middle') ? (arg.mid_shift || 0.5) : 0) * arg.box.height;
+               dx = ((arg.align[0] === 'middle') ? -0.5 : ((arg.align[0] === 'end') ? -1 : 0)) * arg.box.width;
+               dy = ((arg.align[1] === 'top') ? (arg.top_shift || 1) : (arg.align[1] === 'middle') ? (arg.mid_shift || 0.5) : 0) * arg.box.height;
             }
-
          } else if (arg.text_rect) {
-
             // handle latext drawing
-            let box = arg.text_rect;
+            const box = arg.text_rect;
 
             scale = (f > 0) && (Math.abs(1-f) > 0.01) ? 1/f : 1;
 
-            dx = ((arg.align[0] == 'middle') ? -0.5 : ((arg.align[0] == 'end') ? -1 : 0)) * box.width * scale;
+            dx = ((arg.align[0] === 'middle') ? -0.5 : ((arg.align[0] === 'end') ? -1 : 0)) * box.width * scale;
 
-            if (arg.align[1] == 'top')
+            if (arg.align[1] === 'top')
                dy = -box.y1*scale;
-            else if (arg.align[1] == 'bottom')
+            else if (arg.align[1] === 'bottom')
                dy = -box.y2*scale;
-            else if (arg.align[1] == 'middle')
+            else if (arg.align[1] === 'middle')
                dy = -0.5*(box.y1 + box.y2)*scale;
-         } else {
+         } else
             console.error('text rect not calcualted - please check code');
-         }
 
          if (!arg.rotate) { arg.x += dx; arg.y += dy; dx = dy = 0; }
 
          // use translate and then rotate to avoid complex sign calculations
-         let trans = makeTranslate(Math.round(arg.x), Math.round(arg.y)) || '',
-             dtrans = makeTranslate(Math.round(dx), Math.round(dy)),
-             append = arg => { if (trans) trans += ' '; trans += arg; };
+         let trans = makeTranslate(Math.round(arg.x), Math.round(arg.y)) || '';
+         const dtrans = makeTranslate(Math.round(dx), Math.round(dy)),
+               append = arg => { if (trans) trans += ' '; trans += arg; };
 
          if (arg.rotate)
             append(`rotate(${Math.round(arg.rotate)})`);
@@ -1058,11 +1046,11 @@ class ObjectPainter extends BasePainter {
       if (!any_text)
          font.clearFont(draw_g);
 
-      if ((optimize_arr !== null) && (optimize_arr.length > 1))
+      if ((optimize_arr !== null) && (optimize_arr.length > 1)) {
          ['fill', 'text-anchor'].forEach(name => {
             let first = optimize_arr[0].attr(name);
             optimize_arr.forEach(txt_node => {
-               let value = txt_node.attr(name);
+               const value = txt_node.attr(name);
                if (!value || (value !== first)) first = undefined;
             });
             if (first) {
@@ -1070,6 +1058,7 @@ class ObjectPainter extends BasePainter {
                optimize_arr.forEach(txt_node => { txt_node.attr(name, null); });
             }
          });
+      }
 
       // if specified, call resolve function
       if (resolveFunc) resolveFunc(this); // IMPORTANT - return painter, may use in draw methods
