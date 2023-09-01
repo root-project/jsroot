@@ -61,7 +61,7 @@ class RH1Painter extends RHistPainter {
             if ((i<left) || (i>=right)) continue;
 
             if (value > 0)
-               if ((hmin_nz == 0) || (value<hmin_nz)) hmin_nz = value;
+               if ((hmin_nz === 0) || (value<hmin_nz)) hmin_nz = value;
             if (first) {
                hmin = hmax = value;
                first = false;
@@ -275,10 +275,10 @@ class RH1Painter extends RHistPainter {
    async drawFilledErrors(handle, funcs /*, width, height */) {
       this.createG(true);
 
-      let left = handle.i1, right = handle.i2, di = handle.stepi,
-          histo = this.getHisto(), xaxis = this.getAxis('x'),
-          i, x, grx, y, yerr, gry,
-          bins1 = [], bins2 = [];
+      const left = handle.i1, right = handle.i2, di = handle.stepi,
+            histo = this.getHisto(), xaxis = this.getAxis('x'),
+            bins1 = [], bins2 = [];
+      let i, x, grx, y, yerr, gry;
 
       for (i = left; i < right; i += di) {
          x = xaxis.GetBinCoord(i+0.5);
@@ -297,7 +297,7 @@ class RH1Painter extends RHistPainter {
       }
 
       const path1 = buildSvgCurve(bins1, { line: this.options.ErrorKind !== 4 }),
-          path2 = buildSvgCurve(bins2, { line: this.options.ErrorKind !== 4, cmd: 'L' });
+            path2 = buildSvgCurve(bins2, { line: this.options.ErrorKind !== 4, cmd: 'L' });
 
       if (this.fillatt.empty()) this.fillatt.setSolidColor('blue');
 
@@ -594,23 +594,23 @@ class RH1Painter extends RHistPainter {
 
    /** @summary Provide text information (tooltips) for histogram bin */
    getBinTooltips(bin) {
-      let tips = [],
-          name = this.getObjectHint(),
-          pmain = this.getFramePainter(),
-          histo = this.getHisto(),
-          xaxis = this.getAxis('x'),
-          di = this.isDisplayItem() ? histo.stepx : 1,
-          x1 = xaxis.GetBinCoord(bin),
-          x2 = xaxis.GetBinCoord(bin+di),
-          cont = histo.getBinContent(bin+1),
-          xlbl = this.getAxisBinTip('x', bin, di);
+      const tips = [],
+            name = this.getObjectHint(),
+            pmain = this.getFramePainter(),
+            histo = this.getHisto(),
+            xaxis = this.getAxis('x'),
+            di = this.isDisplayItem() ? histo.stepx : 1,
+            x1 = xaxis.GetBinCoord(bin),
+            x2 = xaxis.GetBinCoord(bin+di),
+            xlbl = this.getAxisBinTip('x', bin, di);
+      let cont = histo.getBinContent(bin+1);
 
       if (name) tips.push(name);
 
       if (this.options.Error || this.options.Mark) {
          tips.push(`x = ${xlbl}`, `y = ${pmain.axisAsText('y', cont)}`);
          if (this.options.Error) {
-            if (xlbl[0] == '[') tips.push('error x = ' + ((x2 - x1) / 2).toPrecision(4));
+            if (xlbl[0] === '[') tips.push('error x = ' + ((x2 - x1) / 2).toPrecision(4));
             tips.push('error y = ' + histo.getBinError(bin + 1).toPrecision(4));
          }
       } else {
@@ -643,7 +643,7 @@ class RH1Painter extends RHistPainter {
             left = this.getSelectIndex('x', 'left', -1),
             right = this.getSelectIndex('x', 'right', 2);
       let findbin = null, show_rect,
-          grx1, midx, grx2, gry1, midy, gry2, gapx = 2,
+          grx1, grx2, gry1, gry2, gapx = 2,
           l = left, r = right;
 
       function GetBinGrX(i) {
@@ -710,9 +710,8 @@ class RH1Painter extends RHistPainter {
       if (grx1 > grx2)
          [grx1, grx2] = [grx2, grx1];
 
-      midx = Math.round((grx1 + grx2)/2);
-
-      midy = gry1 = gry2 = GetBinGrY(findbin);
+      const midx = Math.round((grx1 + grx2)/2),
+            midy = gry1 = gry2 = GetBinGrY(findbin);
 
       if (this.options.Bar) {
          show_rect = true;
@@ -883,10 +882,10 @@ class RH1Painter extends RHistPainter {
    /** @summary Perform automatic zoom inside non-zero region of histogram */
    autoZoom() {
       let left = this.getSelectIndex('x', 'left', -1),
-          right = this.getSelectIndex('x', 'right', 1),
-          dist = right - left, histo = this.getHisto(), xaxis = this.getAxis('x');
+          right = this.getSelectIndex('x', 'right', 1);
+      const dist = right - left, histo = this.getHisto(), xaxis = this.getAxis('x');
 
-      if (dist == 0) return;
+      if (dist === 0) return;
 
       // first find minimum
       let min = histo.getBinContent(left + 1);
@@ -910,9 +909,9 @@ class RH1Painter extends RHistPainter {
    canZoomInside(axis, min, max) {
       const xaxis = this.getAxis('x');
 
-      if ((axis == 'x') && (xaxis.FindBin(max, 0.5) - xaxis.FindBin(min, 0) > 1)) return true;
+      if ((axis === 'x') && (xaxis.FindBin(max, 0.5) - xaxis.FindBin(min, 0) > 1)) return true;
 
-      if ((axis == 'y') && (Math.abs(max-min) > Math.abs(this.ymax-this.ymin)*1e-6)) return true;
+      if ((axis === 'y') && (Math.abs(max-min) > Math.abs(this.ymax-this.ymin)*1e-6)) return true;
 
       return false;
    }
