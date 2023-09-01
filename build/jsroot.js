@@ -1,4 +1,4 @@
-// https://root.cern/js/ v7.4.2
+// https://root.cern/js/ v7.4.3
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -7,11 +7,11 @@ typeof define === 'function' && define.amd ? define(['exports'], factory) :
 
 /** @summary version id
   * @desc For the JSROOT release the string in format 'major.minor.patch' like '7.0.0' */
-let version_id = '7.4.x';
+let version_id = '7.4.3';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '31/08/2023';
+let version_date = '1/09/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -65354,7 +65354,7 @@ class StandaloneMenu extends JSRootMenu {
   * let flag = true;
   * menu.addchk(flag, 'Checked', arg => console.log(`Now flag is ${arg}`));
   * menu.show(); */
-function createMenu$1(evnt, handler, menuname) {
+function createMenu(evnt, handler, menuname) {
    let menu = new StandaloneMenu(handler, menuname || 'root_ctx_menu', evnt);
    return menu.load();
 }
@@ -65375,7 +65375,7 @@ function showPainterMenu(evnt, painter, kind) {
       evnt.preventDefault();  // disable browser context menu
    }
 
-   createMenu$1(evnt, painter).then(menu => {
+   createMenu(evnt, painter).then(menu => {
       painter.fillContextMenu(menu);
       return painter.fillObjectExecMenu(menu, kind);
    }).then(menu => menu.show());
@@ -66784,7 +66784,7 @@ const FrameInteractive = {
 
       this.clearInteractiveElements();
 
-      createMenu$1(evnt, menu_painter).then(menu => {
+      createMenu(evnt, menu_painter).then(menu => {
 
          let domenu = menu.painter.fillContextMenu(menu, kind, obj);
 
@@ -68086,7 +68086,7 @@ class TFramePainter extends ObjectPainter {
       if (zoom_y) {
          let cnt = 0;
          if ((ymin <= this.ymin) || (!this.ymin && this.logy &&
-              (!this.y_handle?.log_min_nz && ymin < logminfactorY*this.ymax) || (ymin < this.y_handle?.log_min_nz)))
+              ((!this.y_handle?.log_min_nz && ymin < logminfactorY*this.ymax) || (ymin < this.y_handle?.log_min_nz))))
             { ymin = this.ymin; cnt++; }
          if (ymax >= this.ymax) { ymax = this.ymax; cnt++; }
          if ((cnt === 2) && (this.scales_ndim !== 1)) { zoom_y = false; unzoom_y = true; }
@@ -69415,7 +69415,7 @@ class FlexibleDisplay extends MDIDisplay {
 
       arr.sort((f1,f2) => (select(f1).property('frame_cnt') < select(f2).property('frame_cnt') ? -1 : 1));
 
-      createMenu$1(evnt, this).then(menu => {
+      createMenu(evnt, this).then(menu => {
          menu.add('header:Flex');
          menu.add('Cascade', () => this.sortFrames('cascade'), 'Cascade frames');
          menu.add('Tile', () => this.sortFrames('tile'), 'Tile all frames');
@@ -71219,7 +71219,7 @@ class TPadPainter extends ObjectPainter {
          this.getFramePainter()?.setLastEventPos();
       }
 
-      createMenu$1(evnt, this).then(menu => {
+      createMenu(evnt, this).then(menu => {
          this.fillContextMenu(menu);
          return this.fillObjectExecMenu(menu, '');
       }).then(menu => menu.show());
@@ -71982,7 +71982,7 @@ class TPadPainter extends ObjectPainter {
 
        if (!isFunc(selp?.fillContextMenu)) return;
 
-       createMenu$1(evnt, selp).then(menu => {
+       createMenu(evnt, selp).then(menu => {
           if (selp.fillContextMenu(menu, selkind))
              selp.fillObjectExecMenu(menu, selkind).then(() => setTimeout(() => menu.show(), 50));
        });
@@ -72144,7 +72144,7 @@ class TPadPainter extends ObjectPainter {
          evnt?.stopPropagation();
          if (closeMenu()) return;
 
-         createMenu$1(evnt, this).then(menu => {
+         createMenu(evnt, this).then(menu => {
             menu.add('header:Menus');
 
             if (this.iscan)
@@ -74926,7 +74926,7 @@ class THistDrawOptions {
 
       // flag identifies 3D drawing mode for histogram
       if ((this.Lego > 0) || (hdim == 3) ||
-          ((this.Surf > 0) || this.Error && (hdim == 2))) this.Mode3D = true;
+          (((this.Surf > 0) || this.Error) && (hdim == 2))) this.Mode3D = true;
 
       //if (this.Surf == 15)
       //   if (this.System == CoordSystem.kPOLAR || this.System == CoordSystem.kCARTESIAN)
@@ -87319,7 +87319,7 @@ class TGeoPainter extends ObjectPainter {
 
             if (closeMenu()) return;
 
-            createMenu$1(evnt, this).then(menu => {
+            createMenu(evnt, this).then(menu => {
                 menu.painter.fillContextMenu(menu);
                 menu.show();
             });
@@ -88344,7 +88344,7 @@ class TGeoPainter extends ObjectPainter {
      * @private */
    orbitContext(evnt, intersects) {
 
-      createMenu$1(evnt, this).then(menu => {
+      createMenu(evnt, this).then(menu => {
          let numitems = 0, numnodes = 0, cnt = 0;
          if (intersects)
             for (let n = 0; n < intersects.length; ++n) {
@@ -90524,7 +90524,7 @@ class TGeoPainter extends ObjectPainter {
 
             SetMaxVisNodes: limit => {
                if (!this.ctrl.maxnodes)
-                  this.ctrl.maxnodes = pasrseInt(limit) || 0;
+                  this.ctrl.maxnodes = parseInt(limit) || 0;
             },
 
             SetVisLevel: limit => {
@@ -101023,7 +101023,7 @@ class HierarchyPainter extends BasePainter {
             cmdargs.push((n+2 < arguments.length) ? arguments[n+2] : '');
 
       let promise = (cmdargs.length == 0) || !elem ? Promise.resolve(cmdargs) :
-                     createMenu$1().then(menu => menu.showCommandArgsDialog(hitem._name, cmdargs));
+                     createMenu().then(menu => menu.showCommandArgsDialog(hitem._name, cmdargs));
 
       return promise.then(args => {
          if (args === null) return false;
@@ -101670,7 +101670,7 @@ class HierarchyPainter extends BasePainter {
       if (!hitem) return;
 
       if (isFunc(this.fill_context))
-         createMenu$1(evnt, this).then(menu => {
+         createMenu(evnt, this).then(menu => {
             this.fill_context(menu, hitem);
             if (menu.size() > 0) {
                menu.tree_node = elem.parentNode;
@@ -101722,7 +101722,7 @@ class HierarchyPainter extends BasePainter {
          return el.firstChild.href;
       }
 
-      createMenu$1(evnt, this).then(menu => {
+      createMenu(evnt, this).then(menu => {
 
          if ((!itemname || !hitem._parent) && !('_jsonfile' in hitem)) {
             let files = [], addr = '', cnt = 0,
@@ -102427,7 +102427,7 @@ class HierarchyPainter extends BasePainter {
       async function doExpandItem(_item, _obj){
 
          if (isStr(_item._expand))
-            _item._expand = findFunction(item._expand);
+            _item._expand = findFunction(_item._expand);
 
          if (!isFunc(_item._expand)) {
             let handle = getDrawHandle(_item._kind, '::expand');
@@ -103547,7 +103547,7 @@ class HierarchyPainter extends BasePainter {
       let title_elem = this.brlayout.setBrowserTitle(this.is_online ? 'ROOT online server' : 'Read a ROOT file');
       title_elem?.on('contextmenu', evnt => {
          evnt.preventDefault();
-         createMenu$1(evnt).then(menu => {
+         createMenu(evnt).then(menu => {
             this.fillSettingsMenu(menu, true);
             menu.show();
          });
@@ -106816,7 +106816,7 @@ function drawPie() {
    for (let n = 0; n < nb; n++) {
       let slice = pie.fPieSlices[n];
 
-      this.createAttLine({ attr: slice }),
+      this.createAttLine({ attr: slice });
       this.createAttFill({ attr: slice });
 
       af += slice.fValue/total*2*Math.PI;
@@ -106838,7 +106838,7 @@ function drawBox$1() {
        opt = this.getDrawOpt(),
        draw_line = (opt.toUpperCase().indexOf('L') >= 0);
 
-   this.createAttLine({ attr: box }),
+   this.createAttLine({ attr: box });
    this.createAttFill({ attr: box });
 
    // if box filled, contour line drawn only with 'L' draw option:
@@ -111784,6 +111784,7 @@ class TWebPaintingPainter extends ObjectPainter {
                   console.log(`unsupported operation ${oper}`);
             }
          }
+
          return Promise.resolve(true);
       };
 
@@ -112203,7 +112204,7 @@ class TSplinePainter extends ObjectPainter {
       if (axis !== 'x') return false;
 
       // spline can always be calculated and therefore one can zoom inside
-      return this.getObject() ? true : false;
+      return this.getObject();
    }
 
    /** @summary Decode options for TSpline drawing */
@@ -113052,7 +113053,8 @@ TDrawSelector.prototype.ShowProgress = function(value) {
    main_box.onclick = function() {
       if (++selector._break < 3) {
          main_box.title = 'Tree draw will break after next I/O operation';
-         return text_node.nodeValue = 'Breaking ... ';
+         text_node.nodeValue = 'Breaking ... ';
+         return;
       }
       selector.Abort();
       showProgress();
@@ -114791,7 +114793,7 @@ class RAxisPainter extends RObjectPainter {
             this.draw_g.on('contextmenu', evnt => {
                evnt.stopPropagation(); // disable main context menu
                evnt.preventDefault();  // disable browser context menu
-               createMenu$1(evnt, this).then(menu => {
+               createMenu(evnt, this).then(menu => {
                  menu.add('header:RAxisDrawable');
                  menu.add('Unzoom', () => this.zoomStandalone());
                  this.fillAxisContextMenu(menu, '');
@@ -116810,7 +116812,7 @@ class RPadPainter extends RObjectPainter {
          this.getFramePainter()?.setLastEventPos();
       }
 
-      createMenu$1(evnt, this).then(menu => {
+      createMenu(evnt, this).then(menu => {
          this.fillContextMenu(menu);
          return this.fillObjectExecMenu(menu);
       }).then(menu => menu.show());
@@ -117380,7 +117382,7 @@ class RPadPainter extends RObjectPainter {
 
        if (!isFunc(selp?.fillContextMenu)) return;
 
-       createMenu$1(evnt, selp).then(menu => {
+       createMenu(evnt, selp).then(menu => {
           if (selp.fillContextMenu(menu, selkind))
              selp.fillObjectExecMenu(menu, selkind).then(() => setTimeout(() => menu.show(), 50));
        });
@@ -117521,7 +117523,7 @@ class RPadPainter extends RObjectPainter {
          evnt?.stopPropagation();
          if (closeMenu()) return;
 
-         createMenu$1(evnt, this).then(menu => {
+         createMenu(evnt, this).then(menu => {
             menu.add('header:Menus');
 
             if (this.iscan)
@@ -119593,7 +119595,7 @@ class RPalettePainter extends RObjectPainter {
             this.draw_g.on('contextmenu', evnt => {
                evnt.stopPropagation(); // disable main context menu
                evnt.preventDefault();  // disable browser context menu
-               createMenu$1(evnt, this).then(menu => {
+               createMenu(evnt, this).then(menu => {
                   menu.add('header:Palette');
                   menu.addchk(vertical, 'Vertical', flag => { this.v7SetAttr('vertical', flag); this.redrawPad(); });
                   framep.z_handle.fillAxisContextMenu(menu, 'z');
@@ -120370,7 +120372,7 @@ class RHistPainter extends RObjectPainter {
                if ((histo.stepx > 1) || (histo.stepy > 1) || (histo.stepz > 1))
                   histo.getBin0 = function(x, y, z) { return Math.floor((x-this.dx)/this.stepx) + this.nx/this.stepx*Math.floor((y-this.dy)/this.stepy) + this.nx/this.stepx*this.ny/this.stepy*Math.floor((z-this.dz)/this.stepz); };
                else
-                  histo.getBin0 = function(x, y, z) { return (x-this.dx) + this.nx*(y-this.dy) + this.nx*this.ny*(z-dz); };
+                  histo.getBin0 = function(x, y, z) { return (x-this.dx) + this.nx*(y-this.dy) + this.nx*this.ny*(z-this.dz); };
 
                histo.getBinContent = function(x, y, z) { return this.fBinContent[this.getBin0(x, y, z)]; };
                histo.getBinError = function(x, y, z) { return Math.sqrt(Math.abs(this.getBinContent(x, y, z))); };
@@ -121215,7 +121217,8 @@ let RH1Painter$2 = class RH1Painter extends RHistPainter {
    /** @summary Fill statistic */
    fillStatistic(stat, dostat/*, dofit*/) {
 
-      let data = this.countStat(),
+      let histo = this.getHisto(),
+          data = this.countStat(),
           print_name = dostat % 10,
           print_entries = Math.floor(dostat / 10) % 10,
           print_mean = Math.floor(dostat / 100) % 10,
@@ -124029,8 +124032,8 @@ class RH3Painter extends RHistPainter {
       }
 
       let binx, grx, biny, gry, binz, grz;
-      xaxis = this.getAxis('x'),
-      yaxis = this.getAxis('y'),
+      xaxis = this.getAxis('x');
+      yaxis = this.getAxis('y');
       zaxis = this.getAxis('z');
 
       for (i = i1; i < i2; i += di) {

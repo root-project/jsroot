@@ -1,6 +1,6 @@
 # JSROOT changelog
 
-## Changes in 7.4.x
+## Changes in 7.4.3
 1. Fix - correctly use GMT specifier in time format
 2. Fix - logical error in decodeUrl
 3. Fix - member-wise streaming of std::map   #262
