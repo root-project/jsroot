@@ -79864,17 +79864,17 @@ class Vertex {
    }
 
    clone() {
-      return new Vertex( this.x, this.y, this.z, this.nx, this.ny, this.nz);
+      return new Vertex(this.x, this.y, this.z, this.nx, this.ny, this.nz);
    }
 
-   add( vertex ) {
+   add(vertex) {
       this.x += vertex.x;
       this.y += vertex.y;
       this.z += vertex.z;
       return this;
    }
 
-   subtract( vertex ) {
+   subtract(vertex) {
       this.x -= vertex.x;
       this.y -= vertex.y;
       this.z -= vertex.z;
@@ -79899,8 +79899,8 @@ class Vertex {
    //    return this;
    // }
 
-   cross3( vx, vy, vz ) {
-      let x = this.x, y = this.y, z = this.z;
+   cross3(vx, vy, vz) {
+      const x = this.x, y = this.y, z = this.z;
 
       this.x = y * vz - z * vy;
       this.y = z * vx - x * vz;
@@ -79911,7 +79911,7 @@ class Vertex {
 
 
    normalize() {
-      let length = Math.sqrt( this.x**2 + this.y**2 + this.z**2 );
+      const length = Math.sqrt(this.x**2 + this.y**2 + this.z**2);
 
       this.x /= length;
       this.y /= length;
@@ -79920,12 +79920,12 @@ class Vertex {
       return this;
    }
 
-   dot( vertex ) {
+   dot(vertex) {
       return this.x*vertex.x + this.y*vertex.y + this.z*vertex.z;
    }
 
-   diff( vertex ) {
-      let dx = (this.x - vertex.x),
+   diff(vertex) {
+      const dx = (this.x - vertex.x),
           dy = (this.y - vertex.y),
           dz = (this.z - vertex.z),
           len2 = this.x**2 + this.y**2 + this.z**2;
@@ -79955,17 +79955,17 @@ class Vertex {
    };
 */
 
-   interpolate( a, t ) {
-      let t1 = 1 - t;
+   interpolate(a, t) {
+      const t1 = 1 - t;
       return new Vertex(this.x*t1 + a.x*t, this.y*t1 + a.y*t, this.z*t1 + a.z*t,
                         this.nx*t1 + a.nx*t, this.ny*t1 + a.ny*t, this.nz*t1 + a.nz*t);
    }
 
    applyMatrix4(m) {
-
       // input: Matrix4 affine matrix
 
-      let x = this.x, y = this.y, z = this.z, e = m.elements;
+      let x = this.x, y = this.y, z = this.z;
+      const e = m.elements;
 
       this.x = e[0] * x + e[4] * y + e[8]  * z + e[12];
       this.y = e[1] * x + e[5] * y + e[9]  * z + e[13];
@@ -80008,35 +80008,34 @@ class Polygon {
    calculateProperties(force) {
       if (this.normal && !force) return;
 
-      let a = this.vertices[0],
+      const a = this.vertices[0],
           b = this.vertices[1],
           c = this.vertices[2];
 
       this.nsign = 1;
 
-      //this.normal = b.clone().subtract(a).cross(c.clone().subtract(a)).normalize();
+      // this.normal = b.clone().subtract(a).cross(c.clone().subtract(a)).normalize();
 
       this.normal = new Vertex(b.x - a.x, b.y - a.y, b.z - a.z, 0, 0, 0).cross3(c.x - a.x, c.y - a.y, c.z - a.z).normalize();
 
-      this.w = this.normal.dot( a );
+      this.w = this.normal.dot(a);
       return this;
    }
 
    clone() {
-      let vertice_count = this.vertices.length,
+      const vertice_count = this.vertices.length,
           vertices = [];
 
-      for (let i = 0; i < vertice_count; ++i )
+      for (let i = 0; i < vertice_count; ++i)
          vertices.push(this.vertices[i].clone());
 
       return new Polygon(vertices, this);
    }
 
    flip() {
-
       /// normal is not changed, only sign variable
-      //this.normal.multiplyScalar( -1 );
-      //this.w *= -1;
+      // this.normal.multiplyScalar( -1 );
+      // this.w *= -1;
 
       this.nsign *= -1;
 
@@ -80045,82 +80044,78 @@ class Polygon {
       return this;
    }
 
-   classifyVertex( vertex ) {
-      let side_value = this.nsign * (this.normal.dot( vertex ) - this.w);
+   classifyVertex(vertex) {
+      const side_value = this.nsign * (this.normal.dot(vertex) - this.w);
 
-      if ( side_value < -EPSILON ) return BACK;
-      if ( side_value > EPSILON ) return FRONT;
+      if (side_value < -EPSILON) return BACK;
+      if (side_value > EPSILON) return FRONT;
       return COPLANAR;
    }
 
-   classifySide( polygon ) {
-      let num_positive = 0, num_negative = 0,
-          vertice_count = polygon.vertices.length;
+   classifySide(polygon) {
+      let num_positive = 0, num_negative = 0;
+      const vertice_count = polygon.vertices.length;
 
-      for (let i = 0; i < vertice_count; ++i ) {
-         let classification = this.classifyVertex( polygon.vertices[i] );
-         if ( classification === FRONT ) {
+      for (let i = 0; i < vertice_count; ++i) {
+         const classification = this.classifyVertex(polygon.vertices[i]);
+         if (classification === FRONT)
             ++num_positive;
-         } else if ( classification === BACK ) {
+          else if (classification === BACK)
             ++num_negative;
-         }
       }
 
-      if ( num_positive > 0 && num_negative === 0 ) return FRONT;
-      if ( num_positive === 0 && num_negative > 0 ) return BACK;
-      if ( num_positive === 0 && num_negative === 0 ) return COPLANAR;
+      if (num_positive > 0 && num_negative === 0) return FRONT;
+      if (num_positive === 0 && num_negative > 0) return BACK;
+      if (num_positive === 0 && num_negative === 0) return COPLANAR;
       return SPANNING;
    }
 
-   splitPolygon( polygon, coplanar_front, coplanar_back, front, back ) {
-      let classification = this.classifySide( polygon );
+   splitPolygon(polygon, coplanar_front, coplanar_back, front, back) {
+      const classification = this.classifySide(polygon);
 
-      if ( classification === COPLANAR ) {
+      if (classification === COPLANAR)
 
-         ( (this.nsign * polygon.nsign * this.normal.dot( polygon.normal ) > 0) ? coplanar_front : coplanar_back ).push( polygon );
+         ((this.nsign * polygon.nsign * this.normal.dot(polygon.normal) > 0) ? coplanar_front : coplanar_back).push(polygon);
 
-      } else if ( classification === FRONT ) {
+       else if (classification === FRONT)
 
-         front.push( polygon );
+         front.push(polygon);
 
-      } else if ( classification === BACK ) {
+       else if (classification === BACK)
 
-         back.push( polygon );
+         back.push(polygon);
 
-      } else {
+       else {
+         const vertice_count = polygon.vertices.length,
+               nnx = this.normal.x,
+               nny = this.normal.y,
+               nnz = this.normal.z,
+               f = [], b = [];
+          let i, j, ti, tj, vi, vj, t, v;
 
-         let vertice_count = polygon.vertices.length,
-             nnx = this.normal.x,
-             nny = this.normal.y,
-             nnz = this.normal.z,
-             i, j, ti, tj, vi, vj,
-             t, v,
-             f = [], b = [];
-
-         for ( i = 0; i < vertice_count; ++i ) {
-
+         for (i = 0; i < vertice_count; ++i) {
             j = (i + 1) % vertice_count;
             vi = polygon.vertices[i];
             vj = polygon.vertices[j];
-            ti = this.classifyVertex( vi );
-            tj = this.classifyVertex( vj );
+            ti = this.classifyVertex(vi);
+            tj = this.classifyVertex(vj);
 
-            if ( ti != BACK ) f.push( vi );
-            if ( ti != FRONT ) b.push( vi );
-            if ( (ti | tj) === SPANNING ) {
+            if (ti !== BACK) f.push(vi);
+            if (ti !== FRONT) b.push(vi);
+            if ((ti | tj) === SPANNING) {
                // t = (this.w - this.normal.dot(vi))/this.normal.dot(vj.clone().subtract(vi));
-               //v = vi.clone().lerp( vj, t );
+               // v = vi.clone().lerp( vj, t );
 
                t = (this.w - (nnx*vi.x + nny*vi.y + nnz*vi.z)) / (nnx*(vj.x-vi.x) + nny*(vj.y-vi.y) + nnz*(vj.z-vi.z));
 
-               v = vi.interpolate( vj, t );
-               f.push( v );
-               b.push( v );
+               v = vi.interpolate(vj, t);
+               f.push(v);
+               b.push(v);
             }
          }
 
-         //if ( f.length >= 3 ) front.push(new Polygon(f).calculateProperties());
-         //if ( b.length >= 3 ) back.push(new Polygon(b).calculateProperties());
+         // if ( f.length >= 3 ) front.push(new Polygon(f).calculateProperties());
+         // if ( b.length >= 3 ) back.push(new Polygon(b).calculateProperties());
          if (f.length >= 3) front.push(new Polygon(f, polygon, true));
          if (b.length >= 3) back.push(new Polygon(b, polygon, true));
       }
@@ -80130,6 +80125,7 @@ class Polygon {
 
 
 class Node {
+
    constructor(polygons, nodeid) {
       this.polygons = [];
       this.front = this.back = undefined;
@@ -80138,7 +80134,7 @@ class Node {
 
       this.divider = polygons[0].clone();
 
-      let polygon_count = polygons.length,
+      const polygon_count = polygons.length,
           front = [], back = [];
 
       for (let i = 0; i < polygon_count; ++i) {
@@ -80148,57 +80144,58 @@ class Node {
          }
 
          // by difinition polygon should be COPLANAR for itself
-         if (i == 0)
+         if (i === 0)
             this.polygons.push(polygons[0]);
          else
-            this.divider.splitPolygon( polygons[i], this.polygons, this.polygons, front, back );
+            this.divider.splitPolygon(polygons[i], this.polygons, this.polygons, front, back);
       }
 
       if (nodeid !== undefined) this.maxnodeid = nodeid;
 
       if (front.length > 0)
-         this.front = new Node( front );
+         this.front = new Node(front);
 
       if (back.length > 0)
-         this.back = new Node( back );
+         this.back = new Node(back);
    }
 
-   //isConvex(polygons) {
+   // isConvex(polygons) {
    //   let i, j, len = polygons.length;
    //   for ( i = 0; i < len; ++i )
    //      for ( j = 0; j < len; ++j )
    //         if ( i !== j && polygons[i].classifySide( polygons[j] ) !== BACK ) return false;
    //   return true;
-   //}
+   // }
 
-   build( polygons ) {
-      let polygon_count = polygons.length,
-          first = 0, front = [], back = [];
+   build(polygons) {
+      const polygon_count = polygons.length,
+            front = [], back = [];
+      let first = 0;
 
-      if ( !this.divider ) {
+      if (!this.divider) {
          this.divider = polygons[0].clone();
          this.polygons.push(polygons[0]);
          first = 1;
       }
 
-      for (let i = first; i < polygon_count; ++i )
-         this.divider.splitPolygon( polygons[i], this.polygons, this.polygons, front, back );
+      for (let i = first; i < polygon_count; ++i)
+         this.divider.splitPolygon(polygons[i], this.polygons, this.polygons, front, back);
 
       if (front.length > 0) {
-         if ( !this.front ) this.front = new Node();
-         this.front.build( front );
+         if (!this.front) this.front = new Node();
+         this.front.build(front);
       }
 
       if (back.length > 0) {
-         if ( !this.back ) this.back = new Node();
-         this.back.build( back );
+         if (!this.back) this.back = new Node();
+         this.back.build(back);
       }
    }
 
    collectPolygons(arr) {
       if (arr === undefined)
          arr = [];
-      let len = this.polygons.length;
+      const len = this.polygons.length;
       for (let i = 0; i < len; ++i)
          arr.push(this.polygons[i]);
       this.front?.collectPolygons(arr);
@@ -80211,7 +80208,7 @@ class Node {
    }
 
    clone() {
-      let node = new Node();
+      const node = new Node();
 
       node.divider = this.divider?.clone();
       node.polygons = this.polygons.map(polygon => polygon.clone());
@@ -80222,59 +80219,59 @@ class Node {
    }
 
    invert() {
-      let polygon_count = this.polygons.length;
+      const polygon_count = this.polygons.length;
 
-      for (let i = 0; i < polygon_count; ++i )
+      for (let i = 0; i < polygon_count; ++i)
          this.polygons[i].flip();
 
       this.divider.flip();
-      if ( this.front ) this.front.invert();
-      if ( this.back ) this.back.invert();
+      if (this.front) this.front.invert();
+      if (this.back) this.back.invert();
 
-      let temp = this.front;
+      const temp = this.front;
       this.front = this.back;
       this.back = temp;
 
       return this;
    }
 
-   clipPolygons( polygons ) {
+   clipPolygons(polygons) {
+      if (!this.divider) return polygons.slice();
 
-      if ( !this.divider ) return polygons.slice();
+      const polygon_count = polygons.length;
+      let front = [], back = [];
 
-      let polygon_count = polygons.length, front = [], back = [];
+      for (let i = 0; i < polygon_count; ++i)
+         this.divider.splitPolygon(polygons[i], front, back, front, back);
 
-      for (let i = 0; i < polygon_count; ++i )
-         this.divider.splitPolygon( polygons[i], front, back, front, back );
-
-      if ( this.front ) front = this.front.clipPolygons( front );
-      if ( this.back ) back = this.back.clipPolygons( back );
+      if (this.front) front = this.front.clipPolygons(front);
+      if (this.back) back = this.back.clipPolygons(back);
       else back = [];
 
-      return front.concat( back );
+      return front.concat(back);
    }
 
-   clipTo( node ) {
-      this.polygons = node.clipPolygons( this.polygons );
-      if ( this.front ) this.front.clipTo( node );
-      if ( this.back ) this.back.clipTo( node );
+   clipTo(node) {
+      this.polygons = node.clipPolygons(this.polygons);
+      if (this.front) this.front.clipTo(node);
+      if (this.back) this.back.clipTo(node);
    }
 
  } // class Node
 
 
 function createBufferGeometry(polygons) {
-   let i, j, polygon_count = polygons.length, buf_size = 0;
+   const polygon_count = polygons.length;
+   let i, j, buf_size = 0;
 
-   for ( i = 0; i < polygon_count; ++i )
+   for (i = 0; i < polygon_count; ++i)
       buf_size += (polygons[i].vertices.length - 2) * 9;
 
-   let positions_buf = new Float32Array(buf_size),
-       normals_buf = new Float32Array(buf_size),
-       iii = 0, polygon;
+   const positions_buf = new Float32Array(buf_size),
+         normals_buf = new Float32Array(buf_size);
+   let iii = 0, polygon;
 
    function CopyVertex(vertex) {
-
       positions_buf[iii] = vertex.x;
       positions_buf[iii+1] = vertex.y;
       positions_buf[iii+2] = vertex.z;
@@ -80285,16 +80282,16 @@ function createBufferGeometry(polygons) {
       iii+=3;
    }
 
-   for ( i = 0; i < polygon_count; ++i ) {
+   for (i = 0; i < polygon_count; ++i) {
       polygon = polygons[i];
-      for ( j = 2; j < polygon.vertices.length; ++j ) {
+      for (j = 2; j < polygon.vertices.length; ++j) {
          CopyVertex(polygon.vertices[0]);
          CopyVertex(polygon.vertices[j-1]);
          CopyVertex(polygon.vertices[j]);
       }
    }
 
-   let geometry = new BufferGeometry();
+   const geometry = new BufferGeometry();
    geometry.setAttribute('position', new BufferAttribute(positions_buf, 3));
    geometry.setAttribute('normal', new BufferAttribute(normals_buf, 3));
 
@@ -80308,16 +80305,16 @@ class Geometry {
    constructor(geometry, transfer_matrix, nodeid, flippedMesh) {
       // Convert BufferGeometry to ThreeBSP
 
-      if ( geometry instanceof Mesh ) {
+      if (geometry instanceof Mesh) {
          // #todo: add hierarchy support
          geometry.updateMatrix();
          transfer_matrix = this.matrix = geometry.matrix.clone();
          geometry = geometry.geometry;
-      } else if ( geometry instanceof Node ) {
+      } else if (geometry instanceof Node) {
          this.tree = geometry;
          this.matrix = null; // new Matrix4;
          return this;
-      } else if ( geometry instanceof BufferGeometry ) {
+      } else if (geometry instanceof BufferGeometry) {
          const pos_buf = geometry.getAttribute('position').array,
                norm_buf = geometry.getAttribute('normal').array,
                polygons = [];
@@ -80326,23 +80323,23 @@ class Geometry {
          for (let i=0; i < pos_buf.length; i+=9) {
             polygon = new Polygon();
 
-            vert1 = new Vertex( pos_buf[i], pos_buf[i+1], pos_buf[i+2], norm_buf[i], norm_buf[i+1], norm_buf[i+2]);
+            vert1 = new Vertex(pos_buf[i], pos_buf[i+1], pos_buf[i+2], norm_buf[i], norm_buf[i+1], norm_buf[i+2]);
             if (transfer_matrix) vert1.applyMatrix4(transfer_matrix);
 
-            vert2 = new Vertex( pos_buf[i+3], pos_buf[i+4], pos_buf[i+5], norm_buf[i+3], norm_buf[i+4], norm_buf[i+5]);
+            vert2 = new Vertex(pos_buf[i+3], pos_buf[i+4], pos_buf[i+5], norm_buf[i+3], norm_buf[i+4], norm_buf[i+5]);
             if (transfer_matrix) vert2.applyMatrix4(transfer_matrix);
 
-            vert3 = new Vertex( pos_buf[i+6], pos_buf[i+7], pos_buf[i+8], norm_buf[i+6], norm_buf[i+7], norm_buf[i+8]);
+            vert3 = new Vertex(pos_buf[i+6], pos_buf[i+7], pos_buf[i+8], norm_buf[i+6], norm_buf[i+7], norm_buf[i+8]);
             if (transfer_matrix) vert3.applyMatrix4(transfer_matrix);
 
-            if (flippedMesh) polygon.vertices.push( vert1, vert3, vert2 );
-                        else polygon.vertices.push( vert1, vert2, vert3 );
+            if (flippedMesh) polygon.vertices.push(vert1, vert3, vert2);
+                        else polygon.vertices.push(vert1, vert2, vert3);
 
             polygon.calculateProperties(true);
-            polygons.push( polygon );
+            polygons.push(polygon);
          }
 
-         this.tree = new Node( polygons, nodeid );
+         this.tree = new Node(polygons, nodeid);
          if (nodeid !== undefined) this.maxid = this.tree.maxnodeid;
          return this;
       } else if (geometry.polygons && (geometry.polygons[0] instanceof Polygon)) {
@@ -80362,57 +80359,56 @@ class Geometry {
             polygon.calculateProperties(transfer_matrix);
          }
 
-         this.tree = new Node( polygons, nodeid );
+         this.tree = new Node(polygons, nodeid);
          if (nodeid !== undefined) this.maxid = this.tree.maxnodeid;
          return this;
-
-      } else {
+      } else
          throw Error('ThreeBSP: Given geometry is unsupported');
-      }
+
 
       const polygons = [], nfaces = geometry.faces.length;
       let face, polygon, vertex, normal, useVertexNormals;
 
-      for (let i = 0; i < nfaces; ++i ) {
+      for (let i = 0; i < nfaces; ++i) {
          face = geometry.faces[i];
          normal = face.normal;
          // faceVertexUvs = geometry.faceVertexUvs[0][i];
          polygon = new Polygon();
 
-         useVertexNormals = face.vertexNormals && (face.vertexNormals.length==3);
+         useVertexNormals = face.vertexNormals && (face.vertexNormals.length === 3);
 
-         vertex = geometry.vertices[ face.a ];
+         vertex = geometry.vertices[face.a];
          if (useVertexNormals) normal = face.vertexNormals[0];
          // uvs = faceVertexUvs ? new Vector2( faceVertexUvs[0].x, faceVertexUvs[0].y ) : null;
-         vertex = new Vertex( vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z /* face.normal, uvs */);
+         vertex = new Vertex(vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z /* face.normal, uvs */);
          if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
-         polygon.vertices.push( vertex );
+         polygon.vertices.push(vertex);
 
-         vertex = geometry.vertices[ face.b ];
+         vertex = geometry.vertices[face.b];
          if (useVertexNormals) normal = face.vertexNormals[1];
          // uvs = faceVertexUvs ? new Vector2( faceVertexUvs[1].x, faceVertexUvs[1].y ) : null;
-         vertex = new Vertex( vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z /* face.normal, uvs */);
+         vertex = new Vertex(vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z /* face.normal, uvs */);
          if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
-         polygon.vertices.push( vertex );
+         polygon.vertices.push(vertex);
 
-         vertex = geometry.vertices[ face.c ];
+         vertex = geometry.vertices[face.c];
          if (useVertexNormals) normal = face.vertexNormals[2];
          // uvs = faceVertexUvs ? new Vector2( faceVertexUvs[2].x, faceVertexUvs[2].y ) : null;
-         vertex = new Vertex( vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z /* face.normal, uvs */);
+         vertex = new Vertex(vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z /* face.normal, uvs */);
          if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
-         polygon.vertices.push( vertex );
+         polygon.vertices.push(vertex);
 
          polygon.calculateProperties(true);
-         polygons.push( polygon );
+         polygons.push(polygon);
       }
 
-      this.tree = new Node( polygons, nodeid );
+      this.tree = new Node(polygons, nodeid);
       if (nodeid !== undefined) this.maxid = this.tree.maxnodeid;
    }
 
-   subtract( other_tree ) {
-      let a = this.tree.clone(),
-          b = other_tree.tree.clone();
+   subtract(other_tree) {
+      let a = this.tree.clone();
+      const b = other_tree.tree.clone();
 
       a.invert();
       a.clipTo(b);
@@ -80427,9 +80423,9 @@ class Geometry {
       return a;
    }
 
-   union( other_tree ) {
-      let a = this.tree.clone(),
-          b = other_tree.tree.clone();
+   union(other_tree) {
+      let a = this.tree.clone();
+      const b = other_tree.tree.clone();
 
       a.clipTo(b);
       b.clipTo(a);
@@ -80442,9 +80438,9 @@ class Geometry {
       return a;
    }
 
-   intersect( other_tree ) {
-      let a = this.tree.clone(),
-          b = other_tree.tree.clone();
+   intersect(other_tree) {
+      let a = this.tree.clone();
+      const b = other_tree.tree.clone();
 
       a.invert();
       b.clipTo(a);
@@ -80461,7 +80457,8 @@ class Geometry {
    tryToCompress(polygons) {
       if (this.maxid === undefined) return;
 
-      let arr = [], parts, foundpair,
+      const arr = [];
+      let parts, foundpair,
           nreduce = 0, n, len = polygons.length,
           p, p1, p2, i1, i2;
 
@@ -80559,7 +80556,7 @@ class Geometry {
       return this;
    }
 
-   cut_from_plane( other_tree) {
+   cut_from_plane(other_tree) {
       // just cut peaces from second geometry, which just simple plane
 
       const a = this.tree,
@@ -80592,7 +80589,7 @@ class Geometry {
 
       this.tryToCompress(polygons);
 
-      for (let i = 0; i < polygons.length; ++i ) {
+      for (let i = 0; i < polygons.length; ++i) {
          delete polygons[i].id;
          delete polygons[i].parent;
       }
@@ -80606,7 +80603,7 @@ class Geometry {
 
    toMesh(material) {
       const geometry = this.toBufferGeometry(),
-            mesh = new Mesh( geometry, material );
+            mesh = new Mesh(geometry, material);
 
       if (this.matrix) {
          mesh.position.setFromMatrixPosition(this.matrix);
@@ -80625,30 +80622,30 @@ function createNormal(axis_name, pos, size) {
 
    let vertices;
 
-   switch(axis_name) {
+   switch (axis_name) {
       case 'x':
-         vertices = [ new Vertex(pos, -3*size,    size, 1, 0, 0),
-                      new Vertex(pos,    size, -3*size, 1, 0, 0),
-                      new Vertex(pos,    size,    size, 1, 0, 0) ];
+         vertices = [new Vertex(pos, -3*size,    size, 1, 0, 0),
+                     new Vertex(pos,    size, -3*size, 1, 0, 0),
+                     new Vertex(pos,    size,    size, 1, 0, 0)];
          break;
       case 'y':
-         vertices = [ new Vertex(-3*size,  pos,    size, 0, 1, 0),
-                      new Vertex(   size,  pos,    size, 0, 1, 0),
-                      new Vertex(   size,  pos, -3*size, 0, 1, 0) ];
+         vertices = [new Vertex(-3*size,  pos,    size, 0, 1, 0),
+                     new Vertex(size,  pos,    size, 0, 1, 0),
+                     new Vertex(size,  pos, -3*size, 0, 1, 0)];
          break;
       // case 'z':
       default:
-         vertices = [ new Vertex(-3*size,    size, pos, 0, 0, 1),
-                      new Vertex(   size, -3*size, pos, 0, 0, 1),
-                      new Vertex(   size,    size, pos, 0, 0, 1) ];
+         vertices = [new Vertex(-3*size,    size, pos, 0, 0, 1),
+                     new Vertex(size, -3*size, pos, 0, 0, 1),
+                     new Vertex(size,    size, pos, 0, 0, 1)];
    }
 
-   let node = new Node([ new Polygon(vertices) ]);
+   const node = new Node([new Polygon(vertices)]);
 
    return new Geometry(node);
 }
 
-let cfg = {
+const cfg = {
    GradPerSegm: 6,       // grad per segment in cylinder/spherical symmetry shapes
    CompressComp: true    // use faces compression in composite shapes
 };
@@ -80663,26 +80660,26 @@ function geoCfg(name, value) {
 
 const kindGeo = 0,    // TGeoNode / TGeoShape
       kindEve = 1,    // TEveShape / TEveGeoShapeExtract
-      kindShape = 2;  // special kind for single shape handling
+      kindShape = 2,  // special kind for single shape handling
 
 /** @summary TGeo-related bits
   * @private */
-const geoBITS = {
-   kVisOverride   : BIT(0),  // volume's vis. attributes are overwritten
-   kVisNone       : BIT(1),  // the volume/node is invisible, as well as daughters
-   kVisThis       : BIT(2),  // this volume/node is visible
-   kVisDaughters  : BIT(3),  // all leaves are visible
-   kVisOneLevel   : BIT(4),  // first level daughters are visible (not used)
-   kVisStreamed   : BIT(5),  // true if attributes have been streamed
-   kVisTouched    : BIT(6),  // true if attributes are changed after closing geom
-   kVisOnScreen   : BIT(7),  // true if volume is visible on screen
-   kVisContainers : BIT(12), // all containers visible
-   kVisOnly       : BIT(13), // just this visible
-   kVisBranch     : BIT(14), // only a given branch visible
-   kVisRaytrace   : BIT(15)  // raytracing flag
-};
+ geoBITS = {
+   kVisOverride: BIT(0),  // volume's vis. attributes are overwritten
+   kVisNone: BIT(1),  // the volume/node is invisible, as well as daughters
+   kVisThis: BIT(2),  // this volume/node is visible
+   kVisDaughters: BIT(3),  // all leaves are visible
+   kVisOneLevel: BIT(4),  // first level daughters are visible (not used)
+   kVisStreamed: BIT(5),  // true if attributes have been streamed
+   kVisTouched: BIT(6),  // true if attributes are changed after closing geom
+   kVisOnScreen: BIT(7),  // true if volume is visible on screen
+   kVisContainers: BIT(12), // all containers visible
+   kVisOnly: BIT(13), // just this visible
+   kVisBranch: BIT(14), // only a given branch visible
+   kVisRaytrace: BIT(15)  // raytracing flag
+},
 
-const clTGeoBBox = 'TGeoBBox',
+ clTGeoBBox = 'TGeoBBox',
       clTGeoArb8 = 'TGeoArb8',
       clTGeoCone = 'TGeoCone',
       clTGeoConeSeg = 'TGeoConeSeg',
@@ -80710,7 +80707,7 @@ const clTGeoBBox = 'TGeoBBox',
 /** @summary Test fGeoAtt bits
   * @private */
 function testGeoBit(volume, f) {
-   let att = volume.fGeoAtt;
+   const att = volume.fGeoAtt;
    return att === undefined ? false : ((att & f) !== 0);
 }
 
@@ -80736,12 +80733,13 @@ function setInvisibleAll(volume, flag) {
    setGeoBit(volume, geoBITS.kVisThis, !flag);
    // setGeoBit(this, geoBITS.kVisDaughters, !flag);
 
-   if (volume.fNodes)
+   if (volume.fNodes) {
       for (let n = 0; n < volume.fNodes.arr.length; ++n) {
-         let sub = volume.fNodes.arr[n].fVolume;
+         const sub = volume.fNodes.arr[n].fVolume;
          setGeoBit(sub, geoBITS.kVisThis, !flag);
          // setGeoBit(sub, geoBITS.kVisDaughters, !flag);
       }
+   }
 }
 
 const _warn_msgs = {};
@@ -80790,15 +80788,15 @@ function checkDuplicates(parent, chlds) {
       parent.$geo_checked = true;
    }
 
-   let names = [], cnts = [];
+   const names = [], cnts = [];
    for (let k = 0; k < chlds.length; ++k) {
-      let chld = chlds[k];
+      const chld = chlds[k];
       if (!chld?.fName) continue;
       if (!chld.$geo_suffix) {
-         let indx = names.indexOf(chld.fName);
+         const indx = names.indexOf(chld.fName);
          if (indx >= 0) {
             let cnt = cnts[indx] || 1;
-            while(names.indexOf(chld.fName+'#'+cnt) >= 0) ++cnt;
+            while (names.indexOf(chld.fName+'#'+cnt) >= 0) ++cnt;
             chld.$geo_suffix = '#' + cnt;
             cnts[indx] = cnt+1;
          }
@@ -80810,11 +80808,10 @@ function checkDuplicates(parent, chlds) {
 
 /** @summary Create normal to plane, defined with three points
   * @private */
-function produceNormal(x1,y1,z1, x2,y2,z2, x3,y3,z3) {
-
-   let pA = new Vector3(x1,y1,z1),
-       pB = new Vector3(x2,y2,z2),
-       pC = new Vector3(x3,y3,z3),
+function produceNormal(x1, y1, z1, x2, y2, z2, x3, y3, z3) {
+   const pA = new Vector3(x1, y1, z1),
+       pB = new Vector3(x2, y2, z2),
+       pC = new Vector3(x3, y3, z3),
        cb = new Vector3(),
        ab = new Vector3();
 
@@ -80834,6 +80831,7 @@ function produceNormal(x1,y1,z1, x2,y2,z2, x3,y3,z3) {
   */
 
 class GeometryCreator {
+
    /** @summary Constructor
      * @param numfaces - number of faces */
    constructor(numfaces) {
@@ -80844,8 +80842,8 @@ class GeometryCreator {
    }
 
    /** @summary Add face with 3 vertices */
-   addFace3(x1,y1,z1, x2,y2,z2, x3,y3,z3) {
-      let indx = this.indx, pos = this.pos;
+   addFace3(x1, y1, z1, x2, y2, z2, x3, y3, z3) {
+      const indx = this.indx, pos = this.pos;
       pos[indx] = x1;
       pos[indx+1] = y1;
       pos[indx+2] = z1;
@@ -80867,10 +80865,11 @@ class GeometryCreator {
 
    /** @summary Add face with 4 vertices
      * @desc From four vertices one normally creates two faces (1,2,3) and (1,3,4)
-     * if (reduce == 1), first face is reduced
-     * if (reduce == 2), second face is reduced*/
-   addFace4(x1,y1,z1, x2,y2,z2, x3,y3,z3, x4,y4,z4, reduce) {
-      let indx = this.indx, pos = this.pos;
+     * if (reduce === 1), first face is reduced
+     * if (reduce === 2), second face is reduced */
+   addFace4(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4, reduce) {
+      let indx = this.indx;
+      const pos = this.pos;
 
       if (reduce !== 1) {
          pos[indx] = x1;
@@ -80905,13 +80904,14 @@ class GeometryCreator {
    /** @summary Specify normal for face with 4 vertices
      * @desc same as addFace4, assign normals for each individual vertex
      * reduce has same meaning and should be the same */
-   setNormal4(nx1,ny1,nz1, nx2,ny2,nz2, nx3,ny3,nz3, nx4,ny4,nz4, reduce) {
+   setNormal4(nx1, ny1, nz1, nx2, ny2, nz2, nx3, ny3, nz3, nx4, ny4, nz4, reduce) {
       if (this.last4 && reduce)
          return console.error('missmatch between addFace4 and setNormal4 calls');
 
-      let indx = this.indx - (this.last4 ? 18 : 9), norm = this.norm;
+      let indx = this.indx - (this.last4 ? 18 : 9);
+      const norm = this.norm;
 
-      if (reduce!==1) {
+      if (reduce !== 1) {
          norm[indx] = nx1;
          norm[indx+1] = ny1;
          norm[indx+2] = nz1;
@@ -80924,7 +80924,7 @@ class GeometryCreator {
          indx+=9;
       }
 
-      if (reduce!==2) {
+      if (reduce !== 2) {
          norm[indx] = nx1;
          norm[indx+1] = ny1;
          norm[indx+2] = nz1;
@@ -80939,9 +80939,9 @@ class GeometryCreator {
 
    /** @summary Recalculate Z with provided func */
    recalcZ(func) {
-      let pos = this.pos,
-          last = this.indx,
-          indx = last - (this.last4 ? 18 : 9);
+      const pos = this.pos,
+            last = this.indx;
+      let indx = last - (this.last4 ? 18 : 9);
 
       while (indx < last) {
          pos[indx+2] = func(pos[indx], pos[indx+1], pos[indx+2]);
@@ -80971,8 +80971,9 @@ class GeometryCreator {
    }
 
    /** @summary Set normal */
-   setNormal(nx,ny,nz) {
-      let indx = this.indx - 9, norm = this.norm;
+   setNormal(nx, ny, nz) {
+      let indx = this.indx - 9;
+      const norm = this.norm;
 
       norm[indx]   = norm[indx+3] = norm[indx+6] = nx;
       norm[indx+1] = norm[indx+4] = norm[indx+7] = ny;
@@ -80988,10 +80989,11 @@ class GeometryCreator {
 
    /** @summary Set normal
      * @desc special shortcut, when same normals can be applied for 1-2 point and 3-4 point */
-   setNormal_12_34(nx12,ny12,nz12, nx34,ny34,nz34, reduce) {
+   setNormal_12_34(nx12, ny12, nz12, nx34, ny34, nz34, reduce) {
       if (reduce === undefined) reduce = 0;
 
-      let indx = this.indx - ((reduce > 0) ? 9 : 18), norm = this.norm;
+      let indx = this.indx - ((reduce > 0) ? 9 : 18);
+      const norm = this.norm;
 
       if (reduce!==1) {
          norm[indx]   = nx12;
@@ -81025,11 +81027,12 @@ class GeometryCreator {
       if (this.nfaces !== this.indx/9)
          console.error(`Mismatch with created ${this.nfaces} and filled ${this.indx/9} number of faces`);
 
-      let geometry = new BufferGeometry();
+      const geometry = new BufferGeometry();
       geometry.setAttribute('position', new BufferAttribute(this.pos, 3));
       geometry.setAttribute('normal', new BufferAttribute(this.norm, 3));
       return geometry;
    }
+
 }
 
 // ================================================================================
@@ -81060,21 +81063,21 @@ class PolygonsCreator {
    }
 
    /** @summary Add face with 3 vertices */
-   addFace3(x1,y1,z1, x2,y2,z2, x3,y3,z3) {
-      this.addFace4(x1,y1,z1, x2,y2,z2, x3,y3,z3, x3,y3,z3, 2);
+   addFace3(x1, y1, z1, x2, y2, z2, x3, y3, z3) {
+      this.addFace4(x1, y1, z1, x2, y2, z2, x3, y3, z3, x3, y3, z3, 2);
    }
 
    /** @summary Add face with 4 vertices
      * @desc From four vertices one normally creates two faces (1,2,3) and (1,3,4)
-     * if (reduce == 1), first face is reduced
-     * if (reduce == 2), second face is reduced */
-   addFace4(x1,y1,z1, x2,y2,z2, x3,y3,z3, x4,y4,z4, reduce) {
+     * if (reduce === 1), first face is reduced
+     * if (reduce === 2), second face is reduced */
+   addFace4(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4, reduce) {
       if (reduce === undefined) reduce = 0;
 
-      this.v1 = new Vertex(x1,y1,z1, 0,0,0);
-      this.v2 = (reduce === 1) ? null : new Vertex(x2,y2,z2, 0,0,0);
-      this.v3 = new Vertex(x3,y3,z3, 0,0,0);
-      this.v4 = (reduce === 2) ? null : new Vertex(x4,y4,z4, 0,0,0);
+      this.v1 = new Vertex(x1, y1, z1, 0, 0, 0);
+      this.v2 = (reduce === 1) ? null : new Vertex(x2, y2, z2, 0, 0, 0);
+      this.v3 = new Vertex(x3, y3, z3, 0, 0, 0);
+      this.v4 = (reduce === 2) ? null : new Vertex(x4, y4, z4, 0, 0, 0);
 
       this.reduce = reduce;
 
@@ -81091,7 +81094,7 @@ class PolygonsCreator {
          } else {
             polygon = this.polygons[this.polygons.length-1];
             // check that last vertice equals to v2
-            let last = this.mnormal ? polygon.vertices[polygon.vertices.length-1] : polygon.vertices[0],
+            const last = this.mnormal ? polygon.vertices[polygon.vertices.length-1] : polygon.vertices[0],
                 comp = this.mnormal ? this.v2 : this.v3;
 
             if (comp.diff(last) > 1e-12)
@@ -81105,16 +81108,16 @@ class PolygonsCreator {
             // console.log(`polygon closed!!! nvertices = ${polygon.vertices.length}`);
             this.multi = 0;
          } else
-         if (this.mnormal) {
+         if (this.mnormal)
             polygon.vertices.push(this.v3);
-         } else {
+          else
             polygon.vertices.unshift(this.v2);
-         }
+
 
          return;
       }
 
-      let polygon = new Polygon();
+      const polygon = new Polygon();
 
       switch (reduce) {
          case 0: polygon.vertices.push(this.v1, this.v2, this.v3, this.v4); break;
@@ -81128,25 +81131,24 @@ class PolygonsCreator {
    /** @summary Specify normal for face with 4 vertices
      * @desc same as addFace4, assign normals for each individual vertex
      * reduce has same meaning and should be the same */
-   setNormal4(nx1,ny1,nz1, nx2,ny2,nz2, nx3,ny3,nz3, nx4,ny4,nz4) {
-      this.v1.setnormal(nx1,ny1,nz1);
-      if (this.v2) this.v2.setnormal(nx2,ny2,nz2);
-      this.v3.setnormal(nx3,ny3,nz3);
-      if (this.v4) this.v4.setnormal(nx4,ny4,nz4);
+   setNormal4(nx1, ny1, nz1, nx2, ny2, nz2, nx3, ny3, nz3, nx4, ny4, nz4) {
+      this.v1.setnormal(nx1, ny1, nz1);
+      if (this.v2) this.v2.setnormal(nx2, ny2, nz2);
+      this.v3.setnormal(nx3, ny3, nz3);
+      if (this.v4) this.v4.setnormal(nx4, ny4, nz4);
    }
 
    /** @summary Set normal
      * @desc special shortcut, when same normals can be applied for 1-2 point and 3-4 point */
-   setNormal_12_34(nx12,ny12,nz12, nx34,ny34,nz34) {
-      this.v1.setnormal(nx12,ny12,nz12);
-      if (this.v2) this.v2.setnormal(nx12,ny12,nz12);
-      this.v3.setnormal(nx34,ny34,nz34);
-      if (this.v4) this.v4.setnormal(nx34,ny34,nz34);
+   setNormal_12_34(nx12, ny12, nz12, nx34, ny34, nz34) {
+      this.v1.setnormal(nx12, ny12, nz12);
+      if (this.v2) this.v2.setnormal(nx12, ny12, nz12);
+      this.v3.setnormal(nx34, ny34, nz34);
+      if (this.v4) this.v4.setnormal(nx34, ny34, nz34);
    }
 
    /** @summary Calculate normal */
    calcNormal() {
-
       if (!this.cb) {
          this.pA = new Vector3();
          this.pB = new Vector3();
@@ -81155,14 +81157,14 @@ class PolygonsCreator {
          this.ab = new Vector3();
       }
 
-      this.pA.set( this.v1.x, this.v1.y, this.v1.z);
+      this.pA.set(this.v1.x, this.v1.y, this.v1.z);
 
       if (this.reduce !== 1) {
-         this.pB.set( this.v2.x, this.v2.y, this.v2.z);
-         this.pC.set( this.v3.x, this.v3.y, this.v3.z);
+         this.pB.set(this.v2.x, this.v2.y, this.v2.z);
+         this.pC.set(this.v3.x, this.v3.y, this.v3.z);
       } else {
-         this.pB.set( this.v3.x, this.v3.y, this.v3.z);
-         this.pC.set( this.v4.x, this.v4.y, this.v4.z);
+         this.pB.set(this.v3.x, this.v3.y, this.v3.z);
+         this.pC.set(this.v4.x, this.v4.y, this.v4.z);
       }
 
       this.cb.subVectors(this.pC, this.pB);
@@ -81172,12 +81174,12 @@ class PolygonsCreator {
       this.setNormal(this.cb.x, this.cb.y, this.cb.z);
    }
 
-   /** @summary Set normal*/
-   setNormal(nx,ny,nz) {
-      this.v1.setnormal(nx,ny,nz);
-      if (this.v2) this.v2.setnormal(nx,ny,nz);
-      this.v3.setnormal(nx,ny,nz);
-      if (this.v4) this.v4.setnormal(nx,ny,nz);
+   /** @summary Set normal */
+   setNormal(nx, ny, nz) {
+      this.v1.setnormal(nx, ny, nz);
+      if (this.v2) this.v2.setnormal(nx, ny, nz);
+      this.v3.setnormal(nx, ny, nz);
+      if (this.v4) this.v4.setnormal(nx, ny, nz);
    }
 
    /** @summary Recalculate Z with provided func */
@@ -81193,6 +81195,7 @@ class PolygonsCreator {
    create() {
       return { polygons: this.polygons };
    }
+
 }
 
 // ================= all functions to create geometry ===================================
@@ -81205,25 +81208,25 @@ function createCubeBuffer(shape, faces_limit) {
    const dx = shape.fDX, dy = shape.fDY, dz = shape.fDZ,
          creator = faces_limit ? new PolygonsCreator() : new GeometryCreator(12);
 
-   creator.addFace4(dx,dy,dz, dx,-dy,dz, dx,-dy,-dz, dx,dy,-dz); creator.setNormal(1,0,0);
+   creator.addFace4(dx, dy, dz, dx, -dy, dz, dx, -dy, -dz, dx, dy, -dz); creator.setNormal(1, 0, 0);
 
-   creator.addFace4(-dx,dy,-dz, -dx,-dy,-dz, -dx,-dy,dz, -dx,dy,dz); creator.setNormal(-1,0,0);
+   creator.addFace4(-dx, dy, -dz, -dx, -dy, -dz, -dx, -dy, dz, -dx, dy, dz); creator.setNormal(-1, 0, 0);
 
-   creator.addFace4(-dx,dy,-dz, -dx,dy,dz, dx,dy,dz, dx,dy,-dz); creator.setNormal(0,1,0);
+   creator.addFace4(-dx, dy, -dz, -dx, dy, dz, dx, dy, dz, dx, dy, -dz); creator.setNormal(0, 1, 0);
 
-   creator.addFace4(-dx,-dy,dz, -dx,-dy,-dz, dx,-dy,-dz, dx,-dy,dz); creator.setNormal(0,-1,0);
+   creator.addFace4(-dx, -dy, dz, -dx, -dy, -dz, dx, -dy, -dz, dx, -dy, dz); creator.setNormal(0, -1, 0);
 
-   creator.addFace4(-dx,dy,dz, -dx,-dy,dz, dx,-dy,dz, dx,dy,dz); creator.setNormal(0,0,1);
+   creator.addFace4(-dx, dy, dz, -dx, -dy, dz, dx, -dy, dz, dx, dy, dz); creator.setNormal(0, 0, 1);
 
-   creator.addFace4(dx,dy,-dz, dx,-dy,-dz, -dx,-dy,-dz, -dx,dy,-dz); creator.setNormal(0,0,-1);
+   creator.addFace4(dx, dy, -dz, dx, -dy, -dz, -dx, -dy, -dz, -dx, dy, -dz); creator.setNormal(0, 0, -1);
 
    return creator.create();
 }
 
 /** @summary Creates 8 edges geometry
   * @private */
-function create8edgesBuffer( v, faces_limit ) {
-   const indicies = [4,7,6,5, 0,3,7,4, 4,5,1,0, 6,2,1,5, 7,3,2,6, 1,2,3,0],
+function create8edgesBuffer(v, faces_limit) {
+   const indicies = [4, 7, 6, 5, 0, 3, 7, 4, 4, 5, 1, 0, 6, 2, 1, 5, 7, 3, 2, 6, 1, 2, 3, 0],
          creator = (faces_limit > 0) ? new PolygonsCreator() : new GeometryCreator(12);
 
    for (let n = 0; n < indicies.length; n += 4) {
@@ -81234,9 +81237,9 @@ function create8edgesBuffer( v, faces_limit ) {
       creator.addFace4(v[i1], v[i1+1], v[i1+2], v[i2], v[i2+1], v[i2+2],
                        v[i3], v[i3+1], v[i3+2], v[i4], v[i4+1], v[i4+2]);
       if (n === 0)
-         creator.setNormal(0,0,1);
+         creator.setNormal(0, 0, 1);
       else if (n === 20)
-         creator.setNormal(0,0,-1);
+         creator.setNormal(0, 0, -1);
       else
          creator.calcNormal();
    }
@@ -81249,7 +81252,7 @@ function create8edgesBuffer( v, faces_limit ) {
 function createParaBuffer(shape, faces_limit) {
    if (faces_limit < 0) return 12;
 
-   let txy = shape.fTxy, txz = shape.fTxz, tyz = shape.fTyz, v = [
+   const txy = shape.fTxy, txz = shape.fTxz, tyz = shape.fTyz, v = [
        -shape.fZ*txz-txy*shape.fY-shape.fX, -shape.fY-shape.fZ*tyz, -shape.fZ,
        -shape.fZ*txz+txy*shape.fY-shape.fX,  shape.fY-shape.fZ*tyz, -shape.fZ,
        -shape.fZ*txz+txy*shape.fY+shape.fX,  shape.fY-shape.fZ*tyz, -shape.fZ,
@@ -81257,25 +81260,24 @@ function createParaBuffer(shape, faces_limit) {
         shape.fZ*txz-txy*shape.fY-shape.fX, -shape.fY+shape.fZ*tyz,  shape.fZ,
         shape.fZ*txz+txy*shape.fY-shape.fX,  shape.fY+shape.fZ*tyz,  shape.fZ,
         shape.fZ*txz+txy*shape.fY+shape.fX,  shape.fY+shape.fZ*tyz,  shape.fZ,
-        shape.fZ*txz-txy*shape.fY+shape.fX, -shape.fY+shape.fZ*tyz,  shape.fZ ];
+        shape.fZ*txz-txy*shape.fY+shape.fX, -shape.fY+shape.fZ*tyz,  shape.fZ];
 
-   return create8edgesBuffer(v, faces_limit );
+   return create8edgesBuffer(v, faces_limit);
 }
 
 /** @summary Creates Ttrapezoid geometrey
   * @private */
 function createTrapezoidBuffer(shape, faces_limit) {
-
    if (faces_limit < 0) return 12;
 
    let y1, y2;
-   if (shape._typename == clTGeoTrd1) {
+   if (shape._typename === clTGeoTrd1)
       y1 = y2 = shape.fDY;
-   } else {
+    else {
       y1 = shape.fDy1; y2 = shape.fDy2;
    }
 
-   let v = [
+   const v = [
       -shape.fDx1,  y1, -shape.fDZ,
        shape.fDx1,  y1, -shape.fDZ,
        shape.fDx1, -y1, -shape.fDZ,
@@ -81286,17 +81288,16 @@ function createTrapezoidBuffer(shape, faces_limit) {
       -shape.fDx2, -y2,  shape.fDZ
    ];
 
-   return create8edgesBuffer(v, faces_limit );
+   return create8edgesBuffer(v, faces_limit);
 }
 
 
 /** @summary Creates arb8 geometrey
   * @private */
 function createArb8Buffer(shape, faces_limit) {
-
    if (faces_limit < 0) return 12;
 
-   let vertices = [
+   const vertices = [
       shape.fXY[0][0], shape.fXY[0][1], -shape.fDZ,
       shape.fXY[1][0], shape.fXY[1][1], -shape.fDZ,
       shape.fXY[2][0], shape.fXY[2][1], -shape.fDZ,
@@ -81305,26 +81306,28 @@ function createArb8Buffer(shape, faces_limit) {
       shape.fXY[5][0], shape.fXY[5][1],  shape.fDZ,
       shape.fXY[6][0], shape.fXY[6][1],  shape.fDZ,
       shape.fXY[7][0], shape.fXY[7][1],  shape.fDZ
-   ];
-   const indicies = [
-         4,7,6,  6,5,4,  3,7,4,  4,0,3,
-         5,1,0,  0,4,5,  6,2,1,  1,5,6,
-         7,3,2,  2,6,7,  1,2,3,  3,0,1 ];
+   ],
+    indicies = [
+         4, 7, 6,  6, 5, 4,  3, 7, 4,  4, 0, 3,
+         5, 1, 0,  0, 4, 5,  6, 2, 1,  1, 5, 6,
+         7, 3, 2,  2, 6, 7,  1, 2, 3,  3, 0, 1];
 
    // detect same vertices on both Z-layers
-   for (let side = 0; side < vertices.length; side += vertices.length/2)
-      for (let n1 = side; n1 < side + vertices.length/2 - 3 ; n1+=3)
-         for (let n2 = n1+3; n2 < side + vertices.length/2 ; n2+=3)
-            if ((vertices[n1] === vertices[n2]) &&
+   for (let side = 0; side < vertices.length; side += vertices.length/2) {
+      for (let n1 = side; n1 < side + vertices.length/2 - 3; n1+=3) {
+         for (let n2 = n1+3; n2 < side + vertices.length/2; n2+=3) {
+             if ((vertices[n1] === vertices[n2]) &&
                 (vertices[n1+1] === vertices[n2+1]) &&
                 (vertices[n1+2] === vertices[n2+2])) {
-                   for (let k=0;k<indicies.length;++k)
+                   for (let k=0; k<indicies.length; ++k)
                      if (indicies[k] === n2/3) indicies[k] = n1/3;
                }
+         }
+      }
+   }
 
-
-   let map = [], // list of existing faces (with all rotations)
-       numfaces = 0;
+   const map = []; // list of existing faces (with all rotations)
+   let numfaces = 0;
 
    for (let k = 0; k < indicies.length; k += 3) {
       const id1 = indicies[k]*100   + indicies[k+1]*10 + indicies[k+2],
@@ -81335,7 +81338,7 @@ function createArb8Buffer(shape, faces_limit) {
           (map.indexOf(id1) >= 0) || (map.indexOf(id2) >= 0) || (map.indexOf(id3) >= 0))
          indicies[k] = indicies[k+1] = indicies[k+2] = -1;
       else {
-         map.push(id1,id2,id3);
+         map.push(id1, id2, id3);
          numfaces++;
       }
    }
@@ -81343,28 +81346,28 @@ function createArb8Buffer(shape, faces_limit) {
    const creator = faces_limit ? new PolygonsCreator() : new GeometryCreator(numfaces);
 
    for (let n = 0; n < indicies.length; n += 6) {
-      let i1 = indicies[n]   * 3,
-          i2 = indicies[n+1] * 3,
-          i3 = indicies[n+2] * 3,
-          i4 = indicies[n+3] * 3,
-          i5 = indicies[n+4] * 3,
-          i6 = indicies[n+5] * 3,
-          norm = null;
+      const i1 = indicies[n]   * 3,
+            i2 = indicies[n+1] * 3,
+            i3 = indicies[n+2] * 3,
+            i4 = indicies[n+3] * 3,
+            i5 = indicies[n+4] * 3,
+            i6 = indicies[n+5] * 3;
+      let norm = null;
 
       if ((i1 >= 0) && (i4 >= 0) && faces_limit) {
          // try to identify two faces with same normal - very useful if one can create face4
          if (n === 0)
-            norm = new Vector3(0,0,1);
+            norm = new Vector3(0, 0, 1);
          else if (n === 30)
-            norm = new Vector3(0,0,-1);
+            norm = new Vector3(0, 0, -1);
          else {
-            let norm1 = produceNormal(vertices[i1], vertices[i1+1], vertices[i1+2],
+            const norm1 = produceNormal(vertices[i1], vertices[i1+1], vertices[i1+2],
                                       vertices[i2], vertices[i2+1], vertices[i2+2],
                                       vertices[i3], vertices[i3+1], vertices[i3+2]);
 
             norm1.normalize();
 
-            let norm2 = produceNormal(vertices[i4], vertices[i4+1], vertices[i4+2],
+            const norm2 = produceNormal(vertices[i4], vertices[i4+1], vertices[i4+2],
                                       vertices[i5], vertices[i5+1], vertices[i5+2],
                                       vertices[i6], vertices[i6+1], vertices[i6+2]);
 
@@ -81402,19 +81405,19 @@ function createArb8Buffer(shape, faces_limit) {
 /** @summary Creates sphere geometrey
   * @private */
 function createSphereBuffer(shape, faces_limit) {
-   let radius = [shape.fRmax, shape.fRmin],
-       phiStart = shape.fPhi1,
-       phiLength = shape.fPhi2 - shape.fPhi1,
-       thetaStart = shape.fTheta1,
-       thetaLength = shape.fTheta2 - shape.fTheta1,
-       widthSegments = shape.fNseg,
-       heightSegments = shape.fNz,
-       noInside = (radius[1] <= 0);
+   const radius = [shape.fRmax, shape.fRmin],
+         phiStart = shape.fPhi1,
+         phiLength = shape.fPhi2 - shape.fPhi1,
+         thetaStart = shape.fTheta1,
+         thetaLength = shape.fTheta2 - shape.fTheta1,
+         noInside = (radius[1] <= 0);
+   let widthSegments = shape.fNseg,
+       heightSegments = shape.fNz;
 
    if (faces_limit > 0) {
-      let fact = (noInside ? 2 : 4) * widthSegments * heightSegments / faces_limit;
+      const fact = (noInside ? 2 : 4) * widthSegments * heightSegments / faces_limit;
 
-      if (fact > 1.) {
+      if (fact > 1.0) {
          widthSegments = Math.max(4, Math.floor(widthSegments/Math.sqrt(fact)));
          heightSegments = Math.max(4, Math.floor(heightSegments/Math.sqrt(fact)));
       }
@@ -81422,25 +81425,25 @@ function createSphereBuffer(shape, faces_limit) {
 
    let numoutside = widthSegments * heightSegments * 2,
        numtop = widthSegments * (noInside ? 1 : 2),
-       numbottom = widthSegments * (noInside ? 1 : 2),
-       numcut = (phiLength === 360) ? 0 : heightSegments * (noInside ? 2 : 4),
-       epsilon = 1e-10;
+       numbottom = widthSegments * (noInside ? 1 : 2);
+   const numcut = (phiLength === 360) ? 0 : heightSegments * (noInside ? 2 : 4),
+         epsilon = 1e-10;
 
    if (faces_limit < 0) return numoutside * (noInside ? 1 : 2) + numtop + numbottom + numcut;
 
-   let _sinp = new Float32Array(widthSegments+1),
+   const _sinp = new Float32Array(widthSegments+1),
        _cosp = new Float32Array(widthSegments+1),
        _sint = new Float32Array(heightSegments+1),
        _cost = new Float32Array(heightSegments+1);
 
    for (let n = 0; n <= heightSegments; ++n) {
-      let theta = (thetaStart + thetaLength/heightSegments*n)*Math.PI/180;
+      const theta = (thetaStart + thetaLength/heightSegments*n)*Math.PI/180;
       _sint[n] = Math.sin(theta);
       _cost[n] = Math.cos(theta);
    }
 
    for (let n = 0; n <= widthSegments; ++n) {
-      let phi = (phiStart + phiLength/widthSegments*n)*Math.PI/180;
+      const phi = (phiStart + phiLength/widthSegments*n)*Math.PI/180;
       _sinp[n] = Math.sin(phi);
       _cosp[n] = Math.cos(phi);
    }
@@ -81454,14 +81457,14 @@ function createSphereBuffer(shape, faces_limit) {
    for (let side = 0; side < 2; ++side) {
       if ((side === 1) && noInside) break;
 
-      let r = radius[side],
-          s = (side === 0) ? 1 : -1,
-          d1 = 1 - side, d2 = 1 - d1;
+      const r = radius[side],
+            s = (side === 0) ? 1 : -1,
+            d1 = 1 - side, d2 = 1 - d1;
 
       // use direct algorithm for the sphere - here normals and position can be calculated directly
       for (let k = 0; k < heightSegments; ++k) {
-
-         let k1 = k + d1, k2 = k + d2, skip = 0;
+         const k1 = k + d1, k2 = k + d2;
+         let skip = 0;
          if (Math.abs(_sint[k1]) <= epsilon) skip = 1; else
          if (Math.abs(_sint[k2]) <= epsilon) skip = 2;
 
@@ -81501,11 +81504,11 @@ function createSphereBuffer(shape, faces_limit) {
 
    // cut left/right sides
    if (phiLength < 360) {
-      for (let side=0;side<=widthSegments;side+=widthSegments) {
-         let ss = _sinp[side], cc = _cosp[side],
+      for (let side=0; side<=widthSegments; side+=widthSegments) {
+         const ss = _sinp[side], cc = _cosp[side],
              d1 = (side === 0) ? 1 : 0, d2 = 1 - d1;
 
-         for (let k=0;k<heightSegments;++k) {
+         for (let k=0; k<heightSegments; ++k) {
             creator.addFace4(
                   radius[1] * _sint[k+d1] * cc, radius[1] * _sint[k+d1] * ss, radius[1] * _cost[k+d1],
                   radius[0] * _sint[k+d1] * cc, radius[0] * _sint[k+d1] * ss, radius[0] * _cost[k+d1],
@@ -81524,23 +81527,23 @@ function createSphereBuffer(shape, faces_limit) {
   * @private */
 function createTubeBuffer(shape, faces_limit) {
    let outerR, innerR; // inner/outer tube radius
-   if ((shape._typename == clTGeoCone) || (shape._typename == clTGeoConeSeg)) {
-      outerR = [ shape.fRmax2, shape.fRmax1 ];
-      innerR = [ shape.fRmin2, shape.fRmin1 ];
+   if ((shape._typename === clTGeoCone) || (shape._typename === clTGeoConeSeg)) {
+      outerR = [shape.fRmax2, shape.fRmax1];
+      innerR = [shape.fRmin2, shape.fRmin1];
    } else {
-      outerR = [ shape.fRmax, shape.fRmax ];
-      innerR = [ shape.fRmin, shape.fRmin ];
+      outerR = [shape.fRmax, shape.fRmax];
+      innerR = [shape.fRmin, shape.fRmin];
    }
 
-   let hasrmin = (innerR[0] > 0) || (innerR[1] > 0),
-       thetaStart = 0, thetaLength = 360;
+   const hasrmin = (innerR[0] > 0) || (innerR[1] > 0);
+   let thetaStart = 0, thetaLength = 360;
 
-   if ((shape._typename == clTGeoConeSeg) || (shape._typename == clTGeoTubeSeg) || (shape._typename == clTGeoCtub)) {
+   if ((shape._typename === clTGeoConeSeg) || (shape._typename === clTGeoTubeSeg) || (shape._typename === clTGeoCtub)) {
       thetaStart = shape.fPhi1;
       thetaLength = shape.fPhi2 - shape.fPhi1;
    }
 
-   let radiusSegments = Math.max(4, Math.round(thetaLength/cfg.GradPerSegm));
+   const radiusSegments = Math.max(4, Math.round(thetaLength/cfg.GradPerSegm));
 
    // external surface
    let numfaces = radiusSegments * (((outerR[0] <= 0) || (outerR[1] <= 0)) ? 1 : 2);
@@ -81559,7 +81562,7 @@ function createTubeBuffer(shape, faces_limit) {
 
    if (faces_limit < 0) return numfaces;
 
-   let phi0 = thetaStart*Math.PI/180,
+   const phi0 = thetaStart*Math.PI/180,
        dphi = thetaLength/radiusSegments*Math.PI/180,
        _sin = new Float32Array(radiusSegments+1),
        _cos = new Float32Array(radiusSegments+1);
@@ -81600,7 +81603,7 @@ function createTubeBuffer(shape, faces_limit) {
                R[1] * _cos[seg+d1], R[1] * _sin[seg+d1], -shape.fDZ,
                R[1] * _cos[seg+d2], R[1] * _sin[seg+d2], -shape.fDZ,
                R[0] * _cos[seg+d2], R[0] * _sin[seg+d2],  shape.fDZ,
-               reduce );
+               reduce);
 
          if (calcZ) creator.recalcZ(calcZ);
 
@@ -81614,8 +81617,8 @@ function createTubeBuffer(shape, faces_limit) {
    for (let side = 0; side < 2; ++side) {
       if (outerR[side] <= 0) continue;
 
-      let d1 = side, d2 = 1- side,
-          sign = (side == 0) ? 1 : -1,
+      const d1 = side, d2 = 1- side,
+          sign = (side === 0) ? 1 : -1,
           reduce = (innerR[side] <= 0) ? 2 : 0;
       if ((reduce === 2) && (thetaLength === 360) && !calcZ)
          creator.startPolygon(side === 0);
@@ -81629,9 +81632,8 @@ function createTubeBuffer(shape, faces_limit) {
          if (calcZ) {
             creator.recalcZ(calcZ);
             creator.calcNormal();
-         } else {
-            creator.setNormal(0,0,sign);
-         }
+         } else
+            creator.setNormal(0, 0, sign);
       }
 
       creator.stopPolygon();
@@ -81663,7 +81665,7 @@ function createTubeBuffer(shape, faces_limit) {
 /** @summary Creates eltu geometrey
   * @private */
 function createEltuBuffer(shape, faces_limit) {
-   let radiusSegments = Math.max(4, Math.round(360/cfg.GradPerSegm));
+   const radiusSegments = Math.max(4, Math.round(360/cfg.GradPerSegm));
 
    if (faces_limit < 0) return radiusSegments*4;
 
@@ -81693,7 +81695,7 @@ function createEltuBuffer(shape, faces_limit) {
       const dist = Math.sqrt(nx2**2 + ny2**2);
       nx2 = nx2 / dist; ny2 = ny2/dist;
 
-      creator.setNormal_12_34(nx1,ny1,0,nx2,ny2,0);
+      creator.setNormal_12_34(nx1, ny1, 0, nx2, ny2, 0);
    }
 
    // create top/bottom sides
@@ -81713,8 +81715,8 @@ function createEltuBuffer(shape, faces_limit) {
 /** @summary Creates torus geometrey
   * @private */
 function createTorusBuffer(shape, faces_limit) {
-   let radius = shape.fR,
-       radialSegments = Math.max(6, Math.round(360/cfg.GradPerSegm)),
+   const radius = shape.fR;
+   let radialSegments = Math.max(6, Math.round(360/cfg.GradPerSegm)),
        tubularSegments = Math.max(8, Math.round(shape.fDphi/cfg.GradPerSegm)),
        numfaces = (shape.fRmin > 0 ? 4 : 2) * radialSegments * (tubularSegments + (shape.fDphi !== 360 ? 1 : 0));
 
@@ -81769,10 +81771,10 @@ function createTorusBuffer(shape, faces_limit) {
                              p3.x, p3.y, p3.z,
                              p4.x, p4.y, p4.z);
 
-            n1.subVectors( p1, center1 ).normalize();
-            n2.subVectors( p2, center1 ).normalize();
-            n3.subVectors( p3, center2 ).normalize();
-            n4.subVectors( p4, center2 ).normalize();
+            n1.subVectors(p1, center1).normalize();
+            n2.subVectors(p2, center1).normalize();
+            n3.subVectors(p3, center2).normalize();
+            n4.subVectors(p4, center2).normalize();
 
             creator.setNormal4(ns*n1.x, ns*n1.y, ns*n1.z,
                                ns*n2.x, ns*n2.y, ns*n2.z,
@@ -81782,9 +81784,9 @@ function createTorusBuffer(shape, faces_limit) {
       }
    }
 
-   if (shape.fDphi !== 360)
+   if (shape.fDphi !== 360) {
       for (let t = 0; t <= tubularSegments; t += tubularSegments) {
-         let tube1 = shape.fRmax, tube2 = shape.fRmin,
+         const tube1 = shape.fRmax, tube2 = shape.fRmin,
              d1 = t > 0 ? 0 : 1, d2 = 1 - d1,
              skip = shape.fRmin > 0 ? 0 : 1,
              nsign = t > 0 ? 1 : -1;
@@ -81796,6 +81798,7 @@ function createTorusBuffer(shape, faces_limit) {
             creator.setNormal(-nsign* _sint[t], nsign * _cost[t], 0);
          }
       }
+   }
 
    return creator.create();
 }
@@ -81804,19 +81807,20 @@ function createTorusBuffer(shape, faces_limit) {
 /** @summary Creates polygon geometrey
   * @private */
 function createPolygonBuffer(shape, faces_limit) {
-   let thetaStart = shape.fPhi1,
-       thetaLength = shape.fDphi,
-       radiusSegments, factor;
+   const thetaStart = shape.fPhi1,
+       thetaLength = shape.fDphi;
+   let radiusSegments, factor;
 
-   if (shape._typename == clTGeoPgon) {
+   if (shape._typename === clTGeoPgon) {
       radiusSegments = shape.fNedges;
-      factor = 1. / Math.cos(Math.PI/180 * thetaLength / radiusSegments / 2);
+      factor = 1.0 / Math.cos(Math.PI/180 * thetaLength / radiusSegments / 2);
    } else {
       radiusSegments = Math.max(5, Math.round(thetaLength/cfg.GradPerSegm));
       factor = 1;
    }
 
-   let usage = new Int16Array(2*shape.fNz), numusedlayers = 0, hasrmin = false;
+   const usage = new Int16Array(2*shape.fNz);
+   let numusedlayers = 0, hasrmin = false;
 
    for (let layer = 0; layer < shape.fNz; ++layer)
       if (shape.fRmin[layer] > 0) hasrmin = true;
@@ -81825,28 +81829,27 @@ function createPolygonBuffer(shape, faces_limit) {
    if (faces_limit < 0) return (hasrmin ? 4 : 2) * radiusSegments * (shape.fNz-1);
 
    // coordinate of point on cut edge (x,z)
-   let pnts = (thetaLength === 360) ? null : [];
+   const pnts = (thetaLength === 360) ? null : [];
 
    // first analyse levels - if we need to create all of them
    for (let side = 0; side < 2; ++side) {
-      let rside = (side === 0) ? 'fRmax' : 'fRmin';
+      const rside = (side === 0) ? 'fRmax' : 'fRmin';
 
       for (let layer=0; layer < shape.fNz; ++layer) {
-
          // first create points for the layer
-         let layerz = shape.fZ[layer], rad = shape[rside][layer];
+         const layerz = shape.fZ[layer], rad = shape[rside][layer];
 
          usage[layer*2+side] = 0;
 
-         if ((layer > 0) && (layer < shape.fNz-1))
+         if ((layer > 0) && (layer < shape.fNz-1)) {
             if (((shape.fZ[layer-1] === layerz) && (shape[rside][layer-1] === rad)) ||
                 ((shape[rside][layer+1] === rad) && (shape[rside][layer-1] === rad))) {
-
                // same Z and R as before - ignore
                // or same R before and after
 
                continue;
             }
+         }
 
          if ((layer > 0) && ((side === 0) || hasrmin)) {
             usage[layer*2+side] = 1;
@@ -81854,11 +81857,10 @@ function createPolygonBuffer(shape, faces_limit) {
          }
 
          if (pnts !== null) {
-            if (side === 0) {
+            if (side === 0)
                pnts.push(new Vector2(factor*rad, layerz));
-            } else if (rad < shape.fRmax[layer]) {
+             else if (rad < shape.fRmax[layer])
                pnts.unshift(new Vector2(factor*rad, layerz));
-            }
          }
       }
    }
@@ -81875,11 +81877,10 @@ function createPolygonBuffer(shape, faces_limit) {
          cut_faces = [];
          for (let layer = shape.fNz-1; layer > 0; --layer) {
             if (shape.fZ[layer] === shape.fZ[layer-1]) continue;
-            let right = 2*shape.fNz - 1 - layer;
+            const right = 2*shape.fNz - 1 - layer;
             cut_faces.push([right, layer - 1, layer]);
             cut_faces.push([right, right + 1, layer-1]);
          }
-
       } else {
          // let three.js calculate our faces
          // console.log(`triangulate polygon ${shape.fShapeId}`);
@@ -81888,11 +81889,10 @@ function createPolygonBuffer(shape, faces_limit) {
       numfaces += cut_faces.length*2;
    }
 
-   let phi0 = thetaStart*Math.PI/180, dphi = thetaLength/radiusSegments*Math.PI/180;
-
-   // calculate all sin/cos tables in advance
-   const _sin = new Float32Array(radiusSegments+1),
-         _cos = new Float32Array(radiusSegments+1);
+   const phi0 = thetaStart*Math.PI/180, dphi = thetaLength/radiusSegments*Math.PI/180,
+      // calculate all sin/cos tables in advance
+      _sin = new Float32Array(radiusSegments+1),
+      _cos = new Float32Array(radiusSegments+1);
    for (let seg = 0; seg <= radiusSegments; ++seg) {
       _cos[seg] = Math.cos(phi0+seg*dphi);
       _sin[seg] = Math.sin(phi0+seg*dphi);
@@ -81902,15 +81902,15 @@ function createPolygonBuffer(shape, faces_limit) {
 
    // add sides
    for (let side = 0; side < 2; ++side) {
-      let rside = (side === 0) ? 'fRmax' : 'fRmin',
-          z1 = shape.fZ[0], r1 = factor*shape[rside][0],
-          d1 = 1 - side, d2 = side;
+      const rside = (side === 0) ? 'fRmax' : 'fRmin',
+            d1 = 1 - side, d2 = side;
+      let z1 = shape.fZ[0], r1 = factor*shape[rside][0];
 
       for (let layer = 0; layer < shape.fNz; ++layer) {
          if (usage[layer*2+side] === 0) continue;
 
-         let z2 = shape.fZ[layer], r2 = factor*shape[rside][layer],
-             nxy = 1, nz = 0;
+         const z2 = shape.fZ[layer], r2 = factor*shape[rside][layer];
+         let nxy = 1, nz = 0;
 
          if ((r2 !== r1)) {
             const angle = Math.atan2((r2-r1), (z2-z1));
@@ -81934,14 +81934,13 @@ function createPolygonBuffer(shape, faces_limit) {
 
    // add top/bottom
    for (let layer = 0; layer < shape.fNz; layer += (shape.fNz-1)) {
-
-      let rmin = factor*shape.fRmin[layer], rmax = factor*shape.fRmax[layer];
+      const rmin = factor*shape.fRmin[layer], rmax = factor*shape.fRmax[layer];
 
       if (rmin === rmax) continue;
 
-      let layerz = shape.fZ[layer],
-          d1 = (layer === 0) ? 1 : 0, d2 = 1 - d1,
-          normalz = (layer === 0) ? -1: 1;
+      const layerz = shape.fZ[layer],
+            d1 = (layer === 0) ? 1 : 0, d2 = 1 - d1,
+            normalz = (layer === 0) ? -1: 1;
 
       if (!hasrmin && !cut_faces)
          creator.startPolygon(layer > 0);
@@ -81958,11 +81957,11 @@ function createPolygonBuffer(shape, faces_limit) {
       creator.stopPolygon();
    }
 
-   if (cut_faces)
+   if (cut_faces) {
       for (let seg = 0; seg <= radiusSegments; seg += radiusSegments) {
-         let d1 = (seg === 0) ? 1 : 2, d2 = 3 - d1;
-         for (let n=0;n<cut_faces.length;++n) {
-            let a = pnts[cut_faces[n][0]],
+         const d1 = (seg === 0) ? 1 : 2, d2 = 3 - d1;
+         for (let n=0; n<cut_faces.length; ++n) {
+            const a = pnts[cut_faces[n][0]],
                 b = pnts[cut_faces[n][d1]],
                 c = pnts[cut_faces[n][d2]];
 
@@ -81973,6 +81972,7 @@ function createPolygonBuffer(shape, faces_limit) {
             creator.calcNormal();
          }
       }
+   }
 
    return creator.create();
 }
@@ -81985,7 +81985,7 @@ function createXtruBuffer(shape, faces_limit) {
    if (faces_limit < 0) return nfaces + shape.fNvert*3;
 
    // create points
-   let pnts = [];
+   const pnts = [];
    for (let vert = 0; vert < shape.fNvert; ++vert)
       pnts.push(new Vector2(shape.fX[vert], shape.fY[vert]));
 
@@ -82037,20 +82037,19 @@ function createXtruBuffer(shape, faces_limit) {
 /** @summary Creates para geometrey
   * @private */
 function createParaboloidBuffer(shape, faces_limit) {
-
    let radiusSegments = Math.max(4, Math.round(360/cfg.GradPerSegm)),
        heightSegments = 30;
 
    if (faces_limit > 0) {
-      let fact = 2*radiusSegments*(heightSegments+1) / faces_limit;
-      if (fact > 1.) {
+      const fact = 2*radiusSegments*(heightSegments+1) / faces_limit;
+      if (fact > 1.0) {
          radiusSegments = Math.max(5, Math.floor(radiusSegments/Math.sqrt(fact)));
          heightSegments = Math.max(5, Math.floor(heightSegments/Math.sqrt(fact)));
       }
    }
 
-   let rmin = shape.fRlo, rmax = shape.fRhi,
-       numfaces = (heightSegments+1) * radiusSegments*2;
+   const rmin = shape.fRlo, rmax = shape.fRhi;
+   let numfaces = (heightSegments+1) * radiusSegments*2;
 
    if (rmin === 0) numfaces -= radiusSegments*2; // complete layer
    if (rmax === 0) numfaces -= radiusSegments*2; // complete layer
@@ -82062,16 +82061,16 @@ function createParaboloidBuffer(shape, faces_limit) {
    // if no radius at -z, find intersection
    if (shape.fA >= 0) {
       if (shape.fB > zmin) zmin = shape.fB;
-   } else {
+   } else
       if (shape.fB < zmax) zmax = shape.fB;
-   }
 
-   let ttmin = Math.atan2(zmin, rmin), ttmax = Math.atan2(zmax, rmax);
+
+   const ttmin = Math.atan2(zmin, rmin), ttmax = Math.atan2(zmax, rmax),
 
    // calculate all sin/cos tables in advance
-   const _sin = new Float32Array(radiusSegments+1),
+    _sin = new Float32Array(radiusSegments+1),
          _cos = new Float32Array(radiusSegments+1);
-   for (let seg=0;seg<=radiusSegments;++seg) {
+   for (let seg=0; seg<=radiusSegments; ++seg) {
       _cos[seg] = Math.cos(seg/radiusSegments*2*Math.PI);
       _sin[seg] = Math.sin(seg/radiusSegments*2*Math.PI);
    }
@@ -82131,7 +82130,6 @@ function createParaboloidBuffer(shape, faces_limit) {
 /** @summary Creates hype geometrey
   * @private */
 function createHypeBuffer(shape, faces_limit) {
-
    if ((shape.fTin === 0) && (shape.fTout === 0))
       return createTubeBuffer(shape, faces_limit);
 
@@ -82150,7 +82148,7 @@ function createHypeBuffer(shape, faces_limit) {
    // calculate all sin/cos tables in advance
    const _sin = new Float32Array(radiusSegments+1),
          _cos = new Float32Array(radiusSegments+1);
-   for (let seg=0;seg<=radiusSegments;++seg) {
+   for (let seg=0; seg<=radiusSegments; ++seg) {
       _cos[seg] = Math.cos(seg/radiusSegments*2*Math.PI);
       _sin[seg] = Math.sin(seg/radiusSegments*2*Math.PI);
    }
@@ -82167,7 +82165,7 @@ function createHypeBuffer(shape, faces_limit) {
 
       // vertical layers
       for (let layer = 0; layer < heightSegments; ++layer) {
-         let z1 = -shape.fDz + layer/heightSegments*2*shape.fDz,
+         const z1 = -shape.fDz + layer/heightSegments*2*shape.fDz,
              z2 = -shape.fDz + (layer+1)/heightSegments*2*shape.fDz,
              r1 = Math.sqrt(r0**2 + tsq*z1**2),
              r2 = Math.sqrt(r0**2 + tsq*z2**2);
@@ -82194,7 +82192,7 @@ function createHypeBuffer(shape, faces_limit) {
                            r2 * _cos[seg+d1], r2 * _sin[seg+d1], z,
                            r2 * _cos[seg+d2], r2 * _sin[seg+d2], z,
                            r1 * _cos[seg+d2], r1 * _sin[seg+d2], z, skip);
-          creator.setNormal(0,0, (layer === 0) ? 1 : -1);
+          creator.setNormal(0, 0, (layer === 0) ? 1 : -1);
        }
    }
 
@@ -82206,7 +82204,7 @@ function createHypeBuffer(shape, faces_limit) {
 function createTessellatedBuffer(shape, faces_limit) {
    let numfaces = 0;
    for (let i = 0; i < shape.fFacets.length; ++i)
-      numfaces += (shape.fFacets[i].fNvert == 4) ? 2 : 1;
+      numfaces += (shape.fFacets[i].fNvert === 4) ? 2 : 1;
    if (faces_limit < 0) return numfaces;
 
    const creator = faces_limit ? new PolygonsCreator() : new GeometryCreator(numfaces);
@@ -82283,7 +82281,6 @@ function createMatrix(matrix) {
   * @desc created after node visibility flag is checked and volume cut is performed
   * @private */
 function getNodeMatrix(kind, node) {
-
    let matrix = null;
 
    if (kind === kindEve) {
@@ -82299,9 +82296,9 @@ function getNodeMatrix(kind, node) {
          // second - set position with proper sign
          matrix.setPosition(node.fTrans[12], node.fTrans[13], node.fTrans[14]);
       }
-   } else if (node.fMatrix) {
+   } else if (node.fMatrix)
       matrix = createMatrix(node.fMatrix);
-   } else if ((node._typename == 'TGeoNodeOffset') && node.fFinder) {
+    else if ((node._typename === 'TGeoNodeOffset') && node.fFinder) {
       const kPatternReflected = BIT(14);
       if ((node.fFinder.fBits & kPatternReflected) !== 0)
          geoWarn('Unsupported reflected pattern ' + node.fFinder._typename);
@@ -82311,7 +82308,7 @@ function getNodeMatrix(kind, node) {
       // if (node.fFinder._typename === 'TGeoPatternSphTheta') {}
       // if (node.fFinder._typename === 'TGeoPatternSphPhi') {}
       // if (node.fFinder._typename === 'TGeoPatternHoneycomb') {}
-      switch(node.fFinder._typename) {
+      switch (node.fFinder._typename) {
         case 'TGeoPatternX':
         case 'TGeoPatternY':
         case 'TGeoPatternZ':
@@ -82377,7 +82374,7 @@ function numGeometryFaces(geom) {
    if (geom.polygons)
       return geom.polygons.length;
 
-   let attr = geom.getAttribute('position');
+   const attr = geom.getAttribute('position');
    return attr?.count ? Math.round(attr.count / 3) : 0;
 }
 
@@ -82394,9 +82391,9 @@ function geomBoundingBox(geom) {
       polygons = geom.polygons;
 
    if (polygons !== null) {
-      let box = new Box3();
+      const box = new Box3();
       for (let n = 0; n < polygons.length; ++n) {
-         let polygon = polygons[n], nvert = polygon.vertices.length;
+         const polygon = polygons[n], nvert = polygon.vertices.length;
          for (let k = 0; k < nvert; ++k)
             box.expandByPoint(polygon.vertices[k]);
       }
@@ -82415,7 +82412,7 @@ function geomBoundingBox(geom) {
 function createHalfSpace(shape, geom) {
    if (!shape?.fN || !shape?.fP) return null;
 
-   let vertex = new Vector3(shape.fP[0], shape.fP[1], shape.fP[2]),
+   const vertex = new Vector3(shape.fP[0], shape.fP[1], shape.fP[2]),
        normal = new Vector3(shape.fN[0], shape.fN[1], shape.fN[2]);
 
    normal.normalize();
@@ -82423,26 +82420,26 @@ function createHalfSpace(shape, geom) {
    let sz = 1e10;
    if (geom) {
       // using real size of other geometry, we probably improve precision
-      let box = geomBoundingBox(geom);
+      const box = geomBoundingBox(geom);
       if (box) sz = box.getSize(new Vector3()).length() * 1000;
    }
 
-   let v0 = new Vector3(-sz, -sz/2, 0),
+   const v0 = new Vector3(-sz, -sz/2, 0),
        v1 = new Vector3(0, sz, 0),
        v2 = new Vector3(sz, -sz/2, 0),
        v3 = new Vector3(0, 0, -sz),
        geometry = new BufferGeometry(),
-       positions = new Float32Array([ v0.x,v0.y,v0.z, v2.x,v2.y,v2.z, v1.x,v1.y,v1.z,
-                                      v0.x,v0.y,v0.z, v1.x,v1.y,v1.z, v3.x,v3.y,v3.z,
-                                      v1.x,v1.y,v1.z, v2.x,v2.y,v2.z, v3.x,v3.y,v3.z,
-                                      v2.x,v2.y,v2.z, v0.x,v0.y,v0.z, v3.x,v3.y,v3.z ]);
+       positions = new Float32Array([v0.x, v0.y, v0.z, v2.x, v2.y, v2.z, v1.x, v1.y, v1.z,
+                                      v0.x, v0.y, v0.z, v1.x, v1.y, v1.z, v3.x, v3.y, v3.z,
+                                      v1.x, v1.y, v1.z, v2.x, v2.y, v2.z, v3.x, v3.y, v3.z,
+                                      v2.x, v2.y, v2.z, v0.x, v0.y, v0.z, v3.x, v3.y, v3.z]);
    geometry.setAttribute('position', new BufferAttribute(positions, 3));
    geometry.computeVertexNormals();
 
    geometry.lookAt(normal);
    geometry.computeVertexNormals();
 
-   for(let k = 0; k < positions.length; k += 3) {
+   for (let k = 0; k < positions.length; k += 3) {
       positions[k] = positions[k] + vertex.x;
       positions[k+1] = positions[k+1] + vertex.y;
       positions[k+2] = positions[k+2] + vertex.z;
@@ -82464,21 +82461,21 @@ function countGeometryFaces(geom) {
    if (geom.polygons)
       return geom.polygons.length;
 
-   let attr = geom.getAttribute('position');
+   const attr = geom.getAttribute('position');
    return attr?.count ? Math.round(attr.count / 3) : 0;
 }
 
 /** @summary Creates geometrey for composite shape
   * @private */
 function createComposite(shape, faces_limit) {
-
-   if (faces_limit < 0)
+   if (faces_limit < 0) {
       return createGeometry(shape.fNode.fLeft, -1) +
              createGeometry(shape.fNode.fRight, -1);
+   }
 
-   let geom1, geom2, bsp1, bsp2, return_bsp = false,
-       matrix1 = createMatrix(shape.fNode.fLeftMat),
-       matrix2 = createMatrix(shape.fNode.fRightMat);
+   let geom1, geom2, return_bsp = false;
+   const matrix1 = createMatrix(shape.fNode.fLeftMat),
+         matrix2 = createMatrix(shape.fNode.fRightMat);
 
    if (faces_limit === 0) faces_limit = 4000;
                      else return_bsp = true;
@@ -82489,11 +82486,10 @@ function createComposite(shape, faces_limit) {
    if (matrix2 && (matrix2.determinant() < -0.9))
       geoWarn('Axis reflections in right composite shape - not supported');
 
-   if (shape.fNode.fLeft._typename == clTGeoHalfSpace) {
+   if (shape.fNode.fLeft._typename === clTGeoHalfSpace)
       geom1 = createHalfSpace(shape.fNode.fLeft);
-   } else {
+    else
       geom1 = createGeometry(shape.fNode.fLeft, faces_limit);
-   }
 
    if (!geom1) return null;
 
@@ -82501,12 +82497,11 @@ function createComposite(shape, faces_limit) {
    if (geom1._exceed_limit) n1 += faces_limit;
 
    if (n1 < faces_limit) {
-
-      if (shape.fNode.fRight._typename == clTGeoHalfSpace) {
+      if (shape.fNode.fRight._typename === clTGeoHalfSpace)
          geom2 = createHalfSpace(shape.fNode.fRight, geom1);
-      } else {
+       else
          geom2 = createGeometry(shape.fNode.fRight, faces_limit);
-      }
+
 
       n2 = countGeometryFaces(geom2);
    }
@@ -82519,14 +82514,14 @@ function createComposite(shape, faces_limit) {
       return geom1;
    }
 
-   bsp1 = new Geometry(geom1, matrix1, cfg.CompressComp ? 0 : undefined);
+   let bsp1 = new Geometry(geom1, matrix1, cfg.CompressComp ? 0 : undefined);
 
-   bsp2 = new Geometry(geom2, matrix2, bsp1.maxid);
+   const bsp2 = new Geometry(geom2, matrix2, bsp1.maxid);
 
    // take over maxid from both geometries
    bsp1.maxid = bsp2.maxid;
 
-   switch(shape.fNode._typename) {
+   switch (shape.fNode._typename) {
       case 'TGeoIntersection': bsp1.direct_intersect(bsp2);  break; // '*'
       case 'TGeoUnion': bsp1.direct_union(bsp2); break;   // '+'
       case 'TGeoSubtraction': bsp1.direct_subtract(bsp2); break; // '/'
@@ -82557,23 +82552,23 @@ function projectGeometry(geom, matrix, projection, position, flippedMesh) {
    if (!position) position = 0;
 
    if (((box.min[projection] >= position) && (box.max[projection] >= position)) ||
-       ((box.min[projection] <= position) && (box.max[projection] <= position))) {
+       ((box.min[projection] <= position) && (box.max[projection] <= position)))
       return null; // not interesting
-   }
 
-   let bsp1 = new Geometry(geom, matrix, 0, flippedMesh),
-       sizex = 2*Math.max(Math.abs(box.min.x), Math.abs(box.max.x)),
-       sizey = 2*Math.max(Math.abs(box.min.y), Math.abs(box.max.y)),
-       sizez = 2*Math.max(Math.abs(box.min.z), Math.abs(box.max.z)),
-       size = 10000;
+
+   const bsp1 = new Geometry(geom, matrix, 0, flippedMesh),
+         sizex = 2*Math.max(Math.abs(box.min.x), Math.abs(box.max.x)),
+         sizey = 2*Math.max(Math.abs(box.min.y), Math.abs(box.max.y)),
+         sizez = 2*Math.max(Math.abs(box.min.z), Math.abs(box.max.z));
+   let size = 10000;
 
    switch (projection) {
-      case 'x': size = Math.max(sizey,sizez); break;
-      case 'y': size = Math.max(sizex,sizez); break;
-      case 'z': size = Math.max(sizex,sizey); break;
+      case 'x': size = Math.max(sizey, sizez); break;
+      case 'y': size = Math.max(sizex, sizez); break;
+      case 'z': size = Math.max(sizex, sizey); break;
    }
 
-   let bsp2 = createNormal(projection, position, size);
+   const bsp2 = createNormal(projection, position, size);
 
    bsp1.cut_from_plane(bsp2);
 
@@ -82617,7 +82612,7 @@ function createGeometry(shape, limit) {
          case clTGeoCompositeShape: return createComposite(shape, limit);
          case clTGeoShapeAssembly: break;
          case clTGeoScaledShape: {
-            let res = createGeometry(shape.fShape, limit);
+            const res = createGeometry(shape.fShape, limit);
             if (shape.fScale && (limit >= 0) && isFunc(res?.scale))
                res.scale(shape.fScale.fScale[0], shape.fScale.fScale[1], shape.fScale.fScale[2]);
             return res;
@@ -82646,7 +82641,6 @@ function createGeometry(shape, limit) {
 /** @summary Create single shape from EVE7 render date
   * @private */
 function makeEveGeometry(rd) {
-
    let off = 0;
 
    if (rd.sz[0]) {
@@ -82689,10 +82683,9 @@ function makeEveGeometry(rd) {
 /** @summary Create single shape from geometry veiwer render date
   * @private */
 function makeViewerGeometry(rd) {
+   const vtxBuff = new Float32Array(rd.raw.buffer, 0, rd.raw.buffer.byteLength/4),
 
-   let vtxBuff = new Float32Array(rd.raw.buffer, 0, rd.raw.buffer.byteLength/4);
-
-   let body = new BufferGeometry();
+    body = new BufferGeometry();
    body.setAttribute('position', new BufferAttribute(vtxBuff, 3));
    body.setIndex(new BufferAttribute(new Uint32Array(rd.idx), 1));
    body.computeVertexNormals();
@@ -82703,7 +82696,6 @@ function makeViewerGeometry(rd) {
   * @desc If nsegm changed, shape will be recreated
   * @private */
 function createServerGeometry(rd, nsegm) {
-
    if (rd.server_shape && ((rd.nsegm === nsegm) || !rd.shape))
       return rd.server_shape;
 
@@ -82715,7 +82707,6 @@ function createServerGeometry(rd, nsegm) {
       // case when TGeoShape provided as is
       g = createGeometry(rd.shape);
    } else {
-
       if (!rd.raw?.buffer) {
          console.error('No raw data at all');
          return null;
@@ -82725,7 +82716,6 @@ function createServerGeometry(rd, nsegm) {
          g = makeEveGeometry(rd);
       else
          g = makeViewerGeometry(rd);
-
    }
 
    // shape handle is similar to created in TGeoPainter
@@ -82755,11 +82745,11 @@ function provideObjectInfo(obj) {
       return info;
    }
 
-   let sz = Math.max(shape.fDX, shape.fDY, shape.fDZ),
+   const sz = Math.max(shape.fDX, shape.fDY, shape.fDZ),
        useexp = (sz > 1e7) || (sz < 1e-7),
        conv = (v) => {
           if (v === undefined) return '???';
-          if ((v == Math.round(v) && v < 1e7)) return Math.round(v);
+          if ((v === Math.round(v) && v < 1e7)) return Math.round(v);
           return useexp ? v.toExponential(4) : v.toPrecision(7);
        };
 
@@ -82833,7 +82823,7 @@ function createProjectionMatrix(camera) {
    camera.updateMatrixWorld();
 
    camera.matrixWorldInverse.copy(camera.matrixWorld).invert();
-   cameraProjectionMatrix.multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse);
+   cameraProjectionMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
 
    return cameraProjectionMatrix;
 }
@@ -82846,7 +82836,7 @@ function createFrustum(source) {
    if (source instanceof PerspectiveCamera)
       source = createProjectionMatrix(source);
 
-   let frustum = new Frustum();
+   const frustum = new Frustum();
    frustum.setFromProjectionMatrix(source);
 
    frustum.corners = new Float32Array([
@@ -82861,12 +82851,12 @@ function createFrustum(source) {
        0,  0,  0 // also check center of the shape
    ]);
 
-   frustum.test = new Vector3(0,0,0);
+   frustum.test = new Vector3(0, 0, 0);
 
    frustum.CheckShape = function(matrix, shape) {
-      let pnt = this.test, len = this.corners.length, corners = this.corners, i;
+      const pnt = this.test, len = this.corners.length, corners = this.corners;
 
-      for (i = 0; i < len; i+=3) {
+      for (let i = 0; i < len; i+=3) {
          pnt.x = corners[i] * shape.fDX;
          pnt.y = corners[i+1] * shape.fDY;
          pnt.z = corners[i+2] * shape.fDZ;
@@ -82877,7 +82867,8 @@ function createFrustum(source) {
    };
 
    frustum.CheckBox = function(box) {
-      let pnt = this.test, cnt = 0;
+      const pnt = this.test;
+      let cnt = 0;
       pnt.set(box.min.x, box.min.y, box.min.z);
       if (this.containsPoint(pnt)) cnt++;
       pnt.set(box.min.x, box.min.y, box.max.z);
@@ -82905,7 +82896,7 @@ function createFrustum(source) {
 function createMaterial(cfg, args0) {
    if (!cfg) cfg = { material_kind: 'lambert' };
 
-   let args = Object.assign({}, args0);
+   const args = Object.assign({}, args0);
 
    if (args.opacity === undefined)
       args.opacity = 1;
@@ -82917,34 +82908,34 @@ function createMaterial(cfg, args0) {
    if (!args.color) args.color = 'red';
    args.side = FrontSide;
    args.transparent = args.opacity < 1;
-   args.depthWrite = args.opactity == 1;
+   args.depthWrite = args.opactity === 1;
 
    let material;
 
-   if (cfg.material_kind == 'basic') {
+   if (cfg.material_kind === 'basic')
       material = new MeshBasicMaterial(args);
-   } else if (cfg.material_kind == 'depth') {
+    else if (cfg.material_kind === 'depth') {
       delete args.color;
       material = new MeshDepthMaterial(args);
-   } else if (cfg.material_kind == 'toon') {
+   } else if (cfg.material_kind === 'toon')
       material = new MeshToonMaterial(args);
-   } else if (cfg.material_kind == 'matcap') {
+    else if (cfg.material_kind === 'matcap') {
       delete args.wireframe;
       material = new MeshMatcapMaterial(args);
-   } else if (cfg.material_kind == 'standard') {
+   } else if (cfg.material_kind === 'standard') {
       args.metalness = cfg.metalness ?? 0.5;
       args.roughness = cfg.roughness ?? 0.1;
       material = new MeshStandardMaterial(args);
-   } else if (cfg.material_kind == 'normal') {
+   } else if (cfg.material_kind === 'normal') {
       delete args.color;
       material = new MeshNormalMaterial(args);
-   } else if (cfg.material_kind == 'physical') {
+   } else if (cfg.material_kind === 'physical') {
       args.metalness = cfg.metalness ?? 0.5;
       args.roughness = cfg.roughness ?? 0.1;
       args.reflectivity = cfg.reflectivity ?? 0.5;
       args.emissive = args.color;
       material = new MeshPhysicalMaterial(args);
-   } else if (cfg.material_kind == 'phong') {
+   } else if (cfg.material_kind === 'phong') {
       args.shininess = cfg.shininess ?? 0.9;
       material = new MeshPhongMaterial(args);
    } else {
@@ -83013,9 +83004,8 @@ class ClonedNodes {
       if (obj) {
          if (obj.$geoh) this.toplevel = false;
          this.createClones(obj);
-      } else if (clones) {
+      } else if (clones)
          this.nodes = clones;
-      }
    }
 
    /** @summary Set maximal depth for nodes visibility */
@@ -83054,20 +83044,19 @@ class ClonedNodes {
    /** @summary Returns TGeoShape for element with given indx */
    getNodeShape(indx) {
       if (!this.origin || !this.nodes) return null;
-      let obj = this.origin[indx], clone = this.nodes[indx];
+      const obj = this.origin[indx], clone = this.nodes[indx];
       if (!obj || !clone) return null;
       if (clone.kind === kindGeo) {
          if (obj.fVolume) return obj.fVolume.fShape;
-      } else {
+      } else
          return obj.fShape;
-      }
+
       return null;
    }
 
    /** @summary function to cleanup as much as possible structures
      * @desc Provided parameters drawnodes and drawshapes are arrays created during building of geometry */
    cleanup(drawnodes, drawshapes) {
-
       if (drawnodes) {
          for (let n = 0; n < drawnodes.length; ++n) {
             delete drawnodes[n].stack;
@@ -83098,8 +83087,7 @@ class ClonedNodes {
    /** @summary Create complete description for provided Geo object */
    createClones(obj, sublevel, kind) {
       if (!sublevel) {
-
-         if (obj?._typename == '$$Shape$$')
+         if (obj?._typename === '$$Shape$$')
             return this.createClonesForShape(obj);
 
          this.origin = [];
@@ -83129,20 +83117,20 @@ class ClonedNodes {
 
       this.nodes = [];
 
-      let sortarr = [];
+      const sortarr = [];
 
       // first create nodes objects
       for (let id = 0; id < this.origin.length; ++id) {
          // let obj = this.origin[id];
-         let node = { id, kind, vol: 0, nfaces: 0 };
+         const node = { id, kind, vol: 0, nfaces: 0 };
          this.nodes.push(node);
          sortarr.push(node); // array use to produce sortmap
       }
 
       // than fill children lists
       for (let n = 0; n < this.origin.length; ++n) {
-         let obj = this.origin[n], clone = this.nodes[n],
-             chlds = null, shape = null;
+         const obj = this.origin[n], clone = this.nodes[n];
+         let chlds = null, shape = null;
 
          if (kind === kindEve) {
             shape = obj.fShape;
@@ -83152,7 +83140,7 @@ class ClonedNodes {
             if (obj.fVolume.fNodes) chlds = obj.fVolume.fNodes.arr;
          }
 
-         let matrix = getNodeMatrix(kind, obj);
+         const matrix = getNodeMatrix(kind, obj);
          if (matrix) {
             clone.matrix = matrix.elements; // take only matrix elements, matrix will be constructed in worker
             if (clone.matrix[0] === 1) {
@@ -83161,7 +83149,7 @@ class ClonedNodes {
                   issimple = (clone.matrix[k] === ((k === 5) || (k === 10) || (k === 15) ? 1 : 0));
                if (issimple) delete clone.matrix;
             }
-            if (clone.matrix && (kind == kindEve)) clone.abs_matrix = true;
+            if (clone.matrix && (kind === kindEve)) clone.abs_matrix = true;
          }
          if (shape) {
             clone.fDX = shape.fDX;
@@ -83205,7 +83193,7 @@ class ClonedNodes {
       // indicate that just plain shape is used
       this.plain_shape = obj;
 
-      let node = {
+      const node = {
             id: 0, sortid: 0, kind: kindShape,
             name: 'Shape',
             nfaces: obj.nfaces,
@@ -83213,12 +83201,13 @@ class ClonedNodes {
             vis: true
          };
 
-      this.nodes = [ node ];
+      this.nodes = [node];
    }
 
    /** @summary Count all visisble nodes */
    countVisibles() {
-      let cnt = 0, len = this.nodes?.length || 0;
+      const len = this.nodes?.length || 0;
+      let cnt = 0;
       for (let k = 0; k < len; ++k)
           if (this.nodes[k].vis) cnt++;
       return cnt;
@@ -83233,7 +83222,7 @@ class ClonedNodes {
       let res = 0;
 
       for (let n = 0; n < this.nodes.length; ++n) {
-         let clone = this.nodes[n], obj = this.origin[n];
+         const clone = this.nodes[n], obj = this.origin[n];
 
          clone.vis = 0; // 1 - only with last level
          delete clone.nochlds;
@@ -83244,7 +83233,7 @@ class ClonedNodes {
                   // on screen bits used always, childs always checked
                   clone.vis = testGeoBit(obj.fVolume, geoBITS.kVisOnScreen) ? 99 : 0;
 
-                  if ((n == 0) && clone.vis && hide_top_volume) clone.vis = 0;
+                  if ((n === 0) && clone.vis && hide_top_volume) clone.vis = 0;
 
                   if (copy_bits) {
                      setGeoBit(obj.fVolume, geoBITS.kVisNone, false);
@@ -83252,7 +83241,6 @@ class ClonedNodes {
                      setGeoBit(obj.fVolume, geoBITS.kVisDaughters, true);
                      setGeoBit(obj, geoBITS.kVisDaughters, true);
                   }
-
                } else {
                   clone.vis = !testGeoBit(obj.fVolume, geoBITS.kVisNone) && testGeoBit(obj.fVolume, geoBITS.kVisThis) ? 99 : 0;
 
@@ -83295,9 +83283,10 @@ class ClonedNodes {
       function scan_func(nodes, node) {
          if (node.idshift < 0) {
             node.idshift = 0;
-            if (node.chlds)
-               for(let k = 0; k<node.chlds.length; ++k)
+            if (node.chlds) {
+               for (let k = 0; k<node.chlds.length; ++k)
                   node.idshift += scan_func(nodes, nodes[node.chlds[k]]);
+            }
          }
 
          return node.idshift + 1;
@@ -83309,20 +83298,20 @@ class ClonedNodes {
    /** @summary Extract only visibility flags
      * @desc Used to transfer them to the worker */
    getVisibleFlags() {
-      let res = new Array(this.nodes.length);
-      for (let n=0;n<this.nodes.length;++n)
+      const res = new Array(this.nodes.length);
+      for (let n=0; n<this.nodes.length; ++n)
          res[n] = { vis: this.nodes[n].vis, nochlds: this.nodes[n].nochlds };
       return res;
    }
 
    /** @summary Assign only visibility flags, extracted with getVisibleFlags */
    setVisibleFlags(flags) {
-      if (!this.nodes || !flags || !flags.length != this.nodes.length)
+      if (!this.nodes || !flags || !flags.length !== this.nodes.length)
          return 0;
 
       let res = 0;
       for (let n = 0; n < this.nodes.length; ++n) {
-         let clone = this.nodes[n];
+         const clone = this.nodes[n];
          clone.vis = flags[n].vis;
          clone.nochlds = flags[n].nochlds;
          if (clone.vis) res++;
@@ -83349,7 +83338,7 @@ class ClonedNodes {
          this.fVisibility = [];
 
       for (let indx = 0; indx < this.fVisibility.length; ++indx) {
-         let item = this.fVisibility[indx],
+         const item = this.fVisibility[indx],
              res = compare_stacks(item.stack, stack);
 
          if (res === 0) {
@@ -83379,9 +83368,9 @@ class ClonedNodes {
       if (!stack || !this.fVisibility)
          return null;
       for (let indx = 0; indx < this.fVisibility.length; ++indx) {
-         let item = this.fVisibility[indx],
+         const item = this.fVisibility[indx],
              res = compare_stacks(item.stack, stack);
-         if (res == 0)
+         if (res === 0)
             return item;
          if (res > 0)
             return null;
@@ -83393,7 +83382,6 @@ class ClonedNodes {
    /** @summary Scan visible nodes in hierarchy, starting from nodeid
      * @desc Each entry in hierarchy get its unique id, which is not changed with visibility flags */
    scanVisible(arg, vislvl) {
-
       if (!this.nodes) return 0;
 
       if (vislvl === undefined) {
@@ -83407,7 +83395,7 @@ class ClonedNodes {
          arg.counter = 0; // sequence ID of the node, used to identify it later
          arg.last = 0;
          arg.copyStack = function(factor) {
-            let entry = { nodeid: this.nodeid, seqid: this.counter, stack: new Array(this.last) };
+            const entry = { nodeid: this.nodeid, seqid: this.counter, stack: new Array(this.last) };
             if (factor) entry.factor = factor; // factor used to indicate importance of entry, will be built as first
             for (let n = 0; n < this.last; ++n)
                entry.stack[n] = this.stack[n+1]; // copy stack
@@ -83416,7 +83404,7 @@ class ClonedNodes {
 
          if (arg.domatrix) {
             arg.matrices = [];
-            arg.mpool = [ new Matrix4() ]; // pool of Matrix objects to avoid permanent creation
+            arg.mpool = [new Matrix4()]; // pool of Matrix objects to avoid permanent creation
             arg.getmatrix = function() { return this.matrices[this.last]; };
          }
 
@@ -83425,37 +83413,38 @@ class ClonedNodes {
             arg.varray = this.fVisibility;
             arg.vstack = arg.varray[arg.vindx].stack;
             arg.testPhysVis = function() {
-               if (!this.vstack || (this.vstack?.length != this.last))
+               if (!this.vstack || (this.vstack?.length !== this.last))
                   return undefined;
-               for (let n = 0; n < this.last; ++n)
-                  if (this.vstack[n] != this.stack[n+1])
+               for (let n = 0; n < this.last; ++n) {
+                  if (this.vstack[n] !== this.stack[n+1])
                      return undefined;
-               let res = this.varray[this.vindx++].visible;
+               }
+               const res = this.varray[this.vindx++].visible;
                this.vstack = this.vindx < this.varray.length ? this.varray[this.vindx].stack : null;
                return res;
             };
          }
       }
 
-      let res = 0, node = this.nodes[arg.nodeid];
+      const node = this.nodes[arg.nodeid];
+      let res = 0;
 
       if (arg.domatrix) {
          if (!arg.mpool[arg.last+1])
             arg.mpool[arg.last+1] = new Matrix4();
 
-         let prnt = (arg.last > 0) ? arg.matrices[arg.last-1] : new Matrix4();
+         const prnt = (arg.last > 0) ? arg.matrices[arg.last-1] : new Matrix4();
          if (node.matrix) {
             arg.matrices[arg.last] = arg.mpool[arg.last].fromArray(prnt.elements);
             arg.matrices[arg.last].multiply(arg.mpool[arg.last+1].fromArray(node.matrix));
-         } else {
+         } else
             arg.matrices[arg.last] = prnt;
-         }
       }
 
       let node_vis = node.vis, node_nochlds = node.nochlds;
 
       if (arg.testPhysVis) {
-         let res = arg.testPhysVis();
+         const res = arg.testPhysVis();
          if (res !== undefined) {
             node_vis = res && !node.chlds ? vislvl + 1 : 0;
             node_nochlds = !res;
@@ -83480,9 +83469,9 @@ class ClonedNodes {
             res += this.scanVisible(arg, vislvl-1);
          }
          arg.last--;
-      } else {
+      } else
          arg.counter += (node.idshift || 0);
-      }
+
 
       if (arg.last === 0) {
          delete arg.last;
@@ -83505,18 +83494,17 @@ class ClonedNodes {
     * @desc Either original object or description is used */
    getNodeName(nodeid) {
       if (this.origin) {
-         let obj = this.origin[nodeid];
+         const obj = this.origin[nodeid];
          return obj ? getObjectName(obj) : '';
       }
-      let node = this.nodes[nodeid];
+      const node = this.nodes[nodeid];
       return node ? node.name : '';
    }
 
    /** @summary Returns description for provided stack
      * @desc If specified, absolute matrix is also calculated */
    resolveStack(stack, withmatrix) {
-
-      let res = { id: 0, obj: null, node: this.nodes[0], name: this.name_prefix || '' };
+      const res = { id: 0, obj: null, node: this.nodes[0], name: this.name_prefix || '' };
 
       // if (!this.toplevel || (this.nodes.length === 1) || (res.node.kind === 1)) res.name = '';
 
@@ -83528,18 +83516,18 @@ class ClonedNodes {
       if (this.origin)
          res.obj = this.origin[0];
 
-      //if (!res.name)
+      // if (!res.name)
       //   res.name = this.getNodeName(0);
 
-      if (stack)
-         for(let lvl = 0; lvl < stack.length; ++lvl) {
+      if (stack) {
+         for (let lvl = 0; lvl < stack.length; ++lvl) {
             res.id = res.node.chlds[stack[lvl]];
             res.node = this.nodes[res.id];
 
             if (this.origin)
                res.obj = this.origin[res.id];
 
-            let subname = this.getNodeName(res.id);
+            const subname = this.getNodeName(res.id);
             if (subname) {
                if (res.name) res.name += '/';
                res.name += subname;
@@ -83548,6 +83536,7 @@ class ClonedNodes {
             if (withmatrix && res.node.matrix)
                res.matrix.multiply(new Matrix4().fromArray(res.node.matrix));
          }
+      }
 
       return res;
    }
@@ -83568,12 +83557,13 @@ class ClonedNodes {
          return null;
       }
 
-      let node = this.nodes[0], stack = [];
+      let node = this.nodes[0];
+      const stack = [];
 
       for (let k = 1; k < ids.length; ++k) {
-         let nodeid = ids[k];
+         const nodeid = ids[k];
          if (!node) return null;
-         let chindx = node.chlds.indexOf(nodeid);
+         const chindx = node.chlds.indexOf(nodeid);
          if (chindx < 0) {
             console.error(`wrong nodes ids ${ids[k]} is not child of ${ids[k-1]}`);
             return null;
@@ -83589,9 +83579,10 @@ class ClonedNodes {
    /** @summary Retuns ids array which correspond to the stack */
    buildIdsByStack(stack) {
       if (!stack) return null;
-      let node = this.nodes[0], ids = [0];
+      let node = this.nodes[0];
+      const ids = [0];
       for (let k = 0; k < stack.length; ++k) {
-         let id = node.chlds[stack[k]];
+         const id = node.chlds[stack[k]];
          ids.push(id);
          node = this.nodes[id];
       }
@@ -83612,14 +83603,13 @@ class ClonedNodes {
 
    /** @summary Returns true if stack includes at any place provided nodeid */
    isIdInStack(nodeid, stack) {
-
       if (!nodeid) return true;
 
       let node = this.nodes[0], id = 0;
 
-      for(let lvl = 0; lvl < stack.length; ++lvl) {
+      for (let lvl = 0; lvl < stack.length; ++lvl) {
          id = node.chlds[stack[lvl]];
-         if (id == nodeid) return true;
+         if (id === nodeid) return true;
          node = this.nodes[id];
       }
 
@@ -83628,17 +83618,17 @@ class ClonedNodes {
 
    /** @summary Find stack by name which include names of all parents */
    findStackByName(fullname) {
-
-      let names = fullname.split('/'), currid = 0, stack = [];
+      const names = fullname.split('/'), stack = [];
+      let currid = 0;
 
       if (this.getNodeName(currid) !== names[0]) return null;
 
       for (let n = 1; n < names.length; ++n) {
-         let node = this.nodes[currid];
+         const node = this.nodes[currid];
          if (!node.chlds) return null;
 
          for (let k = 0; k < node.chlds.length; ++k) {
-            let chldid = node.chlds[k];
+            const chldid = node.chlds[k];
             if (this.getNodeName(chldid) === names[n]) {
                stack.push(k);
                currid = chldid;
@@ -83657,20 +83647,19 @@ class ClonedNodes {
    setDefaultColors(on) {
       this.use_dflt_colors = on;
       if (this.use_dflt_colors && !this.dflt_table) {
-
-         let dflt = { kWhite: 0,  kBlack: 1, kGray: 920,
+         const dflt = { kWhite: 0,  kBlack: 1, kGray: 920,
                       kRed: 632, kGreen: 416, kBlue: 600, kYellow: 400, kMagenta: 616, kCyan: 432,
-                      kOrange: 800, kSpring: 820, kTeal: 840, kAzure: 860, kViolet: 880, kPink: 900 };
+                      kOrange: 800, kSpring: 820, kTeal: 840, kAzure: 860, kViolet: 880, kPink: 900 },
 
-         let nmax = 110, col = [];
-         for (let i=0;i<nmax;i++) col.push(dflt.kGray);
+          nmax = 110, col = [];
+         for (let i=0; i<nmax; i++) col.push(dflt.kGray);
 
          //  here we should create a new TColor with the same rgb as in the default
          //  ROOT colors used below
-         col[ 3] = dflt.kYellow-10;
-         col[ 4] = col[ 5] = dflt.kGreen-10;
-         col[ 6] = col[ 7] = dflt.kBlue-7;
-         col[ 8] = col[ 9] = dflt.kMagenta-3;
+         col[3] = dflt.kYellow-10;
+         col[4] = col[5] = dflt.kGreen-10;
+         col[6] = col[7] = dflt.kBlue-7;
+         col[8] = col[9] = dflt.kMagenta-3;
          col[10] = col[11] = dflt.kRed-10;
          col[12] = dflt.kGray+1;
          col[13] = dflt.kBlue-10;
@@ -83688,13 +83677,12 @@ class ClonedNodes {
    /** @summary Provide different properties of draw entry nodeid
      * @desc Only if node visible, material will be created */
    getDrawEntryProperties(entry, root_colors) {
-
-      let clone = this.nodes[entry.nodeid];
+      const clone = this.nodes[entry.nodeid];
 
       if (clone.kind === kindShape) {
-         let prop = { name: clone.name, nname: clone.name, shape: null, material: null, chlds: null },
+         const prop = { name: clone.name, nname: clone.name, shape: null, material: null, chlds: null },
              opacity = entry.opacity || 1, col = entry.color || '#0000FF';
-         prop.fillcolor = new Color(col[0] == '#' ? col : `rgb(${col})`);
+         prop.fillcolor = new Color(col[0] === '#' ? col : `rgb(${col})`);
          prop.material = createMaterial(this._cfg, { opacity, color: prop.fillcolor });
          return prop;
       }
@@ -83704,17 +83692,17 @@ class ClonedNodes {
          return null;
       }
 
-      let node = this.origin[entry.nodeid];
+      const node = this.origin[entry.nodeid];
 
       if (clone.kind === kindEve) {
          // special handling for EVE nodes
 
-         let prop = { name: getObjectName(node), nname: getObjectName(node), shape: node.fShape, material: null, chlds: null };
+         const prop = { name: getObjectName(node), nname: getObjectName(node), shape: node.fShape, material: null, chlds: null };
 
          if (node.fElements !== null) prop.chlds = node.fElements.arr;
 
          {
-            let opacity = Math.min(1, node.fRGBA[3]);
+            const opacity = Math.min(1, node.fRGBA[3]);
             prop.fillcolor = new Color(node.fRGBA[0], node.fRGBA[1], node.fRGBA[2]);
             prop.material = createMaterial(this._cfg, { opacity, color: prop.fillcolor });
          }
@@ -83722,32 +83710,31 @@ class ClonedNodes {
          return prop;
       }
 
-      let volume = node.fVolume;
+      const volume = node.fVolume,
 
-      let prop = { name: getObjectName(volume), nname: getObjectName(node), volume, shape: volume.fShape, material: null,
+       prop = { name: getObjectName(volume), nname: getObjectName(node), volume, shape: volume.fShape, material: null,
                    chlds: volume.fNodes?.arr, linewidth: volume.fLineWidth };
 
       {
-
          // TODO: maybe correctly extract ROOT colors here?
          let opacity = 1.0;
          if (!root_colors) root_colors = ['white', 'black', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan'];
 
          if (entry.custom_color)
             prop.fillcolor = entry.custom_color;
-         else if ((volume.fFillColor > 1) && (volume.fLineColor == 1))
+         else if ((volume.fFillColor > 1) && (volume.fLineColor === 1))
             prop.fillcolor = root_colors[volume.fFillColor];
          else if (volume.fLineColor >= 0)
             prop.fillcolor = root_colors[volume.fLineColor];
 
-         let mat = volume?.fMedium?.fMaterial;
+         const mat = volume?.fMedium?.fMaterial;
 
          if (mat) {
-            let fillstyle = mat.fFillStyle,
-                transparency = (fillstyle >= 3000 && fillstyle <= 3100) ? fillstyle - 3000 : 0;
+            const fillstyle = mat.fFillStyle;
+            let transparency = (fillstyle >= 3000 && fillstyle <= 3100) ? fillstyle - 3000 : 0;
 
             if (this.use_dflt_colors) {
-               let matZ = Math.round(mat.fZ), icol = this.dflt_table[matZ];
+               const matZ = Math.round(mat.fZ), icol = this.dflt_table[matZ];
                prop.fillcolor = root_colors[icol];
                if (mat.fDensity < 0.1) transparency = 60;
             }
@@ -83770,15 +83757,13 @@ class ClonedNodes {
      * @desc Such hierarchy repeats hierarchy of TGeoNodes and set matrix for the objects drawing
      * also set renderOrder, required to handle transparency */
    createObject3D(stack, toplevel, options) {
-
-      let node = this.nodes[0], three_prnt = toplevel, draw_depth = 0,
-          force = isObject(options) || (options === 'force');
+      let node = this.nodes[0], three_prnt = toplevel, draw_depth = 0;
+      const force = isObject(options) || (options === 'force');
 
       for (let lvl = 0; lvl <= stack.length; ++lvl) {
-         let nchld = (lvl > 0) ? stack[lvl-1] : 0,
-             // extract current node
-             child = (lvl > 0) ? this.nodes[node.chlds[nchld]] : node,
-             obj3d;
+         const nchld = (lvl > 0) ? stack[lvl-1] : 0,
+               // extract current node
+               child = (lvl > 0) ? this.nodes[node.chlds[nchld]] : node;
          if (!child) {
             console.error(`Wrong stack ${JSON.stringify(stack)} for nodes at level ${lvl}, node.id ${node.id}, numnodes ${this.nodes.length}, nchld ${nchld}, numchilds ${node.chlds.length}, chldid ${node.chlds[nchld]}`);
             return null;
@@ -83786,13 +83771,16 @@ class ClonedNodes {
 
          node = child;
 
-         if (three_prnt.children)
+         let obj3d;
+
+         if (three_prnt.children) {
             for (let i = 0; i < three_prnt.children.length; ++i) {
                if (three_prnt.children[i].nchld === nchld) {
                   obj3d = three_prnt.children[i];
                   break;
                }
             }
+         }
 
          if (obj3d) {
             three_prnt = obj3d;
@@ -83809,7 +83797,7 @@ class ClonedNodes {
             obj3d.absMatrix.fromArray(node.matrix);
          } else if (node.matrix) {
             obj3d.matrix.fromArray(node.matrix);
-            obj3d.matrix.decompose( obj3d.position, obj3d.quaternion, obj3d.scale );
+            obj3d.matrix.decompose(obj3d.position, obj3d.quaternion, obj3d.scale);
          }
 
          // this.accountNodes(obj3d);
@@ -83819,7 +83807,7 @@ class ClonedNodes {
          three_prnt.add(obj3d);
 
          // this is only for debugging - test inversion of whole geometry
-         if ((lvl == 0) && isObject(options) && options.scale) {
+         if ((lvl === 0) && isObject(options) && options.scale) {
             if ((options.scale.x < 0) || (options.scale.y < 0) || (options.scale.z < 0)) {
                obj3d.scale.copy(options.scale);
                obj3d.updateMatrix();
@@ -83833,19 +83821,20 @@ class ClonedNodes {
 
       if ((options === 'mesh') || (options === 'delete_mesh')) {
          let mesh = null;
-         if (three_prnt)
+         if (three_prnt) {
             for (let n = 0; (n < three_prnt.children.length) && !mesh; ++n) {
-               let chld = three_prnt.children[n];
+               const chld = three_prnt.children[n];
                if ((chld.type === 'Mesh') && (chld.nchld === undefined)) mesh = chld;
             }
+         }
 
          if ((options === 'mesh') || !mesh) return mesh;
 
-         let res = three_prnt;
+         const res = three_prnt;
          while (mesh && (mesh !== toplevel)) {
             three_prnt = mesh.parent;
             three_prnt.remove(mesh);
-            mesh = (three_prnt.children.length == 0) ? three_prnt : null;
+            mesh = (three_prnt.children.length === 0) ? three_prnt : null;
          }
 
          return res;
@@ -83873,19 +83862,19 @@ class ClonedNodes {
          return null;
       }
 
-      let prop = this.getDrawEntryProperties(entry, colors),
-          obj3d = this.createObject3D(entry.stack, toplevel, ctrl),
-          matrix = obj3d.absMatrix || obj3d.matrixWorld, mesh;
+      const prop = this.getDrawEntryProperties(entry, colors),
+            obj3d = this.createObject3D(entry.stack, toplevel, ctrl),
+            matrix = obj3d.absMatrix || obj3d.matrixWorld;
 
       prop.material.wireframe = ctrl.wireframe;
 
       prop.material.side = ctrl.doubleside ? DoubleSide : FrontSide;
 
-      if (matrix.determinant() > -0.9) {
+      let mesh;
+      if (matrix.determinant() > -0.9)
          mesh = new Mesh(shape.geom, prop.material);
-      } else {
+       else
          mesh = createFlippedMesh(shape, prop.material);
-      }
 
       obj3d.add(mesh);
 
@@ -83908,11 +83897,10 @@ class ClonedNodes {
       }
 
       // set initial render order, when camera moves, one must refine it
-      //mesh.$jsroot_order = mesh.renderOrder =
+      // mesh.$jsroot_order = mesh.renderOrder =
       //   this._clones.maxdepth - ((obj3d.$jsroot_depth !== undefined) ? obj3d.$jsroot_depth : entry.stack.length);
 
       return mesh;
-
    }
 
    /** @summary Check if instancing can be used for the nodes */
@@ -83921,14 +83909,15 @@ class ClonedNodes {
          return false;
 
       // first delete previous data
-      let used_shapes = [], max_entries = 1;
+      const used_shapes = [];
+      let max_entries = 1;
 
       for (let n = 0; n < draw_nodes.length; ++n) {
-         let entry = draw_nodes[n];
+         const entry = draw_nodes[n];
          if (entry.done) continue;
 
          /// shape can be provided with entry itself
-         let shape = entry.server_shape || build_shapes[entry.shapeid];
+         const shape = entry.server_shape || build_shapes[entry.shapeid];
          if (!shape || !shape.ready) {
             console.warn(`Problem with shape id ${entry.shapeid} when building`);
             return false;
@@ -83943,13 +83932,13 @@ class ClonedNodes {
             used_shapes.push(shape);
          }
 
-         let instance = shape.instances.find(i => i.nodeid == entry.nodeid);
+         const instance = shape.instances.find(i => i.nodeid === entry.nodeid);
 
          if (instance) {
             instance.entries.push(entry);
             max_entries = Math.max(max_entries, instance.entries.length);
          } else
-            shape.instances.push({ nodeid: entry.nodeid, entries: [ entry ] });
+            shape.instances.push({ nodeid: entry.nodeid, entries: [entry] });
       }
 
       const make_sense = ctrl.instancing > 0 ? (max_entries > 2) : (draw_nodes.length > 10000) && (max_entries > 10);
@@ -83962,20 +83951,20 @@ class ClonedNodes {
       used_shapes.forEach(shape => {
          shape.used = true;
          shape.instances.forEach(instance => {
-            let entry0 = instance.entries[0],
+            const entry0 = instance.entries[0],
                 prop = this.getDrawEntryProperties(entry0, colors);
 
             prop.material.wireframe = ctrl.wireframe;
 
             prop.material.side = ctrl.doubleside ? DoubleSide : FrontSide;
 
-            if (instance.entries.length == 1)
+            if (instance.entries.length === 1)
                this.createEntryMesh(ctrl, toplevel, entry0, shape, colors);
             else {
-               let arr1 = [], arr2 = [], stacks1 = [], stacks2 = [];
+               const arr1 = [], arr2 = [], stacks1 = [], stacks2 = [];
 
                instance.entries.forEach(entry => {
-                  let info = this.resolveStack(entry.stack, true);
+                  const info = this.resolveStack(entry.stack, true);
 
                   if (info.matrix.determinant() > -0.9) {
                      arr1.push(info.matrix);
@@ -83988,10 +83977,10 @@ class ClonedNodes {
                });
 
                if (arr1.length > 0) {
-                  let mesh1 = new InstancedMesh(shape.geom, prop.material, arr1.length);
+                  const mesh1 = new InstancedMesh(shape.geom, prop.material, arr1.length);
 
                   mesh1.stacks = stacks1;
-                  arr1.forEach((matrix,i) => mesh1.setMatrixAt(i, matrix));
+                  arr1.forEach((matrix, i) => mesh1.setMatrixAt(i, matrix));
 
                   toplevel.add(mesh1);
 
@@ -84006,11 +83995,11 @@ class ClonedNodes {
                   if (shape.geomZ === undefined)
                      shape.geomZ = createFlippedGeom(shape.geom);
 
-                  let mesh2 = new InstancedMesh(shape.geomZ, prop.material, arr2.length);
+                  const mesh2 = new InstancedMesh(shape.geomZ, prop.material, arr2.length);
 
                   mesh2.stacks = stacks2;
-                  let m = new Matrix4().makeScale(1,1,-1);
-                  arr2.forEach((matrix,i) => {
+                  const m = new Matrix4().makeScale(1, 1, -1);
+                  arr2.forEach((matrix, i) => {
                      mesh2.setMatrixAt(i, matrix.multiply(m));
                   });
                   mesh2._flippedMesh = true;
@@ -84033,8 +84022,7 @@ class ClonedNodes {
 
    /** @summary Get volume boundary */
    getVolumeBoundary(viscnt, facelimit, nodeslimit) {
-
-      let result = { min: 0, max: 1, sortidcut: 0 };
+      const result = { min: 0, max: 1, sortidcut: 0 };
 
       if (!this.sortmap) {
          console.error('sorting map do not exist');
@@ -84044,7 +84032,7 @@ class ClonedNodes {
       let maxNode, currNode, cnt=0, facecnt=0;
 
       for (let n = 0; (n < this.sortmap.length) && (cnt < nodeslimit) && (facecnt < facelimit); ++n) {
-         let id = this.sortmap[n];
+         const id = this.sortmap[n];
          if (viscnt[id] === 0) continue;
          currNode = this.nodes[id];
          if (!maxNode) maxNode = currNode;
@@ -84067,12 +84055,11 @@ class ClonedNodes {
    /** @summary Collects visible nodes, using maxlimit
      * @desc One can use map to define cut based on the volume or serious of cuts */
    collectVisibles(maxnumfaces, frustum) {
-
       // in simple case shape as it is
       if (this.plain_shape)
-         return { lst: [ { nodeid: 0, seqid: 0, stack: [], factor: 1, shapeid: 0, server_shape: this.plain_shape } ], complete: true };
+         return { lst: [{ nodeid: 0, seqid: 0, stack: [], factor: 1, shapeid: 0, server_shape: this.plain_shape }], complete: true };
 
-      let arg = {
+      const arg = {
          facecnt: 0,
          viscnt: new Array(this.nodes.length), // counter for each node
          vislvl: this.getVisLevel(),
@@ -84092,8 +84079,8 @@ class ClonedNodes {
 
       arg.reset();
 
-      let total = this.scanVisible(arg),
-          maxnumnodes = this.getMaxVisNodes();
+      let total = this.scanVisible(arg);
+      const maxnumnodes = this.getMaxVisNodes();
 
       if (maxnumnodes > 0) {
          while ((total > maxnumnodes) && (arg.vislvl > 1)) {
@@ -84110,12 +84097,10 @@ class ClonedNodes {
       console.log(`Total visible nodes ${total} numfaces ${arg.facecnt}`);
 
       if (arg.facecnt > maxnumfaces) {
-
-         let bignumfaces = maxnumfaces * (frustum ? 0.8 : 1.0),
-             bignumnodes = maxnumnodes * (frustum ? 0.8 : 1.0);
-
-         // define minimal volume, which always to shown
-         let boundary = this.getVolumeBoundary(arg.viscnt, bignumfaces, bignumnodes);
+         const bignumfaces = maxnumfaces * (frustum ? 0.8 : 1.0),
+               bignumnodes = maxnumnodes * (frustum ? 0.8 : 1.0),
+               // define minimal volume, which always to shown
+               boundary = this.getVolumeBoundary(arg.viscnt, bignumfaces, bignumnodes);
 
          minVol = boundary.min;
          maxVol = boundary.max;
@@ -84126,11 +84111,13 @@ class ClonedNodes {
              arg.frustum = frustum;
              arg.totalcam = 0;
              arg.func = function(node) {
-                if (node.vol <= minVol) // only small volumes are interesting
-                   if (this.frustum.CheckShape(this.getmatrix(), node)) {
+                if (node.vol <= minVol) {
+                    // only small volumes are interesting
+                    if (this.frustum.CheckShape(this.getmatrix(), node)) {
                       this.viscnt[node.id]++;
                       this.totalcam += node.nfaces;
                    }
+                }
 
                 return true;
              };
@@ -84154,9 +84141,9 @@ class ClonedNodes {
       arg.items = [];
 
       arg.func = function(node) {
-         if (node.sortid < sortidcut) {
+         if (node.sortid < sortidcut)
             this.items.push(this.copyStack());
-         } else if ((camVol >= 0) && (node.vol > camVol)) {
+          else if ((camVol >= 0) && (node.vol > camVol)) {
             if (this.frustum.CheckShape(this.getmatrix(), node))
                this.items.push(this.copyStack(camFact));
          }
@@ -84172,13 +84159,12 @@ class ClonedNodes {
      * @desc In current list we should mark if object already exists
      * from previous list we should collect objects which are not there */
    mergeVisibles(current, prev) {
-
-      let indx2 = 0, del = [];
+      let indx2 = 0;
+      const del = [];
       for (let indx1 = 0; (indx1 < current.length) && (indx2 < prev.length); ++indx1) {
-
-         while ((indx2 < prev.length) && (prev[indx2].seqid < current[indx1].seqid)) {
+         while ((indx2 < prev.length) && (prev[indx2].seqid < current[indx1].seqid))
             del.push(prev[indx2++]); // this entry should be removed
-         }
+
 
          if ((indx2 < prev.length) && (prev[indx2].seqid === current[indx1].seqid)) {
             if (prev[indx2].done) current[indx1].done = true; // copy ready flag
@@ -84196,15 +84182,14 @@ class ClonedNodes {
    /** @summary Collect all uniques shapes which should be built
     *  @desc Check if same shape used many times for drawing */
    collectShapes(lst) {
-
       // nothing else - just that single shape
       if (this.plain_shape)
-         return [ this.plain_shape ];
+         return [this.plain_shape];
 
-      let shapes = [];
+      const shapes = [];
 
       for (let i = 0; i < lst.length; ++i) {
-         let entry = lst[i],
+         const entry = lst[i],
              shape = this.getNodeShape(entry.nodeid);
 
          if (!shape) continue; // strange, but avoid misleading
@@ -84215,9 +84200,9 @@ class ClonedNodes {
             shapes.push({ id: shape._id, shape, vol: this.nodes[entry.nodeid].vol, refcnt: 1, factor: 1, ready: false });
 
             // shapes.push( { obj: shape, vol: this.nodes[entry.nodeid].vol });
-         } else {
+         } else
             shapes[shape._id].refcnt++;
-         }
+
 
          entry.shape = shapes[shape._id]; // remember shape used
 
@@ -84227,18 +84212,18 @@ class ClonedNodes {
       }
 
       // now sort shapes in volume decrease order
-      shapes.sort((a,b) => b.vol*b.factor - a.vol*a.factor);
+      shapes.sort((a, b) => b.vol*b.factor - a.vol*a.factor);
 
       // now set new shape ids according to the sorted order and delete temporary field
       for (let n = 0; n < shapes.length; ++n) {
-         let item = shapes[n];
+         const item = shapes[n];
          item.id = n; // set new ID
          delete item.shape._id; // remove temporary field
       }
 
       // as last action set current shape id to each entry
       for (let i = 0; i < lst.length; ++i) {
-         let entry = lst[i];
+         const entry = lst[i];
          if (entry.shape) {
             entry.shapeid = entry.shape.id; // keep only id for the entry
             delete entry.shape; // remove direct references
@@ -84250,12 +84235,11 @@ class ClonedNodes {
 
    /** @summary Merge shape lists */
    mergeShapesLists(oldlst, newlst) {
-
       if (!oldlst) return newlst;
 
       // set geometry to shape object itself
       for (let n = 0; n < oldlst.length; ++n) {
-         let item = oldlst[n];
+         const item = oldlst[n];
 
          item.shape._geom = item.geom;
          delete item.geom;
@@ -84268,7 +84252,7 @@ class ClonedNodes {
 
       // take from shape (if match)
       for (let n = 0; n < newlst.length; ++n) {
-         let item = newlst[n];
+         const item = newlst[n];
 
          if (item.shape._geom !== undefined) {
             item.geom = item.shape._geom;
@@ -84283,7 +84267,7 @@ class ClonedNodes {
 
       // now delete all unused geometries
       for (let n = 0; n < oldlst.length; ++n) {
-         let item = oldlst[n];
+         const item = oldlst[n];
          delete item.shape._geom;
          delete item.shape._geomZ;
       }
@@ -84293,13 +84277,12 @@ class ClonedNodes {
 
    /** @summary Build shapes */
    buildShapes(lst, limit, timelimit) {
-
-      let created = 0,
-          tm1 = new Date().getTime(),
-          res = { done: false, shapes: 0, faces: 0, notusedshapes: 0 };
+      let created = 0;
+      const tm1 = new Date().getTime(),
+            res = { done: false, shapes: 0, faces: 0, notusedshapes: 0 };
 
       for (let n = 0; n < lst.length; ++n) {
-         let item = lst[n];
+         const item = lst[n];
 
          // if enough faces are produced, nothing else is required
          if (res.done) { item.ready = true; continue; }
@@ -84318,10 +84301,10 @@ class ClonedNodes {
          if (!item.used) res.notusedshapes++;
          res.faces += item.nfaces * item.refcnt;
 
-         if (res.faces >= limit) {
+         if (res.faces >= limit)
             res.done = true;
-         } else if ((created > 0.01*lst.length) && (timelimit !== undefined)) {
-            let tm2 = new Date().getTime();
+          else if ((created > 0.01*lst.length) && (timelimit !== undefined)) {
+            const tm2 = new Date().getTime();
             if (tm2-tm1 > timelimit) return res;
          }
       }
@@ -84336,52 +84319,51 @@ class ClonedNodes {
    static formatServerElement(elem) {
       elem.kind = 2; // special element for geom viewer, used in TGeoPainter
       elem.vis = 2; // visibility is alwys on
-      let m = elem.matr;
+      const m = elem.matr;
       delete elem.matr;
       if (!m?.length) return elem;
 
-      if (m.length == 16) {
+      if (m.length === 16)
          elem.matrix = m;
-      } else {
-         let nm = elem.matrix = new Array(16);
+       else {
+         const nm = elem.matrix = new Array(16);
          nm.fill(0);
          nm[0] = nm[5] = nm[10] = nm[15] = 1;
 
-         if (m.length == 3) {
+         if (m.length === 3) {
             // translation martix
             nm[12] = m[0]; nm[13] = m[1]; nm[14] = m[2];
-         } else if (m.length == 4) {
+         } else if (m.length === 4) {
             // scale matrix
             nm[0] = m[0]; nm[5] = m[1]; nm[10] = m[2]; nm[15] = m[3];
-         } else if (m.length == 9) {
+         } else if (m.length === 9) {
             // rotation matrix
             nm[0] = m[0]; nm[4] = m[1]; nm[8] = m[2];
             nm[1] = m[3]; nm[5] = m[4]; nm[9] = m[5];
             nm[2] = m[6]; nm[6] = m[7]; nm[10] = m[8];
-         } else {
+         } else
             console.error(`wrong number of elements ${m.length} in the matrix`);
-         }
       }
       return elem;
    }
+
 }
 
 function createFlippedGeom(geom) {
-
    let pos = geom.getAttribute('position').array,
-       norm = geom.getAttribute('normal').array,
-       index = geom.getIndex();
+       norm = geom.getAttribute('normal').array;
+   const index = geom.getIndex();
 
    if (index) {
       // we need to unfold all points to
-      let arr = index.array,
-          i0 = geom.drawRange.start,
-          ilen = geom.drawRange.count;
+      const arr = index.array,
+            i0 = geom.drawRange.start;
+      let ilen = geom.drawRange.count;
       if (i0 + ilen > arr.length) ilen = arr.length - i0;
 
-      let dpos = new Float32Array(ilen*3), dnorm = new Float32Array(ilen*3);
+      const dpos = new Float32Array(ilen*3), dnorm = new Float32Array(ilen*3);
       for (let ii = 0; ii < ilen; ++ii) {
-         let k = arr[i0 + ii];
+         const k = arr[i0 + ii];
          if ((k < 0) || (k*3 >= pos.length))
             console.log(`strange index ${k*3} totallen = ${pos.length}`);
          dpos[ii*3] = pos[k*3];
@@ -84395,7 +84377,7 @@ function createFlippedGeom(geom) {
       pos = dpos; norm = dnorm;
    }
 
-   let len = pos.length,
+   const len = pos.length,
        newpos = new Float32Array(len),
        newnorm = new Float32Array(len);
 
@@ -84412,7 +84394,7 @@ function createFlippedGeom(geom) {
       shift+=3; if (shift===6) shift=-3; // values 0,3,-3
    }
 
-   let geomZ = new BufferGeometry();
+   const geomZ = new BufferGeometry();
    geomZ.setAttribute('position', new BufferAttribute(newpos, 3));
    geomZ.setAttribute('normal', new BufferAttribute(newnorm, 3));
 
@@ -84427,12 +84409,11 @@ function createFlippedGeom(geom) {
   * @param {Object} material - material
   * @private */
 function createFlippedMesh(shape, material) {
-
    if (shape.geomZ === undefined)
       shape.geomZ = createFlippedGeom(shape.geom);
 
-   let mesh = new Mesh(shape.geomZ, material);
-   mesh.scale.copy(new Vector3(1,1,-1));
+   const mesh = new Mesh(shape.geomZ, material);
+   mesh.scale.copy(new Vector3(1, 1, -1));
    mesh.updateMatrix();
 
    mesh._flippedMesh = true;
@@ -84449,29 +84430,30 @@ function getBoundingBox(node, box3, local_coordinates) {
    if (!box3) box3 = new Box3().makeEmpty();
 
    if (node.isInstancedMesh) {
-      let m = new Matrix4(), b = new Box3().makeEmpty();
+      const m = new Matrix4(), b = new Box3().makeEmpty();
 
       node.geometry.computeBoundingBox();
 
       for (let i = 0; i < node.count; i++) {
          node.getMatrixAt(i, m);
-         b.copy( node.geometry.boundingBox ).applyMatrix4( m );
-         box3.union( b );
+         b.copy(node.geometry.boundingBox).applyMatrix4(m);
+         box3.union(b);
       }
       return box3;
    }
 
    if (!local_coordinates) node.updateWorldMatrix(false, false);
 
-   let v1 = new Vector3(), attribute = node.geometry.attributes?.position;
+   const v1 = new Vector3(), attribute = node.geometry.attributes?.position;
 
-   if ( attribute !== undefined )
+   if (attribute !== undefined) {
       for (let i = 0, l = attribute.count; i < l; i++) {
          // v1.fromAttribute( attribute, i ).applyMatrix4( node.matrixWorld );
-         v1.fromBufferAttribute( attribute, i );
-         if (!local_coordinates) v1.applyMatrix4( node.matrixWorld );
-         box3.expandByPoint( v1 );
+         v1.fromBufferAttribute(attribute, i);
+         if (!local_coordinates) v1.applyMatrix4(node.matrixWorld);
+         box3.expandByPoint(v1);
       }
+   }
 
    return box3;
 }
@@ -84497,8 +84479,7 @@ function cleanupShape(shape) {
   * @param origin - camera position used to provide sorting
   * @param method - name of sorting method like 'pnt', 'ray', 'size', 'dflt'  */
 function produceRenderOrder(toplevel, origin, method, clones) {
-
-   let raycast = new Raycaster();
+   const raycast = new Raycaster();
 
    function setdefaults(top) {
       if (!top) return;
@@ -84515,19 +84496,17 @@ function produceRenderOrder(toplevel, origin, method, clones) {
       if (!obj.children) return;
 
       for (let k = 0; k < obj.children.length; ++k) {
-         let chld = obj.children[k];
+         const chld = obj.children[k];
          if (chld.$jsroot_order === lvl) {
             if (chld.material) {
                if (chld.material.transparent) {
                   chld.material.depthWrite = false; // disable depth writing for transparent
                   arr.push(chld);
-               } else {
+               } else
                   setdefaults(chld);
-               }
             }
-         } else if ((obj.$jsroot_depth === undefined) || (obj.$jsroot_depth < lvl)) {
+         } else if ((obj.$jsroot_depth === undefined) || (obj.$jsroot_depth < lvl))
             traverse(chld, lvl, arr);
-         }
       }
    }
 
@@ -84542,20 +84521,19 @@ function produceRenderOrder(toplevel, origin, method, clones) {
          return false;
       }
 
-      let tmp_vect = new Vector3();
+      const tmp_vect = new Vector3();
 
       // first calculate distance to the camera
       // it gives preliminary order of volumes
-
       for (let i = 0; i < arr.length; ++i) {
-         let mesh = arr[i],
-             box3 = mesh.$jsroot_box3;
+         const mesh = arr[i];
+         let box3 = mesh.$jsroot_box3;
 
          if (!box3)
             mesh.$jsroot_box3 = box3 = getBoundingBox(mesh);
 
          if (method === 'size') {
-            let sz = box3.getSize(new Vector3());
+            const sz = box3.getSize(new Vector3());
             mesh.$jsroot_distance = sz.x*sz.y*sz.z;
             continue;
          }
@@ -84565,8 +84543,8 @@ function produceRenderOrder(toplevel, origin, method, clones) {
             continue;
          }
 
-         let dist = Math.min(origin.distanceTo(box3.min), origin.distanceTo(box3.max)),
-             pnt = new Vector3(box3.min.x, box3.min.y, box3.max.z);
+         let dist = Math.min(origin.distanceTo(box3.min), origin.distanceTo(box3.max));
+         const pnt = new Vector3(box3.min.x, box3.min.y, box3.max.z);
 
          dist = Math.min(dist, origin.distanceTo(pnt));
          pnt.set(box3.min.x, box3.max.y, box3.min.z);
@@ -84583,29 +84561,27 @@ function produceRenderOrder(toplevel, origin, method, clones) {
          mesh.$jsroot_distance = dist;
       }
 
-      arr.sort((a,b) => a.$jsroot_distance - b.$jsroot_distance);
+      arr.sort((a, b) => a.$jsroot_distance - b.$jsroot_distance);
 
-      let resort = new Array(arr.length);
+      const resort = new Array(arr.length);
 
       for (let i = 0; i < arr.length; ++i) {
          arr[i].$jsroot_index = i;
          resort[i] = arr[i];
       }
 
-      if (method === 'ray')
+      if (method === 'ray') {
          for (let i=arr.length - 1; i >= 0; --i) {
-            let mesh = arr[i], intersects,
-                box3 = mesh.$jsroot_box3,
-                direction = box3.getCenter(tmp_vect);
+            const mesh = arr[i], box3 = mesh.$jsroot_box3;
+            let intersects, direction = box3.getCenter(tmp_vect);
 
-            for(let ntry = 0; ntry < 2; ++ntry) {
-
+            for (let ntry = 0; ntry < 2; ++ntry) {
                direction.sub(origin).normalize();
 
-               raycast.set( origin, direction );
+               raycast.set(origin, direction);
 
                intersects = raycast.intersectObjects(arr, false) || []; // only plain array
-               let unique = [];
+               const unique = [];
 
                for (let k1 = 0; k1 < intersects.length; ++k1) {
                   if (unique.indexOf(intersects[k1].object) < 0)
@@ -84620,7 +84596,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
 
                if ((intersects.indexOf(mesh) >= 0) || (ntry > 0)) break;
 
-               let pos = mesh.geometry.attributes.position.array;
+               const pos = mesh.geometry.attributes.position.array;
 
                direction = new Vector3((pos[0]+pos[3]+pos[6])/3, (pos[1]+pos[4]+pos[7])/3, (pos[2]+pos[5]+pos[8])/3);
 
@@ -84629,7 +84605,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
 
             // now push first object in intersects to the front
             for (let k1 = 0; k1 < intersects.length - 1; ++k1) {
-               let mesh1 = intersects[k1], mesh2 = intersects[k1+1],
+               const mesh1 = intersects[k1], mesh2 = intersects[k1+1],
                    i1 = mesh1.$jsroot_index, i2 = mesh2.$jsroot_index;
                if (i1 < i2) continue;
                for (let ii = i2; ii < i1; ++ii) {
@@ -84640,6 +84616,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
                mesh2.$jsroot_index = i1;
             }
          }
+      }
 
       for (let i = 0; i < resort.length; ++i) {
          resort[i].renderOrder = Math.round(maxorder - (i+1) / (resort.length + 1) * (maxorder - minorder));
@@ -84651,7 +84628,8 @@ function produceRenderOrder(toplevel, origin, method, clones) {
    }
 
    function process(obj, lvl, minorder, maxorder) {
-      let arr = [], did_sort = false;
+      const arr = [];
+      let did_sort = false;
 
       traverse(obj, lvl, arr);
 
@@ -84666,7 +84644,8 @@ function produceRenderOrder(toplevel, origin, method, clones) {
       }
 
       for (let k = 0; k < arr.length; ++k) {
-         let next = arr[k].parent, min = minorder, max = maxorder;
+         const next = arr[k].parent;
+         let min = minorder, max = maxorder;
 
          if (did_sort) {
             max = arr[k].renderOrder;
@@ -84677,7 +84656,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
       }
    }
 
-   if (!method || (method == 'dflt'))
+   if (!method || (method === 'dflt'))
       setdefaults(toplevel);
    else
       process(toplevel, 0, 1, 1000000);
@@ -87105,20 +87084,19 @@ const _ENTIRE_SCENE = 0, _BLOOM_SCENE = 1,
 /** @summary Function used to build hierarchy of elements of overlap object
   * @private */
 function buildOverlapVolume(overlap) {
-
-   let vol = create$1(clTGeoVolume);
+   const vol = create$1(clTGeoVolume);
 
    setGeoBit(vol, geoBITS.kVisDaughters, true);
    vol.$geoh = true; // workaround, let know browser that we are in volumes hierarchy
    vol.fName = '';
 
-   let node1 = create$1(clTGeoNodeMatrix);
+   const node1 = create$1(clTGeoNodeMatrix);
    node1.fName = overlap.fVolume1.fName || 'Overlap1';
    node1.fMatrix = overlap.fMatrix1;
    node1.fVolume = overlap.fVolume1;
    // node1.fVolume.fLineColor = 2; // color assigned with _splitColors
 
-   let node2 = create$1(clTGeoNodeMatrix);
+   const node2 = create$1(clTGeoNodeMatrix);
    node2.fName = overlap.fVolume2.fName || 'Overlap2';
    node2.fMatrix = overlap.fMatrix2;
    node2.fVolume = overlap.fVolume2;
@@ -87136,14 +87114,13 @@ let $comp_col_cnt = 0;
 /** @summary Function used to build hierarchy of elements of composite shapes
   * @private */
 function buildCompositeVolume(comp, maxlvl, side) {
-
    if (maxlvl === undefined) maxlvl = 1;
    if (!side) {
       $comp_col_cnt = 0;
       side = '';
    }
 
-   let vol = create$1(clTGeoVolume);
+   const vol = create$1(clTGeoVolume);
    setGeoBit(vol, geoBITS.kVisThis, true);
    setGeoBit(vol, geoBITS.kVisDaughters, true);
 
@@ -87158,14 +87135,14 @@ function buildCompositeVolume(comp, maxlvl, side) {
    vol.$geoh = true; // workaround, let know browser that we are in volumes hierarchy
    vol.fName = '';
 
-   let node1 = create$1(clTGeoNodeMatrix);
+   const node1 = create$1(clTGeoNodeMatrix);
    setGeoBit(node1, geoBITS.kVisThis, true);
    setGeoBit(node1, geoBITS.kVisDaughters, true);
    node1.fName = 'Left';
    node1.fMatrix = comp.fNode.fLeftMat;
    node1.fVolume = buildCompositeVolume(comp.fNode.fLeft, maxlvl-1, side + 'Left');
 
-   let node2 = create$1(clTGeoNodeMatrix);
+   const node2 = create$1(clTGeoNodeMatrix);
    setGeoBit(node2, geoBITS.kVisThis, true);
    setGeoBit(node2, geoBITS.kVisDaughters, true);
    node2.fName = 'Right';
@@ -87186,9 +87163,8 @@ function buildCompositeVolume(comp, maxlvl, side) {
   * @return {Object} with scene, renderer and other attributes
   * @private */
 function getHistPainter3DCfg(painter) {
-   let main =  painter?.getFramePainter();
+   const main =  painter?.getFramePainter();
    if (painter?.mode3d && isFunc(main?.create3DScene) && main?.renderer) {
-
       let scale_x = 1, scale_y = 1, scale_z = 1,
           offset_x = 0, offset_y = 0, offset_z = 0;
 
@@ -87225,10 +87201,9 @@ function getHistPainter3DCfg(painter) {
 /** @summary create list entity for geo object
   * @private */
 function createList(parent, lst, name, title) {
-
    if (!lst?.arr?.length) return;
 
-   let list_item = {
+   const list_item = {
        _name: name,
        _kind: prROOT + clTList,
        _title: title,
@@ -87250,7 +87225,7 @@ function createList(parent, lst, name, title) {
 
           checkDuplicates(null, lst.arr);
 
-          for (let n in lst.arr)
+          for (const n in lst.arr)
              createItem(node, lst.arr[n]);
 
           return true;
@@ -87270,11 +87245,11 @@ function expandGeoObject(parent, obj) {
 
    if (!parent || !obj) return false;
 
-   let isnode = (obj._typename.indexOf(clTGeoNode) === 0),
-       isvolume = (obj._typename.indexOf(clTGeoVolume) === 0),
-       ismanager = (obj._typename === clTGeoManager),
-       iseve = ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract)),
-       isoverlap = (obj._typename === clTGeoOverlap);
+   const isnode = (obj._typename.indexOf(clTGeoNode) === 0),
+         isvolume = (obj._typename.indexOf(clTGeoVolume) === 0),
+         ismanager = (obj._typename === clTGeoManager),
+         iseve = ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract)),
+         isoverlap = (obj._typename === clTGeoOverlap);
 
    if (!isnode && !isvolume && !ismanager && !iseve && !isoverlap) return false;
 
@@ -87347,9 +87322,8 @@ function provideVisStyle(obj) {
    if ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract))
       return obj.fRnrSelf ? ' geovis_this' : '';
 
-   let vis = !testGeoBit(obj, geoBITS.kVisNone) &&
-              testGeoBit(obj, geoBITS.kVisThis),
-       chld = testGeoBit(obj, geoBITS.kVisDaughters);
+   const vis = !testGeoBit(obj, geoBITS.kVisNone) && testGeoBit(obj, geoBITS.kVisThis);
+   let chld = testGeoBit(obj, geoBITS.kVisDaughters);
 
    if (chld && (!obj.fNodes || (obj.fNodes.arr.length === 0))) chld = false;
 
@@ -87378,7 +87352,7 @@ function updateBrowserIcons(obj, hpainter) {
 /** @summary Return stack for the item from list of intersection
   * @private */
 function getIntersectStack(item) {
-   let obj = item?.object;
+   const obj = item?.object;
    if (!obj) return null;
    if (obj.stack)
       return obj.stack;
@@ -87403,10 +87377,10 @@ class Toolbar {
 
    /** @summary add buttons */
    createButtons() {
-      let buttonsNames = [];
+      const buttonsNames = [];
 
       this.buttons.forEach(buttonConfig => {
-         let buttonName = buttonConfig.name;
+         const buttonName = buttonConfig.name;
          if (!buttonName)
             throw new Error('must provide button name in button config');
          if (buttonsNames.indexOf(buttonName) !== -1)
@@ -87414,7 +87388,7 @@ class Toolbar {
 
          buttonsNames.push(buttonName);
 
-         let title = buttonConfig.title || buttonConfig.name;
+         const title = buttonConfig.title || buttonConfig.name;
 
          if (!isFunc(buttonConfig.click))
             throw new Error('must provide button click() function in button config');
@@ -87428,7 +87402,7 @@ class Toolbar {
 
    /** @summary change brightness */
    changeBrightness(bright) {
-      if (this.bright == bright) return;
+      if (this.bright === bright) return;
       this.element.selectAll('*').remove();
       this.bright = bright;
       this.createButtons();
@@ -87464,27 +87438,26 @@ class GeoDrawingControl extends InteractiveControl {
 
    /** @summary draw special */
    drawSpecial(col, indx) {
-      let c = this.mesh;
+      const c = this.mesh;
       if (!c?.material) return;
 
       if (c.isInstancedMesh) {
-
          if (c._highlight_mesh) {
             c.remove(c._highlight_mesh);
             delete c._highlight_mesh;
          }
 
          if (col && indx !== undefined) {
-            let h = new Mesh(c.geometry, c.material.clone());
+            const h = new Mesh(c.geometry, c.material.clone());
 
             if (this.bloom) {
                h.layers.enable(_BLOOM_SCENE);
                h.material.emissive = new Color(0x00ff00);
             } else {
-               h.material.color = new Color( col );
-               h.material.opacity = 1.;
+               h.material.color = new Color(col);
+               h.material.opacity = 1.0;
             }
-            let m = new Matrix4();
+            const m = new Matrix4();
             c.getMatrixAt(indx, m);
             h.applyMatrix4(m);
             c.add(h);
@@ -87497,7 +87470,7 @@ class GeoDrawingControl extends InteractiveControl {
       }
 
       if (col) {
-         if (!c.origin)
+         if (!c.origin) {
             c.origin = {
               color: c.material.color,
               emissive: c.material.emissive,
@@ -87505,12 +87478,13 @@ class GeoDrawingControl extends InteractiveControl {
               width: c.material.linewidth,
               size: c.material.size
            };
+         }
          if (this.bloom) {
             c.layers.enable(_BLOOM_SCENE);
             c.material.emissive = new Color(0x00ff00);
          } else {
-            c.material.color = new Color( col );
-            c.material.opacity = 1.;
+            c.material.color = new Color(col);
+            c.material.opacity = 1.0;
          }
 
          if (c.hightlightWidthScale && !browser.isWin)
@@ -87552,7 +87526,6 @@ class TGeoPainter extends ObjectPainter {
      * @param {object|string} dom - DOM element for drawing or element id
      * @param {object} obj - supported TGeo object */
    constructor(dom, obj) {
-
       let gm;
       if (obj?._typename === clTGeoManager) {
          gm = obj;
@@ -87606,7 +87579,7 @@ class TGeoPainter extends ObjectPainter {
          ],
          trans_radial: 0,
          trans_z: 0,
-         scale: new Vector3(1,1,1),
+         scale: new Vector3(1, 1, 1),
          zoom: 1.0, rotatey: 0, rotatez: 0,
          depthMethodItems: [
             { name: 'Default', value: 'dflt' },
@@ -87662,7 +87635,7 @@ class TGeoPainter extends ObjectPainter {
             { name: 'MeshPhysicalMaterial', value: 'physical', emissive: true,
                props: [{ name: 'flatShading' }, { name: 'roughness', min: 0, max: 1, step: 0.001 }, { name: 'metalness', min: 0, max: 1, step: 0.001 }, { name: 'reflectivity', min: 0, max: 1, step: 0.001 }] },
             { name: 'MeshPhongMaterial', value: 'phong', emissive: true,
-                props: [{ name: 'flatShading' }, { name: 'shininess', min: 0, max: 100, step: 0.1 }]},
+                props: [{ name: 'flatShading' }, { name: 'shininess', min: 0, max: 100, step: 0.1 }] },
             { name: 'MeshNormalMaterial', value: 'normal', props: [{ name: 'flatShading' }] },
             { name: 'MeshDepthMaterial', value: 'depth' },
             { name: 'MeshMatcapMaterial', value: 'matcap' },
@@ -87684,7 +87657,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Function callled by framework when dark mode is changed
      * @private */
    changeDarkMode(mode) {
-      if ((this.ctrl.background == '#000000') || (this.ctrl.background == '#ffffff'))
+      if ((this.ctrl.background === '#000000') || (this.ctrl.background === '#ffffff'))
          this.changedBackground((mode ?? settings.DarkMode) ? '#000000' : '#ffffff');
    }
 
@@ -87692,8 +87665,8 @@ class TGeoPainter extends ObjectPainter {
      * @private */
    changeStage(value, msg) {
       this.drawing_stage = value;
-      if (!msg)
-         switch(value) {
+      if (!msg) {
+         switch (value) {
             case stageInit: msg = 'Building done'; break;
             case stageCollect: msg = 'collect visibles'; break;
             case stageWorkerCollect: msg = 'worker collect visibles'; break;
@@ -87707,6 +87680,7 @@ class TGeoPainter extends ObjectPainter {
             case stageBuildProj: msg = 'Build projection'; break;
             default: msg = `stage ${value}`;
          }
+      }
       this.drawing_log = msg;
    }
 
@@ -87718,7 +87692,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Create toolbar */
    createToolbar() {
       if (this._toolbar || !this._webgl || this.ctrl.notoolbar || this.isBatchMode()) return;
-      let buttonList = [{
+      const buttonList = [{
          name: 'toImage',
          title: 'Save as PNG',
          icon: 'camera',
@@ -87746,26 +87720,26 @@ class TGeoPainter extends ObjectPainter {
          this.initVRMode();
       }
 
-      if (settings.ContextMenu)
-      buttonList.push({
-         name: 'menu',
-         title: 'Show context menu',
-         icon: 'question',
-         click: evnt => {
+      if (settings.ContextMenu) {
+         buttonList.push({
+            name: 'menu',
+            title: 'Show context menu',
+            icon: 'question',
+            click: evnt => {
+               evnt.preventDefault();
+               evnt.stopPropagation();
 
-            evnt.preventDefault();
-            evnt.stopPropagation();
+               if (closeMenu()) return;
 
-            if (closeMenu()) return;
+               createMenu(evnt, this).then(menu => {
+                   menu.painter.fillContextMenu(menu);
+                   menu.show();
+               });
+            }
+         });
+      }
 
-            createMenu(evnt, this).then(menu => {
-                menu.painter.fillContextMenu(menu);
-                menu.show();
-            });
-         }
-      });
-
-      let bkgr = new Color(this.ctrl.background);
+      const bkgr = new Color(this.ctrl.background);
 
       this._toolbar = new Toolbar(this.selectDom(), (bkgr.r + bkgr.g + bkgr.b) < 1, buttonList);
 
@@ -87785,13 +87759,13 @@ class TGeoPainter extends ObjectPainter {
       this._raycasterOrigin = new Vector3();
 
       navigator.getVRDisplays().then(displays => {
-         let vrDisplay = displays[0];
+         const vrDisplay = displays[0];
          if (!vrDisplay) return;
          this._renderer.vr.setDevice(vrDisplay);
          this._vrDisplay = vrDisplay;
-         if (vrDisplay.stageParameters) {
+         if (vrDisplay.stageParameters)
             this._standingMatrix.fromArray(vrDisplay.stageParameters.sittingToStandingTransform);
-         }
+
          this.initVRControllersGeometry();
       });
    }
@@ -87799,7 +87773,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Init VR controllers geometry
      * @private */
    initVRControllersGeometry() {
-      let geometry = new SphereGeometry(0.025, 18, 36),
+      const geometry = new SphereGeometry(0.025, 18, 36),
           material = new MeshBasicMaterial({ color: 'grey', vertexColors: false }),
           rayMaterial = new MeshBasicMaterial({ color: 'fuchsia', vertexColors: false }),
           rayGeometry = new BoxGeometry(0.001, 0.001, 2),
@@ -87825,14 +87799,14 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Update VR controllers list
      * @private */
    updateVRControllersList() {
-      let gamepads = navigator.getGamepads && navigator.getGamepads();
+      const gamepads = navigator.getGamepads && navigator.getGamepads();
       // Has controller list changed?
-      if (this.vrControllers && (gamepads.length === this.vrControllers.length)) { return; }
+      if (this.vrControllers && (gamepads.length === this.vrControllers.length))  return;
       // Hide meshes.
       this._controllersMeshes.forEach(mesh => { mesh.visible = false; });
       this._vrControllers = [];
       for (let i = 0; i < gamepads.length; ++i) {
-         if (!gamepads[i] || !gamepads[i].pose) { continue; }
+         if (!gamepads[i] || !gamepads[i].pose)  continue;
          this._vrControllers.push({
             gamepad: gamepads[i],
             mesh: this._controllersMeshes[i]
@@ -87890,7 +87864,7 @@ class TGeoPainter extends ObjectPainter {
       this._vrDisplay.requestPresent([{ source: this._renderer.domElement }]).then(() => {
          this._previousCameraNear = this._camera.near;
          this._dolly.position.set(this._camera.position.x/4, -this._camera.position.y/8, -this._camera.position.z/4);
-         this._camera.position.set(0,0,0);
+         this._camera.position.set(0, 0, 0);
          this._dolly.add(this._camera);
          this._camera.near = 0.1;
          this._camera.updateProjectionMatrix();
@@ -87902,9 +87876,9 @@ class TGeoPainter extends ObjectPainter {
       });
       this._renderer.vr.enabled = true;
 
-      window.addEventListener( 'keydown', evnt => {
+      window.addEventListener('keydown', evnt => {
          // Esc Key turns VR mode off
-         if (evnt.code == 'Escape') this.exitVRMode();
+         if (evnt.code === 'Escape') this.exitVRMode();
       });
    }
 
@@ -87939,7 +87913,7 @@ class TGeoPainter extends ObjectPainter {
 
       let regexp, exact = false;
 
-      //arg.node.fVolume
+      // arg.node.fVolume
       if (name.indexOf('*') < 0) {
          regexp = new RegExp('^'+name+'$');
          exact = true;
@@ -87958,12 +87932,12 @@ class TGeoPainter extends ObjectPainter {
    decodeOptions(opt) {
       if (!isStr(opt)) opt = '';
 
-      if (this.superimpose && (opt.indexOf('same') == 0))
+      if (this.superimpose && (opt.indexOf('same') === 0))
          opt = opt.slice(4);
 
-      let res = this.ctrl;
+      const res = this.ctrl,
 
-      let macro = opt.indexOf('macro:');
+       macro = opt.indexOf('macro:');
       if (macro >= 0) {
          let separ = opt.indexOf(';', macro+6);
          if (separ < 0) separ = opt.length;
@@ -87973,21 +87947,22 @@ class TGeoPainter extends ObjectPainter {
       }
 
       while (true) {
-         let pp = opt.indexOf('+'), pm = opt.indexOf('-');
+         const pp = opt.indexOf('+'), pm = opt.indexOf('-');
          if ((pp < 0) && (pm < 0)) break;
          let p1 = pp, sign = '+';
          if ((p1 < 0) || ((pm >= 0) && (pm < pp))) { p1 = pm; sign = '-'; }
 
-         let p2 = p1+1, regexp = /[,; .]/;
-         while ((p2 < opt.length) && !regexp.test(opt[p2]) && (opt[p2] != '+') && (opt[p2] != '-')) p2++;
+         let p2 = p1+1;
+         const regexp = /[,; .]/;
+         while ((p2 < opt.length) && !regexp.test(opt[p2]) && (opt[p2] !== '+') && (opt[p2] !== '-')) p2++;
 
          const name = opt.substring(p1+1, p2);
-         opt = opt.slice(0,p1) + opt.slice(p2);
+         opt = opt.slice(0, p1) + opt.slice(p2);
 
          this.modifyVisisbility(name, sign);
       }
 
-      let d = new DrawOptions(opt);
+      const d = new DrawOptions(opt);
 
       if (d.check('MAIN')) res.is_main = true;
 
@@ -88025,7 +88000,7 @@ class TGeoPainter extends ObjectPainter {
 
       const getCamPart = () => {
          let neg = 1;
-         if (d.part[0] == 'N') {
+         if (d.part[0] === 'N') {
             neg = -1;
             d.part = d.part.slice(1);
          }
@@ -88044,12 +88019,13 @@ class TGeoPainter extends ObjectPainter {
 
       if (d.check('BKGR_', true)) {
          let bckgr = null;
-         if (d.partAsInt(1) > 0) {
-           bckgr = getColor(d.partAsInt());
-         } else {
-            for (let col = 0; col < 8; ++col)
+         if (d.partAsInt(1) > 0)
+            bckgr = getColor(d.partAsInt());
+          else {
+            for (let col = 0; col < 8; ++col) {
                if (getColor(col).toUpperCase() === d.part)
                   bckgr = getColor(col);
+            }
          }
          if (bckgr) res.background = '#' + new Color(bckgr).getHexString();
       }
@@ -88103,11 +88079,11 @@ class TGeoPainter extends ObjectPainter {
 
       if (d.check('COUNT')) res._count = true;
 
-      if (d.check('TRANSP',true))
-         res.transparency = d.partAsInt(0,100)/100;
+      if (d.check('TRANSP', true))
+         res.transparency = d.partAsInt(0, 100)/100;
 
-      if (d.check('OPACITY',true))
-         res.transparency = 1 - d.partAsInt(0,100)/100;
+      if (d.check('OPACITY', true))
+         res.transparency = 1 - d.partAsInt(0, 100)/100;
 
       if (d.check('AXISCENTER') || d.check('AXISC') || d.check('AC')) res._axis = 2;
       if (d.check('AXIS') || d.check('A')) res._axis = 1;
@@ -88130,8 +88106,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Activate specified items in the browser */
    activateInBrowser(names, force) {
-
-      if (isStr(names)) names = [ names ];
+      if (isStr(names)) names = [names];
 
       if (this._hpainter) {
          // show browser if it not visible
@@ -88146,28 +88121,22 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary  method used to check matrix calculations performance with current three.js model */
    testMatrixes() {
-
       let errcnt = 0, totalcnt = 0, totalmax = 0;
 
-      let arg = {
+      const arg = {
             domatrix: true,
-            func: (/*node*/) => {
-
+            func: (/* node */) => {
                let m2 = this.getmatrix();
-
-               let entry = this.copyStack();
-
-               let mesh = this._clones.createObject3D(entry.stack, this._toplevel, 'mesh');
-
+               const entry = this.copyStack(),
+                     mesh = this._clones.createObject3D(entry.stack, this._toplevel, 'mesh');
                if (!mesh) return true;
 
                totalcnt++;
 
-               let m1 = mesh.matrixWorld, flip;
-
+               const m1 = mesh.matrixWorld;
                if (m1.equals(m2)) return true;
-               if ((m1.determinant() > 0) && (m2.determinant()<-0.9)) {
-                  flip = new Vector3(1,1,-1);
+               if ((m1.determinant() > 0) && (m2.determinant() < -0.9)) {
+                  const flip = new Vector3(1, 1, -1);
                   m2 = m2.clone().scale(flip);
                   if (m1.equals(m2)) return true;
                }
@@ -88186,14 +88155,13 @@ class TGeoPainter extends ObjectPainter {
 
                return false;
             }
-         };
+         },
 
-
-      let tm1 = new Date().getTime();
+       tm1 = new Date().getTime();
 
       /* let cnt = */ this._clones.scanVisible(arg);
 
-      let tm2 = new Date().getTime();
+      const tm2 = new Date().getTime();
 
       console.log(`Compare matrixes total ${totalcnt} errors ${errcnt} takes ${tm2-tm1} maxdiff ${totalmax}`);
    }
@@ -88209,9 +88177,9 @@ class TGeoPainter extends ObjectPainter {
       menu.addchk(this.ctrl.show_controls, 'Show Controls', () => this.showControlGui('toggle'));
 
       menu.add('sub:Show axes', () => this.setAxesDraw('toggle'));
-      menu.addchk(this.ctrl._axis == 0, 'off', 0, arg => this.setAxesDraw(parseInt(arg)));
-      menu.addchk(this.ctrl._axis == 1, 'side', 1, arg => this.setAxesDraw(parseInt(arg)));
-      menu.addchk(this.ctrl._axis == 2, 'center', 2, arg => this.setAxesDraw(parseInt(arg)));
+      menu.addchk(this.ctrl._axis === 0, 'off', 0, arg => this.setAxesDraw(parseInt(arg)));
+      menu.addchk(this.ctrl._axis === 1, 'side', 1, arg => this.setAxesDraw(parseInt(arg)));
+      menu.addchk(this.ctrl._axis === 2, 'center', 2, arg => this.setAxesDraw(parseInt(arg)));
       menu.add('endsub:');
 
       if (this.geo_manager)
@@ -88219,7 +88187,7 @@ class TGeoPainter extends ObjectPainter {
 
       menu.addchk(this.ctrl.wireframe, 'Wire frame', () => this.toggleWireFrame());
 
-      if(!this.getCanvPainter())
+      if (!this.getCanvPainter())
          menu.addchk(this.isTooltipAllowed(), 'Show tooltips', () => this.setTooltipAllowed('toggle'));
 
       menu.add('sub:Highlight');
@@ -88257,15 +88225,16 @@ class TGeoPainter extends ObjectPainter {
          menu.addchk(this.canRotateCamera(), 'Can rotate', () => this.changeCanRotate(!this.ctrl.can_rotate));
 
          menu.add('Get position', () => menu.info('Position (as url)', '&opt=' + this.produceCameraUrl()));
-         if (!this.isOrthoCamera())
+         if (!this.isOrthoCamera()) {
             menu.add('Absolute position', () => {
-               let url = this.produceCameraUrl(true), p = url.indexOf('camlx');
-               menu.info('Position (as url)', '&opt=' + ((p < 0) ? url : url.slice(0,p) + '\n' + url.slice(p)));
+               const url = this.produceCameraUrl(true), p = url.indexOf('camlx');
+               menu.info('Position (as url)', '&opt=' + ((p < 0) ? url : url.slice(0, p) + '\n' + url.slice(p)));
             });
+         }
 
          menu.add('sub:Kind');
          this.ctrl.cameraKindItems.forEach(item =>
-            menu.addchk(this.ctrl.camera_kind == item.value, item.name, item.value, arg => {
+            menu.addchk(this.ctrl.camera_kind === item.value, item.name, item.value, arg => {
                this.ctrl.camera_kind = arg;
                this.changeCamera();
             }));
@@ -88274,13 +88243,12 @@ class TGeoPainter extends ObjectPainter {
          if (this.isOrthoCamera()) {
             menu.add('sub:Overlay');
             this.ctrl.cameraOverlayItems.forEach(item =>
-               menu.addchk(this.ctrl.camera_overlay == item.value, item.name, item.value, arg => {
+               menu.addchk(this.ctrl.camera_overlay === item.value, item.name, item.value, arg => {
                   this.ctrl.camera_overlay = arg;
                   this.changeCamera();
                }));
             menu.add('endsub:');
          }
-
       }
       menu.add('endsub:');
 
@@ -88294,7 +88262,7 @@ class TGeoPainter extends ObjectPainter {
      * @param {number|Function} transparency - one could provide function
      * @param {boolean} [skip_render] - if specified, do not perform rendering */
    changedGlobalTransparency(transparency) {
-      let func = isFunc(transparency) ? transparency : null;
+      const func = isFunc(transparency) ? transparency : null;
       if (func || (transparency === undefined))
          transparency = this.ctrl.transparency;
 
@@ -88303,13 +88271,13 @@ class TGeoPainter extends ObjectPainter {
          if (node?.material?.inherentOpacity === undefined)
             return;
 
-         let t = func ? func(node) : undefined;
+         const t = func ? func(node) : undefined;
          if (t !== undefined)
             node.material.opacity = 1 - t;
          else
             node.material.opacity = Math.min(1 - (transparency || 0), node.material.inherentOpacity);
 
-         node.material.depthWrite = node.material.opacity == 1;
+         node.material.depthWrite = node.material.opacity === 1;
          node.material.transparent = node.material.opacity < 1;
       });
 
@@ -88318,12 +88286,10 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Method used to interactively change material kinds */
    changedMaterial() {
-
       this._toplevel?.traverse(node => {
          // ignore all kind of extra elements
-         if (node.material?.inherentArgs !== undefined) {
+         if (node.material?.inherentArgs !== undefined)
             node.material = createMaterial(this.ctrl, node.material.inherentArgs);
-         }
       });
 
       this.render3D(-1);
@@ -88331,7 +88297,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Change for all materials that property */
    changeMaterialProperty(name) {
-      let value = this.ctrl[name];
+      const value = this.ctrl[name];
       if (value === undefined)
          return console.error('No property ', name);
 
@@ -88357,19 +88323,18 @@ class TGeoPainter extends ObjectPainter {
    changedTransformation(arg) {
       if (!this._toplevel) return;
 
-      let ctrl = this.ctrl,
+      const ctrl = this.ctrl,
           translation = new Matrix4(),
           vect2 = new Vector3();
 
-      if (arg == 'reset')
+      if (arg === 'reset')
          ctrl.trans_z = ctrl.trans_radial = 0;
 
       this._toplevel.traverse(mesh => {
          if (mesh.stack !== undefined) {
+            const node = mesh.parent;
 
-            let node = mesh.parent;
-
-            if (arg == 'reset') {
+            if (arg === 'reset') {
                if (node.matrix0) {
                   node.matrix.copy(node.matrix0);
                   node.matrix.decompose(node.position, node.quaternion, node.scale);
@@ -88386,12 +88351,12 @@ class TGeoPainter extends ObjectPainter {
                node.matrix0 = node.matrix.clone();
                node.minvert = new Matrix4().copy(node.matrixWorld).invert();
 
-               let box3 = getBoundingBox(mesh, null, true),
+               const box3 = getBoundingBox(mesh, null, true),
                    signz = mesh._flippedMesh ? -1 : 1;
 
                // real center of mesh in local coordinates
                node.vect0 = new Vector3((box3.max.x + box3.min.x) / 2, (box3.max.y + box3.min.y) / 2, signz * (box3.max.z + box3.min.z) / 2).applyMatrix4(node.matrixWorld);
-               node.vect1 = new Vector3(0,0,0).applyMatrix4(node.minvert);
+               node.vect1 = new Vector3(0, 0, 0).applyMatrix4(node.minvert);
             }
 
             vect2.set(ctrl.trans_radial * node.vect0.x, ctrl.trans_radial * node.vect0.y, ctrl.trans_z * node.vect0.z).applyMatrix4(node.minvert).sub(node.vect1);
@@ -88400,11 +88365,10 @@ class TGeoPainter extends ObjectPainter {
             node.matrix.decompose(node.position, node.quaternion, node.scale);
             node.matrixWorldNeedsUpdate = true;
          } else if (mesh.stacks !== undefined) {
-
             mesh.instanceMatrix.needsUpdate = true;
 
-            if (arg == 'reset') {
-               mesh.trans?.forEach((item,i) => {
+            if (arg === 'reset') {
+               mesh.trans?.forEach((item, i) => {
                   mesh.setMatrixAt(i, item.matrix0);
                });
                delete mesh.trans;
@@ -88417,7 +88381,7 @@ class TGeoPainter extends ObjectPainter {
                mesh.geometry.computeBoundingBox();
 
                for (let i = 0; i < mesh.count; i++) {
-                  let item = {
+                  const item = {
                      matrix0: new Matrix4(),
                      minvert: new Matrix4()
                   };
@@ -88427,30 +88391,29 @@ class TGeoPainter extends ObjectPainter {
                   mesh.getMatrixAt(i, item.matrix0);
                   item.minvert.copy(item.matrix0).invert();
 
-                  let box3 = new Box3().copy(mesh.geometry.boundingBox).applyMatrix4(item.matrix0);
+                  const box3 = new Box3().copy(mesh.geometry.boundingBox).applyMatrix4(item.matrix0);
 
                   item.vect0 = new Vector3((box3.max.x + box3.min.x) / 2, (box3.max.y + box3.min.y) / 2, (box3.max.z + box3.min.z) / 2);
                   item.vect1 = new Vector3(0, 0, 0).applyMatrix4(item.minvert);
                }
             }
 
-            let mm = new Matrix4();
+            const mm = new Matrix4();
 
-            mesh.trans?.forEach((item,i) => {
+            mesh.trans?.forEach((item, i) => {
                vect2.set(ctrl.trans_radial * item.vect0.x, ctrl.trans_radial * item.vect0.y, ctrl.trans_z * item.vect0.z).applyMatrix4(item.minvert).sub(item.vect1);
 
                mm.multiplyMatrices(item.matrix0, translation.makeTranslation(vect2.x, vect2.y, vect2.z));
 
                mesh.setMatrixAt(i, mm);
             });
-
          }
       });
 
       this._toplevel.updateMatrixWorld();
 
       // axes drawing always triggers rendering
-      if (arg != 'norender')
+      if (arg !== 'norender')
          this.drawAxesAndOverlay();
    }
 
@@ -88476,7 +88439,7 @@ class TGeoPainter extends ObjectPainter {
       this.render3D(0);
 
       if (this._toolbar) {
-         let bkgr = new Color(this.ctrl.background);
+         const bkgr = new Color(this.ctrl.background);
          this._toolbar.changeBrightness((bkgr.r + bkgr.g + bkgr.b) < 1);
       }
    }
@@ -88486,11 +88449,11 @@ class TGeoPainter extends ObjectPainter {
       // while complete geo drawing can be removed until dat is loaded - just check and ignore callback
       if (!this.ctrl) return;
 
-      if (on === 'toggle') {
+      if (on === 'toggle')
          on = !this._gui;
-      } else if (on === undefined) {
+       else if (on === undefined)
          on = this.ctrl.show_controls;
-      }
+
 
       this.ctrl.show_controls = on;
 
@@ -88506,14 +88469,14 @@ class TGeoPainter extends ObjectPainter {
          return;
 
 
-      let main = this.selectDom();
-      if (main.style('position') == 'static')
+      const main = this.selectDom();
+      if (main.style('position') === 'static')
          main.style('position', 'relative');
 
       this._gui = new GUI({ container: main.node(), closeFolders: true, width: Math.min(300, this._scene_width / 2),
                             title: 'Settings' });
 
-      let dom = this._gui.domElement;
+      const dom = this._gui.domElement;
       dom.style.position = 'absolute';
       dom.style.top = 0;
       dom.style.right = 0;
@@ -88521,13 +88484,13 @@ class TGeoPainter extends ObjectPainter {
       this._gui.painter = this;
 
       const makeLil = items => {
-         let lil = {};
+         const lil = {};
          items.forEach(i => { lil[i.name] = i.value; });
          return lil;
       };
 
       if (!this.ctrl.project) {
-         let selection = this._gui.addFolder('Selection');
+         const selection = this._gui.addFolder('Selection');
 
          if (!this.ctrl.maxnodes)
             this.ctrl.maxnodes = this._clones?.getMaxVisNodes() ?? 10000;
@@ -88549,8 +88512,7 @@ class TGeoPainter extends ObjectPainter {
       }
 
       if (this.ctrl.project) {
-
-         let bound = this.getGeomBoundingBox(this.getProjectionSource(), 0.01),
+         const bound = this.getGeomBoundingBox(this.getProjectionSource(), 0.01),
              axis = this.ctrl.project;
 
          if (this.ctrl.projectPos === undefined)
@@ -88559,14 +88521,13 @@ class TGeoPainter extends ObjectPainter {
          this._gui.add(this.ctrl, 'projectPos', bound.min[axis], bound.max[axis])
              .name(axis.toUpperCase() + ' projection')
              .onChange(() => this.startDrawGeometry());
-
       } else {
          // Clipping Options
 
-         let clipFolder = this._gui.addFolder('Clipping');
+         const clipFolder = this._gui.addFolder('Clipping');
 
          for (let naxis = 0; naxis < 3; ++naxis) {
-            let cc = this.ctrl.clip[naxis],
+            const cc = this.ctrl.clip[naxis],
                 axisC = cc.name.toUpperCase();
 
             clipFolder.add(cc, 'enabled')
@@ -88587,22 +88548,22 @@ class TGeoPainter extends ObjectPainter {
 
       // Scene Options
 
-      let scene = this._gui.addFolder('Scene'), light_pnts;
+      const scene = this._gui.addFolder('Scene');
 
       scene.add(this.ctrl.light, 'kind', makeLil(this.ctrl.lightKindItems)).name('Light')
            .listen().onChange(() => {
-              light_pnts.show(this.ctrl.light.kind == 'mix' || this.ctrl.light.kind == 'points');
+              light_pnts.show(this.ctrl.light.kind === 'mix' || this.ctrl.light.kind === 'points');
               this.changedLight();
            });
 
       this.ctrl.light._pnts = this.ctrl.light.specular ? 0 : (this.ctrl.light.front ? 1 : 2);
-      light_pnts = scene.add(this.ctrl.light, '_pnts', { specular: 0, front: 1, box: 2 })
+      const light_pnts = scene.add(this.ctrl.light, '_pnts', { specular: 0, front: 1, box: 2 })
                 .name('Positions')
-                .show(this.ctrl.light.kind == 'mix' || this.ctrl.light.kind == 'points')
+                .show(this.ctrl.light.kind === 'mix' || this.ctrl.light.kind === 'points')
                 .onChange(v => {
-                   this.ctrl.light.specular = (v == 0);
-                   this.ctrl.light.front = (v == 1);
-                   this.ctrl.light.top = this.ctrl.light.bottom = this.ctrl.light.left = this.ctrl.light.right = (v == 2);
+                   this.ctrl.light.specular = (v === 0);
+                   this.ctrl.light.front = (v === 1);
+                   this.ctrl.light.top = this.ctrl.light.bottom = this.ctrl.light.left = this.ctrl.light.right = (v === 2);
                    this.changedLight();
                 });
 
@@ -88615,21 +88576,21 @@ class TGeoPainter extends ObjectPainter {
 
       // Appearance Options
 
-      let appearance = this._gui.addFolder('Appearance'), strength, hcolor;
+      const appearance = this._gui.addFolder('Appearance');
 
       this.ctrl._highlight = !this.ctrl.highlight ? 0 : this.ctrl.highlight_bloom ? 2 : 1;
       appearance.add(this.ctrl, '_highlight', { none: 0, normal: 1, bloom: 2 }).name('Highlight Selection')
                 .listen().onChange(() => {
                    this.changedHighlight(this.ctrl._highlight);
-                   strength.show(this.ctrl._highlight == 2);
-                   hcolor.show(this.ctrl._highlight == 1);
+                   strength.show(this.ctrl._highlight === 2);
+                   hcolor.show(this.ctrl._highlight === 1);
                 });
 
-      hcolor = appearance.addColor(this.ctrl, 'highlight_color').name('Hightlight color')
-                         .show(this.ctrl._highlight == 1);
-      strength = appearance.add(this.ctrl, 'bloom_strength', 0, 3).name('Bloom strength')
+      const hcolor = appearance.addColor(this.ctrl, 'highlight_color').name('Hightlight color')
+                         .show(this.ctrl._highlight === 1),
+            strength = appearance.add(this.ctrl, 'bloom_strength', 0, 3).name('Bloom strength')
                            .listen().onChange(() => this.changedHighlight())
-                           .show(this.ctrl._highlight == 2);
+                           .show(this.ctrl._highlight === 2);
 
       appearance.addColor(this.ctrl, 'background').name('Background')
                 .onChange(col => this.changedBackground(col));
@@ -88637,23 +88598,25 @@ class TGeoPainter extends ObjectPainter {
       appearance.add(this.ctrl, '_axis', { none: 0, side: 1, center: 2 }).name('Axes')
                     .onChange(() => this.changedAxes());
 
-      if (!this.ctrl.project)
+      if (!this.ctrl.project) {
          appearance.add(this.ctrl, 'rotate').name('Autorotate')
                       .listen().onChange(() => this.changedAutoRotate());
+      }
 
       // Material options
 
-      let material = this._gui.addFolder('Material'), material_props = [];
+      const material = this._gui.addFolder('Material');
+      let material_props = [];
 
       const addMaterialProp = () => {
          material_props.forEach(f => f.destroy());
          material_props = [];
 
-         let props = this.ctrl.getMaterialCfg()?.props;
+         const props = this.ctrl.getMaterialCfg()?.props;
          if (!props) return;
 
          props.forEach(prop => {
-            let f = material.add(this.ctrl, prop.name, prop.min, prop.max, prop.step).onChange(() => {
+            const f = material.add(this.ctrl, prop.name, prop.min, prop.max, prop.step).onChange(() => {
                this.changeMaterialProperty(prop.name);
             });
             material_props.push(f);
@@ -88666,7 +88629,6 @@ class TGeoPainter extends ObjectPainter {
             this.ensureBloom(false);
             this.changedMaterial();
             this.changedHighlight(); // for some materials bloom will not work
-
       });
 
       material.add(this.ctrl, 'transparency', 0, 1, 0.001).name('Transparency')
@@ -88681,11 +88643,11 @@ class TGeoPainter extends ObjectPainter {
 
 
       // Camera options
-      let camera = this._gui.addFolder('Camera'), overlay;
+      const camera = this._gui.addFolder('Camera');
 
       camera.add(this.ctrl, 'camera_kind', makeLil(this.ctrl.cameraKindItems))
             .name('Kind').listen().onChange(() => {
-            overlay.show(this.ctrl.camera_kind.indexOf('ortho') == 0);
+            overlay.show(this.ctrl.camera_kind.indexOf('ortho') === 0);
             this.changeCamera();
       });
 
@@ -88694,18 +88656,18 @@ class TGeoPainter extends ObjectPainter {
 
       camera.add(this, 'focusCamera').name('Reset position');
 
-      overlay = camera.add(this.ctrl, 'camera_overlay', makeLil(this.ctrl.cameraOverlayItems))
+      const overlay = camera.add(this.ctrl, 'camera_overlay', makeLil(this.ctrl.cameraOverlayItems))
                       .name('Overlay').listen().onChange(() => this.changeCamera())
-                      .show(this.ctrl.camera_kind.indexOf('ortho') == 0);
+                      .show(this.ctrl.camera_kind.indexOf('ortho') === 0);
 
       // Advanced Options
       if (this._webgl) {
-         let advanced = this._gui.addFolder('Advanced');
+         const advanced = this._gui.addFolder('Advanced');
 
          advanced.add(this.ctrl, 'depthTest').name('Depth test')
             .listen().onChange(() => this.changedDepthTest());
 
-         advanced.add( this.ctrl, 'depthMethod', makeLil(this.ctrl.depthMethodItems))
+         advanced.add(this.ctrl, 'depthMethod', makeLil(this.ctrl.depthMethodItems))
              .name('Rendering order')
              .onChange(method => this.changedDepthMethod(method));
 
@@ -88714,11 +88676,11 @@ class TGeoPainter extends ObjectPainter {
 
       // Transformation Options
       if (!this.ctrl.project) {
-         let transform = this._gui.addFolder('Transform');
-         transform.add(this.ctrl, 'trans_z', 0., 3., 0.01)
+         const transform = this._gui.addFolder('Transform');
+         transform.add(this.ctrl, 'trans_z', 0.0, 3.0, 0.01)
                      .name('Z axis')
                      .listen().onChange(() => this.changedTransformation());
-         transform.add(this.ctrl, 'trans_radial', 0., 3., 0.01)
+         transform.add(this.ctrl, 'trans_radial', 0.0, 3.0, 0.01)
                   .name('Radial')
                   .listen().onChange(() => this.changedTransformation());
 
@@ -88726,12 +88688,11 @@ class TGeoPainter extends ObjectPainter {
 
          if (this.ctrl.trans_z || this.ctrl.trans_radial) transform.open();
       }
-
    }
 
    /** @summary show material docu */
    showMaterialDocu() {
-      let cfg = this.ctrl.getMaterialCfg();
+      const cfg = this.ctrl.getMaterialCfg();
       if (cfg?.name && typeof window !== 'undefined')
          window.open('https://threejs.org/docs/index.html#api/en/materials/' + cfg.name, '_blank');
    }
@@ -88755,7 +88716,6 @@ class TGeoPainter extends ObjectPainter {
          p.ctrl.bloom_strength = this.ctrl.bloom_strength;
          p.changedHighlight();
       });
-
    }
 
    /** @summary Handle change of can rotate */
@@ -88816,7 +88776,7 @@ class TGeoPainter extends ObjectPainter {
          this._camera.layers.enable(_BLOOM_SCENE);
          this._bloomComposer = new EffectComposer(this._renderer);
          this._bloomComposer.addPass(new RenderPass(this._scene, this._camera));
-         let pass = new UnrealBloomPass(new Vector2(this._scene_width, this._scene_height), 1.5, 0.4, 0.85);
+         const pass = new UnrealBloomPass(new Vector2(this._scene_width, this._scene_height), 1.5, 0.4, 0.85);
          pass.threshold = 0;
          pass.radius = 0;
          pass.renderToScreen = true;
@@ -88825,7 +88785,7 @@ class TGeoPainter extends ObjectPainter {
       } else if (!on && this._bloomComposer) {
          this._bloomComposer.dispose();
          delete this._bloomComposer;
-         if(this._renderer)
+         if (this._renderer)
             this._renderer.autoClear = true;
          this._camera?.layers.disable(_BLOOM_SCENE);
          this._camera?.layers.set(_ENTIRE_SCENE);
@@ -88839,29 +88799,30 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Show context menu for orbit control
      * @private */
    orbitContext(evnt, intersects) {
-
       createMenu(evnt, this).then(menu => {
          let numitems = 0, numnodes = 0, cnt = 0;
-         if (intersects)
+         if (intersects) {
             for (let n = 0; n < intersects.length; ++n) {
                if (getIntersectStack(intersects[n])) numnodes++;
                if (intersects[n].geo_name) numitems++;
             }
+         }
 
-         if (numnodes + numitems === 0) {
+         if (numnodes + numitems === 0)
             this.fillContextMenu(menu);
-         } else {
-            let many = (numnodes + numitems) > 1;
+          else {
+            const many = (numnodes + numitems) > 1;
 
             if (many) menu.add('header:' + ((numitems > 0) ? 'Items' : 'Nodes'));
 
             for (let n = 0; n < intersects.length; ++n) {
-               let obj = intersects[n].object,
-                   name, itemname, hdr, stack = getIntersectStack(intersects[n]);
+               const obj = intersects[n].object,
+                     stack = getIntersectStack(intersects[n]);
+               let name, itemname, hdr;
 
                if (obj.geo_name) {
                   itemname = obj.geo_name;
-                  if (itemname.indexOf('<prnt>') == 0)
+                  if (itemname.indexOf('<prnt>') === 0)
                      itemname = (this.getItemName() || 'top') + itemname.slice(6);
                   name = itemname.slice(itemname.lastIndexOf('/')+1);
                   if (!name) name = itemname;
@@ -88876,10 +88837,9 @@ class TGeoPainter extends ObjectPainter {
                      hdr = name;
                   else if (!hdr)
                      hdr = 'header';
-
-               } else {
+               } else
                   continue;
-               }
+
 
                cnt++;
 
@@ -88892,18 +88852,19 @@ class TGeoPainter extends ObjectPainter {
 
                if (isFunc(this.hidePhysicalNode)) {
                   menu.add('Hide', itemname, arg => this.hidePhysicalNode([arg]));
-                  if (cnt > 1)
+                  if (cnt > 1) {
                      menu.add('Hide all before', n, indx => {
-                        let items = [];
+                        const items = [];
                         for (let i = 0; i < indx; ++i) {
-                           let stack = getIntersectStack(intersects[i]);
+                           const stack = getIntersectStack(intersects[i]);
                            if (stack) items.push(this.getStackFullName(stack));
                         }
                         this.hidePhysicalNode(items);
                      });
+                  }
                } else if (obj.geo_name) {
                   menu.add('Hide', n, indx => {
-                     let mesh = intersects[indx].object;
+                     const mesh = intersects[indx].object;
                      mesh.visible = false; // just disable mesh
                      if (mesh.geo_object) mesh.geo_object.$hidden_via_menu = true; // and hide object for further redraw
                      menu.painter.render3D();
@@ -88914,18 +88875,17 @@ class TGeoPainter extends ObjectPainter {
                   continue;
                }
 
-               let wireframe = this.accessObjectWireFrame(obj);
-
-               if (wireframe !== undefined)
+               const wireframe = this.accessObjectWireFrame(obj);
+               if (wireframe !== undefined) {
                   menu.addchk(wireframe, 'Wireframe', n, indx => {
-                     let m = intersects[indx].object.material;
+                     const m = intersects[indx].object.material;
                      m.wireframe = !m.wireframe;
                      this.render3D();
                   }, 'Toggle wireframe mode for the node');
+               }
 
-               if (cnt > 1)
+               if (cnt > 1) {
                   menu.add('Manifest', n, indx => {
-
                      if (this._last_manifest)
                         this._last_manifest.wireframe = !this._last_manifest.wireframe;
 
@@ -88945,7 +88905,7 @@ class TGeoPainter extends ObjectPainter {
 
                      this.render3D();
                   }, 'Manifest selected node');
-
+               }
 
                menu.add('Focus', n, indx => {
                   this.focusCamera(intersects[indx].object);
@@ -88953,7 +88913,7 @@ class TGeoPainter extends ObjectPainter {
 
                if (!this._geom_viewer) {
                   menu.add('Hide', n, indx => {
-                     let resolve = this._clones.resolveStack(intersects[indx].object.stack);
+                     const resolve = this._clones.resolveStack(intersects[indx].object.stack);
                      if (resolve.obj && (resolve.node.kind === kindGeo) && resolve.obj.fVolume) {
                         setGeoBit(resolve.obj.fVolume, geoBITS.kVisThis, false);
                         updateBrowserIcons(resolve.obj.fVolume, this._hpainter);
@@ -88968,12 +88928,13 @@ class TGeoPainter extends ObjectPainter {
                      this._clones.setPhysNodeVisibility(getIntersectStack(intersects[indx]), false);
                      this.testGeomChanges();
                   }, 'Hide only this physical node');
-                  if (n > 1)
-                     menu.add('Hide all before', n, indx => {
+                  if (n > 1) {
+                    menu.add('Hide all before', n, indx => {
                         for (let k = 0; k < indx; ++k)
                            this._clones.setPhysNodeVisibility(getIntersectStack(intersects[k]), false);
                         this.testGeomChanges();
                      }, 'Hide all physical nodes before that');
+                  }
                }
 
                if (many) menu.add('endsub:');
@@ -88985,41 +88946,42 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Filter some objects from three.js intersects array */
    filterIntersects(intersects) {
-
       if (!intersects?.length)
          return intersects;
 
       // check redirections
-      for (let n = 0; n < intersects.length; ++n)
+      for (let n = 0; n < intersects.length; ++n) {
          if (intersects[n].object.geo_highlight)
             intersects[n].object = intersects[n].object.geo_highlight;
+      }
 
       // remove all elements without stack - indicator that this is geometry object
       // also remove all objects which are mostly transparent
       for (let n = intersects.length - 1; n >= 0; --n) {
-
-         let obj = intersects[n].object,
-             unique = obj.visible && (getIntersectStack(intersects[n]) || (obj.geo_name !== undefined));
+         const obj = intersects[n].object;
+         let unique = obj.visible && (getIntersectStack(intersects[n]) || (obj.geo_name !== undefined));
 
          if (unique && obj.material && (obj.material.opacity !== undefined))
             unique = (obj.material.opacity >= 0.1);
 
          if (obj.jsroot_special) unique = false;
 
-         for (let k = 0; (k < n) && unique; ++k)
+         for (let k = 0; (k < n) && unique; ++k) {
             if (intersects[k].object === obj)
                unique = false;
+         }
 
-         if (!unique) intersects.splice(n,1);
+         if (!unique) intersects.splice(n, 1);
       }
 
-      let clip = this.ctrl.clip;
+      const clip = this.ctrl.clip;
 
       if (clip[0].enabled || clip[1].enabled || clip[2].enabled) {
-         let clippedIntersects = [];
+         const clippedIntersects = [];
 
          for (let i = 0; i < intersects.length; ++i) {
-            let point = intersects[i].point, special = (intersects[i].object.type == 'Points'), clipped = true;
+            const point = intersects[i].point, special = (intersects[i].object.type === 'Points');
+            let clipped = true;
 
             if (clip[0].enabled && ((this._clipPlanes[0].normal.dot(point) > this._clipPlanes[0].constant) ^ special)) clipped = false;
             if (clip[1].enabled && ((this._clipPlanes[1].normal.dot(point) > this._clipPlanes[1].constant) ^ special)) clipped = false;
@@ -89038,10 +89000,9 @@ class TGeoPainter extends ObjectPainter {
      * @desc function analyzes camera position and start redraw of geometry
      *  if objects in view may be changed */
    testCameraPositionChange() {
-
       if (!this.ctrl.select_in_view || this._draw_all_nodes) return;
 
-      let matrix = createProjectionMatrix(this._camera),
+      const matrix = createProjectionMatrix(this._camera),
           frustum = createFrustum(matrix);
 
       // check if overall bounding box seen
@@ -89057,7 +89018,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Returns stack full name
      * @desc Includes item name of top geo object */
    getStackFullName(stack) {
-      let mainitemname = this.getItemName(),
+      const mainitemname = this.getItemName(),
           sub = this.resolveStack(stack);
       if (!sub || !sub.name)
          return mainitemname;
@@ -89075,22 +89036,21 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary perform mesh highlight */
    highlightMesh(active_mesh, color, geo_object, geo_index, geo_stack, no_recursive) {
-
       if (geo_object) {
-         active_mesh = active_mesh ? [ active_mesh ] : [];
-         let extras = this.getExtrasContainer();
-         if (extras)
+         active_mesh = active_mesh ? [active_mesh] : [];
+         const extras = this.getExtrasContainer();
+         if (extras) {
             extras.traverse(obj3d => {
                if ((obj3d.geo_object === geo_object) && (active_mesh.indexOf(obj3d) < 0)) active_mesh.push(obj3d);
             });
+         }
       } else if (geo_stack && this._toplevel) {
          active_mesh = [];
          this._toplevel.traverse(mesh => {
             if ((mesh instanceof Mesh) && isSameStack(mesh.stack, geo_stack)) active_mesh.push(mesh);
          });
-      } else {
-         active_mesh = active_mesh ? [ active_mesh ] : [];
-      }
+      } else
+         active_mesh = active_mesh ? [active_mesh] : [];
 
       if (!active_mesh.length)
          active_mesh = null;
@@ -89099,9 +89059,8 @@ class TGeoPainter extends ObjectPainter {
          // check if highlight is disabled for correspondent objects kinds
          if (active_mesh[0].geo_object) {
             if (!this.ctrl.highlight_scene) active_mesh = null;
-         } else {
+         } else
             if (!this.ctrl.highlight) active_mesh = null;
-         }
       }
 
       if (!no_recursive) {
@@ -89112,37 +89071,41 @@ class TGeoPainter extends ObjectPainter {
             if (!geo_stack) geo_stack = active_mesh[0].stack;
          }
 
-         let lst = this._highlight_handlers || (!this._main_painter ? this._slave_painters : this._main_painter._slave_painters.concat([this._main_painter]));
+         const lst = this._highlight_handlers || (!this._main_painter ? this._slave_painters : this._main_painter._slave_painters.concat([this._main_painter]));
 
-         for (let k = 0; k < lst?.length; ++k)
+         for (let k = 0; k < lst?.length; ++k) {
             if (lst[k] !== this)
                lst[k].highlightMesh(null, color, geo_object, geo_index, geo_stack, true);
+         }
       }
 
-      let curr_mesh = this._selected_mesh, same = false;
+      const curr_mesh = this._selected_mesh;
 
       if (!curr_mesh && !active_mesh) return false;
 
       const get_ctrl = mesh => mesh.get_ctrl ? mesh.get_ctrl() : new GeoDrawingControl(mesh, this.ctrl.highlight_bloom && this._bloomComposer);
 
+      let same = false;
+
       // check if selections are the same
-      if (curr_mesh && active_mesh && (curr_mesh.length == active_mesh.length)) {
+      if (curr_mesh && active_mesh && (curr_mesh.length === active_mesh.length)) {
          same = true;
-         for (let k = 0; (k < curr_mesh.length) && same; ++k) {
+         for (let k = 0; (k < curr_mesh.length) && same; ++k)
             if ((curr_mesh[k] !== active_mesh[k]) || get_ctrl(curr_mesh[k]).checkHighlightIndex(geo_index)) same = false;
-         }
       }
       if (same) return !!curr_mesh;
 
-      if (curr_mesh)
+      if (curr_mesh) {
          for (let k = 0; k < curr_mesh.length; ++k)
             get_ctrl(curr_mesh[k]).setHighlight();
+      }
 
       this._selected_mesh = active_mesh;
 
-      if (active_mesh)
+      if (active_mesh) {
          for (let k = 0; k < active_mesh.length; ++k)
             get_ctrl(active_mesh[k]).setHighlight(color || new Color(this.ctrl.highlight_color), geo_index);
+      }
 
       this.render3D(0);
 
@@ -89153,10 +89116,10 @@ class TGeoPainter extends ObjectPainter {
    processMouseClick(pnt, intersects, evnt) {
       if (!intersects.length) return;
 
-      let mesh = intersects[0].object;
+      const mesh = intersects[0].object;
       if (!mesh.get_ctrl) return;
 
-      let ctrl = mesh.get_ctrl(),
+      const ctrl = mesh.get_ctrl(),
           click_indx = ctrl.extractIndex(intersects[0]);
 
       ctrl.evnt = evnt;
@@ -89194,7 +89157,6 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Add orbit control */
    addOrbitControls() {
-
       if (this._controls || !this._webgl || this.isBatchMode() || this.superimpose) return;
 
       if (!this.getCanvPainter())
@@ -89210,7 +89172,6 @@ class TGeoPainter extends ObjectPainter {
       this._controls.contextMenu = this.orbitContext.bind(this);
 
       this._controls.processMouseMove = intersects => {
-
          // painter already cleaned up, ignore any incoming events
          if (!this.ctrl || !this._controls) return;
 
@@ -89218,15 +89179,16 @@ class TGeoPainter extends ObjectPainter {
 
          // try to find mesh from intersections
          for (let k = 0; k < intersects.length; ++k) {
-            let obj = intersects[k].object, info = null, stack = getIntersectStack(intersects[k]);
+            const obj = intersects[k].object, stack = getIntersectStack(intersects[k]);
             if (!obj || !obj.visible) continue;
+            let info = null;
             if (obj.geo_object)
                info = obj.geo_name;
             else if (stack)
                info = this.getStackFullName(stack);
             if (!info) continue;
 
-            if (info.indexOf('<prnt>') == 0)
+            if (info.indexOf('<prnt>') === 0)
                info = this.getItemName() + info.slice(6);
 
             names.push(info);
@@ -89252,14 +89214,14 @@ class TGeoPainter extends ObjectPainter {
          this.highlightMesh(active_mesh, undefined, geo_object, geo_index);
 
          if (this.ctrl.update_browser) {
-            if (this.ctrl.highlight && tooltip) names = [ tooltip ];
+            if (this.ctrl.highlight && tooltip) names = [tooltip];
             this.activateInBrowser(names);
          }
 
          if (!resolve?.obj)
             return tooltip;
 
-         let lines = provideObjectInfo(resolve.obj);
+         const lines = provideObjectInfo(resolve.obj);
          lines.unshift(tooltip);
 
          return { name: resolve.obj.fName, title: resolve.obj.fTitle || resolve.obj._typename, lines };
@@ -89279,9 +89241,9 @@ class TGeoPainter extends ObjectPainter {
                this._last_hidden.forEach(obj => { obj.visible = true; });
             delete this._last_hidden;
             delete this._last_manifest;
-         } else {
+         } else
             this.adjustCameraPosition(true);
-         }
+
          this.render3D();
       };
    }
@@ -89293,11 +89255,9 @@ class TGeoPainter extends ObjectPainter {
      * - 1 when call after short timeout required
      * - 2 when call must be done from processWorkerReply */
    nextDrawAction() {
-
       if (!this._clones || this.isStage(stageInit)) return false;
 
       if (this.isStage(stageCollect)) {
-
          if (this._geom_viewer) {
             this._draw_all_nodes = false;
             this.changeStage(stageAnalyze);
@@ -89339,7 +89299,7 @@ class TGeoPainter extends ObjectPainter {
          let need_worker = !this.isBatchMode() && browser.isChrome && ((numvis > 10000) || (matrix && (this._clones.scanVisible() > 1e5)));
 
          // worker does not work when starting from file system
-         if (need_worker && exports.source_dir.indexOf('file://') == 0) {
+         if (need_worker && exports.source_dir.indexOf('file://') === 0) {
             console.log('disable worker for jsroot from file system');
             need_worker = false;
          }
@@ -89348,14 +89308,14 @@ class TGeoPainter extends ObjectPainter {
             this.startWorker(); // we starting worker, but it may not be ready so fast
 
          if (!need_worker || !this._worker_ready) {
-            let res = this._clones.collectVisibles(this._current_face_limit, frustum);
+            const res = this._clones.collectVisibles(this._current_face_limit, frustum);
             this._new_draw_nodes = res.lst;
             this._draw_all_nodes = res.complete;
             this.changeStage(stageAnalyze);
             return true;
          }
 
-         let job = {
+         const job = {
             collect: this._current_face_limit,   // indicator for the command
             flags: this._clones.getVisibleFlags(),
             matrix: matrix ? matrix.elements : null,
@@ -89380,13 +89340,10 @@ class TGeoPainter extends ObjectPainter {
          // normally operation is fast and can be implemented with one c
 
          if (this._new_append_nodes) {
-
             this._new_draw_nodes = this._draw_nodes.concat(this._new_append_nodes);
 
             delete this._new_append_nodes;
-
          } else if (this._draw_nodes) {
-
             let del;
             if (this._geom_viewer)
                del = this._draw_nodes;
@@ -89408,9 +89365,8 @@ class TGeoPainter extends ObjectPainter {
       }
 
       if (this.isStage(stageCollShapes)) {
-
          // collect shapes
-         let shapes = this._clones.collectShapes(this._draw_nodes);
+         const shapes = this._clones.collectShapes(this._draw_nodes);
 
          // merge old and new list with produced shapes
          this._build_shapes = this._clones.mergeShapesLists(this._build_shapes, shapes);
@@ -89424,9 +89380,11 @@ class TGeoPainter extends ObjectPainter {
          // one can ask worker to build them or do it ourself
 
          if (this.canSubmitToWorker()) {
-            let job = { limit: this._current_face_limit, shapes: [] }, cnt = 0;
+            const job = { limit: this._current_face_limit, shapes: [] };
+            let cnt = 0;
             for (let n = 0; n < this._build_shapes.length; ++n) {
-               let cl = null, item = this._build_shapes[n];
+               let cl = null;
+               const item = this._build_shapes[n];
                // only submit not-done items
                if (item.ready || item.geom) {
                   // this is place holder for existing geometry
@@ -89456,11 +89414,10 @@ class TGeoPainter extends ObjectPainter {
       }
 
       if (this.isStage(stageBuild) || this.isStage(stageBuildReady)) {
-
          if (this.isStage(stageBuild)) {
             // building shapes
 
-            let res = this._clones.buildShapes(this._build_shapes, this._current_face_limit, 500);
+            const res = this._clones.buildShapes(this._build_shapes, this._current_face_limit, 500);
             if (res.done) {
                this.ctrl.info.num_shapes = this._build_shapes.length;
                this.changeStage(stageBuildReady);
@@ -89468,32 +89425,33 @@ class TGeoPainter extends ObjectPainter {
                this.ctrl.info.num_shapes = res.shapes;
                this.drawing_log = `Creating: ${res.shapes} / ${this._build_shapes.length} shapes,  ${res.faces} faces`;
                return true;
-               //if (res.notusedshapes < 30) return true;
+               // if (res.notusedshapes < 30) return true;
             }
          }
 
          // final stage, create all meshes
 
-         let tm0 = new Date().getTime(), ready = true,
-             toplevel = this.ctrl.project ? this._full_geom : this._toplevel,
-             build_instanced = false;
+         const tm0 = new Date().getTime(),
+               toplevel = this.ctrl.project ? this._full_geom : this._toplevel;
+         let build_instanced = false, ready = true;
 
          if (!this.ctrl.project)
             build_instanced = this._clones.createInstancedMeshes(this.ctrl, toplevel, this._draw_nodes, this._build_shapes, getRootColors());
 
-         if (!build_instanced)
+         if (!build_instanced) {
             for (let n = 0; n < this._draw_nodes.length; ++n) {
-               let entry = this._draw_nodes[n];
+               const entry = this._draw_nodes[n];
                if (entry.done) continue;
 
                /// shape can be provided with entry itself
-               let shape = entry.server_shape || this._build_shapes[entry.shapeid];
+               const shape = entry.server_shape || this._build_shapes[entry.shapeid];
 
                this.createEntryMesh(entry, shape, toplevel);
 
-               let tm1 = new Date().getTime();
+               const tm1 = new Date().getTime();
                if (tm1 - tm0 > 500) { ready = false; break; }
             }
+         }
 
          if (ready) {
             if (this.ctrl.project) {
@@ -89534,7 +89492,6 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Insert appropriate mesh for given entry */
    createEntryMesh(entry, shape, toplevel) {
-
       // workaround for the TGeoOverlap, where two branches should get predefined color
       if (this._splitColors && entry.stack) {
          if (entry.stack[0] === 0)
@@ -89552,30 +89509,30 @@ class TGeoPainter extends ObjectPainter {
      * @desc These nodes excluded from selection logic and always inserted into the model
      * Shape already should be created and assigned to the node */
    appendMoreNodes(nodes, from_drawing) {
-
       if (!this.isStage(stageInit) && !from_drawing) {
          this._provided_more_nodes = nodes;
          return;
       }
 
       // delete old nodes
-      if (this._more_nodes)
+      if (this._more_nodes) {
          for (let n = 0; n < this._more_nodes.length; ++n) {
-            let entry = this._more_nodes[n],
+            const entry = this._more_nodes[n],
                 obj3d = this._clones.createObject3D(entry.stack, this._toplevel, 'delete_mesh');
             disposeThreejsObject(obj3d);
             cleanupShape(entry.server_shape);
             delete entry.server_shape;
          }
+      }
 
       delete this._more_nodes;
 
       if (!nodes) return;
 
-      let real_nodes = [];
+      const real_nodes = [];
 
       for (let k = 0; k < nodes.length; ++k) {
-         let entry = nodes[k],
+         const entry = nodes[k],
              shape = entry.server_shape;
          if (!shape?.ready) continue;
 
@@ -89612,7 +89569,7 @@ class TGeoPainter extends ObjectPainter {
       if (!this._customBoundingBox)
          this._customBoundingBox = new Box3().makeEmpty();
 
-      let origin = this._customBoundingBox.clone();
+      const origin = this._customBoundingBox.clone();
       this._customBoundingBox.union(box);
 
       if (!this._customBoundingBox.equals(origin))
@@ -89621,7 +89578,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Calculate geometry bounding box */
    getGeomBoundingBox(topitem, scalar) {
-      let box3 = new Box3(), check_any = !this._clones;
+      const box3 = new Box3(), check_any = !this._clones;
       if (topitem === undefined)
          topitem = this._toplevel;
 
@@ -89644,7 +89601,7 @@ class TGeoPainter extends ObjectPainter {
             getBoundingBox(mesh, box3);
       });
 
-      if (scalar == 'original') {
+      if (scalar === 'original') {
          box3.translate(new Vector3(-topitem.position.x, -topitem.position.y, -topitem.position.z));
          box3.min.multiply(new Vector3(1/topitem.scale.x, 1/topitem.scale.y, 1/topitem.scale.z));
          box3.max.multiply(new Vector3(1/topitem.scale.x, 1/topitem.scale.y, 1/topitem.scale.z));
@@ -89656,7 +89613,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Create geometry projection */
    doProjection() {
-      let toplevel = this.getProjectionSource();
+      const toplevel = this.getProjectionSource();
 
       if (!toplevel) return false;
 
@@ -89665,12 +89622,11 @@ class TGeoPainter extends ObjectPainter {
       // let axis = this.ctrl.project;
 
       if (this.ctrl.projectPos === undefined) {
+         const bound = this.getGeomBoundingBox(toplevel),
+               min = bound.min[this.ctrl.project], max = bound.max[this.ctrl.project];
+         let mean = (min + max)/2;
 
-         let bound = this.getGeomBoundingBox(toplevel),
-             min = bound.min[this.ctrl.project], max = bound.max[this.ctrl.project],
-             mean = (min+max)/2;
-
-         if ((min < 0) && (max > 0) && (Math.abs(mean) < 0.2*Math.max(-min,max))) mean = 0; // if middle is around 0, use 0
+         if ((min < 0) && (max > 0) && (Math.abs(mean) < 0.2*Math.max(-min, max))) mean = 0; // if middle is around 0, use 0
 
          this.ctrl.projectPos = mean;
       }
@@ -89678,11 +89634,11 @@ class TGeoPainter extends ObjectPainter {
       toplevel.traverse(mesh => {
          if (!(mesh instanceof Mesh) || !mesh.stack) return;
 
-         let geom2 = projectGeometry(mesh.geometry, mesh.parent.absMatrix || mesh.parent.matrixWorld, this.ctrl.project, this.ctrl.projectPos, mesh._flippedMesh);
+         const geom2 = projectGeometry(mesh.geometry, mesh.parent.absMatrix || mesh.parent.matrixWorld, this.ctrl.project, this.ctrl.projectPos, mesh._flippedMesh);
 
          if (!geom2) return;
 
-         let mesh2 = new Mesh(geom2, mesh.material.clone());
+         const mesh2 = new Mesh(geom2, mesh.material.clone());
 
          this._toplevel.add(mesh2);
 
@@ -89696,16 +89652,16 @@ class TGeoPainter extends ObjectPainter {
    changedLight(box) {
       if (!this._camera) return;
 
-      let need_render = !box;
+      const need_render = !box;
 
       if (!box) box = this.getGeomBoundingBox();
 
-      let sizex = box.max.x - box.min.x,
+      const sizex = box.max.x - box.min.x,
           sizey = box.max.y - box.min.y,
           sizez = box.max.z - box.min.z,
           plights = [], p = (this.ctrl.light.power ?? 1) * 0.5;
 
-      if (this._camera._lights != this.ctrl.light.kind) {
+      if (this._camera._lights !== this.ctrl.light.kind) {
          // remove all childs and recreate only necessary lights
          disposeThreejsObject(this._camera, true);
 
@@ -89754,27 +89710,26 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Returns true if orthogarphic camera is used */
    isOrthoCamera() {
-      return this.ctrl.camera_kind.indexOf('ortho') == 0;
+      return this.ctrl.camera_kind.indexOf('ortho') === 0;
    }
 
    /** @summary Create configured camera */
    createCamera() {
-
       if (this._camera) {
           this._scene.remove(this._camera);
           disposeThreejsObject(this._camera);
           delete this._camera;
        }
 
-      if (this.isOrthoCamera()) {
+      if (this.isOrthoCamera())
          this._camera = new OrthographicCamera(-this._scene_width/2, this._scene_width/2, this._scene_height/2, -this._scene_height/2, 1, 10000);
-      } else {
+       else {
          this._camera = new PerspectiveCamera(25, this._scene_width / this._scene_height, 1, 10000);
-         this._camera.up = this.ctrl._yup ? new Vector3(0,1,0) : new Vector3(0,0,1);
+         this._camera.up = this.ctrl._yup ? new Vector3(0, 1, 0) : new Vector3(0, 0, 1);
       }
 
       // Light - add default directional light, adjust later
-      let light = new DirectionalLight(0xefefef, 0.1);
+      const light = new DirectionalLight(0xefefef, 0.1);
       light.position.set(10, 10, 10);
       this._camera.add(light);
 
@@ -89796,7 +89751,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Initial scene creation */
    async createScene(w, h, render3d) {
       if (this.superimpose) {
-         let cfg = getHistPainter3DCfg(this.getMainPainter());
+         const cfg = getHistPainter3DCfg(this.getMainPainter());
 
          if (cfg?.renderer) {
             this._scene = cfg.scene;
@@ -89845,7 +89800,6 @@ class TGeoPainter extends ObjectPainter {
 
       return createRender3D(w, h, render3d, { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true })
         .then(r => {
-
          this._renderer = r;
 
          if (this.batch_format)
@@ -89863,8 +89817,8 @@ class TGeoPainter extends ObjectPainter {
          if (this._fit_main_area && this._webgl) {
             this._renderer.domElement.style.width = '100%';
             this._renderer.domElement.style.height = '100%';
-            let main = this.selectDom();
-            if (main.style('position') == 'static')
+            const main = this.selectDom();
+            if (main.style('position') === 'static')
                main.style('position', 'relative');
          }
 
@@ -89875,7 +89829,7 @@ class TGeoPainter extends ObjectPainter {
 
          if (this._fit_main_area && !this._webgl) {
             // create top-most SVG for geomtery drawings
-            let doc = getDocument(),
+            const doc = getDocument(),
                 svg = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
             svg.setAttribute('width', w);
             svg.setAttribute('height', h);
@@ -89889,7 +89843,6 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Start geometry drawing */
    startDrawGeometry(force) {
-
       if (!force && !this.isStage(stageInit)) {
          this._draw_nodes_again = true;
          return;
@@ -89910,14 +89863,12 @@ class TGeoPainter extends ObjectPainter {
 
       if (this.ctrl.project) {
          if (this._clones_owner) {
-            if (this._full_geom) {
+            if (this._full_geom)
                this.changeStage(stageBuildProj);
-            } else {
+             else
                this._full_geom = new Object3D();
-            }
-         } else {
+         } else
             this.changeStage(stageWaitMain);
-         }
       }
 
       delete this._last_manifest;
@@ -89941,7 +89892,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary returns maximal dimension */
    getOverallSize(force) {
       if (!this._overall_size || force || this._customBoundingBox) {
-         let box = this.getGeomBoundingBox();
+         const box = this.getGeomBoundingBox();
 
          // if detect of coordinates fails - ignore
          if (!Number.isFinite(box.min.x)) return 1000;
@@ -89956,38 +89907,37 @@ class TGeoPainter extends ObjectPainter {
    createSnapshot(filename) {
       if (!this._renderer) return;
       this.render3D(0);
-      let dataUrl = this._renderer.domElement.toDataURL('image/png');
+      const dataUrl = this._renderer.domElement.toDataURL('image/png');
       if (filename === 'asis') return dataUrl;
       dataUrl.replace('image/png', 'image/octet-stream');
-      let doc = getDocument(),
+      const doc = getDocument(),
           link = doc.createElement('a');
       if (isStr(link.download)) {
-         doc.body.appendChild(link); //Firefox requires the link to be in the body
+         doc.body.appendChild(link); // Firefox requires the link to be in the body
          link.download = filename || 'geometry.png';
          link.href = dataUrl;
          link.click();
-         doc.body.removeChild(link); //remove the link when done
+         doc.body.removeChild(link); // remove the link when done
       }
    }
 
    /** @summary Returns url parameters defining camera position.
-     * @desc Either absolute position are provided (arg == true) or zoom, roty, rotz parameters */
+     * @desc Either absolute position are provided (arg === true) or zoom, roty, rotz parameters */
    produceCameraUrl(arg) {
-
       if (!this._camera)
          return '';
 
       if (this._camera.isOrthographicCamera) {
-         let zoom = Math.round(this._camera.zoom * 100);
-         return this.ctrl.camera_kind + (zoom == 100 ? '' : `,zoom=${zoom}`);
+         const zoom = Math.round(this._camera.zoom * 100);
+         return this.ctrl.camera_kind + (zoom === 100 ? '' : `,zoom=${zoom}`);
       }
 
       let kind = '';
-      if (this.ctrl.camera_kind != 'perspective')
+      if (this.ctrl.camera_kind !== 'perspective')
         kind = this.ctrl.camera_kind + ',';
 
       if (arg === true) {
-         let p = this._camera?.position, t = this._controls?.target;
+         const p = this._camera?.position, t = this._controls?.target;
          if (!p || !t) return '';
 
          const conv = v => {
@@ -90004,14 +89954,14 @@ class TGeoPainter extends ObjectPainter {
       if (!this._lookat || !this._camera0pos || !this._camera || !this.ctrl)
          return '';
 
-      let pos1 = new Vector3().add(this._camera0pos).sub(this._lookat),
+      const pos1 = new Vector3().add(this._camera0pos).sub(this._lookat),
           pos2 = new Vector3().add(this._camera.position).sub(this._lookat),
           zoom = Math.min(10000, Math.max(1, this.ctrl.zoom * pos2.length() / pos1.length() * 100));
 
       pos1.normalize();
       pos2.normalize();
 
-      let quat = new Quaternion(), euler = new Euler();
+      const quat = new Quaternion(), euler = new Euler();
 
       quat.setFromUnitVectors(pos1, pos2);
       euler.setFromQuaternion(quat, 'YZX');
@@ -90027,7 +89977,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Calculates current zoom factor */
    calculateZoom() {
       if (this._camera0pos && this._camera && this._lookat) {
-         let pos1 = new Vector3().add(this._camera0pos).sub(this._lookat),
+         const pos1 = new Vector3().add(this._camera0pos).sub(this._lookat),
              pos2 = new Vector3().add(this._camera.position).sub(this._lookat);
          return pos2.length() / pos1.length();
       }
@@ -90041,9 +89991,9 @@ class TGeoPainter extends ObjectPainter {
    adjustCameraPosition(arg, keep_zoom) {
       if (!this._toplevel || this.superimpose) return;
 
-      let force = (arg === true),
-          first_time = (arg == 'first') || force,
-          only_set = (arg == 'only_set'),
+      const force = (arg === true),
+          first_time = (arg === 'first') || force,
+          only_set = (arg === 'only_set'),
           box = this.getGeomBoundingBox();
 
       // let box2 = new Box3().makeEmpty();
@@ -90056,20 +90006,20 @@ class TGeoPainter extends ObjectPainter {
          return;
       }
 
-      let sizex = box.max.x - box.min.x,
-          sizey = box.max.y - box.min.y,
-          sizez = box.max.z - box.min.z,
-          midx = (box.max.x + box.min.x)/2,
-          midy = (box.max.y + box.min.y)/2,
-          midz = (box.max.z + box.min.z)/2,
-          more = this.ctrl._axis || (this.ctrl.camera_overlay == 'bar')  ? 0.2 : 0.1;
+      const sizex = box.max.x - box.min.x,
+            sizey = box.max.y - box.min.y,
+            sizez = box.max.z - box.min.z,
+            midx = (box.max.x + box.min.x)/2,
+            midy = (box.max.y + box.min.y)/2,
+            midz = (box.max.z + box.min.z)/2,
+            more = this.ctrl._axis || (this.ctrl.camera_overlay === 'bar')  ? 0.2 : 0.1;
 
       if (this._scene_size && !force) {
          const d = this._scene_size, test = (v1, v2, scale) => {
             if (!scale) scale = Math.abs((v1+v2)/2);
             return scale <= 1e-20 ? true : Math.abs(v2-v1)/scale > 0.01;
-         };
-         let large_change = test(sizex, d.sizex) || test(sizey, d.sizey) || test(sizez, d.sizez) ||
+         },
+          large_change = test(sizex, d.sizex) || test(sizey, d.sizey) || test(sizez, d.sizez) ||
                             test(midx, d.midx, d.sizex) || test(midy, d.midy, d.sizey) || test(midz, d.midz, d.sizez);
          if (!large_change) {
             if (this.ctrl.select_in_view)
@@ -90087,12 +90037,12 @@ class TGeoPainter extends ObjectPainter {
       this._fog.near = this._overall_size * 0.5;
       this._fog.far = this._overall_size * 5;
 
-      if (first_time)
+      if (first_time) {
          for (let naxis = 0; naxis < 3; ++naxis) {
-            let cc = this.ctrl.clip[naxis];
+            const cc = this.ctrl.clip[naxis];
             cc.min = box.min[cc.name];
             cc.max = box.max[cc.name];
-            let sz = cc.max - cc.min;
+            const sz = cc.max - cc.min;
             cc.max += sz*0.01;
             cc.min -= sz*0.01;
             if (sz > 100)
@@ -90109,10 +90059,11 @@ class TGeoPainter extends ObjectPainter {
             else if (cc.value > cc.max)
                cc.value = cc.max;
          }
+      }
 
-      let k = 2*this.ctrl.zoom,
-          max_all = Math.max(sizex, sizey, sizez),
-          sign = this.ctrl.camera_kind.indexOf('N') > 0 ? -1 : 1;
+      let k = 2*this.ctrl.zoom;
+      const max_all = Math.max(sizex, sizey, sizez),
+            sign = this.ctrl.camera_kind.indexOf('N') > 0 ? -1 : 1;
 
       this._lookat = new Vector3(midx, midy, midz);
       this._camera0pos = new Vector3(-2*max_all, 0, 0); // virtual 0 position, where rotation starts
@@ -90128,7 +90079,7 @@ class TGeoPainter extends ObjectPainter {
 
          this._camera.position.set(-k*max_all, 0, 0);
          this._camera.position.applyEuler(euler);
-         this._camera.position.add(new Vector3(midx,midy,midz));
+         this._camera.position.add(new Vector3(midx, midy, midz));
 
          if (keep_zoom && prev_zoom) {
             const actual_zoom = this.calculateZoom();
@@ -90136,13 +90087,13 @@ class TGeoPainter extends ObjectPainter {
 
             this._camera.position.set(-k*max_all, 0, 0);
             this._camera.position.applyEuler(euler);
-            this._camera.position.add(new Vector3(midx,midy,midz));
+            this._camera.position.add(new Vector3(midx, midy, midz));
          }
       } else if (this.ctrl.camx !== undefined && this.ctrl.camy !== undefined && this.ctrl.camz !== undefined) {
          this._camera.position.set(this.ctrl.camx, this.ctrl.camy, this.ctrl.camz);
          this._lookat.set(this.ctrl.camlx || 0, this.ctrl.camly || 0, this.ctrl.camlz || 0);
          this.ctrl.camx = this.ctrl.camy = this.ctrl.camz = this.ctrl.camlx = this.ctrl.camly = this.ctrl.camlz = undefined;
-      } else if ((this.ctrl.camera_kind == 'orthoXOY') || (this.ctrl.camera_kind == 'orthoXNOY')) {
+      } else if ((this.ctrl.camera_kind === 'orthoXOY') || (this.ctrl.camera_kind === 'orthoXNOY')) {
          this._camera.up.set(0, 1, 0);
          this._camera.position.set(sign < 0 ? midx*2 : 0, 0, midz + sign*sizez*2);
          this._lookat.set(sign < 0 ? midx*2 : 0, 0, midz);
@@ -90153,7 +90104,7 @@ class TGeoPainter extends ObjectPainter {
          if (!keep_zoom) this._camera.zoom = this.ctrl.zoom || 1;
          this._camera.orthoSign = sign;
          this._camera.orthoZ = [midz, sizez/2];
-      } else if ((this.ctrl.camera_kind == 'orthoXOZ') || (this.ctrl.camera_kind == 'orthoXNOZ')) {
+      } else if ((this.ctrl.camera_kind === 'orthoXOZ') || (this.ctrl.camera_kind === 'orthoXNOZ')) {
          this._camera.up.set(0, 0, 1);
          this._camera.position.set(sign < 0 ? midx*2 : 0, midy - sign*sizey*2, 0);
          this._lookat.set(sign < 0 ? midx*2 : 0, midy, 0);
@@ -90166,7 +90117,7 @@ class TGeoPainter extends ObjectPainter {
          this._camera.orthoRotation = geom => geom.rotateX(Math.PI/2);
          this._camera.orthoSign = sign;
          this._camera.orthoZ = [midy, -sizey/2];
-      } else if ((this.ctrl.camera_kind == 'orthoZOY') || (this.ctrl.camera_kind == 'orthoZNOY')) {
+      } else if ((this.ctrl.camera_kind === 'orthoZOY') || (this.ctrl.camera_kind === 'orthoZNOY')) {
          this._camera.up.set(0, 1, 0);
          this._camera.position.set(midx - sign*sizex*2, 0, sign < 0 ? midz*2 : 0);
          this._lookat.set(midx, 0, sign < 0 ? midz*2 : 0);
@@ -90179,7 +90130,7 @@ class TGeoPainter extends ObjectPainter {
          this._camera.orthoRotation = geom => geom.rotateY(-Math.PI/2);
          this._camera.orthoSign = sign;
          this._camera.orthoZ = [midx, -sizex/2];
-      } else if ((this.ctrl.camera_kind == 'orthoZOX') || (this.ctrl.camera_kind == 'orthoZNOX')) {
+      } else if ((this.ctrl.camera_kind === 'orthoZOX') || (this.ctrl.camera_kind === 'orthoZNOX')) {
          this._camera.up.set(1, 0, 0);
          this._camera.position.set(0, midy - sign*sizey*2, sign > 0 ? midz*2 : 0);
          this._lookat.set(0, midy, sign > 0 ? midz*2 : 0);
@@ -90194,39 +90145,39 @@ class TGeoPainter extends ObjectPainter {
          this._camera.orthoZ = [midy, -sizey/2];
       } else if (this.ctrl.project) {
          switch (this.ctrl.project) {
-            case 'x': this._camera.position.set(k*1.5*Math.max(sizey,sizez), 0, 0); break;
-            case 'y': this._camera.position.set(0, k*1.5*Math.max(sizex,sizez), 0); break;
-            case 'z': this._camera.position.set(0, 0, k*1.5*Math.max(sizex,sizey)); break;
+            case 'x': this._camera.position.set(k*1.5*Math.max(sizey, sizez), 0, 0); break;
+            case 'y': this._camera.position.set(0, k*1.5*Math.max(sizex, sizez), 0); break;
+            case 'z': this._camera.position.set(0, 0, k*1.5*Math.max(sizex, sizey)); break;
          }
-      } else if (this.ctrl.camera_kind == 'perspXOZ') {
-         this._camera.up.set(0,1,0);
+      } else if (this.ctrl.camera_kind === 'perspXOZ') {
+         this._camera.up.set(0, 1, 0);
          this._camera.position.set(midx - 3*max_all, midy, midz);
-      } else if (this.ctrl.camera_kind == 'perspYOZ') {
-         this._camera.up.set(1,0,0);
+      } else if (this.ctrl.camera_kind === 'perspYOZ') {
+         this._camera.up.set(1, 0, 0);
          this._camera.position.set(midx, midy - 3*max_all, midz);
-      } else if (this.ctrl.camera_kind == 'perspXOY') {
-         this._camera.up.set(0,0,1);
+      } else if (this.ctrl.camera_kind === 'perspXOY') {
+         this._camera.up.set(0, 0, 1);
          this._camera.position.set(midx - 3*max_all, midy, midz);
       } else if (this.ctrl._yup) {
-         this._camera.up.set(0,1,0);
-         this._camera.position.set(midx-k*Math.max(sizex,sizez), midy+k*sizey, midz-k*Math.max(sizex,sizez));
+         this._camera.up.set(0, 1, 0);
+         this._camera.position.set(midx-k*Math.max(sizex, sizez), midy+k*sizey, midz-k*Math.max(sizex, sizez));
       } else {
-         this._camera.up.set(0,0,1);
-         this._camera.position.set(midx-k*Math.max(sizex,sizey), midy-k*Math.max(sizex,sizey), midz+k*sizez);
+         this._camera.up.set(0, 0, 1);
+         this._camera.position.set(midx-k*Math.max(sizex, sizey), midy-k*Math.max(sizex, sizey), midz+k*sizez);
       }
 
       if (this._camera.isOrthographicCamera && this.isOrthoCamera() && this._scene_width && this._scene_height) {
-         let screen_ratio = this._scene_width / this._scene_height,
+         const screen_ratio = this._scene_width / this._scene_height,
              szx = this._camera.right - this._camera.left, szy = this._camera.top - this._camera.bottom;
 
          if (screen_ratio > szx / szy) {
             // screen wider than actual geometry
-            let m = (this._camera.right + this._camera.left) / 2;
+            const m = (this._camera.right + this._camera.left) / 2;
             this._camera.left = m - szy * screen_ratio / 2;
             this._camera.right = m + szy * screen_ratio / 2;
          } else {
             // screen heigher than actual geometry
-            let m = (this._camera.top + this._camera.bottom) / 2;
+            const m = (this._camera.top + this._camera.bottom) / 2;
             this._camera.top  = m + szx / screen_ratio / 2;
             this._camera.bottom = m - szx / screen_ratio / 2;
          }
@@ -90253,11 +90204,11 @@ class TGeoPainter extends ObjectPainter {
       this.ctrl.rotatey = rotatey || 0;
       this.ctrl.rotatez = rotatez || 0;
       let preserve_zoom = false;
-      if (zoom && Number.isFinite(zoom)) {
+      if (zoom && Number.isFinite(zoom))
          this.ctrl.zoom = zoom;
-      } else {
+       else
          preserve_zoom = true;
-      }
+
       this.adjustCameraPosition(false, preserve_zoom);
    }
 
@@ -90277,10 +90228,9 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary focus on item */
    focusOnItem(itemname) {
-
       if (!itemname || !this._clones) return;
 
-      let stack = this._clones.findStackByName(itemname);
+      const stack = this._clones.findStackByName(itemname);
 
       if (stack)
          this.focusCamera(this._clones.resolveStack(stack, true), false);
@@ -90288,53 +90238,50 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary focus camera on speicifed position */
    focusCamera(focus, autoClip) {
-
       if (this.ctrl.project || this.isOrthoCamera()) {
          this.adjustCameraPosition(true);
          return this.render3D();
       }
 
       let box = new Box3();
-      if (focus === undefined) {
+      if (focus === undefined)
          box = this.getGeomBoundingBox();
-      } else if (focus instanceof Mesh) {
+       else if (focus instanceof Mesh)
          box.setFromObject(focus);
-      } else {
-         let center = new Vector3().setFromMatrixPosition(focus.matrix),
+       else {
+         const center = new Vector3().setFromMatrixPosition(focus.matrix),
              node = focus.node,
              halfDelta = new Vector3(node.fDX, node.fDY, node.fDZ).multiplyScalar(0.5);
          box.min = center.clone().sub(halfDelta);
          box.max = center.clone().add(halfDelta);
       }
 
-      let sizex = box.max.x - box.min.x,
+      const sizex = box.max.x - box.min.x,
           sizey = box.max.y - box.min.y,
           sizez = box.max.z - box.min.z,
           midx = (box.max.x + box.min.x)/2,
           midy = (box.max.y + box.min.y)/2,
           midz = (box.max.z + box.min.z)/2;
 
-      let position;
+      let position, frames = 50, step = 0;
       if (this.ctrl._yup)
-         position = new Vector3(midx-2*Math.max(sizex,sizez), midy+2*sizey, midz-2*Math.max(sizex,sizez));
+         position = new Vector3(midx-2*Math.max(sizex, sizez), midy+2*sizey, midz-2*Math.max(sizex, sizez));
       else
-         position = new Vector3(midx-2*Math.max(sizex,sizey), midy-2*Math.max(sizex,sizey), midz+2*sizez);
+         position = new Vector3(midx-2*Math.max(sizex, sizey), midy-2*Math.max(sizex, sizey), midz+2*sizez);
 
-      let target = new Vector3(midx, midy, midz),
-          oldTarget = this._controls.target,
-          // probably, reduce number of frames
-          frames = 50, step = 0,
-          // Amount to change camera position at each step
-          posIncrement = position.sub(this._camera.position).divideScalar(frames),
-          // Amount to change 'lookAt' so it will end pointed at target
-          targetIncrement = target.sub(oldTarget).divideScalar(frames);
+      const target = new Vector3(midx, midy, midz),
+            oldTarget = this._controls.target,
+            // Amount to change camera position at each step
+            posIncrement = position.sub(this._camera.position).divideScalar(frames),
+            // Amount to change 'lookAt' so it will end pointed at target
+            targetIncrement = target.sub(oldTarget).divideScalar(frames);
 
       autoClip = autoClip && this._webgl;
 
       // Automatic Clipping
       if (autoClip) {
          for (let axis = 0; axis < 3; ++axis) {
-            let cc = this.ctrl.clip[axis];
+            const cc = this.ctrl.clip[axis];
             if (!cc.enabled) { cc.value = cc.min; cc.enabled = true; }
             cc.inc = ((cc.min + cc.max) / 2 - cc.value) / frames;
          }
@@ -90348,29 +90295,29 @@ class TGeoPainter extends ObjectPainter {
       const animate = () => {
          if (this._animating === undefined) return;
 
-         if (this._animating) {
+         if (this._animating)
             requestAnimationFrame(animate);
-         } else {
+          else {
             if (!this._geom_viewer)
                this.startDrawGeometry();
          }
-         let smoothFactor = -Math.cos((2.0*Math.PI*step)/frames) + 1.0;
+         const smoothFactor = -Math.cos((2.0*Math.PI*step)/frames) + 1.0;
          this._camera.position.add(posIncrement.clone().multiplyScalar(smoothFactor));
          oldTarget.add(targetIncrement.clone().multiplyScalar(smoothFactor));
          this._lookat = oldTarget;
          this._camera.lookAt(this._lookat);
          this._camera.updateProjectionMatrix();
 
-         let tm1 = new Date().getTime();
+         const tm1 = new Date().getTime();
          if (autoClip) {
             for (let axis = 0; axis < 3; ++axis)
                this.ctrl.clip[axis].value += this.ctrl.clip[axis].inc * smoothFactor;
             this.updateClipping();
-         } else {
+         } else
             this.render3D(0);
-         }
-         let tm2 = new Date().getTime();
-         if ((step == 0) && (tm2-tm1 > 200)) frames = 20;
+
+         const tm2 = new Date().getTime();
+         if ((step === 0) && (tm2-tm1 > 200)) frames = 20;
          step++;
          this._animating = step < frames;
       };
@@ -90382,14 +90329,13 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary actiavte auto rotate */
    autorotate(speed) {
-
-      let rotSpeed = (speed === undefined) ? 2.0 : speed,
-          last = new Date();
+      const rotSpeed = (speed === undefined) ? 2.0 : speed;
+      let last = new Date();
 
       const animate = () => {
          if (!this._renderer || !this.ctrl) return;
 
-         let current = new Date();
+         const current = new Date();
 
          if (this.ctrl.rotate)
             requestAnimationFrame(animate);
@@ -90414,17 +90360,17 @@ class TGeoPainter extends ObjectPainter {
      * @desc Scans hieararchy and check for unique nodes
      * @return {Promise} with object drawing ready */
    async drawCount(unqievis, clonetm) {
+      const makeTime = tm => (this.isBatchMode() ? 'anytime' : tm.toString()) + ' ms',
 
-      const makeTime = tm => (this.isBatchMode() ? 'anytime' : tm.toString()) + ' ms';
-
-      let res = [ 'Unique nodes: ' + this._clones.nodes.length,
+       res = ['Unique nodes: ' + this._clones.nodes.length,
                   'Unique visible: ' + unqievis,
-                  'Time to clone: ' + makeTime(clonetm) ];
+                  'Time to clone: ' + makeTime(clonetm)];
 
       // need to fill cached value line numvischld
       this._clones.scanVisible();
 
-      let nshapes = 0, arg = {
+      let nshapes = 0;
+      const arg = {
          clones: this._clones,
          cnt: [],
          func(node) {
@@ -90451,7 +90397,7 @@ class TGeoPainter extends ObjectPainter {
 
       res.push(`Time to scan: ${makeTime(tm2-tm1)}`, '', 'Check timing for matrix calculations ...');
 
-      let elem = this.selectDom().style('overflow', 'auto');
+      const elem = this.selectDom().style('overflow', 'auto');
 
       if (this.isBatchMode())
          elem.property('_json_object_', res);
@@ -90465,7 +90411,7 @@ class TGeoPainter extends ObjectPainter {
             numvis = this._clones.scanVisible(arg);
             tm2 = new Date().getTime();
 
-            let last_str = `Time to scan with matrix: ${makeTime(tm2-tm1)}`;
+            const last_str = `Time to scan with matrix: ${makeTime(tm2-tm1)}`;
             if (this.isBatchMode())
                res.push(last_str);
             else
@@ -90482,7 +90428,6 @@ class TGeoPainter extends ObjectPainter {
      * By default function with name 'extract_geo_tracks' is checked
      * @return {Promise} handling of drop operation */
    async performDrop(obj, itemname, hitem, opt) {
-
       if (obj?.$kind === 'TTree') {
          // drop tree means function call which must extract tracks from provided tree
 
@@ -90493,7 +90438,7 @@ class TGeoPainter extends ObjectPainter {
             opt = opt.slice(opt.indexOf('$')+1);
          }
 
-         let func = findFunction(funcname);
+         const func = findFunction(funcname);
 
          if (!func) return Promise.reject(Error(`Function ${funcname} not found`));
 
@@ -90521,7 +90466,7 @@ class TGeoPainter extends ObjectPainter {
    mouseOverHierarchy(on, itemname, hitem) {
       if (!this.ctrl) return; // protection for cleaned-up painter
 
-      let obj = hitem._obj;
+      const obj = hitem._obj;
 
       // let's highlight tracks and hits only for the time being
       if (!obj || (obj._typename !== clTEveTrack && obj._typename !== clTEvePointSet && obj._typename !== clTPolyMarker3D)) return;
@@ -90558,8 +90503,8 @@ class TGeoPainter extends ObjectPainter {
    extraObjectVisible(hpainter, hitem, toggle) {
       if (!this._extraObjects) return;
 
-      let itemname = hpainter.itemFullName(hitem),
-          indx = this._extraObjects.opt.indexOf(itemname);
+      const itemname = hpainter.itemFullName(hitem);
+      let indx = this._extraObjects.opt.indexOf(itemname);
 
       if ((indx < 0) && hitem._obj) {
          indx = this._extraObjects.arr.indexOf(hitem._obj);
@@ -90605,17 +90550,18 @@ class TGeoPainter extends ObjectPainter {
       if (add_objects === undefined) {
          add_objects = true;
          do_render = true;
-      } else if (not_wait_render) {
+      } else if (not_wait_render)
          do_render = true;
-      }
+
 
       let promise = false;
 
       if ((obj._typename === clTList) || (obj._typename === clTObjArray)) {
          if (!obj.arr) return false;
-         let parr = [];
+         const parr = [];
          for (let n = 0; n < obj.arr.length; ++n) {
-            let sobj = obj.arr[n], sname = obj.opt ? obj.opt[n] : '';
+            const sobj = obj.arr[n];
+            let sname = obj.opt ? obj.opt[n] : '';
             if (!sname) sname = (itemname || '<prnt>') + `/[${n}]`;
             parr.push(this.drawExtras(sobj, sname, add_objects));
          }
@@ -90647,7 +90593,7 @@ class TGeoPainter extends ObjectPainter {
 
          this.updateClipping(true);
 
-         let pr = this.render3D(100, not_wait_render ? 'nopromise' : false);
+         const pr = this.render3D(100, not_wait_render ? 'nopromise' : false);
 
          return not_wait_render ? this : pr;
       });
@@ -90659,21 +90605,22 @@ class TGeoPainter extends ObjectPainter {
 
       if (!name) name = 'tracks';
 
-      let extras = null, lst = [];
+      let extras = null;
+      const lst = [];
       for (let n = 0; n < this._toplevel.children.length; ++n) {
-         let chld = this._toplevel.children[n];
+         const chld = this._toplevel.children[n];
          if (!chld._extras) continue;
-         if (action == 'collect') { lst.push(chld); continue; }
+         if (action === 'collect') { lst.push(chld); continue; }
          if (chld._extras === name) { extras = chld; break; }
       }
 
-      if (action == 'collect') {
+      if (action === 'collect') {
          for (let k = 0; k < lst.length; ++k)
             this._toplevel.remove(lst[k]);
          return lst;
       }
 
-      if (action == 'delete') {
+      if (action === 'delete') {
          if (extras) this._toplevel.remove(extras);
          disposeThreejsObject(extras);
          return null;
@@ -90691,10 +90638,10 @@ class TGeoPainter extends ObjectPainter {
    /** @summary add object to extras container.
      * @desc If fail, dispose object */
    addToExtrasContainer(obj, name) {
-      let container = this.getExtrasContainer('', name);
-      if (container) {
+      const container = this.getExtrasContainer('', name);
+      if (container)
          container.add(obj);
-      } else {
+       else {
          console.warn('Fail to add object to extras');
          disposeThreejsObject(obj);
       }
@@ -90704,27 +90651,26 @@ class TGeoPainter extends ObjectPainter {
    drawGeoTrack(track, itemname) {
       if (!track?.fNpoints) return false;
 
-      let linewidth = browser.isWin ? 1 : (track.fLineWidth || 1), // line width not supported on windows
-          color = getColor(track.fLineColor) || '#ff00ff',
-          npoints = Math.round(track.fNpoints/4), // each track point has [x,y,z,t] coordinate
-          buf = new Float32Array((npoints-1)*6),
-          pos = 0, projv = this.ctrl.projectPos,
-          projx = (this.ctrl.project === 'x'),
-          projy = (this.ctrl.project === 'y'),
-          projz = (this.ctrl.project === 'z');
+      const linewidth = browser.isWin ? 1 : (track.fLineWidth || 1), // line width not supported on windows
+            color = getColor(track.fLineColor) || '#ff00ff',
+            npoints = Math.round(track.fNpoints/4), // each track point has [x,y,z,t] coordinate
+            buf = new Float32Array((npoints-1)*6),
+            projv = this.ctrl.projectPos,
+            projx = (this.ctrl.project === 'x'),
+            projy = (this.ctrl.project === 'y'),
+            projz = (this.ctrl.project === 'z');
 
-      for (let k = 0; k < npoints-1; ++k) {
+      for (let k = 0, pos = 0; k < npoints-1; ++k, pos+=6) {
          buf[pos]   = projx ? projv : track.fPoints[k*4];
          buf[pos+1] = projy ? projv : track.fPoints[k*4+1];
          buf[pos+2] = projz ? projv : track.fPoints[k*4+2];
          buf[pos+3] = projx ? projv : track.fPoints[k*4+4];
          buf[pos+4] = projy ? projv : track.fPoints[k*4+5];
          buf[pos+5] = projz ? projv : track.fPoints[k*4+6];
-         pos+=6;
       }
 
-      let lineMaterial = new LineBasicMaterial({ color, linewidth }),
-          line = createLineSegments(buf, lineMaterial);
+      const lineMaterial = new LineBasicMaterial({ color, linewidth }),
+            line = createLineSegments(buf, lineMaterial);
 
       line.defaultOrder = line.renderOrder = 1000000; // to bring line to the front
       line.geo_name = itemname;
@@ -90743,27 +90689,26 @@ class TGeoPainter extends ObjectPainter {
    drawPolyLine(line, itemname) {
       if (!line) return false;
 
-      let linewidth = browser.isWin ? 1 : (line.fLineWidth || 1),
-          color = getColor(line.fLineColor) || '#ff00ff',
-          npoints = line.fN,
-          fP = line.fP,
-          buf = new Float32Array((npoints-1)*6),
-          pos = 0, projv = this.ctrl.projectPos,
-          projx = (this.ctrl.project === 'x'),
-          projy = (this.ctrl.project === 'y'),
-          projz = (this.ctrl.project === 'z');
+      const linewidth = browser.isWin ? 1 : (line.fLineWidth || 1),
+            color = getColor(line.fLineColor) || '#ff00ff',
+            npoints = line.fN,
+            fP = line.fP,
+            buf = new Float32Array((npoints-1)*6),
+            projv = this.ctrl.projectPos,
+            projx = (this.ctrl.project === 'x'),
+            projy = (this.ctrl.project === 'y'),
+            projz = (this.ctrl.project === 'z');
 
-      for (let k = 0; k < npoints-1; ++k) {
+      for (let k = 0, pos = 0; k < npoints-1; ++k, pos += 6) {
          buf[pos]   = projx ? projv : fP[k*3];
          buf[pos+1] = projy ? projv : fP[k*3+1];
          buf[pos+2] = projz ? projv : fP[k*3+2];
          buf[pos+3] = projx ? projv : fP[k*3+3];
          buf[pos+4] = projy ? projv : fP[k*3+4];
          buf[pos+5] = projz ? projv : fP[k*3+5];
-         pos += 6;
       }
 
-      let lineMaterial = new LineBasicMaterial({ color, linewidth }),
+      const lineMaterial = new LineBasicMaterial({ color, linewidth }),
           line3d = createLineSegments(buf, lineMaterial);
 
       line3d.defaultOrder = line3d.renderOrder = 1000000; // to bring line to the front
@@ -90780,26 +90725,25 @@ class TGeoPainter extends ObjectPainter {
    drawEveTrack(track, itemname) {
       if (!track || (track.fN <= 0)) return false;
 
-      let linewidth = browser.isWin ? 1 : (track.fLineWidth || 1),
-          color = getColor(track.fLineColor) || '#ff00ff',
-          buf = new Float32Array((track.fN-1)*6), pos = 0,
-          projv = this.ctrl.projectPos,
-          projx = (this.ctrl.project === 'x'),
-          projy = (this.ctrl.project === 'y'),
-          projz = (this.ctrl.project === 'z');
+      const linewidth = browser.isWin ? 1 : (track.fLineWidth || 1),
+            color = getColor(track.fLineColor) || '#ff00ff',
+            buf = new Float32Array((track.fN-1)*6),
+            projv = this.ctrl.projectPos,
+            projx = (this.ctrl.project === 'x'),
+            projy = (this.ctrl.project === 'y'),
+            projz = (this.ctrl.project === 'z');
 
-      for (let k = 0; k < track.fN-1; ++k) {
+      for (let k = 0, pos = 0; k < track.fN-1; ++k, pos+=6) {
          buf[pos]   = projx ? projv : track.fP[k*3];
          buf[pos+1] = projy ? projv : track.fP[k*3+1];
          buf[pos+2] = projz ? projv : track.fP[k*3+2];
          buf[pos+3] = projx ? projv : track.fP[k*3+3];
          buf[pos+4] = projy ? projv : track.fP[k*3+4];
          buf[pos+5] = projz ? projv : track.fP[k*3+5];
-         pos+=6;
       }
 
-      let lineMaterial = new LineBasicMaterial({ color, linewidth }),
-          line = createLineSegments(buf, lineMaterial);
+      const lineMaterial = new LineBasicMaterial({ color, linewidth }),
+            line = createLineSegments(buf, lineMaterial);
 
       line.defaultOrder = line.renderOrder = 1000000; // to bring line to the front
       line.geo_name = itemname;
@@ -90818,24 +90762,25 @@ class TGeoPainter extends ObjectPainter {
 
       // make hit size scaling factor of overall geometry size
       // otherwise it is not possible to correctly see hits at all
+      const nhits = hit.fN,
+            projv = this.ctrl.projectPos,
+            projx = (this.ctrl.project === 'x'),
+            projy = (this.ctrl.project === 'y'),
+            projz = (this.ctrl.project === 'z');
       let hit_size = Math.max(hit.fMarkerSize * this.getOverallSize() * 0.005, 0.2),
-          nhits = hit.fN,
-          projv = this.ctrl.projectPos,
-          projx = (this.ctrl.project === 'x'),
-          projy = (this.ctrl.project === 'y'),
-          projz = (this.ctrl.project === 'z'),
           style = hit.fMarkerStyle;
 
       // FIXME: styles 2 and 4 does not work properly, see Misc/basic3d demo
       // style 4 is very bad for hits representation
-      if ((style == 4) || (style == 2)) { style = 7; hit_size *= 1.5; }
+      if ((style === 4) || (style === 2)) { style = 7; hit_size *= 1.5; }
 
-      let pnts = new PointsCreator(nhits, this._webgl, hit_size);
+      const pnts = new PointsCreator(nhits, this._webgl, hit_size);
 
-      for (let i = 0; i < nhits; i++)
+      for (let i = 0; i < nhits; i++) {
          pnts.addPoint(projx ? projv : hit.fP[i*3],
                        projy ? projv : hit.fP[i*3+1],
                        projz ? projv : hit.fP[i*3+2]);
+      }
 
       return pnts.createPoints({ color: getColor(hit.fMarkerColor) || '#0000ff', style }).then(mesh => {
          mesh.defaultOrder = mesh.renderOrder = 1000000; // to bring points to the front
@@ -90849,7 +90794,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Draw extra shape on the geometry */
    drawExtraShape(obj, itemname) {
-      let mesh = build(obj);
+      const mesh = build(obj);
       if (!mesh) return false;
 
       mesh.geo_name = itemname;
@@ -90862,7 +90807,6 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Serach for specified node
      * @private */
    findNodeWithVolume(name, action, prnt, itemname, volumes) {
-
       let first_level = false, res = null;
 
       if (!prnt) {
@@ -90886,23 +90830,24 @@ class TGeoPainter extends ObjectPainter {
       prnt.fVolume._searched = true;
       volumes.push(prnt.fVolume);
 
-      if (prnt.fVolume.fNodes)
+      if (prnt.fVolume.fNodes) {
          for (let n = 0, len = prnt.fVolume.fNodes.arr.length; n < len; ++n) {
             res = this.findNodeWithVolume(name, action, prnt.fVolume.fNodes.arr[n], itemname, volumes);
             if (res) break;
          }
+      }
 
-      if (first_level)
+      if (first_level) {
          for (let n = 0, len = volumes.length; n < len; ++n)
             delete volumes[n]._searched;
+      }
 
       return res;
    }
 
    /** @summary Process script option - load and execute some gGeoManager-related calls */
    async loadMacro(script_name) {
-
-      let result = { obj: this.getGeometry(), prefix: '' };
+      const result = { obj: this.getGeometry(), prefix: '' };
 
       if (this.geo_manager)
          result.prefix = result.obj.fName;
@@ -90910,9 +90855,9 @@ class TGeoPainter extends ObjectPainter {
       if (!script_name || (script_name.length < 3) || (getNodeKind(result.obj) !== 0))
          return result;
 
-      let mgr = {
+      const mgr = {
             GetVolume: name => {
-               let regexp = new RegExp('^'+name+'$'),
+               const regexp = new RegExp('^'+name+'$'),
                    currnode = this.findNodeWithVolume(regexp, arg => arg);
 
                if (!currnode) console.log(`Did not found ${name} volume`);
@@ -90958,28 +90903,29 @@ class TGeoPainter extends ObjectPainter {
       showProgress(`Loading macro ${script_name}`);
 
       return httpRequest(script_name, 'text').then(script => {
-         let lines = script.split('\n'), indx = 0;
+         const lines = script.split('\n');
+         let indx = 0;
 
          while (indx < lines.length) {
             let line = lines[indx++].trim();
 
-            if (line.indexOf('//') == 0) continue;
+            if (line.indexOf('//') === 0) continue;
 
             if (line.indexOf('gGeoManager') < 0) continue;
-            line = line.replace('->GetVolume','.GetVolume');
-            line = line.replace('->InvisibleAll','.InvisibleAll');
-            line = line.replace('->SetMaxVisNodes','.SetMaxVisNodes');
-            line = line.replace('->DefaultColors','.DefaultColors');
-            line = line.replace('->Draw','.Draw');
-            line = line.replace('->SetTransparency','.SetTransparency');
-            line = line.replace('->SetLineColor','.SetLineColor');
-            line = line.replace('->SetVisLevel','.SetVisLevel');
+            line = line.replace('->GetVolume', '.GetVolume');
+            line = line.replace('->InvisibleAll', '.InvisibleAll');
+            line = line.replace('->SetMaxVisNodes', '.SetMaxVisNodes');
+            line = line.replace('->DefaultColors', '.DefaultColors');
+            line = line.replace('->Draw', '.Draw');
+            line = line.replace('->SetTransparency', '.SetTransparency');
+            line = line.replace('->SetLineColor', '.SetLineColor');
+            line = line.replace('->SetVisLevel', '.SetVisLevel');
             if (line.indexOf('->') >= 0) continue;
 
             try {
-               let func = new Function('gGeoManager', line);
+               const func = new Function('gGeoManager', line);
                func(mgr);
-            } catch(err) {
+            } catch (err) {
                console.error(`Problem by processing ${line}`);
             }
          }
@@ -91037,11 +90983,11 @@ class TGeoPainter extends ObjectPainter {
 
       if (nsegm) {
          old_gradpersegm = geoCfg('GradPerSegm');
-         geoCfg('GradPerSegm', 360 / Math.max(nsegm,6));
+         geoCfg('GradPerSegm', 360 / Math.max(nsegm, 6));
       }
 
       for (let cnt = 0; cnt < draw_msg.visibles.length; ++cnt) {
-         let item = draw_msg.visibles[cnt], rd = item.ri;
+         const item = draw_msg.visibles[cnt], rd = item.ri;
 
          // entry may be provided without shape - it is ok
          if (rd)
@@ -91061,11 +91007,11 @@ class TGeoPainter extends ObjectPainter {
       if (this.did_cleanup)
          return null;
 
-      if (name_prefix == '__geom_viewer_append__') {
+      if (name_prefix === '__geom_viewer_append__') {
          this._new_append_nodes = draw_obj;
          this.ctrl.use_worker = 0;
          this._geom_viewer = true; // indicate that working with geom viewer
-      } else if ((name_prefix == '__geom_viewer_selection__') && this._clones) {
+      } else if ((name_prefix === '__geom_viewer_selection__') && this._clones) {
          // these are selection done from geom viewer
          this._new_draw_nodes = draw_obj;
          this.ctrl.use_worker = 0;
@@ -91095,8 +91041,8 @@ class TGeoPainter extends ObjectPainter {
 
          this._clones.name_prefix = name_prefix;
 
-         let hide_top_volume = !!this.geo_manager && !this.ctrl.showtop,
-             uniquevis = this.ctrl.no_screen ? 0 : this._clones.markVisibles(true, false, hide_top_volume);
+         const hide_top_volume = !!this.geo_manager && !this.ctrl.showtop;
+         let uniquevis = this.ctrl.no_screen ? 0 : this._clones.markVisibles(true, false, hide_top_volume);
 
          if (uniquevis <= 0)
             uniquevis = this._clones.markVisibles(false, false, hide_top_volume);
@@ -91105,7 +91051,7 @@ class TGeoPainter extends ObjectPainter {
 
          this._clones.produceIdShifts();
 
-         let spent = new Date().getTime() - this._start_drawing_time;
+         const spent = new Date().getTime() - this._start_drawing_time;
 
          if (!this._scene)
             console.log(`Creating clones ${this._clones.nodes.length} takes ${spent} ms uniquevis ${uniquevis}`);
@@ -91119,13 +91065,13 @@ class TGeoPainter extends ObjectPainter {
       if (!this._scene) {
          this._first_drawing = true;
 
-         let pp = this.getPadPainter();
+         const pp = this.getPadPainter();
 
          this._on_pad = !!pp;
 
          if (this._on_pad) {
             let size, render3d, fp;
-            promise = ensureTCanvas(this,'3d').then(() => {
+            promise = ensureTCanvas(this, '3d').then(() => {
                if (pp.fillatt?.color)
                   this.ctrl.background = pp.fillatt.color;
                fp = this.getFramePainter();
@@ -91143,14 +91089,13 @@ class TGeoPainter extends ObjectPainter {
                return this.createScene(size.width, size.height, render3d)
                           .then(dom => fp.add3dCanvas(size, dom, render3d === constants$1.Render3D.WebGL));
             });
-
          } else {
-            let dom = this.selectDom('origin');
+            const dom = this.selectDom('origin');
 
             this.batch_mode = isBatchMode() || (!dom.empty() && dom.property('_batch_mode'));
             this.batch_format = dom.property('_batch_format');
 
-            let render3d = getRender3DKind(this.options.Render3D, this.batch_mode);
+            const render3d = getRender3DKind(this.options.Render3D, this.batch_mode);
 
             // activate worker
             if ((this.ctrl.use_worker > 0) && !this.batch_mode)
@@ -91158,7 +91103,7 @@ class TGeoPainter extends ObjectPainter {
 
             assign3DHandler(this);
 
-            let size = this.getSizeFor3d(undefined, render3d);
+            const size = this.getSizeFor3d(undefined, render3d);
 
             this._fit_main_area = (size.can3d === -1);
 
@@ -91168,7 +91113,6 @@ class TGeoPainter extends ObjectPainter {
       }
 
       return promise.then(() => {
-
          // this is limit for the visible faces, number of volumes does not matter
          if (this._first_drawing && !this.ctrl.maxfaces)
             this.ctrl.maxfaces = 200000 * this.ctrl.more;
@@ -91194,15 +91138,15 @@ class TGeoPainter extends ObjectPainter {
    showDrawInfo(msg) {
       if (this.isBatchMode() || !this._first_drawing || !this._start_drawing_time) return;
 
-      let main = this._renderer.domElement.parentNode;
+      const main = this._renderer.domElement.parentNode;
       if (!main) return;
 
       let info = main.querySelector('.geo_info');
 
-      if (!msg) {
+      if (!msg)
          info?.remove();
-      } else {
-         let spent = (new Date().getTime() - this._start_drawing_time)*1e-3;
+       else {
+         const spent = (new Date().getTime() - this._start_drawing_time)*1e-3;
          if (!info) {
             info = document.createElement('p');
             info.setAttribute('class', 'geo_info');
@@ -91215,17 +91159,15 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Reentrant method to perform geometry drawing step by step */
    continueDraw() {
-
       // nothing to do - exit
       if (this.isStage(stageInit)) return;
 
-      let tm0 = new Date().getTime(),
-          interval = this._first_drawing ? 1000 : 200,
-          now = tm0;
+      const tm0 = new Date().getTime(),
+            interval = this._first_drawing ? 1000 : 200;
+      let now = tm0;
 
-      while(true) {
-
-         let res = this.nextDrawAction();
+      while (true) {
+         const res = this.nextDrawAction();
          if (!res) break;
 
          now = new Date().getTime();
@@ -91240,7 +91182,6 @@ class TGeoPainter extends ObjectPainter {
          if ((res === true) && (now - tm0 < interval)) continue;
 
          if ((now - tm0 > interval) || (res === 1) || (res === 2)) {
-
             showProgress(this.drawing_log);
 
             this.showDrawInfo(this.drawing_log);
@@ -91256,7 +91197,7 @@ class TGeoPainter extends ObjectPainter {
          }
       }
 
-      let take_time = now - this._startm;
+      const take_time = now - this._startm;
 
       if (this._first_drawing || this._full_redrawing)
          console.log(`Create tm = ${take_time} meshes ${this.ctrl.info.num_meshes} faces ${this.ctrl.info.num_faces}`);
@@ -91277,17 +91218,17 @@ class TGeoPainter extends ObjectPainter {
 
       this.drawOverlay();
 
-      let origin = this._camera.position.clone();
+      const origin = this._camera.position.clone();
       if (!force && this._last_camera_position) {
          // if camera position does not changed a lot, ignore such change
-         let dist = this._last_camera_position.distanceTo(origin);
+         const dist = this._last_camera_position.distanceTo(origin);
          if (dist < (this._overall_size || 1000)*1e-4) return;
       }
 
       this._last_camera_position = origin; // remember current camera position
 
       if (this.ctrl._axis) {
-         let vect = (this._controls?.target || this._lookat).clone().sub(this._camera.position).normalize();
+         const vect = (this._controls?.target || this._lookat).clone().sub(this._camera.position).normalize();
          this.getExtrasContainer('get', 'axis')?.traverse(obj3d => {
             if (isFunc(obj3d._axis_flip))
                obj3d._axis_flip(vect);
@@ -91307,7 +91248,6 @@ class TGeoPainter extends ObjectPainter {
      * Several special values are used:
      *   -1    - force recheck of rendering order based on camera position */
    render3D(tmout, measure) {
-
       if (!this._renderer) {
          if (!this.did_cleanup)
             console.warn('renderer object not exists - check code');
@@ -91316,13 +91256,13 @@ class TGeoPainter extends ObjectPainter {
          return this;
       }
 
-      let ret_promise = (tmout !== undefined) && (tmout > 0) && (measure != 'nopromise');
+      const ret_promise = (tmout !== undefined) && (tmout > 0) && (measure !== 'nopromise');
 
       if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
 
       if ((tmout > 0) && this._webgl) {
          if (this.isBatchMode()) tmout = 1; // use minimal timeout in batch mode
-         if (ret_promise)
+         if (ret_promise) {
             return new Promise(resolveFunc => {
                if (!this._render_resolveFuncs)
                   this._render_resolveFuncs = [];
@@ -91330,6 +91270,7 @@ class TGeoPainter extends ObjectPainter {
                if (!this.render_tmout)
                   this.render_tmout = setTimeout(() => this.render3D(0), tmout);
             });
+         }
 
          if (!this.render_tmout)
             this.render_tmout = setTimeout(() => this.render3D(0), tmout);
@@ -91343,7 +91284,7 @@ class TGeoPainter extends ObjectPainter {
 
       beforeRender3D(this._renderer);
 
-      let tm1 = new Date();
+      const tm1 = new Date();
 
       if (this._adjust_camera_with_render) {
          this.adjustCameraPosition('only_set');
@@ -91353,20 +91294,20 @@ class TGeoPainter extends ObjectPainter {
       this.testCameraPosition(tmout === -1);
 
       // its needed for outlinePass - do rendering, most consuming time
-      if (this._webgl && this._effectComposer && (this._effectComposer.passes.length > 0)) {
+      if (this._webgl && this._effectComposer && (this._effectComposer.passes.length > 0))
          this._effectComposer.render();
-      } else if (this._webgl && this._bloomComposer && (this._bloomComposer.passes.length > 0)) {
+       else if (this._webgl && this._bloomComposer && (this._bloomComposer.passes.length > 0)) {
          this._renderer.clear();
          this._camera.layers.set(_BLOOM_SCENE);
          this._bloomComposer.render();
          this._renderer.clearDepth();
          this._camera.layers.set(_ENTIRE_SCENE);
          this._renderer.render(this._scene, this._camera);
-      } else {
+      } else
          this._renderer.render(this._scene, this._camera);
-      }
 
-      let tm2 = new Date();
+
+      const tm2 = new Date();
 
       this.last_render_tm = tm2.getTime();
 
@@ -91379,7 +91320,7 @@ class TGeoPainter extends ObjectPainter {
       afterRender3D(this._renderer);
 
       if (this._render_resolveFuncs) {
-         let arr = this._render_resolveFuncs;
+         const arr = this._render_resolveFuncs;
          delete this._render_resolveFuncs;
          arr.forEach(func => func(this));
       }
@@ -91387,7 +91328,6 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Start geo worker */
    startWorker() {
-
       if (this._worker) return;
 
       this._worker_ready = false;
@@ -91397,7 +91337,6 @@ class TGeoPainter extends ObjectPainter {
       this._worker = new Worker(exports.source_dir + 'scripts/geoworker.js' /*, { type: 'module' } */);
 
       this._worker.onmessage = e => {
-
          if (!isObject(e.data)) return;
 
          if ('log' in e.data)
@@ -91411,9 +91350,8 @@ class TGeoPainter extends ObjectPainter {
          if ('init' in e.data) {
             this._worker_ready = true;
             console.log(`Worker ready: ${e.data.tm3 - e.data.tm0}`);
-         } else {
+         } else
             this.processWorkerReply(e.data);
-         }
       };
 
       // send initialization message with clones
@@ -91433,7 +91371,7 @@ class TGeoPainter extends ObjectPainter {
    canSubmitToWorker(force) {
       if (!this._worker) return false;
 
-      return this._worker_ready && ((this._worker_jobs == 0) || force);
+      return this._worker_ready && ((this._worker_jobs === 0) || force);
    }
 
    /** @summary submit request to worker
@@ -91460,18 +91398,17 @@ class TGeoPainter extends ObjectPainter {
       }
 
       if ('shapes' in job) {
-
-         for (let n=0;n<job.shapes.length;++n) {
-            let item = job.shapes[n],
+         for (let n=0; n<job.shapes.length; ++n) {
+            const item = job.shapes[n],
                 origin = this._build_shapes[n];
 
             // let shape = this._clones.getNodeShape(item.nodeid);
 
             if (item.buf_pos && item.buf_norm) {
-               if (item.buf_pos.length === 0) {
+               if (item.buf_pos.length === 0)
                   origin.geom = null;
-               } else if (item.buf_pos.length !== item.buf_norm.length) {
-                  console.error(`item.buf_pos.length ${item.buf_pos.length} != item.buf_norm.length ${item.buf_norm.length}`);
+                else if (item.buf_pos.length !== item.buf_norm.length) {
+                  console.error(`item.buf_pos.length ${item.buf_pos.length} !== item.buf_norm.length ${item.buf_norm.length}`);
                   origin.geom = null;
                } else {
                   origin.geom = new BufferGeometry();
@@ -91508,7 +91445,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Draw axes and camera overlay */
    drawAxesAndOverlay(norender) {
-      let res1 = this.drawAxes(),
+      const res1 = this.drawAxes(),
           res2 = this.drawOverlay();
 
       if (!res1 && !res2)
@@ -91519,12 +91456,11 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Draw overlay for the orthographic cameras */
    drawOverlay() {
-
       this.getExtrasContainer('delete', 'overlay');
-      if (!this.isOrthoCamera() || (this.ctrl.camera_overlay == 'none'))
+      if (!this.isOrthoCamera() || (this.ctrl.camera_overlay === 'none'))
          return false;
 
-      let zoom = 0.5 / this._camera.zoom,
+      const zoom = 0.5 / this._camera.zoom,
           midx = (this._camera.left + this._camera.right) / 2,
           midy = (this._camera.bottom + this._camera.top) / 2,
           xmin = midx - (this._camera.right - this._camera.left) * zoom,
@@ -91535,16 +91471,17 @@ class TGeoPainter extends ObjectPainter {
           text_size = (ymax - ymin) * 0.015,
           grid_gap = (ymax - ymin) * 0.001,
           x1 = xmin + text_size * 5, x2 = xmax - text_size * 5,
-          y1 = ymin + text_size * 3, y2 = ymax - text_size * 3;
+          y1 = ymin + text_size * 3, y2 = ymax - text_size * 3,
+          x_handle = new TAxisPainter(null, create$1(clTAxis));
 
-      let  x_handle = new TAxisPainter(null, create$1(clTAxis));
       x_handle.configureAxis('xaxis', x1, x2, x1, x2, false, [x1, x2],
                              { log: 0, reverse: false });
-      let y_handle = new TAxisPainter(null, create$1(clTAxis));
+      const y_handle = new TAxisPainter(null, create$1(clTAxis));
       y_handle.configureAxis('yaxis', y1, y2, y1, y2, false, [y1, y2],
                               { log: 0, reverse: false });
 
-      let buf, pos, ii = this._camera.orthoIndicies ?? [0, 1, 2], midZ = 0, gridZ = 0;
+      const ii = this._camera.orthoIndicies ?? [0, 1, 2];
+      let buf, pos, midZ = 0, gridZ = 0;
 
       if (this._camera.orthoZ)
          gridZ = midZ = this._camera.orthoZ[0];
@@ -91555,7 +91492,7 @@ class TGeoPainter extends ObjectPainter {
          buf[pos+ii[2]] = z ?? gridZ;
          pos += 3;
       }, createText = (lbl, size) => {
-         let text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size, height: 0, curveSegments: 5 });
+         const text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          text3d._width = text3d.boundingBox.max.x - text3d.boundingBox.min.x;
          text3d._height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
@@ -91569,25 +91506,23 @@ class TGeoPainter extends ObjectPainter {
 
          return text3d;
       }, createTextMesh = (geom, material, x, y, z) => {
-         let tgt = [0, 0, 0];
+         const tgt = [0, 0, 0];
          tgt[ii[0]] = x;
          tgt[ii[1]] = y;
          tgt[ii[2]] = z ?? gridZ;
-         let mesh = new Mesh(geom, material);
+         const mesh = new Mesh(geom, material);
          mesh.translateX(tgt[0]).translateY(tgt[1]).translateZ(tgt[2]);
          return mesh;
       };
 
-      if (this.ctrl.camera_overlay == 'bar') {
-
-         let container = this.getExtrasContainer('create', 'overlay');
+      if (this.ctrl.camera_overlay === 'bar') {
+         const container = this.getExtrasContainer('create', 'overlay');
 
          let x1 = xmin * 0.15 + xmax * 0.85,
-             x2 = xmin * 0.05 + xmax * 0.95,
-             y1 = ymax * 0.9 + ymin * 0.1,
-             y2 = ymax * 0.86 + ymin * 0.14;
-
-         let ticks = x_handle.createTicks();
+             x2 = xmin * 0.05 + xmax * 0.95;
+         const y1 = ymax * 0.9 + ymin * 0.1,
+               y2 = ymax * 0.86 + ymin * 0.14,
+               ticks = x_handle.createTicks();
 
          if (ticks.major?.length > 1) {
             x1 = ticks.major[ticks.major.length-2];
@@ -91605,45 +91540,42 @@ class TGeoPainter extends ObjectPainter {
          addPoint(x2, y1, midZ);
          addPoint(x2, y2, midZ);
 
-         let lineMaterial = new LineBasicMaterial({ color: 'green' }),
-             textMaterial = new MeshBasicMaterial({ color: 'green', vertexColors: false });
+         const lineMaterial = new LineBasicMaterial({ color: 'green' }),
+               textMaterial = new MeshBasicMaterial({ color: 'green', vertexColors: false });
 
          container.add(createLineSegments(buf, lineMaterial));
 
-         let text3d = createText(x_handle.format(x2-x1, true), Math.abs(y2-y1));
+         const text3d = createText(x_handle.format(x2-x1, true), Math.abs(y2-y1));
 
          container.add(createTextMesh(text3d, textMaterial, (x2 + x1) / 2, (y1 + y2) / 2 + text3d._height * 0.8, midZ));
          return true;
       }
 
-      let show_grid = this.ctrl.camera_overlay.indexOf('grid') == 0;
+      const show_grid = this.ctrl.camera_overlay.indexOf('grid') === 0;
 
       if (show_grid && this._camera.orthoZ) {
-         if (this.ctrl.camera_overlay == 'gridf')
+         if (this.ctrl.camera_overlay === 'gridf')
             gridZ += this._camera.orthoSign * this._camera.orthoZ[1];
-         else if (this.ctrl.camera_overlay == 'gridb')
+         else if (this.ctrl.camera_overlay === 'gridb')
             gridZ -= this._camera.orthoSign * this._camera.orthoZ[1];
       }
 
-      if ((this.ctrl.camera_overlay == 'axis') || show_grid) {
-
-         let container = this.getExtrasContainer('create', 'overlay');
-
-         let lineMaterial = new LineBasicMaterial({ color: new Color('black') }),
-             gridMaterial1 = show_grid ? new LineBasicMaterial({ color: new Color(0xbbbbbb) }) : null,
-             gridMaterial2 = show_grid ? new LineDashedMaterial({ color: new Color(0xdddddd), dashSize: grid_gap, gapSize: grid_gap }) : null,
-             textMaterial = new MeshBasicMaterial({ color: 'black', vertexColors: false });
-
-         let xticks = x_handle.createTicks();
+      if ((this.ctrl.camera_overlay === 'axis') || show_grid) {
+         const container = this.getExtrasContainer('create', 'overlay'),
+               lineMaterial = new LineBasicMaterial({ color: new Color('black') }),
+               gridMaterial1 = show_grid ? new LineBasicMaterial({ color: new Color(0xbbbbbb) }) : null,
+               gridMaterial2 = show_grid ? new LineDashedMaterial({ color: new Color(0xdddddd), dashSize: grid_gap, gapSize: grid_gap }) : null,
+               textMaterial = new MeshBasicMaterial({ color: 'black', vertexColors: false }),
+               xticks = x_handle.createTicks();
 
          while (xticks.next()) {
-            let x = xticks.tick, k = (xticks.kind == 1) ? 1. : 0.6;
+            const x = xticks.tick, k = (xticks.kind === 1) ? 1.0 : 0.6;
 
             if (show_grid) {
                buf = new Float32Array(2*3); pos = 0;
                addPoint(x, ymax - k*tick_size - grid_gap);
                addPoint(x, ymin + k*tick_size + grid_gap);
-               container.add(createLineSegments(buf, xticks.kind == 1 ? gridMaterial1 : gridMaterial2));
+               container.add(createLineSegments(buf, xticks.kind === 1 ? gridMaterial1 : gridMaterial2));
             }
 
             buf = new Float32Array(4*3); pos = 0;
@@ -91654,25 +91586,25 @@ class TGeoPainter extends ObjectPainter {
 
             container.add(createLineSegments(buf, lineMaterial));
 
-            if (xticks.kind != 1) continue;
+            if (xticks.kind !== 1) continue;
 
-            let text3d = createText(x_handle.format(x, true), text_size);
+            const text3d = createText(x_handle.format(x, true), text_size);
 
             container.add(createTextMesh(text3d, textMaterial, x, ymax - tick_size - text_size/2 - text3d._height/2));
 
             container.add(createTextMesh(text3d, textMaterial, x, ymin + tick_size + text_size/2 + text3d._height/2));
          }
 
-         let yticks = y_handle.createTicks();
+         const yticks = y_handle.createTicks();
 
          while (yticks.next()) {
-            let y = yticks.tick, k = (yticks.kind == 1) ? 1. : 0.6;
+            const y = yticks.tick, k = (yticks.kind === 1) ? 1.0 : 0.6;
 
             if (show_grid) {
                buf = new Float32Array(2*3); pos = 0;
                addPoint(xmin + k*tick_size + grid_gap, y);
                addPoint(xmax - k*tick_size - grid_gap, y);
-               container.add(createLineSegments(buf, yticks.kind == 1 ? gridMaterial1 : gridMaterial2));
+               container.add(createLineSegments(buf, yticks.kind === 1 ? gridMaterial1 : gridMaterial2));
             }
 
             buf = new Float32Array(4*3); pos = 0;
@@ -91705,7 +91637,7 @@ class TGeoPainter extends ObjectPainter {
       if (!this.ctrl._axis)
          return false;
 
-      let box = this.getGeomBoundingBox(this._toplevel, this.superimpose ? 'original' : undefined),
+      const box = this.getGeomBoundingBox(this._toplevel, this.superimpose ? 'original' : undefined),
           container = this.getExtrasContainer('create', 'axis'),
           text_size = 0.02 * Math.max(box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z),
           center = [0, 0, 0],
@@ -91715,24 +91647,25 @@ class TGeoPainter extends ObjectPainter {
           ortho = this.isOrthoCamera(),
           ckind = this.ctrl.camera_kind ?? 'perspective';
 
-      if (this.ctrl._axis == 2)
+      if (this.ctrl._axis === 2) {
          for (let naxis = 0; naxis < 3; ++naxis) {
-            let name = names[naxis];
+            const name = names[naxis];
             if ((box.min[name] <= 0) && (box.max[name] >= 0)) continue;
             center[naxis] = (box.min[name] + box.max[name])/2;
          }
+      }
 
       for (let naxis = 0; naxis < 3; ++naxis) {
          // exclude axis which is not seen
          if (ortho && ckind.indexOf(labels[naxis]) < 0) continue;
 
-         let buf = new Float32Array(6),
+         const buf = new Float32Array(6),
              color = colors[naxis],
-             name = names[naxis];
+             name = names[naxis],
 
-         const valueToString = val => {
+          valueToString = val => {
             if (!val) return '0';
-            let lg = Math.log10(Math.abs(val));
+            const lg = Math.log10(Math.abs(val));
             if (lg < 0) {
                if (lg > -1) return val.toFixed(2);
                if (lg > -2) return val.toFixed(3);
@@ -91741,9 +91674,9 @@ class TGeoPainter extends ObjectPainter {
                if (lg < 4) return val.toFixed(0);
             }
             return val.toExponential(2);
-         };
+         },
 
-         let lbl = valueToString(box.max[name]) + ' ' + labels[naxis];
+          lbl = valueToString(box.max[name]) + ' ' + labels[naxis];
 
          buf[0] = box.min.x;
          buf[1] = box.min.y;
@@ -91774,7 +91707,7 @@ class TGeoPainter extends ObjectPainter {
          const textMaterial = new MeshBasicMaterial({ color, vertexColors: false });
 
          if ((center[naxis] === 0) && (center[naxis] >= box.min[name]) && (center[naxis] <= box.max[name])) {
-            if ((this.ctrl._axis != 2) || (naxis === 0)) {
+            if ((this.ctrl._axis !== 2) || (naxis === 0)) {
                const geom = ortho ? new CircleGeometry(text_size*0.25) : new SphereGeometry(text_size*0.25);
                mesh = new Mesh(geom, textMaterial);
                mesh.translateX(naxis === 0 ? center[0] : buf[0]);
@@ -91811,7 +91744,7 @@ class TGeoPainter extends ObjectPainter {
                   default: angle = Math.atan2(vect.y, vect.x);
                }
                angle = Math.round(angle / Math.PI * 2 + 2) % 4;
-               if (this._last_angle != angle) {
+               if (this._last_angle !== angle) {
                   this.rotateX((angle - this._last_angle) * Math.PI/2);
                   this._last_angle = angle;
                }
@@ -91829,17 +91762,17 @@ class TGeoPainter extends ObjectPainter {
          mesh._axis_name = name;
 
          if (naxis === 0) {
-            if (ortho && ckind.indexOf('OX') > 0) {
+            if (ortho && ckind.indexOf('OX') > 0)
                setTopRotation(mesh, 0);
-            } else if (ortho ? ckind.indexOf('OY') > 0 : this.ctrl._yup) {
+             else if (ortho ? ckind.indexOf('OY') > 0 : this.ctrl._yup)
                setSideRotation(mesh, new Vector3(0, 0, -1));
-            } else {
+             else {
                setSideRotation(mesh, new Vector3(0, 1, 0));
                mesh.rotateX(Math.PI/2);
             }
 
             mesh.translateX(text_size*0.5 + textbox.max.x*0.5);
-         } else if (naxis == 1) {
+         } else if (naxis === 1) {
             if (ortho ? ckind.indexOf('OY') > 0 : this.ctrl._yup) {
                setTopRotation(mesh, 2);
                mesh.rotateX(-Math.PI/2);
@@ -91851,10 +91784,9 @@ class TGeoPainter extends ObjectPainter {
                mesh.rotateY(-Math.PI/2);
                mesh.translateX(-textbox.max.x*0.5 - text_size*0.5);
             }
-
-         } else if (naxis == 2) {
+         } else if (naxis === 2) {
             if (ortho ? ckind.indexOf('OZ') < 0 : this.ctrl._yup) {
-               let zox = ortho && (ckind.indexOf('ZOX') > 0 || ckind.indexOf('ZNOX') > 0);
+               const zox = ortho && (ckind.indexOf('ZOX') > 0 || ckind.indexOf('ZNOX') > 0);
                setSideRotation(mesh, zox ? new Vector3(0, -1, 0) : undefined);
                mesh.rotateY(-Math.PI/2);
                if (zox) mesh.rotateX(-Math.PI/2);
@@ -91883,16 +91815,16 @@ class TGeoPainter extends ObjectPainter {
          mesh.translateZ(buf[2]);
 
          if (naxis === 0) {
-            if (ortho && ckind.indexOf('OX') > 0) {
+            if (ortho && ckind.indexOf('OX') > 0)
                setTopRotation(mesh, 0);
-            } else if (ortho ? ckind.indexOf('OY') > 0 : this.ctrl._yup) {
+             else if (ortho ? ckind.indexOf('OY') > 0 : this.ctrl._yup)
                setSideRotation(mesh, new Vector3(0, 0, -1));
-            } else {
+             else {
                setSideRotation(mesh, new Vector3(0, 1, 0));
                mesh.rotateX(Math.PI/2);
             }
             mesh.translateX(-text_size*0.5 - textbox.max.x*0.5);
-         } else if (naxis == 1) {
+         } else if (naxis === 1) {
             if (ortho ? ckind.indexOf('OY') > 0 : this.ctrl._yup) {
                setTopRotation(mesh, 2);
                mesh.rotateX(-Math.PI/2);
@@ -91904,9 +91836,9 @@ class TGeoPainter extends ObjectPainter {
                mesh.rotateY(-Math.PI/2);
                mesh.translateX(textbox.max.x*0.5 + text_size*0.5);
             }
-         } else if (naxis == 2) {
+         } else if (naxis === 2) {
             if (ortho ? ckind.indexOf('OZ') < 0 : this.ctrl._yup) {
-               let zox = ortho && (ckind.indexOf('ZOX') > 0 || ckind.indexOf('ZNOX') > 0);
+               const zox = ortho && (ckind.indexOf('ZOX') > 0 || ckind.indexOf('ZNOX') > 0);
                setSideRotation(mesh, zox ? new Vector3(0, -1, 0) : undefined);
                mesh.rotateY(-Math.PI/2);
                if (zox) mesh.rotateX(-Math.PI/2);
@@ -91930,7 +91862,7 @@ class TGeoPainter extends ObjectPainter {
       if (on === 'toggle')
          this.ctrl._axis = this.ctrl._axis ? 0 : 1;
       else
-         this.ctrl._axis = (typeof on == 'number') ? on : (on ? 1 : 0);
+         this.ctrl._axis = (typeof on === 'number') ? on : (on ? 1 : 0);
       return this.drawAxesAndOverlay();
    }
 
@@ -91990,15 +91922,17 @@ class TGeoPainter extends ObjectPainter {
       // do not try clipping with SVG renderer
       if (this._renderer?.jsroot_render3d === constants$1.Render3D.SVG) return;
 
-      if (!this._clipPlanes)
-         this._clipPlanes = [ new Plane(new Vector3(1, 0, 0), 0),
-                              new Plane(new Vector3(0, this.ctrl._yup ? -1 : 1, 0), 0),
-                              new Plane(new Vector3(0, 0, this.ctrl._yup ? 1 : -1), 0) ];
+      if (!this._clipPlanes) {
+         this._clipPlanes = [new Plane(new Vector3(1, 0, 0), 0),
+                             new Plane(new Vector3(0, this.ctrl._yup ? -1 : 1, 0), 0),
+                             new Plane(new Vector3(0, 0, this.ctrl._yup ? 1 : -1), 0)];
+      }
 
-      let clip = this.ctrl.clip, panels = [], changed = false,
-          clip_constants = [ -1 * clip[0].value, clip[1].value, (this.ctrl._yup ? -1 : 1) * clip[2].value ],
-          clip_cfg = this.ctrl.clipIntersect ? 16 : 0,
-          container = this.getExtrasContainer(this.ctrl.clipVisualize ? '' : 'delete', 'clipping');
+      const clip = this.ctrl.clip,
+            clip_constants = [-1 * clip[0].value, clip[1].value, (this.ctrl._yup ? -1 : 1) * clip[2].value],
+            container = this.getExtrasContainer(this.ctrl.clipVisualize ? '' : 'delete', 'clipping');
+      let panels = [], changed = false,
+          clip_cfg = this.ctrl.clipIntersect ? 16 : 0;
 
       for (let k = 0; k < 3; ++k) {
          if (clip[k].enabled)
@@ -92011,12 +91945,12 @@ class TGeoPainter extends ObjectPainter {
             panels.push(this._clipPlanes[k]);
 
          if (container && clip[k].enabled) {
-            let helper = new PlaneHelper(this._clipPlanes[k], (clip[k].max - clip[k].min));
+            const helper = new PlaneHelper(this._clipPlanes[k], (clip[k].max - clip[k].min));
             helper._no_clip = true;
             container.add(helper);
          }
       }
-      if (panels.length == 0)
+      if (panels.length === 0)
          panels = null;
 
       if (this._clipCfg !== clip_cfg)
@@ -92024,13 +91958,12 @@ class TGeoPainter extends ObjectPainter {
 
       this._clipCfg = clip_cfg;
 
-      let any_clipping = !!panels, ci = this.ctrl.clipIntersect,
+      const any_clipping = !!panels, ci = this.ctrl.clipIntersect,
           material_side = any_clipping ? DoubleSide : FrontSide;
 
-      if (force_traverse || changed)
+      if (force_traverse || changed) {
          this._scene.traverse(node => {
             if (!node._no_clip && (node.material?.clippingPlanes !== undefined)) {
-
                if (node.material.clippingPlanes !== panels) {
                   node.material.clipIntersection = ci;
                   node.material.clippingPlanes = panels;
@@ -92038,13 +91971,14 @@ class TGeoPainter extends ObjectPainter {
                }
 
                if (node.material.emissive !== undefined) {
-                  if (node.material.side != material_side) {
+                  if (node.material.side !== material_side) {
                      node.material.side = material_side;
                      node.material.needsUpdate = true;
                   }
                }
             }
          });
+      }
 
       this.ctrl.doubleside = any_clipping;
 
@@ -92063,7 +91997,6 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Completes drawing procedure
      * @return {Promise} for ready */
    async completeDraw(close_progress) {
-
       let first_time = false, full_redraw = false, check_extras = true;
 
       if (!this.ctrl) {
@@ -92077,7 +92010,7 @@ class TGeoPainter extends ObjectPainter {
          check_extras = false;
          // if extra object where append, redraw them at the end
          this.getExtrasContainer('delete'); // delete old container
-         let extras = (this._main_painter ? this._main_painter._extraObjects : null) || this._extraObjects;
+         const extras = (this._main_painter ? this._main_painter._extraObjects : null) || this._extraObjects;
          promise = this.drawExtras(extras, '', false);
       } else if (this._first_drawing || this._full_redrawing) {
          if (this.ctrl.tracks && this.geo_manager)
@@ -92085,7 +92018,6 @@ class TGeoPainter extends ObjectPainter {
       }
 
       return promise.then(() => {
-
          if (this._full_redrawing) {
             this.adjustCameraPosition('first');
             this._full_redrawing = false;
@@ -92109,9 +92041,7 @@ class TGeoPainter extends ObjectPainter {
 
          if (full_redraw)
             return this.drawAxesAndOverlay(true);
-
       }).then(() => {
-
          this._scene.overrideMaterial = null;
 
          if (this._provided_more_nodes !== undefined) {
@@ -92122,11 +92052,10 @@ class TGeoPainter extends ObjectPainter {
          if (check_extras) {
             // if extra object where append, redraw them at the end
             this.getExtrasContainer('delete'); // delete old container
-            let extras = this._main_painter?._extraObjects || this._extraObjects;
+            const extras = this._main_painter?._extraObjects || this._extraObjects;
             return this.drawExtras(extras, '', false);
          }
       }).then(() => {
-
          this.updateClipping(true); // do not render
 
          this.render3D(0, true);
@@ -92136,7 +92065,6 @@ class TGeoPainter extends ObjectPainter {
          this.addOrbitControls();
 
          if (first_time && !this.isBatchMode()) {
-
             // after first draw check if highlight can be enabled
             if (this.ctrl.highlight === 0)
                this.ctrl.highlight = (this.first_render_tm < 1000);
@@ -92178,15 +92106,14 @@ class TGeoPainter extends ObjectPainter {
    removeDrawnNode(nodeid) {
       if (!this._draw_nodes) return;
 
-      let new_nodes = [];
+      const new_nodes = [];
 
       for (let n = 0; n < this._draw_nodes.length; ++n) {
-         let entry = this._draw_nodes[n];
-         if ((entry.nodeid === nodeid) || this._clones.isIdInStack(nodeid, entry.stack)) {
+         const entry = this._draw_nodes[n];
+         if ((entry.nodeid === nodeid) || this._clones.isIdInStack(nodeid, entry.stack))
             this._clones.createObject3D(entry.stack, this._toplevel, 'delete_mesh');
-         } else {
+          else
             new_nodes.push(entry);
-         }
       }
 
       if (new_nodes.length < this._draw_nodes.length) {
@@ -92197,23 +92124,21 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Cleanup geometry painter */
    cleanup(first_time) {
-
       if (!first_time) {
-
          let can3d = 0;
 
          if (!this.superimpose) {
             this.clearTopPainter(); // remove as pointer
 
             if (this._on_pad) {
-               let fp = this.getFramePainter();
+               const fp = this.getFramePainter();
                if (fp?.mode3d) {
                   fp.clear3dCanvas();
                   fp.mode3d = false;
                }
-            } else {
+            } else
                can3d = this.clear3dCanvas(); // remove 3d canvas from main HTML element
-            }
+
 
             disposeThreejsObject(this._scene);
          }
@@ -92233,7 +92158,7 @@ class TGeoPainter extends ObjectPainter {
 
          delete this._animating;
 
-         let obj = this.getGeometry();
+         const obj = this.getGeometry();
          if (obj && this.ctrl.is_main) {
             if (obj.$geo_painter === this)
                delete obj.$geo_painter;
@@ -92242,12 +92167,12 @@ class TGeoPainter extends ObjectPainter {
          }
 
          if (this._main_painter?._slave_painters) {
-            let pos = this._main_painter._slave_painters.indexOf(this);
+            const pos = this._main_painter._slave_painters.indexOf(this);
             if (pos >= 0) this._main_painter._slave_painters.splice(pos, 1);
          }
 
          for (let k = 0; k < this._slave_painters?.length; ++k) {
-            let slave = this._slave_painters[k];
+            const slave = this._slave_painters[k];
             if (slave?._main_painter === this) slave._main_painter = null;
          }
 
@@ -92264,12 +92189,13 @@ class TGeoPainter extends ObjectPainter {
          if (can3d < 0) this.selectDom().html('');
       }
 
-      if (this._slave_painters)
-         for (let k in this._slave_painters) {
-            let slave = this._slave_painters[k];
+      if (this._slave_painters) {
+         for (const k in this._slave_painters) {
+            const slave = this._slave_painters[k];
             slave._main_painter = null;
             if (slave._clones === this._clones) slave._clones = null;
          }
+      }
 
       this._main_painter = null;
       this._slave_painters = [];
@@ -92337,9 +92263,9 @@ class TGeoPainter extends ObjectPainter {
          else if (this._camera.isOrthographicCamera)
             this.adjustCameraPosition(true, true);
          this._camera.updateProjectionMatrix();
-         this._renderer.setSize( this._scene_width, this._scene_height, !this._fit_main_area );
-         this._effectComposer?.setSize( this._scene_width, this._scene_height );
-         this._bloomComposer?.setSize( this._scene_width, this._scene_height );
+         this._renderer.setSize(this._scene_width, this._scene_height, !this._fit_main_area);
+         this._effectComposer?.setSize(this._scene_width, this._scene_height);
+         this._bloomComposer?.setSize(this._scene_width, this._scene_height);
 
          if (this.isStage(stageInit))
             this.render3D();
@@ -92350,13 +92276,13 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Check if HTML element was resized and drawing need to be adjusted */
    checkResize(arg) {
-      let cp = this.getCanvPainter();
+      const cp = this.getCanvPainter();
 
       // firefox is the only browser which correctly supports resize of embedded canvas,
       // for others we should force canvas redrawing at every step
       if (cp && !cp.checkCanvasResize(arg)) return false;
 
-      let sz = this.getSizeFor3d();
+      const sz = this.getSizeFor3d();
 
       return this.performResize(sz.width, sz.height);
    }
@@ -92440,7 +92366,7 @@ class TGeoPainter extends ObjectPainter {
     /** @summary Redraw TGeo object inside TPad */
    redraw() {
       if (this.superimpose) {
-         let cfg = getHistPainter3DCfg(this.getMainPainter());
+         const cfg = getHistPainter3DCfg(this.getMainPainter());
 
          if (cfg) {
             this._toplevel.scale.set(cfg.scale_x ?? 1, cfg.scale_y ?? 1, cfg.scale_z ?? 1);
@@ -92453,10 +92379,10 @@ class TGeoPainter extends ObjectPainter {
       if (this._did_update)
          return this.startRedraw();
 
-      let main = this._on_pad ? this.getFramePainter() : null;
+      const main = this._on_pad ? this.getFramePainter() : null;
       if (!main)
          return Promise.resolve(false);
-      let sz = main.getSizeFor3d(main.access3dKind());
+      const sz = main.getSizeFor3d(main.access3dKind());
       main.apply3dSize(sz);
       return this.performResize(sz.width, sz.height);
    }
@@ -92482,8 +92408,8 @@ class TGeoPainter extends ObjectPainter {
       delete this._did_update;
 
       this.clearDrawings();
-      let draw_obj = this.getGeometry(), name_prefix = '';
-      if (this.geo_manager) name_prefix = draw_obj.fName;
+      const draw_obj = this.getGeometry(),
+            name_prefix = this.geo_manager ? draw_obj.fName : '';
       return this.prepareObjectDraw(draw_obj, name_prefix);
    }
 
@@ -92495,36 +92421,37 @@ class TGeoPainter extends ObjectPainter {
 
       if (('fShapeBits' in obj) && ('fShapeId' in obj)) {
          shape = obj; obj = null;
-      } else if ((obj._typename === clTGeoVolumeAssembly) || (obj._typename === clTGeoVolume)) {
+      } else if ((obj._typename === clTGeoVolumeAssembly) || (obj._typename === clTGeoVolume))
          shape = obj.fShape;
-      } else if ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract)) {
+       else if ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract)) {
          shape = obj.fShape; is_eve = true;
-      } else if (obj._typename === clTGeoManager) {
+      } else if (obj._typename === clTGeoManager)
          shape = obj.fMasterVolume.fShape;
-      } else if (obj._typename === clTGeoOverlap) {
+       else if (obj._typename === clTGeoOverlap) {
          extras = obj.fMarker; extras_path = '<prnt>/Marker';
          obj = buildOverlapVolume(obj);
          if (!opt) opt = 'wire';
       } else if ('fVolume' in obj) {
          if (obj.fVolume) shape = obj.fVolume.fShape;
-      } else {
+      } else
          obj = null;
-      }
 
-      if (isStr(opt) && opt.indexOf('comp') == 0 && shape && (shape._typename == clTGeoCompositeShape) && shape.fNode) {
+
+      if (isStr(opt) && opt.indexOf('comp') === 0 && shape && (shape._typename === clTGeoCompositeShape) && shape.fNode) {
          let maxlvl = 1;
          opt = opt.slice(4);
-         if (opt[0] == 'x') { maxlvl = 999; opt = opt.slice(1) + '_vislvl999'; }
+         if (opt[0] === 'x') { maxlvl = 999; opt = opt.slice(1) + '_vislvl999'; }
          obj = buildCompositeVolume(shape, maxlvl);
       }
 
-      if (!obj && shape)
+      if (!obj && shape) {
          obj = Object.assign(create$1(clTNamed),
                    { _typename: clTEveGeoShapeExtract, fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
+      }
 
       if (!obj) return null;
 
-      let painter = createGeoPainter(dom, obj, opt);
+      const painter = createGeoPainter(dom, obj, opt);
 
       if (painter.ctrl.is_main && !obj.$geo_painter)
          obj.$geo_painter = painter;
@@ -92553,7 +92480,6 @@ let add_settings = false;
 /** @summary Create geo-related css entries
   * @private */
 function injectGeoStyle() {
-
    if (!add_settings && isFunc(internals.addDrawFunc)) {
       add_settings = true;
       // indication that draw and hierarchy is loaded, create css
@@ -92561,41 +92487,41 @@ function injectGeoStyle() {
       internals.addDrawFunc({ name: clTEveTrack, icon_get: getBrowserIcon, icon_click: browserIconClick });
    }
 
-   function img(name,code) {
+   function img(name, code) {
       return `.jsroot .img_${name} { display: inline-block; height: 16px; width: 16px; background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQ${code}'); }`;
    }
 
    injectStyle(`
-${img('geoarb8','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAB1SURBVBjTdY6rEYAwEETTy6lzK8/Fo+Jj18dTAjUgaQGfGiggtRDE8RtY93Zu514If2nzk2ux9c5TZkwXbiWTUavzws69oBfpYBrMT4r0Jhsw+QfRgQSw+CaKRsKsnV+SaF8MN49RBSgPUxO85PMl5n4tfGUH2gghs2uPAeQAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==')}
-${img('geocombi','CAQAAAC1+jfqAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAP+Hj8y/AAAACXBIWXMAAABIAAAASABGyWs+AAAAlUlEQVQoz5VQMQ4CMQyzEUNnBqT7Bo+4nZUH8gj+welWJsQDkHoCEYakTXMHSFiq2jqu4xRAEl2A7w4myWzpzCSZRZ658ldKu1hPnFsequBIc/hcLli3l52MAIANtpWrDsv8waGTW6BPuFtsdZArXyFuj33TQpazGEQF38phipnLgItxRcAoOeNpzv4PTXnC42fb//AGI5YqfQAU8dkAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==')}
-${img('geocone','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACRSURBVBjTdY+xDcNACEVvEm/ggo6Olva37IB0C3iEzJABvAHFTXBDeJRwthMnUvylk44vPjxK+afeokX0flQhJO7L4pafSOMxzaxIKc/Tc7SIjNLyieyZSjBzc4DqMZI0HTMonWPBNlogOLeuewbg9c0hOiIqH7DKmTCuFykjHe4XOzQ58XVMGxzt575tKzd6AX9yMkcWyPlsAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
-${img('geogtra','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACCSURBVBjTVc+hDQMxDAVQD1FyqCQk0MwsCwQEG3+eCW6B0FvheDboFMGepTlVitPP/Cz5y0S/mNkw8pySU9INJDDH4vM4Usm5OrQXasXtkA+tQF+zxfcDY8EVwgNeiwmA37TEccK5oLOwQtuCj7BM2Fq7iGrxVqJbSsH+GzXs+798AThwKMh3/6jDAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
-${img('geomedium','BAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAABVQTFRFAAAAAAAAMDAww8PDWKj/////gICAG0/C4AAAAAF0Uk5TAEDm2GYAAAABYktHRAX4b+nHAAAACXBIWXMAAABIAAAASABGyWs+AAAAXElEQVQI102MwRGAMAgEuQ6IDwvQCjQdhAl/H7ED038JHhkd3dcOLAgESFARaAqnEB3yrj6QSEym1RbbOKinN+8q2Esui1GaX7VXSi4RUbxHRbER8X6O5Pg/fLgBBzMN8HfXD3AAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==')}
-${img('geopara','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAABtSURBVBjTY2DADq5MT7+CzD9kaKjp+QhJYIWqublhMbKAgpOnZxWSQJdsVJTndCSBKoWoAM/VSALpqlEBAYeQBKJAAsi2BGgCBZDdEWUYFZCOLFBlGOWJ7AyGFeaotjIccopageK3R12PGHABACTYHWd0tGw6AAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
-${img('georotation','CAQAAAC1+jfqAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAP+Hj8y/AAAACXBIWXMAAABIAAAASABGyWs+AAAAiklEQVQoz2NgYGBgYGDg+A/BmIAFIvyDEbs0AwMTAwHACLPiB5QVBTdpGSOSCZjScDcgc4z+32BgYGBgEGIQw3QDLkdCTZD8/xJFeBfDVxQT/j9n/MeIrMCNIRBJwX8GRuzGM/yHKMAljeILNFOuMTyEisEUMKIqucrwB2oyIhyQpH8y/MZrLWkAAHFzIHIc0Q5yAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
-${img('geotranslation','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAABESURBVBjTY2DgYGAAYzjgAAIQgSLAgSwAAcrWUUCAJBAVhSpgBAQumALGCJPAAsriHIS0IAQ4UAU4cGphQBWwZSAOAADGJBKdZk/rHQAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC')}
-${img('geotrd2','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAABsSURBVBjTbY+xDcAwCARZx6UraiaAmpoRvIIb75PWI2QITxIiRQKk0CCO/xcA/NZ9LRs7RkJEYg3QxczUwoGsXiMAoe8lAelqRWFNKpiNXZLAalRDd0f3TMgeMckABKsCDmu+442RddeHz9cf9jUkW8smGn8AAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==')}
-${img('geovolume','BAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAB5QTFRFAAAAMDAw///Ay8uc/7+Q/4BgmJh4gIDgAAD/////CZb2ugAAAAF0Uk5TAEDm2GYAAAABYktHRAnx2aXsAAAACXBIWXMAAABIAAAASABGyWs+AAAAR0lEQVQI12NggAEBIBAEQgYGQUYQAyIGIhgwAZMSGCgwMJuEKimFOhswsKWAGG4JDGxJIBk1EEO9o6NIDVkEpgauC24ODAAASQ8Pkj/retYAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==')}
-${img('geoassembly','BAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAA9QTFRFAAAAMDAw/wAAAAD/////jEo0BQAAAAF0Uk5TAEDm2GYAAAABYktHRASPaNlRAAAACXBIWXMAAABIAAAASABGyWs+AAAAOklEQVQI12NggAFGRgEgEBRgEBSAMhgYGQQEgAR+oARGDIwCIAYjUL0A2DQQg9nY2ABVBKoGrgsDAADxzgNboMz8zQAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC')}
-${img('geocomposite','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAABuSURBVBjTY2AgF2hqgQCCr+0V4O7hFmgCF7CJyKysKkmxhfGNLaw9SppqAi2gfMuY5Agrl+ZaC6iAUXRJZX6Ic0klTMA5urapPFY5NRcmYKFqWl8S5RobBRNg0PbNT3a1dDGH8RlM3LysTRjIBwAG6xrzJt11BAAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC')}
-${img('geoctub','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACESURBVBjTdc+xDcMwDARA7cKKHTuWX37LHaw+vQbQAJomA7j2DB7FhCMFCZB8pxPwJEv5kQcZW+3HencRBekak4aaMQIi8YJdAQ1CMeE0UBkuaLMETklQ9Alhka0JzzXWqLVBuQYPpWcVuBbZjZafNRYcDk9o/b07bvhINz+/zxu1/M0FSRcmAk/HaIcAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==')}
-${img('geohype','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACKSURBVBjTbU+rFQQhDKQSDDISEYuMREfHx6eHKMpYuf5qoIQt5bgDblfcuJk3nySEhSvceDV3c/ejT66lspopE9pXyIlkCrHMBACpu1DClekQAREi/loviCnF/NhRwJLaQ6hVhPjB8bOCsjlnNnNl0FWJVWxAqGzHONRHpu5Ml+nQ+8GzNW9n+Is3eg80Nk0iiwoAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==')}
-${img('geomixture','BAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAACFQTFRFAAAAAAAAKysrVVUA//8B//8AgICAqqpV398gv79A////VYJtlwAAAAF0Uk5TAEDm2GYAAAABYktHRApo0PRWAAAACXBIWXMAAABIAAAASABGyWs+AAAAXklEQVQI12NgwASCQsJCgoZAhoADq1tKIJAhEpDGxpYIZKgxsLElgBhibAkOCY4gKTaGkPRGIEPUIYEBrEaAIY0tDawmgYWNgREkkjCVjRWkWCUhLY0FJCIIBljsBgCZTAykgaRiRwAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC')}
-${img('geopcon','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACJSURBVBjTdc+hGcQwCIZhhjl/rkgWiECj8XgGyAbZoD5LdIRMkEnKkV575n75Pp8AgLU54dmh6mauelyAL2Qzxfe2sklioq6FacFAcRFXYhwJHdU5rDD2hEYB/CmoJVRMiIJqgtENuoqA8ltAlYAqRH4d1tGkwzTqN2gA7Nv+fUwkgZ/3mg34txM+szzATJS1HQAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC')}
-${img('geosphere','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACFSURBVBjTdY+xEcQwCAQp5QNFjpQ5vZACFBFTADFFfKYCXINzlUAJruXll2ekxDAEt9zcANFbXb2mqm56dxsymAH0yccAJaeNi0h5QGyfxGJmivMPjj0nmLsbRmyFCss3rlbpcUjfS8wLUNRcJyCF6uqg2IvYCnoKC7f1kSbA6riTz7evfwj3Ml+H3KBqAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
-${img('geotrap','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAB5SURBVBjTbY+hFYAwDETZB1OJi4yNPp0JqjtAZ2AELL5DdABmIS2PtLxHXH7u7l2W5W+uHMHpGiCHLYR1yw4SCZMIXBOJWVSjK7QDDAu4g8OBmAKK4sAEDdR3rw8YmcUcrEijKKhl7lN1IQPn9ExlgU6/WEyc75+5AYK0KY5oHBDfAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
-${img('geotubeseg','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACBSURBVBjTdc+hEcQwDARA12P6QFBQ9LDwcXEVkA7SQTr4BlJBakgpsWdsh/wfux3NSCrlV86Mlrxmz1pBWq3bAHwETohxABVmDZADQp1BE+wDNnGywzHgmHDOreJNTDH3Xn3CVX0dpu2MHcIFBkYp/gKsQ8SCQ72V+36/+2aWf3kAQfgshnpXF0wAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==')}
-${img('geoxtru','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAABcSURBVBjTY2AgEmhpeZV56vmWwQW00QUYwAJlSAI6XmVqukh8PT1bT03PchhXX09Pr9wQIQDiJ+ZowgWAXD3bck+QQDlCQTkDQgCoxA/ERBKwhbDglgA1lDMQDwCc/Rvq8nYsWgAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC')}
-${img('geobbox','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAB/SURBVBjTVc+hEYAwDAXQLlNRF1tVGxn9NRswQiSSCdgDyQBM0FlIIb2WuL77uf6E8E0N02wKYRwDciTKREVvB04GuZSyOMCABRB1WGzF3uDNQTvs/RcDtJXT4fSEXA5XoiQt0ttVSm8Co2psIOvoimjAOqBmFtH5wEP2373TPIvTK1nrpULXAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
-${img('geoconeseg','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAB4SURBVBjTdc6hEcAgDAXQbFNZXHQkFlkd/30myAIMwAws0gmYpVzvoFyv/S5P/B+izzQ387ZA2pkDnvsU1SQLVIFrOM4JFmEaYp2gCQbmPEGODhJ8jt7Am47hwgrzInGAifa/elUZnQLY00iU30BZAV+BWi2VfnIBv1osbHH8jX0AAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==')}
-${img('geoeltu','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACGSURBVBjTdY+hFYUwDEU7xq9CIXC4uNjY6KczQXeoYgVMR2ABRmCGjvIp/6dgiEruueedvBDuOR57LQnKyc8CJmKO+N8bieIUPtmBWjIIx8XDBHYCipsnql1g2D0UP2OoDqwBncf+RdZmzFMHizRjog7KZYzawd4Ay93lEAPWR7WAvNbwMl/XwSxBV8qCjgAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC')}
-${img('geomaterial','CAQAAAC1+jfqAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAP+Hj8y/AAAACXBIWXMAAABIAAAASABGyWs+AAAAbElEQVQoz62QMRbAIAhDP319Xon7j54qHSyCtaMZFCUkRjgDIdRU9yZUCfg8ut5aAHdcxtoNurmgA3ABNKIR9KimhSukPe2qxcCYC0pfFXx/aFWo7i42KKItOpopqvvnLzJmtlZTS7EfGAfwAM4EQbLIGV0sAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
-${img('geoparab','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAB/SURBVBjTbY+xDYAwDAQ9UAp3X7p0m9o9dUZgA9oMwAjpMwMzMAnYBAQSX9mn9+tN9KOtzsWsLOvYCziUGNX3nnCLJRzKPgeYrhPW7FJNLUB3YJazYKQKTnBaxgXRzNmJcrt7XCHQp9kEB1wfELEir/KGj4Foh8A+/zW1nf51AFabKZuWK+mNAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
-${img('geopgon','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAABwSURBVBjTY2AgDlwAAzh3sX1sPRDEeuwDc+8V2dsHgQQ8LCzq74HkLSzs7Yva2tLt7S3sN4MNiDUGKQmysCi6BzWkzcI+PdY+aDPCljZlj1iFOUjW1tvHLjYuQhJIt5/DcAFZYLH9YnSn7iPST9gAACbsJth21haFAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
-${img('geotorus','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACGSURBVBjTjY+hFcMwDEQ9SkFggXGIoejhw+LiGkBDlHoAr+AhgjNL5byChuXeE7gvPelUyjOds/f5Zw0ggfj5KVCPMBWeyx+SbQ1XUriAC2XfpWWxjQQEZasRtRHiCUAj3qN4JaolUJppzh4q7dUTdHFXW/tH9OuswWm3nI7tc08+/eGLl758ey9KpKrNOQAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC')}
-${img('geotrd1','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAB/SURBVBjTbc6xDQMhDAVQ9qH6lUtal65/zQ5IDMAMmYAZrmKGm4FJzlEQQUo+bvwkG4fwm9lbodV7w40Y4WGfSxQiXiJlQfZOjWRb8Ioi3tKuBQMCo7+9N72BzPsfAuoTdUP9QN8wgOQwvsfWmHzpeT5BKydMNW0nhJGvGf7mAc5WKO9e5N2dAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
-${img('geotube','CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACGSURBVBjTRc+tEcAwCAXgLFNbWeSzSDQazw5doWNUZIOM0BEyS/NHy10E30HyklKvWnJ+0le3sJoKn3X2z7GRuvG++YRyMMDt0IIKUXMzxbnugJi5m9K1gNnGBOUFElAWGMaKIKI4xoQggl00gT+A9hXWgDwnfqgsHRAx2m+8bfjfdyrx5AtsSjpwu+M2RgAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC')}
-${img('evepoints','BAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAABJQTFRF////n4mJcEdKRDMzcEdH////lLE/CwAAAAF0Uk5TAEDm2GYAAAABYktHRACIBR1IAAAACXBIWXMAAABIAAAASABGyWs+AAAAI0lEQVQI12NgIAowIpgKEJIZLiAgAKWZGQzQ9UGlWIizBQgAN4IAvGtVrTcAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTYtMDktMDJUMTU6MDQ6MzgrMDI6MDDPyc7hAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE2LTA5LTAyVDE1OjA0OjM4KzAyOjAwvpR2XQAAAABJRU5ErkJggg==')}
+${img('geoarb8', 'CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAB1SURBVBjTdY6rEYAwEETTy6lzK8/Fo+Jj18dTAjUgaQGfGiggtRDE8RtY93Zu514If2nzk2ux9c5TZkwXbiWTUavzws69oBfpYBrMT4r0Jhsw+QfRgQSw+CaKRsKsnV+SaF8MN49RBSgPUxO85PMl5n4tfGUH2gghs2uPAeQAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==')}
+${img('geocombi', 'CAQAAAC1+jfqAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAP+Hj8y/AAAACXBIWXMAAABIAAAASABGyWs+AAAAlUlEQVQoz5VQMQ4CMQyzEUNnBqT7Bo+4nZUH8gj+welWJsQDkHoCEYakTXMHSFiq2jqu4xRAEl2A7w4myWzpzCSZRZ658ldKu1hPnFsequBIc/hcLli3l52MAIANtpWrDsv8waGTW6BPuFtsdZArXyFuj33TQpazGEQF38phipnLgItxRcAoOeNpzv4PTXnC42fb//AGI5YqfQAU8dkAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==')}
+${img('geocone', 'CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACRSURBVBjTdY+xDcNACEVvEm/ggo6Olva37IB0C3iEzJABvAHFTXBDeJRwthMnUvylk44vPjxK+afeokX0flQhJO7L4pafSOMxzaxIKc/Tc7SIjNLyieyZSjBzc4DqMZI0HTMonWPBNlogOLeuewbg9c0hOiIqH7DKmTCuFykjHe4XOzQ58XVMGxzt575tKzd6AX9yMkcWyPlsAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
+${img('geogtra', 'CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACCSURBVBjTVc+hDQMxDAVQD1FyqCQk0MwsCwQEG3+eCW6B0FvheDboFMGepTlVitPP/Cz5y0S/mNkw8pySU9INJDDH4vM4Usm5OrQXasXtkA+tQF+zxfcDY8EVwgNeiwmA37TEccK5oLOwQtuCj7BM2Fq7iGrxVqJbSsH+GzXs+798AThwKMh3/6jDAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
+${img('geomedium', 'BAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAABVQTFRFAAAAAAAAMDAww8PDWKj/////gICAG0/C4AAAAAF0Uk5TAEDm2GYAAAABYktHRAX4b+nHAAAACXBIWXMAAABIAAAASABGyWs+AAAAXElEQVQI102MwRGAMAgEuQ6IDwvQCjQdhAl/H7ED038JHhkd3dcOLAgESFARaAqnEB3yrj6QSEym1RbbOKinN+8q2Esui1GaX7VXSi4RUbxHRbER8X6O5Pg/fLgBBzMN8HfXD3AAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==')}
+${img('geopara', 'CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAABtSURBVBjTY2DADq5MT7+CzD9kaKjp+QhJYIWqublhMbKAgpOnZxWSQJdsVJTndCSBKoWoAM/VSALpqlEBAYeQBKJAAsi2BGgCBZDdEWUYFZCOLFBlGOWJ7AyGFeaotjIccopageK3R12PGHABACTYHWd0tGw6AAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
+${img('georotation', 'CAQAAAC1+jfqAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAP+Hj8y/AAAACXBIWXMAAABIAAAASABGyWs+AAAAiklEQVQoz2NgYGBgYGDg+A/BmIAFIvyDEbs0AwMTAwHACLPiB5QVBTdpGSOSCZjScDcgc4z+32BgYGBgEGIQw3QDLkdCTZD8/xJFeBfDVxQT/j9n/MeIrMCNIRBJwX8GRuzGM/yHKMAljeILNFOuMTyEisEUMKIqucrwB2oyIhyQpH8y/MZrLWkAAHFzIHIc0Q5yAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
+${img('geotranslation', 'CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAABESURBVBjTY2DgYGAAYzjgAAIQgSLAgSwAAcrWUUCAJBAVhSpgBAQumALGCJPAAsriHIS0IAQ4UAU4cGphQBWwZSAOAADGJBKdZk/rHQAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC')}
+${img('geotrd2', 'CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAABsSURBVBjTbY+xDcAwCARZx6UraiaAmpoRvIIb75PWI2QITxIiRQKk0CCO/xcA/NZ9LRs7RkJEYg3QxczUwoGsXiMAoe8lAelqRWFNKpiNXZLAalRDd0f3TMgeMckABKsCDmu+442RddeHz9cf9jUkW8smGn8AAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==')}
+${img('geovolume', 'BAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAB5QTFRFAAAAMDAw///Ay8uc/7+Q/4BgmJh4gIDgAAD/////CZb2ugAAAAF0Uk5TAEDm2GYAAAABYktHRAnx2aXsAAAACXBIWXMAAABIAAAASABGyWs+AAAAR0lEQVQI12NggAEBIBAEQgYGQUYQAyIGIhgwAZMSGCgwMJuEKimFOhswsKWAGG4JDGxJIBk1EEO9o6NIDVkEpgauC24ODAAASQ8Pkj/retYAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==')}
+${img('geoassembly', 'BAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAA9QTFRFAAAAMDAw/wAAAAD/////jEo0BQAAAAF0Uk5TAEDm2GYAAAABYktHRASPaNlRAAAACXBIWXMAAABIAAAASABGyWs+AAAAOklEQVQI12NggAFGRgEgEBRgEBSAMhgYGQQEgAR+oARGDIwCIAYjUL0A2DQQg9nY2ABVBKoGrgsDAADxzgNboMz8zQAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC')}
+${img('geocomposite', 'CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAABuSURBVBjTY2AgF2hqgQCCr+0V4O7hFmgCF7CJyKysKkmxhfGNLaw9SppqAi2gfMuY5Agrl+ZaC6iAUXRJZX6Ic0klTMA5urapPFY5NRcmYKFqWl8S5RobBRNg0PbNT3a1dDGH8RlM3LysTRjIBwAG6xrzJt11BAAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC')}
+${img('geoctub', 'CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACESURBVBjTdc+xDcMwDARA7cKKHTuWX37LHaw+vQbQAJomA7j2DB7FhCMFCZB8pxPwJEv5kQcZW+3HencRBekak4aaMQIi8YJdAQ1CMeE0UBkuaLMETklQ9Alhka0JzzXWqLVBuQYPpWcVuBbZjZafNRYcDk9o/b07bvhINz+/zxu1/M0FSRcmAk/HaIcAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==')}
+${img('geohype', 'CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACKSURBVBjTbU+rFQQhDKQSDDISEYuMREfHx6eHKMpYuf5qoIQt5bgDblfcuJk3nySEhSvceDV3c/ejT66lspopE9pXyIlkCrHMBACpu1DClekQAREi/loviCnF/NhRwJLaQ6hVhPjB8bOCsjlnNnNl0FWJVWxAqGzHONRHpu5Ml+nQ+8GzNW9n+Is3eg80Nk0iiwoAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==')}
+${img('geomixture', 'BAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAACFQTFRFAAAAAAAAKysrVVUA//8B//8AgICAqqpV398gv79A////VYJtlwAAAAF0Uk5TAEDm2GYAAAABYktHRApo0PRWAAAACXBIWXMAAABIAAAASABGyWs+AAAAXklEQVQI12NgwASCQsJCgoZAhoADq1tKIJAhEpDGxpYIZKgxsLElgBhibAkOCY4gKTaGkPRGIEPUIYEBrEaAIY0tDawmgYWNgREkkjCVjRWkWCUhLY0FJCIIBljsBgCZTAykgaRiRwAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC')}
+${img('geopcon', 'CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACJSURBVBjTdc+hGcQwCIZhhjl/rkgWiECj8XgGyAbZoD5LdIRMkEnKkV575n75Pp8AgLU54dmh6mauelyAL2Qzxfe2sklioq6FacFAcRFXYhwJHdU5rDD2hEYB/CmoJVRMiIJqgtENuoqA8ltAlYAqRH4d1tGkwzTqN2gA7Nv+fUwkgZ/3mg34txM+szzATJS1HQAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC')}
+${img('geosphere', 'CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACFSURBVBjTdY+xEcQwCAQp5QNFjpQ5vZACFBFTADFFfKYCXINzlUAJruXll2ekxDAEt9zcANFbXb2mqm56dxsymAH0yccAJaeNi0h5QGyfxGJmivMPjj0nmLsbRmyFCss3rlbpcUjfS8wLUNRcJyCF6uqg2IvYCnoKC7f1kSbA6riTz7evfwj3Ml+H3KBqAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
+${img('geotrap', 'CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAB5SURBVBjTbY+hFYAwDETZB1OJi4yNPp0JqjtAZ2AELL5DdABmIS2PtLxHXH7u7l2W5W+uHMHpGiCHLYR1yw4SCZMIXBOJWVSjK7QDDAu4g8OBmAKK4sAEDdR3rw8YmcUcrEijKKhl7lN1IQPn9ExlgU6/WEyc75+5AYK0KY5oHBDfAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
+${img('geotubeseg', 'CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACBSURBVBjTdc+hEcQwDARA12P6QFBQ9LDwcXEVkA7SQTr4BlJBakgpsWdsh/wfux3NSCrlV86Mlrxmz1pBWq3bAHwETohxABVmDZADQp1BE+wDNnGywzHgmHDOreJNTDH3Xn3CVX0dpu2MHcIFBkYp/gKsQ8SCQ72V+36/+2aWf3kAQfgshnpXF0wAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==')}
+${img('geoxtru', 'CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAABcSURBVBjTY2AgEmhpeZV56vmWwQW00QUYwAJlSAI6XmVqukh8PT1bT03PchhXX09Pr9wQIQDiJ+ZowgWAXD3bck+QQDlCQTkDQgCoxA/ERBKwhbDglgA1lDMQDwCc/Rvq8nYsWgAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC')}
+${img('geobbox', 'CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAB/SURBVBjTVc+hEYAwDAXQLlNRF1tVGxn9NRswQiSSCdgDyQBM0FlIIb2WuL77uf6E8E0N02wKYRwDciTKREVvB04GuZSyOMCABRB1WGzF3uDNQTvs/RcDtJXT4fSEXA5XoiQt0ttVSm8Co2psIOvoimjAOqBmFtH5wEP2373TPIvTK1nrpULXAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
+${img('geoconeseg', 'CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAB4SURBVBjTdc6hEcAgDAXQbFNZXHQkFlkd/30myAIMwAws0gmYpVzvoFyv/S5P/B+izzQ387ZA2pkDnvsU1SQLVIFrOM4JFmEaYp2gCQbmPEGODhJ8jt7Am47hwgrzInGAifa/elUZnQLY00iU30BZAV+BWi2VfnIBv1osbHH8jX0AAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMTItMDJUMTQ6MjY6MjkrMDE6MDDARtd2AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE0LTExLTEyVDA4OjM5OjE5KzAxOjAwO3ydwwAAAABJRU5ErkJggg==')}
+${img('geoeltu', 'CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACGSURBVBjTdY+hFYUwDEU7xq9CIXC4uNjY6KczQXeoYgVMR2ABRmCGjvIp/6dgiEruueedvBDuOR57LQnKyc8CJmKO+N8bieIUPtmBWjIIx8XDBHYCipsnql1g2D0UP2OoDqwBncf+RdZmzFMHizRjog7KZYzawd4Ay93lEAPWR7WAvNbwMl/XwSxBV8qCjgAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC')}
+${img('geomaterial', 'CAQAAAC1+jfqAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAP+Hj8y/AAAACXBIWXMAAABIAAAASABGyWs+AAAAbElEQVQoz62QMRbAIAhDP319Xon7j54qHSyCtaMZFCUkRjgDIdRU9yZUCfg8ut5aAHdcxtoNurmgA3ABNKIR9KimhSukPe2qxcCYC0pfFXx/aFWo7i42KKItOpopqvvnLzJmtlZTS7EfGAfwAM4EQbLIGV0sAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
+${img('geoparab', 'CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAB/SURBVBjTbY+xDYAwDAQ9UAp3X7p0m9o9dUZgA9oMwAjpMwMzMAnYBAQSX9mn9+tN9KOtzsWsLOvYCziUGNX3nnCLJRzKPgeYrhPW7FJNLUB3YJazYKQKTnBaxgXRzNmJcrt7XCHQp9kEB1wfELEir/KGj4Foh8A+/zW1nf51AFabKZuWK+mNAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
+${img('geopgon', 'CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAABwSURBVBjTY2AgDlwAAzh3sX1sPRDEeuwDc+8V2dsHgQQ8LCzq74HkLSzs7Yva2tLt7S3sN4MNiDUGKQmysCi6BzWkzcI+PdY+aDPCljZlj1iFOUjW1tvHLjYuQhJIt5/DcAFZYLH9YnSn7iPST9gAACbsJth21haFAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
+${img('geotorus', 'CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACGSURBVBjTjY+hFcMwDEQ9SkFggXGIoejhw+LiGkBDlHoAr+AhgjNL5byChuXeE7gvPelUyjOds/f5Zw0ggfj5KVCPMBWeyx+SbQ1XUriAC2XfpWWxjQQEZasRtRHiCUAj3qN4JaolUJppzh4q7dUTdHFXW/tH9OuswWm3nI7tc08+/eGLl758ey9KpKrNOQAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC')}
+${img('geotrd1', 'CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAB/SURBVBjTbc6xDQMhDAVQ9qH6lUtal65/zQ5IDMAMmYAZrmKGm4FJzlEQQUo+bvwkG4fwm9lbodV7w40Y4WGfSxQiXiJlQfZOjWRb8Ioi3tKuBQMCo7+9N72BzPsfAuoTdUP9QN8wgOQwvsfWmHzpeT5BKydMNW0nhJGvGf7mAc5WKO9e5N2dAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE1LTEyLTAyVDE0OjI2OjI5KzAxOjAwwEbXdgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0xMlQwODozOToxOSswMTowMDt8ncMAAAAASUVORK5CYII=')}
+${img('geotube', 'CAAAAAA6mKC9AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJ0Uk5TAAB2k804AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAACGSURBVBjTRc+tEcAwCAXgLFNbWeSzSDQazw5doWNUZIOM0BEyS/NHy10E30HyklKvWnJ+0le3sJoKn3X2z7GRuvG++YRyMMDt0IIKUXMzxbnugJi5m9K1gNnGBOUFElAWGMaKIKI4xoQggl00gT+A9hXWgDwnfqgsHRAx2m+8bfjfdyrx5AtsSjpwu+M2RgAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNS0xMi0wMlQxNDoyNjoyOSswMTowMMBG13YAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTQtMTEtMTJUMDg6Mzk6MTkrMDE6MDA7fJ3DAAAAAElFTkSuQmCC')}
+${img('evepoints', 'BAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAABJQTFRF////n4mJcEdKRDMzcEdH////lLE/CwAAAAF0Uk5TAEDm2GYAAAABYktHRACIBR1IAAAACXBIWXMAAABIAAAASABGyWs+AAAAI0lEQVQI12NgIAowIpgKEJIZLiAgAKWZGQzQ9UGlWIizBQgAN4IAvGtVrTcAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTYtMDktMDJUMTU6MDQ6MzgrMDI6MDDPyc7hAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE2LTA5LTAyVDE1OjA0OjM4KzAyOjAwvpR2XQAAAABJRU5ErkJggg==')}
 ${img('evetrack', 'CAQAAAC1+jfqAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAP+Hj8y/AAAACXBIWXMAAABIAAAASABGyWs+AAAAqElEQVQoz32RMQrCQBBFf4IgSMB0IpGkMpVHCFh7BbHIGTyVhU0K8QYewEKsbVJZaCUiPAsXV8Puzhaz7H8zs5+JUDjikLilQr5zpCRl5xMXZNScQE5gSMGaz70jjUAJcw5c3UBMTsUe+9Kzf065SbropeLXimWfDIgoab/tOyPGzOhz53+oSWcSGh7UdB2ZNKXBZdgAuUdEKJYmrEILyVgG6pE2tEHgDfe42rbjYzSHAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE2LTA5LTAyVDE1OjA0OjQ3KzAyOjAwM0S3EQAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNi0wOS0wMlQxNTowNDo0NyswMjowMEIZD60AAAAASUVORK5CYII=')}
 .jsroot .geovis_this { background-color: lightgreen; }
 .jsroot .geovis_daughters { background-color: lightblue; }
@@ -92606,13 +92532,12 @@ ${img('evetrack', 'CAQAAAC1+jfqAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hST
 /** @summary Create geo painter
   * @private */
 function createGeoPainter(dom, obj, opt) {
-
    injectGeoStyle();
 
    geoCfg('GradPerSegm', settings.GeoGradPerSegm);
    geoCfg('CompressComp', settings.GeoCompressComp);
 
-   let painter = new TGeoPainter(dom, obj);
+   const painter = new TGeoPainter(dom, obj);
 
    painter.decodeOptions(opt); // indicator of initialization
 
@@ -92623,18 +92548,16 @@ function createGeoPainter(dom, obj, opt) {
 /** @summary provide menu for geo object
   * @private */
 function provideMenu(menu, item, hpainter) {
-
    if (!item._geoobj) return false;
 
-   let obj = item._geoobj, vol = item._volume,
-       iseve = ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract));
+   const obj = item._geoobj, vol = item._volume,
+         iseve = ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract));
 
    if (!vol && !iseve) return false;
 
    menu.add('separator');
 
    const ScanEveVisible = (obj, arg, skip_this) => {
-
       if (!arg) arg = { visible: 0, hidden: 0 };
 
       if (!skip_this) {
@@ -92646,14 +92569,13 @@ function provideMenu(menu, item, hpainter) {
             arg.hidden++;
       }
 
-      if (obj.fElements)
+      if (obj.fElements) {
          for (let n = 0; n < obj.fElements.arr.length; ++n)
             ScanEveVisible(obj.fElements.arr[n], arg, false);
+      }
 
       return arg;
-
    }, ToggleEveVisibility = arg => {
-
       if (arg === 'self') {
          obj.fRnrSelf = !obj.fRnrSelf;
          item._icon = item._icon.split(' ')[0] + provideVisStyle(obj);
@@ -92672,7 +92594,7 @@ function provideMenu(menu, item, hpainter) {
       findItemWithPainter(item, 'testGeomChanges');
    }, ToggleMenuBit = arg => {
       toggleGeoBit(vol, arg);
-      let newname = item._icon.split(' ')[0] + provideVisStyle(vol);
+      const newname = item._icon.split(' ')[0] + provideVisStyle(vol);
       hpainter.forEachItem(m => {
          // update all items with that volume
          if (item._volume === m._volume) {
@@ -92683,25 +92605,25 @@ function provideMenu(menu, item, hpainter) {
 
       hpainter.updateTreeNode(item);
       findItemWithPainter(item, 'testGeomChanges');
-   };
+   },
 
-   let drawitem = findItemWithPainter(item),
+    drawitem = findItemWithPainter(item),
        fullname = drawitem ? hpainter.itemFullName(item, drawitem) : '';
 
-   if ((item._geoobj._typename.indexOf(clTGeoNode) === 0) && drawitem)
+   if ((item._geoobj._typename.indexOf(clTGeoNode) === 0) && drawitem) {
       menu.add('Focus', () => {
         if (drawitem && isFunc(drawitem._painter?.focusOnItem))
            drawitem._painter.focusOnItem(fullname);
       });
+   }
 
    if (iseve) {
       menu.addchk(obj.fRnrSelf, 'Visible', 'self', ToggleEveVisibility);
-      let res = ScanEveVisible(obj, undefined, true);
+      const res = ScanEveVisible(obj, undefined, true);
       if (res.hidden + res.visible > 0)
-         menu.addchk((res.hidden == 0), 'Daughters', res.hidden !== 0 ? 'true' : 'false', ToggleEveVisibility);
+         menu.addchk((res.hidden === 0), 'Daughters', res.hidden !== 0 ? 'true' : 'false', ToggleEveVisibility);
    } else {
-
-      let stack = drawitem?._painter?._clones?.findStackByName(fullname),
+      const stack = drawitem?._painter?._clones?.findStackByName(fullname),
           phys_vis = stack ? drawitem._painter._clones.getPhysNodeVisibility(stack) : null,
           is_visible = testGeoBit(vol, geoBITS.kVisThis);
 
@@ -92709,7 +92631,7 @@ function provideMenu(menu, item, hpainter) {
             geoBITS.kVisNone, ToggleMenuBit);
       if (stack) {
          const changePhysVis = arg => {
-            drawitem._painter._clones.setPhysNodeVisibility(stack, (arg == 'off') ? false : arg);
+            drawitem._painter._clones.setPhysNodeVisibility(stack, (arg === 'off') ? false : arg);
             findItemWithPainter(item, 'testGeomChanges');
          };
 
@@ -92745,7 +92667,7 @@ function browserIconClick(hitem, hpainter) {
       return false; // no need to update icon - we did it ourself
    }
 
-   if (hitem._geoobj && ((hitem._geoobj._typename == clTEveGeoShapeExtract) || (hitem._geoobj._typename == clREveGeoShapeExtract))) {
+   if (hitem._geoobj && ((hitem._geoobj._typename === clTEveGeoShapeExtract) || (hitem._geoobj._typename === clREveGeoShapeExtract))) {
       hitem._geoobj.fRnrSelf = !hitem._geoobj.fRnrSelf;
 
       updateBrowserIcons(hitem._geoobj, hpainter);
@@ -92754,7 +92676,7 @@ function browserIconClick(hitem, hpainter) {
    }
 
    // first check that geo painter assigned with the item
-   let drawitem = findItemWithPainter(hitem),
+   const drawitem = findItemWithPainter(hitem),
        newstate = drawitem?._painter?.extraObjectVisible(hpainter, hitem, true);
 
    // return true means browser should update icon for the item
@@ -92837,7 +92759,7 @@ function createItem(node, obj, name) {
          };
       }
 
-      if (!sub._title && (obj._typename != clTGeoVolume))
+      if (!sub._title && (obj._typename !== clTGeoVolume))
          sub._title = obj._typename;
 
       if (shape) {
@@ -92877,8 +92799,7 @@ function createItem(node, obj, name) {
 /** @summary Draw dummy geometry
   * @private */
 async function drawDummy3DGeom(painter) {
-
-   let shape = create$1(clTNamed);
+   const shape = create$1(clTNamed);
    shape._typename = clTGeoBBox;
    shape.fDX = 1e-10;
    shape.fDY = 1e-10;
@@ -92887,15 +92808,12 @@ async function drawDummy3DGeom(painter) {
    shape.fShapeBits = 0;
    shape.fOrigin = [0, 0, 0];
 
-   let obj = Object.assign(create$1(clTNamed),
+   const obj = Object.assign(create$1(clTNamed),
                 { _typename: clTEveGeoShapeExtract,
-                  fTrans: [1,0,0,0, 0,1,0,0, 0,0,1,0, 0, 0, 0, 0],
-                  fShape: shape, fRGBA: [0, 0, 0, 0], fElements: null, fRnrSelf: false });
-
-   let opt = '', pp = painter.getPadPainter();
-
-   if (pp?.pad?.fFillColor && (pp?.pad?.fFillStyle > 1000))
-      opt = 'bkgr_' +  pp.pad.fFillColor;
+                  fTrans: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+                  fShape: shape, fRGBA: [0, 0, 0, 0], fElements: null, fRnrSelf: false }),
+         pp = painter.getPadPainter(),
+         opt = (pp?.pad?.fFillColor && (pp?.pad?.fFillStyle > 1000)) ? 'bkgr_' +  pp.pad.fFillColor : '';
 
    return TGeoPainter.draw(painter.getDom(), obj, opt)
                      .then(geop => { geop._dummy = true; return geop; });
@@ -92904,7 +92822,7 @@ async function drawDummy3DGeom(painter) {
 /** @summary Direct draw function for TAxis3D
   * @private */
 function drawAxis3D() {
-   let main = this.getMainPainter();
+   const main = this.getMainPainter();
 
    if (isFunc(main?.setAxesDraw))
       return main.setAxesDraw(true);
@@ -92930,7 +92848,6 @@ function drawAxis3D() {
   * // this is three.js object and can be now inserted in the scene
   */
 function build(obj, opt) {
-
    if (!obj) return null;
 
    if (!opt) opt = {};
@@ -92950,7 +92867,7 @@ function build(obj, opt) {
    if (obj.visibles && obj.nodes && obj.numnodes) {
       // case of draw message from geometry viewer
 
-      let nodes = obj.numnodes > 1e6 ? { length: obj.numnodes } : new Array(obj.numnodes);
+      const nodes = obj.numnodes > 1e6 ? { length: obj.numnodes } : new Array(obj.numnodes);
 
       obj.nodes.forEach(node => {
          nodes[node.id] = ClonedNodes.formatServerElement(node);
@@ -92965,10 +92882,10 @@ function build(obj, opt) {
       // TODO: provide from server
       clones.maxdepth = 20;
 
-      let nsegm = obj.cfg?.nsegm || 30;
+      const nsegm = obj.cfg?.nsegm || 30;
 
       for (let cnt = 0; cnt < obj.visibles.length; ++cnt) {
-         let item = obj.visibles[cnt], rd = item.ri;
+         const item = obj.visibles[cnt], rd = item.ri;
 
          // entry may be provided without shape - it is ok
          if (rd)
@@ -92976,27 +92893,26 @@ function build(obj, opt) {
       }
 
       visibles = obj.visibles;
-
    } else {
       let shape = null, hide_top = false;
 
       if (('fShapeBits' in obj) && ('fShapeId' in obj)) {
          shape = obj; obj = null;
-      } else if ((obj._typename === clTGeoVolumeAssembly) || (obj._typename === clTGeoVolume)) {
+      } else if ((obj._typename === clTGeoVolumeAssembly) || (obj._typename === clTGeoVolume))
          shape = obj.fShape;
-      } else if ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract)) {
+       else if ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract))
          shape = obj.fShape;
-      } else if (obj._typename === clTGeoManager) {
+       else if (obj._typename === clTGeoManager) {
          obj = obj.fMasterVolume;
          hide_top = !opt.showtop;
          shape = obj.fShape;
-      } else if (obj.fVolume) {
+      } else if (obj.fVolume)
          shape = obj.fVolume.fShape;
-      } else {
+       else
          obj = null;
-      }
 
-      if (opt.composite && shape && (shape._typename == clTGeoCompositeShape) && shape.fNode)
+
+      if (opt.composite && shape && (shape._typename === clTGeoCompositeShape) && shape.fNode)
          obj = buildCompositeVolume(shape);
 
       if (!obj && shape)
@@ -93014,7 +92930,7 @@ function build(obj, opt) {
       if (opt.dflt_colors)
          clones.setDefaultColors(true);
 
-      let uniquevis = opt.no_screen ? 0 : clones.markVisibles(true);
+      const uniquevis = opt.no_screen ? 0 : clones.markVisibles(true);
       if (uniquevis <= 0)
          clones.markVisibles(false, false, hide_top);
       else
@@ -93023,7 +92939,7 @@ function build(obj, opt) {
       clones.produceIdShifts();
 
       // collect visible nodes
-      let res = clones.collectVisibles(opt.numfaces, opt.frustum);
+      const res = clones.collectVisibles(opt.numfaces, opt.frustum);
 
       visibles = res.lst;
    }
@@ -93034,29 +92950,29 @@ function build(obj, opt) {
    clones.setConfig(opt);
 
    // collect shapes
-   let shapes = clones.collectShapes(visibles);
+   const shapes = clones.collectShapes(visibles);
 
    clones.buildShapes(shapes, opt.numfaces);
 
-   let toplevel = new Object3D();
+   const toplevel = new Object3D();
    toplevel.clones = clones; // keep reference on JSROOT data
 
-   let colors = getRootColors();
+   const colors = getRootColors();
 
    if (clones.createInstancedMeshes(opt, toplevel, visibles, shapes, colors))
       return toplevel;
 
    for (let n = 0; n < visibles.length; ++n) {
-      let entry = visibles[n];
+      const entry = visibles[n];
       if (entry.done) continue;
 
-      let shape = entry.server_shape || shapes[entry.shapeid];
+      const shape = entry.server_shape || shapes[entry.shapeid];
       if (!shape.ready) {
          console.warn('shape marked as not ready when should');
          break;
       }
 
-      let mesh = clones.createEntryMesh(opt, toplevel, entry, shape, colors);
+      const mesh = clones.createEntryMesh(opt, toplevel, entry, shape, colors);
 
       if (mesh)
          mesh.name = clones.getNodeName(entry.nodeid);
@@ -106445,15 +106361,15 @@ class TGraphPainter extends TGraphPainter$1 {
 /** @summary direct draw function for TPolyMarker3D object
   * @private */
 async function drawPolyMarker3D$1() {
-
-   let fp = this.$fp || this.getFramePainter();
+   const fp = this.$fp || this.getFramePainter();
 
    delete this.$fp;
 
    if (!isObject(fp) || !fp.grx || !fp.gry || !fp.grz)
       return this;
 
-   let poly = this.getObject(), step = 1, sizelimit = 50000, numselect = 0, fP = poly.fP;
+   const poly = this.getObject(),  sizelimit = 50000, fP = poly.fP;
+   let step = 1, numselect = 0;
 
    for (let i = 0; i < fP.length; i += 3) {
       if ((fP[i] < fp.scale_xmin) || (fP[i] > fp.scale_xmax) ||
@@ -106467,13 +106383,12 @@ async function drawPolyMarker3D$1() {
       if (step <= 2) step = 2;
    }
 
-   let size = Math.floor(numselect/step),
-       pnts = new PointsCreator(size, fp.webgl, fp.size_x3d/100),
-       index = new Int32Array(size),
-       select = 0, icnt = 0;
+   const size = Math.floor(numselect/step),
+         pnts = new PointsCreator(size, fp.webgl, fp.size_x3d/100),
+         index = new Int32Array(size);
+   let select = 0, icnt = 0;
 
    for (let i = 0; i < fP.length; i += 3) {
-
       if ((fP[i] < fp.scale_xmin) || (fP[i] > fp.scale_xmax) ||
           (fP[i+1] < fp.scale_ymin) || (fP[i+1] > fp.scale_ymax) ||
           (fP[i+2] < fp.scale_zmin) || (fP[i+2] > fp.scale_zmax)) continue;
@@ -106489,7 +106404,6 @@ async function drawPolyMarker3D$1() {
    }
 
    return pnts.createPoints({ color: this.getColor(poly.fMarkerColor), style: poly.fMarkerStyle }).then(mesh => {
-
       mesh.tip_color = (poly.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
       mesh.tip_name = poly.fName || 'Poly3D';
       mesh.poly = poly;
@@ -106505,7 +106419,7 @@ async function drawPolyMarker3D$1() {
 
          indx = this.index[indx];
 
-         let p = this.painter,
+         const p = this.painter,
              grx = p.grx(this.poly.fP[indx]),
              gry = p.gry(this.poly.fP[indx+1]),
              grz = p.grz(this.poly.fP[indx+2]);
@@ -106518,7 +106432,7 @@ async function drawPolyMarker3D$1() {
             z1: grz - this.scale0,
             z2: grz + this.scale0,
             color: this.tip_color,
-            lines: [ this.tip_name,
+            lines: [this.tip_name,
                      'pnt: ' + indx/3,
                      'x: ' + p.axisAsText('x', this.poly.fP[indx]),
                      'y: ' + p.axisAsText('y', this.poly.fP[indx+1]),
@@ -106534,12 +106448,12 @@ async function drawPolyMarker3D$1() {
 }
 
 function treeShowProgress(handle, str) {
-   if (isBatchMode() || (typeof document == 'undefined')) return;
+   if (isBatchMode() || (typeof document === 'undefined')) return;
 
    if (!str)
       return showProgress();
 
-   let main_box = document.createElement('p'),
+   const main_box = document.createElement('p'),
        text_node = document.createTextNode(str);
 
    main_box.appendChild(text_node);
@@ -106565,12 +106479,11 @@ function treeShowProgress(handle, str) {
 /** @summary Show TTree::Draw progress during processing
   * @private */
 TDrawSelector.prototype.ShowProgress = function(value) {
-
    if ((value === undefined) || !Number.isFinite(value))
       return showProgress();
 
    if (this.last_progress !== value) {
-      let diff = value - this.last_progress;
+      const diff = value - this.last_progress;
       if (!this.aver_diff) this.aver_diff = diff;
       this.aver_diff = diff * 0.3 + this.aver_diff * 0.7;
    }
@@ -106593,23 +106506,22 @@ TDrawSelector.prototype.ShowProgress = function(value) {
 /** @summary Draw result of tree drawing
   * @private */
 async function drawTreeDrawResult(dom, obj, opt) {
-
-   let typ = obj?._typename;
+   const typ = obj?._typename;
 
    if (!typ || !isStr(typ))
-      return Promise.reject(Error(`Object without type cannot be draw with TTree`));
+      return Promise.reject(Error('Object without type cannot be draw with TTree'));
 
-   if (typ.indexOf(clTH1) == 0)
+   if (typ.indexOf(clTH1) === 0)
       return TH1Painter.draw(dom, obj, opt);
-   if (typ.indexOf(clTH2) == 0)
+   if (typ.indexOf(clTH2) === 0)
       return TH2Painter.draw(dom, obj, opt);
-   if (typ.indexOf(clTH3) == 0)
+   if (typ.indexOf(clTH3) === 0)
       return TH3Painter.draw(dom, obj, opt);
-   if (typ.indexOf(clTGraph) == 0)
+   if (typ.indexOf(clTGraph) === 0)
       return TGraphPainter.draw(dom, obj, opt);
-   if ((typ == clTPolyMarker3D) && obj.$hist) {
+   if ((typ === clTPolyMarker3D) && obj.$hist) {
       return TH3Painter.draw(dom, obj.$hist, opt).then(() => {
-         let p2 = new ObjectPainter(dom, obj, opt);
+         const p2 = new ObjectPainter(dom, obj, opt);
          p2.addToPadPrimitives();
          p2.redraw = drawPolyMarker3D$1;
          return p2.redraw();
@@ -106623,7 +106535,6 @@ async function drawTreeDrawResult(dom, obj, opt) {
 /** @summary Handle callback function with progress of tree draw
   * @private */
 async function treeDrawProgress(obj, final) {
-
    // no need to update drawing if previous is not yet completed
    if (!final && !this.last_pr)
       return;
@@ -106631,13 +106542,13 @@ async function treeDrawProgress(obj, final) {
    if (this.dump || this.testio) {
       if (!final) return;
       if (isBatchMode()) {
-         let painter = new BasePainter(this.drawid);
+         const painter = new BasePainter(this.drawid);
          painter.selectDom().property('_json_object_', obj);
          return painter;
       }
       if (isFunc(internals.drawInspector))
          return internals.drawInspector(this.drawid, obj);
-      let str = create$1(clTObjString);
+      const str = create$1(clTObjString);
       str.fString = toJSON(obj, 2);
       return drawRawText(this.drawid, str);
    }
@@ -106653,12 +106564,13 @@ async function treeDrawProgress(obj, final) {
     return this.last_pr.then(() => {
        if (this.obj_painter)
           this.last_pr = this.obj_painter.redrawObject(obj).then(() => this.obj_painter);
-       else
+       else {
           this.last_pr = drawTreeDrawResult(this.drawid, obj).then(p => {
              this.obj_painter = p;
              if (!final) this.last_pr = null;
              return p; // return painter for histogram
           });
+       }
 
        return final ? this.last_pr : null;
    });
@@ -106668,7 +106580,6 @@ async function treeDrawProgress(obj, final) {
 /** @summary Create painter to perform tree drawing on server side
   * @private */
 function createTreePlayer(player) {
-
    player.draw_first = true;
 
    player.configureOnline = function(itemname, url, askey, root_version, expr) {
@@ -106684,7 +106595,7 @@ function createTreePlayer(player) {
    };
 
    player.showExtraButtons = function(args) {
-      let main = this.selectDom(),
+      const main = this.selectDom(),
          numentries = this.local_tree?.fEntries || 0;
 
       main.select('.treedraw_more').remove(); // remove more button first
@@ -106705,12 +106616,11 @@ function createTreePlayer(player) {
    };
 
    player.showPlayer = function(args) {
-
-      let main = this.selectDom();
+      const main = this.selectDom();
 
       this.drawid = 'jsroot_tree_player_' + internals.id_counter++ + '_draw';
 
-      let show_extra = args?.parse_cut || args?.numentries || args?.firstentry;
+      const show_extra = args?.parse_cut || args?.numentries || args?.firstentry;
 
       main.html('<div style="display:flex; flex-flow:column; height:100%; width:100%;">'+
                    '<div class="treedraw_buttons" style="flex: 0 1 auto;margin-top:0.2em;">' +
@@ -106727,9 +106637,10 @@ function createTreePlayer(player) {
       // ObjectPainter allow such usage of methods from BasePainter
       this.setTopPainter();
 
-      if (this.local_tree)
+      if (this.local_tree) {
          main.select('.treedraw_buttons')
              .attr('title', 'Tree draw player for: ' + this.local_tree.fName);
+      }
       main.select('.treedraw_exe').on('click', () => this.performDraw());
       main.select('.treedraw_varexp')
           .attr('value', args?.parse_expr || this.draw_expr || 'px:py')
@@ -106794,35 +106705,34 @@ function createTreePlayer(player) {
    };
 
    player.getDrawOpt = function() {
-      let res = 'player',
-          expr = this.getValue('.treedraw_varexp');
+      let res = 'player';
+      const expr = this.getValue('.treedraw_varexp');
       if (expr) res += ':' + expr;
       return res;
    };
 
    player.performDraw = function() {
-
       if (this.local_tree)
          return this.performLocalDraw();
 
-      let frame = this.selectDom(),
-          url = this.url + '/exe.json.gz?compact=3&method=Draw',
+      const frame = this.selectDom();
+      let url = this.url + '/exe.json.gz?compact=3&method=Draw',
           expr = this.getValue('.treedraw_varexp'),
-          hname = 'h_tree_draw', option = '',
-          pos = expr.indexOf('>>');
+          hname = 'h_tree_draw', option = '';
+      const pos = expr.indexOf('>>');
 
-      if (pos < 0) {
+      if (pos < 0)
          expr += `>>${hname}`;
-      } else {
+       else {
          hname = expr.slice(pos+2);
-         if (hname[0] == '+') hname = hname.slice(1);
-         let pos2 = hname.indexOf('(');
+         if (hname[0] === '+') hname = hname.slice(1);
+         const pos2 = hname.indexOf('(');
          if (pos2 > 0) hname = hname.slice(0, pos2);
       }
 
       if (frame.select('.treedraw_more').empty()) {
-         let cut = this.getValue('.treedraw_cut'),
-             nentries = this.getValue('.treedraw_number'),
+         const cut = this.getValue('.treedraw_cut');
+         let nentries = this.getValue('.treedraw_number'),
              firstentry = this.getValue('.treedraw_first');
 
          option = this.getValue('.treedraw_opt');
@@ -106833,9 +106743,9 @@ function createTreePlayer(player) {
          if (!nentries) nentries = 'TTree::kMaxEntries'; // kMaxEntries available since ROOT 6.05/03
          if (!firstentry) firstentry = '0';
          url += `&option="${option}"&nentries=${nentries}&firstentry=${firstentry}`;
-      } else {
+      } else
          url += `&prototype="Option_t*"&opt="${expr}"`;
-      }
+
       url += `&_ret_object_=${hname}`;
 
       const submitDrawRequest = () => {
@@ -106851,12 +106761,11 @@ function createTreePlayer(player) {
          // first let read tree from the file
          this.askey = false;
          httpRequest(this.url + '/root.json.gz?compact=3', 'text').then(submitDrawRequest);
-      } else {
+      } else
          submitDrawRequest();
-      }
    };
 
-   player.checkResize = function(/*arg*/) {
+   player.checkResize = function(/* arg */) {
       resize(this.drawid);
    };
 
@@ -106867,10 +106776,9 @@ function createTreePlayer(player) {
 /** @summary function used with THttpServer to assign player for the TTree object
   * @private */
 function drawTreePlayer(hpainter, itemname, askey, asleaf) {
-
    let item = hpainter.findItem(itemname),
-       top = hpainter.getTopOnlineItem(item),
        expr = '', leaf_cnt = 0;
+   const top = hpainter.getTopOnlineItem(item);
    if (!item || !top) return null;
 
    if (asleaf) {
@@ -106880,28 +106788,29 @@ function drawTreePlayer(hpainter, itemname, askey, asleaf) {
       itemname = hpainter.itemFullName(item);
    }
 
-   let url = hpainter.getOnlineItemUrl(itemname);
+   const url = hpainter.getOnlineItemUrl(itemname);
    if (!url) return null;
 
-   let root_version = top._root_version || 400129; // by default use version number 6-27-01
+   const root_version = top._root_version || 400129, // by default use version number 6-27-01
 
-   let mdi = hpainter.getDisplay();
+    mdi = hpainter.getDisplay();
    if (!mdi) return null;
 
-   let frame = mdi.findFrame(itemname, true);
+   const frame = mdi.findFrame(itemname, true);
    if (!frame) return null;
 
-   let divid = select(frame).attr('id'),
+   const divid = select(frame).attr('id'),
        player = new BasePainter(divid);
 
-   if (item._childs && !asleaf)
+   if (item._childs && !asleaf) {
       for (let n = 0; n < item._childs.length; ++n) {
-         let leaf = item._childs[n];
-         if (leaf && leaf._kind && (leaf._kind.indexOf(prROOT + 'TLeaf') == 0) && (leaf_cnt < 2)) {
+         const leaf = item._childs[n];
+         if (leaf && leaf._kind && (leaf._kind.indexOf(prROOT + 'TLeaf') === 0) && (leaf_cnt < 2)) {
             if (leaf_cnt++ > 0) expr += ':';
             expr += leaf._name;
          }
       }
+   }
 
    createTreePlayer(player);
    player.configureOnline(itemname, url, askey, root_version, expr);
@@ -106927,13 +106836,12 @@ function drawLeafPlayer(hpainter, itemname) {
   * Can be also used for the branch and leaf object
   * @private */
 async function drawTree(dom, obj, opt) {
-
    let tree = obj, args = opt;
 
-   if (obj._typename == clTBranchFunc) {
+   if (obj._typename === clTBranchFunc) {
       // fictional object, created only in browser
       args = { expr: `.${obj.func}()`, branch: obj.branch };
-      if (opt && opt.indexOf('dump') == 0)
+      if (opt && opt.indexOf('dump') === 0)
          args.expr += '>>' + opt;
       else if (opt)
          args.expr += opt;
@@ -106966,15 +106874,15 @@ async function drawTree(dom, obj, opt) {
       throw Error('No TTree object available for TTree::Draw');
 
    if (isStr(args.expr)) {
-      let p = args.expr.indexOf('player');
-      if (p == 0) {
+      const p = args.expr.indexOf('player');
+      if (p === 0) {
          args.player = true;
          args.expr = args.expr.slice(6);
-         if (args.expr[0] == ':') args.expr = args.expr.slice(1);
-      } else if ((p >= 0) && (p == args.expr.length-6)) {
+         if (args.expr[0] === ':') args.expr = args.expr.slice(1);
+      } else if ((p >= 0) && (p === args.expr.length-6)) {
          args.player = true;
          args.expr = args.expr.slice(0, p);
-         if ((p > 0) && (args.expr[p-1] == ';')) args.expr = args.expr.slice(0, p-1);
+         if ((p > 0) && (args.expr[p-1] === ';')) args.expr = args.expr.slice(0, p-1);
       }
    }
 
@@ -106986,9 +106894,9 @@ async function drawTree(dom, obj, opt) {
       painter.configureTree(tree);
       painter.showPlayer(args);
       args.drawid = painter.drawid;
-   } else {
+   } else
       args.drawid = dom;
-   }
+
 
    // use in result handling same function as for progress handling
 
@@ -106999,9 +106907,9 @@ async function drawTree(dom, obj, opt) {
       args.testio = true;
       args.showProgress = msg => treeShowProgress(args, msg);
       pr = treeIOTest(tree, args);
-   } else if (args.expr || args.branch) {
+   } else if (args.expr || args.branch)
       pr = treeDraw(tree, args);
-   } else
+    else
       return painter;
 
    return pr.then(res => args.progress(res, true));
@@ -110251,7 +110159,7 @@ class TLinePainter extends ObjectPainter {
 
    /** @summary Start interactive moving */
    moveStart(x, y) {
-      let fullsize = Math.sqrt((this.x1-this.x2)**2 + (this.y1-this.y2)**2),
+      const fullsize = Math.sqrt((this.x1-this.x2)**2 + (this.y1-this.y2)**2),
           sz1 = Math.sqrt((x-this.x1)**2 + (y-this.y1)**2)/fullsize,
           sz2 = Math.sqrt((x-this.x2)**2 + (y-this.y2)**2)/fullsize;
       if (sz1 > 0.9)
@@ -110264,27 +110172,28 @@ class TLinePainter extends ObjectPainter {
 
    /** @summary Continue interactive moving */
    moveDrag(dx, dy) {
-      if (this.side != 1) { this.x1 += dx; this.y1 += dy; }
-      if (this.side != -1) { this.x2 += dx; this.y2 += dy; }
+      if (this.side !== 1) { this.x1 += dx; this.y1 += dy; }
+      if (this.side !== -1) { this.x2 += dx; this.y2 += dy; }
       this.draw_g.select('path').attr('d', this.createPath());
    }
 
    /** @summary Finish interactive moving */
    moveEnd(not_changed) {
       if (not_changed) return;
-      let line = this.getObject(), exec = '';
+      const line = this.getObject();
+      let exec = '';
       line.fX1 = this.svgToAxis('x', this.x1, this.isndc);
       line.fX2 = this.svgToAxis('x', this.x2, this.isndc);
       line.fY1 = this.svgToAxis('y', this.y1, this.isndc);
       line.fY2 = this.svgToAxis('y', this.y2, this.isndc);
-      if (this.side != 1) exec += `SetX1(${line.fX1});;SetY1(${line.fY1});;`;
-      if (this.side != -1) exec += `SetX2(${line.fX2});;SetY2(${line.fY2});;`;
+      if (this.side !== 1) exec += `SetX1(${line.fX1});;SetY1(${line.fY1});;`;
+      if (this.side !== -1) exec += `SetX2(${line.fX2});;SetY2(${line.fY2});;`;
       this.submitCanvExec(exec + 'Notify();;');
    }
 
    /** @summary Calculate line coordinates */
    prepareDraw() {
-      let line = this.getObject(), kLineNDC = BIT(14);
+      const line = this.getObject(), kLineNDC = BIT(14);
 
       this.isndc = line.TestBit(kLineNDC);
 
@@ -110299,7 +110208,7 @@ class TLinePainter extends ObjectPainter {
    /** @summary Create path */
    createPath() {
       const x1 = Math.round(this.x1), x2 = Math.round(this.x2), y1 = Math.round(this.y1), y2 = Math.round(this.y2);
-      return `M${x1},${y1}` + (x1 == x2 ? `V${y2}` : (y1 == y2 ? `H${x2}` : `L${x2},${y2}`));
+      return `M${x1},${y1}` + (x1 === x2 ? `V${y2}` : (y1 === y2 ? `H${x2}` : `L${x2},${y2}`));
    }
 
    /** @summary Add extras - used for TArrow */
@@ -110325,7 +110234,7 @@ class TLinePainter extends ObjectPainter {
 
    /** @summary Draw TLine object */
    static async draw(dom, obj, opt) {
-      let painter = new TLinePainter(dom, obj, opt);
+      const painter = new TLinePainter(dom, obj, opt);
       return ensureTCanvas(painter, false).then(() => painter.redraw());
    }
 
@@ -110346,9 +110255,9 @@ class TRatioPlotPainter extends ObjectPainter {
 
    /** @summary Set grids range */
    setGridsRange(xmin, xmax) {
-      let ratio = this.getObject();
+      const ratio = this.getObject();
       if (xmin === xmax) {
-         let x_handle = this.getPadPainter()?.findPainterFor(ratio.fLowerPad, 'lower_pad', clTPad)?.getFramePainter()?.x_handle;
+         const x_handle = this.getPadPainter()?.findPainterFor(ratio.fLowerPad, 'lower_pad', clTPad)?.getFramePainter()?.x_handle;
          if (!x_handle) return;
          xmin = x_handle.full_min;
          xmax = x_handle.full_max;
@@ -110362,19 +110271,18 @@ class TRatioPlotPainter extends ObjectPainter {
 
    /** @summary Redraw TRatioPlot */
    async redraw() {
-      let ratio = this.getObject(),
-          pp = this.getPadPainter();
-
-      let top_p = pp.findPainterFor(ratio.fTopPad, 'top_pad', clTPad);
+      const ratio = this.getObject(),
+            pp = this.getPadPainter(),
+            top_p = pp.findPainterFor(ratio.fTopPad, 'top_pad', clTPad);
       if (top_p) top_p.disablePadDrawing();
 
-      let up_p = pp.findPainterFor(ratio.fUpperPad, 'upper_pad', clTPad),
-          up_main = up_p?.getMainPainter(),
-          up_fp = up_p?.getFramePainter(),
-          low_p = pp.findPainterFor(ratio.fLowerPad, 'lower_pad', clTPad),
-          low_main = low_p?.getMainPainter(),
-          low_fp = low_p?.getFramePainter(),
-          lbl_size = 20, promise_up = Promise.resolve(true);
+      const up_p = pp.findPainterFor(ratio.fUpperPad, 'upper_pad', clTPad),
+            up_main = up_p?.getMainPainter(),
+            up_fp = up_p?.getFramePainter(),
+            low_p = pp.findPainterFor(ratio.fLowerPad, 'lower_pad', clTPad),
+            low_main = low_p?.getMainPainter(),
+            low_fp = low_p?.getFramePainter();
+      let lbl_size = 20, promise_up = Promise.resolve(true);
 
       if (up_p && up_main && up_fp && low_fp && !up_p._ratio_configured) {
          up_p._ratio_configured = true;
@@ -110383,7 +110291,7 @@ class TRatioPlotPainter extends ObjectPainter {
          lbl_size = up_main.getHisto().fYaxis.fLabelSize;
          if (lbl_size < 1) lbl_size = Math.round(lbl_size*Math.min(up_p.getPadWidth(), up_p.getPadHeight()));
 
-         let h = up_main.getHisto();
+         const h = up_main.getHisto();
          h.fXaxis.fLabelSize = 0; // do not draw X axis labels
          h.fXaxis.fTitle = ''; // do not draw X axis title
          h.fYaxis.fLabelSize = lbl_size;
@@ -110396,8 +110304,8 @@ class TRatioPlotPainter extends ObjectPainter {
             up_fp._ratio_low_fp = low_fp;
             up_fp._ratio_painter = this;
 
-            up_fp.zoom = function(xmin,xmax,ymin,ymax,zmin,zmax) {
-               return this.o_zoom(xmin,xmax,ymin,ymax,zmin,zmax).then(res => {
+            up_fp.zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
+               return this.o_zoom(xmin, xmax, ymin, ymax, zmin, zmax).then(res => {
                   this._ratio_painter.setGridsRange(up_fp.scale_xmin, up_fp.scale_xmax);
                   this._ratio_low_fp.o_zoom(up_fp.scale_xmin, up_fp.scale_xmax);
                   return res;
@@ -110416,13 +110324,12 @@ class TRatioPlotPainter extends ObjectPainter {
       }
 
       return promise_up.then(() => {
-
          if (!low_p || !low_main || !low_fp || !up_fp || low_p._ratio_configured)
             return this;
 
          low_p._ratio_configured = true;
          low_main.options.Axis = 0; // draw both axes
-         let h = low_main.getHisto();
+         const h = low_main.getHisto();
          h.fXaxis.fTitle = 'x';
          h.fXaxis.fLabelSize = lbl_size;
          h.fXaxis.fTitleSize = lbl_size;
@@ -110435,16 +110342,17 @@ class TRatioPlotPainter extends ObjectPainter {
                objp.testEditable(false);
          });
 
-         let arr = [], currpad;
+         const arr = [];
+         let currpad;
 
          if ((ratio.fGridlinePositions.length > 0) && (ratio.fGridlines.length < ratio.fGridlinePositions.length)) {
             ratio.fGridlinePositions.forEach(gridy => {
                let found = false;
                ratio.fGridlines.forEach(line => {
-                  if ((line.fY1 == line.fY2) && (Math.abs(line.fY1 - gridy) < 1e-6)) found = true;
+                  if ((line.fY1 === line.fY2) && (Math.abs(line.fY1 - gridy) < 1e-6)) found = true;
                });
                if (!found) {
-                  let line = create$1(clTLine);
+                  const line = create$1(clTLine);
                   line.fX1 = up_fp.scale_xmin;
                   line.fX2 = up_fp.scale_xmax;
                   line.fY1 = line.fY2 = gridy;
@@ -110458,15 +110366,14 @@ class TRatioPlotPainter extends ObjectPainter {
          }
 
          return Promise.all(arr).then(() => low_fp.zoom(up_fp.scale_xmin,  up_fp.scale_xmax)).then(() => {
-
             low_fp.o_zoom = low_fp.zoom;
             low_fp._ratio_up_fp = up_fp;
             low_fp._ratio_painter = this;
 
-            low_fp.zoom = function(xmin,xmax,ymin,ymax,zmin,zmax) {
+            low_fp.zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
                this._ratio_painter.setGridsRange(xmin, xmax);
-               this._ratio_up_fp.o_zoom(xmin,xmax);
-               return this.o_zoom(xmin,xmax,ymin,ymax,zmin,zmax);
+               this._ratio_up_fp.o_zoom(xmin, xmax);
+               return this.o_zoom(xmin, xmax, ymin, ymax, zmin, zmax);
             };
 
             low_fp.o_sizeChanged = low_fp.sizeChanged;
@@ -110483,7 +110390,7 @@ class TRatioPlotPainter extends ObjectPainter {
 
    /** @summary Draw TRatioPlot */
    static async draw(dom, ratio, opt) {
-      let painter = new TRatioPlotPainter(dom, ratio, opt);
+      const painter = new TRatioPlotPainter(dom, ratio, opt);
 
       return ensureTCanvas(painter, false).then(() => painter.redraw());
    }
@@ -110830,16 +110737,16 @@ class TWebPaintingPainter extends ObjectPainter {
 
    /** @summary draw TWebPainting object */
    async redraw() {
-
       const obj = this.getObject(), func = this.getAxisToSvgFunc();
 
       if (!obj?.fOper || !func) return;
 
       let indx = 0, attr = {}, lastpath = null, lastkind = 'none', d = '',
-          oper, npoints, n, arr = obj.fOper.split(';');
+          oper, npoints, n;
 
-      const check_attributes = kind => {
-         if (kind == lastkind) return;
+      const arr = obj.fOper.split(';'),
+      check_attributes = kind => {
+         if (kind === lastkind) return;
 
          if (lastpath) {
             lastpath.attr('d', d); // flush previous
@@ -110856,9 +110763,10 @@ class TWebPaintingPainter extends ObjectPainter {
             case 'm': lastpath.call(this.markeratt.func); break;
          }
       }, read_attr = (str, names) => {
-         let lastp = 0, obj = { _typename: 'any' };
+         let lastp = 0;
+         const obj = { _typename: 'any' };
          for (let k = 0; k < names.length; ++k) {
-            let p = str.indexOf(':', lastp+1);
+            const p = str.indexOf(':', lastp+1);
             obj[names[k]] = parseInt(str.slice(lastp+1, (p > lastp) ? p : undefined));
             lastp = p;
          }
@@ -110886,10 +110794,9 @@ class TWebPaintingPainter extends ObjectPainter {
                   continue;
                case 'r':
                case 'b': {
+                  check_attributes((oper === 'b') ? 'f' : 'l');
 
-                  check_attributes((oper == 'b') ? 'f' : 'l');
-
-                  let x1 = func.x(obj.fBuf[indx++]),
+                  const x1 = func.x(obj.fBuf[indx++]),
                       y1 = func.y(obj.fBuf[indx++]),
                       x2 = func.x(obj.fBuf[indx++]),
                       y2 = func.y(obj.fBuf[indx++]);
@@ -110900,7 +110807,6 @@ class TWebPaintingPainter extends ObjectPainter {
                }
                case 'l':
                case 'f': {
-
                   check_attributes(oper);
 
                   npoints = parseInt(arr[k].slice(1));
@@ -110908,13 +110814,12 @@ class TWebPaintingPainter extends ObjectPainter {
                   for (n = 0; n < npoints; ++n)
                      d += `${(n>0)?'L':'M'}${func.x(obj.fBuf[indx++])},${func.y(obj.fBuf[indx++])}`;
 
-                  if (oper == 'f') d += 'Z';
+                  if (oper === 'f') d += 'Z';
 
                   continue;
                }
 
                case 'm': {
-
                   check_attributes(oper);
 
                   npoints = parseInt(arr[k].slice(1));
@@ -110929,22 +110834,21 @@ class TWebPaintingPainter extends ObjectPainter {
                case 'h':
                case 't': {
                   if (attr.fTextSize) {
-
                      check_attributes();
 
-                     let height = (attr.fTextSize > 1) ? attr.fTextSize : this.getPadPainter().getPadHeight() * attr.fTextSize,
-                         angle = attr.fTextAngle,
-                         txt = arr[k].slice(1),
-                         group = this.draw_g.append('svg:g');
+                     const height = (attr.fTextSize > 1) ? attr.fTextSize : this.getPadPainter().getPadHeight() * attr.fTextSize,
+                           group = this.draw_g.append('svg:g');
+                     let angle = attr.fTextAngle,
+                         txt = arr[k].slice(1);
 
                      if (angle >= 360) angle -= Math.floor(angle/360) * 360;
 
                      this.startTextDrawing(attr.fTextFont, height, group);
 
-                     if (oper == 'h') {
+                     if (oper === 'h') {
                         let res = '';
                         for (n = 0; n < txt.length; n += 2)
-                           res += String.fromCharCode(parseInt(txt.slice(n,n+2), 16));
+                           res += String.fromCharCode(parseInt(txt.slice(n, n+2), 16));
                         txt = res;
                      }
 
@@ -110976,7 +110880,7 @@ class TWebPaintingPainter extends ObjectPainter {
    }
 
    static async draw(dom, obj) {
-      let painter = new TWebPaintingPainter(dom, obj);
+      const painter = new TWebPaintingPainter(dom, obj);
       painter.addToPadPrimitives();
       return painter.redraw();
    }
@@ -111313,9 +111217,9 @@ class TSplinePainter extends ObjectPainter {
    /** @summary Update TSpline object
      * @private */
    updateObject(obj, opt) {
-      let spline = this.getObject();
+      const spline = this.getObject();
 
-      if (spline._typename != obj._typename) return false;
+      if (spline._typename !== obj._typename) return false;
 
       if (spline !== obj) Object.assign(spline, obj);
 
@@ -111327,12 +111231,12 @@ class TSplinePainter extends ObjectPainter {
    /** @summary Evaluate spline at given position
      * @private */
    eval(knot, x) {
-      let dx = x - knot.fX;
+      const dx = x - knot.fX;
 
-      if (knot._typename == 'TSplinePoly3')
+      if (knot._typename === 'TSplinePoly3')
          return knot.fY + dx*(knot.fB + dx*(knot.fC + dx*knot.fD));
 
-      if (knot._typename == 'TSplinePoly5')
+      if (knot._typename === 'TSplinePoly5')
          return knot.fY + dx*(knot.fB + dx*(knot.fC + dx*(knot.fD + dx*(knot.fE + dx*knot.fF))));
 
       return knot.fY + dx;
@@ -111341,26 +111245,25 @@ class TSplinePainter extends ObjectPainter {
    /** @summary Find idex for x value
      * @private */
    findX(x) {
-      let spline = this.getObject(),
-          klow = 0, khig = spline.fNp - 1;
+      const spline = this.getObject();
+      let klow = 0, khig = spline.fNp - 1;
 
       if (x <= spline.fXmin) return 0;
       if (x >= spline.fXmax) return khig;
 
-      if(spline.fKstep) {
+      if (spline.fKstep) {
          // Equidistant knots, use histogramming
          klow = Math.round((x - spline.fXmin)/spline.fDelta);
          // Correction for rounding errors
-         if (x < spline.fPoly[klow].fX) {
-            klow = Math.max(klow-1,0);
-         } else if (klow < khig) {
+         if (x < spline.fPoly[klow].fX)
+            klow = Math.max(klow-1, 0);
+          else if (klow < khig)
             if (x > spline.fPoly[klow+1].fX) ++klow;
-         }
       } else {
          // Non equidistant knots, binary search
-         while(khig - klow > 1) {
-            let khalf = Math.round((klow + khig)/2);
-            if(x > spline.fPoly[khalf].fX) klow = khalf;
+         while (khig - klow > 1) {
+            const khalf = Math.round((klow + khig)/2);
+            if (x > spline.fPoly[khalf].fX) klow = khalf;
                                       else khig = khalf;
          }
       }
@@ -111370,12 +111273,10 @@ class TSplinePainter extends ObjectPainter {
    /** @summary Create histogram for axes drawing
      * @private */
    createDummyHisto() {
-
-      let xmin = 0, xmax = 1, ymin = 0, ymax = 1,
-          spline = this.getObject();
+      const spline = this.getObject();
+      let xmin = 0, xmax = 1, ymin = 0, ymax = 1;
 
       if (spline?.fPoly) {
-
          xmin = xmax = spline.fPoly[0].fX;
          ymin = ymax = spline.fPoly[0].fY;
 
@@ -111390,7 +111291,7 @@ class TSplinePainter extends ObjectPainter {
          if (ymin < 0) ymin *= (1 + gStyle.fHistTopMargin);
       }
 
-      let histo = create$1(clTH1I);
+      const histo = create$1(clTH1I);
 
       histo.fName = spline.fName + '_hist';
       histo.fTitle = spline.fTitle;
@@ -111406,15 +111307,13 @@ class TSplinePainter extends ObjectPainter {
    /** @summary Process tooltip event
      * @private */
    processTooltipEvent(pnt) {
+      const spline = this.getObject(),
+            funcs = this.getFramePainter()?.getGrFuncs(this.options.second_x, this.options.second_y);
+      let cleanup = false, xx, yy, knot = null, indx = 0;
 
-      let cleanup = false,
-          spline = this.getObject(),
-          funcs = this.getFramePainter()?.getGrFuncs(this.options.second_x, this.options.second_y),
-          xx, yy, knot = null, indx = 0;
-
-      if ((pnt === null) || !spline || !funcs) {
+      if ((pnt === null) || !spline || !funcs)
          cleanup = true;
-      } else {
+       else {
          xx = funcs.revertAxis('x', pnt.x);
          indx = this.findX(xx);
          knot = spline.fPoly[indx];
@@ -111430,23 +111329,24 @@ class TSplinePainter extends ObjectPainter {
          }
       }
 
-      let gbin = this.draw_g?.selectChild('.tooltip_bin'),
-          radius = this.lineatt.width + 3;
+      let gbin = this.draw_g?.selectChild('.tooltip_bin');
+      const radius = this.lineatt.width + 3;
 
       if (cleanup || !this.draw_g) {
          gbin?.remove();
          return null;
       }
 
-      if (gbin.empty())
+      if (gbin.empty()) {
          gbin = this.draw_g.append('svg:circle')
                            .attr('class', 'tooltip_bin')
-                           .style('pointer-events','none')
+                           .style('pointer-events', 'none')
                            .attr('r', radius)
                            .style('fill', 'none')
                            .call(this.lineatt.func);
+      }
 
-      let res = { name: this.getObject().fName,
+      const res = { name: this.getObject().fName,
                   title: this.getObject().fTitle,
                   x: funcs.grx(xx),
                   y: funcs.gry(yy),
@@ -111458,12 +111358,13 @@ class TSplinePainter extends ObjectPainter {
       res.menu = res.exact;
       res.menu_dist = Math.sqrt((res.x-pnt.x)**2 + (res.y-pnt.y)**2);
 
-      if (res.changed)
+      if (res.changed) {
          gbin.attr('cx', Math.round(res.x))
              .attr('cy', Math.round(res.y))
              .property('current_xx', xx);
+      }
 
-      let name = this.getObjectHint();
+      const name = this.getObjectHint();
       if (name) res.lines.push(name);
       res.lines.push(`x = ${funcs.axisAsText('x', xx)}`,
                      `y = ${funcs.axisAsText('y', yy)}`);
@@ -111472,9 +111373,10 @@ class TSplinePainter extends ObjectPainter {
                         `B = ${floatToString(knot.fB, gStyle.fStatFormat)}`,
                         `C = ${floatToString(knot.fC, gStyle.fStatFormat)}`,
                         `D = ${floatToString(knot.fD, gStyle.fStatFormat)}`);
-         if ((knot.fE !== undefined) && (knot.fF !== undefined))
+         if ((knot.fE !== undefined) && (knot.fF !== undefined)) {
             res.lines.push(`E = ${floatToString(knot.fE, gStyle.fStatFormat)}`,
                            `F = ${floatToString(knot.fF, gStyle.fStatFormat)}`);
+         }
       }
 
       return res;
@@ -111483,8 +111385,7 @@ class TSplinePainter extends ObjectPainter {
    /** @summary Redraw object
      * @private */
    redraw() {
-
-      let spline = this.getObject(),
+      const spline = this.getObject(),
           pmain = this.getFramePainter(),
           funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
           w = pmain.getFrameWidth(),
@@ -111497,12 +111398,10 @@ class TSplinePainter extends ObjectPainter {
       this.createAttLine({ attr: spline });
 
       if (this.options.Line || this.options.Curve) {
-
-         let npx = Math.max(10, spline.fNpx),
-             xmin = Math.max(pmain.scale_xmin, spline.fXmin),
+         const npx = Math.max(10, spline.fNpx), bins = []; // index of current knot
+         let xmin = Math.max(pmain.scale_xmin, spline.fXmin),
              xmax = Math.min(pmain.scale_xmax, spline.fXmax),
-             indx = this.findX(xmin),
-             bins = []; // index of current knot
+             indx = this.findX(xmin);
 
          if (pmain.logx) {
             xmin = Math.log(xmin);
@@ -111515,7 +111414,7 @@ class TSplinePainter extends ObjectPainter {
 
             while ((indx < spline.fNp-1) && (x > spline.fPoly[indx+1].fX)) ++indx;
 
-            let y = this.eval(spline.fPoly[indx], x);
+            const y = this.eval(spline.fPoly[indx], x);
 
             bins.push({ x, y, grx: funcs.grx(x), gry: funcs.gry(y) });
          }
@@ -111528,7 +111427,6 @@ class TSplinePainter extends ObjectPainter {
       }
 
       if (this.options.Mark) {
-
          // for tooltips use markers only if nodes where not created
          let path = '';
 
@@ -111539,20 +111437,20 @@ class TSplinePainter extends ObjectPainter {
          this.knot_size = this.markeratt.getFullSize();
 
          for (let n = 0; n < spline.fPoly.length; n++) {
-            let knot = spline.fPoly[n],
+            const knot = spline.fPoly[n],
                 grx = funcs.grx(knot.fX);
             if ((grx > -this.knot_size) && (grx < w + this.knot_size)) {
-               let gry = funcs.gry(knot.fY);
-               if ((gry > -this.knot_size) && (gry < h + this.knot_size)) {
+               const gry = funcs.gry(knot.fY);
+               if ((gry > -this.knot_size) && (gry < h + this.knot_size))
                   path += this.markeratt.create(grx, gry);
-               }
             }
          }
 
-         if (path)
+         if (path) {
             this.draw_g.append('svg:path')
                        .attr('d', path)
                        .call(this.markeratt.func);
+         }
       }
    }
 
@@ -111566,11 +111464,11 @@ class TSplinePainter extends ObjectPainter {
 
    /** @summary Decode options for TSpline drawing */
    decodeOptions(opt) {
-      let d = new DrawOptions(opt);
+      const d = new DrawOptions(opt);
 
       if (!this.options) this.options = {};
 
-      let has_main = !!this.getMainPainter();
+      const has_main = !!this.getMainPainter();
 
       Object.assign(this.options, {
          Same: d.check('SAME'),
@@ -111593,16 +111491,17 @@ class TSplinePainter extends ObjectPainter {
 
    /** @summary Draw TSpline */
    static async draw(dom, spline, opt) {
-      let painter = new TSplinePainter(dom, spline);
+      const painter = new TSplinePainter(dom, spline);
       painter.decodeOptions(opt);
 
-      let promise = Promise.resolve(), no_main = !painter.getMainPainter();
+      const no_main = !painter.getMainPainter();
+      let promise = Promise.resolve();
       if (no_main || painter.options.second_x || painter.options.second_y) {
          if (painter.options.Same && no_main) {
             console.warn('TSpline painter requires histogram to be drawn');
             return null;
          }
-         let histo = painter.createDummyHisto();
+         const histo = painter.createDummyHisto();
          promise = TH1Painter.draw(dom, histo, painter.options.Hopt);
       }
 
@@ -112705,7 +112604,7 @@ class RAxisPainter extends RObjectPainter {
 
    /** @summary constructor */
    constructor(dom, arg1, axis, cssprefix) {
-      let drawable = cssprefix ? arg1.getObject() : arg1;
+      const drawable = cssprefix ? arg1.getObject() : arg1;
       super(dom, drawable, '', cssprefix ? arg1.csstype : 'axis');
       Object.assign(this, AxisPainterMethods);
       this.initAxisPainter();
@@ -112713,7 +112612,7 @@ class RAxisPainter extends RObjectPainter {
       this.axis = axis;
       if (cssprefix) { // drawing from the frame
          this.embedded = true; // indicate that painter embedded into the histo painter
-         //this.csstype = arg1.csstype; // for the moment only via frame one can set axis attributes
+         // this.csstype = arg1.csstype; // for the moment only via frame one can set axis attributes
          this.cssprefix = cssprefix;
          this.rstyle = arg1.rstyle;
       } else {
@@ -112738,7 +112637,7 @@ class RAxisPainter extends RObjectPainter {
       this.name = name;
       this.kind = 'normal';
       this.log = false;
-      let _log = this.v7EvalAttr('log', 0);
+      const _log = this.v7EvalAttr('log', 0);
       if (_log) {
          this.log = true;
          this.logbase = 10;
@@ -112762,7 +112661,7 @@ class RAxisPainter extends RObjectPainter {
       this.kind = 'normal';
       this.vertical = vertical;
       this.log = false;
-      let _log = this.v7EvalAttr('log', 0),
+      const _log = this.v7EvalAttr('log', 0),
           _symlog = this.v7EvalAttr('symlog', 0);
       this.reverse = opts.reverse || false;
 
@@ -112777,17 +112676,17 @@ class RAxisPainter extends RObjectPainter {
       } else if (this.axis?.fLabelsIndex) {
          this.kind = 'labels';
          delete this.own_labels;
-      } else if (opts.labels) {
+      } else if (opts.labels)
          this.kind = 'labels';
-      } else {
+       else
          this.kind = 'normal';
-      }
 
-      if (this.kind == 'time') {
+
+      if (this.kind === 'time')
          this.func = time().domain([this.convertDate(smin), this.convertDate(smax)]);
-      } else if (_symlog && (_symlog > 0)) {
+       else if (_symlog && (_symlog > 0)) {
          this.symlog = _symlog;
-         this.func = symlog().constant(_symlog).domain([smin,smax]);
+         this.func = symlog().constant(_symlog).domain([smin, smax]);
       } else if (_log) {
          if (smax <= 0) smax = 1;
          if ((smin <= 0) || (smin >= smax))
@@ -112798,9 +112697,9 @@ class RAxisPainter extends RObjectPainter {
             this.logbase = Math.exp(1);
          else if (_log > 1.9)
             this.logbase = Math.round(_log);
-         this.func = log().base(this.logbase).domain([smin,smax]);
+         this.func = log().base(this.logbase).domain([smin, smax]);
       } else
-         this.func = linear().domain([smin,smax]);
+         this.func = linear().domain([smin, smax]);
 
       this.scale_min = smin;
       this.scale_max = smax;
@@ -112825,7 +112724,7 @@ class RAxisPainter extends RObjectPainter {
 
       delete this.format;// remove formatting func
 
-      let ndiv = this.v7EvalAttr('ndiv', 508);
+      const ndiv = this.v7EvalAttr('ndiv', 508);
 
       this.nticks = ndiv % 100;
       this.nticks2 = (ndiv % 10000 - this.nticks) / 100;
@@ -112833,37 +112732,36 @@ class RAxisPainter extends RObjectPainter {
 
       if (this.nticks > 20) this.nticks = 20;
 
-      let gr_range = Math.abs(this.gr_range) || 100;
+      const gr_range = Math.abs(this.gr_range) || 100;
 
-      if (this.kind == 'time') {
+      if (this.kind === 'time') {
          if (this.nticks > 8) this.nticks = 8;
 
-         let scale_range = this.scale_max - this.scale_min,
-             tf1 = this.v7EvalAttr('timeFormat', ''),
-             tf2 = chooseTimeFormat(scale_range / gr_range, false);
+         const scale_range = this.scale_max - this.scale_min,
+               tf2 = chooseTimeFormat(scale_range / gr_range, false);
+         let tf1 = this.v7EvalAttr('timeFormat', '');
 
          if (!tf1 || (scale_range < 0.1 * (this.full_max - this.full_min)))
             tf1 = chooseTimeFormat(scale_range / this.nticks, true);
 
          this.tfunc1 = this.tfunc2 = timeFormat(tf1);
-         if (tf2!==tf1)
+         if (tf2 !== tf1)
             this.tfunc2 = timeFormat(tf2);
 
          this.format = this.formatTime;
-
       } else if (this.log) {
          if (this.nticks2 > 1) {
             this.nticks *= this.nticks2; // all log ticks (major or minor) created centrally
             this.nticks2 = 1;
          }
          this.noexp = this.v7EvalAttr('noexp', false);
-         if ((this.scale_max < 300) && (this.scale_min > 0.3) && (this.logbase == 10)) this.noexp = true;
+         if ((this.scale_max < 300) && (this.scale_min > 0.3) && (this.logbase === 10)) this.noexp = true;
          this.moreloglabels = this.v7EvalAttr('moreloglbls', false);
 
          this.format = this.formatLog;
-      } else if (this.kind == 'labels') {
+      } else if (this.kind === 'labels') {
          this.nticks = 50; // for text output allow max 50 names
-         let scale_range = this.scale_max - this.scale_min;
+         const scale_range = this.scale_max - this.scale_min;
          if (this.nticks > scale_range)
             this.nticks = Math.round(scale_range);
          this.nticks2 = 1;
@@ -112888,15 +112786,15 @@ class RAxisPainter extends RObjectPainter {
 
    /** @summary Provide label for axis value */
    formatLabels(d) {
-      let indx = Math.round(d);
+      const indx = Math.round(d);
       if (this.axis?.fLabelsIndex) {
          if ((indx < 0) || (indx >= this.axis.fNBinsNoOver)) return null;
          for (let i = 0; i < this.axis.fLabelsIndex.length; ++i) {
-            let pair = this.axis.fLabelsIndex[i];
+            const pair = this.axis.fLabelsIndex[i];
             if (pair.second === indx) return pair.first;
          }
       } else {
-         let labels = this.getObject().fLabels;
+         const labels = this.getObject().fLabels;
          if (labels && (indx >= 0) && (indx < labels.length))
             return labels[indx];
       }
@@ -112905,15 +112803,14 @@ class RAxisPainter extends RObjectPainter {
 
    /** @summary Creates array with minor/middle/major ticks */
    createTicks(only_major_as_array, optionNoexp, optionNoopt, optionInt) {
+      if (optionNoopt && this.nticks && (this.kind === 'normal')) this.noticksopt = true;
 
-      if (optionNoopt && this.nticks && (this.kind == 'normal')) this.noticksopt = true;
-
-      let handle = { nminor: 0, nmiddle: 0, nmajor: 0, func: this.func };
+      const handle = { nminor: 0, nmiddle: 0, nmajor: 0, func: this.func };
 
       handle.minor = handle.middle = handle.major = this.produceTicks(this.nticks);
 
       if (only_major_as_array) {
-         let res = handle.major, delta = (this.scale_max - this.scale_min)*1e-5;
+         const res = handle.major, delta = (this.scale_max - this.scale_min)*1e-5;
          if (res[0] > this.scale_min + delta) res.unshift(this.scale_min);
          if (res[res.length-1] < this.scale_max - delta) res.push(this.scale_max);
          return res;
@@ -112922,12 +112819,12 @@ class RAxisPainter extends RObjectPainter {
       if ((this.nticks2 > 1) && (!this.log || (this.logbase === 10))) {
          handle.minor = handle.middle = this.produceTicks(handle.major.length, this.nticks2);
 
-         let gr_range = Math.abs(this.func.range()[1] - this.func.range()[0]);
+         const gr_range = Math.abs(this.func.range()[1] - this.func.range()[0]);
 
          // avoid black filling by middle-size
-         if ((handle.middle.length <= handle.major.length) || (handle.middle.length > gr_range/3.5)) {
+         if ((handle.middle.length <= handle.major.length) || (handle.middle.length > gr_range/3.5))
             handle.minor = handle.middle = handle.major;
-         } else if ((this.nticks3 > 1) && !this.log) {
+          else if ((this.nticks3 > 1) && !this.log) {
             handle.minor = this.produceTicks(handle.middle.length, this.nticks3);
             if ((handle.minor.length <= handle.middle.length) || (handle.minor.length > gr_range/1.7)) handle.minor = handle.middle;
          }
@@ -112958,7 +112855,7 @@ class RAxisPainter extends RObjectPainter {
       };
 
       handle.last_major = function() {
-         return (this.kind !== 1) ? false : this.nmajor == this.major.length;
+         return (this.kind !== 1) ? false : this.nmajor === this.major.length;
       };
 
       handle.next_major_grpos = function() {
@@ -112973,12 +112870,11 @@ class RAxisPainter extends RObjectPainter {
 
       // at the moment when drawing labels, we can try to find most optimal text representation for them
 
-      if ((this.kind == 'normal') && !this.log && (handle.major.length > 0)) {
-
+      if ((this.kind === 'normal') && !this.log && (handle.major.length > 0)) {
          let maxorder = 0, minorder = 0, exclorder3 = false;
 
          if (!optionNoexp) {
-            let maxtick = Math.max(Math.abs(handle.major[0]), Math.abs(handle.major[handle.major.length-1])),
+            const maxtick = Math.max(Math.abs(handle.major[0]), Math.abs(handle.major[handle.major.length-1])),
                 mintick = Math.min(Math.abs(handle.major[0]), Math.abs(handle.major[handle.major.length-1])),
                 ord1 = (maxtick > 0) ? Math.round(Math.log10(maxtick)/3)*3 : 0,
                 ord2 = (mintick > 0) ? Math.round(Math.log10(mintick)/3)*3 : 0;
@@ -112986,8 +112882,8 @@ class RAxisPainter extends RObjectPainter {
              exclorder3 = (maxtick < 2e4); // do not show 10^3 for values below 20000
 
              if (maxtick || mintick) {
-                maxorder = Math.max(ord1,ord2) + 3;
-                minorder = Math.min(ord1,ord2) - 3;
+                maxorder = Math.max(ord1, ord2) + 3;
+                minorder = Math.min(ord1, ord2) - 3;
              }
          }
 
@@ -113001,7 +112897,7 @@ class RAxisPainter extends RObjectPainter {
             this.ndig = 0;
             let lbls = [], indx = 0, totallen = 0;
             while (indx<handle.major.length) {
-               let lbl = this.format(handle.major[indx], true);
+               const lbl = this.format(handle.major[indx], true);
                if (lbls.indexOf(lbl) < 0) {
                   lbls.push(lbl);
                   totallen += lbl.length;
@@ -113012,7 +112908,7 @@ class RAxisPainter extends RObjectPainter {
                lbls = []; indx = 0; totallen = 0;
             }
 
-            // for order == 0 we should virually remove '0.' and extra label on top
+            // for order === 0 we should virually remove '0.' and extra label on top
             if (!order && (this.ndig < 4))
                totallen -= (handle.major.length * 2 + 3);
 
@@ -113049,26 +112945,26 @@ class RAxisPainter extends RObjectPainter {
    processLabelsMove(arg, pos) {
       if (this.optionUnlab || !this.axis_g) return false;
 
-      let label_g = this.axis_g.select('.axis_labels');
-      if (!label_g || (label_g.size() != 1)) return false;
+      const label_g = this.axis_g.select('.axis_labels');
+      if (!label_g || (label_g.size() !== 1)) return false;
 
-      if (arg == 'start') {
+      if (arg === 'start') {
          // no moving without labels
-         let box = label_g.node().getBBox();
+         const box = label_g.node().getBBox();
 
          label_g.append('rect')
-                 .classed('drag',true)
+                 .classed('drag', true)
                  .attr('x', box.x)
                  .attr('y', box.y)
                  .attr('width', box.width)
                  .attr('height', box.height)
                  .style('cursor', 'move')
                  .call(addHighlightStyle, true);
-         if (this.vertical) {
+         if (this.vertical)
             this.drag_pos0 = pos[0];
-         } else {
+          else
             this.drag_pos0 = pos[1];
-         }
+
 
          return true;
       }
@@ -113084,12 +112980,12 @@ class RAxisPainter extends RObjectPainter {
       }
       if (!offset) label_g.attr('transform', null);
 
-      if (arg == 'stop') {
+      if (arg === 'stop') {
          label_g.select('rect.drag').remove();
          delete this.drag_pos0;
-         if (offset != label_g.property('fix_offset')) {
+         if (offset !== label_g.property('fix_offset')) {
             label_g.property('fix_offset', offset);
-            let side = label_g.property('side') || 1;
+            const side = label_g.property('side') || 1;
             this.labelsOffset = offset / (this.vertical ? -side : side);
             this.changeAxisAttr(1, 'labels_offset', this.labelsOffset / this.scalingSize);
          }
@@ -113103,34 +112999,34 @@ class RAxisPainter extends RObjectPainter {
       if (!settings.MoveResize || this.isBatchMode()) return;
 
       let drag_rect = null,
-          acc_x, acc_y, new_x, new_y, alt_pos, curr_indx,
-          drag_move = drag().subject(Object);
+          acc_x, acc_y, new_x, new_y, alt_pos, curr_indx;
+
+      const drag_move = drag().subject(Object);
 
       drag_move
          .on('start', evnt => {
-
             evnt.sourceEvent.preventDefault();
             evnt.sourceEvent.stopPropagation();
 
-            let box = title_g.node().getBBox(), // check that elements visible, request precise value
+            const box = title_g.node().getBBox(), // check that elements visible, request precise value
                 title_length = this.vertical ? box.height : box.width;
 
             new_x = acc_x = title_g.property('shift_x');
             new_y = acc_y = title_g.property('shift_y');
 
-            if (this.titlePos == 'center')
+            if (this.titlePos === 'center')
                curr_indx = 1;
             else
-               curr_indx = (this.titlePos == 'left') ? 0 : 2;
+               curr_indx = (this.titlePos === 'left') ? 0 : 2;
 
             // let d = ((this.gr_range > 0) && this.vertical) ? title_length : 0;
             alt_pos = [0, this.gr_range/2, this.gr_range]; // possible positions
-            let off = this.vertical ? -title_length : title_length,
+            const off = this.vertical ? -title_length : title_length,
                 swap = this.isReverseAxis() ? 2 : 0;
-            if (this.title_align == 'middle') {
+            if (this.title_align === 'middle') {
                alt_pos[swap] += off/2;
                alt_pos[2-swap] -= off/2;
-            } else if ((this.title_align == 'begin') ^ this.isTitleRotated()) {
+            } else if ((this.title_align === 'begin') ^ this.isTitleRotated()) {
                alt_pos[1] -= off/2;
                alt_pos[2-swap] -= off;
             } else { // end
@@ -113157,10 +113053,10 @@ class RAxisPainter extends RObjectPainter {
                acc_x += evnt.dx;
                acc_y += evnt.dy;
 
-               let set_x, set_y,
-                   p = this.vertical ? acc_y : acc_x, besti = 0;
+               const p = this.vertical ? acc_y : acc_x;
+               let set_x, set_y, besti = 0;
 
-               for (let i=1; i<3; ++i)
+               for (let i = 1; i < 3; ++i)
                   if (Math.abs(p - alt_pos[i]) < Math.abs(p - alt_pos[besti])) besti = i;
 
                if (this.vertical) {
@@ -113173,27 +113069,26 @@ class RAxisPainter extends RObjectPainter {
 
                new_x = set_x; new_y = set_y; curr_indx = besti;
                makeTranslate(title_g, new_x, new_y);
-
           }).on('end', evnt => {
                if (!drag_rect) return;
 
                evnt.sourceEvent.preventDefault();
                evnt.sourceEvent.stopPropagation();
 
-               let basepos = title_g.property('basepos') || 0;
+               const basepos = title_g.property('basepos') || 0;
 
                title_g.property('shift_x', new_x)
                       .property('shift_y', new_y);
 
                this.titleOffset = (this.vertical ? basepos - new_x : new_y - basepos) * side;
 
-               if (curr_indx == 1) {
+               if (curr_indx === 1)
                   this.titlePos = 'center';
-               } else if (curr_indx == 0) {
+                else if (curr_indx === 0)
                   this.titlePos = 'left';
-               } else {
+                else
                   this.titlePos = 'right';
-               }
+
 
                this.changeAxisAttr(0, 'title_position', this.titlePos, 'title_offset', this.titleOffset / this.scalingSize);
 
@@ -113232,8 +113127,8 @@ class RAxisPainter extends RObjectPainter {
       let ending = '';
 
       if (this.endingSize && this.endingStyle) {
-         let sz = (this.gr_range > 0) ? -this.endingSize : this.endingSize,
-             sz7 = Math.round(sz*0.7);
+         let sz = (this.gr_range > 0) ? -this.endingSize : this.endingSize;
+         const sz7 = Math.round(sz*0.7);
          sz = Math.round(sz);
          if (this.vertical)
             ending = `l${sz7},${sz}M0,${this.gr_range}l${-sz7},${sz}`;
@@ -113242,7 +113137,7 @@ class RAxisPainter extends RObjectPainter {
       }
 
       axis_g.append('svg:path')
-            .attr('d','M0,0' + (this.vertical ? 'v' : 'h') + this.gr_range + ending)
+            .attr('d', 'M0,0' + (this.vertical ? 'v' : 'h') + this.gr_range + ending)
             .call(this.lineatt.func)
             .style('fill', ending ? 'none' : null);
    }
@@ -113256,7 +113151,7 @@ class RAxisPainter extends RObjectPainter {
       this.handle.reset();
 
       let res = '', ticks_plusminus = 0;
-      if (this.ticksSide == 'both') {
+      if (this.ticksSide === 'both') {
          side = 1;
          ticks_plusminus = 1;
       }
@@ -113267,13 +113162,13 @@ class RAxisPainter extends RObjectPainter {
          if (this.handle.kind < 3)
             h1 = Math.round(this.ticksSize/2);
 
-         let grpos = this.handle.grpos - this.axis_shift;
+         const grpos = this.handle.grpos - this.axis_shift;
 
          if ((this.startingSize || this.endingSize) && !this.isInsideGrRange(grpos, -Math.abs(this.startingSize), -Math.abs(this.endingSize))) continue;
 
-         if (this.handle.kind == 1) {
+         if (this.handle.kind === 1) {
             // if not showing labels, not show large tick
-            if ((this.kind == 'labels') || (this.format(this.handle.tick,true) !== null)) h1 = this.ticksSize;
+            if ((this.kind === 'labels') || (this.format(this.handle.tick, true) !== null)) h1 = this.ticksSize;
 
             if (main_draw) this.ticks.push(grpos); // keep graphical positions of major ticks
          }
@@ -113292,10 +113187,10 @@ class RAxisPainter extends RObjectPainter {
          axis_g.append('svg:path')
                .attr('d', res)
                .style('stroke', this.ticksColor || this.lineatt.color)
-               .style('stroke-width', !this.ticksWidth || (this.ticksWidth == 1) ? null : this.ticksWidth);
+               .style('stroke-width', !this.ticksWidth || (this.ticksWidth === 1) ? null : this.ticksWidth);
        }
 
-       let gap0 = Math.round(0.25*this.ticksSize), gap = Math.round(1.25*this.ticksSize);
+       const gap0 = Math.round(0.25*this.ticksSize), gap = Math.round(1.25*this.ticksSize);
        return { '-1': (side > 0) || ticks_plusminus ? gap : gap0,
                   1: (side < 0) || ticks_plusminus ? gap : gap0 };
    }
@@ -113303,11 +113198,11 @@ class RAxisPainter extends RObjectPainter {
    /** @summary Performs labels drawing
      * @return {Promise} with gaps in both direction */
    async drawLabels(axis_g, side, gaps) {
-      let center_lbls = this.isCenteredLabels(),
-          rotate_lbls = this.labelsFont.angle != 0,
-          textscale = 1, maxtextlen = 0, lbls_tilt = false,
-          label_g = axis_g.append('svg:g').attr('class','axis_labels').property('side', side),
-          lbl_pos = this.handle.lbl_pos || this.handle.major,
+      const center_lbls = this.isCenteredLabels(),
+            rotate_lbls = this.labelsFont.angle !== 0,
+            label_g = axis_g.append('svg:g').attr('class', 'axis_labels').property('side', side),
+            lbl_pos = this.handle.lbl_pos || this.handle.major;
+      let textscale = 1, maxtextlen = 0, lbls_tilt = false,
           max_lbl_width = 0, max_lbl_height = 0;
 
       // function called when text is drawn to analyze width, required to correctly scale all labels
@@ -113315,7 +113210,7 @@ class RAxisPainter extends RObjectPainter {
          max_lbl_width = Math.max(max_lbl_width, this.result_width);
          max_lbl_height = Math.max(max_lbl_height, this.result_height);
 
-         let textwidth = this.result_width;
+         const textwidth = this.result_width;
 
          if (textwidth && ((!painter.vertical && !rotate_lbls) || (painter.vertical && rotate_lbls)) && !painter.log) {
             let maxwidth = this.gap_before*0.45 + this.gap_after*0.45;
@@ -113327,14 +113222,14 @@ class RAxisPainter extends RObjectPainter {
          if ((textscale > 0.0001) && (textscale < 0.8) && !painter.vertical && !rotate_lbls && (maxtextlen > 5) && (side > 0))
             lbls_tilt = true;
 
-         let scale = textscale * (lbls_tilt ? 3 : 1);
+         const scale = textscale * (lbls_tilt ? 3 : 1);
          if ((scale > 0.0001) && (scale < 1))
             painter.scaleTextDrawing(1/scale, label_g);
       }
 
-      let lastpos = 0,
-          fix_offset = Math.round((this.vertical ? -side : side) * this.labelsOffset),
-          fix_coord = Math.round((this.vertical ? -side : side) * gaps[side]);
+      const fix_offset = Math.round((this.vertical ? -side : side) * this.labelsOffset),
+            fix_coord = Math.round((this.vertical ? -side : side) * gaps[side]);
+      let lastpos = 0;
 
       if (fix_offset)
          label_g.attr('transform', this.vertical ? `translate(${fix_offset})` : `translate(0,${fix_offset})`);
@@ -113387,7 +113282,7 @@ class RAxisPainter extends RObjectPainter {
          lastpos = pos;
       }
 
-      if (this.order)
+      if (this.order) {
          this.drawText({ x: this.vertical ? side*5 : this.getGrRange(5),
                          y: this.has_obstacle ? fix_coord : (this.vertical ? this.getGrRange(3) : -3*side),
                          align: this.vertical ? ((side < 0) ? 30 : 10) : ((this.has_obstacle ^ (side < 0)) ? 13 : 10),
@@ -113395,19 +113290,20 @@ class RAxisPainter extends RObjectPainter {
                          text: '#times' + this.formatExp(10, this.order),
                          draw_g: label_g
          });
+      }
 
       return this.finishTextDrawing(label_g).then(() => {
-
-        if (lbls_tilt)
+        if (lbls_tilt) {
            label_g.selectAll('text').each(function() {
-               let txt = select(this), tr = txt.attr('transform');
+               const txt = select(this), tr = txt.attr('transform');
                txt.attr('transform', tr + ' rotate(25)').style('text-anchor', 'start');
            });
+         }
 
-         if (this.vertical) {
+         if (this.vertical)
             gaps[side] += Math.round(rotate_lbls ? 1.2*max_lbl_height : max_lbl_width + 0.4*this.labelsFont.size) - side*fix_offset;
-         } else {
-            let tilt_height = lbls_tilt ? max_lbl_width * Math.sin(25/180*Math.PI) + max_lbl_height * (Math.cos(25/180*Math.PI) + 0.2) : 0;
+         else {
+            const tilt_height = lbls_tilt ? max_lbl_width * Math.sin(25/180*Math.PI) + max_lbl_height * (Math.cos(25/180*Math.PI) + 0.2) : 0;
 
             gaps[side] += Math.round(Math.max(rotate_lbls ? max_lbl_width + 0.4*this.labelsFont.size : 1.2*max_lbl_height, 1.2*this.labelsFont.size, tilt_height)) + fix_offset;
          }
@@ -113422,7 +113318,7 @@ class RAxisPainter extends RObjectPainter {
          const sz = Math.max(lgaps[side], 10),
                d = this.vertical ? `v${this.gr_range}h${-side*sz}v${-this.gr_range}` : `h${this.gr_range}v${side*sz}h${-this.gr_range}`;
          axis_g.append('svg:path')
-               .attr('d',`M0,0${d}z`)
+               .attr('d', `M0,0${d}z`)
                .attr('class', 'axis_zoom')
                .style('opacity', '0')
                .style('cursor', 'crosshair');
@@ -113431,7 +113327,7 @@ class RAxisPainter extends RObjectPainter {
 
    /** @summary Returns true if axis title is rotated */
    isTitleRotated() {
-      return this.titleFont && (this.titleFont.angle != (this.vertical ? 270 : 0));
+      return this.titleFont && (this.titleFont.angle !== (this.vertical ? 270 : 0));
    }
 
    /** @summary Draw axis title */
@@ -113439,10 +113335,9 @@ class RAxisPainter extends RObjectPainter {
       if (!this.fTitle)
          return this;
 
-      let title_g = axis_g.append('svg:g').attr('class', 'axis_title'),
-          title_shift_x = 0, title_shift_y = 0, title_basepos = 0;
-
-      let rotated = this.isTitleRotated();
+      const title_g = axis_g.append('svg:g').attr('class', 'axis_title'),
+            rotated = this.isTitleRotated();
+      let title_shift_x = 0, title_shift_y = 0, title_basepos = 0;
 
       this.startTextDrawing(this.titleFont, 'font', title_g);
 
@@ -113475,7 +113370,7 @@ class RAxisPainter extends RObjectPainter {
    /** @summary Extract major draw attributes, which are also used in interactive operations
      * @private  */
    extractDrawAttributes(scalingSize) {
-      let pp = this.getPadPainter(),
+      const pp = this.getPadPainter(),
           rect = pp?.getPadRect() || { width: 10, height: 10 };
 
       this.scalingSize = scalingSize || (this.vertical ? rect.width : rect.height);
@@ -113502,8 +113397,8 @@ class RAxisPainter extends RObjectPainter {
 
          this.titleOffset = this.v7EvalLength('title_offset', this.scalingSize, 0);
          this.titlePos = this.v7EvalAttr('title_position', 'right');
-         this.titleCenter = (this.titlePos == 'center');
-         this.titleOpposite = (this.titlePos == 'left');
+         this.titleCenter = (this.titlePos === 'center');
+         this.titleOpposite = (this.titlePos === 'left');
       } else {
          delete this.titleFont;
          delete this.titleOffset;
@@ -113543,14 +113438,14 @@ class RAxisPainter extends RObjectPainter {
       this.axis_g = axis_g;
       this.side = side;
 
-      if (this.ticksSide == 'invert') side = -side;
+      if (this.ticksSide === 'invert') side = -side;
 
       if (this.standalone)
          this.drawMainLine(axis_g);
 
-      let optionNoopt = false,  // no ticks position optimization
-          optionInt = false,    // integer labels
-          optionNoexp = false;  // do not create exp
+      const optionNoopt = false,  // no ticks position optimization
+            optionInt = false,    // integer labels
+            optionNoexp = false;  // do not create exp
 
       this.handle = this.createTicks(false, optionNoexp, optionNoopt, optionInt);
 
@@ -113583,7 +113478,7 @@ class RAxisPainter extends RObjectPainter {
       this.extractDrawAttributes();
 
       let side = this.side;
-      if (this.ticksSide == 'invert') side = -side;
+      if (this.ticksSide === 'invert') side = -side;
 
       if (this.standalone)
          this.drawMainLine(this.axis_g);
@@ -113607,13 +113502,13 @@ class RAxisPainter extends RObjectPainter {
    drawAxisOtherPlace(layer, transform, side, only_ticks) {
       let axis_g = layer.selectChild(`.${this.name}_container2`);
       if (axis_g.empty())
-         axis_g = layer.append('svg:g').attr('class',`${this.name}_container2`);
+         axis_g = layer.append('svg:g').attr('class', `${this.name}_container2`);
       else
          axis_g.selectAll('*').remove();
 
       axis_g.attr('transform', transform);
 
-      if (this.ticksSide == 'invert') side = -side;
+      if (this.ticksSide === 'invert') side = -side;
 
       // draw ticks again
       const tgaps = this.drawTicks(axis_g, side, false),
@@ -113628,21 +113523,20 @@ class RAxisPainter extends RObjectPainter {
    }
 
    /** @summary Change zooming in standalone mode */
-   zoomStandalone(min,max) {
+   zoomStandalone(min, max) {
       this.changeAxisAttr(1, 'zoomMin', min, 'zoomMax', max);
    }
 
    /** @summary Redraw axis, used in standalone mode for RAxisDrawable */
    redraw() {
-
-      let drawable = this.getObject(),
-          pp   = this.getPadPainter(),
-          pos  = pp.getCoordinate(drawable.fPos),
-          len  = pp.getPadLength(drawable.fVertical, drawable.fLength),
-          reverse = this.v7EvalAttr('reverse', false),
-          labels_len = drawable.fLabels.length,
-          min = (labels_len > 0) ? 0 : this.v7EvalAttr('min', 0),
-          max = (labels_len > 0) ? labels_len : this.v7EvalAttr('max', 100);
+      const drawable = this.getObject(),
+            pp   = this.getPadPainter(),
+            pos  = pp.getCoordinate(drawable.fPos),
+            reverse = this.v7EvalAttr('reverse', false),
+            labels_len = drawable.fLabels.length,
+            min = (labels_len > 0) ? 0 : this.v7EvalAttr('min', 0),
+            max = (labels_len > 0) ? labels_len : this.v7EvalAttr('max', 100);
+      let len  = pp.getPadLength(drawable.fVertical, drawable.fLength);
 
       // in vertical direction axis drawn in negative direction
       if (drawable.fVertical) len -= pp.getPadHeight();
@@ -113659,12 +113553,12 @@ class RAxisPainter extends RObjectPainter {
 
       this.standalone = true;  // no need to clean axis container
 
-      let promise = this.drawAxis(this.draw_g, makeTranslate(pos.x, pos.y));
+      const promise = this.drawAxis(this.draw_g, makeTranslate(pos.x, pos.y));
 
       if (this.isBatchMode()) return promise;
 
       return promise.then(() => {
-         if (settings.ContextMenu)
+         if (settings.ContextMenu) {
             this.draw_g.on('contextmenu', evnt => {
                evnt.stopPropagation(); // disable main context menu
                evnt.preventDefault();  // disable browser context menu
@@ -113675,35 +113569,37 @@ class RAxisPainter extends RObjectPainter {
                  menu.show();
                });
             });
+         }
 
          addDragHandler(this, { x: pos.x, y: pos.y, width: this.vertical ? 10 : len, height: this.vertical ? len : 10,
                                 only_move: true, redraw: d => this.positionChanged(d) });
 
          this.draw_g.on('dblclick', () => this.zoomStandalone());
 
-         if (settings.ZoomWheel)
+         if (settings.ZoomWheel) {
             this.draw_g.on('wheel', evnt => {
                evnt.stopPropagation();
                evnt.preventDefault();
 
-               let pos = pointer(evnt, this.draw_g.node()),
+               const pos = pointer(evnt, this.draw_g.node()),
                    coord = this.vertical ? (1 - pos[1] / len) : pos[0] / len,
                    item = this.analyzeWheelEvent(evnt, coord);
 
                if (item.changed) this.zoomStandalone(item.min, item.max);
             });
+         }
       });
    }
 
    /** @summary Process interactive moving of the axis drawing */
    positionChanged(drag) {
-      let drawable = this.getObject(),
+      const drawable = this.getObject(),
           rect = this.getPadPainter().getPadRect(),
           xn = drag.x / rect.width,
           yn = 1 - drag.y / rect.height;
 
-      drawable.fPos.fHoriz.fArr = [ xn ];
-      drawable.fPos.fVert.fArr = [ yn ];
+      drawable.fPos.fHoriz.fArr = [xn];
+      drawable.fPos.fVert.fArr = [yn];
 
       this.submitCanvExec(`SetPos({${xn.toFixed(4)},${yn.toFixed(4)}})`);
    }
@@ -113711,7 +113607,8 @@ class RAxisPainter extends RObjectPainter {
    /** @summary Change axis attribute, submit changes to server and redraw axis when specified
      * @desc Arguments as redraw_mode, name1, value1, name2, value2, ... */
    changeAxisAttr(redraw_mode) {
-      let changes = {}, indx = 1;
+      const changes = {};
+      let indx = 1;
       while (indx < arguments.length - 1) {
          this.v7AttrChange(changes, arguments[indx], arguments[indx+1]);
          this.v7SetAttr(arguments[indx], arguments[indx+1]);
@@ -113729,7 +113626,7 @@ class RAxisPainter extends RObjectPainter {
 
    /** @summary Change axis log scale kind */
    changeAxisLog(arg) {
-      if ((this.kind == 'labels') || (this.kind == 'time')) return;
+      if ((this.kind === 'labels') || (this.kind === 'time')) return;
       if (arg === 'toggle') arg = this.log ? 0 : 10;
 
       arg = parseFloat(arg);
@@ -113738,16 +113635,15 @@ class RAxisPainter extends RObjectPainter {
 
    /** @summary Provide context menu for axis */
    fillAxisContextMenu(menu, kind) {
-
       if (kind) menu.add('Unzoom', () => this.getFramePainter().unzoom(kind));
 
       menu.add('sub:Log scale', () => this.changeAxisLog('toggle'));
       menu.addchk(!this.log && !this.symlog, 'linear', 0, arg => this.changeAxisLog(arg));
-      menu.addchk(this.log && !this.symlog && (this.logbase == 10), 'log10', () => this.changeAxisLog(10));
-      menu.addchk(this.log && !this.symlog && (this.logbase == 2), 'log2', () => this.changeAxisLog(2));
+      menu.addchk(this.log && !this.symlog && (this.logbase === 10), 'log10', () => this.changeAxisLog(10));
+      menu.addchk(this.log && !this.symlog && (this.logbase === 2), 'log2', () => this.changeAxisLog(2));
       menu.addchk(this.log && !this.symlog && Math.abs(this.logbase - Math.exp(1)) < 0.1, 'ln', () => this.changeAxisLog(Math.exp(1)));
       menu.addchk(!this.log && this.symlog, 'symlog', 0, () =>
-         menu.input('set symlog constant', this.symlog || 10, 'float').then(v => this.changeAxisAttr(2,'symlog', v)));
+         menu.input('set symlog constant', this.symlog || 10, 'float').then(v => this.changeAxisAttr(2, 'symlog', v)));
       menu.add('endsub:');
 
       menu.add('Divisions', () => menu.input('Set axis devisions', this.v7EvalAttr('ndiv', 508), 'int').then(val => this.changeAxisAttr(2, 'ndiv', val)));
@@ -113839,8 +113735,7 @@ class RFramePainter extends RObjectPainter {
    /** @summary Update graphical attributes */
    updateAttributes(force) {
       if ((this.fX1NDC === undefined) || (force && !this.modified_NDC)) {
-
-         let rect = this.getPadPainter().getPadRect();
+         const rect = this.getPadPainter().getPadRect();
          this.fX1NDC = this.v7EvalLength('margins_left', rect.width, gStyle.fPadLeftMargin) / rect.width;
          this.fY1NDC = this.v7EvalLength('margins_bottom', rect.height, gStyle.fPadBottomMargin) / rect.height;
          this.fX2NDC = 1 - this.v7EvalLength('margins_right', rect.width, gStyle.fPadRightMargin) / rect.width;
@@ -113861,18 +113756,18 @@ class RFramePainter extends RObjectPainter {
    recalculateRange(Proj) {
       this.projection = Proj || 0;
 
-      if ((this.projection == 2) && ((this.scale_ymin <= -90 || this.scale_ymax >=90))) {
+      if ((this.projection === 2) && ((this.scale_ymin <= -90 || this.scale_ymax >=90))) {
          console.warn(`Mercator Projection: latitude out of range ${this.scale_ymin} ${this.scale_ymax}`);
          this.projection = 0;
       }
 
-      let func = this.getProjectionFunc();
+      const func = this.getProjectionFunc();
       if (!func) return;
 
-      let pnts = [ func(this.scale_xmin, this.scale_ymin),
+      const pnts = [func(this.scale_xmin, this.scale_ymin),
                    func(this.scale_xmin, this.scale_ymax),
                    func(this.scale_xmax, this.scale_ymax),
-                   func(this.scale_xmax, this.scale_ymin) ];
+                   func(this.scale_xmax, this.scale_ymin)];
       if (this.scale_xmin < 0 && this.scale_xmax > 0) {
          pnts.push(func(0, this.scale_ymin));
          pnts.push(func(0, this.scale_ymax));
@@ -113901,17 +113796,17 @@ class RFramePainter extends RObjectPainter {
    /** @summary Draw axes grids
      * @desc Called immediately after axes drawing */
    drawGrids() {
-      let layer = this.getFrameSvg().selectChild('.axis_layer');
+      const layer = this.getFrameSvg().selectChild('.axis_layer');
 
       layer.selectAll('.xgrid').remove();
       layer.selectAll('.ygrid').remove();
 
-      let h = this.getFrameHeight(),
-          w = this.getFrameWidth(),
-          gridx = this.v7EvalAttr('gridX', false),
-          gridy = this.v7EvalAttr('gridY', false),
-          grid_style = getSvgLineStyle(gStyle.fGridStyle),
-          grid_color = (gStyle.fGridColor > 0) ? this.getColor(gStyle.fGridColor) : 'black';
+      const h = this.getFrameHeight(),
+            w = this.getFrameWidth(),
+            gridx = this.v7EvalAttr('gridX', false),
+            gridy = this.v7EvalAttr('gridY', false),
+            grid_style = getSvgLineStyle(gStyle.fGridStyle),
+            grid_color = (gStyle.fGridColor > 0) ? this.getColor(gStyle.fGridColor) : 'black';
 
       if (this.x_handle)
          this.x_handle.draw_grid = gridx;
@@ -113919,19 +113814,20 @@ class RFramePainter extends RObjectPainter {
       // add a grid on x axis, if the option is set
       if (this.x_handle?.draw_grid) {
          let grid = '';
-         for (let n = 0; n < this.x_handle.ticks.length; ++n)
-            if (this.swap_xy)
-               grid += `M0,${h+this.x_handle.ticks[n]}h${w}`;
-            else
-               grid += `M${this.x_handle.ticks[n]},0v${h}`;
+         for (let n = 0; n < this.x_handle.ticks.length; ++n) {
+            grid += this.swap_xy
+                  ? `M0,${h+this.x_handle.ticks[n]}h${w}`
+                  : `M${this.x_handle.ticks[n]},0v${h}`;
+         }
 
-         if (grid)
+         if (grid) {
             layer.append('svg:path')
                  .attr('class', 'xgrid')
                  .attr('d', grid)
-                 .style('stroke',grid_color)
+                 .style('stroke', grid_color)
                  .style('stroke-width', gStyle.fGridWidth)
                  .style('stroke-dasharray', grid_style);
+         }
       }
 
       if (this.y_handle)
@@ -113940,33 +113836,34 @@ class RFramePainter extends RObjectPainter {
       // add a grid on y axis, if the option is set
       if (this.y_handle?.draw_grid) {
          let grid = '';
-         for (let n = 0; n < this.y_handle.ticks.length; ++n)
-            if (this.swap_xy)
-               grid += `M${this.y_handle.ticks[n]},0v${h}`;
-            else
-               grid += `M0,${h+this.y_handle.ticks[n]}h${w}`;
+         for (let n = 0; n < this.y_handle.ticks.length; ++n) {
+            grid += this.swap_xy
+                     ? `M${this.y_handle.ticks[n]},0v${h}`
+                     : `M0,${h+this.y_handle.ticks[n]}h${w}`;
+         }
 
-         if (grid)
-          layer.append('svg:path')
+         if (grid) {
+            layer.append('svg:path')
                .attr('class', 'ygrid')
                .attr('d', grid)
                .style('stroke', grid_color)
                .style('stroke-width', gStyle.fGridWidth)
                .style('stroke-dasharray', grid_style);
+         }
       }
    }
 
    /** @summary Converts 'raw' axis value into text */
    axisAsText(axis, value) {
-      let handle = this[`${axis}_handle`];
+      const handle = this[`${axis}_handle`];
 
       return handle ? handle.axisAsText(value, settings[axis.toUpperCase() + 'ValuesFormat']) : value.toPrecision(4);
    }
 
    /** @summary Set axix range */
    _setAxisRange(prefix, vmin, vmax) {
-      let nmin = `${prefix}min`, nmax = `${prefix}max`;
-      if (this[nmin] != this[nmax]) return;
+      const nmin = `${prefix}min`, nmax = `${prefix}max`;
+      if (this[nmin] !== this[nmax]) return;
       let min = this.v7EvalAttr(`${prefix}_min`),
           max = this.v7EvalAttr(`${prefix}_max`);
 
@@ -113978,9 +113875,9 @@ class RFramePainter extends RObjectPainter {
          this[nmax] = vmax;
       }
 
-      let nzmin = `zoom_${prefix}min`, nzmax = `zoom_${prefix}max`;
+      const nzmin = `zoom_${prefix}min`, nzmax = `zoom_${prefix}max`;
 
-      if ((this[nzmin] == this[nzmax]) && !this.zoomChangedInteractive(prefix)) {
+      if ((this[nzmin] === this[nzmax]) && !this.zoomChangedInteractive(prefix)) {
          min = this.v7EvalAttr(`${prefix}_zoomMin`);
          max = this.v7EvalAttr(`${prefix}_zoomMax`);
 
@@ -114032,7 +113929,7 @@ class RFramePainter extends RObjectPainter {
       this.logx = this.v7EvalAttr('x_log', 0);
       this.logy = this.v7EvalAttr('y_log', 0);
 
-      let w = this.getFrameWidth(), h = this.getFrameHeight();
+      const w = this.getFrameWidth(), h = this.getFrameHeight();
 
       this.scales_ndim = opts.ndim;
 
@@ -114043,7 +113940,7 @@ class RFramePainter extends RObjectPainter {
       this.scale_ymax = this.ymax;
 
       if (opts.extra_y_space) {
-         let log_scale = this.swap_xy ? this.logx : this.logy;
+         const log_scale = this.swap_xy ? this.logx : this.logy;
          if (log_scale && (this.scale_ymax > 0))
             this.scale_ymax = Math.exp(Math.log(this.scale_ymax)*1.1);
          else
@@ -114054,30 +113951,30 @@ class RFramePainter extends RObjectPainter {
          // take zooming out of pad or axis attributes - skip!
       // }
 
-      if ((opts.zoom_ymin != opts.zoom_ymax) && ((this.zoom_ymin == this.zoom_ymax) || !this.zoomChangedInteractive('y'))) {
+      if ((opts.zoom_ymin !== opts.zoom_ymax) && ((this.zoom_ymin === this.zoom_ymax) || !this.zoomChangedInteractive('y'))) {
          this.zoom_ymin = opts.zoom_ymin;
          this.zoom_ymax = opts.zoom_ymax;
       }
 
-      if (this.zoom_xmin != this.zoom_xmax) {
+      if (this.zoom_xmin !== this.zoom_xmax) {
          this.scale_xmin = this.zoom_xmin;
          this.scale_xmax = this.zoom_xmax;
       }
 
-      if (this.zoom_ymin != this.zoom_ymax) {
+      if (this.zoom_ymin !== this.zoom_ymax) {
          this.scale_ymin = this.zoom_ymin;
          this.scale_ymax = this.zoom_ymax;
       }
 
       let xaxis = this.xaxis, yaxis = this.yaxis;
-      if (xaxis?._typename != clTAxis) xaxis = create$1(clTAxis);
-      if (yaxis?._typename != clTAxis) yaxis = create$1(clTAxis);
+      if (xaxis?._typename !== clTAxis) xaxis = create$1(clTAxis);
+      if (yaxis?._typename !== clTAxis) yaxis = create$1(clTAxis);
 
       this.x_handle = new TAxisPainter(this.getDom(), xaxis, true);
       this.x_handle.setPadName(this.getPadName());
       this.x_handle.optionUnlab = this.v7EvalAttr('x_labels_hide', false);
 
-      this.x_handle.configureAxis('xaxis', this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, this.swap_xy, this.swap_xy ? [0,h] : [0,w],
+      this.x_handle.configureAxis('xaxis', this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, this.swap_xy, this.swap_xy ? [0, h] : [0, w],
                                       { reverse: this.reverse_x,
                                         log: this.swap_xy ? this.logy : this.logx,
                                         symlog: this.swap_xy ? opts.symlog_y : opts.symlog_x,
@@ -114090,7 +113987,7 @@ class RFramePainter extends RObjectPainter {
       this.y_handle.setPadName(this.getPadName());
       this.y_handle.optionUnlab = this.v7EvalAttr('y_labels_hide', false);
 
-      this.y_handle.configureAxis('yaxis', this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, !this.swap_xy, this.swap_xy ? [0,w] : [0,h],
+      this.y_handle.configureAxis('yaxis', this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, !this.swap_xy, this.swap_xy ? [0, w] : [0, h],
                                       { reverse: this.reverse_y,
                                         log: this.swap_xy ? this.logx : this.logy,
                                         symlog: this.swap_xy ? opts.symlog_x : opts.symlog_y,
@@ -114110,18 +114007,17 @@ class RFramePainter extends RObjectPainter {
    /** @summary Draw configured axes on the frame
      * @desc axes can be drawn only for main histogram  */
    async drawAxes() {
-
-      if (this.axes_drawn || (this.xmin == this.xmax) || (this.ymin == this.ymax))
+      if (this.axes_drawn || (this.xmin === this.xmax) || (this.ymin === this.ymax))
          return this.axes_drawn;
 
-      let ticksx = this.v7EvalAttr('ticksX', 1),
-          ticksy = this.v7EvalAttr('ticksY', 1),
-          sidex = 1, sidey = 1;
+      const ticksx = this.v7EvalAttr('ticksX', 1),
+            ticksy = this.v7EvalAttr('ticksY', 1);
+      let sidex = 1, sidey = 1;
 
       if (this.v7EvalAttr('swapX', false)) sidex = -1;
       if (this.v7EvalAttr('swapY', false)) sidey = -1;
 
-      let w = this.getFrameWidth(), h = this.getFrameHeight();
+      const w = this.getFrameWidth(), h = this.getFrameHeight();
 
       if (!this.v6axes) {
          // this is partially same as v6 createXY method
@@ -114130,7 +114026,7 @@ class RFramePainter extends RObjectPainter {
 
          this.swap_xy = false;
 
-         if (this.zoom_xmin != this.zoom_xmax) {
+         if (this.zoom_xmin !== this.zoom_xmax) {
             this.scale_xmin = this.zoom_xmin;
             this.scale_xmax = this.zoom_xmax;
          } else {
@@ -114138,7 +114034,7 @@ class RFramePainter extends RObjectPainter {
             this.scale_xmax = this.xmax;
          }
 
-         if (this.zoom_ymin != this.zoom_ymax) {
+         if (this.zoom_ymin !== this.zoom_ymax) {
             this.scale_ymin = this.zoom_ymin;
             this.scale_ymax = this.zoom_ymax;
          } else {
@@ -114164,50 +114060,47 @@ class RFramePainter extends RObjectPainter {
          this.z_handle.setPadName(this.getPadName());
          this.z_handle.snapid = this.snapid;
 
-         this.x_handle.configureAxis('xaxis', this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, false, [0,w], w, { reverse: false });
+         this.x_handle.configureAxis('xaxis', this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, false, [0, w], w, { reverse: false });
          this.x_handle.assignFrameMembers(this, 'x');
 
-         this.y_handle.configureAxis('yaxis', this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, true, [h,0], -h, { reverse: false });
+         this.y_handle.configureAxis('yaxis', this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, true, [h, 0], -h, { reverse: false });
          this.y_handle.assignFrameMembers(this, 'y');
 
          // only get basic properties like log scale
          this.z_handle.configureZAxis('zaxis', this);
       }
 
-      let layer = this.getFrameSvg().selectChild('.axis_layer');
+      const layer = this.getFrameSvg().selectChild('.axis_layer');
 
       this.x_handle.has_obstacle = false;
 
-      let draw_horiz = this.swap_xy ? this.y_handle : this.x_handle,
-          draw_vertical = this.swap_xy ? this.x_handle : this.y_handle,
-          pr;
+      const draw_horiz = this.swap_xy ? this.y_handle : this.x_handle,
+            draw_vertical = this.swap_xy ? this.x_handle : this.y_handle;
+      let pr;
 
-      if (this.getPadPainter()?._fast_drawing) {
+      if (this.getPadPainter()?._fast_drawing)
          pr = Promise.resolve(true); // do nothing
-      } else if (this.v6axes) {
-
+       else if (this.v6axes) {
          // in v7 ticksx/y values shifted by 1 relative to v6
-         // In v7 ticksx == 0 means no ticks, ticksx == 1 equivalent to == 0 in v6
+         // In v7 ticksx === 0 means no ticks, ticksx === 1 equivalent to === 0 in v6
 
-         let can_adjust_frame = false, disable_x_draw = false, disable_y_draw = false;
+         const can_adjust_frame = false, disable_x_draw = false, disable_y_draw = false;
 
          draw_horiz.disable_ticks = (ticksx <= 0);
          draw_vertical.disable_ticks = (ticksy <= 0);
 
-         let pr1 = draw_horiz.drawAxis(layer, w, h,
+         const pr1 = draw_horiz.drawAxis(layer, w, h,
                                    draw_horiz.invert_side ? null : `translate(0,${h})`,
                                    (ticksx > 1) ? -h : 0, disable_x_draw,
-                                   undefined, false);
+                                   undefined, false),
 
-         let pr2 = draw_vertical.drawAxis(layer, w, h,
+          pr2 = draw_vertical.drawAxis(layer, w, h,
                                    draw_vertical.invert_side ? `translate(${w})` : null,
                                    (ticksy > 1) ? w : 0, disable_y_draw,
                                    draw_vertical.invert_side ? 0 : this._frame_x, can_adjust_frame);
 
-         pr = Promise.all([pr1,pr2]).then(() => this.drawGrids());
-
+         pr = Promise.all([pr1, pr2]).then(() => this.drawGrids());
       } else {
-
          let arr = [];
 
          if (ticksx > 0)
@@ -114219,10 +114112,10 @@ class RFramePainter extends RObjectPainter {
          pr = Promise.all(arr).then(() => {
             arr = [];
             if (ticksx > 1)
-               arr.push(draw_horiz.drawAxisOtherPlace(layer, makeTranslate(0, sidex < 0 ? h : 0), -sidex, ticksx == 2));
+               arr.push(draw_horiz.drawAxisOtherPlace(layer, makeTranslate(0, sidex < 0 ? h : 0), -sidex, ticksx === 2));
 
             if (ticksy > 1)
-               arr.push(draw_vertical.drawAxisOtherPlace(layer, makeTranslate(sidey < 0 ? 0 : w, h), -sidey, ticksy == 2));
+               arr.push(draw_vertical.drawAxisOtherPlace(layer, makeTranslate(sidey < 0 ? 0 : w, h), -sidey, ticksy === 2));
             return Promise.all(arr);
          }).then(() => this.drawGrids());
       }
@@ -114235,12 +114128,12 @@ class RFramePainter extends RObjectPainter {
 
    /** @summary Draw secondary configuread axes */
    drawAxes2(second_x, second_y) {
-      let w = this.getFrameWidth(), h = this.getFrameHeight(),
-          layer = this.getFrameSvg().selectChild('.axis_layer'),
-          pr1, pr2;
+      const w = this.getFrameWidth(), h = this.getFrameHeight(),
+            layer = this.getFrameSvg().selectChild('.axis_layer');
+      let pr1, pr2;
 
       if (second_x) {
-         if (this.zoom_x2min != this.zoom_x2max) {
+         if (this.zoom_x2min !== this.zoom_x2max) {
             this.scale_x2min = this.zoom_x2min;
             this.scale_x2max = this.zoom_x2max;
          } else {
@@ -114251,14 +114144,14 @@ class RFramePainter extends RObjectPainter {
          this.x2_handle.setPadName(this.getPadName());
          this.x2_handle.snapid = this.snapid;
 
-         this.x2_handle.configureAxis('x2axis', this.x2min, this.x2max, this.scale_x2min, this.scale_x2max, false, [0,w], w, { reverse: false });
+         this.x2_handle.configureAxis('x2axis', this.x2min, this.x2max, this.scale_x2min, this.scale_x2max, false, [0, w], w, { reverse: false });
          this.x2_handle.assignFrameMembers(this, 'x2');
 
          pr1 = this.x2_handle.drawAxis(layer, null, -1);
       }
 
       if (second_y) {
-         if (this.zoom_y2min != this.zoom_y2max) {
+         if (this.zoom_y2min !== this.zoom_y2max) {
             this.scale_y2min = this.zoom_y2min;
             this.scale_y2max = this.zoom_y2max;
          } else {
@@ -114270,31 +114163,31 @@ class RFramePainter extends RObjectPainter {
          this.y2_handle.setPadName(this.getPadName());
          this.y2_handle.snapid = this.snapid;
 
-         this.y2_handle.configureAxis('y2axis', this.y2min, this.y2max, this.scale_y2min, this.scale_y2max, true, [h,0], -h, { reverse: false });
+         this.y2_handle.configureAxis('y2axis', this.y2min, this.y2max, this.scale_y2min, this.scale_y2max, true, [h, 0], -h, { reverse: false });
          this.y2_handle.assignFrameMembers(this, 'y2');
 
          pr2 = this.y2_handle.drawAxis(layer, makeTranslate(w, h), -1);
       }
 
-      return Promise.all([pr1,pr2]);
+      return Promise.all([pr1, pr2]);
    }
 
    /** @summary Return functions to create x/y points based on coordinates
      * @desc In default case returns frame painter itself
      * @private */
    getGrFuncs(second_x, second_y) {
-      let use_x2 = second_x && this.grx2,
+      const use_x2 = second_x && this.grx2,
           use_y2 = second_y && this.gry2;
       if (!use_x2 && !use_y2) return this;
 
       return {
-         use_x2: use_x2,
+         use_x2,
          grx: use_x2 ? this.grx2 : this.grx,
          x_handle: use_x2 ? this.x2_handle : this.x_handle,
          logx: use_x2 ? this.x2_handle.log : this.x_handle.log,
          scale_xmin: use_x2 ? this.scale_x2min : this.scale_xmin,
          scale_xmax: use_x2 ? this.scale_x2max : this.scale_xmax,
-         use_y2: use_y2,
+         use_y2,
          gry: use_y2 ? this.gry2 : this.gry,
          y_handle: use_y2 ? this.y2_handle : this.y_handle,
          logy: use_y2 ? this.y2_handle.log : this.y_handle.log,
@@ -114303,13 +114196,13 @@ class RFramePainter extends RObjectPainter {
          swap_xy: this.swap_xy,
          fp: this,
          revertAxis(name, v) {
-            if ((name == 'x') && this.use_x2) name = 'x2';
-            if ((name == 'y') && this.use_y2) name = 'y2';
+            if ((name === 'x') && this.use_x2) name = 'x2';
+            if ((name === 'y') && this.use_y2) name = 'y2';
             return this.fp.revertAxis(name, v);
          },
          axisAsText(name, v) {
-            if ((name == 'x') && this.use_x2) name = 'x2';
-            if ((name == 'y') && this.use_y2) name = 'y2';
+            if ((name === 'x') && this.use_x2) name = 'x2';
+            if ((name === 'y') && this.use_y2) name = 'y2';
             return this.fp.axisAsText(name, v);
          }
       };
@@ -114319,8 +114212,7 @@ class RFramePainter extends RObjectPainter {
      * @desc Used to update attributes on the server
      * @private */
    sizeChanged() {
-
-      let changes = {};
+      const changes = {};
       this.v7AttrChange(changes, 'margins_left', this.fX1NDC);
       this.v7AttrChange(changes, 'margins_bottom', this.fY1NDC);
       this.v7AttrChange(changes, 'margins_right', 1 - this.fX2NDC);
@@ -114334,7 +114226,7 @@ class RFramePainter extends RObjectPainter {
      * @private */
    cleanXY() {
       // remove all axes drawings
-      let clean = (name,grname) => {
+      const clean = (name, grname) => {
          this[name]?.cleanup();
          delete this[name];
          delete this[grname];
@@ -114367,7 +114259,7 @@ class RFramePainter extends RObjectPainter {
 
       this.cleanupAxes();
 
-      let clean = (name) => {
+      const clean = (name) => {
          this[name+'min'] = this[name+'max'] = 0;
          this[`zoom_${name}min`] = this[`zoom_${name}max`] = 0;
          this[`scale_${name}min`] = this[`scale_${name}max`] = 0;
@@ -114386,7 +114278,6 @@ class RFramePainter extends RObjectPainter {
    /** @summary Fully cleanup frame
      * @private */
    cleanup() {
-
       this.cleanFrameDrawings();
 
       if (this.draw_g) {
@@ -114416,7 +114307,7 @@ class RFramePainter extends RObjectPainter {
       delete this._click_handler;
       delete this._dblclick_handler;
 
-      let pp = this.getPadPainter();
+      const pp = this.getPadPainter();
       if (pp?.frame_painter_ref === this)
          delete pp.frame_painter_ref;
 
@@ -114426,17 +114317,16 @@ class RFramePainter extends RObjectPainter {
    /** @summary Redraw frame
      * @private */
    redraw() {
-
-      let pp = this.getPadPainter();
+      const pp = this.getPadPainter();
       if (pp) pp.frame_painter_ref = this;
 
       // first update all attributes from objects
       this.updateAttributes();
 
-      let rect = pp?.getPadRect() ?? { width: 10, height: 10 },
-          lm = Math.round(rect.width * this.fX1NDC),
-          w = Math.round(rect.width * (this.fX2NDC - this.fX1NDC)),
-          tm = Math.round(rect.height * (1 - this.fY2NDC)),
+      const rect = pp?.getPadRect() ?? { width: 10, height: 10 },
+            lm = Math.round(rect.width * this.fX1NDC),
+            tm = Math.round(rect.height * (1 - this.fY2NDC));
+      let w = Math.round(rect.width * (this.fX2NDC - this.fX1NDC)),
           h = Math.round(rect.height * (this.fY2NDC - this.fY1NDC)),
           rotate = false, fixpos = false, trans;
 
@@ -114448,9 +114338,9 @@ class RFramePainter extends RObjectPainter {
       if (rotate) {
          trans = `rotate(-90,${lm},${tm}) translate(${lm-h},${tm})`;
          [w, h] = [h, w];
-      } else {
-         trans = makeTranslate(lm,tm);
-      }
+      } else
+         trans = makeTranslate(lm, tm);
+
 
       // update values here to let access even when frame is not really updated
       this._frame_x = lm;
@@ -114468,7 +114358,6 @@ class RFramePainter extends RObjectPainter {
       let top_rect, main_svg;
 
       if (this.draw_g.empty()) {
-
          this.draw_g = this.getLayerSvg('primitives_layer').append('svg:g').attr('class', 'root_frame');
 
          if (!this.isBatchMode())
@@ -114477,13 +114366,13 @@ class RFramePainter extends RObjectPainter {
          top_rect = this.draw_g.append('svg:rect');
 
          main_svg = this.draw_g.append('svg:svg')
-                           .attr('class','main_layer')
+                           .attr('class', 'main_layer')
                            .attr('x', 0)
                            .attr('y', 0)
                            .attr('overflow', 'hidden');
 
-         this.draw_g.append('svg:g').attr('class','axis_layer');
-         this.draw_g.append('svg:g').attr('class','upper_layer');
+         this.draw_g.append('svg:g').attr('class', 'axis_layer');
+         this.draw_g.append('svg:g').attr('class', 'upper_layer');
       } else {
          top_rect = this.draw_g.selectChild('rect');
          main_svg = this.draw_g.selectChild('.main_layer');
@@ -114567,10 +114456,9 @@ class RFramePainter extends RObjectPainter {
    }
 
    /** @summary function can be used for zooming into specified range
-     * @desc if both limits for each axis 0 (like xmin == xmax == 0), axis will be unzoomed
+     * @desc if both limits for each axis 0 (like xmin === xmax === 0), axis will be unzoomed
      * @return {Promise} with boolean flag if zoom operation was performed */
    async zoom(xmin, xmax, ymin, ymax, zmin, zmax) {
-
       // disable zooming when axis conversion is enabled
       if (this.projection) return false;
 
@@ -114586,18 +114474,18 @@ class RFramePainter extends RObjectPainter {
          if (xmin <= this.xmin) { xmin = this.xmin; cnt++; }
          if (xmax >= this.xmax) { xmax = this.xmax; cnt++; }
          if (cnt === 2) { zoom_x = false; unzoom_x = true; }
-      } else {
+      } else
          unzoom_x = (xmin === xmax) && (xmin === 0);
-      }
+
 
       if (zoom_y) {
          let cnt = 0;
          if (ymin <= this.ymin) { ymin = this.ymin; cnt++; }
          if (ymax >= this.ymax) { ymax = this.ymax; cnt++; }
          if (cnt === 2) { zoom_y = false; unzoom_y = true; }
-      } else {
+      } else
          unzoom_y = (ymin === ymax) && (ymin === 0);
-      }
+
 
       if (zoom_z) {
          let cnt = 0;
@@ -114605,19 +114493,18 @@ class RFramePainter extends RObjectPainter {
          if (zmin <= this.zmin) { zmin = this.zmin; cnt++; }
          if (zmax >= this.zmax) { zmax = this.zmax; cnt++; }
          if (cnt === 2) { zoom_z = false; unzoom_z = true; }
-      } else {
+      } else
          unzoom_z = (zmin === zmax) && (zmin === 0);
-      }
 
-      let changed = false,
-          r_x = '', r_y = '', r_z = '', is_any_check = false,
-          req = {
+
+      let changed = false, r_x = '', r_y = '', r_z = '', is_any_check = false;
+      const req = {
             _typename: `${nsREX}RFrame::RUserRanges`,
             values: [0, 0, 0, 0, 0, 0],
             flags: [false, false, false, false, false, false]
-          };
+      },
 
-      const checkZooming = (painter, force) => {
+      checkZooming = (painter, force) => {
          if (!force && !isFunc(painter.canZoomInside)) return;
 
          is_any_check = true;
@@ -114686,8 +114573,7 @@ class RFramePainter extends RObjectPainter {
    /** @summary Provide zooming of single axis
      * @desc One can specify names like x/y/z but also second axis x2 or y2 */
    async zoomSingle(name, vmin, vmax) {
-
-      let names = ['x','y','z','x2','y2'], indx = names.indexOf(name);
+      const names = ['x', 'y', 'z', 'x2', 'y2'], indx = names.indexOf(name);
 
       // disable zooming when axis conversion is enabled
       if (this.projection || !this[name+'_handle'] || (indx < 0))
@@ -114700,18 +114586,18 @@ class RFramePainter extends RObjectPainter {
          if (vmin <= this[name+'min']) { vmin = this[name+'min']; cnt++; }
          if (vmax >= this[name+'max']) { vmax = this[name+'max']; cnt++; }
          if (cnt === 2) { zoom_v = false; unzoom_v = true; }
-      } else {
+      } else
          unzoom_v = (vmin === vmax) && (vmin === 0);
-      }
 
-      let changed = false, is_any_check = false,
-          req = {
+
+      let changed = false, is_any_check = false;
+      const req = {
              _typename: `${nsREX}RFrame::RUserRanges`,
              values: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
              flags: [false, false, false, false, false, false, false, false, false, false]
-          };
+       },
 
-      let checkZooming = (painter, force) => {
+       checkZooming = (painter, force) => {
          if (!force && !isFunc(painter?.canZoomInside)) return;
 
          is_any_check = true;
@@ -114756,22 +114642,22 @@ class RFramePainter extends RObjectPainter {
    /** @summary Unzoom specified axes
      * @return {Promise} with boolean flag if zoom is changed */
    async unzoom(dox, doy, doz) {
-      if (dox == 'all')
+      if (dox === 'all')
          return this.unzoom('x2').then(() => this.unzoom('y2')).then(() => this.unzoom('xyz'));
 
-      if ((dox == 'x2') || (dox == 'y2'))
+      if ((dox === 'x2') || (dox === 'y2')) {
          return this.zoomSingle(dox, 0, 0).then(changed => {
             if (changed) this.zoomChangedInteractive(dox, 'unzoom');
             return changed;
          });
+      }
 
-      if (typeof dox === 'undefined') { dox = doy = doz = true; } else
+      if (typeof dox === 'undefined')  dox = doy = doz = true;  else
       if (isStr(dox)) { doz = dox.indexOf('z') >= 0; doy = dox.indexOf('y') >= 0; dox = dox.indexOf('x') >= 0; }
 
       return this.zoom(dox ? 0 : undefined, dox ? 0 : undefined,
                        doy ? 0 : undefined, doy ? 0 : undefined,
                        doz ? 0 : undefined, doz ? 0 : undefined).then(changed => {
-
          if (changed && dox) this.zoomChangedInteractive('x', 'unzoom');
          if (changed && doy) this.zoomChangedInteractive('y', 'unzoom');
          if (changed && doz) this.zoomChangedInteractive('z', 'unzoom');
@@ -114783,16 +114669,16 @@ class RFramePainter extends RObjectPainter {
    /** @summary Mark/check if zoom for specific axis was changed interactively
      * @private */
    zoomChangedInteractive(axis, value) {
-      if (axis == 'reset') {
+      if (axis === 'reset') {
          this.zoom_changed_x = this.zoom_changed_y = this.zoom_changed_z = undefined;
          return;
       }
-      if (!axis || axis == 'any')
+      if (!axis || axis === 'any')
          return this.zoom_changed_x || this.zoom_changed_y  || this.zoom_changed_z;
 
       if ((axis !== 'x') && (axis !== 'y') && (axis !== 'z')) return;
 
-      let fld = 'zoom_changed_' + axis;
+      const fld = 'zoom_changed_' + axis;
       if (value === undefined) return this[fld];
 
       if (value === 'unzoom') {
@@ -114806,11 +114692,11 @@ class RFramePainter extends RObjectPainter {
 
    /** @summary Fill menu for frame when server is not there */
    fillObjectOfflineMenu(menu, kind) {
-      if ((kind != 'x') && (kind != 'y')) return;
+      if ((kind !== 'x') && (kind !== 'y')) return;
 
       menu.add('Unzoom', () => this.unzoom(kind));
 
-      //if (this[kind+'_kind'] == 'normal')
+      // if (this[kind+'_kind'] === 'normal')
       //   menu.addchk(this['log'+kind], 'SetLog'+kind, this.toggleAxisLog.bind(this, kind));
 
       // here should be all axes attributes in offline
@@ -114818,7 +114704,7 @@ class RFramePainter extends RObjectPainter {
 
    /** @summary Set grid drawing for specified axis */
    changeFrameAttr(attr, value) {
-      let changes = {};
+      const changes = {};
       this.v7AttrChange(changes, attr, value);
       this.v7SetAttr(attr, value);
       this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
@@ -114901,10 +114787,11 @@ class RFramePainter extends RObjectPainter {
      * @desc method called normally when mouse enter main object element
      * @private */
    showAxisStatus(axis_name, evnt) {
-      let hint_name = axis_name, hint_title = 'axis',
-          m = pointer(evnt, this.getFrameSvg().node()), id = (axis_name === 'x') ? 0 : 1;
+      const hint_name = axis_name, hint_title = 'axis',
+            m = pointer(evnt, this.getFrameSvg().node());
+      let id = (axis_name === 'x') ? 0 : 1;
 
-      if (this.swap_xy) id = 1-id;
+      if (this.swap_xy) id = 1 - id;
 
       const axis_value = this.revertAxis(axis_name, m[id]);
 
@@ -114922,7 +114809,6 @@ class RFramePainter extends RObjectPainter {
    /** @summary Add interactive functionality to the frame
     * @private */
    addInteractivity(for_second_axes) {
-
       if (this.isBatchMode() || (!settings.Zooming && !settings.ContextMenu))
          return true;
       FrameInteractive.assign(this);
@@ -114937,7 +114823,7 @@ class RFramePainter extends RObjectPainter {
 
    /** @summary Toggle log scale on the specified axes */
    toggleAxisLog(axis) {
-      let handle = this[axis+'_handle'];
+      const handle = this[axis+'_handle'];
       if (handle) handle.changeAxisLog('toggle');
    }
 
@@ -114967,7 +114853,7 @@ class RPadPainter extends RObjectPainter {
       this.has_canvas = true;
       this.forEachPainter = this.forEachPainterInPad;
 
-      let d = this.selectDom();
+      const d = this.selectDom();
       if (!d.empty() && d.property('_batch_mode'))
          this.batch_mode = true;
    }
@@ -115018,7 +114904,7 @@ class RPadPainter extends RObjectPainter {
 
       this.painters.forEach(p => p.cleanup());
 
-      let svg_p = this.svg_this_pad();
+      const svg_p = this.svg_this_pad();
       if (!svg_p.empty()) {
          svg_p.property('pad_painter', null);
          if (!this.iscan) svg_p.remove();
@@ -115068,12 +114954,12 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary Returns frame coordiantes - also when frame is not drawn */
    getFrameRect() {
-      let fp = this.getFramePainter();
+      const fp = this.getFramePainter();
       if (fp) return fp.getFrameRect();
 
-      let w = this.getPadWidth(),
-          h = this.getPadHeight(),
-          rect = {};
+      const w = this.getPadWidth(),
+            h = this.getPadHeight(),
+            rect = {};
 
       rect.szx = Math.round(0.5*w);
       rect.szy = Math.round(0.5*h);
@@ -115083,7 +114969,7 @@ class RPadPainter extends RObjectPainter {
       rect.y = Math.round(h/2 - rect.szy);
       rect.hint_delta_x = rect.szx;
       rect.hint_delta_y = rect.szy;
-      rect.transform = makeTranslate(rect.x,rect.y) || '';
+      rect.transform = makeTranslate(rect.x, rect.y) || '';
       return rect;
    }
 
@@ -115097,11 +114983,12 @@ class RPadPainter extends RObjectPainter {
    cleanPrimitives(selector) {
       if (!isFunc(selector)) return;
 
-      for (let k = this.painters.length-1; k >= 0; --k)
+      for (let k = this.painters.length-1; k >= 0; --k) {
          if (selector(this.painters[k])) {
             this.painters[k].cleanup();
             this.painters.splice(k, 1);
          }
+      }
    }
 
    /** @summary try to find object by name in list of pad primitives
@@ -115132,7 +115019,7 @@ class RPadPainter extends RObjectPainter {
    /** @summary Returns palette associated with pad.
      * @desc Either from existing palette painter or just default palette */
    getHistPalette() {
-      let pp = this.findPainterFor(undefined, undefined, `${nsREX}RPaletteDrawable`);
+      const pp = this.findPainterFor(undefined, undefined, `${nsREX}RPaletteDrawable`);
 
       if (pp) return pp.getHistPalette();
 
@@ -115167,12 +115054,12 @@ class RPadPainter extends RObjectPainter {
      * @private */
    forEachPainterInPad(userfunc, kind) {
       if (!kind) kind = 'all';
-      if (kind != 'objects') userfunc(this);
+      if (kind !== 'objects') userfunc(this);
       for (let k = 0; k < this.painters.length; ++k) {
-         let sub = this.painters[k];
+         const sub = this.painters[k];
          if (isFunc(sub.forEachPainterInPad)) {
-            if (kind!='objects') sub.forEachPainterInPad(userfunc, kind);
-         } else if (kind != 'pads') userfunc(sub);
+            if (kind !== 'objects') sub.forEachPainterInPad(userfunc, kind);
+         } else if (kind !== 'pads') userfunc(sub);
       }
    }
 
@@ -115187,7 +115074,7 @@ class RPadPainter extends RObjectPainter {
      * @desc in pad painter, while pad may be drawn without canvas
      * @private */
    producePadEvent(what, padpainter, painter, position, place) {
-      if ((what == 'select') && isFunc(this.selectActivePad))
+      if ((what === 'select') && isFunc(this.selectActivePad))
          this.selectActivePad(padpainter, painter, position);
 
       if (this.pad_events_receiver)
@@ -115196,8 +115083,7 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary method redirect call to pad events receiver */
    selectObjectPainter(painter, pos, place) {
-
-      let istoppad = (this.iscan || !this.has_canvas),
+      const istoppad = (this.iscan || !this.has_canvas),
           canp = istoppad ? this : this.getCanvPainter();
 
       if (painter === undefined) painter = this;
@@ -115213,7 +115099,7 @@ class RPadPainter extends RObjectPainter {
    /** @summary Set fast drawing property depending on the size
      * @private */
    setFastDrawing(w, h) {
-      let was_fast = this._fast_drawing;
+      const was_fast = this._fast_drawing;
       this._fast_drawing = settings.SmallPad && ((w < settings.SmallPad.width) || (h  < settings.SmallPad.height));
       if (was_fast !== this._fast_drawing)
          this.showPadButtons();
@@ -115221,11 +115107,10 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary Create SVG element for the canvas */
    createCanvasSvg(check_resize, new_size) {
-
-      let factor = null, svg = null, lmt = 5, rect = null, btns, frect;
+      const lmt = 5;
+      let factor = null, svg = null, rect = null, btns, frect;
 
       if (check_resize > 0) {
-
          if (this._fixed_size)
             return check_resize > 1; // flag used to force re-drawing of all subpads
 
@@ -115237,19 +115122,17 @@ class RPadPainter extends RObjectPainter {
 
          rect = this.testMainResize(check_resize, null, factor);
 
-         if (!rect.changed && (check_resize == 1))
+         if (!rect.changed && (check_resize === 1))
             return false;
 
          if (!this.isBatchMode())
             btns = this.getLayerSvg('btns_layer', this.this_pad_name);
 
          frect = svg.selectChild('.canvas_fillrect');
-
       } else {
+         const render_to = this.selectDom();
 
-         let render_to = this.selectDom();
-
-         if (render_to.style('position') == 'static')
+         if (render_to.style('position') === 'static')
             render_to.style('position', 'relative');
 
          svg = render_to.append('svg')
@@ -115258,26 +115141,28 @@ class RPadPainter extends RObjectPainter {
              .property('current_pad', '') // this is custom property
              .property('redraw_by_resize', false); // could be enabled to force redraw by each resize
 
-         this.setTopPainter(); //assign canvas as top painter of that element
+         this.setTopPainter(); // assign canvas as top painter of that element
 
          if (!this.isBatchMode() && !this.online_canvas)
             svg.append('svg:title').text('ROOT canvas');
 
-         frect = svg.append('svg:path').attr('class','canvas_fillrect');
-         if (!this.isBatchMode())
+         frect = svg.append('svg:path').attr('class', 'canvas_fillrect');
+         if (!this.isBatchMode()) {
             frect.style('pointer-events', 'visibleFill')
                  .on('dblclick', evnt => this.enlargePad(evnt, true))
                  .on('click', () => this.selectObjectPainter(this, null))
                  .on('mouseenter', () => this.showObjectStatus())
                  .on('contextmenu', settings.ContextMenu ? evnt => this.padContextMenu(evnt) : null);
+         }
 
          svg.append('svg:g').attr('class', 'primitives_layer');
          svg.append('svg:g').attr('class', 'info_layer');
-         if (!this.isBatchMode())
+         if (!this.isBatchMode()) {
             btns = svg.append('svg:g')
-                      .attr('class','btns_layer')
-                      .property('leftside', settings.ToolBarSide == 'left')
+                      .attr('class', 'btns_layer')
+                      .property('leftside', settings.ToolBarSide === 'left')
                       .property('vertical', settings.ToolBarVert);
+         }
 
          factor = 0.66;
          if (this.pad && this.pad.fWinSize[0] && this.pad.fWinSize[1]) {
@@ -115286,13 +115171,12 @@ class RPadPainter extends RObjectPainter {
          }
 
          if (this._fixed_size) {
-            render_to.style('overflow','auto');
+            render_to.style('overflow', 'auto');
             rect = { width: this.pad.fWinSize[0], height: this.pad.fWinSize[1] };
             if (!rect.width || !rect.height)
                rect = getElementRect(render_to);
-         } else {
+         } else
             rect = this.testMainResize(2, new_size, factor);
-         }
       }
 
       this.createAttFill({ pattern: 1001, color: 0 });
@@ -115301,9 +115185,9 @@ class RPadPainter extends RObjectPainter {
          svg.style('display', 'none');
          console.warn(`Hide canvas while geometry too small w=${rect.width} h=${rect.height}`);
          rect.width = 200; rect.height = 100; // just to complete drawing
-      } else {
+      } else
          svg.style('display', null);
-      }
+
 
       if (this._fixed_size) {
          svg.attr('x', 0)
@@ -115356,32 +115240,31 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary Enlarge pad draw element when possible */
    enlargePad(evnt, is_dblclick) {
-
       if (evnt) {
          evnt.preventDefault();
          evnt.stopPropagation();
       }
 
       // ignore double click on canvas itself for enlarge
-      if (is_dblclick && this._websocket && (this.enlargeMain('state') == 'off'))
+      if (is_dblclick && this._websocket && (this.enlargeMain('state') === 'off'))
          return;
 
-      let svg_can = this.getCanvSvg(),
-          pad_enlarged = svg_can.property('pad_enlarged');
+      const svg_can = this.getCanvSvg(),
+            pad_enlarged = svg_can.property('pad_enlarged');
 
       if (this.iscan || !this.has_canvas || (!pad_enlarged && !this.hasObjectsToDraw() && !this.painters)) {
          if (this._fixed_size) return; // canvas cannot be enlarged in such mode
          if (!this.enlargeMain('toggle')) return;
-         if (this.enlargeMain('state') == 'off') svg_can.property('pad_enlarged', null);
+         if (this.enlargeMain('state') === 'off') svg_can.property('pad_enlarged', null);
       } else if (!pad_enlarged) {
          this.enlargeMain(true, true);
          svg_can.property('pad_enlarged', this.pad);
       } else if (pad_enlarged === this.pad) {
          this.enlargeMain(false);
          svg_can.property('pad_enlarged', null);
-      } else {
+      } else
          console.error('missmatch with pad double click events');
-      }
+
 
       this.checkResize(true);
    }
@@ -115389,18 +115272,17 @@ class RPadPainter extends RObjectPainter {
    /** @summary Create SVG element for the pad
      * @return true when pad is displayed and all its items should be redrawn */
    createPadSvg(only_resize) {
-
       if (!this.has_canvas) {
          this.createCanvasSvg(only_resize ? 2 : 0);
          return true;
       }
 
-      let svg_parent = this.getPadSvg(this.pad_name), // this.pad_name MUST be here to select parent pad
-          svg_can = this.getCanvSvg(),
-          width = svg_parent.property('draw_width'),
-          height = svg_parent.property('draw_height'),
-          pad_enlarged = svg_can.property('pad_enlarged'),
-          pad_visible = true,
+      const svg_parent = this.getPadSvg(this.pad_name), // this.pad_name MUST be here to select parent pad
+            svg_can = this.getCanvSvg(),
+            width = svg_parent.property('draw_width'),
+            height = svg_parent.property('draw_height'),
+            pad_enlarged = svg_can.property('pad_enlarged');
+      let pad_visible = true,
           w = width, h = height, x = 0, y = 0,
           svg_pad = null, svg_rect = null, btns = null;
 
@@ -115416,7 +115298,7 @@ class RPadPainter extends RObjectPainter {
          if (pad_enlarged === this.pad)
             pad_visible = true;
          else
-            this.forEachPainterInPad(pp => { if (pp.getObject() == pad_enlarged) pad_visible = true; }, 'pads');
+            this.forEachPainterInPad(pp => { if (pp.getObject() === pad_enlarged) pad_visible = true; }, 'pads');
 
          if (pad_visible) { w = width; h = height; x = y = 0; }
       }
@@ -115438,26 +115320,28 @@ class RPadPainter extends RObjectPainter {
 
          svg_rect = svg_pad.append('svg:path').attr('class', 'root_pad_border');
 
-         svg_pad.append('svg:g').attr('class','primitives_layer');
-         if (!this.isBatchMode())
+         svg_pad.append('svg:g').attr('class', 'primitives_layer');
+         if (!this.isBatchMode()) {
             btns = svg_pad.append('svg:g')
-                          .attr('class','btns_layer')
-                          .property('leftside', settings.ToolBarSide != 'left')
+                          .attr('class', 'btns_layer')
+                          .property('leftside', settings.ToolBarSide !== 'left')
                           .property('vertical', settings.ToolBarVert);
+         }
 
          if (settings.ContextMenu)
             svg_rect.on('contextmenu', evnt => this.padContextMenu(evnt));
 
-         if (!this.isBatchMode())
+         if (!this.isBatchMode()) {
             svg_rect.style('pointer-events', 'visibleFill') // get events also for not visible rect
                     .on('dblclick', evnt => this.enlargePad(evnt, true))
                     .on('click', () => this.selectObjectPainter(this, null))
                     .on('mouseenter', () => this.showObjectStatus());
+         }
       }
 
       this.createAttFill({ attr: this.pad });
 
-      this.createAttLine({ attr: this.pad, color0: this.pad.fBorderMode == 0 ? 'none' : '' });
+      this.createAttLine({ attr: this.pad, color0: this.pad.fBorderMode === 0 ? 'none' : '' });
 
       svg_pad.style('display', pad_visible ? null : 'none')
              .attr('viewBox', `0 0 ${w} ${h}`) // due to svg
@@ -115483,9 +115367,10 @@ class RPadPainter extends RObjectPainter {
       this.setFastDrawing(w, h);
 
       // special case of 3D canvas overlay
-      if (svg_pad.property('can3d') === constants$1.Embed3D.Overlay)
-          this.selectDom().select('.draw3d_' + this.this_pad_name)
-              .style('display', pad_visible ? '' : 'none');
+      if (svg_pad.property('can3d') === constants$1.Embed3D.Overlay) {
+         this.selectDom().select('.draw3d_' + this.this_pad_name)
+             .style('display', pad_visible ? '' : 'none');
+      }
 
       if (this.alignButtons && btns) this.alignButtons(btns, w, h);
 
@@ -115494,7 +115379,7 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary returns true if any objects beside sub-pads exists in the pad */
    hasObjectsToDraw() {
-      return this.pad?.fPrimitives?.find(obj => obj._typename != `${nsREX}RPadDisplayItem`);
+      return this.pad?.fPrimitives?.find(obj => obj._typename !== `${nsREX}RPadDisplayItem`);
    }
 
    /** @summary sync drawing/redrawing/resize of the pad
@@ -115502,13 +115387,13 @@ class RPadPainter extends RObjectPainter {
      * @return {Promise} when pad is ready for draw operation or false if operation already queued
      * @private */
    syncDraw(kind) {
-      const entry = { kind : kind || 'redraw' };
+      const entry = { kind: kind || 'redraw' };
       if (this._doing_draw === undefined) {
          this._doing_draw = [entry];
          return Promise.resolve(true);
       }
-      // if queued operation registered, ignore next calls, indx == 0 is running operation
-      if ((entry.kind !== true) && (this._doing_draw.findIndex((e,i) => (i > 0) && (e.kind === entry.kind)) > 0))
+      // if queued operation registered, ignore next calls, indx === 0 is running operation
+      if ((entry.kind !== true) && (this._doing_draw.findIndex((e, i) => (i > 0) && (e.kind === entry.kind)) > 0))
          return false;
       this._doing_draw.push(entry);
       return new Promise(resolveFunc => {
@@ -115574,13 +115459,12 @@ class RPadPainter extends RObjectPainter {
    /** @summary Process tooltip event in the pad
      * @private */
    processPadTooltipEvent(pnt) {
-      let painters = [], hints = [];
+      const painters = [], hints = [];
 
       // first count - how many processors are there
-      if (this.painters !== null)
-         this.painters.forEach(obj => {
-            if (isFunc(obj.processTooltipEvent)) painters.push(obj);
-         });
+      this.painters?.forEach(obj => {
+         if (isFunc(obj.processTooltipEvent)) painters.push(obj);
+      });
 
       if (pnt) pnt.nproc = painters.length;
 
@@ -115603,7 +115487,6 @@ class RPadPainter extends RObjectPainter {
    /** @summary Fill pad context menu
      * @private */
    fillContextMenu(menu) {
-
       if (this.iscan)
          menu.add('header: RCanvas');
       else
@@ -115613,10 +115496,11 @@ class RPadPainter extends RObjectPainter {
 
       if (!this._websocket) {
          menu.addAttributesMenu(this);
-         if (this.iscan)
+         if (this.iscan) {
             menu.addSettingsMenu(false, false, arg => {
-               if (arg == 'dark') this.changeDarkMode();
+               if (arg === 'dark') this.changeDarkMode();
             });
+         }
       }
 
       menu.add('separator');
@@ -115628,9 +115512,9 @@ class RPadPainter extends RObjectPainter {
          menu.addchk(this.hasEventStatus(), 'Event status', () => this.activateStatusBar('toggle'));
 
       if (this.enlargeMain() || (this.has_canvas && this.hasObjectsToDraw()))
-         menu.addchk((this.enlargeMain('state') == 'on'), 'Enlarge ' + (this.iscan ? 'canvas' : 'pad'), () => this.enlargePad());
+         menu.addchk((this.enlargeMain('state') === 'on'), 'Enlarge ' + (this.iscan ? 'canvas' : 'pad'), () => this.enlargePad());
 
-      let fname = this.this_pad_name || (this.iscan ? 'canvas' : 'pad');
+      const fname = this.this_pad_name || (this.iscan ? 'canvas' : 'pad');
       menu.add(`Save as ${fname}.png`, fname+'.png', arg => this.saveAs('png', false, arg));
       menu.add(`Save as ${fname}.svg`, fname+'.svg', arg => this.saveAs('svg', false, arg));
 
@@ -115641,10 +115525,10 @@ class RPadPainter extends RObjectPainter {
      * @private */
    padContextMenu(evnt) {
       if (evnt.stopPropagation) {
-         let pos = pointer(evnt, this.svg_this_pad().node());
+         const pos = pointer(evnt, this.svg_this_pad().node());
          // this is normal event processing and not emulated jsroot event
          // for debug purposes keep original context menu for small region in top-left corner
-         if ((pos.length==2) && (pos[0] >= 0) && (pos[0] < 10) && (pos[1] >= 0) && (pos[1] < 10)) return;
+         if ((pos.length === 2) && (pos[0] >= 0) && (pos[0] < 10) && (pos[1] >= 0) && (pos[1] < 10)) return;
 
          evnt.stopPropagation(); // disable main context menu
          evnt.preventDefault();  // disable browser context menu
@@ -115661,17 +115545,17 @@ class RPadPainter extends RObjectPainter {
    /** @summary Redraw pad means redraw ourself
      * @return {Promise} when redrawing ready */
    async redrawPad(reason) {
-
-      let sync_promise = this.syncDraw(reason);
+      const sync_promise = this.syncDraw(reason);
       if (sync_promise === false) {
          console.log('Prevent RPad redrawing');
          return false;
       }
 
       let showsubitems = true;
-      let redrawNext = indx => {
+      const redrawNext = indx => {
          while (indx < this.painters.length) {
-            let sub = this.painters[indx++], res = 0;
+            const sub = this.painters[indx++];
+            let res = 0;
             if (showsubitems || sub.this_pad_name)
                res = sub.redraw(reason);
 
@@ -115682,11 +115566,11 @@ class RPadPainter extends RObjectPainter {
       };
 
       return sync_promise.then(() => {
-         if (this.iscan) {
+         if (this.iscan)
             this.createCanvasSvg(2);
-         } else {
+          else
             showsubitems = this.createPadSvg(true);
-         }
+
          return redrawNext(0);
       }).then(() => {
          if (getActivePad() === this)
@@ -115705,25 +115589,25 @@ class RPadPainter extends RObjectPainter {
    /** @summary Checks if pad should be redrawn by resize
      * @private */
    needRedrawByResize() {
-      let elem = this.svg_this_pad();
+      const elem = this.svg_this_pad();
       if (!elem.empty() && elem.property('can3d') === constants$1.Embed3D.Overlay) return true;
 
-      for (let i = 0; i < this.painters.length; ++i)
+      for (let i = 0; i < this.painters.length; ++i) {
          if (isFunc(this.painters[i].needRedrawByResize))
             if (this.painters[i].needRedrawByResize()) return true;
+      }
 
       return false;
    }
 
    /** @summary Check resize of canvas */
    checkCanvasResize(size, force) {
-
       if (this._ignore_resize)
          return false;
 
       if (!this.iscan && this.has_canvas) return false;
 
-      let sync_promise = this.syncDraw('canvas_resize');
+      const sync_promise = this.syncDraw('canvas_resize');
       if (sync_promise === false) return false;
 
       if ((size === true) || (size === false)) { force = size; size = null; }
@@ -115732,14 +115616,15 @@ class RPadPainter extends RObjectPainter {
 
       if (!force) force = this.needRedrawByResize();
 
-      let changed = false, redrawNext = indx => {
-             if (!changed || (indx >= this.painters.length)) {
-                this.confirmDraw();
-                return changed;
-             }
+      let changed = false;
+      const redrawNext = indx => {
+         if (!changed || (indx >= this.painters.length)) {
+            this.confirmDraw();
+            return changed;
+         }
 
-             return getPromise(this.painters[indx].redraw(force ? 'redraw' : 'resize')).then(() => redrawNext(indx+1));
-          };
+         return getPromise(this.painters[indx].redraw(force ? 'redraw' : 'resize')).then(() => redrawNext(indx+1));
+      };
 
 
       return sync_promise.then(() => {
@@ -115751,8 +115636,8 @@ class RPadPainter extends RObjectPainter {
             this._resize_tmout = setTimeout(() => {
                delete this._resize_tmout;
                if (!this.pad?.fWinSize) return;
-               let cw = this.getPadWidth(), ch = this.getPadHeight();
-               if ((cw > 0) && (ch > 0) && ((this.pad.fWinSize[0] != cw) || (this.pad.fWinSize[1] != ch))) {
+               const cw = this.getPadWidth(), ch = this.getPadHeight();
+               if ((cw > 0) && (ch > 0) && ((this.pad.fWinSize[0] !== cw) || (this.pad.fWinSize[1] !== ch))) {
                   this.pad.fWinSize[0] = cw;
                   this.pad.fWinSize[1] = ch;
                   this.sendWebsocket(`RESIZED:[${cw},${ch}]`);
@@ -115807,7 +115692,7 @@ class RPadPainter extends RObjectPainter {
        }
 
       // painter used only for evaluation of attributes
-      let pattr = new RObjectPainter(), obj = snap.fObject;
+      const pattr = new RObjectPainter(), obj = snap.fObject;
       pattr.assignObject(snap);
       pattr.csstype = snap.fCssType;
       pattr.rstyle = snap.fStyle;
@@ -115815,7 +115700,7 @@ class RPadPainter extends RObjectPainter {
       snap.fOption = pattr.v7EvalAttr('options', '');
 
       const extract_color = (member_name, attr_name) => {
-         let col = pattr.v7EvalColor(attr_name, '');
+         const col = pattr.v7EvalColor(attr_name, '');
          if (col) obj[member_name] = addColor(col, this.root_colors);
       };
 
@@ -115853,7 +115738,6 @@ class RPadPainter extends RObjectPainter {
      * @return {Promise} with pad painter when ready
      * @private */
    async drawNextSnap(lst, indx) {
-
       if (indx === undefined) {
          indx = -1;
          // flag used to prevent immediate pad redraw during first draw
@@ -115872,9 +115756,9 @@ class RPadPainter extends RObjectPainter {
          return this;
       }
 
-      let snap = lst[indx],
-          snapid = snap.fObjectID,
-          cnt = this._snaps_map[snapid],
+      const snap = lst[indx],
+            snapid = snap.fObjectID;
+      let cnt = this._snaps_map[snapid],
           objpainter = null;
 
       if (cnt) cnt++; else cnt=1;
@@ -115891,12 +115775,13 @@ class RPadPainter extends RObjectPainter {
       }
 
       if (objpainter) {
-
-         if (snap._typename == `${nsREX}RPadDisplayItem`)  // subpad
+         if (snap._typename === `${nsREX}RPadDisplayItem`) {
+            // subpad
             return objpainter.redrawPadSnap(snap).then(ppainter => {
                this.addObjectPainter(ppainter, lst, indx);
                return this.drawNextSnap(lst, indx);
             });
+         }
 
          if (snap._typename === `${nsREX}TObjectDisplayItem`)
             this.extractTObjectProp(snap);
@@ -115909,11 +115794,10 @@ class RPadPainter extends RObjectPainter {
          return getPromise(promise).then(() => this.drawNextSnap(lst, indx)); // call next
       }
 
-      if (snap._typename == `${nsREX}RPadDisplayItem`) { // subpad
+      if (snap._typename === `${nsREX}RPadDisplayItem`) { // subpad
+         const subpad = snap, // not subpad, but just attributes
 
-         let subpad = snap; // not subpad, but just attributes
-
-         let padpainter = new RPadPainter(this.getDom(), subpad, false);
+          padpainter = new RPadPainter(this.getDom(), subpad, false);
          padpainter.decodeOptions('');
          padpainter.addToPadPrimitives(this.this_pad_name); // only set parent pad name
          padpainter.assignSnapId(snap.fObjectID);
@@ -115925,7 +115809,7 @@ class RPadPainter extends RObjectPainter {
             padpainter.addPadButtons();
 
          // we select current pad, where all drawing is performed
-         let prev_name = padpainter.selectCurrentPad(padpainter.this_pad_name);
+         const prev_name = padpainter.selectCurrentPad(padpainter.this_pad_name);
 
          return padpainter.drawNextSnap(snap.fPrimitives).then(() => {
             padpainter.selectCurrentPad(prev_name);
@@ -115937,21 +115821,20 @@ class RPadPainter extends RObjectPainter {
       this.next_rstyle = lst[indx].fStyle || this.rstyle;
 
       if (snap._typename === `${nsREX}TObjectDisplayItem`) {
-
          // identifier used in RObjectDrawable
          const webSnapIds = { kNone: 0,  kObject: 1, kColors: 4, kStyle: 5, kPalette: 6 };
 
-         if (snap.fKind == webSnapIds.kStyle) {
+         if (snap.fKind === webSnapIds.kStyle) {
             Object.assign(gStyle, snap.fObject);
             return this.drawNextSnap(lst, indx);
          }
 
-         if (snap.fKind == webSnapIds.kColors) {
-            let ListOfColors = [], arr = snap.fObject.arr;
+         if (snap.fKind === webSnapIds.kColors) {
+            const ListOfColors = [], arr = snap.fObject.arr;
             for (let n = 0; n < arr.length; ++n) {
-               let name = arr[n].fString, p = name.indexOf('=');
+               const name = arr[n].fString, p = name.indexOf('=');
                if (p > 0)
-                  ListOfColors[parseInt(name.slice(0,p))] = name.slice(p+1);
+                  ListOfColors[parseInt(name.slice(0, p))] = name.slice(p+1);
             }
 
             this.root_colors = ListOfColors;
@@ -115960,17 +115843,18 @@ class RPadPainter extends RObjectPainter {
             return this.drawNextSnap(lst, indx);
          }
 
-         if (snap.fKind == webSnapIds.kPalette) {
-            let arr = snap.fObject.arr, palette = [];
+         if (snap.fKind === webSnapIds.kPalette) {
+            const arr = snap.fObject.arr, palette = [];
             for (let n = 0; n < arr.length; ++n)
                palette[n] = arr[n].fString;
             this.custom_palette = new ColorPalette(palette);
             return this.drawNextSnap(lst, indx);
          }
 
-         if (!this.getFramePainter())
+         if (!this.getFramePainter()) {
             return this.drawObject(this.getDom(), { _typename: 'TFrame', $dummy: true }, '')
-                       .then(() => this.drawNextSnap(lst, indx-1)); // call same object again
+                       .then(() => this.drawNextSnap(lst, indx-1));
+         } // call same object again
 
          this.extractTObjectProp(snap);
       }
@@ -115985,19 +115869,18 @@ class RPadPainter extends RObjectPainter {
    /** @summary Search painter with specified snapid, also sub-pads are checked
      * @private */
    findSnap(snapid, onlyid) {
-
       function check(checkid) {
          if (!checkid || !isStr(checkid)) return false;
-         if (checkid == snapid) return true;
+         if (checkid === snapid) return true;
          return onlyid && (checkid.length > snapid.length) &&
-                (checkid.indexOf(snapid) == (checkid.length - snapid.length));
+                (checkid.indexOf(snapid) === (checkid.length - snapid.length));
       }
 
       if (check(this.snapid)) return this;
 
       if (!this.painters) return null;
 
-      for (let k=0;k<this.painters.length;++k) {
+      for (let k=0; k<this.painters.length; ++k) {
          let sub = this.painters[k];
 
          if (!onlyid && isFunc(sub.findSnap))
@@ -116013,7 +115896,7 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary Redraw pad snap
      * @desc Online version of drawing pad primitives
-     * @return {Promise} with pad painter*/
+     * @return {Promise} with pad painter */
    async redrawPadSnap(snap) {
       // for the pad/canvas display item contains list of primitives plus pad attributes
 
@@ -116040,7 +115923,7 @@ class RPadPainter extends RObjectPainter {
          if (this.isBatchMode() && this.iscan)
              this._fixed_size = true;
 
-         let mainid = this.selectDom().attr('id');
+         const mainid = this.selectDom().attr('id');
 
          if (!this.isBatchMode() && !this.use_openui && !this.brlayout && mainid && isStr(mainid)) {
             this.brlayout = new BrowserLayout(mainid, null, this);
@@ -116059,11 +115942,11 @@ class RPadPainter extends RObjectPainter {
       this.updateObject(snap);
 
       // apply all changes in the object (pad or canvas)
-      if (this.iscan) {
+      if (this.iscan)
          this.createCanvasSvg(2);
-      } else {
+       else
          this.createPadSvg(true);
-      }
+
 
       let isanyfound = false, isanyremove = false;
 
@@ -116080,7 +115963,7 @@ class RPadPainter extends RObjectPainter {
 
          if (sub) {
             // remove painter which does not found in the list of snaps
-            this.painters.splice(k--,1);
+            this.painters.splice(k--, 1);
             sub.cleanup(); // cleanup such painter
             isanyremove = true;
             if (this.main_painter_ref === sub)
@@ -116095,9 +115978,10 @@ class RPadPainter extends RObjectPainter {
          let fp = this.getFramePainter();
          // cannot preserve ROOT6 frame - it must be recreated
          if (fp?.is_root6()) fp = null;
-         for (let k = 0; k < this.painters.length; ++k)
-             if (fp !== this.painters[k])
+         for (let k = 0; k < this.painters.length; ++k) {
+ if (fp !== this.painters[k])
                this.painters[k].cleanup();
+}
          this.painters = [];
          delete this.main_painter_ref;
          if (fp) {
@@ -116109,7 +115993,7 @@ class RPadPainter extends RObjectPainter {
          this.addPadButtons(true);
       }
 
-      let prev_name = this.selectCurrentPad(this.this_pad_name);
+      const prev_name = this.selectCurrentPad(this.this_pad_name);
 
       return this.drawNextSnap(snap.fPrimitives).then(() => {
          this.selectCurrentPad(prev_name);
@@ -116126,15 +116010,16 @@ class RPadPainter extends RObjectPainter {
      * @private */
    async createImage(format) {
       // use https://github.com/MrRio/jsPDF in the future here
-      if (format == 'pdf')
+      if (format === 'pdf')
          return btoa_func('dummy PDF file');
 
-      if ((format == 'png') || (format == 'jpeg') || (format == 'svg'))
+      if ((format === 'png') || (format === 'jpeg') || (format === 'svg')) {
          return this.produceImage(true, format).then(res => {
-            if (!res || (format == 'svg')) return res;
-            let separ = res.indexOf('base64,');
+            if (!res || (format === 'svg')) return res;
+            const separ = res.indexOf('base64,');
             return (separ > 0) ? res.slice(separ+7) : '';
          });
+      }
 
       return '';
    }
@@ -116142,16 +116027,16 @@ class RPadPainter extends RObjectPainter {
    /** @summary Show context menu for specified item
      * @private */
    itemContextMenu(name) {
-       let rrr = this.svg_this_pad().node().getBoundingClientRect(),
+       const rrr = this.svg_this_pad().node().getBoundingClientRect(),
            evnt = { clientX: rrr.left+10, clientY: rrr.top + 10 };
 
        // use timeout to avoid conflict with mouse click and automatic menu close
-       if (name == 'pad')
+       if (name === 'pad')
           return setTimeout(() => this.padContextMenu(evnt), 50);
 
        let selp = null, selkind;
 
-       switch(name) {
+       switch (name) {
           case 'xaxis':
           case 'yaxis':
           case 'zaxis':
@@ -116162,7 +116047,7 @@ class RPadPainter extends RObjectPainter {
              selp = this.getFramePainter();
              break;
           default: {
-             let indx = parseInt(name);
+             const indx = parseInt(name);
              if (Number.isInteger(indx)) selp = this.painters[indx];
           }
        }
@@ -116185,7 +116070,7 @@ class RPadPainter extends RObjectPainter {
          if (!imgdata)
             return console.error(`Fail to produce image ${filename}`);
 
-         saveFile(filename, (kind != 'svg') ? imgdata : 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(imgdata));
+         saveFile(filename, (kind !== 'svg') ? imgdata : 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(imgdata));
       });
    }
 
@@ -116198,8 +116083,7 @@ class RPadPainter extends RObjectPainter {
    /** @summary Prodce image for the pad
      * @return {Promise} with created image */
    async produceImage(full_canvas, file_format) {
-
-      let use_frame = (full_canvas === 'frame'),
+      const use_frame = (full_canvas === 'frame'),
           elem = use_frame ? this.getFrameSvg(this.this_pad_name) : (full_canvas ? this.getCanvSvg() : this.svg_this_pad()),
           painter = (full_canvas && !use_frame) ? this.getCanvPainter() : this,
           items = []; // keep list of replaced elements, which should be moved back at the end
@@ -116207,62 +116091,61 @@ class RPadPainter extends RObjectPainter {
       if (elem.empty())
          return '';
 
-      if (!use_frame) // do not make transformations for the frame
-      painter.forEachPainterInPad(pp => {
+      if (!use_frame) {
+         // do not make transformations for the frame
+         painter.forEachPainterInPad(pp => {
+            const item = { prnt: pp.svg_this_pad() };
+            items.push(item);
 
-         let item = { prnt: pp.svg_this_pad() };
-         items.push(item);
+            // remove buttons from each subpad
+            const btns = pp.getLayerSvg('btns_layer', this.this_pad_name);
+            item.btns_node = btns.node();
+            if (item.btns_node) {
+               item.btns_prnt = item.btns_node.parentNode;
+               item.btns_next = item.btns_node.nextSibling;
+               btns.remove();
+            }
 
-         // remove buttons from each subpad
-         let btns = pp.getLayerSvg('btns_layer', this.this_pad_name);
-         item.btns_node = btns.node();
-         if (item.btns_node) {
-            item.btns_prnt = item.btns_node.parentNode;
-            item.btns_next = item.btns_node.nextSibling;
-            btns.remove();
-         }
+            const main = pp.getFramePainter();
+            if (!isFunc(main?.render3D) || !isFunc(main?.access3dKind)) return;
 
-         let main = pp.getFramePainter();
-         if (!isFunc(main?.render3D) || !isFunc(main?.access3dKind)) return;
+            const can3d = main.access3dKind();
 
-         let can3d = main.access3dKind();
+            if ((can3d !== constants$1.Embed3D.Overlay) && (can3d !== constants$1.Embed3D.Embed)) return;
 
-         if ((can3d !== constants$1.Embed3D.Overlay) && (can3d !== constants$1.Embed3D.Embed)) return;
+            const sz2 = main.getSizeFor3d(constants$1.Embed3D.Embed), // get size and position of DOM element as it will be embed
+                canvas = main.renderer.domElement;
 
-         let sz2 = main.getSizeFor3d(constants$1.Embed3D.Embed), // get size and position of DOM element as it will be embed
-             canvas = main.renderer.domElement;
+            main.render3D(0); // WebGL clears buffers, therefore we should render scene and convert immediately
 
-         main.render3D(0); // WebGL clears buffers, therefore we should render scene and convert immediately
+            const dataUrl = canvas.toDataURL('image/png');
 
-         let dataUrl = canvas.toDataURL('image/png');
+            // remove 3D drawings
+            if (can3d === constants$1.Embed3D.Embed) {
+               item.foreign = item.prnt.select('.' + sz2.clname);
+               item.foreign.remove();
+            }
 
-         // remove 3D drawings
+            const svg_frame = main.getFrameSvg();
+            item.frame_node = svg_frame.node();
+            if (item.frame_node) {
+               item.frame_next = item.frame_node.nextSibling;
+               svg_frame.remove();
+            }
 
-         if (can3d === constants$1.Embed3D.Embed) {
-            item.foreign = item.prnt.select('.' + sz2.clname);
-            item.foreign.remove();
-         }
-
-         let svg_frame = main.getFrameSvg();
-         item.frame_node = svg_frame.node();
-         if (item.frame_node) {
-            item.frame_next = item.frame_node.nextSibling;
-            svg_frame.remove();
-         }
-
-         // add svg image
-         item.img = item.prnt.insert('image','.primitives_layer')     // create image object
-                        .attr('x', sz2.x)
-                        .attr('y', sz2.y)
-                        .attr('width', canvas.width)
-                        .attr('height', canvas.height)
-                        .attr('href', dataUrl);
-
-      }, 'pads');
+            // add svg image
+            item.img = item.prnt.insert('image', '.primitives_layer')     // create image object
+                           .attr('x', sz2.x)
+                           .attr('y', sz2.y)
+                           .attr('width', canvas.width)
+                           .attr('height', canvas.height)
+                           .attr('href', dataUrl);
+         }, 'pads');
+      }
 
       let width = elem.property('draw_width'), height = elem.property('draw_height');
       if (use_frame) {
-         let fp = this.getFramePainter();
+         const fp = this.getFramePainter();
          width = fp.getFrameWidth();
          height = fp.getFrameHeight();
       }
@@ -116272,11 +116155,11 @@ class RPadPainter extends RObjectPainter {
 
       return svgToImage(svg, file_format).then(res => {
          for (let k = 0; k < items.length; ++k) {
-            let item = items[k];
+            const item = items[k];
 
             item.img?.remove(); // delete embed image
 
-            let prim = item.prnt.selectChild('.primitives_layer');
+            const prim = item.prnt.selectChild('.primitives_layer');
 
             if (item.foreign) // reinsert foreign object
                item.prnt.node().insertBefore(item.foreign.node(), prim.node());
@@ -116293,18 +116176,16 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary Process pad button click */
    clickPadButton(funcname, evnt) {
-
-      if (funcname == 'CanvasSnapShot')
+      if (funcname === 'CanvasSnapShot')
          return this.saveAs('png', true);
 
-      if (funcname == 'enlargePad')
+      if (funcname === 'enlargePad')
          return this.enlargePad();
 
-      if (funcname == 'PadSnapShot')
+      if (funcname === 'PadSnapShot')
          return this.saveAs('png', false);
 
-      if (funcname == 'PadContextMenus') {
-
+      if (funcname === 'PadContextMenus') {
          evnt?.preventDefault();
          evnt?.stopPropagation();
          if (closeMenu()) return;
@@ -116320,7 +116201,7 @@ class RPadPainter extends RObjectPainter {
             if (this.getFramePainter())
                menu.add('Frame', 'frame', this.itemContextMenu);
 
-            let main = this.getMainPainter(); // here hist painter methods
+            const main = this.getMainPainter(); // here hist painter methods
 
             if (main) {
                menu.add('X axis', 'xaxis', this.itemContextMenu);
@@ -116331,9 +116212,9 @@ class RPadPainter extends RObjectPainter {
 
             if (this.painters?.length) {
                menu.add('separator');
-               let shown = [];
+               const shown = [];
                for (let n = 0; n < this.painters.length; ++n) {
-                  let obj = this.painters[n]?.getObject();
+                  const obj = this.painters[n]?.getObject();
                   if (!obj || (shown.indexOf(obj) >= 0)) continue;
 
                   let name = obj._typename ? obj._typename + '::' : '';
@@ -116354,7 +116235,7 @@ class RPadPainter extends RObjectPainter {
       let done = false;
 
       for (let i = 0; i < this.painters.length; ++i) {
-         let pp = this.painters[i];
+         const pp = this.painters[i];
 
          if (isFunc(pp.clickPadButton))
             pp.clickPadButton(funcname, evnt);
@@ -116373,13 +116254,13 @@ class RPadPainter extends RObjectPainter {
       // check if there are duplications
 
       for (let k = 0; k < this._buttons.length; ++k)
-         if (this._buttons[k].funcname == funcname) return;
+         if (this._buttons[k].funcname === funcname) return;
 
       this._buttons.push({ btn, tooltip, funcname, keyname });
 
-      let iscan = this.iscan || !this.has_canvas;
-      if (!iscan && (funcname.indexOf('Pad') != 0) && (funcname !== 'enlargePad')) {
-         let cp = this.getCanvPainter();
+      const iscan = this.iscan || !this.has_canvas;
+      if (!iscan && (funcname.indexOf('Pad') !== 0) && (funcname !== 'enlargePad')) {
+         const cp = this.getCanvPainter();
          if (cp && (cp !== this)) cp.addPadButton(btn, tooltip, funcname);
       }
    }
@@ -116387,13 +116268,12 @@ class RPadPainter extends RObjectPainter {
    /** @summary Add buttons for pad or canvas
      * @private */
    addPadButtons(is_online) {
-
       this.addPadButton('camera', 'Create PNG', this.iscan ? 'CanvasSnapShot' : 'PadSnapShot', 'Ctrl PrintScreen');
 
       if (settings.ContextMenu)
          this.addPadButton('question', 'Access context menus', 'PadContextMenus');
 
-      let add_enlarge = !this.iscan && this.has_canvas && this.hasObjectsToDraw();
+      const add_enlarge = !this.iscan && this.has_canvas && this.hasObjectsToDraw();
 
       if (add_enlarge || this.enlargeMain('verify'))
          this.addPadButton('circle', 'Enlarge canvas', 'enlargePad');
@@ -116402,7 +116282,6 @@ class RPadPainter extends RObjectPainter {
          this.addPadButton('diamand', 'Toggle Ged', 'ToggleGed');
          this.addPadButton('three_circles', 'Toggle Status', 'ToggleStatus');
       }
-
    }
 
    /** @summary Show pad buttons
@@ -116416,17 +116295,17 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary Calculates RPadLength value */
    getPadLength(vertical, len, frame_painter) {
-      let sign = vertical ? -1 : 1,
-          rect, res,
-          getV = (indx, dflt) => (indx < len.fArr.length) ? len.fArr[indx] : dflt,
-          getRect = () => {
-             if (!rect)
-                rect = frame_painter ? frame_painter.getFrameRect() : this.getPadRect();
-             return rect;
-          };
+      let rect, res;
+      const sign = vertical ? -1 : 1,
+            getV = (indx, dflt) => (indx < len.fArr.length) ? len.fArr[indx] : dflt,
+            getRect = () => {
+               if (!rect)
+                  rect = frame_painter ? frame_painter.getFrameRect() : this.getPadRect();
+               return rect;
+            };
 
       if (frame_painter) {
-         let user = getV(2), func = vertical ? 'gry' : 'grx';
+         const user = getV(2), func = vertical ? 'gry' : 'grx';
          if ((user !== undefined) && frame_painter[func])
             res = frame_painter[func](user);
       }
@@ -116434,7 +116313,7 @@ class RPadPainter extends RObjectPainter {
       if (res === undefined)
          res = vertical ? getRect().height : 0;
 
-      let norm = getV(0, 0), pixel = getV(1, 0);
+      const norm = getV(0, 0), pixel = getV(1, 0);
 
       res += sign*pixel;
 
@@ -116457,10 +116336,10 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary Decode pad draw options */
    decodeOptions(opt) {
-      let pad = this.getObject();
+      const pad = this.getObject();
       if (!pad) return;
 
-      let d = new DrawOptions(opt);
+      const d = new DrawOptions(opt);
 
       if (!this.options) this.options = {};
 
@@ -116487,16 +116366,16 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary draw RPad object */
    static async draw(dom, pad, opt) {
-      let painter = new RPadPainter(dom, pad, false);
+      const painter = new RPadPainter(dom, pad, false);
       painter.decodeOptions(opt);
 
       if (painter.getCanvSvg().empty()) {
          painter.has_canvas = false;
          painter.this_pad_name = '';
          painter.setTopPainter();
-      } else {
+      } else
          painter.addToPadPrimitives(painter.pad_name); // must be here due to pad painter
-      }
+
 
       painter.createPadSvg();
 
@@ -116504,7 +116383,7 @@ class RPadPainter extends RObjectPainter {
          painter.addPadButtons();
 
       // we select current pad, where all drawing is performed
-      let prev_name = painter.has_canvas ? painter.selectCurrentPad(painter.this_pad_name) : undefined;
+      const prev_name = painter.has_canvas ? painter.selectCurrentPad(painter.this_pad_name) : undefined;
 
       selectActivePad({ pp: painter, active: false });
 
@@ -117223,18 +117102,18 @@ class RCanvasPainter extends RPadPainter {
 
    /** @summary Returns layout kind */
    getLayoutKind() {
-      let origin = this.selectDom('origin'),
+      const origin = this.selectDom('origin'),
          layout = origin.empty() ? '' : origin.property('layout');
       return layout || 'simple';
    }
 
    /** @summary Set canvas layout kind */
    setLayoutKind(kind, main_selector) {
-      let origin = this.selectDom('origin');
+      const origin = this.selectDom('origin');
       if (!origin.empty()) {
          if (!kind) kind = 'simple';
          origin.property('layout', kind);
-         origin.property('layout_selector', (kind != 'simple') && main_selector ? main_selector : null);
+         origin.property('layout_selector', (kind !== 'simple') && main_selector ? main_selector : null);
          this._changed_layout = (kind !== 'simple'); // use in cleanup
       }
    }
@@ -117242,14 +117121,15 @@ class RCanvasPainter extends RPadPainter {
    /** @summary Changes layout
      * @return {Promise} indicating when finished */
    async changeLayout(layout_kind, mainid) {
-      let current = this.getLayoutKind();
-      if (current == layout_kind)
+      const current = this.getLayoutKind();
+      if (current === layout_kind)
          return true;
 
-      let origin = this.selectDom('origin'),
-          sidebar = origin.select('.side_panel'),
-          sidebar2 = origin.select('.side_panel2'),
-          main = this.selectDom(), lst = [], force;
+      const origin = this.selectDom('origin'),
+            sidebar2 = origin.select('.side_panel2'),
+            lst = [];
+      let sidebar = origin.select('.side_panel'),
+          main = this.selectDom(), force;
 
       while (main.node().firstChild)
          lst.push(main.node().removeChild(main.node().firstChild));
@@ -117262,22 +117142,22 @@ class RCanvasPainter extends RPadPainter {
       this.setLayoutKind('simple'); // restore defaults
       origin.html(''); // cleanup origin
 
-      if (layout_kind == 'simple') {
+      if (layout_kind === 'simple') {
          main = origin;
          for (let k = 0; k < lst.length; ++k)
             main.node().appendChild(lst[k]);
          this.setLayoutKind(layout_kind);
          force = true;
       } else {
-         let grid = new GridDisplay(origin.node(), layout_kind);
+         const grid = new GridDisplay(origin.node(), layout_kind);
 
-         if (mainid == undefined)
-            mainid = (layout_kind.indexOf('vert') == 0) ? 0 : 1;
+         if (mainid === undefined)
+            mainid = (layout_kind.indexOf('vert') === 0) ? 0 : 1;
 
          main = select(grid.getGridFrame(mainid));
          main.classed('central_panel', true).style('position', 'relative');
 
-         if (mainid == 2) {
+         if (mainid === 2) {
             // left panel for Y
             sidebar = select(grid.getGridFrame(0));
             sidebar.classed('side_panel2', true).style('position', 'relative');
@@ -117317,7 +117197,7 @@ class RCanvasPainter extends RPadPainter {
 
       let layout = 'simple', mainid;
 
-      switch(kind) {
+      switch (kind) {
          case 'XY': layout = 'projxy'; mainid = 2; break;
          case 'X':
          case 'bottom': layout = 'vert2_31'; mainid = 0; break;
@@ -117332,7 +117212,7 @@ class RCanvasPainter extends RPadPainter {
 
    /** @summary Draw projection for specified histogram
      * @private */
-   async drawProjection(/*kind,hist,hopt*/) {
+   async drawProjection(/* kind,hist,hopt */) {
       // dummy for the moment
       return false;
    }
@@ -117340,8 +117220,8 @@ class RCanvasPainter extends RPadPainter {
    /** @summary Draw in side panel
      * @private */
    async drawInSidePanel(canv, opt, kind) {
-      let sel = ((this.getLayoutKind() == 'projxy') && (kind == 'Y')) ? '.side_panel2' : '.side_panel',
-          side = this.selectDom('origin').select(sel);
+      const sel = ((this.getLayoutKind() === 'projxy') && (kind === 'Y')) ? '.side_panel2' : '.side_panel',
+            side = this.selectDom('origin').select(sel);
       return side.empty() ? null : this.drawObject(side.node(), canv, opt);
    }
 
@@ -117364,7 +117244,7 @@ class RCanvasPainter extends RPadPainter {
 
    /** @summary Function called when canvas menu item Save is called */
    saveCanvasAsFile(fname) {
-      let pnt = fname.indexOf('.');
+      const pnt = fname.indexOf('.');
       this.createImage(fname.slice(pnt+1))
           .then(res => this.sendWebsocket(`SAVE:${fname}:${res}`));
    }
@@ -117415,25 +117295,24 @@ class RCanvasPainter extends RPadPainter {
       if (!this._websocket._tmouts)
          this._websocket._tmouts = {};
 
-      let handle = this._websocket._tmouts[name];
+      const handle = this._websocket._tmouts[name];
       if (tm === undefined)
          return handle !== undefined;
 
-      if (tm == 'reset') {
+      if (tm === 'reset') {
          if (handle) { clearTimeout(handle); delete this._websocket._tmouts[name]; }
-      } else if (!handle && Number.isInteger(tm)) {
+      } else if (!handle && Number.isInteger(tm))
          this._websocket._tmouts[name] = setTimeout(() => { delete this._websocket._tmouts[name]; }, tm);
-      }
    }
 
    /** @summary Hanler for websocket open event
      * @private */
-   onWebsocketOpened(/*handle*/) {
+   onWebsocketOpened(/* handle */) {
    }
 
    /** @summary Hanler for websocket close event
      * @private */
-   onWebsocketClosed(/*handle*/) {
+   onWebsocketClosed(/* handle */) {
       if (!this.embed_canvas)
          closeCurrentWindow();
    }
@@ -117443,13 +117322,13 @@ class RCanvasPainter extends RPadPainter {
    onWebsocketMsg(handle, msg) {
       // console.log('GET_MSG ' + msg.slice(0,30));
 
-      if (msg == 'CLOSE') {
+      if (msg === 'CLOSE') {
          this.onWebsocketClosed();
          this.closeWebsocket(true);
-      } else if (msg.slice(0,5) == 'SNAP:') {
+      } else if (msg.slice(0, 5) === 'SNAP:') {
          msg = msg.slice(5);
-         let p1 = msg.indexOf(':'),
-             snapid = msg.slice(0,p1),
+         const p1 = msg.indexOf(':'),
+             snapid = msg.slice(0, p1),
              snap = parse(msg.slice(p1+1));
          this.syncDraw(true)
              .then(() => {
@@ -117460,28 +117339,27 @@ class RCanvasPainter extends RPadPainter {
                  handle.send(`SNAPDONE:${snapid}`); // send ready message back when drawing completed
                  this.confirmDraw();
               });
-      } else if (msg.slice(0,4) == 'JSON') {
-         let obj = parse(msg.slice(4));
+      } else if (msg.slice(0, 4) === 'JSON') {
+         const obj = parse(msg.slice(4));
          // console.log('get JSON ', msg.length-4, obj._typename);
          this.redrawObject(obj);
-      } else if (msg.slice(0,9) == 'REPL_REQ:') {
+      } else if (msg.slice(0, 9) === 'REPL_REQ:')
          this.processDrawableReply(msg.slice(9));
-      } else if (msg.slice(0,4) == 'CMD:') {
+       else if (msg.slice(0, 4) === 'CMD:') {
          msg = msg.slice(4);
-         let p1 = msg.indexOf(':'),
-             cmdid = msg.slice(0,p1),
+         const p1 = msg.indexOf(':'),
+             cmdid = msg.slice(0, p1),
              cmd = msg.slice(p1+1),
              reply = `REPLY:${cmdid}:`;
-         if ((cmd == 'SVG') || (cmd == 'PNG') || (cmd == 'JPEG')) {
+         if ((cmd === 'SVG') || (cmd === 'PNG') || (cmd === 'JPEG')) {
             this.createImage(cmd.toLowerCase())
                 .then(res => handle.send(reply + res));
-         } else if (cmd.indexOf('ADDPANEL:') == 0) {
-            let relative_path = cmd.slice(9);
-            if (!isFunc(this.showUI5Panel)) {
+         } else if (cmd.indexOf('ADDPANEL:') === 0) {
+            const relative_path = cmd.slice(9);
+            if (!isFunc(this.showUI5Panel))
                handle.send(reply + 'false');
-            } else {
-
-               let conn = new WebWindowHandle(handle.kind);
+             else {
+               const conn = new WebWindowHandle(handle.kind);
 
                // set interim receiver until first message arrives
                conn.setReceiver({
@@ -117491,7 +117369,7 @@ class RCanvasPainter extends RPadPainter {
                   },
 
                   onWebsocketMsg(panel_handle, msg) {
-                     let panel_name = (msg.indexOf('SHOWPANEL:') == 0) ? msg.slice(10) : '';
+                     const panel_name = (msg.indexOf('SHOWPANEL:') === 0) ? msg.slice(10) : '';
                      this.cpainter.showUI5Panel(panel_name, panel_handle)
                                   .then(res => handle.send(reply + (res ? 'true' : 'false')));
                   },
@@ -117509,12 +117387,12 @@ class RCanvasPainter extends RPadPainter {
                });
 
                let addr = handle.href;
-               if (relative_path.indexOf('../') == 0) {
-                  let ddd = addr.lastIndexOf('/',addr.length-2);
-                  addr = addr.slice(0,ddd) + relative_path.slice(2);
-               } else {
+               if (relative_path.indexOf('../') === 0) {
+                  const ddd = addr.lastIndexOf('/', addr.length-2);
+                  addr = addr.slice(0, ddd) + relative_path.slice(2);
+               } else
                   addr += relative_path;
-               }
+
                // only when connection established, panel will be activated
                conn.connect(addr);
             }
@@ -117522,22 +117400,20 @@ class RCanvasPainter extends RPadPainter {
             console.log('Unrecognized command ' + cmd);
             handle.send(reply);
          }
-      } else if ((msg.slice(0,7) == 'DXPROJ:') || (msg.slice(0,7) == 'DYPROJ:')) {
-         let kind = msg[1],
+      } else if ((msg.slice(0, 7) === 'DXPROJ:') || (msg.slice(0, 7) === 'DYPROJ:')) {
+         const kind = msg[1],
              hist = parse(msg.slice(7));
          this.drawProjection(kind, hist);
-      } else if (msg.slice(0,5) == 'SHOW:') {
-         let that = msg.slice(5),
-             on = that[that.length-1] == '1';
-         this.showSection(that.slice(0,that.length-2), on);
-      } else {
-         console.log(`unrecognized msg len: ${msg.length} msg: ${msg.slice(0,30)}`);
-      }
+      } else if (msg.slice(0, 5) === 'SHOW:') {
+         const that = msg.slice(5),
+             on = that[that.length-1] === '1';
+         this.showSection(that.slice(0, that.length-2), on);
+      } else
+         console.log(`unrecognized msg len: ${msg.length} msg: ${msg.slice(0, 30)}`);
    }
 
    /** @summary Submit request to RDrawable object on server side */
    submitDrawableRequest(kind, req, painter, method) {
-
       if (!this._websocket || !req || !req._typename ||
           !painter.snapid || !isStr(painter.snapid)) return null;
 
@@ -117545,10 +117421,10 @@ class RCanvasPainter extends RPadPainter {
          // if kind specified - check if such request already was submitted
          if (!painter._requests) painter._requests = {};
 
-         let prevreq = painter._requests[kind];
+         const prevreq = painter._requests[kind];
 
          if (prevreq) {
-            let tm = new Date().getTime();
+            const tm = new Date().getTime();
             if (!prevreq._tm || (tm - prevreq._tm < 5000)) {
                prevreq._nextreq = req; // submit when got reply
                return false;
@@ -117564,11 +117440,11 @@ class RCanvasPainter extends RPadPainter {
       if (method) {
          if (!this._nextreqid) this._nextreqid = 1;
          req.reqid = this._nextreqid++;
-      } else {
+      } else
          req.reqid = 0; // request will not be replied
-      }
 
-      let msg = JSON.stringify(req);
+
+      const msg = JSON.stringify(req);
 
       if (req.reqid) {
          req._kind = kind;
@@ -117604,12 +117480,12 @@ class RCanvasPainter extends RPadPainter {
       if (!this._websocket) return;
 
       if (subelem && isStr(subelem)) {
-         let len = subelem.length;
-         if ((len > 2) && (subelem.indexOf('#x') == len - 2)) subelem = 'x'; else
-         if ((len > 2) && (subelem.indexOf('#y') == len - 2)) subelem = 'y'; else
-         if ((len > 2) && (subelem.indexOf('#z') == len - 2)) subelem = 'z';
+         const len = subelem.length;
+         if ((len > 2) && (subelem.indexOf('#x') === len - 2)) subelem = 'x'; else
+         if ((len > 2) && (subelem.indexOf('#y') === len - 2)) subelem = 'y'; else
+         if ((len > 2) && (subelem.indexOf('#z') === len - 2)) subelem = 'z';
 
-         if ((subelem == 'x') || (subelem == 'y') || (subelem == 'z'))
+         if ((subelem === 'x') || (subelem === 'y') || (subelem === 'z'))
             exec = subelem + 'axis#' + exec;
          else
             return console.log(`not recoginzed subelem ${subelem} in SubmitExec`);
@@ -117620,19 +117496,20 @@ class RCanvasPainter extends RPadPainter {
 
    /** @summary Process reply from request to RDrawable */
    processDrawableReply(msg) {
-      let reply = parse(msg);
+      const reply = parse(msg);
       if (!reply || !reply.reqid || !this._submreq) return false;
 
-      let req = this._submreq[reply.reqid];
+      const req = this._submreq[reply.reqid];
       if (!req) return false;
 
       // remove reference first
       delete this._submreq[reply.reqid];
 
       // remove blocking reference for that kind
-      if (req._kind && req._painter?._requests)
+      if (req._kind && req._painter?._requests) {
          if (req._painter._requests[req._kind] === req)
             delete req._painter._requests[req._kind];
+      }
 
       if (req._method)
          req._method(reply, req);
@@ -117644,7 +117521,7 @@ class RCanvasPainter extends RPadPainter {
 
    /** @summary Show specified section in canvas */
    async showSection(that, on) {
-      switch(that) {
+      switch (that) {
          case 'Menu': break;
          case 'StatusBar': break;
          case 'Editor': break;
@@ -117673,20 +117550,19 @@ class RCanvasPainter extends RPadPainter {
             console.log('TPave is moved inside RCanvas - that to do?');
             break;
          default:
-            if ((kind.slice(0,5) == 'exec:') && painter?.snapid) {
+            if ((kind.slice(0, 5) === 'exec:') && painter?.snapid)
                this.submitExec(painter, kind.slice(5), subelem);
-            } else {
+             else
                console.log('UNPROCESSED CHANGES', kind);
-            }
       }
    }
 
    /** @summary Handle pad button click event
      * @private */
    clickPadButton(funcname, evnt) {
-      if (funcname == 'ToggleGed')
+      if (funcname === 'ToggleGed')
          return this.activateGed(this, null, 'toggle');
-      if (funcname == 'ToggleStatus')
+      if (funcname === 'ToggleStatus')
          return this.activateStatusBar('toggle');
       super.clickPadButton(funcname, evnt);
    }
@@ -117696,7 +117572,7 @@ class RCanvasPainter extends RPadPainter {
       if (this.testUI5()) return false;
       if (this.brlayout)
          return this.brlayout.hasStatus();
-      let hp = getHPainter();
+      const hp = getHPainter();
       return hp ? hp.hasStatusLine() : false;
    }
 
@@ -117717,7 +117593,7 @@ class RCanvasPainter extends RPadPainter {
    showCanvasStatus(...msgs) {
       if (this.testUI5()) return;
 
-      let br = this.brlayout || getHPainter()?.brlayout;
+      const br = this.brlayout || getHPainter()?.brlayout;
 
       br?.showStatus(...msgs);
    }
@@ -117769,37 +117645,33 @@ class RCanvasPainter extends RPadPainter {
       if (mode === false)
          return false;
 
-      let btns = this.brlayout.createBrowserBtns();
+      const btns = this.brlayout.createBrowserBtns();
 
       ToolbarIcons.createSVG(btns, ToolbarIcons.diamand, 15, 'toggle fix-pos mode', 'browser')
-                  .style('margin','3px').on('click', () => this.brlayout.toggleKind('fix'));
+                  .style('margin', '3px').on('click', () => this.brlayout.toggleKind('fix'));
 
       ToolbarIcons.createSVG(btns, ToolbarIcons.circle, 15, 'toggle float mode', 'browser')
-                  .style('margin','3px').on('click', () => this.brlayout.toggleKind('float'));
+                  .style('margin', '3px').on('click', () => this.brlayout.toggleKind('float'));
 
       ToolbarIcons.createSVG(btns, ToolbarIcons.cross, 15, 'delete GED', 'browser')
-                  .style('margin','3px').on('click', () => this.removeGed());
+                  .style('margin', '3px').on('click', () => this.removeGed());
 
       // be aware, that jsroot_browser_hierarchy required for flexible layout that element use full browser area
-      this.brlayout.setBrowserContent("<div class='jsroot_browser_hierarchy' id='ged_placeholder'>Loading GED ...</div>");
+      this.brlayout.setBrowserContent('<div class=\'jsroot_browser_hierarchy\' id=\'ged_placeholder\'>Loading GED ...</div>');
       this.brlayout.setBrowserTitle('GED');
       this.brlayout.toggleBrowserKind(kind || 'float');
 
       return new Promise(resolveFunc => {
-
          loadOpenui5.then(sap => {
-
             select('#ged_placeholder').text('');
 
-            sap.ui.require(['sap/ui/model/json/JSONModel', 'sap/ui/core/mvc/XMLView'], (JSONModel,XMLView) => {
-
-               let oModel = new JSONModel({ handle: null });
+            sap.ui.require(['sap/ui/model/json/JSONModel', 'sap/ui/core/mvc/XMLView'], (JSONModel, XMLView) => {
+               const oModel = new JSONModel({ handle: null });
 
                XMLView.create({
                   viewName: 'rootui5.canv.view.Ged',
                   viewData: this.getUi5PanelData('Ged')
                }).then(oGed => {
-
                   oGed.setModel(oModel);
 
                   oGed.placeAt('ged_placeholder');
@@ -117836,11 +117708,11 @@ class RCanvasPainter extends RPadPainter {
 
    /** @summary draw RCanvas object */
    static async draw(dom, can /*, opt */) {
-      let nocanvas = !can;
+      const nocanvas = !can;
       if (nocanvas)
          can = create$1(`${nsREX}RCanvas`);
 
-      let painter = new RCanvasPainter(dom, can);
+      const painter = new RCanvasPainter(dom, can);
       painter.normal_canvas = !nocanvas;
       painter.createCanvasSvg(0);
 
@@ -117858,8 +117730,8 @@ class RCanvasPainter extends RPadPainter {
 
 /** @summary draw RPadSnapshot object
   * @private */
-function drawRPadSnapshot(dom, snap /*, opt*/) {
-   let painter = new RCanvasPainter(dom, null);
+function drawRPadSnapshot(dom, snap /*, opt */) {
+   const painter = new RCanvasPainter(dom, null);
    painter.normal_canvas = false;
    painter.batch_mode = isBatchMode();
    return painter.syncDraw(true).then(() => painter.redrawPadSnap(snap)).then(() => {
@@ -117880,7 +117752,7 @@ async function ensureRCanvas(painter, frame_kind) {
       return Promise.reject(Error('Painter not provided in ensureRCanvas'));
 
    // simple check - if canvas there, can use painter
-   let pr = painter.getCanvSvg().empty() ? RCanvasPainter.draw(painter.getDom(), null /* noframe */) : Promise.resolve(true);
+   const pr = painter.getCanvSvg().empty() ? RCanvasPainter.draw(painter.getDom(), null /* noframe */) : Promise.resolve(true);
 
    return pr.then(() => {
       if ((frame_kind !== false) && painter.getFrameSvg().selectChild('.main_layer').empty())
@@ -117895,26 +117767,26 @@ async function ensureRCanvas(painter, frame_kind) {
 /** @summary Function used for direct draw of RFrameTitle
   * @private */
 function drawRFrameTitle(reason, drag) {
-   let fp = this.getFramePainter();
+   const fp = this.getFramePainter();
    if (!fp)
       return console.log('no frame painter - no title');
 
-   let rect         = fp.getFrameRect(),
-       fx           = rect.x,
-       fy           = rect.y,
-       fw           = rect.width,
-       // fh           = rect.height,
-       ph           = this.getPadPainter().getPadHeight(),
-       title        = this.getObject(),
-       title_margin = this.v7EvalLength('margin', ph, 0.02),
-       title_width  = fw,
-       title_height = this.v7EvalLength('height', ph, 0.05),
-       textFont     = this.v7EvalFont('text', { size: 0.07, color: 'black', align: 22 });
+   const rect         = fp.getFrameRect(),
+         fx           = rect.x,
+         fy           = rect.y,
+         fw           = rect.width,
+         // fh           = rect.height,
+         ph           = this.getPadPainter().getPadHeight(),
+         title        = this.getObject(),
+         title_width  = fw,
+         textFont     = this.v7EvalFont('text', { size: 0.07, color: 'black', align: 22 });
+   let title_margin = this.v7EvalLength('margin', ph, 0.02),
+       title_height = this.v7EvalLength('height', ph, 0.05);
 
-   if (reason == 'drag') {
+   if (reason === 'drag') {
       title_height = drag.height;
       title_margin = fy - drag.y - drag.height;
-      let changes = {};
+      const changes = {};
       this.v7AttrChange(changes, 'margin', title_margin / ph);
       this.v7AttrChange(changes, 'height', title_height / ph);
       this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
@@ -117924,7 +117796,7 @@ function drawRFrameTitle(reason, drag) {
 
    makeTranslate(this.draw_g, fx, Math.round(fy-title_margin-title_height));
 
-   let arg = { x: title_width/2, y: title_height/2, text: title.fText, latex: 1 };
+   const arg = { x: title_width/2, y: title_height/2, text: title.fText, latex: 1 };
 
    this.startTextDrawing(textFont, 'font');
 
@@ -117936,7 +117808,7 @@ function drawRFrameTitle(reason, drag) {
    );
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////////////////
 
 registerMethods(`${nsREX}RPalette`, {
 
@@ -117949,7 +117821,8 @@ registerMethods(`${nsREX}RPalette`, {
    },
 
    getContourIndex(zc) {
-      let cntr = this.fContour, l = 0, r = cntr.length-1, mid;
+      const cntr = this.fContour;
+      let l = 0, r = cntr.length-1, mid;
 
       if (zc < cntr[0]) return -1;
       if (zc >= cntr[r]) return r-1;
@@ -117967,7 +117840,7 @@ registerMethods(`${nsREX}RPalette`, {
    },
 
    getContourColor(zc) {
-      let zindx = this.getContourIndex(zc);
+      const zindx = this.getContourIndex(zc);
       return (zindx < 0) ? '' : this.getColor(zindx);
    },
 
@@ -117980,7 +117853,7 @@ registerMethods(`${nsREX}RPalette`, {
    },
 
    calcColor(value, entry1, entry2) {
-      let dist = entry2.fOrdinal - entry1.fOrdinal,
+      const dist = entry2.fOrdinal - entry1.fOrdinal,
           r1 = entry2.fOrdinal - value,
           r2 = value - entry1.fOrdinal;
 
@@ -117988,7 +117861,7 @@ registerMethods(`${nsREX}RPalette`, {
          return (r1 < r2) ? entry2.fColor : entry1.fColor;
 
       // interpolate
-      let col1 = rgb(this.extractRColor(entry1.fColor)),
+      const col1 = rgb(this.extractRColor(entry1.fColor)),
           col2 = rgb(this.extractRColor(entry2.fColor)),
           color = rgb(Math.round((col1.r*r1 + col2.r*r2)/dist),
                          Math.round((col1.g*r1 + col2.g*r2)/dist),
@@ -117998,19 +117871,20 @@ registerMethods(`${nsREX}RPalette`, {
    },
 
    createPaletteColors(len) {
-      let arr = [], indx = 0;
+      const arr = [];
+      let indx = 0;
 
       while (arr.length < len) {
-         let value = arr.length / (len-1);
+         const value = arr.length / (len-1),
 
-         let entry = this.fColors[indx];
+          entry = this.fColors[indx];
 
-         if ((Math.abs(entry.fOrdinal - value) < 0.0001) || (indx == this.fColors.length - 1)) {
+         if ((Math.abs(entry.fOrdinal - value) < 0.0001) || (indx === this.fColors.length - 1)) {
             arr.push(this.extractRColor(entry.fColor));
             continue;
          }
 
-         let next = this.fColors[indx+1];
+         const next = this.fColors[indx+1];
          if (next.fOrdinal <= value)
             indx++;
          else
@@ -118024,7 +117898,7 @@ registerMethods(`${nsREX}RPalette`, {
       // extract color with ordinal value between 0 and 1
       if (!this.fColors)
          return 'black';
-      if ((typeof value != 'number') || (value < 0))
+      if ((typeof value !== 'number') || (value < 0))
          value = 0;
       else if (value > 1)
          value = 1;
@@ -118059,15 +117933,17 @@ registerMethods(`${nsREX}RPalette`, {
       this.colzmax = zmax;
 
       if (logz) {
-         if (this.colzmax <= 0) this.colzmax = 1.;
-         if (this.colzmin <= 0)
+         if (this.colzmax <= 0) this.colzmax = 1.0;
+         if (this.colzmin <= 0) {
             if ((zminpositive === undefined) || (zminpositive <= 0))
                this.colzmin = 0.0001*this.colzmax;
             else
                this.colzmin = ((zminpositive < 3) || (zminpositive>100)) ? 0.3*zminpositive : 1;
-         if (this.colzmin >= this.colzmax) this.colzmin = 0.0001*this.colzmax;
+         }
+         if (this.colzmin >= this.colzmax)
+            this.colzmin = 0.0001*this.colzmax;
 
-         let logmin = Math.log(this.colzmin)/Math.log(10),
+         const logmin = Math.log(this.colzmin)/Math.log(10),
              logmax = Math.log(this.colzmax)/Math.log(10),
              dz = (logmax-logmin)/nlevels;
          this.fContour.push(this.colzmin);
@@ -118080,12 +117956,12 @@ registerMethods(`${nsREX}RPalette`, {
             this.colzmax += 0.01*Math.abs(this.colzmax);
             this.colzmin -= 0.01*Math.abs(this.colzmin);
          }
-         let dz = (this.colzmax-this.colzmin)/nlevels;
+         const dz = (this.colzmax-this.colzmin)/nlevels;
          for (let level=0; level<=nlevels; level++)
             this.fContour.push(this.colzmin + dz*level);
       }
 
-      if (!this.palette || (this.palette.length != nlevels))
+      if (!this.palette || (this.palette.length !== nlevels))
          this.palette = this.createPaletteColors(nlevels);
    }
 
@@ -118094,10 +117970,10 @@ registerMethods(`${nsREX}RPalette`, {
 /** @summary draw RFont object
   * @private */
 function drawRFont() {
-   let font   = this.getObject(),
-       svg    = this.getCanvSvg(),
-       defs   = svg.selectChild('.canvas_defs'),
-       clname = 'custom_font_' + font.fFamily+font.fWeight+font.fStyle;
+   const font   = this.getObject(),
+         svg    = this.getCanvSvg(),
+         clname = 'custom_font_' + font.fFamily+font.fWeight+font.fStyle;
+   let defs = svg.selectChild('.canvas_defs');
 
    if (defs.empty())
       defs = svg.insert('svg:defs', ':first-child').attr('class', 'canvas_defs');
@@ -118106,7 +117982,7 @@ function drawRFont() {
    if (entry.empty())
       entry = defs.append('style').attr('type', 'text/css').attr('class', clname);
 
-   entry.text(`@font-face { font-family: "${font.fFamily}"; font-weight: ${font.fWeight ? font.fWeight : "normal"}; font-style: ${font.fStyle ? font.fStyle : "normal"}; src: ${font.fSrc}; }`);
+   entry.text(`@font-face { font-family: "${font.fFamily}"; font-weight: ${font.fWeight ? font.fWeight : 'normal'}; font-style: ${font.fStyle ? font.fStyle : 'normal'}; src: ${font.fSrc}; }`);
 
    if (font.fDefault)
       this.getPadPainter()._dfltRFont = font;
@@ -118117,7 +117993,7 @@ function drawRFont() {
 /** @summary draw RAxis object
   * @private */
 function drawRAxis(dom, obj, opt) {
-   let painter = new RAxisPainter(dom, obj, opt);
+   const painter = new RAxisPainter(dom, obj, opt);
    painter.disable_zooming = true;
    return ensureRCanvas(painter, false)
            .then(() => painter.redraw())
@@ -118127,8 +118003,8 @@ function drawRAxis(dom, obj, opt) {
 /** @summary draw RFrame object
   * @private */
 function drawRFrame(dom, obj, opt) {
-   let p = new RFramePainter(dom, obj);
-   if (opt == '3d') p.mode3d = true;
+   const p = new RFramePainter(dom, obj);
+   if (opt === '3d') p.mode3d = true;
    return ensureRCanvas(p, false).then(() => p.redraw());
 }
 
@@ -118148,7 +118024,7 @@ ensureRCanvas: ensureRCanvas
 /** @summary draw RText object
   * @private */
 function drawText() {
-   let text      = this.getObject(),
+   const text      = this.getObject(),
        pp        = this.getPadPainter(),
        onframe   = this.v7EvalAttr('onFrame', false) ? pp.getFramePainter() : null,
        clipping  = onframe ? this.v7EvalAttr('clipping', false) : false,
@@ -118167,8 +118043,7 @@ function drawText() {
 /** @summary draw RLine object
   * @private */
 function drawLine() {
-
-    let line     = this.getObject(),
+    const line     = this.getObject(),
         pp       = this.getPadPainter(),
         onframe  = this.v7EvalAttr('onFrame', false) ? pp.getFramePainter() : null,
         clipping = onframe ? this.v7EvalAttr('clipping', false) : false,
@@ -118181,15 +118056,14 @@ function drawLine() {
 
     this.draw_g
         .append('svg:path')
-        .attr('d',`M${p1.x},${p1.y}L${p2.x},${p2.y}`)
+        .attr('d', `M${p1.x},${p1.y}L${p2.x},${p2.y}`)
         .call(this.lineatt.func);
 }
 
 /** @summary draw RBox object
   * @private */
 function drawBox() {
-
-   let box      = this.getObject(),
+   const box      = this.getObject(),
        pp       = this.getPadPainter(),
        onframe  = this.v7EvalAttr('onFrame', false) ? pp.getFramePainter() : null,
        clipping = onframe ? this.v7EvalAttr('clipping', false) : false,
@@ -118204,7 +118078,7 @@ function drawBox() {
 
    this.draw_g
        .append('svg:path')
-       .attr('d',`M${p1.x},${p1.y}H${p2.x}V${p2.y}H${p1.x}Z`)
+       .attr('d', `M${p1.x},${p1.y}H${p2.x}V${p2.y}H${p1.x}Z`)
        .call(this.lineatt.func)
        .call(this.fillatt.func);
 }
@@ -118212,7 +118086,7 @@ function drawBox() {
 /** @summary draw RMarker object
   * @private */
 function drawMarker() {
-    let marker   = this.getObject(),
+    const marker   = this.getObject(),
         pp       = this.getPadPainter(),
         onframe  = this.v7EvalAttr('onFrame', false) ? pp.getFramePainter() : null,
         clipping = onframe ? this.v7EvalAttr('clipping', false) : false,
@@ -118222,12 +118096,13 @@ function drawMarker() {
 
     this.createv7AttMarker();
 
-    let path = this.markeratt.create(p.x, p.y);
+    const path = this.markeratt.create(p.x, p.y);
 
-    if (path)
+    if (path) {
        this.draw_g.append('svg:path')
                   .attr('d', path)
                   .call(this.markeratt.func);
+    }
 }
 
 /** @summary painter for RPalette
@@ -118239,7 +118114,7 @@ class RPalettePainter extends RObjectPainter {
 
    /** @summary get palette */
    getHistPalette() {
-      let drawable = this.getObject(),
+      const drawable = this.getObject(),
           pal = drawable ? drawable.fPalette : null;
 
       if (pal && !pal.getColor)
@@ -118250,10 +118125,9 @@ class RPalettePainter extends RObjectPainter {
 
    /** @summary Draw palette */
    drawPalette(drag) {
-
-      let palette = this.getHistPalette(),
-          contour = palette.getContour(),
-          framep = this.getFramePainter();
+      const palette = this.getHistPalette(),
+            contour = palette.getContour(),
+            framep = this.getFramePainter();
 
       if (!contour)
          return console.log('no contour - no palette');
@@ -118262,22 +118136,22 @@ class RPalettePainter extends RObjectPainter {
       if (!framep)
          return console.log('no frame painter - no palette');
 
+      const zmin         = contour[0],
+            zmax         = contour[contour.length-1],
+            rect         = framep.getFrameRect(),
+            pad_width    = this.getPadPainter().getPadWidth(),
+            pad_height   = this.getPadPainter().getPadHeight(),
+            visible      = this.v7EvalAttr('visible', true),
+            vertical     = this.v7EvalAttr('vertical', true);
       let gmin         = palette.full_min,
           gmax         = palette.full_max,
-          zmin         = contour[0],
-          zmax         = contour[contour.length-1],
-          rect         = framep.getFrameRect(),
-          pad_width    = this.getPadPainter().getPadWidth(),
-          pad_height   = this.getPadPainter().getPadHeight(),
-          visible      = this.v7EvalAttr('visible', true),
-          vertical     = this.v7EvalAttr('vertical', true),
           palette_x, palette_y, palette_width, palette_height;
 
       if (drag) {
          palette_width = drag.width;
          palette_height = drag.height;
 
-         let changes = {};
+         const changes = {};
          if (vertical) {
             this.v7AttrChange(changes, 'margin', (drag.x - rect.x - rect.width) / pad_width);
             this.v7AttrChange(changes, 'width', palette_width / pad_width);
@@ -118288,13 +118162,13 @@ class RPalettePainter extends RObjectPainter {
          this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
       } else {
           if (vertical) {
-            let margin = this.v7EvalLength('margin', pad_width, 0.02);
+            const margin = this.v7EvalLength('margin', pad_width, 0.02);
             palette_x = Math.round(rect.x + rect.width + margin);
             palette_width = this.v7EvalLength('width', pad_width, 0.05);
             palette_y = rect.y;
             palette_height = rect.height;
           } else {
-            let margin = this.v7EvalLength('margin', pad_height, 0.02);
+            const margin = this.v7EvalLength('margin', pad_height, 0.02);
             palette_x = rect.x;
             palette_width = rect.width;
             palette_y = Math.round(rect.y + rect.height + margin);
@@ -118326,23 +118200,24 @@ class RPalettePainter extends RObjectPainter {
          framep.z_handle.configureAxis('zaxis', gmin, gmax, zmin, zmax, false, [0, palette_width], palette_width, { reverse: false });
 
       for (let i = 0; i < contour.length-1; ++i) {
-         let z0 = Math.round(framep.z_handle.gr(contour[i])),
+         const z0 = Math.round(framep.z_handle.gr(contour[i])),
              z1 = Math.round(framep.z_handle.gr(contour[i+1])),
-             col = palette.getContourColor((contour[i]+contour[i+1])/2);
+             col = palette.getContourColor((contour[i]+contour[i+1])/2),
 
-         let r = g_btns.append('svg:path')
+          r = g_btns.append('svg:path')
                      .attr('d', vertical ? `M0,${z1}H${palette_width}V${z0}H0Z` : `M${z0},0V${palette_height}H${z1}V0Z`)
                      .style('fill', col)
                      .style('stroke', col)
                      .property('fill0', col)
                      .property('fill1', rgb(col).darker(0.5).toString());
 
-         if (this.isTooltipAllowed())
+         if (this.isTooltipAllowed()) {
             r.on('mouseover', function() {
                select(this).transition().duration(100).style('fill', select(this).property('fill1'));
             }).on('mouseout', function() {
                select(this).transition().duration(100).style('fill', select(this).property('fill0'));
             }).append('svg:title').text(contour[i].toFixed(2) + ' - ' + contour[i+1].toFixed(2));
+         }
 
          if (settings.Zooming)
             r.on('dblclick', () => framep.unzoom('z'));
@@ -118350,14 +118225,13 @@ class RPalettePainter extends RObjectPainter {
 
       framep.z_handle.maxTickSize = Math.round(palette_width*0.3);
 
-      let promise = framep.z_handle.drawAxis(this.draw_g, makeTranslate(vertical ? palette_width : 0, palette_height), vertical ? -1 : 1);
+      const promise = framep.z_handle.drawAxis(this.draw_g, makeTranslate(vertical ? palette_width : 0, palette_height), vertical ? -1 : 1);
 
       if (this.isBatchMode() || drag)
          return promise;
 
       return promise.then(() => {
-
-         if (settings.ContextMenu)
+         if (settings.ContextMenu) {
             this.draw_g.on('contextmenu', evnt => {
                evnt.stopPropagation(); // disable main context menu
                evnt.preventDefault();  // disable browser context menu
@@ -118368,6 +118242,7 @@ class RPalettePainter extends RObjectPainter {
                   menu.show();
                });
             });
+         }
 
          addDragHandler(this, { x: palette_x, y: palette_y, width: palette_width, height: palette_height,
                                 minwidth: 20, minheight: 20, no_change_x: !vertical, no_change_y: vertical, redraw: d => this.drawPalette(d) });
@@ -118377,7 +118252,6 @@ class RPalettePainter extends RObjectPainter {
          let doing_zoom = false, sel1 = 0, sel2 = 0, zoom_rect, zoom_rect_visible, moving_labels, last_pos;
 
          const moveRectSel = evnt => {
-
             if (!doing_zoom) return;
             evnt.preventDefault();
 
@@ -118391,7 +118265,7 @@ class RPalettePainter extends RObjectPainter {
             else
                sel2 = Math.min(Math.max(last_pos[0], 0), palette_width);
 
-            let sz = Math.abs(sel2-sel1);
+            const sz = Math.abs(sel2-sel1);
 
             if (!zoom_rect_visible && (sz > 1)) {
                zoom_rect.style('display', null);
@@ -118412,10 +118286,10 @@ class RPalettePainter extends RObjectPainter {
             zoom_rect = null;
             doing_zoom = false;
 
-            if (moving_labels) {
+            if (moving_labels)
                framep.z_handle.processLabelsMove('stop', last_pos);
-            } else {
-               let z = framep.z_handle.func, z1 = z.invert(sel1), z2 = z.invert(sel2);
+             else {
+               const z = framep.z_handle.func, z1 = z.invert(sel1), z2 = z.invert(sel2);
                this.getFramePainter().zoom('z', Math.min(z1, z2), Math.max(z1, z2));
             }
          }, startRectSel = evnt => {
@@ -118452,18 +118326,19 @@ class RPalettePainter extends RObjectPainter {
                        .on('mousedown', startRectSel)
                        .on('dblclick', () => framep.unzoom('z'));
 
-            if (settings.ZoomWheel)
+            if (settings.ZoomWheel) {
                this.draw_g.on('wheel', evnt => {
                   evnt.stopPropagation();
                   evnt.preventDefault();
 
-                  let pos = pointer(evnt, this.draw_g.node()),
-                      coord = vertical ? (1 - pos[1] / palette_height) : pos[0] / palette_width;
+                  const pos = pointer(evnt, this.draw_g.node()),
+                      coord = vertical ? (1 - pos[1] / palette_height) : pos[0] / palette_width,
 
-                  let item = framep.z_handle.analyzeWheelEvent(evnt, coord);
+                   item = framep.z_handle.analyzeWheelEvent(evnt, coord);
                   if (item.changed)
                      framep.zoom('z', item.min, item.max);
                });
+            }
          };
 
          framep.z_handle.setAfterDrawHandler(assignHandlers);
@@ -118474,7 +118349,7 @@ class RPalettePainter extends RObjectPainter {
 
    /** @summary draw RPalette object */
    static async draw(dom, palette, opt) {
-      let painter = new RPalettePainter(dom, palette, opt, 'palette');
+      const painter = new RPalettePainter(dom, palette, opt, 'palette');
       return ensureRCanvas(painter, false).then(() => {
          painter.createG(); // just create container, real drawing will be done by histogram
          return painter;
