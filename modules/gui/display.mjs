@@ -26,6 +26,7 @@ function setHPainter(hp) { first_hpainter = hp; }
  */
 
 class MDIDisplay extends BasePainter {
+
    /** @summary constructor */
    constructor(frameid) {
       super();
@@ -102,11 +103,9 @@ class MDIDisplay extends BasePainter {
    /** @summary perform resize for each frame
      * @protected */
    checkMDIResize(only_frame_id, size) {
-
       let resized_frame = null;
 
       this.forEachPainter((painter, frame) => {
-
          if (only_frame_id && (d3_select(frame).attr('id') != only_frame_id)) return;
 
          if ((painter.getItemName() !== null) && isFunc(painter.checkResize)) {
@@ -138,20 +137,21 @@ class MDIDisplay extends BasePainter {
  */
 
 class CustomDisplay extends MDIDisplay {
+
    constructor() {
       super('dummy');
       this.frames = {}; // array of configured frames
    }
 
    addFrame(divid, itemname) {
-      let prev = this.frames[divid] || '';
+      const prev = this.frames[divid] || '';
       this.frames[divid] = prev + (itemname + ';');
    }
 
    forEachFrame(userfunc) {
-      let ks = Object.keys(this.frames);
+      const ks = Object.keys(this.frames);
       for (let k = 0; k < ks.length; ++k) {
-         let node = d3_select('#'+ks[k]);
+         const node = d3_select('#'+ks[k]);
          if (!node.empty())
             userfunc(node.node());
       }
@@ -160,9 +160,9 @@ class CustomDisplay extends MDIDisplay {
    createFrame(title) {
       this.beforeCreateFrame(title);
 
-      let ks = Object.keys(this.frames);
+      const ks = Object.keys(this.frames);
       for (let k = 0; k < ks.length; ++k) {
-         let items = this.frames[ks[k]];
+         const items = this.frames[ks[k]];
          if (items.indexOf(title+';') >= 0)
             return d3_select('#'+ks[k]).node();
       }
@@ -197,7 +197,6 @@ class GridDisplay extends MDIDisplay {
    *    - gridiNxM - grid layout with interactive separators
    *    - simple - no layout, full frame used for object drawings */
    constructor(frameid, kind, kind2) {
-
       super(frameid);
 
       this.framecnt = 0;
@@ -207,7 +206,7 @@ class GridDisplay extends MDIDisplay {
       this.use_separarators = !kind || (kind.indexOf('x') < 0);
       this.simple_layout = false;
 
-      let dom = this.selectDom();
+      const dom = this.selectDom();
       dom.style('overflow', 'hidden');
 
       if (kind === 'simple') {
@@ -223,8 +222,8 @@ class GridDisplay extends MDIDisplay {
          this.vertical = false;
          this.use_separarators = true;
          arr = [2, 2];
-         sizes = [1,3];
-         chld_sizes = [[3,1], [3,1]];
+         sizes = [1, 3];
+         chld_sizes = [[3, 1], [3, 1]];
          kind = '';
          this.match_sizes = true;
       } else if ((kind.indexOf('grid') == 0) || kind2) {
@@ -241,9 +240,9 @@ class GridDisplay extends MDIDisplay {
          if (separ > 0) {
             sizey = parseInt(kind.slice(separ + 1));
             sizex = parseInt(kind.slice(0, separ));
-         } else {
+         } else
             sizex = sizey = parseInt(kind);
-         }
+
 
          if (!Number.isInteger(sizex)) sizex = 3;
          if (!Number.isInteger(sizey)) sizey = 3;
@@ -278,11 +277,11 @@ class GridDisplay extends MDIDisplay {
          }
       }
 
-      kind = kind ? parseInt(kind.replace( /^\D+/g, ''), 10) : 0;
+      kind = kind ? parseInt(kind.replace(/^\D+/g, ''), 10) : 0;
       if (Number.isInteger(kind) && (kind > 1)) {
-         if (kind < 10) {
+         if (kind < 10)
             num = kind;
-         } else {
+          else {
             arr = [];
             while (kind > 0) {
                arr.unshift(kind % 10);
@@ -305,7 +304,6 @@ class GridDisplay extends MDIDisplay {
    /** @summary Create frames group
      * @private */
    createGroup(handle, main, num, childs, sizes, childs_sizes) {
-
       if (!sizes) sizes = new Array(num);
       let sum1 = 0, sum2 = 0;
       for (let n = 0; n < num; ++n)
@@ -317,7 +315,7 @@ class GridDisplay extends MDIDisplay {
       }
 
       for (let cnt = 0; cnt < num; ++cnt) {
-         let group = { id: cnt, drawid: -1, position: 0, size: sizes[cnt], parent: handle };
+         const group = { id: cnt, drawid: -1, position: 0, size: sizes[cnt], parent: handle };
          if (cnt > 0) group.position = handle.groups[cnt-1].position + handle.groups[cnt-1].size;
          group.position0 = group.position;
 
@@ -326,42 +324,42 @@ class GridDisplay extends MDIDisplay {
 
          handle.groups.push(group);
 
-         let elem = main.append('div').attr('groupid', group.id);
+         const elem = main.append('div').attr('groupid', group.id);
 
          // remember HTML node only when need to match sizes of different groups
          if (handle.match_sizes)
             group.node = elem.node();
 
          if (handle.vertical)
-            elem.style('float', 'bottom').style('height', group.size.toFixed(2)+'%').style('width','100%');
+            elem.style('float', 'bottom').style('height', group.size.toFixed(2)+'%').style('width', '100%');
          else
-            elem.style('float', 'left').style('width', group.size.toFixed(2)+'%').style('height','100%');
+            elem.style('float', 'left').style('width', group.size.toFixed(2)+'%').style('height', '100%');
 
          if (group.drawid >= 0) {
             elem.classed('jsroot_newgrid', true);
             if (isStr(this.frameid))
                elem.attr('id', `${this.frameid}_${group.drawid}`);
-         } else {
-            elem.style('display','flex').style('flex-direction', handle.vertical ? 'row' : 'column');
-         }
+         } else
+            elem.style('display', 'flex').style('flex-direction', handle.vertical ? 'row' : 'column');
+
 
          if (childs && (childs[cnt] > 1)) {
             group.vertical = !handle.vertical;
             group.groups = [];
-            elem.style('overflow','hidden');
+            elem.style('overflow', 'hidden');
             this.createGroup(group, elem, childs[cnt], null, childs_sizes ? childs_sizes[cnt] : null);
          }
       }
 
-      if (this.use_separarators && isFunc(this.createSeparator))
+      if (this.use_separarators && isFunc(this.createSeparator)) {
          for (let cnt = 1; cnt < num; ++cnt)
             this.createSeparator(handle, main, handle.groups[cnt]);
+      }
    }
 
    /** @summary Handle interactive sepearator movement
      * @private */
    handleSeparator(elem, action) {
-
       const findGroup = (node, grid) => {
          let chld = node?.firstChild;
          while (chld) {
@@ -372,7 +370,7 @@ class GridDisplay extends MDIDisplay {
          // should never happen, but keep it here like
          return d3_select(node).select(`[groupid='${grid}']`);
       }, setGroupSize = (h, node, grid) => {
-         let name = h.vertical ? 'height' : 'width',
+         const name = h.vertical ? 'height' : 'width',
              size = h.groups[grid].size.toFixed(2)+'%';
          findGroup(node, grid).style(name, size)
                               .selectAll('.jsroot_separator').style(name, size);
@@ -403,11 +401,10 @@ class GridDisplay extends MDIDisplay {
             return;
          needResize = true;
       } else {
-
          let pos;
-         if (action == 'restore') {
+         if (action == 'restore')
              pos = group.position0;
-         } else if (handle.vertical) {
+          else if (handle.vertical) {
              group.acc_drag += action.dy;
              pos = group.startpos + ((group.acc_drag + 2) / parent.clientHeight) * 100;
          } else {
@@ -415,7 +412,7 @@ class GridDisplay extends MDIDisplay {
              pos = group.startpos + ((group.acc_drag + 2) / parent.clientWidth) * 100;
          }
 
-         let diff = group.position - pos;
+         const diff = group.position - pos;
 
          if (Math.abs(diff) < 0.3) return; // if no significant change, do nothing
 
@@ -447,7 +444,7 @@ class GridDisplay extends MDIDisplay {
          return;
 
       for (let k = 0; k < handle.parent.groups.length; ++k) {
-         let hh = handle.parent.groups[k];
+         const hh = handle.parent.groups[k];
          if ((hh === handle) || !hh.node) continue;
          hh.groups[id].size = handle.groups[id].size;
          hh.groups[id].position = handle.groups[id].position;
@@ -455,7 +452,7 @@ class GridDisplay extends MDIDisplay {
          hh.groups[id-1].position = handle.groups[id-1].position;
          if (needSetSize) {
             d3_select(hh.node).selectAll('.jsroot_separator').each(function() {
-               let s = d3_select(this);
+               const s = d3_select(this);
                if (s.property('separator_id') === id)
                   posSepar(hh, hh.groups[id], s);
             });
@@ -472,7 +469,7 @@ class GridDisplay extends MDIDisplay {
    /** @summary Create group separator
      * @private */
    createSeparator(handle, main, group) {
-      let separ = main.append('div');
+      const separ = main.append('div');
 
       separ.classed('jsroot_separator', true)
            .property('handle', handle)
@@ -486,7 +483,7 @@ class GridDisplay extends MDIDisplay {
                        ? 'left: 0; right: 0; top: 50%; height: 3px; border-top: 1px dotted #ff0000'
                        : 'top: 0; bottom: 0; left: 50%; width: 3px; border-left: 1px dotted #ff0000'));
 
-      let pthis = this, drag_move =
+      const pthis = this, drag_move =
         d3_drag().on('start', function() { pthis.handleSeparator(this, 'start'); })
                  .on('drag', function(evnt) { pthis.handleSeparator(this, evnt); })
                  .on('end', function() { pthis.handleSeparator(this, 'end'); });
@@ -503,10 +500,11 @@ class GridDisplay extends MDIDisplay {
    forEachFrame(userfunc) {
       if (this.simple_layout)
          userfunc(this.getGridFrame());
-      else
+      else {
          this.selectDom().selectAll('.jsroot_newgrid').each(function() {
             userfunc(this);
          });
+      }
    }
 
    /** @summary Returns active frame */
@@ -589,12 +587,12 @@ class TabsDisplay extends MDIDisplay {
       if (!isFunc(userfunc)) return;
 
       if (only_visible) {
-         let active = this.getActiveFrame();
+         const active = this.getActiveFrame();
          if (active) userfunc(active);
          return;
       }
 
-      let main = this.selectDom().select('.jsroot_tabs_main');
+      const main = this.selectDom().select('.jsroot_tabs_main');
 
       main.selectAll('.jsroot_tabs_draw').each(function() {
          userfunc(this);
@@ -603,28 +601,27 @@ class TabsDisplay extends MDIDisplay {
 
    /** @summary modify tab state by id */
    modifyTabsFrame(frame_id, action) {
-      let top = this.selectDom().select('.jsroot_tabs'),
+      const top = this.selectDom().select('.jsroot_tabs'),
           labels = top.select('.jsroot_tabs_labels'),
           main = top.select('.jsroot_tabs_main');
 
       labels.selectAll('.jsroot_tabs_label').each(function() {
-         let id = d3_select(this).property('frame_id'),
+         const id = d3_select(this).property('frame_id'),
              is_same = (id == frame_id),
              active_color = settings.DarkMode ? '#333' : 'white';
 
-         if (action == 'activate')
+         if (action == 'activate') {
             d3_select(this).style('background', is_same ? active_color : (settings.DarkMode ? 'black' : '#ddd'))
                            .style('color', settings.DarkMode ? '#ddd' : 'inherit')
                            .style('border-color', active_color);
-
-         else if ((action == 'close') && is_same)
+         } else if ((action == 'close') && is_same)
             this.parentNode.remove();
       });
 
       let selected_frame, other_frame;
 
       main.selectAll('.jsroot_tabs_draw').each(function() {
-         let match = d3_select(this).property('frame_id') === frame_id;
+         const match = d3_select(this).property('frame_id') === frame_id;
          if (match)
             selected_frame = this;
          else
@@ -635,11 +632,11 @@ class TabsDisplay extends MDIDisplay {
 
       if (!selected_frame) return;
 
-      if (action == 'activate') {
+      if (action == 'activate')
          selected_frame.parentNode.appendChild(selected_frame);
          // super.activateFrame(selected_frame);
-      } else if (action == 'close') {
-         let was_active = (selected_frame === this.getActiveFrame());
+       else if (action == 'close') {
+         const was_active = (selected_frame === this.getActiveFrame());
          cleanup(selected_frame);
          selected_frame.remove();
 
@@ -657,7 +654,6 @@ class TabsDisplay extends MDIDisplay {
 
    /** @summary create new frame */
    createFrame(title) {
-
       this.beforeCreateFrame(title);
 
       let dom = this.selectDom(),
@@ -692,8 +688,8 @@ class TabsDisplay extends MDIDisplay {
          .attr('tabindex', 0)
          .append('label')
          .attr('class', 'jsroot_tabs_label')
-         .attr('style', `border: 1px solid; display: inline-block; font-size: 1rem; left: 1px;`+
-                        `margin-left: 3px; padding: 0px 5px 1px 5px; position: relative; vertical-align: bottom;`)
+         .attr('style', 'border: 1px solid; display: inline-block; font-size: 1rem; left: 1px;'+
+                        'margin-left: 3px; padding: 0px 5px 1px 5px; position: relative; vertical-align: bottom;')
          .property('frame_id', frame_id)
          .text(lbl)
          .attr('title', title)
@@ -708,10 +704,10 @@ class TabsDisplay extends MDIDisplay {
             mdi.modifyTabsFrame(d3_select(this.parentNode).property('frame_id'), 'close');
          });
 
-      let draw_frame = main.append('div')
+      const draw_frame = main.append('div')
                            .attr('frame_title', title)
                            .attr('class', 'jsroot_tabs_draw')
-                           .attr('style', `overflow: hidden; position: absolute; inset: 0px`)
+                           .attr('style', 'overflow: hidden; position: absolute; inset: 0px')
                            .property('frame_id', frame_id);
 
       this.modifyTabsFrame(frame_id, 'activate');
@@ -721,7 +717,7 @@ class TabsDisplay extends MDIDisplay {
 
    /** @summary Handle changes in dark mode */
    changeDarkMode() {
-      let frame = this.getActiveFrame();
+      const frame = this.getActiveFrame();
       this.modifyTabsFrame(d3_select(frame).property('frame_id'), 'activate');
    }
 
@@ -755,7 +751,7 @@ class FlexibleDisplay extends MDIDisplay {
    forEachFrame(userfunc,  only_visible) {
       if (!isFunc(userfunc)) return;
 
-      let mdi = this, top = this.selectDom().select('.jsroot_flex_top');
+      const mdi = this, top = this.selectDom().select('.jsroot_flex_top');
 
       top.selectAll('.jsroot_flex_draw').each(function() {
          // check if only visible specified
@@ -789,7 +785,7 @@ class FlexibleDisplay extends MDIDisplay {
 
       super.activateFrame(frame);
 
-      let main = frame.parentNode;
+      const main = frame.parentNode;
       main.parentNode.append(main);
 
       if (this.getFrameState(frame) != 'min') {
@@ -800,26 +796,26 @@ class FlexibleDisplay extends MDIDisplay {
 
    /** @summary get frame state */
    getFrameState(frame) {
-      let main = d3_select(frame.parentNode);
+      const main = d3_select(frame.parentNode);
       return main.property('state');
    }
 
    /** @summary returns frame rect */
    getFrameRect(frame) {
       if (this.getFrameState(frame) == 'max') {
-         let top = this.selectDom().select('.jsroot_flex_top');
+         const top = this.selectDom().select('.jsroot_flex_top');
          return { x: 0, y: 0, w: top.node().clientWidth, h: top.node().clientHeight };
       }
 
-      let main = d3_select(frame.parentNode), left = main.style('left'), top = main.style('top');
+      const main = d3_select(frame.parentNode), left = main.style('left'), top = main.style('top');
 
       return { x: parseInt(left.slice(0, left.length-2)), y: parseInt(top.slice(0, top.length-2)),
                w: main.node().clientWidth, h: main.node().clientHeight };
    }
 
    /** @summary change frame state */
-   changeFrameState(frame, newstate,no_redraw) {
-      let main = d3_select(frame.parentNode),
+   changeFrameState(frame, newstate, no_redraw) {
+      const main = d3_select(frame.parentNode),
           state = main.property('state'),
           top = this.selectDom().select('.jsroot_flex_top');
 
@@ -834,11 +830,11 @@ class FlexibleDisplay extends MDIDisplay {
 
       switch (newstate) {
          case 'min':
-            main.style('height','auto').style('width', 'auto');
-            main.select('.jsroot_flex_draw').style('display','none');
+            main.style('height', 'auto').style('width', 'auto');
+            main.select('.jsroot_flex_draw').style('display', 'none');
             break;
          case 'max':
-            main.style('height','100%').style('width', '100%').style('left','').style('top','');
+            main.style('height', '100%').style('width', '100%').style('left', '').style('top', '');
             main.select('.jsroot_flex_draw').style('display', null);
             top.style('overflow', 'hidden');
             break;
@@ -848,7 +844,7 @@ class FlexibleDisplay extends MDIDisplay {
       }
 
       main.select('.jsroot_flex_header').selectAll('button').each(function(d) {
-         let btn = d3_select(this);
+         const btn = d3_select(this);
          if (((d.t == 'minimize') && (newstate == 'min')) ||
              ((d.t == 'maximize') && (newstate == 'max')))
                btn.html('&#x259E;').attr('title', 'restore');
@@ -866,8 +862,8 @@ class FlexibleDisplay extends MDIDisplay {
                ww = top.node().clientWidth,
                hh = top.node().clientHeight,
                arr = [], step = 4,
-               crossX = (r1,r2) => ((r1.x <= r2.x) && (r1.x + r1.w >= r2.x)) || ((r2.x <= r1.x) && (r2.x + r2.w >= r1.x)),
-               crossY = (r1,r2) => ((r1.y <= r2.y) && (r1.y + r1.h >= r2.y)) || ((r2.y <= r1.y) && (r2.y + r2.h >= r1.y));
+               crossX = (r1, r2) => ((r1.x <= r2.x) && (r1.x + r1.w >= r2.x)) || ((r2.x <= r1.x) && (r2.x + r2.w >= r1.x)),
+               crossY = (r1, r2) => ((r1.y <= r2.y) && (r1.y + r1.h >= r2.y)) || ((r2.y <= r1.y) && (r2.y + r2.h >= r1.y));
 
          this.forEachFrame(f => { if ((f!==frame) && (this.getFrameState(f) == 'min')) arr.push(this.getFrameRect(f)); });
 
@@ -877,9 +873,9 @@ class FlexibleDisplay extends MDIDisplay {
             rect.y -= rect.h + step;
             let maxx = step, iscrossed = false;
             arr.forEach(r => {
-               if (crossY(r,rect)) {
+               if (crossY(r, rect)) {
                   maxx = Math.max(maxx, r.x + r.w + step);
-                  if (crossX(r,rect)) iscrossed = true;
+                  if (crossX(r, rect)) iscrossed = true;
                }
             });
             if (iscrossed) rect.x = maxx;
@@ -887,9 +883,9 @@ class FlexibleDisplay extends MDIDisplay {
          if (rect.y < 0) { rect.x = step; rect.y = hh - rect.h - step; }
 
          main.style('left', rect.x + 'px').style('top', rect.y + 'px');
-      } else if (!no_redraw) {
+      } else if (!no_redraw)
          resize(frame);
-      }
+
 
       return true;
    }
@@ -897,7 +893,7 @@ class FlexibleDisplay extends MDIDisplay {
    /** @summary handle button click
      * @private */
    _clickButton(btn) {
-      let kind = d3_select(btn).datum(),
+      const kind = d3_select(btn).datum(),
           main = d3_select(btn.parentNode.parentNode),
           frame = main.select('.jsroot_flex_draw').node();
 
@@ -920,26 +916,26 @@ class FlexibleDisplay extends MDIDisplay {
 
    /** @summary create new frame */
    createFrame(title) {
-
       this.beforeCreateFrame(title);
 
-      let mdi = this,
-          dom = this.selectDom(),
-          top = dom.select('.jsroot_flex_top');
+      const mdi = this,
+            dom = this.selectDom();
+      let top = dom.select('.jsroot_flex_top');
 
-      if (top.empty())
+      if (top.empty()) {
          top = dom.append('div')
                   .attr('class', 'jsroot_flex_top')
                   .attr('style', 'overflow: auto; position: relative; height: 100%; width: 100%');
+      }
 
-      let w = top.node().clientWidth,
+      const w = top.node().clientWidth,
           h = top.node().clientHeight,
           main = top.append('div');
 
-      main.html(`<div class='jsroot_flex_header' style='height: 23px; overflow: hidden; background-color: lightblue'>` +
+      main.html('<div class=\'jsroot_flex_header\' style=\'height: 23px; overflow: hidden; background-color: lightblue\'>' +
                 `<p style='margin: 1px; float: left; font-size: 14px; padding-left: 5px'>${title}</p></div>`+
                 `<div id='${this.frameid}_cont${this.cnt}' class='jsroot_flex_draw' style='overflow: hidden; width: 100%; height: calc(100% - 24px); background: white'></div>`+
-                `<div class='jsroot_flex_resize' style='position: absolute; right: 3px; bottom: 1px; overflow: hidden; cursor: nwse-resize'>&#x25FF;</div>`);
+                '<div class=\'jsroot_flex_resize\' style=\'position: absolute; right: 3px; bottom: 1px; overflow: hidden; cursor: nwse-resize\'>&#x25FF;</div>');
 
       main.attr('class', 'jsroot_flex_frame')
          .style('position', 'absolute')
@@ -962,16 +958,16 @@ class FlexibleDisplay extends MDIDisplay {
          .html(d => d.n)
          .on('click', function() { mdi._clickButton(this); });
 
-      let moving_frame = null, moving_div = null, doing_move = false,
-          drag_object = d3_drag().subject(Object), current = [];
+      let moving_frame = null, moving_div = null, doing_move = false, current = [];
+      const drag_object = d3_drag().subject(Object);
       drag_object.on('start', function(evnt) {
          if (evnt.sourceEvent.target.type == 'button')
             return mdi._clickButton(evnt.sourceEvent.target);
 
          if (detectRightButton(evnt.sourceEvent)) return;
 
-         let main = d3_select(this.parentNode);
-         if(!main.classed('jsroot_flex_frame') || (main.property('state') == 'max')) return;
+         const main = d3_select(this.parentNode);
+         if (!main.classed('jsroot_flex_frame') || (main.property('state') == 'max')) return;
 
          doing_move = !d3_select(this).classed('jsroot_flex_resize');
          if (!doing_move && (main.property('state') == 'min')) return;
@@ -980,24 +976,24 @@ class FlexibleDisplay extends MDIDisplay {
 
          moving_div = top.append('div').attr('style', main.attr('style')).style('border', '2px dotted #00F');
 
-         if (main.property('state') == 'min')
+         if (main.property('state') === 'min') {
             moving_div.style('width', main.node().clientWidth + 'px')
                       .style('height', main.node().clientHeight + 'px');
+         }
 
          evnt.sourceEvent.preventDefault();
          evnt.sourceEvent.stopPropagation();
 
          moving_frame = main;
          current = [];
-
       }).on('drag', function(evnt) {
          if (!moving_div) return;
          evnt.sourceEvent.preventDefault();
          evnt.sourceEvent.stopPropagation();
-         let changeProp = (i,name,dd) => {
+         const changeProp = (i, name, dd) => {
             if (i >= current.length) {
-               let v = moving_div.style(name);
-               current[i] = parseInt(v.slice(0,v.length-2));
+               const v = moving_div.style(name);
+               current[i] = parseInt(v.slice(0, v.length-2));
             }
             current[i] += dd;
             moving_div.style(name, Math.max(0, current[i])+'px');
@@ -1029,7 +1025,7 @@ class FlexibleDisplay extends MDIDisplay {
       main.select('.jsroot_flex_header').call(drag_object);
       main.select('.jsroot_flex_resize').call(drag_object);
 
-      let draw_frame = main.select('.jsroot_flex_draw')
+      const draw_frame = main.select('.jsroot_flex_draw')
                            .attr('frame_title', title)
                            .property('frame_cnt', this.cnt++)
                            .node();
@@ -1052,7 +1048,7 @@ class FlexibleDisplay extends MDIDisplay {
 
    /** @summary close all frames */
    closeAllFrames() {
-      let arr = [];
+      const arr = [];
       this.forEachFrame(frame => arr.push(frame));
       arr.forEach(frame => {
          this.cleanupFrame(frame);
@@ -1062,39 +1058,40 @@ class FlexibleDisplay extends MDIDisplay {
 
    /** @summary cascade frames */
    sortFrames(kind) {
-      let arr = [];
+      const arr = [];
       this.forEachFrame(frame => {
-         let state = this.getFrameState(frame);
+         const state = this.getFrameState(frame);
          if (state == 'min') return;
          if (state == 'max') this.changeFrameState(frame, 'normal', true);
          arr.push(frame);
       });
 
-      if (arr.length == 0) return;
+      if (arr.length === 0) return;
 
-      let top = this.selectDom(),
-          w = top.node().clientWidth,
-          h = top.node().clientHeight,
-          dx = Math.min(40, Math.round(w*0.4/arr.length)),
-          dy = Math.min(40, Math.round(h*0.4/arr.length)),
-          nx = Math.ceil(Math.sqrt(arr.length)), ny = nx;
+      const top = this.selectDom(),
+            w = top.node().clientWidth,
+            h = top.node().clientHeight,
+            dx = Math.min(40, Math.round(w*0.4/arr.length)),
+            dy = Math.min(40, Math.round(h*0.4/arr.length));
+      let nx = Math.ceil(Math.sqrt(arr.length)), ny = nx;
 
       // calculate number of divisions for 'tile' sorting
       if ((nx > 1) && (nx*(nx-1) >= arr.length))
         if (w > h) ny--; else nx--;
 
-      arr.forEach((frame,i) => {
-         let main = d3_select(frame.parentNode);
-         if (kind == 'cascade')
+      arr.forEach((frame, i) => {
+         const main = d3_select(frame.parentNode);
+         if (kind === 'cascade') {
             main.style('left', (i*dx) + 'px')
                 .style('top', (i*dy) + 'px')
                 .style('width', Math.round(w * 0.58) + 'px')
                 .style('height', Math.round(h * 0.58) + 'px');
-         else
+         } else {
             main.style('left', Math.round(w/nx*(i%nx)) + 'px')
                 .style('top', Math.round(h/ny*((i-i%nx)/nx)) + 'px')
                 .style('width', Math.round(w/nx - 4) + 'px')
                 .style('height', Math.round(h/ny - 4) + 'px');
+         }
          resize(frame);
       });
    }
@@ -1111,9 +1108,9 @@ class FlexibleDisplay extends MDIDisplay {
          arr.push(f);
          if (this.getFrameState(f) == 'min') nummin++;
       });
-      let active = this.getActiveFrame();
+      const active = this.getActiveFrame();
 
-      arr.sort((f1,f2) => (d3_select(f1).property('frame_cnt') < d3_select(f2).property('frame_cnt') ? -1 : 1));
+      arr.sort((f1, f2) => (d3_select(f1).property('frame_cnt') < d3_select(f2).property('frame_cnt') ? -1 : 1));
 
       createMenu(evnt, this).then(menu => {
          menu.add('header:Flex');
@@ -1126,9 +1123,9 @@ class FlexibleDisplay extends MDIDisplay {
          menu.add('Close all', () => this.closeAllFrames());
          menu.add('separator');
 
-         arr.forEach((f,i) => menu.addchk((f===active), ((this.getFrameState(f) == 'min') ? '[min] ' : '') + d3_select(f).attr('frame_title'), i,
+         arr.forEach((f, i) => menu.addchk((f===active), ((this.getFrameState(f) == 'min') ? '[min] ' : '') + d3_select(f).attr('frame_title'), i,
                       arg => {
-                        let frame = arr[arg];
+                        const frame = arr[arg];
                         if (this.getFrameState(frame) == 'min')
                            this.changeFrameState(frame, 'normal');
                         this.activateFrame(frame);
@@ -1167,12 +1164,12 @@ class BatchDisplay extends MDIDisplay {
    createFrame(title) {
       this.beforeCreateFrame(title);
 
-      let frame =
+      const frame =
          this.jsdom_body.append('div')
              .style('visible', 'hidden')
              .attr('width', this.width).attr('height', this.height)
              .style('width', this.width + 'px').style('height', this.height + 'px')
-             .attr('id','jsroot_batch_' + this.frames.length)
+             .attr('id', 'jsroot_batch_' + this.frames.length)
              .attr('frame_title', title);
 
       this.frames.push(frame.node());
@@ -1186,9 +1183,9 @@ class BatchDisplay extends MDIDisplay {
    /** @summary returns JSON representation if any
      * @desc Now works only for inspector, can be called once */
    makeJSON(id, spacing) {
-      let frame = this.frames[id];
+      const frame = this.frames[id];
       if (!frame) return;
-      let obj = d3_select(frame).property('_json_object_');
+      const obj = d3_select(frame).property('_json_object_');
       if (obj) {
          d3_select(frame).property('_json_object_', null);
          return toJSON(obj, spacing);
@@ -1197,9 +1194,9 @@ class BatchDisplay extends MDIDisplay {
 
    /** @summary Create SVG for specified frame id */
    makeSVG(id) {
-      let frame = this.frames[id];
+      const frame = this.frames[id];
       if (!frame) return;
-      let main = d3_select(frame);
+      const main = d3_select(frame);
       main.select('svg')
           .attr('xmlns', 'http://www.w3.org/2000/svg')
           .attr('width', this.width)
@@ -1259,41 +1256,40 @@ class BrowserLayout {
    checkResize() {
       if (isFunc(this.hpainter?.checkResize))
          this.hpainter.checkResize();
-      else if (isFunc(this.objpainter?.checkResize)) {
+      else if (isFunc(this.objpainter?.checkResize))
          this.objpainter.checkResize(true);
-      }
    }
 
    /** @summary Create or update CSS style */
    createStyle() {
-      let bkgr_color = settings.DarkMode ? 'black' : '#E6E6FA',
+      const bkgr_color = settings.DarkMode ? 'black' : '#E6E6FA',
           title_color = settings.DarkMode ? '#ccc' : 'inherit',
           text_color = settings.DarkMode ? '#ddd' : 'inherit',
           input_style = settings.DarkMode ? `background-color: #222; color: ${text_color}` : '';
 
       injectStyle(
-         `.jsroot_browser { pointer-events: none; position: absolute; inset: 0px; margin: 0px; border: 0px; overflow: hidden; }`+
+         '.jsroot_browser { pointer-events: none; position: absolute; inset: 0px; margin: 0px; border: 0px; overflow: hidden; }'+
          `.jsroot_draw_area { background-color: ${bkgr_color}; overflow: hidden; margin: 0px; border: 0px; }`+
          `.jsroot_browser_area { color: ${text_color}; background-color: ${bkgr_color}; font-size: 12px; font-family: Verdana; pointer-events: all; box-sizing: initial; }`+
          `.jsroot_browser_area input { ${input_style} }`+
          `.jsroot_browser_area select { ${input_style} }`+
          `.jsroot_browser_title { font-family: Verdana; font-size: 20px; color: ${title_color}; }`+
-         `.jsroot_browser_btns { pointer-events: all; display: flex; flex-direction: column; }`+
-         `.jsroot_browser_area p { margin-top: 5px; margin-bottom: 5px; white-space: nowrap; }`+
-         `.jsroot_browser_hierarchy { flex: 1; margin-top: 2px; }`+
+         '.jsroot_browser_btns { pointer-events: all; display: flex; flex-direction: column; }'+
+         '.jsroot_browser_area p { margin-top: 5px; margin-bottom: 5px; white-space: nowrap; }'+
+         '.jsroot_browser_hierarchy { flex: 1; margin-top: 2px; }'+
          `.jsroot_status_area { background-color: ${bkgr_color}; overflow: hidden; font-size: 12px; font-family: Verdana; pointer-events: all; }`+
-         `.jsroot_browser_resize { position: absolute; right: 3px; bottom: 3px; margin-bottom: 0px; margin-right: 0px; opacity: 0.5; cursor: se-resize; z-index: 1; }`,
+         '.jsroot_browser_resize { position: absolute; right: 3px; bottom: 3px; margin-bottom: 0px; margin-right: 0px; opacity: 0.5; cursor: se-resize; z-index: 1; }',
           this.main().node(), 'browser_layout_style');
    }
 
    /** @summary method used to create basic elements
      * @desc should be called only once */
    create(with_browser) {
-      let main = this.main();
+      const main = this.main();
 
       main.append('div').attr('id', this.drawing_divid())
                         .classed('jsroot_draw_area', true)
-                        .style('position','absolute').style('left',0).style('top',0).style('bottom',0).style('right',0);
+                        .style('position', 'absolute').style('left', 0).style('top', 0).style('bottom', 0).style('right', 0);
 
       if (with_browser)
          main.append('div').classed('jsroot_browser', true);
@@ -1303,14 +1299,14 @@ class BrowserLayout {
 
    /** @summary Create buttons in the layout */
    createBrowserBtns() {
-      let br = this.browser();
+      const br = this.browser();
       if (br.empty()) return;
       let btns = br.select('.jsroot_browser_btns');
-      if (btns.empty())
+      if (btns.empty()) {
          btns = br.append('div')
                   .attr('class', 'jsroot jsroot_browser_btns')
                   .attr('style', 'position:absolute; left:7px; top: 7px');
-      else
+      } else
          btns.html('');
       return btns;
    }
@@ -1322,26 +1318,26 @@ class BrowserLayout {
 
    /** @summary Set browser content */
    setBrowserContent(guiCode) {
-      let main = this.browser();
+      const main = this.browser();
       if (main.empty()) return;
 
       main.insert('div', '.jsroot_browser_btns').classed('jsroot_browser_area', true)
-          .style('position','absolute').style('left',0).style('top',0).style('bottom',0).style('width','250px')
+          .style('position', 'absolute').style('left', 0).style('top', 0).style('bottom', 0).style('width', '250px')
           .style('overflow', 'hidden')
-          .style('padding-left','5px')
-          .style('display','flex').style('flex-direction', 'column')   /* use the flex model */
+          .style('padding-left', '5px')
+          .style('display', 'flex').style('flex-direction', 'column')   /* use the flex model */
           .html(`<p class='jsroot_browser_title'>title</p><div class='jsroot_browser_resize' style='display:none'>&#9727</div>${guiCode}`);
    }
 
    /** @summary Check if there is browser content */
    hasContent() {
-      let main = this.browser();
+      const main = this.browser();
       return main.empty() ? false : !main.select('.jsroot_browser_area').empty();
    }
 
    /** @summary Delete content */
    deleteContent(keep_status) {
-      let main = this.browser();
+      const main = this.browser();
       if (main.empty()) return;
 
       if (!keep_status)
@@ -1354,9 +1350,9 @@ class BrowserLayout {
          main.select('.jsroot_browser_area').remove();
          main.select('.jsroot_browser_btns').remove();
          main.select('.jsroot_v_separator').remove();
-      } else {
+      } else
          main.selectAll('*').remove();
-      }
+
       delete this.browser_visible;
       delete this.browser_kind;
 
@@ -1365,16 +1361,16 @@ class BrowserLayout {
 
    /** @summary Returns true when status line exists */
    hasStatus() {
-      let main = this.browser();
+      const main = this.browser();
       return main.empty() ? false : !this.status().empty();
    }
 
    /** @summary Set browser title text
      * @desc Title also used for dragging of the float browser */
    setBrowserTitle(title) {
-      let main = this.browser(),
+      const main = this.browser(),
           elem = !main.empty() ? main.select('.jsroot_browser_title') : null;
-      if (elem) elem.text(title).style('cursor',this.browser_kind == 'flex' ? 'move' : null);
+      if (elem) elem.text(title).style('cursor', this.browser_kind == 'flex' ? 'move' : null);
       return elem;
    }
 
@@ -1389,18 +1385,17 @@ class BrowserLayout {
 
    /** @summary Creates status line */
    async createStatusLine(height, mode) {
-
-      let main = this.browser();
+      const main = this.browser();
       if (main.empty())
          return '';
 
-      let id = this.gui_div + '_status',
+      const id = this.gui_div + '_status',
           line = d3_select('#'+id),
           is_visible = !line.empty();
 
-      if (mode === 'toggle') {
+      if (mode === 'toggle')
          mode = !is_visible;
-      } else if (mode === 'delete') {
+       else if (mode === 'delete') {
          mode = false; height = 0; delete this.status_layout;
       } else if (mode === undefined) {
          mode = true; this.status_layout = 'app';
@@ -1410,7 +1405,7 @@ class BrowserLayout {
          if (mode === true)
             return id;
 
-         let hsepar = main.select('.jsroot_h_separator');
+         const hsepar = main.select('.jsroot_h_separator');
 
          hsepar.remove();
          line.remove();
@@ -1430,20 +1425,20 @@ class BrowserLayout {
       if (mode === false)
          return '';
 
-      let left_pos = this.drawing().style('left');
+      const left_pos = this.drawing().style('left');
 
-      main.insert('div','.jsroot_browser_area')
-          .attr('id',id)
+      main.insert('div', '.jsroot_browser_area')
+          .attr('id', id)
           .classed('jsroot_status_area', true)
-          .style('position','absolute').style('left',left_pos).style('height','20px').style('bottom',0).style('right',0)
-          .style('margin',0).style('border',0);
+          .style('position', 'absolute').style('left', left_pos).style('height', '20px').style('bottom', 0).style('right', 0)
+          .style('margin', 0).style('border', 0);
 
-      let separ_color = settings.DarkMode ? 'grey' : 'azure',
+      const separ_color = settings.DarkMode ? 'grey' : 'azure',
           hsepar = main.insert('div', '.jsroot_browser_area')
                        .classed('jsroot_h_separator', true)
-                       .attr('style', `pointer-events: all; border: 0; margin: 0; padding: 0; background-color: ${separ_color}; position: absolute; left: ${left_pos}; right: 0; bottom: 20px; height: 5px; cursor: ns-resize;`);
+                       .attr('style', `pointer-events: all; border: 0; margin: 0; padding: 0; background-color: ${separ_color}; position: absolute; left: ${left_pos}; right: 0; bottom: 20px; height: 5px; cursor: ns-resize;`),
 
-      let drag_move = d3_drag().on('start', () => {
+       drag_move = d3_drag().on('start', () => {
           this._hsepar_move = this._hsepar_position;
           hsepar.style('background-color', 'grey');
       }).on('drag', evnt => {
@@ -1465,16 +1460,17 @@ class BrowserLayout {
 
       this.adjustSeparators(null, height, true);
 
-      if (this.status_layout == 'app')
+      if (this.status_layout === 'app')
          return id;
 
       this.status_layout = new GridDisplay(id, 'horizx4_1213');
 
-      let frame_titles = ['object name', 'object title', 'mouse coordinates', 'object info'];
-      for (let k = 0; k < 4; ++k)
+      const frame_titles = ['object name', 'object title', 'mouse coordinates', 'object info'];
+      for (let k = 0; k < 4; ++k) {
          d3_select(this.status_layout.getGridFrame(k))
            .attr('title', frame_titles[k]).style('overflow', 'hidden')
            .append('label').attr('style', 'margin: 3px; margin-left: 5px; font-size: 14px; vertical-align: middle; white-space: nowrap;');
+      }
 
       internals.showStatus = this.status_handler = this.showStatus.bind(this);
 
@@ -1483,16 +1479,15 @@ class BrowserLayout {
 
    /** @summary Adjust separator positions */
    adjustSeparators(vsepar, hsepar, redraw, first_time) {
-
       if (!this.gui_div) return;
 
-      let main = this.browser(), w = 5;
+      const main = this.browser(), w = 5;
 
       if ((hsepar === null) && first_time && !main.select('.jsroot_h_separator').empty()) {
          // if separator set for the first time, check if status line present
          hsepar = main.select('.jsroot_h_separator').style('bottom');
          if (isStr(hsepar) && (hsepar.length > 2) && (hsepar.indexOf('px') == hsepar.length-2))
-            hsepar = hsepar.slice(0,hsepar.length-2);
+            hsepar = hsepar.slice(0, hsepar.length-2);
          else
             hsepar = null;
       }
@@ -1504,7 +1499,7 @@ class BrowserLayout {
          if (!elem.empty()) {
             if (hsepar < 5) hsepar = 5;
 
-            let maxh = main.node().clientHeight - w;
+            const maxh = main.node().clientHeight - w;
             if (maxh > 0) {
                if (hsepar < 0) hsepar += maxh;
                if (hsepar > maxh) hsepar = maxh;
@@ -1541,7 +1536,7 @@ class BrowserLayout {
 
       let maxh = 0;
       for (let n = 0; n < 4; ++n) {
-         let lbl = this.status_layout.getGridFrame(n).querySelector('label');
+         const lbl = this.status_layout.getGridFrame(n).querySelector('label');
          maxh = Math.max(maxh, lbl.clientHeight);
          lbl.innerHTML = msgs[n] || '';
       }
@@ -1557,7 +1552,7 @@ class BrowserLayout {
    toggleBrowserVisisbility(fast_close) {
       if (!this.gui_div || isStr(this.browser_visible)) return;
 
-      let main = this.browser(), area = main.select('.jsroot_browser_area');
+      const main = this.browser(), area = main.select('.jsroot_browser_area');
 
       if (area.empty()) return;
 
@@ -1569,7 +1564,7 @@ class BrowserLayout {
 
       if (!this.browser_visible) {
          if (fast_close) return;
-         area.property('last_left', null).property('last_vsepar',null).property('last_drawing', null);
+         area.property('last_left', null).property('last_vsepar', null).property('last_drawing', null);
       } else {
          area.property('last_left', area.style('left'));
          if (!vsepar.empty()) {
@@ -1578,7 +1573,7 @@ class BrowserLayout {
          }
 
          tgt = (-area.node().clientWidth - 10) + 'px';
-         let mainw = main.node().clientWidth;
+         const mainw = main.node().clientWidth;
 
          if (vsepar.empty() && (area.node().offsetLeft > mainw/2))
             tgt = (mainw+10) + 'px';
@@ -1587,7 +1582,7 @@ class BrowserLayout {
          tgt_drawing = '0px';
       }
 
-      let visible_at_the_end  = !this.browser_visible, _duration = fast_close ? 0 : 700;
+      const visible_at_the_end  = !this.browser_visible, _duration = fast_close ? 0 : 700;
 
       this.browser_visible = 'changing';
 
@@ -1615,21 +1610,21 @@ class BrowserLayout {
    adjustBrowserSize(onlycheckmax) {
       if (!this.gui_div || (this.browser_kind !== 'float')) return;
 
-      let main = this.browser();
+      const main = this.browser();
       if (main.empty()) return;
 
-      let area = main.select('.jsroot_browser_area'),
+      const area = main.select('.jsroot_browser_area'),
           cont = main.select('.jsroot_browser_hierarchy'),
           chld = d3_select(cont.node().firstChild);
 
       if (onlycheckmax) {
          if (area.node().parentNode.clientHeight - 10 < area.node().clientHeight)
-            area.style('bottom', '0px').style('top','0px');
+            area.style('bottom', '0px').style('top', '0px');
          return;
       }
 
       if (chld.empty()) return;
-      let h1 = cont.node().clientHeight,
+      const h1 = cont.node().clientHeight,
           h2 = chld.node().clientHeight;
 
       if ((h2 !== undefined) && (h2 < h1*0.7)) area.style('bottom', '');
@@ -1646,7 +1641,7 @@ class BrowserLayout {
       if (btns.empty()) return;
 
       if (this.browser_visible) {
-         let area = main.select('.jsroot_browser_area');
+         const area = main.select('.jsroot_browser_area');
 
          top = area.node().offsetTop + 7;
 
@@ -1658,7 +1653,6 @@ class BrowserLayout {
 
    /** @summary Toggle browser kind */
    async toggleBrowserKind(kind) {
-
       if (!this.gui_div)
          return null;
 
@@ -1668,23 +1662,21 @@ class BrowserLayout {
          kind = (this.browser_kind === 'float') ? 'fix' : 'float';
       }
 
-      let main = this.browser(),
+      const main = this.browser(),
           area = main.select('.jsroot_browser_area');
 
       if (this.browser_kind === 'float') {
           area.style('bottom', '0px')
               .style('top', '0px')
-              .style('width','').style('height','')
+              .style('width', '').style('height', '')
               .classed('jsroot_float_browser', false)
               .style('border', null);
-
-
       } else if (this.browser_kind === 'fix') {
          main.select('.jsroot_v_separator').remove();
          area.style('left', '0px');
-         this.drawing().style('left','0px'); // reset size
-         main.select('.jsroot_h_separator').style('left','0px');
-         this.status().style('left','0px'); // reset left
+         this.drawing().style('left', '0px'); // reset size
+         main.select('.jsroot_h_separator').style('left', '0px');
+         this.status().style('left', '0px'); // reset left
          this.checkResize();
       }
 
@@ -1699,13 +1691,12 @@ class BrowserLayout {
              .classed('jsroot_float_browser', true)
              .style('border', 'solid 3px white');
 
-        let drag_move = d3_drag().on('start', () => {
-           let sl = area.style('left'), st = area.style('top');
-           this._float_left = parseInt(sl.slice(0,sl.length-2));
-           this._float_top = parseInt(st.slice(0,st.length-2));
+        const drag_move = d3_drag().on('start', () => {
+           const sl = area.style('left'), st = area.style('top');
+           this._float_left = parseInt(sl.slice(0, sl.length-2));
+           this._float_top = parseInt(st.slice(0, st.length-2));
            this._max_left = Math.max(0, main.node().clientWidth - area.node().offsetWidth - 1);
            this._max_top = Math.max(0, main.node().clientHeight - area.node().offsetHeight - 1);
-
         }).filter(evnt => {
             return main.select('.jsroot_browser_title').node() === evnt.target;
         }).on('drag', evnt => {
@@ -1714,11 +1705,11 @@ class BrowserLayout {
            area.style('left', Math.min(Math.max(0, this._float_left), this._max_left) + 'px')
                .style('top', Math.min(Math.max(0, this._float_top), this._max_top) + 'px');
            this.setButtonsPosition();
-        });
+        }),
 
-        let drag_resize = d3_drag().on('start', () => {
-           let sw = area.style('width');
-           this._float_width = parseInt(sw.slice(0,sw.length-2));
+         drag_resize = d3_drag().on('start', () => {
+           const sw = area.style('width');
+           this._float_width = parseInt(sw.slice(0, sw.length-2));
            this._float_height = area.node().clientHeight;
            this._max_width = main.node().clientWidth - area.node().offsetLeft - 1;
            this._max_height = main.node().clientHeight - area.node().offsetTop - 1;
@@ -1736,17 +1727,15 @@ class BrowserLayout {
         main.select('.jsroot_browser_resize').call(drag_resize);
 
         this.adjustBrowserSize();
-
      } else {
-
         area.style('left', 0).style('top', 0).style('bottom', 0).style('height', null);
 
-        let separ_color = settings.DarkMode ? 'grey' : 'azure',
+        const separ_color = settings.DarkMode ? 'grey' : 'azure',
            vsepar = main.append('div')
                .classed('jsroot_v_separator', true)
-               .attr('style', `pointer-events: all; border: 0; margin: 0; padding: 0; background-color: ${separ_color}; position: absolute; top: 0; bottom: 0; cursor: ew-resize;`);
+               .attr('style', `pointer-events: all; border: 0; margin: 0; padding: 0; background-color: ${separ_color}; position: absolute; top: 0; bottom: 0; cursor: ew-resize;`),
 
-        let drag_move = d3_drag().on('start', () => {
+         drag_move = d3_drag().on('start', () => {
             this._vsepar_move = this._vsepar_position;
             vsepar.style('background-color', 'grey');
         }).on('drag', evnt => {
