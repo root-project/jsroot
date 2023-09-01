@@ -554,11 +554,11 @@ class TH1Painter extends THistPainter {
             }
 
             if (show_line) {
-               if (path_line.length == 0)
+               if (path_line.length === 0)
                   path_line = `M${midx},${my}`;
-               else if (lx == midx)
+               else if (lx === midx)
                   path_line += `v${my-ly}`;
-               else if (ly == my)
+               else if (ly === my)
                   path_line += `h${midx-lx}`;
                else
                   path_line += `l${midx-lx},${my-ly}`;
@@ -808,7 +808,7 @@ class TH1Painter extends THistPainter {
       if (this.options.Error || this.options.Mark || this.isTF1()) {
          tips.push('x = ' + xlbl, 'y = ' + funcs.axisAsText('y', cont));
          if (this.options.Error) {
-            if (xlbl[0] == '[') tips.push('error x = ' + ((x2 - x1) / 2).toPrecision(4));
+            if (xlbl[0] === '[') tips.push('error x = ' + ((x2 - x1) / 2).toPrecision(4));
             tips.push('error y = ' + histo.getBinError(bin + 1).toPrecision(4));
          }
       } else {
@@ -933,7 +933,7 @@ class TH1Painter extends THistPainter {
             gry1 = Math.round(funcs.gry(cont + binerr)); // up
             gry2 = Math.round(funcs.gry(cont - binerr)); // down
 
-            if ((cont == 0) && this.isTProfile()) findbin = null;
+            if ((cont === 0) && this.isTProfile()) findbin = null;
 
             const dx = (grx2-grx1)*this.options.errorX;
             grx1 = Math.round(midx - dx);
@@ -1086,10 +1086,8 @@ class TH1Painter extends THistPainter {
           nbins = Math.floor(xaxis.fNbins/ sz);
       if (nbins < 2) return;
 
-      let arr = new Array(nbins+2), xbins = null;
-
-      if (xaxis.fXbins.length > 0)
-         xbins = new Array(nbins);
+      const arr = new Array(nbins+2),
+            xbins = (xaxis.fXbins.length > 0) ? new Array(nbins) : null;
 
       arr[0] = histo.fArray[0];
       let indx = 1;
@@ -1128,11 +1126,11 @@ class TH1Painter extends THistPainter {
    /** @summary Perform automatic zoom inside non-zero region of histogram */
    autoZoom() {
       let left = this.getSelectIndex('x', 'left', -1),
-          right = this.getSelectIndex('x', 'right', 1),
-          dist = right - left,
-          histo = this.getHisto();
+          right = this.getSelectIndex('x', 'right', 1);
+      const dist = right - left,
+            histo = this.getHisto();
 
-      if ((dist == 0) || !histo) return;
+      if ((dist === 0) || !histo) return;
 
       // first find minimum
       let min = histo.getBinContent(left + 1);
@@ -1156,9 +1154,9 @@ class TH1Painter extends THistPainter {
    canZoomInside(axis, min, max) {
       const histo = this.getHisto();
 
-      if ((axis == 'x') && histo && (histo.fXaxis.FindBin(max, 0.5) - histo.fXaxis.FindBin(min, 0) > 1)) return true;
+      if ((axis === 'x') && histo && (histo.fXaxis.FindBin(max, 0.5) - histo.fXaxis.FindBin(min, 0) > 1)) return true;
 
-      if ((axis == 'y') && (Math.abs(max-min) > Math.abs(this.ymax-this.ymin)*1e-6)) return true;
+      if ((axis === 'y') && (Math.abs(max-min) > Math.abs(this.ymax-this.ymin)*1e-6)) return true;
 
       return false;
    }
