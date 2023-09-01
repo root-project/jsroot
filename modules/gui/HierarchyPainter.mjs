@@ -195,7 +195,8 @@ function listHierarchy(folder, lst) {
 
    folder._childs = [];
    for (let i = 0; i < lst.arr.length; ++i) {
-      let obj = ismap ? lst.arr[i].first : lst.arr[i], item;
+      const obj = ismap ? lst.arr[i].first : lst.arr[i];
+      let item;
       if (!obj?._typename) {
          item = {
             _name: i.toString(),
@@ -569,8 +570,8 @@ function createStreamerInfoContent(lst) {
       for (let l = 0; l < entry.fElements.arr.length; ++l) {
          const elem = entry.fElements.arr[l];
          if (!elem?.fName) continue;
-         let _name = `${elem.fTypeName} ${elem.fName}`,
-             _title = `${elem.fTypeName} type:${elem.fType}`;
+         let _name = `${elem.fTypeName} ${elem.fName}`;
+         const _title = `${elem.fTypeName} type:${elem.fType}`;
          if (elem.fArrayDim === 1)
             _name += `[${elem.fArrayLength}]`;
          else {
@@ -1051,7 +1052,8 @@ class HierarchyPainter extends BasePainter {
      * @return {Promise} with object like { item, obj, itemname }
      * @private */
    async getObject(arg, options) {
-      let itemname, item, result = { item: null, obj: null };
+      const result = { item: null, obj: null };
+      let itemname, item;
 
       if (arg === null)
          return result;
@@ -1124,7 +1126,8 @@ class HierarchyPainter extends BasePainter {
      * @private */
    isLastSibling(hitem) {
       if (!hitem || !hitem._parent || !hitem._parent._childs) return false;
-      let chlds = hitem._parent._childs, indx = chlds.indexOf(hitem);
+      const chlds = hitem._parent._childs;
+      let indx = chlds.indexOf(hitem);
       if (indx < 0) return false;
       while (++indx < chlds.length)
          if (!('_hidden' in chlds[indx])) return false;
@@ -1136,11 +1139,11 @@ class HierarchyPainter extends BasePainter {
    addItemHtml(hitem, d3prnt, arg) {
       if (!hitem || ('_hidden' in hitem)) return true;
 
-      let isroot = (hitem === this.h),
-          has_childs = ('_childs' in hitem),
-          handle = getDrawHandle(hitem._kind),
-          img1 = '', img2 = '', can_click = false, break_list = false,
-          d3cont, itemname = this.itemFullName(hitem);
+      const isroot = (hitem === this.h),
+            has_childs = ('_childs' in hitem),
+            handle = getDrawHandle(hitem._kind),
+            itemname = this.itemFullName(hitem);
+      let img1 = '', img2 = '', can_click = false, break_list = false, d3cont;
 
       if (handle) {
          if ('icon' in handle) img1 = handle.icon;
@@ -1347,7 +1350,8 @@ class HierarchyPainter extends BasePainter {
 
       injectHStyle(d3elem.node());
 
-      let h = this, factcmds = [], status_item = null;
+      const h = this, factcmds = [];
+      let status_item = null;
       this.forEachItem(item => {
          delete item._d3cont; // remove html container
          if (('_fastcmd' in item) && (item._kind === 'Command')) factcmds.push(item);
@@ -1574,9 +1578,9 @@ class HierarchyPainter extends BasePainter {
 
          if (handle?.ignore_online && this.isOnlineItem(hitem)) return;
 
+         const dflt_expand = (this.default_by_click === 'expand');
          let can_draw = hitem._can_draw,
              can_expand = hitem._more,
-             dflt_expand = (this.default_by_click === 'expand'),
              drawopt = '';
 
          if (evnt.shiftKey) {
@@ -1728,8 +1732,8 @@ class HierarchyPainter extends BasePainter {
 
       createMenu(evnt, this).then(menu => {
          if ((!itemname || !hitem._parent) && !('_jsonfile' in hitem)) {
-            let files = [], addr = '', cnt = 0,
-                separ = () => (cnt++ > 0) ? '&' : '?';
+            let addr = '', cnt = 0;
+            const files = [], separ = () => (cnt++ > 0) ? '&' : '?';
 
             this.forEachRootFile(item => files.push(item._file.fFullURL));
 
@@ -1750,8 +1754,8 @@ class HierarchyPainter extends BasePainter {
             const items = [], opts = [];
 
             this.disp?.forEachFrame(frame => {
-               let dummy = new ObjectPainter(frame),
-                   top = dummy.getTopPainter(),
+               const dummy = new ObjectPainter(frame);
+               let top = dummy.getTopPainter(),
                    item = top ? top.getItemName() : null, opt;
 
                if (item)
@@ -1908,14 +1912,14 @@ class HierarchyPainter extends BasePainter {
      * @param {boolean} [interactive] - if display was called in interactive mode, will activate selected drawing
      * @return {Promise} with created painter object */
    async display(itemname, drawopt, interactive) {
+      const display_itemname = itemname,
+            marker = '::_display_on_frame_::';
       let painter = null,
           updating = false,
           item = null,
-          display_itemname = itemname,
-          frame_name = itemname,
-          marker = '::_display_on_frame_::',
-          p = drawopt ? drawopt.indexOf(marker) : -1;
+          frame_name = itemname;
 
+      const p = drawopt?.indexOf(marker) ?? -1;
       if (p >= 0) {
          frame_name = drawopt.slice(p + marker.length);
          drawopt = drawopt.slice(0, p);
@@ -2103,7 +2107,8 @@ class HierarchyPainter extends BasePainter {
       if (!this.disp)
          return false;
 
-      let allitems = [], options = [], only_auto_items = false, want_update_all = false;
+      const allitems = [], options = [];
+      let only_auto_items = false, want_update_all = false;
 
       if (isStr(arg))
          arg = [arg];
@@ -2124,7 +2129,8 @@ class HierarchyPainter extends BasePainter {
             const item = this.findItem(itemname);
             if (!item || ('_not_monitor' in item) || ('_player' in item)) return;
             if (!('_always_monitor' in item)) {
-               let forced = false, handle = getDrawHandle(item._kind);
+               const handle = getDrawHandle(item._kind);
+               let forced = false;
                if (handle?.monitor !== undefined) {
                   if ((handle.monitor === false) || (handle.monitor === 'never')) return;
                   if (handle.monitor === 'always') forced = true;
@@ -2176,14 +2182,15 @@ class HierarchyPainter extends BasePainter {
       }
 
       const dropitems = new Array(items.length),
-          dropopts = new Array(items.length),
-          images = new Array(items.length);
+            dropopts = new Array(items.length),
+            images = new Array(items.length);
 
       // First of all check that items are exists, look for cycle extension and plus sign
       for (let i = 0; i < items.length; ++i) {
          dropitems[i] = dropopts[i] = null;
 
-         let item = items[i], can_split = true;
+         const item = items[i];
+         let can_split = true;
 
          if (item?.indexOf('img:') === 0) { images[i] = true; continue; }
 
@@ -3131,13 +3138,14 @@ class HierarchyPainter extends BasePainter {
    /** @summary function updates object drawings for other painters
      * @private */
    updateOnOtherFrames(painter, obj) {
-      let mdi = this.disp, isany = false;
+      const mdi = this.disp;
       if (!mdi) return false;
 
       const handle = obj._typename ? getDrawHandle(prROOT + obj._typename) : null;
       if (handle?.draw_field && obj[handle?.draw_field])
          obj = obj[handle?.draw_field];
 
+      let isany = false;
       mdi.forEachPainter((p /*, frame */) => {
          if ((p === painter) || (p.getItemName() !== painter.getItemName())) return;
 
@@ -3194,8 +3202,8 @@ class HierarchyPainter extends BasePainter {
          let res = [];
 
          while (opt) {
-            let separ = opt.indexOf(';'),
-                part = (separ > 0) ? opt.slice(0, separ) : opt;
+            const separ = opt.indexOf(';');
+            let part = (separ > 0) ? opt.slice(0, separ) : opt;
 
             opt = (separ > 0) ? opt.slice(separ+1) : '';
 
@@ -3234,25 +3242,27 @@ class HierarchyPainter extends BasePainter {
                res.push(val);
          }
          return res;
-      };
+      },
+
+      filesdir = d.get('path') || '', // path used in normal gui
+      jsonarr = GetOptionAsArray('#json;jsons'),
+      expanditems = GetOptionAsArray('expand'),
+      focusitem = GetOption('focus'),
+      layout = GetOption('layout'),
+      style = GetOptionAsArray('#style'),
+      title = GetOption('title');
 
       let prereq = GetOption('prereq') || '',
           load = GetOption('load'),
           inject = GetOption('inject'),
-          filesdir = d.get('path') || '', // path used in normal gui
           filesarr = GetOptionAsArray('#file;files'),
-          jsonarr = GetOptionAsArray('#json;jsons'),
-          expanditems = GetOptionAsArray('expand'),
-          focusitem = GetOption('focus'),
           itemsarr = GetOptionAsArray('#item;items'),
           optionsarr = GetOptionAsArray('#opt;opts'),
           monitor = GetOption('monitoring'),
-          layout = GetOption('layout'),
-          style = GetOptionAsArray('#style'),
           statush = 0, status = GetOption('status'),
           browser_kind = GetOption('browser'),
-          browser_configured = !!browser_kind,
-          title = GetOption('title');
+          browser_configured = !!browser_kind;
+
 
       if (monitor === null)
          monitor = 0;
@@ -3747,7 +3757,8 @@ async function drawInspector(dom, obj) {
       if (sett.opts) {
          menu.addDrawMenu('nosub:Draw', sett.opts, arg => {
             if (!hitem?._obj) return;
-            let obj = hitem._obj, ddom = this.selectDom().node();
+            const obj = hitem._obj;
+            let ddom = this.selectDom().node();
             if (isFunc(this.removeInspector)) {
                ddom = ddom.parentNode;
                this.removeInspector();
