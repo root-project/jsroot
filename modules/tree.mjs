@@ -369,10 +369,10 @@ function findBranch(tree, name) {
 }
 
 
-/** @summary Returns number of branches in the TTree
-  * @desc Checks also sub-branches in the branches
-  * @return {number} number of branches
-  * @private
+/** summary Returns number of branches in the TTree
+  * desc Checks also sub-branches in the branches
+  * return {number} number of branches
+  * private
 function getNumBranches(tree) {
    function count(obj) {
       if (!obj?.fBranches) return 0;
