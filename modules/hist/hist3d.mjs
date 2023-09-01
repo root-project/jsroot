@@ -32,18 +32,18 @@ function createTextGeometry(painter, lbl, size) {
       }
 
       append(kind) {
-         if (kind == 'svg:g')
+         if (kind === 'svg:g')
             return new TextParseWrapper('g', this);
-         if (kind == 'svg:text')
+         if (kind === 'svg:text')
             return new TextParseWrapper('text', this);
-         if (kind == 'svg:path')
+         if (kind === 'svg:path')
             return new TextParseWrapper('path', this);
          console.log('should create', kind);
       }
 
       style(name, value) {
          // console.log(`style ${name} = ${value}`);
-         if ((name == 'stroke-width') && value)
+         if ((name === 'stroke-width') && value)
             stroke_width = Number.parseInt(value);
          return this;
       }
@@ -51,7 +51,7 @@ function createTextGeometry(painter, lbl, size) {
       translate() {
          if (this.geom) {
             // special workaround for path elements, while 3d font is exact height, keep some space on the top
-            // let dy = this.kind == 'path' ? this.font_size*0.002 : 0;
+            // let dy = this.kind === 'path' ? this.font_size*0.002 : 0;
             this.geom.translate(this.x, this.y, 0);
          }
          this.childs.forEach(chld => {
@@ -71,14 +71,14 @@ function createTextGeometry(painter, lbl, size) {
                   return res;
                }, getN = (skip) => {
                   let p = 0;
-                  while (((value[p] >= '0') && (value[p] <= '9')) || (value[p] == '-')) p++;
+                  while (((value[p] >= '0') && (value[p] <= '9')) || (value[p] === '-')) p++;
                   const res = Number.parseInt(value.slice(0, p));
                   value = value.slice(p);
                   if (skip) get();
                   return res;
                };
 
-         if ((name == 'font-size') && value)
+         if ((name === 'font-size') && value)
             this.font_size = Number.parseInt(value);
          else if ((name === 'transform') && isStr(value) && (value.indexOf('translate') === 0)) {
             const arr = value.slice(value.indexOf('(')+1, value.lastIndexOf(')')).split(',');
@@ -127,7 +127,7 @@ function createTextGeometry(painter, lbl, size) {
       }
 
       text(v) {
-         if (this.kind == 'text') {
+         if (this.kind === 'text') {
             this.geom = new TextGeometry(v, { font: HelveticerRegularFont, size: Math.round(0.01*this.font_size), height: 0, curveSegments: 5 });
             geoms.push(this.geom);
          }
@@ -145,7 +145,7 @@ function createTextGeometry(painter, lbl, size) {
 
    node.translate(); // apply translate attributes
 
-   if (geoms.length == 1)
+   if (geoms.length === 1)
       return geoms[0];
 
    let total_size = 0;
@@ -192,7 +192,8 @@ function testAxisVisibility(camera, toplevel, fb = false, bb = false) {
       return;
    }
 
-   let qudrant = 1, pos = camera.position;
+   const pos = camera.position;
+   let qudrant = 1;
    if ((pos.x < 0) && (pos.y >= 0)) qudrant = 2;
    if ((pos.x >= 0) && (pos.y >= 0)) qudrant = 3;
    if ((pos.x >= 0) && (pos.y < 0)) qudrant = 4;
@@ -239,7 +240,8 @@ function testAxisVisibility(camera, toplevel, fb = false, bb = false) {
 function convertLegoBuf(painter, pos, binsx, binsy) {
    if (painter.options.System === kCARTESIAN)
       return pos;
-   let fp = painter.getFramePainter(), kx = 1/fp.size_x3d, ky = 1/fp.size_y3d;
+   const fp = painter.getFramePainter();
+   let kx = 1/fp.size_x3d, ky = 1/fp.size_y3d;
    if (binsx && binsy) {
       kx *= binsx/(binsx-1);
       ky *= binsy/(binsy-1);
@@ -396,8 +398,8 @@ function create3DControl(fp) {
 
       if (tip && !tip.use_itself) {
          const delta_x = 1e-4*frame_painter.size_x3d,
-             delta_y = 1e-4*frame_painter.size_y3d,
-             delta_z = 1e-4*frame_painter.size_z3d;
+               delta_y = 1e-4*frame_painter.size_y3d,
+               delta_z = 1e-4*frame_painter.size_z3d;
          if ((tip.x1 > tip.x2) || (tip.y1 > tip.y2) || (tip.z1 > tip.z2)) console.warn('check 3D hints coordinates');
          tip.x1 -= delta_x; tip.x2 += delta_x;
          tip.y1 -= delta_y; tip.y2 += delta_y;
@@ -407,9 +409,9 @@ function create3DControl(fp) {
       frame_painter.highlightBin3D(tip, mesh);
 
       if (!tip && zoom_mesh && isFunc(frame_painter.get3dZoomCoord)) {
-         let pnt = zoom_mesh.globalIntersect(this.raycaster),
-             axis_name = zoom_mesh.zoom,
-             axis_value = frame_painter.get3dZoomCoord(pnt, axis_name);
+         let axis_name = zoom_mesh.zoom;
+         const pnt = zoom_mesh.globalIntersect(this.raycaster),
+               axis_value = frame_painter.get3dZoomCoord(pnt, axis_name);
 
          if ((axis_name === 'z') && zoom_mesh.use_y_for_z) axis_name = 'y';
 
@@ -576,7 +578,7 @@ function change3DCamera(orthographic) {
   * @desc Timeout used to avoid multiple rendering of the picture when several 3D drawings
   * superimposed with each other.
   * If tmeout <= 0, rendering performed immediately
-  * If tmout == -1111, immediate rendering with SVG renderer is performed
+  * If tmout === -1111, immediate rendering with SVG renderer is performed
   * @private */
 function render3D(tmout) {
    if (tmout === -1111) {
@@ -664,9 +666,8 @@ function resize3D() {
 /** @summary Hilight bin in frame painter 3D drawing
   * @private */
 function highlightBin3D(tip, selfmesh) {
-   let changed = false, tooltip_mesh = null, changed_self = true,
-       want_remove = !tip || (tip.x1 === undefined) || !this.enable_highlight,
-       mainp = this.getMainPainter();
+   const want_remove = !tip || (tip.x1 === undefined) || !this.enable_highlight;
+   let changed = false, tooltip_mesh = null, changed_self = true, mainp = this.getMainPainter();
 
    if (mainp && (!mainp.provideUserTooltip || !mainp.hasUserTooltip())) mainp = null;
 
@@ -776,11 +777,11 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    else
       opts.drawany = true;
 
+   const pad = opts.v7 ? null : this.getPadPainter().getRootPad(true);
    let grminx = -this.size_x3d, grmaxx = this.size_x3d,
        grminy = -this.size_y3d, grmaxy = this.size_y3d,
        grminz = 0, grmaxz = 2*this.size_z3d,
        scalingSize = this.size_z3d,
-       pad = opts.v7 ? null : this.getPadPainter().getRootPad(true),
        xmin = this.xmin, xmax = this.xmax,
        ymin = this.ymin, ymax = this.ymax,
        zmin = this.zmin, zmax = this.zmax,
@@ -855,8 +856,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    let text_scale = 1;
 
    function getLineMaterial(handle, kind) {
-      const col = ((kind == 'ticks') ? handle.ticksColor : handle.lineatt.color) || 'black',
-          linewidth = (kind == 'ticks') ? handle.ticksWidth : handle.lineatt.width,
+      const col = ((kind === 'ticks') ? handle.ticksColor : handle.lineatt.color) || 'black',
+          linewidth = (kind === 'ticks') ? handle.ticksWidth : handle.lineatt.width,
        name = `${col}_${linewidth}`;
       if (!lineMaterials[name])
          lineMaterials[name] = new LineBasicMaterial(getMaterialArgs(col, { linewidth, vertexColors: false }));
@@ -864,7 +865,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    }
 
    function getTextMaterial(handle, kind, custom_color) {
-      const col = custom_color || ((kind == 'title') ? handle.titleFont?.color : handle.labelsFont?.color) || 'black';
+      const col = custom_color || ((kind === 'title') ? handle.titleFont?.color : handle.labelsFont?.color) || 'black';
       if (!textMaterials[col])
          textMaterials[col] = new MeshBasicMaterial(getMaterialArgs(col, { vertexColors: false }));
       return textMaterials[col];
@@ -935,7 +936,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
    this.get3dZoomCoord = function(point, kind) {
       // return axis coordinate from intersection point with axis geometry
-      let pos = point[kind], min = this[`scale_${kind}min`], max = this[`scale_${kind}max`];
+      const min = this[`scale_${kind}min`], max = this[`scale_${kind}max`];
+      let pos = point[kind];
 
       switch (kind) {
          case 'x': pos = (pos + this.size_x3d)/2/this.size_x3d; break;
@@ -951,7 +953,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    };
 
    const createZoomMesh = (kind, size_3d, use_y_for_z) => {
-      let positions, geom = new BufferGeometry(), tsz = Math.max(this[kind+'_handle'].ticksSize, 0.005 * size_3d);
+      const geom = new BufferGeometry(), tsz = Math.max(this[kind+'_handle'].ticksSize, 0.005 * size_3d);
+      let positions;
       if (kind === 'z')
          positions = new Float32Array([0, 0, 0, tsz*4, 0, 2*size_3d, tsz*4, 0, 0, 0, 0, 0, 0, 0, 2*size_3d, tsz*4, 0, 2*size_3d]);
       else
@@ -966,7 +969,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       mesh.size_3d = size_3d;
       mesh.tsz = tsz;
       mesh.use_y_for_z = use_y_for_z;
-      if (kind == 'y') mesh.rotateZ(Math.PI/2).rotateX(Math.PI);
+      if (kind === 'y') mesh.rotateZ(Math.PI/2).rotateX(Math.PI);
 
       mesh.v1 = new Vector3(positions[0], positions[1], positions[2]);
       mesh.v2 = new Vector3(positions[6], positions[7], positions[8]);
@@ -999,7 +1002,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       mesh.showSelection = function(pnt1, pnt2) {
          // used to show selection
 
-         let tgtmesh = this.children ? this.children[0] : null, gg, kind = this.zoom;
+         const kind = this.zoom;
+         let tgtmesh = this.children ? this.children[0] : null, gg;
          if (!pnt1 || !pnt2) {
             if (tgtmesh) {
                this.remove(tgtmesh);
@@ -1015,8 +1019,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
             const pos = gg.getAttribute('position').array;
 
             // original vertices [0, 2, 1, 0, 3, 2]
-            if (kind == 'z') pos[6] = pos[3] = pos[15] = this.tsz;
-                        else pos[4] = pos[16] = pos[13] = -this.tsz;
+            if (kind === 'z') pos[6] = pos[3] = pos[15] = this.tsz;
+                         else pos[4] = pos[16] = pos[13] = -this.tsz;
             tgtmesh = new Mesh(gg, new MeshBasicMaterial({ color: 0xFF00, side: DoubleSide, vertexColors: false }));
             this.add(tgtmesh);
          } else
@@ -1025,7 +1029,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
          const pos = gg.getAttribute('position').array;
 
-         if (kind == 'z') {
+         if (kind === 'z') {
             pos[2] = pos[11] = pos[8] = pnt1[kind];
             pos[5] = pos[17] = pos[14] = pnt2[kind];
          } else {
@@ -1080,8 +1084,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
    lbls.forEach(lbl => {
       const w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
-          posx = (lbl.center ? lbl.grx + w/2 : lbl.opposite ? grminx + w : grmaxx),
-          m = new Matrix4();
+            posx = (lbl.center ? lbl.grx + w/2 : lbl.opposite ? grminx + w : grmaxx),
+            m = new Matrix4();
 
       // matrix to swap y and z scales and shift along z to its position
       m.set(-text_scale, 0,          0, posx,
@@ -1101,8 +1105,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    lbls = []; text_scale = 1; maxtextheight = 0; ticks = [];
 
    while (yticks.next()) {
-      let gry = yticks.grpos,
-          is_major = (yticks.kind === 1),
+      const gry = yticks.grpos;
+      let is_major = (yticks.kind === 1),
           lbl = this.y_handle.format(yticks.tick, 2);
 
       if (yticks.last_major()) {
@@ -1217,7 +1221,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
    while (zticks.next()) {
       const grz = zticks.grpos;
-      let is_major = (zticks.kind == 1),
+      let is_major = (zticks.kind === 1),
           lbl = this.z_handle.format(zticks.tick, 2);
 
       if (lbl === null) { is_major = false; lbl = ''; }
@@ -1291,7 +1295,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       zcont.push(new Object3D());
 
       lbls.forEach((lbl, indx) => {
-         let m = new Matrix4(), grz = lbl.grz;
+         const m = new Matrix4();
+         let grz = lbl.grz;
 
          if (this.z_handle.isCenteredLabels()) {
             if (indx < lbls.length - 1)
@@ -1327,7 +1332,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       }
 
       if (opts.draw && zticksline)
-         zcont[n].add(n == 0 ? zticksline : new LineSegments(zticksline.geometry, zticksline.material));
+         zcont[n].add(n === 0 ? zticksline : new LineSegments(zticksline.geometry, zticksline.material));
 
       if (opts.zoom && opts.drawany)
          zcont[n].add(createZoomMesh('z', this.size_z3d, opts.use_y_for_z));
@@ -1355,13 +1360,13 @@ function drawXYZ(toplevel, AxisPainter, opts) {
        linex_geom = createLineSegments([grminx, 0, 0, grmaxx, 0, 0], linex_material, null, true);
    for (let n = 0; n < 2; ++n) {
       let line = new LineSegments(linex_geom, linex_material);
-      line.position.set(0, grminy, n == 0 ? grminz : grmaxz);
-      line.xyboxid = 2; line.bottom = (n == 0);
+      line.position.set(0, grminy, n === 0 ? grminz : grmaxz);
+      line.xyboxid = 2; line.bottom = (n === 0);
       top.add(line);
 
       line = new LineSegments(linex_geom, linex_material);
-      line.position.set(0, grmaxy, n == 0 ? grminz : grmaxz);
-      line.xyboxid = 4; line.bottom = (n == 0);
+      line.position.set(0, grmaxy, n === 0 ? grminz : grmaxz);
+      line.xyboxid = 4; line.bottom = (n === 0);
       top.add(line);
    }
 
@@ -1369,13 +1374,13 @@ function drawXYZ(toplevel, AxisPainter, opts) {
        liney_geom = createLineSegments([0, grminy, 0, 0, grmaxy, 0], liney_material, null, true);
    for (let n = 0; n < 2; ++n) {
       let line = new LineSegments(liney_geom, liney_material);
-      line.position.set(grminx, 0, n == 0 ? grminz : grmaxz);
-      line.xyboxid = 3; line.bottom = (n == 0);
+      line.position.set(grminx, 0, n === 0 ? grminz : grmaxz);
+      line.xyboxid = 3; line.bottom = (n === 0);
       top.add(line);
 
       line = new LineSegments(liney_geom, liney_material);
-      line.position.set(grmaxx, 0, n == 0 ? grminz : grmaxz);
-      line.xyboxid = 1; line.bottom = (n == 0);
+      line.position.set(grmaxx, 0, n === 0 ? grminz : grmaxz);
+      line.xyboxid = 1; line.bottom = (n === 0);
       top.add(line);
    }
 
@@ -1510,7 +1515,7 @@ function drawBinsLego(painter, is_v7 = false) {
       zmax = levels[nlevel+1];
 
       // artificially extend last level of color palette to maximal visible value
-      if (palette && (nlevel==levels.length-2) && zmax < axis_zmax) zmax = axis_zmax;
+      if (palette && (nlevel === levels.length-2) && zmax < axis_zmax) zmax = axis_zmax;
 
       const grzmin = main.grz(zmin), grzmax = main.grz(zmax);
       let z1 = 0, z2 = 0, numvertices = 0, num2vertices = 0;
@@ -1568,7 +1573,8 @@ function drawBinsLego(painter, is_v7 = false) {
                k += 24;
             }
 
-            let size = indicies.length, bin_index = histo.getBin(i+1, j+1);
+            const bin_index = histo.getBin(i+1, j+1);
+            let size = indicies.length;
             if (nobottom) size -= 6;
 
             // array over all vertices of the single bin
@@ -1658,7 +1664,7 @@ function drawBinsLego(painter, is_v7 = false) {
 
          tip.color = this.tip_color;
          tip.$painter = p;
-         tip.$projection = p.is_projection && (p.getDimension() == 2);
+         tip.$projection = p.is_projection && (p.getDimension() === 2);
 
          return tip;
       };
@@ -1948,7 +1954,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
       if (need_palette > 0) {
          palette = main.getHistPalette();
-         if (need_palette == 2)
+         if (need_palette === 2)
             painter.createContour(main, palette, { full_z_range: true });
          ilevels = palette.getContour();
       }
@@ -1989,8 +1995,9 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
                if (normindx[bin] === -1) continue; // nothing there
 
-               let beg = (normindx[bin]  >= 0) ? bin : bin+9+normindx[bin],
-                   end = bin+8, sumx = 0, sumy = 0, sumz = 0;
+               const beg = (normindx[bin]  >= 0) ? bin : bin + 9 + normindx[bin],
+                     end = bin + 8;
+               let sumx = 0, sumy = 0, sumz = 0;
 
                for (let kk = beg; kk < end; ++kk) {
                   const indx = normindx[kk];
