@@ -46,19 +46,19 @@ class TH3Painter extends THistPainter {
 
    /** @summary Count TH3 statistic */
    countStat() {
-      let histo = this.getHisto(), xaxis = histo.fXaxis, yaxis = histo.fYaxis, zaxis = histo.fZaxis,
+      const histo = this.getHisto(), xaxis = histo.fXaxis, yaxis = histo.fYaxis, zaxis = histo.fZaxis,
+            i1 = this.getSelectIndex('x', 'left'),
+            i2 = this.getSelectIndex('x', 'right'),
+            j1 = this.getSelectIndex('y', 'left'),
+            j2 = this.getSelectIndex('y', 'right'),
+            k1 = this.getSelectIndex('z', 'left'),
+            k2 = this.getSelectIndex('z', 'right'),
+            fp = this.getFramePainter(),
+            res = { name: histo.fName, entries: 0, integral: 0, meanx: 0, meany: 0, meanz: 0, rmsx: 0, rmsy: 0, rmsz: 0 },
+            has_counted_stat = (Math.abs(histo.fTsumw) > 1e-300) && !fp.isAxisZoomed('x') && !fp.isAxisZoomed('y') && !fp.isAxisZoomed('z');
+      let xi, yi, zi, xx, xside, yy, yside, zz, zside, cont,
           stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
-          stat_sumz1 = 0, stat_sumx2 = 0, stat_sumy2 = 0, stat_sumz2 = 0,
-          i1 = this.getSelectIndex('x', 'left'),
-          i2 = this.getSelectIndex('x', 'right'),
-          j1 = this.getSelectIndex('y', 'left'),
-          j2 = this.getSelectIndex('y', 'right'),
-          k1 = this.getSelectIndex('z', 'left'),
-          k2 = this.getSelectIndex('z', 'right'),
-          fp = this.getFramePainter(),
-          res = { name: histo.fName, entries: 0, integral: 0, meanx: 0, meany: 0, meanz: 0, rmsx: 0, rmsy: 0, rmsz: 0 },
-          xi, yi, zi, xx, xside, yy, yside, zz, zside, cont,
-          has_counted_stat = (Math.abs(histo.fTsumw) > 1e-300) && !fp.isAxisZoomed('x') && !fp.isAxisZoomed('y') && !fp.isAxisZoomed('z');
+          stat_sumz1 = 0, stat_sumx2 = 0, stat_sumy2 = 0, stat_sumz2 = 0;
 
       for (xi = 0; xi < this.nbinsx+2; ++xi) {
          xx = xaxis.GetBinCoord(xi - 0.5);
@@ -75,7 +75,7 @@ class TH3Painter extends THistPainter {
                cont = histo.getBinContent(xi, yi, zi);
                res.entries += cont;
 
-               if (!has_counted_stat && (xside == 1) && (yside == 1) && (zside == 1)) {
+               if (!has_counted_stat && (xside === 1) && (yside === 1) && (zside === 1)) {
                   stat_sum0 += cont;
                   stat_sumx1 += xx * cont;
                   stat_sumy1 += yy * cont;
@@ -289,14 +289,12 @@ class TH3Painter extends THistPainter {
       } else if (!box_option && !this.options.GLBox && !this.options.GLColor && !this.options.Lego)
          box_option = 12; // default draw option
 
-
-      let histo = this.getHisto(),
-          fillcolor = this.getColor(histo.fFillColor),
-          main = this.getFramePainter(),
-          buffer_size = 0, use_lambert = false,
+      const histo = this.getHisto(),
+            main = this.getFramePainter();
+      let buffer_size = 0, use_lambert = false,
           use_helper = false, use_colors = false, use_opacity = 1, use_scale = true,
           single_bin_verts, single_bin_norms,
-
+          fillcolor = this.getColor(histo.fFillColor),
           tipscale = 0.5;
 
       if (!box_option && this.options.Lego)
@@ -421,8 +419,8 @@ class TH3Painter extends THistPainter {
             bin_norms = new Array(num_colors),
             bin_tooltips = new Array(num_colors),
             helper_kind = new Array(num_colors),
-            helper_indexes = new Array(num_colors),  // helper_kind == 1, use original vertices
-            helper_positions = new Array(num_colors);  // helper_kind == 2, all vertices copied into separate buffer
+            helper_indexes = new Array(num_colors),  // helper_kind === 1, use original vertices
+            helper_positions = new Array(num_colors);  // helper_kind === 2, all vertices copied into separate buffer
 
       for (let ncol = 0; ncol < cols_size.length; ++ncol) {
          if (!cols_size[ncol]) continue; // ignore dummy colors
@@ -587,7 +585,7 @@ class TH3Painter extends THistPainter {
             histo = this.getHisto();
       let pr = Promise.resolve(true);
 
-      if (reason == 'resize') {
+      if (reason === 'resize') {
          if (main.resize3D()) main.render3D();
       } else {
          assignFrame3DMethods(main);
