@@ -398,19 +398,19 @@ class RH3Painter extends RHistPainter {
          cols_sequence = [0];
       }
 
-      let cols_nbins = new Array(num_colors),
-          bin_verts = new Array(num_colors),
-          bin_norms = new Array(num_colors),
-          bin_tooltips = new Array(num_colors),
-          helper_kind = new Array(num_colors),
-          helper_indexes = new Array(num_colors),  // helper_kind == 1, use original vertices
-          helper_positions = new Array(num_colors);  // helper_kind == 2, all vertices copied into separate buffer
+      const cols_nbins = new Array(num_colors),
+            bin_verts = new Array(num_colors),
+            bin_norms = new Array(num_colors),
+            bin_tooltips = new Array(num_colors),
+            helper_kind = new Array(num_colors),
+            helper_indexes = new Array(num_colors),  // helper_kind == 1, use original vertices
+            helper_positions = new Array(num_colors);  // helper_kind == 2, all vertices copied into separate buffer
 
-      for(let ncol = 0; ncol < cols_size.length; ++ncol) {
+      for (let ncol = 0; ncol < cols_size.length; ++ncol) {
          if (!cols_size[ncol]) continue; // ignore dummy colors
 
          nbins = cols_size[ncol]; // how many bins with specified color
-         let nseq = cols_sequence[ncol];
+         const nseq = cols_sequence[ncol];
 
          cols_nbins[nseq] = 0; // counter for the filled bins
 
@@ -450,7 +450,7 @@ class RH3Painter extends RHistPainter {
 
                let nseq = 0;
                if (use_colors) {
-                  let colindx = palette.getContourIndex(bin_content);
+                  const colindx = palette.getContourIndex(bin_content);
                   if (colindx < 0) continue;
                   nseq = cols_sequence[colindx];
                }
@@ -462,7 +462,8 @@ class RH3Painter extends RHistPainter {
                // remember bin index for tooltip
                bin_tooltips[nseq][nbins] = histo.getBin(i+1, j+1, k+1);
 
-               let vvv = nbins * buffer_size, bin_v = bin_verts[nseq], bin_n = bin_norms[nseq];
+               let vvv = nbins * buffer_size;
+               const bin_v = bin_verts[nseq], bin_n = bin_norms[nseq];
 
                // Grab the coordinates and scale that are being assigned to each bin
                for (let vi = 0; vi < buffer_size; vi+=3, vvv+=3) {
@@ -477,20 +478,20 @@ class RH3Painter extends RHistPainter {
 
                if (helper_kind[nseq] === 1) {
                   // reuse vertices created for the mesh
-                  let helper_segments = Box3D.MeshSegments;
+                  const helper_segments = Box3D.MeshSegments;
                   vvv = nbins * helper_segments.length;
-                  let shift = Math.round(nbins * buffer_size/3),
-                      helper_i = helper_indexes[nseq];
+                  const shift = Math.round(nbins * buffer_size/3),
+                        helper_i = helper_indexes[nseq];
                   for (let n = 0; n < helper_segments.length; ++n)
                      helper_i[vvv+n] = shift + helper_segments[n];
                }
 
                if (helper_kind[nseq] === 2) {
-                  let helper_segments = Box3D.Segments,
-                      helper_p = helper_positions[nseq];
+                  const helper_segments = Box3D.Segments,
+                        helper_p = helper_positions[nseq];
                   vvv = nbins * helper_segments.length * 3;
                   for (let n = 0; n < helper_segments.length; ++n, vvv += 3) {
-                     let vert = Box3D.Vertices[helper_segments[n]];
+                     const vert = Box3D.Vertices[helper_segments[n]];
                      helper_p[vvv]   = grx + (vert.x-0.5)*scalex*wei;
                      helper_p[vvv+1] = gry + (vert.y-0.5)*scaley*wei;
                      helper_p[vvv+2] = grz + (vert.z-0.5)*scalez*wei;
@@ -505,10 +506,9 @@ class RH3Painter extends RHistPainter {
       for (let ncol = 0; ncol < cols_size.length; ++ncol) {
          if (!cols_size[ncol]) continue; // ignore dummy colors
 
-         let nseq = cols_sequence[ncol];
-
-         // BufferGeometries that store geometry of all bins
-         let all_bins_buffgeom = new BufferGeometry();
+         const nseq = cols_sequence[ncol],
+              // BufferGeometries that store geometry of all bins
+              all_bins_buffgeom = new BufferGeometry();
 
          // Create mesh from bin buffergeometry
          all_bins_buffgeom.setAttribute('position', new BufferAttribute(bin_verts[nseq], 3));
@@ -532,16 +532,16 @@ class RH3Painter extends RHistPainter {
          combined_bins.use_scale = use_scale;
 
          combined_bins.tooltip = function(intersect) {
-            let indx = Math.floor(intersect.faceIndex / this.bins_faces);
+            const indx = Math.floor(intersect.faceIndex / this.bins_faces);
             if ((indx < 0) || (indx >= this.bins.length)) return null;
 
-            let p = this.painter,
-                main = p.getFramePainter(),
-                tip = p.get3DToolTip(this.bins[indx]),
-                grx = main.grx(p.getAxis('x').GetBinCoord(tip.ix-0.5)),
-                gry = main.gry(p.getAxis('y').GetBinCoord(tip.iy-0.5)),
-                grz = main.grz(p.getAxis('z').GetBinCoord(tip.iz-0.5)),
-                wei = this.use_scale ? Math.pow(Math.abs(tip.value*this.use_scale), 0.3333) : 1;
+            const p = this.painter,
+                  main = p.getFramePainter(),
+                  tip = p.get3DToolTip(this.bins[indx]),
+                  grx = main.grx(p.getAxis('x').GetBinCoord(tip.ix-0.5)),
+                  gry = main.gry(p.getAxis('y').GetBinCoord(tip.iy-0.5)),
+                  grz = main.grz(p.getAxis('z').GetBinCoord(tip.iz-0.5)),
+                  wei = this.use_scale ? Math.pow(Math.abs(tip.value*this.use_scale), 0.3333) : 1;
 
             tip.x1 = grx - this.scalex*wei; tip.x2 = grx + this.scalex*wei;
             tip.y1 = gry - this.scaley*wei; tip.y2 = gry + this.scaley*wei;
@@ -555,16 +555,12 @@ class RH3Painter extends RHistPainter {
          main.toplevel.add(combined_bins);
 
          if (helper_kind[nseq] > 0) {
-            let lcolor = this.v7EvalColor('line_color', 'lightblue'),
-                helper_material = new LineBasicMaterial({ color: lcolor }),
-                lines = null;
-
-            if (helper_kind[nseq] === 1) {
-               // reuse positions from the mesh - only special index was created
-               lines = createLineSegments(bin_verts[nseq], helper_material, helper_indexes[nseq]);
-            } else {
-               lines = createLineSegments(helper_positions[nseq], helper_material);
-            }
+            const lcolor = this.v7EvalColor('line_color', 'lightblue'),
+                  helper_material = new LineBasicMaterial({ color: lcolor }),
+                  lines = (helper_kind[nseq] === 1)
+                          // reuse positions from the mesh - only special index was created
+                          ? createLineSegments(bin_verts[nseq], helper_material, helper_indexes[nseq])
+                          : createLineSegments(helper_positions[nseq], helper_material);
 
             main.toplevel.add(lines);
          }
@@ -589,13 +585,11 @@ class RH3Painter extends RHistPainter {
       });
    }
 
-
-   /** @summary Redraw histogram*/
+   /** @summary Redraw histogram */
    redraw(reason) {
+      const main = this.getFramePainter(); // who makes axis and 3D drawing
 
-      let main = this.getFramePainter(); // who makes axis and 3D drawing
-
-      if (reason == 'resize') {
+      if (reason === 'resize') {
          if (main.resize3D()) main.render3D();
          return this;
       }
@@ -615,7 +609,7 @@ class RH3Painter extends RHistPainter {
 
    /** @summary Fill pad toolbar with RH3-related functions */
    fillToolbar() {
-      let pp = this.getPadPainter();
+      const pp = this.getPadPainter();
       if (!pp) return;
 
       pp.addPadButton('auto_zoom', 'Unzoom all axes', 'ToggleZoom', 'Ctrl *');
@@ -628,35 +622,38 @@ class RH3Painter extends RHistPainter {
    canZoomInside(axis, min, max) {
       let obj = this.getHisto();
       if (obj) obj = obj['f'+axis.toUpperCase()+'axis'];
-      return !obj || (obj.FindBin(max,0.5) - obj.FindBin(min,0) > 1);
+      return !obj || (obj.FindBin(max, 0.5) - obj.FindBin(min, 0) > 1);
    }
 
    /** @summary Perform automatic zoom inside non-zero region of histogram */
    autoZoom() {
-      let i1 = this.getSelectIndex('x', 'left'),
-          i2 = this.getSelectIndex('x', 'right'),
-          j1 = this.getSelectIndex('y', 'left'),
-          j2 = this.getSelectIndex('y', 'right'),
-          k1 = this.getSelectIndex('z', 'left'),
-          k2 = this.getSelectIndex('z', 'right'),
-          i, j, k, histo = this.getHisto();
+      const i1 = this.getSelectIndex('x', 'left'),
+            i2 = this.getSelectIndex('x', 'right'),
+            j1 = this.getSelectIndex('y', 'left'),
+            j2 = this.getSelectIndex('y', 'right'),
+            k1 = this.getSelectIndex('z', 'left'),
+            k2 = this.getSelectIndex('z', 'right'),
+            histo = this.getHisto();
+      let i, j, k;
 
       if ((i1 === i2) || (j1 === j2) || (k1 === k2)) return;
 
       // first find minimum
       let min = histo.getBinContent(i1 + 1, j1 + 1, k1+1);
-      for (i = i1; i < i2; ++i)
-         for (j = j1; j < j2; ++j)
+      for (i = i1; i < i2; ++i) {
+         for (j = j1; j < j2; ++j) {
             for (k = k1; k < k2; ++k)
                min = Math.min(min, histo.getBinContent(i+1, j+1, k+1));
+         }
+      }
 
       if (min > 0) return; // if all points positive, no chance for autoscale
 
       let ileft = i2, iright = i1, jleft = j2, jright = j1, kleft = k2, kright = k1;
 
-      for (i = i1; i < i2; ++i)
-         for (j = j1; j < j2; ++j)
-            for (k = k1; k < k2; ++k)
+      for (i = i1; i < i2; ++i) {
+         for (j = j1; j < j2; ++j) {
+            for (k = k1; k < k2; ++k) {
                if (histo.getBinContent(i+1, j+1, k+1) > min) {
                   if (i < ileft) ileft = i;
                   if (i >= iright) iright = i + 1;
@@ -665,6 +662,9 @@ class RH3Painter extends RHistPainter {
                   if (k < kleft) kleft = k;
                   if (k >= kright) kright = k + 1;
                }
+            }
+         }
+      }
 
       let xmin, xmax, ymin, ymax, zmin, zmax, isany = false;
 
@@ -696,7 +696,7 @@ class RH3Painter extends RHistPainter {
 
    /** @summary Fill histogram context menu */
    fillHistContextMenu(menu) {
-      let opts = this.getSupportedDrawOptions();
+      const opts = this.getSupportedDrawOptions();
 
       menu.addDrawMenu('Draw with', opts, arg => {
          if (arg === 'inspect')
@@ -709,7 +709,7 @@ class RH3Painter extends RHistPainter {
    }
 
    /** @summary draw RH3 object */
-  static async draw(dom, histo /*, opt*/) {
+  static async draw(dom, histo /* ,opt */) {
       const painter = new RH3Painter(dom, histo);
       painter.mode3d = true;
 
@@ -718,11 +718,11 @@ class RH3Painter extends RHistPainter {
 
          painter.options = { Box: 0, Scatter: false, Sphere: 0, Color: false, minimum: kNoZoom, maximum: kNoZoom, FrontBox: false, BackBox: false };
 
-         let kind = painter.v7EvalAttr('kind', ''),
-             sub = painter.v7EvalAttr('sub', 0),
-             o = painter.options;
+         const kind = painter.v7EvalAttr('kind', ''),
+               sub = painter.v7EvalAttr('sub', 0),
+               o = painter.options;
 
-         switch(kind) {
+         switch (kind) {
             case 'box': o.Box = 10 + sub; break;
             case 'sphere': o.Sphere = 10 + sub; break;
             case 'col': o.Color = true; break;
