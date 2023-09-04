@@ -1333,8 +1333,10 @@ class THistPainter extends ObjectPainter {
 
       if (this.options.PadStats || !histo) return null;
 
-      if (!force && !this.options.ForceStat)
+      if (!force && !this.options.ForceStat) {
          if (this.options.NoStat || histo.TestBit(kNoStats) || !settings.AutoStat) return null;
+         if (!this.isMainPainter()) return null;
+      }
 
       const st = gStyle;
       let stats = this.findStat(),
