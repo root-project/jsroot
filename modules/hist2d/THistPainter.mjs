@@ -1267,8 +1267,8 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Find stats box
      * @desc either in list of functions or as object of correspondent painter */
-   findStat() {
-      if (this.options.PadStats)
+   findStat(check_in_pad) {
+      if (this.options.PadStats || check_in_pad)
          return this.getPadPainter()?.findPainterFor(null, 'stats', clTPaveStats)?.getObject();
 
       return this.findFunction(clTPaveStats, 'stats');
@@ -1329,14 +1329,14 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Create stat box for histogram if required */
    createStat(force) {
-      const histo = this.getHisto();
+      const histo = this.getHisto(), is_main = this.isMainPainter();
 
       if (this.options.PadStats || !histo) return null;
 
       if (!force && !this.options.ForceStat) {
          if (this.options.NoStat || histo.TestBit(kNoStats) || !settings.AutoStat) return null;
 
-         if ((this.options.Axis > 0) || !this.isMainPainter()) return null;
+         if ((this.options.Axis > 0) || (!is_main && this.findStat(true))) return null;
       }
 
       const st = gStyle;
@@ -1350,13 +1350,11 @@ class THistPainter extends ObjectPainter {
       } else
          optstat = histo.$custom_stat || st.fOptStat;
 
-
       if (optfit !== undefined) {
          if (stats) stats.fOptFit = optfit;
          delete this.options.optfit;
       } else
          optfit = st.fOptFit;
-
 
       if (!stats && !optstat && !optfit) return null;
 
@@ -1377,6 +1375,10 @@ class THistPainter extends ObjectPainter {
       stats.AddText(histo.fName);
 
       this.addFunction(stats);
+
+      // set reference on the painter which will fill stats
+      if (!is_main)
+         stats.$main_painter = this;
 
       return stats;
    }
