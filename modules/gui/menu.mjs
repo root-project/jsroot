@@ -119,15 +119,19 @@ class JSRootMenu {
          if (without_sub)
             name = top_name + ' ' + name;
 
-         if (group < i+2)
-            this.add(name, opts[i], call_back);
-          else {
+         if (group >= i+2) {
             this.add('sub:' + name, opts[i], call_back);
             for (let k = i+1; k < group; ++k)
                this.add(opts[k], opts[k], call_back);
             this.add('endsub:');
-            i = group-1;
-         }
+            i = group - 1;
+         } else if (name === kInspect) {
+            this.add('sub:' + name, opts[i], call_back, 'Inspect object content');
+            for (let k = 0; k < 10; ++k)
+               this.add(k.toString(), kInspect + k, call_back, `Inspect object and expand to level ${k}`);
+            this.add('endsub:');
+         } else
+            this.add(name, opts[i], call_back);
       }
       if (!without_sub)
          this.add('endsub:');
