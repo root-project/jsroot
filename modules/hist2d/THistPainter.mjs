@@ -1324,20 +1324,17 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Returns true if stats box fill can be ingored */
    isIgnoreStatsFill() {
-      return !this.getObject() || (!this.draw_content && !this.create_stats && !this.snapid) || (this.options.Axis > 0);
+      return !this.getObject() || (!this.draw_content && !this.create_stats && !this.snapid); // || (this.options.Axis > 0);
    }
 
    /** @summary Create stat box for histogram if required */
    createStat(force) {
-      const histo = this.getHisto(), is_main = this.isMainPainter();
+      const histo = this.getHisto();
 
       if (this.options.PadStats || !histo) return null;
 
-      if (!force && !this.options.ForceStat) {
+      if (!force && !this.options.ForceStat)
          if (this.options.NoStat || histo.TestBit(kNoStats) || !settings.AutoStat) return null;
-
-         if ((this.options.Axis > 0) || (!is_main && this.findStat(true))) return null;
-      }
 
       const st = gStyle;
       let stats = this.findStat(),
@@ -1360,7 +1357,8 @@ class THistPainter extends ObjectPainter {
 
       this.create_stats = true;
 
-      if (stats) return stats;
+      if (stats)
+         return stats;
 
       stats = create(clTPaveStats);
       Object.assign(stats, {
@@ -1375,10 +1373,6 @@ class THistPainter extends ObjectPainter {
       stats.AddText(histo.fName);
 
       this.addFunction(stats);
-
-      // set reference on the painter which will fill stats
-      if (!is_main)
-         stats.$main_painter = this;
 
       return stats;
    }
