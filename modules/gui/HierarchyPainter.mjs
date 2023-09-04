@@ -1,7 +1,7 @@
 import { version, gStyle, httpRequest, create, createHttpRequest, loadScript, decodeUrl,
          source_dir, settings, internals, browser, findFunction,
          isArrayProto, isRootCollection, isBatchMode, isNodeJs, isObject, isFunc, isStr, _ensureJSROOT,
-         prROOT, clTList, clTMap, clTObjString, clTKey, clTFile, clTText, clTLatex, clTColor, clTStyle, kInspect } from '../core.mjs';
+         prROOT, clTList, clTMap, clTObjString, clTKey, clTFile, clTText, clTLatex, clTColor, clTStyle, kInspect, isPromise } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { openFile, clTStreamerInfoList, clTDirectory, clTDirectoryFile, nameStreamerInfo, addUserStreamer } from '../io.mjs';
 import { getRGBfromTColor } from '../base/colors.mjs';
@@ -1298,7 +1298,7 @@ class HierarchyPainter extends BasePainter {
      * @desc Used with 'expand all' / 'collapse all' buttons in normal GUI
      * @param {boolean} isopen - if items should be expand or closed
      * @return {boolean} true when any item was changed */
-   toggleOpenState(isopen, h) {
+   toggleOpenState(isopen, h, promises) {
       const hitem = h || this.h;
 
       if (hitem._childs === undefined) {
@@ -1309,7 +1309,9 @@ class HierarchyPainter extends BasePainter {
             if (!hitem._more && !hitem._expand && !this.canExpandItem(hitem)) return false;
          }
 
-         this.expandItem(this.itemFullName(hitem));
+         const pr = this.expandItem(this.itemFullName(hitem));
+         if (isPromise(pr))
+            promises.push(pr);
          if (hitem._childs !== undefined) hitem._isopen = true;
          return hitem._isopen;
       }
@@ -1322,7 +1324,7 @@ class HierarchyPainter extends BasePainter {
 
       let change_child = false;
       for (let i = 0; i < hitem._childs.length; ++i) {
-         if (this.toggleOpenState(isopen, hitem._childs[i]))
+         if (this.toggleOpenState(isopen, hitem._childs[i], promises))
             change_child = true;
       }
 
@@ -1330,10 +1332,20 @@ class HierarchyPainter extends BasePainter {
          // if none of the childs can be closed, than just close that item
          delete hitem._isopen;
          return true;
-       }
+      }
 
       if (!h) this.refreshHtml();
       return false;
+   }
+
+   /** @summary Exapnd to specified level
+     * @protected */
+   async exapndToLevel(level) {
+      if (!level || !Number.isFinite(level) || (level < 0)) return this;
+
+      const promises = [];
+      this.toggleOpenState(true, this.h, promises);
+      return Promise.all(promises).then(() => this.exapndToLevel(level - 1));
    }
 
    /** @summary Refresh HTML code of hierarchy painter
@@ -3680,29 +3692,29 @@ class HierarchyPainter extends BasePainter {
 
 /** @summary Show object in inspector for provided object
   * @protected */
-ObjectPainter.prototype.showInspector = function(obj) {
-   if (obj === 'check')
+ObjectPainter.prototype.showInspector = function(opt, obj) {
+   if (opt === 'check')
       return true;
 
    const main = this.selectDom(),
-      rect = getElementRect(main),
-      w = Math.round(rect.width * 0.05) + 'px',
-      h = Math.round(rect.height * 0.05) + 'px',
-      id = 'root_inspector_' + internals.id_counter++;
+        rect = getElementRect(main),
+        w = Math.round(rect.width * 0.05) + 'px',
+        h = Math.round(rect.height * 0.05) + 'px',
+        id = 'root_inspector_' + internals.id_counter++;
 
    main.append('div')
-      .attr('id', id)
-      .attr('class', 'jsroot_inspector')
-      .style('position', 'absolute')
-      .style('top', h)
-      .style('bottom', h)
-      .style('left', w)
-      .style('right', w);
+       .attr('id', id)
+       .attr('class', 'jsroot_inspector')
+       .style('position', 'absolute')
+       .style('top', h)
+       .style('bottom', h)
+       .style('left', w)
+       .style('right', w);
 
    if (!obj?._typename)
       obj = this.getObject();
 
-   return drawInspector(id, obj);
+   return drawInspector(id, obj, opt);
 }
 
 
@@ -3732,7 +3744,7 @@ async function drawStreamerInfo(dom, lst) {
 
 /** @summary Display inspector
   * @private */
-async function drawInspector(dom, obj) {
+async function drawInspector(dom, obj, opt) {
    cleanup(dom);
    const painter = new HierarchyPainter('inspector', dom, '__as_dark_mode__');
 
@@ -3745,6 +3757,13 @@ async function drawInspector(dom, obj) {
    painter.default_by_click = 'expand'; // default action
    painter.with_icons = false;
    painter._inspector = true; // keep
+   let expand_level = 0;
+
+   if (isStr(opt) && opt.indexOf(kInspect) === 0) {
+      opt = opt.slice(kInspect.length);
+      if (opt.length > 0)
+         expand_level = Number.parseInt(opt);
+   }
 
    if (painter.selectDom().classed('jsroot_inspector')) {
       painter.removeInspector = function() {
@@ -3763,7 +3782,7 @@ async function drawInspector(dom, obj) {
                ddom = ddom.parentNode;
                this.removeInspector();
                if (arg.indexOf(kInspect) === 0)
-                  return this.showInspector(obj, arg);
+                  return this.showInspector(arg, obj);
             }
             cleanup(ddom);
             draw(ddom, obj, arg);
@@ -3775,7 +3794,7 @@ async function drawInspector(dom, obj) {
 
    return painter.refreshHtml().then(() => {
       painter.setTopPainter();
-      return painter;
+      return painter.exapndToLevel(expand_level);
    });
 }
 

@@ -338,7 +338,7 @@ async function draw(dom, obj, opt) {
       type_info = 'kind ' + obj._kind;
       handle = getDrawHandle(obj._kind, opt);
    } else
-      return import_h().then(h => h.drawInspector(dom, obj));
+      return import_h().then(h => h.drawInspector(dom, obj, opt));
 
    // this is case of unsupported class, close it normally
    if (!handle)
