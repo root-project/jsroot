@@ -1597,7 +1597,7 @@ class HierarchyPainter extends BasePainter {
 
          if (evnt.shiftKey) {
             drawopt = handle?.shift || kInspect;
-            if ((drawopt === kInspect) && handle?.noinspect) drawopt = '';
+            if (isStr(drawopt) && (drawopt.indexOf(kInspect) === 0) && handle?.noinspect) drawopt = '';
          }
          if (evnt.ctrlKey && handle?.ctrl)
             drawopt = handle.ctrl;
@@ -1906,7 +1906,7 @@ class HierarchyPainter extends BasePainter {
       if (!item) return false;
       if (item._player) return true;
       if (item._can_draw !== undefined) return item._can_draw;
-      if (drawopt === kInspect) return true;
+      if (isStr(drawopt) && (drawopt.indexOf(kInspect) === 0)) return true;
       const handle = getDrawHandle(item._kind, drawopt);
       return canDrawHandle(handle);
    }
