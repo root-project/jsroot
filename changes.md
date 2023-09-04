@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in 7.4.x
+1. Fix - menu filling for stat/fit options
+
+
 ## Changes in 7.4.3
 1. Fix - correctly use GMT specifier in time format
 2. Fix - logical error in decodeUrl
