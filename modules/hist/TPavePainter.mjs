@@ -1020,7 +1020,7 @@ class TPavePainter extends ObjectPainter {
                this.interactiveRedraw(true, `exec:SetOptStat(${fmt})`);
             });
          });
-         function AddStatOpt(pos, name) {
+         const AddStatOpt = (pos, name) => {
             let opt = (pos<10) ? pave.fOptStat : pave.fOptFit;
             opt = parseInt(parseInt(opt) / parseInt(Math.pow(10,pos % 10))) % 10;
             menu.addchk(opt, name, opt * 100 + pos, arg => {
@@ -1035,7 +1035,7 @@ class TPavePainter extends ObjectPainter {
                   this.interactiveRedraw(true, `exec:SetOptFit(${newopt})`);
                }
             });
-         }
+         };
 
          AddStatOpt(0, 'Histogram name');
          AddStatOpt(1, 'Entries');
