@@ -1014,7 +1014,7 @@ const prROOT = 'ROOT.', clTObject = 'TObject', clTNamed = 'TNamed', clTString = 
       clTF1 = 'TF1', clTF2 = 'TF2', clTProfile = 'TProfile', clTProfile2D = 'TProfile2D',
       clTGeoVolume = 'TGeoVolume', clTGeoNode = 'TGeoNode', clTGeoNodeMatrix = 'TGeoNodeMatrix',
       nsREX = 'ROOT::Experimental::',
-      kNoZoom = -1111, kNoStats = BIT(9);
+      kNoZoom = -1111, kNoStats = BIT(9), kInspect = 'inspect';
 
 
 /** @summary Create some ROOT classes
@@ -1773,7 +1773,7 @@ export { version_id, version_date, version, source_dir, isNodeJs, isBatchMode, s
          clTAxis, clTStyle, clTH1, clTH1I, clTH1D, clTH2, clTH2I, clTH2F, clTH3, clTF1, clTF2, clTProfile, clTProfile2D, clTHStack,
          clTGraph, clTGraph2DErrors, clTGraph2DAsymmErrors,
          clTGraphPolar, clTGraphPolargram, clTGraphTime, clTCutG,
-         clTPolyLine3D, clTPolyMarker3D, clTGeoVolume, clTGeoNode, clTGeoNodeMatrix, nsREX, kNoZoom, kNoStats,
+         clTPolyLine3D, clTPolyMarker3D, clTGeoVolume, clTGeoNode, clTGeoNodeMatrix, nsREX, kNoZoom, kNoStats, kInspect,
          isArrayProto, getDocument, BIT, clone, addMethods, parse, parseMulti, toJSON,
          decodeUrl, findFunction, createHttpRequest, httpRequest, loadScript, injectCode,
          create, createHistogram, setHistogramTitle, createTPolyLine, createTGraph, createTHStack, createTMultiGraph,

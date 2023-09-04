@@ -5,7 +5,7 @@ import { loadScript, findFunction, internals, getPromise, isNodeJs, isObject, is
          clTText, clTLine, clTBox, clTLatex, clTMathText, clTAnnotation, clTMultiGraph, clTH2, clTF1, clTF2, clTProfile, clTProfile2D,
          clTColor, clTHStack, clTGraph, clTGraph2DErrors, clTGraph2DAsymmErrors,
          clTGraphPolar, clTGraphPolargram, clTGraphTime, clTCutG, clTPolyLine, clTPolyLine3D, clTPolyMarker3D,
-         clTPad, clTStyle, clTCanvas, clTGaxis, clTGeoVolume, nsREX, atob_func } from './core.mjs';
+         clTPad, clTStyle, clTCanvas, clTGaxis, clTGeoVolume, kInspect, nsREX, atob_func } from './core.mjs';
 import { clTStreamerInfoList } from './io.mjs';
 import { clTBranchFunc } from './tree.mjs';
 import { BasePainter, compressSVG, svgToImage, _loadJSDOM } from './base/BasePainter.mjs';
@@ -124,11 +124,11 @@ drawFuncs = { lst: [
    { name: 'kind:Command', icon: 'img_execute', execute: true },
    { name: 'TFolder', icon: 'img_folder', icon2: 'img_folderopen', noinspect: true, get_expand: () => import_h().then(h => h.folderHierarchy) },
    { name: 'TTask', icon: 'img_task', get_expand: () => import_h().then(h => h.taskHierarchy), for_derived: true },
-   { name: clTTree, icon: 'img_tree', get_expand: () => import('./tree.mjs').then(h => h.treeHierarchy), draw: () => import_tree().then(h => h.drawTree), dflt: 'expand', opt: 'player;testio', shift: 'inspect' },
+   { name: clTTree, icon: 'img_tree', get_expand: () => import('./tree.mjs').then(h => h.treeHierarchy), draw: () => import_tree().then(h => h.drawTree), dflt: 'expand', opt: 'player;testio', shift: kInspect },
    { name: 'TNtuple', sameas: clTTree },
    { name: 'TNtupleD', sameas: clTTree },
    { name: clTBranchFunc, icon: 'img_leaf_method', draw: () => import_tree().then(h => h.drawTree), opt: ';dump', noinspect: true },
-   { name: /^TBranch/, icon: 'img_branch', draw: () => import_tree().then(h => h.drawTree), dflt: 'expand', opt: ';dump', ctrl: 'dump', shift: 'inspect', ignore_online: true, always_draw: true },
+   { name: /^TBranch/, icon: 'img_branch', draw: () => import_tree().then(h => h.drawTree), dflt: 'expand', opt: ';dump', ctrl: 'dump', shift: kInspect, ignore_online: true, always_draw: true },
    { name: /^TLeaf/, icon: 'img_leaf', noexpand: true, draw: () => import_tree().then(h => h.drawTree), opt: ';dump', ctrl: 'dump', ignore_online: true, always_draw: true },
    { name: clTList, icon: 'img_list', draw: () => import_h().then(h => h.drawList), get_expand: () => import_h().then(h => h.listHierarchy), dflt: 'expand' },
    { name: clTHashList, sameas: clTList },
@@ -290,7 +290,7 @@ function getDrawSettings(kind, selector) {
    if (!isany && (kind.indexOf(prROOT) === 0) && !noinspect) res.opts = [];
 
    if (!noinspect && res.opts)
-      res.opts.push('inspect');
+      res.opts.push(kInspect);
 
    res.inspect = !noinspect;
    res.expand = canexpand;
@@ -327,8 +327,8 @@ async function draw(dom, obj, opt) {
    if (!isObject(obj))
       return Promise.reject(Error('not an object in draw call'));
 
-   if (opt === 'inspect')
-      return import_h().then(h => h.drawInspector(dom, obj));
+   if (isStr(opt) && (opt.indexOf(kInspect) === 0))
+      return import_h().then(h => h.drawInspector(dom, obj, opt));
 
    let handle, type_info;
    if ('_typename' in obj) {

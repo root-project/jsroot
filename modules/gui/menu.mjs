@@ -1,4 +1,4 @@
-import { settings, browser, gStyle, isObject, isFunc, isStr, clTGaxis } from '../core.mjs';
+import { settings, browser, gStyle, isObject, isFunc, isStr, clTGaxis, kInspect } from '../core.mjs';
 import { rgb as d3_rgb, select as d3_select } from '../d3.mjs';
 import { selectgStyle, saveSettings, readSettings, saveStyle, getColorExec } from './utils.mjs';
 import { getColor } from '../base/colors.mjs';
@@ -95,7 +95,7 @@ class JSRootMenu {
       }
 
       if (opts.length === 1) {
-         if (opts[0] === 'inspect')
+         if (opts[0] === kInspect)
             top_name = top_name.replace('Draw', 'Inspect');
          this.add(top_name, opts[0], call_back);
          return;

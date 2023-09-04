@@ -1,7 +1,7 @@
 import { version, gStyle, httpRequest, create, createHttpRequest, loadScript, decodeUrl,
          source_dir, settings, internals, browser, findFunction,
          isArrayProto, isRootCollection, isBatchMode, isNodeJs, isObject, isFunc, isStr, _ensureJSROOT,
-         prROOT, clTList, clTMap, clTObjString, clTKey, clTFile, clTText, clTLatex, clTColor, clTStyle } from '../core.mjs';
+         prROOT, clTList, clTMap, clTObjString, clTKey, clTFile, clTText, clTLatex, clTColor, clTStyle, kInspect } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { openFile, clTStreamerInfoList, clTDirectory, clTDirectoryFile, nameStreamerInfo, addUserStreamer } from '../io.mjs';
 import { getRGBfromTColor } from '../base/colors.mjs';
@@ -1584,8 +1584,8 @@ class HierarchyPainter extends BasePainter {
              drawopt = '';
 
          if (evnt.shiftKey) {
-            drawopt = handle?.shift || 'inspect';
-            if ((drawopt === 'inspect') && handle?.noinspect) drawopt = '';
+            drawopt = handle?.shift || kInspect;
+            if ((drawopt === kInspect) && handle?.noinspect) drawopt = '';
          }
          if (evnt.ctrlKey && handle?.ctrl)
             drawopt = handle.ctrl;
@@ -1623,7 +1623,7 @@ class HierarchyPainter extends BasePainter {
 
          // cannot draw, but can inspect ROOT objects
          if (isStr(hitem._kind) && (hitem._kind.indexOf(prROOT) === 0) && sett.inspect && (can_draw !== false))
-            return this.display(itemname, 'inspect', true);
+            return this.display(itemname, kInspect, true);
 
          if (!hitem._childs || (hitem === this.h)) return;
       }
@@ -1894,7 +1894,7 @@ class HierarchyPainter extends BasePainter {
       if (!item) return false;
       if (item._player) return true;
       if (item._can_draw !== undefined) return item._can_draw;
-      if (drawopt === 'inspect') return true;
+      if (drawopt === kInspect) return true;
       const handle = getDrawHandle(item._kind, drawopt);
       return canDrawHandle(handle);
    }
@@ -2890,7 +2890,7 @@ class HierarchyPainter extends BasePainter {
           root_type = isStr(node._kind) ? node._kind.indexOf(prROOT) === 0 : false;
 
       if (sett.opts && (node._can_draw !== false)) {
-         sett.opts.push('inspect');
+         sett.opts.push(kInspect);
          menu.addDrawMenu('Draw', sett.opts, arg => this.display(itemname, arg));
       }
 
@@ -3762,8 +3762,8 @@ async function drawInspector(dom, obj) {
             if (isFunc(this.removeInspector)) {
                ddom = ddom.parentNode;
                this.removeInspector();
-               if (arg === 'inspect')
-                  return this.showInspector(obj);
+               if (arg.indexOf(kInspect) === 0)
+                  return this.showInspector(obj, arg);
             }
             cleanup(ddom);
             draw(ddom, obj, arg);
