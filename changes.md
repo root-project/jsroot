@@ -20,6 +20,7 @@
 17. Put `gl` in "devDependencies" of package.json. One can skip it installation with `npm i --production`.
 18. Add support of `TPaveClass`
 19. Use `eslint` for static code checking
+20. Support `inspectN` draw option, allows automatically expand object content to specified level
 
 
 ## Changes in 7.4.3
