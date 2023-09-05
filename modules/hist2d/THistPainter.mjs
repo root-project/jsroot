@@ -27,7 +27,7 @@ class THistDrawOptions {
               Bar: false, BarStyle: 0, Curve: false,
               Hist: 1, Line: false, Fill: false,
               Error: 0, ErrorKind: -1, errorX: gStyle.fErrorX,
-              Mark: false, Same: false, Scat: false, ScatCoef: 1.0, Func: true,
+              Mark: false, Same: false, Scat: false, ScatCoef: 1.0, Func: true, AllFunc: false,
               Arrow: false, Box: false, BoxStyle: 0,
               Text: false, TextAngle: 0, TextKind: '', Char: 0, Color: false, Contour: 0, Cjust: false,
               Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0, Ortho: gStyle.fOrthoCamera,
@@ -304,6 +304,7 @@ class THistDrawOptions {
       if (d.check('CJUST')) this.Cjust = true;
       if (d.check('COL')) this.Color = true;
       if (d.check('CHAR')) this.Char = 1;
+      if (d.check('ALLFUNC')) this.AllFunc = true;
       if (d.check('FUNC')) { this.Func = true; this.Hist = false; }
       if (d.check('AXIS3D')) { this.Axis = 1; this.Lego = 1; check3d = true; }
       if (d.check('AXIS')) this.Axis = 1;
@@ -1413,7 +1414,7 @@ class THistPainter extends ObjectPainter {
           return (func.fName !== 'stats') || (!histo.TestBit(kNoStats) && !this.options.NoStat);
 
        if ((func._typename === clTF1) || (func._typename === clTF2))
-          return !func.TestBit(BIT(9)); // TF1::kNotDraw
+          return this.options.AllFunc || !func.TestBit(BIT(9)); // TF1::kNotDraw
 
        if ((func._typename === 'TGraphDelaunay') || (func._typename === 'TGraphDelaunay2D'))
           return false; // do not try to draw delaunay classes
