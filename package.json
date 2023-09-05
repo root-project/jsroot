@@ -19,7 +19,8 @@
     "./colors": "./modules/base/colors.mjs",
     "./hierarchy": "./modules/gui/HierarchyPainter.mjs",
     "./latex": "./modules/base/latex.mjs",
-    "./geom": "./modules/geom/TGeoPainter.mjs"
+    "./geom": "./modules/geom/TGeoPainter.mjs",
+    "./testing": "./modules/testing.mjs"
   },
   "contributors": [
     {
@@ -78,7 +79,7 @@
   "scripts": {
     "build": "rollup -c build/rollup.config.js",
     "doc": "jsdoc -c docs/jsdoc.json -R docs/main.md  && jsdoc -c docs/jsdoc.json -p -d docs/jsdocfull -R docs/main.md",
-    "check": "eslint modules/core.mjs modules/draw.mjs modules/gui.mjs modules/io.mjs modules/main.mjs modules/tree.mjs modules/webwindow.mjs modules/base/*.mjs modules/draw/*.mjs modules/geom/*.mjs modules/gpad/*.mjs modules/gui/display.mjs modules/gui/HierarchyPainter.mjs modules/gui/menu.mjs modules/gui/utils.mjs modules/hist/*.mjs modules/hist2d/*.mjs"
+    "check": "eslint modules/core.mjs modules/draw.mjs modules/gui.mjs modules/io.mjs modules/main.mjs modules/tree.mjs modules/testing.mjs modules/webwindow.mjs modules/base/*.mjs modules/draw/*.mjs modules/geom/*.mjs modules/gpad/*.mjs modules/gui/display.mjs modules/gui/HierarchyPainter.mjs modules/gui/menu.mjs modules/gui/utils.mjs modules/hist/*.mjs modules/hist2d/*.mjs"
   },
   "keywords": [
     "ROOT",

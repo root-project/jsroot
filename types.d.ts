@@ -7,3 +7,4 @@ declare module "jsroot/colors";
 declare module "jsroot/hierarchy";
 declare module "jsroot/latex";
 declare module "jsroot/geom";
+declare module "jsroot/testing";
