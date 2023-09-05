@@ -68,36 +68,49 @@ async function testMouseZooming(node) {
       evnt.set(fw*0.1*i, fh*0.1*i);
       fp.moveRectSel(evnt);
    }
-   fp.endRectSel(evnt);
+   return fp.endRectSel(evnt).then(() => fp.unzoom());
+}
+
+async function do_testing(dom) {
+   return testZooming(dom).then(() => testMouseZooming(dom));
 }
 
 
 /** @summary test interactive features of JSROOT drawings
   * @desc used in https://github.com/linev/jsroot-test
   * @private */
-function testInteractivity(args) {
+async function testInteractivity(args) {
+   if (args.dom)
+      return do_testing(args.dom);
+
    async function build(main) {
       main.attr('width', args.width).attr('height', args.height)
           .style('width', args.width + 'px').style('height', args.height + 'px');
 
-      const flag = isBatchMode();
       setBatchMode(false);
 
-      return draw(main.node(), args.object, args.option || '').then(() => {
-         return testZooming(main.node());
-      }).then(() => {
-         return testMouseZooming(main.node());
-      }).then(() => {
-         cleanup(main.node());
-         main.remove();
-         setBatchMode(flag);
-         return true;
-      });
+      return main;
    }
 
-   return isNodeJs()
+   const flag = isBatchMode(),
+         pr = isNodeJs()
           ? _loadJSDOM().then(handle => build(handle.body.append('div')))
           : build(d3_select('body').append('div'));
+   return pr.then(main => {
+      main.attr('width', args.width).attr('height', args.height)
+          .style('width', args.width + 'px').style('height', args.height + 'px');
+
+      setBatchMode(false);
+
+      return draw(main.node(), args.object, args.option || '')
+             .then(() => do_testing(main.node()))
+             .then(() => {
+                cleanup(main.node());
+                main.remove();
+                setBatchMode(flag);
+                return true;
+              });
+   });
 }
 
 export { testInteractivity };

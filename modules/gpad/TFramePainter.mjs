@@ -1067,7 +1067,7 @@ const TooltipHandler = {
       }
 
       const m = d3_pointer(evnt, this.getFrameSvg().node());
-      let kind = this.zoom_kind;
+      let kind = this.zoom_kind, pr;
 
       if (this.zoom_labels)
          this.zoom_labels.processLabelsMove('stop', m);
@@ -1102,16 +1102,16 @@ const TooltipHandler = {
 
          if (namex === 'x2') {
             this.zoomChangedInteractive(namex, true);
-            this.zoomSingle(namex, xmin, xmax);
+            pr = this.zoomSingle(namex, xmin, xmax);
             kind = 0;
          } else if (namey === 'y2') {
             this.zoomChangedInteractive(namey, true);
-            this.zoomSingle(namey, ymin, ymax);
+            pr = this.zoomSingle(namey, ymin, ymax);
             kind = 0;
          } else if (isany) {
             this.zoomChangedInteractive('x', true);
             this.zoomChangedInteractive('y', true);
-            this.zoom(xmin, xmax, ymin, ymax);
+            pr = this.zoom(xmin, xmax, ymin, ymax);
             kind = 0;
          }
       }
@@ -1132,6 +1132,9 @@ const TooltipHandler = {
             this.getPadPainter()?.selectObjectPainter(this, null, 'yaxis');
             break;
       }
+
+      // return promise - if any
+      return pr;
    },
 
    /** @summary Handle mouse double click on frame */

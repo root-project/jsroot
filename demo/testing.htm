@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="utf-8">
+      <title>Run interactivity testings</title>
+      <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+   </head>
+   <body>
+      <div id="drawing" style="width:800px; height:600px"></div>
+   </body>
+   <script type='module'>
+      import { openFile, draw } from '../modules/main.mjs';
+      import { testInteractivity } from '../modules/testing.mjs';
+      let file = await openFile('../../files/hsimple.root');
+      let obj = await file.readObject('hpxpy;1');
+      await draw('drawing', obj, 'colz');
+      testInteractivity( { dom: document.getElementById('drawing'), timeout: 1000 });
+   </script>
+</html>
