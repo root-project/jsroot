@@ -937,7 +937,7 @@ const TooltipHandler = {
       if (this.zoom_kind > 100) return;
 
       const frame = this.getFrameSvg(),
-          pos = d3_pointer(evnt, frame.node());
+            pos = d3_pointer(evnt, frame.node());
 
       if ((evnt.buttons === 3) || (evnt.button === 1)) {
          this.clearInteractiveElements();
@@ -962,8 +962,7 @@ const TooltipHandler = {
       const w = this.getFrameWidth(), h = this.getFrameHeight();
 
       this.zoom_lastpos = pos;
-      this.zoom_curr = [Math.max(0, Math.min(w, pos[0])),
-                         Math.max(0, Math.min(h, pos[1]))];
+      this.zoom_curr = [Math.max(0, Math.min(w, pos[0])), Math.max(0, Math.min(h, pos[1]))];
 
       this.zoom_origin = [0, 0];
       this.zoom_second = false;
@@ -1035,9 +1034,9 @@ const TooltipHandler = {
       }
 
       const x = Math.min(this.zoom_origin[0], this.zoom_curr[0]),
-          y = Math.min(this.zoom_origin[1], this.zoom_curr[1]),
-          w = Math.abs(this.zoom_curr[0] - this.zoom_origin[0]),
-          h = Math.abs(this.zoom_curr[1] - this.zoom_origin[1]);
+            y = Math.min(this.zoom_origin[1], this.zoom_curr[1]),
+            w = Math.abs(this.zoom_curr[0] - this.zoom_origin[0]),
+            h = Math.abs(this.zoom_curr[1] - this.zoom_origin[1]);
 
       if (!this.zoom_rect) {
          // ignore small changes, can be switching to labels move
@@ -1133,11 +1132,11 @@ const TooltipHandler = {
    mouseDoubleClick(evnt) {
       evnt.preventDefault();
       const m = d3_pointer(evnt, this.getFrameSvg().node()),
-          fw = this.getFrameWidth(), fh = this.getFrameHeight();
+            fw = this.getFrameWidth(), fh = this.getFrameHeight();
       this.clearInteractiveElements();
 
       const valid_x = (m[0] >= 0) && (m[0] <= fw),
-          valid_y = (m[1] >= 0) && (m[1] <= fh);
+            valid_y = (m[1] >= 0) && (m[1] <= fh);
 
       if (valid_x && valid_y && this._dblclick_handler)
          if (this.processFrameClick({ x: m[0], y: m[1] }, true)) return;
