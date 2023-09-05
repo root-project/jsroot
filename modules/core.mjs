@@ -4,7 +4,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '4/09/2023',
+version_date = '5/09/2023',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -20,14 +20,15 @@ nodejs = !!((typeof process === 'object') && isObject(process.versions) && proce
 internals = {
    /** @summary unique id counter, starts from 1 */
    id_counter: 1
-};
+},
+
+_src = import.meta?.url;
+
 
 /** @summary Location of JSROOT modules
   * @desc Automatically detected and used to dynamically load other modules
   * @private */
 let source_dir = '';
-
-const _src = import.meta?.url;
 
 if (_src && isStr(_src)) {
    const pos = _src.indexOf('modules/core.mjs');
