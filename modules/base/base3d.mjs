@@ -456,8 +456,6 @@ async function createRender3D(width, height, render3d, args) {
          args.context = gl;
          gl.canvas = args.canvas;
 
-         globalThis.WebGLRenderingContext = function() {}; // workaround to prevent crash in three.js constructor
-
          const r = new WebGLRenderer(args);
          r.jsroot_output = new WebGLRenderTarget(width, height);
          r.setRenderTarget(r.jsroot_output);
