@@ -2809,7 +2809,8 @@ class HierarchyPainter extends BasePainter {
          this.h = result;
          if (!result) return Promise.resolve(null);
 
-         if (this.h?._title) document.title = this.h._title;
+         if (this.h?._title && (typeof document !== 'undefined'))
+            document.title = this.h._title;
 
          result._isopen = true;
 
@@ -3299,7 +3300,8 @@ class HierarchyPainter extends BasePainter {
       if (GetOption('files_monitoring') !== null)
          this.files_monitoring = true;
 
-      if (title) document.title = title;
+      if (title && (typeof document !== 'undefined'))
+         document.title = title;
 
       if (expanditems.length === 0 && (GetOption('expand') === '')) expanditems.push('');
 
