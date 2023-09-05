@@ -459,22 +459,25 @@ class RHistPainter extends RObjectPainter {
    getSelectIndex(axis, size, add) {
       // be aware - here indexes starts from 0
       const taxis = this.getAxis(axis),
-          nbins = this['nbins'+axis] || 0;
+            nbins = this['nbins'+axis] || 0;
       let indx = 0;
 
       if (this.options.second_x && axis === 'x') axis = 'x2';
       if (this.options.second_y && axis === 'y') axis = 'y2';
 
       const main = this.getFramePainter(),
-          min = main ? main[`zoom_${axis}min`] : 0,
-          max = main ? main[`zoom_${axis}max`] : 0;
+            min = main ? main[`zoom_${axis}min`] : 0,
+            max = main ? main[`zoom_${axis}max`] : 0;
 
       if ((min !== max) && taxis) {
          if (size === 'left')
             indx = taxis.FindBin(min, add || 0);
          else
             indx = taxis.FindBin(max, (add || 0) + 0.5);
-         if (indx < 0) indx = 0; else if (indx>nbins) indx = nbins;
+         if (indx < 0)
+            indx = 0;
+         else if (indx > nbins)
+            indx = nbins;
       } else
          indx = (size === 'left') ? 0 : nbins;
 
