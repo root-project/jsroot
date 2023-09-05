@@ -2785,7 +2785,7 @@ class TGeoPainter extends ObjectPainter {
          if (this._fit_main_area && !this._webgl) {
             // create top-most SVG for geomtery drawings
             const doc = getDocument(),
-                svg = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                  svg = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
             svg.setAttribute('width', w);
             svg.setAttribute('height', h);
             svg.appendChild(this._renderer.jsroot_dom);
@@ -2866,7 +2866,7 @@ class TGeoPainter extends ObjectPainter {
       if (filename === 'asis') return dataUrl;
       dataUrl.replace('image/png', 'image/octet-stream');
       const doc = getDocument(),
-          link = doc.createElement('a');
+            link = doc.createElement('a');
       if (isStr(link.download)) {
          doc.body.appendChild(link); // Firefox requires the link to be in the body
          link.download = filename || 'geometry.png';
