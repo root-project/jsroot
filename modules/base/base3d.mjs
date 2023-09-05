@@ -437,10 +437,7 @@ async function createRender3D(width, height, render3d, args) {
 
    let promise;
 
-   if (render3d === rc.WebGL) {
-      // interactive WebGL Rendering
-      promise = Promise.resolve(new WebGLRenderer(args));
-   } else if (render3d === rc.SVG) {
+   if (render3d === rc.SVG) {
       // SVG rendering
       const r = createSVGRenderer(false, 0, doc);
       r.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -467,6 +464,9 @@ async function createRender3D(width, height, render3d, args) {
          r.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'image');
          return r;
       });
+   } else if (render3d === rc.WebGL) {
+      // interactive WebGL Rendering
+      promise = Promise.resolve(new WebGLRenderer(args));
    } else {
       // rendering with WebGL directly into svg image
       const r = new WebGLRenderer(args);
