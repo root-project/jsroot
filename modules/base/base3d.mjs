@@ -389,10 +389,10 @@ const Handling3DDrawings = {
          // canvas element offset relative to first parent with non-static position
          // now try to use getBoundingClientRect - it should be more precise
 
-         const pos0 = prnt.getBoundingClientRect();
+         const pos0 = prnt.getBoundingClientRect(), doc = getDocument();
 
          while (prnt) {
-            if (prnt === document) { prnt = null; break; }
+            if (prnt === doc) { prnt = null; break; }
             try {
                if (getComputedStyle(prnt).position !== 'static') break;
             } catch (err) {
@@ -595,7 +595,7 @@ class TooltipFor3D {
       this.tt = null;
       this.cont = null;
       this.lastlbl = '';
-      this.parent = prnt || document.body;
+      this.parent = prnt || getDocument().body;
       this.canvas = canvas; // we need canvas to recalculate mouse events
       this.abspos = !prnt;
    }
@@ -685,9 +685,10 @@ class TooltipFor3D {
       }
 
       if (this.tt === null) {
-         this.tt = document.createElement('div');
+         const doc = getDocument();
+         this.tt = doc.createElement('div');
          this.tt.setAttribute('style', 'opacity: 1; filter: alpha(opacity=1); position: absolute; display: block; overflow: hidden; z-index: 101;');
-         this.cont = document.createElement('div');
+         this.cont = doc.createElement('div');
          this.cont.setAttribute('style', 'display: block; padding: 2px 12px 3px 7px; margin-left: 5px; font-size: 11px; background: #777; color: #fff;');
          this.tt.appendChild(this.cont);
          this.parent.appendChild(this.tt);
@@ -1128,7 +1129,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
          }
       }
 
-      document.body.style.cursor = this.cursor_changed ? 'pointer' : 'auto';
+      getDocument().body.style.cursor = this.cursor_changed ? 'pointer' : 'auto';
    }
 
    control.mainProcessMouseLeave = function() {
@@ -1143,7 +1144,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       if (isFunc(this.processMouseLeave))
          this.processMouseLeave();
       if (this.cursor_changed) {
-         document.body.style.cursor = 'auto';
+         getDocument().body.style.cursor = 'auto';
          this.cursor_changed = false;
       }
    }

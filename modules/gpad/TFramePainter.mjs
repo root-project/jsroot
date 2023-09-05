@@ -2802,7 +2802,7 @@ class TFramePainter extends ObjectPainter {
 
       // first process zooming
       if (zoom_v) {
- this.forEachPainter(obj => {
+         this.forEachPainter(obj => {
             if (!isFunc(obj.canZoomInside)) return;
             if (zoom_v && obj.canZoomInside(name[0], vmin, vmax)) {
                this[`zoom_${name}min`] = vmin;
@@ -2811,7 +2811,7 @@ class TFramePainter extends ObjectPainter {
                zoom_v = false;
             }
          });
-}
+      }
 
       // and process unzoom, if any
       if (unzoom_v) {
