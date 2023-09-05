@@ -632,6 +632,27 @@ async function makeImage(args) {
           : build(d3_select('body').append('div').style('display', 'none'));
 }
 
+/** @summary test interactive features of JSROOT drawings
+  * @desc used in https://github.com/linev/jsroot-test
+  * @private */
+
+function testInteractivity(args) {
+   async function build(main) {
+      main.attr('width', args.width).attr('height', args.height)
+          .style('width', args.width + 'px').style('height', args.height + 'px');
+
+      return draw(main.node(), args.object, args.option || '').then(() => {
+         cleanup(main.node());
+         main.remove();
+         return true;
+      });
+   }
+
+   return isNodeJs()
+          ? _loadJSDOM().then(handle => build(handle.body.append('div')))
+          : build(d3_select('body').append('div').style('display', 'none'));
+}
+
 
 /** @summary Create SVG image for provided object.
   * @desc Function especially useful in Node.js environment to generate images for
@@ -698,4 +719,4 @@ async function drawRooPlot(dom, plot) {
 }
 
 export { addDrawFunc, getDrawHandle, canDrawHandle, getDrawSettings, setDefaultDrawOpt,
-         draw, redraw, cleanup, makeSVG, makeImage, drawRooPlot, assignPadPainterDraw };
+         draw, redraw, cleanup, makeSVG, makeImage, drawRooPlot, assignPadPainterDraw, testInteractivity };
