@@ -1160,10 +1160,10 @@ const TooltipHandler = {
          kind = this.swap_xy ? 'y' : 'x';
          if ((m[1] < 0) && this[kind+'2_handle']) kind += '2'; // let unzoom second axis
       }
-      this.unzoom(kind).then(changed => {
+      return this.unzoom(kind).then(changed => {
          if (changed) return;
          const pp = this.getPadPainter(), rect = this.getFrameRect();
-         if (pp) pp.selectObjectPainter(pp, { x: m[0] + rect.x, y: m[1] + rect.y, dbl: true });
+         return pp?.selectObjectPainter(pp, { x: m[0] + rect.x, y: m[1] + rect.y, dbl: true });
       });
    },
 

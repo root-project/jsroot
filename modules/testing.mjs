@@ -86,7 +86,7 @@ async function testMouseZooming(node, args) {
          await _test_timeout(args, 0.2);
       }
 
-      await Promise.all([fp.endRectSel(evnt)]);
+      await fp.endRectSel(evnt);
 
       await _test_timeout(args);
 
@@ -96,8 +96,7 @@ async function testMouseZooming(node, args) {
 
 async function testFrameClick(node) {
    const fp = getElementCanvPainter(node)?.getFramePainter();
-   if (fp?.mode3d) return;
-   if (typeof fp?.processFrameClick !== 'function') return;
+   if (fp?.mode3d || typeof fp?.processFrameClick !== 'function') return;
 
    const fw = fp.getFrameWidth(), fh = fp.getFrameHeight();
 
@@ -107,13 +106,30 @@ async function testFrameClick(node) {
          fp.processFrameClick(pnt);
       }
    }
-
 }
+
+async function testFrameMouseDoubleClick(node) {
+   const fp = getElementCanvPainter(node)?.getFramePainter();
+   if (fp?.mode3d || typeof fp?.mouseDoubleClick !== 'function') return;
+
+   const fw = fp.getFrameWidth(), fh = fp.getFrameHeight(),
+         evnt = new EmulationMouseEvent(),
+         rect = fp.getFrameSvg().node().getBoundingClientRect();
+
+   for (let i = -2; i < 14; i++) {
+      for (let j = -2; j < 14; j++) {
+         evnt.set(rect.x + i/10*fw, rect.y + j/10*fh);
+         await fp.mouseDoubleClick(evnt);
+      }
+   }
+}
+
 
 async function _testing(dom, args) {
    return testZooming(dom, args)
           .then(() => testMouseZooming(dom, args))
-          .then(() => testFrameClick(dom));
+          .then(() => testFrameClick(dom))
+          .then(() => testFrameMouseDoubleClick(dom));
 }
 
 
