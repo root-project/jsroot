@@ -870,9 +870,9 @@ const TooltipHandler = {
       }
 
       if (!dblckick) {
- pp.selectObjectPainter(exact ? exact.painter : this,
+         pp.selectObjectPainter(exact ? exact.painter : this,
                { x: pnt.x + (this._frame_x || 0),  y: pnt.y + (this._frame_y || 0) });
-}
+      }
 
       return res;
    },
@@ -943,8 +943,10 @@ const TooltipHandler = {
          this.clearInteractiveElements();
          this._shifting_buttons = evnt.buttons;
 
-         d3_select(window).on('mousemove.shiftHandler', evnt => this.shiftMoveHanlder(evnt, pos))
-                          .on('mouseup.shiftHandler', evnt => this.shiftUpHanlder(evnt), true);
+         if (!evnt.$emul) {
+            d3_select(window).on('mousemove.shiftHandler', evnt => this.shiftMoveHanlder(evnt, pos))
+                             .on('mouseup.shiftHandler', evnt => this.shiftUpHanlder(evnt), true);
+         }
 
          setPainterTooltipEnabled(this, false);
          evnt.preventDefault();
@@ -985,8 +987,10 @@ const TooltipHandler = {
          this.zoom_origin[1] = this.zoom_curr[1];
       }
 
-      d3_select(window).on('mousemove.zoomRect', evnt => this.moveRectSel(evnt))
-                       .on('mouseup.zoomRect', evnt => this.endRectSel(evnt), true);
+      if (!evnt.$emul) {
+         d3_select(window).on('mousemove.zoomRect', evnt => this.moveRectSel(evnt))
+                          .on('mouseup.zoomRect', evnt => this.endRectSel(evnt), true);
+      }
 
       this.zoom_rect = null;
 
@@ -1057,8 +1061,10 @@ const TooltipHandler = {
 
       evnt.preventDefault();
 
-      d3_select(window).on('mousemove.zoomRect', null)
-                       .on('mouseup.zoomRect', null);
+      if (!evnt.$emul) {
+         d3_select(window).on('mousemove.zoomRect', null)
+                          .on('mouseup.zoomRect', null);
+      }
 
       const m = d3_pointer(evnt, this.getFrameSvg().node());
       let kind = this.zoom_kind;
