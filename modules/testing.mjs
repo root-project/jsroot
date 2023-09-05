@@ -72,21 +72,35 @@ async function testMouseZooming(node, args) {
    if ((typeof fp?.startRectSel !== 'function') || (typeof fp?.moveRectSel !== 'function')) return;
 
    const fw = fp.getFrameWidth(), fh = fp.getFrameHeight(),
-         evnt = new EmulationMouseEvent();
+         evnt = new EmulationMouseEvent(),
+         rect = fp.getFrameSvg().node().getBoundingClientRect();
 
-   evnt.set(fw*0.1, fh*0.1);
-   fp.startRectSel(evnt);
+   // region zooming
 
-   await _test_timeout(args);
 
-   for (let i = 2; i < 10; ++i) {
-      evnt.set(fw*0.1*i, fh*0.1*i);
-      fp.moveRectSel(evnt);
-      await _test_timeout(args, 0.2);
+   for (let side = -1; side <= 1; side++) {
+      evnt.set(rect.x + (side > 0 ? -25 : fw*0.1), rect.y + (side < 0 ? fh + 25 : fh*0.1));
+
+      console.log(`start zooming ${side} x ${evnt.clientX} y ${evnt.clientY} sizes ${fw} ${fh}`);
+
+      fp.startRectSel(evnt);
+
+      await _test_timeout(args);
+
+      for (let i = 2; i < 10; ++i) {
+         evnt.set(rect.x + (side > 0 ? -5 : fw*0.1*i), rect.y + (side < 0 ? fh + 25 : fh*0.1*i));
+         fp.moveRectSel(evnt);
+         await _test_timeout(args, 0.2);
+      }
+
+      await Promise.all([fp.endRectSel(evnt)]);
+
+      await _test_timeout(args);
+
+      await fp.unzoom();
    }
-   return Promise.all([fp.endRectSel(evnt)])
-            .then(() => _test_timeout(args))
-            .then(() => fp.unzoom());
+
+
 }
 
 async function _testing(dom, args) {
