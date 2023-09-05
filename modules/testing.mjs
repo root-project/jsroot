@@ -41,10 +41,7 @@ class EmulationMouseEvent {
 /** @summary test zooming features
   * @private */
 async function testZooming(node, args) {
-   const cp = getElementCanvPainter(node);
-   if (!cp) return;
-
-   const fp = cp.getFramePainter();
+   const fp = getElementCanvPainter(node)?.getFramePainter();
 
    if ((typeof fp?.zoom !== 'function') || (typeof fp?.zoomSingle !== 'function')) return;
    if (typeof fp.scale_xmin === 'undefined' || typeof fp.scale_ymax === 'undefined') return;
@@ -65,8 +62,7 @@ async function testZooming(node, args) {
 /** @summary test zooming features
   * @private */
 async function testMouseZooming(node, args) {
-   const cp = getElementCanvPainter(node),
-         fp = cp?.getFramePainter();
+   const fp = getElementCanvPainter(node)?.getFramePainter();
 
    if (fp?.mode3d) return;
    if ((typeof fp?.startRectSel !== 'function') || (typeof fp?.moveRectSel !== 'function')) return;
@@ -77,11 +73,8 @@ async function testMouseZooming(node, args) {
 
    // region zooming
 
-
    for (let side = -1; side <= 1; side++) {
       evnt.set(rect.x + (side > 0 ? -25 : fw*0.1), rect.y + (side < 0 ? fh + 25 : fh*0.1));
-
-      console.log(`start zooming ${side} x ${evnt.clientX} y ${evnt.clientY} sizes ${fw} ${fh}`);
 
       fp.startRectSel(evnt);
 
@@ -99,12 +92,28 @@ async function testMouseZooming(node, args) {
 
       await fp.unzoom();
    }
+}
 
+async function testFrameClick(node) {
+   const fp = getElementCanvPainter(node)?.getFramePainter();
+   if (fp?.mode3d) return;
+   if (typeof fp?.processFrameClick !== 'function') return;
+
+   const fw = fp.getFrameWidth(), fh = fp.getFrameHeight();
+
+   for (let i = 1; i < 15; i++) {
+      for (let j = 1; j < 15; j++) {
+         let pnt = { x: Math.round(i/15*fw), y: Math.round(j/15*fh) };
+         fp.processFrameClick(pnt);
+      }
+   }
 
 }
 
 async function _testing(dom, args) {
-   return testZooming(dom, args).then(() => testMouseZooming(dom, args));
+   return testZooming(dom, args)
+          .then(() => testMouseZooming(dom, args))
+          .then(() => testFrameClick(dom));
 }
 
 
