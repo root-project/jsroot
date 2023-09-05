@@ -3429,7 +3429,7 @@ class HierarchyPainter extends BasePainter {
             if (('_layout' in this.h) && !layout && ((this.is_online !== 'draw') || (itemsarr.length > 1)))
                this.disp_kind = this.h._layout;
 
-            if (('_toptitle' in this.h) && this.exclude_browser && document)
+            if (('_toptitle' in this.h) && this.exclude_browser && (typeof document !== 'undefined'))
                document.title = this.h._toptitle;
 
             if (gui_div)
@@ -3657,7 +3657,7 @@ class HierarchyPainter extends BasePainter {
             const opt = document.createElement('option');
             opt.innerHTML = opt.value = this.getLayout();
             selects.appendChild(opt);
-            selects.selectedIndex = selects.options.length-1;
+            selects.selectedIndex = selects.options.length - 1;
          }
       }
 

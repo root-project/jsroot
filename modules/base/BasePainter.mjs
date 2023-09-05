@@ -1,5 +1,5 @@
 import { select as d3_select } from '../d3.mjs';
-import { settings, internals, isNodeJs, isFunc, isStr, isObject, btoa_func } from '../core.mjs';
+import { settings, internals, isNodeJs, isFunc, isStr, isObject, btoa_func, getDocument } from '../core.mjs';
 
 
 /** @summary Returns visible rect of element
@@ -608,7 +608,7 @@ class BasePainter {
       if ((action === true) && (state !== 'on')) {
          if (!enlarge.empty()) return false;
 
-         enlarge = d3_select(document.body)
+         enlarge = d3_select(getDocument().body)
             .append('div')
             .attr('id', 'jsroot_enlarge_div')
             .attr('style', 'position: fixed; margin: 0px; border: 0px; padding: 0px; inset: 1px; background: white; opacity: 0.95; z-index: 100; overflow: hidden;');

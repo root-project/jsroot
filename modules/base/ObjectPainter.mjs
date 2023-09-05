@@ -1,6 +1,6 @@
 import { select as d3_select, pointer as d3_pointer } from '../d3.mjs';
 import { settings, constants, internals, isNodeJs, isBatchMode, getPromise, BIT,
-         prROOT, clTObjString, clTAxis, isObject, isFunc, isStr } from '../core.mjs';
+         prROOT, clTObjString, clTAxis, isObject, isFunc, isStr, getDocument } from '../core.mjs';
 import { isPlainText, producePlainText, produceLatex, produceMathjax, typesetMathjax } from './latex.mjs';
 import { getElementRect, BasePainter, makeTranslate } from './BasePainter.mjs';
 import { TAttMarkerHandler } from './TAttMarkerHandler.mjs';
@@ -188,10 +188,11 @@ class ObjectPainter extends BasePainter {
       * @protected */
    redrawObject(obj, opt) {
       if (!this.updateObject(obj, opt)) return false;
-      const current = document.body.style.cursor;
+      const doc = getDocument(),
+            current = doc.body.style.cursor;
       document.body.style.cursor = 'wait';
       const res = this.redrawPad();
-      document.body.style.cursor = current;
+      doc.body.style.cursor = current;
       return res || true;
    }
 

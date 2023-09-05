@@ -4103,7 +4103,7 @@ class TGeoPainter extends ObjectPainter {
        else {
          const spent = (new Date().getTime() - this._start_drawing_time)*1e-3;
          if (!info) {
-            info = document.createElement('p');
+            info = getDocument().createElement('p');
             info.setAttribute('class', 'geo_info');
             info.setAttribute('style', 'position: absolute; text-align: center; vertical-align: middle; top: 45%; left: 40%; color: red; font-size: 150%;');
             main.append(info);
