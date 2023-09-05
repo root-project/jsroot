@@ -1,4 +1,4 @@
-import { isNodeJs } from './core.mjs';
+import { isNodeJs, isBatchMode, setBatchMode } from './core.mjs';
 
 import { select as d3_select } from './d3.mjs';
 
@@ -16,7 +16,8 @@ async function testZooming(node) {
    if (!cp) return;
 
    const fp = cp.getFramePainter();
-   if (typeof fp?.zomm !== 'function') return;
+
+   if (typeof fp?.zoom !== 'function') return;
    if (typeof fp.scale_xmin === 'undefined' || typeof fp.scale_ymax === 'undefined') return;
 
    const xmin = fp.scale_xmin, xmax = fp.scale_xmax, ymin = fp.scale_yxmin, ymax = fp.scale_ymax;
@@ -38,18 +39,22 @@ function testInteractivity(args) {
       main.attr('width', args.width).attr('height', args.height)
           .style('width', args.width + 'px').style('height', args.height + 'px');
 
+      const flag = isBatchMode();
+      setBatchMode(false);
+
       return draw(main.node(), args.object, args.option || '').then(() => {
          return testZooming(main.node());
       }).then(() => {
          cleanup(main.node());
          main.remove();
+         setBatchMode(flag);
          return true;
       });
    }
 
    return isNodeJs()
           ? _loadJSDOM().then(handle => build(handle.body.append('div')))
-          : build(d3_select('body').append('div').style('display', 'none'));
+          : build(d3_select('body').append('div'));
 }
 
 export { testInteractivity };
