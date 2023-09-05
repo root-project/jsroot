@@ -659,7 +659,7 @@ internals.addDrawFunc = addDrawFunc;
 
 function assignPadPainterDraw(PadPainterClass) {
    PadPainterClass.prototype.drawObject = async (...args) =>
-      draw(...args).catch(err => { console.log(err?.message ?? err); return null; });
+      draw(...args).catch(err => { console.log('Error: ' + (err?.message ?? err)); return null; });
    PadPainterClass.prototype.getObjectDrawSettings = getDrawSettings;
 }
 
