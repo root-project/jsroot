@@ -2,6 +2,7 @@
 
 ## Changes in 7.4.x
 1. Fix - menu filling for stat/fit options
+2. Fix - prevent negative radius in chord draw option
 
 
 ## Changes in 7.4.3
