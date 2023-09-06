@@ -429,13 +429,11 @@ async function injectCode(code) {
       const promise = code.indexOf('JSROOT.require') >= 0 ? _ensureJSROOT() : Promise.resolve(true);
 
       return promise.then(() => {
-         return new Promise(resolve => {
-            const element = document.createElement('script');
-            element.setAttribute('type', 'text/javascript');
-            element.innerHTML = code;
-            document.head.appendChild(element);
-            setTimeout(() => resolve(true), 10); // while onload event not fired, just postpone resolve
-         });
+         const element = document.createElement('script');
+         element.setAttribute('type', 'text/javascript');
+         element.innerHTML = code;
+         document.head.appendChild(element);
+         return postponePromise(true, 10); // while onload event not fired, just postpone resolve
       });
    }
 
@@ -1752,7 +1750,7 @@ function isPromise(obj) { return isObject(obj) && isFunc(obj.then); }
 function postponePromise(func, timeout) {
    return new Promise(resolveFunc => {
       setTimeout(() => {
-         const res = func();
+         const res = isFunc(func) ? func() : func;
          resolveFunc(res);
       }, timeout);
    });

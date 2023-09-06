@@ -1,5 +1,5 @@
 import { httpRequest, browser, source_dir, settings, internals, constants, create, clone,
-         findFunction, isBatchMode, isNodeJs, getDocument, isObject, isFunc, isStr, getPromise,
+         findFunction, isBatchMode, isNodeJs, getDocument, isObject, isFunc, isStr, postponePromise, getPromise,
          prROOT, clTNamed, clTList, clTAxis, clTObjArray, clTPolyMarker3D, clTPolyLine3D,
          clTGeoVolume, clTGeoNode, clTGeoNodeMatrix, nsREX, kInspect } from '../core.mjs';
 import { REVISION, DoubleSide, FrontSide,
@@ -3359,21 +3359,19 @@ class TGeoPainter extends ObjectPainter {
       else
          res.forEach(str => elem.append('p').text(str));
 
-      return new Promise(resolveFunc => {
-         setTimeout(() => {
-            arg.domatrix = true;
-            tm1 = new Date().getTime();
-            numvis = this._clones.scanVisible(arg);
-            tm2 = new Date().getTime();
+      return postponePromise(() => {
+         arg.domatrix = true;
+         tm1 = new Date().getTime();
+         numvis = this._clones.scanVisible(arg);
+         tm2 = new Date().getTime();
 
-            const last_str = `Time to scan with matrix: ${makeTime(tm2-tm1)}`;
-            if (this.isBatchMode())
-               res.push(last_str);
-            else
-               elem.append('p').text(last_str);
-            resolveFunc(this);
-         }, 100);
-      });
+         const last_str = `Time to scan with matrix: ${makeTime(tm2-tm1)}`;
+         if (this.isBatchMode())
+            res.push(last_str);
+         else
+            elem.append('p').text(last_str);
+         return this;
+      }, 100);
    }
 
    /** @summary Handle drop operation

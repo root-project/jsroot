@@ -1,4 +1,4 @@
-import { gStyle, settings, isFunc, isStr, browser, clTAxis, kNoZoom } from '../core.mjs';
+import { gStyle, settings, isFunc, isStr, postponePromise, browser, clTAxis, kNoZoom } from '../core.mjs';
 import { select as d3_select, pointer as d3_pointer, pointers as d3_pointers, drag as d3_drag } from '../d3.mjs';
 import { getElementRect, getAbsPosInCanvas, makeTranslate, addHighlightStyle } from '../base/BasePainter.mjs';
 import { getActivePad, ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
@@ -1008,7 +1008,7 @@ const TooltipHandler = {
       evnt.stopPropagation();
 
       if (this.zoom_kind !== 1)
-         setTimeout(() => this.startLabelsMove(), 500);
+         return postponePromise(() => this.startLabelsMove(), 500);
    },
 
    /** @summary Starts labels move */

@@ -1,4 +1,4 @@
-import { isNodeJs, isBatchMode, setBatchMode } from './core.mjs';
+import { isNodeJs, isBatchMode, setBatchMode, postponePromise } from './core.mjs';
 import { select as d3_select } from './d3.mjs';
 import { _loadJSDOM } from './base/BasePainter.mjs';
 import { cleanup, getElementCanvPainter } from './base/ObjectPainter.mjs';
@@ -10,9 +10,7 @@ async function _test_timeout(args, portion = 1) {
    if (!args?.timeout)
       return true;
 
-   return new Promise(resolve => {
-      setTimeout(resolve, Math.round(portion * args.timeout));
-   });
+   return postponePromise(true, Math.round(portion * args.timeout));
 }
 
 class EmulationMouseEvent {

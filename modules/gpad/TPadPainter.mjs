@@ -53,7 +53,8 @@ function toggleButtonsVisibility(handler, action, evnt) {
       case 'disable':
       case 'leavebtn':
          handler.btns_active_flag = false;
-         if (!state) btn.property('timout_handler', setTimeout(() => toggleButtonsVisibility(handler, 'timeout'), 1200));
+         if (!state)
+            btn.property('timout_handler', setTimeout(() => toggleButtonsVisibility(handler, 'timeout'), 1200));
          return;
    }
 
