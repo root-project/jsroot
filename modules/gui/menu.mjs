@@ -1296,14 +1296,15 @@ class StandaloneMenu extends JSRootMenu {
 
       if (!event && this.show_evnt) event = this.show_evnt;
 
-      const doc = getDocument();
+      const doc = getDocument(),
+            woffset = typeof window === 'undefined' ? { x: 0, y: 0 } : { x: window.pageXOffset, y: window.pageYOffset };
 
       doc.body.addEventListener('click', this.remove_handler);
 
       const oldmenu = doc.getElementById(this.menuname);
       if (oldmenu) oldmenu.remove();
 
-      this.element = this._buildContextmenu(this.code, (event?.clientX || 0) + window.pageXOffset, (event?.clientY || 0) + window.pageYOffset, doc.body);
+      this.element = this._buildContextmenu(this.code, (event?.clientX || 0) + woffset.x, (event?.clientY || 0) + woffset.y, doc.body);
 
       this.element.setAttribute('id', this.menuname);
 

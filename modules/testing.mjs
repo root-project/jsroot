@@ -1,12 +1,10 @@
 import { isNodeJs, isBatchMode, setBatchMode } from './core.mjs';
-
 import { select as d3_select } from './d3.mjs';
-
 import { _loadJSDOM } from './base/BasePainter.mjs';
-
 import { cleanup, getElementCanvPainter } from './base/ObjectPainter.mjs';
-
 import { draw } from './draw.mjs';
+import { closeMenu } from './gui/menu.mjs';
+
 
 async function _test_timeout(args, portion = 1) {
    if (!args?.timeout)
@@ -195,6 +193,36 @@ async function testFrameMouseDoubleClick(node) {
    }
 }
 
+async function testFrameContextMenu(node, args) {
+   const fp = getElementCanvPainter(node)?.getFramePainter();
+   if (fp?.mode3d || typeof fp?.showContextMenu !== 'function') return;
+
+   const fw = fp.getFrameWidth(), fh = fp.getFrameHeight(),
+         evnt = new EmulationMouseEvent(),
+         rect = fp.getFrameSvg().node().getBoundingClientRect();
+
+   for (let i = 1; i < 10; i++) {
+      for (let j = 1; j < 10; j++) {
+         evnt.set(rect.x + i/10*fw, rect.y + j/10*fh);
+         await fp.showContextMenu('', evnt);
+         await _test_timeout(args, 0.03);
+         closeMenu();
+      }
+   }
+
+   evnt.set(rect.x + 20, rect.y + fh + 20);
+   await fp.showContextMenu('x', evnt);
+   await _test_timeout(args, 0.1);
+   closeMenu();
+
+   evnt.set(rect.x - 20, rect.y + 20);
+   await fp.showContextMenu('y', evnt);
+   await _test_timeout(args, 0.1);
+   closeMenu();
+}
+
+
+
 
 async function _testing(dom, args) {
    await testFrameClick(dom);
@@ -203,6 +231,7 @@ async function _testing(dom, args) {
    await testZooming(dom, args);
    await testMouseZooming(dom, args);
    await testMouseWheel(dom, args);
+   await testFrameContextMenu(dom, args);
    await testTouchZooming(dom, args);
 
    await testFrameClick(dom);

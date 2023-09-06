@@ -1474,7 +1474,7 @@ const TooltipHandler = {
 
       this.clearInteractiveElements();
 
-      createMenu(evnt, menu_painter).then(menu => {
+      return createMenu(evnt, menu_painter).then(menu => {
          let domenu = menu.painter.fillContextMenu(menu, kind, obj);
 
          // fill frame menu by default - or append frame elements when activated in the frame corner
@@ -1482,10 +1482,10 @@ const TooltipHandler = {
             domenu = fp.fillContextMenu(menu);
 
          if (domenu) {
-            exec_painter.fillObjectExecMenu(menu, kind).then(menu => {
+            return exec_painter.fillObjectExecMenu(menu, kind).then(menu => {
                 // suppress any running zooming
                 setPainterTooltipEnabled(menu.painter, false);
-                menu.show().then(() => setPainterTooltipEnabled(menu.painter, true));
+                return menu.show().then(() => setPainterTooltipEnabled(menu.painter, true));
             });
          }
       });
