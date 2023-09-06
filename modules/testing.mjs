@@ -62,13 +62,15 @@ async function testZooming(node, args) {
             .then(() => fp.unzoom())
 }
 
-/** @summary test zooming features
+/** @summary test mouse zooming features
   * @private */
 async function testMouseZooming(node, args) {
    const fp = getElementCanvPainter(node)?.getFramePainter();
 
    if (fp?.mode3d) return;
-   if ((typeof fp?.startRectSel !== 'function') || (typeof fp?.moveRectSel !== 'function')) return;
+   if ((typeof fp?.startRectSel !== 'function') ||
+       (typeof fp?.moveRectSel !== 'function') ||
+       (typeof fp?.endRectSel !== 'function')) return;
 
    const fw = fp.getFrameWidth(), fh = fp.getFrameHeight(),
          evnt = new EmulationMouseEvent(),
@@ -97,18 +99,18 @@ async function testMouseZooming(node, args) {
    }
 }
 
-/** @summary test zooming features
+/** @summary test touch zooming features
   * @private */
 async function testTouchZooming(node, args) {
    const fp = getElementCanvPainter(node)?.getFramePainter();
 
    if (fp?.mode3d) return;
-   if ((typeof fp?.startRectSel !== 'function') || (typeof fp?.moveRectSel !== 'function')) return;
+   if ((typeof fp?.startTouchZoom !== 'function') ||
+       (typeof fp?.moveTouchZoom !== 'function') ||
+       (typeof fp?.endTouchZoom !== 'function')) return;
 
    const fw = fp.getFrameWidth(), fh = fp.getFrameHeight(),
          evnt = new EmulationMouseEvent();
-
-   // region zooming
 
    evnt.setTouch(fw*0.4, fh*0.4, fw*0.6, fh*0.6);
 
@@ -128,6 +130,40 @@ async function testTouchZooming(node, args) {
 
    await fp.unzoom();
 }
+
+/** @summary test mouse wheel zooming features
+  * @private */
+async function testMouseWheel(node, args) {
+   const fp = getElementCanvPainter(node)?.getFramePainter();
+
+   if (fp?.mode3d) return;
+   if (typeof fp?.mouseWheel !== 'function') return;
+
+   const fw = fp.getFrameWidth(), fh = fp.getFrameHeight(),
+         evnt = new EmulationMouseEvent(),
+         rect = fp.getFrameSvg().node().getBoundingClientRect();
+
+   evnt.set(rect.x + fw*0.4, rect.y + fh*0.4);
+
+   // zoom inside
+   for (let i = 0; i < 7; ++i) {
+      evnt.wheelDelta = 1;
+      fp.mouseWheel(evnt);
+      await _test_timeout(args, 0.2);
+   }
+
+   // zoom outside
+   for (let i = 0; i < 7; ++i) {
+      evnt.wheelDelta = -1;
+      fp.mouseWheel(evnt);
+      await _test_timeout(args, 0.2);
+   }
+
+   await _test_timeout(args);
+
+   await fp.unzoom();
+}
+
 
 async function testFrameClick(node) {
    const fp = getElementCanvPainter(node)?.getFramePainter();
@@ -166,6 +202,7 @@ async function _testing(dom, args) {
 
    await testZooming(dom, args);
    await testMouseZooming(dom, args);
+   await testMouseWheel(dom, args);
    await testTouchZooming(dom, args);
 
    await testFrameClick(dom);

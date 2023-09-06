@@ -26,6 +26,12 @@ function setPainterTooltipEnabled(painter, on) {
       painter.control.setTooltipEnabled(on);
 }
 
+/** @summary Return pointers on touch event
+  * @private */
+function get_touch_pointers(event, node) {
+   return event.$touch_arr ?? d3_pointers(event, node);
+}
+
 /** @summary Returns coordinates transformation func
   * @private */
 function getEarthProjectionFunc(id) {
@@ -359,7 +365,7 @@ const TooltipHandler = {
          if (!rect || rect.empty())
             pnt = null; // disable
          else if (pnt.touch && evnt) {
-            const pos = d3_pointers(evnt, rect.node());
+            const pos = get_touch_pointers(evnt, rect.node());
             pnt = (pos && pos.length === 1) ? { touch: true, x: pos[0][0], y: pos[0][1] } : null;
          } else if (evnt) {
             const pos = d3_pointer(evnt, rect.node());
@@ -1177,7 +1183,7 @@ const TooltipHandler = {
       if ((this.zoom_kind !== 0) || drag_kind)
          return;
 
-      const arr = evnt.$touch_arr ?? d3_pointers(evnt, this.getFrameSvg().node());
+      const arr = get_touch_pointers(evnt, this.getFrameSvg().node());
 
       // normally double-touch will be handled
       // touch with single click used for context menu
@@ -1257,7 +1263,7 @@ const TooltipHandler = {
 
       evnt.preventDefault();
 
-      const arr = evnt.$touch_arr ?? d3_pointers(evnt, this.getFrameSvg().node());
+      const arr = get_touch_pointers(evnt, this.getFrameSvg().node());
 
       if (arr.length !== 2)
          return this.clearInteractiveElements();
@@ -1415,7 +1421,7 @@ const TooltipHandler = {
          evnt.preventDefault();
          evnt.stopPropagation(); // disable main context menu
          const ms = d3_pointer(evnt, svg_node),
-               tch = d3_pointers(evnt, svg_node);
+               tch = get_touch_pointers(evnt, svg_node);
          if (tch.length === 1)
              pnt = { x: tch[0][0], y: tch[0][1], touch: true };
          else if (ms.length === 2)
@@ -1488,7 +1494,7 @@ const TooltipHandler = {
   /** @summary Activate touch handling on frame
     * @private */
    startSingleTouchHandling(kind, evnt) {
-      const arr = d3_pointers(evnt, this.getFrameSvg().node());
+      const arr = get_touch_pointers(evnt, this.getFrameSvg().node());
       if (arr.length !== 1) return;
 
       evnt.preventDefault();
@@ -1515,7 +1521,7 @@ const TooltipHandler = {
       let pos;
 
       try {
-        pos = d3_pointers(evnt, frame.node())[0];
+        pos = get_touch_pointers(evnt, frame.node())[0];
       } catch (err) {
         pos = [0, 0];
         if (evnt?.changedTouches)
