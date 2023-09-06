@@ -759,19 +759,19 @@ class TH2Painter extends THistPainter {
 
    /** @summary Process click on histogram-defined buttons */
    clickButton(funcname) {
-      if (super.clickButton(funcname)) return true;
+      const res = super.clickButton(funcname);
+      if (res) return res;
 
-      if (this !== this.getMainPainter()) return false;
-
-      switch (funcname) {
-         case 'ToggleColor': this.toggleColor(); break;
-         case 'ToggleColorZ': this.toggleColz(); break;
-         case 'Toggle3D': this.toggleMode3D(); break;
-         default: return false;
+      if (this.isMainPainter()) {
+         switch (funcname) {
+            case 'ToggleColor': return this.toggleColor();
+            case 'ToggleColorZ': return this.toggleColz();
+            case 'Toggle3D': return this.toggleMode3D();
+         }
       }
 
       // all methods here should not be processed further
-      return true;
+      return false;
    }
 
    /** @summary Fill pad toolbar with histogram-related functions */
@@ -803,7 +803,7 @@ class TH2Painter extends THistPainter {
 
       this.copyOptionsToOthers();
 
-      this.interactiveRedraw('pad', 'drawopt');
+      return this.interactiveRedraw('pad', 'drawopt');
    }
 
    /** @summary Perform automatic zoom inside non-zero region of histogram */

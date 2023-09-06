@@ -509,7 +509,7 @@ class RCanvasPainter extends RPadPainter {
          return this.activateGed(this, null, 'toggle');
       if (funcname === 'ToggleStatus')
          return this.activateStatusBar('toggle');
-      super.clickPadButton(funcname, evnt);
+      return super.clickPadButton(funcname, evnt);
    }
 
    /** @summary returns true when event status area exist for the canvas */

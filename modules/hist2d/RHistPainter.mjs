@@ -688,7 +688,7 @@ class RHistPainter extends RObjectPainter {
 
       if (this.options.Mode3D) {
          if (!this.options.Surf && !this.options.Lego && !this.options.Error) {
-            if ((this.nbinsx>=50) || (this.nbinsy>=50))
+            if ((this.nbinsx >= 50) || (this.nbinsy >= 50))
                this.options.Lego = this.options.Color ? 14 : 13;
             else
                this.options.Lego = this.options.Color ? 12 : 1;
@@ -698,7 +698,7 @@ class RHistPainter extends RObjectPainter {
       }
 
       this.copyOptionsToOthers();
-      this.interactiveRedraw('pad', 'drawopt');
+      return this.interactiveRedraw('pad', 'drawopt');
    }
 
    /** @summary Calculate histogram inidicies and axes values for each visible bin */

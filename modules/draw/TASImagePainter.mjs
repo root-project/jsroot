@@ -394,7 +394,7 @@ class TASImagePainter extends ObjectPainter {
    toggleColz() {
       if (this.getObject()?.fPalette) {
          this.options.Zscale = !this.options.Zscale;
-         this.drawColorPalette(this.options.Zscale, true);
+         return this.drawColorPalette(this.options.Zscale, true);
       }
    }
 
@@ -403,16 +403,13 @@ class TASImagePainter extends ObjectPainter {
       return this.drawImage();
    }
 
-   /** @summary Process click on TASImage-defined buttons */
+   /** @summary Process click on TASImage-defined buttons
+     * @desc may return promise or simply false */
    clickButton(funcname) {
-      if (!this.isMainPainter()) return false;
+      if (this.isMainPainter() && funcname === 'ToggleColorZ')
+         return this.toggleColz();
 
-      switch (funcname) {
-         case 'ToggleColorZ': this.toggleColz(); break;
-         default: return false;
-      }
-
-      return true;
+      return false;
    }
 
    /** @summary Fill pad toolbar for TASImage */

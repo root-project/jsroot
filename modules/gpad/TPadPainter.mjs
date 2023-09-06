@@ -1168,7 +1168,7 @@ class TPadPainter extends ObjectPainter {
          this.getFramePainter()?.setLastEventPos();
       }
 
-      createMenu(evnt, this).then(menu => {
+      return createMenu(evnt, this).then(menu => {
          this.fillContextMenu(menu);
          return this.fillObjectExecMenu(menu, '');
       }).then(menu => menu.show());
@@ -2034,7 +2034,7 @@ class TPadPainter extends ObjectPainter {
          evnt?.stopPropagation();
          if (closeMenu()) return;
 
-         createMenu(evnt, this).then(menu => {
+         return createMenu(evnt, this).then(menu => {
             menu.add('header:Menus');
 
             if (this.iscan)
@@ -2070,21 +2070,26 @@ class TPadPainter extends ObjectPainter {
 
             menu.show();
          });
-
-         return;
       }
 
       // click automatically goes to all sub-pads
       // if any painter indicates that processing completed, it returns true
       let done = false;
+      const prs = [];
 
-      this.painters.forEach(pp => {
+      for (let i = 0; i < this.painters.length; ++i) {
+         const pp = this.painters[i];
+
          if (isFunc(pp.clickPadButton))
-            pp.clickPadButton(funcname, evnt);
+            prs.push(pp.clickPadButton(funcname, evnt));
 
-         if (!done && isFunc(pp.clickButton))
+         if (!done && isFunc(pp.clickButton)) {
             done = pp.clickButton(funcname);
-      });
+            if (isPromise(done)) prs.push(done);
+         }
+      }
+
+      return Promise.all(prs);
    }
 
    /** @summary Add button to the pad
