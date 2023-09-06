@@ -239,12 +239,28 @@ async function testPadContextMenu(node, args) {
    }
 }
 
+async function testPadItemContextMenu(node, args) {
+   const cp = getElementCanvPainter(node);
+
+   if (typeof cp?.itemContextMenu !== 'function') return;
+
+   const nprimitives = cp.painters?.length ?? 0,
+         names = [ 'xaxis', 'yaxis', 'zaxis', 'pad', 'frame'];
+
+   for (let i = -names.length; i < nprimitives; ++i) {
+      const name = i < 0 ? names[i+names.length] : i.toString();
+      await cp.itemContextMenu(name);
+      await _test_timeout(args, 0.1);
+      closeMenu();
+   }
+}
+
 async function testPadButtons(node, args) {
    const cp = getElementCanvPainter(node);
    if (typeof cp?.clickPadButton !== 'function') return;
 
    const evnt = new EmulationMouseEvent(50, 50),
-        toggles = ['enlargePad', 'ToggleZoom', 'ToggleLogX', 'ToggleLogY', 'ToggleLogZ', 'ToggleStatBox', 'ToggleColorZ', 'Toggle3D'];
+        toggles = ['enlargePad', 'ToggleZoom', 'ToggleLogX', 'ToggleLogY', 'ToggleLogZ', 'Toggle3D', 'ToggleColorZ', 'ToggleStatBox'];
 
    await cp.clickPadButton('PadContextMenus', evnt);
    await _test_timeout(args, 0.1);
@@ -273,6 +289,7 @@ async function _testing(dom, args) {
    await testFrameMouseDoubleClick(dom);
 
    await testPadContextMenu(dom, args);
+   await testPadItemContextMenu(dom, args);
    await testPadButtons(dom, args);
 }
 
