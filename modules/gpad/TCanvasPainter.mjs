@@ -459,7 +459,7 @@ class TCanvasPainter extends TPadPainter {
          return this.activateGed(this, null, 'toggle');
       if (funcname === 'ToggleStatus')
          return this.activateStatusBar('toggle');
-      super.clickPadButton(funcname, evnt);
+      return super.clickPadButton(funcname, evnt);
    }
 
    /** @summary Returns true if event status shown in the canvas */
