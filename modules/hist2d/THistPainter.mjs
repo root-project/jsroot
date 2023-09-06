@@ -1769,9 +1769,9 @@ class THistPainter extends ObjectPainter {
       pp.addPadButton('arrow_up', 'Toggle log y', 'ToggleLogY', 'PageUp');
       if (this.getDimension() > 1)
          pp.addPadButton('arrow_diag', 'Toggle log z', 'ToggleLogZ');
-      if (this.options.Axis <= 0)
-         pp.addPadButton('statbox', 'Toggle stat box', 'ToggleStatBox');
-      if (!not_shown) pp.showPadButtons();
+      pp.addPadButton('statbox', 'Toggle stat box', 'ToggleStatBox');
+      if (!not_shown)
+         pp.showPadButtons();
    }
 
    /** @summary Returns tooltip information for 3D drawings */
