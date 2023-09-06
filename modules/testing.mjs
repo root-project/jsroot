@@ -45,7 +45,7 @@ async function testZooming(node, args) {
    if ((typeof fp?.zoom !== 'function') || (typeof fp?.zoomSingle !== 'function')) return;
    if (typeof fp.scale_xmin === 'undefined' || typeof fp.scale_ymax === 'undefined') return;
 
-   const xmin = fp.scale_xmin, xmax = fp.scale_xmax, ymin = fp.scale_yxmin, ymax = fp.scale_ymax;
+   const xmin = fp.scale_xmin, xmax = fp.scale_xmax, ymin = fp.scale_ymin, ymax = fp.scale_ymax;
 
    return fp.zoom(xmin + 0.2*(xmax - xmin), xmin + 0.8*(xmax - xmin), ymin + 0.2*(ymax - ymin), ymin + 0.8*(ymax - ymin))
             .then(() => _test_timeout(args))
