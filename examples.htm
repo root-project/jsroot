@@ -391,6 +391,9 @@
          extra_opts += '&interactive=0';
       }
 
+      if (window.location.search.indexOf('interactivity') > 0)
+         test_interactivity = true;
+
       let host = window.location.host;
 
       if (host.indexOf('localhost') >= 0) {
