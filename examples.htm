@@ -352,18 +352,13 @@
 
    <script type="module">
       import { settings, httpRequest, decodeUrl, version, version_id, source_dir } from './modules/core.mjs';
-
       import { cleanup } from './modules/base/ObjectPainter.mjs';
-
       import { registerForResize } from './modules/gui/utils.mjs';
-
       import { createRootColors } from './modules/base/colors.mjs';
-
       import { draw, makeImage } from './modules/draw.mjs';
-
       import { openFile } from './modules/io.mjs';
-
       import { HierarchyPainter, getHPainter } from './modules/gui/HierarchyPainter.mjs';
+      import { testInteractivity } from './modules/testing.mjs';
 
       document.getElementById('version').innerHTML = (version_id != 'dev') ? version_id : version;
       document.getElementById('version').title = `${version}, ${source_dir}`;
@@ -385,7 +380,8 @@
           select_key = null, // select the only key like ?select=TH2
           no_interactive = false, // disable interactivity
           use_zstd = true,
-          examples_main = [];
+          examples_main = [],
+          test_interactivity = false;
 
       if (window.location.search.indexOf('nowebgl') > 0)
          extra_opts = '&webgl=0';
@@ -414,15 +410,19 @@
       let keyid = null, optid, testfile, testobj, testinterval = 10, hpainter = null;
 
       function drawEntry(entry, object, option) {
-         if (!entry?.aspng)
-            return draw('plaindraw', object, option);
-         return makeImage({ format: 'png', object, option, width: 800, height: 600 })
-            .then(png => {
-               let img = new Image;
-               img.src = png;
-               document.getElementById('plaindraw').appendChild(img);
-               return true;
-            });
+         if (entry?.aspng)
+            return makeImage({ format: 'png', object, option, width: 800, height: 600 })
+               .then(png => {
+                  let img = new Image;
+                  img.src = png;
+                 document.getElementById('plaindraw').appendChild(img);
+                  return true;
+               });
+
+         let pr = draw('plaindraw', object, option);
+         if (!test_interactivity) return pr;
+
+         return pr.then(() => testInteractivity({ dom: document.getElementById('plaindraw'), timeout: testinterval }));
       }
 
       async function processClick(durl, filename, itemname, opt, jsonname, entry) {
@@ -496,6 +496,7 @@
             let running = (keyid !== null); // indication that test running - no need to relaunch events
             keyid = select_key || 'TH1'; optid = -1;
             testfile = testobj = null;
+            test_interactivity = (doinit === 'full');
             let ii = decodeUrl().get('interval');
             if (ii && Number.isInteger(parseInt(ii))) testinterval = parseInt(ii);
                                                  else testinterval = interval;
@@ -776,12 +777,12 @@
           aaa.addEventListener('click', event => {
              event.preventDefault();
              window.location.hash = 'run';
-             runBigTest(10,true);
+             runBigTest(10, true);
           });
 
           content.appendChild(document.createTextNode(', '));
 
-          aaa = document.createElement( 'a' );
+          aaa = document.createElement('a');
           aaa.textContent = 'slow';
           aaa.title = 'Run all examples slowly after each other';
           content.appendChild( aaa );
@@ -804,6 +805,19 @@
           });
 
           content.appendChild(document.createTextNode(', '));
+
+          aaa = document.createElement('a');
+          aaa.textContent = 'interactivity';
+          aaa.title = 'Run all examples with interactivity tests';
+          content.appendChild( aaa );
+          aaa.addEventListener('click', event => {
+             event.preventDefault();
+             window.location.hash = 'interactivity';
+             runBigTest(100, 'full');
+          });
+
+          content.appendChild(document.createTextNode(', '));
+
           aaa = document.createElement('a');
           aaa.textContent = 'stop';
           aaa.title = 'Stop running example';
@@ -815,9 +829,11 @@
       }
 
       if (window.location.hash == '#run')
-         runBigTest(100,true);
+         runBigTest(100, true);
       else if (window.location.hash == '#fast')
          runBigTest(1, true);
+      else if (window.location.hash == '#interactivity')
+         runBigTest(100, 'full');
       else if (window.location.hash == '#slow')
          runBigTest(5000, true);
 
