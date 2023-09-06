@@ -1,4 +1,4 @@
-import { gStyle, settings, isObject, isFunc, isStr, nsREX } from '../core.mjs';
+import { gStyle, settings, isObject, isFunc, isStr, nsREX, getPromise } from '../core.mjs';
 import { RObjectPainter } from '../base/RObjectPainter.mjs';
 
 
@@ -491,23 +491,23 @@ class RHistPainter extends RObjectPainter {
 
    /** @summary Process click on histogram-defined buttons */
    clickButton(funcname) {
-      // TODO: move to frame painter
+      const fp = this.getFramePainter();
+      if (!fp) return false;
+
       switch (funcname) {
          case 'ToggleZoom':
             if ((this.zoom_xmin !== this.zoom_xmax) || (this.zoom_ymin !== this.zoom_ymax) || (this.zoom_zmin !== this.zoom_zmax)) {
-               this.unzoom();
-               this.getFramePainter().zoomChangedInteractive('reset');
-               return true;
+               const res = this.unzoom();
+               fp.zoomChangedInteractive('reset');
+               return res;
             }
-            if (this.draw_content) {
-               this.autoZoom();
-               return true;
-            }
+            if (this.draw_content)
+               return this.autoZoom();
             break;
-         case 'ToggleLogX': this.getFramePainter().toggleAxisLog('x'); break;
-         case 'ToggleLogY': this.getFramePainter().toggleAxisLog('y'); break;
-         case 'ToggleLogZ': this.getFramePainter().toggleAxisLog('z'); break;
-         case 'ToggleStatBox': this.toggleStat(); return true;
+         case 'ToggleLogX': return fp.toggleAxisLog('x');
+         case 'ToggleLogY': return fp.toggleAxisLog('y');
+         case 'ToggleLogZ': return fp.toggleAxisLog('z');
+         case 'ToggleStatBox': return getPromise(this.toggleStat());
       }
       return false;
    }

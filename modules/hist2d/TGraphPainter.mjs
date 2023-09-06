@@ -1406,14 +1406,9 @@ class TGraphPainter extends ObjectPainter {
    clickButton(funcname) {
       if (funcname !== 'ToggleZoom') return false;
 
-      const main = this.getFramePainter();
-      if (!main) return false;
-
       if ((this.xmin === this.xmax) && (this.ymin === this.ymax)) return false;
 
-      main.zoom(this.xmin, this.xmax, this.ymin, this.ymax);
-
-      return true;
+      return this.getFramePainter()?.zoom(this.xmin, this.xmax, this.ymin, this.ymax);
    }
 
    /** @summary Find TF1/TF2 in TGraph list of functions */

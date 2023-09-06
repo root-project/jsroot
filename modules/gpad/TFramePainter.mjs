@@ -2502,7 +2502,7 @@ class TFramePainter extends ObjectPainter {
      * @param {number} value - 0 (linear), 1 (log) or 2 (log2) */
    changeAxisLog(axis, value) {
       const pp = this.getPadPainter(),
-          pad = pp?.getRootPad(true);
+            pad = pp?.getRootPad(true);
       if (!pad) return;
 
       pp._interactively_changed = true;
@@ -2525,12 +2525,12 @@ class TFramePainter extends ObjectPainter {
       // directly change attribute in the pad
       pad[name] = value;
 
-      this.interactiveRedraw('pad', `log${axis}`);
+      return this.interactiveRedraw('pad', `log${axis}`);
    }
 
    /** @summary Toggle log state on the specified axis */
    toggleAxisLog(axis) {
-      this.changeAxisLog(axis, 'toggle');
+      return this.changeAxisLog(axis, 'toggle');
    }
 
    /** @summary Fill context menu for the frame
