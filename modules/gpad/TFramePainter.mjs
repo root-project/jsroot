@@ -2541,11 +2541,15 @@ class TFramePainter extends ObjectPainter {
           pp = this.getPadPainter(),
           pad = pp?.getRootPad(true),
           is_pal = kind === 'pal';
+
       if (is_pal) kind = 'z';
 
       if ((kind === 'x') || (kind === 'y') || (kind === 'z') || (kind === 'x2') || (kind === 'y2')) {
          const faxis = obj || this[kind+'axis'],
-             handle = this[`${kind}_handle`];
+               handle = this[`${kind}_handle`];
+        if (typeof faxis?.TestBit !== 'function')
+           return false;
+
          menu.add(`header: ${kind.toUpperCase()} axis`);
          menu.add('Unzoom', () => this.unzoom(kind));
          if (pad) {
