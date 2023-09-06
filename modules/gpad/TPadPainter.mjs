@@ -1,5 +1,6 @@
 import { gStyle, settings, constants, browser, internals, btoa_func,
-         create, toJSON, isBatchMode, loadScript, injectCode, isPromise, getPromise, isObject, isFunc, isStr,
+         create, toJSON, isBatchMode, loadScript, injectCode, isPromise, getPromise, postponePromise,
+         isObject, isFunc, isStr,
          clTObjArray, clTPaveText, clTColor, clTPad, clTStyle } from '../core.mjs';
 import { color as d3_color, pointer as d3_pointer, select as d3_select, rgb as d3_rgb } from '../d3.mjs';
 import { ColorPalette, adoptRootColors, extendRootColors, getRGBfromTColor } from '../base/colors.mjs';
@@ -1846,11 +1847,11 @@ class TPadPainter extends ObjectPainter {
      * @private */
    itemContextMenu(name) {
        const rrr = this.svg_this_pad().node().getBoundingClientRect(),
-           evnt = { clientX: rrr.left+10, clientY: rrr.top + 10 };
+             evnt = { clientX: rrr.left + 10, clientY: rrr.top + 10 };
 
        // use timeout to avoid conflict with mouse click and automatic menu close
        if (name === 'pad')
-          return setTimeout(() => this.padContextMenu(evnt), 50);
+          return postponePromise(() => this.padContextMenu(evnt), 50);
 
        let selp = null, selkind;
 
@@ -1872,9 +1873,9 @@ class TPadPainter extends ObjectPainter {
 
        if (!isFunc(selp?.fillContextMenu)) return;
 
-       createMenu(evnt, selp).then(menu => {
+       return createMenu(evnt, selp).then(menu => {
           if (selp.fillContextMenu(menu, selkind))
-             selp.fillObjectExecMenu(menu, selkind).then(() => setTimeout(() => menu.show(), 50));
+             return selp.fillObjectExecMenu(menu, selkind).then(() => postponePromise(() => menu.show(), 50));
        });
    }
 

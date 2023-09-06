@@ -1747,6 +1747,17 @@ function isStr(arg) { return typeof arg === 'string'; }
   * @private */
 function isPromise(obj) { return isObject(obj) && isFunc(obj.then); }
 
+/** @summary Postpone func execution and return result in promise
+  * @private */
+function postponePromise(func, timeout) {
+   return new Promise(resolveFunc => {
+      setTimeout(() => {
+         const res = func();
+         resolveFunc(res);
+      }, timeout);
+   });
+}
+
 /** @summary Provide promise in any case
   * @private */
 function getPromise(obj) { return isPromise(obj) ? obj : Promise.resolve(obj); }
@@ -1778,4 +1789,4 @@ export { version_id, version_date, version, source_dir, isNodeJs, isBatchMode, s
          isArrayProto, getDocument, BIT, clone, addMethods, parse, parseMulti, toJSON,
          decodeUrl, findFunction, createHttpRequest, httpRequest, loadScript, injectCode,
          create, createHistogram, setHistogramTitle, createTPolyLine, createTGraph, createTHStack, createTMultiGraph,
-         getMethods, registerMethods, isRootCollection, isObject, isFunc, isStr, isPromise, getPromise, _ensureJSROOT };
+         getMethods, registerMethods, isRootCollection, isObject, isFunc, isStr, isPromise, getPromise, postponePromise, _ensureJSROOT };
