@@ -471,6 +471,12 @@ class TCanvasPainter extends TPadPainter {
       return getHPainter()?.hasStatusLine() ?? false;
    }
 
+   /** @summary Check if status bar can be toggled
+     * @private */
+   canStatusBar() {
+      return this.testUI5() || this.brlayout || getHPainter();
+   }
+
    /** @summary Show/toggle event status bar
      * @private */
    activateStatusBar(state) {
