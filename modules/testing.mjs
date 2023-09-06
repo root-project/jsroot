@@ -243,10 +243,10 @@ async function testPadItemContextMenu(node, args) {
    if (typeof cp?.itemContextMenu !== 'function') return;
 
    const nprimitives = cp.painters?.length ?? 0,
-         names = [ 'xaxis', 'yaxis', 'zaxis', 'pad', 'frame'];
+         names = ['xaxis', 'yaxis', 'zaxis', 'pad', 'frame'];
 
    for (let i = -names.length; i < nprimitives; ++i) {
-      const name = i < 0 ? names[i+names.length] : i.toString();
+      const name = (i < 0) ? names[i+names.length] : i.toString();
       await cp.itemContextMenu(name);
       await _test_timeout(args, 0.1);
       closeMenu();

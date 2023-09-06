@@ -377,7 +377,7 @@ class TPadPainter extends ObjectPainter {
    }
 
    /** @summary Generate pad events, normally handled by GED
-    * @desc in pad painter, while pad may be drawn without canvas
+     * @desc in pad painter, while pad may be drawn without canvas
      * @private */
    producePadEvent(what, padpainter, painter, position, place) {
       if ((what === 'select') && isFunc(this.selectActivePad))
@@ -1002,8 +1002,7 @@ class TPadPainter extends ObjectPainter {
 
       if (nx*ny < 2) return this;
 
-      const xmargin = 0.01, ymargin = 0.01,
-          dy = 1/ny, dx = 1/nx, subpads = [];
+      const xmargin = 0.01, ymargin = 0.01, dy = 1/ny, dx = 1/nx, subpads = [];
       let n = 0;
       for (let iy = 0; iy < ny; iy++) {
          const y2 = 1 - iy*dy - ymargin;
