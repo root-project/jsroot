@@ -21,15 +21,18 @@ class EmulationMouseEvent {
 
    constructor(x = 0, y = 0) {
       this.$emul = true; // special flag mark emulated event
-      this.clientX = x;
-      this.clientY = y;
       this.button = 0;
       this.key = '';
+      this.set(x, y);
    }
 
    set(x, y) {
       this.clientX = Math.round(x);
       this.clientY = Math.round(y);
+   }
+
+   setTouch(x1, y1, x2, y2) {
+      this.$touch_arr = [[Math.round(x1), Math.round(y1)], [Math.round(x2), Math.round(y2)]];
    }
 
   preventDefault() {}
@@ -94,6 +97,38 @@ async function testMouseZooming(node, args) {
    }
 }
 
+/** @summary test zooming features
+  * @private */
+async function testTouchZooming(node, args) {
+   const fp = getElementCanvPainter(node)?.getFramePainter();
+
+   if (fp?.mode3d) return;
+   if ((typeof fp?.startRectSel !== 'function') || (typeof fp?.moveRectSel !== 'function')) return;
+
+   const fw = fp.getFrameWidth(), fh = fp.getFrameHeight(),
+         evnt = new EmulationMouseEvent();
+
+   // region zooming
+
+   evnt.setTouch(fw*0.4, fh*0.4, fw*0.6, fh*0.6);
+
+   fp.startTouchZoom(evnt);
+
+   await _test_timeout(args);
+
+   for (let i = 2; i < 9; ++i) {
+      evnt.setTouch(fw*0.05*(10 - i), fh*0.05*(10 - i), fw*0.05*(10 + i), fh*0.05*(10 + i));
+      fp.moveTouchZoom(evnt);
+      await _test_timeout(args, 0.2);
+   }
+
+   await fp.endTouchZoom(evnt);
+
+   await _test_timeout(args);
+
+   await fp.unzoom();
+}
+
 async function testFrameClick(node) {
    const fp = getElementCanvPainter(node)?.getFramePainter();
    if (fp?.mode3d || typeof fp?.processFrameClick !== 'function') return;
@@ -102,7 +137,7 @@ async function testFrameClick(node) {
 
    for (let i = 1; i < 15; i++) {
       for (let j = 1; j < 15; j++) {
-         let pnt = { x: Math.round(i/15*fw), y: Math.round(j/15*fh) };
+         const pnt = { x: Math.round(i/15*fw), y: Math.round(j/15*fh) };
          fp.processFrameClick(pnt);
       }
    }
@@ -126,10 +161,15 @@ async function testFrameMouseDoubleClick(node) {
 
 
 async function _testing(dom, args) {
-   return testZooming(dom, args)
-          .then(() => testMouseZooming(dom, args))
-          .then(() => testFrameClick(dom))
-          .then(() => testFrameMouseDoubleClick(dom));
+   await testFrameClick(dom);
+   await testFrameMouseDoubleClick(dom);
+
+   await testZooming(dom, args);
+   await testMouseZooming(dom, args);
+   await testTouchZooming(dom, args);
+
+   await testFrameClick(dom);
+   await testFrameMouseDoubleClick(dom);
 }
 
 

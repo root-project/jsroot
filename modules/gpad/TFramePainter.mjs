@@ -1177,7 +1177,7 @@ const TooltipHandler = {
       if ((this.zoom_kind !== 0) || drag_kind)
          return;
 
-      const arr = d3_pointers(evnt, this.getFrameSvg().node());
+      const arr = evnt.$touch_arr ?? d3_pointers(evnt, this.getFrameSvg().node());
 
       // normally double-touch will be handled
       // touch with single click used for context menu
@@ -1232,7 +1232,6 @@ const TooltipHandler = {
       } else
          this.zoom_kind = 101; // x and y
 
-
       drag_kind = 'zoom'; // block other possible dragging
 
       setPainterTooltipEnabled(this, false);
@@ -1245,9 +1244,11 @@ const TooltipHandler = {
             .attr('height', this.zoom_origin[1] - this.zoom_curr[1])
             .call(addHighlightStyle, true);
 
-      d3_select(window).on('touchmove.zoomRect', evnt => this.moveTouchZoom(evnt))
-                       .on('touchcancel.zoomRect', evnt => this.endTouchZoom(evnt))
-                       .on('touchend.zoomRect', evnt => this.endTouchZoom(evnt));
+      if (!evnt.$emul) {
+         d3_select(window).on('touchmove.zoomRect', evnt => this.moveTouchZoom(evnt))
+                          .on('touchcancel.zoomRect', evnt => this.endTouchZoom(evnt))
+                          .on('touchend.zoomRect', evnt => this.endTouchZoom(evnt));
+      }
    },
 
    /** @summary Move touch zooming */
@@ -1256,7 +1257,7 @@ const TooltipHandler = {
 
       evnt.preventDefault();
 
-      const arr = d3_pointers(evnt, this.getFrameSvg().node());
+      const arr = evnt.$touch_arr ?? d3_pointers(evnt, this.getFrameSvg().node());
 
       if (arr.length !== 2)
          return this.clearInteractiveElements();
@@ -1290,9 +1291,11 @@ const TooltipHandler = {
       drag_kind = ''; // reset global flag
 
       evnt.preventDefault();
-      d3_select(window).on('touchmove.zoomRect', null)
-                       .on('touchend.zoomRect', null)
-                       .on('touchcancel.zoomRect', null);
+      if (!evnt.$emul) {
+         d3_select(window).on('touchmove.zoomRect', null)
+                          .on('touchend.zoomRect', null)
+                          .on('touchcancel.zoomRect', null);
+      }
 
       let xmin, xmax, ymin, ymax, isany = false, namex = 'x', namey = 'y';
       const xid = this.swap_xy ? 1 : 0, yid = 1 - xid, changed = [true, true];
