@@ -373,7 +373,7 @@ const TooltipHandler = {
          }
       }
 
-      let hints = [], nhints = 0, nexact = 0, maxlen = 0, lastcolor1 = 0, usecolor1 = false, textheight = 11;
+      let nhints = 0, nexact = 0, maxlen = 0, lastcolor1 = 0, usecolor1 = false, textheight = 11;
       const hmargin = 3, wmargin = 3, hstep = 1.2,
             frame_rect = this.getFrameRect(),
             pp = this.getPadPainter(),
@@ -381,11 +381,13 @@ const TooltipHandler = {
             font = new FontHandler(160, textheight),
             disable_tootlips = !this.isTooltipAllowed() || !this.tooltip_enabled;
 
-      if (pnt && disable_tootlips) pnt.disabled = true; // indicate that highlighting is not required
-      if (pnt) pnt.painters = true; // get also painter
+      if (pnt) {
+         pnt.disabled = disable_tootlips; // indicate that highlighting is not required
+         pnt.painters = true; // get also painter
+      }
 
       // collect tooltips from pad painter - it has list of all drawn objects
-      if (pp) hints = pp.processPadTooltipEvent(pnt);
+      const hints = pp?.processPadTooltipEvent(pnt) ?? [];
 
       if (pp?._deliver_webcanvas_events && pp?.is_active_pad && pnt && isFunc(pp?.deliverWebCanvasEvent))
          pp.deliverWebCanvasEvent('move', frame_rect.x + pnt.x, frame_rect.y + pnt.y, hints);

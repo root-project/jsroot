@@ -1058,20 +1058,17 @@ class TPadPainter extends ObjectPainter {
       const painters = [], hints = [];
 
       // first count - how many processors are there
-      if (this.painters !== null) {
-         this.painters.forEach(obj => {
-            if (isFunc(obj.processTooltipEvent))
-               painters.push(obj);
-         });
-      }
+      this.painters?.forEach(obj => {
+         if (isFunc(obj.processTooltipEvent))
+            painters.push(obj);
+      });
 
       if (pnt) pnt.nproc = painters.length;
 
       painters.forEach(obj => {
-         let hint = obj.processTooltipEvent(pnt);
-         if (!hint) hint = { user_info: null };
+         const hint = obj.processTooltipEvent(pnt) || { user_info: null };
          hints.push(hint);
-         if (pnt && pnt.painters) hint.painter = obj;
+         if (pnt?.painters) hint.painter = obj;
       });
 
       return hints;
