@@ -2247,8 +2247,8 @@ class TH2Painter extends THistPainter {
 
       let rect = this.getPadPainter().getFrameRect(),
           palette = this.getHistPalette(),
-          outerRadius = Math.min(rect.width, rect.height) * 0.5 - 60,
-          innerRadius = outerRadius - 10,
+          outerRadius = Math.max(10, Math.min(rect.width, rect.height) * 0.5 - 60),
+          innerRadius = Math.max(2, outerRadius - 10),
           data = [], labels = [],
           getColor = indx => palette.calcColor(indx, used.length),
           ndig = 0, tickStep = 1,
