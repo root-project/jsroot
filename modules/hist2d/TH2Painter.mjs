@@ -2590,8 +2590,8 @@ class TH2Painter extends THistPainter {
       let ndig = 0, tickStep = 1;
       const rect = this.getPadPainter().getFrameRect(),
             palette = this.getHistPalette(),
-            outerRadius = Math.min(rect.width, rect.height) * 0.5 - 60,
-            innerRadius = outerRadius - 10,
+            outerRadius = Math.max(10, Math.min(rect.width, rect.height) * 0.5 - 60),
+            innerRadius = Math.max(2, outerRadius - 10),
             data = [], labels = [],
             getColor = indx => palette.calcColor(indx, used.length),
             formatValue = v => v.toString(),
@@ -2636,18 +2636,18 @@ class TH2Painter extends THistPainter {
          .sortSubgroups(d3_descending)
          .sortChords(d3_descending),
 
-       chords = chord(data),
+      chords = chord(data),
 
-       group = this.draw_g.append('g')
+      group = this.draw_g.append('g')
          .attr('font-size', 10)
          .attr('font-family', 'sans-serif')
          .selectAll('g')
          .data(chords.groups)
          .join('g'),
 
-       arc = d3_arc().innerRadius(innerRadius).outerRadius(outerRadius),
+      arc = d3_arc().innerRadius(innerRadius).outerRadius(outerRadius),
 
-       ribbon = d3_ribbon().radius(innerRadius - 1).padAngle(1 / innerRadius);
+      ribbon = d3_ribbon().radius(innerRadius - 1).padAngle(1 / innerRadius);
 
       function ticks({ startAngle, endAngle, value }) {
          const k = (endAngle - startAngle) / value,
