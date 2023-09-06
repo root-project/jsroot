@@ -1350,8 +1350,7 @@ const TooltipHandler = {
          return handle2.analyzeWheelEvent(event, dmin, item.second, test_ignore);
       }
       const handle = this[item.name + '_handle'];
-      if (handle) return handle.analyzeWheelEvent(event, dmin, item, test_ignore);
-      console.error(`Fail to analyze zooming event for ${item.name}`);
+      return handle?.analyzeWheelEvent(event, dmin, item, test_ignore);
    },
 
     /** @summary return true if default Y zooming should be enabled
