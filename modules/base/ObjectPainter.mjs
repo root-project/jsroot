@@ -1357,10 +1357,18 @@ class ObjectPainter extends BasePainter {
          menu.exec_painter = (menu.painter !== this) ? this : undefined;
 
       return new Promise(resolveFunc => {
-         // set timeout to avoid menu hanging
-         setTimeout(() => DoFillMenu(menu, reqid, resolveFunc), 2000);
+         let did_resolve = false;
 
-         canvp.submitMenuRequest(this, kind, reqid).then(lst => DoFillMenu(menu, reqid, resolveFunc, lst));
+         function handleResolve(res) {
+            if (did_resolve) return;
+            did_resolve = true;
+            resolveFunc(res);
+         }
+
+         // set timeout to avoid menu hanging
+         setTimeout(() => DoFillMenu(menu, reqid, handleResolve), 2000);
+
+         canvp.submitMenuRequest(this, kind, reqid).then(lst => DoFillMenu(menu, reqid, handleResolve, lst));
       });
    }
 
