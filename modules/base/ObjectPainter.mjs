@@ -262,11 +262,7 @@ class ObjectPainter extends BasePainter {
      * @desc Redirects to {@link TPadPainter#checkCanvasResize}
      * @private */
    checkResize(arg) {
-      const p = this.getCanvPainter();
-      if (!p) return false;
-      // only canvas should be checked
-      p.checkCanvasResize(arg);
-      return true;
+      return this.getCanvPainter()?.checkCanvasResize(arg);
    }
 
    /** @summary removes <g> element with object drawing

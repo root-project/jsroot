@@ -422,10 +422,8 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary Enlarge pad draw element when possible */
    enlargePad(evnt, is_dblclick) {
-      if (evnt) {
-         evnt.preventDefault();
-         evnt.stopPropagation();
-      }
+      evnt?.preventDefault();
+      evnt?.stopPropagation();
 
       // ignore double click on canvas itself for enlarge
       if (is_dblclick && this._websocket && (this.enlargeMain('state') === 'off'))
@@ -447,8 +445,7 @@ class RPadPainter extends RObjectPainter {
       } else
          console.error('missmatch with pad double click events');
 
-
-      this.checkResize(true);
+      return this.checkResize(true);
    }
 
    /** @summary Create SVG element for the pad
