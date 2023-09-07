@@ -378,25 +378,40 @@
           filepath = '../files/',
           extra_opts = '', // extra options like webgl=no or interactive=0
           select_key = null, // select the only key like ?select=TH2
+          select_id = null,  // selected entry
           no_interactive = false, // disable interactivity
           use_zstd = true,
           examples_main = [],
           test_interactivity = false,
           show_debug = false;
 
-      if (window.location.search.indexOf('nowebgl') > 0)
+      const d = decodeUrl();
+
+      if (d.has('nowebgl'))
          extra_opts = '&webgl=0';
 
-      if (window.location.search.indexOf('noint') > 0) {
+      if (d.has('noint')) {
          no_interactive = true;
          extra_opts += '&interactive=0';
       }
 
-      if (window.location.search.indexOf('interactivity') > 0)
+      if (d.has('interactivity'))
          test_interactivity = true;
 
-      if (window.location.search.indexOf('debug') > 0)
+      if (d.has('debug'))
          show_debug = true;
+
+      select_key = d.get('select');
+      if (!select_key && d.has('geom')) select_key = 'TGeo';
+
+      if (select_key && d.has('id'))
+         select_id = parseInt(d.get('id'));
+
+      if (d.has('dark')) {
+         settings.DarkMode = true;
+         document.getElementById('panel').style.background = 'black';
+         document.getElementById('plaindraw').style.background = 'black';
+      }
 
       let host = window.location.host;
 
@@ -476,10 +491,10 @@
 
       function setPageTitle(title) {
          let arr = document.getElementsByTagName('meta');
-         for (let k=0;k<arr.length;++k) {
+         for (let k = 0; k < arr.length; ++k) {
             let elem = arr[k];
             if (elem.getAttribute('property') == 'og:title')
-              elem.setAttribute('content', title);
+               elem.setAttribute('content', title);
          }
       }
 
@@ -501,7 +516,8 @@
       async function runBigTest(interval, doinit) {
          if (doinit) {
             let running = (keyid !== null); // indication that test running - no need to relaunch events
-            keyid = select_key || 'TH1'; optid = -1;
+            keyid = select_key || 'TH1';
+            optid = select_key && (select_id !== null) ? select_id - 1 : -1;
             testfile = testobj = null;
             test_interactivity = (doinit === 'full');
             let ii = decodeUrl().get('interval');
@@ -530,9 +546,11 @@
                }
             keyid = next;
             if (!next) return; // stop condition
-            optid = -1; testfile = testobj = null;
-            // console.log(`Switch key ${keyid}`);
+            optid = select_key && (select_id !== null) ? select_id - 1 : -1;
+            testfile = testobj = null;
             return runBigTest(0);
+         } else if (select_key && select_id !== null && optid !== select_id) {
+            return; // do only this id
          }
 
          let entry = examples_main[keyid][optid];
@@ -649,17 +667,6 @@
 
       // all painter assigned to viewer element will be automatically informed about resize
       registerForResize('plaindraw');
-
-      let d = decodeUrl();
-
-      select_key = d.get('select');
-      if (!select_key && d.has('geom')) select_key = 'TGeo';
-
-      if (d.has('dark')) {
-         settings.DarkMode = true;
-         document.getElementById('panel').style.background = 'black';
-         document.getElementById('plaindraw').style.background = 'black';
-      }
 
       let content = document.getElementById( 'content' );
 

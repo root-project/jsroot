@@ -49,15 +49,15 @@ async function testZooming(node, args) {
 
    if (args.debug) console.log(`test zooming in range: ${xmin} ${xmax} ${ymin} ${ymax}`);
 
-   return fp.zoom(xmin + 0.2*(xmax - xmin), xmin + 0.8*(xmax - xmin), ymin + 0.2*(ymax - ymin), ymin + 0.8*(ymax - ymin))
-            .then(() => _test_timeout(args))
-            .then(() => fp.unzoom())
-            .then(() => _test_timeout(args))
-            .then(() => fp.zoomSingle('x', xmin + 0.22*(xmax - xmin), xmin + 0.25*(xmax - xmin)))
-            .then(() => _test_timeout(args))
-            .then(() => fp.zoomSingle('y', ymin + 0.12*(ymax - ymin), ymin + 0.43*(ymax - ymin)))
-            .then(() => _test_timeout(args))
-            .then(() => fp.unzoom())
+   await fp.zoom(xmin + 0.2*(xmax - xmin), xmin + 0.8*(xmax - xmin), ymin + 0.2*(ymax - ymin), ymin + 0.8*(ymax - ymin));
+   await _test_timeout(args);
+   await fp.unzoom();
+   await _test_timeout(args);
+   await fp.zoomSingle('x', xmin + 0.22*(xmax - xmin), xmin + 0.25*(xmax - xmin));
+   await _test_timeout(args);
+   await fp.zoomSingle('y', ymin + 0.12*(ymax - ymin), ymin + 0.43*(ymax - ymin));
+   await _test_timeout(args);
+   await fp.unzoom();
 }
 
 /** @summary test mouse zooming features
