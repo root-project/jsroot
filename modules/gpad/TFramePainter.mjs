@@ -1390,19 +1390,21 @@ const TooltipHandler = {
       if (this.can_zoom_y)
          this.analyzeMouseWheelEvent(evnt, this.swap_xy ? itemx : itemy, 1 - cur[1] / h, (cur[0] >= 0) && (cur[0] <= w), cur[0] > w);
 
-      this.zoom(itemx.min, itemx.max, itemy.min, itemy.max);
+      let pr = this.zoom(itemx.min, itemx.max, itemy.min, itemy.max);
 
       if (itemx.changed) this.zoomChangedInteractive('x', true);
       if (itemy.changed) this.zoomChangedInteractive('y', true);
 
       if (itemx.second) {
-         this.zoomSingle('x2', itemx.second.min, itemx.second.max);
+         pr = pr.then(() => this.zoomSingle('x2', itemx.second.min, itemx.second.max));
          if (itemx.second.changed) this.zoomChangedInteractive('x2', true);
       }
       if (itemy.second) {
-         this.zoomSingle('y2', itemy.second.min, itemy.second.max);
+         pr = pr.then(() => this.zoomSingle('y2', itemy.second.min, itemy.second.max));
          if (itemy.second.changed) this.zoomChangedInteractive('y2', true);
       }
+
+      return pr;
    },
 
    /** @summary Show frame context menu */
