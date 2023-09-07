@@ -435,10 +435,11 @@
                   return true;
                });
 
-         let pr = draw('plaindraw', object, option);
-         if (!test_interactivity) return pr;
+         return draw('plaindraw', object, option).then(res => {
+             if (!test_interactivity) return res;
 
-         return pr.then(() => testInteractivity({ dom: document.getElementById('plaindraw'), timeout: testinterval, debug: show_debug }));
+             return testInteractivity({ dom: document.getElementById('plaindraw'), timeout: testinterval, debug: show_debug });
+         })
       }
 
       async function drawUrl(url) {
@@ -460,7 +461,17 @@
             hpainter.setDisplay(layout, 'right-div');
          }
 
-         return hpainter.startGUI(null, url);
+         return hpainter.startGUI(null, url).then(res => {
+            if (!test_interactivity) return res;
+
+            const prs = [];
+
+            hpainter.getDisplay()?.forEachFrame(frame => {
+               prs.push(testInteractivity({ dom: frame, timeout: testinterval, debug: show_debug }));
+            }, true);
+
+            return Promise.all(prs);
+         });
       }
 
       async function processClick(durl, filename, itemname, opt, jsonname, entry) {
