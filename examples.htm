@@ -381,7 +381,8 @@
           no_interactive = false, // disable interactivity
           use_zstd = true,
           examples_main = [],
-          test_interactivity = false;
+          test_interactivity = false,
+          show_debug = false;
 
       if (window.location.search.indexOf('nowebgl') > 0)
          extra_opts = '&webgl=0';
@@ -393,6 +394,9 @@
 
       if (window.location.search.indexOf('interactivity') > 0)
          test_interactivity = true;
+
+      if (window.location.search.indexOf('debug') > 0)
+         show_debug = true;
 
       let host = window.location.host;
 
@@ -425,7 +429,7 @@
          let pr = draw('plaindraw', object, option);
          if (!test_interactivity) return pr;
 
-         return pr.then(() => testInteractivity({ dom: document.getElementById('plaindraw'), timeout: testinterval }));
+         return pr.then(() => testInteractivity({ dom: document.getElementById('plaindraw'), timeout: testinterval, debug: show_debug }));
       }
 
       async function processClick(durl, filename, itemname, opt, jsonname, entry) {
@@ -522,7 +526,7 @@
             if (!select_key)
                for (let key in examples_main) {
                   if (found) { next = key; break; }
-                  if (key == keyid) found = true;
+                  if (key === keyid) found = true;
                }
             keyid = next;
             if (!next) return; // stop condition
@@ -532,6 +536,9 @@
          }
 
          let entry = examples_main[keyid][optid];
+
+         if (show_debug)
+            console.log(`Testing ${keyid}  ${entry.name || entry.opt}`);
 
          // exclude some entries from the test
          if (entry.notest) return runBigTest(0);
