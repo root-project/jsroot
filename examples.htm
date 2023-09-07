@@ -243,12 +243,6 @@
             overflow: hidden;
          }
 
-         #guidraw {
-            border: 0px;
-            width: 100%;
-            height: 100%;
-         }
-
          @media all and ( min-width: 1700px ) {
             :root {
                --panel-width: 280px;
@@ -431,7 +425,7 @@
 
       let keyid = null, optid, testfile, testobj, testinterval = 10, hpainter = null;
 
-      function drawEntry(entry, object, option) {
+      async function drawEntry(entry, object, option) {
          if (entry?.aspng)
             return makeImage({ format: 'png', object, option, width: 800, height: 600 })
                .then(png => {
@@ -445,6 +439,28 @@
          if (!test_interactivity) return pr;
 
          return pr.then(() => testInteractivity({ dom: document.getElementById('plaindraw'), timeout: testinterval, debug: show_debug }));
+      }
+
+      async function drawUrl(url) {
+         let d = decodeUrl(url),
+             layout = d.get('layout', 'simple'),
+             nobrowser = d.has('nobrowser');
+
+         if (nobrowser) {
+            document.getElementById('plaindraw').innerHTML = '';
+            hpainter = new HierarchyPainter('root', null);
+            hpainter.setDisplay(layout, 'plaindraw');
+         } else {
+            document.getElementById('plaindraw').innerHTML =
+                `<div id='left-div' style='float:left; width:25%; overflow:auto; height:100%;'>` +
+                `<div id='browser'></div></div>` +
+                `<div id='right-div' style='float:right; width:73%; height:100%;'></div>`;
+
+            hpainter = new HierarchyPainter('root', 'browser');
+            hpainter.setDisplay(layout, 'right-div');
+         }
+
+         return hpainter.startGUI(null, url);
       }
 
       async function processClick(durl, filename, itemname, opt, jsonname, entry) {
@@ -464,30 +480,23 @@
             settings.DragAndDrop = false;
          }
 
-         if (durl.length > 0) {
-            let viewer = document.getElementById('guidraw');
-            if (!viewer) {
-               document.getElementById('plaindraw').innerHTML = '';
-               viewer = document.createElement('iframe');
-               viewer.id = 'guidraw';
-               document.getElementById('plaindraw').appendChild(viewer);
-            }
-            viewer.src = jsroot_path + durl + (opt ? `&opt=${opt}` : '') + extra_opts;
-            viewer.focus();
-          } else {
-
-             document.getElementById('plaindraw').innerHTML = '';
+         hpainter?.cleanup();
+         hpainter = null;
+         cleanup('plaindraw');
+         document.getElementById('plaindraw').innerHTML = '';
              document.getElementById('plaindraw').style['background-color'] = '';
 
-             if (jsonname)
-                return httpRequest(jsonname, 'object')
-                         .then(obj => drawEntry(entry, obj, opt));
-             else
-                return openFile(filename)
-                         .then(file => file.readObject(itemname))
-                         .then(obj => drawEntry(entry, obj, opt));
+         if (durl.length > 0) {
+            return drawUrl(durl + (opt ? `&opt=${opt}` : '') + extra_opts);
+          } else if (jsonname) {
+             return httpRequest(jsonname, 'object')
+                      .then(obj => drawEntry(entry, obj, opt));
+           } else {
+              return openFile(filename)
+                       .then(file => file.readObject(itemname))
+                       .then(obj => drawEntry(entry, obj, opt));
           }
-      };
+      }
 
       function setPageTitle(title) {
          let arr = document.getElementsByTagName('meta');
@@ -511,7 +520,7 @@
                 document.getElementById('panel').classList.toggle('open');
              })
          });
-      };
+      }
 
       async function runBigTest(interval, doinit) {
          if (doinit) {
@@ -597,7 +606,8 @@
          // console.log(`KEY ${keyid} opt ${opt}`);
          // if ((url.length == 0) || (keyid != 'Misc')) return runBigTest(0);
 
-         if (hpainter) { hpainter.cleanup(); hpainter = null; }
+         hpainter?.cleanup();
+         hpainter = null;
          cleanup('plaindraw');
 
          createRootColors(); // ensure default colors
@@ -608,25 +618,7 @@
             testfile = testobj = null;
             // if (keyid == 'TGeo') return runBigTest(0);  // ignore TGeo URLs - too complex
 
-            let d = decodeUrl(url),
-                layout = d.get('layout', 'simple'),
-                nobrowser = d.has('nobrowser');
-
-            if (nobrowser) {
-               document.getElementById('plaindraw').innerHTML = '';
-               hpainter = new HierarchyPainter('root', null);
-               hpainter.setDisplay(layout, 'plaindraw');
-            } else {
-               document.getElementById('plaindraw').innerHTML =
-                   `<div id='left-div' style='float:left; width:25%; overflow:auto; height:100%;'>` +
-                   `<div id='browser'></div></div>` +
-                   `<div id='right-div' style='float:right; width:73%; height:100%;'></div>`;
-
-               hpainter = new HierarchyPainter('root', 'browser');
-               hpainter.setDisplay(layout, 'right-div');
-            }
-
-            hpainter.startGUI(null, url).then(TestContinue, TestFailure);
+            drawUrl(url).then(TestContinue, TestFailure);
          } else if (jsonname.length > 0) {
             testfile = testobj = null;
             httpRequest(jsonname, 'object').then(obj => {
