@@ -36,11 +36,28 @@ class EmulationMouseEvent {
 
 } // class EmulationMouseEvent
 
+function _getAllSubPads(cp) {
+   const sub = [];
+   cp?.forEachPainterInPad(p => {
+      if ((p !== cp) && p.getFramePainter())
+         sub.push(p);
+   }, 'pads');
+   return sub.length > 4 ? [] : sub; // do not test large canvas with many-many subpads
+}
 
 /** @summary test zooming features
   * @private */
-async function testZooming(node, args) {
-   const fp = getElementCanvPainter(node)?.getFramePainter();
+async function testZooming(node, args, pp) {
+   const cp = getElementCanvPainter(node),
+         pad_painter = pp ?? cp;
+   if (!pad_painter) return;
+   const fp = pad_painter.getFramePainter();
+   if (!fp && !pp) {
+      const sub_pads = _getAllSubPads(cp);
+      for (let k = 0; k < sub_pads.length; ++k)
+         await testZooming(node, args, sub_pads[k]);
+      return;
+   }
 
    if ((typeof fp?.zoom !== 'function') || (typeof fp?.zoomSingle !== 'function')) return;
    if (typeof fp.scale_xmin === 'undefined' || typeof fp.scale_ymax === 'undefined') return;
@@ -62,8 +79,18 @@ async function testZooming(node, args) {
 
 /** @summary test mouse zooming features
   * @private */
-async function testMouseZooming(node, args) {
-   const fp = getElementCanvPainter(node)?.getFramePainter();
+async function testMouseZooming(node, args, pp) {
+   const cp = getElementCanvPainter(node),
+         pad_painter = pp ?? cp;
+   if (!pad_painter) return;
+   const fp = pad_painter.getFramePainter();
+
+   if (!fp && !pp) {
+      const sub_pads = _getAllSubPads(cp);
+      for (let k = 0; k < sub_pads.length; ++k)
+         await testMouseZooming(node, args, sub_pads[k]);
+      return;
+   }
 
    if (fp?.mode3d) return;
    if ((typeof fp?.startRectSel !== 'function') ||
@@ -101,8 +128,18 @@ async function testMouseZooming(node, args) {
 
 /** @summary test touch zooming features
   * @private */
-async function testTouchZooming(node, args) {
-   const fp = getElementCanvPainter(node)?.getFramePainter();
+async function testTouchZooming(node, args, pp) {
+   const cp = getElementCanvPainter(node),
+         pad_painter = pp ?? cp;
+   if (!pad_painter) return;
+   const fp = pad_painter.getFramePainter();
+
+   if (!fp && !pp) {
+      const sub_pads = _getAllSubPads(cp);
+      for (let k = 0; k < sub_pads.length; ++k)
+         await testTouchZooming(node, args, sub_pads[k]);
+      return;
+   }
 
    if (fp?.mode3d) return;
    if ((typeof fp?.startTouchZoom !== 'function') ||
@@ -135,8 +172,18 @@ async function testTouchZooming(node, args) {
 
 /** @summary test mouse wheel zooming features
   * @private */
-async function testMouseWheel(node, args) {
-   const fp = getElementCanvPainter(node)?.getFramePainter();
+async function testMouseWheel(node, args, pp) {
+   const cp = getElementCanvPainter(node),
+         pad_painter = pp ?? cp;
+   if (!pad_painter) return;
+   const fp = pad_painter.getFramePainter();
+
+   if (!fp && !pp) {
+      const sub_pads = _getAllSubPads(cp);
+      for (let k = 0; k < sub_pads.length; ++k)
+         await testMouseWheel(node, args, sub_pads[k]);
+      return;
+   }
 
    if (fp?.mode3d) return;
    if (typeof fp?.mouseWheel !== 'function') return;
@@ -167,8 +214,19 @@ async function testMouseWheel(node, args) {
 }
 
 
-async function testFrameClick(node) {
-   const fp = getElementCanvPainter(node)?.getFramePainter();
+async function testFrameClick(node, pp) {
+   const cp = getElementCanvPainter(node),
+         pad_painter = pp ?? cp;
+   if (!pad_painter) return;
+   const fp = pad_painter.getFramePainter();
+
+   if (!fp && !pp) {
+      const sub_pads = _getAllSubPads(cp);
+      for (let k = 0; k < sub_pads.length; ++k)
+         await testFrameClick(node, sub_pads[k]);
+      return;
+   }
+
    if (fp?.mode3d || typeof fp?.processFrameClick !== 'function') return;
 
    const fw = fp.getFrameWidth(), fh = fp.getFrameHeight();
@@ -181,8 +239,19 @@ async function testFrameClick(node) {
    }
 }
 
-async function testFrameMouseDoubleClick(node) {
-   const fp = getElementCanvPainter(node)?.getFramePainter();
+async function testFrameMouseDoubleClick(node, pp) {
+   const cp = getElementCanvPainter(node),
+         pad_painter = pp ?? cp;
+   if (!pad_painter) return;
+   const fp = pad_painter.getFramePainter();
+
+   if (!fp && !pp) {
+      const sub_pads = _getAllSubPads(cp);
+      for (let k = 0; k < sub_pads.length; ++k)
+         await testFrameMouseDoubleClick(node, sub_pads[k]);
+      return;
+   }
+
    if (fp?.mode3d || typeof fp?.mouseDoubleClick !== 'function') return;
 
    const fw = fp.getFrameWidth(), fh = fp.getFrameHeight(),
@@ -197,8 +266,19 @@ async function testFrameMouseDoubleClick(node) {
    }
 }
 
-async function testFrameContextMenu(node, args) {
-   const fp = getElementCanvPainter(node)?.getFramePainter();
+async function testFrameContextMenu(node, args, pp) {
+   const cp = getElementCanvPainter(node),
+         pad_painter = pp ?? cp;
+   if (!pad_painter) return;
+   const fp = pad_painter.getFramePainter();
+
+   if (!fp && !pp) {
+      const sub_pads = _getAllSubPads(cp);
+      for (let k = 0; k < sub_pads.length; ++k)
+         await testFrameContextMenu(node, args, sub_pads[k]);
+      return;
+   }
+
    if (fp?.mode3d || typeof fp?.showContextMenu !== 'function') return;
 
    const fw = fp.getFrameWidth(), fh = fp.getFrameHeight(),
@@ -225,8 +305,15 @@ async function testFrameContextMenu(node, args) {
    closeMenu();
 }
 
-async function testPadContextMenu(node, args) {
-   const cp = getElementCanvPainter(node);
+async function testPadContextMenu(node, args, pp) {
+   const cp = pp ?? getElementCanvPainter(node);
+
+   if (!pp && cp) {
+      const sub_pads = _getAllSubPads(cp);
+      for (let k = 0; k < sub_pads.length; ++k)
+         await testPadContextMenu(node, args, sub_pads[k]);
+   }
+
    if (typeof cp?.padContextMenu !== 'function') return;
 
    const pw = cp.getPadWidth(), ph = cp.getPadHeight(),
@@ -243,8 +330,14 @@ async function testPadContextMenu(node, args) {
    }
 }
 
-async function testPadItemContextMenu(node, args) {
-   const cp = getElementCanvPainter(node);
+async function testPadItemContextMenu(node, args, pp) {
+   const cp = pp ?? getElementCanvPainter(node);
+
+   if (!pp && cp) {
+      const sub_pads = _getAllSubPads(cp);
+      for (let k = 0; k < sub_pads.length; ++k)
+         await testPadItemContextMenu(node, args, sub_pads[k]);
+   }
 
    if (typeof cp?.itemContextMenu !== 'function') return;
 
@@ -264,7 +357,7 @@ async function testPadButtons(node, args) {
    if (typeof cp?.clickPadButton !== 'function') return;
 
    const evnt = new EmulationMouseEvent(50, 50),
-        toggles = ['enlargePad', 'ToggleZoom', 'ToggleLogX', 'ToggleLogY', 'ToggleLogZ', 'Toggle3D', 'ToggleColorZ', 'ToggleStatBox'];
+         toggles = ['enlargePad', 'ToggleZoom', 'ToggleLogX', 'ToggleLogY', 'ToggleLogZ', 'Toggle3D', 'ToggleColorZ', 'ToggleStatBox'];
 
    await cp.clickPadButton('PadContextMenus', evnt);
    await _test_timeout(args, 0.1);
