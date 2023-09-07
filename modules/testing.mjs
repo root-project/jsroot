@@ -357,11 +357,14 @@ async function testPadButtons(node, args) {
    if (typeof cp?.clickPadButton !== 'function') return;
 
    const evnt = new EmulationMouseEvent(50, 50),
-         toggles = ['enlargePad', 'ToggleZoom', 'ToggleLogX', 'ToggleLogY', 'ToggleLogZ', 'Toggle3D', 'ToggleColorZ', 'ToggleStatBox'];
+         toggles = ['ToggleZoom', 'ToggleLogX', 'ToggleLogY', 'ToggleLogZ', 'Toggle3D', 'ToggleColorZ', 'ToggleStatBox'];
 
    await cp.clickPadButton('PadContextMenus', evnt);
    await _test_timeout(args, 0.1);
    closeMenu();
+
+   if (!args.no_enlarge)
+      toggles.unshift('enlargePad');
 
    for (let i = 0; i < toggles.length; ++i) {
       await cp.clickPadButton(toggles[i], evnt);

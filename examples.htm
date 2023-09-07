@@ -467,7 +467,7 @@
             const prs = [];
 
             hpainter.getDisplay()?.forEachFrame(frame => {
-               prs.push(testInteractivity({ dom: frame, timeout: testinterval, debug: show_debug }));
+               prs.push(testInteractivity({ dom: frame, timeout: testinterval, debug: show_debug, no_enlarge: true }));
             }, true);
 
             return Promise.all(prs);
