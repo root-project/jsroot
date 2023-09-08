@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '6/09/2023',
+version_date = '7/09/2023',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -62226,19 +62226,21 @@ const TooltipHandler = {
       if (this.can_zoom_y)
          this.analyzeMouseWheelEvent(evnt, this.swap_xy ? itemx : itemy, 1 - cur[1] / h, (cur[0] >= 0) && (cur[0] <= w), cur[0] > w);
 
-      this.zoom(itemx.min, itemx.max, itemy.min, itemy.max);
+      let pr = this.zoom(itemx.min, itemx.max, itemy.min, itemy.max);
 
       if (itemx.changed) this.zoomChangedInteractive('x', true);
       if (itemy.changed) this.zoomChangedInteractive('y', true);
 
       if (itemx.second) {
-         this.zoomSingle('x2', itemx.second.min, itemx.second.max);
+         pr = pr.then(() => this.zoomSingle('x2', itemx.second.min, itemx.second.max));
          if (itemx.second.changed) this.zoomChangedInteractive('x2', true);
       }
       if (itemy.second) {
-         this.zoomSingle('y2', itemy.second.min, itemy.second.max);
+         pr = pr.then(() => this.zoomSingle('y2', itemy.second.min, itemy.second.max));
          if (itemy.second.changed) this.zoomChangedInteractive('y2', true);
       }
+
+      return pr;
    },
 
    /** @summary Show frame context menu */
@@ -62677,8 +62679,8 @@ class TFramePainter extends ObjectPainter {
       this.logx = this.logy = 0;
 
       const w = this.getFrameWidth(), h = this.getFrameHeight(),
-          pp = this.getPadPainter(),
-          pad = pp.getRootPad();
+            pp = this.getPadPainter(),
+            pad = pp.getRootPad();
 
       this.scales_ndim = opts.ndim;
 
@@ -62777,8 +62779,8 @@ class TFramePainter extends ObjectPainter {
       this.logx2 = this.logy2 = 0;
 
       const w = this.getFrameWidth(), h = this.getFrameHeight(),
-          pp = this.getPadPainter(),
-          pad = pp.getRootPad();
+            pp = this.getPadPainter(),
+            pad = pp.getRootPad();
 
       if (opts.second_x) {
          this.scale_x2min = this.x2min;
@@ -62819,6 +62821,7 @@ class TFramePainter extends ObjectPainter {
                                            noexp_changed: this.x2_noexp_changed,
                                            logcheckmin: this.swap_xy,
                                            logminfactor: logminfactorX });
+
          this.x2_handle.assignFrameMembers(this, 'x2');
       }
 
@@ -62844,7 +62847,7 @@ class TFramePainter extends ObjectPainter {
      * @private */
    getGrFuncs(second_x, second_y) {
       const use_x2 = second_x && this.grx2,
-          use_y2 = second_y && this.gry2;
+            use_y2 = second_y && this.gry2;
       if (!use_x2 && !use_y2) return this;
 
       return {
@@ -64969,6 +64972,8 @@ class BatchDisplay extends MDIDisplay {
       const obj = select(frame).property('_json_object_');
       if (obj) {
          select(frame).property('_json_object_', null);
+         cleanup(frame);
+         select(frame).remove();
          return toJSON(obj, spacing);
       }
    }
@@ -64993,6 +64998,8 @@ class BatchDisplay extends MDIDisplay {
       main.selectAll('svg').each(clear_element);
 
       const svg = compressSVG(main.html());
+
+      cleanup(frame);
       main.remove();
       return svg;
    }
@@ -66668,8 +66675,10 @@ class TPadPainter extends ObjectPainter {
       if (isFunc(this.hasMenuBar) && isFunc(this.actiavteMenuBar))
          menu.addchk(this.hasMenuBar(), 'Menu bar', flag => this.actiavteMenuBar(flag));
 
-      if (isFunc(this.hasEventStatus) && isFunc(this.activateStatusBar))
-         menu.addchk(this.hasEventStatus(), 'Event status', () => this.activateStatusBar('toggle'));
+      if (isFunc(this.hasEventStatus) && isFunc(this.activateStatusBar) && isFunc(this.canStatusBar)) {
+         if (this.canStatusBar())
+            menu.addchk(this.hasEventStatus(), 'Event status', () => this.activateStatusBar('toggle'));
+      }
 
       if (this.enlargeMain() || (this.has_canvas && this.hasObjectsToDraw()))
          menu.addchk(this.isPadEnlarged(), 'Enlarge ' + (this.iscan ? 'canvas' : 'pad'), () => this.enlargePad());
@@ -68230,6 +68239,12 @@ class TCanvasPainter extends TPadPainter {
       if (this.brlayout)
          return this.brlayout.hasStatus();
       return getHPainter()?.hasStatusLine() ?? false;
+   }
+
+   /** @summary Check if status bar can be toggled
+     * @private */
+   canStatusBar() {
+      return this.testUI5() || this.brlayout || getHPainter();
    }
 
    /** @summary Show/toggle event status bar
@@ -105309,9 +105324,11 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
       for (let n = drawbins.length-1; n >= 0; --n) {
          const bin = drawbins[n],
              dlen = Math.sqrt(bin.dgrx**2 + bin.dgry**2);
-         // shift point
-         bin.grx += excl_width*bin.dgry/dlen;
-         bin.gry -= excl_width*bin.dgrx/dlen;
+         if (dlen > 1e-10) {
+            // shift point
+            bin.grx += excl_width*bin.dgry/dlen;
+            bin.gry -= excl_width*bin.dgrx/dlen;
+         }
          extrabins.push(bin);
       }
 
@@ -115570,8 +115587,10 @@ class RPadPainter extends RObjectPainter {
       if (isFunc(this.hasMenuBar) && isFunc(this.actiavteMenuBar))
          menu.addchk(this.hasMenuBar(), 'Menu bar', flag => this.actiavteMenuBar(flag));
 
-      if (isFunc(this.hasEventStatus) && isFunc(this.activateStatusBar))
-         menu.addchk(this.hasEventStatus(), 'Event status', () => this.activateStatusBar('toggle'));
+      if (isFunc(this.hasEventStatus) && isFunc(this.activateStatusBar) && isFunc(this.canStatusBar)) {
+         if (this.canStatusBar())
+            menu.addchk(this.hasEventStatus(), 'Event status', () => this.activateStatusBar('toggle'));
+      }
 
       if (this.enlargeMain() || (this.has_canvas && this.hasObjectsToDraw()))
          menu.addchk((this.enlargeMain('state') === 'on'), 'Enlarge ' + (this.iscan ? 'canvas' : 'pad'), () => this.enlargePad());
@@ -117641,10 +117660,17 @@ class RCanvasPainter extends RPadPainter {
       return hp ? hp.hasStatusLine() : false;
    }
 
+   /** @summary Check if status bar can be toggled
+     * @private */
+   canStatusBar() {
+      return this.testUI5() || this.brlayout || getHPainter();
+   }
+
    /** @summary Show/toggle event status bar
      * @private */
    activateStatusBar(state) {
-      if (this.testUI5()) return;
+      if (this.testUI5())
+         return;
       if (this.brlayout)
          this.brlayout.createStatusLine(23, state);
       else
