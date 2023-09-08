@@ -1834,6 +1834,8 @@ class TFramePainter extends ObjectPainter {
    createXY(opts) {
       this.cleanXY(); // remove all previous configurations
 
+      console.log('Calling createXY');
+
       if (!opts) opts = { ndim: 1 };
 
       this.swap_xy = opts.swap_xy || false;
@@ -1913,6 +1915,10 @@ class TFramePainter extends ObjectPainter {
                                         logminfactor: logminfactorX });
 
       this.x_handle.assignFrameMembers(this, 'x');
+
+      console.trace();
+      console.log('Assign frame.grx', typeof this.grx);
+
 
       this.y_handle = new TAxisPainter(this.getDom(), this.yaxis, true);
       this.y_handle.setPadName(this.getPadName());
@@ -2325,6 +2331,8 @@ class TFramePainter extends ObjectPainter {
 
     /** @summary Remove all kinds of X/Y function for axes transformation */
    cleanXY() {
+      console.trace();
+      console.log('cleanup grx in the frame');
       delete this.grx;
       delete this.gry;
       delete this.grz;
