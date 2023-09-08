@@ -1843,8 +1843,8 @@ class TFramePainter extends ObjectPainter {
       this.logx = this.logy = 0;
 
       const w = this.getFrameWidth(), h = this.getFrameHeight(),
-          pp = this.getPadPainter(),
-          pad = pp.getRootPad();
+            pp = this.getPadPainter(),
+            pad = pp.getRootPad();
 
       this.scales_ndim = opts.ndim;
 
@@ -1943,8 +1943,8 @@ class TFramePainter extends ObjectPainter {
       this.logx2 = this.logy2 = 0;
 
       const w = this.getFrameWidth(), h = this.getFrameHeight(),
-          pp = this.getPadPainter(),
-          pad = pp.getRootPad();
+            pp = this.getPadPainter(),
+            pad = pp.getRootPad();
 
       if (opts.second_x) {
          this.scale_x2min = this.x2min;
@@ -1985,6 +1985,7 @@ class TFramePainter extends ObjectPainter {
                                            noexp_changed: this.x2_noexp_changed,
                                            logcheckmin: this.swap_xy,
                                            logminfactor: logminfactorX });
+
          this.x2_handle.assignFrameMembers(this, 'x2');
       }
 
@@ -2010,7 +2011,7 @@ class TFramePainter extends ObjectPainter {
      * @private */
    getGrFuncs(second_x, second_y) {
       const use_x2 = second_x && this.grx2,
-          use_y2 = second_y && this.gry2;
+            use_y2 = second_y && this.gry2;
       if (!use_x2 && !use_y2) return this;
 
       return {
