@@ -436,7 +436,7 @@
                });
 
          return draw('plaindraw', object, option).then(res => {
-             if (!test_interactivity) return res;
+             if (!test_interactivity && (!keyid || (entry?.interactive !== true))) return res;
 
              return testInteractivity({ dom: document.getElementById('plaindraw'), timeout: testinterval, debug: show_debug });
          })

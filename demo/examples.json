@@ -1,6 +1,6 @@
 {
    "TH1" : [
-     { "opt": "", "file": "hsimple.root", "item": "hpx;1" },
+     { "opt": "", "file": "hsimple.root", "item": "hpx;1", "interactive": true },
      { "name": "star", "opt":"*", "title": "draw stars on histogram bins" },
      { "name": "*H", "opt":"*H", "title": "draw stars and histogram itself" },
      { "opt": "L", "title": "draw histogram as line" },
@@ -42,7 +42,7 @@
      { "opt": "", "file": "hsimple.root", "item": "hpxpy;1", "title": "default draw mode for TH2" },
      { "opt": "col", "title": "color draw" },
      { "opt": "colpal77", "title": "example how color palette 77 can be used for drawing" },
-     { "opt": "colz", "title": "color draw with palette" },
+     { "opt": "colz", "title": "color draw with palette", "interactive": true },
      { "opt": "colhz", "title": "color draw with horizontal palette", "reset_funcs": true },
      { "opt": "acol", "title": "disable axes drawing with col option" },
      { "opt": "col_rx_ry", "title": "reverse x and y axis with col drawing" },
@@ -66,7 +66,7 @@
      { "opt": "lego", "title": "3D lego plot" },
      { "opt": "lego0", "title": "3D lego plot (without zeros)" },
      { "opt": "lego1", "title": "3D lego plot with red colors on x-sides", "r3d": "svg" },
-     { "opt": "lego2", "title": "3D lego plot with color levels" },
+     { "opt": "lego2", "title": "3D lego plot with color levels", "interactive": true },
      { "opt": "lego2z", "title": "3D lego plot with color levels and palette", "reset_funcs": true },
      { "opt": "alego2", "title": "3D lego plot without axis drawings - option A" },
      { "opt": "lego3", "title": "lego3 plot - lego1 without border lines" },
@@ -105,8 +105,8 @@
      { "name": "scaled", "file": "candleplot.root", "item": "candlescaled;1", "title": "output from candleplotwiskers.C macro" }
    ],
    "TH2Poly" : [
-      { "name": "honeycomb", "file": "th2poly.root", "item": "honeycomb;1", "opt": "l,col" },
-      { "opt": "lego", "file": "th2poly.root", "item": "boxes;1" },
+      { "name": "honeycomb", "file": "th2poly.root", "item": "honeycomb;1", "opt": "l,col", "interactive": true },
+      { "opt": "lego", "file": "th2poly.root", "item": "boxes;1", "interactive": true },
       { "opt": "col0z", "title": "suppress empty bins with 0 option" },
       { "opt": "col0zl", "title": "draw lines and suppress empty bins with 0 option" },
       { "name": "europe", "item": "europe;1", "opt": "", "title": "Europe map (relatively old)" },
@@ -117,7 +117,7 @@
    "TH3" : [
      { "opt": "", "file": "histpainter6.root", "item": "draw_th3_scat;1", "title": "Default TH3 draw option" },
      { "name": "scat", "asurl": true, "file": "histpainter6.root", "item": "draw_th3_scat;1/h3scat", "opt": "scat", "title": "Scatter plot" },
-     { "opt": "box", "file": "histpainter6.root", "item": "draw_th3_box;1/h3box" },
+     { "opt": "box", "file": "histpainter6.root", "item": "draw_th3_box;1/h3box", "interactive": true },
      { "name": "box2", "file": "hsimple.root", "item": "ntuple", "opt": "px:py:pz;hbins:15;drawopt:box2", "title": "use colors" },
      { "name": "box3", "file": "hsimple.root", "item": "ntuple", "opt": "px:py:pz;hbins:15;drawopt:box3", "title": "use colors" },
      { "opt": "glbox1", "file": "glbox.root", "item": "h31;1", "title": "draw spheres" },
@@ -153,7 +153,7 @@
      { "name": "lego", "file": "tutorials_hist.root", "item": "multicolor", "title": "Several histograms with different colors, tutorials/hist/multicolor.C" }
    ],
    "TF1" : [
-     { "name": "func", "file": "fillrandom.root", "item": "sqroot;1", "title": "default drawing of TF1" },
+     { "name": "func", "file": "fillrandom.root", "item": "sqroot;1", "title": "default drawing of TF1", "interactive": true },
      { "name": "X+Y+", "file": "fillrandom.root", "item": "sqroot;1", "opt": "X+Y+", "title": "draw axes on other sides" },
      { "name": "hist+func", "opt": "", "url": "?nobrowser&file=$$$fillrandom.root&item=h1f;1+sqroot;1" },
      { "name": "hist+func+Y+", "opt": "", "url": "?nobrowser&file=$$$fillrandom.root&item=[h1f;1,sqroot;1]&opt=[hist,y+]", "title": "demo for second fully interactive Y axis" },
@@ -171,13 +171,13 @@
      { "name": "waves", "file": "tutorials_graphs.root", "item": "waves", "title": "Draw several TF2 with col options, output of tutorials/graphs/waves.C" }
    ],
    "TCanvas" : [
-     { "name": "roofit", "file": "rf107.root", "item": "rf107_plotstyles;1" },
+     { "name": "roofit", "file": "rf107.root", "item": "rf107_plotstyles;1", "interactive": true },
      { "name": "subpad", "url": "?nobrowser&file=$$$rf107.root&item=rf107_plotstyles;1/[0]", "title": "Draw only selected sub-pad from list of TCanvas list of primitives"  },
      { "name": "zdemo", "file": "zdemo.root", "item": "zdemo;1" },
      { "name": "legend", "asurl": true, "file": "legends.root", "item": "legends;1", "title": "TCanvas with TLegend, use normal latex parser" },
      { "name": "autoplace", "file": "tutorials_hist.root", "item": "legendautoplace;1", "title": "Autoplace of TLegend element, canvas from tutorials/hist/legendautoplace.C macro" },
      { "name": "time", "file": "ct.root", "item": "ct;1" },
-     { "name": "2d+3d", "file": "mix2d3d.root", "item": "Canvas;1", "title": "Mixture of 2D and 3D drawings on the same canvas (work properly in Firefox and Chrome)" },
+     { "name": "2d+3d", "file": "mix2d3d.root", "item": "Canvas;1", "title": "Mixture of 2D and 3D drawings on the same canvas", "interactive": true },
      { "name": "big", "file": "bigcanvas.root", "item": "big", "title": "100 histograms in subpads, for performance testing" },
      { "name": "log2", "file": "tutorials_graphs.root", "item": "exclusiongraph2", "opt": "log2", "title": "log2 for both x and y axes" },
      { "name": "axes", "file": "tutorials_graphs.root", "item": "exclusiongraph2", "opt": "ctx_oty_log2x", "title": "Moving axes title ctx - center title x, oty - opposite title y, plus log2x option" },
@@ -216,7 +216,7 @@
      { "name": "image", "aspng": true, "file": "geom/rootgeom.root", "item": "simple1;1", "title": "Using makeImage to produce PNG image for geometry" }
    ],
    "TGraph" : [
-     { "opt": "", "file": "graph.root", "item": "Graph;1" },
+     { "opt": "", "file": "graph.root", "item": "Graph;1", "interactive": true },
      { "opt": "L" },
      { "opt": "C" },
      { "opt": "P" },
@@ -235,7 +235,7 @@
      { "name": "excl", "file": "tutorials_graphs.root", "item": "exclusiongraph2", "title": "Exclusion draw example, output of tutorials/graphs/exclusiongraph2.C" },
      { "name": "plc", "file": "tutorials_graphs.root", "item": "graphpalettecolor", "title": "Automatic set of graph colors, output of tutorials/graphs/graphpalettecolor.C" },
      { "name": "shade", "file": "tutorials_graphs.root", "item": "graphShade", "title": "output of tutorials/graphs/graphShade.C" },
-     { "name": "second_axis", "url": "?nobrowser&file=$$$graph_twopad.root&item=[c1/pad1/[0],c1/pad2/[0]]&opt=[alp,ly+;yaxis_red]", "title": "two overlayed graphs with second Y axis" },
+     { "name": "second_axis", "url": "?nobrowser&file=$$$graph_twopad.root&item=[c1/pad1/[0],c1/pad2/[0]]&opt=[alp,ly+;yaxis_red]", "title": "two overlayed graphs with second Y axis", "interactive": true },
      { "name": "qq", "file": "tutorials_math.root", "item": "chi2test", "title": "Example of TGraphQQ, output of tutorials/math/chi2test.C" }
    ],
    "TGraphErrors" : [
@@ -273,7 +273,7 @@
       { "name": "tut3", "item": "graphpolar3", "title": "Polar coordinates, output of tutorials/graphs/graphpolar3.C" }
    ],
    "TMultiGraph" : [
-     { "name": "exclusion", "file": "graph.root", "item": "exclusion;1" },
+     { "name": "exclusion", "file": "graph.root", "item": "exclusion;1", "interactive": true },
      { "name": "c1", "file": "multigraph.root", "item": "c1;1", "title": "3d mode, see https://root.cern/doc/master/classTMultiGraph.html" },
      { "name": "c2", "item": "c2;1" },
      { "name": "c3", "item": "c3;1" },
@@ -282,12 +282,12 @@
      { "name": "3d", "file": "multigraph_3d.root", "item": "c2_514;1", "title": "3d mode with extra TPolyLine3D" }
    ],
    "TGraph2D" : [
-      { "opt": "", "file": "graph2d.root", "item": "Graph2D", "title": "example of TGraph2D" },
+      { "opt": "", "file": "graph2d.root", "item": "Graph2D", "title": "example of TGraph2D", "interactive": true },
       { "name": "pcol", "item": "pcol", "title": "example of TGraph2D, color options" },
       { "opt": "err",  "item": "cerr", "title": "example of TGraph2DErrors, errors drawing" },
       { "opt": "asymm",  "item": "asymm", "title": "example of TGraph2DAsymmErrors" },
       { "opt": "line",  "item": "line", "title": "line drawing with TGraph2D" },
-      { "opt": "tri1", "asurl": true, "file": "graph2d.root", "item": "pcol/[0]", "title": "Drawing colored triangles and mesh using Delaunay algorithm" },
+      { "opt": "tri1", "asurl": true, "file": "graph2d.root", "item": "pcol/[0]", "title": "Drawing colored triangles and mesh using Delaunay algorithm", "interactive": true },
       { "opt": "tri1z", "asurl": true, "file": "graph2d.root", "item": "pcol/[0]", "title": "Drawing color palette in addtion to triangles and mesh" },
       { "opt": "tri2", "asurl": true, "file": "graph2d.root", "item": "pcol/[0]", "title": "Drawing colored triangles using Delaunay algorithm" },
       { "opt": "triw", "asurl": true, "file": "graph2d.root", "item": "pcol/[0]", "title": "Drawing triangles mesh using Delaunay algorithm" },
@@ -316,7 +316,7 @@
      { "name": "ellipse", "file": "ellipse.root", "item": "c1;1", "title": "TEllipse class" },
      { "name": "axis", "file": "gaxis.root", "item": "c1;1", "title": "TGaxis class" },
      { "name": "cut", "file": "cut.root", "item": "c1",  "title": "TCutG used for TH2 bins selection" },
-     { "name": "arrow", "file": "arrow.root", "item": "c1;1", "title": "TArrow class" },
+     { "name": "arrow", "file": "arrow.root", "item": "c1;1", "title": "TArrow class", "interactive": true },
      { "name": "sinfo", "url": "?nobrowser&file=$$$hsimple.root&item=StreamerInfo", "title": "List of streamer infos" },
      { "name": "3dmark", "url": "?nobrowser&file=$$$mix2d3d.root&item=Canvas;1/pad4&opt=white;nomargins", "title": "TPloyMarker3D class, reset pad margins" },
      { "name": "profile2d", "file": "profile2d.root", "item": "c1;1", "title": "TProfile2D class" },
@@ -328,7 +328,7 @@
      { "name": "feynman", "file": "tutorials_graphics.root", "item": "feynman",  "title": "Usage of TCulyLine/Arc, tutorials/graphics/feynman.C" },
      { "name": "pie", "file": "tutorials_graphics.root", "item": "piechart",  "title": "TPie, tutorials/graphics/piechart.C" },
      { "name": "fill", "file": "fillpatterns.root", "item": "patterns",  "title": "Different fill patterns" },
-     { "name": "mass_spectrum", "file": "mass_spectrum.root", "item": "C",  "title": "Output of graphics/mass_spectrum.C tutorial" },
+     { "name": "mass_spectrum", "file": "mass_spectrum.root", "item": "C",  "title": "Output of graphics/mass_spectrum.C tutorial", "interactive": true },
      { "name": "legend", "url": "?nobrowser&file=$$$graph_twopad.root&item=[c1/pad1/[0],c1/pad2/[0],$legend]&opt=[alp,ly+;yaxis_red]", "title": "Display legend for the drawn objects" },
      { "name": "scatter", "file": "scatter.root", "item": "c2",  "title": "Canvas with new TScatter class, tutorials/graphs/scatter.C" },
      { "name": "ann3d", "file": "tutorials_graphs.root", "item": "annotation3d_new",  "title": "Usage of new TAnnotation class, tutorials/graphs/annotation3d.C" }
