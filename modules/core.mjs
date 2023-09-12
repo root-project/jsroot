@@ -265,7 +265,9 @@ settings = {
    /** @summary Configures dark mode for the GUI */
    DarkMode: false,
    /** @summary Prefer to use saved points in TF1/TF2, avoids eval() and Function() when possible */
-   PreferSavedPoints: false
+   PreferSavedPoints: false,
+   /** @summary Angle in degree for axis labels tilt when available space is not enough */
+   AxisTiltAngle: 25
 },
 
 /** @namespace
