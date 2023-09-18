@@ -1110,6 +1110,9 @@ class TPadPainter extends ObjectPainter {
          menu.addchk(this.pad?.fTicky === 2, 'labels on both sides', '2fTicky', SetPadField);
          menu.add('endsub:');
 
+         if (isFunc(this.drawObject))
+            menu.add('Build legend', () => this.buildLegend());
+
          menu.addAttributesMenu(this);
          menu.add('Save to gStyle', () => {
             if (!this.pad) return;
@@ -1336,7 +1339,7 @@ class TPadPainter extends ObjectPainter {
       if (lp) return lp;
 
       if (!isFunc(this.drawObject))
-         return Promise.reject(Error('Not possible to build legend while draw.mjs was not load'));
+         return Promise.reject(Error('Not possible to build legend while module draw.mjs was not load'));
 
       const leg = create(clTLegend),
             pad = this.getRootPad(true);
@@ -1344,11 +1347,14 @@ class TPadPainter extends ObjectPainter {
       for (let k = 0; k < this.painters.length; ++k) {
          const painter = this.painters[k],
                obj = painter.getObject();
-         if (!obj) continue;
+         if (!obj || obj.fName === 'title' || obj.fName === 'stats')
+            continue;
 
          const entry = create(clTLegendEntry);
          entry.fObject = obj;
-         entry.fLabel = (opt === 'all') ? obj.fName : painter.getItemName();
+         entry.fLabel = painter.getItemName();
+         if ((opt === 'all') || !entry.fLabel)
+             entry.fLabel = obj.fName;
          entry.fOption = '';
          if (!entry.fLabel) continue;
 
