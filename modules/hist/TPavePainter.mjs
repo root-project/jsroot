@@ -1359,7 +1359,7 @@ async function produceLegend(dom, opt) {
       if (painter.fillatt?.used)
          entry.fOption += 'f';
       if (painter.markeratt?.used)
-         entry.fOption += 'm';
+         entry.fOption += 'p';
       if (!entry.fOption)
          entry.fOption = 'l';
 
