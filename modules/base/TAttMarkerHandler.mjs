@@ -263,6 +263,7 @@ class TAttMarkerHandler {
 
    /** @summary Apply marker styles to created element */
    apply(selection) {
+      this.used = true;
       selection.style('stroke', this.stroke ? this.color : 'none')
                .style('fill', this.fill ? this.color : 'none');
    }
