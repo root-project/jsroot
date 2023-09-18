@@ -1080,8 +1080,8 @@ class TH1Painter extends THistPainter {
    /** @summary Rebin histogram, used via context menu */
    rebinHist(sz) {
       const histo = this.getHisto(),
-          xaxis = histo.fXaxis,
-          nbins = Math.floor(xaxis.fNbins/ sz);
+            xaxis = histo.fXaxis,
+            nbins = Math.floor(xaxis.fNbins/ sz);
       if (nbins < 2) return;
 
       const arr = new Array(nbins+2),
