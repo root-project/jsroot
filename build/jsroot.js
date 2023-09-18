@@ -1,4 +1,4 @@
-// https://root.cern/js/ v7.4.3
+// https://root.cern/js/ v7.4.4
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -7,11 +7,11 @@ typeof define === 'function' && define.amd ? define(['exports'], factory) :
 
 /** @summary version id
   * @desc For the JSROOT release the string in format 'major.minor.patch' like '7.0.0' */
-let version_id = '7.4.3';
+let version_id = '7.4.x';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '1/09/2023';
+let version_date = '18/09/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -10691,6 +10691,7 @@ class TAttMarkerHandler {
 
    /** @summary Apply marker styles to created element */
    apply(selection) {
+      this.used = true;
       selection.style('stroke', this.stroke ? this.color : 'none')
                .style('fill', this.fill ? this.color : 'none');
    }
@@ -74198,7 +74199,7 @@ class TPavePainter extends ObjectPainter {
                this.interactiveRedraw(true, `exec:SetOptStat(${fmt})`);
             });
          });
-         function AddStatOpt(pos, name) {
+         const AddStatOpt = (pos, name) => {
             let opt = (pos<10) ? pave.fOptStat : pave.fOptFit;
             opt = parseInt(parseInt(opt) / parseInt(Math.pow(10,pos % 10))) % 10;
             menu.addchk(opt, name, opt * 100 + pos, arg => {
@@ -74213,7 +74214,7 @@ class TPavePainter extends ObjectPainter {
                   this.interactiveRedraw(true, `exec:SetOptFit(${newopt})`);
                }
             });
-         }
+         };
 
          AddStatOpt(0, 'Histogram name');
          AddStatOpt(1, 'Entries');
@@ -74537,7 +74538,7 @@ async function produceLegend(dom, opt) {
       if (painter.fillatt?.used)
          entry.fOption += 'f';
       if (painter.markeratt?.used)
-         entry.fOption += 'm';
+         entry.fOption += 'p';
       if (!entry.fOption)
          entry.fOption = 'l';
 
@@ -80307,8 +80308,8 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
       let rect = this.getPadPainter().getFrameRect(),
           palette = this.getHistPalette(),
-          outerRadius = Math.min(rect.width, rect.height) * 0.5 - 60,
-          innerRadius = outerRadius - 10,
+          outerRadius = Math.max(10, Math.min(rect.width, rect.height) * 0.5 - 60),
+          innerRadius = Math.max(2, outerRadius - 10),
           data = [], labels = [],
           getColor = indx => palette.calcColor(indx, used.length),
           ndig = 0, tickStep = 1,
@@ -109225,9 +109226,11 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
       for (let n = drawbins.length-1; n >= 0; --n) {
          let bin = drawbins[n],
              dlen = Math.sqrt(bin.dgrx**2 + bin.dgry**2);
-         // shift point
-         bin.grx += excl_width*bin.dgry/dlen;
-         bin.gry -= excl_width*bin.dgrx/dlen;
+         if (dlen > 1e-10) {
+            // shift point
+            bin.grx += excl_width*bin.dgry/dlen;
+            bin.gry -= excl_width*bin.dgrx/dlen;
+         }
          extrabins.push(bin);
       }
 
