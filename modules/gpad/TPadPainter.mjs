@@ -1348,7 +1348,7 @@ class TPadPainter extends ObjectPainter {
       for (let k = 0; k < this.painters.length; ++k) {
          const painter = this.painters[k],
                obj = painter.getObject();
-         if (!obj || obj.fName === 'title' || obj.fName === 'stats' || painter.$secondary)
+         if (!obj || obj.fName === 'title' || obj.fName === 'stats' || painter.$secondary || obj._typename === clTLegend)
             continue;
 
          const entry = create(clTLegendEntry);
@@ -1387,7 +1387,12 @@ class TPadPainter extends ObjectPainter {
       leg.fY2NDC = 0.99 - pad.fTopMargin;
       leg.fFillStyle = 1001;
 
-      return this.drawObject(this.getDom(), leg, opt ?? 'autoplace');
+      const prev_name = this.has_canvas ? this.selectCurrentPad(this.this_pad_name) : undefined;
+
+      return this.drawObject(this.getDom(), leg, opt ?? 'autoplace').then(p => {
+         this.selectCurrentPad(prev_name);
+         return p;
+      });
    }
 
    /** @summary Add object painter to list of primitives
