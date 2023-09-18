@@ -1336,18 +1336,19 @@ class TPadPainter extends ObjectPainter {
      * @private */
    async buildLegend(opt) {
       const lp = this.findPainterFor(null, '', clTLegend);
-      if (lp) return lp;
 
-      if (!isFunc(this.drawObject))
+      if (!lp && !isFunc(this.drawObject))
          return Promise.reject(Error('Not possible to build legend while module draw.mjs was not load'));
 
-      const leg = create(clTLegend),
+      const leg = lp?.getObject() ?? create(clTLegend),
             pad = this.getRootPad(true);
+
+      leg.fPrimitives.Clear();
 
       for (let k = 0; k < this.painters.length; ++k) {
          const painter = this.painters[k],
                obj = painter.getObject();
-         if (!obj || obj.fName === 'title' || obj.fName === 'stats')
+         if (!obj || obj.fName === 'title' || obj.fName === 'stats' || painter.$secondary)
             continue;
 
          const entry = create(clTLegendEntry);
@@ -1363,7 +1364,7 @@ class TPadPainter extends ObjectPainter {
          if (painter.fillatt?.used)
             entry.fOption += 'f';
          if (painter.markeratt?.used)
-            entry.fOption += 'm';
+            entry.fOption += 'p';
          if (!entry.fOption)
             entry.fOption = 'l';
 
@@ -1371,6 +1372,9 @@ class TPadPainter extends ObjectPainter {
       }
 
       // no entries - no need to draw legend
+      if (lp)
+         return lp.redraw();
+
       const szx = 0.4;
       let szy = leg.fPrimitives.arr.length;
       if (!szy) return null;
@@ -1383,7 +1387,7 @@ class TPadPainter extends ObjectPainter {
       leg.fY2NDC = 0.99 - pad.fTopMargin;
       leg.fFillStyle = 1001;
 
-      return this.drawObject(this.getDom(), leg, opt);
+      return this.drawObject(this.getDom(), leg, opt ?? 'autoplace');
    }
 
    /** @summary Add object painter to list of primitives
