@@ -1,7 +1,7 @@
 import { gStyle, settings, constants, browser, internals, btoa_func,
          create, toJSON, isBatchMode, loadScript, injectCode, isPromise, getPromise, postponePromise,
          isObject, isFunc, isStr,
-         clTObjArray, clTPaveText, clTColor, clTPad, clTStyle } from '../core.mjs';
+         clTObjArray, clTPaveText, clTColor, clTPad, clTStyle, clTLegend, clTLegendEntry } from '../core.mjs';
 import { color as d3_color, select as d3_select, rgb as d3_rgb } from '../d3.mjs';
 import { ColorPalette, adoptRootColors, extendRootColors, getRGBfromTColor } from '../base/colors.mjs';
 import { getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG, makeTranslate, svgToImage } from '../base/BasePainter.mjs';
@@ -1327,6 +1327,57 @@ class TPadPainter extends ObjectPainter {
       }
 
       return isany;
+   }
+
+   /** @summary add legend object to the pad and redraw it
+     * @private */
+   async buildLegend(opt) {
+      const lp = this.findPainterFor(null, '', clTLegend);
+      if (lp) return lp;
+
+      if (!isFunc(this.drawObject))
+         return Promise.reject(Error('Not possible to build legend while draw.mjs was not load'));
+
+      const leg = create(clTLegend),
+            pad = this.getRootPad(true);
+
+      for (let k = 0; k < this.painters.length; ++k) {
+         const painter = this.painters[k],
+               obj = painter.getObject();
+         if (!obj) continue;
+
+         const entry = create(clTLegendEntry);
+         entry.fObject = obj;
+         entry.fLabel = (opt === 'all') ? obj.fName : painter.getItemName();
+         entry.fOption = '';
+         if (!entry.fLabel) continue;
+
+         if (painter.lineatt?.used)
+            entry.fOption += 'l';
+         if (painter.fillatt?.used)
+            entry.fOption += 'f';
+         if (painter.markeratt?.used)
+            entry.fOption += 'm';
+         if (!entry.fOption)
+            entry.fOption = 'l';
+
+         leg.fPrimitives.Add(entry);
+      }
+
+      // no entries - no need to draw legend
+      const szx = 0.4;
+      let szy = leg.fPrimitives.arr.length;
+      if (!szy) return null;
+      if (szy > 8) szy = 8;
+      szy *= 0.1;
+
+      leg.fX1NDC = szx * pad.fLeftMargin + (1 - szx) * (1 - pad.fRightMargin);
+      leg.fY1NDC = (1 - szy) * (1 - pad.fTopMargin) + szy * pad.fBottomMargin;
+      leg.fX2NDC = 0.99 - pad.fRightMargin;
+      leg.fY2NDC = 0.99 - pad.fTopMargin;
+      leg.fFillStyle = 1001;
+
+      return this.drawObject(this.getDom(), leg, opt);
    }
 
    /** @summary Add object painter to list of primitives

@@ -1343,58 +1343,5 @@ class TPavePainter extends ObjectPainter {
 
 } // class TPavePainter
 
-/** @summary Produce and draw TLegend object for the specified dom
-  * @desc Should be called when all other objects are painted
-  * Invoked when item '$legend' specified in url string
-  * @return {Promise} with TLegend painter
-  * @private */
-async function produceLegend(dom, opt) {
-   const main_painter = getElementMainPainter(dom),
-       pp = main_painter ? main_painter.getPadPainter() : null,
-       pad = pp?.getRootPad(true);
 
-   if (!pad) return null;
-
-   const leg = create(clTLegend);
-
-   for (let k = 0; k < pp.painters.length; ++k) {
-      const painter = pp.painters[k],
-          obj = painter.getObject();
-
-      if (!obj) continue;
-
-      const entry = create(clTLegendEntry);
-      entry.fObject = obj;
-      entry.fLabel = (opt === 'all') ? obj.fName : painter.getItemName();
-      entry.fOption = '';
-      if (!entry.fLabel) continue;
-
-      if (painter.lineatt?.used)
-         entry.fOption += 'l';
-      if (painter.fillatt?.used)
-         entry.fOption += 'f';
-      if (painter.markeratt?.used)
-         entry.fOption += 'm';
-      if (!entry.fOption)
-         entry.fOption = 'l';
-
-      leg.fPrimitives.Add(entry);
-   }
-
-   // no entries - no need to draw legend
-   const szx = 0.4;
-   let szy = leg.fPrimitives.arr.length;
-   if (!szy) return null;
-   if (szy > 8) szy = 8;
-   szy *= 0.1;
-
-   leg.fX1NDC = szx*pad.fLeftMargin + (1-szx)*(1-pad.fRightMargin);
-   leg.fY1NDC = (1-szy)*(1-pad.fTopMargin) + szy*pad.fBottomMargin;
-   leg.fX2NDC = 0.99-pad.fRightMargin;
-   leg.fY2NDC = 0.99-pad.fTopMargin;
-   leg.fFillStyle = 1001;
-
-   return TPavePainter.draw(dom, leg);
-}
-
-export { TPavePainter, produceLegend };
+export { TPavePainter };
