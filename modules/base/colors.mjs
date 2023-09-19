@@ -1,4 +1,5 @@
 import { clTColor, settings } from '../core.mjs';
+import { color as d3_color } from '../d3.mjs';
 
 /** @summary Covert value between 0 and 1 into hex, used for colors coding
   * @private */
@@ -68,10 +69,25 @@ function getRGBfromTColor(col) {
    return rgb;
 }
 
+/** @ummary Return list of grey colors for the original array
+  * @private */
+function getGrayColors(rgb_array) {
+   const gray_colors = [];
+
+   for (let n = 0; n < rgb_array.length; ++n) {
+      if (!rgb_array[n]) continue;
+      const rgb = d3_color(rgb_array[n]),
+            gray = 0.299*rgb.r + 0.587*rgb.g + 0.114*rgb.b;
+      rgb.r = rgb.g = rgb.b = gray;
+      gray_colors[n] = rgb.hex();
+   }
+
+   return gray_colors;
+}
 
 /** @summary Add new colors from object array
   * @private */
-function extendRootColors(jsarr, objarr) {
+function extendRootColors(jsarr, objarr, grayscale) {
    if (!jsarr) {
       jsarr = [];
       for (let n = 0; n < gbl_colors_list.length; ++n)
@@ -97,7 +113,7 @@ function extendRootColors(jsarr, objarr) {
          jsarr[n] = rgb_array[n];
    }
 
-   return jsarr;
+   return grayscale ? getGrayColors(jsarr) : jsarr;
 }
 
 /** @ummary Set global list of colors.
@@ -364,5 +380,6 @@ function getColorPalette(id) {
 createRootColors();
 
 export { getColor, findColor, addColor, adoptRootColors,
-         getRootColors, extendRootColors, getRGBfromTColor, createRootColors, toHex,
+         getRootColors, getGrayColors,
+         extendRootColors, getRGBfromTColor, createRootColors, toHex,
          ColorPalette, getColorPalette };

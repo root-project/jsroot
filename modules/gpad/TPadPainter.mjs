@@ -1,9 +1,9 @@
-import { gStyle, settings, constants, browser, internals, btoa_func,
+import { gStyle, settings, constants, browser, internals, btoa_func, BIT,
          create, toJSON, isBatchMode, loadScript, injectCode, isPromise, getPromise, postponePromise,
          isObject, isFunc, isStr,
          clTObjArray, clTPaveText, clTColor, clTPad, clTStyle, clTLegend, clTLegendEntry } from '../core.mjs';
 import { color as d3_color, select as d3_select, rgb as d3_rgb } from '../d3.mjs';
-import { ColorPalette, adoptRootColors, extendRootColors, getRGBfromTColor } from '../base/colors.mjs';
+import { ColorPalette, adoptRootColors, getRootColors, getGrayColors, extendRootColors, getRGBfromTColor } from '../base/colors.mjs';
 import { getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG, makeTranslate, svgToImage } from '../base/BasePainter.mjs';
 import { ObjectPainter, selectActivePad, getActivePad } from '../base/ObjectPainter.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
@@ -13,7 +13,7 @@ import { ToolbarIcons, registerForResize, saveFile } from '../gui/utils.mjs';
 import { BrowserLayout } from '../gui/display.mjs';
 
 
-const clTButton = 'TButton';
+const clTButton = 'TButton', kIsGrayscale = BIT(22);
 
 function getButtonSize(handler, fact) {
    return Math.round((fact || 1) * (handler.iscan || !handler.has_canvas ? 16 : 12));
@@ -472,9 +472,8 @@ class TPadPainter extends ObjectPainter {
 
          if (is_batch)
             svg.attr('xmlns', 'http://www.w3.org/2000/svg');
-          else if (!this.online_canvas)
+         else if (!this.online_canvas)
             svg.append('svg:title').text('ROOT canvas');
-
 
          if (!is_batch || (this.pad.fFillStyle > 0))
             frect = svg.append('svg:path').attr('class', 'canvas_fillrect');
@@ -510,6 +509,9 @@ class TPadPainter extends ObjectPainter {
          } else
             rect = this.testMainResize(2, new_size, factor);
       }
+
+      if (this.pad?.TestBit(kIsGrayscale) && !this.root_colors)
+         this.root_colors = getGrayColors(getRootColors());
 
       this.createAttFill({ attr: this.pad });
 
@@ -838,7 +840,7 @@ class TPadPainter extends ObjectPainter {
 
          // copy existing colors and extend with new values
          if (this.options?.LocalColors)
-            this.root_colors = extendRootColors(null, obj);
+            this.root_colors = extendRootColors(null, obj, this.pad?.TestBit(kIsGrayscale));
          return true;
       }
 
@@ -854,7 +856,7 @@ class TPadPainter extends ObjectPainter {
             }
          }
          if (!this.options || (!missing && !this.options.IgnorePalette))
-            this.custom_palette = new ColorPalette(arr);
+            this.custom_palette = new ColorPalette(this.pad?.TestBit(kIsGrayscale) ? getGrayColors(arr) : arr);
          return true;
       }
 
@@ -1465,15 +1467,17 @@ class TPadPainter extends ObjectPainter {
          if (!this.options || this.options.GlobalColors)
             adoptRootColors(ListOfColors);
 
+         const colors = extendRootColors(null, ListOfColors, this.pad?.TestBit(kIsGrayscale));
+
          // copy existing colors and extend with new values
          if (this.options?.LocalColors)
-            this.root_colors = extendRootColors(null, ListOfColors);
+            this.root_colors = colors;
 
          // set palette
          if (snap.fSnapshot.fBuf && (!this.options || !this.options.IgnorePalette)) {
             const palette = [];
             for (let n = 0; n < snap.fSnapshot.fBuf.length; ++n)
-               palette[n] = ListOfColors[Math.round(snap.fSnapshot.fBuf[n])];
+               palette[n] = colors[Math.round(snap.fSnapshot.fBuf[n])];
 
             this.custom_palette = new ColorPalette(palette);
          }
@@ -2223,6 +2227,8 @@ class TPadPainter extends ObjectPainter {
 
       if (d.check('NOZOOMX')) this.options.NoZoomX = true;
       if (d.check('NOZOOMY')) this.options.NoZoomY = true;
+      if (d.check('GRAYSCALE') && !pad.TestBit(kIsGrayscale))
+          pad.InvertBit(kIsGrayscale);
 
       function forEach(func, p) {
          if (!p) p = pad;
