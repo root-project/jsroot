@@ -168,7 +168,7 @@ function drawTH2PolyLego(painter) {
       geometry.computeVertexNormals();
 
       const material = new MeshBasicMaterial(getMaterialArgs(painter.fPalette.getColor(colindx), { vertexColors: false })),
-          mesh = new Mesh(geometry, material);
+            mesh = new Mesh(geometry, material);
 
       pmain.toplevel.add(mesh);
 
