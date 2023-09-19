@@ -1,10 +1,10 @@
-import { gStyle, browser, settings, clone, create, isObject, isFunc, isStr,
-         clTPave, clTPaveText, clTPavesText, clTPaveStats, clTPaveLabel, clTPaveClass, clTDiamond, clTLegend, clTLegendEntry, clTPaletteAxis,
+import { gStyle, browser, settings, clone, isObject, isFunc, isStr,
+         clTPave, clTPaveText, clTPavesText, clTPaveStats, clTPaveLabel, clTPaveClass, clTDiamond, clTLegend, clTPaletteAxis,
          clTText, clTLatex, clTLine, clTBox } from '../core.mjs';
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer } from '../d3.mjs';
 import { Prob } from '../base/math.mjs';
 import { floatToString, makeTranslate, compressSVG, svgToImage, addHighlightStyle } from '../base/BasePainter.mjs';
-import { getElementMainPainter, ObjectPainter } from '../base/ObjectPainter.mjs';
+import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
 import { showPainterMenu } from '../gui/menu.mjs';
