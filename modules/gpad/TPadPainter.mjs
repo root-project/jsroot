@@ -451,8 +451,7 @@ class TPadPainter extends ObjectPainter {
 
       if (flag === undefined) {
          flag = this.pad?.TestBit(kIsGrayscale) ?? false;
-         if (this._last_grayscale !== undefined)
-            changed = this._last_grayscale !== flag;
+         changed = (this._last_grayscale !== undefined) && (this._last_grayscale !== flag);
       } else if (flag !== this.pad?.TestBit(kIsGrayscale)) {
          this.pad?.InvertBit(kIsGrayscale);
          changed = true;
