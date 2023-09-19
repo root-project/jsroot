@@ -702,7 +702,7 @@ class THistPainter extends ObjectPainter {
    cleanup() {
       this.clear3DScene();
 
-      delete this.fPalette;
+      delete this._color_palette;
       delete this.fContour;
       delete this.options;
 
@@ -1902,15 +1902,15 @@ class THistPainter extends ObjectPainter {
    /** @summary Returns color palette associated with histogram
      * @desc Create if required, checks pad and canvas for custom palette */
    getHistPalette(force) {
-      if (force) this.fPalette = null;
+      if (force) this._color_palette = null;
       const pp = this.getPadPainter();
-      if (!this.fPalette && !this.options.Palette) {
+      if (!this._color_palette && !this.options.Palette) {
          if (isFunc(pp?.getCustomPalette))
-            this.fPalette = pp.getCustomPalette();
+            this._color_palette = pp.getCustomPalette();
       }
-      if (!this.fPalette)
-         this.fPalette = getColorPalette(this.options.Palette, pp?.isGrayscale());
-      return this.fPalette;
+      if (!this._color_palette)
+         this._color_palette = getColorPalette(this.options.Palette, pp?.isGrayscale());
+      return this._color_palette;
    }
 
    /** @summary Fill menu entries for palette */

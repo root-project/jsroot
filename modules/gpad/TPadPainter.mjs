@@ -450,7 +450,7 @@ class TPadPainter extends ObjectPainter {
          flag = this.pad?.TestBit(kIsGrayscale) ?? false;
       else if (flag !== this.pad?.TestBit(kIsGrayscale)) {
          this.pad?.InvertBit(kIsGrayscale);
-         this.forEachPainter(p => { delete p.fPalette; });
+         this.forEachPainter(p => { delete p._color_palette; });
       }
 
       this.root_colors = flag ? getGrayColors(this._custom_colors) : this._custom_colors;
