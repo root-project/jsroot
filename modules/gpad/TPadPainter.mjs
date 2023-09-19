@@ -268,6 +268,7 @@ class TPadPainter extends ObjectPainter {
       delete this._doing_draw;
       delete this._interactively_changed;
       delete this._snap_primitives;
+      delete this._last_grayscale;
       delete this._custom_colors;
       delete this._custom_palette_colors;
       delete this.root_colors;
@@ -446,14 +447,23 @@ class TPadPainter extends ObjectPainter {
    setGrayscale(flag) {
       if (!this.iscan) return;
 
-      if (flag === undefined)
+      let changed = false;
+
+      if (flag === undefined) {
          flag = this.pad?.TestBit(kIsGrayscale) ?? false;
-      else if (flag !== this.pad?.TestBit(kIsGrayscale)) {
+         if (this._last_grayscale !== undefined)
+            changed = this._last_grayscale !== flag;
+      } else if (flag !== this.pad?.TestBit(kIsGrayscale)) {
          this.pad?.InvertBit(kIsGrayscale);
-         this.forEachPainter(p => { delete p._color_palette; });
+         changed = true;
       }
 
+      if (changed)
+         this.forEachPainter(p => { delete p._color_palette; });
+
       this.root_colors = flag ? getGrayColors(this._custom_colors) : this._custom_colors;
+
+      this._last_grayscale = flag;
 
       this.custom_palette = this._custom_palette_colors ? new ColorPalette(this._custom_palette_colors, flag) : null;
    }
@@ -1682,7 +1692,6 @@ class TPadPainter extends ObjectPainter {
          this.createCanvasSvg(2);
        else
          this.createPadSvg(true);
-
 
       const MatchPrimitive = (painters, primitives, class_name, obj_name) => {
          const painter = painters.find(p => {
