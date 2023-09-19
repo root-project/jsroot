@@ -610,7 +610,7 @@ class TPadPainter extends ObjectPainter {
    }
 
    /** @summary Enlarge pad draw element when possible */
-   enlargePad(evnt, is_dblclick) {
+   enlargePad(evnt, is_dblclick, is_escape) {
       evnt?.preventDefault();
       evnt?.stopPropagation();
 
@@ -623,16 +623,16 @@ class TPadPainter extends ObjectPainter {
 
       if (this.iscan || !this.has_canvas || (!pad_enlarged && !this.hasObjectsToDraw() && !this.painters)) {
          if (this._fixed_size) return; // canvas cannot be enlarged in such mode
-         if (!this.enlargeMain('toggle')) return;
+         if (!this.enlargeMain(is_escape ? false : 'toggle')) return;
          if (this.enlargeMain('state') === 'off')
             svg_can.property('pad_enlarged', null);
-      } else if (!pad_enlarged) {
+      } else if (!pad_enlarged && !is_escape) {
          this.enlargeMain(true, true);
          svg_can.property('pad_enlarged', this.pad);
       } else if (pad_enlarged === this.pad) {
          this.enlargeMain(false);
          svg_can.property('pad_enlarged', null);
-      } else
+      } else if (!is_escape && is_dblclick)
          console.error('missmatch with pad double click events');
 
       return this.checkResize(true);
@@ -769,8 +769,8 @@ class TPadPainter extends ObjectPainter {
          return;
 
       const svg_can = this.getCanvSvg(),
-          width = svg_can.property('draw_width'),
-          height = svg_can.property('draw_height');
+            width = svg_can.property('draw_width'),
+            height = svg_can.property('draw_height');
 
       addDragHandler(this, {
          cleanup, // do cleanup to let assign new handlers later on
