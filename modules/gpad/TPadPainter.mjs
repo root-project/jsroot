@@ -269,6 +269,7 @@ class TPadPainter extends ObjectPainter {
       delete this._interactively_changed;
       delete this._snap_primitives;
       delete this._custom_colors;
+      delete this._custom_palette_colors;
       delete this.root_colors;
 
       this.painters = [];
@@ -433,6 +434,30 @@ class TPadPainter extends ObjectPainter {
          this.showPadButtons();
    }
 
+   /** @summary Returns true if canvas configured with grayscale
+     * @private */
+   isGrayscale() {
+      if (!this.iscan) return false;
+      return this.pad?.TestBit(kIsGrayscale) ?? false;
+   }
+
+   /** @summary Set grayscale mode for the canvas
+     * @private */
+   setGrayscale(flag) {
+      if (!this.iscan) return;
+
+      if (flag === undefined)
+         flag = this.pad?.TestBit(kIsGrayscale) ?? false;
+      else if (flag !== this.pad?.TestBit(kIsGrayscale)) {
+         this.pad?.InvertBit(kIsGrayscale);
+         this.forEachPainter(p => { delete p.fPalette; });
+      }
+
+      this.root_colors = flag ? getGrayColors(this._custom_colors) : this._custom_colors;
+
+      this.custom_palette = this._custom_palette_colors ? new ColorPalette(this._custom_palette_colors, flag) : null;
+   }
+
    /** @summary Create SVG element for canvas */
    createCanvasSvg(check_resize, new_size) {
       const is_batch = this.isBatchMode(), lmt = 5;
@@ -512,7 +537,7 @@ class TPadPainter extends ObjectPainter {
             rect = this.testMainResize(2, new_size, factor);
       }
 
-      this.root_colors = this.pad?.TestBit(kIsGrayscale) ? getGrayColors(this._custom_colors) : this._custom_colors;
+      this.setGrayscale();
 
       this.createAttFill({ attr: this.pad });
 
@@ -855,8 +880,9 @@ class TPadPainter extends ObjectPainter {
                console.log(`Missing color with index ${n}`); missing = true;
             }
          }
-         if (!this.options || (!missing && !this.options.IgnorePalette))
-            this.custom_palette = new ColorPalette(this.pad?.TestBit(kIsGrayscale) ? getGrayColors(arr) : arr);
+
+         this._custom_palette_colors = (!this.options || (!missing && !this.options.IgnorePalette)) ? arr : null;
+
          return true;
       }
 
@@ -1114,6 +1140,8 @@ class TPadPainter extends ObjectPainter {
          menu.addchk(this.pad?.fTicky === 1, 'ticks on both sides', '1fTicky', SetPadField);
          menu.addchk(this.pad?.fTicky === 2, 'labels on both sides', '2fTicky', SetPadField);
          menu.add('endsub:');
+         if (this.iscan)
+            menu.addchk(this.pad?.TestBit(kIsGrayscale), 'Gray scale', flag => { this.setGrayscale(flag); this.interactiveRedraw('pad'); });
 
          if (isFunc(this.drawObject))
             menu.add('Build legend', () => this.buildLegend());

@@ -168,8 +168,8 @@ function addColor(rgb, lst) {
 class ColorPalette {
 
    /** @summary constructor */
-   constructor(arr) {
-      this.palette = arr;
+   constructor(arr, grayscale) {
+      this.palette = grayscale ? getGrayColors(arr) : arr;
    }
 
    /** @summary Returns color index which correspond to contour index of provided length */
@@ -189,7 +189,7 @@ class ColorPalette {
 
 } // class ColorPalette
 
-function createDefaultPalette() {
+function createDefaultPalette(grayscale) {
    const hue2rgb = (p, q, t) => {
       if (t < 0) t += 1;
       if (t > 1) t -= 1;
@@ -209,7 +209,7 @@ function createDefaultPalette() {
       const hue = (maxHue - (i + 1) * ((maxHue - minHue) / maxPretty)) / 360;
       palette.push(HLStoRGB(hue, 0.5, 1));
    }
-   return new ColorPalette(palette);
+   return new ColorPalette(palette, grayscale);
 }
 
 function createGrayPalette() {
@@ -226,10 +226,10 @@ function createGrayPalette() {
 
 /** @summary Create color palette
   * @private */
-function getColorPalette(id) {
+function getColorPalette(id, grayscale) {
    id = id || settings.Palette;
    if ((id > 0) && (id < 10)) return createGrayPalette();
-   if (id < 51) return createDefaultPalette();
+   if (id < 51) return createDefaultPalette(grayscale);
    if (id > 113) id = 57;
    const stops = [0,0.125,0.25,0.375,0.5,0.625,0.75,0.875,1];
    let rgb;
@@ -370,13 +370,13 @@ function getColorPalette(id) {
        const nColorsGradient = Math.round(Math.floor(NColors*stops[g]) - Math.floor(NColors*stops[g-1]));
        for (let c = 0; c < nColorsGradient; c++) {
           const col = '#' + toHex(Red[g-1] + c * (Red[g] - Red[g-1]) / nColorsGradient, 1) +
-                          toHex(Green[g-1] + c * (Green[g] - Green[g-1]) / nColorsGradient, 1) +
-                          toHex(Blue[g-1] + c * (Blue[g] - Blue[g-1]) / nColorsGradient, 1);
+                            toHex(Green[g-1] + c * (Green[g] - Green[g-1]) / nColorsGradient, 1) +
+                            toHex(Blue[g-1] + c * (Blue[g] - Blue[g-1]) / nColorsGradient, 1);
           palette.push(col);
        }
     }
 
-    return new ColorPalette(palette);
+    return new ColorPalette(palette, grayscale);
 }
 
 createRootColors();

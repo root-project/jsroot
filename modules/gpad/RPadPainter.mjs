@@ -286,6 +286,18 @@ class RPadPainter extends RObjectPainter {
          this.showPadButtons();
    }
 
+   /** @summary Returns true if canvas configured with grayscale
+     * @private */
+   isGrayscale() {
+      return false;
+   }
+
+   /** @summary Set grayscale mode for the canvas
+     * @private */
+   setGrayscale(/* flag */) {
+      console.error('grayscale mode not implemented for RCanvas');
+   }
+
    /** @summary Create SVG element for the canvas */
    createCanvasSvg(check_resize, new_size) {
       const lmt = 5;

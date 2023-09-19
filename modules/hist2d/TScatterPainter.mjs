@@ -71,19 +71,16 @@ class TScatterPainter extends TGraphPainter {
       let scale = 1, offset = 0;
       if (!fpainter || !hpainter || !scatter) return;
 
-
       if (scatter.fColor) {
          const pal = this.getPalette();
          if (pal)
             pal.$main_painter = this;
 
-         if (!this.fPalette) {
-            const pp = this.getPadPainter();
-            if (isFunc(pp?.getCustomPalette))
-               this.fPalette = pp.getCustomPalette();
-         }
+         const pp = this.getPadPainter();
+         if (!this.fPalette && isFunc(pp?.getCustomPalette))
+            this.fPalette = pp.getCustomPalette();
          if (!this.fPalette)
-            this.fPalette = getColorPalette(this.options.Palette);
+            this.fPalette = getColorPalette(this.options.Palette, pp?.isGrayscale());
 
          let minc = scatter.fColor[0], maxc = scatter.fColor[0];
          for (let i = 1; i < scatter.fColor.length; ++i) {
