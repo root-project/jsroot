@@ -678,7 +678,7 @@ class TPavePainter extends ObjectPainter {
          if (draw_fill) {
             const fillatt = painter?.fillatt?.used ? painter.fillatt : this.createAttFill(o_fill);
             let lineatt;
-            if ((lopt.indexOf('l') < 0 && lopt.indexOf('e') < 0) && (lopt.indexOf('p') < 0)) {
+            if (!draw_line && !draw_error && !draw_marker) {
                lineatt = painter?.lineatt?.used ? painter.lineatt : new TAttLineHandler(o_line);
                if (lineatt.empty()) lineatt = null;
             }
@@ -688,8 +688,9 @@ class TPavePainter extends ObjectPainter {
                // box total height is yspace*0.7
                // define x,y as the center of the symbol for this entry
                const rect = this.draw_g.append('svg:path')
-                              .attr('d', `M${x0 + padding_x},${Math.round(pos_y+step_y*0.1)}v${Math.round(step_y*0.8)}h${tpos_x-2*padding_x-x0}v${-Math.round(step_y*0.8)}z`)
-                              .call(fillatt.func);
+                              .attr('d', `M${x0 + padding_x},${Math.round(pos_y+step_y*0.1)}v${Math.round(step_y*0.8)}h${tpos_x-2*padding_x-x0}v${-Math.round(step_y*0.8)}z`);
+               if (!fillatt.empty())
+                  rect.call(fillatt.func);
                if (lineatt)
                   rect.call(lineatt.func);
             }
@@ -701,8 +702,8 @@ class TPavePainter extends ObjectPainter {
             if (!lineatt.empty()) {
                isany = true;
                this.draw_g.append('svg:path')
-                  .attr('d', `M${x0 + padding_x},${mid_y}H${tpos_x - padding_x}`)
-                  .call(lineatt.func);
+                   .attr('d', `M${x0 + padding_x},${mid_y}H${tpos_x - padding_x}`)
+                   .call(lineatt.func);
                if (draw_error) {
                   this.draw_g.append('svg:path')
                       .attr('d', `M${mid_x},${Math.round(pos_y+step_y*0.1)}V${Math.round(pos_y+step_y*0.9)}`)
