@@ -268,6 +268,8 @@ class TPadPainter extends ObjectPainter {
       delete this._doing_draw;
       delete this._interactively_changed;
       delete this._snap_primitives;
+      delete this._custom_colors;
+      delete this.root_colors;
 
       this.painters = [];
       this.pad = null;
@@ -510,8 +512,7 @@ class TPadPainter extends ObjectPainter {
             rect = this.testMainResize(2, new_size, factor);
       }
 
-      if (this.pad?.TestBit(kIsGrayscale) && !this.root_colors)
-         this.root_colors = getGrayColors(getRootColors());
+      this.root_colors = this.pad?.TestBit(kIsGrayscale) ? getGrayColors(this._custom_colors) : this._custom_colors;
 
       this.createAttFill({ attr: this.pad });
 
@@ -839,8 +840,7 @@ class TPadPainter extends ObjectPainter {
             adoptRootColors(obj);
 
          // copy existing colors and extend with new values
-         if (this.options?.LocalColors)
-            this.root_colors = extendRootColors(null, obj, this.pad?.TestBit(kIsGrayscale));
+         this._custom_colors = this.options?.LocalColors ? extendRootColors(null, obj) : null;
          return true;
       }
 
@@ -1470,8 +1470,7 @@ class TPadPainter extends ObjectPainter {
          const colors = extendRootColors(null, ListOfColors, this.pad?.TestBit(kIsGrayscale));
 
          // copy existing colors and extend with new values
-         if (this.options?.LocalColors)
-            this.root_colors = colors;
+         this._custom_colors = this.options?.LocalColors ? colors : null;
 
          // set palette
          if (snap.fSnapshot.fBuf && (!this.options || !this.options.IgnorePalette)) {
@@ -2307,4 +2306,4 @@ class TPadPainter extends ObjectPainter {
 
 } // class TPadPainter
 
-export { TPadPainter, PadButtonsHandler, clTButton };
+export { TPadPainter, PadButtonsHandler, clTButton, kIsGrayscale };

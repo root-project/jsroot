@@ -5,6 +5,7 @@ import { getColor, getColorPalette } from '../base/colors.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
 import { TPavePainter } from '../hist/TPavePainter.mjs';
+import { kIsGrayscale } from '../gpad/TPadPainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
 
@@ -182,6 +183,8 @@ class THistDrawOptions {
       if (d.check('TICKXY') && pad) pad.fTickx = pad.fTicky = 1;
       if (d.check('TICKX') && pad) pad.fTickx = 1;
       if (d.check('TICKY') && pad) pad.fTicky = 1;
+      if (d.check('GRAYSCALE') && pad && !pad.TestBit(kIsGrayscale))
+          pad.InvertBit(kIsGrayscale);
 
       d.getColor = function() {
          this.color = this.partAsInt(1) - 1;
