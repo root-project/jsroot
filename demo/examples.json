@@ -51,6 +51,7 @@
      { "name": "projy3", "opt": "projy3,colz", "title": "Draw Y projection over 3 bins together with 2D plot", "notest": true },
      { "name": "projxy", "opt": "projxy,colz", "title": "Draw X and Y projection together with 2D plot", "notest": true },
      { "opt": "arr", "title": "ARR draw option" },
+     { "opt": "grayscale", "title": "Draw histogram on canvas with grayscale" },
      { "opt": "cont", "title": "Contour plot" },
      { "opt": "cont1", "title": "Contour plot with different line colors" },
      { "opt": "cont2", "title": "Contour plot with different line styles" },

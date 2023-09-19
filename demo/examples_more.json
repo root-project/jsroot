@@ -154,6 +154,7 @@
    ],
    "TCanvas" : [
      { "name": "jpsi", "file":"JPsi_evolution.root", "item": "CutTrees/cut1/C_cut1 < 2.85714;1" },
+     { "name": "grayscale", "file":"JPsi_evolution.root", "item": "CutTrees/cut1/C_cut1 < 2.85714;1", "opt": "grayscale", "title": "Testing canvas grayscale" },
      { "name": "noframe", "file": "can4.root", "item": "c1;1" },
      { "name": "higgs", "file": "higgs_c.root", "item": "c;1" },
      { "name": "amore", "file": "VertexXY.root", "item": "Amore Canvas;1" },
