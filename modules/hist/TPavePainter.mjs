@@ -600,6 +600,7 @@ class TPavePainter extends ObjectPainter {
       let ncols = legend.fNColumns,
           nrows = nlines,
           any_text = false,
+          scale_text = !legend.fTextSize,
           custom_textg = false; // each text entry has own attributes
 
       if (ncols < 2)
@@ -617,7 +618,8 @@ class TPavePainter extends ObjectPainter {
          } else if (entry.fLabel) {
             any_text = true;
             if ((entry.fTextFont && (entry.fTextFont !== legend.fTextFont)) ||
-                (entry.fTextSize && (entry.fTextSize !== legend.fTextSize))) custom_textg = true;
+                (entry.fTextSize && (entry.fTextSize !== legend.fTextSize)))
+                   custom_textg = true;
          }
       }
 
@@ -766,7 +768,10 @@ class TPavePainter extends ObjectPainter {
                this.startTextDrawing(textatt.font, entry_font_size, lbl_g, max_font_size);
             }
 
-            this.drawText({ draw_g: lbl_g, align: textatt.align, x: pos_x, y: pos_y, width: x0+column_width-pos_x-padding_x, height: step_y, text: entry.fLabel, color: textatt.color });
+            this.drawText({ draw_g: lbl_g, align: textatt.align, x: pos_x, y: pos_y,
+                            scale: (custom_textg && !entry.fTextSize) || !legend.fTextSize,
+                            width: x0+column_width-pos_x-padding_x, height: step_y,
+                            text: entry.fLabel, color: textatt.color });
 
             if (custom_textg)
                text_promises.push(this.finishTextDrawing(lbl_g));
