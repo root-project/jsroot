@@ -2267,6 +2267,7 @@ class TPadPainter extends ObjectPainter {
       if (d.check('NOPALETTE') || d.check('NOPAL')) this.options.IgnorePalette = true;
       if (d.check('ROTATE')) this.options.RotateFrame = true;
       if (d.check('FIXFRAME')) this.options.FixFrame = true;
+      if (d.check('FIXSIZE') && this.iscan) this._fixed_size = true;
 
       if (d.check('CP', true)) this.options.CreatePalette = d.partAsInt(0, 0);
 
