@@ -600,7 +600,6 @@ class TPavePainter extends ObjectPainter {
       let ncols = legend.fNColumns,
           nrows = nlines,
           any_text = false,
-          scale_text = !legend.fTextSize,
           custom_textg = false; // each text entry has own attributes
 
       if (ncols < 2)
