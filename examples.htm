@@ -345,7 +345,7 @@
    </body>
 
    <script type="module">
-      import { settings, httpRequest, decodeUrl, version, version_id, source_dir } from './modules/core.mjs';
+      import { settings, constants, httpRequest, decodeUrl, version, version_id, source_dir } from './modules/core.mjs';
       import { cleanup } from './modules/base/ObjectPainter.mjs';
       import { registerForResize } from './modules/gui/utils.mjs';
       import { createRootColors } from './modules/base/colors.mjs';
@@ -445,7 +445,12 @@
       async function drawUrl(url) {
          let d = decodeUrl(url),
              layout = d.get('layout', 'simple'),
+             latex = d.get('latex', null),
+             prev_latex = settings.Latex,
              nobrowser = d.has('nobrowser');
+
+         if (latex !== null)
+            settings.Latex = constants.Latex.fromString(latex);
 
          if (nobrowser) {
             document.getElementById('plaindraw').innerHTML = '';
@@ -462,6 +467,9 @@
          }
 
          return hpainter.startGUI(null, url).then(res => {
+            if (latex !== null)
+               settings.Latex = prev_latex;
+
             if (!test_interactivity) return res;
 
             const prs = [];
