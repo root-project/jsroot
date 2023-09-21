@@ -229,7 +229,9 @@ class TAttFillHandler {
                   i = (code - j * 10 - k) / 100;
             if (!i) break;
 
-            const hatches_spacing = Math.round(Math.max(0.5, gStyle.fHatchesSpacing)*2) * 6,
+            const pp = painter?.getPadPainter(),
+                  scale_size = pp ? Math.max(pp.getPadWidth(), pp.getPadHeight()) : 600,
+                  hatches_spacing = Math.max(1, Math.round(Math.max(0.5, gStyle.fHatchesSpacing) * scale_size * 0.0015)) * 6,
                   sz = i * hatches_spacing; // axis distance between lines
 
             let pos, step, x1, x2, y1, y2, max;
@@ -326,7 +328,7 @@ class TAttFillHandler {
          patt.append('svg:path').attr('d', fills2).style('fill', col);
       }
       if (fills) patt.append('svg:path').attr('d', fills).style('fill', this.color);
-      if (lines) patt.append('svg:path').attr('d', lines).style('stroke', this.color).style('stroke-width', gStyle.fHatchesLineWidth).style('fill', lfill);
+      if (lines) patt.append('svg:path').attr('d', lines).style('stroke', this.color).style('stroke-width', gStyle.fHatchesLineWidth || 1).style('fill', lfill);
 
       return true;
    }
