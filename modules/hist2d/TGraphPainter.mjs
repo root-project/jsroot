@@ -662,7 +662,7 @@ class TGraphPainter extends ObjectPainter {
             drawbins[0].width = w/4; // pathologic case of single bin
          else {
             for (let i = 0; i < drawbins.length; ++i)
-               drawbins[i].width = (xmax - xmin) / drawbins.length;
+               drawbins[i].width = (xmax - xmin) / drawbins.length * gStyle.fBarWidth;
          }
 
          const yy0 = Math.round(funcs.gry(0));
