@@ -291,9 +291,9 @@ class TAttFillHandler {
 
                   while (yy < h) {
                      if (angle === 0)
-                        lines += `M0,${yy.toFixed(1)}h${w}`;
+                        lines += `M0,${Math.round(yy)}h${w}`;
                      else
-                        lines += `M${yy.toFixed(1)},0v${h}`;
+                        lines += `M${Math.round(yy)},0v${h}`;
                      yy += dyreal;
                   }
 
@@ -307,7 +307,7 @@ class TAttFillHandler {
                      dyreal = hside / hside_steps,
                      nsteps = Math.floor(h / dyreal);
 
-               h = nsteps * dyreal;
+               h = Math.round(nsteps * dyreal);
 
                let yy = nsteps * dyreal;
 
@@ -331,7 +331,7 @@ class TAttFillHandler {
                      x2 = w - x2;
                   }
 
-                  lines += `M${x1.toFixed(1)},${y1.toFixed(1)}L${x2.toFixed(1)},${y2.toFixed(1)}`;
+                  lines += `M${Math.round(x1)},${Math.round(y1)}L${Math.round(x2)},${Math.round(y2)}`;
                   yy -= dyreal;
                }
             },
@@ -383,7 +383,7 @@ class TAttFillHandler {
       if (defs.selectChild('.' + id).empty()) {
          const patt = defs.append('svg:pattern')
                           .attr('id', id).attr('class', id).attr('patternUnits', 'userSpaceOnUse')
-                          .attr('width', w).attr('height', Math.round(h));
+                          .attr('width', w).attr('height', h);
 
          if (fills2) {
             const col = d3_rgb(this.color);
