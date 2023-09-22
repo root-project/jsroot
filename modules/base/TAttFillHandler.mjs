@@ -218,17 +218,20 @@ class TAttFillHandler {
                   i = (code - j * 10 - k) / 100;
             if (!i) break;
 
-            const pp = painter?.getPadPainter(),
+            // use flexible hatches only possible when single pattern is used,
+            // otherwise it is not possible to adjust pattern dimension that both hatches match with each other
+            const use_new = (j === k) || (j === 0) || (j === 5) || (j === 9) || (k === 0) || (k === 5) || (k === 9),
+                  pp = painter?.getPadPainter(),
                   scale_size = pp ? Math.max(pp.getPadWidth(), pp.getPadHeight()) : 600,
                   spacing_original = Math.max(0.1, gStyle.fHatchesSpacing * scale_size * 0.0015),
                   hatches_spacing = Math.max(1, Math.round(spacing_original)) * 6,
                   sz = i * hatches_spacing; // axis distance between lines
 
-            id += `_h${hatches_spacing}`;
+            id += use_new ? `_hn${Math.round(spacing_original*100)}` : `_ho${hatches_spacing}`;
 
             w = h = 6 * sz; // we use at least 6 steps
 
-            const produce = (dy, swap) => {
+            const produce_old = (dy, swap) => {
                const pos = [];
                let step = sz, y1 = 0, max = h, y2, x1, x2;
 
@@ -277,31 +280,92 @@ class TAttFillHandler {
                   else
                      lines += `L${x2},${y2}`;
                }
-            };
+            },
+
+            produce_new = (_aa, _bb, angle, swapx) => {
+               if ((angle === 0) || (angle === 90)) {
+                  const dy = spacing_original*6,
+                        nsteps = Math.round(h / dy),
+                        dyreal = h / nsteps;
+                  let yy = dyreal/2;
+
+                  while (yy < h) {
+                     if (angle === 0)
+                        lines += `M0,${yy.toFixed(1)}h${w}`;
+                     else
+                        lines += `M${yy.toFixed(1)},0v${h}`;
+                     yy += dyreal;
+                  }
+
+                  return;
+               }
+
+               const a = angle/180*Math.PI,
+                     dy = spacing_original*6/Math.cos(a),
+                     hside = Math.tan(a) * w,
+                     hside_steps = Math.round(hside / dy),
+                     dyreal = hside / hside_steps,
+                     nsteps = Math.floor(h / dyreal);
+
+               h = nsteps * dyreal;
+
+               let yy = nsteps * dyreal;
+
+               while (Math.abs(yy-h) < 0.1) yy -= dyreal;
+
+               while (yy + hside > 0) {
+                  let x1 = 0, y1 = yy, x2 = w, y2 = yy + hside;
+
+                  if (y1 < -0.00001) {
+                     // cut at the begin
+                     x1 = -y1 / hside * w;
+                     y1 = 0;
+                  } else if (y2 > h) {
+                     // cut at the end
+                     x2 = (h - y1) / hside * w;
+                     y2 = h;
+                  }
+
+                  if (swapx) {
+                     x1 = w - x1;
+                     x2 = w - x2;
+                  }
+
+                  lines += `M${x1.toFixed(1)},${y1.toFixed(1)}L${x2.toFixed(1)},${y2.toFixed(1)}`;
+                  yy -= dyreal;
+               }
+            },
+
+            func = use_new ? produce_new : produce_old;
+
+            let horiz = false, vertical = false;
 
             switch (j) {
-               case 0: produce(0); break;
-               case 1: produce(1); break;
-               case 2: produce(2); break;
-               case 3: produce(3); break;
-               case 4: produce(6); break;
-               case 6: produce(3, true); break;
-               case 7: produce(2, true); break;
-               case 8: produce(1, true); break;
-               case 9: produce(0, true); break;
+               case 0: horiz = true; break;
+               case 1: func(1, false, 10);  break;
+               case 2: func(2, false, 20); break;
+               case 3: func(3, false, 30); break;
+               case 4: func(6, false, 45); break;
+               case 6: func(3, true, 60); break;
+               case 7: func(2, true, 70); break;
+               case 8: func(1, true, 80); break;
+               case 9: vertical = true; break;
             }
 
             switch (k) {
-               case 0: if (j) produce(0); break;
-               case 1: produce(-1); break;
-               case 2: produce(-2); break;
-               case 3: produce(-3); break;
-               case 4: produce(-6); break;
-               case 6: produce(-3, true); break;
-               case 7: produce(-2, true); break;
-               case 8: produce(-1, true); break;
-               case 9: if (j !== 9) produce(0, true); break;
+               case 0: horiz = true; break;
+               case 1: func(-1, false, 10, true); break;
+               case 2: func(-2, false, 20, true); break;
+               case 3: func(-3, false, 30, true); break;
+               case 4: func(-6, false, 45, true); break;
+               case 6: func(-3, true, 60, true); break;
+               case 7: func(-2, true, 70, true); break;
+               case 8: func(-1, true, 80, true); break;
+               case 9: vertical = true; break;
             }
+
+            if (horiz) func(0, false, 0);
+            if (vertical) func(0, true, 90);
 
             break;
          }
@@ -319,7 +383,7 @@ class TAttFillHandler {
       if (defs.selectChild('.' + id).empty()) {
          const patt = defs.append('svg:pattern')
                           .attr('id', id).attr('class', id).attr('patternUnits', 'userSpaceOnUse')
-                          .attr('width', w).attr('height', h);
+                          .attr('width', w).attr('height', Math.round(h));
 
          if (fills2) {
             const col = d3_rgb(this.color);
