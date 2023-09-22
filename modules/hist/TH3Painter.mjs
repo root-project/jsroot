@@ -17,6 +17,9 @@ import { assignFrame3DMethods } from './hist3d.mjs';
 
 class TH3Painter extends THistPainter {
 
+   /** @summary Returns number of histogram dimensions */
+   getDimension() { return 3; }
+
    /** @summary Scan TH3 histogram content */
    scanContent(when_axis_changed) {
       // no need to rescan histogram while result does not depend from axis selection
