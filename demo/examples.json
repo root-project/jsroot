@@ -124,7 +124,8 @@
      { "name": "box3", "file": "hsimple.root", "item": "ntuple", "opt": "px:py:pz;hbins:15;drawopt:box3", "title": "use colors" },
      { "opt": "glbox1", "file": "glbox.root", "item": "h31;1", "title": "draw spheres" },
      { "opt": "glbox2", "title": "draw spheres with color derived from bin content" },
-     { "opt": "glcol", "file": "histpainter6.root", "item": "glvoxel",  "title": "draw semi-transparent boxes with color derived from bin content" }
+     { "opt": "glcol", "file": "histpainter6.root", "item": "glvoxel",  "title": "draw semi-transparent boxes with color derived from bin content" },
+     { "name": "prof3d", "file": "profile3d.root", "item": "profile3d", "opt": "", "title": "Example of TProfile3D class" }
    ],
    "TTree" : [
       { "name": "Draw", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "px", "title": "Histogram data of TBranch object" },
