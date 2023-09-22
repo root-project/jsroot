@@ -11,7 +11,7 @@ const version_id = '7.5.pre',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '21/09/2023',
+version_date = '22/09/2023',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -1019,7 +1019,7 @@ const prROOT = 'ROOT.', clTObject = 'TObject', clTNamed = 'TNamed', clTString = 
       clTAttPad = 'TAttPad', clTPad = 'TPad', clTCanvas = 'TCanvas', clTAttCanvas = 'TAttCanvas',
       clTGaxis = 'TGaxis', clTAttAxis = 'TAttAxis', clTAxis = 'TAxis', clTStyle = 'TStyle',
       clTH1 = 'TH1', clTH1I = 'TH1I', clTH1D = 'TH1D', clTH2 = 'TH2', clTH2I = 'TH2I', clTH2F = 'TH2F', clTH3 = 'TH3',
-      clTF1 = 'TF1', clTF2 = 'TF2', clTProfile = 'TProfile', clTProfile2D = 'TProfile2D',
+      clTF1 = 'TF1', clTF2 = 'TF2', clTProfile = 'TProfile', clTProfile2D = 'TProfile2D', clTProfile3D = 'TProfile3D',
       clTGeoVolume = 'TGeoVolume', clTGeoNode = 'TGeoNode', clTGeoNodeMatrix = 'TGeoNodeMatrix',
       nsREX = 'ROOT::Experimental::',
       kNoZoom = -1111, kNoStats = BIT(9), kInspect = 'inspect';
@@ -1606,7 +1606,18 @@ function getMethods(typename, obj) {
    }
 
    if (typename.indexOf(clTProfile) === 0) {
-      if (typename.indexOf(clTProfile2D) === 0) {
+      if (typename === clTProfile3D) {
+         m.getBin = function(x, y, z) { return (x + (this.fXaxis.fNbins+2) * (y + (this.fYaxis.fNbins+2) * z)); };
+         m.getBinContent = function(x, y, z) {
+            const bin = this.getBin(x, y, z);
+            if (bin < 0 || bin >= this.fNcells || this.fBinEntries[bin] < 1e-300) return 0;
+            return this.fArray ? this.fArray[bin]/this.fBinEntries[bin] : 0;
+         };
+         m.getBinEntries = function(x, y, z) {
+            const bin = this.getBin(x, y, z);
+            return (bin < 0) || (bin >= this.fNcells) ? 0 : this.fBinEntries[bin];
+         };
+      } else if (typename === clTProfile2D) {
          m.getBin = function(x, y) { return (x + (this.fXaxis.fNbins+2) * y); };
          m.getBinContent = function(x, y) {
             const bin = this.getBin(x, y);
@@ -1850,6 +1861,7 @@ clTPolyLine3D: clTPolyLine3D,
 clTPolyMarker3D: clTPolyMarker3D,
 clTProfile: clTProfile,
 clTProfile2D: clTProfile2D,
+clTProfile3D: clTProfile3D,
 clTString: clTString,
 clTStyle: clTStyle,
 clTText: clTText,
@@ -70906,8 +70918,9 @@ class THistPainter extends ObjectPainter {
       const histo = this.getHisto();
       if (!histo) return 0;
       if (histo._typename.match(/^TH2/)) return 2;
-      if (histo._typename.match(/^TProfile2D/)) return 2;
+      if (histo._typename === clTProfile2D) return 2;
       if (histo._typename.match(/^TH3/)) return 3;
+      if (histo._typename === clTProfile3D) return 3;
       if (this.isTH2Poly()) return 2;
       return 1;
    }
@@ -79336,6 +79349,9 @@ TH2Painter: TH2Painter
 
 class TH3Painter extends THistPainter {
 
+   /** @summary Returns number of histogram dimensions */
+   getDimension() { return 3; }
+
    /** @summary Scan TH3 histogram content */
    scanContent(when_axis_changed) {
       // no need to rescan histogram while result does not depend from axis selection
@@ -79496,6 +79512,11 @@ class TH3Painter extends THistPainter {
          lines.push(`entries = ${binz}`);
       else
          lines.push(`entries = ${floatToString(binz, gStyle.fStatFormat)}`);
+
+      if (this.matchObjectType(clTProfile3D)) {
+         const errz = histo.getBinError(histo.getBin(ix+1, iy+1, iz+1));
+         lines.push('error = ' + ((errz === Math.round(errz)) ? errz.toString() : floatToString(errz, gStyle.fPaintTextFormat)));
+      }
 
       return lines;
    }
@@ -99833,6 +99854,7 @@ drawFuncs = { lst: [
    { name: /^TH2/, icon: 'img_histo2d', class: () => Promise.resolve().then(function () { return TH2Painter$1; }).then(h => h.TH2Painter), dflt: 'col', opt: ';COL;COLZ;COL0;COL1;COL0Z;COL1Z;COLA;BOX;BOX1;PROJ;PROJX1;PROJX2;PROJX3;PROJY1;PROJY2;PROJY3;SCAT;TEXT;TEXTE;TEXTE0;CANDLE;CANDLE1;CANDLE2;CANDLE3;CANDLE4;CANDLE5;CANDLE6;CANDLEY1;CANDLEY2;CANDLEY3;CANDLEY4;CANDLEY5;CANDLEY6;VIOLIN;VIOLIN1;VIOLIN2;VIOLINY1;VIOLINY2;CONT;CONT1;CONT2;CONT3;CONT4;ARR;SURF;SURF1;SURF2;SURF4;SURF6;E;A;LEGO;LEGO0;LEGO1;LEGO2;LEGO3;LEGO4;same', ctrl: 'lego' },
    { name: clTProfile2D, sameas: clTH2 },
    { name: /^TH3/, icon: 'img_histo3d', class: () => Promise.resolve().then(function () { return TH3Painter$1; }).then(h => h.TH3Painter), opt: ';SCAT;BOX;BOX2;BOX3;GLBOX1;GLBOX2;GLCOL' },
+   { name: clTProfile3D, sameas: clTH3 },
    { name: clTHStack, icon: 'img_histo1d', class: () => Promise.resolve().then(function () { return THStackPainter$1; }).then(h => h.THStackPainter), expand_item: 'fHists', opt: 'NOSTACK;HIST;E;PFC;PLC' },
    { name: clTPolyMarker3D, icon: 'img_histo3d', draw: () => Promise.resolve().then(function () { return draw3d; }).then(h => h.drawPolyMarker3D), direct: true, frame: '3d' },
    { name: clTPolyLine3D, icon: 'img_graph', draw: () => Promise.resolve().then(function () { return draw3d; }).then(h => h.drawPolyLine3D), direct: true, frame: '3d' },
@@ -123139,6 +123161,7 @@ exports.clTPolyLine3D = clTPolyLine3D;
 exports.clTPolyMarker3D = clTPolyMarker3D;
 exports.clTProfile = clTProfile;
 exports.clTProfile2D = clTProfile2D;
+exports.clTProfile3D = clTProfile3D;
 exports.clTString = clTString;
 exports.clTStyle = clTStyle;
 exports.clTText = clTText;
