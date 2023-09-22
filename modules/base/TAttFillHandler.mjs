@@ -220,17 +220,17 @@ class TAttFillHandler {
 
             const pp = painter?.getPadPainter(),
                   scale_size = pp ? Math.max(pp.getPadWidth(), pp.getPadHeight()) : 600,
-                  hatches_spacing = Math.max(1, Math.round(Math.max(0.5, gStyle.fHatchesSpacing) * scale_size * 0.0015)) * 6,
+                  spacing_original = Math.max(0.1, gStyle.fHatchesSpacing * scale_size * 0.0015),
+                  hatches_spacing = Math.max(1, Math.round(spacing_original)) * 6,
                   sz = i * hatches_spacing; // axis distance between lines
 
             id += `_h${hatches_spacing}`;
 
-            let pos, step, x1, x2, y1, y2, max;
-
             w = h = 6 * sz; // we use at least 6 steps
 
             const produce = (dy, swap) => {
-               pos = []; step = sz; y1 = 0; max = h;
+               const pos = [];
+               let step = sz, y1 = 0, max = h, y2, x1, x2;
 
                // reduce step for smaller angles to keep normal distance approx same
                if (Math.abs(dy) < 3)
