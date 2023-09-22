@@ -223,7 +223,7 @@ class TAttFillHandler {
             const use_new = (j === k) || (j === 0) || (j === 5) || (j === 9) || (k === 0) || (k === 5) || (k === 9),
                   pp = painter?.getPadPainter(),
                   scale_size = pp ? Math.max(pp.getPadWidth(), pp.getPadHeight()) : 600,
-                  spacing_original = Math.max(0.1, gStyle.fHatchesSpacing * scale_size * 0.0015),
+                  spacing_original = Math.max(0.1, gStyle.fHatchesSpacing * scale_size * 0.001),
                   hatches_spacing = Math.max(1, Math.round(spacing_original)) * 6,
                   sz = i * hatches_spacing; // axis distance between lines
 
@@ -284,7 +284,7 @@ class TAttFillHandler {
 
             produce_new = (_aa, _bb, angle, swapx) => {
                if ((angle === 0) || (angle === 90)) {
-                  const dy = spacing_original*6,
+                  const dy = i*spacing_original*3,
                         nsteps = Math.round(h / dy),
                         dyreal = h / nsteps;
                   let yy = dyreal/2;
@@ -301,7 +301,7 @@ class TAttFillHandler {
                }
 
                const a = angle/180*Math.PI,
-                     dy = spacing_original*6/Math.cos(a),
+                     dy = i*spacing_original*3/Math.cos(a),
                      hside = Math.tan(a) * w,
                      hside_steps = Math.round(hside / dy),
                      dyreal = hside / hside_steps,
