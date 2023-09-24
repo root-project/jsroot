@@ -1,4 +1,4 @@
-name: Run `npm ci` and `npm run build` with latest Node versions and MacOS clang++ compiler
+name: Test building on latest MacOS
 
 on:
   push:

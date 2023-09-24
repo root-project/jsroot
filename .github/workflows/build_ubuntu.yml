@@ -1,4 +1,4 @@
-name: Run `npm ci` and `npm run build` with latest Node versions and C++ compilers
+name: Test building on latest Ubuntu
 
 on:
   push:
