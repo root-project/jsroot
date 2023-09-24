@@ -1,0 +1,32 @@
+name: Run `npm ci` and `npm run build` with latest Node versions and MacOS clang++ compiler
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Set up C++ compiler (macOS)
+        run: |
+          echo "CXX=clang++" >> $GITHUB_ENV
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm run build
