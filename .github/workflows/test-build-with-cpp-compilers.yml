@@ -1,0 +1,56 @@
+name: Node.js CI with different C++ compilers
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: [18.x, 20.x]
+        include:
+          - os: ubuntu-latest
+            cxx: g++-7
+          - os: ubuntu-latest
+            cxx: g++-9
+          - os: macos-latest
+            cxx: clang++
+          - os: windows-latest
+            cxx: cl
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Set up C++ compiler (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ${{ matrix.cxx }}
+          echo "CXX=${{ matrix.cxx }}" >> $GITHUB_ENV
+
+      - name: Set up C++ compiler (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          echo "CXX=${{ matrix.cxx }}" >> $GITHUB_ENV
+
+      - name: Set up C++ compiler (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          echo "CXX=${{ matrix.cxx }}" >> $GITHUB_ENV
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm run build
