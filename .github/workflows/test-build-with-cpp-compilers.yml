@@ -18,7 +18,17 @@ jobs:
           - os: ubuntu-latest
             cxx: g++-7
           - os: ubuntu-latest
+            cxx: g++-8
+          - os: ubuntu-latest
             cxx: g++-9
+          - os: ubuntu-latest
+            cxx: g++-10
+          - os: ubuntu-latest
+            cxx: g++-11
+          - os: ubuntu-latest
+            cxx: g++-12
+          - os: ubuntu-latest
+            cxx: g++-13
           - os: macos-latest
             cxx: clang++
           - os: windows-latest
