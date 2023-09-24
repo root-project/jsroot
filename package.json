@@ -2,8 +2,9 @@
   "name": "jsroot",
   "version": "7.5.0",
   "engines": {
-    "node": ">=18"
+    "node": "18.*"
   },
+  "engineStrict": true,
   "description": "JavaScript ROOT",
   "homepage": "https://root.cern/js/",
   "type": "module",
