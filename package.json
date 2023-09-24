@@ -2,7 +2,7 @@
   "name": "jsroot",
   "version": "7.5.0",
   "engines": {
-    "node": ">=0.18.0"
+    "node": ">=18"
   },
   "description": "JavaScript ROOT",
   "homepage": "https://root.cern/js/",
@@ -68,7 +68,7 @@
     "eslint-plugin-n": "^15.7.0",
     "eslint-plugin-promise": "^6.1.1",
     "gl": "^6.0.2",
-    "jsdoc": "^3.6.11",
+    "jsdoc": "^4.0.2",
     "magic-string": "^0.30.0",
     "mocha": "9",
     "rollup": "3",
