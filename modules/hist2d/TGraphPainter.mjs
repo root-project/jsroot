@@ -156,7 +156,7 @@ class TGraphPainter extends ObjectPainter {
       res._plc = d.check('PLC');
       res._pmc = d.check('PMC');
 
-      if (d.check('A')) res.Axis = d.check('I') ? 'A' : 'AXIS'; // I means invisible axis
+      if (d.check('A')) res.Axis = d.check('I') ? 'A' : 'AXIS;'; // I means invisible axis
       if (d.check('X+')) { res.Axis += 'X+'; res.second_x = has_main; }
       if (d.check('Y+')) { res.Axis += 'Y+'; res.second_y = has_main; }
       if (d.check('RX')) res.Axis += 'RX';
@@ -206,10 +206,9 @@ class TGraphPainter extends ObjectPainter {
          // either graph drawn directly or
          // graph is first object in list of primitives
          const pad = this.getPadPainter()?.getRootPad(true);
-         if (!pad || (pad?.fPrimitives?.arr[0] === this.getObject())) res.Axis = 'AXIS';
+         if (!pad || (pad?.fPrimitives?.arr[0] === this.getObject())) res.Axis = 'AXIS;';
       } else if (res.Axis.indexOf('A') < 0)
-         res.Axis = 'AXIS,' + res.Axis;
-
+         res.Axis = 'AXIS;' + res.Axis;
 
       res.Axis += hopt;
 
@@ -1504,7 +1503,10 @@ class TGraphPainter extends ObjectPainter {
      * @private */
    async drawAxisHisto() {
       const histo = this.createHistogram();
-      return TH1Painter.draw(this.getDom(), histo, this.options.Axis);
+      let hopt = this.options.Axis;
+      if (hopt.indexOf('AXIS;') === 0)
+         hopt = hopt.slice(5);
+      return TH1Painter.draw(this.getDom(), histo, hopt);
    }
 
    /** @summary Draw TGraph
