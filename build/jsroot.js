@@ -11,7 +11,7 @@ const version_id = '7.5.pre',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '22/09/2023',
+version_date = '25/09/2023',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -69108,9 +69108,10 @@ class TPavePainter extends ObjectPainter {
          }
 
          const pad_rect = pp.getPadRect(),
-             brd = pt.fBorderSize,
-             dx = (opt.indexOf('L') >= 0) ? -1 : ((opt.indexOf('R') >= 0) ? 1 : 0),
-             dy = (opt.indexOf('T') >= 0) ? -1 : ((opt.indexOf('B') >= 0) ? 1 : 0);
+               brd = pt.fBorderSize,
+               noborder = opt.indexOf('NB') >= 0,
+               dx = (opt.indexOf('L') >= 0) ? -1 : ((opt.indexOf('R') >= 0) ? 1 : 0),
+               dy = (opt.indexOf('T') >= 0) ? -1 : ((opt.indexOf('B') >= 0) ? 1 : 0);
 
          // container used to recalculate coordinates
          this.createG();
@@ -69130,7 +69131,7 @@ class TPavePainter extends ObjectPainter {
             const h2 = Math.round(height/2), w2 = Math.round(width/2),
                   dpath = `l${w2},${-h2}l${w2},${h2}l${-w2},${h2}z`;
 
-            if ((brd > 1) && (pt.fShadowColor > 0) && (dx || dy) && !this.fillatt.empty()) {
+            if ((brd > 1) && (pt.fShadowColor > 0) && (dx || dy) && !this.fillatt.empty() && !noborder) {
                 this.draw_g.append('svg:path')
                     .attr('d', 'M0,'+(h2+brd) + dpath)
                     .style('fill', this.getColor(pt.fShadowColor))
@@ -69149,7 +69150,7 @@ class TPavePainter extends ObjectPainter {
             return this.drawPaveText(w2, h2, arg, text_g);
          } else {
             // add shadow decoration before main rect
-            if ((brd > 1) && (pt.fShadowColor > 0) && !pt.fNpaves && (dx || dy)) {
+            if ((brd > 1) && (pt.fShadowColor > 0) && !pt.fNpaves && (dx || dy) && !noborder) {
                const scol = this.getColor(pt.fShadowColor);
                let spath = '';
                if (this.fillatt.empty()) {
@@ -69177,11 +69178,12 @@ class TPavePainter extends ObjectPainter {
                }
             }
 
-            if (!this.isBatchMode() || !this.fillatt.empty() || !this.lineatt.empty()) {
+            if (!this.isBatchMode() || !this.fillatt.empty() || (!this.lineatt.empty() && !noborder)) {
                interactive_element = this.draw_g.append('svg:path')
                                                 .attr('d', `M0,0H${width}V${height}H0Z`)
-                                                .call(this.fillatt.func)
-                                                .call(this.lineatt.func);
+                                                .call(this.fillatt.func);
+               if (!noborder)
+                  interactive_element.call(this.lineatt.func);
             }
 
             return isFunc(this.paveDrawFunc) ? this.paveDrawFunc(width, height, arg) : true;
@@ -69388,6 +69390,7 @@ class TPavePainter extends ObjectPainter {
                   // individual positioning
                   const x = entry.fX ? entry.fX*width : margin_x,
                         y = entry.fY ? (1 - entry.fY)*height : texty;
+
                   let color = entry.fTextColor ? this.getColor(entry.fTextColor) : '';
                   if (!color) color = this.textatt.color;
 
@@ -69405,19 +69408,19 @@ class TPavePainter extends ObjectPainter {
                      this.startTextDrawing(this.textatt.font, height/(nlines * 1.2), text_g, max_font_size);
 
                   const arg = { x: 0, y: 0, width, height, align: entry.fTextAlign || this.textatt.align,
-                              draw_g: text_g, latex: entry._typename === clTText ? 0 : 1,
-                              text: entry.fTitle, fast },
-                   halign = Math.floor(arg.align / 10);
+                                draw_g: text_g, latex: (entry._typename === clTText) ? 0 : 1,
+                                text: entry.fTitle, fast },
+                  halign = Math.floor(arg.align / 10);
                   // when horizontal align applied, just shift text, not change width to keep scaling
                   arg.x = (halign === 1) ? margin_x : (halign === 3 ? -margin_x : 0);
 
                   if (nlines > 1) {
                      arg.y = texty;
                      arg.height = stepy;
-                     if (entry.fTextColor) arg.color = this.getColor(entry.fTextColor);
-                     if (entry.fTextSize) arg.font_size = this.textatt.getAltSize(entry.fTextSize, pad_height);
                   }
+                  if (entry.fTextColor) arg.color = this.getColor(entry.fTextColor);
                   if (!arg.color) arg.color = this.textatt.color;
+                  if (entry.fTextSize) arg.font_size = this.textatt.getAltSize(entry.fTextSize, pad_height);
                   this.drawText(arg);
                }
                break;
@@ -70433,7 +70436,7 @@ class THistDrawOptions {
       if (d.check('PERSPECTIVE') || d.check('PERSP')) this.Ortho = false;
       if (d.check('ORTHO')) this.Ortho = true;
 
-      let lx = 0, ly = 0, check3dbox = '', check3d = (hdim === 3);
+      let lx = 0, ly = 0, check3dbox = '';
       if (d.check('LOG2XY')) lx = ly = 2;
       if (d.check('LOGXY')) lx = ly = 1;
       if (d.check('LOG2X')) lx = 2;
@@ -70576,7 +70579,6 @@ class THistDrawOptions {
       if (d.check('CHAR')) this.Char = 1;
       if (d.check('ALLFUNC')) this.AllFunc = true;
       if (d.check('FUNC')) { this.Func = true; this.Hist = false; }
-      if (d.check('AXIS3D')) { this.Axis = 1; this.Lego = 1; check3d = true; }
       if (d.check('AXIS')) this.Axis = 1;
       if (d.check('AXIG')) this.Axis = 2;
 
@@ -70625,8 +70627,8 @@ class THistDrawOptions {
          if (check3dbox.indexOf('BB') >= 0) this.BackBox = false;
       }
 
-      if (check3d && d.check('FB')) this.FrontBox = false;
-      if (check3d && d.check('BB')) this.BackBox = false;
+      if ((hdim === 3) && d.check('FB')) this.FrontBox = false;
+      if ((hdim === 3) && d.check('BB')) this.BackBox = false;
 
       this._pfc = d.check('PFC');
       this._plc = d.check('PLC') || this.AutoColor;
@@ -71483,7 +71485,7 @@ class THistPainter extends ObjectPainter {
      * @return {Promise} with painter */
    async drawHistTitle() {
       // case when histogram drawn over other histogram (same option)
-      if (!this.isMainPainter() || this.options.Same)
+      if (!this.isMainPainter() || this.options.Same || this.options.Axis > 0)
          return this;
 
       const histo = this.getHisto(), st = gStyle,
@@ -75704,7 +75706,6 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
             pr = this.drawBinsChord();
           else
             pr = this.drawAxes().then(() => this.draw2DBins());
-
 
          return pr.then(() => this.completePalette(pp));
       }).then(() => this.drawHistTitle())
@@ -105238,7 +105239,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
       res._plc = d.check('PLC');
       res._pmc = d.check('PMC');
 
-      if (d.check('A')) res.Axis = d.check('I') ? 'A' : 'AXIS'; // I means invisible axis
+      if (d.check('A')) res.Axis = d.check('I') ? 'A' : 'AXIS;'; // I means invisible axis
       if (d.check('X+')) { res.Axis += 'X+'; res.second_x = has_main; }
       if (d.check('Y+')) { res.Axis += 'Y+'; res.second_y = has_main; }
       if (d.check('RX')) res.Axis += 'RX';
@@ -105288,10 +105289,9 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
          // either graph drawn directly or
          // graph is first object in list of primitives
          const pad = this.getPadPainter()?.getRootPad(true);
-         if (!pad || (pad?.fPrimitives?.arr[0] === this.getObject())) res.Axis = 'AXIS';
+         if (!pad || (pad?.fPrimitives?.arr[0] === this.getObject())) res.Axis = 'AXIS;';
       } else if (res.Axis.indexOf('A') < 0)
-         res.Axis = 'AXIS,' + res.Axis;
-
+         res.Axis = 'AXIS;' + res.Axis;
 
       res.Axis += hopt;
 
@@ -106582,11 +106582,20 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
       return this.getPadPainter().drawObject(this.getDom(), func, opt).then(() => this.drawNextFunction(indx+1));
    }
 
+   /** @summary Return draw option for axis histogram
+     * @private */
+   getHistoOpt() {
+      let hopt = this.options.Axis;
+      if (hopt.indexOf('AXIS;') === 0)
+         hopt = hopt.slice(5);
+      return hopt;
+   }
+
    /** @summary Draw axis histogram
      * @private */
    async drawAxisHisto() {
       const histo = this.createHistogram();
-      return TH1Painter$2.draw(this.getDom(), histo, this.options.Axis);
+      return TH1Painter$2.draw(this.getDom(), histo, this.getHistoOpt());
    }
 
    /** @summary Draw TGraph
@@ -107659,7 +107668,7 @@ class THStackPainter extends ObjectPainter {
              stack.fHistogram = painter.createHistogram(stack);
 
          const mm = painter.getMinMax(painter.options.errors || painter.options.draw_errors),
-               hopt = painter.options.hopt + ';axis;' + mm.hopt;
+               hopt = painter.options.hopt + ';' + mm.hopt;
 
          return painter.hdraw_func(dom, stack.fHistogram, hopt).then(subp => {
             painter.addToPadPrimitives();
@@ -107924,7 +107933,7 @@ class TGraphTimePainter extends ObjectPainter {
 
       painter.selfid = 'grtime_' + internals.id_counter++; // use to identify primitives which should be clean
 
-      return TH1Painter$2.draw(dom, gr.fFrame, 'AXIS').then(() => {
+      return TH1Painter$2.draw(dom, gr.fFrame, '').then(() => {
          painter.addToPadPrimitives();
          return painter.startDrawing();
       });
@@ -109158,6 +109167,12 @@ class TGraph2DPainter extends ObjectPainter {
       }
 
       return Promise.all(promises).then(() => {
+         if (this.options.Zscale && this.ownhisto) {
+            const pal = this.getMainPainter()?.findFunction(clTPaletteAxis),
+                  pal_painter = this.getPadPainter()?.findPainterFor(pal);
+            return pal_painter?.drawPave();
+         }
+      }).then(() => {
          fp.render3D(100);
          return this;
       });
@@ -109174,7 +109189,7 @@ class TGraph2DPainter extends ObjectPainter {
          if (!gr.fHistogram)
             gr.fHistogram = painter.createHistogram();
 
-         promise = TH2Painter.draw(dom, gr.fHistogram, painter.options.Zscale ? 'lego2z;axis' : 'lego2;axis');
+         promise = TH2Painter.draw(dom, gr.fHistogram, painter.options.Zscale ? 'lego2z' : 'lego2');
          painter.ownhisto = true;
       }
 
@@ -110359,7 +110374,7 @@ class TScatterPainter extends TGraphPainter$1 {
     * @private */
    async drawAxisHisto() {
       const histo = this.createHistogram();
-      return TH2Painter$2.draw(this.getDom(), histo, this.options.Axis);
+      return TH2Painter$2.draw(this.getDom(), histo, this.getHistoOpt());
    }
 
   /** @summary Provide palette, create if necessary
@@ -110882,11 +110897,10 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
       if (!histo) {
          let xaxis, yaxis;
          if (this._3d) {
-            histo = create$1(clTH2I);
+            histo = createHistogram(clTH2I, graphs.arr.length, 10);
             xaxis = histo.fXaxis;
             xaxis.fXmin = 0;
             xaxis.fXmax = graphs.arr.length;
-            xaxis.fNbins = graphs.arr.length;
             xaxis.fLabels = create$1(clTHashList);
             for (let i = 0; i < graphs.arr.length; i++) {
                const lbl = create$1(clTObjString);
@@ -110897,7 +110911,7 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
             xaxis = histo.fYaxis;
             yaxis = histo.fZaxis;
          } else {
-            histo = create$1(clTH1I);
+            histo = createHistogram(clTH1I, 10);
             xaxis = histo.fXaxis;
             yaxis = histo.fYaxis;
          }
@@ -110928,7 +110942,7 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
    /** @summary draw speical histogram for axis
      * @return {Promise} when ready */
    async drawAxisHist(histo, hopt) {
-      return TH1Painter$2.draw(this.getDom(), histo, 'AXIS' + hopt);
+      return TH1Painter$2.draw(this.getDom(), histo, hopt);
    }
 
    /** @summary method draws next function from the functions list  */
@@ -110992,12 +111006,13 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
       painter._pmc = d.check('PMC');
 
       let hopt = '';
+      if (d.check('FB') && painter._3d) hopt += 'FB'; // will be directly combined with LEGO
       PadDrawOptions.forEach(name => { if (d.check(name)) hopt += ';' + name; });
 
       let promise = Promise.resolve(true);
       if (d.check('A') || !painter.getMainPainter()) {
           const mgraph = painter.getObject(),
-              histo = painter.scanGraphsRange(mgraph.fGraphs, mgraph.fHistogram, painter.getPadPainter()?.getRootPad(true));
+                histo = painter.scanGraphsRange(mgraph.fGraphs, mgraph.fHistogram, painter.getPadPainter()?.getRootPad(true));
 
          promise = painter.drawAxisHist(histo, hopt).then(ap => {
             painter.firstpainter = ap;
@@ -111025,8 +111040,8 @@ class TMultiGraphPainter extends TMultiGraphPainter$2 {
      * @return {Promise} when ready */
    async drawAxisHist(histo, hopt) {
       return this._3d
-              ? TH2Painter.draw(this.getDom(), histo, 'AXIS3D' + hopt)
-              : TH1Painter$2.draw(this.getDom(), histo, 'AXIS' + hopt);
+              ? TH2Painter.draw(this.getDom(), histo, 'LEGO' + hopt)
+              : TH1Painter$2.draw(this.getDom(), histo, hopt);
    }
 
    /** @summary draw multigraph in 3D */
@@ -111618,7 +111633,7 @@ class TSplinePainter extends ObjectPainter {
          if (ymin < 0) ymin *= (1 + gStyle.fHistTopMargin);
       }
 
-      const histo = create$1(clTH1I);
+      const histo = createHistogram(clTH1I, 10);
 
       histo.fName = spline.fName + '_hist';
       histo.fTitle = spline.fTitle;
@@ -111803,7 +111818,7 @@ class TSplinePainter extends ObjectPainter {
          Line: d.check('L'),
          Curve: d.check('C'),
          Mark: d.check('P'),
-         Hopt: 'AXIS',
+         Hopt: '',
          second_x: false,
          second_y: false
       });
