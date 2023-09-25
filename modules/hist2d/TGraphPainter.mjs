@@ -1499,14 +1499,20 @@ class TGraphPainter extends ObjectPainter {
       return this.getPadPainter().drawObject(this.getDom(), func, opt).then(() => this.drawNextFunction(indx+1));
    }
 
+   /** @summary Return draw option for axis histogram
+     * @private */
+   getHistoOpt() {
+      let hopt = this.options.Axis;
+      if (hopt.indexOf('AXIS;') === 0)
+         hopt = hopt.slice(5);
+      return hopt;
+   }
+
    /** @summary Draw axis histogram
      * @private */
    async drawAxisHisto() {
       const histo = this.createHistogram();
-      let hopt = this.options.Axis;
-      if (hopt.indexOf('AXIS;') === 0)
-         hopt = hopt.slice(5);
-      return TH1Painter.draw(this.getDom(), histo, hopt);
+      return TH1Painter.draw(this.getDom(), histo, this.getHistoOpt());
    }
 
    /** @summary Draw TGraph

@@ -1245,7 +1245,7 @@ class TGraph2DPainter extends ObjectPainter {
          if (!gr.fHistogram)
             gr.fHistogram = painter.createHistogram();
 
-         promise = TH2Painter.draw(dom, gr.fHistogram, painter.options.Zscale ? 'lego2z;axis' : 'lego2;axis');
+         promise = TH2Painter.draw(dom, gr.fHistogram, painter.options.Zscale ? 'lego2z' : 'lego2');
          painter.ownhisto = true;
       }
 

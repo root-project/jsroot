@@ -12,8 +12,7 @@
      { "name": "tut4", "file": "tutorials_hist.root", "layout": "grid2x2", "items": ["thstackpalettecolor", "statsEditing", "testSmooth",  "xyplot"], "opts": ["pfc nostack"], "title": "Macro outputs from $ROOTSYS/tutorials/hist" }
    ],
    "TH2": [
-     { "opt": "axis", "file": "hsimple.root", "item": "hpxpy;1", "title": "Draw only axis histogram" },
-     { "opt": "axis3d", "title": "Draw only axis histogram in 3D mode" },
+     { "opt": "axis", "file": "hsimple.root", "item": "hpxpy;1", "title": "Draw only histogram axes" },
      { "name": "hitmap", "file": "hitmap.root", "item": "HitMap;1" },
      { "name": "atlas", "opt": "col", "file": "atlas.root", "item": "LEDShapeHeightCorr_Gain0;1" },
      { "name": "logx", "opt": "colz", "file": "QAresults.root", "item": "PIDqa/PIDqa1/ITS/hNsigmaP_ITS_electron;1" },
