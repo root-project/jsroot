@@ -274,11 +274,12 @@ class TPavePainter extends ObjectPainter {
                }
             }
 
-            if (!this.isBatchMode() || !this.fillatt.empty() || !this.lineatt.empty()) {
+            if (!this.isBatchMode() || !this.fillatt.empty() || (!this.lineatt.empty() && !noborder)) {
                interactive_element = this.draw_g.append('svg:path')
                                                 .attr('d', `M0,0H${width}V${height}H0Z`)
-                                                .call(this.fillatt.func)
-                                                .call(this.lineatt.func);
+                                                .call(this.fillatt.func);
+               if (!noborder)
+                  interactive_element.call(this.lineatt.func)
             }
 
             return isFunc(this.paveDrawFunc) ? this.paveDrawFunc(width, height, arg) : true;
