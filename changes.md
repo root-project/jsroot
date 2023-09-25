@@ -30,6 +30,7 @@
 27. Fix - graph "B" bar widths as in native ROOT
 28. Fix - use pad and not frame size for `TText` / `TLatex` scaling
 29. Fix - properly handle "NB" (no border) draw option for `TPave` classes
+30. Fix - do not draw histogram title with AXIS draw option
 
 
 ## Changes in 7.4.3
