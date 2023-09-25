@@ -488,7 +488,6 @@ class TPavePainter extends ObjectPainter {
                         y = entry.fY ? (1 - entry.fY)*height : texty;
 
                   let color = entry.fTextColor ? this.getColor(entry.fTextColor) : '';
-                  console.log('', entry.fTitle,  entry.fTextColor, color);
                   if (!color) color = this.textatt.color;
 
                   const sub_g = text_g.append('svg:g');
