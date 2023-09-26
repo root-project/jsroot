@@ -30,6 +30,7 @@
      { "opt": "ticky", "title": "draw Y ticks also on opposite frame side" },
      { "opt": "tickxy", "title": "draw X and Y ticks also on opposite frame sides" },
      { "name": "axis", "opt": "axis;nostat;maximum:1000", "title": "draw only axes, configure maximum value, disable stats" },
+     { "name": "axig", "opt": "axig", "title": "Draw only stats box, no axes, no content, no title" },
      { "name": "autozoom", "opt": "hist;autozoom", "title": "Automatically zoom into non-empty content" },
      { "opt": "inspect", "asurl": true, "file": "hsimple.root", "item": "hpx;1", "title": "universal object inspector, can be used for any class" },
      { "name": "docu", "file": "histpainter6.root", "layout": "vert32", "items": ["two_axis","draw_e1","draw_bar","draw_e34","draw_text"], "title":"several TH1 examples from THistPainter documentation" },
