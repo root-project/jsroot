@@ -1994,7 +1994,9 @@ class THistPainter extends ObjectPainter {
 
          const zaxis = this.getHisto().fZaxis;
 
-         Object.assign(pal.fAxis, { fTitle: zaxis.fTitle, fTitleSize: zaxis.fTitleSize, fChopt: '+',
+         Object.assign(pal.fAxis, { fTitle: zaxis.fTitle, fTitleSize: zaxis.fTitleSize,
+                                    fTitleOffset: zaxis.fTitleOffset, fTitleColor: zaxis.fTitleColor,
+                                    fChopt: '+',
                                     fLineColor: zaxis.fAxisColor, fLineSyle: 1, fLineWidth: 1,
                                     fTextAngle: 0, fTextSize: zaxis.fLabelSize, fTextAlign: 11,
                                     fTextColor: zaxis.fLabelColor, fTextFont: zaxis.fLabelFont,
