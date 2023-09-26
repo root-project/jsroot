@@ -689,9 +689,14 @@ const TooltipHandler = {
                                 only_resize: true, minwidth: 20, minheight: 20, redraw: () => this.sizeChanged() });
       }
 
-      const main_svg = this.draw_g.selectChild('.main_layer');
+      const top_rect = this.draw_g.selectChild('path'),
+            main_svg = this.draw_g.selectChild('.main_layer');
+
+      top_rect.style('pointer-events', 'visibleFill')  // let process mouse events inside frame
+              .style('cursor', 'default');             // show normal cursor
 
       main_svg.style('pointer-events', 'visibleFill')
+              .style('cursor', 'default')
               .property('handlers_set', 0);
 
       const pp = this.getPadPainter(),
@@ -2494,9 +2499,6 @@ class TFramePainter extends ObjectPainter {
               .attr('viewBox', `0 0 ${w} ${h}`);
 
       if (!this.isBatchMode()) {
-         top_rect.style('pointer-events', 'visibleFill')  // let process mouse events inside frame
-                 .style('cursor', 'default');             // show normal cursor
-         main_svg.style('cursor', 'default');             // show normal cursor
          FrameInteractive.assign(this);
          this.addBasicInteractivity();
       }

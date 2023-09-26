@@ -729,8 +729,6 @@ class RFramePainter extends RObjectPainter {
 
       return pr.then(() => {
          if (!this.isBatchMode()) {
-            top_rect.style('pointer-events', 'visibleFill');  // let process mouse events inside frame
-
             FrameInteractive.assign(this);
             this.addBasicInteractivity();
          }
