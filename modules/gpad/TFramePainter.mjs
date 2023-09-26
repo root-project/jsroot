@@ -2498,11 +2498,6 @@ class TFramePainter extends ObjectPainter {
               .attr('height', h)
               .attr('viewBox', `0 0 ${w} ${h}`);
 
-      if (!this.isBatchMode()) {
-         FrameInteractive.assign(this);
-         this.addBasicInteractivity();
-      }
-
       return this;
    }
 
@@ -2956,6 +2951,9 @@ class TFramePainter extends ObjectPainter {
          return false;
 
       FrameInteractive.assign(this);
+      if (!for_second_axes)
+         this.addBasicInteractivity();
+
       return this.addFrameInteractivity(for_second_axes);
    }
 
