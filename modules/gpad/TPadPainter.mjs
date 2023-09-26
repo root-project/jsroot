@@ -1022,8 +1022,13 @@ class TPadPainter extends ObjectPainter {
          return;
       }
 
+      const obj = this.pad.fPrimitives.arr[indx];
+
+      if (!obj || ((indx > 0) && (obj._typename === 'TFrame') && this.getFramePainter()))
+         return this.drawPrimitives(indx+1);
+
       // use of Promise should avoid large call-stack depth when many primitives are drawn
-      return this.drawObject(this.getDom(), this.pad.fPrimitives.arr[indx], this.pad.fPrimitives.opt[indx]).then(op => {
+      return this.drawObject(this.getDom(), obj, this.pad.fPrimitives.opt[indx]).then(op => {
          if (isObject(op))
             op._primitive = true; // mark painter as belonging to primitives
 
