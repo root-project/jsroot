@@ -905,7 +905,7 @@ class TPadPainter extends ObjectPainter {
    checkSpecialsInPrimitives(can) {
       const lst = can?.fPrimitives;
       if (!lst) return;
-      for (let i = 0; i < lst.arr.length; ++i) {
+      for (let i = 0; i < lst.arr?.length; ++i) {
          if (this.checkSpecial(lst.arr[i])) {
             lst.arr.splice(i, 1);
             lst.opt.splice(i, 1);
@@ -1368,7 +1368,7 @@ class TPadPainter extends ObjectPainter {
       if (!obj.fPrimitives) return false;
 
       let isany = false, p = 0;
-      for (let n = 0; n < obj.fPrimitives.arr.length; ++n) {
+      for (let n = 0; n < obj.fPrimitives.arr?.length; ++n) {
          while (p < this.painters.length) {
             const pp = this.painters[p++];
             if (!pp._primitive) continue;
