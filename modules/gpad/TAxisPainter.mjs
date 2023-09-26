@@ -1108,7 +1108,7 @@ class TAxisPainter extends ObjectPainter {
          tickSize = optionSize ? axis.fTickSize : 0.03;
          titleColor = this.getColor(axis.fTextColor);
          offset = axis.fLabelOffset;
-         if ((this.vertical && axis.fY1 > axis.fY2) || (!this.vertical && axis.fX1 > axis.fX2))
+         if ((this.vertical && axis.fY1 > axis.fY2 && !this.optionMinus) || (!this.vertical && axis.fX1 > axis.fX2))
             offset = -offset;
       } else {
          this.optionUnlab = false;
@@ -1123,6 +1123,8 @@ class TAxisPainter extends ObjectPainter {
          titleColor = this.getColor(axis.fTitleColor);
          offset = axis.fLabelOffset;
       }
+
+      offset += (this.vertical ? 0.002 : 0.005);
 
       if (this.kind === 'labels')
          this.optionText = true;
