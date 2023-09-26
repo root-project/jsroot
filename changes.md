@@ -31,6 +31,7 @@
 28. Fix - use pad and not frame size for `TText` / `TLatex` scaling
 29. Fix - properly handle "NB" (no border) draw option for `TPave` classes
 30. Fix - do not draw histogram title with AXIS draw option
+31. Fix - correct scaling of custom axis labels
 
 
 ## Changes in 7.4.3
