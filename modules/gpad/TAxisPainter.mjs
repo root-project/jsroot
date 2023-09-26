@@ -1091,7 +1091,7 @@ class TAxisPainter extends ObjectPainter {
             pp = this.getPadPainter(),
             pad_w = pp?.getPadWidth() || scalingSize || w/0.8, // use factor 0.8 as ratio between frame and pad size
             pad_h = pp?.getPadHeight() || scalingSize || h/0.8;
-      let tickSize = 0, tickScalingSize = 0, titleColor;
+      let tickSize = 0, tickScalingSize = 0, titleColor, offset;
 
       this.scalingSize = scalingSize || Math.max(Math.min(pad_w, pad_h), 10);
 
@@ -1107,6 +1107,9 @@ class TAxisPainter extends ObjectPainter {
          tickScalingSize = scalingSize || (this.vertical ? 1.7*h : 0.6*w);
          tickSize = optionSize ? axis.fTickSize : 0.03;
          titleColor = this.getColor(axis.fTextColor);
+         offset = axis.fLabelOffset;
+         if ((this.vertical && axis.fY1 > axis.fY2) || (!this.vertical && axis.fX1 > axis.fX2))
+            offset = -offset;
       } else {
          this.optionUnlab = false;
          this.optionMinus = this.vertical ^ this.invert_side;
@@ -1118,6 +1121,7 @@ class TAxisPainter extends ObjectPainter {
          tickScalingSize = scalingSize || (this.vertical ? pad_w : pad_h);
          tickSize = axis.fTickLength;
          titleColor = this.getColor(axis.fTitleColor);
+         offset = axis.fLabelOffset;
       }
 
       if (this.kind === 'labels')
@@ -1137,7 +1141,7 @@ class TAxisPainter extends ObjectPainter {
 
       const k = this.optionText ? 0.66666 : 1; // set TGaxis.cxx, line 1504
       this.labelSize = Math.round((axis.fLabelSize < 1) ? k * axis.fLabelSize * this.scalingSize : k * axis.fLabelSize);
-      this.labelsOffset = Math.round(Math.abs(axis.fLabelOffset) * this.scalingSize);
+      this.labelsOffset = Math.round(offset * this.scalingSize);
       this.labelsFont = new FontHandler(axis.fLabelFont, this.labelSize, scalingSize);
       if ((this.labelSize <= 0) || (Math.abs(axis.fLabelOffset) > 1.1)) this.optionUnlab = true; // disable labels when size not specified
       this.labelsFont.setColor(this.getColor(axis.fLabelColor));
