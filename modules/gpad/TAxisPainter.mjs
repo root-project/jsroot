@@ -157,8 +157,17 @@ const AxisPainterMethods = {
       if (gStyle.fStripDecimals && (val === Math.round(val)))
          return Math.abs(val) < 1e9 ? val.toFixed(0) : val.toExponential(4);
 
-      if (asticks)
-         return this.ndig > 10 ? val.toExponential(this.ndig-11) : val.toFixed(this.ndig);
+      if (asticks) {
+         if (this.ndig > 10)
+            return val.toExponential(this.ndig - 11);
+         let res = val.toFixed(this.ndig);
+         const p = res.indexOf('.');
+         if ((p > 0) && settings.StripAxisLabels) {
+            while ((res.length >= p) && ((res[res.length-1] === '0') || (res[res.length-1] === '.')))
+               res = res.slice(0, res.length - 1);
+         }
+         return res;
+      }
 
       return floatToString(val, fmt || gStyle.fStatFormat);
    },

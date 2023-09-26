@@ -267,7 +267,9 @@ settings = {
    /** @summary Prefer to use saved points in TF1/TF2, avoids eval() and Function() when possible */
    PreferSavedPoints: false,
    /** @summary Angle in degree for axis labels tilt when available space is not enough */
-   AxisTiltAngle: 25
+   AxisTiltAngle: 25,
+   /** @summary Strip axis labels trailing 0 or replace 10^0 by 1 */
+   StripAxisLabels: true
 },
 
 /** @namespace
