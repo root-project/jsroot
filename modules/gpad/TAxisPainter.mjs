@@ -139,8 +139,12 @@ const AxisPainterMethods = {
       const base = this.logbase;
       if (base !== 10) vlog = vlog / Math.log10(base);
       if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog)) < 0.001)) {
-         if (!this.noexp && (asticks !== 2))
-            return this.formatExp(base, Math.floor(vlog+0.01), val);
+         if (!this.noexp && (asticks !== 2)) {
+            const pow = Math.floor(vlog+0.01);
+            if ((pow === 0) && settings.StripAxisLabels)
+               return '1';
+            return this.formatExp(base, pow, val);
+         }
          if (Math.abs(base - Math.E) < 0.001)
             return floatToString(val, fmt || gStyle.fStatFormat);
          return (vlog < 0) ? val.toFixed(Math.round(-vlog+0.5)) : val.toFixed(0);
