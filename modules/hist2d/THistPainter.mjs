@@ -1172,7 +1172,9 @@ class THistPainter extends ObjectPainter {
       if (this.options.Same)
          return false;
 
-      return fp.drawAxes(false, this.options.Axis < 0, this.options.Axis < 0,
+      const disable_axis_draw = (this.options.Axis < 0) || (this.options.Axis === 2);
+
+      return fp.drawAxes(false, disable_axis_draw, disable_axis_draw,
                          this.options.AxisPos, this.options.Zscale && this.options.Zvert, this.options.Zscale && !this.options.Zvert);
    }
 
@@ -1197,7 +1199,6 @@ class THistPainter extends ObjectPainter {
 
       return res;
    }
-
 
    /** @summary Toggle histogram title drawing */
    toggleTitle(arg) {
