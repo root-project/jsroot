@@ -652,7 +652,6 @@ class THistPainter extends ObjectPainter {
       this.nbinsx = this.nbinsy = 0;
       this.accept_drops = true; // indicate that one can drop other objects like doing Draw('same')
       this.mode3d = false;
-      this.setUniqueId();
    }
 
    /** @summary Returns histogram object */
