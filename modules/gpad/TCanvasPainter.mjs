@@ -264,8 +264,8 @@ class TCanvasPainter extends TPadPainter {
    submitExec(painter, exec, snapid) {
       if (this._readonly || !painter) return;
 
-      if (!snapid) snapid = painter.snapid;
-      if (snapid && isStr(snapid))
+      if (!snapid) snapid = painter.getSnapId();
+      if (snapid && isStr(snapid) && exec)
          return this.sendWebsocket(`OBJEXEC:${snapid}:${exec}`);
    }
 
