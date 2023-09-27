@@ -1135,11 +1135,10 @@ class TH2Painter extends THistPainter {
 
       // now start build
       for (let i = handle.i1; i < handle.i2; ++i) {
-         dx = handle.grx[i+1] - handle.grx[i];
-         if (can_merge_x) {
+         dx = (handle.grx[i+1] - handle.grx[i]) || 1;
+         if (can_merge_x)
             x1 = handle.grx[i];
-            if (!dx) dx = 1;
-         } else {
+         else {
             x1 = Math.round(handle.grx[i] + dx*handle.xbar1);
             dx = Math.round(dx*(handle.xbar2 - handle.xbar1)) || 1;
          }
@@ -1166,7 +1165,7 @@ class TH2Painter extends THistPainter {
             dy = (handle.gry[j] - handle.gry[j+1]) || 1;
             if (can_merge_y)
                y2 = handle.gry[j+1];
-             else {
+            else {
                y2 = Math.round(handle.gry[j+1] + dy*handle.ybar2);
                dy = Math.round(dy*(handle.ybar2 - handle.ybar1)) || 1;
             }
