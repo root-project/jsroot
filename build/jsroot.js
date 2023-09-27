@@ -11,7 +11,7 @@ const version_id = '7.5.pre',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '26/09/2023',
+version_date = '27/09/2023',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -273,7 +273,9 @@ settings = {
    /** @summary Prefer to use saved points in TF1/TF2, avoids eval() and Function() when possible */
    PreferSavedPoints: false,
    /** @summary Angle in degree for axis labels tilt when available space is not enough */
-   AxisTiltAngle: 25
+   AxisTiltAngle: 25,
+   /** @summary Strip axis labels trailing 0 or replace 10^0 by 1 */
+   StripAxisLabels: true
 },
 
 /** @namespace
@@ -58854,7 +58856,7 @@ class JSRootMenu {
             arg => { faxis.InvertBit(EAxisBits.kLabelsVert); painter.interactiveRedraw('pad', `exec:SetBit(TAxis::kLabelsVert,${arg})`, kind); });
       this.addColorMenu('Color', faxis.fLabelColor,
             arg => { faxis.fLabelColor = arg; painter.interactiveRedraw('pad', getColorExec(arg, 'SetLabelColor'), kind); });
-      this.addSizeMenu('Offset', 0, 0.1, 0.01, faxis.fLabelOffset,
+      this.addSizeMenu('Offset', -0.02, 0.1, 0.01, faxis.fLabelOffset,
             arg => { faxis.fLabelOffset = arg; painter.interactiveRedraw('pad', `exec:SetLabelOffset(${arg})`, kind); });
       let a = faxis.fLabelSize >= 1;
       this.addSizeMenu('Size', a ? 2 : 0.02, a ? 30 : 0.11, a ? 2 : 0.01, faxis.fLabelSize,
@@ -59807,8 +59809,12 @@ const AxisPainterMethods = {
       const base = this.logbase;
       if (base !== 10) vlog = vlog / Math.log10(base);
       if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog)) < 0.001)) {
-         if (!this.noexp && (asticks !== 2))
-            return this.formatExp(base, Math.floor(vlog+0.01), val);
+         if (!this.noexp && (asticks !== 2)) {
+            const pow = Math.floor(vlog+0.01);
+            if ((pow === 0) && settings.StripAxisLabels)
+               return '1';
+            return this.formatExp(base, pow, val);
+         }
          if (Math.abs(base - Math.E) < 0.001)
             return floatToString(val, fmt || gStyle.fStatFormat);
          return (vlog < 0) ? val.toFixed(Math.round(-vlog+0.5)) : val.toFixed(0);
@@ -59825,8 +59831,17 @@ const AxisPainterMethods = {
       if (gStyle.fStripDecimals && (val === Math.round(val)))
          return Math.abs(val) < 1e9 ? val.toFixed(0) : val.toExponential(4);
 
-      if (asticks)
-         return this.ndig > 10 ? val.toExponential(this.ndig-11) : val.toFixed(this.ndig);
+      if (asticks) {
+         if (this.ndig > 10)
+            return val.toExponential(this.ndig - 11);
+         let res = val.toFixed(this.ndig);
+         const p = res.indexOf('.');
+         if ((p > 0) && settings.StripAxisLabels) {
+            while ((res.length >= p) && ((res[res.length-1] === '0') || (res[res.length-1] === '.')))
+               res = res.slice(0, res.length - 1);
+         }
+         return res;
+      }
 
       return floatToString(val, fmt || gStyle.fStatFormat);
    },
@@ -60759,7 +60774,7 @@ class TAxisPainter extends ObjectPainter {
             pp = this.getPadPainter(),
             pad_w = pp?.getPadWidth() || scalingSize || w/0.8, // use factor 0.8 as ratio between frame and pad size
             pad_h = pp?.getPadHeight() || scalingSize || h/0.8;
-      let tickSize = 0, tickScalingSize = 0, titleColor;
+      let tickSize = 0, tickScalingSize = 0, titleColor, offset;
 
       this.scalingSize = scalingSize || Math.max(Math.min(pad_w, pad_h), 10);
 
@@ -60775,6 +60790,9 @@ class TAxisPainter extends ObjectPainter {
          tickScalingSize = scalingSize || (this.vertical ? 1.7*h : 0.6*w);
          tickSize = optionSize ? axis.fTickSize : 0.03;
          titleColor = this.getColor(axis.fTextColor);
+         offset = axis.fLabelOffset;
+         if ((this.vertical && axis.fY1 > axis.fY2 && !this.optionMinus) || (!this.vertical && axis.fX1 > axis.fX2))
+            offset = -offset;
       } else {
          this.optionUnlab = false;
          this.optionMinus = this.vertical ^ this.invert_side;
@@ -60786,7 +60804,10 @@ class TAxisPainter extends ObjectPainter {
          tickScalingSize = scalingSize || (this.vertical ? pad_w : pad_h);
          tickSize = axis.fTickLength;
          titleColor = this.getColor(axis.fTitleColor);
+         offset = axis.fLabelOffset;
       }
+
+      offset += (this.vertical ? 0.002 : 0.005);
 
       if (this.kind === 'labels')
          this.optionText = true;
@@ -60805,7 +60826,7 @@ class TAxisPainter extends ObjectPainter {
 
       const k = this.optionText ? 0.66666 : 1; // set TGaxis.cxx, line 1504
       this.labelSize = Math.round((axis.fLabelSize < 1) ? k * axis.fLabelSize * this.scalingSize : k * axis.fLabelSize);
-      this.labelsOffset = Math.round(Math.abs(axis.fLabelOffset) * this.scalingSize);
+      this.labelsOffset = Math.round(offset * this.scalingSize);
       this.labelsFont = new FontHandler(axis.fLabelFont, this.labelSize, scalingSize);
       if ((this.labelSize <= 0) || (Math.abs(axis.fLabelOffset) > 1.1)) this.optionUnlab = true; // disable labels when size not specified
       this.labelsFont.setColor(this.getColor(axis.fLabelColor));
@@ -61669,9 +61690,14 @@ const TooltipHandler = {
                                 only_resize: true, minwidth: 20, minheight: 20, redraw: () => this.sizeChanged() });
       }
 
-      const main_svg = this.draw_g.selectChild('.main_layer');
+      const top_rect = this.draw_g.selectChild('path'),
+            main_svg = this.draw_g.selectChild('.main_layer');
+
+      top_rect.style('pointer-events', 'visibleFill')  // let process mouse events inside frame
+              .style('cursor', 'default');             // show normal cursor
 
       main_svg.style('pointer-events', 'visibleFill')
+              .style('cursor', 'default')
               .property('handlers_set', 0);
 
       const pp = this.getPadPainter(),
@@ -63473,14 +63499,6 @@ class TFramePainter extends ObjectPainter {
               .attr('height', h)
               .attr('viewBox', `0 0 ${w} ${h}`);
 
-      if (!this.isBatchMode()) {
-         top_rect.style('pointer-events', 'visibleFill')  // let process mouse events inside frame
-                 .style('cursor', 'default');             // show normal cursor
-         main_svg.style('cursor', 'default');             // show normal cursor
-         FrameInteractive.assign(this);
-         this.addBasicInteractivity();
-      }
-
       return this;
    }
 
@@ -63532,7 +63550,7 @@ class TFramePainter extends ObjectPainter {
       if ((kind === 'x') || (kind === 'y') || (kind === 'z') || (kind === 'x2') || (kind === 'y2')) {
          const faxis = obj || this[kind+'axis'],
                handle = this[`${kind}_handle`];
-        if (typeof faxis?.TestBit !== 'function')
+        if (!isFunc(faxis?.TestBit))
            return false;
 
          menu.add(`header: ${kind.toUpperCase()} axis`);
@@ -63934,6 +63952,9 @@ class TFramePainter extends ObjectPainter {
          return false;
 
       FrameInteractive.assign(this);
+      if (!for_second_axes)
+         this.addBasicInteractivity();
+
       return this.addFrameInteractivity(for_second_axes);
    }
 
@@ -66596,7 +66617,7 @@ class TPadPainter extends ObjectPainter {
    checkSpecialsInPrimitives(can) {
       const lst = can?.fPrimitives;
       if (!lst) return;
-      for (let i = 0; i < lst.arr.length; ++i) {
+      for (let i = 0; i < lst.arr?.length; ++i) {
          if (this.checkSpecial(lst.arr[i])) {
             lst.arr.splice(i, 1);
             lst.opt.splice(i, 1);
@@ -66713,8 +66734,13 @@ class TPadPainter extends ObjectPainter {
          return;
       }
 
+      const obj = this.pad.fPrimitives.arr[indx];
+
+      if (!obj || ((indx > 0) && (obj._typename === 'TFrame') && this.getFramePainter()))
+         return this.drawPrimitives(indx+1);
+
       // use of Promise should avoid large call-stack depth when many primitives are drawn
-      return this.drawObject(this.getDom(), this.pad.fPrimitives.arr[indx], this.pad.fPrimitives.opt[indx]).then(op => {
+      return this.drawObject(this.getDom(), obj, this.pad.fPrimitives.opt[indx]).then(op => {
          if (isObject(op))
             op._primitive = true; // mark painter as belonging to primitives
 
@@ -67054,7 +67080,7 @@ class TPadPainter extends ObjectPainter {
       if (!obj.fPrimitives) return false;
 
       let isany = false, p = 0;
-      for (let n = 0; n < obj.fPrimitives.arr.length; ++n) {
+      for (let n = 0; n < obj.fPrimitives.arr?.length; ++n) {
          while (p < this.painters.length) {
             const pp = this.painters[p++];
             if (!pp._primitive) continue;
@@ -69714,12 +69740,25 @@ class TPavePainter extends ObjectPainter {
             framep = this.getFramePainter(),
             contour = main.fContour,
             levels = contour?.getLevels(),
-            draw_palette = main._color_palette;
+            draw_palette = main._color_palette,
+            zaxis = main?.getObject()?.fZaxis;
+
       let zmin = 0, zmax = 100, gzmin, gzmax, axis_transform = '';
 
       this._palette_vertical = (palette.fX2NDC - palette.fX1NDC) < (palette.fY2NDC - palette.fY1NDC);
 
       axis.fTickSize = 0.6 * s_width / width; // adjust axis ticks size
+      if (typeof zaxis?.fLabelOffset !== 'undefined') {
+         axis.fTitle = zaxis.fTitle;
+         axis.fTitleSize = zaxis.fTitleSize;
+         axis.fTitleOffset =  zaxis.fTitleOffset;
+         axis.fTitleColor = zaxis.fTitleColor;
+         axis.fLineColor = zaxis.fAxisColor;
+         axis.fTextSize = zaxis.fLabelSize;
+         axis.fTextColor = zaxis.fLabelColor;
+         axis.fTextFont = zaxis.fLabelFont;
+         axis.fLabelOffset = zaxis.fLabelOffset;
+      }
 
       if (contour && framep) {
          if ((framep.zmin !== undefined) && (framep.zmax !== undefined) && (framep.zmin !== framep.zmax)) {
@@ -72273,10 +72312,13 @@ class THistPainter extends ObjectPainter {
 
          const zaxis = this.getHisto().fZaxis;
 
-         Object.assign(pal.fAxis, { fTitle: zaxis.fTitle, fTitleSize: zaxis.fTitleSize, fChopt: '+',
+         Object.assign(pal.fAxis, { fTitle: zaxis.fTitle, fTitleSize: zaxis.fTitleSize,
+                                    fTitleOffset: zaxis.fTitleOffset, fTitleColor: zaxis.fTitleColor,
+                                    fChopt: '+',
                                     fLineColor: zaxis.fAxisColor, fLineSyle: 1, fLineWidth: 1,
                                     fTextAngle: 0, fTextSize: zaxis.fLabelSize, fTextAlign: 11,
-                                    fTextColor: zaxis.fLabelColor, fTextFont: zaxis.fLabelFont });
+                                    fTextColor: zaxis.fLabelColor, fTextFont: zaxis.fLabelFont,
+                                    fLabelOffset: zaxis.fLabelOffset });
 
          // place colz in the beginning, that stat box is always drawn on the top
          this.addFunction(pal, true);
@@ -72284,7 +72326,6 @@ class THistPainter extends ObjectPainter {
          can_move = true;
       } else if (pp?._palette_vertical !== undefined)
          this.options.Zvert = pp._palette_vertical;
-
 
       const fp = this.getFramePainter();
 
@@ -106582,7 +106623,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
          return this;
 
       const func = graph.fFunctions.arr[indx],
-          opt = graph.fFunctions.opt[indx];
+            opt = graph.fFunctions.opt[indx];
 
       //  required for stats filling
       // TODO: use weak reference (via pad list of painters and any kind of string)
@@ -112456,7 +112497,7 @@ class TASImagePainter extends ObjectPainter {
          if (!res?.url)
             return this;
 
-         const img = this.createG(fp)
+         const img = this.createG(!!fp)
              .append('image')
              .attr('href', res.url)
              .attr('width', rect.width)
@@ -114753,16 +114794,7 @@ class RFramePainter extends RObjectPainter {
          pr = this.drawAxes().then(() => this.addInteractivity());
       }
 
-      return pr.then(() => {
-         if (!this.isBatchMode()) {
-            top_rect.style('pointer-events', 'visibleFill');  // let process mouse events inside frame
-
-            FrameInteractive.assign(this);
-            this.addBasicInteractivity();
-         }
-
-         return this;
-      });
+      return pr.then(() => { return this; });
    }
 
    /** @summary Returns frame X position */
@@ -115167,7 +115199,10 @@ class RFramePainter extends RObjectPainter {
    addInteractivity(for_second_axes) {
       if (this.isBatchMode() || (!settings.Zooming && !settings.ContextMenu))
          return true;
+
       FrameInteractive.assign(this);
+      if (!for_second_axes)
+         this.addBasicInteractivity();
       return this.addFrameInteractivity(for_second_axes);
    }
 
