@@ -66283,10 +66283,8 @@ class TPadPainter extends ObjectPainter {
 
       if (this._fixed_size)
          svg.attr('width', rect.width).attr('height', rect.height);
-      else {
-         svg.style('width', '100%').style('height', '100%')
-            .style('left', 0).style('top', 0).style('right', 0).style('bottom', 0);
-      }
+      else
+         svg.style('width', '100%').style('height', '100%').style('inset', '0px');
 
       svg.style('filter', settings.DarkMode || this.pad?.$dark ? 'invert(100%)' : null);
 
@@ -73776,7 +73774,8 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
             palette = this.getHistPalette(),
             entries = [],
             show_empty = this._show_empty_bins,
-            can_merge = (handle.ybar2 === 1) && (handle.ybar1 === 0);
+            can_merge_x = (handle.xbar2 === 1) && (handle.xbar1 === 0),
+            can_merge_y = (handle.ybar2 === 1) && (handle.ybar1 === 0);
 
       let dx, dy, x1, y2, binz, is_zero, colindx, last_entry = null,
           skip_zero = !this.options.Zero;
@@ -73792,9 +73791,13 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
       // now start build
       for (let i = handle.i1; i < handle.i2; ++i) {
-         dx = handle.grx[i+1] - handle.grx[i];
-         x1 = Math.round(handle.grx[i] + dx*handle.xbar1);
-         dx = Math.round(dx*(handle.xbar2 - handle.xbar1)) || 1;
+         dx = (handle.grx[i+1] - handle.grx[i]) || 1;
+         if (can_merge_x)
+            x1 = handle.grx[i];
+         else {
+            x1 = Math.round(handle.grx[i] + dx*handle.xbar1);
+            dx = Math.round(dx*(handle.xbar2 - handle.xbar1)) || 1;
+         }
 
          for (let j = handle.j2 - 1; j >= handle.j1; --j) {
             binz = histo.getBinContent(i + 1, j + 1);
@@ -73816,10 +73819,10 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
             }
 
             dy = (handle.gry[j] - handle.gry[j+1]) || 1;
-            if (can_merge)
+            if (can_merge_y)
                y2 = handle.gry[j+1];
-             else {
-               y2 = Math.round(handle.gry[j+1] + dy*handle.ybar2);
+            else {
+               y2 = Math.round(handle.gry[j] - dy*handle.ybar2);
                dy = Math.round(dy*(handle.ybar2 - handle.ybar1)) || 1;
             }
 
@@ -73827,7 +73830,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
             let entry = entries[colindx];
             if (!entry)
                entry = entries[colindx] = { path: cmd1 };
-             else if (can_merge && (entry === last_entry)) {
+             else if (can_merge_y && (entry === last_entry)) {
                entry.y1 = y2 + dy;
                continue;
             } else {
@@ -73842,7 +73845,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
             entry.x1 = x1;
             entry.y2 = y2;
 
-            if (can_merge) {
+            if (can_merge_y) {
                entry.y1 = y2 + dy;
                last_entry = entry;
             } else
@@ -73852,12 +73855,12 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
       }
 
       entries.forEach((entry, colindx) => {
-        if (entry) {
-           this.draw_g
-               .append('svg:path')
-               .attr('fill', palette.getColor(colindx))
-               .attr('d', entry.path);
-        }
+         if (entry) {
+            this.draw_g
+                .append('svg:path')
+                .attr('fill', palette.getColor(colindx))
+                .attr('d', entry.path);
+         }
       });
 
       return handle;
