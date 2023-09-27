@@ -1130,11 +1130,6 @@ class TH2Painter extends THistPainter {
          last_entry = null;
       };
 
-      // for (let i = handle.i1; i < handle.i2; ++i)
-      //   console.log(`grx[${i}] = ${handle.grx[i]}`);
-      // for (let j = handle.j1; j < handle.j2; ++j)
-      //   console.log(`gry[${j}] = ${handle.gry[j]}`);
-
       // check in the beginning if zero can be skipped
       if (!skip_zero && !show_empty && (cntr.getPaletteIndex(palette, 0) === null)) skip_zero = true;
 
@@ -1149,8 +1144,6 @@ class TH2Painter extends THistPainter {
          }
 
          for (let j = handle.j2 - 1; j >= handle.j1; --j) {
-            // if (j < handle.j2*0.7) break;
-
             binz = histo.getBinContent(i + 1, j + 1);
             is_zero = (binz === 0);
 
@@ -1203,7 +1196,6 @@ class TH2Painter extends THistPainter {
                entry.path += `h${dx}v${dy}h${-dx}z`;
          }
          if (last_entry) flush_last_entry();
-         // if (i === handle.i1) break;
       }
 
       entries.forEach((entry, colindx) => {
