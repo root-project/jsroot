@@ -1849,8 +1849,19 @@ class HierarchyPainter extends BasePainter {
                                 'Draw item in the new browser tab or window');
             }
 
-            if ((sett.expand || sett.get_expand) && !('_childs' in hitem) && (hitem._more || !('_more' in hitem)))
-               menu.add('Expand', () => this.expandItem(itemname));
+            if ((sett.expand || sett.get_expand) && (hitem._more || hitem._more === undefined)) {
+               if (hitem._childs === undefined)
+                  menu.add('Expand', () => this.expandItem(itemname), 'Exapnd content of object');
+               else {
+                  menu.add('Unexpand', () => {
+                     delete hitem._childs;
+                     delete hitem._isopen;
+                     if (hitem.expand_item)
+                        delete hitem._expand;
+                     this.updateTreeNode(hitem);
+                  }, 'Remove all childs from hierarchy');
+               }
+            }
 
             if (hitem._kind === prROOT + clTStyle)
                menu.add('Apply', () => this.applyStyle(itemname));
@@ -2474,7 +2485,8 @@ class HierarchyPainter extends BasePainter {
 
             if (handle?.expand_item) {
                _obj = _obj[handle.expand_item];
-              handle = _obj?._typename ? getDrawHandle(prROOT + _obj._typename, '::expand') : null;
+               hitem.expand_item = handle.expand_item; // remember that was exapnd item
+               handle = _obj?._typename ? getDrawHandle(prROOT + _obj._typename, '::expand') : null;
             }
 
             if (handle?.expand || handle?.get_expand) {
