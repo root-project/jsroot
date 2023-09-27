@@ -2317,9 +2317,9 @@ class HierarchyPainter extends BasePainter {
             }
          }
 
-         function DropNextItem(indx, painter) {
+         function dropNextItem(indx, painter) {
             if (painter && dropitems[indx] && (dropitems[indx].length > 0))
-               return h.dropItem(dropitems[indx].shift(), painter.getDom(), dropopts[indx].shift()).then(() => DropNextItem(indx, painter));
+               return h.dropItem(dropitems[indx].shift(), painter.getDom(), dropopts[indx].shift()).then(() => dropNextItem(indx, painter));
 
             dropitems[indx] = null; // mark that all drop items are processed
             items[indx] = null; // mark item as ready
@@ -2328,17 +2328,30 @@ class HierarchyPainter extends BasePainter {
                if (items[cnt] === null) continue; // ignore completed item
                if (items_wait[cnt] && items.indexOf(items[cnt]) === cnt) {
                   items_wait[cnt] = false;
-                  return h.display(items[cnt], options[cnt]).then(painter => DropNextItem(cnt, painter));
+                  return h.display(items[cnt], options[cnt]).then(painter => dropNextItem(cnt, painter));
                }
             }
          }
 
          const promises = [];
 
-         // We start display of all items parallel, but only if they are not the same
-         for (let i = 0; i < items.length; ++i) {
-            if (!items_wait[i])
-               promises.push(h.display(items[i], options[i]).then(painter => DropNextItem(i, painter)));
+         if (this._one_by_one) {
+            function processNext(indx) {
+               if (indx >= items.length)
+                  return true;
+               if (items_wait[indx])
+                  return processNext(indx + 1);
+                return h.display(items[indx], options[indx])
+                        .then(painter => dropNextItem(indx, painter))
+                        .then(() => processNext(indx + 1));
+            }
+            promises.push(processNext(0));
+         } else {
+            // We start display of all items parallel, but only if they are not the same
+            for (let i = 0; i < items.length; ++i) {
+               if (!items_wait[i])
+                  promises.push(h.display(items[i], options[i]).then(painter => dropNextItem(i, painter)));
+            }
          }
 
          return Promise.all(promises);
@@ -3208,14 +3221,14 @@ class HierarchyPainter extends BasePainter {
    async startGUI(gui_div, url) {
       const d = decodeUrl(url),
 
-       GetOption = opt => {
+      getOption = opt => {
          let res = d.get(opt, null);
          if ((res === null) && gui_div && !gui_div.empty() && gui_div.node().hasAttribute(opt))
             res = gui_div.attr(opt);
          return res;
       },
 
-       GetUrlOptionAsArray = opt => {
+      getUrlOptionAsArray = opt => {
          let res = [];
 
          while (opt) {
@@ -3237,8 +3250,8 @@ class HierarchyPainter extends BasePainter {
          return res;
       },
 
-       GetOptionAsArray = opt => {
-         let res = GetUrlOptionAsArray(opt);
+      getOptionAsArray = opt => {
+         let res = getUrlOptionAsArray(opt);
          if (res.length > 0 || !gui_div || gui_div.empty()) return res;
          while (opt) {
             const separ = opt.indexOf(';');
@@ -3262,22 +3275,24 @@ class HierarchyPainter extends BasePainter {
       },
 
       filesdir = d.get('path') || '', // path used in normal gui
-      jsonarr = GetOptionAsArray('#json;jsons'),
-      expanditems = GetOptionAsArray('expand'),
-      focusitem = GetOption('focus'),
-      layout = GetOption('layout'),
-      style = GetOptionAsArray('#style'),
-      title = GetOption('title');
+      jsonarr = getOptionAsArray('#json;jsons'),
+      expanditems = getOptionAsArray('expand'),
+      focusitem = getOption('focus'),
+      layout = getOption('layout'),
+      style = getOptionAsArray('#style'),
+      title = getOption('title');
 
-      let prereq = GetOption('prereq') || '',
-          load = GetOption('load'),
-          inject = GetOption('inject'),
-          filesarr = GetOptionAsArray('#file;files'),
-          itemsarr = GetOptionAsArray('#item;items'),
-          optionsarr = GetOptionAsArray('#opt;opts'),
-          monitor = GetOption('monitoring'),
-          statush = 0, status = GetOption('status'),
-          browser_kind = GetOption('browser'),
+      this._one_by_one = settings.drop_items_one_by_one ?? (getOption('one_by_one') !== null);
+
+      let prereq = getOption('prereq') || '',
+          load = getOption('load'),
+          inject = getOption('inject'),
+          filesarr = getOptionAsArray('#file;files'),
+          itemsarr = getOptionAsArray('#item;items'),
+          optionsarr = getOptionAsArray('#opt;opts'),
+          monitor = getOption('monitoring'),
+          statush = 0, status = getOption('status'),
+          browser_kind = getOption('browser'),
           browser_configured = !!browser_kind;
 
 
@@ -3288,10 +3303,10 @@ class HierarchyPainter extends BasePainter {
       else
          monitor = parseInt(monitor);
 
-      if (GetOption('float') !== null) {
+      if (getOption('float') !== null) {
          browser_kind = 'float';
          browser_configured = true;
-      } else if (GetOption('fix') !== null) {
+      } else if (getOption('fix') !== null) {
          browser_kind = 'fix';
          browser_configured = true;
       }
@@ -3299,22 +3314,22 @@ class HierarchyPainter extends BasePainter {
       if (!browser_configured && (browser.screenWidth <= 640))
          browser_kind = 'float';
 
-      this.no_select = GetOption('noselect');
+      this.no_select = getOption('noselect');
 
-      if (GetOption('files_monitoring') !== null)
+      if (getOption('files_monitoring') !== null)
          this.files_monitoring = true;
 
       if (title && (typeof document !== 'undefined'))
          document.title = title;
 
-      if (expanditems.length === 0 && (GetOption('expand') === '')) expanditems.push('');
+      if (expanditems.length === 0 && (getOption('expand') === '')) expanditems.push('');
 
       if (filesdir) {
          for (let i = 0; i < filesarr.length; ++i) filesarr[i] = filesdir + filesarr[i];
          for (let i = 0; i < jsonarr.length; ++i) jsonarr[i] = filesdir + jsonarr[i];
       }
 
-      if ((itemsarr.length === 0) && GetOption('item') === '') itemsarr.push('');
+      if ((itemsarr.length === 0) && getOption('item') === '') itemsarr.push('');
 
       if ((jsonarr.length === 1) && (itemsarr.length === 0) && (expanditems.length === 0)) itemsarr.push('');
 
@@ -3361,12 +3376,12 @@ class HierarchyPainter extends BasePainter {
          status = null;
          this.exclude_browser = true;
       }
-      if (GetOption('nofloat') !== null)
+      if (getOption('nofloat') !== null)
          this.float_browser_disabled = true;
 
       if (this.start_without_browser) browser_kind = '';
 
-      this._topname = GetOption('topname');
+      this._topname = getOption('topname');
 
       const openAllFiles = () => {
          let promise;
