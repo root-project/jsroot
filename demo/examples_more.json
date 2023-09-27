@@ -176,7 +176,8 @@
      { "name": "fit6", "url": "?nobrowser&file=$$$tutorials_fit.root&layout=grid1x2&items=[fit2,fit2dHist]", "title": "part6 macros from tutorials/fit directory" },
      { "name": "optfile", "url": "?nobrowser&file=$$$tutorials_math.root&item=vavilov;1&optfile=1&optdate=1652700372", "title": "TCanvas drawing with optfile and optdate URL options" },
      { "name": "canvas2", "file": "tutorials_graphics.root", "item": "canvas2_new;1", "title": "output of tutorials/graphics/canvas2.C macro", "large": true },
-     { "name": "dupl", "file": "dupl.root", "item": "c1;1", "title": "Draw histogram twice, first with axis then with hist options" }
+     { "name": "dupl", "file": "dupl.root", "item": "c1;1", "title": "Draw histogram twice, first with axis then with hist options" },
+     { "name": "cms_style", "url": "?nobrowser&file=$$$cms_style_canvases.root&layout=grid4x3&items=[[0],[1],[2],[3],[4],[5],[6],[7],[8],[9]]", "title": "canvases from https://github.com/cms-cat/cms-root-style" }
    ],
    "TGeo" : [
      { "name": "prim_can", "file": "geom/geodemo.root", "layout": "vert333", "items": ["box_can","para_can","arb8_can","trap_can","gtra_can","trd1_can","trd2_can","xtru_can"], "title": "Basic TGeo primitives in TCanvas from tutorials/geom/geodemo.C, group 1" },
