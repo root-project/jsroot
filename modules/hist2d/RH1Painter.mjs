@@ -314,7 +314,7 @@ class RH1Painter extends RHistPainter {
           rect = pmain.getFrameRect();
 
       if (!this.draw_content || (rect.width <= 0) || (rect.height <= 0)) {
-         this.removeG()
+         this.removeG();
          return false;
       }
 

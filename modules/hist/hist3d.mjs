@@ -422,11 +422,11 @@ function create3DControl(fp) {
       }
 
       return tip?.lines ? tip : '';
-   }
+   };
 
    fp.control.processMouseLeave = function() {
       frame_painter.highlightBin3D(null);
-   }
+   };
 
    fp.control.contextMenu = function(pos, intersects) {
       let kind = 'painter', p = obj_painter;
@@ -443,7 +443,7 @@ function create3DControl(fp) {
       const fp = obj_painter.getFramePainter();
       if (isFunc(fp?.showContextMenu))
          fp.showContextMenu(kind, pos, p);
-   }
+   };
 }
 
 /** @summary Create all necessary components for 3D drawings in frame painter
@@ -997,7 +997,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
             pnt[this.zoom] = max;
 
          return pnt;
-      }
+      };
 
       mesh.showSelection = function(pnt1, pnt2) {
          // used to show selection
@@ -1040,7 +1040,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          gg.getAttribute('position').needsUpdate = true;
 
          return true;
-      }
+      };
 
       return mesh;
    };

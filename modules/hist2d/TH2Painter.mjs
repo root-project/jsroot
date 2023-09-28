@@ -319,7 +319,7 @@ class Triangles3DHandler {
 
          lpos[lindx] = x1; lpos[lindx+1] = y1; lpos[lindx+2] = z1; lindx+=3;
          lpos[lindx] = x2; lpos[lindx+1] = y2; lpos[lindx+2] = z2; lindx+=3;
-      }
+      };
 
       function addCrossingPoint(xx1, yy1, zz1, xx2, yy2, zz2, crossz, with_grid) {
          if (pntindx >= pntbuf.length)
@@ -3105,7 +3105,7 @@ class TH2Painter extends THistPainter {
           else if (this.options.Chord && this.isMainPainter())
             pr = this.drawBinsChord();
           else
-            pr = this.drawAxes().then(() => this.draw2DBins())
+            pr = this.drawAxes().then(() => this.draw2DBins());
 
          return pr.then(() => this.completePalette(pp));
       }).then(() => this.drawHistTitle())

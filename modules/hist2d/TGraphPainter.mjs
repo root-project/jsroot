@@ -471,7 +471,7 @@ class TGraphPainter extends ObjectPainter {
             return v;
           },
           getGrFuncs() { return this; }
-      }
+      };
 
       return pmain.pad ? pmain : null;
    }

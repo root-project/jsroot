@@ -263,7 +263,7 @@ class RPaveTextPainter extends RPavePainter {
       const stepy = height / nlines, margin_x = 0.02 * width;
       let posy = 0;
 
-      textFont.setSize(height/(nlines * 1.2))
+      textFont.setSize(height/(nlines * 1.2));
 
       this.startTextDrawing(textFont, 'font');
 

@@ -1633,7 +1633,7 @@ class THistPainter extends ObjectPainter {
                fp?.zoom(kind, axis.GetBinLowEdge(bins[0]), axis.GetBinLowEdge(bins[1]+1));
             // let execute command on server
          } else if (method.fName === 'SetRangeUser') {
-            const values = JSON.parse(`[${args}]`)
+            const values = JSON.parse(`[${args}]`);
             if (values?.length === 2)
                fp?.zoom(kind, values[0], values[1]);
             // let execute command on server

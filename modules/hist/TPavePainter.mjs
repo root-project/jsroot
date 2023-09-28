@@ -279,7 +279,7 @@ class TPavePainter extends ObjectPainter {
                                                 .attr('d', `M0,0H${width}V${height}H0Z`)
                                                 .call(this.fillatt.func);
                if (!noborder)
-                  interactive_element.call(this.lineatt.func)
+                  interactive_element.call(this.lineatt.func);
             }
 
             return isFunc(this.paveDrawFunc) ? this.paveDrawFunc(width, height, arg) : true;
@@ -1037,7 +1037,7 @@ class TPavePainter extends ObjectPainter {
             pave.fY2NDC = gStyle.fStatY;
             pave.fY1NDC = pave.fY2NDC - gStyle.fStatH;
             pave.fInit = 1;
-            this.interactiveRedraw(true, 'pave_moved')
+            this.interactiveRedraw(true, 'pave_moved');
          });
 
          menu.add('Save to gStyle', () => {
