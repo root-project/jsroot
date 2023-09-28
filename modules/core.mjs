@@ -876,7 +876,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
       switch (kind) {
          case 'head': method = 'HEAD'; break;
          case 'posttext': method = 'POST'; kind = 'text'; break;
-         case 'postbuf':  method = 'POST'; kind = 'buf'; break;
+         case 'postbuf': method = 'POST'; kind = 'buf'; break;
          case 'post':
          case 'multi': method = 'POST'; break;
       }
@@ -1153,7 +1153,7 @@ function create(typename, target) {
          break;
       case clTH2:
          create(clTH1, obj);
-         extend(obj, { fScalefactor: 1, fTsumwy: 0,  fTsumwy2: 0, fTsumwxy: 0 });
+         extend(obj, { fScalefactor: 1, fTsumwy: 0, fTsumwy2: 0, fTsumwxy: 0 });
          break;
       case clTH2I:
       case 'TH2L64':
@@ -1166,7 +1166,7 @@ function create(typename, target) {
          break;
       case clTH3:
          create(clTH1, obj);
-         extend(obj, { fTsumwy: 0,  fTsumwy2: 0, fTsumwz: 0,  fTsumwz2: 0, fTsumwxy: 0, fTsumwxz: 0, fTsumwyz: 0 });
+         extend(obj, { fTsumwy: 0, fTsumwy2: 0, fTsumwz: 0, fTsumwz2: 0, fTsumwxy: 0, fTsumwxz: 0, fTsumwyz: 0 });
          break;
       case 'TH3I':
       case 'TH3L64':
@@ -1647,7 +1647,7 @@ function getMethods(typename, obj) {
       m.getBinError = function(bin) {
          if (bin < 0 || bin >= this.fNcells) return 0;
          const cont = this.fArray[bin],               // sum of bin w *y
-               sum  = this.fBinEntries[bin],          // sum of bin weights
+               sum = this.fBinEntries[bin],          // sum of bin weights
                err2 = this.fSumw2[bin],               // sum of bin w * y^2
                neff = this.getBinEffectiveEntries(bin);  // (sum of w)^2 / (sum of w^2)
          if (sum < 1e-300) return 0;                  // for empty bins

@@ -37,7 +37,7 @@ module.exports = {
       "curly": ["warn", "multi-or-nest"],
       "one-var": ["warn", "consecutive"],
       "space-infix-ops": "off",
-      "no-multi-spaces": "off",
+      "no-multi-spaces": ["warn", { ignoreEOLComments: true }],
       "no-multiple-empty-lines": "off",
       "object-property-newline": "off",
       "promise/param-names": ["warn", { resolvePattern: "^resolve*", rejectPattern: "^reject*" } ],

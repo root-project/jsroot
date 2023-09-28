@@ -555,7 +555,7 @@ function afterRender3D(renderer) {
       // small code to flip Y scale
       let indx1 = 0, indx2 = (canvas.height - 1) * 4 * canvas.width, k, d;
       while (indx1 < indx2) {
-         for  (k = 0; k < 4 * canvas.width; ++k) {
+         for (k = 0; k < 4 * canvas.width; ++k) {
             d = pixels[indx1 + k]; pixels[indx1 + k] = pixels[indx2 + k]; pixels[indx2 + k] = d;
          }
          indx1 += 4 * canvas.width;
@@ -961,7 +961,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       }
 
       if (tip && painter) {
-         return { obj: painter.getObject(),  name: painter.getObject().fName,
+         return { obj: painter.getObject(), name: painter.getObject().fName,
                   bin: tip.bin, cont: tip.value,
                   binx: tip.ix, biny: tip.iy, binz: tip.iz,
                   grx: (tip.x1+tip.x2)/2, gry: (tip.y1+tip.y2)/2, grz: (tip.z1+tip.z2)/2 };
@@ -1304,9 +1304,9 @@ const Box3D = {
                new Vector3(1, 0, 1), new Vector3(1, 0, 0),
                new Vector3(0, 1, 0), new Vector3(0, 1, 1),
                new Vector3(0, 0, 0), new Vector3(0, 0, 1)],
-    Indexes: [0, 2, 1,  2, 3, 1,  4, 6, 5,  6, 7, 5,  4, 5, 1,  5, 0, 1,
-              7, 6, 2,  6, 3, 2,  5, 7, 0,  7, 2, 0,  1, 3, 4,  3, 6, 4],
-    Normals: [1, 0, 0,  -1, 0, 0,  0, 1, 0,  0, -1, 0,  0, 0, 1,  0, 0, -1],
+    Indexes: [0, 2, 1, 2, 3, 1, 4, 6, 5, 6, 7, 5, 4, 5, 1, 5, 0, 1,
+              7, 6, 2, 6, 3, 2, 5, 7, 0, 7, 2, 0, 1, 3, 4, 3, 6, 4],
+    Normals: [1, 0, 0, -1, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 1, 0, 0, -1],
     Segments: [0, 2, 2, 7, 7, 5, 5, 0, 1, 3, 3, 6, 6, 4, 4, 1, 1, 0, 3, 2, 6, 7, 4, 5],  // segments addresses Vertices
     MeshSegments: undefined
 };
@@ -1450,7 +1450,7 @@ class PointsCreator {
 
    /** @summary Add point */
    addPoint(x, y, z) {
-      this.pos[this.indx]   = x;
+      this.pos[this.indx] = x;
       this.pos[this.indx+1] = y;
       this.pos[this.indx+2] = z;
       this.indx += 3;

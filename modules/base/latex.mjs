@@ -1,5 +1,5 @@
 import { loadScript, settings, isNodeJs, isStr, source_dir, browser } from '../core.mjs';
-import { getElementRect, _loadJSDOM, makeTranslate  } from './BasePainter.mjs';
+import { getElementRect, _loadJSDOM, makeTranslate } from './BasePainter.mjs';
 import { FontHandler } from './FontHandler.mjs';
 
 
@@ -928,7 +928,7 @@ async function loadMathjax() {
 
       let mj_dir = '../mathjax/3.2.0';
       if (browser.webwindow && source_dir.indexOf('https://root.cern/js') < 0 && source_dir.indexOf('https://jsroot.gsi.de') < 0)
-         mj_dir =  'mathjax';
+         mj_dir = 'mathjax';
 
       return loadScript(source_dir + mj_dir + '/es5/tex-svg.js')
                .catch(() => loadScript('https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-svg.js'))
