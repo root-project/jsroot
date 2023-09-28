@@ -752,7 +752,7 @@ class RFramePainter extends RObjectPainter {
          transform: this.draw_g?.attr('transform') || '',
          hint_delta_x: 0,
          hint_delta_y: 0
-      }
+      };
    }
 
    /** @summary Returns palette associated with frame */

@@ -1159,7 +1159,7 @@ class BatchDisplay extends MDIDisplay {
 
    /** @summary Call function for each frame */
    forEachFrame(userfunc) {
-      this.frames.forEach(userfunc)
+      this.frames.forEach(userfunc);
    }
 
    /** @summary Create batch frame */

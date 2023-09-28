@@ -1187,7 +1187,7 @@ class StandaloneMenu extends JSRootMenu {
             } else if (item.classList.contains('jsroot_ctxt_focus')) {
                item.style['background-color'] = null;
                item.classList.remove('jsroot_ctxt_focus');
-               item.querySelector('.jsroot_ctxt_container')?.remove()
+               item.querySelector('.jsroot_ctxt_container')?.remove();
             }
          }
 

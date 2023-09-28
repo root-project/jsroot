@@ -2103,7 +2103,7 @@ function createServerGeometry(rd, nsegm) {
       ready: true,
       geom: g,
       nfaces: numGeometryFaces(g)
-   }
+   };
 }
 
 /** @summary Provides info about geo object, used for tooltip info
@@ -2243,7 +2243,7 @@ function createFrustum(source) {
      }
 
      return false;
-   }
+   };
 
    frustum.CheckBox = function(box) {
       const pnt = this.test;
@@ -2265,7 +2265,7 @@ function createFrustum(source) {
       pnt.set(box.max.x, box.max.y, box.max.z);
       if (this.containsPoint(pnt)) cnt++;
       return cnt > 5; // only if 6 edges and more are seen, we think that box is fully visible
-   }
+   };
 
    return frustum;
 }
@@ -2801,7 +2801,7 @@ class ClonedNodes {
                const res = this.varray[this.vindx++].visible;
                this.vstack = this.vindx < this.varray.length ? this.varray[this.vindx].stack : null;
                return res;
-            }
+            };
          }
       }
 
@@ -3926,15 +3926,15 @@ function produceRenderOrder(toplevel, origin, method, clones) {
          const pnt = new Vector3(box3.min.x, box3.min.y, box3.max.z);
 
          dist = Math.min(dist, origin.distanceTo(pnt));
-         pnt.set(box3.min.x, box3.max.y, box3.min.z)
+         pnt.set(box3.min.x, box3.max.y, box3.min.z);
          dist = Math.min(dist, origin.distanceTo(pnt));
-         pnt.set(box3.max.x, box3.min.y, box3.min.z)
+         pnt.set(box3.max.x, box3.min.y, box3.min.z);
          dist = Math.min(dist, origin.distanceTo(pnt));
-         pnt.set(box3.max.x, box3.max.y, box3.min.z)
+         pnt.set(box3.max.x, box3.max.y, box3.min.z);
          dist = Math.min(dist, origin.distanceTo(pnt));
-         pnt.set(box3.max.x, box3.min.y, box3.max.z)
+         pnt.set(box3.max.x, box3.min.y, box3.max.z);
          dist = Math.min(dist, origin.distanceTo(pnt));
-         pnt.set(box3.min.x, box3.max.y, box3.max.z)
+         pnt.set(box3.min.x, box3.max.y, box3.max.z);
          dist = Math.min(dist, origin.distanceTo(pnt));
 
          mesh.$jsroot_distance = dist;

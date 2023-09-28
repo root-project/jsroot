@@ -100,7 +100,7 @@ async function drawList(dom, lst, opt) {
         }
         return this.painter;
      }
-   }
+   };
 
    return handle.draw_next();
 }
@@ -2102,7 +2102,7 @@ class HierarchyPainter extends BasePainter {
          if (!is_main_painter && isFunc(drop_painter?.setItemName))
             drop_painter.setItemName(itemname, null, this);
          return drop_painter;
-      }
+      };
 
       if (itemname === '$legend') {
          const cp = getElementCanvPainter(divid);
@@ -2447,7 +2447,7 @@ class HierarchyPainter extends BasePainter {
          }
 
          find_next();
-      }
+      };
 
       if (force && this.brlayout) {
          if (!this.brlayout.browser_kind)
@@ -2613,9 +2613,12 @@ class HierarchyPainter extends BasePainter {
                              item._jsontmp = res;
                              return res;
                           });
-         }
-         if (!this.h) this.h = h1; else
-         if (this.h._kind === 'TopFolder') this.h._childs.push(h1); else {
+         };
+         if (!this.h)
+            this.h = h1;
+         else if (this.h._kind === 'TopFolder')
+            this.h._childs.push(h1);
+         else {
             const h0 = this.h, topname = ('_jsonfile' in h0) ? 'Files' : 'Items';
             this.h = { _name: topname, _kind: 'TopFolder', _childs: [h0, h1] };
          }
@@ -2827,7 +2830,7 @@ class HierarchyPainter extends BasePainter {
                else
                   handleAfterRequest(findFunction(item._after_request)); // v6 support
             } else
-               handleAfterRequest(draw_handle?.after_request)
+               handleAfterRequest(draw_handle?.after_request);
          }, undefined, true).then(xhr => { itemreq = xhr; xhr.send(null); });
       });
    }
@@ -2890,7 +2893,7 @@ class HierarchyPainter extends BasePainter {
 
                   return this;
                });
-      }
+      };
 
       if (!server_address) server_address = '';
 
@@ -3538,7 +3541,7 @@ class HierarchyPainter extends BasePainter {
    redrawObject(obj) {
       if (!this._inspector && !this._streamer_info) return false;
       if (this._streamer_info)
-         this.h = createStreamerInfoContent(obj)
+         this.h = createStreamerInfoContent(obj);
       else
          this.h = createInspectorContent(obj);
       return this.refreshHtml().then(() => { this.setTopPainter(); });
@@ -3750,7 +3753,7 @@ ObjectPainter.prototype.showInspector = function(opt, obj) {
       obj = this.getObject();
 
    return drawInspector(id, obj, opt);
-}
+};
 
 
 /** @summary Display streamer info
@@ -3803,7 +3806,7 @@ async function drawInspector(dom, obj, opt) {
    if (painter.selectDom().classed('jsroot_inspector')) {
       painter.removeInspector = function() {
          this.selectDom().remove();
-      }
+      };
    }
 
    painter.fill_context = function(menu, hitem) {
@@ -3823,7 +3826,7 @@ async function drawInspector(dom, obj, opt) {
             draw(ddom, obj, arg);
          });
       }
-   }
+   };
 
    painter.h = createInspectorContent(obj);
 

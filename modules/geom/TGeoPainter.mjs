@@ -773,7 +773,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Process VR controller intersection
      * @private */
    processVRControllerIntersections() {
-      let intersects = []
+      let intersects = [];
       for (let i = 0; i < this._vrControllers.length; ++i) {
          const controller = this._vrControllers[i].mesh,
                end = controller.localToWorld(this._raycasterEnd.set(0, 0, -1)),
@@ -1339,7 +1339,7 @@ class TGeoPainter extends ObjectPainter {
                   const item = {
                      matrix0: new Matrix4(),
                      minvert: new Matrix4()
-                  }
+                  };
 
                   mesh.trans[i] = item;
 
@@ -2180,11 +2180,11 @@ class TGeoPainter extends ObjectPainter {
          lines.unshift(tooltip);
 
          return { name: resolve.obj.fName, title: resolve.obj.fTitle || resolve.obj._typename, lines };
-      }
+      };
 
       this._controls.processMouseLeave = function() {
          this.processMouseMove([]); // to disable highlight and reset browser
-      }
+      };
 
       this._controls.processDblClick = () => {
          // painter already cleaned up, ignore any incoming events
@@ -2200,7 +2200,7 @@ class TGeoPainter extends ObjectPainter {
             this.adjustCameraPosition(true);
 
          this.render3D();
-      }
+      };
    }
 
    /** @summary Main function in geometry creation loop
@@ -2883,7 +2883,7 @@ class TGeoPainter extends ObjectPainter {
          return '';
 
       if (this._camera.isOrthographicCamera) {
-         const zoom = Math.round(this._camera.zoom * 100)
+         const zoom = Math.round(this._camera.zoom * 100);
          return this.ctrl.camera_kind + (zoom === 100 ? '' : `,zoom=${zoom}`);
       }
 
@@ -2899,7 +2899,7 @@ class TGeoPainter extends ObjectPainter {
             let s = '';
             if (v < 0) { s = 'n'; v = -v; }
             return s + v.toFixed(0);
-         }
+         };
 
          let res = `${kind}camx${conv(p.x)},camy${conv(p.y)},camz${conv(p.z)}`;
          if (t.x || t.y || t.z) res += `,camlx${conv(t.x)},camly${conv(t.y)},camlz${conv(t.z)}`;
@@ -4684,7 +4684,7 @@ class TGeoPainter extends ObjectPainter {
                   this._other_side = other_side;
                   this.rotateY(Math.PI);
                }
-            }
+            };
          }
 
          function setTopRotation(mesh, first_angle = -1) {
@@ -4701,7 +4701,7 @@ class TGeoPainter extends ObjectPainter {
                   this.rotateX((angle - this._last_angle) * Math.PI/2);
                   this._last_angle = angle;
                }
-            }
+            };
          }
 
          let textbox = new Box3().setFromObject(mesh);
@@ -5824,7 +5824,7 @@ function build(obj, opt) {
 
       obj.nodes.forEach(node => {
          nodes[node.id] = ClonedNodes.formatServerElement(node);
-      })
+      });
 
       clones = new ClonedNodes(null, nodes);
       clones.name_prefix = clones.getNodeName(0);

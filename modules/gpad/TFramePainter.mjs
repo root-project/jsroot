@@ -53,7 +53,7 @@ function getEarthProjectionFunc(id) {
       // mercator
       case 2: return (l, b) => { return { x: l, y: Math.log(Math.tan((Math.PI/2 + b/180*Math.PI)/2)) }; };
       // sinusoidal
-      case 3: return (l, b) => { return { x: l*Math.cos(b/180*Math.PI), y: b } };
+      case 3: return (l, b) => { return { x: l*Math.cos(b/180*Math.PI), y: b }; };
       // parabolic
       case 4: return (l, b) => { return { x: l*(2.0*Math.cos(2*b/180*Math.PI/3) - 1), y: 180*Math.sin(b/180*Math.PI/3) }; };
       // Mollweide projection
@@ -1587,7 +1587,7 @@ const TooltipHandler = {
       Object.assign(painter, this);
    }
 
-} // FrameInterative
+}; // FrameInterative
 
 
 /**
@@ -2558,7 +2558,7 @@ class TFramePainter extends ObjectPainter {
             const member = 'fLog'+kind[0];
             menu.add('sub:SetLog '+kind[0], () => {
                menu.input('Enter log kind: 0 - off, 1 - log10, 2 - log2, 3 - ln, ...', pad[member], 'int', 0, 10000).then(v => {
-                  this.changeAxisLog(kind[0], v)
+                  this.changeAxisLog(kind[0], v);
                });
             });
             menu.addchk(pad[member] === 0, 'linear', () => this.changeAxisLog(kind[0], 0));
@@ -2686,7 +2686,7 @@ class TFramePainter extends ObjectPainter {
          transform: this.draw_g?.attr('transform') || '',
          hint_delta_x: 0,
          hint_delta_y: 0
-      }
+      };
    }
 
    /** @summary Configure user-defined click handler

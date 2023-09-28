@@ -99,11 +99,11 @@ function tryOpenOpenUI(sources, args) {
       element.parentNode.removeChild(element);
       // and try next
       tryOpenOpenUI(sources, args);
-   }
+   };
 
    element.onload = function() {
       console.log(`Load openui5 from ${src}`);
-   }
+   };
 
    document.head.appendChild(element);
 }
@@ -252,7 +252,7 @@ const ToolbarIcons = {
       return svg;
    }
 
-} // ToolbarIcons
+}; // ToolbarIcons
 
 
 /** @summary Register handle to react on window resize
