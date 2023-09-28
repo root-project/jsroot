@@ -60,7 +60,7 @@ function createSVGRenderer(as_is, precision, doc) {
                  }
                  this._wrapper.path_attr[name] = value;
               }
-           }
+           };
         }
 
         if (kind !== 'svg') {
@@ -75,11 +75,11 @@ function createSVGRenderer(as_is, precision, doc) {
            setAttribute(name, value) {
               this._wrapper.svg_attr[name] = value;
            },
-           appendChild(node) {
+           appendChild(_node) {
               this._wrapper.accPath += `<path style="${this._wrapper.path_attr.style}" d="${this._wrapper.path_attr.d}"/>`;
               this._wrapper.path_attr = {};
            },
-           removeChild(node) {
+           removeChild(_node) {
               this.childNodes = [];
            }
         };
@@ -111,11 +111,11 @@ function createSVGRenderer(as_is, precision, doc) {
 
       if (isNodeJs())
          globalThis.document = originalDocument;
-   }
+   };
 
    rndr.clearHTML = function() {
       this.doc_wrapper.accPath = '';
-   }
+   };
 
    rndr.makeOuterHTML = function() {
       const wrap = this.doc_wrapper,
@@ -123,7 +123,7 @@ function createSVGRenderer(as_is, precision, doc) {
            _textClearAttr = wrap.svg_style.backgroundColor ? ` style="background:${wrap.svg_style.backgroundColor}"` : '';
 
       return `<svg xmlns="http://www.w3.org/2000/svg" ${_textSizeAttr}${_textClearAttr}>${wrap.accPath}</svg>`;
-   }
+   };
 
    rndr.fillTargetSVG = function(svg) {
       if (isNodeJs()) {
@@ -149,7 +149,7 @@ function createSVGRenderer(as_is, precision, doc) {
             svg.appendChild(elem);
          }
       }
-   }
+   };
 
    rndr.setPrecision(precision);
 
@@ -893,11 +893,11 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       delete this.renderer;
       delete this.raycaster;
       delete this.mouse_zoom_mesh;
-   }
+   };
 
    control.HideTooltip = function() {
       this.tooltip.hide();
-   }
+   };
 
    control.getMousePos = function(evnt, mouse) {
       mouse.x = ('offsetX' in evnt) ? evnt.offsetX : evnt.layerX;
@@ -905,7 +905,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       mouse.clientX = evnt.clientX;
       mouse.clientY = evnt.clientY;
       return mouse;
-   }
+   };
 
    control.getOriginDirectionIntersects = function(origin, direction) {
       this.raycaster.set(origin, direction);
@@ -914,7 +914,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       if (isFunc(this.painter.filterIntersects))
          intersects = this.painter.filterIntersects(intersects);
       return intersects;
-   }
+   };
 
    control.getMouseIntersects = function(mouse) {
       // domElement gives correct coordinate with canvas render, but isn't always right for webgl renderer
@@ -933,7 +933,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
          intersects = this.painter.filterIntersects(intersects);
 
       return intersects;
-   }
+   };
 
    control.detectZoomMesh = function(evnt) {
       const mouse = this.getMousePos(evnt, {}),
@@ -946,7 +946,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       }
 
       return null;
-   }
+   };
 
    control.getInfoAtMousePosition = function(mouse_pos) {
       const intersects = this.getMouseIntersects(mouse_pos);
@@ -966,7 +966,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
                   binx: tip.ix, biny: tip.iy, binz: tip.iz,
                   grx: (tip.x1+tip.x2)/2, gry: (tip.y1+tip.y2)/2, grz: (tip.z1+tip.z2)/2 };
       }
-   }
+   };
 
    control.processDblClick = function(evnt) {
       // first check if zoom mesh clicked
@@ -987,13 +987,13 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
        }
 
        this.reset();
-   }
+   };
 
    control.changeEvent = function() {
       this.mouse_ctxt.on = false; // disable context menu if any changes where done by orbit control
       this.painter.render3D(0);
       this.control_changed = true;
-   }
+   };
 
    control.startEvent = function() {
       this.control_active = true;
@@ -1005,7 +1005,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       // do not reset here, problem of events sequence in orbitcontrol
       // it issue change/start/stop event when do zooming
       // control.control_changed = false;
-   }
+   };
 
    control.endEvent = function() {
       this.control_active = false;
@@ -1016,7 +1016,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
          // react on camera change when required
       } */
       this.control_changed = false;
-   }
+   };
 
    control.mainProcessContextMenu = function(evnt) {
       evnt.preventDefault();
@@ -1027,11 +1027,11 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
          this.block_ctxt = false;
       else
          this.contextMenu(this.mouse_ctxt, this.getMouseIntersects(this.mouse_ctxt));
-   }
+   };
 
    control.contextMenu = function(/* pos, intersects */) {
       // do nothing, function called when context menu want to be activated
-   }
+   };
 
    control.setTooltipEnabled = function(on) {
       this.block_mousemove = !on;
@@ -1039,13 +1039,13 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
          this.tooltip.hide();
          this.removeZoomMesh();
       }
-   }
+   };
 
    control.removeZoomMesh = function() {
       if (this.mouse_zoom_mesh?.object.showSelection())
          this.painter.render3D();
       this.mouse_zoom_mesh = null; // in any case clear mesh, enable orbit control again
-   }
+   };
 
    control.mainProcessMouseMove = function(evnt) {
       if (!this.painter) return; // protect when cleanup
@@ -1087,7 +1087,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
          this.delayedProcessMouseMove();
       else
          this.tmout_handle = setTimeout(() => this.delayedProcessMouseMove(), this.mouse_tmout);
-   }
+   };
 
    control.delayedProcessMouseMove = function() {
       // remove handle - allow to trigger new timeout
@@ -1128,7 +1128,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       }
 
       getDocument().body.style.cursor = this.cursor_changed ? 'pointer' : 'auto';
-   }
+   };
 
    control.mainProcessMouseLeave = function() {
       if (!this.painter) return; // protect when cleanup
@@ -1145,7 +1145,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
          getDocument().body.style.cursor = 'auto';
          this.cursor_changed = false;
       }
-   }
+   };
 
    control.mainProcessDblClick = function(evnt) {
       // suppress simple click handler if double click detected
@@ -1154,7 +1154,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
          delete this.single_click_tm;
       }
       this.processDblClick(evnt);
-   }
+   };
 
    control.processClick = function(mouse_pos, kind) {
       delete this.single_click_tm;

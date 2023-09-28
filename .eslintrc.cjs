@@ -27,7 +27,7 @@ module.exports = {
       "object-curly-spacing": "warn",
       "semi-spacing": "warn",
       "no-floating-decimal": "warn",
-      "semi": "off",
+      "semi": "warn",
       "object-curly-newline": "off",
       "curly": ["warn", "multi-or-nest"],
       "one-var": ["warn", "consecutive"],

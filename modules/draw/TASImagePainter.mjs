@@ -209,7 +209,7 @@ class TASImagePainter extends ObjectPainter {
             res.url = canvas2.toDataURL();
 
             resolveFunc(res);
-         }
+         };
 
          image.onerror = () => resolveFunc(res);
 
@@ -302,7 +302,7 @@ class TASImagePainter extends ObjectPainter {
             fp.setAxesRanges(create(clTAxis), 0, 1, create(clTAxis), 0, 1, null, 0, 0);
             fp.createXY({ ndim: 2, check_pad_range: false });
             return fp.addInteractivity();
-         })
+         });
       });
    }
 
