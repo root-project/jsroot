@@ -14,7 +14,7 @@ module.exports = {
       "quotes": ["warn", "single"],
       "indent": "off",
       "camelcase": "off",
-      "space-before-function-paren": "off",
+      "space-before-function-paren": ["warn", "never"],
       "comma-spacing": "warn",
       "keyword-spacing": "warn",
       "prefer-const": "warn",

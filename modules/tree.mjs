@@ -394,7 +394,7 @@ function getNumBranches(tree) {
 class TDrawVariable {
 
    /** @summary constructor */
-   constructor (globals) {
+   constructor(globals) {
       this.globals = globals;
 
       this.code = '';

@@ -782,7 +782,7 @@ class TGeoPainter extends ObjectPainter {
          intersects = intersects.concat(this._controls.getOriginDirectionIntersects(origin, end));
       }
       // Remove duplicates.
-      intersects = intersects.filter(function (item, pos) { return intersects.indexOf(item) === pos; });
+      intersects = intersects.filter((item, pos) => { return intersects.indexOf(item) === pos; });
       this._controls.processMouseMove(intersects);
    }
 
