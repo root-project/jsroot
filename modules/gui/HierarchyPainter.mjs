@@ -1219,7 +1219,7 @@ class HierarchyPainter extends BasePainter {
 
       if (this.with_icons && !break_list) {
          const icon_name = hitem._isopen ? img2 : img1,
-              d3img = (icon_name.indexOf('img_') === 0)
+               d3img = (icon_name.indexOf('img_') === 0)
                  ? d3line.append('div')
                           .attr('class', icon_name)
                           .attr('title', hitem._kind)
@@ -1227,7 +1227,9 @@ class HierarchyPainter extends BasePainter {
                           .attr('src', icon_name)
                           .attr('alt', '')
                           .attr('title', hitem._kind)
-                          .style('vertical-align', 'top').style('width', '18px').style('height', '18px');
+                          .style('vertical-align', 'top')
+                          .style('width', '18px')
+                          .style('height', '18px');
 
          if (('_icon_click' in hitem) || (handle && ('icon_click' in handle)))
             d3img.on('click', function(evnt) { h.tree_click(evnt, this, 'icon'); });
@@ -3730,10 +3732,10 @@ ObjectPainter.prototype.showInspector = function(opt, obj) {
       return true;
 
    const main = this.selectDom(),
-        rect = getElementRect(main),
-        w = Math.round(rect.width * 0.05) + 'px',
-        h = Math.round(rect.height * 0.05) + 'px',
-        id = 'root_inspector_' + internals.id_counter++;
+         rect = getElementRect(main),
+         w = Math.round(rect.width * 0.05) + 'px',
+         h = Math.round(rect.height * 0.05) + 'px',
+         id = 'root_inspector_' + internals.id_counter++;
 
    main.append('div')
        .attr('id', id)

@@ -1673,7 +1673,8 @@ class BrowserLayout {
       if (this.browser_kind === 'float') {
           area.style('bottom', '0px')
               .style('top', '0px')
-              .style('width', '').style('height', '')
+              .style('width', '')
+              .style('height', '')
               .classed('jsroot_float_browser', false)
               .style('border', null);
       } else if (this.browser_kind === 'fix') {
