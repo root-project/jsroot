@@ -944,13 +944,13 @@ class RAxisPainter extends RObjectPainter {
    /** @summary Redraw axis, used in standalone mode for RAxisDrawable */
    redraw() {
       const drawable = this.getObject(),
-            pp   = this.getPadPainter(),
-            pos  = pp.getCoordinate(drawable.fPos),
+            pp = this.getPadPainter(),
+            pos = pp.getCoordinate(drawable.fPos),
             reverse = this.v7EvalAttr('reverse', false),
             labels_len = drawable.fLabels.length,
             min = (labels_len > 0) ? 0 : this.v7EvalAttr('min', 0),
             max = (labels_len > 0) ? labels_len : this.v7EvalAttr('max', 100);
-      let len  = pp.getPadLength(drawable.fVertical, drawable.fLength);
+      let len = pp.getPadLength(drawable.fVertical, drawable.fLength);
 
       // in vertical direction axis drawn in negative direction
       if (drawable.fVertical) len -= pp.getPadHeight();

@@ -633,7 +633,7 @@ const kUserContour = BIT(10), // user specified contour levels
 //      kCanRebin    = BIT(11), // can rebin axis
 //      kLogX        = BIT(15), // X-axis in log scale
 //      kIsZoomed    = BIT(16), // bit set when zooming on Y axis
-      kNoTitle     = BIT(17); // don't draw the histogram title
+      kNoTitle = BIT(17); // don't draw the histogram title
 //      kIsAverage   = BIT(18);  // Bin contents are average (used by Add)
 
 /**

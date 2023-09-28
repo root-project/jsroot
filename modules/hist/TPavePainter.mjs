@@ -495,7 +495,7 @@ class TPavePainter extends ObjectPainter {
                   this.startTextDrawing(this.textatt.font, this.textatt.getAltSize(entry.fTextSize, pad_height), sub_g);
 
                   this.drawText({ align: entry.fTextAlign || this.textatt.align, x, y, text: entry.fTitle, color,
-                                  latex: (entry._typename === clTText) ? 0 : 1,  draw_g: sub_g, fast });
+                                  latex: (entry._typename === clTText) ? 0 : 1, draw_g: sub_g, fast });
 
                   promises.push(this.finishTextDrawing(sub_g));
                } else {
@@ -813,7 +813,7 @@ class TPavePainter extends ObjectPainter {
       if (typeof zaxis?.fLabelOffset !== 'undefined') {
          axis.fTitle = zaxis.fTitle;
          axis.fTitleSize = zaxis.fTitleSize;
-         axis.fTitleOffset =  zaxis.fTitleOffset;
+         axis.fTitleOffset = zaxis.fTitleOffset;
          axis.fTitleColor = zaxis.fTitleColor;
          axis.fLineColor = zaxis.fAxisColor;
          axis.fTextSize = zaxis.fLabelSize;
@@ -1176,15 +1176,15 @@ class TPavePainter extends ObjectPainter {
    fillFunctionStat(f1, dofit) {
       if (!dofit || !f1) return false;
 
-      const print_fval    = dofit % 10,
+      const print_fval = dofit % 10,
           print_ferrors = Math.floor(dofit/10) % 10,
-          print_fchi2   = Math.floor(dofit/100) % 10,
-          print_fprob   = Math.floor(dofit/1000) % 10;
+          print_fchi2 = Math.floor(dofit/100) % 10,
+          print_fprob = Math.floor(dofit/1000) % 10;
 
       if (print_fchi2 > 0)
          this.addText('#chi^2 / ndf = ' + this.format(f1.fChisquare, 'fit') + ' / ' + f1.fNDF);
       if (print_fprob > 0)
-         this.addText('Prob = '  + this.format(Prob(f1.fChisquare, f1.fNDF)));
+         this.addText('Prob = ' + this.format(Prob(f1.fChisquare, f1.fNDF)));
       if (print_fval > 0) {
          for (let n = 0; n < f1.GetNumPars(); ++n) {
             const parname = f1.GetParName(n);

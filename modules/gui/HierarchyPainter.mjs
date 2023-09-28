@@ -207,7 +207,7 @@ function listHierarchy(folder, lst) {
             _obj: null
           };
       } else {
-         item =  {
+         item = {
             _name: obj.fName || obj.name,
             _kind: prROOT + obj._typename,
             _title: `${obj.fTitle || ''} type:${obj._typename}`,
@@ -277,7 +277,7 @@ function keysHierarchy(folder, keys, file, dirname) {
             // remove cycle number - we have already directory
             item._name = key.fName;
             keysHierarchy(item, dir.fKeys, file, dirname + key.fName + '/');
-         } else  {
+         } else {
             item._more = true;
             item._expand = function(node, obj) {
                // one can get expand call from child objects - ignore them
@@ -430,7 +430,7 @@ function objectHierarchy(top, obj, args = undefined) {
 
       const item = { _parent: top, _name: key };
 
-      if (compress) { lastitem = item;  lastkey = key; lastfield = fld; cnt = 0; }
+      if (compress) { lastitem = item; lastkey = key; lastfield = fld; cnt = 0; }
 
       if (fld === null) {
          item._value = item._title = 'null';
@@ -499,7 +499,7 @@ function objectHierarchy(top, obj, args = undefined) {
                   default:
                      if (isRootCollection(fld) && isObject(fld.arr)) {
                         item._value = fld.arr.length ? '[...]' : '[]';
-                        item._title += ', size:'  + fld.arr.length;
+                        item._title += ', size:' + fld.arr.length;
                         if (fld.arr.length > 0) item._more = true;
                      } else {
                         item._more = true;
@@ -772,7 +772,7 @@ class HierarchyPainter extends BasePainter {
 
        folder = {
          _name: file.fFileName,
-         _title: (file.fTitle ? file.fTitle + ', path ' : '')  + file.fFullURL,
+         _title: (file.fTitle ? file.fTitle + ', path ' : '') + file.fFullURL,
          _kind: kindTFile,
          _file: file,
          _fullurl: file.fFullURL,
@@ -1774,7 +1774,7 @@ class HierarchyPainter extends BasePainter {
                    item = top ? top.getItemName() : null, opt;
 
                if (item)
-                  opt  = top.getDrawOpt() || top.getItemDrawOpt();
+                  opt = top.getDrawOpt() || top.getItemDrawOpt();
                 else {
                   top = null;
                   dummy.forEachPainter(p => {
