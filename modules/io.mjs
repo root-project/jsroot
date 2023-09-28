@@ -3853,8 +3853,7 @@ function openFile(arg) {
 addClassMethods(clTNamed, CustomStreamers[clTNamed]);
 addClassMethods(clTObjString, CustomStreamers[clTObjString]);
 
-export {
-   kChar, kShort, kInt, kLong, kFloat, kCounter,
+export { kChar, kShort, kInt, kLong, kFloat, kCounter,
    kCharStar, kDouble, kDouble32, kLegacyChar,
    kUChar, kUShort, kUInt, kULong, kBits,
    kLong64, kULong64, kBool, kFloat16,
@@ -3862,6 +3861,4 @@ export {
    kAnyP, kStreamer, kStreamLoop, kSTLp, kSTL,
    clTStreamerInfoList, clTDirectory, clTDirectoryFile, nameStreamerInfo, clTBasket,
    R__unzip, addUserStreamer, createStreamerElement, createMemberStreamer,
-   openFile, reconstructObject, FileProxy,
-   TBuffer /*, TDirectory, TFile, TLocalFile, TNodejsFile */
-};
+   openFile, reconstructObject, FileProxy, TBuffer }; /*, TDirectory, TFile, TLocalFile, TNodejsFile */

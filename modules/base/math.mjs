@@ -2031,8 +2031,7 @@ function getTEfficiencyBoundaryFunc(option, isbayessian) {
    return eff_ClopperPearson;
 }
 
-export {
-   gamma, gamma as tgamma, gamma as Gamma,
+export { gamma, gamma as tgamma, gamma as Gamma,
    Polynomialeval, Polynomial1eval, stirf,
    gamma_pdf, ndtri, normal_quantile, normal_quantile_c, lognormal_cdf_c, lognormal_cdf,
    igami, igamc, igam, lgam, lgamma, erfc, erf,
@@ -2056,5 +2055,4 @@ export {
    ChebyshevN, Chebyshev0, Chebyshev1, Chebyshev2, Chebyshev3, Chebyshev4,
    Chebyshev5, Chebyshev6, Chebyshev7, Chebyshev8, Chebyshev9, Chebyshev10,
 
-   getTEfficiencyBoundaryFunc
-};
+   getTEfficiencyBoundaryFunc };

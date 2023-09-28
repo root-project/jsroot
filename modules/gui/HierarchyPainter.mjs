@@ -87,7 +87,9 @@ async function drawList(dom, lst, opt) {
    if (!lst || !lst.arr)
       return null;
 
-   const handle = { dom, lst, opt, indx: -1, painter: null,
+   const handle = {
+     dom, lst, opt,
+     indx: -1, painter: null,
      draw_next() {
         while (++this.indx < this.lst.arr.length) {
            const item = this.lst.arr[this.indx],

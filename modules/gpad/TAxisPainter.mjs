@@ -1075,8 +1075,7 @@ class TAxisPainter extends ObjectPainter {
                             align: this.vertical ? ((side < 0) ? 30 : 10) : ((this.has_obstacle ^ (side < 0)) ? 13 : 10),
                             latex: 1,
                             text: '#times' + this.formatExp(10, this.order),
-                            draw_g: label_g[lcnt]
-            });
+                            draw_g: label_g[lcnt] });
          }
       }
 
