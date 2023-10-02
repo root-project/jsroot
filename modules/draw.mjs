@@ -500,32 +500,25 @@ function addStreamerInfosForPainter(lst) {
    if (!lst) return;
 
    function checkBaseClasses(si, lvl) {
-      if (!si.fElements || (lvl > 10))
+      const element = si.fElements?.arr[0];
+      if ((element?.fTypeName !== 'BASE') || (lvl > 4))
          return null;
 
-      for (let j = 0; j < si.fElements.arr.length; ++j) {
-         // extract streamer info for each class member
-         const element = si.fElements.arr[j];
-         if (element.fTypeName !== 'BASE') continue;
-
-         let handle = getDrawHandle(prROOT + element.fName);
-         if (handle && !handle.for_derived)
+      let handle = getDrawHandle(prROOT + element.fName);
+      if (handle && !handle.for_derived)
             handle = null;
 
-         // now try find that base class of base in the list
-         if (handle === null) {
-            for (let k = 0; k < lst.arr.length; ++k) {
-               if (lst.arr[k].fName === element.fName) {
-                  handle = checkBaseClasses(lst.arr[k], lvl + 1);
-                  break;
-               }
+      // now try find that base class of base in the list
+      if (handle === null) {
+         for (let k = 0; k < lst.arr.length; ++k) {
+            if (lst.arr[k].fName === element.fName) {
+               handle = checkBaseClasses(lst.arr[k], lvl + 1);
+               break;
             }
          }
-
-         if (handle?.for_derived)
-            return handle;
       }
-      return null;
+
+      return handle?.for_derived ? handle : null;
    }
 
    lst.arr.forEach(si => {
@@ -534,7 +527,7 @@ function addStreamerInfosForPainter(lst) {
       const handle = checkBaseClasses(si, 0);
       if (handle) {
          const newhandle = Object.assign({}, handle);
-         // delete newhandle.for_derived; // should we disable?
+         delete newhandle.for_derived; // should we disable?
          newhandle.name = si.fName;
          addDrawFunc(newhandle);
       }
