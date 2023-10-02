@@ -1,6 +1,8 @@
 import { select as d3_select } from './d3.mjs';
 import { loadScript, findFunction, internals, getPromise, isNodeJs, isObject, isFunc, isStr, _ensureJSROOT,
-         prROOT, clTObjString, clTFile, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
+         prROOT,
+         clTObject, clTNamed, clTString, clTAttLine, clTAttFill, clTAttMarker, clTAttText,
+         clTObjString, clTFile, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
          clTPave, clTPaveText, clTPavesText, clTPaveStats, clTPaveLabel, clTPaveClass, clTDiamond, clTLegend, clTPaletteAxis,
          clTText, clTLine, clTBox, clTLatex, clTMathText, clTAnnotation, clTMultiGraph, clTH2, clTF1, clTF2, clTH3,
          clTProfile, clTProfile2D, clTProfile3D,
@@ -499,9 +501,14 @@ async function redraw(dom, obj, opt) {
 function addStreamerInfosForPainter(lst) {
    if (!lst) return;
 
+   const basics = [clTObject, clTNamed, clTString, 'TCollection', clTAttLine, clTAttFill, clTAttMarker, clTAttText];
+
    function checkBaseClasses(si, lvl) {
       const element = si.fElements?.arr[0];
       if ((element?.fTypeName !== 'BASE') || (lvl > 4))
+         return null;
+      // exclude very basic classes
+      if (basics.indexOf(element.fName) >= 0)
          return null;
 
       let handle = getDrawHandle(prROOT + element.fName);
