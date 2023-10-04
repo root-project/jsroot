@@ -78,7 +78,7 @@ if ((typeof document !== 'undefined') && (typeof window !== 'undefined') && (typ
       }
    });
 
-   if (browser.isChrome || browser.isChromeHeadless)
+   if (browser.chromeVersion)
       browser.isWin = navigator.userAgentData.platform === 'Windows';
    else {
       browser.isFirefox = navigator.userAgent.indexOf('Firefox') >= 0;
