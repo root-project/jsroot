@@ -78,9 +78,10 @@ if ((typeof document !== 'undefined') && (typeof window !== 'undefined') && (typ
       }
    });
 
-   if (browser.chromeVersion)
+   if (browser.chromeVersion) {
+      browser.isFirefox = false;
       browser.isWin = navigator.userAgentData.platform === 'Windows';
-   else {
+   } else {
       browser.isFirefox = navigator.userAgent.indexOf('Firefox') >= 0;
       browser.isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
       browser.isChrome = !!window.chrome;
