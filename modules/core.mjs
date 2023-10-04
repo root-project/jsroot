@@ -4,7 +4,7 @@ const version_id = '7.5.pre',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '2/10/2023',
+version_date = '4/10/2023',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -68,12 +68,26 @@ btoa_func = isNodeJs() ? str => Buffer.from(str, 'latin1').toString('base64') : 
 browser = { isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false, screenWidth: 1200 };
 
 if ((typeof document !== 'undefined') && (typeof window !== 'undefined') && (typeof navigator !== 'undefined')) {
-   browser.isFirefox = navigator.userAgent.indexOf('Firefox') >= 0;
-   browser.isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
-   browser.isChrome = !!window.chrome;
-   browser.isChromeHeadless = navigator.userAgent.indexOf('HeadlessChrome') >= 0;
-   browser.chromeVersion = (browser.isChrome || browser.isChromeHeadless) ? parseInt(navigator.userAgent.match(/Chrom(?:e|ium)\/([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/)[1]) : 0;
-   browser.isWin = navigator.userAgent.indexOf('Windows') >= 0;
+   navigator.userAgentData?.brands?.forEach(item => {
+      if (item.brand === 'HeadlessChrome') {
+         browser.isChromeHeadless = true;
+         browser.chromeVersion = parseInt(item.version);
+      } else if (item.brand === 'Chromium') {
+         browser.isChrome = true;
+         browser.chromeVersion = parseInt(item.version);
+      }
+   });
+
+   if (browser.isChrome || browser.isChromeHeadless)
+      browser.isWin = navigator.userAgentData.platform === 'Windows';
+   else {
+      browser.isFirefox = navigator.userAgent.indexOf('Firefox') >= 0;
+      browser.isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
+      browser.isChrome = !!window.chrome;
+      browser.isChromeHeadless = navigator.userAgent.indexOf('HeadlessChrome') >= 0;
+      browser.chromeVersion = (browser.isChrome || browser.isChromeHeadless) ? parseInt(navigator.userAgent.match(/Chrom(?:e|ium)\/([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/)[1]) : 0;
+      browser.isWin = navigator.userAgent.indexOf('Windows') >= 0;
+   }
    browser.touches = ('ontouchend' in document); // identify if touch events are supported
    browser.screenWidth = window.screen?.width ?? 1200;
 }
