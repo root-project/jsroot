@@ -1,6 +1,6 @@
 # JSROOT changelog
 
-## Changes in 7.5
+## Changes in 7.5.0
 1. Correctly implement `TH2` projections like MERCATOR or PARABOLIC, add MOLLWEIDE
 2. Support "pol", "cyl", "sph" and "psr" coordinates systems for lego and surf plots
 3. Support orthographic camera for lego and surface plots
