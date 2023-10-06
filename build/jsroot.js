@@ -1,4 +1,4 @@
-// https://root.cern/js/ v7.5.0
+// https://root.cern/js/ v7.5.99
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -7,11 +7,11 @@ typeof define === 'function' && define.amd ? define(['exports'], factory) :
 
 /** @summary version id
   * @desc For the JSROOT release the string in format 'major.minor.patch' like '7.0.0' */
-const version_id = '7.5.0',
+const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '5/10/2023',
+version_date = '6/10/2023',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -103848,7 +103848,8 @@ class HierarchyPainter extends BasePainter {
       if (use_inject && !globalThis.JSROOT) {
          globalThis.JSROOT = {
             version, gStyle, create: create$1, httpRequest, loadScript, decodeUrl,
-            source_dir: exports.source_dir, settings, addUserStreamer, addDrawFunc
+            source_dir: exports.source_dir, settings, addUserStreamer, addDrawFunc,
+            draw, redraw
          };
       }
 
