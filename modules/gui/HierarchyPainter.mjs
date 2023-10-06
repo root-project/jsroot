@@ -3220,7 +3220,8 @@ class HierarchyPainter extends BasePainter {
       if (use_inject && !globalThis.JSROOT) {
          globalThis.JSROOT = {
             version, gStyle, create, httpRequest, loadScript, decodeUrl,
-            source_dir, settings, addUserStreamer, addDrawFunc
+            source_dir, settings, addUserStreamer, addDrawFunc,
+            draw, redraw
          };
       }
 
