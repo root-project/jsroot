@@ -4,6 +4,7 @@
 1. Fix - expand item in hierarchy painter
 2. Fix - correctly use saved TF1 values for non-equidistant bins #270
 3. In log scales replace 10^1 label by 10
+4. Fix - align of log labels on X axis
 
 
 ## Changes in 7.5.0
