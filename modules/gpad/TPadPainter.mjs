@@ -2309,6 +2309,7 @@ class TPadPainter extends ObjectPainter {
       if (d.check('GRID')) forEach(p => { p.fGridx = p.fGridy = 1; });
       if (d.check('TICKX')) forEach(p => { p.fTickx = 1; });
       if (d.check('TICKY')) forEach(p => { p.fTicky = 1; });
+      if (d.check('TICKZ')) forEach(p => { p.fTickz = 1; });
       if (d.check('TICK')) forEach(p => { p.fTickx = p.fTicky = 1; });
       if (d.check('OTX')) forEach(p => { p.$OTX = true; });
       if (d.check('OTY')) forEach(p => { p.$OTY = true; });

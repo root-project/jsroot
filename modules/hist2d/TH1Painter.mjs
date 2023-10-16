@@ -5,7 +5,7 @@ import { THistPainter } from './THistPainter.mjs';
 
 
 const PadDrawOptions = ['USE_PAD_TITLE', 'LOGXY', 'LOGX', 'LOGY', 'LOGZ', 'LOG', 'LOG2X', 'LOG2Y', 'LOG2',
-                        'LNX', 'LNY', 'LN', 'GRIDXY', 'GRIDX', 'GRIDY', 'TICKXY', 'TICKX', 'TICKY', 'FB', 'GRAYSCALE'];
+                        'LNX', 'LNY', 'LN', 'GRIDXY', 'GRIDX', 'GRIDY', 'TICKXY', 'TICKX', 'TICKY', 'TICKZ', 'FB', 'GRAYSCALE'];
 
 /**
  * @summary Painter for TH1 classes

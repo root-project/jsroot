@@ -182,6 +182,7 @@ class THistDrawOptions {
       if (d.check('TICKXY') && pad) pad.fTickx = pad.fTicky = 1;
       if (d.check('TICKX') && pad) pad.fTickx = 1;
       if (d.check('TICKY') && pad) pad.fTicky = 1;
+      if (d.check('TICKZ') && pad) pad.fTickz = 1;
       if (d.check('GRAYSCALE'))
          pp?.setGrayscale(true);
 
@@ -511,6 +512,7 @@ class THistDrawOptions {
          if (pad.fGridy) res += '_GRIDY';
          if (pad.fTickx) res += '_TICKX';
          if (pad.fTicky) res += '_TICKY';
+         if (pad.fTickz) res += '_TICKZ';
       }
 
       if (this.cutg_name)
