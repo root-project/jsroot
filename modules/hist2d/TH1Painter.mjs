@@ -302,9 +302,9 @@ class TH1Painter extends THistPainter {
             stat.addText('Integral = ' + stat.format(data.integral, 'entries'));
 
          if (print_skew === 2)
-            stat.addText(`Skew = ${stat.format(data.skewx)} #pm ${stat.format(data.skewd)}`);
+            stat.addText(`Skewness = ${stat.format(data.skewx)} #pm ${stat.format(data.skewd)}`);
          else if (print_skew > 0)
-            stat.addText(`Skew = ${stat.format(data.skewx)}`);
+            stat.addText(`Skewness = ${stat.format(data.skewx)}`);
 
          if (print_kurt > 0)
             stat.addText('Kurt = <not avail>');
