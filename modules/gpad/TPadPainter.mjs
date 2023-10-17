@@ -2299,6 +2299,7 @@ class TPadPainter extends ObjectPainter {
       if (d.check('LOGY')) forEach(p => { p.fLogy = 1; p.fUymin = 0; p.fUymax = 1; p.fY1 = 0; p.fY2 = 1; });
       if (d.check('LOG2Z')) forEach(p => { p.fLogz = 2; });
       if (d.check('LOGZ')) forEach(p => { p.fLogz = 1; });
+      if (d.check('LOGV')) forEach(p => { p.fLogv = 1; });
       if (d.check('LOG2')) forEach(p => { p.fLogx = p.fLogy = p.fLogz = 2; });
       if (d.check('LOG')) forEach(p => { p.fLogx = p.fLogy = p.fLogz = 1; });
       if (d.check('LNX')) forEach(p => { p.fLogx = 3; p.fUxmin = 0; p.fUxmax = 1; p.fX1 = 0; p.fX2 = 1; });

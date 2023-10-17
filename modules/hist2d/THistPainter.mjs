@@ -176,6 +176,7 @@ class THistDrawOptions {
       if (ly && pad) { pad.fLogy = ly; pad.fUymin = 0; pad.fUymax = 1; pad.fY1 = 0; pad.fY2 = 1; }
       if (d.check('LOG2Z') && pad) pad.fLogz = 2;
       if (d.check('LOGZ') && pad) pad.fLogz = 1;
+      if (d.check('LOGV') && pad) pad.fLogv = 1; // ficitional member, can be introduced in ROOT
       if (d.check('GRIDXY') && pad) pad.fGridx = pad.fGridy = 1;
       if (d.check('GRIDX') && pad) pad.fGridx = 1;
       if (d.check('GRIDY') && pad) pad.fGridy = 1;
@@ -1817,20 +1818,23 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Create contour object for histogram */
    createContour(nlevels, zmin, zmax, zminpositive, custom_levels) {
-      const cntr = new HistContour(zmin, zmax);
+      const cntr = new HistContour(zmin, zmax),
+            ndim = this.getDimension();
 
       if (custom_levels)
          cntr.createCustom(custom_levels);
       else {
          if (nlevels < 2) nlevels = gStyle.fNumberContours;
-         const pad = this.getPadPainter().getRootPad(true);
-         cntr.createNormal(nlevels, pad?.fLogz ?? 0, zminpositive);
+         const pad = this.getPadPainter().getRootPad(true),
+               logv = pad?.fLogv ?? ((ndim === 2) && pad?.fLogz);
+
+         cntr.createNormal(nlevels, logv ?? 0, zminpositive);
       }
 
       cntr.configIndicies(this.options.Zero ? -1 : 0, (cntr.colzmin !== 0) || !this.options.Zero || this.isTH2Poly() ? 0 : -1);
 
       const fp = this.getFramePainter();
-      if (fp && (this.getDimension() < 3) && !fp.mode3d) {
+      if (fp && (ndim < 3) && !fp.mode3d) {
          fp.zmin = cntr.colzmin;
          fp.zmax = cntr.colzmax;
       }
