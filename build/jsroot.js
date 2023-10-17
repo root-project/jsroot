@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '16/10/2023',
+version_date = '17/10/2023',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -73626,18 +73626,19 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
    /** @summary Count TH2 histogram statistic
      * @desc Optionally one could provide condition function to select special range */
-   countStat(cond) {
-      if (!cond && this.options.cutg)
-         cond = (x, y) => this.options.cutg.IsInside(x, y);
+   countStat(cond, count_skew) {
+      if (!isFunc(cond))
+         cond = this.options.cutg ? (x, y) => this.options.cutg.IsInside(x, y) : null;
 
       const histo = this.getHisto(), xaxis = histo.fXaxis, yaxis = histo.fYaxis,
             fp = this.getFramePainter(),
             funcs = fp.getGrFuncs(this.options.second_x, this.options.second_y),
-            res = { name: histo.fName, entries: 0, integral: 0, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix: [0, 0, 0, 0, 0, 0, 0, 0, 0], xmax: 0, ymax: 0, wmax: null },
+            res = { name: histo.fName, entries: 0, eff_entries: 0, integral: 0, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix: [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    xmax: 0, ymax: 0, wmax: null, skewx: 0, skewy: 0, skewd: 0 },
             has_counted_stat = !fp.isAxisZoomed('x') && !fp.isAxisZoomed('y') && (Math.abs(histo.fTsumw) > 1e-300) && !cond;
-      let stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
+      let stat_sum0 = 0, stat_sumw2 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
           stat_sumx2 = 0, stat_sumy2 = 0,
-          xside, yside, xx, yy, zz;
+          xside, yside, xx, yy, zz, xleft, xright, yleft, yright;
 
       if (this.isTH2Poly()) {
          const len = histo.fBins.arr.length;
@@ -73684,6 +73685,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
             if (!has_counted_stat) {
                stat_sum0 += zz;
+               stat_sumw2 += zz * zz;
                stat_sumx1 += xx * zz;
                stat_sumy1 += yy * zz;
                stat_sumx2 += xx * xx * zz;
@@ -73691,10 +73693,10 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
             }
          }
       } else {
-         const xleft = this.getSelectIndex('x', 'left'),
-               xright = this.getSelectIndex('x', 'right'),
-               yleft = this.getSelectIndex('y', 'left'),
-               yright = this.getSelectIndex('y', 'right');
+         xleft = this.getSelectIndex('x', 'left');
+         xright = this.getSelectIndex('x', 'right');
+         yleft = this.getSelectIndex('y', 'left');
+         yright = this.getSelectIndex('y', 'right');
 
          for (let xi = 0; xi <= this.nbinsx + 1; ++xi) {
             xside = (xi <= xleft) ? 0 : (xi > xright ? 2 : 1);
@@ -73720,6 +73722,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
                if (!has_counted_stat) {
                   stat_sum0 += zz;
+                  stat_sumw2 += zz * zz;
                   stat_sumx1 += xx * zz;
                   stat_sumy1 += yy * zz;
                   stat_sumx2 += xx**2 * zz;
@@ -73732,6 +73735,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
       if (has_counted_stat) {
          stat_sum0 = histo.fTsumw;
+         stat_sumw2 = histo.fTsumw2;
          stat_sumx1 = histo.fTsumwx;
          stat_sumx2 = histo.fTsumwx2;
          stat_sumy1 = histo.fTsumwy;
@@ -73753,6 +73757,31 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
       if (histo.fEntries > 1)
          res.entries = histo.fEntries;
 
+      res.eff_entries = stat_sumw2 ? stat_sum0*stat_sum0/stat_sumw2 : Math.abs(stat_sum0);
+
+      if (count_skew && !this.isTH2Poly()) {
+         let sumx = 0, sumy = 0, np = 0, w = 0;
+         for (let xi = xleft; xi < xright; ++xi) {
+            xx = xaxis.GetBinCoord(xi + 0.5);
+            for (let yi = yleft; yi < yright; ++yi) {
+               yy = yaxis.GetBinCoord(yi + 0.5);
+               if (cond && !cond(xx, yy)) continue;
+               w = histo.getBinContent(xi + 1, yi + 1);
+               np += w;
+               sumx += w * Math.pow(xx - res.meanx, 3);
+               sumy += w * Math.pow(yy - res.meany, 3);
+            }
+         }
+
+         const stddev3x = res.rmsx * res.rmsx * res.rmsx,
+               stddev3y = res.rmsy * res.rmsy * res.rmsy;
+         if (np * stddev3x !== 0)
+            res.skewx = sumx / (np * stddev3x);
+         if (np * stddev3y !== 0)
+            res.skewy = sumy / (np * stddev3y);
+         res.skewd = res.eff_entries > 0 ? Math.sqrt(6/res.eff_entries) : 0;
+      }
+
       return res;
    }
 
@@ -73763,16 +73792,16 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
       if (dostat === 1) dostat = 1111;
 
-      const data = this.countStat(),
-          print_name = Math.floor(dostat % 10),
-          print_entries = Math.floor(dostat / 10) % 10,
-          print_mean = Math.floor(dostat / 100) % 10,
-          print_rms = Math.floor(dostat / 1000) % 10,
-          print_under = Math.floor(dostat / 10000) % 10,
-          print_over = Math.floor(dostat / 100000) % 10,
-          print_integral = Math.floor(dostat / 1000000) % 10,
-          print_skew = Math.floor(dostat / 10000000) % 10,
-          print_kurt = Math.floor(dostat / 100000000) % 10;
+      const print_name = Math.floor(dostat % 10),
+            print_entries = Math.floor(dostat / 10) % 10,
+            print_mean = Math.floor(dostat / 100) % 10,
+            print_rms = Math.floor(dostat / 1000) % 10,
+            print_under = Math.floor(dostat / 10000) % 10,
+            print_over = Math.floor(dostat / 100000) % 10,
+            print_integral = Math.floor(dostat / 1000000) % 10,
+            print_skew = Math.floor(dostat / 10000000) % 10,
+            print_kurt = Math.floor(dostat / 100000000) % 10,
+            data = this.countStat(undefined, print_skew > 0);
 
       stat.clearPave();
 
@@ -73795,9 +73824,12 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
       if (print_integral > 0)
          stat.addText('Integral = ' + stat.format(data.matrix[4], 'entries'));
 
-      if (print_skew > 0) {
-         stat.addText('Skewness x = <undef>');
-         stat.addText('Skewness y = <undef>');
+      if (print_skew === 2) {
+         stat.addText(`Skewness x = ${stat.format(data.skewx)} #pm ${stat.format(data.skewd)}`);
+         stat.addText(`Skewness y = ${stat.format(data.skewy)} #pm ${stat.format(data.skewd)}`);
+      } else if (print_skew > 0) {
+         stat.addText(`Skewness x = ${stat.format(data.skewx)}`);
+         stat.addText(`Skewness y = ${stat.format(data.skewy)}`);
       }
 
       if (print_kurt > 0)
@@ -78118,16 +78150,19 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
    }
 
    /** @summary Count histogram statistic */
-   countStat(cond) {
+   countStat(cond, count_skew) {
       const profile = this.isTProfile(),
             histo = this.getHisto(), xaxis = histo.fXaxis,
             left = this.getSelectIndex('x', 'left'),
             right = this.getSelectIndex('x', 'right'),
             fp = this.getFramePainter(),
-            res = { name: histo.fName, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, integral: 0, entries: this.stat_entries, xmax: 0, wmax: 0 },
+            res = { name: histo.fName, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, integral: 0,
+                    entries: this.stat_entries, eff_entries: 0, xmax: 0, wmax: 0, skewx: 0, skewd: 0 },
             has_counted_stat = !fp.isAxisZoomed('x') && (Math.abs(histo.fTsumw) > 1e-300);
-      let stat_sumw = 0, stat_sumwx = 0, stat_sumwx2 = 0, stat_sumwy = 0, stat_sumwy2 = 0,
+      let stat_sumw = 0, stat_sumw2 = 0, stat_sumwx = 0, stat_sumwx2 = 0, stat_sumwy = 0, stat_sumwy2 = 0,
           i, xx = 0, w = 0, xmax = null, wmax = null;
+
+      if (!isFunc(cond)) cond = null;
 
       for (i = left; i < right; ++i) {
          xx = xaxis.GetBinCoord(i + 0.5);
@@ -78149,6 +78184,7 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
 
          if (!has_counted_stat) {
             stat_sumw += w;
+            stat_sumw2 += w * w;
             stat_sumwx += w * xx;
             stat_sumwx2 += w * xx**2;
          }
@@ -78157,11 +78193,14 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
       // when no range selection done, use original statistic from histogram
       if (has_counted_stat) {
          stat_sumw = histo.fTsumw;
+         stat_sumw2 = histo.fTsumw2;
          stat_sumwx = histo.fTsumwx;
          stat_sumwx2 = histo.fTsumwx2;
       }
 
       res.integral = stat_sumw;
+
+      res.eff_entries = stat_sumw2 ? stat_sumw*stat_sumw/stat_sumw2 : Math.abs(stat_sumw);
 
       if (Math.abs(stat_sumw) > 1e-300) {
          res.meanx = stat_sumwx / stat_sumw;
@@ -78175,6 +78214,22 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
          res.wmax = wmax;
       }
 
+      if (count_skew) {
+         let sum = 0, np = 0;
+         for (i = left; i < right; ++i) {
+            xx = xaxis.GetBinCoord(i + 0.5);
+            if (cond && !cond(xx)) continue;
+            w = profile ? histo.fBinEntries[i + 1] : histo.getBinContent(i + 1);
+            np += w;
+            sum += w * Math.pow(xx - res.meanx, 3);
+         }
+
+         const stddev3 = res.rmsx * res.rmsx * res.rmsx;
+         if (np * stddev3 !== 0)
+            res.skewx = sum / (np * stddev3);
+         res.skewd = res.eff_entries > 0 ? Math.sqrt(6/res.eff_entries) : 0;
+      }
+
       return res;
    }
 
@@ -78186,16 +78241,17 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
       if (dostat === 1) dostat = 1111;
 
       const histo = this.getHisto(),
-          data = this.countStat(),
-          print_name = dostat % 10,
-          print_entries = Math.floor(dostat / 10) % 10,
-          print_mean = Math.floor(dostat / 100) % 10,
-          print_rms = Math.floor(dostat / 1000) % 10,
-          print_under = Math.floor(dostat / 10000) % 10,
-          print_over = Math.floor(dostat / 100000) % 10,
-          print_integral = Math.floor(dostat / 1000000) % 10,
-          print_skew = Math.floor(dostat / 10000000) % 10,
-          print_kurt = Math.floor(dostat / 100000000) % 10;
+            print_name = dostat % 10,
+            print_entries = Math.floor(dostat / 10) % 10,
+            print_mean = Math.floor(dostat / 100) % 10,
+            print_rms = Math.floor(dostat / 1000) % 10,
+            print_under = Math.floor(dostat / 10000) % 10,
+            print_over = Math.floor(dostat / 100000) % 10,
+            print_integral = Math.floor(dostat / 1000000) % 10,
+            print_skew = Math.floor(dostat / 10000000) % 10,
+            print_kurt = Math.floor(dostat / 100000000) % 10,
+            data = this.countStat(undefined, print_skew > 0);
+
 
       // make empty at the beginning
       stat.clearPave();
@@ -78235,8 +78291,10 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
          if (print_integral > 0)
             stat.addText('Integral = ' + stat.format(data.integral, 'entries'));
 
-         if (print_skew > 0)
-            stat.addText('Skew = <not avail>');
+         if (print_skew === 2)
+            stat.addText(`Skewness = ${stat.format(data.skewx)} #pm ${stat.format(data.skewd)}`);
+         else if (print_skew > 0)
+            stat.addText(`Skewness = ${stat.format(data.skewx)}`);
 
          if (print_kurt > 0)
             stat.addText('Kurt = <not avail>');
@@ -79548,7 +79606,7 @@ class TH3Painter extends THistPainter {
    }
 
    /** @summary Count TH3 statistic */
-   countStat() {
+   countStat(cond, count_skew) {
       const histo = this.getHisto(), xaxis = histo.fXaxis, yaxis = histo.fYaxis, zaxis = histo.fZaxis,
             i1 = this.getSelectIndex('x', 'left'),
             i2 = this.getSelectIndex('x', 'right'),
@@ -79557,11 +79615,14 @@ class TH3Painter extends THistPainter {
             k1 = this.getSelectIndex('z', 'left'),
             k2 = this.getSelectIndex('z', 'right'),
             fp = this.getFramePainter(),
-            res = { name: histo.fName, entries: 0, integral: 0, meanx: 0, meany: 0, meanz: 0, rmsx: 0, rmsy: 0, rmsz: 0 },
+            res = { name: histo.fName, entries: 0, eff_entries: 0, integral: 0,
+                    meanx: 0, meany: 0, meanz: 0, rmsx: 0, rmsy: 0, rmsz: 0, skewx: 0, skewy: 0, skewz: 0, skewd: 0 },
             has_counted_stat = (Math.abs(histo.fTsumw) > 1e-300) && !fp.isAxisZoomed('x') && !fp.isAxisZoomed('y') && !fp.isAxisZoomed('z');
       let xi, yi, zi, xx, xside, yy, yside, zz, zside, cont,
-          stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
+          stat_sum0 = 0, stat_sumw2 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
           stat_sumz1 = 0, stat_sumx2 = 0, stat_sumy2 = 0, stat_sumz2 = 0;
+
+      if (!isFunc(cond)) cond = null;
 
       for (xi = 0; xi < this.nbinsx+2; ++xi) {
          xx = xaxis.GetBinCoord(xi - 0.5);
@@ -79575,11 +79636,14 @@ class TH3Painter extends THistPainter {
                zz = zaxis.GetBinCoord(zi - 0.5);
                zside = (zi < k1) ? 0 : (zi > k2 ? 2 : 1);
 
+               if (cond && !cond(xx, yy, zz)) continue;
+
                cont = histo.getBinContent(xi, yi, zi);
                res.entries += cont;
 
                if (!has_counted_stat && (xside === 1) && (yside === 1) && (zside === 1)) {
                   stat_sum0 += cont;
+                  stat_sumw2 += cont * cont;
                   stat_sumx1 += xx * cont;
                   stat_sumy1 += yy * cont;
                   stat_sumz1 += zz * cont;
@@ -79593,6 +79657,7 @@ class TH3Painter extends THistPainter {
 
       if (has_counted_stat) {
          stat_sum0 = histo.fTsumw;
+         stat_sumw2 = histo.fTsumw2;
          stat_sumx1 = histo.fTsumwx;
          stat_sumx2 = histo.fTsumwx2;
          stat_sumy1 = histo.fTsumwy;
@@ -79615,6 +79680,38 @@ class TH3Painter extends THistPainter {
       if (histo.fEntries > 1)
          res.entries = histo.fEntries;
 
+      res.eff_entries = stat_sumw2 ? stat_sum0*stat_sum0/stat_sumw2 : Math.abs(stat_sum0);
+
+      if (count_skew && !this.isTH2Poly()) {
+         let sumx = 0, sumy = 0, sumz = 0, np = 0, w = 0;
+         for (let xi = i1; xi < i2; ++xi) {
+            xx = xaxis.GetBinCoord(xi + 0.5);
+            for (let yi = j1; yi < j2; ++yi) {
+               yy = yaxis.GetBinCoord(yi + 0.5);
+               for (let zi = k1; zi < k2; ++zi) {
+                  zz = zaxis.GetBinCoord(zi + 0.5);
+                  if (cond && !cond(xx, yy, zz)) continue;
+                  w = histo.getBinContent(xi + 1, yi + 1, zi + 1);
+                  np += w;
+                  sumx += w * Math.pow(xx - res.meanx, 3);
+                  sumy += w * Math.pow(yy - res.meany, 3);
+                  sumz += w * Math.pow(zz - res.meany, 3);
+               }
+            }
+         }
+
+         const stddev3x = res.rmsx * res.rmsx * res.rmsx,
+               stddev3y = res.rmsy * res.rmsy * res.rmsy,
+               stddev3z = res.rmsz * res.rmsz * res.rmsz;
+         if (np * stddev3x !== 0)
+            res.skewx = sumx / (np * stddev3x);
+         if (np * stddev3y !== 0)
+            res.skewy = sumy / (np * stddev3y);
+         if (np * stddev3z !== 0)
+            res.skewz = sumz / (np * stddev3z);
+         res.skewd = res.eff_entries > 0 ? Math.sqrt(6/res.eff_entries) : 0;
+      }
+
       return res;
    }
 
@@ -79626,16 +79723,17 @@ class TH3Painter extends THistPainter {
 
       if (dostat === 1) dostat = 1111;
 
-      const data = this.countStat(),
-            print_name = dostat % 10,
+      const print_name = dostat % 10,
             print_entries = Math.floor(dostat / 10) % 10,
             print_mean = Math.floor(dostat / 100) % 10,
             print_rms = Math.floor(dostat / 1000) % 10,
-            print_integral = Math.floor(dostat / 1000000) % 10;
-          // print_under = Math.floor(dostat / 10000) % 10,
-          // print_over = Math.floor(dostat / 100000) % 10,
-          // print_skew = Math.floor(dostat / 10000000) % 10,
-          // print_kurt = Math.floor(dostat / 100000000) % 10;
+            print_integral = Math.floor(dostat / 1000000) % 10,
+            print_skew = Math.floor(dostat / 10000000) % 10,
+            data = this.countStat(undefined, print_skew > 0);
+
+            // print_under = Math.floor(dostat / 10000) % 10,
+            // print_over = Math.floor(dostat / 100000) % 10,
+            // print_kurt = Math.floor(dostat / 100000000) % 10;
 
       stat.clearPave();
 
@@ -79660,6 +79758,15 @@ class TH3Painter extends THistPainter {
       if (print_integral > 0)
          stat.addText('Integral = ' + stat.format(data.integral, 'entries'));
 
+      if (print_skew === 2) {
+         stat.addText(`Skewness x = ${stat.format(data.skewx)} #pm ${stat.format(data.skewd)}`);
+         stat.addText(`Skewness y = ${stat.format(data.skewy)} #pm ${stat.format(data.skewd)}`);
+         stat.addText(`Skewness z = ${stat.format(data.skewz)} #pm ${stat.format(data.skewd)}`);
+      } else if (print_skew > 0) {
+         stat.addText(`Skewness x = ${stat.format(data.skewx)}`);
+         stat.addText(`Skewness y = ${stat.format(data.skewy)}`);
+         stat.addText(`Skewness z = ${stat.format(data.skewz)}`);
+      }
 
       if (dofit) stat.fillFunctionStat(this.findFunction('TF3'), dofit);
 
