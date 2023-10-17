@@ -920,13 +920,13 @@ class TH2Painter extends THistPainter {
    /** @summary Count TH2 histogram statistic
      * @desc Optionally one could provide condition function to select special range */
    countStat(cond, count_skew) {
-      if (!cond && this.options.cutg)
-         cond = (x, y) => this.options.cutg.IsInside(x, y);
+      if (!isFunc(cond))
+         cond = this.options.cutg ? (x, y) => this.options.cutg.IsInside(x, y) : null;
 
       const histo = this.getHisto(), xaxis = histo.fXaxis, yaxis = histo.fYaxis,
             fp = this.getFramePainter(),
             funcs = fp.getGrFuncs(this.options.second_x, this.options.second_y),
-            res = { name: histo.fName, entries: 0, integral: 0, eff_entries: 0, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix: [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            res = { name: histo.fName, entries: 0, eff_entries: 0, integral: 0, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix: [0, 0, 0, 0, 0, 0, 0, 0, 0],
                     xmax: 0, ymax: 0, wmax: null, skewx: 0, skewy: 0, skewd: 0 },
             has_counted_stat = !fp.isAxisZoomed('x') && !fp.isAxisZoomed('y') && (Math.abs(histo.fTsumw) > 1e-300) && !cond;
       let stat_sum0 = 0, stat_sumw2 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
@@ -1047,10 +1047,10 @@ class TH2Painter extends THistPainter {
          res.wmax = 0;
       res.integral = stat_sum0;
 
-      res.eff_entries = stat_sumw2 ? stat_sum0*stat_sum0/stat_sumw2 : Math.abs(stat_sum0);
-
       if (histo.fEntries > 1)
          res.entries = histo.fEntries;
+
+      res.eff_entries = stat_sumw2 ? stat_sum0*stat_sum0/stat_sumw2 : Math.abs(stat_sum0);
 
       if (count_skew && !this.isTH2Poly()) {
          let sumx = 0, sumy = 0, np = 0, w = 0;
@@ -1059,10 +1059,10 @@ class TH2Painter extends THistPainter {
             for (let yi = yleft; yi < yright; ++yi) {
                yy = yaxis.GetBinCoord(yi + 0.5);
                if (cond && !cond(xx, yy)) continue;
-                w = histo.getBinContent(xi + 1, yi + 1);
-                np += w;
-                sumx += w * Math.pow(xx - res.meanx, 3);
-                sumy += w * Math.pow(yy - res.meany, 3);
+               w = histo.getBinContent(xi + 1, yi + 1);
+               np += w;
+               sumx += w * Math.pow(xx - res.meanx, 3);
+               sumy += w * Math.pow(yy - res.meany, 3);
             }
          }
 

@@ -1,4 +1,4 @@
-import { gStyle, settings, clTF1, kNoZoom, kInspect } from '../core.mjs';
+import { gStyle, settings, clTF1, kNoZoom, kInspect, isFunc } from '../core.mjs';
 import { rgb as d3_rgb } from '../d3.mjs';
 import { floatToString, buildSvgCurve, addHighlightStyle } from '../base/BasePainter.mjs';
 import { THistPainter } from './THistPainter.mjs';
@@ -173,6 +173,8 @@ class TH1Painter extends THistPainter {
             has_counted_stat = !fp.isAxisZoomed('x') && (Math.abs(histo.fTsumw) > 1e-300);
       let stat_sumw = 0, stat_sumw2 = 0, stat_sumwx = 0, stat_sumwx2 = 0, stat_sumwy = 0, stat_sumwy2 = 0,
           i, xx = 0, w = 0, xmax = null, wmax = null;
+
+      if (!isFunc(cond)) cond = null;
 
       for (i = left; i < right; ++i) {
          xx = xaxis.GetBinCoord(i + 0.5);

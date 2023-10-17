@@ -1,4 +1,4 @@
-import { gStyle, settings, kInspect, clTProfile3D } from '../core.mjs';
+import { gStyle, settings, kInspect, clTProfile3D, isFunc } from '../core.mjs';
 import { Matrix4, BufferGeometry, BufferAttribute, Mesh, MeshBasicMaterial, MeshLambertMaterial,
          LineBasicMaterial, SphereGeometry } from '../three.mjs';
 import { TRandom, floatToString } from '../base/BasePainter.mjs';
@@ -48,7 +48,7 @@ class TH3Painter extends THistPainter {
    }
 
    /** @summary Count TH3 statistic */
-   countStat() {
+   countStat(cond, count_skew) {
       const histo = this.getHisto(), xaxis = histo.fXaxis, yaxis = histo.fYaxis, zaxis = histo.fZaxis,
             i1 = this.getSelectIndex('x', 'left'),
             i2 = this.getSelectIndex('x', 'right'),
@@ -57,11 +57,14 @@ class TH3Painter extends THistPainter {
             k1 = this.getSelectIndex('z', 'left'),
             k2 = this.getSelectIndex('z', 'right'),
             fp = this.getFramePainter(),
-            res = { name: histo.fName, entries: 0, integral: 0, meanx: 0, meany: 0, meanz: 0, rmsx: 0, rmsy: 0, rmsz: 0 },
+            res = { name: histo.fName, entries: 0, eff_entries: 0, integral: 0,
+                    meanx: 0, meany: 0, meanz: 0, rmsx: 0, rmsy: 0, rmsz: 0, skewx: 0, skewy: 0, skewz: 0, skewd: 0 },
             has_counted_stat = (Math.abs(histo.fTsumw) > 1e-300) && !fp.isAxisZoomed('x') && !fp.isAxisZoomed('y') && !fp.isAxisZoomed('z');
       let xi, yi, zi, xx, xside, yy, yside, zz, zside, cont,
-          stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
+          stat_sum0 = 0, stat_sumw2 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
           stat_sumz1 = 0, stat_sumx2 = 0, stat_sumy2 = 0, stat_sumz2 = 0;
+
+      if (!isFunc(cond)) cond = null;
 
       for (xi = 0; xi < this.nbinsx+2; ++xi) {
          xx = xaxis.GetBinCoord(xi - 0.5);
@@ -75,11 +78,14 @@ class TH3Painter extends THistPainter {
                zz = zaxis.GetBinCoord(zi - 0.5);
                zside = (zi < k1) ? 0 : (zi > k2 ? 2 : 1);
 
+               if (cond && !cond(xx, yy, zz)) continue;
+
                cont = histo.getBinContent(xi, yi, zi);
                res.entries += cont;
 
                if (!has_counted_stat && (xside === 1) && (yside === 1) && (zside === 1)) {
                   stat_sum0 += cont;
+                  stat_sumw2 += cont * cont;
                   stat_sumx1 += xx * cont;
                   stat_sumy1 += yy * cont;
                   stat_sumz1 += zz * cont;
@@ -93,6 +99,7 @@ class TH3Painter extends THistPainter {
 
       if (has_counted_stat) {
          stat_sum0 = histo.fTsumw;
+         stat_sumw2 = histo.fTsumw2;
          stat_sumx1 = histo.fTsumwx;
          stat_sumx2 = histo.fTsumwx2;
          stat_sumy1 = histo.fTsumwy;
@@ -115,6 +122,38 @@ class TH3Painter extends THistPainter {
       if (histo.fEntries > 1)
          res.entries = histo.fEntries;
 
+      res.eff_entries = stat_sumw2 ? stat_sum0*stat_sum0/stat_sumw2 : Math.abs(stat_sum0);
+
+      if (count_skew && !this.isTH2Poly()) {
+         let sumx = 0, sumy = 0, sumz = 0, np = 0, w = 0;
+         for (let xi = i1; xi < i2; ++xi) {
+            xx = xaxis.GetBinCoord(xi + 0.5);
+            for (let yi = j1; yi < j2; ++yi) {
+               yy = yaxis.GetBinCoord(yi + 0.5);
+               for (let zi = k1; zi < k2; ++zi) {
+                  zz = zaxis.GetBinCoord(zi + 0.5);
+                  if (cond && !cond(xx, yy, zz)) continue;
+                  w = histo.getBinContent(xi + 1, yi + 1, zi + 1);
+                  np += w;
+                  sumx += w * Math.pow(xx - res.meanx, 3);
+                  sumy += w * Math.pow(yy - res.meany, 3);
+                  sumz += w * Math.pow(zz - res.meany, 3);
+               }
+            }
+         }
+
+         const stddev3x = res.rmsx * res.rmsx * res.rmsx,
+               stddev3y = res.rmsy * res.rmsy * res.rmsy,
+               stddev3z = res.rmsz * res.rmsz * res.rmsz;
+         if (np * stddev3x !== 0)
+            res.skewx = sumx / (np * stddev3x);
+         if (np * stddev3y !== 0)
+            res.skewy = sumy / (np * stddev3y);
+         if (np * stddev3z !== 0)
+            res.skewz = sumz / (np * stddev3z);
+         res.skewd = res.eff_entries > 0 ? Math.sqrt(6/res.eff_entries) : 0;
+      }
+
       return res;
    }
 
@@ -126,16 +165,17 @@ class TH3Painter extends THistPainter {
 
       if (dostat === 1) dostat = 1111;
 
-      const data = this.countStat(),
-            print_name = dostat % 10,
+      const print_name = dostat % 10,
             print_entries = Math.floor(dostat / 10) % 10,
             print_mean = Math.floor(dostat / 100) % 10,
             print_rms = Math.floor(dostat / 1000) % 10,
-            print_integral = Math.floor(dostat / 1000000) % 10;
-          // print_under = Math.floor(dostat / 10000) % 10,
-          // print_over = Math.floor(dostat / 100000) % 10,
-          // print_skew = Math.floor(dostat / 10000000) % 10,
-          // print_kurt = Math.floor(dostat / 100000000) % 10;
+            print_integral = Math.floor(dostat / 1000000) % 10,
+            print_skew = Math.floor(dostat / 10000000) % 10,
+            data = this.countStat(undefined, print_skew > 0);
+
+            // print_under = Math.floor(dostat / 10000) % 10,
+            // print_over = Math.floor(dostat / 100000) % 10,
+            // print_kurt = Math.floor(dostat / 100000000) % 10;
 
       stat.clearPave();
 
@@ -160,6 +200,15 @@ class TH3Painter extends THistPainter {
       if (print_integral > 0)
          stat.addText('Integral = ' + stat.format(data.integral, 'entries'));
 
+      if (print_skew === 2) {
+         stat.addText(`Skewness x = ${stat.format(data.skewx)} #pm ${stat.format(data.skewd)}`);
+         stat.addText(`Skewness y = ${stat.format(data.skewy)} #pm ${stat.format(data.skewd)}`);
+         stat.addText(`Skewness z = ${stat.format(data.skewz)} #pm ${stat.format(data.skewd)}`);
+      } else if (print_skew > 0) {
+         stat.addText(`Skewness x = ${stat.format(data.skewx)}`);
+         stat.addText(`Skewness y = ${stat.format(data.skewy)}`);
+         stat.addText(`Skewness z = ${stat.format(data.skewz)}`);
+      }
 
       if (dofit) stat.fillFunctionStat(this.findFunction('TF3'), dofit);
 
