@@ -458,6 +458,8 @@ class TH3Painter extends THistPainter {
          }
       }
 
+      this._box_option = box_option;
+
       if (use_scale && logv) {
          if (this.gminposbin && this.gmaxbin > this.gminposbin) {
             scale_offset = Math.log(this.gminposbin) - 0.1;
@@ -714,7 +716,10 @@ class TH3Painter extends THistPainter {
          });
       }
 
-      return pr.then(() => this.drawHistTitle()).then(() => this);
+      if (this.isMainPainter())
+        pr = pr.then(() => this.drawColorPalette(this.options.Zscale && (this._box_option === 12 || this._box_option === 13))).then(() => this.drawHistTitle());
+
+      return pr.then(() => this);
    }
 
    /** @summary Fill pad toolbar with TH3-related functions */
