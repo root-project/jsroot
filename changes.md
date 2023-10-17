@@ -4,9 +4,10 @@
 1. In log scales replace 10^1 label by 10
 2. Implement tickz draw option, used for color palette ticks
 3. Implement skewness and kurtosis calculations for histogram stats box
-4. Fix - expand item in hierarchy painter
-5. Fix - correctly use saved TF1 values for non-equidistant bins #270
-6. Fix - align of log labels on X axis
+4. Introduce "logv" draw option for TH3, use logarithmic scale for box volume
+5. Fix - expand item in hierarchy painter
+6. Fix - correctly use saved TF1 values for non-equidistant bins #270
+7. Fix - align of log labels on X axis
 
 
 ## Changes in 7.5.0
