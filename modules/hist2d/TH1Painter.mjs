@@ -251,16 +251,16 @@ class TH1Painter extends THistPainter {
       if (dostat === 1) dostat = 1111;
 
       const histo = this.getHisto(),
-          print_name = dostat % 10,
-          print_entries = Math.floor(dostat / 10) % 10,
-          print_mean = Math.floor(dostat / 100) % 10,
-          print_rms = Math.floor(dostat / 1000) % 10,
-          print_under = Math.floor(dostat / 10000) % 10,
-          print_over = Math.floor(dostat / 100000) % 10,
-          print_integral = Math.floor(dostat / 1000000) % 10,
-          print_skew = Math.floor(dostat / 10000000) % 10,
-          print_kurt = Math.floor(dostat / 100000000) % 10,
-          data = this.countStat(undefined, print_skew > 0);
+            print_name = dostat % 10,
+            print_entries = Math.floor(dostat / 10) % 10,
+            print_mean = Math.floor(dostat / 100) % 10,
+            print_rms = Math.floor(dostat / 1000) % 10,
+            print_under = Math.floor(dostat / 10000) % 10,
+            print_over = Math.floor(dostat / 100000) % 10,
+            print_integral = Math.floor(dostat / 1000000) % 10,
+            print_skew = Math.floor(dostat / 10000000) % 10,
+            print_kurt = Math.floor(dostat / 100000000) % 10,
+            data = this.countStat(undefined, print_skew > 0);
 
 
       // make empty at the beginning
