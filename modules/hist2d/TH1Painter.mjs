@@ -169,7 +169,7 @@ class TH1Painter extends THistPainter {
             right = this.getSelectIndex('x', 'right'),
             fp = this.getFramePainter(),
             res = { name: histo.fName, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, integral: 0,
-                    entries: this.stat_entries, eff_entries: 0, xmax: 0, wmax: 0, skewx: 0, skewdx: 0 },
+                    entries: this.stat_entries, eff_entries: 0, xmax: 0, wmax: 0, skewx: 0, skewd: 0 },
             has_counted_stat = !fp.isAxisZoomed('x') && (Math.abs(histo.fTsumw) > 1e-300);
       let stat_sumw = 0, stat_sumw2 = 0, stat_sumwx = 0, stat_sumwx2 = 0, stat_sumwy = 0, stat_sumwy2 = 0,
           i, xx = 0, w = 0, xmax = null, wmax = null;
@@ -237,7 +237,7 @@ class TH1Painter extends THistPainter {
          const stddev3 = res.rmsx * res.rmsx * res.rmsx;
          if (np * stddev3 !== 0)
             res.skewx = sum / (np * stddev3);
-         res.skewdx = res.eff_entries > 0 ? Math.sqrt(6/res.eff_entries) : 0;
+         res.skewd = res.eff_entries > 0 ? Math.sqrt(6/res.eff_entries) : 0;
       }
 
       return res;
@@ -302,7 +302,7 @@ class TH1Painter extends THistPainter {
             stat.addText('Integral = ' + stat.format(data.integral, 'entries'));
 
          if (print_skew === 2)
-            stat.addText(`Skew = ${stat.format(data.skewx)} #pm ${stat.format(data.skewdx)}`);
+            stat.addText(`Skew = ${stat.format(data.skewx)} #pm ${stat.format(data.skewd)}`);
          else if (print_skew > 0)
             stat.addText(`Skew = ${stat.format(data.skewx)}`);
 

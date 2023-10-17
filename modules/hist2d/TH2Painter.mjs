@@ -919,18 +919,19 @@ class TH2Painter extends THistPainter {
 
    /** @summary Count TH2 histogram statistic
      * @desc Optionally one could provide condition function to select special range */
-   countStat(cond) {
+   countStat(cond, count_skew) {
       if (!cond && this.options.cutg)
          cond = (x, y) => this.options.cutg.IsInside(x, y);
 
       const histo = this.getHisto(), xaxis = histo.fXaxis, yaxis = histo.fYaxis,
             fp = this.getFramePainter(),
             funcs = fp.getGrFuncs(this.options.second_x, this.options.second_y),
-            res = { name: histo.fName, entries: 0, integral: 0, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix: [0, 0, 0, 0, 0, 0, 0, 0, 0], xmax: 0, ymax: 0, wmax: null },
+            res = { name: histo.fName, entries: 0, integral: 0, eff_entries: 0, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix: [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    xmax: 0, ymax: 0, wmax: null, skewx: 0, skewy: 0, skewd: 0 },
             has_counted_stat = !fp.isAxisZoomed('x') && !fp.isAxisZoomed('y') && (Math.abs(histo.fTsumw) > 1e-300) && !cond;
-      let stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
+      let stat_sum0 = 0, stat_sumw2 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
           stat_sumx2 = 0, stat_sumy2 = 0,
-          xside, yside, xx, yy, zz;
+          xside, yside, xx, yy, zz, xleft, xright, yleft, yright;
 
       if (this.isTH2Poly()) {
          const len = histo.fBins.arr.length;
@@ -977,6 +978,7 @@ class TH2Painter extends THistPainter {
 
             if (!has_counted_stat) {
                stat_sum0 += zz;
+               stat_sumw2 += zz * zz;
                stat_sumx1 += xx * zz;
                stat_sumy1 += yy * zz;
                stat_sumx2 += xx * xx * zz;
@@ -984,10 +986,10 @@ class TH2Painter extends THistPainter {
             }
          }
       } else {
-         const xleft = this.getSelectIndex('x', 'left'),
-               xright = this.getSelectIndex('x', 'right'),
-               yleft = this.getSelectIndex('y', 'left'),
-               yright = this.getSelectIndex('y', 'right');
+         xleft = this.getSelectIndex('x', 'left');
+         xright = this.getSelectIndex('x', 'right');
+         yleft = this.getSelectIndex('y', 'left');
+         yright = this.getSelectIndex('y', 'right');
 
          for (let xi = 0; xi <= this.nbinsx + 1; ++xi) {
             xside = (xi <= xleft) ? 0 : (xi > xright ? 2 : 1);
@@ -1013,6 +1015,7 @@ class TH2Painter extends THistPainter {
 
                if (!has_counted_stat) {
                   stat_sum0 += zz;
+                  stat_sumw2 += zz * zz;
                   stat_sumx1 += xx * zz;
                   stat_sumy1 += yy * zz;
                   stat_sumx2 += xx**2 * zz;
@@ -1025,6 +1028,7 @@ class TH2Painter extends THistPainter {
 
       if (has_counted_stat) {
          stat_sum0 = histo.fTsumw;
+         stat_sumw2 = histo.fTsumw2;
          stat_sumx1 = histo.fTsumwx;
          stat_sumx2 = histo.fTsumwx2;
          stat_sumy1 = histo.fTsumwy;
@@ -1043,8 +1047,33 @@ class TH2Painter extends THistPainter {
          res.wmax = 0;
       res.integral = stat_sum0;
 
+      res.eff_entries = stat_sumw2 ? stat_sum0*stat_sum0/stat_sumw2 : Math.abs(stat_sum0);
+
       if (histo.fEntries > 1)
          res.entries = histo.fEntries;
+
+      if (count_skew && !this.isTH2Poly()) {
+         let sumx = 0, sumy = 0, np = 0, w = 0;
+         for (let xi = xleft; xi < xright; ++xi) {
+            xx = xaxis.GetBinCoord(xi + 0.5);
+            for (let yi = yleft; yi < yright; ++yi) {
+               yy = yaxis.GetBinCoord(yi + 0.5);
+               if (cond && !cond(xx, yy)) continue;
+                w = histo.getBinContent(xi + 1, yi + 1);
+                np += w;
+                sumx += w * Math.pow(xx - res.meanx, 3);
+                sumy += w * Math.pow(yy - res.meany, 3);
+            }
+         }
+
+         const stddev3x = res.rmsx * res.rmsx * res.rmsx,
+               stddev3y = res.rmsy * res.rmsy * res.rmsy;
+         if (np * stddev3x !== 0)
+            res.skewx = sumx / (np * stddev3x);
+         if (np * stddev3y !== 0)
+            res.skewy = sumy / (np * stddev3y);
+         res.skewd = res.eff_entries > 0 ? Math.sqrt(6/res.eff_entries) : 0;
+      }
 
       return res;
    }
@@ -1056,16 +1085,16 @@ class TH2Painter extends THistPainter {
 
       if (dostat === 1) dostat = 1111;
 
-      const data = this.countStat(),
-          print_name = Math.floor(dostat % 10),
-          print_entries = Math.floor(dostat / 10) % 10,
-          print_mean = Math.floor(dostat / 100) % 10,
-          print_rms = Math.floor(dostat / 1000) % 10,
-          print_under = Math.floor(dostat / 10000) % 10,
-          print_over = Math.floor(dostat / 100000) % 10,
-          print_integral = Math.floor(dostat / 1000000) % 10,
-          print_skew = Math.floor(dostat / 10000000) % 10,
-          print_kurt = Math.floor(dostat / 100000000) % 10;
+      const print_name = Math.floor(dostat % 10),
+            print_entries = Math.floor(dostat / 10) % 10,
+            print_mean = Math.floor(dostat / 100) % 10,
+            print_rms = Math.floor(dostat / 1000) % 10,
+            print_under = Math.floor(dostat / 10000) % 10,
+            print_over = Math.floor(dostat / 100000) % 10,
+            print_integral = Math.floor(dostat / 1000000) % 10,
+            print_skew = Math.floor(dostat / 10000000) % 10,
+            print_kurt = Math.floor(dostat / 100000000) % 10,
+            data = this.countStat(undefined, print_skew > 0);
 
       stat.clearPave();
 
@@ -1088,9 +1117,12 @@ class TH2Painter extends THistPainter {
       if (print_integral > 0)
          stat.addText('Integral = ' + stat.format(data.matrix[4], 'entries'));
 
-      if (print_skew > 0) {
-         stat.addText('Skewness x = <undef>');
-         stat.addText('Skewness y = <undef>');
+      if (print_skew === 2) {
+         stat.addText(`Skewness x = ${stat.format(data.skewx)} #pm ${stat.format(data.skewd)}`);
+         stat.addText(`Skewness y = ${stat.format(data.skewy)} #pm ${stat.format(data.skewd)}`);
+      } else if (print_skew > 0) {
+         stat.addText(`Skewness x = ${stat.format(data.skewx)}`);
+         stat.addText(`Skewness y = ${stat.format(data.skewy)}`);
       }
 
       if (print_kurt > 0)
