@@ -300,8 +300,14 @@ class THistDrawOptions {
       if (d.check('ARR'))
          this.Arrow = true;
 
-      if (d.check('BOX', true))
-         this.BoxStyle = 10 + d.partAsInt();
+      if (d.check('BOX', true)) {
+         this.BoxStyle = 10;
+         if (d.part.indexOf('1') >= 0) this.BoxStyle = 11; else
+         if (d.part.indexOf('2') >= 0) this.BoxStyle = 12; else
+         if (d.part.indexOf('3') >= 0) this.BoxStyle = 13;
+         if (d.part.indexOf('Z') >= 0) this.Zscale = true;
+         if (d.part.indexOf('H') >= 0) this.Zvert = false;
+      }
 
       this.Box = this.BoxStyle > 0;
 
