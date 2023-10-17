@@ -876,11 +876,13 @@ class TH2Painter extends THistPainter {
             const bin_content = histo.fBins.arr[n].fContent;
             if (n === 0) this.gminbin = this.gmaxbin = bin_content;
 
-            if (bin_content < this.gminbin) this.gminbin = bin_content; else
-               if (bin_content > this.gmaxbin) this.gmaxbin = bin_content;
+            if (bin_content < this.gminbin)
+               this.gminbin = bin_content;
+            else if (bin_content > this.gmaxbin)
+               this.gmaxbin = bin_content;
 
-            if (bin_content > 0)
-               if ((this.gminposbin === null) || (this.gminposbin > bin_content)) this.gminposbin = bin_content;
+            if ((bin_content > 0) && ((this.gminposbin === null) || (this.gminposbin > bin_content)))
+               this.gminposbin = bin_content;
          }
       } else {
          // global min/max, used at the moment in 3D drawing

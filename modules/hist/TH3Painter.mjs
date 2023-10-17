@@ -31,6 +31,7 @@ class TH3Painter extends THistPainter {
 
       // global min/max, used at the moment in 3D drawing
       this.gminbin = this.gmaxbin = histo.getBinContent(1, 1, 1);
+      this.gminposbin = null;
 
       for (let i = 0; i < this.nbinsx; ++i) {
          for (let j = 0; j < this.nbinsy; ++j) {
@@ -40,9 +41,15 @@ class TH3Painter extends THistPainter {
                   this.gminbin = bin_content;
                else if (bin_content > this.gmaxbin)
                   this.gmaxbin = bin_content;
+
+               if ((bin_content > 0) && ((this.gminposbin === null) || (this.gminposbin > bin_content)))
+                  this.gminposbin = bin_content;
             }
          }
       }
+
+      if (this.gminposbin === null)
+         this.gminposbin = this.gmaxbin*1e-4;
 
       this.draw_content = this.gmaxbin > 0;
    }
@@ -376,8 +383,12 @@ class TH3Painter extends THistPainter {
 
       const histo = this.getHisto(),
             main = this.getFramePainter();
+
+
       let buffer_size = 0, use_lambert = false,
-          use_helper = false, use_colors = false, use_opacity = 1, use_scale = true,
+          use_helper = false, use_colors = false, use_opacity = 1,
+          logv = this.getPadPainter()?.getRootPad()?.fLogv,
+          use_scale = true, scale_offset = 0,
           single_bin_verts, single_bin_norms,
           fillcolor = this.getColor(histo.fFillColor),
           tipscale = 0.5;
@@ -447,15 +458,30 @@ class TH3Painter extends THistPainter {
          }
       }
 
-      if (use_scale)
+      if (use_scale && logv) {
+         if (this.gminposbin && this.gmaxbin > this.gminposbin) {
+            scale_offset = Math.log(this.gminposbin) - 0.1;
+            use_scale = 1/(Math.log(this.gmaxbin) - scale_offset);
+         } else {
+            logv = 0;
+            use_scale = 1;
+         }
+      } else if (use_scale)
          use_scale = (this.gminbin || this.gmaxbin) ? 1 / Math.max(Math.abs(this.gminbin), Math.abs(this.gmaxbin)) : 1;
 
-      const i1 = this.getSelectIndex('x', 'left', 0.5),
-            i2 = this.getSelectIndex('x', 'right', 0),
-            j1 = this.getSelectIndex('y', 'left', 0.5),
-            j2 = this.getSelectIndex('y', 'right', 0),
-            k1 = this.getSelectIndex('z', 'left', 0.5),
-            k2 = this.getSelectIndex('z', 'right', 0);
+      const get_bin_weight = content => {
+         if (!use_scale) return 1;
+         if (logv) {
+            if (content <= 0) return 0;
+            content = Math.log(content) - scale_offset;
+         }
+         return Math.pow(Math.abs(content*use_scale), 0.3333);
+      }, i1 = this.getSelectIndex('x', 'left', 0.5),
+         i2 = this.getSelectIndex('x', 'right', 0),
+         j1 = this.getSelectIndex('y', 'left', 0.5),
+         j2 = this.getSelectIndex('y', 'right', 0),
+         k1 = this.getSelectIndex('z', 'left', 0.5),
+         k2 = this.getSelectIndex('z', 'right', 0);
 
       if ((i2 <= i1) || (j2 <= j1) || (k2 <= k1))
          return false;
@@ -473,7 +499,8 @@ class TH3Painter extends THistPainter {
             for (k = k1; k < k2; ++k) {
                bin_content = histo.getBinContent(i+1, j+1, k+1);
                if (!this.options.GLColor && ((bin_content === 0) || (bin_content < this.gminbin))) continue;
-               wei = use_scale ? Math.pow(Math.abs(bin_content*use_scale), 0.3333) : 1;
+
+               wei = get_bin_weight(bin_content);
                if (wei < 1e-3) continue; // do not draw empty or very small bins
 
                nbins++;
@@ -486,7 +513,7 @@ class TH3Painter extends THistPainter {
                      cols_size[colindx] = 0;
                      cols_sequence[colindx] = num_colors++;
                   }
-                  cols_size[colindx]+=1;
+                  cols_size[colindx] += 1;
                } else
                   console.error(`not found color for value = ${bin_content}`);
             }
@@ -541,7 +568,7 @@ class TH3Painter extends THistPainter {
                bin_content = histo.getBinContent(i+1, j+1, k+1);
                if (!this.options.GLColor && ((bin_content === 0) || (bin_content < this.gminbin))) continue;
 
-               wei = use_scale ? Math.pow(Math.abs(bin_content*use_scale), 0.3333) : 1;
+               wei = get_bin_weight(bin_content);
                if (wei < 1e-3) continue; // do not show very small bins
 
                let nseq = 0;
@@ -624,20 +651,20 @@ class TH3Painter extends THistPainter {
          combined_bins.scaley = tipscale*scaley;
          combined_bins.scalez = tipscale*scalez;
          combined_bins.tip_color = (histo.fFillColor === 3) ? 0xFF0000 : 0x00FF00;
-         combined_bins.use_scale = use_scale;
+         combined_bins.get_weight = get_bin_weight;
 
          combined_bins.tooltip = function(intersect) {
             const indx = Math.floor(intersect.faceIndex / this.bins_faces);
             if ((indx < 0) || (indx >= this.bins.length)) return null;
 
             const p = this.painter,
-                histo = p.getHisto(),
-                main = p.getFramePainter(),
-                tip = p.get3DToolTip(this.bins[indx]),
-                grx = main.grx(histo.fXaxis.GetBinCoord(tip.ix-0.5)),
-                gry = main.gry(histo.fYaxis.GetBinCoord(tip.iy-0.5)),
-                grz = main.grz(histo.fZaxis.GetBinCoord(tip.iz-0.5)),
-                wei = this.use_scale ? Math.pow(Math.abs(tip.value*this.use_scale), 0.3333) : 1;
+                  histo = p.getHisto(),
+                  main = p.getFramePainter(),
+                  tip = p.get3DToolTip(this.bins[indx]),
+                  grx = main.grx(histo.fXaxis.GetBinCoord(tip.ix-0.5)),
+                  gry = main.gry(histo.fYaxis.GetBinCoord(tip.iy-0.5)),
+                  grz = main.grz(histo.fZaxis.GetBinCoord(tip.iz-0.5)),
+                  wei = this.get_weight(tip.value);
 
             tip.x1 = grx - this.scalex*wei; tip.x2 = grx + this.scalex*wei;
             tip.y1 = gry - this.scaley*wei; tip.y2 = gry + this.scaley*wei;
