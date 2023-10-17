@@ -162,13 +162,13 @@ class TH1Painter extends THistPainter {
    }
 
    /** @summary Count histogram statistic */
-   countStat(cond) {
+   countStat(cond, count_skew) {
       const profile = this.isTProfile(),
             histo = this.getHisto(), xaxis = histo.fXaxis,
             left = this.getSelectIndex('x', 'left'),
             right = this.getSelectIndex('x', 'right'),
             fp = this.getFramePainter(),
-            res = { name: histo.fName, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, integral: 0, entries: this.stat_entries, xmax: 0, wmax: 0 },
+            res = { name: histo.fName, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, integral: 0, entries: this.stat_entries, xmax: 0, wmax: 0, skewx: 0 },
             has_counted_stat = !fp.isAxisZoomed('x') && (Math.abs(histo.fTsumw) > 1e-300);
       let stat_sumw = 0, stat_sumwx = 0, stat_sumwx2 = 0, stat_sumwy = 0, stat_sumwy2 = 0,
           i, xx = 0, w = 0, xmax = null, wmax = null;
@@ -219,6 +219,21 @@ class TH1Painter extends THistPainter {
          res.wmax = wmax;
       }
 
+      if (count_skew) {
+         let sum = 0, np = 0;
+         for (i = left; i < right; ++i) {
+            xx = xaxis.GetBinCoord(i + 0.5);
+            if (cond && !cond(xx)) continue;
+            w = profile ? histo.fBinEntries[i + 1] : histo.getBinContent(i + 1);
+            np += w;
+            sum += w * Math.pow(xx - res.meanx, 3);
+         }
+
+         const stddev3 = res.rmsx * res.rmsx * res.rmsx;
+         if (np * stddev3 !== 0)
+            res.skewx = sum / (np * stddev3);
+      }
+
       return res;
    }
 
@@ -230,7 +245,6 @@ class TH1Painter extends THistPainter {
       if (dostat === 1) dostat = 1111;
 
       const histo = this.getHisto(),
-          data = this.countStat(),
           print_name = dostat % 10,
           print_entries = Math.floor(dostat / 10) % 10,
           print_mean = Math.floor(dostat / 100) % 10,
@@ -239,7 +253,9 @@ class TH1Painter extends THistPainter {
           print_over = Math.floor(dostat / 100000) % 10,
           print_integral = Math.floor(dostat / 1000000) % 10,
           print_skew = Math.floor(dostat / 10000000) % 10,
-          print_kurt = Math.floor(dostat / 100000000) % 10;
+          print_kurt = Math.floor(dostat / 100000000) % 10,
+          data = this.countStat(undefined, print_skew > 0);
+
 
       // make empty at the beginning
       stat.clearPave();
@@ -280,7 +296,7 @@ class TH1Painter extends THistPainter {
             stat.addText('Integral = ' + stat.format(data.integral, 'entries'));
 
          if (print_skew > 0)
-            stat.addText('Skew = <not avail>');
+            stat.addText('Skew = ' + stat.format(data.skewx));
 
          if (print_kurt > 0)
             stat.addText('Kurt = <not avail>');
