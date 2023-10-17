@@ -73633,8 +73633,9 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
       const histo = this.getHisto(), xaxis = histo.fXaxis, yaxis = histo.fYaxis,
             fp = this.getFramePainter(),
             funcs = fp.getGrFuncs(this.options.second_x, this.options.second_y),
-            res = { name: histo.fName, entries: 0, eff_entries: 0, integral: 0, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix: [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    xmax: 0, ymax: 0, wmax: null, skewx: 0, skewy: 0, skewd: 0 },
+            res = { name: histo.fName, entries: 0, eff_entries: 0, integral: 0,
+                    meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix: [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    xmax: 0, ymax: 0, wmax: null, skewx: 0, skewy: 0, skewd: 0, kurtx: 0, kurty: 0, kurtd: 0 },
             has_counted_stat = !fp.isAxisZoomed('x') && !fp.isAxisZoomed('y') && (Math.abs(histo.fTsumw) > 1e-300) && !cond;
       let stat_sum0 = 0, stat_sumw2 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
           stat_sumx2 = 0, stat_sumy2 = 0,
@@ -73760,7 +73761,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
       res.eff_entries = stat_sumw2 ? stat_sum0*stat_sum0/stat_sumw2 : Math.abs(stat_sum0);
 
       if (count_skew && !this.isTH2Poly()) {
-         let sumx = 0, sumy = 0, np = 0, w = 0;
+         let sumx3 = 0, sumy3 = 0, sumx4 = 0, sumy4 = 0, np = 0, w = 0;
          for (let xi = xleft; xi < xright; ++xi) {
             xx = xaxis.GetBinCoord(xi + 0.5);
             for (let yi = yleft; yi < yright; ++yi) {
@@ -73768,18 +73769,27 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
                if (cond && !cond(xx, yy)) continue;
                w = histo.getBinContent(xi + 1, yi + 1);
                np += w;
-               sumx += w * Math.pow(xx - res.meanx, 3);
-               sumy += w * Math.pow(yy - res.meany, 3);
+               sumx3 += w * Math.pow(xx - res.meanx, 3);
+               sumy3 += w * Math.pow(yy - res.meany, 3);
+               sumx4 += w * Math.pow(xx - res.meanx, 4);
+               sumy4 += w * Math.pow(yy - res.meany, 4);
             }
          }
 
-         const stddev3x = res.rmsx * res.rmsx * res.rmsx,
-               stddev3y = res.rmsy * res.rmsy * res.rmsy;
+         const stddev3x = Math.pow(res.rmsx, 3),
+               stddev3y = Math.pow(res.rmsy, 3),
+               stddev4x = Math.pow(res.rmsx, 4),
+               stddev4y = Math.pow(res.rmsy, 4);
          if (np * stddev3x !== 0)
-            res.skewx = sumx / (np * stddev3x);
+            res.skewx = sumx3 / (np * stddev3x);
          if (np * stddev3y !== 0)
-            res.skewy = sumy / (np * stddev3y);
+            res.skewy = sumy3 / (np * stddev3y);
          res.skewd = res.eff_entries > 0 ? Math.sqrt(6/res.eff_entries) : 0;
+         if (np * stddev4x !== 0)
+            res.kurtx = sumx4 / (np * stddev4x) - 3;
+         if (np * stddev4y !== 0)
+            res.kurty = sumy4 / (np * stddev4y) - 3;
+         res.kurtd = res.eff_entries > 0 ? Math.sqrt(24/res.eff_entries) : 0;
       }
 
       return res;
@@ -73801,7 +73811,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
             print_integral = Math.floor(dostat / 1000000) % 10,
             print_skew = Math.floor(dostat / 10000000) % 10,
             print_kurt = Math.floor(dostat / 100000000) % 10,
-            data = this.countStat(undefined, print_skew > 0);
+            data = this.countStat(undefined, (print_skew > 0) || (print_kurt > 0));
 
       stat.clearPave();
 
@@ -73832,8 +73842,13 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
          stat.addText(`Skewness y = ${stat.format(data.skewy)}`);
       }
 
-      if (print_kurt > 0)
-         stat.addText('Kurt = <undef>');
+      if (print_kurt === 2) {
+         stat.addText(`Kurtosis x = ${stat.format(data.kurtx)} #pm ${stat.format(data.kurtd)}`);
+         stat.addText(`Kurtosis y = ${stat.format(data.kurty)} #pm ${stat.format(data.kurtd)}`);
+      } else if (print_kurt > 0) {
+         stat.addText(`Kurtosis x = ${stat.format(data.kurtx)}`);
+         stat.addText(`Kurtosis y = ${stat.format(data.kurty)}`);
+      }
 
       if ((print_under > 0) || (print_over > 0)) {
          const get = i => data.matrix[i].toFixed(0);
@@ -78157,7 +78172,7 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
             right = this.getSelectIndex('x', 'right'),
             fp = this.getFramePainter(),
             res = { name: histo.fName, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, integral: 0,
-                    entries: this.stat_entries, eff_entries: 0, xmax: 0, wmax: 0, skewx: 0, skewd: 0 },
+                    entries: this.stat_entries, eff_entries: 0, xmax: 0, wmax: 0, skewx: 0, skewd: 0, kurtx: 0, kurtd: 0 },
             has_counted_stat = !fp.isAxisZoomed('x') && (Math.abs(histo.fTsumw) > 1e-300);
       let stat_sumw = 0, stat_sumw2 = 0, stat_sumwx = 0, stat_sumwx2 = 0, stat_sumwy = 0, stat_sumwy2 = 0,
           i, xx = 0, w = 0, xmax = null, wmax = null;
@@ -78215,19 +78230,23 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
       }
 
       if (count_skew) {
-         let sum = 0, np = 0;
+         let sum3 = 0, sum4 = 0, np = 0;
          for (i = left; i < right; ++i) {
             xx = xaxis.GetBinCoord(i + 0.5);
             if (cond && !cond(xx)) continue;
             w = profile ? histo.fBinEntries[i + 1] : histo.getBinContent(i + 1);
             np += w;
-            sum += w * Math.pow(xx - res.meanx, 3);
+            sum3 += w * Math.pow(xx - res.meanx, 3);
+            sum4 += w * Math.pow(xx - res.meanx, 4);
          }
 
-         const stddev3 = res.rmsx * res.rmsx * res.rmsx;
+         const stddev3 = Math.pow(res.rmsx, 3), stddev4 = Math.pow(res.rmsx, 4);
          if (np * stddev3 !== 0)
-            res.skewx = sum / (np * stddev3);
+            res.skewx = sum3 / (np * stddev3);
          res.skewd = res.eff_entries > 0 ? Math.sqrt(6/res.eff_entries) : 0;
+         if (np * stddev4 !== 0)
+            res.kurtx = sum4 / (np * stddev4) - 3;
+         res.kurtd = res.eff_entries > 0 ? Math.sqrt(24/res.eff_entries) : 0;
       }
 
       return res;
@@ -78250,7 +78269,7 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
             print_integral = Math.floor(dostat / 1000000) % 10,
             print_skew = Math.floor(dostat / 10000000) % 10,
             print_kurt = Math.floor(dostat / 100000000) % 10,
-            data = this.countStat(undefined, print_skew > 0);
+            data = this.countStat(undefined, (print_skew > 0) || (print_kurt > 0));
 
 
       // make empty at the beginning
@@ -78296,8 +78315,10 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
          else if (print_skew > 0)
             stat.addText(`Skewness = ${stat.format(data.skewx)}`);
 
-         if (print_kurt > 0)
-            stat.addText('Kurt = <not avail>');
+         if (print_kurt === 2)
+            stat.addText(`Kurtosis = ${stat.format(data.kurtx)} #pm ${stat.format(data.kurtd)}`);
+         else if (print_kurt > 0)
+            stat.addText(`Kurtosis = ${stat.format(data.kurtx)}`);
       }
 
       if (dofit) stat.fillFunctionStat(this.findFunction(clTF1), dofit);
@@ -79616,7 +79637,8 @@ class TH3Painter extends THistPainter {
             k2 = this.getSelectIndex('z', 'right'),
             fp = this.getFramePainter(),
             res = { name: histo.fName, entries: 0, eff_entries: 0, integral: 0,
-                    meanx: 0, meany: 0, meanz: 0, rmsx: 0, rmsy: 0, rmsz: 0, skewx: 0, skewy: 0, skewz: 0, skewd: 0 },
+                    meanx: 0, meany: 0, meanz: 0, rmsx: 0, rmsy: 0, rmsz: 0,
+                    skewx: 0, skewy: 0, skewz: 0, skewd: 0, kurtx: 0, kurty: 0, kurtz: 0, kurtd: 0 },
             has_counted_stat = (Math.abs(histo.fTsumw) > 1e-300) && !fp.isAxisZoomed('x') && !fp.isAxisZoomed('y') && !fp.isAxisZoomed('z');
       let xi, yi, zi, xx, xside, yy, yside, zz, zside, cont,
           stat_sum0 = 0, stat_sumw2 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
@@ -79683,7 +79705,7 @@ class TH3Painter extends THistPainter {
       res.eff_entries = stat_sumw2 ? stat_sum0*stat_sum0/stat_sumw2 : Math.abs(stat_sum0);
 
       if (count_skew && !this.isTH2Poly()) {
-         let sumx = 0, sumy = 0, sumz = 0, np = 0, w = 0;
+         let sumx3 = 0, sumy3 = 0, sumz3 = 0, sumx4 = 0, sumy4 = 0, sumz4 = 0, np = 0, w = 0;
          for (let xi = i1; xi < i2; ++xi) {
             xx = xaxis.GetBinCoord(xi + 0.5);
             for (let yi = j1; yi < j2; ++yi) {
@@ -79693,23 +79715,38 @@ class TH3Painter extends THistPainter {
                   if (cond && !cond(xx, yy, zz)) continue;
                   w = histo.getBinContent(xi + 1, yi + 1, zi + 1);
                   np += w;
-                  sumx += w * Math.pow(xx - res.meanx, 3);
-                  sumy += w * Math.pow(yy - res.meany, 3);
-                  sumz += w * Math.pow(zz - res.meany, 3);
+                  sumx3 += w * Math.pow(xx - res.meanx, 3);
+                  sumy3 += w * Math.pow(yy - res.meany, 3);
+                  sumz3 += w * Math.pow(zz - res.meany, 3);
+                  sumx4 += w * Math.pow(xx - res.meanx, 4);
+                  sumy4 += w * Math.pow(yy - res.meany, 4);
+                  sumz4 += w * Math.pow(yy - res.meany, 4);
                }
             }
          }
 
-         const stddev3x = res.rmsx * res.rmsx * res.rmsx,
-               stddev3y = res.rmsy * res.rmsy * res.rmsy,
-               stddev3z = res.rmsz * res.rmsz * res.rmsz;
+         const stddev3x = Math.pow(res.rmsx, 3),
+               stddev3y = Math.pow(res.rmsy, 3),
+               stddev3z = Math.pow(res.rmsz, 3),
+               stddev4x = Math.pow(res.rmsx, 4),
+               stddev4y = Math.pow(res.rmsy, 4),
+               stddev4z = Math.pow(res.rmsz, 4);
+
          if (np * stddev3x !== 0)
-            res.skewx = sumx / (np * stddev3x);
+            res.skewx = sumx3 / (np * stddev3x);
          if (np * stddev3y !== 0)
-            res.skewy = sumy / (np * stddev3y);
+            res.skewy = sumy3 / (np * stddev3y);
          if (np * stddev3z !== 0)
-            res.skewz = sumz / (np * stddev3z);
+            res.skewz = sumz3 / (np * stddev3z);
          res.skewd = res.eff_entries > 0 ? Math.sqrt(6/res.eff_entries) : 0;
+
+         if (np * stddev4x !== 0)
+            res.kurtx = sumx4 / (np * stddev4x) - 3;
+         if (np * stddev4y !== 0)
+            res.kurty = sumy4 / (np * stddev4y) - 3;
+         if (np * stddev4z !== 0)
+            res.kurtz = sumz4 / (np * stddev4z) - 3;
+         res.kurtd = res.eff_entries > 0 ? Math.sqrt(24/res.eff_entries) : 0;
       }
 
       return res;
@@ -79729,11 +79766,12 @@ class TH3Painter extends THistPainter {
             print_rms = Math.floor(dostat / 1000) % 10,
             print_integral = Math.floor(dostat / 1000000) % 10,
             print_skew = Math.floor(dostat / 10000000) % 10,
-            data = this.countStat(undefined, print_skew > 0);
+            print_kurt = Math.floor(dostat / 100000000) % 10,
+            data = this.countStat(undefined, (print_skew > 0) || (print_kurt > 0));
 
             // print_under = Math.floor(dostat / 10000) % 10,
             // print_over = Math.floor(dostat / 100000) % 10,
-            // print_kurt = Math.floor(dostat / 100000000) % 10;
+            // ;
 
       stat.clearPave();
 
@@ -79767,6 +79805,17 @@ class TH3Painter extends THistPainter {
          stat.addText(`Skewness y = ${stat.format(data.skewy)}`);
          stat.addText(`Skewness z = ${stat.format(data.skewz)}`);
       }
+
+      if (print_kurt === 2) {
+         stat.addText(`Kurtosis x = ${stat.format(data.kurtx)} #pm ${stat.format(data.kurtd)}`);
+         stat.addText(`Kurtosis y = ${stat.format(data.kurty)} #pm ${stat.format(data.kurtd)}`);
+         stat.addText(`Kurtosis z = ${stat.format(data.kurtz)} #pm ${stat.format(data.kurtd)}`);
+      } else if (print_kurt > 0) {
+         stat.addText(`Kurtosis x = ${stat.format(data.kurtx)}`);
+         stat.addText(`Kurtosis y = ${stat.format(data.kurty)}`);
+         stat.addText(`Kurtosis z = ${stat.format(data.kurtz)}`);
+      }
+
 
       if (dofit) stat.fillFunctionStat(this.findFunction('TF3'), dofit);
 
