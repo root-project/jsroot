@@ -5,7 +5,6 @@ import { TRandom, floatToString } from '../base/BasePainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { TAxisPainter } from '../gpad/TAxisPainter.mjs';
 import { createLineSegments, PointsCreator, Box3D } from '../base/base3d.mjs';
-import { TPavePainter } from '../hist/TPavePainter.mjs';
 import { THistPainter } from '../hist2d/THistPainter.mjs';
 import { assignFrame3DMethods } from './hist3d.mjs';
 
@@ -832,12 +831,11 @@ class TH3Painter extends THistPainter {
          painter.decodeOptions(opt);
          painter.checkPadRange();
          painter.scanContent();
+         painter.createStat(); // only when required
          return painter.redraw();
-      }).then(() => {
-         const stats = painter.createStat(); // only when required
-         if (stats)
-            return TPavePainter.draw(dom, stats, '');
-      }).then(() => {
+      })
+      .then(() => painter.drawNextFunction(0))
+      .then(() => {
          painter.fillToolbar();
          return painter;
       });
