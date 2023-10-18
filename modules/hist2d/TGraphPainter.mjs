@@ -439,7 +439,7 @@ class TGraphPainter extends ObjectPainter {
 
       // FIXME: check if needed, can be removed easily
       const pp = this.getPadPainter(),
-          rect = pp?.getPadRect() || { width: 800, height: 600 };
+            rect = pp?.getPadRect() || { width: 800, height: 600 };
 
       pmain = {
           pad_layer: true,
@@ -457,7 +457,7 @@ class TGraphPainter extends ObjectPainter {
              return value * this.pw;
           },
           gry(value) {
-             if (this.pad.fLogy)
+             if (this.pad.fLogv ?? this.pad.fLogy)
                 value = (value > 0) ? Math.log10(value) : this.pad.fUymin;
              else
                 value = (value - this.pad.fY1) / (this.pad.fY2 - this.pad.fY1);

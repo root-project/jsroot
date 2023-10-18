@@ -1773,7 +1773,7 @@ class TH2Painter extends THistPainter {
           zdiff, dgrx, dgry, xx, yy, ww, hh, xyfactor,
           uselogz = false, logmin = 0;
 
-      if (pad?.fLogz && (absmax > 0)) {
+      if ((pad?.fLogv ?? pad?.fLogz) && (absmax > 0)) {
          uselogz = true;
          const logmax = Math.log(absmax);
          if (absmin > 0)
