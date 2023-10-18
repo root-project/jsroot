@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '17/10/2023',
+version_date = '18/10/2023',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -8875,6 +8875,7 @@ const symbols_map = {
    '#downarrow': '\u2193',
    '#circ': '\u02C6', // ^
    '#pm': '\xB1',
+   '#mp': '\u2213',
    '#doublequote': '\u2033',
    '#geq': '\u2265',
    '#times': '\xD7',
@@ -69778,6 +69779,8 @@ class TPavePainter extends ObjectPainter {
             framep = this.getFramePainter(),
             contour = main.fContour,
             levels = contour?.getLevels(),
+            is_th3 = main.getDimension() === 3,
+            log = (is_th3 ? pad?.fLogv : pad?.fLogz) ?? 0,
             draw_palette = main._color_palette,
             zaxis = main?.getObject()?.fZaxis,
             sizek = pad?.fTickz ? 0.35 : 0.7;
@@ -69787,7 +69790,7 @@ class TPavePainter extends ObjectPainter {
       this._palette_vertical = (palette.fX2NDC - palette.fX1NDC) < (palette.fY2NDC - palette.fY1NDC);
 
       axis.fTickSize = 0.6 * s_width / width; // adjust axis ticks size
-      if (typeof zaxis?.fLabelOffset !== 'undefined') {
+      if ((typeof zaxis?.fLabelOffset !== 'undefined') && !is_th3) {
          axis.fTitle = zaxis.fTitle;
          axis.fTitleSize = zaxis.fTitleSize;
          axis.fTitleOffset = zaxis.fTitleOffset;
@@ -69801,7 +69804,7 @@ class TPavePainter extends ObjectPainter {
          this.z_handle.source_axis = zaxis;
       }
 
-      if (contour && framep) {
+      if (contour && framep && !is_th3) {
          if ((framep.zmin !== undefined) && (framep.zmax !== undefined) && (framep.zmin !== framep.zmax)) {
             gzmin = framep.zmin;
             gzmax = framep.zmax;
@@ -69830,12 +69833,12 @@ class TPavePainter extends ObjectPainter {
 
       if (this._palette_vertical) {
          this._swap_side = palette.fX2NDC < 0.5;
-         this.z_handle.configureAxis('zaxis', gzmin, gzmax, zmin, zmax, true, [0, s_height], { log: pad?.fLogz ?? 0, fixed_ticks: cjust ? levels : null, maxTickSize: Math.round(s_width*sizek), swap_side: this._swap_side });
+         this.z_handle.configureAxis('zaxis', gzmin, gzmax, zmin, zmax, true, [0, s_height], { log, fixed_ticks: cjust ? levels : null, maxTickSize: Math.round(s_width*sizek), swap_side: this._swap_side });
          axis_transform = this._swap_side ? null : `translate(${s_width})`;
          if (pad?.fTickz) axis_second = this._swap_side ? s_width : -s_width;
       } else {
          this._swap_side = palette.fY1NDC > 0.5;
-         this.z_handle.configureAxis('zaxis', gzmin, gzmax, zmin, zmax, false, [0, s_width], { log: pad?.fLogz ?? 0, fixed_ticks: cjust ? levels : null, maxTickSize: Math.round(s_height*sizek), swap_side: this._swap_side });
+         this.z_handle.configureAxis('zaxis', gzmin, gzmax, zmin, zmax, false, [0, s_width], { log, fixed_ticks: cjust ? levels : null, maxTickSize: Math.round(s_height*sizek), swap_side: this._swap_side });
          axis_transform = this._swap_side ? null : `translate(0,${s_height})`;
          if (pad?.fTickz) axis_second = this._swap_side ? s_height : -s_height;
       }
@@ -70661,8 +70664,14 @@ class THistDrawOptions {
       if (d.check('ARR'))
          this.Arrow = true;
 
-      if (d.check('BOX', true))
-         this.BoxStyle = 10 + d.partAsInt();
+      if (d.check('BOX', true)) {
+         this.BoxStyle = 10;
+         if (d.part.indexOf('1') >= 0) this.BoxStyle = 11; else
+         if (d.part.indexOf('2') >= 0) this.BoxStyle = 12; else
+         if (d.part.indexOf('3') >= 0) this.BoxStyle = 13;
+         if (d.part.indexOf('Z') >= 0) this.Zscale = true;
+         if (d.part.indexOf('H') >= 0) this.Zvert = false;
+      }
 
       this.Box = this.BoxStyle > 0;
 
@@ -72362,15 +72371,16 @@ class THistPainter extends ObjectPainter {
          else
             Object.assign(pal, { fX1NDC: 1.005 - gStyle.fPadRightMargin, fX2NDC: 1.045 - gStyle.fPadRightMargin, fY1NDC: gStyle.fPadBottomMargin, fY2NDC: 1 - gStyle.fPadTopMargin });
 
-         const zaxis = this.getHisto().fZaxis;
+         Object.assign(pal.fAxis, { fChopt: '+', fLineSyle: 1, fLineWidth: 1, fTextAngle: 0, fTextAlign: 11 });
 
-         Object.assign(pal.fAxis, { fTitle: zaxis.fTitle, fTitleSize: zaxis.fTitleSize,
-                                    fTitleOffset: zaxis.fTitleOffset, fTitleColor: zaxis.fTitleColor,
-                                    fChopt: '+',
-                                    fLineColor: zaxis.fAxisColor, fLineSyle: 1, fLineWidth: 1,
-                                    fTextAngle: 0, fTextSize: zaxis.fLabelSize, fTextAlign: 11,
-                                    fTextColor: zaxis.fLabelColor, fTextFont: zaxis.fLabelFont,
-                                    fLabelOffset: zaxis.fLabelOffset });
+         if (this.getDimension() === 2) {
+            const zaxis = this.getHisto().fZaxis;
+            Object.assign(pal.fAxis, { fTitle: zaxis.fTitle, fTitleSize: zaxis.fTitleSize,
+                                       fTitleOffset: zaxis.fTitleOffset, fTitleColor: zaxis.fTitleColor,
+                                       fLineColor: zaxis.fAxisColor, fTextSize: zaxis.fLabelSize,
+                                       fTextColor: zaxis.fLabelColor, fTextFont: zaxis.fLabelFont,
+                                       fLabelOffset: zaxis.fLabelOffset });
+         }
 
          // place colz in the beginning, that stat box is always drawn on the top
          this.addFunction(pal, true);
@@ -80044,6 +80054,8 @@ class TH3Painter extends THistPainter {
          }
       }
 
+      this._box_option = box_option;
+
       if (use_scale && logv) {
          if (this.gminposbin && this.gmaxbin > this.gminposbin) {
             scale_offset = Math.log(this.gminposbin) - 0.1;
@@ -80300,7 +80312,10 @@ class TH3Painter extends THistPainter {
          });
       }
 
-      return pr.then(() => this.drawHistTitle()).then(() => this);
+      if (this.isMainPainter())
+        pr = pr.then(() => this.drawColorPalette(this.options.Zscale && (this._box_option === 12 || this._box_option === 13))).then(() => this.drawHistTitle());
+
+      return pr.then(() => this);
    }
 
    /** @summary Fill pad toolbar with TH3-related functions */
