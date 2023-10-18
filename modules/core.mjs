@@ -1657,10 +1657,10 @@ function getMethods(typename, obj) {
             }
          }
          return nx * ny;
-      }
+      };
       m.GetPad = function(number) {
          return this.fPrimitives.arr.find(elem => { return elem._typename === clTPad && elem.fNumber === number; });
-      }
+      };
    }
 
    if (typename.indexOf(clTProfile) === 0) {
