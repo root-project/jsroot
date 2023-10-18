@@ -132,7 +132,7 @@
      { "opt": "glbox2", "title": "draw spheres with color derived from bin content" },
      { "opt": "glcol", "file": "histpainter6.root", "item": "glvoxel",  "title": "draw semi-transparent boxes with color derived from bin content" },
      { "name": "prof3d", "file": "profile3d.root", "item": "profile3d", "opt": "", "title": "Example of TProfile3D class" },
-     { "name": "optstat", "file": "histpainter6.root", "item": "draw_th3_box;1/h3box", "opt": "box,optstat111111111,stat", "title": "Force stats box drawing with all possible entries", "asurl": true }
+     { "name": "optstat", "file": "histpainter6.root", "item": "draw_th3_box;1/h3box", "opt": "box,optstat111111111", "title": "Force stats box drawing with all possible entries", "asurl": true }
    ],
    "TTree" : [
       { "name": "Draw", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "px", "title": "Histogram data of TBranch object" },
