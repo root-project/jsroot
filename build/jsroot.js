@@ -62891,8 +62891,9 @@ class TFramePainter extends ObjectPainter {
       this.logx = this.logy = 0;
 
       const w = this.getFrameWidth(), h = this.getFrameHeight(),
-            pp = this.getPadPainter(),
-            pad = pp.getRootPad();
+            pp = this.getPadPainter(), pad = pp.getRootPad(),
+            pad_logx = pad.fLogx,
+            pad_logy = (opts.ndim === 1 ? pad.fLogv : undefined) ?? pad.fLogy;
 
       this.scales_ndim = opts.ndim;
 
@@ -62903,7 +62904,7 @@ class TFramePainter extends ObjectPainter {
       this.scale_ymax = this.ymax;
 
       if (opts.extra_y_space) {
-         const log_scale = this.swap_xy ? pad.fLogx : pad.fLogy;
+         const log_scale = this.swap_xy ? pad_logx : pad_logy;
          if (log_scale && (this.scale_ymax > 0))
             this.scale_ymax = Math.exp(Math.log(this.scale_ymax)*1.1);
          else
@@ -62954,7 +62955,7 @@ class TFramePainter extends ObjectPainter {
 
       this.x_handle.configureAxis('xaxis', this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, this.swap_xy, this.swap_xy ? [0, h] : [0, w],
                                       { reverse: this.reverse_x,
-                                        log: this.swap_xy ? pad.fLogy : pad.fLogx,
+                                        log: this.swap_xy ? pad_logy : pad_logx,
                                         noexp_changed: this.x_noexp_changed,
                                         symlog: this.swap_xy ? opts.symlog_y : opts.symlog_x,
                                         logcheckmin: this.swap_xy,
@@ -62968,7 +62969,7 @@ class TFramePainter extends ObjectPainter {
 
       this.y_handle.configureAxis('yaxis', this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, !this.swap_xy, this.swap_xy ? [0, w] : [0, h],
                                       { reverse: this.reverse_y,
-                                        log: this.swap_xy ? pad.fLogx : pad.fLogy,
+                                        log: this.swap_xy ? pad_logx : pad_logy,
                                         noexp_changed: this.y_noexp_changed,
                                         symlog: this.swap_xy ? opts.symlog_x : opts.symlog_y,
                                         logcheckmin: (opts.ndim < 2) || this.swap_xy,
@@ -69779,7 +69780,7 @@ class TPavePainter extends ObjectPainter {
             framep = this.getFramePainter(),
             contour = main.fContour,
             levels = contour?.getLevels(),
-            is_th3 = main.getDimension() === 3,
+            is_th3 = isFunc(main?.getDimension) && (main.getDimension() === 3),
             log = (is_th3 ? pad?.fLogv : pad?.fLogz) ?? 0,
             draw_palette = main._color_palette,
             zaxis = main?.getObject()?.fZaxis,
@@ -70513,6 +70514,9 @@ class THistDrawOptions {
 
       if (d.check('OPTSTAT', true)) this.optstat = d.partAsInt();
       if (d.check('OPTFIT', true)) this.optfit = d.partAsInt();
+
+      if ((this.optstat || this.optstat) && histo?.TestBit(kNoStats))
+         histo?.InvertBit(kNoStats);
 
       if (d.check('NOSTAT')) this.NoStat = true;
       if (d.check('STAT')) this.ForceStat = true;
@@ -74494,7 +74498,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
           zdiff, dgrx, dgry, xx, yy, ww, hh, xyfactor,
           uselogz = false, logmin = 0;
 
-      if (pad?.fLogz && (absmax > 0)) {
+      if ((pad?.fLogv ?? pad?.fLogz) && (absmax > 0)) {
          uselogz = true;
          const logmax = Math.log(absmax);
          if (absmin > 0)
@@ -76743,8 +76747,10 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       this.z_handle.setPadName(this.getPadName());
       this.z_handle.snapid = this.snapid;
    }
+
    this.z_handle.configureAxis('zaxis', this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz],
-                               { log: pad?.fLogz ?? 0, reverse: opts.reverse_z });
+                               { log: ((opts.use_y_for_z || (opts.ndim === 2)) ? pad?.fLogv : undefined) ?? pad?.fLogz ?? 0,
+                                  reverse: opts.reverse_z });
    this.z_handle.assignFrameMembers(this, 'z');
    this.z_handle.extractDrawAttributes(scalingSize);
 
@@ -76797,7 +76803,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          const text3d = createTextGeometry(this, lbl, this.x_handle.labelsFont.size);
          text3d.computeBoundingBox();
          const draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
-             draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
+               draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
          text3d.center = true; // place central
 
          text3d.offsety = this.x_handle.labelsOffset + (grmaxy - grminy) * 0.005;
@@ -79533,19 +79539,20 @@ class TH2Painter extends TH2Painter$2 {
       if (reason === 'resize') {
          if (is_main && main.resize3D()) main.render3D();
       } else {
-         const pad = this.getPadPainter().getRootPad(true);
+         const pad = this.getPadPainter().getRootPad(true),
+               logz = pad?.fLogv ?? pad?.fLogz;
          let zmult = 1;
 
          if (this.options.minimum !== kNoZoom && this.options.maximum !== kNoZoom) {
             this.zmin = this.options.minimum;
             this.zmax = this.options.maximum;
          } else if (this.draw_content || (this.gmaxbin !== 0)) {
-            this.zmin = pad?.fLogz ? this.gminposbin * 0.3 : this.gminbin;
+            this.zmin = logz ? this.gminposbin * 0.3 : this.gminbin;
             this.zmax = this.gmaxbin;
             zmult = 1 + 2*gStyle.fHistTopMargin;
          }
 
-         if (pad?.fLogz && (this.zmin <= 0))
+         if (logz && (this.zmin <= 0))
             this.zmin = this.zmax * 1e-5;
 
          this.deleteAttr();
@@ -80428,12 +80435,11 @@ class TH3Painter extends THistPainter {
          painter.decodeOptions(opt);
          painter.checkPadRange();
          painter.scanContent();
+         painter.createStat(); // only when required
          return painter.redraw();
-      }).then(() => {
-         const stats = painter.createStat(); // only when required
-         if (stats)
-            return TPavePainter.draw(dom, stats, '');
-      }).then(() => {
+      })
+      .then(() => painter.drawNextFunction(0))
+      .then(() => {
          painter.fillToolbar();
          return painter;
       });
@@ -100284,7 +100290,7 @@ drawFuncs = { lst: [
    { name: 'TEveGeoShapeExtract', sameas: clTGeoVolume, opt: ';more;all;count;projx;projz;wire;dflt' },
    { name: nsREX+'REveGeoShapeExtract', sameas: clTGeoVolume, opt: ';more;all;count;projx;projz;wire;dflt' },
    { name: 'TGeoOverlap', sameas: clTGeoVolume, opt: ';more;all;count;projx;projz;wire;dflt', dflt: 'dflt', ctrl: 'expand' },
-   { name: 'TGeoManager', sameas: clTGeoVolume, opt: ';more;all;count;projx;projz;wire;tracks;no_screen;dflt', dflt: 'expand', ctrl: 'dflt', noappend: true },
+   { name: 'TGeoManager', sameas: clTGeoVolume, opt: ';more;all;count;projx;projz;wire;tracks;no_screen;dflt', dflt: 'expand', ctrl: 'dflt', noappend: true, exapnd_after_draw: true },
    { name: 'TGeoVolumeAssembly', sameas: clTGeoVolume, /* icon: 'img_geoassembly', */ opt: ';more;all;count' },
    { name: /^TGeo/, class: () => import_geo().then(h => h.TGeoPainter), get_expand: () => import_geo().then(h => h.expandGeoObject), opt: ';more;all;axis;compa;count;projx;projz;wire;no_screen;dflt', dflt: 'dflt', ctrl: 'expand' },
    { name: 'TAxis3D', icon: 'img_graph', draw: () => import_geo().then(h => h.drawAxis3D), direct: true },
@@ -102473,7 +102479,7 @@ class HierarchyPainter extends BasePainter {
          if (can_draw && can_expand && !drawopt) {
             // if default action specified as expand, disable drawing
             // if already displayed, try to expand
-            if (dflt_expand || (handle?.dflt === 'expand') || this.isItemDisplayed(itemname)) can_draw = false;
+            if (dflt_expand || (handle?.dflt === 'expand') || (handle?.exapnd_after_draw && this.isItemDisplayed(itemname))) can_draw = false;
          }
 
          if (can_draw && !drawopt)
@@ -102707,6 +102713,7 @@ class HierarchyPainter extends BasePainter {
                   menu.add('Expand', () => this.expandItem(itemname), 'Exapnd content of object');
                else {
                   menu.add('Unexpand', () => {
+                     hitem._more = true;
                      delete hitem._childs;
                      delete hitem._isopen;
                      if (hitem.expand_item)
@@ -105864,11 +105871,11 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
 
       // FIXME: check if needed, can be removed easily
       const pp = this.getPadPainter(),
-          rect = pp?.getPadRect() || { width: 800, height: 600 };
+            rect = pp?.getPadRect() || { width: 800, height: 600 };
 
       pmain = {
           pad_layer: true,
-          pad: pp?.getRootPad(true),
+          pad: pp?.getRootPad(true) ?? create$1(clTPad),
           pw: rect.width,
           ph: rect.height,
           fX1NDC: 0.1, fX2NDC: 0.9, fY1NDC: 0.1, fY2NDC: 0.9,
@@ -105882,7 +105889,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
              return value * this.pw;
           },
           gry(value) {
-             if (this.pad.fLogy)
+             if (this.pad.fLogv ?? this.pad.fLogy)
                 value = (value > 0) ? Math.log10(value) : this.pad.fUymin;
              else
                 value = (value - this.pad.fY1) / (this.pad.fY2 - this.pad.fY1);
@@ -107715,11 +107722,11 @@ class THStackPainter extends ObjectPainter {
       }
 
       const adjustRange = () => {
-         if (pad && (this.options.ndim === 1 ? pad.fLogy : pad.fLogz)) {
+         if (pad && (pad.fLogv ?? (this.options.ndim === 1 ? pad.fLogy : pad.fLogz))) {
             if (max <= 0) max = 1;
             if (min <= 0) min = 1e-4*max;
             const kmin = 1/(1 + 0.5*Math.log10(max / min)),
-                kmax = 1 + 0.2*Math.log10(max / min);
+                  kmax = 1 + 0.2*Math.log10(max / min);
             min *= kmin;
             max *= kmax;
          } else if ((min > 0) && (min < 0.05*max))
@@ -111162,7 +111169,7 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
 
       if (pad) {
          logx = pad.fLogx;
-         logy = pad.fLogy;
+         logy = pad.fLogv ?? pad.fLogy;
          rw.xmin = pad.fUxmin;
          rw.xmax = pad.fUxmax;
          rw.ymin = pad.fUymin;

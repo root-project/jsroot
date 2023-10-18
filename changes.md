@@ -1,14 +1,18 @@
 # JSROOT changelog
 
 ## Changes in dev
-1. In log scales replace 10^1 label by 10
-2. Implement tickz draw option, used for color palette ticks
-3. Implement skewness and kurtosis calculations for histogram stats box
-4. Introduce "logv" draw option for TH3, use logarithmic scale for box volume
-5. Support color palette drawing for TH3
-6. Fix - expand item in hierarchy painter
-7. Fix - correctly use saved TF1 values for non-equidistant bins #270
-8. Fix - align of log labels on X axis
+1. Implement tickz draw option, used for color palette ticks
+2. Implement skewness and kurtosis calculations for histogram stats box
+3. Introduce "logv" draw option for TH3, use logarithmic scale for box volume
+4. Support color palette drawing for TH3
+
+
+## Changes in 7.5.1
+1. Fix - expand item in hierarchy painter
+2. Fix - correctly use saved TF1 values for non-equidistant bins #270
+3. Fix - in log scales replace 10^1 label by 10
+4. Fix - vertical align of log labels on X axis
+5. Fix - second click of the same item in hierarchy painter
 
 
 ## Changes in 7.5.0
