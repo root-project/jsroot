@@ -1858,6 +1858,7 @@ class HierarchyPainter extends BasePainter {
                   menu.add('Expand', () => this.expandItem(itemname), 'Exapnd content of object');
                else {
                   menu.add('Unexpand', () => {
+                     hitem._more = true;
                      delete hitem._childs;
                      delete hitem._isopen;
                      if (hitem.expand_item)
