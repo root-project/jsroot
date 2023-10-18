@@ -863,6 +863,13 @@ Following methods can be applied: "box", "pnt", "size", "ray" and "dflt". See mo
 Here is [running example](https://root.cern/js/latest/api.htm#custom_html_geometry) and [source code](https://github.com/root-project/jsroot/blob/master/demo/tgeo_build.htm).
 
 
+### Custom user class
+
+There is [code example](https://github.com/root-project/jsroot/tree/master/demo/custom) how custom user class can be implemented.
+It shows usage of different draw options for the class and ability to access sub-elements of the object using specialized `expand` function.
+
+
+
 ### Use with Node.js
 
 To install latest JSROOT release, just do:
