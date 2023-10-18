@@ -345,11 +345,12 @@
    </body>
 
    <script type="module">
-      import { settings, constants, httpRequest, decodeUrl, version, version_id, source_dir } from './modules/core.mjs';
+      import { settings, constants, httpRequest, decodeUrl, version, version_id, source_dir, gStyle } from './modules/core.mjs';
       import { cleanup } from './modules/base/ObjectPainter.mjs';
       import { registerForResize } from './modules/gui/utils.mjs';
       import { createRootColors } from './modules/base/colors.mjs';
       import { draw, makeImage } from './modules/draw.mjs';
+      import { readStyleFromURL } from './modules/gui.mjs';
       import { openFile } from './modules/io.mjs';
       import { HierarchyPainter, getHPainter } from './modules/gui/HierarchyPainter.mjs';
       import { testInteractivity } from './modules/testing.mjs';
@@ -423,9 +424,28 @@
          filepath = 'https://jsroot.gsi.de/files/';
       }
 
-      let keyid = null, optid, testfile, testobj, testinterval = 10, hpainter = null;
+      let keyid = null, optid, testfile, testobj, testinterval = 10, hpainter = null, init_style, init_palette;
+
+      function produceGlobalStyleCopy() {
+         // copy style when painter is loaded
+         if (!init_style && gStyle) {
+            init_style = Object.assign({}, gStyle);
+            init_palette = settings.Palette;
+         }
+      }
+
+      function restoreGlobalStyle() {
+         if (init_style && gStyle)
+            Object.assign(gStyle, init_style);
+         settings.Palette = init_palette;
+      }
+
+      produceGlobalStyleCopy();
 
       async function drawEntry(entry, object, option) {
+
+         restoreGlobalStyle();
+
          if (entry?.aspng)
             return makeImage({ format: 'png', object, option, width: 800, height: 600 })
                .then(png => {
@@ -448,6 +468,10 @@
              latex = d.get('latex', null),
              prev_latex = settings.Latex,
              nobrowser = d.has('nobrowser');
+
+         restoreGlobalStyle();
+
+         readStyleFromURL(url);
 
          if (latex !== null)
             settings.Latex = constants.Latex.fromString(latex);

@@ -37,7 +37,7 @@
      { "name": "docu", "file": "histpainter6.root", "layout": "vert32", "items": ["two_axis","draw_e1","draw_bar","draw_e34","draw_text"], "title":"several TH1 examples from THistPainter documentation" },
      { "name": "twoscales", "url": "?nobrowser&file=$$$tutorials_hist.root&item=[twoscales/[1],twoscales/[3]]&opt=[hist,yaxis_red;line_red;y+]", "title": "interactive second Y scale to draw axis for second histogram" },
      { "name": "twoscales2", "url": "?nobrowser&file=$$$tutorials_hist.root&item=[transpad/pad1/[1],transpad/pad2/[0]]&opt=[hist,Y+;yaxis_red]", "title": "interactive second Y scale to draw axis for second histogram" },
-     { "name": "optdate", "url": "?nobrowser&file=$$$hsimple.root&item=hpx;1&optdate=1652700372&optfile", "title": "Draw on canvas date and item title using optdate and optfile URL parameters" },
+     { "name": "optdate", "url": "?nobrowser&file=$$$hsimple.root&item=hpx;1&optdate=1652700372&optfile", "title": "Draw on canvas date and item name using optdate and optfile URL parameters" },
      { "name": "opttitle", "url": "?nobrowser&file=$$$hsimple.root&item=hpx;1&opttitle=0", "title": "Disable title drawing for histogram using opttitle=0 URL parameter" },
      { "name": "histmargin", "url": "?nobrowser&file=$$$hsimple.root&item=hpx;1&histmargin=0.5", "title": "Setting gStyle.fHistTopMargin = 0.5 to demonstrate it usage, &histmargin=0.5 in URL" }
    ],
