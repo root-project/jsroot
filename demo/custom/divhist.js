@@ -6,6 +6,9 @@ name: 'DivHist',
 // this is icon
 icon: 'img_histo1d',
 
+// supported draw options
+opt: ';pads',
+
 // draw function which accept three arguments, same as JSROOT.draw
 func: (dom, obj, opt) => {
 
@@ -27,7 +30,17 @@ func: (dom, obj, opt) => {
    }
 
    // draw new histogram
-   return JSROOT.draw(dom, hdiv, opt);
+   if (opt !== 'pads')
+      return JSROOT.draw(dom, hdiv, opt);
+
+   const canv = JSROOT.create('TCanvas');
+
+   canv.Divide(1, 3);
+   canv.GetPad(1).fPrimitives.Add(obj.fNum);
+   canv.GetPad(2).fPrimitives.Add(obj.fDen);
+   canv.GetPad(3).fPrimitives.Add(hdiv);
+   return JSROOT.draw(dom, canv);
+
 },
 
 // exapnd user object, provide elements which should be seen
