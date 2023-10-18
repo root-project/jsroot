@@ -2007,15 +2007,16 @@ class THistPainter extends ObjectPainter {
          else
             Object.assign(pal, { fX1NDC: 1.005 - gStyle.fPadRightMargin, fX2NDC: 1.045 - gStyle.fPadRightMargin, fY1NDC: gStyle.fPadBottomMargin, fY2NDC: 1 - gStyle.fPadTopMargin });
 
-         const zaxis = this.getHisto().fZaxis;
+         Object.assign(pal.fAxis, { fChopt: '+', fLineSyle: 1, fLineWidth: 1, fTextAngle: 0, fTextAlign: 11 });
 
-         Object.assign(pal.fAxis, { fTitle: zaxis.fTitle, fTitleSize: zaxis.fTitleSize,
-                                    fTitleOffset: zaxis.fTitleOffset, fTitleColor: zaxis.fTitleColor,
-                                    fChopt: '+',
-                                    fLineColor: zaxis.fAxisColor, fLineSyle: 1, fLineWidth: 1,
-                                    fTextAngle: 0, fTextSize: zaxis.fLabelSize, fTextAlign: 11,
-                                    fTextColor: zaxis.fLabelColor, fTextFont: zaxis.fLabelFont,
-                                    fLabelOffset: zaxis.fLabelOffset });
+         if (this.getDimension() === 2) {
+            const zaxis = this.getHisto().fZaxis;
+            Object.assign(pal.fAxis, { fTitle: zaxis.fTitle, fTitleSize: zaxis.fTitleSize,
+                                       fTitleOffset: zaxis.fTitleOffset, fTitleColor: zaxis.fTitleColor,
+                                       fLineColor: zaxis.fAxisColor, fTextSize: zaxis.fLabelSize,
+                                       fTextColor: zaxis.fLabelColor, fTextFont: zaxis.fLabelFont,
+                                       fLabelOffset: zaxis.fLabelOffset });
+         }
 
          // place colz in the beginning, that stat box is always drawn on the top
          this.addFunction(pal, true);
