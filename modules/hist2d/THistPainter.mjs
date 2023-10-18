@@ -150,6 +150,9 @@ class THistDrawOptions {
       if (d.check('OPTSTAT', true)) this.optstat = d.partAsInt();
       if (d.check('OPTFIT', true)) this.optfit = d.partAsInt();
 
+      if ((this.optstat || this.optstat) && histo?.TestBit(kNoStats))
+         histo?.InvertBit(kNoStats);
+
       if (d.check('NOSTAT')) this.NoStat = true;
       if (d.check('STAT')) this.ForceStat = true;
 
