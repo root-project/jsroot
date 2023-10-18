@@ -1,4 +1,13 @@
-JSROOT.addDrawFunc({ name: 'DivHist', icon: 'img_histo1d', func: (dom, obj, opt) => {
+JSROOT.addDrawFunc({
+
+// this is class name
+name: 'DivHist',
+
+// this is icon
+icon: 'img_histo1d',
+
+// draw function which accept three arguments, same as JSROOT.draw
+func: (dom, obj, opt) => {
 
    // clone histogram
    let hdiv = Object.assign({}, obj.fNum);
@@ -19,4 +28,22 @@ JSROOT.addDrawFunc({ name: 'DivHist', icon: 'img_histo1d', func: (dom, obj, opt)
 
    // draw new histogram
    return JSROOT.draw(dom, hdiv, opt);
-} });
+},
+
+// exapnd user object, provide elements which should be seen
+expand: (parent, obj) => {
+   parent._childs = [{
+      _kind: `ROOT.${obj.fNum._typename}`,
+      _name: 'Num',
+      _title: 'Title for fNum',
+      _obj: obj.fNum
+   }, {
+      _kind: `ROOT.${obj.fDen._typename}`,
+      _name: 'Den',
+      _title: 'Title for fDen',
+      _obj: obj.fDen
+   }];
+   return true;
+}
+
+});
