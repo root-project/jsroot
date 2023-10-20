@@ -5,6 +5,7 @@
 2. Implement skewness and kurtosis calculations for histogram stats box
 3. Introduce "logv" draw option for TH3, use logarithmic scale for box volume
 4. Support color palette drawing for TH3
+5. Support "[cutg]" draw option for TH2/TF2 surface plots
 
 
 ## Changes in 7.5.1

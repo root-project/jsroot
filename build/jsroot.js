@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '18/10/2023',
+version_date = '20/10/2023',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -72576,6 +72576,24 @@ class THistPainter extends ObjectPainter {
                j2: (hdim === 1) ? 1 : (args.nozoom ? this.nbinsy : this.getSelectIndex('y', 'right', 1 + args.extra)),
                min: 0, max: 0, sumz: 0, xbar1: 0, xbar2: 1, ybar1: 0, ybar2: 1
             };
+
+      if (args.cutg) {
+         // if using cutg - define rectengular region
+         let i1 = res.i2, i2 = res.i1, j1 = res.j2, j2 = res.j1;
+         for (let ii = res.i1; ii < res.i2; ++ii) {
+            for (let jj = res.j1; jj < res.j2; ++jj) {
+               if (args.cutg.IsInside(xaxis.GetBinCoord(ii + args.middle), yaxis.GetBinCoord(jj + args.middle))) {
+                  i1 = Math.min(i1, ii);
+                  i2 = Math.max(i2, ii+1);
+                  j1 = Math.min(j1, jj);
+                  j2 = Math.max(j2, jj+1);
+               }
+            }
+         }
+
+         res.i1 = i1; res.i2 = i2; res.j1 = j1; res.j2 = j2;
+      }
+
       let i, j, x, y, binz, binarea;
 
       res.grx = new Float32Array(res.i2+1);
@@ -77850,8 +77868,8 @@ function drawBinsSurf3D(painter, is_v7 = false) {
          main_grz = !main.logz ? main.grz : value => (value < axis_zmin) ? -0.1 : main.grz(value),
          main_grz_min = 0, main_grz_max = 2*main.size_z3d;
 
-   let handle = painter.prepareDraw({ rounding: false, use3d: true, extra: 1, middle: 0.5 });
-
+   let handle = painter.prepareDraw({ rounding: false, use3d: true, extra: 1, middle: 0.5,
+                                      cutg: isFunc(painter.options?.cutg?.IsInside) ? painter.options?.cutg : null });
    if ((handle.i2 - handle.i1 < 2) || (handle.j2 - handle.j1 < 2)) return;
 
    let ilevels = null, levels = null, palette = null;
@@ -111874,14 +111892,13 @@ class TF2Painter extends TH2Painter {
          opt = 'cont3';
       else if (d.opt === 'SAME')
          opt = 'cont2 same';
-      else
-         opt = d.opt;
 
       // workaround for old waves.C
-      if (opt === 'SAMECOLORZ' || opt === 'SAMECOLOR' || opt === 'SAMECOLZ')
-         opt = 'SAMECOL';
+      const o2 = isStr(opt) ? opt.toUpperCase() : '';
+      if (o2 === 'SAMECOLORZ' || o2 === 'SAMECOLOR' || o2 === 'SAMECOLZ')
+         opt = 'samecol';
 
-      if (opt.indexOf('SAME') === 0) {
+      if ((opt.indexOf('same') === 0) || (opt.indexOf('SAME') === 0)) {
          if (!getElementMainPainter(dom))
             opt = 'A_ADJUST_FRAME_' + opt.slice(4);
       }
@@ -111890,7 +111907,6 @@ class TF2Painter extends TH2Painter {
 
       if (webcanv_hist) {
          const dummy = new ObjectPainter(dom);
-
          hist = dummy.getPadPainter()?.findInPrimitives('Func', clTH2F);
       }
 
@@ -111905,7 +111921,6 @@ class TF2Painter extends TH2Painter {
       painter.webcanv_hist = webcanv_hist;
       painter.force_saved = force_saved;
       painter.createTF2Histogram(tf2, hist);
-
       return THistPainter._drawHist(painter, opt);
    }
 
