@@ -1190,7 +1190,7 @@ class TPavePainter extends ObjectPainter {
             print_fprob = (ndim === 1) ? Math.floor(dofit/1000) % 10 : 0;
 
       if (print_fchi2)
-         this.addText('#chi^2 / ndf = ' + this.format(f1.fChisquare, 'fit') + ' / ' + f1.fNDF);
+         this.addText('#chi^{2} / ndf = ' + this.format(f1.fChisquare, 'fit') + ' / ' + f1.fNDF);
       if (print_fprob)
          this.addText('Prob = ' + this.format(Prob(f1.fChisquare, f1.fNDF)));
       if (print_fval) {
