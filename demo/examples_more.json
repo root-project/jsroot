@@ -72,7 +72,8 @@
       { "name": "trans", "json": "web6canv/transparency.json.gz", "title": "Testing with TGraph without axes" },
       { "name": "ann3d", "json": "web6canv/annotation3d.json.gz", "title": "Output of tutorials/graphs/annotation3d.C with TF2 and custom histogram" },
       { "name": "gaxis2", "json": "web6canv/gaxis2.json.gz", "title": "TGaxis with custom function, output of tutorials/graphics/gaxis2.C macro" },
-      { "name": "fit2a", "json": "web6canv/fit2a.json.gz", "title": "TF2 function drawn with [cutg] option to cut axis range, output of tutorials/fit/fit2a.C macro" }
+      { "name": "fit2a", "json": "web6canv/fit2a.json.gz", "title": "TF2 function drawn with [cutg] option to cut axis range, output of tutorials/fit/fit2a.C macro" },
+      { "name": "fit2dHist", "json": "web6canv/fit2dHist.json.gz", "title": "Drawing stats box with TF2 parameters, use gStyle, output of tutorials/fit/fit2dHist.C macro" }
    ],
    "RCanvas" : [
       { "name": "raxis", "json": "rcanvas/raxis.json.gz", "title": "RAxis drawings from raxis.cxx macro" },
