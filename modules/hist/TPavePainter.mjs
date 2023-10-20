@@ -1,4 +1,4 @@
-import { gStyle, browser, settings, clone, isObject, isFunc, isStr,
+import { gStyle, browser, settings, clone, isObject, isFunc, isStr, BIT,
          clTPave, clTPaveText, clTPavesText, clTPaveStats, clTPaveLabel, clTPaveClass, clTDiamond, clTLegend, clTPaletteAxis,
          clTText, clTLatex, clTLine, clTBox } from '../core.mjs';
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer } from '../d3.mjs';
@@ -17,6 +17,9 @@ import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
  *
  * @private
  */
+
+const kTakeStyle = BIT(17);
+
 
 class TPavePainter extends ObjectPainter {
 
@@ -190,8 +193,8 @@ class TPavePainter extends ObjectPainter {
 
             if (isFunc(main?.fillStatistic)) {
                let dostat = parseInt(pt.fOptStat), dofit = parseInt(pt.fOptFit);
-               if (!Number.isInteger(dostat)) dostat = gStyle.fOptStat;
-               if (!Number.isInteger(dofit)) dofit = gStyle.fOptFit;
+               if (!Number.isInteger(dostat) || pt.TestBit(kTakeStyle)) dostat = gStyle.fOptStat;
+               if (!Number.isInteger(dofit)|| pt.TestBit(kTakeStyle)) dofit = gStyle.fOptFit;
 
                // we take statistic from main painter
                if (main.fillStatistic(this, dostat, dofit)) {
@@ -1178,19 +1181,19 @@ class TPavePainter extends ObjectPainter {
    }
 
    /** @summary Fill function parameters */
-   fillFunctionStat(f1, dofit) {
+   fillFunctionStat(f1, dofit, ndim = 1) {
       if (!dofit || !f1) return false;
 
-      const print_fval = dofit % 10,
-          print_ferrors = Math.floor(dofit/10) % 10,
-          print_fchi2 = Math.floor(dofit/100) % 10,
-          print_fprob = Math.floor(dofit/1000) % 10;
+      const print_fval = (ndim === 1) ? dofit % 10 : 1,
+            print_ferrors = (ndim === 1) ? Math.floor(dofit/10) % 10 : 1,
+            print_fchi2 = (ndim === 1) ? Math.floor(dofit/100) % 10 : 1,
+            print_fprob = (ndim === 1) ? Math.floor(dofit/1000) % 10 : 0;
 
-      if (print_fchi2 > 0)
+      if (print_fchi2)
          this.addText('#chi^2 / ndf = ' + this.format(f1.fChisquare, 'fit') + ' / ' + f1.fNDF);
-      if (print_fprob > 0)
+      if (print_fprob)
          this.addText('Prob = ' + this.format(Prob(f1.fChisquare, f1.fNDF)));
-      if (print_fval > 0) {
+      if (print_fval) {
          for (let n = 0; n < f1.GetNumPars(); ++n) {
             const parname = f1.GetParName(n);
             let parvalue = f1.GetParValue(n), parerr = f1.GetParError(n);
@@ -1202,7 +1205,7 @@ class TPavePainter extends ObjectPainter {
                   parerr = this.format(f1.GetParError(n), '4.2g');
             }
 
-            if ((print_ferrors > 0) && parerr)
+            if (print_ferrors && parerr)
                this.addText(`${parname} = ${parvalue} #pm ${parerr}`);
             else
                this.addText(`${parname} = ${parvalue}`);
