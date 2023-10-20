@@ -1,4 +1,4 @@
-// https://root.cern/js/ v7.5.1
+// https://root.cern/js/ v7.5.2
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -7,11 +7,11 @@ typeof define === 'function' && define.amd ? define(['exports'], factory) :
 
 /** @summary version id
   * @desc For the JSROOT release the string in format 'major.minor.patch' like '7.0.0' */
-const version_id = '7.5.1',
+const version_id = '7.5.x',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '18/10/2023',
+version_date = '20/10/2023',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -69173,7 +69173,7 @@ class TPavePainter extends ObjectPainter {
                   // adjust the size of the stats box with the number of lines
                   const nlines = pt.fLines?.arr.length || 0;
                   if ((nlines > 0) && !this.moved_interactive && ((gStyle.fStatFontSize <= 0) || (gStyle.fStatFont % 10 === 3)))
-                     pt.fY1NDC = pt.fY2NDC - nlines * 0.25 * gStyle.fStatH;
+                     pt.fY1NDC = Math.max(0.02, pt.fY2NDC - ((nlines < 8) ? nlines * 0.25 * gStyle.fStatH : nlines * 0.025));
                }
             }
          }
@@ -70148,19 +70148,19 @@ class TPavePainter extends ObjectPainter {
    }
 
    /** @summary Fill function parameters */
-   fillFunctionStat(f1, dofit) {
+   fillFunctionStat(f1, dofit, ndim = 1) {
       if (!dofit || !f1) return false;
 
-      const print_fval = dofit % 10,
-          print_ferrors = Math.floor(dofit/10) % 10,
-          print_fchi2 = Math.floor(dofit/100) % 10,
-          print_fprob = Math.floor(dofit/1000) % 10;
+      const print_fval = (ndim === 1) ? dofit % 10 : 1,
+            print_ferrors = (ndim === 1) ? Math.floor(dofit/10) % 10 : 1,
+            print_fchi2 = (ndim === 1) ? Math.floor(dofit/100) % 10 : 1,
+            print_fprob = (ndim === 1) ? Math.floor(dofit/1000) % 10 : 0;
 
-      if (print_fchi2 > 0)
-         this.addText('#chi^2 / ndf = ' + this.format(f1.fChisquare, 'fit') + ' / ' + f1.fNDF);
-      if (print_fprob > 0)
+      if (print_fchi2)
+         this.addText('#chi^{2} / ndf = ' + this.format(f1.fChisquare, 'fit') + ' / ' + f1.fNDF);
+      if (print_fprob)
          this.addText('Prob = ' + this.format(Prob(f1.fChisquare, f1.fNDF)));
-      if (print_fval > 0) {
+      if (print_fval) {
          for (let n = 0; n < f1.GetNumPars(); ++n) {
             const parname = f1.GetParName(n);
             let parvalue = f1.GetParValue(n), parerr = f1.GetParError(n);
@@ -70172,7 +70172,7 @@ class TPavePainter extends ObjectPainter {
                   parerr = this.format(f1.GetParError(n), '4.2g');
             }
 
-            if ((print_ferrors > 0) && parerr)
+            if (print_ferrors && parerr)
                this.addText(`${parname} = ${parvalue} #pm ${parerr}`);
             else
                this.addText(`${parname} = ${parvalue}`);
@@ -73806,7 +73806,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
          stat.addText(`${get(0)} | ${get(1)} | ${get(2)}`);
       }
 
-      if (dofit) stat.fillFunctionStat(this.findFunction(clTF2), dofit);
+      if (dofit) stat.fillFunctionStat(this.findFunction(clTF2), dofit, 2);
 
       return true;
    }
@@ -78237,7 +78237,7 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
             stat.addText('Kurt = <not avail>');
       }
 
-      if (dofit) stat.fillFunctionStat(this.findFunction(clTF1), dofit);
+      if (dofit) stat.fillFunctionStat(this.findFunction(clTF1), dofit, 1);
 
       return true;
    }
@@ -79656,7 +79656,7 @@ class TH3Painter extends THistPainter {
          stat.addText('Integral = ' + stat.format(data.integral, 'entries'));
 
 
-      if (dofit) stat.fillFunctionStat(this.findFunction('TF3'), dofit);
+      if (dofit) stat.fillFunctionStat(this.findFunction('TF3'), dofit, 3);
 
       return true;
    }
@@ -106692,7 +106692,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
 
       stat.clearPave();
 
-      stat.fillFunctionStat(func, dofit);
+      stat.fillFunctionStat(func, dofit, 1);
 
       return true;
    }
