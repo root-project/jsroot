@@ -1934,8 +1934,8 @@ function drawBinsSurf3D(painter, is_v7 = false) {
          main_grz = !main.logz ? main.grz : value => (value < axis_zmin) ? -0.1 : main.grz(value),
          main_grz_min = 0, main_grz_max = 2*main.size_z3d;
 
-   let handle = painter.prepareDraw({ rounding: false, use3d: true, extra: 1, middle: 0.5 });
-
+   let handle = painter.prepareDraw({ rounding: false, use3d: true, extra: 1, middle: 0.5,
+                                      cutg: isFunc(painter.options?.cutg?.IsInside) ? painter.options?.cutg : null });
    if ((handle.i2 - handle.i1 < 2) || (handle.j2 - handle.j1 < 2)) return;
 
    let ilevels = null, levels = null, palette = null;

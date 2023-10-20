@@ -2200,6 +2200,24 @@ class THistPainter extends ObjectPainter {
                j2: (hdim === 1) ? 1 : (args.nozoom ? this.nbinsy : this.getSelectIndex('y', 'right', 1 + args.extra)),
                min: 0, max: 0, sumz: 0, xbar1: 0, xbar2: 1, ybar1: 0, ybar2: 1
             };
+
+      if (args.cutg) {
+         // if using cutg - define rectengular region
+         let i1 = res.i2, i2 = res.i1, j1 = res.j2, j2 = res.j1;
+         for (let ii = res.i1; ii < res.i2; ++ii) {
+            for (let jj = res.j1; jj < res.j2; ++jj) {
+               if (args.cutg.IsInside(xaxis.GetBinCoord(ii + args.middle), yaxis.GetBinCoord(jj + args.middle))) {
+                  i1 = Math.min(i1, ii);
+                  i2 = Math.max(i2, ii+1);
+                  j1 = Math.min(j1, jj);
+                  j2 = Math.max(j2, jj+1);
+               }
+            }
+         }
+
+         res.i1 = i1; res.i2 = i2; res.j1 = j1; res.j2 = j2;
+      }
+
       let i, j, x, y, binz, binarea;
 
       res.grx = new Float32Array(res.i2+1);
