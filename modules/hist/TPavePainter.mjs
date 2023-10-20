@@ -201,7 +201,7 @@ class TPavePainter extends ObjectPainter {
                   // adjust the size of the stats box with the number of lines
                   const nlines = pt.fLines?.arr.length || 0;
                   if ((nlines > 0) && !this.moved_interactive && ((gStyle.fStatFontSize <= 0) || (gStyle.fStatFont % 10 === 3)))
-                     pt.fY1NDC = pt.fY2NDC - nlines * 0.25 * gStyle.fStatH;
+                     pt.fY1NDC = Math.max(0.02, pt.fY2NDC - ((nlines < 8) ? nlines * 0.25 * gStyle.fStatH : nlines * 0.025));
                }
             }
          }
