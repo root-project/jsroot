@@ -6,6 +6,7 @@
 3. Introduce "logv" draw option for TH3, use logarithmic scale for box volume
 4. Support color palette drawing for TH3
 5. Support "[cutg]" draw option for TH2/TF2 surface plots
+6. Fix - fit pars in stats box, correct #chi^{2} symbol
 
 
 ## Changes in 7.5.1
