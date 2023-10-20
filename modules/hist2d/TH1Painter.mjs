@@ -318,7 +318,7 @@ class TH1Painter extends THistPainter {
             stat.addText(`Kurtosis = ${stat.format(data.kurtx)}`);
       }
 
-      if (dofit) stat.fillFunctionStat(this.findFunction(clTF1), dofit);
+      if (dofit) stat.fillFunctionStat(this.findFunction(clTF1), dofit, 1);
 
       return true;
    }

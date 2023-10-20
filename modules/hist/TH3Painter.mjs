@@ -244,7 +244,7 @@ class TH3Painter extends THistPainter {
       }
 
 
-      if (dofit) stat.fillFunctionStat(this.findFunction('TF3'), dofit);
+      if (dofit) stat.fillFunctionStat(this.findFunction('TF3'), dofit, 3);
 
       return true;
    }
