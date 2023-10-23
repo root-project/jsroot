@@ -876,6 +876,9 @@ class TGraph2DPainter extends ObjectPainter {
       if (res.Color || res.Triangles >= 10)
          res.Zscale = d.check('Z');
 
+      res.Axis = 'lego2';
+      if (res.Zscale) res.Axis += 'z';
+
       this.storeDrawOpt(opt);
    }
 
@@ -929,6 +932,8 @@ class TGraph2DPainter extends ObjectPainter {
 
       if (graph.fMinimum !== kNoZoom) uzmin = graph.fMinimum;
       if (graph.fMaximum !== kNoZoom) uzmax = graph.fMaximum;
+
+      this._own_histogram = true; // when histogram created on client side
 
       const histo = createHistogram(clTH2I, 10, 10);
       histo.fName = graph.fName + '_h';
@@ -1034,7 +1039,7 @@ class TGraph2DPainter extends ObjectPainter {
          fp.toplevel.add(mesh);
 
          mesh.painter = this; // to let use it with context menu
-      }, (isgrid, lpos) => {
+      }, (_isgrid, lpos) => {
          const lcolor = this.getColor(graph.fLineColor),
               material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: graph.fLineWidth }),
               linemesh = createLineSegments(convertLegoBuf(this.getMainPainter(), lpos, 100, 100), material);
@@ -1042,9 +1047,45 @@ class TGraph2DPainter extends ObjectPainter {
       });
    }
 
-   /** @summary Actual drawing of TGraph2D object
+   /** @summary Update TGraph2D object */
+   updateObject(obj, opt) {
+      if (!this.matchObjectType(obj)) return false;
+
+      if (opt && (opt !== this.options.original))
+         this.decodeOptions(opt, obj);
+
+      Object.assign(this.getObject(), obj);
+
+      delete this.$redraw_hist;
+
+      // if our own histogram was used as axis drawing, we need update histogram as well
+      if (this.axes_draw) {
+         const hist_painter = this.getMainPainter();
+         hist_painter?.updateObject(this.createHistogram(), this.options.Axis);
+         this.$redraw_hist = hist_painter;
+      }
+
+      return true;
+   }
+
+   /** @summary Redraw TGraph2D object
+     * @desc Update histogram drawing if necessary
      * @return {Promise} for drawing ready */
    async redraw() {
+      let promise = Promise.resolve(true);
+
+      if (this.$redraw_hist) {
+         let p = this.$redraw_hist;
+         delete this.$redraw_hist;
+         promise = p.redraw();
+      }
+
+      return promise.then(() => this.drawGraph2D());
+   }
+
+   /** @summary Actual drawing of TGraph2D object
+     * @return {Promise} for drawing ready */
+   async drawGraph2D() {
       const main = this.getMainPainter(),
             fp = this.getFramePainter(),
             graph = this.getObject();
@@ -1231,7 +1272,7 @@ class TGraph2DPainter extends ObjectPainter {
       }
 
       return Promise.all(promises).then(() => {
-         if (this.options.Zscale && this.ownhisto) {
+         if (this.options.Zscale && this.axes_draw) {
             const pal = this.getMainPainter()?.findFunction(clTPaletteAxis),
                   pal_painter = this.getPadPainter()?.findPainterFor(pal);
             return pal_painter?.drawPave();
@@ -1250,16 +1291,14 @@ class TGraph2DPainter extends ObjectPainter {
       let promise = Promise.resolve(null);
 
       if (!painter.getMainPainter()) {
-         if (!gr.fHistogram)
-            gr.fHistogram = painter.createHistogram();
-
-         promise = TH2Painter.draw(dom, gr.fHistogram, painter.options.Zscale ? 'lego2z' : 'lego2');
-         painter.ownhisto = true;
+         // histogram is not preserved in TGraph2D
+         promise = TH2Painter.draw(dom, painter.createHistogram(), painter.options.Axis);
+         painter.axes_draw = true;
       }
 
       return promise.then(() => {
          painter.addToPadPrimitives();
-         return painter.redraw();
+         return painter.drawGraph2D();
       });
    }
 
