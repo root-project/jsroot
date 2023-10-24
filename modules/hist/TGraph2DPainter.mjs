@@ -910,11 +910,13 @@ class TGraph2DPainter extends ObjectPainter {
          }
       }
 
-      function calc_delta(min, max) {
-         if (min < max) return 0.02*(max - min);
+      function calc_delta(min, max, margin) {
+         if (min < max) return margin * (max - min);
          return Math.abs(min) < 1e5 ? 0.02 : 0.02 * Math.abs(min);
       }
-      const dx = calc_delta(xmin, xmax), dy = calc_delta(ymin, ymax), dz = calc_delta(zmin, zmax);
+      const dx = calc_delta(xmin, xmax, gr.fMargin),
+            dy = calc_delta(ymin, ymax, gr.fMargin),
+            dz = calc_delta(zmin, zmax, 0);
       let uxmin = xmin - dx, uxmax = xmax + dx,
           uymin = ymin - dy, uymax = ymax + dy,
           uzmin = zmin - dz, uzmax = zmax + dz;
