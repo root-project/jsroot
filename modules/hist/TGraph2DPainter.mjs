@@ -1133,7 +1133,7 @@ class TGraph2DPainter extends ObjectPainter {
 
       if (fp.usesvg) scale *= 0.3;
 
-      // scale *= 10 * Math.max(fp.size_x3d / fp.getFrameWidth(), fp.size_z3d / fp.getFrameHeight());
+      scale *= 10 * Math.max(fp.size_x3d / fp.getFrameWidth(), fp.size_z3d / fp.getFrameHeight());
 
       if (this.options.Color || this.options.Triangles) {
          levels = main.getContourLevels(true);
