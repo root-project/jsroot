@@ -1077,9 +1077,8 @@ class TGraph2DPainter extends ObjectPainter {
       let promise = Promise.resolve(true);
 
       if (this.$redraw_hist) {
-         let p = this.$redraw_hist;
+         promise = this.$redraw_hist.redraw();
          delete this.$redraw_hist;
-         promise = p.redraw();
       }
 
       return promise.then(() => this.drawGraph2D());
