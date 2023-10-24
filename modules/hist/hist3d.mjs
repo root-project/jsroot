@@ -574,11 +574,13 @@ function change3DCamera(orthographic) {
 
 /** @summary Add 3D mesh to frame painter
   * @private */
-function add3DMesh(mesh, painter) {
+function add3DMesh(mesh, painter, the_only) {
    if (!mesh)
       return;
    if (!this.toplevel)
       return console.error('3D objects are not yet created in the frame');
+   if (painter && the_only)
+      this.remove3DMeshes(painter);
    this.toplevel.add(mesh);
    mesh._painter = painter;
 }
@@ -1698,7 +1700,7 @@ function drawBinsLego(painter, is_v7 = false) {
          return tip;
       };
 
-      main.toplevel.add(mesh);
+      main.add3DMesh(mesh);
 
       if (num2vertices > 0) {
          const geom2 = createLegoGeom(painter, pos2, norm2),
@@ -1714,7 +1716,7 @@ function drawBinsLego(painter, is_v7 = false) {
          mesh2.baseline = mesh.baseline;
          mesh2.tip_color = mesh.tip_color;
 
-         main.toplevel.add(mesh2);
+         main.add3DMesh(mesh2);
       }
    }
 
@@ -1807,7 +1809,7 @@ function drawBinsLego(painter, is_v7 = false) {
    }
    */
 
-   main.toplevel.add(line);
+   main.add3DMesh(line);
 }
 
 /** @summary Draw TH2 histogram in error mode
@@ -1914,7 +1916,7 @@ function drawBinsError3D(painter, is_v7 = false) {
        return tip;
     };
 
-    main.toplevel.add(line);
+    main.add3DMesh(line);
 }
 
 /** @summary Draw TH2 as 3D contour plot
@@ -1947,7 +1949,7 @@ function drawBinsContour3D(painter, realz = false, is_v7 = false) {
    );
 
    const lines = createLineSegments(pnts, create3DLineMaterial(painter, is_v7 ? 'line_' : histo));
-   main.toplevel.add(lines);
+   main.add3DMesh(lines);
 }
 
 /** @summary Draw TH2 histograms in surf mode
@@ -2066,7 +2068,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
       const mesh = new Mesh(geometry, material);
 
-      main.toplevel.add(mesh);
+      main.add3DMesh(mesh);
 
       mesh.painter = painter; // to let use it with context menu
    }, (isgrid, lpos) => {
@@ -2083,7 +2085,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
       const line = createLineSegments(convertLegoBuf(painter, lpos, handle.i2 - handle.i1, handle.j2 - handle.j1), material);
       line.painter = painter;
-      main.toplevel.add(line);
+      main.add3DMesh(line);
    });
 
    if (painter.options.Surf === 17)
@@ -2146,7 +2148,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
                    material = new MeshBasicMaterial(getMaterialArgs(palette.getColor(colindx), { side: DoubleSide, opacity: 0.5, vertexColors: false })),
                    mesh = new Mesh(geometry, material);
              mesh.painter = painter;
-             main.toplevel.add(mesh);
+             main.add3DMesh(mesh);
          }
       );
    }
