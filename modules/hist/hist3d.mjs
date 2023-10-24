@@ -572,6 +572,33 @@ function change3DCamera(orthographic) {
    this.render3D();
 }
 
+/** @summary Add 3D mesh to frame painter
+  * @private */
+function add3DMesh(mesh, painter) {
+   if (!mesh)
+      return;
+   if (!this.toplevel)
+      return console.error('3D objects are not yet created in the frame');
+   this.toplevel.add(mesh);
+   mesh._painter = painter;
+}
+
+/** @summary Remove 3D meshed for specified painter
+  * @private */
+function remove3DMeshes(painter) {
+   if (!painter || !this.toplevel)
+      return;
+   let i = this.toplevel.children.length;
+
+   while (i > 0) {
+      const mesh = this.toplevel.children[--i];
+      if (mesh._painter === painter) {
+         this.toplevel.remove(mesh);
+         disposeThreejsObject(mesh);
+      }
+   }
+}
+
 
 /** @summary call 3D rendering of the frame
   * @param {number} tmout - specifies delay, after which actual rendering will be invoked
@@ -1427,7 +1454,7 @@ function convert3DtoPadNDC(x, y, z) {
 /** @summary Assign 3D methods for frame painter
   * @private */
 function assignFrame3DMethods(fpainter) {
-   Object.assign(fpainter, { create3DScene, render3D, resize3D, change3DCamera, highlightBin3D, set3DOptions, drawXYZ, convert3DtoPadNDC });
+   Object.assign(fpainter, { create3DScene, add3DMesh, remove3DMeshes, render3D, resize3D, change3DCamera, highlightBin3D, set3DOptions, drawXYZ, convert3DtoPadNDC });
 }
 
 /** @summary Draw histograms in 3D mode
