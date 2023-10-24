@@ -398,7 +398,7 @@ class TF1Painter extends TH1Painter {
       }
 
       if (!opt && getElementMainPainter(dom))
-         opt = 'same';
+         opt = 'same l';
 
       const painter = new TF1Painter(dom, hist);
 
