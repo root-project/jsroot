@@ -961,16 +961,16 @@ class TGraph2DPainter extends ObjectPainter {
 
       indx = this.index[indx];
 
-      const p = this.painter, gr = this.graph;
-      let grx = p.grx(gr.fX[indx]),
-          gry = p.gry(gr.fY[indx]),
-          grz = p.grz(gr.fZ[indx]);
+      const fp = this.fp, gr = this.graph;
+      let grx = fp.grx(gr.fX[indx]),
+          gry = fp.gry(gr.fY[indx]),
+          grz = fp.grz(gr.fZ[indx]);
 
       if (this.check_next && indx+1<gr.fX.length) {
          const d = intersect.point,
-             grx1 = p.grx(gr.fX[indx+1]),
-             gry1 = p.gry(gr.fY[indx+1]),
-             grz1 = p.grz(gr.fZ[indx+1]);
+             grx1 = fp.grx(gr.fX[indx+1]),
+             gry1 = fp.gry(gr.fY[indx+1]),
+             grz1 = fp.grz(gr.fZ[indx+1]);
          if (sqr(d.x-grx1)+sqr(d.y-gry1)+sqr(d.z-grz1) < sqr(d.x-grx)+sqr(d.y-gry)+sqr(d.z-grz)) {
             grx = grx1; gry = gry1; grz = grz1; indx++;
          }
@@ -986,9 +986,9 @@ class TGraph2DPainter extends ObjectPainter {
          color: this.tip_color,
          lines: [this.tip_name,
                   'pnt: ' + indx,
-                  'x: ' + p.axisAsText('x', gr.fX[indx]),
-                  'y: ' + p.axisAsText('y', gr.fY[indx]),
-                  'z: ' + p.axisAsText('z', gr.fZ[indx])
+                  'x: ' + fp.axisAsText('x', gr.fX[indx]),
+                  'y: ' + fp.axisAsText('y', gr.fY[indx]),
+                  'z: ' + fp.axisAsText('z', gr.fZ[indx])
                 ]
       };
    }
@@ -1039,14 +1039,14 @@ class TGraph2DPainter extends ObjectPainter {
 
           mesh = new Mesh(geometry, material);
 
-         fp.toplevel.add(mesh);
+         fp.add3DMesh(mesh, this);
 
          mesh.painter = this; // to let use it with context menu
       }, (_isgrid, lpos) => {
          const lcolor = this.getColor(graph.fLineColor),
               material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: graph.fLineWidth }),
               linemesh = createLineSegments(convertLegoBuf(this.getMainPainter(), lpos, 100, 100), material);
-         fp.toplevel.add(linemesh);
+         fp.add3DMesh(linemesh, this);
       });
    }
 
@@ -1095,6 +1095,8 @@ class TGraph2DPainter extends ObjectPainter {
       if (!graph || !main || !fp || !fp.mode3d)
          return this;
 
+      fp.remove3DMeshes(this);
+
       const countSelected = (zmin, zmax) => {
          let cnt = 0;
          for (let i = 0; i < graph.fNpoints; ++i) {
@@ -1126,9 +1128,11 @@ class TGraph2DPainter extends ObjectPainter {
           scale = fp.size_x3d / 100 * markeratt.getFullSize();
 
       if (this.options.Circles)
-         scale = 0.06*fp.size_x3d;
+         scale = 0.06 * fp.size_x3d;
 
       if (fp.usesvg) scale *= 0.3;
+
+      // scale *= 10 * Math.max(fp.size_x3d / fp.getFrameWidth(), fp.size_z3d / fp.getFrameHeight());
 
       if (this.options.Color || this.options.Triangles) {
          levels = main.getContourLevels(true);
@@ -1218,13 +1222,13 @@ class TGraph2DPainter extends ObjectPainter {
 
          if (line && (iline > 3) && (line.length === iline)) {
             const lcolor = this.getColor(graph.fLineColor),
-                material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: graph.fLineWidth }),
-                linemesh = createLineSegments(line, material);
-            fp.toplevel.add(linemesh);
+                  material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: graph.fLineWidth }),
+                  linemesh = createLineSegments(line, material);
+            fp.add3DMesh(linemesh, this);
 
             linemesh.graph = graph;
             linemesh.index = index;
-            linemesh.painter = fp;
+            linemesh.fp = fp;
             linemesh.scale0 = 0.7*scale;
             linemesh.tip_name = this.getObjectHint();
             linemesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
@@ -1236,13 +1240,13 @@ class TGraph2DPainter extends ObjectPainter {
 
          if (err) {
             const lcolor = this.getColor(graph.fLineColor),
-                material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: graph.fLineWidth }),
-                errmesh = createLineSegments(err, material);
-            fp.toplevel.add(errmesh);
+                  material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: graph.fLineWidth }),
+                  errmesh = createLineSegments(err, material);
+            fp.add3DMesh(errmesh, this);
 
             errmesh.graph = graph;
             errmesh.index = index;
-            errmesh.painter = fp;
+            errmesh.fp = fp;
             errmesh.scale0 = 0.7*scale;
             errmesh.tip_name = this.getObjectHint();
             errmesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
@@ -1252,21 +1256,21 @@ class TGraph2DPainter extends ObjectPainter {
          }
 
          if (pnts) {
-            let fcolor = 'blue';
+            let color = 'blue';
 
             if (!this.options.Circles || this.options.Color)
-               fcolor = palette ? palette.calcColor(lvl, levels.length) : this.getColor(graph.fMarkerColor);
+               color = palette?.calcColor(lvl, levels.length) ?? this.getColor(graph.fMarkerColor);
 
-            const pr = pnts.createPoints({ color: fcolor, style: this.options.Circles ? 4 : graph.fMarkerStyle }).then(mesh => {
+            const pr = pnts.createPoints({ color, style: this.options.Circles ? 4 : graph.fMarkerStyle }).then(mesh => {
                mesh.graph = graph;
-               mesh.painter = fp;
+               mesh.fp = fp;
                mesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
                mesh.scale0 = 0.3*scale;
                mesh.index = index;
 
                mesh.tip_name = this.getObjectHint();
                mesh.tooltip = this.graph2DTooltip;
-               fp.toplevel.add(mesh);
+               fp.add3DMesh(mesh, this);
             });
 
             promises.push(pr);
