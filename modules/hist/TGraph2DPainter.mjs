@@ -829,6 +829,47 @@ class TGraphDelaunay {
 
 }
 
+   /** @summary Function handles tooltips in the mesh */
+function graph2DTooltip(intersect) {
+   let indx = Math.floor(intersect.index / this.nvertex);
+   if ((indx < 0) || (indx >= this.index.length)) return null;
+   const sqr = v => v*v;
+
+   indx = this.index[indx];
+
+   const fp = this.fp, gr = this.graph;
+   let grx = fp.grx(gr.fX[indx]),
+       gry = fp.gry(gr.fY[indx]),
+       grz = fp.grz(gr.fZ[indx]);
+
+   if (this.check_next && indx+1<gr.fX.length) {
+      const d = intersect.point,
+          grx1 = fp.grx(gr.fX[indx+1]),
+          gry1 = fp.gry(gr.fY[indx+1]),
+          grz1 = fp.grz(gr.fZ[indx+1]);
+      if (sqr(d.x-grx1)+sqr(d.y-gry1)+sqr(d.z-grz1) < sqr(d.x-grx)+sqr(d.y-gry)+sqr(d.z-grz)) {
+         grx = grx1; gry = gry1; grz = grz1; indx++;
+      }
+   }
+
+   return {
+      x1: grx - this.scale0,
+      x2: grx + this.scale0,
+      y1: gry - this.scale0,
+      y2: gry + this.scale0,
+      z1: grz - this.scale0,
+      z2: grz + this.scale0,
+      color: this.tip_color,
+      lines: [this.tip_name,
+               'pnt: ' + indx,
+               'x: ' + fp.axisAsText('x', gr.fX[indx]),
+               'y: ' + fp.axisAsText('y', gr.fY[indx]),
+               'z: ' + fp.axisAsText('z', gr.fZ[indx])
+             ]
+   };
+}
+
+
 
 /**
  * @summary Painter for TGraph2D classes
@@ -951,46 +992,6 @@ class TGraph2DPainter extends ObjectPainter {
       histo.fMaximum = uzmax;
       histo.fBits |= kNoStats;
       return histo;
-   }
-
-   /** @summary Function handles tooltips in the mesh */
-   graph2DTooltip(intersect) {
-      let indx = Math.floor(intersect.index / this.nvertex);
-      if ((indx < 0) || (indx >= this.index.length)) return null;
-      const sqr = v => v*v;
-
-      indx = this.index[indx];
-
-      const fp = this.fp, gr = this.graph;
-      let grx = fp.grx(gr.fX[indx]),
-          gry = fp.gry(gr.fY[indx]),
-          grz = fp.grz(gr.fZ[indx]);
-
-      if (this.check_next && indx+1<gr.fX.length) {
-         const d = intersect.point,
-             grx1 = fp.grx(gr.fX[indx+1]),
-             gry1 = fp.gry(gr.fY[indx+1]),
-             grz1 = fp.grz(gr.fZ[indx+1]);
-         if (sqr(d.x-grx1)+sqr(d.y-gry1)+sqr(d.z-grz1) < sqr(d.x-grx)+sqr(d.y-gry)+sqr(d.z-grz)) {
-            grx = grx1; gry = gry1; grz = grz1; indx++;
-         }
-      }
-
-      return {
-         x1: grx - this.scale0,
-         x2: grx + this.scale0,
-         y1: gry - this.scale0,
-         y2: gry + this.scale0,
-         z1: grz - this.scale0,
-         z2: grz + this.scale0,
-         color: this.tip_color,
-         lines: [this.tip_name,
-                  'pnt: ' + indx,
-                  'x: ' + fp.axisAsText('x', gr.fX[indx]),
-                  'y: ' + fp.axisAsText('y', gr.fY[indx]),
-                  'z: ' + fp.axisAsText('z', gr.fZ[indx])
-                ]
-      };
    }
 
    drawTriangles(fp, graph, levels, palette) {
@@ -1235,7 +1236,7 @@ class TGraph2DPainter extends ObjectPainter {
             linemesh.nvertex = 2;
             linemesh.check_next = true;
 
-            linemesh.tooltip = this.graph2DTooltip;
+            linemesh.tooltip = graph2DTooltip;
          }
 
          if (err) {
@@ -1252,7 +1253,7 @@ class TGraph2DPainter extends ObjectPainter {
             errmesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
             errmesh.nvertex = 6;
 
-            errmesh.tooltip = this.graph2DTooltip;
+            errmesh.tooltip = graph2DTooltip;
          }
 
          if (pnts) {
@@ -1269,7 +1270,7 @@ class TGraph2DPainter extends ObjectPainter {
                mesh.index = index;
 
                mesh.tip_name = this.getObjectHint();
-               mesh.tooltip = this.graph2DTooltip;
+               mesh.tooltip = graph2DTooltip;
                fp.add3DMesh(mesh, this);
             });
 
