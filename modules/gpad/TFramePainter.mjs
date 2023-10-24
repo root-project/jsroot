@@ -80,13 +80,16 @@ function getEarthProjectionFunc(id) {
 
 /** @summary Unzoom preselected range for main histogram painter
   * @desc Used with TGraph where Y zooming selected with fMinimum/fMaximum but histogram
-  * axis range can be wider
+  * axis range can be wider. Or for normal histogram drawing when preselected range smaller than histogram range
   * @private */
 function unzoomHistogramYRange(main) {
-    if (!isFunc(main?.getDimension) || main.getDimension() !== 1 || main.draw_content) return;
+    if (!isFunc(main?.getDimension) || main.getDimension() !== 1) return;
 
-    if ((main.zoom_ymin !== main.zoom_ymax) && (main.ymin !== main.ymax) &&
-        (main.ymin <= main.zoom_ymin) && (main.zoom_ymax <= main.ymax))
+    const ymin = main.draw_content ? main.hmin : main.ymin,
+          ymax = main.draw_content ? main.hmax : main.ymax;
+
+    if ((main.zoom_ymin !== main.zoom_ymax) && (ymin !== ymax) &&
+        (ymin <= main.zoom_ymin) && (main.zoom_ymax <= ymax))
        main.zoom_ymin = main.zoom_ymax = 0;
 }
 
