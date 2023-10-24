@@ -223,6 +223,16 @@ class TF1Painter extends TH1Painter {
                custom_xaxis = mp?.getHisto()?.fXaxis;
             else
                console.error('Very special stored values, see TF1::Save, in TF1.cxx:3183', xmin, xmax);
+         } else {
+            const epsilon = 1e-10, dx = (tf1.fXmax - tf1.fXmin) / Math.max(1, tf1.fNpx),
+                  bad_save_buffer = (Math.abs(xmin - tf1.fXmin - 0.5*dx) < epsilon) && (Math.abs(tf1.fXmax - 0.5*dx - xmax) < epsilon);
+
+            // last point in saved buffer never used for bin content
+            // in case of buggy data also one more point has to be excluded
+            if (np >= tf1.fNpx)
+               np = bad_save_buffer ? tf1.fNpx - 1 : tf1.fNpx;
+
+            console.log('bad buffer', bad_save_buffer, 'numbins', np);
          }
 
          ensureBins(np);
@@ -231,10 +241,8 @@ class TF1Painter extends TH1Painter {
          if (custom_xaxis)
             Object.assign(hist.fXaxis, custom_xaxis);
          else {
-            const dx = (xmax - xmin) / (np - 2); // np-2 due to arithmetic in the TF1 class
-            // extend range while saved values are for bin center
-            hist.fXaxis.fXmin = xmin - dx/2;
-            hist.fXaxis.fXmax = xmax + dx/2;
+            hist.fXaxis.fXmin = xmin;
+            hist.fXaxis.fXmax = xmax;
          }
 
          for (let n = 0; n < np; ++n) {
