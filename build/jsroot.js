@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '20/10/2023',
+version_date = '24/10/2023',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -109194,6 +109194,9 @@ class TGraph2DPainter extends ObjectPainter {
       if (res.Color || res.Triangles >= 10)
          res.Zscale = d.check('Z');
 
+      res.Axis = 'lego2';
+      if (res.Zscale) res.Axis += 'z';
+
       this.storeDrawOpt(opt);
    }
 
@@ -109225,10 +109228,13 @@ class TGraph2DPainter extends ObjectPainter {
          }
       }
 
-      if (xmin >= xmax) xmax = xmin+1;
-      if (ymin >= ymax) ymax = ymin+1;
-      if (zmin >= zmax) zmax = zmin+1;
-      const dx = (xmax-xmin)*0.02, dy = (ymax-ymin)*0.02, dz = (zmax-zmin)*0.02;
+      function calc_delta(min, max, margin) {
+         if (min < max) return margin * (max - min);
+         return Math.abs(min) < 1e5 ? 0.02 : 0.02 * Math.abs(min);
+      }
+      const dx = calc_delta(xmin, xmax, gr.fMargin),
+            dy = calc_delta(ymin, ymax, gr.fMargin),
+            dz = calc_delta(zmin, zmax, 0);
       let uxmin = xmin - dx, uxmax = xmax + dx,
           uymin = ymin - dy, uymax = ymax + dy,
           uzmin = zmin - dz, uzmax = zmax + dz;
@@ -109246,6 +109252,8 @@ class TGraph2DPainter extends ObjectPainter {
 
       if (graph.fMinimum !== kNoZoom) uzmin = graph.fMinimum;
       if (graph.fMaximum !== kNoZoom) uzmax = graph.fMaximum;
+
+      this._own_histogram = true; // when histogram created on client side
 
       const histo = createHistogram(clTH2I, 10, 10);
       histo.fName = graph.fName + '_h';
@@ -109351,7 +109359,7 @@ class TGraph2DPainter extends ObjectPainter {
          fp.toplevel.add(mesh);
 
          mesh.painter = this; // to let use it with context menu
-      }, (isgrid, lpos) => {
+      }, (_isgrid, lpos) => {
          const lcolor = this.getColor(graph.fLineColor),
               material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: graph.fLineWidth }),
               linemesh = createLineSegments(convertLegoBuf(this.getMainPainter(), lpos, 100, 100), material);
@@ -109359,9 +109367,44 @@ class TGraph2DPainter extends ObjectPainter {
       });
    }
 
-   /** @summary Actual drawing of TGraph2D object
+   /** @summary Update TGraph2D object */
+   updateObject(obj, opt) {
+      if (!this.matchObjectType(obj)) return false;
+
+      if (opt && (opt !== this.options.original))
+         this.decodeOptions(opt, obj);
+
+      Object.assign(this.getObject(), obj);
+
+      delete this.$redraw_hist;
+
+      // if our own histogram was used as axis drawing, we need update histogram as well
+      if (this.axes_draw) {
+         const hist_painter = this.getMainPainter();
+         hist_painter?.updateObject(this.createHistogram(), this.options.Axis);
+         this.$redraw_hist = hist_painter;
+      }
+
+      return true;
+   }
+
+   /** @summary Redraw TGraph2D object
+     * @desc Update histogram drawing if necessary
      * @return {Promise} for drawing ready */
    async redraw() {
+      let promise = Promise.resolve(true);
+
+      if (this.$redraw_hist) {
+         promise = this.$redraw_hist.redraw();
+         delete this.$redraw_hist;
+      }
+
+      return promise.then(() => this.drawGraph2D());
+   }
+
+   /** @summary Actual drawing of TGraph2D object
+     * @return {Promise} for drawing ready */
+   async drawGraph2D() {
       const main = this.getMainPainter(),
             fp = this.getFramePainter(),
             graph = this.getObject();
@@ -109548,7 +109591,7 @@ class TGraph2DPainter extends ObjectPainter {
       }
 
       return Promise.all(promises).then(() => {
-         if (this.options.Zscale && this.ownhisto) {
+         if (this.options.Zscale && this.axes_draw) {
             const pal = this.getMainPainter()?.findFunction(clTPaletteAxis),
                   pal_painter = this.getPadPainter()?.findPainterFor(pal);
             return pal_painter?.drawPave();
@@ -109567,16 +109610,14 @@ class TGraph2DPainter extends ObjectPainter {
       let promise = Promise.resolve(null);
 
       if (!painter.getMainPainter()) {
-         if (!gr.fHistogram)
-            gr.fHistogram = painter.createHistogram();
-
-         promise = TH2Painter.draw(dom, gr.fHistogram, painter.options.Zscale ? 'lego2z' : 'lego2');
-         painter.ownhisto = true;
+         // histogram is not preserved in TGraph2D
+         promise = TH2Painter.draw(dom, painter.createHistogram(), painter.options.Axis);
+         painter.axes_draw = true;
       }
 
       return promise.then(() => {
          painter.addToPadPrimitives();
-         return painter.redraw();
+         return painter.drawGraph2D();
       });
    }
 
