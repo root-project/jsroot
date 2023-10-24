@@ -846,6 +846,7 @@ class TGraph2DPainter extends ObjectPainter {
 
       const res = this.options;
 
+      d.check('SAME');
       if (d.check('TRI1'))
          res.Triangles = 11; // wireframe and colors
       else if (d.check('TRI2'))
