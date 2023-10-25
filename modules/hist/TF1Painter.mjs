@@ -231,8 +231,6 @@ class TF1Painter extends TH1Painter {
             // in case of buggy data also one more point has to be excluded
             if (np >= tf1.fNpx)
                np = bad_save_buffer ? tf1.fNpx - 1 : tf1.fNpx;
-
-            console.log('bad buffer', bad_save_buffer, 'numbins', np);
          }
 
          ensureBins(np);
