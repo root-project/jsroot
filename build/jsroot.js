@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '24/10/2023',
+version_date = '25/10/2023',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -290,7 +290,9 @@ settings = {
    /** @summary Angle in degree for axis labels tilt when available space is not enough */
    AxisTiltAngle: 25,
    /** @summary Strip axis labels trailing 0 or replace 10^0 by 1 */
-   StripAxisLabels: true
+   StripAxisLabels: true,
+   /** @summary Draw TF1 by default as curve or line */
+   FuncAsCurve: false
 },
 
 /** @namespace
@@ -55230,7 +55232,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       if (this.control_active && evnt.buttons && (evnt.buttons & 2))
          this.block_ctxt = true; // if right button in control was active, block next context menu
 
-      if (this.control_active || this.block_mousemove || !this.processMouseMove) return;
+      if (this.control_active || this.block_mousemove || !isFunc(this.processMouseMove)) return;
 
       if (this.mouse_zoom_mesh) {
          // when working with zoom mesh, need special handling
@@ -61168,6 +61170,21 @@ function getEarthProjectionFunc(id) {
    }
 }
 
+/** @summary Unzoom preselected range for main histogram painter
+  * @desc Used with TGraph where Y zooming selected with fMinimum/fMaximum but histogram
+  * axis range can be wider. Or for normal histogram drawing when preselected range smaller than histogram range
+  * @private */
+function unzoomHistogramYRange(main) {
+    if (!isFunc(main?.getDimension) || main.getDimension() !== 1) return;
+
+    const ymin = main.draw_content ? main.hmin : main.ymin,
+          ymax = main.draw_content ? main.hmax : main.ymax;
+
+    if ((main.zoom_ymin !== main.zoom_ymax) && (ymin !== ymax) &&
+        (ymin <= main.zoom_ymin) && (main.zoom_ymax <= ymax))
+       main.zoom_ymin = main.zoom_ymax = 0;
+}
+
 // global, allow single drag at once
 let drag_rect = null, drag_kind = '', drag_painter = null;
 
@@ -63879,7 +63896,10 @@ class TFramePainter extends ObjectPainter {
             this.zoom_xmin = this.zoom_xmax = 0;
          }
          if (unzoom_y) {
-            if (this.zoom_ymin !== this.zoom_ymax) changed = true;
+            if (this.zoom_ymin !== this.zoom_ymax) {
+               changed = true;
+               unzoomHistogramYRange(this.getMainPainter());
+            }
             this.zoom_ymin = this.zoom_ymax = 0;
          }
          if (unzoom_z) {
@@ -63936,7 +63956,10 @@ class TFramePainter extends ObjectPainter {
 
       // and process unzoom, if any
       if (unzoom_v) {
-         if (this[`zoom_${name}min`] !== this[`zoom_${name}max`]) changed = true;
+         if (this[`zoom_${name}min`] !== this[`zoom_${name}max`]) {
+            changed = true;
+            if (name === 'y') unzoomHistogramYRange(this.getMainPainter());
+         }
          this[`zoom_${name}min`] = this[`zoom_${name}max`] = 0;
       }
 
@@ -70811,9 +70834,11 @@ class THistDrawOptions {
           (((this.Surf > 0) || this.Error) && (hdim === 2))) this.Mode3D = true;
 
       // default draw options for TF1 is line and fill
-      if (painter.isTF1() && (hdim === 1) && (this.Hist === 1) && !this.Line && !this.Fill && !this.Curve) {
+      if (painter.isTF1() && (hdim === 1) && (this.Hist === 1) && !this.Line && !this.Fill && !this.Curve /* && !this.ForceStat */) {
          this.Hist = false;
-         this.Curve = this.Fill = true;
+         this.Curve = settings.FuncAsCurve;
+         this.Line = !this.Curve;
+         this.Fill = true;
       }
 
       if ((this.Surf === 15) && (this.System === kPOLAR || this.System === kCARTESIAN))
@@ -76324,9 +76349,10 @@ function create3DControl(fp) {
 
    fp.control.processMouseMove = function(intersects) {
       let tip = null, mesh = null, zoom_mesh = null;
+      const handle_tooltip = frame_painter.isTooltipAllowed();
 
       for (let i = 0; i < intersects.length; ++i) {
-         if (isFunc(intersects[i].object?.tooltip)) {
+         if (handle_tooltip && isFunc(intersects[i].object?.tooltip)) {
             tip = intersects[i].object.tooltip(intersects[i]);
             if (tip) { mesh = intersects[i].object; break; }
          } else if (intersects[i].object?.zoom && !zoom_mesh)
@@ -76507,6 +76533,35 @@ function change3DCamera(orthographic) {
       create3DControl(this);
 
    this.render3D();
+}
+
+/** @summary Add 3D mesh to frame painter
+  * @private */
+function add3DMesh(mesh, painter, the_only) {
+   if (!mesh)
+      return;
+   if (!this.toplevel)
+      return console.error('3D objects are not yet created in the frame');
+   if (painter && the_only)
+      this.remove3DMeshes(painter);
+   this.toplevel.add(mesh);
+   mesh._painter = painter;
+}
+
+/** @summary Remove 3D meshed for specified painter
+  * @private */
+function remove3DMeshes(painter) {
+   if (!painter || !this.toplevel)
+      return;
+   let i = this.toplevel.children.length;
+
+   while (i > 0) {
+      const mesh = this.toplevel.children[--i];
+      if (mesh._painter === painter) {
+         this.toplevel.remove(mesh);
+         disposeThreejsObject(mesh);
+      }
+   }
 }
 
 
@@ -77364,7 +77419,7 @@ function convert3DtoPadNDC(x, y, z) {
 /** @summary Assign 3D methods for frame painter
   * @private */
 function assignFrame3DMethods(fpainter) {
-   Object.assign(fpainter, { create3DScene, render3D, resize3D, change3DCamera, highlightBin3D, set3DOptions, drawXYZ, convert3DtoPadNDC });
+   Object.assign(fpainter, { create3DScene, add3DMesh, remove3DMeshes, render3D, resize3D, change3DCamera, highlightBin3D, set3DOptions, drawXYZ, convert3DtoPadNDC });
 }
 
 /** @summary Draw histograms in 3D mode
@@ -77608,7 +77663,7 @@ function drawBinsLego(painter, is_v7 = false) {
          return tip;
       };
 
-      main.toplevel.add(mesh);
+      main.add3DMesh(mesh);
 
       if (num2vertices > 0) {
          const geom2 = createLegoGeom(painter, pos2, norm2),
@@ -77624,7 +77679,7 @@ function drawBinsLego(painter, is_v7 = false) {
          mesh2.baseline = mesh.baseline;
          mesh2.tip_color = mesh.tip_color;
 
-         main.toplevel.add(mesh2);
+         main.add3DMesh(mesh2);
       }
    }
 
@@ -77717,7 +77772,7 @@ function drawBinsLego(painter, is_v7 = false) {
    }
    */
 
-   main.toplevel.add(line);
+   main.add3DMesh(line);
 }
 
 /** @summary Draw TH2 histogram in error mode
@@ -77824,7 +77879,7 @@ function drawBinsError3D(painter, is_v7 = false) {
        return tip;
     };
 
-    main.toplevel.add(line);
+    main.add3DMesh(line);
 }
 
 /** @summary Draw TH2 as 3D contour plot
@@ -77857,7 +77912,7 @@ function drawBinsContour3D(painter, realz = false, is_v7 = false) {
    );
 
    const lines = createLineSegments(pnts, create3DLineMaterial(painter, is_v7 ? 'line_' : histo));
-   main.toplevel.add(lines);
+   main.add3DMesh(lines);
 }
 
 /** @summary Draw TH2 histograms in surf mode
@@ -77976,7 +78031,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
       const mesh = new Mesh(geometry, material);
 
-      main.toplevel.add(mesh);
+      main.add3DMesh(mesh);
 
       mesh.painter = painter; // to let use it with context menu
    }, (isgrid, lpos) => {
@@ -77993,7 +78048,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
       const line = createLineSegments(convertLegoBuf(painter, lpos, handle.i2 - handle.i1, handle.j2 - handle.j1), material);
       line.painter = painter;
-      main.toplevel.add(line);
+      main.add3DMesh(line);
    });
 
    if (painter.options.Surf === 17)
@@ -78056,7 +78111,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
                    material = new MeshBasicMaterial(getMaterialArgs(palette.getColor(colindx), { side: DoubleSide, opacity: 0.5, vertexColors: false })),
                    mesh = new Mesh(geometry, material);
              mesh.painter = painter;
-             main.toplevel.add(mesh);
+             main.add3DMesh(mesh);
          }
       );
    }
@@ -79524,7 +79579,7 @@ function drawTH2PolyLego(painter) {
       const material = new MeshBasicMaterial(getMaterialArgs(painter._color_palette?.getColor(colindx), { vertexColors: false })),
             mesh = new Mesh(geometry, material);
 
-      pmain.toplevel.add(mesh);
+      pmain.add3DMesh(mesh);
 
       mesh.painter = painter;
       mesh.bins_index = i;
@@ -79972,7 +80027,7 @@ class TH3Painter extends THistPainter {
       }
 
       return pnts.createPoints({ color: this.getColor(histo.fMarkerColor) }).then(mesh => {
-         main.toplevel.add(mesh);
+         main.add3DMesh(mesh);
 
          mesh.bins = bins;
          mesh.painter = this;
@@ -80312,7 +80367,7 @@ class TH3Painter extends THistPainter {
             return tip;
          };
 
-         main.toplevel.add(combined_bins);
+         main.add3DMesh(combined_bins);
 
          if (helper_kind[nseq] > 0) {
             const helper_material = new LineBasicMaterial({ color: this.getColor(histo.fLineColor) }),
@@ -80321,7 +80376,7 @@ class TH3Painter extends THistPainter {
                    ? createLineSegments(bin_verts[nseq], helper_material, helper_indexes[nseq])
                    : createLineSegments(helper_positions[nseq], helper_material);
 
-            main.toplevel.add(lines);
+            main.add3DMesh(lines);
          }
       }
 
@@ -104786,6 +104841,12 @@ function readStyleFromURL(url) {
    if (d.has('prefer_saved_points'))
       settings.PreferSavedPoints = true;
 
+   const tf1_style = d.get('tf1');
+   if (tf1_style === 'curve')
+      settings.FuncAsCurve = true;
+   else if (tf1_style === 'line')
+      settings.FuncAsCurve = false;
+
    if (d.has('with_credentials'))
       settings.WithCredentials = true;
 
@@ -107052,7 +107113,7 @@ class TGraphPainter extends TGraphPainter$1 {
 
       const lines = createLineSegments(pnts, create3DLineMaterial(this, graph));
 
-      fp.toplevel.add(lines);
+      fp.add3DMesh(lines, this, true);
 
       fp.render3D(100);
    }
@@ -107118,11 +107179,11 @@ async function drawPolyMarker3D$1() {
       mesh.tip_color = (poly.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
       mesh.tip_name = poly.fName || 'Poly3D';
       mesh.poly = poly;
-      mesh.painter = fp;
+      mesh.fp = fp;
       mesh.scale0 = 0.7*pnts.scale;
       mesh.index = index;
 
-      fp.toplevel.add(mesh);
+      fp.add3DMesh(mesh, this, true);
 
       mesh.tooltip = function(intersect) {
          let indx = Math.floor(intersect.index / this.nvertex);
@@ -107130,10 +107191,10 @@ async function drawPolyMarker3D$1() {
 
          indx = this.index[indx];
 
-         const p = this.painter,
-             grx = p.grx(this.poly.fP[indx]),
-             gry = p.gry(this.poly.fP[indx+1]),
-             grz = p.grz(this.poly.fP[indx+2]);
+         const fp = this.fp,
+               grx = fp.grx(this.poly.fP[indx]),
+               gry = fp.gry(this.poly.fP[indx+1]),
+               grz = fp.grz(this.poly.fP[indx+2]);
 
          return {
             x1: grx - this.scale0,
@@ -107145,9 +107206,9 @@ async function drawPolyMarker3D$1() {
             color: this.tip_color,
             lines: [this.tip_name,
                      'pnt: ' + indx/3,
-                     'x: ' + p.axisAsText('x', this.poly.fP[indx]),
-                     'y: ' + p.axisAsText('y', this.poly.fP[indx+1]),
-                     'z: ' + p.axisAsText('z', this.poly.fP[indx+2])
+                     'x: ' + fp.axisAsText('x', this.poly.fP[indx]),
+                     'y: ' + fp.axisAsText('y', this.poly.fP[indx+1]),
+                     'z: ' + fp.axisAsText('z', this.poly.fP[indx+2])
                    ]
          };
       };
@@ -108161,7 +108222,7 @@ async function drawPolyLine3D() {
 
    const lines = createLineSegments(pnts, create3DLineMaterial(this, line));
 
-   fp.toplevel.add(lines);
+   fp.add3DMesh(lines, this, true);
 
    fp.render3D(100);
 
@@ -109147,6 +109208,47 @@ class TGraphDelaunay {
 
 }
 
+   /** @summary Function handles tooltips in the mesh */
+function graph2DTooltip(intersect) {
+   let indx = Math.floor(intersect.index / this.nvertex);
+   if ((indx < 0) || (indx >= this.index.length)) return null;
+   const sqr = v => v*v;
+
+   indx = this.index[indx];
+
+   const fp = this.fp, gr = this.graph;
+   let grx = fp.grx(gr.fX[indx]),
+       gry = fp.gry(gr.fY[indx]),
+       grz = fp.grz(gr.fZ[indx]);
+
+   if (this.check_next && indx+1<gr.fX.length) {
+      const d = intersect.point,
+          grx1 = fp.grx(gr.fX[indx+1]),
+          gry1 = fp.gry(gr.fY[indx+1]),
+          grz1 = fp.grz(gr.fZ[indx+1]);
+      if (sqr(d.x-grx1)+sqr(d.y-gry1)+sqr(d.z-grz1) < sqr(d.x-grx)+sqr(d.y-gry)+sqr(d.z-grz)) {
+         grx = grx1; gry = gry1; grz = grz1; indx++;
+      }
+   }
+
+   return {
+      x1: grx - this.scale0,
+      x2: grx + this.scale0,
+      y1: gry - this.scale0,
+      y2: gry + this.scale0,
+      z1: grz - this.scale0,
+      z2: grz + this.scale0,
+      color: this.tip_color,
+      lines: [this.tip_name,
+               'pnt: ' + indx,
+               'x: ' + fp.axisAsText('x', gr.fX[indx]),
+               'y: ' + fp.axisAsText('y', gr.fY[indx]),
+               'z: ' + fp.axisAsText('z', gr.fZ[indx])
+             ]
+   };
+}
+
+
 
 /**
  * @summary Painter for TGraph2D classes
@@ -109164,6 +109266,7 @@ class TGraph2DPainter extends ObjectPainter {
 
       const res = this.options;
 
+      d.check('SAME');
       if (d.check('TRI1'))
          res.Triangles = 11; // wireframe and colors
       else if (d.check('TRI2'))
@@ -109270,46 +109373,6 @@ class TGraph2DPainter extends ObjectPainter {
       return histo;
    }
 
-   /** @summary Function handles tooltips in the mesh */
-   graph2DTooltip(intersect) {
-      let indx = Math.floor(intersect.index / this.nvertex);
-      if ((indx < 0) || (indx >= this.index.length)) return null;
-      const sqr = v => v*v;
-
-      indx = this.index[indx];
-
-      const p = this.painter, gr = this.graph;
-      let grx = p.grx(gr.fX[indx]),
-          gry = p.gry(gr.fY[indx]),
-          grz = p.grz(gr.fZ[indx]);
-
-      if (this.check_next && indx+1<gr.fX.length) {
-         const d = intersect.point,
-             grx1 = p.grx(gr.fX[indx+1]),
-             gry1 = p.gry(gr.fY[indx+1]),
-             grz1 = p.grz(gr.fZ[indx+1]);
-         if (sqr(d.x-grx1)+sqr(d.y-gry1)+sqr(d.z-grz1) < sqr(d.x-grx)+sqr(d.y-gry)+sqr(d.z-grz)) {
-            grx = grx1; gry = gry1; grz = grz1; indx++;
-         }
-      }
-
-      return {
-         x1: grx - this.scale0,
-         x2: grx + this.scale0,
-         y1: gry - this.scale0,
-         y2: gry + this.scale0,
-         z1: grz - this.scale0,
-         z2: grz + this.scale0,
-         color: this.tip_color,
-         lines: [this.tip_name,
-                  'pnt: ' + indx,
-                  'x: ' + p.axisAsText('x', gr.fX[indx]),
-                  'y: ' + p.axisAsText('y', gr.fY[indx]),
-                  'z: ' + p.axisAsText('z', gr.fZ[indx])
-                ]
-      };
-   }
-
    drawTriangles(fp, graph, levels, palette) {
       const dulaunay = new TGraphDelaunay(graph);
       dulaunay.FindAllTriangles();
@@ -109356,14 +109419,14 @@ class TGraph2DPainter extends ObjectPainter {
 
           mesh = new Mesh(geometry, material);
 
-         fp.toplevel.add(mesh);
+         fp.add3DMesh(mesh, this);
 
          mesh.painter = this; // to let use it with context menu
       }, (_isgrid, lpos) => {
          const lcolor = this.getColor(graph.fLineColor),
               material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: graph.fLineWidth }),
               linemesh = createLineSegments(convertLegoBuf(this.getMainPainter(), lpos, 100, 100), material);
-         fp.toplevel.add(linemesh);
+         fp.add3DMesh(linemesh, this);
       });
    }
 
@@ -109412,6 +109475,8 @@ class TGraph2DPainter extends ObjectPainter {
       if (!graph || !main || !fp || !fp.mode3d)
          return this;
 
+      fp.remove3DMeshes(this);
+
       const countSelected = (zmin, zmax) => {
          let cnt = 0;
          for (let i = 0; i < graph.fNpoints; ++i) {
@@ -109443,9 +109508,11 @@ class TGraph2DPainter extends ObjectPainter {
           scale = fp.size_x3d / 100 * markeratt.getFullSize();
 
       if (this.options.Circles)
-         scale = 0.06*fp.size_x3d;
+         scale = 0.06 * fp.size_x3d;
 
       if (fp.usesvg) scale *= 0.3;
+
+      scale *= 10 * Math.max(fp.size_x3d / fp.getFrameWidth(), fp.size_z3d / fp.getFrameHeight());
 
       if (this.options.Color || this.options.Triangles) {
          levels = main.getContourLevels(true);
@@ -109535,55 +109602,55 @@ class TGraph2DPainter extends ObjectPainter {
 
          if (line && (iline > 3) && (line.length === iline)) {
             const lcolor = this.getColor(graph.fLineColor),
-                material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: graph.fLineWidth }),
-                linemesh = createLineSegments(line, material);
-            fp.toplevel.add(linemesh);
+                  material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: graph.fLineWidth }),
+                  linemesh = createLineSegments(line, material);
+            fp.add3DMesh(linemesh, this);
 
             linemesh.graph = graph;
             linemesh.index = index;
-            linemesh.painter = fp;
+            linemesh.fp = fp;
             linemesh.scale0 = 0.7*scale;
             linemesh.tip_name = this.getObjectHint();
             linemesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
             linemesh.nvertex = 2;
             linemesh.check_next = true;
 
-            linemesh.tooltip = this.graph2DTooltip;
+            linemesh.tooltip = graph2DTooltip;
          }
 
          if (err) {
             const lcolor = this.getColor(graph.fLineColor),
-                material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: graph.fLineWidth }),
-                errmesh = createLineSegments(err, material);
-            fp.toplevel.add(errmesh);
+                  material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: graph.fLineWidth }),
+                  errmesh = createLineSegments(err, material);
+            fp.add3DMesh(errmesh, this);
 
             errmesh.graph = graph;
             errmesh.index = index;
-            errmesh.painter = fp;
+            errmesh.fp = fp;
             errmesh.scale0 = 0.7*scale;
             errmesh.tip_name = this.getObjectHint();
             errmesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
             errmesh.nvertex = 6;
 
-            errmesh.tooltip = this.graph2DTooltip;
+            errmesh.tooltip = graph2DTooltip;
          }
 
          if (pnts) {
-            let fcolor = 'blue';
+            let color = 'blue';
 
             if (!this.options.Circles || this.options.Color)
-               fcolor = palette ? palette.calcColor(lvl, levels.length) : this.getColor(graph.fMarkerColor);
+               color = palette?.calcColor(lvl, levels.length) ?? this.getColor(graph.fMarkerColor);
 
-            const pr = pnts.createPoints({ color: fcolor, style: this.options.Circles ? 4 : graph.fMarkerStyle }).then(mesh => {
+            const pr = pnts.createPoints({ color, style: this.options.Circles ? 4 : graph.fMarkerStyle }).then(mesh => {
                mesh.graph = graph;
-               mesh.painter = fp;
+               mesh.fp = fp;
                mesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
                mesh.scale0 = 0.3*scale;
                mesh.index = index;
 
                mesh.tip_name = this.getObjectHint();
-               mesh.tooltip = this.graph2DTooltip;
-               fp.toplevel.add(mesh);
+               mesh.tooltip = graph2DTooltip;
+               fp.add3DMesh(mesh, this);
             });
 
             promises.push(pr);
@@ -110196,29 +110263,27 @@ function proivdeEvalPar(obj) {
       _func = _func.replaceAll(entry.fName, entry.fTitle);
    });
 
-   _func = _func.replace(/\b(abs)\b/g, 'TMath::Abs')
-                .replace(/\b(TMath::Exp)/g, 'Math.exp')
-                .replace(/\b(TMath::Abs)/g, 'Math.abs')
-                .replace(/xygaus\(/g, 'this._math.gausxy(this, x, y, ')
-                .replace(/gaus\(/g, 'this._math.gaus(this, x, ')
-                .replace(/gausn\(/g, 'this._math.gausn(this, x, ')
-                .replace(/expo\(/g, 'this._math.expo(this, x, ')
-                .replace(/landau\(/g, 'this._math.landau(this, x, ')
-                .replace(/landaun\(/g, 'this._math.landaun(this, x, ')
-                .replace(/TMath::/g, 'this._math.')
-                .replace(/ROOT::Math::/g, 'this._math.');
+   _func = _func.replace(/\b(sin|SIN)\b/g, 'Math.sin')
+                .replace(/\b(cos|COS)\b/g, 'Math.cos')
+                .replace(/\b(tan|TAN)\b/g, 'Math.tan')
+                .replace(/\b(exp|EXP|TMath::Exp)\b/g, 'Math.exp')
+                .replace(/\b(log|LOG)\b/g, 'Math.log')
+                .replace(/\b(log10|LOG10)\b/g, 'Math.log10')
+                .replace(/\b(pow|POW)\b/g, 'Math.pow')
+                .replace(/\b(pi|PI)\b/g, 'Math.PI')
+                .replace(/\b(abs|ABS|TMath::Abs)\b/g, 'Math.abs')
+                .replace(/\bxygaus\(/g, 'this._math.gausxy(this, x, y, ')
+                .replace(/\bgaus\(/g, 'this._math.gaus(this, x, ')
+                .replace(/\bgausn\(/g, 'this._math.gausn(this, x, ')
+                .replace(/\bexpo\(/g, 'this._math.expo(this, x, ')
+                .replace(/\blandau\(/g, 'this._math.landau(this, x, ')
+                .replace(/\blandaun\(/g, 'this._math.landaun(this, x, ')
+                .replace(/\bTMath::/g, 'this._math.')
+                .replace(/\bROOT::Math::/g, 'this._math.');
 
    for (let i = 0; i < obj.fNpar; ++i)
       _func = _func.replaceAll(pprefix + i + ']', `(${obj.GetParValue(i)})`);
 
-   _func = _func.replace(/\b(sin)\b/gi, 'Math.sin')
-                .replace(/\b(cos)\b/gi, 'Math.cos')
-                .replace(/\b(tan)\b/gi, 'Math.tan')
-                .replace(/\b(exp)\b/gi, 'Math.exp')
-                .replace(/\b(log)\b/gi, 'Math.log')
-                .replace(/\b(log10)\b/gi, 'Math.log10')
-                .replace(/\b(pow)\b/gi, 'Math.pow')
-                .replace(/pi/g, 'Math.PI');
    for (let n = 2; n < 10; ++n)
       _func = _func.replaceAll(`x^${n}`, `Math.pow(x,${n})`);
 
@@ -110382,6 +110447,14 @@ class TF1Painter extends TH1Painter$2 {
                custom_xaxis = mp?.getHisto()?.fXaxis;
             else
                console.error('Very special stored values, see TF1::Save, in TF1.cxx:3183', xmin, xmax);
+         } else {
+            const epsilon = 1e-10, dx = (tf1.fXmax - tf1.fXmin) / Math.max(1, tf1.fNpx),
+                  bad_save_buffer = (Math.abs(xmin - tf1.fXmin - 0.5*dx) < epsilon) && (Math.abs(tf1.fXmax - 0.5*dx - xmax) < epsilon);
+
+            // last point in saved buffer never used for bin content
+            // in case of buggy data also one more point has to be excluded
+            if (np >= tf1.fNpx)
+               np = bad_save_buffer ? tf1.fNpx - 1 : tf1.fNpx;
          }
 
          ensureBins(np);
@@ -110390,10 +110463,8 @@ class TF1Painter extends TH1Painter$2 {
          if (custom_xaxis)
             Object.assign(hist.fXaxis, custom_xaxis);
          else {
-            const dx = (xmax - xmin) / (np - 2); // np-2 due to arithmetic in the TF1 class
-            // extend range while saved values are for bin center
-            hist.fXaxis.fXmin = xmin - dx/2;
-            hist.fXaxis.fXmax = xmax + dx/2;
+            hist.fXaxis.fXmin = xmin;
+            hist.fXaxis.fXmax = xmax;
          }
 
          for (let n = 0; n < np; ++n) {
@@ -123056,7 +123127,7 @@ class RH3Painter extends RHistPainter {
       }
 
       return pnts.createPoints({ color: this.v7EvalColor('fill_color', 'red') }).then(mesh => {
-         main.toplevel.add(mesh);
+         main.add3DMesh(mesh);
 
          mesh.bins = bins;
          mesh.painter = this;
@@ -123358,7 +123429,7 @@ class RH3Painter extends RHistPainter {
             return tip;
          };
 
-         main.toplevel.add(combined_bins);
+         main.add3DMesh(combined_bins);
 
          if (helper_kind[nseq] > 0) {
             const lcolor = this.v7EvalColor('line_color', 'lightblue'),
@@ -123368,7 +123439,7 @@ class RH3Painter extends RHistPainter {
                           ? createLineSegments(bin_verts[nseq], helper_material, helper_indexes[nseq])
                           : createLineSegments(helper_positions[nseq], helper_material);
 
-            main.toplevel.add(lines);
+            main.add3DMesh(lines);
          }
       }
 
