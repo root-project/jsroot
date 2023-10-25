@@ -432,7 +432,7 @@ class THistDrawOptions {
           (((this.Surf > 0) || this.Error) && (hdim === 2))) this.Mode3D = true;
 
       // default draw options for TF1 is line and fill
-      if (painter.isTF1() && (hdim === 1) && (this.Hist === 1) && !this.Line && !this.Fill && !this.Curve /* && !this.ForceStat */) {
+      if (painter.isTF1() && (hdim === 1) && (this.Hist === 1) && !this.Line && !this.Fill && !this.Curve && !this.Mark) {
          this.Hist = false;
          this.Curve = settings.FuncAsCurve;
          this.Line = !this.Curve;
