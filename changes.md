@@ -8,6 +8,7 @@
 5. Support "[cutg]" draw option for TH2/TF2 surface plots
 6. Fix - fit pars in stats box, correct #chi^{2} symbol
 7. Fix - several bugs in TFormula parsing
+8. Fix - correctly use saved buffer in TF1/TF2
 
 
 ## Changes in 7.5.1
