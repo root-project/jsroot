@@ -117,7 +117,7 @@ class TF1Painter extends TH1Painter {
    /** @summary Returns true while function is drawn */
    isTF1() { return true; }
 
-   /** @summary Update histogram */
+   /** @summary Update function */
    updateObject(obj /*, opt */) {
       if (!obj || (this.getClassName() !== obj._typename)) return false;
       delete obj.evalPar;
