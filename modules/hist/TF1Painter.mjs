@@ -39,29 +39,27 @@ function proivdeEvalPar(obj) {
       _func = _func.replaceAll(entry.fName, entry.fTitle);
    });
 
-   _func = _func.replace(/\b(abs)\b/g, 'TMath::Abs')
-                .replace(/\b(TMath::Exp)/g, 'Math.exp')
-                .replace(/\b(TMath::Abs)/g, 'Math.abs')
-                .replace(/xygaus\(/g, 'this._math.gausxy(this, x, y, ')
-                .replace(/gaus\(/g, 'this._math.gaus(this, x, ')
-                .replace(/gausn\(/g, 'this._math.gausn(this, x, ')
-                .replace(/expo\(/g, 'this._math.expo(this, x, ')
-                .replace(/landau\(/g, 'this._math.landau(this, x, ')
-                .replace(/landaun\(/g, 'this._math.landaun(this, x, ')
-                .replace(/TMath::/g, 'this._math.')
-                .replace(/ROOT::Math::/g, 'this._math.');
+   _func = _func.replace(/\b(sin|SIN)\b/g, 'Math.sin')
+                .replace(/\b(cos|COS)\b/g, 'Math.cos')
+                .replace(/\b(tan|TAN)\b/g, 'Math.tan')
+                .replace(/\b(exp|EXP|TMath::Exp)\b/g, 'Math.exp')
+                .replace(/\b(log|LOG)\b/g, 'Math.log')
+                .replace(/\b(log10|LOG10)\b/g, 'Math.log10')
+                .replace(/\b(pow|POW)\b/g, 'Math.pow')
+                .replace(/\b(pi|PI)\b/g, 'Math.PI')
+                .replace(/\b(abs|ABS|TMath::Abs)\b/g, 'Math.abs')
+                .replace(/\bxygaus\(/g, 'this._math.gausxy(this, x, y, ')
+                .replace(/\bgaus\(/g, 'this._math.gaus(this, x, ')
+                .replace(/\bgausn\(/g, 'this._math.gausn(this, x, ')
+                .replace(/\bexpo\(/g, 'this._math.expo(this, x, ')
+                .replace(/\blandau\(/g, 'this._math.landau(this, x, ')
+                .replace(/\blandaun\(/g, 'this._math.landaun(this, x, ')
+                .replace(/\bTMath::/g, 'this._math.')
+                .replace(/\bROOT::Math::/g, 'this._math.');
 
    for (let i = 0; i < obj.fNpar; ++i)
       _func = _func.replaceAll(pprefix + i + ']', `(${obj.GetParValue(i)})`);
 
-   _func = _func.replace(/\b(sin)\b/gi, 'Math.sin')
-                .replace(/\b(cos)\b/gi, 'Math.cos')
-                .replace(/\b(tan)\b/gi, 'Math.tan')
-                .replace(/\b(exp)\b/gi, 'Math.exp')
-                .replace(/\b(log)\b/gi, 'Math.log')
-                .replace(/\b(log10)\b/gi, 'Math.log10')
-                .replace(/\b(pow)\b/gi, 'Math.pow')
-                .replace(/pi/g, 'Math.PI');
    for (let n = 2; n < 10; ++n)
       _func = _func.replaceAll(`x^${n}`, `Math.pow(x,${n})`);
 
