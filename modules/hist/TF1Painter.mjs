@@ -270,11 +270,8 @@ class TF1Painter extends TH1Painter {
       const func = this.$func, nsave = func?.fSave.length ?? 0;
 
       if (nsave > 3 && this._use_saved_points) {
-         const np = nsave - 2,
-             dx = (func.fSave[np+1] - func.fSave[np]) / (np - 2);
-
-         this.xmin = Math.min(this.xmin, func.fSave[np] - dx/2);
-         this.xmax = Math.max(this.xmax, func.fSave[np+1] + dx/2);
+         this.xmin = Math.min(this.xmin, func.fSave[nsave - 2]);
+         this.xmax = Math.max(this.xmax, func.fSave[nsave - 1]);
       }
       if (func) {
          this.xmin = Math.min(this.xmin, func.fXmin);
