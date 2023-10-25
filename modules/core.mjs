@@ -284,7 +284,9 @@ settings = {
    /** @summary Angle in degree for axis labels tilt when available space is not enough */
    AxisTiltAngle: 25,
    /** @summary Strip axis labels trailing 0 or replace 10^0 by 1 */
-   StripAxisLabels: true
+   StripAxisLabels: true,
+   /** @summary Draw TF1 by default as curve or line */
+   FuncAsCurve: false
 },
 
 /** @namespace
