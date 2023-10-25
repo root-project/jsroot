@@ -1940,7 +1940,8 @@ class TPadPainter extends ObjectPainter {
              break;
           default: {
              const indx = parseInt(name);
-             if (Number.isInteger(indx)) selp = this.painters[indx];
+             if (Number.isInteger(indx))
+                selp = this.painters[indx];
           }
        }
 
