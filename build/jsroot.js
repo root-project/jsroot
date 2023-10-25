@@ -67920,17 +67920,18 @@ class TPadPainter extends ObjectPainter {
                   menu.add('Z axis', 'zaxis', this.itemContextMenu);
             }
 
-            if (this.painters && (this.painters.length > 0)) {
+            if (this.painters?.length) {
                menu.add('separator');
                const shown = [];
                this.painters.forEach((pp, indx) => {
                   const obj = pp?.getObject();
                   if (!obj || (shown.indexOf(obj) >= 0)) return;
                   if (pp.$secondary) return;
-                  let name = ('_typename' in obj) ? (obj._typename + '::') : '';
-                  if ('fName' in obj) name += obj.fName;
-                  if (!name.length) name = 'item' + indx;
+                  let name = isFunc(pp.getClassName) ? pp.getClassName() : (obj._typename || '');
+                  if (name) name += '::';
+                  name += isFunc(pp.getObjectName) ? pp.getObjectName() : (obj.fName || `item${indx}`);
                   menu.add(name, indx, this.itemContextMenu);
+                  shown.push(obj);
                });
             }
 
@@ -71189,9 +71190,9 @@ class THistPainter extends ObjectPainter {
 
       this.getPadPainter().forEachPainterInPad(objp => {
          if (objp.isSecondaryPainter(this)) {
-            const obj = objp.getObject();
-            if (obj?.fName)
-               objp.snapid = `${snapid}#func_${obj.fName}`;
+            const objname = objp.getObjectName();
+            if (objname)
+               objp.snapid = `${snapid}#func_${objname}`;
             else if (objp.child_painter_indx !== undefined)
                objp.snapid = `${snapid}#indx_${objp.child_painter_indx}`;
          }
@@ -110140,11 +110141,8 @@ class TF1Painter extends TH1Painter$2 {
       const func = this.$func, nsave = func?.fSave.length ?? 0;
 
       if (nsave > 3 && this._use_saved_points) {
-         const np = nsave - 2,
-             dx = (func.fSave[np+1] - func.fSave[np]) / (np - 2);
-
-         this.xmin = Math.min(this.xmin, func.fSave[np] - dx/2);
-         this.xmax = Math.max(this.xmax, func.fSave[np+1] + dx/2);
+         this.xmin = Math.min(this.xmin, func.fSave[nsave - 2]);
+         this.xmax = Math.max(this.xmax, func.fSave[nsave - 1]);
       }
       if (func) {
          this.xmin = Math.min(this.xmin, func.fXmin);
@@ -111509,19 +111507,27 @@ class TF2Painter extends TH2Painter {
       if (this._use_saved_points) {
          const npx = Math.round(func.fSave[nsave-2]),
                npy = Math.round(func.fSave[nsave-1]),
-               dx = (func.fSave[nsave-5] - func.fSave[nsave-6]) / (npx - 1),
-               dy = (func.fSave[nsave-3] - func.fSave[nsave-4]) / (npy - 1);
+               xmin = func.fSave[nsave-6], xmax = func.fSave[nsave-5],
+               ymin = func.fSave[nsave-4], ymax = func.fSave[nsave-3],
+               epsilon = 1e-10,
+               dx = (func.fXmax - func.fXmin) / Math.max(1, func.fNpx),
+               dy = (func.fYmax - func.fYmin) / Math.max(1, func.fNpy),
+               bad_save_buffer = (Math.abs(xmin - func.fXmin - 0.5*dx) < epsilon) && (Math.abs(func.fXmax - 0.5*dx - xmax) < epsilon) &&
+                                 (Math.abs(ymin - func.fYmin - 0.5*dy) < epsilon) && (Math.abs(func.fYmax - 0.5*dy - ymax) < epsilon),
+               nbinsx = bad_save_buffer ? npx - 1 : npx,
+               nbinsy = bad_save_buffer ? npy - 1 : npy;
 
-         ensureBins(npx+1, npy+1);
-         hist.fXaxis.fXmin = func.fSave[nsave-6] - dx/2;
-         hist.fXaxis.fXmax = func.fSave[nsave-5] + dx/2;
-         hist.fYaxis.fXmin = func.fSave[nsave-4] - dy/2;
-         hist.fYaxis.fXmax = func.fSave[nsave-3] + dy/2;
+         ensureBins(nbinsx, nbinsy);
+         hist.fXaxis.fXmin = xmin;
+         hist.fXaxis.fXmax = xmax;
+         hist.fYaxis.fXmin = ymin;
+         hist.fYaxis.fXmax = ymax;
 
          for (let k = 0, j = 0; j <= npy; ++j) {
             for (let i = 0; i <= npx; ++i) {
                const z = func.fSave[k++];
-               hist.setBinContent(hist.getBin(i+1, j+1), Number.isFinite(z) ? z : 0);
+               if ((j < nbinsy) && (i < nbinsx))
+                  hist.setBinContent(hist.getBin(i+1, j+1), Number.isFinite(z) ? z : 0);
             }
          }
       }
@@ -111550,15 +111556,10 @@ class TF2Painter extends TH2Painter {
       const func = this.$func, nsave = func?.fSave.length ?? 0;
 
       if (nsave > 6 && this._use_saved_points) {
-         const npx = Math.round(func.fSave[nsave-2]),
-             npy = Math.round(func.fSave[nsave-1]),
-             dx = (func.fSave[nsave-5] - func.fSave[nsave-6]) / (npx - 1),
-             dy = (func.fSave[nsave-3] - func.fSave[nsave-4]) / (npy - 1);
-
-         this.xmin = Math.min(this.xmin, func.fSave[nsave-6] - dx/2);
-         this.xmax = Math.max(this.xmax, func.fSave[nsave-5] + dx/2);
-         this.ymin = Math.min(this.ymin, func.fSave[nsave-4] - dy/2);
-         this.ymax = Math.max(this.ymax, func.fSave[nsave-3] + dy/2);
+         this.xmin = Math.min(this.xmin, func.fSave[nsave-6]);
+         this.xmax = Math.max(this.xmax, func.fSave[nsave-5]);
+         this.ymin = Math.min(this.ymin, func.fSave[nsave-4]);
+         this.ymax = Math.max(this.ymax, func.fSave[nsave-3]);
       }
       if (func) {
          this.xmin = Math.min(this.xmin, func.fXmin);
@@ -116721,15 +116722,16 @@ class RPadPainter extends RObjectPainter {
             if (this.painters?.length) {
                menu.add('separator');
                const shown = [];
-               for (let n = 0; n < this.painters.length; ++n) {
-                  const obj = this.painters[n]?.getObject();
-                  if (!obj || (shown.indexOf(obj) >= 0)) continue;
-
-                  let name = obj._typename ? obj._typename + '::' : '';
-                  if (obj.fName) name += obj.fName;
-                  if (!name) name = 'item' + n;
-                  menu.add(name, n, this.itemContextMenu);
-               }
+               this.painters.forEach((pp, indx) => {
+                  const obj = pp?.getObject();
+                  if (!obj || (shown.indexOf(obj) >= 0)) return;
+                  if (pp.$secondary) return;
+                  let name = isFunc(pp.getClassName) ? pp.getClassName() : (obj._typename || '');
+                  if (name) name += '::';
+                  name += isFunc(pp.getObjectName) ? pp.getObjectName() : (obj.fName || `item${indx}`);
+                  menu.add(name, indx, this.itemContextMenu);
+                  shown.push(obj);
+               });
             }
 
             menu.show();

@@ -3,6 +3,7 @@
 ## Change in 7.5.x
 1. Fix - proper fit pars display in stats, proper #chi^{2}
 2. Fix - several bugs in TFormula parsing
+3. Fix - correctly use saved buffer in TF1/TF2
 
 
 ## Changes in 7.5.1
