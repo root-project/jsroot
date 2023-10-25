@@ -425,25 +425,22 @@
       }
 
       let keyid = null, optid, testfile, testobj, testinterval = 10, hpainter = null,
-          init_style, init_palette, init_settings;
+          init_style, init_palette, init_curve;
 
       function produceGlobalStyleCopy() {
          // copy style when painter is loaded
          if (!init_style && gStyle) {
             init_style = Object.assign({}, gStyle);
             init_palette = settings.Palette;
+            init_curve = settings.FuncAsCurve;
          }
-
-         if (!init_settings && settings)
-            init_settings = Object.assign({}, settings);
       }
 
       function restoreGlobalStyle() {
          if (init_style && gStyle)
             Object.assign(gStyle, init_style);
-         if (init_settings && settings)
-            Object.assign(settings, init_settings);
          settings.Palette = init_palette;
+         settings.FuncAsCurve = init_curve;
       }
 
       produceGlobalStyleCopy();
