@@ -293,7 +293,7 @@
      { "name": "3d", "file": "multigraph_3d.root", "item": "c2_514;1", "title": "3d mode with extra TPolyLine3D" }
    ],
    "TGraph2D" : [
-      { "opt": "", "file": "graph2d.root", "item": "Graph2D", "title": "example of TGraph2D", "interactive": true },
+      { "name": "p", "file": "graph2d.root", "item": "Graph2D", "opt": "p", "title": "example of TGraph2D", "interactive": true },
       { "name": "pcol", "item": "pcol", "title": "example of TGraph2D, color options" },
       { "opt": "err",  "item": "cerr", "title": "example of TGraph2DErrors, errors drawing" },
       { "opt": "asymm",  "item": "asymm", "title": "example of TGraph2DAsymmErrors" },
