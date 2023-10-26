@@ -4,13 +4,14 @@
 1. Implement tickz draw option, used for color palette ticks
 2. Implement skewness and kurtosis calculations for histogram stats box
 3. Introduce "logv" draw option for TH3, use logarithmic scale for box volume
-4. Support color palette drawing for TH3
-5. Support "[cutg]" draw option for TH2/TF2 surface plots
-6. Support `TMath::Sq()` function and several others like SinH, ASinH, ...
-7. Fix - fit pars in stats box, correct #chi^{2} symbol
-8. Fix - several bugs in TFormula parsing
-9. Fix - correctly use saved buffer in TF1/TF2
-10. Fix - properly adjust size of stats box
+4. Implement color palette drawing for TH3
+5. Implement "[cutg]" draw option for TH2/TF2 surface plots
+6. Implement `TMath::Sq()` function and several others like SinH, ASinH, ...
+7. Implement histogram drawing build from TGraph2D using Delaunay interpolation
+8. Fix - fit pars in stats box, correct #chi^{2} symbol
+9. Fix - several bugs in TFormula parsing
+10. Fix - correctly use saved buffer in TF1/TF2
+11. Fix - properly adjust size of stats box
 
 
 ## Changes in 7.5.1

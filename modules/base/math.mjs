@@ -2098,7 +2098,4 @@ export { gamma, gamma as tgamma, gamma as Gamma,
 
    getTEfficiencyBoundaryFunc,
 
-   Sq, Pi, TwoPi, PiOver2, PiOver4, InvPi
-
-
-   };
+   Sq, Pi, TwoPi, PiOver2, PiOver4, InvPi };
