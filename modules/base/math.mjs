@@ -1595,6 +1595,12 @@ function Prob(chi2, ndf) {
    return chisquared_cdf_c(chi2,ndf,0);
 }
 
+/** @summary Square function
+  * @memberof Math */
+function Sq(x) {
+   return x * x;
+}
+
 /** @summary Gaus function
   * @memberof Math */
 function Gaus(x, mean, sigma, norm) {
@@ -2054,7 +2060,7 @@ export {
    tdistribution_cdf_c, tdistribution_cdf, tdistribution_pdf, exponential_cdf_c, exponential_cdf, chisquared_pdf,
    Beta, GammaDist, LaplaceDist, LaplaceDistI, LogNormal, Student, StudentI,
    gaus, gausn, gausxy, expo,
-   Prob, Gaus, BreitWigner, BetaDist, BetaDistI, landau, landaun,
+   Prob, Sq, Gaus, BreitWigner, BetaDist, BetaDistI, landau, landaun,
 
    ChebyshevN, Chebyshev0, Chebyshev1, Chebyshev2, Chebyshev3, Chebyshev4,
    Chebyshev5, Chebyshev6, Chebyshev7, Chebyshev8, Chebyshev9, Chebyshev10,
