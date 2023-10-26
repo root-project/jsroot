@@ -879,7 +879,7 @@ function graph2DTooltip(intersect) {
 class TGraph2DPainter extends ObjectPainter {
 
    /** @summary Decode options string  */
-   decodeOptions(opt, gr) {
+   decodeOptions(opt, _gr) {
       const d = new DrawOptions(opt);
 
       if (!this.options)
@@ -907,19 +907,20 @@ class TGraph2DPainter extends ObjectPainter {
          res.Markers = d.check('P');
       }
 
-      if (!res.Markers && !res.Error && !res.Circles && !res.Line && !res.Triangles) {
-         if ((gr.fMarkerSize === 1) && (gr.fMarkerStyle === 1))
-            res.Circles = true;
-         else
-            res.Markers = true;
-      }
       if (!res.Markers) res.Color = false;
 
       if (res.Color || res.Triangles >= 10)
          res.Zscale = d.check('Z');
 
-      res.Axis = 'lego2';
-      if (res.Zscale) res.Axis += 'z';
+      res.isAny = function() {
+         return this.Markers || this.Error || this.Circles || this.Line || this.Triangles;
+      };
+
+      if (res.isAny()) {
+         res.Axis = 'lego2';
+         if (res.Zscale) res.Axis += 'z';
+      } else
+         res.Axis = opt;
 
       this.storeDrawOpt(opt);
    }
@@ -1097,6 +1098,16 @@ class TGraph2DPainter extends ObjectPainter {
          return this;
 
       fp.remove3DMeshes(this);
+
+      if (!this.options.isAny()) {
+         // no need to draw somthing if histogram content was drawn
+         if (main.draw_content)
+            return this;
+         if ((graph.fMarkerSize === 1) && (graph.fMarkerStyle === 1))
+            this.options.Circles = true;
+         else
+            this.options.Markers = true;
+      }
 
       const countSelected = (zmin, zmax) => {
          let cnt = 0;
