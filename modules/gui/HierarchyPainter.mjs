@@ -80,6 +80,18 @@ ${img('tf2', 16, 'png', 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAABGdBTUE
 `, node, 'jsroot_hstyle');
 }
 
+/** @summary Return size as string with suffix like MB or KB
+  * @private */
+function getSizeStr(sz) {
+   if (sz < 10000)
+      return sz.toFixed(0) + 'B';
+   if (sz < 1e6)
+      return (sz/1e3).toFixed(2) + 'KiB';
+   if (sz < 1e9)
+      return (sz/1e6).toFixed(2) + 'MiB';
+   return (sz/1e9).toFixed(2) + 'GiB';
+}
+
 /** @summary draw list content
   * @desc used to draw all items from TList or TObjArray inserted into the TCanvas list of primitives
   * @private */
@@ -259,14 +271,11 @@ function keysHierarchy(folder, keys, file, dirname) {
          _name: key.fName + ';' + key.fCycle,
          _cycle: key.fCycle,
          _kind: prROOT + key.fClassName,
-         _title: key.fTitle,
+         _title: key.fTitle + ` (size: ${getSizeStr(key.fObjlen)})`,
          _keyname: key.fName,
          _readobj: null,
          _parent: folder
       };
-
-      if (key.fObjlen > 1e5)
-         item._title += ' (size: ' + (key.fObjlen/1e6).toFixed(1) + 'MB)';
 
       if (key.fRealName)
          item._realname = key.fRealName + ';' + key.fCycle;
@@ -772,7 +781,7 @@ class HierarchyPainter extends BasePainter {
 
        folder = {
          _name: file.fFileName,
-         _title: (file.fTitle ? file.fTitle + ', path ' : '') + file.fFullURL,
+         _title: (file.fTitle ? file.fTitle + ', path: ' : '') + file.fFullURL + `, size: ${getSizeStr(file.fEND)}`,
          _kind: kindTFile,
          _file: file,
          _fullurl: file.fFullURL,
