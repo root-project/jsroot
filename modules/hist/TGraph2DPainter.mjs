@@ -1,5 +1,5 @@
 import { settings, createHistogram, setHistogramTitle, kNoZoom,
-         clTH2I, clTGraph2DErrors, clTGraph2DAsymmErrors, clTPaletteAxis, kNoStats } from '../core.mjs';
+         clTH2F, clTGraph2DErrors, clTGraph2DAsymmErrors, clTPaletteAxis, kNoStats } from '../core.mjs';
 import { Color, DoubleSide, LineBasicMaterial, MeshBasicMaterial, Mesh } from '../three.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
@@ -980,7 +980,7 @@ class TGraph2DPainter extends ObjectPainter {
 
       this._own_histogram = true; // when histogram created on client side
 
-      const histo = createHistogram(clTH2I, 10, 10);
+      const histo = createHistogram(clTH2F, graph.fNpx, graph.fNpy);
       histo.fName = graph.fName + '_h';
       setHistogramTitle(histo, graph.fTitle);
       histo.fXaxis.fXmin = uxmin;
@@ -992,13 +992,37 @@ class TGraph2DPainter extends ObjectPainter {
       histo.fMinimum = uzmin;
       histo.fMaximum = uzmax;
       histo.fBits |= kNoStats;
+
+      if (!this.options.isAny()) {
+         const dulaunay = this.buildDelaunay(graph);
+         if (dulaunay) {
+            for (let i = 0; i < graph.fNpx; ++i) {
+               const xx = uxmin + (i + 0.5) / graph.fNpx * (uxmax - uxmin);
+               for (let j = 0; j < graph.fNpy; ++j) {
+                  const yy = uymin + (j + 0.5) / graph.fNpy * (uymax - uymin),
+                        zz = dulaunay.ComputeZ(xx, yy);
+                  histo.fArray[histo.getBin(i+1, j+1)] = zz;
+               }
+            }
+         }
+      }
+
       return histo;
    }
 
+   buildDelaunay(graph) {
+      if (!this._delaunay) {
+         this._delaunay = new TGraphDelaunay(graph);
+         this._delaunay.FindAllTriangles();
+         if (!this._delaunay.fNdt)
+            delete this._delaunay;
+      }
+      return this._delaunay;
+   }
+
    drawTriangles(fp, graph, levels, palette) {
-      const dulaunay = new TGraphDelaunay(graph);
-      dulaunay.FindAllTriangles();
-      if (!dulaunay.fNdt) return;
+      const dulaunay = this.buildDelaunay(graph);
+      if (!dulaunay) return;
 
       const main_grz = !fp.logz ? fp.grz : value => (value < fp.scale_zmin) ? -0.1 : fp.grz(value),
             do_faces = this.options.Triangles >= 10,
@@ -1060,6 +1084,8 @@ class TGraph2DPainter extends ObjectPainter {
          this.decodeOptions(opt, obj);
 
       Object.assign(this.getObject(), obj);
+
+      delete this._delaunay; // rebuild triangles
 
       delete this.$redraw_hist;
 
