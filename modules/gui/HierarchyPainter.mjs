@@ -2854,9 +2854,10 @@ class HierarchyPainter extends BasePainter {
      * @param {string} server_address - URL to server like 'http://localhost:8090/'
      * @return {Promise} when ready */
    async openOnline(server_address) {
-      const AdoptHierarchy = result => {
+      const adoptHierarchy = async result => {
          this.h = result;
-         if (!result) return Promise.resolve(null);
+         if (!result)
+            return Promise.resolve(null);
 
          if (this.h?._title && (typeof document !== 'undefined'))
             document.title = this.h._title;
@@ -2866,9 +2867,7 @@ class HierarchyPainter extends BasePainter {
          // mark top hierarchy as online data and
          this.h._online = server_address;
 
-         this.h._get = (item, itemname, option) => {
-            return this.getOnlineItem(item, itemname, option);
-         };
+         this.h._get = (item, itemname, option) => this.getOnlineItem(item, itemname, option);
 
          this.h._expand = onlineHierarchy;
 
@@ -2915,10 +2914,10 @@ class HierarchyPainter extends BasePainter {
       if (isObject(server_address)) {
          const h = server_address;
          server_address = '';
-         return AdoptHierarchy(h);
+         return adoptHierarchy(h);
       }
 
-      return httpRequest(server_address + 'h.json?compact=3', 'object').then(hh => AdoptHierarchy(hh));
+      return httpRequest(server_address + 'h.json?compact=3', 'object').then(hh => adoptHierarchy(hh));
    }
 
    /** @summary Get properties for online item  - server name and relative name
