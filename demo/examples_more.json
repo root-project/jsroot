@@ -215,6 +215,9 @@
      { "name": "split", "file": "gr2.root", "item": "c1equi;1", "title": "TGraph class with split line in legend" },
      { "name": "approx", "file": "tutorials_graphs.root", "item": "approx;1", "title": "Output of tutorials/graphs/approx.C" }
    ],
+   "TMultiGraph": [
+     { "name": "fit", "file": "fitMultiGraph.root", "item": "myc;1", "title": "Fitting of TMultiGraph by pol2, output from tutorials/fit/fitMultiGraph.C, test for TMath::sq() function" }
+   ],
    "TLatex" : [
       { "name": "symbols", "file": "latex.root", "layout": "grid2x2", "latex": "symbols", "items": ["lva","ex1","ex2","ex3"], "title": "Replace only known TLatex symbols" },
       { "name": "plain", "file": "latex.root", "layout": "grid2x2", "latex": "off", "items": ["lva","ex1","ex2","ex3"], "title": "Disable TLatex processor completely" },
