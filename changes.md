@@ -12,6 +12,7 @@
 9. Fix - several bugs in TFormula parsing
 10. Fix - correctly use saved buffer in TF1/TF2
 11. Fix - properly adjust size of stats box
+12. Fix - support pol0..pol9 functions
 
 
 ## Changes in 7.5.1
