@@ -256,7 +256,8 @@ class TF1Painter extends TH1Painter {
                hist.setBinContent(n + 1, Number.isFinite(y) ? y : 0);
             }
          } else {
-            const dx = (xmax - xmin) / np, getSave = x => {
+            const dx = (xmax - xmin) / np;
+            function getSave(x) {
                if (x < xmin)
                   return tf1.fSave[0];
                if (x > xmax)
@@ -276,7 +277,7 @@ class TF1Painter extends TH1Painter {
                   yup = ylow; ylow = tf1.fSave[bin - 1];
                }
                return ((xup * ylow - xlow * yup) + x * (yup - ylow)) / dx;
-            };
+            }
 
             ensureBins(tf1.fNpx);
             hist.fXaxis.fXmin = tf1.fXmin;
