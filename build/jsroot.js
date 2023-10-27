@@ -11,7 +11,7 @@ const version_id = '7.5.x',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '26/10/2023',
+version_date = '27/10/2023',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -57194,6 +57194,12 @@ function Prob(chi2, ndf) {
    return chisquared_cdf_c(chi2,ndf,0);
 }
 
+/** @summary Square function
+  * @memberof Math */
+function Sq(x) {
+   return x * x;
+}
+
 /** @summary Gaus function
   * @memberof Math */
 function Gaus(x, mean, sigma, norm) {
@@ -57663,6 +57669,7 @@ LogNormal: LogNormal,
 Polynomial1eval: Polynomial1eval,
 Polynomialeval: Polynomialeval,
 Prob: Prob,
+Sq: Sq,
 Student: Student,
 StudentI: StudentI,
 beta: beta,
@@ -109952,6 +109959,12 @@ function proivdeEvalPar(obj) {
                 .replace(/\blandaun\(/g, 'this._math.landaun(this, x, ')
                 .replace(/\bTMath::/g, 'this._math.')
                 .replace(/\bROOT::Math::/g, 'this._math.');
+
+   if (_func.match(/^pol[0-9]$/) && (parseInt(_func[3]) === obj.fNpar - 1)) {
+      _func = '[0]';
+      for (let k = 1; k < obj.fNpar; ++k)
+         _func += ` + [${k}] * `+ ((k === 1) ? 'x' : `Math.pow(x,${k})`);
+   }
 
    for (let i = 0; i < obj.fNpar; ++i)
       _func = _func.replaceAll(pprefix + i + ']', `(${obj.GetParValue(i)})`);
