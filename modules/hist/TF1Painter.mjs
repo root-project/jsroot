@@ -261,11 +261,19 @@ class TF1Painter extends TH1Painter {
                if (x > xmax)
                   return tf1.fSave[np];
 
-               const bin = Math.floor((x - xmin) / dx),
-                     xlow = xmin + bin * dx,
-                     xup  = xlow + dx,
-                     ylow = tf1.fSave[bin],
-                     yup  = tf1.fSave[bin + 1];
+               const bin = Math.floor((x - xmin) / dx);
+               let xlow = xmin + bin * dx,
+                   xup = xlow + dx,
+                   ylow = tf1.fSave[bin],
+                   yup = tf1.fSave[bin + 1];
+
+               if (!Number.isFinite(ylow) && (bin < np - 1)) {
+                  xlow += dx; xup += dx;
+                  ylow = yup; yup = tf1.fSave[bin + 2];
+               } else if (!Number.isFinite(yup) && (bin > 0)) {
+                  xup -= dx; xlow -= dx;
+                  yup = ylow; ylow = tf1.fSave[bin - 1];
+               }
                return ((xup * ylow - xlow * yup) + x * (yup - ylow)) / dx;
             };
 
