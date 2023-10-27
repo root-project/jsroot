@@ -230,35 +230,51 @@ class TF1Painter extends TH1Painter {
       // in the case there were points have saved and we cannot calculate function
       // if we don't have the user's function
       if (this._use_saved_points) {
-         let np = tf1.fSave.length - 2, custom_xaxis = null;
-         xmin = tf1.fSave[np];
-         xmax = tf1.fSave[np + 1];
+         let np = tf1.fSave.length - 3, custom_xaxis = null;
+         xmin = tf1.fSave[np + 1];
+         xmax = tf1.fSave[np + 2];
 
          if (xmin === xmax) {
-            xmin = tf1.fSave[--np];
+            xmin = tf1.fSave[np];
             const mp = this.getMainPainter();
             if (isFunc(mp?.getHisto))
                custom_xaxis = mp?.getHisto()?.fXaxis;
+            if (!custom_xaxis) {
+               xmin = tf1.fXmin;
+               xmax = tf1.fXmax;
+            }
          }
 
          if (custom_xaxis) {
-            ensureBins(np);
+            ensureBins(hist.fXaxis.fNbins);
             Object.assign(hist.fXaxis, custom_xaxis);
+            // TODO: find first bin
+
             for (let n = 0; n < np; ++n) {
-               // if (n < 10) console.log('bin', n, 'center', hist.fXaxis.GetBinCenter(n + 1), 'value', tf1.fSave[n]);
                const y = tf1.fSave[n];
                hist.setBinContent(n + 1, Number.isFinite(y) ? y : 0);
             }
          } else {
-            // const dx = (xmax - xmin) / tf1.fNpx;
+            const dx = (xmax - xmin) / np, getSave = x => {
+               if (x < xmin)
+                  return tf1.fSave[0];
+               if (x > xmax)
+                  return tf1.fSave[np];
+
+               const bin = Math.floor((x - xmin) / dx),
+                     xlow = xmin + bin * dx,
+                     xup  = xlow + dx,
+                     ylow = tf1.fSave[bin],
+                     yup  = tf1.fSave[bin + 1];
+               return ((xup * ylow - xlow * yup) + x * (yup - ylow)) / dx;
+            };
 
             ensureBins(tf1.fNpx);
-
             hist.fXaxis.fXmin = tf1.fXmin;
             hist.fXaxis.fXmax = tf1.fXmax;
 
             for (let n = 0; n < tf1.fNpx; ++n) {
-               const y = tf1.fSave[n];
+               const y = getSave(hist.fXaxis.GetBinCenter(n + 1));
                hist.setBinContent(n + 1, Number.isFinite(y) ? y : 0);
             }
          }
