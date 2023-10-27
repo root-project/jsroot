@@ -262,7 +262,7 @@ class TF1Painter extends TH1Painter {
                if (x > xmax)
                   return tf1.fSave[np];
 
-               const bin = Math.floor((x - xmin) / dx);
+               const bin = Math.min(np - 1, Math.floor((x - xmin) / dx));
                let xlow = xmin + bin * dx,
                    xup = xlow + dx,
                    ylow = tf1.fSave[bin],
