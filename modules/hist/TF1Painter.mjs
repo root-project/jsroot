@@ -189,6 +189,8 @@ class TF1Painter extends TH1Painter {
 
       delete this._fail_eval;
 
+      // this._use_saved_points = true;
+
       if (!this._use_saved_points) {
          const np = Math.max(tf1.fNpx, 100);
          let iserror = false;
@@ -237,31 +239,28 @@ class TF1Painter extends TH1Painter {
             const mp = this.getMainPainter();
             if (isFunc(mp?.getHisto))
                custom_xaxis = mp?.getHisto()?.fXaxis;
-            else
-               console.error('Very special stored values, see TF1::Save, in TF1.cxx:3183', xmin, xmax);
-         } else {
-            const epsilon = 1e-10, dx = (tf1.fXmax - tf1.fXmin) / Math.max(1, tf1.fNpx),
-                  bad_save_buffer = (Math.abs(xmin - tf1.fXmin - 0.5*dx) < epsilon) && (Math.abs(tf1.fXmax - 0.5*dx - xmax) < epsilon);
-
-            // last point in saved buffer never used for bin content
-            // in case of buggy data also one more point has to be excluded
-            if (np >= tf1.fNpx)
-               np = bad_save_buffer ? tf1.fNpx - 1 : tf1.fNpx;
          }
 
-         ensureBins(np);
-
-         // TODO: try to detect such situation, should not happen with TWebCanvas
-         if (custom_xaxis)
+         if (custom_xaxis) {
+            ensureBins(np);
             Object.assign(hist.fXaxis, custom_xaxis);
-         else {
-            hist.fXaxis.fXmin = xmin;
-            hist.fXaxis.fXmax = xmax;
-         }
+            for (let n = 0; n < np; ++n) {
+               // if (n < 10) console.log('bin', n, 'center', hist.fXaxis.GetBinCenter(n + 1), 'value', tf1.fSave[n]);
+               const y = tf1.fSave[n];
+               hist.setBinContent(n + 1, Number.isFinite(y) ? y : 0);
+            }
+         } else {
+            // const dx = (xmax - xmin) / tf1.fNpx;
 
-         for (let n = 0; n < np; ++n) {
-            const y = tf1.fSave[n];
-            hist.setBinContent(n + 1, Number.isFinite(y) ? y : 0);
+            ensureBins(tf1.fNpx);
+
+            hist.fXaxis.fXmin = tf1.fXmin;
+            hist.fXaxis.fXmax = tf1.fXmax;
+
+            for (let n = 0; n < tf1.fNpx; ++n) {
+               const y = tf1.fSave[n];
+               hist.setBinContent(n + 1, Number.isFinite(y) ? y : 0);
+            }
          }
       }
 
