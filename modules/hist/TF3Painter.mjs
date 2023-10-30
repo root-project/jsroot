@@ -16,7 +16,7 @@ function findZValue(arrz, arrv, cross = 0) {
          return z1 + (cross - v1) / (v2 - v1) * (z2 - z1);
    }
 
-   return arrz[0];
+   return 0;
 }
 
 
