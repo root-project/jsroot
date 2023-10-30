@@ -180,6 +180,9 @@
      { "name": "pnt", "file": "tutorials_graphs.root", "item": "graph2derrorsfit", "title": "Combination of TF2 and TGraph2DErrors, output of tutorials/graphs/graph2derrorsfit.C" },
      { "name": "waves", "file": "tutorials_graphs.root", "item": "waves", "title": "Draw several TF2 with col options, output of tutorials/graphs/waves.C" }
    ],
+   "TF3" : [
+     { "name": "tf3", "file": "tf3.root", "item": "c1", "opt": "", "title": "Canvas with TF3, produced by tutorials/fit/exampleFit3D.C macro" }
+   ],
    "TCanvas" : [
      { "name": "roofit", "file": "rf107.root", "item": "rf107_plotstyles;1", "interactive": true },
      { "name": "subpad", "url": "?nobrowser&file=$$$rf107.root&item=rf107_plotstyles;1/[0]", "title": "Draw only selected sub-pad from list of TCanvas list of primitives"  },
