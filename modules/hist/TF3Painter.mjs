@@ -16,7 +16,7 @@ function findZValue(arrz, arrv, cross = 0) {
          return z1 + (cross - v1) / (v2 - v1) * (z2 - z1);
    }
 
-   return 0;
+   return arrz[0] - 1;
 }
 
 
@@ -119,10 +119,6 @@ class TF3Painter extends TH2Painter {
             iserror = true;
 
          ensureBins(npx, npy);
-         hist.fXaxis.fXmin = xmin;
-         hist.fXaxis.fXmax = xmax;
-         hist.fYaxis.fXmin = ymin;
-         hist.fYaxis.fXmax = ymax;
 
          if (logx)
             produceTAxisLogScale(hist.fXaxis, npx, xmin, xmax);
@@ -161,10 +157,10 @@ class TF3Painter extends TH2Painter {
       }
 
       if (this._use_saved_points) {
-         const xmin = func.fSave[nsave], xmax = func.fSave[nsave+1],
-               ymin = func.fSave[nsave+2], ymax = func.fSave[nsave+3],
-               zmin = func.fSave[nsave+4], zmax = func.fSave[nsave+5],
-               npx = Math.round(func.fSave[nsave+6]),
+         xmin = func.fSave[nsave]; xmax = func.fSave[nsave+1];
+         ymin = func.fSave[nsave+2]; ymax = func.fSave[nsave+3];
+         zmin = func.fSave[nsave+4]; zmax = func.fSave[nsave+5];
+         const npx = Math.round(func.fSave[nsave+6]),
                npy = Math.round(func.fSave[nsave+7]),
                npz = Math.round(func.fSave[nsave+8]),
                // dx = (xmax - xmin) / npx,
@@ -172,10 +168,6 @@ class TF3Painter extends TH2Painter {
                dz = (zmax - zmin) / npz;
 
          ensureBins(npx + 1, npy + 1);
-         hist.fXaxis.fXmin = xmin;
-         hist.fXaxis.fXmax = xmax;
-         hist.fYaxis.fXmin = ymin;
-         hist.fYaxis.fXmax = ymax;
 
          const arrv = new Array(npz + 1), arrz = new Array(npz + 1);
          for (let k = 0; k <= npz; k++)
@@ -193,8 +185,16 @@ class TF3Painter extends TH2Painter {
 
       hist.fName = 'Func';
       setHistogramTitle(hist, func.fTitle);
-      hist.fMinimum = func.fMinimum;
-      hist.fMaximum = func.fMaximum;
+
+      hist.fXaxis.fXmin = xmin;
+      hist.fXaxis.fXmax = xmax;
+      hist.fYaxis.fXmin = ymin;
+      hist.fYaxis.fXmax = ymax;
+      hist.fMinimum = zmin;
+      hist.fMaximum = zmax;
+
+      // hist.fMinimum = func.fMinimum;
+      // hist.fMaximum = func.fMaximum;
       // fHistogram->SetContour(fContour.fN, levels);
       hist.fLineColor = func.fLineColor;
       hist.fLineStyle = func.fLineStyle;
@@ -214,17 +214,21 @@ class TF3Painter extends TH2Painter {
 
       const func = this.$func, nsave = func?.fSave.length ?? 0;
 
-      if (nsave > 6 && this._use_saved_points) {
-         this.xmin = Math.min(this.xmin, func.fSave[nsave-6]);
-         this.xmax = Math.max(this.xmax, func.fSave[nsave-5]);
-         this.ymin = Math.min(this.ymin, func.fSave[nsave-4]);
-         this.ymax = Math.max(this.ymax, func.fSave[nsave-3]);
+      if (nsave > 9 && this._use_saved_points) {
+         this.xmin = Math.min(this.xmin, func.fSave[nsave-9]);
+         this.xmax = Math.max(this.xmax, func.fSave[nsave-8]);
+         this.ymin = Math.min(this.ymin, func.fSave[nsave-7]);
+         this.ymax = Math.max(this.ymax, func.fSave[nsave-6]);
+         this.zmin = Math.min(this.zmin, func.fSave[nsave-5]);
+         this.zmax = Math.max(this.zmax, func.fSave[nsave-4]);
       }
       if (func) {
          this.xmin = Math.min(this.xmin, func.fXmin);
          this.xmax = Math.max(this.xmax, func.fXmax);
          this.ymin = Math.min(this.ymin, func.fYmin);
          this.ymax = Math.max(this.ymax, func.fYmax);
+         this.zmin = Math.min(this.zmin, func.fZmin);
+         this.zmax = Math.max(this.zmax, func.fZmax);
       }
    }
 
