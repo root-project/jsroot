@@ -1826,7 +1826,7 @@ function ChebyshevN(n, x, c) {
 
 /** @summary Chebyshev0 function
   * @memberof Math */
-function Chebyshev0(x, c0) {
+function Chebyshev0(_x, c0) {
    return c0;
 }
 
