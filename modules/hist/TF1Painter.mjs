@@ -73,6 +73,13 @@ function proivdeEvalPar(obj) {
          _func += ` + [${k}] * `+ ((k === 1) ? 'x' : `Math.pow(x,${k})`);
    }
 
+   if (_func.match(/^chebyshev[0-9]$/) && (parseInt(_func[9]) === obj.fNpar - 1)) {
+      _func = `this._math.ChebyshevN(${obj.fNpar-1}, x, `;
+      for (let k = 0; k < obj.fNpar; ++k)
+         _func += (k === 0 ? '[' : ', ') + `[${k}]`;
+      _func += '])';
+   }
+
    for (let i = 0; i < obj.fNpar; ++i)
       _func = _func.replaceAll(pprefix + i + ']', `(${obj.GetParValue(i)})`);
 
