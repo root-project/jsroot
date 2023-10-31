@@ -11,7 +11,7 @@ let version_id = '7.3.x';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '14/06/2023';
+let version_date = '31/10/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -8625,6 +8625,7 @@ const symbols_map = {
    '#downarrow': '\u2193',
    '#circ': '\u02C6', // ^
    '#pm': '\xB1',
+   '#mp': '\u2213',
    '#doublequote': '\u2033',
    '#geq': '\u2265',
    '#times': '\xD7',
@@ -46680,10 +46681,20 @@ function Prob(chi2, ndf) {
    return chisquared_cdf_c(chi2,ndf,0);
 }
 
+/** @summary Square function
+  * @memberof Math */
+function Sq(x) {
+   return x * x;
+}
+
 /** @summary Gaus function
   * @memberof Math */
-function Gaus(x, mean, sigma) {
-   return Math.exp(-0.5 * Math.pow((x-mean) / sigma, 2));
+function Gaus(x, mean, sigma, norm) {
+   if (!sigma) return 1e30;
+   let arg = (x - mean) / sigma;
+   if (arg < -39 || arg > 39) return 0;
+   let res = Math.exp(-0.5*arg*arg);
+   return norm ? res/(2.50662827463100024*sigma) : res; //sqrt(2*Pi)=2.50662827463100024
 }
 
 /** @summary BreitWigner function
@@ -46906,6 +46917,12 @@ function ChebyshevN(n, x, c) {
    }
 
    return x * d1 - d2 + c[0];
+}
+
+/** @summary Chebyshev0 function
+  * @memberof Math */
+function Chebyshev0(x, c0) {
+   return c0;
 }
 
 /** @summary Chebyshev1 function
@@ -47186,6 +47203,7 @@ gausn: gausn,
 gausxy: gausxy,
 expo: expo,
 Prob: Prob,
+Sq: Sq,
 Gaus: Gaus,
 BreitWigner: BreitWigner,
 BetaDist: BetaDist,
@@ -47193,6 +47211,7 @@ BetaDistI: BetaDistI,
 landau: landau,
 landaun: landaun,
 ChebyshevN: ChebyshevN,
+Chebyshev0: Chebyshev0,
 Chebyshev1: Chebyshev1,
 Chebyshev2: Chebyshev2,
 Chebyshev3: Chebyshev3,
@@ -49264,7 +49283,7 @@ class BootstrapMenu extends JSRootMenu {
   * let flag = true;
   * menu.addchk(flag, 'Checked', arg => console.log(`Now flag is ${arg}`));
   * menu.show(); */
-function createMenu$1(evnt, handler, menuname) {
+function createMenu(evnt, handler, menuname) {
    let menu = settings.Bootstrap ? new BootstrapMenu(handler, menuname || 'root_ctx_menu', evnt)
                                  : new StandaloneMenu(handler, menuname || 'root_ctx_menu', evnt);
    return menu.load();
@@ -49311,7 +49330,7 @@ function addDragHandler(_painter, arg) {
    function makeResizeElements(group, handler) {
       function addElement(cursor, d) {
          let clname = 'js_' + cursor.replace(/[-]/g, '_'),
-             elem = group.select('.' + clname);
+             elem = group.selectChild('.' + clname);
          if (elem.empty()) elem = group.append('path').classed(clname, true);
          elem.style('opacity', 0).style('cursor', cursor).attr('d', d);
          if (handler) elem.call(handler);
@@ -50625,7 +50644,7 @@ const FrameInteractive = {
 
       this.clearInteractiveElements();
 
-      createMenu$1(evnt, menu_painter).then(menu => {
+      createMenu(evnt, menu_painter).then(menu => {
 
          let domenu = menu.painter.fillContextMenu(menu, kind, obj);
 
@@ -53169,7 +53188,7 @@ class FlexibleDisplay extends MDIDisplay {
 
       arr.sort((f1,f2) => (select(f1).property('frame_cnt') < select(f2).property('frame_cnt') ? -1 : 1));
 
-      createMenu$1(evnt, this).then(menu => {
+      createMenu(evnt, this).then(menu => {
          menu.add('header:Flex');
          menu.add('Cascade', () => this.sortFrames('cascade'), 'Cascade frames');
          menu.add('Tile', () => this.sortFrames('tile'), 'Tile all frames');
@@ -54871,7 +54890,7 @@ class TPadPainter extends ObjectPainter {
          this.getFramePainter()?.setLastEventPos();
       }
 
-      createMenu$1(evnt, this).then(menu => {
+      createMenu(evnt, this).then(menu => {
          this.fillContextMenu(menu);
          return this.fillObjectExecMenu(menu, '');
       }).then(menu => menu.show());
@@ -55554,7 +55573,7 @@ class TPadPainter extends ObjectPainter {
 
        if (!isFunc(selp?.fillContextMenu)) return;
 
-       createMenu$1(evnt, selp).then(menu => {
+       createMenu(evnt, selp).then(menu => {
           if (selp.fillContextMenu(menu, selkind))
              selp.fillObjectExecMenu(menu, selkind).then(() => setTimeout(() => menu.show(), 50));
        });
@@ -55751,7 +55770,7 @@ class TPadPainter extends ObjectPainter {
 
          if (closeMenu()) return;
 
-         createMenu$1(evnt, this).then(menu => {
+         createMenu(evnt, this).then(menu => {
             menu.add('header:Menus');
 
             if (this.iscan)
@@ -57710,7 +57729,7 @@ class TPavePainter extends ObjectPainter {
       evnt.stopPropagation(); // disable main context menu
       evnt.preventDefault();  // disable browser context menu
 
-      createMenu$1(evnt, this).then(menu => {
+      createMenu(evnt, this).then(menu => {
          this.fillContextMenu(menu);
          return this.fillObjectExecMenu(menu, this.isTitle() ? 'title' : undefined);
        }).then(menu => menu.show());
@@ -58517,7 +58536,7 @@ class THistDrawOptions {
 
       // flag identifies 3D drawing mode for histogram
       if ((this.Lego > 0) || (hdim == 3) ||
-          ((this.Surf > 0) || this.Error && (hdim == 2))) this.Mode3D = true;
+          (((this.Surf > 0) || this.Error) && (hdim == 2))) this.Mode3D = true;
 
       //if (this.Surf == 15)
       //   if (this.System == CoordSystem.kPOLAR || this.System == CoordSystem.kCARTESIAN)
@@ -62154,7 +62173,7 @@ class TH2Painter$2 extends THistPainter {
             if (can_merge) {
                y2 = handle.gry[j+1];
             } else {
-               y2 = Math.round(handle.gry[j+1] + dy*handle.ybar2);
+               y2 = Math.round(handle.gry[j] - dy*handle.ybar2);
                dy = Math.round(dy*(handle.ybar2 - handle.ybar1)) || 1;
             }
 
@@ -70310,7 +70329,7 @@ class TGeoPainter extends ObjectPainter {
 
             if (closeMenu()) return;
 
-            createMenu$1(evnt, this).then(menu => {
+            createMenu(evnt, this).then(menu => {
                 menu.painter.fillContextMenu(menu);
                 menu.show();
             });
@@ -71170,7 +71189,7 @@ class TGeoPainter extends ObjectPainter {
      * @private */
    orbitContext(evnt, intersects) {
 
-      createMenu$1(evnt, this).then(menu => {
+      createMenu(evnt, this).then(menu => {
          let numitems = 0, numnodes = 0, cnt = 0;
          if (intersects)
             for (let n = 0; n < intersects.length; ++n) {
@@ -78597,9 +78616,16 @@ function readMapElement(buf) {
    }
 
    // due-to member-wise streaming second element read after first is completed
-   if (this.member_wise)
+   if (this.member_wise) {
+      if (buf.remain() >= 6) {
+         if (buf.ntoi2() === kStreamedMemberWise)
+            buf.shift(4);  // skip checksum
+         else
+            buf.shift(-2);  // rewind
+      }
       for (i = 0; i < n; ++i)
          streamer[1].func(buf, res[i]);
+   }
 
    return res;
 }
@@ -81678,12 +81704,12 @@ const drawFuncs = { lst: [
    { name: clTLatex, icon: 'img_text', draw: () => import_more().then(h => h.drawText), direct: true },
    { name: clTMathText, sameas: clTLatex },
    { name: clTText, sameas: clTLatex },
-   { name: /^TH1/, icon: 'img_histo1d', class: () => Promise.resolve().then(function () { return TH1Painter$1; }).then(h => h.TH1Painter), opt: ';hist;P;P0;E;E1;E2;E3;E4;E1X0;L;LF2;B;B1;A;TEXT;LEGO;same', ctrl: 'l' },
+   { name: /^TH1/, icon: 'img_histo1d', class: () => Promise.resolve().then(function () { return TH1Painter$1; }).then(h => h.TH1Painter), opt: ';hist;P;P0;E;E1;E2;E3;E4;E1X0;L;LF2;B;B1;A;TEXT;LEGO;same', ctrl: 'l', for_derived: true },
    { name: clTProfile, icon: 'img_profile', class: () => Promise.resolve().then(function () { return TH1Painter$1; }).then(h => h.TH1Painter), opt: ';E0;E1;E2;p;AH;hist' },
    { name: clTH2Poly, icon: 'img_histo2d', class: () => Promise.resolve().then(function () { return TH2Painter$1; }).then(h => h.TH2Painter), opt: ';COL;COL0;COLZ;LCOL;LCOL0;LCOLZ;LEGO;TEXT;same', expand_item: 'fBins', theonly: true },
    { name: 'TProfile2Poly', sameas: clTH2Poly },
    { name: 'TH2PolyBin', icon: 'img_histo2d', draw_field: 'fPoly', draw_field_opt: 'L' },
-   { name: /^TH2/, icon: 'img_histo2d', class: () => Promise.resolve().then(function () { return TH2Painter$1; }).then(h => h.TH2Painter), dflt: 'col', opt: ';COL;COLZ;COL0;COL1;COL0Z;COL1Z;COLA;BOX;BOX1;PROJ;PROJX1;PROJX2;PROJX3;PROJY1;PROJY2;PROJY3;SCAT;TEXT;TEXTE;TEXTE0;CANDLE;CANDLE1;CANDLE2;CANDLE3;CANDLE4;CANDLE5;CANDLE6;CANDLEY1;CANDLEY2;CANDLEY3;CANDLEY4;CANDLEY5;CANDLEY6;VIOLIN;VIOLIN1;VIOLIN2;VIOLINY1;VIOLINY2;CONT;CONT1;CONT2;CONT3;CONT4;ARR;SURF;SURF1;SURF2;SURF4;SURF6;E;A;LEGO;LEGO0;LEGO1;LEGO2;LEGO3;LEGO4;same', ctrl: 'lego' },
+   { name: /^TH2/, icon: 'img_histo2d', class: () => Promise.resolve().then(function () { return TH2Painter$1; }).then(h => h.TH2Painter), dflt: 'col', opt: ';COL;COLZ;COL0;COL1;COL0Z;COL1Z;COLA;BOX;BOX1;PROJ;PROJX1;PROJX2;PROJX3;PROJY1;PROJY2;PROJY3;SCAT;TEXT;TEXTE;TEXTE0;CANDLE;CANDLE1;CANDLE2;CANDLE3;CANDLE4;CANDLE5;CANDLE6;CANDLEY1;CANDLEY2;CANDLEY3;CANDLEY4;CANDLEY5;CANDLEY6;VIOLIN;VIOLIN1;VIOLIN2;VIOLINY1;VIOLINY2;CONT;CONT1;CONT2;CONT3;CONT4;ARR;SURF;SURF1;SURF2;SURF4;SURF6;E;A;LEGO;LEGO0;LEGO1;LEGO2;LEGO3;LEGO4;same', ctrl: 'lego', for_derived: true },
    { name: clTProfile2D, sameas: clTH2 },
    { name: /^TH3/, icon: 'img_histo3d', class: () => Promise.resolve().then(function () { return TH3Painter$1; }).then(h => h.TH3Painter), opt: ';SCAT;BOX;BOX2;BOX3;GLBOX1;GLBOX2;GLCOL' },
    { name: 'THStack', icon: 'img_histo1d', class: () => Promise.resolve().then(function () { return THStackPainter$1; }).then(h => h.THStackPainter), expand_item: 'fHists', opt: 'NOSTACK;HIST;E;PFC;PLC' },
@@ -83236,7 +83262,7 @@ class HierarchyPainter extends BasePainter {
             cmdargs.push((n+2 < arguments.length) ? arguments[n+2] : '');
 
       let promise = (cmdargs.length == 0) || !elem ? Promise.resolve(cmdargs) :
-                     createMenu$1().then(menu => menu.showCommandArgsDialog(hitem._name, cmdargs));
+                     createMenu().then(menu => menu.showCommandArgsDialog(hitem._name, cmdargs));
 
       return promise.then(args => {
          if (args === null) return false;
@@ -83879,7 +83905,7 @@ class HierarchyPainter extends BasePainter {
       if (!hitem) return;
 
       if (isFunc(this.fill_context))
-         createMenu$1(evnt, this).then(menu => {
+         createMenu(evnt, this).then(menu => {
             this.fill_context(menu, hitem);
             if (menu.size() > 0) {
                menu.tree_node = elem.parentNode;
@@ -83931,7 +83957,7 @@ class HierarchyPainter extends BasePainter {
          return el.firstChild.href;
       }
 
-      createMenu$1(evnt, this).then(menu => {
+      createMenu(evnt, this).then(menu => {
 
          if ((!itemname || !hitem._parent) && !('_jsonfile' in hitem)) {
             let files = [], addr = '', cnt = 0,
@@ -84251,7 +84277,7 @@ class HierarchyPainter extends BasePainter {
       }).on('drop', function(ev) {
          select(this).classed('jsroot_drag_area', false);
          let itemname = ev.dataTransfer.getData('item');
-         if (itemname) h.dropItem(itemname, this.getAttribute('id'));
+         if (itemname) h.dropItem(itemname, this);
       });
    }
 
@@ -84631,7 +84657,7 @@ class HierarchyPainter extends BasePainter {
       async function doExpandItem(_item, _obj){
 
          if (isStr(_item._expand))
-            _item._expand = findFunction(item._expand);
+            _item._expand = findFunction(_item._expand);
 
          if (!isFunc(_item._expand)) {
             let handle = getDrawHandle(_item._kind, '::expand');
@@ -85733,7 +85759,7 @@ class HierarchyPainter extends BasePainter {
       let title_elem = this.brlayout.setBrowserTitle(this.is_online ? 'ROOT online server' : 'Read a ROOT file');
       if (title_elem) title_elem.on('contextmenu', evnt => {
          evnt.preventDefault();
-         createMenu$1(evnt).then(menu => {
+         createMenu(evnt).then(menu => {
             this.fillSettingsMenu(menu, true);
             menu.show();
          });
@@ -89656,6 +89682,8 @@ async function drawPolyLine3D() {
 
    fp.toplevel.add(lines);
 
+   fp.render3D(100);
+
    return true;
 }
 
@@ -91174,9 +91202,11 @@ class TGraphPainter$1 extends ObjectPainter {
       for (let n = drawbins.length-1; n >= 0; --n) {
          let bin = drawbins[n],
              dlen = Math.sqrt(bin.dgrx**2 + bin.dgry**2);
-         // shift point
-         bin.grx += excl_width*bin.dgry/dlen;
-         bin.gry -= excl_width*bin.dgrx/dlen;
+         if (dlen > 1e-10) {
+            // shift point
+            bin.grx += excl_width*bin.dgry/dlen;
+            bin.gry -= excl_width*bin.dgrx/dlen;
+         }
          extrabins.push(bin);
       }
 
@@ -91193,6 +91223,8 @@ class TGraphPainter$1 extends ObjectPainter {
    drawBins(funcs, options, draw_g, w, h, lineatt, fillatt, main_block) {
       let graph = this.getObject(),
           excl_width = 0, drawbins = null;
+
+      if (!graph?.fNpoints) return;
 
       if (main_block && lineatt.excl_side) {
          excl_width = lineatt.excl_width;
@@ -96265,7 +96297,7 @@ class RAxisPainter extends RObjectPainter {
             this.draw_g.on('contextmenu', evnt => {
                evnt.stopPropagation(); // disable main context menu
                evnt.preventDefault();  // disable browser context menu
-               createMenu$1(evnt, this).then(menu => {
+               createMenu(evnt, this).then(menu => {
                  menu.add('header:RAxisDrawable');
                  menu.add('Unzoom', () => this.zoomStandalone());
                  this.fillAxisContextMenu(menu, '');
@@ -98252,7 +98284,7 @@ class RPadPainter extends RObjectPainter {
          this.getFramePainter()?.setLastEventPos();
       }
 
-      createMenu$1(evnt, this).then(menu => {
+      createMenu(evnt, this).then(menu => {
          this.fillContextMenu(menu);
          return this.fillObjectExecMenu(menu);
       }).then(menu => menu.show());
@@ -98752,7 +98784,7 @@ class RPadPainter extends RObjectPainter {
 
        if (!isFunc(selp?.fillContextMenu)) return;
 
-       createMenu$1(evnt, selp).then(menu => {
+       createMenu(evnt, selp).then(menu => {
           if (selp.fillContextMenu(menu, selkind))
              selp.fillObjectExecMenu(menu, selkind).then(() => setTimeout(() => menu.show(), 50));
        });
@@ -98936,7 +98968,7 @@ class RPadPainter extends RObjectPainter {
 
          if (closeMenu()) return;
 
-         createMenu$1(evnt, this).then(menu => {
+         createMenu(evnt, this).then(menu => {
             menu.add('header:Menus');
 
             if (this.iscan)
@@ -99575,7 +99607,7 @@ class WebWindowHandle {
      * @private */
    createChannel() {
       if (this.master)
-         return master.createChannel();
+         return this.master.createChannel();
 
       let channel = new WebWindowHandle('channel', this.credits);
       channel.wait_first_recv = true; // first received message via the channel is confirmation of established connection
@@ -100926,7 +100958,7 @@ class RPalettePainter extends RObjectPainter {
             this.draw_g.on('contextmenu', evnt => {
                evnt.stopPropagation(); // disable main context menu
                evnt.preventDefault();  // disable browser context menu
-               createMenu$1(evnt, this).then(menu => {
+               createMenu(evnt, this).then(menu => {
                   menu.add('header:Palette');
                   menu.addchk(vertical, 'Vertical', flag => { this.v7SetAttr('vertical', flag); this.redrawPad(); });
                   framep.z_handle.fillAxisContextMenu(menu, 'z');
@@ -101703,7 +101735,7 @@ class RHistPainter extends RObjectPainter {
                if ((histo.stepx > 1) || (histo.stepy > 1) || (histo.stepz > 1))
                   histo.getBin0 = function(x, y, z) { return Math.floor((x-this.dx)/this.stepx) + this.nx/this.stepx*Math.floor((y-this.dy)/this.stepy) + this.nx/this.stepx*this.ny/this.stepy*Math.floor((z-this.dz)/this.stepz); };
                else
-                  histo.getBin0 = function(x, y, z) { return (x-this.dx) + this.nx*(y-this.dy) + this.nx*this.ny*(z-dz); };
+                  histo.getBin0 = function(x, y, z) { return (x-this.dx) + this.nx*(y-this.dy) + this.nx*this.ny*(z-this.dz); };
 
                histo.getBinContent = function(x, y, z) { return this.fBinContent[this.getBin0(x, y, z)]; };
                histo.getBinError = function(x, y, z) { return Math.sqrt(Math.abs(this.getBinContent(x, y, z))); };
@@ -102555,7 +102587,8 @@ class RH1Painter$2 extends RHistPainter {
    /** @summary Fill statistic */
    fillStatistic(stat, dostat/*, dofit*/) {
 
-      let data = this.countStat(),
+      let histo = this.getHisto(),
+          data = this.countStat(),
           print_name = dostat % 10,
           print_entries = Math.floor(dostat / 10) % 10,
           print_mean = Math.floor(dostat / 100) % 10,
@@ -105341,8 +105374,8 @@ class RH3Painter extends RHistPainter {
       }
 
       let binx, grx, biny, gry, binz, grz;
-      xaxis = this.getAxis('x'),
-      yaxis = this.getAxis('y'),
+      xaxis = this.getAxis('x');
+      yaxis = this.getAxis('y');
       zaxis = this.getAxis('z');
 
       for (i = i1; i < i2; i += di) {
