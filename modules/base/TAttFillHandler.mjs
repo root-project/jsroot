@@ -180,9 +180,9 @@ class TAttFillHandler {
 
       let id = '', lines = '', lfill = null, fills = '', fills2 = '', w = 2, h = 2;
 
-      if (this.gradient) {
+      if (this.gradient)
          id = `grad_${this.gradient.fNumber}`;
-      } else {
+      else {
          id = `pat_${this.pattern}_${indx}`;
 
          switch (this.pattern) {
@@ -397,12 +397,17 @@ class TAttFillHandler {
       if (defs.selectChild('.' + id).empty()) {
          if (this.gradient) {
             const grad = defs.append('svg:linearGradient')
-                             .attr('id', id).attr('class', id).attr('x1', 0).attr('x2',0).attr('y1',0).attr('y2', 1);
+                             .attr('id', id).attr('class', id);
+            grad.attr('x1', Math.round(this.gradient.fStart.fX))
+                .attr('y1', Math.round(1 - this.gradient.fStart.fY))
+                .attr('x2', Math.round(this.gradient.fEnd.fX))
+                .attr('y2', Math.round(1 - this.gradient.fEnd.fY));
             for (let n = 0; n < this.gradient.fColorPositions.length; ++n) {
                const pos = this.gradient.fColorPositions[n],
                      col = '#' + toHex(this.gradient.fColors[n*4]) + toHex(this.gradient.fColors[n*4+1]) + toHex(this.gradient.fColors[n*4+2]);
                grad.append('svg:stop').attr('offset', `${Math.round(pos*100)}%`)
-                                      .attr('stop-color', col);
+                                      .attr('stop-color', col)
+                                      .attr('stop-opacity', `${Math.round(this.gradient.fColors[n*4+3]*100)}%`);
             }
          } else {
             const patt = defs.append('svg:pattern')
