@@ -8,7 +8,8 @@
 5. Implement "[cutg]" draw option for TH2/TF2 surface plots
 6. Implement `TMath::Sq()` function and several others like SinH, ASinH, ...
 7. Implement histogram drawing build from TGraph2D using Delaunay interpolation
-8. Provide preliminary TF3 support
+8. Provide preliminary `TF3` support
+9. Support `TLinearGradient` color
 
 
 ## Changes in 7.5.2
