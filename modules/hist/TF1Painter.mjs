@@ -194,8 +194,8 @@ class TF1Painter extends TH1Painter {
          if (hist.fNcells !== num + 2) {
             hist.fNcells = num + 2;
             hist.fArray = new Float32Array(hist.fNcells);
-            hist.fArray.fill(0);
          }
+         hist.fArray.fill(0);
          hist.fXaxis.fNbins = num;
          hist.fXaxis.fXbins = [];
       };

@@ -81,8 +81,8 @@ class TF2Painter extends TH2Painter {
          if (hist.fNcells !== (nx + 2) * (ny + 2)) {
             hist.fNcells = (nx + 2) * (ny + 2);
             hist.fArray = new Float32Array(hist.fNcells);
-            hist.fArray.fill(0);
          }
+         hist.fArray.fill(0);
          hist.fXaxis.fNbins = nx;
          hist.fXaxis.fXbins = [];
          hist.fYaxis.fNbins = ny;
