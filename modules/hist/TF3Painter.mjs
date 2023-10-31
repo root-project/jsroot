@@ -233,7 +233,7 @@ class TF3Painter extends TH2Painter {
    }
 
    /** @summary retrurn tooltips for TF2 */
-   getTF2Tooltips(pnt) {
+   getTF3Tooltips(pnt) {
       const lines = [this.getObjectHint()],
             funcs = this.getFramePainter()?.getGrFuncs(this.options.second_x, this.options.second_y);
 
@@ -274,7 +274,7 @@ class TF3Painter extends TH2Painter {
                   x: pnt.x, y: pnt.y,
                   color1: this.lineatt?.color ?? 'green',
                   color2: this.fillatt?.getFillColorAlt('blue') ?? 'blue',
-                  lines: this.getTF2Tooltips(pnt), exact: true, menu: true };
+                  lines: this.getTF3Tooltips(pnt), exact: true, menu: true };
 
       if (ttrect.empty()) {
          ttrect = this.draw_g.append('svg:circle')
