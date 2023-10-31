@@ -99,12 +99,18 @@ class TF3Painter extends TH2Painter {
          if (hist.fNcells !== (nx + 2) * (ny + 2)) {
             hist.fNcells = (nx + 2) * (ny + 2);
             hist.fArray = new Float32Array(hist.fNcells);
-            hist.fArray.fill(0);
          }
+         hist.fArray.fill(0);
          hist.fXaxis.fNbins = nx;
          hist.fXaxis.fXbins = [];
          hist.fYaxis.fNbins = ny;
          hist.fYaxis.fXbins = [];
+         hist.fXaxis.fXmin = xmin;
+         hist.fXaxis.fXmax = xmax;
+         hist.fYaxis.fXmin = ymin;
+         hist.fYaxis.fXmax = ymax;
+         hist.fMinimum = zmin;
+         hist.fMaximum = zmax;
       };
 
       delete this._fail_eval;
@@ -126,8 +132,8 @@ class TF3Painter extends TH2Painter {
             produceTAxisLogScale(hist.fYaxis, npy, ymin, ymax);
 
          const arrv = new Array(npz), arrz = new Array(npz);
-         for (let i = 0; i < npz; ++i)
-            arrz[i] = zmin + i / (func.fNpz - 1) * (zmax - zmin);
+         for (let k = 0; k < npz; ++k)
+            arrz[k] = zmin + k / (npz - 1) * (zmax - zmin);
 
          for (let j = 0; (j < npy) && !iserror; ++j) {
             for (let i = 0; (i < npx) && !iserror; ++i) {
@@ -136,8 +142,8 @@ class TF3Painter extends TH2Painter {
                let z = 0;
 
                try {
-                  for (let i = 0; i < npz; ++i)
-                     arrv[i] = func.evalPar(x, y, arrz[i]);
+                  for (let k = 0; k < npz; ++k)
+                     arrv[k] = func.evalPar(x, y, arrz[k]);
 
                   z = findZValue(arrz, arrv);
                } catch {
@@ -152,7 +158,7 @@ class TF3Painter extends TH2Painter {
          if (iserror)
             this._fail_eval = true;
 
-         if (iserror && (nsave > 6))
+         if (iserror && (nsave > 0))
             this._use_saved_points = true;
       }
 
@@ -186,12 +192,6 @@ class TF3Painter extends TH2Painter {
       hist.fName = 'Func';
       setHistogramTitle(hist, func.fTitle);
 
-      hist.fXaxis.fXmin = xmin;
-      hist.fXaxis.fXmax = xmax;
-      hist.fYaxis.fXmin = ymin;
-      hist.fYaxis.fXmax = ymax;
-      hist.fMinimum = zmin;
-      hist.fMaximum = zmax;
 
       // hist.fMinimum = func.fMinimum;
       // hist.fMaximum = func.fMaximum;
