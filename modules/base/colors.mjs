@@ -1,10 +1,12 @@
 import { clTColor, settings } from '../core.mjs';
 import { color as d3_color } from '../d3.mjs';
 
+const clTLinearGradient = 'TLinearGradient';
+
 /** @summary Covert value between 0 and 1 into hex, used for colors coding
   * @private */
-function toHex(num, scale) {
-   const s = Math.round(num*(scale || 255)).toString(16);
+function toHex(num, scale = 255) {
+   const s = Math.round(num * scale).toString(16);
    return s.length === 1 ? '0'+s : s;
 }
 
@@ -103,7 +105,14 @@ function extendRootColors(jsarr, objarr, grayscale) {
       rgb_array = [];
       for (let n = 0; n < objarr.arr.length; ++n) {
          const col = objarr.arr[n];
-         if (col?._typename !== clTColor) continue;
+         if (col?._typename === clTLinearGradient) {
+            rgb_array[col.fNumber] = col;
+            col.toString = () => 'white';
+            continue;
+         }
+
+         if (col?._typename !== clTColor)
+            continue;
 
          if ((col.fNumber >= 0) && (col.fNumber <= 10000))
             rgb_array[col.fNumber] = getRGBfromTColor(col);
@@ -384,4 +393,4 @@ createRootColors();
 export { getColor, findColor, addColor, adoptRootColors,
          getRootColors, getGrayColors,
          extendRootColors, getRGBfromTColor, createRootColors, toHex,
-         ColorPalette, getColorPalette };
+         ColorPalette, getColorPalette, clTLinearGradient };
