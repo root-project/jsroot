@@ -476,6 +476,8 @@ class TGraphPainter extends ObjectPainter {
       let graph = this.getObject(),
           excl_width = 0, drawbins = null;
 
+      if (!graph?.fNpoints) return;
+
       if (main_block && lineatt.excl_side) {
          excl_width = lineatt.excl_width;
          if ((lineatt.width > 0) && !options.Line && !options.Curve) options.Line = 1;
