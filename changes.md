@@ -15,6 +15,7 @@
 12. Fix - properly adjust size of stats box
 13. Fix - support pol0..pol9 functions
 14. Fix - TGraph bar width should be at least 1 pixel
+15. Fix - prevent drawing of empty TGraph
 
 
 ## Changes in 7.5.1
