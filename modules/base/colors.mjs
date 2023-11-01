@@ -409,10 +409,12 @@ function decodeWebCanvasColors(oper) {
       if (p < 0) continue;
 
       const grad = { _typename: 'TLinearGradient' },
-            data = JSON.parse(name.slice(p+1));
+            data = JSON.parse(name.slice(p+1)),
+            colindx = parseInt(name.slice(0, p));
 
       let cnt = 0;
 
+      grad.fNumber = colindx;
       grad.fCoordinateMode = Math.round(data[cnt++]);
       const nsteps = Math.round(data[cnt++]);
       grad.fColorPositions = data.slice(cnt, cnt + nsteps); cnt += nsteps;
@@ -420,7 +422,7 @@ function decodeWebCanvasColors(oper) {
       grad.fStart = { fX: data[cnt++], fY: data[cnt++] };
       grad.fEnd = { fX: data[cnt++], fY: data[cnt++] };
 
-      colors[parseInt(name.slice(0, p))] = grad;
+      colors[colindx] = grad;
    }
 
    return colors;
