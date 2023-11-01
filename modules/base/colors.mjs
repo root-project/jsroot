@@ -105,7 +105,7 @@ function extendRootColors(jsarr, objarr, grayscale) {
       rgb_array = [];
       for (let n = 0; n < objarr.arr.length; ++n) {
          const col = objarr.arr[n];
-         if (col?._typename === clTLinearGradient) {
+         if ((col?._typename === clTLinearGradient) || (col?._typename === clTRadialGradient)) {
             rgb_array[col.fNumber] = col;
             col.toString = () => 'white';
             continue;
@@ -437,4 +437,4 @@ createRootColors();
 export { getColor, findColor, addColor, adoptRootColors,
          getRootColors, getGrayColors,
          extendRootColors, getRGBfromTColor, createRootColors, toHex,
-         ColorPalette, getColorPalette, clTLinearGradient, decodeWebCanvasColors };
+         ColorPalette, getColorPalette, clTLinearGradient, clTRadialGradient, decodeWebCanvasColors };

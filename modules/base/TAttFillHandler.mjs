@@ -1,6 +1,6 @@
 import { gStyle, isObject, isStr } from '../core.mjs';
 import { color as d3_color, rgb as d3_rgb, select as d3_select } from '../d3.mjs';
-import { getColor, findColor, clTLinearGradient, toHex } from './colors.mjs';
+import { getColor, findColor, clTLinearGradient, clTRadialGradient, toHex } from './colors.mjs';
 
 
 /**
@@ -159,7 +159,7 @@ class TAttFillHandler {
          this.color = painter ? painter.getColor(indx) : getColor(indx);
 
       if (!isStr(this.color)) {
-         if (isObject(this.color) && this.color?._typename === clTLinearGradient)
+         if (isObject(this.color) && (this.color?._typename === clTLinearGradient || this.color?._typename === clTRadialGradient))
             this.gradient = this.color;
          this.color = 'none';
       }
@@ -396,12 +396,19 @@ class TAttFillHandler {
 
       if (defs.selectChild('.' + id).empty()) {
          if (this.gradient) {
-            const grad = defs.append('svg:linearGradient')
+            const is_linear = this.gradient._typename === clTLinearGradient,
+                  grad = defs.append(is_linear ? 'svg:linearGradient' : 'svg:radialGradient')
                              .attr('id', id).attr('class', id);
-            grad.attr('x1', Math.round(this.gradient.fStart.fX))
-                .attr('y1', Math.round(1 - this.gradient.fStart.fY))
-                .attr('x2', Math.round(this.gradient.fEnd.fX))
-                .attr('y2', Math.round(1 - this.gradient.fEnd.fY));
+            if (is_linear) {
+               grad.attr('x1', Math.round(this.gradient.fStart.fX))
+                   .attr('y1', Math.round(1 - this.gradient.fStart.fY))
+                   .attr('x2', Math.round(this.gradient.fEnd.fX))
+                   .attr('y2', Math.round(1 - this.gradient.fEnd.fY));
+            } else {
+               grad.attr('cx', this.gradient.fStart.fX)
+                   .attr('cy', 1 - this.gradient.fStart.fY)
+                   .attr('cr', this.gradient.fR1);
+            }
             for (let n = 0; n < this.gradient.fColorPositions.length; ++n) {
                const pos = this.gradient.fColorPositions[n],
                      col = '#' + toHex(this.gradient.fColors[n*4]) + toHex(this.gradient.fColors[n*4+1]) + toHex(this.gradient.fColors[n*4+2]);
