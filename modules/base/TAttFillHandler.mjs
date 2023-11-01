@@ -398,16 +398,17 @@ class TAttFillHandler {
          if (this.gradient) {
             const is_linear = this.gradient._typename === clTLinearGradient,
                   grad = defs.append(is_linear ? 'svg:linearGradient' : 'svg:radialGradient')
-                             .attr('id', id).attr('class', id);
+                             .attr('id', id).attr('class', id),
+                  conv = v => { return v === Math.round(v) ? v.toFixed(0) : v.toFixed(2); };
             if (is_linear) {
-               grad.attr('x1', Math.round(this.gradient.fStart.fX))
-                   .attr('y1', Math.round(1 - this.gradient.fStart.fY))
-                   .attr('x2', Math.round(this.gradient.fEnd.fX))
-                   .attr('y2', Math.round(1 - this.gradient.fEnd.fY));
+               grad.attr('x1', conv(this.gradient.fStart.fX))
+                   .attr('y1', conv(1 - this.gradient.fStart.fY))
+                   .attr('x2', conv(this.gradient.fEnd.fX))
+                   .attr('y2', conv(1 - this.gradient.fEnd.fY));
             } else {
-               grad.attr('cx', this.gradient.fStart.fX)
-                   .attr('cy', 1 - this.gradient.fStart.fY)
-                   .attr('cr', this.gradient.fR1);
+               grad.attr('cx', conv(this.gradient.fStart.fX))
+                   .attr('cy', conv(1 - this.gradient.fStart.fY))
+                   .attr('cr', conv(this.gradient.fR1));
             }
             for (let n = 0; n < this.gradient.fColorPositions.length; ++n) {
                const pos = this.gradient.fColorPositions[n],
