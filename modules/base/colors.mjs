@@ -420,10 +420,10 @@ function decodeWebCanvasColors(oper) {
       grad.fStart = { fX: data[cnt++], fY: data[cnt++] };
       grad.fEnd = { fX: data[cnt++], fY: data[cnt++] };
 
-      console.log('assign linear gradient', JSON.stringify(grad));
-
       colors[parseInt(name.slice(0, p))] = grad;
    }
+
+   return colors;
 }
 
 
