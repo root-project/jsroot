@@ -1,7 +1,7 @@
 import { clTColor, settings } from '../core.mjs';
 import { color as d3_color } from '../d3.mjs';
 
-const clTLinearGradient = 'TLinearGradient';
+const clTLinearGradient = 'TLinearGradient', clTRadialGradient = 'TRadialGradient';
 
 /** @summary Covert value between 0 and 1 into hex, used for colors coding
   * @private */
@@ -408,19 +408,22 @@ function decodeWebCanvasColors(oper) {
       p = name.indexOf('#');
       if (p < 0) continue;
 
-      const grad = { _typename: 'TLinearGradient' },
+      const colindx = parseInt(name.slice(0, p)),
             data = JSON.parse(name.slice(p+1)),
-            colindx = parseInt(name.slice(0, p));
+            grad = { _typename: data[0] === 10 ? clTLinearGradient : clTRadialGradient, fNumber: colindx, fType: data[0] };
 
-      let cnt = 0;
+      let cnt = 1;
 
-      grad.fNumber = colindx;
       grad.fCoordinateMode = Math.round(data[cnt++]);
       const nsteps = Math.round(data[cnt++]);
       grad.fColorPositions = data.slice(cnt, cnt + nsteps); cnt += nsteps;
       grad.fColors = data.slice(cnt, cnt + 4*nsteps); cnt += 4*nsteps;
       grad.fStart = { fX: data[cnt++], fY: data[cnt++] };
       grad.fEnd = { fX: data[cnt++], fY: data[cnt++] };
+      if (grad._typename === clTRadialGradient && cnt < data.length) {
+         grad.fR1 = data[cnt++];
+         grad.fR2 = data[cnt++];
+      }
 
       colors[colindx] = grad;
    }
