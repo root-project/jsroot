@@ -388,9 +388,48 @@ function getColorPalette(id, grayscale) {
     return new ColorPalette(palette, grayscale);
 }
 
+
+/** @summary Decode list of ROOT colors coded by TWebCanvas
+  * @private */
+function decodeWebCanvasColors(oper) {
+   const colors = [], arr = oper.split(';');
+   for (let n = 0; n < arr.length; ++n) {
+      const name = arr[n];
+      let p = name.indexOf(':');
+      if (p > 0) {
+         colors[parseInt(name.slice(0, p))] = d3_color(`rgb(${name.slice(p+1)})`).formatHex();
+         continue;
+      }
+      p = name.indexOf('=');
+      if (p > 0) {
+         colors[parseInt(name.slice(0, p))] = d3_color(`rgba(${name.slice(p+1)})`).formatHex8();
+         continue;
+      }
+      p = name.indexOf('#');
+      if (p < 0) continue;
+
+      const grad = { _typename: 'TLinearGradient' },
+            data = JSON.parse(name.slice(p+1));
+
+      let cnt = 0;
+
+      grad.fCoordinateMode = Math.round(data[cnt++]);
+      const nsteps = Math.round(data[cnt++]);
+      grad.fColorPositions = data.slice(cnt, cnt + nsteps); cnt += nsteps;
+      grad.fColors = data.slice(cnt, cnt + 4*nsteps); cnt += 4*nsteps;
+      grad.fStart = { fX: data[cnt++], fY: data[cnt++] };
+      grad.fEnd = { fX: data[cnt++], fY: data[cnt++] };
+
+      console.log('assign linear gradient', JSON.stringify(grad));
+
+      colors[parseInt(name.slice(0, p))] = grad;
+   }
+}
+
+
 createRootColors();
 
 export { getColor, findColor, addColor, adoptRootColors,
          getRootColors, getGrayColors,
          extendRootColors, getRGBfromTColor, createRootColors, toHex,
-         ColorPalette, getColorPalette, clTLinearGradient };
+         ColorPalette, getColorPalette, clTLinearGradient, decodeWebCanvasColors };

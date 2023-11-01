@@ -2,8 +2,8 @@ import { gStyle, settings, constants, browser, internals, btoa_func, BIT,
          create, toJSON, isBatchMode, loadScript, injectCode, isPromise, getPromise, postponePromise,
          isObject, isFunc, isStr,
          clTObjArray, clTPaveText, clTColor, clTPad, clTStyle, clTLegend, clTLegendEntry } from '../core.mjs';
-import { color as d3_color, select as d3_select, rgb as d3_rgb } from '../d3.mjs';
-import { ColorPalette, adoptRootColors, getGrayColors, extendRootColors, getRGBfromTColor } from '../base/colors.mjs';
+import { select as d3_select, rgb as d3_rgb } from '../d3.mjs';
+import { ColorPalette, adoptRootColors, getGrayColors, extendRootColors, getRGBfromTColor, decodeWebCanvasColors } from '../base/colors.mjs';
 import { getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG, makeTranslate, svgToImage } from '../base/BasePainter.mjs';
 import { ObjectPainter, selectActivePad, getActivePad } from '../base/ObjectPainter.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
@@ -1456,17 +1456,7 @@ class TPadPainter extends ObjectPainter {
 
       // list of colors
       if (snap.fKind === webSnapIds.kColors) {
-         const ListOfColors = [], arr = snap.fSnapshot.fOper.split(';');
-         for (let n = 0; n < arr.length; ++n) {
-            const name = arr[n];
-            let p = name.indexOf(':');
-            if (p > 0)
-               ListOfColors[parseInt(name.slice(0, p))] = d3_color(`rgb(${name.slice(p+1)})`).formatHex();
-             else {
-               p = name.indexOf('=');
-               ListOfColors[parseInt(name.slice(0, p))] = d3_color(`rgba(${name.slice(p+1)})`).formatHex8();
-            }
-         }
+         const ListOfColors = decodeWebCanvasColors(snap.fSnapshot.fOper);
 
          // set global list of colors
          if (!this.options || this.options.GlobalColors)
