@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '31/10/2023',
+version_date = '1/11/2023',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -10193,7 +10193,7 @@ async function typesetMathjax(node) {
    return loadMathjax().then(mj => mj.typesetPromise(node ? [node] : undefined));
 }
 
-const clTLinearGradient = 'TLinearGradient';
+const clTLinearGradient = 'TLinearGradient', clTRadialGradient = 'TRadialGradient';
 
 /** @summary Covert value between 0 and 1 into hex, used for colors coding
   * @private */
@@ -10297,7 +10297,7 @@ function extendRootColors(jsarr, objarr, grayscale) {
       rgb_array = [];
       for (let n = 0; n < objarr.arr.length; ++n) {
          const col = objarr.arr[n];
-         if (col?._typename === clTLinearGradient) {
+         if ((col?._typename === clTLinearGradient) || (col?._typename === clTRadialGradient)) {
             rgb_array[col.fNumber] = col;
             col.toString = () => 'white';
             continue;
@@ -10579,6 +10579,50 @@ function getColorPalette(id, grayscale) {
 
     return new ColorPalette(palette, grayscale);
 }
+
+
+/** @summary Decode list of ROOT colors coded by TWebCanvas
+  * @private */
+function decodeWebCanvasColors(oper) {
+   const colors = [], arr = oper.split(';');
+   for (let n = 0; n < arr.length; ++n) {
+      const name = arr[n];
+      let p = name.indexOf(':');
+      if (p > 0) {
+         colors[parseInt(name.slice(0, p))] = color(`rgb(${name.slice(p+1)})`).formatHex();
+         continue;
+      }
+      p = name.indexOf('=');
+      if (p > 0) {
+         colors[parseInt(name.slice(0, p))] = color(`rgba(${name.slice(p+1)})`).formatHex8();
+         continue;
+      }
+      p = name.indexOf('#');
+      if (p < 0) continue;
+
+      const colindx = parseInt(name.slice(0, p)),
+            data = JSON.parse(name.slice(p+1)),
+            grad = { _typename: data[0] === 10 ? clTLinearGradient : clTRadialGradient, fNumber: colindx, fType: data[0] };
+
+      let cnt = 1;
+
+      grad.fCoordinateMode = Math.round(data[cnt++]);
+      const nsteps = Math.round(data[cnt++]);
+      grad.fColorPositions = data.slice(cnt, cnt + nsteps); cnt += nsteps;
+      grad.fColors = data.slice(cnt, cnt + 4*nsteps); cnt += 4*nsteps;
+      grad.fStart = { fX: data[cnt++], fY: data[cnt++] };
+      grad.fEnd = { fX: data[cnt++], fY: data[cnt++] };
+      if (grad._typename === clTRadialGradient && cnt < data.length) {
+         grad.fR1 = data[cnt++];
+         grad.fR2 = data[cnt++];
+      }
+
+      colors[colindx] = grad;
+   }
+
+   return colors;
+}
+
 
 createRootColors();
 
@@ -11030,7 +11074,7 @@ class TAttFillHandler {
          this.color = painter ? painter.getColor(indx) : getColor(indx);
 
       if (!isStr(this.color)) {
-         if (isObject(this.color) && this.color?._typename === clTLinearGradient)
+         if (isObject(this.color) && (this.color?._typename === clTLinearGradient || this.color?._typename === clTRadialGradient))
             this.gradient = this.color;
          this.color = 'none';
       }
@@ -11267,12 +11311,20 @@ class TAttFillHandler {
 
       if (defs.selectChild('.' + id).empty()) {
          if (this.gradient) {
-            const grad = defs.append('svg:linearGradient')
-                             .attr('id', id).attr('class', id);
-            grad.attr('x1', Math.round(this.gradient.fStart.fX))
-                .attr('y1', Math.round(1 - this.gradient.fStart.fY))
-                .attr('x2', Math.round(this.gradient.fEnd.fX))
-                .attr('y2', Math.round(1 - this.gradient.fEnd.fY));
+            const is_linear = this.gradient._typename === clTLinearGradient,
+                  grad = defs.append(is_linear ? 'svg:linearGradient' : 'svg:radialGradient')
+                             .attr('id', id).attr('class', id),
+                  conv = v => { return v === Math.round(v) ? v.toFixed(0) : v.toFixed(2); };
+            if (is_linear) {
+               grad.attr('x1', conv(this.gradient.fStart.fX))
+                   .attr('y1', conv(1 - this.gradient.fStart.fY))
+                   .attr('x2', conv(this.gradient.fEnd.fX))
+                   .attr('y2', conv(1 - this.gradient.fEnd.fY));
+            } else {
+               grad.attr('cx', conv(this.gradient.fStart.fX))
+                   .attr('cy', conv(1 - this.gradient.fStart.fY))
+                   .attr('cr', conv(this.gradient.fR1));
+            }
             for (let n = 0; n < this.gradient.fColorPositions.length; ++n) {
                const pos = this.gradient.fColorPositions[n],
                      col = '#' + toHex(this.gradient.fColors[n*4]) + toHex(this.gradient.fColors[n*4+1]) + toHex(this.gradient.fColors[n*4+2]);
@@ -67337,6 +67389,43 @@ class TPadPainter extends ObjectPainter {
       }
    }
 
+   /** @summary Process special snaps like colors or style objects
+     * @return {Promise} index where processing should start
+     * @private */
+   processSpecialSnaps(lst) {
+      while (lst?.length) {
+         const snap = lst[0];
+
+         // gStyle object
+         if (snap.fKind === webSnapIds.kStyle) {
+            lst.shift();
+            Object.assign(gStyle, snap.fSnapshot);
+         } else if (snap.fKind === webSnapIds.kColors) {
+            lst.shift();
+            const ListOfColors = decodeWebCanvasColors(snap.fSnapshot.fOper);
+
+            // set global list of colors
+            if (!this.options || this.options.GlobalColors)
+               adoptRootColors(ListOfColors);
+
+            const colors = extendRootColors(null, ListOfColors, this.pad?.TestBit(kIsGrayscale));
+
+            // copy existing colors and extend with new values
+            this._custom_colors = this.options?.LocalColors ? colors : null;
+
+            // set palette
+            if (snap.fSnapshot.fBuf && (!this.options || !this.options.IgnorePalette)) {
+               const palette = [];
+               for (let n = 0; n < snap.fSnapshot.fBuf.length; ++n)
+                  palette[n] = colors[Math.round(snap.fSnapshot.fBuf[n])];
+
+               this.custom_palette = new ColorPalette(palette);
+            }
+         } else
+            break;
+      }
+   }
+
    /** @summary Function called when drawing next snapshot from the list
      * @return {Promise} for drawing of the snap
      * @private */
@@ -67364,17 +67453,7 @@ class TPadPainter extends ObjectPainter {
 
       // list of colors
       if (snap.fKind === webSnapIds.kColors) {
-         const ListOfColors = [], arr = snap.fSnapshot.fOper.split(';');
-         for (let n = 0; n < arr.length; ++n) {
-            const name = arr[n];
-            let p = name.indexOf(':');
-            if (p > 0)
-               ListOfColors[parseInt(name.slice(0, p))] = color(`rgb(${name.slice(p+1)})`).formatHex();
-             else {
-               p = name.indexOf('=');
-               ListOfColors[parseInt(name.slice(0, p))] = color(`rgba(${name.slice(p+1)})`).formatHex8();
-            }
-         }
+         const ListOfColors = decodeWebCanvasColors(snap.fSnapshot.fOper);
 
          // set global list of colors
          if (!this.options || this.options.GlobalColors)
@@ -67440,6 +67519,8 @@ class TPadPainter extends ObjectPainter {
          padpainter._readonly = snap.fReadOnly ?? false; // readonly flag
          padpainter._snap_primitives = snap.fPrimitives; // keep list to be able find primitive
          padpainter._has_execs = snap.fHasExecs ?? false; // are there pad execs, enables some interactive features
+
+         padpainter.processSpecialSnaps(snap.fPrimitives); // need to process style and colors before creating graph elements
 
          padpainter.createPadSvg();
 
@@ -67535,6 +67616,8 @@ class TPadPainter extends ObjectPainter {
             this.setDom(this.brlayout.drawing_divid()); // need to create canvas
             registerForResize(this.brlayout);
          }
+
+         this.processSpecialSnaps(snap.fPrimitives);
 
          this.createCanvasSvg(0);
 
