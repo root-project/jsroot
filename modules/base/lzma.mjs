@@ -1,14 +1,10 @@
- let /** ce */
-     /** ds */
+ let /** ds */
      action_decompress = 2,
      /** de */
      action_progress   = 3,
      wait = typeof setImmediate == "function" ? setImmediate : setTimeout,
      __4294967296 = 4294967296,
      N1_longLit = [4294967295, -__4294967296],
-     /** cs */
-     MIN_VALUE = [0, -9223372036854775808],
-     /** ce */
      P0_longLit = [0, 0],
      P1_longLit = [1, 0],
      LZMA_disableEndMark = true;
@@ -31,12 +27,6 @@
  function add(a, b) {
      return create(a[0] + b[0], a[1] + b[1]);
  }
-
- /** cs */
- function and(a, b) {
-     return makeFromBits(~~Math.max(Math.min(a[1] / __4294967296, 2147483647), -2147483648) & ~~Math.max(Math.min(b[1] / __4294967296, 2147483647), -2147483648), lowBits_0(a) & lowBits_0(b));
- }
- /** ce */
 
  function compare(a, b) {
      var nega, negb;
@@ -83,11 +73,6 @@
      return [valueLow, valueHigh];
  }
 
- /** cs */
- function eq(a, b) {
-     return a[0] == b[0] && a[1] == b[1];
- }
- /** ce */
  function fromInt(value) {
      if (value >= 0) {
          return [value, 0];
@@ -103,65 +88,6 @@
          return ~~Math.max(Math.min(a[0], 2147483647), -2147483648);
      }
  }
- /** cs */
- function makeFromBits(highBits, lowBits) {
-     var high, low;
-     high = highBits * __4294967296;
-     low = lowBits;
-     if (lowBits < 0) {
-         low += __4294967296;
-     }
-     return [low, high];
- }
-
- function pwrAsDouble(n) {
-     if (n <= 30) {
-         return 1 << n;
-     } else {
-         return pwrAsDouble(30) * pwrAsDouble(n - 30);
-     }
- }
-
- function shl(a, n) {
-     var diff, newHigh, newLow, twoToN;
-     n &= 63;
-     if (eq(a, MIN_VALUE)) {
-         if (!n) {
-             return a;
-         }
-         return P0_longLit;
-     }
-     if (a[1] < 0) {
-         throw new Error("Neg");
-     }
-     twoToN = pwrAsDouble(n);
-     newHigh = a[1] * twoToN % 1.8446744073709552E19;
-     newLow = a[0] * twoToN;
-     diff = newLow - newLow % __4294967296;
-     newHigh += diff;
-     newLow -= diff;
-     if (newHigh >= 9223372036854775807) {
-         newHigh -= 1.8446744073709552E19;
-     }
-     return [newLow, newHigh];
- }
-
- function shr(a, n) {
-     var shiftFact;
-     n &= 63;
-     shiftFact = pwrAsDouble(n);
-     return create(Math.floor(a[0] / shiftFact), a[1] / shiftFact);
- }
-
- function shru(a, n) {
-     n &= 63;
-     let sr = shr(a, n);
-     if (a[1] < 0)
-         sr = add(sr, shl([2, 0], 63 - n));
-     return sr;
- }
-
- /** ce */
 
  function sub(a, b) {
      return create(a[0] - b[0], a[1] - b[1]);
@@ -181,16 +107,6 @@
      return this$static.buf[this$static.pos++] & 255;
  }
  /** de */
- /** cs */
- function $read_0(this$static, buf, off, len) {
-     if (this$static.pos >= this$static.count)
-         return -1;
-     len = Math.min(len, this$static.count - this$static.pos);
-     arraycopy(this$static.buf, this$static.pos, buf, off, len);
-     this$static.pos += len;
-     return len;
- }
- /** ce */
 
  function $ByteArrayOutputStream(this$static) {
      this$static.buf = initDim(32);
@@ -204,25 +120,11 @@
      return data;
  }
 
- /** cs */
- function $write(this$static, b) {
-     this$static.buf[this$static.count++] = b << 24 >> 24;
- }
- /** ce */
-
- function $write_0(this$static, buf, off, len) {
+  function $write_0(this$static, buf, off, len) {
      arraycopy(buf, off, this$static.buf, this$static.count, len);
      this$static.count += len;
  }
 
- /** cs */
- function $getChars(this$static, srcBegin, srcEnd, dst, dstBegin) {
-     var srcIdx;
-     for (srcIdx = srcBegin; srcIdx < srcEnd; ++srcIdx) {
-         dst[dstBegin++] = this$static.charCodeAt(srcIdx);
-     }
- }
- /** ce */
 
  function arraycopy(src, srcOfs, dest, destOfs, len) {
      for (var i = 0; i < len; ++i) {
@@ -2116,76 +2018,7 @@
      return symbol;
  }
  /** de */
- /** cs */
- function $BitTreeEncoder(this$static, numBitLevels) {
-     this$static.NumBitLevels = numBitLevels;
-     this$static.Models = initDim(1 << numBitLevels);
-     return this$static;
- }
 
- function $Encode_2(this$static, rangeEncoder, symbol) {
-     var bit, bitIndex, m = 1;
-     for (bitIndex = this$static.NumBitLevels; bitIndex != 0;) {
-         --bitIndex;
-         bit = symbol >>> bitIndex & 1;
-         $Encode_3(rangeEncoder, this$static.Models, m, bit);
-         m = m << 1 | bit;
-     }
- }
-
- function $GetPrice_1(this$static, symbol) {
-     var bit, bitIndex, m = 1, price = 0;
-     for (bitIndex = this$static.NumBitLevels; bitIndex != 0;) {
-         --bitIndex;
-         bit = symbol >>> bitIndex & 1;
-         price += GetPrice(this$static.Models[m], bit);
-         m = (m << 1) + bit;
-     }
-     return price;
- }
-
- function $ReverseEncode(this$static, rangeEncoder, symbol) {
-     var bit, i, m = 1;
-     for (i = 0; i < this$static.NumBitLevels; ++i) {
-         bit = symbol & 1;
-         $Encode_3(rangeEncoder, this$static.Models, m, bit);
-         m = m << 1 | bit;
-         symbol >>= 1;
-     }
- }
-
- function $ReverseGetPrice(this$static, symbol) {
-     var bit, i, m = 1, price = 0;
-     for (i = this$static.NumBitLevels; i != 0; --i) {
-         bit = symbol & 1;
-         symbol >>>= 1;
-         price += GetPrice(this$static.Models[m], bit);
-         m = m << 1 | bit;
-     }
-     return price;
- }
-
- function ReverseEncode(Models, startIndex, rangeEncoder, NumBitLevels, symbol) {
-     var bit, i, m = 1;
-     for (i = 0; i < NumBitLevels; ++i) {
-         bit = symbol & 1;
-         $Encode_3(rangeEncoder, Models, startIndex + m, bit);
-         m = m << 1 | bit;
-         symbol >>= 1;
-     }
- }
-
- function ReverseGetPrice(Models, startIndex, NumBitLevels, symbol) {
-     var bit, i, m = 1, price = 0;
-     for (i = NumBitLevels; i != 0; --i) {
-         bit = symbol & 1;
-         symbol >>>= 1;
-         price += ProbPrices[((Models[startIndex + m] - bit ^ -bit) & 2047) >>> 2];
-         m = m << 1 | bit;
-     }
-     return price;
- }
- /** ce */
  /** ds */
  function $DecodeBit(this$static, probs, index) {
      var newBound, prob = probs[index];
@@ -2239,20 +2072,8 @@
          probs[i] = 1024;
      }
  }
- /** cs */
- var ProbPrices = (function () {
-     var end, i, j, start, ProbPrices = [];
-     for (i = 8; i >= 0; --i) {
-         start = 1 << 9 - i - 1;
-         end = 1 << 9 - i;
-         for (j = start; j < end; ++j) {
-             ProbPrices[j] = (i << 6) + (end - j << 6 >>> 9 - i - 1);
-         }
-     }
-     return ProbPrices;
- }());
 
- function $Encode_3(this$static, probs, index, symbol) {
+  function $Encode_3(this$static, probs, index, symbol) {
      var newBound, prob = probs[index];
      newBound = (this$static.Range >>> 11) * prob;
      if (!symbol) {
