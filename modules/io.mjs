@@ -2098,45 +2098,18 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
          //  place for unpacking
          if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
 
-         const tgt8arr = new Uint8Array(tgtbuf, fullres);
+         const tgt8arr = new Uint8Array(tgtbuf, fullres),
+               expected_size = (getCode(curr + 6) & 0xff) | ((getCode(curr + 7) & 0xff) << 8) | ((getCode(curr + 8) & 0xff) << 16);
          let reslen = 0;
 
-         if (fmt === 'LZMA') {
-            const arr = new Array(uint8arr.length - 31 + 12).fill(0);
-            arr[0] = 93;
-            arr[1] = 0;
-            arr[2] = 0;
-            arr[3] = 1;
-            arr[4] = 0;
-            arr[5] = getCode(curr + 6) & 0xff;
-            arr[6] = getCode(curr + 7) & 0xff;
-            arr[7] = getCode(curr + 8) & 0xff;
-            arr[8] = 0;
-            arr[9] = 0;
-            arr[10] = 0;
-            arr[11] = 0;
-            arr[12] = 0;
+         if (fmt === 'LZMA')
+            reslen = LZMA_decompress(uint8arr, tgt8arr, expected_size);
+         else if (fmt === 'LZ4')
+            reslen = LZ4_uncompress(uint8arr, tgt8arr);
+         else
+            reslen = ZIP_inflate(uint8arr, tgt8arr);
 
-            const expected_size = (getCode(curr + 6) & 0xff) | ((getCode(curr + 7) & 0xff) << 8) | ((getCode(curr + 8) & 0xff) << 16);
-
-            for (let n = 5; n <= 7; ++n)
-               if (arr[n] > 127) arr[n] -= 256;
-
-            for (let n = 1; n < uint8arr.length - 31; ++n)
-               arr[12 + n] = (uint8arr[n + 29] < 128) ? uint8arr[n + 29] : (uint8arr[n + 29] - 256);
-
-            const res = LZMA_decompress(arr);
-            if (res.length !== expected_size)
-               throw Error(`LZMA: mismatch unpacked buffer size ${res.length} != ${expected_size}}`);
-
-            for (let k = 0; k < expected_size; ++k)
-                tgt8arr[k] = res[k];
-
-             reslen = expected_size;
-         } else {
-            reslen = (fmt === 'LZ4') ? LZ4_uncompress(uint8arr, tgt8arr) : ZIP_inflate(uint8arr, tgt8arr);
-            if (reslen <= 0) break;
-         }
+         if (reslen <= 0) break;
 
          fullres += reslen;
          curr += srcsize;
