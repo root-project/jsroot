@@ -4,7 +4,7 @@ import { createHttpRequest, BIT, loadScript, internals, settings, browser,
          clTAttLine, clTAttFill, clTAttMarker, clTStyle, clTImagePalette,
          clTPad, clTCanvas, clTAttCanvas, clTPolyMarker3D, clTF1, clTF2 } from './core.mjs';
 
-import { decompress as LZMA_decompress, compress as LZMA_compress } from './base/lzma.mjs';
+import { decompress as LZMA_decompress } from './base/lzma.mjs';
 
 const clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObject',
       clTStreamerSTL = 'TStreamerSTL', clTStreamerInfoList = 'TStreamerInfoList',
