@@ -696,15 +696,46 @@
      return buf.join('');
  }
 
-  /** ce */
- /** ds */
- function decompress(byte_arr) {
-     const this$static = {};
+function decompress(uint8arr, tgt8arr, expected_size) {
 
-     this$static.d = $LZMAByteArrayDecompressor({}, byte_arr);
-     while ($processChunk(this$static.d.chunker));
-     return decode($toByteArray(this$static.d.output));
- }
+   // ROOT magic, try to recode data from ROOT buffer to those which accepted by LZMA implementation
+
+   const arr = new Array(uint8arr.length - 31 + 12).fill(0);
+   arr[0] = 93;
+   arr[1] = 0;
+   arr[2] = 0;
+   arr[3] = 1;
+   arr[4] = 0;
+   arr[5] = expected_size & 0xff;
+   arr[6] = (expected_size >> 8) & 0xff;
+   arr[7] = (expected_size >> 16) & 0xff;
+   arr[8] = 0;
+   arr[9] = 0;
+   arr[10] = 0;
+   arr[11] = 0;
+   arr[12] = 0;
+
+   for (let n = 5; n <= 7; ++n)
+       if (arr[n] > 127) arr[n] -= 256;
+
+   for (let n = 1; n < uint8arr.length - 31; ++n)
+      arr[12 + n] = (uint8arr[n + 29] < 128) ? uint8arr[n + 29] : (uint8arr[n + 29] - 256);
+
+   const this$static = {};
+
+   this$static.d = $LZMAByteArrayDecompressor({}, arr);
+   while ($processChunk(this$static.d.chunker));
+
+   const res = decode($toByteArray(this$static.d.output));
+
+   if (res.length !== expected_size)
+      throw Error(`LZMA: mismatch unpacked buffer size ${res.length} != ${expected_size}}`);
+
+   for (let k = 0; k < expected_size; ++k)
+      tgt8arr[k] = res[k];
+
+   return expected_size;
+}
 
 
 export { decompress };
