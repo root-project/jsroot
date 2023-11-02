@@ -2095,6 +2095,12 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
             return promise.then(() => nextPortion());
          }
 
+         //  place for unpacking
+         if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
+
+         const tgt8arr = new Uint8Array(tgtbuf, fullres);
+         let reslen = 0;
+
          if (fmt === 'LZMA') {
             const arr = new Array(uint8arr.length - 31 + 12).fill(0);
             arr[0] = 93;
@@ -2119,34 +2125,18 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
             for (let n = 1; n < uint8arr.length - 31; ++n)
                arr[12 + n] = (uint8arr[n + 29] < 128) ? uint8arr[n + 29] : (uint8arr[n + 29] - 256);
 
-            const promise = new Promise((resolveFunc, rejectFunc) => {
-               LZMA_decompress(arr, (res, err) => {
-                  if (err)
-                     return rejectFunc(err);
-                  if (res.length != expected_size)
-                     return rejectFunc(Error(`LZMA: mismatch unpacked buffer size ${res.length} != ${expected_size}}`));
+            const res = LZMA_decompress(arr);
+            if (res.length !== expected_size)
+               throw Error(`LZMA: mismatch unpacked buffer size ${res.length} != ${expected_size}}`);
 
-                  if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
-                  const tgt8arr = new Uint8Array(tgtbuf, fullres);
+            for (let k = 0; k < expected_size; ++k)
+                tgt8arr[k] = res[k];
 
-                  for (let k = 0; k < expected_size; ++k)
-                     tgt8arr[k] = res[k];
-
-                  fullres += expected_size;
-                  curr += srcsize;
-                  resolveFunc(true);
-               });
-            });
-
-            return promise.then(() => nextPortion());
+             reslen = expected_size;
+         } else {
+            reslen = (fmt === 'LZ4') ? LZ4_uncompress(uint8arr, tgt8arr) : ZIP_inflate(uint8arr, tgt8arr);
+            if (reslen <= 0) break;
          }
-
-         //  place for unpacking
-         if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
-
-         const tgt8arr = new Uint8Array(tgtbuf, fullres),
-               reslen = (fmt === 'LZ4') ? LZ4_uncompress(uint8arr, tgt8arr) : ZIP_inflate(uint8arr, tgt8arr);
-         if (reslen <= 0) break;
 
          fullres += reslen;
          curr += srcsize;
