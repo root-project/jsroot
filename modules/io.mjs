@@ -2133,7 +2133,7 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
             for (let n = 5; n <= 7; ++n)
                if (arr[n] > 127) arr[n] -= 256;
 
-            console.log('source[29] = ', uint8arr[28]);
+            console.log('source[29] = ', uint8arr[29]);
 
             for (let n = 1; n < uint8arr.length - 31 - 28; ++n)
                arr[12 + n] = (uint8arr[n + 29] < 128) ? uint8arr[n + 29] : (uint8arr[n + 29] - 256);
@@ -2151,17 +2151,13 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
                   if (err)
                      return rejectFunc(err);
 
-                  //LZMA_compress(res, 1, (res2) => {
-                  //   console.log('CODE AGAIN', res2);
-                  //});
-
-                  console.log('RESULT', res, 'expected size', expected_size, 'tgt size', tgtsize);
+                  console.log('RESULT', res.length, 'expected size', expected_size, 'tgt size', tgtsize);
 
                   if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
                   const tgt8arr = new Uint8Array(tgtbuf, fullres);
 
                   for (let k = 0; k < expected_size; ++k)
-                     tgt8arr[k] = (res[k] < 0) ? res[k] + 256 : res[k];
+                     tgt8arr[k] = res[k];
 
                   fullres += expected_size;
                   curr += srcsize;
@@ -2169,7 +2165,7 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
                });
             });
 
-            return promise.then(() => new DataView(tgtbuf));
+            return promise.then(() => nextPortion());
          }
 
          //  place for unpacking
@@ -3142,7 +3138,14 @@ class TFile {
          }
 
          return R__unzip(blob1, key.fObjlen).then(objbuf => {
-            if (!objbuf) return Promise.reject(Error('Fail to UNZIP buffer'));
+            if (!objbuf)
+               return Promise.reject(Error('Fail to UNZIP buffer'));
+
+            console.log('objbuf', objbuf, key);
+            let arr = new Uint8Array(objbuf.buffer);
+            console.log('arr', arr);
+
+
             const buf = new TBuffer(objbuf, 0, this);
             buf.fTagOffset = key.fKeylen;
             return buf;
@@ -3228,9 +3231,18 @@ class TFile {
    extractStreamerInfos(buf) {
       if (!buf) return;
 
+      console.log('Calling list streamer');
+
       const lst = {};
-      buf.mapObject(1, lst);
-      buf.classStreamer(lst, clTList);
+
+      try {
+         buf.mapObject(1, lst);
+         buf.classStreamer(lst, clTList);
+      } catch (err) {
+          console.log('catch', err);
+      }
+
+      console.log('lst', lst);
 
       lst._typename = clTStreamerInfoList;
 
@@ -3366,6 +3378,7 @@ class TFile {
          this.fKeys.push(si_key);
          return this.readObjBuffer(si_key);
       }).then(blob6 => {
+          console.log('extract streamer infos from', blob6);
           this.extractStreamerInfos(blob6);
           return this;
       });
