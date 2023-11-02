@@ -1,21 +1,7 @@
- let /** ds */
-     action_decompress = 2,
-     /** de */
-     action_progress   = 3,
-     wait = typeof setImmediate == "function" ? setImmediate : setTimeout,
-     __4294967296 = 4294967296,
+ let __4294967296 = 4294967296,
      N1_longLit = [4294967295, -__4294967296],
      P0_longLit = [0, 0],
-     P1_longLit = [1, 0],
-     LZMA_disableEndMark = true;
-
- function update_progress(percent, cbn) {
-     postMessage({
-         action: action_progress,
-         cbn: cbn,
-         result: percent
-     });
- }
+     P1_longLit = [1, 0];
 
  function initDim(len) {
      ///NOTE: This is MUCH faster than "new Array(len)" in newer versions of v8 (starting with Node.js 0.11.15, which uses v8 3.28.73).
@@ -286,12 +272,12 @@
 
  /** ds */
  function $processDecoderChunk(this$static) {
-     var result = $CodeOneChunk(this$static.decoder);
+     const result = $CodeOneChunk(this$static.decoder);
      if (result === -1)
          throw new Error('corrupted input');
      this$static.inBytesProcessed = N1_longLit;
      this$static.outBytesProcessed = this$static.decoder.nowPos64;
-     if (result || compare(this$static.decoder.outSize, P0_longLit) >= 0 && compare(this$static.decoder.nowPos64, this$static.decoder.outSize) >= 0) {
+     if ((result || compare(this$static.decoder.outSize, P0_longLit) >= 0) && compare(this$static.decoder.nowPos64, this$static.decoder.outSize) >= 0) {
          $Flush_0(this$static.decoder.m_OutWindow);
          $ReleaseStream(this$static.decoder.m_OutWindow);
          this$static.decoder.m_RangeDecoder.Stream = null;
@@ -661,9 +647,8 @@
  /** de */
 
  function InitBitModels(probs) {
-     for (var i = probs.length - 1; i >= 0; --i) {
+     for (let i = probs.length - 1; i >= 0; --i)
          probs[i] = 1024;
-     }
  }
 
  /** ce */
@@ -709,7 +694,7 @@
              /// It appears that this is binary data, so it cannot be converted to a string, so just send it back.
              return utf;
          }
-         if (j == 16383) {
+         if (j === 16383) {
              buf.push(String.fromCharCode.apply(String, charCodes));
              j = -1;
          }
@@ -718,96 +703,17 @@
          charCodes.length = j;
          buf.push(String.fromCharCode.apply(String, charCodes));
      }
-     return buf.join("");
+     return buf.join('');
  }
 
- function toDouble(a) {
-     return a[1] + a[0];
- }
-
- /** ce */
+  /** ce */
  /** ds */
- function decompress(byte_arr, on_finish, on_progress) {
-     var this$static = {},
-         percent,
-         cbn, /// A callback number should be supplied instead of on_finish() if we are using Web Workers.
-         has_progress,
-         len,
-         sync = typeof on_finish == "undefined" && typeof on_progress == "undefined";
+ function decompress(byte_arr) {
+     const this$static = {};
 
-     if (typeof on_finish != "function") {
-         cbn = on_finish;
-         on_finish = on_progress = 0;
-     }
-
-     on_progress = on_progress || function(percent) {
-         if (typeof cbn == "undefined")
-             return;
-
-         return update_progress(has_progress ? percent : -1, cbn);
-     };
-
-     on_finish = on_finish || function(res, err) {
-         if (typeof cbn == "undefined")
-             return;
-
-         return postMessage({
-             action: action_decompress,
-             cbn: cbn,
-             result: res,
-             error: err
-         });
-     };
-
-     if (sync) {
-         this$static.d = $LZMAByteArrayDecompressor({}, byte_arr);
-         while ($processChunk(this$static.d.chunker));
-         return decode($toByteArray(this$static.d.output));
-     }
-
-     try {
-         this$static.d = $LZMAByteArrayDecompressor({}, byte_arr);
-
-         len = toDouble(this$static.d.length_0);
-
-         ///NOTE: If the data was created via a stream, it will not have a length value, and therefore we can't calculate the progress.
-         has_progress = len > -1;
-
-         on_progress(0);
-     } catch (err) {
-         return on_finish(null, err);
-     }
-
-     function do_action() {
-         try {
-             var res, i = 0, start = (new Date()).getTime();
-             while ($processChunk(this$static.d.chunker)) {
-                 if (++i % 1000 == 0 && (new Date()).getTime() - start > 200) {
-                     if (has_progress) {
-                         percent = toDouble(this$static.d.chunker.decoder.nowPos64) / len;
-                         /// If about 200 miliseconds have passed, update the progress.
-                         on_progress(percent);
-                     }
-
-                     ///NOTE: This allows other code to run, like the browser to update.
-                     wait(do_action, 0);
-                     return 0;
-                 }
-             }
-
-             on_progress(1);
-
-             res = decode($toByteArray(this$static.d.output));
-
-             /// delay so we don’t catch errors from the on_finish handler
-             wait(on_finish.bind(null, res), 0);
-         } catch (err) {
-             on_finish(null, err);
-         }
-     }
-
-     ///NOTE: We need to wait to make sure it is always async.
-     wait(do_action, 0);
+     this$static.d = $LZMAByteArrayDecompressor({}, byte_arr);
+     while ($processChunk(this$static.d.chunker));
+     return decode($toByteArray(this$static.d.output));
  }
 
 
