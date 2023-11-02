@@ -14,7 +14,8 @@
         MIN_VALUE = [0, -9223372036854775808],
         /** ce */
         P0_longLit = [0, 0],
-        P1_longLit = [1, 0];
+        P1_longLit = [1, 0],
+        LZMA_disableEndMark = true;
 
     function update_progress(percent, cbn) {
         postMessage({
@@ -258,7 +259,7 @@
         this$static.length_0 = length_0;
         encoder = $Encoder({});
         $configure(mode, encoder);
-        encoder._writeEndMark = typeof LZMA.disableEndMark == "undefined";
+        encoder._writeEndMark = typeof LZMA_disableEndMark == "undefined";
         $WriteCoderProperties(encoder, output);
         for (i = 0; i < 64; i += 8)
             $write(output, lowBits_0(shr(length_0, i)) & 255);
@@ -2611,4 +2612,4 @@
     }());
     /** ce */
 
-export { decompress as LZMA_decompress };
+export { decompress, compress };
