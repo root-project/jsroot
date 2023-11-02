@@ -315,7 +315,6 @@
             } else {
                 this$static.length_0 = fromInt(tmp_length);
             }
-            console.log('length_0', this$static.length_0[0]);
         }
 
         this$static.chunker = $CodeInChunks(decoder, input, output, this$static.length_0);
@@ -843,7 +842,6 @@
         this$static.m_RangeDecoder.Stream = inStream;
         $ReleaseStream(this$static.m_OutWindow);
         this$static.m_OutWindow._stream = outStream;
-        console.log('outStream', outStream?.buf?.length);
 
         $Init_1(this$static);
         this$static.state = 0;
@@ -975,7 +973,6 @@
 
     function $SetDecoderProperties(this$static, properties) {
         var dictionarySize, i, lc, lp, pb, remainder, val;
-        console.log("properties.length", properties.length);
         if (properties.length < 5)
             return 0;
         val = properties[0] & 255;
@@ -984,14 +981,11 @@
         lp = remainder % 5;
         pb = ~~(remainder / 5);
         dictionarySize = 0;
-        for (i = 0; i < 4; ++i) {
+        for (i = 0; i < 4; ++i)
             dictionarySize += (properties[1 + i] & 255) << i * 8;
-        }
-        console.log("dict size", dictionarySize, properties);
         ///NOTE: If the input is bad, it might call for an insanely large dictionary size, which would crash the script.
-        if (dictionarySize > 99999999 || !$SetLcLpPb(this$static, lc, lp, pb)) {
+        if (dictionarySize > 99999999 || !$SetLcLpPb(this$static, lc, lp, pb))
             return 0;
-        }
 
         return $SetDictionarySize(this$static, dictionarySize);
     }
