@@ -209,7 +209,6 @@ function $ReleaseStream(this$static) {
    $Flush_0(this$static);
    this$static._stream = null;
 }
-/** de */
 
 function GetLenToPosState(len) {
    len -= 2;
@@ -229,14 +228,12 @@ function StateUpdateChar(index) {
    return index - 6;
 }
 
-/** ds */
 function $Chunker(this$static, decoder) {
    this$static.decoder = decoder;
    this$static.encoder = null;
    this$static.alive = 1;
    return this$static;
 }
-/** de */
 
 function $processChunk(this$static) {
    if (!this$static.alive)
@@ -250,7 +247,6 @@ function $processChunk(this$static) {
    return this$static.alive;
 }
 
-/** ds */
 function $processDecoderChunk(this$static) {
    const result = $CodeOneChunk(this$static.decoder);
    if (result === -1)
@@ -629,7 +625,7 @@ function decompress(uint8arr, tgt8arr, expected_size) {
    arr[0] = 93;
    arr[1] = 0;
    arr[2] = 0;
-   arr[3] = 1;
+   arr[3] = -128; // maximal dictionary size
    arr[4] = 0;
    arr[5] = expected_size & 0xff;
    arr[6] = (expected_size >> 8) & 0xff;
