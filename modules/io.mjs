@@ -2096,26 +2096,7 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
          }
 
          if (fmt === 'LZMA') {
-            // let testarr = new Array(1024);
-            // for (let i = 0; i < 1024; ++i)
-            //   testarr[i] = (i + 0) % 128;
-
-/*
-            const testarr = new Array(16304);
-            for (let i = 0; i < 16304; ++i)
-               testarr[i] = (16304 - i) % 256;
-
-            console.log('call compress');
-            LZMA_compress(testarr, 5, (res, _msg) => {
-               console.log('COMP TEST', res, res.length, _msg);
-
-               LZMA_decompress(res, (res2, _msg) => {
-                  console.log('UNCOMP TEST', res2, _msg);
-               });
-            });
-*/
-
-            const arr = new Array(uint8arr.length - 31 + 12 - 28).fill(0);
+            const arr = new Array(uint8arr.length - 31 + 12).fill(0);
             arr[0] = 93;
             arr[1] = 0;
             arr[2] = 0;
@@ -2130,28 +2111,20 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
             arr[11] = 0;
             arr[12] = 0;
 
+            const expected_size = (getCode(curr + 6) & 0xff) | ((getCode(curr + 7) & 0xff) << 8) | ((getCode(curr + 8) & 0xff) << 16);
+
             for (let n = 5; n <= 7; ++n)
                if (arr[n] > 127) arr[n] -= 256;
 
-            console.log('source[29] = ', uint8arr[29]);
-
-            for (let n = 1; n < uint8arr.length - 31 - 28; ++n)
+            for (let n = 1; n < uint8arr.length - 31; ++n)
                arr[12 + n] = (uint8arr[n + 29] < 128) ? uint8arr[n + 29] : (uint8arr[n + 29] - 256);
-
-            console.log('TRY to decode arr', arr, 'src', uint8arr);
-
-            const expected_size = (getCode(curr + 6) & 0xff) | ((getCode(curr + 7) & 0xff) << 8) | ((getCode(curr + 8) & 0xff) << 16);
-
-            console.log('expect size', expected_size);
-            // for (let n = 0; n < 100; ++n)
-            //   console.log(`[${n}] = ${uint8arr[n]}`);
 
             const promise = new Promise((resolveFunc, rejectFunc) => {
                LZMA_decompress(arr, (res, err) => {
                   if (err)
                      return rejectFunc(err);
-
-                  console.log('RESULT', res.length, 'expected size', expected_size, 'tgt size', tgtsize);
+                  if (res.length != expected_size)
+                     return rejectFunc(Error(`LZMA: mismatch unpacked buffer size ${res.length} != ${expected_size}}`));
 
                   if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
                   const tgt8arr = new Uint8Array(tgtbuf, fullres);
@@ -3139,12 +3112,7 @@ class TFile {
 
          return R__unzip(blob1, key.fObjlen).then(objbuf => {
             if (!objbuf)
-               return Promise.reject(Error('Fail to UNZIP buffer'));
-
-            console.log('objbuf', objbuf, key);
-            let arr = new Uint8Array(objbuf.buffer);
-            console.log('arr', arr);
-
+               return Promise.reject(Error(`Fail to UNZIP buffer for ${key.fName}`));
 
             const buf = new TBuffer(objbuf, 0, this);
             buf.fTagOffset = key.fKeylen;
@@ -3231,18 +3199,15 @@ class TFile {
    extractStreamerInfos(buf) {
       if (!buf) return;
 
-      console.log('Calling list streamer');
-
       const lst = {};
+      buf.mapObject(1, lst);
 
       try {
-         buf.mapObject(1, lst);
          buf.classStreamer(lst, clTList);
       } catch (err) {
-          console.log('catch', err);
+          console.error('Fail extract streamer infos', err);
+          return;
       }
-
-      console.log('lst', lst);
 
       lst._typename = clTStreamerInfoList;
 
@@ -3378,7 +3343,6 @@ class TFile {
          this.fKeys.push(si_key);
          return this.readObjBuffer(si_key);
       }).then(blob6 => {
-          console.log('extract streamer infos from', blob6);
           this.extractStreamerInfos(blob6);
           return this;
       });
