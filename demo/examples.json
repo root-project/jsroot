@@ -197,7 +197,8 @@
      { "name": "df104", "file": "df104_HiggsToTwoPhotons.root", "item": "c", "opt": "", "title": "Output produced by tutorials/dataframe/df104_HiggsToTwoPhotons.py macro" },
      { "name": "df105", "file": "df105_WBosonAnalysis.root", "item": "c", "opt": "", "title": "Output produced by tutorials/dataframe/df105_WBosonAnalysis.py macro" },
      { "name": "sames", "file": "sames.root", "item": "c1", "opt": "", "title": "Three histograms with sames options - example of several stats boxes" },
-     { "name": "grad", "file": "gl_grad.root", "item": "grad", "opt": "", "title": "Demo of TLinearGradient color handling, canvas produced by tutorials/gl/grad.C macro" }
+     { "name": "grad", "file": "tutorials_gl.root", "item": "grad", "opt": "", "title": "Demo of TLinearGradient color handling, canvas produced by tutorials/gl/grad.C macro" },
+     { "name": "radial", "file": "tutorials_gl.root", "item": "radialgradients", "opt": "", "title": "Demo of TRadialGradient color handling, canvas produced by tutorials/gl/radialgradients.C macro" }
    ],
    "TRatioPlot" : [
       { "name": "r1", "file": "ratioplot.root", "item": "ratioplot1;1", "title": "Output of tutorial hist/ratioplot1.C" },
