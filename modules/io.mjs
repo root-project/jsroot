@@ -2043,7 +2043,7 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
 
          if (checkChar(curr, 'Z') && checkChar(curr+1, 'L') && getCode(curr + 2) === 8) { fmt = 'new'; off = 2; } else
          if (checkChar(curr, 'C') && checkChar(curr+1, 'S') && getCode(curr + 2) === 8) { fmt = 'old'; off = 0; } else
-         if (checkChar(curr, 'X') && checkChar(curr+1, 'Z') && getCode(curr + 2) === 0) { fmt = 'LZMA'; off = 29; } else
+         if (checkChar(curr, 'X') && checkChar(curr+1, 'Z') && getCode(curr + 2) === 0) { fmt = 'LZMA'; off = 0; } else
          if (checkChar(curr, 'Z') && checkChar(curr+1, 'S') && getCode(curr + 2) === 1) fmt = 'ZSTD'; else
          if (checkChar(curr, 'L') && checkChar(curr+1, '4')) { fmt = 'LZ4'; off = 0; CHKSUM = 8; }
 
@@ -2099,13 +2099,14 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
             // let testarr = new Array(1024);
             // for (let i = 0; i < 1024; ++i)
             //   testarr[i] = (i + 0) % 128;
+
 /*
             const testarr = new Array(16304);
             for (let i = 0; i < 16304; ++i)
                testarr[i] = (16304 - i) % 256;
 
             console.log('call compress');
-            LZMA_compress(testarr, 0, (res, _msg) => {
+            LZMA_compress(testarr, 5, (res, _msg) => {
                console.log('COMP TEST', res, res.length, _msg);
 
                LZMA_decompress(res, (res2, _msg) => {
@@ -2114,11 +2115,11 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
             });
 */
 
-            const arr = new Array(uint8arr.length - 31 + 12).fill(0);
+            const arr = new Array(uint8arr.length - 31 + 12 - 28).fill(0);
             arr[0] = 93;
             arr[1] = 0;
             arr[2] = 0;
-            arr[3] = -128;
+            arr[3] = 1;
             arr[4] = 0;
             arr[5] = getCode(curr + 6) & 0xff;
             arr[6] = getCode(curr + 7) & 0xff;
@@ -2132,10 +2133,12 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
             for (let n = 5; n <= 7; ++n)
                if (arr[n] > 127) arr[n] -= 256;
 
-            for (let n = 1; n < uint8arr.length - 31; ++n)
-               arr[12 + n] = (uint8arr[n] < 128) ? uint8arr[n] : uint8arr[n] - 256;
+            console.log('source[29] = ', uint8arr[28]);
 
-            console.log('TRY to decode arr', arr);
+            for (let n = 1; n < uint8arr.length - 31 - 28; ++n)
+               arr[12 + n] = (uint8arr[n + 29] < 128) ? uint8arr[n + 29] : (uint8arr[n + 29] - 256);
+
+            console.log('TRY to decode arr', arr, 'src', uint8arr);
 
             const expected_size = (getCode(curr + 6) & 0xff) | ((getCode(curr + 7) & 0xff) << 8) | ((getCode(curr + 8) & 0xff) << 16);
 
@@ -2148,20 +2151,25 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
                   if (err)
                      return rejectFunc(err);
 
-                  console.log('RESULT', err, res.length, res);
+                  //LZMA_compress(res, 1, (res2) => {
+                  //   console.log('CODE AGAIN', res2);
+                  //});
+
+                  console.log('RESULT', res, 'expected size', expected_size, 'tgt size', tgtsize);
+
                   if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
-                   const tgt8arr = new Uint8Array(tgtbuf, fullres);
+                  const tgt8arr = new Uint8Array(tgtbuf, fullres);
 
-                   for (let k = 0; k < expected_size; ++k)
-                      tgt8arr[k] = arr[k] < 0 ? arr[k] + 256 : arr[k];
+                  for (let k = 0; k < expected_size; ++k)
+                     tgt8arr[k] = (res[k] < 0) ? res[k] + 256 : res[k];
 
-                   fullres += expected_size;
-                   curr += srcsize;
-                   resolveFunc(true);
+                  fullres += expected_size;
+                  curr += srcsize;
+                  resolveFunc(true);
                });
             });
 
-            return promise.then(() => nextPortion());
+            return promise.then(() => new DataView(tgtbuf));
          }
 
          //  place for unpacking
