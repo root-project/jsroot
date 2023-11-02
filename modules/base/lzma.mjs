@@ -1,11 +1,11 @@
- let __4294967296 = 4294967296,
-     N1_longLit = [4294967295, -__4294967296],
-     P0_longLit = [0, 0],
-     P1_longLit = [1, 0];
+ const __4294967296 = 4294967296,
+        N1_longLit = [4294967295, -__4294967296],
+        P0_longLit = [0, 0],
+        P1_longLit = [1, 0];
 
  function initDim(len) {
-     ///NOTE: This is MUCH faster than "new Array(len)" in newer versions of v8 (starting with Node.js 0.11.15, which uses v8 3.28.73).
-     var a = [];
+     /// NOTE: This is MUCH faster than "new Array(len)" in newer versions of v8 (starting with Node.js 0.11.15, which uses v8 3.28.73).
+     let a = [];
      a[len - 1] = undefined;
      return a;
  }
@@ -15,30 +15,24 @@
  }
 
  function compare(a, b) {
-     var nega, negb;
-     if (a[0] == b[0] && a[1] == b[1]) {
+     if (a[0] === b[0] && a[1] === b[1])
          return 0;
-     }
-     nega = a[1] < 0;
-     negb = b[1] < 0;
-     if (nega && !negb) {
+     const nega = a[1] < 0,
+           negb = b[1] < 0;
+     if (nega && !negb)
          return -1;
-     }
-     if (!nega && negb) {
+     if (!nega && negb)
          return 1;
-     }
-     if (sub(a, b)[1] < 0) {
+     if (sub(a, b)[1] < 0)
          return -1;
-     }
      return 1;
  }
 
  function create(valueLow, valueHigh) {
-     var diffHigh, diffLow;
      valueHigh %= 1.8446744073709552E19;
      valueLow %= 1.8446744073709552E19;
-     diffHigh = valueHigh % __4294967296;
-     diffLow = Math.floor(valueLow / __4294967296) * __4294967296;
+     const diffHigh = valueHigh % __4294967296,
+           diffLow = Math.floor(valueLow / __4294967296) * __4294967296;
      valueHigh = valueHigh - diffHigh + diffLow;
      valueLow = valueLow - diffLow + diffHigh;
      while (valueLow < 0) {
@@ -50,29 +44,25 @@
          valueHigh += __4294967296;
      }
      valueHigh = valueHigh % 1.8446744073709552E19;
-     while (valueHigh > 9223372032559808512) {
+     while (valueHigh > 9223372032559808512)
          valueHigh -= 1.8446744073709552E19;
-     }
-     while (valueHigh < -9223372036854775808) {
+     while (valueHigh < -9223372036854775808)
          valueHigh += 1.8446744073709552E19;
-     }
      return [valueLow, valueHigh];
  }
 
  function fromInt(value) {
-     if (value >= 0) {
+     if (value >= 0)
          return [value, 0];
-     } else {
+     else
          return [value + __4294967296, -__4294967296];
-     }
  }
 
  function lowBits_0(a) {
-     if (a[0] >= 2147483648) {
+     if (a[0] >= 2147483648)
          return ~~Math.max(Math.min(a[0] - __4294967296, 2147483647), -2147483648);
-     } else {
+     else
          return ~~Math.max(Math.min(a[0], 2147483647), -2147483648);
-     }
  }
 
  function sub(a, b) {
