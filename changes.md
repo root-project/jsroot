@@ -10,6 +10,7 @@
 7. Implement histogram drawing build from TGraph2D using Delaunay interpolation
 8. Provide preliminary `TF3` support
 9. Support `TLinearGradient` and `TRadialGradient` colors
+10. Support LZMA compression of ROOT files #272
 
 
 ## Changes in 7.5.2

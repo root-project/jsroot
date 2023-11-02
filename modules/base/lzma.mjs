@@ -1,7 +1,10 @@
+/** © 2016 Nathan Rugg <nmrugg@gmail.com>
+  * Code extracted from https://github.com/LZMA-JS/LZMA-JS */
+
 const __4294967296 = 4294967296,
-   N1_longLit = [4294967295, -__4294967296],
-   P0_longLit = [0, 0],
-   P1_longLit = [1, 0];
+      N1_longLit = [4294967295, -__4294967296],
+      P0_longLit = [0, 0],
+      P1_longLit = [1, 0];
 
 function initDim(len) {
    /// NOTE: This is MUCH faster than "new Array(len)" in newer versions of v8 (starting with Node.js 0.11.15, which uses v8 3.28.73).
