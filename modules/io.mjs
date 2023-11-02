@@ -4,6 +4,8 @@ import { createHttpRequest, BIT, loadScript, internals, settings, browser,
          clTAttLine, clTAttFill, clTAttMarker, clTStyle, clTImagePalette,
          clTPad, clTCanvas, clTAttCanvas, clTPolyMarker3D, clTF1, clTF2 } from './core.mjs';
 
+import { LZMA_decompress } from './base/lzma.mjs';
+
 const clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObject',
       clTStreamerSTL = 'TStreamerSTL', clTStreamerInfoList = 'TStreamerInfoList',
       clTDirectory = 'TDirectory', clTDirectoryFile = 'TDirectoryFile',
@@ -2019,6 +2021,7 @@ function LZ4_uncompress(input, output, sIdx, eIdx) {
    return j;
 }
 
+
 /** @summary Reads header envelope, determines zipped size and unzip content
   * @return {Promise} with unzipped content
   * @private */
@@ -2045,7 +2048,7 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
          if (checkChar(curr, 'L') && checkChar(curr+1, '4')) { fmt = 'LZ4'; off = 0; CHKSUM = 8; }
 
          /*   C H E C K   H E A D E R   */
-         if ((fmt !== 'new') && (fmt !== 'old') && (fmt !== 'LZ4') && (fmt !== 'ZSTD')) {
+         if ((fmt !== 'new') && (fmt !== 'old') && (fmt !== 'LZ4') && (fmt !== 'ZSTD') && (fmt !== 'LZMA')) {
             if (!noalert) console.error(`R__unzip: ${fmt} format is not supported!`);
             return Promise.resolve(null);
          }
@@ -2090,6 +2093,12 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
                           // eslint-disable-next-line no-undef
                          .then(() => handleZsdt(ZstdCodec));
             return promise.then(() => nextPortion());
+         }
+
+         if (fmt === 'LZMA') {
+            console.log('decoding', uint8arr.length, uint8arr[0], uint8arr[1], uint8arr[2]);
+            LZMA_decompress(uint8arr, (res, err) => { console.log('get result', res, err); }, (percent) => { console.log('progress', percent); });
+            console.log('result', typeof str);
          }
 
          //  place for unpacking
