@@ -254,6 +254,7 @@
      { "name": "tornado", "file": "tutorials_graphics.root", "item": "tornado",  "title": "TPolyMarker3D, output of graphics/tornado.C tutorial" },
      { "name": "dark", "url": "?nobrowser&file=$$$hsimple.root&item=hpx;1&dark", "title": "Invert colors of histogram drawing, providing &amp;dark in URL", "notest": true },
      { "name": "scatter0", "file": "scatter.root", "item": "c1",  "title": "Canvas with new TScatter class, but no palette and histogram in the object, tutorials/graphs/scatter.C" },
-     { "name": "map_io", "asurl": true, "file": "broken_qo.root", "item": "ccdb_object", "opt": "inspect3", "title": "Example of member-wise streamer for std::pair, showing result with inspect3" }
+     { "name": "map_io", "asurl": true, "file": "broken_qo.root", "item": "ccdb_object", "opt": "inspect3", "title": "Example of member-wise streamer for std::pair, showing result with inspect3" },
+     { "name": "lzma", "asurl": true, "file": "example_lzma.root", "item": "TupleLb2pKpipi/DecayTree/B_PX", "opt": "", "title": "Test for LZMA decompression" }
    ]
 }
