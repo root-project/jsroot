@@ -4,7 +4,7 @@ import { createHttpRequest, BIT, loadScript, internals, settings, browser,
          clTAttLine, clTAttFill, clTAttMarker, clTStyle, clTImagePalette,
          clTPad, clTCanvas, clTAttCanvas, clTPolyMarker3D, clTF1, clTF2 } from './core.mjs';
 
-import { LZMA_decompress } from './base/lzma.mjs';
+import { decompress as LZMA_decompress, compress as LZMA_compress } from './base/lzma.mjs';
 
 const clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObject',
       clTStreamerSTL = 'TStreamerSTL', clTStreamerInfoList = 'TStreamerInfoList',
@@ -2043,7 +2043,7 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
 
          if (checkChar(curr, 'Z') && checkChar(curr+1, 'L') && getCode(curr + 2) === 8) { fmt = 'new'; off = 2; } else
          if (checkChar(curr, 'C') && checkChar(curr+1, 'S') && getCode(curr + 2) === 8) { fmt = 'old'; off = 0; } else
-         if (checkChar(curr, 'X') && checkChar(curr+1, 'Z') && getCode(curr + 2) === 0) fmt = 'LZMA'; else
+         if (checkChar(curr, 'X') && checkChar(curr+1, 'Z') && getCode(curr + 2) === 0) { fmt = 'LZMA'; off = 29; } else
          if (checkChar(curr, 'Z') && checkChar(curr+1, 'S') && getCode(curr + 2) === 1) fmt = 'ZSTD'; else
          if (checkChar(curr, 'L') && checkChar(curr+1, '4')) { fmt = 'LZ4'; off = 0; CHKSUM = 8; }
 
@@ -2096,9 +2096,72 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
          }
 
          if (fmt === 'LZMA') {
-            console.log('decoding', uint8arr.length, uint8arr[0], uint8arr[1], uint8arr[2]);
-            LZMA_decompress(uint8arr, (res, err) => { console.log('get result', res, err); }, (percent) => { console.log('progress', percent); });
-            console.log('result', typeof str);
+            // let testarr = new Array(1024);
+            // for (let i = 0; i < 1024; ++i)
+            //   testarr[i] = (i + 0) % 128;
+/*
+            const testarr = new Array(16304);
+            for (let i = 0; i < 16304; ++i)
+               testarr[i] = (16304 - i) % 256;
+
+            console.log('call compress');
+            LZMA_compress(testarr, 0, (res, _msg) => {
+               console.log('COMP TEST', res, res.length, _msg);
+
+               LZMA_decompress(res, (res2, _msg) => {
+                  console.log('UNCOMP TEST', res2, _msg);
+               });
+            });
+*/
+
+            const arr = new Array(uint8arr.length - 31 + 12).fill(0);
+            arr[0] = 93;
+            arr[1] = 0;
+            arr[2] = 0;
+            arr[3] = -128;
+            arr[4] = 0;
+            arr[5] = getCode(curr + 6) & 0xff;
+            arr[6] = getCode(curr + 7) & 0xff;
+            arr[7] = getCode(curr + 8) & 0xff;
+            arr[8] = 0;
+            arr[9] = 0;
+            arr[10] = 0;
+            arr[11] = 0;
+            arr[12] = 0;
+
+            for (let n = 5; n <= 7; ++n)
+               if (arr[n] > 127) arr[n] -= 256;
+
+            for (let n = 1; n < uint8arr.length - 31; ++n)
+               arr[12 + n] = (uint8arr[n] < 128) ? uint8arr[n] : uint8arr[n] - 256;
+
+            console.log('TRY to decode arr', arr);
+
+            const expected_size = (getCode(curr + 6) & 0xff) | ((getCode(curr + 7) & 0xff) << 8) | ((getCode(curr + 8) & 0xff) << 16);
+
+            console.log('expect size', expected_size);
+            // for (let n = 0; n < 100; ++n)
+            //   console.log(`[${n}] = ${uint8arr[n]}`);
+
+            const promise = new Promise((resolveFunc, rejectFunc) => {
+               LZMA_decompress(arr, (res, err) => {
+                  if (err)
+                     return rejectFunc(err);
+
+                  console.log('RESULT', err, res.length, res);
+                  if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
+                   const tgt8arr = new Uint8Array(tgtbuf, fullres);
+
+                   for (let k = 0; k < expected_size; ++k)
+                      tgt8arr[k] = arr[k] < 0 ? arr[k] + 256 : arr[k];
+
+                   fullres += expected_size;
+                   curr += srcsize;
+                   resolveFunc(true);
+               });
+            });
+
+            return promise.then(() => nextPortion());
          }
 
          //  place for unpacking
