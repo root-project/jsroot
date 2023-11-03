@@ -9,7 +9,7 @@ import * as jsroot_math from '../base/math.mjs';
 /** @summary Assign `evalPar` function for TF1 object
   * @private */
 
-function proivdeEvalPar(obj) {
+function proivdeEvalPar(obj, check_save) {
    obj._math = jsroot_math;
 
    let _func = obj.fTitle, isformula = false, pprefix = '[';
@@ -33,7 +33,7 @@ function proivdeEvalPar(obj) {
    }
 
    if (!_func)
-      return false;
+      return !check_save || (obj.fSave?.length > 2);
 
    obj.formulas?.forEach(entry => {
       _func = _func.replaceAll(entry.fName, entry.fTitle);
@@ -138,6 +138,9 @@ function _getTF1Save(func, x) {
     return ((xup * ylow - xlow * yup) + x * (yup - ylow)) / dx;
 }
 
+/** @summary Provide TF1 value
+  * @desc First try evaluate, if not possible - check saved buffer
+  * @private */
 function getTF1Value(func, x, skip_eval = undefined) {
    let y = 0;
    if (!func)
@@ -146,7 +149,7 @@ function getTF1Value(func, x, skip_eval = undefined) {
    if (!skip_eval && !func.evalPar)
       proivdeEvalPar(func);
 
-   if (func.evalPar && (skip_eval !== false)) {
+   if (func.evalPar) {
       try {
          y = func.evalPar(x);
          return y;
@@ -159,7 +162,6 @@ function getTF1Value(func, x, skip_eval = undefined) {
    if ((np < 2) || (func.fSave[np + 1] === func.fSave[np + 2])) return 0;
    return _getTF1Save(func, x);
 }
-
 
 /** @summary Create log scale for axis bins
   * @private */
