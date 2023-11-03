@@ -72,9 +72,9 @@ function sub(a, b) {
    return create(a[0] - b[0], a[1] - b[1]);
 }
 
-function $ByteArrayInputStream(this$static, buf) {
+function $ByteArrayInputStream(this$static, buf, offset) {
    this$static.buf = buf;
-   this$static.pos = 0;
+   this$static.pos = offset ?? 0;
    this$static.count = buf.length;
    return this$static;
 }
@@ -123,9 +123,9 @@ function $init_0(this$static, input, output, output_size) {
    this$static.chunker = $CodeInChunks(decoder, input, output, this$static.length_0);
 }
 
-function $LZMAByteArrayDecompressor(this$static, data, output_size) {
+function $LZMAByteArrayDecompressor(this$static, data, offset, output_size) {
    this$static.output = $ByteArrayOutputStream({});
-   $init_0(this$static, $ByteArrayInputStream({}, data), this$static.output, output_size);
+   $init_0(this$static, $ByteArrayInputStream({}, data, offset), this$static.output, output_size);
    return this$static;
 }
 /** de */
@@ -594,13 +594,7 @@ function InitBitModels(probs) {
 /** @summary decompress LZMA buffer
   * @desc Includes special part to reorder header provided by ROOT implementation */
 function decompress(uint8arr, tgt8arr, expected_size) {
-   // ROOT magic, try to recode data from ROOT buffer to those which accepted by LZMA implementation
-   const arr = new Array(uint8arr.length - 29);
-
-   for (let n = 0; n < uint8arr.length - 29; ++n)
-      arr[n] = (uint8arr[n + 29] < 128) ? uint8arr[n + 29] : (uint8arr[n + 29] - 256);
-
-   const d = $LZMAByteArrayDecompressor({}, arr, expected_size);
+   const d = $LZMAByteArrayDecompressor({}, uint8arr, 29, expected_size);
    while ($processChunk(d.chunker));
 
    const res = $toByteArray(d.output);
