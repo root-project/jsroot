@@ -38,7 +38,7 @@
     "mathjax": "3.2.2",
     "tmp": "^0.2.1",
     "xhr2": "^0.2.1",
-    "zstd-codec": "^0.1.4"
+    "@oneidentity/zstd-js": "^1.0.3"
   },
   "repository": {
     "type": "git",
