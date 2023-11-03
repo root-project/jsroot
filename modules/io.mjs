@@ -2058,9 +2058,16 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
          const tgt8arr = new Uint8Array(tgtbuf, fullres);
 
          if (fmt === 'ZSTD') {
-            const handleZsdt = ZstdCodec => {
+            const promise = isNodeJs()
+                        ? import('zstd-codec').then(handle => handle.ZstdCodec)
+                        : loadScript('../../zstd/zstd-codec.min.js')
+                          .catch(() => loadScript('https://root.cern/js/zstd/zstd-codec.min.js'))
+                          // eslint-disable-next-line no-undef
+                         .then(() => ZstdCodec);
+
+            return promise.then(_zstdCodec => {
                return new Promise((resolveFunc, rejectFunc) => {
-                  ZstdCodec.run(zstd => {
+                  _zstdCodec.run(zstd => {
                      // const simple = new zstd.Simple();
                      const streaming = new zstd.Streaming(),
                            data2 = streaming.decompress(uint8arr),
@@ -2074,18 +2081,10 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
 
                      fullres += reslen;
                      curr += srcsize;
-                     resolveFunc(true);
+                     resolveFunc(nextPortion());
                   });
                });
-            },
-
-            promise = isNodeJs()
-                        ? import('zstd-codec').then(handle => handleZsdt(handle.ZstdCodec))
-                        : loadScript('../../zstd/zstd-codec.min.js')
-                          .catch(() => loadScript('https://root.cern/js/zstd/zstd-codec.min.js'))
-                          // eslint-disable-next-line no-undef
-                         .then(() => handleZsdt(ZstdCodec));
-            return promise.then(() => nextPortion());
+            });
          } else if (fmt === 'LZMA') {
             return import(/* webpackIgnore: true */ './base/lzma.mjs').then(lzma => {
                const expected_len = (getCode(curr + 6) & 0xff) | ((getCode(curr + 7) & 0xff) << 8) | ((getCode(curr + 8) & 0xff) << 16),
