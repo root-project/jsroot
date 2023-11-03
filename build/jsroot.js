@@ -80768,7 +80768,7 @@ class TH3Painter extends THistPainter {
             main = this.getFramePainter();
 
       let buffer_size = 0, use_lambert = false,
-          use_helper = false, use_colors = false, use_opacity = 1,
+          use_helper = false, use_colors = false, use_opacity = 1, exclude_content = -1,
           logv = this.getPadPainter()?.getRootPad()?.fLogv,
           use_scale = true, scale_offset = 0,
           single_bin_verts, single_bin_norms,
@@ -80836,6 +80836,7 @@ class TH3Painter extends THistPainter {
             use_opacity = 0.5;
             use_scale = false;
             use_helper = false;
+            exclude_content = 0;
             use_lambert = true;
          }
       }
@@ -80854,6 +80855,7 @@ class TH3Painter extends THistPainter {
          use_scale = (this.gminbin || this.gmaxbin) ? 1 / Math.max(Math.abs(this.gminbin), Math.abs(this.gmaxbin)) : 1;
 
       const get_bin_weight = content => {
+         if ((exclude_content >= 0) && (content < exclude_content)) return 0;
          if (!use_scale) return 1;
          if (logv) {
             if (content <= 0) return 0;
