@@ -109,7 +109,7 @@ function arraycopy(src, srcOfs, dest, destOfs, len) {
       dest[destOfs + i] = src[srcOfs + i];
 }
 
-function $init_0(this$static, input, output) {
+function $init_0(this$static, input, output, output_size) {
    let hex_length = '', r, tmp_length;
 
    const properties = [];
@@ -133,26 +133,14 @@ function $init_0(this$static, input, output) {
       hex_length = r + '' + hex_length;
    }
 
-   /// Was the length set in the header (if it was compressed from a stream, the length is all f"s).
-   if (/^0+$|^f+$/i.test(hex_length)) {
-      /// The length is unknown, so set to -1.
-      this$static.length_0 = N1_longLit;
-   } else {
-      /// NOTE: If there is a problem with the decoder because of the length, you can always set the length to -1 (N1_longLit) which means unknown.
-      tmp_length = parseInt(hex_length, 16);
-      /// If the length is too long to handle, just set it to unknown.
-      if (tmp_length > 4294967295)
-         this$static.length_0 = N1_longLit;
-      else
-         this$static.length_0 = fromInt(tmp_length);
-   }
+   this$static.length_0 = [output_size,0];
 
    this$static.chunker = $CodeInChunks(decoder, input, output, this$static.length_0);
 }
 
-function $LZMAByteArrayDecompressor(this$static, data) {
+function $LZMAByteArrayDecompressor(this$static, data, output_size) {
    this$static.output = $ByteArrayOutputStream({});
-   $init_0(this$static, $ByteArrayInputStream({}, data), this$static.output);
+   $init_0(this$static, $ByteArrayInputStream({}, data), this$static.output, output_size);
    return this$static;
 }
 /** de */
@@ -645,7 +633,7 @@ function decompress(uint8arr, tgt8arr, expected_size) {
    for (let n = 1; n < uint8arr.length - 31; ++n)
       arr[12 + n] = (uint8arr[n + 29] < 128) ? uint8arr[n + 29] : (uint8arr[n + 29] - 256);
 
-   const d = $LZMAByteArrayDecompressor({}, arr);
+   const d = $LZMAByteArrayDecompressor({}, arr, expected_size);
    while ($processChunk(d.chunker));
 
    const res = $toByteArray(d.output);
