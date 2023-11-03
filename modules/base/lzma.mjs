@@ -6,7 +6,7 @@ const __4294967296 = 4294967296,
       P1_longLit = [1, 0];
 
 function initDim(len) {
-   /// NOTE: This is MUCH faster than "new Array(len)" in newer versions of v8 (starting with Node.js 0.11.15, which uses v8 3.28.73).
+   // This is MUCH faster than "new Array(len)" in newer versions of v8 (starting with Node.js 0.11.15, which uses v8 3.28.73).
    const a = [];
    a[len - 1] = undefined;
    return a;
@@ -20,7 +20,7 @@ function compare(a, b) {
    if (a[0] === b[0] && a[1] === b[1])
       return 0;
    const nega = a[1] < 0,
-      negb = b[1] < 0;
+         negb = b[1] < 0;
    if (nega && !negb)
       return -1;
    if (!nega && negb)
@@ -173,20 +173,14 @@ function $ReleaseStream(this$static) {
 
 function GetLenToPosState(len) {
    len -= 2;
-   if (len < 4)
-      return len;
-
-   return 3;
+   return (len < 4) ? len : 3;
 }
 
 function StateUpdateChar(index) {
    if (index < 4)
       return 0;
 
-   if (index < 10)
-      return index - 3;
-
-   return index - 6;
+   return index < 10 ? index - 3 : index - 6;
 }
 
 function $Chunker(this$static, decoder) {
@@ -360,13 +354,12 @@ function $SetDecoderProperties(this$static, val) {
    const lc = val % 9,
          remainder = ~~(val / 9),
          lp = remainder % 5,
-         pb = ~~(remainder / 5),
-         dictionarySize = 0x80000;
+         pb = ~~(remainder / 5);
 
    if (!$SetLcLpPb(this$static, lc, lp, pb))
       return false;
 
-   return $SetDictionarySize(this$static, dictionarySize);
+   return $SetDictionarySize(this$static, 0x800000);
 }
 
 function $SetDictionarySize(this$static, dictionarySize) {
@@ -570,8 +563,8 @@ function InitBitModels(probs) {
       probs[i] = 1024;
 }
 
-/** @summary decompress LZMA buffer
-  * @desc Includes special part to reorder header provided by ROOT implementation */
+/** @summary decompress ROOT LZMA buffer
+  * @desc ROOT buffer has internal header of 29 bytes long which can be simply ignored */
 function decompress(uint8arr, tgt8arr, expected_size) {
    const d = $LZMAByteArrayDecompressor({}, uint8arr, 29, expected_size, tgt8arr);
 
