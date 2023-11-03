@@ -7,6 +7,7 @@ import { TAxisPainter } from '../gpad/TAxisPainter.mjs';
 import { createLineSegments, PointsCreator, Box3D } from '../base/base3d.mjs';
 import { THistPainter } from '../hist2d/THistPainter.mjs';
 import { assignFrame3DMethods } from './hist3d.mjs';
+import { proivdeEvalPar, getTF1Value } from './TF1Painter.mjs';
 
 
 /**
@@ -384,7 +385,6 @@ class TH3Painter extends THistPainter {
       const histo = this.getHisto(),
             main = this.getFramePainter();
 
-
       let buffer_size = 0, use_lambert = false,
           use_helper = false, use_colors = false, use_opacity = 1,
           logv = this.getPadPainter()?.getRootPad()?.fLogv,
@@ -491,10 +491,13 @@ class TH3Painter extends THistPainter {
       const scalex = (main.grx(histo.fXaxis.GetBinLowEdge(i2+1)) - main.grx(histo.fXaxis.GetBinLowEdge(i1+1))) / (i2-i1),
             scaley = (main.gry(histo.fYaxis.GetBinLowEdge(j2+1)) - main.gry(histo.fYaxis.GetBinLowEdge(j1+1))) / (j2-j1),
             scalez = (main.grz(histo.fZaxis.GetBinLowEdge(k2+1)) - main.grz(histo.fZaxis.GetBinLowEdge(k1+1))) / (k2-k1),
-            cols_size = [],
+            cols_size = {}, cols_sequence = {},
             cntr = use_colors ? this.getContour() : null,
             palette = use_colors ? this.getHistPalette() : null;
-      let nbins = 0, i, j, k, wei, bin_content, num_colors = 0, cols_sequence = [];
+      let nbins = 0, i, j, k, wei, bin_content, num_colors = 0, transfer = null;
+
+      if (this.transferFunc && proivdeEvalPar(this.transferFunc, true))
+         transfer = this.transferFunc;
 
       for (i = i1; i < i2; ++i) {
          for (j = j1; j < j2; ++j) {
@@ -504,6 +507,11 @@ class TH3Painter extends THistPainter {
 
                wei = get_bin_weight(bin_content);
                if (wei < 1e-3) continue; // do not draw empty or very small bins
+
+               if (transfer) {
+                  const bin_opacity = getTF1Value(transfer, bin_content, false); // try to get opacity
+                  // if (nbins < 100) console.log(bin_content, 'bins_opacity', bin_opacity);
+               }
 
                nbins++;
 
@@ -523,9 +531,9 @@ class TH3Painter extends THistPainter {
       }
 
       if (!use_colors) {
-         cols_size.push(nbins);
+         cols_size[0] = nbins;
          num_colors = 1;
-         cols_sequence = [0];
+         cols_sequence[0] = 0;
       }
 
       const cols_nbins = new Array(num_colors),
@@ -536,11 +544,9 @@ class TH3Painter extends THistPainter {
             helper_indexes = new Array(num_colors),  // helper_kind === 1, use original vertices
             helper_positions = new Array(num_colors);  // helper_kind === 2, all vertices copied into separate buffer
 
-      for (let ncol = 0; ncol < cols_size.length; ++ncol) {
-         if (!cols_size[ncol]) continue; // ignore dummy colors
-
-         nbins = cols_size[ncol]; // how many bins with specified color
-         const nseq = cols_sequence[ncol];
+      for (const colindx in cols_size) {
+         nbins = cols_size[colindx]; // how many bins with specified color
+         const nseq = cols_sequence[colindx];
 
          cols_nbins[nseq] = helper_kind[nseq] = 0; // counter for the filled bins
 
@@ -628,17 +634,15 @@ class TH3Painter extends THistPainter {
          }
       }
 
-      for (let ncol = 0; ncol < cols_size.length; ++ncol) {
-         if (!cols_size[ncol]) continue; // ignore dummy colors
-
-         const nseq = cols_sequence[ncol],
+      for (const colindx in cols_size) {
+         const nseq = cols_sequence[colindx],
                all_bins_buffgeom = new BufferGeometry(); // BufferGeometries that store geometry of all bins
 
          // Create mesh from bin buffergeometry
          all_bins_buffgeom.setAttribute('position', new BufferAttribute(bin_verts[nseq], 3));
          all_bins_buffgeom.setAttribute('normal', new BufferAttribute(bin_norms[nseq], 3));
 
-         if (use_colors) fillcolor = this._color_palette.getColor(ncol);
+         if (use_colors) fillcolor = this._color_palette.getColor(colindx);
 
          const material = use_lambert
                             ? new MeshLambertMaterial({ color: fillcolor, opacity: use_opacity, transparent: use_opacity < 1, vertexColors: false })
