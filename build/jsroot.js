@@ -1052,7 +1052,7 @@ const prROOT = 'ROOT.', clTObject = 'TObject', clTNamed = 'TNamed', clTString = 
   * let obj = create('TNamed');
   * obj.fName = 'name';
   * obj.fTitle = 'title'; */
-function create$2(typename, target) {
+function create$1(typename, target) {
    const obj = target || {};
 
    switch (typename) {
@@ -1072,8 +1072,8 @@ function create$2(typename, target) {
                        fTitleOffset: 1, fTitleSize: 0.035, fTitleColor: 1, fTitleFont: 42 });
          break;
       case clTAxis:
-         create$2(clTNamed, obj);
-         create$2(clTAttAxis, obj);
+         create$1(clTNamed, obj);
+         create$1(clTAttAxis, obj);
          extend$1(obj, { fNbins: 1, fXmin: 0, fXmax: 1, fXbins: [], fFirst: 0, fLast: 0,
                        fBits2: 0, fTimeDisplay: false, fTimeFormat: '', fLabels: null, fModLabs: null });
          break;
@@ -1087,18 +1087,18 @@ function create$2(typename, target) {
          extend$1(obj, { fMarkerColor: 1, fMarkerStyle: 1, fMarkerSize: 1 });
          break;
       case clTLine:
-         create$2(clTObject, obj);
-         create$2(clTAttLine, obj);
+         create$1(clTObject, obj);
+         create$1(clTAttLine, obj);
          extend$1(obj, { fX1: 0, fX2: 1, fY1: 0, fY2: 1 });
          break;
       case clTBox:
-         create$2(clTObject, obj);
-         create$2(clTAttLine, obj);
-         create$2(clTAttFill, obj);
+         create$1(clTObject, obj);
+         create$1(clTAttLine, obj);
+         create$1(clTAttFill, obj);
          extend$1(obj, { fX1: 0, fX2: 1, fY1: 0, fY2: 1 });
          break;
       case clTPave:
-         create$2(clTBox, obj);
+         create$1(clTBox, obj);
          extend$1(obj, { fX1NDC: 0, fY1NDC: 0, fX2NDC: 1, fY2NDC: 1,
                        fBorderSize: 0, fInit: 1, fShadowColor: 1,
                        fCornerRadius: 0, fOption: 'brNDC', fName: 'title' });
@@ -1107,62 +1107,62 @@ function create$2(typename, target) {
          extend$1(obj, { fTextAngle: 0, fTextSize: 0, fTextAlign: 22, fTextColor: 1, fTextFont: 42 });
          break;
       case clTPaveText:
-         create$2(clTPave, obj);
-         create$2(clTAttText, obj);
-         extend$1(obj, { fLabel: '', fLongest: 27, fMargin: 0.05, fLines: create$2(clTList) });
+         create$1(clTPave, obj);
+         create$1(clTAttText, obj);
+         extend$1(obj, { fLabel: '', fLongest: 27, fMargin: 0.05, fLines: create$1(clTList) });
          break;
       case clTPaveStats:
-         create$2(clTPaveText, obj);
+         create$1(clTPaveText, obj);
          extend$1(obj, { fFillColor: gStyle.fStatColor, fFillStyle: gStyle.fStatStyle,
                        fTextFont: gStyle.fStatFont, fTextSize: gStyle.fStatFontSize, fTextColor: gStyle.fStatTextColor,
                        fBorderSize: gStyle.fStatBorderSize,
                        fOptFit: 0, fOptStat: 0, fFitFormat: '', fStatFormat: '', fParent: null });
          break;
       case clTLegend:
-         create$2(clTPave, obj);
-         create$2(clTAttText, obj);
-         extend$1(obj, { fColumnSeparation: 0, fEntrySeparation: 0.1, fMargin: 0.25, fNColumns: 1, fPrimitives: create$2(clTList),
+         create$1(clTPave, obj);
+         create$1(clTAttText, obj);
+         extend$1(obj, { fColumnSeparation: 0, fEntrySeparation: 0.1, fMargin: 0.25, fNColumns: 1, fPrimitives: create$1(clTList),
                        fBorderSize: gStyle.fLegendBorderSize, fTextFont: gStyle.fLegendFont, fTextSize: gStyle.fLegendTextSize, fFillColor: gStyle.fLegendFillColor });
          break;
       case clTPaletteAxis:
-         create$2(clTPave, obj);
-         extend$1(obj, { fAxis: create$2(clTGaxis), fH: null, fName: clTPave });
+         create$1(clTPave, obj);
+         extend$1(obj, { fAxis: create$1(clTGaxis), fH: null, fName: clTPave });
          break;
       case clTLegendEntry:
-         create$2(clTObject, obj);
-         create$2(clTAttText, obj);
-         create$2(clTAttLine, obj);
-         create$2(clTAttFill, obj);
-         create$2(clTAttMarker, obj);
+         create$1(clTObject, obj);
+         create$1(clTAttText, obj);
+         create$1(clTAttLine, obj);
+         create$1(clTAttFill, obj);
+         create$1(clTAttMarker, obj);
          extend$1(obj, { fLabel: '', fObject: null, fOption: '', fTextAlign: 0, fTextColor: 0, fTextFont: 0 });
          break;
       case clTText:
-         create$2(clTNamed, obj);
-         create$2(clTAttText, obj);
+         create$1(clTNamed, obj);
+         create$1(clTAttText, obj);
          extend$1(obj, { fLimitFactorSize: 3, fOriginSize: 0.04 });
          break;
       case clTLatex:
-         create$2(clTText, obj);
-         create$2(clTAttLine, obj);
+         create$1(clTText, obj);
+         create$1(clTAttLine, obj);
          extend$1(obj, { fX: 0, fY: 0 });
          break;
       case clTObjString:
-         create$2(clTObject, obj);
+         create$1(clTObject, obj);
          extend$1(obj, { fString: '' });
          break;
       case clTH1:
-         create$2(clTNamed, obj);
-         create$2(clTAttLine, obj);
-         create$2(clTAttFill, obj);
-         create$2(clTAttMarker, obj);
+         create$1(clTNamed, obj);
+         create$1(clTAttLine, obj);
+         create$1(clTAttFill, obj);
+         create$1(clTAttMarker, obj);
          extend$1(obj, { fBits: 8, fNcells: 0,
-                       fXaxis: create$2(clTAxis), fYaxis: create$2(clTAxis), fZaxis: create$2(clTAxis),
+                       fXaxis: create$1(clTAxis), fYaxis: create$1(clTAxis), fZaxis: create$1(clTAxis),
                        fFillColor: gStyle.fHistFillColor, fFillStyle: gStyle.fHistFillStyle,
                        fLineColor: gStyle.fHistLineColor, fLineStyle: gStyle.fHistLineStyle, fLineWidth: gStyle.fHistLineWidth,
                        fBarOffset: 0, fBarWidth: 1000, fEntries: 0,
                        fTsumw: 0, fTsumw2: 0, fTsumwx: 0, fTsumwx2: 0,
                        fMaximum: kNoZoom, fMinimum: kNoZoom, fNormFactor: 0, fContour: [],
-                       fSumw2: [], fOption: '', fFunctions: create$2(clTList),
+                       fSumw2: [], fOption: '', fFunctions: create$1(clTList),
                        fBufferSize: 0, fBuffer: [], fBinStatErrOpt: 0, fStatOverflows: 2 });
          break;
       case clTH1I:
@@ -1171,11 +1171,11 @@ function create$2(typename, target) {
       case 'TH1F':
       case 'TH1S':
       case 'TH1C':
-         create$2(clTH1, obj);
+         create$1(clTH1, obj);
          obj.fArray = [];
          break;
       case clTH2:
-         create$2(clTH1, obj);
+         create$1(clTH1, obj);
          extend$1(obj, { fScalefactor: 1, fTsumwy: 0, fTsumwy2: 0, fTsumwxy: 0 });
          break;
       case clTH2I:
@@ -1184,11 +1184,11 @@ function create$2(typename, target) {
       case 'TH2D':
       case 'TH2S':
       case 'TH2C':
-         create$2(clTH2, obj);
+         create$1(clTH2, obj);
          obj.fArray = [];
          break;
       case clTH3:
-         create$2(clTH1, obj);
+         create$1(clTH1, obj);
          extend$1(obj, { fTsumwy: 0, fTsumwy2: 0, fTsumwz: 0, fTsumwz2: 0, fTsumwxy: 0, fTsumwxz: 0, fTsumwyz: 0 });
          break;
       case 'TH3I':
@@ -1197,48 +1197,48 @@ function create$2(typename, target) {
       case 'TH3D':
       case 'TH3S':
       case 'TH3C':
-         create$2(clTH3, obj);
+         create$1(clTH3, obj);
          obj.fArray = [];
          break;
       case clTHStack:
-         create$2(clTNamed, obj);
-         extend$1(obj, { fHists: create$2(clTList), fHistogram: null, fMaximum: kNoZoom, fMinimum: kNoZoom });
+         create$1(clTNamed, obj);
+         extend$1(obj, { fHists: create$1(clTList), fHistogram: null, fMaximum: kNoZoom, fMinimum: kNoZoom });
          break;
       case clTGraph:
-         create$2(clTNamed, obj);
-         create$2(clTAttLine, obj);
-         create$2(clTAttFill, obj);
-         create$2(clTAttMarker, obj);
-         extend$1(obj, { fFunctions: create$2(clTList), fHistogram: null,
+         create$1(clTNamed, obj);
+         create$1(clTAttLine, obj);
+         create$1(clTAttFill, obj);
+         create$1(clTAttMarker, obj);
+         extend$1(obj, { fFunctions: create$1(clTList), fHistogram: null,
                        fMaxSize: 0, fMaximum: kNoZoom, fMinimum: kNoZoom, fNpoints: 0, fX: [], fY: [] });
          break;
       case 'TGraphAsymmErrors':
-         create$2(clTGraph, obj);
+         create$1(clTGraph, obj);
          extend$1(obj, { fEXlow: [], fEXhigh: [], fEYlow: [], fEYhigh: [] });
          break;
       case clTMultiGraph:
-         create$2(clTNamed, obj);
-         extend$1(obj, { fFunctions: create$2(clTList), fGraphs: create$2(clTList),
+         create$1(clTNamed, obj);
+         extend$1(obj, { fFunctions: create$1(clTList), fGraphs: create$1(clTList),
                        fHistogram: null, fMaximum: kNoZoom, fMinimum: kNoZoom });
          break;
       case clTGraphPolargram:
-         create$2(clTNamed, obj);
-         create$2(clTAttText, obj);
-         create$2(clTAttLine, obj);
+         create$1(clTNamed, obj);
+         create$1(clTAttText, obj);
+         create$1(clTAttLine, obj);
          extend$1(obj, { fRadian: true, fDegree: false, fGrad: false, fPolarLabelColor: 1, fRadialLabelColor: 1,
                        fAxisAngle: 0, fPolarOffset: 0.04, fPolarTextSize: 0.04, fRadialOffset: 0.025, fRadialTextSize: 0.035,
                        fRwrmin: 0, fRwrmax: 1, fRwtmin: 0, fRwtmax: 2*Math.PI, fTickpolarSize: 0.02,
                        fPolarLabelFont: 62, fRadialLabelFont: 62, fCutRadial: 0, fNdivRad: 508, fNdivPol: 508 });
          break;
       case clTPolyLine:
-         create$2(clTObject, obj);
-         create$2(clTAttLine, obj);
-         create$2(clTAttFill, obj);
+         create$1(clTObject, obj);
+         create$1(clTAttLine, obj);
+         create$1(clTAttFill, obj);
          extend$1(obj, { fLastPoint: -1, fN: 0, fOption: '', fX: null, fY: null });
          break;
       case clTGaxis:
-         create$2(clTLine, obj);
-         create$2(clTAttText, obj);
+         create$1(clTLine, obj);
+         create$1(clTAttText, obj);
          extend$1(obj, { fChopt: '', fFunctionName: '', fGridLength: 0,
                        fLabelColor: 1, fLabelFont: 42, fLabelOffset: 0.005, fLabelSize: 0.035,
                        fName: '', fNdiv: 12, fTickSize: 0.02, fTimeFormat: '',
@@ -1260,10 +1260,10 @@ function create$2(typename, target) {
                        fFrameBorderMode: gStyle.fFrameBorderMode });
          break;
       case clTPad:
-         create$2(clTObject, obj);
-         create$2(clTAttLine, obj);
-         create$2(clTAttFill, obj);
-         create$2(clTAttPad, obj);
+         create$1(clTObject, obj);
+         create$1(clTAttLine, obj);
+         create$1(clTAttFill, obj);
+         create$1(clTAttPad, obj);
          extend$1(obj, { fFillColor: gStyle.fPadColor, fFillStyle: 1001,
                        fX1: 0, fY1: 0, fX2: 1, fY2: 1, fXtoAbsPixelk: 1, fXtoPixelk: 1,
                        fXtoPixel: 1, fYtoAbsPixelk: 1, fYtoPixelk: 1, fYtoPixel: 1,
@@ -1279,7 +1279,7 @@ function create$2(typename, target) {
                        fBorderMode: gStyle.fPadBorderMode, fModified: false,
                        fGridx: gStyle.fPadGridX, fGridy: gStyle.fPadGridY,
                        fAbsCoord: false, fEditable: true, fFixedAspectRatio: false,
-                       fPrimitives: create$2(clTList), fExecs: null,
+                       fPrimitives: create$1(clTList), fExecs: null,
                        fName: 'pad', fTitle: 'canvas' });
          break;
       case clTAttCanvas:
@@ -1287,45 +1287,45 @@ function create$2(typename, target) {
                        fXdate: 0.2, fYdate: 0.3, fAdate: 1 });
          break;
       case clTCanvas:
-         create$2(clTPad, obj);
+         create$1(clTPad, obj);
          extend$1(obj, { fFillColor: gStyle.fCanvasColor, fFillStyle: 1001,
                        fNumPaletteColor: 0, fNextPaletteColor: 0, fDISPLAY: '$DISPLAY',
                        fDoubleBuffer: 0, fRetained: true, fXsizeUser: 0,
                        fYsizeUser: 0, fXsizeReal: 20, fYsizeReal: 10,
                        fWindowTopX: 0, fWindowTopY: 0, fWindowWidth: 0, fWindowHeight: 0,
                        fBorderSize: gStyle.fCanvasBorderSize, fBorderMode: gStyle.fCanvasBorderMode,
-                       fCw: 500, fCh: 300, fCatt: create$2(clTAttCanvas),
+                       fCw: 500, fCh: 300, fCatt: create$1(clTAttCanvas),
                        kMoveOpaque: true, kResizeOpaque: true, fHighLightColor: 5,
                        fBatch: true, kShowEventStatus: false, kAutoExec: true, kMenuBar: true });
          break;
       case clTGeoVolume:
-         create$2(clTNamed, obj);
-         create$2(clTAttLine, obj);
-         create$2(clTAttFill, obj);
+         create$1(clTNamed, obj);
+         create$1(clTAttLine, obj);
+         create$1(clTAttFill, obj);
          extend$1(obj, { fGeoAtt: 0, fFinder: null, fMedium: null, fNodes: null, fNtotal: 0, fNumber: 0, fRefCount: 0, fShape: null, fVoxels: null });
          break;
       case clTGeoNode:
-         create$2(clTNamed, obj);
+         create$1(clTNamed, obj);
          extend$1(obj, { fGeoAtt: 0, fMother: null, fNovlp: 0, fNumber: 0, fOverlaps: null, fVolume: null });
          break;
       case clTGeoNodeMatrix:
-         create$2(clTGeoNode, obj);
+         create$1(clTGeoNode, obj);
          extend$1(obj, { fMatrix: null });
          break;
       case 'TGeoTrack':
-         create$2(clTObject, obj);
-         create$2(clTAttLine, obj);
-         create$2(clTAttMarker, obj);
+         create$1(clTObject, obj);
+         create$1(clTAttLine, obj);
+         create$1(clTAttMarker, obj);
          extend$1(obj, { fGeoAtt: 0, fNpoints: 0, fPoints: [] });
          break;
       case clTPolyLine3D:
-         create$2(clTObject, obj);
-         create$2(clTAttLine, obj);
+         create$1(clTObject, obj);
+         create$1(clTAttLine, obj);
          extend$1(obj, { fLastPoint: -1, fN: 0, fOption: '', fP: [] });
          break;
       case clTPolyMarker3D:
-         create$2(clTObject, obj);
-         create$2(clTAttMarker, obj);
+         create$1(clTObject, obj);
+         create$1(clTAttMarker, obj);
          extend$1(obj, { fLastPoint: -1, fN: 0, fName: '', fOption: '', fP: [] });
          break;
    }
@@ -1350,7 +1350,7 @@ function create$2(typename, target) {
   * h1.fYaxis.fTitle = 'yaxis';
   * h1.fXaxis.fLabelSize = 0.02; */
 function createHistogram(typename, nbinsx, nbinsy, nbinsz) {
-   const histo = create$2(typename);
+   const histo = create$1(typename);
    if (!histo.fXaxis || !histo.fYaxis || !histo.fZaxis) return null;
    histo.fName = 'hist'; histo.fTitle = 'title';
    if (nbinsx) extend$1(histo.fXaxis, { fNbins: nbinsx, fXmin: 0, fXmax: nbinsx });
@@ -1397,7 +1397,7 @@ function setHistogramTitle(histo, title) {
   * @param {number} npoints - number of points
   * @param {boolean} [use_int32] - use Int32Array type for points, default is Float32Array */
 function createTPolyLine(npoints, use_int32) {
-   const poly = create$2(clTPolyLine);
+   const poly = create$1(clTPolyLine);
    if (npoints) {
       poly.fN = npoints;
       if (use_int32) {
@@ -1416,7 +1416,7 @@ function createTPolyLine(npoints, use_int32) {
   * @param {array} [xpts] - array with X coordinates
   * @param {array} [ypts] - array with Y coordinates */
 function createTGraph(npoints, xpts, ypts) {
-   const graph = extend$1(create$2(clTGraph), { fBits: 0x408, fName: 'graph', fTitle: 'title' });
+   const graph = extend$1(create$1(clTGraph), { fBits: 0x408, fName: 'graph', fTitle: 'title' });
 
    if (npoints > 0) {
       graph.fMaxSize = graph.fNpoints = npoints;
@@ -1443,7 +1443,7 @@ function createTGraph(npoints, xpts, ypts) {
   * let h3 = createHistogram('TH1F', nbinsx);
   * let stack = createTHStack(h1, h2, h3); */
 function createTHStack() {
-   const stack = create$2(clTHStack);
+   const stack = create$1(clTHStack);
    for (let i = 0; i < arguments.length; ++i)
       stack.fHists.Add(arguments[i], '');
    return stack;
@@ -1458,7 +1458,7 @@ function createTHStack() {
   * let gr3 = createTGraph(100);
   * let mgr = createTMultiGraph(gr1, gr2, gr3); */
 function createTMultiGraph() {
-   const mgraph = create$2(clTMultiGraph);
+   const mgraph = create$1(clTMultiGraph);
    for (let i = 0; i < arguments.length; ++i)
        mgraph.fGraphs.Add(arguments[i], '');
    return mgraph;
@@ -1507,7 +1507,7 @@ function getMethods(typename, obj) {
 
    if ((typename === clTPaveText) || (typename === clTPaveStats)) {
       m.AddText = function(txt) {
-         const line = create$2(clTLatex);
+         const line = create$1(clTLatex);
          line.fTitle = txt;
          line.fTextAlign = this.fTextAlign;
          this.fLines.Add(line);
@@ -1646,7 +1646,7 @@ function getMethods(typename, obj) {
                      x2 = x1 + dx -2*xmargin;
                if (x1 > x2) continue;
                n++;
-               const pad = create$2(clTPad);
+               const pad = create$1(clTPad);
                pad.fName = pad.fTitle = `${this.fName}_${n}`;
                pad.fNumber = n;
                if (this._typename !== clTCanvas) {
@@ -1790,9 +1790,9 @@ function getMethods(typename, obj) {
    return m;
 }
 
-gStyle.fXaxis = create$2(clTAttAxis);
-gStyle.fYaxis = create$2(clTAttAxis);
-gStyle.fZaxis = create$2(clTAttAxis);
+gStyle.fXaxis = create$1(clTAttAxis);
+gStyle.fYaxis = create$1(clTAttAxis);
+gStyle.fZaxis = create$1(clTAttAxis);
 
 /** @summary Add methods for specified type.
   * @desc Will be automatically applied when decoding JSON string
@@ -1934,7 +1934,7 @@ clTStyle: clTStyle,
 clTText: clTText,
 clone: clone,
 constants: constants$1,
-create: create$2,
+create: create$1,
 createHistogram: createHistogram,
 createHttpRequest: createHttpRequest,
 createTGraph: createTGraph,
@@ -7073,7 +7073,7 @@ function schedule(node, name, id, index, group, timing) {
   var schedules = node.__transition;
   if (!schedules) node.__transition = {};
   else if (id in schedules) return;
-  create$1(node, id, {
+  create(node, id, {
     name: name,
     index: index, // For context during callback.
     group: group, // For context during callback.
@@ -7106,7 +7106,7 @@ function get(node, id) {
   return schedule;
 }
 
-function create$1(node, id, self) {
+function create(node, id, self) {
   var schedules = node.__transition,
       tween;
 
@@ -67310,7 +67310,7 @@ class TPadPainter extends ObjectPainter {
       if (!lp && !isFunc(this.drawObject))
          return Promise.reject(Error('Not possible to build legend while module draw.mjs was not load'));
 
-      const leg = lp?.getObject() ?? create$2(clTLegend),
+      const leg = lp?.getObject() ?? create$1(clTLegend),
             pad = this.getRootPad(true);
 
       leg.fPrimitives.Clear();
@@ -67321,7 +67321,7 @@ class TPadPainter extends ObjectPainter {
          if (!obj || obj.fName === 'title' || obj.fName === 'stats' || painter.$secondary || obj._typename === clTLegend)
             continue;
 
-         const entry = create$2(clTLegendEntry);
+         const entry = create$1(clTLegendEntry);
          entry.fObject = obj;
          entry.fLabel = painter.getItemName();
          if ((opt === 'all') || !entry.fLabel)
@@ -68483,7 +68483,7 @@ class TCanvasPainter extends TPadPainter {
       if (!this.proj_painter[kind]) {
          this.proj_painter[kind] = 'init';
 
-         const canv = create$2(clTCanvas),
+         const canv = create$1(clTCanvas),
                pad = this.pad,
                main = this.getFramePainter();
          let drawopt;
@@ -68831,7 +68831,7 @@ class TCanvasPainter extends TPadPainter {
    /** @summary Get view data for ui5 panel
      * @private */
    getUi5PanelData(/* panel_name */) {
-      return { jsroot: { settings, create: create$2, parse, toJSON, loadScript, EAxisBits, getColorExec } };
+      return { jsroot: { settings, create: create$1, parse, toJSON, loadScript, EAxisBits, getColorExec } };
    }
 
    /** @summary Function used to activate GED
@@ -69103,7 +69103,7 @@ class TCanvasPainter extends TPadPainter {
    /** @summary draw TCanvas */
    static async draw(dom, can, opt) {
       const nocanvas = !can;
-      if (nocanvas) can = create$2(clTCanvas);
+      if (nocanvas) can = create$1(clTCanvas);
 
       const painter = new TCanvasPainter(dom, can);
       painter.checkSpecialsInPrimitives(can);
@@ -69163,7 +69163,7 @@ async function ensureTCanvas(painter, frame_kind) {
 /** @summary draw TPad snapshot from TWebCanvas
   * @private */
 async function drawTPadSnapshot(dom, snap /*, opt */) {
-   const can = create$2(clTCanvas),
+   const can = create$1(clTCanvas),
        painter = new TCanvasPainter(dom, can);
    painter.normal_canvas = false;
    painter.addPadButtons();
@@ -71844,7 +71844,7 @@ class THistPainter extends ObjectPainter {
          if (draw_title) pt.AddText(histo.fTitle);
          if (tpainter) return tpainter.redraw().then(() => this);
       } else if (draw_title && !tpainter && histo.fTitle && !this.options.PadTitle) {
-         pt = create$2(clTPaveText);
+         pt = create$1(clTPaveText);
          Object.assign(pt, { fName: 'title', fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
                              fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: st.fTitleAlign });
          pt.AddText(histo.fTitle);
@@ -71983,7 +71983,7 @@ class THistPainter extends ObjectPainter {
       if (stats)
          return stats;
 
-      stats = create$2(clTPaveStats);
+      stats = create$1(clTPaveStats);
       Object.assign(stats, {
          fName: 'stats', fOptStat: optstat, fOptFit: optfit,
          fX1NDC: st.fStatX - st.fStatW, fY1NDC: st.fStatY - st.fStatH, fX2NDC: st.fStatX, fY2NDC: st.fStatY,
@@ -72020,7 +72020,7 @@ class THistPainter extends ObjectPainter {
       if (!histo || !obj) return;
 
       if (!histo.fFunctions)
-         histo.fFunctions = create$2(clTList);
+         histo.fFunctions = create$1(clTList);
 
       if (asfirst)
          histo.fFunctions.AddFirst(obj);
@@ -72601,7 +72601,7 @@ class THistPainter extends ObjectPainter {
          if (this.options.PadPalette)
             return null;
 
-         pal = create$2(clTPaletteAxis);
+         pal = create$1(clTPaletteAxis);
 
          pal.fInit = 1;
          pal.$can_move = true;
@@ -88493,25 +88493,25 @@ const _ENTIRE_SCENE = 0, _BLOOM_SCENE = 1,
 /** @summary Function used to build hierarchy of elements of overlap object
   * @private */
 function buildOverlapVolume(overlap) {
-   const vol = create$2(clTGeoVolume);
+   const vol = create$1(clTGeoVolume);
 
    setGeoBit(vol, geoBITS.kVisDaughters, true);
    vol.$geoh = true; // workaround, let know browser that we are in volumes hierarchy
    vol.fName = '';
 
-   const node1 = create$2(clTGeoNodeMatrix);
+   const node1 = create$1(clTGeoNodeMatrix);
    node1.fName = overlap.fVolume1.fName || 'Overlap1';
    node1.fMatrix = overlap.fMatrix1;
    node1.fVolume = overlap.fVolume1;
    // node1.fVolume.fLineColor = 2; // color assigned with _splitColors
 
-   const node2 = create$2(clTGeoNodeMatrix);
+   const node2 = create$1(clTGeoNodeMatrix);
    node2.fName = overlap.fVolume2.fName || 'Overlap2';
    node2.fMatrix = overlap.fMatrix2;
    node2.fVolume = overlap.fVolume2;
    // node2.fVolume.fLineColor = 3;  // color assigned with _splitColors
 
-   vol.fNodes = create$2(clTList);
+   vol.fNodes = create$1(clTList);
    vol.fNodes.Add(node1);
    vol.fNodes.Add(node2);
 
@@ -88529,7 +88529,7 @@ function buildCompositeVolume(comp, maxlvl, side) {
       side = '';
    }
 
-   const vol = create$2(clTGeoVolume);
+   const vol = create$1(clTGeoVolume);
    setGeoBit(vol, geoBITS.kVisThis, true);
    setGeoBit(vol, geoBITS.kVisDaughters, true);
 
@@ -88544,21 +88544,21 @@ function buildCompositeVolume(comp, maxlvl, side) {
    vol.$geoh = true; // workaround, let know browser that we are in volumes hierarchy
    vol.fName = '';
 
-   const node1 = create$2(clTGeoNodeMatrix);
+   const node1 = create$1(clTGeoNodeMatrix);
    setGeoBit(node1, geoBITS.kVisThis, true);
    setGeoBit(node1, geoBITS.kVisDaughters, true);
    node1.fName = 'Left';
    node1.fMatrix = comp.fNode.fLeftMat;
    node1.fVolume = buildCompositeVolume(comp.fNode.fLeft, maxlvl-1, side + 'Left');
 
-   const node2 = create$2(clTGeoNodeMatrix);
+   const node2 = create$1(clTGeoNodeMatrix);
    setGeoBit(node2, geoBITS.kVisThis, true);
    setGeoBit(node2, geoBITS.kVisDaughters, true);
    node2.fName = 'Right';
    node2.fMatrix = comp.fNode.fRightMat;
    node2.fVolume = buildCompositeVolume(comp.fNode.fRight, maxlvl-1, side + 'Right');
 
-   vol.fNodes = create$2(clTList);
+   vol.fNodes = create$1(clTList);
    vol.fNodes.Add(node1);
    vol.fNodes.Add(node2);
 
@@ -91893,7 +91893,7 @@ class TGeoPainter extends ObjectPainter {
     * Check if object already exists to prevent duplication */
    addExtra(obj, itemname) {
       if (this._extraObjects === undefined)
-         this._extraObjects = create$2(clTList);
+         this._extraObjects = create$1(clTList);
 
       if (this._extraObjects.arr.indexOf(obj) >= 0)
          return false;
@@ -92879,11 +92879,11 @@ class TGeoPainter extends ObjectPainter {
           grid_gap = (ymax - ymin) * 0.001,
           x1 = xmin + text_size * 5, x2 = xmax - text_size * 5,
           y1 = ymin + text_size * 3, y2 = ymax - text_size * 3,
-          x_handle = new TAxisPainter(null, create$2(clTAxis));
+          x_handle = new TAxisPainter(null, create$1(clTAxis));
 
       x_handle.configureAxis('xaxis', x1, x2, x1, x2, false, [x1, x2],
                              { log: 0, reverse: false });
-      const y_handle = new TAxisPainter(null, create$2(clTAxis));
+      const y_handle = new TAxisPainter(null, create$1(clTAxis));
       y_handle.configureAxis('yaxis', y1, y2, y1, y2, false, [y1, y2],
                               { log: 0, reverse: false });
 
@@ -93852,7 +93852,7 @@ class TGeoPainter extends ObjectPainter {
       }
 
       if (!obj && shape) {
-         obj = Object.assign(create$2(clTNamed),
+         obj = Object.assign(create$1(clTNamed),
                    { _typename: clTEveGeoShapeExtract, fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
       }
 
@@ -94206,7 +94206,7 @@ function createItem(node, obj, name) {
 /** @summary Draw dummy geometry
   * @private */
 async function drawDummy3DGeom(painter) {
-   const shape = create$2(clTNamed);
+   const shape = create$1(clTNamed);
    shape._typename = clTGeoBBox;
    shape.fDX = 1e-10;
    shape.fDY = 1e-10;
@@ -94215,7 +94215,7 @@ async function drawDummy3DGeom(painter) {
    shape.fShapeBits = 0;
    shape.fOrigin = [0, 0, 0];
 
-   const obj = Object.assign(create$2(clTNamed),
+   const obj = Object.assign(create$1(clTNamed),
                 { _typename: clTEveGeoShapeExtract,
                   fTrans: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
                   fShape: shape, fRGBA: [0, 0, 0, 0], fElements: null, fRnrSelf: false }),
@@ -94323,7 +94323,7 @@ function build(obj, opt) {
          obj = buildCompositeVolume(shape);
 
       if (!obj && shape)
-         obj = Object.assign(create$2(clTNamed), { _typename: clTEveGeoShapeExtract, fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
+         obj = Object.assign(create$1(clTNamed), { _typename: clTEveGeoShapeExtract, fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
 
       if (!obj) return null;
 
@@ -94400,667 +94400,6 @@ drawDummy3DGeom: drawDummy3DGeom,
 expandGeoObject: expandGeoObject,
 produceRenderOrder: produceRenderOrder
 });
-
-/** © 2016 Nathan Rugg <nmrugg@gmail.com>
-  * Code extracted from https://github.com/LZMA-JS/LZMA-JS */
-
-const __4294967296 = 4294967296,
-      N1_longLit = [4294967295, -__4294967296],
-      P0_longLit = [0, 0],
-      P1_longLit = [1, 0];
-
-function initDim(len) {
-   /// NOTE: This is MUCH faster than "new Array(len)" in newer versions of v8 (starting with Node.js 0.11.15, which uses v8 3.28.73).
-   const a = [];
-   a[len - 1] = undefined;
-   return a;
-}
-
-function add(a, b) {
-   return create(a[0] + b[0], a[1] + b[1]);
-}
-
-function compare(a, b) {
-   if (a[0] === b[0] && a[1] === b[1])
-      return 0;
-   const nega = a[1] < 0,
-      negb = b[1] < 0;
-   if (nega && !negb)
-      return -1;
-   if (!nega && negb)
-      return 1;
-   if (sub(a, b)[1] < 0)
-      return -1;
-   return 1;
-}
-
-function create(valueLow, valueHigh) {
-   valueHigh %= 1.8446744073709552E19;
-   valueLow %= 1.8446744073709552E19;
-   const diffHigh = valueHigh % __4294967296,
-      diffLow = Math.floor(valueLow / __4294967296) * __4294967296;
-   valueHigh = valueHigh - diffHigh + diffLow;
-   valueLow = valueLow - diffLow + diffHigh;
-   while (valueLow < 0) {
-      valueLow += __4294967296;
-      valueHigh -= __4294967296;
-   }
-   while (valueLow > 4294967295) {
-      valueLow -= __4294967296;
-      valueHigh += __4294967296;
-   }
-   valueHigh = valueHigh % 1.8446744073709552E19;
-   while (valueHigh > 9223372032559808512)
-      valueHigh -= 1.8446744073709552E19;
-   while (valueHigh < -9223372036854775808)
-      valueHigh += 1.8446744073709552E19;
-   return [valueLow, valueHigh];
-}
-
-function fromInt(value) {
-   if (value >= 0)
-      return [value, 0];
-   else
-      return [value + __4294967296, -__4294967296];
-}
-
-function lowBits_0(a) {
-   if (a[0] >= 2147483648)
-      return ~~Math.max(Math.min(a[0] - __4294967296, 2147483647), -2147483648);
-   else
-      return ~~Math.max(Math.min(a[0], 2147483647), -2147483648);
-}
-
-function sub(a, b) {
-   return create(a[0] - b[0], a[1] - b[1]);
-}
-
-function $ByteArrayInputStream(this$static, buf) {
-   this$static.buf = buf;
-   this$static.pos = 0;
-   this$static.count = buf.length;
-   return this$static;
-}
-
-function $read(this$static) {
-   if (this$static.pos >= this$static.count)
-      return -1;
-   return this$static.buf[this$static.pos++] & 255;
-}
-
-function $ByteArrayOutputStream(this$static) {
-   if (!this$static.buf)
-      this$static.buf = initDim(32);
-
-   this$static.count = 0;
-   return this$static;
-}
-
-function $toByteArray(this$static) {
-   const data = this$static.buf;
-   data.length = this$static.count;
-   return data;
-}
-
-function $write_0(this$static, buf, off, len) {
-   arraycopy(buf, off, this$static.buf, this$static.count, len);
-   this$static.count += len;
-}
-
-function arraycopy(src, srcOfs, dest, destOfs, len) {
-   for (let i = 0; i < len; ++i)
-      dest[destOfs + i] = src[srcOfs + i];
-}
-
-function $init_0(this$static, input, output) {
-   let hex_length = '', r, tmp_length;
-
-   const properties = [];
-   for (let i = 0; i < 5; ++i) {
-      r = $read(input);
-      if (r === -1)
-         throw new Error('truncated input');
-      properties[i] = r << 24 >> 24;
-   }
-
-   const decoder = $Decoder({});
-   if (!$SetDecoderProperties(decoder, properties))
-      throw new Error('corrupted input');
-
-   for (let i = 0; i < 64; i += 8) {
-      r = $read(input);
-      if (r === -1)
-         throw new Error('truncated input');
-      r = r.toString(16);
-      if (r.length === 1) r = '0' + r;
-      hex_length = r + '' + hex_length;
-   }
-
-   /// Was the length set in the header (if it was compressed from a stream, the length is all f"s).
-   if (/^0+$|^f+$/i.test(hex_length)) {
-      /// The length is unknown, so set to -1.
-      this$static.length_0 = N1_longLit;
-   } else {
-      /// NOTE: If there is a problem with the decoder because of the length, you can always set the length to -1 (N1_longLit) which means unknown.
-      tmp_length = parseInt(hex_length, 16);
-      /// If the length is too long to handle, just set it to unknown.
-      if (tmp_length > 4294967295)
-         this$static.length_0 = N1_longLit;
-      else
-         this$static.length_0 = fromInt(tmp_length);
-   }
-
-   this$static.chunker = $CodeInChunks(decoder, input, output, this$static.length_0);
-}
-
-function $LZMAByteArrayDecompressor(this$static, data) {
-   this$static.output = $ByteArrayOutputStream({});
-   $init_0(this$static, $ByteArrayInputStream({}, data), this$static.output);
-   return this$static;
-}
-/** de */
-
-/** ds */
-function $CopyBlock(this$static, distance, len) {
-   let pos = this$static._pos - distance - 1;
-   if (pos < 0)
-      pos += this$static._windowSize;
-
-   for (; len !== 0; --len) {
-      if (pos >= this$static._windowSize)
-         pos = 0;
-
-      this$static._buffer[this$static._pos++] = this$static._buffer[pos++];
-      if (this$static._pos >= this$static._windowSize)
-         $Flush_0(this$static);
-   }
-}
-
-function $Create_5(this$static, windowSize) {
-   if (!this$static._buffer || this$static._windowSize !== windowSize)
-      this$static._buffer = initDim(windowSize);
-
-   this$static._windowSize = windowSize;
-   this$static._pos = 0;
-   this$static._streamPos = 0;
-}
-
-function $Flush_0(this$static) {
-   const size = this$static._pos - this$static._streamPos;
-   if (!size)
-      return;
-
-   $write_0(this$static._stream, this$static._buffer, this$static._streamPos, size);
-   if (this$static._pos >= this$static._windowSize)
-      this$static._pos = 0;
-
-   this$static._streamPos = this$static._pos;
-}
-
-function $GetByte(this$static, distance) {
-   let pos = this$static._pos - distance - 1;
-   if (pos < 0)
-      pos += this$static._windowSize;
-
-   return this$static._buffer[pos];
-}
-
-function $PutByte(this$static, b) {
-   this$static._buffer[this$static._pos++] = b;
-   if (this$static._pos >= this$static._windowSize)
-      $Flush_0(this$static);
-}
-
-function $ReleaseStream(this$static) {
-   $Flush_0(this$static);
-   this$static._stream = null;
-}
-
-function GetLenToPosState(len) {
-   len -= 2;
-   if (len < 4)
-      return len;
-
-   return 3;
-}
-
-function StateUpdateChar(index) {
-   if (index < 4)
-      return 0;
-
-   if (index < 10)
-      return index - 3;
-
-   return index - 6;
-}
-
-function $Chunker(this$static, decoder) {
-   this$static.decoder = decoder;
-   this$static.encoder = null;
-   this$static.alive = 1;
-   return this$static;
-}
-
-function $processChunk(this$static) {
-   if (!this$static.alive)
-      throw new Error('bad state');
-
-   if (this$static.encoder)
-      throw new Error('No encoding');
-   else
-      $processDecoderChunk(this$static);
-
-   return this$static.alive;
-}
-
-function $processDecoderChunk(this$static) {
-   const result = $CodeOneChunk(this$static.decoder);
-   if (result === -1)
-      throw new Error('corrupted input');
-   this$static.inBytesProcessed = N1_longLit;
-   this$static.outBytesProcessed = this$static.decoder.nowPos64;
-   if ((result || compare(this$static.decoder.outSize, P0_longLit) >= 0) && compare(this$static.decoder.nowPos64, this$static.decoder.outSize) >= 0) {
-      $Flush_0(this$static.decoder.m_OutWindow);
-      $ReleaseStream(this$static.decoder.m_OutWindow);
-      this$static.decoder.m_RangeDecoder.Stream = null;
-      this$static.alive = 0;
-   }
-}
-/** de */
-
-/** ds */
-function $CodeInChunks(this$static, inStream, outStream, outSize) {
-   this$static.m_RangeDecoder.Stream = inStream;
-   $ReleaseStream(this$static.m_OutWindow);
-   this$static.m_OutWindow._stream = outStream;
-
-   $Init_1(this$static);
-   this$static.state = 0;
-   this$static.rep0 = 0;
-   this$static.rep1 = 0;
-   this$static.rep2 = 0;
-   this$static.rep3 = 0;
-   this$static.outSize = outSize;
-   this$static.nowPos64 = P0_longLit;
-   this$static.prevByte = 0;
-   return $Chunker({}, this$static);
-}
-
-function $CodeOneChunk(this$static) {
-   let decoder2, distance, len, numDirectBits, posSlot;
-   const posState = lowBits_0(this$static.nowPos64) & this$static.m_PosStateMask;
-   if (!$DecodeBit(this$static.m_RangeDecoder, this$static.m_IsMatchDecoders, (this$static.state << 4) + posState)) {
-      decoder2 = $GetDecoder(this$static.m_LiteralDecoder, lowBits_0(this$static.nowPos64), this$static.prevByte);
-      if (this$static.state < 7)
-         this$static.prevByte = $DecodeNormal(decoder2, this$static.m_RangeDecoder);
-      else
-         this$static.prevByte = $DecodeWithMatchByte(decoder2, this$static.m_RangeDecoder, $GetByte(this$static.m_OutWindow, this$static.rep0));
-
-      $PutByte(this$static.m_OutWindow, this$static.prevByte);
-      this$static.state = StateUpdateChar(this$static.state);
-      this$static.nowPos64 = add(this$static.nowPos64, P1_longLit);
-   } else {
-      if ($DecodeBit(this$static.m_RangeDecoder, this$static.m_IsRepDecoders, this$static.state)) {
-         len = 0;
-         if (!$DecodeBit(this$static.m_RangeDecoder, this$static.m_IsRepG0Decoders, this$static.state)) {
-            if (!$DecodeBit(this$static.m_RangeDecoder, this$static.m_IsRep0LongDecoders, (this$static.state << 4) + posState)) {
-               this$static.state = this$static.state < 7 ? 9 : 11;
-               len = 1;
-            }
-         } else {
-            if (!$DecodeBit(this$static.m_RangeDecoder, this$static.m_IsRepG1Decoders, this$static.state))
-               distance = this$static.rep1;
-            else {
-               if (!$DecodeBit(this$static.m_RangeDecoder, this$static.m_IsRepG2Decoders, this$static.state))
-                  distance = this$static.rep2;
-               else {
-                  distance = this$static.rep3;
-                  this$static.rep3 = this$static.rep2;
-               }
-               this$static.rep2 = this$static.rep1;
-            }
-            this$static.rep1 = this$static.rep0;
-            this$static.rep0 = distance;
-         }
-         if (!len) {
-            len = $Decode(this$static.m_RepLenDecoder, this$static.m_RangeDecoder, posState) + 2;
-            this$static.state = this$static.state < 7 ? 8 : 11;
-         }
-      } else {
-         this$static.rep3 = this$static.rep2;
-         this$static.rep2 = this$static.rep1;
-         this$static.rep1 = this$static.rep0;
-         len = 2 + $Decode(this$static.m_LenDecoder, this$static.m_RangeDecoder, posState);
-         this$static.state = this$static.state < 7 ? 7 : 10;
-         posSlot = $Decode_0(this$static.m_PosSlotDecoder[GetLenToPosState(len)], this$static.m_RangeDecoder);
-         if (posSlot >= 4) {
-            numDirectBits = (posSlot >> 1) - 1;
-            this$static.rep0 = (2 | posSlot & 1) << numDirectBits;
-            if (posSlot < 14)
-               this$static.rep0 += ReverseDecode(this$static.m_PosDecoders, this$static.rep0 - posSlot - 1, this$static.m_RangeDecoder, numDirectBits);
-            else {
-               this$static.rep0 += $DecodeDirectBits(this$static.m_RangeDecoder, numDirectBits - 4) << 4;
-               this$static.rep0 += $ReverseDecode(this$static.m_PosAlignDecoder, this$static.m_RangeDecoder);
-               if (this$static.rep0 < 0) {
-                  if (this$static.rep0 === -1)
-                     return 1;
-
-                  return -1;
-               }
-            }
-         } else
-            this$static.rep0 = posSlot;
-      }
-      if (compare(fromInt(this$static.rep0), this$static.nowPos64) >= 0 || this$static.rep0 >= this$static.m_DictionarySizeCheck)
-         return -1;
-
-      $CopyBlock(this$static.m_OutWindow, this$static.rep0, len);
-      this$static.nowPos64 = add(this$static.nowPos64, fromInt(len));
-      this$static.prevByte = $GetByte(this$static.m_OutWindow, 0);
-   }
-   return 0;
-}
-
-function $Decoder(this$static) {
-   this$static.m_OutWindow = {};
-   this$static.m_RangeDecoder = {};
-   this$static.m_IsMatchDecoders = initDim(192);
-   this$static.m_IsRepDecoders = initDim(12);
-   this$static.m_IsRepG0Decoders = initDim(12);
-   this$static.m_IsRepG1Decoders = initDim(12);
-   this$static.m_IsRepG2Decoders = initDim(12);
-   this$static.m_IsRep0LongDecoders = initDim(192);
-   this$static.m_PosSlotDecoder = initDim(4);
-   this$static.m_PosDecoders = initDim(114);
-   this$static.m_PosAlignDecoder = $BitTreeDecoder({}, 4);
-   this$static.m_LenDecoder = $Decoder$LenDecoder({});
-   this$static.m_RepLenDecoder = $Decoder$LenDecoder({});
-   this$static.m_LiteralDecoder = {};
-   for (let i = 0; i < 4; ++i)
-      this$static.m_PosSlotDecoder[i] = $BitTreeDecoder({}, 6);
-
-   return this$static;
-}
-
-function $Init_1(this$static) {
-   this$static.m_OutWindow._streamPos = 0;
-   this$static.m_OutWindow._pos = 0;
-   InitBitModels(this$static.m_IsMatchDecoders);
-   InitBitModels(this$static.m_IsRep0LongDecoders);
-   InitBitModels(this$static.m_IsRepDecoders);
-   InitBitModels(this$static.m_IsRepG0Decoders);
-   InitBitModels(this$static.m_IsRepG1Decoders);
-   InitBitModels(this$static.m_IsRepG2Decoders);
-   InitBitModels(this$static.m_PosDecoders);
-   $Init_0(this$static.m_LiteralDecoder);
-   for (let i = 0; i < 4; ++i)
-      InitBitModels(this$static.m_PosSlotDecoder[i].Models);
-
-   $Init(this$static.m_LenDecoder);
-   $Init(this$static.m_RepLenDecoder);
-   InitBitModels(this$static.m_PosAlignDecoder.Models);
-   $Init_8(this$static.m_RangeDecoder);
-}
-
-function $SetDecoderProperties(this$static, properties) {
-   if (properties.length < 5)
-      return 0;
-   const val = properties[0] & 255,
-      lc = val % 9,
-      remainder = ~~(val / 9),
-      lp = remainder % 5,
-      pb = ~~(remainder / 5);
-   let dictionarySize = 0;
-   for (let i = 0; i < 4; ++i)
-      dictionarySize += (properties[1 + i] & 255) << i * 8;
-   /// NOTE: If the input is bad, it might call for an insanely large dictionary size, which would crash the script.
-   if (dictionarySize > 99999999 || !$SetLcLpPb(this$static, lc, lp, pb))
-      return 0;
-
-   return $SetDictionarySize(this$static, dictionarySize);
-}
-
-function $SetDictionarySize(this$static, dictionarySize) {
-   if (dictionarySize < 0)
-      return 0;
-
-   if (this$static.m_DictionarySize !== dictionarySize) {
-      this$static.m_DictionarySize = dictionarySize;
-      this$static.m_DictionarySizeCheck = Math.max(this$static.m_DictionarySize, 1);
-      $Create_5(this$static.m_OutWindow, Math.max(this$static.m_DictionarySizeCheck, 4096));
-   }
-   return 1;
-}
-
-function $SetLcLpPb(this$static, lc, lp, pb) {
-   if (lc > 8 || lp > 4 || pb > 4)
-      return 0;
-
-   $Create_0(this$static.m_LiteralDecoder, lp, lc);
-   const numPosStates = 1 << pb;
-   $Create(this$static.m_LenDecoder, numPosStates);
-   $Create(this$static.m_RepLenDecoder, numPosStates);
-   this$static.m_PosStateMask = numPosStates - 1;
-   return 1;
-}
-
-function $Create(this$static, numPosStates) {
-   for (; this$static.m_NumPosStates < numPosStates; ++this$static.m_NumPosStates) {
-      this$static.m_LowCoder[this$static.m_NumPosStates] = $BitTreeDecoder({}, 3);
-      this$static.m_MidCoder[this$static.m_NumPosStates] = $BitTreeDecoder({}, 3);
-   }
-}
-
-function $Decode(this$static, rangeDecoder, posState) {
-   if (!$DecodeBit(rangeDecoder, this$static.m_Choice, 0))
-      return $Decode_0(this$static.m_LowCoder[posState], rangeDecoder);
-
-   let symbol = 8;
-   if (!$DecodeBit(rangeDecoder, this$static.m_Choice, 1))
-      symbol += $Decode_0(this$static.m_MidCoder[posState], rangeDecoder);
-   else
-      symbol += 8 + $Decode_0(this$static.m_HighCoder, rangeDecoder);
-
-   return symbol;
-}
-
-function $Decoder$LenDecoder(this$static) {
-   this$static.m_Choice = initDim(2);
-   this$static.m_LowCoder = initDim(16);
-   this$static.m_MidCoder = initDim(16);
-   this$static.m_HighCoder = $BitTreeDecoder({}, 8);
-   this$static.m_NumPosStates = 0;
-   return this$static;
-}
-
-function $Init(this$static) {
-   InitBitModels(this$static.m_Choice);
-   for (let posState = 0; posState < this$static.m_NumPosStates; ++posState) {
-      InitBitModels(this$static.m_LowCoder[posState].Models);
-      InitBitModels(this$static.m_MidCoder[posState].Models);
-   }
-   InitBitModels(this$static.m_HighCoder.Models);
-}
-
-
-function $Create_0(this$static, numPosBits, numPrevBits) {
-   if (this$static.m_Coders != null && this$static.m_NumPrevBits === numPrevBits && this$static.m_NumPosBits === numPosBits)
-      return;
-   this$static.m_NumPosBits = numPosBits;
-   this$static.m_PosMask = (1 << numPosBits) - 1;
-   this$static.m_NumPrevBits = numPrevBits;
-   const numStates = 1 << this$static.m_NumPrevBits + this$static.m_NumPosBits;
-   this$static.m_Coders = initDim(numStates);
-   for (let i = 0; i < numStates; ++i)
-      this$static.m_Coders[i] = $Decoder$LiteralDecoder$Decoder2({});
-}
-
-function $GetDecoder(this$static, pos, prevByte) {
-   return this$static.m_Coders[((pos & this$static.m_PosMask) << this$static.m_NumPrevBits) + ((prevByte & 255) >>> 8 - this$static.m_NumPrevBits)];
-}
-
-function $Init_0(this$static) {
-   const numStates = 1 << this$static.m_NumPrevBits + this$static.m_NumPosBits;
-   for (let i = 0; i < numStates; ++i)
-      InitBitModels(this$static.m_Coders[i].m_Decoders);
-}
-
-function $DecodeNormal(this$static, rangeDecoder) {
-   let symbol = 1;
-   do
-      symbol = symbol << 1 | $DecodeBit(rangeDecoder, this$static.m_Decoders, symbol);
-   while (symbol < 256);
-   return symbol << 24 >> 24;
-}
-
-function $DecodeWithMatchByte(this$static, rangeDecoder, matchByte) {
-   let bit, matchBit, symbol = 1;
-   do {
-      matchBit = matchByte >> 7 & 1;
-      matchByte <<= 1;
-      bit = $DecodeBit(rangeDecoder, this$static.m_Decoders, (1 + matchBit << 8) + symbol);
-      symbol = symbol << 1 | bit;
-      if (matchBit !== bit) {
-         while (symbol < 256)
-            symbol = symbol << 1 | $DecodeBit(rangeDecoder, this$static.m_Decoders, symbol);
-
-         break;
-      }
-   } while (symbol < 256);
-   return symbol << 24 >> 24;
-}
-
-function $Decoder$LiteralDecoder$Decoder2(this$static) {
-   this$static.m_Decoders = initDim(768);
-   return this$static;
-}
-
-function $BitTreeDecoder(this$static, numBitLevels) {
-   this$static.NumBitLevels = numBitLevels;
-   this$static.Models = initDim(1 << numBitLevels);
-   return this$static;
-}
-
-function $Decode_0(this$static, rangeDecoder) {
-   let m = 1;
-   for (let bitIndex = this$static.NumBitLevels; bitIndex !== 0; --bitIndex)
-      m = (m << 1) + $DecodeBit(rangeDecoder, this$static.Models, m);
-
-   return m - (1 << this$static.NumBitLevels);
-}
-
-function $ReverseDecode(this$static, rangeDecoder) {
-   let bit, bitIndex, m = 1, symbol = 0;
-   for (bitIndex = 0; bitIndex < this$static.NumBitLevels; ++bitIndex) {
-      bit = $DecodeBit(rangeDecoder, this$static.Models, m);
-      m <<= 1;
-      m += bit;
-      symbol |= bit << bitIndex;
-   }
-   return symbol;
-}
-
-function ReverseDecode(Models, startIndex, rangeDecoder, NumBitLevels) {
-   let bit, bitIndex, m = 1, symbol = 0;
-   for (bitIndex = 0; bitIndex < NumBitLevels; ++bitIndex) {
-      bit = $DecodeBit(rangeDecoder, Models, startIndex + m);
-      m <<= 1;
-      m += bit;
-      symbol |= bit << bitIndex;
-   }
-   return symbol;
-}
-
-function $DecodeBit(this$static, probs, index) {
-   const prob = probs[index],
-      newBound = (this$static.Range >>> 11) * prob;
-   if ((this$static.Code ^ -2147483648) < (newBound ^ -2147483648)) {
-      this$static.Range = newBound;
-      probs[index] = prob + (2048 - prob >>> 5) << 16 >> 16;
-      if (!(this$static.Range & -16777216)) {
-         this$static.Code = this$static.Code << 8 | $read(this$static.Stream);
-         this$static.Range <<= 8;
-      }
-      return 0;
-   } else {
-      this$static.Range -= newBound;
-      this$static.Code -= newBound;
-      probs[index] = prob - (prob >>> 5) << 16 >> 16;
-      if (!(this$static.Range & -16777216)) {
-         this$static.Code = this$static.Code << 8 | $read(this$static.Stream);
-         this$static.Range <<= 8;
-      }
-      return 1;
-   }
-}
-
-function $DecodeDirectBits(this$static, numTotalBits) {
-   let i, t, result = 0;
-   for (i = numTotalBits; i !== 0; --i) {
-      this$static.Range >>>= 1;
-      t = this$static.Code - this$static.Range >>> 31;
-      this$static.Code -= this$static.Range & t - 1;
-      result = result << 1 | 1 - t;
-      if (!(this$static.Range & -16777216)) {
-         this$static.Code = this$static.Code << 8 | $read(this$static.Stream);
-         this$static.Range <<= 8;
-      }
-   }
-   return result;
-}
-
-function $Init_8(this$static) {
-   this$static.Code = 0;
-   this$static.Range = -1;
-   for (let i = 0; i < 5; ++i)
-      this$static.Code = this$static.Code << 8 | $read(this$static.Stream);
-}
-/** de */
-
-function InitBitModels(probs) {
-   for (let i = probs.length - 1; i >= 0; --i)
-      probs[i] = 1024;
-}
-
-
-/** @summary decompress LZMA buffer
-  * @desc Includes special part to reorder header provided by ROOT implementation */
-function decompress(uint8arr, tgt8arr, expected_size) {
-   // ROOT magic, try to recode data from ROOT buffer to those which accepted by LZMA implementation
-   const arr = new Array(uint8arr.length - 31 + 12).fill(0);
-   arr[0] = 93;
-   arr[1] = 0;
-   arr[2] = 0;
-   arr[3] = -128; // maximal dictionary size
-   arr[4] = 0;
-   arr[5] = expected_size & 0xff;
-   arr[6] = (expected_size >> 8) & 0xff;
-   arr[7] = (expected_size >> 16) & 0xff;
-   arr[8] = 0;
-   arr[9] = 0;
-   arr[10] = 0;
-   arr[11] = 0;
-   arr[12] = 0;
-
-   for (let n = 5; n <= 7; ++n)
-      if (arr[n] > 127) arr[n] -= 256;
-
-   for (let n = 1; n < uint8arr.length - 31; ++n)
-      arr[12 + n] = (uint8arr[n + 29] < 128) ? uint8arr[n + 29] : (uint8arr[n + 29] - 256);
-
-   const d = $LZMAByteArrayDecompressor({}, arr);
-   while ($processChunk(d.chunker));
-
-   const res = $toByteArray(d.output);
-
-   if (res.length !== expected_size)
-      throw Error(`LZMA: mismatch unpacked buffer size ${res.length} != ${expected_size}}`);
-
-   for (let k = 0; k < expected_size; ++k)
-      tgt8arr[k] = res[k];
-
-   return expected_size;
-}
 
 const clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObject',
       clTStreamerSTL = 'TStreamerSTL', clTStreamerInfoList = 'TStreamerInfoList',
@@ -95464,7 +94803,7 @@ CustomStreamers = {
       const v = buf.last_read_version;
       buf.classStreamer(obj, clTObject);
       let size = buf.ntoi4();
-      obj.arr = create$2(clTList);
+      obj.arr = create$1(clTList);
       while (size--)
          obj.arr.Add(buf.readObjectAny());
       if (v > 1) obj._name = buf.readTString();
@@ -95804,7 +95143,7 @@ function getPairStreamer(si, typname, file) {
             p1 = p - 1;
             return res.trim();
          }
-         si = { _typename: 'TStreamerInfo', fVersion: 1, fName: typname, fElements: create$2(clTList) };
+         si = { _typename: 'TStreamerInfo', fVersion: 1, fName: typname, fElements: create$1(clTList) };
          si.fElements.Add(createStreamerElement('first', GetNextName(), file));
          si.fElements.Add(createStreamerElement('second', GetNextName(), file));
       }
@@ -97112,61 +96451,38 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
          const srcsize = HDRSIZE + ((getCode(curr + 3) & 0xff) | ((getCode(curr + 4) & 0xff) << 8) | ((getCode(curr + 5) & 0xff) << 16)),
                uint8arr = new Uint8Array(arr.buffer, arr.byteOffset + curr + HDRSIZE + off + CHKSUM, Math.min(arr.byteLength - curr - HDRSIZE - off - CHKSUM, srcsize - HDRSIZE - CHKSUM));
 
+         if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
+         const tgt8arr = new Uint8Array(tgtbuf, fullres);
+
          if (fmt === 'ZSTD') {
-            const handleZsdt = ZstdCodec => {
-               return new Promise((resolveFunc, rejectFunc) => {
-                  ZstdCodec.run(zstd => {
-                     // const simple = new zstd.Simple();
-                     const streaming = new zstd.Streaming(),
-                           data2 = streaming.decompress(uint8arr),
-                           reslen = data2.length;
+            const promise = internals._ZstdStream
+                            ? Promise.resolve(internals._ZstdStream)
+                            : (isNodeJs() ? Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }) : Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }))
+                              .then(({ ZstdInit }) => ZstdInit()).then(({ ZstdStream }) => { internals._ZstdStream = ZstdStream; return ZstdStream; });
+            return promise.then(ZstdStream => {
+               const data2 = ZstdStream.decompress(uint8arr),
+                     reslen = data2.length;
 
-                     if (data2.byteOffset !== 0)
-                        return rejectFunc(Error('ZSTD result with byteOffset != 0'));
+               for (let i = 0; i < reslen; ++i)
+                   tgt8arr[i] = data2[i];
 
-                     // shortcut when exactly required data unpacked
-                     // if ((tgtsize == reslen) && data2.buffer)
-                     //    resolveFunc(new DataView(data2.buffer));
-
-                     // need to copy data while zstd does not provide simple way of doing it
-                     if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
-                     const tgt8arr = new Uint8Array(tgtbuf, fullres);
-
-                     for (let i = 0; i < reslen; ++i)
-                        tgt8arr[i] = data2[i];
-
-                     fullres += reslen;
-                     curr += srcsize;
-                     resolveFunc(true);
-                  });
-               });
-            },
-
-            promise = isNodeJs()
-                        ? Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(handle => handleZsdt(handle.ZstdCodec))
-                        : loadScript('../../zstd/zstd-codec.min.js')
-                          .catch(() => loadScript('https://root.cern/js/zstd/zstd-codec.min.js'))
-                          // eslint-disable-next-line no-undef
-                         .then(() => handleZsdt(ZstdCodec));
-            return promise.then(() => nextPortion());
+               fullres += reslen;
+               curr += srcsize;
+               return nextPortion();
+            });
+         } else if (fmt === 'LZMA') {
+            return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(lzma => {
+               const expected_len = (getCode(curr + 6) & 0xff) | ((getCode(curr + 7) & 0xff) << 8) | ((getCode(curr + 8) & 0xff) << 16),
+                     reslen = lzma.decompress(uint8arr, tgt8arr, expected_len);
+               fullres += reslen;
+               curr += srcsize;
+               return nextPortion();
+            });
          }
 
-         //  place for unpacking
-         if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
-
-         const tgt8arr = new Uint8Array(tgtbuf, fullres),
-               expected_size = (getCode(curr + 6) & 0xff) | ((getCode(curr + 7) & 0xff) << 8) | ((getCode(curr + 8) & 0xff) << 16);
-         let reslen = 0;
-
-         if (fmt === 'LZMA')
-            reslen = decompress(uint8arr, tgt8arr, expected_size);
-         else if (fmt === 'LZ4')
-            reslen = LZ4_uncompress(uint8arr, tgt8arr);
-         else
-            reslen = ZIP_inflate(uint8arr, tgt8arr);
+         const reslen = (fmt === 'LZ4') ? LZ4_uncompress(uint8arr, tgt8arr) : ZIP_inflate(uint8arr, tgt8arr);
 
          if (reslen <= 0) break;
-
          fullres += reslen;
          curr += srcsize;
       }
@@ -99815,9 +99131,9 @@ class TDrawSelector extends TSelector {
    /** @summary Get bins for bits histogram */
    getBitsBins(nbits, res) {
       res.nbins = res.max = nbits;
-      res.fLabels = create$2(clTHashList);
+      res.fLabels = create$1(clTHashList);
       for (let k = 0; k < nbits; ++k) {
-         const s = create$2(clTObjString);
+         const s = create$1(clTObjString);
          s.fString = k.toString();
          s.fUniqueID = k + 1;
          res.fLabels.Add(s);
@@ -99868,9 +99184,9 @@ class TDrawSelector extends TSelector {
          res.lbls.sort();
          res.max = res.nbins = res.lbls.length;
 
-         res.fLabels = create$2(clTHashList);
+         res.fLabels = create$1(clTHashList);
          for (let k = 0; k < res.lbls.length; ++k) {
-            const s = create$2(clTObjString);
+            const s = create$1(clTObjString);
             s.fString = res.lbls[k];
             s.fUniqueID = k + 1;
             if (s.fString === '') s.fString = '<empty>';
@@ -100009,7 +99325,7 @@ class TDrawSelector extends TSelector {
             res.fTitle = this.hist_title;
             delete this.vars[1].buf;
          } else if (this.ndim === 3) {
-            res = create$2(clTPolyMarker3D);
+            res = create$1(clTPolyMarker3D);
             res.fN = N;
             res.fLastPoint = N - 1;
             const arr = new Array(N*3);
@@ -105559,7 +104875,7 @@ class HierarchyPainter extends BasePainter {
 
       if (use_inject && !globalThis.JSROOT) {
          globalThis.JSROOT = {
-            version, gStyle, create: create$2, httpRequest, loadScript, decodeUrl,
+            version, gStyle, create: create$1, httpRequest, loadScript, decodeUrl,
             source_dir: exports.source_dir, settings, addUserStreamer, addDrawFunc,
             draw, redraw
          };
@@ -107365,7 +106681,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
 
       pmain = {
           pad_layer: true,
-          pad: pp?.getRootPad(true) ?? create$2(clTPad),
+          pad: pp?.getRootPad(true) ?? create$1(clTPad),
           pw: rect.width,
           ph: rect.height,
           fX1NDC: 0.1, fX2NDC: 0.9, fY1NDC: 0.1, fY2NDC: 0.9,
@@ -108367,7 +107683,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
 
       const st = gStyle;
 
-      stats = create$2(clTPaveStats);
+      stats = create$1(clTPaveStats);
       Object.assign(stats, { fName: 'stats', fOptStat: 0, fOptFit: st.fOptFit || 111, fBorderSize: 1 });
 
       stats.fX1NDC = st.fStatX - st.fStatW;
@@ -108720,7 +108036,7 @@ async function treeDrawProgress(obj, final) {
       }
       if (isFunc(internals.drawInspector))
          return internals.drawInspector(this.drawid, obj);
-      const str = create$2(clTObjString);
+      const str = create$1(clTObjString);
       str.fString = toJSON(obj, 2);
       return drawRawText(this.drawid, str);
    }
@@ -109127,7 +108443,7 @@ class THStackPainter extends ObjectPainter {
       if (!stack.fHists) return false;
       const nhists = stack.fHists.arr.length;
       if (nhists <= 0) return false;
-      const lst = create$2(clTList);
+      const lst = create$1(clTList);
       lst.Add(clone(stack.fHists.arr[0]), stack.fHists.opt[0]);
       for (let i = 1; i < nhists; ++i) {
          const hnext = clone(stack.fHists.arr[i]),
@@ -111542,7 +110858,7 @@ class TGraphPolarPainter extends ObjectPainter {
 
    /** @summary Create polargram object */
    createPolargram() {
-      const polargram = create$2('TGraphPolargram'),
+      const polargram = create$1('TGraphPolargram'),
             gr = this.getObject();
 
       let rmin = gr.fY[0] || 0, rmax = rmin;
@@ -111762,7 +111078,7 @@ class TEfficiencyPainter extends ObjectPainter {
 
    /** @summary Create graph for the drawing of 1-dim TEfficiency */
    createGraph(/* eff */) {
-      const gr = create$2(clTGraphAsymmErrors);
+      const gr = create$1(clTGraphAsymmErrors);
       gr.fName = 'eff_graph';
       return gr;
    }
@@ -111916,7 +111232,7 @@ class TScatterPainter extends TGraphPainter$1 {
       if (this.options.PadPalette)
          pal = this.getPadPainter()?.findInPrimitives('palette', clTPaletteAxis);
       else if (gr) {
-         pal = create$2(clTPaletteAxis);
+         pal = create$1(clTPaletteAxis);
 
          const fp = this.get_main();
 
@@ -112218,7 +111534,7 @@ class TRatioPlotPainter extends ObjectPainter {
                   if ((line.fY1 === line.fY2) && (Math.abs(line.fY1 - gridy) < 1e-6)) found = true;
                });
                if (!found) {
-                  const line = create$2(clTLine);
+                  const line = create$1(clTLine);
                   line.fX1 = up_fp.scale_xmin;
                   line.fX2 = up_fp.scale_xmax;
                   line.fY1 = line.fY2 = gridy;
@@ -112429,9 +111745,9 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
             xaxis = histo.fXaxis;
             xaxis.fXmin = 0;
             xaxis.fXmax = graphs.arr.length;
-            xaxis.fLabels = create$2(clTHashList);
+            xaxis.fLabels = create$1(clTHashList);
             for (let i = 0; i < graphs.arr.length; i++) {
-               const lbl = create$2(clTObjString);
+               const lbl = create$1(clTObjString);
                lbl.fString = graphs.arr[i].fTitle || `gr${i}`;
                lbl.fUniqueID = graphs.arr.length - i; // graphs drawn in reverse order
                xaxis.fLabels.Add(lbl, '');
@@ -114354,7 +113670,7 @@ class TASImagePainter extends ObjectPainter {
             return this;
 
          return this.drawColorPalette(this.options.Zscale, true).then(() => {
-            fp.setAxesRanges(create$2(clTAxis), 0, 1, create$2(clTAxis), 0, 1, null, 0, 0);
+            fp.setAxesRanges(create$1(clTAxis), 0, 1, create$1(clTAxis), 0, 1, null, 0, 0);
             fp.createXY({ ndim: 2, check_pad_range: false });
             return fp.addInteractivity();
          });
@@ -114397,7 +113713,7 @@ class TASImagePainter extends ObjectPainter {
          return null;
 
       if (!this.draw_palette) {
-         const pal = create$2(clTPaletteAxis);
+         const pal = create$1(clTPaletteAxis);
          Object.assign(pal, { fX1NDC: 0.91, fX2NDC: 0.95, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1 });
          pal.fAxis.fChopt = '+';
          this.draw_palette = pal;
@@ -116196,8 +115512,8 @@ class RFramePainter extends RObjectPainter {
       }
 
       let xaxis = this.xaxis, yaxis = this.yaxis;
-      if (xaxis?._typename !== clTAxis) xaxis = create$2(clTAxis);
-      if (yaxis?._typename !== clTAxis) yaxis = create$2(clTAxis);
+      if (xaxis?._typename !== clTAxis) xaxis = create$1(clTAxis);
+      if (yaxis?._typename !== clTAxis) yaxis = create$1(clTAxis);
 
       this.x_handle = new TAxisPainter(this.getDom(), xaxis, true);
       this.x_handle.setPadName(this.getPadName());
@@ -119881,7 +119197,7 @@ class RCanvasPainter extends RPadPainter {
    /** @summary Get view data for ui5 panel
      * @private */
    getUi5PanelData(/* panel_name */) {
-      return { jsroot: { settings, create: create$2, parse, toJSON, loadScript, EAxisBits, getColorExec } };
+      return { jsroot: { settings, create: create$1, parse, toJSON, loadScript, EAxisBits, getColorExec } };
    }
 
    /** @summary Function used to activate GED
@@ -119968,7 +119284,7 @@ class RCanvasPainter extends RPadPainter {
    static async draw(dom, can /*, opt */) {
       const nocanvas = !can;
       if (nocanvas)
-         can = create$2(`${nsREX}RCanvas`);
+         can = create$1(`${nsREX}RCanvas`);
 
       const painter = new RCanvasPainter(dom, can);
       painter.normal_canvas = !nocanvas;
@@ -125128,7 +124444,7 @@ exports.cleanup = cleanup;
 exports.clone = clone;
 exports.compressSVG = compressSVG;
 exports.constants = constants$1;
-exports.create = create$2;
+exports.create = create$1;
 exports.createGeoPainter = createGeoPainter;
 exports.createHistogram = createHistogram;
 exports.createHttpRequest = createHttpRequest;

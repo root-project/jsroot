@@ -11,7 +11,7 @@
 8. Provide preliminary `TF3` support
 9. Support `TLinearGradient` and `TRadialGradient` colors
 10. Support LZMA decompression of ROOT files #272
-11. Include ZSTD decompression to repository
+11. Include ZSTD decompression to repository #274
 12. Support opacity transfer function for `TH3`, see tutorials/gl/glvox2.C
 
 
