@@ -1,4 +1,4 @@
-import { createHttpRequest, BIT, loadScript, internals, settings, browser,
+import { createHttpRequest, BIT, internals, settings, browser,
          create, getMethods, addMethods, isNodeJs, isObject, isFunc, isStr,
          clTObject, clTNamed, clTString, clTObjString, clTKey, clTFile, clTList, clTMap, clTObjArray, clTClonesArray,
          clTAttLine, clTAttFill, clTAttMarker, clTStyle, clTImagePalette,
@@ -2058,32 +2058,17 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
          const tgt8arr = new Uint8Array(tgtbuf, fullres);
 
          if (fmt === 'ZSTD') {
-            const promise = isNodeJs()
-                        ? import('zstd-codec').then(handle => handle.ZstdCodec)
-                        : loadScript('../../zstd/zstd-codec.min.js')
-                          .catch(() => loadScript('https://root.cern/js/zstd/zstd-codec.min.js'))
-                          // eslint-disable-next-line no-undef
-                         .then(() => ZstdCodec);
+            return import(/* webpackIgnore: true */ './base/zstd.mjs')
+                     .then(({ ZstdInit }) => ZstdInit()).then(({ ZstdStream }) => {
+               const data2 = ZstdStream.decompress(uint8arr),
+                     reslen = data2.length;
 
-            return promise.then(_zstdCodec => {
-               return new Promise((resolveFunc, rejectFunc) => {
-                  _zstdCodec.run(zstd => {
-                     // const simple = new zstd.Simple();
-                     const streaming = new zstd.Streaming(),
-                           data2 = streaming.decompress(uint8arr),
-                           reslen = data2.length;
+               for (let i = 0; i < reslen; ++i)
+                   tgt8arr[i] = data2[i];
 
-                     if (data2.byteOffset !== 0)
-                        return rejectFunc(Error('ZSTD result with byteOffset != 0'));
-
-                     for (let i = 0; i < reslen; ++i)
-                        tgt8arr[i] = data2[i];
-
-                     fullres += reslen;
-                     curr += srcsize;
-                     resolveFunc(nextPortion());
-                  });
-               });
+               fullres += reslen;
+               curr += srcsize;
+               return nextPortion();
             });
          } else if (fmt === 'LZMA') {
             return import(/* webpackIgnore: true */ './base/lzma.mjs').then(lzma => {
