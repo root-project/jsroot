@@ -498,6 +498,12 @@ class TH3Painter extends THistPainter {
 
       if (this.transferFunc && proivdeEvalPar(this.transferFunc, true))
          transfer = this.transferFunc;
+      const getOpacityIndex = colindx => {
+         const bin_opactity = getTF1Value(transfer, bin_content, false) * 3; // try to get opacity
+         if (!bin_opactity || (bin_opactity < 0) || (bin_opactity >= 1))
+            return colindx;
+         return colindx + Math.round(bin_opactity * 200) * 10000; // 200 steps between 0..1
+      };
 
       for (i = i1; i < i2; ++i) {
          for (j = j1; j < j2; ++j) {
@@ -508,17 +514,15 @@ class TH3Painter extends THistPainter {
                wei = get_bin_weight(bin_content);
                if (wei < 1e-3) continue; // do not draw empty or very small bins
 
-               if (transfer) {
-                  const bin_opacity = getTF1Value(transfer, bin_content, false); // try to get opacity
-                  // if (nbins < 100) console.log(bin_content, 'bins_opacity', bin_opacity);
-               }
-
                nbins++;
 
                if (!use_colors) continue;
 
-               const colindx = cntr.getPaletteIndex(palette, bin_content);
+               let colindx = cntr.getPaletteIndex(palette, bin_content);
                if (colindx !== null) {
+                  if (transfer)
+                     colindx = getOpacityIndex(colindx);
+
                   if (cols_size[colindx] === undefined) {
                      cols_size[colindx] = 0;
                      cols_sequence[colindx] = num_colors++;
@@ -581,8 +585,10 @@ class TH3Painter extends THistPainter {
 
                let nseq = 0;
                if (use_colors) {
-                  const colindx = cntr.getPaletteIndex(palette, bin_content);
+                  let colindx = cntr.getPaletteIndex(palette, bin_content);
                   if (colindx === null) continue;
+                  if (transfer)
+                     colindx = getOpacityIndex(colindx);
                   nseq = cols_sequence[colindx];
                }
 
@@ -642,11 +648,16 @@ class TH3Painter extends THistPainter {
          all_bins_buffgeom.setAttribute('position', new BufferAttribute(bin_verts[nseq], 3));
          all_bins_buffgeom.setAttribute('normal', new BufferAttribute(bin_norms[nseq], 3));
 
-         if (use_colors) fillcolor = this._color_palette.getColor(colindx);
+         let opacity = use_opacity;
+
+         if (use_colors) {
+            fillcolor = this._color_palette.getColor(colindx % 10000);
+            if (colindx > 10000) opacity = Math.floor(colindx / 10000) / 200;
+         }
 
          const material = use_lambert
-                            ? new MeshLambertMaterial({ color: fillcolor, opacity: use_opacity, transparent: use_opacity < 1, vertexColors: false })
-                            : new MeshBasicMaterial({ color: fillcolor, opacity: use_opacity, transparent: use_opacity < 1, vertexColors: false }),
+                            ? new MeshLambertMaterial({ color: fillcolor, opacity, transparent: opacity < 1, vertexColors: false })
+                            : new MeshBasicMaterial({ color: fillcolor, opacity, transparent: opacity < 1, vertexColors: false }),
               combined_bins = new Mesh(all_bins_buffgeom, material);
 
          combined_bins.bins = bin_tooltips[nseq];
