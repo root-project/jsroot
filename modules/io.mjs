@@ -4,8 +4,6 @@ import { createHttpRequest, BIT, loadScript, internals, settings, browser,
          clTAttLine, clTAttFill, clTAttMarker, clTStyle, clTImagePalette,
          clTPad, clTCanvas, clTAttCanvas, clTPolyMarker3D, clTF1, clTF2 } from './core.mjs';
 
-import { decompress as LZMA_decompress } from './base/lzma.mjs';
-
 const clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObject',
       clTStreamerSTL = 'TStreamerSTL', clTStreamerInfoList = 'TStreamerInfoList',
       clTDirectory = 'TDirectory', clTDirectoryFile = 'TDirectoryFile',
@@ -2088,19 +2086,19 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
                           // eslint-disable-next-line no-undef
                          .then(() => handleZsdt(ZstdCodec));
             return promise.then(() => nextPortion());
+         } else if (fmt === 'LZMA') {
+            return import(/* webpackIgnore: true */ './base/lzma.mjs').then(lzma => {
+               const expected_len = (getCode(curr + 6) & 0xff) | ((getCode(curr + 7) & 0xff) << 8) | ((getCode(curr + 8) & 0xff) << 16),
+                     reslen = lzma.decompress(uint8arr, tgt8arr, expected_len);
+               fullres += reslen;
+               curr += srcsize;
+               return nextPortion();
+            });
          }
 
-         let reslen = 0;
-
-         if (fmt === 'LZMA')
-            reslen = LZMA_decompress(uint8arr, tgt8arr, (getCode(curr + 6) & 0xff) | ((getCode(curr + 7) & 0xff) << 8) | ((getCode(curr + 8) & 0xff) << 16));
-         else if (fmt === 'LZ4')
-            reslen = LZ4_uncompress(uint8arr, tgt8arr);
-         else
-            reslen = ZIP_inflate(uint8arr, tgt8arr);
+         const reslen = (fmt === 'LZ4') ? LZ4_uncompress(uint8arr, tgt8arr) : ZIP_inflate(uint8arr, tgt8arr);
 
          if (reslen <= 0) break;
-
          fullres += reslen;
          curr += srcsize;
       }
