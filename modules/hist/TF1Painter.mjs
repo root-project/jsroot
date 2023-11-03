@@ -108,6 +108,59 @@ function proivdeEvalPar(obj) {
 }
 
 
+/** @summary Get interpolation in saved buffer
+  * @desc Several checks must be done before function can be used
+  * @private */
+function _getTF1Save(func, x) {
+   const np = func.fSave.length - 3,
+         xmin = func.fSave[np + 1],
+        xmax = func.fSave[np + 2],
+        dx = (xmax - xmin) / np;
+    if (x < xmin)
+       return func.fSave[0];
+    if (x > xmax)
+       return func.fSave[np];
+
+    const bin = Math.min(np - 1, Math.floor((x - xmin) / dx));
+    let xlow = xmin + bin * dx,
+        xup = xlow + dx,
+        ylow = func.fSave[bin],
+        yup = func.fSave[bin + 1];
+
+    if (!Number.isFinite(ylow) && (bin < np - 1)) {
+       xlow += dx; xup += dx;
+       ylow = yup; yup = func.fSave[bin + 2];
+    } else if (!Number.isFinite(yup) && (bin > 0)) {
+       xup -= dx; xlow -= dx;
+       yup = ylow; ylow = func.fSave[bin - 1];
+    }
+
+    return ((xup * ylow - xlow * yup) + x * (yup - ylow)) / dx;
+}
+
+function getTF1Value(func, x, skip_eval = undefined) {
+   let y = 0;
+   if (!func)
+      return 0;
+
+   if (!skip_eval && !func.evalPar)
+      proivdeEvalPar(func);
+
+   if (func.evalPar && (skip_eval !== false)) {
+      try {
+         y = func.evalPar(x);
+         return y;
+      } catch {
+         y = 0;
+      }
+   }
+
+   const np = func.fSave.length - 3;
+   if ((np < 2) || (func.fSave[np + 1] === func.fSave[np + 2])) return 0;
+   return _getTF1Save(func, x);
+}
+
+
 /** @summary Create log scale for axis bins
   * @private */
 function produceTAxisLogScale(axis, num, min, max) {
@@ -269,35 +322,12 @@ class TF1Painter extends TH1Painter {
                hist.setBinContent(n + 1, Number.isFinite(y) ? y : 0);
             }
          } else {
-            const dx = (xmax - xmin) / np;
-            function getSave(x) {
-               if (x < xmin)
-                  return tf1.fSave[0];
-               if (x > xmax)
-                  return tf1.fSave[np];
-
-               const bin = Math.min(np - 1, Math.floor((x - xmin) / dx));
-               let xlow = xmin + bin * dx,
-                   xup = xlow + dx,
-                   ylow = tf1.fSave[bin],
-                   yup = tf1.fSave[bin + 1];
-
-               if (!Number.isFinite(ylow) && (bin < np - 1)) {
-                  xlow += dx; xup += dx;
-                  ylow = yup; yup = tf1.fSave[bin + 2];
-               } else if (!Number.isFinite(yup) && (bin > 0)) {
-                  xup -= dx; xlow -= dx;
-                  yup = ylow; ylow = tf1.fSave[bin - 1];
-               }
-               return ((xup * ylow - xlow * yup) + x * (yup - ylow)) / dx;
-            }
-
             ensureBins(tf1.fNpx);
             hist.fXaxis.fXmin = tf1.fXmin;
             hist.fXaxis.fXmax = tf1.fXmax;
 
             for (let n = 0; n < tf1.fNpx; ++n) {
-               const y = getSave(hist.fXaxis.GetBinCenter(n + 1));
+               const y = _getTF1Save(tf1, hist.fXaxis.GetBinCenter(n + 1));
                hist.setBinContent(n + 1, Number.isFinite(y) ? y : 0);
             }
          }
@@ -460,4 +490,4 @@ class TF1Painter extends TH1Painter {
 
 } // class TF1Painter
 
-export { TF1Painter, proivdeEvalPar, produceTAxisLogScale };
+export { TF1Painter, proivdeEvalPar, produceTAxisLogScale, getTF1Value };
