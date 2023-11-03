@@ -2,11 +2,11 @@ import json from '@rollup/plugin-json';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import terser from '@rollup/plugin-terser';
 import modify from 'rollup-plugin-modify';
-import ascii from "rollup-plugin-ascii";
+import ascii from 'rollup-plugin-ascii';
 import ignore from 'rollup-plugin-ignore';
 import meta from '../package.json' assert {type: 'json'};
 
-const ignore_modules = ['fs', 'zlib', 'gl', './base/lzma.mjs'];
+const ignore_modules = ['fs', 'zlib', 'gl', './base/lzma.mjs', './base/zstd.mjs'];
 
 const importMetaUrlPolyfill = `(typeof document === 'undefined' && typeof location === 'undefined' ? undefined : typeof document === 'undefined' ? location.href : (document.currentScript && document.currentScript.src || new URL('jsroot.js', document.baseURI).href));`;
 
