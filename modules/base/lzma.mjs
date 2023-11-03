@@ -110,30 +110,15 @@ function arraycopy(src, srcOfs, dest, destOfs, len) {
 }
 
 function $init_0(this$static, input, output, output_size) {
-   let hex_length = '', r, tmp_length;
-
-   const properties = [];
-   for (let i = 0; i < 5; ++i) {
-      r = $read(input);
-      if (r === -1)
-         throw new Error('truncated input');
-      properties[i] = r << 24 >> 24;
-   }
-
-   const decoder = $Decoder({});
+   let r = $read(input);
+   if (r === -1)
+      throw new Error('truncated input');
+   const properties = [r << 24 >> 24],
+         decoder = $Decoder({});
    if (!$SetDecoderProperties(decoder, properties))
       throw new Error('corrupted input');
 
-   for (let i = 0; i < 64; i += 8) {
-      r = $read(input);
-      if (r === -1)
-         throw new Error('truncated input');
-      r = r.toString(16);
-      if (r.length === 1) r = '0' + r;
-      hex_length = r + '' + hex_length;
-   }
-
-   this$static.length_0 = [output_size,0];
+   this$static.length_0 = [output_size, 0];
 
    this$static.chunker = $CodeInChunks(decoder, input, output, this$static.length_0);
 }
@@ -388,18 +373,16 @@ function $Init_1(this$static) {
 }
 
 function $SetDecoderProperties(this$static, properties) {
-   if (properties.length < 5)
+   if (properties.length < 1)
       return 0;
    const val = properties[0] & 255,
       lc = val % 9,
       remainder = ~~(val / 9),
       lp = remainder % 5,
-      pb = ~~(remainder / 5);
-   let dictionarySize = 0;
-   for (let i = 0; i < 4; ++i)
-      dictionarySize += (properties[1 + i] & 255) << i * 8;
-   /// NOTE: If the input is bad, it might call for an insanely large dictionary size, which would crash the script.
-   if (dictionarySize > 99999999 || !$SetLcLpPb(this$static, lc, lp, pb))
+      pb = ~~(remainder / 5),
+      dictionarySize = 0x80000;
+
+   if (!$SetLcLpPb(this$static, lc, lp, pb))
       return 0;
 
    return $SetDictionarySize(this$static, dictionarySize);
@@ -612,26 +595,10 @@ function InitBitModels(probs) {
   * @desc Includes special part to reorder header provided by ROOT implementation */
 function decompress(uint8arr, tgt8arr, expected_size) {
    // ROOT magic, try to recode data from ROOT buffer to those which accepted by LZMA implementation
-   const arr = new Array(uint8arr.length - 31 + 12).fill(0);
-   arr[0] = 93;
-   arr[1] = 0;
-   arr[2] = 0;
-   arr[3] = -128; // maximal dictionary size
-   arr[4] = 0;
-   arr[5] = expected_size & 0xff;
-   arr[6] = (expected_size >> 8) & 0xff;
-   arr[7] = (expected_size >> 16) & 0xff;
-   arr[8] = 0;
-   arr[9] = 0;
-   arr[10] = 0;
-   arr[11] = 0;
-   arr[12] = 0;
+   const arr = new Array(uint8arr.length - 29);
 
-   for (let n = 5; n <= 7; ++n)
-      if (arr[n] > 127) arr[n] -= 256;
-
-   for (let n = 1; n < uint8arr.length - 31; ++n)
-      arr[12 + n] = (uint8arr[n + 29] < 128) ? uint8arr[n + 29] : (uint8arr[n + 29] - 256);
+   for (let n = 0; n < uint8arr.length - 29; ++n)
+      arr[n] = (uint8arr[n + 29] < 128) ? uint8arr[n + 29] : (uint8arr[n + 29] - 256);
 
    const d = $LZMAByteArrayDecompressor({}, arr, expected_size);
    while ($processChunk(d.chunker));
