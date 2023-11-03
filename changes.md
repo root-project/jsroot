@@ -10,8 +10,9 @@
 7. Implement histogram drawing build from `TGraph2D` using Delaunay interpolation
 8. Provide preliminary `TF3` support
 9. Support `TLinearGradient` and `TRadialGradient` colors
-10. Support LZMA compression of ROOT files #272
-11. Support opacity transfer function for `TH3`, see tutorials/gl/glvox2.C
+10. Support LZMA decompression of ROOT files #272
+11. Include ZSTD decompression to repository
+12. Support opacity transfer function for `TH3`, see tutorials/gl/glvox2.C
 
 
 ## Changes in 7.5.2

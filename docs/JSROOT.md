@@ -17,8 +17,6 @@ When required, there are following alternatives to install JSROOT on other web s
    - use [npm](https://npmjs.com/package/jsroot) package manager and invoke `npm install jsroot`
    - clone master branch from [repository](https://github.com/root-project/jsroot/)
 
-To use ROOT files with ZSTD compression, one have to copy https://root.cern/js/zstd/zstd-codec.min.js file to "zstd" subfolder in the same directory where jsroot itself is installed. If jsroot url is "https://server/sub/jsroot/", one should copy codec file into "https://server/sub/zstd/" subfolder. It is not required when JSROOT used with node.js
-
 
 ## Drawing objects in JSROOT
 
