@@ -1,4 +1,4 @@
-import { gStyle, settings, kInspect, clTF3, clTProfile3D, isFunc } from '../core.mjs';
+import { gStyle, settings, kInspect, clTF1, clTF3, clTProfile3D, BIT, isFunc } from '../core.mjs';
 import { Matrix4, BufferGeometry, BufferAttribute, Mesh, MeshBasicMaterial, MeshLambertMaterial,
          LineBasicMaterial, SphereGeometry } from '../three.mjs';
 import { TRandom, floatToString } from '../base/BasePainter.mjs';
@@ -51,6 +51,10 @@ class TH3Painter extends THistPainter {
          this.gminposbin = this.gmaxbin*1e-4;
 
       this.draw_content = this.gmaxbin > 0;
+
+      this.transferFunc = this.findFunction(clTF1, 'TransferFunction');
+      if (this.transferFunc && !this.transferFunc.TestBit(BIT(9))) // TF1::kNotDraw
+         this.transferFunc.InvertBit(BIT(9));
    }
 
    /** @summary Count TH3 statistic */
@@ -240,7 +244,6 @@ class TH3Painter extends THistPainter {
          stat.addText(`Kurtosis y = ${stat.format(data.kurty)}`);
          stat.addText(`Kurtosis z = ${stat.format(data.kurtz)}`);
       }
-
 
       if (dofit) stat.fillFunctionStat(this.findFunction(clTF3), dofit, 3);
 
