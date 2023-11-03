@@ -13,6 +13,7 @@
 10. Support LZMA decompression of ROOT files #272
 11. Include ZSTD decompression to repository #274
 12. Support opacity transfer function for `TH3`, see tutorials/gl/glvox2.C
+13. Upgrade three.js r155 -> r158
 
 
 ## Changes in 7.5.2
