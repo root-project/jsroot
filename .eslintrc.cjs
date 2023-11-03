@@ -10,7 +10,7 @@ module.exports = {
       "ecmaVersion": "latest",
       "sourceType": "module"
   },
-  "ignorePatterns" : ["modules/base/zstd.mjs"],
+  "ignorePatterns" : ["modules/base/zstd.mjs", "modules/three.mjs", "modules/d3.mjs", "modules/gui/lil-gui.mjs"],
   "rules": {
       "quotes": ["warn", "single"],
       "indent": "off",
