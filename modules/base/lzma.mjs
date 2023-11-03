@@ -84,18 +84,10 @@ function $read(this$static) {
    return this$static.buf[this$static.pos++]; //  & 255; not needed, input always uint8
 }
 
-function $ByteArrayOutputStream(this$static) {
-   if (!this$static.buf)
-      this$static.buf = initDim(32);
-
+function $ByteArrayOutputStream(this$static, buf) {
+   this$static.buf = buf;
    this$static.count = 0;
    return this$static;
-}
-
-function $toByteArray(this$static) {
-   const data = this$static.buf;
-   data.length = this$static.count;
-   return data;
 }
 
 function $write_0(this$static, buf, off, len) {
@@ -118,8 +110,8 @@ function $init_0(this$static, input, output, output_size) {
    this$static.chunker = $CodeInChunks(decoder, input, output, this$static.length_0);
 }
 
-function $LZMAByteArrayDecompressor(this$static, data, offset, output_size) {
-   this$static.output = $ByteArrayOutputStream({});
+function $LZMAByteArrayDecompressor(this$static, data, offset, output_size, outbuf) {
+   this$static.output = $ByteArrayOutputStream({}, outbuf);
    $init_0(this$static, $ByteArrayInputStream({}, data, offset), this$static.output, output_size);
    return this$static;
 }
@@ -581,18 +573,16 @@ function InitBitModels(probs) {
 /** @summary decompress LZMA buffer
   * @desc Includes special part to reorder header provided by ROOT implementation */
 function decompress(uint8arr, tgt8arr, expected_size) {
-   const d = $LZMAByteArrayDecompressor({}, uint8arr, 29, expected_size);
+   const d = $LZMAByteArrayDecompressor({}, uint8arr, 29, expected_size, tgt8arr);
+
    while ($processChunk(d.chunker));
 
-   const res = $toByteArray(d.output);
+   const res_length = d.output.count;
 
-   if (res.length !== expected_size)
-      throw Error(`LZMA: mismatch unpacked buffer size ${res.length} != ${expected_size}}`);
+   if (res_length !== expected_size)
+      throw Error(`LZMA: mismatch unpacked buffer size ${res_length} != ${expected_size}}`);
 
-   for (let k = 0; k < expected_size; ++k)
-      tgt8arr[k] = res[k];
-
-   return expected_size;
+   return res_length;
 }
 
 export { decompress };
