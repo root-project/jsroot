@@ -2056,6 +2056,9 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
          const srcsize = HDRSIZE + ((getCode(curr + 3) & 0xff) | ((getCode(curr + 4) & 0xff) << 8) | ((getCode(curr + 5) & 0xff) << 16)),
                uint8arr = new Uint8Array(arr.buffer, arr.byteOffset + curr + HDRSIZE + off + CHKSUM, Math.min(arr.byteLength - curr - HDRSIZE - off - CHKSUM, srcsize - HDRSIZE - CHKSUM));
 
+         if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
+         const tgt8arr = new Uint8Array(tgtbuf, fullres);
+
          if (fmt === 'ZSTD') {
             const handleZsdt = ZstdCodec => {
                return new Promise((resolveFunc, rejectFunc) => {
@@ -2067,14 +2070,6 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
 
                      if (data2.byteOffset !== 0)
                         return rejectFunc(Error('ZSTD result with byteOffset != 0'));
-
-                     // shortcut when exactly required data unpacked
-                     // if ((tgtsize == reslen) && data2.buffer)
-                     //    resolveFunc(new DataView(data2.buffer));
-
-                     // need to copy data while zstd does not provide simple way of doing it
-                     if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
-                     const tgt8arr = new Uint8Array(tgtbuf, fullres);
 
                      for (let i = 0; i < reslen; ++i)
                         tgt8arr[i] = data2[i];
@@ -2095,15 +2090,10 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
             return promise.then(() => nextPortion());
          }
 
-         //  place for unpacking
-         if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
-
-         const tgt8arr = new Uint8Array(tgtbuf, fullres),
-               expected_size = (getCode(curr + 6) & 0xff) | ((getCode(curr + 7) & 0xff) << 8) | ((getCode(curr + 8) & 0xff) << 16);
          let reslen = 0;
 
          if (fmt === 'LZMA')
-            reslen = LZMA_decompress(uint8arr, tgt8arr, expected_size);
+            reslen = LZMA_decompress(uint8arr, tgt8arr, (getCode(curr + 6) & 0xff) | ((getCode(curr + 7) & 0xff) << 8) | ((getCode(curr + 8) & 0xff) << 16));
          else if (fmt === 'LZ4')
             reslen = LZ4_uncompress(uint8arr, tgt8arr);
          else
