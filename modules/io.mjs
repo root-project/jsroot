@@ -2058,8 +2058,11 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
          const tgt8arr = new Uint8Array(tgtbuf, fullres);
 
          if (fmt === 'ZSTD') {
-            return import(/* webpackIgnore: true */ './base/zstd.mjs')
-                     .then(({ ZstdInit }) => ZstdInit()).then(({ ZstdStream }) => {
+            const promise = internals._ZstdStream
+                            ? Promise.resolve(internals._ZstdStream)
+                            : (isNodeJs() ? import('@oneidentity/zstd-js') : import(/* webpackIgnore: true */ './base/zstd.mjs'))
+                              .then(({ ZstdInit }) => ZstdInit()).then(({ ZstdStream }) => { internals._ZstdStream = ZstdStream; return ZstdStream; });
+            return promise.then(ZstdStream => {
                const data2 = ZstdStream.decompress(uint8arr),
                      reslen = data2.length;
 
