@@ -2122,7 +2122,7 @@ class HierarchyPainter extends BasePainter {
       if (itemname === '$legend') {
          const cp = getElementCanvPainter(divid);
          if (isFunc(cp?.buildLegend))
-            return cp.buildLegend(opt).then(lp => drop_complete(lp));
+            return cp.buildLegend(0, 0, 0, 0, '', opt).then(lp => drop_complete(lp));
          console.error('Not possible to build legend');
          return drop_complete(null);
       }
