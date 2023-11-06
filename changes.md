@@ -14,6 +14,7 @@
 11. Include ZSTD decompression to repository #274
 12. Support opacity transfer function for `TH3`, see tutorials/gl/glvox2.C
 13. Upgrade three.js r155 -> r158
+14. Fix - do not add `THStack` and `TMultiGraph` to legend
 
 
 ## Changes in 7.5.2

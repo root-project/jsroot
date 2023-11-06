@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '3/11/2023',
+version_date = '6/11/2023',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -67635,7 +67635,7 @@ class TPadPainter extends ObjectPainter {
 
    /** @summary add legend object to the pad and redraw it
      * @private */
-   async buildLegend(opt) {
+   async buildLegend(x1, y1, x2, y2, title, opt) {
       const lp = this.findPainterFor(null, '', clTLegend);
 
       if (!lp && !isFunc(this.drawObject))
@@ -67649,7 +67649,8 @@ class TPadPainter extends ObjectPainter {
       for (let k = 0; k < this.painters.length; ++k) {
          const painter = this.painters[k],
                obj = painter.getObject();
-         if (!obj || obj.fName === 'title' || obj.fName === 'stats' || painter.$secondary || obj._typename === clTLegend)
+         if (!obj || obj.fName === 'title' || obj.fName === 'stats' || painter.$secondary ||
+              obj._typename === clTLegend || obj._typename === clTHStack || obj._typename === clTMultiGraph)
             continue;
 
          const entry = create$1(clTLegendEntry);
@@ -67672,25 +67673,34 @@ class TPadPainter extends ObjectPainter {
          leg.fPrimitives.Add(entry);
       }
 
-      // no entries - no need to draw legend
       if (lp)
          return lp.redraw();
 
       const szx = 0.4;
       let szy = leg.fPrimitives.arr.length;
+      // no entries - no need to draw legend
       if (!szy) return null;
       if (szy > 8) szy = 8;
       szy *= 0.1;
 
-      leg.fX1NDC = szx * pad.fLeftMargin + (1 - szx) * (1 - pad.fRightMargin);
-      leg.fY1NDC = (1 - szy) * (1 - pad.fTopMargin) + szy * pad.fBottomMargin;
-      leg.fX2NDC = 0.99 - pad.fRightMargin;
-      leg.fY2NDC = 0.99 - pad.fTopMargin;
+      if ((x1 === x2) || (y1 === y2)) {
+         leg.fX1NDC = szx * pad.fLeftMargin + (1 - szx) * (1 - pad.fRightMargin);
+         leg.fY1NDC = (1 - szy) * (1 - pad.fTopMargin) + szy * pad.fBottomMargin;
+         leg.fX2NDC = 0.99 - pad.fRightMargin;
+         leg.fY2NDC = 0.99 - pad.fTopMargin;
+         if (opt === undefined) opt = 'autoplace';
+      } else {
+         leg.fX1NDC = x1;
+         leg.fY1NDC = y1;
+         leg.fX2NDC = x2;
+         leg.fY2NDC = y2;
+      }
       leg.fFillStyle = 1001;
+      leg.fTitle = title ?? '';
 
       const prev_name = this.has_canvas ? this.selectCurrentPad(this.this_pad_name) : undefined;
 
-      return this.drawObject(this.getDom(), leg, opt ?? 'autoplace').then(p => {
+      return this.drawObject(this.getDom(), leg, opt).then(p => {
          this.selectCurrentPad(prev_name);
          return p;
       });
@@ -104099,7 +104109,7 @@ class HierarchyPainter extends BasePainter {
       if (itemname === '$legend') {
          const cp = getElementCanvPainter(divid);
          if (isFunc(cp?.buildLegend))
-            return cp.buildLegend(opt).then(lp => drop_complete(lp));
+            return cp.buildLegend(0, 0, 0, 0, '', opt).then(lp => drop_complete(lp));
          console.error('Not possible to build legend');
          return drop_complete(null);
       }
