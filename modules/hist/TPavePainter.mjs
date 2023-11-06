@@ -468,7 +468,7 @@ class TPavePainter extends ObjectPainter {
    }
 
    /** @summary draw TPaveText object */
-   drawPaveText(width, height, dummy_arg, text_g) {
+   drawPaveText(width, height, _dummy_arg, text_g) {
       const pt = this.getObject(),
             arr = pt?.fLines?.arr || [],
             nlines = arr.length,
@@ -496,22 +496,23 @@ class TPavePainter extends ObjectPainter {
 
          switch (entry._typename) {
             case clTText:
-            case clTLatex:
+            case clTLatex: {
                if (!entry.fTitle || !entry.fTitle.trim()) continue;
 
-               if (entry.fX || entry.fY) {
+               let color = entry.fTextColor ? this.getColor(entry.fTextColor) : '';
+               if (!color) color = this.textatt.color;
+
+               if (entry.fX || entry.fY || entry.fTextSize) {
                   // individual positioning
-                  const x = entry.fX ? entry.fX*width : margin_x,
-                        y = entry.fY ? (1 - entry.fY)*height : texty;
-
-                  let color = entry.fTextColor ? this.getColor(entry.fTextColor) : '';
-                  if (!color) color = this.textatt.color;
-
-                  const sub_g = text_g.append('svg:g');
+                  const align = entry.fTextAlign || this.textatt.align,
+                        halign = Math.floor(align/10),
+                        x = entry.fX ? entry.fX*width : (halign === 1 ? margin_x : (halign === 2 ? width / 2 : width - margin_x)),
+                        y = entry.fY ? (1 - entry.fY)*height : texty,
+                        sub_g = text_g.append('svg:g');
 
                   this.startTextDrawing(this.textatt.font, this.textatt.getAltSize(entry.fTextSize, pad_height), sub_g);
 
-                  this.drawText({ align: entry.fTextAlign || this.textatt.align, x, y, text: entry.fTitle, color,
+                  this.drawText({ align, x, y, text: entry.fTitle, color,
                                   latex: (entry._typename === clTText) ? 0 : 1, draw_g: sub_g, fast });
 
                   promises.push(this.finishTextDrawing(sub_g));
@@ -520,23 +521,13 @@ class TPavePainter extends ObjectPainter {
                   if (num_default++ === 0)
                      this.startTextDrawing(this.textatt.font, height/(nlines * 1.2), text_g, max_font_size);
 
-                  const arg = { x: 0, y: 0, width, height, align: entry.fTextAlign || this.textatt.align,
-                                draw_g: text_g, latex: (entry._typename === clTText) ? 0 : 1,
-                                text: entry.fTitle, fast },
-                  halign = Math.floor(arg.align / 10);
-                  // when horizontal align applied, just shift text, not change width to keep scaling
-                  arg.x = (halign === 1) ? margin_x : (halign === 3 ? -margin_x : 0);
-
-                  if (nlines > 1) {
-                     arg.y = texty;
-                     arg.height = stepy;
-                  }
-                  if (entry.fTextColor) arg.color = this.getColor(entry.fTextColor);
-                  if (!arg.color) arg.color = this.textatt.color;
-                  if (entry.fTextSize) arg.font_size = this.textatt.getAltSize(entry.fTextSize, pad_height);
-                  this.drawText(arg);
+                  this.drawText({ x: margin_x, y: texty, width: width - 2*margin_x, height: stepy,
+                                  align: entry.fTextAlign || this.textatt.align,
+                                  draw_g: text_g, latex: (entry._typename === clTText) ? 0 : 1,
+                                  text: entry.fTitle, color, fast })
                }
                break;
+            }
 
             case clTLine: {
                const lx1 = entry.fX1 ? Math.round(entry.fX1*width) : 0,
