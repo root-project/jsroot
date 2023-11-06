@@ -738,17 +738,20 @@ class TPavePainter extends ObjectPainter {
                       .call(lineatt.func);
                }
                if (draw_error) {
-                  let endcaps = 0;
+                  let endcaps = 0, edx = step_y*0.05;
                   if (isFunc(painter?.getHisto) && painter.options?.ErrorKind === 1)
                      endcaps = 1; // draw bars for e1 option in histogram
-                  else if (isFunc(painter?.getGraph))
+                  else if (isFunc(painter?.getGraph) && mo?.fLineWidth !== undefined && mo?.fMarkerSize !== undefined) {
                      endcaps = painter.options?.Ends ?? 1; // deafult is 1
+                     edx = mo.fLineWidth + gStyle.fEndErrorSize;
+                     if (endcaps > 1) edx = Math.max(edx, mo.fMarkerSize*8*0.66);
+                  }
 
                   const eoff = (endcaps === 3) ? 0.03 : 0,
                         ey1 = Math.round(pos_y+step_y*(0.1 + eoff)),
                         ey2 = Math.round(pos_y+step_y*(0.9 - eoff)),
-                        edx = Math.round(step_y*0.05),
-                        edy = Math.round(step_y*0.03);
+                        edy = Math.round(edx * 0.66);
+                  edx = Math.round(edx);
                   let path = `M${mid_x},${ey1}V${ey2}`;
                   switch (endcaps) {
                      case 1: path += `M${mid_x-edx},${ey1}h${2*edx}M${mid_x-edx},${ey2}h${2*edx}`; break; // bars
