@@ -15,6 +15,7 @@
 12. Support opacity transfer function for `TH3`, see tutorials/gl/glvox2.C
 13. Upgrade three.js r155 -> r158
 14. Fix - do not add `THStack` and `TMultiGraph` to legend
+15. Fix - correctly use margin in `TPaveText` class
 
 
 ## Changes in 7.5.2

@@ -60103,7 +60103,7 @@ class StandaloneMenu extends JSRootMenu {
       if (!event && this.show_evnt) event = this.show_evnt;
 
       const doc = getDocument(),
-            woffset = typeof window === 'undefined' ? { x: 0, y: 0 } : { x: window.pageXOffset, y: window.pageYOffset };
+            woffset = typeof window === 'undefined' ? { x: 0, y: 0 } : { x: window.scrollX, y: window.scrollY };
 
       doc.body.addEventListener('click', this.remove_handler);
 
@@ -69991,7 +69991,7 @@ class TPavePainter extends ObjectPainter {
    }
 
    /** @summary draw TPaveText object */
-   drawPaveText(width, height, dummy_arg, text_g) {
+   drawPaveText(width, height, _dummy_arg, text_g) {
       const pt = this.getObject(),
             arr = pt?.fLines?.arr || [],
             nlines = arr.length,
@@ -70019,22 +70019,23 @@ class TPavePainter extends ObjectPainter {
 
          switch (entry._typename) {
             case clTText:
-            case clTLatex:
+            case clTLatex: {
                if (!entry.fTitle || !entry.fTitle.trim()) continue;
 
-               if (entry.fX || entry.fY) {
+               let color = entry.fTextColor ? this.getColor(entry.fTextColor) : '';
+               if (!color) color = this.textatt.color;
+
+               if (entry.fX || entry.fY || entry.fTextSize) {
                   // individual positioning
-                  const x = entry.fX ? entry.fX*width : margin_x,
-                        y = entry.fY ? (1 - entry.fY)*height : texty;
-
-                  let color = entry.fTextColor ? this.getColor(entry.fTextColor) : '';
-                  if (!color) color = this.textatt.color;
-
-                  const sub_g = text_g.append('svg:g');
+                  const align = entry.fTextAlign || this.textatt.align,
+                        halign = Math.floor(align/10),
+                        x = entry.fX ? entry.fX*width : (halign === 1 ? margin_x : (halign === 2 ? width / 2 : width - margin_x)),
+                        y = entry.fY ? (1 - entry.fY)*height : texty,
+                        sub_g = text_g.append('svg:g');
 
                   this.startTextDrawing(this.textatt.font, this.textatt.getAltSize(entry.fTextSize, pad_height), sub_g);
 
-                  this.drawText({ align: entry.fTextAlign || this.textatt.align, x, y, text: entry.fTitle, color,
+                  this.drawText({ align, x, y, text: entry.fTitle, color,
                                   latex: (entry._typename === clTText) ? 0 : 1, draw_g: sub_g, fast });
 
                   promises.push(this.finishTextDrawing(sub_g));
@@ -70043,23 +70044,13 @@ class TPavePainter extends ObjectPainter {
                   if (num_default++ === 0)
                      this.startTextDrawing(this.textatt.font, height/(nlines * 1.2), text_g, max_font_size);
 
-                  const arg = { x: 0, y: 0, width, height, align: entry.fTextAlign || this.textatt.align,
-                                draw_g: text_g, latex: (entry._typename === clTText) ? 0 : 1,
-                                text: entry.fTitle, fast },
-                  halign = Math.floor(arg.align / 10);
-                  // when horizontal align applied, just shift text, not change width to keep scaling
-                  arg.x = (halign === 1) ? margin_x : (halign === 3 ? -margin_x : 0);
-
-                  if (nlines > 1) {
-                     arg.y = texty;
-                     arg.height = stepy;
-                  }
-                  if (entry.fTextColor) arg.color = this.getColor(entry.fTextColor);
-                  if (!arg.color) arg.color = this.textatt.color;
-                  if (entry.fTextSize) arg.font_size = this.textatt.getAltSize(entry.fTextSize, pad_height);
-                  this.drawText(arg);
+                  this.drawText({ x: margin_x, y: texty, width: width - 2*margin_x, height: stepy,
+                                  align: entry.fTextAlign || this.textatt.align,
+                                  draw_g: text_g, latex: (entry._typename === clTText) ? 0 : 1,
+                                  text: entry.fTitle, color, fast });
                }
                break;
+            }
 
             case clTLine: {
                const lx1 = entry.fX1 ? Math.round(entry.fX1*width) : 0,
@@ -89077,7 +89068,7 @@ function provideVisStyle(obj) {
    const vis = !testGeoBit(obj, geoBITS.kVisNone) && testGeoBit(obj, geoBITS.kVisThis);
    let chld = testGeoBit(obj, geoBITS.kVisDaughters);
 
-   if (chld && (!obj.fNodes || (obj.fNodes.arr.length === 0))) chld = false;
+   if (chld && !obj.fNodes?.arr?.length) chld = false;
 
    if (vis && chld) return ' geovis_all';
    if (vis) return ' geovis_this';
@@ -94406,7 +94397,7 @@ function provideMenu(menu, item, hpainter) {
   * @private */
 function browserIconClick(hitem, hpainter) {
    if (hitem._volume) {
-      if (hitem._more && hitem._volume.fNodes && (hitem._volume.fNodes.arr.length > 0))
+      if (hitem._more && hitem._volume.fNodes?.arr?.length)
          toggleGeoBit(hitem._volume, geoBITS.kVisDaughters);
       else
          toggleGeoBit(hitem._volume, geoBITS.kVisThis);
@@ -100187,7 +100178,7 @@ async function treeProcess(tree, selector, args) {
       while (item.getBasketEntry(item.numbaskets + 1)) item.numbaskets++;
 
       // check all counters if we
-      const nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0,
+      const nb_leaves = branch.fLeaves?.arr?.length ?? 0,
             leaf = (nb_leaves > 0) ? branch.fLeaves.arr[0] : null,
             is_brelem = (branch._typename === clTBranchElement);
       let elem = null, // TStreamerElement used to create reader
@@ -101128,7 +101119,7 @@ function treeIOTest(tree, args) {
       const br = branches[nbr],
             object_class = getBranchObjectClass(br, tree),
             num = br.fEntries,
-            skip_branch = object_class ? (nchilds[nbr] > 100) : (!br.fLeaves || (br.fLeaves.arr.length === 0));
+            skip_branch = object_class ? (nchilds[nbr] > 100) : !br.fLeaves?.arr?.length;
 
       if (skip_branch || (num <= 0))
          return testBranch(nbr+1);
@@ -101165,8 +101156,8 @@ function treeHierarchy(node, obj) {
    function createBranchItem(node, branch, tree, parent_branch) {
       if (!node || !branch) return false;
 
-      const nb_branches = branch.fBranches ? branch.fBranches.arr.length : 0,
-            nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0;
+      const nb_branches = branch.fBranches?.arr?.length ?? 0,
+            nb_leaves = branch.fLeaves?.arr?.length ?? 0;
 
       function ClearName(arg) {
          const pos = arg.indexOf('[');
@@ -101202,7 +101193,7 @@ function treeHierarchy(node, obj) {
 
             if (!bnode._childs) bnode._childs = [];
 
-            if (bobj.fLeaves && (bobj.fLeaves.arr.length === 1) &&
+            if ((bobj.fLeaves?.arr?.length === 1) &&
                 ((bobj.fType === kClonesNode) || (bobj.fType === kSTLNode))) {
                  bobj.fLeaves.arr[0].$branch = bobj;
                  bnode._childs.push({
@@ -108965,7 +108956,7 @@ class THStackPainter extends ObjectPainter {
             this.options.has_errors = this.options.has_errors || hasErrors(stack.fHists.arr[k]);
       }
 
-      this.options.nhist = stack.fHists ? stack.fHists.arr.length : 1;
+      this.options.nhist = stack.fHists?.arr?.length ?? 1;
 
       const d = new DrawOptions(opt);
 
@@ -109117,7 +109108,7 @@ class THStackPainter extends ObjectPainter {
          if (painter.options.pads) {
             pad_painter = painter.getPadPainter();
             if (pad_painter.doingDraw() && pad_painter.pad?.fPrimitives &&
-                pad_painter.pad.fPrimitives.arr.length > 1 && (pad_painter.pad.fPrimitives.arr.indexOf(stack) === 0)) {
+                (pad_painter.pad.fPrimitives.arr.length > 1) && (pad_painter.pad.fPrimitives.arr.indexOf(stack) === 0)) {
                skip_drawing = true;
                console.log('special case with THStack with is already rendered - do nothing');
                return;
