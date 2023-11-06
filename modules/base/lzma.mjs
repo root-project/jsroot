@@ -568,7 +568,12 @@ function InitBitModels(probs) {
 function decompress(uint8arr, tgt8arr, expected_size) {
    const d = $LZMAByteArrayDecompressor({}, uint8arr, 29, expected_size, tgt8arr);
 
-   while ($processChunk(d.chunker));
+   let cnt = 0;
+
+   while ($processChunk(d.chunker) && (cnt <= expected_size)) cnt++;
+
+   if (cnt > expected_size)
+      throw Error('Endless loop in LZMA decompress');
 
    const res_length = d.output.count;
 
