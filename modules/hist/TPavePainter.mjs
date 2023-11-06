@@ -738,9 +738,28 @@ class TPavePainter extends ObjectPainter {
                       .call(lineatt.func);
                }
                if (draw_error) {
+                  let endcaps = 0;
+                  if (isFunc(painter?.getHisto) && painter.options?.ErrorKind === 1)
+                     endcaps = 1; // draw bars for e1 option in histogram
+                  else if (isFunc(painter?.getGraph))
+                     endcaps = painter.options?.Ends ?? 1; // deafult is 1
+
+                  const eoff = (endcaps === 3) ? 0.03 : 0,
+                        ey1 = Math.round(pos_y+step_y*(0.1 + eoff)),
+                        ey2 = Math.round(pos_y+step_y*(0.9 - eoff)),
+                        edx = Math.round(step_y*0.05),
+                        edy = Math.round(step_y*0.03);
+                  let path = `M${mid_x},${ey1}V${ey2}`;
+                  switch (endcaps) {
+                     case 1: path += `M${mid_x-edx},${ey1}h${2*edx}M${mid_x-edx},${ey2}h${2*edx}`; break; // bars
+                     case 2: path += `M${mid_x-edx},${ey1+edy}v${-edy}h${2*edx}v${edy}M${mid_x-edx},${ey2-edy}v${edy}h${2*edx}v${-edy}`; break; // ]
+                     case 3: path += `M${mid_x-edx},${ey1}h${2*edx}l${-edx},${-edy}zM${mid_x-edx},${ey2}h${2*edx}l${-edx},${edy}z`; break; // triangle
+                     case 4: path += `M${mid_x-edx},${ey1+edy}l${edx},${-edy}l${edx},${edy}M${mid_x-edx},${ey2-edy}l${edx},${edy}l${edx},${-edy}`; break; // arrow
+                  }
                   this.draw_g.append('svg:path')
-                      .attr('d', `M${mid_x},${Math.round(pos_y+step_y*0.1)}V${Math.round(pos_y+step_y*0.9)}`)
-                      .call(lineatt.func);
+                      .attr('d', path)
+                      .call(lineatt.func)
+                      .style('fill', endcaps > 1 ? 'none' : null);
                }
             }
          }
