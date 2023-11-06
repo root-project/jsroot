@@ -16,6 +16,7 @@
 13. Upgrade three.js r155 -> r158
 14. Fix - do not add `THStack` and `TMultiGraph` to legend
 15. Fix - correctly use margin in `TPaveText` class
+16. Fix - correctly draw endcaps in legend errors
 
 
 ## Changes in 7.5.2
