@@ -1342,16 +1342,6 @@ zip_MASK_BITS = [
    zip_border = [  // Order of the bit length code lengths
    16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15];
 
-//    zip_STORED_BLOCK = 0,
-//    zip_STATIC_TREES = 1,
-//    zip_DYN_TREES    = 2,
-
-/* for inflate */
-//    zip_lbits = 9,            // bits in base literal/length lookup table
-//    zip_dbits = 6,            // bits in base distance lookup table
-//    zip_INBUFSIZ = 32768,     // Input buffer size
-//    zip_INBUF_EXTRA = 64,     // Extra buffer
-
 function ZIP_inflate(arr, tgt) {
    /* variables (inflate) */
    const zip_slide = new Array(2 * zip_WSIZE),
@@ -1396,8 +1386,8 @@ function ZIP_inflate(arr, tgt) {
                           e,     // list of extra bits for non-simple codes
                           mm) {  // maximum lookup bits
       const res = {
-         status: 0,     // 0: success, 1: incomplete table, 2: bad input
-         root: null,    // (zip_HuftList) starting table
+         status: 0,    // 0: success, 1: incomplete table, 2: bad input
+         root: null,   // (zip_HuftList) starting table
          m: 0          // maximum lookup bits, returns actual
       },
       BMAX = 16,      // maximum bit length of any code
@@ -1580,7 +1570,6 @@ function ZIP_inflate(arr, tgt) {
 
       /* Return true (1) if we were given an incomplete table */
       res.status = ((y !== 0 && g !== 1) ? 1 : 0);
-     /* end of constructor */
 
       return res;
    }
@@ -1822,10 +1811,8 @@ function ZIP_inflate(arr, tgt) {
       h = zip_HuftBuild(ll, nl, 257, zip_cplens, zip_cplext, zip_bl);
       if (zip_bl === 0)  // no literals or lengths
          h.status = 1;
-      if (h.status !== 0) {
-         // if (h.status == 1); // **incomplete literal tree**
+      if (h.status !== 0)
          return -1;     // incomplete code set
-      }
       zip_tl = h.root;
       zip_bl = h.m;
 
@@ -1836,14 +1823,8 @@ function ZIP_inflate(arr, tgt) {
       zip_td = h.root;
       zip_bd = h.m;
 
-      if (zip_bd === 0 && nl > 257) {   // lengths but no distances
-         // **incomplete distance tree**
-         return -1;
-      }
-
-      // if (h.status == 1); // **incomplete distance tree**
-
-      if (h.status !== 0)
+      // incomplete distance tree
+      if ((zip_bd === 0 && nl > 257) || (h.status !== 0))   // lengths but no distances
          return -1;
 
       // decompress until an end-of-block code
