@@ -727,14 +727,16 @@ class TPavePainter extends ObjectPainter {
             }
          }
 
-         // Draw line and error (when specified)
+         // Draw line and/or error (when specified)
          if (draw_line || draw_error) {
             const lineatt = painter?.lineatt?.used ? painter.lineatt : new TAttLineHandler(o_line);
             if (!lineatt.empty()) {
                isany = true;
-               this.draw_g.append('svg:path')
-                   .attr('d', `M${x0 + padding_x},${mid_y}H${tpos_x - padding_x}`)
-                   .call(lineatt.func);
+               if (draw_line) {
+                  this.draw_g.append('svg:path')
+                      .attr('d', `M${x0 + padding_x},${mid_y}H${tpos_x - padding_x}`)
+                      .call(lineatt.func);
+               }
                if (draw_error) {
                   this.draw_g.append('svg:path')
                       .attr('d', `M${mid_x},${Math.round(pos_y+step_y*0.1)}V${Math.round(pos_y+step_y*0.9)}`)
