@@ -280,7 +280,7 @@ function provideVisStyle(obj) {
    const vis = !testGeoBit(obj, geoBITS.kVisNone) && testGeoBit(obj, geoBITS.kVisThis);
    let chld = testGeoBit(obj, geoBITS.kVisDaughters);
 
-   if (chld && (!obj.fNodes || (obj.fNodes.arr.length === 0))) chld = false;
+   if (chld && !obj.fNodes?.arr?.length) chld = false;
 
    if (vis && chld) return ' geovis_all';
    if (vis) return ' geovis_this';
@@ -5609,7 +5609,7 @@ function provideMenu(menu, item, hpainter) {
   * @private */
 function browserIconClick(hitem, hpainter) {
    if (hitem._volume) {
-      if (hitem._more && hitem._volume.fNodes && (hitem._volume.fNodes.arr.length > 0))
+      if (hitem._more && hitem._volume.fNodes?.arr?.length)
          toggleGeoBit(hitem._volume, geoBITS.kVisDaughters);
       else
          toggleGeoBit(hitem._volume, geoBITS.kVisThis);

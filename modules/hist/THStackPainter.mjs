@@ -248,7 +248,7 @@ class THStackPainter extends ObjectPainter {
             this.options.has_errors = this.options.has_errors || hasErrors(stack.fHists.arr[k]);
       }
 
-      this.options.nhist = stack.fHists ? stack.fHists.arr.length : 1;
+      this.options.nhist = stack.fHists?.arr?.length ?? 1;
 
       const d = new DrawOptions(opt);
 
@@ -400,7 +400,7 @@ class THStackPainter extends ObjectPainter {
          if (painter.options.pads) {
             pad_painter = painter.getPadPainter();
             if (pad_painter.doingDraw() && pad_painter.pad?.fPrimitives &&
-                pad_painter.pad.fPrimitives.arr.length > 1 && (pad_painter.pad.fPrimitives.arr.indexOf(stack) === 0)) {
+                (pad_painter.pad.fPrimitives.arr.length > 1) && (pad_painter.pad.fPrimitives.arr.indexOf(stack) === 0)) {
                skip_drawing = true;
                console.log('special case with THStack with is already rendered - do nothing');
                return;
