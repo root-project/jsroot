@@ -381,8 +381,8 @@ class ObjectPainter extends BasePainter {
 
    /** @summary Check if this is secondary painter
      * @private */
-   isSecondaryPainter(main) {
-      return this._main_painter_id === main.getUniqueId();
+   isSecondary(main) {
+      return isObject(main) ? this._main_painter_id === main.getUniqueId() : (this._main_painter_id !== undefined);
    }
 
    /** @summary Provides identifier on server for requested sublement */

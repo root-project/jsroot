@@ -1331,9 +1331,9 @@ class TPadPainter extends ObjectPainter {
       let isany = false, p = 0;
       for (let n = 0; n < obj.fPrimitives.arr?.length; ++n) {
          while (p < this.painters.length) {
-            const pp = this.painters[p++];
-            if (!pp._primitive) continue;
-            if (pp.updateObject(obj.fPrimitives.arr[n], obj.fPrimitives.opt[n]))
+            const op = this.painters[p++];
+            if (!op._primitive) continue;
+            if (op.updateObject(obj.fPrimitives.arr[n], obj.fPrimitives.opt[n]))
                isany = true;
             break;
          }
@@ -1696,7 +1696,7 @@ class TPadPainter extends ObjectPainter {
        else
          this.createPadSvg(true);
 
-      const MatchPrimitive = (painters, primitives, class_name, obj_name) => {
+      const matchPrimitive = (painters, primitives, class_name, obj_name) => {
          const painter = painters.find(p => {
             if (p.snapid === undefined) return false;
             if (!p.matchObjectType(class_name)) return false;
@@ -1719,8 +1719,8 @@ class TPadPainter extends ObjectPainter {
       // check if frame or title was recreated, we could reassign handlers for them directly
       // while this is temporary objects, which can be recreated very often, try to catch such situation ourselfs
       if (!snap.fWithoutPrimitives) {
-         MatchPrimitive(this.painters, snap.fPrimitives, 'TFrame');
-         MatchPrimitive(this.painters, snap.fPrimitives, clTPaveText, 'title');
+         matchPrimitive(this.painters, snap.fPrimitives, 'TFrame');
+         matchPrimitive(this.painters, snap.fPrimitives, clTPaveText, 'title');
       }
 
       let isanyfound = false, isanyremove = false;
@@ -1728,21 +1728,16 @@ class TPadPainter extends ObjectPainter {
       // find and remove painters which no longer exists in the list
       if (!snap.fWithoutPrimitives) {
          for (let k = 0; k < this.painters.length; ++k) {
-            let sub = this.painters[k];
+            const sub = this.painters[k];
 
-            if (!isStr(sub.snapid)) continue; // look only for painters with snapid
+            // skip secondary painters or painters without snapid
+            if (!isStr(sub.snapid) || sub.isSecondary()) continue; // look only for painters with snapid
 
-            const p = sub.snapid.indexOf('#'),
-                  mainid = p > 0 ? sub.snapid.slice(0, p) : -1;
-
-            snap.fPrimitives.forEach(prim => {
-               if ((prim.fObjectID === mainid) || (prim.fObjectID === sub?.snapid)) {
-                  sub = null;
-                  isanyfound = true;
-               }
-            });
-
-            if (sub) {
+            const prim = snap.fPrimitives.find(prim => (prim.fObjectID === sub.snapid && !prim.$checked));
+            if (prim) {
+               isanyfound = true;
+               prim.$checked = true;
+            } else {
                // remove painter which does not found in the list of snaps
                this.painters.splice(k--, 1);
                sub.cleanup(); // cleanup such painter

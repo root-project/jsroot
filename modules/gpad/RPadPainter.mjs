@@ -637,10 +637,10 @@ class RPadPainter extends RObjectPainter {
       }
 
       // handle used to invoke callback only when necessary
-      return this.drawObject(this.getDom(), this.pad.fPrimitives[indx], '').then(ppainter => {
+      return this.drawObject(this.getDom(), this.pad.fPrimitives[indx], '').then(op => {
          // mark painter as belonging to primitives
-         if (isObject(ppainter))
-            ppainter._primitive = true;
+         if (isObject(op))
+            op._primitive = true;
 
          return this.drawPrimitives(indx+1);
       });
