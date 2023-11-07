@@ -1423,17 +1423,12 @@ class TPadPainter extends ObjectPainter {
          if (this.painters.indexOf(objpainter) < 0)
             this.painters.push(objpainter);
 
-         if (isFunc(objpainter.setSnapId))
-            objpainter.setSnapId(lst[indx].fObjectID);
-         else
-            objpainter.snapid = lst[indx].fObjectID;
-
-         if (objpainter.$primary) {
+         objpainter.snapid = lst[indx].fObjectID;
+         // assigned id means that there are secondary painters
+         if (objpainter._unique_painter_id !== undefined) {
             this.painters.forEach(sub => {
-               if ((sub !== objpainter) && (sub.$secondary === 'hist')) {
-                  sub.snapid = objpainter.snapid + '#hist';
-                  console.log(`ASSIGN SECONDARY HIST ID ${sub.snapid}`);
-               }
+               if ((sub !== objpainter) && (sub._main_painter_id === objpainter._unique_painter_id) && sub._secondary_id)
+                  sub.snapid = objpainter.snapid + '#' + sub._secondary_id;
             });
          }
       }

@@ -840,26 +840,6 @@ class THistPainter extends ObjectPainter {
       this.createAttLine({ attr: histo, color0: this.options.histoLineColor });
    }
 
-   /** @summary Assign snapid for histo painter
-     * @desc Used to assign snapid also for functions painters */
-   setSnapId(snapid) {
-      this.snapid = snapid;
-
-      console.log('set histogram snapid', snapid);
-
-      this.getPadPainter().forEachPainterInPad(objp => {
-         if (objp.isSecondaryPainter(this)) {
-            const objname = objp.getObjectName();
-            if (objname)
-               objp.snapid = `${snapid}#func_${objname}`;
-            else if (objp.child_painter_indx !== undefined)
-               objp.snapid = `${snapid}#indx_${objp.child_painter_indx}`;
-
-            console.log('set function snapid', objp.snapid, objp.getObjectName(), objp.getClassName());
-         }
-       }, 'objects');
-   }
-
    /** @summary Update axes attributes in target histogram
      * @private */
    updateAxes(tgt_histo, src_histo, fp) {
@@ -1495,10 +1475,8 @@ class THistPainter extends ObjectPainter {
             : pp.drawObject(this.getDom(), func, opt);
 
       return promise.then(painter => {
-         if (isFunc(painter?.setSecondaryId)) {
-            painter.setSecondaryId(this, `func_${func.fName}`);
-            if (!only_extra) painter.child_painter_indx = indx;
-         }
+         if (isFunc(painter?.setSecondaryId))
+            painter.setSecondaryId(this, func.fName ? `func_${func.fName}` : `indx_${indx}`);
 
          return this.drawNextFunction(indx+1, only_extra);
       });
