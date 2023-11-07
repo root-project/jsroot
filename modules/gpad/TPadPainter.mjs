@@ -1737,12 +1737,15 @@ class TPadPainter extends ObjectPainter {
 
             if (!isStr(sub.snapid)) continue; // look only for painters with snapid
 
-            let snapid = sub.snapid;
-            const p = snapid.indexOf('#');
-            if (p > 0) snapid = snapid.slice(0, p);
+            const p = sub.snapid.indexOf('#'),
+                  mainid = p > 0 ? sub.snapid.slice(0, p) : -1;
 
-            for (let i = 0; i < snap.fPrimitives.length; ++i)
-               if (snap.fPrimitives[i].fObjectID === snapid) { sub = null; isanyfound = true; break; }
+            snap.fPrimitives.forEach(prim => {
+               if ((prim.fObjectID === mainid) || (prim.fObjectID === sub?.snapid)) {
+                  sub = null;
+                  isanyfound = true;
+               }
+            });
 
             if (sub) {
                // remove painter which does not found in the list of snaps
