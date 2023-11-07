@@ -1414,8 +1414,7 @@ class RPadPainter extends RObjectPainter {
                const shown = [];
                this.painters.forEach((pp, indx) => {
                   const obj = pp?.getObject();
-                  if (!obj || (shown.indexOf(obj) >= 0)) return;
-                  if (pp.$secondary) return;
+                  if (!obj || (shown.indexOf(obj) >= 0) || pp.isSecondary()) return;
                   let name = isFunc(pp.getClassName) ? pp.getClassName() : (obj._typename || '');
                   if (name) name += '::';
                   name += isFunc(pp.getObjectName) ? pp.getObjectName() : (obj.fName || `item${indx}`);

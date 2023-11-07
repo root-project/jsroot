@@ -757,15 +757,14 @@ class TCanvasPainter extends TPadPainter {
    /** @summary produce JSON for TCanvas, which can be used to display canvas once again */
    produceJSON() {
       const canv = this.getObject(),
-          fill0 = (canv.fFillStyle === 0);
+           fill0 = (canv.fFillStyle === 0);
 
       if (fill0) canv.fFillStyle = 1001;
 
       if (!this.normal_canvas) {
          // fill list of primitives from painters
          this.forEachPainterInPad(p => {
-            if (p.$secondary) return; // ignore all secondary painters
-
+            if (p.isSecondary()) return; // ignore all secondary painters
             const subobj = p.getObject();
             if (subobj?._typename)
                canv.fPrimitives.Add(subobj, p.getDrawOpt());

@@ -1412,7 +1412,6 @@ class TPavePainter extends ObjectPainter {
                break;
             case clTPaveStats:
                painter.paveDrawFunc = painter.drawPaveStats;
-               painter.$secondary = true; // indicates that painter created from others
                break;
             case clTPaveText:
             case clTPavesText:

@@ -426,7 +426,6 @@ class THStackPainter extends ObjectPainter {
          return painter.hdraw_func(dom, stack.fHistogram, hopt).then(subp => {
             painter.addToPadPrimitives();
             painter.firstpainter = subp;
-            subp.$secondary = 'hist'; // mark histogram painter as secondary
             subp.setSecondaryId(painter, 'hist'); // mark hist painter as created by hstack
          });
       }).then(() => skip_drawing ? painter : painter.drawNextHisto(0, pad_painter));

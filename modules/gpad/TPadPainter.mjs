@@ -1358,7 +1358,7 @@ class TPadPainter extends ObjectPainter {
       for (let k = 0; k < this.painters.length; ++k) {
          const painter = this.painters[k],
                obj = painter.getObject();
-         if (!obj || obj.fName === 'title' || obj.fName === 'stats' || painter.$secondary ||
+         if (!obj || obj.fName === 'title' || obj.fName === 'stats' || painter.isSecondary() ||
               obj._typename === clTLegend || obj._typename === clTHStack || obj._typename === clTMultiGraph)
             continue;
 
@@ -2173,7 +2173,6 @@ class TPadPainter extends ObjectPainter {
                this.painters.forEach((pp, indx) => {
                   const obj = pp?.getObject();
                   if (!obj || (shown.indexOf(obj) >= 0)) return;
-                  if (pp.$secondary) return;
                   let name = isFunc(pp.getClassName) ? pp.getClassName() : (obj._typename || '');
                   if (name) name += '::';
                   name += isFunc(pp.getObjectName) ? pp.getObjectName() : (obj.fName || `item${indx}`);
