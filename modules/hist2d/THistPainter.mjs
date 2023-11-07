@@ -718,11 +718,13 @@ class HistFunctionsHandler {
 
    /** @summary Draw/update functions selected before */
    drawNext(indx) {
+      console.log('drawNExt', indx);
+
       if (this._extraPainters) {
          const p = this._extraPainters.shift();
          if (this._extraPainters.length === 0)
             delete this._extraPainters;
-         return getPromise(p.redraw()).then(() => this.drawNext(indx));
+         return getPromise(p.redraw()).then(() => this.drawNext(0));
       }
 
       if (!this.newfuncs || (indx >= this.newfuncs.length)) {
@@ -733,7 +735,7 @@ class HistFunctionsHandler {
 
       const func = this.newfuncs[indx], fopt = this.newopts[indx];
 
-      if (!func)
+      if (!func || this.pp?.findPainterFor(func))
          return this.drawNext(indx+1);
 
       const func_secondary_id = func?.fName ? `func_${func.fName}` : `indx_${indx}`;
@@ -750,6 +752,7 @@ class HistFunctionsHandler {
          if (isFunc(fpainter?.setSecondaryId))
             fpainter.setSecondaryId(this.painter, func_secondary_id);
 
+         console.log('calling draw next', indx+1);
          return this.drawNext(indx+1);
       });
    }
@@ -1060,7 +1063,6 @@ class THistPainter extends ObjectPainter {
             histo.fReady = 0;
          } else if (this.isTH2Poly())
             histo.fBins = obj.fBins;
-
 
          // remove old functions, update existing, prepare to draw new one
          if (this.options.Func)
@@ -1488,15 +1490,10 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Method draws functions from the histogram list of functions
      * @return {Promise} fulfilled when drawing is ready */
-   async drawFunctions(only_extra) {
-      if (only_extra) {
-         const res = this._funcHandler?.drawNext(0);
-         delete this._funcHandler;
-         return res ?? true;
-      }
-
+   async drawFunctions() {
+      if (!this.options.Func)
+         return true;
       const handler = new HistFunctionsHandler(this.getPadPainter(), this, this.getHisto().fFunctions, 'only_draw');
-
       return handler.drawNext(0);
    }
 
@@ -2386,9 +2383,9 @@ class THistPainter extends ObjectPainter {
          painter.createStat(); // only when required
 
          return painter.callDrawFunc();
-      }).then(
-         () => painter.drawFunctions()
-      ).then(() => {
+      }).then(() => {
+         return painter.drawFunctions();
+      }).then(() => {
          if (!painter.Mode3D && painter.options.AutoZoom)
             return painter.autoZoom();
       }).then(() => {
