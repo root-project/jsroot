@@ -718,8 +718,6 @@ class HistFunctionsHandler {
 
    /** @summary Draw/update functions selected before */
    drawNext(indx) {
-      console.log('drawNExt', indx);
-
       if (this._extraPainters) {
          const p = this._extraPainters.shift();
          if (this._extraPainters.length === 0)
@@ -752,7 +750,6 @@ class HistFunctionsHandler {
          if (isFunc(fpainter?.setSecondaryId))
             fpainter.setSecondaryId(this.painter, func_secondary_id);
 
-         console.log('calling draw next', indx+1);
          return this.drawNext(indx+1);
       });
    }
@@ -1491,8 +1488,6 @@ class THistPainter extends ObjectPainter {
    /** @summary Method draws functions from the histogram list of functions
      * @return {Promise} fulfilled when drawing is ready */
    async drawFunctions() {
-      if (!this.options.Func)
-         return true;
       const handler = new HistFunctionsHandler(this.getPadPainter(), this, this.getHisto().fFunctions, 'only_draw');
       return handler.drawNext(0);
    }
