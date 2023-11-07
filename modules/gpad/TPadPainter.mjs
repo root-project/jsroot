@@ -358,7 +358,7 @@ class TPadPainter extends ObjectPainter {
       for (let k = this.painters.length-1; k >= 0; --k) {
          if ((k === indx) || this.painters[k].isSecondary(prim)) {
             arr.push(this.painters[k]);
-            this.painters.slice(k, 1);
+            this.painters.splice(k, 1);
             if (k < indx) resindx--;
          }
       }
@@ -1788,8 +1788,6 @@ class TPadPainter extends ObjectPainter {
       }
 
       const prev_name = this.selectCurrentPad(this.this_pad_name);
-
-      console.log('drawing primitives', snap.fPrimitives.length);
 
       return this.drawNextSnap(snap.fPrimitives).then(() => {
          this.addPadInteractive();

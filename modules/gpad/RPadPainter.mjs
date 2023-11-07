@@ -182,7 +182,7 @@ class RPadPainter extends RObjectPainter {
       for (let k = this.painters.length-1; k >= 0; --k) {
          if ((k === indx) || this.painters[k].isSecondary(prim)) {
             arr.push(this.painters[k]);
-            this.painters.slice(k, 1);
+            this.painters.splice(k, 1);
             if (k < indx) resindx--;
          }
       }
