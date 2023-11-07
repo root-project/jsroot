@@ -348,6 +348,28 @@ class TPadPainter extends ObjectPainter {
       }
    }
 
+   /** @summary Removes and cleanup specified primitive
+     * @desc also secondary primitives will be removed
+     * @return new index of the object
+    * @private */
+   removePrimitive(indx) {
+      const prim = this.painters[indx], arr = [];
+      let resindx = indx;
+      for (let k = this.painters.length-1; k >= 0; --k) {
+         if ((k === indx) || this.painters[k].isSecondary(prim)) {
+            arr.push(this.painters[k]);
+            this.painters.slice(k, 1);
+            if (k < indx) resindx--;
+         }
+      }
+
+      arr.forEach(painter => painter.cleanup());
+      if (this.main_painter_ref === prim)
+         delete this.main_painter_ref;
+
+      return resindx;
+   }
+
   /** @summary returns custom palette associated with pad or top canvas
     * @private */
    getCustomPalette() {
@@ -1739,11 +1761,8 @@ class TPadPainter extends ObjectPainter {
                prim.$checked = true;
             } else {
                // remove painter which does not found in the list of snaps
-               this.painters.splice(k--, 1);
-               sub.cleanup(); // cleanup such painter
+               k = this.removePrimitive(k) - 1; // index modified
                isanyremove = true;
-               if (this.main_painter_ref === sub)
-                  delete this.main_painter_ref;
             }
          }
       }
@@ -1769,6 +1788,8 @@ class TPadPainter extends ObjectPainter {
       }
 
       const prev_name = this.selectCurrentPad(this.this_pad_name);
+
+      console.log('drawing primitives', snap.fPrimitives.length);
 
       return this.drawNextSnap(snap.fPrimitives).then(() => {
          this.addPadInteractive();

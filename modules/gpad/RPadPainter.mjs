@@ -172,6 +172,29 @@ class RPadPainter extends RObjectPainter {
       }
    }
 
+   /** @summary Removes and cleanup specified primitive
+     * @desc also secondary primitives will be removed
+     * @return new index of the object
+    * @private */
+   removePrimitive(indx) {
+      const prim = this.painters[indx], arr = [];
+      let resindx = indx;
+      for (let k = this.painters.length-1; k >= 0; --k) {
+         if ((k === indx) || this.painters[k].isSecondary(prim)) {
+            arr.push(this.painters[k]);
+            this.painters.slice(k, 1);
+            if (k < indx) resindx--;
+         }
+      }
+
+      arr.forEach(painter => painter.cleanup());
+      if (this.main_painter_ref === prim)
+         delete this.main_painter_ref;
+
+      return resindx;
+   }
+
+
    /** @summary try to find object by name in list of pad primitives
      * @desc used to find title drawing
      * @private */
