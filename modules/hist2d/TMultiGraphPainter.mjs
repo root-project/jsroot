@@ -1,7 +1,7 @@
 import { create, createHistogram, isFunc, clTH1I, clTH2I, clTObjString, clTHashList, kNoZoom, kNoStats } from '../core.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
-import { HistFunctionsHandler } from './THistPainter.mjs';
+import { FunctionsHandler } from './THistPainter.mjs';
 import { TH1Painter, PadDrawOptions } from './TH1Painter.mjs';
 import { TGraphPainter } from './TGraphPainter.mjs';
 
@@ -57,7 +57,7 @@ class TMultiGraphPainter extends ObjectPainter {
             isany = true;
       }
 
-      this._funcHandler = new HistFunctionsHandler(pp, this, obj.fFunctions);
+      this._funcHandler = new FunctionsHandler(this, pp, obj.fFunctions);
 
       return isany;
    }
@@ -74,7 +74,7 @@ class TMultiGraphPainter extends ObjectPainter {
              };
 
        return promise.then(() => redrawNext(0)).then(() => {
-          const res = this._funcHandler.drawNext(0);
+          const res = this._funcHandler?.drawNext(0) ?? this;
           delete this._funcHandler;
           return res;
        });
@@ -292,9 +292,9 @@ class TMultiGraphPainter extends ObjectPainter {
          painter.addToPadPrimitives();
          return painter.drawNextGraph(0, d.remain());
       }).then(() => {
-         const handler = new HistFunctionsHandler(painter.getPadPainter(), painter, painter.getObject().fFunctions, true);
-         return handler.drawNext(0);
-      }).then(() => painter);
+         const handler = new FunctionsHandler(painter, painter.getPadPainter(), painter.getObject().fFunctions, true);
+         return handler.drawNext(0); // returns painter
+      });
    }
 
    /** @summary Draw TMultiGraph object */

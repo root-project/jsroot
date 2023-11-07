@@ -648,11 +648,11 @@ class HistContour {
  * @private
  */
 
-class HistFunctionsHandler {
+class FunctionsHandler {
 
-   constructor(pp, painter, funcs, statpainter) {
-      this.pp = pp;
+   constructor(painter, pp, funcs, statpainter) {
       this.painter = painter;
+      this.pp = pp;
 
       const painters = [], update_painters = [],
             only_draw = (statpainter === true);
@@ -728,7 +728,7 @@ class HistFunctionsHandler {
       if (!this.newfuncs || (indx >= this.newfuncs.length)) {
          delete this.newfuncs;
          delete this.newopts;
-         return Promise.resolve(true);
+         return Promise.resolve(this.painter); // simplify drawing
       }
 
       const func = this.newfuncs[indx], fopt = this.newopts[indx];
@@ -754,7 +754,7 @@ class HistFunctionsHandler {
       });
    }
 
-} // class HistFunctionsHandler
+} // class FunctionsHandler
 
 
 // TH1 bits
@@ -1062,7 +1062,7 @@ class THistPainter extends ObjectPainter {
             histo.fBins = obj.fBins;
 
          // remove old functions, update existing, prepare to draw new one
-         this._funcHandler = new HistFunctionsHandler(pp, this, obj.fFunctions, statpainter);
+         this._funcHandler = new FunctionsHandler(this, pp, obj.fFunctions, statpainter);
 
          const changed_opt = (histo.fOption !== obj.fOption);
          histo.fOption = obj.fOption;
@@ -1487,16 +1487,16 @@ class THistPainter extends ObjectPainter {
    /** @summary Method draws functions from the histogram list of functions
      * @return {Promise} fulfilled when drawing is ready */
    async drawFunctions() {
-      const handler = new HistFunctionsHandler(this.getPadPainter(), this, this.getHisto().fFunctions, true);
-      return handler.drawNext(0);
+      const handler = new FunctionsHandler(this, this.getPadPainter(), this.getHisto().fFunctions, true);
+      return handler.drawNext(0); // returns this painter
    }
 
    /** @summary Method used to update functions which are prepared before
      * @return {Promise} fulfilled when drawing is ready */
    async updateFunctions() {
-      const res = this._funcHandler?.drawNext(0);
+      const res = this._funcHandler?.drawNext(0) ?? this;
       delete this._funcHandler;
-      return res ?? true;
+      return res;
    }
 
    /** @summary Returns selected index for specified axis
@@ -2392,4 +2392,4 @@ class THistPainter extends ObjectPainter {
 
 } // class THistPainter
 
-export { THistPainter, HistFunctionsHandler, kNoZoom, HistContour, kCARTESIAN, kPOLAR, kCYLINDRICAL, kSPHERICAL, kRAPIDITY };
+export { THistPainter, FunctionsHandler, kNoZoom, HistContour, kCARTESIAN, kPOLAR, kCYLINDRICAL, kSPHERICAL, kRAPIDITY };

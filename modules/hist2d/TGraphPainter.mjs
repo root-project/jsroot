@@ -3,7 +3,7 @@ import { gStyle, BIT, settings, create, createHistogram, setHistogramTitle, isFu
 import { select as d3_select } from '../d3.mjs';
 import { DrawOptions, buildSvgCurve, makeTranslate, addHighlightStyle } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
-import { HistFunctionsHandler } from './THistPainter.mjs';
+import { FunctionsHandler } from './THistPainter.mjs';
 import { TH1Painter, PadDrawOptions } from './TH1Painter.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 import { TAttFillHandler } from '../base/TAttFillHandler.mjs';
@@ -65,10 +65,10 @@ class TGraphPainter extends ObjectPainter {
       }
 
       return promise.then(() => this.drawGraph()).then(() => {
-         const res = this._funcHandler?.drawNext(0);
+         const res = this._funcHandler?.drawNext(0) ?? this;
          delete this._funcHandler;
          return res;
-      }).then(() => this);
+      });
    }
 
    /** @summary Cleanup graph painter */
@@ -1401,7 +1401,7 @@ class TGraphPainter extends ObjectPainter {
          }
       }
 
-      this._funcHandler = new HistFunctionsHandler(this.getPadPainter(), this, obj.fFunctions);
+      this._funcHandler = new FunctionsHandler(this, this.getPadPainter(), obj.fFunctions);
 
       return true;
    }
@@ -1530,9 +1530,9 @@ class TGraphPainter extends ObjectPainter {
          painter.addToPadPrimitives();
          return painter.drawGraph();
       }).then(() => {
-         const handler = new HistFunctionsHandler(painter.getPadPainter(), painter, graph.fFunctions, true);
-         return handler.drawNext(0);
-      }).then(() => painter);
+         const handler = new FunctionsHandler(painter, painter.getPadPainter(), graph.fFunctions, true);
+         return handler.drawNext(0); // returns painter
+      });
    }
 
    static async draw(dom, graph, opt) {
