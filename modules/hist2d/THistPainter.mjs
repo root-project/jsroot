@@ -642,6 +642,120 @@ class HistContour {
 
 } // class HistContour
 
+/**
+ * @summary Handle for updateing of secondary functions
+ *
+ * @private
+ */
+
+class HistFunctionsHandler {
+
+   constructor(pp, painter, funcs, is_online, statpainter) {
+      this.pp = pp;
+      this.painter = painter;
+
+      const painters = [], update_painters = [],
+            only_draw = is_online === 'only_draw';
+
+      this.newfuncs = [];
+      this.newopts = [];
+
+      // find painters associated with histogram/graph/...
+      if (!only_draw) {
+         pp?.forEachPainterInPad(objp => {
+            if (objp.isSecondaryPainter(painter))
+               painters.push(objp);
+         }, 'objects');
+      }
+
+      for (let n = 0; n < funcs?.arr.length; ++n) {
+         const func = funcs.arr[n], fopt = funcs.opt[n];
+         if (!func?._typename) continue;
+         if (isFunc(painter.needDrawFunc) && !painter.needDrawFunc(painter.getObject(), func)) continue;
+
+         let funcpainter = null, func_indx = -1;
+
+         if (!only_draw) {
+            // try to find matching object in associated list of painters
+            for (let i = 0; i < painters.length; ++i) {
+               if (painters[i].matchObjectType(func._typename) && (painters[i].getObject().fName === func.fName)) {
+                  funcpainter = painters[i];
+                  func_indx = i;
+                  break;
+               }
+            }
+            // or just in generic list of painted objects
+            if (!funcpainter && func.fName)
+               funcpainter = pp?.findPainterFor(null, func.fName, func._typename);
+         }
+
+         if (funcpainter) {
+            funcpainter.updateObject(func, fopt);
+            if (func_indx >= 0) {
+               painters.splice(func_indx, 1);
+               update_painters.push(funcpainter);
+             }
+         } else {
+            // use arrays index while index may be important
+            this.newfuncs[n] = func;
+            this.newopts[n] = fopt;
+         }
+      }
+
+      // stat painter has to be kept even when no object exists in the list
+      if (statpainter) {
+         const indx = painters.indexOf(statpainter);
+         if (indx >= 0) painters.splice(indx, 1);
+      }
+
+      // remove all function which are not found in new list of primitives
+      if (painters.length > 0)
+         pp?.cleanPrimitives(p => painters.indexOf(p) >= 0);
+
+      if (is_online && (update_painters.length > 0))
+         this._extraPainters = update_painters;
+   }
+
+   /** @summary Draw/update functions selected before */
+   drawNext(indx) {
+      if (this._extraPainters) {
+         const p = this._extraPainters.shift();
+         if (this._extraPainters.length === 0)
+            delete this._extraPainters;
+         return getPromise(p.redraw()).then(() => this.drawNext(indx));
+      }
+
+      if (!this.newfuncs || (indx >= this.newfuncs.length)) {
+         delete this.newfuncs;
+         delete this.newopts;
+         return Promise.resolve(true);
+      }
+
+      const func = this.newfuncs[indx], fopt = this.newopts[indx];
+
+      if (!func)
+         return this.drawNext(indx+1);
+
+      const func_secondary_id = func?.fName ? `func_${func.fName}` : `indx_${indx}`;
+
+      // Required to correctly draw multiple stats boxes
+      // TODO: set reference via weak pointer
+      func.$main_painter = this.painter;
+
+      const promise = TPavePainter.canDraw(func)
+            ? TPavePainter.draw(this.painter.getDom(), func, fopt)
+            : this.pp.drawObject(this.painter.getDom(), func, fopt);
+
+      return promise.then(fpainter => {
+         if (isFunc(fpainter?.setSecondaryId))
+            fpainter.setSecondaryId(this.painter, func_secondary_id);
+
+         return this.drawNext(indx+1);
+      });
+   }
+}
+
+
 // TH1 bits
 //    kNoStats = BIT(9), don't draw stats box
 const kUserContour = BIT(10), // user specified contour levels
@@ -948,65 +1062,9 @@ class THistPainter extends ObjectPainter {
             histo.fBins = obj.fBins;
 
 
-         if (this.options.Func) {
-            const painters = [], newfuncs = [], update_painters = [];
-
-            // find painters associated with histogram
-            if (pp) {
-               pp.forEachPainterInPad(objp => {
-                  if (objp.isSecondaryPainter(this))
-                     painters.push(objp);
-               }, 'objects');
-            }
-
-            if (obj.fFunctions) {
-               for (let n = 0; n < obj.fFunctions.arr.length; ++n) {
-                  const func = obj.fFunctions.arr[n],
-                        fopt = obj.fFunctions.opt[n];
-                  if (!func?._typename || !this.needDrawFunc(histo, func)) continue;
-
-                  let funcpainter = null, func_indx = -1;
-
-                  // try to find matching object in associated list of painters
-                  for (let i = 0; i < painters.length; ++i) {
-                     if (painters[i].matchObjectType(func._typename) && (painters[i].getObject().fName === func.fName)) {
-                        funcpainter = painters[i];
-                        func_indx = i;
-                        break;
-                     }
-                  }
-                  // or just in generic list of painted objects
-                  if (!funcpainter && func.fName)
-                     funcpainter = pp?.findPainterFor(null, func.fName, func._typename);
-
-                  if (funcpainter) {
-                     funcpainter.updateObject(func, fopt);
-                     if (func_indx >= 0) {
-                        painters.splice(func_indx, 1);
-                        update_painters.push(funcpainter);
-                      }
-                  } else
-                     newfuncs.push(func);
-               }
-            }
-
-            // stat painter has to be kept even when no object exists in the list
-            if (statpainter) {
-               const indx = painters.indexOf(statpainter);
-               if (indx >= 0) painters.splice(indx, 1);
-            }
-
-            // remove all function which are not found in new list of primitives
-            if (pp && (painters.length > 0))
-               pp.cleanPrimitives(p => painters.indexOf(p) >= 0);
-
-            // plot new objects on the same pad with next redraw
-            if (newfuncs.length > 0)
-               this._extraFunctions = newfuncs;
-
-            if (is_online && (update_painters.length > 0))
-               this._extraPainters = update_painters;
-         }
+         // remove old functions, update existing, prepare to draw new one
+         if (this.options.Func)
+            this._funcHandler = new HistFunctionsHandler(pp, this, obj.fFunctions, is_online, statpainter);
 
          const changed_opt = (histo.fOption !== obj.fOption);
          histo.fOption = obj.fOption;
@@ -1428,58 +1486,26 @@ class THistPainter extends ObjectPainter {
        return func._typename !== clTPaletteAxis;
    }
 
-   /** @summary Method draws next function from the functions list
+   /** @summary Method draws functions from the histogram list of functions
      * @return {Promise} fulfilled when drawing is ready */
-   async drawNextFunction(indx, only_extra) {
-      const histo = this.getHisto();
-      let func = null, opt = '';
-
+   async drawFunctions(only_extra) {
       if (only_extra) {
-         if (this._extraPainters) {
-             const p = this._extraPainters.shift();
-             if (this._extraPainters.length === 0)
-                delete this._extraPainters;
-             return getPromise(p.redraw()).then(() => this.drawNextFunction(indx, only_extra));
-         }
-         if (this._extraFunctions && (indx < this._extraFunctions.length))
-            func = this._extraFunctions[indx];
-         else
-            delete this._extraFunctions;
-      } else {
-         if (this.options.Func && histo.fFunctions && (indx < histo.fFunctions.arr.length)) {
-            func = histo.fFunctions.arr[indx];
-            opt = histo.fFunctions.opt[indx];
-         }
+         const res = this._funcHandler?.drawNext(0);
+         delete this._funcHandler;
+         return res ?? true;
       }
 
-      if (!func) return true;
+      const handler = new HistFunctionsHandler(this.getPadPainter(), this, this.getHisto().fFunctions, 'only_draw');
 
-      const pp = this.getPadPainter(),
-            func_painter = pp?.findPainterFor(func);
-      let do_draw = false;
+      return handler.drawNext(0);
+   }
 
-      // no need to do something if painter for object was already done
-      // object will be redraw automatically
-      if (!func_painter)
-         do_draw = this.needDrawFunc(histo, func);
-
-      if (!do_draw)
-         return this.drawNextFunction(indx+1, only_extra);
-
-      // Required to correctly draw multiple stats boxes
-      // TODO: set reference via weak pointer
-      func.$main_painter = this;
-
-      const promise = TPavePainter.canDraw(func)
-            ? TPavePainter.draw(this.getDom(), func, opt)
-            : pp.drawObject(this.getDom(), func, opt);
-
-      return promise.then(painter => {
-         if (isFunc(painter?.setSecondaryId))
-            painter.setSecondaryId(this, func.fName ? `func_${func.fName}` : `indx_${indx}`);
-
-         return this.drawNextFunction(indx+1, only_extra);
-      });
+   /** @summary Method used to update functions which are prepared before
+     * @return {Promise} fulfilled when drawing is ready */
+   async updateFunctions() {
+      const res = this._funcHandler?.drawNext(0);
+      delete this._funcHandler;
+      return res ?? true;
    }
 
    /** @summary Returns selected index for specified axis
@@ -2360,7 +2386,9 @@ class THistPainter extends ObjectPainter {
          painter.createStat(); // only when required
 
          return painter.callDrawFunc();
-      }).then(() => painter.drawNextFunction(0)).then(() => {
+      }).then(
+         () => painter.drawFunctions()
+      ).then(() => {
          if (!painter.Mode3D && painter.options.AutoZoom)
             return painter.autoZoom();
       }).then(() => {

@@ -3146,7 +3146,7 @@ class TH2Painter extends THistPainter {
       const need_palette = this.options.Zscale && this.options.canHavePalette();
 
       // draw new palette, resize frame if required
-      return this.drawColorPalette(need_palette, true).then(pp => {
+      return this.drawColorPalette(need_palette, true).then(async pp => {
          let pr;
          if (this.options.Circular && this.isMainPainter())
             pr = this.drawBinsCircular();
@@ -3157,7 +3157,7 @@ class TH2Painter extends THistPainter {
 
          return pr.then(() => this.completePalette(pp));
       }).then(() => this.drawHistTitle())
-        .then(() => this.drawNextFunction(0, true))
+        .then(() => this.updateFunctions())
         .then(() => {
             this.updateStatWebCanvas();
             return this.addInteractivity();

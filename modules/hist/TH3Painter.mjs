@@ -736,7 +736,7 @@ class TH3Painter extends THistPainter {
       if (this.isMainPainter())
         pr = pr.then(() => this.drawColorPalette(this.options.Zscale && (this._box_option === 12 || this._box_option === 13))).then(() => this.drawHistTitle());
 
-      return pr.then(() => this);
+      return pr.then(() => this.updateFunctions()).then(() => this);
    }
 
    /** @summary Fill pad toolbar with TH3-related functions */
@@ -852,7 +852,7 @@ class TH3Painter extends THistPainter {
          painter.createStat(); // only when required
          return painter.redraw();
       })
-      .then(() => painter.drawNextFunction(0))
+      .then(() => painter.drawFunctions())
       .then(() => {
          painter.fillToolbar();
          return painter;
