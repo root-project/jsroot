@@ -663,7 +663,7 @@ class HistFunctionsHandler {
       // find painters associated with histogram/graph/...
       if (!only_draw) {
          pp?.forEachPainterInPad(objp => {
-            if (objp.isSecondaryPainter(painter))
+            if (objp.isSecondary(painter))
                painters.push(objp);
          }, 'objects');
       }
