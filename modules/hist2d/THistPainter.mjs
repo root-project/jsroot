@@ -1292,7 +1292,7 @@ class THistPainter extends ObjectPainter {
                              fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: st.fTitleAlign });
          pt.AddText(histo.fTitle);
          return TPavePainter.draw(this.getDom(), pt, 'postitle').then(tp => {
-            if (tp) tp.$secondary = true;
+            tp?.setSecondaryId(this);
             return this;
          });
       }
@@ -2007,6 +2007,7 @@ class THistPainter extends ObjectPainter {
 
          pal.fInit = 1;
          pal.$can_move = true;
+         pal.$generated = true;
 
          if (!this.options.Zvert)
             Object.assign(pal, { fX1NDC: gStyle.fPadLeftMargin, fX2NDC: 1 - gStyle.fPadRightMargin, fY1NDC: 1.005 - gStyle.fPadTopMargin, fY2NDC: 1.045 - gStyle.fPadTopMargin });
@@ -2084,10 +2085,9 @@ class THistPainter extends ObjectPainter {
          pr = TPavePainter.draw(this.getDom(), pal, arg).then(_palp => {
             pal_painter = _palp;
             this.selectCurrentPad(prev);
-            if (found_in_func) {
+            pal_painter.setSecondaryId(this, found_in_func && !pal.$generated ? `func_${pal.fName}` : undefined);
+            if (found_in_func)
                pal_painter._hist_painter = this;
-               pal_painter.setSecondaryId(this);
-            }
          });
       } else {
          pal_painter.Enabled = true;
@@ -2098,7 +2098,6 @@ class THistPainter extends ObjectPainter {
 
       return pr.then(() => {
          // mark painter as secondary - not in list of TCanvas primitives
-         pal_painter.$secondary = true;
          this.options.Zvert = pal_painter._palette_vertical;
 
          // make dummy redraw, palette will be updated only from histogram painter

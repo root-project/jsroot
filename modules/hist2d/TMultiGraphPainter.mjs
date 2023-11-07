@@ -280,9 +280,8 @@ class TMultiGraphPainter extends ObjectPainter {
                 histo = painter.scanGraphsRange(mgraph.fGraphs, mgraph.fHistogram, painter.getPadPainter()?.getRootPad(true));
 
          promise = painter.drawAxisHist(histo, hopt).then(ap => {
-            painter.firstpainter = ap;
-            ap.$secondary = 'hist'; // mark histogram painter as secondary
             ap.setSecondaryId(painter, 'hist'); // mark that axis painter generated from mg
+            painter.firstpainter = ap;
          });
       }
 
