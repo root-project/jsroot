@@ -1771,16 +1771,6 @@ class TPadPainter extends ObjectPainter {
       const prev_name = this.selectCurrentPad(this.this_pad_name);
 
       return this.drawNextSnap(snap.fPrimitives).then(() => {
-         // redraw secondaries like stat box
-         const promises = [];
-         if (!snap.fWithoutPrimitives) {
-            this.painters.forEach(sub => {
-               if ((sub.snapid === undefined) || sub.$secondary)
-                  promises.push(sub.redraw());
-            });
-         }
-         return Promise.all(promises);
-      }).then(() => {
          this.addPadInteractive();
          this.selectCurrentPad(prev_name);
          if (getActivePad() === this)
