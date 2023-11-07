@@ -650,12 +650,12 @@ class HistContour {
 
 class HistFunctionsHandler {
 
-   constructor(pp, painter, funcs, is_online, statpainter) {
+   constructor(pp, painter, funcs, statpainter) {
       this.pp = pp;
       this.painter = painter;
 
       const painters = [], update_painters = [],
-            only_draw = is_online === 'only_draw';
+            only_draw = (statpainter === true);
 
       this.newfuncs = [];
       this.newopts = [];
@@ -703,7 +703,7 @@ class HistFunctionsHandler {
       }
 
       // stat painter has to be kept even when no object exists in the list
-      if (statpainter) {
+      if (isObject(statpainter)) {
          const indx = painters.indexOf(statpainter);
          if (indx >= 0) painters.splice(indx, 1);
       }
@@ -712,7 +712,7 @@ class HistFunctionsHandler {
       if (painters.length > 0)
          pp?.cleanPrimitives(p => painters.indexOf(p) >= 0);
 
-      if (is_online && (update_painters.length > 0))
+      if (update_painters.length > 0)
          this._extraPainters = update_painters;
    }
 
@@ -753,7 +753,8 @@ class HistFunctionsHandler {
          return this.drawNext(indx+1);
       });
    }
-}
+
+} // class HistFunctionsHandler
 
 
 // TH1 bits
@@ -990,9 +991,8 @@ class THistPainter extends ObjectPainter {
    /** @summary Update histogram object
      * @param obj - new histogram instance
      * @param opt - new drawing option (optional)
-     * @param is_online - if update from online canvas, need to redraw functions
      * @return {Boolean} - true if histogram was successfully updated */
-   updateObject(obj, opt, is_online) {
+   updateObject(obj, opt) {
       const histo = this.getHisto(),
             fp = this.getFramePainter(),
             pp = this.getPadPainter();
@@ -1062,8 +1062,7 @@ class THistPainter extends ObjectPainter {
             histo.fBins = obj.fBins;
 
          // remove old functions, update existing, prepare to draw new one
-         if (this.options.Func)
-            this._funcHandler = new HistFunctionsHandler(pp, this, obj.fFunctions, is_online, statpainter);
+         this._funcHandler = new HistFunctionsHandler(pp, this, obj.fFunctions, statpainter);
 
          const changed_opt = (histo.fOption !== obj.fOption);
          histo.fOption = obj.fOption;
@@ -1488,7 +1487,7 @@ class THistPainter extends ObjectPainter {
    /** @summary Method draws functions from the histogram list of functions
      * @return {Promise} fulfilled when drawing is ready */
    async drawFunctions() {
-      const handler = new HistFunctionsHandler(this.getPadPainter(), this, this.getHisto().fFunctions, 'only_draw');
+      const handler = new HistFunctionsHandler(this.getPadPainter(), this, this.getHisto().fFunctions, true);
       return handler.drawNext(0);
    }
 
@@ -2393,4 +2392,4 @@ class THistPainter extends ObjectPainter {
 
 } // class THistPainter
 
-export { THistPainter, kNoZoom, HistContour, kCARTESIAN, kPOLAR, kCYLINDRICAL, kSPHERICAL, kRAPIDITY };
+export { THistPainter, HistFunctionsHandler, kNoZoom, HistContour, kCARTESIAN, kPOLAR, kCYLINDRICAL, kSPHERICAL, kRAPIDITY };
