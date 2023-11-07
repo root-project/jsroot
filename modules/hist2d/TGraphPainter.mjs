@@ -1534,8 +1534,7 @@ class TGraphPainter extends ObjectPainter {
          promise = painter.drawAxisHisto().then(hist_painter => {
             if (!hist_painter) return;
             painter.axes_draw = true;
-            if (!painter._own_histogram)
-               painter.$primary = true;
+            hist_painter.setSecondaryId(painter, 'hist');
             hist_painter.$secondary = 'hist';
          });
       }

@@ -282,7 +282,7 @@ class TMultiGraphPainter extends ObjectPainter {
          promise = painter.drawAxisHist(histo, hopt).then(ap => {
             painter.firstpainter = ap;
             ap.$secondary = 'hist'; // mark histogram painter as secondary
-            if (mgraph.fHistogram) painter.$primary = true; // mark mg painter as primary
+            ap.setSecondaryId(painter, 'hist'); // mark that axis painter generated from mg
          });
       }
 

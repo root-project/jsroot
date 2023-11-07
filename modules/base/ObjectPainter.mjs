@@ -374,8 +374,9 @@ class ObjectPainter extends BasePainter {
 
    /** @summary Assign secondary id
      * @private */
-   setSecondaryId(main) {
+   setSecondaryId(main, name) {
       this._main_painter_id = main.getUniqueId();
+      this._secondary_id = name;
    }
 
    /** @summary Check if this is secondary painter

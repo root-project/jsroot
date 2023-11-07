@@ -845,6 +845,8 @@ class THistPainter extends ObjectPainter {
    setSnapId(snapid) {
       this.snapid = snapid;
 
+      console.log('set histogram snapid', snapid);
+
       this.getPadPainter().forEachPainterInPad(objp => {
          if (objp.isSecondaryPainter(this)) {
             const objname = objp.getObjectName();
@@ -852,6 +854,8 @@ class THistPainter extends ObjectPainter {
                objp.snapid = `${snapid}#func_${objname}`;
             else if (objp.child_painter_indx !== undefined)
                objp.snapid = `${snapid}#indx_${objp.child_painter_indx}`;
+
+            console.log('set function snapid', objp.snapid, objp.getObjectName(), objp.getClassName());
          }
        }, 'objects');
    }
@@ -1492,7 +1496,7 @@ class THistPainter extends ObjectPainter {
 
       return promise.then(painter => {
          if (isFunc(painter?.setSecondaryId)) {
-            painter.setSecondaryId(this);
+            painter.setSecondaryId(this, `func_${func.fName}`);
             if (!only_extra) painter.child_painter_indx = indx;
          }
 
