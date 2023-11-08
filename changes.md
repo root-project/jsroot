@@ -19,6 +19,7 @@
 16. Fix - add support of #mp symbol
 17. Fix - support TMath::Sq() function
 18. Fix - prevent drawing of empty TGraph
+19. Fix - draw histogram with only negative bins #276
 
 
 ## Changes in 7.3.4
