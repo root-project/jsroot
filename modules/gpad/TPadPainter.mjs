@@ -1187,7 +1187,7 @@ class TPadPainter extends ObjectPainter {
 
    /** @summary Show pad context menu
      * @private */
-   padContextMenu(evnt) {
+   async padContextMenu(evnt) {
       if (evnt.stopPropagation) {
          // this is normal event processing and not emulated jsroot event
          evnt.stopPropagation(); // disable main context menu

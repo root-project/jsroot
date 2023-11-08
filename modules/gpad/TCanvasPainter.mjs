@@ -251,7 +251,7 @@ class TCanvasPainter extends TPadPainter {
 
    /** @summary Submit menu request
      * @private */
-   async submitMenuRequest(painter, kind, reqid) {
+   async submitMenuRequest(_painter, _kind, reqid) {
       // only single request can be handled, no limit better in RCanvas
       return new Promise(resolveFunc => {
          this._getmenu_callback = resolveFunc;
@@ -866,7 +866,7 @@ async function drawTPadSnapshot(dom, snap /*, opt */) {
 
 /** @summary draw TFrame object
   * @private */
-function drawTFrame(dom, obj, opt) {
+async function drawTFrame(dom, obj, opt) {
    const fp = new TFramePainter(dom, obj);
    fp.mode3d = opt === '3d';
    return ensureTCanvas(fp, false).then(() => fp.redraw());
