@@ -663,7 +663,7 @@ class FunctionsHandler {
       // find painters associated with histogram/graph/...
       if (!only_draw) {
          pp?.forEachPainterInPad(objp => {
-            if (objp.isSecondary(painter))
+            if (objp.isSecondary(painter) && objp._secondary_id?.match(/^func_|^indx_/))
                painters.push(objp);
          }, 'objects');
       }
@@ -708,7 +708,7 @@ class FunctionsHandler {
          if (indx >= 0) painters.splice(indx, 1);
       }
 
-      // remove all function which are not found in new list of primitives
+      // remove all function which are not found in new list of functions
       if (painters.length > 0)
          pp?.cleanPrimitives(p => painters.indexOf(p) >= 0);
 
@@ -747,8 +747,7 @@ class FunctionsHandler {
             : this.pp.drawObject(this.painter.getDom(), func, fopt);
 
       return promise.then(fpainter => {
-         if (isFunc(fpainter?.setSecondaryId))
-            fpainter.setSecondaryId(this.painter, func_secondary_id);
+         fpainter.setSecondaryId(this.painter, func_secondary_id);
 
          return this.drawNext(indx+1);
       });
