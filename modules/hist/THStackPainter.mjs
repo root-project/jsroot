@@ -173,6 +173,7 @@ class THStackPainter extends ObjectPainter {
          return this;
 
       const rindx = this.options.horder ? indx : nhists-indx-1,
+            subid = this.options.nostack ? `hists_${rindx}` : `stack_${rindx}`,
             hist = hlst.arr[rindx];
       let hopt = hlst.opt[rindx] || hist.fOption || this.options.hopt,
           exec = '';
@@ -202,6 +203,7 @@ class THStackPainter extends ObjectPainter {
 
          return this.hdraw_func(subpad_painter.getDom(), hist, hopt).then(subp => {
             if (subp) {
+               subp.setSecondaryId(this, subid);
                subp._auto_exec = exec;
                this.painters.push(subp);
             }
@@ -216,6 +218,7 @@ class THStackPainter extends ObjectPainter {
          hist.$baseh = hlst.arr[rindx - 1];
 
       return this.hdraw_func(this.getDom(), hist, hopt + ' same nostat').then(subp => {
+          subp.setSecondaryId(this, subid);
           this.painters.push(subp);
           return this.drawNextHisto(indx+1, pad_painter);
       });
