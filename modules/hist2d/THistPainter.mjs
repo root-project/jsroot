@@ -678,7 +678,7 @@ class FunctionsHandler {
          if (!only_draw) {
             // try to find matching object in associated list of painters
             for (let i = 0; i < painters.length; ++i) {
-               if (painters[i].matchObjectType(func._typename) && (painters[i].getObject().fName === func.fName)) {
+               if (painters[i].matchObjectType(func._typename) && (painters[i].getObjectName() === func.fName)) {
                   funcpainter = painters[i];
                   func_indx = i;
                   break;
@@ -696,7 +696,7 @@ class FunctionsHandler {
                update_painters.push(funcpainter);
              }
          } else {
-            // use arrays index while index may be important
+            // use arrays index while index is important
             this.newfuncs[n] = func;
             this.newopts[n] = fopt;
          }
