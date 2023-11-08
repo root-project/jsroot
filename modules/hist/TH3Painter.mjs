@@ -51,7 +51,7 @@ class TH3Painter extends THistPainter {
       if (this.gminposbin === null)
          this.gminposbin = this.gmaxbin*1e-4;
 
-      this.draw_content = this.gmaxbin > 0;
+      this.draw_content = (this.gmaxbin !== 0) || (this.gminbin !== 0);
 
       this.transferFunc = this.findFunction(clTF1, 'TransferFunction');
       if (this.transferFunc && !this.transferFunc.TestBit(BIT(9))) // TF1::kNotDraw
