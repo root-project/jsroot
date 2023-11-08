@@ -757,7 +757,7 @@ class TCanvasPainter extends TPadPainter {
    /** @summary produce JSON for TCanvas, which can be used to display canvas once again */
    produceJSON() {
       const canv = this.getObject(),
-           fill0 = (canv.fFillStyle === 0);
+            fill0 = (canv.fFillStyle === 0);
 
       if (fill0) canv.fFillStyle = 1001;
 
@@ -836,9 +836,9 @@ async function ensureTCanvas(painter, frame_kind) {
 
    // simple check - if canvas there, can use painter
    const noframe = (frame_kind === false) || (frame_kind === '3d') ? 'noframe' : '',
-       promise = painter.getCanvSvg().empty()
-                 ? TCanvasPainter.draw(painter.getDom(), null, noframe)
-                 : Promise.resolve(true);
+         promise = painter.getCanvSvg().empty()
+                   ? TCanvasPainter.draw(painter.getDom(), null, noframe)
+                   : Promise.resolve(true);
 
    return promise.then(() => {
       if ((frame_kind !== false) && painter.getFrameSvg().selectChild('.main_layer').empty() && !painter.getFramePainter())
@@ -853,7 +853,7 @@ async function ensureTCanvas(painter, frame_kind) {
   * @private */
 async function drawTPadSnapshot(dom, snap /*, opt */) {
    const can = create(clTCanvas),
-       painter = new TCanvasPainter(dom, can);
+         painter = new TCanvasPainter(dom, can);
    painter.normal_canvas = false;
    painter.addPadButtons();
 
@@ -864,14 +864,12 @@ async function drawTPadSnapshot(dom, snap /*, opt */) {
    });
 }
 
-/** @summary draw TGaxis object
+/** @summary draw TFrame object
   * @private */
 function drawTFrame(dom, obj, opt) {
    const fp = new TFramePainter(dom, obj);
-   return ensureTCanvas(fp, false).then(() => {
-      if (opt === '3d') fp.mode3d = true;
-      return fp.redraw();
-   });
+   fp.mode3d = opt === '3d';
+   return ensureTCanvas(fp, false).then(() => fp.redraw());
 }
 
 export { ensureTCanvas, drawTPadSnapshot, drawTFrame, TPadPainter, TCanvasPainter };
