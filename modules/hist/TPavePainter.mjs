@@ -117,6 +117,15 @@ class TPavePainter extends ObjectPainter {
       });
    }
 
+   /** @summary Returns true if stat box on default place and can be adjusted */
+   isDefaultStatPlace(pt) {
+      const test = (v1,v2) => Math.abs(v1-v2) < 1e-3;
+      return test(pt.fX1NDC, gStyle.fStatX - gStyle.fStatW) &&
+             test(pt.fY1NDC, gStyle.fStatY - gStyle.fStatH) &&
+             test(pt.fX2NDC, gStyle.fStatX) &&
+             test(pt.fY2NDC, gStyle.fStatY);
+   }
+
    /** @summary Draw pave and content
      * @return {Promise} */
    async drawPave(arg) {
@@ -200,7 +209,7 @@ class TPavePainter extends ObjectPainter {
                if (main.fillStatistic(this, dostat, dofit)) {
                   // adjust the size of the stats box with the number of lines
                   let nlines = pt.fLines?.arr.length || 0;
-                  if ((nlines > 0) && !this.moved_interactive) {
+                  if ((nlines > 0) && !this.moved_interactive && this.isDefaultStatPlace(pt)) {
                      // in ROOT TH2 and TH3 always add full statsh for fit parameters
                      const extrah = this._has_fit && (this._fit_dim > 1) ? gStyle.fStatH : 0;
                      // but fit parameters not used in full size calculations

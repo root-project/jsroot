@@ -1464,7 +1464,8 @@ class TGraphPainter extends ObjectPainter {
       const st = gStyle;
 
       stats = create(clTPaveStats);
-      Object.assign(stats, { fName: 'stats', fOptStat: 0, fOptFit: st.fOptFit || 111, fBorderSize: 1 });
+      Object.assign(stats, { fName: 'stats', fOptStat: 0, fOptFit: st.fOptFit || 111, fBorderSize: 1,
+                             fX1NDC: st.fStatX - st.fStatW, fY1NDC: st.fStatY - st.fStatH, fX2NDC: st.fStatX, fY2NDC: st.fStatY });
 
       stats.fX1NDC = st.fStatX - st.fStatW;
       stats.fY1NDC = st.fStatY - st.fStatH;
@@ -1489,15 +1490,14 @@ class TGraphPainter extends ObjectPainter {
    }
 
    /** @summary Fill statistic */
-   fillStatistic(stat, dostat, dofit) {
-      // cannot fill stats without func
+   fillStatistic(stat, _dostat, dofit) {
       const func = this.findFunc();
 
-      if (!func || !dofit || !this.create_stats) return false;
+      if (!func || !dofit /*|| !this.create_stats*/) return false;
 
       stat.clearPave();
 
-      stat.fillFunctionStat(func, dofit);
+      stat.fillFunctionStat(func, (dofit === 1) ? 111 : dofit, 1);
 
       return true;
    }
