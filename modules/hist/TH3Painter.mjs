@@ -48,7 +48,7 @@ class TH3Painter extends THistPainter {
          }
       }
 
-      if (this.gminposbin === null)
+      if ((this.gminposbin === null) && (this.gmaxbin > 0))
          this.gminposbin = this.gmaxbin*1e-4;
 
       this.draw_content = (this.gmaxbin !== 0) || (this.gminbin !== 0);
@@ -462,7 +462,7 @@ class TH3Painter extends THistPainter {
       this._box_option = box_option;
 
       if (use_scale && logv) {
-         if (this.gminposbin && this.gmaxbin > this.gminposbin) {
+         if (this.gminposbin && (this.gmaxbin > this.gminposbin)) {
             scale_offset = Math.log(this.gminposbin) - 0.1;
             use_scale = 1/(Math.log(this.gmaxbin) - scale_offset);
          } else {

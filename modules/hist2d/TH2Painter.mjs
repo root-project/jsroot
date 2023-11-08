@@ -904,7 +904,7 @@ class TH2Painter extends THistPainter {
       }
 
       // this value used for logz scale drawing
-      if (this.gminposbin === null)
+      if ((this.gminposbin === null) && (this.gmaxbin > 0))
          this.gminposbin = this.gmaxbin*1e-4;
 
       if (this.options.Axis > 0) {
