@@ -1446,13 +1446,20 @@ class TPadPainter extends ObjectPainter {
             this.painters.push(objpainter);
 
          objpainter.snapid = lst[indx].fObjectID;
-         // assigned id means that there are secondary painters
-         if (objpainter._unique_painter_id !== undefined) {
-            this.forEachPainterInPad(sub => {
-               if ((sub !== objpainter) && (sub._main_painter_id === objpainter._unique_painter_id) && sub._secondary_id)
-                  sub.snapid = objpainter.snapid + '#' + sub._secondary_id;
-            });
-         }
+         console.log('assign snapid', objpainter.snapid);
+         const setSubSnaps = p => {
+            if (!p._unique_painter_id) return;
+            for (let k = 0; k < this.painters.length; ++k) {
+               const sub = this.painters[k];
+               if ((sub._main_painter_id === p._unique_painter_id) && sub._secondary_id) {
+                  sub.snapid = p.snapid + '#' + sub._secondary_id;
+                  console.log('assign sub snapid', sub.snapid);
+                  setSubSnaps(sub);
+               }
+            }
+         };
+
+         setSubSnaps(objpainter);
       }
    }
 
@@ -1555,6 +1562,8 @@ class TPadPainter extends ObjectPainter {
          if (this.painters[k].snapid === snapid)
             if (--cnt === 0) { objpainter = this.painters[k]; break; }
       }
+
+      console.log('checking snapid', snapid, objpainter);
 
       if (objpainter) {
          if (snap.fKind === webSnapIds.kSubPad) // subpad
@@ -1761,6 +1770,7 @@ class TPadPainter extends ObjectPainter {
                prim.$checked = true;
             } else {
                // remove painter which does not found in the list of snaps
+               console.log('remove painter with', sub.snapid);
                k = this.removePrimitive(k) - 1; // index modified
                isanyremove = true;
             }
