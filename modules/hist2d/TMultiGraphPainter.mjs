@@ -254,7 +254,7 @@ class TMultiGraphPainter extends ObjectPainter {
 
       return this.drawGraph(gr, o, graphs.arr.length - indx).then(subp => {
          if (subp) {
-            subp.setSecondaryId(this, `graph_${indx}`);
+            subp.setSecondaryId(this, `graphs_${indx}`);
             this.painters.push(subp);
             subp._auto_exec = exec;
          }
