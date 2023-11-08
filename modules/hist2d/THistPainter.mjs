@@ -2085,7 +2085,7 @@ class THistPainter extends ObjectPainter {
             this.selectCurrentPad(prev);
             pal_painter.setSecondaryId(this, found_in_func && !pal.$generated ? `func_${pal.fName}` : undefined);
             if (found_in_func)
-               pal_painter._hist_painter = this;
+               pal_painter._hist_painter = this; // TODO: check and remove it
          });
       } else {
          pal_painter.Enabled = true;
