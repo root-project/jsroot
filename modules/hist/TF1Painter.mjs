@@ -447,7 +447,8 @@ class TF1Painter extends TH1Painter {
      * @private */
    fillWebObjectOptions(opt) {
       // mark that saved points are used or evaluation failed
-      opt.fcust = this._fail_eval ? 'func_fail' : '';
+      if (opt) opt.fcust = this._fail_eval ? 'func_fail' : '';
+      return opt;
    }
 
    /** @summary draw TF1 object */
