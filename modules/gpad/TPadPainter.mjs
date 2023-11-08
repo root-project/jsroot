@@ -1903,7 +1903,8 @@ class TPadPainter extends ObjectPainter {
             let opt = { _typename: 'TWebObjectOptions', snapid: sub.snapid.toString(), opt: sub.getDrawOpt(true), fcust: '', fopt: [] };
             if (isFunc(sub.fillWebObjectOptions))
                opt = sub.fillWebObjectOptions(opt);
-            elem.primitives.push(opt);
+            if (opt)
+               elem.primitives.push(opt);
          }
       });
 
