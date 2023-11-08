@@ -366,8 +366,8 @@ class ObjectPainter extends BasePainter {
 
    /** @summary Assign unique identifier for the painter
      * @private */
-   getUniqueId() {
-      if (this._unique_painter_id === undefined)
+   getUniqueId(only_read = false) {
+      if (!only_read && (this._unique_painter_id === undefined))
          this._unique_painter_id = internals.id_counter++; // assign unique identifier
       return this._unique_painter_id;
    }
@@ -380,9 +380,12 @@ class ObjectPainter extends BasePainter {
    }
 
    /** @summary Check if this is secondary painter
+     * @desc if main painter provided - check if this really main for this
      * @private */
    isSecondary(main) {
-      return isObject(main) ? this._main_painter_id === main.getUniqueId() : (this._main_painter_id !== undefined);
+      if (this._main_painter_id === undefined)
+         return false;
+      return !isObject(main) ? true : this._main_painter_id === main.getUniqueId(true);
    }
 
    /** @summary Provides identifier on server for requested sublement */
