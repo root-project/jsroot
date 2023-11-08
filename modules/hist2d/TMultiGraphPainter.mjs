@@ -65,12 +65,12 @@ class TMultiGraphPainter extends ObjectPainter {
    /** @summary Redraw multigraph
      * @desc may redraw histogram which was used to draw axes
      * @return {Promise} for ready */
-    async redraw() {
-       const promise = this.firstpainter?.redraw() ?? Promise.resolve(true),
+    async redraw(reason) {
+       const promise = this.firstpainter?.redraw(reason) ?? Promise.resolve(true),
              redrawNext = async indx => {
                 if (indx >= this.painters.length)
                    return this;
-                return this.painters[indx].redraw().then(() => redrawNext(indx + 1));
+                return this.painters[indx].redraw(reason).then(() => redrawNext(indx + 1));
              };
 
        return promise.then(() => redrawNext(0)).then(() => {
