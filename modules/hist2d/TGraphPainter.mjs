@@ -136,7 +136,7 @@ class TGraphPainter extends ObjectPainter {
          }
       }
 
-      const res = this.options;
+      const res = this.options, _a = 'AXIS;FORCE_TITLE;';
       let d = new DrawOptions(opt), hopt = '';
 
       PadDrawOptions.forEach(name => { if (d.check(name)) hopt += ';' + name; });
@@ -156,7 +156,7 @@ class TGraphPainter extends ObjectPainter {
       res._plc = d.check('PLC');
       res._pmc = d.check('PMC');
 
-      if (d.check('A')) res.Axis = d.check('I') ? 'A;' : 'AXIS;'; // I means invisible axis
+      if (d.check('A')) res.Axis = d.check('I') ? 'A;' : _a; // I means invisible axis
       if (d.check('X+')) { res.Axis += 'X+'; res.second_x = has_main; }
       if (d.check('Y+')) { res.Axis += 'Y+'; res.second_y = has_main; }
       if (d.check('RX')) res.Axis += 'RX';
@@ -206,11 +206,11 @@ class TGraphPainter extends ObjectPainter {
          // either graph drawn directly or
          // graph is first object in list of primitives
          const pad = this.getPadPainter()?.getRootPad(true);
-         if (!pad || (pad?.fPrimitives?.arr[0] === this.getObject())) res.Axis = 'AXIS;';
+         if (!pad || (pad?.fPrimitives?.arr[0] === this.getObject())) res.Axis = _a;
       } else if (res.Axis.indexOf('A') < 0)
-         res.Axis = 'AXIS;' + res.Axis;
+         res.Axis = _a + res.Axis;
 
-      res.Axis += 'FORCE_TITLE;' + hopt;
+      res.Axis += hopt;
 
       for (let bl = 0; bl < blocks_gme.length; ++bl) {
          const subd = new DrawOptions(blocks_gme[bl]), subres = {};

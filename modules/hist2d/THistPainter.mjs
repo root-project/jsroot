@@ -98,6 +98,12 @@ class THistDrawOptions {
 
       this.ndim = hdim || 1; // keep dimensions, used for now in GED
 
+      // for old web canvas json
+      // TODO: remove in version 8
+      d.check('USE_PAD_TITLE');
+      d.check('USE_PAD_PALETTE');
+      d.check('USE_PAD_STATS');
+
       if (d.check('PAL', true)) this.Palette = d.partAsInt();
       // this is zooming of histo content
       if (d.check('MINIMUM:', true)) {
@@ -135,7 +141,7 @@ class THistDrawOptions {
       if (d.check('YTITLE:', true)) histo.fYaxis.fTitle = decodeURIComponent(d.part.toLowerCase());
       if (d.check('ZTITLE:', true)) histo.fZaxis.fTitle = decodeURIComponent(d.part.toLowerCase());
 
-      if (d.check('FORCE_TITLE')) this.ForceTitle = true;
+      // if (d.check('FORCE_TITLE')) this.ForceTitle = true;
 
       if (d.check('_ADJUST_FRAME_')) this.adjustFrame = true;
 
