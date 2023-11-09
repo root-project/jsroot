@@ -1709,6 +1709,8 @@ class HierarchyPainter extends BasePainter {
             this.refreshHtml();
          } else if (arg === 'dark')
             this.changeDarkMode();
+         else if (arg === 'width')
+            this.brlayout?.adjustSeparators(settings.BrowserWidth, null);
       });
    }
 
