@@ -137,13 +137,8 @@ class TGraphPainter extends ObjectPainter {
       }
 
       const res = this.options;
-      let d = new DrawOptions(opt);
+      let d = new DrawOptions(opt), hopt = '';
 
-      // check pad options first
-      res.PadStats = d.check('USE_PAD_STATS');
-      res.PadPalette = d.check('USE_PAD_PALETTE');
-
-      let hopt = '';
       PadDrawOptions.forEach(name => { if (d.check(name)) hopt += ';' + name; });
       if (d.check('XAXIS_', true)) hopt += ';XAXIS_' + d.part;
       if (d.check('YAXIS_', true)) hopt += ';YAXIS_' + d.part;
@@ -1457,7 +1452,7 @@ class TGraphPainter extends ObjectPainter {
       if (stats) return stats;
 
       // do not create stats box when drawing canvas
-      if (this.getCanvPainter()?.normal_canvas || this.options.PadStats) return null;
+      if (this.getCanvPainter()?.normal_canvas) return null;
 
       this.create_stats = true;
 

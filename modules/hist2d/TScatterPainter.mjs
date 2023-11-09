@@ -35,13 +35,10 @@ class TScatterPainter extends TGraphPainter {
 
       if (pal) return pal;
 
-      if (this.options.PadPalette)
-         pal = this.getPadPainter()?.findInPrimitives('palette', clTPaletteAxis);
-      else if (gr) {
+      if (gr) {
          pal = create(clTPaletteAxis);
 
          const fp = this.get_main();
-
          Object.assign(pal, { fX1NDC: fp.fX2NDC + 0.005, fX2NDC: fp.fX2NDC + 0.05, fY1NDC: fp.fY1NDC, fY2NDC: fp.fY2NDC, fInit: 1, $can_move: true });
          Object.assign(pal.fAxis, { fChopt: '+', fLineColor: 1, fLineSyle: 1, fLineWidth: 1, fTextAngle: 0, fTextAlign: 11, fNdiv: 510 });
          gr.fFunctions.AddFirst(pal, '');

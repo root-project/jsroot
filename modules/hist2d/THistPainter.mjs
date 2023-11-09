@@ -98,10 +98,6 @@ class THistDrawOptions {
 
       this.ndim = hdim || 1; // keep dimensions, used for now in GED
 
-      this.PadStats = d.check('USE_PAD_STATS');
-      this.PadPalette = d.check('USE_PAD_PALETTE');
-      this.PadTitle = d.check('USE_PAD_TITLE');
-
       if (d.check('PAL', true)) this.Palette = d.partAsInt();
       // this is zooming of histo content
       if (d.check('MINIMUM:', true)) {
@@ -1277,7 +1273,7 @@ class THistPainter extends ObjectPainter {
          pt.Clear();
          if (draw_title) pt.AddText(histo.fTitle);
          if (tpainter) return tpainter.redraw().then(() => this);
-      } else if (draw_title && !tpainter && histo.fTitle && !this.options.PadTitle) {
+      } else if (draw_title && !tpainter && histo.fTitle) {
          pt = create(clTPaveText);
          Object.assign(pt, { fName: 'title', fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
                              fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: st.fTitleAlign });
@@ -1320,12 +1316,8 @@ class THistPainter extends ObjectPainter {
       if (statpainter && !statpainter.snapid) statpainter.redraw();
    }
 
-   /** @summary Find stats box
-     * @desc either in list of functions or as object of correspondent painter */
-   findStat(check_in_pad) {
-      if (this.options.PadStats || check_in_pad)
-         return this.getPadPainter()?.findPainterFor(null, 'stats', clTPaveStats)?.getObject();
-
+   /** @summary Find stats box in list of functions */
+   findStat() {
       return this.findFunction(clTPaveStats, 'stats');
    }
 
@@ -1385,8 +1377,7 @@ class THistPainter extends ObjectPainter {
    /** @summary Create stat box for histogram if required */
    createStat(force) {
       const histo = this.getHisto();
-
-      if (this.options.PadStats || !histo) return null;
+      if (!histo) return null;
 
       if (!force && !this.options.ForceStat) {
          if (this.options.NoStat || histo.TestBit(kNoStats) || !settings.AutoStat) return null;
@@ -1988,9 +1979,6 @@ class THistPainter extends ObjectPainter {
       }
 
       if (!pal) {
-         if (this.options.PadPalette)
-            return null;
-
          pal = create(clTPaletteAxis);
 
          pal.fInit = 1;
