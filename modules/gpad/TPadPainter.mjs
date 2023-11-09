@@ -1458,14 +1458,12 @@ class TPadPainter extends ObjectPainter {
             this.painters.push(objpainter);
 
          objpainter.snapid = lst[indx].fObjectID;
-         console.log('assign snapid', objpainter.snapid);
          const setSubSnaps = p => {
             if (!p._unique_painter_id) return;
             for (let k = 0; k < this.painters.length; ++k) {
                const sub = this.painters[k];
                if ((sub._main_painter_id === p._unique_painter_id) && sub._secondary_id) {
                   sub.snapid = p.snapid + '#' + sub._secondary_id;
-                  console.log('assign sub snapid', sub.snapid);
                   setSubSnaps(sub);
                }
             }
@@ -1574,8 +1572,6 @@ class TPadPainter extends ObjectPainter {
          if (this.painters[k].snapid === snapid)
             if (--cnt === 0) { objpainter = this.painters[k]; break; }
       }
-
-      console.log('checking snapid', snapid, objpainter);
 
       if (objpainter) {
          if (snap.fKind === webSnapIds.kSubPad) // subpad
