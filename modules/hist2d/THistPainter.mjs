@@ -141,7 +141,7 @@ class THistDrawOptions {
       if (d.check('YTITLE:', true)) histo.fYaxis.fTitle = decodeURIComponent(d.part.toLowerCase());
       if (d.check('ZTITLE:', true)) histo.fZaxis.fTitle = decodeURIComponent(d.part.toLowerCase());
 
-      // if (d.check('FORCE_TITLE')) this.ForceTitle = true;
+      if (d.check('FORCE_TITLE')) this.ForceTitle = true;
 
       if (d.check('_ADJUST_FRAME_')) this.adjustFrame = true;
 
