@@ -1481,7 +1481,7 @@ class TGraphPainter extends ObjectPainter {
    fillStatistic(stat, _dostat, dofit) {
       const func = this.findFunc();
 
-      if (!func || !dofit /*|| !this.create_stats*/) return false;
+      if (!func || !dofit) return false;
 
       stat.clearPave();
 

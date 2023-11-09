@@ -525,7 +525,7 @@ class TPavePainter extends ObjectPainter {
                   this.drawText({ x: margin_x, y: texty, width: width - 2*margin_x, height: stepy,
                                   align: entry.fTextAlign || this.textatt.align,
                                   draw_g: text_g, latex: (entry._typename === clTText) ? 0 : 1,
-                                  text: entry.fTitle, color, fast })
+                                  text: entry.fTitle, color, fast });
                }
                break;
             }
