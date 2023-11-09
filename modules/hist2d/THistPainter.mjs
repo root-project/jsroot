@@ -1424,9 +1424,6 @@ class THistPainter extends ObjectPainter {
          fTextAlign: 12
       });
 
-      if (histo._typename.match(/^TProfile/) || histo._typename.match(/^TH2/))
-         stats.fY1NDC = 0.67;
-
       stats.AddText(histo.fName);
 
       this.addFunction(stats);
