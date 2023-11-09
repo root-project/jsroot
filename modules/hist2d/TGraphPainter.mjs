@@ -156,7 +156,7 @@ class TGraphPainter extends ObjectPainter {
       res._plc = d.check('PLC');
       res._pmc = d.check('PMC');
 
-      if (d.check('A')) res.Axis = d.check('I') ? 'A' : 'AXIS;'; // I means invisible axis
+      if (d.check('A')) res.Axis = d.check('I') ? 'A;' : 'AXIS;'; // I means invisible axis
       if (d.check('X+')) { res.Axis += 'X+'; res.second_x = has_main; }
       if (d.check('Y+')) { res.Axis += 'Y+'; res.second_y = has_main; }
       if (d.check('RX')) res.Axis += 'RX';
@@ -210,7 +210,7 @@ class TGraphPainter extends ObjectPainter {
       } else if (res.Axis.indexOf('A') < 0)
          res.Axis = 'AXIS;' + res.Axis;
 
-      res.Axis += hopt;
+      res.Axis += 'FORCE_TITLE;' + hopt;
 
       for (let bl = 0; bl < blocks_gme.length; ++bl) {
          const subd = new DrawOptions(blocks_gme[bl]), subres = {};
@@ -1490,20 +1490,11 @@ class TGraphPainter extends ObjectPainter {
       return true;
    }
 
-   /** @summary Return draw option for axis histogram
-     * @private */
-   getHistoOpt() {
-      let hopt = this.options.Axis;
-      if (hopt.indexOf('AXIS;') === 0)
-         hopt = hopt.slice(5);
-      return hopt;
-   }
-
    /** @summary Draw axis histogram
      * @private */
    async drawAxisHisto() {
       const histo = this.createHistogram();
-      return TH1Painter.draw(this.getDom(), histo, this.getHistoOpt());
+      return TH1Painter.draw(this.getDom(), histo, this.options.Axis);
    }
 
    /** @summary Draw TGraph
