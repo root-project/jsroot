@@ -3368,6 +3368,8 @@ class HierarchyPainter extends BasePainter {
       if (!this.disp_kind) {
          if (isStr(layout) && layout)
             this.disp_kind = layout;
+         else if (settings.DislpayKind && settings.DislpayKind !== 'simple')
+            this.disp_kind = settings.DislpayKind;
          else {
             switch (itemsarr.length) {
                case 0:
@@ -3674,7 +3676,11 @@ class HierarchyPainter extends BasePainter {
          ['simple', 'vert2', 'vert3', 'vert231', 'horiz2', 'horiz32', 'flex', 'tabs',
           'grid 2x2', 'grid 1x3', 'grid 2x3', 'grid 3x3', 'grid 4x4'].forEach(kind => layout.append('option').attr('value', kind).html(kind));
 
-         layout.on('change', ev => this.setDisplay(ev.target.value || 'flex', this.gui_div + '_drawing'));
+         layout.on('change', ev => {
+            const kind = ev.target.value || 'flex';
+            this.setDisplay(kind, this.gui_div + '_drawing');
+            settings.DislpayKind = kind;
+         });
       }
 
       this.setDom(this.gui_div + '_browser_hierarchy');

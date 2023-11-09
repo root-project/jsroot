@@ -250,6 +250,8 @@ settings = {
    IgnoreUrlOptions: false,
    /** @summary how many items shown on one level of hierarchy */
    HierarchyLimit: 250,
+   /** @summary default display kind for the hierarchy painter */
+   DislpayKind: 'simple',
    /** @summary custom format for all X values, when not specified {@link gStyle.fStatFormat} is used */
    XValuesFormat: undefined,
    /** @summary custom format for all Y values, when not specified {@link gStyle.fStatFormat} is used */
