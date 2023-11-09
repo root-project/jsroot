@@ -209,7 +209,6 @@ class TPavePainter extends ObjectPainter {
                if (main.fillStatistic(this, dostat, dofit)) {
                   // adjust the size of the stats box with the number of lines
                   let nlines = pt.fLines?.arr.length || 0;
-                  console.log('is default stat place', this.isDefaultStatPlace(pt), pt.fX1NDC);
                   if ((nlines > 0) && !this.moved_interactive && this.isDefaultStatPlace(pt)) {
                      // in ROOT TH2 and TH3 always add full statsh for fit parameters
                      const extrah = this._has_fit && (this._fit_dim > 1) ? gStyle.fStatH : 0;
@@ -1294,6 +1293,13 @@ class TPavePainter extends ObjectPainter {
 
       pave.fOption = obj.fOption;
       pave.fBorderSize = obj.fBorderSize;
+      if (pave.fTextColor !== undefined && obj.fTextColor !== undefined) {
+         pave.fTextAngle = obj.fTextAngle;
+         pave.fTextSize = obj.fTextSize;
+         pave.fTextAlign = obj.fTextAlign;
+         pave.fTextColor = obj.fTextColor;
+         pave.fTextFont = obj.fTextFont;
+      }
 
       switch (obj._typename) {
          case clTDiamond:
