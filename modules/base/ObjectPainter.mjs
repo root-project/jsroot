@@ -314,10 +314,11 @@ class ObjectPainter extends BasePainter {
       }
 
       // set attributes for debugging
-      if (this.draw_object) {
-         this.draw_g.attr('objname', (this.draw_object.fName || 'name').replace(/[^\w]/g, '_'));
-         this.draw_g.attr('objtype', (this.draw_object._typename || 'type').replace(/[^\w]/g, '_'));
-      }
+      const clname = this.getClassName(), objname = this.getObjectName();
+      if (objname)
+         this.draw_g.attr('objname', objname.replace(/[^\w]/g, '_'));
+      if (clname)
+         this.draw_g.attr('objtype', clname.replace(/[^\w]/g, '_'));
 
       this.draw_g.property('in_frame', !!frame_layer); // indicates coordinate system
 
