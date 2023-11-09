@@ -313,12 +313,12 @@ class ObjectPainter extends BasePainter {
             layer.selectChildren('.most_upper_primitives').raise();
       }
 
-      // set attributes for debugging
+      // set attributes for debugging, both should be there for opt out them later
       const clname = this.getClassName(), objname = this.getObjectName();
-      if (objname)
-         this.draw_g.attr('objname', objname.replace(/[^\w]/g, '_'));
-      if (clname)
-         this.draw_g.attr('objtype', clname.replace(/[^\w]/g, '_'));
+      if (objname || clname) {
+         this.draw_g.attr('objname', (objname || 'name').replace(/[^\w]/g, '_'))
+                    .attr('objtype', (clname || 'type').replace(/[^\w]/g, '_'));
+      }
 
       this.draw_g.property('in_frame', !!frame_layer); // indicates coordinate system
 
