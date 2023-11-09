@@ -4,7 +4,7 @@ import { closeCurrentWindow, showProgress, loadOpenui5, ToolbarIcons, getColorEx
 import { GridDisplay, getHPainter } from '../gui/display.mjs';
 import { cleanup, resize, selectActivePad, EAxisBits } from '../base/ObjectPainter.mjs';
 import { TFramePainter } from './TFramePainter.mjs';
-import { TPadPainter, clTButton } from './TPadPainter.mjs';
+import { TPadPainter, clTButton, createWebObjectOptions } from './TPadPainter.mjs';
 
 const kShowEventStatus = BIT(15),
      // kAutoExec = BIT(16),
@@ -683,12 +683,11 @@ class TCanvasPainter extends TPadPainter {
             if (painter.snapid)
                msg = 'DRAWOPT:' + JSON.stringify([painter.snapid.toString(), painter.getDrawOpt() || '']);
             break;
-         case 'pave_moved':
-            if (isFunc(painter.fillWebObjectOptions)) {
-               const info = painter.fillWebObjectOptions();
-               if (info) msg = 'PRIMIT6:' + toJSON(info);
-            }
+         case 'pave_moved': {
+            const info = createWebObjectOptions(painter);
+            if (info) msg = 'PRIMIT6:' + toJSON(info);
             break;
+         }
          case 'logx':
          case 'logy':
          case 'logz': {

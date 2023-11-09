@@ -1240,17 +1240,10 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Fill option object used in TWebCanvas */
    fillWebObjectOptions(res) {
-      if (!res) {
-         if (!this.snapid || !this._auto_exec) return null;
-         res = { _typename: 'TWebObjectOptions', snapid: this.snapid.toString(), opt: this.getDrawOpt(), fcust: '', fopt: [] };
-      }
-
       if (this._auto_exec) {
          res.fcust = 'auto_exec:' + this._auto_exec;
          delete this._auto_exec;
       }
-
-      return res;
    }
 
    /** @summary Toggle histogram title drawing */
@@ -2084,8 +2077,6 @@ class THistPainter extends ObjectPainter {
             pal_painter = _palp;
             this.selectCurrentPad(prev);
             pal_painter.setSecondaryId(this, found_in_func && !pal.$generated ? `func_${pal.fName}` : undefined);
-            if (found_in_func)
-               pal_painter._hist_painter = this; // TODO: check and remove it
          });
       } else {
          pal_painter.Enabled = true;

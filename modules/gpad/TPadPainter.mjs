@@ -169,10 +169,22 @@ const PadButtonsHandler = {
 
 }, // PadButtonsHandler
 
-
-
 // identifier used in TWebCanvas painter
- webSnapIds = { kNone: 0, kObject: 1, kSVG: 2, kSubPad: 3, kColors: 4, kStyle: 5 };
+webSnapIds = { kNone: 0, kObject: 1, kSVG: 2, kSubPad: 3, kColors: 4, kStyle: 5 };
+
+
+/** @summary Fill TWebObjectOptions for painter
+  * @private */
+function createWebObjectOptions(painter) {
+   if (!painter?.snapid)
+      return null;
+
+   const obj = { _typename: 'TWebObjectOptions', snapid: painter.snapid.toString(), opt: painter.getDrawOpt(true), fcust: '', fopt: [] };
+   if (isFunc(painter.fillWebObjectOptions))
+      painter.fillWebObjectOptions(obj);
+   return obj;
+}
+
 
 /**
   * @summary Painter for TPad object
@@ -1899,10 +1911,8 @@ class TPadPainter extends ObjectPainter {
       this.painters.forEach(sub => {
          if (isFunc(sub.getWebPadOptions)) {
             if (scan_subpads) sub.getWebPadOptions(arg, cp);
-         } else if (sub.snapid) {
-            let opt = { _typename: 'TWebObjectOptions', snapid: sub.snapid.toString(), opt: sub.getDrawOpt(true), fcust: '', fopt: [] };
-            if (isFunc(sub.fillWebObjectOptions))
-               opt = sub.fillWebObjectOptions(opt);
+         } else {
+            const opt = createWebObjectOptions(sub);
             if (opt)
                elem.primitives.push(opt);
          }
@@ -2378,4 +2388,4 @@ class TPadPainter extends ObjectPainter {
 
 } // class TPadPainter
 
-export { TPadPainter, PadButtonsHandler, clTButton, kIsGrayscale };
+export { TPadPainter, PadButtonsHandler, clTButton, kIsGrayscale, createWebObjectOptions };

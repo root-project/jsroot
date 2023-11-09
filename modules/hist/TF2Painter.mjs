@@ -275,8 +275,7 @@ class TF2Painter extends TH2Painter {
      * @private */
    fillWebObjectOptions(opt) {
       // mark that saved points are used or evaluation failed
-      if (opt) opt.fcust = this._fail_eval ? 'func_fail' : '';
-      return opt;
+      opt.fcust = this._fail_eval ? 'func_fail' : '';
    }
 
    /** @summary draw TF2 object */
