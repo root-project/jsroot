@@ -2008,7 +2008,8 @@ class TPadPainter extends ObjectPainter {
        if (!isFunc(selp?.fillContextMenu)) return;
 
        return createMenu(evnt, selp).then(menu => {
-          if (selp.fillContextMenu(menu, selkind))
+          const offline_menu = selp.fillContextMenu(menu, selkind);
+          if (offline_menu || selp.snapid)
              return selp.fillObjectExecMenu(menu, selkind).then(() => postponePromise(() => menu.show(), 50));
        });
    }
