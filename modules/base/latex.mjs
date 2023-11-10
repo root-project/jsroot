@@ -586,7 +586,8 @@ function parseLatex(node, arg, label, curr) {
       const extractLowUp = name => {
          const res = {};
          if (name) {
-            res[name] = extractSubLabel();
+            label = '{' + label;
+            res[name] = extractSubLabel(name === 'low' ? '_' : '^');
             if (res[name] === -1) return false;
          }
 
