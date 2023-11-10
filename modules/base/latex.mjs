@@ -510,12 +510,13 @@ function parseLatex(node, arg, label, curr) {
          if (sublabel === -1) return false;
 
          const gg = createGG(),
-               subpos = createSubPos();
+               subpos = createSubPos(),
+               reduce = (sublabel.length !== 1) ? 1 : (((sublabel >= 'a') && (sublabel <= 'z') && ('tdfhkl'.indexOf(sublabel) < 0)) ? 0.75 : 0.9);
 
          parseLatex(gg, arg, sublabel, subpos);
 
          const minw = curr.fsize * 0.6,
-               y1 = Math.round(subpos.rect.y1),
+               y1 = Math.round(subpos.rect.y1*reduce),
                dy2 = Math.round(curr.fsize*0.1), dy = dy2*2,
                dot = `a${dy2},${dy2},0,0,1,${dy},0a${dy2},${dy2},0,0,1,${-dy},0z`;
          let xpos = 0, w = subpos.rect.width;
