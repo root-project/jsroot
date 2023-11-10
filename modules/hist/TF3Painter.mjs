@@ -1,8 +1,8 @@
-import { createHistogram, setHistogramTitle, kNoStats, settings, gStyle, clTF3, clTH2F, isStr, isFunc } from '../core.mjs';
+import { createHistogram, setHistogramTitle, kNoStats, settings, clTF3, clTH2F, isStr } from '../core.mjs';
 import { TH2Painter } from '../hist/TH2Painter.mjs';
 import { proivdeEvalPar, produceTAxisLogScale } from '../hist/TF1Painter.mjs';
 import { ObjectPainter, getElementMainPainter } from '../base/ObjectPainter.mjs';
-import { DrawOptions, floatToString } from '../base/BasePainter.mjs';
+import { DrawOptions } from '../base/BasePainter.mjs';
 import { THistPainter } from '../hist2d/THistPainter.mjs';
 
 

@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '9/11/2023',
+version_date = '10/11/2023',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -67774,6 +67774,41 @@ class TPadPainter extends ObjectPainter {
       }
    }
 
+   /** @summary Process snap with style
+     * @private */
+   processSnapStyle(snap) {
+      Object.assign(gStyle, snap.fSnapshot);
+   }
+
+   /** @summary Process snap with colors
+     * @private */
+   processSnapColors(snap) {
+      const ListOfColors = decodeWebCanvasColors(snap.fSnapshot.fOper);
+
+      // set global list of colors
+      if (!this.options || this.options.GlobalColors)
+         adoptRootColors(ListOfColors);
+
+      const greyscale = this.pad?.TestBit(kIsGrayscale) ?? false,
+            colors = extendRootColors(null, ListOfColors, greyscale);
+
+      // copy existing colors and extend with new values
+      this._custom_colors = this.options?.LocalColors ? colors : null;
+
+      // set palette
+      if (snap.fSnapshot.fBuf && (!this.options || !this.options.IgnorePalette)) {
+         const palette = [];
+         for (let n = 0; n < snap.fSnapshot.fBuf.length; ++n)
+            palette[n] = colors[Math.round(snap.fSnapshot.fBuf[n])];
+
+         this._custom_palette_colors = palette;
+         this.custom_palette = new ColorPalette(palette, greyscale);
+      } else {
+         delete this._custom_palette_colors;
+         delete this.custom_palette;
+      }
+   }
+
    /** @summary Process special snaps like colors or style objects
      * @return {Promise} index where processing should start
      * @private */
@@ -67784,28 +67819,10 @@ class TPadPainter extends ObjectPainter {
          // gStyle object
          if (snap.fKind === webSnapIds.kStyle) {
             lst.shift();
-            Object.assign(gStyle, snap.fSnapshot);
+            this.processSnapStyle(snap);
          } else if (snap.fKind === webSnapIds.kColors) {
             lst.shift();
-            const ListOfColors = decodeWebCanvasColors(snap.fSnapshot.fOper);
-
-            // set global list of colors
-            if (!this.options || this.options.GlobalColors)
-               adoptRootColors(ListOfColors);
-
-            const colors = extendRootColors(null, ListOfColors, this.pad?.TestBit(kIsGrayscale));
-
-            // copy existing colors and extend with new values
-            this._custom_colors = this.options?.LocalColors ? colors : null;
-
-            // set palette
-            if (snap.fSnapshot.fBuf && (!this.options || !this.options.IgnorePalette)) {
-               const palette = [];
-               for (let n = 0; n < snap.fSnapshot.fBuf.length; ++n)
-                  palette[n] = colors[Math.round(snap.fSnapshot.fBuf[n])];
-
-               this.custom_palette = new ColorPalette(palette);
-            }
+            this.processSnapColors(snap);
          } else
             break;
       }
@@ -67832,32 +67849,13 @@ class TPadPainter extends ObjectPainter {
 
       // gStyle object
       if (snap.fKind === webSnapIds.kStyle) {
-         Object.assign(gStyle, snap.fSnapshot);
+         this.processSnapStyle(snap);
          return this.drawNextSnap(lst, indx); // call next
       }
 
       // list of colors
       if (snap.fKind === webSnapIds.kColors) {
-         const ListOfColors = decodeWebCanvasColors(snap.fSnapshot.fOper);
-
-         // set global list of colors
-         if (!this.options || this.options.GlobalColors)
-            adoptRootColors(ListOfColors);
-
-         const colors = extendRootColors(null, ListOfColors, this.pad?.TestBit(kIsGrayscale));
-
-         // copy existing colors and extend with new values
-         this._custom_colors = this.options?.LocalColors ? colors : null;
-
-         // set palette
-         if (snap.fSnapshot.fBuf && (!this.options || !this.options.IgnorePalette)) {
-            const palette = [];
-            for (let n = 0; n < snap.fSnapshot.fBuf.length; ++n)
-               palette[n] = colors[Math.round(snap.fSnapshot.fBuf[n])];
-
-            this.custom_palette = new ColorPalette(palette);
-         }
-
+         this.processSnapColors(snap);
          return this.drawNextSnap(lst, indx); // call next
       }
 
@@ -68309,7 +68307,8 @@ class TPadPainter extends ObjectPainter {
        if (!isFunc(selp?.fillContextMenu)) return;
 
        return createMenu(evnt, selp).then(menu => {
-          if (selp.fillContextMenu(menu, selkind))
+          const offline_menu = selp.fillContextMenu(menu, selkind);
+          if (offline_menu || selp.snapid)
              return selp.fillObjectExecMenu(menu, selkind).then(() => postponePromise(() => menu.show(), 50));
        });
    }
@@ -79543,8 +79542,7 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
    /** @summary Process tooltip event */
    processTooltipEvent(pnt) {
       if (!pnt || !this.draw_content || !this.draw_g || this.options.Mode3D) {
-         if (this.draw_g)
-            this.draw_g.selectChild('.tooltip_bin').remove();
+         this.draw_g?.selectChild('.tooltip_bin').remove();
          return null;
       }
 
@@ -79704,14 +79702,13 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
       }
 
       const res = { name: this.getObjectName(), title: histo.fTitle,
-                  x: midx, y: midy, exact: true,
-                  color1: this.lineatt?.color ?? 'green',
-                  color2: this.fillatt?.getFillColorAlt('blue') ?? 'blue',
-                  lines: this.getBinTooltips(findbin) };
+                    x: midx, y: midy, exact: true,
+                    color1: this.lineatt?.color ?? 'green',
+                    color2: this.fillatt?.getFillColorAlt('blue') ?? 'blue',
+                    lines: this.getBinTooltips(findbin) };
 
       if (pnt.disabled) {
          // case when tooltip should not highlight bin
-
          ttrect.remove();
          res.changed = true;
       } else if (show_rect) {
@@ -80619,6 +80616,7 @@ class TF1Painter extends TH1Painter$2 {
       hist.fBits |= kNoStats;
    }
 
+   /** @summary Extract function ranges */
    extractAxesProperties(ndim) {
       super.extractAxesProperties(ndim);
 
@@ -80692,22 +80690,26 @@ class TF1Painter extends TH1Painter$2 {
       }
 
       const res = { name: this.$func?.fName, title: this.$func?.fTitle,
-                  x: pnt.x, y: pnt.y,
-                  color1: this.lineatt?.color ?? 'green',
-                  color2: this.fillatt?.getFillColorAlt('blue') ?? 'blue',
-                  lines: this.getTF1Tooltips(pnt), exact: true, menu: true };
+                    x: pnt.x, y: pnt.y,
+                    color1: this.lineatt?.color ?? 'green',
+                    color2: this.fillatt?.getFillColorAlt('blue') ?? 'blue',
+                    lines: this.getTF1Tooltips(pnt), exact: true, menu: true };
 
-      if (ttrect.empty()) {
-         ttrect = this.draw_g.append('svg:circle')
+      if (pnt.disabled)
+         ttrect.remove();
+      else {
+         if (ttrect.empty()) {
+            ttrect = this.draw_g.append('svg:circle')
                              .attr('class', 'tooltip_bin')
                              .style('pointer-events', 'none')
                              .style('fill', 'none')
                              .attr('r', (this.lineatt?.width ?? 1) + 4);
-      }
+         }
 
-      ttrect.attr('cx', pnt.x)
-            .attr('cy', this.$tmp_tooltip.gry ?? pnt.y)
-            .call(this.lineatt?.func);
+         ttrect.attr('cx', pnt.x)
+               .attr('cy', this.$tmp_tooltip.gry ?? pnt.y)
+               .call(this.lineatt?.func);
+      }
 
       return res;
    }
@@ -108896,6 +108898,16 @@ class THStackPainter extends ObjectPainter {
       return { min, max, min0, max0, zoomed, hopt: `hmin:${min0};hmax:${max0};minimum:${min};maximum:${max}` };
    }
 
+   /** @summary Provide draw options for the histogram */
+   getHistDrawOption(hist, opt) {
+      let hopt = opt || hist.fOption || this.options.hopt;
+      if (hopt.toUpperCase().indexOf(this.options.hopt) < 0)
+         hopt += ' ' + this.options.hopt;
+      if (this.options.draw_errors && !hopt)
+         hopt = 'E';
+      return hopt;
+   }
+
    /** @summary Draw next stack histogram */
    async drawNextHisto(indx, pad_painter) {
       const stack = this.getObject(),
@@ -108907,14 +108919,9 @@ class THStackPainter extends ObjectPainter {
 
       const rindx = this.options.horder ? indx : nhists-indx-1,
             subid = this.options.nostack ? `hists_${rindx}` : `stack_${rindx}`,
-            hist = hlst.arr[rindx];
-      let hopt = hlst.opt[rindx] || hist.fOption || this.options.hopt,
-          exec = '';
-
-      if (hopt.toUpperCase().indexOf(this.options.hopt) < 0)
-         hopt += ' ' + this.options.hopt;
-      if (this.options.draw_errors && !hopt)
-         hopt = 'E';
+            hist = hlst.arr[rindx],
+            hopt = this.getHistDrawOption(hist, hlst.opt[rindx]);
+      let exec = '';
 
       if (this.options._pfc || this.options._plc || this.options._pmc) {
          const mp = this.getMainPainter();
@@ -109093,7 +109100,7 @@ class THStackPainter extends ObjectPainter {
 
       // and now update histograms
       const hlst = this.options.nostack ? stack.fHists : stack.fStack,
-          nhists = hlst?.arr?.length ?? 0;
+            nhists = hlst?.arr?.length ?? 0;
 
       if (nhists !== this.painters.length) {
          this.getPadPainter()?.cleanPrimitives(objp => this.painters.indexOf(objp) >= 0);
@@ -109102,9 +109109,8 @@ class THStackPainter extends ObjectPainter {
       } else {
          for (let indx = 0; indx < nhists; ++indx) {
             const rindx = this.options.horder ? indx : nhists - indx - 1,
-                  hist = hlst.arr[rindx],
-                  hopt = hlst.opt[rindx];
-            this.painters[indx].updateObject(hist, hopt || hist.fOption || this.options.hopt);
+                  hist = hlst.arr[rindx];
+            this.painters[indx].updateObject(hist, this.getHistDrawOption(hist, hlst.opt[rindx]));
          }
       }
 
@@ -109118,6 +109124,22 @@ class THStackPainter extends ObjectPainter {
          delete this.did_update;
          return this.drawNextHisto(0, this.options.pads ? this.getPadPainter() : null);
       }
+   }
+
+   /** @summary Fill hstack context menu */
+   fillContextMenuItems(menu) {
+      menu.addchk(this.options.draw_errors, 'Draw errors', flag => {
+         this.options.draw_errors = flag;
+         const stack = this.getObject(),
+               hlst = this.options.nostack ? stack.fHists : stack.fStack,
+               nhists = hlst?.arr?.length ?? 0;
+         for (let indx = 0; indx < nhists; ++indx) {
+            const rindx = this.options.horder ? indx : nhists - indx - 1,
+                  hist = hlst.arr[rindx];
+            this.painters[indx].decodeOptions(this.getHistDrawOption(hist, hlst.opt[rindx]));
+         }
+         this.redrawPad();
+      }, 'Change draw erros in the stack');
    }
 
    /** @summary draw THStack object */
@@ -112593,6 +112615,7 @@ class TF2Painter extends TH2Painter {
       return hist;
    }
 
+   /** @summary Extract function ranges */
    extractAxesProperties(ndim) {
       super.extractAxesProperties(ndim);
 
@@ -112656,17 +112679,21 @@ class TF2Painter extends TH2Painter {
                   color2: this.fillatt?.getFillColorAlt('blue') ?? 'blue',
                   lines: this.getTF2Tooltips(pnt), exact: true, menu: true };
 
-      if (ttrect.empty()) {
-         ttrect = this.draw_g.append('svg:circle')
-                             .attr('class', 'tooltip_bin')
-                             .style('pointer-events', 'none')
-                             .style('fill', 'none')
-                             .attr('r', (this.lineatt?.width ?? 1) + 4);
-      }
+      if (pnt.disabled)
+         ttrect.remove();
+      else {
+         if (ttrect.empty()) {
+            ttrect = this.draw_g.append('svg:circle')
+                                .attr('class', 'tooltip_bin')
+                                .style('pointer-events', 'none')
+                                .style('fill', 'none')
+                                .attr('r', (this.lineatt?.width ?? 1) + 4);
+         }
 
-      ttrect.attr('cx', pnt.x)
-            .attr('cy', pnt.y)
-            .call(this.lineatt?.func);
+         ttrect.attr('cx', pnt.x)
+               .attr('cy', pnt.y)
+               .call(this.lineatt?.func);
+      }
 
       return res;
    }
@@ -112939,6 +112966,7 @@ class TF3Painter extends TH2Painter {
       return hist;
    }
 
+   /** @summary Extract function ranges */
    extractAxesProperties(ndim) {
       super.extractAxesProperties(ndim);
 
@@ -112960,65 +112988,6 @@ class TF3Painter extends TH2Painter {
          this.zmin = Math.min(this.zmin, func.fZmin);
          this.zmax = Math.max(this.zmax, func.fZmax);
       }
-   }
-
-   /** @summary retrurn tooltips for TF2 */
-   getTF3Tooltips(pnt) {
-      const lines = [this.getObjectHint()],
-            funcs = this.getFramePainter()?.getGrFuncs(this.options.second_x, this.options.second_y);
-
-      if (!funcs || !isFunc(this.$func?.evalPar)) {
-         lines.push('grx = ' + pnt.x, 'gry = ' + pnt.y);
-         return lines;
-      }
-
-      const x = funcs.revertAxis('x', pnt.x),
-            y = funcs.revertAxis('y', pnt.y);
-      let z = 0, iserror = false;
-
-       try {
-          z = this.$func.evalPar(x, y);
-       } catch {
-          iserror = true;
-       }
-
-      lines.push('x = ' + funcs.axisAsText('x', x),
-                 'y = ' + funcs.axisAsText('y', y),
-                 'value = ' + (iserror ? '<fail>' : floatToString(z, gStyle.fStatFormat)));
-      return lines;
-   }
-
-   /** @summary process tooltip event for TF2 object */
-   processTooltipEvent(pnt) {
-      if (this._use_saved_points)
-         return super.processTooltipEvent(pnt);
-
-      let ttrect = this.draw_g?.selectChild('.tooltip_bin');
-
-      if (!this.draw_g || !pnt) {
-         ttrect?.remove();
-         return null;
-      }
-
-      const res = { name: this.$func?.fName, title: this.$func?.fTitle,
-                  x: pnt.x, y: pnt.y,
-                  color1: this.lineatt?.color ?? 'green',
-                  color2: this.fillatt?.getFillColorAlt('blue') ?? 'blue',
-                  lines: this.getTF3Tooltips(pnt), exact: true, menu: true };
-
-      if (ttrect.empty()) {
-         ttrect = this.draw_g.append('svg:circle')
-                             .attr('class', 'tooltip_bin')
-                             .style('pointer-events', 'none')
-                             .style('fill', 'none')
-                             .attr('r', (this.lineatt?.width ?? 1) + 4);
-      }
-
-      ttrect.attr('cx', pnt.x)
-            .attr('cy', pnt.y)
-            .call(this.lineatt?.func);
-
-      return res;
    }
 
    /** @summary fill information for TWebCanvas
@@ -117961,7 +117930,8 @@ class RPadPainter extends RObjectPainter {
        if (!isFunc(selp?.fillContextMenu)) return;
 
        return createMenu(evnt, selp).then(menu => {
-          if (selp.fillContextMenu(menu, selkind))
+          const offline_menu = selp.fillContextMenu(menu, selkind);
+          if (offline_menu || selp.snapid)
              selp.fillObjectExecMenu(menu, selkind).then(() => postponePromise(() => menu.show(), 50));
        });
    }
