@@ -350,6 +350,7 @@ class TF1Painter extends TH1Painter {
       hist.fBits |= kNoStats;
    }
 
+   /** @summary Extract function ranges */
    extractAxesProperties(ndim) {
       super.extractAxesProperties(ndim);
 

@@ -193,6 +193,7 @@ class TF2Painter extends TH2Painter {
       return hist;
    }
 
+   /** @summary Extract function ranges */
    extractAxesProperties(ndim) {
       super.extractAxesProperties(ndim);
 
