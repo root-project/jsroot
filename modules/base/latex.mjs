@@ -485,7 +485,10 @@ function parseLatex(node, arg, label, curr) {
             if (curr.x) elem.attr('x', curr.x);
             if (curr.y) elem.attr('y', curr.y);
 
-            extendPosition(curr.x, curr.y - rect.height*0.8, curr.x + rect.width, curr.y + rect.height*0.2);
+            // for single f or l sumbols one gets wrong estimation of total width
+            const dx = (s.length === 1) && !curr.font.isMonospace() && ('lf'.indexOf(s) >= 0) ? curr.fsize*0.1 : 0;
+
+            extendPosition(curr.x, curr.y - rect.height*0.8, curr.x + rect.width + dx, curr.y + rect.height*0.2);
 
             if (!alone) {
                shiftX(rect.width);
