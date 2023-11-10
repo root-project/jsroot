@@ -857,8 +857,7 @@ class TH1Painter extends THistPainter {
    /** @summary Process tooltip event */
    processTooltipEvent(pnt) {
       if (!pnt || !this.draw_content || !this.draw_g || this.options.Mode3D) {
-         if (this.draw_g)
-            this.draw_g.selectChild('.tooltip_bin').remove();
+         this.draw_g?.selectChild('.tooltip_bin').remove();
          return null;
       }
 
@@ -1018,14 +1017,13 @@ class TH1Painter extends THistPainter {
       }
 
       const res = { name: this.getObjectName(), title: histo.fTitle,
-                  x: midx, y: midy, exact: true,
-                  color1: this.lineatt?.color ?? 'green',
-                  color2: this.fillatt?.getFillColorAlt('blue') ?? 'blue',
-                  lines: this.getBinTooltips(findbin) };
+                    x: midx, y: midy, exact: true,
+                    color1: this.lineatt?.color ?? 'green',
+                    color2: this.fillatt?.getFillColorAlt('blue') ?? 'blue',
+                    lines: this.getBinTooltips(findbin) };
 
       if (pnt.disabled) {
          // case when tooltip should not highlight bin
-
          ttrect.remove();
          res.changed = true;
       } else if (show_rect) {
