@@ -615,7 +615,7 @@ function parseLatex(node, arg, label, curr) {
          const subs = extractLowUp(found.low_up);
          if (!subs) return false;
 
-         const x = curr.x, y1 = -curr.fsize, y2 = 0.25*curr.fsize;
+         const x = curr.x, dx = 0.03*curr.fsize, yup = -curr.fsize, ylow = 0.25*curr.fsize;
          let pos_up, pos_low, w1 = 0, w2 = 0;
 
          if (subs.up) {
@@ -629,16 +629,16 @@ function parseLatex(node, arg, label, curr) {
          }
 
          if (pos_up) {
-            positionGNode(pos_up, x, y1 - pos_up.rect.y1 - curr.fsize*0.1);
+            positionGNode(pos_up, x+dx, yup - pos_up.rect.y1 - curr.fsize*0.1);
             w1 = pos_up.rect.width;
          }
 
          if (pos_low) {
-            positionGNode(pos_low, x, y2 - pos_low.rect.y2 + curr.fsize*0.1);
+            positionGNode(pos_low, x+dx, ylow - pos_low.rect.y2 + curr.fsize*0.1);
             w2 = pos_low.rect.width;
          }
 
-         shiftX(Math.max(w1, w2));
+         shiftX(dx + Math.max(w1, w2));
 
          continue;
       }
