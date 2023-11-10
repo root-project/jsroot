@@ -511,7 +511,7 @@ function parseLatex(node, arg, label, curr) {
 
          const gg = createGG(),
                subpos = createSubPos(),
-               reduce = (sublabel.length !== 1) ? 1 : (((sublabel >= 'a') && (sublabel <= 'z') && ('tdfhkl'.indexOf(sublabel) < 0)) ? 0.75 : 0.9);
+               reduce = (sublabel.length !== 1) ? 1 : (((sublabel >= 'a') && (sublabel <= 'z') && ('tdbfhkl'.indexOf(sublabel) < 0)) ? 0.75 : 0.9);
 
          parseLatex(gg, arg, sublabel, subpos);
 
