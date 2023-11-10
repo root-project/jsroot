@@ -1473,6 +1473,41 @@ class TPadPainter extends ObjectPainter {
       }
    }
 
+   /** @summary Process snap with style
+     * @private */
+   processSnapStyle(snap) {
+      Object.assign(gStyle, snap.fSnapshot);
+   }
+
+   /** @summary Process snap with colors
+     * @private */
+   processSnapColors(snap) {
+      const ListOfColors = decodeWebCanvasColors(snap.fSnapshot.fOper);
+
+      // set global list of colors
+      if (!this.options || this.options.GlobalColors)
+         adoptRootColors(ListOfColors);
+
+      const greyscale = this.pad?.TestBit(kIsGrayscale) ?? false,
+            colors = extendRootColors(null, ListOfColors, greyscale);
+
+      // copy existing colors and extend with new values
+      this._custom_colors = this.options?.LocalColors ? colors : null;
+
+      // set palette
+      if (snap.fSnapshot.fBuf && (!this.options || !this.options.IgnorePalette)) {
+         const palette = [];
+         for (let n = 0; n < snap.fSnapshot.fBuf.length; ++n)
+            palette[n] = colors[Math.round(snap.fSnapshot.fBuf[n])];
+
+         this._custom_palette_colors = palette;
+         this.custom_palette = new ColorPalette(palette, greyscale);
+      } else {
+         delete this._custom_palette_colors;
+         delete this.custom_palette;
+      }
+   }
+
    /** @summary Process special snaps like colors or style objects
      * @return {Promise} index where processing should start
      * @private */
@@ -1483,28 +1518,10 @@ class TPadPainter extends ObjectPainter {
          // gStyle object
          if (snap.fKind === webSnapIds.kStyle) {
             lst.shift();
-            Object.assign(gStyle, snap.fSnapshot);
+            this.processSnapStyle(snap);
          } else if (snap.fKind === webSnapIds.kColors) {
             lst.shift();
-            const ListOfColors = decodeWebCanvasColors(snap.fSnapshot.fOper);
-
-            // set global list of colors
-            if (!this.options || this.options.GlobalColors)
-               adoptRootColors(ListOfColors);
-
-            const colors = extendRootColors(null, ListOfColors, this.pad?.TestBit(kIsGrayscale));
-
-            // copy existing colors and extend with new values
-            this._custom_colors = this.options?.LocalColors ? colors : null;
-
-            // set palette
-            if (snap.fSnapshot.fBuf && (!this.options || !this.options.IgnorePalette)) {
-               const palette = [];
-               for (let n = 0; n < snap.fSnapshot.fBuf.length; ++n)
-                  palette[n] = colors[Math.round(snap.fSnapshot.fBuf[n])];
-
-               this.custom_palette = new ColorPalette(palette);
-            }
+            this.processSnapColors(snap);
          } else
             break;
       }
@@ -1531,32 +1548,13 @@ class TPadPainter extends ObjectPainter {
 
       // gStyle object
       if (snap.fKind === webSnapIds.kStyle) {
-         Object.assign(gStyle, snap.fSnapshot);
+         this.processSnapStyle(snap);
          return this.drawNextSnap(lst, indx); // call next
       }
 
       // list of colors
       if (snap.fKind === webSnapIds.kColors) {
-         const ListOfColors = decodeWebCanvasColors(snap.fSnapshot.fOper);
-
-         // set global list of colors
-         if (!this.options || this.options.GlobalColors)
-            adoptRootColors(ListOfColors);
-
-         const colors = extendRootColors(null, ListOfColors, this.pad?.TestBit(kIsGrayscale));
-
-         // copy existing colors and extend with new values
-         this._custom_colors = this.options?.LocalColors ? colors : null;
-
-         // set palette
-         if (snap.fSnapshot.fBuf && (!this.options || !this.options.IgnorePalette)) {
-            const palette = [];
-            for (let n = 0; n < snap.fSnapshot.fBuf.length; ++n)
-               palette[n] = colors[Math.round(snap.fSnapshot.fBuf[n])];
-
-            this.custom_palette = new ColorPalette(palette);
-         }
-
+         this.processSnapColors(snap);
          return this.drawNextSnap(lst, indx); // call next
       }
 
