@@ -5,6 +5,7 @@
 2. Fix error in TGraphPolar labels drawing
 3. Fix error in "multi" request submission
 4. Fix web-based TCanvas updating
+5. Fix - reading TLeaf with fixed-size array
 
 
 ## Changes in 6.3.4

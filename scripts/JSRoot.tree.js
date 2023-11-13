@@ -1465,7 +1465,12 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
             case 'TLeafC': datakind = jsrio.kTString; break; // datakind = leaf.fIsUnsigned ? jsrio.kUChar : jsrio.kChar; break;
             default: return null;
          }
-         return jsrio.createStreamerElement(name || leaf.fName, datakind);
+         let elem = jsrio.createStreamerElement(name || leaf.fName, datakind);
+         if (leaf.fLen > 1) {
+            elem.fType += jsrio.kOffsetL;
+            elem.fArrayLength = leaf.fLen;
+         }
+         return elem;
       }
 
       function FindInHandle(branch) {
