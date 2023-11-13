@@ -2,6 +2,7 @@
 
 ## Changes in 7.5.x
 1. Fix - draw histograms with negative bins #276
+2. Fix - correctly read TLeaf with fixed-size array
 
 
 ## Changes in 7.5.2

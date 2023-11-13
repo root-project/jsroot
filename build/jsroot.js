@@ -7,11 +7,11 @@ typeof define === 'function' && define.amd ? define(['exports'], factory) :
 
 /** @summary version id
   * @desc For the JSROOT release the string in format 'major.minor.patch' like '7.0.0' */
-const version_id = '7.5.2',
+const version_id = '7.5.x',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '31/10/2023',
+version_date = '13/11/2023',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -9362,7 +9362,8 @@ function parseLatex(node, arg, label, curr) {
       const extractLowUp = name => {
          const res = {};
          if (name) {
-            res[name] = extractSubLabel();
+            label = '{' + label;
+            res[name] = extractSubLabel(name === 'low' ? '_' : '^');
             if (res[name] === -1) return false;
          }
 
@@ -67153,7 +67154,7 @@ class TPadPainter extends ObjectPainter {
       for (let k = 0; k < this.painters.length; ++k) {
          const painter = this.painters[k],
                obj = painter.getObject();
-         if (!obj || obj.fName === 'title' || obj.fName === 'stats' || painter.$secondary || obj._typename === clTLegend)
+         if (!obj || obj.fName === 'title' || obj.fName === 'stats' || painter.$secondary || obj._typename === clTLegend || obj._typename === clTHStack)
             continue;
 
          const entry = create$1(clTLegendEntry);
@@ -73645,7 +73646,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
          // Paint histogram axis only
          this.draw_content = false;
       } else {
-         this.draw_content = this.gmaxbin > 0;
+         this.draw_content = (this.gmaxbin !== 0) || (this.gminbin !== 0);
          if (!this.draw_content && this.options.Zero && this.isTH2Poly()) {
             this.draw_content = true;
             this.options.Line = 1;
@@ -79574,7 +79575,7 @@ class TH3Painter extends THistPainter {
          }
       }
 
-      this.draw_content = this.gmaxbin > 0;
+      this.draw_content = (this.gmaxbin !== 0) || (this.gminbin !== 0);
    }
 
    /** @summary Count TH3 statistic */
@@ -98805,7 +98806,12 @@ async function treeProcess(tree, selector, args) {
          case 'TLeafC': datakind = kTString; break;
          default: return null;
       }
-      return createStreamerElement(name || leaf.fName, datakind);
+      const elem = createStreamerElement(name || leaf.fName, datakind);
+      if (leaf.fLen > 1) {
+         elem.fType += kOffsetL;
+         elem.fArrayLength = leaf.fLen;
+      }
+      return elem;
    }, findInHandle = branch => {
       for (let k = 0; k < handle.arr.length; ++k) {
          if (handle.arr[k].branch === branch)
@@ -121586,10 +121592,10 @@ let RH2Painter$2 = class RH2Painter extends RHistPainter {
       // this value used for logz scale drawing
       if (this.gminposbin === null) this.gminposbin = this.gmaxbin*1e-4;
 
-      if (this.options.Axis > 0) { // Paint histogram axis only
+      if (this.options.Axis > 0) // Paint histogram axis only
          this.draw_content = false;
-      } else
-         this.draw_content = this.gmaxbin > 0;
+      else
+         this.draw_content = (this.gmaxbin !== 0) || (this.gminbin !== 0);
    }
 
    /** @summary Count statistic */
@@ -122629,7 +122635,7 @@ class RH3Painter extends RHistPainter {
          }
       }
 
-      this.draw_content = this.gmaxbin > 0;
+      this.draw_content = (this.gmaxbin !== 0) || (this.gminbin !== 0);
    }
 
   /** @summary Count histogram statistic */
