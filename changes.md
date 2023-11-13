@@ -1,5 +1,10 @@
 # JSROOT changelog
 
+## Changes in 5.9.x
+1. Fix - member-wise streaming of std::map
+2. Fix - reading leaf with fixed-size array
+
+
 ## Changes in 5.9.1
 1. Fix zooming in color palette
 2. Fix interactive update of TGraph painting on time scale
