@@ -1417,7 +1417,12 @@
             case 'TLeafC': datakind = JSROOT.IO.kTString; break; // datakind = leaf.fIsUnsigned ? JSROOT.IO.kUChar : JSROOT.IO.kChar; break;
             default: return null;
          }
-         return JSROOT.IO.CreateStreamerElement(name || leaf.fName, datakind);
+         var elem = JSROOT.IO.CreateStreamerElement(name || leaf.fName, datakind);
+         if (leaf.fLen > 1) {
+            elem.fType += JSROOT.IO.kOffsetL;
+            elem.fArrayLength = leaf.fLen;
+         }
+         return elem;
       }
 
       function FindInHandle(branch) {
