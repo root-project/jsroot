@@ -17,6 +17,7 @@
 14. Fix - do not add `THStack` and `TMultiGraph` to legend
 15. Fix - correctly use margin in `TPaveText` class
 16. Fix - correctly draw endcaps in legend errors
+17. Fix - correctly read leaf with fixed-size array
 
 
 ## Changes in 7.5.2

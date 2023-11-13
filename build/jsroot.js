@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '10/11/2023',
+version_date = '13/11/2023',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -9317,15 +9317,20 @@ function parseLatex(node, arg, label, curr) {
             if (curr.x) elem.attr('x', curr.x);
             if (curr.y) elem.attr('y', curr.y);
 
+            // for single symbols like f,l.i one gets wrong estimation of total width, use it in sup/sub-scripts
+            const xgap = (s.length === 1) && !curr.font.isMonospace() && ('lfij'.indexOf(s) >= 0) ? 0.1*curr.fsize : 0;
+
             extendPosition(curr.x, curr.y - rect.height*0.8, curr.x + rect.width, curr.y + rect.height*0.2);
 
             if (!alone) {
-               shiftX(rect.width);
+               shiftX(rect.width + xgap);
                addSpaces(nendspaces);
+               curr.xgap = 0;
             } else if (curr.deco) {
                elem.attr('text-decoration', curr.deco);
                delete curr.deco; // inform that decoration was applied
-            }
+            } else
+               curr.xgap = xgap; // may be used in accent or somewere else
          } else
             addSpaces(nendspaces);
       }
@@ -9342,12 +9347,13 @@ function parseLatex(node, arg, label, curr) {
          if (sublabel === -1) return false;
 
          const gg = createGG(),
-               subpos = createSubPos();
+               subpos = createSubPos(),
+               reduce = (sublabel.length !== 1) ? 1 : (((sublabel >= 'a') && (sublabel <= 'z') && ('tdbfhkli'.indexOf(sublabel) < 0)) ? 0.75 : 0.9);
 
          parseLatex(gg, arg, sublabel, subpos);
 
          const minw = curr.fsize * 0.6,
-               y1 = Math.round(subpos.rect.y1),
+               y1 = Math.round(subpos.rect.y1*reduce),
                dy2 = Math.round(curr.fsize*0.1), dy = dy2*2,
                dot = `a${dy2},${dy2},0,0,1,${dy},0a${dy2},${dy2},0,0,1,${-dy},0z`;
          let xpos = 0, w = subpos.rect.width;
@@ -9375,7 +9381,7 @@ function parseLatex(node, arg, label, curr) {
             default: createPath(gg, `M${w2},${y1}L${w5},${y1-dy}L${w8},${y1}`); // #hat{
          }
 
-         shiftX(subpos.rect.width);
+         shiftX(subpos.rect.width + (subpos.xgap ?? 0));
 
          continue;
       }
@@ -9417,7 +9423,8 @@ function parseLatex(node, arg, label, curr) {
       const extractLowUp = name => {
          const res = {};
          if (name) {
-            res[name] = extractSubLabel();
+            label = '{' + label;
+            res[name] = extractSubLabel(name === 'low' ? '_' : '^');
             if (res[name] === -1) return false;
          }
 
@@ -9445,7 +9452,7 @@ function parseLatex(node, arg, label, curr) {
          const subs = extractLowUp(found.low_up);
          if (!subs) return false;
 
-         const x = curr.x, y1 = -curr.fsize, y2 = 0.25*curr.fsize;
+         const x = curr.x, dx = 0.03*curr.fsize, yup = -curr.fsize, ylow = 0.25*curr.fsize;
          let pos_up, pos_low, w1 = 0, w2 = 0;
 
          if (subs.up) {
@@ -9459,16 +9466,16 @@ function parseLatex(node, arg, label, curr) {
          }
 
          if (pos_up) {
-            positionGNode(pos_up, x, y1 - pos_up.rect.y1 - curr.fsize*0.1);
+            positionGNode(pos_up, x+dx, yup - pos_up.rect.y1 - curr.fsize*0.1);
             w1 = pos_up.rect.width;
          }
 
          if (pos_low) {
-            positionGNode(pos_low, x, y2 - pos_low.rect.y2 + curr.fsize*0.1);
+            positionGNode(pos_low, x+dx, ylow - pos_low.rect.y2 + curr.fsize*0.1);
             w2 = pos_low.rect.width;
          }
 
-         shiftX(Math.max(w1, w2));
+         shiftX(dx + Math.max(w1, w2));
 
          continue;
       }
@@ -100119,7 +100126,12 @@ async function treeProcess(tree, selector, args) {
          case 'TLeafC': datakind = kTString; break;
          default: return null;
       }
-      return createStreamerElement(name || leaf.fName, datakind);
+      const elem = createStreamerElement(name || leaf.fName, datakind);
+      if (leaf.fLen > 1) {
+         elem.fType += kOffsetL;
+         elem.fArrayLength = leaf.fLen;
+      }
+      return elem;
    }, findInHandle = branch => {
       for (let k = 0; k < handle.arr.length; ++k) {
          if (handle.arr[k].branch === branch)
