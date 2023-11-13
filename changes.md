@@ -20,6 +20,7 @@
 17. Fix - support TMath::Sq() function
 18. Fix - prevent drawing of empty TGraph
 19. Fix - draw histogram with only negative bins #276
+20. Fix - reading TLeaf with fixed-size array
 
 
 ## Changes in 7.3.4

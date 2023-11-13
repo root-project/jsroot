@@ -11,7 +11,7 @@ let version_id = '7.3.x';
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-let version_date = '31/10/2023';
+let version_date = '13/11/2023';
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -61921,7 +61921,7 @@ class TH2Painter$2 extends THistPainter {
          // Paint histogram axis only
          this.draw_content = false;
       } else {
-         this.draw_content = (this.gmaxbin > 0);
+         this.draw_content = (this.gmaxbin !== 0) || (this.gminbin !== 0);
          if (!this.draw_content  && this.options.Zero && this.isTH2Poly()) {
             this.draw_content = true;
             this.options.Line = 1;
@@ -64599,7 +64599,7 @@ class TH3Painter extends THistPainter {
                   this.gmaxbin = bin_content;
             }
 
-      this.draw_content = this.gmaxbin > 0;
+      this.draw_content = (this.gmaxbin !== 0) || (this.gminbin !== 0);
    }
 
    /** @summary Count TH3 statistic */
@@ -80435,8 +80435,12 @@ async function treeProcess(tree, selector, args) {
          case 'TLeafC': datakind = kTString; break;
          default: return null;
       }
-      return createStreamerElement(name || leaf.fName, datakind);
-
+      const elem = createStreamerElement(name || leaf.fName, datakind);
+      if (leaf.fLen > 1) {
+         elem.fType += kOffsetL;
+         elem.fArrayLength = leaf.fLen;
+      }
+      return elem;
    }, findInHandle = branch => {
       for (let k = 0; k < handle.arr.length; ++k)
          if (handle.arr[k].branch === branch)
@@ -103720,11 +103724,10 @@ class RH2Painter$2 extends RHistPainter {
       // this value used for logz scale drawing
       if (this.gminposbin === null) this.gminposbin = this.gmaxbin*1e-4;
 
-      if (this.options.Axis > 0) { // Paint histogram axis only
+      if (this.options.Axis > 0) // Paint histogram axis only
          this.draw_content = false;
-      } else {
-         this.draw_content = this.gmaxbin > 0;
-      }
+      else
+         this.draw_content = (this.gmaxbin !== 0) || (this.gminbin !== 0);
    }
 
    /** @summary Count statistic */
@@ -104984,7 +104987,7 @@ class RH3Painter extends RHistPainter {
                }
       }
 
-      this.draw_content = this.gmaxbin > 0;
+      this.draw_content = (this.gmaxbin !== 0) || (this.gminbin !== 0);
    }
 
   /** @summary Count histogram statistic */
