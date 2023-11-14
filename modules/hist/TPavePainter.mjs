@@ -198,7 +198,7 @@ class TPavePainter extends ObjectPainter {
 
       return promise.then(() => {
          // fill stats before drawing to have coordinates early
-         if (this.isStats() && !this.NoFillStats && !pp?._fast_drawing) {
+         if (this.isStats() && !this.NoFillStats && !pp._fast_drawing) {
             const main = pt.$main_painter || this.getMainPainter();
 
             if (isFunc(main?.fillStatistic)) {
@@ -471,7 +471,7 @@ class TPavePainter extends ObjectPainter {
    /** @summary draw TPaveText object */
    drawPaveText(width, height, _dummy_arg, text_g) {
       const pt = this.getObject(),
-            arr = pt?.fLines?.arr || [],
+            arr = pt.fLines?.arr || [],
             nlines = arr.length,
             pp = this.getPadPainter(),
             pad_height = pp.getPadHeight(),
@@ -489,7 +489,7 @@ class TPavePainter extends ObjectPainter {
 
       if (!text_g) text_g = this.draw_g;
 
-      const fast = (nlines === 1) && pp?._fast_drawing;
+      const fast = (nlines === 1) && pp._fast_drawing;
       let num_default = 0;
 
       for (let nline = 0; nline < nlines; ++nline) {
@@ -641,11 +641,10 @@ class TPavePainter extends ObjectPainter {
       if (ncols > 1) {
          const column_weight = new Array(ncols).fill(1);
 
-         for (let ii = 0, i = -1; ii < nlines; ++ii) {
+         for (let ii = 0; ii < nlines; ++ii) {
             const entry = legend.fPrimitives.arr[ii];
             if (isEmpty(entry)) continue; // let discard empty entry
-            if (ncols === 1) ++i; else i = ii;
-            const icol = i % ncols;
+            const icol = ii % ncols;
             column_weight[icol] = Math.max(column_weight[icol], entry.fLabel.length);
          }
 
@@ -654,7 +653,7 @@ class TPavePainter extends ObjectPainter {
             sum_weight += column_weight[icol];
          for (let icol = 0; icol < ncols-1; ++icol)
             column_pos[icol+1] = column_pos[icol] + legend.fMargin*w/ncols + column_weight[icol] * (1-legend.fMargin) * w / sum_weight;
-       }
+      }
       column_pos[ncols] = w;
 
       const padding_x = Math.round(0.03*w/ncols),
@@ -835,10 +834,10 @@ class TPavePainter extends ObjectPainter {
             framep = this.getFramePainter(),
             contour = main.fContour,
             levels = contour?.getLevels(),
-            is_th3 = isFunc(main?.getDimension) && (main.getDimension() === 3),
+            is_th3 = isFunc(main.getDimension) && (main.getDimension() === 3),
             log = (is_th3 ? pad?.fLogv : pad?.fLogz) ?? 0,
             draw_palette = main._color_palette,
-            zaxis = main?.getObject()?.fZaxis,
+            zaxis = main.getObject()?.fZaxis,
             sizek = pad?.fTickz ? 0.35 : 0.7;
 
       let zmin = 0, zmax = 100, gzmin, gzmax, axis_transform = '', axis_second = 0;
