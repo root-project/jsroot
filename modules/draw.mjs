@@ -663,7 +663,7 @@ internals.addDrawFunc = addDrawFunc;
 
 function assignPadPainterDraw(PadPainterClass) {
    PadPainterClass.prototype.drawObject = (...args) =>
-      draw(...args).catch(err => { console.log(`Error ${err?.message ?? err}  at ${err.stack ?? 'uncknown place'}`); return null; });
+      draw(...args).catch(err => { console.log(`Error ${err?.message ?? err}  at ${err?.stack ?? 'uncknown place'}`); return null; });
    PadPainterClass.prototype.getObjectDrawSettings = getDrawSettings;
 }
 
