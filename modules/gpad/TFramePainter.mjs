@@ -392,7 +392,7 @@ const TooltipHandler = {
       const hmargin = 3, wmargin = 3, hstep = 1.2,
             frame_rect = this.getFrameRect(),
             pp = this.getPadPainter(),
-            pad_width = pp.getPadWidth(),
+            pad_width = pp?.getPadWidth(),
             font = new FontHandler(160, textheight),
             disable_tootlips = !this.isTooltipAllowed() || !this.tooltip_enabled;
 
@@ -454,7 +454,7 @@ const TooltipHandler = {
           hint = null, best_dist2 = 1e10, best_hint = null;
 
       // try to select hint with exact match of the position when several hints available
-      for (let k = 0; k < (hints?.length || 0); ++k) {
+      for (let k = 0; k < hints.length; ++k) {
          if (!hints[k]) continue;
          if (!hint) hint = hints[k];
 
@@ -1674,7 +1674,7 @@ class TFramePainter extends ObjectPainter {
    recalculateRange(Proj, change_x, change_y) {
       this.projection = Proj || 0;
 
-      if ((this.projection === 2) && ((this.scale_ymin <= -90 || this.scale_ymax >= 90))) {
+      if ((this.projection === 2) && ((this.scale_ymin <= -90) || (this.scale_ymax >= 90))) {
          console.warn(`Mercator Projection: Latitude out of range ${this.scale_ymin} ${this.scale_ymax}`);
          this.projection = 0;
       }

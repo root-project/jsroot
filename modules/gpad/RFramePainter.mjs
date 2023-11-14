@@ -80,7 +80,7 @@ class RFramePainter extends RObjectPainter {
    recalculateRange(Proj) {
       this.projection = Proj || 0;
 
-      if ((this.projection === 2) && ((this.scale_ymin <= -90 || this.scale_ymax >=90))) {
+      if ((this.projection === 2) && ((this.scale_ymin <= -90) || (this.scale_ymax >=90))) {
          console.warn(`Mercator Projection: latitude out of range ${this.scale_ymin} ${this.scale_ymax}`);
          this.projection = 0;
       }
