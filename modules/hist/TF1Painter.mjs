@@ -10,7 +10,7 @@ import * as jsroot_math from '../base/math.mjs';
   * @private */
 
 function proivdeEvalPar(obj, check_save) {
-   obj._math = jsroot_math;
+   obj.$math = jsroot_math;
 
    let _func = obj.fTitle, isformula = false, pprefix = '[';
    if (_func === 'gaus') _func = 'gaus(0)';
@@ -58,14 +58,14 @@ function proivdeEvalPar(obj, check_save) {
                 .replace(/\b(pow|POW|TMath::Power)\b/g, 'Math.pow')
                 .replace(/\b(pi|PI)\b/g, 'Math.PI')
                 .replace(/\b(abs|ABS|TMath::Abs)\b/g, 'Math.abs')
-                .replace(/\bxygaus\(/g, 'this._math.gausxy(this, x, y, ')
-                .replace(/\bgaus\(/g, 'this._math.gaus(this, x, ')
-                .replace(/\bgausn\(/g, 'this._math.gausn(this, x, ')
-                .replace(/\bexpo\(/g, 'this._math.expo(this, x, ')
-                .replace(/\blandau\(/g, 'this._math.landau(this, x, ')
-                .replace(/\blandaun\(/g, 'this._math.landaun(this, x, ')
-                .replace(/\bTMath::/g, 'this._math.')
-                .replace(/\bROOT::Math::/g, 'this._math.');
+                .replace(/\bxygaus\(/g, 'this.$math.gausxy(this, x, y, ')
+                .replace(/\bgaus\(/g, 'this.$math.gaus(this, x, ')
+                .replace(/\bgausn\(/g, 'this.$math.gausn(this, x, ')
+                .replace(/\bexpo\(/g, 'this.$math.expo(this, x, ')
+                .replace(/\blandau\(/g, 'this.$math.landau(this, x, ')
+                .replace(/\blandaun\(/g, 'this.$math.landaun(this, x, ')
+                .replace(/\bTMath::/g, 'this.$math.')
+                .replace(/\bROOT::Math::/g, 'this.$math.');
 
    if (_func.match(/^pol[0-9]$/) && (parseInt(_func[3]) === obj.fNpar - 1)) {
       _func = '[0]';
@@ -74,7 +74,7 @@ function proivdeEvalPar(obj, check_save) {
    }
 
    if (_func.match(/^chebyshev[0-9]$/) && (parseInt(_func[9]) === obj.fNpar - 1)) {
-      _func = `this._math.ChebyshevN(${obj.fNpar-1}, x, `;
+      _func = `this.$math.ChebyshevN(${obj.fNpar-1}, x, `;
       for (let k = 0; k < obj.fNpar; ++k)
          _func += (k === 0 ? '[' : ', ') + `[${k}]`;
       _func += '])';
