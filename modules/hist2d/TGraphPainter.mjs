@@ -5,8 +5,7 @@ import { DrawOptions, buildSvgCurve, makeTranslate, addHighlightStyle } from '..
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { FunctionsHandler } from './THistPainter.mjs';
 import { TH1Painter, PadDrawOptions } from './TH1Painter.mjs';
-import { kBlack } from '../base/colors.mjs';
-import { TAttFillHandler } from '../base/TAttFillHandler.mjs';
+import { kBlack, kWhite } from '../base/colors.mjs';
 import { addMoveHandler } from '../gui/utils.mjs';
 import { assignContextMenu } from '../gui/menu.mjs';
 
@@ -685,7 +684,7 @@ class TGraphPainter extends ObjectPainter {
                   fpcol = !fp?.fillatt?.empty() ? fp.fillatt.getFillColor() : -1;
 
             if (fpcol === fillatt.getFillColor())
-               usefill = new TAttFillHandler({ color: fpcol === 'white' ? 1 : 0, pattern: 1001 });
+               usefill = this.createAttFill({ color: fpcol === 'white' ? kBlack : kWhite, pattern: 1001, std: false });
          }
 
          nodes.append('svg:path')
