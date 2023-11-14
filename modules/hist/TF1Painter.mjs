@@ -95,7 +95,7 @@ function produceTAxisLogScale(axis, num, min, max) {
       lmin = min > 0 ? Math.log(min) : lmax - 5;
    } else {
       lmax = -10;
-      lmax = -15;
+      lmin = -15;
    }
 
    axis.fNbins = num;
