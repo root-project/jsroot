@@ -3,6 +3,8 @@
 ## Changes in 7.5.x
 1. Fix - draw histograms with negative bins #276
 2. Fix - correctly read TLeaf with fixed-size array
+3. Fix - bug in options handling in startGUI
+4. Fix - greyscale support in TLegend drawing
 
 
 ## Changes in 7.5.2

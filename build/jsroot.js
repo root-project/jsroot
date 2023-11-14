@@ -1,4 +1,4 @@
-// https://root.cern/js/ v7.5.2
+// https://root.cern/js/ v7.5.3
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -11,7 +11,7 @@ const version_id = '7.5.x',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '13/11/2023',
+version_date = '14/11/2023',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -69524,7 +69524,7 @@ class TPavePainter extends ObjectPainter {
                      lx2 = entry.fX2 ? Math.round(entry.fX2*width) : width,
                      ly1 = entry.fY1 ? Math.round((1 - entry.fY1)*height) : Math.round(texty + stepy*0.5),
                      ly2 = entry.fY2 ? Math.round((1 - entry.fY2)*height) : Math.round(texty + stepy*0.5),
-                     lineatt = new TAttLineHandler(entry);
+                     lineatt = this.createAttLine(entry);
                text_g.append('svg:path')
                      .attr('d', `M${lx1},${ly1}L${lx2},${ly2}`)
                      .call(lineatt.func);
@@ -69695,12 +69695,13 @@ class TPavePainter extends ObjectPainter {
             painter = pp.findPainterFor(mo);
          }
 
+
          // Draw fill pattern (in a box)
          if (draw_fill) {
             const fillatt = painter?.fillatt?.used ? painter.fillatt : this.createAttFill(o_fill);
             let lineatt;
             if (!draw_line && !draw_error && !draw_marker) {
-               lineatt = painter?.lineatt?.used ? painter.lineatt : new TAttLineHandler(o_line);
+               lineatt = painter?.lineatt?.used ? painter.lineatt : this.createAttLine(o_line);
                if (lineatt.empty()) lineatt = null;
             }
 
@@ -69719,7 +69720,7 @@ class TPavePainter extends ObjectPainter {
 
          // Draw line and error (when specified)
          if (draw_line || draw_error) {
-            const lineatt = painter?.lineatt?.used ? painter.lineatt : new TAttLineHandler(o_line);
+            const lineatt = painter?.lineatt?.used ? painter.lineatt : this.createAttLine(o_line);
             if (!lineatt.empty()) {
                isany = true;
                this.draw_g.append('svg:path')
@@ -69735,7 +69736,7 @@ class TPavePainter extends ObjectPainter {
 
          // Draw Polymarker
          if (draw_marker) {
-            const marker = painter?.markeratt?.used ? painter.markeratt : new TAttMarkerHandler(o_marker);
+            const marker = painter?.markeratt?.used ? painter.markeratt : this.createAttMarker(o_marker);
             if (!marker.empty()) {
                isany = true;
                this.draw_g
@@ -76007,7 +76008,7 @@ function createTextGeometry(painter, lbl, size) {
 
    produceLatex(painter, node, arg);
 
-   if (!geoms)
+   if (!geoms.length)
       return new TextGeometry(translateLaTeX(lbl), { font: HelveticerRegularFont, size, height: 0, curveSegments: 5 });
 
    node.translate(); // apply translate attributes
@@ -77316,7 +77317,7 @@ function drawBinsLego(painter, is_v7 = false) {
          test_cutg = painter.options.cutg,
          i1 = handle.i1, i2 = handle.i2, j1 = handle.j1, j2 = handle.j2,
          histo = painter.getHisto(),
-         basehisto = histo ? histo.$baseh : null,
+         basehisto = histo.$baseh,
          split_faces = (painter.options.Lego === 11) || (painter.options.Lego === 13), // split each layer on two parts
          use16indx = (histo.getBin(i2, j2) < 0xFFFF); // if bin ID fit into 16 bit, use smaller arrays for intersect indexes
 
@@ -104091,7 +104092,7 @@ class HierarchyPainter extends BasePainter {
             promise = this.loadScripts(load, prereq); load = ''; prereq = '';
          } else if (inject) {
             promise = this.loadScripts(inject, '', true); inject = '';
-         } if (browser_kind) {
+         } else if (browser_kind) {
             promise = this.createBrowser(browser_kind); browser_kind = '';
          } else if (status !== null) {
             promise = this.createStatusLine(statush, status); status = null;
@@ -109855,7 +109856,7 @@ class TGraphPolarPainter extends ObjectPainter {
    showTooltip(hint) {
       let ttcircle = this.draw_g?.selectChild('.tooltip_bin');
 
-      if (!hint || !!this.draw_g) {
+      if (!hint || !this.draw_g) {
          ttcircle?.remove();
          return;
       }
@@ -110008,7 +110009,7 @@ function produceTAxisLogScale(axis, num, min, max) {
       lmin = min > 0 ? Math.log(min) : lmax - 5;
    } else {
       lmax = -10;
-      lmax = -15;
+      lmin = -15;
    }
 
    axis.fNbins = num;
