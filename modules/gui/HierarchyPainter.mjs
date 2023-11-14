@@ -2443,7 +2443,7 @@ class HierarchyPainter extends BasePainter {
             hitem = d.last;
          }
 
-         if (hitem) {
+         if (hitem) { // deepscan-disable-line
             // check that item is visible (opened), otherwise should enable parent
 
             let prnt = hitem._parent;
@@ -2524,7 +2524,7 @@ class HierarchyPainter extends BasePainter {
          }
 
          // try to use expand function
-         if (_obj && isFunc(_item?._expand)) {
+         if (_obj && isFunc(_item._expand)) {
             if (_item._expand(_item, _obj)) {
                _item._isopen = true;
                if (_item._parent && !_item._parent._isopen) {
@@ -3636,7 +3636,7 @@ class HierarchyPainter extends BasePainter {
             menu.show();
          });
       }).on('dblclick', () => {
-         this.createBrowser(this?.brlayout?.browser_kind === 'float' ? 'fix' : 'float', true);
+         this.createBrowser(this.brlayout?.browser_kind === 'float' ? 'fix' : 'float', true);
       });
 
       if (!this.is_online && !this.no_select) {
