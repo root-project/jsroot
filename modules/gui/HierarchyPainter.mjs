@@ -3426,7 +3426,7 @@ class HierarchyPainter extends BasePainter {
             promise = this.loadScripts(load, prereq); load = ''; prereq = '';
          } else if (inject) {
             promise = this.loadScripts(inject, '', true); inject = '';
-         } if (browser_kind) {
+         } else if (browser_kind) {
             promise = this.createBrowser(browser_kind); browser_kind = '';
          } else if (status !== null) {
             promise = this.createStatusLine(statush, status); status = null;
