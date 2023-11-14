@@ -1,7 +1,7 @@
 import { gStyle, createHistogram, createTPolyLine, isFunc, isStr,
          clTMultiGraph, clTH1D, clTF2, clTProfile2D, kInspect } from '../core.mjs';
 import { rgb as d3_rgb, chord as d3_chord, arc as d3_arc, ribbon as d3_ribbon } from '../d3.mjs';
-import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
+import { kBlack } from '../base/colors.mjs';
 import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
 import { TRandom, floatToString, makeTranslate, addHighlightStyle } from '../base/BasePainter.mjs';
 import { EAxisBits } from '../base/ObjectPainter.mjs';
@@ -1422,8 +1422,8 @@ class TH2Painter extends THistPainter {
 
          switch (this.options.Contour) {
             case 1: break;
-            case 11: fillcolor = 'none'; lineatt = new TAttLineHandler({ color: icol }); break;
-            case 12: fillcolor = 'none'; lineatt = new TAttLineHandler({ color: 1, style: (ipoly%5 + 1), width: 1 }); break;
+            case 11: fillcolor = 'none'; lineatt = this.createAttLine({ color: icol, std: false }); break;
+            case 12: fillcolor = 'none'; lineatt = this.createAttLine({ color: 1, style: (ipoly%5 + 1), width: 1, std: false }); break;
             case 13: fillcolor = 'none'; lineatt = this.lineatt; break;
             case 14: break;
          }
@@ -2302,7 +2302,7 @@ class TH2Painter extends THistPainter {
       }
 
       if (dashed_lines) {
-         const dashed = new TAttLineHandler({ attr: histo, style: 2 });
+         const dashed = this.createAttLine({ attr: histo, style: 2, std: false, color: kBlack });
          this.draw_g.append('svg:path')
              .attr('d', dashed_lines)
              .call(dashed.func)
