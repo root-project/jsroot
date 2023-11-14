@@ -3,7 +3,6 @@ import { settings, createHistogram, setHistogramTitle, kNoZoom,
 import { Color, DoubleSide, LineBasicMaterial, MeshBasicMaterial, Mesh } from '../three.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
-import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
 import { TH2Painter } from './TH2Painter.mjs';
 import { Triangles3DHandler } from '../hist2d/TH2Painter.mjs';
 import { createLineSegments, PointsCreator, getMaterialArgs } from '../base/base3d.mjs';
@@ -1153,7 +1152,7 @@ class TGraph2DPainter extends ObjectPainter {
          }
       }
 
-      const markeratt = new TAttMarkerHandler(graph),
+      const markeratt = this.createAttMarker({ attr: graph, std: false }),
             promises = [];
       let palette = null,
           levels = [fp.scale_zmin, fp.scale_zmax],

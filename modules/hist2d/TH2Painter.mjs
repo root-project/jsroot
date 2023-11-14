@@ -2,7 +2,6 @@ import { gStyle, createHistogram, createTPolyLine, isFunc, isStr,
          clTMultiGraph, clTH1D, clTF2, clTProfile2D, kInspect } from '../core.mjs';
 import { rgb as d3_rgb, chord as d3_chord, arc as d3_arc, ribbon as d3_ribbon } from '../d3.mjs';
 import { kBlack } from '../base/colors.mjs';
-import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
 import { TRandom, floatToString, makeTranslate, addHighlightStyle } from '../base/BasePainter.mjs';
 import { EAxisBits } from '../base/ObjectPainter.mjs';
 import { THistPainter } from './THistPainter.mjs';
@@ -2038,7 +2037,7 @@ class TH2Painter extends THistPainter {
          markers += swapXY ? this.markeratt.create(y, x) : this.markeratt.create(x, y);
       }, make_cmarker = (x, y) => {
          if (!attrcmarkers) {
-            attrcmarkers = new TAttMarkerHandler({ attr: histo, style: 24 });
+            attrcmarkers = this.createAttMarker({ attr: histo, style: 24, std: false });
             attrcmarkers.resetPos();
          }
          cmarkers += swapXY ? attrcmarkers.create(y, x) : attrcmarkers.create(x, y);
