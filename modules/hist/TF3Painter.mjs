@@ -65,9 +65,9 @@ class TF3Painter extends TH2Painter {
       return super.redraw(reason);
    }
 
-   /** @summary Create histogram for TF2 drawing
+   /** @summary Create histogram for TF3 drawing
      * @private */
-   createTF3Histogram(func, hist = undefined) {
+   createTF3Histogram(func, hist) {
       const nsave = func.fSave.length - 9;
 
       this._use_saved_points = (nsave > 0) && (settings.PreferSavedPoints || this.force_saved);

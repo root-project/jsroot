@@ -53,7 +53,7 @@ class TF2Painter extends TH2Painter {
 
    /** @summary Create histogram for TF2 drawing
      * @private */
-   createTF2Histogram(func, hist = undefined) {
+   createTF2Histogram(func, hist) {
       let nsave = func.fSave.length - 6;
       if ((nsave > 0) && (nsave !== (func.fSave[nsave+4]+1) * (func.fSave[nsave+5]+1)))
          nsave = 0;

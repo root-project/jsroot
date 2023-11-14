@@ -304,14 +304,10 @@ class TF1Painter extends TH1Painter {
          xmax = tf1.fSave[np + 2];
 
          if (xmin === xmax) {
-            xmin = tf1.fSave[np];
+            // xmin = tf1.fSave[np];
             const mp = this.getMainPainter();
             if (isFunc(mp?.getHisto))
                custom_xaxis = mp?.getHisto()?.fXaxis;
-            if (!custom_xaxis) {
-               xmin = tf1.fXmin;
-               xmax = tf1.fXmax;
-            }
          }
 
          if (custom_xaxis) {
