@@ -64,8 +64,7 @@ function proivdeEvalPar(obj, check_save) {
                 .replace(/\bexpo\(/g, 'this.$math.expo(this, x, ')
                 .replace(/\blandau\(/g, 'this.$math.landau(this, x, ')
                 .replace(/\blandaun\(/g, 'this.$math.landaun(this, x, ')
-                .replace(/\bTMath::/g, 'this.$math.')
-                .replace(/\bROOT::Math::/g, 'this.$math.');
+                .replace(/\b(TMath::|ROOT::Math::)/g, 'this.$math.');
 
    if (_func.match(/^pol[0-9]$/) && (parseInt(_func[3]) === obj.fNpar - 1)) {
       _func = '[0]';
