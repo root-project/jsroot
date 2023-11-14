@@ -194,7 +194,7 @@ class ObjectPainter extends BasePainter {
       document.body.style.cursor = 'wait';
       const res = this.redrawPad();
       doc.body.style.cursor = current;
-      return res || true;
+      return res;
    }
 
    /** @summary Generic method to update object content.
@@ -676,7 +676,7 @@ class ObjectPainter extends BasePainter {
    createAttText(args) {
       if (!isObject(args))
          args = { std: true };
-      else if (args.fTextFont !== undefined && args.fTextSize !== undefined && args.fTextSize !== undefined)
+      else if (args.fTextFont !== undefined && args.fTextSize !== undefined && args.fTextColor !== undefined)
          args = { attr: args, std: false };
 
       if (args.std === undefined) args.std = true;

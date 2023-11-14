@@ -1237,8 +1237,9 @@ function translateMath(str, kind, color, painter) {
       str = str.replace(/\\\./g, '\\unicode{0x2E}').replace(/\\\^/g, '\\hat');
       for (const x in mathjax_unicode)
          str = str.replace(new RegExp(`\\\\\\b${x}\\b`, 'g'), `\\unicode{0x${mathjax_unicode[x].toString(16)}}`);
-      for (const x in mathjax_asis)
-         str = str.replace(new RegExp(`(\\\\${mathjax_asis[x]})`, 'g'), `\\unicode{0x${mathjax_asis[x].charCodeAt(0).toString(16)}}`);
+      mathjax_asis.forEach(symbol => {
+         str = str.replace(new RegExp(`(\\\\${symbol})`, 'g'), `\\unicode{0x${symbol.charCodeAt(0).toString(16)}}`);
+      });
       for (const x in mathjax_remap)
          str = str.replace(new RegExp(`\\\\\\b${x}\\b`, 'g'), `\\${mathjax_remap[x]}`);
    }
