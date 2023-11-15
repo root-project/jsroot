@@ -23,6 +23,9 @@ class TF2Painter extends TH2Painter {
    /** @summary Returns true while function is drawn */
    isTF1() { return true; }
 
+   /** @summary Returns primary function which was then drawn as histogram */
+   getPrimaryObject() { return this.$func; }
+
    /** @summary Update histogram */
    updateObject(obj /*, opt */) {
       if (!obj || (this.getClassName() !== obj._typename)) return false;
