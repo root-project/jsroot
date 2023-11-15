@@ -206,8 +206,10 @@ class THistDrawOptions {
          return false;
       };
 
-      if (d.check('FILL_', true) && d.getColor())
+      if (d.check('FILL_', true) && d.getColor()) {
          this.histoFillColor = d.color;
+         this.histoFillPattern = 1001;
+      }
 
       if (d.check('LINE_', true) && d.getColor())
          this.histoLineColor = getColor(d.color);
@@ -953,7 +955,7 @@ class THistPainter extends ObjectPainter {
          }
       }
 
-      this.createAttFill({ attr: histo, color: this.options.histoFillColor, kind: 1 });
+      this.createAttFill({ attr: histo, color: this.options.histoFillColor, pattern: this.options.histoFillPattern, kind: 1 });
 
       this.createAttLine({ attr: histo, color0: this.options.histoLineColor });
    }
