@@ -53,7 +53,7 @@ function showProgress(msg, tmout) {
   * therefore try several workarounds
   * @private */
 function closeCurrentWindow() {
-   if (!window) return;
+   if (typeof window === 'undefined') return;
    window.close();
    window.open('', '_self').close();
 }
