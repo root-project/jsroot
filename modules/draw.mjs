@@ -93,7 +93,7 @@ drawFuncs = { lst: [
    { name: 'TPadWebSnapshot', sameas: clTCanvasWebSnapshot },
    { name: 'kind:Text', icon: 'img_text', func: drawRawText },
    { name: clTObjString, icon: 'img_text', func: drawRawText },
-   { name: clTF1, icon: 'img_tf1', class: () => import('./hist/TF1Painter.mjs').then(h => h.TF1Painter) },
+   { name: clTF1, icon: 'img_tf1', class: () => import('./hist/TF1Painter.mjs').then(h => h.TF1Painter), opt: ';L;C;FC;FL' },
    { name: clTF2, icon: 'img_tf2', class: () => import('./hist/TF2Painter.mjs').then(h => h.TF2Painter), opt: ';BOX;ARR;SURF;SURF1;SURF2;SURF4;SURF6;LEGO;LEGO0;LEGO1;LEGO2;LEGO3;LEGO4;same' },
    { name: clTF3, icon: 'img_histo3d', class: () => import('./hist/TF3Painter.mjs').then(h => h.TF3Painter), opt: ';SURF' },
    { name: clTSpline3, icon: 'img_tf1', class: () => import('./draw/TSplinePainter.mjs').then(h => h.TSplinePainter) },
