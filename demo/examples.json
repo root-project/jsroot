@@ -165,6 +165,7 @@
    ],
    "TF1" : [
      { "name": "func", "file": "fillrandom.root", "item": "sqroot;1", "title": "default drawing of TF1", "interactive": true },
+     { "name": "LF", "file": "fillrandom.root", "item": "sqroot;1", "opt" : "lf,fill_red", "title": "Draw function with line and fill, provide extra fill_red option" },
      { "name": "X+Y+", "file": "fillrandom.root", "item": "sqroot;1", "opt": "X+Y+", "title": "draw axes on other sides" },
      { "name": "hist+func", "opt": "", "url": "?nobrowser&file=$$$fillrandom.root&item=h1f;1+sqroot;1" },
      { "name": "hist+func+Y+", "opt": "", "url": "?nobrowser&file=$$$fillrandom.root&item=[h1f;1,sqroot;1]&opt=[hist,y+]", "title": "demo for second fully interactive Y axis" },
