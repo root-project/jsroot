@@ -2488,7 +2488,8 @@ class HierarchyPainter extends BasePainter {
          if (!isFunc(_item._expand)) {
             let handle = getDrawHandle(_item._kind, '::expand');
 
-            if (handle?.expand_item) {
+            // in inspector show all memebers
+            if (handle?.expand_item && !hpainter._inspector) {
                _obj = _obj[handle.expand_item];
                _item.expand_item = handle.expand_item; // remember that was exapnd item
                handle = _obj?._typename ? getDrawHandle(prROOT + _obj._typename, '::expand') : null;
