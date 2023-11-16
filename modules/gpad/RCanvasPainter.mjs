@@ -45,6 +45,11 @@ class RCanvasPainter extends RPadPainter {
       super.cleanup();
    }
 
+   /** @summary Returns true if canvas is editable */
+   isEditable() {
+      return true;
+   }
+
    /** @summary Returns layout kind */
    getLayoutKind() {
       const origin = this.selectDom('origin'),

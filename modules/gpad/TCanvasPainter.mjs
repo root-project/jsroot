@@ -54,6 +54,11 @@ class TCanvasPainter extends TPadPainter {
       super.cleanup();
    }
 
+   /** @summary Returns true if canvas is editable */
+   isEditable() {
+      return this.pad?.fEditable ?? true;
+   }
+
    /** @summary Returns layout kind */
    getLayoutKind() {
       const origin = this.selectDom('origin'),

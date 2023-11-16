@@ -1155,8 +1155,10 @@ class TPadPainter extends ObjectPainter {
          menu.addchk(this.pad?.fTicky === 1, 'ticks on both sides', '1fTicky', SetPadField);
          menu.addchk(this.pad?.fTicky === 2, 'labels on both sides', '2fTicky', SetPadField);
          menu.add('endsub:');
-         if (this.iscan)
-            menu.addchk(this.pad?.TestBit(kIsGrayscale), 'Gray scale', flag => { this.setGrayscale(flag); this.interactiveRedraw('pad'); });
+         if (this.iscan && this.pad) {
+            menu.addchk(this.pad.TestBit(kIsGrayscale), 'Gray scale', flag => { this.setGrayscale(flag); this.interactiveRedraw('pad'); });
+            menu.addchk(this.pad.fEditable, 'Editable', flag => { this.pad.fEditable = flag; this.interactiveRedraw('pad'); });
+         }
 
          if (isFunc(this.drawObject))
             menu.add('Build legend', () => this.buildLegend());
@@ -1359,7 +1361,11 @@ class TPadPainter extends ObjectPainter {
       this.pad.fPhi = obj.fPhi;
       this.pad.fTheta = obj.fTheta;
 
-      if (this.iscan) this.checkSpecialsInPrimitives(obj);
+      if (this.iscan) {
+         if (obj.fEditable !== undefined)
+            this.pad.fEditable = obj.fEditable;
+         this.checkSpecialsInPrimitives(obj);
+      }
 
       const fp = this.getFramePainter();
       if (fp) fp.updateAttributes(!fp.modified_NDC);
