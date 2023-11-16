@@ -322,6 +322,8 @@ function parseLatex(node, arg, label, curr) {
          curr.rect.y2 = Math.max(curr.rect.y2, y2);
       }
 
+      curr.rect.last_y1 = y1; // upper position of last symbols
+
       curr.rect.width = curr.rect.x2 - curr.rect.x1;
       curr.rect.height = curr.rect.y2 - curr.rect.y1;
 
@@ -620,8 +622,9 @@ function parseLatex(node, arg, label, curr) {
          const subs = extractLowUp(found.low_up);
          if (!subs) return false;
 
-         const x = curr.x, dx = 0.03*curr.fsize, yup = -curr.fsize, ylow = 0.25*curr.fsize;
-         let pos_up, pos_low, w1 = 0, w2 = 0;
+         const x = curr.x, dx = 0.03*curr.fsize, ylow = 0.25*curr.fsize;
+
+         let pos_up, pos_low, w1 = 0, w2 = 0, yup = -curr.fsize;
 
          if (subs.up) {
             pos_up = createSubPos(0.6);
@@ -634,6 +637,7 @@ function parseLatex(node, arg, label, curr) {
          }
 
          if (pos_up) {
+            if (!pos_low) yup = Math.min(yup, curr.rect.last_y1);
             positionGNode(pos_up, x+dx, yup - pos_up.rect.y1 - curr.fsize*0.1);
             w1 = pos_up.rect.width;
          }
