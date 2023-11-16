@@ -58573,6 +58573,9 @@ function detectRightButton(event) {
 function addMoveHandler(painter, enabled = true) {
    if (!settings.MoveResize || painter.isBatchMode() || !painter.draw_g) return;
 
+   if (painter.getCanvPainter()?.isEditable() === false)
+      enabled = false;
+
    if (!enabled) {
       if (painter.draw_g.property('assigned_move')) {
          const drag_move = drag().subject(Object);
@@ -61561,7 +61564,7 @@ class TAxisPainter extends ObjectPainter {
             if ((this.name === 'zaxis') && this.is_gaxis && ('getBoundingClientRect' in axis_g.node())) {
                // special handling for color palette labels - draw them always on right side
                const rect = axis_g.node().getBoundingClientRect();
-               if (title_shift_x < rect.waddMoveHandleridth - this.ticksSize)
+               if (title_shift_x < rect.width - this.ticksSize)
                   title_shift_x = Math.round(rect.width - this.ticksSize);
             }
 
@@ -61698,6 +61701,9 @@ function addDragHandler(_painter, arg) {
 
    const painter = _painter, pp = painter.getPadPainter();
    if (pp?._fast_drawing || pp?.isBatchMode()) return;
+   // cleanup all drag elements when canvas is not ediatable
+   if (_painter.getCanvPainter()?.isEditable() === false)
+      arg.cleanup = true;
 
    if (!isFunc(arg.getDrawG))
       arg.getDrawG = () => painter?.draw_g;
@@ -61746,7 +61752,7 @@ function addDragHandler(_painter, arg) {
       if (arg.minheight && newheight < arg.minheight) newheight = arg.minheight;
 
       const change_size = (newwidth !== arg.width) || (newheight !== arg.height),
-          change_pos = (newx !== oldx) || (newy !== oldy);
+            change_pos = (newx !== oldx) || (newy !== oldy);
 
       arg.x = newx; arg.y = newy; arg.width = newwidth; arg.height = newheight;
 
@@ -61782,9 +61788,8 @@ function addDragHandler(_painter, arg) {
 
       return change_size || change_pos;
    },
-
-    drag_move = drag().subject(Object),
-       drag_move_off = drag().subject(Object);
+   drag_move = drag().subject(Object),
+   drag_move_off = drag().subject(Object);
 
    drag_move_off.on('start', null).on('drag', null).on('end', null);
 
@@ -62308,7 +62313,7 @@ const TooltipHandler = {
 
       if (main_svg.property('handlers_set') !== handlers_set) {
          const close_handler = handlers_set ? this.processFrameTooltipEvent.bind(this, null) : null,
-             mouse_handler = handlers_set ? this.processFrameTooltipEvent.bind(this, { handler: true, touch: false }) : null;
+               mouse_handler = handlers_set ? this.processFrameTooltipEvent.bind(this, { handler: true, touch: false }) : null;
 
          main_svg.property('handlers_set', handlers_set)
                  .on('mouseenter', mouse_handler)
@@ -67469,8 +67474,10 @@ class TPadPainter extends ObjectPainter {
          menu.addchk(this.pad?.fTicky === 1, 'ticks on both sides', '1fTicky', SetPadField);
          menu.addchk(this.pad?.fTicky === 2, 'labels on both sides', '2fTicky', SetPadField);
          menu.add('endsub:');
-         if (this.iscan)
-            menu.addchk(this.pad?.TestBit(kIsGrayscale), 'Gray scale', flag => { this.setGrayscale(flag); this.interactiveRedraw('pad'); });
+         if (this.iscan && this.pad) {
+            menu.addchk(this.pad.TestBit(kIsGrayscale), 'Gray scale', flag => { this.setGrayscale(flag); this.interactiveRedraw('pad'); });
+            menu.addchk(this.pad.fEditable, 'Editable', flag => { this.pad.fEditable = flag; this.interactiveRedraw('pad'); });
+         }
 
          if (isFunc(this.drawObject))
             menu.add('Build legend', () => this.buildLegend());
@@ -67673,7 +67680,11 @@ class TPadPainter extends ObjectPainter {
       this.pad.fPhi = obj.fPhi;
       this.pad.fTheta = obj.fTheta;
 
-      if (this.iscan) this.checkSpecialsInPrimitives(obj);
+      if (this.iscan) {
+         if (obj.fEditable !== undefined)
+            this.pad.fEditable = obj.fEditable;
+         this.checkSpecialsInPrimitives(obj);
+      }
 
       const fp = this.getFramePainter();
       if (fp) fp.updateAttributes(!fp.modified_NDC);
@@ -68752,6 +68763,11 @@ class TCanvasPainter extends TPadPainter {
          this.setLayoutKind('simple');
       delete this._changed_layout;
       super.cleanup();
+   }
+
+   /** @summary Returns true if canvas is editable */
+   isEditable() {
+      return this.pad?.fEditable ?? true;
    }
 
    /** @summary Returns layout kind */
@@ -119024,6 +119040,11 @@ class RCanvasPainter extends RPadPainter {
       delete this._changed_layout;
 
       super.cleanup();
+   }
+
+   /** @summary Returns true if canvas is editable */
+   isEditable() {
+      return true;
    }
 
    /** @summary Returns layout kind */
