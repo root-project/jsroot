@@ -110,7 +110,7 @@ function addDragHandler(_painter, arg) {
    const painter = _painter, pp = painter.getPadPainter();
    if (pp?._fast_drawing || pp?.isBatchMode()) return;
    // cleanup all drag elements when canvas is not ediatable
-   if (_painter.getCanvPainter()?.isEditable() === false)
+   if (pp?.isEditable() === false)
       arg.cleanup = true;
 
    if (!isFunc(arg.getDrawG))

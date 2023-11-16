@@ -306,7 +306,7 @@ function detectRightButton(event) {
 function addMoveHandler(painter, enabled = true) {
    if (!settings.MoveResize || painter.isBatchMode() || !painter.draw_g) return;
 
-   if (painter.getCanvPainter()?.isEditable() === false)
+   if (painter.getPadPainter()?.isEditable() === false)
       enabled = false;
 
    if (!enabled) {

@@ -58,6 +58,11 @@ class RPadPainter extends RObjectPainter {
     * @private */
    isRoot6() { return false; }
 
+   /** @summary Returns true if pad is editable */
+   isEditable() {
+      return true;
+   }
+
   /** @summary Returns SVG element for the pad itself
     * @private */
    svg_this_pad() {
