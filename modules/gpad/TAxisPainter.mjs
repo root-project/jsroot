@@ -1311,7 +1311,7 @@ class TAxisPainter extends ObjectPainter {
             if ((this.name === 'zaxis') && this.is_gaxis && ('getBoundingClientRect' in axis_g.node())) {
                // special handling for color palette labels - draw them always on right side
                const rect = axis_g.node().getBoundingClientRect();
-               if (title_shift_x < rect.waddMoveHandleridth - this.ticksSize)
+               if (title_shift_x < rect.width - this.ticksSize)
                   title_shift_x = Math.round(rect.width - this.ticksSize);
             }
 
