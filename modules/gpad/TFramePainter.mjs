@@ -109,6 +109,9 @@ function addDragHandler(_painter, arg) {
 
    const painter = _painter, pp = painter.getPadPainter();
    if (pp?._fast_drawing || pp?.isBatchMode()) return;
+   // cleanup all drag elements when canvas is not ediatable
+   if (_painter.getCanvPainter()?.isEditable() === false)
+      arg.cleanup = true;
 
    if (!isFunc(arg.getDrawG))
       arg.getDrawG = () => painter?.draw_g;
@@ -157,7 +160,7 @@ function addDragHandler(_painter, arg) {
       if (arg.minheight && newheight < arg.minheight) newheight = arg.minheight;
 
       const change_size = (newwidth !== arg.width) || (newheight !== arg.height),
-          change_pos = (newx !== oldx) || (newy !== oldy);
+            change_pos = (newx !== oldx) || (newy !== oldy);
 
       arg.x = newx; arg.y = newy; arg.width = newwidth; arg.height = newheight;
 
@@ -193,9 +196,8 @@ function addDragHandler(_painter, arg) {
 
       return change_size || change_pos;
    },
-
-    drag_move = d3_drag().subject(Object),
-       drag_move_off = d3_drag().subject(Object);
+   drag_move = d3_drag().subject(Object),
+   drag_move_off = d3_drag().subject(Object);
 
    drag_move_off.on('start', null).on('drag', null).on('end', null);
 
@@ -719,7 +721,7 @@ const TooltipHandler = {
 
       if (main_svg.property('handlers_set') !== handlers_set) {
          const close_handler = handlers_set ? this.processFrameTooltipEvent.bind(this, null) : null,
-             mouse_handler = handlers_set ? this.processFrameTooltipEvent.bind(this, { handler: true, touch: false }) : null;
+               mouse_handler = handlers_set ? this.processFrameTooltipEvent.bind(this, { handler: true, touch: false }) : null;
 
          main_svg.property('handlers_set', handlers_set)
                  .on('mouseenter', mouse_handler)
