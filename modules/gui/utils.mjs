@@ -306,6 +306,9 @@ function detectRightButton(event) {
 function addMoveHandler(painter, enabled = true) {
    if (!settings.MoveResize || painter.isBatchMode() || !painter.draw_g) return;
 
+   if (painter.getCanvPainter()?.isEditable() === false)
+      enabled = false;
+
    if (!enabled) {
       if (painter.draw_g.property('assigned_move')) {
          const drag_move = d3_drag().subject(Object);
