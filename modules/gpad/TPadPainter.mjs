@@ -1778,10 +1778,8 @@ class TPadPainter extends ObjectPainter {
             if (prim) {
                isanyfound = true;
                prim.$checked = true;
-               console.log('Found primitive for painter of ', sub.getClassName());
             } else {
                // remove painter which does not found in the list of snaps
-               console.log('remove painter with', sub.snapid, sub.getClassName());
                k = this.removePrimitive(k); // index modified
                isanyremove = true;
                if (k === -111) {
