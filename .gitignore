@@ -18,9 +18,9 @@ build/hist2d.js
 build/hist2d.min.js
 build/hist.js
 build/hist.min.js
+build/geom.mjs
 openui5dist
 httpcontrol.C
 httpserver.C
 Go4ExampleSimple
-/build/
 .idea/
