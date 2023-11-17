@@ -408,7 +408,7 @@ class TPavePainter extends ObjectPainter {
        else {
           for (let j = 0; j < nlines; ++j) {
             const y = j*stepy,
-                color = (colors[j] > 1) ? this.getColor(colors[j]) : this.textatt.color;
+                  color = (colors[j] > 1) ? this.getColor(colors[j]) : this.textatt.color;
 
             if (first_stat && (j >= first_stat)) {
                const parts = lines[j].split('|');
@@ -431,7 +431,7 @@ class TPavePainter extends ObjectPainter {
                for (let n = 0; n < 2; ++n) {
                   const arg = {
                      align: (n === 0) ? 'start' : 'end', x: margin_x, y,
-                     width: width-2*margin_x, height: stepy, text: parts[n], color,
+                     width: width - 2*margin_x, height: stepy, text: parts[n], color,
                      _expected_width: width-2*margin_x, _args: args,
                      post_process(painter) {
                        if (this._args[0].ready && this._args[1].ready)
