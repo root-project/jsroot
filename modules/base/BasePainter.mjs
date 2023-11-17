@@ -717,7 +717,7 @@ function addHighlightStyle(elem, drag) {
 /** @summary Create pdf for existing SVG element
   * @return {Promise} with produced PDF file as url string
   * @private */
-async function svgToPDF(svg_element, width, height, as_buffer) {
+async function svgToPDF(svg_element, width, height, as_buffer, can_modify) {
    const nodejs = isNodeJs();
    let _jspdf, _svg2pdf;
 
@@ -725,44 +725,56 @@ async function svgToPDF(svg_element, width, height, as_buffer) {
       ? import('jspdf').then(h => { _jspdf = h; return import('svg2pdf.js'); }).then(h => { _svg2pdf = h.default; })
       : loadScript(source_dir + 'scripts/jspdf.umd.min.js').then(() => loadScript(source_dir + 'scripts/svg2pdf.umd.min.js')).then(() => { _jspdf = globalThis.jspdf; _svg2pdf = globalThis.svg2pdf;  });
 
+   const restore_nodes = [];   
+
    return pr.then(() => {
+      d3_select(svg_element).selectAll('g').each(function() {
+         if (this.hasAttribute('font-family')) {
+            let name = this.getAttribute('font-family');
+            if (name === 'Courier New')
+               this.setAttribute('font-family', 'courier');
+            if (!can_modify) restore_nodes.push(this); // keep to restore it
+         }
+      });
+
+      if (nodejs) {
+         const doc = internals.nodejs_document;
+         doc.oldFunc = doc.createElementNS;
+         globalThis.document = doc;
+         doc.createElementNS = function (ns, kind) {
+            const res = doc.oldFunc(ns, kind);
+            res.getBBox = function() { 
+               let width = 50, height = 10;
+               if (this.tagName === 'text') {
+                  const font = FontHandler.detect(this);
+                  width = approximateLabelWidth(this.textContent, font);
+                  height = font.size;
+               }
+               
+               return { x: 0, y: 0, width, height }; 
+            };
+            return res;
+         };
+      }
+
+      let doc = new _jspdf.jsPDF({
+         orientation: "landscape",
+         unit: "px",
+         format: [width + 10, height + 10]
+      });
+
+      return _svg2pdf.svg2pdf(svg_element, doc, { x: 5, y: 5, width, height })
+         .then(() => {
+            restore_nodes.forEach(node => node.setAttribute('font-family', 'Courier New'));
+            let res = as_buffer ? doc.output('arraybuffer') : doc.output('dataurlstring');
             if (nodejs) {
-               const doc = internals.nodejs_document;
-               doc.oldFunc = doc.createElementNS;
-               globalThis.document = doc;
-               doc.createElementNS = function (ns, kind) {
-                  const res = doc.oldFunc(ns, kind);
-                  res.getBBox = function() { 
-                     let width = 50, height = 10;
-                     if (this.tagName === 'text') {
-                        const font = FontHandler.detect(this);
-                        width = approximateLabelWidth(this.textContent, font);
-                        height = font.size;
-                     }
-                     
-                     return { x: 0, y: 0, width, height }; 
-                  };
-                  return res;;
-               };
+               globalThis.document = undefined;
+               internals.nodejs_document.createElementNS = internals.nodejs_document.oldFunc;
+               if (as_buffer) return Buffer.from(res);
             }
-
-            let doc = new _jspdf.jsPDF({
-               orientation: "landscape",
-               unit: "px",
-               format: [width + 10, height + 10]
-            });
-
-            return _svg2pdf.svg2pdf(svg_element, doc, { x: 5, y: 5, width, height })
-               .then(() => {
-                  let res = as_buffer ? doc.output('arraybuffer') : doc.output('dataurlstring');
-                  if (nodejs) {
-                     globalThis.document = undefined;
-                     internals.nodejs_document.createElementNS = internals.nodejs_document.oldFunc;
-                     if (as_buffer) return Buffer.from(res);
-                  }
-                  return res;
-                });
+            return res;
          });
+   });
 }
 
 
@@ -777,7 +789,7 @@ async function svgToImage(svg, image_format, as_buffer) {
       return svg;
 
    if (image_format === 'pdf')
-      return svgToPDF(svg.node, svg.width, svg.height, as_buffer);
+      return svgToPDF(svg.node, svg.width, svg.height, as_buffer, svg.can_modify);
 
    if (!isNodeJs()) {
       // required with df104.py/df105.py example with RCanvas
