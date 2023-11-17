@@ -715,19 +715,32 @@ function addHighlightStyle(elem, drag) {
 /** @summary Create pdf for existing SVG element
   * @return {Promise} with produced PDF file as url string
   * @private */
-async function svgToPDF(svg_element, width, height) {
-   return loadScript(source_dir + 'scripts/jspdf.umd.min.js')
-         .then(() => loadScript(source_dir + 'scripts/svg2pdf.umd.min.js'))
-         .then(() => {
-            let doc = new globalThis.jspdf.jsPDF({
+async function svgToPDF(svg_element, width, height, as_buffer) {
+   const nodejs = isNodeJs();
+   let _jspdf, _svg2pdf;
+
+   const pr = nodejs 
+      ? import('jspdf').then(h => { _jspdf = h; return import('svg2pdf.js'); }).then(h => { _svg2pdf = h.default; })
+      : loadScript(source_dir + 'scripts/jspdf.umd.min.js').then(() => loadScript(source_dir + 'scripts/svg2pdf.umd.min.js')).then(() => { _jspdf = globalThis.jspdf; _svg2pdf = globalThis.svg2pdf;  });
+
+   return pr.then(() => {
+            if (nodejs)
+               globalThis.document = internals.nodejs_document;
+
+            let doc = new _jspdf.jsPDF({
                orientation: "landscape",
                unit: "px",
                format: [width + 10, height + 10]
             });
-            return globalThis.svg2pdf.svg2pdf(svg_element, doc, { x: 5, y: 5, width, height })
+
+            return _svg2pdf.svg2pdf(svg_element, doc, { x: 5, y: 5, width, height })
                .then(() => {
-                  const buf = doc.output('dataurlstring');
-                  return buf;
+                  let res = as_buffer ? doc.output('arraybuffer') : doc.output('dataurlstring');
+                  if (nodejs) {
+                     globalThis.document = undefined;
+                     if (as_buffer) return Buffer.from(res);
+                  }
+                  return res;
                 });
          });
 }
@@ -744,7 +757,7 @@ async function svgToImage(svg, image_format, as_buffer) {
       return svg;
 
    if (image_format === 'pdf')
-      return svgToPDF(svg.node, svg.width, svg.height);
+      return svgToPDF(svg.node, svg.width, svg.height, as_buffer);
 
    if (!isNodeJs()) {
       // required with df104.py/df105.py example with RCanvas

@@ -623,9 +623,14 @@ async function makeImage(args) {
          main.selectAll('g.root_frame').each(clear_element);
          main.selectAll('svg').each(clear_element);
 
-         const svg = compressSVG(main.html());
-         if (args.format === 'svg')
-            return complete(svg);
+         let svg;
+         if (args.format === 'pdf') 
+            svg = { node: main.node(), width: args.width, height: args.height };
+         else {
+            svg = compressSVG(main.html());
+            if (args.format === 'svg')
+               return complete(svg);
+         }
 
          return svgToImage(svg, args.format, args.as_buffer).then(complete);
       });
