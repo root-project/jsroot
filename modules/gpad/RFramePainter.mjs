@@ -1097,6 +1097,7 @@ class RFramePainter extends RObjectPainter {
       menu.add('separator');
       menu.add('Save as frame.png', () => this.getPadPainter().saveAs('png', 'frame', 'frame.png'));
       menu.add('Save as frame.svg', () => this.getPadPainter().saveAs('svg', 'frame', 'frame.svg'));
+      menu.add('Save as frame.pdf', () => this.getPadPainter().saveAs('pdf', 'frame', 'frame.pdf'));
 
       return true;
    }

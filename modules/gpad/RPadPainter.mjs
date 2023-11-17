@@ -739,6 +739,7 @@ class RPadPainter extends RObjectPainter {
       const fname = this.this_pad_name || (this.iscan ? 'canvas' : 'pad');
       menu.add(`Save as ${fname}.png`, fname+'.png', arg => this.saveAs('png', false, arg));
       menu.add(`Save as ${fname}.svg`, fname+'.svg', arg => this.saveAs('svg', false, arg));
+      menu.add(`Save as ${fname}.pdf`, fname+'.pdf', arg => this.saveAs('pdf', false, arg));
 
       return true;
    }
@@ -1228,11 +1229,7 @@ class RPadPainter extends RObjectPainter {
      * @return {Promise} with image data, coded with btoa() function
      * @private */
    async createImage(format) {
-      // use https://github.com/MrRio/jsPDF in the future here
-      if (format === 'pdf')
-         return btoa_func('dummy PDF file');
-
-      if ((format === 'png') || (format === 'jpeg') || (format === 'svg')) {
+      if ((format === 'png') || (format === 'jpeg') || (format === 'svg') || (format === 'pdf')) {
          return this.produceImage(true, format).then(res => {
             if (!res || (format === 'svg')) return res;
             const separ = res.indexOf('base64,');
@@ -1378,10 +1375,11 @@ class RPadPainter extends RObjectPainter {
          height = fp.getFrameHeight();
       }
 
-      let svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">${elem.node().innerHTML}</svg>`;
-      svg = compressSVG(svg);
+      const arg = (file_format === 'pdf') 
+         ? { node: elem.node(), width, height, reset_tranform: use_frame } 
+         : compressSVG(`<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">${elem.node().innerHTML}</svg>`);
 
-      return svgToImage(svg, file_format).then(res => {
+      return svgToImage(arg, file_format).then(res => {
          for (let k = 0; k < items.length; ++k) {
             const item = items[k];
 
