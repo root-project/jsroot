@@ -725,16 +725,27 @@ async function svgToPDF(svg_element, width, height, as_buffer, can_modify) {
       ? import('jspdf').then(h => { _jspdf = h; return import('svg2pdf.js'); }).then(h => { _svg2pdf = h.default; })
       : loadScript(source_dir + 'scripts/jspdf.umd.min.js').then(() => loadScript(source_dir + 'scripts/svg2pdf.umd.min.js')).then(() => { _jspdf = globalThis.jspdf; _svg2pdf = globalThis.svg2pdf;  });
 
-   const restore_nodes = [];   
+   const restore_fonts = [], restore_dominant = [];   
 
    return pr.then(() => {
       d3_select(svg_element).selectAll('g').each(function() {
          if (this.hasAttribute('font-family')) {
             let name = this.getAttribute('font-family');
-            if (name === 'Courier New')
+            if (name === 'Courier New') {
                this.setAttribute('font-family', 'courier');
-            if (!can_modify) restore_nodes.push(this); // keep to restore it
+               if (!can_modify) restore_fonts.push(this); // keep to restore it
+            }
          }
+      });
+
+      d3_select(svg_element).selectAll('text').each(function() {
+         if (this.hasAttribute('dominant-baseline')) {
+            this.setAttribute('dy', '.2em'); // slightly different as in plain text
+            this.removeAttribute('dominant-baseline');
+            if (!can_modify) restore_dominant.push(this); // keep to restore it
+         } else if (can_modify && nodejs && this.getAttribute('dy') === '.4em') {
+            this.setAttribute('dy', '.2em'); // better allignment in PDF
+         } 
       });
 
       if (nodejs) {
@@ -765,7 +776,11 @@ async function svgToPDF(svg_element, width, height, as_buffer, can_modify) {
 
       return _svg2pdf.svg2pdf(svg_element, doc, { x: 5, y: 5, width, height })
          .then(() => {
-            restore_nodes.forEach(node => node.setAttribute('font-family', 'Courier New'));
+            restore_fonts.forEach(node => node.setAttribute('font-family', 'Courier New'));
+            restore_dominant.forEach(node => {
+               node.setAttribute('dominant-baseline', 'middle');
+               node.removeAttribute('dy');
+            });
             let res = as_buffer ? doc.output('arraybuffer') : doc.output('dataurlstring');
             if (nodejs) {
                globalThis.document = undefined;
