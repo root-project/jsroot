@@ -2665,6 +2665,7 @@ class TFramePainter extends ObjectPainter {
       menu.add('separator');
       menu.add('Save as frame.png', () => pp.saveAs('png', 'frame', 'frame.png'));
       menu.add('Save as frame.svg', () => pp.saveAs('svg', 'frame', 'frame.svg'));
+      menu.add('Save as frame.pdf', () => pp.saveAs('pdf', 'frame', 'frame.pdf'));
 
       return true;
    }

@@ -2140,7 +2140,7 @@ class TPadPainter extends ObjectPainter {
       }
 
       const arg = (file_format === 'pdf') 
-         ? { node: elem.node(), width, height } 
+         ? { node: elem.node(), width, height, reset_tranform: use_frame } 
          : compressSVG(`<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">${elem.node().innerHTML}</svg>`);
 
       return svgToImage(arg, file_format).then(res => {

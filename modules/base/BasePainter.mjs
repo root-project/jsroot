@@ -717,7 +717,7 @@ function addHighlightStyle(elem, drag) {
 /** @summary Create pdf for existing SVG element
   * @return {Promise} with produced PDF file as url string
   * @private */
-async function svgToPDF(svg_element, width, height, as_buffer, can_modify) {
+async function svgToPDF(args, as_buffer) {
    const nodejs = isNodeJs();
    let _jspdf, _svg2pdf;
 
@@ -725,25 +725,28 @@ async function svgToPDF(svg_element, width, height, as_buffer, can_modify) {
       ? import('jspdf').then(h => { _jspdf = h; return import('svg2pdf.js'); }).then(h => { _svg2pdf = h.default; })
       : loadScript(source_dir + 'scripts/jspdf.umd.min.js').then(() => loadScript(source_dir + 'scripts/svg2pdf.umd.min.js')).then(() => { _jspdf = globalThis.jspdf; _svg2pdf = globalThis.svg2pdf;  });
 
-   const restore_fonts = [], restore_dominant = [];   
+   const restore_fonts = [], restore_dominant = [], node_transform = args.node.getAttribute('transform');
+
+   if (args.reset_tranform)
+      args.node.removeAttribute('transform');
 
    return pr.then(() => {
-      d3_select(svg_element).selectAll('g').each(function() {
+      d3_select(args.node).selectAll('g').each(function() {
          if (this.hasAttribute('font-family')) {
             let name = this.getAttribute('font-family');
             if (name === 'Courier New') {
                this.setAttribute('font-family', 'courier');
-               if (!can_modify) restore_fonts.push(this); // keep to restore it
+               if (!args.can_modify) restore_fonts.push(this); // keep to restore it
             }
          }
       });
 
-      d3_select(svg_element).selectAll('text').each(function() {
+      d3_select(args.node).selectAll('text').each(function() {
          if (this.hasAttribute('dominant-baseline')) {
             this.setAttribute('dy', '.2em'); // slightly different as in plain text
             this.removeAttribute('dominant-baseline');
-            if (!can_modify) restore_dominant.push(this); // keep to restore it
-         } else if (can_modify && nodejs && this.getAttribute('dy') === '.4em') {
+            if (!args.can_modify) restore_dominant.push(this); // keep to restore it
+         } else if (args.can_modify && nodejs && this.getAttribute('dy') === '.4em') {
             this.setAttribute('dy', '.2em'); // better allignment in PDF
          } 
       });
@@ -771,11 +774,14 @@ async function svgToPDF(svg_element, width, height, as_buffer, can_modify) {
       let doc = new _jspdf.jsPDF({
          orientation: "landscape",
          unit: "px",
-         format: [width + 10, height + 10]
+         format: [args.width + 10, args.height + 10]
       });
 
-      return _svg2pdf.svg2pdf(svg_element, doc, { x: 5, y: 5, width, height })
+      return _svg2pdf.svg2pdf(args.node, doc, { x: 5, y: 5, width: args.width, height: args.height })
          .then(() => {
+            if (args.reset_tranform && !args.can_modify && node_transform)
+               args.node.setAttribute('transform', node_transform);
+
             restore_fonts.forEach(node => node.setAttribute('font-family', 'Courier New'));
             restore_dominant.forEach(node => {
                node.setAttribute('dominant-baseline', 'middle');
@@ -804,7 +810,7 @@ async function svgToImage(svg, image_format, as_buffer) {
       return svg;
 
    if (image_format === 'pdf')
-      return svgToPDF(svg.node, svg.width, svg.height, as_buffer, svg.can_modify);
+      return svgToPDF(svg, as_buffer);
 
    if (!isNodeJs()) {
       // required with df104.py/df105.py example with RCanvas
@@ -859,4 +865,4 @@ async function svgToImage(svg, image_format, as_buffer) {
 
 export { getElementRect, getAbsPosInCanvas,
          DrawOptions, TRandom, floatToString, buildSvgCurve, compressSVG,
-         BasePainter, _loadJSDOM, makeTranslate, addHighlightStyle, svgToImage, svgToPDF };
+         BasePainter, _loadJSDOM, makeTranslate, addHighlightStyle, svgToImage };
