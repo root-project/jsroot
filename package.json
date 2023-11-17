@@ -35,10 +35,11 @@
   "dependencies": {
     "canvas": "^2.11.2",
     "jsdom": "^22.1.0",
+    "jspdf": "^2.5.1",
     "mathjax": "3.2.2",
+    "svg2pdf.js": "^2.2.2",
     "tmp": "^0.2.1",
-    "xhr2": "^0.2.1",
-    "@oneidentity/zstd-js": "^1.0.3"
+    "xhr2": "^0.2.1"
   },
   "repository": {
     "type": "git",
