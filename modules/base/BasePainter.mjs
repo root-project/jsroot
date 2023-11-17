@@ -1,5 +1,5 @@
 import { select as d3_select } from '../d3.mjs';
-import { settings, internals, isNodeJs, isFunc, isStr, isObject, btoa_func, getDocument } from '../core.mjs';
+import { settings, internals, isNodeJs, isFunc, isStr, isObject, btoa_func, getDocument, source_dir, loadScript } from '../core.mjs';
 
 
 /** @summary Returns visible rect of element
@@ -712,6 +712,27 @@ function addHighlightStyle(elem, drag) {
    }
 }
 
+/** @summary Create pdf for existing SVG element
+  * @return {Promise} with produced PDF file as url string
+  * @private */
+async function svgToPDF(svg_element, width, height) {
+   return loadScript(source_dir + 'scripts/jspdf.umd.min.js')
+         .then(() => loadScript(source_dir + 'scripts/svg2pdf.umd.min.js'))
+         .then(() => {
+            let doc = new globalThis.jspdf.jsPDF({
+               orientation: "landscape",
+               unit: "px",
+               format: [width + 10, height + 10]
+            });
+            return globalThis.svg2pdf.svg2pdf(svg_element, doc, { x: 5, y: 5, width, height })
+               .then(() => {
+                  const buf = doc.output('dataurlstring');
+                  return buf;
+                });
+         });
+}
+
+
 /** @summary Create image based on SVG
   * @param {string} svg - svg code of the image
   * @param {string} [image_format] - image format like 'png' or 'jpeg'
@@ -721,6 +742,9 @@ function addHighlightStyle(elem, drag) {
 async function svgToImage(svg, image_format, as_buffer) {
    if (image_format === 'svg')
       return svg;
+
+   if (image_format === 'pdf')
+      return svgToPDF(svg.node, svg.width, svg.height);
 
    if (!isNodeJs()) {
       // required with df104.py/df105.py example with RCanvas
@@ -775,4 +799,4 @@ async function svgToImage(svg, image_format, as_buffer) {
 
 export { getElementRect, getAbsPosInCanvas,
          DrawOptions, TRandom, floatToString, buildSvgCurve, compressSVG,
-         BasePainter, _loadJSDOM, makeTranslate, addHighlightStyle, svgToImage };
+         BasePainter, _loadJSDOM, makeTranslate, addHighlightStyle, svgToImage, svgToPDF };
