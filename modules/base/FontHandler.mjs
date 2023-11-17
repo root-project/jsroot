@@ -139,11 +139,32 @@ class FontHandler {
             sz_pixels = p > 0 ? Number.parseInt(sz.slice(0,p)) : 12;
       let style = node.getAttribute('font-style'), 
           weight = node.getAttribute('font-weight'),
-          fontIndx = null;
-      if (style === 'normal') style = '';
-      if (weight === 'normal') weight = '';
-      if (family === 'arial' && !style && !weight)
-         fontIndx = 42;
+          fontIndx = null, name = '';
+      if (weight === 'normal') 
+         weight = '';
+      else if (weight === 'bold') 
+         name += 'b';
+      if (style === 'normal') 
+         style = '';
+      else if (style === 'italic')
+         name += 'i';
+      else if (style === 'oblique')
+         name += 'o';
+
+      if (family === 'arial')
+         name += 'Arial';
+      else if (family === 'times')
+         name += 'Times New Roman';
+      else if (family === 'verdana')
+         name += 'Verdana';
+
+      for (let n = 1; n < root_fonts.length; ++n)   
+         if (name === root_fonts[n]) {
+             fontIndx = n*10 + 2;
+             break;
+         }
+      
+      // console.log('detect', family, sz, style, weight, 'index', fontIndx, 'text', node.textContent);
 
       return new FontHandler(fontIndx, sz_pixels, 0, family, style, weight);
    }
