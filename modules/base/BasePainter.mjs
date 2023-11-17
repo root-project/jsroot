@@ -1,5 +1,7 @@
 import { select as d3_select } from '../d3.mjs';
 import { settings, internals, isNodeJs, isFunc, isStr, isObject, btoa_func, getDocument, source_dir, loadScript } from '../core.mjs';
+import { FontHandler } from './FontHandler.mjs';
+import { approximateLabelWidth } from './latex.mjs';
 
 
 /** @summary Returns visible rect of element
@@ -730,7 +732,16 @@ async function svgToPDF(svg_element, width, height, as_buffer) {
                globalThis.document = doc;
                doc.createElementNS = function (ns, kind) {
                   const res = doc.oldFunc(ns, kind);
-                  res.getBBox = () => { return { x: 0, y: 0, width: 50, height: 10 }; };
+                  res.getBBox = function() { 
+                     let width = 50, height = 10;
+                     if (this.tagName === 'text') {
+                        const font = FontHandler.detect(this);
+                        width = approximateLabelWidth(this.textContent, font);
+                        height = font.size;
+                     }
+                     
+                     return { x: 0, y: 0, width, height }; 
+                  };
                   return res;;
                };
             }

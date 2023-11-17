@@ -131,6 +131,23 @@ class FontHandler {
       return this.isSymbol || this.name || 'none';
    }
 
+   /** @summary Try to detect and create font handler for SVG text node */
+   static detect(node) {
+      const sz = node.getAttribute('font-size'),
+            family = node.getAttribute('font-family'), 
+            p = sz.indexOf('px'),
+            sz_pixels = p > 0 ? Number.parseInt(sz.slice(0,p)) : 12;
+      let style = node.getAttribute('font-style'), 
+          weight = node.getAttribute('font-weight'),
+          fontIndx = null;
+      if (style === 'normal') style = '';
+      if (weight === 'normal') weight = '';
+      if (family === 'arial' && !style && !weight)
+         fontIndx = 42;
+
+      return new FontHandler(fontIndx, sz_pixels, 0, family, style, weight);
+   }
+
 } // class FontHandler
 
 export { FontHandler };
