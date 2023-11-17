@@ -23,6 +23,10 @@ writeFileSync('test1.jpeg', jpeg1buf);
 
 console.log(`histogram col drawing test1.svg ${svg1.length} test1.png ${png1buf.byteLength} test1.jpeg ${jpeg1buf.byteLength}`);
 
+// let pdf1buf = await makeImage({ format: 'pdf', as_buffer: true, object: hpxpy, option: 'col', width, height });
+// writeFileSync('test1.pdf', pdf1buf);
+// console.log(`histogram col drawing test1.pdf ${pdf1buf.byteLength}`);
+
 // testing 3D graphics
 let svg2 = await makeSVG({ object: hpxpy, option: 'lego2', width, height });
 let png2buf = await makeImage({ format: 'png', as_buffer: true, object: hpxpy, option: 'lego2', width, height });
