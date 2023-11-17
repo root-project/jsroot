@@ -1,6 +1,6 @@
 {
    "TH1" : [
-     { "opt": "", "file": "hsimple.root", "item": "hpx;1", "interactive": true },
+     { "opt": "", "file": "hsimple.root", "item": "hpx;1", "interactive": true, "pdf": true },
      { "name": "star", "opt":"*", "title": "draw stars on histogram bins" },
      { "name": "*H", "opt":"*H", "title": "draw stars and histogram itself" },
      { "opt": "L", "title": "draw histogram as line" },
@@ -42,7 +42,7 @@
      { "name": "histmargin", "url": "?nobrowser&file=$$$hsimple.root&item=hpx;1&histmargin=0.5", "title": "Setting gStyle.fHistTopMargin = 0.5 to demonstrate it usage, &histmargin=0.5 in URL" }
    ],
    "TH2" : [
-     { "opt": "", "file": "hsimple.root", "item": "hpxpy;1", "title": "default draw mode for TH2" },
+     { "opt": "", "file": "hsimple.root", "item": "hpxpy;1", "title": "default draw mode for TH2", "pdf": true },
      { "opt": "col", "title": "color draw" },
      { "opt": "colpal77", "title": "example how color palette 77 can be used for drawing" },
      { "opt": "colz", "title": "color draw with palette", "interactive": true },
@@ -115,7 +115,7 @@
       { "opt": "lego", "file": "th2poly.root", "item": "boxes;1", "interactive": true },
       { "opt": "col0z", "title": "suppress empty bins with 0 option" },
       { "opt": "col0zl", "title": "draw lines and suppress empty bins with 0 option" },
-      { "name": "europe", "item": "europe;1", "opt": "", "title": "Europe map (relatively old)" },
+      { "name": "europe", "item": "europe;1", "opt": "", "title": "Europe map (relatively old)", "pdf": true },
       { "name": "usa", "item": "usa;1", "opt": "l,col,pal50", "title": "USA map" },
       { "name": "fibonacci", "file": "tutorials_hist.root", "item": "Fibonacci",  "title": "Macro outputs from $ROOTSYS/tutorials/hist/Fibonacci.C" },
       { "name": "tprofile2poly", "file": "tprofile2poly.root", "item": "c2", "title": "Example of TProfile2Poly class, see $ROOTSYS/tutorials/hist/tprofile2polyRealistic.C output" }
@@ -188,7 +188,7 @@
    "TCanvas" : [
      { "name": "roofit", "file": "rf107.root", "item": "rf107_plotstyles;1", "interactive": true },
      { "name": "subpad", "url": "?nobrowser&file=$$$rf107.root&item=rf107_plotstyles;1/[0]", "title": "Draw only selected sub-pad from list of TCanvas list of primitives"  },
-     { "name": "zdemo", "file": "zdemo.root", "item": "zdemo;1" },
+     { "name": "zdemo", "file": "zdemo.root", "item": "zdemo;1", "pdf": true },
      { "name": "legend", "asurl": true, "file": "legends.root", "item": "legends;1", "title": "TCanvas with TLegend, use normal latex parser" },
      { "name": "autoplace", "file": "tutorials_hist.root", "item": "legendautoplace;1", "title": "Autoplace of TLegend element, canvas from tutorials/hist/legendautoplace.C macro" },
      { "name": "time", "file": "ct.root", "item": "ct;1" },
