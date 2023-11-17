@@ -726,7 +726,7 @@ async function svgToPDF(svg_element, width, height, as_buffer) {
    return pr.then(() => {
             if (nodejs) {
                const doc = internals.nodejs_document;
-               old.oldFunc = old.createElementNS;
+               doc.oldFunc = doc.createElementNS;
                globalThis.document = doc;
                doc.createElementNS = function (ns, kind) {
                   const res = doc.oldFunc(ns, kind);
@@ -741,7 +741,7 @@ async function svgToPDF(svg_element, width, height, as_buffer) {
                format: [width + 10, height + 10]
             });
 
-            return _svg2pdf.svg2pdf(svg_element.firstChild, doc, { x: 5, y: 5, width, height })
+            return _svg2pdf.svg2pdf(svg_element, doc, { x: 5, y: 5, width, height })
                .then(() => {
                   let res = as_buffer ? doc.output('arraybuffer') : doc.output('dataurlstring');
                   if (nodejs) {
