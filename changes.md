@@ -15,11 +15,12 @@
 12. Support opacity transfer function for `TH3`, see tutorials/gl/glvox2.C
 13. Upgrade three.js r155 -> r158
 14. Handle TCanvas IsEdiatable flag to disable some interactive features
-15. Fix - do not add `THStack` and `TMultiGraph` to legend
-16. Fix - correctly use margin in `TPaveText` class
-17. Fix - correctly draw endcaps in legend errors
-18. Fix - correctly read leaf with fixed-size array
-19. Fix - vertical position of up elements like {M}^{2} in TLatex
+15. Support PDF creation using jsPDF and svg2pdf.js - in browser and node.js
+16. Fix - do not add `THStack` and `TMultiGraph` to legend
+17. Fix - correctly use margin in `TPaveText` class
+18. Fix - correctly draw endcaps in legend errors
+19. Fix - correctly read leaf with fixed-size array
+20. Fix - vertical position of up elements like {M}^{2} in TLatex
 
 
 ## Changes in 7.5.2
