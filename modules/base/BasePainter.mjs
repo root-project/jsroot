@@ -724,8 +724,16 @@ async function svgToPDF(svg_element, width, height, as_buffer) {
       : loadScript(source_dir + 'scripts/jspdf.umd.min.js').then(() => loadScript(source_dir + 'scripts/svg2pdf.umd.min.js')).then(() => { _jspdf = globalThis.jspdf; _svg2pdf = globalThis.svg2pdf;  });
 
    return pr.then(() => {
-            if (nodejs)
-               globalThis.document = internals.nodejs_document;
+            if (nodejs) {
+               const doc = internals.nodejs_document;
+               old.oldFunc = old.createElementNS;
+               globalThis.document = doc;
+               doc.createElementNS = function (ns, kind) {
+                  const res = doc.oldFunc(ns, kind);
+                  res.getBBox = () => { return { x: 0, y: 0, width: 50, height: 10 }; };
+                  return res;;
+               };
+            }
 
             let doc = new _jspdf.jsPDF({
                orientation: "landscape",
@@ -733,11 +741,12 @@ async function svgToPDF(svg_element, width, height, as_buffer) {
                format: [width + 10, height + 10]
             });
 
-            return _svg2pdf.svg2pdf(svg_element, doc, { x: 5, y: 5, width, height })
+            return _svg2pdf.svg2pdf(svg_element.firstChild, doc, { x: 5, y: 5, width, height })
                .then(() => {
                   let res = as_buffer ? doc.output('arraybuffer') : doc.output('dataurlstring');
                   if (nodejs) {
                      globalThis.document = undefined;
+                     internals.nodejs_document.createElementNS = internals.nodejs_document.oldFunc;
                      if (as_buffer) return Buffer.from(res);
                   }
                   return res;
