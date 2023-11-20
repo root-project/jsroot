@@ -777,6 +777,19 @@ async function svgToPDF(args, as_buffer) {
          format: [args.width + 10, args.height + 10]
       });
 
+      /*
+      if (internals.courier) {
+         doc.addFileToVFS('courier.ttf', internals.courier.toString('base64'));
+         doc.addFont('courier.ttf', 'Courier New', 'normal');
+      }
+
+      if (internals.courierb) {
+         doc.addFileToVFS('courierb.ttf', internals.courierb.toString('base64'));
+         doc.addFont('courierb.ttf', 'Courier New', 'bold');
+      }
+      */
+
+
       return _svg2pdf.svg2pdf(args.node, doc, { x: 5, y: 5, width: args.width, height: args.height })
          .then(() => {
             if (args.reset_tranform && !args.can_modify && node_transform)
