@@ -170,7 +170,7 @@ const PadButtonsHandler = {
 }, // PadButtonsHandler
 
 // identifier used in TWebCanvas painter
-webSnapIds = { kNone: 0, kObject: 1, kSVG: 2, kSubPad: 3, kColors: 4, kStyle: 5 };
+webSnapIds = { kNone: 0, kObject: 1, kSVG: 2, kSubPad: 3, kColors: 4, kStyle: 5, kFont: 6 };
 
 
 /** @summary Fill TWebObjectOptions for painter
@@ -1521,6 +1521,13 @@ class TPadPainter extends ObjectPainter {
       }
    }
 
+   /** @summary Process snap with custom font
+     * @private */
+   processSnapFont(snap) {
+      let arr = snap.fSnapshot.fOper.split(':');
+      console.log('arr', arr[0], arr[1], arr[2], arr[3]);
+   }
+
    /** @summary Process special snaps like colors or style objects
      * @return {Promise} index where processing should start
      * @private */
@@ -1535,6 +1542,9 @@ class TPadPainter extends ObjectPainter {
          } else if (snap.fKind === webSnapIds.kColors) {
             lst.shift();
             this.processSnapColors(snap);
+         } else if (snap.fKind === webSnapIds.kFont) {
+            lst.shift();
+            this.processSnapFont(snap);
          } else
             break;
       }
