@@ -811,7 +811,7 @@ async function svgToPDF(args, as_buffer) {
 
 /** @summary Create image based on SVG
   * @param {string} svg - svg code of the image
-  * @param {string} [image_format] - image format like 'png' or 'jpeg'
+  * @param {string} [image_format] - image format like 'png', 'jpeg' or 'webp'
   * @param {boolean} [as_buffer] - return Buffer object for image
   * @return {Promise} with produced image in base64 form or as Buffer (or canvas when no image_format specified)
   * @private */

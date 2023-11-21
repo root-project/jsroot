@@ -2665,7 +2665,7 @@ class TFramePainter extends ObjectPainter {
       menu.add('separator');
       
       menu.add('sub:Save as');
-      ['svg','png','jpeg','pdf'].forEach(fmt => menu.add(`frame.${fmt}`, () => pp.saveAs(fmt, 'frame', `frame.${fmt}`)));
+      ['svg','png','jpeg','pdf','webp'].forEach(fmt => menu.add(`frame.${fmt}`, () => pp.saveAs(fmt, 'frame', `frame.${fmt}`)));
       menu.add('endsub:');
 
       return true;

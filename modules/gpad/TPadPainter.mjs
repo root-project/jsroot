@@ -1203,7 +1203,7 @@ class TPadPainter extends ObjectPainter {
 
       const fname = this.this_pad_name || (this.iscan ? 'canvas' : 'pad');
       menu.add('sub:Save as');
-      ['svg','png','jpeg','pdf'].forEach(fmt => menu.add(`${fname}.${fmt}`, () => this.saveAs(fmt, this.iscan, `${fname}.${fmt}`)));
+      ['svg','png','jpeg','pdf','webp'].forEach(fmt => menu.add(`${fname}.${fmt}`, () => this.saveAs(fmt, this.iscan, `${fname}.${fmt}`)));
       menu.add('endsub:');
 
       return true;
