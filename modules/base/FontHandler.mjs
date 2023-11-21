@@ -19,9 +19,7 @@ root_fonts = [null,  // index 0 not exists
       { n: kVerdana, aw: 0.5664 },
       { n: kVerdana, s: 'italic', aw: 0.5495 },
       { n: kVerdana, w: 'bold', aw: 0.5748 },
-      { n: kVerdana, s: 'italic', w: 'bold', aw: 0.5578 } ],
-// custom fonts configured from TWebCanvas
-custom_fonts = {}; 
+      { n: kVerdana, s: 'italic', w: 'bold', aw: 0.5578 } ];
 
 /**
  * @summary Helper class for font handling
@@ -44,20 +42,21 @@ class FontHandler {
 
       const indx = (fontIndex && Number.isInteger(fontIndex)) ? Math.floor(fontIndex / 10) : 0,
             cfg = root_fonts[indx];
-
+   
       if (cfg)
-         this.setNameStyleWeight(cfg.n, cfg.s, cfg.w, cfg.aw);
+         this.setNameStyleWeight(cfg.n, cfg.s, cfg.w, cfg.aw, cfg.base64);
       else
          this.setNameStyleWeight(kArial);
    }
 
    /** @summary Directly set name, style and weight for the font
     * @private */
-   setNameStyleWeight(name, style, weight, aver_width) {
+   setNameStyleWeight(name, style, weight, aver_width, base64) {
       this.name = name;
       this.style = style || null;
       this.weight = weight || null;
       this.aver_width = aver_width || (weight ? 0.58 : 0.55);
+      this.base64 = base64; // indication of custom font
       if ((this.name === kSymbol) || (this.name === kWingdings)) {
          this.isSymbol = this.name;
          this.name = kTimes;
@@ -72,6 +71,20 @@ class FontHandler {
 
    /** @summary Assigns font-related attributes */
    setFont(selection) {
+      if(this.base64 && this.painter) {
+         const svg = this.painter.getCanvSvg(),
+               clname = 'custom_font_' + this.name,
+               fmt = 'ttf';
+         let defs = svg.selectChild('.canvas_defs');
+         if (defs.empty())
+            defs = svg.insert('svg:defs', ':first-child').attr('class', 'canvas_defs');
+         let entry = defs.selectChild('.' + clname);
+         if (entry.empty()) {
+            entry = defs.append('style').attr('type', 'text/css').attr('class', clname);
+            entry.text(`@font-face { font-family: "${this.name}"; font-weight: normal; font-style: normal; src: url('data:application/font-${fmt};charset=utf-8;base64,${this.base64}') }`);
+         }
+      }
+
       selection.attr('font-family', this.name)
                .attr('font-size', this.size)
                .attr('xml:space', 'preserve')
@@ -140,7 +153,7 @@ function addCustomFont(index, name, format, base64) {
    if (!Number.isInteger(index)) 
       console.error(`Wrong index ${index} for custom font`);
    else
-      custom_fonts[index] = { name, format, base64 };
+      root_fonts[index] = { n: name, format, base64 };
 }
 
 /** @summary Try to detect and create font handler for SVG text node 
