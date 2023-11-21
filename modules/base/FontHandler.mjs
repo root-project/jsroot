@@ -22,11 +22,7 @@ custom_fonts = {};
 class FontHandler {
 
    /** @summary constructor */
-   constructor(fontIndex, size, scale, name, style, weight) {
-      this.name = 'Arial';
-      this.style = null;
-      this.weight = null;
-
+   constructor(fontIndex, size, scale) {
       if (scale && (size < 1)) {
          size *= scale;
          this.scaled = true;
@@ -35,38 +31,42 @@ class FontHandler {
       this.size = Math.round(size || 11);
       this.scale = scale;
 
-      if (fontIndex !== null) {
+      if (fontIndex && Number.isInteger(fontIndex)) {
          const indx = Math.floor(fontIndex / 10);
-         let fontName = root_fonts[indx] || 'Arial';
+         let fontName = root_fonts[indx] || 'Arial', style, weight;
 
          while (fontName) {
             if (fontName[0] === 'b')
-               this.weight = 'bold';
+               weight = 'bold';
             else if (fontName[0] === 'i')
-               this.style = 'italic';
+               style = 'italic';
             else if (fontName[0] === 'o')
-               this.style = 'oblique';
+               style = 'oblique';
             else
                break;
             fontName = fontName.slice(1);
          }
 
-         this.name = fontName;
-         this.aver_width = root_fonts_aver_width[indx] || 0.55;
+         this.setNameStyleWeight(fontName, style, weight, root_fonts_aver_width[indx]);
       } else {
-         this.name = name;
-         this.style = style || null;
-         this.weight = weight || null;
-         this.aver_width = this.weight ? 0.58 : 0.55;
+         this.setNameStyleWeight('Arial');
       }
 
+      this.func = this.setFont.bind(this);
+   }
+
+   /** @summary Directly set name, style and weight for the font
+    * @private */
+   setNameStyleWeight(name, style, weight, aver_width) {
+      this.name = name;
+      this.style = style || null;
+      this.weight = weight || null;
+      this.aver_width = aver_width || (weight ? 0.58 : 0.55);
       if ((this.name === 'Symbol') || (this.name === 'Wingdings')) {
          this.isSymbol = this.name;
          this.name = 'Times New Roman';
       } else
          this.isSymbol = '';
-
-      this.func = this.setFont.bind(this);
    }
 
    /** @summary Assigns font-related attributes */
@@ -178,7 +178,10 @@ function detectFont(node) {
       break;
    }
 
-   return new FontHandler(fontIndx, sz_pixels, 0, family, style, weight);
+   let handler = new FontHandler(fontIndx, sz_pixels);
+   if (!fontIndx)
+      handler.setNameStyleWeight(family, style, weight);
+   return handler;
 }
 
 export { FontHandler, addCustomFont, detectFont };
