@@ -10,6 +10,7 @@ demo/node/node_modules
 demo/node/*.svg
 demo/node/*.png
 demo/node/*.jpeg
+demo/node/*.pdf
 node_modules/
 libs/three/node_modules/
 libs/d3/node_modules/
