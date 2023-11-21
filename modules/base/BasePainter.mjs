@@ -1,6 +1,6 @@
 import { select as d3_select } from '../d3.mjs';
 import { settings, internals, isNodeJs, isFunc, isStr, isObject, btoa_func, getDocument, source_dir, loadScript } from '../core.mjs';
-import { FontHandler } from './FontHandler.mjs';
+import { detectFont } from './FontHandler.mjs';
 import { approximateLabelWidth } from './latex.mjs';
 
 
@@ -760,7 +760,7 @@ async function svgToPDF(args, as_buffer) {
             res.getBBox = function() { 
                let width = 50, height = 10;
                if (this.tagName === 'text') {
-                  const font = FontHandler.detect(this);
+                  const font = detectFont(this);
                   width = approximateLabelWidth(this.textContent, font);
                   height = font.size;
                }

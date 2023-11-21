@@ -133,46 +133,10 @@ class FontHandler {
       return this.isSymbol || this.name || 'none';
    }
 
-   /** @summary Try to detect and create font handler for SVG text node */
-   static detect(node) {
-      const sz = node.getAttribute('font-size'),
-            family = node.getAttribute('font-family'), 
-            p = sz.indexOf('px'),
-            sz_pixels = p > 0 ? Number.parseInt(sz.slice(0,p)) : 12;
-      let style = node.getAttribute('font-style'), 
-          weight = node.getAttribute('font-weight'),
-          fontIndx = null, name = '';
-      if (weight === 'normal') 
-         weight = '';
-      else if (weight === 'bold') 
-         name += 'b';
-      if (style === 'normal') 
-         style = '';
-      else if (style === 'italic')
-         name += 'i';
-      else if (style === 'oblique')
-         name += 'o';
-
-      if (family === 'arial')
-         name += 'Arial';
-      else if (family === 'times')
-         name += 'Times New Roman';
-      else if (family === 'verdana')
-         name += 'Verdana';
-
-      for (let n = 1; n < root_fonts.length; ++n)   
-         if (name === root_fonts[n]) {
-             fontIndx = n*10 + 2;
-             break;
-         }
-      
-      // console.log('detect', family, sz, style, weight, 'index', fontIndx, 'text', node.textContent);
-
-      return new FontHandler(fontIndx, sz_pixels, 0, family, style, weight);
-   }
-
 } // class FontHandler
 
+/** @summary Register custom font
+  * @private */
 function addCustomFont(index, name, format, base64) {
    if (!Number.isInteger(index)) 
       console.error(`Wrong index ${index} for custom font`);
@@ -180,4 +144,41 @@ function addCustomFont(index, name, format, base64) {
       custom_fonts[index] = { name, format, base64 };
 }
 
-export { FontHandler, addCustomFont };
+/** @summary Try to detect and create font handler for SVG text node 
+  * @private */
+function detectFont(node) {
+   const sz = node.getAttribute('font-size'),
+         family = node.getAttribute('font-family'), 
+         p = sz.indexOf('px'),
+         sz_pixels = p > 0 ? Number.parseInt(sz.slice(0,p)) : 12;
+   let style = node.getAttribute('font-style'), 
+       weight = node.getAttribute('font-weight'),
+      fontIndx = null, name = '';
+   if (weight === 'normal') 
+      weight = '';
+   else if (weight === 'bold') 
+      name += 'b';
+   if (style === 'normal') 
+      style = '';
+   else if (style === 'italic')
+      name += 'i';
+   else if (style === 'oblique')
+      name += 'o';
+
+   if (family === 'arial')
+      name += 'Arial';
+   else if (family === 'times')
+      name += 'Times New Roman';
+   else if (family === 'verdana')
+      name += 'Verdana';
+
+   for (let n = 1; n < root_fonts.length; ++n)   
+   if (name === root_fonts[n]) {
+      fontIndx = n*10 + 2;
+      break;
+   }
+
+   return new FontHandler(fontIndx, sz_pixels, 0, family, style, weight);
+}
+
+export { FontHandler, addCustomFont, detectFont };
