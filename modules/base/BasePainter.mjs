@@ -777,11 +777,11 @@ async function svgToPDF(args, as_buffer) {
          format: [args.width + 10, args.height + 10]
       });
 
-      // add custom fonts to PDF document
+      // add custom fonts to PDF document, only TTF format supported 
       d3_select(args.node).selectAll('style').each(function() {
          let fh = this.$fonthandler;
-         if (!fh || custom_fonts[fh.name]) return;
-         let filename = fh.name.toLowerCase().replace(/\s/g, '') + '.' + (fh.fmt ?? 'ttf');
+         if (!fh || custom_fonts[fh.name] || (fh.format !== 'ttf')) return;
+         let filename = fh.name.toLowerCase().replace(/\s/g, '') + '.ttf';
          doc.addFileToVFS(filename, fh.base64);
          doc.addFont(filename, fh.name, 'normal');
          custom_fonts[fh.name] = true;

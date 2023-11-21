@@ -44,18 +44,19 @@ class FontHandler {
             cfg = root_fonts[indx];
    
       if (cfg)
-         this.setNameStyleWeight(cfg.n, cfg.s, cfg.w, cfg.aw, cfg.base64);
+         this.setNameStyleWeight(cfg.n, cfg.s, cfg.w, cfg.aw, cfg.format, cfg.base64);
       else
          this.setNameStyleWeight(kArial);
    }
 
    /** @summary Directly set name, style and weight for the font
     * @private */
-   setNameStyleWeight(name, style, weight, aver_width, base64) {
+   setNameStyleWeight(name, style, weight, aver_width, format, base64) {
       this.name = name;
       this.style = style || null;
       this.weight = weight || null;
       this.aver_width = aver_width || (weight ? 0.58 : 0.55);
+      this.format = format; // format of custom font, ttf by default
       this.base64 = base64; // indication of custom font
       if ((this.name === kSymbol) || (this.name === kWingdings)) {
          this.isSymbol = this.name;
