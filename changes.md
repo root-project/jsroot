@@ -5,6 +5,7 @@
 2. Fix - correctly read TLeaf with fixed-size array
 3. Fix - bug in options handling in startGUI
 4. Fix - greyscale support in TLegend drawing
+5. Fix - correctly use text font for TGaxis title
 
 
 ## Changes in 7.5.2
