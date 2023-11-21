@@ -33,6 +33,7 @@
     }
   ],
   "dependencies": {
+    "@oneidentity/zstd-js": "^1.0.3",
     "canvas": "^2.11.2",
     "jsdom": "^22.1.0",
     "jspdf": "^2.5.1",
