@@ -2663,9 +2663,10 @@ class TFramePainter extends ObjectPainter {
       }, 'Store frame position and graphical attributes to gStyle');
 
       menu.add('separator');
-      menu.add('Save as frame.png', () => pp.saveAs('png', 'frame', 'frame.png'));
-      menu.add('Save as frame.svg', () => pp.saveAs('svg', 'frame', 'frame.svg'));
-      menu.add('Save as frame.pdf', () => pp.saveAs('pdf', 'frame', 'frame.pdf'));
+      
+      menu.add('sub:Save as');
+      ['svg','png','jpeg','pdf'].forEach(fmt => menu.add(`frame.${fmt}`, () => pp.saveAs(fmt, 'frame', `frame.${fmt}`)));
+      menu.add('endsub:');
 
       return true;
    }
