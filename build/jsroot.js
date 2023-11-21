@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '17/11/2023',
+version_date = '21/11/2023',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -7929,19 +7929,28 @@ function selection_transition(name) {
 selection.prototype.interrupt = selection_interrupt;
 selection.prototype.transition = selection_transition;
 
-const root_fonts = ['Arial', 'iTimes New Roman',
-      'bTimes New Roman', 'biTimes New Roman', 'Arial',
-      'oArial', 'bArial', 'boArial', 'Courier New',
-      'oCourier New', 'bCourier New', 'boCourier New',
-      'Symbol', 'Times New Roman', 'Wingdings', 'iSymbol',
-      'Verdana', 'iVerdana', 'bVerdana', 'biVerdana'],
-// taken from symbols.html, counted only for letters and digits
-root_fonts_aver_width = [0.5778, 0.5314,
-      0.5809, 0.5540, 0.5778,
-      0.5783, 0.6034, 0.6030, 0.6003,
-      0.6004, 0.6003, 0.6005,
-      0.5521, 0.5521, 0.5664, 0.5314,
-      0.5664, 0.5495, 0.5748, 0.5578];
+const kArial = 'Arial', kTimes = 'Times New Roman', kCourier = 'Courier New', kVerdana = 'Verdana', kSymbol = 'Symbol', kWingdings = 'Wingdings',
+// average width taken from symbols.html, counted only for letters and digits
+root_fonts = [null,  // index 0 not exists
+      { n: kTimes, s: 'italic', aw: 0.5314 },
+      { n: kTimes, w: 'bold', aw: 0.5809 },
+      { n: kTimes, s: 'italic', w: 'bold', aw: 0.5540 },
+      { n: kArial, aw: 0.5778 },
+      { n: kArial, s: 'oblique', aw: 0.5783 },
+      { n: kArial, w: 'bold', aw: 0.6034 },
+      { n: kArial, s: 'oblique', w: 'bold', aw: 0.6030 },
+      { n: kCourier, aw: 0.6003 },
+      { n: kCourier, s: 'oblique', aw: 0.6004 },
+      { n: kCourier, w: 'bold', aw: 0.6003 },
+      { n: kCourier, s: 'oblique', w: 'bold', aw: 0.6005 },
+      { n: kSymbol, aw: 0.5521 },
+      { n: kTimes, aw: 0.5521 },
+      { n: kWingdings, aw: 0.5664 },
+      { n: kSymbol, s: 'italic', aw: 0.5314 },
+      { n: kVerdana, aw: 0.5664 },
+      { n: kVerdana, s: 'italic', aw: 0.5495 },
+      { n: kVerdana, w: 'bold', aw: 0.5748 },
+      { n: kVerdana, s: 'italic', w: 'bold', aw: 0.5578 }];
 
 /**
  * @summary Helper class for font handling
@@ -7951,11 +7960,7 @@ root_fonts_aver_width = [0.5778, 0.5314,
 class FontHandler {
 
    /** @summary constructor */
-   constructor(fontIndex, size, scale, name, style, weight) {
-      this.name = 'Arial';
-      this.style = null;
-      this.weight = null;
-
+   constructor(fontIndex, size, scale) {
       if (scale && (size < 1)) {
          size *= scale;
          this.scaled = true;
@@ -7964,49 +7969,62 @@ class FontHandler {
       this.size = Math.round(size || 11);
       this.scale = scale;
 
-      if (fontIndex !== null) {
-         const indx = Math.floor(fontIndex / 10);
-         let fontName = root_fonts[indx] || 'Arial';
+      this.func = this.setFont.bind(this);
 
-         while (fontName) {
-            if (fontName[0] === 'b')
-               this.weight = 'bold';
-            else if (fontName[0] === 'i')
-               this.style = 'italic';
-            else if (fontName[0] === 'o')
-               this.style = 'oblique';
-            else
-               break;
-            fontName = fontName.slice(1);
-         }
+      const indx = (fontIndex && Number.isInteger(fontIndex)) ? Math.floor(fontIndex / 10) : 0,
+            cfg = root_fonts[indx];
 
-         this.name = fontName;
-         this.aver_width = root_fonts_aver_width[indx] || 0.55;
-      } else {
-         this.name = name;
-         this.style = style || null;
-         this.weight = weight || null;
-         this.aver_width = this.weight ? 0.58 : 0.55;
-      }
+      if (cfg)
+         this.setNameStyleWeight(cfg.n, cfg.s, cfg.w, cfg.aw, cfg.format, cfg.base64);
+      else
+         this.setNameStyleWeight(kArial);
+   }
 
-      if ((this.name === 'Symbol') || (this.name === 'Wingdings')) {
+   /** @summary Directly set name, style and weight for the font
+    * @private */
+   setNameStyleWeight(name, style, weight, aver_width, format, base64) {
+      this.name = name;
+      this.style = style || null;
+      this.weight = weight || null;
+      this.aver_width = aver_width || (weight ? 0.58 : 0.55);
+      this.format = format; // format of custom font, ttf by default
+      this.base64 = base64; // indication of custom font
+      if ((this.name === kSymbol) || (this.name === kWingdings)) {
          this.isSymbol = this.name;
-         this.name = 'Times New Roman';
+         this.name = kTimes;
       } else
          this.isSymbol = '';
+   }
 
-      this.func = this.setFont.bind(this);
+   /** @summary Set painter for which font will be applied */
+   setPainter(painter) {
+      this.painter = painter;
    }
 
    /** @summary Assigns font-related attributes */
-   setFont(selection, arg) {
-      selection.attr('font-family', this.name);
-      if (arg !== 'without-size') {
-         selection.attr('font-size', this.size)
-                  .attr('xml:space', 'preserve');
+   setFont(selection) {
+      if (this.base64 && this.painter) {
+         const svg = this.painter.getCanvSvg(),
+               clname = 'custom_font_' + this.name,
+               fmt = 'ttf';
+         let defs = svg.selectChild('.canvas_defs');
+         if (defs.empty())
+            defs = svg.insert('svg:defs', ':first-child').attr('class', 'canvas_defs');
+         const entry = defs.selectChild('.' + clname);
+         if (entry.empty()) {
+            defs.append('style')
+                .attr('type', 'text/css')
+                .attr('class', clname)
+                .property('$fonthandler', this)
+                .text(`@font-face { font-family: "${this.name}"; font-weight: normal; font-style: normal; src: url('data:application/font-${fmt};charset=utf-8;base64,${this.base64}') }`);
+         }
       }
-      selection.attr('font-weight', this.weight || null);
-      selection.attr('font-style', this.style || null);
+
+      selection.attr('font-family', this.name)
+               .attr('font-size', this.size)
+               .attr('xml:space', 'preserve')
+               .attr('font-weight', this.weight || null)
+               .attr('font-style', this.style || null);
    }
 
    /** @summary Set font size (optional) */
@@ -8062,45 +8080,57 @@ class FontHandler {
       return this.isSymbol || this.name || 'none';
    }
 
-   /** @summary Try to detect and create font handler for SVG text node */
-   static detect(node) {
-      const sz = node.getAttribute('font-size'),
-            family = node.getAttribute('font-family'), 
-            p = sz.indexOf('px'),
-            sz_pixels = p > 0 ? Number.parseInt(sz.slice(0,p)) : 12;
-      let style = node.getAttribute('font-style'), 
-          weight = node.getAttribute('font-weight'),
-          fontIndx = null, name = '';
-      if (weight === 'normal') 
-         weight = '';
-      else if (weight === 'bold') 
-         name += 'b';
-      if (style === 'normal') 
-         style = '';
-      else if (style === 'italic')
-         name += 'i';
-      else if (style === 'oblique')
-         name += 'o';
+} // class FontHandler
 
-      if (family === 'arial')
-         name += 'Arial';
-      else if (family === 'times')
-         name += 'Times New Roman';
-      else if (family === 'verdana')
-         name += 'Verdana';
+/** @summary Register custom font
+  * @private */
+function addCustomFont(index, name, format, base64) {
+   if (!Number.isInteger(index))
+      console.error(`Wrong index ${index} for custom font`);
+   else
+      root_fonts[index] = { n: name, format, base64 };
+}
 
-      for (let n = 1; n < root_fonts.length; ++n)   
-         if (name === root_fonts[n]) {
-             fontIndx = n*10 + 2;
-             break;
-         }
-      
-      // console.log('detect', family, sz, style, weight, 'index', fontIndx, 'text', node.textContent);
+/** @summary Try to detect and create font handler for SVG text node
+  * @private */
+function detectFont(node) {
+   const sz = node.getAttribute('font-size'),
+         family = node.getAttribute('font-family'),
+         p = sz.indexOf('px'),
+         sz_pixels = p > 0 ? Number.parseInt(sz.slice(0, p)) : 12;
+   let style = node.getAttribute('font-style'),
+       weight = node.getAttribute('font-weight'),
+      fontIndx = null, name = '';
+   if (weight === 'normal')
+      weight = '';
+   else if (weight === 'bold')
+      name += 'b';
+   if (style === 'normal')
+      style = '';
+   else if (style === 'italic')
+      name += 'i';
+   else if (style === 'oblique')
+      name += 'o';
 
-      return new FontHandler(fontIndx, sz_pixels, 0, family, style, weight);
+   if (family === 'arial')
+      name += 'Arial';
+   else if (family === 'times')
+      name += 'Times New Roman';
+   else if (family === 'verdana')
+      name += 'Verdana';
+
+   for (let n = 1; n < root_fonts.length; ++n) {
+      if (name === root_fonts[n]) {
+         fontIndx = n*10 + 2;
+         break;
+      }
    }
 
-} // class FontHandler
+   const handler = new FontHandler(fontIndx, sz_pixels);
+   if (!fontIndx)
+      handler.setNameStyleWeight(family, style, weight);
+   return handler;
+}
 
 const symbols_map = {
    // greek letters
@@ -8558,8 +8588,10 @@ function parseLatex(node, arg, label, curr) {
             if (alone && !curr.g) curr.g = elem;
 
             // apply font attributes only once, inherited by all other elements
-            if (curr.ufont)
-               curr.font.setFont(curr.g /*, 'without-size' */);
+            if (curr.ufont) {
+               curr.font.setPainter(arg.painter);
+               curr.font.setFont(curr.g);
+            }
 
             if (curr.bold !== undefined)
                curr.g.attr('font-weight', curr.bold ? 'bold' : 'normal');
@@ -10189,71 +10221,86 @@ function addHighlightStyle(elem, drag) {
 /** @summary Create pdf for existing SVG element
   * @return {Promise} with produced PDF file as url string
   * @private */
-async function svgToPDF(svg_element, width, height, as_buffer, can_modify) {
+async function svgToPDF(args, as_buffer) {
    const nodejs = isNodeJs();
    let _jspdf, _svg2pdf;
 
-   const pr = nodejs 
+   const pr = nodejs
       ? Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(h => { _jspdf = h; return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }); }).then(h => { _svg2pdf = h.default; })
-      : loadScript(exports.source_dir + 'scripts/jspdf.umd.min.js').then(() => loadScript(exports.source_dir + 'scripts/svg2pdf.umd.min.js')).then(() => { _jspdf = globalThis.jspdf; _svg2pdf = globalThis.svg2pdf;  });
+      : loadScript(exports.source_dir + 'scripts/jspdf.umd.min.js').then(() => loadScript(exports.source_dir + 'scripts/svg2pdf.umd.min.js')).then(() => { _jspdf = globalThis.jspdf; _svg2pdf = globalThis.svg2pdf; }),
+        restore_fonts = [], restore_dominant = [], node_transform = args.node.getAttribute('transform'), custom_fonts = {};
 
-   const restore_fonts = [], restore_dominant = [];   
+   if (args.reset_tranform)
+      args.node.removeAttribute('transform');
 
    return pr.then(() => {
-      select(svg_element).selectAll('g').each(function() {
+      select(args.node).selectAll('g').each(function() {
          if (this.hasAttribute('font-family')) {
-            let name = this.getAttribute('font-family');
+            const name = this.getAttribute('font-family');
             if (name === 'Courier New') {
                this.setAttribute('font-family', 'courier');
-               if (!can_modify) restore_fonts.push(this); // keep to restore it
+               if (!args.can_modify) restore_fonts.push(this); // keep to restore it
             }
          }
       });
 
-      select(svg_element).selectAll('text').each(function() {
+      select(args.node).selectAll('text').each(function() {
          if (this.hasAttribute('dominant-baseline')) {
             this.setAttribute('dy', '.2em'); // slightly different as in plain text
             this.removeAttribute('dominant-baseline');
-            if (!can_modify) restore_dominant.push(this); // keep to restore it
-         } else if (can_modify && nodejs && this.getAttribute('dy') === '.4em') {
+            if (!args.can_modify) restore_dominant.push(this); // keep to restore it
+         } else if (args.can_modify && nodejs && this.getAttribute('dy') === '.4em')
             this.setAttribute('dy', '.2em'); // better allignment in PDF
-         } 
       });
 
       if (nodejs) {
          const doc = internals.nodejs_document;
          doc.oldFunc = doc.createElementNS;
          globalThis.document = doc;
-         doc.createElementNS = function (ns, kind) {
+         doc.createElementNS = function(ns, kind) {
             const res = doc.oldFunc(ns, kind);
-            res.getBBox = function() { 
+            res.getBBox = function() {
                let width = 50, height = 10;
                if (this.tagName === 'text') {
-                  const font = FontHandler.detect(this);
+                  const font = detectFont(this);
                   width = approximateLabelWidth(this.textContent, font);
                   height = font.size;
                }
-               
-               return { x: 0, y: 0, width, height }; 
+
+               return { x: 0, y: 0, width, height };
             };
             return res;
          };
       }
 
-      let doc = new _jspdf.jsPDF({
-         orientation: "landscape",
-         unit: "px",
-         format: [width + 10, height + 10]
+      // eslint-disable-next-line new-cap
+      const doc = new _jspdf.jsPDF({
+         orientation: 'landscape',
+         unit: 'px',
+         format: [args.width + 10, args.height + 10]
       });
 
-      return _svg2pdf.svg2pdf(svg_element, doc, { x: 5, y: 5, width, height })
+      // add custom fonts to PDF document, only TTF format supported
+      select(args.node).selectAll('style').each(function() {
+         const fh = this.$fonthandler;
+         if (!fh || custom_fonts[fh.name] || (fh.format !== 'ttf')) return;
+         const filename = fh.name.toLowerCase().replace(/\s/g, '') + '.ttf';
+         doc.addFileToVFS(filename, fh.base64);
+         doc.addFont(filename, fh.name, 'normal');
+         custom_fonts[fh.name] = true;
+      });
+
+      return _svg2pdf.svg2pdf(args.node, doc, { x: 5, y: 5, width: args.width, height: args.height })
          .then(() => {
+            if (args.reset_tranform && !args.can_modify && node_transform)
+               args.node.setAttribute('transform', node_transform);
+
             restore_fonts.forEach(node => node.setAttribute('font-family', 'Courier New'));
             restore_dominant.forEach(node => {
                node.setAttribute('dominant-baseline', 'middle');
                node.removeAttribute('dy');
             });
-            let res = as_buffer ? doc.output('arraybuffer') : doc.output('dataurlstring');
+            const res = as_buffer ? doc.output('arraybuffer') : doc.output('dataurlstring');
             if (nodejs) {
                globalThis.document = undefined;
                internals.nodejs_document.createElementNS = internals.nodejs_document.oldFunc;
@@ -10267,7 +10314,7 @@ async function svgToPDF(svg_element, width, height, as_buffer, can_modify) {
 
 /** @summary Create image based on SVG
   * @param {string} svg - svg code of the image
-  * @param {string} [image_format] - image format like 'png' or 'jpeg'
+  * @param {string} [image_format] - image format like 'png', 'jpeg' or 'webp'
   * @param {boolean} [as_buffer] - return Buffer object for image
   * @return {Promise} with produced image in base64 form or as Buffer (or canvas when no image_format specified)
   * @private */
@@ -10276,7 +10323,7 @@ async function svgToImage(svg, image_format, as_buffer) {
       return svg;
 
    if (image_format === 'pdf')
-      return svgToPDF(svg.node, svg.width, svg.height, as_buffer, svg.can_modify);
+      return svgToPDF(svg, as_buffer);
 
    if (!isNodeJs()) {
       // required with df104.py/df105.py example with RCanvas
@@ -11074,7 +11121,7 @@ class TAttFillHandler {
       this.changed = false;
       this.func = this.apply.bind(this);
       this.setArgs(args);
-      this.changed = false; // unset change property that
+      this.changed = false; // unset change property
    }
 
    /** @summary Set fill style as arguments
@@ -12680,6 +12727,8 @@ class ObjectPainter extends BasePainter {
       if (!draw_g || draw_g.empty()) return;
 
       const font = (font_size === 'font') ? font_face : new FontHandler(font_face, font_size);
+
+      font.setPainter(this); // may be required when custom font is used
 
       draw_g.call(font.func);
 
@@ -61485,7 +61534,7 @@ class TAxisPainter extends ObjectPainter {
             pp = this.getPadPainter(),
             pad_w = pp?.getPadWidth() || scalingSize || w/0.8, // use factor 0.8 as ratio between frame and pad size
             pad_h = pp?.getPadHeight() || scalingSize || h/0.8;
-      let tickSize = 0, tickScalingSize = 0, titleColor, offset;
+      let tickSize = 0, tickScalingSize = 0, titleColor, titleFontId, offset;
 
       this.scalingSize = scalingSize || Math.max(Math.min(pad_w, pad_h), 10);
 
@@ -61501,6 +61550,7 @@ class TAxisPainter extends ObjectPainter {
          tickScalingSize = scalingSize || (this.vertical ? 1.7*h : 0.6*w);
          tickSize = optionSize ? axis.fTickSize : 0.03;
          titleColor = this.getColor(axis.fTextColor);
+         titleFontId = axis.fTextFont;
          offset = axis.fLabelOffset;
          if ((this.vertical && axis.fY1 > axis.fY2 && !this.optionMinus) || (!this.vertical && axis.fX1 > axis.fX2))
             offset = -offset;
@@ -61515,6 +61565,7 @@ class TAxisPainter extends ObjectPainter {
          tickScalingSize = scalingSize || (this.vertical ? pad_w : pad_h);
          tickSize = axis.fTickLength;
          titleColor = this.getColor(axis.fTitleColor);
+         titleFontId = axis.fTitleFont;
          offset = axis.fLabelOffset;
       }
 
@@ -61545,7 +61596,7 @@ class TAxisPainter extends ObjectPainter {
       this.fTitle = axis.fTitle;
       if (this.fTitle) {
          this.titleSize = (axis.fTitleSize >= 1) ? axis.fTitleSize : Math.round(axis.fTitleSize * this.scalingSize);
-         this.titleFont = new FontHandler(axis.fTitleFont, this.titleSize, scalingSize);
+         this.titleFont = new FontHandler(titleFontId, this.titleSize, scalingSize);
          this.titleFont.setColor(titleColor);
          this.offsetScaling = (axis.fTitleSize >= 1) ? 1 : (this.vertical ? pad_w : pad_h) / this.scalingSize;
          this.titleOffset = axis.fTitleOffset;
@@ -64375,8 +64426,10 @@ class TFramePainter extends ObjectPainter {
       }, 'Store frame position and graphical attributes to gStyle');
 
       menu.add('separator');
-      menu.add('Save as frame.png', () => pp.saveAs('png', 'frame', 'frame.png'));
-      menu.add('Save as frame.svg', () => pp.saveAs('svg', 'frame', 'frame.svg'));
+
+      menu.add('sub:Save as');
+      ['svg', 'png', 'jpeg', 'pdf', 'webp'].forEach(fmt => menu.add(`frame.${fmt}`, () => pp.saveAs(fmt, 'frame', `frame.${fmt}`)));
+      menu.add('endsub:');
 
       return true;
    }
@@ -66609,7 +66662,7 @@ const PadButtonsHandler = {
 }, // PadButtonsHandler
 
 // identifier used in TWebCanvas painter
-webSnapIds = { kNone: 0, kObject: 1, kSVG: 2, kSubPad: 3, kColors: 4, kStyle: 5 };
+webSnapIds = { kNone: 0, kObject: 1, kSVG: 2, kSubPad: 3, kColors: 4, kStyle: 5, kFont: 6 };
 
 
 /** @summary Fill TWebObjectOptions for painter
@@ -67600,7 +67653,7 @@ class TPadPainter extends ObjectPainter {
          menu.addchk(this.pad?.fTicky === 2, 'labels on both sides', '2fTicky', SetPadField);
          menu.add('endsub:');
          menu.addchk(this.pad?.fEditable, 'Editable', flag => { this.pad.fEditable = flag; this.interactiveRedraw('pad'); });
-         if (this.iscan) 
+         if (this.iscan)
             menu.addchk(this.pad?.TestBit(kIsGrayscale), 'Gray scale', flag => { this.setGrayscale(flag); this.interactiveRedraw('pad'); });
 
          if (isFunc(this.drawObject))
@@ -67640,9 +67693,9 @@ class TPadPainter extends ObjectPainter {
          menu.addchk(this.isPadEnlarged(), 'Enlarge ' + (this.iscan ? 'canvas' : 'pad'), () => this.enlargePad());
 
       const fname = this.this_pad_name || (this.iscan ? 'canvas' : 'pad');
-      menu.add(`Save as ${fname}.png`, fname+'.png', arg => this.saveAs('png', this.iscan, arg));
-      menu.add(`Save as ${fname}.svg`, fname+'.svg', arg => this.saveAs('svg', this.iscan, arg));
-      menu.add(`Save as ${fname}.pdf`, fname+'.pdf', arg => this.saveAs('pdf', this.iscan, arg));
+      menu.add('sub:Save as');
+      ['svg', 'png', 'jpeg', 'pdf', 'webp'].forEach(fmt => menu.add(`${fname}.${fmt}`, () => this.saveAs(fmt, this.iscan, `${fname}.${fmt}`)));
+      menu.add('endsub:');
 
       return true;
    }
@@ -67806,7 +67859,7 @@ class TPadPainter extends ObjectPainter {
       this.pad.fTheta = obj.fTheta;
       this.pad.fEditable = obj.fEditable;
 
-      if (this.iscan) 
+      if (this.iscan)
          this.checkSpecialsInPrimitives(obj);
 
       const fp = this.getFramePainter();
@@ -67960,6 +68013,13 @@ class TPadPainter extends ObjectPainter {
       }
    }
 
+   /** @summary Process snap with custom font
+     * @private */
+   processSnapFont(snap) {
+      const arr = snap.fSnapshot.fOper.split(':');
+      addCustomFont(Number.parseInt(arr[0]), arr[1], arr[2], arr[3]);
+   }
+
    /** @summary Process special snaps like colors or style objects
      * @return {Promise} index where processing should start
      * @private */
@@ -67974,6 +68034,9 @@ class TPadPainter extends ObjectPainter {
          } else if (snap.fKind === webSnapIds.kColors) {
             lst.shift();
             this.processSnapColors(snap);
+         } else if (snap.fKind === webSnapIds.kFont) {
+            lst.shift();
+            this.processSnapFont(snap);
          } else
             break;
       }
@@ -68578,8 +68641,8 @@ class TPadPainter extends ObjectPainter {
          height = fp.getFrameHeight();
       }
 
-      const arg = (file_format === 'pdf') 
-         ? { node: elem.node(), width, height } 
+      const arg = (file_format === 'pdf')
+         ? { node: elem.node(), width, height, reset_tranform: use_frame }
          : compressSVG(`<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">${elem.node().innerHTML}</svg>`);
 
       return svgToImage(arg, file_format).then(res => {
@@ -96953,7 +97016,7 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
          if (fmt === 'ZSTD') {
             const promise = internals._ZstdStream
                             ? Promise.resolve(internals._ZstdStream)
-                            : (isNodeJs() ? import('@oneidentity/zstd-js') : Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }))
+                            : (isNodeJs() ? Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }) : Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }))
                               .then(({ ZstdInit }) => ZstdInit()).then(({ ZstdStream }) => { internals._ZstdStream = ZstdStream; return ZstdStream; });
             return promise.then(ZstdStream => {
                const data2 = ZstdStream.decompress(uint8arr),
@@ -102083,7 +102146,7 @@ async function makeImage(args) {
          main.selectAll('svg').each(clear_element);
 
          let svg;
-         if (args.format === 'pdf') 
+         if (args.format === 'pdf')
             svg = { node: main.select('svg').node(), width: args.width, height: args.height, can_modify: true };
          else {
             svg = compressSVG(main.html());
@@ -114452,7 +114515,8 @@ class RObjectPainter extends ObjectPainter {
        if (!Number.isFinite(text_size) || (text_size <= 0)) text_size = 12;
        if (!fontScale) fontScale = pp?.getPadHeight() || 100;
 
-       const handler = new FontHandler(null, text_size, fontScale, font_family, font_style, font_weight);
+       const handler = new FontHandler(null, text_size, fontScale);
+       handler.setNameStyleWeight(font_family, font_style, font_weight);
 
        if (text_angle) handler.setAngle(360 - text_angle);
        if (text_align !== 'none') handler.setAlign(text_align);
@@ -116779,8 +116843,10 @@ class RFramePainter extends RObjectPainter {
 
       menu.addAttributesMenu(this, alone ? '' : 'Frame ');
       menu.add('separator');
-      menu.add('Save as frame.png', () => this.getPadPainter().saveAs('png', 'frame', 'frame.png'));
-      menu.add('Save as frame.svg', () => this.getPadPainter().saveAs('svg', 'frame', 'frame.svg'));
+
+      menu.add('sub:Save as');
+      ['svg', 'png', 'jpeg', 'pdf', 'webp'].forEach(fmt => menu.add(`frame.${fmt}`, () => this.getPadPainter().saveAs(fmt, 'frame', `frame.${fmt}`)));
+      menu.add('endsub:');
 
       return true;
    }
@@ -117564,8 +117630,9 @@ class RPadPainter extends RObjectPainter {
          menu.addchk((this.enlargeMain('state') === 'on'), 'Enlarge ' + (this.iscan ? 'canvas' : 'pad'), () => this.enlargePad());
 
       const fname = this.this_pad_name || (this.iscan ? 'canvas' : 'pad');
-      menu.add(`Save as ${fname}.png`, fname+'.png', arg => this.saveAs('png', false, arg));
-      menu.add(`Save as ${fname}.svg`, fname+'.svg', arg => this.saveAs('svg', false, arg));
+      menu.add('sub:Save as');
+      ['svg', 'png', 'jpeg', 'pdf', 'webp'].forEach(fmt => menu.add(`${fname}.${fmt}`, () => this.saveAs(fmt, this.iscan, `${fname}.${fmt}`)));
+      menu.add('endsub:');
 
       return true;
    }
@@ -118055,11 +118122,7 @@ class RPadPainter extends RObjectPainter {
      * @return {Promise} with image data, coded with btoa() function
      * @private */
    async createImage(format) {
-      // use https://github.com/MrRio/jsPDF in the future here
-      if (format === 'pdf')
-         return btoa_func('dummy PDF file');
-
-      if ((format === 'png') || (format === 'jpeg') || (format === 'svg')) {
+      if ((format === 'png') || (format === 'jpeg') || (format === 'svg') || (format === 'pdf')) {
          return this.produceImage(true, format).then(res => {
             if (!res || (format === 'svg')) return res;
             const separ = res.indexOf('base64,');
@@ -118205,10 +118268,11 @@ class RPadPainter extends RObjectPainter {
          height = fp.getFrameHeight();
       }
 
-      let svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">${elem.node().innerHTML}</svg>`;
-      svg = compressSVG(svg);
+      const arg = (file_format === 'pdf')
+         ? { node: elem.node(), width, height, reset_tranform: use_frame }
+         : compressSVG(`<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">${elem.node().innerHTML}</svg>`);
 
-      return svgToImage(svg, file_format).then(res => {
+      return svgToImage(arg, file_format).then(res => {
          for (let k = 0; k < items.length; ++k) {
             const item = items[k];
 
@@ -118492,7 +118556,6 @@ class LongPollSocket {
          reqmode = 'text;sync'; // use sync mode to close connection before browser window closed
       } else if ((this.connid === null) || (typeof this.connid !== 'number')) {
          if (!browser.qt5) console.error('No connection');
-         return;
       } else {
          url += '?connection=' + this.connid;
          if (kind === 'dummy') url += '&dummy';
@@ -118941,14 +119004,20 @@ class WebWindowHandle {
    /** @summary Assign href parameter
      * @param {string} [path] - absolute path, when not specified window.location.url will be used
      * @private */
-   setHRef(path) { this.href = path; }
+   setHRef(path) {
+      if (isStr(path) && (path.indexOf('?') > 0)) {
+         this.href = path.slice(0, path.indexOf('?'));
+         this.key = decodeUrl(path).get('key');
+      } else
+         this.href = path;
+   }
 
    /** @summary Return href part
      * @param {string} [relative_path] - relative path to the handle
      * @private */
    getHRef(relative_path) {
-      if (!relative_path || !this.kind || !this.href) return this.href;
-
+      if (!relative_path || !this.kind || !this.href)
+         return this.href;
       let addr = this.href;
       if (relative_path.indexOf('../') === 0) {
          const ddd = addr.lastIndexOf('/', addr.length-2);
@@ -120052,10 +120121,21 @@ function drawRFont() {
       defs = svg.insert('svg:defs', ':first-child').attr('class', 'canvas_defs');
 
    let entry = defs.selectChild('.' + clname);
-   if (entry.empty())
-      entry = defs.append('style').attr('type', 'text/css').attr('class', clname);
-
-   entry.text(`@font-face { font-family: "${font.fFamily}"; font-weight: ${font.fWeight ? font.fWeight : 'normal'}; font-style: ${font.fStyle ? font.fStyle : 'normal'}; src: ${font.fSrc}; }`);
+   if (entry.empty()) {
+      entry = defs.append('style')
+                  .attr('type', 'text/css')
+                  .attr('class', clname)
+                  .text(`@font-face { font-family: "${font.fFamily}"; font-weight: ${font.fWeight ? font.fWeight : 'normal'}; font-style: ${font.fStyle ? font.fStyle : 'normal'}; src: ${font.fSrc}; }`);
+      const p1 = font.fSrc.indexOf('base64,'),
+            p2 = font.fSrc.lastIndexOf(' format(');
+      if (p1 > 0 && p2 > p1) {
+         const base64 = font.fSrc.slice(p1 + 7, p2 - 2),
+               is_ttf = font.fSrc.indexOf('data:application/font-ttf') > 0;
+         // TODO: for the moment only ttf format supported by jsPDF
+         if (is_ttf)
+            entry.property('$fonthandler', { name: font.fFamily, format: 'ttf', base64 });
+      }
+   }
 
    if (font.fDefault)
       this.getPadPainter()._dfltRFont = font;
@@ -125008,7 +125088,6 @@ exports.setHistogramTitle = setHistogramTitle;
 exports.setSaveFile = setSaveFile;
 exports.settings = settings;
 exports.svgToImage = svgToImage;
-exports.svgToPDF = svgToPDF;
 exports.toJSON = toJSON;
 exports.treeDraw = treeDraw;
 exports.version = version;

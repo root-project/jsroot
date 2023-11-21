@@ -2,8 +2,8 @@ const kArial = 'Arial', kTimes = 'Times New Roman', kCourier = 'Courier New', kV
 // average width taken from symbols.html, counted only for letters and digits
 root_fonts = [null,  // index 0 not exists
       { n: kTimes, s: 'italic', aw: 0.5314 },
-      { n: kTimes, w: 'bold', aw: 0.5809 }, 
-      { n: kTimes, s: 'italic', w: 'bold', aw: 0.5540 }, 
+      { n: kTimes, w: 'bold', aw: 0.5809 },
+      { n: kTimes, s: 'italic', w: 'bold', aw: 0.5540 },
       { n: kArial, aw: 0.5778 },
       { n: kArial, s: 'oblique', aw: 0.5783 },
       { n: kArial, w: 'bold', aw: 0.6034 },
@@ -13,13 +13,13 @@ root_fonts = [null,  // index 0 not exists
       { n: kCourier, w: 'bold', aw: 0.6003 },
       { n: kCourier, s: 'oblique', w: 'bold', aw: 0.6005 },
       { n: kSymbol, aw: 0.5521 },
-      { n: kTimes, aw: 0.5521 }, 
-      { n: kWingdings, aw: 0.5664 }, 
+      { n: kTimes, aw: 0.5521 },
+      { n: kWingdings, aw: 0.5664 },
       { n: kSymbol, s: 'italic', aw: 0.5314 },
       { n: kVerdana, aw: 0.5664 },
       { n: kVerdana, s: 'italic', aw: 0.5495 },
       { n: kVerdana, w: 'bold', aw: 0.5748 },
-      { n: kVerdana, s: 'italic', w: 'bold', aw: 0.5578 } ];
+      { n: kVerdana, s: 'italic', w: 'bold', aw: 0.5578 }];
 
 /**
  * @summary Helper class for font handling
@@ -42,7 +42,7 @@ class FontHandler {
 
       const indx = (fontIndex && Number.isInteger(fontIndex)) ? Math.floor(fontIndex / 10) : 0,
             cfg = root_fonts[indx];
-   
+
       if (cfg)
          this.setNameStyleWeight(cfg.n, cfg.s, cfg.w, cfg.aw, cfg.format, cfg.base64);
       else
@@ -72,14 +72,14 @@ class FontHandler {
 
    /** @summary Assigns font-related attributes */
    setFont(selection) {
-      if(this.base64 && this.painter) {
+      if (this.base64 && this.painter) {
          const svg = this.painter.getCanvSvg(),
                clname = 'custom_font_' + this.name,
                fmt = 'ttf';
          let defs = svg.selectChild('.canvas_defs');
          if (defs.empty())
             defs = svg.insert('svg:defs', ':first-child').attr('class', 'canvas_defs');
-         let entry = defs.selectChild('.' + clname);
+         const entry = defs.selectChild('.' + clname);
          if (entry.empty()) {
             defs.append('style')
                 .attr('type', 'text/css')
@@ -154,27 +154,27 @@ class FontHandler {
 /** @summary Register custom font
   * @private */
 function addCustomFont(index, name, format, base64) {
-   if (!Number.isInteger(index)) 
+   if (!Number.isInteger(index))
       console.error(`Wrong index ${index} for custom font`);
    else
       root_fonts[index] = { n: name, format, base64 };
 }
 
-/** @summary Try to detect and create font handler for SVG text node 
+/** @summary Try to detect and create font handler for SVG text node
   * @private */
 function detectFont(node) {
    const sz = node.getAttribute('font-size'),
-         family = node.getAttribute('font-family'), 
+         family = node.getAttribute('font-family'),
          p = sz.indexOf('px'),
-         sz_pixels = p > 0 ? Number.parseInt(sz.slice(0,p)) : 12;
-   let style = node.getAttribute('font-style'), 
+         sz_pixels = p > 0 ? Number.parseInt(sz.slice(0, p)) : 12;
+   let style = node.getAttribute('font-style'),
        weight = node.getAttribute('font-weight'),
       fontIndx = null, name = '';
-   if (weight === 'normal') 
+   if (weight === 'normal')
       weight = '';
-   else if (weight === 'bold') 
+   else if (weight === 'bold')
       name += 'b';
-   if (style === 'normal') 
+   if (style === 'normal')
       style = '';
    else if (style === 'italic')
       name += 'i';
@@ -188,13 +188,14 @@ function detectFont(node) {
    else if (family === 'verdana')
       name += 'Verdana';
 
-   for (let n = 1; n < root_fonts.length; ++n)   
-   if (name === root_fonts[n]) {
-      fontIndx = n*10 + 2;
-      break;
+   for (let n = 1; n < root_fonts.length; ++n) {
+      if (name === root_fonts[n]) {
+         fontIndx = n*10 + 2;
+         break;
+      }
    }
 
-   let handler = new FontHandler(fontIndx, sz_pixels);
+   const handler = new FontHandler(fontIndx, sz_pixels);
    if (!fontIndx)
       handler.setNameStyleWeight(family, style, weight);
    return handler;

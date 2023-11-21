@@ -1162,7 +1162,7 @@ class TPadPainter extends ObjectPainter {
          menu.addchk(this.pad?.fTicky === 2, 'labels on both sides', '2fTicky', SetPadField);
          menu.add('endsub:');
          menu.addchk(this.pad?.fEditable, 'Editable', flag => { this.pad.fEditable = flag; this.interactiveRedraw('pad'); });
-         if (this.iscan) 
+         if (this.iscan)
             menu.addchk(this.pad?.TestBit(kIsGrayscale), 'Gray scale', flag => { this.setGrayscale(flag); this.interactiveRedraw('pad'); });
 
          if (isFunc(this.drawObject))
@@ -1203,7 +1203,7 @@ class TPadPainter extends ObjectPainter {
 
       const fname = this.this_pad_name || (this.iscan ? 'canvas' : 'pad');
       menu.add('sub:Save as');
-      ['svg','png','jpeg','pdf','webp'].forEach(fmt => menu.add(`${fname}.${fmt}`, () => this.saveAs(fmt, this.iscan, `${fname}.${fmt}`)));
+      ['svg', 'png', 'jpeg', 'pdf', 'webp'].forEach(fmt => menu.add(`${fname}.${fmt}`, () => this.saveAs(fmt, this.iscan, `${fname}.${fmt}`)));
       menu.add('endsub:');
 
       return true;
@@ -1368,7 +1368,7 @@ class TPadPainter extends ObjectPainter {
       this.pad.fTheta = obj.fTheta;
       this.pad.fEditable = obj.fEditable;
 
-      if (this.iscan) 
+      if (this.iscan)
          this.checkSpecialsInPrimitives(obj);
 
       const fp = this.getFramePainter();
@@ -2150,8 +2150,8 @@ class TPadPainter extends ObjectPainter {
          height = fp.getFrameHeight();
       }
 
-      const arg = (file_format === 'pdf') 
-         ? { node: elem.node(), width, height, reset_tranform: use_frame } 
+      const arg = (file_format === 'pdf')
+         ? { node: elem.node(), width, height, reset_tranform: use_frame }
          : compressSVG(`<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">${elem.node().innerHTML}</svg>`);
 
       return svgToImage(arg, file_format).then(res => {

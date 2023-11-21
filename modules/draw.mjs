@@ -624,7 +624,7 @@ async function makeImage(args) {
          main.selectAll('svg').each(clear_element);
 
          let svg;
-         if (args.format === 'pdf') 
+         if (args.format === 'pdf')
             svg = { node: main.select('svg').node(), width: args.width, height: args.height, can_modify: true };
          else {
             svg = compressSVG(main.html());

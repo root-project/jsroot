@@ -1,5 +1,5 @@
 import { gStyle, settings, constants, internals, addMethods,
-         isPromise, getPromise, postponePromise, isBatchMode, isObject, isFunc, isStr, btoa_func, clTPad, nsREX } from '../core.mjs';
+         isPromise, getPromise, postponePromise, isBatchMode, isObject, isFunc, isStr, clTPad, nsREX } from '../core.mjs';
 import { ColorPalette, addColor, getRootColors } from '../base/colors.mjs';
 import { RObjectPainter } from '../base/RObjectPainter.mjs';
 import { getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG, makeTranslate, svgToImage } from '../base/BasePainter.mjs';
@@ -738,7 +738,7 @@ class RPadPainter extends RObjectPainter {
 
       const fname = this.this_pad_name || (this.iscan ? 'canvas' : 'pad');
       menu.add('sub:Save as');
-      ['svg','png','jpeg','pdf','webp'].forEach(fmt => menu.add(`${fname}.${fmt}`, () => this.saveAs(fmt, this.iscan, `${fname}.${fmt}`)));
+      ['svg', 'png', 'jpeg', 'pdf', 'webp'].forEach(fmt => menu.add(`${fname}.${fmt}`, () => this.saveAs(fmt, this.iscan, `${fname}.${fmt}`)));
       menu.add('endsub:');
 
       return true;
@@ -1375,8 +1375,8 @@ class RPadPainter extends RObjectPainter {
          height = fp.getFrameHeight();
       }
 
-      const arg = (file_format === 'pdf') 
-         ? { node: elem.node(), width, height, reset_tranform: use_frame } 
+      const arg = (file_format === 'pdf')
+         ? { node: elem.node(), width, height, reset_tranform: use_frame }
          : compressSVG(`<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">${elem.node().innerHTML}</svg>`);
 
       return svgToImage(arg, file_format).then(res => {

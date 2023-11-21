@@ -484,19 +484,19 @@ class WebWindowHandle {
    /** @summary Assign href parameter
      * @param {string} [path] - absolute path, when not specified window.location.url will be used
      * @private */
-   setHRef(path) { 
+   setHRef(path) {
       if (isStr(path) && (path.indexOf('?') > 0)) {
          this.href = path.slice(0, path.indexOf('?'));
          this.key = decodeUrl(path).get('key');
-      } else 
-         this.href = path; 
+      } else
+         this.href = path;
    }
 
    /** @summary Return href part
      * @param {string} [relative_path] - relative path to the handle
      * @private */
    getHRef(relative_path) {
-      if (!relative_path || !this.kind || !this.href) 
+      if (!relative_path || !this.kind || !this.href)
          return this.href;
       let addr = this.href;
       if (relative_path.indexOf('../') === 0) {

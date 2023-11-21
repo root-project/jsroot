@@ -721,11 +721,10 @@ async function svgToPDF(args, as_buffer) {
    const nodejs = isNodeJs();
    let _jspdf, _svg2pdf;
 
-   const pr = nodejs 
+   const pr = nodejs
       ? import('jspdf').then(h => { _jspdf = h; return import('svg2pdf.js'); }).then(h => { _svg2pdf = h.default; })
-      : loadScript(source_dir + 'scripts/jspdf.umd.min.js').then(() => loadScript(source_dir + 'scripts/svg2pdf.umd.min.js')).then(() => { _jspdf = globalThis.jspdf; _svg2pdf = globalThis.svg2pdf;  });
-
-   const restore_fonts = [], restore_dominant = [], node_transform = args.node.getAttribute('transform'), custom_fonts = {};
+      : loadScript(source_dir + 'scripts/jspdf.umd.min.js').then(() => loadScript(source_dir + 'scripts/svg2pdf.umd.min.js')).then(() => { _jspdf = globalThis.jspdf; _svg2pdf = globalThis.svg2pdf; }),
+        restore_fonts = [], restore_dominant = [], node_transform = args.node.getAttribute('transform'), custom_fonts = {};
 
    if (args.reset_tranform)
       args.node.removeAttribute('transform');
@@ -733,7 +732,7 @@ async function svgToPDF(args, as_buffer) {
    return pr.then(() => {
       d3_select(args.node).selectAll('g').each(function() {
          if (this.hasAttribute('font-family')) {
-            let name = this.getAttribute('font-family');
+            const name = this.getAttribute('font-family');
             if (name === 'Courier New') {
                this.setAttribute('font-family', 'courier');
                if (!args.can_modify) restore_fonts.push(this); // keep to restore it
@@ -746,42 +745,42 @@ async function svgToPDF(args, as_buffer) {
             this.setAttribute('dy', '.2em'); // slightly different as in plain text
             this.removeAttribute('dominant-baseline');
             if (!args.can_modify) restore_dominant.push(this); // keep to restore it
-         } else if (args.can_modify && nodejs && this.getAttribute('dy') === '.4em') {
+         } else if (args.can_modify && nodejs && this.getAttribute('dy') === '.4em')
             this.setAttribute('dy', '.2em'); // better allignment in PDF
-         } 
       });
 
       if (nodejs) {
          const doc = internals.nodejs_document;
          doc.oldFunc = doc.createElementNS;
          globalThis.document = doc;
-         doc.createElementNS = function (ns, kind) {
+         doc.createElementNS = function(ns, kind) {
             const res = doc.oldFunc(ns, kind);
-            res.getBBox = function() { 
+            res.getBBox = function() {
                let width = 50, height = 10;
                if (this.tagName === 'text') {
                   const font = detectFont(this);
                   width = approximateLabelWidth(this.textContent, font);
                   height = font.size;
                }
-               
-               return { x: 0, y: 0, width, height }; 
+
+               return { x: 0, y: 0, width, height };
             };
             return res;
          };
       }
 
-      let doc = new _jspdf.jsPDF({
-         orientation: "landscape",
-         unit: "px",
+      // eslint-disable-next-line new-cap
+      const doc = new _jspdf.jsPDF({
+         orientation: 'landscape',
+         unit: 'px',
          format: [args.width + 10, args.height + 10]
       });
 
-      // add custom fonts to PDF document, only TTF format supported 
+      // add custom fonts to PDF document, only TTF format supported
       d3_select(args.node).selectAll('style').each(function() {
-         let fh = this.$fonthandler;
+         const fh = this.$fonthandler;
          if (!fh || custom_fonts[fh.name] || (fh.format !== 'ttf')) return;
-         let filename = fh.name.toLowerCase().replace(/\s/g, '') + '.ttf';
+         const filename = fh.name.toLowerCase().replace(/\s/g, '') + '.ttf';
          doc.addFileToVFS(filename, fh.base64);
          doc.addFont(filename, fh.name, 'normal');
          custom_fonts[fh.name] = true;
@@ -797,7 +796,7 @@ async function svgToPDF(args, as_buffer) {
                node.setAttribute('dominant-baseline', 'middle');
                node.removeAttribute('dy');
             });
-            let res = as_buffer ? doc.output('arraybuffer') : doc.output('dataurlstring');
+            const res = as_buffer ? doc.output('arraybuffer') : doc.output('dataurlstring');
             if (nodejs) {
                globalThis.document = undefined;
                internals.nodejs_document.createElementNS = internals.nodejs_document.oldFunc;
