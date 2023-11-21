@@ -10,7 +10,9 @@ root_fonts_aver_width = [0.5778, 0.5314,
       0.5783, 0.6034, 0.6030, 0.6003,
       0.6004, 0.6003, 0.6005,
       0.5521, 0.5521, 0.5664, 0.5314,
-      0.5664, 0.5495, 0.5748, 0.5578];
+      0.5664, 0.5495, 0.5748, 0.5578],
+// custom fonts configured from TWebCanvas
+custom_fonts = {}; 
 
 /**
  * @summary Helper class for font handling
@@ -171,4 +173,11 @@ class FontHandler {
 
 } // class FontHandler
 
-export { FontHandler };
+function addCustomFont(index, name, format, base64) {
+   if (!Number.isInteger(index)) 
+      console.error(`Wrong index ${index} for custom font`);
+   else
+      custom_fonts[index] = { name, format, base64 };
+}
+
+export { FontHandler, addCustomFont };

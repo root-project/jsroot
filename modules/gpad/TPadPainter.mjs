@@ -1,4 +1,4 @@
-import { gStyle, settings, constants, browser, internals, btoa_func, BIT,
+import { gStyle, settings, constants, browser, internals, BIT,
          create, toJSON, isBatchMode, loadScript, injectCode, isPromise, getPromise, postponePromise,
          isObject, isFunc, isStr,
          clTObjArray, clTPaveText, clTColor, clTPad, clTStyle, clTLegend, clTHStack, clTMultiGraph, clTLegendEntry } from '../core.mjs';
@@ -7,6 +7,7 @@ import { ColorPalette, adoptRootColors, getGrayColors, extendRootColors, getRGBf
 import { getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG, makeTranslate, svgToImage } from '../base/BasePainter.mjs';
 import { ObjectPainter, selectActivePad, getActivePad } from '../base/ObjectPainter.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
+import { addCustomFont } from '../base/FontHandler.mjs';
 import { addDragHandler } from './TFramePainter.mjs';
 import { createMenu, closeMenu } from '../gui/menu.mjs';
 import { ToolbarIcons, registerForResize, saveFile } from '../gui/utils.mjs';
@@ -1524,8 +1525,8 @@ class TPadPainter extends ObjectPainter {
    /** @summary Process snap with custom font
      * @private */
    processSnapFont(snap) {
-      let arr = snap.fSnapshot.fOper.split(':');
-      console.log('arr', arr[0], arr[1], arr[2], arr[3]);
+      const arr = snap.fSnapshot.fOper.split(':');
+      addCustomFont(Number.parseInt(arr[0]), arr[1], arr[2], arr[3]);
    }
 
    /** @summary Process special snaps like colors or style objects
