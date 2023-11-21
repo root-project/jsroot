@@ -80,8 +80,11 @@ class FontHandler {
             defs = svg.insert('svg:defs', ':first-child').attr('class', 'canvas_defs');
          let entry = defs.selectChild('.' + clname);
          if (entry.empty()) {
-            entry = defs.append('style').attr('type', 'text/css').attr('class', clname);
-            entry.text(`@font-face { font-family: "${this.name}"; font-weight: normal; font-style: normal; src: url('data:application/font-${fmt};charset=utf-8;base64,${this.base64}') }`);
+            defs.append('style')
+                .attr('type', 'text/css')
+                .attr('class', clname)
+                .property('$fonthandler', this)
+                .text(`@font-face { font-family: "${this.name}"; font-weight: normal; font-style: normal; src: url('data:application/font-${fmt};charset=utf-8;base64,${this.base64}') }`);
          }
       }
 

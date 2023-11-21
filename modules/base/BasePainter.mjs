@@ -725,7 +725,7 @@ async function svgToPDF(args, as_buffer) {
       ? import('jspdf').then(h => { _jspdf = h; return import('svg2pdf.js'); }).then(h => { _svg2pdf = h.default; })
       : loadScript(source_dir + 'scripts/jspdf.umd.min.js').then(() => loadScript(source_dir + 'scripts/svg2pdf.umd.min.js')).then(() => { _jspdf = globalThis.jspdf; _svg2pdf = globalThis.svg2pdf;  });
 
-   const restore_fonts = [], restore_dominant = [], node_transform = args.node.getAttribute('transform');
+   const restore_fonts = [], restore_dominant = [], node_transform = args.node.getAttribute('transform'), custom_fonts = {};
 
    if (args.reset_tranform)
       args.node.removeAttribute('transform');
@@ -777,18 +777,15 @@ async function svgToPDF(args, as_buffer) {
          format: [args.width + 10, args.height + 10]
       });
 
-      /*
-      if (internals.courier) {
-         doc.addFileToVFS('courier.ttf', internals.courier.toString('base64'));
-         doc.addFont('courier.ttf', 'Courier New', 'normal');
-      }
-
-      if (internals.courierb) {
-         doc.addFileToVFS('courierb.ttf', internals.courierb.toString('base64'));
-         doc.addFont('courierb.ttf', 'Courier New', 'bold');
-      }
-      */
-
+      // add custom fonts to PDF document
+      d3_select(args.node).selectAll('style').each(function() {
+         let fh = this.$fonthandler;
+         if (!fh || custom_fonts[fh.name]) return;
+         let filename = fh.name.toLowerCase().replace(/\s/g, '') + '.' + (fh.fmt ?? 'ttf');
+         doc.addFileToVFS(filename, fh.base64);
+         doc.addFont(filename, fh.name, 'normal');
+         custom_fonts[fh.name] = true;
+      });
 
       return _svg2pdf.svg2pdf(args.node, doc, { x: 5, y: 5, width: args.width, height: args.height })
          .then(() => {
