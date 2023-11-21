@@ -889,6 +889,8 @@ class ObjectPainter extends BasePainter {
 
       const font = (font_size === 'font') ? font_face : new FontHandler(font_face, font_size);
 
+      font.setPainter(this); // may be required when custom font is used
+
       draw_g.call(font.func);
 
       draw_g.property('draw_text_completed', false) // indicate that draw operations submitted

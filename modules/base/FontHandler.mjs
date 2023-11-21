@@ -69,15 +69,18 @@ class FontHandler {
          this.isSymbol = '';
    }
 
+   /** @summary Set painter for which font will be applied */
+   setPainter(painter) {
+      this.painter = painter;
+   }
+
    /** @summary Assigns font-related attributes */
-   setFont(selection, arg) {
-      selection.attr('font-family', this.name);
-      if (arg !== 'without-size') {
-         selection.attr('font-size', this.size)
-                  .attr('xml:space', 'preserve');
-      }
-      selection.attr('font-weight', this.weight || null);
-      selection.attr('font-style', this.style || null);
+   setFont(selection) {
+      selection.attr('font-family', this.name)
+               .attr('font-size', this.size)
+               .attr('xml:space', 'preserve')
+               .attr('font-weight', this.weight || null)
+               .attr('font-style', this.style || null);
    }
 
    /** @summary Set font size (optional) */

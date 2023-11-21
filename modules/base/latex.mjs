@@ -459,8 +459,10 @@ function parseLatex(node, arg, label, curr) {
             if (alone && !curr.g) curr.g = elem;
 
             // apply font attributes only once, inherited by all other elements
-            if (curr.ufont)
-               curr.font.setFont(curr.g /*, 'without-size' */);
+            if (curr.ufont) {
+               curr.font.setPainter(arg.painter);
+               curr.font.setFont(curr.g);
+            }
 
             if (curr.bold !== undefined)
                curr.g.attr('font-weight', curr.bold ? 'bold' : 'normal');
