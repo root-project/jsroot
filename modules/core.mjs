@@ -1093,7 +1093,7 @@ function create(typename, target) {
          create(clTBox, obj);
          extend(obj, { fX1NDC: 0, fY1NDC: 0, fX2NDC: 1, fY2NDC: 1,
                        fBorderSize: 0, fInit: 1, fShadowColor: 1,
-                       fCornerRadius: 0, fOption: 'brNDC', fName: 'title' });
+                       fCornerRadius: 0, fOption: 'brNDC', fName: '' });
          break;
       case clTAttText:
          extend(obj, { fTextAngle: 0, fTextSize: 0, fTextAlign: 22, fTextColor: 1, fTextFont: 42 });
@@ -1113,7 +1113,7 @@ function create(typename, target) {
       case clTLegend:
          create(clTPave, obj);
          create(clTAttText, obj);
-         extend(obj, { fColumnSeparation: 0, fEntrySeparation: 0.1, fMargin: 0.25, fNColumns: 1, fPrimitives: create(clTList),
+         extend(obj, { fColumnSeparation: 0, fEntrySeparation: 0.1, fMargin: 0.25, fNColumns: 1, fPrimitives: create(clTList), fName: clTPave,
                        fBorderSize: gStyle.fLegendBorderSize, fTextFont: gStyle.fLegendFont, fTextSize: gStyle.fLegendTextSize, fFillColor: gStyle.fLegendFillColor });
          break;
       case clTPaletteAxis:
