@@ -1,7 +1,7 @@
 import { select as d3_select } from '../d3.mjs';
 import { settings, internals, isNodeJs, isFunc, isStr, isObject, btoa_func, getDocument, source_dir, loadScript } from '../core.mjs';
-import { detectFont } from './FontHandler.mjs';
-import { approximateLabelWidth } from './latex.mjs';
+import { detectFont, getCustomFont, FontHandler } from './FontHandler.mjs';
+import { approximateLabelWidth, replaceSymbolsInTextNode } from './latex.mjs';
 
 
 /** @summary Returns visible rect of element
@@ -719,12 +719,13 @@ function addHighlightStyle(elem, drag) {
   * @private */
 async function svgToPDF(args, as_buffer) {
    const nodejs = isNodeJs();
-   let _jspdf, _svg2pdf;
+   let _jspdf, _svg2pdf, need_symbols = false;
 
    const pr = nodejs
       ? import('jspdf').then(h => { _jspdf = h; return import('svg2pdf.js'); }).then(h => { _svg2pdf = h.default; })
       : loadScript(source_dir + 'scripts/jspdf.umd.min.js').then(() => loadScript(source_dir + 'scripts/svg2pdf.umd.min.js')).then(() => { _jspdf = globalThis.jspdf; _svg2pdf = globalThis.svg2pdf; }),
-        restore_fonts = [], restore_dominant = [], node_transform = args.node.getAttribute('transform'), custom_fonts = {};
+        restore_fonts = [], restore_dominant = [], restore_text = [],
+        node_transform = args.node.getAttribute('transform'), custom_fonts = {};
 
    if (args.reset_tranform)
       args.node.removeAttribute('transform');
@@ -747,6 +748,11 @@ async function svgToPDF(args, as_buffer) {
             if (!args.can_modify) restore_dominant.push(this); // keep to restore it
          } else if (args.can_modify && nodejs && this.getAttribute('dy') === '.4em')
             this.setAttribute('dy', '.2em'); // better allignment in PDF
+
+         if (replaceSymbolsInTextNode(this)) {
+            need_symbols = true;
+            if (!args.can_modify) restore_text.push(this); // keep to restore it
+         }
       });
 
       if (nodejs) {
@@ -782,9 +788,20 @@ async function svgToPDF(args, as_buffer) {
          if (!fh || custom_fonts[fh.name] || (fh.format !== 'ttf')) return;
          const filename = fh.name.toLowerCase().replace(/\s/g, '') + '.ttf';
          doc.addFileToVFS(filename, fh.base64);
-         doc.addFont(filename, fh.name, 'normal');
+         doc.addFont(filename, fh.name, 'normal', 'normal', fh.name === 'symbol' ? 'StandardEncoding' : 'Identity-H');
          custom_fonts[fh.name] = true;
       });
+
+      if (need_symbols) {
+         const fh = getCustomFont('greek'); // just for short time
+         if (fh && !custom_fonts.symbol) {
+            const handler = new FontHandler(242, 10);
+            handler.name = 'symbol';
+            handler.addCustomFontToSvg(d3_select(args.node));
+            doc.addFileToVFS('symbol.ttf', fh.base64);
+            doc.addFont('symbol.ttf', 'symbol', 'normal', 'normal', 'StandardEncoding' /* 'WinAnsiEncoding' */);
+         }
+      }
 
       return _svg2pdf.svg2pdf(args.node, doc, { x: 5, y: 5, width: args.width, height: args.height })
          .then(() => {
@@ -796,13 +813,17 @@ async function svgToPDF(args, as_buffer) {
                node.setAttribute('dominant-baseline', 'middle');
                node.removeAttribute('dy');
             });
+
+            restore_text.forEach(node => { node.innerHTML = node.$originalHTML; });
+
             const res = as_buffer ? doc.output('arraybuffer') : doc.output('dataurlstring');
             if (nodejs) {
                globalThis.document = undefined;
                internals.nodejs_document.createElementNS = internals.nodejs_document.oldFunc;
                if (as_buffer) return Buffer.from(res);
             }
-            return res;
+             return res;
+            // return null;
          });
    });
 }

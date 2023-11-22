@@ -298,6 +298,36 @@ function remapGreekSymbolCode(code) {
    return code;
 }
 
+/** @summary Reformat text node if it includes greek or special symbols
+ * @desc Used in PDF generation where greek symbols are not available
+ * @private */
+function replaceSymbolsInTextNode(node) {
+   if (node.childNodes.length !== 1)
+      return false;
+   const txt = node.textContent;
+   if (!txt)
+      return false;
+   let new_html = '', lasti = -1;
+   for (let i = 0; i < txt.length; i++) {
+      const code = txt.charCodeAt(i),
+            newcode = remapGreekSymbolCode(code);
+      if (code !== newcode) {
+         new_html += txt.slice(lasti+1, i) + '<tspan font-family="symbol">'+String.fromCharCode(newcode)+'</tspan>';
+         lasti = i;
+      }
+   }
+
+   if (lasti < 0)
+      return false;
+
+   if (lasti < txt.length-1)
+      new_html += txt.slice(lasti+1, txt.length);
+
+   node.$originalHTML = node.innerHTML;
+   node.innerHTML = new_html;
+   return true;
+}
+
 function replaceSymbols(s, kind) {
    const m = (kind === 'Wingdings') ? wingdingsMap : symbolsMap;
    let res = '';
@@ -1405,4 +1435,4 @@ async function typesetMathjax(node) {
 }
 
 export { symbols_map, translateLaTeX, producePlainText, isPlainText, produceLatex, loadMathjax,
-         produceMathjax, typesetMathjax, approximateLabelWidth, remapGreekSymbolCode };
+         produceMathjax, typesetMathjax, approximateLabelWidth, replaceSymbolsInTextNode };
