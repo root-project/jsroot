@@ -159,8 +159,6 @@ class FontHandler {
 /** @summary Register custom font
   * @private */
 function addCustomFont(index, name, format, base64) {
-   console.log('add custom font', index, name);
-
    if (!Number.isInteger(index))
       console.error(`Wrong index ${index} for custom font`);
    else

@@ -312,7 +312,7 @@ function replaceSymbolsInTextNode(node) {
       const code = txt.charCodeAt(i),
             newcode = remapGreekSymbolCode(code);
       if (code !== newcode) {
-         new_html += txt.slice(lasti+1, i) + '<tspan font-family="symbol">'+String.fromCharCode(newcode)+'</tspan>';
+         new_html += txt.slice(lasti+1, i) + '<tspan font-family="symbol" font-style="normal">'+String.fromCharCode(newcode)+'</tspan>';
          lasti = i;
       }
    }

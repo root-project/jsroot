@@ -1,6 +1,6 @@
 import { select as d3_select } from '../d3.mjs';
-import { settings, internals, isNodeJs, isFunc, isStr, isObject, btoa_func, getDocument, source_dir, loadScript } from '../core.mjs';
-import { detectFont, getCustomFont, FontHandler } from './FontHandler.mjs';
+import { settings, internals, isNodeJs, isFunc, isStr, isObject, btoa_func, getDocument, source_dir, loadScript, httpRequest } from '../core.mjs';
+import { detectFont, addCustomFont, getCustomFont, FontHandler } from './FontHandler.mjs';
 import { approximateLabelWidth, replaceSymbolsInTextNode } from './latex.mjs';
 
 
@@ -788,22 +788,31 @@ async function svgToPDF(args, as_buffer) {
          if (!fh || custom_fonts[fh.name] || (fh.format !== 'ttf')) return;
          const filename = fh.name.toLowerCase().replace(/\s/g, '') + '.ttf';
          doc.addFileToVFS(filename, fh.base64);
-         doc.addFont(filename, fh.name, 'normal', 'normal', fh.name === 'symbol' ? 'StandardEncoding' : 'Identity-H');
+         doc.addFont(filename, fh.name, 'normal', 'normal', (fh.name === 'symbol') ? 'StandardEncoding' : 'Identity-H');
          custom_fonts[fh.name] = true;
       });
 
-      if (need_symbols) {
-         const fh = getCustomFont('greek'); // just for short time
-         if (fh && !custom_fonts.symbol) {
-            const handler = new FontHandler(242, 10);
+      let pr2 = Promise.resolve(true);
+
+      if (need_symbols && !custom_fonts.symbol) {
+         if (!getCustomFont('symbol')) {
+            pr2 = httpRequest(source_dir+'fonts/symbol.ttf', 'bin').then(buf => {
+               const base64 = btoa_func(buf);
+               addCustomFont(25, 'symbol', 'ttf', base64);
+            });
+         }
+
+         pr2 = pr2.then(() => {
+            const fh = getCustomFont('symbol'),
+                  handler = new FontHandler(242, 10);
             handler.name = 'symbol';
             handler.addCustomFontToSvg(d3_select(args.node));
             doc.addFileToVFS('symbol.ttf', fh.base64);
             doc.addFont('symbol.ttf', 'symbol', 'normal', 'normal', 'StandardEncoding' /* 'WinAnsiEncoding' */);
-         }
+         });
       }
 
-      return _svg2pdf.svg2pdf(args.node, doc, { x: 5, y: 5, width: args.width, height: args.height })
+      return pr2.then(() => _svg2pdf.svg2pdf(args.node, doc, { x: 5, y: 5, width: args.width, height: args.height }))
          .then(() => {
             if (args.reset_tranform && !args.can_modify && node_transform)
                args.node.setAttribute('transform', node_transform);
