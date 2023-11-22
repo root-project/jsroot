@@ -4,7 +4,7 @@ import { FontHandler } from './FontHandler.mjs';
 
 
 const symbols_map = {
-   // greek letters
+   // greek letters from symbols.ttf
    '#alpha': '\u03B1',
    '#beta': '\u03B2',
    '#chi': '\u03C7',
@@ -17,8 +17,6 @@ const symbols_map = {
    '#iota': '\u03B9',
    '#varphi': '\u03C6',
    '#kappa': '\u03BA',
-   '#koppa': '\u03DF',
-   '#sampi': '\u03E1',
    '#lambda': '\u03BB',
    '#mu': '\u03BC',
    '#nu': '\u03BD',
@@ -27,13 +25,9 @@ const symbols_map = {
    '#theta': '\u03B8',
    '#rho': '\u03C1',
    '#sigma': '\u03C3',
-   '#stigma': '\u03DB',
-   '#san': '\u03FB',
-   '#sho': '\u03F8',
    '#tau': '\u03C4',
    '#upsilon': '\u03C5',
    '#varomega': '\u03D6',
-   '#varcoppa': '\u03D9',
    '#omega': '\u03C9',
    '#xi': '\u03BE',
    '#psi': '\u03C8',
@@ -42,7 +36,6 @@ const symbols_map = {
    '#Beta': '\u0392',
    '#Chi': '\u03A7',
    '#Delta': '\u0394',
-   '#Digamma': '\u03DC',
    '#Epsilon': '\u0395',
    '#Phi': '\u03A6',
    '#Gamma': '\u0393',
@@ -50,9 +43,6 @@ const symbols_map = {
    '#Iota': '\u0399',
    '#vartheta': '\u03D1',
    '#Kappa': '\u039A',
-   '#Koppa': '\u03DE',
-   '#varKoppa': '\u03D8',
-   '#Sampi': '\u03E0',
    '#Lambda': '\u039B',
    '#Mu': '\u039C',
    '#Nu': '\u039D',
@@ -61,9 +51,6 @@ const symbols_map = {
    '#Theta': '\u0398',
    '#Rho': '\u03A1',
    '#Sigma': '\u03A3',
-   '#Stigma': '\u03DA',
-   '#San': '\u03FA',
-   '#Sho': '\u03F7',
    '#Tau': '\u03A4',
    '#Upsilon': '\u03A5',
    '#varsigma': '\u03C2',
@@ -73,7 +60,22 @@ const symbols_map = {
    '#Zeta': '\u0396',
    '#varUpsilon': '\u03D2',
    '#epsilon': '\u03B5',
-   '#P': '\u00B6',
+   // more greek symbols
+   '#koppa': '\u03DF',
+   '#sampi': '\u03E1',
+   '#stigma': '\u03DB',
+   '#san': '\u03FB',
+   '#sho': '\u03F8',
+   '#varcoppa': '\u03D9',
+   '#Digamma': '\u03DC',
+   '#Koppa': '\u03DE',
+   '#varKoppa': '\u03D8',
+   '#Sampi': '\u03E0',
+   '#Stigma': '\u03DA',
+   '#San': '\u03FA',
+   '#Sho': '\u03F7',
+
+   '#P': '\u00B6', // paragraph
 
    // only required for MathJax to provide correct replacement
    '#sqrt': '\u221A',
@@ -272,6 +274,29 @@ const symbolsMap = [0,8704,0,8707,0,0,8717,0,0,8727,0,0,8722,0,0,0,0,0,0,0,0,0,0
 // taken from http://www.alanwood.net/demos/wingdings.html, starts from 33
 // eslint-disable-next-line
 const wingdingsMap = [128393,9986,9985,128083,128365,128366,128367,128383,9990,128386,128387,128234,128235,128236,128237,128193,128194,128196,128463,128464,128452,8987,128430,128432,128434,128435,128436,128427,128428,9991,9997,128398,9996,128076,128077,128078,9756,9758,9757,9759,128400,9786,128528,9785,128163,9760,127987,127985,9992,9788,128167,10052,128326,10014,128328,10016,10017,9770,9775,2384,9784,9800,9801,9802,9803,9804,9805,9806,9807,9808,9809,9810,9811,128624,128629,9679,128318,9632,9633,128912,10065,10066,11047,10731,9670,10070,11045,8999,11193,8984,127989,127990,128630,128631,0,9450,9312,9313,9314,9315,9316,9317,9318,9319,9320,9321,9471,10102,10103,10104,10105,10106,10107,10108,10109,10110,10111,128610,128608,128609,128611,128606,128604,128605,128607,183,8226,9642,9898,128902,128904,9673,9678,128319,9642,9723,128962,10022,9733,10038,10036,10041,10037,11216,8982,10209,8977,11217,10026,10032,128336,128337,128338,128339,128340,128341,128342,128343,128344,128345,128346,128347,11184,11185,11186,11187,11188,11189,11190,11191,128618,128619,128597,128596,128599,128598,128592,128593,128594,128595,9003,8998,11160,11162,11161,11163,11144,11146,11145,11147,129128,129130,129129,129131,129132,129133,129135,129134,129144,129146,129145,129147,129148,129149,129151,129150,8678,8680,8679,8681,11012,8691,11008,11009,11011,11010,129196,129197,128502,10004,128503,128505];
+
+
+/** @summary Return code for greek symbols from symbols.ttf
+ * @desc Used in PDF generation where greek symbols are not available
+ * @private */
+function remapGreekSymbolCode(code) {
+   if ((code < 0x391) || (code > 0x3E4))
+      return code;
+   const symbol = String.fromCharCode(code);
+   let opGreek = 0;
+   for (const key in symbols_map) {
+      if (symbols_map[key] === symbol) {
+         // see code in TLatex.cxx, line 1302
+         let letter = 97 + opGreek - 1; // -1 ??
+         if (opGreek > 25) letter -= 58;
+         if (opGreek === 52) letter = 241; //varUpsilon
+         if (opGreek === 53) letter = 316; //epsilon
+         return letter;
+      }
+      if (++opGreek > 53) break;
+   }
+   return code;
+}
 
 function replaceSymbols(s, kind) {
    const m = (kind === 'Wingdings') ? wingdingsMap : symbolsMap;
@@ -1379,4 +1404,5 @@ async function typesetMathjax(node) {
    return loadMathjax().then(mj => mj.typesetPromise(node ? [node] : undefined));
 }
 
-export { symbols_map, translateLaTeX, producePlainText, isPlainText, produceLatex, loadMathjax, produceMathjax, typesetMathjax, approximateLabelWidth };
+export { symbols_map, translateLaTeX, producePlainText, isPlainText, produceLatex, loadMathjax,
+         produceMathjax, typesetMathjax, approximateLabelWidth, remapGreekSymbolCode };
