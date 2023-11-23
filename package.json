@@ -54,6 +54,7 @@
   "files": [
     "modules/*",
     "scripts/*",
+    "fonts/*",
     "build/*",
     "types.d.ts",
     "LICENSE"
