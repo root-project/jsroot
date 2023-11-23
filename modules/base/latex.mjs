@@ -9,7 +9,6 @@ const symbols_map = {
    '#beta': '\u03B2',
    '#chi': '\u03C7',
    '#delta': '\u03B4',
-   '#digamma': '\u03DD',
    '#varepsilon': '\u03B5',
    '#phi': '\u03C6',
    '#gamma': '\u03B3',
@@ -60,31 +59,8 @@ const symbols_map = {
    '#Zeta': '\u0396',
    '#varUpsilon': '\u03D2',
    '#epsilon': '\u03B5',
-   // more greek symbols
-   '#koppa': '\u03DF',
-   '#sampi': '\u03E1',
-   '#stigma': '\u03DB',
-   '#san': '\u03FB',
-   '#sho': '\u03F8',
-   '#varcoppa': '\u03D9',
-   '#Digamma': '\u03DC',
-   '#Koppa': '\u03DE',
-   '#varKoppa': '\u03D8',
-   '#Sampi': '\u03E0',
-   '#Stigma': '\u03DA',
-   '#San': '\u03FA',
-   '#Sho': '\u03F7',
 
-   '#P': '\u00B6', // paragraph
-
-   // only required for MathJax to provide correct replacement
-   '#sqrt': '\u221A',
-   '#bar': '',
-   '#overline': '',
-   '#underline': '',
-   '#strike': '',
-
-   // from TLatex tables #2 & #3
+    // second set from symbols.ttf
    '#leq': '\u2264',
    '#/': '\u2044',
    '#infty': '\u221E',
@@ -98,9 +74,8 @@ const symbols_map = {
    '#uparrow': '\u2191',
    '#rightarrow': '\u2192',
    '#downarrow': '\u2193',
-   '#circ': '\u02C6', // ^
+   '#circ': '\u2E30',
    '#pm': '\xB1',
-   '#mp': '\u2213',
    '#doublequote': '\u2033',
    '#geq': '\u2265',
    '#times': '\xD7',
@@ -124,12 +99,11 @@ const symbols_map = {
    '#oslash': '\u2205',
    '#cap': '\u2229',
    '#cup': '\u222A',
-   '#supseteq': '\u2287',
    '#supset': '\u2283',
+   '#supseteq': '\u2287',
    '#notsubset': '\u2284',
-   '#subseteq': '\u2286',
    '#subset': '\u2282',
-   '#int': '\u222B',
+   '#subseteq': '\u2286',
    '#in': '\u2208',
    '#notin': '\u2209',
    '#angle': '\u2220',
@@ -139,7 +113,7 @@ const symbols_map = {
    '#trademark': '\u2122',
    '#prod': '\u220F',
    '#surd': '\u221A',
-   '#upoint': '\u02D9',
+   '#upoint': '\u2027',
    '#corner': '\xAC',
    '#wedge': '\u2227',
    '#vee': '\u2228',
@@ -148,24 +122,45 @@ const symbols_map = {
    '#Uparrow': '\u21D1',
    '#Rightarrow': '\u21D2',
    '#Downarrow': '\u21D3',
+   '#void2': '', // dummy, placeholder
    '#LT': '\x3C',
    '#void1': '\xAE',
    '#copyright': '\xA9',
-   '#void3': '\u2122',
+   '#void3': '\u2122',  // it is dummy placeholder, TM
    '#sum': '\u2211',
    '#arctop': '\u239B',
-   '#lbar': '\u23B8',
+   '#lbar': '\u23A2',
    '#arcbottom': '\u239D',
-   '#void8': '',
+   '#void4': '', // dummy, placeholder
+   '#void8': '\u23A2', // same as lbar
    '#bottombar': '\u230A',
    '#arcbar': '\u23A7',
    '#ltbar': '\u23A8',
    '#AA': '\u212B',
-   '#aa': '\u00E5',
+   '#aa': '\xE5',
    '#void06': '',
    '#GT': '\x3E',
+   '#int': '\u222B',
    '#forall': '\u2200',
    '#exists': '\u2203',
+   // here ends second set from symbols.ttf
+
+   // more greek symbols
+   '#koppa': '\u03DF',
+   '#sampi': '\u03E1',
+   '#stigma': '\u03DB',
+   '#san': '\u03FB',
+   '#sho': '\u03F8',
+   '#varcoppa': '\u03D9',
+   '#digamma': '\u03DD',
+   '#Digamma': '\u03DC',
+   '#Koppa': '\u03DE',
+   '#varKoppa': '\u03D8',
+   '#Sampi': '\u03E0',
+   '#Stigma': '\u03DA',
+   '#San': '\u03FA',
+   '#Sho': '\u03F7',
+
    '#vec': '',
    '#dot': '\u22C5',
    '#hat': '\xB7',
@@ -183,7 +178,21 @@ const symbols_map = {
    '#odot': '\u2299',
    '#left': '',
    '#right': '',
-   '{}': ''
+   '{}': '',
+
+   '#mp': '\u2213',
+
+   '#P': '\u00B6', // paragraph
+
+
+   // only required for MathJax to provide correct replacement
+   '#sqrt': '\u221A',
+   '#bar': '',
+   '#overline': '',
+   '#underline': '',
+   '#strike': ''
+
+
 },
 
 /** @summary Create a single regex to detect any symbol to replace
@@ -280,23 +289,38 @@ const wingdingsMap = [128393,9986,9985,128083,128365,128366,128367,128383,9990,1
  * @desc Used in PDF generation where greek symbols are not available
  * @private */
 function remapGreekSymbolCode(code) {
-   if ((code < 0x391) || (code > 0x3E4))
+   const is_inside = ((code >= 0x391) && (code <= 0x3E4)) || ((code >= 0x80) && (code <= 0xFF)) || ((code >= 0x2000) && (code <= 0x2FFF)) || (code === 0x192);
+   if (!is_inside)
       return code;
    const symbol = String.fromCharCode(code);
    let opGreek = 0;
    for (const key in symbols_map) {
       if (symbols_map[key] === symbol) {
-         // see code in TLatex.cxx, line 1302
-         let letter = 97 + opGreek - 1; // -1 ??
-         if (opGreek > 25) letter -= 58;
-         if (opGreek === 52) letter = 241; //varUpsilon
-         if (opGreek === 53) letter = 316; //epsilon
-         return letter;
+         if (opGreek < 54) {
+            // see code in TLatex.cxx, line 1302
+            let letter = 97 + opGreek;
+            if (opGreek > 25) letter -= 58;
+            if (opGreek === 52) letter = 0o241; //varUpsilon
+            if (opGreek === 53) letter = 0o316; //epsilon
+            return letter;
+         } else {
+            // see code in TLatex.cxx, line 1323
+            const opSpec = opGreek - 54;
+            let letter = 0o243 + opSpec;
+            switch (opSpec) {
+               case 75: letter = 0o305; break; // AA Angstroem
+               case 76: letter = 0o345; break; // aa Angstroem
+               case 80: letter = 0o42; break; // #forall
+               case 81: letter = 0o44; break; // #exists
+            }
+            return letter;
+         }
       }
-      if (++opGreek > 53) break;
+      if (++opGreek > 54 + 82) break;
    }
    return code;
 }
+
 
 /** @summary Reformat text node if it includes greek or special symbols
  * @desc Used in PDF generation where greek symbols are not available
