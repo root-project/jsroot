@@ -82,10 +82,9 @@ class FontHandler {
       if (entry.empty()) {
          console.log('Adding style entry for class', clname);
          defs.append('style')
-               .attr('type', 'text/css')
                .attr('class', clname)
                .property('$fonthandler', this)
-               .text(`@font-face { font-family: "${this.name}"; font-weight: normal; font-style: normal; src: url('data:application/font-${fmt};charset=utf-8;base64,${this.base64}') }`);
+               .text(`@font-face { font-family: "${this.name}"; font-weight: normal; font-style: normal; src: url(data:application/font-${fmt};charset=utf-8;base64,${this.base64}); }`);
       }
    }
 
