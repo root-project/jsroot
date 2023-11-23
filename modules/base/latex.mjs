@@ -192,17 +192,11 @@ const symbols_map = {
    '#strike': ''
 },
 
-/** @summary Create a single regex to detect any symbol to replace, always match word boundary at the end
+
+
+/** @summary Create a single regex to detect any symbol to replace, apply longer symbols first
   * @private */
-symbolsRegexCache = (() => {
-   let expr = '';
-   for (const key in symbols_map) {
-      if (expr) expr += '|';
-      expr += key;
-      if (key !== '#/') expr += '\\b';
-   }
-   return new RegExp(expr, 'g');
-})(),
+symbolsRegexCache = new RegExp(Object.keys(symbols_map).sort((a, b) => (a.length < b.length ? 1 : (a.length > b.length ? -1 : 0))).join('|'), 'g'),
 
 /** @summary Simple replacement of latex letters
   * @private */
