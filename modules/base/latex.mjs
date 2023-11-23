@@ -195,9 +195,9 @@ const symbols_map = {
 
 },
 
-/** @summary Create a single regex to detect any symbol to replace
+/** @summary Create a single regex to detect any symbol to replace, always match word boundary at the end
   * @private */
-symbolsRegexCache = new RegExp('(' + Object.keys(symbols_map).join('|').replace(/\\\{/g, '{').replace(/\\\}/g, '}') + ')', 'g'),
+symbolsRegexCache = new RegExp(Object.keys(symbols_map).join('\\b|') + '\\b', 'g'),
 
 /** @summary Simple replacement of latex letters
   * @private */
