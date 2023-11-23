@@ -184,20 +184,25 @@ const symbols_map = {
 
    '#P': '\u00B6', // paragraph
 
-
-   // only required for MathJax to provide correct replacement
+    // only required for MathJax to provide correct replacement
    '#sqrt': '\u221A',
    '#bar': '',
    '#overline': '',
    '#underline': '',
    '#strike': ''
-
-
 },
 
 /** @summary Create a single regex to detect any symbol to replace, always match word boundary at the end
   * @private */
-symbolsRegexCache = new RegExp(Object.keys(symbols_map).join('\\b|') + '\\b', 'g'),
+symbolsRegexCache = (() => {
+   let expr = '';
+   for (const key in symbols_map) {
+      if (expr) expr += '|';
+      expr += key;
+      if (key !== '#/') expr += '\\b';
+   }
+   return new RegExp(expr, 'g');
+})(),
 
 /** @summary Simple replacement of latex letters
   * @private */
