@@ -806,6 +806,7 @@ async function svgToPDF(args, as_buffer) {
             const fh = getCustomFont('symbol'),
                   handler = new FontHandler(242, 10);
             handler.name = 'symbol';
+            handler.base64 = fh.base64;
             handler.addCustomFontToSvg(d3_select(args.node));
             doc.addFileToVFS('symbol.ttf', fh.base64);
             doc.addFont('symbol.ttf', 'symbol', 'normal', 'normal', 'StandardEncoding' /* 'WinAnsiEncoding' */);
@@ -832,7 +833,6 @@ async function svgToPDF(args, as_buffer) {
                if (as_buffer) return Buffer.from(res);
             }
              return res;
-            // return null;
          });
    });
 }
