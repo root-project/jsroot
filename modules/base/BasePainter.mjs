@@ -759,11 +759,14 @@ async function svgToPDF(args, as_buffer) {
          const doc = internals.nodejs_document;
          doc.oldFunc = doc.createElementNS;
          globalThis.document = doc;
+         globalThis.CSSStyleSheet = internals.nodejs_window.CSSStyleSheet;
+         globalThis.CSSStyleRule = internals.nodejs_window.CSSStyleRule;
          doc.createElementNS = function(ns, kind) {
             const res = doc.oldFunc(ns, kind);
             res.getBBox = function() {
                let width = 50, height = 10;
                if (this.tagName === 'text') {
+                  // TODO: use jsDOC fonts for label width estimation
                   const font = detectFont(this);
                   width = approximateLabelWidth(this.textContent, font);
                   height = font.size;
@@ -796,7 +799,13 @@ async function svgToPDF(args, as_buffer) {
 
       if (need_symbols && !custom_fonts.symbol) {
          if (!getCustomFont('symbol')) {
-            pr2 = httpRequest(source_dir+'fonts/symbol.ttf', 'bin').then(buf => {
+            pr2 = nodejs
+              ? import('fs').then(fs => {
+                 const base64 = fs.readFileSync('../../fonts/symbol.ttf').toString('base64');
+                 console.log('reading symbol.ttf', base64.length);
+                 addCustomFont(25, 'symbol', 'ttf', base64);
+              })
+              : httpRequest(source_dir+'fonts/symbol.ttf', 'bin').then(buf => {
                const base64 = btoa_func(buf);
                addCustomFont(25, 'symbol', 'ttf', base64);
             });
@@ -804,7 +813,7 @@ async function svgToPDF(args, as_buffer) {
 
          pr2 = pr2.then(() => {
             const fh = getCustomFont('symbol'),
-                  handler = new FontHandler(242, 10);
+                  handler = new FontHandler(1242, 10);
             handler.name = 'symbol';
             handler.base64 = fh.base64;
             handler.addCustomFontToSvg(d3_select(args.node));
@@ -829,6 +838,8 @@ async function svgToPDF(args, as_buffer) {
             const res = as_buffer ? doc.output('arraybuffer') : doc.output('dataurlstring');
             if (nodejs) {
                globalThis.document = undefined;
+               globalThis.CSSStyleSheet = undefined;
+               globalThis.CSSStyleRule = undefined;
                internals.nodejs_document.createElementNS = internals.nodejs_document.oldFunc;
                if (as_buffer) return Buffer.from(res);
             }
@@ -851,16 +862,14 @@ async function svgToImage(svg, image_format, as_buffer) {
    if (image_format === 'pdf')
       return svgToPDF(svg, as_buffer);
 
-   if (!isNodeJs()) {
-      // required with df104.py/df105.py example with RCanvas
-      const doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
-      svg = encodeURIComponent(doctype + svg);
-      svg = svg.replace(/%([0-9A-F]{2})/g, (match, p1) => {
-          const c = String.fromCharCode('0x'+p1);
-          return c === '%' ? '%25' : c;
-      });
-      svg = decodeURIComponent(svg);
-   }
+   // required with df104.py/df105.py example with RCanvas or any special symbols in TLatex
+   const doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
+   svg = encodeURIComponent(doctype + svg);
+   svg = svg.replace(/%([0-9A-F]{2})/g, (match, p1) => {
+       const c = String.fromCharCode('0x'+p1);
+       return c === '%' ? '%25' : c;
+   });
+   svg = decodeURIComponent(svg);
 
    const img_src = 'data:image/svg+xml;base64,' + btoa_func(svg);
 
