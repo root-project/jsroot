@@ -919,7 +919,7 @@ class THistPainter extends ObjectPainter {
    }
 
    /** @summary Create necessary histogram draw attributes */
-   createHistDrawAttributes() {
+   createHistDrawAttributes(only_check_auto) {
       const histo = this.getHisto(), o = this.options;
 
       if (o._pfc > 1 || o._plc > 1 || o._pmc > 1) {
@@ -933,9 +933,12 @@ class THistPainter extends ObjectPainter {
          }
       }
 
-      this.createAttFill({ attr: histo, color: this.options.histoFillColor, pattern: this.options.histoFillPattern, kind: 1 });
-
-      this.createAttLine({ attr: histo, color0: this.options.histoLineColor });
+      if (only_check_auto)
+         this.deleteAttr();
+      else {
+         this.createAttFill({ attr: histo, color: this.options.histoFillColor, pattern: this.options.histoFillPattern, kind: 1 });
+         this.createAttLine({ attr: histo, color0: this.options.histoLineColor });
+      }
    }
 
    /** @summary Update axes attributes in target histogram
