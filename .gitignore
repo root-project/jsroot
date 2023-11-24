@@ -2,6 +2,7 @@ docs/jsdoc/
 docs/jsdocfull/
 .settings
 .project
+.vscode
 .gitattributes
 *.root
 *.json
@@ -24,4 +25,3 @@ openui5dist
 httpcontrol.C
 httpserver.C
 Go4ExampleSimple
-.idea/
