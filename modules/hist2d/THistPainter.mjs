@@ -40,7 +40,7 @@ class THistDrawOptions {
               Mode3D: false, x3dscale: 1, y3dscale: 1,
               Render3D: constants.Render3D.Default,
               FrontBox: true, BackBox: true,
-              _pmc: false, _plc: false, _pfc: false, need_fillcol: false,
+              need_fillcol: false,
               minimum: kNoZoom, maximum: kNoZoom, ymin: 0, ymax: 0, cutg: null, IgnoreMainScale: false });
    }
 
@@ -377,9 +377,12 @@ class THistDrawOptions {
       if ((hdim === 3) && d.check('FB')) this.FrontBox = false;
       if ((hdim === 3) && d.check('BB')) this.BackBox = false;
 
-      this._pfc = d.check('PFC');
-      this._plc = d.check('PLC') || this.AutoColor;
-      this._pmc = d.check('PMC');
+      if (d.check('PFC') && !this._pfc)
+         this._pfc = 2;
+      if ((d.check('PLC') || this.AutoColor) && !this._plc)
+         this._plc = 2;
+      if (d.check('PMC') && !this._pmc)
+         this._pmc = 2;
 
       if (d.check('L')) { this.Line = true; this.Hist = false; this.Error = false; }
       if (d.check('F')) { this.Fill = true; this.need_fillcol = true; }
@@ -940,17 +943,16 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Create necessary histogram draw attributes */
    createHistDrawAttributes() {
-      const histo = this.getHisto();
+      const histo = this.getHisto(), o = this.options;
 
-      if (this.options._pfc || this.options._plc || this.options._pmc) {
+      if (o._pfc > 1 || o._plc > 1 || o._pmc > 1) {
          const mp = this.getMainPainter();
          if (isFunc(mp?.createAutoColor)) {
             const icolor = mp.createAutoColor();
             let exec = '';
-            if (this.options._pfc) { histo.fFillColor = icolor; exec += `SetFillColor(${icolor});;`; delete this.fillatt; }
-            if (this.options._plc) { histo.fLineColor = icolor; exec += `SetLineColor(${icolor});;`; delete this.lineatt; }
-            if (this.options._pmc) { histo.fMarkerColor = icolor; exec += `SetMarkerColor(${icolor});;`; delete this.markeratt; }
-            this.options._pfc = this.options._plc = this.options._pmc = false;
+            if (o._pfc > 1) { o._pfc = 1; histo.fFillColor = icolor; exec += `SetFillColor(${icolor});;`; delete this.fillatt; }
+            if (o._plc > 1) { o._plc = 1; histo.fLineColor = icolor; exec += `SetLineColor(${icolor});;`; delete this.lineatt; }
+            if (o._pmc > 1) { o._pmc = 1; histo.fMarkerColor = icolor; exec += `SetMarkerColor(${icolor});;`; delete this.markeratt; }
             this._auto_exec = exec; // can be reused when sending option back to server
          }
       }
@@ -1000,7 +1002,8 @@ class THistPainter extends ObjectPainter {
    updateObject(obj, opt) {
       const histo = this.getHisto(),
             fp = this.getFramePainter(),
-            pp = this.getPadPainter();
+            pp = this.getPadPainter(),
+            o = this.options;
 
       if (obj !== histo) {
          if (!this.matchObjectType(obj)) return false;
@@ -1018,14 +1021,24 @@ class THistPainter extends ObjectPainter {
          }
 
          // special treatment for webcanvas - also name can be changed
-         if (this.snapid !== undefined)
+         if (this.snapid !== undefined) {
             histo.fName = obj.fName;
+            o._pfc = o._plc = o._pmc = 0; // auto colors should be processed in web canvas
+         }
 
-         histo.fFillColor = obj.fFillColor;
+         console.log('update histogram', histo.fName, o._pfc, o._plc, o._pmc);
+
+         if (!o._pfc)
+            histo.fFillColor = obj.fFillColor;
          histo.fFillStyle = obj.fFillStyle;
-         histo.fLineColor = obj.fLineColor;
+         if (!o._plc)
+            histo.fLineColor = obj.fLineColor;
          histo.fLineStyle = obj.fLineStyle;
          histo.fLineWidth = obj.fLineWidth;
+         if (!o._pmc)
+            histo.fMarkerColor = obj.fMarkerColor;
+         histo.fMarkerSize = obj.fMarkerSize;
+         histo.fMarkerStyle = obj.fMarkerStyle;
 
          histo.fEntries = obj.fEntries;
          histo.fTsumw = obj.fTsumw;
@@ -1056,7 +1069,7 @@ class THistPainter extends ObjectPainter {
          histo.fSumw2 = obj.fSumw2;
 
          if (this.getDimension() === 1)
-            this.options.decodeSumw2(histo);
+            o.decodeSumw2(histo);
 
          if (this.isTProfile())
             histo.fBinEntries = obj.fBinEntries;
@@ -1072,14 +1085,14 @@ class THistPainter extends ObjectPainter {
          const changed_opt = (histo.fOption !== obj.fOption);
          histo.fOption = obj.fOption;
 
-         if (((opt !== undefined) && (this.options.original !== opt)) || changed_opt)
+         if (((opt !== undefined) && (o.original !== opt)) || changed_opt)
             this.decodeOptions(opt || histo.fOption);
       }
 
-      if (!this.options.ominimum)
-         this.options.minimum = histo.fMinimum;
-      if (!this.options.omaximum)
-         this.options.maximum = histo.fMaximum;
+      if (!o.ominimum)
+         o.minimum = histo.fMinimum;
+      if (!o.omaximum)
+         o.maximum = histo.fMaximum;
 
       if (this.snapid || !fp || !fp.zoomChangedInteractive())
          this.checkPadRange();
