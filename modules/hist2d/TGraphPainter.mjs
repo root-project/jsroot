@@ -151,9 +151,12 @@ class TGraphPainter extends ObjectPainter {
 
       if (d.check('POS3D_', true)) res.pos3d = d.partAsInt() - 0.5;
 
-      res._pfc = d.check('PFC');
-      res._plc = d.check('PLC');
-      res._pmc = d.check('PMC');
+      if (d.check('PFC') && !res._pfc)
+         res._pfc = 2;
+      if (d.check('PLC') && !res._plc)
+         res._plc = 2;
+      if (d.check('PMC') && !res._pmc)
+         res._pmc = 2;
 
       if (d.check('A')) res.Axis = d.check('I') ? 'A;' : _a; // I means invisible axis
       if (d.check('X+')) { res.Axis += 'X+'; res.second_x = has_main; }
@@ -883,18 +886,19 @@ class TGraphPainter extends ObjectPainter {
       const is_gme = !!this.get_gme(),
             funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
             w = pmain.getFrameWidth(),
-            h = pmain.getFrameHeight();
+            h = pmain.getFrameHeight(),
+            o = this.options;
 
       this.createG(!pmain.pad_layer);
 
-      if (this.options._pfc || this.options._plc || this.options._pmc) {
+      if (o._pfc > 1 || o._plc > 1 || p._pmc > 1) {
          const mp = this.getMainPainter();
          if (isFunc(mp?.createAutoColor)) {
             const icolor = mp.createAutoColor();
-            if (this.options._pfc) { graph.fFillColor = icolor; delete this.fillatt; }
-            if (this.options._plc) { graph.fLineColor = icolor; delete this.lineatt; }
-            if (this.options._pmc) { graph.fMarkerColor = icolor; delete this.markeratt; }
-            this.options._pfc = this.options._plc = this.options._pmc = false;
+            this._auto_exec = ''; // can be reused when sending option back to server
+            if (o._pfc > 1) { o._pfc = 1; graph.fFillColor = icolor; this._auto_exec += `SetFillColor(${icolor});;`; delete this.fillatt; }
+            if (o._plc > 1) { o._plc = 1; graph.fLineColor = icolor; this._auto_exec += `SetLineColor(${icolor});;`; delete this.lineatt; }
+            if (o._pmc > 1) { o._pmc = 1; graph.fMarkerColor = icolor; this._auto_exec += `SetMarkerColor(${icolor});;`; delete this.markeratt; }
          }
       }
 
@@ -1389,6 +1393,23 @@ class TGraphPainter extends ObjectPainter {
       graph.fNpoints = obj.fNpoints;
       graph.fMinimum = obj.fMinimum;
       graph.fMaximum = obj.fMaximum;
+
+      const o = this.options;
+
+      if (this.snapid !== undefined)
+         o._pfc = o._plc = o._pmc = 0; // auto colors should be processed in web canvas
+
+      if (!o._pfc)
+         graph.fFillColor = obj.fFillColor;
+      graph.fFillStyle = obj.fFillStyle;
+      if (!o._plc)
+         graph.fLineColor = obj.fLineColor;
+      graph.fLineStyle = obj.fLineStyle;
+      graph.fLineWidth = obj.fLineWidth;
+      if (!o._pmc)
+         graph.fMarkerColor = obj.fMarkerColor;
+      graph.fMarkerSize = obj.fMarkerSize;
+      graph.fMarkerStyle = obj.fMarkerStyle;
    }
 
    /** @summary Update TGraph object */
