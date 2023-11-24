@@ -1,12 +1,13 @@
 # JSROOT changelog
 
-## Changes in 7.5.x
+## Changes in 7.5.3
 1. Fix - draw histograms with negative bins #276
 2. Fix - correctly read TLeaf with fixed-size array
 3. Fix - bug in options handling in startGUI
 4. Fix - greyscale support in TLegend drawing
 5. Fix - correctly use text font for TGaxis title
-6. Fix - correctly set pave name #278
+6. Fix - preserve auto colors in THStack #277
+7. Fix - correctly set pave name #278
 
 
 ## Changes in 7.5.2
