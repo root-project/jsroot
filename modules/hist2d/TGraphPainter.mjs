@@ -892,9 +892,9 @@ class TGraphPainter extends ObjectPainter {
       this.createG(!pmain.pad_layer);
 
       if (o._pfc > 1 || o._plc > 1 || o._pmc > 1) {
-         const mp = this.getMainPainter();
-         if (isFunc(mp?.createAutoColor)) {
-            const icolor = mp.createAutoColor();
+         const pp = this.getPadPainter();
+         if (isFunc(pp?.getAutoColor)) {
+            const icolor = pp.getAutoColor();
             this._auto_exec = ''; // can be reused when sending option back to server
             if (o._pfc > 1) { o._pfc = 1; graph.fFillColor = icolor; this._auto_exec += `SetFillColor(${icolor});;`; delete this.fillatt; }
             if (o._plc > 1) { o._plc = 1; graph.fLineColor = icolor; this._auto_exec += `SetLineColor(${icolor});;`; delete this.lineatt; }

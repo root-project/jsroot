@@ -918,37 +918,14 @@ class THistPainter extends ObjectPainter {
          this.check_pad_range = use_pad ? 'pad_range' : true;
    }
 
-   /** @summary Generates automatic color for some objects painters */
-   createAutoColor(numprimitives) {
-      if (!numprimitives)
-         numprimitives = this.getPadPainter()?.getRootPad(true)?.fPrimitves?.arr?.length || 5;
-
-      let indx = this._auto_color || 0;
-      this._auto_color = indx + 1;
-
-      const pal = this.getHistPalette();
-
-      if (pal) {
-         if (numprimitives < 2) numprimitives = 2;
-         if (indx >= numprimitives) indx = numprimitives - 1;
-         const palindx = Math.round(indx * (pal.getLength()-3) / (numprimitives-1)),
-               colvalue = pal.getColor(palindx);
-
-         return this.addColor(colvalue);
-      }
-
-      this._auto_color = this._auto_color % 8;
-      return indx+2;
-   }
-
    /** @summary Create necessary histogram draw attributes */
    createHistDrawAttributes() {
       const histo = this.getHisto(), o = this.options;
 
       if (o._pfc > 1 || o._plc > 1 || o._pmc > 1) {
-         const mp = this.getMainPainter();
-         if (isFunc(mp?.createAutoColor)) {
-            const icolor = mp.createAutoColor();
+         const pp = this.getPadPainter();
+         if (isFunc(pp?.getAutoColor)) {
+            const icolor = pp.getAutoColor();
             this._auto_exec = ''; // can be reused when sending option back to server
             if (o._pfc > 1) { o._pfc = 1; histo.fFillColor = icolor; this._auto_exec += `SetFillColor(${icolor});;`; delete this.fillatt; }
             if (o._plc > 1) { o._plc = 1; histo.fLineColor = icolor; this._auto_exec += `SetLineColor(${icolor});;`; delete this.lineatt; }
