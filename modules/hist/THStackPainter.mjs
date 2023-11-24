@@ -171,7 +171,7 @@ class THStackPainter extends ObjectPainter {
       if (this.options.draw_errors && !hopt)
          hopt = 'E';
       if (!this.options.pads)
-         hopt += ' hist same' + this.options.auto;
+         hopt += ' same nostat' + this.options.auto;
       return hopt;
    }
 
