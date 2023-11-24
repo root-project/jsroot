@@ -1246,7 +1246,7 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Fill option object used in TWebCanvas */
    fillWebObjectOptions(res) {
-      if (this._auto_exec) {
+      if (this._auto_exec && res) {
          res.fcust = 'auto_exec:' + this._auto_exec;
          delete this._auto_exec;
       }

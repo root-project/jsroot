@@ -1335,6 +1335,14 @@ class TGraphPainter extends ObjectPainter {
          this.submitCanvExec(exec);
    }
 
+   /** @summary Fill option object used in TWebCanvas */
+   fillWebObjectOptions(res) {
+      if (this._auto_exec && res) {
+         res.fcust = 'auto_exec:' + this._auto_exec;
+         delete this._auto_exec;
+      }
+   }
+
    /** @summary Fill context menu */
    fillContextMenuItems(menu) {
       if (!this.snapid)
@@ -1357,8 +1365,8 @@ class TGraphPainter extends ObjectPainter {
          if (method.fName === 'InsertPoint') {
             if (pnt) {
                const funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
-                   userx = funcs.revertAxis('x', pnt.x) ?? 0,
-                   usery = funcs.revertAxis('y', pnt.y) ?? 0;
+                     userx = funcs.revertAxis('x', pnt.x) ?? 0,
+                     usery = funcs.revertAxis('y', pnt.y) ?? 0;
                this.submitCanvExec(`AddPoint(${userx.toFixed(3)}, ${usery.toFixed(3)})`, method.$execid);
             }
          } else if (method.$execid && (hint?.binindx !== undefined))
