@@ -366,8 +366,10 @@ class THStackPainter extends ObjectPainter {
       } else {
          for (let indx = 0; indx < nhists; ++indx) {
             const rindx = this.options.horder ? indx : nhists - indx - 1,
-                  hist = hlst.arr[rindx],
-                  hopt = hlst.opt[rindx];
+                  hist = hlst.arr[rindx], hopt = hlst.opt[rindx], hist0 = this.painters[indx].getHisto();
+            if (this.options._pfc) hist.fFillColor = hist0.fFillColor;
+            if (this.options._plc) hist.fLineColor = hist0.fLineColor;
+            if (this.options._pmc) hist.fMarkerColor = hist0.fMarkerColor;
             this.painters[indx].updateObject(hist, hopt || hist.fOption || this.options.hopt);
          }
       }
