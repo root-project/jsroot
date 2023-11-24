@@ -300,8 +300,8 @@ function remapSymbolTtfCode(code) {
                // see code in TLatex.cxx, line 1302
                letter = 97 + opGreek;
                if (opGreek > 25) letter -= 58;
-               if (opGreek === 52) letter = 0o241; //varUpsilon
-               if (opGreek === 53) letter = 0o316; //epsilon
+               if (opGreek === 52) letter = 0o241; // varUpsilon
+               if (opGreek === 53) letter = 0o316; // epsilon
             } else {
                // see code in TLatex.cxx, line 1323
                const opSpec = cnt - 54;
