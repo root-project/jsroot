@@ -949,11 +949,10 @@ class THistPainter extends ObjectPainter {
          const mp = this.getMainPainter();
          if (isFunc(mp?.createAutoColor)) {
             const icolor = mp.createAutoColor();
-            let exec = '';
-            if (o._pfc > 1) { o._pfc = 1; histo.fFillColor = icolor; exec += `SetFillColor(${icolor});;`; delete this.fillatt; }
-            if (o._plc > 1) { o._plc = 1; histo.fLineColor = icolor; exec += `SetLineColor(${icolor});;`; delete this.lineatt; }
-            if (o._pmc > 1) { o._pmc = 1; histo.fMarkerColor = icolor; exec += `SetMarkerColor(${icolor});;`; delete this.markeratt; }
-            this._auto_exec = exec; // can be reused when sending option back to server
+            this._auto_exec = ''; // can be reused when sending option back to server
+            if (o._pfc > 1) { o._pfc = 1; histo.fFillColor = icolor; this._auto_exec += `SetFillColor(${icolor});;`; delete this.fillatt; }
+            if (o._plc > 1) { o._plc = 1; histo.fLineColor = icolor; this._auto_exec += `SetLineColor(${icolor});;`; delete this.lineatt; }
+            if (o._pmc > 1) { o._pmc = 1; histo.fMarkerColor = icolor; this._auto_exec += `SetMarkerColor(${icolor});;`; delete this.markeratt; }
          }
       }
 
@@ -1025,8 +1024,6 @@ class THistPainter extends ObjectPainter {
             histo.fName = obj.fName;
             o._pfc = o._plc = o._pmc = 0; // auto colors should be processed in web canvas
          }
-
-         console.log('update histogram', histo.fName, o._pfc, o._plc, o._pmc);
 
          if (!o._pfc)
             histo.fFillColor = obj.fFillColor;
