@@ -409,23 +409,23 @@ class TPadPainter extends ObjectPainter {
    getAutoColor(numprimitives) {
       if (!numprimitives)
          numprimitives = this._num_primitives || 5;
+      if (numprimitives < 2) numprimitives = 2;
 
       let indx = this._auto_color ?? 0;
-      this._auto_color = indx + 1;
-      if (numprimitives < 2) numprimitives = 2;
+      this._auto_color = (indx + 1) % numprimitives;
       if (indx >= numprimitives) indx = numprimitives - 1;
 
       const indexes = this._custom_palette_indexes || this.getCanvPainter()?._custom_palette_indexes;
 
       if (indexes?.length) {
-         const p = Math.round(indx * (indexes.length - 2) / (numprimitives - 1));
+         const p = Math.round(indx * (indexes.length - 3) / (numprimitives - 1));
          return indexes[p];
       }
 
-      let pal = this.getCustomPalette();
-      if (!pal) pal = getColorPalette(settings.Palette, this.isGrayscale());
-      const palindx = Math.round(indx * (pal.getLength()-3) / (numprimitives-1)),
-            colvalue = pal.getColor(palindx);
+      if (!this._auto_palette)
+         this._auto_palette = getColorPalette(settings.Palette, this.isGrayscale());
+      const palindx = Math.round(indx * (this._auto_palette.getLength()-3) / (numprimitives-1)),
+            colvalue = this._auto_palette.getColor(palindx);
 
       return this.addColor(colvalue);
    }

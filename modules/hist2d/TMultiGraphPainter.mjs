@@ -239,6 +239,10 @@ class TMultiGraphPainter extends ObjectPainter {
       const gr = graphs.arr[indx],
             draw_opt = (graphs.opt[indx] || this._restopt) + this._auto;
 
+      // used in automatic colors numbering
+      if (this._auto)
+         gr.$num_graphs = graphs.arr.length;
+
       return this.drawGraph(gr, draw_opt, graphs.arr.length - indx).then(subp => {
          if (subp) {
             subp.setSecondaryId(this, `graphs_${indx}`);

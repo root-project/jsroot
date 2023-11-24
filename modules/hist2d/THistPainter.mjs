@@ -925,7 +925,7 @@ class THistPainter extends ObjectPainter {
       if (o._pfc > 1 || o._plc > 1 || o._pmc > 1) {
          const pp = this.getPadPainter();
          if (isFunc(pp?.getAutoColor)) {
-            const icolor = pp.getAutoColor();
+            const icolor = pp.getAutoColor(histo.$num_histos);
             this._auto_exec = ''; // can be reused when sending option back to server
             if (o._pfc > 1) { o._pfc = 1; histo.fFillColor = icolor; this._auto_exec += `SetFillColor(${icolor});;`; delete this.fillatt; }
             if (o._plc > 1) { o._plc = 1; histo.fLineColor = icolor; this._auto_exec += `SetLineColor(${icolor});;`; delete this.lineatt; }

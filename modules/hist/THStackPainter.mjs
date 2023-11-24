@@ -211,6 +211,9 @@ class THStackPainter extends ObjectPainter {
       // also used to provide tooltips
       if ((rindx > 0) && !this.options.nostack)
          hist.$baseh = hlst.arr[rindx - 1];
+      // this number used for auto colors creation
+      if (this.options.auto)
+         hist.$num_histos = nhists;
 
       return this.hdraw_func(this.getDom(), hist, hopt).then(subp => {
           subp.setSecondaryId(this, subid);
