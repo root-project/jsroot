@@ -891,7 +891,7 @@ class TGraphPainter extends ObjectPainter {
 
       this.createG(!pmain.pad_layer);
 
-      if (o._pfc > 1 || o._plc > 1 || p._pmc > 1) {
+      if (o._pfc > 1 || o._plc > 1 || o._pmc > 1) {
          const mp = this.getMainPainter();
          if (isFunc(mp?.createAutoColor)) {
             const icolor = mp.createAutoColor();

@@ -53,7 +53,7 @@ class TMultiGraphPainter extends ObjectPainter {
       const ngr = Math.min(graphs.arr.length, this.painters.length);
 
       for (let i = 0; i < ngr; ++i) {
-         if (this.painters[i].updateObject(graphs.arr[i], (graphs.opt[i] || this._restopt || '') + this._auto))
+         if (this.painters[i].updateObject(graphs.arr[i], (graphs.opt[i] || this._restopt) + this._auto))
             isany = true;
       }
 
@@ -229,7 +229,7 @@ class TMultiGraphPainter extends ObjectPainter {
    }
 
    /** @summary method draws next graph  */
-   async drawNextGraph(indx, opt) {
+   async drawNextGraph(indx) {
       const graphs = this.getObject().fGraphs;
 
       // at the end of graphs drawing draw functions (if any)
@@ -237,7 +237,7 @@ class TMultiGraphPainter extends ObjectPainter {
          return this;
 
       const gr = graphs.arr[indx],
-            draw_opt = (graphs.opt[indx] || opt || '') + this._auto;
+            draw_opt = (graphs.opt[indx] || this._restopt) + this._auto;
 
       return this.drawGraph(gr, draw_opt, graphs.arr.length - indx).then(subp => {
          if (subp) {
@@ -245,7 +245,7 @@ class TMultiGraphPainter extends ObjectPainter {
             this.painters.push(subp);
          }
 
-         return this.drawNextGraph(indx+1, opt);
+         return this.drawNextGraph(indx+1);
       });
    }
 
@@ -277,7 +277,7 @@ class TMultiGraphPainter extends ObjectPainter {
 
       return promise.then(() => {
          painter.addToPadPrimitives();
-         return painter.drawNextGraph(0, painter._restopt);
+         return painter.drawNextGraph(0);
       }).then(() => {
          const handler = new FunctionsHandler(painter, painter.getPadPainter(), painter.getObject().fFunctions, true);
          return handler.drawNext(0); // returns painter
