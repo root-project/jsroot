@@ -873,6 +873,28 @@ class TGraphPainter extends ObjectPainter {
       console.log('Load ./hist/TGraphPainter.mjs to draw graph in 3D');
    }
 
+   /** @summary Create necessary histogram draw attributes */
+   createGraphDrawAttributes(only_check_auto) {
+      const graph = this.getGraph(), o = this.options;
+      if (o._pfc > 1 || o._plc > 1 || o._pmc > 1) {
+         const pp = this.getPadPainter();
+         if (isFunc(pp?.getAutoColor)) {
+            const icolor = pp.getAutoColor(graph.$num_graphs);
+            this._auto_exec = ''; // can be reused when sending option back to server
+            if (o._pfc > 1) { o._pfc = 1; graph.fFillColor = icolor; this._auto_exec += `SetFillColor(${icolor});;`; delete this.fillatt; }
+            if (o._plc > 1) { o._plc = 1; graph.fLineColor = icolor; this._auto_exec += `SetLineColor(${icolor});;`; delete this.lineatt; }
+            if (o._pmc > 1) { o._pmc = 1; graph.fMarkerColor = icolor; this._auto_exec += `SetMarkerColor(${icolor});;`; delete this.markeratt; }
+         }
+      }
+
+      if (only_check_auto)
+         this.deleteAttr();
+      else {
+         this.createAttLine({ attr: graph, can_excl: true });
+         this.createAttFill({ attr: graph });
+      }
+   }
+
    /** @summary draw TGraph */
    drawGraph() {
       const pmain = this.get_main(),
@@ -886,24 +908,11 @@ class TGraphPainter extends ObjectPainter {
       const is_gme = !!this.get_gme(),
             funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
             w = pmain.getFrameWidth(),
-            h = pmain.getFrameHeight(),
-            o = this.options;
+            h = pmain.getFrameHeight();
 
       this.createG(!pmain.pad_layer);
 
-      if (o._pfc > 1 || o._plc > 1 || o._pmc > 1) {
-         const pp = this.getPadPainter();
-         if (isFunc(pp?.getAutoColor)) {
-            const icolor = pp.getAutoColor(graph.$num_graphs);
-            this._auto_exec = ''; // can be reused when sending option back to server
-            if (o._pfc > 1) { o._pfc = 1; graph.fFillColor = icolor; this._auto_exec += `SetFillColor(${icolor});;`; delete this.fillatt; }
-            if (o._plc > 1) { o._plc = 1; graph.fLineColor = icolor; this._auto_exec += `SetLineColor(${icolor});;`; delete this.lineatt; }
-            if (o._pmc > 1) { o._pmc = 1; graph.fMarkerColor = icolor; this._auto_exec += `SetMarkerColor(${icolor});;`; delete this.markeratt; }
-         }
-      }
-
-      this.createAttLine({ attr: graph, can_excl: true });
-      this.createAttFill({ attr: graph });
+      this.createGraphDrawAttributes();
 
       this.fillatt.used = false; // mark used only when really used
 
