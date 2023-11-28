@@ -673,11 +673,27 @@ async function connectWebWindow(arg) {
    else if (!isObject(arg))
       arg = {};
 
-   let d = decodeUrl();
+   const d = decodeUrl(),
+         d_key = d.get('key'),
+         d_token = d.get('token');
+   let new_key;
+
+   if (typeof sessionStorage !== 'undefined') {
+      new_key = sessionStorage.getItem('RWebWindow_Key');
+      sessionStorage.removeItem('RWebWindow_Key');
+      if (new_key) console.log(`Use key ${new_key} from session storage`);
+   }
+
+   // hide key and any following parameters from URL, chrome do not allows to close browser with changed URL
+   const href = (typeof document !== 'undefined') ? document.URL : null;
+   if (d_key && !d.has('headless') && isStr(href) && window?.history && browser.isFirefox) {
+      const p = href.indexOf('?key=');
+      if (p > 0) window.history.pushState({}, undefined, href.slice(0, p));
+   }
 
    // special holder script, prevents headless chrome browser from too early exit
-   if (d.has('headless') && d.get('key') && (browser.isChromeHeadless || browser.isChrome) && !arg.ignore_chrome_batch_holder)
-      loadScript('root_batch_holder.js?key=' + d.get('key'));
+   if (d.has('headless') && d_key && (browser.isChromeHeadless || browser.isChrome) && !arg.ignore_chrome_batch_holder)
+      loadScript('root_batch_holder.js?key=' + (new_key || d_key));
 
    if (!arg.platform)
       arg.platform = d.get('platform');
@@ -717,8 +733,8 @@ async function connectWebWindow(arg) {
          if (browser.qt5) window.onqt5unload = window.onbeforeunload;
       }
 
-      handle.key = d.get('key');
-      handle.token = d.get('token');
+      handle.key = new_key || d_key;
+      handle.token = d_token;
 
       if (typeof sessionStorage !== 'undefined') {
          let new_key = sessionStorage.getItem('RWebWindow_Key');
