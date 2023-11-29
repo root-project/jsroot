@@ -708,9 +708,8 @@ async function connectWebWindow(arg) {
    let d_key, d_token, new_key;
 
    if (!arg.href) {
-
       const d = decodeUrl();
-      d_key = d.get('key'),
+      d_key = d.get('key');
       d_token = d.get('token');
 
       if (typeof sessionStorage !== 'undefined') {

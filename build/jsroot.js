@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '24/11/2023',
+version_date = '29/11/2023',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -119193,9 +119193,14 @@ class WebWindowHandle {
    setHRef(path) {
       if (isStr(path) && (path.indexOf('?') > 0)) {
          this.href = path.slice(0, path.indexOf('?'));
-         this.key = decodeUrl(path).get('key');
-      } else
+         const d = decodeUrl(path);
+         this.key = d.get('key');
+         this.token = d.get('token');
+      } else {
          this.href = path;
+         delete this.key;
+         delete this.token;
+      }
    }
 
    /** @summary Return href part
