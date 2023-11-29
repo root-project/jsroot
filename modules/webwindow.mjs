@@ -487,9 +487,14 @@ class WebWindowHandle {
    setHRef(path) {
       if (isStr(path) && (path.indexOf('?') > 0)) {
          this.href = path.slice(0, path.indexOf('?'));
-         this.key = decodeUrl(path).get('key');
-      } else
+         const d = decodeUrl(path);
+         this.key = d.get('key');
+         this.token = d.get('token');
+      } else {
          this.href = path;
+         delete this.key;
+         delete this.token;
+      }
    }
 
    /** @summary Return href part
@@ -759,15 +764,18 @@ async function connectWebWindow(arg) {
    const main = new Promise(resolveFunc => {
       const handle = new WebWindowHandle(arg.socket_kind, arg.credits);
       handle.setUserArgs(arg.user_args);
-      if (arg.href) handle.setHRef(arg.href); // apply href now  while connect can be called from other place
+      if (arg.href)
+         handle.setHRef(arg.href); // apply href now  while connect can be called from other place
+      else {
+         handle.key = new_key || d_key;
+         handle.token = d_token;
+      }
 
       if (window) {
          window.onbeforeunload = () => handle.close(true);
          if (browser.qt5) window.onqt5unload = window.onbeforeunload;
       }
 
-      handle.key = new_key || d_key;
-      handle.token = d_token;
 
       if (arg.receiver) {
          // when receiver exists, it handles itself callbacks
