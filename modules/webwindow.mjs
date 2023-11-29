@@ -706,43 +706,53 @@ async function connectWebWindow(arg) {
    else if (!isObject(arg))
       arg = {};
 
-   const d = decodeUrl(),
-         d_key = d.get('key'),
-         d_token = d.get('token');
-   let new_key;
+   let d_key, d_token, new_key;
 
-   if (typeof sessionStorage !== 'undefined') {
-      new_key = sessionStorage.getItem('RWebWindow_Key');
-      sessionStorage.removeItem('RWebWindow_Key');
-      if (new_key) console.log(`Use key ${new_key} from session storage`);
+   if (!arg.href) {
+
+      const d = decodeUrl();
+      d_key = d.get('key'),
+      d_token = d.get('token');
+
+      if (typeof sessionStorage !== 'undefined') {
+         new_key = sessionStorage.getItem('RWebWindow_Key');
+         sessionStorage.removeItem('RWebWindow_Key');
+         if (new_key) console.log(`Use key ${new_key} from session storage`);
+      }
+
+      // hide key and any following parameters from URL, chrome do not allows to close browser with changed URL
+      const href = (typeof document !== 'undefined') ? document.URL : null;
+      if (d_key && !d.has('headless') && isStr(href) && window?.history && browser.isFirefox) {
+         const p = href.indexOf('?key=');
+         if (p > 0) window.history.pushState({}, undefined, href.slice(0, p));
+      }
+
+      // special holder script, prevents headless chrome browser from too early exit
+      if (d.has('headless') && d_key && (browser.isChromeHeadless || browser.isChrome) && !arg.ignore_chrome_batch_holder)
+         loadScript('root_batch_holder.js?key=' + (new_key || d_key));
+
+      if (!arg.platform)
+         arg.platform = d.get('platform');
+
+      if (arg.platform === 'qt5')
+         browser.qt5 = true;
+      else if (arg.platform === 'cef3')
+         browser.cef3 = true;
+
+      if (arg.batch === undefined)
+         arg.batch = d.has('headless');
+
+      if (arg.batch) setBatchMode(true);
+
+      if (!arg.socket_kind)
+         arg.socket_kind = d.get('ws');
+
+      if (!new_key && arg.winW && arg.winH && !isBatchMode() && isFunc(window?.resizeTo))
+         window.resizeTo(arg.winW, arg.winH);
+
+      if (!new_key && arg.winX && arg.winY && !isBatchMode() && isFunc(window?.moveTo))
+         window.moveTo(arg.winX, arg.winY);
    }
-
-   // hide key and any following parameters from URL, chrome do not allows to close browser with changed URL
-   const href = (typeof document !== 'undefined') ? document.URL : null;
-   if (d_key && !d.has('headless') && isStr(href) && window?.history && browser.isFirefox) {
-      const p = href.indexOf('?key=');
-      if (p > 0) window.history.pushState({}, undefined, href.slice(0, p));
-   }
-
-   // special holder script, prevents headless chrome browser from too early exit
-   if (d.has('headless') && d_key && (browser.isChromeHeadless || browser.isChrome) && !arg.ignore_chrome_batch_holder)
-      loadScript('root_batch_holder.js?key=' + (new_key || d_key));
-
-   if (!arg.platform)
-      arg.platform = d.get('platform');
-
-   if (arg.platform === 'qt5')
-      browser.qt5 = true;
-   else if (arg.platform === 'cef3')
-      browser.cef3 = true;
-
-   if (arg.batch === undefined)
-      arg.batch = d.has('headless');
-
-   if (arg.batch) setBatchMode(true);
-
-   if (!arg.socket_kind)
-      arg.socket_kind = d.get('ws');
 
    if (!arg.socket_kind) {
       if (browser.qt5)
@@ -752,12 +762,6 @@ async function connectWebWindow(arg) {
       else
          arg.socket_kind = 'websocket';
    }
-
-   if (!new_key && arg.winW && arg.winH && !isBatchMode() && isFunc(window?.resizeTo))
-      window.resizeTo(arg.winW, arg.winH);
-
-   if (!new_key && arg.winX && arg.winY && !isBatchMode() && isFunc(window?.moveTo))
-      window.moveTo(arg.winX, arg.winY);
 
    // only for debug purposes
    // arg.socket_kind = 'longpoll';
