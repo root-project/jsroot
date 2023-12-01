@@ -249,17 +249,14 @@ function binl2rstr(input) {
  * @returns {Array<number>} Array of little-endian words
  */
 function rstr2binl(input) {
-  var i
-  var output = []
-  output[(input.length >> 2) - 1] = undefined
-  for (i = 0; i < output.length; i += 1) {
-    output[i] = 0
-  }
-  var length8 = input.length * 8
-  for (i = 0; i < length8; i += 8) {
-    output[i >> 5] |= (input.charCodeAt(i / 8) & 0xff) << i % 32
-  }
-  return output
+  const output = [];
+  output[(input.length >> 2) - 1] = undefined;
+  for (let i = 0; i < output.length; i += 1)
+    output[i] = 0;
+  const length8 = input.length * 8;
+  for (let i = 0; i < length8; i += 8)
+    output[i >> 5] |= (input.charCodeAt(i / 8) & 0xff) << i % 32;
+  return output;
 }
 
 /**
@@ -269,32 +266,7 @@ function rstr2binl(input) {
  * @returns {string} Raw MD5 string
  */
 function rstrMD5(s) {
-  return binl2rstr(binlMD5(rstr2binl(s), s.length * 8))
-}
-
-/**
- * Calculates the HMAC-MD5 of a key and some data (raw strings)
- *
- * @param {string} key HMAC key
- * @param {string} data Raw input string
- * @returns {string} Raw MD5 string
- */
-function rstrHMACMD5(key, data) {
-  var i
-  var bkey = rstr2binl(key)
-  var ipad = []
-  var opad = []
-  var hash
-  ipad[15] = opad[15] = undefined
-  if (bkey.length > 16) {
-    bkey = binlMD5(bkey, key.length * 8)
-  }
-  for (i = 0; i < 16; i += 1) {
-    ipad[i] = bkey[i] ^ 0x36363636
-    opad[i] = bkey[i] ^ 0x5c5c5c5c
-  }
-  hash = binlMD5(ipad.concat(rstr2binl(data)), 512 + data.length * 8)
-  return binl2rstr(binlMD5(opad.concat(hash), 512 + 128))
+  return binl2rstr(binlMD5(rstr2binl(s), s.length * 8));
 }
 
 /**
@@ -304,15 +276,13 @@ function rstrHMACMD5(key, data) {
  * @returns {string} Hex encoded string
  */
 function rstr2hex(input) {
-  var hexTab = '0123456789abcdef'
-  var output = ''
-  var x
-  var i
-  for (i = 0; i < input.length; i += 1) {
-    x = input.charCodeAt(i)
-    output += hexTab.charAt((x >>> 4) & 0x0f) + hexTab.charAt(x & 0x0f)
+  const hexTab = '0123456789abcdef';
+  let output = '';
+  for (let i = 0; i < input.length; i += 1) {
+    const x = input.charCodeAt(i);
+    output += hexTab.charAt((x >>> 4) & 0x0f) + hexTab.charAt(x & 0x0f);
   }
-  return output
+  return output;
 }
 
 /**
@@ -322,7 +292,7 @@ function rstr2hex(input) {
  * @returns {string} UTF8 string
  */
 function str2rstrUTF8(input) {
-  return unescape(encodeURIComponent(input))
+  return decodeURIComponent(encodeURIComponent(input));
 }
 
 /**
@@ -332,7 +302,7 @@ function str2rstrUTF8(input) {
  * @returns {string} Raw MD5 string
  */
 function rawMD5(s) {
-  return rstrMD5(str2rstrUTF8(s))
+  return rstrMD5(str2rstrUTF8(s));
 }
 /**
  * Encodes input string as Hex encoded string
@@ -341,50 +311,7 @@ function rawMD5(s) {
  * @returns {string} Hex encoded string
  */
 function hexMD5(s) {
-  return rstr2hex(rawMD5(s))
-}
-/**
- * Calculates the raw HMAC-MD5 for the given key and data
- *
- * @param {string} k HMAC key
- * @param {string} d Input string
- * @returns {string} Raw MD5 string
- */
-function rawHMACMD5(k, d) {
-  return rstrHMACMD5(str2rstrUTF8(k), str2rstrUTF8(d))
-}
-/**
- * Calculates the Hex encoded HMAC-MD5 for the given key and data
- *
- * @param {string} k HMAC key
- * @param {string} d Input string
- * @returns {string} Raw MD5 string
- */
-function hexHMACMD5(k, d) {
-  return rstr2hex(rawHMACMD5(k, d))
-}
-
-/**
- * Calculates MD5 value for a given string.
- * If a key is provided, calculates the HMAC-MD5 value.
- * Returns a Hex encoded string unless the raw argument is given.
- *
- * @param {string} string Input string
- * @param {string} [key] HMAC key
- * @param {boolean} [raw] Raw output switch
- * @returns {string} MD5 output
- */
-function md5(string, key, raw) {
-  if (!key) {
-    if (!raw) {
-      return hexMD5(string)
-    }
-    return rawMD5(string)
-  }
-  if (!raw) {
-    return hexHMACMD5(key, string)
-  }
-  return rawHMACMD5(key, string)
+  return rstr2hex(rawMD5(s));
 }
 
 export { hexMD5 };
