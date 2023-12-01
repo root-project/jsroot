@@ -18,102 +18,39 @@
  */
 
 
-/**
- * Add integers, wrapping at 2^32.
- * This uses 16-bit operations internally to work around bugs in interpreters.
- *
- * @param {number} x First integer
- * @param {number} y Second integer
- * @returns {number} Sum
- */
+/** @private */
 function safeAdd(x, y) {
   const lsw = (x & 0xffff) + (y & 0xffff),
         msw = (x >> 16) + (y >> 16) + (lsw >> 16);
   return (msw << 16) | (lsw & 0xffff);
 }
 
-/**
- * Bitwise rotate a 32-bit number to the left.
- *
- * @param {number} num 32-bit number
- * @param {number} cnt Rotation count
- * @returns {number} Rotated number
- */
+/** @private */
 function bitRotateLeft(num, cnt) {
   return (num << cnt) | (num >>> (32 - cnt));
 }
 
-/**
- * Basic operation the algorithm uses.
- *
- * @param {number} q q
- * @param {number} a a
- * @param {number} b b
- * @param {number} x x
- * @param {number} s s
- * @param {number} t t
- * @returns {number} Result
- */
+/** @private */
 function md5cmn(q, a, b, x, s, t) {
   return safeAdd(bitRotateLeft(safeAdd(safeAdd(a, q), safeAdd(x, t)), s), b);
 }
-/**
- * Basic operation the algorithm uses.
- *
- * @param {number} a a
- * @param {number} b b
- * @param {number} c c
- * @param {number} d d
- * @param {number} x x
- * @param {number} s s
- * @param {number} t t
- * @returns {number} Result
- */
+
+/** @private */
 function md5ff(a, b, c, d, x, s, t) {
   return md5cmn((b & c) | (~b & d), a, b, x, s, t);
 }
-/**
- * Basic operation the algorithm uses.
- *
- * @param {number} a a
- * @param {number} b b
- * @param {number} c c
- * @param {number} d d
- * @param {number} x x
- * @param {number} s s
- * @param {number} t t
- * @returns {number} Result
- */
+
+/** @private */
 function md5gg(a, b, c, d, x, s, t) {
   return md5cmn((b & d) | (c & ~d), a, b, x, s, t);
 }
-/**
- * Basic operation the algorithm uses.
- *
- * @param {number} a a
- * @param {number} b b
- * @param {number} c c
- * @param {number} d d
- * @param {number} x x
- * @param {number} s s
- * @param {number} t t
- * @returns {number} Result
- */
+
+/** @private */
 function md5hh(a, b, c, d, x, s, t) {
   return md5cmn(b ^ c ^ d, a, b, x, s, t);
 }
-/**
- * Basic operation the algorithm uses.
- *
- * @param {number} a a
- * @param {number} b b
- * @param {number} c c
- * @param {number} d d
- * @param {number} x x
- * @param {number} s s
- * @param {number} t t
- * @returns {number} Result
- */
+
+/** @private */
 function md5ii(a, b, c, d, x, s, t) {
   return md5cmn(c ^ (b | ~d), a, b, x, s, t);
 }
@@ -124,7 +61,7 @@ function md5ii(a, b, c, d, x, s, t) {
  * @param {Array} x Array of little-endian words
  * @param {number} len Bit length
  * @returns {Array<number>} MD5 Array
- */
+ * @private */
 function binlMD5(x, len) {
   /* append padding */
   x[len >> 5] |= 0x80 << len % 32;
