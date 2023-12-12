@@ -1,7 +1,7 @@
 import { httpRequest, createHttpRequest, loadScript, decodeUrl,
          browser, setBatchMode, isBatchMode, isObject, isFunc, isStr, btoa_func } from './core.mjs';
 import { closeCurrentWindow, showProgress, loadOpenui5 } from './gui/utils.mjs';
-import { hexMD5 } from './base/md5.mjs';
+import { hexMD5, hexMD5_2 } from './base/md5.mjs';
 
 
 // secret session key used for hashing connections keys
@@ -10,7 +10,7 @@ let sessionKey = '';
 /** @summary HMAC implementation
  * @desc see https://en.wikipedia.org/wiki/HMAC for more details
  * @private */
-function HMAC(key, m) {
+function HMAC(key, m, o) {
    const kbis = hexMD5(sessionKey + key),
          ipad = 0x5c, opad = 0x36;
    let ki = '', ko = '';
@@ -19,7 +19,10 @@ function HMAC(key, m) {
       ki += String.fromCharCode(code ^ ipad);
       ko += String.fromCharCode(code ^ opad);
    }
-   return hexMD5(ki + hexMD5(ko + m));
+
+   const hash = (o === undefined) ? hexMD5(ko + m) : hexMD5_2(ko, m, o);
+
+   return hexMD5(ki + hash);
 }
 
 /**
@@ -596,19 +599,39 @@ class WebWindowHandle {
             let msg = e.data;
 
             if (this.next_binary) {
-
-               let binchid = this.next_binary;
+               const binchid = this.next_binary,
+                     server_hash = this.next_binary_hash;
                delete this.next_binary;
+               delete this.next_binary_hash;
 
                if (msg instanceof Blob) {
                   // convert Blob object to BufferArray
                   let reader = new FileReader, qitem = this.reserveQueueItem();
                   // The file's text will be printed here
-                  reader.onload = event => this.markQueueItemDone(qitem, event.target.result, 0);
+                  reader.onload = event => {
+                     let result = event.target.result;
+                     if (this.key && sessionKey) {
+                        const hash = HMAC(this.key, result, 0);
+                        if (hash !== server_hash) {
+                           console.log('Discard binary buffer');
+                           result = new ArrayBuffer(0);
+                        }
+                     }
+
+                     this.markQueueItemDone(qitem, result, 0);
+                  };
                   reader.readAsArrayBuffer(msg, e.offset || 0);
                } else {
                   // this is from CEF or LongPoll handler
-                  this.provideData(binchid, msg, e.offset || 0);
+                  let result = msg;
+                  if (this.key && sessionKey) {
+                     const hash = HMAC(this.key, result, e.offset || 0);
+                     if (hash !== server_hash) {
+                        console.log('Discard binary buffer');
+                        result = new ArrayBuffer(0);
+                     }
+                  }
+                  this.provideData(binchid, result, e.offset || 0);
                }
 
                return;
@@ -663,9 +686,10 @@ class WebWindowHandle {
                      sessionStorage.setItem('RWebWindow_Key', newkey);
                   location.reload(true);
                }
-            } else if (msg == '$$binary$$') {
+            } else if (msg.slice(0, 10) === '$$binary$$') {
                this.next_binary = chid;
-            } else if (msg == '$$nullbinary$$') {
+               this.next_binary_hash = msg.slice(10);
+            } else if (msg === '$$nullbinary$$') {
                this.provideData(chid, new ArrayBuffer(0), 0);
             } else {
                this.provideData(chid, msg);
