@@ -7,6 +7,21 @@ import { hexMD5 } from './base/md5.mjs';
 // secret session key used for hashing connections keys
 let sessionKey = '';
 
+/** @summary HMAC implementation
+ * @desc see https://en.wikipedia.org/wiki/HMAC for more details
+ * @private */
+function HMAC(key, m) {
+   const kbis = hexMD5(sessionKey + key),
+         ipad = 0x5c, opad = 0x36;
+   let ki = '', ko = '';
+   for (let i = 0; i < kbis.length; ++i) {
+      const code = kbis.charCodeAt(i);
+      ki += String.fromCharCode(code ^ ipad);
+      ko += String.fromCharCode(code ^ opad);
+   }
+   return hexMD5(ki + hexMD5(ko + m));
+}
+
 /**
  * @summary Class emulating web socket with long-poll http requests
  *
@@ -406,7 +421,7 @@ class WebWindowHandle {
 
       let md5 = 'none';
       if (this.key && sessionKey)
-         md5 = hexMD5(`${sessionKey}:${prefix}${msg}:${this.key}`);
+         md5 = HMAC(this.key, `${prefix}${msg}`);
 
       this._websocket.send(`${md5}:${prefix}${msg}`);
 
@@ -531,7 +546,7 @@ class WebWindowHandle {
    getConnArgs(ntry) {
       let args = '';
       if (this.key && sessionKey) {
-         const k = hexMD5(`${sessionKey}:${ntry}:${this.key}`);
+         const k = HMAC(this.key, `attempt_${ntry}`);
          args += `key=${k}&ntry=${ntry}`;
       } else if (this.key)
          args += `key=${this.key}`;
@@ -635,11 +650,11 @@ class WebWindowHandle {
                   i4 = msg.indexOf(':', i3 + 1),
                   chid = Number.parseInt(msg.slice(i3 + 1, i4));
 
-            // for authentication MD5 sum and sequence id is important
-            // MD5 used to authenticate server
+            // for authentication HMAC checksum and sequence id is important
+            // HMAC used to authenticate server
             // sequence id is necessary to exclude submission of same packet again
             if (this.key && sessionKey) {
-               const client_md5 = hexMD5(`${sessionKey}:${msg.slice(i0+1)}:${this.key}`);
+               const client_md5 = HMAC(this.key, msg.slice(i0+1));
                if (server_md5 !== client_md5)
                   return console.log(`Failure checking server md5 sum ${server_md5}`);
             }
