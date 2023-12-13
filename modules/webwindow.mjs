@@ -20,7 +20,7 @@ function HMAC(key, m, o) {
       ko += String.fromCharCode(code ^ opad);
    }
 
-   const hash = (o === undefined) ? hexMD5(ko + m) : hexMD5_2(ko, m, o);
+   const hash = (o === undefined) ? hexMD5(ko + m) : hexMD5_2(ko, new Uint8Array(m, o));
 
    return hexMD5(ki + hash);
 }
