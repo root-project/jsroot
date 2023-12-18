@@ -22,30 +22,8 @@
     0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
     0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
   ];
-  var OUTPUT_TYPES = ['hex', 'array', 'digest', 'arrayBuffer'];
 
   var blocks = [];
-
-  var createOutputMethod = function (outputType, is224) {
-    return function (message) {
-      return new Sha256(is224, true).update(message)[outputType]();
-    };
-  };
-
-  var createMethod = function (is224) {
-    var method = createOutputMethod('hex', is224);
-    method.create = function () {
-      return new Sha256(is224);
-    };
-    method.update = function (message) {
-      return method.create().update(message);
-    };
-    for (var i = 0; i < OUTPUT_TYPES.length; ++i) {
-      var type = OUTPUT_TYPES[i];
-      method[type] = createOutputMethod(type, is224);
-    }
-    return method;
-  };
 
   function Sha256(is224, sharedMemory) {
     if (sharedMemory) {
@@ -309,48 +287,11 @@
 
   Sha256.prototype.toString = Sha256.prototype.hex;
 
-  Sha256.prototype.digest = function () {
-    this.finalize();
-
-    var h0 = this.h0, h1 = this.h1, h2 = this.h2, h3 = this.h3, h4 = this.h4, h5 = this.h5,
-      h6 = this.h6, h7 = this.h7;
-
-    var arr = [
-      (h0 >> 24) & 0xFF, (h0 >> 16) & 0xFF, (h0 >> 8) & 0xFF, h0 & 0xFF,
-      (h1 >> 24) & 0xFF, (h1 >> 16) & 0xFF, (h1 >> 8) & 0xFF, h1 & 0xFF,
-      (h2 >> 24) & 0xFF, (h2 >> 16) & 0xFF, (h2 >> 8) & 0xFF, h2 & 0xFF,
-      (h3 >> 24) & 0xFF, (h3 >> 16) & 0xFF, (h3 >> 8) & 0xFF, h3 & 0xFF,
-      (h4 >> 24) & 0xFF, (h4 >> 16) & 0xFF, (h4 >> 8) & 0xFF, h4 & 0xFF,
-      (h5 >> 24) & 0xFF, (h5 >> 16) & 0xFF, (h5 >> 8) & 0xFF, h5 & 0xFF,
-      (h6 >> 24) & 0xFF, (h6 >> 16) & 0xFF, (h6 >> 8) & 0xFF, h6 & 0xFF
-    ];
-    if (!this.is224) {
-      arr.push((h7 >> 24) & 0xFF, (h7 >> 16) & 0xFF, (h7 >> 8) & 0xFF, h7 & 0xFF);
-    }
-    return arr;
-  };
-
-  Sha256.prototype.array = Sha256.prototype.digest;
-
-  Sha256.prototype.arrayBuffer = function () {
-    this.finalize();
-
-    var buffer = new ArrayBuffer(this.is224 ? 28 : 32);
-    var dataView = new DataView(buffer);
-    dataView.setUint32(0, this.h0);
-    dataView.setUint32(4, this.h1);
-    dataView.setUint32(8, this.h2);
-    dataView.setUint32(12, this.h3);
-    dataView.setUint32(16, this.h4);
-    dataView.setUint32(20, this.h5);
-    dataView.setUint32(24, this.h6);
-    if (!this.is224) {
-      dataView.setUint32(28, this.h7);
-    }
-    return buffer;
-  };
-
-
-  const sha256 = createMethod();
+  function sha256(message) {
+    const is224 = false,
+          m = new Sha256(is224, true);
+    m.update(message);
+    return m.hex();
+  }
 
   export { sha256 };
