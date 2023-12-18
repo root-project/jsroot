@@ -7,21 +7,17 @@
  * @license MIT
  */
 
-var ERROR = 'input is invalid type';
-var ARRAY_BUFFER = typeof ArrayBuffer !== 'undefined';
-var HEX_CHARS = '0123456789abcdef'.split('');
-var EXTRA = [-2147483648, 8388608, 32768, 128];
-var SHIFT = [24, 16, 8, 0];
-var K = [
-  0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
-  0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
-  0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
-  0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
-  0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
-  0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
-  0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
-  0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
-];
+const HEX_CHARS = '0123456789abcdef'.split(''),
+      EXTRA = [-2147483648, 8388608, 32768, 128],
+      SHIFT = [24, 16, 8, 0],
+      K = [0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+           0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+           0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+           0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+           0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+           0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+           0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+           0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2];
 
 
 class Sha256 {
@@ -55,28 +51,15 @@ class Sha256 {
     this.is224 = is224;
   }
 
+  /** One can use only string or Uint8Array */
   update(message) {
-    if (this.finalized) {
+    if (this.finalized)
       return;
-    }
-    var notString, type = typeof message;
-    if (type !== 'string') {
-      if (type === 'object') {
-        if (message === null) {
-          throw new Error(ERROR);
-        } else if (ARRAY_BUFFER && message.constructor === ArrayBuffer) {
-          message = new Uint8Array(message);
-        } else if (!Array.isArray(message)) {
-          if (!ARRAY_BUFFER || !ArrayBuffer.isView(message)) {
-            throw new Error(ERROR);
-          }
-        }
-      } else {
-        throw new Error(ERROR);
-      }
-      notString = true;
-    }
-    var code, index = 0, i, length = message.length, blocks = this.blocks;
+
+    const notString = (typeof message !== 'string'),
+          length = message.length, blocks = this.blocks;
+
+    let code, index = 0, i;
 
     while (index < length) {
       if (this.hashed) {
@@ -89,15 +72,14 @@ class Sha256 {
       }
 
       if (notString) {
-        for (i = this.start; index < length && i < 64; ++index) {
+        for (i = this.start; index < length && i < 64; ++index)
           blocks[i >> 2] |= message[index] << SHIFT[i++ & 3];
-        }
       } else {
         for (i = this.start; index < length && i < 64; ++index) {
           code = message.charCodeAt(index);
-          if (code < 0x80) {
+          if (code < 0x80)
             blocks[i >> 2] |= code << SHIFT[i++ & 3];
-          } else if (code < 0x800) {
+          else if (code < 0x800) {
             blocks[i >> 2] |= (0xc0 | (code >> 6)) << SHIFT[i++ & 3];
             blocks[i >> 2] |= (0x80 | (code & 0x3f)) << SHIFT[i++ & 3];
           } else if (code < 0xd800 || code >= 0xe000) {
@@ -121,9 +103,8 @@ class Sha256 {
         this.start = i - 64;
         this.hash();
         this.hashed = true;
-      } else {
+      } else
         this.start = i;
-      }
     }
     if (this.bytes > 4294967295) {
       this.hBytes += this.bytes / 4294967296 << 0;
@@ -133,9 +114,8 @@ class Sha256 {
   }
 
   finalize() {
-    if (this.finalized) {
+    if (this.finalized)
       return;
-    }
     this.finalized = true;
     var blocks = this.blocks, i = this.lastByteIndex;
     blocks[16] = this.block;
@@ -154,7 +134,7 @@ class Sha256 {
     blocks[14] = this.hBytes << 3 | this.bytes >>> 29;
     blocks[15] = this.bytes << 3;
     this.hash();
-  };
+  }
 
   hash() {
     var a = this.h0, b = this.h1, c = this.h2, d = this.h3, e = this.h4, f = this.h5, g = this.h6,
