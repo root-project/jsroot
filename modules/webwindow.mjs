@@ -1,7 +1,7 @@
 import { httpRequest, createHttpRequest, loadScript, decodeUrl,
          browser, setBatchMode, isBatchMode, isObject, isFunc, isStr, btoa_func } from './core.mjs';
 import { closeCurrentWindow, showProgress, loadOpenui5 } from './gui/utils.mjs';
-import { hexMD5, hexMD5_2 } from './base/md5.mjs';
+import { sha256, sha256_2 } from './base/sha256.mjs';
 
 
 // secret session key used for hashing connections keys
@@ -12,7 +12,7 @@ let sessionKey = '';
  * @desc see https://en.wikipedia.org/wiki/HMAC for more details
  * @private */
 function HMAC(key, m, o) {
-   const kbis = hexMD5(sessionKey + key),
+   const kbis = sha256(sessionKey + key),
          ipad = 0x5c, opad = 0x36;
    let ki = '', ko = '';
    for (let i = 0; i < kbis.length; ++i) {
@@ -21,9 +21,9 @@ function HMAC(key, m, o) {
       ko += String.fromCharCode(code ^ opad);
    }
 
-   const hash = (o === undefined) ? hexMD5(ko + m) : hexMD5_2(ko, new Uint8Array(m, o));
+   const hash = (o === undefined) ? sha256(ko + m) : sha256_2(ko, new Uint8Array(m, o));
 
-   return hexMD5(ki + hash);
+   return sha256(ki + hash);
 }
 
 /**
