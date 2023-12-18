@@ -8,21 +8,7 @@
  */
 
   var ERROR = 'input is invalid type';
-  var WINDOW = typeof window === 'object';
-  var root = WINDOW ? window : {};
-  if (root.JS_SHA256_NO_WINDOW) {
-    WINDOW = false;
-  }
-  var WEB_WORKER = !WINDOW && typeof self === 'object';
-  var NODE_JS = !root.JS_SHA256_NO_NODE_JS && typeof process === 'object' && process.versions && process.versions.node;
-  if (NODE_JS) {
-    root = global;
-  } else if (WEB_WORKER) {
-    root = self;
-  }
-  var COMMON_JS = !root.JS_SHA256_NO_COMMON_JS && typeof module === 'object' && module.exports;
-  var AMD = typeof define === 'function' && define.amd;
-  var ARRAY_BUFFER = !root.JS_SHA256_NO_ARRAY_BUFFER && typeof ArrayBuffer !== 'undefined';
+  var ARRAY_BUFFER = typeof ArrayBuffer !== 'undefined';
   var HEX_CHARS = '0123456789abcdef'.split('');
   var EXTRA = [-2147483648, 8388608, 32768, 128];
   var SHIFT = [24, 16, 8, 0];
@@ -40,18 +26,6 @@
 
   var blocks = [];
 
-  if (root.JS_SHA256_NO_NODE_JS || !Array.isArray) {
-    Array.isArray = function (obj) {
-      return Object.prototype.toString.call(obj) === '[object Array]';
-    };
-  }
-
-  if (ARRAY_BUFFER && (root.JS_SHA256_NO_ARRAY_BUFFER_IS_VIEW || !ArrayBuffer.isView)) {
-    ArrayBuffer.isView = function (obj) {
-      return typeof obj === 'object' && obj.buffer && obj.buffer.constructor === ArrayBuffer;
-    };
-  }
-
   var createOutputMethod = function (outputType, is224) {
     return function (message) {
       return new Sha256(is224, true).update(message)[outputType]();
@@ -60,9 +34,6 @@
 
   var createMethod = function (is224) {
     var method = createOutputMethod('hex', is224);
-    if (NODE_JS) {
-      method = nodeWrap(method, is224);
-    }
     method.create = function () {
       return new Sha256(is224);
     };
@@ -72,59 +43,6 @@
     for (var i = 0; i < OUTPUT_TYPES.length; ++i) {
       var type = OUTPUT_TYPES[i];
       method[type] = createOutputMethod(type, is224);
-    }
-    return method;
-  };
-
-  var nodeWrap = function (method, is224) {
-    var crypto = require('crypto')
-    var Buffer = require('buffer').Buffer;
-    var algorithm = is224 ? 'sha224' : 'sha256';
-    var bufferFrom;
-    if (Buffer.from && !root.JS_SHA256_NO_BUFFER_FROM) {
-      bufferFrom = Buffer.from;
-    } else {
-      bufferFrom = function (message) {
-        return new Buffer(message);
-      };
-    }
-    var nodeMethod = function (message) {
-      if (typeof message === 'string') {
-        return crypto.createHash(algorithm).update(message, 'utf8').digest('hex');
-      } else {
-        if (message === null || message === undefined) {
-          throw new Error(ERROR);
-        } else if (message.constructor === ArrayBuffer) {
-          message = new Uint8Array(message);
-        }
-      }
-      if (Array.isArray(message) || ArrayBuffer.isView(message) ||
-        message.constructor === Buffer) {
-        return crypto.createHash(algorithm).update(bufferFrom(message)).digest('hex');
-      } else {
-        return method(message);
-      }
-    };
-    return nodeMethod;
-  };
-
-  var createHmacOutputMethod = function (outputType, is224) {
-    return function (key, message) {
-      return new HmacSha256(key, is224, true).update(message)[outputType]();
-    };
-  };
-
-  var createHmacMethod = function (is224) {
-    var method = createHmacOutputMethod('hex', is224);
-    method.create = function (key) {
-      return new HmacSha256(key, is224);
-    };
-    method.update = function (key, message) {
-      return method.create(key).update(message);
-    };
-    for (var i = 0; i < OUTPUT_TYPES.length; ++i) {
-      var type = OUTPUT_TYPES[i];
-      method[type] = createHmacOutputMethod(type, is224);
     }
     return method;
   };
