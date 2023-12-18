@@ -266,10 +266,16 @@ class Sha256 {
 } // class Sha256
 
 function sha256(message) {
-  const is224 = false,
-        m = new Sha256(is224);
+  const m = new Sha256(false);
   m.update(message);
   return m.hex();
 }
 
-export { sha256 };
+function sha256_2(message, arr) {
+  const m = new Sha256(false);
+  m.update(message);
+  m.update(arr);
+  return m.hex();
+}
+
+export { sha256, sha256_2 };
