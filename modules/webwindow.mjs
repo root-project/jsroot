@@ -5,6 +5,7 @@ import { hexMD5, hexMD5_2 } from './base/md5.mjs';
 
 
 // secret session key used for hashing connections keys
+// only if set, all messages from and to server signed with HMAC hash
 let sessionKey = '';
 
 /** @summary HMAC implementation
@@ -423,11 +424,11 @@ class WebWindowHandle {
       this.ackn = 0;
       this.cansend--; // decrease number of allowed send packets
 
-      let md5 = 'none';
+      let hash = 'none';
       if (this.key && sessionKey)
-         md5 = HMAC(this.key, `${prefix}${msg}`);
+         hash = HMAC(this.key, `${prefix}${msg}`);
 
-      this._websocket.send(`${md5}:${prefix}${msg}`);
+      this._websocket.send(`${hash}:${prefix}${msg}`);
 
       if ((this.kind === 'websocket') || (this.kind === 'longpoll')) {
          if (this.timerid) clearTimeout(this.timerid);
@@ -549,11 +550,10 @@ class WebWindowHandle {
     * @private */
    getConnArgs(ntry) {
       let args = '';
-      if (this.key && sessionKey) {
+      if (this.key) {
          const k = HMAC(this.key, `attempt_${ntry}`);
          args += `key=${k}&ntry=${ntry}`;
-      } else if (this.key)
-         args += `key=${this.key}`;
+      }
       if (this.token) {
          if (args) args += '&';
          args += `token=${this.token}`;
@@ -637,7 +637,7 @@ class WebWindowHandle {
                      if (this.key && sessionKey) {
                         const hash = HMAC(this.key, result, 0);
                         if (hash !== server_hash) {
-                           console.log('Discard binary buffer');
+                           console.log('Discard binary buffer because of HMAC mismatch');
                            result = new ArrayBuffer(0);
                         }
                      }
@@ -651,7 +651,7 @@ class WebWindowHandle {
                   if (this.key && sessionKey) {
                      const hash = HMAC(this.key, result, e.offset || 0);
                      if (hash !== server_hash) {
-                        console.log('Discard binary buffer');
+                        console.log('Discard binary buffer because of HMAC mismatch');
                         result = new ArrayBuffer(0);
                      }
                   }
@@ -665,7 +665,7 @@ class WebWindowHandle {
                return console.log(`unsupported message kind: ${typeof msg}`);
 
             const i0 = msg.indexOf(':'),
-                  server_md5 = msg.slice(0, i0),
+                  server_hash = msg.slice(0, i0),
                   i1 = msg.indexOf(':', i0 + 1),
                   seq_id = Number.parseInt(msg.slice(i0 + 1, i1)),
                   i2 = msg.indexOf(':', i1 + 1),
@@ -679,9 +679,9 @@ class WebWindowHandle {
             // HMAC used to authenticate server
             // sequence id is necessary to exclude submission of same packet again
             if (this.key && sessionKey) {
-               const client_md5 = HMAC(this.key, msg.slice(i0+1));
-               if (server_md5 !== client_md5)
-                  return console.log(`Failure checking server md5 sum ${server_md5}`);
+               const client_hash = HMAC(this.key, msg.slice(i0+1));
+               if (server_hash !== client_hash)
+                  return console.log(`Failure checking server md5 sum ${server_hash}`);
             }
 
             if (seq_id <= this.recv_seq)
@@ -815,7 +815,7 @@ async function connectWebWindow(arg) {
          if (sessionKey)
             sessionStorage.setItem('RWebWindow_SessionKey', sessionKey);
          else
-            sessionKey = sessionStorage.getItem('RWebWindow_SessionKey');
+            sessionKey = sessionStorage.getItem('RWebWindow_SessionKey') || '';
       }
 
       // hide key and any following parameters from URL, chrome do not allows to close browser with changed URL
