@@ -112,8 +112,14 @@ class TF1Painter extends ObjectPainter {
           force_use_save = has_saved_points && (ignore_zoom || settings.PreferSavedPoints);
 
       if (!force_use_save) {
-         if (!tf1.evalPar)
-            proivdeEvalPar(tf1);
+         if (!tf1.evalPar) {
+            try {
+               if (!proivdeEvalPar(tf1))
+                  iserror = true;
+            } catch {
+               iserror = true;
+            }
+         }
 
          for (let n = 0; n < np; n++) {
             let x = xmin + n*dx, y = 0;
