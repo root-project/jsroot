@@ -779,19 +779,19 @@ class HierarchyPainter extends BasePainter {
 
    /** @summary Create file hierarchy
      * @private */
-   fileHierarchy(file) {
-      const painter = this,
+   fileHierarchy(file, folder) {
+      const painter = this;
+      if (!folder) folder = {};
 
-       folder = {
-         _name: file.fFileName,
-         _title: (file.fTitle ? file.fTitle + ', path: ' : '') + file.fFullURL + `, size: ${getSizeStr(file.fEND)}`,
-         _kind: kindTFile,
-         _file: file,
-         _fullurl: file.fFullURL,
-         _localfile: file.fLocalFile,
-         _had_direct_read: false,
-         // this is central get method, item or itemname can be used, returns promise
-         _get(item, itemname) {
+      folder._name = file.fFileName;
+      folder._title = (file.fTitle ? file.fTitle + ', path: ' : '') + file.fFullURL + `, size: ${getSizeStr(file.fEND)}`;
+      folder._kind = kindTFile;
+      folder._file = file;
+      folder._fullurl = file.fFullURL;
+      folder._localfile = file.fLocalFile;
+      folder._had_direct_read = false;
+      // this is central get method, item or itemname can be used, returns promise
+      folder._get = function(item, itemname) {
             if (item?._readobj)
                return Promise.resolve(item._readobj);
 
@@ -836,8 +836,7 @@ class HierarchyPainter extends BasePainter {
             if (this._localfile) return openFile(this._localfile).then(f => readFileObject(f));
             if (this._fullurl) return openFile(this._fullurl).then(f => readFileObject(f));
             return Promise.resolve(null);
-         }
-      };
+         };
 
       keysHierarchy(folder, file.fKeys, file, '');
 
@@ -2701,7 +2700,38 @@ class HierarchyPainter extends BasePainter {
    async listServerDir(dirname) {
       return httpRequest(dirname, 'text').then(res => {
          if (!res) return false;
-         console.log('res', res);
+         const h = { _name: 'Files', _kind: kTopFolder, _childs: [], _isopen: true };
+         let p = 0;
+         while (p < res.length) {
+            p = res.indexOf('a href="', p+1);
+            if (p < 0) break;
+            p += 8;
+            const p2 = res.indexOf('"', p+1);
+            if (p2 < 0) break;
+
+            const fname = res.slice(p, p2);
+            p = p2 + 1;
+            if ((fname.lastIndexOf('.root') === fname.length - 5) && (fname.length > 5)) {
+               const item = { _name: fname, _title: dirname + fname, _url: dirname + fname, _kind: kindTFile,
+                              _click_action: 'expand', _more: true, _obj: {},
+                              _expand: item => {
+                                 return openFile(item._url).then(file => {
+                                    if (!file) return false;
+                                    delete item._exapnd;
+                                    delete item._more;
+                                    delete item._click_action;
+                                    delete item._obj;
+                                    item._isopen = true;
+                                    this.fileHierarchy(file, item);
+
+                                    return this.refreshHtml();
+                                 });
+                              } };
+               h._childs.push(item);
+            }
+         }
+         if (h._childs.length > 0)
+            this.h = h;
          return true;
       });
    }
