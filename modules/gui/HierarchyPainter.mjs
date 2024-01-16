@@ -2697,6 +2697,15 @@ class HierarchyPainter extends BasePainter {
       }).finally(() => showProgress());
    }
 
+   /** @summary Create list of files for specified directory */
+   async listServerDir(dirname) {
+      return httpRequest(dirname).then(res => {
+         if (!res) return false;
+         console.log('res', res);
+         return true;
+      });
+   }
+
    /** @summary Apply loaded TStyle object
      * @desc One also can specify item name of JSON file name where style is loaded
      * @param {object|string} style - either TStyle object of item name where object can be load */
@@ -3321,6 +3330,7 @@ class HierarchyPainter extends BasePainter {
 
       let prereq = getOption('prereq') || '',
           load = getOption('load'),
+          dir = getOption('dir'),
           inject = getOption('inject'),
           filesarr = getOptionAsArray('#file;files'),
           itemsarr = getOptionAsArray('#item;items'),
@@ -3435,7 +3445,9 @@ class HierarchyPainter extends BasePainter {
             promise = this.openJsonFile(jsonarr.shift());
          else if (filesarr.length > 0)
             promise = this.openRootFile(filesarr.shift());
-         else if (expanditems.length > 0)
+         else if (dir) {
+            promise = this.listServerDir(dir); dir = '';
+         } else if (expanditems.length > 0)
             promise = this.expandItem(expanditems.shift());
          else if (style.length > 0)
             promise = this.applyStyle(style.shift());
