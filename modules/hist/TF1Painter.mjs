@@ -141,14 +141,20 @@ function _getTF1Save(func, x) {
   * @desc First try evaluate, if not possible - check saved buffer
   * @private */
 function getTF1Value(func, x, skip_eval = undefined) {
-   let y = 0;
+   let y = 0, iserr = false;
    if (!func)
       return 0;
 
-   if (!skip_eval && !func.evalPar)
-      proivdeEvalPar(func);
+   if (!skip_eval && !func.evalPar) {
+      try {
+         if (!proivdeEvalPar(func))
+            iserr = true;
+      } catch {
+         iserr = true;
+      }
+   }
 
-   if (func.evalPar) {
+   if (func.evalPar && !iserr) {
       try {
          y = func.evalPar(x);
          return y;
