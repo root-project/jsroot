@@ -54,8 +54,8 @@ class THStackPainter extends ObjectPainter {
              (Math.abs((xnext.fXmax - xnext.fXmin)/xnext.fNbins - (xprev.fXmax - xprev.fXmin)/xprev.fNbins) < 0.0001)) {
             // simple extension of histogram to make sum
             const arr = new Array(hprev.fNcells).fill(0);
-            for (let i = 1; i <= xnext.fNbins; ++i)
-               arr[i] = hnext.fArray[i];
+            for (let n = 1; n <= xnext.fNbins; ++n)
+               arr[n] = hnext.fArray[n];
             hnext.fNcells = hprev.fNcells;
             Object.assign(xnext, xprev);
             hnext.fArray = arr;
