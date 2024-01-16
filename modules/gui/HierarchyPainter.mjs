@@ -2699,7 +2699,7 @@ class HierarchyPainter extends BasePainter {
 
    /** @summary Create list of files for specified directory */
    async listServerDir(dirname) {
-      return httpRequest(dirname).then(res => {
+      return httpRequest(dirname, 'text').then(res => {
          if (!res) return false;
          console.log('res', res);
          return true;
