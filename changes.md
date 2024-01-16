@@ -21,6 +21,7 @@
 18. Fix - correctly use margin in `TPaveText` class
 19. Fix - correctly draw endcaps in legend errors
 20. Fix - vertical position of up elements like {M}^{2} in TLatex
+21. Fix - catch exception when evaluate faulty TF1
 
 
 ## Changes in 7.5.3
