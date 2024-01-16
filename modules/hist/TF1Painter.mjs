@@ -183,8 +183,14 @@ class TF1Painter extends TH1Painter {
          const np = Math.max(tf1.fNpx, 100);
          let iserror = false;
 
-         if (!tf1.evalPar && !proivdeEvalPar(tf1))
-            iserror = true;
+         if (!tf1.evalPar) {
+            try {
+               if (!proivdeEvalPar(tf1))
+                  iserror = true;
+            } catch {
+               iserror = true;
+            }
+         }
 
          ensureBins(np);
 
