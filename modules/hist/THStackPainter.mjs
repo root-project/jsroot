@@ -46,9 +46,22 @@ class THStackPainter extends ObjectPainter {
                hprev = lst.arr[i-1],
                xnext = hnext.fXaxis, xprev = hprev.fXaxis;
 
-         if ((xnext.fNbins !== xprev.fNbins) ||
-             (xnext.fXmin !== xprev.fXmin) ||
-             (xnext.fXmax !== xprev.fXmax)) {
+         let match = (xnext.fNbins === xprev.fNbins) &&
+                     (xnext.fXmin === xprev.fXmin) &&
+                     (xnext.fXmax === xprev.fXmax);
+
+         if (!match && (xnext.fNbins > 0) && (xnext.fNbins < xprev.fNbins) && (xnext.fXmin === xprev.fXmin) &&
+             (Math.abs((xnext.fXmax - xnext.fXmin)/xnext.fNbins - (xprev.fXmax - xprev.fXmin)/xprev.fNbins) < 0.0001)) {
+            // simple extension of histogram to make sum
+            const arr = new Array(hprev.fNcells).fill(0);
+            for (let i = 1; i <= xnext.fNbins; ++i)
+               arr[i] = hnext.fArray[i];
+            hnext.fNcells = hprev.fNcells;
+            Object.assign(xnext, xprev);
+            hnext.fArray = arr;
+            match = true;
+         }
+         if (!match) {
             console.warn(`When drawing THStack, cannot sum-up histograms ${hnext.fName} and ${hprev.fName}`);
             lst.Clear();
             return false;
