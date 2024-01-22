@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '16/01/2024',
+version_date = '22/01/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -60580,7 +60580,7 @@ function getTimeOffset(axis) {
       sof = sof.slice(pos + 1);
       if (!Number.isInteger(val) || (val < min) || (val > max)) return min;
       return val;
-   }, year = next('-', 1970, 2300),
+   }, year = next('-', 1900, 2900),
       month = next('-', 1, 12) - 1,
       day = next(' ', 1, 31),
       hour = next(':', 0, 23),
@@ -79629,8 +79629,10 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
             path_err += `M${midx-dlw},${my-yerr1+dend}h${2*dlw}m${-dlw},0v${yerr1+yerr2-2*dend}m${-dlw},0h${2*dlw}`;
          else
             path_err += `M${midx},${my-yerr1+dend}v${yerr1+yerr2-2*dend}`;
-         if (hints_err !== null)
-            hints_err += `M${midx-edx},${my-yerr1}h${2*edx}v${yerr1+yerr2}h${-2*edx}z`;
+         if (hints_err !== null) {
+            const he1 = Math.max(yerr1, 5), he2 = Math.max(yerr2, 5);
+            hints_err += `M${midx-edx},${my-he1}h${2*edx}v${he1+he2}h${-2*edx}z`;
+         }
       }, draw_bin = bin => {
          if (extract_bin(bin)) {
             if (show_text) {
@@ -105000,6 +105002,7 @@ class HierarchyPainter extends BasePainter {
       if (isfileopened) return;
 
       return httpRequest(filepath, 'object').then(res => {
+         if (!res) return;
          const h1 = { _jsonfile: filepath, _kind: prROOT + res._typename, _jsontmp: res, _name: filepath.split('/').pop() };
          if (res.fTitle) h1._title = res.fTitle;
          h1._get = function(item /* ,itemname */) {
@@ -105092,22 +105095,37 @@ class HierarchyPainter extends BasePainter {
             const fname = res.slice(p, p2);
             p = p2 + 1;
             if ((fname.lastIndexOf('.root') === fname.length - 5) && (fname.length > 5)) {
-               const item = { _name: fname, _title: dirname + fname, _url: dirname + fname, _kind: kindTFile,
-                              _click_action: 'expand', _more: true, _obj: {},
-                              _expand: item => {
-                                 return openFile(item._url).then(file => {
-                                    if (!file) return false;
-                                    delete item._exapnd;
-                                    delete item._more;
-                                    delete item._click_action;
-                                    delete item._obj;
-                                    item._isopen = true;
-                                    this.fileHierarchy(file, item);
-
-                                    return this.refreshHtml();
-                                 });
-                              } };
-               h._childs.push(item);
+               h._childs.push({
+                  _name: fname, _title: dirname + fname, _url: dirname + fname, _kind: kindTFile,
+                  _click_action: 'expand', _more: true, _obj: {},
+                  _expand: item => {
+                     return openFile(item._url).then(file => {
+                        if (!file) return false;
+                        delete item._exapnd;
+                        delete item._more;
+                        delete item._click_action;
+                        delete item._obj;
+                        item._isopen = true;
+                        this.fileHierarchy(file, item);
+                        this.updateTreeNode(item);
+                     });
+                  }
+               });
+            } else if (((fname.lastIndexOf('.json.gz') === fname.length - 8) && (fname.length > 8)) ||
+                       ((fname.lastIndexOf('.json') === fname.length - 5) && (fname.length > 5))) {
+               h._childs.push({
+                  _name: fname, _title: dirname + fname, _jsonfile: dirname + fname, _can_draw: true,
+                  _get: item => {
+                     return httpRequest(item._jsonfile, 'object').then(res => {
+                        if (res) {
+                          item._kind = prROOT + res._typename;
+                          item._jsontmp = res;
+                          this.updateTreeNode(item);
+                        }
+                        return res;
+                     });
+                  }
+               });
             }
          }
          if (h._childs.length > 0)
