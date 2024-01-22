@@ -2723,8 +2723,7 @@ class HierarchyPainter extends BasePainter {
                                     delete item._obj;
                                     item._isopen = true;
                                     this.fileHierarchy(file, item);
-
-                                    return this.refreshHtml();
+                                    this.updateTreeNode(item);
                                  });
                               } };
                h._childs.push(item);
