@@ -17,7 +17,7 @@
 14. Handle TCanvas IsEdiatable flag to disable some interactive features
 15. Support PDF creation using jsPDF and svg2pdf.js - in browser and node.js
 16. Implement custom fonts support in TWebCanvas
-17. Load of ROOT/JSON files list with `&dir=<path>` URL parameter
+17. List of ROOT/JSON files on server with `&dir=<path>` URL parameter #283
 18. Fix - do not add `THStack` and `TMultiGraph` to legend
 19. Fix - correctly use margin in `TPaveText` class
 20. Fix - correctly draw endcaps in legend errors
