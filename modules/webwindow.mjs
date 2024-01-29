@@ -13,8 +13,11 @@ let sessionKey = '';
  * @private */
 function HMAC(key, m, o) {
    const kbis = sha256(sessionKey + key),
+         block_size = 64,
          opad = 0x5c, ipad = 0x36,
          ko = [], ki = [];
+   while (kbis.length < block_size)
+      kbis.push(0);
    for (let i = 0; i < kbis.length; ++i) {
       const code = kbis[i];
       ko.push(code ^ opad);
