@@ -1356,7 +1356,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          let painter = pp.painters[k],
              obj = painter.getObject();
 
-         if (!obj) continue;
+         if (!obj || obj.fName == 'title' || obj.fName == 'stats' || painter.draw_content === false ||
+              obj._typename == 'TLegend' || obj._typename == 'THStack' || obj._typename == 'TMultiGraph')
+                continue;
 
          let entry = JSROOT.create("TLegendEntry");
          entry.fObject = obj;
