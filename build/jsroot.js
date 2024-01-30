@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '22/01/2024',
+version_date = '29/01/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -67114,7 +67114,7 @@ class TPadPainter extends ObjectPainter {
 
       const cp = this.getCanvPainter();
 
-      let lineatt = this.is_active_pad && (cp?.highlight_gpad !== false) ? new TAttLineHandler({ style: 1, width: 1, color: 'red' }) : this.lineatt;
+      let lineatt = this.is_active_pad && cp?.highlight_gpad ? new TAttLineHandler({ style: 1, width: 1, color: 'red' }) : this.lineatt;
 
       if (!lineatt) lineatt = new TAttLineHandler({ color: 'none' });
 
@@ -119068,17 +119068,20 @@ let sessionKey = '';
  * @private */
 function HMAC(key, m, o) {
    const kbis = sha256(sessionKey + key),
-         ipad = 0x5c, opad = 0x36,
-         ki = [], ko = [];
+         block_size = 64,
+         opad = 0x5c, ipad = 0x36,
+         ko = [], ki = [];
+   while (kbis.length < block_size)
+      kbis.push(0);
    for (let i = 0; i < kbis.length; ++i) {
       const code = kbis[i];
-      ki.push(code ^ ipad);
       ko.push(code ^ opad);
+      ki.push(code ^ ipad);
    }
 
-   const hash = sha256_2(ko, (o === undefined) ? m : new Uint8Array(m, o));
+   const hash = sha256_2(ki, (o === undefined) ? m : new Uint8Array(m, o));
 
-   return sha256_2(ki, hash, true);
+   return sha256_2(ko, hash, true);
 }
 
 /**
