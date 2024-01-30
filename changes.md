@@ -6,6 +6,7 @@
 3. Fix error in "multi" request submission
 4. Fix web-based TCanvas updating
 5. Fix - reading TLeaf with fixed-size array
+6. Fix - exclude misc objects from $legend
 
 
 ## Changes in 6.3.4
