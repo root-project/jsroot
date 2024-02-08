@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '29/01/2024',
+version_date = '8/02/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -10209,7 +10209,7 @@ class BasePainter {
          enlarge = select(doc.body)
             .append('div')
             .attr('id', 'jsroot_enlarge_div')
-            .attr('style', 'position: fixed; margin: 0px; border: 0px; padding: 0px; inset: 1px; background: white; opacity: 0.95; z-index: 100; overflow: hidden;');
+            .attr('style', 'position: fixed; margin: 0px; border: 0px; padding: 0px; left: 1px; top: 1px; bottom: 1px; right: 1px; background: white; opacity: 0.95; z-index: 100; overflow: hidden;');
 
          const rect1 = getElementRect(main),
                rect2 = getElementRect(enlarge);
@@ -12182,8 +12182,10 @@ class ObjectPainter extends BasePainter {
      * Such string typically used as object tooltip.
      * If result string larger than 20 symbols, it will be cutted. */
    getObjectHint() {
-      const hint = this.getItemName() || this.getObjectName() || this.getClassName() || '';
-      return (hint.length <= 20) ? hint : hint.slice(0, 17) + '...';
+      const iname = this.getItemName();
+      if (iname)
+         return (iname.length > 20) ? '...' + iname.slice(iname.length - 17) : iname;
+      return this.getObjectName() || this.getClassName() || '';
    }
 
    /** @summary returns color from current list of colors
@@ -60459,7 +60461,7 @@ class StandaloneMenu extends JSRootMenu {
           block = select('body').append('div')
                                    .attr('id', `${dlg_id}_block`)
                                    .attr('class', 'jsroot_dialog_block')
-                                   .attr('style', 'z-index: 100000; position: absolute; inset: 0px; opacity: 0.2; background-color: white'),
+                                   .attr('style', 'z-index: 100000; position: absolute; left: 0px; top: 0px; bottom: 0px; right: 0px; opacity: 0.2; background-color: white'),
           element = select('body')
                       .append('div')
                       .attr('id', dlg_id)
@@ -62341,6 +62343,19 @@ const TooltipHandler = {
          }
       }
 
+      let path_name = null, same_path = hints.length > 1;
+      for (let n = 0; n < hints.length; ++n) {
+         const hint = hints[n], p = hint?.lines ? hint.lines[0]?.lastIndexOf('/') : -1;
+         if (p > 0) {
+            const path = hint.lines[0].slice(0, p + 1);
+            if (path_name === null)
+               path_name = path;
+            else if (path_name !== path)
+               same_path = false;
+         } else
+            same_path = false;
+      }
+
       const layer = this.hints_layer(),
             show_only_best = nhints > 15,
             coordinates = pnt ? Math.round(pnt.x) + ',' + Math.round(pnt.y) : '';
@@ -62435,24 +62450,14 @@ const TooltipHandler = {
           gapminx = -1111, gapmaxx = -1111;
       const minhinty = -frame_shift.y,
             cp = this.getCanvPainter(),
-            maxhinty = cp.getPadHeight() - frame_rect.y - frame_shift.y,
-      FindPosInGap = y => {
-         for (let n = 0; (n < hints.length) && (y < maxhinty); ++n) {
-            const hint = hints[n];
-            if (!hint) continue;
-            if ((hint.y >= y - 5) && (hint.y <= y + hint.height + 5)) {
-               y = hint.y + 10;
-               n = -1;
-            }
-         }
-         return y;
-      };
+            maxhinty = cp.getPadHeight() - frame_rect.y - frame_shift.y;
 
       for (let n = 0; n < hints.length; ++n) {
          let hint = hints[n],
-            group = hintsg.selectChild(`.painter_hint_${n}`);
+             group = hintsg.selectChild(`.painter_hint_${n}`);
 
-         if (show_only_best && (hint !== best_hint)) hint = null;
+         if (show_only_best && (hint !== best_hint))
+            hint = null;
 
          if (hint === null) {
             group.remove();
@@ -62472,16 +62477,23 @@ const TooltipHandler = {
          if (viewmode === 'single')
             curry = pnt.touch ? (pnt.y - hint.height - 5) : Math.min(pnt.y + 15, maxhinty - hint.height - 3) + frame_rect.hint_delta_y;
           else {
-            gapy = FindPosInGap(gapy);
+            for (let n = 0; (n < hints.length) && (gapy < maxhinty); ++n) {
+               const hint = hints[n];
+               if (!hint) continue;
+               if ((hint.y >= gapy - 5) && (hint.y <= gapy + hint.height + 5)) {
+                  gapy = hint.y + 10;
+                  n = -1;
+               }
+            }
             if ((gapminx === -1111) && (gapmaxx === -1111)) gapminx = gapmaxx = hint.x;
             gapminx = Math.min(gapminx, hint.x);
             gapmaxx = Math.min(gapmaxx, hint.x);
          }
 
          group.attr('x', posx)
-            .attr('y', curry)
-            .property('curry', curry)
-            .property('gapy', gapy);
+              .attr('y', curry)
+              .property('curry', curry)
+              .property('gapy', gapy);
 
          curry += hint.height + 5;
          gapy += hint.height + 5;
@@ -62490,7 +62502,7 @@ const TooltipHandler = {
             group.selectAll('*').remove();
 
          group.attr('width', 60)
-            .attr('height', hint.height);
+              .attr('height', hint.height);
 
          const r = group.append('rect')
             .attr('x', 0)
@@ -62507,8 +62519,11 @@ const TooltipHandler = {
          }
          r.attr('stroke-width', hint.exact ? 3 : 1);
 
-         for (let l = 0; l < (hint.lines ? hint.lines.length : 0); l++) {
-            if (hint.lines[l] !== null) {
+         for (let l = 0; l < (hint.lines?.length ?? 0); l++) {
+            let line = hint.lines[l];
+            if (l === 0 && path_name && same_path)
+               line = line.slice(path_name.length);
+            if (line) {
                const txt = group.append('svg:text')
                   .attr('text-anchor', 'start')
                   .attr('x', wmargin)
@@ -62517,9 +62532,8 @@ const TooltipHandler = {
                   .style('fill', 'black')
                   .style('pointer-events', 'none')
                   .call(font.func)
-                  .text(hint.lines[l]),
-
-                box = getElementRect(txt, 'bbox');
+                  .text(line),
+               box = getElementRect(txt, 'bbox');
 
                actualw = Math.max(actualw, box.width);
             }
@@ -65526,7 +65540,7 @@ class TabsDisplay extends MDIDisplay {
 
       if (top.empty()) {
          top = dom.append('div').attr('class', 'jsroot_tabs')
-                  .attr('style', 'display: flex; flex-direction: column; position: absolute; overflow: hidden; inset: 0px 0px 0px 0px');
+                  .attr('style', 'display: flex; flex-direction: column; position: absolute; overflow: hidden; left: 0px; top: 0px; bottom: 0px; right: 0px;');
          labels = top.append('div').attr('class', 'jsroot_tabs_labels')
                      .attr('style', 'white-space: nowrap; position: relative; overflow-x: auto');
          main = top.append('div').attr('class', 'jsroot_tabs_main')
@@ -65573,7 +65587,7 @@ class TabsDisplay extends MDIDisplay {
       const draw_frame = main.append('div')
                            .attr('frame_title', title)
                            .attr('class', 'jsroot_tabs_draw')
-                           .attr('style', 'overflow: hidden; position: absolute; inset: 0px')
+                           .attr('style', 'overflow: hidden; position: absolute; left: 0px; top: 0px; bottom: 0px; right: 0px;')
                            .property('frame_id', frame_id);
 
       this.modifyTabsFrame(frame_id, 'activate');
@@ -66140,7 +66154,7 @@ class BrowserLayout {
           input_style = settings.DarkMode ? `background-color: #222; color: ${text_color}` : '';
 
       injectStyle(
-         '.jsroot_browser { pointer-events: none; position: absolute; inset: 0px; margin: 0px; border: 0px; overflow: hidden; }'+
+         '.jsroot_browser { pointer-events: none; position: absolute; left: 0px; top: 0px; bottom: 0px; right: 0px; margin: 0px; border: 0px; overflow: hidden; }'+
          `.jsroot_draw_area { background-color: ${bkgr_color}; overflow: hidden; margin: 0px; border: 0px; }`+
          `.jsroot_browser_area { color: ${text_color}; background-color: ${bkgr_color}; font-size: 12px; font-family: Verdana; pointer-events: all; box-sizing: initial; }`+
          `.jsroot_browser_area input { ${input_style} }`+
@@ -66162,7 +66176,7 @@ class BrowserLayout {
       main.append('div').attr('id', this.drawing_divid())
                         .classed('jsroot_draw_area', true)
                         .style('position', 'absolute')
-                        .style('inset', '0px');
+                        .style('left', 0).style('top', 0).style('bottom', 0).style('right', 0);
 
       if (with_browser)
          main.append('div').classed('jsroot_browser', true);
@@ -67265,7 +67279,7 @@ class TPadPainter extends ObjectPainter {
       if (this._fixed_size)
          svg.attr('width', rect.width).attr('height', rect.height);
       else
-         svg.style('width', '100%').style('height', '100%').style('inset', '0px');
+         svg.style('width', '100%').style('height', '100%').style('left', 0).style('top', 0).style('bottom', 0).style('right', 0);
 
       svg.style('filter', settings.DarkMode || this.pad?.$dark ? 'invert(100%)' : null);
 
@@ -106500,7 +106514,7 @@ async function buildGUI(gui_element, gui_kind = '') {
       else {
          select('html').style('height', '100%');
          select('body').style('min-height', '100%').style('margin', 0).style('overflow', 'hidden');
-         myDiv.style('position', 'absolute').style('inset', '0px').style('padding', '1px');
+         myDiv.style('position', 'absolute').style('left', 0).style('top', 0).style('bottom', 0).style('right', 0).style('padding', '1px');
       }
    }
 
@@ -117589,7 +117603,7 @@ class RPadPainter extends RObjectPainter {
            .style('width', '100%')
            .style('height', '100%')
            .style('position', 'absolute')
-           .style('inset', '0px');
+           .style('left', 0).style('top', 0).style('bottom', 0).style('right', 0);
       }
 
       svg.style('filter', settings.DarkMode ? 'invert(100%)' : null);
