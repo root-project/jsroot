@@ -448,6 +448,19 @@ const TooltipHandler = {
          }
       }
 
+      let path_name = null, same_path = true;
+      for (let n = 0; n < hints.length; ++n) {
+         const hint = hints[n], p = hint?.lines ? hint.lines[0]?.lastIndexOf('/') : -1;
+         if (p > 0) {
+            const path = hint.lines[0].slice(0, p + 1);
+            if (path_name === null)
+               path_name = path;
+            else if (path_name !== path)
+               same_path = false;
+         } else
+            same_path = false;
+      }
+
       const layer = this.hints_layer(),
             show_only_best = nhints > 15,
             coordinates = pnt ? Math.round(pnt.x) + ',' + Math.round(pnt.y) : '';
@@ -612,7 +625,10 @@ const TooltipHandler = {
          r.attr('stroke-width', hint.exact ? 3 : 1);
 
          for (let l = 0; l < (hint.lines?.length ?? 0); l++) {
-            if (hint.lines[l] !== null) {
+            let line = hint.lines[l];
+            if (l === 0 && path_name && same_path)
+               line = line.slice(path_name.length);
+            if (line) {
                const txt = group.append('svg:text')
                   .attr('text-anchor', 'start')
                   .attr('x', wmargin)
@@ -621,7 +637,7 @@ const TooltipHandler = {
                   .style('fill', 'black')
                   .style('pointer-events', 'none')
                   .call(font.func)
-                  .text(hint.lines[l]),
+                  .text(line),
                box = getElementRect(txt, 'bbox');
 
                actualw = Math.max(actualw, box.width);
