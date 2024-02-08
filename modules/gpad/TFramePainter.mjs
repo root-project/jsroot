@@ -448,7 +448,7 @@ const TooltipHandler = {
          }
       }
 
-      let path_name = null, same_path = true;
+      let path_name = null, same_path = hints.length > 1;
       for (let n = 0; n < hints.length; ++n) {
          const hint = hints[n], p = hint?.lines ? hint.lines[0]?.lastIndexOf('/') : -1;
          if (p > 0) {
