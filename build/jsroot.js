@@ -80713,6 +80713,7 @@ function proivdeEvalPar(obj, check_save) {
                 .replace(/\b(pow|POW|TMath::Power)\b/g, 'Math.pow')
                 .replace(/\b(pi|PI)\b/g, 'Math.PI')
                 .replace(/\b(abs|ABS|TMath::Abs)\b/g, 'Math.abs')
+                .replace(/\bsqrt\(/g, 'Math.sqrt(')
                 .replace(/\bxygaus\(/g, 'this.$math.gausxy(this, x, y, ')
                 .replace(/\bgaus\(/g, 'this.$math.gaus(this, x, ')
                 .replace(/\bgausn\(/g, 'this.$math.gausn(this, x, ')
@@ -114112,15 +114113,30 @@ class TGaxisPainter extends TAxisPainter {
    }
 
    /** @summary Check if there is function for TGaxis can be found */
-   checkFuncion() {
+   async checkFuncion() {
       const gaxis = this.getObject();
-      if (!gaxis.fFunctionName)
+      if (!gaxis.fFunctionName) {
          this.axis_func = null;
-      else
-         this.axis_func = this.getPadPainter()?.findInPrimitives(gaxis.fFunctionName, clTF1);
+         return;
+      }
+      const func = this.getPadPainter()?.findInPrimitives(gaxis.fFunctionName, clTF1);
 
-      if (this.axis_func)
-         proivdeEvalPar(this.axis_func);
+      let promise = Promise.resolve(func);
+      if (!func) {
+         const h = getHPainter(),
+               item = h?.findItem({ name: gaxis.fFunctionName, check_keys: true });
+         if (item) {
+            promise = h.getObject({ item }).then(res => {
+               return res?.obj?._typename === clTF1 ? res.obj : null;
+            });
+         }
+      }
+
+      return promise.then(f => {
+         this.axis_func = f;
+         if (f)
+            proivdeEvalPar(f);
+      });
    }
 
    /** @summary Create handle for custom function in the axis */
@@ -114177,9 +114193,8 @@ class TGaxisPainter extends TAxisPainter {
 
       return ensureTCanvas(painter, false).then(() => {
          if (opt) painter.convertTo(opt);
-         painter.checkFuncion();
-         return painter.redraw();
-      });
+         return painter.checkFuncion();
+      }).then(() => painter.redraw());
    }
 
 } // class TGaxisPainter
