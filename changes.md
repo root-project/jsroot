@@ -23,9 +23,16 @@
 20. Fix - correctly use margin in `TPaveText` class
 21. Fix - correctly draw endcaps in legend errors
 22. Fix - vertical position of up elements like {M}^{2} in TLatex
-23. Fix - catch exception when evaluate faulty TF1
 24. Fix - let draw THStack with diff binning hists
-25. Fix - better tooltip name for the item
+25. Fix - better tooltip name for the items
+
+
+## Changes in 7.5.4
+1. Fix - catch exception when parsing TF1 formula
+2. Fix - properly check THStack histograms axes when doing sum
+3. Fix - correctly handle negative offset on time axis
+4. Fix - do not use `inset` because of old Chrome browsers
+5. Fix - properly provide object hints
 
 
 ## Changes in 7.5.3
