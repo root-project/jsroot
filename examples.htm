@@ -352,7 +352,8 @@
       import { draw, makeImage } from './modules/draw.mjs';
       import { readStyleFromURL } from './modules/gui.mjs';
       import { openFile } from './modules/io.mjs';
-      import { HierarchyPainter, getHPainter } from './modules/gui/HierarchyPainter.mjs';
+      import { setHPainter, getHPainter } from './modules/gui/display.mjs';
+      import { HierarchyPainter } from './modules/gui/HierarchyPainter.mjs';
       import { testInteractivity } from './modules/testing.mjs';
 
       document.getElementById('version').innerHTML = (version_id != 'dev') ? version_id : version;
@@ -493,6 +494,8 @@
             hpainter.setDisplay(layout, 'right-div');
          }
 
+         setHPainter(hpainter);
+
          return hpainter.startGUI(null, url).then(res => {
             if (latex !== null)
                settings.Latex = prev_latex;
@@ -513,8 +516,7 @@
 
          keyid = null; // stop execution of running test loop (if any)
 
-         if (getHPainter())
-            getHPainter().cleanup();
+         getHPainter()?.cleanup();
 
          cleanup('plaindraw');
 
@@ -528,6 +530,7 @@
 
          hpainter?.cleanup();
          hpainter = null;
+         setHPainter(null);
          cleanup('plaindraw');
          document.getElementById('plaindraw').innerHTML = '';
              document.getElementById('plaindraw').style['background-color'] = '';
