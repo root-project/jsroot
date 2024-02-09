@@ -1,7 +1,7 @@
 # JSROOT changelog
 
 ## Changes in 7.5.4
-1. Fix - catch excpetion when parsing TF1 formula
+1. Fix - catch exception when parsing TF1 formula
 2. Fix - properly check THStack histograms axes when doing sum
 3. Fix - correctly handle negative offset on time axis
 4. Fix - do not use `inset` because of old Chrome browsers
