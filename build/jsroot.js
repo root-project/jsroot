@@ -1,4 +1,4 @@
-// https://root.cern/js/ v7.5.3
+// https://root.cern/js/ v7.5.4
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -7,11 +7,11 @@ typeof define === 'function' && define.amd ? define(['exports'], factory) :
 
 /** @summary version id
   * @desc For the JSROOT release the string in format 'major.minor.patch' like '7.0.0' */
-const version_id = '7.5.3',
+const version_id = '7.5.4',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '24/11/2023',
+version_date = '9/02/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -8484,7 +8484,7 @@ class BasePainter {
          enlarge = select(doc.body)
             .append('div')
             .attr('id', 'jsroot_enlarge_div')
-            .attr('style', 'position: fixed; margin: 0px; border: 0px; padding: 0px; inset: 1px; background: white; opacity: 0.95; z-index: 100; overflow: hidden;');
+            .attr('style', 'position: fixed; margin: 0px; border: 0px; padding: 0px; left: 1px; top: 1px; bottom: 1px; right: 1px; background: white; opacity: 0.95; z-index: 100; overflow: hidden;');
 
          const rect1 = getElementRect(main),
                rect2 = getElementRect(enlarge);
@@ -11726,8 +11726,10 @@ class ObjectPainter extends BasePainter {
      * Such string typically used as object tooltip.
      * If result string larger than 20 symbols, it will be cutted. */
    getObjectHint() {
-      const hint = this.getItemName() || this.getObjectName() || this.getClassName() || '';
-      return (hint.length <= 20) ? hint : hint.slice(0, 17) + '...';
+      const iname = this.getItemName();
+      if (iname)
+         return (iname.length > 20) ? '...' + iname.slice(iname.length - 17) : iname;
+      return this.getObjectName() || this.getClassName() || '';
    }
 
    /** @summary returns color from current list of colors
@@ -59618,7 +59620,7 @@ class StandaloneMenu extends JSRootMenu {
           block = select('body').append('div')
                                    .attr('id', `${dlg_id}_block`)
                                    .attr('class', 'jsroot_dialog_block')
-                                   .attr('style', 'z-index: 100000; position: absolute; inset: 0px; opacity: 0.2; background-color: white'),
+                                   .attr('style', 'z-index: 100000; position: absolute; left: 0px; top: 0px; bottom: 0px; right: 0px; opacity: 0.2; background-color: white'),
           element = select('body')
                       .append('div')
                       .attr('id', dlg_id)
@@ -59739,7 +59741,7 @@ function getTimeOffset(axis) {
       sof = sof.slice(pos + 1);
       if (!Number.isInteger(val) || (val < min) || (val > max)) return min;
       return val;
-   }, year = next('-', 1970, 2300),
+   }, year = next('-', 1900, 2900),
       month = next('-', 1, 12) - 1,
       day = next(' ', 1, 31),
       hour = next(':', 0, 23),
@@ -64665,7 +64667,7 @@ class TabsDisplay extends MDIDisplay {
 
       if (top.empty()) {
          top = dom.append('div').attr('class', 'jsroot_tabs')
-                  .attr('style', 'display: flex; flex-direction: column; position: absolute; overflow: hidden; inset: 0px 0px 0px 0px');
+                  .attr('style', 'display: flex; flex-direction: column; position: absolute; overflow: hidden; left: 0px; top: 0px; bottom: 0px; right: 0px;');
          labels = top.append('div').attr('class', 'jsroot_tabs_labels')
                      .attr('style', 'white-space: nowrap; position: relative; overflow-x: auto');
          main = top.append('div').attr('class', 'jsroot_tabs_main')
@@ -64712,7 +64714,7 @@ class TabsDisplay extends MDIDisplay {
       const draw_frame = main.append('div')
                            .attr('frame_title', title)
                            .attr('class', 'jsroot_tabs_draw')
-                           .attr('style', 'overflow: hidden; position: absolute; inset: 0px')
+                           .attr('style', 'overflow: hidden; position: absolute; left: 0px; top: 0px; bottom: 0px; right: 0px;')
                            .property('frame_id', frame_id);
 
       this.modifyTabsFrame(frame_id, 'activate');
@@ -65279,7 +65281,7 @@ class BrowserLayout {
           input_style = settings.DarkMode ? `background-color: #222; color: ${text_color}` : '';
 
       injectStyle(
-         '.jsroot_browser { pointer-events: none; position: absolute; inset: 0px; margin: 0px; border: 0px; overflow: hidden; }'+
+         '.jsroot_browser { pointer-events: none; position: absolute; left: 0px; top: 0px; bottom: 0px; right: 0px; margin: 0px; border: 0px; overflow: hidden; }'+
          `.jsroot_draw_area { background-color: ${bkgr_color}; overflow: hidden; margin: 0px; border: 0px; }`+
          `.jsroot_browser_area { color: ${text_color}; background-color: ${bkgr_color}; font-size: 12px; font-family: Verdana; pointer-events: all; box-sizing: initial; }`+
          `.jsroot_browser_area input { ${input_style} }`+
@@ -65301,7 +65303,7 @@ class BrowserLayout {
       main.append('div').attr('id', this.drawing_divid())
                         .classed('jsroot_draw_area', true)
                         .style('position', 'absolute')
-                        .style('inset', '0px');
+                        .style('left', 0).style('top', 0).style('bottom', 0).style('right', 0);
 
       if (with_browser)
          main.append('div').classed('jsroot_browser', true);
@@ -66333,7 +66335,7 @@ class TPadPainter extends ObjectPainter {
       if (this._fixed_size)
          svg.attr('width', rect.width).attr('height', rect.height);
       else
-         svg.style('width', '100%').style('height', '100%').style('inset', '0px');
+         svg.style('width', '100%').style('height', '100%').style('left', 0).style('top', 0).style('bottom', 0).style('right', 0);
 
       svg.style('filter', settings.DarkMode || this.pad?.$dark ? 'invert(100%)' : null);
 
@@ -78528,8 +78530,10 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
             path_err += `M${midx-dlw},${my-yerr1+dend}h${2*dlw}m${-dlw},0v${yerr1+yerr2-2*dend}m${-dlw},0h${2*dlw}`;
          else
             path_err += `M${midx},${my-yerr1+dend}v${yerr1+yerr2-2*dend}`;
-         if (hints_err !== null)
-            hints_err += `M${midx-edx},${my-yerr1}h${2*edx}v${yerr1+yerr2}h${-2*edx}z`;
+         if (hints_err !== null) {
+            const he1 = Math.max(yerr1, 5), he2 = Math.max(yerr2, 5);
+            hints_err += `M${midx-edx},${my-he1}h${2*edx}v${he1+he2}h${-2*edx}z`;
+         }
       }, draw_bin = bin => {
          if (extract_bin(bin)) {
             if (show_text) {
@@ -101996,7 +102000,7 @@ class HierarchyPainter extends BasePainter {
          }
 
          const pr = this.expandItem(this.itemFullName(hitem));
-         if (isPromise(pr))
+         if (isPromise(pr) && isObject(promises))
             promises.push(pr);
          if (hitem._childs !== undefined) hitem._isopen = true;
          return hitem._isopen;
@@ -104718,7 +104722,7 @@ async function buildGUI(gui_element, gui_kind = '') {
       else {
          select('html').style('height', '100%');
          select('body').style('min-height', '100%').style('margin', 0).style('overflow', 'hidden');
-         myDiv.style('position', 'absolute').style('inset', '0px').style('padding', '1px');
+         myDiv.style('position', 'absolute').style('left', 0).style('top', 0).style('bottom', 0).style('right', 0).style('padding', '1px');
       }
    }
 
@@ -107470,12 +107474,13 @@ class THStackPainter extends ObjectPainter {
       lst.Add(clone(stack.fHists.arr[0]), stack.fHists.opt[0]);
       for (let i = 1; i < nhists; ++i) {
          const hnext = clone(stack.fHists.arr[i]),
-             hnextopt = stack.fHists.opt[i],
-             hprev = lst.arr[i-1];
+               hnextopt = stack.fHists.opt[i],
+               hprev = lst.arr[i-1],
+               xnext = hnext.fXaxis, xprev = hprev.fXaxis;
 
-         if ((hnext.fNbins !== hprev.fNbins) ||
-             (hnext.fXaxis.fXmin !== hprev.fXaxis.fXmin) ||
-             (hnext.fXaxis.fXmax !== hprev.fXaxis.fXmax)) {
+         if ((xnext.fNbins !== xprev.fNbins) ||
+             (xnext.fXmin !== xprev.fXmin) ||
+             (xnext.fXmax !== xprev.fXmax)) {
             console.warn(`When drawing THStack, cannot sum-up histograms ${hnext.fName} and ${hprev.fName}`);
             lst.Clear();
             return false;
@@ -110102,8 +110107,14 @@ class TF1Painter extends TH1Painter$2 {
          const np = Math.max(tf1.fNpx, 100);
          let iserror = false;
 
-         if (!tf1.evalPar && !proivdeEvalPar(tf1))
-            iserror = true;
+         if (!tf1.evalPar) {
+            try {
+               if (!proivdeEvalPar(tf1))
+                  iserror = true;
+            } catch {
+               iserror = true;
+            }
+         }
 
          ensureBins(np);
 
@@ -115757,7 +115768,7 @@ class RPadPainter extends RObjectPainter {
            .style('width', '100%')
            .style('height', '100%')
            .style('position', 'absolute')
-           .style('inset', '0px');
+           .style('left', 0).style('top', 0).style('bottom', 0).style('right', 0);
       }
 
       svg.style('filter', settings.DarkMode ? 'invert(100%)' : null);

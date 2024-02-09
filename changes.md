@@ -1,5 +1,13 @@
 # JSROOT changelog
 
+## Changes in 7.5.4
+1. Fix - catch excpetion when parsing TF1 formula
+2. Fix - properly check THStack histograms axes when doing sum
+3. Fix - correctly handle negative offset on time axis
+4. Fix - do not use `inset` because of old Chrome browsers
+5. Fix - properly provide object hints
+
+
 ## Changes in 7.5.3
 1. Fix - draw histograms with negative bins #276
 2. Fix - correctly read TLeaf with fixed-size array
