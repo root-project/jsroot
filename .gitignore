@@ -15,6 +15,7 @@ demo/node/*.pdf
 node_modules/
 libs/three/node_modules/
 libs/d3/node_modules/
+build/jsroot.js
 build/jsroot.min.js
 build/hist2d.js
 build/hist2d.min.js
