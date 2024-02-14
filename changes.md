@@ -19,10 +19,11 @@
 16. Implement custom fonts support in TWebCanvas
 17. List of ROOT/JSON files on server with `&dir=<path>` URL parameter #283
 18. Load TGaxis function from the file #282
-19. Fix - do not add `THStack` and `TMultiGraph` to legend
-20. Fix - correctly use margin in `TPaveText` class
-21. Fix - correctly draw endcaps in legend errors
-22. Fix - vertical position of up elements like {M}^{2} in TLatex
+19. Let display progress messages in modal element #285
+20. Fix - do not add `THStack` and `TMultiGraph` to legend
+21. Fix - correctly use margin in `TPaveText` class
+22. Fix - correctly draw endcaps in legend errors
+23. Fix - vertical position of up elements like {M}^{2} in TLatex
 24. Fix - let draw THStack with diff binning hists
 25. Fix - better tooltip name for the items
 

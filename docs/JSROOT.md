@@ -34,6 +34,7 @@ To automate files loading and objects drawing, one can provide number of URL par
 - expand - item name(s) to be expanded in the hierarchy browser
 - focus - item name to be focused on in the hierarchy browser
 - title - set browser title
+- dir - list files in directory on http server, see https://github.com/root-project/jsroot/issues/283
 - layout - can be 'simple', 'flex', 'tabs', 'gridNxM', 'horizNMK', 'vertNMK'
 - browser - layout of the browser 'fix' (default), 'float', 'no' (hidden), 'off' (fully disabled)
 - nobrowser - do not display file browser (same as browser=no)
@@ -53,9 +54,9 @@ To automate files loading and objects drawing, one can provide number of URL par
 - optfit - fit parameters settings for stat box, default 0 (see TStyle::SetOptFit)
 - statfmt - formatting for float values in stat box, default 6.4g (see TStyle::SetStatFormat)
 - fitfmt - formatting for fit values in stat box, default 5.4g (see TStyle::SetFitFormat)
-- nomenu - disable content menu
+- nomenu - disable context menu
 - notouch - disable touch events handling
-- noprogress - do not show progress messages like scripts loading
+- progress - switch progress display mode between 'off', 'on' and 'modal'
 
 
 For instance:

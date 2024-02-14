@@ -221,7 +221,7 @@ settings = {
    DragAndDrop: !nodejs,
    /** @summary Interactive dragging of TGraph points */
    DragGraphs: true,
-   /** @summary Show progress box */
+   /** @summary Show progress box, can be false, true or 'modal' */
    ProgressBox: !nodejs,
    /** @summary Show additional tool buttons on the canvas, false - disabled, true - enabled, 'popup' - only toggle button */
    ToolBar: nodejs ? false : 'popup',
@@ -58576,42 +58576,54 @@ tgamma: gamma
   * @desc Previous message will be overwritten
   * if no argument specified, any shown messages will be removed
   * @param {string} msg - message to display
-  * @param {number} tmout - optional timeout in milliseconds, after message will disappear
+  * @param {number} [tmout] - optional timeout in milliseconds, after message will disappear
+  * @param {function} [click_handle] - optional handle to process click events
   * @private */
-function showProgress(msg, tmout) {
+function showProgress(msg, tmout, click_handle) {
    if (isBatchMode() || (typeof document === 'undefined'))
       return;
-   const id = 'jsroot_progressbox';
+
+   const id = 'jsroot_progressbox', modal = (settings.ProgressBox === 'modal') && isFunc(internals._modalProgress) ? internals._modalProgress : null;
    let box = select('#' + id);
 
-   if (!settings.ProgressBox)
+   if (!settings.ProgressBox) {
+      if (modal) modal();
       return box.remove();
+   }
 
    if ((arguments.length === 0) || !msg) {
       if ((tmout !== -1) || (!box.empty() && box.property('with_timeout'))) box.remove();
+      if (modal) modal();
       return;
    }
 
-   if (box.empty()) {
-      box = select(document.body)
-              .append('div').attr('id', id)
-              .attr('style', 'position: fixed; min-width: 100px; height: auto; overflow: visible; z-index: 101; border: 1px solid #999; background: #F8F8F8; left: 10px; bottom: 10px;');
-      box.append('p');
+   if (modal) {
+      box.remove();
+      modal(msg, click_handle);
+   } else {
+      if (box.empty()) {
+         box = select(document.body)
+               .append('div').attr('id', id)
+               .attr('style', 'position: fixed; min-width: 100px; height: auto; overflow: visible; z-index: 101; border: 1px solid #999; background: #F8F8F8; left: 10px; bottom: 10px;');
+         box.append('p');
+      }
+
+      box.property('with_timeout', false);
+
+      const p = box.select('p');
+
+      if (isStr(msg)) {
+         p.html(msg)
+          .on('click', isFunc(click_handle) ? click_handle : null)
+          .attr('title', isFunc(click_handle) ? 'Click element to abort current operation' : '');
+      }
+
+      p.attr('style', 'font-size: 10px; margin-left: 10px; margin-right: 10px; margin-top: 3px; margin-bottom: 3px');
    }
-
-   box.property('with_timeout', false);
-
-   if (isStr(msg))
-      box.select('p').html(msg);
-    else {
-      box.html('');
-      box.node().appendChild(msg);
-   }
-
-   box.select('p').attr('style', 'font-size: 10px; margin-left: 10px; margin-right: 10px; margin-top: 3px; margin-bottom: 3px');
 
    if (Number.isFinite(tmout) && (tmout > 0)) {
-      box.property('with_timeout', true);
+      if (!box.empty())
+         box.property('with_timeout', true);
       setTimeout(() => showProgress('', -1), tmout);
    }
 }
@@ -59839,7 +59851,9 @@ class JSRootMenu {
       this.addchk(settings.MoveResize, 'Move and resize', flag => { settings.MoveResize = flag; });
       this.addchk(settings.DragAndDrop, 'Drag and drop', flag => { settings.DragAndDrop = flag; });
       this.addchk(settings.DragGraphs, 'Drag graph points', flag => { settings.DragGraphs = flag; });
-      this.addchk(settings.ProgressBox, 'Progress box', flag => { settings.ProgressBox = flag; });
+      this.addSelectMenu('Progress box', ['off', 'on', 'modal'], isStr(settings.ProgressBox) ? settings.ProgressBox : (settings.ProgressBox ? 'on' : 'off'), value => {
+         settings.ProgressBox = (value === 'off') ? false : (value === ' on' ? true : value);
+      });
       this.add('endsub:');
 
       this.add('sub:Drawing');
@@ -60451,18 +60465,21 @@ class StandaloneMenu extends JSRootMenu {
    }
 
    /** @summary Run modal elements with standalone code */
-   async runModal(title, main_content, args) {
+   createModal(title, main_content, args) {
       if (!args) args = {};
-      const dlg_id = this.menuname + '_dialog';
+
+      if (!args.Ok) args.Ok = 'Ok';
+
+      const modal = { args }, dlg_id = this.menuname + '_dialog';
       select(`#${dlg_id}`).remove();
       select(`#${dlg_id}_block`).remove();
 
-      const w = Math.min(args.width || 450, Math.round(0.9*browser.screenWidth)),
-          block = select('body').append('div')
+      const w = Math.min(args.width || 450, Math.round(0.9*browser.screenWidth));
+      modal.block = select('body').append('div')
                                    .attr('id', `${dlg_id}_block`)
                                    .attr('class', 'jsroot_dialog_block')
-                                   .attr('style', 'z-index: 100000; position: absolute; left: 0px; top: 0px; bottom: 0px; right: 0px; opacity: 0.2; background-color: white'),
-          element = select('body')
+                                   .attr('style', 'z-index: 100000; position: absolute; left: 0px; top: 0px; bottom: 0px; right: 0px; opacity: 0.2; background-color: white');
+      modal.element = select('body')
                       .append('div')
                       .attr('id', dlg_id)
                       .attr('class', 'jsroot_dialog')
@@ -60477,37 +60494,60 @@ class StandaloneMenu extends JSRootMenu {
            `<div style='flex: 0 1 auto; padding: 5px'>${title}</div>`+
            `<div class='jsroot_dialog_content' style='flex: 1 1 auto; padding: 5px'>${main_content}</div>`+
            '<div class=\'jsroot_dialog_footer\' style=\'flex: 0 1 auto; padding: 5px\'>'+
-              '<button class=\'jsroot_dialog_button\' style=\'float: right; width: fit-content; margin-right: 1em\'>Ok</button>'+
+              `<button class='jsroot_dialog_button' style='float: right; width: fit-content; margin-right: 1em'>${args.Ok}</button>`+
               (args.btns ? '<button class=\'jsroot_dialog_button\' style=\'float: right; width: fit-content; margin-right: 1em\'>Cancel</button>' : '') +
          '</div></div>');
 
-      return new Promise(resolveFunc => {
-         element.on('keyup', evnt => {
-            if ((evnt.code === 'Enter') || (evnt.code === 'Escape')) {
-               evnt.preventDefault();
-               evnt.stopPropagation();
-               resolveFunc(evnt.code === 'Enter' ? element.node() : null);
-               element.remove();
-               block.remove();
-            }
-         });
-         element.on('keydown', evnt => {
-            if ((evnt.code === 'Enter') || (evnt.code === 'Escape')) {
-               evnt.preventDefault();
-               evnt.stopPropagation();
-            }
-         });
-         element.selectAll('.jsroot_dialog_button').on('click', evnt => {
-            resolveFunc(args.btns && (select(evnt.target).text() === 'Ok') ? element.node() : null);
-            element.remove();
-            block.remove();
-         });
+      modal.done = function(res) {
+         if (this._done) return;
+         this._done = true;
+         if (isFunc(this.call_back))
+            this.call_back(res);
+         this.element.remove();
+         this.block.remove();
+      };
 
-         let f = element.select('.jsroot_dialog_content').select('input');
-         if (f.empty()) f = element.select('.jsroot_dialog_footer').select('button');
-         if (!f.empty()) f.node().focus();
+      modal.setContent = function(content, btn_text) {
+         if (!this._done) {
+            this.element.select('.jsroot_dialog_content').html(content);
+            if (btn_text) {
+               this.args.Ok = btn_text;
+               this.element.select('.jsroot_dialog_button').text(btn_text);
+            }
+         }
+      };
+
+      modal.element.on('keyup', evnt => {
+         if ((evnt.code === 'Enter') || (evnt.code === 'Escape')) {
+            evnt.preventDefault();
+            evnt.stopPropagation();
+            modal.done(evnt.code === 'Enter' ? modal.element.node() : null);
+         }
+      });
+      modal.element.on('keydown', evnt => {
+         if ((evnt.code === 'Enter') || (evnt.code === 'Escape')) {
+            evnt.preventDefault();
+            evnt.stopPropagation();
+         }
+      });
+      modal.element.selectAll('.jsroot_dialog_button').on('click', evnt => {
+         modal.done(args.btns && (select(evnt.target).text() === args.Ok) ? modal.element.node() : null);
+      });
+
+      let f = modal.element.select('.jsroot_dialog_content').select('input');
+      if (f.empty()) f = modal.element.select('.jsroot_dialog_footer').select('button');
+      if (!f.empty()) f.node().focus();
+      return modal;
+   }
+
+   /** @summary Run modal elements with standalone code */
+   async runModal(title, main_content, args) {
+      const modal = this.createModal(title, main_content, args);
+      return new Promise(resolveFunc => {
+         modal.call_back = resolveFunc;
       });
    }
+
 
 } // class StandaloneMenu
 
@@ -60553,6 +60593,23 @@ function showPainterMenu(evnt, painter, kind) {
       return painter.fillObjectExecMenu(menu, kind);
    }).then(menu => menu.show());
 }
+
+/** @summary Internal method to implement modal progress
+  * @private */
+internals._modalProgress = function(msg, click_handle) {
+   if (!msg || !isStr(msg)) {
+      internals.modal?.done();
+      delete internals.modal;
+      return;
+   }
+
+   if (!internals.modal)
+      internals.modal = new StandaloneMenu().createModal('Progress', msg);
+
+   internals.modal.setContent(msg, click_handle ? 'Abort' : 'Ok');
+
+   internals.modal.call_back = click_handle;
+};
 
 /** @summary Assign handler for context menu for painter draw element
   * @private */
@@ -106346,10 +106403,13 @@ function readStyleFromURL(url) {
 
    const d = decodeUrl(url);
 
-   function get_bool(name, field) {
+   function get_bool(name, field, special) {
       if (d.has(name)) {
          const val = d.get(name);
-         settings[field] = (val !== '0') && (val !== 'false') && (val !== 'off');
+         if (special && (val === special))
+            settings[field] = special;
+         else
+            settings[field] = (val !== '0') && (val !== 'false') && (val !== 'off');
       }
    }
 
@@ -106423,7 +106483,11 @@ function readStyleFromURL(url) {
       settings.Latex = constants$1.Latex.fromString(latex);
 
    if (d.has('nomenu')) settings.ContextMenu = false;
-   if (d.has('noprogress')) settings.ProgressBox = false;
+   if (d.has('noprogress'))
+      settings.ProgressBox = false;
+   else
+      get_bool('progress', 'ProgressBox', 'modal');
+
    if (d.has('notouch')) browser.touches = false;
    if (d.has('adjframe')) settings.CanAdjustFrame = true;
 
@@ -108784,34 +108848,20 @@ function treeShowProgress(handle, str) {
    if (!str)
       return showProgress();
 
-   const main_box = document.createElement('p'),
-         text_node = document.createTextNode(str);
-
-   main_box.appendChild(text_node);
-   main_box.title = 'Click on element to break';
-
-   main_box.onclick = () => {
-      if (!handle._break) handle._break = 0;
-
-      if (++handle._break < 3) {
-         main_box.title = 'Will break after next I/O operation';
-         text_node.nodeValue = 'Breaking ... ';
-         return;
-      }
-      if (isFunc(handle.Abort))
-         handle.Abort();
-      showProgress();
-   };
-
-   showProgress(main_box);
+   showProgress(str, -1, () => { handle._break = 1; });
 }
-
 
 /** @summary Show TTree::Draw progress during processing
   * @private */
 TDrawSelector.prototype.ShowProgress = function(value) {
-   if ((value === undefined) || !Number.isFinite(value))
+   if (this.is_modal === undefined)
+      this.is_modal = (settings.ProgressBox === 'modal');
+
+   if ((value === undefined) || !Number.isFinite(value)) {
+      this.modal?.done();
+      delete this.modal;
       return showProgress();
+   }
 
    if (this._break) {
       treeShowProgress(this, 'Breaking ... ');
@@ -108836,7 +108886,9 @@ TDrawSelector.prototype.ShowProgress = function(value) {
    else if (this.aver_diff < 0.01)
       ndig = 1;
 
-   treeShowProgress(this, `TTree draw ${(value * 100).toFixed(ndig)} % `);
+   const msg = `TTree draw ${(value * 100).toFixed(ndig)} % `;
+
+   treeShowProgress(this, msg);
 };
 
 /** @summary Draw result of tree drawing
