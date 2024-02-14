@@ -1,4 +1,4 @@
-import { settings, browser, gStyle, isBatchMode, isNodeJs, isObject, isFunc, isStr, source_dir, atob_func, btoa_func } from '../core.mjs';
+import { settings, internals, browser, gStyle, isBatchMode, isNodeJs, isObject, isFunc, isStr, source_dir, atob_func, btoa_func } from '../core.mjs';
 import { select as d3_select, pointer as d3_pointer, drag as d3_drag, color as d3_color } from '../d3.mjs';
 import { BasePainter } from '../base/BasePainter.mjs';
 import { resize } from '../base/ObjectPainter.mjs';
@@ -13,37 +13,46 @@ import { getRootColors } from '../base/colors.mjs';
 function showProgress(msg, tmout) {
    if (isBatchMode() || (typeof document === 'undefined'))
       return;
-   const id = 'jsroot_progressbox';
+   const id = 'jsroot_progressbox', modal = (settings.ProgressBox === 'modal') && isFunc(internals._modalProgress) ? internals._modalProgress : null;
    let box = d3_select('#' + id);
 
-   if (!settings.ProgressBox)
+   if (!settings.ProgressBox) {
+      if (modal) modal();
       return box.remove();
+   }
 
    if ((arguments.length === 0) || !msg) {
       if ((tmout !== -1) || (!box.empty() && box.property('with_timeout'))) box.remove();
+      if (modal) modal();
       return;
    }
 
-   if (box.empty()) {
-      box = d3_select(document.body)
-              .append('div').attr('id', id)
-              .attr('style', 'position: fixed; min-width: 100px; height: auto; overflow: visible; z-index: 101; border: 1px solid #999; background: #F8F8F8; left: 10px; bottom: 10px;');
-      box.append('p');
+   if (modal) {
+      box.remove();
+      modal(msg);
+   } else {
+      if (box.empty()) {
+         box = d3_select(document.body)
+               .append('div').attr('id', id)
+               .attr('style', 'position: fixed; min-width: 100px; height: auto; overflow: visible; z-index: 101; border: 1px solid #999; background: #F8F8F8; left: 10px; bottom: 10px;');
+         box.append('p');
+      }
+
+      box.property('with_timeout', false);
+
+      if (isStr(msg))
+         box.select('p').html(msg);
+      else {
+         box.html('');
+         box.node().appendChild(msg);
+      }
+
+      box.select('p').attr('style', 'font-size: 10px; margin-left: 10px; margin-right: 10px; margin-top: 3px; margin-bottom: 3px');
    }
-
-   box.property('with_timeout', false);
-
-   if (isStr(msg))
-      box.select('p').html(msg);
-    else {
-      box.html('');
-      box.node().appendChild(msg);
-   }
-
-   box.select('p').attr('style', 'font-size: 10px; margin-left: 10px; margin-right: 10px; margin-top: 3px; margin-bottom: 3px');
 
    if (Number.isFinite(tmout) && (tmout > 0)) {
-      box.property('with_timeout', true);
+      if (!box.empty())
+         box.property('with_timeout', true);
       setTimeout(() => showProgress('', -1), tmout);
    }
 }

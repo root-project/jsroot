@@ -46,7 +46,7 @@ function treeShowProgress(handle, str) {
   * @private */
 TDrawSelector.prototype.ShowProgress = function(value) {
    if (this.is_modal === undefined)
-      this.is_modal = settings.ModalProgress;
+      this.is_modal = (settings.ProgressBox === 'modal');
 
    if ((value === undefined) || !Number.isFinite(value)) {
       this.modal?.done();
@@ -88,7 +88,7 @@ TDrawSelector.prototype.ShowProgress = function(value) {
       if (!this.modal) {
          showProgress(); // remove any previous message
          createMenu().then(menu => {
-            this.modal = menu.createModal('Performing TTree draw', msg);
+            this.modal = menu.createModal('Performing TTree draw', msg, { Ok: 'Abort' });
             this.modal.call_back = () => { this._break = 1; };
          });
       } else

@@ -91,6 +91,7 @@ function readStyleFromURL(url) {
 
    if (d.has('nomenu')) settings.ContextMenu = false;
    if (d.has('noprogress')) settings.ProgressBox = false;
+   if (d.has('modal_progress')) settings.ProgressBox = 'modal';
    if (d.has('notouch')) browser.touches = false;
    if (d.has('adjframe')) settings.CanAdjustFrame = true;
 

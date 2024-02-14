@@ -1,4 +1,4 @@
-import { settings, browser, gStyle, isObject, isFunc, isStr, clTGaxis, kInspect, getDocument } from '../core.mjs';
+import { settings, internals, browser, gStyle, isObject, isFunc, isStr, clTGaxis, kInspect, getDocument } from '../core.mjs';
 import { rgb as d3_rgb, select as d3_select } from '../d3.mjs';
 import { selectgStyle, saveSettings, readSettings, saveStyle, getColorExec } from './utils.mjs';
 import { getColor } from '../base/colors.mjs';
@@ -1322,6 +1322,8 @@ class StandaloneMenu extends JSRootMenu {
    createModal(title, main_content, args) {
       if (!args) args = {};
 
+      if (!args.Ok) args.Ok = 'Ok';
+
       const modal = {}, dlg_id = this.menuname + '_dialog';
       d3_select(`#${dlg_id}`).remove();
       d3_select(`#${dlg_id}_block`).remove();
@@ -1346,7 +1348,7 @@ class StandaloneMenu extends JSRootMenu {
            `<div style='flex: 0 1 auto; padding: 5px'>${title}</div>`+
            `<div class='jsroot_dialog_content' style='flex: 1 1 auto; padding: 5px'>${main_content}</div>`+
            '<div class=\'jsroot_dialog_footer\' style=\'flex: 0 1 auto; padding: 5px\'>'+
-              '<button class=\'jsroot_dialog_button\' style=\'float: right; width: fit-content; margin-right: 1em\'>Ok</button>'+
+              `<button class='jsroot_dialog_button' style='float: right; width: fit-content; margin-right: 1em'>${args.Ok}</button>`+
               (args.btns ? '<button class=\'jsroot_dialog_button\' style=\'float: right; width: fit-content; margin-right: 1em\'>Cancel</button>' : '') +
          '</div></div>');
 
@@ -1378,7 +1380,7 @@ class StandaloneMenu extends JSRootMenu {
          }
       });
       modal.element.selectAll('.jsroot_dialog_button').on('click', evnt => {
-         modal.done(args.btns && (d3_select(evnt.target).text() === 'Ok') ? modal.element.node() : null);
+         modal.done(args.btns && (d3_select(evnt.target).text() === args.Ok) ? modal.element.node() : null);
       });
 
       let f = modal.element.select('.jsroot_dialog_content').select('input');
@@ -1439,6 +1441,21 @@ function showPainterMenu(evnt, painter, kind) {
       }
       return painter.fillObjectExecMenu(menu, kind);
    }).then(menu => menu.show());
+}
+
+/** @summary Internal method to implement modal progress
+  * @private */
+internals._modalProgress = function(msg) {
+   if (!msg || !isStr(msg)) {
+      internals.modal?.done();
+      delete internals.modal;
+      return;
+   }
+
+   if (!internals.modal)
+      internals.modal = new StandaloneMenu().createModal('Progress bar', msg);
+   else
+      internals.modal.setContent(msg);
 }
 
 /** @summary Assign handler for context menu for painter draw element
