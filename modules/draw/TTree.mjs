@@ -11,7 +11,6 @@ import { TH3Painter } from '../hist/TH3Painter.mjs';
 import { TGraphPainter } from '../hist/TGraphPainter.mjs';
 import { drawPolyMarker3D } from '../draw/TPolyMarker3D.mjs';
 import { showProgress, registerForResize } from '../gui/utils.mjs';
-import { createMenu } from '../gui/menu.mjs';
 
 
 function treeShowProgress(handle, str) {
@@ -20,26 +19,7 @@ function treeShowProgress(handle, str) {
    if (!str)
       return showProgress();
 
-   const main_box = document.createElement('p'),
-         text_node = document.createTextNode(str);
-
-   main_box.appendChild(text_node);
-   main_box.title = 'Click on element to break';
-
-   main_box.onclick = () => {
-      if (!handle._break) handle._break = 0;
-
-      if (++handle._break < 3) {
-         main_box.title = 'Will break after next I/O operation';
-         text_node.nodeValue = 'Breaking ... ';
-         return;
-      }
-      if (isFunc(handle.Abort))
-         handle.Abort();
-      showProgress();
-   };
-
-   showProgress(main_box);
+   showProgress(str, -1, () => { handle._break = 1; });
 }
 
 /** @summary Show TTree::Draw progress during processing
@@ -55,10 +35,7 @@ TDrawSelector.prototype.ShowProgress = function(value) {
    }
 
    if (this._break) {
-      if (!this.is_modal)
-         treeShowProgress(this, 'Breaking ... ');
-      else
-         this.modal?.setContent('Breaking ... ');
+      treeShowProgress(this, 'Breaking ... ');
       return 'break';
    }
 
@@ -82,18 +59,7 @@ TDrawSelector.prototype.ShowProgress = function(value) {
 
    const msg = `TTree draw ${(value * 100).toFixed(ndig)} % `;
 
-   if (!this.is_modal)
-      treeShowProgress(this, msg);
-   else {
-      if (!this.modal) {
-         showProgress(); // remove any previous message
-         createMenu().then(menu => {
-            this.modal = menu.createModal('Performing TTree draw', msg, { Ok: 'Abort' });
-            this.modal.call_back = () => { this._break = 1; };
-         });
-      } else
-         this.modal.setContent(msg);
-   }
+   treeShowProgress(this, msg);
 };
 
 /** @summary Draw result of tree drawing

@@ -8,11 +8,13 @@ import { getRootColors } from '../base/colors.mjs';
   * @desc Previous message will be overwritten
   * if no argument specified, any shown messages will be removed
   * @param {string} msg - message to display
-  * @param {number} tmout - optional timeout in milliseconds, after message will disappear
+  * @param {number} [tmout] - optional timeout in milliseconds, after message will disappear
+  * @param {function} [click_handle] - optional handle to process click events
   * @private */
-function showProgress(msg, tmout) {
+function showProgress(msg, tmout, click_handle) {
    if (isBatchMode() || (typeof document === 'undefined'))
       return;
+
    const id = 'jsroot_progressbox', modal = (settings.ProgressBox === 'modal') && isFunc(internals._modalProgress) ? internals._modalProgress : null;
    let box = d3_select('#' + id);
 
@@ -29,7 +31,7 @@ function showProgress(msg, tmout) {
 
    if (modal) {
       box.remove();
-      modal(msg);
+      modal(msg, click_handle);
    } else {
       if (box.empty()) {
          box = d3_select(document.body)
@@ -41,11 +43,7 @@ function showProgress(msg, tmout) {
       box.property('with_timeout', false);
 
       if (isStr(msg))
-         box.select('p').html(msg);
-      else {
-         box.html('');
-         box.node().appendChild(msg);
-      }
+         box.select('p').html(msg).on('click', isFunc(click_handle) ? click_handle : null);
 
       box.select('p').attr('style', 'font-size: 10px; margin-left: 10px; margin-right: 10px; margin-top: 3px; margin-bottom: 3px');
    }

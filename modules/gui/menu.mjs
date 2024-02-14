@@ -1362,8 +1362,8 @@ class StandaloneMenu extends JSRootMenu {
       };
 
       modal.setContent = function(content) {
-         if (this._done) return;
-         this.element.select('.jsroot_dialog_content').html(content);
+         if (!this._done)
+            this.element.select('.jsroot_dialog_content').html(content);
       };
 
       modal.element.on('keyup', evnt => {
@@ -1445,7 +1445,7 @@ function showPainterMenu(evnt, painter, kind) {
 
 /** @summary Internal method to implement modal progress
   * @private */
-internals._modalProgress = function(msg) {
+internals._modalProgress = function(msg, click_handle) {
    if (!msg || !isStr(msg)) {
       internals.modal?.done();
       delete internals.modal;
@@ -1453,9 +1453,11 @@ internals._modalProgress = function(msg) {
    }
 
    if (!internals.modal)
-      internals.modal = new StandaloneMenu().createModal('Progress bar', msg);
+      internals.modal = new StandaloneMenu().createModal('Progress bar', msg, { Ok: click_handle ? 'Abort' : 'Ok' });
    else
       internals.modal.setContent(msg);
+
+   internals.modal.call_back = click_handle;
 }
 
 /** @summary Assign handler for context menu for painter draw element
