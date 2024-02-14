@@ -48,6 +48,11 @@ TDrawSelector.prototype.ShowProgress = function(value) {
    if ((value === undefined) || !Number.isFinite(value))
       return showProgress();
 
+   if (this._break) {
+      treeShowProgress(this, 'Breaking ... ');
+      return 'break';
+   }
+
    if (this.last_progress !== value) {
       const diff = value - this.last_progress;
       if (!this.aver_diff) this.aver_diff = diff;
@@ -66,7 +71,7 @@ TDrawSelector.prototype.ShowProgress = function(value) {
    else if (this.aver_diff < 0.01)
       ndig = 1;
 
-   treeShowProgress(this, this._break ? 'Breaking ... ' : `TTree draw ${(value * 100).toFixed(ndig)} % `);
+   treeShowProgress(this, `TTree draw ${(value * 100).toFixed(ndig)} % `);
 };
 
 /** @summary Draw result of tree drawing
