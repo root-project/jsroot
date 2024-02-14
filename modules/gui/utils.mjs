@@ -42,10 +42,15 @@ function showProgress(msg, tmout, click_handle) {
 
       box.property('with_timeout', false);
 
-      if (isStr(msg))
-         box.select('p').html(msg).on('click', isFunc(click_handle) ? click_handle : null);
+      const p = box.select('p');
 
-      box.select('p').attr('style', 'font-size: 10px; margin-left: 10px; margin-right: 10px; margin-top: 3px; margin-bottom: 3px');
+      if (isStr(msg)) {
+         p.html(msg)
+          .on('click', isFunc(click_handle) ? click_handle : null)
+          .attr('title', isFunc(click_handle) ? 'Click element to abort current operation' : '');
+      }
+
+      p.attr('style', 'font-size: 10px; margin-left: 10px; margin-right: 10px; margin-top: 3px; margin-bottom: 3px');
    }
 
    if (Number.isFinite(tmout) && (tmout > 0)) {

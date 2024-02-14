@@ -1324,7 +1324,7 @@ class StandaloneMenu extends JSRootMenu {
 
       if (!args.Ok) args.Ok = 'Ok';
 
-      const modal = {}, dlg_id = this.menuname + '_dialog';
+      const modal = { args }, dlg_id = this.menuname + '_dialog';
       d3_select(`#${dlg_id}`).remove();
       d3_select(`#${dlg_id}_block`).remove();
 
@@ -1361,9 +1361,14 @@ class StandaloneMenu extends JSRootMenu {
          this.block.remove();
       };
 
-      modal.setContent = function(content) {
-         if (!this._done)
+      modal.setContent = function(content, btn_text) {
+         if (!this._done) {
             this.element.select('.jsroot_dialog_content').html(content);
+            if (btn_text) {
+               this.args.Ok = btn_text;
+               this.element.select('.jsroot_dialog_button').text(btn_text);
+            }
+         }
       };
 
       modal.element.on('keyup', evnt => {
@@ -1453,12 +1458,12 @@ internals._modalProgress = function(msg, click_handle) {
    }
 
    if (!internals.modal)
-      internals.modal = new StandaloneMenu().createModal('Progress bar', msg, { Ok: click_handle ? 'Abort' : 'Ok' });
-   else
-      internals.modal.setContent(msg);
+      internals.modal = new StandaloneMenu().createModal('Progress', msg);
+
+   internals.modal.setContent(msg, click_handle ? 'Abort' : 'Ok');
 
    internals.modal.call_back = click_handle;
-}
+};
 
 /** @summary Assign handler for context menu for painter draw element
   * @private */
