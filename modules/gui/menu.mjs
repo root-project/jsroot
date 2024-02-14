@@ -1319,18 +1319,19 @@ class StandaloneMenu extends JSRootMenu {
    }
 
    /** @summary Run modal elements with standalone code */
-   async runModal(title, main_content, args) {
+   createModal(title, main_content, args) {
       if (!args) args = {};
-      const dlg_id = this.menuname + '_dialog';
+
+      const modal = {}, dlg_id = this.menuname + '_dialog';
       d3_select(`#${dlg_id}`).remove();
       d3_select(`#${dlg_id}_block`).remove();
 
-      const w = Math.min(args.width || 450, Math.round(0.9*browser.screenWidth)),
-          block = d3_select('body').append('div')
+      const w = Math.min(args.width || 450, Math.round(0.9*browser.screenWidth));
+      modal.block = d3_select('body').append('div')
                                    .attr('id', `${dlg_id}_block`)
                                    .attr('class', 'jsroot_dialog_block')
-                                   .attr('style', 'z-index: 100000; position: absolute; left: 0px; top: 0px; bottom: 0px; right: 0px; opacity: 0.2; background-color: white'),
-          element = d3_select('body')
+                                   .attr('style', 'z-index: 100000; position: absolute; left: 0px; top: 0px; bottom: 0px; right: 0px; opacity: 0.2; background-color: white');
+      modal.element = d3_select('body')
                       .append('div')
                       .attr('id', dlg_id)
                       .attr('class', 'jsroot_dialog')
@@ -1349,33 +1350,51 @@ class StandaloneMenu extends JSRootMenu {
               (args.btns ? '<button class=\'jsroot_dialog_button\' style=\'float: right; width: fit-content; margin-right: 1em\'>Cancel</button>' : '') +
          '</div></div>');
 
-      return new Promise(resolveFunc => {
-         element.on('keyup', evnt => {
-            if ((evnt.code === 'Enter') || (evnt.code === 'Escape')) {
-               evnt.preventDefault();
-               evnt.stopPropagation();
-               resolveFunc(evnt.code === 'Enter' ? element.node() : null);
-               element.remove();
-               block.remove();
-            }
-         });
-         element.on('keydown', evnt => {
-            if ((evnt.code === 'Enter') || (evnt.code === 'Escape')) {
-               evnt.preventDefault();
-               evnt.stopPropagation();
-            }
-         });
-         element.selectAll('.jsroot_dialog_button').on('click', evnt => {
-            resolveFunc(args.btns && (d3_select(evnt.target).text() === 'Ok') ? element.node() : null);
-            element.remove();
-            block.remove();
-         });
+      modal.done = function(res) {
+         if (this._done) return;
+         this._done = true;
+         if (isFunc(this.call_back))
+            this.call_back(res);
+         this.element.remove();
+         this.block.remove();
+      };
 
-         let f = element.select('.jsroot_dialog_content').select('input');
-         if (f.empty()) f = element.select('.jsroot_dialog_footer').select('button');
-         if (!f.empty()) f.node().focus();
+      modal.setContent = function(content) {
+         if (this._done) return;
+         this.element.select('.jsroot_dialog_content').html(content);
+      };
+
+      modal.element.on('keyup', evnt => {
+         if ((evnt.code === 'Enter') || (evnt.code === 'Escape')) {
+            evnt.preventDefault();
+            evnt.stopPropagation();
+            modal.done(evnt.code === 'Enter' ? modal.element.node() : null);
+         }
+      });
+      modal.element.on('keydown', evnt => {
+         if ((evnt.code === 'Enter') || (evnt.code === 'Escape')) {
+            evnt.preventDefault();
+            evnt.stopPropagation();
+         }
+      });
+      modal.element.selectAll('.jsroot_dialog_button').on('click', evnt => {
+         modal.done(args.btns && (d3_select(evnt.target).text() === 'Ok') ? modal.element.node() : null);
+      });
+
+      let f = modal.element.select('.jsroot_dialog_content').select('input');
+      if (f.empty()) f = modal.element.select('.jsroot_dialog_footer').select('button');
+      if (!f.empty()) f.node().focus();
+      return modal;
+   }
+
+   /** @summary Run modal elements with standalone code */
+   async runModal(title, main_content, args) {
+      const modal = this.createModal(title, main_content, args);
+      return new Promise(resolveFunc => {
+         modal.call_back = resolveFunc;
       });
    }
+
 
 } // class StandaloneMenu
 

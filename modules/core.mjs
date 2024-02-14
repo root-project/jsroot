@@ -290,7 +290,9 @@ settings = {
    /** @summary Strip axis labels trailing 0 or replace 10^0 by 1 */
    StripAxisLabels: true,
    /** @summary Draw TF1 by default as curve or line */
-   FuncAsCurve: false
+   FuncAsCurve: false,
+   /** @summary Show modal progress for TTree draw */
+   ModalProgress: true
 },
 
 /** @namespace

@@ -1,4 +1,4 @@
-import { internals, httpRequest, isBatchMode, isFunc, isStr, create, toJSON,
+import { internals, settings, httpRequest, isBatchMode, isFunc, isStr, create, toJSON,
          prROOT, clTObjString, clTGraph, clTPolyMarker3D, clTH1, clTH2, clTH3 } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { kTString, kObject, kAnyP } from '../io.mjs';
@@ -11,6 +11,7 @@ import { TH3Painter } from '../hist/TH3Painter.mjs';
 import { TGraphPainter } from '../hist/TGraphPainter.mjs';
 import { drawPolyMarker3D } from '../draw/TPolyMarker3D.mjs';
 import { showProgress, registerForResize } from '../gui/utils.mjs';
+import { createMenu } from '../gui/menu.mjs';
 
 
 function treeShowProgress(handle, str) {
@@ -41,15 +42,23 @@ function treeShowProgress(handle, str) {
    showProgress(main_box);
 }
 
-
 /** @summary Show TTree::Draw progress during processing
   * @private */
 TDrawSelector.prototype.ShowProgress = function(value) {
-   if ((value === undefined) || !Number.isFinite(value))
+   if (this.is_modal === undefined)
+      this.is_modal = settings.ModalProgress;
+
+   if ((value === undefined) || !Number.isFinite(value)) {
+      this.modal?.done();
+      delete this.modal;
       return showProgress();
+   }
 
    if (this._break) {
-      treeShowProgress(this, 'Breaking ... ');
+      if (!this.is_modal)
+         treeShowProgress(this, 'Breaking ... ');
+      else
+         this.modal?.setContent('Breaking ... ');
       return 'break';
    }
 
@@ -71,7 +80,20 @@ TDrawSelector.prototype.ShowProgress = function(value) {
    else if (this.aver_diff < 0.01)
       ndig = 1;
 
-   treeShowProgress(this, `TTree draw ${(value * 100).toFixed(ndig)} % `);
+   const msg = `TTree draw ${(value * 100).toFixed(ndig)} % `;
+
+   if (!this.is_modal)
+      treeShowProgress(this, msg);
+   else {
+      if (!this.modal) {
+         showProgress(); // remove any previous message
+         createMenu().then(menu => {
+            this.modal = menu.createModal('Performing TTree draw', msg);
+            this.modal.call_back = () => { this._break = 1; };
+         });
+      } else
+         this.modal.setContent(msg);
+   }
 };
 
 /** @summary Draw result of tree drawing
