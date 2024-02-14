@@ -66,7 +66,7 @@ TDrawSelector.prototype.ShowProgress = function(value) {
    else if (this.aver_diff < 0.01)
       ndig = 1;
 
-   treeShowProgress(this, `TTree draw ${(value * 100).toFixed(ndig)} % `);
+   treeShowProgress(this, this._break ? 'Breaking ... ' : `TTree draw ${(value * 100).toFixed(ndig)} % `);
 };
 
 /** @summary Draw result of tree drawing
