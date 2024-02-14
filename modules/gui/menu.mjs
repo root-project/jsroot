@@ -1326,7 +1326,7 @@ class StandaloneMenu extends JSRootMenu {
 
       if (!args.Ok) args.Ok = 'Ok';
 
-      const modal = { args }, dlg_id = this.menuname + '_dialog';
+      const modal = { args }, dlg_id = (this?.menuname ?? 'root_modal') + '_dialog';
       d3_select(`#${dlg_id}`).remove();
       d3_select(`#${dlg_id}_block`).remove();
 
@@ -1460,7 +1460,7 @@ internals._modalProgress = function(msg, click_handle) {
    }
 
    if (!internals.modal)
-      internals.modal = new StandaloneMenu().createModal('Progress', msg);
+      internals.modal = StandaloneMenu.prototype.createModal('Progress', msg);
 
    internals.modal.setContent(msg, click_handle ? 'Abort' : 'Ok');
 
