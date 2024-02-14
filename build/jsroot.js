@@ -1,4 +1,4 @@
-// https://root.cern/js/ v7.5.4
+// https://root.cern/js/ v7.5.5
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -7,11 +7,11 @@ typeof define === 'function' && define.amd ? define(['exports'], factory) :
 
 /** @summary version id
   * @desc For the JSROOT release the string in format 'major.minor.patch' like '7.0.0' */
-const version_id = '7.5.4',
+const version_id = '7.5.x',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '9/02/2024',
+version_date = '14/02/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -96218,8 +96218,10 @@ class TFile {
 
                const progress_offest = sum1 / sum_total, progress_this = (sum2 - sum1) / sum_total;
                xhr.addEventListener('progress', oEvent => {
-                  if (oEvent.lengthComputable)
-                     progress_callback(progress_offest + progress_this * oEvent.loaded / oEvent.total);
+                  if (oEvent.lengthComputable) {
+                     if (progress_callback(progress_offest + progress_this * oEvent.loaded / oEvent.total) === 'break')
+                        xhr.abort();
+                  }
                });
             } else if (first_block_retry && isFunc(xhr.addEventListener)) {
                xhr.addEventListener('progress', oEvent => {
@@ -98651,7 +98653,7 @@ class TDrawSelector extends TSelector {
          const now = new Date().getTime();
          if (now - this.lasttm > this.monitoring) {
             this.lasttm = now;
-            if (this.progress_callback)
+            if (isFunc(this.progress_callback))
                this.progress_callback(this.hist);
          }
       }
@@ -99472,7 +99474,7 @@ async function treeProcess(tree, selector, args) {
 
          const portion = (handle.staged_prev + value * (handle.staged_now - handle.staged_prev)) /
                          (handle.process_max - handle.process_min);
-         handle.selector.ShowProgress(portion);
+        return handle.selector.ShowProgress(portion);
       }
 
       function ProcessBlobs(blobs, places) {
@@ -99631,7 +99633,10 @@ async function treeProcess(tree, selector, args) {
       if (handle.process_max > handle.process_min)
          portion = (handle.staged_prev - handle.process_min) / (handle.process_max - handle.process_min);
 
-      handle.selector.ShowProgress(portion);
+      if (handle.selector.ShowProgress(portion) === 'break') {
+         handle.selector.Terminate(true);
+         return resolveFunc(handle.selector);
+      }
 
       handle.progress_showtm = new Date().getTime();
 
@@ -106996,6 +107001,11 @@ function treeShowProgress(handle, str) {
 TDrawSelector.prototype.ShowProgress = function(value) {
    if ((value === undefined) || !Number.isFinite(value))
       return showProgress();
+
+   if (this._break) {
+      treeShowProgress(this, 'Breaking ... ');
+      return 'break';
+   }
 
    if (this.last_progress !== value) {
       const diff = value - this.last_progress;

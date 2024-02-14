@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in 7.5.x
+1. Fix - abort tree draw operation faster
+
+
 ## Changes in 7.5.4
 1. Fix - catch exception when parsing TF1 formula
 2. Fix - properly check THStack histograms axes when doing sum
