@@ -60470,7 +60470,7 @@ class StandaloneMenu extends JSRootMenu {
 
       if (!args.Ok) args.Ok = 'Ok';
 
-      const modal = { args }, dlg_id = this.menuname + '_dialog';
+      const modal = { args }, dlg_id = (this?.menuname ?? 'root_modal') + '_dialog';
       select(`#${dlg_id}`).remove();
       select(`#${dlg_id}_block`).remove();
 
@@ -60604,7 +60604,7 @@ internals._modalProgress = function(msg, click_handle) {
    }
 
    if (!internals.modal)
-      internals.modal = new StandaloneMenu().createModal('Progress', msg);
+      internals.modal = StandaloneMenu.prototype.createModal('Progress', msg);
 
    internals.modal.setContent(msg, click_handle ? 'Abort' : 'Ok');
 
@@ -108842,53 +108842,38 @@ async function drawPolyMarker3D$1() {
    });
 }
 
-function treeShowProgress(handle, str) {
-   if (isBatchMode() || (typeof document === 'undefined')) return;
-
-   if (!str)
-      return showProgress();
-
-   showProgress(str, -1, () => { handle._break = 1; });
-}
-
 /** @summary Show TTree::Draw progress during processing
   * @private */
 TDrawSelector.prototype.ShowProgress = function(value) {
-   if (this.is_modal === undefined)
-      this.is_modal = (settings.ProgressBox === 'modal');
+   let msg, ret;
+   if ((value === undefined) || !Number.isFinite(value))
+      msg = ret = '';
+   else if (this._break) {
+      msg = 'Breaking ... ';
+      ret = 'break';
+   } else {
+      if (this.last_progress !== value) {
+         const diff = value - this.last_progress;
+         if (!this.aver_diff) this.aver_diff = diff;
+         this.aver_diff = diff * 0.3 + this.aver_diff * 0.7;
+      }
 
-   if ((value === undefined) || !Number.isFinite(value)) {
-      this.modal?.done();
-      delete this.modal;
-      return showProgress();
+      this.last_progress = value;
+
+      let ndig = 0;
+      if (this.aver_diff <= 0)
+         ndig = 0;
+      else if (this.aver_diff < 0.0001)
+         ndig = 3;
+      else if (this.aver_diff < 0.001)
+         ndig = 2;
+      else if (this.aver_diff < 0.01)
+         ndig = 1;
+      msg = `TTree draw ${(value * 100).toFixed(ndig)} % `;
    }
 
-   if (this._break) {
-      treeShowProgress(this, 'Breaking ... ');
-      return 'break';
-   }
-
-   if (this.last_progress !== value) {
-      const diff = value - this.last_progress;
-      if (!this.aver_diff) this.aver_diff = diff;
-      this.aver_diff = diff * 0.3 + this.aver_diff * 0.7;
-   }
-
-   this.last_progress = value;
-
-   let ndig = 0;
-   if (this.aver_diff <= 0)
-      ndig = 0;
-   else if (this.aver_diff < 0.0001)
-      ndig = 3;
-   else if (this.aver_diff < 0.001)
-      ndig = 2;
-   else if (this.aver_diff < 0.01)
-      ndig = 1;
-
-   const msg = `TTree draw ${(value * 100).toFixed(ndig)} % `;
-
-   treeShowProgress(this, msg);
+   showProgress(msg, -1, () => { this._break = 1; });
+   return ret;
 };
 
 /** @summary Draw result of tree drawing
@@ -109293,7 +109278,7 @@ async function drawTree(dom, obj, opt) {
    let pr;
    if (args.expr === 'testio') {
       args.testio = true;
-      args.showProgress = msg => treeShowProgress(args, msg);
+      args.showProgress = msg => showProgress(msg, -1, () => { args._break = 1; });
       pr = treeIOTest(tree, args);
    } else if (args.expr || args.branch)
       pr = treeDraw(tree, args);
