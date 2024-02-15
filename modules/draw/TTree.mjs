@@ -105,18 +105,21 @@ async function treeDrawProgress(obj, final) {
 
    if (!this.last_pr) this.last_pr = Promise.resolve(true);
 
-    return this.last_pr.then(() => {
-       if (this.obj_painter)
-          this.last_pr = this.obj_painter.redrawObject(obj).then(() => this.obj_painter);
-       else {
-          this.last_pr = drawTreeDrawResult(this.drawid, obj).then(p => {
-             this.obj_painter = p;
-             if (!final) this.last_pr = null;
-             return p; // return painter for histogram
-          });
-       }
+   return this.last_pr.then(() => {
+      if (this.obj_painter)
+         this.last_pr = this.obj_painter.redrawObject(obj).then(() => this.obj_painter);
+      else if (!obj) {
+         if (final) console.log('no result after tree drawing');
+         this.last_pr = false; // return false indicating no drawing is done
+      } else {
+         this.last_pr = drawTreeDrawResult(this.drawid, obj).then(p => {
+            this.obj_painter = p;
+            if (!final) this.last_pr = null;
+            return p; // return painter for histogram
+         });
+      }
 
-       return final ? this.last_pr : null;
+      return final ? this.last_pr : null;
    });
 }
 
