@@ -850,9 +850,9 @@ class TPavePainter extends ObjectPainter {
          axis.fTitleOffset = zaxis.fTitleOffset;
          axis.fTitleColor = zaxis.fTitleColor;
          axis.fLineColor = zaxis.fAxisColor;
-         axis.fTextSize = zaxis.fLabelSize;
-         axis.fTextColor = zaxis.fLabelColor;
-         axis.fTextFont = zaxis.fLabelFont;
+         axis.fLabelSize = zaxis.fLabelSize;
+         axis.fLabelColor = zaxis.fLabelColor;
+         axis.fLabelFont = zaxis.fLabelFont;
          axis.fLabelOffset = zaxis.fLabelOffset;
          this.z_handle.setHistPainter(main, 'z');
          this.z_handle.source_axis = zaxis;
