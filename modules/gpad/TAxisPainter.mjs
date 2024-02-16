@@ -1310,12 +1310,12 @@ class TAxisPainter extends ObjectPainter {
 
             title_shift_x = Math.round(title_offest_k * this.titleOffset);
 
-            if ((this.name === 'zaxis') && this.is_gaxis && ('getBoundingClientRect' in axis_g.node())) {
-               // special handling for color palette labels - draw them always on right side
-               const rect = axis_g.node().getBoundingClientRect();
-               if (title_shift_x < rect.width - this.ticksSize)
-                  title_shift_x = Math.round(rect.width - this.ticksSize);
-            }
+            // if ((this.name === 'zaxis') && this.is_gaxis && ('getBoundingClientRect' in axis_g.node())) {
+            //    // special handling for color palette labels - draw them always on right side
+            //   const rect = axis_g.node().getBoundingClientRect();
+            //   if (title_shift_x < rect.width - this.ticksSize)
+            //      title_shift_x = Math.round(rect.width - this.ticksSize);
+            // }
 
             title_shift_y = Math.round(this.titleCenter ? h/2 : (xor_reverse ? h : 0));
 
