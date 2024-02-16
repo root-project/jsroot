@@ -848,7 +848,8 @@ class TPavePainter extends ObjectPainter {
          axis.fTitle = zaxis.fTitle;
          axis.fTitleSize = zaxis.fTitleSize;
          axis.fTitleOffset = zaxis.fTitleOffset;
-         axis.fTitleColor = zaxis.fTitleColor;
+         axis.fTextColor = zaxis.fTitleColor;
+         axis.fTextFont = zaxis.fTitleFont;
          axis.fLineColor = zaxis.fAxisColor;
          axis.fLabelSize = zaxis.fLabelSize;
          axis.fLabelColor = zaxis.fLabelColor;
