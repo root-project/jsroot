@@ -42,7 +42,7 @@ To automate files loading and objects drawing, one can provide number of URL par
 - status - configure status line 'no' (default), 'off' (completely disable), 'size'
 - inject - name of extra JavaScript to load, see several examples in demo/ subdir
 - optimize - drawing optimization 0:off, 1:only large histograms (default), 2:always
-- paltte - id of default color palette, 51..121 - new ROOT6 palette  (default 57)
+- palette - id of default color palette, 51..121 - new ROOT6 palette  (default 57)
 - interactive - enable/disable interactive functions 0 - disable all, 1 - enable all
 - noselect - hide file-selection part in the browser (only when file name is specified)
 - mathjax - use MathJax for latex output
@@ -69,6 +69,7 @@ Following layouts are supported:
 
   - simple - available space used for single object (default)
   - [flex](https://root.cern/js/latest/api.htm#url_syntax_flexible_layout) - creates as many frames as necessary, each can be individually moved/enlarged
+  - [tabs](https://root.cern/js/latest/api.htm#url_syntax_tabs_layout) - tabs for each object drawing
   - [gridNxM](https://root.cern/js/latest/api.htm#url_syntax_grid_layout) - fixed-size grid with NxM frames
   - vertN - N frames sorted in vertical direction (like gridi1xN)
   - horizN - N frames sorted in horizontal direction (like gridiNx1)
