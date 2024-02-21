@@ -26,6 +26,7 @@
 23. Fix - vertical position of up elements like {M}^{2} in TLatex
 24. Fix - let draw THStack with diff binning hists
 25. Fix - better tooltip name for the items
+26. Fix - better logy scale selection
 
 
 ## Changes in 7.5.4
