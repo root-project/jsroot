@@ -85,8 +85,7 @@ class TH1Painter extends THistPainter {
       else
          hsum += histo.getBinContent(0) + histo.getBinContent(this.nbinsx + 1);
 
-      this.stat_entries = hsum;
-      if (histo.fEntries > 1) this.stat_entries = histo.fEntries;
+      this.stat_entries = (histo.fEntries > 1) ? histo.fEntries : hsum;
 
       this.hmin = hmin;
       this.hmax = hmax;
