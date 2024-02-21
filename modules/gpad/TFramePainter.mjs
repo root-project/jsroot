@@ -1830,12 +1830,12 @@ class TFramePainter extends ObjectPainter {
 
       let aname = name;
       if (this.swap_xy) aname = (name === 'x') ? 'y' : 'x';
-      const smin = `scale_${aname}min`,
-          smax = `scale_${aname}max`;
+      const smin = this[`scale_${aname}min`],
+            smax = this[`scale_${aname}max`];
 
-      eps = (this[smax] - this[smin]) * 1e-7;
+      eps = (smax - smin) * 1e-7;
 
-      if ((Math.abs(umin - this[smin]) > eps) || (Math.abs(umax - this[smax]) > eps)) {
+      if ((Math.abs(umin - smin) > eps) || (Math.abs(umax - smax) > eps)) {
          this[`zoom_${aname}min`] = umin;
          this[`zoom_${aname}max`] = umax;
       }
