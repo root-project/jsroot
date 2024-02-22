@@ -467,13 +467,13 @@ class TH1Painter extends THistPainter {
             xaxis = histo.fXaxis,
             exclude_zero = !this.options.Zero,
             show_errors = this.options.Error,
-            show_line = this.options.Line,
             show_curve = this.options.Curve,
             show_text = this.options.Text,
             text_profile = show_text && (this.options.TextKind === 'E') && this.isTProfile() && histo.fBinEntries,
             grpnts = [];
       let res = '', lastbin = false,
           show_markers = this.options.Mark,
+          show_line = this.options.Line,
           startx, startmidx, currx, curry, x, grx, y, gry, curry_min, curry_max, prevy, prevx, i, bestimin, bestimax,
           path_fill = null, path_err = null, path_marker = null, path_line = '',
           hints_err = null, hints_marker = null, hsz = 5,
@@ -487,7 +487,8 @@ class TH1Painter extends THistPainter {
       if (this.options.ErrorKind === 2) {
          if (this.fillatt.empty()) show_markers = true;
                               else path_fill = '';
-      } else if (this.options.Error) {
+      } else if (show_errors) {
+         show_line = false;
          path_err = '';
          hints_err = want_tooltip ? '' : null;
          do_err = true;
