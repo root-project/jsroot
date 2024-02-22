@@ -1807,7 +1807,7 @@ class TFramePainter extends ObjectPainter {
           umax = pad[`fU${name}max`],
           eps = 1e-7;
 
-      if (name === 'x') {
+            if (name === 'x') {
          if ((Math.abs(pad.fX1) > eps) || (Math.abs(pad.fX2 - 1) > eps)) {
             const dx = pad.fX2 - pad.fX1;
             umin = pad.fX1 + dx*pad.fLeftMargin;
@@ -1904,6 +1904,9 @@ class TFramePainter extends ObjectPainter {
          if (opts.ndim > 1) this.applyAxisZoom('y');
          if (opts.ndim > 2) this.applyAxisZoom('z');
 
+         // TODO: extraction of PAD ranges must be done much earlier in hist painter
+         // normally histogram MUST set this ranges
+         // to be fixed after 7.6.0 release
          if (opts.check_pad_range === 'pad_range') {
             const canp = this.getCanvPainter();
             // ignore range set in the online canvas
@@ -1960,7 +1963,7 @@ class TFramePainter extends ObjectPainter {
                                         noexp_changed: this.y_noexp_changed,
                                         symlog: this.swap_xy ? opts.symlog_x : opts.symlog_y,
                                         logcheckmin: (opts.ndim < 2) || this.swap_xy,
-                                        log_min_nz: opts.ymin_nz && (opts.ymin_nz < this.ymax) ? 0.9*opts.ymin_nz : 0,
+                                        log_min_nz: opts.ymin_nz && (opts.ymin_nz <= this.ymax) ? 0.5*opts.ymin_nz : 0,
                                         logminfactor: logminfactorY });
 
       this.y_handle.assignFrameMembers(this, 'y');
