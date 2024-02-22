@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '21/02/2024',
+version_date = '22/02/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -63759,7 +63759,7 @@ class TFramePainter extends ObjectPainter {
           umax = pad[`fU${name}max`],
           eps = 1e-7;
 
-      if (name === 'x') {
+            if (name === 'x') {
          if ((Math.abs(pad.fX1) > eps) || (Math.abs(pad.fX2 - 1) > eps)) {
             const dx = pad.fX2 - pad.fX1;
             umin = pad.fX1 + dx*pad.fLeftMargin;
@@ -63782,12 +63782,12 @@ class TFramePainter extends ObjectPainter {
 
       let aname = name;
       if (this.swap_xy) aname = (name === 'x') ? 'y' : 'x';
-      const smin = `scale_${aname}min`,
-          smax = `scale_${aname}max`;
+      const smin = this[`scale_${aname}min`],
+            smax = this[`scale_${aname}max`];
 
-      eps = (this[smax] - this[smin]) * 1e-7;
+      eps = (smax - smin) * 1e-7;
 
-      if ((Math.abs(umin - this[smin]) > eps) || (Math.abs(umax - this[smax]) > eps)) {
+      if ((Math.abs(umin - smin) > eps) || (Math.abs(umax - smax) > eps)) {
          this[`zoom_${aname}min`] = umin;
          this[`zoom_${aname}max`] = umax;
       }
@@ -63856,6 +63856,9 @@ class TFramePainter extends ObjectPainter {
          if (opts.ndim > 1) this.applyAxisZoom('y');
          if (opts.ndim > 2) this.applyAxisZoom('z');
 
+         // TODO: extraction of PAD ranges must be done much earlier in hist painter
+         // normally histogram MUST set this ranges
+         // to be fixed after 7.6.0 release
          if (opts.check_pad_range === 'pad_range') {
             const canp = this.getCanvPainter();
             // ignore range set in the online canvas
@@ -63912,7 +63915,7 @@ class TFramePainter extends ObjectPainter {
                                         noexp_changed: this.y_noexp_changed,
                                         symlog: this.swap_xy ? opts.symlog_x : opts.symlog_y,
                                         logcheckmin: (opts.ndim < 2) || this.swap_xy,
-                                        log_min_nz: opts.ymin_nz && (opts.ymin_nz < this.ymax) ? 0.9*opts.ymin_nz : 0,
+                                        log_min_nz: opts.ymin_nz && (opts.ymin_nz <= this.ymax) ? 0.5*opts.ymin_nz : 0,
                                         logminfactor: logminfactorY });
 
       this.y_handle.assignFrameMembers(this, 'y');
@@ -63987,7 +63990,7 @@ class TFramePainter extends ObjectPainter {
                                            log: this.swap_xy ? pad.fLogx : pad.fLogy,
                                            noexp_changed: this.y2_noexp_changed,
                                            logcheckmin: (opts.ndim < 2) || this.swap_xy,
-                                           log_min_nz: opts.ymin_nz && (opts.ymin_nz < 0.01*this.y2max) ? 0.3 * opts.ymin_nz : 0,
+                                           log_min_nz: opts.ymin_nz && (opts.ymin_nz < this.y2max) ? 0.5 * opts.ymin_nz : 0,
                                            logminfactor: logminfactorY });
 
          this.y2_handle.assignFrameMembers(this, 'y2');
@@ -70509,11 +70512,13 @@ class TPavePainter extends ObjectPainter {
                   // individual positioning
                   const align = entry.fTextAlign || this.textatt.align,
                         halign = Math.floor(align/10),
+                        valign = align % 10,
+                        tsize = this.textatt.getAltSize(entry.fTextSize, pad_height),
                         x = entry.fX ? entry.fX*width : (halign === 1 ? margin_x : (halign === 2 ? width / 2 : width - margin_x)),
-                        y = entry.fY ? (1 - entry.fY)*height : texty,
+                        y = entry.fY ? (1 - entry.fY)*height : (texty + (valign === 2 ? tsize / 2 : (valign === 3 ? tsize : 0))),
                         sub_g = text_g.append('svg:g');
 
-                  this.startTextDrawing(this.textatt.font, this.textatt.getAltSize(entry.fTextSize, pad_height), sub_g);
+                  this.startTextDrawing(this.textatt.font, tsize, sub_g);
 
                   this.drawText({ align, x, y, text: entry.fTitle, color,
                                   latex: (entry._typename === clTText) ? 0 : 1, draw_g: sub_g, fast });
@@ -71825,7 +71830,7 @@ class THistDrawOptions {
       if (d.check('PMC') && !this._pmc)
          this._pmc = 2;
 
-      if (d.check('L')) { this.Line = true; this.Hist = false; this.Error = false; }
+      if (d.check('L')) { this.Line = true; this.Hist = false; }
       if (d.check('F')) { this.Fill = true; this.need_fillcol = true; }
 
       if (d.check('A')) this.Axis = -1;
@@ -79219,7 +79224,7 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
       this.hmin = hmin;
       this.hmax = hmax;
 
-      this.ymin_nz = hmin_nz; // value can be used to show optimal log scale
+      // this.ymin_nz = hmin_nz; // value can be used to show optimal log scale
 
       if ((this.nbinsx === 0) || ((Math.abs(hmin) < 1e-300) && (Math.abs(hmax) < 1e-300)))
          this.draw_content = false;
@@ -79236,10 +79241,16 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
                this.ymin = 0; this.ymax = hmin * 2;
             }
          } else {
-            const dy = (hmax - hmin) * gStyle.fHistTopMargin;
-            this.ymin = hmin - dy;
-            if ((this.ymin < 0) && (hmin >= 0)) this.ymin = 0;
-            this.ymax = hmax + dy;
+            const pad = this.getPadPainter()?.getRootPad(),
+                  pad_logy = (this.options.BarStyle >= 20) ? pad.fLogx : (pad?.fLogv ?? pad?.fLogy);
+            if (pad_logy) {
+               this.ymin = (hmin_nz || hmin) * 0.5;
+               this.ymax = hmax*2*(0.9/0.95);
+            } else {
+               this.ymin = hmin - (hmax - hmin) * gStyle.fHistTopMargin;
+               if ((this.ymin < 0) && (hmin >= 0)) this.ymin = 0;
+               this.ymax = hmax + (hmax - this.ymin) * gStyle.fHistTopMargin;
+            }
          }
       }
 
@@ -79590,13 +79601,13 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
             xaxis = histo.fXaxis,
             exclude_zero = !this.options.Zero,
             show_errors = this.options.Error,
-            show_line = this.options.Line,
             show_curve = this.options.Curve,
             show_text = this.options.Text,
             text_profile = show_text && (this.options.TextKind === 'E') && this.isTProfile() && histo.fBinEntries,
             grpnts = [];
       let res = '', lastbin = false,
           show_markers = this.options.Mark,
+          show_line = this.options.Line,
           startx, startmidx, currx, curry, x, grx, y, gry, curry_min, curry_max, prevy, prevx, i, bestimin, bestimax,
           path_fill = null, path_err = null, path_marker = null, path_line = '',
           hints_err = null, hints_marker = null, hsz = 5,
@@ -79610,7 +79621,8 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
       if (this.options.ErrorKind === 2) {
          if (this.fillatt.empty()) show_markers = true;
                               else path_fill = '';
-      } else if (this.options.Error) {
+      } else if (show_errors) {
+         show_line = false;
          path_err = '';
          hints_err = want_tooltip ? '' : null;
          do_err = true;
@@ -116422,7 +116434,7 @@ class RFramePainter extends RObjectPainter {
                                         log: this.swap_xy ? this.logx : this.logy,
                                         symlog: this.swap_xy ? opts.symlog_x : opts.symlog_y,
                                         logcheckmin: (opts.ndim < 2) || this.swap_xy,
-                                        log_min_nz: opts.ymin_nz && (opts.ymin_nz < 0.01*this.ymax) ? 0.3 * opts.ymin_nz : 0,
+                                        log_min_nz: opts.ymin_nz && (opts.ymin_nz < this.ymax) ? 0.5 * opts.ymin_nz : 0,
                                         logminfactor: 3e-4 });
 
       this.y_handle.assignFrameMembers(this, 'y');
