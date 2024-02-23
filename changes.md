@@ -1,6 +1,6 @@
 # JSROOT changelog
 
-## Changes in dev
+## Changes in 7.6.0
 1. Implement "tickz" draw option, used for color palette ticks
 2. Implement skewness and kurtosis calculations for histogram stats box
 3. Introduce "logv" draw option for `TH3`, configures logarithmic scale for box volume
