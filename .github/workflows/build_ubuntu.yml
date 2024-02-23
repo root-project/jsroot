@@ -27,6 +27,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y ${{ matrix.cxx }}
+          sudo apt-get install -y xutils-dev libxi-dev libxxf86vm-dev x11proto-xf86vidmode-dev mesa-utils xvfb libgl1-mesa-dri libglapi-mesa libosmesa6 musl-dev libgl1-mesa-dev
+          sudo apt-get install -y build-essential libxi-dev libglu1-mesa-dev libglew-dev pkg-config
           echo "CXX=${{ matrix.cxx }}" >> $GITHUB_ENV
 
       - name: Install dependencies
