@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [18.x]
+        node-version: [18.x, 20.x]
         cxx: [g++-9, g++-10, g++-11, g++-12, g++-13]
 
     steps:
@@ -34,4 +34,7 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci
+
+      - name: Build jsroot.js
+        run: |
           npm run build
