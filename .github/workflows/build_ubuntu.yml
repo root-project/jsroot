@@ -42,8 +42,8 @@ jobs:
       - name: Run demos
         run: |
           cd demo/node; npm install; cd ../..
-          node demo/node/makesvg.js
+          xvfb-run -s "-ac -screen 0 1280x1024x24" node demo/node/makesvg.js
           node demo/node/tree_dump.js
           node demo/node/tree_draw.js
-          node demo/node/geomsvg.js
+          xvfb-run -s "-ac -screen 0 1280x1024x24" node demo/node/geomsvg.js
           node demo/node/selector.js
