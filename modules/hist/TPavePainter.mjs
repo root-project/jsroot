@@ -506,12 +506,11 @@ class TPavePainter extends ObjectPainter {
                   const align = entry.fTextAlign || this.textatt.align,
                         halign = Math.floor(align/10),
                         valign = align % 10,
-                        tsize = this.textatt.getAltSize(entry.fTextSize, pad_height),
                         x = entry.fX ? entry.fX*width : (halign === 1 ? margin_x : (halign === 2 ? width / 2 : width - margin_x)),
-                        y = entry.fY ? (1 - entry.fY)*height : (texty + (valign === 2 ? tsize / 2 : (valign === 3 ? tsize : 0))),
+                        y = entry.fY ? (1 - entry.fY)*height : (texty + (valign === 2 ? stepy / 2 : (valign === 3 ? stepy : 0))),
                         sub_g = text_g.append('svg:g');
 
-                  this.startTextDrawing(this.textatt.font, tsize, sub_g);
+                  this.startTextDrawing(this.textatt.font, this.textatt.getAltSize(entry.fTextSize, pad_height), sub_g);
 
                   this.drawText({ align, x, y, text: entry.fTitle, color,
                                   latex: (entry._typename === clTText) ? 0 : 1, draw_g: sub_g, fast });
