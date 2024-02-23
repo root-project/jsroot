@@ -1,4 +1,4 @@
-// https://root.cern/js/ v7.5.99
+// https://root.cern/js/ v7.6.99
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '22/02/2024',
+version_date = '23/02/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -70513,12 +70513,11 @@ class TPavePainter extends ObjectPainter {
                   const align = entry.fTextAlign || this.textatt.align,
                         halign = Math.floor(align/10),
                         valign = align % 10,
-                        tsize = this.textatt.getAltSize(entry.fTextSize, pad_height),
                         x = entry.fX ? entry.fX*width : (halign === 1 ? margin_x : (halign === 2 ? width / 2 : width - margin_x)),
-                        y = entry.fY ? (1 - entry.fY)*height : (texty + (valign === 2 ? tsize / 2 : (valign === 3 ? tsize : 0))),
+                        y = entry.fY ? (1 - entry.fY)*height : (texty + (valign === 2 ? stepy / 2 : (valign === 3 ? stepy : 0))),
                         sub_g = text_g.append('svg:g');
 
-                  this.startTextDrawing(this.textatt.font, tsize, sub_g);
+                  this.startTextDrawing(this.textatt.font, this.textatt.getAltSize(entry.fTextSize, pad_height), sub_g);
 
                   this.drawText({ align, x, y, text: entry.fTitle, color,
                                   latex: (entry._typename === clTText) ? 0 : 1, draw_g: sub_g, fast });
@@ -70527,7 +70526,7 @@ class TPavePainter extends ObjectPainter {
                } else {
                   // default position
                   if (num_default++ === 0)
-                     this.startTextDrawing(this.textatt.font, height/(nlines * 1.2), text_g, max_font_size);
+                     this.startTextDrawing(this.textatt.font, 0.85*height/nlines, text_g, max_font_size);
 
                   this.drawText({ x: margin_x, y: texty, width: width - 2*margin_x, height: stepy,
                                   align: entry.fTextAlign || this.textatt.align,
