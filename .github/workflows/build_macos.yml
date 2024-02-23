@@ -31,4 +31,15 @@ jobs:
         run: |
           python3 -m pip install setuptools
           npm ci
+
+      - name: Build jsroot.js
+        run: |
           npm run build
+
+      - name: Run demos
+        run: |
+          node demo/node/makesvg.js
+          node demo/node/tree_dump.js
+          node demo/node/tree_draw.js
+          node demo/node/geomsvg.js
+          node demo/node/selector.js
