@@ -29,6 +29,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm install -g node-gyp
+          python3 -m pip install setuptools
           npm ci
           npm run build
