@@ -519,7 +519,7 @@ class TPavePainter extends ObjectPainter {
                } else {
                   // default position
                   if (num_default++ === 0)
-                     this.startTextDrawing(this.textatt.font, height/(nlines * 1.2), text_g, max_font_size);
+                     this.startTextDrawing(this.textatt.font, 0.85*height/nlines, text_g, max_font_size);
 
                   this.drawText({ x: margin_x, y: texty, width: width - 2*margin_x, height: stepy,
                                   align: entry.fTextAlign || this.textatt.align,
