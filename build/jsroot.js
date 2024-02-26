@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '23/02/2024',
+version_date = '26/02/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -95725,6 +95725,21 @@ function addUserStreamer(type, user_streamer) {
    CustomStreamers[type] = user_streamer;
 }
 
+function getTDatimeDate() {
+   const res = new Date();
+   res.setFullYear((this.fDatime >>> 26) + 1995);
+
+   console.log('month', (this.fDatime << 6) >>> 28, 'date', (this.fDatime << 10) >>> 27);
+   res.setMonth(((this.fDatime << 6) >>> 28) - 1);
+   res.setDate((this.fDatime << 10) >>> 27);
+   res.setHours((this.fDatime << 15) >>> 27);
+   res.setMinutes((this.fDatime << 20) >>> 26);
+   res.setSeconds((this.fDatime << 26) >>> 26);
+   res.setMilliseconds(0);
+   console.log(res, res.toUTCString());
+   return res;
+}
+
 
 /** @summary these are streamers which do not handle version regularly
   * @desc used for special classes like TRef or TBasket
@@ -95738,17 +95753,7 @@ const DirectStreamers = {
 
    TDatime(buf, obj) {
       obj.fDatime = buf.ntou4();
-      //  obj.GetDate = function() {
-      //  let res = new Date();
-      //  res.setFullYear((this.fDatime >>> 26) + 1995);
-      //  res.setMonth((this.fDatime << 6) >>> 28);
-      //  res.setDate((this.fDatime << 10) >>> 27);
-      //  res.setHours((this.fDatime << 15) >>> 27);
-      //  res.setMinutes((this.fDatime << 20) >>> 26);
-      //  res.setSeconds((this.fDatime << 26) >>> 26);
-      //  res.setMilliseconds(0);
-      //  return res;
-      //  }
+      obj.getDate = getTDatimeDate;
    },
 
    TKey(buf, key) {
@@ -103259,7 +103264,7 @@ class HierarchyPainter extends BasePainter {
       if (!folder) folder = {};
 
       folder._name = file.fFileName;
-      folder._title = (file.fTitle ? file.fTitle + ', path: ' : '') + file.fFullURL + `, size: ${getSizeStr(file.fEND)}`;
+      folder._title = (file.fTitle ? file.fTitle + ', path: ' : '') + file.fFullURL + `, size: ${getSizeStr(file.fEND)}, created: ${file.fDatimeC.getDate().toUTCString()}`;
       folder._kind = kindTFile;
       folder._file = file;
       folder._fullurl = file.fFullURL;
