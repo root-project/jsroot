@@ -784,7 +784,7 @@ class HierarchyPainter extends BasePainter {
       if (!folder) folder = {};
 
       folder._name = file.fFileName;
-      folder._title = (file.fTitle ? file.fTitle + ', path: ' : '') + file.fFullURL + `, size: ${getSizeStr(file.fEND)}, created: ${file.fDatimeC.getDate().toUTCString()}`;
+      folder._title = (file.fTitle ? file.fTitle + ', path: ' : '') + file.fFullURL + `, size: ${getSizeStr(file.fEND)}, modified: ${file.fDatimeM.getDate().toLocaleString('en-GB')}`;
       folder._kind = kindTFile;
       folder._file = file;
       folder._fullurl = file.fFullURL;
