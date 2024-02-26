@@ -489,15 +489,12 @@ function addUserStreamer(type, user_streamer) {
 function getTDatimeDate() {
    const res = new Date();
    res.setFullYear((this.fDatime >>> 26) + 1995);
-
-   console.log('month', (this.fDatime << 6) >>> 28, 'date', (this.fDatime << 10) >>> 27);
    res.setMonth(((this.fDatime << 6) >>> 28) - 1);
    res.setDate((this.fDatime << 10) >>> 27);
    res.setHours((this.fDatime << 15) >>> 27);
    res.setMinutes((this.fDatime << 20) >>> 26);
    res.setSeconds((this.fDatime << 26) >>> 26);
    res.setMilliseconds(0);
-   console.log(res, res.toUTCString());
    return res;
 }
 
