@@ -2,7 +2,8 @@
 
 ## Changes in dev
 1. Use own "jsroot-gl" package from npm because of gcc13 problems
-2. Let plot file creation or modification date with `&optdate=2` and `&optdate=3` URL parameters
+2. Let plot current time, file creation or modification time with `&optdate=[1,2,3]` URL parameters
+3. Let plot file name, full file name or item name with `&optfile=[1,2,3]` URL parameters
 
 
 ## Changes in 7.6.0

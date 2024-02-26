@@ -59892,8 +59892,9 @@ class JSRootMenu {
       const setStyleField = arg => { gStyle[arg.slice(1)] = parseInt(arg[0]); },
             addStyleIntField = (name, field, arr) => {
          this.add('sub:' + name);
+         const curr = gStyle[field] >= arr.length ? 1 : gStyle[field];
          for (let v = 0; v < arr.length; ++v)
-            this.addchk(gStyle[field] === v, arr[v], `${v}${field}`, setStyleField);
+            this.addchk(curr === v, arr[v], `${v}${field}`, setStyleField);
          this.add('endsub:');
       };
 
@@ -59901,8 +59902,8 @@ class JSRootMenu {
 
       this.add('sub:Canvas');
       this.addColorMenu('Color', gStyle.fCanvasColor, col => { gStyle.fCanvasColor = col; });
-      this.addchk(gStyle.fOptDate, 'Draw date', flag => { gStyle.fOptDate = flag ? 1 : 0; });
-      this.addchk(gStyle.fOptFile, 'Draw item', flag => { gStyle.fOptFile = flag ? 1 : 0; });
+      addStyleIntField('Draw date', 'fOptDate', ['Off', 'Current time', 'File create time', 'File modify time']);
+      addStyleIntField('Draw file', 'fOptFile', ['Off', 'File name', 'Full file URL', 'Item name']);
       this.addSizeMenu('Date X', 0.01, 0.1, 0.01, gStyle.fDateX, x => { gStyle.fDateX = x; }, 'configure gStyle.fDateX for date/item name drawings');
       this.addSizeMenu('Date Y', 0.01, 0.1, 0.01, gStyle.fDateY, y => { gStyle.fDateY = y; }, 'configure gStyle.fDateY for date/item name drawings');
       this.add('endsub:');
@@ -67399,21 +67400,21 @@ class TPadPainter extends ObjectPainter {
    drawItemNameOnCanvas(item_name) {
       const info = this.getLayerSvg('info_layer', this.this_pad_name);
       let df = info.selectChild('.canvas_item');
-      if (!gStyle.fOptFile || !item_name)
+      const fitem = getHPainter().findRootFileForItem(item_name),
+            fname = (gStyle.fOptFile === 3) ? item_name : ((gStyle.fOptFile === 2) ? fitem?._fullurl : fitem?._name);
+
+      if (!gStyle.fOptFile || !fname)
          df.remove();
        else {
          if (df.empty()) df = info.append('text').attr('class', 'canvas_item');
          const rect = this.getPadRect();
          makeTranslate(df, Math.round(rect.width * (1 - gStyle.fDateX)), Math.round(rect.height * (1 - gStyle.fDateY)))
             .style('text-anchor', 'end')
-            .text(item_name);
+            .text(fname);
       }
-      if (((gStyle.fOptDate === 2) || (gStyle.fOptDate === 3)) && item_name) {
-         const file = getHPainter().findRootFileForItem(item_name);
-         if (file) {
-            const dt = gStyle.fOptDate === 2 ? file.fDatimeC : file.fDatimeM;
-            info.selectChild('.canvas_date').text(dt.getDate().toLocaleString('en-GB'));
-         }
+      if (((gStyle.fOptDate === 2) || (gStyle.fOptDate === 3)) && fitem?._file) {
+         const dt = gStyle.fOptDate === 2 ? fitem._file.fDatimeC : fitem._file.fDatimeM;
+         info.selectChild('.canvas_date').text(dt.getDate().toLocaleString('en-GB'));
       }
    }
 
@@ -105150,18 +105151,13 @@ class HierarchyPainter extends BasePainter {
    /** @summary Find ROOT file which corresponds to provided item name
      * @private */
    findRootFileForItem(itemname) {
-      if (!itemname || !isStr(itemname))
-         return null;
-
-      let file = null;
-
-      this.forEachRootFile(item => {
-         const fname = this.itemFullName(item);
-         if (isStr(fname) && (itemname.length >= fname.length) && (itemname.slice(0, fname.length) === fname))
-            file = item._file;
-      });
-
-      return file;
+      let item = this.findItem(itemname);
+      while (item) {
+         if ((item._kind === kindTFile) && item._fullurl && item._file)
+            return item;
+         item = item?._parent;
+      }
+      return null;
    }
 
    /** @summary Open ROOT file
