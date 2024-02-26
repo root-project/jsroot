@@ -67372,20 +67372,24 @@ class TPadPainter extends ObjectPainter {
          dt.remove();
        else {
          if (dt.empty()) dt = info.append('text').attr('class', 'canvas_date');
-         const date = new Date(),
-               posy = Math.round(rect.height * (1 - gStyle.fDateY));
+         const posy = Math.round(rect.height * (1 - gStyle.fDateY)),
+               date = new Date();
          let posx = Math.round(rect.width * gStyle.fDateX);
-         if (!is_batch && (posx < 25)) posx = 25;
-         if (gStyle.fOptDate > 1) date.setTime(gStyle.fOptDate*1000);
+         if (!is_batch && (posx < 25))
+            posx = 25;
+         if (gStyle.fOptDate > 3)
+            date.setTime(gStyle.fOptDate*1000);
+
          makeTranslate(dt, posx, posy)
             .style('text-anchor', 'start')
             .text(date.toLocaleString('en-GB'));
       }
 
-      if (!gStyle.fOptFile || !this.getItemName())
+      const iname = this.getItemName();
+      if (iname)
+         this.drawItemNameOnCanvas(iname);
+      else if (!gStyle.fOptFile)
          info.selectChild('.canvas_item').remove();
-      else
-         this.drawItemNameOnCanvas(this.getItemName());
 
       return true;
    }
@@ -67403,6 +67407,13 @@ class TPadPainter extends ObjectPainter {
          makeTranslate(df, Math.round(rect.width * (1 - gStyle.fDateX)), Math.round(rect.height * (1 - gStyle.fDateY)))
             .style('text-anchor', 'end')
             .text(item_name);
+      }
+      if (((gStyle.fOptDate === 2) || (gStyle.fOptDate === 3)) && item_name) {
+         const file = getHPainter().findRootFileForItem(item_name);
+         if (file) {
+            const dt = gStyle.fOptDate === 2 ? file.fDatimeC : file.fDatimeM;
+            info.selectChild('.canvas_date').text(dt.getDate().toLocaleString('en-GB'));
+         }
       }
    }
 
@@ -95728,15 +95739,12 @@ function addUserStreamer(type, user_streamer) {
 function getTDatimeDate() {
    const res = new Date();
    res.setFullYear((this.fDatime >>> 26) + 1995);
-
-   console.log('month', (this.fDatime << 6) >>> 28, 'date', (this.fDatime << 10) >>> 27);
    res.setMonth(((this.fDatime << 6) >>> 28) - 1);
    res.setDate((this.fDatime << 10) >>> 27);
    res.setHours((this.fDatime << 15) >>> 27);
    res.setMinutes((this.fDatime << 20) >>> 26);
    res.setSeconds((this.fDatime << 26) >>> 26);
    res.setMilliseconds(0);
-   console.log(res, res.toUTCString());
    return res;
 }
 
@@ -103264,7 +103272,7 @@ class HierarchyPainter extends BasePainter {
       if (!folder) folder = {};
 
       folder._name = file.fFileName;
-      folder._title = (file.fTitle ? file.fTitle + ', path: ' : '') + file.fFullURL + `, size: ${getSizeStr(file.fEND)}, created: ${file.fDatimeC.getDate().toUTCString()}`;
+      folder._title = (file.fTitle ? file.fTitle + ', path: ' : '') + file.fFullURL + `, size: ${getSizeStr(file.fEND)}, modified: ${file.fDatimeM.getDate().toLocaleString('en-GB')}`;
       folder._kind = kindTFile;
       folder._file = file;
       folder._fullurl = file.fFullURL;
@@ -105137,6 +105145,23 @@ class HierarchyPainter extends BasePainter {
                func(item);
          }
       }
+   }
+
+   /** @summary Find ROOT file which corresponds to provided item name
+     * @private */
+   findRootFileForItem(itemname) {
+      if (!itemname || !isStr(itemname))
+         return null;
+
+      let file = null;
+
+      this.forEachRootFile(item => {
+         const fname = this.itemFullName(item);
+         if (isStr(fname) && (itemname.length >= fname.length) && (itemname.slice(0, fname.length) === fname))
+            file = item._file;
+      });
+
+      return file;
    }
 
    /** @summary Open ROOT file
