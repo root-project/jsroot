@@ -911,6 +911,21 @@ async function svgToImage(svg, image_format, as_buffer) {
    });
 }
 
-export { getElementRect, getAbsPosInCanvas,
+/** @summary Convert Date object into string used preconfigured time zone
+ * @desc Time zone stored in settings.TimeZone */
+
+function convertDate(dt) {
+   let res = '';
+   if (settings.TimeZone) {
+     try {
+        res = dt.toLocaleString('en', { timeZone: settings.TimeZone });
+     } catch (err) {
+        res = '';
+     }
+   }
+   return res || dt.toLocaleString('en');
+}
+
+export { getElementRect, getAbsPosInCanvas, convertDate,
          DrawOptions, TRandom, floatToString, buildSvgCurve, compressSVG,
          BasePainter, _loadJSDOM, makeTranslate, addHighlightStyle, svgToImage };

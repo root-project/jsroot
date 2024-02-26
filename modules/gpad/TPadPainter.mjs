@@ -4,7 +4,7 @@ import { gStyle, settings, constants, browser, internals, BIT,
          clTObjArray, clTPaveText, clTColor, clTPad, clTStyle, clTLegend, clTHStack, clTMultiGraph, clTLegendEntry } from '../core.mjs';
 import { select as d3_select, rgb as d3_rgb } from '../d3.mjs';
 import { ColorPalette, adoptRootColors, getColorPalette, getGrayColors, extendRootColors, getRGBfromTColor, decodeWebCanvasColors } from '../base/colors.mjs';
-import { getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG, makeTranslate, svgToImage } from '../base/BasePainter.mjs';
+import { getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG, makeTranslate, convertDate, svgToImage } from '../base/BasePainter.mjs';
 import { ObjectPainter, selectActivePad, getActivePad } from '../base/ObjectPainter.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 import { addCustomFont } from '../base/FontHandler.mjs';
@@ -687,7 +687,7 @@ class TPadPainter extends ObjectPainter {
 
          makeTranslate(dt, posx, posy)
             .style('text-anchor', 'start')
-            .text(date.toLocaleString('en', { timeZone: settings.timeZone }));
+            .text(convertDate(date));
       }
 
       const iname = this.getItemName();
@@ -718,7 +718,7 @@ class TPadPainter extends ObjectPainter {
       }
       if (((gStyle.fOptDate === 2) || (gStyle.fOptDate === 3)) && fitem?._file) {
          const dt = gStyle.fOptDate === 2 ? fitem._file.fDatimeC : fitem._file.fDatimeM;
-         info.selectChild('.canvas_date').text(dt.getDate().toLocaleString('en', { timeZone: settings.timeZone }));
+         info.selectChild('.canvas_date').text(convertDate(dt.getDate()));
       }
    }
 
