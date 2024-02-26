@@ -2661,6 +2661,23 @@ class HierarchyPainter extends BasePainter {
       }
    }
 
+   /** @summary Find ROOT file which corresponds to provided item name
+     * @private */
+   findRootFileForItem(itemname) {
+      if (!itemname || !isStr(itemname))
+         return null;
+
+      let file = null;
+
+      this.forEachRootFile(item => {
+         const fname = this.itemFullName(item);
+         if (isStr(fname) && (itemname.length >= fname.length) && (itemname.slice(0, fname.length) === fname))
+            file = item._file;
+      });
+
+      return file;
+   }
+
    /** @summary Open ROOT file
      * @param {string} filepath - URL to ROOT file, argument for openFile
      * @return {Promise} when file is opened */
