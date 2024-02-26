@@ -292,7 +292,7 @@ settings = {
    /** @summary Draw TF1 by default as curve or line */
    FuncAsCurve: false,
    /** @summary Time zone used for date/time display of file time */
-   TimeZone: 'UTC'
+   TimeZone: ''
 },
 
 /** @namespace

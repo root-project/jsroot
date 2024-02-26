@@ -676,7 +676,8 @@ class TPadPainter extends ObjectPainter {
       if (!gStyle.fOptDate)
          dt.remove();
        else {
-         if (dt.empty()) dt = info.append('text').attr('class', 'canvas_date');
+         if (dt.empty())
+             dt = info.append('text').attr('class', 'canvas_date');
          const posy = Math.round(rect.height * (1 - gStyle.fDateY)),
                date = new Date();
          let posx = Math.round(rect.width * gStyle.fDateX);
@@ -710,15 +711,16 @@ class TPadPainter extends ObjectPainter {
       if (!gStyle.fOptFile || !fname)
          df.remove();
        else {
-         if (df.empty()) df = info.append('text').attr('class', 'canvas_item');
+         if (df.empty())
+            df = info.append('text').attr('class', 'canvas_item');
          const rect = this.getPadRect();
          makeTranslate(df, Math.round(rect.width * (1 - gStyle.fDateX)), Math.round(rect.height * (1 - gStyle.fDateY)))
             .style('text-anchor', 'end')
             .text(fname);
       }
       if (((gStyle.fOptDate === 2) || (gStyle.fOptDate === 3)) && fitem?._file) {
-         const dt = gStyle.fOptDate === 2 ? fitem._file.fDatimeC : fitem._file.fDatimeM;
-         info.selectChild('.canvas_date').text(convertDate(dt.getDate()));
+         info.selectChild('.canvas_date')
+             .text(convertDate(gStyle.fOptDate === 2 ? fitem._file.fDatimeC.getDate() : fitem._file.fDatimeM.getDate()));
       }
    }
 
