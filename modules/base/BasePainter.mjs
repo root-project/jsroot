@@ -917,12 +917,12 @@ function convertDate(dt) {
    let res = '';
    if (settings.TimeZone && isStr(settings.TimeZone)) {
      try {
-        res = dt.toLocaleString('en', { timeZone: settings.TimeZone });
+        res = dt.toLocaleString('en-GB', { timeZone: settings.TimeZone });
      } catch (err) {
         res = '';
      }
    }
-   return res || dt.toLocaleString('en');
+   return res || dt.toLocaleString('en-GB');
 }
 
 export { getElementRect, getAbsPosInCanvas, convertDate,
