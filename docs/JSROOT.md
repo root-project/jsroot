@@ -55,7 +55,8 @@ To automate files loading and objects drawing, one can provide number of URL par
 - statfmt - formatting for float values in stat box, default 6.4g (see TStyle::SetStatFormat)
 - fitfmt - formatting for fit values in stat box, default 5.4g (see TStyle::SetFitFormat)
 - optdate - plot specified date on the canvas, 1 - current time, 2 - file creation date, 3 - file modification date
-- opttitle - plot item name on the canvas
+- optfile - plot file name on the canvas, 1 - file name, 2 - full file URL, 3 - object item name
+- opttitle=0 - disable drawing of object title in the canvas
 - nomenu - disable context menu
 - notouch - disable touch events handling
 - progress - switch progress display mode between 'off', 'on' and 'modal'

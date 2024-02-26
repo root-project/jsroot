@@ -705,7 +705,7 @@ class TPadPainter extends ObjectPainter {
       const info = this.getLayerSvg('info_layer', this.this_pad_name);
       let df = info.selectChild('.canvas_item');
       const fitem = getHPainter().findRootFileForItem(item_name),
-            fname = (gStyle.fOptFile === 2) ? item_name : fitem?._name;
+            fname = (gStyle.fOptFile === 3) ? item_name : ((gStyle.fOptFile === 2) ? fitem?._fullurl : fitem?._name);
 
       if (!gStyle.fOptFile || !fname)
          df.remove();
