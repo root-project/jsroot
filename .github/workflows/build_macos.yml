@@ -32,6 +32,10 @@ jobs:
           python3 -m pip install setuptools
           npm ci
 
+      - name: Run eslint
+        run: |
+          npm run check
+
       - name: Build jsroot.js
         run: |
           npm run build
