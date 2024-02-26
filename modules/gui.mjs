@@ -149,6 +149,12 @@ function readStyleFromURL(url) {
    get_int_style('optdate', 'fOptDate', 1);
    get_int_style('optfile', 'fOptFile', 1);
    get_int_style('opttitle', 'fOptTitle', 1);
+   if (d.has('utc')) {
+      const v = d.get('utc');
+      settings.timeZone = Number.isInteger(v) ? `UTC${v}` : 'UTC';
+   } else if (d.has('timezone'))
+      settings.timeZone = d.get('timezone');
+
    gStyle.fStatFormat = d.get('statfmt', gStyle.fStatFormat);
    gStyle.fFitFormat = d.get('fitfmt', gStyle.fFitFormat);
 }

@@ -759,6 +759,7 @@ class JSRootMenu {
       this.add('sub:Canvas');
       this.addColorMenu('Color', gStyle.fCanvasColor, col => { gStyle.fCanvasColor = col; });
       addStyleIntField('Draw date', 'fOptDate', ['Off', 'Current time', 'File create time', 'File modify time']);
+      this.add(`Time zone: ${settings.timeZone}`, () => this.input('Input time zone like GMT-08:00 or UTC', settings.timeZone, 'string').then(val => { settings.timeZone = val; }));
       addStyleIntField('Draw file', 'fOptFile', ['Off', 'File name', 'Full file URL', 'Item name']);
       this.addSizeMenu('Date X', 0.01, 0.1, 0.01, gStyle.fDateX, x => { gStyle.fDateX = x; }, 'configure gStyle.fDateX for date/item name drawings');
       this.addSizeMenu('Date Y', 0.01, 0.1, 0.01, gStyle.fDateY, y => { gStyle.fDateY = y; }, 'configure gStyle.fDateY for date/item name drawings');

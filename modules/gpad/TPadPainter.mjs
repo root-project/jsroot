@@ -687,7 +687,7 @@ class TPadPainter extends ObjectPainter {
 
          makeTranslate(dt, posx, posy)
             .style('text-anchor', 'start')
-            .text(date.toLocaleString('en-GB'));
+            .text(date.toLocaleString('en', { timeZone: settings.timeZone }));
       }
 
       const iname = this.getItemName();
@@ -718,7 +718,7 @@ class TPadPainter extends ObjectPainter {
       }
       if (((gStyle.fOptDate === 2) || (gStyle.fOptDate === 3)) && fitem?._file) {
          const dt = gStyle.fOptDate === 2 ? fitem._file.fDatimeC : fitem._file.fDatimeM;
-         info.selectChild('.canvas_date').text(dt.getDate().toLocaleString('en-GB'));
+         info.selectChild('.canvas_date').text(dt.getDate().toLocaleString('en', { timeZone: settings.timeZone }));
       }
    }
 
