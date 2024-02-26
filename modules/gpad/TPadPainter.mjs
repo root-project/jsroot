@@ -704,21 +704,21 @@ class TPadPainter extends ObjectPainter {
    drawItemNameOnCanvas(item_name) {
       const info = this.getLayerSvg('info_layer', this.this_pad_name);
       let df = info.selectChild('.canvas_item');
-      if (!gStyle.fOptFile || !item_name)
+      const fitem = getHPainter().findRootFileForItem(item_name),
+            fname = (gStyle.fOptFile === 2) ? item_name : fitem?._name;
+
+      if (!gStyle.fOptFile || !fname)
          df.remove();
        else {
          if (df.empty()) df = info.append('text').attr('class', 'canvas_item');
          const rect = this.getPadRect();
          makeTranslate(df, Math.round(rect.width * (1 - gStyle.fDateX)), Math.round(rect.height * (1 - gStyle.fDateY)))
             .style('text-anchor', 'end')
-            .text(item_name);
+            .text(fname);
       }
-      if (((gStyle.fOptDate === 2) || (gStyle.fOptDate === 3)) && item_name) {
-         const file = getHPainter().findRootFileForItem(item_name);
-         if (file) {
-            const dt = gStyle.fOptDate === 2 ? file.fDatimeC : file.fDatimeM;
-            info.selectChild('.canvas_date').text(dt.getDate().toLocaleString('en-GB'));
-         }
+      if (((gStyle.fOptDate === 2) || (gStyle.fOptDate === 3)) && fitem?._file) {
+         const dt = gStyle.fOptDate === 2 ? fitem._file.fDatimeC : fitem._file.fDatimeM;
+         info.selectChild('.canvas_date').text(dt.getDate().toLocaleString('en-GB'));
       }
    }
 
