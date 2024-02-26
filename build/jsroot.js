@@ -296,7 +296,9 @@ settings = {
    /** @summary Strip axis labels trailing 0 or replace 10^0 by 1 */
    StripAxisLabels: true,
    /** @summary Draw TF1 by default as curve or line */
-   FuncAsCurve: false
+   FuncAsCurve: false,
+   /** @summary Time zone used for date/time display of file time */
+   TimeZone: ''
 },
 
 /** @namespace
@@ -10504,6 +10506,20 @@ async function svgToImage(svg, image_format, as_buffer) {
 
       image.src = img_src;
    });
+}
+
+/** @summary Convert Date object into string used preconfigured time zone
+ * @desc Time zone stored in settings.TimeZone */
+function convertDate(dt) {
+   let res = '';
+   if (settings.TimeZone && isStr(settings.TimeZone)) {
+     try {
+        res = dt.toLocaleString('en-GB', { timeZone: settings.TimeZone });
+     } catch (err) {
+        res = '';
+     }
+   }
+   return res || dt.toLocaleString('en-GB');
 }
 
 const clTLinearGradient = 'TLinearGradient', clTRadialGradient = 'TRadialGradient',
@@ -59903,6 +59919,7 @@ class JSRootMenu {
       this.add('sub:Canvas');
       this.addColorMenu('Color', gStyle.fCanvasColor, col => { gStyle.fCanvasColor = col; });
       addStyleIntField('Draw date', 'fOptDate', ['Off', 'Current time', 'File create time', 'File modify time']);
+      this.add(`Time zone: ${settings.TimeZone}`, () => this.input('Input time zone like UTC. empty string - local timezone', settings.TimeZone, 'string').then(val => { settings.TimeZone = val; }));
       addStyleIntField('Draw file', 'fOptFile', ['Off', 'File name', 'Full file URL', 'Item name']);
       this.addSizeMenu('Date X', 0.01, 0.1, 0.01, gStyle.fDateX, x => { gStyle.fDateX = x; }, 'configure gStyle.fDateX for date/item name drawings');
       this.addSizeMenu('Date Y', 0.01, 0.1, 0.01, gStyle.fDateY, y => { gStyle.fDateY = y; }, 'configure gStyle.fDateY for date/item name drawings');
@@ -67372,7 +67389,8 @@ class TPadPainter extends ObjectPainter {
       if (!gStyle.fOptDate)
          dt.remove();
        else {
-         if (dt.empty()) dt = info.append('text').attr('class', 'canvas_date');
+         if (dt.empty())
+             dt = info.append('text').attr('class', 'canvas_date');
          const posy = Math.round(rect.height * (1 - gStyle.fDateY)),
                date = new Date();
          let posx = Math.round(rect.width * gStyle.fDateX);
@@ -67383,7 +67401,7 @@ class TPadPainter extends ObjectPainter {
 
          makeTranslate(dt, posx, posy)
             .style('text-anchor', 'start')
-            .text(date.toLocaleString('en-GB'));
+            .text(convertDate(date));
       }
 
       const iname = this.getItemName();
@@ -67406,15 +67424,16 @@ class TPadPainter extends ObjectPainter {
       if (!gStyle.fOptFile || !fname)
          df.remove();
        else {
-         if (df.empty()) df = info.append('text').attr('class', 'canvas_item');
+         if (df.empty())
+            df = info.append('text').attr('class', 'canvas_item');
          const rect = this.getPadRect();
          makeTranslate(df, Math.round(rect.width * (1 - gStyle.fDateX)), Math.round(rect.height * (1 - gStyle.fDateY)))
             .style('text-anchor', 'end')
             .text(fname);
       }
       if (((gStyle.fOptDate === 2) || (gStyle.fOptDate === 3)) && fitem?._file) {
-         const dt = gStyle.fOptDate === 2 ? fitem._file.fDatimeC : fitem._file.fDatimeM;
-         info.selectChild('.canvas_date').text(dt.getDate().toLocaleString('en-GB'));
+         info.selectChild('.canvas_date')
+             .text(convertDate(gStyle.fOptDate === 2 ? fitem._file.fDatimeC.getDate() : fitem._file.fDatimeM.getDate()));
       }
    }
 
@@ -103273,7 +103292,7 @@ class HierarchyPainter extends BasePainter {
       if (!folder) folder = {};
 
       folder._name = file.fFileName;
-      folder._title = (file.fTitle ? file.fTitle + ', path: ' : '') + file.fFullURL + `, size: ${getSizeStr(file.fEND)}, modified: ${file.fDatimeM.getDate().toLocaleString('en-GB')}`;
+      folder._title = (file.fTitle ? file.fTitle + ', path: ' : '') + file.fFullURL + `, size: ${getSizeStr(file.fEND)}, modified: ${convertDate(file.fDatimeM.getDate())}`;
       folder._kind = kindTFile;
       folder._file = file;
       folder._fullurl = file.fFullURL;
@@ -106579,6 +106598,14 @@ function readStyleFromURL(url) {
    get_int_style('optdate', 'fOptDate', 1);
    get_int_style('optfile', 'fOptFile', 1);
    get_int_style('opttitle', 'fOptTitle', 1);
+   if (d.has('utc'))
+      settings.TimeZone = 'UTC';
+   else if (d.has('timezone')) {
+      settings.TimeZone = d.get('timezone');
+      if ((settings.TimeZone === 'default') || (settings.TimeZone === 'dflt'))
+         settings.TimeZone = '';
+   }
+
    gStyle.fStatFormat = d.get('statfmt', gStyle.fStatFormat);
    gStyle.fFitFormat = d.get('fitfmt', gStyle.fFitFormat);
 }
@@ -125777,6 +125804,7 @@ exports.cleanup = cleanup;
 exports.clone = clone;
 exports.compressSVG = compressSVG;
 exports.constants = constants$1;
+exports.convertDate = convertDate;
 exports.create = create$1;
 exports.createGeoPainter = createGeoPainter;
 exports.createHistogram = createHistogram;
