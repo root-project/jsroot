@@ -11,7 +11,7 @@ import { addCustomFont } from '../base/FontHandler.mjs';
 import { addDragHandler } from './TFramePainter.mjs';
 import { createMenu, closeMenu } from '../gui/menu.mjs';
 import { ToolbarIcons, registerForResize, saveFile } from '../gui/utils.mjs';
-import { BrowserLayout } from '../gui/display.mjs';
+import { BrowserLayout, getHPainter } from '../gui/display.mjs';
 
 
 const clTButton = 'TButton', kIsGrayscale = BIT(22);
@@ -677,20 +677,24 @@ class TPadPainter extends ObjectPainter {
          dt.remove();
        else {
          if (dt.empty()) dt = info.append('text').attr('class', 'canvas_date');
-         const date = new Date(),
-               posy = Math.round(rect.height * (1 - gStyle.fDateY));
+         const posy = Math.round(rect.height * (1 - gStyle.fDateY)),
+               date = new Date();
          let posx = Math.round(rect.width * gStyle.fDateX);
-         if (!is_batch && (posx < 25)) posx = 25;
-         if (gStyle.fOptDate > 1) date.setTime(gStyle.fOptDate*1000);
+         if (!is_batch && (posx < 25))
+            posx = 25;
+         if (gStyle.fOptDate > 3)
+            date.setTime(gStyle.fOptDate*1000);
+
          makeTranslate(dt, posx, posy)
             .style('text-anchor', 'start')
             .text(date.toLocaleString('en-GB'));
       }
 
-      if (!gStyle.fOptFile || !this.getItemName())
+      const iname = this.getItemName();
+      if (iname)
+         this.drawItemNameOnCanvas(iname);
+      else if (!gStyle.fOptFile)
          info.selectChild('.canvas_item').remove();
-      else
-         this.drawItemNameOnCanvas(this.getItemName());
 
       return true;
    }
@@ -708,6 +712,13 @@ class TPadPainter extends ObjectPainter {
          makeTranslate(df, Math.round(rect.width * (1 - gStyle.fDateX)), Math.round(rect.height * (1 - gStyle.fDateY)))
             .style('text-anchor', 'end')
             .text(item_name);
+      }
+      if (((gStyle.fOptDate === 2) || (gStyle.fOptDate === 3)) && item_name) {
+         const file = getHPainter().findRootFileForItem(item_name);
+         if (file) {
+            const dt = gStyle.fOptDate === 2 ? file.fDatimeC : file.fDatimeM;
+            info.selectChild('.canvas_date').text(dt.getDate().toLocaleString('en-GB'));
+         }
       }
    }
 
