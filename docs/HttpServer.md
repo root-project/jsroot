@@ -382,6 +382,7 @@ The following requests can be performed:
 | :----------- | :---------------- |
 |  `root.bin`   | binary data produced by object streaming with `TBufferFile` |
 |  `root.json`  | ROOT JSON representation for object and objects members |
+|  `file.root`  | Creates TMemFile with the only object, from ROOT 6.32 |
 |  `root.xml`   | ROOT XML representation |
 |  `root.png`   | PNG image (if object drawing implemented) |
 |  `root.gif`   | GIF image |
