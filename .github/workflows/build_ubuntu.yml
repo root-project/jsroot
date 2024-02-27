@@ -1,4 +1,4 @@
-name: Test building on latest Ubuntu
+name: Test jsroot on Ubuntu
 
 on:
   push:

@@ -1,4 +1,4 @@
-name: Test building on latest MacOS
+name: Test jsroot on MacOS
 
 on:
   push:
