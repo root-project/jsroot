@@ -48,6 +48,7 @@ jobs:
       - name: Run demos
         run: |
           cd demo/node; npm install; cd ../..
+          node demo/node/makesvg.js
           node demo/node/tree_dump.js
           node demo/node/tree_draw.js
           node demo/node/selector.js
