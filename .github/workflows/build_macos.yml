@@ -16,12 +16,17 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          xcode-version: '15.3'
           cache: 'npm'
+
+      - name: Configure xcode usage
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
 
       - name: Set up C++ compiler (macOS)
         run: |
