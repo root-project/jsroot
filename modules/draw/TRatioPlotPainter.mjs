@@ -98,8 +98,11 @@ class TRatioPlotPainter extends ObjectPainter {
          const h = low_main.getHisto();
          h.fXaxis.fTitle = 'x';
 
-         // rescale label to lower pad sizes
-         lbl_size = lbl_size / Math.min(low_p.getPadWidth(), low_p.getPadHeight());
+         if (h.fYaxis.fLabelSize > 1)
+            lbl_size = h.fYaxis.fLabelSize;
+         else
+            // rescale label to lower pad sizes
+            lbl_size = lbl_size / Math.min(low_p.getPadWidth(), low_p.getPadHeight());
 
          h.fXaxis.fLabelSize = lbl_size;
          h.fXaxis.fTitleSize = lbl_size;
