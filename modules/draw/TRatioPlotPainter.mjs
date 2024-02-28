@@ -49,14 +49,16 @@ class TRatioPlotPainter extends ObjectPainter {
             low_fp = low_p?.getFramePainter();
       let lbl_size = 20, promise_up = Promise.resolve(true);
 
-      if (up_p && up_main && up_fp && low_fp && !up_p._ratio_configured) {
-         up_p._ratio_configured = true;
+      if (up_p && up_main && up_fp && low_fp) {
          up_main.options.Axis = 0; // draw both axes
 
-         lbl_size = up_main.getHisto().fYaxis.fLabelSize;
+         const h = up_main.getHisto();
+         if (!this._axisLabelSize)
+            this._axisLabelSize = h.fYaxis.fLabelSize;
+
+         lbl_size = this._axisLabelSize;
          if (lbl_size < 1) lbl_size = Math.round(lbl_size*Math.min(up_p.getPadWidth(), up_p.getPadHeight()));
 
-         const h = up_main.getHisto();
          h.fXaxis.fLabelSize = 0; // do not draw X axis labels
          h.fXaxis.fTitle = ''; // do not draw X axis title
          h.fYaxis.fLabelSize = lbl_size;
@@ -65,6 +67,11 @@ class TRatioPlotPainter extends ObjectPainter {
          up_p.getRootPad().fTicky = 1;
 
          promise_up = up_p.redrawPad().then(() => {
+            if (up_p._ratio_configured)
+               return this;
+
+            up_p._ratio_configured = true;
+
             up_fp.o_zoom = up_fp.zoom;
             up_fp._ratio_low_fp = low_fp;
             up_fp._ratio_painter = this;
@@ -84,15 +91,14 @@ class TRatioPlotPainter extends ObjectPainter {
                this._ratio_low_fp.fX2NDC = this.fX2NDC;
                this._ratio_low_fp.o_sizeChanged();
             };
-            return true;
+            return this;
          });
       }
 
       return promise_up.then(() => {
-         if (!low_p || !low_main || !low_fp || !up_fp || low_p._ratio_configured)
+         if (!low_p || !low_main || !low_fp || !up_fp)
             return this;
 
-         low_p._ratio_configured = true;
          low_main.options.Axis = 0; // draw both axes
          const h = low_main.getHisto();
          h.fXaxis.fTitle = 'x';
@@ -131,6 +137,9 @@ class TRatioPlotPainter extends ObjectPainter {
          }
 
          return Promise.all(arr).then(() => low_fp.zoom(up_fp.scale_xmin, up_fp.scale_xmax)).then(() => {
+            if (low_p._ratio_configured)
+               return this;
+            low_p._ratio_configured = true;
             low_fp.o_zoom = low_fp.zoom;
             low_fp._ratio_up_fp = up_fp;
             low_fp._ratio_painter = this;
