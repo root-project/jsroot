@@ -47,7 +47,7 @@ class TRatioPlotPainter extends ObjectPainter {
             low_p = pp.findPainterFor(ratio.fLowerPad, 'lower_pad', clTPad),
             low_main = low_p?.getMainPainter(),
             low_fp = low_p?.getFramePainter();
-      let lbl_size = 12, promise_up = Promise.resolve(true);
+      let promise_up = Promise.resolve(true);
 
       if (up_p && up_main && up_fp && low_fp && !up_p._ratio_configured) {
          up_p._ratio_configured = true;
@@ -56,12 +56,9 @@ class TRatioPlotPainter extends ObjectPainter {
 
          const h = up_main.getHisto();
 
-         lbl_size = h.fYaxis.fLabelSize;
-         h.fYaxis.fTitleSize = lbl_size;
+         h.fYaxis.$use_top_pad = true; // workaround to use same scaling
          h.fXaxis.fLabelSize = 0; // do not draw X axis labels
          h.fXaxis.fTitle = ''; // do not draw X axis title
-
-         if (lbl_size < 1) lbl_size = Math.round(lbl_size*Math.min(up_p.getPadWidth(), up_p.getPadHeight()));
 
          up_p.getRootPad().fTicky = 1;
 
@@ -98,16 +95,8 @@ class TRatioPlotPainter extends ObjectPainter {
          const h = low_main.getHisto();
          h.fXaxis.fTitle = 'x';
 
-         if (h.fYaxis.fLabelSize > 1)
-            lbl_size = h.fYaxis.fLabelSize;
-         else
-            // rescale label to lower pad sizes
-            lbl_size = lbl_size / Math.min(low_p.getPadWidth(), low_p.getPadHeight());
-
-         h.fXaxis.fLabelSize = lbl_size;
-         h.fXaxis.fTitleSize = lbl_size;
-         h.fYaxis.fLabelSize = lbl_size;
-         h.fYaxis.fTitleSize = lbl_size;
+         h.fXaxis.$use_top_pad = true;
+         h.fYaxis.$use_top_pad = true;
          low_p.getRootPad().fTicky = 1;
 
          low_p.forEachPainterInPad(objp => {

@@ -1108,9 +1108,11 @@ class TAxisPainter extends ObjectPainter {
    /** @summary Extract major draw attributes, which are also used in interactive operations
      * @private  */
    extractDrawAttributes(scalingSize, w, h) {
-      const axis = this.getObject(),
-            pp = this.getPadPainter(),
-            pad_w = pp?.getPadWidth() || scalingSize || w/0.8, // use factor 0.8 as ratio between frame and pad size
+      const axis = this.getObject();
+      let pp = this.getPadPainter();
+      if (axis.$use_top_pad)
+         pp = pp?.getPadPainter(); // workaround for ratio plot
+      const pad_w = pp?.getPadWidth() || scalingSize || w/0.8, // use factor 0.8 as ratio between frame and pad size
             pad_h = pp?.getPadHeight() || scalingSize || h/0.8;
       let tickSize = 0, tickScalingSize = 0, titleColor, titleFontId, offset;
 
