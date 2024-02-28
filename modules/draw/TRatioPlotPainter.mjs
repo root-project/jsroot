@@ -18,10 +18,16 @@ class TRatioPlotPainter extends ObjectPainter {
       if (xmin === xmax) {
          const x_handle = this.getPadPainter()?.findPainterFor(ratio.fLowerPad, 'lower_pad', clTPad)?.getFramePainter()?.x_handle;
          if (!x_handle) return;
-         xmin = x_handle.full_min;
-         xmax = x_handle.full_max;
+         if (xmin === 0) {
+            // in case of unzoom full range should be used
+            xmin = x_handle.full_min;
+            xmax = x_handle.full_max;
+         } else {
+            // in case of y-scale zooming actual range has to be used
+            xmin = x_handle.scale_min;
+            xmax = x_handle.scale_max;
+         }
       }
-
       ratio.fGridlines.forEach(line => {
          line.fX1 = xmin;
          line.fX2 = xmax;
