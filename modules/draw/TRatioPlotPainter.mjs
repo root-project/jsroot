@@ -47,31 +47,25 @@ class TRatioPlotPainter extends ObjectPainter {
             low_p = pp.findPainterFor(ratio.fLowerPad, 'lower_pad', clTPad),
             low_main = low_p?.getMainPainter(),
             low_fp = low_p?.getFramePainter();
-      let lbl_size = 20, promise_up = Promise.resolve(true);
+      let lbl_size = 12, promise_up = Promise.resolve(true);
 
-      if (up_p && up_main && up_fp && low_fp) {
+      if (up_p && up_main && up_fp && low_fp && !up_p._ratio_configured) {
+         up_p._ratio_configured = true;
+
          up_main.options.Axis = 0; // draw both axes
 
          const h = up_main.getHisto();
-         if (!this._axisLabelSize)
-            this._axisLabelSize = h.fYaxis.fLabelSize;
 
-         lbl_size = this._axisLabelSize;
-         if (lbl_size < 1) lbl_size = Math.round(lbl_size*Math.min(up_p.getPadWidth(), up_p.getPadHeight()));
-
+         lbl_size = h.fYaxis.fLabelSize;
+         h.fYaxis.fTitleSize = lbl_size;
          h.fXaxis.fLabelSize = 0; // do not draw X axis labels
          h.fXaxis.fTitle = ''; // do not draw X axis title
-         h.fYaxis.fLabelSize = lbl_size;
-         h.fYaxis.fTitleSize = lbl_size;
+
+         if (lbl_size < 1) lbl_size = Math.round(lbl_size*Math.min(up_p.getPadWidth(), up_p.getPadHeight()));
 
          up_p.getRootPad().fTicky = 1;
 
          promise_up = up_p.redrawPad().then(() => {
-            if (up_p._ratio_configured)
-               return this;
-
-            up_p._ratio_configured = true;
-
             up_fp.o_zoom = up_fp.zoom;
             up_fp._ratio_low_fp = low_fp;
             up_fp._ratio_painter = this;
@@ -96,12 +90,17 @@ class TRatioPlotPainter extends ObjectPainter {
       }
 
       return promise_up.then(() => {
-         if (!low_p || !low_main || !low_fp || !up_fp)
+         if (!low_p || !low_main || !low_fp || !up_fp || low_p._ratio_configured)
             return this;
 
+         low_p._ratio_configured = true;
          low_main.options.Axis = 0; // draw both axes
          const h = low_main.getHisto();
          h.fXaxis.fTitle = 'x';
+
+         // rescale label to lower pad sizes
+         lbl_size = lbl_size / Math.min(low_p.getPadWidth(), low_p.getPadHeight());
+
          h.fXaxis.fLabelSize = lbl_size;
          h.fXaxis.fTitleSize = lbl_size;
          h.fYaxis.fLabelSize = lbl_size;
@@ -137,9 +136,6 @@ class TRatioPlotPainter extends ObjectPainter {
          }
 
          return Promise.all(arr).then(() => low_fp.zoom(up_fp.scale_xmin, up_fp.scale_xmax)).then(() => {
-            if (low_p._ratio_configured)
-               return this;
-            low_p._ratio_configured = true;
             low_fp.o_zoom = low_fp.zoom;
             low_fp._ratio_up_fp = up_fp;
             low_fp._ratio_painter = this;
