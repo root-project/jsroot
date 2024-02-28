@@ -5,6 +5,8 @@
 2. Let plot current time, file creation or modification time with `&optdate=[1,2,3]` URL parameters
 3. Let plot file name, full file name or item name with `&optfile=[1,2,3]` URL parameters
 4. Improve TRatioPlot axis and lines drawing
+5. Use localStorage to preserve custom settings and gStyle
+6. Let configure custom storage prefix with `&storage_prefix=name` URL #290
 
 
 ## Changes in 7.6.0
