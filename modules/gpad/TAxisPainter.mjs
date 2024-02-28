@@ -1054,9 +1054,10 @@ class TAxisPainter extends ObjectPainter {
 
             this.drawText(arg);
 
-            if (lastpos && (pos !== lastpos) && ((this.vertical && !rotate_lbls) || (!this.vertical && rotate_lbls))) {
+            // workaround for symlog where labels can be compressed to close
+            if (this.symlog && lastpos && (pos !== lastpos) && ((this.vertical && !rotate_lbls) || (!this.vertical && rotate_lbls))) {
                const axis_step = Math.abs(pos - lastpos);
-               textscale = Math.min(textscale, 0.9*axis_step/labelsFont.size);
+               textscale = Math.min(textscale, 1.1*axis_step/labelsFont.size);
             }
 
             lastpos = pos;
