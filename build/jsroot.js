@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '27/02/2024',
+version_date = '28/02/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -61687,9 +61687,10 @@ class TAxisPainter extends ObjectPainter {
 
             this.drawText(arg);
 
-            if (lastpos && (pos !== lastpos) && ((this.vertical && !rotate_lbls) || (!this.vertical && rotate_lbls))) {
+            // workaround for symlog where labels can be compressed to close
+            if (this.symlog && lastpos && (pos !== lastpos) && ((this.vertical && !rotate_lbls) || (!this.vertical && rotate_lbls))) {
                const axis_step = Math.abs(pos - lastpos);
-               textscale = Math.min(textscale, 0.9*axis_step/labelsFont.size);
+               textscale = Math.min(textscale, 1.1*axis_step/labelsFont.size);
             }
 
             lastpos = pos;
@@ -61741,9 +61742,11 @@ class TAxisPainter extends ObjectPainter {
    /** @summary Extract major draw attributes, which are also used in interactive operations
      * @private  */
    extractDrawAttributes(scalingSize, w, h) {
-      const axis = this.getObject(),
-            pp = this.getPadPainter(),
-            pad_w = pp?.getPadWidth() || scalingSize || w/0.8, // use factor 0.8 as ratio between frame and pad size
+      const axis = this.getObject();
+      let pp = this.getPadPainter();
+      if (axis.$use_top_pad)
+         pp = pp?.getPadPainter(); // workaround for ratio plot
+      const pad_w = pp?.getPadWidth() || scalingSize || w/0.8, // use factor 0.8 as ratio between frame and pad size
             pad_h = pp?.getPadHeight() || scalingSize || h/0.8;
       let tickSize = 0, tickScalingSize = 0, titleColor, titleFontId, offset;
 
@@ -112431,10 +112434,16 @@ class TRatioPlotPainter extends ObjectPainter {
       if (xmin === xmax) {
          const x_handle = this.getPadPainter()?.findPainterFor(ratio.fLowerPad, 'lower_pad', clTPad)?.getFramePainter()?.x_handle;
          if (!x_handle) return;
-         xmin = x_handle.full_min;
-         xmax = x_handle.full_max;
+         if (xmin === 0) {
+            // in case of unzoom full range should be used
+            xmin = x_handle.full_min;
+            xmax = x_handle.full_max;
+         } else {
+            // in case of y-scale zooming actual range has to be used
+            xmin = x_handle.scale_min;
+            xmax = x_handle.scale_max;
+         }
       }
-
       ratio.fGridlines.forEach(line => {
          line.fX1 = xmin;
          line.fX2 = xmax;
@@ -112454,20 +112463,18 @@ class TRatioPlotPainter extends ObjectPainter {
             low_p = pp.findPainterFor(ratio.fLowerPad, 'lower_pad', clTPad),
             low_main = low_p?.getMainPainter(),
             low_fp = low_p?.getFramePainter();
-      let lbl_size = 20, promise_up = Promise.resolve(true);
+      let promise_up = Promise.resolve(true);
 
       if (up_p && up_main && up_fp && low_fp && !up_p._ratio_configured) {
          up_p._ratio_configured = true;
+
          up_main.options.Axis = 0; // draw both axes
 
-         lbl_size = up_main.getHisto().fYaxis.fLabelSize;
-         if (lbl_size < 1) lbl_size = Math.round(lbl_size*Math.min(up_p.getPadWidth(), up_p.getPadHeight()));
-
          const h = up_main.getHisto();
+
+         h.fYaxis.$use_top_pad = true; // workaround to use same scaling
          h.fXaxis.fLabelSize = 0; // do not draw X axis labels
          h.fXaxis.fTitle = ''; // do not draw X axis title
-         h.fYaxis.fLabelSize = lbl_size;
-         h.fYaxis.fTitleSize = lbl_size;
 
          up_p.getRootPad().fTicky = 1;
 
@@ -112491,7 +112498,7 @@ class TRatioPlotPainter extends ObjectPainter {
                this._ratio_low_fp.fX2NDC = this.fX2NDC;
                this._ratio_low_fp.o_sizeChanged();
             };
-            return true;
+            return this;
          });
       }
 
@@ -112503,10 +112510,9 @@ class TRatioPlotPainter extends ObjectPainter {
          low_main.options.Axis = 0; // draw both axes
          const h = low_main.getHisto();
          h.fXaxis.fTitle = 'x';
-         h.fXaxis.fLabelSize = lbl_size;
-         h.fXaxis.fTitleSize = lbl_size;
-         h.fYaxis.fLabelSize = lbl_size;
-         h.fYaxis.fTitleSize = lbl_size;
+
+         h.fXaxis.$use_top_pad = true;
+         h.fYaxis.$use_top_pad = true;
          low_p.getRootPad().fTicky = 1;
 
          low_p.forEachPainterInPad(objp => {
