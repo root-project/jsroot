@@ -1878,6 +1878,24 @@ class HierarchyPainter extends BasePainter {
                      arg0 += '&utc';
                   else if (settings.TimeZone)
                      arg0 += `&timezone='${settings.TimeZone}'`;
+                  if (gStyle.fHistMinimumZero)
+                     arg0 += '&histzero';
+                  if (settings.DarkMode)
+                     arg0 += '&dark=on';
+                  if (!settings.UseStamp)
+                     arg0 += '&usestamp=off';
+                  if (settings.OnlyLastCycle)
+                     arg0 += '&lastcycle';
+                  if (settings.OptimizeDraw !== 1)
+                     arg0 += `&optimize=${settings.OptimizeDraw}`;
+                  if (settings.MaxRanges !== 200)
+                     arg0 += `&maxranges=${settings.MaxRanges}`;
+                  if (settings.FuncAsCurve)
+                     arg0 += '&tf1=curve';
+                  if (!settings.ToolBar && !settings.Tooltip && !settings.ContextMenu && !settings.Zooming && !settings.MoveResize && !settings.DragAndDrop)
+                     arg0 += '&interactive=0';
+                  else if (!settings.ContextMenu)
+                     arg0 += '&nomenu';
                }
 
                menu.addDrawMenu('Draw in new tab', sett.opts,
