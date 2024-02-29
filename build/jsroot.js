@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '28/02/2024',
+version_date = '29/02/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -298,7 +298,13 @@ settings = {
    /** @summary Draw TF1 by default as curve or line */
    FuncAsCurve: false,
    /** @summary Time zone used for date/time display of file time */
-   TimeZone: ''
+   TimeZone: '',
+   /** @summary Page URL which will be used to show item in new tab, jsroot main dir used by default */
+   NewTabUrl: '',
+   /** @summary Extra parameters which will be append to the url when item shown in new tab */
+   NewTabUrlPars: '',
+   /** @summary Export different settings in output URL */
+   NewTabUrlExportSettings: false
 },
 
 /** @namespace
@@ -104358,9 +104364,10 @@ class HierarchyPainter extends BasePainter {
             }
 
             if (fileprop && sett.opts && !fileprop.localfile) {
+               const url = settings.NewTabUrl || exports.source_dir;
                let filepath = qualifyURL(fileprop.fileurl);
-               if (filepath.indexOf(exports.source_dir) === 0)
-                  filepath = filepath.slice(exports.source_dir.length);
+               if (filepath.indexOf(url) === 0)
+                  filepath = filepath.slice(url.length);
                filepath = `${fileprop.kind}=${filepath}`;
                if (fileprop.itemname) {
                   let name = fileprop.itemname;
@@ -104371,9 +104378,45 @@ class HierarchyPainter extends BasePainter {
                let arg0 = 'nobrowser';
                if (settings.WithCredentials)
                   arg0 += '&with_credentials';
+               if (settings.NewTabUrlPars)
+                  arg0 += '&' + settings.NewTabUrlPars;
+               if (settings.NewTabUrlExportSettings) {
+                  if (gStyle.fOptStat !== 1111)
+                     arg0 += `&optstat=${gStyle.fOptStat}`;
+                  if (gStyle.fOptFit !== 0)
+                     arg0 += `&optfit=${gStyle.fOptFit}`;
+                  if (gStyle.fOptDate !== 0)
+                     arg0 += `&optdate=${gStyle.fOptDate}`;
+                  if (gStyle.fOptFile !== 0)
+                     arg0 += `&optfile=${gStyle.fOptFile}`;
+                  if (gStyle.fOptTitle !== 1)
+                     arg0 += `&opttitle=${gStyle.fOptTitle}`;
+                  if (settings.TimeZone === 'UTC')
+                     arg0 += '&utc';
+                  else if (settings.TimeZone)
+                     arg0 += `&timezone='${settings.TimeZone}'`;
+                  if (gStyle.fHistMinimumZero)
+                     arg0 += '&histzero';
+                  if (settings.DarkMode)
+                     arg0 += '&dark=on';
+                  if (!settings.UseStamp)
+                     arg0 += '&usestamp=off';
+                  if (settings.OnlyLastCycle)
+                     arg0 += '&lastcycle';
+                  if (settings.OptimizeDraw !== 1)
+                     arg0 += `&optimize=${settings.OptimizeDraw}`;
+                  if (settings.MaxRanges !== 200)
+                     arg0 += `&maxranges=${settings.MaxRanges}`;
+                  if (settings.FuncAsCurve)
+                     arg0 += '&tf1=curve';
+                  if (!settings.ToolBar && !settings.Tooltip && !settings.ContextMenu && !settings.Zooming && !settings.MoveResize && !settings.DragAndDrop)
+                     arg0 += '&interactive=0';
+                  else if (!settings.ContextMenu)
+                     arg0 += '&nomenu';
+               }
 
                menu.addDrawMenu('Draw in new tab', sett.opts,
-                                arg => window.open(`${exports.source_dir}?${arg0}&${filepath}&opt=${arg}`),
+                                arg => window.open(`${url}?${arg0}&${filepath}&opt=${arg}`),
                                 'Draw item in the new browser tab or window');
             }
 
@@ -112456,8 +112499,13 @@ class TRatioPlotPainter extends ObjectPainter {
    async redraw() {
       const ratio = this.getObject(),
             pp = this.getPadPainter(),
-            top_p = pp.findPainterFor(ratio.fTopPad, 'top_pad', clTPad);
-      if (top_p) top_p.disablePadDrawing();
+            top_p = pp.findPainterFor(ratio.fTopPad, 'top_pad', clTPad),
+            pad = pp.getRootPad(),
+            mirrow_axis = (pad.fFrameFillStyle === 0) ? 1 : 0,
+            tick_x = pad.fTickx || mirrow_axis,
+            tick_y = pad.fTicky || mirrow_axis;
+
+      top_p?.disablePadDrawing();
 
       const up_p = pp.findPainterFor(ratio.fUpperPad, 'upper_pad', clTPad),
             up_main = up_p?.getMainPainter(),
@@ -112478,7 +112526,8 @@ class TRatioPlotPainter extends ObjectPainter {
          h.fXaxis.fLabelSize = 0; // do not draw X axis labels
          h.fXaxis.fTitle = ''; // do not draw X axis title
 
-         up_p.getRootPad().fTicky = 1;
+         up_p.getRootPad().fTickx = tick_x;
+         up_p.getRootPad().fTicky = tick_y;
 
          promise_up = up_p.redrawPad().then(() => {
             up_fp.o_zoom = up_fp.zoom;
@@ -112515,7 +112564,8 @@ class TRatioPlotPainter extends ObjectPainter {
 
          h.fXaxis.$use_top_pad = true;
          h.fYaxis.$use_top_pad = true;
-         low_p.getRootPad().fTicky = 1;
+         low_p.getRootPad().fTickx = tick_x;
+         low_p.getRootPad().fTicky = tick_y;
 
          low_p.forEachPainterInPad(objp => {
             if (isFunc(objp?.testEditable))
