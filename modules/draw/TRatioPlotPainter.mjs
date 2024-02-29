@@ -38,8 +38,13 @@ class TRatioPlotPainter extends ObjectPainter {
    async redraw() {
       const ratio = this.getObject(),
             pp = this.getPadPainter(),
-            top_p = pp.findPainterFor(ratio.fTopPad, 'top_pad', clTPad);
-      if (top_p) top_p.disablePadDrawing();
+            top_p = pp.findPainterFor(ratio.fTopPad, 'top_pad', clTPad),
+            pad = pp.getRootPad(),
+            mirrow_axis = (pad.fFrameFillStyle === 0) ? 1 : 0,
+            tick_x = pad.fTickx || mirrow_axis,
+            tick_y = pad.fTicky || mirrow_axis;
+
+      top_p?.disablePadDrawing();
 
       const up_p = pp.findPainterFor(ratio.fUpperPad, 'upper_pad', clTPad),
             up_main = up_p?.getMainPainter(),
@@ -60,7 +65,8 @@ class TRatioPlotPainter extends ObjectPainter {
          h.fXaxis.fLabelSize = 0; // do not draw X axis labels
          h.fXaxis.fTitle = ''; // do not draw X axis title
 
-         up_p.getRootPad().fTicky = 1;
+         up_p.getRootPad().fTickx = tick_x;
+         up_p.getRootPad().fTicky = tick_y;
 
          promise_up = up_p.redrawPad().then(() => {
             up_fp.o_zoom = up_fp.zoom;
@@ -97,7 +103,8 @@ class TRatioPlotPainter extends ObjectPainter {
 
          h.fXaxis.$use_top_pad = true;
          h.fYaxis.$use_top_pad = true;
-         low_p.getRootPad().fTicky = 1;
+         low_p.getRootPad().fTickx = tick_x;
+         low_p.getRootPad().fTicky = tick_y;
 
          low_p.forEachPainterInPad(objp => {
             if (isFunc(objp?.testEditable))
