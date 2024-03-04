@@ -29,6 +29,12 @@
 26. Fix - better logy scale selection
 
 
+## Changes in 7.5.5
+1. Fix - abort tree draw operation faster
+2. Fix - support plain TRI option for TGraph2D
+3. Fix - use latest npm "gl" module
+
+
 ## Changes in 7.5.4
 1. Fix - catch exception when parsing TF1 formula
 2. Fix - properly check THStack histograms axes when doing sum
