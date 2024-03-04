@@ -194,30 +194,18 @@ class THistDrawOptions {
       if (d.check('GRAYSCALE'))
          pp?.setGrayscale(true);
 
-      d.getColor = function() {
-         this.color = this.partAsInt(1) - 1;
-         if (this.color >= 0) return true;
-         for (let col = 0; col < 8; ++col) {
-            if (getColor(col).toUpperCase() === this.part) {
-               this.color = col;
-               return true;
-            }
-         }
-         return false;
-      };
-
-      if (d.check('FILL_', true) && d.getColor()) {
+      if (d.check('FILL_', 'color')) {
          this.histoFillColor = d.color;
          this.histoFillPattern = 1001;
       }
 
-      if (d.check('LINE_', true) && d.getColor())
+      if (d.check('LINE_', 'color'))
          this.histoLineColor = getColor(d.color);
 
-      if (d.check('XAXIS_', true) && d.getColor())
+      if (d.check('XAXIS_', 'color'))
          histo.fXaxis.fAxisColor = histo.fXaxis.fLabelColor = histo.fXaxis.fTitleColor = d.color;
 
-      if (d.check('YAXIS_', true) && d.getColor())
+      if (d.check('YAXIS_', 'color'))
          histo.fYaxis.fAxisColor = histo.fYaxis.fLabelColor = histo.fYaxis.fTitleColor = d.color;
 
       const has_main = painter ? !!painter.getMainPainter() : false;
