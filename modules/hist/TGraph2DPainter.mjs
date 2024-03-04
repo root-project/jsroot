@@ -878,7 +878,13 @@ class TGraph2DPainter extends ObjectPainter {
       if (!this.options)
          this.options = {};
 
-      const res = this.options;
+      const res = this.options, gr2d = this.getObject();
+
+      if (d.check('FILL_', 'color') && gr2d)
+         gr2d.fFillColor = d.color;
+
+      if (d.check('LINE_', 'color') && gr2d)
+         gr2d.fLineColor = d.color;
 
       d.check('SAME');
       if (d.check('TRI1'))
@@ -893,13 +899,6 @@ class TGraph2DPainter extends ObjectPainter {
          res.Triangles = 0;
       res.Line = d.check('LINE');
       res.Error = d.check('ERR') && (this.matchObjectType(clTGraph2DErrors) || this.matchObjectType(clTGraph2DAsymmErrors));
-
-      const gr2d = this.getObject();
-      if (d.check('FILL_', 'color') && gr2d)
-         gr2d.fFillColor = d.color;
-
-      if (d.check('LINE_', 'color') && gr2d)
-         gr2d.fLineColor = d.color;
 
       if (d.check('P0COL'))
          res.Color = res.Circles = res.Markers = true;
