@@ -2,6 +2,7 @@
 
 ## Changes in 7.5.x
 1. Fix - abort tree draw operation faster
+2. Fix - support plain TRI option for TGraph2D
 
 
 ## Changes in 7.5.4
