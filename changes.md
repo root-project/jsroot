@@ -1,9 +1,5 @@
 # JSROOT changelog
 
-## Changes in 7.6.x
-1. Use own "jsroot-gl" package to support latest compilers/platforms
-
-
 ## Changes in 7.6.0
 1. Implement "tickz" draw option, used for color palette ticks
 2. Implement skewness and kurtosis calculations for histogram stats box
