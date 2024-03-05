@@ -35,7 +35,6 @@
   "dependencies": {
     "@oneidentity/zstd-js": "^1.0.3",
     "canvas": "^2.11.2",
-    "fflate": "^0.4.8",
     "jsdom": "^22.1.0",
     "mathjax": "3.2.2",
     "svg2pdf.js": "^2.2.2",
