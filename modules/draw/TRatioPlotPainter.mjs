@@ -134,7 +134,11 @@ class TRatioPlotPainter extends ObjectPainter {
             });
          }
 
-         return Promise.all(arr).then(() => low_fp.zoom(up_fp.scale_xmin, up_fp.scale_xmax)).then(() => {
+         return Promise.all(arr).then(() => {
+            if (currpad !== undefined)
+               this.selectCurrentPad(currpad);
+            return low_fp.zoom(up_fp.scale_xmin, up_fp.scale_xmax);
+         }).then(() => {
             low_fp.o_zoom = low_fp.zoom;
             low_fp._ratio_up_fp = up_fp;
             low_fp._ratio_painter = this;
