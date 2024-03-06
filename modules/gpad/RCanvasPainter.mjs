@@ -281,6 +281,7 @@ class RCanvasPainter extends RPadPainter {
                    this.resizeBrowser(snap.fWinSize[0], snap.fWinSize[1]);
              }).then(() => this.redrawPadSnap(snap))
              .then(() => {
+                 this.addPadInteractive();
                  handle.send(`SNAPDONE:${snapid}`); // send ready message back when drawing completed
                  this.confirmDraw();
               });

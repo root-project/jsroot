@@ -1682,6 +1682,9 @@ class TPadPainter extends ObjectPainter {
          padpainter._snap_primitives = snap.fPrimitives; // keep list to be able find primitive
          padpainter._has_execs = snap.fHasExecs ?? false; // are there pad execs, enables some interactive features
 
+         if (subpad.$disable_drawing)
+            padpainter.pad_draw_disabled = true;
+
          padpainter.processSpecialSnaps(snap.fPrimitives); // need to process style and colors before creating graph elements
 
          padpainter.createPadSvg();
