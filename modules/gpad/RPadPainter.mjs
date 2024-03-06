@@ -1199,9 +1199,9 @@ class RPadPainter extends RObjectPainter {
          // cannot preserve ROOT6 frame - it must be recreated
          if (fp?.is_root6()) fp = null;
          for (let k = 0; k < this.painters.length; ++k) {
- if (fp !== this.painters[k])
+            if (fp !== this.painters[k])
                this.painters[k].cleanup();
-}
+         }
          this.painters = [];
          delete this.main_painter_ref;
          if (fp) {
