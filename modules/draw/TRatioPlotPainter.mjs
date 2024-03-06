@@ -39,7 +39,7 @@ class TRatioPlotPainter extends ObjectPainter {
       for (let i = 0; i < nlines; ++i) {
          const y = ratio.fGridlinePositions[i],
                line = ratio.fGridlines[i];
-         line.$do_draw = (ymin === ymax) || ((ymin <= y) && (y <= ymax));
+         line.$do_not_draw = (ymin !== ymax) && ((y < ymin) || (y > ymax));
          line.fY1 = line.fY2 = y;
       }
    }
@@ -56,6 +56,11 @@ class TRatioPlotPainter extends ObjectPainter {
 
       if (!up_p || !low_p)
          return;
+
+      low_p.forEachPainterInPad(objp => {
+         if (isFunc(objp?.testEditable))
+            objp.testEditable(false);
+      });
 
       if (up_p._ratio_interactive && low_p._ratio_interactive)
          return;
@@ -153,14 +158,10 @@ class TRatioPlotPainter extends ObjectPainter {
          low_p.getRootPad().fTickx = tick_x;
          low_p.getRootPad().fTicky = tick_y;
 
-         low_p.forEachPainterInPad(objp => {
-            if (isFunc(objp?.testEditable))
-               objp.testEditable(false);
-         });
-
          const arr = [];
          let currpad;
 
+         // add missing lines in old ratio painter
          if ((ratio.fGridlinePositions.length > 0) && (ratio.fGridlines.length < ratio.fGridlinePositions.length)) {
             ratio.fGridlinePositions.forEach(gridy => {
                let found = false;
