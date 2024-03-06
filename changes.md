@@ -7,6 +7,7 @@
 4. Use localStorage to preserve custom settings and gStyle
 5. Let configure custom storage prefix with `&storage_prefix=name` URL #290
 6. Let customize URL for "Show in new tab" menu command
+7. Support new TRatioPlot drawing
 
 
 ## Changes in 7.6.0
