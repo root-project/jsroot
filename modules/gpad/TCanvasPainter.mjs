@@ -822,6 +822,7 @@ class TCanvasPainter extends TPadPainter {
       selectActivePad({ pp: painter, active: true });
 
       return painter.drawPrimitives().then(() => {
+         painter.addPadInteractive();
          painter.showPadButtons();
          return painter;
       });

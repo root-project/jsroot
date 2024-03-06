@@ -676,6 +676,7 @@ class RCanvasPainter extends RPadPainter {
       selectActivePad({ pp: painter, active: false });
 
       return painter.drawPrimitives().then(() => {
+         painter.addPadInteractive();
          painter.addPadButtons();
          painter.showPadButtons();
          return painter;
