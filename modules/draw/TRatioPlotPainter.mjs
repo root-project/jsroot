@@ -201,7 +201,7 @@ class TRatioPlotPainter extends ObjectPainter {
       // do not draw primitives and pad itself
       ratio.fTopPad.$disable_drawing = true;
 
-      ratio.fUpperPad.$ratio_pad = 'top'; // indicate drawing of the axes for main painter
+      ratio.fUpperPad.$ratio_pad = 'up'; // indicate drawing of the axes for main painter
       ratio.fUpperPad.fTickx = tick_x;
       ratio.fUpperPad.fTicky = tick_y;
 
