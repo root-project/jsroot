@@ -68418,6 +68418,9 @@ class TPadPainter extends ObjectPainter {
          padpainter._snap_primitives = snap.fPrimitives; // keep list to be able find primitive
          padpainter._has_execs = snap.fHasExecs ?? false; // are there pad execs, enables some interactive features
 
+         if (subpad.$disable_drawing)
+            padpainter.pad_draw_disabled = true;
+
          padpainter.processSpecialSnaps(snap.fPrimitives); // need to process style and colors before creating graph elements
 
          padpainter.createPadSvg();
@@ -69812,6 +69815,8 @@ class TCanvasPainter extends TPadPainter {
      * @private */
    completeCanvasSnapDrawing() {
       if (!this.pad) return;
+
+      this.addPadInteractive();
 
       if ((typeof document !== 'undefined') && !this.embed_canvas && this._websocket)
          document.title = this.pad.fTitle;
@@ -112509,7 +112514,7 @@ TLinePainter: TLinePainter
 class TRatioPlotPainter extends ObjectPainter {
 
    /** @summary Set grids range */
-   setGridsRange(xmin, xmax, ymin, ymax) {
+   setGridsRange(xmin, xmax, ymin, ymax, low_p) {
       const ratio = this.getObject();
       if (xmin === xmax) {
          const x_handle = this.getPadPainter()?.findPainterFor(ratio.fLowerPad, 'lower_pad', clTPad)?.getFramePainter()?.x_handle;
@@ -112528,15 +112533,15 @@ class TRatioPlotPainter extends ObjectPainter {
          line.fX1 = xmin;
          line.fX2 = xmax;
       });
-      if (ymin === 'ignore')
-         return;
-
       const nlines = Math.min(ratio.fGridlines.length, ratio.fGridlinePositions.length);
       for (let i = 0; i < nlines; ++i) {
          const y = ratio.fGridlinePositions[i],
                line = ratio.fGridlines[i];
-         line.$do_not_draw = (ymin !== ymax) && ((y < ymin) || (y > ymax));
-         line.fY1 = line.fY2 = y;
+         if (ymin !== 'ignorey') {
+            line.$do_not_draw = (ymin !== ymax) && ((y < ymin) || (y > ymax));
+            line.fY1 = line.fY2 = y;
+         }
+         low_p?.findPainterFor(line)?.redraw();
       }
    }
 
@@ -112558,6 +112563,8 @@ class TRatioPlotPainter extends ObjectPainter {
             objp.testEditable(false);
       });
 
+      this.setGridsRange(low_fp.scale_xmin, low_fp.scale_xmax, low_fp.scale_ymin, low_fp.scale_ymax, low_p);
+
       if (up_p._ratio_interactive && low_p._ratio_interactive)
          return;
 
@@ -112570,7 +112577,7 @@ class TRatioPlotPainter extends ObjectPainter {
 
       up_fp.zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
          return this.o_zoom(xmin, xmax, ymin, ymax, zmin, zmax).then(res => {
-            this._ratio_painter.setGridsRange(up_fp.scale_xmin, up_fp.scale_xmax, 'ignore');
+            this._ratio_painter.setGridsRange(up_fp.scale_xmin, up_fp.scale_xmax, 'ignory');
             this._ratio_low_fp.o_zoom(up_fp.scale_xmin, up_fp.scale_xmax);
             return res;
          });
@@ -120432,6 +120439,7 @@ class RCanvasPainter extends RPadPainter {
                    this.resizeBrowser(snap.fWinSize[0], snap.fWinSize[1]);
              }).then(() => this.redrawPadSnap(snap))
              .then(() => {
+                 this.addPadInteractive();
                  handle.send(`SNAPDONE:${snapid}`); // send ready message back when drawing completed
                  this.confirmDraw();
               });
