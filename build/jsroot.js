@@ -63910,6 +63910,11 @@ class TFramePainter extends ObjectPainter {
          }
       }
 
+      if ((opts.zoom_xmin !== opts.zoom_xmax) && ((this.zoom_xmin === this.zoom_xmax) || !this.zoomChangedInteractive('x'))) {
+         this.zoom_xmin = opts.zoom_xmin;
+         this.zoom_xmax = opts.zoom_xmax;
+      }
+
       if ((opts.zoom_ymin !== opts.zoom_ymax) && ((this.zoom_ymin === this.zoom_ymax) || !this.zoomChangedInteractive('y'))) {
          this.zoom_ymin = opts.zoom_ymin;
          this.zoom_ymax = opts.zoom_ymax;
@@ -71902,6 +71907,11 @@ class THistDrawOptions {
          histo.fXaxis.$use_top_pad = true;
          histo.fYaxis.$use_top_pad = true;
          histo.fXaxis.fTitle = 'x';
+         const fp = painter?.getCanvPainter().findPainterFor(null, 'upper_pad', clTPad)?.getFramePainter();
+         if (fp) {
+            painter.zoom_xmin = fp.scale_xmin;
+            painter.zoom_xmax = fp.scale_xmax;
+         }
       }
 
       if (d.check('RX') || pad?.$RX) this.RevX = true;
@@ -72720,6 +72730,8 @@ class THistPainter extends ObjectPainter {
 
       fp.createXY({ ndim: this.getDimension(),
                     check_pad_range: this.check_pad_range,
+                    zoom_xmin: this.zoom_xmin,
+                    zoom_xmax: this.zoom_xmax,
                     zoom_ymin: this.zoom_ymin,
                     zoom_ymax: this.zoom_ymax,
                     ymin_nz: this.ymin_nz,
@@ -72732,6 +72744,8 @@ class THistPainter extends ObjectPainter {
                     extra_y_space: this.options.Text && (this.options.BarStyle > 0),
                     hist_painter: this });
       delete this.check_pad_range;
+      delete this.zoom_xmin;
+      delete this.zoom_xmax;
 
       if (this.options.Same)
          return false;
@@ -112578,8 +112592,7 @@ class TRatioPlotPainter extends ObjectPainter {
       up_fp.zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
          return this.o_zoom(xmin, xmax, ymin, ymax, zmin, zmax).then(res => {
             this._ratio_painter.setGridsRange(up_fp.scale_xmin, up_fp.scale_xmax, 'ignory');
-            this._ratio_low_fp.o_zoom(up_fp.scale_xmin, up_fp.scale_xmax);
-            return res;
+            return this._ratio_low_fp.o_zoom(up_fp.scale_xmin, up_fp.scale_xmax).then(() => res);
          });
       };
 
@@ -112596,9 +112609,15 @@ class TRatioPlotPainter extends ObjectPainter {
       low_fp._ratio_painter = this;
 
       low_fp.zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
+         if (xmin === xmax) {
+            xmin = up_fp.xmin;
+            xmax = up_fp.xmax;
+         } else {
+            if (xmin < up_fp.xmin) xmin = up_fp.xmin;
+            if (xmax > up_fp.xmax) xmax = up_fp.xmax;
+         }
          this._ratio_painter.setGridsRange(xmin, xmax, ymin, ymax);
-         this._ratio_up_fp.o_zoom(xmin, xmax);
-         return this.o_zoom(xmin, xmax, ymin, ymax, zmin, zmax);
+         return this._ratio_up_fp.o_zoom(xmin, xmax).then(() => this.o_zoom(xmin, xmax, ymin, ymax, zmin, zmax));
       };
 
       low_fp.o_sizeChanged = low_fp.sizeChanged;
@@ -116611,9 +116630,10 @@ class RFramePainter extends RObjectPainter {
             this.scale_ymax += (this.scale_ymax - this.scale_ymin)*0.1;
       }
 
-      // if (opts.check_pad_range) {
-         // take zooming out of pad or axis attributes - skip!
-      // }
+      if ((opts.zoom_xmin !== opts.zoom_xmax) && ((this.zoom_xmin === this.zoom_xmax) || !this.zoomChangedInteractive('x'))) {
+         this.zoom_xmin = opts.zoom_xmin;
+         this.zoom_xmax = opts.zoom_xmax;
+      }
 
       if ((opts.zoom_ymin !== opts.zoom_ymax) && ((this.zoom_ymin === this.zoom_ymax) || !this.zoomChangedInteractive('y'))) {
          this.zoom_ymin = opts.zoom_ymin;
