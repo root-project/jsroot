@@ -376,6 +376,17 @@ class THistDrawOptions {
       if (d.check('F')) { this.Fill = true; this.need_fillcol = true; }
 
       if (d.check('A')) this.Axis = -1;
+      if (pad?.$ratio_pad === 'top') {
+         this.Axis = 0; // draw both axes
+         histo.fXaxis.fLabelSize = 0;
+         histo.fXaxis.fTitle = '';
+         histo.fYaxis.$use_top_pad = true;
+      } else if (pad?.$ratio_pad === 'low') {
+         this.Axis = 0; // draw both axes
+         histo.fXaxis.$use_top_pad = true;
+         histo.fYaxis.$use_top_pad = true;
+         histo.fXaxis.fTitle = 'x';
+      }
 
       if (d.check('RX') || pad?.$RX) this.RevX = true;
       if (d.check('RY') || pad?.$RY) this.RevY = true;

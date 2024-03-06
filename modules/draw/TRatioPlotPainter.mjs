@@ -164,20 +164,33 @@ class TRatioPlotPainter extends ObjectPainter {
    /** @summary Redraw TRatioPlot */
    async redraw() {
       const ratio = this.getObject(),
-            pp = this.getPadPainter(),
-            top_p = pp.findPainterFor(ratio.fTopPad, 'top_pad', clTPad),
-            pad = pp.getRootPad(),
-            mirrow_axis = (pad.fFrameFillStyle === 0) ? 1 : 0,
-            tick_x = pad.fTickx || mirrow_axis,
-            tick_y = pad.fTicky || mirrow_axis;
+            pp = this.getPadPainter();
 
       if (this.$oldratio === undefined)
-         this.$oldratio = !!top_p;
+         this.$oldratio = !!pp.findPainterFor(ratio.fTopPad, 'top_pad', clTPad);
 
       if (this.$oldratio)
          return this.redrawOld();
 
-      top_p?.disablePadDrawing();
+      const pad = pp.getRootPad(),
+            mirrow_axis = (pad.fFrameFillStyle === 0) ? 1 : 0,
+            tick_x = pad.fTickx || mirrow_axis,
+            tick_y = pad.fTicky || mirrow_axis;
+
+      // do not draw primitives and pad itself
+      ratio.fTopPad.$disable_drawing = true;
+
+      ratio.fUpperPad.$ratio_pad = 'top'; // indicate drawing of the axes for main painter
+      ratio.fUpperPad.fTickx = tick_x;
+      ratio.fUpperPad.fTicky = tick_y;
+
+      ratio.fLowerPad.$ratio_pad = 'low'; // indicate drawing of the axes for main painter
+      ratio.fLowerPad.fTickx = tick_x;
+      ratio.fLowerPad.fTicky = tick_y;
+
+
+      return this;
+/*
 
       const up_p = pp.findPainterFor(ratio.fUpperPad, 'upper_pad', clTPad),
             up_main = up_p?.getMainPainter(),
@@ -292,6 +305,7 @@ class TRatioPlotPainter extends ObjectPainter {
             return this;
          });
       });
+      */
    }
 
    /** @summary Draw TRatioPlot */

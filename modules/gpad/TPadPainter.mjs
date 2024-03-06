@@ -2433,6 +2433,9 @@ class TPadPainter extends ObjectPainter {
          painter.addToPadPrimitives(painter.pad_name);
       }
 
+      if (pad?.$disable_drawing)
+         painter.pad_draw_disabled = true;
+
       painter.createPadSvg();
 
       if (painter.matchObjectType(clTPad) && (!painter.has_canvas || painter.hasObjectsToDraw()))
