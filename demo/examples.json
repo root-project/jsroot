@@ -203,7 +203,7 @@
      { "name": "radial", "file": "tutorials_gl.root", "item": "radialgradients", "opt": "", "title": "Demo of TRadialGradient color handling, canvas produced by tutorials/gl/radialgradients.C macro" }
    ],
    "TRatioPlot" : [
-      { "name": "r1", "file": "ratioplot.root", "item": "ratioplot1;1", "title": "Output of tutorial hist/ratioplot1.C" },
+      { "name": "r1", "file": "ratioplotnew.root", "item": "ratioplot1;1", "title": "Output of tutorial hist/ratioplot1.C" },
       { "name": "r2", "item": "ratioplot2;1", "title": "Output of tutorial hist/ratioplot2.C" },
       { "name": "r3", "item": "ratioplot3;1", "title": "Output of tutorial hist/ratioplot3.C" },
       { "name": "r4", "item": "ratioplot4;1", "title": "Output of tutorial hist/ratioplot4.C" },
