@@ -1,5 +1,5 @@
 import { gStyle, BIT, settings, constants, create, isObject, isFunc, isStr, getPromise,
-         clTList, clTPaveText, clTPaveStats, clTPaletteAxis, clTProfile2D, clTProfile3D,
+         clTList, clTPaveText, clTPaveStats, clTPaletteAxis, clTProfile2D, clTProfile3D, clTPad,
          clTAxis, clTF1, clTF2, clTProfile, kNoZoom, clTCutG, kNoStats } from '../core.mjs';
 import { getColor, getColorPalette } from '../base/colors.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
@@ -386,6 +386,11 @@ class THistDrawOptions {
          histo.fXaxis.$use_top_pad = true;
          histo.fYaxis.$use_top_pad = true;
          histo.fXaxis.fTitle = 'x';
+         const fp = painter?.getCanvPainter().findPainterFor(null, 'upper_pad', clTPad)?.getFramePainter();
+         if (fp) {
+            painter.zoom_xmin = fp.scale_xmin;
+            painter.zoom_xmax = fp.scale_xmax;
+         }
       }
 
       if (d.check('RX') || pad?.$RX) this.RevX = true;
@@ -1218,6 +1223,8 @@ class THistPainter extends ObjectPainter {
                     extra_y_space: this.options.Text && (this.options.BarStyle > 0),
                     hist_painter: this });
       delete this.check_pad_range;
+      delete this.zoom_xmin;
+      delete this.zoom_xmax;
 
       if (this.options.Same)
          return false;
