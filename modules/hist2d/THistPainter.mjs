@@ -1204,6 +1204,8 @@ class THistPainter extends ObjectPainter {
 
       fp.createXY({ ndim: this.getDimension(),
                     check_pad_range: this.check_pad_range,
+                    zoom_xmin: this.zoom_xmin,
+                    zoom_xmax: this.zoom_xmax,
                     zoom_ymin: this.zoom_ymin,
                     zoom_ymax: this.zoom_ymax,
                     ymin_nz: this.ymin_nz,
