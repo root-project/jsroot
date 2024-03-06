@@ -77,8 +77,7 @@ class TRatioPlotPainter extends ObjectPainter {
       up_fp.zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
          return this.o_zoom(xmin, xmax, ymin, ymax, zmin, zmax).then(res => {
             this._ratio_painter.setGridsRange(up_fp.scale_xmin, up_fp.scale_xmax, 'ignory');
-            this._ratio_low_fp.o_zoom(up_fp.scale_xmin, up_fp.scale_xmax);
-            return res;
+            return this._ratio_low_fp.o_zoom(up_fp.scale_xmin, up_fp.scale_xmax).then(() => res);
          });
       };
 
@@ -95,9 +94,15 @@ class TRatioPlotPainter extends ObjectPainter {
       low_fp._ratio_painter = this;
 
       low_fp.zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
+         if (xmin === xmax) {
+            xmin = up_fp.xmin;
+            xmax = up_fp.xmax;
+         } else {
+            if (xmin < up_fp.xmin) xmin = up_fp.xmin;
+            if (xmax > up_fp.xmax) xmax = up_fp.xmax;
+         }
          this._ratio_painter.setGridsRange(xmin, xmax, ymin, ymax);
-         this._ratio_up_fp.o_zoom(xmin, xmax);
-         return this.o_zoom(xmin, xmax, ymin, ymax, zmin, zmax);
+         return this._ratio_up_fp.o_zoom(xmin, xmax).then(() => this.o_zoom(xmin, xmax, ymin, ymax, zmin, zmax));
       };
 
       low_fp.o_sizeChanged = low_fp.sizeChanged;
