@@ -51,6 +51,7 @@ jobs:
           node demo/node/tree_draw.js
           xvfb-run -s "-ac -screen 0 1280x1024x24" node demo/node/geomsvg.js
           node demo/node/selector.js
+          cd demo/node; xvfb-run -s "-ac -screen 0 1280x1024x24" node make_image.js
 
   build-macos:
     runs-on: macos-latest
@@ -97,6 +98,7 @@ jobs:
           node demo/node/tree_dump.js
           node demo/node/tree_draw.js
           node demo/node/selector.js
+          cd demo/node; node make_image.js
 
   build-windows:
     runs-on: windows-latest
@@ -137,3 +139,4 @@ jobs:
           node demo/node/tree_draw.js
           node demo/node/geomsvg.js
           node demo/node/selector.js
+          cd demo/node; node make_image.js
