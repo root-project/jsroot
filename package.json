@@ -83,7 +83,11 @@
     "@babel/runtime": "^7.14.0",
     "atob": "^2.1.2",
     "btoa": "^1.2.1",
-    "fflate": "^0.4.8"
+    "fflate": "^0.4.8",
+    "canvg": "^3.0.6",
+    "html2canvas": "^1.0.0-rc.5",
+    "core-js": "^3.6.0",
+    "dompurify": "^2.2.0"
   },
   "scripts": {
     "build": "rollup -c build/rollup.config.js",
