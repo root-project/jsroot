@@ -10771,7 +10771,7 @@ async function svgToPDF(args, as_buffer) {
    let _jspdf, _svg2pdf, need_symbols = false;
 
    const pr = nodejs
-      ? Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(h => { _jspdf = h; return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }); }).then(h => { _svg2pdf = h.default; })
+      ? Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(h1 => { _jspdf = h1; return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }); }).then(h2 => { _svg2pdf = h2; })
       : loadScript(exports.source_dir + 'scripts/jspdf.umd.min.js').then(() => loadScript(exports.source_dir + 'scripts/svg2pdf.umd.min.js')).then(() => { _jspdf = globalThis.jspdf; _svg2pdf = globalThis.svg2pdf; }),
         restore_fonts = [], restore_dominant = [], restore_text = [],
         node_transform = args.node.getAttribute('transform'), custom_fonts = {};

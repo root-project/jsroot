@@ -8,6 +8,7 @@
 5. Let configure custom storage prefix with `&storage_prefix=name` URL #290
 6. Let customize URL for "Show in new tab" menu command
 7. Support both new and old TRatioPlot drawings
+8. Fully integrate svg2pdf.js into jsroot repo
 
 
 ## Changes in 7.6.0
