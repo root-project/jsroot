@@ -1,4 +1,4 @@
-// https://root.cern/js/ v7.5.99
+// https://root.cern/js/ v7.6.1
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -7,11 +7,11 @@ typeof define === 'function' && define.amd ? define(['exports'], factory) :
 
 /** @summary version id
   * @desc For the JSROOT release the string in format 'major.minor.patch' like '7.0.0' */
-const version_id = 'dev',
+const version_id = '7.6.x',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '22/02/2024',
+version_date = '7/03/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -10317,7 +10317,7 @@ async function svgToPDF(args, as_buffer) {
    let _jspdf, _svg2pdf, need_symbols = false;
 
    const pr = nodejs
-      ? Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(h => { _jspdf = h; return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }); }).then(h => { _svg2pdf = h.default; })
+      ? Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(h1 => { _jspdf = h1; return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }); }).then(h2 => { _svg2pdf = h2; })
       : loadScript(exports.source_dir + 'scripts/jspdf.umd.min.js').then(() => loadScript(exports.source_dir + 'scripts/svg2pdf.umd.min.js')).then(() => { _jspdf = globalThis.jspdf; _svg2pdf = globalThis.svg2pdf; }),
         restore_fonts = [], restore_dominant = [], restore_text = [],
         node_transform = args.node.getAttribute('transform'), custom_fonts = {};
@@ -70513,12 +70513,11 @@ class TPavePainter extends ObjectPainter {
                   const align = entry.fTextAlign || this.textatt.align,
                         halign = Math.floor(align/10),
                         valign = align % 10,
-                        tsize = this.textatt.getAltSize(entry.fTextSize, pad_height),
                         x = entry.fX ? entry.fX*width : (halign === 1 ? margin_x : (halign === 2 ? width / 2 : width - margin_x)),
-                        y = entry.fY ? (1 - entry.fY)*height : (texty + (valign === 2 ? tsize / 2 : (valign === 3 ? tsize : 0))),
+                        y = entry.fY ? (1 - entry.fY)*height : (texty + (valign === 2 ? stepy / 2 : (valign === 3 ? stepy : 0))),
                         sub_g = text_g.append('svg:g');
 
-                  this.startTextDrawing(this.textatt.font, tsize, sub_g);
+                  this.startTextDrawing(this.textatt.font, this.textatt.getAltSize(entry.fTextSize, pad_height), sub_g);
 
                   this.drawText({ align, x, y, text: entry.fTitle, color,
                                   latex: (entry._typename === clTText) ? 0 : 1, draw_g: sub_g, fast });
@@ -70527,7 +70526,7 @@ class TPavePainter extends ObjectPainter {
                } else {
                   // default position
                   if (num_default++ === 0)
-                     this.startTextDrawing(this.textatt.font, height/(nlines * 1.2), text_g, max_font_size);
+                     this.startTextDrawing(this.textatt.font, 0.85*height/nlines, text_g, max_font_size);
 
                   this.drawText({ x: margin_x, y: texty, width: width - 2*margin_x, height: stepy,
                                   align: entry.fTextAlign || this.textatt.align,
@@ -110920,8 +110919,10 @@ class TGraph2DPainter extends ObjectPainter {
          res.Triangles = 11; // wireframe and colors
       else if (d.check('TRI2'))
          res.Triangles = 10; // only color triangles
-      else if (d.check('TRIW') || d.check('TRI'))
+      else if (d.check('TRIW'))
          res.Triangles = 1;
+      else if (d.check('TRI'))
+         res.Triangles = 2;
       else
          res.Triangles = 0;
       res.Line = d.check('LINE');
@@ -111053,8 +111054,9 @@ class TGraph2DPainter extends ObjectPainter {
       if (!dulaunay) return;
 
       const main_grz = !fp.logz ? fp.grz : value => (value < fp.scale_zmin) ? -0.1 : fp.grz(value),
-            do_faces = this.options.Triangles >= 10,
-            do_lines = this.options.Triangles % 10 === 1,
+            plain_mode = this.options.Triangles === 2,
+            do_faces = (this.options.Triangles >= 10) || plain_mode,
+            do_lines = (this.options.Triangles % 10 === 1) || (plain_mode && (graph.fLineColor !== graph.fFillColor)),
             triangles = new Triangles3DHandler(levels, main_grz, 0, 2*fp.size_z3d, do_lines);
 
       for (triangles.loop = 0; triangles.loop < 2; ++triangles.loop) {
@@ -111088,8 +111090,8 @@ class TGraph2DPainter extends ObjectPainter {
 
       triangles.callFuncs((lvl, pos) => {
          const geometry = createLegoGeom(this.getMainPainter(), pos, null, 100, 100),
-             color = palette.calcColor(lvl, levels.length),
-             material = new MeshBasicMaterial(getMaterialArgs(color, { side: DoubleSide, vertexColors: false })),
+               color = plain_mode ? this.getColor(graph.fFillColor) : palette.calcColor(lvl, levels.length),
+               material = new MeshBasicMaterial(getMaterialArgs(color, { side: DoubleSide, vertexColors: false })),
 
           mesh = new Mesh(geometry, material);
 
@@ -111200,7 +111202,7 @@ class TGraph2DPainter extends ObjectPainter {
 
       scale *= 7 * Math.max(fp.size_x3d / fp.getFrameWidth(), fp.size_z3d / fp.getFrameHeight());
 
-      if (this.options.Color || this.options.Triangles) {
+      if (this.options.Color || (this.options.Triangles >= 10)) {
          levels = main.getContourLevels(true);
          palette = main.getHistPalette();
       }
