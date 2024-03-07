@@ -125,6 +125,17 @@
     "tmp": false,
     "xhr": false,
     "xhr2": false,
-    "child_process": false
+    "child_process": false,
+    "cssesc": false,
+    "font-family-papandreou": false,
+    "svgpath": false,
+    "specificity": false,
+    "@babel/runtime": false,
+    "fflate": false,
+    "canvg": false,
+    "html2canvas": false,
+    "core-js": false,
+    "dompurify": false
+
   }
 }
