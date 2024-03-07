@@ -377,12 +377,12 @@ class THistDrawOptions {
 
       if (d.check('A')) this.Axis = -1;
       if (pad?.$ratio_pad === 'up') {
-         this.Axis = 0; // draw both axes
+         if (!this.Same) this.Axis = 0; // draw both axes
          histo.fXaxis.fLabelSize = 0;
          histo.fXaxis.fTitle = '';
          histo.fYaxis.$use_top_pad = true;
       } else if (pad?.$ratio_pad === 'low') {
-         this.Axis = 0; // draw both axes
+         if (!this.Same) this.Axis = 0; // draw both axes
          histo.fXaxis.$use_top_pad = true;
          histo.fYaxis.$use_top_pad = true;
          histo.fXaxis.fTitle = 'x';
