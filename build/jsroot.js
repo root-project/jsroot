@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '6/03/2024',
+version_date = '7/03/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -67631,15 +67631,12 @@ class TPadPainter extends ObjectPainter {
    /** @summary Add pad interactive features like dragging and resize
      * @private */
    addPadInteractive(cleanup = false) {
-      if (this.isBatchMode())
-         return;
-
       if (isFunc(this.$userInteractive)) {
          this.$userInteractive();
          delete this.$userInteractive;
       }
 
-      if (this.iscan)
+      if (this.isBatchMode() || this.iscan)
          return;
 
       const svg_can = this.getCanvSvg(),
@@ -71898,12 +71895,12 @@ class THistDrawOptions {
 
       if (d.check('A')) this.Axis = -1;
       if (pad?.$ratio_pad === 'up') {
-         this.Axis = 0; // draw both axes
+         if (!this.Same) this.Axis = 0; // draw both axes
          histo.fXaxis.fLabelSize = 0;
          histo.fXaxis.fTitle = '';
          histo.fYaxis.$use_top_pad = true;
       } else if (pad?.$ratio_pad === 'low') {
-         this.Axis = 0; // draw both axes
+         if (!this.Same) this.Axis = 0; // draw both axes
          histo.fXaxis.$use_top_pad = true;
          histo.fYaxis.$use_top_pad = true;
          histo.fXaxis.fTitle = 'x';
@@ -118107,13 +118104,12 @@ class RPadPainter extends RObjectPainter {
    /** @summary Add pad interactive features like dragging and resize
     * @private */
    addPadInteractive(cleanup = false) {
-      if (this.isBatchMode())
-        return;
-
       if (isFunc(this.$userInteractive)) {
          this.$userInteractive();
          delete this.$userInteractive;
       }
+      // if (this.isBatchMode())
+      //   return;
    }
 
    /** @summary returns true if any objects beside sub-pads exists in the pad */
