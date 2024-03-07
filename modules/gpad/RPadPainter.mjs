@@ -602,13 +602,12 @@ class RPadPainter extends RObjectPainter {
    /** @summary Add pad interactive features like dragging and resize
     * @private */
    addPadInteractive(cleanup = false) {
-      if (this.isBatchMode())
-        return;
-
       if (isFunc(this.$userInteractive)) {
          this.$userInteractive();
          delete this.$userInteractive;
       }
+      // if (this.isBatchMode())
+      //   return;
    }
 
    /** @summary returns true if any objects beside sub-pads exists in the pad */

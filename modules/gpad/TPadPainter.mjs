@@ -890,15 +890,12 @@ class TPadPainter extends ObjectPainter {
    /** @summary Add pad interactive features like dragging and resize
      * @private */
    addPadInteractive(cleanup = false) {
-      if (this.isBatchMode())
-         return;
-
       if (isFunc(this.$userInteractive)) {
          this.$userInteractive();
          delete this.$userInteractive;
       }
 
-      if (this.iscan)
+      if (this.isBatchMode() || this.iscan)
          return;
 
       const svg_can = this.getCanvSvg(),
