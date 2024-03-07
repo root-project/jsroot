@@ -37,7 +37,6 @@
     "canvas": "^2.11.2",
     "jsdom": "^22.1.0",
     "mathjax": "3.2.2",
-    "svg2pdf.js": "^2.2.2",
     "tmp": "^0.2.1",
     "xhr2": "^0.2.1"
   },
@@ -76,7 +75,15 @@
     "rollup": "3",
     "rollup-plugin-ascii": "0.0",
     "rollup-plugin-ignore": "1.0.10",
-    "rollup-plugin-modify": "^3.0.0"
+    "rollup-plugin-modify": "^3.0.0",
+    "cssesc": "^3.0.0",
+    "font-family-papandreou": "^0.2.0-patch1",
+    "svgpath": "^2.3.0",
+    "specificity": "^0.4.1",
+    "@babel/runtime": "^7.14.0",
+    "atob": "^2.1.2",
+    "btoa": "^1.2.1",
+    "fflate": "^0.4.8"
   },
   "scripts": {
     "build": "rollup -c build/rollup.config.js",
