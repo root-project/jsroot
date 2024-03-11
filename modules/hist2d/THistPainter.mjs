@@ -916,10 +916,12 @@ class THistPainter extends ObjectPainter {
       // if when_axis_changed === true specified, content will be scanned after axis zoom changed
    }
 
-   /** @summary Check pad ranges when drawing of frame axes will be performed */
-   checkPadRange(use_pad) {
+   /** @summary Check pad ranges when drawing of frame axes will be performed
+     * @desc Only if histogram is main painter and drawn with SAME option, pad range can be used
+     * In all other cases configured range must be derived from histogram itself */
+   checkPadRange() {
       if (this.isMainPainter())
-         this.check_pad_range = use_pad ? 'pad_range' : true;
+         this.check_pad_range = this.options.Same ? 'pad_range' : true;
    }
 
    /** @summary Create necessary histogram draw attributes */
@@ -1075,7 +1077,7 @@ class THistPainter extends ObjectPainter {
       if (!o.omaximum)
          o.maximum = histo.fMaximum;
 
-      if (this.snapid || !fp || !fp.zoomChangedInteractive())
+      if (!fp || !fp.zoomChangedInteractive())
          this.checkPadRange();
 
       this.scanContent();
@@ -2353,7 +2355,7 @@ class THistPainter extends ObjectPainter {
                painter.options.Color = true; // default is color
          }
 
-         painter.checkPadRange(/* !painter.options.Mode3D && */ (painter.options.Contour !== 14));
+         painter.checkPadRange();
 
          painter.scanContent();
 

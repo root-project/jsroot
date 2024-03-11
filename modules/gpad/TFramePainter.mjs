@@ -1904,9 +1904,7 @@ class TFramePainter extends ObjectPainter {
          if (opts.ndim > 1) this.applyAxisZoom('y');
          if (opts.ndim > 2) this.applyAxisZoom('z');
 
-         // TODO: extraction of PAD ranges must be done much earlier in hist painter
-         // normally histogram MUST set this ranges
-         // to be fixed after 7.6.0 release
+         // Use configured pad range - only when main histogram drawn with SAME draw option
          if (opts.check_pad_range === 'pad_range') {
             const canp = this.getCanvPainter();
             // ignore range set in the online canvas
