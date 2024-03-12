@@ -1906,12 +1906,8 @@ class TFramePainter extends ObjectPainter {
 
          // Use configured pad range - only when main histogram drawn with SAME draw option
          if (opts.check_pad_range === 'pad_range') {
-            const canp = this.getCanvPainter();
-            // ignore range set in the online canvas
-            if (!canp || !canp.online_canvas) {
-               this.applyPadUserRange(pad, 'x');
-               this.applyPadUserRange(pad, 'y');
-            }
+            this.applyPadUserRange(pad, 'x');
+            this.applyPadUserRange(pad, 'y');
          }
       }
 
