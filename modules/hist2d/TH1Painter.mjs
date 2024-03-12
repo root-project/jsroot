@@ -46,8 +46,7 @@ class TH1Painter extends THistPainter {
 
       const left = this.getSelectIndex('x', 'left'),
             right = this.getSelectIndex('x', 'right'),
-            pad = this.getPadPainter()?.getRootPad(),
-            pad_logy = (this.options.BarStyle >= 20) ? pad.fLogx : (pad?.fLogv ?? pad?.fLogy),
+            pad_logy = this.getPadPainter()?.getPadLog(this.options.BarStyle >= 20 ? 'x' : 'y'),
             f1 = this.options.Func ? this.findFunction(clTF1) : null;
 
       if (when_axis_changed && (left === this.scan_xleft) && (right === this.scan_xright))
