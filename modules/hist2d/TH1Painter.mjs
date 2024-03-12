@@ -454,8 +454,8 @@ class TH1Painter extends THistPainter {
 
    /** @summary Draw histogram as filled errors */
    drawFilledErrors(funcs) {
-      const left = this.getSelectIndex('x', 'left', -1),
-            right = this.getSelectIndex('x', 'right', 1),
+      const left = this.getSelectIndex('x', 'left', 0),
+            right = this.getSelectIndex('x', 'right', 0),
             histo = this.getHisto(), xaxis = histo.fXaxis,
             bins1 = [], bins2 = [];
       let i, x, grx, y, yerr;
