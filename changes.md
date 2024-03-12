@@ -9,6 +9,7 @@
 6. Let customize URL for "Show in new tab" menu command
 7. Support both new and old TRatioPlot drawings
 8. Fully integrate svg2pdf.js into jsroot repo
+9. Synchronize X/Y range selection with native ROOT
 
 
 ## Changes in 7.6.0
