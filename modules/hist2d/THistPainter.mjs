@@ -1093,7 +1093,6 @@ class THistPainter extends ObjectPainter {
    extractAxesProperties(ndim) {
       const assignTAxisFuncs = axis => {
          if (axis.fXbins.length >= axis.fNbins) {
-            axis.regular = false;
             axis.GetBinCoord = function(bin) {
                const indx = Math.round(bin);
                if (indx <= 0) return this.fXmin;
@@ -1108,10 +1107,9 @@ class THistPainter extends ObjectPainter {
                return this.fNbins;
             };
          } else {
-            axis.regular = true;
-            axis.binwidth = (axis.fXmax - axis.fXmin) / (axis.fNbins || 1);
-            axis.GetBinCoord = function(bin) { return this.fXmin + bin*this.binwidth; };
-            axis.FindBin = function(x, add) { return Math.floor((x - this.fXmin) / this.binwidth + add); };
+            axis.$binwidth = (axis.fXmax - axis.fXmin) / (axis.fNbins || 1);
+            axis.GetBinCoord = function(bin) { return this.fXmin + bin*this.$binwidth; };
+            axis.FindBin = function(x, add) { return Math.floor((x - this.fXmin) / this.$binwidth + add); };
          }
       };
 
