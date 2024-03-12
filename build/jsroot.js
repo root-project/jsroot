@@ -63899,12 +63899,8 @@ class TFramePainter extends ObjectPainter {
 
          // Use configured pad range - only when main histogram drawn with SAME draw option
          if (opts.check_pad_range === 'pad_range') {
-            const canp = this.getCanvPainter();
-            // ignore range set in the online canvas
-            if (!canp || !canp.online_canvas) {
-               this.applyPadUserRange(pad, 'x');
-               this.applyPadUserRange(pad, 'y');
-            }
+            this.applyPadUserRange(pad, 'x');
+            this.applyPadUserRange(pad, 'y');
          }
       }
 
@@ -72619,7 +72615,6 @@ class THistPainter extends ObjectPainter {
    extractAxesProperties(ndim) {
       const assignTAxisFuncs = axis => {
          if (axis.fXbins.length >= axis.fNbins) {
-            axis.regular = false;
             axis.GetBinCoord = function(bin) {
                const indx = Math.round(bin);
                if (indx <= 0) return this.fXmin;
@@ -72634,10 +72629,9 @@ class THistPainter extends ObjectPainter {
                return this.fNbins;
             };
          } else {
-            axis.regular = true;
-            axis.binwidth = (axis.fXmax - axis.fXmin) / (axis.fNbins || 1);
-            axis.GetBinCoord = function(bin) { return this.fXmin + bin*this.binwidth; };
-            axis.FindBin = function(x, add) { return Math.floor((x - this.fXmin) / this.binwidth + add); };
+            axis.$binwidth = (axis.fXmax - axis.fXmin) / (axis.fNbins || 1);
+            axis.GetBinCoord = function(bin) { return this.fXmin + bin*this.$binwidth; };
+            axis.FindBin = function(x, add) { return Math.floor((x - this.fXmin) / this.$binwidth + add); };
          }
       };
 
@@ -79844,25 +79838,23 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
    drawFilledErrors(funcs) {
       const left = this.getSelectIndex('x', 'left', 0),
             right = this.getSelectIndex('x', 'right', 0),
-            histo = this.getHisto(), xaxis = histo.fXaxis,
-            bins1 = [], bins2 = [];
-      let i, x, grx, y, yerr;
+            histo = this.getHisto(), bins1 = [], bins2 = [];
 
-      for (i = left; i < right; ++i) {
-         x = xaxis.GetBinCoord(i+0.5);
+      for (let i = left; i < right; ++i) {
+         const x = histo.fXaxis.GetBinCoord(i+0.5);
          if (funcs.logx && (x <= 0)) continue;
-         grx = Math.round(funcs.grx(x));
-
-         y = histo.getBinContent(i+1);
-         yerr = histo.getBinError(i+1);
+         const grx = Math.round(funcs.grx(x)),
+               y = histo.getBinContent(i+1),
+               yerr = histo.getBinError(i+1);
          if (funcs.logy && (y-yerr < funcs.scale_ymin)) continue;
 
          bins1.push({ grx, gry: Math.round(funcs.gry(y + yerr)) });
          bins2.unshift({ grx, gry: Math.round(funcs.gry(y - yerr)) });
       }
 
-      const path1 = buildSvgCurve(bins1, { line: this.options.ErrorKind !== 4 }),
-            path2 = buildSvgCurve(bins2, { line: this.options.ErrorKind !== 4, cmd: 'L' });
+      const line = this.options.ErrorKind !== 4,
+            path1 = buildSvgCurve(bins1, { line }),
+            path2 = buildSvgCurve(bins2, { line, cmd: 'L' });
 
       this.draw_g.append('svg:path')
                  .attr('d', path1 + path2 + 'Z')
