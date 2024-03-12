@@ -80,7 +80,8 @@
       { "name": "fit2a", "json": "web6canv/fit2a.json.gz", "title": "TF2 function drawn with [cutg] option to cut axis range, output of tutorials/fit/fit2a.C macro" },
       { "name": "fit2dHist", "json": "web6canv/fit2dHist.json.gz", "title": "Drawing stats box with TF2 parameters, use gStyle, output of tutorials/fit/fit2dHist.C macro" },
       { "name": "transp", "json": "web6canv/transparentpad.json.gz", "title": "Drawing several TPads with semi-transparent colors, output of tutorials/gl/transparentpad.C macro" },
-      { "name": "palette", "json": "web6canv/perceptualcolormap.json.gz", "title": "Usage of custom palette, output of tutorials/graphics/perceptualcolormap.C macro" }
+      { "name": "palette", "json": "web6canv/perceptualcolormap.json.gz", "title": "Usage of custom palette, output of tutorials/graphics/perceptualcolormap.C macro" },
+      { "name": "transpad", "json": "web6canv/transpad.json.gz", "title": "Overlay transparent pad with TGaxis, output of tutorials/hist/transpad.C macro" }
    ],
    "RCanvas" : [
       { "name": "raxis", "json": "rcanvas/raxis.json.gz", "title": "RAxis drawings from raxis.cxx macro" },
