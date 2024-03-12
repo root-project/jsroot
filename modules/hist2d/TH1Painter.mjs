@@ -44,7 +44,9 @@ class TH1Painter extends THistPainter {
          this.extractAxesProperties(1);
 
       const left = this.getSelectIndex('x', 'left'),
-            right = this.getSelectIndex('x', 'right');
+            right = this.getSelectIndex('x', 'right'),
+            pad = this.getPadPainter()?.getRootPad(),
+            pad_logy = (this.options.BarStyle >= 20) ? pad.fLogx : (pad?.fLogv ?? pad?.fLogy);
 
       if (when_axis_changed && (left === this.scan_xleft) && (right === this.scan_xright))
          return;
@@ -107,17 +109,27 @@ class TH1Painter extends THistPainter {
                this.ymin = 0; this.ymax = hmin * 2;
             }
          } else {
-            const pad = this.getPadPainter()?.getRootPad(),
-                  pad_logy = (this.options.BarStyle >= 20) ? pad.fLogx : (pad?.fLogv ?? pad?.fLogy);
             if (pad_logy) {
                this.ymin = (hmin_nz || hmin) * 0.5;
                this.ymax = hmax*2*(0.9/0.95);
             } else {
-               this.ymin = hmin - (hmax - hmin) * gStyle.fHistTopMargin;
-               if ((this.ymin < 0) && (hmin >= 0)) this.ymin = 0;
-               this.ymax = hmax + (hmax - this.ymin) * gStyle.fHistTopMargin;
+               this.ymin = hmin;
+               this.ymax = hmax;
             }
          }
+      }
+
+      // final adjustment like in THistPainter.cxx line 7309
+      if (!this._exact_y_range && !pad_logy) {
+         if ((this.options.BaseLine !== false) && (this.ymin >= 0))
+            this.ymin = 0;
+         else {
+            const positive = (this.ymin >= 0);
+            this.ymin -= gStyle.fHistTopMargin*(this.ymax-this.ymin);
+            if (positive && (this.ymin < 0))
+               this.ymin = 0;
+         }
+         this.ymax += gStyle.fHistTopMargin*(this.ymax-this.ymin);
       }
 
       hmin = this.options.minimum;

@@ -1127,7 +1127,9 @@ class THistPainter extends ObjectPainter {
       this.ymin = histo.fYaxis.fXmin;
       this.ymax = histo.fYaxis.fXmax;
 
-      if ((ndim === 1) && this.options.ohmin && this.options.ohmax) {
+      this._exact_y_range = (ndim === 1) && this.options.ohmin && this.options.ohmax;
+
+      if (this._exact_y_range) {
          this.ymin = this.options.hmin;
          this.ymax = this.options.hmax;
       }
