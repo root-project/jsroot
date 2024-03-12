@@ -2,6 +2,7 @@ import { gStyle, settings, clTF1, kNoZoom, kInspect, isFunc } from '../core.mjs'
 import { rgb as d3_rgb } from '../d3.mjs';
 import { floatToString, buildSvgCurve, addHighlightStyle } from '../base/BasePainter.mjs';
 import { THistPainter } from './THistPainter.mjs';
+import { getTF1Value } from '../base/func.mjs';
 
 
 const PadDrawOptions = ['LOGXY', 'LOGX', 'LOGY', 'LOGZ', 'LOGV', 'LOG', 'LOG2X', 'LOG2Y', 'LOG2',
@@ -46,7 +47,8 @@ class TH1Painter extends THistPainter {
       const left = this.getSelectIndex('x', 'left'),
             right = this.getSelectIndex('x', 'right'),
             pad = this.getPadPainter()?.getRootPad(),
-            pad_logy = (this.options.BarStyle >= 20) ? pad.fLogx : (pad?.fLogv ?? pad?.fLogy);
+            pad_logy = (this.options.BarStyle >= 20) ? pad.fLogx : (pad?.fLogv ?? pad?.fLogy),
+            f1 = this.options.Func ? this.findFunction(clTF1) : null;
 
       if (when_axis_changed && (left === this.scan_xleft) && (right === this.scan_xright))
          return;
@@ -79,6 +81,17 @@ class TH1Painter extends THistPainter {
 
          hmin = Math.min(hmin, value - err);
          hmax = Math.max(hmax, value + err);
+
+         if (f1) {
+            // similar code as in THistPainter, line 7196
+            const x = histo.fXaxis.GetBinCenter(i + 1),
+                  v = getTF1Value(f1, x);
+            if (v !== undefined) {
+               hmax = Math.max(hmax, v);
+               if (pad_logy && (value > 0) && (v > 0.3 * value))
+                  hmin_nz = Math.min(hmin_nz, v);
+            }
+         }
       }
 
       // account overflow/underflow bins
