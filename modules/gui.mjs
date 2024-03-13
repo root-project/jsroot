@@ -105,7 +105,8 @@ function readStyleFromURL(url) {
    if (d.has('notouch')) browser.touches = false;
    if (d.has('adjframe')) settings.CanAdjustFrame = true;
 
-   if (d.has('toolbar')) {
+   const has_toolbar = d.has('toolbar');
+   if (has_toolbar) {
       const toolbar = d.get('toolbar', '');
       let val = null;
       if (toolbar.indexOf('popup') >= 0) val = 'popup';
@@ -144,14 +145,18 @@ function readStyleFromURL(url) {
          gStyle[field] = 0;
       else
          gStyle[field] = parseInt(val);
+      return gStyle[field] !== 0;
    }
 
    if (d.has('histzero')) gStyle.fHistMinimumZero = true;
    if (d.has('histmargin')) gStyle.fHistTopMargin = parseFloat(d.get('histmargin'));
    get_int_style('optstat', 'fOptStat', 1111);
    get_int_style('optfit', 'fOptFit', 0);
-   get_int_style('optdate', 'fOptDate', 1);
-   get_int_style('optfile', 'fOptFile', 1);
+   const has_date = get_int_style('optdate', 'fOptDate', 1),
+         has_file = get_int_style('optfile', 'fOptFile', 1);
+   if ((has_date || has_file) && !has_toolbar)
+      settings.ToolBarVert = true;
+
    get_int_style('opttitle', 'fOptTitle', 1);
    if (d.has('utc'))
       settings.TimeZone = 'UTC';
