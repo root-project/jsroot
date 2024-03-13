@@ -503,7 +503,8 @@ class THistDrawOptions {
          } else if (this.Line) {
             res += 'L';
             if (this.Fill) res += 'F';
-         }
+         } else if (this.Off)
+            res = '][';
 
          if (this.Cjust) res += ' CJUST';
 
@@ -513,8 +514,9 @@ class THistDrawOptions {
             res += this.TextKind;
          }
       }
-
-      if (is_main_hist && res) {
+      if (this.Same)
+         res += this.ForceStat ? 'SAMES' : 'SAME';
+      else if (is_main_hist && res) {
          if (this.ForceStat || (this.StatEnabled === true))
             res += '_STAT';
          else if (this.NoStat || (this.StatEnabled === false))
