@@ -147,6 +147,13 @@ function readStyleFromURL(url) {
          gStyle[field] = parseInt(val);
       return gStyle[field] !== 0;
    }
+   function get_float_style(name, field) {
+      if (!d.has(name)) return;
+      const val = d.get(name),
+            flt = Number.parseFloat(val);
+      if (Number.isFinite(flt))
+         gStyle[field] = flt;
+   }
 
    if (d.has('histzero')) gStyle.fHistMinimumZero = true;
    if (d.has('histmargin')) gStyle.fHistTopMargin = parseFloat(d.get('histmargin'));
@@ -156,6 +163,8 @@ function readStyleFromURL(url) {
          has_file = get_int_style('optfile', 'fOptFile', 1);
    if ((has_date || has_file) && !has_toolbar)
       settings.ToolBarVert = true;
+   get_float_style('datex', 'fDateX');
+   get_float_style('datey', 'fDateY');
 
    get_int_style('opttitle', 'fOptTitle', 1);
    if (d.has('utc'))
