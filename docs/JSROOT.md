@@ -56,6 +56,8 @@ To automate files loading and objects drawing, one can provide number of URL par
 - fitfmt - formatting for fit values in stat box, default 5.4g (see TStyle::SetFitFormat)
 - optdate - plot specified date on the canvas, 1 - current time, 2 - file creation date, 3 - file modification date
 - utc - select timeZone to 'UTC'
+- datex     - X position of date
+- datey     - Y position of date
 - optfile - plot file name on the canvas, 1 - file name, 2 - full file URL, 3 - object item name
 - opttitle - disable/enable drawing of object title in the canvas
 - nomenu - disable context menu

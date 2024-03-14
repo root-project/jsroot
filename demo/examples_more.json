@@ -7,7 +7,7 @@
      { "name": "labels2", "opt": "", "file": "text_labels.root", "item": "c1;1", "title": "small labels, should be rotated by 20 grad" },
      { "name": "hbar", "file": "hbars.root", "item": "c1;1", "title": "Horizontal bars" },
      { "name": "optdate2", "url": "?nobrowser&file=$$$hsimple.root&item=hpx;1&optdate=2&optfile=2&utc", "title": "Draw on canvas file creation date and file URL using optdate=2&optfile=2&utc URL parameters" },
-     { "name": "optdate3", "url": "?nobrowser&file=$$$hsimple.root&item=hpx;1&optdate=3&optfile=3&utc", "title": "Draw on canvas file modification date and item name using optdate=3&optfile=3&utc URL parameter" },
+     { "name": "optdate3", "url": "?nobrowser&file=$$$hsimple.root&item=hpx;1&optdate=3&optfile=3&utc&datex=0.03&datey=0.03", "title": "Draw on canvas file modification date and item name using optdate=3&optfile=3&utc URL parameter" },
      { "name": "tut1", "file": "tutorials_hist.root", "layout": "grid2x1", "items": ["h1draw","hksimple"], "title": "Macro outputs from $ROOTSYS/tutorials/hist" },
      { "name": "tut2", "file": "tutorials_hist.root", "layout": "grid2x1", "items": ["logscales", "rebin"], "title": "Macro outputs from $ROOTSYS/tutorials/hist" },
      { "name": "tut3", "file": "tutorials_hist.root", "layout": "grid2x2", "items": ["histpalettecolor", "hlabels1", "twoscales", "transpad"], "title": "Macro outputs from $ROOTSYS/tutorials/hist" },
