@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '12/03/2024',
+version_date = '14/03/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -72025,7 +72025,8 @@ class THistDrawOptions {
          } else if (this.Line) {
             res += 'L';
             if (this.Fill) res += 'F';
-         }
+         } else if (this.Off)
+            res = '][';
 
          if (this.Cjust) res += ' CJUST';
 
@@ -72035,8 +72036,9 @@ class THistDrawOptions {
             res += this.TextKind;
          }
       }
-
-      if (is_main_hist && res) {
+      if (this.Same)
+         res += this.ForceStat ? 'SAMES' : 'SAME';
+      else if (is_main_hist && res) {
          if (this.ForceStat || (this.StatEnabled === true))
             res += '_STAT';
          else if (this.NoStat || (this.StatEnabled === false))
@@ -104114,6 +104116,10 @@ class HierarchyPainter extends BasePainter {
                      arg0 += '&utc';
                   else if (settings.TimeZone)
                      arg0 += `&timezone='${settings.TimeZone}'`;
+                  if (Math.abs(gStyle.fDateX - 0.01) > 1e-3)
+                     arg0 += `&datex=${gStyle.fDateX.toFixed(3)}`;
+                  if (Math.abs(gStyle.fDateY - 0.01) > 1e-3)
+                     arg0 += `&datey=${gStyle.fDateY.toFixed(3)}`;
                   if (gStyle.fHistMinimumZero)
                      arg0 += '&histzero';
                   if (settings.DarkMode)
@@ -106321,7 +106327,8 @@ function readStyleFromURL(url) {
    if (d.has('notouch')) browser.touches = false;
    if (d.has('adjframe')) settings.CanAdjustFrame = true;
 
-   if (d.has('toolbar')) {
+   const has_toolbar = d.has('toolbar');
+   if (has_toolbar) {
       const toolbar = d.get('toolbar', '');
       let val = null;
       if (toolbar.indexOf('popup') >= 0) val = 'popup';
@@ -106360,14 +106367,27 @@ function readStyleFromURL(url) {
          gStyle[field] = 0;
       else
          gStyle[field] = parseInt(val);
+      return gStyle[field] !== 0;
+   }
+   function get_float_style(name, field) {
+      if (!d.has(name)) return;
+      const val = d.get(name),
+            flt = Number.parseFloat(val);
+      if (Number.isFinite(flt))
+         gStyle[field] = flt;
    }
 
    if (d.has('histzero')) gStyle.fHistMinimumZero = true;
    if (d.has('histmargin')) gStyle.fHistTopMargin = parseFloat(d.get('histmargin'));
    get_int_style('optstat', 'fOptStat', 1111);
    get_int_style('optfit', 'fOptFit', 0);
-   get_int_style('optdate', 'fOptDate', 1);
-   get_int_style('optfile', 'fOptFile', 1);
+   const has_date = get_int_style('optdate', 'fOptDate', 1),
+         has_file = get_int_style('optfile', 'fOptFile', 1);
+   if ((has_date || has_file) && !has_toolbar)
+      settings.ToolBarVert = true;
+   get_float_style('datex', 'fDateX');
+   get_float_style('datey', 'fDateY');
+
    get_int_style('opttitle', 'fOptTitle', 1);
    if (d.has('utc'))
       settings.TimeZone = 'UTC';
