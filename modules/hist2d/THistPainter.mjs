@@ -2353,8 +2353,6 @@ class THistPainter extends ObjectPainter {
          if (painter.isTH2Poly()) {
             if (painter.options.Mode3D)
                painter.options.Lego = 12; // lego always 12
-            else if (!painter.options.Color)
-               painter.options.Color = true; // default is color
          }
 
          painter.checkPadRange();
