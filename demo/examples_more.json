@@ -61,7 +61,9 @@
    "TH2Poly" : [
       { "name": "germany", "url": "?nobrowser&file=$$$th2poly.root&item=europe;1/[13]", "title": "Draw single TH2PolyBin from europe map" },
       { "name": "docu", "file": "histpainter6.root", "layout": "vert22", "items": ["draw_poly1", "draw_poly2", "draw_poly3"], "title": "several TH2Poly examples from THistPainter documentation page" },
-      { "name": "kdtree", "url": "?nobrowser&file=$$$tutorials_math.root&item=kdTreeBinning4;1/[0]", "title": "Draw only TH2Poly from tutorials/math/kdTreeBinning.C macro" }
+      { "name": "kdtree", "url": "?nobrowser&file=$$$tutorials_math.root&item=kdTreeBinning4;1/[0]", "title": "Draw only TH2Poly from tutorials/math/kdTreeBinning.C macro" },
+      { "name": "text", "file": "th2poly.root", "item": "honeycomb;1", "opt": "text", "title": "Only text from honeycomb" },
+      { "name": "l", "file": "th2poly.root", "item": "honeycomb;1", "opt": "l", "title": "Only line from honeycomb" }
    ],
    "TH3" : [
       { "name": "subpads", "opt": "", "file": "glc.root", "item": "glc;1", "title": "canvas with two subpads, both with 3D plotls" },
