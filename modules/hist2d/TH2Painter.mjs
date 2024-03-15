@@ -1524,15 +1524,67 @@ class TH2Painter extends THistPainter {
       return cmd;
    }
 
-   /** @summary draw TH2Poly as color */
-   async drawPolyBinsColor() {
+   createPolyBinNew(funcs, gr) {
+      let grcmd = '', acc_x = 0, acc_y = 0;
+
+      const flush = () => {
+         if (acc_x) { grcmd += 'h' + acc_x; acc_x = 0; }
+         if (acc_y) { grcmd += 'v' + acc_y; acc_y = 0; }
+      };
+
+
+      const x = gr.fX, y = gr.fY;
+      let n, nextx, nexty, npnts = gr.fNpoints, dx, dy,
+             grx = Math.round(funcs.grx(x[0])),
+             gry = Math.round(funcs.gry(y[0]));
+
+      if ((npnts > 2) && (x[0] === x[npnts-1]) && (y[0] === y[npnts-1])) npnts--;
+
+      const poscmd = `M${grx},${gry}`;
+
+      grcmd = '';
+
+      for (let n = 1; n < npnts; ++n) {
+         nextx = Math.round(funcs.grx(x[n]));
+         nexty = Math.round(funcs.gry(y[n]));
+         dx = nextx - grx;
+         dy = nexty - gry;
+         if (dx || dy) {
+            if (dx === 0) {
+               if ((acc_y === 0) || ((dy < 0) !== (acc_y < 0))) flush();
+               acc_y += dy;
+            } else if (dy === 0) {
+               if ((acc_x === 0) || ((dx < 0) !== (acc_x < 0))) flush();
+               acc_x += dx;
+            } else {
+               flush();
+               grcmd += `l${dx},${dy}`;
+            }
+
+            grx = nextx; gry = nexty;
+         }
+      }
+
+      flush();
+
+      return grcmd ? poscmd + grcmd + 'z' : '';
+   }
+
+
+   /** @summary draw TH2Poly bins */
+   async drawPolyBins() {
       const histo = this.getObject(),
             pmain = this.getFramePainter(),
             funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
+            draw_lines = this.options.Line || this.options.Text,
+            draw_colors = this.options.Color,
+            draw_fill = this.options.Fill && !draw_colors,
             h = pmain.getFrameHeight(),
             colPaths = [], textbins = [],
             len = histo.fBins.arr.length;
-       let colindx, cmd, bin, item, i;
+       let colindx, cmd, full_cmd = '', bin, item, i, gr0 = null,
+           lineatt_match = draw_lines,
+           fillatt_match = draw_fill;
 
       // force recalculations of contours
       // use global coordinates
@@ -1540,43 +1592,95 @@ class TH2Painter extends THistPainter {
       this.minbin = this.gminbin;
       this.minposbin = this.gminposbin;
 
-      const cntr = this.getContour(true), palette = this.getHistPalette(),
-            draw_lines = this.options.Line || this.options.Text;
+      const cntr = draw_colors ? this.getContour(true) : null,
+            palette = cntr ? this.getHistPalette() : null,
+            rejectBin = bin => {
+               if (!bin.fContent && !this.options.Zero)
+                  return true;
+               // check if bin outside visible range
+               return ((bin.fXmin > funcs.scale_xmax) || (bin.fXmax < funcs.scale_xmin) ||
+                       (bin.fYmin > funcs.scale_ymax) || (bin.fYmax < funcs.scale_ymin));
+            };
 
+      // check if similar fill attributes
       for (i = 0; i < len; ++i) {
          bin = histo.fBins.arr[i];
-         colindx = cntr.getPaletteIndex(palette, bin.fContent);
-         if (colindx === null) {
-            if (!draw_lines) continue;
-            colindx = 0;
+         if (rejectBin(bin)) continue;
+
+         const arr = (bin.fPoly._typename === clTMultiGraph) ? bin.fPoly.fGraphs.arr : [bin.fPoly];
+         for (let k = 0; k < arr.length; ++k) {
+            const gr = arr[k];
+            if (!gr0) { gr0 = gr; continue; }
+            if (lineatt_match && ((gr0.fLineColor !== gr.fLineColor) || (gr0.fLineWidth !== gr.fLineWidth) || (gr0.fLineStyle !== gr.fLineStyle)))
+               lineatt_match = false;
+            if (fillatt_match && ((gr0.fFillColor !== gr.fFillColor) || (gr0.fFillStyle !== gr.fFillStyle)))
+               fillatt_match = false;
          }
-         // contrary to TH2 col drawing always, empty bins not drawn only when Zero option is specified
-         if ((bin.fContent === 0) && !this.options.Zero) continue;
-
-         // check if bin outside visible range
-         if ((bin.fXmin > funcs.scale_xmax) || (bin.fXmax < funcs.scale_xmin) ||
-             (bin.fYmin > funcs.scale_ymax) || (bin.fYmax < funcs.scale_ymin)) continue;
-
-         cmd = this.createPolyBin(funcs, bin, this.options.Text && bin.fContent);
-
-         if (colPaths[colindx] === undefined)
-            colPaths[colindx] = cmd;
-         else
-            colPaths[colindx] += cmd;
-
-         if (this.options.Text && bin.fContent)
-            textbins.push(bin);
+         if (!lineatt_match && !fillatt_match)
+            break;
       }
 
-      for (colindx = 0; colindx < colPaths.length; ++colindx) {
-         if (colPaths[colindx]) {
-            item = this.draw_g
-                     .append('svg:path')
-                     .style('fill', colindx ? this._color_palette.getColor(colindx) : 'none')
-                     .attr('d', colPaths[colindx]);
-            if (draw_lines)
-               item.call(this.lineatt.func);
+      const lineatt0 = lineatt_match && gr0 ? this.createAttLine(gr0) : null,
+            fillatt0 = fillatt_match && gr0 ? this.createAttFill(gr0) : null,
+            optimize_color_draw = draw_colors && lineatt_match,
+            optimize_draw = !draw_colors && (draw_lines ? lineatt_match : true) && (draw_fill ? fillatt_match : true);
+
+      // draw bins
+      for (i = 0; i < len; ++i) {
+         bin = histo.fBins.arr[i];
+         if (rejectBin(bin)) continue;
+
+         const arr = (bin.fPoly._typename === clTMultiGraph) ? bin.fPoly.fGraphs.arr : [bin.fPoly];
+
+         colindx = draw_colors ? cntr.getPaletteIndex(palette, bin.fContent) : null;
+
+         for (let k = 0; k < arr.length; ++k) {
+            const gr = arr[k];
+            cmd = this.createPolyBinNew(funcs, arr[k]);
+            if (!cmd) continue;
+
+            if (optimize_color_draw) {
+               if (colindx !== null) {
+                  if (colPaths[colindx] === undefined)
+                     colPaths[colindx] = cmd;
+                  else
+                     colPaths[colindx] += cmd;
+               }
+            } else if (optimize_draw)
+               full_cmd += cmd;
+            else {
+               item = this.draw_g.append('svg:path').attr('d', cmd);
+               if (draw_colors && (colindx !== null))
+                  item.style('fill', this._color_palette.getColor(colindx));
+               else if (draw_fill)
+                  item.call('fill', this.createAttFill(gr).func);
+               else
+                  item.style('fill', 'none');
+               if (draw_lines)
+                  item.call(this.createAttLine(gr).func);
+            }
+         } // loop over graphs
+      } // loop over bins
+
+      if (optimize_color_draw) {
+         for (colindx = 0; colindx < colPaths.length; ++colindx) {
+            if (colPaths[colindx]) {
+               item = this.draw_g
+                        .append('svg:path')
+                        .style('fill', colindx ? this._color_palette.getColor(colindx) : 'none')
+                        .attr('d', colPaths[colindx]);
+               if (draw_lines && lineatt0)
+                  item.call(lineatt0.func);
+            }
          }
+      } else if (optimize_draw) {
+         item = this.draw_g.append('svg:path').attr('d', full_cmd);
+         if (draw_fill && fillatt0)
+            item.call(fillatt0.func);
+         else
+            item.style('fill', 'none');
+         if (draw_lines && lineatt0)
+            item.call(lineatt0.func);
       }
 
       let pr = Promise.resolve(true);
@@ -2485,7 +2589,7 @@ class TH2Painter extends THistPainter {
       let handle, pr;
 
       if (this.isTH2Poly())
-         pr = this.drawPolyBinsColor();
+         pr = this.drawPolyBins();
        else {
          if (this.options.Scat)
             handle = this.drawBinsScatter();
