@@ -1444,111 +1444,36 @@ class TH2Painter extends THistPainter {
       return handle;
    }
 
-   /** @summary Create poly bin */
-   createPolyBin(funcs, bin, text_pos) {
-      let cmd = '', grcmd = '', acc_x = 0, acc_y = 0, ngr, ngraphs = 1, gr = null;
+   /** @summary Create single graph path from TH2PolyBin */
+   createPolyGr(funcs, gr, textbin) {
+      let grcmd = '', acc_x = 0, acc_y = 0, npnts = gr.fNpoints;
 
-      if (bin.fPoly._typename === clTMultiGraph)
-         ngraphs = bin.fPoly.fGraphs.arr.length;
-      else
-         gr = bin.fPoly;
-
-      if (text_pos)
-         bin._sumx = bin._sumy = bin._suml = 0;
-
-      const addPoint = (x1, y1, x2, y2) => {
-         const len = Math.sqrt((x1-x2)**2 + (y1-y2)**2);
-         bin._sumx += (x1+x2)*len/2;
-         bin._sumy += (y1+y2)*len/2;
-         bin._suml += len;
-      },
-
-       flush = () => {
-         if (acc_x) { grcmd += 'h' + acc_x; acc_x = 0; }
-         if (acc_y) { grcmd += 'v' + acc_y; acc_y = 0; }
-      };
-
-      for (ngr = 0; ngr < ngraphs; ++ngr) {
-         if (!gr || (ngr > 0)) gr = bin.fPoly.fGraphs.arr[ngr];
-
-         const x = gr.fX, y = gr.fY;
-         let n, nextx, nexty, npnts = gr.fNpoints, dx, dy,
-             grx = Math.round(funcs.grx(x[0])),
-             gry = Math.round(funcs.gry(y[0]));
-
-         if ((npnts > 2) && (x[0] === x[npnts-1]) && (y[0] === y[npnts-1])) npnts--;
-
-         const poscmd = `M${grx},${gry}`;
-
-         grcmd = '';
-
-         for (n = 1; n < npnts; ++n) {
-            nextx = Math.round(funcs.grx(x[n]));
-            nexty = Math.round(funcs.gry(y[n]));
-            if (text_pos) addPoint(grx, gry, nextx, nexty);
-            dx = nextx - grx;
-            dy = nexty - gry;
-            if (dx || dy) {
-               if (dx === 0) {
-                  if ((acc_y === 0) || ((dy < 0) !== (acc_y < 0))) flush();
-                  acc_y += dy;
-               } else if (dy === 0) {
-                  if ((acc_x === 0) || ((dx < 0) !== (acc_x < 0))) flush();
-                  acc_x += dx;
-               } else {
-                  flush();
-                  grcmd += 'l' + dx + ',' + dy;
-               }
-
-               grx = nextx; gry = nexty;
-            }
-         }
-
-         if (text_pos) addPoint(grx, gry, Math.round(funcs.grx(x[0])), Math.round(funcs.gry(y[0])));
-         flush();
-
-         if (grcmd)
-            cmd += poscmd + grcmd + 'z';
-      }
-
-      if (text_pos) {
-         if (bin._suml > 0) {
-            bin._midx = Math.round(bin._sumx / bin._suml);
-            bin._midy = Math.round(bin._sumy / bin._suml);
-         } else {
-            bin._midx = Math.round(funcs.grx((bin.fXmin + bin.fXmax)/2));
-            bin._midy = Math.round(funcs.gry((bin.fYmin + bin.fYmax)/2));
-         }
-      }
-
-      return cmd;
-   }
-
-   createPolyBinNew(funcs, gr) {
-      let grcmd = '', acc_x = 0, acc_y = 0;
-
-      const flush = () => {
-         if (acc_x) { grcmd += 'h' + acc_x; acc_x = 0; }
-         if (acc_y) { grcmd += 'v' + acc_y; acc_y = 0; }
-      };
-
-
-      const x = gr.fX, y = gr.fY;
-      let n, nextx, nexty, npnts = gr.fNpoints, dx, dy,
-             grx = Math.round(funcs.grx(x[0])),
-             gry = Math.round(funcs.gry(y[0]));
+      const x = gr.fX, y = gr.fY,
+         flush = () => {
+            if (acc_x) { grcmd += 'h' + acc_x; acc_x = 0; }
+            if (acc_y) { grcmd += 'v' + acc_y; acc_y = 0; }
+         }, addPoint = (x1, y1, x2, y2) => {
+            const len = Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
+            textbin.sumx += (x1 + x2) * len / 2;
+            textbin.sumy += (y1 + y2) * len / 2;
+            textbin.sum += len;
+         };
 
       if ((npnts > 2) && (x[0] === x[npnts-1]) && (y[0] === y[npnts-1])) npnts--;
+      if (npnts < 2)
+         return '';
 
-      const poscmd = `M${grx},${gry}`;
-
-      grcmd = '';
+      const grx0 = Math.round(funcs.grx(x[0])),
+            gry0 = Math.round(funcs.gry(y[0]));
+      let grx = grx0, gry = gry0
 
       for (let n = 1; n < npnts; ++n) {
-         nextx = Math.round(funcs.grx(x[n]));
-         nexty = Math.round(funcs.gry(y[n]));
-         dx = nextx - grx;
-         dy = nexty - gry;
+         const nextx = Math.round(funcs.grx(x[n])),
+               nexty = Math.round(funcs.gry(y[n])),
+               dx = nextx - grx,
+               dy = nexty - gry;
+
+         if (textbin) addPoint(grx, gry, nextx, nexty);
          if (dx || dy) {
             if (dx === 0) {
                if ((acc_y === 0) || ((dy < 0) !== (acc_y < 0))) flush();
@@ -1565,19 +1490,28 @@ class TH2Painter extends THistPainter {
          }
       }
 
+      if (textbin) addPoint(grx, gry, grx0, gry0);
       flush();
 
-      return grcmd ? poscmd + grcmd + 'z' : '';
+      return grcmd ? `M${grx0},${gry0}` + grcmd + 'z' : '';
    }
 
+   /** @summary Create path for complete TH2PolyBin */
+   createPolyBin(funcs, bin) {
+      const arr = (bin.fPoly._typename === clTMultiGraph) ? bin.fPoly.fGraphs.arr : [bin.fPoly];
+      let cmd = '';
+      for (let k = 0; k < arr.length; ++k)
+         cmd += this.createPolyGr(funcs, arr[k]);
+      return cmd;
+   }
 
    /** @summary draw TH2Poly bins */
    async drawPolyBins() {
       const histo = this.getObject(),
             pmain = this.getFramePainter(),
             funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
-            draw_lines = this.options.Line || this.options.Text,
-            draw_colors = this.options.Color,
+            draw_lines = this.options.Line,
+            draw_colors = this.options.Color || (!this.options.Line && !this.options.Fill),
             draw_fill = this.options.Fill && !draw_colors,
             h = pmain.getFrameHeight(),
             colPaths = [], textbins = [],
@@ -1634,9 +1568,11 @@ class TH2Painter extends THistPainter {
 
          colindx = draw_colors ? cntr.getPaletteIndex(palette, bin.fContent) : null;
 
+         const textbin = this.options.Text ? { bin, sumx: 0, sumy: 0, sum: 0 } : null;
+
          for (let k = 0; k < arr.length; ++k) {
             const gr = arr[k];
-            cmd = this.createPolyBinNew(funcs, arr[k]);
+            cmd = this.createPolyGr(funcs, gr, textbin);
             if (!cmd) continue;
 
             if (optimize_color_draw) {
@@ -1660,6 +1596,9 @@ class TH2Painter extends THistPainter {
                   item.call(this.createAttLine(gr).func);
             }
          } // loop over graphs
+
+         if (textbin?.sum)
+            textbins.push(textbin);
       } // loop over bins
 
       if (optimize_color_draw) {
@@ -1694,7 +1633,17 @@ class TH2Painter extends THistPainter {
          this.startTextDrawing(42, text_size, text_g, text_size);
 
          for (i = 0; i < textbins.length; ++i) {
-            bin = textbins[i];
+            const textbin = textbins[i];
+
+            bin = textbin.bin;
+
+            if (textbin.sum > 0) {
+               textbin.midx = Math.round(textbin.sumx / textbin.sum);
+               textbin.midy = Math.round(textbin.sumy / textbin.sum);
+            } else {
+               textbin.midx = Math.round(funcs.grx((bin.fXmin + bin.fXmax)/2));
+               textbin.midy = Math.round(funcs.gry((bin.fYmin + bin.fYmax)/2));
+            }
 
             let text;
 
@@ -1706,7 +1655,7 @@ class TH2Painter extends THistPainter {
                   text = bin.fNumber.toString();
             }
 
-            this.drawText({ align: 22, x: bin._midx, y: bin._midy, rotate, text, color, latex: 0, draw_g: text_g });
+            this.drawText({ align: 22, x: textbin.midx, y: textbin.midy, rotate, text, color, latex: 0, draw_g: text_g });
          }
 
          pr = this.finishTextDrawing(text_g, true);
@@ -2968,7 +2917,7 @@ class TH2Painter extends THistPainter {
                    (realy < bin.fYmin) || (realy > bin.fYmax)) continue;
 
                // ignore empty bins with col0 option
-               if ((bin.fContent === 0) && !this.options.Zero) continue;
+               if (!bin.fContent && !this.options.Zero) continue;
 
                let gr = bin.fPoly, numgraphs = 1;
                if (gr._typename === clTMultiGraph) { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }
