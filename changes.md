@@ -11,6 +11,7 @@
 8. Support both new and old TRatioPlot drawings
 9. Fully integrate svg2pdf.js into jsroot repo
 10. Synchronize X/Y range selection with native ROOT
+11. Proper handle attributes from TH2Poly bins
 
 
 ## Changes in 7.6.0

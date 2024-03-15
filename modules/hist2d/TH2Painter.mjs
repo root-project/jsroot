@@ -1465,7 +1465,7 @@ class TH2Painter extends THistPainter {
 
       const grx0 = Math.round(funcs.grx(x[0])),
             gry0 = Math.round(funcs.gry(y[0]));
-      let grx = grx0, gry = gry0
+      let grx = grx0, gry = gry0;
 
       for (let n = 1; n < npnts; ++n) {
          const nextx = Math.round(funcs.grx(x[n])),
