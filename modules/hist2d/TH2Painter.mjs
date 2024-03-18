@@ -1571,7 +1571,7 @@ class TH2Painter extends THistPainter {
       const lineatt0 = lineatt_match && gr0 ? this.createAttLine(gr0) : null,
             fillatt0 = fillatt_match && gr0 ? this.createAttFill(gr0) : null,
             markeratt0 = markatt_match && gr0 ? this.createAttMarker({ attr: gr0, style: this.options.MarkStyle, std: false }) : null,
-            optimize_color_draw = draw_colors && lineatt_match,
+            optimize_color_draw = draw_colors && (!draw_lines || lineatt_match),
             optimize_draw = !draw_colors && (draw_lines ? lineatt_match : true) && (draw_fill ? fillatt_match : true);
 
       // draw bins
