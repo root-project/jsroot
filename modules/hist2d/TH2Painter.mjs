@@ -1525,7 +1525,7 @@ class TH2Painter extends THistPainter {
             draw_fill = this.options.Fill && !draw_colors,
             draw_mark = this.options.Mark,
             h = pmain.getFrameHeight(),
-            colPaths = [], textbins = [],
+            textbins = [],
             len = histo.fBins.arr.length;
        let colindx, cmd,
            full_cmd = '', allmarkers_cmd = '',
