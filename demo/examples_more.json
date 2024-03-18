@@ -63,7 +63,9 @@
       { "name": "docu", "file": "histpainter6.root", "layout": "vert22", "items": ["draw_poly1", "draw_poly2", "draw_poly3"], "title": "several TH2Poly examples from THistPainter documentation page" },
       { "name": "kdtree", "url": "?nobrowser&file=$$$tutorials_math.root&item=kdTreeBinning4;1/[0]", "title": "Draw only TH2Poly from tutorials/math/kdTreeBinning.C macro" },
       { "name": "text", "file": "th2poly.root", "item": "honeycomb;1", "opt": "text", "title": "Only text from honeycomb" },
-      { "name": "l", "file": "th2poly.root", "item": "honeycomb;1", "opt": "l", "title": "Only line from honeycomb" }
+      { "name": "l", "file": "th2poly.root", "item": "honeycomb;1", "opt": "l", "title": "Only lines for honeycomb" },
+      { "name": "p", "file": "th2poly.root", "item": "honeycomb;1", "opt": "p", "title": "Only markers for honeycomb" },
+      { "name": "star", "file": "th2poly.root", "item": "honeycomb;1", "opt": "*", "title": "Only * as markers for honeycomb" }
    ],
    "TH3" : [
       { "name": "subpads", "opt": "", "file": "glc.root", "item": "glc;1", "title": "canvas with two subpads, both with 3D plotls" },
