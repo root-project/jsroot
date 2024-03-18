@@ -1568,10 +1568,12 @@ class TH2Painter extends THistPainter {
             break;
       }
 
+      // do not try color draw optimization as with plain th2 while
+      // bins are not rectangular and drawings artefacts are nasty
+      // therefore draw each bin separately when doing color draw
       const lineatt0 = lineatt_match && gr0 ? this.createAttLine(gr0) : null,
             fillatt0 = fillatt_match && gr0 ? this.createAttFill(gr0) : null,
             markeratt0 = markatt_match && gr0 ? this.createAttMarker({ attr: gr0, style: this.options.MarkStyle, std: false }) : null,
-            optimize_color_draw = draw_colors && (!draw_lines || lineatt_match),
             optimize_draw = !draw_colors && (draw_lines ? lineatt_match : true) && (draw_fill ? fillatt_match : true);
 
       // draw bins
@@ -1597,16 +1599,9 @@ class TH2Painter extends THistPainter {
             cmd = this.createPolyGr(funcs, gr, textbin);
             if (!cmd) continue;
 
-            if (optimize_color_draw) {
-               if (colindx !== null) {
-                  if (colPaths[colindx] === undefined)
-                     colPaths[colindx] = cmd;
-                  else
-                     colPaths[colindx] += cmd;
-               }
-            } else if (optimize_draw)
+            if (optimize_draw)
                full_cmd += cmd;
-            else {
+            else if ((colindx !== null) || draw_fill || draw_lines) {
                item = this.draw_g.append('svg:path').attr('d', cmd);
                if (draw_colors && (colindx !== null))
                   item.style('fill', this._color_palette.getColor(colindx));
@@ -1623,18 +1618,7 @@ class TH2Painter extends THistPainter {
             textbins.push(textbin);
       } // loop over bins
 
-      if (optimize_color_draw) {
-         for (colindx = 0; colindx < colPaths.length; ++colindx) {
-            if (colPaths[colindx]) {
-               item = this.draw_g
-                        .append('svg:path')
-                        .style('fill', colindx ? this._color_palette.getColor(colindx) : 'none')
-                        .attr('d', colPaths[colindx]);
-               if (draw_lines && lineatt0)
-                  item.call(lineatt0.func);
-            }
-         }
-      } else if (optimize_draw) {
+      if (optimize_draw) {
          item = this.draw_g.append('svg:path').attr('d', full_cmd);
          if (draw_fill && fillatt0)
             item.call(fillatt0.func);
