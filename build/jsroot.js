@@ -60696,7 +60696,7 @@ function getTimeOffset(axis) {
       if (sof.length > 3) {
          let p = 0, sign = 1000;
          if (sof[0] === '-') { p = 1; sign = -1000; }
-         offset -= sign * (parseInt(sof.slice(p, p+2)) * 3600 + parseInt(sof.slice(p+2, p+4)) * 60);
+         offset -= sign * (parseInt(sof.slice(p, p + 2)) * 3600 + parseInt(sof.slice(p + 2, p + 4)) * 60);
       }
    }
 
@@ -60789,10 +60789,10 @@ const AxisPainterMethods = {
       if (base !== 10) vlog = vlog / Math.log10(base);
       if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog)) < 0.001)) {
          if (!this.noexp && (asticks !== 2))
-            return this.formatExp(base, Math.floor(vlog+0.01), val);
+            return this.formatExp(base, Math.floor(vlog + 0.01), val);
          if (Math.abs(base - Math.E) < 0.001)
             return floatToString(val, fmt || gStyle.fStatFormat);
-         return (vlog < 0) ? val.toFixed(Math.round(-vlog+0.5)) : val.toFixed(0);
+         return (vlog < 0) ? val.toFixed(Math.round(-vlog + 0.5)) : val.toFixed(0);
       }
       return null;
    },
@@ -60904,14 +60904,11 @@ const AxisPainterMethods = {
          if (this.log) return this.poduceLogTicks(this.func, total);
 
          const dom = this.func.domain(),
-
-          check = ticks => {
-            if (ticks.length <= total) return true;
-            if (ticks.length > total + 1) return false;
-            return (ticks[0] === dom[0]) || (ticks[total] === dom[1]); // special case of N+1 ticks, but match any range
-         },
-
-          res1 = this.func.ticks(total);
+            check = ticks => {
+               if (ticks.length <= total) return true;
+               if (ticks.length > total + 1) return false;
+               return (ticks[0] === dom[0]) || (ticks[total] === dom[1]); // special case of N+1 ticks, but match any range
+            }, res1 = this.func.ticks(total);
          if (ndiv2 || check(res1)) return res1;
 
          const res2 = this.func.ticks(Math.round(total * 0.7));
@@ -61443,12 +61440,12 @@ class TAxisPainter extends ObjectPainter {
          alt_pos[curr_indx] = vertical ? acc_y : acc_x;
 
          drag_rect = title_g.append('rect')
-              .attr('x', box.x)
-              .attr('y', box.y)
-              .attr('width', box.width)
-              .attr('height', box.height)
-              .style('cursor', 'move')
-              .call(addHighlightStyle, true);
+            .attr('x', box.x)
+            .attr('y', box.y)
+            .attr('width', box.width)
+            .attr('height', box.height)
+            .style('cursor', 'move')
+            .call(addHighlightStyle, true);
          //   .style('pointer-events','none'); // let forward double click to underlying elements
       }).on('drag', evnt => {
          if (!drag_rect) return;
@@ -61647,7 +61644,7 @@ class TAxisPainter extends ObjectPainter {
          if (lcnt > 0) side = -side;
 
          let lastpos = 0;
-         const fix_coord = this.vertical ? -labeloffset*side : labeloffset*side + ticksPlusMinus*tickSize;
+         const fix_coord = this.vertical ? -labeloffset * side : labeloffset * side + ticksPlusMinus * tickSize;
 
          this.startTextDrawing(labelsFont, 'font', label_g[lcnt]);
 
@@ -61666,13 +61663,13 @@ class TAxisPainter extends ObjectPainter {
 
             if (mod?.fTextColor > 0) arg.color = this.getColor(mod.fTextColor);
 
-            arg.gap_before = (nmajor > 0) ? Math.abs(Math.round(pos - this.func(lbl_pos[nmajor-1]))) : 0;
+            arg.gap_before = (nmajor > 0) ? Math.abs(Math.round(pos - this.func(lbl_pos[nmajor - 1]))) : 0;
 
-            arg.gap_after = (nmajor < lbl_pos.length-1) ? Math.abs(Math.round(this.func(lbl_pos[nmajor+1])-pos)) : 0;
+            arg.gap_after = (nmajor < lbl_pos.length - 1) ? Math.abs(Math.round(this.func(lbl_pos[nmajor + 1]) - pos)) : 0;
 
             if (center_lbls) {
                const gap = arg.gap_after || arg.gap_before;
-               pos = Math.round(pos - ((this.vertical !== this.reverse) ? 0.5*gap : -0.5*gap));
+               pos = Math.round(pos - ((this.vertical !== this.reverse) ? 0.5 * gap : -0.5 * gap));
                if ((pos < -5) || (pos > (this.vertical ? h : w) + 5)) continue;
             }
 
@@ -61935,10 +61932,9 @@ class TAxisPainter extends ObjectPainter {
 
          if (calculate_position) {
             const node1 = axis_g.node(), node2 = this.getPadSvg().node();
-            if (node1 && node2 && node1.getBoundingClientRect && node2.getBoundingClientRect) {
+            if (isFunc(node1?.getBoundingClientRect) && isFunc(node2?.getBoundingClientRect)) {
                const rect1 = node1.getBoundingClientRect(),
-                   rect2 = node2.getBoundingClientRect();
-
+                  rect2 = node2.getBoundingClientRect();
                this.position = rect1.left - rect2.left; // use to control left position of Y scale
             }
             if (node1 && !node2)
@@ -80338,18 +80334,18 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
       if (name) tips.push(name);
 
       if (this.options.Error || this.options.Mark || this.isTF1()) {
-         tips.push('x = ' + xlbl, 'y = ' + funcs.axisAsText('y', cont));
+         tips.push(`x = ${xlbl}`, `y = ${funcs.axisAsText('y', cont)}`);
          if (this.options.Error) {
-            if (xlbl[0] === '[') tips.push('error x = ' + ((x2 - x1) / 2).toPrecision(4));
-            tips.push('error y = ' + histo.getBinError(bin + 1).toPrecision(4));
+            if (xlbl[0] === '[') tips.push(`error x = ${((x2 - x1) / 2).toPrecision(4)}`);
+            tips.push(`error y = ${histo.getBinError(bin + 1).toPrecision(4)}`);
          }
       } else {
          tips.push(`bin = ${bin+1}`, `x = ${xlbl}`);
          if (histo.$baseh) cont -= histo.$baseh.getBinContent(bin+1);
          if (cont === Math.round(cont))
-            tips.push('entries = ' + cont);
+            tips.push(`entries = ${cont}`);
          else
-            tips.push('entries = ' + floatToString(cont, gStyle.fStatFormat));
+            tips.push(`entries = ${floatToString(cont, gStyle.fStatFormat)}`);
       }
 
       return tips;
@@ -80429,15 +80425,15 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
 
       if (this.options.Bar) {
          const w = grx2 - grx1;
-         grx1 += Math.round(histo.fBarOffset/1000*w);
-         grx2 = grx1 + Math.round(histo.fBarWidth/1000*w);
+         grx1 += Math.round(histo.fBarOffset / 1000 * w);
+         grx2 = grx1 + Math.round(histo.fBarWidth / 1000 * w);
       }
 
       if (grx1 > grx2)
          [grx1, grx2] = [grx2, grx1];
 
-      const midx = Math.round((grx1 + grx2)/2),
-            midy = gry1 = gry2 = GetBinGrY(findbin);
+      const midx = Math.round((grx1 + grx2) / 2),
+         midy = gry1 = gry2 = GetBinGrY(findbin);
 
       if (this.options.Bar) {
          show_rect = true;
