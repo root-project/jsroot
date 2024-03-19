@@ -12,6 +12,7 @@
 9. Fully integrate svg2pdf.js into jsroot repo
 10. Synchronize X/Y range selection with native ROOT
 11. Proper handle attributes from TH2Poly bins, support "p" for markers drawing
+12. Correctly scale size of axis ticks - take into account NDC axis length
 
 
 ## Changes in 7.6.0

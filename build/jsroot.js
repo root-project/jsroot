@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '18/03/2024',
+version_date = '19/03/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -61763,8 +61763,11 @@ class TAxisPainter extends ObjectPainter {
       if (axis.$use_top_pad)
          pp = pp?.getPadPainter(); // workaround for ratio plot
       const pad_w = pp?.getPadWidth() || scalingSize || w/0.8, // use factor 0.8 as ratio between frame and pad size
-            pad_h = pp?.getPadHeight() || scalingSize || h/0.8;
-      let tickSize = 0, tickScalingSize = 0, titleColor, titleFontId, offset;
+            pad_h = pp?.getPadHeight() || scalingSize || h/0.8,
+            // if no external scaling size use scaling as in TGaxis.cxx:1448 - NDC axis length is in the scaling factor
+            tickScalingSize = scalingSize || (this.vertical ? h/pad_h*pad_w : w/pad_w*pad_h);
+
+      let tickSize = 0, titleColor, titleFontId, offset;
 
       this.scalingSize = scalingSize || Math.max(Math.min(pad_w, pad_h), 10);
 
@@ -61777,7 +61780,6 @@ class TAxisPainter extends ObjectPainter {
          this.optionInt = (axis.fChopt.indexOf('I') >= 0);  // integer labels
          this.optionText = (axis.fChopt.indexOf('T') >= 0);  // text scaling?
          this.createAttLine({ attr: axis });
-         tickScalingSize = scalingSize || (this.vertical ? 1.7*h : 0.6*w);
          tickSize = optionSize ? axis.fTickSize : 0.03;
          titleColor = this.getColor(axis.fTextColor);
          titleFontId = axis.fTextFont;
@@ -61792,7 +61794,6 @@ class TAxisPainter extends ObjectPainter {
          this.optionInt = false;  // integer labels
          this.optionText = false;
          this.createAttLine({ color: axis.fAxisColor, width: 1, style: 1 });
-         tickScalingSize = scalingSize || (this.vertical ? pad_w : pad_h);
          tickSize = axis.fTickLength;
          titleColor = this.getColor(axis.fTitleColor);
          titleFontId = axis.fTitleFont;
