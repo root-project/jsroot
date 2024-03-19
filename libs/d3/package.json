@@ -1,6 +1,6 @@
 {
   "name": "d3_jsroot",
-  "version": "7.8.4",
+  "version": "7.9.0",
   "description": "Data-Driven Documents",
   "homepage": "https://d3js.org",
   "repository": {
@@ -45,9 +45,9 @@
   "devDependencies": {
     "@rollup/plugin-json": "6",
     "@rollup/plugin-node-resolve": "15",
-    "@rollup/plugin-terser": "0",
+    "@rollup/plugin-terser": "^0.4.0",
     "eslint": "8",
-    "mocha": "9",
+    "mocha": "10",
     "rollup": "3"
   },
   "scripts": {
