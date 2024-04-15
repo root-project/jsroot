@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '19/03/2024',
+version_date = '15/04/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -40,9 +40,11 @@ if (_src && isStr(_src)) {
    const pos = _src.indexOf('modules/core.mjs');
    if (pos >= 0) {
       exports.source_dir = _src.slice(0, pos);
-      console.log(`Set jsroot source_dir to ${exports.source_dir}, ${version}`);
+      if (!nodejs)
+         console.log(`Set jsroot source_dir to ${exports.source_dir}, ${version}`);
    } else {
-      console.log(`jsroot bundle, ${version}`);
+      if (!nodejs)
+         console.log(`jsroot bundle, ${version}`);
       internals.ignore_v6 = true;
    }
 }
@@ -1990,7 +1992,7 @@ version_date: version_date,
 version_id: version_id
 });
 
-// https://d3js.org v7.8.4 Copyright 2010-2021 Mike Bostock
+// https://d3js.org v7.9.0 Copyright 2010-2021 Mike Bostock
 
 function define(constructor, factory, prototype) {
   constructor.prototype = factory.prototype = prototype;

@@ -13,6 +13,7 @@
 10. Synchronize X/Y range selection with native ROOT
 11. Proper handle attributes from TH2Poly bins, support "p" for markers drawing
 12. Correctly scale size of axis ticks - take into account NDC axis length
+13. Remove source_dir output in node.js #296
 
 
 ## Changes in 7.6.0
