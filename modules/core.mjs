@@ -34,9 +34,11 @@ if (_src && isStr(_src)) {
    const pos = _src.indexOf('modules/core.mjs');
    if (pos >= 0) {
       source_dir = _src.slice(0, pos);
-      console.log(`Set jsroot source_dir to ${source_dir}, ${version}`);
+      if (!nodejs)
+         console.log(`Set jsroot source_dir to ${source_dir}, ${version}`);
    } else {
-      console.log(`jsroot bundle, ${version}`);
+      if (!nodejs)
+         console.log(`jsroot bundle, ${version}`);
       internals.ignore_v6 = true;
    }
 }
