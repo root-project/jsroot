@@ -61,21 +61,16 @@ jobs:
       - name: Checkout jsroot-test repo
         uses: actions/checkout@v4
         with:
-          repository: 'linev/jsroot-test'
+          repository: 'DuesselbergAdrian/jsroot-test' #Forked repository
           path: 'jsroot-test'
 
       - name: Clone JSROOT Repository
-        run: git clone https://github.com/root-project/jsroot.git
+        run: git clone https://github.com/DuesselbergAdrian/jsroot.git #Forked repository
 
       - name: Install System Dependencies for headless-gl
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential libxi-dev libglu1-mesa-dev libglew-dev xvfb
-
-      - name: Setup Xvfb
-        run: |
-          Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-          echo "DISPLAY=:99" >> $GITHUB_ENV
 
       - name: Dependencies jsroot
         run: |
@@ -87,142 +82,10 @@ jobs:
           cd jsroot-test
           npm install
 
-
-      #all the individual tests for each example. It is also possible to do it in one test
-      - name: Run test in jsroot-test for Candle
+      - name: Run all tests
         run: |
           cd jsroot-test
-          node test.js --key Candle
-
-      - name: Run test in jsroot-test for Misc
-        run: |
-          cd jsroot-test
-          node test.js --key Misc
-
-      - name: Run test in jsroot-test for RCanvas
-        run: |
-          cd jsroot-test
-          node test.js --key RCanvas
-
-      - name: Run test in jsroot-test for TASImage
-        run: |
-          cd jsroot-test
-          node test.js --key TASImage
-
-      - name: Run test in jsroot-test for TCanvas #
-        run: |
-          cd jsroot-test
-          node test.js --key TCanvas
-
-      - name: Run test in jsroot-test for TEfficiency
-        run: |
-          cd jsroot-test
-          node test.js --key TEfficiency
-
-      - name: Run test in jsroot-test for TF1
-        run: |
-          cd jsroot-test
-          node test.js --key TF1
-
-      - name: Run test in jsroot-test for TF2
-        run: |
-          cd jsroot-test
-          node test.js --key TF2
-
-      - name: Run test in jsroot-test for TF3
-        run: |
-          cd jsroot-test
-          node test.js --TF3
-
-      - name: Run test in jsroot-test for TGeo #
-        run: |
-          cd jsroot-test
-          node test.js --key TGeo
-
-      - name: Run test in jsroot-test for TGraph
-        run: |
-          cd jsroot-test
-          node test.js --key TGraph
-
-      - name: Run test in jsroot-test for TGraph2D #
-        run: |
-          cd jsroot-test
-          node test.js --key TGraph2D
-
-      - name: Run test in jsroot-test for TGraphAsymmErrors
-        run: |
-          cd jsroot-test
-          node test.js --key TGraphAsymmErrors
-
-      - name: Run test in jsroot-test for TGraphErrors
-        run: |
-          cd jsroot-test
-          node test.js --key TGraphErrors
-
-      - name: Run test in jsroot-test for TGraphMultiErrors
-        run: |
-          cd jsroot-test
-          node test.js --key TGraphMultiErrors
-
-      - name: Run test in jsroot-test for TGraphPolar
-        run: |
-          cd jsroot-test
-          node test.js --key TGraphPolar
-
-      - name: Run test in jsroot-test for TH1
-        run: |
-          cd jsroot-test
-          node test.js --key TH1
-
-      - name: Run test in jsroot-test for TH2 #
-        run: |
-          cd jsroot-test
-          node test.js --key TH2
-
-      - name: Run test in jsroot-test for TH2Poly #
-        run: |
-          cd jsroot-test
-          node test.js --key TH2Poly
-
-      - name: Run test in jsroot-test for TH3 #
-        run: |
-          cd jsroot-test
-          node test.js --key TH3
-
-      - name: Run test in jsroot-test for THStack #
-        run: |
-          cd jsroot-test
-          node test.js --key THStack
-
-      - name: Run test in jsroot-test for TLatex
-        run: |
-          cd jsroot-test
-          node test.js --key TLatex
-
-      - name: Run test in jsroot-test for TMultiGraph
-        run: |
-          cd jsroot-test
-          node test.js --key TMultiGraph
-
-      - name: Run test in jsroot-test for TProfile
-        run: |
-          cd jsroot-test
-          node test.js --key TProfile
-
-      - name: Run test in jsroot-test for TRatioPlot
-        run: |
-          cd jsroot-test
-          node test.js --key TRatioPlot
-
-      - name: Run test in jsroot-test for TTree
-        run: |
-          cd jsroot-test
-          node test.js --key TTree
-
-      - name: Run test in jsroot-test for TWebCanvas
-        run: |
-          cd jsroot-test
-          node test.js --key TWebCanvas
+          xvfb-run -s "-ac -screen 0 1280x1024x24"  node test.js -c -m
 
   build-macos:
     runs-on: macos-latest
@@ -233,7 +96,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
@@ -244,7 +106,7 @@ jobs:
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: latest-stable
-        
+
       - name: Set up C++ compiler (macOS)
         run: |
           echo "CXX=clang++" >> $GITHUB_ENV
@@ -271,36 +133,6 @@ jobs:
           node demo/node/selector.js
           cd demo/node; node make_image.js
 
-  tests_macos:
-    runs-on: macos-latest
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x]
-    steps:
-      - name: Checkout jsroot-test repo
-        uses: actions/checkout@v4
-        with:
-          repository: 'linev/jsroot-test'
-          path: 'jsroot-test'
-
-      - name: Clone JSROOT Repository
-        run: git clone https://github.com/root-project/jsroot.git
-
-      - name: Install Node Dependencies for jsroot
-        run: |
-          cd jsroot
-          npm install
-        
-      - name: Install Node Dependencies for jsroot-test
-        run: |
-          cd jsroot-test
-          npm install     
-
-      - name: Run all tests
-        run: |
-          cd jsroot-test
-          node test.js --verify
-  
   build-windows:
     runs-on: windows-latest
     strategy:
@@ -341,33 +173,4 @@ jobs:
           node demo/node/geomsvg.js
           node demo/node/selector.js
           cd demo/node; node make_image.js
-  tests_windows:
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x]
-    steps:
-      - name: Checkout jsroot-test repo
-        uses: actions/checkout@v4
-        with:
-          repository: 'linev/jsroot-test'
-          path: 'jsroot-test'
-
-      - name: Clone JSROOT Repository
-        run: git clone https://github.com/root-project/jsroot.git
-      
-      - name: Install Node Dependencies for jsroot
-        run: |
-          cd jsroot
-          npm install
-      
-      - name: Install Node Dependencies for jsroot-test
-        run: |
-          cd jsroot-test
-          npm install
-      
-      - name: Run all tests
-        run: |
-          cd jsroot-test
-          node test.js --verify
 
