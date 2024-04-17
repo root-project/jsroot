@@ -90,14 +90,15 @@ jobs:
   tests_fedora:
     runs-on: ubuntu-latest # Assuming the runner remains hosted on GitHub Actions
     container:
-      image: fedora39
+      image: fedora:39
     strategy:
       matrix:
-        node-version: [20.x]
+        node-version: [18.x]
     steps:
       - name: Install Git
         run: |
           dnf -y install git
+
       - name: Install Node.js and npm
         run: |
           curl -sL https://rpm.nodesource.com/setup_18.x | sudo bash -
