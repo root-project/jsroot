@@ -98,6 +98,10 @@ jobs:
       - name: Install Git
         run: |
           dnf -y install git
+      - name: Install Node.js and npm
+        run: |
+          curl -sL https://rpm.nodesource.com/setup_18.x | sudo bash -
+          sudo dnf install -y nodejs
 
       - name: Checkout jsroot-test repo
         uses: actions/checkout@v4
