@@ -90,10 +90,10 @@ jobs:
   tests_fedora:
     runs-on: ubuntu-latest # Assuming the runner remains hosted on GitHub Actions
     container:
-      image: fedora:latest
+      image: fedora39
     strategy:
       matrix:
-        node-version: [18.x, 20.x]
+        node-version: [20.x]
     steps:
       - name: Install Git
         run: |
