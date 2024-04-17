@@ -52,40 +52,40 @@ jobs:
           xvfb-run -s "-ac -screen 0 1280x1024x24" node demo/node/geomsvg.js
           node demo/node/selector.js
           cd demo/node; xvfb-run -s "-ac -screen 0 1280x1024x24" node make_image.js
-  #tests_ubuntu:
-  #  runs-on: ubuntu-latest
-  #  strategy:
-  #    matrix:
-  #      node-version: [18.x, 20.x]
-  #  steps:
-  #    - name: Checkout jsroot-test repo
-  #      uses: actions/checkout@v4
-  #      with:
-  #        repository: 'DuesselbergAdrian/jsroot-test' #Forked repository
-  #        path: 'jsroot-test'
+  tests_ubuntu:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    steps:
+      - name: Checkout jsroot-test repo
+        uses: actions/checkout@v4
+        with:
+          repository: 'DuesselbergAdrian/jsroot-test' #Forked repository
+          path: 'jsroot-test'
 
-  #    - name: Clone JSROOT Repository
-  #      run: git clone https://github.com/DuesselbergAdrian/jsroot.git #Forked repository
+      - name: Clone JSROOT Repository
+        run: git clone https://github.com/DuesselbergAdrian/jsroot.git #Forked repository
 
-  #    - name: Install System Dependencies for headless-gl
-  #      run: |
-  #        sudo apt-get update
-  #        sudo apt-get install -y build-essential libxi-dev libglu1-mesa-dev libglew-dev xvfb
+      - name: Install System Dependencies for headless-gl
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libxi-dev libglu1-mesa-dev libglew-dev xvfb
 
-  #    - name: Dependencies jsroot
-  #      run: |
-  #        cd jsroot
-  #        npm install
+      - name: Dependencies jsroot
+        run: |
+          cd jsroot
+          npm install
 
-  #    - name: Dependencies jsroot-test
-  #      run: |
-  #        cd jsroot-test
-  #        npm install
+      - name: Dependencies jsroot-test
+        run: |
+          cd jsroot-test
+          npm install
 
-  #    - name: Run all tests
-  #      run: |
-  #        cd jsroot-test
-  #        xvfb-run -s "-ac -screen 0 1280x1024x24"  node test.js -c -m
+      - name: Run all tests
+        run: |
+          cd jsroot-test
+          xvfb-run -s "-ac -screen 0 1280x1024x24"  node test.js -c -m
 
   tests_fedora:
     runs-on: ubuntu-latest # Assuming the runner remains hosted on GitHub Actions
