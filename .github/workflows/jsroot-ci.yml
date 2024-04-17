@@ -87,6 +87,43 @@ jobs:
           cd jsroot-test
           xvfb-run -s "-ac -screen 0 1280x1024x24"  node test.js -c -m
 
+  tests_fedora:
+    runs-on: ubuntu-latest # Assuming the runner remains hosted on GitHub Actions
+    container:
+      image: fedora:latest
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    steps:
+      - name: Checkout jsroot-test repo
+        uses: actions/checkout@v4
+        with:
+          repository: 'DuesselbergAdrian/jsroot-test' #Forked repository
+          path: 'jsroot-test'
+
+      - name: Clone JSROOT Repository
+        run: git clone https://github.com/DuesselbergAdrian/jsroot.git #Forked repository
+
+      - name: Install System Dependencies for headless-gl
+        run: |
+          dnf -y update
+          dnf install -y gcc-c++ libXi-devel mesa-libGLU-devel mesa-libGL-devel xorg-x11-server-Xvfb
+
+      - name: Dependencies jsroot
+        run: |
+          cd jsroot
+          npm install
+
+      - name: Dependencies jsroot-test
+        run: |
+          cd jsroot-test
+          npm install
+
+      - name: Run all tests
+        run: |
+          cd jsroot-test
+          xvfb-run -s "-ac -screen 0 1280x1024x24" node test.js -c -m
+
   build-macos:
     runs-on: macos-latest
     strategy:
