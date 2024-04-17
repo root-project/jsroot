@@ -93,7 +93,7 @@ jobs:
       image: fedora:39
     strategy:
       matrix:
-        node-version: [18.x]
+        node-version: [18.x, 20.x]
     steps:
       - name: Install Git
         run: |
@@ -101,7 +101,7 @@ jobs:
 
       - name: Install Node.js and npm
         run: |
-          curl -sL https://rpm.nodesource.com/setup_18.x | sudo bash -
+          curl -sL https://rpm.nodesource.com/setup_${{ matrix.node-version }}  | sudo bash -
           sudo dnf install -y nodejs
 
       - name: Checkout jsroot-test repo
