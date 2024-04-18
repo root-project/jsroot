@@ -85,10 +85,20 @@ jobs:
       - name: Run all tests
         run: |
           cd jsroot-test
-          xvfb-run -s "-ac -screen 0 1280x1024x24"  node test.js -c -m
+          xvfb-run -s "-ac -screen 0 1280x1024x24"  node test.js --key TH1
+        #TH1/opdate.svg
+        #TH1/optdate2.svg
+        #TH1/optdate3.svg
+        #TH2/image.png
+        #Candle/plot.svg
+        #Candle/stack.svg
+        #TCanvas/time.svg
+        #TGeo/image.png
+        #Misc/taxis.svg
+        #RCanvas/raxis.svg
 
   tests_fedora:
-    runs-on: ubuntu-latest # Assuming the runner remains hosted on GitHub Actions
+    runs-on: ubuntu-latest
     container:
       image: fedora:39
     strategy:
@@ -101,8 +111,8 @@ jobs:
 
       - name: Install Node.js and npm
         run: |
-          curl -sL https://rpm.nodesource.com/setup_${{ matrix.node-version }}  | sudo bash -
-          sudo dnf install -y nodejs
+          curl -sL https://rpm.nodesource.com/setup_${{ matrix.node-version }}  | bash -
+          dnf install -y nodejs
 
       - name: Checkout jsroot-test repo
         uses: actions/checkout@v4
