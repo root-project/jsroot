@@ -88,6 +88,7 @@ jobs:
           xvfb-run -s "-ac -screen 0 1280x1024x24"  node test.js --key TH1
           ./testdiff.sh TH1/TH1.svg
 
+
         #TH1/opdate.svg
         #TH1/optdate2.svg
         #TH1/optdate3.svg
