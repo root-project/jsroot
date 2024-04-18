@@ -87,6 +87,9 @@ jobs:
         run: |
           cd jsroot-test
           xvfb-run -s "-ac -screen 0 1280x1024x24"  node test.js --key TH1
+      - name: Display differences
+        run: |
+          cd jsroot-test
           ./testdiff.sh TH1/optdate.svg noimg
 
         #TH1/opdate.svg
