@@ -71,8 +71,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential libxi-dev libglu1-mesa-dev libglew-dev xvfb
-          sudo apt-get install libxml2-utils
-          sudo apt-get install colordiff
+          sudo apt-get install libxml2-utils colordiff
 
       - name: Dependencies jsroot
         run: |
@@ -88,7 +87,7 @@ jobs:
         run: |
           cd jsroot-test
           xvfb-run -s "-ac -screen 0 1280x1024x24"  node test.js --key TH1
-          ./testdiff.sh TH1/optdate.svg
+          ./testdiff.sh TH1/optdate.svg noimg
 
         #TH1/opdate.svg
         #TH1/optdate2.svg
