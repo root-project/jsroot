@@ -89,6 +89,8 @@ jobs:
           cd jsroot-test
           xvfb-run -s "-ac -screen 0 1280x1024x24"  node test.js --key TH1
           ./testdiff.sh TH1/TH1.svg
+          xvfb-run -s "-ac -screen 0 1280x1024x24"  node test.js --key TH2
+          ./testdiff.sh TH2/TH2.svg
 
 
         #TH1/opdate.svg
