@@ -86,8 +86,7 @@ jobs:
       - name: Run all tests
         run: |
           cd jsroot-test
-          xvfb-run -s "-ac -screen 0 1280x1024x24"  node test.js --key TH1
-          xvfb-run -s "-ac -screen 0 1280x1024x24"  node test.js --key Candle
+          xvfb-run -s "-ac -screen 0 1280x1024x24"  node test.js -c -m
       - name: Display differences
         run: |
           cd jsroot-test
