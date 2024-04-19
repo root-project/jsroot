@@ -61,11 +61,11 @@ jobs:
       - name: Checkout jsroot-test repo
         uses: actions/checkout@v4
         with:
-          repository: 'DuesselbergAdrian/jsroot-test' #Forked repository
+          repository: 'linev/jsroot-test'
           path: 'jsroot-test'
 
       - name: Clone JSROOT Repository
-        run: git clone https://github.com/DuesselbergAdrian/jsroot.git #Forked repository
+        run: git clone https://github.com/root-project/jsroot.git
 
       - name: Install System Dependencies for headless-gl
         run: |
