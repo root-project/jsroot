@@ -88,12 +88,7 @@ jobs:
           cd jsroot-test
           xvfb-run -s "-ac -screen 0 1280x1024x24"  node test.js -c -m
 
-      #- name: Display differences
-      #  run: |
-      #    cd jsroot-test
-      #    ./testdiff.sh TH1/optdate.svg noimg
-      #    ./testdiff.sh Candle/plot.svg noimg
-
+        #Special Cases: Tests,which are not running proberly on ubuntu
         #TH1/opdate.svg
         #TH1/optdate2.svg
         #TH1/optdate3.svg
