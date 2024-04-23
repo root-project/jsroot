@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '15/04/2024',
+version_date = '23/04/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -59053,7 +59053,7 @@ function saveLocalStorage(obj, expires, name) {
       localStorage.setItem(_storage_prefix + name, btoa_func(JSON.stringify(obj)));
 }
 
-/** @summary Read cookie with specified name
+/** @summary Read object from storage with specified name
   * @private */
 function readLocalStorage(name) {
    if (typeof localStorage === 'undefined')
@@ -59063,9 +59063,9 @@ function readLocalStorage(name) {
    return isObject(s) ? s : null;
 }
 
-/** @summary Save JSROOT settings as specified cookie parameter
-  * @param {Number} expires - days when cookie will be removed by browser, negative - delete immediately
-  * @param {String} name - cookie parameter name
+/** @summary Save JSROOT settings in local storage
+  * @param {Number} [expires] - delete settings when negative
+  * @param {String} [name] - storage name, 'settings' by default
   * @private */
 function saveSettings(expires = 365, name = 'settings') {
    saveLocalStorage(settings, expires, name);
@@ -59073,7 +59073,7 @@ function saveSettings(expires = 365, name = 'settings') {
 
 /** @summary Read JSROOT settings from specified cookie parameter
   * @param {Boolean} only_check - when true just checks if settings were stored before with provided name
-  * @param {String} name - cookie parameter name
+  * @param {String} [name] - storage name, 'settings' by default
   * @private */
 function readSettings(only_check = false, name = 'settings') {
    const s = readLocalStorage(name);
@@ -59083,17 +59083,17 @@ function readSettings(only_check = false, name = 'settings') {
    return true;
 }
 
-/** @summary Save JSROOT gStyle object as specified cookie parameter
-  * @param {Number} expires - days when cookie will be removed by browser, negative - delete immediately
-  * @param {String} name - cookie parameter name
+/** @summary Save JSROOT gStyle object in local storage
+  * @param {Number} [expires] - delete style when negative
+  * @param {String} [name] - storage name, 'style' by default
   * @private */
 function saveStyle(expires = 365, name = 'style') {
    saveLocalStorage(gStyle, expires, name);
 }
 
-/** @summary Read JSROOT gStyle object specified cookie parameter
-  * @param {Boolean} only_check - when true just checks if settings were stored before with provided name
-  * @param {String} name - cookie parameter name
+/** @summary Read JSROOT gStyle object from local storage
+  * @param {Boolean} [only_check] - when true just checks if settings were stored before with provided name
+  * @param {String} [name] - storage name, 'style' by default
   * @private */
 function readStyle(only_check = false, name = 'style') {
    const s = readLocalStorage(name);
@@ -64108,20 +64108,20 @@ class TFramePainter extends ObjectPainter {
 
    /** @summary Draw axes grids
      * @desc Called immediately after axes drawing */
-   drawGrids() {
+   drawGrids(draw_grids) {
       const layer = this.getFrameSvg().selectChild('.axis_layer');
 
       layer.selectAll('.xgrid').remove();
       layer.selectAll('.ygrid').remove();
 
       const pp = this.getPadPainter(),
-          pad = pp?.getRootPad(true),
-          h = this.getFrameHeight(),
-          w = this.getFrameWidth(),
-          grid_style = gStyle.fGridStyle;
+         pad = pp?.getRootPad(true),
+         h = this.getFrameHeight(),
+         w = this.getFrameWidth(),
+         grid_style = gStyle.fGridStyle;
 
       // add a grid on x axis, if the option is set
-      if (pad?.fGridx && this.x_handle?.ticks) {
+      if (pad?.fGridx && draw_grids && this.x_handle?.ticks) {
          const colid = (gStyle.fGridColor > 0) ? gStyle.fGridColor : (this.getAxis('x')?.fAxisColor ?? 1);
          let gridx = '';
 
@@ -64138,7 +64138,7 @@ class TFramePainter extends ObjectPainter {
       }
 
       // add a grid on y axis, if the option is set
-      if (pad?.fGridy && this.y_handle?.ticks) {
+      if (pad?.fGridy && draw_grids && this.y_handle?.ticks) {
          const colid = (gStyle.fGridColor > 0) ? gStyle.fGridColor : (this.getAxis('y')?.fAxisColor ?? 1);
          let gridy = '';
 
@@ -64174,7 +64174,7 @@ class TFramePainter extends ObjectPainter {
    /** @summary draw axes,
      * @return {Promise} which ready when drawing is completed  */
    async drawAxes(shrink_forbidden, disable_x_draw, disable_y_draw,
-                  AxisPos, has_x_obstacle, has_y_obstacle) {
+                  AxisPos, has_x_obstacle, has_y_obstacle, enable_grids) {
       this.cleanAxesDrawings();
 
       if ((this.xmin === this.xmax) || (this.ymin === this.ymax))
@@ -64186,7 +64186,8 @@ class TFramePainter extends ObjectPainter {
             w = this.getFrameWidth(),
             h = this.getFrameHeight(),
             pp = this.getPadPainter(),
-            pad = pp.getRootPad(true);
+            pad = pp.getRootPad(true),
+            draw_grids = enable_grids && (pad?.fGridx || pad?.fGridy);
 
       this.x_handle.invert_side = (AxisPos >= 10);
       this.x_handle.lbls_both_sides = !this.x_handle.invert_side && (pad?.fTickx > 1); // labels on both sides
@@ -64204,7 +64205,7 @@ class TFramePainter extends ObjectPainter {
 
       let pr = Promise.resolve(true);
 
-      if (!disable_x_draw || !disable_y_draw) {
+      if (!disable_x_draw || !disable_y_draw || draw_grids) {
          const can_adjust_frame = !shrink_forbidden && settings.CanAdjustFrame,
 
          pr1 = draw_horiz.drawAxis(layer, w, h,
@@ -64218,7 +64219,7 @@ class TFramePainter extends ObjectPainter {
                                       draw_vertical.invert_side ? 0 : this._frame_x, can_adjust_frame);
 
          pr = Promise.all([pr1, pr2]).then(() => {
-            this.drawGrids();
+            this.drawGrids(draw_grids);
 
             if (!can_adjust_frame) return;
 
@@ -71662,8 +71663,6 @@ class THistDrawOptions {
       if (d.check('YTITLE:', true)) histo.fYaxis.fTitle = decodeURIComponent(d.part.toLowerCase());
       if (d.check('ZTITLE:', true)) histo.fZaxis.fTitle = decodeURIComponent(d.part.toLowerCase());
 
-      if (d.check('FORCE_TITLE')) this.ForceTitle = true;
-
       if (d.check('_ADJUST_FRAME_')) this.adjustFrame = true;
 
       if (d.check('NOOPTIMIZE')) this.Optimize = 0;
@@ -72757,7 +72756,8 @@ class THistPainter extends ObjectPainter {
       const disable_axis_draw = (this.options.Axis < 0) || (this.options.Axis === 2);
 
       return fp.drawAxes(false, disable_axis_draw, disable_axis_draw,
-                         this.options.AxisPos, this.options.Zscale && this.options.Zvert, this.options.Zscale && !this.options.Zvert);
+                         this.options.AxisPos, this.options.Zscale && this.options.Zvert,
+                         this.options.Zscale && !this.options.Zvert, this.options.Axis !== 1);
    }
 
    /** @summary Inform web canvas that something changed in the histogram */
@@ -72790,7 +72790,7 @@ class THistPainter extends ObjectPainter {
      * @return {Promise} with painter */
    async drawHistTitle() {
       // case when histogram drawn over other histogram (same option)
-      if (!this.isMainPainter() || this.options.Same || (this.options.Axis > 0 && !this.options.ForceTitle))
+      if (!this.isMainPainter() || this.options.Same || (this.options.Axis > 0))
          return this;
 
       const histo = this.getHisto(), st = gStyle,
@@ -103286,15 +103286,20 @@ class HierarchyPainter extends BasePainter {
       let top = this.h, itemname = '';
 
       if (isStr(arg)) {
-         itemname = arg; arg = {};
+         itemname = arg;
+         arg = {};
       } else if (isObject(arg)) {
-         itemname = arg.name; if ('top' in arg) top = arg.top;
+         itemname = arg.name;
+         if ('top' in arg)
+            top = arg.top;
       } else
          return null;
 
-      if (itemname === '__top_folder__') return top;
+      if (itemname === '__top_folder__')
+         return top;
 
-      if (isStr(itemname) && (itemname.indexOf('img:') === 0)) return null;
+      if (isStr(itemname) && (itemname.indexOf('img:') === 0))
+         return null;
 
       return find_in_hierarchy(top, itemname);
    }
@@ -103306,7 +103311,8 @@ class HierarchyPainter extends BasePainter {
      * @return {string} produced name
      * @private */
    itemFullName(node, uptoparent, compact) {
-      if (node && node._kind === kTopFolder) return '__top_folder__';
+      if (node?._kind === kTopFolder)
+         return '__top_folder__';
 
       let res = '';
 
@@ -107204,7 +107210,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
          }
       }
 
-      const res = this.options, _a = 'AXIS;FORCE_TITLE;';
+      const res = this.options;
       let d = new DrawOptions(opt), hopt = '';
 
       PadDrawOptions.forEach(name => { if (d.check(name)) hopt += ';' + name; });
@@ -107227,7 +107233,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
       if (d.check('PMC') && !res._pmc)
          res._pmc = 2;
 
-      if (d.check('A')) res.Axis = d.check('I') ? 'A;' : _a; // I means invisible axis
+      if (d.check('A')) res.Axis = d.check('I') ? 'A;' : ' '; // I means invisible axis
       if (d.check('X+')) { res.Axis += 'X+'; res.second_x = has_main; }
       if (d.check('Y+')) { res.Axis += 'Y+'; res.second_y = has_main; }
       if (d.check('RX')) res.Axis += 'RX';
@@ -107277,9 +107283,8 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
          // either graph drawn directly or
          // graph is first object in list of primitives
          const pad = this.getPadPainter()?.getRootPad(true);
-         if (!pad || (pad?.fPrimitives?.arr[0] === this.getObject())) res.Axis = _a;
-      } else if (res.Axis.indexOf('A') < 0)
-         res.Axis = _a + res.Axis;
+         if (!pad || (pad?.fPrimitives?.arr[0] === this.getObject())) res.Axis = ' ';
+      }
 
       res.Axis += hopt;
 
