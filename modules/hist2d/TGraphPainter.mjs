@@ -338,12 +338,12 @@ class TGraphPainter extends ObjectPainter {
 
       setHistogramTitle(histo, this.getObject().fTitle);
 
-      if (set_x) {
+      if (set_x && !histo.fXaxis.fLabels) {
          histo.fXaxis.fXmin = uxmin;
          histo.fXaxis.fXmax = uxmax;
       }
 
-      if (set_y) {
+      if (set_y && !histo.fYaxis.fLabels) {
          histo.fYaxis.fXmin = Math.min(minimum0, minimum);
          histo.fYaxis.fXmax = Math.max(maximum0, maximum);
          histo.fMinimum = minimum;
