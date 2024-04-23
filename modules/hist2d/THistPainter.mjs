@@ -141,8 +141,6 @@ class THistDrawOptions {
       if (d.check('YTITLE:', true)) histo.fYaxis.fTitle = decodeURIComponent(d.part.toLowerCase());
       if (d.check('ZTITLE:', true)) histo.fZaxis.fTitle = decodeURIComponent(d.part.toLowerCase());
 
-      if (d.check('FORCE_TITLE')) this.ForceTitle = true;
-
       if (d.check('_ADJUST_FRAME_')) this.adjustFrame = true;
 
       if (d.check('NOOPTIMIZE')) this.Optimize = 0;
@@ -1270,7 +1268,7 @@ class THistPainter extends ObjectPainter {
      * @return {Promise} with painter */
    async drawHistTitle() {
       // case when histogram drawn over other histogram (same option)
-      if (!this.isMainPainter() || this.options.Same || (this.options.Axis > 0 && !this.options.ForceTitle))
+      if (!this.isMainPainter() || this.options.Same || (this.options.Axis > 0))
          return this;
 
       const histo = this.getHisto(), st = gStyle,
