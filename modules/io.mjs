@@ -3044,7 +3044,7 @@ class TFile {
      * console.log(`Read object of type ${obj._typename}`); */
    async readObject(obj_name, cycle, only_dir) {
       const pos = obj_name.lastIndexOf(';');
-      if (pos > 0) {
+      if (pos >= 0) {
          cycle = parseInt(obj_name.slice(pos + 1));
          obj_name = obj_name.slice(0, pos);
       }
