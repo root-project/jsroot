@@ -16,6 +16,7 @@
 13. Remove source_dir output in node.js #296
 14. Fix - correctly draw only grids with AXIG draw option
 15. Fix - let read object from TFile with empty name
+16. Fix - graph drawing fix custom labels on X axis #297
 
 
 ## Changes in 7.6.0
