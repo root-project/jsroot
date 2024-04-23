@@ -1236,7 +1236,8 @@ class THistPainter extends ObjectPainter {
       const disable_axis_draw = (this.options.Axis < 0) || (this.options.Axis === 2);
 
       return fp.drawAxes(false, disable_axis_draw, disable_axis_draw,
-                         this.options.AxisPos, this.options.Zscale && this.options.Zvert, this.options.Zscale && !this.options.Zvert);
+                         this.options.AxisPos, this.options.Zscale && this.options.Zvert,
+                        this.options.Zscale && !this.options.Zvert, this.options.Axis !== 1);
    }
 
    /** @summary Inform web canvas that something changed in the histogram */

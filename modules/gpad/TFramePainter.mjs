@@ -2116,7 +2116,7 @@ class TFramePainter extends ObjectPainter {
 
    /** @summary Draw axes grids
      * @desc Called immediately after axes drawing */
-   drawGrids() {
+   drawGrids(draw_grids) {
       const layer = this.getFrameSvg().selectChild('.axis_layer');
 
       layer.selectAll('.xgrid').remove();
@@ -2129,7 +2129,7 @@ class TFramePainter extends ObjectPainter {
           grid_style = gStyle.fGridStyle;
 
       // add a grid on x axis, if the option is set
-      if (pad?.fGridx && this.x_handle?.ticks) {
+      if (pad?.fGridx && draw_grids && this.x_handle?.ticks) {
          const colid = (gStyle.fGridColor > 0) ? gStyle.fGridColor : (this.getAxis('x')?.fAxisColor ?? 1);
          let gridx = '';
 
@@ -2146,7 +2146,7 @@ class TFramePainter extends ObjectPainter {
       }
 
       // add a grid on y axis, if the option is set
-      if (pad?.fGridy && this.y_handle?.ticks) {
+      if (pad?.fGridy && draw_grids && this.y_handle?.ticks) {
          const colid = (gStyle.fGridColor > 0) ? gStyle.fGridColor : (this.getAxis('y')?.fAxisColor ?? 1);
          let gridy = '';
 
@@ -2182,7 +2182,7 @@ class TFramePainter extends ObjectPainter {
    /** @summary draw axes,
      * @return {Promise} which ready when drawing is completed  */
    async drawAxes(shrink_forbidden, disable_x_draw, disable_y_draw,
-                  AxisPos, has_x_obstacle, has_y_obstacle) {
+                  AxisPos, has_x_obstacle, has_y_obstacle, draw_grids) {
       this.cleanAxesDrawings();
 
       if ((this.xmin === this.xmax) || (this.ymin === this.ymax))
@@ -2226,7 +2226,7 @@ class TFramePainter extends ObjectPainter {
                                       draw_vertical.invert_side ? 0 : this._frame_x, can_adjust_frame);
 
          pr = Promise.all([pr1, pr2]).then(() => {
-            this.drawGrids();
+            this.drawGrids(draw_grids);
 
             if (!can_adjust_frame) return;
 
