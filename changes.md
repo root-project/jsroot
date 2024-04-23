@@ -15,6 +15,7 @@
 12. Correctly scale size of axis ticks - take into account NDC axis length
 13. Remove source_dir output in node.js #296
 14. Fix - correctly draw only grids with AXIG draw option
+15. Fix - let read object from TFile with empty name
 
 
 ## Changes in 7.6.0
