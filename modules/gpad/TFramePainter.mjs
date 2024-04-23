@@ -2182,7 +2182,7 @@ class TFramePainter extends ObjectPainter {
    /** @summary draw axes,
      * @return {Promise} which ready when drawing is completed  */
    async drawAxes(shrink_forbidden, disable_x_draw, disable_y_draw,
-                  AxisPos, has_x_obstacle, has_y_obstacle, draw_grids) {
+                  AxisPos, has_x_obstacle, has_y_obstacle, enable_grids) {
       this.cleanAxesDrawings();
 
       if ((this.xmin === this.xmax) || (this.ymin === this.ymax))
@@ -2194,7 +2194,8 @@ class TFramePainter extends ObjectPainter {
             w = this.getFrameWidth(),
             h = this.getFrameHeight(),
             pp = this.getPadPainter(),
-            pad = pp.getRootPad(true);
+            pad = pp.getRootPad(true),
+            draw_grids = enable_grids && (pad?.fGridx || pad?.fGridy);
 
       this.x_handle.invert_side = (AxisPos >= 10);
       this.x_handle.lbls_both_sides = !this.x_handle.invert_side && (pad?.fTickx > 1); // labels on both sides
