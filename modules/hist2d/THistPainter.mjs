@@ -1237,7 +1237,7 @@ class THistPainter extends ObjectPainter {
 
       return fp.drawAxes(false, disable_axis_draw, disable_axis_draw,
                          this.options.AxisPos, this.options.Zscale && this.options.Zvert,
-                        this.options.Zscale && !this.options.Zvert, this.options.Axis !== 1);
+                         this.options.Zscale && !this.options.Zvert, this.options.Axis !== 1);
    }
 
    /** @summary Inform web canvas that something changed in the histogram */

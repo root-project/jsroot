@@ -2123,10 +2123,10 @@ class TFramePainter extends ObjectPainter {
       layer.selectAll('.ygrid').remove();
 
       const pp = this.getPadPainter(),
-          pad = pp?.getRootPad(true),
-          h = this.getFrameHeight(),
-          w = this.getFrameWidth(),
-          grid_style = gStyle.fGridStyle;
+         pad = pp?.getRootPad(true),
+         h = this.getFrameHeight(),
+         w = this.getFrameWidth(),
+         grid_style = gStyle.fGridStyle;
 
       // add a grid on x axis, if the option is set
       if (pad?.fGridx && draw_grids && this.x_handle?.ticks) {
@@ -2212,7 +2212,7 @@ class TFramePainter extends ObjectPainter {
 
       let pr = Promise.resolve(true);
 
-      if (!disable_x_draw || !disable_y_draw) {
+      if (!disable_x_draw || !disable_y_draw || draw_grids) {
          const can_adjust_frame = !shrink_forbidden && settings.CanAdjustFrame,
 
          pr1 = draw_horiz.drawAxis(layer, w, h,
