@@ -30,7 +30,7 @@
      { "opt": "ticky", "title": "draw Y ticks also on opposite frame side" },
      { "opt": "tickxy", "title": "draw X and Y ticks also on opposite frame sides" },
      { "name": "axis", "opt": "axis;nostat;maximum:1000", "title": "draw only axes, configure maximum value, disable stats" },
-     { "name": "axig", "opt": "axig", "title": "Draw only stats box, no axes, no content, no title" },
+     { "name": "axig", "opt": "axig;gridx;gridy", "title": "Draw only axes grids no axes, no content, no title, but stats box" },
      { "name": "autozoom", "opt": "hist;autozoom", "title": "Automatically zoom into non-empty content" },
      { "name": "optstat", "opt": "optstat111111111", "title": "Configure stats option for histogram drawing" },
      { "opt": "inspect", "asurl": true, "file": "hsimple.root", "item": "hpx;1", "title": "universal object inspector, can be used for any class" },
