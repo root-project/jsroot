@@ -17,6 +17,7 @@
 14. Fix - correctly draw only grids with AXIG draw option
 15. Fix - let read object from TFile with empty name
 16. Fix - graph drawing fix custom labels on X axis #297
+17. Fix - draw at least line for TGraphErrors ROOT-8131
 
 
 ## Changes in 7.6.0

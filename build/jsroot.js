@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '23/04/2024',
+version_date = '29/04/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -67967,8 +67967,8 @@ class TPadPainter extends ObjectPainter {
          menu.add('Save to gStyle', () => {
             if (!this.pad) return;
             this.fillatt?.saveToStyle(this.iscan ? 'fCanvasColor' : 'fPadColor');
-            gStyle.fPadGridX = this.pad.fGridX;
-            gStyle.fPadGridY = this.pad.fGridX;
+            gStyle.fPadGridX = this.pad.fGridx;
+            gStyle.fPadGridY = this.pad.fGridy;
             gStyle.fPadTickX = this.pad.fTickx;
             gStyle.fPadTickY = this.pad.fTicky;
             gStyle.fOptLogx = this.pad.fLogx;
@@ -107623,11 +107623,14 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
          }
 
          // build upper part (in reverse direction)
-         const path2 = buildSvgCurve(bins2, { line: options.EF < 2, cmd: 'L', qubic: true });
-
-         draw_g.append('svg:path')
+         const path2 = buildSvgCurve(bins2, { line: options.EF < 2, cmd: 'L', qubic: true }),
+            area = draw_g.append('svg:path')
                .attr('d', path1 + path2 + 'Z')
                .call(fillatt.func);
+
+         // Let behaves as ROOT - see JIRA ROOT-8131
+         if (fillatt.empty() && fillatt.colorindx)
+            area.style('stroke', this.getColor(fillatt.colorindx));
          if (main_block)
             this.draw_kind = 'lines';
       }
