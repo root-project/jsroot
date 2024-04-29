@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="utf-8">
+      <title>Use "same" draw options for histograms drawing</title>
+      <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+   </head>
+   <body>
+      <div id="drawing" style="width:800px; height:600px"></div>
+   </body>
+   <script type='module'>
+      import { draw, httpRequest } from '../modules/main.mjs';
+      const hist1 = await httpRequest('https://jsroot.gsi.de/latest/demo/root10.json', 'object');
+      const hist2 = await httpRequest('https://jsroot.gsi.de/latest/demo/root19.json', 'object');
+      hist1.fTitle = 'Use of "same" draw option';
+      hist2.fLineColor = 2; // red color
+      await draw('drawing', hist1, 'hist');
+      await draw('drawing', hist2, 'hist same');
+   </script>
+</html>
