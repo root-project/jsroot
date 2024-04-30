@@ -5788,6 +5788,7 @@ function drawAxis3D() {
   * @param {boolean} [opt.wireframe=false] - show wireframe for created shapes
   * @param {boolean} [opt.transparency=0] - make nodes transparent
   * @param {boolean} [opt.dflt_colors=false] - use default ROOT colors
+  * @param {boolean} [opt.set_names=false] - set names to all Object3D instances
   * @return {object} Object3D with created model
   * @example
   * import { build } from 'https://root.cern/js/latest/modules/geom/TGeoPainter.mjs';
@@ -5915,13 +5916,13 @@ function build(obj, opt) {
 
       const shape = entry.server_shape || shapes[entry.shapeid];
       if (!shape.ready) {
-         console.warn('shape marked as not ready when should');
+         console.warn('shape marked as not ready when it should');
          break;
       }
 
       const mesh = clones.createEntryMesh(opt, toplevel, entry, shape, colors);
 
-      if (mesh)
+      if (mesh && (opt.set_names !== false))
          mesh.name = clones.getNodeName(entry.nodeid);
    }
 

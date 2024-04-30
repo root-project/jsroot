@@ -3136,7 +3136,8 @@ class ClonedNodes {
      * also set renderOrder, required to handle transparency */
    createObject3D(stack, toplevel, options) {
       let node = this.nodes[0], three_prnt = toplevel, draw_depth = 0;
-      const force = isObject(options) || (options === 'force');
+      const force = isObject(options) || (options === 'force'),
+            set_names = this._cfg?.set_names && this.origin;
 
       for (let lvl = 0; lvl <= stack.length; ++lvl) {
          const nchld = (lvl > 0) ? stack[lvl-1] : 0,
@@ -3169,6 +3170,10 @@ class ClonedNodes {
          if (!force) return null;
 
          obj3d = new Object3D();
+         if (set_names) {
+            const _o = this.origin[node.id];
+            obj3d.name = _o?.fName || '';
+         }
 
          if (node.abs_matrix) {
             obj3d.absMatrix = new Matrix4();
