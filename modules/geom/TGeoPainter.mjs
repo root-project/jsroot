@@ -5788,7 +5788,8 @@ function drawAxis3D() {
   * @param {boolean} [opt.wireframe=false] - show wireframe for created shapes
   * @param {boolean} [opt.transparency=0] - make nodes transparent
   * @param {boolean} [opt.dflt_colors=false] - use default ROOT colors
-  * @param {boolean} [opt.set_names=false] - set names to all Object3D instances
+  * @param {boolean} [opt.set_names=true] - set names to all Object3D instances
+  * @param {boolean} [opt.set_origin=false] - set TGeoNode/TGeoVolume as Object3D.userData
   * @return {object} Object3D with created model
   * @example
   * import { build } from 'https://root.cern/js/latest/modules/geom/TGeoPainter.mjs';
@@ -5894,6 +5895,8 @@ function build(obj, opt) {
 
    if (!opt.material_kind)
       opt.material_kind = 'lambert';
+   if (opt.set_names === undefined)
+      opt.set_names = true;
 
    clones.setConfig(opt);
 
@@ -5920,10 +5923,7 @@ function build(obj, opt) {
          break;
       }
 
-      const mesh = clones.createEntryMesh(opt, toplevel, entry, shape, colors);
-
-      if (mesh && (opt.set_names !== false))
-         mesh.name = clones.getNodeName(entry.nodeid);
+      clones.createEntryMesh(opt, toplevel, entry, shape, colors);
    }
 
    return toplevel;
