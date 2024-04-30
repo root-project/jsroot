@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '29/04/2024',
+version_date = '30/04/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -85896,6 +85896,12 @@ class ClonedNodes {
 
          obj3d = new Object3D();
 
+         if (this._cfg?.set_names)
+            obj3d.name = this.getNodeName(node.id);
+
+         if (this._cfg?.set_origin && this.origin)
+            obj3d.userData = this.origin[node.id];
+
          if (node.abs_matrix) {
             obj3d.absMatrix = new Matrix4();
             obj3d.absMatrix.fromArray(node.matrix);
@@ -85991,6 +85997,12 @@ class ClonedNodes {
       // keep full stack of nodes
       mesh.stack = entry.stack;
       mesh.renderOrder = this.maxdepth - entry.stack.length; // order of transparency handling
+
+      if (this._cfg?.set_names)
+         mesh.name = this.getNodeName(entry.nodeid);
+
+      if (this._cfg?.set_origin)
+         mesh.userData = prop.volume;
 
       // keep hierarchy level
       mesh.$jsroot_order = obj3d.$jsroot_depth;
@@ -94937,6 +94949,8 @@ function drawAxis3D() {
   * @param {boolean} [opt.wireframe=false] - show wireframe for created shapes
   * @param {boolean} [opt.transparency=0] - make nodes transparent
   * @param {boolean} [opt.dflt_colors=false] - use default ROOT colors
+  * @param {boolean} [opt.set_names=true] - set names to all Object3D instances
+  * @param {boolean} [opt.set_origin=false] - set TGeoNode/TGeoVolume as Object3D.userData
   * @return {object} Object3D with created model
   * @example
   * import { build } from 'https://root.cern/js/latest/modules/geom/TGeoPainter.mjs';
@@ -95042,6 +95056,8 @@ function build(obj, opt) {
 
    if (!opt.material_kind)
       opt.material_kind = 'lambert';
+   if (opt.set_names === undefined)
+      opt.set_names = true;
 
    clones.setConfig(opt);
 
@@ -95064,14 +95080,11 @@ function build(obj, opt) {
 
       const shape = entry.server_shape || shapes[entry.shapeid];
       if (!shape.ready) {
-         console.warn('shape marked as not ready when should');
+         console.warn('shape marked as not ready when it should');
          break;
       }
 
-      const mesh = clones.createEntryMesh(opt, toplevel, entry, shape, colors);
-
-      if (mesh)
-         mesh.name = clones.getNodeName(entry.nodeid);
+      clones.createEntryMesh(opt, toplevel, entry, shape, colors);
    }
 
    return toplevel;
