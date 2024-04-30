@@ -3170,10 +3170,10 @@ class ClonedNodes {
 
          obj3d = new Object3D();
 
-         if (this._cfg.set_names)
+         if (this._cfg?.set_names)
             obj3d.name = this.getNodeName(node.id);
 
-         if (this._cfg.set_origin && this.origin)
+         if (this._cfg?.set_origin && this.origin)
             obj3d.userData = this.origin[node.id];
 
          if (node.abs_matrix) {
@@ -3272,8 +3272,11 @@ class ClonedNodes {
       mesh.stack = entry.stack;
       mesh.renderOrder = this.maxdepth - entry.stack.length; // order of transparency handling
 
-      if (this._cfg.set_names)
+      if (this._cfg?.set_names)
          mesh.name = this.getNodeName(entry.nodeid);
+
+      if (this._cfg?.set_origin)
+         mesh.userData = prop.volume;
 
       // keep hierarchy level
       mesh.$jsroot_order = obj3d.$jsroot_depth;
