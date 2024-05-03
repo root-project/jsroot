@@ -208,7 +208,7 @@ class JSRootMenu {
       }
 
       this.add('sub:' + name, () => this.input('Enter value of ' + name, conv(size_value, true), (step >= 1) ? 'int' : 'float').then(set_func), title);
-      values.forEach(v => this.addchk(match(v), conv(v), v, res => set_func((step >= 1) ? parseInt(res) : parseFloat(res))));
+      values.forEach(v => this.addchk(match(v), conv(v), v, res => set_func((step >= 1) ? Number.parseInt(res) : Number.parseFloat(res))));
       this.add('endsub:');
    }
 
@@ -501,8 +501,11 @@ class JSRootMenu {
 
       if (painter.lineatt?.used) {
          this.add(`sub:${preffix}Line att`);
-         this.addSizeMenu('width', 1, 10, 1, painter.lineatt.width,
-            arg => { painter.lineatt.change(undefined, arg); painter.interactiveRedraw(true, `exec:SetLineWidth(${arg})`); });
+         this.addSizeMenu('width', 1, 10, 1, painter.lineatt.width, arg => {
+            changeObjectMember(painter, 'fLineWidth', arg);
+            painter.lineatt.change(undefined, arg);
+            painter.interactiveRedraw(true, `exec:SetLineWidth(${arg})`);
+         });
          this.addColorMenu('color', painter.lineatt.color, arg => {
             changeObjectMember(painter, 'fLineColor', arg, true);
             painter.lineatt.change(arg);
@@ -576,13 +579,19 @@ class JSRootMenu {
       if (painter.textatt?.used) {
          this.add(`sub:${preffix}Text att`);
 
-         this.addFontMenu('font', painter.textatt.font,
-                         arg => { painter.textatt.change(arg); painter.interactiveRedraw(true, `exec:SetTextFont(${arg})`); });
+         this.addFontMenu('font', painter.textatt.font, arg => {
+            changeObjectMember(painter, 'fTextFont', arg);
+            painter.textatt.change(arg);
+            painter.interactiveRedraw(true, `exec:SetTextFont(${arg})`);
+         });
 
          const rel = painter.textatt.size < 1.0;
 
-         this.addSizeMenu('size', rel ? 0.03 : 6, rel ? 0.20 : 26, rel ? 0.01 : 2, painter.textatt.size,
-            arg => { painter.textatt.change(undefined, parseFloat(arg)); painter.interactiveRedraw(true, `exec:SetTextSize(${arg})`); });
+         this.addSizeMenu('size', rel ? 0.03 : 6, rel ? 0.20 : 26, rel ? 0.01 : 2, painter.textatt.size, arg => {
+            changeObjectMember(painter, 'fTextSize', arg);
+            painter.textatt.change(undefined, arg);
+            painter.interactiveRedraw(true, `exec:SetTextSize(${arg})`);
+         });
 
          this.addColorMenu('color', painter.textatt.color, arg => {
             changeObjectMember(painter, 'fTextColor', arg, true);
@@ -596,8 +605,11 @@ class JSRootMenu {
             painter.interactiveRedraw(true, `exec:SetTextAlign(${arg})`);
          });
 
-         this.addSizeMenu('angle', -180, 180, 45, painter.textatt.angle,
-            arg => { painter.textatt.change(undefined, undefined, undefined, undefined, parseFloat(arg)); painter.interactiveRedraw(true, `exec:SetTextAngle(${arg})`); });
+         this.addSizeMenu('angle', -180, 180, 45, painter.textatt.angle, arg => {
+            changeObjectMember(painter, 'fTextAngle', arg);
+            painter.textatt.change(undefined, undefined, undefined, undefined, arg);
+            painter.interactiveRedraw(true, `exec:SetTextAngle(${arg})`);
+         });
 
          this.add('endsub:');
       }
@@ -932,7 +944,7 @@ class JSRootMenu {
             if (!element) return;
             let val = element.querySelector('.jsroot_dlginp').value;
             if (kind === 'float') {
-               val = parseFloat(val);
+               val = Number.parseFloat(val);
                if (Number.isFinite(val))
                   resolveFunc(val);
             } else if (kind === 'int') {
