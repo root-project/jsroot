@@ -19,6 +19,7 @@
 16. Fix - let read object from TFile with empty name
 17. Fix - graph drawing fix custom labels on X axis #297
 18. Fix - draw at least line for TGraphErrors ROOT-8131
+19. Fix - log scales on TH3 drawings #306
 
 
 ## Changes in 7.6.0
