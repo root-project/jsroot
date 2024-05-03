@@ -572,10 +572,12 @@ class TH3Painter extends THistPainter {
             helper_positions[nseq] = new Float32Array(nbins * Box3D.Segments.length * 3);
       }
 
-      let binx, grx, biny, gry, binz, grz;
+      let binx, grx, grx1, grx2, biny, gry, binz, grz;
 
       for (i = i1; i < i2; ++i) {
          binx = histo.fXaxis.GetBinCenter(i+1); grx = main.grx(binx);
+         grx1 = main.grx(histo.fXaxis.GetBinLowEdge(i+1));
+         grx2 = main.grx(histo.fXaxis.GetBinLowEdge(i+2));
          for (j = j1; j < j2; ++j) {
             biny = histo.fYaxis.GetBinCenter(j+1); gry = main.gry(biny);
             for (k = k1; k < k2; ++k) {
@@ -606,7 +608,7 @@ class TH3Painter extends THistPainter {
 
                // Grab the coordinates and scale that are being assigned to each bin
                for (let vi = 0; vi < buffer_size; vi+=3, vvv+=3) {
-                  bin_v[vvv] = grx + single_bin_verts[vi]*scalex*wei;
+                  bin_v[vvv] = (grx2 + grx1) / 2 + single_bin_verts[vi] * (grx2 - grx1) * wei;
                   bin_v[vvv+1] = gry + single_bin_verts[vi+1]*scaley*wei;
                   bin_v[vvv+2] = grz + single_bin_verts[vi+2]*scalez*wei;
 
@@ -680,12 +682,14 @@ class TH3Painter extends THistPainter {
                   histo = p.getHisto(),
                   main = p.getFramePainter(),
                   tip = p.get3DToolTip(this.bins[indx]),
-                  grx = main.grx(histo.fXaxis.GetBinCoord(tip.ix-0.5)),
+                  grx1 = main.grx(histo.fXaxis.GetBinCoord(tip.ix-1)),
+                  grx2 = main.grx(histo.fXaxis.GetBinCoord(tip.ix)),
                   gry = main.gry(histo.fYaxis.GetBinCoord(tip.iy-0.5)),
                   grz = main.grz(histo.fZaxis.GetBinCoord(tip.iz-0.5)),
                   wei = this.get_weight(tip.value);
 
-            tip.x1 = grx - this.scalex*wei; tip.x2 = grx + this.scalex*wei;
+            tip.x1 = (grx2 + grx1) / 2 - (grx2 - grx1) / 2 * wei;
+            tip.x2 = (grx2 + grx1) / 2 + (grx2 - grx1) / 2 * wei;
             tip.y1 = gry - this.scaley*wei; tip.y2 = gry + this.scaley*wei;
             tip.z1 = grz - this.scalez*wei; tip.z2 = grz + this.scalez*wei;
 
