@@ -490,8 +490,7 @@ class TH3Painter extends THistPainter {
       if ((i2 <= i1) || (j2 <= j1) || (k2 <= k1))
          return false;
 
-      const scalez = (main.grz(histo.fZaxis.GetBinLowEdge(k2+1)) - main.grz(histo.fZaxis.GetBinLowEdge(k1+1))) / (k2-k1),
-            cols_size = {}, cols_sequence = {},
+      const cols_size = {}, cols_sequence = {},
             cntr = use_colors ? this.getContour() : null,
             palette = use_colors ? this.getHistPalette() : null;
       let nbins = 0, i, j, k, wei, bin_content, num_colors = 0, transfer = null;
