@@ -370,6 +370,31 @@ class THistDrawOptions {
       if (d.check('PMC') && !this._pmc)
          this._pmc = 2;
 
+      const check_axis_bit = (opt, axis, bit) => {
+         // ignore Z scale options for 2D plots
+         if ((axis === 'fZaxis') && (hdim < 3) && !this.Lego && !this.Surf)
+            return;
+         let flag = d.check(opt);
+         if (pad && pad['$'+opt]) { flag = true; pad['$'+opt] = undefined; }
+         if (flag && histo) {
+            if (!histo[axis].TestBit(bit))
+               histo[axis].InvertBit(bit);
+         }
+      };
+
+      check_axis_bit('OTX', 'fXaxis', EAxisBits.kOppositeTitle);
+      check_axis_bit('OTY', 'fYaxis', EAxisBits.kOppositeTitle);
+      check_axis_bit('OTZ', 'fZaxis', EAxisBits.kOppositeTitle);
+      check_axis_bit('CTX', 'fXaxis', EAxisBits.kCenterTitle);
+      check_axis_bit('CTY', 'fYaxis', EAxisBits.kCenterTitle);
+      check_axis_bit('CTZ', 'fZaxis', EAxisBits.kCenterTitle);
+      check_axis_bit('MLX', 'fXaxis', EAxisBits.kMoreLogLabels);
+      check_axis_bit('MLY', 'fYaxis', EAxisBits.kMoreLogLabels);
+      check_axis_bit('MLZ', 'fZaxis', EAxisBits.kMoreLogLabels);
+
+      if (d.check('RX') || pad?.$RX) this.RevX = true;
+      if (d.check('RY') || pad?.$RY) this.RevY = true;
+
       if (d.check('L')) { this.Line = true; this.Hist = false; }
       if (d.check('F')) { this.Fill = true; this.need_fillcol = true; }
 
@@ -390,21 +415,6 @@ class THistDrawOptions {
             painter.zoom_xmax = fp.scale_xmax;
          }
       }
-
-      if (d.check('RX') || pad?.$RX) this.RevX = true;
-      if (d.check('RY') || pad?.$RY) this.RevY = true;
-      const check_axis_bit = (opt, axis, bit) => {
-         let flag = d.check(opt);
-         if (pad && pad['$'+opt]) { flag = true; pad['$'+opt] = undefined; }
-         if (flag && histo) {
-            if (!histo[axis].TestBit(bit))
-               histo[axis].InvertBit(bit);
-         }
-      };
-      check_axis_bit('OTX', 'fXaxis', EAxisBits.kOppositeTitle);
-      check_axis_bit('OTY', 'fYaxis', EAxisBits.kOppositeTitle);
-      check_axis_bit('CTX', 'fXaxis', EAxisBits.kCenterTitle);
-      check_axis_bit('CTY', 'fYaxis', EAxisBits.kCenterTitle);
 
       if (d.check('B1')) { this.BarStyle = 1; this.BaseLine = 0; this.Hist = false; this.need_fillcol = true; }
       if (d.check('B')) { this.BarStyle = 1; this.Hist = false; this.need_fillcol = true; }
