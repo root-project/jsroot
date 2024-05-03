@@ -548,6 +548,8 @@ function setSaveFile(func) {
    _saveFileFunc = func;
 }
 
+/** @summary Returns color id for the color
+  * @private */
 function getColorId(col) {
    const arr = getRootColors();
    let id = -1;
