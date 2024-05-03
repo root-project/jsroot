@@ -72,7 +72,7 @@
       { "name": "subpads", "opt": "", "file": "glc.root", "item": "glc;1", "title": "canvas with two subpads, both with 3D plotls" },
       { "name": "geo", "url": "?nobrowser&files=[$$$histpainter6.root,$$$/geom/tess.root]&item=[histpainter6.root/draw_th3_box;1/h3box,tess.root/tess]&opt=[box]", "title": "Superimpose TH3 with geometry" },
       { "name": "logx", "opt": "", "file": "th3_logx.root", "item": "c1", "title": "TH3 with custom X binning and logX scale, check for proper positioning" },
-      { "name": "logxyz", "file": "profile3d.root", "item": "profile3d", "opt": "logx,logy,logz", "title": "Example of log x/y/z with TProfile3D class" }
+      { "name": "logxyz", "file": "profile3d.root", "item": "profile3d", "opt": "logx,logy,logz,mlx,mly,mlz", "title": "Example of log x/y/z with TProfile3D class, set also more log labels" }
    ],
    "TRatioPlot" : [
       { "name": "rold", "file": "ratioplot.root", "item": "ratioplot3;1", "title": "Old data from tutorial hist/ratioplot3.C" }
