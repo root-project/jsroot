@@ -629,7 +629,7 @@ class TH3Painter extends THistPainter {
                   const helper_segments = Box3D.Segments,
                       helper_p = helper_positions[nseq];
                   vvv = nbins * helper_segments.length * 3;
-                  for (let n=0; n<helper_segments.length; ++n, vvv+=3) {
+                  for (let n = 0; n < helper_segments.length; ++n, vvv += 3) {
                      const vert = Box3D.Vertices[helper_segments[n]];
                      helper_p[vvv] = (grx2 + grx1) / 2 + (vert.x - 0.5) * (grx2 - grx1) * wei;
                      helper_p[vvv+1] = (gry2 + gry1) / 2 + (vert.y - 0.5) * (gry2 - gry1) * wei;
@@ -665,7 +665,6 @@ class TH3Painter extends THistPainter {
          combined_bins.bins = bin_tooltips[nseq];
          combined_bins.bins_faces = buffer_size/9;
          combined_bins.painter = this;
-
          combined_bins.tipscale = tipscale;
          combined_bins.tip_color = (histo.fFillColor === 3) ? 0xFF0000 : 0x00FF00;
          combined_bins.get_weight = get_bin_weight;
