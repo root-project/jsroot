@@ -587,20 +587,24 @@ function getColorExec(col, method) {
    return `exec:${method}(${d.id})`;
 }
 
-/** @summary Change object color in the painter
+/** @summary Change object member in the painter
   * @desc Used when interactively change in the menu
+  * Special handling for color is provided
   * @private */
-function changeObjectColor(painter, member, col) {
-   const d = getColorId(col);
-   if ((d.id < 0) || (d.id === 9999))
-      return;
+function changeObjectMember(painter, member, val, is_color) {
+   if (is_color) {
+      const d = getColorId(val);
+      if ((d.id < 0) || (d.id === 9999))
+         return;
+      val = d.id;
+   }
 
    const obj = painter?.getObject();
    if (obj && (obj[member] !== undefined))
-      obj[member] = d.id;
+      obj[member] = val;
 }
 
 export { showProgress, closeCurrentWindow, loadOpenui5, ToolbarIcons, registerForResize,
          detectRightButton, addMoveHandler, injectStyle,
          selectgStyle, setStoragePrefix, saveSettings, readSettings, saveStyle, readStyle,
-         saveFile, setSaveFile, getBinFileContent, getColorExec, changeObjectColor };
+         saveFile, setSaveFile, getBinFileContent, getColorExec, changeObjectMember };
