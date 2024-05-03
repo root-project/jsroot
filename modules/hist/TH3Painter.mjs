@@ -572,7 +572,7 @@ class TH3Painter extends THistPainter {
             helper_positions[nseq] = new Float32Array(nbins * Box3D.Segments.length * 3);
       }
 
-      let binx, grx, grx1, grx2, biny, gry, gry1, gry2, binz, grz;
+      let binx, grx, grx1, grx2, biny, gry, gry1, gry2, binz, grz, grz1, grz2;
 
       for (i = i1; i < i2; ++i) {
          binx = histo.fXaxis.GetBinCenter(i+1); grx = main.grx(binx);
@@ -601,6 +601,8 @@ class TH3Painter extends THistPainter {
                nbins = cols_nbins[nseq];
 
                binz = histo.fZaxis.GetBinCenter(k+1); grz = main.grz(binz);
+               grz1 = main.grz(histo.fZaxis.GetBinLowEdge(k+1));
+               grz2 = main.grz(histo.fZaxis.GetBinLowEdge(k+2));
 
                // remember bin index for tooltip
                bin_tooltips[nseq][nbins] = histo.getBin(i+1, j+1, k+1);
@@ -612,7 +614,7 @@ class TH3Painter extends THistPainter {
                for (let vi = 0; vi < buffer_size; vi+=3, vvv+=3) {
                   bin_v[vvv] = (grx2 + grx1) / 2 + single_bin_verts[vi] * (grx2 - grx1) * wei;
                   bin_v[vvv+1] = (gry2 + gry1) / 2 + single_bin_verts[vi+1] * (gry2 - gry1) * wei;
-                  bin_v[vvv+2] = grz + single_bin_verts[vi+2]*scalez*wei;
+                  bin_v[vvv+2] = (grz2 + grz1) / 2 + single_bin_verts[vi+2] * (grz2 - grz1) * wei;
 
                   bin_n[vvv] = single_bin_norms[vi];
                   bin_n[vvv+1] = single_bin_norms[vi+1];
@@ -688,15 +690,16 @@ class TH3Painter extends THistPainter {
                   grx2 = main.grx(histo.fXaxis.GetBinCoord(tip.ix)),
                   gry1 = main.gry(histo.fYaxis.GetBinCoord(tip.iy-1)),
                   gry2 = main.gry(histo.fYaxis.GetBinCoord(tip.iy)),
-                  grz = main.grz(histo.fZaxis.GetBinCoord(tip.iz-0.5)),
+                  grz1 = main.grz(histo.fZaxis.GetBinCoord(tip.iz-1)),
+                  grz2 = main.grz(histo.fZaxis.GetBinCoord(tip.iz)),
                   wei = this.get_weight(tip.value);
 
             tip.x1 = (grx2 + grx1) / 2 - (grx2 - grx1) / 2 * wei;
             tip.x2 = (grx2 + grx1) / 2 + (grx2 - grx1) / 2 * wei;
             tip.y1 = (gry2 + gry1) / 2 - (gry2 - gry1) / 2 * wei;
             tip.y2 = (gry2 + gry1) / 2 + (gry2 - gry1) / 2 * wei;
-            tip.z1 = grz - this.scalez*wei; tip.z2 = grz + this.scalez*wei;
-
+            tip.z1 = (grz2 + grz1) / 2 - (grz2 - grz1) / 2 * wei;
+            tip.z2 = (grz2 + grz1) / 2 + (grz2 - grz1) / 2 * wei;
             tip.color = this.tip_color;
 
             return tip;
