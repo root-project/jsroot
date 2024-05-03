@@ -1,6 +1,6 @@
 import { settings, internals, browser, gStyle, isObject, isFunc, isStr, clTGaxis, kInspect, getDocument } from '../core.mjs';
 import { rgb as d3_rgb, select as d3_select } from '../d3.mjs';
-import { selectgStyle, saveSettings, readSettings, saveStyle, getColorExec } from './utils.mjs';
+import { selectgStyle, saveSettings, readSettings, saveStyle, getColorExec, changeObjectColor } from './utils.mjs';
 import { getColor } from '../base/colors.mjs';
 import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
 import { getSvgLineStyle } from '../base/TAttLineHandler.mjs';
@@ -503,8 +503,11 @@ class JSRootMenu {
          this.add(`sub:${preffix}Line att`);
          this.addSizeMenu('width', 1, 10, 1, painter.lineatt.width,
             arg => { painter.lineatt.change(undefined, arg); painter.interactiveRedraw(true, `exec:SetLineWidth(${arg})`); });
-         this.addColorMenu('color', painter.lineatt.color,
-            arg => { painter.lineatt.change(arg); painter.interactiveRedraw(true, getColorExec(arg, 'SetLineColor')); });
+         this.addColorMenu('color', painter.lineatt.color, arg => {
+            changeObjectColor(painter, 'fLineColor', arg);
+            painter.lineatt.change(arg);
+            painter.interactiveRedraw(true, getColorExec(arg, 'SetLineColor'));
+         });
          this.addLineStyleMenu('style', painter.lineatt.style, id => {
             painter.lineatt.change(undefined, undefined, id);
             painter.interactiveRedraw(true, `exec:SetLineStyle(${id})`);
@@ -531,6 +534,7 @@ class JSRootMenu {
          this.add(`sub:${preffix}Fill att`);
          this.addColorMenu('color', painter.fillatt.colorindx, arg => {
             painter.fillatt.change(arg, undefined, painter.getCanvSvg());
+            changeObjectColor(painter, 'fFillColor', arg);
             painter.interactiveRedraw(true, getColorExec(arg, 'SetFillColor'));
          }, painter.fillatt.kind);
          this.addFillStyleMenu('style', painter.fillatt.pattern, painter.fillatt.colorindx, painter, id => {
@@ -542,8 +546,11 @@ class JSRootMenu {
 
       if (painter.markeratt?.used) {
          this.add(`sub:${preffix}Marker att`);
-         this.addColorMenu('color', painter.markeratt.color,
-            arg => { painter.markeratt.change(arg); painter.interactiveRedraw(true, getColorExec(arg, 'SetMarkerColor')); });
+         this.addColorMenu('color', painter.markeratt.color, arg => {
+            changeObjectColor(painter, 'fMarkerColor', arg);
+            painter.markeratt.change(arg);
+            painter.interactiveRedraw(true, getColorExec(arg, 'SetMarkerColor'));
+         });
          this.addSizeMenu('size', 0.5, 6, 0.5, painter.markeratt.size,
             arg => { painter.markeratt.change(undefined, undefined, arg); painter.interactiveRedraw(true, `exec:SetMarkerSize(${arg})`); });
 
@@ -572,8 +579,11 @@ class JSRootMenu {
          this.addSizeMenu('size', rel ? 0.03 : 6, rel ? 0.20 : 26, rel ? 0.01 : 2, painter.textatt.size,
             arg => { painter.textatt.change(undefined, parseFloat(arg)); painter.interactiveRedraw(true, `exec:SetTextSize(${arg})`); });
 
-         this.addColorMenu('color', painter.textatt.color,
-            arg => { painter.textatt.change(undefined, undefined, arg); painter.interactiveRedraw(true, getColorExec(arg, 'SetTextColor')); });
+         this.addColorMenu('color', painter.textatt.color, arg => {
+            changeObjectColor(painter, 'fTextColor', arg);
+            painter.textatt.change(undefined, undefined, arg);
+            painter.interactiveRedraw(true, getColorExec(arg, 'SetTextColor'));
+         });
 
          this.addAlignMenu('align', painter.textatt.align, arg => {
             painter.textatt.change(undefined, undefined, undefined, arg); painter.interactiveRedraw(true, `exec:SetTextAlign(${arg})`);
