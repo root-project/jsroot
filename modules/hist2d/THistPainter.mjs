@@ -1294,6 +1294,11 @@ class THistPainter extends ObjectPainter {
          pt.Clear();
          if (draw_title) pt.AddText(histo.fTitle);
          if (tpainter) return tpainter.redraw().then(() => this);
+         // draw title already here to ensure order of primitives
+         return TPavePainter.draw(this.getDom(), pt).then(tp => {
+            pt.$skip_pad_draw = true;
+            return this;
+         });
       } else if (draw_title && !tpainter && histo.fTitle) {
          pt = create(clTPaveText);
          Object.assign(pt, { fName: 'title', fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
