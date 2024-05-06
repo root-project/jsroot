@@ -1126,7 +1126,7 @@ class TPadPainter extends ObjectPainter {
 
       const obj = this.pad.fPrimitives.arr[indx];
 
-      if (!obj || obj.$skip_pad_draw || ((indx > 0) && (obj._typename === 'TFrame') && this.getFramePainter()))
+      if (!obj || ((indx > 0) && (obj._typename === 'TFrame') && this.getFramePainter()))
          return this.drawPrimitives(indx+1);
 
       // use of Promise should avoid large call-stack depth when many primitives are drawn
@@ -1655,11 +1655,6 @@ class TPadPainter extends ObjectPainter {
       // if same object drawn twice, two painters will exists
       for (let k = 0; k < this.painters.length; ++k) {
          const subp = this.painters[k];
-         // special case for objects like title - drawn already when histogram is drawn
-         if ((snap.fKind === webSnapIds.kObject) && snap.fSnapshot && (subp.getObject() === snap.fSnapshot)) {
-            subp.snapid = snap.fObjectID;
-            return this.drawNextSnap(lst, indx);
-         }
          if (subp.snapid === snapid)
             if (--cnt === 0) { objpainter = subp; break; }
       }

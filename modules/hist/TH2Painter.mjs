@@ -271,13 +271,13 @@ class TH2Painter extends TH2Painter2D {
       }
 
       //  (re)draw palette by resize while canvas may change dimension
-      if (is_main) {
+      if (is_main)
          pr = pr.then(() => this.drawColorPalette(this.options.Zscale && ((this.options.Lego === 12) || (this.options.Lego === 14) ||
-                                                  (this.options.Surf === 11) || (this.options.Surf === 12))))
-                .then(() => this.drawHistTitle());
-      }
+                                                  (this.options.Surf === 11) || (this.options.Surf === 12))));
 
-      return pr.then(() => this.updateFunctions()).then(() => this);
+      return pr.then(() => this.updateFunctions())
+               .then(() => this.drawHistTitle0())
+               .then(() => this);
    }
 
    /** @summary draw TH2 object */

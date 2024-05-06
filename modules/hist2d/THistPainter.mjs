@@ -1271,15 +1271,19 @@ class THistPainter extends ObjectPainter {
       if (arg === 'only-check')
          return !histo.TestBit(kNoTitle);
       histo.InvertBit(kNoTitle);
-      this.drawHistTitle().then(() => this.processOnlineChange(`exec:SetBit(TH1::kNoTitle,${histo.TestBit(kNoTitle)?1:0})`));
+      this.drawHistTitle0().then(() => this.processOnlineChange(`exec:SetBit(TH1::kNoTitle,${histo.TestBit(kNoTitle)?1:0})`));
    }
+
+   async drawHistTitle0() { return this.drawHistTitle(true); }
 
    /** @summary Draw histogram title
      * @return {Promise} with painter */
-   async drawHistTitle() {
+   async drawHistTitle(only_redraw) {
       // case when histogram drawn over other histogram (same option)
       if (!this.isMainPainter() || this.options.Same || (this.options.Axis > 0))
          return this;
+
+      console.log('draw title');
 
       const histo = this.getHisto(), st = gStyle,
             pp = this.getPadPainter(),
@@ -1293,24 +1297,20 @@ class THistPainter extends ObjectPainter {
       if (pt) {
          pt.Clear();
          if (draw_title) pt.AddText(histo.fTitle);
-         if (tpainter) return tpainter.redraw().then(() => this);
-         // draw title already here to ensure order of primitives
-         return TPavePainter.draw(this.getDom(), pt).then(tp => {
-            pt.$skip_pad_draw = true;
-            return this;
-         });
       } else if (draw_title && !tpainter && histo.fTitle) {
          pt = create(clTPaveText);
          Object.assign(pt, { fName: 'title', fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
                              fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: st.fTitleAlign });
          pt.AddText(histo.fTitle);
-         return TPavePainter.draw(this.getDom(), pt, 'postitle').then(tp => {
-            tp?.setSecondaryId(this);
-            return this;
-         });
       }
 
-      return this;
+      if (only_redraw)
+         return tpainter?.redraw() ?? this;
+
+      if (tpainter)
+         return this;
+
+      return pt ? TPavePainter.draw(this.getDom(), pt, 'postitle').then(() => this) : this;
    }
 
    /** @summary Live change and update of title drawing
@@ -1493,6 +1493,7 @@ class THistPainter extends ObjectPainter {
    /** @summary Method draws functions from the histogram list of functions
      * @return {Promise} fulfilled when drawing is ready */
    async drawFunctions() {
+      console.log('draw functions');
       const handler = new FunctionsHandler(this, this.getPadPainter(), this.getHisto().fFunctions, true);
       return handler.drawNext(0); // returns this painter
    }
@@ -1500,6 +1501,7 @@ class THistPainter extends ObjectPainter {
    /** @summary Method used to update functions which are prepared before
      * @return {Promise} fulfilled when drawing is ready */
    async updateFunctions() {
+      console.log('update functions');
       const res = this._funcHandler?.drawNext(0) ?? this;
       delete this._funcHandler;
       return res;
@@ -2378,6 +2380,8 @@ class THistPainter extends ObjectPainter {
          return painter.callDrawFunc();
       }).then(() => {
          return painter.drawFunctions();
+      }).then(() => {
+         return painter.drawHistTitle();
       }).then(() => {
          if (!painter.Mode3D && painter.options.AutoZoom)
             return painter.autoZoom();
