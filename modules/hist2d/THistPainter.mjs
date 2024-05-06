@@ -1281,14 +1281,14 @@ class THistPainter extends ObjectPainter {
       if (!this.isMainPainter() || this.options.Same || (this.options.Axis > 0))
          return this;
 
-      const histo = this.getHisto(), st = gStyle,
-            pp = this.getPadPainter(),
-            tpainter = pp?.findPainterFor(null, 'title'),
-            pt = tpainter?.getObject(),
-            draw_title = !histo.TestBit(kNoTitle) && (st.fOptTitle > 0);
+      const tpainter = this.getPadPainter()?.findPainterFor(null, 'title', clTPaveText),
+            pt = tpainter?.getObject();
 
       if (!tpainter || !pt)
          return this;
+
+      const histo = this.getHisto(), st = gStyle,
+            draw_title = !histo.TestBit(kNoTitle) && (st.fOptTitle > 0);
 
       pt.Clear();
       if (draw_title) pt.AddText(histo.fTitle);
@@ -1303,26 +1303,21 @@ class THistPainter extends ObjectPainter {
          return this;
 
       const histo = this.getHisto(), st = gStyle,
-            pp = this.getPadPainter(),
-            tpainter = pp?.findPainterFor(null, 'title'),
             draw_title = !histo.TestBit(kNoTitle) && (st.fOptTitle > 0);
-      let pt = tpainter?.getObject();
 
-      if (!pt && isFunc(pp?.findInPrimitives))
-         pt = pp.findInPrimitives('title', clTPaveText);
+      let pt = this.getPadPainter()?.findInPrimitives('title', clTPaveText);
 
       if (pt) {
          pt.Clear();
          if (draw_title) pt.AddText(histo.fTitle);
-      } else if (!tpainter) {
-         pt = create(clTPaveText);
-         Object.assign(pt, { fName: 'title', fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
-                             fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: st.fTitleAlign });
-         if (draw_title) pt.AddText(histo.fTitle);
-         return TPavePainter.draw(this.getDom(), pt, 'postitle').then(() => this);
+         return this;
       }
 
-      return this;
+      pt = create(clTPaveText);
+      Object.assign(pt, { fName: 'title', fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
+                          fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: st.fTitleAlign });
+      if (draw_title) pt.AddText(histo.fTitle);
+      return TPavePainter.draw(this.getDom(), pt, 'postitle');
    }
 
    /** @summary Live change and update of title drawing
