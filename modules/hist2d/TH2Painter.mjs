@@ -3243,7 +3243,7 @@ class TH2Painter extends THistPainter {
 
          return pr.then(() => this.completePalette(pp));
       }).then(() => this.updateFunctions())
-        .then(() => this.drawHistTitle0())
+        .then(() => this.updateHistTitle())
         .then(() => {
             this.updateStatWebCanvas();
             return this.addInteractivity();

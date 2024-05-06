@@ -276,7 +276,7 @@ class TH2Painter extends TH2Painter2D {
                                                   (this.options.Surf === 11) || (this.options.Surf === 12))));
 
       return pr.then(() => this.updateFunctions())
-               .then(() => this.drawHistTitle0())
+               .then(() => this.updateHistTitle())
                .then(() => this);
    }
 
