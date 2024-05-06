@@ -1,6 +1,6 @@
 import { gStyle, BIT, settings, constants, create, isObject, isFunc, isStr, getPromise,
          clTList, clTPaveText, clTPaveStats, clTPaletteAxis, clTProfile2D, clTProfile3D, clTPad,
-         clTAxis, clTF1, clTF2, clTProfile, kNoZoom, clTCutG, kNoStats } from '../core.mjs';
+         clTAxis, clTF1, clTF2, clTProfile, kNoZoom, clTCutG, kNoStats, kTitle } from '../core.mjs';
 import { getColor, getColorPalette } from '../base/colors.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
@@ -1281,7 +1281,7 @@ class THistPainter extends ObjectPainter {
       if (!this.isMainPainter() || this.options.Same || (this.options.Axis > 0))
          return this;
 
-      const tpainter = this.getPadPainter()?.findPainterFor(null, 'title', clTPaveText),
+      const tpainter = this.getPadPainter()?.findPainterFor(null, kTitle, clTPaveText),
             pt = tpainter?.getObject();
 
       if (!tpainter || !pt)
@@ -1305,7 +1305,7 @@ class THistPainter extends ObjectPainter {
       const histo = this.getHisto(), st = gStyle,
             draw_title = !histo.TestBit(kNoTitle) && (st.fOptTitle > 0);
 
-      let pt = this.getPadPainter()?.findInPrimitives('title', clTPaveText);
+      let pt = this.getPadPainter()?.findInPrimitives(kTitle, clTPaveText);
 
       if (pt) {
          pt.Clear();
@@ -1314,7 +1314,7 @@ class THistPainter extends ObjectPainter {
       }
 
       pt = create(clTPaveText);
-      Object.assign(pt, { fName: 'title', fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
+      Object.assign(pt, { fName: kTitle, fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
                           fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: st.fTitleAlign });
       if (draw_title) pt.AddText(histo.fTitle);
       return TPavePainter.draw(this.getDom(), pt, 'postitle');
@@ -1324,7 +1324,7 @@ class THistPainter extends ObjectPainter {
      * @desc Used from the GED */
    processTitleChange(arg) {
       const histo = this.getHisto(),
-            tpainter = this.getPadPainter()?.findPainterFor(null, 'title');
+            tpainter = this.getPadPainter()?.findPainterFor(null, kTitle);
 
       if (!histo || !tpainter) return null;
 
