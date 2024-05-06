@@ -770,8 +770,11 @@ class TCanvasPainter extends TPadPainter {
       if (!this.normal_canvas) {
          // fill list of primitives from painters
          this.forEachPainterInPad(p => {
-            if (p.isSecondary()) return; // ignore all secondary painters
             const subobj = p.getObject();
+            if (p.isSecondary()) {
+               if (!isFunc(p.isTitle) || !p.isTitle())
+                  return; // ignore all secondary painters but title
+            }
             if (subobj?._typename)
                canv.fPrimitives.Add(subobj, p.getDrawOpt());
          }, 'objects');
