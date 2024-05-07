@@ -1234,9 +1234,12 @@ class THistPainter extends ObjectPainter {
                     Proj: this.options.Proj,
                     extra_y_space: this.options.Text && (this.options.BarStyle > 0),
                     hist_painter: this });
+
       delete this.check_pad_range;
       delete this.zoom_xmin;
       delete this.zoom_xmax;
+      delete this.zoom_ymin;
+      delete this.zoom_ymax;
 
       if (this.options.Same)
          return false;
