@@ -484,7 +484,7 @@ class JSRootMenu {
       const hnames = ['left', 'middle', 'right'], vnames = ['bottom', 'centered', 'top'];
       for (let h = 1; h < 4; ++h) {
          for (let v = 1; v < 4; ++v)
-            this.addchk(h*10+v === value, `${h*10+v}: ${hnames[h-1]} ${vnames[h-1]}`, h*10+v, arg => set_func(parseInt(arg)));
+            this.addchk(h*10+v === value, `${h*10+v}: ${hnames[h-1]} ${vnames[v-1]}`, h*10+v, arg => set_func(parseInt(arg)));
       }
 
       this.add('endsub:');
