@@ -1517,7 +1517,10 @@ function getMethods(typename, obj) {
       m.AddText = function(txt) {
          const line = create(clTLatex);
          line.fTitle = txt;
-         line.fTextAlign = this.fTextAlign;
+         line.fTextAlign = 0;
+         line.fTextColor = 0;
+         line.fTextFont = 0;
+         line.fTextSize = 0;
          this.fLines.Add(line);
       };
       m.Clear = function() {
