@@ -1523,7 +1523,10 @@ function getMethods(typename, obj) {
       m.AddText = function(txt) {
          const line = create$1(clTLatex);
          line.fTitle = txt;
-         line.fTextAlign = this.fTextAlign;
+         line.fTextAlign = 0;
+         line.fTextColor = 0;
+         line.fTextFont = 0;
+         line.fTextSize = 0;
          this.fLines.Add(line);
       };
       m.Clear = function() {
@@ -59694,7 +59697,7 @@ class JSRootMenu {
       const hnames = ['left', 'middle', 'right'], vnames = ['bottom', 'centered', 'top'];
       for (let h = 1; h < 4; ++h) {
          for (let v = 1; v < 4; ++v)
-            this.addchk(h*10+v === value, `${h*10+v}: ${hnames[h-1]} ${vnames[h-1]}`, h*10+v, arg => set_func(parseInt(arg)));
+            this.addchk(h*10+v === value, `${h*10+v}: ${hnames[h-1]} ${vnames[v-1]}`, h*10+v, arg => set_func(parseInt(arg)));
       }
 
       this.add('endsub:');
@@ -70027,9 +70030,36 @@ class TCanvasPainter extends TPadPainter {
    /** @summary produce JSON for TCanvas, which can be used to display canvas once again */
    produceJSON() {
       const canv = this.getObject(),
-            fill0 = (canv.fFillStyle === 0);
+            fill0 = (canv.fFillStyle === 0),
+            axes = [];
 
       if (fill0) canv.fFillStyle = 1001;
+
+      // write selected range into TAxis properties
+      this.forEachPainterInPad(pp => {
+         const main = pp.getMainPainter(),
+               fp = pp.getFramePainter();
+         if (!isFunc(main?.getHisto) || !isFunc(main?.getDimension)) return;
+
+         const hist = main.getHisto(),
+               ndim = main.getDimension();
+         if (!hist?.fXaxis) return;
+
+         const setAxisRange = (name, axis) => {
+            if (fp?.zoomChangedInteractive(name)) {
+               axes.push({ axis, f: axis.fFirst, l: axis.fLast, b: axis.fBits });
+               axis.fFirst = main.getSelectIndex(name, 'left');
+               axis.fLast = main.getSelectIndex(name, 'right');
+               const has_range = (axis.fFirst > 0) || (axis.fLast < axis.fNbins);
+               if (has_range !== axis.TestBit(EAxisBits.kAxisRange))
+                  axis.InvertBit(EAxisBits.kAxisRange);
+            }
+         };
+
+         setAxisRange('x', hist.fXaxis);
+         if (ndim > 1) setAxisRange('y', hist.fYaxis);
+         if (ndim > 2) setAxisRange('z', hist.fZaxis);
+      }, 'pads');
 
       if (!this.normal_canvas) {
          // fill list of primitives from painters
@@ -70043,9 +70073,18 @@ class TCanvasPainter extends TPadPainter {
          }, 'objects');
       }
 
+      // const fp = this.getFramePainter();
+      // fp?.setRootPadRange(this.getRootPad());
+
       const res = toJSON(canv);
 
       if (fill0) canv.fFillStyle = 0;
+
+      axes.forEach(e => {
+         e.axis.fFirst = e.f;
+         e.axis.fLast = e.l;
+         e.axis.fBits = e.b;
+      });
 
       if (!this.normal_canvas)
          canv.fPrimitives.Clear();
@@ -71686,7 +71725,8 @@ class THistDrawOptions {
       d.check('USE_PAD_PALETTE');
       d.check('USE_PAD_STATS');
 
-      if (d.check('PAL', true)) this.Palette = d.partAsInt();
+      if (d.check('PAL', true))
+         this.Palette = d.partAsInt();
       // this is zooming of histo content
       if (d.check('MINIMUM:', true)) {
          this.ominimum = true;
@@ -72104,6 +72144,10 @@ class THistDrawOptions {
             res += this.TextKind;
          }
       }
+
+      if (this.Palette && this.canHavePalette())
+         res += `PAL${this.Palette}`;
+
       if (this.Same)
          res += this.ForceStat ? 'SAMES' : 'SAME';
       else if (is_main_hist && res) {
@@ -72816,9 +72860,12 @@ class THistPainter extends ObjectPainter {
                     Proj: this.options.Proj,
                     extra_y_space: this.options.Text && (this.options.BarStyle > 0),
                     hist_painter: this });
+
       delete this.check_pad_range;
       delete this.zoom_xmin;
       delete this.zoom_xmax;
+      delete this.zoom_ymin;
+      delete this.zoom_ymax;
 
       if (this.options.Same)
          return false;

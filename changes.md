@@ -21,6 +21,7 @@
 18. Fix - graph drawing fix custom labels on X axis #297
 19. Fix - draw at least line for TGraphErrors ROOT-8131
 20. Fix - log scales on TH3 drawings #306
+21. Fix - preserve attributes and draw options when call drawingJSON() #307
 
 
 ## Changes in 7.6.0

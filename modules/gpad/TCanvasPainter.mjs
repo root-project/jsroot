@@ -780,20 +780,19 @@ class TCanvasPainter extends TPadPainter {
 
          const setAxisRange = (name, axis) => {
             if (fp?.zoomChangedInteractive(name)) {
-               axes.push({axis, f: axis.fFirst, l: axis.fLast, b: axis.fBits })
+               axes.push({ axis, f: axis.fFirst, l: axis.fLast, b: axis.fBits });
                axis.fFirst = main.getSelectIndex(name, 'left');
                axis.fLast = main.getSelectIndex(name, 'right');
                const has_range = (axis.fFirst > 0) || (axis.fLast < axis.fNbins);
                if (has_range !== axis.TestBit(EAxisBits.kAxisRange))
-                  axis.InvertBit(EAxisBits.kAxisRange)
+                  axis.InvertBit(EAxisBits.kAxisRange);
             }
          };
 
          setAxisRange('x', hist.fXaxis);
          if (ndim > 1) setAxisRange('y', hist.fYaxis);
          if (ndim > 2) setAxisRange('z', hist.fZaxis);
-
-      }, 'pads')
+      }, 'pads');
 
       if (!this.normal_canvas) {
          // fill list of primitives from painters
