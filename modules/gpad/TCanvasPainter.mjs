@@ -763,9 +763,37 @@ class TCanvasPainter extends TPadPainter {
    /** @summary produce JSON for TCanvas, which can be used to display canvas once again */
    produceJSON() {
       const canv = this.getObject(),
-            fill0 = (canv.fFillStyle === 0);
+            fill0 = (canv.fFillStyle === 0),
+            axes = [];
 
       if (fill0) canv.fFillStyle = 1001;
+
+      // write selected range into TAxis properties
+      this.forEachPainterInPad(pp => {
+         const main = pp.getMainPainter(),
+               fp = pp.getFramePainter();
+         if (!isFunc(main?.getHisto) || !isFunc(main?.getDimension)) return;
+
+         const hist = main.getHisto(),
+               ndim = main.getDimension();
+         if (!hist?.fXaxis) return;
+
+         const setAxisRange = (name, axis) => {
+            if (fp?.zoomChangedInteractive(name)) {
+               axes.push({axis, f: axis.fFirst, l: axis.fLast, b: axis.fBits })
+               axis.fFirst = main.getSelectIndex(name, 'left');
+               axis.fLast = main.getSelectIndex(name, 'right');
+               const has_range = (axis.fFirst > 0) || (axis.fLast < axis.fNbins);
+               if (has_range !== axis.TestBit(EAxisBits.kAxisRange))
+                  axis.InvertBit(EAxisBits.kAxisRange)
+            }
+         };
+
+         setAxisRange('x', hist.fXaxis);
+         if (ndim > 1) setAxisRange('y', hist.fYaxis);
+         if (ndim > 2) setAxisRange('z', hist.fZaxis);
+
+      }, 'pads')
 
       if (!this.normal_canvas) {
          // fill list of primitives from painters
@@ -779,9 +807,18 @@ class TCanvasPainter extends TPadPainter {
          }, 'objects');
       }
 
+      // const fp = this.getFramePainter();
+      // fp?.setRootPadRange(this.getRootPad());
+
       const res = toJSON(canv);
 
       if (fill0) canv.fFillStyle = 0;
+
+      axes.forEach(e => {
+         e.axis.fFirst = e.f;
+         e.axis.fLast = e.l;
+         e.axis.fBits = e.b;
+      });
 
       if (!this.normal_canvas)
          canv.fPrimitives.Clear();
