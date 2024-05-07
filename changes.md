@@ -15,11 +15,12 @@
 12. Correctly scale size of axis ticks - take into account NDC axis length
 13. Remove source_dir output in node.js #296
 14. Set name and userData in geometry `build()` function #303
-15. Fix - correctly draw only grids with AXIG draw option
-16. Fix - let read object from TFile with empty name
-17. Fix - graph drawing fix custom labels on X axis #297
-18. Fix - draw at least line for TGraphErrors ROOT-8131
-19. Fix - log scales on TH3 drawings #306
+15. Draw histogram title afterwards - place in front of stats box
+16. Fix - correctly draw only grids with AXIG draw option
+17. Fix - let read object from TFile with empty name
+18. Fix - graph drawing fix custom labels on X axis #297
+19. Fix - draw at least line for TGraphErrors ROOT-8131
+20. Fix - log scales on TH3 drawings #306
 
 
 ## Changes in 7.6.0

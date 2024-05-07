@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '3/05/2024',
+version_date = '7/05/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -1049,13 +1049,13 @@ const prROOT = 'ROOT.', clTObject = 'TObject', clTNamed = 'TNamed', clTString = 
       clTText = 'TText', clTLatex = 'TLatex', clTMathText = 'TMathText', clTAnnotation = 'TAnnotation',
       clTColor = 'TColor', clTLine = 'TLine', clTBox = 'TBox', clTPolyLine = 'TPolyLine',
       clTPolyLine3D = 'TPolyLine3D', clTPolyMarker3D = 'TPolyMarker3D',
-      clTAttPad = 'TAttPad', clTPad = 'TPad', clTCanvas = 'TCanvas', clTAttCanvas = 'TAttCanvas',
+      clTAttPad = 'TAttPad', clTPad = 'TPad', clTCanvas = 'TCanvas', clTFrame = 'TFrame', clTAttCanvas = 'TAttCanvas',
       clTGaxis = 'TGaxis', clTAttAxis = 'TAttAxis', clTAxis = 'TAxis', clTStyle = 'TStyle',
       clTH1 = 'TH1', clTH1I = 'TH1I', clTH1D = 'TH1D', clTH2 = 'TH2', clTH2I = 'TH2I', clTH2F = 'TH2F', clTH3 = 'TH3',
       clTF1 = 'TF1', clTF2 = 'TF2', clTF3 = 'TF3', clTProfile = 'TProfile', clTProfile2D = 'TProfile2D', clTProfile3D = 'TProfile3D',
       clTGeoVolume = 'TGeoVolume', clTGeoNode = 'TGeoNode', clTGeoNodeMatrix = 'TGeoNodeMatrix',
       nsREX = 'ROOT::Experimental::',
-      kNoZoom = -1111, kNoStats = BIT(9), kInspect = 'inspect';
+      kNoZoom = -1111, kNoStats = BIT(9), kInspect = 'inspect', kTitle = 'title';
 
 
 /** @summary Create some ROOT classes
@@ -1896,6 +1896,7 @@ clTF1: clTF1,
 clTF2: clTF2,
 clTF3: clTF3,
 clTFile: clTFile,
+clTFrame: clTFrame,
 clTGaxis: clTGaxis,
 clTGeoNode: clTGeoNode,
 clTGeoNodeMatrix: clTGeoNodeMatrix,
@@ -1975,6 +1976,7 @@ isStr: isStr,
 kInspect: kInspect,
 kNoStats: kNoStats,
 kNoZoom: kNoZoom,
+kTitle: kTitle,
 loadScript: loadScript,
 nsREX: nsREX,
 parse: parse,
@@ -59156,11 +59158,9 @@ function setSaveFile(func) {
    _saveFileFunc = func;
 }
 
-/** @summary Produce exec string for WebCanas to set color value
-  * @desc Color can be id or string, but should belong to list of known colors
-  * For higher color numbers TColor::GetColor(r,g,b) will be invoked to ensure color is exists
+/** @summary Returns color id for the color
   * @private */
-function getColorExec(col, method) {
+function getColorId(col) {
    const arr = getRootColors();
    let id = -1;
    if (isStr(col)) {
@@ -59177,15 +59177,43 @@ function getColorExec(col, method) {
       col = arr[id];
    }
 
-   if (id < 0) return '';
+   return { id, col };
+}
+
+/** @summary Produce exec string for WebCanas to set color value
+  * @desc Color can be id or string, but should belong to list of known colors
+  * For higher color numbers TColor::GetColor(r,g,b) will be invoked to ensure color is exists
+  * @private */
+function getColorExec(col, method) {
+   const d = getColorId(col);
+
+   if (d.id < 0)
+      return '';
 
    // for higher color numbers ensure that such color exists
-   if (id >= 50) {
-      const c = color(col);
-      id = `TColor::GetColor(${c.r},${c.g},${c.b})`;
+   if (d.id >= 50) {
+      const c = color(d.col);
+      d.id = `TColor::GetColor(${c.r},${c.g},${c.b})`;
     }
 
-   return `exec:${method}(${id})`;
+   return `exec:${method}(${d.id})`;
+}
+
+/** @summary Change object member in the painter
+  * @desc Used when interactively change in the menu
+  * Special handling for color is provided
+  * @private */
+function changeObjectMember(painter, member, val, is_color) {
+   if (is_color) {
+      const d = getColorId(val);
+      if ((d.id < 0) || (d.id === 9999))
+         return;
+      val = d.id;
+   }
+
+   const obj = painter?.getObject();
+   if (obj && (obj[member] !== undefined))
+      obj[member] = val;
 }
 
 const kToFront = '__front__';
@@ -59390,7 +59418,7 @@ class JSRootMenu {
       }
 
       this.add('sub:' + name, () => this.input('Enter value of ' + name, conv(size_value, true), (step >= 1) ? 'int' : 'float').then(set_func), title);
-      values.forEach(v => this.addchk(match(v), conv(v), v, res => set_func((step >= 1) ? parseInt(res) : parseFloat(res))));
+      values.forEach(v => this.addchk(match(v), conv(v), v, res => set_func((step >= 1) ? Number.parseInt(res) : Number.parseFloat(res))));
       this.add('endsub:');
    }
 
@@ -59683,11 +59711,18 @@ class JSRootMenu {
 
       if (painter.lineatt?.used) {
          this.add(`sub:${preffix}Line att`);
-         this.addSizeMenu('width', 1, 10, 1, painter.lineatt.width,
-            arg => { painter.lineatt.change(undefined, arg); painter.interactiveRedraw(true, `exec:SetLineWidth(${arg})`); });
-         this.addColorMenu('color', painter.lineatt.color,
-            arg => { painter.lineatt.change(arg); painter.interactiveRedraw(true, getColorExec(arg, 'SetLineColor')); });
+         this.addSizeMenu('width', 1, 10, 1, painter.lineatt.width, arg => {
+            changeObjectMember(painter, 'fLineWidth', arg);
+            painter.lineatt.change(undefined, arg);
+            painter.interactiveRedraw(true, `exec:SetLineWidth(${arg})`);
+         });
+         this.addColorMenu('color', painter.lineatt.color, arg => {
+            changeObjectMember(painter, 'fLineColor', arg, true);
+            painter.lineatt.change(arg);
+            painter.interactiveRedraw(true, getColorExec(arg, 'SetLineColor'));
+         });
          this.addLineStyleMenu('style', painter.lineatt.style, id => {
+            changeObjectMember(painter, 'fLineStyle', id);
             painter.lineatt.change(undefined, undefined, id);
             painter.interactiveRedraw(true, `exec:SetLineStyle(${id})`);
          });
@@ -59712,10 +59747,12 @@ class JSRootMenu {
       if (painter.fillatt?.used) {
          this.add(`sub:${preffix}Fill att`);
          this.addColorMenu('color', painter.fillatt.colorindx, arg => {
+            changeObjectMember(painter, 'fFillColor', arg, true);
             painter.fillatt.change(arg, undefined, painter.getCanvSvg());
             painter.interactiveRedraw(true, getColorExec(arg, 'SetFillColor'));
          }, painter.fillatt.kind);
          this.addFillStyleMenu('style', painter.fillatt.pattern, painter.fillatt.colorindx, painter, id => {
+            changeObjectMember(painter, 'fFillStyle', id);
             painter.fillatt.change(undefined, id, painter.getCanvSvg());
             painter.interactiveRedraw(true, `exec:SetFillStyle(${id})`);
          });
@@ -59724,10 +59761,16 @@ class JSRootMenu {
 
       if (painter.markeratt?.used) {
          this.add(`sub:${preffix}Marker att`);
-         this.addColorMenu('color', painter.markeratt.color,
-            arg => { painter.markeratt.change(arg); painter.interactiveRedraw(true, getColorExec(arg, 'SetMarkerColor')); });
-         this.addSizeMenu('size', 0.5, 6, 0.5, painter.markeratt.size,
-            arg => { painter.markeratt.change(undefined, undefined, arg); painter.interactiveRedraw(true, `exec:SetMarkerSize(${arg})`); });
+         this.addColorMenu('color', painter.markeratt.color, arg => {
+            changeObjectMember(painter, 'fMarkerColor', arg, true);
+            painter.markeratt.change(arg);
+            painter.interactiveRedraw(true, getColorExec(arg, 'SetMarkerColor'));
+         });
+         this.addSizeMenu('size', 0.5, 6, 0.5, painter.markeratt.size, arg => {
+            changeObjectMember(painter, 'fMarkerSize', arg);
+            painter.markeratt.change(undefined, undefined, arg);
+            painter.interactiveRedraw(true, `exec:SetMarkerSize(${arg})`);
+         });
 
          this.add('sub:style');
          const supported = [1, 2, 3, 4, 5, 6, 7, 8, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34];
@@ -59746,23 +59789,37 @@ class JSRootMenu {
       if (painter.textatt?.used) {
          this.add(`sub:${preffix}Text att`);
 
-         this.addFontMenu('font', painter.textatt.font,
-                         arg => { painter.textatt.change(arg); painter.interactiveRedraw(true, `exec:SetTextFont(${arg})`); });
+         this.addFontMenu('font', painter.textatt.font, arg => {
+            changeObjectMember(painter, 'fTextFont', arg);
+            painter.textatt.change(arg);
+            painter.interactiveRedraw(true, `exec:SetTextFont(${arg})`);
+         });
 
          const rel = painter.textatt.size < 1.0;
 
-         this.addSizeMenu('size', rel ? 0.03 : 6, rel ? 0.20 : 26, rel ? 0.01 : 2, painter.textatt.size,
-            arg => { painter.textatt.change(undefined, parseFloat(arg)); painter.interactiveRedraw(true, `exec:SetTextSize(${arg})`); });
-
-         this.addColorMenu('color', painter.textatt.color,
-            arg => { painter.textatt.change(undefined, undefined, arg); painter.interactiveRedraw(true, getColorExec(arg, 'SetTextColor')); });
-
-         this.addAlignMenu('align', painter.textatt.align, arg => {
-            painter.textatt.change(undefined, undefined, undefined, arg); painter.interactiveRedraw(true, `exec:SetTextAlign(${arg})`);
+         this.addSizeMenu('size', rel ? 0.03 : 6, rel ? 0.20 : 26, rel ? 0.01 : 2, painter.textatt.size, arg => {
+            changeObjectMember(painter, 'fTextSize', arg);
+            painter.textatt.change(undefined, arg);
+            painter.interactiveRedraw(true, `exec:SetTextSize(${arg})`);
          });
 
-         this.addSizeMenu('angle', -180, 180, 45, painter.textatt.angle,
-            arg => { painter.textatt.change(undefined, undefined, undefined, undefined, parseFloat(arg)); painter.interactiveRedraw(true, `exec:SetTextAngle(${arg})`); });
+         this.addColorMenu('color', painter.textatt.color, arg => {
+            changeObjectMember(painter, 'fTextColor', arg, true);
+            painter.textatt.change(undefined, undefined, arg);
+            painter.interactiveRedraw(true, getColorExec(arg, 'SetTextColor'));
+         });
+
+         this.addAlignMenu('align', painter.textatt.align, arg => {
+            changeObjectMember(painter, 'fTextAlign', arg);
+            painter.textatt.change(undefined, undefined, undefined, arg);
+            painter.interactiveRedraw(true, `exec:SetTextAlign(${arg})`);
+         });
+
+         this.addSizeMenu('angle', -180, 180, 45, painter.textatt.angle, arg => {
+            changeObjectMember(painter, 'fTextAngle', arg);
+            painter.textatt.change(undefined, undefined, undefined, undefined, arg);
+            painter.interactiveRedraw(true, `exec:SetTextAngle(${arg})`);
+         });
 
          this.add('endsub:');
       }
@@ -60097,7 +60154,7 @@ class JSRootMenu {
             if (!element) return;
             let val = element.querySelector('.jsroot_dlginp').value;
             if (kind === 'float') {
-               val = parseFloat(val);
+               val = Number.parseFloat(val);
                if (Number.isFinite(val))
                   resolveFunc(val);
             } else if (kind === 'int') {
@@ -67861,7 +67918,7 @@ class TPadPainter extends ObjectPainter {
 
       const obj = this.pad.fPrimitives.arr[indx];
 
-      if (!obj || ((indx > 0) && (obj._typename === 'TFrame') && this.getFramePainter()))
+      if (!obj || ((indx > 0) && (obj._typename === clTFrame) && this.getFramePainter()))
          return this.drawPrimitives(indx+1);
 
       // use of Promise should avoid large call-stack depth when many primitives are drawn
@@ -68201,7 +68258,7 @@ class TPadPainter extends ObjectPainter {
       for (let k = 0; k < this.painters.length; ++k) {
          const painter = this.painters[k],
                obj = painter.getObject();
-         if (!obj || obj.fName === 'title' || obj.fName === 'stats' || painter.draw_content === false ||
+         if (!obj || obj.fName === kTitle || obj.fName === 'stats' || painter.draw_content === false ||
               obj._typename === clTLegend || obj._typename === clTHStack || obj._typename === clTMultiGraph)
             continue;
 
@@ -68389,8 +68446,9 @@ class TPadPainter extends ObjectPainter {
       // first appropriate painter for the object
       // if same object drawn twice, two painters will exists
       for (let k = 0; k < this.painters.length; ++k) {
-         if (this.painters[k].snapid === snapid)
-            if (--cnt === 0) { objpainter = this.painters[k]; break; }
+         const subp = this.painters[k];
+         if (subp.snapid === snapid)
+            if (--cnt === 0) { objpainter = subp; break; }
       }
 
       if (objpainter) {
@@ -68581,8 +68639,8 @@ class TPadPainter extends ObjectPainter {
       // check if frame or title was recreated, we could reassign handlers for them directly
       // while this is temporary objects, which can be recreated very often, try to catch such situation ourselfs
       if (!snap.fWithoutPrimitives) {
-         matchPrimitive(this.painters, snap.fPrimitives, 'TFrame');
-         matchPrimitive(this.painters, snap.fPrimitives, clTPaveText, 'title');
+         matchPrimitive(this.painters, snap.fPrimitives, clTFrame);
+         matchPrimitive(this.painters, snap.fPrimitives, clTPaveText, kTitle);
       }
 
       let isanyfound = false, isanyremove = false;
@@ -69976,7 +70034,9 @@ class TCanvasPainter extends TPadPainter {
       if (!this.normal_canvas) {
          // fill list of primitives from painters
          this.forEachPainterInPad(p => {
-            if (p.isSecondary()) return; // ignore all secondary painters
+            // ignore all secondary painters
+            if (p.isSecondary())
+               return;
             const subobj = p.getObject();
             if (subobj?._typename)
                canv.fPrimitives.Add(subobj, p.getDrawOpt());
@@ -71241,7 +71301,7 @@ class TPavePainter extends ObjectPainter {
                if (res) this.interactiveRedraw(true, 'pave_moved');
             });
          });
-      } else if (pave.fName === 'title') {
+      } else if (pave.fName === kTitle) {
          menu.add('Default position', () => {
             pave.fX1NDC = gStyle.fTitleW > 0 ? gStyle.fTitleX - gStyle.fTitleW/2 : gStyle.fPadLeftMargin;
             pave.fY1NDC = gStyle.fTitleY - Math.min(gStyle.fTitleFontSize*1.1, 0.06);
@@ -71271,7 +71331,7 @@ class TPavePainter extends ObjectPainter {
          if (isFunc(fp?.showContextMenu))
              fp.showContextMenu('pal', evnt);
       } else
-         showPainterMenu(evnt, this, this.isTitle() ? 'title' : undefined);
+         showPainterMenu(evnt, this, this.isTitle() ? kTitle : undefined);
    }
 
    /** @summary Returns true when stat box is drawn */
@@ -71281,7 +71341,7 @@ class TPavePainter extends ObjectPainter {
 
    /** @summary Returns true when title is drawn */
    isTitle() {
-      return this.matchObjectType(clTPaveText) && (this.getObject()?.fName === 'title');
+      return this.matchObjectType(clTPaveText) && (this.getObject()?.fName === kTitle);
    }
 
    /** @summary Clear text in the pave */
@@ -71455,8 +71515,8 @@ class TPavePainter extends ObjectPainter {
       const painter = new TPavePainter(dom, pave);
 
       return ensureTCanvas(painter, false).then(() => {
-         if ((pave.fName === 'title') && (pave._typename === clTPaveText)) {
-            const tpainter = painter.getPadPainter().findPainterFor(null, 'title');
+         if ((pave.fName === kTitle) && (pave._typename === clTPaveText)) {
+            const tpainter = painter.getPadPainter().findPainterFor(null, kTitle, clTPaveText);
             if (tpainter && (tpainter !== painter)) {
                tpainter.removeFromPadPrimitives();
                tpainter.cleanup();
@@ -71892,6 +71952,31 @@ class THistDrawOptions {
       if (d.check('PMC') && !this._pmc)
          this._pmc = 2;
 
+      const check_axis_bit = (opt, axis, bit) => {
+         // ignore Z scale options for 2D plots
+         if ((axis === 'fZaxis') && (hdim < 3) && !this.Lego && !this.Surf)
+            return;
+         let flag = d.check(opt);
+         if (pad && pad['$'+opt]) { flag = true; pad['$'+opt] = undefined; }
+         if (flag && histo) {
+            if (!histo[axis].TestBit(bit))
+               histo[axis].InvertBit(bit);
+         }
+      };
+
+      check_axis_bit('OTX', 'fXaxis', EAxisBits.kOppositeTitle);
+      check_axis_bit('OTY', 'fYaxis', EAxisBits.kOppositeTitle);
+      check_axis_bit('OTZ', 'fZaxis', EAxisBits.kOppositeTitle);
+      check_axis_bit('CTX', 'fXaxis', EAxisBits.kCenterTitle);
+      check_axis_bit('CTY', 'fYaxis', EAxisBits.kCenterTitle);
+      check_axis_bit('CTZ', 'fZaxis', EAxisBits.kCenterTitle);
+      check_axis_bit('MLX', 'fXaxis', EAxisBits.kMoreLogLabels);
+      check_axis_bit('MLY', 'fYaxis', EAxisBits.kMoreLogLabels);
+      check_axis_bit('MLZ', 'fZaxis', EAxisBits.kMoreLogLabels);
+
+      if (d.check('RX') || pad?.$RX) this.RevX = true;
+      if (d.check('RY') || pad?.$RY) this.RevY = true;
+
       if (d.check('L')) { this.Line = true; this.Hist = false; }
       if (d.check('F')) { this.Fill = true; this.need_fillcol = true; }
 
@@ -71912,21 +71997,6 @@ class THistDrawOptions {
             painter.zoom_xmax = fp.scale_xmax;
          }
       }
-
-      if (d.check('RX') || pad?.$RX) this.RevX = true;
-      if (d.check('RY') || pad?.$RY) this.RevY = true;
-      const check_axis_bit = (opt, axis, bit) => {
-         let flag = d.check(opt);
-         if (pad && pad['$'+opt]) { flag = true; pad['$'+opt] = undefined; }
-         if (flag && histo) {
-            if (!histo[axis].TestBit(bit))
-               histo[axis].InvertBit(bit);
-         }
-      };
-      check_axis_bit('OTX', 'fXaxis', EAxisBits.kOppositeTitle);
-      check_axis_bit('OTY', 'fYaxis', EAxisBits.kOppositeTitle);
-      check_axis_bit('CTX', 'fXaxis', EAxisBits.kCenterTitle);
-      check_axis_bit('CTY', 'fYaxis', EAxisBits.kCenterTitle);
 
       if (d.check('B1')) { this.BarStyle = 1; this.BaseLine = 0; this.Hist = false; this.need_fillcol = true; }
       if (d.check('B')) { this.BarStyle = 1; this.Hist = false; this.need_fillcol = true; }
@@ -72783,7 +72853,28 @@ class THistPainter extends ObjectPainter {
       if (arg === 'only-check')
          return !histo.TestBit(kNoTitle);
       histo.InvertBit(kNoTitle);
-      this.drawHistTitle().then(() => this.processOnlineChange(`exec:SetBit(TH1::kNoTitle,${histo.TestBit(kNoTitle)?1:0})`));
+      this.updateHistTitle().then(() => this.processOnlineChange(`exec:SetBit(TH1::kNoTitle,${histo.TestBit(kNoTitle)?1:0})`));
+   }
+
+   /** @summary Only redraw histogram title
+     * @return {Promise} with painter */
+   async updateHistTitle() {
+      // case when histogram drawn over other histogram (same option)
+      if (!this.isMainPainter() || this.options.Same || (this.options.Axis > 0))
+         return this;
+
+      const tpainter = this.getPadPainter()?.findPainterFor(null, kTitle, clTPaveText),
+            pt = tpainter?.getObject();
+
+      if (!tpainter || !pt)
+         return this;
+
+      const histo = this.getHisto(), st = gStyle,
+            draw_title = !histo.TestBit(kNoTitle) && (st.fOptTitle > 0);
+
+      pt.Clear();
+      if (draw_title) pt.AddText(histo.fTitle);
+      return tpainter.redraw().then(() => this);
    }
 
    /** @summary Draw histogram title
@@ -72794,37 +72885,28 @@ class THistPainter extends ObjectPainter {
          return this;
 
       const histo = this.getHisto(), st = gStyle,
-            pp = this.getPadPainter(),
-            tpainter = pp?.findPainterFor(null, 'title'),
             draw_title = !histo.TestBit(kNoTitle) && (st.fOptTitle > 0);
-      let pt = tpainter?.getObject();
 
-      if (!pt && isFunc(pp?.findInPrimitives))
-         pt = pp.findInPrimitives('title', clTPaveText);
+      let pt = this.getPadPainter()?.findInPrimitives(kTitle, clTPaveText);
 
       if (pt) {
          pt.Clear();
          if (draw_title) pt.AddText(histo.fTitle);
-         if (tpainter) return tpainter.redraw().then(() => this);
-      } else if (draw_title && !tpainter && histo.fTitle) {
-         pt = create$1(clTPaveText);
-         Object.assign(pt, { fName: 'title', fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
-                             fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: st.fTitleAlign });
-         pt.AddText(histo.fTitle);
-         return TPavePainter.draw(this.getDom(), pt, 'postitle').then(tp => {
-            tp?.setSecondaryId(this);
-            return this;
-         });
+         return this;
       }
 
-      return this;
+      pt = create$1(clTPaveText);
+      Object.assign(pt, { fName: kTitle, fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
+                          fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: st.fTitleAlign });
+      if (draw_title) pt.AddText(histo.fTitle);
+      return TPavePainter.draw(this.getDom(), pt, 'postitle');
    }
 
    /** @summary Live change and update of title drawing
      * @desc Used from the GED */
    processTitleChange(arg) {
       const histo = this.getHisto(),
-            tpainter = this.getPadPainter()?.findPainterFor(null, 'title');
+            tpainter = this.getPadPainter()?.findPainterFor(null, kTitle);
 
       if (!histo || !tpainter) return null;
 
@@ -73885,6 +73967,8 @@ class THistPainter extends ObjectPainter {
          return painter.callDrawFunc();
       }).then(() => {
          return painter.drawFunctions();
+      }).then(() => {
+         return painter.drawHistTitle();
       }).then(() => {
          if (!painter.Mode3D && painter.options.AutoZoom)
             return painter.autoZoom();
@@ -77129,8 +77213,8 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
             pr = this.drawAxes().then(() => this.draw2DBins());
 
          return pr.then(() => this.completePalette(pp));
-      }).then(() => this.drawHistTitle())
-        .then(() => this.updateFunctions())
+      }).then(() => this.updateFunctions())
+        .then(() => this.updateHistTitle())
         .then(() => {
             this.updateStatWebCanvas();
             return this.addInteractivity();
@@ -80711,8 +80795,8 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
 
       return pr.then(() => this.drawAxes())
                .then(() => this.draw1DBins())
-               .then(() => this.drawHistTitle())
                .then(() => this.updateFunctions())
+               .then(() => this.updateHistTitle())
                .then(() => {
                    this.updateStatWebCanvas();
                    return this.addInteractivity();
@@ -80781,12 +80865,12 @@ class TH1Painter extends TH1Painter$2 {
          }
       }
 
-      if (is_main) {
-         pr = pr.then(() => this.drawColorPalette(this.options.Zscale && ((this.options.Lego === 12) || (this.options.Lego === 14))))
-                .then(() => this.drawHistTitle());
-      }
+      if (is_main)
+         pr = pr.then(() => this.drawColorPalette(this.options.Zscale && ((this.options.Lego === 12) || (this.options.Lego === 14))));
 
-      return pr.then(() => this.updateFunctions()).then(() => this);
+      return pr.then(() => this.updateFunctions())
+               .then(() => this.updateHistTitle())
+               .then(() => this);
    }
 
    /** @summary draw TH1 object */
@@ -81067,11 +81151,12 @@ class TH2Painter extends TH2Painter$2 {
       //  (re)draw palette by resize while canvas may change dimension
       if (is_main) {
          pr = pr.then(() => this.drawColorPalette(this.options.Zscale && ((this.options.Lego === 12) || (this.options.Lego === 14) ||
-                                                  (this.options.Surf === 11) || (this.options.Surf === 12))))
-                .then(() => this.drawHistTitle());
+                                                  (this.options.Surf === 11) || (this.options.Surf === 12))));
       }
 
-      return pr.then(() => this.updateFunctions()).then(() => this);
+      return pr.then(() => this.updateFunctions())
+               .then(() => this.updateHistTitle())
+               .then(() => this);
    }
 
    /** @summary draw TH2 object */
@@ -81812,9 +81897,11 @@ class TH3Painter extends THistPainter {
       }
 
       if (this.isMainPainter())
-        pr = pr.then(() => this.drawColorPalette(this.options.Zscale && (this._box_option === 12 || this._box_option === 13))).then(() => this.drawHistTitle());
+        pr = pr.then(() => this.drawColorPalette(this.options.Zscale && (this._box_option === 12 || this._box_option === 13)));
 
-      return pr.then(() => this.updateFunctions()).then(() => this);
+      return pr.then(() => this.updateFunctions())
+               .then(() => this.updateHistTitle())
+               .then(() => this);
    }
 
    /** @summary Fill pad toolbar with TH3-related functions */
@@ -101689,7 +101776,7 @@ drawFuncs = { lst: [
    { name: clTPad, icon: 'img_canvas', func: TPadPainter.draw, opt: ';grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz', expand_item: fPrimitives, noappend: true },
    { name: 'TSlider', icon: 'img_canvas', func: TPadPainter.draw },
    { name: clTButton, icon: 'img_canvas', func: TPadPainter.draw },
-   { name: 'TFrame', icon: 'img_frame', draw: () => import_canvas().then(h => h.drawTFrame) },
+   { name: clTFrame, icon: 'img_frame', draw: () => import_canvas().then(h => h.drawTFrame) },
    { name: clTPave, icon: 'img_pavetext', class: () => Promise.resolve().then(function () { return TPavePainter$1; }).then(h => h.TPavePainter) },
    { name: clTPaveText, sameas: clTPave },
    { name: clTPavesText, sameas: clTPave },
@@ -118748,7 +118835,7 @@ class RPadPainter extends RObjectPainter {
          }
 
          if (!this.getFramePainter()) {
-            return this.drawObject(this.getDom(), { _typename: 'TFrame', $dummy: true }, '')
+            return this.drawObject(this.getDom(), { _typename: clTFrame, $dummy: true }, '')
                        .then(() => this.drawNextSnap(lst, indx-1));
          } // call same object again
 
@@ -126115,6 +126202,7 @@ exports.clTF1 = clTF1;
 exports.clTF2 = clTF2;
 exports.clTF3 = clTF3;
 exports.clTFile = clTFile;
+exports.clTFrame = clTFrame;
 exports.clTGaxis = clTGaxis;
 exports.clTGeoNode = clTGeoNode;
 exports.clTGeoNodeMatrix = clTGeoNodeMatrix;
@@ -126210,6 +126298,7 @@ exports.isStr = isStr;
 exports.kInspect = kInspect;
 exports.kNoStats = kNoStats;
 exports.kNoZoom = kNoZoom;
+exports.kTitle = kTitle;
 exports.loadOpenui5 = loadOpenui5;
 exports.loadScript = loadScript;
 exports.makeImage = makeImage;
