@@ -104,7 +104,8 @@ class THistDrawOptions {
       d.check('USE_PAD_PALETTE');
       d.check('USE_PAD_STATS');
 
-      if (d.check('PAL', true)) this.Palette = d.partAsInt();
+      if (d.check('PAL', true))
+         this.Palette = d.partAsInt();
       // this is zooming of histo content
       if (d.check('MINIMUM:', true)) {
          this.ominimum = true;
@@ -522,6 +523,10 @@ class THistDrawOptions {
             res += this.TextKind;
          }
       }
+
+      if (this.Palette && this.canHavePalette())
+         res += `PAL${this.Palette}`;
+
       if (this.Same)
          res += this.ForceStat ? 'SAMES' : 'SAME';
       else if (is_main_hist && res) {
