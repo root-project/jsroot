@@ -605,11 +605,13 @@ class JSRootMenu {
             painter.interactiveRedraw(true, `exec:SetTextAlign(${arg})`);
          });
 
-         this.addSizeMenu('angle', -180, 180, 45, painter.textatt.angle, arg => {
-            changeObjectMember(painter, 'fTextAngle', arg);
-            painter.textatt.change(undefined, undefined, undefined, undefined, arg);
-            painter.interactiveRedraw(true, `exec:SetTextAngle(${arg})`);
-         });
+         if (painter.textatt.can_rotate) {
+            this.addSizeMenu('angle', -180, 180, 45, painter.textatt.angle, arg => {
+               changeObjectMember(painter, 'fTextAngle', arg);
+               painter.textatt.change(undefined, undefined, undefined, undefined, arg);
+               painter.interactiveRedraw(true, `exec:SetTextAngle(${arg})`);
+            });
+         }
 
          this.add('endsub:');
       }
