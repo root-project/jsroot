@@ -46,6 +46,8 @@ class THistDrawOptions {
 
    isCartesian() { return this.System === kCARTESIAN; }
 
+   is3d() { return this.Lego || this.Surf; }
+
    /** @summary Base on sumw2 values (re)set some bacis draw options, only for 1dim hist */
    decodeSumw2(histo, force) {
       const len = histo.fSumw2?.length ?? 0;
@@ -525,7 +527,10 @@ class THistDrawOptions {
       }
 
       if (this.Palette && this.canHavePalette())
-         res += `PAL${this.Palette}`;
+         res += `_PAL${this.Palette}`;
+
+      if (this.is3d() && this.Ortho && is_main_hist)
+         res += '_ORTHO';
 
       if (this.Same)
          res += this.ForceStat ? 'SAMES' : 'SAME';
@@ -1737,7 +1742,10 @@ class THistPainter extends ObjectPainter {
                main.options.BackBox = !main.options.BackBox;
                fp.render3D();
             });
-            menu.addchk(fp.camera?.isOrthographicCamera, 'Othographic camera', flag => fp.change3DCamera(flag));
+            menu.addchk(fp.camera?.isOrthographicCamera, 'Orthographic camera', flag => {
+               main.options.Ortho = flag;
+               fp.change3DCamera(flag);
+            });
          }
 
          if (this.draw_content) {
