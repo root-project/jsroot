@@ -5,7 +5,7 @@ import { HelveticerRegularJson, Font, WebGLRenderer, WebGLRenderTarget,
          Vector2, Vector3, Color, Points, PointsMaterial,
          LineSegments, LineDashedMaterial, LineBasicMaterial,
          OrbitControls, Raycaster, SVGRenderer } from '../three.mjs';
-import { browser, settings, constants, isBatchMode, isNodeJs, isObject, isFunc, isStr, getDocument } from '../core.mjs';
+import { browser, settings, constants, internals, isBatchMode, isNodeJs, isObject, isFunc, isStr, getDocument } from '../core.mjs';
 import { getElementRect, getAbsPosInCanvas, makeTranslate } from './BasePainter.mjs';
 import { TAttMarkerHandler } from './TAttMarkerHandler.mjs';
 import { getSvgLineStyle } from './TAttLineHandler.mjs';
@@ -836,6 +836,10 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       renderer.domElement.addEventListener('pointerdown', control_mousedown);
       renderer.domElement.addEventListener('pointerup', control_mouseup);
    }
+
+   // workaround for use in node.js
+   if (!isFunc(renderer.domElement.getRootNode))
+      renderer.domElement.getRootNode = () => internals.nodejs_document;
 
    control = new OrbitControls(camera, renderer.domElement);
 
