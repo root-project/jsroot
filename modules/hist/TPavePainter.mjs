@@ -359,7 +359,7 @@ class TPavePainter extends ObjectPainter {
       if (!pave.fLabel || !pave.fLabel.trim())
          return this;
 
-      this.createAttText({ attr: pave });
+      this.createAttText({ attr: pave, can_rotate: false });
 
       this.startTextDrawing(this.textatt.font, height/1.2);
 
@@ -399,7 +399,7 @@ class TPavePainter extends ObjectPainter {
       const stepy = height / nlines, margin_x = pt.fMargin * width;
       let has_head = false;
 
-      this.createAttText({ attr: pt });
+      this.createAttText({ attr: pt, can_rotate: false });
 
       this.startTextDrawing(this.textatt.font, height/(nlines * 1.2));
 
@@ -479,7 +479,7 @@ class TPavePainter extends ObjectPainter {
             stepy = height / (nlines || 1);
       let max_font_size = 0;
 
-      this.createAttText({ attr: pt });
+      this.createAttText({ attr: pt, can_rotate: false });
 
       // for single line (typically title) limit font size
       if ((nlines === 1) && (this.textatt.size > 0))
@@ -664,7 +664,7 @@ class TPavePainter extends ObjectPainter {
           max_font_size = 0, // not limited in the beggining
           any_opt = false;
 
-      this.createAttText({ attr: legend });
+      this.createAttText({ attr: legend, can_rotate: false });
 
       const tsz = this.textatt.getSize(pp.getPadHeight());
       if (tsz && (tsz < font_size))
