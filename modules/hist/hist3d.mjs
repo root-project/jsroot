@@ -1,4 +1,4 @@
-import { constants, isFunc, isStr, getDocument } from '../core.mjs';
+import { constants, isFunc, isStr, getDocument, isNodeJs } from '../core.mjs';
 import { rgb as d3_rgb } from '../d3.mjs';
 import { REVISION, DoubleSide, Object3D, Color, Vector2, Vector3, Matrix4, Line3,
          BufferGeometry, BufferAttribute, Mesh, MeshBasicMaterial, MeshLambertMaterial,
@@ -547,7 +547,7 @@ function create3DScene(render3d, x3dscale, y3dscale, orthographic) {
       this.first_render_tm = 0;
       this.enable_highlight = false;
 
-      if (!this.isBatchMode() && this.webgl)
+      if (!this.isBatchMode() && this.webgl && !isNodeJs())
          create3DControl(this);
 
       return this;
