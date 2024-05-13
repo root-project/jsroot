@@ -491,12 +491,13 @@ class JSRootMenu {
    }
 
    /** @summary Fill context menu for graphical attributes in painter
+     * @desc this method used to fill entries for different attributes of the object
+     * like TAttFill, TAttLine, TAttText
+     * There is special handling for the frame where attributes handled by the pad
      * @private */
    addAttributesMenu(painter, preffix) {
-      // this method used to fill entries for different attributes of the object
-      // like TAttFill, TAttLine, ....
-      // all menu call-backs need to be rebind, while menu can be used from other painter
-
+      const is_frame = painter === painter.getFramePainter(),
+            pp = is_frame ? painter.getPadPainter() : null;
       if (!preffix) preffix = '';
 
       if (painter.lineatt?.used) {
@@ -518,7 +519,7 @@ class JSRootMenu {
          });
          this.add('endsub:');
 
-         if (painter.lineatt?.excl_side) {
+         if (!is_frame && painter.lineatt?.excl_side) {
             this.add('sub:Exclusion');
             this.add('sub:side');
             for (let side = -1; side <= 1; ++side) {
@@ -537,13 +538,15 @@ class JSRootMenu {
       if (painter.fillatt?.used) {
          this.add(`sub:${preffix}Fill att`);
          this.addColorMenu('color', painter.fillatt.colorindx, arg => {
-            changeObjectMember(painter, 'fFillColor', arg, true);
             painter.fillatt.change(arg, undefined, painter.getCanvSvg());
+            changeObjectMember(painter, 'fFillColor', arg, true);
+            if (pp) changeObjectMember(pp, 'fFrameFillColor', arg, true);
             painter.interactiveRedraw(true, getColorExec(arg, 'SetFillColor'));
          }, painter.fillatt.kind);
          this.addFillStyleMenu('style', painter.fillatt.pattern, painter.fillatt.colorindx, painter, id => {
-            changeObjectMember(painter, 'fFillStyle', id);
             painter.fillatt.change(undefined, id, painter.getCanvSvg());
+            changeObjectMember(painter, 'fFillStyle', id);
+            if (pp) changeObjectMember(pp, 'fFrameFillStyle', id);
             painter.interactiveRedraw(true, `exec:SetFillStyle(${id})`);
          });
          this.add('endsub:');
