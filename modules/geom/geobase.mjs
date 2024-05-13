@@ -2595,8 +2595,10 @@ class ClonedNodes {
    /** @summary Mark visisble nodes.
      * @desc Set only basic flags, actual visibility depends from hierarchy */
    markVisibles(on_screen, copy_bits, hide_top_volume) {
-      if (this.plain_shape) return 1;
-      if (!this.origin || !this.nodes) return 0;
+      if (this.plain_shape)
+         return 1;
+      if (!this.origin || !this.nodes)
+         return 0;
 
       let res = 0;
 
@@ -2623,11 +2625,12 @@ class ClonedNodes {
                } else {
                   clone.vis = !testGeoBit(obj.fVolume, geoBITS.kVisNone) && testGeoBit(obj.fVolume, geoBITS.kVisThis) ? 99 : 0;
 
-                  if (!testGeoBit(obj, geoBITS.kVisDaughters) ||
-                      !testGeoBit(obj.fVolume, geoBITS.kVisDaughters)) clone.nochlds = true;
+                  if (!testGeoBit(obj, geoBITS.kVisDaughters) || !testGeoBit(obj.fVolume, geoBITS.kVisDaughters))
+                     clone.nochlds = true;
 
                   // node with childs only shown in case if it is last level in hierarchy
-                  if ((clone.vis > 0) && clone.chlds && !clone.nochlds) clone.vis = 1;
+                  if ((clone.vis > 0) && clone.chlds && !clone.nochlds)
+                     clone.vis = 1;
 
                   // special handling for top node
                   if (n === 0) {
@@ -2822,7 +2825,9 @@ class ClonedNodes {
 
       let node_vis = node.vis, node_nochlds = node.nochlds;
 
-      if (arg.testPhysVis) {
+      if ((arg.nodeid === 0) && arg.main_visible)
+         node_vis = vislvl + 1;
+      else if (arg.testPhysVis) {
          const res = arg.testPhysVis();
          if (res !== undefined) {
             node_vis = res && !node.chlds ? vislvl + 1 : 0;
@@ -3470,6 +3475,13 @@ class ClonedNodes {
       arg.reset();
 
       let total = this.scanVisible(arg);
+      if ((total === 0) && (this.nodes[0].vis < 2) && !this.nodes[0].nochlds) {
+         // try to draw only main node by default
+         arg.reset();
+         arg.main_visible = true;
+         total = this.scanVisible(arg);
+      }
+
       const maxnumnodes = this.getMaxVisNodes();
 
       if (maxnumnodes > 0) {
@@ -3483,8 +3495,6 @@ class ClonedNodes {
       this.actual_level = arg.vislvl; // not used, can be shown somewhere in the gui
 
       let minVol = 0, maxVol = 0, camVol = -1, camFact = 10, sortidcut = this.nodes.length + 1;
-
-      console.log(`Total visible nodes ${total} numfaces ${arg.facecnt}`);
 
       if (arg.facecnt > maxnumfaces) {
          const bignumfaces = maxnumfaces * (frustum ? 0.8 : 1.0),
