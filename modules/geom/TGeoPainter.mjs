@@ -5398,8 +5398,6 @@ class TGeoPainter extends ObjectPainter {
 
       if (!obj) return null;
 
-      console.log('drawing ', obj._typename);
-
       const painter = createGeoPainter(dom, obj, opt);
 
       if (painter.ctrl.is_main && !obj.$geo_painter)
