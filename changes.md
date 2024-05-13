@@ -23,6 +23,7 @@
 20. Fix - draw at least line for TGraphErrors ROOT-8131
 21. Fix - log scales on TH3 drawings #306
 22. Fix - preserve attributes and draw options when call drawingJSON() #307
+23. Fix - draw geometry top node volume if all childs not visible #308
 
 
 ## Changes in 7.6.0

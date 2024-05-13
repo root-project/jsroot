@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '8/05/2024',
+version_date = '13/05/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -11947,6 +11947,7 @@ class TAttTextHandler {
       this.align = args.align;
       this.angle = args.angle;
 
+      this.can_rotate = args.can_rotate ?? true;
       this.angle_used = false;
       this.align_used = false;
    }
@@ -11984,7 +11985,7 @@ class TAttTextHandler {
       this.align_used = !arg.noalign && !arg.align;
       if (this.align_used)
          arg.align = this.align;
-      this.angle_used = !arg.norotate;
+      this.angle_used = !arg.norotate && this.can_rotate;
       if (this.angle_used && this.angle)
          arg.rotate = -this.angle; // SVG rotation angle has different sign
       arg.color = this.color || 'black';
@@ -60618,11 +60619,13 @@ class JSRootMenu {
             painter.interactiveRedraw(true, `exec:SetTextAlign(${arg})`);
          });
 
-         this.addSizeMenu('angle', -180, 180, 45, painter.textatt.angle, arg => {
-            changeObjectMember(painter, 'fTextAngle', arg);
-            painter.textatt.change(undefined, undefined, undefined, undefined, arg);
-            painter.interactiveRedraw(true, `exec:SetTextAngle(${arg})`);
-         });
+         if (painter.textatt.can_rotate) {
+            this.addSizeMenu('angle', -180, 180, 45, painter.textatt.angle, arg => {
+               changeObjectMember(painter, 'fTextAngle', arg);
+               painter.textatt.change(undefined, undefined, undefined, undefined, arg);
+               painter.interactiveRedraw(true, `exec:SetTextAngle(${arg})`);
+            });
+         }
 
          this.add('endsub:');
       }
@@ -71342,7 +71345,7 @@ class TPavePainter extends ObjectPainter {
       if (!pave.fLabel || !pave.fLabel.trim())
          return this;
 
-      this.createAttText({ attr: pave });
+      this.createAttText({ attr: pave, can_rotate: false });
 
       this.startTextDrawing(this.textatt.font, height/1.2);
 
@@ -71382,7 +71385,7 @@ class TPavePainter extends ObjectPainter {
       const stepy = height / nlines, margin_x = pt.fMargin * width;
       let has_head = false;
 
-      this.createAttText({ attr: pt });
+      this.createAttText({ attr: pt, can_rotate: false });
 
       this.startTextDrawing(this.textatt.font, height/(nlines * 1.2));
 
@@ -71462,7 +71465,7 @@ class TPavePainter extends ObjectPainter {
             stepy = height / (nlines || 1);
       let max_font_size = 0;
 
-      this.createAttText({ attr: pt });
+      this.createAttText({ attr: pt, can_rotate: false });
 
       // for single line (typically title) limit font size
       if ((nlines === 1) && (this.textatt.size > 0))
@@ -71647,7 +71650,7 @@ class TPavePainter extends ObjectPainter {
           max_font_size = 0, // not limited in the beggining
           any_opt = false;
 
-      this.createAttText({ attr: legend });
+      this.createAttText({ attr: legend, can_rotate: false });
 
       const tsz = this.textatt.getSize(pp.getPadHeight());
       if (tsz && (tsz < font_size))
@@ -86265,8 +86268,10 @@ class ClonedNodes {
    /** @summary Mark visisble nodes.
      * @desc Set only basic flags, actual visibility depends from hierarchy */
    markVisibles(on_screen, copy_bits, hide_top_volume) {
-      if (this.plain_shape) return 1;
-      if (!this.origin || !this.nodes) return 0;
+      if (this.plain_shape)
+         return 1;
+      if (!this.origin || !this.nodes)
+         return 0;
 
       let res = 0;
 
@@ -86293,11 +86298,12 @@ class ClonedNodes {
                } else {
                   clone.vis = !testGeoBit(obj.fVolume, geoBITS.kVisNone) && testGeoBit(obj.fVolume, geoBITS.kVisThis) ? 99 : 0;
 
-                  if (!testGeoBit(obj, geoBITS.kVisDaughters) ||
-                      !testGeoBit(obj.fVolume, geoBITS.kVisDaughters)) clone.nochlds = true;
+                  if (!testGeoBit(obj, geoBITS.kVisDaughters) || !testGeoBit(obj.fVolume, geoBITS.kVisDaughters))
+                     clone.nochlds = true;
 
                   // node with childs only shown in case if it is last level in hierarchy
-                  if ((clone.vis > 0) && clone.chlds && !clone.nochlds) clone.vis = 1;
+                  if ((clone.vis > 0) && clone.chlds && !clone.nochlds)
+                     clone.vis = 1;
 
                   // special handling for top node
                   if (n === 0) {
@@ -86492,7 +86498,9 @@ class ClonedNodes {
 
       let node_vis = node.vis, node_nochlds = node.nochlds;
 
-      if (arg.testPhysVis) {
+      if ((arg.nodeid === 0) && arg.main_visible)
+         node_vis = vislvl + 1;
+      else if (arg.testPhysVis) {
          const res = arg.testPhysVis();
          if (res !== undefined) {
             node_vis = res && !node.chlds ? vislvl + 1 : 0;
@@ -87140,6 +87148,13 @@ class ClonedNodes {
       arg.reset();
 
       let total = this.scanVisible(arg);
+      if ((total === 0) && (this.nodes[0].vis < 2) && !this.nodes[0].nochlds) {
+         // try to draw only main node by default
+         arg.reset();
+         arg.main_visible = true;
+         total = this.scanVisible(arg);
+      }
+
       const maxnumnodes = this.getMaxVisNodes();
 
       if (maxnumnodes > 0) {
@@ -87153,8 +87168,6 @@ class ClonedNodes {
       this.actual_level = arg.vislvl; // not used, can be shown somewhere in the gui
 
       let minVol = 0, maxVol = 0, camVol = -1, camFact = 10, sortidcut = this.nodes.length + 1;
-
-      console.log(`Total visible nodes ${total} numfaces ${arg.facecnt}`);
 
       if (arg.facecnt > maxnumfaces) {
          const bignumfaces = maxnumfaces * (frustum ? 0.8 : 1.0),
@@ -92217,7 +92230,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Add orbit control */
    addOrbitControls() {
-      if (this._controls || !this._webgl || this.isBatchMode() || this.superimpose) return;
+      if (this._controls || !this._webgl || this.isBatchMode() || this.superimpose || isNodeJs()) return;
 
       if (!this.getCanvPainter())
          this.setTooltipAllowed(settings.Tooltip);
@@ -95475,11 +95488,11 @@ class TGeoPainter extends ObjectPainter {
          shape = obj; obj = null;
       } else if ((obj._typename === clTGeoVolumeAssembly) || (obj._typename === clTGeoVolume))
          shape = obj.fShape;
-       else if ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract)) {
+      else if ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract)) {
          shape = obj.fShape; is_eve = true;
       } else if (obj._typename === clTGeoManager)
          shape = obj.fMasterVolume.fShape;
-       else if (obj._typename === clTGeoOverlap) {
+      else if (obj._typename === clTGeoOverlap) {
          extras = obj.fMarker; extras_path = '<prnt>/Marker';
          obj = buildOverlapVolume(obj);
          if (!opt) opt = 'wire';
