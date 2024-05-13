@@ -2112,7 +2112,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Add orbit control */
    addOrbitControls() {
-      if (this._controls || !this._webgl || this.isBatchMode() || this.superimpose) return;
+      if (this._controls || !this._webgl || this.isBatchMode() || this.superimpose || isNodeJs()) return;
 
       if (!this.getCanvPainter())
          this.setTooltipAllowed(settings.Tooltip);
@@ -5370,11 +5370,11 @@ class TGeoPainter extends ObjectPainter {
          shape = obj; obj = null;
       } else if ((obj._typename === clTGeoVolumeAssembly) || (obj._typename === clTGeoVolume))
          shape = obj.fShape;
-       else if ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract)) {
+      else if ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract)) {
          shape = obj.fShape; is_eve = true;
       } else if (obj._typename === clTGeoManager)
          shape = obj.fMasterVolume.fShape;
-       else if (obj._typename === clTGeoOverlap) {
+      else if (obj._typename === clTGeoOverlap) {
          extras = obj.fMarker; extras_path = '<prnt>/Marker';
          obj = buildOverlapVolume(obj);
          if (!opt) opt = 'wire';
@@ -5397,6 +5397,8 @@ class TGeoPainter extends ObjectPainter {
       }
 
       if (!obj) return null;
+
+      console.log('drawing ', obj._typename);
 
       const painter = createGeoPainter(dom, obj, opt);
 
