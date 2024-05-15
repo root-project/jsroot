@@ -755,7 +755,8 @@ class WebWindowHandle {
      * WARNING - only call when you know that you are doing
      * @private */
    askReload() {
-      this.send('GENERATE_KEY', 0);
+      if (!browser.qt5 && !browser.cef3)
+         this.send('GENERATE_KEY', 0);
    }
 
    /** @summary Instal Ctrl-R handler to realod web window
