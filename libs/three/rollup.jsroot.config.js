@@ -112,7 +112,45 @@ let builds = [
 				file: '../three.mjs'
 			}
 		]
-	}
+	},
+	{
+		input: '../../../threejs/src/Three_addons.js',
+		external: ['three'],
+		plugins: [
+			glsl(),
+			json({ compact: true, indent: "" }),
+			header()
+		],
+		output: [
+			{
+				format: 'es',
+				name: 'THREE',
+				file: '../../modules/three_addons.mjs',
+				inlineDynamicImports: true,
+				indent: '\t'
+			}
+		]
+	},
+	{
+		input: '../../../threejs/src/Three_addons.js',
+		external: ['three'],
+		plugins: [
+			glsl(),
+			json({ compact: true, indent: "" }),
+			terser(),
+			header()
+		],
+		output: [
+			{
+				format: 'es',
+				name: 'THREE',
+				inlineDynamicImports: true,
+				file: '../three_addons.mjs'
+			}
+		]
+	},
+
+
 ];
 
 

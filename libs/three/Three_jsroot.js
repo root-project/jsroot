@@ -155,40 +155,6 @@ export { ShapeUtils } from './extras/ShapeUtils.js';
 export * from './constants.js';
 // export * from './Three.Legacy.js';
 
-// jsroot part
-export { TextGeometry } from '../examples/jsm/geometries/TextGeometry.js';
-
-import * as json1 from "../examples/fonts/helvetiker_regular.typeface.json";
-
-let HelveticerRegularJson = json1;
-
-export { HelveticerRegularJson };
-
-export { Font } from "../examples/jsm/loaders/FontLoader.js";
-
-export { OrbitControls} from "../examples/jsm/controls/OrbitControls.js";
-// export { TransformControls } from "../examples/jsm/controls/TransformControls.js";
-export { CopyShader } from "../examples/jsm/shaders/CopyShader.js";
-export { EffectComposer } from "../examples/jsm/postprocessing/EffectComposer.js";
-// will be required by eve7, but need to be synchronized there
-export { Pass } from "../examples/jsm/postprocessing/Pass.js";
-// export { OutlinePass } from "../examples/jsm/postprocessing/OutlinePass.js";
-export { MaskPass } from "../examples/jsm/postprocessing/MaskPass.js";
-export { RenderPass } from "../examples/jsm/postprocessing/RenderPass.js";
-export { ShaderPass } from "../examples/jsm/postprocessing/ShaderPass.js";
-// export { SSAOShader } from "../examples/jsm/shaders/SSAOShader.js";
-// export { SSAOPass } from "../examples/jsm/postprocessing/SSAOPass.js";
-export { SimplexNoise } from "../examples/jsm/math/SimplexNoise.js";
-export { LuminosityHighPassShader } from "../examples/jsm/shaders/LuminosityHighPassShader.js";
-export { UnrealBloomPass } from "../examples/jsm/postprocessing/UnrealBloomPass.js";
-
-// export { Projector } from "../examples/jsm/renderers/Projector.js";
-
-export { SVGRenderer } from "../examples/jsm/renderers/SVGRenderer.js"
-
-// end of jsroot part
-
-
 if ( typeof __THREE_DEVTOOLS__ !== 'undefined' ) {
 
 	/* eslint-disable no-undef */
