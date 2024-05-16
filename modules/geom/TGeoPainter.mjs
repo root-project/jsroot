@@ -6,10 +6,10 @@ import { REVISION, DoubleSide, FrontSide,
          Color, Vector2, Vector3, Matrix4, Object3D, Box3, Group, Plane, PlaneHelper,
          Euler, Quaternion, Mesh, InstancedMesh, MeshLambertMaterial, MeshBasicMaterial,
          LineSegments, LineBasicMaterial, LineDashedMaterial, BufferAttribute,
-         TextGeometry, BufferGeometry, BoxGeometry, CircleGeometry, SphereGeometry,
+         BufferGeometry, BoxGeometry, CircleGeometry, SphereGeometry,
          Scene, Fog, OrthographicCamera, PerspectiveCamera,
-         DirectionalLight, AmbientLight, HemisphereLight,
-         EffectComposer, RenderPass, UnrealBloomPass } from '../three.mjs';
+         DirectionalLight, AmbientLight, HemisphereLight } from '../three.mjs';
+import { EffectComposer, RenderPass, UnrealBloomPass, TextGeometry } from '../three_addons.mjs';
 import { showProgress, injectStyle, ToolbarIcons } from '../gui/utils.mjs';
 import { GUI } from '../gui/lil-gui.mjs';
 import { assign3DHandler, disposeThreejsObject, createOrbitControl,
