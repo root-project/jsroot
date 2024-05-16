@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '13/05/2024',
+version_date = '16/05/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -72503,7 +72503,7 @@ class THistDrawOptions {
       if (this.Mode3D)
          return this.Lego === 12 || this.Lego === 14 || this.Surf === 11 || this.Surf === 12;
 
-      if (this.Color || this.Contour || this.Axis)
+      if (this.Color || this.Contour || this.Hist || this.Axis)
          return true;
 
       return !this.Scat && !this.Box && !this.Arrow && !this.Proj && !this.Candle && !this.Violin && !this.Text;
@@ -75588,7 +75588,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
          this.interactiveRedraw('pad', 'drawopt');
       });
 
-      if (this.options.Color || this.options.Contour || this.options.Surf || this.options.Lego === 12 || this.options.Lego === 14)
+      if (this.options.Color || this.options.Contour || this.options.Hist || this.options.Surf || this.options.Lego === 12 || this.options.Lego === 14)
          this.fillPaletteMenu(menu, true);
    }
 
@@ -81828,7 +81828,7 @@ function drawTH2PolyLego(painter) {
             if (faces && (faces.length > pnts.length-3)) break;
          }
 
-         if (faces && faces.length && pnts) {
+         if (faces?.length && pnts) {
             all_pnts.push(pnts);
             all_faces.push(faces);
 
@@ -81844,7 +81844,7 @@ function drawTH2PolyLego(painter) {
          const pnts = all_pnts[ngr], faces = all_faces[ngr];
 
          for (let layer = 0; layer < 2; ++layer) {
-            for (let n=0; n<faces.length; ++n) {
+            for (let n = 0; n < faces.length; ++n) {
                const face = faces[n],
                    pnt1 = pnts[face[0]],
                    pnt2 = pnts[face[layer === 0 ? 2 : 1]],
@@ -81869,8 +81869,7 @@ function drawTH2PolyLego(painter) {
 
          if (z1>z0) {
             for (let n = 0; n < pnts.length; ++n) {
-               const pnt1 = pnts[n],
-                   pnt2 = pnts[n > 0 ? n-1 : pnts.length-1];
+               const pnt1 = pnts[n], pnt2 = pnts[n > 0 ? n - 1 : pnts.length - 1];
 
                pos[indx] = pnt1.x;
                pos[indx+1] = pnt1.y;
@@ -86956,10 +86955,10 @@ class ClonedNodes {
       mesh.stack = entry.stack;
       mesh.renderOrder = this.maxdepth - entry.stack.length; // order of transparency handling
 
-      if (this._cfg?.set_names)
+      if (ctrl.set_names)
          mesh.name = this.getNodeName(entry.nodeid);
 
-      if (this._cfg?.set_origin)
+      if (ctrl.set_origin)
          mesh.userData = prop.volume;
 
       // keep hierarchy level
@@ -87035,17 +87034,18 @@ class ClonedNodes {
             if (instance.entries.length === 1)
                this.createEntryMesh(ctrl, toplevel, entry0, shape, colors);
             else {
-               const arr1 = [], arr2 = [], stacks1 = [], stacks2 = [];
+               const arr1 = [], arr2 = [], stacks1 = [], stacks2 = [], names1 = [], names2 = [];
 
                instance.entries.forEach(entry => {
                   const info = this.resolveStack(entry.stack, true);
-
                   if (info.matrix.determinant() > -0.9) {
                      arr1.push(info.matrix);
                      stacks1.push(entry.stack);
+                     names1.push(this.getNodeName(entry.nodeid));
                   } else {
                      arr2.push(info.matrix);
                      stacks2.push(entry.stack);
+                     names2.push(this.getNodeName(entry.nodeid));
                   }
                   entry.done = true;
                });
@@ -87059,6 +87059,14 @@ class ClonedNodes {
                   toplevel.add(mesh1);
 
                   mesh1.renderOrder = 1;
+
+                  if (ctrl.set_names) {
+                     mesh1.name = names1[0];
+                     mesh1.names = names1;
+                  }
+
+                  if (ctrl.set_origin)
+                     mesh1.userData = prop.volume;
 
                   mesh1.$jsroot_order = 1;
                   ctrl.info.num_meshes++;
@@ -87081,6 +87089,13 @@ class ClonedNodes {
                   toplevel.add(mesh2);
 
                   mesh2.renderOrder = 1;
+                  if (ctrl.set_names) {
+                     mesh2.name = names2[0];
+                     mesh2.names = names2;
+                  }
+                  if (ctrl.set_origin)
+                     mesh2.userData = prop.volume;
+
                   mesh2.$jsroot_order = 1;
                   ctrl.info.num_meshes++;
                   ctrl.info.num_faces += shape.nfaces*arr2.length;
@@ -95628,7 +95643,7 @@ function provideMenu(menu, item, hpainter) {
 
    menu.add('separator');
 
-   const ScanEveVisible = (obj, arg, skip_this) => {
+   const scanEveVisible = (obj, arg, skip_this) => {
       if (!arg) arg = { visible: 0, hidden: 0 };
 
       if (!skip_this) {
@@ -95642,17 +95657,17 @@ function provideMenu(menu, item, hpainter) {
 
       if (obj.fElements) {
          for (let n = 0; n < obj.fElements.arr.length; ++n)
-            ScanEveVisible(obj.fElements.arr[n], arg, false);
+            scanEveVisible(obj.fElements.arr[n], arg, false);
       }
 
       return arg;
-   }, ToggleEveVisibility = arg => {
+   }, toggleEveVisibility = arg => {
       if (arg === 'self') {
          obj.fRnrSelf = !obj.fRnrSelf;
          item._icon = item._icon.split(' ')[0] + provideVisStyle(obj);
          hpainter.updateTreeNode(item);
       } else {
-         ScanEveVisible(obj, { assign: (arg === 'true') }, true);
+         scanEveVisible(obj, { assign: (arg === 'true') }, true);
          hpainter.forEachItem(m => {
             // update all child items
             if (m._geoobj && m._icon) {
@@ -95663,7 +95678,7 @@ function provideMenu(menu, item, hpainter) {
       }
 
       findItemWithPainter(item, 'testGeomChanges');
-   }, ToggleMenuBit = arg => {
+   }, toggleMenuBit = arg => {
       toggleGeoBit(vol, arg);
       const newname = item._icon.split(' ')[0] + provideVisStyle(vol);
       hpainter.forEachItem(m => {
@@ -95676,10 +95691,8 @@ function provideMenu(menu, item, hpainter) {
 
       hpainter.updateTreeNode(item);
       findItemWithPainter(item, 'testGeomChanges');
-   },
-
-    drawitem = findItemWithPainter(item),
-       fullname = drawitem ? hpainter.itemFullName(item, drawitem) : '';
+   }, drawitem = findItemWithPainter(item),
+      fullname = drawitem ? hpainter.itemFullName(item, drawitem) : '';
 
    if ((item._geoobj._typename.indexOf(clTGeoNode) === 0) && drawitem) {
       menu.add('Focus', () => {
@@ -95689,17 +95702,16 @@ function provideMenu(menu, item, hpainter) {
    }
 
    if (iseve) {
-      menu.addchk(obj.fRnrSelf, 'Visible', 'self', ToggleEveVisibility);
-      const res = ScanEveVisible(obj, undefined, true);
+      menu.addchk(obj.fRnrSelf, 'Visible', 'self', toggleEveVisibility);
+      const res = scanEveVisible(obj, undefined, true);
       if (res.hidden + res.visible > 0)
-         menu.addchk((res.hidden === 0), 'Daughters', res.hidden !== 0 ? 'true' : 'false', ToggleEveVisibility);
+         menu.addchk((res.hidden === 0), 'Daughters', res.hidden !== 0 ? 'true' : 'false', toggleEveVisibility);
    } else {
       const stack = drawitem?._painter?._clones?.findStackByName(fullname),
           phys_vis = stack ? drawitem._painter._clones.getPhysNodeVisibility(stack) : null,
           is_visible = testGeoBit(vol, geoBITS.kVisThis);
 
-      menu.addchk(testGeoBit(vol, geoBITS.kVisNone), 'Invisible',
-            geoBITS.kVisNone, ToggleMenuBit);
+      menu.addchk(testGeoBit(vol, geoBITS.kVisNone), 'Invisible', geoBITS.kVisNone, toggleMenuBit);
       if (stack) {
          const changePhysVis = arg => {
             drawitem._painter._clones.setPhysNodeVisibility(stack, (arg === 'off') ? false : arg);
@@ -95715,9 +95727,9 @@ function provideMenu(menu, item, hpainter) {
       }
 
       menu.addchk(is_visible, 'Logical vis',
-            geoBITS.kVisThis, ToggleMenuBit, 'Logical node visibility - all instances');
+            geoBITS.kVisThis, toggleMenuBit, 'Logical node visibility - all instances');
       menu.addchk(testGeoBit(vol, geoBITS.kVisDaughters), 'Daughters',
-            geoBITS.kVisDaughters, ToggleMenuBit, 'Logical node daugthers visibility');
+            geoBITS.kVisDaughters, toggleMenuBit, 'Logical node daugthers visibility');
    }
 
    return true;
@@ -121285,7 +121297,8 @@ class WebWindowHandle {
      * WARNING - only call when you know that you are doing
      * @private */
    askReload() {
-      this.send('GENERATE_KEY', 0);
+      if (!browser.qt5 && !browser.cef3)
+         this.send('GENERATE_KEY', 0);
    }
 
    /** @summary Instal Ctrl-R handler to realod web window
