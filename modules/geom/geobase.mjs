@@ -3356,17 +3356,18 @@ class ClonedNodes {
             if (instance.entries.length === 1)
                this.createEntryMesh(ctrl, toplevel, entry0, shape, colors);
             else {
-               const arr1 = [], arr2 = [], stacks1 = [], stacks2 = [];
+               const arr1 = [], arr2 = [], stacks1 = [], stacks2 = [], names1 = [], names2 = [];
 
                instance.entries.forEach(entry => {
                   const info = this.resolveStack(entry.stack, true);
-
                   if (info.matrix.determinant() > -0.9) {
                      arr1.push(info.matrix);
                      stacks1.push(entry.stack);
+                     names1.push(this.getNodeName(entry.nodeid));
                   } else {
                      arr2.push(info.matrix);
                      stacks2.push(entry.stack);
+                     names2.push(this.getNodeName(entry.nodeid));
                   }
                   entry.done = true;
                });
@@ -3380,6 +3381,14 @@ class ClonedNodes {
                   toplevel.add(mesh1);
 
                   mesh1.renderOrder = 1;
+
+                  if (ctrl.set_names) {
+                     mesh1.name = names1[0]
+                     mesh1.names = names1;
+                  }
+
+                  if (ctrl.set_origin)
+                     mesh1.userData = prop.volume;
 
                   mesh1.$jsroot_order = 1;
                   ctrl.info.num_meshes++;
@@ -3402,6 +3411,13 @@ class ClonedNodes {
                   toplevel.add(mesh2);
 
                   mesh2.renderOrder = 1;
+                  if (ctrl.set_names) {
+                     mesh2.name = names2[0]
+                     mesh2.names = names2;
+                  }
+                  if (ctrl.set_origin)
+                     mesh2.userData = prop.volume;
+
                   mesh2.$jsroot_order = 1;
                   ctrl.info.num_meshes++;
                   ctrl.info.num_faces += shape.nfaces*arr2.length;
