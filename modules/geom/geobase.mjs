@@ -3277,10 +3277,10 @@ class ClonedNodes {
       mesh.stack = entry.stack;
       mesh.renderOrder = this.maxdepth - entry.stack.length; // order of transparency handling
 
-      if (this._cfg?.set_names)
+      if (ctrl.set_names)
          mesh.name = this.getNodeName(entry.nodeid);
 
-      if (this._cfg?.set_origin)
+      if (ctrl.set_origin)
          mesh.userData = prop.volume;
 
       // keep hierarchy level
