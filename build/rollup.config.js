@@ -26,8 +26,6 @@ const config = {
   },
   plugins: [
     modify({
-      find: /\/\/\/_begin_exclude_in_qt5web_(.|\n)*?\/\/\/_end_exclude_in_qt5web_/,
-      replace: '',
       'import.meta?.url': importMetaUrlPolyfill
      }),
     ignore(ignore_modules),
@@ -84,7 +82,8 @@ const config_geom_nothreejs = {
   },
   plugins: [
     modify({
-      "from '../three.mjs'": "from 'three'"
+      "from '../three.mjs'": "from 'three'",
+      'import.meta?.url': importMetaUrlPolyfill
      }),
      ignore(ignore_modules),
      nodeResolve(),
