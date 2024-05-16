@@ -72,6 +72,27 @@ const config_geom = {
    }
 }
 
+const config_geom_nothreejs = {
+  ...config,
+  input: "modules/geom/bundle.mjs",
+  external: ['three'],
+  output: {
+     ...config.output,
+     format: 'es',
+     file: 'build/geom_nothreejs.js',
+     inlineDynamicImports: true
+  },
+  plugins: [
+    modify({
+      "from '../three.mjs'": "from 'three'"
+     }),
+     ignore(ignore_modules),
+     nodeResolve(),
+     json(),
+     ascii()
+  ],
+}
+
 const config_minified = {
    ...config,
     output: {
@@ -116,6 +137,7 @@ const config_2d_minified = {
 }
 
 export default [
+  config_geom_nothreejs,
   config,
   config_hist,
   config_2d,
