@@ -8,7 +8,7 @@
 5. Fix - graph drawing fix custom labels on X axis #297
 6. Fix - draw at least line for TGraphErrors ROOT-8131
 7. Fix - preserve attributes and draw options when call drawingJSON() #307
-8. Fix - menu for text align slection typo
+8. Fix - menu for text align selection typo
 
 
 ## Changes in 7.6.0
