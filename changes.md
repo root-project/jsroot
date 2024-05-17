@@ -1,5 +1,16 @@
 # JSROOT changelog
 
+## Changes in 7.6.1
+1. Remove source_dir output in node.js #296
+2. Fully integrate svg2pdf.js into jsroot repo
+3. Fix - support plain TRI option for TGraph2D
+4. Fix - let read object from ROOT file with empty name
+5. Fix - graph drawing fix custom labels on X axis #297
+6. Fix - draw at least line for TGraphErrors ROOT-8131
+7. Fix - preserve attributes and draw options when call drawingJSON() #307
+8. Fix - menu for text align slection typo
+
+
 ## Changes in 7.6.0
 1. Implement "tickz" draw option, used for color palette ticks
 2. Implement skewness and kurtosis calculations for histogram stats box
