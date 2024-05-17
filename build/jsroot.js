@@ -71134,6 +71134,12 @@ class TCanvasPainter extends TPadPainter {
       if (!fullW || !fullH || this.isBatchMode() || this.embed_canvas || this.batch_mode)
          return;
 
+      // workaround for qt5-based display where inner window size is used
+      if (browser.qt5 && fullW > 100 && fullH > 60) {
+         fullW -= 3;
+         fullH -= 30;
+      }
+
       this._websocket?.resizeWindow(fullW, fullH);
    }
 
