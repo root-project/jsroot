@@ -1,4 +1,4 @@
-import { BIT, settings, create, parse, toJSON, loadScript, isFunc, isStr, clTCanvas } from '../core.mjs';
+import { BIT, settings, browser, create, parse, toJSON, loadScript, isFunc, isStr, clTCanvas } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { closeCurrentWindow, showProgress, loadOpenui5, ToolbarIcons, getColorExec } from '../gui/utils.mjs';
 import { GridDisplay, getHPainter } from '../gui/display.mjs';
@@ -829,6 +829,12 @@ class TCanvasPainter extends TPadPainter {
    resizeBrowser(fullW, fullH) {
       if (!fullW || !fullH || this.isBatchMode() || this.embed_canvas || this.batch_mode)
          return;
+
+      // workaround for qt5-based display where inner window size is used
+      if (browser.qt5 && fullW > 100 && fullH > 60) {
+         fullW -= 3;
+         fullH -= 30;
+      }
 
       this._websocket?.resizeWindow(fullW, fullH);
    }
