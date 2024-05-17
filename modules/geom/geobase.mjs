@@ -20,7 +20,6 @@ function geoCfg(name, value) {
    cfg[name] = value;
 }
 
-
 const kindGeo = 0,    // TGeoNode / TGeoShape
       kindEve = 1,    // TEveShape / TEveGeoShapeExtract
       kindShape = 2,  // special kind for single shape handling
@@ -3383,7 +3382,7 @@ class ClonedNodes {
                   mesh1.renderOrder = 1;
 
                   if (ctrl.set_names) {
-                     mesh1.name = names1[0]
+                     mesh1.name = names1[0];
                      mesh1.names = names1;
                   }
 
@@ -3412,7 +3411,7 @@ class ClonedNodes {
 
                   mesh2.renderOrder = 1;
                   if (ctrl.set_names) {
-                     mesh2.name = names2[0]
+                     mesh2.name = names2[0];
                      mesh2.names = names2;
                   }
                   if (ctrl.set_origin)
