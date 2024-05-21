@@ -1,9 +1,9 @@
 import { gStyle, settings, isFunc, isStr, postponePromise, browser, clTAxis, kNoZoom } from '../core.mjs';
 import { select as d3_select, pointer as d3_pointer, pointers as d3_pointers, drag as d3_drag } from '../d3.mjs';
 import { getElementRect, getAbsPosInCanvas, makeTranslate, addHighlightStyle } from '../base/BasePainter.mjs';
-import { getActivePad, ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
+import { getActivePad, ObjectPainter, EAxisBits, kAxisLabels } from '../base/ObjectPainter.mjs';
 import { getSvgLineStyle } from '../base/TAttLineHandler.mjs';
-import { TAxisPainter, kAxisLabels } from './TAxisPainter.mjs';
+import { TAxisPainter } from './TAxisPainter.mjs';
 import { FontHandler } from '../base/FontHandler.mjs';
 import { createMenu, closeMenu, showPainterMenu } from '../gui/menu.mjs';
 import { detectRightButton } from '../gui/utils.mjs';

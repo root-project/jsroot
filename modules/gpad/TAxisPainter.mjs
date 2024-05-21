@@ -3,10 +3,9 @@ import { select as d3_select, drag as d3_drag, timeFormat as d3_timeFormat, utcF
          scaleTime as d3_scaleTime, scaleSymlog as d3_scaleSymlog,
          scaleLog as d3_scaleLog, scaleLinear as d3_scaleLinear } from '../d3.mjs';
 import { floatToString, makeTranslate, addHighlightStyle } from '../base/BasePainter.mjs';
-import { ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
+import { ObjectPainter, EAxisBits, kAxisLabels, kAxisNormal, kAxisFunc, kAxisTime } from '../base/ObjectPainter.mjs';
 import { FontHandler } from '../base/FontHandler.mjs';
 
-const kAxisLabels = 'labels', kAxisNormal = 'normal';
 
 /** @summary Return time offset value for given TAxis object
   * @private */
@@ -122,7 +121,7 @@ const AxisPainterMethods = {
    /** @summary Convert graphical point back into axis value */
    revertPoint(pnt) {
       const value = this.func.invert(pnt);
-      return this.kind === 'time' ? (value - this.timeoffset) / 1000 : value;
+      return this.kind === kAxisTime ? (value - this.timeoffset) / 1000 : value;
    },
 
    /** @summary Provide label for time axis */
@@ -203,7 +202,7 @@ const AxisPainterMethods = {
 
    /** @summary Convert 'raw' axis value into text */
    axisAsText(value, fmt) {
-      if (this.kind === 'time')
+      if (this.kind === kAxisTime)
          value = this.convertDate(value);
       if (this.format)
          return this.format(value, false, fmt);
@@ -417,16 +416,16 @@ class TAxisPainter extends ObjectPainter {
       const axis = this.getObject();
 
       if (opts.time_scale || axis.fTimeDisplay) {
-         this.kind = 'time';
+         this.kind = kAxisTime;
          this.timeoffset = getTimeOffset(axis);
          this.timegmt = getTimeGMT(axis);
       } else if (opts.axis_func)
-         this.kind = 'func';
+         this.kind = kAxisFunc;
        else
          this.kind = !axis.fLabels ? kAxisNormal : kAxisLabels;
 
 
-      if (this.kind === 'time')
+      if (this.kind === kAxisTime)
          this.func = d3_scaleTime().domain([this.convertDate(smin), this.convertDate(smax)]);
        else if (this.log) {
          if ((this.log === 1) || (this.log === 10))
@@ -451,7 +450,7 @@ class TAxisPainter extends ObjectPainter {
          if ((smin <= 0) || (smin >= smax))
             smin = smax * (opts.logminfactor || 1e-4);
 
-         if (this.kind === 'func')
+         if (this.kind === kAxisFunc)
             this.func = this.createFuncHandle(opts.axis_func, this.logbase, smin, smax);
          else
             this.func = d3_scaleLog().base(this.logbase).domain([smin, smax]);
@@ -462,7 +461,7 @@ class TAxisPainter extends ObjectPainter {
          else
             v *= 0.01;
          this.func = d3_scaleSymlog().constant(v).domain([smin, smax]);
-      } else if (this.kind === 'func')
+      } else if (this.kind === kAxisFunc)
          this.func = this.createFuncHandle(opts.axis_func, 0, smin, smax);
        else
          this.func = d3_scaleLinear().domain([smin, smax]);
@@ -477,7 +476,7 @@ class TAxisPainter extends ObjectPainter {
       this.scale_min = smin;
       this.scale_max = smax;
 
-      if (this.kind === 'time')
+      if (this.kind === kAxisTime)
          this.gr = val => this.func(this.convertDate(val));
       else if (this.log)
          this.gr = val => (val < this.scale_min) ? (this.vertical ? this.func.range()[0]+5 : -5) : this.func(val);
@@ -505,7 +504,7 @@ class TAxisPainter extends ObjectPainter {
       let gr_range = Math.abs(this.func.range()[1] - this.func.range()[0]);
       if (gr_range <= 0) gr_range = 100;
 
-      if (this.kind === 'time') {
+      if (this.kind === kAxisTime) {
          if (this.nticks > 8) this.nticks = 8;
 
          const scale_range = this.scale_max - this.scale_min,
@@ -674,7 +673,7 @@ class TAxisPainter extends ObjectPainter {
 
       // at the moment when drawing labels, we can try to find most optimal text representation for them
 
-      if (((this.kind === kAxisNormal) || (this.kind === 'func')) && !this.log && (handle.major.length > 0)) {
+      if (((this.kind === kAxisNormal) || (this.kind === kAxisFunc)) && !this.log && (handle.major.length > 0)) {
          let maxorder = 0, minorder = 0, exclorder3 = false;
 
          if (!optionNoexp) {
@@ -1351,4 +1350,4 @@ class TAxisPainter extends ObjectPainter {
 
 } // class TAxisPainter
 
-export { EAxisBits, chooseTimeFormat, AxisPainterMethods, TAxisPainter, kAxisLabels, kAxisNormal };
+export { EAxisBits, chooseTimeFormat, AxisPainterMethods, TAxisPainter };
