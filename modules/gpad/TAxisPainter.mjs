@@ -606,7 +606,6 @@ class TAxisPainter extends ObjectPainter {
       } else
          ticks = this.produceTicks(this.nticks);
 
-
       handle.minor = handle.middle = handle.major = ticks;
 
       if (only_major_as_array) {

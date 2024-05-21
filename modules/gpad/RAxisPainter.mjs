@@ -222,9 +222,8 @@ class RAxisPainter extends RObjectPainter {
    createTicks(only_major_as_array, optionNoexp, optionNoopt, optionInt) {
       if (optionNoopt && this.nticks && (this.kind === kAxisNormal)) this.noticksopt = true;
 
-      const handle = { nminor: 0, nmiddle: 0, nmajor: 0, func: this.func };
-
-      handle.minor = handle.middle = handle.major = this.produceTicks(this.nticks);
+      const ticks = this.produceTicks(this.nticks),
+            handle = { nminor: 0, nmiddle: 0, nmajor: 0, func: this.func, minor: ticks, middle: ticks, major: ticks };
 
       if (only_major_as_array) {
          const res = handle.major, delta = (this.scale_max - this.scale_min)*1e-5;
