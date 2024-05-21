@@ -6,6 +6,7 @@ import { floatToString, makeTranslate, addHighlightStyle } from '../base/BasePai
 import { ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
 import { FontHandler } from '../base/FontHandler.mjs';
 
+const kAxisLabels = 'labels', kAxisNormal = 'normal';
 
 /** @summary Return time offset value for given TAxis object
   * @private */
@@ -84,7 +85,7 @@ const AxisPainterMethods = {
 
    initAxisPainter() {
       this.name = 'yaxis';
-      this.kind = 'normal';
+      this.kind = kAxisNormal;
       this.func = null;
       this.order = 0; // scaling order for axis labels
 
@@ -294,9 +295,9 @@ const AxisPainterMethods = {
       delta_right *= delta;
 
       const lmin = item.min = this.scale_min,
-          lmax = item.max = this.scale_max,
-          gmin = this.full_min,
-          gmax = this.full_max;
+            lmax = item.max = this.scale_max,
+            gmin = this.full_min,
+            gmax = this.full_max;
 
       if ((item.min === item.max) && (delta < 0)) {
          item.min = gmin;
@@ -403,7 +404,7 @@ class TAxisPainter extends ObjectPainter {
       this.name = name;
       this.full_min = min;
       this.full_max = max;
-      this.kind = 'normal';
+      this.kind = kAxisNormal;
       this.vertical = vertical;
       this.log = opts.log || 0;
       this.noexp_changed = opts.noexp_changed;
@@ -422,7 +423,7 @@ class TAxisPainter extends ObjectPainter {
       } else if (opts.axis_func)
          this.kind = 'func';
        else
-         this.kind = !axis.fLabels ? 'normal' : 'labels';
+         this.kind = !axis.fLabels ? kAxisNormal : kAxisLabels;
 
 
       if (this.kind === 'time')
@@ -529,7 +530,7 @@ class TAxisPainter extends ObjectPainter {
          if ((this.scale_max < 300) && (this.scale_min > 0.3) && !this.noexp_changed) this.noexp = true;
          this.moreloglabels = axis?.TestBit(EAxisBits.kMoreLogLabels);
          this.format = this.formatLog;
-      } else if (this.kind === 'labels') {
+      } else if (this.kind === kAxisLabels) {
          this.nticks = 50; // for text output allow max 50 names
          const scale_range = this.scale_max - this.scale_min;
          if (this.nticks > scale_range)
@@ -581,7 +582,7 @@ class TAxisPainter extends ObjectPainter {
 
    /** @summary Creates array with minor/middle/major ticks */
    createTicks(only_major_as_array, optionNoexp, optionNoopt, optionInt) {
-      if (optionNoopt && this.nticks && (this.kind === 'normal'))
+      if (optionNoopt && this.nticks && (this.kind === kAxisNormal))
          this.noticksopt = true;
 
       const handle = { painter: this, nminor: 0, nmiddle: 0, nmajor: 0, func: this.func, minor: [], middle: [], major: [] };
@@ -592,7 +593,7 @@ class TAxisPainter extends ObjectPainter {
          this.fixed_ticks.forEach(v => {
             if ((v >= this.scale_min) && (v <= this.scale_max)) ticks.push(v);
          });
-      } else if ((this.kind === 'labels') && !this.regular_labels) {
+      } else if ((this.kind === kAxisLabels) && !this.regular_labels) {
          ticks = [];
          handle.lbl_pos = [];
          const axis = this.getObject();
@@ -673,7 +674,7 @@ class TAxisPainter extends ObjectPainter {
 
       // at the moment when drawing labels, we can try to find most optimal text representation for them
 
-      if (((this.kind === 'normal') || (this.kind === 'func')) && !this.log && (handle.major.length > 0)) {
+      if (((this.kind === kAxisNormal) || (this.kind === 'func')) && !this.log && (handle.major.length > 0)) {
          let maxorder = 0, minorder = 0, exclorder3 = false;
 
          if (!optionNoexp) {
@@ -743,7 +744,7 @@ class TAxisPainter extends ObjectPainter {
 
    /** @summary Is labels should be centered */
    isCenteredLabels() {
-      if (this.kind === 'labels') return true;
+      if (this.kind === kAxisLabels) return true;
       if (this.log) return false;
       return this.getObject()?.TestBit(EAxisBits.kCenterLabels);
    }
@@ -896,7 +897,7 @@ class TAxisPainter extends ObjectPainter {
          if (handle.kind === 1) {
             // if not showing labels, not show large tick
             // FIXME: for labels last tick is smaller,
-            if (/* (this.kind === 'labels') || */ (this.format(handle.tick, true) !== null)) h1 = tickSize;
+            if (/* (this.kind === kAxisLabels) || */ (this.format(handle.tick, true) !== null)) h1 = tickSize;
             this.ticks.push(handle.grpos); // keep graphical positions of major ticks
          }
 
@@ -1150,7 +1151,7 @@ class TAxisPainter extends ObjectPainter {
 
       offset += (this.vertical ? 0.002 : 0.005);
 
-      if (this.kind === 'labels')
+      if (this.kind === kAxisLabels)
          this.optionText = true;
 
       this.optionNoexp = axis.TestBit(EAxisBits.kNoExponent);
@@ -1350,4 +1351,4 @@ class TAxisPainter extends ObjectPainter {
 
 } // class TAxisPainter
 
-export { EAxisBits, chooseTimeFormat, AxisPainterMethods, TAxisPainter };
+export { EAxisBits, chooseTimeFormat, AxisPainterMethods, TAxisPainter, kAxisLabels, kAxisNormal };
