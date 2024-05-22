@@ -1,4 +1,4 @@
-import { createHistogram, setHistogramTitle, kNoStats, settings, clTF3, clTH2F, isStr } from '../core.mjs';
+import { createHistogram, setHistogramTitle, kNoStats, settings, clTF3, clTH2F } from '../core.mjs';
 import { TH2Painter } from '../hist/TH2Painter.mjs';
 import { proivdeEvalPar } from '../base/func.mjs';
 import { produceTAxisLogScale, scanTF1Options } from '../hist/TF1Painter.mjs';
