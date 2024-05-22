@@ -9,7 +9,7 @@ import { loadScript, findFunction, internals, getPromise, isNodeJs, isObject, is
          clTColor, clTHStack, clTGraph, clTGraph2DErrors, clTGraph2DAsymmErrors,
          clTGraphPolar, clTGraphPolargram, clTGraphTime, clTCutG, clTPolyLine, clTPolyLine3D, clTPolyMarker3D,
          clTPad, clTStyle, clTCanvas, clTGaxis, clTGeoVolume, kInspect, nsREX, atob_func } from './core.mjs';
-import { clTStreamerInfoList } from './io.mjs';
+import { clTStreamerInfoList, kBaseClass } from './io.mjs';
 import { clTBranchFunc } from './tree.mjs';
 import { BasePainter, compressSVG, svgToImage, _loadJSDOM } from './base/BasePainter.mjs';
 import { ObjectPainter, cleanup, drawRawText, getElementCanvPainter, getElementMainPainter } from './base/ObjectPainter.mjs';
@@ -509,7 +509,7 @@ function addStreamerInfosForPainter(lst) {
 
    function checkBaseClasses(si, lvl) {
       const element = si.fElements?.arr[0];
-      if ((element?.fTypeName !== 'BASE') || (lvl > 4))
+      if ((element?.fTypeName !== kBaseClass) || (lvl > 4))
          return null;
       // exclude very basic classes
       if (basics.indexOf(element.fName) >= 0)

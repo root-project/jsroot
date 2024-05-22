@@ -38,8 +38,10 @@ const clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObj
       // kSTLforwardlist = 9, kSTLunorderedset = 10, kSTLunorderedmultiset = 11, kSTLunorderedmap = 12,
       // kSTLunorderedmultimap = 13, kSTLend = 14
 
+      kBaseClass = 'BASE',
+
       // name of base IO types
-      BasicTypeNames = ['BASE', 'char', 'short', 'int', 'long', 'float', 'int', 'const char*', 'double', 'Double32_t',
+      BasicTypeNames = [kBaseClass, 'char', 'short', 'int', 'long', 'float', 'int', 'const char*', 'double', 'Double32_t',
                         'char', 'unsigned  char', 'unsigned short', 'unsigned', 'unsigned long', 'unsigned', 'Long64_t', 'ULong64_t', 'bool', 'Float16_t'],
 
       // names of STL containers
@@ -786,7 +788,7 @@ function createMemberStreamer(element, file) {
       fMaxIndex: element.fMaxIndex
    };
 
-   if (element.fTypeName === 'BASE') {
+   if (element.fTypeName === kBaseClass) {
       if (getArrayKind(member.name) > 0) {
          // this is workaround for arrays as base class
          // we create 'fArray' member, which read as any other data member
@@ -961,7 +963,7 @@ function createMemberStreamer(element, file) {
       case kAnyp:
       case kObjectp:
       case kObject: {
-         let classname = (element.fTypeName === 'BASE') ? element.fName : element.fTypeName;
+         let classname = (element.fTypeName === kBaseClass) ? element.fName : element.fTypeName;
          if (classname[classname.length - 1] === '*')
             classname = classname.slice(0, classname.length - 1);
 
@@ -3826,7 +3828,7 @@ export { kChar, kShort, kInt, kLong, kFloat, kCounter,
    kUChar, kUShort, kUInt, kULong, kBits,
    kLong64, kULong64, kBool, kFloat16,
    kBase, kOffsetL, kOffsetP, kObject, kAny, kObjectp, kObjectP, kTString,
-   kAnyP, kStreamer, kStreamLoop, kSTLp, kSTL,
+   kAnyP, kStreamer, kStreamLoop, kSTLp, kSTL, kBaseClass,
    clTStreamerInfoList, clTDirectory, clTDirectoryFile, nameStreamerInfo, clTBasket,
    R__unzip, addUserStreamer, createStreamerElement, createMemberStreamer,
    openFile, reconstructObject, FileProxy, TBuffer }; /*, TDirectory, TFile, TLocalFile, TNodejsFile */

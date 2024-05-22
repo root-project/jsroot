@@ -3,7 +3,7 @@ import { version, gStyle, httpRequest, create, createHttpRequest, loadScript, de
          isArrayProto, isRootCollection, isBatchMode, isNodeJs, isObject, isFunc, isStr, _ensureJSROOT,
          prROOT, clTList, clTMap, clTObjString, clTKey, clTFile, clTText, clTLatex, clTColor, clTStyle, kInspect, isPromise } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
-import { openFile, clTStreamerInfoList, clTDirectory, clTDirectoryFile, nameStreamerInfo, addUserStreamer } from '../io.mjs';
+import { openFile, kBaseClass, clTStreamerInfoList, clTDirectory, clTDirectoryFile, nameStreamerInfo, addUserStreamer } from '../io.mjs';
 import { getRGBfromTColor } from '../base/colors.mjs';
 import { BasePainter, getElementRect, _loadJSDOM, convertDate } from '../base/BasePainter.mjs';
 import { getElementMainPainter, getElementCanvPainter, cleanup, ObjectPainter } from '../base/ObjectPainter.mjs';
@@ -599,7 +599,7 @@ function createStreamerInfoContent(lst) {
          if (elem.fTitle)
             _name += ` // ${elem.fTitle}`;
 
-         item._childs.push({ _name, _title, _kind: elem.fTypeName, _icon: (elem.fTypeName === 'BASE') ? 'img_class' : 'img_member' });
+         item._childs.push({ _name, _title, _kind: elem.fTypeName, _icon: (elem.fTypeName === kBaseClass) ? 'img_class' : 'img_member' });
       }
       if (!item._childs.length)
          delete item._childs;
