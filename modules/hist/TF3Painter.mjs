@@ -241,7 +241,7 @@ class TF3Painter extends TH2Painter {
     * @desc Used to inform webcanvas when evaluation failed
      * @private */
    fillWebObjectOptions(opt) {
-      opt.fcust = this._fail_eval && !this.prefer_saved ? 'func_fail' : '';
+      opt.fcust = this._fail_eval && !this.use_saved ? 'func_fail' : '';
    }
 
    /** @summary draw TF3 object */
