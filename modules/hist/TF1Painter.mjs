@@ -234,12 +234,13 @@ class TF1Painter extends TH1Painter {
 
    /** @summary Checks if it makes sense to zoom inside specified axis range */
    canZoomInside(axis, min, max) {
-      if ((this.$func?.fSave.length > 0) && this._use_saved_points && (axis === 'x')) {
+      const nsave = this.$func?.fSave.length ?? 0;
+      if ((nsave > 3) && this._use_saved_points && (axis === 'x')) {
          // in the case where the points have been saved, useful for example
          // if we don't have the user's function
-         const nb_points = this.$func.fNpx,
-             xmin = this.$func.fSave[nb_points + 1],
-             xmax = this.$func.fSave[nb_points + 2];
+         const nb_points = nsave - 2,
+             xmin = this.$func.fSave[nsave - 2],
+             xmax = this.$func.fSave[nsave - 1];
 
          return Math.abs(xmax - xmin) / nb_points < Math.abs(max - min);
       }
