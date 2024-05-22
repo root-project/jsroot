@@ -19,6 +19,7 @@
 17. Fix - correctly draw only grids with AXIG draw option
 18. Fix - log scales on TH3 drawings #306
 19. Fix - draw geometry top node volume if all childs not visible #308
+20. Fix - properly process 206 server response without Accept-Ranges header https://root-forum.cern.ch/t/59426/
 
 
 ## Changes in 7.6.1

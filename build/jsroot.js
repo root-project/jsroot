@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '21/05/2024',
+version_date = '22/05/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -99088,16 +99088,14 @@ class TFile {
          }
 
          if (res && first_req) {
-            if (file.fAcceptRanges && !first_req.getResponseHeader('Accept-Ranges')) {
-               file.fAcceptRanges = false;
-               if (res?.byteLength === place[1]) {
-                  // special case with cernbox, let try to get full size content
-                  console.warn(`First block is ${place[1]} bytes but browser does not provides access to header - try to read full file`);
-                  first_block_retry = true;
-                  return send_new_request();
-               }
+            // special workaround for servers like cernbox blocking access to some response headers
+            // as result, it is not possible to parse multipart responses
+            if (file.fAcceptRanges && (first_req.status === 206) && (res?.byteLength === place[1]) && !first_req.getResponseHeader('Content-Range') && (file.fMaxRanges > 1)) {
+               console.warn('Server response with 206 code but browser does not provide access to Content-Range header - setting fMaxRanges = 1, consider to load full file with "filename.root+" argument or adjust server configurations');
+               file.fMaxRanges = 1;
             }
 
+            // workaround for simpleHTTP
             const kind = browser.isFirefox ? first_req.getResponseHeader('Server') : '';
             if (isStr(kind) && kind.indexOf('SimpleHTTP') === 0) {
                file.fMaxRanges = 1;
@@ -99107,7 +99105,6 @@ class TFile {
 
          if (res && first_block && !file.fFileContent) {
             // special case - keep content of first request (could be complete file) in memory
-
             file.fFileContent = new TBuffer(isStr(res) ? res : new DataView(res));
 
             if (!file.fAcceptRanges)
