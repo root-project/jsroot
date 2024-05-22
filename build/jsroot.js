@@ -1,4 +1,4 @@
-// https://root.cern/js/ v7.6.99
+// https://root.cern/js/ v7.7.0
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -7,7 +7,7 @@ typeof define === 'function' && define.amd ? define(['exports'], factory) :
 
 /** @summary version id
   * @desc For the JSROOT release the string in format 'major.minor.patch' like '7.0.0' */
-const version_id = 'dev',
+const version_id = '7.7.0',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
@@ -113103,6 +113103,27 @@ function produceTAxisLogScale(axis, num, min, max) {
    axis.fXmax = Math.exp(lmax);
 }
 
+function scanTF1Options(opt) {
+   if (!isStr(opt)) opt = '';
+   let p = opt.indexOf(';webcanv_hist'), webcanv_hist = false, use_saved = 0;
+   if (p >= 0) {
+      webcanv_hist = true;
+      opt = opt.slice(0, p);
+   }
+   p = opt.indexOf(';force_saved');
+   if (p >= 0) {
+      use_saved = 2;
+      opt = opt.slice(0, p);
+   }
+   p = opt.indexOf(';prefer_saved');
+   if (p >= 0) {
+      use_saved = 1;
+      opt = opt.slice(0, p);
+   }
+   return { opt, webcanv_hist, use_saved };
+}
+
+
 /**
   * @summary Painter for TF1 object
   *
@@ -113165,7 +113186,7 @@ class TF1Painter extends TH1Painter$2 {
          xmax = Math.max(xmax, gr.zoom_xmax);
       }
 
-      this._use_saved_points = (tf1.fSave.length > 3) && (settings.PreferSavedPoints || this.force_saved);
+      this._use_saved_points = (tf1.fSave.length > 3) && (settings.PreferSavedPoints || (this.use_saved > 1));
 
       const ensureBins = num => {
          if (hist.fNcells !== num + 2) {
@@ -113292,12 +113313,13 @@ class TF1Painter extends TH1Painter$2 {
 
    /** @summary Checks if it makes sense to zoom inside specified axis range */
    canZoomInside(axis, min, max) {
-      if ((this.$func?.fSave.length > 0) && this._use_saved_points && (axis === 'x')) {
+      const nsave = this.$func?.fSave.length ?? 0;
+      if ((nsave > 3) && this._use_saved_points && (axis === 'x')) {
          // in the case where the points have been saved, useful for example
          // if we don't have the user's function
-         const nb_points = this.$func.fNpx,
-             xmin = this.$func.fSave[nb_points + 1],
-             xmax = this.$func.fSave[nb_points + 2];
+         const nb_points = nsave - 2,
+             xmin = this.$func.fSave[nsave - 2],
+             xmax = this.$func.fSave[nsave - 1];
 
          return Math.abs(xmax - xmin) / nb_points < Math.abs(max - min);
       }
@@ -113373,29 +113395,20 @@ class TF1Painter extends TH1Painter$2 {
    }
 
    /** @summary fill information for TWebCanvas
+    * @desc Used to inform webcanvas when evaluation failed
      * @private */
    fillWebObjectOptions(opt) {
-      // mark that saved points are used or evaluation failed
-      opt.fcust = this._fail_eval ? 'func_fail' : '';
+      opt.fcust = this._fail_eval && !this.use_saved ? 'func_fail' : '';
    }
 
    /** @summary draw TF1 object */
    static async draw(dom, tf1, opt) {
-     if (!isStr(opt)) opt = '';
-      let p = opt.indexOf(';webcanv_hist'), webcanv_hist = false, force_saved = false;
-      if (p >= 0) {
-         webcanv_hist = true;
-         opt = opt.slice(0, p);
-      }
-      p = opt.indexOf(';force_saved');
-      if (p >= 0) {
-         force_saved = true;
-         opt = opt.slice(0, p);
-      }
-
+      const web = scanTF1Options(opt);
+      opt = web.opt;
+      delete web.opt;
       let hist;
 
-      if (webcanv_hist) {
+      if (web.webcanv_hist) {
          const dummy = new ObjectPainter(dom);
          hist = dummy.getPadPainter()?.findInPrimitives('Func', clTH1D);
       }
@@ -113411,8 +113424,7 @@ class TF1Painter extends TH1Painter$2 {
       const painter = new TF1Painter(dom, hist);
 
       painter.$func = tf1;
-      painter.webcanv_hist = webcanv_hist;
-      painter.force_saved = force_saved;
+      Object.assign(painter, web);
 
       painter.createTF1Histogram(tf1, hist);
 
@@ -113424,7 +113436,8 @@ class TF1Painter extends TH1Painter$2 {
 var TF1Painter$1 = /*#__PURE__*/Object.freeze({
 __proto__: null,
 TF1Painter: TF1Painter,
-produceTAxisLogScale: produceTAxisLogScale
+produceTAxisLogScale: produceTAxisLogScale,
+scanTF1Options: scanTF1Options
 });
 
 const kIsBayesian = BIT(14),  // Bayesian statistics are used
@@ -114656,7 +114669,7 @@ class TF2Painter extends TH2Painter {
       if ((nsave > 0) && (nsave !== (func.fSave[nsave+4]+1) * (func.fSave[nsave+5]+1)))
          nsave = 0;
 
-      this._use_saved_points = (nsave > 0) && (settings.PreferSavedPoints || this.force_saved);
+      this._use_saved_points = (nsave > 0) && (settings.PreferSavedPoints || (this.use_saved > 1));
 
       const fp = this.getFramePainter(),
             pad = this.getPadPainter()?.getRootPad(true),
@@ -114875,25 +114888,17 @@ class TF2Painter extends TH2Painter {
    }
 
    /** @summary fill information for TWebCanvas
+    * @desc Used to inform webcanvas when evaluation failed
      * @private */
    fillWebObjectOptions(opt) {
-      // mark that saved points are used or evaluation failed
-      opt.fcust = this._fail_eval ? 'func_fail' : '';
+      opt.fcust = this._fail_eval && !this.use_saved ? 'func_fail' : '';
    }
 
    /** @summary draw TF2 object */
    static async draw(dom, tf2, opt) {
-      if (!isStr(opt)) opt = '';
-      let p = opt.indexOf(';webcanv_hist'), webcanv_hist = false, force_saved = false;
-      if (p >= 0) {
-         webcanv_hist = true;
-         opt = opt.slice(0, p);
-      }
-      p = opt.indexOf(';force_saved');
-      if (p >= 0) {
-         force_saved = true;
-         opt = opt.slice(0, p);
-      }
+      const web = scanTF1Options(opt);
+      opt = web.opt;
+      delete web.opt;
 
       const d = new DrawOptions(opt);
       if (d.empty())
@@ -114913,7 +114918,7 @@ class TF2Painter extends TH2Painter {
 
       let hist;
 
-      if (webcanv_hist) {
+      if (web.webcanv_hist) {
          const dummy = new ObjectPainter(dom);
          hist = dummy.getPadPainter()?.findInPrimitives('Func', clTH2F);
       }
@@ -114926,8 +114931,7 @@ class TF2Painter extends TH2Painter {
       const painter = new TF2Painter(dom, hist);
 
       painter.$func = tf2;
-      painter.webcanv_hist = webcanv_hist;
-      painter.force_saved = force_saved;
+      Object.assign(painter, web);
       painter.createTF2Histogram(tf2, hist);
       return THistPainter._drawHist(painter, opt);
    }
@@ -115006,7 +115010,7 @@ class TF3Painter extends TH2Painter {
    createTF3Histogram(func, hist) {
       const nsave = func.fSave.length - 9;
 
-      this._use_saved_points = (nsave > 0) && (settings.PreferSavedPoints || this.force_saved);
+      this._use_saved_points = (nsave > 0) && (settings.PreferSavedPoints || (this.use_saved > 1));
 
       const fp = this.getFramePainter(),
             pad = this.getPadPainter()?.getRootPad(true),
@@ -115170,25 +115174,17 @@ class TF3Painter extends TH2Painter {
    }
 
    /** @summary fill information for TWebCanvas
+    * @desc Used to inform webcanvas when evaluation failed
      * @private */
    fillWebObjectOptions(opt) {
-      // mark that saved points are used or evaluation failed
-      opt.fcust = this._fail_eval ? 'func_fail' : '';
+      opt.fcust = this._fail_eval && !this.prefer_saved ? 'func_fail' : '';
    }
 
    /** @summary draw TF3 object */
    static async draw(dom, tf3, opt) {
-      if (!isStr(opt)) opt = '';
-      let p = opt.indexOf(';webcanv_hist'), webcanv_hist = false, force_saved = false;
-      if (p >= 0) {
-         webcanv_hist = true;
-         opt = opt.slice(0, p);
-      }
-      p = opt.indexOf(';force_saved');
-      if (p >= 0) {
-         force_saved = true;
-         opt = opt.slice(0, p);
-      }
+      const web = scanTF1Options(opt);
+      opt = web.opt;
+      delete web.opt;
 
       const d = new DrawOptions(opt);
       if (d.empty() || (opt === 'gl'))
@@ -115203,7 +115199,7 @@ class TF3Painter extends TH2Painter {
 
       let hist;
 
-      if (webcanv_hist) {
+      if (web.webcanv_hist) {
          const dummy = new ObjectPainter(dom);
          hist = dummy.getPadPainter()?.findInPrimitives('Func', clTH2F);
       }
@@ -115216,8 +115212,7 @@ class TF3Painter extends TH2Painter {
       const painter = new TF3Painter(dom, hist);
 
       painter.$func = tf3;
-      painter.webcanv_hist = webcanv_hist;
-      painter.force_saved = force_saved;
+      Object.assign(painter, web);
       painter.createTF3Histogram(tf3, hist);
       return THistPainter._drawHist(painter, opt);
    }

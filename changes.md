@@ -1,6 +1,6 @@
 # JSROOT changelog
 
-## Changes in dev
+## Changes in 7.7.0
 1. Let plot current time, file creation or modification time with `&optdate=[1,2,3]` URL parameters
 2. Let plot file name, full file name or item name with `&optfile=[1,2,3]` URL parameters
 3. Let define date and file name position with `&datex=0.03&datey=0.03` URL parameters
