@@ -1,4 +1,4 @@
-// https://root.cern/js/ v7.7.0
+// https://root.cern/js/ v7.7.99
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -7,7 +7,7 @@ typeof define === 'function' && define.amd ? define(['exports'], factory) :
 
 /** @summary version id
   * @desc For the JSROOT release the string in format 'major.minor.patch' like '7.0.0' */
-const version_id = '7.7.0',
+const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
@@ -96344,8 +96344,10 @@ const clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObj
       // kSTLforwardlist = 9, kSTLunorderedset = 10, kSTLunorderedmultiset = 11, kSTLunorderedmap = 12,
       // kSTLunorderedmultimap = 13, kSTLend = 14
 
+      kBaseClass = 'BASE',
+
       // name of base IO types
-      BasicTypeNames = ['BASE', 'char', 'short', 'int', 'long', 'float', 'int', 'const char*', 'double', 'Double32_t',
+      BasicTypeNames = [kBaseClass, 'char', 'short', 'int', 'long', 'float', 'int', 'const char*', 'double', 'Double32_t',
                         'char', 'unsigned  char', 'unsigned short', 'unsigned', 'unsigned long', 'unsigned', 'Long64_t', 'ULong64_t', 'bool', 'Float16_t'],
 
       // names of STL containers
@@ -97092,7 +97094,7 @@ function createMemberStreamer(element, file) {
       fMaxIndex: element.fMaxIndex
    };
 
-   if (element.fTypeName === 'BASE') {
+   if (element.fTypeName === kBaseClass) {
       if (getArrayKind(member.name) > 0) {
          // this is workaround for arrays as base class
          // we create 'fArray' member, which read as any other data member
@@ -97267,7 +97269,7 @@ function createMemberStreamer(element, file) {
       case kAnyp:
       case kObjectp:
       case kObject: {
-         let classname = (element.fTypeName === 'BASE') ? element.fName : element.fTypeName;
+         let classname = (element.fTypeName === kBaseClass) ? element.fName : element.fTypeName;
          if (classname[classname.length - 1] === '*')
             classname = classname.slice(0, classname.length - 1);
 
@@ -100336,7 +100338,7 @@ function getBranchObjectClass(branch, tree, with_clones = false, with_leafs = fa
       return branch.fClonesName;
 
    const s_elem = findBrachStreamerElement(branch, tree.$file);
-   if ((branch.fType === kBaseClassNode) && s_elem && (s_elem.fTypeName === 'BASE'))
+   if ((branch.fType === kBaseClassNode) && s_elem && (s_elem.fTypeName === kBaseClass))
       return s_elem.fName;
 
    if (branch.fType === kObjectNode) {
@@ -101566,7 +101568,7 @@ function defineMemberTypeName(file, parent_class, member_name) {
 
    let elem = null;
    for (let k = 0; k < arr.length; ++k) {
-      if (arr[k].fTypeName === 'BASE') {
+      if (arr[k].fTypeName === kBaseClass) {
          const res = defineMemberTypeName(file, arr[k].fName, member_name);
          if (res) return res;
       } else
@@ -101835,7 +101837,7 @@ async function treeProcess(tree, selector, args) {
             }
 
             const elem = findBrachStreamerElement(br, handle.file);
-            if (elem?.fTypeName === 'BASE') {
+            if (elem?.fTypeName === kBaseClass) {
                // if branch is data of base class, map it to original target
                if (br.fTotBytes && !AddBranchForReading(br, target_object, target_name, read_mode)) return false;
                if (!ScanBranches(br.fBranches, master_target, chld_kind)) return false;
@@ -103357,7 +103359,7 @@ function addStreamerInfosForPainter(lst) {
 
    function checkBaseClasses(si, lvl) {
       const element = si.fElements?.arr[0];
-      if ((element?.fTypeName !== 'BASE') || (lvl > 4))
+      if ((element?.fTypeName !== kBaseClass) || (lvl > 4))
          return null;
       // exclude very basic classes
       if (basics.indexOf(element.fName) >= 0)
@@ -104143,7 +104145,7 @@ function createStreamerInfoContent(lst) {
          if (elem.fTitle)
             _name += ` // ${elem.fTitle}`;
 
-         item._childs.push({ _name, _title, _kind: elem.fTypeName, _icon: (elem.fTypeName === 'BASE') ? 'img_class' : 'img_member' });
+         item._childs.push({ _name, _title, _kind: elem.fTypeName, _icon: (elem.fTypeName === kBaseClass) ? 'img_class' : 'img_member' });
       }
       if (!item._childs.length)
          delete item._childs;
