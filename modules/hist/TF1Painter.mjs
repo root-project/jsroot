@@ -29,19 +29,22 @@ function produceTAxisLogScale(axis, num, min, max) {
 
 function scanTF1Options(opt) {
    if (!isStr(opt)) opt = '';
-   let p = opt.indexOf(';webcanv_hist'), webcanv_hist = false, prefer_saved = false;
+   let p = opt.indexOf(';webcanv_hist'), webcanv_hist = false, use_saved = 0;
    if (p >= 0) {
       webcanv_hist = true;
       opt = opt.slice(0, p);
    }
-   p = opt.indexOf(';force_saved'); // only to support old JSON files from TWebCanvas
-   if (p < 0)
-      p = opt.indexOf(';prefer_saved');
+   p = opt.indexOf(';force_saved');
    if (p >= 0) {
-      prefer_saved = true;
+      use_saved = 2;
       opt = opt.slice(0, p);
    }
-   return { opt, webcanv_hist, prefer_saved };
+   p = opt.indexOf(';prefer_saved');
+   if (p >= 0) {
+      use_saved = 1;
+      opt = opt.slice(0, p);
+   }
+   return { opt, webcanv_hist, use_saved };
 }
 
 
@@ -107,7 +110,7 @@ class TF1Painter extends TH1Painter {
          xmax = Math.max(xmax, gr.zoom_xmax);
       }
 
-      this._use_saved_points = (tf1.fSave.length > 3) && (settings.PreferSavedPoints || this.prefer_saved);
+      this._use_saved_points = (tf1.fSave.length > 3) && (settings.PreferSavedPoints || (this.use_saved > 1));
 
       const ensureBins = num => {
          if (hist.fNcells !== num + 2) {
@@ -319,7 +322,7 @@ class TF1Painter extends TH1Painter {
     * @desc Used to inform webcanvas when evaluation failed
      * @private */
    fillWebObjectOptions(opt) {
-      opt.fcust = this._fail_eval && !this.prefer_saved ? 'func_fail' : '';
+      opt.fcust = this._fail_eval && !this.use_saved ? 'func_fail' : '';
    }
 
    /** @summary draw TF1 object */
