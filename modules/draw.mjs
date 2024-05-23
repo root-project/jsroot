@@ -577,8 +577,8 @@ async function makeImage(args) {
       args.height = 800;
 
    if (args.use_canvas_size && (args.object?._typename === clTCanvas) && args.object.fCw && args.object.fCh) {
-      args.width = args.object?.fCw;
-      args.height = args.object?.fCh;
+      args.width = args.object.fCw;
+      args.height = args.object.fCh;
    }
 
    async function build(main) {
