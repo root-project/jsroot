@@ -1,7 +1,7 @@
 import { gStyle, settings, constants, browser, internals, BIT,
          create, toJSON, isBatchMode, loadScript, injectCode, isPromise, getPromise, postponePromise,
-         isObject, isFunc, isStr,
-         clTObjArray, clTPaveText, clTColor, clTPad, clTFrame, clTStyle, clTLegend, clTHStack, clTMultiGraph, clTLegendEntry, kTitle } from '../core.mjs';
+         isObject, isFunc, isStr, clTObjArray, clTPaveText, clTColor, clTPad, clTFrame, clTStyle, clTLegend,
+         clTHStack, clTMultiGraph, clTLegendEntry, nsSVG, kTitle } from '../core.mjs';
 import { select as d3_select, rgb as d3_rgb } from '../d3.mjs';
 import { ColorPalette, adoptRootColors, getColorPalette, getGrayColors, extendRootColors, getRGBfromTColor, decodeWebCanvasColors } from '../base/colors.mjs';
 import { getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG, makeTranslate, convertDate, svgToImage } from '../base/BasePainter.mjs';
@@ -591,7 +591,7 @@ class TPadPainter extends ObjectPainter {
          this.setTopPainter(); // assign canvas as top painter of that element
 
          if (is_batch)
-            svg.attr('xmlns', 'http://www.w3.org/2000/svg');
+            svg.attr('xmlns', nsSVG);
          else if (!this.online_canvas)
             svg.append('svg:title').text('ROOT canvas');
 

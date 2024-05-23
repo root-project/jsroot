@@ -8,7 +8,7 @@ import { loadScript, findFunction, internals, getPromise, isNodeJs, isObject, is
          clTProfile, clTProfile2D, clTProfile3D, clTFrame,
          clTColor, clTHStack, clTGraph, clTGraph2DErrors, clTGraph2DAsymmErrors,
          clTGraphPolar, clTGraphPolargram, clTGraphTime, clTCutG, clTPolyLine, clTPolyLine3D, clTPolyMarker3D,
-         clTPad, clTStyle, clTCanvas, clTGaxis, clTGeoVolume, kInspect, nsREX, atob_func } from './core.mjs';
+         clTPad, clTStyle, clTCanvas, clTGaxis, clTGeoVolume, kInspect, nsREX, nsSVG, atob_func } from './core.mjs';
 import { clTStreamerInfoList, kBaseClass } from './io.mjs';
 import { clTBranchFunc } from './tree.mjs';
 import { BasePainter, compressSVG, svgToImage, _loadJSDOM } from './base/BasePainter.mjs';
@@ -613,7 +613,7 @@ async function makeImage(args) {
          }
 
          main.select('svg')
-             .attr('xmlns', 'http://www.w3.org/2000/svg')
+             .attr('xmlns', nsSVG)
              .attr('width', args.width)
              .attr('height', args.height)
              .attr('style', null).attr('class', null).attr('x', null).attr('y', null);

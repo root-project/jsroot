@@ -1,5 +1,5 @@
 import { select as d3_select, drag as d3_drag } from '../d3.mjs';
-import { browser, internals, toJSON, settings, isObject, isFunc, isStr } from '../core.mjs';
+import { browser, internals, toJSON, settings, isObject, isFunc, isStr, nsSVG } from '../core.mjs';
 import { compressSVG, BasePainter } from '../base/BasePainter.mjs';
 import { getElementCanvPainter, selectActivePad, cleanup, resize, ObjectPainter } from '../base/ObjectPainter.mjs';
 import { createMenu } from './menu.mjs';
@@ -1202,7 +1202,7 @@ class BatchDisplay extends MDIDisplay {
       if (!frame) return;
       const main = d3_select(frame);
       main.select('svg')
-          .attr('xmlns', 'http://www.w3.org/2000/svg')
+          .attr('xmlns', nsSVG)
           .attr('width', this.width)
           .attr('height', this.height)
           .attr('title', null).attr('style', null).attr('class', null).attr('x', null).attr('y', null);
