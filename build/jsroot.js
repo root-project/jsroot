@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '22/05/2024',
+version_date = '23/05/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -1054,7 +1054,7 @@ const prROOT = 'ROOT.', clTObject = 'TObject', clTNamed = 'TNamed', clTString = 
       clTH1 = 'TH1', clTH1I = 'TH1I', clTH1D = 'TH1D', clTH2 = 'TH2', clTH2I = 'TH2I', clTH2F = 'TH2F', clTH3 = 'TH3',
       clTF1 = 'TF1', clTF2 = 'TF2', clTF3 = 'TF3', clTProfile = 'TProfile', clTProfile2D = 'TProfile2D', clTProfile3D = 'TProfile3D',
       clTGeoVolume = 'TGeoVolume', clTGeoNode = 'TGeoNode', clTGeoNodeMatrix = 'TGeoNodeMatrix',
-      nsREX = 'ROOT::Experimental::',
+      nsREX = 'ROOT::Experimental::', nsSVG = 'http://www.w3.org/2000/svg',
       kNoZoom = -1111, kNoStats = BIT(9), kInspect = 'inspect', kTitle = 'title';
 
 
@@ -1982,6 +1982,7 @@ kNoZoom: kNoZoom,
 kTitle: kTitle,
 loadScript: loadScript,
 nsREX: nsREX,
+nsSVG: nsSVG,
 parse: parse,
 parseMulti: parseMulti,
 postponePromise: postponePromise,
@@ -56440,7 +56441,7 @@ async function createRender3D(width, height, render3d, args) {
    if (render3d === rc.SVG) {
       // SVG rendering
       const r = createSVGRenderer(false, 0, doc);
-      r.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      r.jsroot_dom = doc.createElementNS(nsSVG, 'svg');
       promise = Promise.resolve(r);
    } else if (isNodeJs()) {
       // try to use WebGL inside node.js - need to create headless context
@@ -56459,7 +56460,7 @@ async function createRender3D(width, height, render3d, args) {
          const r = new WebGLRenderer(args);
          r.jsroot_output = new WebGLRenderTarget(width, height);
          r.setRenderTarget(r.jsroot_output);
-         r.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'image');
+         r.jsroot_dom = doc.createElementNS(nsSVG, 'image');
          return r;
       });
    } else if (render3d === rc.WebGL) {
@@ -56468,7 +56469,7 @@ async function createRender3D(width, height, render3d, args) {
    } else {
       // rendering with WebGL directly into svg image
       const r = new WebGLRenderer(args);
-      r.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'image');
+      r.jsroot_dom = doc.createElementNS(nsSVG, 'image');
       promise = Promise.resolve(r);
    }
 
@@ -60689,7 +60690,7 @@ class JSRootMenu {
       for (let n = 1; n < 20; ++n) {
          const id = n*10 + prec,
                handler = new FontHandler(id, 14),
-               txt = select(doc.createElementNS('http://www.w3.org/2000/svg', 'text'));
+               txt = select(doc.createElementNS(nsSVG, 'text'));
          let fullname = handler.getFontName(), qual = '';
          if (handler.weight) { qual += 'b'; fullname += ' ' + handler.weight; }
          if (handler.style) { qual += handler.style[0]; fullname += ' ' + handler.style; }
@@ -67278,7 +67279,7 @@ class BatchDisplay extends MDIDisplay {
       if (!frame) return;
       const main = select(frame);
       main.select('svg')
-          .attr('xmlns', 'http://www.w3.org/2000/svg')
+          .attr('xmlns', nsSVG)
           .attr('width', this.width)
           .attr('height', this.height)
           .attr('title', null).attr('style', null).attr('class', null).attr('x', null).attr('y', null);
@@ -68422,7 +68423,7 @@ class TPadPainter extends ObjectPainter {
          this.setTopPainter(); // assign canvas as top painter of that element
 
          if (is_batch)
-            svg.attr('xmlns', 'http://www.w3.org/2000/svg');
+            svg.attr('xmlns', nsSVG);
          else if (!this.online_canvas)
             svg.append('svg:title').text('ROOT canvas');
 
@@ -93156,7 +93157,7 @@ class TGeoPainter extends ObjectPainter {
          if (this._fit_main_area && !this._webgl) {
             // create top-most SVG for geomtery drawings
             const doc = getDocument(),
-                  svg = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                  svg = doc.createElementNS(nsSVG, 'svg');
             svg.setAttribute('width', w);
             svg.setAttribute('height', h);
             svg.appendChild(this._renderer.jsroot_dom);
@@ -103427,8 +103428,8 @@ async function makeImage(args) {
       args.height = 800;
 
    if (args.use_canvas_size && (args.object?._typename === clTCanvas) && args.object.fCw && args.object.fCh) {
-      args.width = args.object?.fCw;
-      args.height = args.object?.fCh;
+      args.width = args.object.fCw;
+      args.height = args.object.fCh;
    }
 
    async function build(main) {
@@ -103463,7 +103464,7 @@ async function makeImage(args) {
          }
 
          main.select('svg')
-             .attr('xmlns', 'http://www.w3.org/2000/svg')
+             .attr('xmlns', nsSVG)
              .attr('width', args.width)
              .attr('height', args.height)
              .attr('style', null).attr('class', null).attr('x', null).attr('y', null);
@@ -127420,6 +127421,7 @@ exports.makeImage = makeImage;
 exports.makeSVG = makeSVG;
 exports.makeTranslate = makeTranslate;
 exports.nsREX = nsREX;
+exports.nsSVG = nsSVG;
 exports.openFile = openFile;
 exports.parse = parse;
 exports.parseMulti = parseMulti;
