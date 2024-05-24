@@ -2,6 +2,7 @@
 
 ## Changes in dev
 1. Fix - properly select TF1 range after zooming
+2. Fix - TH1 y-range selection
 
 
 ## Changes in 7.7.0
