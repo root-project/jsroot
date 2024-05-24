@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '23/05/2024',
+version_date = '24/05/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -113185,8 +113185,10 @@ class TF1Painter extends TH1Painter$2 {
       let xmin = tf1.fXmin, xmax = tf1.fXmax;
 
       if (gr?.zoom_xmin !== gr?.zoom_xmax) {
-         xmin = Math.min(xmin, gr.zoom_xmin);
-         xmax = Math.max(xmax, gr.zoom_xmax);
+         if ((xmin < gr.zoom_xmin) && (gr.zoom_xmin < xmax))
+            xmin = gr.zoom_xmin;
+         if ((xmin < gr.zoom_xmax) && (gr.zoom_xmax < xmax))
+            xmax = gr.zoom_xmax;
       }
 
       this._use_saved_points = (tf1.fSave.length > 3) && (settings.PreferSavedPoints || (this.use_saved > 1));

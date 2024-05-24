@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in dev
+1. Fix - properly select TF1 range after zooming
+
+
 ## Changes in 7.7.0
 1. Let plot current time, file creation or modification time with `&optdate=[1,2,3]` URL parameters
 2. Let plot file name, full file name or item name with `&optfile=[1,2,3]` URL parameters
