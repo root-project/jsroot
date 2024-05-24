@@ -113182,13 +113182,14 @@ class TF1Painter extends TH1Painter$2 {
             pad = this.getPadPainter()?.getRootPad(true),
             logx = pad?.fLogx,
             gr = fp?.getGrFuncs(this.second_x, this.second_y);
-      let xmin = tf1.fXmin, xmax = tf1.fXmax;
+      let xmin = tf1.fXmin, xmax = tf1.fXmax, np = Math.max(tf1.fNpx, 100);
 
       if (gr?.zoom_xmin !== gr?.zoom_xmax) {
+         const dx = (xmax - xmin) / np;
          if ((xmin < gr.zoom_xmin) && (gr.zoom_xmin < xmax))
-            xmin = gr.zoom_xmin;
+            xmin = Math.max(xmin, gr.zoom_xmin - dx);
          if ((xmin < gr.zoom_xmax) && (gr.zoom_xmax < xmax))
-            xmax = gr.zoom_xmax;
+            xmax = Math.min(xmax, gr.zoom_xmax + dx);
       }
 
       this._use_saved_points = (tf1.fSave.length > 3) && (settings.PreferSavedPoints || (this.use_saved > 1));
@@ -113208,7 +113209,6 @@ class TF1Painter extends TH1Painter$2 {
       // this._use_saved_points = true;
 
       if (!this._use_saved_points) {
-         const np = Math.max(tf1.fNpx, 100);
          let iserror = false;
 
          if (!tf1.evalPar) {
@@ -113252,7 +113252,7 @@ class TF1Painter extends TH1Painter$2 {
       // in the case there were points have saved and we cannot calculate function
       // if we don't have the user's function
       if (this._use_saved_points) {
-         const np = tf1.fSave.length - 3;
+         np = tf1.fSave.length - 3;
          let custom_xaxis = null;
          xmin = tf1.fSave[np + 1];
          xmax = tf1.fSave[np + 2];
@@ -114681,16 +114681,24 @@ class TF2Painter extends TH2Painter {
             logx = pad?.fLogx, logy = pad?.fLogy,
             gr = fp?.getGrFuncs(this.second_x, this.second_y);
       let xmin = func.fXmin, xmax = func.fXmax,
-          ymin = func.fYmin, ymax = func.fYmax;
+          ymin = func.fYmin, ymax = func.fYmax,
+          npx = Math.max(func.fNpx, 20),
+          npy = Math.max(func.fNpy, 20);
 
-     if (gr?.zoom_xmin !== gr?.zoom_xmax) {
-         xmin = Math.min(xmin, gr.zoom_xmin);
-         xmax = Math.max(xmax, gr.zoom_xmax);
+      if (gr?.zoom_xmin !== gr?.zoom_xmax) {
+         const dx = (xmax - xmin) / npx;
+         if ((xmin < gr.zoom_xmin) && (gr.zoom_xmin < xmax))
+            xmin = Math.max(xmin, gr.zoom_xmin - dx);
+         if ((xmin < gr.zoom_xmax) && (gr.zoom_xmax < xmax))
+            xmax = Math.min(xmax, gr.zoom_xmax + dx);
       }
 
-     if (gr?.zoom_ymin !== gr?.zoom_ymax) {
-         ymin = Math.min(ymin, gr.zoom_ymin);
-         ymax = Math.max(ymax, gr.zoom_ymax);
+      if (gr?.zoom_ymin !== gr?.zoom_ymax) {
+         const dy = (ymax - ymin) / npy;
+         if ((ymin < gr.zoom_ymin) && (gr.zoom_ymin < ymax))
+            ymin = Math.max(ymin, gr.zoom_ymin - dy);
+         if ((ymin < gr.zoom_ymax) && (gr.zoom_ymax < ymax))
+            ymax = Math.min(ymax, gr.zoom_ymax + dy);
       }
 
       const ensureBins = (nx, ny) => {
@@ -114708,8 +114716,6 @@ class TF2Painter extends TH2Painter {
       delete this._fail_eval;
 
       if (!this._use_saved_points) {
-         const npx = Math.max(func.fNpx, 20),
-               npy = Math.max(func.fNpy, 20);
          let iserror = false;
 
          if (!func.evalPar && !proivdeEvalPar(func))
@@ -114751,10 +114757,10 @@ class TF2Painter extends TH2Painter {
       }
 
       if (this._use_saved_points) {
+         npx = Math.round(func.fSave[nsave+4]);
+         npy = Math.round(func.fSave[nsave+5]);
          const xmin = func.fSave[nsave], xmax = func.fSave[nsave+1],
                ymin = func.fSave[nsave+2], ymax = func.fSave[nsave+3],
-               npx = Math.round(func.fSave[nsave+4]),
-               npy = Math.round(func.fSave[nsave+5]),
                dx = (xmax - xmin) / npx,
                dy = (ymax - ymin) / npy;
           function getSave(x, y) {
@@ -115023,21 +115029,33 @@ class TF3Painter extends TH2Painter {
             gr = fp?.getGrFuncs(this.second_x, this.second_y);
       let xmin = func.fXmin, xmax = func.fXmax,
           ymin = func.fYmin, ymax = func.fYmax,
-          zmin = func.fZmin, zmax = func.fZmax;
+          zmin = func.fZmin, zmax = func.fZmax,
+          npx = Math.max(func.fNpx, 20),
+          npy = Math.max(func.fNpy, 20),
+          npz = Math.max(func.fNpz, 20);
 
-     if (gr?.zoom_xmin !== gr?.zoom_xmax) {
-         xmin = Math.min(xmin, gr.zoom_xmin);
-         xmax = Math.max(xmax, gr.zoom_xmax);
+      if (gr?.zoom_xmin !== gr?.zoom_xmax) {
+         const dx = (xmax - xmin) / npx;
+         if ((xmin < gr.zoom_xmin) && (gr.zoom_xmin < xmax))
+            xmin = Math.max(xmin, gr.zoom_xmin - dx);
+         if ((xmin < gr.zoom_xmax) && (gr.zoom_xmax < xmax))
+            xmax = Math.min(xmax, gr.zoom_xmax + dx);
       }
 
-     if (gr?.zoom_ymin !== gr?.zoom_ymax) {
-         ymin = Math.min(ymin, gr.zoom_ymin);
-         ymax = Math.max(ymax, gr.zoom_ymax);
+      if (gr?.zoom_ymin !== gr?.zoom_ymax) {
+         const dy = (ymax - ymin) / npy;
+         if ((ymin < gr.zoom_ymin) && (gr.zoom_ymin < ymax))
+            ymin = Math.max(ymin, gr.zoom_ymin - dy);
+         if ((ymin < gr.zoom_ymax) && (gr.zoom_ymax < ymax))
+            ymax = Math.min(ymax, gr.zoom_ymax + dy);
       }
 
-     if (gr?.zoom_zmin !== gr?.zoom_zmax) {
-         zmin = Math.min(zmin, gr.zoom_zmin);
-         zmax = Math.max(zmax, gr.zoom_zmax);
+      if (gr?.zoom_zmin !== gr?.zoom_zmax) {
+         // no need for dz here - TH2 is not binned over Z axis
+         if ((zmin < gr.zoom_zmin) && (gr.zoom_zmin < zmax))
+            zmin = gr.zoom_zmin;
+         if ((zmin < gr.zoom_zmax) && (gr.zoom_zmax < zmax))
+            zmax = gr.zoom_zmax;
       }
 
       const ensureBins = (nx, ny) => {
@@ -115061,9 +115079,6 @@ class TF3Painter extends TH2Painter {
       delete this._fail_eval;
 
       if (!this._use_saved_points) {
-         const npx = Math.max(func.fNpx, 20),
-               npy = Math.max(func.fNpy, 20),
-               npz = Math.max(func.fNpz, 20);
          let iserror = false;
 
          if (!func.evalPar && !proivdeEvalPar(func))
@@ -115111,12 +115126,12 @@ class TF3Painter extends TH2Painter {
          xmin = func.fSave[nsave]; xmax = func.fSave[nsave+1];
          ymin = func.fSave[nsave+2]; ymax = func.fSave[nsave+3];
          zmin = func.fSave[nsave+4]; zmax = func.fSave[nsave+5];
-         const npx = Math.round(func.fSave[nsave+6]),
-               npy = Math.round(func.fSave[nsave+7]),
-               npz = Math.round(func.fSave[nsave+8]),
-               // dx = (xmax - xmin) / npx,
-               // dy = (ymax - ymin) / npy,
-               dz = (zmax - zmin) / npz;
+         npx = Math.round(func.fSave[nsave+6]);
+         npy = Math.round(func.fSave[nsave+7]);
+         npz = Math.round(func.fSave[nsave+8]);
+         // dx = (xmax - xmin) / npx,
+         // dy = (ymax - ymin) / npy,
+         const dz = (zmax - zmin) / npz;
 
          ensureBins(npx + 1, npy + 1);
 
