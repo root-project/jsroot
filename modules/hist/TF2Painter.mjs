@@ -68,20 +68,24 @@ class TF2Painter extends TH2Painter {
             logx = pad?.fLogx, logy = pad?.fLogy,
             gr = fp?.getGrFuncs(this.second_x, this.second_y);
       let xmin = func.fXmin, xmax = func.fXmax,
-          ymin = func.fYmin, ymax = func.fYmax;
+          ymin = func.fYmin, ymax = func.fYmax,
+          npx = Math.max(func.fNpx, 20),
+          npy = Math.max(func.fNpy, 20);
 
       if (gr?.zoom_xmin !== gr?.zoom_xmax) {
+         const dx = (xmax - xmin) / npx;
          if ((xmin < gr.zoom_xmin) && (gr.zoom_xmin < xmax))
-            xmin = gr.zoom_xmin;
+            xmin = Math.max(xmin, gr.zoom_xmin - dx);
          if ((xmin < gr.zoom_xmax) && (gr.zoom_xmax < xmax))
-            xmax = gr.zoom_xmax;
+            xmax = Math.min(xmax, gr.zoom_xmax + dx);
       }
 
-     if (gr?.zoom_ymin !== gr?.zoom_ymax) {
+      if (gr?.zoom_ymin !== gr?.zoom_ymax) {
+         const dy = (ymax - ymin) / npy;
          if ((ymin < gr.zoom_ymin) && (gr.zoom_ymin < ymax))
-            ymin = gr.zoom_ymin;
+            ymin = Math.max(ymin, gr.zoom_ymin - dy);
          if ((ymin < gr.zoom_ymax) && (gr.zoom_ymax < ymax))
-            ymax = gr.zoom_ymax;
+            ymax = Math.min(ymax, gr.zoom_ymax + dy);
       }
 
       const ensureBins = (nx, ny) => {
@@ -99,8 +103,6 @@ class TF2Painter extends TH2Painter {
       delete this._fail_eval;
 
       if (!this._use_saved_points) {
-         const npx = Math.max(func.fNpx, 20),
-               npy = Math.max(func.fNpy, 20);
          let iserror = false;
 
          if (!func.evalPar && !proivdeEvalPar(func))
@@ -142,10 +144,10 @@ class TF2Painter extends TH2Painter {
       }
 
       if (this._use_saved_points) {
+         npx = Math.round(func.fSave[nsave+4]);
+         npy = Math.round(func.fSave[nsave+5]);
          const xmin = func.fSave[nsave], xmax = func.fSave[nsave+1],
                ymin = func.fSave[nsave+2], ymax = func.fSave[nsave+3],
-               npx = Math.round(func.fSave[nsave+4]),
-               npy = Math.round(func.fSave[nsave+5]),
                dx = (xmax - xmin) / npx,
                dy = (ymax - ymin) / npy;
           function getSave(x, y) {
