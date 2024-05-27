@@ -125,7 +125,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          brew install python-setuptools pango cairo librsvg
+          brew install python-setuptools pango librsvg
           npm ci
 
       - name: Run eslint
