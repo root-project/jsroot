@@ -925,18 +925,15 @@ async function svgToImage(svg, image_format, as_buffer) {
 }
 
 /** @summary Convert ROOT TDatime object into Date
- * @desc Optionally UTC time can be used */
-function getTDatime(dt, utc) {
-   if (utc === undefined)
-      utc = (settings.TimeZone === 'UTC');
-
+ * @desc Always use UTC to avoid any variation between timezones */
+function getTDatime(dt) {
    const y = (dt.fDatime >>> 26) + 1995,
          m = ((dt.fDatime << 6) >>> 28) - 1,
          d = (dt.fDatime << 10) >>> 27,
          h = (dt.fDatime << 15) >>> 27,
          min = (dt.fDatime << 20) >>> 26,
          s = (dt.fDatime << 26) >>> 26;
-   return utc ? new Date(Date.UTC(y, m, d, h, min, s)) : new Date(y, m, d, h, min, s);
+   return new Date(Date.UTC(y, m, d, h, min, s));
 }
 
 /** @summary Convert Date object into string used preconfigured time zone

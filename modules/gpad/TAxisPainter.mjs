@@ -1,6 +1,6 @@
 import { gStyle, settings, constants, clTAxis, clTGaxis, isFunc } from '../core.mjs';
 import { select as d3_select, drag as d3_drag, timeFormat as d3_timeFormat, utcFormat as d3_utcFormat,
-         scaleTime as d3_scaleTime, scaleSymlog as d3_scaleSymlog,
+         scaleUtc as d3_scaleUtc, scaleSymlog as d3_scaleSymlog,
          scaleLog as d3_scaleLog, scaleLinear as d3_scaleLinear } from '../d3.mjs';
 import { floatToString, makeTranslate, addHighlightStyle } from '../base/BasePainter.mjs';
 import { ObjectPainter, EAxisBits, kAxisLabels, kAxisNormal, kAxisFunc, kAxisTime } from '../base/ObjectPainter.mjs';
@@ -435,8 +435,8 @@ class TAxisPainter extends ObjectPainter {
 
 
       if (this.kind === kAxisTime) {
-         this.func = d3_scaleTime().domain([this.convertDate(smin), this.convertDate(smax)]);
-         console.log('time range', this.convertDate(smin).toString(), this.convertDate(smax).toString());
+         this.func = d3_scaleUtc().domain([this.convertDate(smin), this.convertDate(smax)]);
+         console.log('time range', smin, smax, this.convertDate(smin), this.convertDate(smax));
       } else if (this.log) {
          if ((this.log === 1) || (this.log === 10))
             this.logbase = 10;
