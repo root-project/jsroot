@@ -17,13 +17,11 @@ function getTimeOffset(axis) {
    if (idF < 0) return gStyle.fTimeOffset * 1000;
    let sof = axis.fTimeFormat.slice(idF + 2);
    // default string in axis offset
-   console.log('time string offset', sof);
-
    if (sof.indexOf('1995-01-01 00:00:00s0') === 0)
       return dflt_time_offset;
    // another default string with unix time
-   //if (sof.indexOf('1970-01-01 00:00:00s0') === 0)
-   //   return 0;
+   if (sof.indexOf('1970-01-01 00:00:00s0') === 0)
+      return 0;
    // special case, used from DABC painters
    if ((sof === '0') || (sof === '')) return 0;
 
@@ -57,8 +55,6 @@ function getTimeOffset(axis) {
          offset -= sign * (parseInt(sof.slice(p, p + 2)) * 3600 + parseInt(sof.slice(p + 2, p + 4)) * 60);
       }
    }
-
-   console.log('Retuns time offset', offset);
 
    return offset;
 }
@@ -434,10 +430,9 @@ class TAxisPainter extends ObjectPainter {
          this.kind = !axis.fLabels ? kAxisNormal : kAxisLabels;
 
 
-      if (this.kind === kAxisTime) {
+      if (this.kind === kAxisTime)
          this.func = d3_scaleUtc().domain([this.convertDate(smin), this.convertDate(smax)]);
-         console.log('time range', smin, smax, this.convertDate(smin), this.convertDate(smax));
-      } else if (this.log) {
+      else if (this.log) {
          if ((this.log === 1) || (this.log === 10))
             this.logbase = 10;
          else if (this.log === 3)
@@ -954,14 +949,11 @@ class TAxisPainter extends ObjectPainter {
       let textscale = 1, maxtextlen = 0, applied_scale = 0,
           lbl_tilt = false, any_modified = false, max_textwidth = 0, max_tiltsize = 0;
 
-      if (this.kind === kAxisTime)
-        console.log(`Draw time axis on frame ${w} X ${h}`);
-
       if (this.lbls_both_sides)
          label_g.push(axis_g.append('svg:g').attr('class', 'axis_labels').attr('transform', this.vertical ? `translate(${w})` : `translate(0,${-h})`));
 
-       if (frame_ygap > 0)
-          max_tiltsize = frame_ygap / Math.sin(tilt_angle/180*Math.PI) - Math.tan(tilt_angle/180*Math.PI);
+      if (frame_ygap > 0)
+         max_tiltsize = frame_ygap / Math.sin(tilt_angle/180*Math.PI) - Math.tan(tilt_angle/180*Math.PI);
 
       // function called when text is drawn to analyze width, required to correctly scale all labels
       // must be function to correctly handle 'this' argument
