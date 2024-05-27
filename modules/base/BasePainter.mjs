@@ -924,10 +924,26 @@ async function svgToImage(svg, image_format, as_buffer) {
    });
 }
 
+/** @summary Convert ROOT TDatime object into Date
+ * @desc Optionally UTC time can be used */
+function getTDatime(dt, utc) {
+   if (utc === undefined)
+      utc = (settings.TimeZone === 'UTC');
+
+   const y = (dt.fDatime >>> 26) + 1995,
+         m = ((dt.fDatime << 6) >>> 28) - 1,
+         d = (dt.fDatime << 10) >>> 27,
+         h = (dt.fDatime << 15) >>> 27,
+         min = (dt.fDatime << 20) >>> 26,
+         s = (dt.fDatime << 26) >>> 26;
+   return utc ? new Date(Date.UTC(y, m, d, h, min, s)) : new Date(y, m, d, h, min, s);
+}
+
 /** @summary Convert Date object into string used preconfigured time zone
  * @desc Time zone stored in settings.TimeZone */
 function convertDate(dt) {
    let res = '';
+
    if (settings.TimeZone && isStr(settings.TimeZone)) {
      try {
         res = dt.toLocaleString('en-GB', { timeZone: settings.TimeZone });
@@ -938,6 +954,6 @@ function convertDate(dt) {
    return res || dt.toLocaleString('en-GB');
 }
 
-export { getElementRect, getAbsPosInCanvas, convertDate,
+export { getElementRect, getAbsPosInCanvas, getTDatime, convertDate,
          DrawOptions, TRandom, floatToString, buildSvgCurve, compressSVG,
          BasePainter, _loadJSDOM, makeTranslate, addHighlightStyle, svgToImage };
