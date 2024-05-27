@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '24/05/2024',
+version_date = '27/05/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -10968,10 +10968,26 @@ async function svgToImage(svg, image_format, as_buffer) {
    });
 }
 
+/** @summary Convert ROOT TDatime object into Date
+ * @desc Optionally UTC time can be used */
+function getTDatime(dt, utc) {
+   if (utc === undefined)
+      utc = (settings.TimeZone === 'UTC');
+
+   const y = (dt.fDatime >>> 26) + 1995,
+         m = ((dt.fDatime << 6) >>> 28) - 1,
+         d = (dt.fDatime << 10) >>> 27,
+         h = (dt.fDatime << 15) >>> 27,
+         min = (dt.fDatime << 20) >>> 26,
+         s = (dt.fDatime << 26) >>> 26;
+   return utc ? new Date(Date.UTC(y, m, d, h, min, s)) : new Date(y, m, d, h, min, s);
+}
+
 /** @summary Convert Date object into string used preconfigured time zone
  * @desc Time zone stored in settings.TimeZone */
 function convertDate(dt) {
    let res = '';
+
    if (settings.TimeZone && isStr(settings.TimeZone)) {
      try {
         res = dt.toLocaleString('en-GB', { timeZone: settings.TimeZone });
@@ -68562,7 +68578,7 @@ class TPadPainter extends ObjectPainter {
       }
       if (((gStyle.fOptDate === 2) || (gStyle.fOptDate === 3)) && fitem?._file) {
          info.selectChild('.canvas_date')
-             .text(convertDate(gStyle.fOptDate === 2 ? fitem._file.fDatimeC.getDate() : fitem._file.fDatimeM.getDate()));
+             .text(convertDate(getTDatime(gStyle.fOptDate === 2 ? fitem._file.fDatimeC : fitem._file.fDatimeM)));
       }
    }
 
@@ -96800,19 +96816,6 @@ function addUserStreamer(type, user_streamer) {
    CustomStreamers[type] = user_streamer;
 }
 
-function getTDatimeDate() {
-   const res = new Date();
-   res.setFullYear((this.fDatime >>> 26) + 1995);
-   res.setMonth(((this.fDatime << 6) >>> 28) - 1);
-   res.setDate((this.fDatime << 10) >>> 27);
-   res.setHours((this.fDatime << 15) >>> 27);
-   res.setMinutes((this.fDatime << 20) >>> 26);
-   res.setSeconds((this.fDatime << 26) >>> 26);
-   res.setMilliseconds(0);
-   return res;
-}
-
-
 /** @summary these are streamers which do not handle version regularly
   * @desc used for special classes like TRef or TBasket
   * @private */
@@ -96825,7 +96828,6 @@ const DirectStreamers = {
 
    TDatime(buf, obj) {
       obj.fDatime = buf.ntou4();
-      obj.getDate = getTDatimeDate;
    },
 
    TKey(buf, key) {
@@ -104336,7 +104338,7 @@ class HierarchyPainter extends BasePainter {
       if (!folder) folder = {};
 
       folder._name = file.fFileName;
-      folder._title = (file.fTitle ? file.fTitle + ', path: ' : '') + file.fFullURL + `, size: ${getSizeStr(file.fEND)}, modified: ${convertDate(file.fDatimeM.getDate())}`;
+      folder._title = (file.fTitle ? file.fTitle + ', path: ' : '') + file.fFullURL + `, size: ${getSizeStr(file.fEND)}, modified: ${convertDate(getTDatime(file.fDatimeM))}`;
       folder._kind = kindTFile;
       folder._file = file;
       folder._fullurl = file.fFullURL;
@@ -127418,6 +127420,7 @@ exports.getElementRect = getElementRect;
 exports.getHPainter = getHPainter;
 exports.getMethods = getMethods;
 exports.getPromise = getPromise;
+exports.getTDatime = getTDatime;
 exports.httpRequest = httpRequest;
 exports.injectCode = injectCode;
 exports.internals = internals;
