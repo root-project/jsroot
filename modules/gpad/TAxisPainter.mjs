@@ -421,13 +421,14 @@ class TAxisPainter extends ObjectPainter {
          this.timegmt = getTimeGMT(axis);
       } else if (opts.axis_func)
          this.kind = kAxisFunc;
-       else
+      else
          this.kind = !axis.fLabels ? kAxisNormal : kAxisLabels;
 
 
-      if (this.kind === kAxisTime)
+      if (this.kind === kAxisTime) {
          this.func = d3_scaleTime().domain([this.convertDate(smin), this.convertDate(smax)]);
-       else if (this.log) {
+         console.log('time range', this.convertDate(smin).toString(), this.convertDate(smax).toString());
+      } else if (this.log) {
          if ((this.log === 1) || (this.log === 10))
             this.logbase = 10;
          else if (this.log === 3)
@@ -943,6 +944,9 @@ class TAxisPainter extends ObjectPainter {
             tilt_angle = gStyle.AxisTiltAngle ?? 25;
       let textscale = 1, maxtextlen = 0, applied_scale = 0,
           lbl_tilt = false, any_modified = false, max_textwidth = 0, max_tiltsize = 0;
+
+      if (this.kind === kAxisTime)
+        console.log(`Draw time axis on frame ${w} X ${h}`);
 
       if (this.lbls_both_sides)
          label_g.push(axis_g.append('svg:g').attr('class', 'axis_labels').attr('transform', this.vertical ? `translate(${w})` : `translate(0,${-h})`));
