@@ -1,9 +1,9 @@
 # JSROOT changelog
 
 ## Changes in dev
-1. Fix - properly select TF1 range after zooming
-2. Fix - TH1 y-range selection
-3. Interpret file dates as UTC when `&utc` time zone is configured
+1. Use 'UTC' as default time zone, make it compatible with native ROOT graphics
+2. Fix - properly select TF1 range after zooming
+3. Fix - TH1 y-range selection
 
 
 ## Changes in 7.7.0

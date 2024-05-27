@@ -299,8 +299,8 @@ settings = {
    StripAxisLabels: true,
    /** @summary Draw TF1 by default as curve or line */
    FuncAsCurve: false,
-   /** @summary Time zone used for date/time display of file time */
-   TimeZone: '',
+   /** @summary Time zone used for date/time display of file time, UTC by default */
+   TimeZone: 'UTC',
    /** @summary Page URL which will be used to show item in new tab, jsroot main dir used by default */
    NewTabUrl: '',
    /** @summary Extra parameters which will be append to the url when item shown in new tab */
@@ -5850,6 +5850,8 @@ function ticker(year, month, week, day, hour, minute) {
 
   return [ticks, tickInterval];
 }
+
+const [utcTicks, utcTickInterval] = ticker(utcYear, utcMonth, utcSunday, unixDay, utcHour, utcMinute);
 const [timeTicks, timeTickInterval] = ticker(timeYear, timeMonth, timeSunday, timeDay, timeHour, timeMinute);
 
 function localDate(d) {
@@ -6645,6 +6647,10 @@ function calendar(ticks, tickInterval, year, month, week, day, hour, minute, sec
 
 function time() {
   return initRange.apply(calendar(timeTicks, timeTickInterval, timeYear, timeMonth, timeSunday, timeDay, timeHour, timeMinute, second, timeFormat).domain([new Date(2000, 0, 1), new Date(2000, 0, 2)]), arguments);
+}
+
+function utcTime() {
+  return initRange.apply(calendar(utcTicks, utcTickInterval, utcYear, utcMonth, utcSunday, utcDay, utcHour, utcMinute, second, utcFormat).domain([Date.UTC(2000, 0, 1), Date.UTC(2000, 0, 2)]), arguments);
 }
 
 function constant(x) {
@@ -10969,18 +10975,15 @@ async function svgToImage(svg, image_format, as_buffer) {
 }
 
 /** @summary Convert ROOT TDatime object into Date
- * @desc Optionally UTC time can be used */
-function getTDatime(dt, utc) {
-   if (utc === undefined)
-      utc = (settings.TimeZone === 'UTC');
-
+ * @desc Always use UTC to avoid any variation between timezones */
+function getTDatime(dt) {
    const y = (dt.fDatime >>> 26) + 1995,
          m = ((dt.fDatime << 6) >>> 28) - 1,
          d = (dt.fDatime << 10) >>> 27,
          h = (dt.fDatime << 15) >>> 27,
          min = (dt.fDatime << 20) >>> 26,
          s = (dt.fDatime << 26) >>> 26;
-   return utc ? new Date(Date.UTC(y, m, d, h, min, s)) : new Date(y, m, d, h, min, s);
+   return new Date(Date.UTC(y, m, d, h, min, s));
 }
 
 /** @summary Convert Date object into string used preconfigured time zone
@@ -61776,12 +61779,17 @@ function assignContextMenu(painter, kind) {
   * @private */
 function getTimeOffset(axis) {
    const dflt_time_offset = 788918400000;
+
    if (!axis) return dflt_time_offset;
    const idF = axis.fTimeFormat.indexOf('%F');
    if (idF < 0) return gStyle.fTimeOffset * 1000;
    let sof = axis.fTimeFormat.slice(idF + 2);
    // default string in axis offset
-   if (sof.indexOf('1995-01-01 00:00:00s0') === 0) return dflt_time_offset;
+   if (sof.indexOf('1995-01-01 00:00:00s0') === 0)
+      return dflt_time_offset;
+   // another default string with unix time
+   if (sof.indexOf('1970-01-01 00:00:00s0') === 0)
+      return 0;
    // special case, used from DABC painters
    if ((sof === '0') || (sof === '')) return 0;
 
@@ -62186,13 +62194,13 @@ class TAxisPainter extends ObjectPainter {
          this.timegmt = getTimeGMT(axis);
       } else if (opts.axis_func)
          this.kind = kAxisFunc;
-       else
+      else
          this.kind = !axis.fLabels ? kAxisNormal : kAxisLabels;
 
 
       if (this.kind === kAxisTime)
-         this.func = time().domain([this.convertDate(smin), this.convertDate(smax)]);
-       else if (this.log) {
+         this.func = utcTime().domain([this.convertDate(smin), this.convertDate(smax)]);
+      else if (this.log) {
          if ((this.log === 1) || (this.log === 10))
             this.logbase = 10;
          else if (this.log === 3)
@@ -62712,8 +62720,8 @@ class TAxisPainter extends ObjectPainter {
       if (this.lbls_both_sides)
          label_g.push(axis_g.append('svg:g').attr('class', 'axis_labels').attr('transform', this.vertical ? `translate(${w})` : `translate(0,${-h})`));
 
-       if (frame_ygap > 0)
-          max_tiltsize = frame_ygap / Math.sin(tilt_angle/180*Math.PI) - Math.tan(tilt_angle/180*Math.PI);
+      if (frame_ygap > 0)
+         max_tiltsize = frame_ygap / Math.sin(tilt_angle/180*Math.PI) - Math.tan(tilt_angle/180*Math.PI);
 
       // function called when text is drawn to analyze width, required to correctly scale all labels
       // must be function to correctly handle 'this' argument
@@ -105432,9 +105440,7 @@ class HierarchyPainter extends BasePainter {
                      arg0 += `&optfile=${gStyle.fOptFile}`;
                   if (gStyle.fOptTitle !== 1)
                      arg0 += `&opttitle=${gStyle.fOptTitle}`;
-                  if (settings.TimeZone === 'UTC')
-                     arg0 += '&utc';
-                  else if (settings.TimeZone)
+                  if (settings.TimeZone && settings.TimeZone !== 'UTC')
                      arg0 += `&timezone='${settings.TimeZone}'`;
                   if (Math.abs(gStyle.fDateX - 0.01) > 1e-3)
                      arg0 += `&datex=${gStyle.fDateX.toFixed(3)}`;
