@@ -85,7 +85,7 @@ jobs:
       - name: Run all tests
         run: |
           cd jsroot-test
-          xvfb-run -s "-ac -screen 0 1280x1024x24"  node test.js -c -m
+          xvfb-run -s "-ac -screen 0 1280x1024x24"  node test.js -c -m -p
 
         #Special Cases: Tests,which are not running properly on ubuntu
         #TH1/optdate.svg
