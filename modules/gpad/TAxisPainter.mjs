@@ -1,6 +1,6 @@
 import { gStyle, settings, constants, clTAxis, clTGaxis, isFunc } from '../core.mjs';
 import { select as d3_select, drag as d3_drag, timeFormat as d3_timeFormat, utcFormat as d3_utcFormat,
-         scaleTime as d3_scaleTime, scaleUtc as d3_scaleUtc, scaleSymlog as d3_scaleSymlog,
+         scaleTime as d3_scaleTime, scaleSymlog as d3_scaleSymlog,
          scaleLog as d3_scaleLog, scaleLinear as d3_scaleLinear } from '../d3.mjs';
 import { floatToString, makeTranslate, addHighlightStyle } from '../base/BasePainter.mjs';
 import { ObjectPainter, EAxisBits, kAxisLabels, kAxisNormal, kAxisFunc, kAxisTime } from '../base/ObjectPainter.mjs';
@@ -121,7 +121,16 @@ const AxisPainterMethods = {
 
    /** @summary Convert axis value into the Date object */
    convertDate(v) {
-      return new Date(this.timeoffset + v*1000);
+      const dt = new Date(this.timeoffset + v*1000);
+      let res = dt;
+      if (!this.timegmt && settings.TimeZone) {
+         try {
+            res = new Date(dt.toLocaleString('en-US', { timeZone: settings.TimeZone }));
+         } catch (err) {
+            res = dt;
+         }
+      }
+      return res;
    },
 
    /** @summary Convert graphical point back into axis value */
@@ -132,15 +141,7 @@ const AxisPainterMethods = {
 
    /** @summary Provide label for time axis */
    formatTime(dt, asticks) {
-      let arg = dt;
-      if (!this.timegmt && settings.TimeZone) {
-         try {
-            arg = new Date(dt.toLocaleString('en-US', { timeZone: settings.TimeZone }));
-         } catch (err) {
-            arg = dt;
-         }
-      }
-      return asticks ? this.tfunc1(arg) : this.tfunc2(arg);
+      return asticks ? this.tfunc1(dt) : this.tfunc2(dt);
    },
 
    /** @summary Provide label for log axis */
@@ -433,7 +434,6 @@ class TAxisPainter extends ObjectPainter {
          this.kind = kAxisTime;
          this.timeoffset = getTimeOffset(axis);
          this.timegmt = getTimeGMT(axis);
-         this.localtime = true;
       } else if (opts.axis_func)
          this.kind = kAxisFunc;
       else
@@ -441,7 +441,7 @@ class TAxisPainter extends ObjectPainter {
 
 
       if (this.kind === kAxisTime)
-         this.func = (this.localtime ? d3_scaleTime() : d3_scaleUtc()).domain([this.convertDate(smin), this.convertDate(smax)]);
+         this.func = d3_scaleTime().domain([this.convertDate(smin), this.convertDate(smax)]);
       else if (this.log) {
          if ((this.log === 1) || (this.log === 10))
             this.logbase = 10;
