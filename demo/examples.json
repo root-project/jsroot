@@ -102,11 +102,11 @@
      { "name": "image", "file": "hsimple.root", "item": "hpxpy;1", "opt": "colz", "title": "Create PNG image with makeImage() function", "aspng": "true" }
    ],
    "Candle" : [
-     { "name": "plot", "file": "candleplot.root", "item": "candleplot;1", "title": "output from candleplot.C macro" },
+     { "name": "plot", "file": "candleplot.root", "item": "candleplot;1", "title": "output from candleplot.C macro", "timezone" : "Europe/Berlin" },
      { "name": "decay", "file": "candleplot.root", "item": "candledecay;1", "title": "output from candledecay.C macro" },
      { "name": "histo", "file": "candleplot.root", "layout": "vert21", "items": ["candlehisto_c1", "candlehisto_c2", "candlehisto_c3"], "title": "outputs from candlehisto.C macro" },
      { "name": "option", "file": "candleplot.root", "layout": "vert2", "items": ["candleplotoption_c1", "candleplotoption_c2"], "title": "outputs from candleplotoption.C macro" },
-     { "name": "stack", "file": "candleplot.root", "item": "candleplotstack;1", "title": "output from candleplotstack.C macro" },
+     { "name": "stack", "file": "candleplot.root", "item": "candleplotstack;1", "title": "output from candleplotstack.C macro", "timezone" : "Europe/Berlin" },
      { "name": "whiskers", "file": "candleplot.root", "item": "candleplotwhiskers;1", "title": "output from candleplotwiskers.C macro" },
      { "name": "scaled", "file": "candleplot.root", "item": "candlescaled;1", "title": "output from candleplotwiskers.C macro" }
    ],

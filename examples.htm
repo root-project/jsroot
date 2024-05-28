@@ -426,7 +426,7 @@
       }
 
       let keyid = null, optid, testfile, testobj, testinterval = 10, hpainter = null,
-          init_style, init_palette, init_curve;
+          init_style, init_palette, init_curve, init_TimeZone;
 
       function produceGlobalStyleCopy() {
          // copy style when painter is loaded
@@ -434,6 +434,7 @@
             init_style = Object.assign({}, gStyle);
             init_palette = settings.Palette;
             init_curve = settings.FuncAsCurve;
+            init_TimeZone = settings.TimeZone;
          }
       }
 
@@ -442,6 +443,7 @@
             Object.assign(gStyle, init_style);
          settings.Palette = init_palette;
          settings.FuncAsCurve = init_curve;
+         settings.TimeZone = init_TimeZone;
       }
 
       produceGlobalStyleCopy();
@@ -449,6 +451,8 @@
       async function drawEntry(entry, object, option) {
 
          restoreGlobalStyle();
+
+         settings.TimeZone = entry.TimeZone ?? init_TimeZone;
 
          if (entry?.aspng)
             return makeImage({ format: 'png', object, option, width: 800, height: 600 })
@@ -533,7 +537,7 @@
          setHPainter(null);
          cleanup('plaindraw');
          document.getElementById('plaindraw').innerHTML = '';
-             document.getElementById('plaindraw').style['background-color'] = '';
+         document.getElementById('plaindraw').style['background-color'] = '';
 
          if (durl.length > 0) {
             return drawUrl(durl + (opt ? `&opt=${opt}` : '') + extra_opts);
@@ -569,6 +573,16 @@
                 document.getElementById('panel').classList.toggle('open');
              })
          });
+      }
+
+      function tz(entry) {
+         if (!entry?.timezone)
+            return '';
+         if (entry.timezone === 'UTC')
+            return '&utc';
+         if (entry.timezone === 'Europe/Berlin')
+            return '&cet';
+         return `&timezone='${entry.timezone}'`;
       }
 
       async function runBigTest(interval, doinit) {
@@ -617,20 +631,27 @@
             console.log(`Testing ${keyid}  ${entry.name || entry.opt}`);
 
          // exclude some entries from the test
-         if (entry.notest) return runBigTest(0);
-         if (!use_zstd && entry.zstd) return runBigTest(0);
+         if (entry.notest)
+            return runBigTest(0);
+         if (!use_zstd && entry.zstd)
+            return runBigTest(0);
 
          let filename = '', itemname = '', jsonname = '', url = '', opt = '';
 
          if (entry.file) {
              filename = entry.file;
-             if ((filename.indexOf('http:') < 0) && (filename.indexOf('https:') < 0)) filename = filepath + filename;
+             if ((filename.indexOf('http:') < 0) && (filename.indexOf('https:') < 0))
+                filename = filepath + filename;
          }
          if (entry.item) itemname = entry.item;
-         if (entry.testopt !== undefined) opt = entry.testopt; else if (entry.opt) opt = entry.opt;
+         if (entry.testopt !== undefined)
+            opt = entry.testopt;
+         else if (entry.opt)
+            opt = entry.opt;
          if (entry.json) {
             jsonname = entry.json;
-            if ((jsonname.indexOf('http:') < 0) && (jsonname.indexOf('https:') < 0)) jsonname = filepath + jsonname;
+            if ((jsonname.indexOf('http:') < 0) && (jsonname.indexOf('https:') < 0))
+               jsonname = filepath + jsonname;
          }
 
          if (entry.url) {
@@ -643,6 +664,7 @@
             if (entry.mathjax) url += '&mathjax';
             if (entry.latex) url += `&latex=${entry.latex}`;
             if (entry.style) url += `&style=${entry.style}`;
+            url += tz(entry);
          } else if (entry.asurl) {
             url = (entry.asurl === 'browser') ? '?' : '?nobrowser&';
             url += jsonname ? `json=${jsonname}` : `file=${filename}&item=${itemname}`;
@@ -650,6 +672,7 @@
             if (entry.mathjax) url += '&mathjax';
             if (entry.latex) url += `&latex=${entry.latex}`;
             if (entry.style) url += `&style=${entry.style}`;
+            url += tz(entry);;
          }
 
          // console.log(`KEY ${keyid} opt ${opt}`);
@@ -692,8 +715,8 @@
 
       examples_main = JSON.parse(txt);
       if (window.location.search.indexOf('?more') == 0) {
-         let txt_more = await httpRequest(demo_path + 'examples_more.json', 'text');
-         let examples_more = JSON.parse(txt_more);
+         const txt_more = await httpRequest(demo_path + 'examples_more.json', 'text'),
+                examples_more = JSON.parse(txt_more);
          for (let key in examples_more) {
             if (key in examples_main) {
                for (let n in examples_more[key])
@@ -736,14 +759,18 @@
                url = entry.url.replace(/\$\$\$/g, filepath);
             } else if ('json' in entry) {
                jsonname = entry.json;
-               if ((jsonname.indexOf('http:') < 0) && (jsonname.indexOf('https:') < 0)) jsonname = filepath + jsonname;
+               if ((jsonname.indexOf('http:') < 0) && (jsonname.indexOf('https:') < 0))
+                  jsonname = filepath + jsonname;
             } else {
                if ('file' in entry) {
                   url = ''; filename = entry.file;
-                  if ((filename.indexOf('http:') < 0) && (filename.indexOf('https:') < 0)) filename = filepath + filename;
+                  if ((filename.indexOf('http:') < 0) && (filename.indexOf('https:') < 0))
+                     filename = filepath + filename;
                }
                if ('item' in entry) {
-                  url = ''; itemname = entry.item; style = entry.style;
+                  url = '';
+                  itemname = entry.item;
+                  style = entry.style;
                } else if ('items' in entry) {
                   url = `?nobrowser&file=${filename}`;
                   if (entry.layout) url += `&layout=${entry.layout}`;
@@ -793,6 +820,7 @@
                aaa.href += `&opt=${opt}`;
             if (style)
                aaa.href += `&style=${style}`;
+            aaa.href += tz(entry);
 
             if (settings.DarkMode) {
                aaa.href += '&dark';
