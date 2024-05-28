@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '27/05/2024',
+version_date = '28/05/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -299,8 +299,8 @@ settings = {
    StripAxisLabels: true,
    /** @summary Draw TF1 by default as curve or line */
    FuncAsCurve: false,
-   /** @summary Time zone used for date/time display of file time, UTC by default */
-   TimeZone: 'UTC',
+   /** @summary Time zone used for date/time display, local by default, can be 'UTC' or 'Europe/Berlin' or any other valid value */
+   TimeZone: '',
    /** @summary Page URL which will be used to show item in new tab, jsroot main dir used by default */
    NewTabUrl: '',
    /** @summary Extra parameters which will be append to the url when item shown in new tab */
@@ -61807,10 +61807,11 @@ function getTimeOffset(axis) {
       hour = next(':', 0, 23),
       min = next(':', 0, 59),
       sec = next('s', 0, 59),
-      msec = next(' ', 0, 999),
-      dt = new Date(Date.UTC(year, month, day, hour, min, sec, msec));
+      msec = next(' ', 0, 999);
 
-   let offset = dt.getTime();
+      // dt = new Date();
+
+   let offset = Date.UTC(year, month, day, hour, min, sec, msec);
 
    // now also handle suffix like GMT or GMT -0600
    sof = sof.toUpperCase();
@@ -61898,8 +61899,16 @@ const AxisPainterMethods = {
    },
 
    /** @summary Provide label for time axis */
-   formatTime(d, asticks) {
-      return asticks ? this.tfunc1(d) : this.tfunc2(d);
+   formatTime(dt, asticks) {
+      let arg = dt;
+      if (!this.timegmt && settings.TimeZone) {
+         try {
+            arg = new Date(dt.toLocaleString('en-US', { timeZone: settings.TimeZone }));
+         } catch (err) {
+            arg = dt;
+         }
+      }
+      return asticks ? this.tfunc1(arg) : this.tfunc2(arg);
    },
 
    /** @summary Provide label for log axis */
@@ -62192,6 +62201,7 @@ class TAxisPainter extends ObjectPainter {
          this.kind = kAxisTime;
          this.timeoffset = getTimeOffset(axis);
          this.timegmt = getTimeGMT(axis);
+         this.localtime = true;
       } else if (opts.axis_func)
          this.kind = kAxisFunc;
       else
@@ -62199,7 +62209,7 @@ class TAxisPainter extends ObjectPainter {
 
 
       if (this.kind === kAxisTime)
-         this.func = utcTime().domain([this.convertDate(smin), this.convertDate(smax)]);
+         this.func = (this.localtime ? time() : utcTime()).domain([this.convertDate(smin), this.convertDate(smax)]);
       else if (this.log) {
          if ((this.log === 1) || (this.log === 10))
             this.logbase = 10;
@@ -62290,7 +62300,7 @@ class TAxisPainter extends ObjectPainter {
 
          this.tfunc1 = this.tfunc2 = this.timegmt ? utcFormat(tf1) : timeFormat(tf1);
          if (tf2 !== tf1)
-            this.tfunc2 = this.timegmt ? utcFormat(tf2) : timeFormat(tf2);
+            this.tfunc2 = this.timegmt ? utcFormat(tf2+ ' %H:%M') : timeFormat(tf2 + ' %H:%M');
 
          this.format = this.formatTime;
       } else if (this.log) {
@@ -105440,7 +105450,11 @@ class HierarchyPainter extends BasePainter {
                      arg0 += `&optfile=${gStyle.fOptFile}`;
                   if (gStyle.fOptTitle !== 1)
                      arg0 += `&opttitle=${gStyle.fOptTitle}`;
-                  if (settings.TimeZone && settings.TimeZone !== 'UTC')
+                  if (settings.TimeZone === 'UTC')
+                     arg0 += '&utc';
+                  else if (settings.TimeZone === 'Europe/Berlin')
+                     arg0 += '&cet';
+                  else if (settings.TimeZone)
                      arg0 += `&timezone='${settings.TimeZone}'`;
                   if (Math.abs(gStyle.fDateX - 0.01) > 1e-3)
                      arg0 += `&datex=${gStyle.fDateX.toFixed(3)}`;
@@ -107717,9 +107731,13 @@ function readStyleFromURL(url) {
    get_int_style('opttitle', 'fOptTitle', 1);
    if (d.has('utc'))
       settings.TimeZone = 'UTC';
+   if (d.has('cet'))
+      settings.TimeZone = 'Europe/Berlin';
    else if (d.has('timezone')) {
       settings.TimeZone = d.get('timezone');
       if ((settings.TimeZone === 'default') || (settings.TimeZone === 'dflt'))
+         settings.TimeZone = 'Europe/Berlin';
+      else if (settings.TimeZone === 'local')
          settings.TimeZone = '';
    }
 

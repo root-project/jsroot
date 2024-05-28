@@ -136,7 +136,7 @@ const AxisPainterMethods = {
       if (!this.timegmt && settings.TimeZone) {
          try {
             arg = new Date(dt.toLocaleString('en-US', { timeZone: settings.TimeZone }));
-         } catch(err) {
+         } catch (err) {
             arg = dt;
          }
       }

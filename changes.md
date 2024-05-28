@@ -1,7 +1,7 @@
 # JSROOT changelog
 
 ## Changes in dev
-1. Use 'UTC' as default time zone, make it compatible with native ROOT graphics
+1. Let use custom time zone for time display, support '&utc' and '&cet' in URL parameters
 2. Fix - properly select TF1 range after zooming
 3. Fix - TH1 y-range selection
 
