@@ -1,6 +1,6 @@
 import { gStyle, settings, constants, clTAxis, clTGaxis, isFunc } from '../core.mjs';
 import { select as d3_select, drag as d3_drag, timeFormat as d3_timeFormat, utcFormat as d3_utcFormat,
-         scaleUtc as d3_scaleUtc, scaleSymlog as d3_scaleSymlog,
+         scaleTime as d3_scaleTime, scaleUtc as d3_scaleUtc, scaleSymlog as d3_scaleSymlog,
          scaleLog as d3_scaleLog, scaleLinear as d3_scaleLinear } from '../d3.mjs';
 import { floatToString, makeTranslate, addHighlightStyle } from '../base/BasePainter.mjs';
 import { ObjectPainter, EAxisBits, kAxisLabels, kAxisNormal, kAxisFunc, kAxisTime } from '../base/ObjectPainter.mjs';
@@ -39,10 +39,11 @@ function getTimeOffset(axis) {
       hour = next(':', 0, 23),
       min = next(':', 0, 59),
       sec = next('s', 0, 59),
-      msec = next(' ', 0, 999),
-      dt = new Date(Date.UTC(year, month, day, hour, min, sec, msec));
+      msec = next(' ', 0, 999);
 
-   let offset = dt.getTime();
+      // dt = new Date();
+
+   let offset = Date.UTC(year, month, day, hour, min, sec, msec);
 
    // now also handle suffix like GMT or GMT -0600
    sof = sof.toUpperCase();
@@ -120,7 +121,12 @@ const AxisPainterMethods = {
 
    /** @summary Convert axis value into the Date object */
    convertDate(v) {
-      return new Date(this.timeoffset + v*1000);
+      const dt = new Date(this.timeoffset + v*1000);
+      return dt;
+      //if (this.timegmt)
+      //   dt.setMinutes(dt.getMinutes() + dt.getTimezoneOffset());
+      //const res = this.localtime ? dt : new Date(Date.UTC(dt.getFullYear(), dt.getMonth(), dt.getDate(), dt.getHours(), dt.getMinutes() /* + dt.getTimezoneOffset() */, dt.getSeconds(), dt.getMilliseconds()));
+      //return res;
    },
 
    /** @summary Convert graphical point back into axis value */
@@ -130,8 +136,16 @@ const AxisPainterMethods = {
    },
 
    /** @summary Provide label for time axis */
-   formatTime(d, asticks) {
-      return asticks ? this.tfunc1(d) : this.tfunc2(d);
+   formatTime(dt, asticks) {
+      let arg = dt;
+      if (!this.timegmt && settings.TimeZone) {
+         try {
+            arg = new Date(dt.toLocaleString('en-US', { timeZone: settings.TimeZone }));
+         } catch(err) {
+            arg = dt;
+         }
+      }
+      return asticks ? this.tfunc1(arg) : this.tfunc2(arg);
    },
 
    /** @summary Provide label for log axis */
@@ -424,6 +438,7 @@ class TAxisPainter extends ObjectPainter {
          this.kind = kAxisTime;
          this.timeoffset = getTimeOffset(axis);
          this.timegmt = getTimeGMT(axis);
+         this.localtime = true;
       } else if (opts.axis_func)
          this.kind = kAxisFunc;
       else
@@ -431,7 +446,7 @@ class TAxisPainter extends ObjectPainter {
 
 
       if (this.kind === kAxisTime)
-         this.func = d3_scaleUtc().domain([this.convertDate(smin), this.convertDate(smax)]);
+         this.func = (this.localtime ? d3_scaleTime() : d3_scaleUtc()).domain([this.convertDate(smin), this.convertDate(smax)]);
       else if (this.log) {
          if ((this.log === 1) || (this.log === 10))
             this.logbase = 10;
@@ -522,7 +537,7 @@ class TAxisPainter extends ObjectPainter {
 
          this.tfunc1 = this.tfunc2 = this.timegmt ? d3_utcFormat(tf1) : d3_timeFormat(tf1);
          if (tf2 !== tf1)
-            this.tfunc2 = this.timegmt ? d3_utcFormat(tf2) : d3_timeFormat(tf2);
+            this.tfunc2 = this.timegmt ? d3_utcFormat(tf2+ ' %H:%M') : d3_timeFormat(tf2 + ' %H:%M');
 
          this.format = this.formatTime;
       } else if (this.log) {

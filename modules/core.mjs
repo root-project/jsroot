@@ -293,8 +293,8 @@ settings = {
    StripAxisLabels: true,
    /** @summary Draw TF1 by default as curve or line */
    FuncAsCurve: false,
-   /** @summary Time zone used for date/time display of file time, UTC by default */
-   TimeZone: 'UTC',
+   /** @summary Time zone used for date/time display, local by default, can be 'UTC' or 'Europe/Berlin' or any other valid value */
+   TimeZone: '',
    /** @summary Page URL which will be used to show item in new tab, jsroot main dir used by default */
    NewTabUrl: '',
    /** @summary Extra parameters which will be append to the url when item shown in new tab */
