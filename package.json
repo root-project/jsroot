@@ -132,6 +132,5 @@
     "html2canvas": false,
     "core-js": false,
     "dompurify": false
-
   }
 }
