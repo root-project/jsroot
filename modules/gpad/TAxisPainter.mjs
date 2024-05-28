@@ -41,8 +41,6 @@ function getTimeOffset(axis) {
       sec = next('s', 0, 59),
       msec = next(' ', 0, 999);
 
-      // dt = new Date();
-
    let offset = Date.UTC(year, month, day, hour, min, sec, msec);
 
    // now also handle suffix like GMT or GMT -0600
@@ -532,7 +530,7 @@ class TAxisPainter extends ObjectPainter {
 
          this.tfunc1 = this.tfunc2 = this.timegmt ? d3_utcFormat(tf1) : d3_timeFormat(tf1);
          if (tf2 !== tf1)
-            this.tfunc2 = this.timegmt ? d3_utcFormat(tf2+ ' %H:%M') : d3_timeFormat(tf2 + ' %H:%M');
+            this.tfunc2 = this.timegmt ? d3_utcFormat(tf2) : d3_timeFormat(tf2);
 
          this.format = this.formatTime;
       } else if (this.log) {

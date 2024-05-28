@@ -91,7 +91,7 @@
       { "name": "transpad", "json": "web6canv/transpad.json.gz", "title": "Overlay transparent pad with TGaxis, output of tutorials/hist/transpad.C macro" }
    ],
    "RCanvas" : [
-      { "name": "raxis", "json": "rcanvas/raxis.json.gz", "title": "RAxis drawings from raxis.cxx macro" },
+      { "name": "raxis", "json": "rcanvas/raxis.json.gz", "title": "RAxis drawings from raxis.cxx macro", "timezone" : "Europe/Berlin" },
       { "name": "rbox", "json": "rcanvas/rbox.json.gz", "title": "rbox.cxx macro output" },
       { "name": "rframe", "json": "rcanvas/rframe.json.gz", "title": "rframe.cxx macro output" },
       { "name": "rh1", "json": "rcanvas/rh1.json.gz", "title": "rh1.cxx macro output" },

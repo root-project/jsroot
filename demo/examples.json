@@ -191,7 +191,7 @@
      { "name": "zdemo", "file": "zdemo.root", "item": "zdemo;1", "pdf": true },
      { "name": "legend", "asurl": true, "file": "legends.root", "item": "legends;1", "title": "TCanvas with TLegend, use normal latex parser" },
      { "name": "autoplace", "file": "tutorials_hist.root", "item": "legendautoplace;1", "title": "Autoplace of TLegend element, canvas from tutorials/hist/legendautoplace.C macro" },
-     { "name": "time", "file": "ct.root", "item": "ct;1" },
+     { "name": "time", "file": "ct.root", "item": "ct;1", "timezone" : "Europe/Berlin", "title" : "Time drawing from tutorials/graphs/timeonaxis.C, use European time zone for display" },
      { "name": "2d+3d", "file": "mix2d3d.root", "item": "Canvas;1", "title": "Mixture of 2D and 3D drawings on the same canvas", "interactive": true },
      { "name": "big", "file": "bigcanvas.root", "item": "big", "title": "100 histograms in subpads, for performance testing" },
      { "name": "log2", "file": "tutorials_graphs.root", "item": "exclusiongraph2", "opt": "log2", "title": "log2 for both x and y axes" },
