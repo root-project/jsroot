@@ -5850,8 +5850,6 @@ function ticker(year, month, week, day, hour, minute) {
 
   return [ticks, tickInterval];
 }
-
-const [utcTicks, utcTickInterval] = ticker(utcYear, utcMonth, utcSunday, unixDay, utcHour, utcMinute);
 const [timeTicks, timeTickInterval] = ticker(timeYear, timeMonth, timeSunday, timeDay, timeHour, timeMinute);
 
 function localDate(d) {
@@ -6647,10 +6645,6 @@ function calendar(ticks, tickInterval, year, month, week, day, hour, minute, sec
 
 function time() {
   return initRange.apply(calendar(timeTicks, timeTickInterval, timeYear, timeMonth, timeSunday, timeDay, timeHour, timeMinute, second, timeFormat).domain([new Date(2000, 0, 1), new Date(2000, 0, 2)]), arguments);
-}
-
-function utcTime() {
-  return initRange.apply(calendar(utcTicks, utcTickInterval, utcYear, utcMonth, utcSunday, utcDay, utcHour, utcMinute, second, utcFormat).domain([Date.UTC(2000, 0, 1), Date.UTC(2000, 0, 2)]), arguments);
 }
 
 function constant(x) {
@@ -61889,7 +61883,16 @@ const AxisPainterMethods = {
 
    /** @summary Convert axis value into the Date object */
    convertDate(v) {
-      return new Date(this.timeoffset + v*1000);
+      const dt = new Date(this.timeoffset + v*1000);
+      let res = dt;
+      if (!this.timegmt && settings.TimeZone) {
+         try {
+            res = new Date(dt.toLocaleString('en-US', { timeZone: settings.TimeZone }));
+         } catch (err) {
+            res = dt;
+         }
+      }
+      return res;
    },
 
    /** @summary Convert graphical point back into axis value */
@@ -61900,15 +61903,7 @@ const AxisPainterMethods = {
 
    /** @summary Provide label for time axis */
    formatTime(dt, asticks) {
-      let arg = dt;
-      if (!this.timegmt && settings.TimeZone) {
-         try {
-            arg = new Date(dt.toLocaleString('en-US', { timeZone: settings.TimeZone }));
-         } catch (err) {
-            arg = dt;
-         }
-      }
-      return asticks ? this.tfunc1(arg) : this.tfunc2(arg);
+      return asticks ? this.tfunc1(dt) : this.tfunc2(dt);
    },
 
    /** @summary Provide label for log axis */
@@ -62201,7 +62196,6 @@ class TAxisPainter extends ObjectPainter {
          this.kind = kAxisTime;
          this.timeoffset = getTimeOffset(axis);
          this.timegmt = getTimeGMT(axis);
-         this.localtime = true;
       } else if (opts.axis_func)
          this.kind = kAxisFunc;
       else
@@ -62209,7 +62203,7 @@ class TAxisPainter extends ObjectPainter {
 
 
       if (this.kind === kAxisTime)
-         this.func = (this.localtime ? time() : utcTime()).domain([this.convertDate(smin), this.convertDate(smax)]);
+         this.func = time().domain([this.convertDate(smin), this.convertDate(smax)]);
       else if (this.log) {
          if ((this.log === 1) || (this.log === 10))
             this.logbase = 10;
