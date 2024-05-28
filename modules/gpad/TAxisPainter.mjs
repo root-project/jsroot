@@ -121,12 +121,7 @@ const AxisPainterMethods = {
 
    /** @summary Convert axis value into the Date object */
    convertDate(v) {
-      const dt = new Date(this.timeoffset + v*1000);
-      return dt;
-      //if (this.timegmt)
-      //   dt.setMinutes(dt.getMinutes() + dt.getTimezoneOffset());
-      //const res = this.localtime ? dt : new Date(Date.UTC(dt.getFullYear(), dt.getMonth(), dt.getDate(), dt.getHours(), dt.getMinutes() /* + dt.getTimezoneOffset() */, dt.getSeconds(), dt.getMilliseconds()));
-      //return res;
+      return new Date(this.timeoffset + v*1000);
    },
 
    /** @summary Convert graphical point back into axis value */
