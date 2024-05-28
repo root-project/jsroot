@@ -123,7 +123,9 @@ const AxisPainterMethods = {
       let res = dt;
       if (!this.timegmt && settings.TimeZone) {
          try {
+            const ms = dt.getMilliseconds();
             res = new Date(dt.toLocaleString('en-US', { timeZone: settings.TimeZone }));
+            res.setMilliseconds(ms);
          } catch (err) {
             res = dt;
          }
