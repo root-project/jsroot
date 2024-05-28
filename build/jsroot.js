@@ -61803,8 +61803,6 @@ function getTimeOffset(axis) {
       sec = next('s', 0, 59),
       msec = next(' ', 0, 999);
 
-      // dt = new Date();
-
    let offset = Date.UTC(year, month, day, hour, min, sec, msec);
 
    // now also handle suffix like GMT or GMT -0600
@@ -61887,7 +61885,9 @@ const AxisPainterMethods = {
       let res = dt;
       if (!this.timegmt && settings.TimeZone) {
          try {
+            const ms = dt.getMilliseconds();
             res = new Date(dt.toLocaleString('en-US', { timeZone: settings.TimeZone }));
+            res.setMilliseconds(ms);
          } catch (err) {
             res = dt;
          }
@@ -62294,7 +62294,7 @@ class TAxisPainter extends ObjectPainter {
 
          this.tfunc1 = this.tfunc2 = this.timegmt ? utcFormat(tf1) : timeFormat(tf1);
          if (tf2 !== tf1)
-            this.tfunc2 = this.timegmt ? utcFormat(tf2+ ' %H:%M') : timeFormat(tf2 + ' %H:%M');
+            this.tfunc2 = this.timegmt ? utcFormat(tf2) : timeFormat(tf2);
 
          this.format = this.formatTime;
       } else if (this.log) {
@@ -116761,7 +116761,7 @@ class RAxisPainter extends RObjectPainter {
 
       if (this.kind === kAxisTime)
          this.func = time().domain([this.convertDate(smin), this.convertDate(smax)]);
-       else if (_symlog && (_symlog > 0)) {
+      else if (_symlog && (_symlog > 0)) {
          this.symlog = _symlog;
          this.func = symlog().constant(_symlog).domain([smin, smax]);
       } else if (_log) {
