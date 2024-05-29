@@ -948,6 +948,7 @@ class FlexibleDisplay extends MDIDisplay {
          .property('state', 'normal')
          .select('.jsroot_flex_header')
          .on('click', function() { mdi.activateFrame(d3_select(this.parentNode).select('.jsroot_flex_draw').node()); })
+         .on('contextmenu', evnt => mdi.showContextMenu(evnt))
          .selectAll('button')
          .data([{ n: '&#x2715;', t: 'close' }, { n: '&#x2594;', t: 'maximize' }, { n: '&#x2581;', t: 'minimize' }])
          .enter()
