@@ -512,9 +512,8 @@ class GridDisplay extends MDIDisplay {
          return this.getGridFrame();
 
       let found = super.getActiveFrame();
-      if (found) return found;
-
-      this.forEachFrame(frame => { if (!found) found = frame; });
+      if (!found)
+         this.forEachFrame(frame => { if (!found) found = frame; });
 
       return found;
    }
