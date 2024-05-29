@@ -1,17 +1,13 @@
 {
   "name": "jsroot-demos",
-  "version": "6.99.99",
+  "version": "7.7.1",
   "engines": {
-    "node": ">=0.14"
+    "node": ">=0.18"
   },
   "description": "JSROOT demos for Node.js",
   "author": "s.linev@gsi.de",
   "license": "MIT",
   "type": "module",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/linev/jsroot-test.git"
-  },
   "dependencies": {
     "jsroot": "file:../../"
   }
