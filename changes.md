@@ -2,9 +2,12 @@
 
 ## Changes in dev
 1. Let use custom time zone for time display, support '&utc' and '&cet' in URL parameters
-2. Fix - properly select TF1 range after zooming
-3. Fix - TH1 y-range selection
-4. Fix - add 'gl' and svg2pdf-related packages to dependencies in package.json
+
+
+## Changes in 7.7.1
+1. Fix - properly select TF1 range after zooming
+2. Fix - TH1 y-range selection
+3. Fix - add 'gl' and svg2pdf-related packages to dependencies in package.json
 
 
 ## Changes in 7.7.0
