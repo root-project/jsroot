@@ -11,7 +11,11 @@
   "module": "./modules/main.mjs",
   "types": "./types.d.ts",
   "exports": {
-    ".": "./modules/main.mjs",
+    ".": {
+      "import": "./modules/main.mjs",
+      "require": "./build/jsroot.js",
+      "types": "./types.d.ts"
+    },
     "./core": "./modules/core.mjs",
     "./draw": "./modules/draw.mjs",
     "./io": "./modules/io.mjs",
