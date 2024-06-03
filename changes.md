@@ -2,6 +2,7 @@
 
 ## Changes in dev
 1. Let use custom time zone for time display, support '&utc' and '&cet' in URL parameters
+2. Fix - hide empty title on the canvas
 
 
 ## Changes in 7.7.1

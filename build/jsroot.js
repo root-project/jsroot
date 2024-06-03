@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '29/05/2024',
+version_date = '3/06/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -10451,6 +10451,7 @@ function compressSVG(svg) {
             .replace(/ title=""/g, '')                                 // remove all empty titles
             .replace(/<g objname="\w*" objtype="\w*"/g, '<g')          // remove object ids
             .replace(/<g transform="translate\(\d+,\d+\)"><\/g>/g, '') // remove all empty groups with transform
+            .replace(/<g transform="translate\(\d+,\d+\)" style="display: none;"><\/g>/g, '') // remove hidden title
             .replace(/<g><\/g>/g, '');                                 // remove all empty groups
 
    // remove all empty frame svgs, typically appears in 3D drawings, maybe should be improved in frame painter itself
@@ -69509,7 +69510,8 @@ class TPadPainter extends ObjectPainter {
          return this.drawNextSnap(lst, indx); // call next
       }
 
-      const snapid = snap.fObjectID;
+      const snapid = snap.fObjectID,
+            is_frame = (snap.fKind === webSnapIds.kObject) && (snap.fSnapshot?._typename === clTFrame);
       let cnt = (this._snaps_map[snapid] || 0) + 1,
           objpainter = null;
 
@@ -69519,8 +69521,17 @@ class TPadPainter extends ObjectPainter {
       // if same object drawn twice, two painters will exists
       for (let k = 0; k < this.painters.length; ++k) {
          const subp = this.painters[k];
-         if (subp.snapid === snapid)
-            if (--cnt === 0) { objpainter = subp; break; }
+         if (subp.snapid === snapid) {
+            if (--cnt === 0) {
+               objpainter = subp;
+               break;
+            }
+         } else if (is_frame && !subp.snapid && (subp === this.getFramePainter())) {
+            // workaround for the case when frame created afterwards by server
+            subp.snapid = snapid;
+            objpainter = subp;
+            break;
+         }
       }
 
       if (objpainter) {
@@ -71746,7 +71757,7 @@ class TPavePainter extends ObjectPainter {
       if (!text_g) text_g = this.draw_g;
 
       const fast = (nlines === 1) && pp._fast_drawing;
-      let num_default = 0;
+      let num_default = 0, is_any_text = false;
 
       for (let nline = 0; nline < nlines; ++nline) {
          const entry = arr[nline], texty = nline*stepy;
@@ -71758,7 +71769,7 @@ class TPavePainter extends ObjectPainter {
 
                let color = entry.fTextColor ? this.getColor(entry.fTextColor) : '';
                if (!color) color = this.textatt.color;
-
+               is_any_text = true;
                if (entry.fX || entry.fY || entry.fTextSize) {
                   // individual positioning
                   const align = entry.fTextAlign || this.textatt.align,
@@ -71814,6 +71825,9 @@ class TPavePainter extends ObjectPainter {
 
       if (num_default > 0)
          promises.push(this.finishTextDrawing(text_g, num_default > 1));
+
+      if (this.isTitle())
+         this.draw_g.style('display', !is_any_text ? 'none' : null);
 
       if (draw_header) {
          const x = Math.round(width*0.25),
