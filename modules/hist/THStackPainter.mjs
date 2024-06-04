@@ -1,10 +1,13 @@
-import { clone, create, createHistogram, setHistogramTitle, gStyle, clTList, clTH1I, clTH2, clTH2I, kNoZoom, kNoStats } from '../core.mjs';
+import { clone, create, createHistogram, setHistogramTitle, BIT,
+         gStyle, clTList, clTH1I, clTH2, clTH2I, kNoZoom, kNoStats } from '../core.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
 import { TH1Painter } from './TH1Painter.mjs';
 import { TH2Painter } from './TH2Painter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
+
+const kIsZoomed = BIT(16); // bit set when zooming on Y axis
 
 /**
  * @summary Painter class for THStack
@@ -141,6 +144,12 @@ class THStackPainter extends ObjectPainter {
 
       max *= (1 + gStyle.fHistTopMargin);
 
+      if (stack.fMaximum !== kNoZoom)
+         max = stack.fMaximum;
+
+      if (stack.fMinimum !== kNoZoom)
+         min = stack.fMinimum;
+
       if (pad?.fLogv ?? (this.options.ndim === 1 ? pad?.fLogy : pad?.fLogz)) {
          if (max <= 0) max = 1;
          if (min <= 0) min = 1e-4*max;
@@ -151,14 +160,14 @@ class THStackPainter extends ObjectPainter {
       } else if ((min > 0) && (min < 0.05*max))
          min = 0;
 
-      if ((stack.fMaximum !== kNoZoom)/* && this.options.nostack */)
+      if ((stack.fMaximum !== kNoZoom) && this.options.nostack)
          max = stack.fMaximum;
 
-      if ((stack.fMinimum !== kNoZoom) /* && this.options.nostack */)
+      if ((stack.fMinimum !== kNoZoom) && this.options.nostack)
          min = stack.fMinimum;
 
       const res = { min, max, hopt: `hmin:${min};hmax:${max}` };
-      if (this.options.nostack)
+      if (this.options.nostack || !stack.fHistogram?.TestBit(kIsZoomed))
          res.hopt += ';ignore_min_max';
       return res;
    }
@@ -352,6 +361,8 @@ class THStackPainter extends ObjectPainter {
          }
 
          this.firstpainter.updateObject(src);
+
+         this.firstpainter.options.ignore_min_max = this.options.nostack || !src.TestBit(kIsZoomed);
       }
 
       // and now update histograms
