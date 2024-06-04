@@ -139,42 +139,28 @@ class THStackPainter extends ObjectPainter {
          max = getHistMinMax(stack.fStack.arr[stack.fStack.arr.length-1], iserr).max;
       }
 
-      const adjustRange = () => {
-         if (pad && (pad.fLogv ?? (this.options.ndim === 1 ? pad.fLogy : pad.fLogz))) {
-            if (max <= 0) max = 1;
-            if (min <= 0) min = 1e-4*max;
-            const kmin = 1/(1 + 0.5*Math.log10(max / min)),
-                  kmax = 1 + 0.2*Math.log10(max / min);
-            min *= kmin;
-            max *= kmax;
-         } else if ((min > 0) && (min < 0.05*max))
-            min = 0;
-      };
-
       max *= (1 + gStyle.fHistTopMargin);
 
-      adjustRange();
+      if (pad?.fLogv ?? (this.options.ndim === 1 ? pad?.fLogy : pad?.fLogz)) {
+         if (max <= 0) max = 1;
+         if (min <= 0) min = 1e-4*max;
+         const kmin = 1/(1 + 0.5*Math.log10(max / min)),
+               kmax = 1 + 0.2*Math.log10(max / min);
+         min *= kmin;
+         max *= kmax;
+      } else if ((min > 0) && (min < 0.05*max))
+         min = 0;
 
-      let max0 = max, min0 = min, zoomed = false;
-
-      if (stack.fMaximum !== kNoZoom) {
+      if ((stack.fMaximum !== kNoZoom)/* && this.options.nostack */)
          max = stack.fMaximum;
-         max0 = Math.max(max, max0);
-         zoomed = true;
-      }
 
-      if (stack.fMinimum !== kNoZoom) {
+      if ((stack.fMinimum !== kNoZoom) /* && this.options.nostack */)
          min = stack.fMinimum;
-         min0 = Math.min(min, min0);
-         zoomed = true;
-      }
 
-      if (zoomed)
-         adjustRange();
-      else
-         min = max = kNoZoom;
-
-      return { min, max, min0, max0, zoomed, hopt: `hmin:${min0};hmax:${max0};minimum:${min};maximum:${max}` };
+      const res = { min, max, hopt: `hmin:${min};hmax:${max}` };
+      if (this.options.nostack)
+         res.hopt += ';ignore_min_max';
+      return res;
    }
 
    /** @summary Provide draw options for the histogram */
@@ -352,17 +338,17 @@ class THStackPainter extends ObjectPainter {
             src = stack.fHistogram = this.createHistogram(stack);
 
          const mm = this.getMinMax(this.options.errors || this.options.draw_errors);
+         this.firstpainter.options.hmin = mm.min;
+         this.firstpainter.options.hmax = mm.max;
 
-         this.firstpainter.options.minimum = mm.min;
-         this.firstpainter.options.maximum = mm.max;
          this.firstpainter._checked_zooming = false; // force to check 3d zooming
 
          if (this.options.ndim === 1) {
-            this.firstpainter.ymin = mm.min0;
-            this.firstpainter.ymax = mm.max0;
+            this.firstpainter.ymin = mm.min;
+            this.firstpainter.ymax = mm.max;
          } else {
-            this.firstpainter.zmin = mm.min0;
-            this.firstpainter.zmax = mm.max0;
+            this.firstpainter.zmin = mm.min;
+            this.firstpainter.zmax = mm.max;
          }
 
          this.firstpainter.updateObject(src);
@@ -450,7 +436,10 @@ class THStackPainter extends ObjectPainter {
          if (!painter.options.nostack)
              painter.options.nostack = !painter.buildStack(stack);
 
-         if (painter.options.same) return;
+         if (painter.options.same || !stack.fHists?.arr.length) {
+            painter.addToPadPrimitives();
+            return;
+         }
 
          const no_histogram = !stack.fHistogram;
 
