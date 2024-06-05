@@ -409,6 +409,7 @@ gStyle = {
    fLegendFont: 42,
    fLegendTextSize: 0,
    fLegendFillColor: 0,
+   fLegendFillStyle: 1001,
    fHatchesLineWidth: 1,
    fHatchesSpacing: 1,
    fCandleWhiskerRange: 1.0,
@@ -1130,7 +1131,8 @@ function create(typename, target) {
          create(clTPave, obj);
          create(clTAttText, obj);
          extend(obj, { fColumnSeparation: 0, fEntrySeparation: 0.1, fMargin: 0.25, fNColumns: 1, fPrimitives: create(clTList), fName: clTPave,
-                       fBorderSize: gStyle.fLegendBorderSize, fTextFont: gStyle.fLegendFont, fTextSize: gStyle.fLegendTextSize, fFillColor: gStyle.fLegendFillColor });
+                       fBorderSize: gStyle.fLegendBorderSize, fTextFont: gStyle.fLegendFont, fTextSize: gStyle.fLegendTextSize,
+                       fFillColor: gStyle.fLegendFillColor, fFillStyle: gStyle.fLegendFillStyle });
          break;
       case clTPaletteAxis:
          create(clTPave, obj);
