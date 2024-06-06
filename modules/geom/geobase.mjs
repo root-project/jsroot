@@ -2396,7 +2396,7 @@ class ClonedNodes {
    }
 
    /** @summary Set maximal number of visible nodes
-    * @desc By default 100000 nodes will be visualized */
+    * @desc By default 10000 nodes will be visualized */
    setMaxVisNodes(v, more) {
       this.maxnodes = (v === Infinity) ? 1e9 : (Number.isFinite(v) ? v : 10000);
       if (more && Number.isFinite(more))
