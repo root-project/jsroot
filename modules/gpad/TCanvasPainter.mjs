@@ -781,7 +781,7 @@ class TCanvasPainter extends TPadPainter {
          const setAxisRange = (name, axis) => {
             if (fp?.zoomChangedInteractive(name)) {
                axes.push({ axis, f: axis.fFirst, l: axis.fLast, b: axis.fBits });
-               axis.fFirst = main.getSelectIndex(name, 'left');
+               axis.fFirst = main.getSelectIndex(name, 'left', 1);
                axis.fLast = main.getSelectIndex(name, 'right');
                const has_range = (axis.fFirst > 0) || (axis.fLast < axis.fNbins);
                if (has_range !== axis.TestBit(EAxisBits.kAxisRange))
