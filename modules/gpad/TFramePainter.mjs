@@ -2843,9 +2843,12 @@ class TFramePainter extends ObjectPainter {
    }
 
    /** @summary Provide zooming of single axis
-     * @desc One can specify names like x/y/z but also second axis x2 or y2
+     * @param {String} name - axis name like x/y/z but also second axis x2 or y2
+     * @param {Number} vmin - axis minimal value, 0 for unzoom
+     * @param {Number} vmax - axis maximal value, 0 for unzoom
+     * @param {Boolean} [interactive] - if change was perfromed interactively
      * @private */
-   async zoomSingle(name, vmin, vmax) {
+   async zoomSingle(name, vmin, vmax, interactive) {
       if (!this[name+'_handle'])
          return false;
 
@@ -2885,6 +2888,9 @@ class TFramePainter extends ObjectPainter {
       }
 
       if (!changed) return false;
+
+      if (interactive)
+         this.zoomChangedInteractive(name, interactive);
 
       return this.interactiveRedraw('pad', 'zoom').then(() => true);
    }
