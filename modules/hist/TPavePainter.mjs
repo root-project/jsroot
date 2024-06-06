@@ -1019,8 +1019,7 @@ class TPavePainter extends ObjectPainter {
 
          const z = this.z_handle.gr, z1 = z.invert(sel1), z2 = z.invert(sel2);
 
-         this.getFramePainter().zoom('z', Math.min(z1, z2), Math.max(z1, z2));
-         this.getFramePainter().zoomChangedInteractive('z', true);
+         this.getFramePainter().zoomSingle('z', Math.min(z1, z2), Math.max(z1, z2), true);
       }, startRectSel = evnt => {
          // ignore when touch selection is activated
          if (doing_zoom) return;
@@ -1054,7 +1053,7 @@ class TPavePainter extends ObjectPainter {
       if (settings.Zooming) {
          this.draw_g.selectAll('.axis_zoom')
                     .on('mousedown', startRectSel)
-                    .on('dblclick', () => this.getFramePainter().unzoom('z'));
+                    .on('dblclick', () => this.getFramePainter().zoomSingle('z', 0, 0, true));
       }
 
       if (settings.ZoomWheel) {
@@ -1062,10 +1061,8 @@ class TPavePainter extends ObjectPainter {
             const pos = d3_pointer(evnt, this.draw_g.node()),
                   coord = this._palette_vertical ? (1 - pos[1] / s_height) : pos[0] / s_width,
                   item = this.z_handle.analyzeWheelEvent(evnt, coord);
-            if (item?.changed) {
-               this.getFramePainter().zoom('z', item.min, item.max);
-               this.getFramePainter().zoomChangedInteractive('z', true);
-            }
+            if (item?.changed)
+               this.getFramePainter().zoomSingle('z', item.min, item.max, true);
          });
        }
    }
