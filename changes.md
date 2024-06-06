@@ -5,6 +5,7 @@
 2. Support gStyle.fLegendFillStyle
 3. Fix - hide empty title on the canvas
 4. Fix - properly handle zooming in THStack histogram
+5. Fix - properly save zoomed ranges in drawingJSON()
 
 
 ## Changes in 7.7.1

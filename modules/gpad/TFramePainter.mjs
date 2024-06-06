@@ -1359,11 +1359,11 @@ const TooltipHandler = {
       this.clearInteractiveElements();
       delete this.last_touch_time;
 
-      if (namex === 'x2') {
+      if (namex === 'x2')
          this.zoomSingle(namex, xmin, xmax, true);
-      } else if (namey === 'y2') {
+      else if (namey === 'y2')
          this.zoomSingle(namey, ymin, ymax, true);
-      } else if (isany) {
+      else if (isany) {
          this.zoomChangedInteractive('x', true);
          this.zoomChangedInteractive('y', true);
          this.zoom(xmin, xmax, ymin, ymax);
