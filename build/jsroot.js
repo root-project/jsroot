@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '6/06/2024',
+version_date = '7/06/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -12182,11 +12182,14 @@ class ObjectPainter extends BasePainter {
          if (!this.options_store || pp?._interactively_changed)
             changed = true;
          else {
-            for (const k in this.options) {
-               if (this.options[k] !== this.options_store[k])
-                  changed = true;
+            for (const k in this.options_store) {
+               if (this.options[k] !== this.options_store[k]) {
+                  if ((k[0] !== '_') && (k[0] !== '$') && (k[0].toLowerCase() !== k[0]))
+                     changed = true;
                }
+            }
          }
+
          if (changed && isFunc(this.options.asString))
             return this.options.asString(this.isMainPainter(), ignore_pad ? null : pp?.getRootPad());
       }
@@ -12792,6 +12795,9 @@ class ObjectPainter extends BasePainter {
          res = this.redraw(reason);
 
       return getPromise(res).then(() => {
+         if (arg === 'attribute')
+            return this.getPadPainter()?.redrawLegend();
+      }).then(() => {
          // inform GED that something changes
          const canp = this.getCanvPainter();
 
@@ -60757,7 +60763,8 @@ class JSRootMenu {
      * @private */
    addAttributesMenu(painter, preffix) {
       const is_frame = painter === painter.getFramePainter(),
-            pp = is_frame ? painter.getPadPainter() : null;
+            pp = is_frame ? painter.getPadPainter() : null,
+            redraw_arg = !preffix && !is_frame ? 'attribute' : true;
       if (!preffix) preffix = '';
 
       if (painter.lineatt?.used) {
@@ -60766,19 +60773,19 @@ class JSRootMenu {
             painter.lineatt.change(undefined, arg);
             changeObjectMember(painter, 'fLineWidth', arg);
             if (pp) changeObjectMember(pp, 'fFrameLineWidth', arg);
-            painter.interactiveRedraw(true, `exec:SetLineWidth(${arg})`);
+            painter.interactiveRedraw(redraw_arg, `exec:SetLineWidth(${arg})`);
          });
          this.addColorMenu('color', painter.lineatt.color, arg => {
             painter.lineatt.change(arg);
             changeObjectMember(painter, 'fLineColor', arg, true);
             if (pp) changeObjectMember(pp, 'fFrameLineColor', arg, true);
-            painter.interactiveRedraw(true, getColorExec(arg, 'SetLineColor'));
+            painter.interactiveRedraw(redraw_arg, getColorExec(arg, 'SetLineColor'));
          });
          this.addLineStyleMenu('style', painter.lineatt.style, id => {
             painter.lineatt.change(undefined, undefined, id);
             changeObjectMember(painter, 'fLineStyle', id);
             if (pp) changeObjectMember(pp, 'fFrameLineStyle', id);
-            painter.interactiveRedraw(true, `exec:SetLineStyle(${id})`);
+            painter.interactiveRedraw(redraw_arg, `exec:SetLineStyle(${id})`);
          });
          this.add('endsub:');
 
@@ -60804,13 +60811,13 @@ class JSRootMenu {
             painter.fillatt.change(arg, undefined, painter.getCanvSvg());
             changeObjectMember(painter, 'fFillColor', arg, true);
             if (pp) changeObjectMember(pp, 'fFrameFillColor', arg, true);
-            painter.interactiveRedraw(true, getColorExec(arg, 'SetFillColor'));
+            painter.interactiveRedraw(redraw_arg, getColorExec(arg, 'SetFillColor'));
          }, painter.fillatt.kind);
          this.addFillStyleMenu('style', painter.fillatt.pattern, painter.fillatt.colorindx, painter, id => {
             painter.fillatt.change(undefined, id, painter.getCanvSvg());
             changeObjectMember(painter, 'fFillStyle', id);
             if (pp) changeObjectMember(pp, 'fFrameFillStyle', id);
-            painter.interactiveRedraw(true, `exec:SetFillStyle(${id})`);
+            painter.interactiveRedraw(redraw_arg, `exec:SetFillStyle(${id})`);
          });
          this.add('endsub:');
       }
@@ -60820,12 +60827,12 @@ class JSRootMenu {
          this.addColorMenu('color', painter.markeratt.color, arg => {
             changeObjectMember(painter, 'fMarkerColor', arg, true);
             painter.markeratt.change(arg);
-            painter.interactiveRedraw(true, getColorExec(arg, 'SetMarkerColor'));
+            painter.interactiveRedraw(redraw_arg, getColorExec(arg, 'SetMarkerColor'));
          });
          this.addSizeMenu('size', 0.5, 6, 0.5, painter.markeratt.size, arg => {
             changeObjectMember(painter, 'fMarkerSize', arg);
             painter.markeratt.change(undefined, undefined, arg);
-            painter.interactiveRedraw(true, `exec:SetMarkerSize(${arg})`);
+            painter.interactiveRedraw(redraw_arg, `exec:SetMarkerSize(${arg})`);
          });
 
          this.add('sub:style');
@@ -60836,7 +60843,7 @@ class JSRootMenu {
                 svg = `<svg width='60' height='18'><text x='1' y='12' style='font-size:12px'>${supported[n].toString()}</text><path stroke='black' fill='${clone.fill?'black':'none'}' d='${clone.create(40, 8)}'></path></svg>`;
 
             this.addchk(painter.markeratt.style === supported[n], svg, supported[n],
-               arg => { painter.markeratt.change(undefined, parseInt(arg)); painter.interactiveRedraw(true, `exec:SetMarkerStyle(${arg})`); });
+               arg => { painter.markeratt.change(undefined, parseInt(arg)); painter.interactiveRedraw(redraw_arg, `exec:SetMarkerStyle(${arg})`); });
          }
          this.add('endsub:');
          this.add('endsub:');
@@ -62372,22 +62379,20 @@ class TAxisPainter extends ObjectPainter {
          this.noticksopt = true;
 
       const handle = { painter: this, nminor: 0, nmiddle: 0, nmajor: 0, func: this.func, minor: [], middle: [], major: [] };
-      let ticks;
+      let ticks = [];
 
       if (this.fixed_ticks) {
-         ticks = [];
          this.fixed_ticks.forEach(v => {
             if ((v >= this.scale_min) && (v <= this.scale_max)) ticks.push(v);
          });
-      } else if ((this.kind === kAxisLabels) && !this.regular_labels) {
-         ticks = [];
+      } else if (this.kind === kAxisLabels) {
          handle.lbl_pos = [];
          const axis = this.getObject();
-         for (let n = 0; n < axis.fNbins; ++n) {
-            const x = axis.fXmin + n / axis.fNbins * (axis.fXmax - axis.fXmin);
-            if ((x >= this.scale_min) && (x < this.scale_max)) {
+         for (let n = 0; n <= axis.fNbins; ++n) {
+            const x = this.regular_labels ? n : axis.fXmin + n / axis.fNbins * (axis.fXmax - axis.fXmin);
+            if ((x >= this.scale_min) && (x <= this.scale_max)) {
                handle.lbl_pos.push(x);
-               if (x > this.scale_min) ticks.push(x);
+               ticks.push(x);
             }
          }
       } else
@@ -68285,7 +68290,7 @@ class TPadPainter extends ObjectPainter {
     * @private */
    getAutoColor(numprimitives) {
       if (!numprimitives)
-         numprimitives = this._num_primitives || 5;
+         numprimitives = (this._num_primitives || 5) - (this._num_specials || 0);
       if (numprimitives < 2) numprimitives = 2;
 
       let indx = this._auto_color ?? 0;
@@ -68871,14 +68876,16 @@ class TPadPainter extends ObjectPainter {
 
    /** @summary Check if special objects appears in primitives
      * @desc it could be list of colors or palette */
-   checkSpecialsInPrimitives(can) {
+   checkSpecialsInPrimitives(can, count_specials) {
       const lst = can?.fPrimitives;
+      if (count_specials)
+         this._num_specials = 0;
       if (!lst) return;
       for (let i = 0; i < lst.arr?.length; ++i) {
          if (this.checkSpecial(lst.arr[i])) {
-            lst.arr.splice(i, 1);
-            lst.opt.splice(i, 1);
-            i--;
+            lst.arr[i].$special = true; // mark object as special one, do not use in drawing
+            if (count_specials)
+               this._num_specials++;
          }
       }
    }
@@ -68993,7 +69000,7 @@ class TPadPainter extends ObjectPainter {
 
       const obj = this.pad.fPrimitives.arr[indx];
 
-      if (!obj || ((indx > 0) && (obj._typename === clTFrame) && this.getFramePainter()))
+      if (!obj || obj.$special || ((indx > 0) && (obj._typename === clTFrame) && this.getFramePainter()))
          return this.drawPrimitives(indx+1);
 
       // use of Promise should avoid large call-stack depth when many primitives are drawn
@@ -69152,6 +69159,13 @@ class TPadPainter extends ObjectPainter {
       }).then(menu => menu.show());
    }
 
+   /** @summary Redraw TLegend object
+    * @descr Used when object attributes are changed to ensure that legend is up to date
+    * @private */
+   async redrawLegend() {
+      return this.findPainterFor(null, '', clTLegend)?.redraw();
+   }
+
    /** @summary Redraw pad means redraw ourself
      * @return {Promise} when redrawing ready */
    async redrawPad(reason) {
@@ -69305,6 +69319,8 @@ class TPadPainter extends ObjectPainter {
 
       let isany = false, p = 0;
       for (let n = 0; n < obj.fPrimitives.arr?.length; ++n) {
+         if (obj.fPrimitives.arr[n].$special)
+            continue;
          while (p < this.painters.length) {
             const op = this.painters[p++];
             if (!op._primitive) continue;
@@ -71204,7 +71220,7 @@ class TCanvasPainter extends TPadPainter {
       if (nocanvas) can = create$1(clTCanvas);
 
       const painter = new TCanvasPainter(dom, can);
-      painter.checkSpecialsInPrimitives(can);
+      painter.checkSpecialsInPrimitives(can, true);
 
       if (!nocanvas && can.fCw && can.fCh && !painter.isBatchMode()) {
          const rect0 = painter.selectDom().node().getBoundingClientRect();
@@ -71984,10 +72000,8 @@ class TPavePainter extends ObjectPainter {
             if ('fLineColor' in mo) o_line = mo;
             if ('fFillColor' in mo) o_fill = mo;
             if ('fMarkerColor' in mo) o_marker = mo;
-
             painter = pp.findPainterFor(mo);
          }
-
 
          // Draw fill pattern (in a box)
          if (draw_fill) {
@@ -72006,6 +72020,8 @@ class TPavePainter extends ObjectPainter {
                               .attr('d', `M${x0 + padding_x},${Math.round(pos_y+step_y*0.1)}v${Math.round(step_y*0.8)}h${tpos_x-2*padding_x-x0}v${-Math.round(step_y*0.8)}z`);
                if (!fillatt.empty())
                   rect.call(fillatt.func);
+               else
+                  rect.style('fill', 'none');
                if (lineatt)
                   rect.call(lineatt.func);
             }
@@ -72734,7 +72750,8 @@ const kCARTESIAN = 1, kPOLAR = 2, kCYLINDRICAL = 3, kSPHERICAL = 4, kRAPIDITY = 
 
 /**
  * @summary Class to decode histograms draw options
- *
+ * @desc All options started from capital letter are major drawing options
+ * any other draw options are internal settings.
  * @private
  */
 
@@ -73165,7 +73182,8 @@ class THistDrawOptions {
          if (hdim === 1) {
             this.Zero = false; // do not draw empty bins with errors
             if (this.Hist === 1) this.Hist = false;
-            if (Number.isInteger(parseInt(d.part[0]))) this.ErrorKind = parseInt(d.part[0]);
+            if (Number.isInteger(parseInt(d.part[0])))
+               this.ErrorKind = parseInt(d.part[0]);
             if ((this.ErrorKind === 3) || (this.ErrorKind === 4)) this.need_fillcol = true;
             if (this.ErrorKind === 0) this.Zero = true; // enable drawing of empty bins
             if (d.part.indexOf('X0') >= 0) this.errorX = 0;
@@ -73231,16 +73249,25 @@ class THistDrawOptions {
             res = (this.BaseLine === false) ? 'B' : 'B1';
           else if (this.Mark)
             res = this.Zero ? 'P0' : 'P'; // here invert logic with 0
-          else if (this.Error) {
-            res = 'E';
-            if (this.ErrorKind >= 0) res += this.ErrorKind;
-         } else if (this.Line) {
+          else if (this.Line) {
             res += 'L';
             if (this.Fill) res += 'F';
          } else if (this.Off)
             res = '][';
 
-         if (this.Cjust) res += ' CJUST';
+         if (this.Error) {
+            res += 'E';
+            if (this.ErrorKind >= 0)
+               res += this.ErrorKind;
+            if (this.errorX === 0)
+               res += 'X0';
+         }
+
+         if (this.Cjust)
+            res += ' CJUST';
+
+         if (this.Hist === true)
+            res += 'HIST';
 
          if (this.Text) {
             res += 'TEXT';
@@ -119733,6 +119760,12 @@ class RPadPainter extends RObjectPainter {
          this.fillContextMenu(menu);
          return this.fillObjectExecMenu(menu);
       }).then(menu => menu.show());
+   }
+
+   /** @summary Redraw legend object
+    * @descr Used when object attributes are changed to ensure that legend is up to date
+    * @private */
+   async redrawLegend() {
    }
 
    /** @summary Redraw pad means redraw ourself

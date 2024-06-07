@@ -6,6 +6,7 @@
 3. Fix - hide empty title on the canvas
 4. Fix - properly handle zooming in THStack histogram
 5. Fix - properly save zoomed ranges in drawingJSON()
+6. Fix - always show all ticks for labeled axis
 
 
 ## Changes in 7.7.1
