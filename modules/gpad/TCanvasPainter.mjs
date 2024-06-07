@@ -855,7 +855,7 @@ class TCanvasPainter extends TPadPainter {
       if (nocanvas) can = create(clTCanvas);
 
       const painter = new TCanvasPainter(dom, can);
-      painter.checkSpecialsInPrimitives(can);
+      painter.checkSpecialsInPrimitives(can, true);
 
       if (!nocanvas && can.fCw && can.fCh && !painter.isBatchMode()) {
          const rect0 = painter.selectDom().node().getBoundingClientRect();
