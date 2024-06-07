@@ -955,7 +955,7 @@ class TAxisPainter extends ObjectPainter {
             tilt_angle = gStyle.AxisTiltAngle ?? 25;
       let rotate_lbls = axis.TestBit(EAxisBits.kLabelsVert),
           textscale = 1, flipscale = 1, maxtextlen = 0, applied_scale = 0,
-          lbl_tilt = false, any_modified = false, max_textwidth = 0, max_textheight = 0, max_tiltsize = 0;
+          lbl_tilt = false, any_modified = false, max_textwidth = 0, max_tiltsize = 0;
 
       if (this.lbls_both_sides)
          label_g.push(axis_g.append('svg:g').attr('class', 'axis_labels').attr('transform', this.vertical ? `translate(${w})` : `translate(0,${-h})`));
