@@ -11,7 +11,8 @@
      { "name": "tut1", "file": "tutorials_hist.root", "layout": "grid2x1", "items": ["h1draw","hksimple"], "title": "Macro outputs from $ROOTSYS/tutorials/hist" },
      { "name": "tut2", "file": "tutorials_hist.root", "layout": "grid2x1", "items": ["logscales", "rebin"], "title": "Macro outputs from $ROOTSYS/tutorials/hist" },
      { "name": "tut3", "file": "tutorials_hist.root", "layout": "grid2x2", "items": ["histpalettecolor", "hlabels1", "twoscales", "transpad"], "title": "Macro outputs from $ROOTSYS/tutorials/hist" },
-     { "name": "tut4", "file": "tutorials_hist.root", "layout": "grid2x2", "items": ["thstackpalettecolor", "statsEditing", "testSmooth",  "xyplot"], "opts": ["pfc nostack"], "title": "Macro outputs from $ROOTSYS/tutorials/hist" }
+     { "name": "tut4", "file": "tutorials_hist.root", "layout": "grid2x2", "items": ["thstackpalettecolor", "statsEditing", "testSmooth",  "xyplot"], "opts": ["pfc nostack"], "title": "Macro outputs from $ROOTSYS/tutorials/hist" },
+     { "name": "version", "file": "download_versions.root", "item": "c1", "opt": "logy", "title": "Many custom labels on x axis, tutorials/dataframe/df030_SQliteVersionsOfROOT.C" }
    ],
    "TH2": [
      { "opt": "axis", "file": "hsimple.root", "item": "hpxpy;1", "title": "Draw only histogram axes" },
