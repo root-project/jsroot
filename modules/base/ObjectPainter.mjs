@@ -767,6 +767,9 @@ class ObjectPainter extends BasePainter {
          res = this.redraw(reason);
 
       return getPromise(res).then(() => {
+         if (arg === 'attribute')
+            return this.getPadPainter()?.redrawLegend();
+      }).then(() => {
          // inform GED that something changes
          const canp = this.getCanvPainter();
 

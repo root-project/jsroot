@@ -498,7 +498,8 @@ class JSRootMenu {
      * @private */
    addAttributesMenu(painter, preffix) {
       const is_frame = painter === painter.getFramePainter(),
-            pp = is_frame ? painter.getPadPainter() : null;
+            pp = is_frame ? painter.getPadPainter() : null,
+            redraw_arg = !preffix && !is_frame ? 'attribute' : true;
       if (!preffix) preffix = '';
 
       if (painter.lineatt?.used) {
@@ -507,19 +508,19 @@ class JSRootMenu {
             painter.lineatt.change(undefined, arg);
             changeObjectMember(painter, 'fLineWidth', arg);
             if (pp) changeObjectMember(pp, 'fFrameLineWidth', arg);
-            painter.interactiveRedraw(true, `exec:SetLineWidth(${arg})`);
+            painter.interactiveRedraw(redraw_arg, `exec:SetLineWidth(${arg})`);
          });
          this.addColorMenu('color', painter.lineatt.color, arg => {
             painter.lineatt.change(arg);
             changeObjectMember(painter, 'fLineColor', arg, true);
             if (pp) changeObjectMember(pp, 'fFrameLineColor', arg, true);
-            painter.interactiveRedraw(true, getColorExec(arg, 'SetLineColor'));
+            painter.interactiveRedraw(redraw_arg, getColorExec(arg, 'SetLineColor'));
          });
          this.addLineStyleMenu('style', painter.lineatt.style, id => {
             painter.lineatt.change(undefined, undefined, id);
             changeObjectMember(painter, 'fLineStyle', id);
             if (pp) changeObjectMember(pp, 'fFrameLineStyle', id);
-            painter.interactiveRedraw(true, `exec:SetLineStyle(${id})`);
+            painter.interactiveRedraw(redraw_arg, `exec:SetLineStyle(${id})`);
          });
          this.add('endsub:');
 
@@ -545,13 +546,13 @@ class JSRootMenu {
             painter.fillatt.change(arg, undefined, painter.getCanvSvg());
             changeObjectMember(painter, 'fFillColor', arg, true);
             if (pp) changeObjectMember(pp, 'fFrameFillColor', arg, true);
-            painter.interactiveRedraw(true, getColorExec(arg, 'SetFillColor'));
+            painter.interactiveRedraw(redraw_arg, getColorExec(arg, 'SetFillColor'));
          }, painter.fillatt.kind);
          this.addFillStyleMenu('style', painter.fillatt.pattern, painter.fillatt.colorindx, painter, id => {
             painter.fillatt.change(undefined, id, painter.getCanvSvg());
             changeObjectMember(painter, 'fFillStyle', id);
             if (pp) changeObjectMember(pp, 'fFrameFillStyle', id);
-            painter.interactiveRedraw(true, `exec:SetFillStyle(${id})`);
+            painter.interactiveRedraw(redraw_arg, `exec:SetFillStyle(${id})`);
          });
          this.add('endsub:');
       }
@@ -561,12 +562,12 @@ class JSRootMenu {
          this.addColorMenu('color', painter.markeratt.color, arg => {
             changeObjectMember(painter, 'fMarkerColor', arg, true);
             painter.markeratt.change(arg);
-            painter.interactiveRedraw(true, getColorExec(arg, 'SetMarkerColor'));
+            painter.interactiveRedraw(redraw_arg, getColorExec(arg, 'SetMarkerColor'));
          });
          this.addSizeMenu('size', 0.5, 6, 0.5, painter.markeratt.size, arg => {
             changeObjectMember(painter, 'fMarkerSize', arg);
             painter.markeratt.change(undefined, undefined, arg);
-            painter.interactiveRedraw(true, `exec:SetMarkerSize(${arg})`);
+            painter.interactiveRedraw(redraw_arg, `exec:SetMarkerSize(${arg})`);
          });
 
          this.add('sub:style');
@@ -577,7 +578,7 @@ class JSRootMenu {
                 svg = `<svg width='60' height='18'><text x='1' y='12' style='font-size:12px'>${supported[n].toString()}</text><path stroke='black' fill='${clone.fill?'black':'none'}' d='${clone.create(40, 8)}'></path></svg>`;
 
             this.addchk(painter.markeratt.style === supported[n], svg, supported[n],
-               arg => { painter.markeratt.change(undefined, parseInt(arg)); painter.interactiveRedraw(true, `exec:SetMarkerStyle(${arg})`); });
+               arg => { painter.markeratt.change(undefined, parseInt(arg)); painter.interactiveRedraw(redraw_arg, `exec:SetMarkerStyle(${arg})`); });
          }
          this.add('endsub:');
          this.add('endsub:');

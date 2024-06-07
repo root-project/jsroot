@@ -1289,6 +1289,13 @@ class TPadPainter extends ObjectPainter {
       }).then(menu => menu.show());
    }
 
+   /** @summary Redraw TLegend object
+    * @descr Used when object attributes are changed to ensure that legend is up to date
+    * @private */
+   async redrawLegend() {
+      return this.findPainterFor(null, '', clTLegend)?.redraw();
+   }
+
    /** @summary Redraw pad means redraw ourself
      * @return {Promise} when redrawing ready */
    async redrawPad(reason) {
