@@ -111,10 +111,13 @@ class ObjectPainter extends BasePainter {
      * @protected */
    matchObjectType(arg) {
       const clname = this.getClassName();
-      if (!arg || !clname) return false;
-      if (isStr(arg)) return arg === clname;
-      if (isStr(arg._typename)) return arg._typename === clname;
-      return clname.match(arg);
+      if (!arg || !clname)
+         return false;
+      if (isStr(arg))
+         return arg === clname;
+      if (isStr(arg._typename))
+         return arg._typename === clname;
+      return !!clname.match(arg);
    }
 
    /** @summary Change item name
