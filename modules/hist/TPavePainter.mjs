@@ -1014,7 +1014,8 @@ class TPavePainter extends ObjectPainter {
          zoom_rect = null;
          doing_zoom = false;
 
-         const z = this.z_handle.gr, z1 = z.invert(sel1), z2 = z.invert(sel2);
+         const z1 = this.z_handle.revertPoint(sel1),
+               z2 = this.z_handle.revertPoint(sel2);
 
          this.getFramePainter().zoom('z', Math.min(z1, z2), Math.max(z1, z2));
       }, startRectSel = evnt => {
