@@ -11,7 +11,7 @@ const version_id = '7.7.x',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '7/06/2024',
+version_date = '10/06/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -76822,7 +76822,6 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
             color = this.getColor(histo.fMarkerColor),
             rotate = -1*this.options.TextAngle,
             draw_g = this.draw_g.append('svg:g').attr('class', 'th2_text'),
-            profile2d = this.matchObjectType(clTProfile2D) && isFunc(histo.getBinEntries),
             show_err = (this.options.TextKind === 'E'),
             latex = (show_err && !this.options.TextLine) ? 1 : 0;
       let x, y, width, height,
@@ -76847,9 +76846,6 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
                      histo.fYaxis.GetBinCoord(j + 0.5))) continue;
 
             const binh = handle.gry[j] - handle.gry[j+1];
-
-            if (profile2d)
-               binz = histo.getBinEntries(i+1, j+1);
 
             let text = (binz === Math.round(binz)) ? binz.toString() : floatToString(binz, gStyle.fPaintTextFormat);
 
