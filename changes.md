@@ -7,6 +7,7 @@
 4. Fix - properly handle zooming in THStack histogram
 5. Fix - properly save zoomed ranges in drawingJSON()
 6. Fix - always show all ticks for labeled axis
+7. Fix - draw TProfile2D bins content as text, not entrie
 
 
 ## Changes in 7.7.1
