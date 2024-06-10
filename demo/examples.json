@@ -157,6 +157,11 @@
      { "name": "text", "opt": "hist,text" },
      { "name": "texte", "opt": "hist,texte" }
    ],
+   "TProfile2D": [
+     { "opt": "", "file": "profile2d.root", "item": "c1;1", "title": "TProfile2D class" },
+     { "opt": "text", "file": "profile2d.root", "item": "c1/[1]", "title": "text draw option", "asurl": true },
+     { "opt": "texte", "file": "profile2d.root", "item": "c1/[1]", "title": "texte draw option", "asurl": true }
+   ],
    "THStack" : [
      { "opt": "", "file": "histpainter6.root", "item": "draw_hstack;1", "title": "several examples from THistPainter docu" },
      { "name": "nostackb", "item": "draw_nostackb;1", "title": "example of bar chart with stacked histograms" },
@@ -338,7 +343,6 @@
      { "name": "arrow", "file": "arrow.root", "item": "c1;1", "title": "TArrow class", "interactive": true },
      { "name": "sinfo", "url": "?nobrowser&file=$$$hsimple.root&item=StreamerInfo", "title": "List of streamer infos" },
      { "name": "3dmark", "url": "?nobrowser&file=$$$mix2d3d.root&item=Canvas;1/pad4&opt=white;nomargins", "title": "TPloyMarker3D class, reset pad margins" },
-     { "name": "profile2d", "file": "profile2d.root", "item": "c1;1", "title": "TProfile2D class" },
      { "name": "spline", "file": "tutorials_graphs.root", "item": "splines_test",  "title": "TSpline3 and TSpline5 classes, tutorials/graphs/splines_test.C" },
      { "name": "polyline", "file": "polyline.root", "item": "can;1", "title": "TPolyLine class (produced with graphics/triangles.C)" },
      { "name": "basic3d", "file": "tutorials_graphics.root", "item": "basic3d",  "title": "TPolyLine3D and TPolyMarker3D, output of graphics/basic3d.C tutorial" },
