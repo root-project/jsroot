@@ -2835,7 +2835,8 @@ class TH2Painter extends THistPainter {
 
    /** @summary Provide text information (tooltips) for histogram bin */
    getBinTooltips(i, j) {
-      const histo = this.getHisto();
+      const histo = this.getHisto(),
+            profile2d = this.matchObjectType(clTProfile2D) && isFunc(histo.getBinEntries);
       let binz = histo.getBinContent(i+1, j+1);
 
       if (histo.$baseh)
@@ -2845,11 +2846,16 @@ class TH2Painter extends THistPainter {
                    'x = ' + this.getAxisBinTip('x', histo.fXaxis, i),
                    'y = ' + this.getAxisBinTip('y', histo.fYaxis, j),
                    `bin = ${histo.getBin(i+1, j+1)}  x: ${i+1}  y: ${j+1}`,
-                   'entries = ' + ((binz === Math.round(binz)) ? binz : floatToString(binz, gStyle.fStatFormat))];
+                   'content = ' + ((binz === Math.round(binz)) ? binz : floatToString(binz, gStyle.fStatFormat))];
 
-      if ((this.options.TextKind === 'E') || this.matchObjectType(clTProfile2D)) {
+      if ((this.options.TextKind === 'E') || profile2d) {
          const errz = histo.getBinError(histo.getBin(i+1, j+1));
          lines.push('error = ' + ((errz === Math.round(errz)) ? errz.toString() : floatToString(errz, gStyle.fPaintTextFormat)));
+      }
+
+      if (profile2d) {
+         const entries = histo.getBinEntries(i+1, j+1);
+         lines.push('entries = ' + ((entries === Math.round(entries)) ? entries : floatToString(entries, gStyle.fStatFormat)));
       }
 
       return lines;
