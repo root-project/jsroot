@@ -8,6 +8,7 @@
 5. Fix - properly save zoomed ranges in drawingJSON()
 6. Fix - always show all ticks for labeled axis
 7. Fix - draw TProfile2D bins content as text, not entrie
+8. Fix - interactive zooming on log color palette
 
 
 ## Changes in 7.7.1
