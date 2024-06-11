@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '10/06/2024',
+version_date = '11/06/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -62107,9 +62107,15 @@ const AxisPainterMethods = {
       if ((dmin > 0) && (dmin < 1)) {
          if (this.log) {
             let factor = (item.min > 0) ? Math.log10(item.max/item.min) : 2;
-            if (factor > 10) factor = 10; else if (factor < 0.01) factor = 0.01;
-            item.min = item.min / Math.pow(10, factor*delta_left*dmin);
-            item.max = item.max * Math.pow(10, factor*delta_right*(1-dmin));
+            if (factor > 10)
+               factor = 10;
+            else if (factor < 0.01)
+               factor = 0.01;
+            item.min = item.min / Math.pow(10, factor * delta_left * dmin);
+            item.max = item.max * Math.pow(10, factor * delta_right * (1 - dmin));
+            // special handling for Z scale - limit zooming of color scale
+            if (this.minposbin && this.name === 'zaxis')
+               item.min = Math.max(item.min, 0.3*this.minposbin);
          } else if ((delta_left === -delta_right) && !item.reverse) {
             // shift left/right, try to keep range constant
             let delta = (item.max - item.min) * delta_right * dmin;
@@ -62203,6 +62209,7 @@ class TAxisPainter extends ObjectPainter {
       this.kind = kAxisNormal;
       this.vertical = vertical;
       this.log = opts.log || 0;
+      this.minposbin = opts.minposbin;
       this.noexp_changed = opts.noexp_changed;
       this.symlog = opts.symlog || false;
       this.reverse = opts.reverse || false;
@@ -62220,7 +62227,6 @@ class TAxisPainter extends ObjectPainter {
          this.kind = kAxisFunc;
       else
          this.kind = !axis.fLabels ? kAxisNormal : kAxisLabels;
-
 
       if (this.kind === kAxisTime)
          this.func = time().domain([this.convertDate(smin), this.convertDate(smax)]);
@@ -72209,12 +72215,12 @@ class TPavePainter extends ObjectPainter {
 
       if (this._palette_vertical) {
          this._swap_side = palette.fX2NDC < 0.5;
-         this.z_handle.configureAxis('zaxis', gzmin, gzmax, zmin, zmax, true, [0, s_height], { log, fixed_ticks: cjust ? levels : null, maxTickSize: Math.round(s_width*sizek), swap_side: this._swap_side });
+         this.z_handle.configureAxis('zaxis', gzmin, gzmax, zmin, zmax, true, [0, s_height], { log, fixed_ticks: cjust ? levels : null, maxTickSize: Math.round(s_width*sizek), swap_side: this._swap_side, minposbin: main.gminposbin });
          axis_transform = this._swap_side ? null : `translate(${s_width})`;
          if (pad?.fTickz) axis_second = this._swap_side ? s_width : -s_width;
       } else {
          this._swap_side = palette.fY1NDC > 0.5;
-         this.z_handle.configureAxis('zaxis', gzmin, gzmax, zmin, zmax, false, [0, s_width], { log, fixed_ticks: cjust ? levels : null, maxTickSize: Math.round(s_height*sizek), swap_side: this._swap_side });
+         this.z_handle.configureAxis('zaxis', gzmin, gzmax, zmin, zmax, false, [0, s_width], { log, fixed_ticks: cjust ? levels : null, maxTickSize: Math.round(s_height*sizek), swap_side: this._swap_side, minposbin: main.gminposbin });
          axis_transform = this._swap_side ? null : `translate(0,${s_height})`;
          if (pad?.fTickz) axis_second = this._swap_side ? s_height : -s_height;
       }
@@ -74638,7 +74644,9 @@ class THistPainter extends ObjectPainter {
    /** @summary Create contour object for histogram */
    createContour(nlevels, zmin, zmax, zminpositive, custom_levels) {
       const cntr = new HistContour(zmin, zmax),
-            ndim = this.getDimension();
+            ndim = this.getDimension(),
+            is_th2poly = this.isTH2Poly(),
+            fp = this.getFramePainter();
 
       if (custom_levels)
          cntr.createCustom(custom_levels);
@@ -74650,9 +74658,8 @@ class THistPainter extends ObjectPainter {
          cntr.createNormal(nlevels, logv ?? 0, zminpositive);
       }
 
-      cntr.configIndicies(this.options.Zero ? -1 : 0, (cntr.colzmin !== 0) || !this.options.Zero || this.isTH2Poly() ? 0 : -1);
+      cntr.configIndicies(this.options.Zero && !is_th2poly ? -1 : 0, (cntr.colzmin !== 0) || !this.options.Zero || is_th2poly ? 0 : -1);
 
-      const fp = this.getFramePainter();
       if (fp && (ndim < 3) && !fp.mode3d) {
          fp.zmin = cntr.colzmin;
          fp.zmax = cntr.colzmax;
