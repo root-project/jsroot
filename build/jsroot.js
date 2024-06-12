@@ -72085,7 +72085,7 @@ class TPavePainter extends ObjectPainter {
             contour = main.fContour,
             levels = contour?.getLevels(),
             is_th3 = isFunc(main.getDimension) && (main.getDimension() === 3),
-            log = (is_th3 ? pad?.fLogv : pad?.fLogz) ?? 0,
+            log = pad?.fLogv ?? (is_th3 ? false : pad?.fLogz),
             draw_palette = main._color_palette,
             zaxis = main.getObject()?.fZaxis,
             sizek = pad?.fTickz ? 0.35 : 0.7;
@@ -72264,7 +72264,8 @@ class TPavePainter extends ObjectPainter {
          zoom_rect = null;
          doing_zoom = false;
 
-         const z = this.z_handle.gr, z1 = z.invert(sel1), z2 = z.invert(sel2);
+         const z1 = this.z_handle.revertPoint(sel1),
+               z2 = this.z_handle.revertPoint(sel2);
 
          this.getFramePainter().zoom('z', Math.min(z1, z2), Math.max(z1, z2));
          this.getFramePainter().zoomChangedInteractive('z', true);
@@ -76839,7 +76840,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
       for (let i = handle.i1; i < handle.i2; ++i) {
          const binw = handle.grx[i+1] - handle.grx[i];
          for (let j = handle.j1; j < handle.j2; ++j) {
-            let binz = histo.getBinContent(i+1, j+1);
+            const binz = histo.getBinContent(i+1, j+1);
             if ((binz === 0) && !this._show_empty_bins) continue;
 
             if (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i + 0.5),
