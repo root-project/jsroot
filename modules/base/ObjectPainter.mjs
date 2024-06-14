@@ -1371,7 +1371,7 @@ class ObjectPainter extends BasePainter {
                item.$menu = menu;
 
                if (item.fClassName && lastclname && (lastclname !== item.fClassName)) {
-                  _menu.add('endsub:');
+                  _menu.endsub();
                   lastclname = '';
                }
                if (lastclname !== item.fClassName) {
@@ -1388,7 +1388,7 @@ class ObjectPainter extends BasePainter {
                   _menu.addchk(item.fChecked, item.fName, n, DoExecMenu);
             }
 
-            if (lastclname) _menu.add('endsub:');
+            if (lastclname) _menu.endsub();
          }
 
          _resolveFunc(_menu);

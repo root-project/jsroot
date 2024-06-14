@@ -2596,7 +2596,7 @@ class TFramePainter extends ObjectPainter {
             });
          });
          menu.add('Unzoom', () => this.unzoom(kind));
-         menu.add('endsub:');
+         menu.endsub();
          if (pad) {
             const member = 'fLog'+kind[0];
             menu.sub('SetLog '+kind[0], () => {
@@ -2610,7 +2610,7 @@ class TFramePainter extends ObjectPainter {
             menu.addchk(pad[member] === 3, 'ln', () => this.changeAxisLog(kind[0], 3));
             menu.addchk(pad[member] === 4, 'log4', () => this.changeAxisLog(kind[0], 4));
             menu.addchk(pad[member] === 8, 'log8', () => this.changeAxisLog(kind[0], 8));
-            menu.add('endsub:');
+            menu.endsub();
          }
          menu.addchk(faxis.TestBit(EAxisBits.kMoreLogLabels), 'More log', flag => {
             faxis.InvertBit(EAxisBits.kMoreLogLabels);
@@ -2691,7 +2691,7 @@ class TFramePainter extends ObjectPainter {
 
       menu.sub('Save as');
       ['svg', 'png', 'jpeg', 'pdf', 'webp'].forEach(fmt => menu.add(`frame.${fmt}`, () => pp.saveAs(fmt, 'frame', `frame.${fmt}`)));
-      menu.add('endsub:');
+      menu.endsub();
 
       return true;
    }

@@ -1091,7 +1091,7 @@ class RFramePainter extends RObjectPainter {
          menu.addchk(this.x_handle.draw_ticks === 1, 'normal', () => this.changeFrameAttr('ticksX', 1));
          menu.addchk(this.x_handle.draw_ticks === 2, 'ticks on both sides', () => this.changeFrameAttr('ticksX', 2));
          menu.addchk(this.x_handle.draw_ticks === 3, 'labels on both sides', () => this.changeFrameAttr('ticksX', 3));
-         menu.add('endsub:');
+         menu.endsub();
        }
       if (this.y_handle && !this.y2_handle) {
          menu.sub('Ticks y');
@@ -1099,7 +1099,7 @@ class RFramePainter extends RObjectPainter {
          menu.addchk(this.y_handle.draw_ticks === 1, 'normal', () => this.changeFrameAttr('ticksY', 1));
          menu.addchk(this.y_handle.draw_ticks === 2, 'ticks on both sides', () => this.changeFrameAttr('ticksY', 2));
          menu.addchk(this.y_handle.draw_ticks === 3, 'labels on both sides', () => this.changeFrameAttr('ticksY', 3));
-         menu.add('endsub:');
+         menu.endsub();
        }
 
       menu.addAttributesMenu(this, alone ? '' : 'Frame ');
@@ -1107,7 +1107,7 @@ class RFramePainter extends RObjectPainter {
 
       menu.sub('Save as');
       ['svg', 'png', 'jpeg', 'pdf', 'webp'].forEach(fmt => menu.add(`frame.${fmt}`, () => this.getPadPainter().saveAs(fmt, 'frame', `frame.${fmt}`)));
-      menu.add('endsub:');
+      menu.endsub();
 
       return true;
    }

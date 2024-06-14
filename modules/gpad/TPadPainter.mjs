@@ -1219,12 +1219,12 @@ class TPadPainter extends ObjectPainter {
          menu.addchk(this.pad?.fTickx === 0, 'normal', '0fTickx', SetPadField);
          menu.addchk(this.pad?.fTickx === 1, 'ticks on both sides', '1fTickx', SetPadField);
          menu.addchk(this.pad?.fTickx === 2, 'labels on both sides', '2fTickx', SetPadField);
-         menu.add('endsub:');
+         menu.endsub();
          menu.sub('Ticks y');
          menu.addchk(this.pad?.fTicky === 0, 'normal', '0fTicky', SetPadField);
          menu.addchk(this.pad?.fTicky === 1, 'ticks on both sides', '1fTicky', SetPadField);
          menu.addchk(this.pad?.fTicky === 2, 'labels on both sides', '2fTicky', SetPadField);
-         menu.add('endsub:');
+         menu.endsub();
          menu.addchk(this.pad?.fEditable, 'Editable', flag => { this.pad.fEditable = flag; this.interactiveRedraw('pad'); });
          if (this.iscan)
             menu.addchk(this.pad?.TestBit(kIsGrayscale), 'Gray scale', flag => { this.setGrayscale(flag); this.interactiveRedraw('pad'); });
@@ -1268,7 +1268,7 @@ class TPadPainter extends ObjectPainter {
       const fname = this.this_pad_name || (this.iscan ? 'canvas' : 'pad');
       menu.sub('Save as');
       ['svg', 'png', 'jpeg', 'pdf', 'webp'].forEach(fmt => menu.add(`${fname}.${fmt}`, () => this.saveAs(fmt, this.iscan, `${fname}.${fmt}`)));
-      menu.add('endsub:');
+      menu.endsub();
 
       return true;
    }

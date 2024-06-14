@@ -91,7 +91,7 @@ class JSRootMenu {
 
    /** @summary Mark end of submenu */
    endsub() {
-      this.add('endsub:');
+      this.endsub();
    }
 
    /** @summary Add draw sub-menu with draw options
@@ -131,13 +131,13 @@ class JSRootMenu {
             this.sub('' + name, opts[i], call_back);
             for (let k = i+1; k < group; ++k)
                this.add(opts[k], opts[k], call_back);
-            this.add('endsub:');
+            this.endsub();
             i = group - 1;
          } else if (name === kInspect) {
             this.sub('' + name, opts[i], call_back, 'Inspect object content');
             for (let k = 0; k < 10; ++k)
                this.add(k.toString(), kInspect + k, call_back, `Inspect object and expand to level ${k}`);
-            this.add('endsub:');
+            this.endsub();
          } else
             this.add(name, opts[i], call_back);
       }
@@ -146,7 +146,7 @@ class JSRootMenu {
             const opt = isFunc(this.painter?.getDrawOpt) ? this.painter.getDrawOpt() : opts[0];
             this.input('Provide draw option', opt, 'text').then(call_back);
          }, 'Enter draw option in dialog');
-         this.add('endsub:');
+         this.endsub();
       }
    }
 
@@ -189,7 +189,7 @@ class JSRootMenu {
          if (!this.native()) break;
       }
 
-      this.add('endsub:');
+      this.endsub();
    }
 
    /** @summary Add size selection menu entries
@@ -221,7 +221,7 @@ class JSRootMenu {
 
       this.sub('' + name, () => this.input('Enter value of ' + name, conv(size_value, true), (step >= 1) ? 'int' : 'float').then(set_func), title);
       values.forEach(v => this.addchk(match(v), conv(v), v, res => set_func((step >= 1) ? Number.parseInt(res) : Number.parseFloat(res))));
-      this.add('endsub:');
+      this.endsub();
    }
 
    /** @summary Add palette menu entries
@@ -257,7 +257,7 @@ class JSRootMenu {
       this.add('endcolumn:');
 
       if (!this.native())
-         return this.add('endsub:');
+         return this.endsub();
 
       this.add('column:');
 
@@ -328,7 +328,7 @@ class JSRootMenu {
 
       this.add('endcolumn:');
 
-      this.add('endsub:');
+      this.endsub();
    }
 
    /** @summary Add rebin menu entries
@@ -337,7 +337,7 @@ class JSRootMenu {
       this.sub('Rebin', () => this.input('Enter rebin value', 2, 'int', 2).then(rebin_func));
       for (let sz = 2; sz <= 7; sz++)
          this.add(sz.toString(), sz, res => rebin_func(parseInt(res)));
-      this.add('endsub:');
+      this.endsub();
    }
 
    /** @summary Add selection menu entries
@@ -352,7 +352,7 @@ class JSRootMenu {
       this.sub('' + name, undefined, undefined, title);
       for (let n = 0; n < values.length; ++n)
          this.addchk(use_number ? (n === value) : (values[n] === value), values[n], use_number ? n : values[n], res => set_func(use_number ? Number.parseInt(res) : res));
-      this.add('endsub:');
+      this.endsub();
    }
 
    /** @summary Add RColor selection menu entries
@@ -380,7 +380,7 @@ class JSRootMenu {
          const svg = `<svg width='100' height='18' style='margin:0px;${bkgr}'><text x='4' y='12' style='font-size:12px' fill='${fillcol}'>${coltxt}</text></svg>`;
          this.addchk(match, svg, coltxt, res => set_func(res === 'default' ? null : res));
       }
-      this.add('endsub:');
+      this.endsub();
    }
 
    /** @summary Add items to change RAttrText
@@ -417,7 +417,7 @@ class JSRootMenu {
 
          this.addchk((value === n), svg, n, arg => set_func(parseInt(arg)));
       }
-      this.add('endsub:');
+      this.endsub();
    }
 
    /** @summary Add fill style menu
@@ -439,7 +439,7 @@ class JSRootMenu {
          }
          this.addchk(value === supported[n], svg, supported[n], arg => set_func(parseInt(arg)));
       }
-      this.add('endsub:');
+      this.endsub();
    }
 
    /** @summary Add font selection menu
@@ -479,7 +479,7 @@ class JSRootMenu {
       }
 
       this.add('endcolumn:');
-      this.add('endsub:');
+      this.endsub();
    }
 
    /** @summary Add align selection menu
@@ -500,7 +500,7 @@ class JSRootMenu {
             this.addchk(h*10+v === value, `${h*10+v}: ${hnames[h-1]} ${vnames[v-1]}`, h*10+v, arg => set_func(parseInt(arg)));
       }
 
-      this.add('endsub:');
+      this.endsub();
    }
 
    /** @summary Fill context menu for graphical attributes in painter
@@ -534,7 +534,7 @@ class JSRootMenu {
             if (pp) changeObjectMember(pp, 'fFrameLineStyle', id);
             painter.interactiveRedraw(redraw_arg, `exec:SetLineStyle(${id})`);
          });
-         this.add('endsub:');
+         this.endsub();
 
          if (!is_frame && painter.lineatt?.excl_side) {
             this.sub('Exclusion');
@@ -543,12 +543,12 @@ class JSRootMenu {
                this.addchk((painter.lineatt.excl_side === side), side, side,
                   arg => { painter.lineatt.changeExcl(parseInt(arg)); painter.interactiveRedraw(); });
             }
-            this.add('endsub:');
+            this.endsub();
 
             this.addSizeMenu('width', 10, 100, 10, painter.lineatt.excl_width,
                arg => { painter.lineatt.changeExcl(undefined, arg); painter.interactiveRedraw(); });
 
-            this.add('endsub:');
+            this.endsub();
          }
       }
 
@@ -566,7 +566,7 @@ class JSRootMenu {
             if (pp) changeObjectMember(pp, 'fFrameFillStyle', id);
             painter.interactiveRedraw(redraw_arg, `exec:SetFillStyle(${id})`);
          });
-         this.add('endsub:');
+         this.endsub();
       }
 
       if (painter.markeratt?.used) {
@@ -592,8 +592,8 @@ class JSRootMenu {
             this.addchk(painter.markeratt.style === supported[n], svg, supported[n],
                arg => { painter.markeratt.change(undefined, parseInt(arg)); painter.interactiveRedraw(redraw_arg, `exec:SetMarkerStyle(${arg})`); });
          }
-         this.add('endsub:');
-         this.add('endsub:');
+         this.endsub();
+         this.endsub();
       }
 
       if (painter.textatt?.used) {
@@ -633,7 +633,7 @@ class JSRootMenu {
             });
          }
 
-         this.add('endsub:');
+         this.endsub();
       }
    }
 
@@ -658,7 +658,7 @@ class JSRootMenu {
       let a = faxis.fLabelSize >= 1;
       this.addSizeMenu('Size', a ? 2 : 0.02, a ? 30 : 0.11, a ? 2 : 0.01, faxis.fLabelSize,
             arg => { faxis.fLabelSize = arg; painter.interactiveRedraw('pad', `exec:SetLabelSize(${arg})`, kind); });
-      this.add('endsub:');
+      this.endsub();
       this.sub('Title');
       this.add('SetTitle', () => {
          this.input('Enter axis title', faxis.fTitle).then(t => {
@@ -684,7 +684,7 @@ class JSRootMenu {
       a = faxis.fTitleSize >= 1;
       this.addSizeMenu('Size', a ? 2 : 0.02, a ? 30 : 0.11, a ? 2 : 0.01, faxis.fTitleSize,
                       arg => { faxis.fTitleSize = arg; painter.interactiveRedraw('pad', `exec:SetTitleSize(${arg})`, kind); });
-      this.add('endsub:');
+      this.endsub();
       this.sub('Ticks');
       if (is_gaxis) {
          this.addColorMenu('Color', faxis.fLineColor,
@@ -697,7 +697,7 @@ class JSRootMenu {
          this.addSizeMenu('Size', -0.05, 0.055, 0.01, faxis.fTickLength,
                   arg => { faxis.fTickLength = arg; painter.interactiveRedraw('pad', `exec:SetTickLength(${arg})`, kind); });
       }
-      this.add('endsub:');
+      this.endsub();
 
       if (is_gaxis) {
          this.add('Options', () => this.input('Enter TGaxis options like +L or -G', faxis.fChopt, 'string').then(arg => {
@@ -734,7 +734,7 @@ class JSRootMenu {
       this.addchk(settings.HandleWrongHttpResponse, 'Handle wrong http response', flag => { settings.HandleWrongHttpResponse = flag; });
       this.addchk(settings.WithCredentials, 'With credentials', flag => { settings.WithCredentials = flag; }, 'Submit http request with user credentials');
 
-      this.add('endsub:');
+      this.endsub();
 
       this.sub('Toolbar');
       this.addchk(settings.ToolBar === false, 'Off', flag => { settings.ToolBar = !flag; });
@@ -743,7 +743,7 @@ class JSRootMenu {
       this.add('separator');
       this.addchk(settings.ToolBarSide === 'left', 'Left side', flag => { settings.ToolBarSide = flag ? 'left' : 'right'; });
       this.addchk(settings.ToolBarVert, 'Vertical', flag => { settings.ToolBarVert = flag; });
-      this.add('endsub:');
+      this.endsub();
 
       this.sub('Interactive');
       this.addchk(settings.Tooltip, 'Tooltip', flag => { settings.Tooltip = flag; });
@@ -753,7 +753,7 @@ class JSRootMenu {
       this.addchk(settings.ZoomMouse, 'Mouse', flag => { settings.ZoomMouse = flag; });
       this.addchk(settings.ZoomWheel, 'Wheel', flag => { settings.ZoomWheel = flag; });
       this.addchk(settings.ZoomTouch, 'Touch', flag => { settings.ZoomTouch = flag; });
-      this.add('endsub:');
+      this.endsub();
       this.addchk(settings.HandleKeys, 'Keypress handling', flag => { settings.HandleKeys = flag; });
       this.addchk(settings.MoveResize, 'Move and resize', flag => { settings.MoveResize = flag; });
       this.addchk(settings.DragAndDrop, 'Drag and drop', flag => { settings.DragAndDrop = flag; });
@@ -761,7 +761,7 @@ class JSRootMenu {
       this.addSelectMenu('Progress box', ['off', 'on', 'modal'], isStr(settings.ProgressBox) ? settings.ProgressBox : (settings.ProgressBox ? 'on' : 'off'), value => {
          settings.ProgressBox = (value === 'off') ? false : (value === ' on' ? true : value);
       });
-      this.add('endsub:');
+      this.endsub();
 
       this.sub('Drawing');
       this.addSelectMenu('Optimize', ['None', 'Smart', 'Always'], settings.OptimizeDraw, value => { settings.OptimizeDraw = value; }, 'Histogram drawing optimization');
@@ -770,18 +770,18 @@ class JSRootMenu {
       this.add(`height ${settings.SmallPad?.height ?? 0}px`, () => this.input('Small pad height', settings.SmallPad?.height, 'int', 1, 800).then(val => { settings.SmallPad.height = val; }));
       this.add('disable', () => { settings.SmallPad = { width: 0, height: 0 }; }, 'disable small pad drawing optimization');
       this.add('default', () => { settings.SmallPad = { width: 150, height: 100 }; }, 'Set to default 150x100 dimension');
-      this.add('endsub:');
+      this.endsub();
       this.addPaletteMenu(settings.Palette, pal => { settings.Palette = pal; });
       this.addchk(settings.AutoStat, 'Auto stat box', flag => { settings.AutoStat = flag; });
       this.addSelectMenu('Latex', ['Off', 'Symbols', 'Normal', 'MathJax', 'Force MathJax'], settings.Latex, value => { settings.Latex = value; });
       this.addSelectMenu('3D rendering', ['Default', 'WebGL', 'Image'], settings.Render3D, value => { settings.Render3D = value; });
       this.addSelectMenu('WebGL embeding', ['Default', 'Overlay', 'Embed'], settings.Embed3D, value => { settings.Embed3D = value; });
-      this.add('endsub:');
+      this.endsub();
 
       this.sub('Geometry');
       this.add('Grad per segment:  ' + settings.GeoGradPerSegm, () => this.input('Grad per segment in geometry', settings.GeoGradPerSegm, 'int', 1, 60).then(val => { settings.GeoGradPerSegm = val; }));
       this.addchk(settings.GeoCompressComp, 'Compress composites', flag => { settings.GeoCompressComp = flag; });
-      this.add('endsub:');
+      this.endsub();
 
       if (with_hierarchy) {
          this.sub('Browser');
@@ -793,7 +793,7 @@ class JSRootMenu {
             settings.BrowserWidth = val;
             if (handle_func) handle_func('width');
          }));
-         this.add('endsub:');
+         this.endsub();
       }
 
       this.add('Dark mode: ' + (settings.DarkMode ? 'On' : 'Off'), () => {
@@ -807,7 +807,7 @@ class JSRootMenu {
          const curr = gStyle[field] >= arr.length ? 1 : gStyle[field];
          for (let v = 0; v < arr.length; ++v)
             this.addchk(curr === v, arr[v], `${v}${field}`, setStyleField);
-         this.add('endsub:');
+         this.endsub();
       };
 
       this.sub('gStyle');
@@ -819,7 +819,7 @@ class JSRootMenu {
       addStyleIntField('Draw file', 'fOptFile', ['Off', 'File name', 'Full file URL', 'Item name']);
       this.addSizeMenu('Date X', 0.01, 0.1, 0.01, gStyle.fDateX, x => { gStyle.fDateX = x; }, 'configure gStyle.fDateX for date/item name drawings');
       this.addSizeMenu('Date Y', 0.01, 0.1, 0.01, gStyle.fDateY, y => { gStyle.fDateY = y; }, 'configure gStyle.fDateY for date/item name drawings');
-      this.add('endsub:');
+      this.endsub();
 
       this.sub('Pad');
       this.addColorMenu('Color', gStyle.fPadColor, col => { gStyle.fPadColor = col; });
@@ -829,13 +829,13 @@ class JSRootMenu {
       this.addColorMenu('Color', gStyle.fGridColor, col => { gStyle.fGridColor = col; });
       this.addSizeMenu('Width', 1, 10, 1, gStyle.fGridWidth, w => { gStyle.fGridWidth = w; });
       this.addLineStyleMenu('Style', gStyle.fGridStyle, st => { gStyle.fGridStyle = st; });
-      this.add('endsub:');
+      this.endsub();
       addStyleIntField('Ticks X', 'fPadTickX', ['normal', 'ticks on both sides', 'labels on both sides']);
       addStyleIntField('Ticks Y', 'fPadTickY', ['normal', 'ticks on both sides', 'labels on both sides']);
       addStyleIntField('Log X', 'fOptLogx', ['off', 'on', 'log 2']);
       addStyleIntField('Log Y', 'fOptLogy', ['off', 'on', 'log 2']);
       addStyleIntField('Log Z', 'fOptLogz', ['off', 'on', 'log 2']);
-      this.add('endsub:');
+      this.endsub();
 
       this.sub('Frame');
       this.addColorMenu('Fill color', gStyle.fFrameFillColor, col => { gStyle.fFrameFillColor = col; });
@@ -850,8 +850,8 @@ class JSRootMenu {
       this.addSizeMenu('Top', 0, 0.5, 0.05, gStyle.fPadTopMargin, v => { gStyle.fPadTopMargin = v; });
       this.addSizeMenu('Left', 0, 0.5, 0.05, gStyle.fPadLeftMargin, v => { gStyle.fPadLeftMargin = v; });
       this.addSizeMenu('Right', 0, 0.5, 0.05, gStyle.fPadRightMargin, v => { gStyle.fPadRightMargin = v; });
-      this.add('endsub:');
-      this.add('endsub:');
+      this.endsub();
+      this.endsub();
 
       this.sub('Title');
       this.addColorMenu('Fill color', gStyle.fTitleColor, col => { gStyle.fTitleColor = col; });
@@ -864,7 +864,7 @@ class JSRootMenu {
       this.addSizeMenu('Y: ' + gStyle.fTitleY.toFixed(2), 0.0, 1.0, 0.1, gStyle.fTitleY, v => { gStyle.fTitleY = v; });
       this.addSizeMenu('W: ' + gStyle.fTitleW.toFixed(2), 0.0, 1.0, 0.1, gStyle.fTitleW, v => { gStyle.fTitleW = v; });
       this.addSizeMenu('H: ' + gStyle.fTitleH.toFixed(2), 0.0, 1.0, 0.1, gStyle.fTitleH, v => { gStyle.fTitleH = v; });
-      this.add('endsub:');
+      this.endsub();
 
       this.sub('Stat box');
       this.addColorMenu('Fill color', gStyle.fStatColor, col => { gStyle.fStatColor = col; });
@@ -878,7 +878,7 @@ class JSRootMenu {
       this.addSizeMenu('Y: ' + gStyle.fStatY.toFixed(2), 0.2, 1.0, 0.1, gStyle.fStatY, v => { gStyle.fStatY = v; });
       this.addSizeMenu('Width: ' + gStyle.fStatW.toFixed(2), 0.1, 1.0, 0.1, gStyle.fStatW, v => { gStyle.fStatW = v; });
       this.addSizeMenu('Height: ' + gStyle.fStatH.toFixed(2), 0.1, 1.0, 0.1, gStyle.fStatH, v => { gStyle.fStatH = v; });
-      this.add('endsub:');
+      this.endsub();
 
       this.sub('Legend');
       this.addColorMenu('Fill color', gStyle.fLegendFillColor, col => { gStyle.fLegendFillColor = col; });
@@ -886,7 +886,7 @@ class JSRootMenu {
       this.addSizeMenu('Border size', 0, 10, 1, gStyle.fLegendBorderSize, sz => { gStyle.fLegendBorderSize = sz; });
       this.addFontMenu('Font', gStyle.fLegendFont, fnt => { gStyle.fLegendFont = fnt; });
       this.addSizeMenu('Text size', 0, 0.1, 0.01, gStyle.fLegendTextSize, v => { gStyle.fLegendTextSize = v; }, 'legend text size, when 0 - auto adjustment is used');
-      this.add('endsub:');
+      this.endsub();
 
       this.sub('Histogram');
       this.addchk(gStyle.fOptTitle === 1, 'Hist title', flag => { gStyle.fOptTitle = flag ? 1 : 0; });
@@ -902,14 +902,14 @@ class JSRootMenu {
       this.addColorMenu('Line color', gStyle.fHistLineColor, col => { gStyle.fHistLineColor = col; });
       this.addSizeMenu('Line width', 1, 10, 1, gStyle.fHistLineWidth, w => { gStyle.fHistLineWidth = w; });
       this.addLineStyleMenu('Line style', gStyle.fHistLineStyle, st => { gStyle.fHistLineStyle = st; });
-      this.add('endsub:');
+      this.endsub();
 
       this.add('separator');
       this.sub('Predefined');
       ['Modern', 'Plain', 'Bold'].forEach(name => this.addchk((gStyle.fName === name), name, name, selectgStyle));
-      this.add('endsub:');
+      this.endsub();
 
-      this.add('endsub:'); // gStyle
+      this.endsub(); // gStyle
 
       this.add('separator');
 
@@ -919,7 +919,7 @@ class JSRootMenu {
       }, 'Store settings and gStyle in browser local storage');
       this.add('Delete settings', () => { saveSettings(-1); saveStyle(-1); }, 'Delete settings and gStyle from browser local storage');
 
-      if (!alone) this.add('endsub:');
+      if (!alone) this.endsub();
    }
 
    /** @summary Run modal dialog

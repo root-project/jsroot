@@ -754,7 +754,7 @@ class RPadPainter extends RObjectPainter {
       const fname = this.this_pad_name || (this.iscan ? 'canvas' : 'pad');
       menu.sub('Save as');
       ['svg', 'png', 'jpeg', 'pdf', 'webp'].forEach(fmt => menu.add(`${fname}.${fmt}`, () => this.saveAs(fmt, this.iscan, `${fname}.${fmt}`)));
-      menu.add('endsub:');
+      menu.endsub();
 
       return true;
    }

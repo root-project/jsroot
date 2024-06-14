@@ -1169,7 +1169,7 @@ class TGeoPainter extends ObjectPainter {
          this.changedHighlight();
       });
 
-      menu.add('endsub:');
+      menu.endsub();
 
       menu.sub('Camera');
       menu.add('Reset position', () => this.focusCamera());
@@ -1193,7 +1193,7 @@ class TGeoPainter extends ObjectPainter {
                this.ctrl.camera_kind = arg;
                this.changeCamera();
             }));
-         menu.add('endsub:');
+         menu.endsub();
 
          if (this.isOrthoCamera()) {
             menu.sub('Overlay');
@@ -1202,10 +1202,10 @@ class TGeoPainter extends ObjectPainter {
                   this.ctrl.camera_overlay = arg;
                   this.changeCamera();
                }));
-            menu.add('endsub:');
+            menu.endsub();
          }
       }
-      menu.add('endsub:');
+      menu.endsub();
 
       menu.addchk(this.ctrl.select_in_view, 'Select in view', () => {
          this.ctrl.select_in_view = !this.ctrl.select_in_view;
@@ -1825,7 +1825,7 @@ class TGeoPainter extends ObjectPainter {
                      menu.painter.render3D();
                   }, 'Hide this physical node');
 
-                  if (many) menu.add('endsub:');
+                  if (many) menu.endsub();
 
                   continue;
                }
@@ -1892,7 +1892,7 @@ class TGeoPainter extends ObjectPainter {
                   }
                }
 
-               if (many) menu.add('endsub:');
+               if (many) menu.endsub();
             }
          }
          menu.show();
@@ -5584,7 +5584,7 @@ function provideMenu(menu, item, hpainter) {
          menu.addchk(phys_vis && !phys_vis.visible, 'off', 'off', changePhysVis, 'Disable visibility of physical node');
          menu.add('reset', 'clear', changePhysVis, 'Reset custom visibility of physical node');
          menu.add('reset all', 'clearall', changePhysVis, 'Reset all custom settings for all nodes');
-         menu.add('endsub:');
+         menu.endsub();
       }
 
       menu.addchk(is_visible, 'Logical vis',

@@ -735,7 +735,7 @@ class TH2Painter extends THistPainter {
          menu.sub('Projections', () => menu.input('Input projection kind X1 or XY2 or X3_Y4', kind, 'string').then(val => this.toggleProjection(val)));
          for (let k = 0; k < kinds.length; ++k)
             menu.addchk(kind === kinds[k], kinds[k], kinds[k], arg => this.toggleProjection(arg));
-         menu.add('endsub:');
+         menu.endsub();
       }
 
       if (!this.isTH2Poly())
