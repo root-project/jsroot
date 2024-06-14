@@ -1162,7 +1162,7 @@ class TGeoPainter extends ObjectPainter {
          this.changedHighlight();
       });
 
-      menu.add('separator');
+      menu.separator();
 
       menu.addchk(this.ctrl.highlight_scene, 'Scene', flag => {
          this.ctrl.highlight_scene = flag;
@@ -5502,7 +5502,7 @@ function provideMenu(menu, item, hpainter) {
 
    if (!vol && !iseve) return false;
 
-   menu.add('separator');
+   menu.separator();
 
    const scanEveVisible = (obj, arg, skip_this) => {
       if (!arg) arg = { visible: 0, hidden: 0 };

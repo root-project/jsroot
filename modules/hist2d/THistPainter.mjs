@@ -1741,7 +1741,7 @@ class THistPainter extends ObjectPainter {
          // menu for 3D drawings
 
          if (menu.size() > 0)
-            menu.add('separator');
+            menu.separator();
 
          const main = this.getMainPainter() || this;
 

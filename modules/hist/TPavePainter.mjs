@@ -1107,7 +1107,7 @@ class TPavePainter extends ObjectPainter {
                this.interactiveRedraw(true, `exec:SetFitFormat("${fmt}")`);
             });
          });
-         menu.add('separator');
+         menu.separator();
          menu.sub('SetOptStat', () => {
             menu.input('Enter OptStat', pave.fOptStat, 'int').then(fmt => {
                pave.fOptStat = fmt;
@@ -1154,7 +1154,7 @@ class TPavePainter extends ObjectPainter {
          addStatOpt(13, 'Probability');
          menu.endsub();
 
-         menu.add('separator');
+         menu.separator();
       } else if (pave._typename === clTLegend) {
          menu.add('Autoplace', () => {
             this.autoPlaceLegend(pave, this.getPadPainter()?.getRootPad(true), true).then(res => {

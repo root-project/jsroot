@@ -7,7 +7,8 @@ import { getSvgLineStyle } from '../base/TAttLineHandler.mjs';
 import { FontHandler } from '../base/FontHandler.mjs';
 
 
-const kToFront = '__front__', sDfltName = 'root_ctx_menu', sDfltDlg = '_dialog';
+const kToFront = '__front__', sDfltName = 'root_ctx_menu', sDfltDlg = '_dialog',
+      sSub = 'sub:', sEndsub = 'endsub:', sSeparator = 'separator';
 
 /**
  * @summary Abstract class for creating context menu
@@ -86,12 +87,17 @@ class JSRootMenu {
 
    /** @summary Add sub-menu */
    sub(name, arg, func, title) {
-      this.add(`sub:${name}`, arg, func, title);
+      this.add(sSub + name, arg, func, title);
    }
 
    /** @summary Mark end of submenu */
    endsub() {
-      this.endsub();
+      this.add(sEndsub);
+   }
+
+   /** @summary Add separator */
+   separator() {
+      this.add(sSeparator);
    }
 
    /** @summary Add draw sub-menu with draw options
@@ -485,7 +491,7 @@ class JSRootMenu {
    /** @summary Add align selection menu
      * @private */
    addAlignMenu(name, value, set_func) {
-      this.add(`sub:${name}`, () => {
+      this.sub(name, () => {
          this.input('Enter align like 12 or 31', value).then(arg => {
             const id = parseInt(arg);
             if ((id < 11) || (id > 33)) return;
@@ -515,7 +521,7 @@ class JSRootMenu {
       if (!preffix) preffix = '';
 
       if (painter.lineatt?.used) {
-         this.add(`sub:${preffix}Line att`);
+         this.sub(`${preffix}Line att`);
          this.addSizeMenu('width', 1, 10, 1, painter.lineatt.width, arg => {
             painter.lineatt.change(undefined, arg);
             changeObjectMember(painter, 'fLineWidth', arg);
@@ -553,7 +559,7 @@ class JSRootMenu {
       }
 
       if (painter.fillatt?.used) {
-         this.add(`sub:${preffix}Fill att`);
+         this.sub(`${preffix}Fill att`);
          this.addColorMenu('color', painter.fillatt.colorindx, arg => {
             painter.fillatt.change(arg, undefined, painter.getCanvSvg());
             changeObjectMember(painter, 'fFillColor', arg, true);
@@ -570,7 +576,7 @@ class JSRootMenu {
       }
 
       if (painter.markeratt?.used) {
-         this.add(`sub:${preffix}Marker att`);
+         this.sub(`${preffix}Marker att`);
          this.addColorMenu('color', painter.markeratt.color, arg => {
             changeObjectMember(painter, 'fMarkerColor', arg, true);
             painter.markeratt.change(arg);
@@ -597,7 +603,7 @@ class JSRootMenu {
       }
 
       if (painter.textatt?.used) {
-         this.add(`sub:${preffix}Text att`);
+         this.sub(`${preffix}Text att`);
 
          this.addFontMenu('font', painter.textatt.font, arg => {
             changeObjectMember(painter, 'fTextFont', arg);
@@ -740,7 +746,7 @@ class JSRootMenu {
       this.addchk(settings.ToolBar === false, 'Off', flag => { settings.ToolBar = !flag; });
       this.addchk(settings.ToolBar === true, 'On', flag => { settings.ToolBar = flag; });
       this.addchk(settings.ToolBar === 'popup', 'Popup', flag => { settings.ToolBar = flag ? 'popup' : false; });
-      this.add('separator');
+      this.separator();
       this.addchk(settings.ToolBarSide === 'left', 'Left side', flag => { settings.ToolBarSide = flag ? 'left' : 'right'; });
       this.addchk(settings.ToolBarVert, 'Vertical', flag => { settings.ToolBarVert = flag; });
       this.endsub();
@@ -904,14 +910,14 @@ class JSRootMenu {
       this.addLineStyleMenu('Line style', gStyle.fHistLineStyle, st => { gStyle.fHistLineStyle = st; });
       this.endsub();
 
-      this.add('separator');
+      this.separator();
       this.sub('Predefined');
       ['Modern', 'Plain', 'Bold'].forEach(name => this.addchk((gStyle.fName === name), name, name, selectgStyle));
       this.endsub();
 
       this.endsub(); // gStyle
 
-      this.add('separator');
+      this.separator();
 
       this.add('Save settings', () => {
          const promise = readSettings(true) ? Promise.resolve(true) : this.confirm('Save settings', 'Pressing OK one agreess that JSROOT will store settings in browser local storage');
@@ -1083,13 +1089,13 @@ class StandaloneMenu extends JSRootMenu {
    add(name, arg, func, title) {
       let curr = this.stack[this.stack.length-1];
 
-      if (name === 'separator')
+      if (name === sSeparator)
          return curr.push({ divider: true });
 
       if (name.indexOf('header:') === 0)
          return curr.push({ text: name.slice(7), header: true });
 
-      if (name === 'endsub:') {
+      if (name === sEndsub) {
          this.stack.pop();
          curr = this.stack[this.stack.length-1];
          if (curr[curr.length-1].sub.length === 0)
@@ -1113,7 +1119,7 @@ class StandaloneMenu extends JSRootMenu {
          return;
       }
 
-      if (name.indexOf('sub:') === 0) {
+      if (name.indexOf(sSub) === 0) {
          name = name.slice(4);
          elem.sub = [];
          this.stack.push(elem.sub);

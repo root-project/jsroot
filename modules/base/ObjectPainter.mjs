@@ -1361,7 +1361,7 @@ class ObjectPainter extends BasePainter {
 
          if (menu.exec_items?.length) {
             if (_menu.size() > 0)
-               _menu.add('separator');
+               _menu.separator();
 
             let lastclname;
 

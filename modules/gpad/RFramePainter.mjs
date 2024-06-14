@@ -1059,7 +1059,7 @@ class RFramePainter extends RObjectPainter {
       if (alone)
          menu.add('header:Frame');
       else
-         menu.add('separator');
+         menu.separator();
 
       if (this.zoom_xmin !== this.zoom_xmax)
          menu.add('Unzoom X', () => this.unzoom('x'));
@@ -1073,7 +1073,7 @@ class RFramePainter extends RObjectPainter {
          menu.add('Unzoom Y2', () => this.unzoom('y2'));
       menu.add('Unzoom all', () => this.unzoom('all'));
 
-      menu.add('separator');
+      menu.separator();
 
       menu.addchk(this.isTooltipAllowed(), 'Show tooltips', () => this.setTooltipAllowed('toggle'));
 
@@ -1103,7 +1103,7 @@ class RFramePainter extends RObjectPainter {
        }
 
       menu.addAttributesMenu(this, alone ? '' : 'Frame ');
-      menu.add('separator');
+      menu.separator();
 
       menu.sub('Save as');
       ['svg', 'png', 'jpeg', 'pdf', 'webp'].forEach(fmt => menu.add(`frame.${fmt}`, () => this.getPadPainter().saveAs(fmt, 'frame', `frame.${fmt}`)));

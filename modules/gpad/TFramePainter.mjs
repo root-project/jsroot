@@ -2653,7 +2653,7 @@ class TFramePainter extends ObjectPainter {
       if (alone)
          menu.add('header:Frame');
       else
-         menu.add('separator');
+         menu.separator();
 
       if (this.zoom_xmin !== this.zoom_xmax)
          menu.add('Unzoom X', () => this.unzoom('x'));
@@ -2673,7 +2673,7 @@ class TFramePainter extends ObjectPainter {
 
          if (isFunc(main?.getDimension) && (main.getDimension() > 1))
             menu.addchk(pad.fLogz, 'SetLogz', () => this.toggleAxisLog('z'));
-         menu.add('separator');
+         menu.separator();
       }
 
       menu.addchk(this.isTooltipAllowed(), 'Show tooltips', () => this.setTooltipAllowed('toggle'));
@@ -2687,7 +2687,7 @@ class TFramePainter extends ObjectPainter {
          this.lineatt?.saveToStyle('fFrameLineColor', 'fFrameLineWidth', 'fFrameLineStyle');
       }, 'Store frame position and graphical attributes to gStyle');
 
-      menu.add('separator');
+      menu.separator();
 
       menu.sub('Save as');
       ['svg', 'png', 'jpeg', 'pdf', 'webp'].forEach(fmt => menu.add(`frame.${fmt}`, () => pp.saveAs(fmt, 'frame', `frame.${fmt}`)));

@@ -738,7 +738,7 @@ class RPadPainter extends RObjectPainter {
          }
       }
 
-      menu.add('separator');
+      menu.separator();
 
       if (isFunc(this.hasMenuBar) && isFunc(this.actiavteMenuBar))
          menu.addchk(this.hasMenuBar(), 'Menu bar', flag => this.actiavteMenuBar(flag));
@@ -1465,7 +1465,7 @@ class RPadPainter extends RObjectPainter {
             }
 
             if (this.painters?.length) {
-               menu.add('separator');
+               menu.separator();
                const shown = [];
                this.painters.forEach((pp, indx) => {
                   const obj = pp?.getObject();

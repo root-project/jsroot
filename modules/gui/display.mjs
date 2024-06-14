@@ -1127,7 +1127,7 @@ class FlexibleDisplay extends MDIDisplay {
          if (nummin > 0)
             menu.add('Show all', () => this.showAll(), 'Restore minimized frames');
          menu.add('Close all', () => this.closeAllFrames());
-         menu.add('separator');
+         menu.separator();
 
          arr.forEach((f, i) => menu.addchk((f===active), ((this.getFrameState(f) === 'min') ? '[min] ' : '') + d3_select(f).attr('frame_title'), i,
                       arg => {
