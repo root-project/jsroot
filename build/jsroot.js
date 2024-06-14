@@ -12870,7 +12870,7 @@ class ObjectPainter extends BasePainter {
       if (p > 0) cl = cl.slice(p+2);
       const title = (cl && name) ? `${cl}:${name}` : (cl || name || 'object');
 
-      menu.add(`header:${title}`);
+      menu.header(title);
 
       const size0 = menu.size();
 
@@ -65774,6 +65774,7 @@ class TFramePainter extends ObjectPainter {
            return false;
 
          menu.header(`${kind.toUpperCase()} axis`);
+
          menu.sub('Range');
          menu.add('Zoom', () => {
             let min = this[`zoom_${kind}min`] ?? this[`${kind}min`], max = this[`zoom_${kind}max`] ?? this[`${kind}max`];
@@ -65788,7 +65789,24 @@ class TFramePainter extends ObjectPainter {
             });
          });
          menu.add('Unzoom', () => this.unzoom(kind));
+         if (handle?.value_axis && main) {
+            menu.add('Minimum', () => {
+               menu.input(`Enter minimum value or ${kNoZoom} as default`, main.options.minimum, 'float').then(v => {
+                  main.options.minimum = v;
+                  this[`zoom_${kind}min`] = this[`zoom_${kind}max`] = undefined;
+                  main.interactiveRedraw('pad', `exec:SetMinimum(${v})`);
+               });
+            });
+            menu.add('Maximum', () => {
+               menu.input(`Enter maximum value or ${kNoZoom} as default`, main.options.maximum, 'float').then(v => {
+                  main.options.maximum = v;
+                  this[`zoom_${kind}min`] = this[`zoom_${kind}max`] = undefined;
+                  main.interactiveRedraw('pad', `exec:SetMaximum(${v})`);
+               });
+            });
+         }
          menu.endsub();
+
          if (pad) {
             const member = 'fLog'+kind[0];
             menu.sub('SetLog '+kind[0], () => {
@@ -74425,7 +74443,7 @@ class THistPainter extends ObjectPainter {
          if ((this.options.minimum === kNoZoom) && (this.options.maximum === kNoZoom)) return false;
          if (!this.draw_content) return false; // if not drawing content, not change min/max
          this.options.minimum = this.options.maximum = kNoZoom;
-         this.scanContent(true); // to reset ymin/ymax
+         this.scanContent(); // to reset ymin/ymax
          return true;
       };
 
@@ -80959,19 +80977,6 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
          }
       }
 
-      // final adjustment like in THistPainter.cxx line 7309
-      if (!this._exact_y_range && !this._set_y_range && !pad_logy) {
-         if ((this.options.BaseLine !== false) && (this.ymin >= 0))
-            this.ymin = 0;
-         else {
-            const positive = (this.ymin >= 0);
-            this.ymin -= gStyle.fHistTopMargin*(this.ymax - this.ymin);
-            if (positive && (this.ymin < 0))
-               this.ymin = 0;
-         }
-         this.ymax += gStyle.fHistTopMargin*(this.ymax - this.ymin);
-      }
-
       if (this.options.ignore_min_max)
          hmin = hmax = kNoZoom;
       else {
@@ -80988,7 +80993,7 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
          }
       }
 
-      this._set_y_range = false;
+      let fix_min = false, fix_max = false;
 
       if (this.options.ohmin && this.options.ohmax && !this.draw_content) {
          // case of hstack drawing - histogram range used for zooming, but only for stack
@@ -80997,20 +81002,36 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
           ((this.ymin === this.ymax) || (this.ymin > hmin) || (this.ymax < hmax))) {
          this.ymin = hmin;
          this.ymax = hmax;
-         this._set_y_range = true;
+         fix_min = fix_max = true;
       } else {
          if (hmin !== kNoZoom) {
-            this._set_y_range = true;
+            fix_min = true;
             if (hmin < this.ymin)
                this.ymin = hmin;
              set_zoom = true;
          }
          if (hmax !== kNoZoom) {
-            this._set_y_range = true;
+            fix_max = true;
             if (hmax > this.ymax)
                this.ymax = hmax;
             set_zoom = true;
          }
+      }
+
+      // final adjustment like in THistPainter.cxx line 7309
+      if (!this._exact_y_range && !pad_logy) {
+         if (!fix_min) {
+            if ((this.options.BaseLine !== false) && (this.ymin >= 0))
+               this.ymin = 0;
+            else {
+               const positive = (this.ymin >= 0);
+               this.ymin -= gStyle.fHistTopMargin*(this.ymax - this.ymin);
+               if (positive && (this.ymin < 0))
+                  this.ymin = 0;
+            }
+         }
+         if (!fix_max)
+            this.ymax += gStyle.fHistTopMargin*(this.ymax - this.ymin);
       }
 
       // always set zoom when hmin/hmax is configured
@@ -82074,10 +82095,10 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
 
    /** @summary Performs 2D drawing of histogram
      * @return {Promise} when ready */
-   async draw2D(/* reason */) {
+   async draw2D(reason) {
       this.clear3DScene();
 
-      this.scanContent(true);
+      this.scanContent(reason === 'zoom');
 
       const pr = this.isMainPainter() ? this.drawColorPalette(false) : Promise.resolve(true);
 
@@ -82127,11 +82148,12 @@ class TH1Painter extends TH1Painter$2 {
       let pr = Promise.resolve(true);
 
       if (reason === 'resize') {
-         if (is_main && main.resize3D()) main.render3D();
+         if (is_main && main.resize3D())
+            main.render3D();
       } else {
          this.createHistDrawAttributes(true);
 
-         this.scanContent(true); // may be required for axis drawings
+         this.scanContent(reason === 'zoom'); // may be required for axis drawings
 
          if (is_main) {
             assignFrame3DMethods(main);
