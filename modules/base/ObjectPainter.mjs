@@ -842,7 +842,7 @@ class ObjectPainter extends BasePainter {
       if (p > 0) cl = cl.slice(p+2);
       const title = (cl && name) ? `${cl}:${name}` : (cl || name || 'object');
 
-      menu.add(`header:${title}`);
+      menu.header(title);
 
       const size0 = menu.size();
 
