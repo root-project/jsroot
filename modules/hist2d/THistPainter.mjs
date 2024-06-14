@@ -1088,7 +1088,7 @@ class THistPainter extends ObjectPainter {
          histo.fSumw2 = obj.fSumw2;
 
          if (!o.ominimum) o.minimum = histo.fMinimum;
-         if (!o.omaximum) o.omaximum = histo.fMaximum;
+         if (!o.omaximum) o.maximum = histo.fMaximum;
 
          if (this.getDimension() === 1)
             o.decodeSumw2(histo);
