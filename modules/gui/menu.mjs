@@ -71,7 +71,8 @@ class JSRootMenu {
    /** @summary Add checked menu item
      * @param {boolean} flag - flag
      * @param {string} name - item name
-     * @param {function} func - func called when item is selected */
+     * @param {function} func - func called when item is selected
+     * @param {string} [title] - optional title */
    addchk(flag, name, arg, func, title) {
       let handler = func;
       if (isFunc(arg)) {
@@ -81,6 +82,16 @@ class JSRootMenu {
          arg = flag ? '0' : '1';
       }
       this.add((flag ? 'chk:' : 'unk:') + name, arg, handler, title);
+   }
+
+   /** @summary Add sub-menu */
+   sub(name, arg, func, title) {
+      this.add(`sub:${name}`, arg, func, title);
+   }
+
+   /** @summary Mark end of submenu */
+   endsub() {
+      this.add('endsub:');
    }
 
    /** @summary Add draw sub-menu with draw options
