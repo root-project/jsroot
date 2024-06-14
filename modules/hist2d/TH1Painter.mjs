@@ -1246,10 +1246,10 @@ class TH1Painter extends THistPainter {
 
    /** @summary Performs 2D drawing of histogram
      * @return {Promise} when ready */
-   async draw2D(/* reason */) {
+   async draw2D(reason) {
       this.clear3DScene();
 
-      this.scanContent(true);
+      this.scanContent(reason === 'zoom');
 
       const pr = this.isMainPainter() ? this.drawColorPalette(false) : Promise.resolve(true);
 

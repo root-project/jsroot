@@ -1607,7 +1607,7 @@ class THistPainter extends ObjectPainter {
          if ((this.options.minimum === kNoZoom) && (this.options.maximum === kNoZoom)) return false;
          if (!this.draw_content) return false; // if not drawing content, not change min/max
          this.options.minimum = this.options.maximum = kNoZoom;
-         this.scanContent(true); // to reset ymin/ymax
+         this.scanContent(); // to reset ymin/ymax
          return true;
       };
 
