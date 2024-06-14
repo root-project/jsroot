@@ -1086,7 +1086,7 @@ class RFramePainter extends RObjectPainter {
       if (this.y_handle && !this.y2_handle)
          menu.addchk(this.y_handle.draw_swapside, 'Swap y', flag => this.changeFrameAttr('swapY', flag));
       if (this.x_handle && !this.x2_handle) {
-         menu.add('sub:Ticks x');
+         menu.sub('Ticks x');
          menu.addchk(this.x_handle.draw_ticks === 0, 'off', () => this.changeFrameAttr('ticksX', 0));
          menu.addchk(this.x_handle.draw_ticks === 1, 'normal', () => this.changeFrameAttr('ticksX', 1));
          menu.addchk(this.x_handle.draw_ticks === 2, 'ticks on both sides', () => this.changeFrameAttr('ticksX', 2));
@@ -1094,7 +1094,7 @@ class RFramePainter extends RObjectPainter {
          menu.add('endsub:');
        }
       if (this.y_handle && !this.y2_handle) {
-         menu.add('sub:Ticks y');
+         menu.sub('Ticks y');
          menu.addchk(this.y_handle.draw_ticks === 0, 'off', () => this.changeFrameAttr('ticksY', 0));
          menu.addchk(this.y_handle.draw_ticks === 1, 'normal', () => this.changeFrameAttr('ticksY', 1));
          menu.addchk(this.y_handle.draw_ticks === 2, 'ticks on both sides', () => this.changeFrameAttr('ticksY', 2));
@@ -1105,7 +1105,7 @@ class RFramePainter extends RObjectPainter {
       menu.addAttributesMenu(this, alone ? '' : 'Frame ');
       menu.add('separator');
 
-      menu.add('sub:Save as');
+      menu.sub('Save as');
       ['svg', 'png', 'jpeg', 'pdf', 'webp'].forEach(fmt => menu.add(`frame.${fmt}`, () => this.getPadPainter().saveAs(fmt, 'frame', `frame.${fmt}`)));
       menu.add('endsub:');
 

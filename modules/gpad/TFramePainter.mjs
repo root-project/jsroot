@@ -2582,7 +2582,7 @@ class TFramePainter extends ObjectPainter {
            return false;
 
          menu.add(`header: ${kind.toUpperCase()} axis`);
-         menu.add('sub:Range');
+         menu.sub('Range');
          menu.add('Zoom', () => {
             let min = this[`zoom_${kind}min`] ?? this[`${kind}min`], max = this[`zoom_${kind}max`] ?? this[`${kind}max`];
             if (min === max) {
@@ -2599,7 +2599,7 @@ class TFramePainter extends ObjectPainter {
          menu.add('endsub:');
          if (pad) {
             const member = 'fLog'+kind[0];
-            menu.add('sub:SetLog '+kind[0], () => {
+            menu.sub('SetLog '+kind[0], () => {
                menu.input('Enter log kind: 0 - off, 1 - log10, 2 - log2, 3 - ln, ...', pad[member], 'int', 0, 10000).then(v => {
                   this.changeAxisLog(kind[0], v);
                });
@@ -2689,7 +2689,7 @@ class TFramePainter extends ObjectPainter {
 
       menu.add('separator');
 
-      menu.add('sub:Save as');
+      menu.sub('Save as');
       ['svg', 'png', 'jpeg', 'pdf', 'webp'].forEach(fmt => menu.add(`frame.${fmt}`, () => pp.saveAs(fmt, 'frame', `frame.${fmt}`)));
       menu.add('endsub:');
 

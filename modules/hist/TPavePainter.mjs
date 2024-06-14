@@ -1108,7 +1108,7 @@ class TPavePainter extends ObjectPainter {
             });
          });
          menu.add('separator');
-         menu.add('sub:SetOptStat', () => {
+         menu.sub('SetOptStat', () => {
             menu.input('Enter OptStat', pave.fOptStat, 'int').then(fmt => {
                pave.fOptStat = fmt;
                this.interactiveRedraw(true, `exec:SetOptStat(${fmt})`);
@@ -1142,7 +1142,7 @@ class TPavePainter extends ObjectPainter {
          addStatOpt(8, 'Kurtosis');
          menu.add('endsub:');
 
-         menu.add('sub:SetOptFit', () => {
+         menu.sub('SetOptFit', () => {
             menu.input('Enter OptStat', pave.fOptFit, 'int').then(fmt => {
                pave.fOptFit = fmt;
                this.interactiveRedraw(true, `exec:SetOptFit(${fmt})`);
