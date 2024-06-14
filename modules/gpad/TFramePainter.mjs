@@ -2582,6 +2582,7 @@ class TFramePainter extends ObjectPainter {
            return false;
 
          menu.header(`${kind.toUpperCase()} axis`);
+
          menu.sub('Range');
          menu.add('Zoom', () => {
             let min = this[`zoom_${kind}min`] ?? this[`${kind}min`], max = this[`zoom_${kind}max`] ?? this[`${kind}max`];
@@ -2596,7 +2597,24 @@ class TFramePainter extends ObjectPainter {
             });
          });
          menu.add('Unzoom', () => this.unzoom(kind));
+         if (handle?.value_axis && main) {
+            menu.add('Minimum', () => {
+               menu.input(`Enter minimum value or ${kNoZoom} as default`, main.options.minimum, 'float').then(v => {
+                  main.options.minimum = v;
+                  this[`zoom_${kind}min`] = this[`zoom_${kind}max`] = undefined;
+                  main.interactiveRedraw('pad', `exec:SetMinimum(${v})`);
+               });
+            });
+            menu.add('Maximum', () => {
+               menu.input(`Enter maximum value or ${kNoZoom} as default`, main.options.maximum, 'float').then(v => {
+                  main.options.maximum = v;
+                  this[`zoom_${kind}min`] = this[`zoom_${kind}max`] = undefined;
+                  main.interactiveRedraw('pad', `exec:SetMaximum(${v})`);
+               });
+            });
+         }
          menu.endsub();
+
          if (pad) {
             const member = 'fLog'+kind[0];
             menu.sub('SetLog '+kind[0], () => {
