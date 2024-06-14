@@ -6,6 +6,8 @@
 3. Fix - always use 0 as minimum in THStack drawings
 4. Fix - always show all ticks for labeled axis
 5. Fix - draw TProfile2D bins content as text, not entries
+6. Fix - interactive zooming on log color palette
+7. Fix - keyboard handling while input dialog active
 
 
 ## Changes in 7.7.1

@@ -11,7 +11,7 @@ const version_id = '7.7.x',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '10/06/2024',
+version_date = '14/06/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -61717,6 +61717,18 @@ function closeMenu(menuname) {
    return !!element;
 }
 
+/** @summary Returns true if menu or modual dialog present
+  * @private */
+function hasMenu(menuname) {
+   if (!menuname) menuname = 'root_ctx_menu';
+   const doc = getDocument();
+   if (doc.getElementById(menuname))
+      return true;
+   if (doc.getElementById(menuname + '_dialog'))
+      return true;
+   return false;
+}
+
 /** @summary Fill and show context menu for painter object
   * @private */
 function showPainterMenu(evnt, painter, kind) {
@@ -63931,6 +63943,10 @@ const TooltipHandler = {
 
    /** @summary Handle key press */
    processKeyPress(evnt) {
+      // no custom keys handling when menu is present
+      if (hasMenu())
+         return true;
+
       const allowed = ['PageUp', 'PageDown', 'ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown', 'PrintScreen', 'Escape', '*'],
             main = this.selectDom(),
             pp = this.getPadPainter();
@@ -73780,7 +73796,7 @@ class THistPainter extends ObjectPainter {
          histo.fSumw2 = obj.fSumw2;
 
          if (!o.ominimum) o.minimum = histo.fMinimum;
-         if (!o.omaximum) o.omaximum = histo.fMaximum;
+         if (!o.omaximum) o.maximum = histo.fMaximum;
 
          if (this.getDimension() === 1)
             o.decodeSumw2(histo);
