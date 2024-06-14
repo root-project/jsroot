@@ -6,7 +6,8 @@ import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
 import { getSvgLineStyle } from '../base/TAttLineHandler.mjs';
 import { FontHandler } from '../base/FontHandler.mjs';
 
-const kToFront = '__front__';
+
+const kToFront = '__front__', sDfltName = 'root_ctx_menu', sDfltDlg = '_dialog';
 
 /**
  * @summary Abstract class for creating context menu
@@ -976,7 +977,7 @@ class JSRootMenu {
    /** @summary Let input arguments from the method
      * @return {Promise} with method argument */
    async showMethodArgsDialog(method) {
-      const dlg_id = this.menuname + '_dialog';
+      const dlg_id = this.menuname + sDfltDlg;
       let main_content = '<form> <fieldset style="padding:0; border:0">';
 
       for (let n = 0; n < method.fArgs.length; ++n) {
@@ -1017,7 +1018,7 @@ class JSRootMenu {
    /** @summary Let input arguments from the Command
      * @return {Promise} with command argument */
    async showCommandArgsDialog(cmdname, args) {
-      const dlg_id = this.menuname + '_dialog';
+      const dlg_id = this.menuname + sDfltDlg;
       let main_content = '<form> <fieldset style="padding:0; border:0">';
 
       for (let n = 0; n < args.length; ++n) {
@@ -1373,7 +1374,7 @@ class StandaloneMenu extends JSRootMenu {
 
       if (!args.Ok) args.Ok = 'Ok';
 
-      const modal = { args }, dlg_id = (this?.menuname ?? 'root_modal') + '_dialog';
+      const modal = { args }, dlg_id = (this?.menuname ?? sDfltName) + sDfltDlg;
       d3_select(`#${dlg_id}`).remove();
       d3_select(`#${dlg_id}_block`).remove();
 
@@ -1451,8 +1452,8 @@ class StandaloneMenu extends JSRootMenu {
       });
    }
 
-
 } // class StandaloneMenu
+
 
 /** @summary Create JSROOT menu
   * @desc See {@link JSRootMenu} class for detailed list of methods
@@ -1467,14 +1468,14 @@ class StandaloneMenu extends JSRootMenu {
   * menu.addchk(flag, 'Checked', arg => console.log(`Now flag is ${arg}`));
   * menu.show(); */
 function createMenu(evnt, handler, menuname) {
-   const menu = new StandaloneMenu(handler, menuname || 'root_ctx_menu', evnt);
+   const menu = new StandaloneMenu(handler, menuname || sDfltName, evnt);
    return menu.load();
 }
 
 /** @summary Close previousely created and shown JSROOT menu
   * @param {string} [menuname] - optional menu name */
 function closeMenu(menuname) {
-   const element = getDocument().getElementById(menuname || 'root_ctx_menu');
+   const element = getDocument().getElementById(menuname || sDfltName);
    element?.remove();
    return !!element;
 }
@@ -1482,11 +1483,10 @@ function closeMenu(menuname) {
 /** @summary Returns true if menu or modual dialog present
   * @private */
 function hasMenu(menuname) {
-   if (!menuname) menuname = 'root_ctx_menu';
    const doc = getDocument();
-   if (doc.getElementById(menuname))
+   if (doc.getElementById(menuname || sDfltName))
       return true;
-   if (doc.getElementById(menuname + '_dialog'))
+   if (doc.getElementById((menuname || sDfltName) + sDfltDlg))
       return true;
    return false;
 }
