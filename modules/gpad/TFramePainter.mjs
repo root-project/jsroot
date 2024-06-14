@@ -2581,7 +2581,7 @@ class TFramePainter extends ObjectPainter {
         if (!isFunc(faxis?.TestBit))
            return false;
 
-         menu.add(`header: ${kind.toUpperCase()} axis`);
+         menu.header(`${kind.toUpperCase()} axis`);
          menu.sub('Range');
          menu.add('Zoom', () => {
             let min = this[`zoom_${kind}min`] ?? this[`${kind}min`], max = this[`zoom_${kind}max`] ?? this[`${kind}max`];
@@ -2651,7 +2651,7 @@ class TFramePainter extends ObjectPainter {
       const alone = menu.size() === 0;
 
       if (alone)
-         menu.add('header:Frame');
+         menu.header('Frame');
       else
          menu.separator();
 

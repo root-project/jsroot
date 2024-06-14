@@ -8,7 +8,7 @@ import { FontHandler } from '../base/FontHandler.mjs';
 
 
 const kToFront = '__front__', sDfltName = 'root_ctx_menu', sDfltDlg = '_dialog',
-      sSub = 'sub:', sEndsub = 'endsub:', sSeparator = 'separator';
+      sSub = 'sub:', sEndsub = 'endsub:', sSeparator = 'separator', sHeader = 'header:';
 
 /**
  * @summary Abstract class for creating context menu
@@ -98,6 +98,11 @@ class JSRootMenu {
    /** @summary Add separator */
    separator() {
       this.add(sSeparator);
+   }
+
+   /** @summary Add menu header - must be first entry */
+   header(name) {
+      this.add(sHeader + name);
    }
 
    /** @summary Add draw sub-menu with draw options
@@ -716,7 +721,7 @@ class JSRootMenu {
      * @private */
    addSettingsMenu(with_hierarchy, alone, handle_func) {
       if (alone)
-         this.add('header:Settings');
+         this.header('Settings');
       else
          this.sub('Settings');
 
@@ -1092,8 +1097,8 @@ class StandaloneMenu extends JSRootMenu {
       if (name === sSeparator)
          return curr.push({ divider: true });
 
-      if (name.indexOf('header:') === 0)
-         return curr.push({ text: name.slice(7), header: true });
+      if (name.indexOf(sHeader) === 0)
+         return curr.push({ text: name.slice(sHeader.length), header: true });
 
       if (name === sEndsub) {
          this.stack.pop();

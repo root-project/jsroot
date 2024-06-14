@@ -722,10 +722,7 @@ class RPadPainter extends RObjectPainter {
    /** @summary Fill pad context menu
      * @private */
    fillContextMenu(menu) {
-      if (this.iscan)
-         menu.add('header: RCanvas');
-      else
-         menu.add('header: RPad');
+      menu.header(this.iscan ? 'RCanvas' : 'RPad');
 
       menu.addchk(this.isTooltipAllowed(), 'Show tooltips', () => this.setTooltipAllowed('toggle'));
 
@@ -1445,7 +1442,7 @@ class RPadPainter extends RObjectPainter {
          if (closeMenu()) return;
 
          return createMenu(evnt, this).then(menu => {
-            menu.add('header:Menus');
+            menu.header('Menus');
 
             if (this.iscan)
                menu.add('Canvas', 'pad', this.itemContextMenu);
