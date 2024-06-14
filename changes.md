@@ -9,6 +9,7 @@
 6. Fix - always show all ticks for labeled axis
 7. Fix - draw TProfile2D bins content as text, not entrie
 8. Fix - interactive zooming on log color palette
+9. Fix - keyboard handling while input dialog active
 
 
 ## Changes in 7.7.1

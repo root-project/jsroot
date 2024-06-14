@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '11/06/2024',
+version_date = '14/06/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -61747,6 +61747,18 @@ function closeMenu(menuname) {
    return !!element;
 }
 
+/** @summary Returns true if menu or modual dialog present
+  * @private */
+function hasMenu(menuname) {
+   if (!menuname) menuname = 'root_ctx_menu';
+   const doc = getDocument();
+   if (doc.getElementById(menuname))
+      return true;
+   if (doc.getElementById(menuname + '_dialog'))
+      return true;
+   return false;
+}
+
 /** @summary Fill and show context menu for painter object
   * @private */
 function showPainterMenu(evnt, painter, kind) {
@@ -62216,6 +62228,7 @@ class TAxisPainter extends ObjectPainter {
       this.swap_side = opts.swap_side || false;
       this.fixed_ticks = opts.fixed_ticks || null;
       this.maxTickSize = opts.maxTickSize || 0;
+      this.value_axis = opts.value_axis ?? false; // use fMinimum/fMaximum from source object
 
       const axis = this.getObject();
 
@@ -63999,6 +64012,10 @@ const TooltipHandler = {
 
    /** @summary Handle key press */
    processKeyPress(evnt) {
+      // no custom keys handling when menu is present
+      if (hasMenu())
+         return true;
+
       const allowed = ['PageUp', 'PageDown', 'ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown', 'PrintScreen', 'Escape', '*'],
             main = this.selectDom(),
             pp = this.getPadPainter();
@@ -65106,7 +65123,8 @@ class TFramePainter extends ObjectPainter {
       this.y_handle.setHistPainter(opts.hist_painter, 'y');
 
       this.y_handle.configureAxis('yaxis', this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, !this.swap_xy, this.swap_xy ? [0, w] : [0, h],
-                                      { reverse: this.reverse_y,
+                                      { value_axis: opts.ndim === 1,
+                                        reverse: this.reverse_y,
                                         log: this.swap_xy ? pad_logx : pad_logy,
                                         noexp_changed: this.y_noexp_changed,
                                         symlog: this.swap_xy ? opts.symlog_x : opts.symlog_y,
@@ -65735,7 +65753,21 @@ class TFramePainter extends ObjectPainter {
            return false;
 
          menu.add(`header: ${kind.toUpperCase()} axis`);
+         menu.add('sub:Range');
+         menu.add('Zoom', () => {
+            let min = this[`zoom_${kind}min`] ?? this[`${kind}min`], max = this[`zoom_${kind}max`] ?? this[`${kind}max`];
+            if (min === max) {
+               min = this[`${kind}min`];
+               max = this[`${kind}max`];
+            }
+            menu.input('Enter zoom range like: [min, max]', `[${min}, ${max}]`).then(v => {
+               const arr = JSON.parse(v);
+               if (arr && Array.isArray(arr) && (arr.length === 2))
+                  this.zoomSingle(kind, arr[0], arr[1], true);
+            });
+         });
          menu.add('Unzoom', () => this.unzoom(kind));
+         menu.add('endsub:');
          if (pad) {
             const member = 'fLog'+kind[0];
             menu.add('sub:SetLog '+kind[0], () => {
@@ -65998,7 +66030,7 @@ class TFramePainter extends ObjectPainter {
      * @param {Boolean} [interactive] - if change was perfromed interactively
      * @protected */
    async zoomSingle(name, vmin, vmax, interactive) {
-      if (!this[`${name}+_handle`] && (name !== 'z'))
+      if (!this[`${name}_handle`] && (name !== 'z'))
          return false;
 
       let zoom_v = (vmin !== vmax), unzoom_v = false;
@@ -73854,7 +73886,7 @@ class THistPainter extends ObjectPainter {
          histo.fSumw2 = obj.fSumw2;
 
          if (!o.ominimum) o.minimum = histo.fMinimum;
-         if (!o.omaximum) o.omaximum = histo.fMaximum;
+         if (!o.omaximum) o.maximum = histo.fMaximum;
 
          if (this.getDimension() === 1)
             o.decodeSumw2(histo);
@@ -79261,7 +79293,7 @@ function set3DOptions(hopt) {
 /** @summary Draw axes in 3D mode
   * @private */
 function drawXYZ(toplevel, AxisPainter, opts) {
-   if (!opts) opts = {};
+   if (!opts) opts = { ndim: 2 };
 
    if (opts.drawany === false)
       opts.draw = false;
@@ -79335,8 +79367,9 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    }
 
    this.z_handle.configureAxis('zaxis', this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz],
-                               { log: ((opts.use_y_for_z || (opts.ndim === 2)) ? pad?.fLogv : undefined) ?? pad?.fLogz ?? 0,
-                                  reverse: opts.reverse_z });
+                               { value_axis: (opts.ndim === 1) || (opts.ndim === 2),
+                                 log: ((opts.use_y_for_z || (opts.ndim === 2)) ? pad?.fLogv : undefined) ?? pad?.fLogz ?? 0,
+                                 reverse: opts.reverse_z });
    this.z_handle.assignFrameMembers(this, 'z');
    this.z_handle.extractDrawAttributes(scalingSize);
 
