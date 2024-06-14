@@ -2855,7 +2855,7 @@ class TFramePainter extends ObjectPainter {
      * @param {Boolean} [interactive] - if change was perfromed interactively
      * @protected */
    async zoomSingle(name, vmin, vmax, interactive) {
-      if (!this[`${name}+_handle`] && (name !== 'z'))
+      if (!this[`${name}_handle`] && (name !== 'z'))
          return false;
 
       let zoom_v = (vmin !== vmax), unzoom_v = false;
