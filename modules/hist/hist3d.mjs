@@ -875,7 +875,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    }
 
    this.z_handle.configureAxis('zaxis', this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz],
-                               { value_axis: (opts.ndim === 1) || (opt.ndim === 2),
+                               { value_axis: (opts.ndim === 1) || (opts.ndim === 2),
                                  log: ((opts.use_y_for_z || (opts.ndim === 2)) ? pad?.fLogv : undefined) ?? pad?.fLogz ?? 0,
                                  reverse: opts.reverse_z });
    this.z_handle.assignFrameMembers(this, 'z');
