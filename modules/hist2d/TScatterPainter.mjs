@@ -33,15 +33,24 @@ class TScatterPainter extends TGraphPainter {
       const gr = this.getGraph();
       let pal = gr?.fFunctions?.arr?.find(func => (func._typename === clTPaletteAxis));
 
-      if (pal) return pal;
-
-      if (gr) {
+      if (!pal && gr) {
          pal = create(clTPaletteAxis);
 
          const fp = this.get_main();
          Object.assign(pal, { fX1NDC: fp.fX2NDC + 0.005, fX2NDC: fp.fX2NDC + 0.05, fY1NDC: fp.fY1NDC, fY2NDC: fp.fY2NDC, fInit: 1, $can_move: true });
          Object.assign(pal.fAxis, { fChopt: '+', fLineColor: 1, fLineSyle: 1, fLineWidth: 1, fTextAngle: 0, fTextAlign: 11, fNdiv: 510 });
          gr.fFunctions.AddFirst(pal, '');
+      }
+
+      const zaxis = this.getHistogram()?.fZaxis;
+      if (pal && zaxis) {
+         Object.assign(pal.fAxis, {
+            fTitle: zaxis.fTitle, fTitleSize: zaxis.fTitleSize,
+            fTitleOffset: zaxis.fTitleOffset, fTitleColor: zaxis.fTitleColor,
+            fLineColor: zaxis.fAxisColor, fTextSize: zaxis.fLabelSize,
+            fTextColor: zaxis.fLabelColor, fTextFont: zaxis.fLabelFont,
+            fLabelOffset: zaxis.fLabelOffset
+         });
       }
 
       return pal;
