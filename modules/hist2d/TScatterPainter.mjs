@@ -42,17 +42,6 @@ class TScatterPainter extends TGraphPainter {
          gr.fFunctions.AddFirst(pal, '');
       }
 
-      const zaxis = this.getHistogram()?.fZaxis;
-      if (pal && zaxis) {
-         Object.assign(pal.fAxis, {
-            fTitle: zaxis.fTitle, fTitleSize: zaxis.fTitleSize,
-            fTitleOffset: zaxis.fTitleOffset, fTitleColor: zaxis.fTitleColor,
-            fLineColor: zaxis.fAxisColor, fTextSize: zaxis.fLabelSize,
-            fTextColor: zaxis.fLabelColor, fTextFont: zaxis.fLabelFont,
-            fLabelOffset: zaxis.fLabelOffset
-         });
-      }
-
       return pal;
    }
 
@@ -67,6 +56,12 @@ class TScatterPainter extends TGraphPainter {
       scatter.fMinMarkerSize = obj.fMinMarkerSize;
       scatter.fMaxMarkerSize = obj.fMaxMarkerSize;
       super._updateMembers(scatter.fGraph, obj.fGraph);
+   }
+
+   /** @summary Return Z axis used for palette drawing
+    * @private */
+   getZaxis() {
+      return this.getHistogram()?.fZaxis;
    }
 
    /** @summary Actual drawing of TScatter */
