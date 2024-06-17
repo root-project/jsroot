@@ -4,13 +4,14 @@
 1. Let use custom time zone for time display, support '&utc' and '&cet' in URL parameters
 2. Support gStyle.fLegendFillStyle
 3. Let change histogram min/max values via context menu
-4. Fix - hide empty title on the canvas
-5. Fix - properly handle zooming in THStack histogram
-6. Fix - properly save zoomed ranges in drawingJSON()
-7. Fix - always show all ticks for labeled axis
-8. Fix - draw TProfile2D bins content as text, not entrie
-9. Fix - interactive zooming on log color palette
-10. Fix - keyboard handling while input dialog active
+4. Support Z-scale zooming with TScatter
+5. Fix - hide empty title on the canvas
+6. Fix - properly handle zooming in THStack histogram
+7. Fix - properly save zoomed ranges in drawingJSON()
+8. Fix - always show all ticks for labeled axis
+9. Fix - draw TProfile2D bins content as text, not entrie
+10. Fix - interactive zooming on log color palette
+11. Fix - keyboard handling while input dialog active
 
 
 ## Changes in 7.7.1

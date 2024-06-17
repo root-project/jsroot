@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '14/06/2024',
+version_date = '17/06/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -71708,10 +71708,8 @@ class TPavePainter extends ObjectPainter {
             return this;
 
          // here all kind of interactive settings
-         if (interactive_element) {
-            interactive_element.style('pointer-events', 'visibleFill')
-                               .on('mouseenter', () => this.showObjectStatus());
-         }
+         interactive_element?.style('pointer-events', 'visibleFill')
+                             .on('mouseenter', () => this.showObjectStatus());
 
          addDragHandler(this, { obj: pt, x: this._pave_x, y: this._pave_y, width, height,
                                 minwidth: 10, minheight: 20, canselect: true,
@@ -72878,7 +72876,8 @@ class THistDrawOptions {
               Render3D: constants$1.Render3D.Default,
               FrontBox: true, BackBox: true,
               need_fillcol: false,
-              minimum: kNoZoom, maximum: kNoZoom, ymin: 0, ymax: 0, cutg: null, IgnoreMainScale: false });
+              minimum: kNoZoom, maximum: kNoZoom, ymin: 0, ymax: 0, cutg: null,
+              IgnoreMainScale: false, IgnorePalette: false });
    }
 
    isCartesian() { return this.System === kCARTESIAN; }
@@ -72942,6 +72941,9 @@ class THistDrawOptions {
       d.check('USE_PAD_TITLE');
       d.check('USE_PAD_PALETTE');
       d.check('USE_PAD_STATS');
+
+      if (d.check('IGNORE_PALETTE'))
+         this.IgnorePalette = true;
 
       if (d.check('PAL', true))
          this.Palette = d.partAsInt();
@@ -74848,6 +74850,10 @@ class THistPainter extends ObjectPainter {
    /** @summary draw color palette
      * @return {Promise} when done */
    async drawColorPalette(enabled, postpone_draw, can_move) {
+      // in special cases like scatter palette drawing is ignored
+      if (this.options.IgnorePalette)
+         return null;
+
       // only when create new palette, one could change frame size
       const mp = this.getMainPainter(),
             pp = this.getPadPainter();
@@ -113888,7 +113894,7 @@ class TScatterPainter extends TGraphPainter$1 {
     * @private */
    async drawAxisHisto() {
       const histo = this.createHistogram();
-      return TH2Painter$2.draw(this.getDom(), histo, this.options.Axis);
+      return TH2Painter$2.draw(this.getDom(), histo, this.options.Axis + ';IGNORE_PALETTE');
    }
 
   /** @summary Provide palette, create if necessary
@@ -113897,15 +113903,24 @@ class TScatterPainter extends TGraphPainter$1 {
       const gr = this.getGraph();
       let pal = gr?.fFunctions?.arr?.find(func => (func._typename === clTPaletteAxis));
 
-      if (pal) return pal;
-
-      if (gr) {
+      if (!pal && gr) {
          pal = create$1(clTPaletteAxis);
 
          const fp = this.get_main();
          Object.assign(pal, { fX1NDC: fp.fX2NDC + 0.005, fX2NDC: fp.fX2NDC + 0.05, fY1NDC: fp.fY1NDC, fY2NDC: fp.fY2NDC, fInit: 1, $can_move: true });
          Object.assign(pal.fAxis, { fChopt: '+', fLineColor: 1, fLineSyle: 1, fLineWidth: 1, fTextAngle: 0, fTextAlign: 11, fNdiv: 510 });
          gr.fFunctions.AddFirst(pal, '');
+      }
+
+      const zaxis = this.getHistogram()?.fZaxis;
+      if (pal && zaxis) {
+         Object.assign(pal.fAxis, {
+            fTitle: zaxis.fTitle, fTitleSize: zaxis.fTitleSize,
+            fTitleOffset: zaxis.fTitleOffset, fTitleColor: zaxis.fTitleColor,
+            fLineColor: zaxis.fAxisColor, fTextSize: zaxis.fLabelSize,
+            fTextColor: zaxis.fLabelColor, fTextFont: zaxis.fLabelFont,
+            fLabelOffset: zaxis.fLabelOffset
+         });
       }
 
       return pal;
@@ -113975,9 +113990,13 @@ class TScatterPainter extends TGraphPainter$1 {
 
       this.createG(!fpainter.pad_layer);
 
-      const funcs = fpainter.getGrFuncs();
+      const funcs = fpainter.getGrFuncs(),
+            is_zoom = (fpainter.zoom_zmin !== fpainter.zoom_zmax) && scatter.fColor;
 
       for (let i = 0; i < this.bins.length; ++i) {
+         if (is_zoom && ((scatter.fColor[i] < fpainter.zoom_zmin) || (scatter.fColor[i] > fpainter.zoom_zmax)))
+            continue;
+
          const pnt = this.bins[i],
                grx = funcs.grx(pnt.x),
                gry = funcs.gry(pnt.y),
