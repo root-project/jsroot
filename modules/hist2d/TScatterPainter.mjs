@@ -120,9 +120,13 @@ class TScatterPainter extends TGraphPainter {
 
       this.createG(!fpainter.pad_layer);
 
-      const funcs = fpainter.getGrFuncs();
+      const funcs = fpainter.getGrFuncs(),
+            is_zoom = (fpainter.zoom_zmin !== fpainter.zoom_zmax) && scatter.fColor;
 
       for (let i = 0; i < this.bins.length; ++i) {
+         if (is_zoom && ((scatter.fColor[i] < fpainter.zoom_zmin) || (scatter.fColor[i] > fpainter.zoom_zmax)))
+            continue;
+
          const pnt = this.bins[i],
                grx = funcs.grx(pnt.x),
                gry = funcs.gry(pnt.y),
