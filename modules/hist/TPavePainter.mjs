@@ -314,10 +314,8 @@ class TPavePainter extends ObjectPainter {
             return this;
 
          // here all kind of interactive settings
-         if (interactive_element) {
-            interactive_element.style('pointer-events', 'visibleFill')
-                               .on('mouseenter', () => this.showObjectStatus());
-         }
+         interactive_element?.style('pointer-events', 'visibleFill')
+                             .on('mouseenter', () => this.showObjectStatus());
 
          addDragHandler(this, { obj: pt, x: this._pave_x, y: this._pave_y, width, height,
                                 minwidth: 10, minheight: 20, canselect: true,
