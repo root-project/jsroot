@@ -2578,9 +2578,8 @@ class TFramePainter extends ObjectPainter {
       if ((kind === 'x') || (kind === 'y') || (kind === 'z') || (kind === 'x2') || (kind === 'y2')) {
          const faxis = obj || this[kind+'axis'],
                handle = this[`${kind}_handle`];
-        if (!isFunc(faxis?.TestBit))
-           return false;
-
+         if (!isFunc(faxis?.TestBit))
+            return false;
          menu.header(`${kind.toUpperCase()} axis`);
 
          menu.sub('Range');
