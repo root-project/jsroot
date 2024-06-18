@@ -955,7 +955,7 @@ class TPavePainter extends ObjectPainter {
                   d3_select(this).transition().duration(100).style('fill', d3_select(this).property('fill1'));
                }).on('mouseout', function() {
                   d3_select(this).transition().duration(100).style('fill', d3_select(this).property('fill0'));
-               }).append('svg:title').text(levels[i].toFixed(2) + ' - ' + levels[i+1].toFixed(2));
+               }).append('svg:title').text(this.z_handle.axisAsText(levels[i]) + ' - ' + this.z_handle.axisAsText(levels[i+1]));
             }
 
             if (settings.Zooming)
