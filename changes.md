@@ -12,6 +12,7 @@
 9. Fix - draw TProfile2D bins content as text, not entrie
 10. Fix - interactive zooming on log color palette
 11. Fix - keyboard handling while input dialog active
+12. Fix - log axis labels formating with kMoreLogLabels option
 
 
 ## Changes in 7.7.1

@@ -74,9 +74,10 @@ class TScatterPainter extends TGraphPainter {
       if (!levels)
          return false;
       // match at least full color level inside
-      for (let i = 0; i < levels.length - 1; ++i)
+      for (let i = 0; i < levels.length - 1; ++i) {
          if ((min <= levels[i]) && (max >= levels[i+1]))
             return true;
+      }
       return false;
    }
 

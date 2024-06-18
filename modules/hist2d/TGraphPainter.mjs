@@ -1470,9 +1470,10 @@ class TGraphPainter extends ObjectPainter {
       else if (axis !== (this.options.pos3d ? 'y' : 'x'))
          return false;
 
-      for (let n = 0; n < gr.fNpoints; ++n)
+      for (let n = 0; n < gr.fNpoints; ++n) {
          if ((min < arr[n]) && (arr[n] < max))
             return true;
+      }
 
       return false;
    }

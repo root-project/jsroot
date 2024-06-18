@@ -3225,7 +3225,7 @@ class TH2Painter extends THistPainter {
             return true;
 
          if (logv && (fp.zmin > 0) && (min > 0))
-            return nlevels * Math.log(max/min) > Math.log(fp.zmax/fp.zmin)
+            return nlevels * Math.log(max/min) > Math.log(fp.zmax/fp.zmin);
 
          return (fp.zmax - fp.zmin) < (max - min) * nlevels;
       }

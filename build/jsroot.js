@@ -62005,20 +62005,19 @@ const AxisPainterMethods = {
    /** @summary Provide label for exponential form */
    formatExp(base, order, value) {
       let res = '';
+      const sbase = Math.abs(base - Math.E) < 0.001 ? 'e' : base.toString();
       if (value) {
          value = Math.round(value/Math.pow(base, order));
-         if ((value !== 0) && (value !== 1)) res = value.toString() + (settings.Latex ? '#times' : 'x');
+         if (settings.StripAxisLabels) {
+            if (order === 0)
+               return value.toString();
+            else if ((order === 1) && (value === 1))
+               return sbase;
+         }
+         if (value !== 1)
+            res = value.toString() + (settings.Latex ? '#times' : 'x');
       }
-      if (Math.abs(base - Math.E) < 0.001)
-         res += 'e';
-      else
-         res += base.toString();
-      if (settings.StripAxisLabels) {
-         if (order === 0)
-            return '1';
-         else if (order === 1)
-            return res;
-      }
+      res += sbase;
       if (settings.Latex > constants$1.Latex.Symbols)
          return res + `^{${order}}`;
       const superscript_symbols = {
@@ -64344,9 +64343,7 @@ const TooltipHandler = {
             pr = this.zoomSingle(namey, ymin, ymax, true);
             kind = 0;
          } else if (isany) {
-            this.zoomChangedInteractive('x', true);
-            this.zoomChangedInteractive('y', true);
-            pr = this.zoom(xmin, xmax, ymin, ymax);
+            pr = this.zoom(xmin, xmax, ymin, ymax, undefined, undefined, true);
             kind = 0;
          }
       }
@@ -64559,11 +64556,8 @@ const TooltipHandler = {
          this.zoomSingle(namex, xmin, xmax, true);
       else if (namey === 'y2')
          this.zoomSingle(namey, ymin, ymax, true);
-      else if (isany) {
-         this.zoomChangedInteractive('x', true);
-         this.zoomChangedInteractive('y', true);
-         this.zoom(xmin, xmax, ymin, ymax);
-      }
+      else if (isany)
+         this.zoom(xmin, xmax, ymin, ymax, undefined, undefined, true);
 
       evnt.stopPropagation();
    },
@@ -64615,10 +64609,7 @@ const TooltipHandler = {
       if (this.can_zoom_y)
          this.analyzeMouseWheelEvent(evnt, this.swap_xy ? itemx : itemy, 1 - cur[1] / h, (cur[0] >= 0) && (cur[0] <= w), cur[0] > w);
 
-      let pr = this.zoom(itemx.min, itemx.max, itemy.min, itemy.max);
-
-      if (itemx.changed) this.zoomChangedInteractive('x', true);
-      if (itemy.changed) this.zoomChangedInteractive('y', true);
+      let pr = this.zoom(itemx.min, itemx.max, itemy.min, itemy.max, undefined, undefined, itemx.changed || itemy.changed);
 
       if (itemx.second)
          pr = pr.then(() => this.zoomSingle('x2', itemx.second.min, itemx.second.max, itemx.second.changed));
@@ -72266,6 +72257,7 @@ class TPavePainter extends ObjectPainter {
       axis.fTickSize = 0.6 * s_width / width; // adjust axis ticks size
 
       if ((typeof zaxis?.fLabelOffset !== 'undefined') && !is_th3) {
+         axis.fBits = zaxis.fBits & ~EAxisBits.kTickMinus & ~EAxisBits.kTickPlus;
          axis.fTitle = zaxis.fTitle;
          axis.fTitleSize = zaxis.fTitleSize;
          axis.fTitleOffset = zaxis.fTitleOffset;
@@ -72328,7 +72320,7 @@ class TPavePainter extends ObjectPainter {
          for (let i = 0; i < levels.length-1; ++i) {
             let z0 = Math.round(this.z_handle.gr(levels[i])),
                 z1 = Math.round(this.z_handle.gr(levels[i+1])),
-                lvl = (levels[i]+levels[i+1])/2, d;
+                lvl = (levels[i] + levels[i+1])*0.5, d;
 
             if (this._palette_vertical) {
                if ((z1 >= s_height) || (z0 < 0)) continue;
@@ -72336,10 +72328,11 @@ class TPavePainter extends ObjectPainter {
 
                if (z0 > s_height) {
                   z0 = s_height;
-                  lvl = levels[i]*0.001+levels[i+1]*0.999;
+                  lvl = levels[i]*0.001 + levels[i+1]*0.999;
+                  if (z1 < 0) z1 = 0;
                } else if (z1 < 0) {
                   z1 = 0;
-                  lvl = levels[i]*0.999+levels[i+1]*0.001;
+                  lvl = levels[i]*0.999 + levels[i+1]*0.001;
                }
                d = `M0,${z1}H${s_width}V${z0}H0Z`;
             } else {
@@ -72348,10 +72341,11 @@ class TPavePainter extends ObjectPainter {
 
                if (z1 > s_width) {
                   z1 = s_width;
-                  lvl = levels[i]*0.999+levels[i+1]*0.001;
+                  lvl = levels[i]*0.999 + levels[i+1]*0.001;
+                  if (z0 < 0) z0 = 0;
                } else if (z0 < 0) {
                   z0 = 0;
-                  lvl = levels[i]*0.001+levels[i+1]*0.999;
+                  lvl = levels[i]*0.001 + levels[i+1]*0.999;
                }
                d = `M${z0},0V${s_height}H${z1}V0Z`;
             }
@@ -72370,7 +72364,7 @@ class TPavePainter extends ObjectPainter {
                   select(this).transition().duration(100).style('fill', select(this).property('fill1'));
                }).on('mouseout', function() {
                   select(this).transition().duration(100).style('fill', select(this).property('fill0'));
-               }).append('svg:title').text(levels[i].toFixed(2) + ' - ' + levels[i+1].toFixed(2));
+               }).append('svg:title').text(this.z_handle.axisAsText(levels[i]) + ' - ' + this.z_handle.axisAsText(levels[i+1]));
             }
 
             if (settings.Zooming)
@@ -78499,8 +78493,29 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
    /** @summary Checks if it makes sense to zoom inside specified axis range */
    canZoomInside(axis, min, max) {
-      if ((axis === 'z') || this.options.Proj)
+      if (this.options.Proj)
          return true;
+
+      // z-scale zooming allowed only if special ignore-palette is not provided
+      if (axis === 'z') {
+         if (this.mode3d)
+            return true;
+         if (this.options.IgnorePalette)
+            return false;
+
+         const fp = this.getFramePainter(),
+               nlevels = Math.max(2*gStyle.fNumberContours, 100),
+               pad = this.getPadPainter().getRootPad(true),
+               logv = pad?.fLogv ?? pad?.fLogz;
+
+         if (!fp || (fp.zmin === fp.zmax))
+            return true;
+
+         if (logv && (fp.zmin > 0) && (min > 0))
+            return nlevels * Math.log(max/min) > Math.log(fp.zmax/fp.zmin);
+
+         return (fp.zmax - fp.zmin) < (max - min) * nlevels;
+      }
 
       let obj = this.getHisto();
       if (obj) obj = (axis === 'y') ? obj.fYaxis : obj.fXaxis;
@@ -108856,7 +108871,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
       let histo = this.getHistogram();
 
       if (!histo) {
-         histo = this._need_2dhist ? createHistogram(clTH2I, 30, 30) : createHistogram(clTH1I, 100);
+         histo = this._is_scatter ? createHistogram(clTH2I, 30, 30) : createHistogram(clTH1I, 100);
          histo.fName = graph.fName + '_h';
          histo.fBits |= kNoStats;
          this._own_histogram = true;
@@ -108880,7 +108895,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
       if (set_y && !histo.fYaxis.fLabels) {
          histo.fYaxis.fXmin = Math.min(minimum0, minimum);
          histo.fYaxis.fXmax = Math.max(maximum0, maximum);
-         if (!this._need_2dhist) {
+         if (!this._is_scatter) {
             histo.fMinimum = minimum;
             histo.fMaximum = maximum;
          }
@@ -109992,10 +110007,19 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
      * @desc allow to zoom TGraph only when at least one point in the range */
    canZoomInside(axis, min, max) {
       const gr = this.getGraph();
-      if (!gr || (axis !== (this.options.pos3d ? 'y' : 'x'))) return false;
+      if (!gr || ((axis !== 'x') && (axis !== 'y')))
+         return false;
 
-      for (let n = 0; n < gr.fNpoints; ++n)
-         if ((min < gr.fX[n]) && (gr.fX[n] < max)) return true;
+      let arr = gr.fX;
+      if (this._is_scatter)
+         arr = (axis === 'x') ? gr.fX : gr.fY;
+      else if (axis !== (this.options.pos3d ? 'y' : 'x'))
+         return false;
+
+      for (let n = 0; n < gr.fNpoints; ++n) {
+         if ((min < arr[n]) && (arr[n] < max))
+            return true;
+      }
 
       return false;
    }
@@ -113909,7 +113933,7 @@ class TScatterPainter extends TGraphPainter$1 {
 
    constructor(dom, obj) {
       super(dom, obj);
-      this._need_2dhist = true;
+      this._is_scatter = true;
       this._not_adjust_hrange = true;
    }
 
@@ -113962,6 +113986,22 @@ class TScatterPainter extends TGraphPainter$1 {
     * @private */
    getZaxis() {
       return this.getHistogram()?.fZaxis;
+   }
+
+   /** @summary Checks if it makes sense to zoom inside specified axis range */
+   canZoomInside(axis, min, max) {
+      if (axis !== 'z')
+         return super.canZoomInside(axis, min, max);
+
+      const levels = this.fContour?.getLevels();
+      if (!levels)
+         return false;
+      // match at least full color level inside
+      for (let i = 0; i < levels.length - 1; ++i) {
+         if ((min <= levels[i]) && (max >= levels[i+1]))
+            return true;
+      }
+      return false;
    }
 
    /** @summary Actual drawing of TScatter */
