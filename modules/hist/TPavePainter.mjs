@@ -4,7 +4,7 @@ import { gStyle, browser, settings, clone, isObject, isFunc, isStr, BIT,
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer } from '../d3.mjs';
 import { Prob } from '../base/math.mjs';
 import { floatToString, makeTranslate, compressSVG, svgToImage, addHighlightStyle } from '../base/BasePainter.mjs';
-import { ObjectPainter } from '../base/ObjectPainter.mjs';
+import { ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
 import { showPainterMenu } from '../gui/menu.mjs';
 import { TAxisPainter } from '../gpad/TAxisPainter.mjs';
 import { addDragHandler } from '../gpad/TFramePainter.mjs';
@@ -849,6 +849,7 @@ class TPavePainter extends ObjectPainter {
       axis.fTickSize = 0.6 * s_width / width; // adjust axis ticks size
 
       if ((typeof zaxis?.fLabelOffset !== 'undefined') && !is_th3) {
+         axis.fBits = zaxis.fBits & ~EAxisBits.kTickMinus & ~EAxisBits.kTickPlus;
          axis.fTitle = zaxis.fTitle;
          axis.fTitleSize = zaxis.fTitleSize;
          axis.fTitleOffset = zaxis.fTitleOffset;
