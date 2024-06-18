@@ -3217,14 +3217,17 @@ class TH2Painter extends THistPainter {
             return false;
 
          const fp = this.getFramePainter(),
-               nlevels = Math.max(gStyle.fNumberContours, 20);
+               nlevels = Math.max(2*gStyle.fNumberContours, 100),
+               pad = this.getPadPainter().getRootPad(true),
+               logv = pad?.fLogv ?? pad?.fLogz;
 
          if (!fp || (fp.zmin === fp.zmax))
             return true;
 
-         if ((fp.zmax - fp.zmin) / nlevels < (max - min))
-            return true;
-         return false;
+         if (logv && (fp.zmin > 0) && (min > 0))
+            return nlevels * Math.log(max/min) > Math.log(fp.zmax/fp.zmin)
+
+         return (fp.zmax - fp.zmin) < (max - min) * nlevels;
       }
 
       let obj = this.getHisto();
