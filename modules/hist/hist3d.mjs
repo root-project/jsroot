@@ -679,9 +679,8 @@ function render3D(tmout) {
       this.enable_highlight = (this.first_render_tm < 1200) && this.isTooltipAllowed();
       if (this.first_render_tm > 500)
          console.log(`three.js r${REVISION}, first render tm = ${this.first_render_tm}`);
-   } else {
+   } else
       getCameraPosition(this);
-   }
 
    if (this.processRender3D) {
       this.getPadPainter()?.painters?.forEach(objp => {

@@ -69975,7 +69975,7 @@ class TPadPainter extends ObjectPainter {
                   mleft: this.pad.fLeftMargin, mright: this.pad.fRightMargin,
                   mtop: this.pad.fTopMargin, mbottom: this.pad.fBottomMargin,
                   xlow: 0, ylow: 0, xup: 1, yup: 1,
-                  zx1: 0, zx2: 0, zy1: 0, zy2: 0, zz1: 0, zz2: 0 };
+                  zx1: 0, zx2: 0, zy1: 0, zy2: 0, zz1: 0, zz2: 0, phi: 0, theta: 0 };
 
          if (this.iscan) {
             elem.bits = this.getStatusBits();
@@ -69990,6 +69990,11 @@ class TPadPainter extends ObjectPainter {
             elem.ylow = 1 - (rect.y + rect.height) / ch;
             elem.xup = elem.xlow + rect.width / cw;
             elem.yup = elem.ylow + rect.height / ch;
+         }
+
+         if ((this.pad.fTheta !== 30) || (this.pad.fPhi !== 30)) {
+            elem.phi = this.pad.fPhi;
+            elem.theta = this.pad.fTheta;
          }
 
          if (this.getPadRanges(elem))
@@ -78927,7 +78932,7 @@ function setCameraPosition(fp, first_time) {
          fp.camera_Theta = pad.fTheta;
          max3dx = 3*Math.max(fp.size_x3d, fp.size_z3d);
          max3dy = 3*Math.max(fp.size_y3d, fp.size_z3d);
-         const phi = (270-pad.fPhi)/180*Math.PI, theta = (pad.fTheta-10)/180*Math.PI;
+         const phi = (270 - pad.fPhi)/180*Math.PI, theta = (pad.fTheta - 10)/180*Math.PI;
          fp.camera.position.set(max3dx*Math.cos(phi)*Math.cos(theta),
                                 max3dy*Math.sin(phi)*Math.cos(theta),
                                 fp.size_z3d + (kz-0.9)*(max3dx+max3dy)*Math.sin(theta));
@@ -78956,6 +78961,23 @@ function setCameraPosition(fp, first_time) {
     }
 
     fp.camera.updateProjectionMatrix();
+}
+
+function getCameraPosition(fp) {
+   const p = fp.camera.position, p0 = fp.lookat,
+         dist = p.distanceTo(p0),
+         dist_xy = Math.sqrt((p.x-p0.x)**2 + (p.y-p0.y)**2),
+         new_theta = Math.atan2((p.z - p0.z)/dist, dist_xy/dist) / Math.PI * 180,
+         new_phi = 270 - Math.atan2((p.y - p0.y)/dist_xy, (p.x - p0.x)/dist_xy)/ Math.PI * 180,
+         pad = fp.getPadPainter().getRootPad(true);
+
+   fp.camera_Phi = new_phi >= 360 ? new_phi - 360 : new_phi;
+   fp.camera_Theta = new_theta;
+
+   if (pad && Number.isFinite(fp.camera_Phi) && Number.isFinite(fp.camera_Theta)) {
+      pad.fPhi = fp.camera_Phi;
+      pad.fTheta = fp.camera_Theta;
+   }
 }
 
 function create3DControl(fp) {
@@ -79239,7 +79261,8 @@ function render3D(tmout) {
       this.enable_highlight = (this.first_render_tm < 1200) && this.isTooltipAllowed();
       if (this.first_render_tm > 500)
          console.log(`three.js r${REVISION}, first render tm = ${this.first_render_tm}`);
-   }
+   } else
+      getCameraPosition(this);
 
    if (this.processRender3D) {
       this.getPadPainter()?.painters?.forEach(objp => {
