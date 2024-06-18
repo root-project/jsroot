@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '17/06/2024',
+version_date = '18/06/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -65770,9 +65770,8 @@ class TFramePainter extends ObjectPainter {
       if ((kind === 'x') || (kind === 'y') || (kind === 'z') || (kind === 'x2') || (kind === 'y2')) {
          const faxis = obj || this[kind+'axis'],
                handle = this[`${kind}_handle`];
-        if (!isFunc(faxis?.TestBit))
-           return false;
-
+         if (!isFunc(faxis?.TestBit))
+            return false;
          menu.header(`${kind.toUpperCase()} axis`);
 
          menu.sub('Range');
@@ -65962,11 +65961,16 @@ class TFramePainter extends ObjectPainter {
      * @param {number} [ymax]
      * @param {number} [zmin]
      * @param {number} [zmax]
+     * @param [interactive] - if changes was performed interactively
      * @return {Promise} with boolean flag if zoom operation was performed */
-   async zoom(xmin, xmax, ymin, ymax, zmin, zmax) {
-      if (xmin === 'x') { xmin = xmax; xmax = ymin; ymin = undefined; } else
-      if (xmin === 'y') { ymax = ymin; ymin = xmax; xmin = xmax = undefined; } else
-      if (xmin === 'z') { zmin = xmax; zmax = ymin; xmin = xmax = ymin = undefined; }
+   async zoom(xmin, xmax, ymin, ymax, zmin, zmax, interactive) {
+      if (xmin === 'x') {
+         xmin = xmax; xmax = ymin; interactive = ymax; ymin = ymax = undefined;
+      } else if (xmin === 'y') {
+         interactive = ymax; ymax = ymin; ymin = xmax; xmin = xmax = undefined;
+      } else if (xmin === 'z') {
+         interactive = ymax; zmin = xmax; zmax = ymin; xmin = xmax = ymin = ymax = undefined;
+      }
 
       let zoom_x = (xmin !== xmax), zoom_y = (ymin !== ymax), zoom_z = (zmin !== zmax),
           unzoom_x = false, unzoom_y = false, unzoom_z = false;
@@ -66002,7 +66006,6 @@ class TFramePainter extends ObjectPainter {
       } else
          unzoom_z = (zmin === zmax) && (zmin === 0);
 
-
       let changed = false;
 
       // first process zooming (if any)
@@ -66014,18 +66017,24 @@ class TFramePainter extends ObjectPainter {
                this.zoom_xmax = xmax;
                changed = true;
                zoom_x = false;
+               if (interactive)
+                  this.zoomChangedInteractive('x', interactive);
             }
             if (zoom_y && obj.canZoomInside('y', ymin, ymax)) {
                this.zoom_ymin = ymin;
                this.zoom_ymax = ymax;
                changed = true;
                zoom_y = false;
+               if (interactive)
+                  this.zoomChangedInteractive('y', interactive);
             }
             if (zoom_z && obj.canZoomInside('z', zmin, zmax)) {
                this.zoom_zmin = zmin;
                this.zoom_zmax = zmax;
                changed = true;
                zoom_z = false;
+               if (interactive)
+                  this.zoomChangedInteractive('y', interactive);
             }
          });
       }
@@ -66033,8 +66042,11 @@ class TFramePainter extends ObjectPainter {
       // and process unzoom, if any
       if (unzoom_x || unzoom_y || unzoom_z) {
          if (unzoom_x) {
-            if (this.zoom_xmin !== this.zoom_xmax) changed = true;
+            if (this.zoom_xmin !== this.zoom_xmax)
+               changed = true;
             this.zoom_xmin = this.zoom_xmax = 0;
+            if (interactive)
+               this.zoomChangedInteractive('x', interactive);
          }
          if (unzoom_y) {
             if (this.zoom_ymin !== this.zoom_ymax) {
@@ -66042,10 +66054,15 @@ class TFramePainter extends ObjectPainter {
                unzoomHistogramYRange(this.getMainPainter());
             }
             this.zoom_ymin = this.zoom_ymax = 0;
+            if (interactive)
+               this.zoomChangedInteractive('y', interactive);
          }
          if (unzoom_z) {
-            if (this.zoom_zmin !== this.zoom_zmax) changed = true;
+            if (this.zoom_zmin !== this.zoom_zmax)
+               changed = true;
             this.zoom_zmin = this.zoom_zmax = 0;
+            if (interactive)
+               this.zoomChangedInteractive('z', interactive);
          }
 
          // than try to unzoom all overlapped objects
@@ -66107,12 +66124,18 @@ class TFramePainter extends ObjectPainter {
          this[`zoom_${name}min`] = this[`zoom_${name}max`] = 0;
       }
 
-      if (!changed) return false;
+      if (!changed)
+         return false;
 
       if (interactive)
          this.zoomChangedInteractive(name, interactive);
 
       return this.interactiveRedraw('pad', 'zoom').then(() => true);
+   }
+
+   /** @summary Unzoom single axis */
+   async unzoomSingle(name, interactive) {
+      return this.zoomSingle(name, 0, 0, typeof interactive === 'undefined' ? 'unzoom' : interactive);
    }
 
    /** @summary Checks if specified axis zoomed */
@@ -66124,23 +66147,23 @@ class TFramePainter extends ObjectPainter {
      * @return {Promise} with boolean flag if zooming changed */
    async unzoom(dox, doy, doz) {
       if (dox === 'all')
-         return this.unzoom('x2').then(() => this.unzoom('y2')).then(() => this.unzoom('xyz'));
+         return this.unzoomSingle('x2').then(() => this.unzoomSingle('y2')).then(() => this.unzoom('xyz'));
 
       if ((dox === 'x2') || (dox === 'y2'))
-         return this.zoomSingle(dox, 0, 0, 'unzoom');
+         return this.unzoomSingle(dox);
 
-      if (typeof dox === 'undefined') dox = doy = doz = true; else
-      if (isStr(dox)) { doz = dox.indexOf('z') >= 0; doy = dox.indexOf('y') >= 0; dox = dox.indexOf('x') >= 0; }
+      if (typeof dox === 'undefined')
+         dox = doy = doz = true;
+      else if (isStr(dox)) {
+         doz = dox.indexOf('z') >= 0;
+         doy = dox.indexOf('y') >= 0;
+         dox = dox.indexOf('x') >= 0;
+      }
 
       return this.zoom(dox ? 0 : undefined, dox ? 0 : undefined,
                        doy ? 0 : undefined, doy ? 0 : undefined,
-                       doz ? 0 : undefined, doz ? 0 : undefined).then(changed => {
-         if (changed && dox) this.zoomChangedInteractive('x', 'unzoom');
-         if (changed && doy) this.zoomChangedInteractive('y', 'unzoom');
-         if (changed && doz) this.zoomChangedInteractive('z', 'unzoom');
-
-         return changed;
-      });
+                       doz ? 0 : undefined, doz ? 0 : undefined,
+                       'unzoom');
    }
 
    /** @summary Mark/check if zoom for specific axis was changed interactively
@@ -72230,9 +72253,10 @@ class TPavePainter extends ObjectPainter {
             contour = main.fContour,
             levels = contour?.getLevels(),
             is_th3 = isFunc(main.getDimension) && (main.getDimension() === 3),
+            is_scatter = isFunc(main.getZaxis),
             log = pad?.fLogv ?? (is_th3 ? false : pad?.fLogz),
             draw_palette = main._color_palette,
-            zaxis = main.getObject()?.fZaxis,
+            zaxis = is_scatter ? main.getZaxis() : main.getObject()?.fZaxis,
             sizek = pad?.fTickz ? 0.35 : 0.7;
 
       let zmin = 0, zmax = 100, gzmin, gzmax, axis_transform = '', axis_second = 0;
@@ -72240,6 +72264,7 @@ class TPavePainter extends ObjectPainter {
       this._palette_vertical = (palette.fX2NDC - palette.fX1NDC) < (palette.fY2NDC - palette.fY1NDC);
 
       axis.fTickSize = 0.6 * s_width / width; // adjust axis ticks size
+
       if ((typeof zaxis?.fLabelOffset !== 'undefined') && !is_th3) {
          axis.fTitle = zaxis.fTitle;
          axis.fTitleSize = zaxis.fTitleSize;
@@ -72251,7 +72276,7 @@ class TPavePainter extends ObjectPainter {
          axis.fLabelColor = zaxis.fLabelColor;
          axis.fLabelFont = zaxis.fLabelFont;
          axis.fLabelOffset = zaxis.fLabelOffset;
-         this.z_handle.setHistPainter(main, 'z');
+         this.z_handle.setHistPainter(main, is_scatter ? 'hist#z' : 'z');
          this.z_handle.source_axis = zaxis;
       }
 
@@ -72349,7 +72374,7 @@ class TPavePainter extends ObjectPainter {
             }
 
             if (settings.Zooming)
-               r.on('dblclick', () => this.getFramePainter().unzoom('z'));
+               r.on('dblclick', () => this.getFramePainter().unzoomSingle('z'));
          }
       }
 
@@ -108855,8 +108880,10 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
       if (set_y && !histo.fYaxis.fLabels) {
          histo.fYaxis.fXmin = Math.min(minimum0, minimum);
          histo.fYaxis.fXmax = Math.max(maximum0, maximum);
-         histo.fMinimum = minimum;
-         histo.fMaximum = maximum;
+         if (!this._need_2dhist) {
+            histo.fMinimum = minimum;
+            histo.fMaximum = maximum;
+         }
       }
 
       return histo;
@@ -109902,7 +109929,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
       return false;
    }
 
-   /** @summary Update object members
+   /** @summary Update TGraph object members
      * @private */
    _updateMembers(graph, obj) {
       graph.fBits = obj.fBits;
@@ -109929,6 +109956,8 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
          graph.fMarkerColor = obj.fMarkerColor;
       graph.fMarkerSize = obj.fMarkerSize;
       graph.fMarkerStyle = obj.fMarkerStyle;
+
+      return obj.fFunctions;
    }
 
    /** @summary Update TGraph object */
@@ -109938,7 +109967,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
       if (opt && (opt !== this.options.original))
          this.decodeOptions(opt);
 
-      this._updateMembers(this.getObject(), obj);
+      const new_funcs = this._updateMembers(this.getObject(), obj);
 
       this.createBins();
 
@@ -109954,7 +109983,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
          }
       }
 
-      this._funcHandler = new FunctionsHandler(this, this.getPadPainter(), obj.fFunctions);
+      this._funcHandler = new FunctionsHandler(this, this.getPadPainter(), new_funcs);
 
       return true;
    }
@@ -113912,21 +113941,11 @@ class TScatterPainter extends TGraphPainter$1 {
          gr.fFunctions.AddFirst(pal, '');
       }
 
-      const zaxis = this.getHistogram()?.fZaxis;
-      if (pal && zaxis) {
-         Object.assign(pal.fAxis, {
-            fTitle: zaxis.fTitle, fTitleSize: zaxis.fTitleSize,
-            fTitleOffset: zaxis.fTitleOffset, fTitleColor: zaxis.fTitleColor,
-            fLineColor: zaxis.fAxisColor, fTextSize: zaxis.fLabelSize,
-            fTextColor: zaxis.fLabelColor, fTextFont: zaxis.fLabelFont,
-            fLabelOffset: zaxis.fLabelOffset
-         });
-      }
-
       return pal;
    }
 
-   /** @summary Update TScatter members */
+   /** @summary Update TScatter members
+    * @private */
    _updateMembers(scatter, obj) {
       scatter.fBits = obj.fBits;
       scatter.fTitle = obj.fTitle;
@@ -113936,14 +113955,22 @@ class TScatterPainter extends TGraphPainter$1 {
       scatter.fMargin = obj.fMargin;
       scatter.fMinMarkerSize = obj.fMinMarkerSize;
       scatter.fMaxMarkerSize = obj.fMaxMarkerSize;
-      super._updateMembers(scatter.fGraph, obj.fGraph);
+      return super._updateMembers(scatter.fGraph, obj.fGraph);
+   }
+
+   /** @summary Return Z axis used for palette drawing
+    * @private */
+   getZaxis() {
+      return this.getHistogram()?.fZaxis;
    }
 
    /** @summary Actual drawing of TScatter */
    async drawGraph() {
       const fpainter = this.get_main(),
-          hpainter = this.getMainPainter(),
-          scatter = this.getObject();
+            hpainter = this.getMainPainter(),
+            scatter = this.getObject(),
+            hist = this.getHistogram();
+
       let scale = 1, offset = 0;
       if (!fpainter || !hpainter || !scatter) return;
 
@@ -113965,12 +113992,19 @@ class TScatterPainter extends TGraphPainter$1 {
          }
          if (maxc <= minc)
             maxc = minc < 0 ? 0.9*minc : (minc > 0 ? 1.1*minc : 1);
+         else if ((minc > 0) && (minc < 0.3*maxc))
+            minc = 0;
          this.fContour = new HistContour(minc, maxc);
          this.fContour.createNormal(30);
          this.fContour.configIndicies(0, 0);
 
          fpainter.zmin = minc;
          fpainter.zmax = maxc;
+
+         if (!fpainter.zoomChangedInteractive('z') && hist && hist.fMinimum !== kNoZoom && hist.fMaximum !== kNoZoom) {
+            fpainter.zoom_zmin = hist.fMinimum;
+            fpainter.zoom_zmax = hist.fMaximum;
+         }
       }
 
       if (scatter.fSize) {
@@ -118736,13 +118770,18 @@ class RFramePainter extends RObjectPainter {
    /** @summary function can be used for zooming into specified range
      * @desc if both limits for each axis 0 (like xmin === xmax === 0), axis will be unzoomed
      * @return {Promise} with boolean flag if zoom operation was performed */
-   async zoom(xmin, xmax, ymin, ymax, zmin, zmax) {
+   async zoom(xmin, xmax, ymin, ymax, zmin, zmax, interactive) {
       // disable zooming when axis conversion is enabled
-      if (this.projection) return false;
+      if (this.projection)
+         return false;
 
-      if (xmin === 'x') { xmin = xmax; xmax = ymin; ymin = undefined; } else
-      if (xmin === 'y') { ymax = ymin; ymin = xmax; xmin = xmax = undefined; } else
-      if (xmin === 'z') { zmin = xmax; zmax = ymin; xmin = xmax = ymin = undefined; }
+      if (xmin === 'x') {
+         xmin = xmax; xmax = ymin; interactive = ymax; ymin = ymax = undefined;
+      } else if (xmin === 'y') {
+         interactive = ymax; ymax = ymin; ymin = xmax; xmin = xmax = undefined;
+      } else if (xmin === 'z') {
+         interactive = ymax; zmin = xmax; zmax = ymin; xmin = xmax = ymin = ymax = undefined;
+      }
 
       let zoom_x = (xmin !== xmax), zoom_y = (ymin !== ymax), zoom_z = (zmin !== zmax),
           unzoom_x = false, unzoom_y = false, unzoom_z = false;
@@ -118755,7 +118794,6 @@ class RFramePainter extends RObjectPainter {
       } else
          unzoom_x = (xmin === xmax) && (xmin === 0);
 
-
       if (zoom_y) {
          let cnt = 0;
          if (ymin <= this.ymin) { ymin = this.ymin; cnt++; }
@@ -118763,7 +118801,6 @@ class RFramePainter extends RObjectPainter {
          if (cnt === 2) { zoom_y = false; unzoom_y = true; }
       } else
          unzoom_y = (ymin === ymax) && (ymin === 0);
-
 
       if (zoom_z) {
          let cnt = 0;
@@ -118774,15 +118811,12 @@ class RFramePainter extends RObjectPainter {
       } else
          unzoom_z = (zmin === zmax) && (zmin === 0);
 
-
       let changed = false, r_x = '', r_y = '', r_z = '', is_any_check = false;
       const req = {
-            _typename: `${nsREX}RFrame::RUserRanges`,
-            values: [0, 0, 0, 0, 0, 0],
-            flags: [false, false, false, false, false, false]
-      },
-
-      checkZooming = (painter, force) => {
+         _typename: `${nsREX}RFrame::RUserRanges`,
+         values: [0, 0, 0, 0, 0, 0],
+         flags: [false, false, false, false, false, false]
+      }, checkZooming = (painter, force) => {
          if (!force && !isFunc(painter.canZoomInside)) return;
 
          is_any_check = true;
@@ -118794,6 +118828,8 @@ class RFramePainter extends RObjectPainter {
             zoom_x = false;
             req.values[0] = xmin; req.values[1] = xmax;
             req.flags[0] = req.flags[1] = true;
+            if (interactive)
+               this.zoomChangedInteractive('x', interactive);
          }
          if (zoom_y && (force || painter.canZoomInside('y', ymin, ymax))) {
             this.zoom_ymin = ymin;
@@ -118802,6 +118838,8 @@ class RFramePainter extends RObjectPainter {
             zoom_y = false;
             req.values[2] = ymin; req.values[3] = ymax;
             req.flags[2] = req.flags[3] = true;
+            if (interactive)
+               this.zoomChangedInteractive('y', interactive);
          }
          if (zoom_z && (force || painter.canZoomInside('z', zmin, zmax))) {
             this.zoom_zmin = zmin;
@@ -118810,6 +118848,8 @@ class RFramePainter extends RObjectPainter {
             zoom_z = false;
             req.values[4] = zmin; req.values[5] = zmax;
             req.flags[4] = req.flags[5] = true;
+            if (interactive)
+               this.zoomChangedInteractive('z', interactive);
          }
       };
 
@@ -118827,20 +118867,27 @@ class RFramePainter extends RObjectPainter {
             if (this.zoom_xmin !== this.zoom_xmax) { changed = true; r_x = '0'; }
             this.zoom_xmin = this.zoom_xmax = 0;
             req.values[0] = req.values[1] = -1;
+            if (interactive)
+               this.zoomChangedInteractive('x', interactive);
          }
          if (unzoom_y) {
             if (this.zoom_ymin !== this.zoom_ymax) { changed = true; r_y = '1'; }
             this.zoom_ymin = this.zoom_ymax = 0;
             req.values[2] = req.values[3] = -1;
+            if (interactive)
+               this.zoomChangedInteractive('y', interactive);
          }
          if (unzoom_z) {
             if (this.zoom_zmin !== this.zoom_zmax) { changed = true; r_z = '2'; }
             this.zoom_zmin = this.zoom_zmax = 0;
             req.values[4] = req.values[5] = -1;
+            if (interactive)
+               this.zoomChangedInteractive('z', interactive);
          }
       }
 
-      if (!changed) return false;
+      if (!changed)
+         return false;
 
       if (this.v7NormalMode())
          this.v7SubmitRequest('zoom', { _typename: `${nsREX}RFrame::RZoomRequest`, ranges: req });
@@ -118885,8 +118932,8 @@ class RFramePainter extends RObjectPainter {
          is_any_check = true;
 
          if (zoom_v && (force || painter.canZoomInside(name[0], vmin, vmax))) {
-            this['zoom_' + name + 'min'] = vmin;
-            this['zoom_' + name + 'max'] = vmax;
+            this[`zoom_${name}min`] = vmin;
+            this[`zoom_${name}max`] = vmax;
             changed = true;
             zoom_v = false;
             req.values[indx*2] = vmin; req.values[indx*2+1] = vmax;
@@ -118919,6 +118966,11 @@ class RFramePainter extends RObjectPainter {
       return this.interactiveRedraw('pad', `zoom${indx}`).then(() => true);
    }
 
+   /** @summary Unzoom single axis */
+   async unzoomSingle(name, interactive) {
+      return this.zoomSingle(name, 0, 0, typeof interactive === 'undefined' ? 'unzoom' : interactive);
+   }
+
    /** @summary Checks if specified axis zoomed */
    isAxisZoomed(axis) {
       return this[`zoom_${axis}min`] !== this[`zoom_${axis}max`];
@@ -118931,7 +118983,7 @@ class RFramePainter extends RObjectPainter {
          return this.unzoom('x2').then(() => this.unzoom('y2')).then(() => this.unzoom('xyz'));
 
       if ((dox === 'x2') || (dox === 'y2'))
-         return this.zoomSingle(dox, 0, 0, 'unzoom');
+         return this.unzoomSingle(dox);
 
       if (typeof dox === 'undefined')
          dox = doy = doz = true;
@@ -118943,13 +118995,8 @@ class RFramePainter extends RObjectPainter {
 
       return this.zoom(dox ? 0 : undefined, dox ? 0 : undefined,
                        doy ? 0 : undefined, doy ? 0 : undefined,
-                       doz ? 0 : undefined, doz ? 0 : undefined).then(changed => {
-         if (changed && dox) this.zoomChangedInteractive('x', 'unzoom');
-         if (changed && doy) this.zoomChangedInteractive('y', 'unzoom');
-         if (changed && doz) this.zoomChangedInteractive('z', 'unzoom');
-
-         return changed;
-      });
+                       doz ? 0 : undefined, doz ? 0 : undefined,
+                       'unzoom');
    }
 
    /** @summary Mark/check if zoom for specific axis was changed interactively
