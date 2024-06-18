@@ -1,4 +1,4 @@
-import { clTPaletteAxis, isFunc, create } from '../core.mjs';
+import { clTPaletteAxis, isFunc, create, kNoZoom } from '../core.mjs';
 import { getColorPalette } from '../base/colors.mjs';
 import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
 import { TGraphPainter } from './TGraphPainter.mjs';
@@ -68,8 +68,10 @@ class TScatterPainter extends TGraphPainter {
    /** @summary Actual drawing of TScatter */
    async drawGraph() {
       const fpainter = this.get_main(),
-          hpainter = this.getMainPainter(),
-          scatter = this.getObject();
+            hpainter = this.getMainPainter(),
+            scatter = this.getObject(),
+            hist = this.getHistogram();
+
       let scale = 1, offset = 0;
       if (!fpainter || !hpainter || !scatter) return;
 
@@ -99,6 +101,11 @@ class TScatterPainter extends TGraphPainter {
 
          fpainter.zmin = minc;
          fpainter.zmax = maxc;
+
+         if (!fpainter.zoomChangedInteractive('z') && hist && hist.fMinimum !== kNoZoom && hist.fMaximum !== kNoZoom) {
+            fpainter.zoom_zmin = hist.fMinimum;
+            fpainter.zoom_zmax = hist.fMaximum;
+         }
       }
 
       if (scatter.fSize) {
