@@ -65,6 +65,21 @@ class TScatterPainter extends TGraphPainter {
       return this.getHistogram()?.fZaxis;
    }
 
+   /** @summary Checks if it makes sense to zoom inside specified axis range */
+   canZoomInside(axis, min, max) {
+      if (axis !== 'z')
+         return super.canZoomInside(axis, min, max);
+
+      const levels = this.fContour?.getLevels();
+      if (!levels)
+         return false;
+      // match at least full color level inside
+      for (let i = 0; i < levels.length - 1; ++i)
+         if ((min <= levels[i]) && (max >= levels[i+1]))
+            return true;
+      return false;
+   }
+
    /** @summary Actual drawing of TScatter */
    async drawGraph() {
       const fpainter = this.get_main(),

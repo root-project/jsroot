@@ -1461,10 +1461,12 @@ class TGraphPainter extends ObjectPainter {
      * @desc allow to zoom TGraph only when at least one point in the range */
    canZoomInside(axis, min, max) {
       const gr = this.getGraph();
-      if (!gr || (axis !== (this.options.pos3d ? 'y' : 'x'))) return false;
+      if (!gr || (axis !== (this.options.pos3d ? 'y' : 'x')))
+         return false;
 
       for (let n = 0; n < gr.fNpoints; ++n)
-         if ((min < gr.fX[n]) && (gr.fX[n] < max)) return true;
+         if ((min < gr.fX[n]) && (gr.fX[n] < max))
+            return true;
 
       return false;
    }
