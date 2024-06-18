@@ -957,7 +957,7 @@ class TPavePainter extends ObjectPainter {
             }
 
             if (settings.Zooming)
-               r.on('dblclick', () => this.getFramePainter().unzoom('z'));
+               r.on('dblclick', () => this.getFramePainter().unzoomSingle('z'));
          }
       }
 
