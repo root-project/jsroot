@@ -78969,7 +78969,7 @@ function getCameraPosition(fp) {
          dist_xy = Math.sqrt((p.x-p0.x)**2 + (p.y-p0.y)**2),
          new_theta = Math.atan2((p.z - p0.z)/dist, dist_xy/dist) / Math.PI * 180,
          new_phi = 270 - Math.atan2((p.y - p0.y)/dist_xy, (p.x - p0.x)/dist_xy)/ Math.PI * 180,
-         pad = fp.getPadPainter().getRootPad(true);
+         pad = fp.getPadPainter()?.getRootPad(true);
 
    fp.camera_Phi = new_phi >= 360 ? new_phi - 360 : new_phi;
    fp.camera_Theta = new_theta;
