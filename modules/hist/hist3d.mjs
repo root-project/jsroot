@@ -392,7 +392,7 @@ function getCameraPosition(fp) {
    fp.camera_Phi = new_phi >= 360 ? new_phi - 360 : new_phi;
    fp.camera_Theta = new_theta;
 
-   if (pad) {
+   if (pad && Number.isFinite(fp.camera_Phi) && Number.isFinite(fp.camera_Theta)) {
       pad.fPhi = fp.camera_Phi;
       pad.fTheta = fp.camera_Theta;
    }
