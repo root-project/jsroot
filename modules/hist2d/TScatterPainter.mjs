@@ -10,7 +10,7 @@ class TScatterPainter extends TGraphPainter {
 
    constructor(dom, obj) {
       super(dom, obj);
-      this._need_2dhist = true;
+      this._is_scatter = true;
       this._not_adjust_hrange = true;
    }
 
