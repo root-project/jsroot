@@ -3210,8 +3210,22 @@ class TH2Painter extends THistPainter {
          return true;
 
       // z-scale zooming allowed only if special ignore-palette is not provided
-      if (axis === 'z')
-         return !this.options.IgnorePalette;
+      if (axis === 'z') {
+         if (this.mode3d)
+            return true;
+         if (this.options.IgnorePalette)
+            return false;
+
+         const fp = this.getFramePainter(),
+               nlevels = Math.max(gStyle.fNumberContours, 20);
+
+         if (!fp || (fp.zmin === fp.zmax))
+            return true;
+
+         if ((fp.zmax - fp.zmin) / nlevels < (max - min))
+            return true;
+         return false;
+      }
 
       let obj = this.getHisto();
       if (obj) obj = (axis === 'y') ? obj.fYaxis : obj.fXaxis;
