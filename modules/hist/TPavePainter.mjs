@@ -911,7 +911,7 @@ class TPavePainter extends ObjectPainter {
          for (let i = 0; i < levels.length-1; ++i) {
             let z0 = Math.round(this.z_handle.gr(levels[i])),
                 z1 = Math.round(this.z_handle.gr(levels[i+1])),
-                lvl = (levels[i]+levels[i+1])/2, d;
+                lvl = (levels[i] + levels[i+1])*0.5, d;
 
             if (this._palette_vertical) {
                if ((z1 >= s_height) || (z0 < 0)) continue;
@@ -919,10 +919,11 @@ class TPavePainter extends ObjectPainter {
 
                if (z0 > s_height) {
                   z0 = s_height;
-                  lvl = levels[i]*0.001+levels[i+1]*0.999;
+                  lvl = levels[i]*0.001 + levels[i+1]*0.999;
+                  if (z1 < 0) z1 = 0;
                } else if (z1 < 0) {
                   z1 = 0;
-                  lvl = levels[i]*0.999+levels[i+1]*0.001;
+                  lvl = levels[i]*0.999 + levels[i+1]*0.001;
                }
                d = `M0,${z1}H${s_width}V${z0}H0Z`;
             } else {
@@ -931,10 +932,11 @@ class TPavePainter extends ObjectPainter {
 
                if (z1 > s_width) {
                   z1 = s_width;
-                  lvl = levels[i]*0.999+levels[i+1]*0.001;
+                  lvl = levels[i]*0.999 + levels[i+1]*0.001;
+                  if (z0 < 0) z0 = 0;
                } else if (z0 < 0) {
                   z0 = 0;
-                  lvl = levels[i]*0.001+levels[i+1]*0.999;
+                  lvl = levels[i]*0.001 + levels[i+1]*0.999;
                }
                d = `M${z0},0V${s_height}H${z1}V0Z`;
             }
