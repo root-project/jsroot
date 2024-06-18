@@ -2922,6 +2922,11 @@ class TFramePainter extends ObjectPainter {
       return this.interactiveRedraw('pad', 'zoom').then(() => true);
    }
 
+   /** @summary Unzoom single axis */
+   async unzoomSingle(name, interactive) {
+      return this.zoomSingle(name, 0, 0, typeof interactive === 'undefined' ? 'unzoom' : interactive);
+   }
+
    /** @summary Checks if specified axis zoomed */
    isAxisZoomed(axis) {
       return this[`zoom_${axis}min`] !== this[`zoom_${axis}max`];
@@ -2934,7 +2939,7 @@ class TFramePainter extends ObjectPainter {
          return this.unzoom('x2').then(() => this.unzoom('y2')).then(() => this.unzoom('xyz'));
 
       if ((dox === 'x2') || (dox === 'y2'))
-         return this.zoomSingle(dox, 0, 0, 'unzoom');
+         return this.unzoomSingle(dox);
 
       if (typeof dox === 'undefined')
          dox = doy = doz = true;
