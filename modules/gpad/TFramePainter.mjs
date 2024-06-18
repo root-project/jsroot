@@ -2769,11 +2769,16 @@ class TFramePainter extends ObjectPainter {
      * @param {number} [ymax]
      * @param {number} [zmin]
      * @param {number} [zmax]
+     * @param [interactive] - if changes was performed interactively
      * @return {Promise} with boolean flag if zoom operation was performed */
-   async zoom(xmin, xmax, ymin, ymax, zmin, zmax) {
-      if (xmin === 'x') { xmin = xmax; xmax = ymin; ymin = undefined; } else
-      if (xmin === 'y') { ymax = ymin; ymin = xmax; xmin = xmax = undefined; } else
-      if (xmin === 'z') { zmin = xmax; zmax = ymin; xmin = xmax = ymin = undefined; }
+   async zoom(xmin, xmax, ymin, ymax, zmin, zmax, interactive) {
+      if (xmin === 'x') {
+         xmin = xmax; xmax = ymin; interactive = ymax; ymin = ymax = undefined;
+      } else if (xmin === 'y') {
+         interactive = ymax; ymax = ymin; ymin = xmax; xmin = xmax = undefined;
+      } else if (xmin === 'z') {
+         interactive = ymax; zmin = xmax; zmax = ymin; xmin = xmax = ymin = ymax = undefined;
+      }
 
       let zoom_x = (xmin !== xmax), zoom_y = (ymin !== ymax), zoom_z = (zmin !== zmax),
           unzoom_x = false, unzoom_y = false, unzoom_z = false;
@@ -2809,7 +2814,6 @@ class TFramePainter extends ObjectPainter {
       } else
          unzoom_z = (zmin === zmax) && (zmin === 0);
 
-
       let changed = false;
 
       // first process zooming (if any)
@@ -2821,18 +2825,24 @@ class TFramePainter extends ObjectPainter {
                this.zoom_xmax = xmax;
                changed = true;
                zoom_x = false;
+               if (interactive)
+                  this.zoomChangedInteractive('x', interactive);
             }
             if (zoom_y && obj.canZoomInside('y', ymin, ymax)) {
                this.zoom_ymin = ymin;
                this.zoom_ymax = ymax;
                changed = true;
                zoom_y = false;
+               if (interactive)
+                  this.zoomChangedInteractive('y', interactive);
             }
             if (zoom_z && obj.canZoomInside('z', zmin, zmax)) {
                this.zoom_zmin = zmin;
                this.zoom_zmax = zmax;
                changed = true;
                zoom_z = false;
+               if (interactive)
+                  this.zoomChangedInteractive('y', interactive);
             }
          });
       }
@@ -2840,8 +2850,11 @@ class TFramePainter extends ObjectPainter {
       // and process unzoom, if any
       if (unzoom_x || unzoom_y || unzoom_z) {
          if (unzoom_x) {
-            if (this.zoom_xmin !== this.zoom_xmax) changed = true;
+            if (this.zoom_xmin !== this.zoom_xmax)
+               changed = true;
             this.zoom_xmin = this.zoom_xmax = 0;
+            if (interactive)
+               this.zoomChangedInteractive('x', interactive);
          }
          if (unzoom_y) {
             if (this.zoom_ymin !== this.zoom_ymax) {
@@ -2849,10 +2862,15 @@ class TFramePainter extends ObjectPainter {
                unzoomHistogramYRange(this.getMainPainter());
             }
             this.zoom_ymin = this.zoom_ymax = 0;
+            if (interactive)
+               this.zoomChangedInteractive('y', interactive);
          }
          if (unzoom_z) {
-            if (this.zoom_zmin !== this.zoom_zmax) changed = true;
+            if (this.zoom_zmin !== this.zoom_zmax)
+               changed = true;
             this.zoom_zmin = this.zoom_zmax = 0;
+            if (interactive)
+               this.zoomChangedInteractive('z', interactive);
          }
 
          // than try to unzoom all overlapped objects
@@ -2914,7 +2932,8 @@ class TFramePainter extends ObjectPainter {
          this[`zoom_${name}min`] = this[`zoom_${name}max`] = 0;
       }
 
-      if (!changed) return false;
+      if (!changed)
+         return false;
 
       if (interactive)
          this.zoomChangedInteractive(name, interactive);
@@ -2936,7 +2955,7 @@ class TFramePainter extends ObjectPainter {
      * @return {Promise} with boolean flag if zooming changed */
    async unzoom(dox, doy, doz) {
       if (dox === 'all')
-         return this.unzoom('x2').then(() => this.unzoom('y2')).then(() => this.unzoom('xyz'));
+         return this.unzoomSingle('x2').then(() => this.unzoomSingle('y2')).then(() => this.unzoom('xyz'));
 
       if ((dox === 'x2') || (dox === 'y2'))
          return this.unzoomSingle(dox);
@@ -2951,13 +2970,8 @@ class TFramePainter extends ObjectPainter {
 
       return this.zoom(dox ? 0 : undefined, dox ? 0 : undefined,
                        doy ? 0 : undefined, doy ? 0 : undefined,
-                       doz ? 0 : undefined, doz ? 0 : undefined).then(changed => {
-         if (changed && dox) this.zoomChangedInteractive('x', 'unzoom');
-         if (changed && doy) this.zoomChangedInteractive('y', 'unzoom');
-         if (changed && doz) this.zoomChangedInteractive('z', 'unzoom');
-
-         return changed;
-      });
+                       doz ? 0 : undefined, doz ? 0 : undefined,
+                       'unzoom');
    }
 
    /** @summary Mark/check if zoom for specific axis was changed interactively
