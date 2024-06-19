@@ -543,6 +543,15 @@ class TH2Painter extends THistPainter {
       super.cleanup();
    }
 
+   /** @summary Returns histogram
+    * @desc Also assigns $get method to extract content */
+   getHisto() {
+      const histo = super.getHisto();
+      if (histo)
+         histo.$get = histo.getBinContent;
+      return histo;
+   }
+
    /** @summary Toggle projection */
    toggleProjection(kind, width) {
       if ((kind === 'Projections') || (kind === 'Off'))
@@ -1194,7 +1203,7 @@ class TH2Painter extends THistPainter {
          }
 
          for (let j = handle.j2 - 1; j >= handle.j1; --j) {
-            binz = histo.getBinContent(i + 1, j + 1);
+            binz = histo.$get(i + 1, j + 1);
             is_zero = (binz === 0);
 
             if ((is_zero && skip_zero) || (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i + 0.5), histo.fYaxis.GetBinCoord(j + 0.5)))) {
@@ -1860,7 +1869,7 @@ class TH2Painter extends THistPainter {
          const logmax = Math.log(absmax);
          if (absmin > 0)
             logmin = Math.log(absmin);
-         else if ((main.minposbin>=1) && (main.minposbin<100))
+         else if ((main.minposbin >= 1) && (main.minposbin < 100))
             logmin = Math.log(0.7);
          else
             logmin = (main.minposbin > 0) ? Math.log(0.7*main.minposbin) : logmax - 10;
