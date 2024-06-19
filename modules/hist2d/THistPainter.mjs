@@ -565,6 +565,9 @@ class THistDrawOptions {
       if (this.Proj)
          res += '_PROJ' + this.Proj;
 
+      if (this.ShowEmpty)
+         res += '_SHOWEMPTY';
+
       if (this.Same)
          res += this.ForceStat ? 'SAMES' : 'SAME';
       else if (is_main_hist && res) {
