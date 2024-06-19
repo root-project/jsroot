@@ -232,7 +232,6 @@ class TH1Painter extends THistPainter {
          } else
             w = histo.getBinContent(i + 1);
 
-
          if ((xmax === null) || (w > wmax)) {
             xmax = xx;
             wmax = w;
