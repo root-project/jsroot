@@ -764,7 +764,7 @@ class TH2Painter extends THistPainter {
             return this.showInspector(arg);
          const oldProject = this.options.Project;
          this.decodeOptions(arg);
-         if (oldProject === this.options.Project)
+         if ((oldProject === this.options.Project) || this.mode3d)
             this.interactiveRedraw('pad', 'drawopt');
          else
             this.toggleProjection(this.options.Project);
