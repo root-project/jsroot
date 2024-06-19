@@ -162,7 +162,7 @@
      { "opt": "text", "file": "profile2d.root", "item": "c1/[1]", "title": "text draw option", "asurl": true },
      { "opt": "texte", "file": "profile2d.root", "item": "c1/[1]", "title": "texte draw option", "asurl": true },
      { "name": "projxyb", "opt": "projxyb;colz", "file": "profile2d.root", "item": "c1/[1]", "title": "Draw TProfile2D::ProjectionXY('B') histogram", "asurl": true },
-     { "name": "projxyc=e", "opt": "projxyc=e;text;showempty", "file": "profile2d.root", "item": "c1/[1]", "title": "Draw TProfile2D::ProjectionXY('C=E') histogram", "asurl": true },
+     { "name": "projxyc=e", "opt": "projxyc=e;colz", "file": "profile2d.root", "item": "c1/[1]", "title": "Draw TProfile2D::ProjectionXY('C=E') histogram", "asurl": true },
      { "name": "projxyw", "opt": "projxyw;colz", "file": "profile2d.root", "item": "c1/[1]", "title": "Draw TProfile2D::ProjectionXY('W') histogram", "asurl": true }
    ],
    "THStack" : [
