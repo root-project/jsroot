@@ -544,11 +544,19 @@ class TH2Painter extends THistPainter {
    }
 
    /** @summary Returns histogram
-    * @desc Also assigns $get method to extract content */
+    * @desc Also assigns custom getBinContent method for TProfile2D if PROJXY options specified */
    getHisto() {
       const histo = super.getHisto();
-      if (histo)
-         histo.$get = histo.getBinContent;
+      if (histo?._typename === clTProfile2D) {
+         if (!histo.$getBinContent)
+            histo.$getBinContent = histo.getBinContent;
+         switch (this.options?.Profile2DProj) {
+            case 'B': histo.getBinContent = histo.getBinEntries; break;
+            case 'C=E': histo.getBinContent = histo.getBinError; break;
+            case 'W': histo.getBinContent = function(i,j) { return this.$getBinContent(i,j) * this.getBinEntries(i,j); }; break;
+            default: histo.getBinContent = histo.$getBinContent; break;
+         }
+      }
       return histo;
    }
 
@@ -1203,7 +1211,7 @@ class TH2Painter extends THistPainter {
          }
 
          for (let j = handle.j2 - 1; j >= handle.j1; --j) {
-            binz = histo.$get(i + 1, j + 1);
+            binz = histo.getBinContent(i + 1, j + 1);
             is_zero = (binz === 0);
 
             if ((is_zero && skip_zero) || (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i + 0.5), histo.fYaxis.GetBinCoord(j + 0.5)))) {
