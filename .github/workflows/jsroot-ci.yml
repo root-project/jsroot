@@ -102,7 +102,7 @@ jobs:
       - name: Run all tests
         run: |
           cd jsroot-test
-          xvfb-run -s "-ac -screen 0 1280x1024x24"  node test.js -c -m -p
+          xvfb-run -s "-ac -screen 0 1280x1024x24"  node test.js -c -m
 
   build-macos:
     runs-on: macos-latest
