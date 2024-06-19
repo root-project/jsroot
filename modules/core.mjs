@@ -1718,6 +1718,9 @@ function getMethods(typename, obj) {
             if (!this.fArray) return 0;
             return this.fArray[bin]/this.fBinEntries[bin];
          };
+         m.getBinEntries = function(bin) {
+            return (bin < 0) || (bin >= this.fNcells) ? 0 : this.fBinEntries[bin];
+         };
       }
       m.getBinEffectiveEntries = function(bin) {
          if (bin < 0 || bin >= this.fNcells) return 0;
