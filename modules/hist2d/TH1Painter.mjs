@@ -1,4 +1,4 @@
-import { gStyle, settings, clTF1, kNoZoom, kInspect, isFunc } from '../core.mjs';
+import { gStyle, settings, clTF1, clTProfile, kNoZoom, kInspect, isFunc } from '../core.mjs';
 import { rgb as d3_rgb } from '../d3.mjs';
 import { floatToString, buildSvgCurve, addHighlightStyle } from '../base/BasePainter.mjs';
 import { THistPainter } from './THistPainter.mjs';
@@ -14,6 +14,23 @@ const PadDrawOptions = ['LOGXY', 'LOGX', 'LOGY', 'LOGZ', 'LOGV', 'LOG', 'LOG2X',
  */
 
 class TH1Painter extends THistPainter {
+
+   /** @summary Returns histogram
+     * @desc Also assigns custom getBinContent method for TProfile if PROJX options specified */
+   getHisto() {
+      const histo = super.getHisto();
+      if (histo?._typename === clTProfile) {
+         if (!histo.$getBinContent)
+            histo.$getBinContent = histo.getBinContent;
+         switch (this.options?.ProfileProj) {
+            case 'B': histo.getBinContent = histo.getBinEntries; break;
+            case 'C=E': histo.getBinContent = histo.getBinError; break;
+            case 'W': histo.getBinContent = function(i) { return this.$getBinContent(i) * this.getBinEntries(i); }; break;
+            default: histo.getBinContent = histo.$getBinContent; break;
+         }
+      }
+      return histo;
+   }
 
    /** @summary Convert TH1K into normal binned histogram */
    convertTH1K() {
