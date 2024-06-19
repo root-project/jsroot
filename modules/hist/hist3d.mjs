@@ -1537,7 +1537,7 @@ function drawBinsLego(painter, is_v7 = false) {
 
       if (painter.options.Zero || (axis_zmin > 0)) return true;
 
-      return painter._show_empty_bins;
+      return painter.options.ShowEmpty;
    };
 
    let levels = [axis_zmin, axis_zmax], palette = null;
@@ -1848,7 +1848,7 @@ function drawBinsError3D(painter, is_v7 = false) {
    const check_skip_min = () => {
        // return true if minimal histogram value should be skipped
        if (painter.options.Zero || (zmin > 0)) return false;
-       return !painter._show_empty_bins;
+       return !painter.options.ShowEmpty;
    };
 
     // loop over the points - first loop counts points, second fill arrays
