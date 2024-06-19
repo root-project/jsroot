@@ -1,5 +1,6 @@
 # JSROOT changelog
 
+
 ## Changes in 7.7.2
 1. Fix - hide empty title on the canvas
 2. Fix - properly handle zooming in THStack histogram
