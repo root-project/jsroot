@@ -61,13 +61,25 @@ jobs:
     steps:
       - name: Checkout jsroot
         uses: actions/checkout@v4
+        with:
+          path: 'jsroot'
 
       - name: Checkout jsroot-test repo
         uses: actions/checkout@v4
         with:
           repository: 'linev/jsroot-test'
-          branch: '${{ github.head_ref }}'
+          ref: '${{ github.head_ref }}'
           path: 'jsroot-test'
+
+      - name: Show jsroot info
+        run: |
+          cd jsroot
+          git info
+
+      - name: Show jsroot-test info
+        run: |
+          cd jsroot-test
+          git info
 
       - name: Install System Dependencies for headless-gl
         run: |
