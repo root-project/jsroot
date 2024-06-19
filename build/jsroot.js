@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '18/06/2024',
+version_date = '19/06/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -1723,6 +1723,9 @@ function getMethods(typename, obj) {
             if (this.fBinEntries[bin] < 1e-300) return 0;
             if (!this.fArray) return 0;
             return this.fArray[bin]/this.fBinEntries[bin];
+         };
+         m.getBinEntries = function(bin) {
+            return (bin < 0) || (bin >= this.fNcells) ? 0 : this.fBinEntries[bin];
          };
       }
       m.getBinEffectiveEntries = function(bin) {
@@ -72907,7 +72910,7 @@ class THistDrawOptions {
               Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0, Ortho: gStyle.fOrthoCamera,
               Spec: false, Pie: false, List: false, Zscale: false, Zvert: true, PadPalette: false,
               Candle: '', Violin: '', Scaled: null, Circular: 0,
-              GLBox: 0, GLColor: false, Project: '', Profile2DProj: '', System: kCARTESIAN,
+              GLBox: 0, GLColor: false, Project: '', ProfileProj: '', Profile2DProj: '', System: kCARTESIAN,
               AutoColor: false, NoStat: false, ForceStat: false, PadStats: false, PadTitle: false, AutoZoom: false,
               HighRes: 0, Zero: 1, Palette: 0, BaseLine: false, ShowEmpty: false,
               Optimize: settings.OptimizeDraw, adjustFrame: false,
@@ -73244,7 +73247,12 @@ class THistDrawOptions {
             this.Project = 'XY' + d.partAsInt(0, 1);
       }
 
-      if (d.check('PROJX', true)) this.Project = 'X' + d.part;
+      if (d.check('PROJX', true)) {
+         if (histo?._typename === clTProfile)
+            this.ProfileProj = d.part || 'B';
+         else
+            this.Project = 'X' + d.part;
+      }
       if (d.check('PROJY', true)) this.Project = 'Y' + d.part;
       if (d.check('PROJ')) this.Project = 'Y1';
 
@@ -73431,6 +73439,9 @@ class THistDrawOptions {
 
       if (this.is3d() && this.Ortho && is_main_hist)
          res += '_ORTHO';
+
+      if (this.ProfileProj)
+         res += '_PROJX' + this.ProfileProj;
 
       if (this.Profile2DProj)
          res += '_PROJXY' + this.Profile2DProj;
@@ -75936,7 +75947,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
       this.projection_widthY = widthY;
       this.is_projection = ''; // avoid projection handling until area is created
 
-      this.provideSpecialDrawArea(new_proj).then(() => { this.is_projection = new_proj; return this.redrawProjection(); });
+      return this.provideSpecialDrawArea(new_proj).then(() => { this.is_projection = new_proj; return this.redrawProjection(); });
    }
 
    /** @summary Redraw projection */
@@ -76094,7 +76105,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
             return this.showInspector(arg);
          const oldProject = this.options.Project;
          this.decodeOptions(arg);
-         if (oldProject === this.options.Project)
+         if ((oldProject === this.options.Project) || this.mode3d)
             this.interactiveRedraw('pad', 'drawopt');
          else
             this.toggleProjection(this.options.Project);
@@ -80984,6 +80995,23 @@ const PadDrawOptions = ['LOGXY', 'LOGX', 'LOGY', 'LOGZ', 'LOGV', 'LOG', 'LOG2X',
  */
 
 let TH1Painter$2 = class TH1Painter extends THistPainter {
+
+   /** @summary Returns histogram
+     * @desc Also assigns custom getBinContent method for TProfile if PROJX options specified */
+   getHisto() {
+      const histo = super.getHisto();
+      if (histo?._typename === clTProfile) {
+         if (!histo.$getBinContent)
+            histo.$getBinContent = histo.getBinContent;
+         switch (this.options?.ProfileProj) {
+            case 'B': histo.getBinContent = histo.getBinEntries; break;
+            case 'C=E': histo.getBinContent = histo.getBinError; break;
+            case 'W': histo.getBinContent = function(i) { return this.$getBinContent(i) * this.getBinEntries(i); }; break;
+            default: histo.getBinContent = histo.$getBinContent; break;
+         }
+      }
+      return histo;
+   }
 
    /** @summary Convert TH1K into normal binned histogram */
    convertTH1K() {
@@ -103238,7 +103266,7 @@ drawFuncs = { lst: [
    { name: clTText, sameas: clTLatex },
    { name: clTAnnotation, sameas: clTLatex },
    { name: /^TH1/, icon: 'img_histo1d', class: () => Promise.resolve().then(function () { return TH1Painter$1; }).then(h => h.TH1Painter), opt: ';hist;P;P0;E;E1;E2;E3;E4;E1X0;L;LF2;C;B;B1;A;TEXT;LEGO;same', ctrl: 'l', expand_item: fFunctions, for_derived: true },
-   { name: clTProfile, icon: 'img_profile', class: () => Promise.resolve().then(function () { return TH1Painter$1; }).then(h => h.TH1Painter), opt: ';E0;E1;E2;p;AH;hist', expand_item: fFunctions },
+   { name: clTProfile, icon: 'img_profile', class: () => Promise.resolve().then(function () { return TH1Painter$1; }).then(h => h.TH1Painter), opt: ';E0;E1;E2;p;AH;hist;projx;projxb;projxc=e;projxw', expand_item: fFunctions },
    { name: clTH2Poly, icon: 'img_histo2d', class: () => Promise.resolve().then(function () { return TH2Painter$1; }).then(h => h.TH2Painter), opt: ';COL;COL0;COLZ;LCOL;LCOL0;LCOLZ;LEGO;TEXT;same', expand_item: 'fBins', theonly: true },
    { name: 'TProfile2Poly', sameas: clTH2Poly },
    { name: 'TH2PolyBin', icon: 'img_histo2d', draw_field: 'fPoly', draw_field_opt: 'L' },

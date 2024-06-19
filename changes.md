@@ -5,7 +5,7 @@
 2. Support gStyle.fLegendFillStyle
 3. Let change histogram min/max values via context menu
 4. Support Z-scale zooming with TScatter
-5. TProfile2D projections https://github.com/root-project/root/issues/15851
+5. TProfile and TProfile2D projections https://github.com/root-project/root/issues/15851
 6. Fix - hide empty title on the canvas
 7. Fix - properly handle zooming in THStack histogram
 8. Fix - properly save zoomed ranges in drawingJSON()
