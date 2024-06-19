@@ -2,9 +2,12 @@ name: JSROOT CI
 
 on:
   push:
-    branches: [ "master", "7.7" ]
+    branches:
+      - "master"
+      - "7.7"
   pull_request:
-    branches: [ "master" ]
+    branches:
+      - "master"
 
 jobs:
   build-ubuntu:
