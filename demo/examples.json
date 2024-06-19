@@ -154,8 +154,11 @@
      { "opt": "E1" },
      { "opt": "pE2" },
      { "opt": "hist" },
-     { "name": "text", "opt": "hist,text" },
-     { "name": "texte", "opt": "hist,texte" }
+     { "name": "text", "opt": "hist;text" },
+     { "name": "texte", "opt": "hist;texte" },
+     { "name": "projxb", "opt": "hist;projxb", "title" : "Similar to TProfile::ProjectionX('B')" },
+     { "name": "projxc=e", "opt": "hist;projxc=e", "title" : "Similar to TProfile::ProjectionX('C=E')" },
+     { "name": "projxw", "opt": "hist;projxw", "title" : "Similar to TProfile::ProjectionX('W')" }
    ],
    "TProfile2D": [
      { "opt": "", "file": "profile2d.root", "item": "c1;1", "title": "TProfile2D class" },
