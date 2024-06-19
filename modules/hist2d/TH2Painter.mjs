@@ -762,8 +762,12 @@ class TH2Painter extends THistPainter {
       menu.addDrawMenu('Draw with', opts, arg => {
          if (arg.indexOf(kInspect) === 0)
             return this.showInspector(arg);
+         const oldProject = this.options.Project;
          this.decodeOptions(arg);
-         this.interactiveRedraw('pad', 'drawopt');
+         if (oldProject === this.options.Project)
+            this.interactiveRedraw('pad', 'drawopt');
+         else
+            this.toggleProjection(this.options.Project);
       });
 
       if (this.options.Color || this.options.Contour || this.options.Hist || this.options.Surf || this.options.Lego === 12 || this.options.Lego === 14)
