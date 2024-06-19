@@ -6,14 +6,14 @@
 3. Let change histogram min/max values via context menu
 4. Support Z-scale zooming with TScatter
 5. TProfile2D projections https://github.com/root-project/root/issues/15851
-5. Fix - hide empty title on the canvas
-6. Fix - properly handle zooming in THStack histogram
-7. Fix - properly save zoomed ranges in drawingJSON()
-8. Fix - always show all ticks for labeled axis
-9. Fix - draw TProfile2D bins content as text, not entrie
-10. Fix - interactive zooming on log color palette
-11. Fix - keyboard handling while input dialog active
-12. Fix - log axis labels formating with kMoreLogLabels option
+6. Fix - hide empty title on the canvas
+7. Fix - properly handle zooming in THStack histogram
+8. Fix - properly save zoomed ranges in drawingJSON()
+9. Fix - always show all ticks for labeled axis
+10. Fix - draw TProfile2D bins content as text, not entrie
+11. Fix - interactive zooming on log color palette
+12. Fix - keyboard handling while input dialog active
+13. Fix - log axis labels formating with kMoreLogLabels option
 
 
 ## Changes in 7.7.1

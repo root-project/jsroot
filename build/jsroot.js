@@ -60391,28 +60391,43 @@ class JSRootMenu {
          return;
       }
 
-      if (!without_sub)
-         this.sub('' + top_name, opts[0], call_back, title);
+      const used = {};
 
-      for (let i = 1; i < opts.length; ++i) {
-         let name = opts[i] || (this._use_plain_text ? '<dflt>' : '&lt;dflt&gt;'),
-             group = i+1;
+      if (!without_sub)
+         this.sub(top_name, opts[0], call_back, title);
+
+      if ((opts.indexOf('') >= 0) && (!without_sub || opts[0]))
+         this.add(this._use_plain_text ? '<dflt>' : '&lt;dflt&gt;', '', call_back);
+
+      for (let i = 0; i < opts.length; ++i) {
+         let name = opts[i];
+         if (!name || used[name])
+            continue;
+         used[name] = true;
+
+         const group = [];
          if (opts.length > 5) {
-            // check if there are similar options, which can be grouped once again
-            while ((group < opts.length) && (opts[group].indexOf(name) === 0)) group++;
+            // check if there are similar options, which can be grouped again
+            for (let i2 = i + 1; i2 < opts.length; ++i2) {
+               if (opts[i2] && !used[opts[i2]] && (opts[i2].indexOf(name) === 0))
+                  group.push(opts[i2]);
+               else if (name.length < 4)
+                  break;
+            }
          }
 
          if (without_sub)
             name = top_name + ' ' + name;
 
-         if (group >= i+2) {
-            this.sub('' + name, opts[i], call_back);
-            for (let k = i+1; k < group; ++k)
-               this.add(opts[k], opts[k], call_back);
+         if (group.length > 0) {
+            this.sub(name, opts[i], call_back);
+            group.forEach(sub => {
+               this.add(sub, sub, call_back);
+               used[sub] = true;
+            });
             this.endsub();
-            i = group - 1;
          } else if (name === kInspect) {
-            this.sub('' + name, opts[i], call_back, 'Inspect object content');
+            this.sub(name, opts[i], call_back, 'Inspect object content');
             for (let k = 0; k < 10; ++k)
                this.add(k.toString(), kInspect + k, call_back, `Inspect object and expand to level ${k}`);
             this.endsub();
@@ -72892,9 +72907,9 @@ class THistDrawOptions {
               Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0, Ortho: gStyle.fOrthoCamera,
               Spec: false, Pie: false, List: false, Zscale: false, Zvert: true, PadPalette: false,
               Candle: '', Violin: '', Scaled: null, Circular: 0,
-              GLBox: 0, GLColor: false, Project: '', System: kCARTESIAN,
+              GLBox: 0, GLColor: false, Project: '', Profile2DProj: '', System: kCARTESIAN,
               AutoColor: false, NoStat: false, ForceStat: false, PadStats: false, PadTitle: false, AutoZoom: false,
-              HighRes: 0, Zero: 1, Palette: 0, BaseLine: false,
+              HighRes: 0, Zero: 1, Palette: 0, BaseLine: false, ShowEmpty: false,
               Optimize: settings.OptimizeDraw, adjustFrame: false,
               Mode3D: false, x3dscale: 1, y3dscale: 1,
               Render3D: constants$1.Render3D.Default,
@@ -73009,6 +73024,8 @@ class THistDrawOptions {
       if (d.check('ZTITLE:', true)) histo.fZaxis.fTitle = decodeURIComponent(d.part.toLowerCase());
 
       if (d.check('_ADJUST_FRAME_')) this.adjustFrame = true;
+
+      if (d.check('SHOWEMPTY')) this.ShowEmpty = true;
 
       if (d.check('NOOPTIMIZE')) this.Optimize = 0;
       if (d.check('OPTIMIZE')) this.Optimize = 2;
@@ -73217,7 +73234,16 @@ class THistDrawOptions {
       if (d.check('MOLLWEIDE')) this.Proj = 5;
       if (this.Proj > 0) this.Contour = 14;
 
-      if (d.check('PROJXY', true)) this.Project = 'XY' + d.partAsInt(0, 1);
+      if (d.check('PROJXY', true)) {
+         let flag = true;
+         if ((histo?._typename === clTProfile2D) && d.part && !Number.isInteger(Number.parseInt(d.part))) {
+            this.Profile2DProj = d.part;
+            flag = d.check('PROJXY', true); // allow projxy with projected profile2d
+         }
+         if (flag)
+            this.Project = 'XY' + d.partAsInt(0, 1);
+      }
+
       if (d.check('PROJX', true)) this.Project = 'X' + d.part;
       if (d.check('PROJY', true)) this.Project = 'Y' + d.part;
       if (d.check('PROJ')) this.Project = 'Y1';
@@ -73405,6 +73431,15 @@ class THistDrawOptions {
 
       if (this.is3d() && this.Ortho && is_main_hist)
          res += '_ORTHO';
+
+      if (this.Profile2DProj)
+         res += '_PROJXY' + this.Profile2DProj;
+
+      if (this.Proj)
+         res += '_PROJ' + this.Proj;
+
+      if (this.ShowEmpty)
+         res += '_SHOWEMPTY';
 
       if (this.Same)
          res += this.ForceStat ? 'SAMES' : 'SAME';
@@ -75828,7 +75863,6 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
    constructor(dom, histo) {
       super(dom, histo);
       this.wheel_zoomy = true;
-      this._show_empty_bins = false;
    }
 
    /** @summary cleanup painter */
@@ -75836,6 +75870,23 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
       delete this.tt_handle;
 
       super.cleanup();
+   }
+
+   /** @summary Returns histogram
+    * @desc Also assigns custom getBinContent method for TProfile2D if PROJXY options specified */
+   getHisto() {
+      const histo = super.getHisto();
+      if (histo?._typename === clTProfile2D) {
+         if (!histo.$getBinContent)
+            histo.$getBinContent = histo.getBinContent;
+         switch (this.options?.Profile2DProj) {
+            case 'B': histo.getBinContent = histo.getBinEntries; break;
+            case 'C=E': histo.getBinContent = function(i, j) { return this.getBinError(this.getBin(i, j)); }; break;
+            case 'W': histo.getBinContent = function(i, j) { return this.$getBinContent(i, j) * this.getBinEntries(i, j); }; break;
+            default: histo.getBinContent = histo.$getBinContent; break;
+         }
+      }
+      return histo;
    }
 
    /** @summary Toggle projection */
@@ -76041,8 +76092,12 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
       menu.addDrawMenu('Draw with', opts, arg => {
          if (arg.indexOf(kInspect) === 0)
             return this.showInspector(arg);
+         const oldProject = this.options.Project;
          this.decodeOptions(arg);
-         this.interactiveRedraw('pad', 'drawopt');
+         if (oldProject === this.options.Project)
+            this.interactiveRedraw('pad', 'drawopt');
+         else
+            this.toggleProjection(this.options.Project);
       });
 
       if (this.options.Color || this.options.Contour || this.options.Hist || this.options.Surf || this.options.Lego === 12 || this.options.Lego === 14)
@@ -76213,7 +76268,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
             this.options.Line = 1;
          }
       } else
-         this.draw_content = is_content;
+         this.draw_content = is_content || this.options.ShowEmpty;
    }
 
    /** @summary Count TH2 histogram statistic
@@ -76462,7 +76517,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
             cntr = this.getContour(),
             palette = this.getHistPalette(),
             entries = [],
-            show_empty = this._show_empty_bins,
+            show_empty = this.options.ShowEmpty,
             can_merge_x = (handle.xbar2 === 1) && (handle.xbar1 === 0),
             can_merge_y = (handle.ybar2 === 1) && (handle.ybar1 === 0);
 
@@ -77017,7 +77072,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
          const binw = handle.grx[i+1] - handle.grx[i];
          for (let j = handle.j1; j < handle.j2; ++j) {
             const binz = histo.getBinContent(i+1, j+1);
-            if ((binz === 0) && !this._show_empty_bins) continue;
+            if ((binz === 0) && !this.options.ShowEmpty) continue;
 
             if (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i + 0.5),
                      histo.fYaxis.GetBinCoord(j + 0.5))) continue;
@@ -77154,7 +77209,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
          const logmax = Math.log(absmax);
          if (absmin > 0)
             logmin = Math.log(absmin);
-         else if ((main.minposbin>=1) && (main.minposbin<100))
+         else if ((main.minposbin >= 1) && (main.minposbin < 100))
             logmin = Math.log(0.7);
          else
             logmin = (main.minposbin > 0) ? Math.log(0.7*main.minposbin) : logmax - 10;
@@ -78404,10 +78459,10 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
           else if (!match)
             colindx = null;
           else if (h.hide_only_zeros)
-            colindx = (binz === 0) && !this._show_empty_bins ? null : 0;
+            colindx = (binz === 0) && !this.options.ShowEmpty ? null : 0;
           else {
             colindx = this.getContour().getPaletteIndex(this.getHistPalette(), binz);
-            if ((colindx === null) && (binz === 0) && this._show_empty_bins) colindx = 0;
+            if ((colindx === null) && (binz === 0) && this.options.ShowEmpty) colindx = 0;
          }
       }
 
@@ -80119,7 +80174,7 @@ function drawBinsLego(painter, is_v7 = false) {
 
       if (painter.options.Zero || (axis_zmin > 0)) return true;
 
-      return painter._show_empty_bins;
+      return painter.options.ShowEmpty;
    };
 
    let levels = [axis_zmin, axis_zmax], palette = null;
@@ -80430,7 +80485,7 @@ function drawBinsError3D(painter, is_v7 = false) {
    const check_skip_min = () => {
        // return true if minimal histogram value should be skipped
        if (painter.options.Zero || (zmin > 0)) return false;
-       return !painter._show_empty_bins;
+       return !painter.options.ShowEmpty;
    };
 
     // loop over the points - first loop counts points, second fill arrays
@@ -81146,7 +81201,6 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
             stat_sumwy2 += histo.fSumw2[i + 1];
          } else
             w = histo.getBinContent(i + 1);
-
 
          if ((xmax === null) || (w > wmax)) {
             xmax = xx;
@@ -103188,8 +103242,8 @@ drawFuncs = { lst: [
    { name: clTH2Poly, icon: 'img_histo2d', class: () => Promise.resolve().then(function () { return TH2Painter$1; }).then(h => h.TH2Painter), opt: ';COL;COL0;COLZ;LCOL;LCOL0;LCOLZ;LEGO;TEXT;same', expand_item: 'fBins', theonly: true },
    { name: 'TProfile2Poly', sameas: clTH2Poly },
    { name: 'TH2PolyBin', icon: 'img_histo2d', draw_field: 'fPoly', draw_field_opt: 'L' },
-   { name: /^TH2/, icon: 'img_histo2d', class: () => Promise.resolve().then(function () { return TH2Painter$1; }).then(h => h.TH2Painter), dflt: 'col', opt: ';COL;COLZ;COL0;COL1;COL0Z;COL1Z;COLA;BOX;BOX1;PROJ;PROJX1;PROJX2;PROJX3;PROJY1;PROJY2;PROJY3;SCAT;TEXT;TEXTE;TEXTE0;CANDLE;CANDLE1;CANDLE2;CANDLE3;CANDLE4;CANDLE5;CANDLE6;CANDLEY1;CANDLEY2;CANDLEY3;CANDLEY4;CANDLEY5;CANDLEY6;VIOLIN;VIOLIN1;VIOLIN2;VIOLINY1;VIOLINY2;CONT;CONT1;CONT2;CONT3;CONT4;ARR;SURF;SURF1;SURF2;SURF4;SURF6;E;A;LEGO;LEGO0;LEGO1;LEGO2;LEGO3;LEGO4;same', ctrl: 'lego', expand_item: fFunctions, for_derived: true },
-   { name: clTProfile2D, sameas: clTH2 },
+   { name: /^TH2/, icon: 'img_histo2d', class: () => Promise.resolve().then(function () { return TH2Painter$1; }).then(h => h.TH2Painter), dflt: 'col', opt: ';COL;COLZ;COL0;COL1;COL0Z;COL1Z;COLA;BOX;BOX1;PROJ;PROJX1;PROJX2;PROJX3;PROJY1;PROJY2;PROJY3;PROJXY1;PROJXY2;PROJXY3;SCAT;TEXT;TEXTE;TEXTE0;CANDLE;CANDLE1;CANDLE2;CANDLE3;CANDLE4;CANDLE5;CANDLE6;CANDLEY1;CANDLEY2;CANDLEY3;CANDLEY4;CANDLEY5;CANDLEY6;VIOLIN;VIOLIN1;VIOLIN2;VIOLINY1;VIOLINY2;CONT;CONT1;CONT2;CONT3;CONT4;ARR;SURF;SURF1;SURF2;SURF4;SURF6;E;A;LEGO;LEGO0;LEGO1;LEGO2;LEGO3;LEGO4;same', ctrl: 'lego', expand_item: fFunctions, for_derived: true },
+   { name: clTProfile2D, sameas: clTH2, opt2: ';projxyb;projxyc=e;projxyw' },
    { name: /^TH3/, icon: 'img_histo3d', class: () => Promise.resolve().then(function () { return TH3Painter$1; }).then(h => h.TH3Painter), opt: ';SCAT;BOX;BOX2;BOX3;GLBOX1;GLBOX2;GLCOL', expand_item: fFunctions, for_derived: true },
    { name: clTProfile3D, sameas: clTH3 },
    { name: clTHStack, icon: 'img_histo1d', class: () => Promise.resolve().then(function () { return THStackPainter$1; }).then(h => h.THStackPainter), expand_item: 'fHists', opt: 'NOSTACK;HIST;E;PFC;PLC' },
@@ -103399,8 +103453,10 @@ function getDrawSettings(kind, selector) {
       if (h.expand || h.get_expand || h.expand_item || h.can_expand) canexpand = true;
       if (!h.func && !h.class && !h.draw) break;
       isany = true;
-      if (!('opt' in h)) continue;
-      const opts = h.opt.split(';');
+      if (h.opt === undefined) continue;
+      let opt = h.opt;
+      if (isStr(h.opt2)) opt += h.opt2;
+      const opts = opt.split(';');
       for (let i = 0; i < opts.length; ++i) {
          opts[i] = opts[i].toLowerCase();
          if (opts[i].indexOf('same') === 0) {
