@@ -2459,6 +2459,8 @@ class TPadPainter extends ObjectPainter {
       if (d.check('OTY')) forEach(p => { p.$OTY = true; });
       if (d.check('CTX')) forEach(p => { p.$CTX = true; });
       if (d.check('CTY')) forEach(p => { p.$CTY = true; });
+      if (d.check('NOEX')) forEach(p => { p.$NOEX = true; });
+      if (d.check('NOEY')) forEach(p => { p.$NOEY = true; });
       if (d.check('RX')) forEach(p => { p.$RX = true; });
       if (d.check('RY')) forEach(p => { p.$RY = true; });
 

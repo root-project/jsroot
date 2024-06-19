@@ -416,6 +416,9 @@ class THistDrawOptions {
       check_axis_bit('MLX', 'fXaxis', EAxisBits.kMoreLogLabels);
       check_axis_bit('MLY', 'fYaxis', EAxisBits.kMoreLogLabels);
       check_axis_bit('MLZ', 'fZaxis', EAxisBits.kMoreLogLabels);
+      check_axis_bit('NOEX', 'fXaxis', EAxisBits.kNoExponent);
+      check_axis_bit('NOEY', 'fYaxis', EAxisBits.kNoExponent);
+      check_axis_bit('NOEZ', 'fZaxis', EAxisBits.kNoExponent);
 
       if (d.check('RX') || pad?.$RX) this.RevX = true;
       if (d.check('RY') || pad?.$RY) this.RevY = true;
