@@ -71,15 +71,15 @@ jobs:
           ref: '${{ github.head_ref }}'
           path: 'jsroot-test'
 
-      - name: Show jsroot info
+      - name: Show jsroot status
         run: |
           cd jsroot
-          git info
+          git status
 
-      - name: Show jsroot-test info
+      - name: Show jsroot-test status
         run: |
           cd jsroot-test
-          git info
+          git status
 
       - name: Install System Dependencies for headless-gl
         run: |
