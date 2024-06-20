@@ -1426,6 +1426,7 @@ class THistPainter extends ObjectPainter {
    /** @summary Toggle statbox drawing
      * @private */
    toggleStat(arg) {
+      const pp = this.getPadPainter();
       let stat = this.findStat(), statpainter;
 
       if (!arg) arg = '';
@@ -1435,7 +1436,7 @@ class THistPainter extends ObjectPainter {
          // when statbox created first time, one need to draw it
          stat = this.createStat(true);
       } else
-         statpainter = this.getPadPainter()?.findPainterFor(stat);
+         statpainter = pp.findPainterFor(stat);
 
 
       if (arg === 'only-check')
@@ -1461,9 +1462,8 @@ class THistPainter extends ObjectPainter {
          statpainter.redraw();
          has_stats = statpainter.Enabled;
       } else {
-         const prev_name = this.selectCurrentPad(this.getPadName());
          // return promise which will be used to process
-         has_stats = TPavePainter.draw(this.getDom(), stat).then(() => this.selectCurrentPad(prev_name));
+         has_stats = TPavePainter.draw(pp, stat);
       }
 
       this.processOnlineChange(`exec:SetBit(TH1::kNoStats,${has_stats ? 0 : 1})`, this);
