@@ -1036,7 +1036,7 @@ class RPadPainter extends RObjectPainter {
       if (snap._typename === `${nsREX}RPadDisplayItem`) { // subpad
          const subpad = snap, // not subpad, but just attributes
 
-          padpainter = new RPadPainter(this.getDom(), subpad, false);
+         padpainter = new RPadPainter(this, subpad, false);
          padpainter.decodeOptions('');
          padpainter.addToPadPrimitives(this.this_pad_name); // only set parent pad name
          padpainter.assignSnapId(snap.fObjectID);
