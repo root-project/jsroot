@@ -225,7 +225,7 @@ class TMultiGraphPainter extends ObjectPainter {
 
    /** @summary Draw graph  */
    async drawGraph(gr, opt /*, pos3d */) {
-      return TGraphPainter.draw(this.getDom(), gr, opt);
+      return TGraphPainter.draw(this.getPadPainter(), gr, opt);
    }
 
    /** @summary method draws next graph  */
