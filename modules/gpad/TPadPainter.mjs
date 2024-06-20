@@ -1698,7 +1698,7 @@ class TPadPainter extends ObjectPainter {
 
          subpad.fPrimitives = null; // clear primitives, they just because of I/O
 
-         const padpainter = new TPadPainter(this.getDom(), subpad, false);
+         const padpainter = new TPadPainter(this, subpad, false);
          padpainter.decodeOptions(snap.fOption);
          padpainter.addToPadPrimitives(this.this_pad_name);
          padpainter.snapid = snap.fObjectID;
