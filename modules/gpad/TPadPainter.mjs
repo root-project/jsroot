@@ -2455,14 +2455,9 @@ class TPadPainter extends ObjectPainter {
       if (d.check('TICKY')) forEach(p => { p.fTicky = 1; });
       if (d.check('TICKZ')) forEach(p => { p.fTickz = 1; });
       if (d.check('TICK')) forEach(p => { p.fTickx = p.fTicky = 1; });
-      if (d.check('OTX')) forEach(p => { p.$OTX = true; });
-      if (d.check('OTY')) forEach(p => { p.$OTY = true; });
-      if (d.check('CTX')) forEach(p => { p.$CTX = true; });
-      if (d.check('CTY')) forEach(p => { p.$CTY = true; });
-      if (d.check('NOEX')) forEach(p => { p.$NOEX = true; });
-      if (d.check('NOEY')) forEach(p => { p.$NOEY = true; });
-      if (d.check('RX')) forEach(p => { p.$RX = true; });
-      if (d.check('RY')) forEach(p => { p.$RY = true; });
+      ['OTX', 'OTY', 'CTX', 'CTY', 'NOEX', 'NOEY', 'RX', 'RY'].forEach(name => {
+         if (d.check(name)) forEach(p => { p['$' + name] = true; });
+      });
 
       this.storeDrawOpt(opt);
    }
