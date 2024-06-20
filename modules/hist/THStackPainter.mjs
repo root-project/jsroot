@@ -204,14 +204,11 @@ class THStackPainter extends ObjectPainter {
          if (!subpad_painter)
             return this;
 
-         const prev_name = subpad_painter.selectCurrentPad(subpad_painter.this_pad_name);
-
-         return this.hdraw_func(subpad_painter.getDom(), hist, hopt).then(subp => {
+         return this.hdraw_func(subpad_painter, hist, hopt).then(subp => {
             if (subp) {
                subp.setSecondaryId(this, subid);
                this.painters.push(subp);
             }
-            subpad_painter.selectCurrentPad(prev_name);
             return this.drawNextHisto(indx+1, pad_painter);
          });
       }
@@ -224,7 +221,7 @@ class THStackPainter extends ObjectPainter {
       if (this.options.auto)
          hist.$num_histos = nhists;
 
-      return this.hdraw_func(this.getDom(), hist, hopt).then(subp => {
+      return this.hdraw_func(this.getPadPainter(), hist, hopt).then(subp => {
           subp.setSecondaryId(this, subid);
           this.painters.push(subp);
           return this.drawNextHisto(indx+1, pad_painter);

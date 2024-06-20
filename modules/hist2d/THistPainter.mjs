@@ -1371,9 +1371,10 @@ class THistPainter extends ObjectPainter {
          return this;
 
       const histo = this.getHisto(), st = gStyle,
-            draw_title = !histo.TestBit(kNoTitle) && (st.fOptTitle > 0);
+            draw_title = !histo.TestBit(kNoTitle) && (st.fOptTitle > 0),
+            pp = this.getPadPainter();
 
-      let pt = this.getPadPainter()?.findInPrimitives(kTitle, clTPaveText);
+      let pt = pp.findInPrimitives(kTitle, clTPaveText);
 
       if (pt) {
          pt.Clear();
@@ -1385,7 +1386,7 @@ class THistPainter extends ObjectPainter {
       Object.assign(pt, { fName: kTitle, fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
                           fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: st.fTitleAlign });
       if (draw_title) pt.AddText(histo.fTitle);
-      return TPavePainter.draw(this.getDom(), pt, 'postitle');
+      return TPavePainter.draw(pp, pt, 'postitle');
    }
 
    /** @summary Live change and update of title drawing
