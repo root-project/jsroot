@@ -2168,10 +2168,8 @@ class THistPainter extends ObjectPainter {
 
       if (!pal_painter) {
          // when histogram drawn on sub pad, let draw new axis object on the same pad
-         const prev = this.selectCurrentPad(this.getPadName());
-         pr = TPavePainter.draw(this.getDom(), pal, arg).then(_palp => {
+         pr = TPavePainter.draw(pp, pal, arg).then(_palp => {
             pal_painter = _palp;
-            this.selectCurrentPad(prev);
             pal_painter.setSecondaryId(this, found_in_func && !pal.$generated ? `func_${pal.fName}` : undefined);
          });
       } else {

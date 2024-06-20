@@ -220,7 +220,7 @@ class TMultiGraphPainter extends ObjectPainter {
    /** @summary draw speical histogram for axis
      * @return {Promise} when ready */
    async drawAxisHist(histo, hopt) {
-      return TH1Painter.draw(this.getDom(), histo, hopt);
+      return TH1Painter.draw(this.getPadPainter() || this.getDom(), histo, hopt);
    }
 
    /** @summary Draw graph  */
