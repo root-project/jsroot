@@ -1630,7 +1630,6 @@ class RPadPainter extends RObjectPainter {
       } else
          painter.addToPadPrimitives(painter.pad_name); // must be here due to pad painter
 
-
       painter.createPadSvg();
 
       if (painter.matchObjectType(clTPad) && (!painter.has_canvas || painter.hasObjectsToDraw()))

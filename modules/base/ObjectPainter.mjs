@@ -611,7 +611,8 @@ class ObjectPainter extends BasePainter {
      * @desc Normally one should use {@link ensureTCanvas} to add painter to pad list of primitives
      * @protected */
    addToPadPrimitives(pad_name) {
-      if (pad_name !== undefined) this.setPadName(pad_name);
+      if (pad_name !== undefined)
+         this.setPadName(pad_name);
       const pp = this.getPadPainter(pad_name); // important - pad_name must be here, otherwise PadPainter class confuses itself
 
       if (!pp || (pp === this)) return false;
