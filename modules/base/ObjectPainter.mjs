@@ -19,14 +19,21 @@ import { getRootColors } from './colors.mjs';
 class ObjectPainter extends BasePainter {
 
    /** @summary constructor
-     * @param {object|string} dom - dom element or identifier
+     * @param {object|string} dom - dom element or identifier or pad painter
      * @param {object} obj - object to draw
      * @param {string} [opt] - object draw options */
    constructor(dom, obj, opt) {
+      let pp = null;
+      if (isFunc(dom?.forEachPainterInPad) && (dom?.this_pad_name !== undefined)) {
+         pp = dom;
+         dom = pp.getDom();
+      }
+
       super(dom);
+
       // this.draw_g = undefined; // container for all drawn objects
       // this._main_painter = undefined;  // main painter in the correspondent pad
-      this.pad_name = dom ? this.selectCurrentPad() : ''; // name of pad where object is drawn
+      this.pad_name = pp?.this_pad_name ?? (dom ? this.selectCurrentPad() : ''); // name of pad where object is drawn
       this.assignObject(obj);
       if (isStr(opt))
          this.options = { original: opt };

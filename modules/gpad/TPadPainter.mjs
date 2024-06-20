@@ -1168,7 +1168,6 @@ class TPadPainter extends ObjectPainter {
       return null;
    }
 
-
    /** @summary Process tooltip event in the pad
      * @private */
    processPadTooltipEvent(pnt) {
