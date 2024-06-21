@@ -383,8 +383,15 @@ class TPadPainter extends ObjectPainter {
      * @desc also secondary primitives will be removed
      * @return new index to continue loop or -111 if main painter removed
      * @private */
-   removePrimitive(indx) {
-      const prim = this.painters[indx], arr = [];
+   removePrimitive(arg, clean_only_secondary) {
+      let indx = -1, prim = null;
+      if (Number.isInteger(arg)) {
+         indx = arg; prim = this.painters[indx];
+      } else {
+         indx = this.painters.indexOf(arg); prim = arg;
+      }
+
+      const arr = [];
       let resindx = indx;
       for (let k = this.painters.length-1; k >= 0; --k) {
          if ((k === indx) || this.painters[k].isSecondary(prim)) {
@@ -395,7 +402,8 @@ class TPadPainter extends ObjectPainter {
       }
 
       arr.forEach(painter => {
-         painter.cleanup();
+         if ((painter !== prim) || !clean_only_secondary)
+            painter.cleanup();
          if (this.main_painter_ref === painter) {
             delete this.main_painter_ref;
             resindx = -111;
