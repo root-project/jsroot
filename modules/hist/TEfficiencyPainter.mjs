@@ -1,8 +1,9 @@
 import { BIT, create, createHistogram, isStr, clTH1, clTH2, clTH2F, kNoStats } from '../core.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { TGraphPainter, clTGraphAsymmErrors } from '../hist2d/TGraphPainter.mjs';
-import { TF1Painter } from '../hist/TF1Painter.mjs';
-import { TH2Painter } from '../hist2d/TH2Painter.mjs';
+import { TF1Painter } from './TF1Painter.mjs';
+import { TH1Painter } from './TH1Painter.mjs';
+import { TH2Painter } from './TH2Painter.mjs';
 import { getTEfficiencyBoundaryFunc } from '../base/math.mjs';
 
 
@@ -193,9 +194,12 @@ class TEfficiencyPainter extends ObjectPainter {
 
       painter.fBoundary = getTEfficiencyBoundaryFunc(eff.fStatisticOption, eff.TestBit(kIsBayesian));
 
-      let promise;
+      let promise, draw_funcs = true;
 
-      if (ndim === 1) {
+      if (opt[0] === 'b') {
+         draw_funcs = false;
+         promise = (ndim === 1 ? TH1Painter : TH2Painter).draw(dom, eff.fTotalHistogram, opt.slice(1));
+      } else if (ndim === 1) {
          if (!opt) opt = 'ap';
          if ((opt.indexOf('same') < 0) && (opt.indexOf('a') < 0)) opt += 'a';
          if (opt.indexOf('p') < 0) opt += 'p';
@@ -212,7 +216,7 @@ class TEfficiencyPainter extends ObjectPainter {
 
       return promise.then(() => {
          painter.addToPadPrimitives();
-         return painter.drawFunction(0);
+         return draw_funcs ? painter.drawFunction(0) : painter;
       });
    }
 
