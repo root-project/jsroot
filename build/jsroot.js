@@ -113959,7 +113959,11 @@ class TEfficiencyPainter extends ObjectPainter {
       if (!eff?.fFunctions || (indx >= eff.fFunctions.arr.length))
          return this;
 
-       return TF1Painter.draw(this.getPadPainter(), eff.fFunctions.arr[indx], eff.fFunctions.opt[indx]).then(() => this.drawFunction(indx+1));
+      return TF1Painter.draw(this.getPadPainter(), eff.fFunctions.arr[indx], eff.fFunctions.opt[indx])
+                        .then(funcp => {
+                           funcp?.setSecondaryId(this, `func_${indx}`);
+                           return this.drawFunction(indx + 1);
+                        });
    }
 
    /** @summary Draw TEfficiency object */
@@ -113983,9 +113987,12 @@ class TEfficiencyPainter extends ObjectPainter {
 
       painter.fBoundary = getTEfficiencyBoundaryFunc(eff.fStatisticOption, eff.TestBit(kIsBayesian));
 
-      let promise;
+      let promise, draw_funcs = true;
 
-      if (ndim === 1) {
+      if (opt[0] === 'b') {
+         draw_funcs = false;
+         promise = (ndim === 1 ? TH1Painter : TH2Painter).draw(dom, eff.fTotalHistogram, opt.slice(1));
+      } else if (ndim === 1) {
          if (!opt) opt = 'ap';
          if ((opt.indexOf('same') < 0) && (opt.indexOf('a') < 0)) opt += 'a';
          if (opt.indexOf('p') < 0) opt += 'p';
@@ -113997,12 +114004,13 @@ class TEfficiencyPainter extends ObjectPainter {
          if (!opt) opt = 'col';
          const hist = painter.createHisto(eff);
          painter.fillHisto(hist, opt);
-         promise = TH2Painter$2.draw(dom, hist, opt);
+         promise = TH2Painter.draw(dom, hist, opt);
       }
 
-      return promise.then(() => {
+      return promise.then(subp => {
+         subp?.setSecondaryId(painter, 'eff');
          painter.addToPadPrimitives();
-         return painter.drawFunction(0);
+         return draw_funcs ? painter.drawFunction(0) : painter;
       });
    }
 
