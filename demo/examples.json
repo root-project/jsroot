@@ -326,10 +326,13 @@
    ],
    "TEfficiency" : [
       { "name": "docu1", "file": "efficiency.root", "item": "eff1", "title": "TEfficiency example from documentation" },
+      { "name": "b", "file": "efficiency.root", "item": "eff1/[0]", "opt": "b", "title": "Draw total histogram from 1-dim TEfficiency, use 'b' draw option", "asurl": true },
       { "name": "docu2", "file": "efficiency.root", "item": "eff2", "title": "TEfficiency example from documentation" },
       { "name": "docu3", "file": "efficiency.root", "item": "eff3", "title": "using TMath::BetaDist" },
       { "name": "docu4", "file": "efficiency.root", "item": "eff4", "title": "drawing functions from TEfficiency" },
-      { "name": "2d", "file": "efficiency.root", "item": "eff5", "title": "drawing 2-D efficiency" }
+      { "name": "2d", "file": "efficiency.root", "item": "eff5", "title": "drawing 2-D efficiency" },
+      { "name": "bbox", "file": "efficiency.root", "item": "eff5/[0]", "opt": "bbox", "title": "Draw total histogram from 2-dim TEfficiency, draw option starts with 'b'", "asurl": true }
+
    ],
    "TLatex" : [
      { "name": "latex", "file": "latex.root", "layout": "grid2x2", "items": ["lva","ex1","ex2","ex3"], "title": "Internal TLatex processor" },
