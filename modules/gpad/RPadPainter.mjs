@@ -197,7 +197,7 @@ class RPadPainter extends RObjectPainter {
       const arr = [];
       let resindx = indx - 1; // object removed itself
       arr.push(prim);
-      this.painters.splice(k, 1);
+      this.painters.splice(indx, 1);
 
       let len0 = 0;
       while (len0 < arr.length) {
