@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '19/06/2024',
+version_date = '21/06/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -242,7 +242,7 @@ settings = {
    /** @summary Automatically create stats box, default on */
    AutoStat: true,
    /** @summary Default frame position in NFC
-     * @deprecated Use gStyle.fPad[Left/Right/Top/Bottom]Margin values instead */
+     * @deprecated Use gStyle.fPad[Left/Right/Top/Bottom]Margin values instead, to be removed in v8 */
    FrameNDC: {},
    /** @summary size of pad, where many features will be deactivated like text draw or zooming  */
    SmallPad: { width: 150, height: 100 },
@@ -12050,14 +12050,21 @@ class TAttTextHandler {
 class ObjectPainter extends BasePainter {
 
    /** @summary constructor
-     * @param {object|string} dom - dom element or identifier
+     * @param {object|string} dom - dom element or identifier or pad painter
      * @param {object} obj - object to draw
      * @param {string} [opt] - object draw options */
    constructor(dom, obj, opt) {
+      let pp = null;
+      if (isFunc(dom?.forEachPainterInPad) && (dom?.this_pad_name !== undefined)) {
+         pp = dom;
+         dom = pp.getDom();
+      }
+
       super(dom);
+
       // this.draw_g = undefined; // container for all drawn objects
       // this._main_painter = undefined;  // main painter in the correspondent pad
-      this.pad_name = dom ? this.selectCurrentPad() : ''; // name of pad where object is drawn
+      this.pad_name = pp?.this_pad_name ?? ''; // name of pad where object is drawn
       this.assignObject(obj);
       if (isStr(opt))
          this.options = { original: opt };
@@ -12075,9 +12082,11 @@ class ObjectPainter extends BasePainter {
    /** @summary Assigns pad name where element will be drawn
      * @desc Should happend before first draw of element is performed, only for special use case
      * @param {string} [pad_name] - on which subpad element should be draw, if not specified - use current
-     * @protected */
+     * @protected
+     * @deprecated to be removed in v8 */
    setPadName(pad_name) {
-      this.pad_name = isStr(pad_name) ? pad_name : this.selectCurrentPad();
+      console.warn('setPadName is deprecated, to be removed in v8');
+      this.pad_name = isStr(pad_name) ? pad_name : '';
    }
 
    /** @summary Returns pad name where object is drawn */
@@ -12456,13 +12465,11 @@ class ObjectPainter extends BasePainter {
    /** @summary Method selects current pad name
      * @param {string} [new_name] - when specified, new current pad name will be configured
      * @return {string} previous selected pad or actual pad when new_name not specified
-     * @private */
-   selectCurrentPad(new_name) {
-      const svg = this.getCanvSvg();
-      if (svg.empty()) return '';
-      const curr = svg.property('current_pad');
-      if (new_name !== undefined) svg.property('current_pad', new_name);
-      return curr;
+     * @private
+     * @deprecated to be removed in v8 */
+   selectCurrentPad() {
+      console.warn('selectCurrentPad is deprecated, will be removed in v8');
+      return '';
    }
 
    /** @summary returns pad painter
@@ -12631,32 +12638,30 @@ class ObjectPainter extends BasePainter {
    }
 
    /** @summary Add painter to pad list of painters
-     * @param {string} [pad_name] - optional pad name where painter should be add
-     * @desc Normally one should use {@link ensureTCanvas} to add painter to pad list of primitives
+     * @desc Normally called from {@link ensureTCanvas} function when new painter is created
      * @protected */
-   addToPadPrimitives(pad_name) {
-      if (pad_name !== undefined) this.setPadName(pad_name);
-      const pp = this.getPadPainter(pad_name); // important - pad_name must be here, otherwise PadPainter class confuses itself
+   addToPadPrimitives() {
+      const pp = this.getPadPainter();
 
-      if (!pp || (pp === this)) return false;
+      if (!pp || (pp === this))
+         return null;
 
       if (pp.painters.indexOf(this) < 0)
          pp.painters.push(this);
 
-      if (!this.rstyle && pp.next_rstyle)
-         this.rstyle = pp.next_rstyle;
-
-      return true;
+      return pp;
    }
 
    /** @summary Remove painter from pad list of painters
      * @protected */
    removeFromPadPrimitives() {
       const pp = this.getPadPainter();
-      if (!pp || (pp === this)) return false;
+      if (!pp || (pp === this))
+         return false;
 
       const k = pp.painters.indexOf(this);
-      if (k >= 0) pp.painters.splice(k, 1);
+      if (k >= 0)
+         pp.painters.splice(k, 1);
       return true;
    }
 
@@ -65134,8 +65139,7 @@ class TFramePainter extends ObjectPainter {
       // projection should be assigned
       this.recalculateRange(opts.Proj, orig_x, orig_y);
 
-      this.x_handle = new TAxisPainter(this.getDom(), this.xaxis, true);
-      this.x_handle.setPadName(this.getPadName());
+      this.x_handle = new TAxisPainter(pp, this.xaxis, true);
       this.x_handle.setHistPainter(opts.hist_painter, 'x');
 
       this.x_handle.configureAxis('xaxis', this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, this.swap_xy, this.swap_xy ? [0, h] : [0, w],
@@ -65148,8 +65152,7 @@ class TFramePainter extends ObjectPainter {
 
       this.x_handle.assignFrameMembers(this, 'x');
 
-      this.y_handle = new TAxisPainter(this.getDom(), this.yaxis, true);
-      this.y_handle.setPadName(this.getPadName());
+      this.y_handle = new TAxisPainter(pp, this.yaxis, true);
       this.y_handle.setHistPainter(opts.hist_painter, 'y');
 
       this.y_handle.configureAxis('yaxis', this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, !this.swap_xy, this.swap_xy ? [0, w] : [0, h],
@@ -65178,8 +65181,7 @@ class TFramePainter extends ObjectPainter {
       this.logx2 = this.logy2 = 0;
 
       const w = this.getFrameWidth(), h = this.getFrameHeight(),
-            pp = this.getPadPainter(),
-            pad = pp.getRootPad();
+            pp = this.getPadPainter(), pad = pp.getRootPad();
 
       if (opts.second_x) {
          this.scale_x2min = this.x2min;
@@ -65210,8 +65212,7 @@ class TFramePainter extends ObjectPainter {
       }
 
       if (opts.second_x) {
-         this.x2_handle = new TAxisPainter(this.getDom(), this.x2axis, true);
-         this.x2_handle.setPadName(this.getPadName());
+         this.x2_handle = new TAxisPainter(pp, this.x2axis, true);
          this.x2_handle.setHistPainter(opts.hist_painter, 'x');
 
          this.x2_handle.configureAxis('x2axis', this.x2min, this.x2max, this.scale_x2min, this.scale_x2max, this.swap_xy, this.swap_xy ? [0, h] : [0, w],
@@ -65225,8 +65226,7 @@ class TFramePainter extends ObjectPainter {
       }
 
       if (opts.second_y) {
-         this.y2_handle = new TAxisPainter(this.getDom(), this.y2axis, true);
-         this.y2_handle.setPadName(this.getPadName());
+         this.y2_handle = new TAxisPainter(pp, this.y2axis, true);
          this.y2_handle.setHistPainter(opts.hist_painter, 'y');
 
          this.y2_handle.configureAxis('y2axis', this.y2min, this.y2max, this.scale_y2min, this.scale_y2max, !this.swap_xy, this.swap_xy ? [0, w] : [0, h],
@@ -68586,7 +68586,6 @@ class TPadPainter extends ObjectPainter {
          svg = render_to.append('svg')
              .attr('class', 'jsroot root_canvas')
              .property('pad_painter', this) // this is custom property
-             .property('current_pad', '') // this is custom property
              .property('redraw_by_resize', false); // could be enabled to force redraw by each resize
 
          this.setTopPainter(); // assign canvas as top painter of that element
@@ -69133,7 +69132,7 @@ class TPadPainter extends ObjectPainter {
          return this.drawPrimitives(indx+1);
 
       // use of Promise should avoid large call-stack depth when many primitives are drawn
-      return this.drawObject(this.getDom(), obj, this.pad.fPrimitives.opt[indx]).then(op => {
+      return this.drawObject(this, obj, this.pad.fPrimitives.opt[indx]).then(op => {
          if (isObject(op))
             op._primitive = true; // mark painter as belonging to primitives
 
@@ -69151,7 +69150,7 @@ class TPadPainter extends ObjectPainter {
       const drawNext = indx => {
          if (indx >= this.pad.fPrimitives.arr.length)
             return this;
-         return this.drawObject(this.getDom(), this.pad.fPrimitives.arr[indx]).then(() => drawNext(indx + 1));
+         return this.drawObject(this, this.pad.fPrimitives.arr[indx]).then(() => drawNext(indx + 1));
       };
 
       return drawNext(0);
@@ -69166,7 +69165,6 @@ class TPadPainter extends ObjectPainter {
       }
       return null;
    }
-
 
    /** @summary Process tooltip event in the pad
      * @private */
@@ -69527,12 +69525,7 @@ class TPadPainter extends ObjectPainter {
       leg.fFillStyle = 1001;
       leg.fTitle = title ?? '';
 
-      const prev_name = this.has_canvas ? this.selectCurrentPad(this.this_pad_name) : undefined;
-
-      return this.drawObject(this.getDom(), leg, opt).then(p => {
-         this.selectCurrentPad(prev_name);
-         return p;
-      });
+      return this.drawObject(this, leg, opt);
    }
 
    /** @summary Add object painter to list of primitives
@@ -69703,9 +69696,9 @@ class TPadPainter extends ObjectPainter {
 
          subpad.fPrimitives = null; // clear primitives, they just because of I/O
 
-         const padpainter = new TPadPainter(this.getDom(), subpad, false);
+         const padpainter = new TPadPainter(this, subpad, false);
          padpainter.decodeOptions(snap.fOption);
-         padpainter.addToPadPrimitives(this.this_pad_name);
+         padpainter.addToPadPrimitives();
          padpainter.snapid = snap.fObjectID;
          padpainter.is_active_pad = !!snap.fActive; // enforce boolean flag
          padpainter._readonly = snap.fReadOnly ?? false; // readonly flag
@@ -69723,17 +69716,15 @@ class TPadPainter extends ObjectPainter {
             padpainter.addPadButtons(true);
 
          // we select current pad, where all drawing is performed
-         const prev_name = padpainter.selectCurrentPad(padpainter.this_pad_name);
          return padpainter.drawNextSnap(snap.fPrimitives).then(() => {
             padpainter.addPadInteractive();
-            padpainter.selectCurrentPad(prev_name);
             return this.drawNextSnap(lst, indx); // call next
          });
       }
 
       // here the case of normal drawing, will be handled in promise
       if (((snap.fKind === webSnapIds.kObject) || (snap.fKind === webSnapIds.kSVG)) && (snap.fOption !== '__ignore_drawing__')) {
-         return this.drawObject(this.getDom(), snap.fSnapshot, snap.fOption).then(objpainter => {
+         return this.drawObject(this, snap.fSnapshot, snap.fOption).then(objpainter => {
             this.addObjectPainter(objpainter, lst, indx);
             return this.drawNextSnap(lst, indx);
          });
@@ -69921,11 +69912,8 @@ class TPadPainter extends ObjectPainter {
          this.addPadButtons(true);
       }
 
-      const prev_name = this.selectCurrentPad(this.this_pad_name);
-
       return this.drawNextSnap(snap.fPrimitives).then(() => {
          this.addPadInteractive();
-         this.selectCurrentPad(prev_name);
          if (getActivePad() === this)
             this.getCanvPainter()?.producePadEvent('padredraw', this);
          return this;
@@ -70454,12 +70442,9 @@ class TPadPainter extends ObjectPainter {
       if (d.check('TICKY')) forEach(p => { p.fTicky = 1; });
       if (d.check('TICKZ')) forEach(p => { p.fTickz = 1; });
       if (d.check('TICK')) forEach(p => { p.fTickx = p.fTicky = 1; });
-      if (d.check('OTX')) forEach(p => { p.$OTX = true; });
-      if (d.check('OTY')) forEach(p => { p.$OTY = true; });
-      if (d.check('CTX')) forEach(p => { p.$CTX = true; });
-      if (d.check('CTY')) forEach(p => { p.$CTY = true; });
-      if (d.check('RX')) forEach(p => { p.$RX = true; });
-      if (d.check('RY')) forEach(p => { p.$RY = true; });
+      ['OTX', 'OTY', 'CTX', 'CTY', 'NOEX', 'NOEY', 'RX', 'RY'].forEach(name => {
+         if (d.check(name)) forEach(p => { p['$' + name] = true; });
+      });
 
       this.storeDrawOpt(opt);
    }
@@ -70475,8 +70460,8 @@ class TPadPainter extends ObjectPainter {
          painter.this_pad_name = '';
          painter.setTopPainter();
       } else {
-         // pad painter will be registered in the canvas painters list
-         painter.addToPadPrimitives(painter.pad_name);
+         // pad painter will be registered in the parent pad
+         painter.addToPadPrimitives();
       }
 
       if (pad?.$disable_drawing)
@@ -70487,9 +70472,6 @@ class TPadPainter extends ObjectPainter {
       if (painter.matchObjectType(clTPad) && (!painter.has_canvas || painter.hasObjectsToDraw()))
          painter.addPadButtons();
 
-      // we select current pad, where all drawing is performed
-      const prev_name = painter.has_canvas ? painter.selectCurrentPad(painter.this_pad_name) : undefined;
-
       // set active pad
       selectActivePad({ pp: painter, active: true });
 
@@ -70497,8 +70479,6 @@ class TPadPainter extends ObjectPainter {
       return painter.drawPrimitives().then(() => {
          painter.showPadButtons();
          painter.addPadInteractive();
-         // we restore previous pad name
-         painter.selectCurrentPad(prev_name);
          return painter;
       });
    }
@@ -71371,7 +71351,7 @@ class TCanvasPainter extends TPadPainter {
       painter.addPadButtons();
 
       if (nocanvas && opt.indexOf('noframe') < 0)
-         directDrawTFrame(dom, null);
+         directDrawTFrame(painter, null);
 
       // select global reference - required for keys handling
       selectActivePad({ pp: painter, active: true });
@@ -71402,7 +71382,7 @@ async function ensureTCanvas(painter, frame_kind) {
 
    return promise.then(() => {
       if ((frame_kind !== false) && painter.getFrameSvg().selectChild('.main_layer').empty() && !painter.getFramePainter())
-         directDrawTFrame(painter.getDom(), null, frame_kind);
+         directDrawTFrame(painter.getPadPainter(), null, frame_kind);
 
       painter.addToPadPrimitives();
       return painter;
@@ -72843,8 +72823,7 @@ class TPavePainter extends ObjectPainter {
                if (!pave.fAxis.fLabelOffset) pave.fAxis.fLabelOffset = 0.005;
             }
 
-            painter.z_handle = new TAxisPainter(dom, pave.fAxis, true);
-            painter.z_handle.setPadName(painter.getPadName());
+            painter.z_handle = new TAxisPainter(painter.getPadPainter(), pave.fAxis, true);
 
             painter.UseContextMenu = true;
          }
@@ -73292,6 +73271,9 @@ class THistDrawOptions {
       check_axis_bit('MLX', 'fXaxis', EAxisBits.kMoreLogLabels);
       check_axis_bit('MLY', 'fYaxis', EAxisBits.kMoreLogLabels);
       check_axis_bit('MLZ', 'fZaxis', EAxisBits.kMoreLogLabels);
+      check_axis_bit('NOEX', 'fXaxis', EAxisBits.kNoExponent);
+      check_axis_bit('NOEY', 'fYaxis', EAxisBits.kNoExponent);
+      check_axis_bit('NOEZ', 'fZaxis', EAxisBits.kNoExponent);
 
       if (d.check('RX') || pad?.$RX) this.RevX = true;
       if (d.check('RY') || pad?.$RY) this.RevY = true;
@@ -73696,8 +73678,8 @@ class FunctionsHandler {
       func.$main_painter = this.painter;
 
       const promise = TPavePainter.canDraw(func)
-            ? TPavePainter.draw(this.painter.getDom(), func, fopt)
-            : this.pp.drawObject(this.painter.getDom(), func, fopt);
+            ? TPavePainter.draw(this.pp, func, fopt)
+            : this.pp.drawObject(this.pp, func, fopt);
 
       return promise.then(fpainter => {
          fpainter.setSecondaryId(this.painter, func_secondary_id);
@@ -74244,9 +74226,10 @@ class THistPainter extends ObjectPainter {
          return this;
 
       const histo = this.getHisto(), st = gStyle,
-            draw_title = !histo.TestBit(kNoTitle) && (st.fOptTitle > 0);
+            draw_title = !histo.TestBit(kNoTitle) && (st.fOptTitle > 0),
+            pp = this.getPadPainter();
 
-      let pt = this.getPadPainter()?.findInPrimitives(kTitle, clTPaveText);
+      let pt = pp.findInPrimitives(kTitle, clTPaveText);
 
       if (pt) {
          pt.Clear();
@@ -74258,7 +74241,7 @@ class THistPainter extends ObjectPainter {
       Object.assign(pt, { fName: kTitle, fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
                           fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: st.fTitleAlign });
       if (draw_title) pt.AddText(histo.fTitle);
-      return TPavePainter.draw(this.getDom(), pt, 'postitle');
+      return TPavePainter.draw(pp, pt, 'postitle');
    }
 
    /** @summary Live change and update of title drawing
@@ -74298,6 +74281,7 @@ class THistPainter extends ObjectPainter {
    /** @summary Toggle statbox drawing
      * @private */
    toggleStat(arg) {
+      const pp = this.getPadPainter();
       let stat = this.findStat(), statpainter;
 
       if (!arg) arg = '';
@@ -74307,7 +74291,7 @@ class THistPainter extends ObjectPainter {
          // when statbox created first time, one need to draw it
          stat = this.createStat(true);
       } else
-         statpainter = this.getPadPainter()?.findPainterFor(stat);
+         statpainter = pp.findPainterFor(stat);
 
 
       if (arg === 'only-check')
@@ -74333,9 +74317,8 @@ class THistPainter extends ObjectPainter {
          statpainter.redraw();
          has_stats = statpainter.Enabled;
       } else {
-         const prev_name = this.selectCurrentPad(this.getPadName());
          // return promise which will be used to process
-         has_stats = TPavePainter.draw(this.getDom(), stat).then(() => this.selectCurrentPad(prev_name));
+         has_stats = TPavePainter.draw(pp, stat);
       }
 
       this.processOnlineChange(`exec:SetBit(TH1::kNoStats,${has_stats ? 0 : 1})`, this);
@@ -75040,10 +75023,8 @@ class THistPainter extends ObjectPainter {
 
       if (!pal_painter) {
          // when histogram drawn on sub pad, let draw new axis object on the same pad
-         const prev = this.selectCurrentPad(this.getPadName());
-         pr = TPavePainter.draw(this.getDom(), pal, arg).then(_palp => {
+         pr = TPavePainter.draw(pp, pal, arg).then(_palp => {
             pal_painter = _palp;
-            this.selectCurrentPad(prev);
             pal_painter.setSecondaryId(this, found_in_func && !pal.$generated ? `func_${pal.fName}` : undefined);
          });
       } else {
@@ -79516,7 +79497,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
    this.x_handle = new AxisPainter(null, this.xaxis);
    if (opts.v7) {
-      this.x_handle.setPadName(this.getPadName());
+      this.x_handle.pad_name = this.pad_name;
       this.x_handle.snapid = this.snapid;
    }
    this.x_handle.configureAxis('xaxis', this.xmin, this.xmax, xmin, xmax, false, [grminx, grmaxx],
@@ -79526,7 +79507,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
    this.y_handle = new AxisPainter(null, this.yaxis);
    if (opts.v7) {
-      this.y_handle.setPadName(this.getPadName());
+      this.y_handle.pad_name = this.pad_name;
       this.y_handle.snapid = this.snapid;
    }
    this.y_handle.configureAxis('yaxis', this.ymin, this.ymax, ymin, ymax, false, [grminy, grmaxy],
@@ -79536,10 +79517,9 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
    this.z_handle = new AxisPainter(null, this.zaxis);
    if (opts.v7) {
-      this.z_handle.setPadName(this.getPadName());
+      this.z_handle.pad_name = this.pad_name;
       this.z_handle.snapid = this.snapid;
    }
-
    this.z_handle.configureAxis('zaxis', this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz],
                                { value_axis: (opts.ndim === 1) || (opts.ndim === 2),
                                  log: ((opts.use_y_for_z || (opts.ndim === 2)) ? pad?.fLogv : undefined) ?? pad?.fLogz ?? 0,
@@ -96502,7 +96482,7 @@ async function drawDummy3DGeom(painter) {
          pp = painter.getPadPainter(),
          opt = (pp?.pad?.fFillColor && (pp?.pad?.fFillStyle > 1000)) ? 'bkgr_' + pp.pad.fFillColor : '';
 
-   return TGeoPainter.draw(painter.getDom(), obj, opt)
+   return TGeoPainter.draw(pp, obj, opt)
                      .then(geop => { geop._dummy = true; return geop; });
 }
 
@@ -110201,7 +110181,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
      * @private */
    async drawAxisHisto() {
       const histo = this.createHistogram();
-      return TH1Painter$2.draw(this.getDom(), histo, this.options.Axis);
+      return TH1Painter$2.draw(this.getPadPainter() || this.getDom(), histo, this.options.Axis);
    }
 
    /** @summary Draw TGraph
@@ -110287,7 +110267,7 @@ class TGraphPainter extends TGraphPainter$1 {
    /** @summary Draw axis histogram
      * @private */
    async drawAxisHisto() {
-      return TH1Painter.draw(this.getDom(), this.createHistogram(), this.options.Axis);
+      return TH1Painter.draw(this.getPadPainter() || this.getDom(), this.createHistogram(), this.options.Axis);
    }
 
    static async draw(dom, graph, opt) {
@@ -111039,14 +111019,11 @@ class THStackPainter extends ObjectPainter {
          if (!subpad_painter)
             return this;
 
-         const prev_name = subpad_painter.selectCurrentPad(subpad_painter.this_pad_name);
-
-         return this.hdraw_func(subpad_painter.getDom(), hist, hopt).then(subp => {
+         return this.hdraw_func(subpad_painter, hist, hopt).then(subp => {
             if (subp) {
                subp.setSecondaryId(this, subid);
                this.painters.push(subp);
             }
-            subpad_painter.selectCurrentPad(prev_name);
             return this.drawNextHisto(indx+1, pad_painter);
          });
       }
@@ -111059,7 +111036,7 @@ class THStackPainter extends ObjectPainter {
       if (this.options.auto)
          hist.$num_histos = nhists;
 
-      return this.hdraw_func(this.getDom(), hist, hopt).then(subp => {
+      return this.hdraw_func(this.getPadPainter(), hist, hopt).then(subp => {
           subp.setSecondaryId(this, subid);
           this.painters.push(subp);
           return this.drawNextHisto(indx+1, pad_painter);
@@ -111466,7 +111443,7 @@ class TGraphTimePainter extends ObjectPainter {
          return;
       }
 
-      return draw(this.getDom(), lst.arr[indx], lst.opt[indx]).then(p => {
+      return draw(this.getPadPainter(), lst.arr[indx], lst.opt[indx]).then(p => {
          if (p) {
             p.$grtimeid = this.selfid; // indicator that painter created by ourself
             p.$grstep = this.step; // remember step
@@ -113982,7 +113959,7 @@ class TEfficiencyPainter extends ObjectPainter {
       if (!eff?.fFunctions || (indx >= eff.fFunctions.arr.length))
          return this;
 
-       return TF1Painter.draw(this.getDom(), eff.fFunctions.arr[indx], eff.fFunctions.opt[indx]).then(() => this.drawFunction(indx+1));
+       return TF1Painter.draw(this.getPadPainter(), eff.fFunctions.arr[indx], eff.fFunctions.opt[indx]).then(() => this.drawFunction(indx+1));
    }
 
    /** @summary Draw TEfficiency object */
@@ -114054,7 +114031,7 @@ class TScatterPainter extends TGraphPainter$1 {
     * @private */
    async drawAxisHisto() {
       const histo = this.createHistogram();
-      return TH2Painter$2.draw(this.getDom(), histo, this.options.Axis + ';IGNORE_PALETTE');
+      return TH2Painter$2.draw(this.getPadPainter() || this.getDom(), histo, this.options.Axis + ';IGNORE_PALETTE');
    }
 
   /** @summary Provide palette, create if necessary
@@ -114463,7 +114440,6 @@ class TRatioPlotPainter extends ObjectPainter {
          low_p.getRootPad().fTicky = tick_y;
 
          const arr = [];
-         let currpad;
 
          // add missing lines in old ratio painter
          if ((ratio.fGridlinePositions.length > 0) && (ratio.fGridlines.length < ratio.fGridlinePositions.length)) {
@@ -114479,16 +114455,12 @@ class TRatioPlotPainter extends ObjectPainter {
                   line.fY1 = line.fY2 = gridy;
                   line.fLineStyle = 2;
                   ratio.fGridlines.push(line);
-                  if (currpad === undefined)
-                     currpad = this.selectCurrentPad(ratio.fLowerPad.fName);
-                  arr.push(TLinePainter.draw(this.getDom(), line));
+                  arr.push(TLinePainter.draw(low_p, line));
                }
             });
          }
 
          return Promise.all(arr).then(() => {
-            if (currpad !== undefined)
-               this.selectCurrentPad(currpad);
             return low_fp.zoom(up_fp.scale_xmin, up_fp.scale_xmax);
          });
       });
@@ -114755,12 +114727,12 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
    /** @summary draw speical histogram for axis
      * @return {Promise} when ready */
    async drawAxisHist(histo, hopt) {
-      return TH1Painter$2.draw(this.getDom(), histo, hopt);
+      return TH1Painter$2.draw(this.getPadPainter() || this.getDom(), histo, hopt);
    }
 
    /** @summary Draw graph  */
    async drawGraph(gr, opt /*, pos3d */) {
-      return TGraphPainter$1.draw(this.getDom(), gr, opt);
+      return TGraphPainter$1.draw(this.getPadPainter(), gr, opt);
    }
 
    /** @summary method draws next graph  */
@@ -114835,15 +114807,16 @@ class TMultiGraphPainter extends TMultiGraphPainter$2 {
    /** @summary draw speical histogram for axis
      * @return {Promise} when ready */
    async drawAxisHist(histo, hopt) {
+      const place = this.getPadPainter() || this.getDom();
       return this._3d
-              ? TH2Painter.draw(this.getDom(), histo, 'LEGO' + hopt)
-              : TH1Painter$2.draw(this.getDom(), histo, hopt);
+              ? TH2Painter.draw(place, histo, 'LEGO' + hopt)
+              : TH1Painter$2.draw(place, histo, hopt);
    }
 
    /** @summary draw multigraph in 3D */
    async drawGraph(gr, opt, pos3d) {
       if (this._3d) opt += 'pos3d_'+pos3d;
-      return TGraphPainter.draw(this.getDom(), gr, opt);
+      return TGraphPainter.draw(this.getPadPainter(), gr, opt);
    }
 
    /** @summary Draw TMultiGraph object */
@@ -116662,12 +116635,9 @@ class TASImagePainter extends ObjectPainter {
          return pal_painter.drawPave('');
       }
 
-      const prev_name = this.selectCurrentPad(this.getPadName());
-
-      return TPavePainter.draw(this.getDom(), this.draw_palette).then(p => {
+      return TPavePainter.draw(this.getPadPainter(), this.draw_palette).then(p => {
          pal_painter = p;
 
-         this.selectCurrentPad(prev_name);
          // mark painter as secondary - not in list of TCanvas primitives
          pal_painter.setSecondary(this);
 
@@ -116735,6 +116705,18 @@ class RObjectPainter extends ObjectPainter {
    constructor(dom, obj, opt, csstype) {
       super(dom, obj, opt);
       this.csstype = csstype;
+   }
+
+   /** @summary Add painter to pad list of painters
+    * @desc For RCanvas also handles common style
+    * @protected */
+   addToPadPrimitives() {
+      const pp = super.addToPadPrimitives();
+
+      if (pp && !this.rstyle && pp.next_rstyle)
+         this.rstyle = pp.next_rstyle;
+
+      return pp;
    }
 
    /** @summary Evaluate v7 attributes using fAttr storage and configured RStyle */
@@ -118390,7 +118372,7 @@ class RFramePainter extends RObjectPainter {
       this.logx = this.v7EvalAttr('x_log', 0);
       this.logy = this.v7EvalAttr('y_log', 0);
 
-      const w = this.getFrameWidth(), h = this.getFrameHeight();
+      const w = this.getFrameWidth(), h = this.getFrameHeight(), pp = this.getPadPainter();
 
       this.scales_ndim = opts.ndim;
 
@@ -118432,8 +118414,7 @@ class RFramePainter extends RObjectPainter {
       if (xaxis?._typename !== clTAxis) xaxis = create$1(clTAxis);
       if (yaxis?._typename !== clTAxis) yaxis = create$1(clTAxis);
 
-      this.x_handle = new TAxisPainter(this.getDom(), xaxis, true);
-      this.x_handle.setPadName(this.getPadName());
+      this.x_handle = new TAxisPainter(pp, xaxis, true);
       this.x_handle.optionUnlab = this.v7EvalAttr('x_labels_hide', false);
 
       this.x_handle.configureAxis('xaxis', this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, this.swap_xy, this.swap_xy ? [0, h] : [0, w],
@@ -118445,8 +118426,7 @@ class RFramePainter extends RObjectPainter {
 
       this.x_handle.assignFrameMembers(this, 'x');
 
-      this.y_handle = new TAxisPainter(this.getDom(), yaxis, true);
-      this.y_handle.setPadName(this.getPadName());
+      this.y_handle = new TAxisPainter(pp, yaxis, true);
       this.y_handle.optionUnlab = this.v7EvalAttr('y_labels_hide', false);
 
       this.y_handle.configureAxis('yaxis', this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, !this.swap_xy, this.swap_xy ? [0, w] : [0, h],
@@ -118479,7 +118459,7 @@ class RFramePainter extends RObjectPainter {
       if (this.v7EvalAttr('swapX', false)) sidex = -1;
       if (this.v7EvalAttr('swapY', false)) sidey = -1;
 
-      const w = this.getFrameWidth(), h = this.getFrameHeight();
+      const w = this.getFrameWidth(), h = this.getFrameHeight(), pp = this.getPadPainter();
 
       if (!this.v6axes) {
          // this is partially same as v6 createXY method
@@ -118506,20 +118486,17 @@ class RFramePainter extends RObjectPainter {
 
          this.recalculateRange(0);
 
-         this.x_handle = new RAxisPainter(this.getDom(), this, this.xaxis, 'x_');
-         this.x_handle.setPadName(this.getPadName());
+         this.x_handle = new RAxisPainter(pp, this, this.xaxis, 'x_');
          this.x_handle.snapid = this.snapid;
          this.x_handle.draw_swapside = (sidex < 0);
          this.x_handle.draw_ticks = ticksx;
 
-         this.y_handle = new RAxisPainter(this.getDom(), this, this.yaxis, 'y_');
-         this.y_handle.setPadName(this.getPadName());
+         this.y_handle = new RAxisPainter(pp, this, this.yaxis, 'y_');
          this.y_handle.snapid = this.snapid;
          this.y_handle.draw_swapside = (sidey < 0);
          this.y_handle.draw_ticks = ticksy;
 
-         this.z_handle = new RAxisPainter(this.getDom(), this, this.zaxis, 'z_');
-         this.z_handle.setPadName(this.getPadName());
+         this.z_handle = new RAxisPainter(pp, this, this.zaxis, 'z_');
          this.z_handle.snapid = this.snapid;
 
          this.x_handle.configureAxis('xaxis', this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, false, [0, w], w, { reverse: false });
@@ -118591,6 +118568,7 @@ class RFramePainter extends RObjectPainter {
    /** @summary Draw secondary configuread axes */
    drawAxes2(second_x, second_y) {
       const w = this.getFrameWidth(), h = this.getFrameHeight(),
+            pp = this.getPadPainter(),
             layer = this.getFrameSvg().selectChild('.axis_layer');
       let pr1, pr2;
 
@@ -118602,8 +118580,7 @@ class RFramePainter extends RObjectPainter {
            this.scale_x2min = this.x2min;
            this.scale_x2max = this.x2max;
          }
-         this.x2_handle = new RAxisPainter(this.getDom(), this, this.x2axis, 'x2_');
-         this.x2_handle.setPadName(this.getPadName());
+         this.x2_handle = new RAxisPainter(pp, this, this.x2axis, 'x2_');
          this.x2_handle.snapid = this.snapid;
 
          this.x2_handle.configureAxis('x2axis', this.x2min, this.x2max, this.scale_x2min, this.scale_x2max, false, [0, w], w, { reverse: false });
@@ -118621,8 +118598,7 @@ class RFramePainter extends RObjectPainter {
             this.scale_y2max = this.y2max;
          }
 
-         this.y2_handle = new RAxisPainter(this.getDom(), this, this.y2axis, 'y2_');
-         this.y2_handle.setPadName(this.getPadName());
+         this.y2_handle = new RAxisPainter(pp, this, this.y2axis, 'y2_');
          this.y2_handle.snapid = this.snapid;
 
          this.y2_handle.configureAxis('y2axis', this.y2min, this.y2max, this.scale_y2min, this.scale_y2max, true, [h, 0], -h, { reverse: false });
@@ -119667,7 +119643,6 @@ class RPadPainter extends RObjectPainter {
          svg = render_to.append('svg')
              .attr('class', 'jsroot root_canvas')
              .property('pad_painter', this) // this is custom property
-             .property('current_pad', '') // this is custom property
              .property('redraw_by_resize', false); // could be enabled to force redraw by each resize
 
          this.setTopPainter(); // assign canvas as top painter of that element
@@ -119985,7 +119960,7 @@ class RPadPainter extends RObjectPainter {
       }
 
       // handle used to invoke callback only when necessary
-      return this.drawObject(this.getDom(), this.pad.fPrimitives[indx], '').then(op => {
+      return this.drawObject(this, this.pad.fPrimitives[indx], '').then(op => {
          // mark painter as belonging to primitives
          if (isObject(op))
             op._primitive = true;
@@ -120337,10 +120312,9 @@ class RPadPainter extends RObjectPainter {
 
       if (snap._typename === `${nsREX}RPadDisplayItem`) { // subpad
          const subpad = snap, // not subpad, but just attributes
-
-          padpainter = new RPadPainter(this.getDom(), subpad, false);
+               padpainter = new RPadPainter(this, subpad, false);
          padpainter.decodeOptions('');
-         padpainter.addToPadPrimitives(this.this_pad_name); // only set parent pad name
+         padpainter.addToPadPrimitives();
          padpainter.assignSnapId(snap.fObjectID);
          padpainter.rstyle = snap.fStyle;
 
@@ -120349,12 +120323,8 @@ class RPadPainter extends RObjectPainter {
          if (snap.fPrimitives && snap.fPrimitives.length > 0)
             padpainter.addPadButtons();
 
-         // we select current pad, where all drawing is performed
-         const prev_name = padpainter.selectCurrentPad(padpainter.this_pad_name);
-
          return padpainter.drawNextSnap(snap.fPrimitives).then(() => {
             padpainter.addPadInteractive();
-            padpainter.selectCurrentPad(prev_name);
             return this.drawNextSnap(lst, indx);
          });
       }
@@ -120394,7 +120364,7 @@ class RPadPainter extends RObjectPainter {
          }
 
          if (!this.getFramePainter()) {
-            return this.drawObject(this.getDom(), { _typename: clTFrame, $dummy: true }, '')
+            return this.drawObject(this, { _typename: clTFrame, $dummy: true }, '')
                        .then(() => this.drawNextSnap(lst, indx-1));
          } // call same object again
 
@@ -120402,7 +120372,7 @@ class RPadPainter extends RObjectPainter {
       }
 
       // TODO - fDrawable is v7, fObject from v6, maybe use same data member?
-      return this.drawObject(this.getDom(), snap.fDrawable || snap.fObject || snap, snap.fOption || '').then(objpainter => {
+      return this.drawObject(this, snap.fDrawable || snap.fObject || snap, snap.fOption || '').then(objpainter => {
          this.addObjectPainter(objpainter, lst, indx);
          return this.drawNextSnap(lst, indx);
       });
@@ -120536,12 +120506,8 @@ class RPadPainter extends RObjectPainter {
          this.addPadButtons(true);
       }
 
-      const prev_name = this.selectCurrentPad(this.this_pad_name);
-
       return this.drawNextSnap(snap.fPrimitives).then(() => {
          this.addPadInteractive();
-         this.selectCurrentPad(prev_name);
-
          if (getActivePad() === this)
             this.getCanvPainter()?.producePadEvent('padredraw', this);
          return this;
@@ -120930,16 +120896,12 @@ class RPadPainter extends RObjectPainter {
          painter.this_pad_name = '';
          painter.setTopPainter();
       } else
-         painter.addToPadPrimitives(painter.pad_name); // must be here due to pad painter
-
+         painter.addToPadPrimitives(); // must be here due to pad painter
 
       painter.createPadSvg();
 
       if (painter.matchObjectType(clTPad) && (!painter.has_canvas || painter.hasObjectsToDraw()))
          painter.addPadButtons();
-
-      // we select current pad, where all drawing is performed
-      const prev_name = painter.has_canvas ? painter.selectCurrentPad(painter.this_pad_name) : undefined;
 
       selectActivePad({ pp: painter, active: false });
 
@@ -120947,8 +120909,6 @@ class RPadPainter extends RObjectPainter {
       return painter.drawPrimitives().then(() => {
          painter.addPadInteractive();
          painter.showPadButtons();
-         // we restore previous pad name
-         painter.selectCurrentPad(prev_name);
          return painter;
       });
    }
@@ -123499,7 +123459,7 @@ class RLegendPainter extends RPavePainter {
          if (entry.fDrawableId !== 'custom')
             objp = pp.findSnap(entry.fDrawableId, true);
           else if (entry.fDrawable.fIO) {
-            objp = new RObjectPainter(this.getDom(), entry.fDrawable.fIO);
+            objp = new RObjectPainter(this.getPadPainter(), entry.fDrawable.fIO);
             if (entry.fLine) objp.createv7AttLine();
             if (entry.fFill) objp.createv7AttFill();
             if (entry.fMarker) objp.createv7AttMarker();

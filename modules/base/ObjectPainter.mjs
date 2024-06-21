@@ -435,7 +435,7 @@ class ObjectPainter extends BasePainter {
      * @param {string} [new_name] - when specified, new current pad name will be configured
      * @return {string} previous selected pad or actual pad when new_name not specified
      * @private
-     * @deprectaed will be removed in v8*/
+     * @deprecated to be removed in v8 */
    selectCurrentPad() {
       console.warn('selectCurrentPad is deprecated, will be removed in v8');
       return '';

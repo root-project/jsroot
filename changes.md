@@ -6,6 +6,7 @@
 3. Let change histogram min/max values via context menu
 4. Support Z-scale zooming with TScatter
 5. TProfile and TProfile2D projections https://github.com/root-project/root/issues/15851
+6. Internals - do not select pad (aka gPad) for objects drawing, always use assigned pad painter
 6. Fix - properly save zoomed ranges in drawingJSON()
 
 
