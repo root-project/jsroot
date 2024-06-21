@@ -407,6 +407,19 @@ class ObjectPainter extends BasePainter {
       return !isObject(main) ? true : this._main_painter_id === main.getUniqueId(true);
    }
 
+   /** @summary Return primary object
+     * @private */
+   getPrimary() {
+      let res = null;
+      if (this.isSecondary()) {
+         this.forEachPainter(p => {
+            if (this.isSecondary(p))
+               res = p;
+         });
+      }
+      return res;
+   }
+
    /** @summary Provides identifier on server for requested sublement */
    getSnapId(subelem) {
       if (!this.snapid)
