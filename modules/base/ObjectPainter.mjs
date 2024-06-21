@@ -33,7 +33,7 @@ class ObjectPainter extends BasePainter {
 
       // this.draw_g = undefined; // container for all drawn objects
       // this._main_painter = undefined;  // main painter in the correspondent pad
-      this.pad_name = pp?.this_pad_name ?? (dom ? this.selectCurrentPad() : ''); // name of pad where object is drawn
+      this.pad_name = pp?.this_pad_name ?? ''; // name of pad where object is drawn
       this.assignObject(obj);
       if (isStr(opt))
          this.options = { original: opt };
@@ -51,9 +51,11 @@ class ObjectPainter extends BasePainter {
    /** @summary Assigns pad name where element will be drawn
      * @desc Should happend before first draw of element is performed, only for special use case
      * @param {string} [pad_name] - on which subpad element should be draw, if not specified - use current
-     * @protected */
+     * @protected
+     * @deprecated to be removed in v8 */
    setPadName(pad_name) {
-      this.pad_name = isStr(pad_name) ? pad_name : this.selectCurrentPad();
+      console.warn('setPadName is deprecated, to be removed in v8');
+      this.pad_name = isStr(pad_name) ? pad_name : '';
    }
 
    /** @summary Returns pad name where object is drawn */
@@ -432,13 +434,11 @@ class ObjectPainter extends BasePainter {
    /** @summary Method selects current pad name
      * @param {string} [new_name] - when specified, new current pad name will be configured
      * @return {string} previous selected pad or actual pad when new_name not specified
-     * @private */
-   selectCurrentPad(new_name) {
-      const svg = this.getCanvSvg();
-      if (svg.empty()) return '';
-      const curr = svg.property('current_pad');
-      if (new_name !== undefined) svg.property('current_pad', new_name);
-      return curr;
+     * @private
+     * @deprectaed will be removed in v8*/
+   selectCurrentPad() {
+      console.warn('selectCurrentPad is deprecated, will be removed in v8');
+      return '';
    }
 
    /** @summary returns pad painter
