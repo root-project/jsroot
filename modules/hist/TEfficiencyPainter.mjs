@@ -170,7 +170,11 @@ class TEfficiencyPainter extends ObjectPainter {
       if (!eff?.fFunctions || (indx >= eff.fFunctions.arr.length))
          return this;
 
-       return TF1Painter.draw(this.getPadPainter(), eff.fFunctions.arr[indx], eff.fFunctions.opt[indx]).then(() => this.drawFunction(indx+1));
+      return TF1Painter.draw(this.getPadPainter(), eff.fFunctions.arr[indx], eff.fFunctions.opt[indx])
+                        .then(funcp => {
+                           funcp?.setSecondaryId(this, `func_${indx}`);
+                           return this.drawFunction(indx + 1);
+                        });
    }
 
    /** @summary Draw TEfficiency object */
@@ -214,7 +218,8 @@ class TEfficiencyPainter extends ObjectPainter {
          promise = TH2Painter.draw(dom, hist, opt);
       }
 
-      return promise.then(() => {
+      return promise.then(subp => {
+         subp?.setSecondaryId(painter, 'eff');
          painter.addToPadPrimitives();
          return draw_funcs ? painter.drawFunction(0) : painter;
       });
