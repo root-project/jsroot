@@ -177,52 +177,62 @@ class TEfficiencyPainter extends ObjectPainter {
                         });
    }
 
+   /** @summary Fully redraw efficiency with new draw options */
+   async redrawWith(opt, skip_cleanup, dom) {
+      if (!skip_cleanup)
+         this.getPadPainter().removePrimitive(this, true);
+
+      if (!opt || !isStr(opt)) opt = '';
+      opt = opt.toLowerCase();
+
+      let promise, draw_total = false;
+
+      if (!dom) dom = this.getPadPainter() || this.getDom();
+
+      const eff = this.getObject();
+
+      if (opt[0] === 'b') {
+         draw_total = true;
+         promise = (this.ndim === 1 ? TH1Painter : TH2Painter).draw(dom, eff.fTotalHistogram, opt.slice(1));
+      } else if (this.ndim === 1) {
+         if (!opt) opt = 'ap';
+         if ((opt.indexOf('same') < 0) && (opt.indexOf('a') < 0)) opt += 'a';
+         if (opt.indexOf('p') < 0) opt += 'p';
+
+         const gr = this.createGraph(eff);
+         this.fillGraph(gr, opt);
+         promise = TGraphPainter.draw(dom, gr, opt);
+      } else {
+         if (!opt) opt = 'col';
+         const hist = this.createHisto(eff);
+         this.fillHisto(hist, opt);
+         promise = TH2Painter.draw(dom, hist, opt);
+      }
+
+      return promise.then(subp => {
+         subp?.setSecondaryId(this, 'eff');
+         this.addToPadPrimitives();
+         return draw_total ? this : this.drawFunction(0);
+      });
+   }
+
    /** @summary Draw TEfficiency object */
    static async draw(dom, eff, opt) {
       if (!eff || !eff.fTotalHistogram)
          return null;
 
-      if (!opt || !isStr(opt)) opt = '';
-      opt = opt.toLowerCase();
+      const painter = new TEfficiencyPainter(dom, eff);
 
-      let ndim = 0;
       if (eff.fTotalHistogram._typename.indexOf(clTH1) === 0)
-         ndim = 1;
+         painter.ndim = 1;
       else if (eff.fTotalHistogram._typename.indexOf(clTH2) === 0)
-         ndim = 2;
+         painter.ndim = 2;
       else
          return null;
 
-      const painter = new TEfficiencyPainter(dom, eff);
-      painter.ndim = ndim;
-
       painter.fBoundary = getTEfficiencyBoundaryFunc(eff.fStatisticOption, eff.TestBit(kIsBayesian));
 
-      let promise, draw_funcs = true;
-
-      if (opt[0] === 'b') {
-         draw_funcs = false;
-         promise = (ndim === 1 ? TH1Painter : TH2Painter).draw(dom, eff.fTotalHistogram, opt.slice(1));
-      } else if (ndim === 1) {
-         if (!opt) opt = 'ap';
-         if ((opt.indexOf('same') < 0) && (opt.indexOf('a') < 0)) opt += 'a';
-         if (opt.indexOf('p') < 0) opt += 'p';
-
-         const gr = painter.createGraph(eff);
-         painter.fillGraph(gr, opt);
-         promise = TGraphPainter.draw(dom, gr, opt);
-      } else {
-         if (!opt) opt = 'col';
-         const hist = painter.createHisto(eff);
-         painter.fillHisto(hist, opt);
-         promise = TH2Painter.draw(dom, hist, opt);
-      }
-
-      return promise.then(subp => {
-         subp?.setSecondaryId(painter, 'eff');
-         painter.addToPadPrimitives();
-         return draw_funcs ? painter.drawFunction(0) : painter;
-      });
+      return painter.redrawWith(opt, true, dom);
    }
 
 } // class TEfficiencyPainter
