@@ -12438,6 +12438,19 @@ class ObjectPainter extends BasePainter {
       return !isObject(main) ? true : this._main_painter_id === main.getUniqueId(true);
    }
 
+   /** @summary Return primary object
+     * @private */
+   getPrimary() {
+      let res = null;
+      if (this.isSecondary()) {
+         this.forEachPainter(p => {
+            if (this.isSecondary(p))
+               res = p;
+         });
+      }
+      return res;
+   }
+
    /** @summary Provides identifier on server for requested sublement */
    getSnapId(subelem) {
       if (!this.snapid)
@@ -60451,6 +60464,23 @@ class JSRootMenu {
       }
    }
 
+   /** @summary Add redraw menu for the painter
+     * @protected */
+   addRedrawMenu(painter) {
+      if (!painter || !isFunc(painter.redrawWith) || !isFunc(painter.getSupportedDrawOptions))
+         return false;
+
+      const opts = painter.getSupportedDrawOptions();
+
+      this.addDrawMenu(`Draw ${painter.getClassName()} with`, opts, arg => {
+         if ((arg.indexOf(kInspect) === 0) && isFunc(painter.showInspector))
+            return painter.showInspector(arg);
+
+         painter.redrawWith(arg);
+      });
+      return true;
+   }
+
    /** @summary Add color selection menu entries
      * @protected */
    addColorMenu(name, value, set_func, fill_kind) {
@@ -66175,6 +66205,16 @@ class TFramePainter extends ObjectPainter {
                        'unzoom');
    }
 
+   /** @summary Reset all zoom attributes
+     * @private */
+   resetZoom() {
+      ['x', 'y', 'z', 'x2', 'y2'].forEach(n => {
+         this[`zoom_${n}min`] = undefined;
+         this[`zoom_${n}max`] = undefined;
+         this[`zoom_changed_${n}`] = undefined;
+      });
+   }
+
    /** @summary Mark/check if zoom for specific axis was changed interactively
      * @private */
    zoomChangedInteractive(axis, value) {
@@ -68382,19 +68422,37 @@ class TPadPainter extends ObjectPainter {
      * @desc also secondary primitives will be removed
      * @return new index to continue loop or -111 if main painter removed
      * @private */
-   removePrimitive(indx) {
-      const prim = this.painters[indx], arr = [];
-      let resindx = indx;
-      for (let k = this.painters.length-1; k >= 0; --k) {
-         if ((k === indx) || this.painters[k].isSecondary(prim)) {
-            arr.push(this.painters[k]);
-            this.painters.splice(k, 1);
-            if (k <= indx) resindx--;
+   removePrimitive(arg, clean_only_secondary) {
+      let indx = -1, prim = null;
+      if (Number.isInteger(arg)) {
+         indx = arg; prim = this.painters[indx];
+      } else {
+         indx = this.painters.indexOf(arg); prim = arg;
+      }
+      if (indx < 0)
+         return indx;
+
+      const arr = [];
+      let resindx = indx - 1; // object removed itself
+      arr.push(prim);
+      this.painters.splice(indx, 1);
+
+      // loop to extract all dependent painters
+      let len0 = 0;
+      while (len0 < arr.length) {
+         for (let k = this.painters.length-1; k >= 0; --k) {
+            if (this.painters[k].isSecondary(arr[len0])) {
+               arr.push(this.painters[k]);
+               this.painters.splice(k, 1);
+               if (k < indx) resindx--;
+            }
          }
+         len0++;
       }
 
       arr.forEach(painter => {
-         painter.cleanup();
+         if ((painter !== prim) || !clean_only_secondary)
+            painter.cleanup();
          if (this.main_painter_ref === painter) {
             delete this.main_painter_ref;
             resindx = -111;
@@ -74241,7 +74299,7 @@ class THistPainter extends ObjectPainter {
       Object.assign(pt, { fName: kTitle, fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
                           fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: st.fTitleAlign });
       if (draw_title) pt.AddText(histo.fTitle);
-      return TPavePainter.draw(pp, pt, 'postitle');
+      return TPavePainter.draw(pp, pt, 'postitle').then(p => p?.setSecondaryId(this, kTitle));
    }
 
    /** @summary Live change and update of title drawing
@@ -74626,6 +74684,8 @@ class THistPainter extends ObjectPainter {
 
          if (isFunc(this.fillHistContextMenu))
             this.fillHistContextMenu(menu);
+
+         menu.addRedrawMenu(this.getPrimary());
       }
 
       if (this.options.Mode3D) {
@@ -103267,7 +103327,7 @@ drawFuncs = { lst: [
    { name: clTGraphPolargram, icon: 'img_graph', class: () => Promise.resolve().then(function () { return TGraphPolarPainter$1; }).then(h => h.TGraphPolargramPainter), theonly: true },
    { name: clTGraphPolar, icon: 'img_graph', class: () => Promise.resolve().then(function () { return TGraphPolarPainter$1; }).then(h => h.TGraphPolarPainter), opt: ';F;L;P;PE', theonly: true },
    { name: /^TGraph/, icon: 'img_graph', class: () => Promise.resolve().then(function () { return TGraphPainter$2; }).then(h => h.TGraphPainter), opt: ';L;P' },
-   { name: 'TEfficiency', icon: 'img_graph', class: () => Promise.resolve().then(function () { return TEfficiencyPainter$1; }).then(h => h.TEfficiencyPainter), opt: ';AP' },
+   { name: 'TEfficiency', icon: 'img_graph', class: () => Promise.resolve().then(function () { return TEfficiencyPainter$1; }).then(h => h.TEfficiencyPainter), opt: ';AP;B' },
    { name: clTCutG, sameas: clTGraph },
    { name: /^RooHist/, sameas: clTGraph },
    { name: /^RooCurve/, sameas: clTGraph },
@@ -109997,8 +110057,11 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
 
    /** @summary Fill context menu */
    fillContextMenuItems(menu) {
-      if (!this.snapid)
+      if (!this.snapid) {
          menu.addchk(this.testEditable(), 'Editable', () => { this.testEditable('toggle'); this.drawGraph(); });
+
+         menu.addRedrawMenu(this.getPrimary());
+      }
    }
 
    /** @summary Execute menu command
@@ -113966,52 +114029,66 @@ class TEfficiencyPainter extends ObjectPainter {
                         });
    }
 
+   /** @summary Fully redraw efficiency with new draw options */
+   async redrawWith(opt, skip_cleanup, dom) {
+      if (!skip_cleanup) {
+         const pp = this.getPadPainter();
+         pp.removePrimitive(this, true);
+         if (!this.getMainPainter())
+            pp.getFramePainter()?.resetZoom();
+      }
+
+      if (!opt || !isStr(opt)) opt = '';
+      opt = opt.toLowerCase();
+
+      let promise, draw_total = false;
+
+      if (!dom) dom = this.getPadPainter() || this.getDom();
+
+      const eff = this.getObject();
+
+      if (opt[0] === 'b') {
+         draw_total = true;
+         promise = (this.ndim === 1 ? TH1Painter : TH2Painter).draw(dom, eff.fTotalHistogram, opt.slice(1));
+      } else if (this.ndim === 1) {
+         if (!opt) opt = 'ap';
+         if ((opt.indexOf('same') < 0) && (opt.indexOf('a') < 0)) opt += 'a';
+         if (opt.indexOf('p') < 0) opt += 'p';
+
+         const gr = this.createGraph(eff);
+         this.fillGraph(gr, opt);
+         promise = TGraphPainter$1.draw(dom, gr, opt);
+      } else {
+         if (!opt) opt = 'col';
+         const hist = this.createHisto(eff);
+         this.fillHisto(hist, opt);
+         promise = TH2Painter.draw(dom, hist, opt);
+      }
+
+      return promise.then(subp => {
+         subp?.setSecondaryId(this, 'eff');
+         this.addToPadPrimitives();
+         return draw_total ? this : this.drawFunction(0);
+      });
+   }
+
    /** @summary Draw TEfficiency object */
    static async draw(dom, eff, opt) {
       if (!eff || !eff.fTotalHistogram)
          return null;
 
-      if (!opt || !isStr(opt)) opt = '';
-      opt = opt.toLowerCase();
+      const painter = new TEfficiencyPainter(dom, eff);
 
-      let ndim = 0;
       if (eff.fTotalHistogram._typename.indexOf(clTH1) === 0)
-         ndim = 1;
+         painter.ndim = 1;
       else if (eff.fTotalHistogram._typename.indexOf(clTH2) === 0)
-         ndim = 2;
+         painter.ndim = 2;
       else
          return null;
 
-      const painter = new TEfficiencyPainter(dom, eff);
-      painter.ndim = ndim;
-
       painter.fBoundary = getTEfficiencyBoundaryFunc(eff.fStatisticOption, eff.TestBit(kIsBayesian));
 
-      let promise, draw_funcs = true;
-
-      if (opt[0] === 'b') {
-         draw_funcs = false;
-         promise = (ndim === 1 ? TH1Painter : TH2Painter).draw(dom, eff.fTotalHistogram, opt.slice(1));
-      } else if (ndim === 1) {
-         if (!opt) opt = 'ap';
-         if ((opt.indexOf('same') < 0) && (opt.indexOf('a') < 0)) opt += 'a';
-         if (opt.indexOf('p') < 0) opt += 'p';
-
-         const gr = painter.createGraph(eff);
-         painter.fillGraph(gr, opt);
-         promise = TGraphPainter$1.draw(dom, gr, opt);
-      } else {
-         if (!opt) opt = 'col';
-         const hist = painter.createHisto(eff);
-         painter.fillHisto(hist, opt);
-         promise = TH2Painter.draw(dom, hist, opt);
-      }
-
-      return promise.then(subp => {
-         subp?.setSecondaryId(painter, 'eff');
-         painter.addToPadPrimitives();
-         return draw_funcs ? painter.drawFunction(0) : painter;
-      });
+      return painter.redrawWith(opt, true, dom);
    }
 
 } // class TEfficiencyPainter
@@ -115728,6 +115805,8 @@ class TSplinePainter extends ObjectPainter {
       histo.fXaxis.fXmax = xmax;
       histo.fYaxis.fXmin = ymin;
       histo.fYaxis.fXmax = ymax;
+      histo.fMinimum = ymin;
+      histo.fMaximum = ymax;
 
       return histo;
    }
@@ -115827,8 +115906,8 @@ class TSplinePainter extends ObjectPainter {
 
       if (this.options.Line || this.options.Curve) {
          const npx = Math.max(10, spline.fNpx), bins = []; // index of current knot
-         let xmin = Math.max(pmain.scale_xmin, spline.fXmin),
-             xmax = Math.min(pmain.scale_xmax, spline.fXmax),
+         let xmin = Math.max(funcs.scale_xmin, spline.fXmin),
+             xmax = Math.min(funcs.scale_xmax, spline.fXmax),
              indx = this.findX(xmin);
 
          if (pmain.logx) {
@@ -119130,6 +119209,16 @@ class RFramePainter extends RObjectPainter {
                        'unzoom');
    }
 
+   /** @summary Reset all zoom attributes
+    * @private */
+   resetZoom() {
+      ['x', 'y', 'z', 'x2', 'y2'].forEach(n => {
+         this[`zoom_${n}min`] = undefined;
+         this[`zoom_${n}max`] = undefined;
+         this[`zoom_changed_${n}`] = undefined;
+      });
+   }
+
    /** @summary Mark/check if zoom for specific axis was changed interactively
      * @private */
    zoomChangedInteractive(axis, value) {
@@ -119470,19 +119559,36 @@ class RPadPainter extends RObjectPainter {
      * @desc also secondary primitives will be removed
      * @return new index to continue loop or -111 if main painter removed
      * @private */
-   removePrimitive(indx) {
-      const prim = this.painters[indx], arr = [];
-      let resindx = indx;
-      for (let k = this.painters.length-1; k >= 0; --k) {
-         if ((k === indx) || this.painters[k].isSecondary(prim)) {
-            arr.push(this.painters[k]);
-            this.painters.splice(k, 1);
-            if (k <= indx) resindx--;
+   removePrimitive(arg, clean_only_secondary) {
+      let indx = -1, prim = null;
+      if (Number.isInteger(arg)) {
+         indx = arg; prim = this.painters[indx];
+      } else {
+         indx = this.painters.indexOf(arg); prim = arg;
+      }
+      if (indx < 0)
+         return indx;
+
+      const arr = [];
+      let resindx = indx - 1; // object removed itself
+      arr.push(prim);
+      this.painters.splice(indx, 1);
+
+      let len0 = 0;
+      while (len0 < arr.length) {
+         for (let k = this.painters.length-1; k >= 0; --k) {
+            if (this.painters[k].isSecondary(arr[len0])) {
+               arr.push(this.painters[k]);
+               this.painters.splice(k, 1);
+               if (k <= indx) resindx--;
+            }
          }
+         len0++;
       }
 
       arr.forEach(painter => {
-         painter.cleanup();
+         if ((painter !== prim) || !clean_only_secondary)
+            painter.cleanup();
          if (this.main_painter_ref === painter) {
             delete this.main_painter_ref;
             resindx = -111;
