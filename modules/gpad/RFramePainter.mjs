@@ -1003,6 +1003,16 @@ class RFramePainter extends RObjectPainter {
                        'unzoom');
    }
 
+   /** @summary Reset all zoom attributes
+    * @private */
+   resetZoom() {
+      ['x','y','z','x2','y2'].forEach(n => {
+         this[`zoom_${n}min`] = undefined;
+         this[`zoom_${n}max`] = undefined;
+         this[`zoom_changed_${n}`] = undefined;
+      });
+   }
+
    /** @summary Mark/check if zoom for specific axis was changed interactively
      * @private */
    zoomChangedInteractive(axis, value) {
