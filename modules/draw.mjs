@@ -66,7 +66,7 @@ drawFuncs = { lst: [
    { name: clTProfile2D, sameas: clTH2, opt2: ';projxyb;projxyc=e;projxyw' },
    { name: /^TH3/, icon: 'img_histo3d', class: () => import('./hist/TH3Painter.mjs').then(h => h.TH3Painter), opt: ';SCAT;BOX;BOX2;BOX3;GLBOX1;GLBOX2;GLCOL', expand_item: fFunctions, for_derived: true },
    { name: clTProfile3D, sameas: clTH3 },
-   { name: clTHStack, icon: 'img_histo1d', class: () => import('./hist/THStackPainter.mjs').then(h => h.THStackPainter), expand_item: 'fHists', opt: 'NOSTACK;HIST;E;PFC;PLC' },
+   { name: clTHStack, icon: 'img_histo1d', class: () => import('./hist/THStackPainter.mjs').then(h => h.THStackPainter), expand_item: 'fHists', opt: 'NOSTACK;HIST;E;PFC;PLC;PADS' },
    { name: clTPolyMarker3D, icon: 'img_histo3d', draw: () => import('./draw/draw3d.mjs').then(h => h.drawPolyMarker3D), direct: true, frame: '3d' },
    { name: clTPolyLine3D, icon: 'img_graph', draw: () => import('./draw/draw3d.mjs').then(h => h.drawPolyLine3D), direct: true, frame: '3d' },
    { name: 'TGraphStruct' },
