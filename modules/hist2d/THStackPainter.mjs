@@ -433,10 +433,8 @@ class THStackPainter extends ObjectPainter {
 
    /** @summary Full stack redraw with specified draw option */
    async redrawWith(opt, skip_cleanup) {
-
       const pp = this.getPadPainter();
-
-      if (!skip_cleanup) {
+      if (!skip_cleanup && pp) {
          if (this.options.pads)
             pp.divide(0,0);
 
@@ -447,19 +445,13 @@ class THStackPainter extends ObjectPainter {
 
       const stack = this.getObject();
 
-      let pr = Promise.resolve(this), pad_painter = null, skip_drawing = false;
+      let pr = Promise.resolve(this), pad_painter = null;
 
       if (this.options.pads) {
-         if (pp?.doingDraw() && pp.pad?.fPrimitives &&
-             (pp.pad.fPrimitives.arr.length > 1) && (pp.pad.fPrimitives.arr.indexOf(stack) === 0)) {
-            skip_drawing = true;
-            console.log('special case with THStack with is already rendered - do nothing');
-         } else {
-            pr = ensureTCanvas(this, false).then(() => {
-               pad_painter = this.getPadPainter();
-               return pad_painter.divide(this.options.nhist);
-            });
-         }
+         pr = ensureTCanvas(this, false).then(() => {
+            pad_painter = this.getPadPainter();
+            return pad_painter.divide(this.options.nhist);
+         });
       } else {
          if (!this.options.nostack)
              this.options.nostack = !this.buildStack(stack);
@@ -478,8 +470,8 @@ class THStackPainter extends ObjectPainter {
          }
       }
 
-      return pr.then(() => skip_drawing ? this : this.drawNextHisto(0, pad_painter)).then(() => {
-         if (!this.options.pads && !skip_drawing)
+      return pr.then(() => this.drawNextHisto(0, pad_painter)).then(() => {
+         if (!this.options.pads)
             this.addToPadPrimitives();
          return this;
 
