@@ -114750,11 +114750,11 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
       if (pad) {
          logx = pad.fLogx;
          logy = pad.fLogv ?? pad.fLogy;
-         rw.xmin = pad.fUxmin;
-         rw.xmax = pad.fUxmax;
-         rw.ymin = pad.fUymin;
-         rw.ymax = pad.fUymax;
-         rw.first = false;
+         // rw.xmin = pad.fUxmin;
+         // rw.xmax = pad.fUxmax;
+         // rw.ymin = pad.fUymin;
+         // rw.ymax = pad.fUymax;
+         // rw.first = false;
       }
 
       // ignore existing histo in 3d case
@@ -114791,6 +114791,7 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
          rw.ymax += 1;
       const dx = 0.05 * (rw.xmax - rw.xmin),
             dy = 0.05 * (rw.ymax - rw.ymin);
+
       let uxmin = rw.xmin - dx,
           uxmax = rw.xmax + dx;
       if (logy) {
@@ -114807,7 +114808,7 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
       if (maximum > 0 && rw.ymax <= 0)
          maximum = 0;
 
-       const glob_minimum = minimum, glob_maximum = maximum;
+      const glob_minimum = minimum, glob_maximum = maximum;
 
       if (uxmin < 0 && rw.xmin >= 0)
          uxmin = logx ? 0.9 * rw.xmin : 0;
@@ -114869,8 +114870,10 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
       const axis = this._3d ? histo.fZaxis : histo.fYaxis;
       axis.fXmin = Math.min(minimum, glob_minimum);
       axis.fXmax = Math.max(maximum, glob_maximum);
-      histo.fMinimum = minimum;
-      histo.fMaximum = maximum;
+      if (histo.fMinimum === kNoZoom)
+         histo.fMinimum = minimum;
+      if (histo.fMaximum === kNoZoom)
+         histo.fMaximum = maximum;
       histo.fBits |= kNoStats;
 
       return histo;

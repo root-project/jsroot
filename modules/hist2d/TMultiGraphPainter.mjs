@@ -92,12 +92,11 @@ class TMultiGraphPainter extends ObjectPainter {
       if (pad) {
          logx = pad.fLogx;
          logy = pad.fLogv ?? pad.fLogy;
-         // console.log('umin/max', pad.fUxmin, pad.fUxmax)
-         //rw.xmin = pad.fUxmin;
-         //rw.xmax = pad.fUxmax;
-         //rw.ymin = pad.fUymin;
-         //rw.ymax = pad.fUymax;
-         //rw.first = false;
+         // rw.xmin = pad.fUxmin;
+         // rw.xmax = pad.fUxmax;
+         // rw.ymin = pad.fUymin;
+         // rw.ymax = pad.fUymax;
+         // rw.first = false;
       }
 
       // ignore existing histo in 3d case
