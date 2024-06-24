@@ -905,7 +905,7 @@ class TGraphPainter extends ObjectPainter {
    drawGraph() {
       const pmain = this.get_main(),
             graph = this.getGraph();
-      if (!pmain) return;
+      if (!pmain || !this.options) return;
 
       // special mode for TMultiGraph 3d drawing
       if (this.options.pos3d)
