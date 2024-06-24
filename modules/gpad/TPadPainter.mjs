@@ -371,12 +371,13 @@ class TPadPainter extends ObjectPainter {
       return (is_root6 === undefined) || is_root6 ? this.pad : null;
    }
 
-   /** @summary Cleanup primitives from pad - selector lets define which painters to remove */
+   /** @summary Cleanup primitives from pad - selector lets define which painters to remove
+    * @return true if any painter was removed */
    cleanPrimitives(selector) {
       if (!isFunc(selector))
-         return;
+         return false;
 
-      let pad_cleanup = false;
+      let pad_cleanup = false, is_any = false;
 
       for (let k = this.painters.length-1; k >= 0; --k) {
          const subp = this.painters[k];
@@ -385,6 +386,7 @@ class TPadPainter extends ObjectPainter {
                pad_cleanup = true;
             subp.cleanup();
             this.painters.splice(k, 1);
+            is_any = true;
          }
       }
 
@@ -392,6 +394,8 @@ class TPadPainter extends ObjectPainter {
          const cp = this.getCanvPainter();
          if (cp) delete cp.pads_cache;
       }
+
+      return is_any;
    }
 
    /** @summary Removes and cleanup specified primitive
