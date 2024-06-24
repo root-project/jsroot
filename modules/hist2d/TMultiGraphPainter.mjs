@@ -321,6 +321,8 @@ class TMultiGraphPainter extends ObjectPainter {
          this.addToPadPrimitives();
          return this.drawNextGraph(0, pad_painter);
       }).then(() => {
+         if (this._pads)
+            return this;
          const handler = new FunctionsHandler(this, this.getPadPainter(), this.getObject().fFunctions, true);
          return handler.drawNext(0); // returns painter
       });
