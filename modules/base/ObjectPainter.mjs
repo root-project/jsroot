@@ -54,7 +54,7 @@ class ObjectPainter extends BasePainter {
      * @protected
      * @deprecated to be removed in v8 */
    setPadName(pad_name) {
-      console.warn('setPadName is deprecated, to be removed in v8');
+      // console.warn('setPadName is deprecated, to be removed in v8');
       this.pad_name = isStr(pad_name) ? pad_name : '';
    }
 
