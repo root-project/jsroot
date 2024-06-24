@@ -435,9 +435,10 @@ class THStackPainter extends ObjectPainter {
    async redrawWith(opt, skip_cleanup) {
       const pp = this.getPadPainter();
       if (!skip_cleanup && pp) {
+         this.firstpainter = null;
+         this.painters = [];
          if (this.options.pads)
             pp.divide(0,0);
-
          pp.removePrimitive(this, true);
       }
 
