@@ -393,7 +393,7 @@ class TPadPainter extends ObjectPainter {
       if (indx < 0)
          return indx;
 
-      const arr = [];
+      const arr = [], get_main = clean_only_secondary ? this.getMainPainter() : null;
       let resindx = indx - 1; // object removed itself
       arr.push(prim);
       this.painters.splice(indx, 1);
@@ -419,6 +419,10 @@ class TPadPainter extends ObjectPainter {
             resindx = -111;
          }
       });
+
+      // when main painter disappers because of special cleanup - also reset zooming
+      if (clean_only_secondary && get_main && !this.getMainPainter())
+         this.getFramePainter()?.resetZoom();
 
       return resindx;
    }

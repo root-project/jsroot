@@ -179,12 +179,8 @@ class TEfficiencyPainter extends ObjectPainter {
 
    /** @summary Fully redraw efficiency with new draw options */
    async redrawWith(opt, skip_cleanup) {
-      if (!skip_cleanup) {
-         const pp = this.getPadPainter();
-         pp?.removePrimitive(this, true);
-         if (!this.getMainPainter())
-            pp?.getFramePainter()?.resetZoom();
-      }
+      if (!skip_cleanup)
+         this.getPadPainter()?.removePrimitive(this, true);
 
       if (!opt || !isStr(opt)) opt = '';
       opt = opt.toLowerCase();
