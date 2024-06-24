@@ -178,12 +178,12 @@ class TEfficiencyPainter extends ObjectPainter {
    }
 
    /** @summary Fully redraw efficiency with new draw options */
-   async redrawWith(opt, skip_cleanup, dom) {
+   async redrawWith(opt, skip_cleanup) {
       if (!skip_cleanup) {
          const pp = this.getPadPainter();
-         pp.removePrimitive(this, true);
+         pp?.removePrimitive(this, true);
          if (!this.getMainPainter())
-            pp.getFramePainter()?.resetZoom();
+            pp?.getFramePainter()?.resetZoom();
       }
 
       if (!opt || !isStr(opt)) opt = '';
@@ -191,9 +191,8 @@ class TEfficiencyPainter extends ObjectPainter {
 
       let promise, draw_total = false;
 
-      if (!dom) dom = this.getPadPainter() || this.getDom();
-
-      const eff = this.getObject();
+      const eff = this.getObject(),
+            dom = this.getDrawDom();
 
       if (opt[0] === 'b') {
          draw_total = true;
@@ -236,7 +235,7 @@ class TEfficiencyPainter extends ObjectPainter {
 
       painter.fBoundary = getTEfficiencyBoundaryFunc(eff.fStatisticOption, eff.TestBit(kIsBayesian));
 
-      return painter.redrawWith(opt, true, dom);
+      return painter.redrawWith(opt, true);
    }
 
 } // class TEfficiencyPainter
