@@ -1186,14 +1186,10 @@ class TPadPainter extends ObjectPainter {
      * @return {Promise} when finished
      * @private */
    async divide(nx, ny) {
-      if ((!nx && !ny) || !nx*ny) {
-         this.cleanPrimitives(isPadPainter);
-         this.pad.fPrimitives.Clear();
-         delete this.pads_cache;
-         return this;
-      }
+      this.cleanPrimitives(isPadPainter);
+      this.pad.fPrimitives.Clear();
 
-      if (!this.pad.Divide(nx, ny))
+      if ((!nx && !ny) || !this.pad.Divide(nx, ny))
          return this;
 
       const drawNext = indx => {
@@ -1210,7 +1206,8 @@ class TPadPainter extends ObjectPainter {
    getSubPadPainter(n) {
       for (let k = 0; k < this.painters.length; ++k) {
          const sub = this.painters[k];
-         if (sub.pad && isFunc(sub.forEachPainterInPad) && (sub.pad.fNumber === n)) return sub;
+         if (isPadPainter(sub) && (sub.pad.fNumber === n))
+            return sub;
       }
       return null;
    }
