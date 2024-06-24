@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '21/06/2024',
+version_date = '24/06/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -12183,6 +12183,13 @@ class ObjectPainter extends BasePainter {
       if (pp >= 0) original = original.slice(0, pp);
       this.options.original = original;
       this.options_store = Object.assign({}, this.options);
+   }
+
+   /** @summary Return dom argument for object drawing
+    * @desc Can be used to draw other objects on same pad / same dom element
+    * @protected */
+   getDrawDom() {
+      return this.getPadPainter() || this.getDom();
    }
 
    /** @summary Return actual draw options as string
@@ -68432,7 +68439,7 @@ class TPadPainter extends ObjectPainter {
       if (indx < 0)
          return indx;
 
-      const arr = [];
+      const arr = [], get_main = clean_only_secondary ? this.getMainPainter() : null;
       let resindx = indx - 1; // object removed itself
       arr.push(prim);
       this.painters.splice(indx, 1);
@@ -68458,6 +68465,10 @@ class TPadPainter extends ObjectPainter {
             resindx = -111;
          }
       });
+
+      // when main painter disappers because of special cleanup - also reset zooming
+      if (clean_only_secondary && get_main && !this.getMainPainter())
+         this.getFramePainter()?.resetZoom();
 
       return resindx;
    }
@@ -110244,7 +110255,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
      * @private */
    async drawAxisHisto() {
       const histo = this.createHistogram();
-      return TH1Painter$2.draw(this.getPadPainter() || this.getDom(), histo, this.options.Axis);
+      return TH1Painter$2.draw(this.getDrawDom(), histo, this.options.Axis);
    }
 
    /** @summary Draw TGraph
@@ -110330,7 +110341,7 @@ class TGraphPainter extends TGraphPainter$1 {
    /** @summary Draw axis histogram
      * @private */
    async drawAxisHisto() {
-      return TH1Painter.draw(this.getPadPainter() || this.getDom(), this.createHistogram(), this.options.Axis);
+      return TH1Painter.draw(this.getDrawDom(), this.createHistogram(), this.options.Axis);
    }
 
    static async draw(dom, graph, opt) {
@@ -110893,7 +110904,7 @@ const kIsZoomed = BIT(16); // bit set when zooming on Y axis
  * @private
  */
 
-class THStackPainter extends ObjectPainter {
+let THStackPainter$2 = class THStackPainter extends ObjectPainter {
 
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -111082,7 +111093,7 @@ class THStackPainter extends ObjectPainter {
          if (!subpad_painter)
             return this;
 
-         return this.hdraw_func(subpad_painter, hist, hopt).then(subp => {
+         return this.drawHist(subpad_painter, hist, hopt).then(subp => {
             if (subp) {
                subp.setSecondaryId(this, subid);
                this.painters.push(subp);
@@ -111099,7 +111110,7 @@ class THStackPainter extends ObjectPainter {
       if (this.options.auto)
          hist.$num_histos = nhists;
 
-      return this.hdraw_func(this.getPadPainter(), hist, hopt).then(subp => {
+      return this.drawHist(this.getPadPainter(), hist, hopt).then(subp => {
           subp.setSecondaryId(this, subid);
           this.painters.push(subp);
           return this.drawNextHisto(indx+1, pad_painter);
@@ -111300,54 +111311,88 @@ class THStackPainter extends ObjectPainter {
       }, 'Change draw erros in the stack');
    }
 
+   /** @summary Invoke histogram drawing */
+   drawHist(dom, hist, hopt) {
+      const func = (this.options.ndim === 1) ? TH1Painter$2.draw : TH2Painter$2.draw;
+      return func(dom, hist, hopt);
+   }
+
+   /** @summary Full stack redraw with specified draw option */
+   async redrawWith(opt, skip_cleanup) {
+      if (!skip_cleanup)
+         this.getPadPainter()?.removePrimitive(this, true);
+
+      this.decodeOptions(opt);
+
+      const stack = this.getObject();
+
+      let pr = Promise.resolve(this), pad_painter = null, skip_drawing = false;
+
+      if (this.options.pads) {
+         pad_painter = this.getPadPainter();
+         if (pad_painter.doingDraw() && pad_painter.pad?.fPrimitives &&
+             (pad_painter.pad.fPrimitives.arr.length > 1) && (pad_painter.pad.fPrimitives.arr.indexOf(stack) === 0)) {
+            skip_drawing = true;
+            console.log('special case with THStack with is already rendered - do nothing');
+         } else {
+            pad_painter.cleanPrimitives(p => p !== this);
+            pr = pad_painter.divide(this.options.nhist);
+         }
+      } else {
+         if (!this.options.nostack)
+             this.options.nostack = !this.buildStack(stack);
+
+         if (!this.options.same && stack.fHists?.arr.length) {
+            if (!stack.fHistogram)
+               stack.fHistogram = this.createHistogram(stack);
+
+            const mm = this.getMinMax(this.options.errors || this.options.draw_errors),
+                  hopt = this.options.hopt + ';' + mm.hopt;
+
+            pr = this.drawHist(this.getDrawDom(), stack.fHistogram, hopt).then(subp => {
+               this.firstpainter = subp;
+               subp.setSecondaryId(this, 'hist'); // mark hist painter as created by hstack
+            });
+         }
+      }
+
+      return pr.then(() => skip_drawing ? this : this.drawNextHisto(0, pad_painter));
+   }
+
+   /** @summary draw THStack object in 2D */
+   static async draw(dom, stack, opt) {
+      if (!stack.fHists || !stack.fHists.arr)
+         return null; // drawing not needed
+
+      const painter = new THStackPainter(dom, stack, opt);
+
+      return ensureTCanvas(painter, false).then(() => {
+         painter.addToPadPrimitives();
+         return painter.redrawWith(opt, true);
+      });
+   }
+
+}; // class THStackPainter
+
+class THStackPainter extends THStackPainter$2 {
+
+   /** @summary Invoke histogram drawing */
+   drawHist(dom, hist, hopt) {
+      const func = (this.options.ndim === 1) ? TH1Painter.draw : TH2Painter.draw;
+      return func(dom, hist, hopt);
+   }
+
    /** @summary draw THStack object */
    static async draw(dom, stack, opt) {
       if (!stack.fHists || !stack.fHists.arr)
          return null; // drawing not needed
 
       const painter = new THStackPainter(dom, stack, opt);
-      let pad_painter = null, skip_drawing = false;
 
       return ensureTCanvas(painter, false).then(() => {
-         painter.decodeOptions(opt);
-
-         painter.hdraw_func = (painter.options.ndim === 1) ? TH1Painter.draw : TH2Painter.draw;
-
-         if (painter.options.pads) {
-            pad_painter = painter.getPadPainter();
-            if (pad_painter.doingDraw() && pad_painter.pad?.fPrimitives &&
-                (pad_painter.pad.fPrimitives.arr.length > 1) && (pad_painter.pad.fPrimitives.arr.indexOf(stack) === 0)) {
-               skip_drawing = true;
-               console.log('special case with THStack with is already rendered - do nothing');
-               return;
-            }
-
-            pad_painter.cleanPrimitives(p => p !== painter);
-            return pad_painter.divide(painter.options.nhist);
-         }
-
-         if (!painter.options.nostack)
-             painter.options.nostack = !painter.buildStack(stack);
-
-         if (painter.options.same || !stack.fHists?.arr.length) {
-            painter.addToPadPrimitives();
-            return;
-         }
-
-         const no_histogram = !stack.fHistogram;
-
-         if (no_histogram)
-             stack.fHistogram = painter.createHistogram(stack);
-
-         const mm = painter.getMinMax(painter.options.errors || painter.options.draw_errors),
-               hopt = painter.options.hopt + ';' + mm.hopt;
-
-         return painter.hdraw_func(dom, stack.fHistogram, hopt).then(subp => {
-            painter.addToPadPrimitives();
-            painter.firstpainter = subp;
-            subp.setSecondaryId(painter, 'hist'); // mark hist painter as created by hstack
-         });
-      }).then(() => skip_drawing ? painter : painter.drawNextHisto(0, pad_painter));
+         painter.addToPadPrimitives();
+         return painter.redrawWith(opt, true);
+      });
    }
 
 } // class THStackPainter
@@ -114030,22 +114075,17 @@ class TEfficiencyPainter extends ObjectPainter {
    }
 
    /** @summary Fully redraw efficiency with new draw options */
-   async redrawWith(opt, skip_cleanup, dom) {
-      if (!skip_cleanup) {
-         const pp = this.getPadPainter();
-         pp.removePrimitive(this, true);
-         if (!this.getMainPainter())
-            pp.getFramePainter()?.resetZoom();
-      }
+   async redrawWith(opt, skip_cleanup) {
+      if (!skip_cleanup)
+         this.getPadPainter()?.removePrimitive(this, true);
 
       if (!opt || !isStr(opt)) opt = '';
       opt = opt.toLowerCase();
 
       let promise, draw_total = false;
 
-      if (!dom) dom = this.getPadPainter() || this.getDom();
-
-      const eff = this.getObject();
+      const eff = this.getObject(),
+            dom = this.getDrawDom();
 
       if (opt[0] === 'b') {
          draw_total = true;
@@ -114088,7 +114128,7 @@ class TEfficiencyPainter extends ObjectPainter {
 
       painter.fBoundary = getTEfficiencyBoundaryFunc(eff.fStatisticOption, eff.TestBit(kIsBayesian));
 
-      return painter.redrawWith(opt, true, dom);
+      return painter.redrawWith(opt, true);
    }
 
 } // class TEfficiencyPainter
@@ -114116,7 +114156,7 @@ class TScatterPainter extends TGraphPainter$1 {
     * @private */
    async drawAxisHisto() {
       const histo = this.createHistogram();
-      return TH2Painter$2.draw(this.getPadPainter() || this.getDom(), histo, this.options.Axis + ';IGNORE_PALETTE');
+      return TH2Painter$2.draw(this.getDrawDom(), histo, this.options.Axis + ';IGNORE_PALETTE');
    }
 
   /** @summary Provide palette, create if necessary
@@ -114812,7 +114852,7 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
    /** @summary draw speical histogram for axis
      * @return {Promise} when ready */
    async drawAxisHist(histo, hopt) {
-      return TH1Painter$2.draw(this.getPadPainter() || this.getDom(), histo, hopt);
+      return TH1Painter$2.draw(this.getDrawDom(), histo, hopt);
    }
 
    /** @summary Draw graph  */
@@ -114892,10 +114932,10 @@ class TMultiGraphPainter extends TMultiGraphPainter$2 {
    /** @summary draw speical histogram for axis
      * @return {Promise} when ready */
    async drawAxisHist(histo, hopt) {
-      const place = this.getPadPainter() || this.getDom();
+      const dom = this.getDrawDom();
       return this._3d
-              ? TH2Painter.draw(place, histo, 'LEGO' + hopt)
-              : TH1Painter$2.draw(place, histo, hopt);
+              ? TH2Painter.draw(dom, histo, 'LEGO' + hopt)
+              : TH1Painter$2.draw(dom, histo, hopt);
    }
 
    /** @summary draw multigraph in 3D */
