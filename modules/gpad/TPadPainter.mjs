@@ -22,6 +22,10 @@ function getButtonSize(handler, fact) {
    return Math.round((fact || 1) * (handler.iscan || !handler.has_canvas ? 16 : 12));
 }
 
+function isPadPainter(p) {
+   return p?.pad && isFunc(p.forEachPainterInPad);
+}
+
 function toggleButtonsVisibility(handler, action, evnt) {
    evnt?.preventDefault();
    evnt?.stopPropagation();
@@ -369,13 +373,24 @@ class TPadPainter extends ObjectPainter {
 
    /** @summary Cleanup primitives from pad - selector lets define which painters to remove */
    cleanPrimitives(selector) {
-      if (!isFunc(selector)) return;
+      if (!isFunc(selector))
+         return;
+
+      let pad_cleanup = false;
 
       for (let k = this.painters.length-1; k >= 0; --k) {
-         if (selector(this.painters[k])) {
-            this.painters[k].cleanup();
+         const subp = this.painters[k];
+         if (selector(subp)) {
+            if (isPadPainter(subp))
+               pad_cleanup = true;
+            subp.cleanup();
             this.painters.splice(k, 1);
          }
+      }
+
+      if (pad_cleanup) {
+         const cp = this.getCanvPainter();
+         if (cp) delete cp.pads_cache;
       }
    }
 
