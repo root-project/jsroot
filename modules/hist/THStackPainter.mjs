@@ -456,9 +456,7 @@ class THStackPainter extends ObjectPainter {
             return;
          }
 
-         const no_histogram = !stack.fHistogram;
-
-         if (no_histogram)
+         if (!stack.fHistogram)
              stack.fHistogram = painter.createHistogram(stack);
 
          const mm = painter.getMinMax(painter.options.errors || painter.options.draw_errors),
