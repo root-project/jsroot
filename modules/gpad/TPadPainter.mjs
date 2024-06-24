@@ -1182,6 +1182,13 @@ class TPadPainter extends ObjectPainter {
      * @return {Promise} when finished
      * @private */
    async divide(nx, ny) {
+      if ((!nx && !ny) || !nx*ny) {
+         this.cleanPrimitives(isPadPainter);
+         this.pad.fPrimitives.Clear();
+         delete this.pads_cache;
+         return this;
+      }
+
       if (!this.pad.Divide(nx, ny))
          return this;
 
