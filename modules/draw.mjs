@@ -86,7 +86,7 @@ drawFuncs = { lst: [
    { name: 'TScatter', icon: 'img_graph', class: () => import('./hist2d/TScatterPainter.mjs').then(h => h.TScatterPainter), opt: ';A' },
    { name: 'RooPlot', icon: 'img_canvas', func: drawRooPlot },
    { name: 'TRatioPlot', icon: 'img_mgraph', class: () => import('./draw/TRatioPlotPainter.mjs').then(h => h.TRatioPlotPainter), opt: '' },
-   { name: clTMultiGraph, icon: 'img_mgraph', class: () => import('./hist/TMultiGraphPainter.mjs').then(h => h.TMultiGraphPainter), opt: ';ac;l;p;3d', expand_item: 'fGraphs' },
+   { name: clTMultiGraph, icon: 'img_mgraph', class: () => import('./hist/TMultiGraphPainter.mjs').then(h => h.TMultiGraphPainter), opt: ';ac;l;p;3d;pads', expand_item: 'fGraphs' },
    { name: clTStreamerInfoList, icon: 'img_question', draw: () => import_h().then(h => h.drawStreamerInfo) },
    { name: 'TWebPainting', icon: 'img_graph', class: () => import('./draw/TWebPaintingPainter.mjs').then(h => h.TWebPaintingPainter) },
    { name: clTCanvasWebSnapshot, icon: 'img_canvas', draw: () => import_canvas().then(h => h.drawTPadSnapshot) },

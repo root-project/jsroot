@@ -4,6 +4,7 @@ import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { FunctionsHandler } from './THistPainter.mjs';
 import { TH1Painter, PadDrawOptions } from './TH1Painter.mjs';
 import { TGraphPainter } from './TGraphPainter.mjs';
+import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
 
 /**
@@ -224,12 +225,12 @@ class TMultiGraphPainter extends ObjectPainter {
    }
 
    /** @summary Draw graph  */
-   async drawGraph(gr, opt /*, pos3d */) {
-      return TGraphPainter.draw(this.getPadPainter(), gr, opt);
+   async drawGraph(dom, gr, opt /*, pos3d */) {
+      return TGraphPainter.draw(dom, gr, opt);
    }
 
    /** @summary method draws next graph  */
-   async drawNextGraph(indx) {
+   async drawNextGraph(indx, pad_painter) {
       const graphs = this.getObject().fGraphs;
 
       // at the end of graphs drawing draw functions (if any)
@@ -237,15 +238,32 @@ class TMultiGraphPainter extends ObjectPainter {
          return this;
 
       const gr = graphs.arr[indx],
-            draw_opt = (graphs.opt[indx] || this._restopt) + this._auto;
+            draw_opt = (graphs.opt[indx] || this._restopt) + this._auto,
+            pos3d = graphs.arr.length - indx,
+            subid = `graphs_${indx}`;
+
+      // handling of 'pads' draw option
+      if (pad_painter) {
+         const subpad_painter = pad_painter.getSubPadPainter(indx+1);
+         if (!subpad_painter)
+            return this;
+
+         return this.drawGraph(subpad_painter, gr, draw_opt, pos3d).then(subp => {
+            if (subp) {
+               subp.setSecondaryId(this, subid);
+               this.painters.push(subp);
+            }
+            return this.drawNextGraph(indx+1, pad_painter);
+         });
+      }
 
       // used in automatic colors numbering
       if (this._auto)
          gr.$num_graphs = graphs.arr.length;
 
-      return this.drawGraph(gr, draw_opt, graphs.arr.length - indx).then(subp => {
+      return this.drawGraph(this.getPadPainter(), gr, draw_opt, pos3d).then(subp => {
          if (subp) {
-            subp.setSecondaryId(this, `graphs_${indx}`);
+            subp.setSecondaryId(this, subid);
             this.painters.push(subp);
          }
 
@@ -262,27 +280,36 @@ class TMultiGraphPainter extends ObjectPainter {
      * @private */
    async redrawWith(opt, skip_cleanup) {
       if (!skip_cleanup) {
-         this.getPadPainter()?.removePrimitive(this, true);
          this.firstpainter = null;
          this.painters = [];
+         const pp = this.getPadPainter();
+         pp?.removePrimitive(this, true);
+         if (this._pads)
+            pp?.divide(0, 0);
       }
 
-      const d = new DrawOptions(opt);
+      const d = new DrawOptions(opt),
+            mgraph = this.getObject();
 
       this._3d = d.check('3D');
       this._auto = ''; // extra options for auto colors
+      this._pads = d.check('PADS');
       ['PFC', 'PLC', 'PMC'].forEach(f => { if (d.check(f)) this._auto += ' ' + f; });
 
-      let hopt = '';
+      let hopt = '', pad_painter = null;
       if (d.check('FB') && this._3d) hopt += 'FB'; // will be directly combined with LEGO
       PadDrawOptions.forEach(name => { if (d.check(name)) hopt += ';' + name; });
 
       this._restopt = d.remain();
 
       let promise = Promise.resolve(true);
-      if (d.check('A') || !this.getMainPainter()) {
-          const mgraph = this.getObject(),
-                histo = this.scanGraphsRange(mgraph.fGraphs, mgraph.fHistogram, this.getPadPainter()?.getRootPad(true));
+      if (this._pads) {
+         promise = ensureTCanvas(this, false).then(() => {
+            pad_painter = this.getPadPainter();
+            return pad_painter.divide(mgraph.fGraphs.arr.length);
+         });
+      } else if (d.check('A') || !this.getMainPainter()) {
+         const histo = this.scanGraphsRange(mgraph.fGraphs, mgraph.fHistogram, this.getPadPainter()?.getRootPad(true));
 
          promise = this.drawAxisHist(histo, hopt).then(ap => {
             ap.setSecondaryId(this, 'hist'); // mark that axis painter generated from mg
@@ -292,7 +319,7 @@ class TMultiGraphPainter extends ObjectPainter {
 
       return promise.then(() => {
          this.addToPadPrimitives();
-         return this.drawNextGraph(0);
+         return this.drawNextGraph(0, pad_painter);
       }).then(() => {
          const handler = new FunctionsHandler(this, this.getPadPainter(), this.getObject().fFunctions, true);
          return handler.drawNext(0); // returns painter

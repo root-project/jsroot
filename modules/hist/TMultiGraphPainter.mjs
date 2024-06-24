@@ -16,9 +16,9 @@ class TMultiGraphPainter extends TMultiGraphPainter2D {
    }
 
    /** @summary draw multigraph in 3D */
-   async drawGraph(gr, opt, pos3d) {
-      if (this._3d) opt += 'pos3d_'+pos3d;
-      return TGraphPainter.draw(this.getPadPainter(), gr, opt);
+   async drawGraph(dom, gr, opt, pos3d) {
+      if (this._3d) opt += `pos3d_${pos3d}`;
+      return TGraphPainter.draw(dom, gr, opt);
    }
 
    /** @summary Draw TMultiGraph object */
