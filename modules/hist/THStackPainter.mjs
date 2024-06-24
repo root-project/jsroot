@@ -1,7 +1,6 @@
 import { THStackPainter as THStackPainter2D } from '../hist2d/THStackPainter.mjs';
 import { TH1Painter } from './TH1Painter.mjs';
 import { TH2Painter } from './TH2Painter.mjs';
-import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
 
 class THStackPainter extends THStackPainter2D {
@@ -19,10 +18,7 @@ class THStackPainter extends THStackPainter2D {
 
       const painter = new THStackPainter(dom, stack, opt);
 
-      return ensureTCanvas(painter, false).then(() => {
-         painter.addToPadPrimitives();
-         return painter.redrawWith(opt, true);
-      });
+      return painter.redrawWith(opt, true);
    }
 
 } // class THStackPainter

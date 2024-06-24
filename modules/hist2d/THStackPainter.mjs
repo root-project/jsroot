@@ -83,7 +83,7 @@ class THStackPainter extends ObjectPainter {
    /** @summary Returns stack min/max values */
    getMinMax(iserr) {
       const stack = this.getObject(),
-            pad = this.getPadPainter().getRootPad(true);
+            pad = this.getPadPainter()?.getRootPad(true);
       let min = 0, max = 0;
 
       const getHistMinMax = (hist, witherr) => {
@@ -408,18 +408,21 @@ class THStackPainter extends ObjectPainter {
 
    /** @summary Fill hstack context menu */
    fillContextMenuItems(menu) {
-      menu.addchk(this.options.draw_errors, 'Draw errors', flag => {
-         this.options.draw_errors = flag;
-         const stack = this.getObject(),
-               hlst = this.options.nostack ? stack.fHists : stack.fStack,
-               nhists = hlst?.arr?.length ?? 0;
-         for (let indx = 0; indx < nhists; ++indx) {
-            const rindx = this.options.horder ? indx : nhists - indx - 1,
-                  hist = hlst.arr[rindx];
-            this.painters[indx].decodeOptions(this.getHistDrawOption(hist, hlst.opt[rindx]));
-         }
-         this.redrawPad();
-      }, 'Change draw erros in the stack');
+      menu.addRedrawMenu(this);
+      if (!this.options.pads) {
+         menu.addchk(this.options.draw_errors, 'Draw errors', flag => {
+            this.options.draw_errors = flag;
+            const stack = this.getObject(),
+                  hlst = this.options.nostack ? stack.fHists : stack.fStack,
+                  nhists = hlst?.arr?.length ?? 0;
+            for (let indx = 0; indx < nhists; ++indx) {
+               const rindx = this.options.horder ? indx : nhists - indx - 1,
+                     hist = hlst.arr[rindx];
+               this.painters[indx].decodeOptions(this.getHistDrawOption(hist, hlst.opt[rindx]));
+            }
+            this.redrawPad();
+         }, 'Change draw erros in the stack');
+      }
    }
 
    /** @summary Invoke histogram drawing */
@@ -430,8 +433,15 @@ class THStackPainter extends ObjectPainter {
 
    /** @summary Full stack redraw with specified draw option */
    async redrawWith(opt, skip_cleanup) {
-      if (!skip_cleanup)
-         this.getPadPainter()?.removePrimitive(this, true);
+
+      const pp = this.getPadPainter();
+
+      if (!skip_cleanup) {
+         if (this.options.pads)
+            pp.divide(0,0);
+
+         pp.removePrimitive(this, true);
+      }
 
       this.decodeOptions(opt);
 
@@ -440,14 +450,15 @@ class THStackPainter extends ObjectPainter {
       let pr = Promise.resolve(this), pad_painter = null, skip_drawing = false;
 
       if (this.options.pads) {
-         pad_painter = this.getPadPainter();
-         if (pad_painter.doingDraw() && pad_painter.pad?.fPrimitives &&
-             (pad_painter.pad.fPrimitives.arr.length > 1) && (pad_painter.pad.fPrimitives.arr.indexOf(stack) === 0)) {
+         if (pp?.doingDraw() && pp.pad?.fPrimitives &&
+             (pp.pad.fPrimitives.arr.length > 1) && (pp.pad.fPrimitives.arr.indexOf(stack) === 0)) {
             skip_drawing = true;
             console.log('special case with THStack with is already rendered - do nothing');
          } else {
-            pad_painter.cleanPrimitives(p => p !== this);
-            pr = pad_painter.divide(this.options.nhist);
+            pr = ensureTCanvas(this, false).then(() => {
+               pad_painter = this.getPadPainter();
+               return pad_painter.divide(this.options.nhist);
+            });
          }
       } else {
          if (!this.options.nostack)
@@ -467,7 +478,12 @@ class THStackPainter extends ObjectPainter {
          }
       }
 
-      return pr.then(() => skip_drawing ? this : this.drawNextHisto(0, pad_painter));
+      return pr.then(() => skip_drawing ? this : this.drawNextHisto(0, pad_painter)).then(() => {
+         if (!this.options.pads && !skip_drawing)
+            this.addToPadPrimitives();
+         return this;
+
+      });
    }
 
    /** @summary draw THStack object in 2D */
@@ -477,10 +493,7 @@ class THStackPainter extends ObjectPainter {
 
       const painter = new THStackPainter(dom, stack, opt);
 
-      return ensureTCanvas(painter, false).then(() => {
-         painter.addToPadPrimitives();
-         return painter.redrawWith(opt, true);
-      });
+      return painter.redrawWith(opt, true);
    }
 
 } // class THStackPainter
