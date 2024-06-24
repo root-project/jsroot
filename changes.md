@@ -8,8 +8,9 @@
 5. TProfile and TProfile2D projections https://github.com/root-project/root/issues/15851
 6. Draw total histogram from TEfficiency when draw option starts with 'b'
 7. Let redraw TEfficiency and THStack with different draw options via hist context menu
-8. Internals - do not select pad (aka gPad) for objects drawing, always use assigned pad painter
-9. Fix - properly save zoomed ranges in drawingJSON()
+8. Support 'pads' draw options for TMultiGraph, support context menu for it
+9. Internals - do not select pad (aka gPad) for objects drawing, always use assigned pad painter
+10. Fix - properly save zoomed ranges in drawingJSON()
 
 
 ## Changes in 7.7.2

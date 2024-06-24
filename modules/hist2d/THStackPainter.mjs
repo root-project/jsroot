@@ -438,7 +438,7 @@ class THStackPainter extends ObjectPainter {
          this.firstpainter = null;
          this.painters = [];
          if (this.options.pads)
-            pp.divide(0,0);
+            pp.divide(0, 0);
          pp.removePrimitive(this, true);
       }
 
@@ -475,7 +475,6 @@ class THStackPainter extends ObjectPainter {
          if (!this.options.pads)
             this.addToPadPrimitives();
          return this;
-
       });
    }
 

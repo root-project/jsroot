@@ -12085,7 +12085,7 @@ class ObjectPainter extends BasePainter {
      * @protected
      * @deprecated to be removed in v8 */
    setPadName(pad_name) {
-      console.warn('setPadName is deprecated, to be removed in v8');
+      // console.warn('setPadName is deprecated, to be removed in v8');
       this.pad_name = isStr(pad_name) ? pad_name : '';
    }
 
@@ -68068,6 +68068,10 @@ function getButtonSize(handler, fact) {
    return Math.round((fact || 1) * (handler.iscan || !handler.has_canvas ? 16 : 12));
 }
 
+function isPadPainter(p) {
+   return p?.pad && isFunc(p.forEachPainterInPad);
+}
+
 function toggleButtonsVisibility(handler, action, evnt) {
    evnt?.preventDefault();
    evnt?.stopPropagation();
@@ -68413,16 +68417,31 @@ class TPadPainter extends ObjectPainter {
       return (is_root6 === undefined) || is_root6 ? this.pad : null;
    }
 
-   /** @summary Cleanup primitives from pad - selector lets define which painters to remove */
+   /** @summary Cleanup primitives from pad - selector lets define which painters to remove
+    * @return true if any painter was removed */
    cleanPrimitives(selector) {
-      if (!isFunc(selector)) return;
+      if (!isFunc(selector))
+         return false;
+
+      let pad_cleanup = false, is_any = false;
 
       for (let k = this.painters.length-1; k >= 0; --k) {
-         if (selector(this.painters[k])) {
-            this.painters[k].cleanup();
+         const subp = this.painters[k];
+         if (selector(subp)) {
+            if (isPadPainter(subp))
+               pad_cleanup = true;
+            subp.cleanup();
             this.painters.splice(k, 1);
+            is_any = true;
          }
       }
+
+      if (pad_cleanup) {
+         const cp = this.getCanvPainter();
+         if (cp) delete cp.pads_cache;
+      }
+
+      return is_any;
    }
 
    /** @summary Removes and cleanup specified primitive
@@ -69213,7 +69232,12 @@ class TPadPainter extends ObjectPainter {
      * @return {Promise} when finished
      * @private */
    async divide(nx, ny) {
-      if (!this.pad.Divide(nx, ny))
+      this.cleanPrimitives(isPadPainter);
+      if (!this.pad.fPrimitives)
+         this.pad.fPrimitives = create$1(clTList);
+      this.pad.fPrimitives.Clear();
+
+      if ((!nx && !ny) || !this.pad.Divide(nx, ny))
          return this;
 
       const drawNext = indx => {
@@ -69230,7 +69254,8 @@ class TPadPainter extends ObjectPainter {
    getSubPadPainter(n) {
       for (let k = 0; k < this.painters.length; ++k) {
          const sub = this.painters[k];
-         if (sub.pad && isFunc(sub.forEachPainterInPad) && (sub.pad.fNumber === n)) return sub;
+         if (isPadPainter(sub) && (sub.pad.fNumber === n))
+            return sub;
       }
       return null;
    }
@@ -103325,7 +103350,7 @@ drawFuncs = { lst: [
    { name: clTProfile2D, sameas: clTH2, opt2: ';projxyb;projxyc=e;projxyw' },
    { name: /^TH3/, icon: 'img_histo3d', class: () => Promise.resolve().then(function () { return TH3Painter$1; }).then(h => h.TH3Painter), opt: ';SCAT;BOX;BOX2;BOX3;GLBOX1;GLBOX2;GLCOL', expand_item: fFunctions, for_derived: true },
    { name: clTProfile3D, sameas: clTH3 },
-   { name: clTHStack, icon: 'img_histo1d', class: () => Promise.resolve().then(function () { return THStackPainter$1; }).then(h => h.THStackPainter), expand_item: 'fHists', opt: 'NOSTACK;HIST;E;PFC;PLC' },
+   { name: clTHStack, icon: 'img_histo1d', class: () => Promise.resolve().then(function () { return THStackPainter$1; }).then(h => h.THStackPainter), expand_item: 'fHists', opt: 'NOSTACK;HIST;COL;LEGO;E;PFC;PLC;PADS' },
    { name: clTPolyMarker3D, icon: 'img_histo3d', draw: () => Promise.resolve().then(function () { return draw3d; }).then(h => h.drawPolyMarker3D), direct: true, frame: '3d' },
    { name: clTPolyLine3D, icon: 'img_graph', draw: () => Promise.resolve().then(function () { return draw3d; }).then(h => h.drawPolyLine3D), direct: true, frame: '3d' },
    { name: 'TGraphStruct' },
@@ -103345,7 +103370,7 @@ drawFuncs = { lst: [
    { name: 'TScatter', icon: 'img_graph', class: () => Promise.resolve().then(function () { return TScatterPainter$1; }).then(h => h.TScatterPainter), opt: ';A' },
    { name: 'RooPlot', icon: 'img_canvas', func: drawRooPlot },
    { name: 'TRatioPlot', icon: 'img_mgraph', class: () => Promise.resolve().then(function () { return TRatioPlotPainter$1; }).then(h => h.TRatioPlotPainter), opt: '' },
-   { name: clTMultiGraph, icon: 'img_mgraph', class: () => Promise.resolve().then(function () { return TMultiGraphPainter$1; }).then(h => h.TMultiGraphPainter), opt: ';l;p;3d', expand_item: 'fGraphs' },
+   { name: clTMultiGraph, icon: 'img_mgraph', class: () => Promise.resolve().then(function () { return TMultiGraphPainter$1; }).then(h => h.TMultiGraphPainter), opt: ';ac;l;p;3d;pads', expand_item: 'fGraphs' },
    { name: clTStreamerInfoList, icon: 'img_question', draw: () => import_h().then(h => h.drawStreamerInfo) },
    { name: 'TWebPainting', icon: 'img_graph', class: () => Promise.resolve().then(function () { return TWebPaintingPainter$1; }).then(h => h.TWebPaintingPainter) },
    { name: clTCanvasWebSnapshot, icon: 'img_canvas', draw: () => import_canvas().then(h => h.drawTPadSnapshot) },
@@ -109609,7 +109634,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
    drawGraph() {
       const pmain = this.get_main(),
             graph = this.getGraph();
-      if (!pmain) return;
+      if (!pmain || !this.options) return;
 
       // special mode for TMultiGraph 3d drawing
       if (this.options.pos3d)
@@ -110972,7 +110997,7 @@ let THStackPainter$2 = class THStackPainter extends ObjectPainter {
    /** @summary Returns stack min/max values */
    getMinMax(iserr) {
       const stack = this.getObject(),
-            pad = this.getPadPainter().getRootPad(true);
+            pad = this.getPadPainter()?.getRootPad(true);
       let min = 0, max = 0;
 
       const getHistMinMax = (hist, witherr) => {
@@ -111297,18 +111322,21 @@ let THStackPainter$2 = class THStackPainter extends ObjectPainter {
 
    /** @summary Fill hstack context menu */
    fillContextMenuItems(menu) {
-      menu.addchk(this.options.draw_errors, 'Draw errors', flag => {
-         this.options.draw_errors = flag;
-         const stack = this.getObject(),
-               hlst = this.options.nostack ? stack.fHists : stack.fStack,
-               nhists = hlst?.arr?.length ?? 0;
-         for (let indx = 0; indx < nhists; ++indx) {
-            const rindx = this.options.horder ? indx : nhists - indx - 1,
-                  hist = hlst.arr[rindx];
-            this.painters[indx].decodeOptions(this.getHistDrawOption(hist, hlst.opt[rindx]));
-         }
-         this.redrawPad();
-      }, 'Change draw erros in the stack');
+      menu.addRedrawMenu(this);
+      if (!this.options.pads) {
+         menu.addchk(this.options.draw_errors, 'Draw errors', flag => {
+            this.options.draw_errors = flag;
+            const stack = this.getObject(),
+                  hlst = this.options.nostack ? stack.fHists : stack.fStack,
+                  nhists = hlst?.arr?.length ?? 0;
+            for (let indx = 0; indx < nhists; ++indx) {
+               const rindx = this.options.horder ? indx : nhists - indx - 1,
+                     hist = hlst.arr[rindx];
+               this.painters[indx].decodeOptions(this.getHistDrawOption(hist, hlst.opt[rindx]));
+            }
+            this.redrawPad();
+         }, 'Change draw erros in the stack');
+      }
    }
 
    /** @summary Invoke histogram drawing */
@@ -111319,25 +111347,26 @@ let THStackPainter$2 = class THStackPainter extends ObjectPainter {
 
    /** @summary Full stack redraw with specified draw option */
    async redrawWith(opt, skip_cleanup) {
-      if (!skip_cleanup)
-         this.getPadPainter()?.removePrimitive(this, true);
+      const pp = this.getPadPainter();
+      if (!skip_cleanup && pp) {
+         this.firstpainter = null;
+         this.painters = [];
+         if (this.options.pads)
+            pp.divide(0, 0);
+         pp.removePrimitive(this, true);
+      }
 
       this.decodeOptions(opt);
 
       const stack = this.getObject();
 
-      let pr = Promise.resolve(this), pad_painter = null, skip_drawing = false;
+      let pr = Promise.resolve(this), pad_painter = null;
 
       if (this.options.pads) {
-         pad_painter = this.getPadPainter();
-         if (pad_painter.doingDraw() && pad_painter.pad?.fPrimitives &&
-             (pad_painter.pad.fPrimitives.arr.length > 1) && (pad_painter.pad.fPrimitives.arr.indexOf(stack) === 0)) {
-            skip_drawing = true;
-            console.log('special case with THStack with is already rendered - do nothing');
-         } else {
-            pad_painter.cleanPrimitives(p => p !== this);
-            pr = pad_painter.divide(this.options.nhist);
-         }
+         pr = ensureTCanvas(this, false).then(() => {
+            pad_painter = this.getPadPainter();
+            return pad_painter.divide(this.options.nhist);
+         });
       } else {
          if (!this.options.nostack)
              this.options.nostack = !this.buildStack(stack);
@@ -111356,7 +111385,11 @@ let THStackPainter$2 = class THStackPainter extends ObjectPainter {
          }
       }
 
-      return pr.then(() => skip_drawing ? this : this.drawNextHisto(0, pad_painter));
+      return pr.then(() => this.drawNextHisto(0, pad_painter)).then(() => {
+         if (!this.options.pads)
+            this.addToPadPrimitives();
+         return this;
+      });
    }
 
    /** @summary draw THStack object in 2D */
@@ -111366,10 +111399,7 @@ let THStackPainter$2 = class THStackPainter extends ObjectPainter {
 
       const painter = new THStackPainter(dom, stack, opt);
 
-      return ensureTCanvas(painter, false).then(() => {
-         painter.addToPadPrimitives();
-         return painter.redrawWith(opt, true);
-      });
+      return painter.redrawWith(opt, true);
    }
 
 }; // class THStackPainter
@@ -111389,10 +111419,7 @@ class THStackPainter extends THStackPainter$2 {
 
       const painter = new THStackPainter(dom, stack, opt);
 
-      return ensureTCanvas(painter, false).then(() => {
-         painter.addToPadPrimitives();
-         return painter.redrawWith(opt, true);
-      });
+      return painter.redrawWith(opt, true);
    }
 
 } // class THStackPainter
@@ -114856,12 +114883,12 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
    }
 
    /** @summary Draw graph  */
-   async drawGraph(gr, opt /*, pos3d */) {
-      return TGraphPainter$1.draw(this.getPadPainter(), gr, opt);
+   async drawGraph(dom, gr, opt /*, pos3d */) {
+      return TGraphPainter$1.draw(dom, gr, opt);
    }
 
    /** @summary method draws next graph  */
-   async drawNextGraph(indx) {
+   async drawNextGraph(indx, pad_painter) {
       const graphs = this.getObject().fGraphs;
 
       // at the end of graphs drawing draw functions (if any)
@@ -114869,15 +114896,32 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
          return this;
 
       const gr = graphs.arr[indx],
-            draw_opt = (graphs.opt[indx] || this._restopt) + this._auto;
+            draw_opt = (graphs.opt[indx] || this._restopt) + this._auto,
+            pos3d = graphs.arr.length - indx,
+            subid = `graphs_${indx}`;
+
+      // handling of 'pads' draw option
+      if (pad_painter) {
+         const subpad_painter = pad_painter.getSubPadPainter(indx+1);
+         if (!subpad_painter)
+            return this;
+
+         return this.drawGraph(subpad_painter, gr, draw_opt, pos3d).then(subp => {
+            if (subp) {
+               subp.setSecondaryId(this, subid);
+               this.painters.push(subp);
+            }
+            return this.drawNextGraph(indx+1, pad_painter);
+         });
+      }
 
       // used in automatic colors numbering
       if (this._auto)
          gr.$num_graphs = graphs.arr.length;
 
-      return this.drawGraph(gr, draw_opt, graphs.arr.length - indx).then(subp => {
+      return this.drawGraph(this.getPadPainter(), gr, draw_opt, pos3d).then(subp => {
          if (subp) {
-            subp.setSecondaryId(this, `graphs_${indx}`);
+            subp.setSecondaryId(this, subid);
             this.painters.push(subp);
          }
 
@@ -114885,44 +114929,67 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
       });
    }
 
-   /** @summary Draw multigraph object using painter instance
+   /** @summary Fill multigraph context menu */
+   fillContextMenuItems(menu) {
+      menu.addRedrawMenu(this);
+   }
+
+   /** @summary Redraw multigraph object using provided option
      * @private */
-   static async _drawMG(painter, opt) {
-      const d = new DrawOptions(opt);
+   async redrawWith(opt, skip_cleanup) {
+      if (!skip_cleanup) {
+         this.firstpainter = null;
+         this.painters = [];
+         const pp = this.getPadPainter();
+         pp?.removePrimitive(this, true);
+         if (this._pads)
+            pp?.divide(0, 0);
+      }
 
-      painter._3d = d.check('3D');
-      painter._auto = ''; // extra options for auto colors
-      ['PFC', 'PLC', 'PMC'].forEach(f => { if (d.check(f)) painter._auto += ' ' + f; });
+      const d = new DrawOptions(opt),
+            mgraph = this.getObject();
 
-      let hopt = '';
-      if (d.check('FB') && painter._3d) hopt += 'FB'; // will be directly combined with LEGO
+      this._3d = d.check('3D');
+      this._auto = ''; // extra options for auto colors
+      this._pads = d.check('PADS');
+      ['PFC', 'PLC', 'PMC'].forEach(f => { if (d.check(f)) this._auto += ' ' + f; });
+
+      let hopt = '', pad_painter = null;
+      if (d.check('FB') && this._3d) hopt += 'FB'; // will be directly combined with LEGO
       PadDrawOptions.forEach(name => { if (d.check(name)) hopt += ';' + name; });
 
-      painter._restopt = d.remain();
+      this._restopt = d.remain();
 
       let promise = Promise.resolve(true);
-      if (d.check('A') || !painter.getMainPainter()) {
-          const mgraph = painter.getObject(),
-                histo = painter.scanGraphsRange(mgraph.fGraphs, mgraph.fHistogram, painter.getPadPainter()?.getRootPad(true));
+      if (this._pads) {
+         promise = ensureTCanvas(this, false).then(() => {
+            pad_painter = this.getPadPainter();
+            return pad_painter.divide(mgraph.fGraphs.arr.length);
+         });
+      } else if (d.check('A') || !this.getMainPainter()) {
+         const histo = this.scanGraphsRange(mgraph.fGraphs, mgraph.fHistogram, this.getPadPainter()?.getRootPad(true));
 
-         promise = painter.drawAxisHist(histo, hopt).then(ap => {
-            ap.setSecondaryId(painter, 'hist'); // mark that axis painter generated from mg
-            painter.firstpainter = ap;
+         promise = this.drawAxisHist(histo, hopt).then(ap => {
+            ap.setSecondaryId(this, 'hist'); // mark that axis painter generated from mg
+            this.firstpainter = ap;
          });
       }
 
       return promise.then(() => {
-         painter.addToPadPrimitives();
-         return painter.drawNextGraph(0);
+         this.addToPadPrimitives();
+         return this.drawNextGraph(0, pad_painter);
       }).then(() => {
-         const handler = new FunctionsHandler(painter, painter.getPadPainter(), painter.getObject().fFunctions, true);
+         if (this._pads)
+            return this;
+         const handler = new FunctionsHandler(this, this.getPadPainter(), this.getObject().fFunctions, true);
          return handler.drawNext(0); // returns painter
       });
    }
 
    /** @summary Draw TMultiGraph object */
    static async draw(dom, mgraph, opt) {
-      return TMultiGraphPainter._drawMG(new TMultiGraphPainter(dom, mgraph), opt);
+      const painter = new TMultiGraphPainter(dom, mgraph, opt);
+      return painter.redrawWith(opt, true);
    }
 
 }; // class TMultiGraphPainter
@@ -114939,14 +115006,15 @@ class TMultiGraphPainter extends TMultiGraphPainter$2 {
    }
 
    /** @summary draw multigraph in 3D */
-   async drawGraph(gr, opt, pos3d) {
-      if (this._3d) opt += 'pos3d_'+pos3d;
-      return TGraphPainter.draw(this.getPadPainter(), gr, opt);
+   async drawGraph(dom, gr, opt, pos3d) {
+      if (this._3d) opt += `pos3d_${pos3d}`;
+      return TGraphPainter.draw(dom, gr, opt);
    }
 
    /** @summary Draw TMultiGraph object */
    static async draw(dom, mgraph, opt) {
-      return TMultiGraphPainter._drawMG(new TMultiGraphPainter(dom, mgraph), opt);
+      const painter = new TMultiGraphPainter(dom, mgraph, opt);
+      return painter.redrawWith(opt, true);
    }
 
 } // class TMultiGraphPainter
