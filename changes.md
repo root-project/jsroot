@@ -7,7 +7,7 @@
 4. Support Z-scale zooming with TScatter
 5. TProfile and TProfile2D projections https://github.com/root-project/root/issues/15851
 6. Draw total histogram from TEfficiency when draw option starts with 'b'
-7. Let redraw TEfficiency with different draw options via hist context menu
+7. Let redraw TEfficiency and THStack with different draw options via hist context menu
 8. Internals - do not select pad (aka gPad) for objects drawing, always use assigned pad painter
 9. Fix - properly save zoomed ranges in drawingJSON()
 
