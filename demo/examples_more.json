@@ -234,7 +234,8 @@
      { "name": "approx", "file": "tutorials_graphs.root", "item": "approx;1", "title": "Output of tutorials/graphs/approx.C" }
    ],
    "TMultiGraph": [
-     { "name": "fit", "file": "tutorials_fit.root", "item": "fitMultiGraph;1", "title": "Fitting of TMultiGraph by pol2, output from tutorials/fit/fitMultiGraph.C, test for TMath::sq() function" }
+     { "name": "fit", "file": "tutorials_fit.root", "item": "fitMultiGraph;1", "title": "Fitting of TMultiGraph by pol2, output from tutorials/fit/fitMultiGraph.C, test for TMath::sq() function" },
+     { "opt": "pads", "file": "multigraph.root", "item": "c3;1/[1]", "asurl": true, "title": "Example drawing multigraph components in subpads" }
    ],
    "TGraph2D": [
      { "name": "fit", "file": "tutorials_fit.root", "item": "graph2dflt;1", "title": "Fitting with TGraph2D, output from tutorials/fit/graph2dfit" }
