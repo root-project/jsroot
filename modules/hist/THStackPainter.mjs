@@ -18,7 +18,6 @@ class THStackPainter extends THStackPainter2D {
          return null; // drawing not needed
 
       const painter = new THStackPainter(dom, stack, opt);
-      let pad_painter = null, skip_drawing = false;
 
       return ensureTCanvas(painter, false).then(() => {
          painter.addToPadPrimitives();
