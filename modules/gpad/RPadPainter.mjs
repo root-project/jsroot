@@ -180,6 +180,12 @@ class RPadPainter extends RObjectPainter {
       }
    }
 
+   /** @summary Divide pad on sub-pads */
+   async divide(/*nx, ny */) {
+      console.warn('RPadPainter.divide not implemented');
+      return this;
+   }
+
    /** @summary Removes and cleanup specified primitive
      * @desc also secondary primitives will be removed
      * @return new index to continue loop or -111 if main painter removed
