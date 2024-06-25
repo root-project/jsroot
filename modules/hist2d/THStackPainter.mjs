@@ -149,9 +149,9 @@ class THStackPainter extends ObjectPainter {
          themax = getHistMinMax(stack.fStack.arr[stack.fStack.arr.length-1]).max;
       }
 
-      if (logscale) {
-         themin = (themin > 0) ? themin*0.9 : themax*1e-3
-      } else if (themin > 0)
+      if (logscale)
+         themin = (themin > 0) ? themin*0.9 : themax*1e-3;
+      else if (themin > 0)
          themin = 0;
 
       if (stack.fMaximum !== kNoZoom)

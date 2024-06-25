@@ -166,14 +166,13 @@ class TH1Painter extends THistPainter {
          // case of hstack drawing, zooming allowed only when flag is provided
 
          if (this.options.zoom_min_max) {
-            if ((hmin !==  kNoZoom) && (hmin <= this.ymin))
+            if ((hmin !== kNoZoom) && (hmin <= this.ymin))
                hmin = kNoZoom;
             if ((hmax !== kNoZoom) && (hmax >= this.ymax))
                hmax = kNoZoom;
             set_zoom = true;
-         } else {
+         } else
             hmin = hmax = kNoZoom;
-         }
       } else if ((hmin !== kNoZoom) && (hmax !== kNoZoom) && !this.draw_content &&
           ((this.ymin === this.ymax) || (this.ymin > hmin) || (this.ymax < hmax))) {
          // offten appears with TF1 painter where Y range is not set properly

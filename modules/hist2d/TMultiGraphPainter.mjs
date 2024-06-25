@@ -7,7 +7,7 @@ import { TGraphPainter } from './TGraphPainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
 
-const kResetHisto    = BIT(17);
+const kResetHisto = BIT(17);
 
 /**
  * @summary Painter for TMultiGraph object.
@@ -104,9 +104,9 @@ class TMultiGraphPainter extends ObjectPainter {
       if (this._3d && histo && !histo.fXaxis.fLabels)
          histo = null;
 
-      if (!histo) {
+      if (!histo)
          src_hist = graphs.arr[0]?.fHistogram;
-      } else {
+      else {
          dummy_histo = test(histo.fMinimum, -0.05) && test(histo.fMaximum, 1.05) &&
                        test(histo.fXaxis.fXmin, -0.05) && test(histo.fXaxis.fXmax, 1.05);
          src_hist = histo;
@@ -215,7 +215,6 @@ class TMultiGraphPainter extends ObjectPainter {
          }
          xaxis.fXmin = uxmin;
          xaxis.fXmax = uxmax;
-
       }
 
       const axis = this._3d ? histo.fZaxis : histo.fYaxis;
