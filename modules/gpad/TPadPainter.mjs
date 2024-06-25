@@ -1191,14 +1191,13 @@ class TPadPainter extends ObjectPainter {
      * @private */
    async divide(nx, ny, use_existing) {
       if (nx && !ny && use_existing) {
-         let need_divide = false;
          for (let k = 0; k < nx; ++k) {
             if (!this.getSubPadPainter(k+1)) {
-               need_divide = true;
+               use_existing = false;
                break;
             }
          }
-         if (!need_divide)
+         if (use_existing)
             return this;
       }
 
