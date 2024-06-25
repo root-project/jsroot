@@ -186,7 +186,7 @@ class RPadPainter extends RObjectPainter {
    }
 
    /** @summary Divide pad on sub-pads */
-   async divide(/*nx, ny, use_existing */) {
+   async divide(/* nx, ny, use_existing */) {
       console.warn('RPadPainter.divide not implemented');
       return this;
    }
