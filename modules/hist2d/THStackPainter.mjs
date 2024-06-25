@@ -83,8 +83,9 @@ class THStackPainter extends ObjectPainter {
    /** @summary Returns stack min/max values */
    getMinMax(iserr) {
       const stack = this.getObject(),
-            pad = this.getPadPainter()?.getRootPad(true);
-      let min = 0, max = 0;
+            pad = this.getPadPainter()?.getRootPad(true),
+            logscale = pad?.fLogv ?? (this.options.ndim === 1 ? pad?.fLogy : pad?.fLogz);
+      let themin = 0, themax = 0;
 
       const getHistMinMax = (hist, witherr) => {
          const res = { min: 0, max: 0 };
@@ -117,9 +118,13 @@ class THStackPainter extends ObjectPainter {
          for (let j = j1; j <= j2; ++j) {
             for (let i = i1; i <= i2; ++i) {
                const val = hist.getBinContent(i, j),
-                   err = witherr ? hist.getBinError(hist.getBin(i, j)) : 0;
-               if (domin && (first || (val-err < res.min))) res.min = val-err;
-               if (domax && (first || (val+err > res.max))) res.max = val+err;
+                     err = witherr ? hist.getBinError(hist.getBin(i, j)) : 0;
+               if (logscale && (val - err <= 0))
+                  continue;
+               if (domin && (first || (val - err < res.min)))
+                  res.min = val - err;
+               if (domax && (first || (val + err > res.max)))
+                  res.max = val + err;
                first = false;
            }
          }
@@ -131,44 +136,48 @@ class THStackPainter extends ObjectPainter {
          for (let i = 0; i < stack.fHists.arr.length; ++i) {
             const resh = getHistMinMax(stack.fHists.arr[i], iserr);
             if (i === 0) {
-               min = resh.min; max = resh.max;
+               themin = resh.min;
+               themax = resh.max;
              } else {
-               min = Math.min(min, resh.min);
-               max = Math.max(max, resh.max);
+               themin = Math.min(themin, resh.min);
+               themax = Math.max(themax, resh.max);
             }
          }
       } else {
-         min = getHistMinMax(stack.fStack.arr[0], iserr).min;
-         max = getHistMinMax(stack.fStack.arr[stack.fStack.arr.length-1], iserr).max;
+         // when stacked histogram drawn error is not used
+         themin = getHistMinMax(stack.fStack.arr[0]).min;
+         themax = getHistMinMax(stack.fStack.arr[stack.fStack.arr.length-1]).max;
       }
 
-      max *= (1 + gStyle.fHistTopMargin);
+      if (logscale) {
+         themin = (themin > 0) ? themin*0.9 : themax*1e-3
+      } else if (themin > 0)
+         themin = 0;
 
       if (stack.fMaximum !== kNoZoom)
-         max = stack.fMaximum;
+         themax = stack.fMaximum;
 
       if (stack.fMinimum !== kNoZoom)
-         min = stack.fMinimum;
+         themin = stack.fMinimum;
 
-      if (pad?.fLogv ?? (this.options.ndim === 1 ? pad?.fLogy : pad?.fLogz)) {
-         if (max <= 0) max = 1;
-         if (min <= 0) min = 1e-4*max;
-         const kmin = 1/(1 + 0.5*Math.log10(max / min)),
-               kmax = 1 + 0.2*Math.log10(max / min);
-         min *= kmin;
-         max *= kmax;
-      } else if ((min < 0.9*max) && (min !== stack.fMinimum))
-         min = 0;
+      // redo code from THStack::BuildAndPaint
 
-      if ((stack.fMaximum !== kNoZoom) && this.options.nostack)
-         max = stack.fMaximum;
+      if (!this.options.nostack || (stack.fMaximum === kNoZoom)) {
+         if (logscale) {
+            if (themin > 0)
+               themax *= (1+0.2*Math.log10(themax/themin));
+         } else if (stack.fMaximum === kNoZoom)
+            themax *= (1 + gStyle.fHistTopMargin);
+      }
+      if (!this.options.nostack || (stack.fMinimum === kNoZoom)) {
+         if (logscale)
+            themin = (themin > 0) ? themin/(1+0.5*Math.log10(themax/themin)) : 1e-3*themax;
+      }
 
-      if ((stack.fMinimum !== kNoZoom) && this.options.nostack)
-         min = stack.fMinimum;
+      const res = { min: themin, max: themax, hopt: `hmin:${themin};hmax:${themax}` };
+      if (stack.fHistogram?.TestBit(kIsZoomed))
+         res.hopt += ';zoom_min_max';
 
-      const res = { min, max, hopt: `hmin:${min};hmax:${max}` };
-      if (this.options.nostack || !stack.fHistogram?.TestBit(kIsZoomed))
-         res.hopt += ';ignore_min_max';
       return res;
    }
 
@@ -359,7 +368,7 @@ class THStackPainter extends ObjectPainter {
 
          this.firstpainter.updateObject(src);
 
-         this.firstpainter.options.ignore_min_max = this.options.nostack || !src.TestBit(kIsZoomed);
+         this.firstpainter.options.zoom_min_max = src.TestBit(kIsZoomed);
       }
 
       // and now update histograms
