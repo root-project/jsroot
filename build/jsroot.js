@@ -103371,7 +103371,7 @@ drawFuncs = { lst: [
    { name: clTGraphPolargram, icon: 'img_graph', class: () => Promise.resolve().then(function () { return TGraphPolarPainter$1; }).then(h => h.TGraphPolargramPainter), theonly: true },
    { name: clTGraphPolar, icon: 'img_graph', class: () => Promise.resolve().then(function () { return TGraphPolarPainter$1; }).then(h => h.TGraphPolarPainter), opt: ';F;L;P;PE', theonly: true },
    { name: /^TGraph/, icon: 'img_graph', class: () => Promise.resolve().then(function () { return TGraphPainter$2; }).then(h => h.TGraphPainter), opt: ';L;P' },
-   { name: 'TEfficiency', icon: 'img_graph', class: () => Promise.resolve().then(function () { return TEfficiencyPainter$1; }).then(h => h.TEfficiencyPainter), opt: ';AP;B' },
+   { name: 'TEfficiency', icon: 'img_graph', class: () => Promise.resolve().then(function () { return TEfficiencyPainter$1; }).then(h => h.TEfficiencyPainter), opt: ';AP;A4P;B' },
    { name: clTCutG, sameas: clTGraph },
    { name: /^RooHist/, sameas: clTGraph },
    { name: /^RooCurve/, sameas: clTGraph },
@@ -114127,6 +114127,11 @@ class TEfficiencyPainter extends ObjectPainter {
                            funcp?.setSecondaryId(this, `func_${indx}`);
                            return this.drawFunction(indx + 1);
                         });
+   }
+
+   /** @summary Fill context menu */
+   fillContextMenuItems(menu) {
+      menu.addRedrawMenu(this);
    }
 
    /** @summary Fully redraw efficiency with new draw options */
