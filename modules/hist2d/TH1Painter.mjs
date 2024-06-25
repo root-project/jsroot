@@ -151,7 +151,6 @@ class TH1Painter extends THistPainter {
       hmin = this.options.minimum;
       hmax = this.options.maximum;
 
-
       if ((hmin === hmax) && (hmin !== kNoZoom)) {
          if (hmin < 0) {
             hmin *= 2; hmax = 0;
@@ -177,6 +176,7 @@ class TH1Painter extends THistPainter {
          }
       } else if ((hmin !== kNoZoom) && (hmax !== kNoZoom) && !this.draw_content &&
           ((this.ymin === this.ymax) || (this.ymin > hmin) || (this.ymax < hmax))) {
+         // offten appears with TF1 painter where Y range is not set properly
          this.ymin = hmin;
          this.ymax = hmax;
          fix_min = fix_max = true;
