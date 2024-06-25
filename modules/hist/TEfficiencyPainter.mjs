@@ -177,6 +177,11 @@ class TEfficiencyPainter extends ObjectPainter {
                         });
    }
 
+   /** @summary Fill context menu */
+   fillContextMenuItems(menu) {
+      menu.addRedrawMenu(this);
+   }
+
    /** @summary Fully redraw efficiency with new draw options */
    async redrawWith(opt, skip_cleanup) {
       if (!skip_cleanup)
