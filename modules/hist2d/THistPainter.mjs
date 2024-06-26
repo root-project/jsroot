@@ -1171,7 +1171,7 @@ class THistPainter extends ObjectPainter {
 
       this.options[name] = v;
 
-      this.interactiveRedraw('pad', ismin ? `exec:SetMinimum(${v})` : `exec:SetMaximum(${v})` );
+      this.interactiveRedraw('pad', ismin ? `exec:SetMinimum(${v})` : `exec:SetMaximum(${v})`);
    }
 
    /** @summary Extract axes bins and ranges

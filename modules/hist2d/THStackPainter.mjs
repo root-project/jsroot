@@ -470,7 +470,7 @@ class THStackPainter extends ObjectPainter {
 
       stack[name] = v;
 
-      this.interactiveRedraw('pad', ismin ? `exec:SetMinimum(${v})` : `exec:SetMaximum(${v})` );
+      this.interactiveRedraw('pad', ismin ? `exec:SetMinimum(${v})` : `exec:SetMaximum(${v})`);
    }
 
    /** @summary Full stack redraw with specified draw option */
