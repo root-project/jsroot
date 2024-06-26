@@ -452,6 +452,26 @@ class THStackPainter extends ObjectPainter {
       return func(dom, hist, hopt);
    }
 
+
+   /** @summary Access or modify histogram min/max
+    * @private */
+   accessMM(ismin, v) {
+      const name = ismin ? 'fMinimum' : 'fMaximum',
+            stack = this.getObject();
+      if (v === undefined)
+         return stack[name];
+
+      stack[name] = v;
+
+      this.interactiveRedraw('pad', ismin ? `exec:SetMinimum(${v})` : `exec:SetMaximum(${v})` );
+   }
+
+   /** @summary Returns stack minimum */
+   getMinimum() { return this.getObject().fMinimum; }
+
+   /** @summary Returns stack maximum */
+   getMaximum() { return this.getObject().fMaximum; }
+
    /** @summary Full stack redraw with specified draw option */
    async redrawWith(opt, skip_cleanup) {
       const pp = this.getPadPainter();
@@ -487,6 +507,7 @@ class THStackPainter extends ObjectPainter {
 
             pr = this.drawHist(this.getDrawDom(), stack.fHistogram, hopt).then(subp => {
                this.firstpainter = subp;
+               subp.$stack_hist = true;
                subp.setSecondaryId(this, 'hist'); // mark hist painter as created by hstack
             });
          }
