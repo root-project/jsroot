@@ -2556,6 +2556,7 @@ class TFramePainter extends ObjectPainter {
      * @desc It could be appended to the histogram menus */
    fillContextMenu(menu, kind, obj) {
       const main = this.getMainPainter(true),
+            wrk = main?.$stack_hist ? main.getPrimary() : main,
             pp = this.getPadPainter(),
             pad = pp?.getRootPad(true),
             is_pal = kind === 'pal';
@@ -2583,12 +2584,11 @@ class TFramePainter extends ObjectPainter {
             });
          });
          menu.add('Unzoom', () => this.unzoom(kind));
-         if (handle?.value_axis && main) {
-            const wrk = main.$stack_hist ? main.getPrimary() : main;
+         if (handle?.value_axis && isFunc(wrk?.accessMM)) {
             menu.add('Minimum', () => {
                menu.input(`Enter minimum value or ${kNoZoom} as default`, wrk.accessMM(true), 'float').then(v => {
                   this[`zoom_${kind}min`] = this[`zoom_${kind}max`] = undefined;
-                  wrk.accessMM(true, v)
+                  wrk.accessMM(true, v);
                });
             });
             menu.add('Maximum', () => {
