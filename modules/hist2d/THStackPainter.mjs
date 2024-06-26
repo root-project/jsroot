@@ -412,7 +412,13 @@ class THStackPainter extends ObjectPainter {
       const full_redraw = this.did_update === 1;
       delete this.did_update;
 
-      const pr = this.firstpainter ? this.firstpainter.redraw(reason) : Promise.resolve(this);
+      let pr = Promise.resolve(this);
+
+      if (this.firstpainter) {
+         const mm = this.getMinMax(this.options.errors || this.options.draw_errors);
+         this.firstpainter.decodeOptions(this.options.hopt + ';' + mm.hopt);
+         pr = this.firstpainter.redraw(reason);
+      }
 
       return pr.then(() => {
          if (full_redraw)
@@ -460,6 +466,8 @@ class THStackPainter extends ObjectPainter {
             stack = this.getObject();
       if (v === undefined)
          return stack[name];
+
+      this.did_update = 2;
 
       stack[name] = v;
 
