@@ -154,9 +154,8 @@ class THStackPainter extends ObjectPainter {
             }
          }
       } else {
-         // when stacked histogram drawn error is not used
-         themin = getHistMinMax(this.fStack.arr[0]).min;
-         themax = getHistMinMax(this.fStack.arr[this.fStack.arr.length-1]).max;
+         themin = getHistMinMax(this.fStack.arr[0], iserr).min;
+         themax = getHistMinMax(this.fStack.arr[this.fStack.arr.length-1], iserr).max;
       }
 
       if (logscale)
@@ -474,12 +473,6 @@ class THStackPainter extends ObjectPainter {
       this.interactiveRedraw('pad', ismin ? `exec:SetMinimum(${v})` : `exec:SetMaximum(${v})` );
    }
 
-   /** @summary Returns stack minimum */
-   getMinimum() { return this.getObject().fMinimum; }
-
-   /** @summary Returns stack maximum */
-   getMaximum() { return this.getObject().fMaximum; }
-
    /** @summary Full stack redraw with specified draw option */
    async redrawWith(opt, skip_cleanup) {
       const pp = this.getPadPainter();
@@ -510,10 +503,9 @@ class THStackPainter extends ObjectPainter {
             if (!stack.fHistogram)
                stack.fHistogram = this.createHistogram(stack);
 
-            const mm = this.getMinMax(this.options.errors || this.options.draw_errors),
-                  hopt = this.options.hopt + ';' + mm.hopt;
+            const mm = this.getMinMax(this.options.errors || this.options.draw_errors);
 
-            pr = this.drawHist(this.getDrawDom(), stack.fHistogram, hopt).then(subp => {
+            pr = this.drawHist(this.getDrawDom(), stack.fHistogram, this.options.hopt + ';' + mm.hopt).then(subp => {
                this.firstpainter = subp;
                subp.$stack_hist = true;
                subp.setSecondaryId(this, 'hist'); // mark hist painter as created by hstack
