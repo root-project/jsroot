@@ -183,7 +183,7 @@ class THStackPainter extends ObjectPainter {
             themin = (themin > 0) ? themin/(1+0.5*Math.log10(themax/themin)) : 1e-3*themax;
       }
 
-      const res = { min: themin, max: themax, hopt: `hmin:${themin};hmax:${themax}` };
+      const res = { min: themin, max: themax, hopt: `;hmin:${themin};hmax:${themax}` };
       if (stack.fHistogram?.TestBit(kIsZoomed))
          res.hopt += ';zoom_min_max';
 
@@ -415,7 +415,7 @@ class THStackPainter extends ObjectPainter {
 
       if (this.firstpainter) {
          const mm = this.getMinMax(this.options.errors || this.options.draw_errors);
-         this.firstpainter.decodeOptions(this.options.hopt + ';' + mm.hopt);
+         this.firstpainter.decodeOptions(this.options.hopt + mm.hopt);
          pr = this.firstpainter.redraw(reason);
       }
 
@@ -505,7 +505,7 @@ class THStackPainter extends ObjectPainter {
 
             const mm = this.getMinMax(this.options.errors || this.options.draw_errors);
 
-            pr = this.drawHist(this.getDrawDom(), stack.fHistogram, this.options.hopt + ';' + mm.hopt).then(subp => {
+            pr = this.drawHist(this.getDrawDom(), stack.fHistogram, this.options.hopt + mm.hopt).then(subp => {
                this.firstpainter = subp;
                subp.$stack_hist = true;
                subp.setSecondaryId(this, 'hist'); // mark hist painter as created by hstack
