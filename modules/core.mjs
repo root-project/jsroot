@@ -1075,6 +1075,9 @@ function create(typename, target) {
       case clTHashList:
          extend(obj, { name: typename, arr: [], opt: [] });
          break;
+      case clTObjArray:
+         extend(obj, { name: typename, arr: [] });
+         break;
       case clTAttAxis:
          extend(obj, { fNdivisions: 510, fAxisColor: 1,
                        fLabelColor: 1, fLabelFont: 42, fLabelOffset: 0.005, fLabelSize: 0.035, fTickLength: 0.03,
