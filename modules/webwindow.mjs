@@ -768,7 +768,7 @@ class WebWindowHandle {
      * WARNING - only call when you know that you are doing
      * @private */
    addReloadKeyHandler() {
-      if (this.kind === 'file')
+      if ((this.kind === 'file') || this._handling_reload)
          return;
 
       // this websocket will handle reload
@@ -793,9 +793,9 @@ class WebWindowHandle {
 
       let href = (typeof document !== 'undefined') ? document.URL : null;
       if (isStr(href) && (typeof window !== 'undefined') && window?.history) {
-         let prefix = '?key=', p = href.indexOf(prefix);
+         let prefix = '&key=', p = href.indexOf(prefix);
          if (p < 0) {
-            prefix = '&key=';
+            prefix = '?key=';
             p = href.indexOf(prefix);
          }
          if (p > 0)
