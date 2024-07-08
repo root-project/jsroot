@@ -567,14 +567,16 @@ class WebWindowHandle {
      * @private */
    connect(href) {
       this.close();
-      if (!href && this.href) href = this.href;
+      if (!href && this.href)
+         href = this.href;
 
       let ntry = 0;
 
       const retry_open = first_time => {
          if (this.state !== 0) return;
 
-         if (!first_time) console.log(`try connect window again ${new Date().toString()}`);
+         if (!first_time)
+            console.log(`try connect window again ${new Date().toString()}`);
 
          if (this._websocket) {
             this._websocket.close();
@@ -583,8 +585,10 @@ class WebWindowHandle {
 
          if (!href) {
             href = window.location.href;
-            if (href && href.indexOf('#') > 0) href = href.slice(0, href.indexOf('#'));
-            if (href && href.lastIndexOf('/') > 0) href = href.slice(0, href.lastIndexOf('/') + 1);
+            if (href && href.indexOf('#') > 0)
+               href = href.slice(0, href.indexOf('#'));
+            if (href && href.lastIndexOf('/') > 0)
+               href = href.slice(0, href.lastIndexOf('/') + 1);
          }
          this.href = href;
          ntry++;
@@ -701,16 +705,10 @@ class WebWindowHandle {
                   this.close(true); // force closing of socket
                   this.invokeReceiver(true, 'onWebsocketClosed');
                } else if (msg.indexOf('NEW_KEY=') === 0) {
-                  const newkey = msg.slice(8);
-                  this.close(true);
-                  let href = (typeof document !== 'undefined') ? document.URL : null;
-                  if (isStr(href) && (typeof window !== 'undefined') && window?.history) {
-                     const p = href.indexOf('?key=');
-                     if (p > 0) href = href.slice(0, p);
-                     window.history.replaceState(window.history.state, undefined, `${href}?key=${newkey}`);
-                  } else if (typeof sessionStorage !== 'undefined')
-                     sessionStorage.setItem('RWebWindow_Key', newkey);
-                  location.reload(true);
+                  this.new_key = msg.slice(8);
+                  this.storeKeyInUrl();
+                  if (this._ask_reload)
+                     this.askReload(true);
                }
             } else if (msg.slice(0, 10) === '$$binary$$') {
                this.next_binary = chid;
@@ -749,13 +747,20 @@ class WebWindowHandle {
       retry_open(true); // call for the first time
    }
 
-   /** @summary Send newkey request to application
-     * @desc If server creates newkey and response - webpage will be reaload
-     * After key generation done, connection will not be working any longer
-     * WARNING - only call when you know that you are doing
+   /** @summary Ask to reload web widget
+     * @desc If new key already exists - reload immediately
+     * Otherwise request server to generate new key - and then reload page
+     * WARNING - call only when knowing that you are doing
      * @private */
-   askReload() {
-      this.send('GENERATE_KEY', 0);
+   askReload(force) {
+      if (this.new_key || force) {
+         this.close(true);
+         if (typeof location !== 'undefined')
+            location.reload(true);
+      } else {
+         this._ask_reload = true;
+         this.send('GENERATE_KEY', 0);
+      }
    }
 
    /** @summary Instal Ctrl-R handler to realod web window
@@ -763,7 +768,12 @@ class WebWindowHandle {
      * WARNING - only call when you know that you are doing
      * @private */
    addReloadKeyHandler() {
-      if (this.kind === 'file') return;
+      if (this.kind === 'file')
+         return;
+
+      // this websocket will handle reload
+      // embed widgets should not call this method
+      this._handling_reload = true;
 
       window.addEventListener('keydown', evnt => {
          if (((evnt.key === 'R') || (evnt.key === 'r')) && evnt.ctrlKey) {
@@ -774,6 +784,31 @@ class WebWindowHandle {
           }
       });
    }
+
+   /** @summary Replace widget URL before reload or close of the page
+     * @private */
+   storeKeyInUrl() {
+      if (!this._handling_reload)
+         return;
+
+      let href = (typeof document !== 'undefined') ? document.URL : null;
+      if (isStr(href) && (typeof window !== 'undefined') && window?.history) {
+         const p = href.indexOf('?key=');
+         if (p > 0)
+            href = href.slice(0, p);
+         if (this.new_key)
+            href += `?key=${this.new_key}`;
+         if (sessionKey)
+            href += `#${sessionKey}`
+         window.history.replaceState(window.history.state, undefined, href);
+      }
+      if (typeof sessionStorage !== 'undefined') {
+         sessionStorage.setItem('RWebWindow_SessionKey', sessionKey);
+         sessionStorage.setItem('RWebWindow_Key', this.new_key);
+      }
+   }
+
+
 
 } // class WebWindowHandle
 
@@ -803,28 +838,35 @@ async function connectWebWindow(arg) {
       if (p > 0) {
          sessionKey = href.slice(p+1);
          href = href.slice(0, p);
+         console.log('get seesion key from URL', sessionKey);
       }
 
       const d = decodeUrl(href);
       d_key = d.get('key');
       d_token = d.get('token');
+      if (d_key)
+         console.log('get connection key from URL', d_key);
 
       if (typeof sessionStorage !== 'undefined') {
          new_key = sessionStorage.getItem('RWebWindow_Key');
          sessionStorage.removeItem('RWebWindow_Key');
+
          if (new_key) console.log(`Use key ${new_key} from session storage`);
 
          if (sessionKey)
             sessionStorage.setItem('RWebWindow_SessionKey', sessionKey);
-         else
+         else {
             sessionKey = sessionStorage.getItem('RWebWindow_SessionKey') || '';
+            console.log('get seesion key from STORAGE', sessionKey);
+         }
       }
 
       // hide key and any following parameters from URL, chrome do not allows to close browser with changed URL
-      if (d_key && !d.has('headless') && isStr(href) && (typeof window !== 'undefined') && window?.history) {
-         const p = href.indexOf('?key=');
-         if (p > 0) window.history.replaceState(window.history.state, undefined, href.slice(0, p));
-      }
+      //if (d_key && !d.has('headless') && isStr(href) && (typeof window !== 'undefined') && window?.history) {
+      //   const p = href.indexOf('?key=');
+      //   console.log('remove key from URL');
+      //   if (p > 0) window.history.replaceState(window.history.state, undefined, href.slice(0, p));
+      //}
 
       // special holder script, prevents headless chrome browser from too early exit
       if (d.has('headless') && d_key && (browser.isChromeHeadless || browser.isChrome) && !arg.ignore_chrome_batch_holder)
@@ -875,11 +917,10 @@ async function connectWebWindow(arg) {
          handle.token = d_token;
       }
 
-      if (window) {
+      if (typeof window !== 'undefined') {
          window.onbeforeunload = () => handle.close(true);
          if (browser.qt5) window.onqt5unload = window.onbeforeunload;
       }
-
 
       if (arg.receiver) {
          // when receiver exists, it handles itself callbacks
