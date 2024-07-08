@@ -793,11 +793,15 @@ class WebWindowHandle {
 
       let href = (typeof document !== 'undefined') ? document.URL : null;
       if (isStr(href) && (typeof window !== 'undefined') && window?.history) {
-         const p = href.indexOf('?key=');
+         let prefix = '?key=', p = href.indexOf(prefix);
+         if (p < 0) {
+            prefix = '&key=';
+            p = href.indexOf(prefix);
+         }
          if (p > 0)
             href = href.slice(0, p);
          if (this.new_key)
-            href += `?key=${this.new_key}`;
+            href += prefix + this.new_key;
          if (sessionKey)
             href += `#${sessionKey}`
          window.history.replaceState(window.history.state, undefined, href);
