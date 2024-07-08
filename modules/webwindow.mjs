@@ -605,8 +605,8 @@ class WebWindowHandle {
             console.log(`configure protocol log ${path}`);
          } else if ((this.kind === 'websocket') && first_time) {
             path = path.replace('http://', 'ws://').replace('https://', 'wss://') + 'root.websocket';
-            path += '?' + this.getConnArgs(ntry);
             console.log(`configure websocket ${path}`);
+            path += '?' + this.getConnArgs(ntry);
             this._websocket = new WebSocket(path);
          } else {
             path += 'root.longpoll';
@@ -687,7 +687,7 @@ class WebWindowHandle {
             if (this.key && sessionKey) {
                const client_hash = HMAC(this.key, msg.slice(i0+1));
                if (server_hash !== client_hash)
-                  return console.log(`Failure checking server md5 sum ${server_hash}`);
+                  return console.log(`Failure checking server HMAC sum ${server_hash}`);
             }
 
             if (seq_id <= this.recv_seq)
@@ -700,7 +700,7 @@ class WebWindowHandle {
             msg = msg.slice(i4 + 1);
 
             if (chid === 0) {
-               console.log(`GET chid=0 message ${msg}`);
+               // console.log(`GET chid=0 message ${msg}`);
                if (msg === 'CLOSE') {
                   this.close(true); // force closing of socket
                   this.invokeReceiver(true, 'onWebsocketClosed');
@@ -842,35 +842,21 @@ async function connectWebWindow(arg) {
       if (p > 0) {
          sessionKey = href.slice(p+1);
          href = href.slice(0, p);
-         console.log('get seesion key from URL', sessionKey);
       }
 
       const d = decodeUrl(href);
       d_key = d.get('key');
       d_token = d.get('token');
-      if (d_key)
-         console.log('get connection key from URL', d_key);
 
       if (typeof sessionStorage !== 'undefined') {
          new_key = sessionStorage.getItem('RWebWindow_Key');
          sessionStorage.removeItem('RWebWindow_Key');
 
-         if (new_key) console.log(`Use key ${new_key} from session storage`);
-
          if (sessionKey)
             sessionStorage.setItem('RWebWindow_SessionKey', sessionKey);
-         else {
+         else
             sessionKey = sessionStorage.getItem('RWebWindow_SessionKey') || '';
-            console.log('get seesion key from STORAGE', sessionKey);
-         }
       }
-
-      // hide key and any following parameters from URL, chrome do not allows to close browser with changed URL
-      //if (d_key && !d.has('headless') && isStr(href) && (typeof window !== 'undefined') && window?.history) {
-      //   const p = href.indexOf('?key=');
-      //   console.log('remove key from URL');
-      //   if (p > 0) window.history.replaceState(window.history.state, undefined, href.slice(0, p));
-      //}
 
       // special holder script, prevents headless chrome browser from too early exit
       if (d.has('headless') && d_key && (browser.isChromeHeadless || browser.isChrome) && !arg.ignore_chrome_batch_holder)
