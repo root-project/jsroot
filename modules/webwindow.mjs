@@ -803,7 +803,7 @@ class WebWindowHandle {
          if (this.new_key)
             href += prefix + this.new_key;
          if (sessionKey)
-            href += `#${sessionKey}`
+            href += `#${sessionKey}`;
          window.history.replaceState(window.history.state, undefined, href);
       }
       if (typeof sessionStorage !== 'undefined') {
