@@ -1,4 +1,4 @@
-import { BIT, isFunc, isStr, clTLatex, clTMathText, clTAnnotation, clTPolyLine } from '../core.mjs';
+import { BIT, isFunc, clTLatex, clTMathText, clTAnnotation } from '../core.mjs';
 import { rgb as d3_rgb, select as d3_select } from '../d3.mjs';
 import { BasePainter, makeTranslate } from '../base/BasePainter.mjs';
 import { addMoveHandler } from '../gui/utils.mjs';
@@ -97,67 +97,6 @@ async function drawText() {
 
       return this;
    });
-}
-
-
-/** @summary Draw TPolyLine
-  * @private */
-function drawPolyLine() {
-   this.createG();
-
-   const polyline = this.getObject(),
-         kPolyLineNDC = BIT(14),
-         isndc = polyline.TestBit(kPolyLineNDC),
-         opt = this.getDrawOpt() || polyline.fOption,
-         dofill = (polyline._typename === clTPolyLine) && (isStr(opt) && opt.toLowerCase().indexOf('f') >= 0),
-         func = this.getAxisToSvgFunc(isndc);
-
-   this.createAttLine({ attr: polyline });
-   this.createAttFill({ attr: polyline });
-
-   let cmd = '';
-   for (let n = 0; n <= polyline.fLastPoint; ++n)
-      cmd += `${n>0?'L':'M'}${func.x(polyline.fX[n])},${func.y(polyline.fY[n])}`;
-
-   if (dofill)
-      cmd += 'Z';
-
-   const elem = this.draw_g.append('svg:path').attr('d', cmd);
-
-   if (dofill)
-      elem.call(this.fillatt.func);
-   else
-      elem.call(this.lineatt.func).style('fill', 'none');
-
-   assignContextMenu(this, kToFront);
-
-   addMoveHandler(this);
-
-   this.dx = this.dy = 0;
-   this.isndc = isndc;
-
-   this.moveDrag = function(dx, dy) {
-      this.dx += dx;
-      this.dy += dy;
-      makeTranslate(this.draw_g.select('path'), this.dx, this.dy);
-   };
-
-   this.moveEnd = function(not_changed) {
-      if (not_changed) return;
-      const polyline = this.getObject(),
-            func = this.getAxisToSvgFunc(this.isndc);
-      let exec = '';
-
-      for (let n = 0; n <= polyline.fLastPoint; ++n) {
-         const x = this.svgToAxis('x', func.x(polyline.fX[n]) + this.dx, this.isndc),
-               y = this.svgToAxis('y', func.y(polyline.fY[n]) + this.dy, this.isndc);
-         polyline.fX[n] = x;
-         polyline.fY[n] = y;
-         exec += `SetPoint(${n},${x},${y});;`;
-      }
-      this.submitCanvExec(exec + 'Notify();;');
-      this.redraw();
-   };
 }
 
 /** @summary Draw TEllipse
@@ -516,5 +455,5 @@ function drawJSImage(dom, obj, opt) {
    return painter;
 }
 
-export { drawText, drawPolyLine, drawEllipse, drawPie, drawBox,
+export { drawText, drawEllipse, drawPie, drawBox,
          drawMarker, drawPolyMarker, drawJSImage };
