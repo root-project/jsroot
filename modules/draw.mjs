@@ -111,7 +111,7 @@ drawFuncs = { lst: [
    { name: 'TCurlyArc', sameas: clTPolyLine },
    { name: 'TParallelCoord', icon: 'img_graph', dummy: true },
    { name: clTGaxis, icon: 'img_graph', class: () => import('./draw/TGaxisPainter.mjs').then(h => h.TGaxisPainter) },
-   { name: clTBox, icon: 'img_graph', draw: () => import_more().then(h => h.drawBox), direct: true },
+   { name: clTBox, icon: 'img_graph', class: () => import('./draw/TBoxPainter.mjs').then(h => h.TBoxPainter), opt: ';L' },
    { name: 'TWbox', sameas: clTBox },
    { name: 'TSliderBox', sameas: clTBox },
    { name: 'TMarker', icon: 'img_graph', draw: () => import_more().then(h => h.drawMarker), direct: true },
