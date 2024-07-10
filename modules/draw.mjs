@@ -225,7 +225,8 @@ function getDrawHandle(kind, selector) {
 
       if ((selector === null) || (selector === undefined)) {
          // store found handle in cache, can reuse later
-         if (!(kind in drawFuncs.cache)) drawFuncs.cache[kind] = h;
+         if (!(kind in drawFuncs.cache))
+            drawFuncs.cache[kind] = h;
          return h;
       } else if (isStr(selector)) {
          if (!first) first = h;
@@ -235,9 +236,10 @@ function getDrawHandle(kind, selector) {
             if (('expand' in h) || ('expand_item' in h)) return h;
          } else if ('opt' in h) {
             const opts = h.opt.split(';');
-            for (let j = 0; j < opts.length; ++j)
-               opts[j] = opts[j].toLowerCase();
-            if (opts.indexOf(selector.toLowerCase()) >= 0) return h;
+            for (let j = 0; j < opts.length; ++j) {
+               if (opts[j].toLowerCase() === selector.toLowerCase())
+                  return h;
+            }
          }
       } else if (selector === counter)
          return h;
