@@ -67,7 +67,6 @@ class RHistPainter extends RObjectPainter {
       this.draw_content = true;
       this.nbinsx = 0;
       this.nbinsy = 0;
-      this.accept_drops = true; // indicate that one can drop other objects like doing Draw('same')
       this.mode3d = false;
 
       // initialize histogram methods

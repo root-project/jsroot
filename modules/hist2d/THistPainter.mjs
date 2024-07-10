@@ -859,7 +859,6 @@ class THistPainter extends ObjectPainter {
       super(dom, histo);
       this.draw_content = true;
       this.nbinsx = this.nbinsy = 0;
-      this.accept_drops = true; // indicate that one can drop other objects like doing Draw('same')
       this.mode3d = false;
    }
 

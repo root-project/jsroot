@@ -2196,9 +2196,6 @@ class HierarchyPainter extends BasePainter {
          } else
             this.cleanupFrame(divid);
 
-         // if (main_painter?.accept_drops)
-         //    return draw(divid, res.obj, 'same ' + opt).then(p => drop_complete(p, main_painter === p));
-
          return draw(divid, res.obj, opt).then(p => drop_complete(p, main_painter === p));
       });
    }
