@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '9/07/2024',
+version_date = '10/07/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -71487,8 +71487,23 @@ async function ensureTCanvas(painter, frame_kind) {
 
    // simple check - if canvas there, can use painter
    const noframe = (frame_kind === false) || (frame_kind === '3d') ? 'noframe' : '',
+         createCanv = () => {
+            if ((noframe !== 'noframe') || !isFunc(painter.getUserRanges))
+               return null;
+            const ranges = painter.getUserRanges();
+            if (!ranges)
+               return null;
+            const canv = create$1(clTCanvas),
+                  dx = (ranges.maxx - ranges.minx) || 1,
+                  dy = (ranges.maxy - ranges.miny) || 1;
+            canv.fX1 = ranges.minx - dx * 0.1;
+            canv.fX2 = ranges.maxx + dx * 0.1;
+            canv.fY1 = ranges.miny - dy * 0.1;
+            canv.fY2 = ranges.maxy + dy * 0.1;
+            return canv;
+         },
          promise = painter.getCanvSvg().empty()
-                   ? TCanvasPainter.draw(painter.getDom(), null, noframe)
+                   ? TCanvasPainter.draw(painter.getDom(), createCanv(), noframe)
                    : Promise.resolve(true);
 
    return promise.then(() => {
@@ -73825,7 +73840,6 @@ class THistPainter extends ObjectPainter {
       super(dom, histo);
       this.draw_content = true;
       this.nbinsx = this.nbinsy = 0;
-      this.accept_drops = true; // indicate that one can drop other objects like doing Draw('same')
       this.mode3d = false;
    }
 
@@ -103428,7 +103442,7 @@ drawFuncs = { lst: [
    { name: 'TExec', icon: 'img_graph', dummy: true },
    { name: clTLine, icon: 'img_graph', class: () => Promise.resolve().then(function () { return TLinePainter$1; }).then(h => h.TLinePainter) },
    { name: 'TArrow', icon: 'img_graph', class: () => Promise.resolve().then(function () { return TArrowPainter$1; }).then(h => h.TArrowPainter) },
-   { name: clTPolyLine, icon: 'img_graph', draw: () => import_more().then(h => h.drawPolyLine), direct: true },
+   { name: clTPolyLine, icon: 'img_graph', class: () => Promise.resolve().then(function () { return TPolyLinePainter$1; }).then(h => h.TPolyLinePainter), opt: ';F' },
    { name: 'TCurlyLine', sameas: clTPolyLine },
    { name: 'TCurlyArc', sameas: clTPolyLine },
    { name: 'TParallelCoord', icon: 'img_graph', dummy: true },
@@ -103547,7 +103561,8 @@ function getDrawHandle(kind, selector) {
 
       if ((selector === null) || (selector === undefined)) {
          // store found handle in cache, can reuse later
-         if (!(kind in drawFuncs.cache)) drawFuncs.cache[kind] = h;
+         if (!(kind in drawFuncs.cache))
+            drawFuncs.cache[kind] = h;
          return h;
       } else if (isStr(selector)) {
          if (!first) first = h;
@@ -103557,9 +103572,10 @@ function getDrawHandle(kind, selector) {
             if (('expand' in h) || ('expand_item' in h)) return h;
          } else if ('opt' in h) {
             const opts = h.opt.split(';');
-            for (let j = 0; j < opts.length; ++j)
-               opts[j] = opts[j].toLowerCase();
-            if (opts.indexOf(selector.toLowerCase()) >= 0) return h;
+            for (let j = 0; j < opts.length; ++j) {
+               if (opts[j].toLowerCase() === selector.toLowerCase())
+                  return h;
+            }
          }
       } else if (selector === counter)
          return h;
@@ -106203,11 +106219,18 @@ class HierarchyPainter extends BasePainter {
          if (isFunc(main_painter?.performDrop))
             return main_painter.performDrop(res.obj, itemname, res.item, opt).then(p => drop_complete(p, main_painter === p));
 
-         if (main_painter?.accept_drops)
-            return draw(divid, res.obj, 'same ' + opt).then(p => drop_complete(p, main_painter === p));
+         const sett = res.obj._typename ? getDrawSettings(prROOT + res.obj._typename) : null;
+         if (!sett?.draw) return null;
 
-         this.cleanupFrame(divid);
-         return draw(divid, res.obj, opt).then(p => drop_complete(p));
+         const cp = getElementCanvPainter(divid);
+
+         if (cp) {
+            if (sett?.has_same)
+               opt = 'same ' + opt;
+         } else
+            this.cleanupFrame(divid);
+
+         return draw(divid, res.obj, opt).then(p => drop_complete(p, main_painter === p));
       });
    }
 
@@ -108348,67 +108371,6 @@ async function drawText$1() {
    });
 }
 
-
-/** @summary Draw TPolyLine
-  * @private */
-function drawPolyLine() {
-   this.createG();
-
-   const polyline = this.getObject(),
-         kPolyLineNDC = BIT(14),
-         isndc = polyline.TestBit(kPolyLineNDC),
-         opt = this.getDrawOpt() || polyline.fOption,
-         dofill = (polyline._typename === clTPolyLine) && ((opt === 'f') || (opt === 'F')),
-         func = this.getAxisToSvgFunc(isndc);
-
-   this.createAttLine({ attr: polyline });
-   this.createAttFill({ attr: polyline });
-
-   let cmd = '';
-   for (let n = 0; n <= polyline.fLastPoint; ++n)
-      cmd += `${n>0?'L':'M'}${func.x(polyline.fX[n])},${func.y(polyline.fY[n])}`;
-
-   if (dofill)
-      cmd += 'Z';
-
-   const elem = this.draw_g.append('svg:path').attr('d', cmd);
-
-   if (dofill)
-      elem.call(this.fillatt.func);
-   else
-      elem.call(this.lineatt.func).style('fill', 'none');
-
-   assignContextMenu(this, kToFront);
-
-   addMoveHandler(this);
-
-   this.dx = this.dy = 0;
-   this.isndc = isndc;
-
-   this.moveDrag = function(dx, dy) {
-      this.dx += dx;
-      this.dy += dy;
-      makeTranslate(this.draw_g.select('path'), this.dx, this.dy);
-   };
-
-   this.moveEnd = function(not_changed) {
-      if (not_changed) return;
-      const polyline = this.getObject(),
-            func = this.getAxisToSvgFunc(this.isndc);
-      let exec = '';
-
-      for (let n = 0; n <= polyline.fLastPoint; ++n) {
-         const x = this.svgToAxis('x', func.x(polyline.fX[n]) + this.dx, this.isndc),
-               y = this.svgToAxis('y', func.y(polyline.fY[n]) + this.dy, this.isndc);
-         polyline.fX[n] = x;
-         polyline.fY[n] = y;
-         exec += `SetPoint(${n},${x},${y});;`;
-      }
-      this.submitCanvExec(exec + 'Notify();;');
-      this.redraw();
-   };
-}
-
 /** @summary Draw TEllipse
   * @private */
 function drawEllipse() {
@@ -108772,7 +108734,6 @@ drawEllipse: drawEllipse,
 drawJSImage: drawJSImage,
 drawMarker: drawMarker$1,
 drawPie: drawPie,
-drawPolyLine: drawPolyLine,
 drawPolyMarker: drawPolyMarker,
 drawText: drawText$1
 });
@@ -114467,6 +114428,20 @@ class TLinePainter extends ObjectPainter {
       this.submitCanvExec(exec + 'Notify();;');
    }
 
+   /** @summary Returns object ranges
+     * @desc Can be used for newly created canvas */
+   getUserRanges() {
+      const line = this.getObject(),
+            isndc = line.TestBit(kLineNDC);
+      if (isndc)
+         return null;
+      const minx = Math.min(line.fX1, line.fX2),
+            maxx = Math.max(line.fX1, line.fX2),
+            miny = Math.min(line.fY1, line.fY2),
+            maxy = Math.max(line.fY1, line.fY2);
+      return { minx, miny, maxx, maxy };
+   }
+
    /** @summary Calculate line coordinates */
    prepareDraw() {
       const line = this.getObject();
@@ -116341,6 +116316,103 @@ class TArrowPainter extends TLinePainter {
 var TArrowPainter$1 = /*#__PURE__*/Object.freeze({
 __proto__: null,
 TArrowPainter: TArrowPainter
+});
+
+const kPolyLineNDC = BIT(14);
+
+class TPolyLinePainter extends ObjectPainter {
+
+   /** @summary Dragging object */
+   moveDrag(dx, dy) {
+      this.dx += dx;
+      this.dy += dy;
+      makeTranslate(this.draw_g.select('path'), this.dx, this.dy);
+   }
+
+   /** @summary End dragging object */
+   moveEnd(not_changed) {
+      if (not_changed) return;
+      const polyline = this.getObject(),
+            func = this.getAxisToSvgFunc(this.isndc);
+      let exec = '';
+
+      for (let n = 0; n <= polyline.fLastPoint; ++n) {
+         const x = this.svgToAxis('x', func.x(polyline.fX[n]) + this.dx, this.isndc),
+               y = this.svgToAxis('y', func.y(polyline.fY[n]) + this.dy, this.isndc);
+         polyline.fX[n] = x;
+         polyline.fY[n] = y;
+         exec += `SetPoint(${n},${x},${y});;`;
+      }
+      this.submitCanvExec(exec + 'Notify();;');
+      this.redraw();
+   }
+
+   /** @summary Returns object ranges
+    * @desc Can be used for newly created canvas */
+   getUserRanges() {
+      const polyline = this.getObject(),
+            isndc = polyline.TestBit(kPolyLineNDC);
+      if (isndc || !polyline.fLastPoint)
+         return null;
+      let minx = polyline.fX[0], maxx = minx,
+          miny = polyline.fY[0], maxy = miny;
+      for (let n = 1; n <= polyline.fLastPoint; ++n) {
+         minx = Math.min(minx, polyline.fX[n]);
+         maxx = Math.max(maxx, polyline.fX[n]);
+         miny = Math.min(miny, polyline.fY[n]);
+         maxy = Math.max(maxy, polyline.fY[n]);
+      }
+      return { minx, miny, maxx, maxy };
+   }
+
+   /** @summary Redraw poly line */
+   redraw() {
+      this.createG();
+
+      const polyline = this.getObject(),
+            isndc = polyline.TestBit(kPolyLineNDC),
+            opt = this.getDrawOpt() || polyline.fOption,
+            dofill = (polyline._typename === clTPolyLine) && (isStr(opt) && opt.toLowerCase().indexOf('f') >= 0),
+            func = this.getAxisToSvgFunc(isndc);
+
+      this.createAttLine({ attr: polyline });
+      this.createAttFill({ attr: polyline });
+
+      let cmd = '';
+      for (let n = 0; n <= polyline.fLastPoint; ++n)
+         cmd += `${n>0?'L':'M'}${func.x(polyline.fX[n])},${func.y(polyline.fY[n])}`;
+
+      if (dofill)
+         cmd += 'Z';
+
+      const elem = this.draw_g.append('svg:path').attr('d', cmd);
+
+      if (dofill)
+         elem.call(this.fillatt.func);
+      else
+         elem.call(this.lineatt.func).style('fill', 'none');
+
+      assignContextMenu(this, kToFront);
+
+      addMoveHandler(this);
+
+      this.dx = this.dy = 0;
+      this.isndc = isndc;
+
+      return this;
+   }
+
+   /** @summary Draw TLine object */
+   static async draw(dom, obj, opt) {
+      const painter = new TPolyLinePainter(dom, obj, opt);
+      return ensureTCanvas(painter, false).then(() => painter.redraw());
+   }
+
+} // class TPolyLinePainter
+
+var TPolyLinePainter$1 = /*#__PURE__*/Object.freeze({
+__proto__: null,
+TPolyLinePainter: TPolyLinePainter
 });
 
 /** @summary Drawing TGaxis
@@ -124219,7 +124291,6 @@ class RHistPainter extends RObjectPainter {
       this.draw_content = true;
       this.nbinsx = 0;
       this.nbinsy = 0;
-      this.accept_drops = true; // indicate that one can drop other objects like doing Draw('same')
       this.mode3d = false;
 
       // initialize histogram methods

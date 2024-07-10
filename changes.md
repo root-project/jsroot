@@ -9,9 +9,10 @@
 6. Draw total histogram from TEfficiency when draw option starts with 'b'
 7. Let redraw TEfficiency, THStack and TMultiGraph with different draw options via hist context menu
 8. Support 'pads' draw options for TMultiGraph, support context menu for it
-9. Internals - do not select pad (aka gPad) for objects drawing, always use assigned pad painter
-10. Fix - properly save zoomed ranges in drawingJSON()
-11. Fix - properly redraw TMultuGraph
+9. Better support of objects drop on the canvas
+10. Internals - do not select pad (aka gPad) for objects drawing, always use assigned pad painter
+11. Fix - properly save zoomed ranges in drawingJSON()
+12. Fix - properly redraw TMultuGraph
 
 
 ## Changes in 7.7.2
