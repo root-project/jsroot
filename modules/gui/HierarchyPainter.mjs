@@ -2185,11 +2185,21 @@ class HierarchyPainter extends BasePainter {
          if (isFunc(main_painter?.performDrop))
             return main_painter.performDrop(res.obj, itemname, res.item, opt).then(p => drop_complete(p, main_painter === p));
 
-         if (main_painter?.accept_drops)
-            return draw(divid, res.obj, 'same ' + opt).then(p => drop_complete(p, main_painter === p));
+         const sett = res.obj._typename ? getDrawSettings(prROOT + res.obj._typename) : null;
+         if (!sett?.draw) return null;
 
-         this.cleanupFrame(divid);
-         return draw(divid, res.obj, opt).then(p => drop_complete(p));
+         const cp = getElementCanvPainter(divid);
+
+         if (cp) {
+            if (sett?.has_same)
+               opt = 'same ' + opt;
+         } else
+            this.cleanupFrame(divid);
+
+         // if (main_painter?.accept_drops)
+         //    return draw(divid, res.obj, 'same ' + opt).then(p => drop_complete(p, main_painter === p));
+
+         return draw(divid, res.obj, opt).then(p => drop_complete(p, main_painter === p));
       });
    }
 
