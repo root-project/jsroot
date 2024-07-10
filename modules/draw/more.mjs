@@ -1,4 +1,4 @@
-import { BIT, isFunc, clTLatex, clTMathText, clTAnnotation, clTPolyLine } from '../core.mjs';
+import { BIT, isFunc, isStr, clTLatex, clTMathText, clTAnnotation, clTPolyLine } from '../core.mjs';
 import { rgb as d3_rgb, select as d3_select } from '../d3.mjs';
 import { BasePainter, makeTranslate } from '../base/BasePainter.mjs';
 import { addMoveHandler } from '../gui/utils.mjs';
@@ -109,7 +109,7 @@ function drawPolyLine() {
          kPolyLineNDC = BIT(14),
          isndc = polyline.TestBit(kPolyLineNDC),
          opt = this.getDrawOpt() || polyline.fOption,
-         dofill = (polyline._typename === clTPolyLine) && ((opt === 'f') || (opt === 'F')),
+         dofill = (polyline._typename === clTPolyLine) && (isStr(opt) && opt.toLowerCase().indexOf('f') >= 0),
          func = this.getAxisToSvgFunc(isndc);
 
    this.createAttLine({ attr: polyline });
