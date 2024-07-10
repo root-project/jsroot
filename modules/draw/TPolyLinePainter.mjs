@@ -35,6 +35,24 @@ class TPolyLinePainter extends ObjectPainter {
       this.redraw();
    }
 
+   /** @summary Returns object ranges
+    * @desc Can be used for newly created canvas */
+   getUserRanges() {
+      const polyline = this.getObject(),
+            isndc = polyline.TestBit(kPolyLineNDC);
+      if (isndc || !polyline.fLastPoint)
+         return null;
+      let minx = polyline.fX[0], maxx = minx,
+          miny = polyline.fY[0], maxy = miny;
+      for (let n = 1; n <= polyline.fLastPoint; ++n) {
+         minx = Math.min(minx, polyline.fX[n]);
+         maxx = Math.max(maxx, polyline.fX[n]);
+         miny = Math.min(miny, polyline.fY[n]);
+         maxy = Math.max(maxy, polyline.fY[n]);
+      }
+      return { minx, miny, maxx, maxy };
+   }
+
    /** @summary Redraw poly line */
    redraw() {
       this.createG();

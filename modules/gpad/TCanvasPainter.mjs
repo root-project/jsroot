@@ -897,8 +897,23 @@ async function ensureTCanvas(painter, frame_kind) {
 
    // simple check - if canvas there, can use painter
    const noframe = (frame_kind === false) || (frame_kind === '3d') ? 'noframe' : '',
+         createCanv = () => {
+            if ((noframe !== 'noframe') || !isFunc(painter.getUserRanges))
+               return null;
+            const ranges = painter.getUserRanges();
+            if (!ranges)
+               return null;
+            const canv = create(clTCanvas),
+                  dx = (ranges.maxx - ranges.minx) || 1,
+                  dy = (ranges.maxy - ranges.miny) || 1;
+            canv.fX1 = ranges.minx - dx * 0.1;
+            canv.fX2 = ranges.maxx + dx * 0.1;
+            canv.fY1 = ranges.miny - dy * 0.1;
+            canv.fY2 = ranges.maxy + dy * 0.1;
+            return canv;
+         },
          promise = painter.getCanvSvg().empty()
-                   ? TCanvasPainter.draw(painter.getDom(), null, noframe)
+                   ? TCanvasPainter.draw(painter.getDom(), createCanv(), noframe)
                    : Promise.resolve(true);
 
    return promise.then(() => {
