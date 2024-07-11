@@ -110,7 +110,7 @@ class TGraphTimePainter extends ObjectPainter {
       }
    }
 
-   /** @ummary Start drawing of graph time */
+   /** @summary Start drawing of graph time */
    startDrawing() {
       this.step = 0;
 
