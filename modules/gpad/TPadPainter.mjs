@@ -1861,7 +1861,6 @@ class TPadPainter extends ObjectPainter {
          if (!this.isBatchMode() && !this.use_openui && !this.brlayout && mainid && isStr(mainid)) {
             this.brlayout = new BrowserLayout(mainid, null, this);
             this.brlayout.create(mainid, true);
-            // this.brlayout.toggleBrowserKind('float');
             this.setDom(this.brlayout.drawing_divid()); // need to create canvas
             registerForResize(this.brlayout);
          }

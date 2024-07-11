@@ -324,13 +324,13 @@ class TCanvasPainter extends TPadPainter {
          this._websocket._tmouts[name] = setTimeout(() => { delete this._websocket._tmouts[name]; }, tm);
    }
 
-   /** @summary Hanler for websocket open event
+   /** @summary Handler for websocket open event
      * @private */
    onWebsocketOpened(/* handle */) {
-      // indicate that we are ready to recieve any following commands
+      // indicate that we are ready to receive any following commands
    }
 
-   /** @summary Hanler for websocket close event
+   /** @summary Handler for websocket close event
      * @private */
    onWebsocketClosed(/* handle */) {
       if (!this.embed_canvas)
@@ -361,7 +361,7 @@ class TCanvasPainter extends TPadPainter {
              .then(() => this.redrawPadSnap(snap))
              .then(() => {
                 this.completeCanvasSnapDrawing();
-                let ranges = this.getWebPadOptions(); // all data, including subpads
+                let ranges = this.getWebPadOptions(); // all data, including sub-pads
                 if (ranges) ranges = ':' + ranges;
                 handle.send(`READY6:${version}${ranges}`); // send ready message back when drawing completed
                 this.confirmDraw();
