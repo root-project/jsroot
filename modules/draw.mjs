@@ -230,7 +230,7 @@ function getDrawHandle(kind, selector) {
          return h;
       } else if (isStr(selector)) {
          if (!first) first = h;
-         // if drawoption specified, check it present in the list
+         // if draw option specified, check it present in the list
 
          if (selector === '::expand') {
             if (('expand' in h) || ('expand_item' in h)) return h;
@@ -699,7 +699,7 @@ async function init_v7(arg) {
 }
 
 
-// to avoid cross-dependnecy between io.mjs and draw.mjs
+// to avoid cross-dependency between io.mjs and draw.mjs
 internals.addStreamerInfosForPainter = addStreamerInfosForPainter;
 
 /** @summary Draw TRooPlot

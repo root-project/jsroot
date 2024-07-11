@@ -7,7 +7,7 @@ import { setStoragePrefix, readSettings, readStyle } from './gui/utils.mjs';
 /** @summary Read style and settings from URL
   * @private */
 function readStyleFromURL(url) {
-   // first try to read settings from coockies
+   // first try to read settings from local storage
    const d = decodeUrl(url),
          prefix = d.get('storage_prefix');
 

@@ -94,7 +94,7 @@ class LongPollSocket {
             // raw mode - all kind of reply data packed into binary buffer
             // first 4 bytes header 'txt:' or 'bin:'
             // after the 'bin:' there is length of optional text argument like 'bin:14  :optional_text'
-            // and immedaitely after text binary data. Server sends binary data so, that offset should be multiple of 8
+            // and immediately after text binary data. Server sends binary data so, that offset should be multiple of 8
 
             const u8Arr = new Uint8Array(res);
             let str = '', i = 0, offset = u8Arr.length;
@@ -226,7 +226,7 @@ class FileDumpSocket {
       this.nextOperation();
    }
 
-   /** @summary Emulate send - just cound operation */
+   /** @summary Emulate send - just count operation */
    send(/* str */) {
       if (this.protocol[this.cnt] === 'send') {
          this.cnt++;
@@ -296,7 +296,7 @@ class WebWindowHandle {
 
    /** @summary Set callbacks receiver.
      * @param {object} obj - object with receiver functions
-     * @param {function} obj.onWebsocketMsg - called when new data receieved from RWebWindow
+     * @param {function} obj.onWebsocketMsg - called when new data received from RWebWindow
      * @param {function} obj.onWebsocketOpened - called when connection established
      * @param {function} obj.onWebsocketClosed - called when connection closed
      * @param {function} obj.onWebsocketError - called when get error via the connection */
@@ -441,7 +441,7 @@ class WebWindowHandle {
    }
 
    /** @summary Send only last message of specified kind during defined time interval.
-     * @desc Idea is to prvent sending multiple messages of similar kind and overload connection
+     * @desc Idea is to prevent sending multiple messages of similar kind and overload connection
      * Instead timeout is started after which only last specified message will be send
      * @private */
    sendLast(kind, tmout, msg) {
@@ -470,7 +470,7 @@ class WebWindowHandle {
    }
 
    /** @summary Send keep-alive message.
-     * @desc Only for internal use, only when used with websockets
+     * @desc Only for internal use, only when used with web sockets
      * @private */
    keepAlive() {
       delete this.timerid;
@@ -763,7 +763,7 @@ class WebWindowHandle {
       }
    }
 
-   /** @summary Instal Ctrl-R handler to realod web window
+   /** @summary Instal Ctrl-R handler to reload web window
      * @desc Instead of default window reload invokes {@link askReload} method
      * WARNING - only call when you know that you are doing
      * @private */

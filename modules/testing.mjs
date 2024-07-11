@@ -42,7 +42,7 @@ function _getAllSubPads(cp) {
       if ((p !== cp) && p.getFramePainter())
          sub.push(p);
    }, 'pads');
-   return sub.length > 4 ? [] : sub; // do not test large canvas with many-many subpads
+   return sub.length > 4 ? [] : sub; // do not test large canvas with many-many sub-pads
 }
 
 /** @summary test zooming features

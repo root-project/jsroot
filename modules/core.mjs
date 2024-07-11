@@ -118,7 +118,7 @@ const constants = {
       WebGL: 1,
       /** @summary Use WebGL rendering, but convert into svg image, not interactive */
       WebGLImage: 2,
-      /** @summary Use SVG rendering, slow, inprecise and not interactive, nor recommendet */
+      /** @summary Use SVG rendering, slow, imprecise and not interactive, not recommended */
       SVG: 3,
       fromString(s) {
          if ((s === 'webgl') || (s === 'gl')) return this.WebGL;
@@ -132,13 +132,13 @@ const constants = {
    Embed3D: {
       /** @summary Do not embed 3D drawing, use complete space */
       NoEmbed: -1,
-      /** @summary Default embeding mode - on Firefox and latest Chrome is real ```Embed```, on all other ```Overlay``` */
+      /** @summary Default embedding mode - on Firefox and latest Chrome is real ```Embed```, on all other ```Overlay``` */
       Default: 0,
-      /** @summary WebGL canvas not inserted into SVG, but just overlayed The only way how earlier Chrome browser can be used */
+      /** @summary WebGL canvas not inserted into SVG, but just overlay. The only way how old Chrome browser can be used */
       Overlay: 1,
       /** @summary Really embed WebGL Canvas into SVG */
       Embed: 2,
-      /** @summary Embeding, but when SVG rendering or SVG image converion is used */
+      /** @summary Embedding, but when SVG rendering or SVG image conversion is used */
       EmbedSVG: 3,
       /** @summary Convert string values into number  */
       fromString(s) {
@@ -207,10 +207,10 @@ settings = {
    ZoomWheel: !nodejs,
    /** @summary Zooming on touch devices */
    ZoomTouch: !nodejs,
-   /** @summary Enables move and resize of elements like statbox, title, pave, colz  */
+   /** @summary Enables move and resize of elements like statistic box, title, pave, colz  */
    MoveResize: !browser.touches && !nodejs,
-   /** @summary Configures keybord key press handling
-     * @desc Can be disabled to prevent keys heandling in complex HTML layouts
+   /** @summary Configures keyboard key press handling
+     * @desc Can be disabled to prevent keys handling in complex HTML layouts
      * @default true */
    HandleKeys: !nodejs,
    /** @summary enables drag and drop functionality */
@@ -274,7 +274,7 @@ settings = {
      * @default true */
    UseStamp: true,
    /** @summary Maximal number of bytes ranges in http 'Range' header
-     * @desc Some http server has limitations for number of bytes rannges therefore let change maximal number via setting
+     * @desc Some http server has limitations for number of bytes ranges therefore let change maximal number via setting
      * @default 200 */
    MaxRanges: 200,
   /** @summary Configure xhr.withCredentials = true when submitting http requests from JSROOT */
@@ -948,7 +948,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
                return this.error_callback(Error(`Fail to load url ${url}`), this.status);
 
          if (this.nodejs_checkzip && (this.getResponseHeader('content-encoding') === 'gzip')) {
-            // special handling of gzipped JSON objects in Node.js
+            // special handling of gzip JSON objects in Node.js
             return import('zlib').then(handle => {
                 const res = handle.unzipSync(Buffer.from(this.response)),
                       obj = JSON.parse(res); // zlib returns Buffer, use JSON to parse it
@@ -1004,7 +1004,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
    return use_promise ? Promise.resolve(xhr) : xhr;
 }
 
-/** @summary Submit asynchronoues http request
+/** @summary Submit asynchronous http request
   * @desc Following requests kind can be specified:
   *    - 'bin' - abstract binary data, result as string
   *    - 'buf' - abstract binary data, result as ArrayBuffer (default)
@@ -1014,7 +1014,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
   *    - 'xml' - returns req.responseXML
   *    - 'head' - returns request itself, uses 'HEAD' request method
   *    - 'post' - creates post request, submits req.send(post_data)
-  *    - 'postbuf' - creates post request, expectes binary data as response
+  *    - 'postbuf' - creates post request, expects binary data as response
   * @param {string} url - URL for the request
   * @param {string} kind - kind of requested data
   * @param {string} [post_data] - data submitted with post kind of request
@@ -1842,7 +1842,7 @@ function isObject(arg) { return arg && typeof arg === 'object'; }
   * @private */
 function isFunc(arg) { return typeof arg === 'function'; }
 
-/** @summary Check if argument is a atring
+/** @summary Check if argument is a String
   * @private */
 function isStr(arg) { return typeof arg === 'string'; }
 
