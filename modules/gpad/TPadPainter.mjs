@@ -1268,31 +1268,10 @@ class TPadPainter extends ObjectPainter {
       menu.addchk(this.isTooltipAllowed(), 'Show tooltips', () => this.setTooltipAllowed('toggle'));
 
       if (!this._websocket) {
-         function SetPadField(arg) {
-            this.pad[arg.slice(1)] = parseInt(arg[0]);
+         const set_pad_field = arg => {
+            this.pad[arg.slice(1)] = Number.parseInt(arg[0]);
             this.interactiveRedraw('pad', arg.slice(1));
-         }
-
-         menu.addchk(this.pad?.fGridx, 'Grid x', (this.pad?.fGridx ? '0' : '1') + 'fGridx', SetPadField);
-         menu.addchk(this.pad?.fGridy, 'Grid y', (this.pad?.fGridy ? '0' : '1') + 'fGridy', SetPadField);
-         menu.sub('Ticks x');
-         menu.addchk(this.pad?.fTickx === 0, 'normal', '0fTickx', SetPadField);
-         menu.addchk(this.pad?.fTickx === 1, 'ticks on both sides', '1fTickx', SetPadField);
-         menu.addchk(this.pad?.fTickx === 2, 'labels on both sides', '2fTickx', SetPadField);
-         menu.endsub();
-         menu.sub('Ticks y');
-         menu.addchk(this.pad?.fTicky === 0, 'normal', '0fTicky', SetPadField);
-         menu.addchk(this.pad?.fTicky === 1, 'ticks on both sides', '1fTicky', SetPadField);
-         menu.addchk(this.pad?.fTicky === 2, 'labels on both sides', '2fTicky', SetPadField);
-         menu.endsub();
-         menu.addchk(this.pad?.fEditable, 'Editable', flag => { this.pad.fEditable = flag; this.interactiveRedraw('pad'); });
-         if (this.iscan)
-            menu.addchk(this.pad?.TestBit(kIsGrayscale), 'Gray scale', flag => { this.setGrayscale(flag); this.interactiveRedraw('pad'); });
-
-         if (isFunc(this.drawObject))
-            menu.add('Build legend', () => this.buildLegend());
-
-         const do_divide = arg => {
+         }, do_divide = arg => {
             if (!arg || !isStr(arg))
                return;
             const arr = arg.split('x');
@@ -1302,6 +1281,25 @@ class TPadPainter extends ObjectPainter {
             if (arr.length === 2)
                this.divide(Number.parseInt(arr[0]), Number.parseInt(arr[1]));
          };
+
+         menu.addchk(this.pad?.fGridx, 'Grid x', (this.pad?.fGridx ? '0' : '1') + 'fGridx', set_pad_field);
+         menu.addchk(this.pad?.fGridy, 'Grid y', (this.pad?.fGridy ? '0' : '1') + 'fGridy', set_pad_field);
+         menu.sub('Ticks x');
+         menu.addchk(this.pad?.fTickx === 0, 'normal', '0fTickx', set_pad_field);
+         menu.addchk(this.pad?.fTickx === 1, 'ticks on both sides', '1fTickx', set_pad_field);
+         menu.addchk(this.pad?.fTickx === 2, 'labels on both sides', '2fTickx', set_pad_field);
+         menu.endsub();
+         menu.sub('Ticks y');
+         menu.addchk(this.pad?.fTicky === 0, 'normal', '0fTicky', set_pad_field);
+         menu.addchk(this.pad?.fTicky === 1, 'ticks on both sides', '1fTicky', set_pad_field);
+         menu.addchk(this.pad?.fTicky === 2, 'labels on both sides', '2fTicky', set_pad_field);
+         menu.endsub();
+         menu.addchk(this.pad?.fEditable, 'Editable', flag => { this.pad.fEditable = flag; this.interactiveRedraw('pad'); });
+         if (this.iscan)
+            menu.addchk(this.pad?.TestBit(kIsGrayscale), 'Gray scale', flag => { this.setGrayscale(flag); this.interactiveRedraw('pad'); });
+
+         if (isFunc(this.drawObject))
+            menu.add('Build legend', () => this.buildLegend());
 
          menu.sub('Divide', () => menu.input('Input divide arg', '2x2').then(do_divide), 'Divide on sub-pads');
          ['1x2', '2x1', '2x2', '2x3', '3x2', '3x3', '4x4', '0'].forEach(item => menu.add(item, item, do_divide));
