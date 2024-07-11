@@ -63,7 +63,7 @@ class MDIDisplay extends BasePainter {
       console.warn(`forEachFrame not implemented in MDIDisplay ${typeof userfunc} ${only_visible}`);
    }
 
-   /** @summary method dedicated to iterate over existing panles
+   /** @summary method dedicated to iterate over existing panels
      * @param {function} userfunc is called with arguments (painter, frame)
      * @param {boolean} only_visible let select only visible frames */
    forEachPainter(userfunc, only_visible) {
@@ -79,7 +79,7 @@ class MDIDisplay extends BasePainter {
       return cnt;
    }
 
-   /** @summary Serach for the frame using item name */
+   /** @summary Search for the frame using item name */
    findFrame(searchtitle, force) {
       let found_frame = null;
 
@@ -358,7 +358,7 @@ class GridDisplay extends MDIDisplay {
       }
    }
 
-   /** @summary Handle interactive sepearator movement
+   /** @summary Handle interactive separator movement
      * @private */
    handleSeparator(elem, action) {
       const findGroup = (node, grid) => {
@@ -899,7 +899,7 @@ class FlexibleDisplay extends MDIDisplay {
       if (kind.t === 'close') {
          this.cleanupFrame(frame);
          main.remove();
-         this.activateFrame('last'); // set active as last non-minfied window
+         this.activateFrame('last'); // set active as last non-minified window
          return;
       }
 
@@ -1242,7 +1242,7 @@ class BrowserLayout {
    /** @summary Constructor */
    constructor(id, hpainter, objpainter) {
       this.gui_div = id;
-      this.hpainter = hpainter; // painter for brwoser area (if any)
+      this.hpainter = hpainter; // painter for browser area (if any)
       this.objpainter = objpainter; // painter for object area (if any)
       this.browser_kind = null; // should be 'float' or 'fix'
    }

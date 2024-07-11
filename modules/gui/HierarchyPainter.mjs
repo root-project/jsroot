@@ -808,7 +808,7 @@ class HierarchyPainter extends BasePainter {
                      // first try to found last read directory
                      const d = painter.findItem({ name: itemname, top: this, last_exists: true, check_keys: true });
                      if ((d?.last !== undefined) && (d.last !== this)) {
-                        // reconstruct only subdir hierarchy
+                        // reconstruct only sub-directory hierarchy
                         const dir = file.getDir(painter.itemFullName(d.last, this));
                         if (dir) {
                            d.last._name = d.last._keyname;
@@ -1219,10 +1219,7 @@ class HierarchyPainter extends BasePainter {
       } else if (has_childs && !break_list) {
          icon_class = hitem._isopen ? 'img_minus' : 'img_plus';
          plusminus = true;
-      } else /* if (hitem._more) {
-         icon_class = 'img_plus'; // should be special plus ???
-         plusminus = true;
-      } else */
+      } else
          icon_class = 'img_join';
 
       const h = this;
@@ -1358,7 +1355,7 @@ class HierarchyPainter extends BasePainter {
       return false;
    }
 
-   /** @summary Exapnd to specified level
+   /** @summary Expand to specified level
      * @protected */
    async exapndToLevel(level) {
       if (!level || !Number.isFinite(level) || (level < 0)) return this;
@@ -1452,7 +1449,7 @@ class HierarchyPainter extends BasePainter {
 
       this.addItemHtml(this.h, maindiv.append('div').attr('class', 'h_tree'));
 
-      this.setTopPainter(); // assign hpainter as top painter
+      this.setTopPainter(); // assign this hierarchy painter as top painter
 
       if (status_item && !this.status_disabled && !decodeUrl().has('nostatus')) {
          const func = findFunction(status_item._status);
@@ -1503,7 +1500,7 @@ class HierarchyPainter extends BasePainter {
 
    /** @summary Focus on hierarchy item
      * @param {Object|string} hitem - item to open or its name
-     * @desc all parents to the otem will be opened first
+     * @desc all parents to the item will be opened first
      * @return {Promise} when done
      * @private */
    async focusOnItem(hitem) {
@@ -2156,7 +2153,7 @@ class HierarchyPainter extends BasePainter {
             painters.push(pp);
             elements.push(pp.svg_this_pad().node());
          }, 'pads');
-         // only if there are subpads - try to find them
+         // only if there are sub-pads - try to find them
          if (painters.length > 1) {
             while (target && (target !== this)) {
                const p = elements.indexOf(target);
@@ -2577,10 +2574,10 @@ class HierarchyPainter extends BasePainter {
          if (!isFunc(_item._expand)) {
             let handle = getDrawHandle(_item._kind, '::expand');
 
-            // in inspector show all memebers
+            // in inspector show all members
             if (handle?.expand_item && !hpainter._inspector) {
                _obj = _obj[handle.expand_item];
-               _item.expand_item = handle.expand_item; // remember that was exapnd item
+               _item.expand_item = handle.expand_item; // remember that was expand item
                handle = _obj?._typename ? getDrawHandle(prROOT + _obj._typename, '::expand') : null;
             }
 
@@ -2863,7 +2860,7 @@ class HierarchyPainter extends BasePainter {
       });
    }
 
-   /** @summary Provides information abouf file item
+   /** @summary Provides information about file item
      * @private */
    getFileProp(itemname) {
       let item = this.findItem(itemname);
@@ -2901,7 +2898,7 @@ class HierarchyPainter extends BasePainter {
       return this.getOnlineItemUrl(item) !== null;
    }
 
-   /** @summary Dynamic module import, supports special shorcuts from core or draw_tree
+   /** @summary Dynamic module import, supports special shortcuts from core or draw_tree
      * @return {Promise} with module
      * @private */
    async importModule(module) {
@@ -3217,7 +3214,7 @@ class HierarchyPainter extends BasePainter {
       return this.disp_kind;
    }
 
-   /** @summary Remove painter reference from hierarhcy
+   /** @summary Remove painter reference from hierarchy
      * @private */
    removePainter(obj_painter) {
       this.forEachItem(item => {
@@ -3258,7 +3255,7 @@ class HierarchyPainter extends BasePainter {
    }
 
    /** @summary Returns actual MDI display object
-     * @desc It should an instance of {@link MDIDsiplay} class */
+     * @desc It should an instance of {@link MDIDisplay} class */
    getDisplay() {
       return this.disp;
    }
@@ -3356,7 +3353,7 @@ class HierarchyPainter extends BasePainter {
       mdi.forEachPainter((p /*, frame */) => {
          if ((p === painter) || (p.getItemName() !== painter.getItemName())) return;
 
-         // do not actiavte frame when doing update
+         // do not activate frame when doing update
          // mdi.activateFrame(frame);
          if (isFunc(p.redrawObject) && p.redrawObject(obj)) isany = true;
       });
@@ -3674,7 +3671,7 @@ class HierarchyPainter extends BasePainter {
       }
    }
 
-   /** @summary Returns trus if status is exists */
+   /** @summary Returns true if status is exists */
    hasStatusLine() {
       if (this.status_disabled || !this.gui_div || !this.brlayout)
          return false;
