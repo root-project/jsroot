@@ -1292,6 +1292,21 @@ class TPadPainter extends ObjectPainter {
          if (isFunc(this.drawObject))
             menu.add('Build legend', () => this.buildLegend());
 
+         const do_divide = arg => {
+            if (!arg || !isStr(arg))
+               return;
+            const arr = arg.split('x');
+            this.cleanPrimitives(true);
+            if (arr.length === 1)
+               this.divide(Number.parseInt(arr[0]));
+            if (arr.length === 2)
+               this.divide(Number.parseInt(arr[0]), Number.parseInt(arr[1]));
+         };
+
+         menu.sub('Divide', () => menu.input('Input divide arg', '2x2').then(do_divide), 'Divide on sub-pads');
+         ['1x2', '2x1', '2x2', '2x3', '3x2', '3x3', '4x4', '0'].forEach(item => menu.add(item, item, do_divide));
+         menu.endsub();
+
          menu.addAttributesMenu(this);
          menu.add('Save to gStyle', () => {
             if (!this.pad) return;
