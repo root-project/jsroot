@@ -10,14 +10,16 @@ const kPolyLineNDC = BIT(14);
 
 class TPolyLinePainter extends ObjectPainter {
 
-   /** @summary Dragging object */
+   /** @summary Dragging object
+    *  @private */
    moveDrag(dx, dy) {
       this.dx += dx;
       this.dy += dy;
       makeTranslate(this.draw_g.select('path'), this.dx, this.dy);
    }
 
-   /** @summary End dragging object */
+   /** @summary End dragging object
+    * @private */
    moveEnd(not_changed) {
       if (not_changed) return;
       const polyline = this.getObject(),
@@ -90,7 +92,7 @@ class TPolyLinePainter extends ObjectPainter {
       return this;
    }
 
-   /** @summary Draw TLine object */
+   /** @summary Draw TPolyLine object */
    static async draw(dom, obj, opt) {
       const painter = new TPolyLinePainter(dom, obj, opt);
       return ensureTCanvas(painter, false).then(() => painter.redraw());

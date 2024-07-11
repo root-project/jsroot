@@ -7,6 +7,8 @@ import { assignContextMenu, kToFront } from '../gui/menu.mjs';
 
 class TBoxPainter extends ObjectPainter {
 
+   /** @summary start of drag handler
+     * @private */
    moveStart(x, y) {
       const ww = Math.abs(this.x2 - this.x1), hh = Math.abs(this.y1 - this.y2);
 
@@ -20,6 +22,8 @@ class TBoxPainter extends ObjectPainter {
          this.c_x1 = this.c_x2 = false;
    }
 
+   /** @summary drag handler
+     * @private */
    moveDrag(dx, dy) {
       if (this.c_x1) this.x1 += dx;
       if (this.c_x2) this.x2 += dx;
@@ -32,6 +36,8 @@ class TBoxPainter extends ObjectPainter {
       pathes.forEach((path, i) => d3_select(nodes[i]).attr('d', path));
    }
 
+   /** @summary end of drag handler
+     * @private */
    moveEnd(not_changed) {
       if (not_changed) return;
       const box = this.getObject();
