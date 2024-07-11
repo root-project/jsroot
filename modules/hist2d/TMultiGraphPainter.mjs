@@ -100,7 +100,7 @@ class TMultiGraphPainter extends ObjectPainter {
          // rw.first = false;
       }
 
-      // ignore existing histo in 3d case
+      // ignore existing histogram in 3d case
       if (this._3d && histo && !histo.fXaxis.fLabels)
          histo = null;
 
