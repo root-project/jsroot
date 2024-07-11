@@ -51,7 +51,7 @@ class TEfficiencyPainter extends ObjectPainter {
 
             if (tw2 <= 0) return pw/tw;
 
-            // tw/tw2 renormalize the weights
+            // tw/tw2 re-normalize the weights
             const norm = tw/tw2;
             aa = pw * norm + alpha;
             bb = (tw - pw) * norm + beta;
@@ -95,7 +95,7 @@ class TEfficiencyPainter extends ObjectPainter {
       return this.fBoundary(total, passed, obj.fConfLevel, true, alpha, beta) - value;
    }
 
-   /** @summary Copy drawning attributes */
+   /** @summary Copy drawing attributes */
    copyAttributes(obj, eff) {
       ['fLineColor', 'fLineStyle', 'fLineWidth', 'fFillColor', 'fFillStyle', 'fMarkerColor', 'fMarkerStyle', 'fMarkerSize'].forEach(name => { obj[name] = eff[name]; });
    }
