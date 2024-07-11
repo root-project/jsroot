@@ -447,7 +447,7 @@ class TGraphPainter extends ObjectPainter {
    }
 
    /** @summary Provide frame painter for graph
-     * @desc If not exists, emulate its behaviour */
+     * @desc If not exists, emulate its behavior */
    get_main() {
       let pmain = this.getFramePainter();
 

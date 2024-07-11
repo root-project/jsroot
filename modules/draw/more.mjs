@@ -38,7 +38,7 @@ async function drawText() {
 
    this.createG();
 
-   this.draw_g.attr('transform', null); // remove transofrm from interactive changes
+   this.draw_g.attr('transform', null); // remove transform from interactive changes
 
    this.pos_x = this.axisToSvg('x', pos_x, this.isndc);
    this.pos_y = this.axisToSvg('y', pos_y, this.isndc);
