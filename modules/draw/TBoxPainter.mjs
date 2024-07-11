@@ -47,7 +47,7 @@ class TBoxPainter extends ObjectPainter {
       if (this.c_y1) { box.fY1 = this.svgToAxis('y', this.y1); exec += `SetY1(${box.fY1});;`; }
       if (this.c_y2) { box.fY2 = this.svgToAxis('y', this.y2); exec += `SetY2(${box.fY2});;`; }
       this.submitCanvExec(exec + 'Notify();;');
-   };
+   }
 
    /** @summary Returns object ranges
      * @desc Can be used for newly created canvas */

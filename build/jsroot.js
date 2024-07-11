@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '10/07/2024',
+version_date = '11/07/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -12461,7 +12461,7 @@ class ObjectPainter extends BasePainter {
       return res;
    }
 
-   /** @summary Provides identifier on server for requested sublement */
+   /** @summary Provides identifier on server for requested sub-element */
    getSnapId(subelem) {
       if (!this.snapid)
          return '';
@@ -68386,7 +68386,7 @@ class TPadPainter extends ObjectPainter {
       return false;
    }
 
-   /** @summary Returns frame coordiantes - also when frame is not drawn */
+   /** @summary Returns frame coordinates - also when frame is not drawn */
    getFrameRect() {
       const fp = this.getFramePainter();
       if (fp) return fp.getFrameRect();
@@ -103447,7 +103447,7 @@ drawFuncs = { lst: [
    { name: 'TCurlyArc', sameas: clTPolyLine },
    { name: 'TParallelCoord', icon: 'img_graph', dummy: true },
    { name: clTGaxis, icon: 'img_graph', class: () => Promise.resolve().then(function () { return TGaxisPainter$1; }).then(h => h.TGaxisPainter) },
-   { name: clTBox, icon: 'img_graph', draw: () => import_more().then(h => h.drawBox), direct: true },
+   { name: clTBox, icon: 'img_graph', class: () => Promise.resolve().then(function () { return TBoxPainter$1; }).then(h => h.TBoxPainter), opt: ';L' },
    { name: 'TWbox', sameas: clTBox },
    { name: 'TSliderBox', sameas: clTBox },
    { name: 'TMarker', icon: 'img_graph', draw: () => import_more().then(h => h.drawMarker), direct: true },
@@ -106173,7 +106173,7 @@ class HierarchyPainter extends BasePainter {
          const itemname = ev.dataTransfer.getData('item'),
               ditem = h.findItem(itemname);
          if (isStr(ditem?._kind) && (ditem._kind.indexOf(prROOT) === 0))
-            ev.preventDefault(); // let accept drop, otherwise it will be refuced
+            ev.preventDefault(); // let accept drop, otherwise it will be refused
       }).on('dragenter', function() {
          select(this).classed('jsroot_drag_area', true);
       }).on('dragleave', function() {
@@ -106181,7 +106181,27 @@ class HierarchyPainter extends BasePainter {
       }).on('drop', function(ev) {
          select(this).classed('jsroot_drag_area', false);
          const itemname = ev.dataTransfer.getData('item');
-         if (itemname) h.dropItem(itemname, this);
+         if (!itemname)
+            return;
+         const painters = [], elements = [];
+         let pad_painter = getElementCanvPainter(this),
+             target = ev.target;
+         pad_painter?.forEachPainter(pp => {
+            painters.push(pp);
+            elements.push(pp.svg_this_pad().node());
+         }, 'pads');
+         // only if there are subpads - try to find them
+         if (painters.length > 1) {
+            while (target && (target !== this)) {
+               const p = elements.indexOf(target);
+               if (p > 0) {
+                  pad_painter = painters[p];
+                  break;
+               }
+               target = target.parentNode;
+            }
+         }
+         h.dropItem(itemname, pad_painter || this);
       });
    }
 
@@ -108517,103 +108537,6 @@ function drawPie() {
    }
 }
 
-/** @summary Draw TBox
-  * @private */
-function drawBox$1() {
-   const box = this.getObject(),
-         opt = this.getDrawOpt(),
-         draw_line = (opt.toUpperCase().indexOf('L') >= 0);
-
-   this.createAttLine({ attr: box });
-   this.createAttFill({ attr: box });
-
-   // if box filled, contour line drawn only with 'L' draw option:
-   if (!this.fillatt.empty() && !draw_line)
-      this.lineatt.color = 'none';
-
-   this.createG();
-
-   this.x1 = this.axisToSvg('x', box.fX1);
-   this.x2 = this.axisToSvg('x', box.fX2);
-   this.y1 = this.axisToSvg('y', box.fY1);
-   this.y2 = this.axisToSvg('y', box.fY2);
-   this.borderMode = (box.fBorderMode && box.fBorderSize && this.fillatt.hasColor()) ? box.fBorderMode : 0;
-   this.borderSize = box.fBorderSize;
-
-   this.getPathes = () => {
-      const xx = Math.min(this.x1, this.x2), yy = Math.min(this.y1, this.y2),
-            ww = Math.abs(this.x2 - this.x1), hh = Math.abs(this.y1 - this.y2),
-            path = `M${xx},${yy}h${ww}v${hh}h${-ww}z`;
-      if (!this.borderMode)
-         return [path];
-      const pww = this.borderSize, phh = this.borderSize,
-            side1 = `M${xx},${yy}h${ww}l${-pww},${phh}h${2*pww-ww}v${hh-2*phh}l${-pww},${phh}z`,
-            side2 = `M${xx+ww},${yy+hh}v${-hh}l${-pww},${phh}v${hh-2*phh}h${2*pww-ww}l${-pww},${phh}z`;
-
-      return (this.borderMode > 0) ? [path, side1, side2] : [path, side2, side1];
-   };
-
-   const paths = this.getPathes();
-
-   this.draw_g
-       .append('svg:path')
-       .attr('d', paths[0])
-       .call(this.lineatt.func)
-       .call(this.fillatt.func);
-
-   if (this.borderMode) {
-      this.draw_g.append('svg:path')
-                 .attr('d', paths[1])
-                 .call(this.fillatt.func)
-                 .style('fill', rgb(this.fillatt.color).brighter(0.5).formatHex());
-
-      this.draw_g.append('svg:path')
-                 .attr('d', paths[2])
-                 .call(this.fillatt.func)
-                 .style('fill', rgb(this.fillatt.color).darker(0.5).formatHex());
-   }
-
-   assignContextMenu(this, kToFront);
-
-   addMoveHandler(this);
-
-   this.moveStart = function(x, y) {
-      const ww = Math.abs(this.x2 - this.x1), hh = Math.abs(this.y1 - this.y2);
-
-      this.c_x1 = Math.abs(x - this.x2) > ww*0.1;
-      this.c_x2 = Math.abs(x - this.x1) > ww*0.1;
-      this.c_y1 = Math.abs(y - this.y2) > hh*0.1;
-      this.c_y2 = Math.abs(y - this.y1) > hh*0.1;
-      if (this.c_x1 !== this.c_x2 && this.c_y1 && this.c_y2)
-         this.c_y1 = this.c_y2 = false;
-      if (this.c_y1 !== this.c_y2 && this.c_x1 && this.c_x2)
-         this.c_x1 = this.c_x2 = false;
-   };
-
-   this.moveDrag = function(dx, dy) {
-      if (this.c_x1) this.x1 += dx;
-      if (this.c_x2) this.x2 += dx;
-      if (this.c_y1) this.y1 += dy;
-      if (this.c_y2) this.y2 += dy;
-
-      const nodes = this.draw_g.selectAll('path').nodes(),
-            pathes = this.getPathes();
-
-      pathes.forEach((path, i) => select(nodes[i]).attr('d', path));
-   };
-
-   this.moveEnd = function(not_changed) {
-      if (not_changed) return;
-      const box = this.getObject();
-      let exec = '';
-      if (this.c_x1) { box.fX1 = this.svgToAxis('x', this.x1); exec += `SetX1(${box.fX1});;`; }
-      if (this.c_x2) { box.fX2 = this.svgToAxis('x', this.x2); exec += `SetX2(${box.fX2});;`; }
-      if (this.c_y1) { box.fY1 = this.svgToAxis('y', this.y1); exec += `SetY1(${box.fY1});;`; }
-      if (this.c_y2) { box.fY2 = this.svgToAxis('y', this.y2); exec += `SetY2(${box.fY2});;`; }
-      this.submitCanvExec(exec + 'Notify();;');
-   };
-}
-
 /** @summary Draw TMarker
   * @private */
 function drawMarker$1() {
@@ -108729,7 +108652,6 @@ function drawJSImage(dom, obj, opt) {
 
 var more = /*#__PURE__*/Object.freeze({
 __proto__: null,
-drawBox: drawBox$1,
 drawEllipse: drawEllipse,
 drawJSImage: drawJSImage,
 drawMarker: drawMarker$1,
@@ -116322,14 +116244,16 @@ const kPolyLineNDC = BIT(14);
 
 class TPolyLinePainter extends ObjectPainter {
 
-   /** @summary Dragging object */
+   /** @summary Dragging object
+    *  @private */
    moveDrag(dx, dy) {
       this.dx += dx;
       this.dy += dy;
       makeTranslate(this.draw_g.select('path'), this.dx, this.dy);
    }
 
-   /** @summary End dragging object */
+   /** @summary End dragging object
+    * @private */
    moveEnd(not_changed) {
       if (not_changed) return;
       const polyline = this.getObject(),
@@ -116402,7 +116326,7 @@ class TPolyLinePainter extends ObjectPainter {
       return this;
    }
 
-   /** @summary Draw TLine object */
+   /** @summary Draw TPolyLine object */
    static async draw(dom, obj, opt) {
       const painter = new TPolyLinePainter(dom, obj, opt);
       return ensureTCanvas(painter, false).then(() => painter.redraw());
@@ -116640,6 +116564,137 @@ class TGaxisPainter extends TAxisPainter {
 var TGaxisPainter$1 = /*#__PURE__*/Object.freeze({
 __proto__: null,
 TGaxisPainter: TGaxisPainter
+});
+
+class TBoxPainter extends ObjectPainter {
+
+   /** @summary start of drag handler
+     * @private */
+   moveStart(x, y) {
+      const ww = Math.abs(this.x2 - this.x1), hh = Math.abs(this.y1 - this.y2);
+
+      this.c_x1 = Math.abs(x - this.x2) > ww*0.1;
+      this.c_x2 = Math.abs(x - this.x1) > ww*0.1;
+      this.c_y1 = Math.abs(y - this.y2) > hh*0.1;
+      this.c_y2 = Math.abs(y - this.y1) > hh*0.1;
+      if (this.c_x1 !== this.c_x2 && this.c_y1 && this.c_y2)
+         this.c_y1 = this.c_y2 = false;
+      if (this.c_y1 !== this.c_y2 && this.c_x1 && this.c_x2)
+         this.c_x1 = this.c_x2 = false;
+   }
+
+   /** @summary drag handler
+     * @private */
+   moveDrag(dx, dy) {
+      if (this.c_x1) this.x1 += dx;
+      if (this.c_x2) this.x2 += dx;
+      if (this.c_y1) this.y1 += dy;
+      if (this.c_y2) this.y2 += dy;
+
+      const nodes = this.draw_g.selectAll('path').nodes(),
+            pathes = this.getPathes();
+
+      pathes.forEach((path, i) => select(nodes[i]).attr('d', path));
+   }
+
+   /** @summary end of drag handler
+     * @private */
+   moveEnd(not_changed) {
+      if (not_changed) return;
+      const box = this.getObject();
+      let exec = '';
+      if (this.c_x1) { box.fX1 = this.svgToAxis('x', this.x1); exec += `SetX1(${box.fX1});;`; }
+      if (this.c_x2) { box.fX2 = this.svgToAxis('x', this.x2); exec += `SetX2(${box.fX2});;`; }
+      if (this.c_y1) { box.fY1 = this.svgToAxis('y', this.y1); exec += `SetY1(${box.fY1});;`; }
+      if (this.c_y2) { box.fY2 = this.svgToAxis('y', this.y2); exec += `SetY2(${box.fY2});;`; }
+      this.submitCanvExec(exec + 'Notify();;');
+   }
+
+   /** @summary Returns object ranges
+     * @desc Can be used for newly created canvas */
+   getUserRanges() {
+      const box = this.getObject(),
+            minx = Math.min(box.fX1, box.fX2),
+            maxx = Math.max(box.fX1, box.fX2),
+            miny = Math.min(box.fY1, box.fY2),
+            maxy = Math.max(box.fY1, box.fY2);
+      return { minx, miny, maxx, maxy };
+   }
+
+   /** @summary Create path */
+   getPathes() {
+      const xx = Math.min(this.x1, this.x2), yy = Math.min(this.y1, this.y2),
+            ww = Math.abs(this.x2 - this.x1), hh = Math.abs(this.y1 - this.y2),
+            path = `M${xx},${yy}h${ww}v${hh}h${-ww}z`;
+      if (!this.borderMode)
+         return [path];
+      const pww = this.borderSize, phh = this.borderSize,
+            side1 = `M${xx},${yy}h${ww}l${-pww},${phh}h${2*pww-ww}v${hh-2*phh}l${-pww},${phh}z`,
+            side2 = `M${xx+ww},${yy+hh}v${-hh}l${-pww},${phh}v${hh-2*phh}h${2*pww-ww}l${-pww},${phh}z`;
+
+      return (this.borderMode > 0) ? [path, side1, side2] : [path, side2, side1];
+   }
+
+   /** @summary Redraw line */
+   redraw() {
+      const box = this.getObject(),
+            opt = this.getDrawOpt(),
+            draw_line = (opt.toUpperCase().indexOf('L') >= 0);
+
+      this.createAttLine({ attr: box });
+      this.createAttFill({ attr: box });
+
+      // if box filled, contour line drawn only with 'L' draw option:
+      if (!this.fillatt.empty() && !draw_line)
+         this.lineatt.color = 'none';
+
+      this.createG();
+
+      this.x1 = this.axisToSvg('x', box.fX1);
+      this.x2 = this.axisToSvg('x', box.fX2);
+      this.y1 = this.axisToSvg('y', box.fY1);
+      this.y2 = this.axisToSvg('y', box.fY2);
+      this.borderMode = (box.fBorderMode && box.fBorderSize && this.fillatt.hasColor()) ? box.fBorderMode : 0;
+      this.borderSize = box.fBorderSize;
+
+      const paths = this.getPathes();
+
+      this.draw_g
+          .append('svg:path')
+          .attr('d', paths[0])
+          .call(this.lineatt.func)
+          .call(this.fillatt.func);
+
+      if (this.borderMode) {
+         this.draw_g.append('svg:path')
+                    .attr('d', paths[1])
+                    .call(this.fillatt.func)
+                    .style('fill', rgb(this.fillatt.color).brighter(0.5).formatHex());
+
+         this.draw_g.append('svg:path')
+                    .attr('d', paths[2])
+                    .call(this.fillatt.func)
+                    .style('fill', rgb(this.fillatt.color).darker(0.5).formatHex());
+      }
+
+      assignContextMenu(this, kToFront);
+
+      addMoveHandler(this);
+
+      return this;
+   }
+
+   /** @summary Draw TLine object */
+   static async draw(dom, obj, opt) {
+      const painter = new TBoxPainter(dom, obj, opt);
+      return ensureTCanvas(painter, false).then(() => painter.redraw());
+   }
+
+} // class TBoxPainter
+
+var TBoxPainter$1 = /*#__PURE__*/Object.freeze({
+__proto__: null,
+TBoxPainter: TBoxPainter
 });
 
 /**
