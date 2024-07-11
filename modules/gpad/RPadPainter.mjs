@@ -141,7 +141,7 @@ class RPadPainter extends RObjectPainter {
       };
    }
 
-   /** @summary Returns frame coordiantes - also when frame is not drawn */
+   /** @summary Returns frame coordinates - also when frame is not drawn */
    getFrameRect() {
       const fp = this.getFramePainter();
       if (fp) return fp.getFrameRect();

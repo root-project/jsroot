@@ -34,7 +34,7 @@ class JSRootMenu {
 
    async load() { return this; }
 
-   /** @summary Returns object with mouse event position when context menu was actiavted
+   /** @summary Returns object with mouse event position when context menu was activated
      * @desc Return object will have members 'clientX' and 'clientY' */
    getEventPosition() { return this.show_evnt; }
 

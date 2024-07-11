@@ -2732,7 +2732,7 @@ class TFramePainter extends ObjectPainter {
    }
 
    /** @summary Configure user-defined click handler
-     * @desc Function will be called every time when frame click was perfromed
+     * @desc Function will be called every time when frame click was performed
      * As argument, tooltip object with selected bins will be provided
      * If handler function returns true, default handling of click will be disabled */
    configureUserClickHandler(handler) {
@@ -2877,7 +2877,7 @@ class TFramePainter extends ObjectPainter {
      * @param {String} name - axis name like x/y/z but also second axis x2 or y2
      * @param {Number} vmin - axis minimal value, 0 for unzoom
      * @param {Number} vmax - axis maximal value, 0 for unzoom
-     * @param {Boolean} [interactive] - if change was perfromed interactively
+     * @param {Boolean} [interactive] - if change was performed interactively
      * @protected */
    async zoomSingle(name, vmin, vmax, interactive) {
       if (!this[`${name}_handle`] && (name !== 'z'))

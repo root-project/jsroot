@@ -28,7 +28,7 @@ async function drawText() {
       // NDC coordinates
       this.isndc = true;
    } else if (pp.getRootPad(true)) {
-      // force pad coordiantes
+      // force pad coordinates
    } else {
       // place in the middle
       this.isndc = true;

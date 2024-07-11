@@ -49,8 +49,8 @@ class ObjectPainter extends BasePainter {
    }
 
    /** @summary Assigns pad name where element will be drawn
-     * @desc Should happend before first draw of element is performed, only for special use case
-     * @param {string} [pad_name] - on which subpad element should be draw, if not specified - use current
+     * @desc Should happened before first draw of element is performed, only for special use case
+     * @param {string} [pad_name] - on which sub-pad element should be draw, if not specified - use current
      * @protected
      * @deprecated to be removed in v8 */
    setPadName(pad_name) {
@@ -130,7 +130,7 @@ class ObjectPainter extends BasePainter {
    }
 
    /** @summary Change item name
-     * @desc When available, used for svg:title proprty
+     * @desc When available, used for svg:title property
      * @private */
    setItemName(name, opt, hpainter) {
       super.setItemName(name, opt, hpainter);
@@ -535,7 +535,7 @@ class ObjectPainter extends BasePainter {
      * @param {number} value - axis value to convert.
      * @param {boolean} ndc - is value in NDC coordinates
      * @param {boolean} [noround] - skip rounding
-     * @return {number} value of requested coordiantes
+     * @return {number} value of requested coordinates
      * @protected */
    axisToSvg(axis, value, ndc, noround) {
       const func = this.getAxisToSvgFunc(ndc, noround);
@@ -545,9 +545,9 @@ class ObjectPainter extends BasePainter {
    /** @summary Converts pad SVG x or y coordinates into axis values.
      * @desc Reverse transformation for {@link ObjectPainter#axisToSvg}
      * @param {string} axis - name like 'x' or 'y'
-     * @param {number} coord - graphics coordiante.
+     * @param {number} coord - graphics coordinate.
      * @param {boolean} ndc - kind of return value
-     * @return {number} value of requested coordiantes
+     * @return {number} value of requested coordinates
      * @protected */
    svgToAxis(axis, coord, ndc) {
       const use_frame = this.draw_g?.property('in_frame');
@@ -595,7 +595,7 @@ class ObjectPainter extends BasePainter {
 
    /** @summary Returns painter for main object on the pad.
      * @desc Typically it is first histogram drawn on the pad and which draws frame axes
-     * But it also can be special usecase as TASImage or TGraphPolargram
+     * But it also can be special use-case as TASImage or TGraphPolargram
      * @param {boolean} [not_store] - if true, prevent temporary storage of main painter reference
      * @protected */
    getMainPainter(not_store) {
@@ -804,7 +804,7 @@ class ObjectPainter extends BasePainter {
          if (isFunc(canp?.producePadEvent))
             canp.producePadEvent('redraw', this.getPadPainter(), this, null, subelem);
 
-         // inform server that drawopt changes
+         // inform server that draw options changes
          if (isFunc(canp?.processChanges))
             canp.processChanges(info, this, subelem);
 
@@ -883,7 +883,7 @@ class ObjectPainter extends BasePainter {
    }
 
    /** @summary shows objects status
-     * @desc Either used canvas painter method or globaly assigned
+     * @desc Either used canvas painter method or globally assigned
      * When no parameters are specified, just basic object properties are shown
      * @private */
    showObjectStatus(name, title, info, info2) {
@@ -920,7 +920,7 @@ class ObjectPainter extends BasePainter {
      * @desc required before any text can be drawn
      * @param {number} font_face - font id as used in ROOT font attributes
      * @param {number} font_size - font size as used in ROOT font attributes
-     * @param {object} [draw_g] - element where text drawm, by default using main object <g> element
+     * @param {object} [draw_g] - element where text drawn, by default using main object <g> element
      * @param {number} [max_font_size] - maximal font size, used when text can be scaled
      * @protected */
    startTextDrawing(font_face, font_size, draw_g, max_font_size) {
@@ -1074,7 +1074,7 @@ class ObjectPainter extends BasePainter {
                dy = ((arg.align[1] === 'top') ? (arg.top_shift || 1) : (arg.align[1] === 'middle') ? (arg.mid_shift || 0.5) : 0) * arg.box.height;
             }
          } else if (arg.text_rect) {
-            // handle latext drawing
+            // handle latex drawing
             const box = arg.text_rect;
 
             scale = (f > 0) && (Math.abs(1-f) > 0.01) ? 1/f : 1;
@@ -1132,7 +1132,7 @@ class ObjectPainter extends BasePainter {
    /** @summary Post-process plain text drawing
      * @private */
    _postprocessDrawText(arg, txt_node) {
-      // complete rectangle with very rougth size estimations
+      // complete rectangle with very rough size estimations
       arg.box = !isNodeJs() && !settings.ApproxTextSize && !arg.fast
                  ? getElementRect(txt_node, 'bbox')
                  : (arg.text_rect || { height: arg.font_size * 1.2, width: arg.text.length * arg.font_size * arg.font.aver_width });
@@ -1166,7 +1166,7 @@ class ObjectPainter extends BasePainter {
      * @param {boolean} [arg.scale = true] - scale into draw box when width and height parameters are specified
      * @param {number} [arg.latex] - 0 - plain text, 1 - normal TLatex, 2 - math
      * @param {string} [arg.color=black] - text color
-     * @param {number} [arg.rotate] - rotaion angle
+     * @param {number} [arg.rotate] - rotation angle
      * @param {number} [arg.font_size] - fixed font size
      * @param {object} [arg.draw_g] - element where to place text, if not specified central draw_g container is used
      * @param {function} [arg.post_process] - optional function called when specified text is drawn
@@ -1307,11 +1307,11 @@ class ObjectPainter extends BasePainter {
    }
 
    /** @summary Configure user-defined context menu for the object
-     * @desc fillmenu_func will be called when context menu is actiavted
+     * @desc fillmenu_func will be called when context menu is activated
      * Arguments fillmenu_func are (menu,kind)
-     * First is menu object, second is object subelement like axis 'x' or 'y'
+     * First is menu object, second is object sub-element like axis 'x' or 'y'
      * Function should return promise with menu when items are filled
-     * @param {function} fillmenu_func - function to fill custom context menu for oabject */
+     * @param {function} fillmenu_func - function to fill custom context menu for object */
    configureUserContextMenu(fillmenu_func) {
       if (!fillmenu_func || !isFunc(fillmenu_func))
          delete this._userContextMenuFunc;
@@ -1444,7 +1444,7 @@ class ObjectPainter extends BasePainter {
 
    /** @summary Configure user-defined tooltip handler
      * @desc Hook for the users to get tooltip information when mouse cursor moves over frame area
-     * Hanlder function will be called every time when new data is selected
+     * Handler function will be called every time when new data is selected
      * when mouse leave frame area, handler(null) will be called
      * @param {function} handler - function called when tooltip is produced
      * @param {number} [tmout = 100] - delay in ms before tooltip delivered */
@@ -1459,7 +1459,7 @@ class ObjectPainter extends BasePainter {
    }
 
     /** @summary Configure user-defined click handler
-      * @desc Function will be called every time when frame click was perfromed
+      * @desc Function will be called every time when frame click was performed
       * As argument, tooltip object with selected bins will be provided
       * If handler function returns true, default handling of click will be disabled
       * @param {function} handler - function called when mouse click is done */
@@ -1537,7 +1537,7 @@ class ObjectPainter extends BasePainter {
    }
 
    /** @summary Get tooltip for painter and specified event position
-     * @param {Object} evnt - object wiith clientX and clientY positions
+     * @param {Object} evnt - object with clientX and clientY positions
      * @private */
    getToolTip(evnt) {
       if ((evnt?.clientX === undefined) || (evnt?.clientY === undefined)) return null;
@@ -1707,7 +1707,7 @@ const EAxisBits = {
    kLabelsUp: BIT(21),
    kIsInteger: BIT(22),
    kMoreLogLabels: BIT(23),
-   kOppositeTitle: BIT(32) // atrificial bit, not possible to set in ROOT
+   kOppositeTitle: BIT(32) // artificial bit, not possible to set in ROOT
 }, kAxisLabels = 'labels', kAxisNormal = 'normal', kAxisFunc = 'func', kAxisTime = 'time';
 
 

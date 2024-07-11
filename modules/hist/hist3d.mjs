@@ -1446,7 +1446,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 }
 
 
-/** @summary Converts 3D coordiante to the pad NDC
+/** @summary Converts 3D coordinate to the pad NDC
   * @private */
 function convert3DtoPadNDC(x, y, z) {
    x = this.x_handle.gr(x);
