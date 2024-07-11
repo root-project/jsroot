@@ -427,7 +427,7 @@ class ObjectPainter extends BasePainter {
       return res;
    }
 
-   /** @summary Provides identifier on server for requested sublement */
+   /** @summary Provides identifier on server for requested sub-element */
    getSnapId(subelem) {
       if (!this.snapid)
          return '';
