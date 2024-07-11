@@ -2211,7 +2211,17 @@ class TPadPainter extends ObjectPainter {
          if (!imgdata)
             return console.error(`Fail to produce image ${filename}`);
 
-         saveFile(filename, (kind !== 'svg') ? imgdata : 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(imgdata));
+         if ((browser.qt5 || browser.cef3) && this.snapid) {
+            console.warn(`sending file ${filename} to server`)
+            let res = imgdata;
+            if (kind !== 'svg') {
+               const separ = res.indexOf('base64,');
+               res = (separ > 0) ? res.slice(separ+7) : '';
+            }
+            if (res)
+              this.getCanvPainter()?.sendWebsocket(`SAVE:${filename}:${res}`);
+         } else
+            saveFile(filename, (kind !== 'svg') ? imgdata : 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(imgdata));
       });
    }
 
