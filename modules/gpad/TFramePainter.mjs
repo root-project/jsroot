@@ -1772,7 +1772,7 @@ class TFramePainter extends ObjectPainter {
       }
    }
 
-   /** @summary Retuns associated axis object */
+   /** @summary Returns associated axis object */
    getAxis(name) {
       switch (name) {
          case 'x': return this.xaxis;

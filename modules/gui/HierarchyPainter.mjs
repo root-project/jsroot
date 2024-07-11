@@ -1746,7 +1746,7 @@ class HierarchyPainter extends BasePainter {
       this.changeDarkMode();
    }
 
-   /** @summary Handle context menu in the hieararchy
+   /** @summary Handle context menu in the hierarchy
      * @private */
    tree_contextmenu(evnt, elem) {
       evnt.preventDefault();
@@ -2085,7 +2085,7 @@ class HierarchyPainter extends BasePainter {
                return func(divid, obj, drawopt).then(p => complete(p)).catch(err => complete(null, err));
             }
 
-            let did_actiavte = false;
+            let did_activate = false;
 
             mdi.forEachPainter((p, frame) => {
                if (p.getItemName() !== display_itemname) return;
@@ -2096,8 +2096,8 @@ class HierarchyPainter extends BasePainter {
                // verify that object was drawn with same option as specified now (if any)
                if (!updating && drawopt && (itemopt !== drawopt)) return;
 
-               if (interactive && !did_actiavte) {
-                  did_actiavte = true;
+               if (interactive && !did_activate) {
+                  did_activate = true;
                   mdi.activateFrame(frame);
                }
 

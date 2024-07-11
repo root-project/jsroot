@@ -643,7 +643,7 @@ class TabsDisplay extends MDIDisplay {
       }
    }
 
-   /** @summary actiavte frame */
+   /** @summary activate frame */
    activateFrame(frame) {
       if (frame)
          this.modifyTabsFrame(d3_select(frame).property('frame_id'), 'activate');
@@ -770,7 +770,7 @@ class FlexibleDisplay extends MDIDisplay {
       return found;
    }
 
-   /** @summary actiavte frame */
+   /** @summary activate frame */
    activateFrame(frame) {
       if ((frame === 'first') || (frame === 'last')) {
          let res = null;

@@ -2521,7 +2521,7 @@ class ClonedNodes {
          const matrix = getNodeMatrix(kind, obj);
          if (matrix) {
             clone.matrix = matrix.elements; // take only matrix elements, matrix will be constructed in worker
-            if (clone.matrix[0] === 1) {
+            if (clone.matrix && (clone.matrix[0] === 1)) {
                let issimple = true;
                for (let k = 1; (k < clone.matrix.length) && issimple; ++k)
                   issimple = (clone.matrix[k] === ((k === 5) || (k === 10) || (k === 15) ? 1 : 0));
@@ -2657,7 +2657,7 @@ class ClonedNodes {
       return res;
    }
 
-   /** @summary After visibility flags is set, produce idshift for all nodes as it would be maximum level */
+   /** @summary After visibility flags is set, produce id shifts for all nodes as it would be maximum level */
    produceIdShifts() {
       for (let k = 0; k < this.nodes.length; ++k)
          this.nodes[k].idshift = -1;
@@ -2960,7 +2960,7 @@ class ClonedNodes {
       return stack;
    }
 
-   /** @summary Retuns ids array which correspond to the stack */
+   /** @summary Returns ids array which correspond to the stack */
    buildIdsByStack(stack) {
       if (!stack) return null;
       let node = this.nodes[0];
@@ -2973,7 +2973,7 @@ class ClonedNodes {
       return ids;
    }
 
-   /** @summary Retuns node id by stack */
+   /** @summary Returns node id by stack */
    getNodeIdByStack(stack) {
       if (!stack || !this.nodes)
          return -1;
@@ -3747,7 +3747,7 @@ class ClonedNodes {
          nm[0] = nm[5] = nm[10] = nm[15] = 1;
 
          if (m.length === 3) {
-            // translation martix
+            // translation matrix
             nm[12] = m[0]; nm[13] = m[1]; nm[14] = m[2];
          } else if (m.length === 4) {
             // scale matrix
