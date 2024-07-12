@@ -1,4 +1,4 @@
-import { gStyle, settings, constants, internals, addMethods,
+import { gStyle, settings, browser, constants, internals, addMethods,
          isPromise, getPromise, postponePromise, isBatchMode, isObject, isFunc, isStr, clTPad, clTFrame, nsREX } from '../core.mjs';
 import { ColorPalette, addColor, getRootColors } from '../base/colors.mjs';
 import { RObjectPainter } from '../base/RObjectPainter.mjs';
@@ -26,7 +26,7 @@ class RPadPainter extends RObjectPainter {
       this.this_pad_name = '';
       if (!this.iscan && (pad !== null)) {
          if (pad.fObjectID)
-            this.this_pad_name = 'pad' + pad.fObjectID; // use objectid as padname
+            this.this_pad_name = 'pad' + pad.fObjectID; // use objectid as pad name
          else
             this.this_pad_name = 'ppp' + internals.id_counter++; // artificial name
       }
@@ -1042,7 +1042,7 @@ class RPadPainter extends RObjectPainter {
 
       if (objpainter) {
          if (snap._typename === `${nsREX}RPadDisplayItem`) {
-            // subpad
+            // sub-pad
             return objpainter.redrawPadSnap(snap).then(ppainter => {
                this.addObjectPainter(ppainter, lst, indx);
                return this.drawNextSnap(lst, indx);
@@ -1321,7 +1321,17 @@ class RPadPainter extends RObjectPainter {
          if (!imgdata)
             return console.error(`Fail to produce image ${filename}`);
 
-         saveFile(filename, (kind !== 'svg') ? imgdata : 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(imgdata));
+         if ((browser.qt5 || browser.cef3) && this.snapid) {
+            console.warn(`sending file ${filename} to server`)
+            let res = imgdata;
+            if (kind !== 'svg') {
+               const separ = res.indexOf('base64,');
+               res = (separ > 0) ? res.slice(separ+7) : '';
+            }
+            if (res)
+              this.getCanvPainter()?.sendWebsocket(`SAVE:${filename}:${res}`);
+         } else
+            saveFile(filename, (kind !== 'svg') ? imgdata : 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(imgdata));
       });
    }
 
