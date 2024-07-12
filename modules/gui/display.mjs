@@ -1479,8 +1479,8 @@ class BrowserLayout {
       const frame_titles = ['object name', 'object title', 'mouse coordinates', 'object info'];
       for (let k = 0; k < 4; ++k) {
          d3_select(this.status_layout.getGridFrame(k))
-           .attr('title', frame_titles[k]).style('overflow', 'hidden')
-           .append('label').attr('style', 'margin: 3px; margin-left: 5px; font-size: 14px; vertical-align: middle; white-space: nowrap;');
+           .attr('title', frame_titles[k]).style('overflow', 'hidden').style('display', 'flex').style('align-items', 'center')
+           .append('label').attr('style', 'margin: 5px 5px 5px 3px; font-size: 14px; white-space: nowrap;');
       }
 
       internals.showStatus = this.status_handler = this.showStatus.bind(this);
