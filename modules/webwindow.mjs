@@ -785,7 +785,7 @@ class WebWindowHandle {
       });
    }
 
-   /** @summary Replace widget URL before reload or close of the page
+   /** @summary Replace widget URL with new key
      * @private */
    storeKeyInUrl() {
       if (!this._handling_reload)
@@ -798,21 +798,18 @@ class WebWindowHandle {
             prefix = '?key=';
             p = href.indexOf(prefix);
          }
-         if (p > 0)
-            href = href.slice(0, p);
-         if (this.new_key)
-            href += prefix + this.new_key;
-         if (sessionKey)
-            href += `#${sessionKey}`;
-         window.history.replaceState(window.history.state, undefined, href);
+         if ((p > 0) && this.new_key) {
+            const p1 = href.indexOf('#', p+1), p2 = href.indexOf('?', p+1),
+                  pp = (p1 < 0) ? p2 : (p2 < 0 ? p1 : Math.min(p1, p2));
+            href = href.slice(0, p) + prefix + this.new_key + (pp < 0 ? '' : href.slice(pp));
+            window.history.replaceState(window.history.state, undefined, href);
+         }
       }
       if (typeof sessionStorage !== 'undefined') {
          sessionStorage.setItem('RWebWindow_SessionKey', sessionKey);
          sessionStorage.setItem('RWebWindow_Key', this.new_key);
       }
    }
-
-
 
 } // class WebWindowHandle
 
