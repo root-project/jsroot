@@ -54,7 +54,6 @@ class LongPollSocket {
       if (kind === 'connect') {
          url += this.raw ? '?raw_connect' : '?txt_connect';
          if (this.handle) url += '&' + this.handle.getConnArgs(this.counter++);
-         console.log(`longpoll connect ${url} raw = ${this.raw}`);
          this.connid = 'connect';
       } else if (kind === 'close') {
          if ((this.connid === null) || (this.connid === 'close')) return;
