@@ -23,6 +23,8 @@ export { loadOpenui5, registerForResize, setSaveFile } from './gui/utils.mjs';
 
 export { draw, redraw, makeSVG, makeImage, addDrawFunc, setDefaultDrawOpt } from './draw.mjs';
 
+export * from './gpad/TCanvasPainter.mjs';
+
 export { openFile, FileProxy } from './io.mjs';
 
 export * from './gui/display.mjs';
