@@ -1995,15 +1995,19 @@ class HierarchyPainter extends BasePainter {
    /** @summary Display specified item
      * @param {string} itemname - item name
      * @param {string} [drawopt] - draw option for the item
+     * @param {string|Object} [dom] - place where to draw item
      * @param {boolean} [interactive] - if display was called in interactive mode, will activate selected drawing
      * @return {Promise} with created painter object */
-   async display(itemname, drawopt, interactive) {
+   async display(itemname, drawopt, dom = null, interactive = false) {
       const display_itemname = itemname,
             marker = '::_display_on_frame_::';
       let painter = null,
           updating = false,
           item = null,
           frame_name = itemname;
+
+      if ((dom === true) || (dom === false))
+         interactive = dom; dom = null;
 
       const p = drawopt?.indexOf(marker) ?? -1;
       if (p >= 0) {
@@ -2042,10 +2046,12 @@ class HierarchyPainter extends BasePainter {
 
          if (item && !this.canDisplay(item, drawopt)) return complete();
 
-         let divid = '', use_dflt_opt = false;
+         let use_dflt_opt = false;
+         // deprecated - drawing divid was possible to code in draw options
          if (isStr(drawopt) && (drawopt.indexOf('divid:') >= 0)) {
             const pos = drawopt.indexOf('divid:');
-            divid = drawopt.slice(pos+6);
+            if (!dom)
+               dom = drawopt.slice(pos+6);
             drawopt = drawopt.slice(0, pos);
          }
 
@@ -2077,9 +2083,9 @@ class HierarchyPainter extends BasePainter {
             if (use_dflt_opt && !drawopt && handle?.dflt && (handle.dflt !== 'expand'))
                drawopt = handle.dflt;
 
-            if (divid) {
+            if (dom) {
                const func = updating ? redraw : draw;
-               return func(divid, obj, drawopt).then(p => complete(p)).catch(err => complete(null, err));
+               return func(dom, obj, drawopt).then(p => complete(p)).catch(err => complete(null, err));
             }
 
             let did_activate = false;
@@ -2177,7 +2183,7 @@ class HierarchyPainter extends BasePainter {
   /** @summary Drop item on specified element for drawing
     * @return {Promise} when completed
     * @private */
-   async dropItem(itemname, divid, opt) {
+   async dropItem(itemname, dom, opt) {
       if (!opt || !isStr(opt)) opt = '';
 
       const drop_complete = (drop_painter, is_main_painter) => {
@@ -2187,7 +2193,7 @@ class HierarchyPainter extends BasePainter {
       };
 
       if (itemname === '$legend') {
-         const cp = getElementCanvPainter(divid);
+         const cp = getElementCanvPainter(dom);
          if (isFunc(cp?.buildLegend))
             return cp.buildLegend(0, 0, 0, 0, '', opt).then(lp => drop_complete(lp));
          console.error('Not possible to build legend');
@@ -2197,7 +2203,7 @@ class HierarchyPainter extends BasePainter {
       return this.getObject(itemname).then(res => {
          if (!res.obj) return null;
 
-         const main_painter = getElementMainPainter(divid);
+         const main_painter = getElementMainPainter(dom);
 
          if (isFunc(main_painter?.performDrop))
             return main_painter.performDrop(res.obj, itemname, res.item, opt).then(p => drop_complete(p, main_painter === p));
@@ -2205,15 +2211,15 @@ class HierarchyPainter extends BasePainter {
          const sett = res.obj._typename ? getDrawSettings(prROOT + res.obj._typename) : null;
          if (!sett?.draw) return null;
 
-         const cp = getElementCanvPainter(divid);
+         const cp = getElementCanvPainter(dom);
 
          if (cp) {
             if (sett?.has_same)
                opt = 'same ' + opt;
          } else
-            this.cleanupFrame(divid);
+            this.cleanupFrame(dom);
 
-         return draw(divid, res.obj, opt).then(p => drop_complete(p, main_painter === p));
+         return draw(dom, res.obj, opt).then(p => drop_complete(p, main_painter === p));
       });
    }
 
