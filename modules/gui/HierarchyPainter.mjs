@@ -1645,14 +1645,14 @@ class HierarchyPainter extends BasePainter {
             drawopt = '__default_draw_option__';
 
          if (can_draw)
-            return this.display(itemname, drawopt, true);
+            return this.display(itemname, drawopt, null, true);
 
          if (can_expand || dflt_expand)
             return this.expandItem(itemname, d3cont);
 
          // cannot draw, but can inspect ROOT objects
          if (isStr(hitem._kind) && (hitem._kind.indexOf(prROOT) === 0) && sett.inspect && (can_draw !== false))
-            return this.display(itemname, kInspect, true);
+            return this.display(itemname, kInspect, null, true);
 
          if (!hitem._childs || (hitem === this.h)) return;
       }
@@ -1995,7 +1995,7 @@ class HierarchyPainter extends BasePainter {
    /** @summary Display specified item
      * @param {string} itemname - item name
      * @param {string} [drawopt] - draw option for the item
-     * @param {string|Object} [dom] - place where to draw item
+     * @param {string|Object} [dom] - place where to draw item, same as for @ref draw function
      * @param {boolean} [interactive] - if display was called in interactive mode, will activate selected drawing
      * @return {Promise} with created painter object */
    async display(itemname, drawopt, dom = null, interactive = false) {
