@@ -604,7 +604,7 @@ When JSROOT is used with THttpServer, the address looks like:
 <script type='module'>
    import { httpRequest, draw } from 'http://your_root_server:8080/jsrootsys/modules/main.mjs';
    let obj = await httpRequest('http://your_root_server:8080/Objects/hist/root.json','object');
-   await draw("drawing", obj, "hist");
+   await draw('drawing', obj, 'hist');
 </script>
 ```
 
@@ -622,8 +622,8 @@ One also can load some special components directly like:
    h.setDisplay("simple", "myMainDiv");
 
    // open file and display element
-   await h.openRootFile("../../files/hsimple.root");
-   await h.display("hpxpy;1","colz");
+   await h.openRootFile('../../files/hsimple.root');
+   await h.display('hpxpy;1","colz');
 </script>
 ```
 
@@ -633,7 +633,7 @@ to change stat format using to display value in stats box:
 
 ```javascript
 import { gStyle } from 'https://root.cern/js/latest/modules/main.mjs';
-gStyle.fStatFormat = "7.5g";
+gStyle.fStatFormat = '7.5g';
 ```
 
 There is also `settings` object which contains all other JSROOT settings. For instance,
@@ -641,8 +641,8 @@ one can configure custom format for different axes:
 
 ```javascript
 import { settings } from 'https://root.cern/js/latest/modules/main.mjs';
-settings.XValuesFormat = "4.2g";
-settings.YValuesFormat = "6.1f";
+settings.XValuesFormat = '4.2g';
+settings.YValuesFormat = '6.1f';
 ```
 
 One also can use `build/jsroot.js` bundle to load all functionality at one and access it via `JSROOT` global handle:
@@ -652,7 +652,7 @@ One also can use `build/jsroot.js` bundle to load all functionality at one and a
 <script>
    // getting json string from somewhere
    let obj = JSROOT.parse(root_json);
-   JSROOT.draw("plain", obj, "colz");
+   JSROOT.draw('plain', obj, 'colz');
 </script>
 ```
 
