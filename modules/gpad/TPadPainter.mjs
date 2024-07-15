@@ -1,5 +1,5 @@
 import { gStyle, settings, constants, browser, internals, BIT,
-         create, toJSON, isBatchMode, loadScript, injectCode, isPromise, getPromise, postponePromise,
+         create, toJSON, isBatchMode, loadModules, loadScript, injectCode, isPromise, getPromise, postponePromise,
          isObject, isFunc, isStr, clTObjArray, clTPaveText, clTColor, clTPad, clTFrame, clTStyle, clTLegend,
          clTHStack, clTMultiGraph, clTLegendEntry, nsSVG, kTitle, clTList } from '../core.mjs';
 import { select as d3_select, rgb as d3_rgb } from '../d3.mjs';
@@ -1891,14 +1891,16 @@ class TPadPainter extends ObjectPainter {
          let pr = Promise.resolve(true);
 
          if (isStr(snap.fScripts) && snap.fScripts) {
-            let src = '';
+            let src = '', m = null;
 
-            if (snap.fScripts.indexOf('load:') === 0)
+            if (snap.fScripts.indexOf('modules:') === 0)
+               m = snap.fScripts.slice(8).split(';');
+            else if (snap.fScripts.indexOf('load:') === 0)
                src = snap.fScripts.slice(5).split(';');
             else if (snap.fScripts.indexOf('assert:') === 0)
                src = snap.fScripts.slice(7);
 
-            pr = src ? loadScript(src) : injectCode(snap.fScripts);
+            pr = (m !== null) ? loadModules(m) : (src ? loadScript(src) : injectCode(snap.fScripts));
          }
 
          return pr.then(() => this.drawNextSnap(snap.fPrimitives));
