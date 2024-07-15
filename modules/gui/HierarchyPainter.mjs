@@ -1999,8 +1999,7 @@ class HierarchyPainter extends BasePainter {
      * @param {boolean} [interactive] - if display was called in interactive mode, will activate selected drawing
      * @return {Promise} with created painter object */
    async display(itemname, drawopt, dom = null, interactive = false) {
-      const display_itemname = itemname,
-            marker = '::_display_on_frame_::';
+      const display_itemname = itemname;
       let painter = null,
           updating = false,
           item = null,
@@ -2011,10 +2010,9 @@ class HierarchyPainter extends BasePainter {
          interactive = dom; dom = null;
       }
 
-      const p = drawopt?.indexOf(marker) ?? -1;
-      if (p >= 0) {
-         frame_name = drawopt.slice(p + marker.length);
-         drawopt = drawopt.slice(0, p);
+      if (isStr(dom) && (dom.indexOf('frame:') === 0)) {
+         frame_name = dom.slice(6);
+         dom = null;
       }
 
       const complete = (respainter, err) => {
@@ -2419,11 +2417,13 @@ class HierarchyPainter extends BasePainter {
       return this.createDisplay().then(mdi => {
          if (!mdi) return false;
 
+         const doms = new Array(items.length);
+
          // Than create empty frames for each item
          for (let i = 0; i < items.length; ++i) {
             if (options[i].indexOf('update:') !== 0) {
                mdi.createFrame(frame_names[i]);
-               options[i] += '::_display_on_frame_::'+frame_names[i];
+               doms[i] = 'frame:' + frame_names[i];
             }
          }
 
@@ -2438,7 +2438,7 @@ class HierarchyPainter extends BasePainter {
                if (items[cnt] === null) continue; // ignore completed item
                if (items_wait[cnt] && items.indexOf(items[cnt]) === cnt) {
                   items_wait[cnt] = false;
-                  return h.display(items[cnt], options[cnt]).then(painter => dropNextItem(cnt, painter));
+                  return h.display(items[cnt], options[cnt], doms[cnt]).then(painter => dropNextItem(cnt, painter));
                }
             }
          }
@@ -2451,7 +2451,7 @@ class HierarchyPainter extends BasePainter {
                   return true;
                if (items_wait[indx])
                   return processNext(indx + 1);
-                return h.display(items[indx], options[indx])
+                return h.display(items[indx], options[indx], doms[indx])
                         .then(painter => dropNextItem(indx, painter))
                         .then(() => processNext(indx + 1));
             }
@@ -2460,7 +2460,7 @@ class HierarchyPainter extends BasePainter {
             // We start display of all items parallel, but only if they are not the same
             for (let i = 0; i < items.length; ++i) {
                if (!items_wait[i])
-                  promises.push(h.display(items[i], options[i]).then(painter => dropNextItem(i, painter)));
+                  promises.push(h.display(items[i], options[i], doms[i]).then(painter => dropNextItem(i, painter)));
             }
          }
 
