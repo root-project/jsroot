@@ -477,6 +477,17 @@ async function injectCode(code) {
    return false;
 }
 
+/** @summary Load ES6 modules
+  * @param {String} arg - single URL or array of URLs
+  * @return {Promise} */
+async function loadModules(arg) {
+   if(isStr(arg))
+      arg  = arg.split(';');
+   if (arg.length === 0)
+      return true;
+   return import(/* webpackIgnore: true */ arg.shift()).then(() => loadModules(arg));
+}
+
 /** @summary Load script or CSS file into the browser
   * @param {String} url - script or css file URL (or array, in this case they all loaded sequentially)
   * @return {Promise} */
@@ -1891,6 +1902,6 @@ export { version_id, version_date, version, source_dir, isNodeJs, isBatchMode, s
          clTGraphPolar, clTGraphPolargram, clTGraphTime, clTCutG,
          clTPolyLine3D, clTPolyMarker3D, clTGeoVolume, clTGeoNode, clTGeoNodeMatrix, nsREX, nsSVG, kNoZoom, kNoStats, kInspect, kTitle,
          isArrayProto, getDocument, BIT, clone, addMethods, parse, parseMulti, toJSON,
-         decodeUrl, findFunction, createHttpRequest, httpRequest, loadScript, injectCode,
+         decodeUrl, findFunction, createHttpRequest, httpRequest, loadModules, loadScript, injectCode,
          create, createHistogram, setHistogramTitle, createTPolyLine, createTGraph, createTHStack, createTMultiGraph,
          getMethods, registerMethods, isRootCollection, isObject, isFunc, isStr, isPromise, getPromise, postponePromise, _ensureJSROOT };
