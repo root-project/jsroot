@@ -2006,8 +2006,10 @@ class HierarchyPainter extends BasePainter {
           item = null,
           frame_name = itemname;
 
-      if ((dom === true) || (dom === false))
+      // only to support old API where dom was not there
+      if ((dom === true) || (dom === false)) {
          interactive = dom; dom = null;
+      }
 
       const p = drawopt?.indexOf(marker) ?? -1;
       if (p >= 0) {
