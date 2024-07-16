@@ -1,5 +1,5 @@
 import { select as d3_select } from './d3.mjs';
-import { loadScript, findFunction, internals, getPromise, isNodeJs, isObject, isFunc, isStr, _ensureJSROOT,
+import { loadScript, loadModules, findFunction, internals, getPromise, isNodeJs, isObject, isFunc, isStr, _ensureJSROOT,
          prROOT,
          clTObject, clTNamed, clTString, clTAttLine, clTAttFill, clTAttMarker, clTAttText,
          clTObjString, clTFile, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
@@ -414,12 +414,18 @@ async function draw(dom, obj, opt) {
       promise = handle.draw().then(h => { handle.func = h; });
    } else if (!handle.func || !isStr(handle.func))
       return Promise.reject(Error(`Draw function or class not specified to draw ${type_info}`));
-   else if (!handle.prereq && !handle.script)
-      return Promise.reject(Error(`Prerequicities to load ${handle.func} are not specified`));
    else {
-      const init_promise = internals.ignore_v6
-         ? Promise.resolve(true)
-         : _ensureJSROOT().then(v6 => {
+      let func = findFunction(handle.func);
+      if (isFunc(func)) {
+         handle.func = func;
+         return performDraw();
+      }
+      const load_modules = isStr(handle.script) && (handle.script.indexOf('.mjs') > 0);
+      if (!load_modules && !handle.prereq && !handle.script)
+         return Promise.reject(Error(`Prerequicities to load ${handle.func} are not specified`));
+
+      const init_promise = load_modules ? loadModules(handle.script) :
+            internals.ignore_v6 ? Promise.resolve(true) : _ensureJSROOT().then(v6 => {
          const pr = handle.prereq ? v6.require(handle.prereq) : Promise.resolve(true);
          return pr.then(() => {
             if (handle.script)
@@ -428,7 +434,7 @@ async function draw(dom, obj, opt) {
       });
 
       promise = init_promise.then(() => {
-         const func = findFunction(handle.func);
+         func = findFunction(handle.func);
          if (!isFunc(func))
             return Promise.reject(Error(`Fail to find function ${handle.func} after loading ${handle.prereq || handle.script}`));
 
