@@ -420,11 +420,18 @@ async function draw(dom, obj, opt) {
          handle.func = func;
          return performDraw();
       }
-      const load_modules = isStr(handle.script) && (handle.script.indexOf('.mjs') > 0);
-      if (!load_modules && !handle.prereq && !handle.script)
+      let modules = null;
+      if (isStr(handle.script)) {
+         if (handle.script.indexOf('modules:') == 0)
+            modules = handle.script.slice(8);
+         else if (handle.script.indexOf('.mjs') > 0)
+            modules = handle.script;
+      }
+
+      if (!modules && !handle.prereq && !handle.script)
          return Promise.reject(Error(`Prerequicities to load ${handle.func} are not specified`));
 
-      const init_promise = load_modules ? loadModules(handle.script) :
+      const init_promise = modules ? loadModules(modules) :
             internals.ignore_v6 ? Promise.resolve(true) : _ensureJSROOT().then(v6 => {
          const pr = handle.prereq ? v6.require(handle.prereq) : Promise.resolve(true);
          return pr.then(() => {
