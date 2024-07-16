@@ -19,7 +19,7 @@ export { geoCfg } from './geom/geobase.mjs';
 
 export { createGeoPainter, TGeoPainter } from './geom/TGeoPainter.mjs';
 
-export { loadOpenui5, registerForResize, setSaveFile } from './gui/utils.mjs';
+export { loadOpenui5, registerForResize, setSaveFile, addMoveHandler } from './gui/utils.mjs';
 
 export { draw, redraw, makeSVG, makeImage, addDrawFunc, setDefaultDrawOpt } from './draw.mjs';
 
