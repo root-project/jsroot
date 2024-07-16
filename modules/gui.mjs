@@ -2,6 +2,7 @@ import { decodeUrl, settings, constants, gStyle, internals, browser, findFunctio
 import { select as d3_select } from './d3.mjs';
 import { HierarchyPainter } from './gui/HierarchyPainter.mjs';
 import { setStoragePrefix, readSettings, readStyle } from './gui/utils.mjs';
+import { createMenu, closeMenu } from './gui/menu.mjs';
 
 
 /** @summary Read style and settings from URL
@@ -249,4 +250,4 @@ async function buildGUI(gui_element, gui_kind = '') {
    }).then(() => hpainter);
 }
 
-export { buildGUI, internals, readStyleFromURL, HierarchyPainter };
+export { buildGUI, internals, readStyleFromURL, HierarchyPainter, createMenu, closeMenu };

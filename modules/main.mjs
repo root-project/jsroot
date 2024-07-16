@@ -31,6 +31,6 @@ export * from './gui/display.mjs';
 
 export { HierarchyPainter, getHPainter } from './gui/HierarchyPainter.mjs';
 
-export { readStyleFromURL, buildGUI } from './gui.mjs';
+export { readStyleFromURL, buildGUI, createMenu, closeMenu } from './gui.mjs';
 
 export { TSelector, treeDraw } from './tree.mjs';
