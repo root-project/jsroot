@@ -839,7 +839,7 @@ class TCanvasPainter extends TPadPainter {
          return;
 
       // workaround for qt5-based display where inner window size is used
-      if (browser.qt5 && fullW > 100 && fullH > 60) {
+      if ((browser.qt5 || browser.qt6) && fullW > 100 && fullH > 60) {
          fullW -= 3;
          fullH -= 30;
       }
