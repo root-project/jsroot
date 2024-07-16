@@ -463,11 +463,15 @@ async function injectCode(code) {
             return true;
       }
 
-      const promise = code.indexOf('JSROOT.require') >= 0 ? _ensureJSROOT() : Promise.resolve(true);
+      // try to detect if code includes import and must be treated as module
+      const is_v6 = code.indexOf('JSROOT.require') >= 0,
+            is_mjs = !is_v6 && (code.indexOf('import {') > 0) && (code.indexOf('} from \'') > 0);
+
+      const promise = is_v6 ? _ensureJSROOT() : Promise.resolve(true);
 
       return promise.then(() => {
          const element = document.createElement('script');
-         element.setAttribute('type', 'text/javascript');
+         element.setAttribute('type', is_mjs ? 'module' : 'text/javascript');
          element.innerHTML = code;
          document.head.appendChild(element);
          return postponePromise(true, 10); // while onload event not fired, just postpone resolve
