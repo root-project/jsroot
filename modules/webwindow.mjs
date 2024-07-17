@@ -810,6 +810,12 @@ class WebWindowHandle {
       }
    }
 
+   /** @summary Create new instance of same kind
+    * @private */
+   createNewInstance() {
+      return new WebWindowHandle(this.kind);
+   }
+
 } // class WebWindowHandle
 
 

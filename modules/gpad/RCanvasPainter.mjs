@@ -9,7 +9,6 @@ import { RAxisPainter } from './RAxisPainter.mjs';
 import { RFramePainter } from './RFramePainter.mjs';
 import { RPadPainter } from './RPadPainter.mjs';
 import { addDragHandler } from './TFramePainter.mjs';
-import { WebWindowHandle } from '../webwindow.mjs';
 
 
 /**
@@ -303,7 +302,7 @@ class RCanvasPainter extends RPadPainter {
             if (!isFunc(this.showUI5Panel))
                handle.send(reply + 'false');
              else {
-               const conn = new WebWindowHandle(handle.kind);
+               const conn = handle.createNewInstance();
 
                // set interim receiver until first message arrives
                conn.setReceiver({
