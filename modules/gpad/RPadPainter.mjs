@@ -1322,7 +1322,7 @@ class RPadPainter extends RObjectPainter {
             return console.error(`Fail to produce image ${filename}`);
 
          if ((browser.qt5 || browser.qt6 || browser.cef3) && this.snapid) {
-            console.warn(`sending file ${filename} to server`)
+            console.warn(`sending file ${filename} to server`);
             let res = imgdata;
             if (kind !== 'svg') {
                const separ = res.indexOf('base64,');
