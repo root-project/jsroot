@@ -271,9 +271,9 @@ class WebWindowHandle {
    constructor(socket_kind, credits) {
       this.kind = socket_kind;
       this.state = 0;
-      this.credits = credits || 10;
+      this.credits = Math.max(3, credits || 10);
       this.cansend = this.credits;
-      this.ackn = this.credits;
+      this.ackn = this.credits; // this number will be send to server with first message
       this.send_seq = 1; // sequence counter of send messages
       this.recv_seq = 0; // sequence counter of received messages
    }
@@ -717,7 +717,7 @@ class WebWindowHandle {
             else
                this.provideData(chid, msg);
 
-            if (this.ackn > 7)
+            if (this.ackn > Math.max(2, this.credits*0.7))
                this.send('READY', 0); // send dummy message to server
          };
 
