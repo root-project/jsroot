@@ -11346,6 +11346,9 @@ class TAttFillHandler {
          if ((args.color === undefined) && (args.attr.fFillColor !== undefined)) args.color = args.attr.fFillColor;
       }
 
+      if (args.enable !== undefined)
+         this.enable(args.enable);
+
       const was_changed = this.changed; // preserve changed state
       this.change(args.color, args.pattern, args.svg, args.color_as_svg, args.painter);
       this.changed = was_changed;
@@ -11353,8 +11356,10 @@ class TAttFillHandler {
 
    /** @summary Apply fill style to selection */
    apply(selection) {
-      if (this._disable)
-         return selection.style('fill', 'none');
+      if (this._disable) {
+         selection.style('fill', 'none');
+         return;
+      }
 
       this.used = true;
 
@@ -72317,14 +72322,10 @@ class TPavePainter extends ObjectPainter {
                isany = true;
                // box total height is yspace*0.7
                // define x,y as the center of the symbol for this entry
-               const rect = this.draw_g.append('svg:path')
-                              .attr('d', `M${x0 + padding_x},${Math.round(pos_y+step_y*0.1)}v${Math.round(step_y*0.8)}h${tpos_x-2*padding_x-x0}v${-Math.round(step_y*0.8)}z`);
-               if (!fillatt.empty())
-                  rect.call(fillatt.func);
-               else
-                  rect.style('fill', 'none');
-               if (lineatt)
-                  rect.call(lineatt.func);
+               this.draw_g.append('svg:path')
+                          .attr('d', `M${x0 + padding_x},${Math.round(pos_y+step_y*0.1)}v${Math.round(step_y*0.8)}h${tpos_x-2*padding_x-x0}v${-Math.round(step_y*0.8)}z`)
+                          .call(fillatt.func)
+                          .call(lineatt ? lineatt.func : () => {});
             }
          }
 
@@ -76793,8 +76794,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
       entries.forEach((entry, colindx) => {
          if (entry) {
-            this.draw_g
-                .append('svg:path')
+            this.draw_g.append('svg:path')
                 .attr('fill', palette.getColor(colindx))
                 .attr('d', entry.path);
          }
@@ -76975,13 +76975,10 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
          const dd = buildPath(xp, yp, iminus, iplus, fillcolor !== 'none', true);
          if (!dd) return;
 
-         const elem = this.draw_g
-                        .append('svg:path')
-                        .attr('d', dd)
-                        .style('fill', fillcolor);
-
-         if (lineatt)
-            elem.call(lineatt.func);
+         this.draw_g.append('svg:path')
+             .attr('d', dd)
+             .style('fill', fillcolor)
+             .call(lineatt ? lineatt.func : () => {});
       });
 
       handle.hide_only_zeros = true; // text drawing suppress only zeros
@@ -77111,7 +77108,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
       }
 
       // do not try color draw optimization as with plain th2 while
-      // bins are not rectangular and drawings artefacts are nasty
+      // bins are not rectangular and drawings artifacts are nasty
       // therefore draw each bin separately when doing color draw
       const lineatt0 = lineatt_match && gr0 ? this.createAttLine(gr0) : null,
             fillatt0 = fillatt_match && gr0 ? this.createAttFill(gr0) : null,
@@ -77148,7 +77145,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
                if (draw_colors && (colindx !== null))
                   item.style('fill', this._color_palette.getColor(colindx));
                else if (draw_fill)
-                  item.call('fill', this.createAttFill(gr).func);
+                  item.call(this.createAttFill(gr).func);
                else
                   item.style('fill', 'none');
                if (draw_lines)
@@ -81982,23 +81979,23 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
          }
 
          if (path_err) {
-             this.draw_g.append('svg:path')
-                   .attr('d', path_err)
-                   .call(this.lineatt.func);
+            this.draw_g.append('svg:path')
+                .attr('d', path_err)
+                .call(this.lineatt.func);
          }
 
          if (hints_err) {
-               this.draw_g.append('svg:path')
-                   .attr('d', hints_err)
-                   .style('fill', 'none')
-                   .style('pointer-events', this.isBatchMode() ? null : 'visibleFill');
+            this.draw_g.append('svg:path')
+                .attr('d', hints_err)
+                .style('fill', 'none')
+                .style('pointer-events', this.isBatchMode() ? null : 'visibleFill');
          }
 
          if (path_line) {
             this.draw_g.append('svg:path')
-                   .attr('d', path_line)
-                   .style('fill', 'none')
-                   .call(this.lineatt.func);
+                .attr('d', path_line)
+                .style('fill', 'none')
+                .call(this.lineatt.func);
          }
 
          if (path_marker) {
@@ -113930,8 +113927,9 @@ class TF1Painter extends TH1Painter$2 {
          }
 
          ttrect.attr('cx', pnt.x)
-               .attr('cy', this.$tmp_tooltip.gry ?? pnt.y)
-               .call(this.lineatt?.func);
+               .attr('cy', this.$tmp_tooltip.gry ?? pnt.y);
+         if (this.lineatt)
+            ttrect.call(this.lineatt.func);
       }
 
       return res;
@@ -115549,15 +115547,16 @@ class TF2Painter extends TH2Painter {
          }
 
          ttrect.attr('cx', pnt.x)
-               .attr('cy', pnt.y)
-               .call(this.lineatt?.func);
+               .attr('cy', pnt.y);
+         if (this.lineatt)
+            ttrect.call(this.lineatt.func);
       }
 
       return res;
    }
 
    /** @summary fill information for TWebCanvas
-    * @desc Used to inform web canvas when evaluation failed
+     * @desc Used to inform web canvas when evaluation failed
      * @private */
    fillWebObjectOptions(opt) {
       opt.fcust = this._fail_eval && !this.use_saved ? 'func_fail' : '';
@@ -116293,15 +116292,12 @@ class TArrowPainter extends TLinePainter {
       if ((p1 >= 0) && (p1 === len-1))
          this.end = ((p2 >= 0) && (p2 === len-2)) ? 11 : 1;
 
-      this.createAttFill({ attr: arrow });
-   }
+      this.createAttFill({ attr: arrow, enable: (this.beg > 10) || (this.end > 10) });
+  }
 
    /** @summary Add extras to path for TArrow */
    addExtras(elem) {
-      if ((this.beg > 10) || (this.end > 10))
-         elem.call(this.fillatt.func);
-      else
-         elem.style('fill', 'none');
+      elem.call(this.fillatt.func);
    }
 
    /** @summary Draw TArrow object */
@@ -116377,21 +116373,16 @@ class TPolyLinePainter extends ObjectPainter {
             func = this.getAxisToSvgFunc(isndc);
 
       this.createAttLine({ attr: polyline });
-      this.createAttFill({ attr: polyline });
+      this.createAttFill({ attr: polyline, enable: dofill });
 
       let cmd = '';
       for (let n = 0; n <= polyline.fLastPoint; ++n)
-         cmd += `${n>0?'L':'M'}${func.x(polyline.fX[n])},${func.y(polyline.fY[n])}`;
+         cmd += `${n > 0?'L':'M'}${func.x(polyline.fX[n])},${func.y(polyline.fY[n])}`;
 
-      if (dofill)
-         cmd += 'Z';
-
-      const elem = this.draw_g.append('svg:path').attr('d', cmd);
-
-      if (dofill)
-         elem.call(this.fillatt.func);
-      else
-         elem.call(this.lineatt.func).style('fill', 'none');
+      this.draw_g.append('svg:path')
+                 .attr('d', cmd + (dofill ? 'Z' : ''))
+                 .call(dofill ? () => {} : this.lineatt.func)
+                 .call(this.fillatt.func);
 
       assignContextMenu(this, kToFront);
 
