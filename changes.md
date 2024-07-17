@@ -10,9 +10,10 @@
 7. Let redraw TEfficiency, THStack and TMultiGraph with different draw options via hist context menu
 8. Support 'pads' draw options for TMultiGraph, support context menu for it
 9. Let drop object on sub-pads
-10. Internals - do not select pad (aka gPad) for objects drawing, always use assigned pad painter
-11. Fix - properly save zoomed ranges in drawingJSON()
-12. Fix - properly redraw TMultuGraph
+10. Properly loads ES6 modules for web canvas
+11. Internals - do not select pad (aka gPad) for objects drawing, always use assigned pad painter
+12. Fix - properly save zoomed ranges in drawingJSON()
+13. Fix - properly redraw TMultuGraph
 
 
 ## Changes in 7.7.2

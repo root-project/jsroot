@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '11/07/2024',
+version_date = '17/07/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -469,11 +469,14 @@ async function injectCode(code) {
             return true;
       }
 
-      const promise = code.indexOf('JSROOT.require') >= 0 ? _ensureJSROOT() : Promise.resolve(true);
+      // try to detect if code includes import and must be treated as module
+      const is_v6 = code.indexOf('JSROOT.require') >= 0,
+            is_mjs = !is_v6 && (code.indexOf('import {') > 0) && (code.indexOf('} from \'') > 0),
+            promise = is_v6 ? _ensureJSROOT() : Promise.resolve(true);
 
       return promise.then(() => {
          const element = document.createElement('script');
-         element.setAttribute('type', 'text/javascript');
+         element.setAttribute('type', is_mjs ? 'module' : 'text/javascript');
          element.innerHTML = code;
          document.head.appendChild(element);
          return postponePromise(true, 10); // while onload event not fired, just postpone resolve
@@ -481,6 +484,17 @@ async function injectCode(code) {
    }
 
    return false;
+}
+
+/** @summary Load ES6 modules
+  * @param {String} arg - single URL or array of URLs
+  * @return {Promise} */
+async function loadModules(arg) {
+   if (isStr(arg))
+      arg = arg.split(';');
+   if (arg.length === 0)
+      return true;
+   return import(/* webpackIgnore: true */ arg.shift()).then(() => loadModules(arg));
 }
 
 /** @summary Load script or CSS file into the browser
@@ -1988,6 +2002,7 @@ kInspect: kInspect,
 kNoStats: kNoStats,
 kNoZoom: kNoZoom,
 kTitle: kTitle,
+loadModules: loadModules,
 loadScript: loadScript,
 nsREX: nsREX,
 nsSVG: nsSVG,
@@ -11338,6 +11353,9 @@ class TAttFillHandler {
 
    /** @summary Apply fill style to selection */
    apply(selection) {
+      if (this._disable)
+         return selection.style('fill', 'none');
+
       this.used = true;
 
       selection.style('fill', this.getFillColor());
@@ -11362,6 +11380,14 @@ class TAttFillHandler {
    empty() {
       const fill = this.getFillColor();
       return !fill || (fill === 'none');
+   }
+
+   /** @summary Enable or disable fill usage - if disabled only 'fill: none' will be applied */
+   enable(on) {
+      if ((on === undefined) || on)
+         delete this._disable;
+      else
+         this._disable = true;
    }
 
    /** @summary Set usage flag of attribute */
@@ -12696,13 +12722,17 @@ class ObjectPainter extends BasePainter {
      * @return {object} created handler
      * @protected */
    createAttMarker(args) {
-      if (!isObject(args))
+      if (args === undefined)
+         args = { attr: this.getObject() };
+      else if (!isObject(args))
          args = { std: true };
       else if (args.fMarkerColor !== undefined && args.fMarkerStyle !== undefined && args.fMarkerSize !== undefined)
          args = { attr: args, std: false };
 
-      if (args.std === undefined) args.std = true;
-      if (args.painter === undefined) args.painter = this;
+      if (args.std === undefined)
+         args.std = true;
+      if (args.painter === undefined)
+         args.painter = this;
 
       let handler = args.std ? this.markeratt : null;
 
@@ -12711,7 +12741,8 @@ class ObjectPainter extends BasePainter {
       else if (!handler.changed || args.force)
          handler.setArgs(args);
 
-      if (args.std) this.markeratt = handler;
+      if (args.std)
+         this.markeratt = handler;
       return handler;
    }
 
@@ -12722,13 +12753,17 @@ class ObjectPainter extends BasePainter {
      * @param {object} args - either TAttLine or see constructor arguments of {@link TAttLineHandler}
      * @protected */
    createAttLine(args) {
-      if (!isObject(args))
+      if (args === undefined)
+         args = { attr: this.getObject() };
+      else if (!isObject(args))
          args = { std: true };
       else if (args.fLineColor !== undefined && args.fLineStyle !== undefined && args.fLineWidth !== undefined)
          args = { attr: args, std: false };
 
-      if (args.std === undefined) args.std = true;
-      if (args.painter === undefined) args.painter = this;
+      if (args.std === undefined)
+         args.std = true;
+      if (args.painter === undefined)
+         args.painter = this;
 
       let handler = args.std ? this.lineatt : null;
 
@@ -12737,7 +12772,8 @@ class ObjectPainter extends BasePainter {
       else if (!handler.changed || args.force)
          handler.setArgs(args);
 
-      if (args.std) this.lineatt = handler;
+      if (args.std)
+         this.lineatt = handler;
       return handler;
    }
 
@@ -12745,13 +12781,17 @@ class ObjectPainter extends BasePainter {
      * @param {object} args - either TAttText or see constructor arguments of {@link TAttTextHandler}
      * @protected */
    createAttText(args) {
-      if (!isObject(args))
+      if (args === undefined)
+         args = { attr: this.getObject() };
+      else if (!isObject(args))
          args = { std: true };
       else if (args.fTextFont !== undefined && args.fTextSize !== undefined && args.fTextColor !== undefined)
          args = { attr: args, std: false };
 
-      if (args.std === undefined) args.std = true;
-      if (args.painter === undefined) args.painter = this;
+      if (args.std === undefined)
+         args.std = true;
+      if (args.painter === undefined)
+         args.painter = this;
 
       let handler = args.std ? this.textatt : null;
 
@@ -12760,7 +12800,8 @@ class ObjectPainter extends BasePainter {
       else if (!handler.changed || args.force)
          handler.setArgs(args);
 
-      if (args.std) this.textatt = handler;
+      if (args.std)
+         this.textatt = handler;
       return handler;
    }
 
@@ -12769,7 +12810,7 @@ class ObjectPainter extends BasePainter {
      * otherwise newly created patters will not be usable in the canvas
      * See {@link TAttFillHandler} for more info.
      * Instance assigned as this.fillatt data member, recognized by GED editors
-     * @param {object} args - for special cases one can specify TAttFill as args or number of parameters
+     * @param {object} [args] - for special cases one can specify TAttFill as args or number of parameters
      * @param {boolean} [args.std = true] - this is standard fill attribute for object and should be used as this.fillatt
      * @param {object} [args.attr = null] - object, derived from TAttFill
      * @param {number} [args.pattern = undefined] - integer index of fill pattern
@@ -12779,24 +12820,30 @@ class ObjectPainter extends BasePainter {
      * @return created handle
      * @protected */
    createAttFill(args) {
-      if (!isObject(args))
+      if (args === undefined)
+         args = { attr: this.getObject() };
+      else if (!isObject(args))
          args = { std: true };
       else if (args._typename && args.fFillColor !== undefined && args.fFillStyle !== undefined)
          args = { attr: args, std: false };
 
-      if (args.std === undefined) args.std = true;
+      if (args.std === undefined)
+         args.std = true;
+      if (args.painter === undefined)
+         args.painter = this;
 
       let handler = args.std ? this.fillatt : null;
 
-      if (!args.svg) args.svg = this.getCanvSvg();
-      if (args.painter === undefined) args.painter = this;
+      if (!args.svg)
+         args.svg = this.getCanvSvg();
 
       if (!handler)
          handler = new TAttFillHandler(args);
       else if (!handler.changed || args.force)
          handler.setArgs(args);
 
-      if (args.std) this.fillatt = handler;
+      if (args.std)
+         this.fillatt = handler;
       return handler;
    }
 
@@ -67764,8 +67811,8 @@ class BrowserLayout {
       const frame_titles = ['object name', 'object title', 'mouse coordinates', 'object info'];
       for (let k = 0; k < 4; ++k) {
          select(this.status_layout.getGridFrame(k))
-           .attr('title', frame_titles[k]).style('overflow', 'hidden')
-           .append('label').attr('style', 'margin: 3px; margin-left: 5px; font-size: 14px; vertical-align: middle; white-space: nowrap;');
+           .attr('title', frame_titles[k]).style('overflow', 'hidden').style('display', 'flex').style('align-items', 'center')
+           .append('label').attr('style', 'margin: 5px 5px 5px 3px; font-size: 14px; white-space: nowrap;');
       }
 
       internals.showStatus = this.status_handler = this.showStatus.bind(this);
@@ -69310,22 +69357,31 @@ class TPadPainter extends ObjectPainter {
       menu.addchk(this.isTooltipAllowed(), 'Show tooltips', () => this.setTooltipAllowed('toggle'));
 
       if (!this._websocket) {
-         function SetPadField(arg) {
-            this.pad[arg.slice(1)] = parseInt(arg[0]);
+         const set_pad_field = arg => {
+            this.pad[arg.slice(1)] = Number.parseInt(arg[0]);
             this.interactiveRedraw('pad', arg.slice(1));
-         }
+         }, do_divide = arg => {
+            if (!arg || !isStr(arg))
+               return;
+            const arr = arg.split('x');
+            this.cleanPrimitives(true);
+            if (arr.length === 1)
+               this.divide(Number.parseInt(arr[0]));
+            if (arr.length === 2)
+               this.divide(Number.parseInt(arr[0]), Number.parseInt(arr[1]));
+         };
 
-         menu.addchk(this.pad?.fGridx, 'Grid x', (this.pad?.fGridx ? '0' : '1') + 'fGridx', SetPadField);
-         menu.addchk(this.pad?.fGridy, 'Grid y', (this.pad?.fGridy ? '0' : '1') + 'fGridy', SetPadField);
+         menu.addchk(this.pad?.fGridx, 'Grid x', (this.pad?.fGridx ? '0' : '1') + 'fGridx', set_pad_field);
+         menu.addchk(this.pad?.fGridy, 'Grid y', (this.pad?.fGridy ? '0' : '1') + 'fGridy', set_pad_field);
          menu.sub('Ticks x');
-         menu.addchk(this.pad?.fTickx === 0, 'normal', '0fTickx', SetPadField);
-         menu.addchk(this.pad?.fTickx === 1, 'ticks on both sides', '1fTickx', SetPadField);
-         menu.addchk(this.pad?.fTickx === 2, 'labels on both sides', '2fTickx', SetPadField);
+         menu.addchk(this.pad?.fTickx === 0, 'normal', '0fTickx', set_pad_field);
+         menu.addchk(this.pad?.fTickx === 1, 'ticks on both sides', '1fTickx', set_pad_field);
+         menu.addchk(this.pad?.fTickx === 2, 'labels on both sides', '2fTickx', set_pad_field);
          menu.endsub();
          menu.sub('Ticks y');
-         menu.addchk(this.pad?.fTicky === 0, 'normal', '0fTicky', SetPadField);
-         menu.addchk(this.pad?.fTicky === 1, 'ticks on both sides', '1fTicky', SetPadField);
-         menu.addchk(this.pad?.fTicky === 2, 'labels on both sides', '2fTicky', SetPadField);
+         menu.addchk(this.pad?.fTicky === 0, 'normal', '0fTicky', set_pad_field);
+         menu.addchk(this.pad?.fTicky === 1, 'ticks on both sides', '1fTicky', set_pad_field);
+         menu.addchk(this.pad?.fTicky === 2, 'labels on both sides', '2fTicky', set_pad_field);
          menu.endsub();
          menu.addchk(this.pad?.fEditable, 'Editable', flag => { this.pad.fEditable = flag; this.interactiveRedraw('pad'); });
          if (this.iscan)
@@ -69333,6 +69389,10 @@ class TPadPainter extends ObjectPainter {
 
          if (isFunc(this.drawObject))
             menu.add('Build legend', () => this.buildLegend());
+
+         menu.sub('Divide', () => menu.input('Input divide arg', '2x2').then(do_divide), 'Divide on sub-pads');
+         ['1x2', '2x1', '2x2', '2x3', '3x2', '3x3', '4x4', '0'].forEach(item => menu.add(item, item, do_divide));
+         menu.endsub();
 
          menu.addAttributesMenu(this);
          menu.add('Save to gStyle', () => {
@@ -69920,14 +69980,16 @@ class TPadPainter extends ObjectPainter {
          let pr = Promise.resolve(true);
 
          if (isStr(snap.fScripts) && snap.fScripts) {
-            let src = '';
+            let src = '', m = null;
 
-            if (snap.fScripts.indexOf('load:') === 0)
+            if (snap.fScripts.indexOf('modules:') === 0)
+               m = snap.fScripts.slice(8).split(';');
+            else if (snap.fScripts.indexOf('load:') === 0)
                src = snap.fScripts.slice(5).split(';');
             else if (snap.fScripts.indexOf('assert:') === 0)
                src = snap.fScripts.slice(7);
 
-            pr = src ? loadScript(src) : injectCode(snap.fScripts);
+            pr = (m !== null) ? loadModules(m) : (src ? loadScript(src) : injectCode(snap.fScripts));
          }
 
          return pr.then(() => this.drawNextSnap(snap.fPrimitives));
@@ -70240,7 +70302,17 @@ class TPadPainter extends ObjectPainter {
          if (!imgdata)
             return console.error(`Fail to produce image ${filename}`);
 
-         saveFile(filename, (kind !== 'svg') ? imgdata : 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(imgdata));
+         if ((browser.qt5 || browser.qt6 || browser.cef3) && this.snapid) {
+            console.warn(`sending file ${filename} to server`);
+            let res = imgdata;
+            if (kind !== 'svg') {
+               const separ = res.indexOf('base64,');
+               res = (separ > 0) ? res.slice(separ+7) : '';
+            }
+            if (res)
+              this.getCanvPainter()?.sendWebsocket(`SAVE:${filename}:${res}`);
+         } else
+            saveFile(filename, (kind !== 'svg') ? imgdata : 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(imgdata));
       });
    }
 
@@ -70802,9 +70874,7 @@ class TCanvasPainter extends TPadPainter {
      * @desc Function should be used only from the func which supposed to be replaced by ui5
      * @private */
    testUI5() {
-      if (!this.use_openui) return false;
-      console.warn('full ui5 should be used - not loaded yet? Please check!!');
-      return true;
+      return this.use_openui ?? false;
    }
 
    /** @summary Draw in side panel
@@ -71424,7 +71494,7 @@ class TCanvasPainter extends TPadPainter {
          return;
 
       // workaround for qt5-based display where inner window size is used
-      if (browser.qt5 && fullW > 100 && fullH > 60) {
+      if ((browser.qt5 || browser.qt6) && fullW > 100 && fullH > 60) {
          fullW -= 3;
          fullH -= 30;
       }
@@ -103737,21 +103807,38 @@ async function draw(dom, obj, opt) {
       promise = handle.draw().then(h => { handle.func = h; });
    } else if (!handle.func || !isStr(handle.func))
       return Promise.reject(Error(`Draw function or class not specified to draw ${type_info}`));
-   else if (!handle.prereq && !handle.script)
-      return Promise.reject(Error(`Prerequicities to load ${handle.func} are not specified`));
    else {
-      const init_promise = internals.ignore_v6
-         ? Promise.resolve(true)
-         : _ensureJSROOT().then(v6 => {
-         const pr = handle.prereq ? v6.require(handle.prereq) : Promise.resolve(true);
-         return pr.then(() => {
-            if (handle.script)
-               return loadScript(handle.script);
-         }).then(() => v6._complete_loading());
-      });
+      let func = findFunction(handle.func);
+      if (isFunc(func)) {
+         handle.func = func;
+         return performDraw();
+      }
+      let modules = null;
+      if (isStr(handle.script)) {
+         if (handle.script.indexOf('modules:') === 0)
+            modules = handle.script.slice(8);
+         else if (handle.script.indexOf('.mjs') > 0)
+            modules = handle.script;
+      }
+
+      if (!modules && !handle.prereq && !handle.script)
+         return Promise.reject(Error(`Prerequicities to load ${handle.func} are not specified`));
+
+      let init_promise = Promise.resolve(true);
+      if (modules)
+         init_promise = loadModules(modules);
+      else if (!internals.ignore_v6) {
+         init_promise = _ensureJSROOT().then(v6 => {
+            const pr = handle.prereq ? v6.require(handle.prereq) : Promise.resolve(true);
+            return pr.then(() => {
+               if (handle.script)
+                  return loadScript(handle.script);
+            }).then(() => v6._complete_loading());
+         });
+      }
 
       promise = init_promise.then(() => {
-         const func = findFunction(handle.func);
+         func = findFunction(handle.func);
          if (!isFunc(func))
             return Promise.reject(Error(`Fail to find function ${handle.func} after loading ${handle.prereq || handle.script}`));
 
@@ -105666,14 +105753,14 @@ class HierarchyPainter extends BasePainter {
             drawopt = '__default_draw_option__';
 
          if (can_draw)
-            return this.display(itemname, drawopt, true);
+            return this.display(itemname, drawopt, null, true);
 
          if (can_expand || dflt_expand)
             return this.expandItem(itemname, d3cont);
 
          // cannot draw, but can inspect ROOT objects
          if (isStr(hitem._kind) && (hitem._kind.indexOf(prROOT) === 0) && sett.inspect && (can_draw !== false))
-            return this.display(itemname, kInspect, true);
+            return this.display(itemname, kInspect, null, true);
 
          if (!hitem._childs || (hitem === this.h)) return;
       }
@@ -106016,20 +106103,24 @@ class HierarchyPainter extends BasePainter {
    /** @summary Display specified item
      * @param {string} itemname - item name
      * @param {string} [drawopt] - draw option for the item
+     * @param {string|Object} [dom] - place where to draw item, same as for @ref draw function
      * @param {boolean} [interactive] - if display was called in interactive mode, will activate selected drawing
      * @return {Promise} with created painter object */
-   async display(itemname, drawopt, interactive) {
-      const display_itemname = itemname,
-            marker = '::_display_on_frame_::';
+   async display(itemname, drawopt, dom = null, interactive = false) {
+      const display_itemname = itemname;
       let painter = null,
           updating = false,
           item = null,
           frame_name = itemname;
 
-      const p = drawopt?.indexOf(marker) ?? -1;
-      if (p >= 0) {
-         frame_name = drawopt.slice(p + marker.length);
-         drawopt = drawopt.slice(0, p);
+      // only to support old API where dom was not there
+      if ((dom === true) || (dom === false)) {
+         interactive = dom; dom = null;
+      }
+
+      if (isStr(dom) && (dom.indexOf('frame:') === 0)) {
+         frame_name = dom.slice(6);
+         dom = null;
       }
 
       const complete = (respainter, err) => {
@@ -106063,10 +106154,12 @@ class HierarchyPainter extends BasePainter {
 
          if (item && !this.canDisplay(item, drawopt)) return complete();
 
-         let divid = '', use_dflt_opt = false;
+         let use_dflt_opt = false;
+         // deprecated - drawing divid was possible to code in draw options
          if (isStr(drawopt) && (drawopt.indexOf('divid:') >= 0)) {
             const pos = drawopt.indexOf('divid:');
-            divid = drawopt.slice(pos+6);
+            if (!dom)
+               dom = drawopt.slice(pos+6);
             drawopt = drawopt.slice(0, pos);
          }
 
@@ -106098,9 +106191,9 @@ class HierarchyPainter extends BasePainter {
             if (use_dflt_opt && !drawopt && handle?.dflt && (handle.dflt !== 'expand'))
                drawopt = handle.dflt;
 
-            if (divid) {
+            if (dom) {
                const func = updating ? redraw : draw;
-               return func(divid, obj, drawopt).then(p => complete(p)).catch(err => complete(null, err));
+               return func(dom, obj, drawopt).then(p => complete(p)).catch(err => complete(null, err));
             }
 
             let did_activate = false;
@@ -106198,7 +106291,7 @@ class HierarchyPainter extends BasePainter {
   /** @summary Drop item on specified element for drawing
     * @return {Promise} when completed
     * @private */
-   async dropItem(itemname, divid, opt) {
+   async dropItem(itemname, dom, opt) {
       if (!opt || !isStr(opt)) opt = '';
 
       const drop_complete = (drop_painter, is_main_painter) => {
@@ -106208,7 +106301,7 @@ class HierarchyPainter extends BasePainter {
       };
 
       if (itemname === '$legend') {
-         const cp = getElementCanvPainter(divid);
+         const cp = getElementCanvPainter(dom);
          if (isFunc(cp?.buildLegend))
             return cp.buildLegend(0, 0, 0, 0, '', opt).then(lp => drop_complete(lp));
          console.error('Not possible to build legend');
@@ -106218,7 +106311,7 @@ class HierarchyPainter extends BasePainter {
       return this.getObject(itemname).then(res => {
          if (!res.obj) return null;
 
-         const main_painter = getElementMainPainter(divid);
+         const main_painter = getElementMainPainter(dom);
 
          if (isFunc(main_painter?.performDrop))
             return main_painter.performDrop(res.obj, itemname, res.item, opt).then(p => drop_complete(p, main_painter === p));
@@ -106226,15 +106319,15 @@ class HierarchyPainter extends BasePainter {
          const sett = res.obj._typename ? getDrawSettings(prROOT + res.obj._typename) : null;
          if (!sett?.draw) return null;
 
-         const cp = getElementCanvPainter(divid);
+         const cp = getElementCanvPainter(dom);
 
          if (cp) {
             if (sett?.has_same)
                opt = 'same ' + opt;
          } else
-            this.cleanupFrame(divid);
+            this.cleanupFrame(dom);
 
-         return draw(divid, res.obj, opt).then(p => drop_complete(p, main_painter === p));
+         return draw(dom, res.obj, opt).then(p => drop_complete(p, main_painter === p));
       });
    }
 
@@ -106432,11 +106525,13 @@ class HierarchyPainter extends BasePainter {
       return this.createDisplay().then(mdi => {
          if (!mdi) return false;
 
+         const doms = new Array(items.length);
+
          // Than create empty frames for each item
          for (let i = 0; i < items.length; ++i) {
             if (options[i].indexOf('update:') !== 0) {
                mdi.createFrame(frame_names[i]);
-               options[i] += '::_display_on_frame_::'+frame_names[i];
+               doms[i] = 'frame:' + frame_names[i];
             }
          }
 
@@ -106451,7 +106546,7 @@ class HierarchyPainter extends BasePainter {
                if (items[cnt] === null) continue; // ignore completed item
                if (items_wait[cnt] && items.indexOf(items[cnt]) === cnt) {
                   items_wait[cnt] = false;
-                  return h.display(items[cnt], options[cnt]).then(painter => dropNextItem(cnt, painter));
+                  return h.display(items[cnt], options[cnt], doms[cnt]).then(painter => dropNextItem(cnt, painter));
                }
             }
          }
@@ -106464,7 +106559,7 @@ class HierarchyPainter extends BasePainter {
                   return true;
                if (items_wait[indx])
                   return processNext(indx + 1);
-                return h.display(items[indx], options[indx])
+                return h.display(items[indx], options[indx], doms[indx])
                         .then(painter => dropNextItem(indx, painter))
                         .then(() => processNext(indx + 1));
             }
@@ -106473,7 +106568,7 @@ class HierarchyPainter extends BasePainter {
             // We start display of all items parallel, but only if they are not the same
             for (let i = 0; i < items.length; ++i) {
                if (!items_wait[i])
-                  promises.push(h.display(items[i], options[i]).then(painter => dropNextItem(i, painter)));
+                  promises.push(h.display(items[i], options[i], doms[i]).then(painter => dropNextItem(i, painter)));
             }
          }
 
@@ -119723,7 +119818,7 @@ class RPadPainter extends RObjectPainter {
       this.this_pad_name = '';
       if (!this.iscan && (pad !== null)) {
          if (pad.fObjectID)
-            this.this_pad_name = 'pad' + pad.fObjectID; // use objectid as padname
+            this.this_pad_name = 'pad' + pad.fObjectID; // use objectid as pad name
          else
             this.this_pad_name = 'ppp' + internals.id_counter++; // artificial name
       }
@@ -120739,7 +120834,7 @@ class RPadPainter extends RObjectPainter {
 
       if (objpainter) {
          if (snap._typename === `${nsREX}RPadDisplayItem`) {
-            // subpad
+            // sub-pad
             return objpainter.redrawPadSnap(snap).then(ppainter => {
                this.addObjectPainter(ppainter, lst, indx);
                return this.drawNextSnap(lst, indx);
@@ -121018,7 +121113,17 @@ class RPadPainter extends RObjectPainter {
          if (!imgdata)
             return console.error(`Fail to produce image ${filename}`);
 
-         saveFile(filename, (kind !== 'svg') ? imgdata : 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(imgdata));
+         if ((browser.qt5 || browser.qt6 || browser.cef3) && this.snapid) {
+            console.warn(`sending file ${filename} to server`);
+            let res = imgdata;
+            if (kind !== 'svg') {
+               const separ = res.indexOf('base64,');
+               res = (separ > 0) ? res.slice(separ+7) : '';
+            }
+            if (res)
+              this.getCanvPainter()?.sendWebsocket(`SAVE:${filename}:${res}`);
+         } else
+            saveFile(filename, (kind !== 'svg') ? imgdata : 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(imgdata));
       });
    }
 
@@ -121670,7 +121775,6 @@ class LongPollSocket {
       if (kind === 'connect') {
          url += this.raw ? '?raw_connect' : '?txt_connect';
          if (this.handle) url += '&' + this.handle.getConnArgs(this.counter++);
-         console.log(`longpoll connect ${url} raw = ${this.raw}`);
          this.connid = 'connect';
       } else if (kind === 'close') {
          if ((this.connid === null) || (this.connid === 'close')) return;
@@ -121679,7 +121783,7 @@ class LongPollSocket {
          this.connid = 'close';
          reqmode = 'text;sync'; // use sync mode to close connection before browser window closed
       } else if ((this.connid === null) || (typeof this.connid !== 'number')) {
-         if (!browser.qt5) console.error('No connection');
+         if (!browser.qt5 && !browser.qt6) console.error('No connection');
       } else {
          url += '?connection=' + this.connid;
          if (this.handle) url += '&' + this.handle.getConnArgs(this.counter++);
@@ -121715,7 +121819,7 @@ class LongPollSocket {
             const u8Arr = new Uint8Array(res);
             let str = '', i = 0, offset = u8Arr.length;
             if (offset < 4) {
-               if (!browser.qt5) console.error(`longpoll got short message in raw mode ${offset}`);
+               if (!browser.qt5 && !browser.qt6) console.error(`longpoll got short message in raw mode ${offset}`);
                return this.handle.processRequest(null);
             }
 
@@ -122096,7 +122200,7 @@ class WebWindowHandle {
    /** @summary Request server to resize window
      * @desc For local displays like CEF or qt5 only server can do this */
    resizeWindow(w, h) {
-      if (browser.qt5 || browser.cef3)
+      if (browser.qt5 || browser.qt6 || browser.cef3)
          this.send(`RESIZE=${w},${h}`, 0);
       else if ((typeof window !== 'undefined') && isFunc(window?.resizeTo))
          window.resizeTo(w, h);
@@ -122401,7 +122505,7 @@ class WebWindowHandle {
       });
    }
 
-   /** @summary Replace widget URL before reload or close of the page
+   /** @summary Replace widget URL with new key
      * @private */
    storeKeyInUrl() {
       if (!this._handling_reload)
@@ -122414,19 +122518,18 @@ class WebWindowHandle {
             prefix = '?key=';
             p = href.indexOf(prefix);
          }
-         if (p > 0)
-            href = href.slice(0, p);
-         if (this.new_key)
-            href += prefix + this.new_key;
-         window.history.replaceState(window.history.state, undefined, href);
+         if ((p > 0) && this.new_key) {
+            const p1 = href.indexOf('#', p+1), p2 = href.indexOf('&', p+1),
+                  pp = (p1 < 0) ? p2 : (p2 < 0 ? p1 : Math.min(p1, p2));
+            href = href.slice(0, p) + prefix + this.new_key + (pp < 0 ? '' : href.slice(pp));
+            window.history.replaceState(window.history.state, undefined, href);
+         }
       }
       if (typeof sessionStorage !== 'undefined') {
          sessionStorage.setItem('RWebWindow_SessionKey', sessionKey);
          sessionStorage.setItem('RWebWindow_Key', this.new_key);
       }
    }
-
-
 
 } // class WebWindowHandle
 
@@ -122592,9 +122695,7 @@ class RCanvasPainter extends RPadPainter {
      * @desc Function should be used only from the func which supposed to be replaced by ui5
      * @private */
    testUI5() {
-      if (!this.use_openui) return false;
-      console.warn('full ui5 should be used - not loaded yet? Please check!!');
-      return true;
+      return this.use_openui ?? false;
    }
 
    /** @summary Show message
@@ -128156,10 +128257,12 @@ exports.GridDisplay = GridDisplay;
 exports.HierarchyPainter = HierarchyPainter;
 exports.MDIDisplay = MDIDisplay;
 exports.ObjectPainter = ObjectPainter;
+exports.TCanvasPainter = TCanvasPainter;
 exports.TGeoPainter = TGeoPainter;
 exports.TH1Painter = TH1Painter;
 exports.TH2Painter = TH2Painter;
 exports.TH3Painter = TH3Painter;
+exports.TPadPainter = TPadPainter;
 exports.TRandom = TRandom;
 exports.TSelector = TSelector;
 exports.TabsDisplay = TabsDisplay;
@@ -128168,6 +128271,8 @@ exports._loadJSDOM = _loadJSDOM;
 exports.addDrawFunc = addDrawFunc;
 exports.addHighlightStyle = addHighlightStyle;
 exports.addMethods = addMethods;
+exports.addMoveHandler = addMoveHandler;
+exports.assignContextMenu = assignContextMenu;
 exports.atob_func = atob_func;
 exports.browser = browser;
 exports.btoa_func = btoa_func;
@@ -128243,6 +128348,7 @@ exports.clTStyle = clTStyle;
 exports.clTText = clTText;
 exports.cleanup = cleanup;
 exports.clone = clone;
+exports.closeMenu = closeMenu;
 exports.compressSVG = compressSVG;
 exports.constants = constants$1;
 exports.convertDate = convertDate;
@@ -128250,6 +128356,7 @@ exports.create = create$1;
 exports.createGeoPainter = createGeoPainter;
 exports.createHistogram = createHistogram;
 exports.createHttpRequest = createHttpRequest;
+exports.createMenu = createMenu;
 exports.createTGraph = createTGraph;
 exports.createTHStack = createTHStack;
 exports.createTMultiGraph = createTMultiGraph;
@@ -128258,7 +128365,10 @@ exports.d3_select = select;
 exports.decodeUrl = decodeUrl;
 exports.draw = draw;
 exports.drawRawText = drawRawText;
+exports.drawTFrame = drawTFrame;
+exports.drawTPadSnapshot = drawTPadSnapshot;
 exports.drawingJSON = drawingJSON;
+exports.ensureTCanvas = ensureTCanvas;
 exports.findFunction = findFunction;
 exports.floatToString = floatToString;
 exports.gStyle = gStyle;
@@ -128273,6 +128383,7 @@ exports.getHPainter = getHPainter;
 exports.getMethods = getMethods;
 exports.getPromise = getPromise;
 exports.getTDatime = getTDatime;
+exports.hasMenu = hasMenu;
 exports.httpRequest = httpRequest;
 exports.injectCode = injectCode;
 exports.internals = internals;
@@ -128292,6 +128403,8 @@ exports.kInspect = kInspect;
 exports.kNoStats = kNoStats;
 exports.kNoZoom = kNoZoom;
 exports.kTitle = kTitle;
+exports.kToFront = kToFront;
+exports.loadModules = loadModules;
 exports.loadOpenui5 = loadOpenui5;
 exports.loadScript = loadScript;
 exports.makeImage = makeImage;
@@ -128316,6 +128429,7 @@ exports.setHPainter = setHPainter;
 exports.setHistogramTitle = setHistogramTitle;
 exports.setSaveFile = setSaveFile;
 exports.settings = settings;
+exports.showPainterMenu = showPainterMenu;
 exports.svgToImage = svgToImage;
 exports.toJSON = toJSON;
 exports.treeDraw = treeDraw;
