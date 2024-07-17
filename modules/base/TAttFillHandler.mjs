@@ -45,6 +45,9 @@ class TAttFillHandler {
 
    /** @summary Apply fill style to selection */
    apply(selection) {
+      if (this._disable)
+         return selection.style('fill', 'none');
+
       this.used = true;
 
       selection.style('fill', this.getFillColor());
@@ -69,6 +72,14 @@ class TAttFillHandler {
    empty() {
       const fill = this.getFillColor();
       return !fill || (fill === 'none');
+   }
+
+   /** @summary Enable or disable fill usage - if disabled only 'fill: none' will be applied */
+   enable(on) {
+      if ((on === undefined) || on)
+         delete this._disable;
+      else
+         this._disable = true;
    }
 
    /** @summary Set usage flag of attribute */

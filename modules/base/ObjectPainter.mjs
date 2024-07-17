@@ -750,7 +750,7 @@ class ObjectPainter extends BasePainter {
      * otherwise newly created patters will not be usable in the canvas
      * See {@link TAttFillHandler} for more info.
      * Instance assigned as this.fillatt data member, recognized by GED editors
-     * @param {object} args - for special cases one can specify TAttFill as args or number of parameters
+     * @param {object} [args] - for special cases one can specify TAttFill as args or number of parameters
      * @param {boolean} [args.std = true] - this is standard fill attribute for object and should be used as this.fillatt
      * @param {object} [args.attr = null] - object, derived from TAttFill
      * @param {number} [args.pattern = undefined] - integer index of fill pattern
