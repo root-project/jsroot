@@ -1270,8 +1270,7 @@ class TH2Painter extends THistPainter {
 
       entries.forEach((entry, colindx) => {
          if (entry) {
-            this.draw_g
-                .append('svg:path')
+            this.draw_g.append('svg:path')
                 .attr('fill', palette.getColor(colindx))
                 .attr('d', entry.path);
          }
@@ -1453,13 +1452,10 @@ class TH2Painter extends THistPainter {
          const dd = buildPath(xp, yp, iminus, iplus, fillcolor !== 'none', true);
          if (!dd) return;
 
-         const elem = this.draw_g
-                        .append('svg:path')
-                        .attr('d', dd)
-                        .style('fill', fillcolor);
-
-         if (lineatt)
-            elem.call(lineatt.func);
+         this.draw_g.append('svg:path')
+             .attr('d', dd)
+             .style('fill', fillcolor)
+             .call(lineatt ? lineatt.func : () => {});
       });
 
       handle.hide_only_zeros = true; // text drawing suppress only zeros
