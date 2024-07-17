@@ -833,18 +833,23 @@ async function connectWebWindow(arg) {
    let d_key, d_token, new_key;
 
    if (!arg.href) {
-      let href = (typeof document !== 'undefined') ? document.URL : '';
+      let href = (typeof document !== 'undefined') ? document.URL : '', s_key;
       const p = href.indexOf('#');
       if (p > 0) {
-         sessionKey = href.slice(p+1);
+         s_key = href.slice(p + 1);
          href = href.slice(0, p);
-         if (typeof window !== 'undefined')
-            window.history?.replaceState(window.history.state, undefined, href);
       }
 
       const d = decodeUrl(href);
       d_key = d.get('key');
       d_token = d.get('token');
+
+      if (d_key && s_key && (s_key.length > 20)) {
+         sessionKey = s_key;
+
+         if (typeof window !== 'undefined')
+            window.history?.replaceState(window.history.state, undefined, href);
+      }
 
       if (typeof sessionStorage !== 'undefined') {
          new_key = sessionStorage.getItem('RWebWindow_Key');
