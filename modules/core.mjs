@@ -465,9 +465,8 @@ async function injectCode(code) {
 
       // try to detect if code includes import and must be treated as module
       const is_v6 = code.indexOf('JSROOT.require') >= 0,
-            is_mjs = !is_v6 && (code.indexOf('import {') > 0) && (code.indexOf('} from \'') > 0);
-
-      const promise = is_v6 ? _ensureJSROOT() : Promise.resolve(true);
+            is_mjs = !is_v6 && (code.indexOf('import {') > 0) && (code.indexOf('} from \'') > 0),
+            promise = is_v6 ? _ensureJSROOT() : Promise.resolve(true);
 
       return promise.then(() => {
          const element = document.createElement('script');
@@ -485,8 +484,8 @@ async function injectCode(code) {
   * @param {String} arg - single URL or array of URLs
   * @return {Promise} */
 async function loadModules(arg) {
-   if(isStr(arg))
-      arg  = arg.split(';');
+   if (isStr(arg))
+      arg = arg.split(';');
    if (arg.length === 0)
       return true;
    return import(/* webpackIgnore: true */ arg.shift()).then(() => loadModules(arg));
