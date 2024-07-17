@@ -662,13 +662,17 @@ class ObjectPainter extends BasePainter {
      * @return {object} created handler
      * @protected */
    createAttMarker(args) {
-      if (!isObject(args))
+      if (args === undefined)
+         args = { attr: this.getObject() };
+      else if (!isObject(args))
          args = { std: true };
       else if (args.fMarkerColor !== undefined && args.fMarkerStyle !== undefined && args.fMarkerSize !== undefined)
          args = { attr: args, std: false };
 
-      if (args.std === undefined) args.std = true;
-      if (args.painter === undefined) args.painter = this;
+      if (args.std === undefined)
+         args.std = true;
+      if (args.painter === undefined)
+         args.painter = this;
 
       let handler = args.std ? this.markeratt : null;
 
@@ -677,7 +681,8 @@ class ObjectPainter extends BasePainter {
       else if (!handler.changed || args.force)
          handler.setArgs(args);
 
-      if (args.std) this.markeratt = handler;
+      if (args.std)
+         this.markeratt = handler;
       return handler;
    }
 
@@ -688,13 +693,17 @@ class ObjectPainter extends BasePainter {
      * @param {object} args - either TAttLine or see constructor arguments of {@link TAttLineHandler}
      * @protected */
    createAttLine(args) {
-      if (!isObject(args))
+      if (args === undefined)
+         args = { attr: this.getObject() };
+      else if (!isObject(args))
          args = { std: true };
       else if (args.fLineColor !== undefined && args.fLineStyle !== undefined && args.fLineWidth !== undefined)
          args = { attr: args, std: false };
 
-      if (args.std === undefined) args.std = true;
-      if (args.painter === undefined) args.painter = this;
+      if (args.std === undefined)
+         args.std = true;
+      if (args.painter === undefined)
+         args.painter = this;
 
       let handler = args.std ? this.lineatt : null;
 
@@ -703,7 +712,8 @@ class ObjectPainter extends BasePainter {
       else if (!handler.changed || args.force)
          handler.setArgs(args);
 
-      if (args.std) this.lineatt = handler;
+      if (args.std)
+         this.lineatt = handler;
       return handler;
    }
 
@@ -711,13 +721,17 @@ class ObjectPainter extends BasePainter {
      * @param {object} args - either TAttText or see constructor arguments of {@link TAttTextHandler}
      * @protected */
    createAttText(args) {
-      if (!isObject(args))
+      if (args === undefined)
+         args = { attr: this.getObject() };
+      else if (!isObject(args))
          args = { std: true };
       else if (args.fTextFont !== undefined && args.fTextSize !== undefined && args.fTextColor !== undefined)
          args = { attr: args, std: false };
 
-      if (args.std === undefined) args.std = true;
-      if (args.painter === undefined) args.painter = this;
+      if (args.std === undefined)
+         args.std = true;
+      if (args.painter === undefined)
+         args.painter = this;
 
       let handler = args.std ? this.textatt : null;
 
@@ -726,7 +740,8 @@ class ObjectPainter extends BasePainter {
       else if (!handler.changed || args.force)
          handler.setArgs(args);
 
-      if (args.std) this.textatt = handler;
+      if (args.std)
+         this.textatt = handler;
       return handler;
    }
 
@@ -745,24 +760,30 @@ class ObjectPainter extends BasePainter {
      * @return created handle
      * @protected */
    createAttFill(args) {
-      if (!isObject(args))
+      if (args === undefined)
+         args = { attr: this.getObject() };
+      else if (!isObject(args))
          args = { std: true };
       else if (args._typename && args.fFillColor !== undefined && args.fFillStyle !== undefined)
          args = { attr: args, std: false };
 
-      if (args.std === undefined) args.std = true;
+      if (args.std === undefined)
+         args.std = true;
+      if (args.painter === undefined)
+         args.painter = this;
 
       let handler = args.std ? this.fillatt : null;
 
-      if (!args.svg) args.svg = this.getCanvSvg();
-      if (args.painter === undefined) args.painter = this;
+      if (!args.svg)
+         args.svg = this.getCanvSvg();
 
       if (!handler)
          handler = new TAttFillHandler(args);
       else if (!handler.changed || args.force)
          handler.setArgs(args);
 
-      if (args.std) this.fillatt = handler;
+      if (args.std)
+         this.fillatt = handler;
       return handler;
    }
 
