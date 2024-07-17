@@ -1585,7 +1585,7 @@ class TH2Painter extends THistPainter {
       }
 
       // do not try color draw optimization as with plain th2 while
-      // bins are not rectangular and drawings artefacts are nasty
+      // bins are not rectangular and drawings artifacts are nasty
       // therefore draw each bin separately when doing color draw
       const lineatt0 = lineatt_match && gr0 ? this.createAttLine(gr0) : null,
             fillatt0 = fillatt_match && gr0 ? this.createAttFill(gr0) : null,
