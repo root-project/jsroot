@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '17/07/2024',
+version_date = '18/07/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -121739,11 +121739,11 @@ class RCanvasPainter extends RPadPainter {
             this.createImage(cmd.toLowerCase())
                 .then(res => handle.send(reply + res));
          } else if (cmd.indexOf('ADDPANEL:') === 0) {
-            const relative_path = cmd.slice(9);
             if (!isFunc(this.showUI5Panel))
                handle.send(reply + 'false');
              else {
-               const conn = handle.createNewInstance();
+               const window_path = cmd.slice(9),
+                     conn = handle.createNewInstance(window_path);
 
                // set interim receiver until first message arrives
                conn.setReceiver({
@@ -121770,15 +121770,8 @@ class RCanvasPainter extends RPadPainter {
 
                });
 
-               let addr = handle.href;
-               if (relative_path.indexOf('../') === 0) {
-                  const ddd = addr.lastIndexOf('/', addr.length-2);
-                  addr = addr.slice(0, ddd) + relative_path.slice(2);
-               } else
-                  addr += relative_path;
-
                // only when connection established, panel will be activated
-               conn.connect(addr);
+               conn.connect();
             }
          } else {
             console.log('Unrecognized command ' + cmd);
