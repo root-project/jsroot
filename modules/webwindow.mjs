@@ -625,8 +625,8 @@ class WebWindowHandle {
             if (ntry > 2) showProgress();
             this.state = 1;
 
-            const key = this.key || '';
-            this.send(`READY=${key}`, 0); // need to confirm connection
+            const reply = (this._secondary ? '' : 'generate_key;') + (this.key || '');
+            this.send(`READY=${reply}`, 0); // need to confirm connection and request new key
             this.invokeReceiver(false, 'onWebsocketOpened');
          };
 
