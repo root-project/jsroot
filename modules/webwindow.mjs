@@ -562,12 +562,18 @@ class WebWindowHandle {
       return args;
    }
 
-   /** @summary Create configured socket for current object.
+   /** @summary Connect to the server
+     * @param [href] - optional URL to widget, use document URL instead
      * @private */
    connect(href) {
       this.close();
-      if (!href && this.href)
-         href = this.href;
+
+      if (href) {
+         this._secondary = true;
+         this.setHRef(href);
+      }
+
+      href = this.href;
 
       let ntry = 0;
 
@@ -788,6 +794,10 @@ class WebWindowHandle {
    /** @summary Replace widget URL with new key
      * @private */
    storeKeyInUrl() {
+      // do not modify document URLs by secondary widgets
+      if (this._secondary)
+         return;
+
       let href = (typeof document !== 'undefined') ? document.URL : null;
 
       if (this._can_modify_url && isStr(href) && (typeof window !== 'undefined')) {
@@ -812,8 +822,11 @@ class WebWindowHandle {
 
    /** @summary Create new instance of same kind
     * @private */
-   createNewInstance() {
-      return new WebWindowHandle(this.kind);
+   createNewInstance(url) {
+      const handle = new WebWindowHandle(this.kind);
+      handle._secondary = true;
+      handle.setHRef(this.getHRef(url));
+      return handle;
    }
 
 } // class WebWindowHandle
