@@ -7,7 +7,7 @@
 4. Support Z-scale zooming with TScatter
 5. Implement "haxis" draw option for histogram to draw only axes for hbar
 6. Implement "axisg" and "haxisg" to draw axes with grids
-7. Support TH1 marker drawing superimposed with "haxis"
+7. Support TH1 marker, text and line drawing superimposed with "haxis"
 8. TProfile and TProfile2D projections https://github.com/root-project/root/issues/15851
 9. Draw total histogram from TEfficiency when draw option starts with 'b'
 10. Let redraw TEfficiency, THStack and TMultiGraph with different draw options via hist context menu

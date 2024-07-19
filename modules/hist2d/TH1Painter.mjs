@@ -656,8 +656,9 @@ class TH1Painter extends THistPainter {
                const cont = text_profile ? histo.fBinEntries[bin+1] : bincont;
 
                if (cont !== 0) {
-                  const arg = text_angle ? { align: 12, x: midx, y: Math.round(my - 2 - text_size/5), width: 0, height: 0, rotate: text_angle }
-                                         : { align: 22, x: Math.round(mx1 + (mx2-mx1)*0.1), y: Math.round(my-2-text_size), width: Math.round((mx2-mx1)*0.8), height: text_size };
+                  const arg = text_angle
+                     ? { align: 12, x: midx, y: Math.round(my - 2 - text_size / 5), width: 0, height: 0, rotate: text_angle }
+                     : { align: 22, x: Math.round(mx1 + (mx2 - mx1) * 0.1), y: Math.round(my - 2 - text_size), width: Math.round((mx2 - mx1) * 0.8), height: text_size };
                   arg.text = (cont === Math.round(cont)) ? cont.toString() : floatToString(cont, gStyle.fPaintTextFormat);
                   arg.color = text_col;
                   arg.latex = 0;
