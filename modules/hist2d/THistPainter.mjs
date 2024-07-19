@@ -38,7 +38,7 @@ class THistDrawOptions {
               AutoColor: false, NoStat: false, ForceStat: false, PadStats: false, PadTitle: false, AutoZoom: false,
               HighRes: 0, Zero: 1, Palette: 0, BaseLine: false, ShowEmpty: false,
               Optimize: settings.OptimizeDraw, adjustFrame: false,
-              Mode3D: false, x3dscale: 1, y3dscale: 1,
+              Mode3D: false, x3dscale: 1, y3dscale: 1, SwapXY: false,
               Render3D: constants.Render3D.Default,
               FrontBox: true, BackBox: true,
               need_fillcol: false,
@@ -327,6 +327,8 @@ class THistDrawOptions {
       if (d.check('CHAR')) this.Char = 1;
       if (d.check('ALLFUNC')) this.AllFunc = true;
       if (d.check('FUNC')) { this.Func = true; this.Hist = false; }
+      if (d.check('HAXIS')) { this.Axis = 1; this.SwapXY = 1; }
+      if (d.check('HAXIG')) { this.Axis = 2; this.SwapXY = 1; }
       if (d.check('AXIS')) this.Axis = 1;
       if (d.check('AXIG')) this.Axis = 2;
 
@@ -494,9 +496,9 @@ class THistDrawOptions {
          this.Surf = 13;
    }
 
-   /** @summary Is swap xy is configured */
+   /** @summary Is X/Y swap is configured */
    swap_xy() {
-      return this.BarStyle >= 20;
+      return this.BarStyle >= 20 || this.SwapXY;
    }
 
    /** @summary Tries to reconstruct string with hist draw options */
