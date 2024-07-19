@@ -640,6 +640,16 @@ class TH1Painter extends THistPainter {
             const he1 = Math.max(yerr1, 5), he2 = Math.max(yerr2, 5);
             hints_err += `M${midx-edx},${my-he1}h${2*edx}v${he1+he2}h${-2*edx}z`;
          }
+      }, draw_marker = () => {
+         if (funcs.swap_xy) {
+            path_marker += this.markeratt.create(my, midx);
+            if (hints_marker !== null)
+               hints_marker += `M${my-hsz},${midx-hsz}v${2*hsz}h${2*hsz}v${-2*hsz}z`;
+         } else {
+            path_marker += this.markeratt.create(midx, my);
+            if (hints_marker !== null)
+               hints_marker += `M${midx-hsz},${my-hsz}h${2*hsz}v${2*hsz}h${-2*hsz}z`;
+         }
       }, draw_bin = bin => {
          if (extract_bin(bin)) {
             if (show_text) {
@@ -672,12 +682,8 @@ class TH1Painter extends THistPainter {
                if ((my >= -yerr1) && (my <= height + yerr2)) {
                   if (path_fill !== null)
                      path_fill += `M${mx1},${my-yerr1}h${mx2-mx1}v${yerr1+yerr2+1}h${mx1-mx2}z`;
-                  if ((path_marker !== null) && do_marker) {
-                     path_marker += this.markeratt.create(midx, my);
-                     if (hints_marker !== null)
-                        hints_marker += `M${midx-hsz},${my-hsz}h${2*hsz}v${2*hsz}h${-2*hsz}z`;
-                  }
-
+                  if ((path_marker !== null) && do_marker)
+                     draw_marker();
                   if ((path_err !== null) && do_err)
                      draw_errbin();
                }
@@ -691,9 +697,7 @@ class TH1Painter extends THistPainter {
             for (i = left; i < right; ++i) {
                if (extract_bin(i)) {
                   if (path_marker !== null)
-                     path_marker += this.markeratt.create(midx, my);
-                  if (hints_marker !== null)
-                     hints_marker += `M${midx-hsz},${my-hsz}h${2*hsz}v${2*hsz}h${-2*hsz}z`;
+                     draw_marker();
                   if (path_err !== null)
                      draw_errbin();
                }
@@ -701,7 +705,6 @@ class TH1Painter extends THistPainter {
             do_err = do_marker = false;
          }
       }
-
 
       for (i = left; i <= right; ++i) {
          x = xaxis.GetBinLowEdge(i+1);
