@@ -670,7 +670,9 @@ class TH1Painter extends THistPainter {
             }
 
             if (show_line) {
-               if (path_line.length === 0)
+               if (funcs.swap_xy)
+                  path_line += (path_line ? 'L' : 'M') + `${my},${midx}`; // no optimization
+               else if (path_line.length === 0)
                   path_line = `M${midx},${my}`;
                else if (lx === midx)
                   path_line += `v${my-ly}`;
@@ -815,8 +817,11 @@ class TH1Painter extends THistPainter {
       }
 
       if (draw_markers || show_line || show_curve) {
-         if (!path_line && grpnts.length)
+         if (!path_line && grpnts.length) {
+            if (funcs.swap_xy)
+               grpnts.forEach(pnt => { const d = pnt.grx; pnt.grx = pnt.gry; pnt.gry = d; });
             path_line = buildSvgCurve(grpnts);
+         }
 
          if (path_fill) {
             this.draw_g.append('svg:path')
