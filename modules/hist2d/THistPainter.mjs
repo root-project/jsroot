@@ -327,8 +327,10 @@ class THistDrawOptions {
       if (d.check('CHAR')) this.Char = 1;
       if (d.check('ALLFUNC')) this.AllFunc = true;
       if (d.check('FUNC')) { this.Func = true; this.Hist = false; }
+      if (d.check('HAXISG')) { this.Axis = 3; this.SwapXY = 1; }
       if (d.check('HAXIS')) { this.Axis = 1; this.SwapXY = 1; }
       if (d.check('HAXIG')) { this.Axis = 2; this.SwapXY = 1; }
+      if (d.check('AXISG')) this.Axis = 3;
       if (d.check('AXIS')) this.Axis = 1;
       if (d.check('AXIG')) this.Axis = 2;
 
