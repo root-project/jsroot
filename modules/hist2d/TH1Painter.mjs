@@ -402,10 +402,8 @@ class TH1Painter extends THistPainter {
 
       if (side > 4) side = 4;
       gry2 = funcs.swap_xy ? 0 : height;
-      if (Number.isFinite(this.options.BaseLine)) {
-         if (this.options.BaseLine >= funcs.scale_ymin)
-            gry2 = Math.round(funcs.gry(this.options.BaseLine));
-       }
+      if (Number.isFinite(this.options.BaseLine) && (this.options.BaseLine >= funcs.scale_ymin))
+         gry2 = Math.round(funcs.gry(this.options.BaseLine));
 
       if (show_text) {
          text_col = this.getColor(histo.fMarkerColor);
@@ -1023,7 +1021,7 @@ class TH1Painter extends THistPainter {
 
          gapx = 0;
 
-         gry1 = Math.round(funcs.gry(((this.options.BaseLine !== false) && (this.options.BaseLine > funcs.scale_ymin)) ? this.options.BaseLine : funcs.scale_ymin));
+         gry1 = Math.round(funcs.gry(Number.isFinite(this.options.BaseLine && (this.options.BaseLine > funcs.scale_ymin)) ? this.options.BaseLine : funcs.scale_ymin));
 
          if (gry1 > gry2)
             [gry1, gry2] = [gry2, gry1];

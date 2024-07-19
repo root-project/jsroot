@@ -205,11 +205,9 @@ class RH1Painter extends RHistPainter {
       let i, x1, x2, grx1, grx2, y, gry1, gry2, w,
           bars = '', barsl = '', barsr = '';
 
-      gry2 = pmain.swap_xy ? 0 : height;
-      if (Number.isFinite(this.options.BaseLine)) {
-         if (this.options.BaseLine >= funcs.scale_ymin)
-            gry2 = Math.round(funcs.gry(this.options.BaseLine));
-      }
+      gry2 = funcs.swap_xy ? 0 : height;
+      if (Number.isFinite(this.options.BaseLine) && (this.options.BaseLine >= funcs.scale_ymin))
+         gry2 = Math.round(funcs.gry(this.options.BaseLine));
 
       for (i = left; i < right; i += di) {
          x1 = xaxis.GetBinCoord(i);
@@ -726,7 +724,7 @@ class RH1Painter extends RHistPainter {
 
          gapx = 0;
 
-         gry1 = Math.round(funcs.gry(((this.options.BaseLine!==false) && (this.options.BaseLine > funcs.scale_ymin)) ? this.options.BaseLine : funcs.scale_ymin));
+         gry1 = Math.round(funcs.gry((Number.isFinite(this.options.BaseLine) && (this.options.BaseLine > funcs.scale_ymin)) ? this.options.BaseLine : funcs.scale_ymin));
 
          if (gry1 > gry2)
             [gry1, gry2] = [gry2, gry1];
