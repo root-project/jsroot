@@ -494,6 +494,11 @@ class THistDrawOptions {
          this.Surf = 13;
    }
 
+   /** @summary Is swap xy is configured */
+   swap_xy() {
+      return this.BarStyle >= 20;
+   }
+
    /** @summary Tries to reconstruct string with hist draw options */
    asString(is_main_hist, pad) {
       let res = '', zopt = '';
@@ -1302,7 +1307,7 @@ class THistPainter extends ObjectPainter {
                     zoom_ymin: this.zoom_ymin,
                     zoom_ymax: this.zoom_ymax,
                     ymin_nz: this.ymin_nz,
-                    swap_xy: (this.options.BarStyle >= 20),
+                    swap_xy: this.options.swap_xy(),
                     reverse_x: this.options.RevX,
                     reverse_y: this.options.RevY,
                     symlog_x: this.options.SymlogX,
