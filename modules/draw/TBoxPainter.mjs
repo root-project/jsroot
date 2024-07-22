@@ -62,8 +62,10 @@ class TBoxPainter extends ObjectPainter {
 
    /** @summary Create path */
    getPathes() {
-      const xx = Math.min(this.x1, this.x2), yy = Math.min(this.y1, this.y2),
-            ww = Math.abs(this.x2 - this.x1), hh = Math.abs(this.y1 - this.y2),
+      const xx = Math.round(Math.min(this.x1, this.x2)),
+            yy = Math.round(Math.min(this.y1, this.y2)),
+            ww = Math.round(Math.abs(this.x2 - this.x1)),
+            hh = Math.round(Math.abs(this.y1 - this.y2)),
             path = `M${xx},${yy}h${ww}v${hh}h${-ww}z`;
       if (!this.borderMode)
          return [path];
