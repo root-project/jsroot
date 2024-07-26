@@ -80,8 +80,7 @@ class TBoxPainter extends ObjectPainter {
    redraw() {
       const box = this.getObject(),
             opt = this.getDrawOpt(),
-            draw_line = (opt.toUpperCase().indexOf('L') >= 0),
-            fp = this.getFramePainter();
+            draw_line = (opt.toUpperCase().indexOf('L') >= 0);
 
       this.createAttLine({ attr: box });
       this.createAttFill({ attr: box });
@@ -90,13 +89,13 @@ class TBoxPainter extends ObjectPainter {
       if (!this.fillatt.empty() && !draw_line)
          this.lineatt.color = 'none';
 
-      this.createG(fp ? true : undefined);
+      this.createG('frame2d');
 
       this.x1 = this.axisToSvg('x', box.fX1);
       this.x2 = this.axisToSvg('x', box.fX2);
       this.y1 = this.axisToSvg('y', box.fY1);
       this.y2 = this.axisToSvg('y', box.fY2);
-      if (fp?.swap_xy)
+      if (this.getFramePainter()?.swap_xy)
          [this.x1, this.x2, this.y1, this.y2] = [this.y1, this.y2, this.x1, this.x2];
 
       this.borderMode = (box.fBorderMode && box.fBorderSize && this.fillatt.hasColor()) ? box.fBorderMode : 0;

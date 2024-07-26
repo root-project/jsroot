@@ -36,7 +36,7 @@ async function drawText() {
       text.fTextAlign = 22;
    }
 
-   this.createG(!this.isndc && fp ? true : undefined);
+   this.createG(this.isndc ? undefined : 'frame2d');
 
    this.draw_g.attr('transform', null); // remove transform from interactive changes
 
