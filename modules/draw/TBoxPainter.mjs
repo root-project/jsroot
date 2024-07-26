@@ -81,7 +81,7 @@ class TBoxPainter extends ObjectPainter {
       const box = this.getObject(),
             opt = this.getDrawOpt(),
             draw_line = (opt.toUpperCase().indexOf('L') >= 0),
-            funcs = this.getFramePainter().getGrFuncs();
+            fp = this.getFramePainter();
 
       this.createAttLine({ attr: box });
       this.createAttFill({ attr: box });
@@ -90,19 +90,15 @@ class TBoxPainter extends ObjectPainter {
       if (!this.fillatt.empty() && !draw_line)
          this.lineatt.color = 'none';
 
-      this.createG(true);
+      this.createG(fp ? true : undefined);
 
-      if (funcs.swap_xy) {
-         this.y1 = funcs.grx(box.fX1);
-         this.y2 = funcs.grx(box.fX2);
-         this.x1 = funcs.gry(box.fY1);
-         this.x2 = funcs.gry(box.fY2);
-      } else {
-         this.x1 = funcs.grx(box.fX1);
-         this.x2 = funcs.grx(box.fX2);
-         this.y1 = funcs.gry(box.fY1);
-         this.y2 = funcs.gry(box.fY2);
-      }
+      this.x1 = this.axisToSvg('x', box.fX1);
+      this.x2 = this.axisToSvg('x', box.fX2);
+      this.y1 = this.axisToSvg('y', box.fY1);
+      this.y2 = this.axisToSvg('y', box.fY2);
+      if (fp?.swap_xy)
+         [this.x1, this.x2, this.y1, this.y2] = [this.y1, this.y2, this.x1, this.x2];
+
       this.borderMode = (box.fBorderMode && box.fBorderSize && this.fillatt.hasColor()) ? box.fBorderMode : 0;
       this.borderSize = box.fBorderSize;
 
