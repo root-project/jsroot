@@ -2,8 +2,7 @@ import { gStyle, BIT, settings, constants, create, isObject, isFunc, isStr, getP
          clTList, clTPaveText, clTPaveStats, clTPaletteAxis, clTProfile, clTProfile2D, clTProfile3D, clTPad,
          clTAxis, clTF1, clTF2, kNoZoom, clTCutG, kNoStats, kTitle } from '../core.mjs';
 import { getColor, getColorPalette } from '../base/colors.mjs';
-import { DrawOptions } from '../base/BasePainter.mjs';
-import { ObjectPainter, EAxisBits, kAxisTime, kAxisLabels } from '../base/ObjectPainter.mjs';
+import { ObjectPainter, DrawOptions, EAxisBits, kAxisTime, kAxisLabels } from '../base/ObjectPainter.mjs';
 import { TPavePainter } from '../hist/TPavePainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
