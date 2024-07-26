@@ -211,10 +211,10 @@ class RH1Painter extends RHistPainter {
       const left = handle.i1, right = handle.i2, di = handle.stepi,
             pmain = this.getFramePainter(),
             histo = this.getHisto(), xaxis = this.getAxis('x');
-      let i, x1, x2, grx1, grx2, y, gry1, gry2, w,
+      let i, x1, x2, grx1, grx2, y, gry1, w,
           bars = '', barsl = '', barsr = '';
 
-      gry2 = this.getBarBaseline(funcs, height);
+      const gry2 = this.getBarBaseline(funcs, height);
 
       for (i = left; i < right; i += di) {
          x1 = xaxis.GetBinCoord(i);

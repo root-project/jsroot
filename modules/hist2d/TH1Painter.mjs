@@ -404,12 +404,12 @@ class TH1Painter extends THistPainter {
             histo = this.getHisto(), xaxis = histo.fXaxis,
             show_text = this.options.Text;
       let text_col, text_angle, text_size,
-          i, x1, x2, grx1, grx2, y, gry1, gry2, w,
+          i, x1, x2, grx1, grx2, y, gry1, w,
           bars = '', barsl = '', barsr = '',
           side = (this.options.BarStyle > 10) ? this.options.BarStyle % 10 : 0;
 
       if (side > 4) side = 4;
-      gry2 = this.getBarBaseline(funcs, height);
+      const gry2 = this.getBarBaseline(funcs, height);
 
       if (show_text) {
          text_col = this.getColor(histo.fMarkerColor);
