@@ -311,6 +311,11 @@ class ObjectPainter extends BasePainter {
    createG(frame_layer) {
       let layer;
 
+      if (frame_layer === 'frame2d') {
+         const fp = this.getFramePainter();
+         frame_layer = fp && !fp.mode3d;
+      }
+
       if (frame_layer) {
          const frame = this.getFrameSvg();
          if (frame.empty()) {
