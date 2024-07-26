@@ -389,6 +389,14 @@ class TH1Painter extends THistPainter {
       return true;
    }
 
+   /** @summary Get baseline for bar drawings */
+   getBarBaseline(funcs, height) {
+      let gry = funcs.swap_xy ? 0 : height;
+      if (Number.isFinite(this.options.BaseLine) && (this.options.BaseLine >= funcs.scale_ymin))
+         gry = Math.round(funcs.gry(this.options.BaseLine));
+      return gry;
+   }
+
    /** @summary Draw histogram as bars */
    async drawBars(funcs, height) {
       const left = this.getSelectIndex('x', 'left', -1),
@@ -401,9 +409,7 @@ class TH1Painter extends THistPainter {
           side = (this.options.BarStyle > 10) ? this.options.BarStyle % 10 : 0;
 
       if (side > 4) side = 4;
-      gry2 = funcs.swap_xy ? 0 : height;
-      if (Number.isFinite(this.options.BaseLine) && (this.options.BaseLine >= funcs.scale_ymin))
-         gry2 = Math.round(funcs.gry(this.options.BaseLine));
+      gry2 = this.getBarBaseline(funcs, height);
 
       if (show_text) {
          text_col = this.getColor(histo.fMarkerColor);
@@ -1021,7 +1027,7 @@ class TH1Painter extends THistPainter {
 
          gapx = 0;
 
-         gry1 = Math.round(funcs.gry(Number.isFinite(this.options.BaseLine && (this.options.BaseLine > funcs.scale_ymin)) ? this.options.BaseLine : funcs.scale_ymin));
+         gry1 = this.getBarBaseline(funcs, height);
 
          if (gry1 > gry2)
             [gry1, gry2] = [gry2, gry1];
