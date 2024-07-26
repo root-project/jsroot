@@ -1988,7 +1988,7 @@ class THistPainter extends ObjectPainter {
       if (this.options.minimum !== kNoZoom) { zmin = this.options.minimum; gzmin = Math.min(gzmin, zmin); apply_min = true; }
       if (this.options.maximum !== kNoZoom) { zmax = this.options.maximum; gzmax = Math.max(gzmax, zmax); apply_min = false; }
       if (zmin >= zmax) {
-         if (apply_min)
+         if (apply_min || (zmin == 0))
             zmax = zmin + 1;
          else
             zmin = zmax - 1;
