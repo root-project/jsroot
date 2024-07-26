@@ -1,5 +1,5 @@
 import { rgb as d3_rgb, select as d3_select } from '../d3.mjs';
-import { ObjectPainter } from '../base/ObjectPainter.mjs';
+import { ObjectPainter, DrawOptions } from '../base/ObjectPainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { addMoveHandler } from '../gui/utils.mjs';
 import { assignContextMenu, kToFront } from '../gui/menu.mjs';
@@ -79,8 +79,9 @@ class TBoxPainter extends ObjectPainter {
    /** @summary Redraw line */
    redraw() {
       const box = this.getObject(),
-            opt = this.getDrawOpt(),
-            draw_line = (opt.toUpperCase().indexOf('L') >= 0);
+            d = new DrawOptions(this.getDrawOpt()),
+            fp = d.check('FRAME') ? this.getFramePainter() : null,
+            draw_line = d.check('L');
 
       this.createAttLine({ attr: box });
       this.createAttFill({ attr: box });
@@ -89,13 +90,14 @@ class TBoxPainter extends ObjectPainter {
       if (!this.fillatt.empty() && !draw_line)
          this.lineatt.color = 'none';
 
-      this.createG('frame2d');
+      this.createG(fp);
 
       this.x1 = this.axisToSvg('x', box.fX1);
       this.x2 = this.axisToSvg('x', box.fX2);
       this.y1 = this.axisToSvg('y', box.fY1);
       this.y2 = this.axisToSvg('y', box.fY2);
-      if (this.getFramePainter()?.swap_xy)
+
+      if (fp?.swap_xy)
          [this.x1, this.x2, this.y1, this.y2] = [this.y1, this.y2, this.x1, this.x2];
 
       this.borderMode = (box.fBorderMode && box.fBorderSize && this.fillatt.hasColor()) ? box.fBorderMode : 0;
