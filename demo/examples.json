@@ -40,7 +40,7 @@
      { "name": "optdate", "url": "?nobrowser&file=$$$hsimple.root&item=hpx;1&optdate=2&optfile&utc", "title": "Draw on canvas file date and file name using optdate=2&optfile&utc URL parameters" },
      { "name": "opttitle", "url": "?nobrowser&file=$$$hsimple.root&item=hpx;1&opttitle=0", "title": "Disable title drawing for histogram using opttitle=0 URL parameter" },
      { "name": "histmargin", "url": "?nobrowser&file=$$$hsimple.root&item=hpx;1&histmargin=0.5", "title": "Setting gStyle.fHistTopMargin = 0.5 to demonstrate it usage, &histmargin=0.5 in URL" },
-     { "name": "haxis", "file": "haxis.root", "item": "c1", "title": "haxis draw option for swapped axis drawing plus bar chart and markers" }
+     { "name": "haxis", "file": "haxis.root", "item": "chaxis", "title": "haxis draw option for swapped axis drawing plus bar chart and markers" }
    ],
    "TH2" : [
      { "opt": "", "file": "hsimple.root", "item": "hpxpy;1", "title": "default draw mode for TH2", "pdf": true },
