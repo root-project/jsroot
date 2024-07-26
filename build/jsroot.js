@@ -75041,7 +75041,7 @@ class THistPainter extends ObjectPainter {
       if (this.options.minimum !== kNoZoom) { zmin = this.options.minimum; gzmin = Math.min(gzmin, zmin); apply_min = true; }
       if (this.options.maximum !== kNoZoom) { zmax = this.options.maximum; gzmax = Math.max(gzmax, zmax); apply_min = false; }
       if (zmin >= zmax) {
-         if (apply_min)
+         if (apply_min || !zmin)
             zmax = zmin + 1;
          else
             zmin = zmax - 1;
@@ -76421,8 +76421,9 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
    /** @summary Scan TH2 histogram content */
    scanContent(when_axis_changed) {
-      // no need to rescan histogram while result does not depend from axis selection
-      if (when_axis_changed && this.nbinsx && this.nbinsy) return;
+      // no need to re-scan histogram while result does not depend from axis selection
+      if (when_axis_changed && this.nbinsx && this.nbinsy)
+         return;
 
       const histo = this.getObject();
       let i, j;
@@ -76468,7 +76469,19 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
       if ((this.gminposbin === null) && (this.gmaxbin > 0))
          this.gminposbin = this.gmaxbin*1e-4;
 
-      const is_content = (this.gmaxbin !== 0) || (this.gminbin !== 0);
+      let is_content = (this.gmaxbin !== 0) || (this.gminbin !== 0);
+
+      // for TProfile2D show empty bin if there are entries for it
+      if (!is_content && (histo._typename === clTProfile2D)) {
+         for (i = 0; i < this.nbinsx && !is_content; ++i) {
+            for (j = 0; j < this.nbinsy; ++j) {
+               if (histo.getBinEntries(i + 1, j + 1)) {
+                  is_content = true;
+                  break;
+               }
+            }
+         }
+      }
 
       if (this.options.Axis > 0) {
          // Paint histogram axis only
@@ -76743,7 +76756,12 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
       };
 
       // check in the beginning if zero can be skipped
-      if (!skip_zero && !show_empty && (cntr.getPaletteIndex(palette, 0) === null)) skip_zero = true;
+      if (!skip_zero && !show_empty && (cntr.getPaletteIndex(palette, 0) === null))
+         skip_zero = true;
+
+      // special check for TProfile2D - empty bin with no entries shown
+      if (skip_zero && (histo?._typename === clTProfile2D))
+         skip_zero = 0;
 
       // now start build
       for (let i = handle.i1; i < handle.i2; ++i) {
@@ -76760,18 +76778,20 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
             is_zero = (binz === 0);
 
             if ((is_zero && skip_zero) || (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i + 0.5), histo.fYaxis.GetBinCoord(j + 0.5)))) {
-               if (last_entry) flush_last_entry();
+               if (last_entry)
+                  flush_last_entry();
                continue;
-            }
+            } else
+               colindx = cntr.getPaletteIndex(palette, binz);
 
-            colindx = cntr.getPaletteIndex(palette, binz);
             if (colindx === null) {
-               if (is_zero && show_empty)
+               if ((is_zero && show_empty) || ((skip_zero === 0) && histo.getBinEntries(i+1, j+1)))
                   colindx = 0;
-                 else {
-                   if (last_entry) flush_last_entry();
+               else {
+                   if (last_entry)
+                     flush_last_entry();
                    continue;
-                }
+               }
             }
 
             dy = (handle.gry[j] - handle.gry[j+1]) || 1;
@@ -78791,7 +78811,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
       return !obj || (obj.FindBin(max, 0.5) - obj.FindBin(min, 0) > 1);
    }
 
-   /** @summary Complete paletted drawing */
+   /** @summary Complete palette drawing */
    completePalette(pp) {
       if (!pp) return true;
 

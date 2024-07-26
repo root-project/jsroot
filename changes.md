@@ -18,6 +18,7 @@
 15. Internals - do not select pad (aka gPad) for objects drawing, always use assigned pad painter
 16. Fix - properly save zoomed ranges in drawingJSON()
 17. Fix - properly redraw TMultuGraph
+18. Fix - show empty bin in TProfile2D if it has entries #316
 
 
 ## Changes in 7.7.2

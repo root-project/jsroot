@@ -1245,7 +1245,7 @@ class TH2Painter extends THistPainter {
             if (colindx === null) {
                if ((is_zero && show_empty) || ((skip_zero === 0) && histo.getBinEntries(i+1, j+1)))
                   colindx = 0;
-               else  {
+               else {
                    if (last_entry)
                      flush_last_entry();
                    continue;
