@@ -40,12 +40,12 @@ class TBoxPainter extends ObjectPainter {
      * @private */
    moveEnd(not_changed) {
       if (not_changed) return;
-      const box = this.getObject();
+      const box = this.getObject(), X = this.swap_xy ? 'Y' : 'X', Y = this.swap_xy ? 'X' : 'Y';
       let exec = '';
-      if (this.c_x1) { box.fX1 = this.svgToAxis('x', this.x1); exec += `SetX1(${box.fX1});;`; }
-      if (this.c_x2) { box.fX2 = this.svgToAxis('x', this.x2); exec += `SetX2(${box.fX2});;`; }
-      if (this.c_y1) { box.fY1 = this.svgToAxis('y', this.y1); exec += `SetY1(${box.fY1});;`; }
-      if (this.c_y2) { box.fY2 = this.svgToAxis('y', this.y2); exec += `SetY2(${box.fY2});;`; }
+      if (this.c_x1) { const v = this.svgToAxis('x', this.x1); box[`f${X}1`] = v; exec += `Set${X}1(${v});;`; }
+      if (this.c_x2) { const v = this.svgToAxis('x', this.x2); box[`f${X}2`] = v; exec += `Set${X}2(${v});;`; }
+      if (this.c_y1) { const v = this.svgToAxis('y', this.y1); box[`f${Y}1`] = v; exec += `Set${Y}1(${v});;`; }
+      if (this.c_y2) { const v = this.svgToAxis('y', this.y2); box[`f${Y}2`] = v; exec += `Set${Y}2(${v});;`; }
       this.submitCanvExec(exec + 'Notify();;');
    }
 
@@ -86,6 +86,8 @@ class TBoxPainter extends ObjectPainter {
       this.createAttLine({ attr: box });
       this.createAttFill({ attr: box });
 
+      this.swap_xy = fp?.swap_xy;
+
       // if box filled, contour line drawn only with 'L' draw option:
       if (!this.fillatt.empty() && !draw_line)
          this.lineatt.color = 'none';
@@ -97,7 +99,7 @@ class TBoxPainter extends ObjectPainter {
       this.y1 = this.axisToSvg('y', box.fY1);
       this.y2 = this.axisToSvg('y', box.fY2);
 
-      if (fp?.swap_xy)
+      if (this.swap_xy)
          [this.x1, this.x2, this.y1, this.y2] = [this.y1, this.y2, this.x1, this.x2];
 
       this.borderMode = (box.fBorderMode && box.fBorderSize && this.fillatt.hasColor()) ? box.fBorderMode : 0;
