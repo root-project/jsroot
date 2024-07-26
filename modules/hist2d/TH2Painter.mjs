@@ -3152,7 +3152,7 @@ class TH2Painter extends THistPainter {
           else {
             colindx = this.getContour().getPaletteIndex(this.getHistPalette(), binz);
             if ((colindx === null) && (binz === 0) &&
-                (this.options.ShowEmpty || (histo._typename === clTProfile2D && histo.getBinEntries(i+1,j+1))))
+                (this.options.ShowEmpty || (histo._typename === clTProfile2D && histo.getBinEntries(i + 1, j + 1))))
                    colindx = 0;
          }
       }

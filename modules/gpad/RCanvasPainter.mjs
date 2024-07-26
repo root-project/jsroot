@@ -46,10 +46,8 @@ class RCanvasPainter extends RPadPainter {
 
    /** @summary Returns canvas name */
    getCanvasName() {
-      let title = this.pad?.fTitle;
-      if (!title || !isStr(title))
-         return 'rcanvas';
-      return title.replace(/ /g, '_');
+      const title = this.pad?.fTitle;
+      return (!title || !isStr(title)) ? 'rcanvas' : title.replace(/ /g, '_');
    }
 
    /** @summary Returns layout kind */

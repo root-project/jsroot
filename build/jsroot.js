@@ -70006,7 +70006,11 @@ class TPadPainter extends ObjectPainter {
             pr = (m !== null) ? loadModules(m) : (src ? loadScript(src) : injectCode(snap.fScripts));
          }
 
-         return pr.then(() => this.drawNextSnap(snap.fPrimitives));
+         return pr.then(() => this.drawNextSnap(snap.fPrimitives)).then(() => {
+            if (isFunc(this.onCanvasUpdated))
+               this.onCanvasUpdated(this);
+            return this;
+         });
       }
 
       this.updateObject(first); // update only object attributes
@@ -70096,6 +70100,8 @@ class TPadPainter extends ObjectPainter {
          this.addPadInteractive();
          if (getActivePad() === this)
             this.getCanvPainter()?.producePadEvent('padredraw', this);
+         if (isFunc(this.onCanvasUpdated))
+            this.onCanvasUpdated(this);
          return this;
       });
    }
@@ -70121,7 +70127,7 @@ class TPadPainter extends ObjectPainter {
      * @return {Promise} with image data, coded with btoa() function
      * @private */
    async createImage(format) {
-      if ((format === 'png') || (format === 'jpeg') || (format === 'svg') || (format === 'pdf')) {
+      if ((format === 'png') || (format === 'jpeg') || (format === 'svg') || (format === 'webp') || (format === 'pdf')) {
          return this.produceImage(true, format).then(res => {
             if (!res || (format === 'svg')) return res;
             const separ = res.indexOf('base64,');
@@ -70723,6 +70729,11 @@ class TCanvasPainter extends TPadPainter {
       super.cleanup();
    }
 
+   /** @summary Returns canvas name */
+   getCanvasName() {
+      return this.getObjectName();
+   }
+
    /** @summary Returns layout kind */
    getLayoutKind() {
       const origin = this.selectDom('origin'),
@@ -71046,7 +71057,7 @@ class TCanvasPainter extends TPadPainter {
                cmdid = msg.slice(0, p1),
                cmd = msg.slice(p1+1),
                reply = `REPLY:${cmdid}:`;
-         if ((cmd === 'SVG') || (cmd === 'PNG') || (cmd === 'JPEG')) {
+         if ((cmd === 'SVG') || (cmd === 'PNG') || (cmd === 'JPEG') || (cmd === 'WEBP') || (cmd === 'PDF')) {
             this.createImage(cmd.toLowerCase())
                 .then(res => handle.send(reply + res));
          } else {
@@ -78691,7 +78702,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
           else {
             colindx = this.getContour().getPaletteIndex(this.getHistPalette(), binz);
             if ((colindx === null) && (binz === 0) &&
-                (this.options.ShowEmpty || (histo._typename === clTProfile2D && histo.getBinEntries(i+1,j+1))))
+                (this.options.ShowEmpty || (histo._typename === clTProfile2D && histo.getBinEntries(i + 1, j + 1))))
                    colindx = 0;
          }
       }
@@ -121053,7 +121064,11 @@ class RPadPainter extends RObjectPainter {
          this.createCanvasSvg(0);
          this.addPadButtons(true);
 
-         return this.drawNextSnap(snap.fPrimitives);
+         return this.drawNextSnap(snap.fPrimitives).then(() => {
+            if (isFunc(this.onCanvasUpdated))
+               this.onCanvasUpdated(this);
+            return this;
+         });
       }
 
       // update only pad/canvas attributes
@@ -121116,6 +121131,8 @@ class RPadPainter extends RObjectPainter {
          this.addPadInteractive();
          if (getActivePad() === this)
             this.getCanvPainter()?.producePadEvent('padredraw', this);
+         if (isFunc(this.onCanvasUpdated))
+            this.onCanvasUpdated(this);
          return this;
       });
    }
@@ -121125,7 +121142,7 @@ class RPadPainter extends RObjectPainter {
      * @return {Promise} with image data, coded with btoa() function
      * @private */
    async createImage(format) {
-      if ((format === 'png') || (format === 'jpeg') || (format === 'svg') || (format === 'pdf')) {
+      if ((format === 'png') || (format === 'jpeg') || (format === 'svg') || (format === 'webp') || (format === 'pdf')) {
          return this.produceImage(true, format).then(res => {
             if (!res || (format === 'svg')) return res;
             const separ = res.indexOf('base64,');
@@ -121564,6 +121581,12 @@ class RCanvasPainter extends RPadPainter {
       super.cleanup();
    }
 
+   /** @summary Returns canvas name */
+   getCanvasName() {
+      const title = this.pad?.fTitle;
+      return (!title || !isStr(title)) ? 'rcanvas' : title.replace(/ /g, '_');
+   }
+
    /** @summary Returns layout kind */
    getLayoutKind() {
       const origin = this.selectDom('origin'),
@@ -121814,7 +121837,7 @@ class RCanvasPainter extends RPadPainter {
              cmdid = msg.slice(0, p1),
              cmd = msg.slice(p1+1),
              reply = `REPLY:${cmdid}:`;
-         if ((cmd === 'SVG') || (cmd === 'PNG') || (cmd === 'JPEG')) {
+         if ((cmd === 'SVG') || (cmd === 'PNG') || (cmd === 'JPEG') || (cmd === 'WEBP') || (cmd === 'PDF')) {
             this.createImage(cmd.toLowerCase())
                 .then(res => handle.send(reply + res));
          } else if (cmd.indexOf('ADDPANEL:') === 0) {
