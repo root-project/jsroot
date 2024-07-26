@@ -44,8 +44,9 @@ async function drawText() {
 
    this.pos_x = this.axisToSvg('x', pos_x, this.isndc);
    this.pos_y = this.axisToSvg('y', pos_y, this.isndc);
+   this.swap_xy = use_frame && fp?.swap_xy;
 
-   if (use_frame && fp?.swap_xy )
+   if (this.swap_xy)
       [this.pos_x, this.pos_y] = [this.pos_y, this.pos_x];
 
    const arg = this.textatt.createArg({ x: this.pos_x, y: this.pos_y, text: text.fTitle, latex: 0 });
@@ -79,9 +80,14 @@ async function drawText() {
          this.moveEnd = function(not_changed) {
             if (not_changed) return;
             const text = this.getObject();
-            text.fX = this.svgToAxis('x', this.pos_x + this.pos_dx, this.isndc);
-            text.fY = this.svgToAxis('y', this.pos_y + this.pos_dy, this.isndc);
-            this.submitCanvExec(`SetX(${text.fX});;SetY(${text.fY});;`);
+            let x = this.svgToAxis('x', this.pos_x + this.pos_dx, this.isndc),
+                y = this.svgToAxis('y', this.pos_y + this.pos_dy, this.isndc);
+            if (this.swap_xy)
+               [x, y] = [y, x];
+
+            text.fX = x;
+            text.fY = y;
+            this.submitCanvExec(`SetX(${x});;SetY(${y});;`);
          };
       }
 
