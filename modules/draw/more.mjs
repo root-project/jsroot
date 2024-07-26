@@ -36,16 +36,15 @@ async function drawText() {
       text.fTextAlign = 22;
    }
 
-   this.createG(this.isndc ? undefined : true);
+   this.createG(!this.isndc && fp ? true : undefined);
 
    this.draw_g.attr('transform', null); // remove transform from interactive changes
 
    this.pos_x = this.axisToSvg('x', pos_x, this.isndc);
    this.pos_y = this.axisToSvg('y', pos_y, this.isndc);
 
-   if (!this.isndc && fp.swap_xy) {
-      const d = this.pos_x; this.pos_x = this.pos_y; this.pos_y = d;
-   }
+   if (!this.isndc && fp?.swap_xy)
+      [this.pos_x, this.pos_y] = [this.pos_y, this.pos_x];
 
    const arg = this.textatt.createArg({ x: this.pos_x, y: this.pos_y, text: text.fTitle, latex: 0 });
 
