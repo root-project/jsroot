@@ -44,6 +44,14 @@ class RCanvasPainter extends RPadPainter {
       super.cleanup();
    }
 
+   /** @summary Returns canvas name */
+   getCanvasName() {
+      let title = this.pad?.fTitle;
+      if (!title || !isStr(title))
+         return 'rcanvas';
+      return title.replace(/ /g, '_');
+   }
+
    /** @summary Returns layout kind */
    getLayoutKind() {
       const origin = this.selectDom('origin'),

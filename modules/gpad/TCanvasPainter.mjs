@@ -54,6 +54,11 @@ class TCanvasPainter extends TPadPainter {
       super.cleanup();
    }
 
+   /** @summary Returns canvas name */
+   getCanvasName() {
+      return this.getObjectName();
+   }
+
    /** @summary Returns layout kind */
    getLayoutKind() {
       const origin = this.selectDom('origin'),
