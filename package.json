@@ -24,6 +24,7 @@
     "./hierarchy": "./modules/gui/HierarchyPainter.mjs",
     "./latex": "./modules/base/latex.mjs",
     "./geom": "./modules/geom/TGeoPainter.mjs",
+    "./geom_nothreejs": "./build/geom_nothreejs.mjs",
     "./testing": "./modules/testing.mjs"
   },
   "contributors": [
