@@ -412,7 +412,7 @@
       let host = window.location.host;
 
       if (host.indexOf('localhost') >= 0) {
-         filepath = 'https://jsroot.gsi.de/files/'; // 'https://root.cern/js/files/'
+         filepath = 'https://jsroot.gsi.de/files/';
          use_zstd = false;
       } else if ((host.indexOf('jsroot.gsi.de') < 0) && (host.indexOf('root.cern') < 0)) {
          filepath = 'https://root.cern/js/files/';
@@ -424,6 +424,9 @@
          demo_path = '../demo/',
          filepath = 'https://jsroot.gsi.de/files/';
       }
+
+      if (d.has('cern'))
+         filepath = 'https://root.cern/js/files/';
 
       let keyid = null, optid, testfile, testobj, testinterval = 10, hpainter = null,
           init_style, init_palette, init_curve, init_TimeZone;
