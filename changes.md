@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in 7.7.x
+1. Fix - correctly handle in I/O empty std::map
+2. Fix - reading of small (<1KB) ROOT files
+
 
 ## Changes in 7.7.2
 1. Fix - hide empty title on the canvas
