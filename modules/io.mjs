@@ -3171,7 +3171,7 @@ class TFile {
      * @private */
    async readKeys() {
       // with the first readbuffer we read bigger amount to create header cache
-      return this.readBuffer([0, 1024]).then(blob => {
+      return this.readBuffer([0, 400]).then(blob => {
          const buf = new TBuffer(blob, 0, this);
          if (buf.substring(0, 4) !== 'root')
             return Promise.reject(Error(`Not a ROOT file ${this.fURL}`));
