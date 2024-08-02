@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '30/07/2024',
+version_date = '2/08/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -100098,7 +100098,7 @@ class TFile {
      * @private */
    async readKeys() {
       // with the first readbuffer we read bigger amount to create header cache
-      return this.readBuffer([0, 1024]).then(blob => {
+      return this.readBuffer([0, 400]).then(blob => {
          const buf = new TBuffer(blob, 0, this);
          if (buf.substring(0, 4) !== 'root')
             return Promise.reject(Error(`Not a ROOT file ${this.fURL}`));
@@ -100433,6 +100433,11 @@ function readMapElement(buf) {
    }
 
    const n = buf.ntoi4(), res = new Array(n);
+
+   // no extra data written for empty map
+   if (n === 0)
+      return res;
+
    if (this.member_wise && (buf.remain() >= 6)) {
       if (buf.ntoi2() === kStreamedMemberWise)
          buf.shift(4); // skip checksum
