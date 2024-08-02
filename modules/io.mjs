@@ -3537,6 +3537,11 @@ function readMapElement(buf) {
    }
 
    const n = buf.ntoi4(), res = new Array(n);
+
+   // no extra data written for empty map
+   if (n === 0)
+      return res;
+
    if (this.member_wise && (buf.remain() >= 6)) {
       if (buf.ntoi2() === kStreamedMemberWise)
          buf.shift(4); // skip checksum
