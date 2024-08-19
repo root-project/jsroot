@@ -2582,7 +2582,8 @@ class TFramePainter extends ObjectPainter {
 
          menu.sub('Range');
          menu.add('Zoom', () => {
-            let min = this[`zoom_${kind}min`] ?? this[`${kind}min`], max = this[`zoom_${kind}max`] ?? this[`${kind}max`];
+            let min = this[`zoom_${kind}min`] ?? this[`${kind}min`],
+                max = this[`zoom_${kind}max`] ?? this[`${kind}max`];
             if (min === max) {
                min = this[`${kind}min`];
                max = this[`${kind}max`];
