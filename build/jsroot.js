@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '2/08/2024',
+version_date = '20/08/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -65886,7 +65886,8 @@ class TFramePainter extends ObjectPainter {
 
          menu.sub('Range');
          menu.add('Zoom', () => {
-            let min = this[`zoom_${kind}min`] ?? this[`${kind}min`], max = this[`zoom_${kind}max`] ?? this[`${kind}max`];
+            let min = this[`zoom_${kind}min`] ?? this[`${kind}min`],
+                max = this[`zoom_${kind}max`] ?? this[`${kind}max`];
             if (min === max) {
                min = this[`${kind}min`];
                max = this[`${kind}max`];
@@ -73769,10 +73770,12 @@ class HistContour {
    /** @summary Get index based on z value */
    getContourIndex(zc) {
       // bins less than zmin not drawn
-      if (zc < this.colzmin) return this.below_min_indx;
+      if (zc < this.colzmin)
+         return this.below_min_indx;
 
       // if bin content exactly zmin, draw it when col0 specified or when content is positive
-      if (zc === this.colzmin) return this.exact_min_indx;
+      if (zc === this.colzmin)
+         return this.exact_min_indx;
 
       if (!this.custom)
          return Math.floor(0.01+(zc-this.colzmin)*(this.arr.length-1)/(this.colzmax-this.colzmin));
@@ -76764,10 +76767,11 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
             entries = [],
             show_empty = this.options.ShowEmpty,
             can_merge_x = (handle.xbar2 === 1) && (handle.xbar1 === 0),
-            can_merge_y = (handle.ybar2 === 1) && (handle.ybar1 === 0);
+            can_merge_y = (handle.ybar2 === 1) && (handle.ybar1 === 0),
+            colindx0 = cntr.getPaletteIndex(palette, 0);
 
       let dx, dy, x1, y2, binz, is_zero, colindx, last_entry = null,
-          skip_zero = !this.options.Zero;
+          skip_zero = !this.options.Zero, skip_bin;
 
       const test_cutg = this.options.cutg,
             flush_last_entry = () => {
@@ -76776,12 +76780,12 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
       };
 
       // check in the beginning if zero can be skipped
-      if (!skip_zero && !show_empty && (cntr.getPaletteIndex(palette, 0) === null))
+      if (!skip_zero && !show_empty && (colindx0 === null))
          skip_zero = true;
 
       // special check for TProfile2D - empty bin with no entries shown
       if (skip_zero && (histo?._typename === clTProfile2D))
-         skip_zero = 0;
+         skip_zero = 1;
 
       // now start build
       for (let i = handle.i1; i < handle.i2; ++i) {
@@ -76797,7 +76801,9 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
             binz = histo.getBinContent(i + 1, j + 1);
             is_zero = (binz === 0);
 
-            if ((is_zero && skip_zero) || (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i + 0.5), histo.fYaxis.GetBinCoord(j + 0.5)))) {
+            skip_bin = is_zero && ((skip_zero === 1) ? !histo.getBinEntries(i + 1, j + 1) : skip_zero);
+
+            if (skip_bin || (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i + 0.5), histo.fYaxis.GetBinCoord(j + 0.5)))) {
                if (last_entry)
                   flush_last_entry();
                continue;
@@ -76805,8 +76811,8 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
                colindx = cntr.getPaletteIndex(palette, binz);
 
             if (colindx === null) {
-               if ((is_zero && show_empty) || ((skip_zero === 0) && histo.getBinEntries(i+1, j+1)))
-                  colindx = 0;
+               if (is_zero && (show_empty || (skip_zero === 1)))
+                  colindx = colindx0 || 0;
                else {
                    if (last_entry)
                      flush_last_entry();
@@ -119777,13 +119783,21 @@ class RFramePainter extends RObjectPainter {
    }
 
    /** @summary Fill context menu */
-   fillContextMenu(menu, kind /* , obj */) {
+   fillContextMenu(menu, kind, obj) {
       if (kind === 'pal') kind = 'z';
 
       if ((kind === 'x') || (kind === 'y') || (kind === 'x2') || (kind === 'y2')) {
-         const handle = this[kind+'_handle'];
+         const handle = this[kind+'_handle'],
+               faxis = obj || this[kind+'axis'];
          if (!handle) return false;
-         menu.header(kind.toUpperCase() + ' axis');
+         menu.header(`${kind.toUpperCase()} axis`);
+
+         if (isFunc(faxis?.TestBit)) {
+            const main = this.getMainPainter(true);
+            menu.addTAxisMenu(EAxisBits, main || this, faxis, kind);
+            return true;
+         }
+
          return handle.fillAxisContextMenu(menu, kind);
       }
 
