@@ -76,7 +76,10 @@
       { "name": "logx", "opt": "", "file": "th3_logx.root", "item": "c1", "title": "TH3 with custom X binning and logX scale, check for proper positioning" },
       { "name": "logxyz", "file": "profile3d.root", "item": "profile3d", "opt": "logx,logy,logz,mlx,mly,mlz", "title": "Example of log x/y/z with TProfile3D class, set also more log labels" }
    ],
-   "TRatioPlot" : [
+   "TProfile2D": [
+      { "name": "neg", "file": "prof2dn.root", "item": "c1", "title": "TProfile2D with negative content" }
+    ],
+    "TRatioPlot" : [
       { "name": "rold", "file": "ratioplot.root", "item": "ratioplot3;1", "title": "Old data from tutorial hist/ratioplot3.C" }
    ],
    "TWebCanvas": [
