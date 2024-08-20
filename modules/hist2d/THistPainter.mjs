@@ -696,10 +696,12 @@ class HistContour {
    /** @summary Get index based on z value */
    getContourIndex(zc) {
       // bins less than zmin not drawn
-      if (zc < this.colzmin) return this.below_min_indx;
+      if (zc < this.colzmin)
+         return this.below_min_indx;
 
       // if bin content exactly zmin, draw it when col0 specified or when content is positive
-      if (zc === this.colzmin) return this.exact_min_indx;
+      if (zc === this.colzmin)
+         return this.exact_min_indx;
 
       if (!this.custom)
          return Math.floor(0.01+(zc-this.colzmin)*(this.arr.length-1)/(this.colzmax-this.colzmin));
