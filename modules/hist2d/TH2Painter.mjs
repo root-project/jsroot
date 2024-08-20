@@ -1202,10 +1202,11 @@ class TH2Painter extends THistPainter {
             entries = [],
             show_empty = this.options.ShowEmpty,
             can_merge_x = (handle.xbar2 === 1) && (handle.xbar1 === 0),
-            can_merge_y = (handle.ybar2 === 1) && (handle.ybar1 === 0);
+            can_merge_y = (handle.ybar2 === 1) && (handle.ybar1 === 0),
+            colindx0 = cntr.getPaletteIndex(palette, 0);
 
       let dx, dy, x1, y2, binz, is_zero, colindx, last_entry = null,
-          skip_zero = !this.options.Zero;
+          skip_zero = !this.options.Zero, skip_bin;
 
       const test_cutg = this.options.cutg,
             flush_last_entry = () => {
@@ -1214,12 +1215,12 @@ class TH2Painter extends THistPainter {
       };
 
       // check in the beginning if zero can be skipped
-      if (!skip_zero && !show_empty && (cntr.getPaletteIndex(palette, 0) === null))
+      if (!skip_zero && !show_empty && (colindx0 === null))
          skip_zero = true;
 
       // special check for TProfile2D - empty bin with no entries shown
       if (skip_zero && (histo?._typename === clTProfile2D))
-         skip_zero = 0;
+         skip_zero = 1;
 
       // now start build
       for (let i = handle.i1; i < handle.i2; ++i) {
@@ -1235,7 +1236,9 @@ class TH2Painter extends THistPainter {
             binz = histo.getBinContent(i + 1, j + 1);
             is_zero = (binz === 0);
 
-            if ((is_zero && skip_zero) || (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i + 0.5), histo.fYaxis.GetBinCoord(j + 0.5)))) {
+            skip_bin = is_zero && ((skip_zero === 1) ? !histo.getBinEntries(i + 1, j + 1) : skip_zero);
+
+            if (skip_bin || (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i + 0.5), histo.fYaxis.GetBinCoord(j + 0.5)))) {
                if (last_entry)
                   flush_last_entry();
                continue;
@@ -1243,8 +1246,8 @@ class TH2Painter extends THistPainter {
                colindx = cntr.getPaletteIndex(palette, binz);
 
             if (colindx === null) {
-               if ((is_zero && show_empty) || ((skip_zero === 0) && histo.getBinEntries(i+1, j+1)))
-                  colindx = 0;
+               if (is_zero && (show_empty || (skip_zero === 1)))
+                  colindx = colindx0 || 0;
                else {
                    if (last_entry)
                      flush_last_entry();
