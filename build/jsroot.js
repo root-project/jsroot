@@ -11,7 +11,7 @@ const version_id = '7.7.x',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '2/08/2024',
+version_date = '21/08/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -98421,10 +98421,23 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
          const tgt8arr = new Uint8Array(tgtbuf, fullres);
 
          if (fmt === 'ZSTD') {
-            const promise = internals._ZstdStream
-                            ? Promise.resolve(internals._ZstdStream)
-                            : (isNodeJs() ? Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }) : Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }))
-                              .then(({ ZstdInit }) => ZstdInit()).then(({ ZstdStream }) => { internals._ZstdStream = ZstdStream; return ZstdStream; });
+            let promise;
+            if (internals._ZstdStream)
+               promise = Promise.resolve(internals._ZstdStream);
+            else if (internals._ZstdInit !== undefined)
+               promise = new Promise(resolveFunc => { internals._ZstdInit.push(resolveFunc); });
+            else {
+               internals._ZstdInit = [];
+               promise = (isNodeJs() ? Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }) : Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }))
+                   .then(({ ZstdInit }) => ZstdInit())
+                   .then(({ ZstdStream }) => {
+                     internals._ZstdStream = ZstdStream;
+                     internals._ZstdInit.forEach(func => func(ZstdStream));
+                     delete internals._ZstdInit;
+                     return ZstdStream;
+                  });
+            }
+
             return promise.then(ZstdStream => {
                const data2 = ZstdStream.decompress(uint8arr),
                      reslen = data2.length;
