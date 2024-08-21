@@ -2031,7 +2031,7 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
          if (fmt === 'ZSTD') {
             const promise = internals._ZstdStream
                             ? Promise.resolve(internals._ZstdStream)
-                            : (isNodeJs() ? import('@oneidentity/zstd-js') : import(/* webpackIgnore: true */ './base/zstd.mjs'))
+                            : (isNodeJs() ? import('@oneidentity/zstd-js') : import('./base/zstd.mjs'))
                               .then(({ ZstdInit }) => ZstdInit()).then(({ ZstdStream }) => { internals._ZstdStream = ZstdStream; return ZstdStream; });
             return promise.then(ZstdStream => {
                const data2 = ZstdStream.decompress(uint8arr),
@@ -2045,7 +2045,7 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
                return nextPortion();
             });
          } else if (fmt === 'LZMA') {
-            return import(/* webpackIgnore: true */ './base/lzma.mjs').then(lzma => {
+            return import('./base/lzma.mjs').then(lzma => {
                const expected_len = (getCode(curr + 6) & 0xff) | ((getCode(curr + 7) & 0xff) << 8) | ((getCode(curr + 8) & 0xff) << 16),
                      reslen = lzma.decompress(uint8arr, tgt8arr, expected_len);
                fullres += reslen;
