@@ -21,6 +21,7 @@
 18. Fix - show empty bin in TProfile2D if it has entries #316
 19. Fix - correctly handle in I/O empty std::map
 20. Fix - reading of small (<1KB) ROOT files
+21. Fix - race condition in zstd initialization #318
 
 
 ## Changes in 7.7.2
