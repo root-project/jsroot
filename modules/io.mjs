@@ -2029,10 +2029,23 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
          const tgt8arr = new Uint8Array(tgtbuf, fullres);
 
          if (fmt === 'ZSTD') {
-            const promise = internals._ZstdStream
-                            ? Promise.resolve(internals._ZstdStream)
-                            : (isNodeJs() ? import('@oneidentity/zstd-js') : import('./base/zstd.mjs'))
-                              .then(({ ZstdInit }) => ZstdInit()).then(({ ZstdStream }) => { internals._ZstdStream = ZstdStream; return ZstdStream; });
+            let promise;
+            if (internals._ZstdStream)
+               promise = Promise.resolve(internals._ZstdStream);
+            else if (internals._ZstdInit !== undefined)
+               promise = new Promise(resolveFunc => { internals._ZstdInit.push(resolveFunc); })
+            else {
+               internals._ZstdInit = [];
+               promise = (isNodeJs() ? import('@oneidentity/zstd-js') : import('./base/zstd.mjs'))
+                   .then(({ ZstdInit }) => ZstdInit())
+                   .then(({ ZstdStream }) => {
+                     internals._ZstdStream = ZstdStream;
+                     internals._ZstdInit.forEach(func => func(ZstdStream));
+                     delete internals._ZstdInit;
+                     return ZstdStream;
+                  });
+            }
+
             return promise.then(ZstdStream => {
                const data2 = ZstdStream.decompress(uint8arr),
                      reslen = data2.length;
