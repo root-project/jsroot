@@ -38,21 +38,21 @@
     }
   ],
   "dependencies": {
+    "@babel/runtime": "^7.14.0",
     "@oneidentity/zstd-js": "^1.0.3",
+    "atob": "^2.1.2",
+    "btoa": "^1.2.1",
     "canvas": "^2.11.2",
+    "cssesc": "^3.0.0",
+    "fflate": "^0.4.8",
+    "font-family-papandreou": "^0.2.0-patch1",
     "gl": "^8.0.2",
     "jsdom": "^22.1.0",
     "mathjax": "3.2.2",
-    "tmp": "^0.2.1",
-    "xhr2": "^0.2.1",
-    "cssesc": "^3.0.0",
-    "font-family-papandreou": "^0.2.0-patch1",
-    "svgpath": "^2.3.0",
     "specificity": "^0.4.1",
-    "@babel/runtime": "^7.14.0",
-    "atob": "^2.1.2",
-    "btoa": "^1.2.1",
-    "fflate": "^0.4.8"
+    "svgpath": "^2.3.0",
+    "tmp": "^0.2.1",
+    "xhr2": "^0.2.1"
   },
   "repository": {
     "type": "git",
