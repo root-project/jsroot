@@ -19,9 +19,13 @@
 16. Fix - properly save zoomed ranges in drawingJSON()
 17. Fix - properly redraw TMultuGraph
 18. Fix - show empty bin in TProfile2D if it has entries #316
-19. Fix - correctly handle in I/O empty std::map
-20. Fix - reading of small (<1KB) ROOT files
-21. Fix - race condition in zstd initialization #318
+
+
+## Changes in 7.7.3
+1. Fix - correctly handle in I/O empty std::map
+2. Fix - reading of small (<1KB) ROOT files
+3. Fix - race condition in zstd initialization #318
+4. Fix - deployment with zstd #317
 
 
 ## Changes in 7.7.2
