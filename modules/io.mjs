@@ -2033,7 +2033,7 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
             if (internals._ZstdStream)
                promise = Promise.resolve(internals._ZstdStream);
             else if (internals._ZstdInit !== undefined)
-               promise = new Promise(resolveFunc => { internals._ZstdInit.push(resolveFunc); })
+               promise = new Promise(resolveFunc => { internals._ZstdInit.push(resolveFunc); });
             else {
                internals._ZstdInit = [];
                promise = (isNodeJs() ? import('@oneidentity/zstd-js') : import('./base/zstd.mjs'))

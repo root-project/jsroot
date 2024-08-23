@@ -1,6 +1,6 @@
 # JSROOT changelog
 
-## Changes in 7.7.x
+## Changes in 7.7.3
 1. Fix - correctly handle in I/O empty std::map
 2. Fix - reading of small (<1KB) ROOT files
 3. Fix - race condition in zstd initialization #318
