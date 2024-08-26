@@ -1,5 +1,5 @@
 import { decodeUrl, settings, constants, gStyle, internals, browser,
-         findFunction, parse, isFunc, isStr, isObject, setBatchMode } from './core.mjs';
+         findFunction, parse, isFunc, isStr, isObject, isBatchMode, setBatchMode } from './core.mjs';
 import { select as d3_select } from './d3.mjs';
 import { HierarchyPainter } from './gui/HierarchyPainter.mjs';
 import { setStoragePrefix, readSettings, readStyle } from './gui/utils.mjs';
@@ -218,6 +218,9 @@ async function buildGUI(gui_element, gui_kind = '') {
 
    readStyleFromURL();
 
+   if (isBatchMode())
+      nobrowser = true;
+
    if (nobrowser) {
       let guisize = d.get('divsize');
       if (guisize) {
@@ -236,7 +239,8 @@ async function buildGUI(gui_element, gui_kind = '') {
 
    const hpainter = new HierarchyPainter('root', null);
    if (online) hpainter.is_online = drawing ? 'draw' : 'online';
-   if (drawing) hpainter.exclude_browser = true;
+   if (drawing || isBatchMode())
+      hpainter.exclude_browser = true;
    hpainter.start_without_browser = nobrowser;
 
    return hpainter.startGUI(myDiv).then(() => {
