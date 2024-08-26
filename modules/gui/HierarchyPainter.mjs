@@ -2464,7 +2464,10 @@ class HierarchyPainter extends BasePainter {
             }
          }
 
-         return Promise.all(promises);
+         return Promise.all(promises).then(() => {
+            if (mdi?.createFinalBatchFrame && this.divsize)
+               mdi.createFinalBatchFrame();
+         });
       });
    }
 
@@ -3310,7 +3313,9 @@ class HierarchyPainter extends BasePainter {
       if (!document.getElementById(this.disp_frameid))
          return null;
 
-      if ((this.disp_kind.indexOf('flex') === 0) || (this.disp_kind.indexOf('coll') === 0))
+      if (this.divsize && isBatchMode())
+         this.disp = new BatchDisplay(this.divsize[0], this.divsize[1]);
+      else if ((this.disp_kind.indexOf('flex') === 0) || (this.disp_kind.indexOf('coll') === 0))
          this.disp = new FlexibleDisplay(this.disp_frameid);
       else if (this.disp_kind === 'tabs')
          this.disp = new TabsDisplay(this.disp_frameid);
@@ -3556,7 +3561,8 @@ class HierarchyPainter extends BasePainter {
       if (getOption('nofloat') !== null)
          this.float_browser_disabled = true;
 
-      if (this.start_without_browser) browser_kind = '';
+      if (this.start_without_browser)
+         browser_kind = '';
 
       this._topname = getOption('topname');
 

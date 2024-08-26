@@ -206,7 +206,7 @@ async function buildGUI(gui_element, gui_kind = '') {
    myDiv.html(''); // clear element
 
    const d = decodeUrl();
-   let online = (gui_kind === 'online'), nobrowser = false, drawing = false;
+   let online = (gui_kind === 'online'), nobrowser = false, drawing = false, divsize;
 
    if (gui_kind === 'draw')
       online = drawing = nobrowser = true;
@@ -222,14 +222,16 @@ async function buildGUI(gui_element, gui_kind = '') {
       nobrowser = true;
 
    if (nobrowser) {
-      let guisize = d.get('divsize');
-      if (guisize) {
-         guisize = guisize.split('x');
-         if (guisize.length !== 2) guisize = null;
+      divsize = d.get('divsize');
+      if (divsize) {
+         divsize = divsize.split('x');
+         if (divsize.length !== 2) divsize = null;
       }
 
-      if (guisize)
-         myDiv.style('position', 'relative').style('width', guisize[0] + 'px').style('height', guisize[1] + 'px');
+      if (divsize && isBatchMode())
+         myDiv.html(''); // clear element once again
+      else if (divsize)
+         myDiv.style('position', 'relative').style('width', divsize[0] + 'px').style('height', divsize[1] + 'px');
       else {
          d3_select('html').style('height', '100%');
          d3_select('body').style('min-height', '100%').style('margin', 0).style('overflow', 'hidden');
@@ -241,6 +243,8 @@ async function buildGUI(gui_element, gui_kind = '') {
    if (online) hpainter.is_online = drawing ? 'draw' : 'online';
    if (drawing || isBatchMode())
       hpainter.exclude_browser = true;
+   if (divsize && isBatchMode())
+      hpainter.divsize = divsize;
    hpainter.start_without_browser = nobrowser;
 
    return hpainter.startGUI(myDiv).then(() => {

@@ -1183,6 +1183,18 @@ class BatchDisplay extends MDIDisplay {
       return this.afterCreateFrame(frame.node());
    }
 
+   /** @summary Create final frame */
+   createFinalBatchFrame() {
+      const cnt = this.numFrames();
+
+      for (let n = 0; n < cnt; ++n)
+         this.makeSVG(n, true);
+
+      this.jsdom_body.append('div')
+          .attr('id', 'jsroot_batch_final')
+          .html(`${cnt}`);
+   }
+
    /** @summary Returns number of created frames */
    numFrames() { return this.frames.length; }
 
@@ -1201,7 +1213,7 @@ class BatchDisplay extends MDIDisplay {
    }
 
    /** @summary Create SVG for specified frame id */
-   makeSVG(id) {
+   makeSVG(id, keep_frame) {
       const frame = this.frames[id];
       if (!frame) return;
       const main = d3_select(frame);
@@ -1218,6 +1230,9 @@ class BatchDisplay extends MDIDisplay {
 
       main.selectAll('g.root_frame').each(clear_element);
       main.selectAll('svg').each(clear_element);
+
+      if (keep_frame)
+         return;
 
       const svg = compressSVG(main.html());
 
