@@ -1,4 +1,5 @@
-import { decodeUrl, settings, constants, gStyle, internals, browser, findFunction, parse, isFunc, isStr, isObject } from './core.mjs';
+import { decodeUrl, settings, constants, gStyle, internals, browser,
+         findFunction, parse, isFunc, isStr, isObject, setBatchMode } from './core.mjs';
 import { select as d3_select } from './d3.mjs';
 import { HierarchyPainter } from './gui/HierarchyPainter.mjs';
 import { setStoragePrefix, readSettings, readStyle } from './gui/utils.mjs';
@@ -37,6 +38,10 @@ function readStyleFromURL(url) {
             settings.OptimizeDraw = optimize;
       }
    }
+
+   const b = d.get('batch');
+   if (b !== undefined)
+      setBatchMode(d !== 'off');
 
    get_bool('lastcycle', 'OnlyLastCycle');
    get_bool('usestamp', 'UseStamp');
