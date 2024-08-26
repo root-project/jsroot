@@ -3479,7 +3479,6 @@ class HierarchyPainter extends BasePainter {
           browser_kind = getOption('browser'),
           browser_configured = !!browser_kind;
 
-
       if (monitor === null)
          monitor = 0;
       else if (monitor === '')
@@ -3506,16 +3505,18 @@ class HierarchyPainter extends BasePainter {
       if (title && (typeof document !== 'undefined'))
          document.title = title;
 
-      if (expanditems.length === 0 && (getOption('expand') === '')) expanditems.push('');
+      if (expanditems.length === 0 && (getOption('expand') === ''))
+         expanditems.push('');
 
       if (filesdir) {
-         for (let i = 0; i < filesarr.length; ++i) filesarr[i] = filesdir + filesarr[i];
-         for (let i = 0; i < jsonarr.length; ++i) jsonarr[i] = filesdir + jsonarr[i];
+         for (let i = 0; i < filesarr.length; ++i)
+            filesarr[i] = filesdir + filesarr[i];
+         for (let i = 0; i < jsonarr.length; ++i)
+            jsonarr[i] = filesdir + jsonarr[i];
       }
 
-      if ((itemsarr.length === 0) && getOption('item') === '') itemsarr.push('');
-
-      if ((jsonarr.length === 1) && (itemsarr.length === 0) && (expanditems.length === 0)) itemsarr.push('');
+      if ((itemsarr.length === 0) && ((getOption('item') === '') || ((jsonarr.length === 1) && (expanditems.length === 0))))
+         itemsarr.push('');
 
       if (!this.disp_kind) {
          if (isStr(layout) && layout)
