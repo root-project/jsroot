@@ -1,5 +1,5 @@
 import { select as d3_select, drag as d3_drag } from '../d3.mjs';
-import { browser, internals, toJSON, settings, isObject, isFunc, isStr, nsSVG } from '../core.mjs';
+import { browser, internals, toJSON, settings, isObject, isFunc, isStr, nsSVG, btoa_func } from '../core.mjs';
 import { compressSVG, BasePainter } from '../base/BasePainter.mjs';
 import { getElementCanvPainter, selectActivePad, cleanup, resize, ObjectPainter } from '../base/ObjectPainter.mjs';
 import { createMenu } from './menu.mjs';
@@ -1187,8 +1187,13 @@ class BatchDisplay extends MDIDisplay {
    createFinalBatchFrame() {
       const cnt = this.numFrames();
 
-      for (let n = 0; n < cnt; ++n)
-         this.makeSVG(n, true);
+      for (let n = 0; n < cnt; ++n) {
+         const json = this.makeJSON(n, 1, true);
+         if (json)
+            d3_select(this.frames[n]).text('json:' + btoa_func(json));
+         else
+            this.makeSVG(n, true);
+      }
 
       this.jsdom_body.append('div')
           .attr('id', 'jsroot_batch_final')
@@ -1200,14 +1205,15 @@ class BatchDisplay extends MDIDisplay {
 
    /** @summary returns JSON representation if any
      * @desc Now works only for inspector, can be called once */
-   makeJSON(id, spacing) {
+   makeJSON(id, spacing, keep_frame) {
       const frame = this.frames[id];
       if (!frame) return;
       const obj = d3_select(frame).property('_json_object_');
       if (obj) {
          d3_select(frame).property('_json_object_', null);
          cleanup(frame);
-         d3_select(frame).remove();
+         if (!keep_frame)
+            d3_select(frame).remove();
          return toJSON(obj, spacing);
       }
    }
