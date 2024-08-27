@@ -393,8 +393,6 @@ function getColorPalette(id, grayscale) {
          const col = 'rgb(' + toDec(Red[g-1] + c * (Red[g] - Red[g-1]) / nColorsGradient, 1) + ', ' +
                               toDec(Green[g-1] + c * (Green[g] - Green[g-1]) / nColorsGradient, 1) + ', ' +
                               toDec(Blue[g-1] + c * (Blue[g] - Blue[g-1]) / nColorsGradient, 1) + ')';
-         console.log('palette col', col);
-
          palette.push(col);
       }
     }
