@@ -1010,7 +1010,7 @@ class ObjectPainter extends BasePainter {
             max_sz = draw_g.property('max_font_size');
       let font_size = font.size, any_text = false, only_text = true;
 
-      if ((f > 0) && ((f < 0.9) || (f > 1)))
+      if ((f > 0) && ((f < 0.95) || (f > 1.05)))
          font.size = Math.max(1, Math.floor(font.size / f));
 
       if (max_sz && (font.size > max_sz))
@@ -1161,7 +1161,7 @@ class ObjectPainter extends BasePainter {
       // complete rectangle with very rough size estimations
       arg.box = !isNodeJs() && !settings.ApproxTextSize && !arg.fast
                  ? getElementRect(txt_node, 'bbox')
-                 : (arg.text_rect || { height: 1.15 * arg.font_size, width: approximateLabelWidth(arg.text, arg.font, arg.font_size) });
+                 : (arg.text_rect || { height: Math.round(1.15 * arg.font_size), width: approximateLabelWidth(arg.text, arg.font, arg.font_size) });
 
       txt_node.attr('visibility', 'hidden'); // hide elements until text drawing is finished
 
