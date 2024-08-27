@@ -49,7 +49,8 @@ To automate files loading and objects drawing, one can provide number of URL par
 - latex - 'off', 'symbols', 'normal', 'mathjax', 'alwaysmath' control of TLatex processor
 - style - name of TStyle object to define global JSROOT style
 - toolbar - show canvas tool buttons 'off', 'on' and 'popup', 'left' or 'right' for position, 'vert' for vertical
-- divsize - fixed size in pixels for main div element like &dvisize=700x400
+- divsize - fixed size in pixels for main div element like &dvisize=1500x800
+- canvsize - default canvas size in pixels like &canvsize=1200x800
 - optstat -  settings for stat box, default 1111 (see TStyle::SetOptStat)
 - optfit - fit parameters settings for stat box, default 0 (see TStyle::SetOptFit)
 - statfmt - formatting for float values in stat box, default 6.4g (see TStyle::SetStatFormat)
