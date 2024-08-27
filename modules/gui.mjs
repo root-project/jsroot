@@ -205,8 +205,17 @@ async function buildGUI(gui_element, gui_kind = '') {
 
    myDiv.html(''); // clear element
 
-   const d = decodeUrl();
-   let online = (gui_kind === 'online'), nobrowser = false, drawing = false, divsize;
+   const d = decodeUrl(), getSize = name => {
+      if (!d.has(name))
+         return null;
+      let res = d.get(name).split('x');
+      if (res.length !== 2)
+         return null;
+      res[0] = parseInt(res[0]);
+      res[1] = parseInt(res[1]);
+      return res[0] > 0 && res[1] > 0 ? res : null;
+   };
+   let online = (gui_kind === 'online'), nobrowser = false, drawing = false;
 
    if (gui_kind === 'draw')
       online = drawing = nobrowser = true;
@@ -221,30 +230,23 @@ async function buildGUI(gui_element, gui_kind = '') {
    if (isBatchMode())
       nobrowser = true;
 
-   if (nobrowser) {
-      divsize = d.get('divsize');
-      if (divsize) {
-         divsize = divsize.split('x');
-         if (divsize.length !== 2) divsize = null;
-      }
-
-      if (divsize && isBatchMode())
-         myDiv.html(''); // clear element once again
-      else if (divsize)
-         myDiv.style('position', 'relative').style('width', divsize[0] + 'px').style('height', divsize[1] + 'px');
-      else {
-         d3_select('html').style('height', '100%');
-         d3_select('body').style('min-height', '100%').style('margin', 0).style('overflow', 'hidden');
-         myDiv.style('position', 'absolute').style('left', 0).style('top', 0).style('bottom', 0).style('right', 0).style('padding', '1px');
-      }
+   const divsize = getSize('divsize'), canvsize = getSize('canvsize');
+   if (divsize)
+      myDiv.style('position', 'relative').style('width', divsize[0] + 'px').style('height', divsize[1] + 'px');
+   else if (!isBatchMode()) {
+      d3_select('html').style('height', '100%');
+      d3_select('body').style('min-height', '100%').style('margin', 0).style('overflow', 'hidden');
+      myDiv.style('position', 'absolute').style('left', 0).style('top', 0).style('bottom', 0).style('right', 0).style('padding', '1px');
+   }
+   if (canvsize) {
+      settings.CanvasWidth = canvsize[0];
+      settings.CanvasHeight = canvsize[1];
    }
 
    const hpainter = new HierarchyPainter('root', null);
    if (online) hpainter.is_online = drawing ? 'draw' : 'online';
    if (drawing || isBatchMode())
       hpainter.exclude_browser = true;
-   if (divsize && isBatchMode())
-      hpainter.divsize = divsize;
    hpainter.start_without_browser = nobrowser;
 
    return hpainter.startGUI(myDiv).then(() => {

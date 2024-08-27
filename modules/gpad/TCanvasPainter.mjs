@@ -860,10 +860,19 @@ class TCanvasPainter extends TPadPainter {
       const painter = new TCanvasPainter(dom, can);
       painter.checkSpecialsInPrimitives(can, true);
 
-      if (!nocanvas && can.fCw && can.fCh && !painter.isBatchMode()) {
-         const rect0 = painter.selectDom().node().getBoundingClientRect();
-         if (!rect0.height && (rect0.width > 0.1*can.fCw)) {
-            painter.selectDom().style('width', can.fCw+'px').style('height', can.fCh+'px');
+      if (!nocanvas && can.fCw && can.fCh) {
+         const d = painter.selectDom();
+         let apply_size = false;
+         if (!painter.isBatchMode()) {
+            const rect0 = d.node().getBoundingClientRect();
+            apply_size = !rect0.height && (rect0.width > 0.1*can.fCw);
+         } else {
+            const arg = d.property('_batch_use_canvsize');
+            apply_size = arg || (arg === undefined);
+         }
+         if (apply_size) {
+            d.style('width', can.fCw + 'px').style('height', can.fCh + 'px')
+              .attr('width', can.fCw).attr('height', can.fCh);
             painter._fixed_size = true;
          }
       }

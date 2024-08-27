@@ -2465,7 +2465,7 @@ class HierarchyPainter extends BasePainter {
          }
 
          return Promise.all(promises).then(() => {
-            if (mdi?.createFinalBatchFrame && this.divsize)
+            if (mdi?.createFinalBatchFrame && isBatchMode())
                mdi.createFinalBatchFrame();
          });
       });
@@ -3313,8 +3313,8 @@ class HierarchyPainter extends BasePainter {
       if (!document.getElementById(this.disp_frameid))
          return null;
 
-      if (this.divsize && isBatchMode())
-         this.disp = new BatchDisplay(this.divsize[0], this.divsize[1]);
+      if (isBatchMode())
+         this.disp = new BatchDisplay(settings.CanvasWidth, settings.CanvasHeight);
       else if ((this.disp_kind.indexOf('flex') === 0) || (this.disp_kind.indexOf('coll') === 0))
          this.disp = new FlexibleDisplay(this.disp_frameid);
       else if (this.disp_kind === 'tabs')

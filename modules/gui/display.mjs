@@ -1156,8 +1156,8 @@ class BatchDisplay extends MDIDisplay {
    constructor(width, height, jsdom_body) {
       super('$batch$');
       this.frames = []; // array of configured frames
-      this.width = width || 1200;
-      this.height = height || 800;
+      this.width = width || settings.CanvasWidth;
+      this.height = height || settings.CanvasHeight;
       this.jsdom_body = jsdom_body || d3_select('body'); // d3 body handle
    }
 
@@ -1223,11 +1223,14 @@ class BatchDisplay extends MDIDisplay {
       const frame = this.frames[id];
       if (!frame) return;
       const main = d3_select(frame);
+
       main.select('svg')
           .attr('xmlns', nsSVG)
-          .attr('width', this.width)
-          .attr('height', this.height)
           .attr('title', null).attr('style', null).attr('class', null).attr('x', null).attr('y', null);
+
+      if (!main.attr('width') && !main.attr('height'))
+            main.attr('width', this.width)
+                .attr('height', this.height);
 
       function clear_element() {
          const elem = d3_select(this);

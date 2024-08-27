@@ -593,18 +593,14 @@ async function makeImage(args) {
    if (!args.format)
       args.format = 'svg';
    if (!args.width)
-      args.width = 1200;
+      args.width = settings.CanvasWidth;
    if (!args.height)
-      args.height = 800;
-
-   if (args.use_canvas_size && (args.object?._typename === clTCanvas) && args.object.fCw && args.object.fCh) {
-      args.width = args.object.fCw;
-      args.height = args.object.fCh;
-   }
+      args.height = settings.CanvasHeight;
 
    async function build(main) {
       main.attr('width', args.width).attr('height', args.height)
           .style('width', args.width + 'px').style('height', args.height + 'px')
+          .property('_batch_use_canvsize', args.use_canvas_size ?? false)
           .property('_batch_mode', true)
           .property('_batch_format', args.format !== 'svg' ? args.format : null);
 
@@ -635,9 +631,11 @@ async function makeImage(args) {
 
          main.select('svg')
              .attr('xmlns', nsSVG)
-             .attr('width', args.width)
-             .attr('height', args.height)
              .attr('style', null).attr('class', null).attr('x', null).attr('y', null);
+
+         if (!main.attr('width') && !main.attr('height'))
+            main.attr('width', args.width)
+                .attr('height', args.height);
 
          function clear_element() {
             const elem = d3_select(this);
