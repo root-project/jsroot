@@ -429,11 +429,11 @@ class TPavePainter extends ObjectPainter {
                for (let n = 0; n < 2; ++n) {
                   const arg = {
                      align: (n === 0) ? 'start' : 'end', x: margin_x, y,
-                     width: width - 2*margin_x, height: stepy, text: parts[n], color,
+                     width: width - 2*margin_x, height: stepy, text: n > 0 ? parts[n].trimStart() : parts[n].trimEnd(), color,
                      _expected_width: width-2*margin_x, _args: args,
                      post_process(painter) {
-                       if (this._args[0].ready && this._args[1].ready)
-                          painter.scaleTextDrawing(1.05*(this._args[0].result_width+this._args[1].result_width)/this._expected_width, painter.draw_g);
+                        if (this._args[0].ready && this._args[1].ready)
+                           painter.scaleTextDrawing(1.05*(this._args[0].result_width+this._args[1].result_width)/this._expected_width, painter.draw_g);
                      }
                   };
                   args.push(arg);
