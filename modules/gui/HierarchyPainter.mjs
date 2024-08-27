@@ -2465,7 +2465,7 @@ class HierarchyPainter extends BasePainter {
          }
 
          return Promise.all(promises).then(() => {
-            if (mdi?.createFinalBatchFrame && isBatchMode())
+            if (mdi?.createFinalBatchFrame && isBatchMode() && !isNodeJs())
                mdi.createFinalBatchFrame();
          });
       });
@@ -3957,6 +3957,8 @@ async function drawStreamerInfo(dom, lst) {
 async function drawInspector(dom, obj, opt) {
    cleanup(dom);
    const painter = new HierarchyPainter('inspector', dom, '__as_dark_mode__');
+
+   console.log('draw inspector', obj?._typename, 'batch', isBatchMode());
 
    // in batch mode HTML drawing is not possible, just keep object reference for a minute
    if (isBatchMode()) {
