@@ -1091,8 +1091,8 @@ class ObjectPainter extends BasePainter {
                if (arg.align[1] === 'top')
                   txt.attr('dy', '.8em');
                else if (arg.align[1] === 'middle') {
-                  if (isNodeJs()) txt.attr('dy', '.4em');
-                             else txt.attr('dominant-baseline', 'middle');
+                  // if (isNodeJs()) txt.attr('dy', '.4em'); else // old workaround for node.js
+                  txt.attr('dominant-baseline', 'middle');
                }
             } else {
                txt.attr('text-anchor', 'start');
