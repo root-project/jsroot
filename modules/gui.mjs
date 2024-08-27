@@ -46,6 +46,7 @@ function readStyleFromURL(url) {
    get_bool('lastcycle', 'OnlyLastCycle');
    get_bool('usestamp', 'UseStamp');
    get_bool('dark', 'DarkMode');
+   get_bool('approx_text_size', 'ApproxTextSize');
 
    let mr = d.get('maxranges');
    if (mr) {
