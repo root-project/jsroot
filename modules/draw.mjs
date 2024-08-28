@@ -629,13 +629,14 @@ async function makeImage(args) {
             }
          }
 
-         main.select('svg')
-             .attr('xmlns', nsSVG)
-             .attr('style', null).attr('class', null).attr('x', null).attr('y', null);
+         const mainsvg = main.select('svg');
 
-         if (!main.attr('width') && !main.attr('height'))
-            main.attr('width', args.width)
-                .attr('height', args.height);
+         mainsvg.attr('xmlns', nsSVG)
+                .attr('style', null).attr('class', null).attr('x', null).attr('y', null);
+
+         if (!mainsvg.attr('width') && !mainsvg.attr('height'))
+            mainsvg.attr('width', args.width)
+                   .attr('height', args.height);
 
          function clear_element() {
             const elem = d3_select(this);
@@ -647,7 +648,7 @@ async function makeImage(args) {
 
          let svg;
          if (args.format === 'pdf')
-            svg = { node: main.select('svg').node(), width: args.width, height: args.height, can_modify: true };
+            svg = { node: mainsvg.node(), width: args.width, height: args.height, can_modify: true };
          else {
             svg = compressSVG(main.html());
             if (args.format === 'svg')
