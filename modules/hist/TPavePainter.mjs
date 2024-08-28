@@ -1,6 +1,7 @@
 import { gStyle, browser, settings, clone, isObject, isFunc, isStr, BIT,
          clTPave, clTPaveText, clTPavesText, clTPaveStats, clTPaveLabel, clTPaveClass, clTDiamond, clTLegend, clTPaletteAxis,
-         clTText, clTLatex, clTLine, clTBox, kTitle } from '../core.mjs';
+         clTText, clTLatex, clTLine, clTBox, kTitle,
+         isNodeJs} from '../core.mjs';
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer } from '../d3.mjs';
 import { Prob } from '../base/math.mjs';
 import { floatToString, makeTranslate, compressSVG, svgToImage, addHighlightStyle } from '../base/BasePainter.mjs';
@@ -945,6 +946,9 @@ class TPavePainter extends ObjectPainter {
                        .property('fill0', col)
                        .property('fill1', d3_rgb(col).darker(0.5).formatRgb());
 
+            if (this.isBatchMode())
+               continue;
+
             if (this.isTooltipAllowed()) {
                r.on('mouseover', function() {
                   d3_select(this).transition().duration(100).style('fill', d3_select(this).property('fill1'));
@@ -959,26 +963,42 @@ class TPavePainter extends ObjectPainter {
       }
 
       return this.z_handle.drawAxis(this.draw_g, s_width, s_height, axis_transform, axis_second).then(() => {
-         if (can_move && ('getBoundingClientRect' in this.draw_g.node())) {
-            const rect = this.draw_g.node().getBoundingClientRect();
-
-            if (this._palette_vertical) {
-               const shift = (this._pave_x + parseInt(rect.width)) - Math.round(0.995*width) + 3;
-
-               if (shift > 0) {
-                  this._pave_x -= shift;
-                  makeTranslate(this.draw_g, this._pave_x, this._pave_y);
-                  palette.fX1NDC -= shift/width;
-                  palette.fX2NDC -= shift/width;
+         let rect;
+         if (can_move) {
+            if (settings.ApproxTextSize || isNodeJs()) {
+               // for batch testing provide approx estimation
+               rect = { x: this._pave_x, y: this._pave_y, width: s_width, height: s_height };
+               const fsz = this.z_handle.labelsFont?.size || 14;
+               if (this._palette_vertical) {
+                  const dx = (this.z_handle._maxlbllen || 3) * 0.6 * fsz;
+                  rect.width += dx;
+                  if (this._swap_side) rect.x -= dx;
+               } else {
+                  rect.height += fsz;
+                  if (this._swap_side) rect.y -= fsz;
                }
-            } else {
-               const shift = Math.round((1.05 - gStyle.fTitleY)*height) - rect.y;
-               if (shift > 0) {
-                  this._pave_y += shift;
-                  makeTranslate(this.draw_g, this._pave_x, this._pave_y);
-                  palette.fY1NDC -= shift/height;
-                  palette.fY2NDC -= shift/height;
-               }
+            } else if ('getBoundingClientRect' in this.draw_g.node())
+               rect = this.draw_g.node().getBoundingClientRect();
+         }
+         if (!rect)
+            return this;
+
+         if (this._palette_vertical) {
+            const shift = (this._pave_x + parseInt(rect.width)) - Math.round(0.995*width) + 3;
+
+            if (shift > 0) {
+               this._pave_x -= shift;
+               makeTranslate(this.draw_g, this._pave_x, this._pave_y);
+               palette.fX1NDC -= shift/width;
+               palette.fX2NDC -= shift/width;
+            }
+         } else {
+            const shift = Math.round((1.05 - gStyle.fTitleY)*height) - rect.y;
+            if (shift > 0) {
+               this._pave_y += shift;
+               makeTranslate(this.draw_g, this._pave_x, this._pave_y);
+               palette.fY1NDC -= shift/height;
+               palette.fY2NDC -= shift/height;
             }
          }
 
