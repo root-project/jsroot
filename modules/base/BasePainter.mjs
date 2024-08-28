@@ -405,6 +405,7 @@ function compressSVG(svg) {
             .replace(/ class="\w*"/g, '')                              // remove all classes
             .replace(/ pad="\w*"/g, '')                                // remove all pad ids
             .replace(/ title=""/g, '')                                 // remove all empty titles
+            .replace(/ style=""/g, '')                                 // remove all empty styles
             .replace(/<g objname="\w*" objtype="\w*"/g, '<g')          // remove object ids
             .replace(/<g transform="translate\(\d+,\d+\)"><\/g>/g, '') // remove all empty groups with transform
             .replace(/<g transform="translate\(\d+,\d+\)" style="display: none;"><\/g>/g, '') // remove hidden title
