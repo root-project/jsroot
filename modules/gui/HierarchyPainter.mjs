@@ -3958,8 +3958,6 @@ async function drawInspector(dom, obj, opt) {
    cleanup(dom);
    const painter = new HierarchyPainter('inspector', dom, '__as_dark_mode__');
 
-   console.log('draw inspector', obj?._typename, 'batch', isBatchMode());
-
    // in batch mode HTML drawing is not possible, just keep object reference for a minute
    if (isBatchMode()) {
       painter.selectDom().property('_json_object_', obj);
