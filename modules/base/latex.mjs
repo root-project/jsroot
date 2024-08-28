@@ -492,10 +492,10 @@ function parseLatex(node, arg, label, curr) {
 
    createPath = (gg, d, dofill) => {
       return gg.append('svg:path')
+               .attr('d', d || 'M0,0') // provide dummy d value as placeholder, preserve order of attributes
                .style('stroke', dofill ? 'none' : (curr.color || arg.color))
                .style('stroke-width', dofill ? null : Math.max(1, Math.round(curr.fsize*(curr.font.weight ? 0.1 : 0.07))))
-               .style('fill', dofill ? (curr.color || arg.color) : 'none')
-               .attr('d', d ?? null);
+               .style('fill', dofill ? (curr.color || arg.color) : 'none');
    },
 
    createSubPos = fscale => {
@@ -664,7 +664,7 @@ function parseLatex(node, arg, label, curr) {
 
          positionGNode(subpos2, (dw > 0 ? dw/2 : 0), dy - subpos2.rect.y1, true);
 
-         if (path) path.attr('d', `M0,${Math.round(dy)}h${Math.round(w - curr.fsize*0.1)}`);
+         path?.attr('d', `M0,${Math.round(dy)}h${Math.round(w - curr.fsize*0.1)}`);
 
          shiftX(w);
 
