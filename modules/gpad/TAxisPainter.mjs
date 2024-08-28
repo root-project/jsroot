@@ -1117,6 +1117,8 @@ class TAxisPainter extends ObjectPainter {
          }
       }
 
+      this._maxlbllen = maxtextlen; // for internal use in palette painter
+
       // first complete major labels drawing
       return this.finishTextDrawing(label_g[0], true).then(() => {
          if (label_g.length > 1) {
