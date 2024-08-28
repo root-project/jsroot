@@ -943,7 +943,7 @@ class TPavePainter extends ObjectPainter {
                        .attr('d', d)
                        .style('fill', col)
                        .property('fill0', col)
-                       .property('fill1', d3_rgb(col).darker(0.5).formatHex());
+                       .property('fill1', d3_rgb(col).darker(0.5).formatRgb());
 
             if (this.isTooltipAllowed()) {
                r.on('mouseover', function() {

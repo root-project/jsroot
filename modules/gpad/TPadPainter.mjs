@@ -919,10 +919,10 @@ class TPadPainter extends ObjectPainter {
 
             svg_border1.attr('d', this.pad.fBorderMode > 0 ? side1 : side2)
                        .call(this.fillatt.func)
-                       .style('fill', d3_rgb(this.fillatt.color).brighter(0.5).formatHex());
+                       .style('fill', d3_rgb(this.fillatt.color).brighter(0.5).formatRgb());
             svg_border2.attr('d', this.pad.fBorderMode > 0 ? side2 : side1)
                        .call(this.fillatt.func)
-                       .style('fill', d3_rgb(this.fillatt.color).darker(0.5).formatHex());
+                       .style('fill', d3_rgb(this.fillatt.color).darker(0.5).formatRgb());
          } else {
             svg_border1.remove();
             svg_border2.remove();

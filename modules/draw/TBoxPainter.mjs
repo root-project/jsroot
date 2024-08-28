@@ -117,12 +117,12 @@ class TBoxPainter extends ObjectPainter {
          this.draw_g.append('svg:path')
                     .attr('d', paths[1])
                     .call(this.fillatt.func)
-                    .style('fill', d3_rgb(this.fillatt.color).brighter(0.5).formatHex());
+                    .style('fill', d3_rgb(this.fillatt.color).brighter(0.5).formatRgb());
 
          this.draw_g.append('svg:path')
                     .attr('d', paths[2])
                     .call(this.fillatt.func)
-                    .style('fill', d3_rgb(this.fillatt.color).darker(0.5).formatHex());
+                    .style('fill', d3_rgb(this.fillatt.color).darker(0.5).formatRgb());
       }
 
       assignContextMenu(this, kToFront);
