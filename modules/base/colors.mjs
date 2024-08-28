@@ -409,12 +409,12 @@ function decodeWebCanvasColors(oper) {
       const name = arr[n];
       let p = name.indexOf(':');
       if (p > 0) {
-         colors[parseInt(name.slice(0, p))] = d3_color(`rgb(${name.slice(p+1)})`).formatHex();
+         colors[parseInt(name.slice(0, p))] = `rgb(${name.slice(p+1)})`;
          continue;
       }
       p = name.indexOf('=');
       if (p > 0) {
-         colors[parseInt(name.slice(0, p))] = d3_color(`rgba(${name.slice(p+1)})`).formatHex8();
+         colors[parseInt(name.slice(0, p))] = `rgba(${name.slice(p+1)})`;
          continue;
       }
       p = name.indexOf('#');
