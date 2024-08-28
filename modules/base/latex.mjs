@@ -824,11 +824,10 @@ function parseLatex(node, arg, label, curr) {
 
          const r = subpos.rect;
          if (subpos.deco) {
-            const path = createPath(gg), r_width = Math.round(r.width);
             switch (subpos.deco) {
-               case 'underline': path.attr('d', `M0,${Math.round(r.y2)}h${r_width}`); break;
-               case 'overline': path.attr('d', `M0,${Math.round(r.y1)}h${r_width}`); break;
-               case 'line-through': path.attr('d', `M0,${Math.round(0.45*r.y1+0.55*r.y2)}h${r_width}`); break;
+               case 'underline': createPath(gg, `M0,${Math.round(r.y2)}h${Math.round(r.width)}`); break;
+               case 'overline': createPath(gg, `M0,${Math.round(r.y1)}h${Math.round(r.width)}`); break;
+               case 'line-through': createPath(gg, `M0,${Math.round(0.45*r.y1+0.55*r.y2)}h${Math.round(r.width)}`); break;
             }
          }
 
