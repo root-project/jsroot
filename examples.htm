@@ -563,9 +563,12 @@
          }
       }
 
-      function setListener(elem, shortname, durl, filename, itemname, opt, jsonname, entry) {
+      function setListener(elem, shortname, durl, filename, itemname, opt, jsonname, entry, id) {
           elem.addEventListener('click', event => {
              event.preventDefault();
+
+             if (show_debug)
+                console.log('click opt id', id);
 
              if (event.ctrlKey)
                 return window.open(elem.href.replace('?nobrowser&', '?'), '_blank');
@@ -836,7 +839,7 @@
                aaa.title = entry.title;
 
             content.appendChild( aaa );
-            setListener(aaa, shortname, url, filename, itemname, opt, jsonname, entry);
+            setListener(aaa, shortname, url, filename, itemname, opt, jsonname, entry, n);
 
             if (n < opts.length-1) {
                content.appendChild(document.createTextNode(', '));
