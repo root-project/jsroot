@@ -40,8 +40,12 @@ function readStyleFromURL(url) {
    }
 
    const b = d.get('batch');
-   if (b !== undefined)
+   if (b !== undefined) {
       setBatchMode(d !== 'off');
+      if (b === 'png')
+         internals.batch_png = true;
+      console.log('BATCH', b)
+   }
 
    get_bool('lastcycle', 'OnlyLastCycle');
    get_bool('usestamp', 'UseStamp');

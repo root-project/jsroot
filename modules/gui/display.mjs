@@ -1,6 +1,6 @@
 import { select as d3_select, drag as d3_drag } from '../d3.mjs';
 import { browser, internals, toJSON, settings, isObject, isFunc, isStr, nsSVG, btoa_func } from '../core.mjs';
-import { compressSVG, BasePainter } from '../base/BasePainter.mjs';
+import { compressSVG, BasePainter, svgToImage } from '../base/BasePainter.mjs';
 import { getElementCanvPainter, selectActivePad, cleanup, resize, ObjectPainter } from '../base/ObjectPainter.mjs';
 import { createMenu } from './menu.mjs';
 import { detectRightButton, injectStyle } from './utils.mjs';
@@ -1185,19 +1185,21 @@ class BatchDisplay extends MDIDisplay {
 
    /** @summary Create final frame */
    createFinalBatchFrame() {
-      const cnt = this.numFrames();
+      const cnt = this.numFrames(), prs = [];
 
       for (let n = 0; n < cnt; ++n) {
          const json = this.makeJSON(n, 1, true);
          if (json)
             d3_select(this.frames[n]).text('json:' + btoa_func(json));
          else
-            this.makeSVG(n, true);
+            prs.push(this.makeSVG(n, true));
       }
 
-      this.jsdom_body.append('div')
-          .attr('id', 'jsroot_batch_final')
-          .html(`${cnt}`);
+      return Promise.all(prs).then(() => {
+         this.jsdom_body.append('div')
+             .attr('id', 'jsroot_batch_final')
+             .html(`${cnt}`);
+      });
    }
 
    /** @summary Returns number of created frames */
@@ -1222,15 +1224,15 @@ class BatchDisplay extends MDIDisplay {
    makeSVG(id, keep_frame) {
       const frame = this.frames[id];
       if (!frame) return;
-      const main = d3_select(frame);
+      const main = d3_select(frame),
+            mainsvg = main.select('svg');
 
-      main.select('svg')
-          .attr('xmlns', nsSVG)
-          .attr('title', null).attr('style', null).attr('class', null).attr('x', null).attr('y', null);
+      mainsvg.attr('xmlns', nsSVG)
+             .attr('title', null).attr('style', null).attr('class', null).attr('x', null).attr('y', null);
 
-      if (!main.attr('width') && !main.attr('height'))
-            main.attr('width', this.width)
-                .attr('height', this.height);
+      if (!mainsvg.attr('width') && !mainsvg.attr('height'))
+            mainsvg.attr('width', this.width)
+                   .attr('height', this.height);
 
       function clear_element() {
          const elem = d3_select(this);
@@ -1240,8 +1242,13 @@ class BatchDisplay extends MDIDisplay {
       main.selectAll('g.root_frame').each(clear_element);
       main.selectAll('svg').each(clear_element);
 
+      if (internals.batch_png)
+         return svgToImage(compressSVG(main.html()), 'png', false).then(href => {
+            d3_select(this.frames[id]).text('png:' + href);
+         });
+
       if (keep_frame)
-         return;
+         return true;
 
       const svg = compressSVG(main.html());
 
