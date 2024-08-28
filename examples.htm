@@ -462,7 +462,7 @@
                .then(png => {
                   let img = new Image;
                   img.src = png;
-                 document.getElementById('plaindraw').appendChild(img);
+                  document.getElementById('plaindraw').appendChild(img);
                   return true;
                });
 
@@ -833,10 +833,11 @@
                if (url) url += '&dark';
             }
 
-            if (extra_opts) aaa.href += extra_opts;
+            if (extra_opts)
+               aaa.href += extra_opts;
 
             if (entry.title)
-               aaa.title = entry.title;
+               aaa.title = entry.title + (show_debug ? ` id:${n}` : '');
 
             content.appendChild( aaa );
             setListener(aaa, shortname, url, filename, itemname, opt, jsonname, entry, n);
