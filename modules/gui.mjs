@@ -44,7 +44,6 @@ function readStyleFromURL(url) {
       setBatchMode(d !== 'off');
       if (b === 'png')
          internals.batch_png = true;
-      console.log('BATCH', b)
    }
 
    get_bool('lastcycle', 'OnlyLastCycle');
