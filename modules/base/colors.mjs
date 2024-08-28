@@ -95,7 +95,7 @@ function getGrayColors(rgb_array) {
       const rgb = d3_color(rgb_array[n]),
             gray = 0.299*rgb.r + 0.587*rgb.g + 0.114*rgb.b;
       rgb.r = rgb.g = rgb.b = gray;
-      gray_colors[n] = rgb.hex();
+      gray_colors[n] = rgb.rgb();
    }
 
    return gray_colors;
