@@ -235,7 +235,7 @@ async function buildGUI(gui_element, gui_kind = '') {
    if (isBatchMode())
       nobrowser = true;
 
-   const divsize = getSize('divsize'), canvsize = getSize('canvsize');
+   const divsize = getSize('divsize'), canvsize = getSize('canvsize'), smallpad = getSize('smallpad');
    if (divsize)
       myDiv.style('position', 'relative').style('width', divsize[0] + 'px').style('height', divsize[1] + 'px');
    else if (!isBatchMode()) {
@@ -246,6 +246,10 @@ async function buildGUI(gui_element, gui_kind = '') {
    if (canvsize) {
       settings.CanvasWidth = canvsize[0];
       settings.CanvasHeight = canvsize[1];
+   }
+   if (smallpad) {
+      settings.SmallPad.width = smallpad[0];
+      settings.SmallPad.height = smallpad[1];
    }
 
    const hpainter = new HierarchyPainter('root', null);
