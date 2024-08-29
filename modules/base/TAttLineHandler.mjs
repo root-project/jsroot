@@ -112,15 +112,18 @@ class TAttLineHandler {
    applyBorder(selection) {
       this.used = true;
       if (this.empty()) {
-         selection.style('stroke', null)
+         selection.attr('rx', null)
+                  .attr('ry', null)
+                  .style('stroke', null)
                   .style('stroke-width', null)
                   .style('stroke-dasharray', null)
-                  .attr('rx', null).attr('ry', null);
+
       } else {
-         selection.style('stroke', this.color)
+         selection.attr('rx', this.rx || null)
+                  .attr('ry', this.ry || null)
+                  .style('stroke', this.color)
                   .style('stroke-width', this.width)
-                  .style('stroke-dasharray', this.pattern)
-                  .attr('rx', this.rx || null).attr('ry', this.ry || null);
+                  .style('stroke-dasharray', this.pattern);
       }
    }
 
