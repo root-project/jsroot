@@ -228,8 +228,10 @@ class RObjectPainter extends ObjectPainter {
 
       const color = this.v7EvalColor(prefix + 'color', 'black'),
             width = this.v7EvalAttr(prefix + 'width', 1),
-            style = this.v7EvalAttr(prefix + 'style', 1),
-            pattern = this.v7EvalAttr(prefix + 'pattern');
+            style = this.v7EvalAttr(prefix + 'style', 1);
+      let pattern = this.v7EvalAttr(prefix + 'pattern');
+      if (pattern && isNodeJs())
+         pattern = pattern.split(',').join(', ');
 
       this.createAttLine({ color, width, style, pattern });
 

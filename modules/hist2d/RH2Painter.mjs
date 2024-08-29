@@ -433,8 +433,8 @@ class RH2Painter extends RHistPainter {
          if (entry) {
             this.draw_g
                 .append('svg:path')
-                .style('fill', handle.palette.getColor(colindx))
-                .attr('d', entry.path);
+                .attr('d', entry.path)
+                .style('fill', handle.palette.getColor(colindx));
          }
       });
 
