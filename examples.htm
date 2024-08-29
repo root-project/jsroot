@@ -322,6 +322,15 @@
          }
 
       </style>
+      <script type="importmap">
+         {
+            "imports": {
+               "jsroot": "./modules/main.mjs",
+               "jsroot/colors": "./modules/base/colors.mjs",
+               "jsroot/testing": "./modules/testing.mjs"
+            }
+         }
+      </script>
    </head>
 
    <body class="home">
@@ -345,16 +354,11 @@
    </body>
 
    <script type="module">
-      import { settings, constants, httpRequest, decodeUrl, version, version_id, source_dir, gStyle } from './modules/core.mjs';
-      import { cleanup } from './modules/base/ObjectPainter.mjs';
-      import { registerForResize } from './modules/gui/utils.mjs';
-      import { createRootColors } from './modules/base/colors.mjs';
-      import { draw, makeImage } from './modules/draw.mjs';
-      import { readStyleFromURL } from './modules/gui.mjs';
-      import { openFile } from './modules/io.mjs';
-      import { setHPainter, getHPainter } from './modules/gui/display.mjs';
-      import { HierarchyPainter } from './modules/gui/HierarchyPainter.mjs';
-      import { testInteractivity } from './modules/testing.mjs';
+      import { settings, constants, httpRequest, decodeUrl, version, version_id, source_dir, gStyle,
+               cleanup, draw, makeImage, openFile, setHPainter, getHPainter, HierarchyPainter,
+               registerForResize, readStyleFromURL } from 'jsroot';
+      import { createRootColors } from 'jsroot/colors';
+      import { testInteractivity } from 'jsroot/testing';
 
       document.getElementById('version').innerHTML = (version_id != 'dev') ? version_id : version;
       document.getElementById('version').title = `${version}, ${source_dir}`;
@@ -568,7 +572,7 @@
              event.preventDefault();
 
              if (show_debug)
-                console.log(`click -k ${key} -o ${id}`);
+                console.log(`click -k ${key} -o ${id}   url: ${durl}`);
 
              if (event.ctrlKey)
                 return window.open(elem.href.replace('?nobrowser&', '?'), '_blank');
