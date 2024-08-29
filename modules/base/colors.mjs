@@ -30,7 +30,7 @@ function toColor(r, g, b, a = 1) {
 /** @summary Convert color string to unify node.js and browser
   * @private */
 function convertColor(col) {
-   return isNodeJs() && (col[0] === '#' || col[0] === 'r') ? d3_color(col).formatRgb() : col;
+   return (isNodeJs() || (isBatchMode() && settings.ApproxTextSize)) && (col[0] === '#' || col[0] === 'r') ? d3_color(col).formatRgb() : col;
 }
 
 /** @summary list of global root colors
