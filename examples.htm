@@ -563,12 +563,12 @@
          }
       }
 
-      function setListener(elem, shortname, durl, filename, itemname, opt, jsonname, entry, id) {
+      function setListener(elem, shortname, durl, filename, itemname, opt, jsonname, key, entry, id) {
           elem.addEventListener('click', event => {
              event.preventDefault();
 
              if (show_debug)
-                console.log('click opt id', id);
+                console.log(`click -k ${key} -o ${id}`);
 
              if (event.ctrlKey)
                 return window.open(elem.href.replace('?nobrowser&', '?'), '_blank');
@@ -755,9 +755,11 @@
 
          let url = '', filename = '', itemname = '', jsonname = '', style = '';
 
+         const key_lower = key.toLowerCase().replace(' ', '_');
+
          for (let n = 0; n < opts.length; ++n) {
             let entry = opts[n],
-                shortname = key.toLowerCase().replace(' ', '_');
+                shortname = key_lower;
 
             jsonname = url = style = '';
 
@@ -837,10 +839,10 @@
                aaa.href += extra_opts;
 
             if (entry.title)
-               aaa.title = entry.title + (show_debug ? ` id:${n}` : '');
+               aaa.title = entry.title + (show_debug ? ` -o ${n}` : '');
 
             content.appendChild( aaa );
-            setListener(aaa, shortname, url, filename, itemname, opt, jsonname, entry, n);
+            setListener(aaa, shortname, url, filename, itemname, opt, jsonname, key, entry, n);
 
             if (n < opts.length-1) {
                content.appendChild(document.createTextNode(', '));
@@ -848,7 +850,8 @@
                content.appendChild(document.createElement('br'));
             }
 
-            if (window.location.hash == '#' + shortname) {
+            const wh = window.location.hash;
+            if ((wh === '#' + shortname) || (entry.syn && (wh === '#' + entry.syn))) {
                aaa.focus();
                if (entry.title) setPageTitle(entry.title);
                processClick(url, filename, itemname, opt, jsonname, entry).then(() => {
