@@ -333,7 +333,6 @@
       { "name": "docu4", "file": "efficiency.root", "item": "eff4", "title": "drawing functions from TEfficiency" },
       { "name": "2d", "file": "efficiency.root", "item": "eff5", "title": "drawing 2-D efficiency" },
       { "name": "bbox", "file": "efficiency.root", "item": "eff5/[0]", "opt": "bbox", "title": "Draw total histogram from 2-dim TEfficiency, draw option starts with 'b'", "asurl": true }
-
    ],
    "TLatex" : [
      { "name": "latex", "file": "latex.root", "layout": "grid2x2", "items": ["lva","ex1","ex2","ex3"], "title": "Internal TLatex processor" },
@@ -367,8 +366,8 @@
      { "name": "ann3d", "file": "tutorials_graphs.root", "item": "annotation3d_new",  "title": "Usage of new TAnnotation class, tutorials/graphs/annotation3d.C" }
    ],
    "User" : [
-      { "name": "div", "url": "nobrowser&inject=demo/custom/divhist.js&file=demo/custom/divhist.root&item=DivHist", "title": "Draw division of two histograms from user class, see demo/custom/ dir for details" },
-      { "name": "sub", "url": "nobrowser&inject=demo/custom/divhist.js&file=demo/custom/divhist.root&item=DivHist/Num", "title": "Draw subelement of user class, accessed via exapnd function implemented in demo/custom/divhist.js" },
-      { "name": "pads", "url": "nobrowser&inject=demo/custom/divhist.js&file=demo/custom/divhist.root&item=DivHist&opt=pads", "title": "Create canvas and draw all elements in sub pads" }
+      { "name": "div", "url": "nobrowser&inject=$jsroot$/demo/custom/divhist.mjs&file=demo/custom/divhist.root&item=DivHist", "title": "Draw division of two histograms from user class, see demo/custom/ dir for details" },
+      { "name": "sub", "url": "nobrowser&inject=$jsroot$/demo/custom/divhist.mjs&file=demo/custom/divhist.root&item=DivHist/Num", "title": "Draw subelement of user class, accessed via exapnd function implemented in demo/custom/divhist.js" },
+      { "name": "pads", "url": "nobrowser&inject=$jsroot$/demo/custom/divhist.mjs&file=demo/custom/divhist.root&item=DivHist&opt=pads", "title": "Create canvas and draw all elements in sub pads" }
    ]
 }
