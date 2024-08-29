@@ -1096,7 +1096,7 @@ class RPadPainter extends RObjectPainter {
             for (let n = 0; n < arr.length; ++n) {
                const name = arr[n].fString, p = name.indexOf('=');
                if (p > 0)
-                  ListOfColors[parseInt(name.slice(0, p))] = name.slice(p+1);
+                  ListOfColors[parseInt(name.slice(0, p))] = convertColor(name.slice(p+1));
             }
 
             this.root_colors = ListOfColors;
