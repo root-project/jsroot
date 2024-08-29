@@ -661,7 +661,7 @@
          }
 
          if (entry.url) {
-            url = entry.url.replace(/\$\$\$/g, filepath);
+            url = '?' + entry.url.replace(/\$\$\$/g, filepath);
          } else if (entry.items) {
             url = `?nobrowser&file=${filename}`;
             if (entry.layout) url += `&layout=${entry.layout}`;
@@ -762,7 +762,7 @@
             jsonname = url = style = '';
 
             if ('url' in entry) {
-               url = entry.url.replace(/\$\$\$/g, filepath);
+               url = '?' + entry.url.replace(/\$\$\$/g, filepath);
             } else if ('json' in entry) {
                jsonname = entry.json;
                if ((jsonname.indexOf('http:') < 0) && (jsonname.indexOf('https:') < 0))

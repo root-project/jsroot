@@ -35,11 +35,11 @@
      { "name": "optstat", "opt": "optstat111111111", "title": "Configure stats option for histogram drawing" },
      { "opt": "inspect", "asurl": true, "file": "hsimple.root", "item": "hpx;1", "title": "universal object inspector, can be used for any class" },
      { "name": "docu", "file": "histpainter6.root", "layout": "vert32", "items": ["two_axis","draw_e1","draw_bar","draw_e34","draw_text"], "title":"several TH1 examples from THistPainter documentation" },
-     { "name": "twoscales", "url": "?nobrowser&file=$$$tutorials_hist.root&item=[twoscales/[1],twoscales/[3]]&opt=[hist,yaxis_red;line_red;y+]", "title": "interactive second Y scale to draw axis for second histogram" },
-     { "name": "twoscales2", "url": "?nobrowser&file=$$$tutorials_hist.root&item=[transpad/pad1/[1],transpad/pad2/[0]]&opt=[hist,Y+;yaxis_red]", "title": "interactive second Y scale to draw axis for second histogram" },
-     { "name": "optdate", "url": "?nobrowser&file=$$$hsimple.root&item=hpx;1&optdate=2&optfile&utc", "title": "Draw on canvas file date and file name using optdate=2&optfile&utc URL parameters" },
-     { "name": "opttitle", "url": "?nobrowser&file=$$$hsimple.root&item=hpx;1&opttitle=0", "title": "Disable title drawing for histogram using opttitle=0 URL parameter" },
-     { "name": "histmargin", "url": "?nobrowser&file=$$$hsimple.root&item=hpx;1&histmargin=0.5", "title": "Setting gStyle.fHistTopMargin = 0.5 to demonstrate it usage, &histmargin=0.5 in URL" },
+     { "name": "twoscales", "url": "nobrowser&file=$$$tutorials_hist.root&item=[twoscales/[1],twoscales/[3]]&opt=[hist,yaxis_red;line_red;y+]", "title": "interactive second Y scale to draw axis for second histogram" },
+     { "name": "twoscales2", "url": "nobrowser&file=$$$tutorials_hist.root&item=[transpad/pad1/[1],transpad/pad2/[0]]&opt=[hist,Y+;yaxis_red]", "title": "interactive second Y scale to draw axis for second histogram" },
+     { "name": "optdate", "url": "nobrowser&file=$$$hsimple.root&item=hpx;1&optdate=2&optfile&utc", "title": "Draw on canvas file date and file name using optdate=2&optfile&utc URL parameters" },
+     { "name": "opttitle", "url": "nobrowser&file=$$$hsimple.root&item=hpx;1&opttitle=0", "title": "Disable title drawing for histogram using opttitle=0 URL parameter" },
+     { "name": "histmargin", "url": "nobrowser&file=$$$hsimple.root&item=hpx;1&histmargin=0.5", "title": "Setting gStyle.fHistTopMargin = 0.5 to demonstrate it usage, &histmargin=0.5 in URL" },
      { "name": "haxis", "file": "haxis.root", "item": "chaxis", "title": "haxis draw option for swapped axis drawing plus bar chart and markers" }
    ],
    "TH2" : [
@@ -97,7 +97,7 @@
      { "name": "box1", "json": "hbox.json.gz", "opt": "box1", "title": "boxes, area proportional to bin content" },
      { "name": "ctx_cty", "opt": "col_ctx_cty", "file": "QAresults.root", "item": "PIDqa/PIDqa1/ITS/hNsigmaP_ITS_helium-3;1", "title": "center title x (ctx) and center title y (cty)" },
      { "name": "otx_oty", "opt": "col_otx_oty", "file": "QAresults.root", "item": "PIDqa/PIDqa1/ITS/hNsigmaP_ITS_triton;1", "title": "opposite title x (otx) and opposite title y (oty)" },
-     { "name": "twoscales", "url": "?nobrowser&file=$$$histpainter6.root&item=[draw_boxsame/[1],draw_boxsame/[2]]&opt=[box,box;x+y+;xaxis_red;yaxis_red]", "title": "interactive second X and Y scale for second histogram" },
+     { "name": "twoscales", "url": "nobrowser&file=$$$histpainter6.root&item=[draw_boxsame/[1],draw_boxsame/[2]]&opt=[box,box;x+y+;xaxis_red;yaxis_red]", "title": "interactive second X and Y scale for second histogram" },
      { "name": "cjust", "file": "cjust.root", "item": "c1;1", "title": "Demo for cjust draw option with fixed palette colors, see TPaletteAxis docu" },
      { "name": "same0", "file": "histpainter6.root", "item": "same0;1", "title": "Use of SAME0 draw option to ignore main histogram scale, see THistPainter docu" },
      { "name": "image", "file": "hsimple.root", "item": "hpxpy;1", "opt": "colz", "title": "Create PNG image with makeImage() function", "aspng": "true" }
@@ -179,8 +179,8 @@
      { "name": "func", "file": "fillrandom.root", "item": "sqroot;1", "title": "default drawing of TF1", "interactive": true },
      { "name": "LF", "file": "fillrandom.root", "item": "sqroot;1", "opt" : "lf,fill_red", "title": "Draw function with line and fill, provide extra fill_red option" },
      { "name": "X+Y+", "file": "fillrandom.root", "item": "sqroot;1", "opt": "X+Y+", "title": "draw axes on other sides" },
-     { "name": "hist+func", "opt": "", "url": "?nobrowser&file=$$$fillrandom.root&item=h1f;1+sqroot;1" },
-     { "name": "hist+func+Y+", "opt": "", "url": "?nobrowser&file=$$$fillrandom.root&item=[h1f;1,sqroot;1]&opt=[hist,y+]", "title": "demo for second fully interactive Y axis" },
+     { "name": "hist+func", "opt": "", "url": "nobrowser&file=$$$fillrandom.root&item=h1f;1+sqroot;1" },
+     { "name": "hist+func+Y+", "opt": "", "url": "nobrowser&file=$$$fillrandom.root&item=[h1f;1,sqroot;1]&opt=[hist,y+]", "title": "demo for second fully interactive Y axis" },
      { "name": "canv", "opt": "", "file": "danilo6.root", "item": "canvas;1" },
      { "name": "sum", "opt": "", "file": "tf1new.root", "item": "c1;1", "title": "newest version of ROOT with new coding rules for the functions parameters" },
      { "name": "ff2", "file": "ff2.root", "item": "c1Dia;1" },
@@ -199,7 +199,7 @@
    ],
    "TCanvas" : [
      { "name": "roofit", "file": "rf107.root", "item": "rf107_plotstyles;1", "interactive": true },
-     { "name": "subpad", "url": "?nobrowser&file=$$$rf107.root&item=rf107_plotstyles;1/[0]", "title": "Draw only selected sub-pad from list of TCanvas list of primitives"  },
+     { "name": "subpad", "url": "nobrowser&file=$$$rf107.root&item=rf107_plotstyles;1/[0]", "title": "Draw only selected sub-pad from list of TCanvas list of primitives"  },
      { "name": "zdemo", "file": "zdemo.root", "item": "zdemo;1", "pdf": true },
      { "name": "legend", "asurl": true, "file": "legends.root", "item": "legends;1", "title": "TCanvas with TLegend, use normal latex parser" },
      { "name": "autoplace", "file": "tutorials_hist.root", "item": "legendautoplace;1", "title": "Autoplace of TLegend element, canvas from tutorials/hist/legendautoplace.C macro" },
@@ -230,7 +230,7 @@
      { "name": "prim2", "file": "geom/geodemo.root", "layout": "vert333", "items": ["cone","coneseg","tube","tubeseg","ctub","eltu","pcon","pgon"], "opts": ["z","z","z","z","z","z","z","z"], "r3d": "svg", "title": "Basic TGeo primitives from tutorials/geom/geodemo.C, group 2" },
      { "name": "prim3", "file": "geom/geodemo.root", "layout": "grid3x2", "items": ["sphere","torus","parab","hype","comp"], "opts": ["z","z","z","z","z"], "title": "Basic TGeo primitives from tutorials/geom/geodemo.C, group 3" },
      { "name": "tess", "file": "geom/tess.root", "item": "tess", "r3d": "svg", "title": "New TGeoTessellated shape" },
-     { "name": "comp", "url": "?nobrowser&file=$$$geom/geodemo.root+&layout=grid2x2&items=[comp;1/Left,comp;1/Right,comp;1,comp;1]&opts=[az,az,comp_az,az]", "title":"Components of composite shape" },
+     { "name": "comp", "url": "nobrowser&file=$$$geom/geodemo.root+&layout=grid2x2&items=[comp;1/Left,comp;1/Right,comp;1,comp;1]&opts=[az,az,comp_az,az]", "title":"Components of composite shape" },
      { "name": "building", "asurl": true, "file": "geom/building.root", "item": "geom;1", "opt": "allz", "title": "Geometry from tutorials/geom/building.C" },
      { "name": "alice", "asurl": true, "file": "https://root.cern/files/alice2.root", "item": "Geometry;1", "opt": "dsize;macro:https://root.cern/js/files/geomAlice.C;black;vislvl2", "title": "ALICE geometry" },
      { "name": "atlas", "asurl": true, "file": "https://root.cern/files/atlas.root", "item": "atlas;1", "opt": "dflt;black;dsize;vislvl4;zoom70", "title":"ATLAS geometry" },
@@ -238,9 +238,9 @@
      { "name": "animate", "asurl": true, "file": "https://root.cern/files/cms.root", "item": "cms;1/OCMS/CMSE_1", "opt": "vislvl4;dflt;trr300;trz300;rotate;zoom90;black;ctrl", "title": "Animated and transformed CMS geomtery", "notest": true },
      { "name": "lhcb", "asurl": true, "file": "https://root.cern/files/lhcbfull.root", "item": "Geometry;1", "opt": "dflt;black;zoom70", "title": "LHCb geometry" },
      { "name": "eve", "asurl": true, "json": "geom/evegeoshape.json.gz", "opt": "dray", "title": "Example of drawing snapshot of volumes from EVE" },
-     { "name": "tracks", "url": "?nobrowser&json=$$$geom/evegeoshape.json.gz&file=$$$geom/eve_tracks.root&item=evegeoshape.json.gz+eve_tracks.root/tracks;1&opt=dray", "title":"Overlap of geometry with tracks, read from separate file" },
-     { "name": "tracks+hits", "url": "?nobrowser&json=$$$geom/simple_alice.json.gz&file=$$$geom/tracks_hits.root&item=simple_alice.json.gz+tracks_hits.root/tracks;1+tracks_hits.root/hits;1&opt=black;dray", "title":"Overlap of simple ALICE geometry with tracks and hits, read from separate file" },
-     { "name": "proj", "url": "?nobrowser&layout=h12_21&files=[https://root.cern/files/alice_ESDgeometry.root,$$$geom/eve_tracks.root]&items=[[[0]/Gentle,[1]/tracks],[0]/Gentle,[0]/Gentle]&opts=[main;black;dray,projz;black,projx;black]", "title": "Simple ALICE geometry and two projections" },
+     { "name": "tracks", "url": "nobrowser&json=$$$geom/evegeoshape.json.gz&file=$$$geom/eve_tracks.root&item=evegeoshape.json.gz+eve_tracks.root/tracks;1&opt=dray", "title":"Overlap of geometry with tracks, read from separate file" },
+     { "name": "tracks+hits", "url": "nobrowser&json=$$$geom/simple_alice.json.gz&file=$$$geom/tracks_hits.root&item=simple_alice.json.gz+tracks_hits.root/tracks;1+tracks_hits.root/hits;1&opt=black;dray", "title":"Overlap of simple ALICE geometry with tracks and hits, read from separate file" },
+     { "name": "proj", "url": "nobrowser&layout=h12_21&files=[https://root.cern/files/alice_ESDgeometry.root,$$$geom/eve_tracks.root]&items=[[[0]/Gentle,[1]/tracks],[0]/Gentle,[0]/Gentle]&opts=[main;black;dray,projz;black,projx;black]", "title": "Simple ALICE geometry and two projections" },
      { "name": "overlap", "asurl": true, "file": "geom/overlap.root", "r3d": "svg", "item": "default/Overlaps/ov00010", "title": "example of TGeoOverlap" },
      { "name": "half", "json": "geom/comp_half.json.gz", "title": "Use of TGeoHalfSpace for building composites" },
      { "name": "image", "aspng": true, "file": "geom/rootgeom.root", "item": "simple1;1", "title": "Using makeImage to produce PNG image for geometry" }
@@ -265,7 +265,7 @@
      { "name": "excl", "file": "tutorials_graphs.root", "item": "exclusiongraph2", "title": "Exclusion draw example, output of tutorials/graphs/exclusiongraph2.C" },
      { "name": "plc", "file": "tutorials_graphs.root", "item": "graphpalettecolor", "title": "Automatic set of graph colors, output of tutorials/graphs/graphpalettecolor.C" },
      { "name": "shade", "file": "tutorials_graphs.root", "item": "graphShade", "title": "output of tutorials/graphs/graphShade.C" },
-     { "name": "second_axis", "url": "?nobrowser&file=$$$graph_twopad.root&item=[c1/pad1/[0],c1/pad2/[0]]&opt=[alp,ly+;yaxis_red]", "title": "two overlayed graphs with second Y axis", "interactive": true },
+     { "name": "second_axis", "url": "nobrowser&file=$$$graph_twopad.root&item=[c1/pad1/[0],c1/pad2/[0]]&opt=[alp,ly+;yaxis_red]", "title": "two overlayed graphs with second Y axis", "interactive": true },
      { "name": "qq", "file": "tutorials_math.root", "item": "chi2test", "title": "Example of TGraphQQ, output of tutorials/math/chi2test.C" }
    ],
    "TGraphErrors" : [
@@ -351,8 +351,8 @@
      { "name": "axis", "file": "gaxis.root", "item": "c1;1", "title": "TGaxis class" },
      { "name": "cut", "file": "cut.root", "item": "c1",  "title": "TCutG used for TH2 bins selection" },
      { "name": "arrow", "file": "arrow.root", "item": "c1;1", "title": "TArrow class", "interactive": true },
-     { "name": "sinfo", "url": "?nobrowser&file=$$$hsimple.root&item=StreamerInfo", "title": "List of streamer infos" },
-     { "name": "3dmark", "url": "?nobrowser&file=$$$mix2d3d.root&item=Canvas;1/pad4&opt=white;nomargins", "title": "TPloyMarker3D class, reset pad margins" },
+     { "name": "sinfo", "url": "nobrowser&file=$$$hsimple.root&item=StreamerInfo", "title": "List of streamer infos" },
+     { "name": "3dmark", "url": "nobrowser&file=$$$mix2d3d.root&item=Canvas;1/pad4&opt=white;nomargins", "title": "TPloyMarker3D class, reset pad margins" },
      { "name": "spline", "file": "tutorials_graphs.root", "item": "splines_test",  "title": "TSpline3 and TSpline5 classes, tutorials/graphs/splines_test.C" },
      { "name": "polyline", "file": "polyline.root", "item": "can;1", "title": "TPolyLine class (produced with graphics/triangles.C)" },
      { "name": "basic3d", "file": "tutorials_graphics.root", "item": "basic3d",  "title": "TPolyLine3D and TPolyMarker3D, output of graphics/basic3d.C tutorial" },
@@ -362,13 +362,13 @@
      { "name": "pie", "file": "tutorials_graphics.root", "item": "piechart",  "title": "TPie, tutorials/graphics/piechart.C" },
      { "name": "fill", "file": "fillpatterns.root", "item": "patterns",  "title": "Different fill patterns" },
      { "name": "mass_spectrum", "file": "mass_spectrum.root", "item": "C",  "title": "Output of graphics/mass_spectrum.C tutorial", "interactive": true },
-     { "name": "legend", "url": "?nobrowser&file=$$$graph_twopad.root&item=[c1/pad1/[0],c1/pad2/[0],$legend]&opt=[alp,ly+;yaxis_red]", "title": "Display legend for the drawn objects" },
+     { "name": "legend", "url": "nobrowser&file=$$$graph_twopad.root&item=[c1/pad1/[0],c1/pad2/[0],$legend]&opt=[alp,ly+;yaxis_red]", "title": "Display legend for the drawn objects" },
      { "name": "scatter", "file": "scatter.root", "item": "c2",  "title": "Canvas with new TScatter class, tutorials/graphs/scatter.C" },
      { "name": "ann3d", "file": "tutorials_graphs.root", "item": "annotation3d_new",  "title": "Usage of new TAnnotation class, tutorials/graphs/annotation3d.C" }
    ],
    "User" : [
-      { "name": "div", "url": "?nobrowser&inject=demo/custom/divhist.js&file=demo/custom/divhist.root&item=DivHist", "title": "Draw division of two histograms from user class, see demo/custom/ dir for details" },
-      { "name": "sub", "url": "?nobrowser&inject=demo/custom/divhist.js&file=demo/custom/divhist.root&item=DivHist/Num", "title": "Draw subelement of user class, accessed via exapnd function implemented in demo/custom/divhist.js" },
-      { "name": "pads", "url": "?nobrowser&inject=demo/custom/divhist.js&file=demo/custom/divhist.root&item=DivHist&opt=pads", "title": "Create canvas and draw all elements in sub pads" }
+      { "name": "div", "url": "nobrowser&inject=demo/custom/divhist.js&file=demo/custom/divhist.root&item=DivHist", "title": "Draw division of two histograms from user class, see demo/custom/ dir for details" },
+      { "name": "sub", "url": "nobrowser&inject=demo/custom/divhist.js&file=demo/custom/divhist.root&item=DivHist/Num", "title": "Draw subelement of user class, accessed via exapnd function implemented in demo/custom/divhist.js" },
+      { "name": "pads", "url": "nobrowser&inject=demo/custom/divhist.js&file=demo/custom/divhist.root&item=DivHist&opt=pads", "title": "Create canvas and draw all elements in sub pads" }
    ]
 }
