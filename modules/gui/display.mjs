@@ -1226,6 +1226,10 @@ class BatchDisplay extends MDIDisplay {
       if (!frame) return;
       const main = d3_select(frame),
             mainsvg = main.select('svg');
+      if (mainsvg.empty()) {
+         console.error('NO SVG element');
+         return;
+      }
 
       mainsvg.attr('xmlns', nsSVG)
              .attr('title', null).attr('style', null).attr('class', null).attr('x', null).attr('y', null);
