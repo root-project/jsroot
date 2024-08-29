@@ -10,9 +10,20 @@ function toDec(num, scale = 255) {
    return Math.round(num * scale).toString(10);
 }
 
+/** @summary Convert alfa value from rgba to string
+  * @private */
+function toAlfa(a) {
+   const res = a.toFixed(2);
+   if ((res.length === 4) && (res[3] === '0'))
+      return res.slice(0, 3);
+   return res;
+}
+
+/** @summary Convert r,g,b,a values to string
+  * @private */
 function toColor(r, g, b, a = 1) {
    return (a !== undefined) && (a !== 1)
-      ? `rgba(${toDec(r)}, ${toDec(g)}, ${toDec(b)}, ${a.toFixed(2)})`
+      ? `rgba(${toDec(r)}, ${toDec(g)}, ${toDec(b)}, ${toAlfa(a)})`
       : `rgb(${toDec(r)}, ${toDec(g)}, ${toDec(b)})`;
 }
 
