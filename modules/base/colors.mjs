@@ -1,4 +1,4 @@
-import { clTColor, settings } from '../core.mjs';
+import { clTColor, isBatchMode, isNodeJs, settings } from '../core.mjs';
 import { color as d3_color } from '../d3.mjs';
 
 const clTLinearGradient = 'TLinearGradient', clTRadialGradient = 'TRadialGradient',
@@ -106,7 +106,7 @@ function getGrayColors(rgb_array) {
       const rgb = d3_color(rgb_array[n]),
             gray = 0.299*rgb.r + 0.587*rgb.g + 0.114*rgb.b;
       rgb.r = rgb.g = rgb.b = gray;
-      gray_colors[n] = rgb.rgb();
+      gray_colors[n] = rgb.formatRgb();
    }
 
    return gray_colors;
@@ -415,17 +415,25 @@ function getColorPalette(id, grayscale) {
 /** @summary Decode list of ROOT colors coded by TWebCanvas
   * @private */
 function decodeWebCanvasColors(oper) {
-   const colors = [], arr = oper.split(';');
+   const colors = [], arr = oper.split(';'),
+         convert_rgb = isNodeJs() || (isBatchMode() && settings.ApproxTextSize);
    for (let n = 0; n < arr.length; ++n) {
       const name = arr[n];
       let p = name.indexOf(':');
       if (p > 0) {
-         colors[parseInt(name.slice(0, p))] = `rgb(${name.slice(p+1)})`;
+         const col = `rgb(${name.slice(p+1)})`;
+         colors[parseInt(name.slice(0, p))] = convert_rgb ? d3_color(col).formatRgb() : col;
          continue;
       }
       p = name.indexOf('=');
       if (p > 0) {
-         colors[parseInt(name.slice(0, p))] = `rgba(${name.slice(p+1)})`;
+         let col = `rgba(${name.slice(p+1)})`;
+         if (convert_rgb) {
+            col = d3_color(col);
+            col.opacity = (Math.round(col.opacity*255) / 255).toFixed(2);
+            col = col.formatRgb();
+         }
+         colors[parseInt(name.slice(0, p))] = col;
          continue;
       }
       p = name.indexOf('#');
