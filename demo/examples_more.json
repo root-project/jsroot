@@ -72,7 +72,7 @@
    ],
    "TH3" : [
       { "name": "subpads", "opt": "", "file": "glc.root", "item": "glc;1", "title": "canvas with two subpads, both with 3D plotls" },
-      { "name": "geo", "url": "?nobrowser&files=[$$$histpainter6.root,$$$/geom/tess.root]&item=[histpainter6.root/draw_th3_box;1/h3box,tess.root/tess]&opt=[box]", "title": "Superimpose TH3 with geometry" },
+      { "name": "geo", "url": "nobrowser&files=[$$$histpainter6.root,$$$/geom/tess.root]&item=[histpainter6.root/draw_th3_box;1/h3box,tess.root/tess]&opt=[box]", "title": "Superimpose TH3 with geometry" },
       { "name": "logx", "opt": "", "file": "th3_logx.root", "item": "c1", "title": "TH3 with custom X binning and logX scale, check for proper positioning" },
       { "name": "logxyz", "file": "profile3d.root", "item": "profile3d", "opt": "logx,logy,logz,mlx,mly,mlz", "title": "Example of log x/y/z with TProfile3D class, set also more log labels" }
    ],
@@ -176,8 +176,8 @@
      { "name": "stat", "file": "tutorials_math.root", "item": "mathcoreStatFunc;1", "title": "output of tutorials/math/mathcoreStatFunc.C macro" }
    ],
    "TCanvas" : [
-     { "name": "jpsi", "url": "?nobrowser&tf1=curve&file=$$$JPsi_evolution.root&item=CutTrees/cut1/C_cut1 < 2.85714;1" },
-     { "name": "grayscale", "url": "?nobrowser&tf1=curve&file=$$$JPsi_evolution.root&item=CutTrees/cut1/C_cut1 < 2.85714;1&opt=grayscale", "title": "Testing canvas grayscale" },
+     { "name": "jpsi", "url": "nobrowser&tf1=curve&file=$$$JPsi_evolution.root&item=CutTrees/cut1/C_cut1 < 2.85714;1" },
+     { "name": "grayscale", "url": "nobrowser&tf1=curve&file=$$$JPsi_evolution.root&item=CutTrees/cut1/C_cut1 < 2.85714;1&opt=grayscale", "title": "Testing canvas grayscale" },
      { "name": "noframe", "file": "can4.root", "item": "c1;1" },
      { "name": "higgs", "file": "higgs_c.root", "item": "c;1" },
      { "name": "amore", "file": "VertexXY.root", "item": "Amore Canvas;1" },
@@ -221,7 +221,7 @@
      { "name": "tank", "asurl": true, "file": "https://root.cern/files/tank.root", "item": "geom;1", "opt": "z;rotate", "title": "Just for fun" },
      { "name": "lego", "asurl": true, "file": "https://root.cern/files/lego.root", "item": "geom;1", "opt": "z;rotate", "title": "Just for fun" },
      { "name": "cheon", "asurl": true, "file": "https://root.cern/files/cheongwadae.root", "item": "geom;1", "opt": "", "title": "One more building" },
-     { "name": "proj2", "url": "?nobrowser&layout=h21_12&files=[https://root.cern/files/alice_ESDgeometry.root,$$$geom/eve_tracks.root]&items=[[0]/Gentle,[0]/Gentle,[[0]/Gentle,[1]/tracks]]&opts=[projz;black,projx;black,main;black;dray]", "title": "Place main drawing not on the first place" },
+     { "name": "proj2", "url": "nobrowser&layout=h21_12&files=[https://root.cern/files/alice_ESDgeometry.root,$$$geom/eve_tracks.root]&items=[[0]/Gentle,[0]/Gentle,[[0]/Gentle,[1]/tracks]]&opts=[projz;black,projx;black,main;black;dray]", "title": "Place main drawing not on the first place" },
      { "name": "canv", "file": "geom/south_gate.root", "item": "c1;1", "opt": "", "title": "geometry storead in the TCanvas" },
      { "name": "comp_m", "asurl": true,  "file": "geom/BarrelSeg13.root", "item": "ccdb_object;1/lVolTOFrail_22386_22386", "r3d": "svg", "opt": "", "title": "Composite shape with matrix transformation inside" },
      { "name": "comp_m2", "asurl": true,  "file": "geom/MFTComplex_1.root", "item": "ccdb_object;1/lMF22_526107_526107", "r3d": "svg", "opt": "", "title": "Composite shape with matrix transformation inside" },
