@@ -19,9 +19,11 @@
 16. Implement batch mode with '&batch' URL parameter to create SVG/PNG images with default GUI
 17. Adjust node.js implementation to produce identical output with normal browser
 18. Create necessary infrastructure for testing with 'puppeteer'
-19. Fix - properly save zoomed ranges in drawingJSON()
-20. Fix - properly redraw TMultuGraph
-21. Fix - show empty bin in TProfile2D if it has entries #316
+19. Support inject of ES6 modules via '&inject=path.mjs'
+20. Using importmap for 'jsroot' in all major HTML files
+21. Fix - properly save zoomed ranges in drawingJSON()
+22. Fix - properly redraw TMultuGraph
+23. Fix - show empty bin in TProfile2D if it has entries #316
 
 
 ## Changes in 7.7.3
