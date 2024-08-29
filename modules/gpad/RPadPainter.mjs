@@ -1,6 +1,6 @@
 import { gStyle, settings, browser, constants, internals, addMethods,
          isPromise, getPromise, postponePromise, isBatchMode, isObject, isFunc, isStr, clTPad, clTFrame, nsREX } from '../core.mjs';
-import { ColorPalette, addColor, getRootColors } from '../base/colors.mjs';
+import { ColorPalette, addColor, getRootColors, convertColor } from '../base/colors.mjs';
 import { RObjectPainter } from '../base/RObjectPainter.mjs';
 import { getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG, makeTranslate, svgToImage } from '../base/BasePainter.mjs';
 import { selectActivePad, getActivePad } from '../base/ObjectPainter.mjs';
@@ -954,7 +954,7 @@ class RPadPainter extends RObjectPainter {
       if (snap.fColIndex && snap.fColValue) {
          const colors = this.root_colors || getRootColors();
          for (let k = 0; k < snap.fColIndex.length; ++k)
-            colors[snap.fColIndex[k]] = snap.fColValue[k];
+            colors[snap.fColIndex[k]] = convertColor(snap.fColValue[k]);
        }
 
       // painter used only for evaluation of attributes

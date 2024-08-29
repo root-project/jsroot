@@ -27,21 +27,27 @@ function toColor(r, g, b, a = 1) {
       : `rgb(${toDec(r)}, ${toDec(g)}, ${toDec(b)})`;
 }
 
+/** @summary Convert color string to unify node.js and browser
+  * @private */
+function convertColor(col) {
+   return isNodeJs() && (col[0] === '#' || col[0] === 'r') ? d3_color(col).formatRgb() : col;
+}
+
 /** @summary list of global root colors
   * @private */
 let gbl_colors_list = [];
 
-function convertColor(arg) {
-   const r = Number.parseInt(arg.slice(0, 2), 16),
-         g = Number.parseInt(arg.slice(2, 4), 16),
-         b = Number.parseInt(arg.slice(4, 6), 16);
-   return `rgb(${r}, ${g}, ${b})`;
-}
-
 /** @summary Generates all root colors, used also in jstests to reset colors
   * @private */
 function createRootColors() {
-   const colorMap = ['white', 'black', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan', convertColor('59d454'), convertColor('5954d9'), 'white'];
+   function conv(arg) {
+      const r = Number.parseInt(arg.slice(0, 2), 16),
+            g = Number.parseInt(arg.slice(2, 4), 16),
+            b = Number.parseInt(arg.slice(4, 6), 16);
+      return `rgb(${r}, ${g}, ${b})`;
+   }
+
+   const colorMap = ['white', 'black', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan', conv('59d454'), conv('5954d9'), 'white'];
    colorMap[110] = 'white';
 
    const moreCol = [
@@ -60,7 +66,7 @@ function createRootColors() {
       const s = entry.s;
       for (let n = 0; n < s.length; n += 6) {
          const num = entry.n + n / 6;
-         colorMap[num] = convertColor(s.slice(n, n+6));
+         colorMap[num] = conv(s.slice(n, n+6));
       }
    });
 
@@ -469,7 +475,7 @@ function decodeWebCanvasColors(oper) {
 
 createRootColors();
 
-export { getColor, findColor, addColor, adoptRootColors,
+export { getColor, findColor, addColor, adoptRootColors, convertColor,
          getRootColors, getGrayColors,
          extendRootColors, getRGBfromTColor, createRootColors, toColor,
          kWhite, kBlack, kRed, kGreen, kBlue, kYellow, kMagenta, kCyan,
