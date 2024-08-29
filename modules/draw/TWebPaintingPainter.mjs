@@ -37,7 +37,7 @@ class TWebPaintingPainter extends ObjectPainter {
             return this;
 
          lastkind = kind;
-         lastpath = this.draw_g.append('svg:path').attr('d',''); // placeholder for 'd' to have it always in front
+         lastpath = this.draw_g.append('svg:path').attr('d', ''); // placeholder for 'd' to have it always in front
          switch (kind) {
             case 'f': lastpath.call(this.fillatt.func); break;
             case 'l': lastpath.call(this.lineatt.func).style('fill', 'none'); break;

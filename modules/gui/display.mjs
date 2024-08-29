@@ -1226,17 +1226,14 @@ class BatchDisplay extends MDIDisplay {
       if (!frame) return;
       const main = d3_select(frame),
             mainsvg = main.select('svg');
-      if (mainsvg.empty()) {
-         console.error('NO SVG element');
+      if (mainsvg.empty())
          return;
-      }
 
       mainsvg.attr('xmlns', nsSVG)
              .attr('title', null).attr('style', null).attr('class', null).attr('x', null).attr('y', null);
 
       if (!mainsvg.attr('width') && !mainsvg.attr('height'))
-            mainsvg.attr('width', this.width)
-                   .attr('height', this.height);
+            mainsvg.attr('width', this.width).attr('height', this.height);
 
       function clear_element() {
          const elem = d3_select(this);
@@ -1246,10 +1243,11 @@ class BatchDisplay extends MDIDisplay {
       main.selectAll('g.root_frame').each(clear_element);
       main.selectAll('svg').each(clear_element);
 
-      if (internals.batch_png)
+      if (internals.batch_png) {
          return svgToImage(compressSVG(main.html()), 'png', false).then(href => {
             d3_select(this.frames[id]).text('png:' + href);
          });
+      }
 
       if (keep_frame)
          return true;

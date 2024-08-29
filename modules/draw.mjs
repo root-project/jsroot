@@ -1,6 +1,6 @@
 import { select as d3_select } from './d3.mjs';
-import { loadScript, loadModules, findFunction, internals, getPromise, isNodeJs, isObject, isFunc, isStr, _ensureJSROOT,
-         prROOT,
+import { loadScript, loadModules, findFunction, internals, settings, getPromise, isNodeJs, isObject, isFunc, isStr,
+         _ensureJSROOT, prROOT,
          clTObject, clTNamed, clTString, clTAttLine, clTAttFill, clTAttMarker, clTAttText,
          clTObjString, clTFile, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
          clTPave, clTPaveText, clTPavesText, clTPaveStats, clTPaveLabel, clTPaveClass, clTDiamond, clTLegend, clTPaletteAxis,
@@ -635,8 +635,7 @@ async function makeImage(args) {
                 .attr('style', null).attr('class', null).attr('x', null).attr('y', null);
 
          if (!mainsvg.attr('width') && !mainsvg.attr('height'))
-            mainsvg.attr('width', args.width)
-                   .attr('height', args.height);
+            mainsvg.attr('width', args.width).attr('height', args.height);
 
          function clear_element() {
             const elem = d3_select(this);

@@ -210,9 +210,7 @@ async function buildGUI(gui_element, gui_kind = '') {
    myDiv.html(''); // clear element
 
    const d = decodeUrl(), getSize = name => {
-      if (!d.has(name))
-         return null;
-      let res = d.get(name).split('x');
+      const res = d.has(name) ? d.get(name).split('x') : [];
       if (res.length !== 2)
          return null;
       res[0] = parseInt(res[0]);

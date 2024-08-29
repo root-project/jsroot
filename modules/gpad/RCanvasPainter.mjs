@@ -1,4 +1,4 @@
-import { settings, create, parse, toJSON, loadScript, registerMethods, isBatchMode, isNodeJs, isFunc, isStr, nsREX } from '../core.mjs';
+import { settings, create, parse, toJSON, loadScript, registerMethods, isBatchMode, isFunc, isStr, nsREX } from '../core.mjs';
 import { select as d3_select, rgb as d3_rgb } from '../d3.mjs';
 import { closeCurrentWindow, showProgress, loadOpenui5, ToolbarIcons, getColorExec } from '../gui/utils.mjs';
 import { GridDisplay, getHPainter } from '../gui/display.mjs';

@@ -116,8 +116,7 @@ class TAttLineHandler {
                   .attr('ry', null)
                   .style('stroke', null)
                   .style('stroke-width', null)
-                  .style('stroke-dasharray', null)
-
+                  .style('stroke-dasharray', null);
       } else {
          selection.attr('rx', this.rx || null)
                   .attr('ry', this.ry || null)

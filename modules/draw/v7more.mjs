@@ -1,4 +1,4 @@
-import { addMethods, settings, nsREX, isFunc, isNodeJs } from '../core.mjs';
+import { addMethods, settings, nsREX, isFunc } from '../core.mjs';
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer } from '../d3.mjs';
 import { makeTranslate } from '../base/BasePainter.mjs';
 import { RObjectPainter } from '../base/RObjectPainter.mjs';
