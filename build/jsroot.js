@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '21/08/2024',
+version_date = '29/08/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -199,6 +199,10 @@ settings = {
    Render3DBatch: constants$1.Render3D.Default,
    /** @summary Way to embed 3D drawing in SVG, see {@link constants.Embed3D} for possible values */
    Embed3D: constants$1.Embed3D.Default,
+   /** @summary Default canvas width */
+   CanvasWidth: 1200,
+   /** @summary Default canvas height */
+   CanvasHeight: 800,
    /** @summary Enable or disable tooltips, default on */
    Tooltip: !nodejs,
    /** @summary Time in msec for appearance of tooltips, 0 - no animation */
@@ -1327,7 +1331,7 @@ function create$1(typename, target) {
                        fYsizeUser: 0, fXsizeReal: 20, fYsizeReal: 10,
                        fWindowTopX: 0, fWindowTopY: 0, fWindowWidth: 0, fWindowHeight: 0,
                        fBorderSize: gStyle.fCanvasBorderSize, fBorderMode: gStyle.fCanvasBorderMode,
-                       fCw: 500, fCh: 300, fCatt: create$1(clTAttCanvas),
+                       fCw: settings.CanvasWidth, fCh: settings.CanvasHeight, fCatt: create$1(clTAttCanvas),
                        kMoveOpaque: true, kResizeOpaque: true, fHighLightColor: 5,
                        fBatch: true, kShowEventStatus: false, kAutoExec: true, kMenuBar: true });
          break;
@@ -8065,7 +8069,7 @@ class FontHandler {
 
       selection.attr('font-family', this.name)
                .attr('font-size', this.size)
-               .attr('xml:space', 'preserve')
+               .attr(':xml:space', 'preserve')
                .attr('font-weight', this.weight || null)
                .attr('font-style', this.style || null);
    }
@@ -8097,7 +8101,7 @@ class FontHandler {
    clearFont(selection) {
       selection.attr('font-family', null)
                .attr('font-size', null)
-               .attr('xml:space', null)
+               .attr(':xml:space', null)
                .attr('font-weight', null)
                .attr('font-style', null);
    }
@@ -8387,7 +8391,7 @@ translateLaTeX = str => {
 
 // array with relative width of base symbols from range 32..126
 // eslint-disable-next-line
-base_symbols_width = [453,535,661,973,955,1448,1242,324,593,596,778,1011,431,570,468,492,947,885,947,947,947,947,947,947,947,947,511,495,980,1010,987,893,1624,1185,1147,1193,1216,1080,1028,1270,1274,531,910,1177,1004,1521,1252,1276,1111,1276,1164,1056,1073,1215,1159,1596,1150,1124,1065,540,591,540,837,874,572,929,972,879,973,901,569,967,973,453,458,903,453,1477,973,970,972,976,638,846,548,973,870,1285,884,864,835,656,430,656,1069],
+base_symbols_width = [453,535,661,973,955,1448,1242,324,593,596,778,1011,200,570,200,492,947,885,947,947,947,947,947,947,947,947,511,495,980,1010,987,893,1624,1185,1147,1193,1216,1080,1028,1270,1274,531,910,1177,1004,1521,1252,1276,1111,1276,1164,1056,1073,1215,1159,1596,1150,1124,1065,540,591,540,837,874,572,929,972,879,973,901,569,967,973,453,458,903,453,1477,973,970,972,976,638,846,548,973,870,1285,884,864,835,656,430,656,1069],
 
 // eslint-disable-next-line
 extra_symbols_width = {945:1002,946:996,967:917,948:953,949:834,966:1149,947:847,951:989,953:516,954:951,955:913,956:1003,957:862,959:967,960:1070,952:954,961:973,963:1017,964:797,965:944,982:1354,969:1359,958:803,968:1232,950:825,913:1194,914:1153,935:1162,916:1178,917:1086,934:1358,915:1016,919:1275,921:539,977:995,922:1189,923:1170,924:1523,925:1253,927:1281,928:1281,920:1285,929:1102,931:1041,932:1069,933:1135,962:848,937:1279,926:1092,936:1334,918:1067,978:1154,8730:986,8804:940,8260:476,8734:1453,402:811,9827:1170,9830:931,9829:1067,9824:965,8596:1768,8592:1761,8593:895,8594:1761,8595:895,710:695,177:955,8243:680,8805:947,215:995,8733:1124,8706:916,8226:626,247:977,8800:969,8801:1031,8776:976,8230:1552,175:883,8629:1454,8501:1095,8465:1002,8476:1490,8472:1493,8855:1417,8853:1417,8709:1205,8745:1276,8746:1404,8839:1426,8835:1426,8836:1426,8838:1426,8834:1426,8747:480,8712:1426,8713:1426,8736:1608,8711:1551,174:1339,169:1339,8482:1469,8719:1364,729:522,172:1033,8743:1383,8744:1383,8660:1768,8656:1496,8657:1447,8658:1496,8659:1447,8721:1182,9115:882,9144:1000,9117:882,8970:749,9127:1322,9128:1322,8491:1150,229:929,8704:1397,8707:1170,8901:524,183:519,10003:1477,732:692,295:984,9725:1780,9744:1581,8741:737,8869:1390,8857:1421};
@@ -8670,10 +8674,10 @@ function parseLatex(node, arg, label, curr) {
 
    createPath = (gg, d, dofill) => {
       return gg.append('svg:path')
+               .attr('d', d || 'M0,0') // provide dummy d value as placeholder, preserve order of attributes
                .style('stroke', dofill ? 'none' : (curr.color || arg.color))
                .style('stroke-width', dofill ? null : Math.max(1, Math.round(curr.fsize*(curr.font.weight ? 0.1 : 0.07))))
-               .style('fill', dofill ? (curr.color || arg.color) : 'none')
-               .attr('d', d ?? null);
+               .style('fill', dofill ? (curr.color || arg.color) : 'none');
    },
 
    createSubPos = fscale => {
@@ -8842,7 +8846,7 @@ function parseLatex(node, arg, label, curr) {
 
          positionGNode(subpos2, (dw > 0 ? dw/2 : 0), dy - subpos2.rect.y1, true);
 
-         if (path) path.attr('d', `M0,${Math.round(dy)}h${Math.round(w - curr.fsize*0.1)}`);
+         path?.attr('d', `M0,${Math.round(dy)}h${Math.round(w - curr.fsize*0.1)}`);
 
          shiftX(w);
 
@@ -9002,11 +9006,10 @@ function parseLatex(node, arg, label, curr) {
 
          const r = subpos.rect;
          if (subpos.deco) {
-            const path = createPath(gg), r_width = Math.round(r.width);
             switch (subpos.deco) {
-               case 'underline': path.attr('d', `M0,${Math.round(r.y2)}h${r_width}`); break;
-               case 'overline': path.attr('d', `M0,${Math.round(r.y1)}h${r_width}`); break;
-               case 'line-through': path.attr('d', `M0,${Math.round(0.45*r.y1+0.55*r.y2)}h${r_width}`); break;
+               case 'underline': createPath(gg, `M0,${Math.round(r.y2)}h${Math.round(r.width)}`); break;
+               case 'overline': createPath(gg, `M0,${Math.round(r.y1)}h${Math.round(r.width)}`); break;
+               case 'line-through': createPath(gg, `M0,${Math.round(0.45*r.y1+0.55*r.y2)}h${Math.round(r.width)}`); break;
             }
          }
 
@@ -9641,11 +9644,33 @@ async function typesetMathjax(node) {
 const clTLinearGradient = 'TLinearGradient', clTRadialGradient = 'TRadialGradient',
       kWhite = 0, kBlack = 1;
 
-/** @summary Covert value between 0 and 1 into hex, used for colors coding
+/** @summary Covert value between 0 and 1 into decimal string using scale factor, used for colors coding
   * @private */
-function toHex(num, scale = 255) {
-   const s = Math.round(num * scale).toString(16);
-   return s.length === 1 ? '0'+s : s;
+function toDec(num, scale = 255) {
+   return Math.round(num * scale).toString(10);
+}
+
+/** @summary Convert alfa value from rgba to string
+  * @private */
+function toAlfa(a) {
+   const res = a.toFixed(2);
+   if ((res.length === 4) && (res[3] === '0'))
+      return res.slice(0, 3);
+   return res;
+}
+
+/** @summary Convert r,g,b,a values to string
+  * @private */
+function toColor(r, g, b, a = 1) {
+   return (a !== undefined) && (a !== 1)
+      ? `rgba(${toDec(r)}, ${toDec(g)}, ${toDec(b)}, ${toAlfa(a)})`
+      : `rgb(${toDec(r)}, ${toDec(g)}, ${toDec(b)})`;
+}
+
+/** @summary Convert color string to unify node.js and browser
+  * @private */
+function convertColor(col) {
+   return (isNodeJs() || (isBatchMode() && settings.ApproxTextSize)) && (col[0] === '#' || col[0] === 'r') ? color(col).formatRgb() : col;
 }
 
 /** @summary list of global root colors
@@ -9655,7 +9680,14 @@ let gbl_colors_list = [];
 /** @summary Generates all root colors, used also in jstests to reset colors
   * @private */
 function createRootColors() {
-   const colorMap = ['white', 'black', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan', '#59d454', '#5954d9', 'white'];
+   function conv(arg) {
+      const r = Number.parseInt(arg.slice(0, 2), 16),
+            g = Number.parseInt(arg.slice(2, 4), 16),
+            b = Number.parseInt(arg.slice(4, 6), 16);
+      return `rgb(${r}, ${g}, ${b})`;
+   }
+
+   const colorMap = ['white', 'black', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan', conv('59d454'), conv('5954d9'), 'white'];
    colorMap[110] = 'white';
 
    const moreCol = [
@@ -9674,7 +9706,7 @@ function createRootColors() {
       const s = entry.s;
       for (let n = 0; n < s.length; n += 6) {
          const num = entry.n + n / 6;
-         colorMap[num] = '#' + s.slice(n, n+6);
+         colorMap[num] = conv(s.slice(n, n+6));
       }
    });
 
@@ -9690,21 +9722,20 @@ function getRootColors() {
 /** @summary Produces rgb code for TColor object
   * @private */
 function getRGBfromTColor(col) {
-   if (col?._typename !== clTColor) return null;
+   if (col?._typename !== clTColor)
+      return null;
 
-   let rgb = '#' + toHex(col.fRed) + toHex(col.fGreen) + toHex(col.fBlue);
-   if ((col.fAlpha !== undefined) && (col.fAlpha !== 1))
-      rgb += toHex(col.fAlpha);
+   const rgb = toColor(col.fRed, col.fGreen, col.fBlue, col.fAlpha);
 
    switch (rgb) {
-      case '#ffffff': return 'white';
-      case '#000000': return 'black';
-      case '#ff0000': return 'red';
-      case '#00ff00': return 'green';
-      case '#0000ff': return 'blue';
-      case '#ffff00': return 'yellow';
-      case '#ff00ff': return 'magenta';
-      case '#00ffff': return 'cyan';
+      case 'rgb(255, 255, 255)': return 'white';
+      case 'rgb(0, 0, 0)': return 'black';
+      case 'rgb(255, 0, 0)': return 'red';
+      case 'rgb(0, 255, 0)': return 'green';
+      case 'rgb(0, 0, 255)': return 'blue';
+      case 'rgb(255, 255, 0)': return 'yellow';
+      case 'rgb(255, 0, 255)': return 'magenta';
+      case 'rgb(0, 255, 255)': return 'cyan';
    }
    return rgb;
 }
@@ -9721,7 +9752,7 @@ function getGrayColors(rgb_array) {
       const rgb = color(rgb_array[n]),
             gray = 0.299*rgb.r + 0.587*rgb.g + 0.114*rgb.b;
       rgb.r = rgb.g = rgb.b = gray;
-      gray_colors[n] = rgb.hex();
+      gray_colors[n] = rgb.formatRgb();
    }
 
    return gray_colors;
@@ -9800,6 +9831,10 @@ function findColor(name) {
   * @private */
 function addColor(rgb, lst) {
    if (!lst) lst = gbl_colors_list;
+
+   if ((rgb[0] === '#') && (isNodeJs() || (isBatchMode() && settings.ApproxTextSize)))
+      rgb = color(rgb).formatRgb();
+
    const indx = lst.indexOf(rgb);
    if (indx >= 0) return indx;
    lst.push(rgb);
@@ -9850,7 +9885,7 @@ function createDefaultPalette(grayscale) {
             r = hue2rgb(p, q, h + 1/3),
             g = hue2rgb(p, q, h),
             b = hue2rgb(p, q, h - 1/3);
-      return '#' + toHex(r) + toHex(g) + toHex(b);
+      return toColor(r, g, b);
    }, minHue = 0, maxHue = 280, maxPretty = 50, palette = [];
    for (let i = 0; i < maxPretty; ++i) {
       const hue = (maxHue - (i + 1) * ((maxHue - minHue) / maxPretty)) / 360;
@@ -9862,8 +9897,8 @@ function createDefaultPalette(grayscale) {
 function createGrayPalette() {
    const palette = [];
    for (let i = 0; i < 50; ++i) {
-      const code = toHex((i+2)/60);
-      palette.push('#'+code+code+code);
+      const code = toDec((i+2)/60);
+      palette.push(`rgb(${code}, ${code}, ${code})`);
    }
    return new ColorPalette(palette);
 }
@@ -10013,14 +10048,14 @@ function getColorPalette(id, grayscale) {
    const NColors = 255, Red = rgb[0], Green = rgb[1], Blue = rgb[2], palette = [];
 
    for (let g = 1; g < stops.length; g++) {
-       // create the colors...
-       const nColorsGradient = Math.round(Math.floor(NColors*stops[g]) - Math.floor(NColors*stops[g-1]));
-       for (let c = 0; c < nColorsGradient; c++) {
-          const col = '#' + toHex(Red[g-1] + c * (Red[g] - Red[g-1]) / nColorsGradient, 1) +
-                            toHex(Green[g-1] + c * (Green[g] - Green[g-1]) / nColorsGradient, 1) +
-                            toHex(Blue[g-1] + c * (Blue[g] - Blue[g-1]) / nColorsGradient, 1);
-          palette.push(col);
-       }
+      // create the colors...
+      const nColorsGradient = Math.round(Math.floor(NColors*stops[g]) - Math.floor(NColors*stops[g-1]));
+      for (let c = 0; c < nColorsGradient; c++) {
+         const col = 'rgb(' + toDec(Red[g-1] + c * (Red[g] - Red[g-1]) / nColorsGradient, 1) + ', ' +
+                              toDec(Green[g-1] + c * (Green[g] - Green[g-1]) / nColorsGradient, 1) + ', ' +
+                              toDec(Blue[g-1] + c * (Blue[g] - Blue[g-1]) / nColorsGradient, 1) + ')';
+         palette.push(col);
+      }
     }
 
     return new ColorPalette(palette, grayscale);
@@ -10030,17 +10065,25 @@ function getColorPalette(id, grayscale) {
 /** @summary Decode list of ROOT colors coded by TWebCanvas
   * @private */
 function decodeWebCanvasColors(oper) {
-   const colors = [], arr = oper.split(';');
+   const colors = [], arr = oper.split(';'),
+         convert_rgb = isNodeJs() || (isBatchMode() && settings.ApproxTextSize);
    for (let n = 0; n < arr.length; ++n) {
       const name = arr[n];
       let p = name.indexOf(':');
       if (p > 0) {
-         colors[parseInt(name.slice(0, p))] = color(`rgb(${name.slice(p+1)})`).formatHex();
+         const col = `rgb(${name.slice(p+1)})`;
+         colors[parseInt(name.slice(0, p))] = convert_rgb ? color(col).formatRgb() : col;
          continue;
       }
       p = name.indexOf('=');
       if (p > 0) {
-         colors[parseInt(name.slice(0, p))] = color(`rgba(${name.slice(p+1)})`).formatHex8();
+         let col = `rgba(${name.slice(p+1)})`;
+         if (convert_rgb) {
+            col = color(col);
+            col.opacity = (Math.round(col.opacity*255) / 255).toFixed(2);
+            col = col.formatRgb();
+         }
+         colors[parseInt(name.slice(0, p))] = col;
          continue;
       }
       p = name.indexOf('#');
@@ -10472,6 +10515,7 @@ function compressSVG(svg) {
             .replace(/ class="\w*"/g, '')                              // remove all classes
             .replace(/ pad="\w*"/g, '')                                // remove all pad ids
             .replace(/ title=""/g, '')                                 // remove all empty titles
+            .replace(/ style=""/g, '')                                 // remove all empty styles
             .replace(/<g objname="\w*" objtype="\w*"/g, '<g')          // remove object ids
             .replace(/<g transform="translate\(\d+,\d+\)"><\/g>/g, '') // remove all empty groups with transform
             .replace(/<g transform="translate\(\d+,\d+\)" style="display: none;"><\/g>/g, '') // remove hidden title
@@ -11736,7 +11780,7 @@ class TAttFillHandler {
             }
             for (let n = 0; n < this.gradient.fColorPositions.length; ++n) {
                const pos = this.gradient.fColorPositions[n],
-                     col = '#' + toHex(this.gradient.fColors[n*4]) + toHex(this.gradient.fColors[n*4+1]) + toHex(this.gradient.fColors[n*4+2]);
+                     col = toColor(this.gradient.fColors[n*4], this.gradient.fColors[n*4+1], this.gradient.fColors[n*4+2]);
                grad.append('svg:stop').attr('offset', `${Math.round(pos*100)}%`)
                                       .attr('stop-color', col)
                                       .attr('stop-opacity', `${Math.round(this.gradient.fColors[n*4+3]*100)}%`);
@@ -11786,9 +11830,9 @@ class TAttFillHandler {
 } // class TAttFillHandler
 
 const root_line_styles = [
-      '', '', '3,3', '1,2',
-      '3,4,1,4', '5,3,1,3', '5,3,1,3,1,3,1,3', '5,5',
-      '5,3,1,3,1,3', '20,5', '20,10,1,10', '1,3'];
+   '', '', '3, 3', '1, 2',
+   '3, 4, 1, 4', '5, 3, 1, 3', '5, 3, 1, 3, 1, 3, 1, 3', '5, 5',
+   '5, 3, 1, 3, 1, 3', '20, 5', '20, 10, 1, 10', '1, 3'];
 
 /**
   * @summary Handle for line attributes
@@ -11894,15 +11938,17 @@ class TAttLineHandler {
    applyBorder(selection) {
       this.used = true;
       if (this.empty()) {
-         selection.style('stroke', null)
+         selection.attr('rx', null)
+                  .attr('ry', null)
+                  .style('stroke', null)
                   .style('stroke-width', null)
-                  .style('stroke-dasharray', null)
-                  .attr('rx', null).attr('ry', null);
+                  .style('stroke-dasharray', null);
       } else {
-         selection.style('stroke', this.color)
+         selection.attr('rx', this.rx || null)
+                  .attr('ry', this.ry || null)
+                  .style('stroke', this.color)
                   .style('stroke-width', this.width)
-                  .style('stroke-dasharray', this.pattern)
-                  .attr('rx', this.rx || null).attr('ry', this.ry || null);
+                  .style('stroke-dasharray', this.pattern);
       }
    }
 
@@ -13075,7 +13121,7 @@ class ObjectPainter extends BasePainter {
             max_sz = draw_g.property('max_font_size');
       let font_size = font.size, any_text = false, only_text = true;
 
-      if ((f > 0) && ((f < 0.9) || (f > 1)))
+      if ((f > 0) && ((f < 0.95) || (f > 1.05)))
          font.size = Math.max(1, Math.floor(font.size / f));
 
       if (max_sz && (font.size > max_sz))
@@ -13156,8 +13202,8 @@ class ObjectPainter extends BasePainter {
                if (arg.align[1] === 'top')
                   txt.attr('dy', '.8em');
                else if (arg.align[1] === 'middle') {
-                  if (isNodeJs()) txt.attr('dy', '.4em');
-                             else txt.attr('dominant-baseline', 'middle');
+                  // if (isNodeJs()) txt.attr('dy', '.4em'); else // old workaround for node.js
+                  txt.attr('dominant-baseline', 'middle');
                }
             } else {
                txt.attr('text-anchor', 'start');
@@ -13226,7 +13272,7 @@ class ObjectPainter extends BasePainter {
       // complete rectangle with very rough size estimations
       arg.box = !isNodeJs() && !settings.ApproxTextSize && !arg.fast
                  ? getElementRect(txt_node, 'bbox')
-                 : (arg.text_rect || { height: arg.font_size * 1.2, width: arg.text.length * arg.font_size * arg.font.aver_width });
+                 : (arg.text_rect || { height: Math.round(1.15 * arg.font_size), width: approximateLabelWidth(arg.text, arg.font, arg.font_size) });
 
       txt_node.attr('visibility', 'hidden'); // hide elements until text drawing is finished
 
@@ -63052,6 +63098,8 @@ class TAxisPainter extends ObjectPainter {
          }
       }
 
+      this._maxlbllen = maxtextlen; // for internal use in palette painter
+
       // first complete major labels drawing
       return this.finishTextDrawing(label_g[0], true).then(() => {
          if (label_g.length > 1) {
@@ -67512,8 +67560,8 @@ class BatchDisplay extends MDIDisplay {
    constructor(width, height, jsdom_body) {
       super('$batch$');
       this.frames = []; // array of configured frames
-      this.width = width || 1200;
-      this.height = height || 800;
+      this.width = width || settings.CanvasWidth;
+      this.height = height || settings.CanvasHeight;
       this.jsdom_body = jsdom_body || select('body'); // d3 body handle
    }
 
@@ -67539,33 +67587,57 @@ class BatchDisplay extends MDIDisplay {
       return this.afterCreateFrame(frame.node());
    }
 
+   /** @summary Create final frame */
+   createFinalBatchFrame() {
+      const cnt = this.numFrames(), prs = [];
+
+      for (let n = 0; n < cnt; ++n) {
+         const json = this.makeJSON(n, 1, true);
+         if (json)
+            select(this.frames[n]).text('json:' + btoa_func(json));
+         else
+            prs.push(this.makeSVG(n, true));
+      }
+
+      return Promise.all(prs).then(() => {
+         this.jsdom_body.append('div')
+             .attr('id', 'jsroot_batch_final')
+             .html(`${cnt}`);
+      });
+   }
+
    /** @summary Returns number of created frames */
    numFrames() { return this.frames.length; }
 
    /** @summary returns JSON representation if any
      * @desc Now works only for inspector, can be called once */
-   makeJSON(id, spacing) {
+   makeJSON(id, spacing, keep_frame) {
       const frame = this.frames[id];
       if (!frame) return;
       const obj = select(frame).property('_json_object_');
       if (obj) {
          select(frame).property('_json_object_', null);
          cleanup(frame);
-         select(frame).remove();
+         if (!keep_frame)
+            select(frame).remove();
          return toJSON(obj, spacing);
       }
    }
 
    /** @summary Create SVG for specified frame id */
-   makeSVG(id) {
+   makeSVG(id, keep_frame) {
       const frame = this.frames[id];
       if (!frame) return;
-      const main = select(frame);
-      main.select('svg')
-          .attr('xmlns', nsSVG)
-          .attr('width', this.width)
-          .attr('height', this.height)
-          .attr('title', null).attr('style', null).attr('class', null).attr('x', null).attr('y', null);
+      const main = select(frame),
+            mainsvg = main.select('svg');
+      if (mainsvg.empty())
+         return;
+
+      mainsvg.attr('xmlns', nsSVG)
+             .attr('title', null).attr('style', null).attr('class', null).attr('x', null).attr('y', null);
+
+      if (!mainsvg.attr('width') && !mainsvg.attr('height'))
+            mainsvg.attr('width', this.width).attr('height', this.height);
 
       function clear_element() {
          const elem = select(this);
@@ -67574,6 +67646,15 @@ class BatchDisplay extends MDIDisplay {
 
       main.selectAll('g.root_frame').each(clear_element);
       main.selectAll('svg').each(clear_element);
+
+      if (internals.batch_png) {
+         return svgToImage(compressSVG(main.html()), 'png', false).then(href => {
+            select(this.frames[id]).text('png:' + href);
+         });
+      }
+
+      if (keep_frame)
+         return true;
 
       const svg = compressSVG(main.html());
 
@@ -69032,10 +69113,10 @@ class TPadPainter extends ObjectPainter {
 
             svg_border1.attr('d', this.pad.fBorderMode > 0 ? side1 : side2)
                        .call(this.fillatt.func)
-                       .style('fill', rgb(this.fillatt.color).brighter(0.5).formatHex());
+                       .style('fill', rgb(this.fillatt.color).brighter(0.5).formatRgb());
             svg_border2.attr('d', this.pad.fBorderMode > 0 ? side2 : side1)
                        .call(this.fillatt.func)
-                       .style('fill', rgb(this.fillatt.color).darker(0.5).formatHex());
+                       .style('fill', rgb(this.fillatt.color).darker(0.5).formatRgb());
          } else {
             svg_border1.remove();
             svg_border2.remove();
@@ -71545,10 +71626,19 @@ class TCanvasPainter extends TPadPainter {
       const painter = new TCanvasPainter(dom, can);
       painter.checkSpecialsInPrimitives(can, true);
 
-      if (!nocanvas && can.fCw && can.fCh && !painter.isBatchMode()) {
-         const rect0 = painter.selectDom().node().getBoundingClientRect();
-         if (!rect0.height && (rect0.width > 0.1*can.fCw)) {
-            painter.selectDom().style('width', can.fCw+'px').style('height', can.fCh+'px');
+      if (!nocanvas && can.fCw && can.fCh) {
+         const d = painter.selectDom();
+         let apply_size = false;
+         if (!painter.isBatchMode()) {
+            const rect0 = d.node().getBoundingClientRect();
+            apply_size = !rect0.height && (rect0.width > 0.1*can.fCw);
+         } else {
+            const arg = d.property('_batch_use_canvsize');
+            apply_size = arg || (arg === undefined);
+         }
+         if (apply_size) {
+            d.style('width', can.fCw + 'px').style('height', can.fCh + 'px')
+              .attr('width', can.fCw).attr('height', can.fCh);
             painter._fixed_size = true;
          }
       }
@@ -72064,11 +72154,11 @@ class TPavePainter extends ObjectPainter {
                for (let n = 0; n < 2; ++n) {
                   const arg = {
                      align: (n === 0) ? 'start' : 'end', x: margin_x, y,
-                     width: width - 2*margin_x, height: stepy, text: parts[n], color,
+                     width: width - 2*margin_x, height: stepy, text: n > 0 ? parts[n].trimStart() : parts[n].trimEnd(), color,
                      _expected_width: width-2*margin_x, _args: args,
                      post_process(painter) {
-                       if (this._args[0].ready && this._args[1].ready)
-                          painter.scaleTextDrawing(1.05*(this._args[0].result_width+this._args[1].result_width)/this._expected_width, painter.draw_g);
+                        if (this._args[0].ready && this._args[1].ready)
+                           painter.scaleTextDrawing(1.05*(this._args[0].result_width+this._args[1].result_width)/this._expected_width, painter.draw_g);
                      }
                   };
                   args.push(arg);
@@ -72578,7 +72668,10 @@ class TPavePainter extends ObjectPainter {
                        .attr('d', d)
                        .style('fill', col)
                        .property('fill0', col)
-                       .property('fill1', rgb(col).darker(0.5).formatHex());
+                       .property('fill1', rgb(col).darker(0.5).formatRgb());
+
+            if (this.isBatchMode())
+               continue;
 
             if (this.isTooltipAllowed()) {
                r.on('mouseover', function() {
@@ -72594,26 +72687,42 @@ class TPavePainter extends ObjectPainter {
       }
 
       return this.z_handle.drawAxis(this.draw_g, s_width, s_height, axis_transform, axis_second).then(() => {
-         if (can_move && ('getBoundingClientRect' in this.draw_g.node())) {
-            const rect = this.draw_g.node().getBoundingClientRect();
-
-            if (this._palette_vertical) {
-               const shift = (this._pave_x + parseInt(rect.width)) - Math.round(0.995*width) + 3;
-
-               if (shift > 0) {
-                  this._pave_x -= shift;
-                  makeTranslate(this.draw_g, this._pave_x, this._pave_y);
-                  palette.fX1NDC -= shift/width;
-                  palette.fX2NDC -= shift/width;
+         let rect;
+         if (can_move) {
+            if (settings.ApproxTextSize || isNodeJs()) {
+               // for batch testing provide approx estimation
+               rect = { x: this._pave_x, y: this._pave_y, width: s_width, height: s_height };
+               const fsz = this.z_handle.labelsFont?.size || 14;
+               if (this._palette_vertical) {
+                  const dx = (this.z_handle._maxlbllen || 3) * 0.6 * fsz;
+                  rect.width += dx;
+                  if (this._swap_side) rect.x -= dx;
+               } else {
+                  rect.height += fsz;
+                  if (this._swap_side) rect.y -= fsz;
                }
-            } else {
-               const shift = Math.round((1.05 - gStyle.fTitleY)*height) - rect.y;
-               if (shift > 0) {
-                  this._pave_y += shift;
-                  makeTranslate(this.draw_g, this._pave_x, this._pave_y);
-                  palette.fY1NDC -= shift/height;
-                  palette.fY2NDC -= shift/height;
-               }
+            } else if ('getBoundingClientRect' in this.draw_g.node())
+               rect = this.draw_g.node().getBoundingClientRect();
+         }
+         if (!rect)
+            return this;
+
+         if (this._palette_vertical) {
+            const shift = (this._pave_x + parseInt(rect.width)) - Math.round(0.995*width) + 3;
+
+            if (shift > 0) {
+               this._pave_x -= shift;
+               makeTranslate(this.draw_g, this._pave_x, this._pave_y);
+               palette.fX1NDC -= shift/width;
+               palette.fX2NDC -= shift/width;
+            }
+         } else {
+            const shift = Math.round((1.05 - gStyle.fTitleY)*height) - rect.y;
+            if (shift > 0) {
+               this._pave_y += shift;
+               makeTranslate(this.draw_g, this._pave_x, this._pave_y);
+               palette.fY1NDC -= shift/height;
+               palette.fY2NDC -= shift/height;
             }
          }
 
@@ -75194,10 +75303,10 @@ class THistPainter extends ObjectPainter {
          pal.$can_move = true;
          pal.$generated = true;
 
-         if (!this.options.Zvert)
-            Object.assign(pal, { fX1NDC: gStyle.fPadLeftMargin, fX2NDC: 1 - gStyle.fPadRightMargin, fY1NDC: 1.005 - gStyle.fPadTopMargin, fY2NDC: 1.045 - gStyle.fPadTopMargin });
-         else
+         if (this.options.Zvert)
             Object.assign(pal, { fX1NDC: 1.005 - gStyle.fPadRightMargin, fX2NDC: 1.045 - gStyle.fPadRightMargin, fY1NDC: gStyle.fPadBottomMargin, fY2NDC: 1 - gStyle.fPadTopMargin });
+         else
+            Object.assign(pal, { fX1NDC: gStyle.fPadLeftMargin, fX2NDC: 1 - gStyle.fPadRightMargin, fY1NDC: 1.005 - gStyle.fPadTopMargin, fY2NDC: 1.045 - gStyle.fPadTopMargin });
 
          Object.assign(pal.fAxis, { fChopt: '+', fLineSyle: 1, fLineWidth: 1, fTextAngle: 0, fTextAlign: 11 });
 
@@ -75245,7 +75354,7 @@ class THistPainter extends ObjectPainter {
 
             pal.fX1NDC = fp.fX1NDC;
             pal.fX2NDC = fp.fX2NDC;
-            if (pal.fY2NDC > (fp.fY1NDC + fp.fY2NDC)*0.5) {
+            if (pal.fY2NDC > (fp.fY1NDC + fp.fY2NDC) * 0.5) {
                pal.fY2NDC = fp.fY2NDC + 0.005 + (pal.fY2NDC - pal.fY1NDC);
                pal.fY1NDC = fp.fY2NDC + 0.005;
             } else {
@@ -75295,11 +75404,13 @@ class THistPainter extends ObjectPainter {
                   need_redraw = true;
                   fp.fX2NDC = pal.fX1NDC - 0.01;
 
-                  if (fp.fX1NDC > fp.fX2NDC - 0.1) fp.fX1NDC = Math.max(0, fp.fX2NDC - 0.1);
+                  if (fp.fX1NDC > fp.fX2NDC - 0.1)
+                     fp.fX1NDC = Math.max(0, fp.fX2NDC - 0.1);
                 } else if ((pal.fX2NDC < 0.5) && (fp.fX1NDC < pal.fX2NDC)) {
                   need_redraw = true;
                   fp.fX1NDC = pal.fX2NDC + 0.05;
-                  if (fp.fX2NDC < fp.fX1NDC + 0.1) fp.fX2NDC = Math.min(1, fp.fX1NDC + 0.1);
+                  if (fp.fX2NDC < fp.fX1NDC + 0.1)
+                     fp.fX2NDC = Math.min(1, fp.fX1NDC + 0.1);
                 }
                 if (need_redraw && pad) {
                    pad.fLeftMargin = fp.fX1NDC;
@@ -75309,11 +75420,13 @@ class THistPainter extends ObjectPainter {
                if ((pal.fY1NDC > 0.5) && (fp.fY2NDC > pal.fY1NDC)) {
                   need_redraw = true;
                   fp.fY2NDC = pal.fY1NDC - 0.01;
-                  if (fp.fY1NDC > fp.fY2NDC - 0.1) fp.fY1NDC = Math.max(0, fp.fXYNDC - 0.1);
+                  if (fp.fY1NDC > fp.fY2NDC - 0.1)
+                     fp.fY1NDC = Math.max(0, fp.fXYNDC - 0.1);
                } else if ((pal.fY2NDC < 0.5) && (fp.fY1NDC < pal.fY2NDC)) {
                   need_redraw = true;
                   fp.fY1NDC = pal.fY2NDC + 0.05;
-                  if (fp.fXYNDC < fp.fY1NDC + 0.1) fp.fY2NDC = Math.min(1, fp.fY1NDC + 0.1);
+                  if (fp.fXYNDC < fp.fY1NDC + 0.1)
+                     fp.fY2NDC = Math.min(1, fp.fY1NDC + 0.1);
                }
                if (need_redraw && pad) {
                   pad.fTopMargin = fp.fY1NDC;
@@ -77529,14 +77642,14 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
          this.draw_g.append('svg:path')
                     .attr('d', btn1)
                     .call(this.fillatt.func)
-                    .style('fill', rgb(this.fillatt.color).brighter(0.5).formatHex());
+                    .style('fill', rgb(this.fillatt.color).brighter(0.5).formatRgb());
       }
 
       if (btn2) {
          this.draw_g.append('svg:path')
                     .attr('d', btn2)
                     .call(this.fillatt.func)
-                    .style('fill', !this.fillatt.hasColor() ? 'red' : rgb(this.fillatt.color).darker(0.5).formatHex());
+                    .style('fill', !this.fillatt.hasColor() ? 'red' : rgb(this.fillatt.color).darker(0.5).formatRgb());
       }
 
       if (cross) {
@@ -81701,14 +81814,16 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
          this.draw_g.append('svg:path')
              .attr('d', barsl)
              .call(this.fillatt.func)
-             .style('fill', rgb(this.fillatt.color).brighter(0.5).formatHex());
+             .style('fill', rgb(this.fillatt.color).brighter(0.5).formatRgb());
       }
+
+
 
       if (barsr) {
          this.draw_g.append('svg:path')
                .attr('d', barsr)
                .call(this.fillatt.func)
-               .style('fill', rgb(this.fillatt.color).darker(0.5).formatHex());
+               .style('fill', rgb(this.fillatt.color).darker(0.5).formatRgb());
       }
 
       if (show_text)
@@ -103553,7 +103668,7 @@ drawFuncs = { lst: [
    { name: clTH2Poly, icon: 'img_histo2d', class: () => Promise.resolve().then(function () { return TH2Painter$1; }).then(h => h.TH2Painter), opt: ';COL;COL0;COLZ;LCOL;LCOL0;LCOLZ;LEGO;TEXT;same', expand_item: 'fBins', theonly: true },
    { name: 'TProfile2Poly', sameas: clTH2Poly },
    { name: 'TH2PolyBin', icon: 'img_histo2d', draw_field: 'fPoly', draw_field_opt: 'L' },
-   { name: /^TH2/, icon: 'img_histo2d', class: () => Promise.resolve().then(function () { return TH2Painter$1; }).then(h => h.TH2Painter), dflt: 'col', opt: ';COL;COLZ;COL0;COL1;COL0Z;COL1Z;COLA;BOX;BOX1;PROJ;PROJX1;PROJX2;PROJX3;PROJY1;PROJY2;PROJY3;PROJXY1;PROJXY2;PROJXY3;SCAT;TEXT;TEXTE;TEXTE0;CANDLE;CANDLE1;CANDLE2;CANDLE3;CANDLE4;CANDLE5;CANDLE6;CANDLEY1;CANDLEY2;CANDLEY3;CANDLEY4;CANDLEY5;CANDLEY6;VIOLIN;VIOLIN1;VIOLIN2;VIOLINY1;VIOLINY2;CONT;CONT1;CONT2;CONT3;CONT4;ARR;SURF;SURF1;SURF2;SURF4;SURF6;E;A;LEGO;LEGO0;LEGO1;LEGO2;LEGO3;LEGO4;same', ctrl: 'lego', expand_item: fFunctions, for_derived: true },
+   { name: /^TH2/, icon: 'img_histo2d', class: () => Promise.resolve().then(function () { return TH2Painter$1; }).then(h => h.TH2Painter), opt: ';COL;COLZ;COL0;COL1;COL0Z;COL1Z;COLA;BOX;BOX1;PROJ;PROJX1;PROJX2;PROJX3;PROJY1;PROJY2;PROJY3;PROJXY1;PROJXY2;PROJXY3;SCAT;TEXT;TEXTE;TEXTE0;CANDLE;CANDLE1;CANDLE2;CANDLE3;CANDLE4;CANDLE5;CANDLE6;CANDLEY1;CANDLEY2;CANDLEY3;CANDLEY4;CANDLEY5;CANDLEY6;VIOLIN;VIOLIN1;VIOLIN2;VIOLINY1;VIOLINY2;CONT;CONT1;CONT2;CONT3;CONT4;ARR;SURF;SURF1;SURF2;SURF4;SURF6;E;A;LEGO;LEGO0;LEGO1;LEGO2;LEGO3;LEGO4;same', ctrl: 'lego', expand_item: fFunctions, for_derived: true },
    { name: clTProfile2D, sameas: clTH2, opt2: ';projxyb;projxyc=e;projxyw' },
    { name: /^TH3/, icon: 'img_histo3d', class: () => Promise.resolve().then(function () { return TH3Painter$1; }).then(h => h.TH3Painter), opt: ';SCAT;BOX;BOX2;BOX3;GLBOX1;GLBOX2;GLCOL', expand_item: fFunctions, for_derived: true },
    { name: clTProfile3D, sameas: clTH3 },
@@ -104084,18 +104199,14 @@ async function makeImage(args) {
    if (!args.format)
       args.format = 'svg';
    if (!args.width)
-      args.width = 1200;
+      args.width = settings.CanvasWidth;
    if (!args.height)
-      args.height = 800;
-
-   if (args.use_canvas_size && (args.object?._typename === clTCanvas) && args.object.fCw && args.object.fCh) {
-      args.width = args.object.fCw;
-      args.height = args.object.fCh;
-   }
+      args.height = settings.CanvasHeight;
 
    async function build(main) {
       main.attr('width', args.width).attr('height', args.height)
           .style('width', args.width + 'px').style('height', args.height + 'px')
+          .property('_batch_use_canvsize', args.use_canvas_size ?? false)
           .property('_batch_mode', true)
           .property('_batch_format', args.format !== 'svg' ? args.format : null);
 
@@ -104124,11 +104235,13 @@ async function makeImage(args) {
             }
          }
 
-         main.select('svg')
-             .attr('xmlns', nsSVG)
-             .attr('width', args.width)
-             .attr('height', args.height)
-             .attr('style', null).attr('class', null).attr('x', null).attr('y', null);
+         const mainsvg = main.select('svg');
+
+         mainsvg.attr('xmlns', nsSVG)
+                .attr('style', null).attr('class', null).attr('x', null).attr('y', null);
+
+         if (!mainsvg.attr('width') && !mainsvg.attr('height'))
+            mainsvg.attr('width', args.width).attr('height', args.height);
 
          function clear_element() {
             const elem = select(this);
@@ -104140,7 +104253,7 @@ async function makeImage(args) {
 
          let svg;
          if (args.format === 'pdf')
-            svg = { node: main.select('svg').node(), width: args.width, height: args.height, can_modify: true };
+            svg = { node: mainsvg.node(), width: args.width, height: args.height, can_modify: true };
          else {
             svg = compressSVG(main.html());
             if (args.format === 'svg')
@@ -106670,7 +106783,10 @@ class HierarchyPainter extends BasePainter {
             }
          }
 
-         return Promise.all(promises);
+         return Promise.all(promises).then(() => {
+            if (mdi?.createFinalBatchFrame && isBatchMode() && !isNodeJs())
+               mdi.createFinalBatchFrame();
+         });
       });
    }
 
@@ -107516,7 +107632,9 @@ class HierarchyPainter extends BasePainter {
       if (!document.getElementById(this.disp_frameid))
          return null;
 
-      if ((this.disp_kind.indexOf('flex') === 0) || (this.disp_kind.indexOf('coll') === 0))
+      if (isBatchMode())
+         this.disp = new BatchDisplay(settings.CanvasWidth, settings.CanvasHeight);
+      else if ((this.disp_kind.indexOf('flex') === 0) || (this.disp_kind.indexOf('coll') === 0))
          this.disp = new FlexibleDisplay(this.disp_frameid);
       else if (this.disp_kind === 'tabs')
          this.disp = new TabsDisplay(this.disp_frameid);
@@ -107685,7 +107803,6 @@ class HierarchyPainter extends BasePainter {
           browser_kind = getOption('browser'),
           browser_configured = !!browser_kind;
 
-
       if (monitor === null)
          monitor = 0;
       else if (monitor === '')
@@ -107712,16 +107829,18 @@ class HierarchyPainter extends BasePainter {
       if (title && (typeof document !== 'undefined'))
          document.title = title;
 
-      if (expanditems.length === 0 && (getOption('expand') === '')) expanditems.push('');
+      if (expanditems.length === 0 && (getOption('expand') === ''))
+         expanditems.push('');
 
       if (filesdir) {
-         for (let i = 0; i < filesarr.length; ++i) filesarr[i] = filesdir + filesarr[i];
-         for (let i = 0; i < jsonarr.length; ++i) jsonarr[i] = filesdir + jsonarr[i];
+         for (let i = 0; i < filesarr.length; ++i)
+            filesarr[i] = filesdir + filesarr[i];
+         for (let i = 0; i < jsonarr.length; ++i)
+            jsonarr[i] = filesdir + jsonarr[i];
       }
 
-      if ((itemsarr.length === 0) && getOption('item') === '') itemsarr.push('');
-
-      if ((jsonarr.length === 1) && (itemsarr.length === 0) && (expanditems.length === 0)) itemsarr.push('');
+      if ((itemsarr.length === 0) && ((getOption('item') === '') || ((jsonarr.length === 1) && (expanditems.length === 0))))
+         itemsarr.push('');
 
       if (!this.disp_kind) {
          if (isStr(layout) && layout)
@@ -107761,7 +107880,8 @@ class HierarchyPainter extends BasePainter {
       if (getOption('nofloat') !== null)
          this.float_browser_disabled = true;
 
-      if (this.start_without_browser) browser_kind = '';
+      if (this.start_without_browser)
+         browser_kind = '';
 
       this._topname = getOption('topname');
 
@@ -108257,9 +108377,17 @@ function readStyleFromURL(url) {
       }
    }
 
+   const b = d.get('batch');
+   if (b !== undefined) {
+      setBatchMode(d !== 'off');
+      if (b === 'png')
+         internals.batch_png = true;
+   }
+
    get_bool('lastcycle', 'OnlyLastCycle');
    get_bool('usestamp', 'UseStamp');
    get_bool('dark', 'DarkMode');
+   get_bool('approx_text_size', 'ApproxTextSize');
 
    let mr = d.get('maxranges');
    if (mr) {
@@ -108419,7 +108547,14 @@ async function buildGUI(gui_element, gui_kind = '') {
 
    myDiv.html(''); // clear element
 
-   const d = decodeUrl();
+   const d = decodeUrl(), getSize = name => {
+      const res = d.has(name) ? d.get(name).split('x') : [];
+      if (res.length !== 2)
+         return null;
+      res[0] = parseInt(res[0]);
+      res[1] = parseInt(res[1]);
+      return res[0] > 0 && res[1] > 0 ? res : null;
+   };
    let online = (gui_kind === 'online'), nobrowser = false, drawing = false;
 
    if (gui_kind === 'draw')
@@ -108432,25 +108567,30 @@ async function buildGUI(gui_element, gui_kind = '') {
 
    readStyleFromURL();
 
-   if (nobrowser) {
-      let guisize = d.get('divsize');
-      if (guisize) {
-         guisize = guisize.split('x');
-         if (guisize.length !== 2) guisize = null;
-      }
+   if (isBatchMode())
+      nobrowser = true;
 
-      if (guisize)
-         myDiv.style('position', 'relative').style('width', guisize[0] + 'px').style('height', guisize[1] + 'px');
-      else {
-         select('html').style('height', '100%');
-         select('body').style('min-height', '100%').style('margin', 0).style('overflow', 'hidden');
-         myDiv.style('position', 'absolute').style('left', 0).style('top', 0).style('bottom', 0).style('right', 0).style('padding', '1px');
-      }
+   const divsize = getSize('divsize'), canvsize = getSize('canvsize'), smallpad = getSize('smallpad');
+   if (divsize)
+      myDiv.style('position', 'relative').style('width', divsize[0] + 'px').style('height', divsize[1] + 'px');
+   else if (!isBatchMode()) {
+      select('html').style('height', '100%');
+      select('body').style('min-height', '100%').style('margin', 0).style('overflow', 'hidden');
+      myDiv.style('position', 'absolute').style('left', 0).style('top', 0).style('bottom', 0).style('right', 0).style('padding', '1px');
+   }
+   if (canvsize) {
+      settings.CanvasWidth = canvsize[0];
+      settings.CanvasHeight = canvsize[1];
+   }
+   if (smallpad) {
+      settings.SmallPad.width = smallpad[0];
+      settings.SmallPad.height = smallpad[1];
    }
 
    const hpainter = new HierarchyPainter('root', null);
    if (online) hpainter.is_online = drawing ? 'draw' : 'online';
-   if (drawing) hpainter.exclude_browser = true;
+   if (drawing || isBatchMode())
+      hpainter.exclude_browser = true;
    hpainter.start_without_browser = nobrowser;
 
    return hpainter.startGUI(myDiv).then(() => {
@@ -109611,21 +109751,21 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
 
          if (!this.isBatchMode() && settings.Tooltip && main_block) {
             visible.append('svg:path')
+                   .attr('d', d => `M${d.grx0},${d.gry0}h${d.grx2-d.grx0}v${d.gry2-d.gry0}h${d.grx0-d.grx2}z`)
                    .style('fill', 'none')
-                   .style('pointer-events', 'visibleFill')
-                   .attr('d', d => `M${d.grx0},${d.gry0}h${d.grx2-d.grx0}v${d.gry2-d.gry0}h${d.grx0-d.grx2}z`);
+                   .style('pointer-events', 'visibleFill');
          }
 
          visible.append('svg:path')
-             .call(lineatt.func)
-             .style('fill', 'none')
-             .attr('d', d => {
-                d.error = true;
-                return ((d.exlow > 0) ? mainLine(d.grx0+lw, d.grdx0) + vleft : '') +
-                       ((d.exhigh > 0) ? mainLine(d.grx2-lw, d.grdx2) + vright : '') +
-                       ((d.eylow > 0) ? mainLine(d.grdy0, d.gry0-lw) + hbottom : '') +
-                       ((d.eyhigh > 0) ? mainLine(d.grdy2, d.gry2+lw) + htop : '');
-              });
+                .attr('d', d => {
+                   d.error = true;
+                   return ((d.exlow > 0) ? mainLine(d.grx0+lw, d.grdx0) + vleft : '') +
+                          ((d.exhigh > 0) ? mainLine(d.grx2-lw, d.grdx2) + vright : '') +
+                          ((d.eylow > 0) ? mainLine(d.grdy0, d.gry0-lw) + hbottom : '') +
+                          ((d.eyhigh > 0) ? mainLine(d.grdy2, d.gry2+lw) + htop : '');
+                })
+                .style('fill', 'none')
+                .call(lineatt.func);
       }
 
       if (options.Mark) {
@@ -115243,22 +115383,25 @@ class TWebPaintingPainter extends ObjectPainter {
 
       const arr = obj.fOper.split(';'),
       check_attributes = kind => {
-         if (kind === lastkind) return;
+         if (kind === lastkind)
+            return this;
 
          if (lastpath) {
             lastpath.attr('d', d); // flush previous
             d = ''; lastpath = null; lastkind = 'none';
          }
 
-         if (!kind) return;
+         if (!kind)
+            return this;
 
          lastkind = kind;
-         lastpath = this.draw_g.append('svg:path');
+         lastpath = this.draw_g.append('svg:path').attr('d', ''); // placeholder for 'd' to have it always in front
          switch (kind) {
             case 'f': lastpath.call(this.fillatt.func); break;
             case 'l': lastpath.call(this.lineatt.func).style('fill', 'none'); break;
             case 'm': lastpath.call(this.markeratt.func); break;
          }
+         return this;
       }, read_attr = (str, names) => {
          let lastp = 0;
          const obj = { _typename: 'any' };
@@ -115373,7 +115516,7 @@ class TWebPaintingPainter extends ObjectPainter {
 
       this.createG();
 
-      return process(-1).then(() => { check_attributes(); return this; });
+      return process(-1).then(() => check_attributes());
    }
 
    static async draw(dom, obj) {
@@ -116860,12 +117003,12 @@ class TBoxPainter extends ObjectPainter {
          this.draw_g.append('svg:path')
                     .attr('d', paths[1])
                     .call(this.fillatt.func)
-                    .style('fill', rgb(this.fillatt.color).brighter(0.5).formatHex());
+                    .style('fill', rgb(this.fillatt.color).brighter(0.5).formatRgb());
 
          this.draw_g.append('svg:path')
                     .attr('d', paths[2])
                     .call(this.fillatt.func)
-                    .style('fill', rgb(this.fillatt.color).darker(0.5).formatHex());
+                    .style('fill', rgb(this.fillatt.color).darker(0.5).formatRgb());
       }
 
       assignContextMenu(this, kToFront);
@@ -116959,9 +117102,10 @@ class TASImagePainter extends ObjectPainter {
          rgba: this.rgba,
          getLevels() { return this.arr; },
          getPaletteColor(pal, zval) {
-            if (!this.arr || !this.rgba) return 'white';
+            if (!this.arr || !this.rgba)
+               return 'white';
             const indx = Math.round((zval - this.arr[0]) / (this.arr[this.arr.length-1] - this.arr[0]) * (this.rgba.length-4)/4) * 4;
-            return '#' + toHex(this.rgba[indx], 1) + toHex(this.rgba[indx+1], 1) + toHex(this.rgba[indx+2], 1) + toHex(this.rgba[indx+3], 1);
+            return toColor(this.rgba[indx]/255, this.rgba[indx+1]/255, this.rgba[indx+2]/255, this.rgba[indx+3]/255);
          }
       };
       for (let k = 0; k < 200; k++)
@@ -117484,6 +117628,15 @@ class RObjectPainter extends ObjectPainter {
              if (pal) val = pal.getColorOrdinal(ordinal);
          }
       }
+
+      // to make colors similar in node and in pupperteer
+      if ((val[0] === '#') && (isNodeJs() || (isBatchMode() && settings.ApproxTextSize))) {
+         const col = color(val);
+         if (col.opacity !== 1)
+            col.opacity = col.opacity.toFixed(2);
+         return col.formatRgb();
+      }
+
       return val;
    }
 
@@ -117535,8 +117688,10 @@ class RObjectPainter extends ObjectPainter {
 
       const color = this.v7EvalColor(prefix + 'color', 'black'),
             width = this.v7EvalAttr(prefix + 'width', 1),
-            style = this.v7EvalAttr(prefix + 'style', 1),
-            pattern = this.v7EvalAttr(prefix + 'pattern');
+            style = this.v7EvalAttr(prefix + 'style', 1);
+      let pattern = this.v7EvalAttr(prefix + 'pattern');
+      if (pattern && isNodeJs())
+         pattern = pattern.split(',').join(', ');
 
       this.createAttLine({ color, width, style, pattern });
 
@@ -120868,7 +121023,7 @@ class RPadPainter extends RObjectPainter {
       if (snap.fColIndex && snap.fColValue) {
          const colors = this.root_colors || getRootColors();
          for (let k = 0; k < snap.fColIndex.length; ++k)
-            colors[snap.fColIndex[k]] = snap.fColValue[k];
+            colors[snap.fColIndex[k]] = convertColor(snap.fColValue[k]);
        }
 
       // painter used only for evaluation of attributes
@@ -121010,7 +121165,7 @@ class RPadPainter extends RObjectPainter {
             for (let n = 0; n < arr.length; ++n) {
                const name = arr[n].fString, p = name.indexOf('=');
                if (p > 0)
-                  ListOfColors[parseInt(name.slice(0, p))] = name.slice(p+1);
+                  ListOfColors[parseInt(name.slice(0, p))] = convertColor(name.slice(p+1));
             }
 
             this.root_colors = ListOfColors;
@@ -122341,7 +122496,8 @@ function drawRFrameTitle(reason, drag) {
 registerMethods(`${nsREX}RPalette`, {
 
    extractRColor(rcolor) {
-     return rcolor.fColor || 'black';
+      const col = rcolor.fColor || 'black';
+      return convertColor(col);
    },
 
    getColor(indx) {
@@ -122382,20 +122538,20 @@ registerMethods(`${nsREX}RPalette`, {
 
    calcColor(value, entry1, entry2) {
       const dist = entry2.fOrdinal - entry1.fOrdinal,
-          r1 = entry2.fOrdinal - value,
-          r2 = value - entry1.fOrdinal;
+            r1 = entry2.fOrdinal - value,
+            r2 = value - entry1.fOrdinal;
 
       if (!this.fInterpolate || (dist <= 0))
-         return (r1 < r2) ? entry2.fColor : entry1.fColor;
+         return convertColor((r1 < r2) ? entry2.fColor : entry1.fColor);
 
       // interpolate
       const col1 = rgb(this.extractRColor(entry1.fColor)),
-          col2 = rgb(this.extractRColor(entry2.fColor)),
-          color = rgb(Math.round((col1.r*r1 + col2.r*r2)/dist),
-                         Math.round((col1.g*r1 + col2.g*r2)/dist),
-                         Math.round((col1.b*r1 + col2.b*r2)/dist));
+            col2 = rgb(this.extractRColor(entry2.fColor)),
+            color = rgb(Math.round((col1.r*r1 + col2.r*r2)/dist),
+                           Math.round((col1.g*r1 + col2.g*r2)/dist),
+                           Math.round((col1.b*r1 + col2.b*r2)/dist));
 
-      return color.toString();
+      return color.formatRgb();
    },
 
    createPaletteColors(len) {
@@ -122739,15 +122895,18 @@ class RPalettePainter extends RObjectPainter {
 
       for (let i = 0; i < contour.length-1; ++i) {
          const z0 = Math.round(framep.z_handle.gr(contour[i])),
-             z1 = Math.round(framep.z_handle.gr(contour[i+1])),
-             col = palette.getContourColor((contour[i]+contour[i+1])/2),
+               z1 = Math.round(framep.z_handle.gr(contour[i+1])),
+               col = palette.getContourColor((contour[i]+contour[i+1])/2),
 
-          r = g_btns.append('svg:path')
-                     .attr('d', vertical ? `M0,${z1}H${palette_width}V${z0}H0Z` : `M${z0},0V${palette_height}H${z1}V0Z`)
-                     .style('fill', col)
-                     .style('stroke', col)
-                     .property('fill0', col)
-                     .property('fill1', rgb(col).darker(0.5).toString());
+         r = g_btns.append('svg:path')
+                   .attr('d', vertical ? `M0,${z1}H${palette_width}V${z0}H0Z` : `M${z0},0V${palette_height}H${z1}V0Z`)
+                   .style('fill', col)
+                   .style('stroke', col)
+                   .property('fill0', col)
+                   .property('fill1', rgb(col).darker(0.5).formatRgb());
+
+         if (this.isBatchMode())
+            continue;
 
          if (this.isTooltipAllowed()) {
             r.on('mouseover', function() {
@@ -124514,14 +124673,14 @@ let RH1Painter$2 = class RH1Painter extends RHistPainter {
          this.draw_g.append('svg:path')
                .attr('d', barsl)
                .call(this.fillatt.func)
-               .style('fill', rgb(this.fillatt.color).brighter(0.5).formatHex());
+               .style('fill', rgb(this.fillatt.color).brighter(0.5).formatRgb());
       }
 
       if (barsr) {
          this.draw_g.append('svg:path')
                .attr('d', barsr)
                .call(this.fillatt.func)
-               .style('fill', rgb(this.fillatt.color).darker(0.5).formatHex());
+               .style('fill', rgb(this.fillatt.color).darker(0.5).formatRgb());
        }
 
        return true;
@@ -125744,8 +125903,8 @@ let RH2Painter$2 = class RH2Painter extends RHistPainter {
          if (entry) {
             this.draw_g
                 .append('svg:path')
-                .style('fill', handle.palette.getColor(colindx))
-                .attr('d', entry.path);
+                .attr('d', entry.path)
+                .style('fill', handle.palette.getColor(colindx));
          }
       });
 
@@ -126035,14 +126194,14 @@ let RH2Painter$2 = class RH2Painter extends RHistPainter {
          this.draw_g.append('svg:path')
                     .attr('d', btn1)
                     .call(this.fillatt.func)
-                    .style('fill', rgb(this.fillatt.color).brighter(0.5).formatHex());
+                    .style('fill', rgb(this.fillatt.color).brighter(0.5).formatRgb());
       }
 
       if (btn2) {
          this.draw_g.append('svg:path')
                     .attr('d', btn2)
                     .call(this.fillatt.func)
-                    .style('fill', !this.fillatt.hasColor() ? 'red' : rgb(this.fillatt.color).darker(0.5).formatHex());
+                    .style('fill', !this.fillatt.hasColor() ? 'red' : rgb(this.fillatt.color).darker(0.5).formatRgb());
       }
 
       if (cross) {
