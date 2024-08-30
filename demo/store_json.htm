@@ -4,6 +4,9 @@
       <meta charset="utf-8">
       <title>Store canvas in JSON to replicate it</title>
       <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+      <script type="importmap">
+         { "imports": { "jsroot": "../modules/main.mjs" } }
+      </script>
    </head>
 
    <body>
@@ -15,11 +18,11 @@
 
    <script type='module'>
 
-      import { parse, openFile, draw, cleanup, drawingJSON } from '../modules/main.mjs';
+      import { parse, openFile, draw, cleanup, drawingJSON } from 'jsroot';
 
       // absolute file path can be used as well
-      let file = await openFile('../../files/hsimple.root');
-      let obj = await file.readObject('hpxpy;1');
+      const file = await openFile('../../files/hsimple.root');
+      const obj = await file.readObject('hpxpy;1');
       await draw('drawing', obj, 'colz');
 
       document.getElementById('btn1').addEventListener('click', () => {
@@ -39,6 +42,5 @@
       document.getElementById('btn2').addEventListener('click', () => cleanup('replica'));
 
    </script>
-
 </html>
 

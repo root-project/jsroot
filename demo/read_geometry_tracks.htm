@@ -4,6 +4,9 @@
       <meta charset="utf-8">
       <title>Reading geometry and tracks from the ROOT file</title>
       <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+      <script type="importmap">
+         { "imports": { "jsroot": "../modules/main.mjs" } }
+      </script>
    </head>
 
    <body>
@@ -11,22 +14,20 @@
    </body>
 
    <script type='module'>
-      import { httpRequest, openFile, draw } from '../modules/main.mjs';
+      import { httpRequest, openFile, draw } from 'jsroot';
 
-      let geom_file = '../../files/geom/evegeoshape.json.gz',
-          tracks_file = '../../files/geom/eve_tracks.root';
+      const geom_file = '../../files/geom/evegeoshape.json.gz',
+            tracks_file = '../../files/geom/eve_tracks.root';
 
-      let obj = await httpRequest(geom_file, 'object');
-      let geo_painter = await draw('drawing', obj);
-      let file = await openFile(tracks_file);
-      let tracks = await file.readObject('tracks;1');
+      const obj = await httpRequest(geom_file, 'object');
+      const geo_painter = await draw('drawing', obj);
+      const file = await openFile(tracks_file);
+      const tracks = await file.readObject('tracks;1');
 
       // one could simply draw list of tracks
       // draw('drawing', tracks, 'same');
 
       // or use method of TGeoPainter to draw extras
       geo_painter.drawExtras(tracks, 'tracks');
-
    </script>
-
 </html>
