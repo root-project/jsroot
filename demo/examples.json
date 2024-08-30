@@ -366,8 +366,8 @@
      { "name": "ann3d", "file": "tutorials_graphs.root", "item": "annotation3d_new",  "title": "Usage of new TAnnotation class, tutorials/graphs/annotation3d.C" }
    ],
    "User" : [
-      { "name": "div", "url": "nobrowser&inject=$jsroot$/demo/custom/divhist.mjs&file=demo/custom/divhist.root&item=DivHist", "title": "Draw division of two histograms from user class, see demo/custom/ dir for details" },
-      { "name": "sub", "url": "nobrowser&inject=$jsroot$/demo/custom/divhist.mjs&file=demo/custom/divhist.root&item=DivHist/Num", "title": "Draw subelement of user class, accessed via exapnd function implemented in demo/custom/divhist.js" },
-      { "name": "pads", "url": "nobrowser&inject=$jsroot$/demo/custom/divhist.mjs&file=demo/custom/divhist.root&item=DivHist&opt=pads", "title": "Create canvas and draw all elements in sub pads" }
+      { "name": "div", "url": "nobrowser&inject=../demo/custom/divhist.mjs&file=demo/custom/divhist.root&item=DivHist", "title": "Draw division of two histograms from user class, see demo/custom/ dir for details" },
+      { "name": "sub", "url": "nobrowser&inject=../demo/custom/divhist.mjs&file=demo/custom/divhist.root&item=DivHist/Num", "title": "Draw subelement of user class, accessed via exapnd function implemented in demo/custom/divhist.js" },
+      { "name": "pads", "url": "nobrowser&inject=../demo/custom/divhist.mjs&file=demo/custom/divhist.root&item=DivHist&opt=pads", "title": "Create canvas and draw all elements in sub pads" }
    ]
 }

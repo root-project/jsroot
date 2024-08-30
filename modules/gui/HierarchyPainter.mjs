@@ -3385,14 +3385,8 @@ class HierarchyPainter extends BasePainter {
       if (!scripts?.length && !modules?.length)
          return true;
 
-      if (use_inject && scripts.indexOf('.mjs') > 0) {
-         const arr = scripts.split(';'), prefix = '$jsroot$/';
-         arr.forEach((name, indx) => {
-            if (name.indexOf(prefix) === 0)
-               arr[indx] = (source_dir || '../') + name.slice(prefix.length);
-         });
-         return loadModules(arr);
-      }
+      if (use_inject && scripts.indexOf('.mjs') > 0)
+         return loadModules(scripts.split(';'));
 
       if (use_inject && !globalThis.JSROOT) {
          globalThis.JSROOT = {
