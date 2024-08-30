@@ -145,7 +145,7 @@
       { "name": "branch_mvect", "asurl": true, "file": "https://root.cern/files/cms2.root", "item": "Events", "opt":"L1GlobalTriggerObjectMapRecord_hltL1GtObjectMap__HLT.obj.>>dump", "title": "Branch with object which has vector of vector of vector of int, requires special handling" },
       { "name": "files", "asurl": true, "file": "https://root.cern/files/alice_ESDs.root", "item": "esdTree;1/ESDfriend./fTracks/fTPCindex", "opt": "dump", "title": "Data branch stored in different file (in same dir), counter data in main file" },
       { "name": "float16", "asurl": true, "file": "https://root.cern/files/Event100000.root", "item": "T/event/fTracks/fMass2", "opt": "dump", "title": "Float16_t type as TClonesArray branch" },
-      { "name": "markus", "url": "file=https://root.cern/files/markus.root&item=_Event/Refs&opt=dump&inject=demo/gaudi.js", "title": "custom streamer for pool::Token class from some branches" },
+      { "name": "markus", "url": "file=https://root.cern/files/markus.root&item=_Event/Refs&opt=dump&inject=../demo/gaudi.mjs", "title": "custom streamer for pool::Token class from some branches" },
       { "name": "cmssw1", "asurl": "browser", "file": "test_cmssw_10000.root", "item": "MetaData", "opt": "testio", "title": "CMS-SW metadata, complex std::map classes" },
       { "name": "reco103", "asurl": "browser", "file": "https://root.cern/files/reco_103.root", "item": "Events", "opt":"testio", "title": "Older ROOT file with many branches, std::map classes", "notest": true },
       { "name": "cmssw_io", "asurl": "browser", "file": "test_cmssw_10000.root", "item": "Events", "opt":"testio", "title": "Test I/O with CMS-SW events data", "notest": true },
