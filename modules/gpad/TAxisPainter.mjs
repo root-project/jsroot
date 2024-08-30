@@ -434,7 +434,6 @@ class TAxisPainter extends ObjectPainter {
       this.fixed_ticks = opts.fixed_ticks || null;
       this.maxTickSize = opts.maxTickSize || 0;
       this.value_axis = opts.value_axis ?? false; // use fMinimum/fMaximum from source object
-      this.cut_labels = settings.CutAxisLabels && this.vertical;
 
       const axis = this.getObject();
 
@@ -585,6 +584,11 @@ class TAxisPainter extends ObjectPainter {
       return this.func?.domain()[1] ?? 0;
    }
 
+   /** @summary Return true if labels may be cuted */
+   cutLabels() {
+      return settings.CutAxisLabels && this.vertical;
+   }
+
    /** @summary Provide label for axis value */
    formatLabels(d) {
       const a = this.getObject();
@@ -694,7 +698,7 @@ class TAxisPainter extends ObjectPainter {
       if (((this.kind === kAxisNormal) || (this.kind === kAxisFunc)) && !this.log && (handle.major.length > 0)) {
          let maxorder = 0, minorder = 0, exclorder3 = false;
 
-         if (!optionNoexp && !this.cut_labels) {
+         if (!optionNoexp && !this.cutLabels()) {
             const maxtick = Math.max(Math.abs(handle.major[0]), Math.abs(handle.major[handle.major.length-1])),
                   mintick = Math.min(Math.abs(handle.major[0]), Math.abs(handle.major[handle.major.length-1])),
                   ord1 = (maxtick > 0) ? Math.round(Math.log10(maxtick)/3)*3 : 0,
@@ -1064,7 +1068,7 @@ class TAxisPainter extends ObjectPainter {
                arg.y = pos;
                arg.align = rotate_lbls ? ((side < 0) ? 23 : 20) : ((side < 0) ? 12 : 32);
 
-               if (this.cut_labels) {
+               if (this.cutLabels()) {
                   const gap = labelsFont.size * (rotate_lbls ? 1.5 : 0.6);
                   if ((pos < gap) || (pos > h - gap)) continue;
                }
@@ -1078,7 +1082,7 @@ class TAxisPainter extends ObjectPainter {
                } else if (arg.align % 10 === 3)
                   arg.y -= labelsFont.size*0.1; // font takes 10% more by top align
 
-               if (this.cut_labels) {
+               if (this.cutLabels()) {
                   const gap = labelsFont.size * (rotate_lbls ? 0.4 : 1.5);
                   if ((pos < gap) || (pos > w - gap)) continue;
                }
