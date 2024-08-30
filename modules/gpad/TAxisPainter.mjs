@@ -434,6 +434,7 @@ class TAxisPainter extends ObjectPainter {
       this.fixed_ticks = opts.fixed_ticks || null;
       this.maxTickSize = opts.maxTickSize || 0;
       this.value_axis = opts.value_axis ?? false; // use fMinimum/fMaximum from source object
+      this.cut_labels = settings.CutAxisLabels && this.vertical;
 
       const axis = this.getObject();
 
@@ -690,15 +691,14 @@ class TAxisPainter extends ObjectPainter {
       this.ndig = 0;
 
       // at the moment when drawing labels, we can try to find most optimal text representation for them
-
       if (((this.kind === kAxisNormal) || (this.kind === kAxisFunc)) && !this.log && (handle.major.length > 0)) {
          let maxorder = 0, minorder = 0, exclorder3 = false;
 
-         if (!optionNoexp) {
+         if (!optionNoexp && !this.cut_labels) {
             const maxtick = Math.max(Math.abs(handle.major[0]), Math.abs(handle.major[handle.major.length-1])),
-                mintick = Math.min(Math.abs(handle.major[0]), Math.abs(handle.major[handle.major.length-1])),
-                ord1 = (maxtick > 0) ? Math.round(Math.log10(maxtick)/3)*3 : 0,
-                ord2 = (mintick > 0) ? Math.round(Math.log10(mintick)/3)*3 : 0;
+                  mintick = Math.min(Math.abs(handle.major[0]), Math.abs(handle.major[handle.major.length-1])),
+                  ord1 = (maxtick > 0) ? Math.round(Math.log10(maxtick)/3)*3 : 0,
+                  ord2 = (mintick > 0) ? Math.round(Math.log10(mintick)/3)*3 : 0;
 
              exclorder3 = (maxtick < 2e4); // do not show 10^3 for values below 20000
 
@@ -709,10 +709,9 @@ class TAxisPainter extends ObjectPainter {
          }
 
          // now try to find best combination of order and ndig for labels
-
          let bestorder = 0, bestndig = this.ndig, bestlen = 1e10;
 
-         for (let order = minorder; order <= maxorder; order+=3) {
+         for (let order = minorder; order <= maxorder; order += 3) {
             if (exclorder3 && (order === 3)) continue;
             this.order = order;
             this.ndig = 0;
@@ -1064,6 +1063,11 @@ class TAxisPainter extends ObjectPainter {
                arg.x = fix_coord;
                arg.y = pos;
                arg.align = rotate_lbls ? ((side < 0) ? 23 : 20) : ((side < 0) ? 12 : 32);
+
+               if (this.cut_labels) {
+                  const gap = labelsFont.size * (rotate_lbls ? 1.5 : 0.6);
+                  if ((pos < gap) || (pos > h - gap)) continue;
+               }
             } else {
                arg.x = pos;
                arg.y = fix_coord;
@@ -1073,6 +1077,11 @@ class TAxisPainter extends ObjectPainter {
                   arg.y += labelsFont.size;
                } else if (arg.align % 10 === 3)
                   arg.y -= labelsFont.size*0.1; // font takes 10% more by top align
+
+               if (this.cut_labels) {
+                  const gap = labelsFont.size * (rotate_lbls ? 0.4 : 1.5);
+                  if ((pos < gap) || (pos > w - gap)) continue;
+               }
             }
 
             if (rotate_lbls)
@@ -1081,7 +1090,8 @@ class TAxisPainter extends ObjectPainter {
                arg.rotate = -mod.fTextAngle;
 
             // only for major text drawing scale factor need to be checked
-            if (lcnt === 0) arg.post_process = process_drawtext_ready;
+            if (lcnt === 0)
+               arg.post_process = process_drawtext_ready;
 
             this.drawText(arg);
 
