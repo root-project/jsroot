@@ -263,9 +263,11 @@ function drawMarker() {
 
    this.isndc = marker.TestBit(kMarkerNDC);
 
+   const use_frame = this.isndc ? false : new DrawOptions(this.getDrawOpt()).check('FRAME');
+
    this.createAttMarker({ attr: marker });
 
-   this.createG();
+   this.createG(use_frame ? 'frame2d' : undefined);
 
    const x = this.axisToSvg('x', marker.fX, this.isndc),
          y = this.axisToSvg('y', marker.fY, this.isndc),
