@@ -35,4 +35,4 @@ export { HierarchyPainter, getHPainter } from './gui/HierarchyPainter.mjs';
 
 export { readStyleFromURL, buildGUI } from './gui.mjs';
 
-export { TSelector, treeDraw } from './tree.mjs';
+export { TSelector, treeDraw, treeProcess } from './tree.mjs';
