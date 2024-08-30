@@ -4,6 +4,9 @@
       <meta charset="utf-8">
       <title>TMultiGraph with TLegend and custom labels</title>
       <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+      <script type="importmap">
+         { "imports": { "jsroot": "../modules/main.mjs" } }
+      </script>
    </head>
 
    <body>
@@ -12,11 +15,11 @@
 
    <script type='module'>
 
-      import { create, createTGraph, createTMultiGraph, createHistogram, redraw } from '../modules/main.mjs';
+      import { create, createTGraph, createTMultiGraph, createHistogram, redraw } from 'jsroot';
 
       let cnt = 0;
 
-      function CreateLegendEntry(obj, lbl) {
+      function createLegendEntry(obj, lbl) {
          let entry = create('TLegendEntry');
          entry.fObject = obj;
          entry.fLabel = lbl;
@@ -25,7 +28,6 @@
       }
 
       function updateGUI() {
-
         // this is just generation of graph
          const npoints = 20, period = 0.1*Math.PI;
          let xpts = [], ypts1 = [], ypts2 = [];
@@ -63,8 +65,8 @@
          let leg = create('TLegend');
          Object.assign(leg, { fX1NDC: 0.2, fY1NDC: 0.75, fX2NDC: 0.6, fY2NDC: 0.9 });
 
-         leg.fPrimitives.Add(CreateLegendEntry(graph1, `Math.sin ${cnt}`));
-         leg.fPrimitives.Add(CreateLegendEntry(graph2, `Math.cos ${cnt}`));
+         leg.fPrimitives.Add(createLegendEntry(graph1, `Math.sin ${cnt}`));
+         leg.fPrimitives.Add(createLegendEntry(graph2, `Math.cos ${cnt}`));
 
          // specify 'autoplace' for legend to automatically find best suitable position
          // if default option is provided, position will be set from fX1NDC, fX2NDC, ... values
@@ -78,7 +80,6 @@
       }
 
       updateGUI();
-
   </script>
 
 </html>
