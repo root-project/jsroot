@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '29/08/2024',
+version_date = '30/08/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -107704,14 +107704,8 @@ class HierarchyPainter extends BasePainter {
       if (!scripts?.length && !modules?.length)
          return true;
 
-      if (use_inject && scripts.indexOf('.mjs') > 0) {
-         const arr = scripts.split(';'), prefix = '$jsroot$/';
-         arr.forEach((name, indx) => {
-            if (name.indexOf(prefix) === 0)
-               arr[indx] = (exports.source_dir || '../') + name.slice(prefix.length);
-         });
-         return loadModules(arr);
-      }
+      if (use_inject && scripts.indexOf('.mjs') > 0)
+         return loadModules(scripts.split(';'));
 
       if (use_inject && !globalThis.JSROOT) {
          globalThis.JSROOT = {
@@ -127500,6 +127494,7 @@ exports.addDrawFunc = addDrawFunc;
 exports.addHighlightStyle = addHighlightStyle;
 exports.addMethods = addMethods;
 exports.addMoveHandler = addMoveHandler;
+exports.addUserStreamer = addUserStreamer;
 exports.assignContextMenu = assignContextMenu;
 exports.atob_func = atob_func;
 exports.browser = browser;
@@ -127661,6 +127656,7 @@ exports.showPainterMenu = showPainterMenu;
 exports.svgToImage = svgToImage;
 exports.toJSON = toJSON;
 exports.treeDraw = treeDraw;
+exports.treeProcess = treeProcess;
 exports.version = version;
 exports.version_date = version_date;
 exports.version_id = version_id;

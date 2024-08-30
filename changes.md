@@ -20,7 +20,7 @@
 17. Adjust node.js implementation to produce identical output with normal browser
 18. Create necessary infrastructure for testing with 'puppeteer'
 19. Support inject of ES6 modules via '&inject=path.mjs'
-20. Using importmap for 'jsroot' in all major HTML files
+20. Using importmap for 'jsroot' in all major HTML files and in demos
 21. Fix - properly save zoomed ranges in drawingJSON()
 22. Fix - properly redraw TMultuGraph
 23. Fix - show empty bin in TProfile2D if it has entries #316
