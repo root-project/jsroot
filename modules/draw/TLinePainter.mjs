@@ -1,4 +1,5 @@
 import { BIT } from '../core.mjs';
+import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { addMoveHandler } from '../gui/utils.mjs';
@@ -63,6 +64,8 @@ class TLinePainter extends ObjectPainter {
 
       this.isndc = line.TestBit(kLineNDC);
 
+      this.use_frame = this.isndc ? false : new DrawOptions(this.getDrawOpt()).check('FRAME');
+
       const func = this.getAxisToSvgFunc(this.isndc, true, true);
 
       this.x1 = func.x(line.fX1);
@@ -84,7 +87,7 @@ class TLinePainter extends ObjectPainter {
 
    /** @summary Redraw line */
    redraw() {
-      this.createG();
+      this.createG(this.use_frame ? 'frame2d' : undefined);
 
       this.prepareDraw();
 
