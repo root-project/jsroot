@@ -1310,7 +1310,8 @@ class TAxisPainter extends ObjectPainter {
 
       let title_shift_x = 0, title_shift_y = 0, title_g = null, labelsMaxWidth = 0;
       // draw labels (sometime on both sides)
-      const pr = (disable_axis_drawing || this.optionUnlab)
+      const labelSize = Math.max(this.labelsFont.size, 5),
+            pr = (disable_axis_drawing || this.optionUnlab)
                 ? Promise.resolve(0)
                 : this.drawLabels(axis_g, axis, w, h, handle, side, this.labelsFont, this.labelsOffset, this.ticksSize, ticksPlusMinus, max_text_width, frame_ygap);
 
@@ -1318,8 +1319,7 @@ class TAxisPainter extends ObjectPainter {
          labelsMaxWidth = maxw;
 
          if (settings.Zooming && !this.disable_zooming && !this.isBatchMode()) {
-            const labelSize = Math.max(this.labelsFont.size, 5),
-                  r = axis_g.append('svg:rect')
+            const r = axis_g.append('svg:rect')
                             .attr('class', 'axis_zoom')
                             .style('opacity', '0')
                             .style('cursor', 'crosshair');
@@ -1385,8 +1385,8 @@ class TAxisPainter extends ObjectPainter {
          return this.finishTextDrawing(title_g);
       }).then(() => {
          if (title_g) {
-            if (!this.titleOffset && this.vertical && labelsMaxWidth)
-               title_shift_x = Math.round(-side * (labelsMaxWidth + 0.7*this.offsetScaling*this.titleSize));
+            if (!this.titleOffset && this.vertical)
+               title_shift_x = Math.round(-side * ((labelsMaxWidth || labelSize) + 0.7*this.offsetScaling*this.titleSize));
             makeTranslate(title_g, title_shift_x, title_shift_y);
             title_g.property('shift_x', title_shift_x)
                    .property('shift_y', title_shift_y);
