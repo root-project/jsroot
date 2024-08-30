@@ -108720,14 +108720,14 @@ async function drawText$1() {
          this.moveEnd = function(not_changed) {
             if (not_changed) return;
             const text = this.getObject();
-            let x = this.svgToAxis('x', this.pos_x + this.pos_dx, this.isndc),
-                y = this.svgToAxis('y', this.pos_y + this.pos_dy, this.isndc);
+            let fx = this.svgToAxis('x', this.pos_x + this.pos_dx, this.isndc),
+                fy = this.svgToAxis('y', this.pos_y + this.pos_dy, this.isndc);
             if (this.swap_xy)
-               [x, y] = [y, x];
+               [fx, fy] = [fy, fx];
 
-            text.fX = x;
-            text.fY = y;
-            this.submitCanvExec(`SetX(${x});;SetY(${y});;`);
+            text.fX = fx;
+            text.fY = fy;
+            this.submitCanvExec(`SetX(${fx});;SetY(${fy});;`);
          };
       }
 
@@ -108903,13 +108903,19 @@ function drawMarker$1() {
 
    this.isndc = marker.TestBit(kMarkerNDC);
 
+   const use_frame = this.isndc ? false : new DrawOptions(this.getDrawOpt()).check('FRAME'),
+         swap_xy = use_frame && this.getFramePainter()?.swap_xy;
+
    this.createAttMarker({ attr: marker });
 
-   this.createG();
+   this.createG(use_frame ? 'frame2d' : undefined);
 
-   const x = this.axisToSvg('x', marker.fX, this.isndc),
-         y = this.axisToSvg('y', marker.fY, this.isndc),
-         path = this.markeratt.create(x, y);
+   let x = this.axisToSvg('x', marker.fX, this.isndc),
+       y = this.axisToSvg('y', marker.fY, this.isndc);
+   if (swap_xy)
+      [x, y] = [y, x];
+
+   const path = this.markeratt.create(x, y);
 
    if (path) {
       this.draw_g.append('svg:path')
@@ -108932,9 +108938,13 @@ function drawMarker$1() {
    this.moveEnd = function(not_changed) {
       if (not_changed) return;
       const marker = this.getObject();
-      marker.fX = this.svgToAxis('x', this.axisToSvg('x', marker.fX, this.isndc) + this.dx, this.isndc);
-      marker.fY = this.svgToAxis('y', this.axisToSvg('y', marker.fY, this.isndc) + this.dy, this.isndc);
-      this.submitCanvExec(`SetX(${marker.fX});;SetY(${marker.fY});;Notify();;`);
+      let fx = this.svgToAxis('x', this.axisToSvg('x', marker.fX, this.isndc) + this.dx, this.isndc),
+          fy = this.svgToAxis('y', this.axisToSvg('y', marker.fY, this.isndc) + this.dy, this.isndc);
+      if (swap_xy)
+         [fx, fy] = [fy, fx];
+      marker.fX = fx;
+      marker.fY = fy;
+      this.submitCanvExec(`SetX(${fx});;SetY(${fy});;Notify();;`);
       this.redraw();
    };
 }
@@ -114698,13 +114708,19 @@ class TLinePainter extends ObjectPainter {
    moveEnd(not_changed) {
       if (not_changed) return;
       const line = this.getObject();
-      let exec = '';
-      line.fX1 = this.svgToAxis('x', this.x1, this.isndc);
-      line.fX2 = this.svgToAxis('x', this.x2, this.isndc);
-      line.fY1 = this.svgToAxis('y', this.y1, this.isndc);
-      line.fY2 = this.svgToAxis('y', this.y2, this.isndc);
-      if (this.side !== 1) exec += `SetX1(${line.fX1});;SetY1(${line.fY1});;`;
-      if (this.side !== -1) exec += `SetX2(${line.fX2});;SetY2(${line.fY2});;`;
+      let exec = '',
+          fx1 = this.svgToAxis('x', this.x1, this.isndc),
+          fx2 = this.svgToAxis('x', this.x2, this.isndc),
+          fy1 = this.svgToAxis('y', this.y1, this.isndc),
+          fy2 = this.svgToAxis('y', this.y2, this.isndc);
+      if (this.swap_xy)
+         [fx1, fy1, fx2, fy2] = [fy1, fx1, fy2, fx2];
+      line.fX1 = fx1;
+      line.fX2 = fx2;
+      line.fY1 = fy1;
+      line.fY2 = fy2;
+      if (this.side !== 1) exec += `SetX1(${fx1});;SetY1(${fy1});;`;
+      if (this.side !== -1) exec += `SetX2(${fx2});;SetY2(${fy2});;`;
       this.submitCanvExec(exec + 'Notify();;');
    }
 
@@ -114728,12 +114744,19 @@ class TLinePainter extends ObjectPainter {
 
       this.isndc = line.TestBit(kLineNDC);
 
+      this.use_frame = this.isndc ? false : new DrawOptions(this.getDrawOpt()).check('FRAME');
+
+      this.swap_xy = this.use_frame && this.getFramePainter()?.swap_xy;
+
       const func = this.getAxisToSvgFunc(this.isndc, true, true);
 
       this.x1 = func.x(line.fX1);
       this.y1 = func.y(line.fY1);
       this.x2 = func.x(line.fX2);
       this.y2 = func.y(line.fY2);
+
+      if (this.swap_xy)
+         [this.x1, this.y1, this.x2, this.y2] = [this.y1, this.x1, this.y2, this.x2];
 
       this.createAttLine({ attr: line });
    }
@@ -114749,7 +114772,7 @@ class TLinePainter extends ObjectPainter {
 
    /** @summary Redraw line */
    redraw() {
-      this.createG();
+      this.createG(this.use_frame ? 'frame2d' : undefined);
 
       this.prepareDraw();
 

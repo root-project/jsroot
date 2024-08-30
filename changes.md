@@ -8,7 +8,7 @@
 5. Implement "haxis" draw option for histogram to draw only axes for hbar
 6. Implement "axisg" and "haxisg" to draw axes with grids
 7. Support TH1 marker, text and line drawing superimposed with "haxis"
-8. Support TBox and TLatex drawing on "frame", support drawing on swapped axes
+8. Support `TBox`, `TLatex`, `TLine`, `TMarker` drawing on "frame", support drawing on swapped axes
 9. TProfile and TProfile2D projections https://github.com/root-project/root/issues/15851
 10. Draw total histogram from TEfficiency when draw option starts with 'b'
 11. Let redraw TEfficiency, THStack and TMultiGraph with different draw options via hist context menu
