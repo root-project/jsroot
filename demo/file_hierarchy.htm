@@ -4,6 +4,9 @@
       <meta charset="utf-8">
       <title>Use of JSROOT hierarchy painter</title>
       <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+      <script type="importmap">
+         { "imports": { "jsroot": "../modules/main.mjs" } }
+      </script>
    </head>
 
    <body>
@@ -14,14 +17,14 @@
    </body>
 
    <script type='module'>
-      import { HierarchyPainter, setDefaultDrawOpt } from '../modules/main.mjs';
+      import { HierarchyPainter, setDefaultDrawOpt } from 'jsroot';
 
       // change default draw option for supported ROOT class,
       // used when object clicked in the hierarchy
       setDefaultDrawOpt('TH1', 'text');
       setDefaultDrawOpt('TH2', 'col');
 
-      let h = new HierarchyPainter('example', 'myTreeDiv');
+      const h = new HierarchyPainter('example', 'myTreeDiv');
 
       // configure 'simple' in provided <div> element
       // one also can specify "grid2x2" or "flex"
@@ -31,8 +34,6 @@
       await h.openRootFile('../../files/hsimple.root');
 
       await h.display('hpxpy;1', 'colz');
-
    </script>
-
 </html>
 

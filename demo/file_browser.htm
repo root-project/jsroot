@@ -4,6 +4,9 @@
       <meta charset="utf-8">
       <title>Example of hierarchy painter</title>
       <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+      <script type="importmap">
+         { "imports": { "jsroot": "../modules/main.mjs" } }
+      </script>
    </head>
 
    <body>
@@ -11,9 +14,9 @@
    </body>
 
    <script type='module'>
-      import { HierarchyPainter } from '../modules/main.mjs';
+      import { HierarchyPainter } from 'jsroot';
 
-      let h = new HierarchyPainter('example');
+      const h = new HierarchyPainter('example');
 
       // suppress selection elements
       h.no_select = true;
