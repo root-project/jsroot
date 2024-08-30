@@ -4,7 +4,11 @@
       <meta charset="utf-8">
       <title>Create and update THStack object</title>
       <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+      <script type="importmap">
+         { "imports": { "jsroot": "../modules/main.mjs" } }
+      </script>
    </head>
+
    <body>
       <h3>Text Before </h3>
       <div id="object_draw" style="width: 800px; height:600px"></div>
@@ -12,13 +16,10 @@
    </body>
 
    <script type='module'>
-
-     import { draw, redraw, createHistogram, createTHStack } from '../modules/main.mjs';
+     import { draw, redraw, createHistogram, createTHStack } from 'jsroot';
 
      function createStack(loop) {
-
-       let histos = [];
-
+       const histos = [];
        for (let n = 0; n < 5; n++) {
            // time to time exclude one histogram to see how THStack update is working
            if ((loop % 5 == 3) && (n == 1)) continue;
@@ -30,7 +31,7 @@
            histos.push(hist);
         }
 
-        let stack = createTHStack(...histos);
+        const stack = createTHStack(...histos);
         stack.fTitle = `Testing THStack update ${loop}`;
         return stack;
      }
@@ -39,7 +40,5 @@
 
      let cnt = 0;
      setInterval(() => redraw('object_draw', createStack(++cnt), 'nostack'), 2000);
-
    </script>
-
 </html>

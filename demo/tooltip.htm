@@ -4,6 +4,9 @@
       <meta charset="utf-8">
       <title>Use of tooltip callback in JSROOT</title>
       <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+      <script type="importmap">
+         { "imports": { "jsroot": "../modules/main.mjs" } }
+      </script>
    </head>
 
    <body>
@@ -23,7 +26,7 @@
 
    <script type='module'>
 
-      import { createHistogram, redraw } from '../modules/main.mjs';
+      import { createHistogram, redraw } from 'jsroot';
 
       let cnt = 0, toggle_flag = true, last_hbin = -1;
 
@@ -104,18 +107,14 @@
          histo.fTitle = `Drawing ${cnt++}`;
 
          redraw('object_draw', histo, 'col').then(painter => {
-
-            let chkd1 = document.getElementById('btn1').checked,
-                chkd2 = document.getElementById('btn2').checked,
-                chkd3 = document.getElementById('btn3').checked,
-                all = document.getElementById('btn4').checked;
+            const chkd1 = document.getElementById('btn1').checked,
+                  chkd2 = document.getElementById('btn2').checked,
+                  chkd3 = document.getElementById('btn3').checked,
+                  all = document.getElementById('btn4').checked;
 
             painter.configureUserTooltipHandler(chkd1 || all ? info => UserHandler('tooltip', info) : null);
-
             painter.configureUserClickHandler(chkd2 || all ? info => UserHandler('click', info) : null);
-
             painter.configureUserDblclickHandler(chkd3 || all ? info => UserHandler('dblclick', info) : null);
-
             painter.configureUserContextMenu(CustomContextMenu);
          });
       }
@@ -124,7 +123,5 @@
 
       // update drawing every 3 sec
       setInterval(updateGUI, 3000);
-
    </script>
-
 </html>

@@ -14,6 +14,9 @@
             overflow: hidden;
          }
       </style>
+      <script type="importmap">
+         { "imports": { "jsroot": "../modules/main.mjs", "jsroot/geom": "../modules/geom/TGeoPainter.mjs", "three": "../modules/three.mjs" } }
+      </script>
    </head>
 
    <body>
@@ -21,12 +24,12 @@
 
    <script type='module'>
 
-      import { decodeUrl, httpRequest, openFile } from '../modules/main.mjs';
+      import { decodeUrl, httpRequest, openFile } from 'jsroot';
 
       import { Box3, Vector3, PerspectiveCamera, Scene, AmbientLight, DirectionalLight, DoubleSide,
-               MeshLambertMaterial, Mesh, TetrahedronGeometry, WebGLRenderer } from '../modules/three.mjs';
+               MeshLambertMaterial, Mesh, TetrahedronGeometry, WebGLRenderer } from 'three';
 
-      import { build, produceRenderOrder } from '../modules/geom/TGeoPainter.mjs';
+      import { build, produceRenderOrder } from 'jsroot/geom';
 
       import Stats from 'https://threejs.org/examples/jsm/libs/stats.module.js';
 

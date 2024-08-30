@@ -4,7 +4,6 @@
       <meta charset="utf-8">
       <title>Demonstrator of online usage of JSROOT</title>
       <link rel="shortcut icon" href="../img/RootIcon.ico"/>
-
       <style>
          html {
             height: 100%;
@@ -14,7 +13,10 @@
             margin: 0px;
             overflow: hidden;
          }
-     </style>
+      </style>
+      <script type="importmap">
+         { "imports": { "jsroot": "../modules/main.mjs" } }
+      </script>
    </head>
 
    <body>
@@ -22,8 +24,7 @@
    </body>
 
    <script type='module'>
-
-      import { httpRequest, redraw, decodeUrl, registerForResize, GridDisplay } from '../modules/main.mjs';
+      import { httpRequest, redraw, decodeUrl, registerForResize, GridDisplay } from 'jsroot';
 
       let mdi = null, cnt = 0, drawopt = null, addr = null;
 
@@ -61,7 +62,5 @@
           mdi = new GridDisplay('drawing', layout);
 
       setInterval(updateGUI, monitor);
-
    </script>
-
 </html>

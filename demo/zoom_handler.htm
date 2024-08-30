@@ -4,6 +4,9 @@
       <meta charset="utf-8">
       <title>Automatic zooming in second histogram</title>
       <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+      <script type="importmap">
+         { "imports": { "jsroot": "../modules/main.mjs" } }
+      </script>
    </head>
 
    <body>
@@ -12,21 +15,20 @@
    </body>
 
    <script type='module'>
+      import { openFile, draw } from 'jsroot';
 
-      import { openFile, draw } from '../modules/main.mjs';
+      const file = await openFile('../../files/hsimple.root');
 
-      let file = await openFile('../../files/hsimple.root');
+      const obj1 = await file.readObject('hpx;1');
 
-      let obj1 = await file.readObject('hpx;1');
+      const h1painter = await draw('drawth1', obj1, 'hist');
 
-      let h1painter = await draw('drawth1', obj1, 'hist');
+      const obj2 = await file.readObject('hpxpy;1');
 
-      let obj2 = await file.readObject('hpxpy;1');
-
-      let h2painter = await draw('drawth2', obj2, 'col');
+      const h2painter = await draw('drawth2', obj2, 'col');
 
       // zooming handled in the frame painter now
-      let fp = h2painter.getFramePainter();
+      const fp = h2painter.getFramePainter();
 
       // keep old function to be able invoke it again
       fp.oldZoom = fp.zoom;
@@ -36,7 +38,5 @@
           h1painter.getFramePainter().zoom(xmin, xmax);
           return this.oldZoom(xmin,xmax,ymin,ymax,zmin,zmax);
       }
-
    </script>
-
 </html>

@@ -4,28 +4,25 @@
       <meta charset="utf-8">
       <title>Use of tooltip callback in JSROOT</title>
       <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+      <script type="importmap">
+         { "imports": { "jsroot": "../modules/main.mjs" } }
+      </script>
    </head>
 
    <body>
-
       <div id="user_tooltip">Place for info</div>
-
       <form action="">
          <input type="radio" name="kind" id="btn1" value="Tooltip" checked/> Tooltip
          <input type="radio" name="kind" id="btn2" value="Click"/> Click
          <input type="radio" name="kind" id="btn3" value="Dblclick"/> Doubleclk
          <input type="radio" name="kind" id="btn4" value="All"/> All
       </form>
-
       <div id="object_draw" style="width:800px; height:600px"></div>
-
       <div id="tooltip_draw" style="width:400px; height:300px"></div>
-
    </body>
 
    <script type='module'>
-
-      import { create, createHistogram, redraw } from '../modules/main.mjs';
+      import { create, createHistogram, redraw } from 'jsroot';
 
       let cnt = 0, toggle_flag = true, last_hbin = -1;
 
@@ -135,7 +132,5 @@
 
       // update drawing every 30 sec
       setInterval(updateGUI, 30000);
-
    </script>
-
 </html>

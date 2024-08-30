@@ -4,6 +4,9 @@
       <meta charset="utf-8">
       <title>Example how element pointer can be used</title>
       <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+      <script type="importmap">
+         { "imports": { "jsroot": "../modules/main.mjs" } }
+      </script>
    </head>
 
    <body>
@@ -11,9 +14,9 @@
    </body>
 
    <script type='module'>
-      import { httpRequest, draw } from '../modules/main.mjs';
+      import { httpRequest, draw } from 'jsroot';
 
-      let obj = await httpRequest('hpx.json', 'object');
+      const obj = await httpRequest('hpx.json', 'object');
 
       // here demonstrated that div can be used without id attribute
       draw(document.getElementsByTagName('div')[0], obj, 'hist');
