@@ -258,7 +258,7 @@
      { "name": "spline_axes", "url": "nobrowser&file=$$$tutorials_graphs.root&item=[splines_test/[1],splines_test/[9]]&opt=[,x+y+]", "title": "Draw TF1 and TSpline, last uses second axes" },
      { "name": "io", "url": "file=$$$iotest.root&layout=grid4x3&items=[ex1,ex2,ex3,ex4,ex5,ex6,ex7,ex8,ex9,ex10,clones,map]&opts=[inspect,inspect,inspect,inspect,inspect,inspect,inspect,inspect,inspect,inspect,inspect,inspect]", "title": "Different I/O test classes" },
      { "name": "io56", "file": "fitLinear56.root", "item": "fitLinear6", "title": "file with two version from ROOT 5/6 of same object" },
-     { "name": "userio", "url": "file=$$$amore.root&item=moH1F_0;1&inject=demo/amore.js", "title": "Example of custom streamer and custom draw function (AMORE)" },
+     { "name": "userio", "url": "file=$$$amore.root&item=moH1F_0;1&inject=../demo/amore.mjs", "title": "Example of custom streamer and custom draw function (AMORE)" },
      { "name": "folder", "url": "file=$$$folders.root&expand=RsnMgr;1/input/0/2/10&item=RsnMgr;1/input/0/2/4/hSignal", "title": "TFolder class" },
      { "name": "task", "url": "file=$$$tasks.root&expand=run;1/event/tracker&item=run;1/event/[0]/[4]&opt=inspect", "title": "TTask class" },
      { "name": "alitask", "url": "file=$$$alitasks.root&expand=RsnMgr;1/input/1/3/9&item=RsnMgr;1/input/1/3/8/fOutput/hSignalBadFit", "title": "AliRoot TTask classes" },
