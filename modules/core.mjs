@@ -295,7 +295,7 @@ settings = {
    AxisTiltAngle: 25,
    /** @summary Strip axis labels trailing 0 or replace 10^0 by 1 */
    StripAxisLabels: true,
-   /** @summary If true exclude (cut off) axis labels which may exceed graphical range */
+   /** @summary If true exclude (cut off) axis labels which may exceed graphical range, also axis name can be specified */
    CutAxisLabels: false,
    /** @summary Draw TF1 by default as curve or line */
    FuncAsCurve: false,

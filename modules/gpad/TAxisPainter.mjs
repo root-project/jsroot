@@ -1,4 +1,4 @@
-import { gStyle, settings, constants, clTAxis, clTGaxis, isFunc } from '../core.mjs';
+import { gStyle, settings, constants, clTAxis, clTGaxis, isFunc, isStr } from '../core.mjs';
 import { select as d3_select, drag as d3_drag, timeFormat as d3_timeFormat, utcFormat as d3_utcFormat,
          scaleTime as d3_scaleTime, scaleSymlog as d3_scaleSymlog,
          scaleLog as d3_scaleLog, scaleLinear as d3_scaleLinear } from '../d3.mjs';
@@ -584,9 +584,13 @@ class TAxisPainter extends ObjectPainter {
       return this.func?.domain()[1] ?? 0;
    }
 
-   /** @summary Return true if labels may be cuted */
+   /** @summary Return true if labels may be removed while they are not fit to graphical range */
    cutLabels() {
-      return settings.CutAxisLabels && this.vertical;
+      if (!settings.CutAxisLabels)
+         return false;
+      if (isStr(settings.CutAxisLabels))
+         return settings.CutAxisLabels.indexOf(this.name) >= 0;
+      return this.vertical; // cut vertical axis by default
    }
 
    /** @summary Provide label for axis value */
