@@ -8,6 +8,7 @@
       <script type="importmap">
         {
             "imports": {
+               "jsroot": "../modules/main.mjs",
                "three": "../modules/three.mjs"
             }
         }
@@ -21,7 +22,7 @@
 
    <script type='module'>
 
-      import { httpRequest, loadScript, draw } from '../modules/main.mjs';
+      import { httpRequest, loadScript, draw } from 'jsroot';
 
       import { Mesh, MeshPhongMaterial } from 'three';
 
@@ -31,12 +32,12 @@
             stl_file = 'https://threejs.org/examples/models/stl/ascii/slotted_disk.stl';
 
       // get geometry object
-      let obj = await httpRequest(geom_file, 'object');
+      const obj = await httpRequest(geom_file, 'object');
 
       // draw object, also load three.js functionality
-      let geo_painter = await draw('drawing', obj);
+      const geo_painter = await draw('drawing', obj);
 
-      // define global THREE handle requred by STLLoader.js
+      // define global THREE handle required by STLLoader.js
       // globalThis.THREE = Object.assign({}, THREE);
 
       // load extra three.js sources

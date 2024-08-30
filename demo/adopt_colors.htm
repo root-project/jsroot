@@ -4,22 +4,31 @@
       <meta charset="utf-8">
       <title>Reading object from the ROOT file</title>
       <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+      <script type="importmap">
+         {
+            "imports": {
+               "jsroot": "../modules/main.mjs",
+               "jsroot/colors": "../modules/base/colors.mjs"
+            }
+         }
+      </script>
    </head>
+
    <body>
       <div id="drawing" style="width:800px; height:600px"></div>
    </body>
 
    <script type='module'>
-      import { openFile, draw } from '../modules/main.mjs';
-      import { adoptRootColors } from '../modules/base/colors.mjs';
+      import { openFile, draw } from 'jsroot';
+      import { adoptRootColors } from 'jsroot/colors';
 
       // absolute file path can be used as well
-      let filename = '../../files/transparency_test.root';
-      let file = await openFile(filename);
-      let lst = await file.readObject('mycolors');
+      const filename = '../../files/transparency_test.root';
+      const file = await openFile(filename);
+      const lst = await file.readObject('mycolors');
       adoptRootColors(lst);
 
-      let obj_g = await file.readObject('mg');
+      const obj_g = await file.readObject('mg');
       await draw('drawing', obj_g, 'AL');
    </script>
 </html>

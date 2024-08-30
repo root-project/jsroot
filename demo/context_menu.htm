@@ -4,8 +4,14 @@
       <meta charset="utf-8">
       <title>Custom context menu example</title>
       <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+      <script type="importmap">
+         {
+            "imports": {
+               "jsroot": "../modules/main.mjs"
+            }
+         }
+      </script>
    </head>
-
    <body>
       <div id="guiDiv" path="../../files/" files="ct.root;exclusion.root;fillrandom.root;glbox.root;graph.root;hsimple.root;legends.root;rf107.root;stacks.root;zdemo.root">
          loading ...
@@ -15,21 +21,21 @@
    <script type="module">
       // build standard GUI, open ROOT file and display histogram
 
-      import { buildGUI } from '../modules/gui.mjs';
+      import { buildGUI } from 'jsroot';
 
-      let hpainter = await buildGUI('guiDiv');
+      const hpainter = await buildGUI('guiDiv');
 
       await hpainter.openRootFile('../../files/hsimple.root');
 
-      let histpainter = await hpainter.display('hpxpy;1', 'colz');
+      const histpainter = await hpainter.display('hpxpy;1', 'colz');
 
       // assign new context menu handler for TH2 drawing
       histpainter.oldFillHistContextMenu = histpainter.fillHistContextMenu;
 
       histpainter.fillHistContextMenu = function(menu) {
-         let itemname = this.getItemName();
+         const itemname = this.getItemName();
          if ((typeof itemname == 'string') && (itemname.indexOf('hpxpy') >= 0)) {
-            let tip = menu.painter.getToolTip(menu.getEventPosition());
+            const tip = menu.painter.getToolTip(menu.getEventPosition());
 
             // example how to get label from bin index
             // if (tip.binx !== undefined) console.log(`binx as text ${menu.painter.getFramePainter().axisAsText('x', tip.binx)}`);
