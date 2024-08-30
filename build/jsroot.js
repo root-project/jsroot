@@ -301,6 +301,8 @@ settings = {
    AxisTiltAngle: 25,
    /** @summary Strip axis labels trailing 0 or replace 10^0 by 1 */
    StripAxisLabels: true,
+   /** @summary If true exclude (cut off) axis labels which may exceed graphical range, also axis name can be specified */
+   CutAxisLabels: false,
    /** @summary Draw TF1 by default as curve or line */
    FuncAsCurve: false,
    /** @summary Time zone used for date/time display, local by default, can be 'UTC' or 'Europe/Berlin' or any other valid value */
@@ -61217,6 +61219,11 @@ class JSRootMenu {
       this.endsub();
       this.addPaletteMenu(settings.Palette, pal => { settings.Palette = pal; });
       this.addchk(settings.AutoStat, 'Auto stat box', flag => { settings.AutoStat = flag; });
+      this.sub('Axis');
+      this.addchk(settings.StripAxisLabels, 'Strip labels', flag => { settings.StripAxisLabels = flag; }, 'Provide shorter labels like 10^0 -> 1');
+      this.addchk(settings.CutAxisLabels, 'Cut labels', flag => { settings.CutAxisLabels = flag; }, 'Remove labels which may exceed graphical range');
+      this.add(`Tilt angle ${settings.AxisTiltAngle}`, () => this.input('Axis tilt angle', settings.AxisTiltAngle, 'int', 0, 180).then(val => { settings.AxisTiltAngle = val; }));
+      this.endsub();
       this.addSelectMenu('Latex', ['Off', 'Symbols', 'Normal', 'MathJax', 'Force MathJax'], settings.Latex, value => { settings.Latex = value; });
       this.addSelectMenu('3D rendering', ['Default', 'WebGL', 'Image'], settings.Render3D, value => { settings.Render3D = value; });
       this.addSelectMenu('WebGL embeding', ['Default', 'Overlay', 'Embed'], settings.Embed3D, value => { settings.Embed3D = value; });
@@ -62565,6 +62572,15 @@ class TAxisPainter extends ObjectPainter {
       return this.func?.domain()[1] ?? 0;
    }
 
+   /** @summary Return true if labels may be removed while they are not fit to graphical range */
+   cutLabels() {
+      if (!settings.CutAxisLabels)
+         return false;
+      if (isStr(settings.CutAxisLabels))
+         return settings.CutAxisLabels.indexOf(this.name) >= 0;
+      return this.vertical; // cut vertical axis by default
+   }
+
    /** @summary Provide label for axis value */
    formatLabels(d) {
       const a = this.getObject();
@@ -62671,15 +62687,14 @@ class TAxisPainter extends ObjectPainter {
       this.ndig = 0;
 
       // at the moment when drawing labels, we can try to find most optimal text representation for them
-
       if (((this.kind === kAxisNormal) || (this.kind === kAxisFunc)) && !this.log && (handle.major.length > 0)) {
          let maxorder = 0, minorder = 0, exclorder3 = false;
 
-         if (!optionNoexp) {
+         if (!optionNoexp && !this.cutLabels()) {
             const maxtick = Math.max(Math.abs(handle.major[0]), Math.abs(handle.major[handle.major.length-1])),
-                mintick = Math.min(Math.abs(handle.major[0]), Math.abs(handle.major[handle.major.length-1])),
-                ord1 = (maxtick > 0) ? Math.round(Math.log10(maxtick)/3)*3 : 0,
-                ord2 = (mintick > 0) ? Math.round(Math.log10(mintick)/3)*3 : 0;
+                  mintick = Math.min(Math.abs(handle.major[0]), Math.abs(handle.major[handle.major.length-1])),
+                  ord1 = (maxtick > 0) ? Math.round(Math.log10(maxtick)/3)*3 : 0,
+                  ord2 = (mintick > 0) ? Math.round(Math.log10(mintick)/3)*3 : 0;
 
              exclorder3 = (maxtick < 2e4); // do not show 10^3 for values below 20000
 
@@ -62690,10 +62705,9 @@ class TAxisPainter extends ObjectPainter {
          }
 
          // now try to find best combination of order and ndig for labels
-
          let bestorder = 0, bestndig = this.ndig, bestlen = 1e10;
 
-         for (let order = minorder; order <= maxorder; order+=3) {
+         for (let order = minorder; order <= maxorder; order += 3) {
             if (exclorder3 && (order === 3)) continue;
             this.order = order;
             this.ndig = 0;
@@ -63045,6 +63059,11 @@ class TAxisPainter extends ObjectPainter {
                arg.x = fix_coord;
                arg.y = pos;
                arg.align = rotate_lbls ? ((side < 0) ? 23 : 20) : ((side < 0) ? 12 : 32);
+
+               if (this.cutLabels()) {
+                  const gap = labelsFont.size * (rotate_lbls ? 1.5 : 0.6);
+                  if ((pos < gap) || (pos > h - gap)) continue;
+               }
             } else {
                arg.x = pos;
                arg.y = fix_coord;
@@ -63054,6 +63073,11 @@ class TAxisPainter extends ObjectPainter {
                   arg.y += labelsFont.size;
                } else if (arg.align % 10 === 3)
                   arg.y -= labelsFont.size*0.1; // font takes 10% more by top align
+
+               if (this.cutLabels()) {
+                  const gap = labelsFont.size * (rotate_lbls ? 0.4 : 1.5);
+                  if ((pos < gap) || (pos > w - gap)) continue;
+               }
             }
 
             if (rotate_lbls)
@@ -63062,7 +63086,8 @@ class TAxisPainter extends ObjectPainter {
                arg.rotate = -mod.fTextAngle;
 
             // only for major text drawing scale factor need to be checked
-            if (lcnt === 0) arg.post_process = process_drawtext_ready;
+            if (lcnt === 0)
+               arg.post_process = process_drawtext_ready;
 
             this.drawText(arg);
 
@@ -63273,7 +63298,8 @@ class TAxisPainter extends ObjectPainter {
 
       let title_shift_x = 0, title_shift_y = 0, title_g = null, labelsMaxWidth = 0;
       // draw labels (sometime on both sides)
-      const pr = (disable_axis_drawing || this.optionUnlab)
+      const labelSize = Math.max(this.labelsFont.size, 5),
+            pr = (disable_axis_drawing || this.optionUnlab)
                 ? Promise.resolve(0)
                 : this.drawLabels(axis_g, axis, w, h, handle, side, this.labelsFont, this.labelsOffset, this.ticksSize, ticksPlusMinus, max_text_width, frame_ygap);
 
@@ -63281,8 +63307,7 @@ class TAxisPainter extends ObjectPainter {
          labelsMaxWidth = maxw;
 
          if (settings.Zooming && !this.disable_zooming && !this.isBatchMode()) {
-            const labelSize = Math.max(this.labelsFont.size, 5),
-                  r = axis_g.append('svg:rect')
+            const r = axis_g.append('svg:rect')
                             .attr('class', 'axis_zoom')
                             .style('opacity', '0')
                             .style('cursor', 'crosshair');
@@ -63348,8 +63373,8 @@ class TAxisPainter extends ObjectPainter {
          return this.finishTextDrawing(title_g);
       }).then(() => {
          if (title_g) {
-            if (!this.titleOffset && this.vertical && labelsMaxWidth)
-               title_shift_x = Math.round(-side * (labelsMaxWidth + 0.7*this.offsetScaling*this.titleSize));
+            if (!this.titleOffset && this.vertical)
+               title_shift_x = Math.round(-side * ((labelsMaxWidth || labelSize) + 0.7*this.offsetScaling*this.titleSize));
             makeTranslate(title_g, title_shift_x, title_shift_y);
             title_g.property('shift_x', title_shift_x)
                    .property('shift_y', title_shift_y);
