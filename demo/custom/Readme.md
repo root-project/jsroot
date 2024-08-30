@@ -37,7 +37,7 @@ After one set new content and draw created histogram using `draw` function.
 One should register draw function using `addDrawFunc` function provided by JSROOT. Like:
 
 ```{JavaScript}
-   addDrawFunc({ name: 'DivHist', icon: 'img_histo1d', func: (dom, obj, opt) => { ... });
+   addDrawFunc({ name: 'DivHist', icon: 'img_histo1d', func: (dom, obj, opt) => { ... }});
 ```
 
 
@@ -45,9 +45,12 @@ One should register draw function using `addDrawFunc` function provided by JSROO
 
 Normally one creates custom HTML page, where loads and register additional JavaScript code.
 
-In case of such simple class one can use `&inject=<path_to_javascript.js>` URL parameter to inject code in normal JSROOT gui.
-JSROOT loads such code loads before processing other URL parameters. When such code is loading,
-`JSROOT` handle is provided with several (not all!) functions. In case of this example URL look like:
+In case of such simple class one can use `&inject=<path_to_javascript_module.mjs>` URL parameter
+to inject code in the normal JSROOT gui. JSROOT loads such code loads before processing other URL parameters.
+In the code one can use `jsroot` handle to import functionality. In case of this example URL look like:
+
 ```
-https://jsroot.gsi.de/dev/?file=demo/custom/divhist.root&inject=demo/custom/divhist.js&item=DivHist
+https://jsroot.gsi.de/dev/?file=demo/custom/divhist.root&inject=../demo/custom/divhist.mjs&item=DivHist
 ```
+
+In the demo relative path to JSROOT modules/core.mjs is specified. One also can provide full path to such module.
