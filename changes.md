@@ -22,7 +22,7 @@
 19. Support inject of ES6 modules via '&inject=path.mjs'
 20. Using importmap for 'jsroot' in all major HTML files and in demos
 21. Implement `settings.CutAxisLabels` flag to remove labels which may exceed graphical range
-22. Let save canvas as JSON file from context menu
+22. Let save canvas as JSON file from context menu, object as JSON from inspector
 23. Fix - properly save zoomed ranges in drawingJSON()
 24. Fix - properly redraw TMultuGraph
 25. Fix - show empty bin in TProfile2D if it has entries #316

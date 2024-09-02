@@ -10117,6 +10117,14 @@ function decodeWebCanvasColors(oper) {
 
 createRootColors();
 
+/** @summary Standard prefix for SVG file context as data url
+ * @private */
+const prSVG = 'data:image/svg+xml;charset=utf-8,',
+/** @summary Standard prefix for JSON file context as data url
+ * @private */
+      prJSON = 'data:application/json;charset=utf-8,';
+
+
 /** @summary Returns visible rect of element
   * @param {object} elem - d3.select object with element
   * @param {string} [kind] - which size method is used
@@ -10998,7 +11006,7 @@ async function svgToImage(svg, image_format, as_buffer) {
    });
    svg = decodeURIComponent(svg);
 
-   const img_src = 'data:image/svg+xml;base64,' + btoa_func(svg);
+   const img_src = prSVG + btoa_func(svg);
 
    if (isNodeJs()) {
       return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(async handle => {
@@ -57577,7 +57585,7 @@ class PointsCreator {
             imgdata = '<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">' +
                       `<path d="${handler.create(32, 32)}" style="stroke: ${handler.getStrokeColor()}; stroke-width: ${w}; fill: ${handler.getFillColor()}"></path>`+
                       '</svg>',
-            dataUrl = 'data:image/svg+xml;charset=utf8,' + (isNodeJs() ? imgdata : encodeURIComponent(imgdata));
+            dataUrl = prSVG + (isNodeJs() ? imgdata : encodeURIComponent(imgdata));
       let promise;
 
       if (isNodeJs()) {
@@ -60306,10 +60314,8 @@ let _saveFileFunc = null;
   * @private */
 
 function getBinFileContent(content) {
-   const svg_prefix = 'data:image/svg+xml;charset=utf-8,';
-
-   if (content.indexOf(svg_prefix) === 0)
-      return decodeURIComponent(content.slice(svg_prefix.length));
+   if (content.indexOf(prSVG) === 0)
+      return decodeURIComponent(content.slice(prSVG.length));
 
    if (content.indexOf('data:image/') === 0) {
       const p = content.indexOf('base64,');
@@ -70453,7 +70459,7 @@ class TPadPainter extends ObjectPainter {
             if (res)
               this.getCanvPainter()?.sendWebsocket(`SAVE:${filename}:${res}`);
          } else {
-            const prefix = (kind === 'svg') ? 'data:image/svg+xml;charset=utf-8,' : (kind === 'json' ? 'data:application/json;charset=utf-8,' : '');
+            const prefix = (kind === 'svg') ? prSVG : (kind === 'json' ? prJSON : '');
             saveFile(filename, prefix ? prefix + encodeURIComponent(imgdata) : imgdata);
          }
       });
@@ -105766,6 +105772,12 @@ class HierarchyPainter extends BasePainter {
       d3btns.append('a').attr('class', 'h_button').text('collapse all')
             .attr('title', 'collapse all items in the browser').on('click', () => this.toggleOpenState(false));
 
+      if (isFunc(this.storeAsJson)) {
+         d3btns.append('text').text(' | ');
+         d3btns.append('a').attr('class', 'h_button').text('json')
+               .attr('title', 'dump to json file').on('click', () => this.storeAsJson());
+      }
+
       if (isFunc(this.removeInspector)) {
          d3btns.append('text').text(' | ');
          d3btns.append('a').attr('class', 'h_button').text('remove')
@@ -108336,6 +108348,14 @@ async function drawInspector(dom, obj, opt) {
       painter.removeInspector = function() {
          this.selectDom().remove();
       };
+
+      if (!browser.qt5 && !browser.qt6 && !browser.cef3) {
+         painter.storeAsJson = function() {
+            const json = toJSON(obj, 2),
+                  fname = obj.fName || 'file';
+            saveFile(`${fname}.json`, prJSON + encodeURIComponent(json));
+         };
+      }
    }
 
    painter.fill_context = function(menu, hitem) {
@@ -121467,7 +121487,7 @@ class RPadPainter extends RObjectPainter {
             if (res)
               this.getCanvPainter()?.sendWebsocket(`SAVE:${filename}:${res}`);
          } else
-            saveFile(filename, (kind !== 'svg') ? imgdata : 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(imgdata));
+            saveFile(filename, (kind !== 'svg') ? imgdata : prSVG + encodeURIComponent(imgdata));
       });
    }
 
@@ -127697,7 +127717,9 @@ exports.openFile = openFile;
 exports.parse = parse;
 exports.parseMulti = parseMulti;
 exports.postponePromise = postponePromise;
+exports.prJSON = prJSON;
 exports.prROOT = prROOT;
+exports.prSVG = prSVG;
 exports.readStyleFromURL = readStyleFromURL;
 exports.redraw = redraw;
 exports.registerForResize = registerForResize;

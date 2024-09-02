@@ -1,6 +1,6 @@
 import { settings, internals, browser, gStyle, isBatchMode, isNodeJs, isObject, isFunc, isStr, source_dir, atob_func, btoa_func } from '../core.mjs';
 import { select as d3_select, pointer as d3_pointer, drag as d3_drag, color as d3_color } from '../d3.mjs';
-import { BasePainter } from '../base/BasePainter.mjs';
+import { prSVG, BasePainter } from '../base/BasePainter.mjs';
 import { resize } from '../base/ObjectPainter.mjs';
 import { getRootColors } from '../base/colors.mjs';
 
