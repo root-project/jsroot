@@ -1,5 +1,5 @@
 import { version, gStyle, httpRequest, create, createHttpRequest, loadScript, loadModules, decodeUrl,
-         source_dir, settings, internals, browser, findFunction,
+         source_dir, settings, internals, browser, findFunction, toJSON,
          isArrayProto, isRootCollection, isBatchMode, isNodeJs, isObject, isFunc, isStr, _ensureJSROOT,
          prROOT, clTList, clTMap, clTObjString, clTKey, clTFile, clTText, clTLatex, clTColor, clTStyle, kInspect, isPromise } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
@@ -10,7 +10,7 @@ import { getElementMainPainter, getElementCanvPainter, cleanup, ObjectPainter } 
 import { createMenu } from './menu.mjs';
 import { getDrawSettings, getDrawHandle, canDrawHandle, addDrawFunc, draw, redraw } from '../draw.mjs';
 import { BatchDisplay, GridDisplay, TabsDisplay, FlexibleDisplay, BrowserLayout, getHPainter, setHPainter } from './display.mjs';
-import { showProgress, ToolbarIcons, registerForResize, injectStyle } from './utils.mjs';
+import { showProgress, ToolbarIcons, registerForResize, injectStyle, saveFile } from './utils.mjs';
 
 
 const kTopFolder = 'TopFolder';
@@ -1411,6 +1411,12 @@ class HierarchyPainter extends BasePainter {
       d3btns.append('text').text(' | ');
       d3btns.append('a').attr('class', 'h_button').text('collapse all')
             .attr('title', 'collapse all items in the browser').on('click', () => this.toggleOpenState(false));
+
+      if (isFunc(this.storeAsJson)) {
+         d3btns.append('text').text(' | ');
+         d3btns.append('a').attr('class', 'h_button').text('json')
+               .attr('title', 'dump to json file').on('click', () => this.storeAsJson());
+      }
 
       if (isFunc(this.removeInspector)) {
          d3btns.append('text').text(' | ');
@@ -3982,6 +3988,14 @@ async function drawInspector(dom, obj, opt) {
       painter.removeInspector = function() {
          this.selectDom().remove();
       };
+
+      if (!browser.qt5 && !browser.qt6 && !browser.cef3) {
+         painter.storeAsJson = function() {
+            const json = toJSON(obj, 2),
+                  fname = obj.fName || 'file';
+            saveFile(`${fname}.json`, 'data:application/json;charset=utf-8,' + encodeURIComponent(json));
+         };
+      }
    }
 
    painter.fill_context = function(menu, hitem) {
