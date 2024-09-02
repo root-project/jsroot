@@ -892,11 +892,10 @@ async function svgToImage(svg, image_format, as_buffer) {
        const c = String.fromCharCode('0x'+p1);
        return c === '%' ? '%25' : c;
    });
-   svg = decodeURIComponent(svg);
 
-   const img_src = 'data:image/svg+xml;base64,' + btoa_func(svg);
-
-   console.log('image format', image_format)
+   // was before, now try to use standard conversion
+   // const img_src = 'data:image/svg+xml;base64,' + btoa_func(decodeURIComponent(svg));
+   const img_src = prSVG + svg;
 
    if (isNodeJs()) {
       return import('canvas').then(async handle => {
