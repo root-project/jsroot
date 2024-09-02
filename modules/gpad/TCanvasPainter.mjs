@@ -764,7 +764,7 @@ class TCanvasPainter extends TPadPainter {
    }
 
    /** @summary produce JSON for TCanvas, which can be used to display canvas once again */
-   produceJSON() {
+   produceJSON(spacing) {
       const canv = this.getObject(),
             fill0 = (canv.fFillStyle === 0),
             axes = [], hists = [];
@@ -817,7 +817,7 @@ class TCanvasPainter extends TPadPainter {
       // const fp = this.getFramePainter();
       // fp?.setRootPadRange(this.getRootPad());
 
-      const res = toJSON(canv);
+      const res = toJSON(canv, spacing);
 
       if (fill0) canv.fFillStyle = 0;
 

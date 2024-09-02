@@ -1340,9 +1340,12 @@ class TPadPainter extends ObjectPainter {
 
       const fname = this.this_pad_name || (this.iscan ? 'canvas' : 'pad');
       menu.sub('Save as');
-      const formats = ['svg', 'png', 'jpeg', 'pdf', 'webp'];
-      if (this.iscan) formats.push('json');
-      formats.forEach(fmt => menu.add(`${fname}.${fmt}`, () => this.saveAs(fmt, this.iscan, `${fname}.${fmt}`)));
+      ['svg', 'png', 'jpeg', 'pdf', 'webp'].forEach(fmt => menu.add(`${fname}.${fmt}`, () => this.saveAs(fmt, this.iscan, `${fname}.${fmt}`)));
+      if (this.iscan) {
+         menu.separator();
+         menu.add(`${fname}.json`, () => this.saveAs('json', true, `${fname}.json`), 'Produce JSON with line spacing');
+         menu.add(`${fname}0.json`, () => this.saveAs('json', false, `${fname}0.json`), 'Produce JSON without line spacing');
+      }
       menu.endsub();
 
       return true;
@@ -2252,7 +2255,7 @@ class TPadPainter extends ObjectPainter {
      * @return {Promise} with created image */
    async produceImage(full_canvas, file_format) {
       if (file_format === 'json')
-         return isFunc(this.produceJSON) ? this.produceJSON() : '';
+         return isFunc(this.produceJSON) ? this.produceJSON(full_canvas ? 2 : 0) : '';
 
       const use_frame = (full_canvas === 'frame'),
             elem = use_frame ? this.getFrameSvg(this.this_pad_name) : (full_canvas ? this.getCanvSvg() : this.svg_this_pad()),
