@@ -5,7 +5,7 @@ import { WebGLRenderer, WebGLRenderTarget, CanvasTexture, TextureLoader, Raycast
          LineSegments, LineDashedMaterial, LineBasicMaterial } from '../three.mjs';
 import { Font, OrbitControls, SVGRenderer } from '../three_addons.mjs';
 import { browser, settings, constants, isBatchMode, nsSVG, isNodeJs, isObject, isFunc, isStr, getDocument } from '../core.mjs';
-import { getElementRect, getAbsPosInCanvas, makeTranslate } from './BasePainter.mjs';
+import { prSVG, getElementRect, getAbsPosInCanvas, makeTranslate } from './BasePainter.mjs';
 import { TAttMarkerHandler } from './TAttMarkerHandler.mjs';
 import { getSvgLineStyle } from './TAttLineHandler.mjs';
 
@@ -1510,7 +1510,7 @@ class PointsCreator {
             imgdata = '<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">' +
                       `<path d="${handler.create(32, 32)}" style="stroke: ${handler.getStrokeColor()}; stroke-width: ${w}; fill: ${handler.getFillColor()}"></path>`+
                       '</svg>',
-            dataUrl = 'data:image/svg+xml;charset=utf8,' + (isNodeJs() ? imgdata : encodeURIComponent(imgdata));
+            dataUrl = prSVG + (isNodeJs() ? imgdata : encodeURIComponent(imgdata));
       let promise;
 
       if (isNodeJs()) {

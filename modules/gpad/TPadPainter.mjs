@@ -5,7 +5,7 @@ import { gStyle, settings, constants, browser, internals, BIT,
 import { select as d3_select, rgb as d3_rgb } from '../d3.mjs';
 import { ColorPalette, adoptRootColors, getColorPalette, getGrayColors, extendRootColors,
          getRGBfromTColor, decodeWebCanvasColors } from '../base/colors.mjs';
-import { getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG, makeTranslate,
+import { prSVG, getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG, makeTranslate,
          getTDatime, convertDate, svgToImage } from '../base/BasePainter.mjs';
 import { ObjectPainter, selectActivePad, getActivePad } from '../base/ObjectPainter.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
@@ -2234,7 +2234,7 @@ class TPadPainter extends ObjectPainter {
             if (res)
               this.getCanvPainter()?.sendWebsocket(`SAVE:${filename}:${res}`);
          } else {
-            const prefix = (kind === 'svg') ? 'data:image/svg+xml;charset=utf-8,' : (kind === 'json' ? 'data:application/json;charset=utf-8,' : '');
+            const prefix = (kind === 'svg') ? prSVG : (kind === 'json' ? 'data:application/json;charset=utf-8,' : '');
             saveFile(filename, prefix ? prefix + encodeURIComponent(imgdata) : imgdata);
          }
       });

@@ -5,6 +5,10 @@ import { approximateLabelWidth, replaceSymbolsInTextNode } from './latex.mjs';
 import { getColor } from './colors.mjs';
 
 
+/** @summary Standard prefix for SVG file context as data url
+ * @private */
+const prSVG = 'data:image/svg+xml;charset=utf-8,';
+
 /** @summary Returns visible rect of element
   * @param {object} elem - d3.select object with element
   * @param {string} [kind] - which size method is used
@@ -886,7 +890,7 @@ async function svgToImage(svg, image_format, as_buffer) {
    });
    svg = decodeURIComponent(svg);
 
-   const img_src = 'data:image/svg+xml;base64,' + btoa_func(svg);
+   const img_src = prSVG + btoa_func(svg);
 
    if (isNodeJs()) {
       return import('canvas').then(async handle => {
@@ -953,6 +957,6 @@ function convertDate(dt) {
    return res || dt.toLocaleString('en-GB');
 }
 
-export { getElementRect, getAbsPosInCanvas, getTDatime, convertDate,
+export { prSVG, getElementRect, getAbsPosInCanvas, getTDatime, convertDate,
          DrawOptions, TRandom, floatToString, buildSvgCurve, compressSVG,
          BasePainter, _loadJSDOM, makeTranslate, addHighlightStyle, svgToImage };
