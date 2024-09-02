@@ -11006,7 +11006,9 @@ async function svgToImage(svg, image_format, as_buffer) {
    });
    svg = decodeURIComponent(svg);
 
-   const img_src = prSVG + btoa_func(svg);
+   const img_src = 'data:image/svg+xml;base64,' + btoa_func(svg);
+
+   console.log('image format', image_format);
 
    if (isNodeJs()) {
       return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(async handle => {
