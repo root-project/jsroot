@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '30/08/2024',
+version_date = '2/09/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -69560,6 +69560,11 @@ class TPadPainter extends ObjectPainter {
       const fname = this.this_pad_name || (this.iscan ? 'canvas' : 'pad');
       menu.sub('Save as');
       ['svg', 'png', 'jpeg', 'pdf', 'webp'].forEach(fmt => menu.add(`${fname}.${fmt}`, () => this.saveAs(fmt, this.iscan, `${fname}.${fmt}`)));
+      if (this.iscan) {
+         menu.separator();
+         menu.add(`${fname}.json`, () => this.saveAs('json', true, `${fname}.json`), 'Produce JSON with line spacing');
+         menu.add(`${fname}0.json`, () => this.saveAs('json', false, `${fname}0.json`), 'Produce JSON without line spacing');
+      }
       menu.endsub();
 
       return true;
@@ -70447,8 +70452,10 @@ class TPadPainter extends ObjectPainter {
             }
             if (res)
               this.getCanvPainter()?.sendWebsocket(`SAVE:${filename}:${res}`);
-         } else
-            saveFile(filename, (kind !== 'svg') ? imgdata : 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(imgdata));
+         } else {
+            const prefix = (kind === 'svg') ? 'data:image/svg+xml;charset=utf-8,' : (kind === 'json' ? 'data:application/json;charset=utf-8,' : '');
+            saveFile(filename, prefix ? prefix + encodeURIComponent(imgdata) : imgdata);
+         }
       });
    }
 
@@ -70466,6 +70473,9 @@ class TPadPainter extends ObjectPainter {
    /** @summary Produce image for the pad
      * @return {Promise} with created image */
    async produceImage(full_canvas, file_format) {
+      if (file_format === 'json')
+         return isFunc(this.produceJSON) ? this.produceJSON(full_canvas ? 2 : 0) : '';
+
       const use_frame = (full_canvas === 'frame'),
             elem = use_frame ? this.getFrameSvg(this.this_pad_name) : (full_canvas ? this.getCanvSvg() : this.svg_this_pad()),
             painter = (full_canvas && !use_frame) ? this.getCanvPainter() : this,
@@ -71555,7 +71565,7 @@ class TCanvasPainter extends TPadPainter {
    }
 
    /** @summary produce JSON for TCanvas, which can be used to display canvas once again */
-   produceJSON() {
+   produceJSON(spacing) {
       const canv = this.getObject(),
             fill0 = (canv.fFillStyle === 0),
             axes = [], hists = [];
@@ -71608,7 +71618,7 @@ class TCanvasPainter extends TPadPainter {
       // const fp = this.getFramePainter();
       // fp?.setRootPadRange(this.getRootPad());
 
-      const res = toJSON(canv);
+      const res = toJSON(canv, spacing);
 
       if (fill0) canv.fFillStyle = 0;
 
