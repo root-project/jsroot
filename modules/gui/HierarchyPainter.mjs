@@ -5,7 +5,7 @@ import { version, gStyle, httpRequest, create, createHttpRequest, loadScript, lo
 import { select as d3_select } from '../d3.mjs';
 import { openFile, kBaseClass, clTStreamerInfoList, clTDirectory, clTDirectoryFile, nameStreamerInfo, addUserStreamer } from '../io.mjs';
 import { getRGBfromTColor } from '../base/colors.mjs';
-import { BasePainter, getElementRect, _loadJSDOM, getTDatime, convertDate } from '../base/BasePainter.mjs';
+import { prJSON, BasePainter, getElementRect, _loadJSDOM, getTDatime, convertDate } from '../base/BasePainter.mjs';
 import { getElementMainPainter, getElementCanvPainter, cleanup, ObjectPainter } from '../base/ObjectPainter.mjs';
 import { createMenu } from './menu.mjs';
 import { getDrawSettings, getDrawHandle, canDrawHandle, addDrawFunc, draw, redraw } from '../draw.mjs';
@@ -3993,7 +3993,7 @@ async function drawInspector(dom, obj, opt) {
          painter.storeAsJson = function() {
             const json = toJSON(obj, 2),
                   fname = obj.fName || 'file';
-            saveFile(`${fname}.json`, 'data:application/json;charset=utf-8,' + encodeURIComponent(json));
+            saveFile(`${fname}.json`, prJSON + encodeURIComponent(json));
          };
       }
    }

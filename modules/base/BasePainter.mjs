@@ -7,7 +7,11 @@ import { getColor } from './colors.mjs';
 
 /** @summary Standard prefix for SVG file context as data url
  * @private */
-const prSVG = 'data:image/svg+xml;charset=utf-8,';
+const prSVG = 'data:image/svg+xml;charset=utf-8,',
+/** @summary Standard prefix for JSON file context as data url
+ * @private */
+      prJSON = 'data:application/json;charset=utf-8,';
+
 
 /** @summary Returns visible rect of element
   * @param {object} elem - d3.select object with element
@@ -957,6 +961,6 @@ function convertDate(dt) {
    return res || dt.toLocaleString('en-GB');
 }
 
-export { prSVG, getElementRect, getAbsPosInCanvas, getTDatime, convertDate,
+export { prSVG, prJSON, getElementRect, getAbsPosInCanvas, getTDatime, convertDate,
          DrawOptions, TRandom, floatToString, buildSvgCurve, compressSVG,
          BasePainter, _loadJSDOM, makeTranslate, addHighlightStyle, svgToImage };
