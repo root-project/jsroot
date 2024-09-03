@@ -58,7 +58,7 @@ class RFramePainter extends RObjectPainter {
 
    /** @summary Update graphical attributes */
    updateAttributes(force) {
-      if ((this.fX1NDC === undefined) || (force && !this.modified_NDC)) {
+      if ((this.fX1NDC === undefined) || (force && !this.$modifiedNDC)) {
          const rect = this.getPadPainter().getPadRect();
          this.fX1NDC = this.v7EvalLength('margins_left', rect.width, gStyle.fPadLeftMargin) / rect.width;
          this.fY1NDC = this.v7EvalLength('margins_bottom', rect.height, gStyle.fPadBottomMargin) / rect.height;

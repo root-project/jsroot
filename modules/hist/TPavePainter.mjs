@@ -1290,7 +1290,7 @@ class TPavePainter extends ObjectPainter {
 
       const pave = this.getObject();
 
-      if (!pave.modified_NDC && !this.isDummyPos(obj)) {
+      if (!pave.$modifiedNDC && !this.isDummyPos(obj)) {
          // if position was not modified interactively, update from source object
 
          if (this.stored && !obj.fInit && (this.stored.fX1 === obj.fX1) &&

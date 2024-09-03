@@ -1521,7 +1521,7 @@ class TPadPainter extends ObjectPainter {
          this.checkSpecialsInPrimitives(obj);
 
       const fp = this.getFramePainter();
-      if (fp) fp.updateAttributes(!fp.modified_NDC);
+      if (fp) fp.updateAttributes(!fp.$modifiedNDC);
 
       if (!obj.fPrimitives) return false;
 
