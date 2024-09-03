@@ -70,6 +70,28 @@ const config_geom = {
    }
 }
 
+const config_jsroot_r162 = {
+  ...config,
+  input: "libs/r162/main.mjs",
+  output: {
+     ...config.output,
+     format: 'es',
+     file: 'build/jsroot_r162.mjs',
+     inlineDynamicImports: true
+  },
+  plugins: [
+    modify({
+      "from '../three.mjs'": "from '../../libs/r162/three.mjs'",
+      "from '../three_addons.mjs'": "from '../../libs/r162/three_addons.mjs'",
+      'import.meta?.url': importMetaUrlPolyfill
+     }),
+     ignore(ignore_modules),
+     nodeResolve(),
+     json(),
+     ascii()
+  ],
+}
+
 const config_geom_nothreejs = {
   ...config,
   input: "modules/geom/bundle.mjs",
@@ -92,6 +114,7 @@ const config_geom_nothreejs = {
      ascii()
   ],
 }
+
 
 const config_minified = {
    ...config,
@@ -138,6 +161,7 @@ const config_2d_minified = {
 
 export default [
   config,
+  config_jsroot_r162,
   config_hist,
   config_2d,
   config_geom,
