@@ -478,7 +478,7 @@ class Triangles3DHandler {
 
 
 /** @summary Build 3d surface
-  * @desc Make it indepependent from three.js to be able reuse it for 2d case
+  * @desc Make it independent from three.js to be able reuse it for 2d case
   * @private */
 function buildSurf3D(histo, handle, ilevels, meshFunc, linesFunc) {
    const main_grz = handle.grz,
@@ -841,7 +841,7 @@ class TH2Painter extends THistPainter {
          for (let j = j1; j < j2; ++j)
             min = Math.min(min, histo.getBinContent(i + 1, j + 1));
       }
-      if (min > 0) return; // if all points positive, no chance for autoscale
+      if (min > 0) return; // if all points positive, no chance for auto-scale
 
       let ileft = i2, iright = i1, jleft = j2, jright = j1;
 
@@ -1058,7 +1058,6 @@ class TH2Painter extends THistPainter {
                   stat_sumy1 += yy * zz;
                   stat_sumx2 += xx**2 * zz;
                   stat_sumy2 += yy**2 * zz;
-                  // stat_sumxy += xx * yy * zz;
                }
             }
          }
@@ -1071,7 +1070,6 @@ class TH2Painter extends THistPainter {
          stat_sumx2 = histo.fTsumwx2;
          stat_sumy1 = histo.fTsumwy;
          stat_sumy2 = histo.fTsumwy2;
-         // stat_sumxy = histo.fTsumwxy;
       }
 
       if (Math.abs(stat_sum0) > 1e-300) {
@@ -1780,7 +1778,7 @@ class TH2Painter extends THistPainter {
                   text = `#splitline{${text}}{#pm${lble}}`;
             }
 
-            if (rotate /* || (histo.fMarkerSize !== 1) */) {
+            if (rotate) {
                x = Math.round(handle.grx[i] + binw*0.5);
                y = Math.round(handle.gry[j+1] + binh*(0.5 + text_offset));
                width = height = 0;
@@ -2165,14 +2163,11 @@ class TH2Painter extends THistPainter {
          cmarkers += swapXY ? attrcmarkers.create(y, x) : attrcmarkers.create(x, y);
       };
 
-      // if ((histo.fFillStyle === 0) && (histo.fFillColor > 0) && (!this.fillatt || this.fillatt.empty()))
-      //     this.createAttFill({ color: this.getColor(histo.fFillColor), pattern: 1001 });
-
       if (histo.fMarkerColor === 1) histo.fMarkerColor = histo.fLineColor;
 
       handle.candle = []; // array of drawn points
 
-      // Determining the quantiles
+      // Determining the quintiles
       const wRange = gStyle.fCandleWhiskerRange, bRange = gStyle.fCandleBoxRange,
             prob = [(wRange >= 1) ? 1e-15 : 0.5 - wRange/2.0,
                      (bRange >= 1) ? 1E-14 : 0.5 - bRange/2.0,
