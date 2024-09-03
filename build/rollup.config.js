@@ -81,6 +81,7 @@ const config_jsroot_r162 = {
      file: 'build/jsroot_r162.mjs',
      inlineDynamicImports: true
   },
+  external: ['mathjax', 'jsdom', 'fs', 'canvas', 'tmp', 'zlib', 'xhr2', '@oneidentity/zstd-js', 'gl'],
   plugins: [
     modify({
       "from '../three.mjs'": "from '../../libs/r162/three.mjs'",
@@ -88,7 +89,6 @@ const config_jsroot_r162 = {
       'import.meta?.url': importMetaUrlPolyfill
      }),
      ignore(ignore_modules_jsroot),
-     // nodeResolve(),
      json(),
      ascii()
   ],
