@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '2/09/2024',
+version_date = '3/09/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -11004,11 +11004,10 @@ async function svgToImage(svg, image_format, as_buffer) {
        const c = String.fromCharCode('0x'+p1);
        return c === '%' ? '%25' : c;
    });
-   svg = decodeURIComponent(svg);
 
-   const img_src = 'data:image/svg+xml;base64,' + btoa_func(svg);
-
-   console.log('image format', image_format);
+   // was before, now try to use standard conversion
+   // const img_src = 'data:image/svg+xml;base64,' + btoa_func(decodeURIComponent(svg));
+   const img_src = prSVG + svg;
 
    if (isNodeJs()) {
       return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(async handle => {
@@ -63570,7 +63569,7 @@ function addDragHandler(_painter, arg) {
                arg.obj.fX2NDC = (newx + newwidth) / rect.width;
                arg.obj.fY1NDC = 1 - (newy + newheight) / rect.height;
                arg.obj.fY2NDC = 1 - newy / rect.height;
-               arg.obj.modified_NDC = true; // indicate that NDC was interactively changed, block in updated
+               arg.obj.$modifiedNDC = true; // indicate that NDC was interactively changed, block in updated
             } else if (isFunc(arg.move_resize))
                arg.move_resize(newx, newy, newwidth, newheight);
 
@@ -65686,7 +65685,7 @@ class TFramePainter extends ObjectPainter {
           pad = pp?.getRootPad(true),
           tframe = this.getObject();
 
-      if ((this.fX1NDC === undefined) || (force && !this.modified_NDC)) {
+      if ((this.fX1NDC === undefined) || (force && !this.$modifiedNDC)) {
          if (!pad) {
             this.fX1NDC = gStyle.fPadLeftMargin;
             this.fX2NDC = 1 - gStyle.fPadRightMargin;
@@ -69748,7 +69747,7 @@ class TPadPainter extends ObjectPainter {
          this.checkSpecialsInPrimitives(obj);
 
       const fp = this.getFramePainter();
-      if (fp) fp.updateAttributes(!fp.modified_NDC);
+      if (fp) fp.updateAttributes(!fp.$modifiedNDC);
 
       if (!obj.fPrimitives) return false;
 
@@ -73058,7 +73057,7 @@ class TPavePainter extends ObjectPainter {
 
       const pave = this.getObject();
 
-      if (!pave.modified_NDC && !this.isDummyPos(obj)) {
+      if (!pave.$modifiedNDC && !this.isDummyPos(obj)) {
          // if position was not modified interactively, update from source object
 
          if (this.stored && !obj.fInit && (this.stored.fX1 === obj.fX1) &&
@@ -76199,7 +76198,7 @@ class Triangles3DHandler {
 
 
 /** @summary Build 3d surface
-  * @desc Make it indepependent from three.js to be able reuse it for 2d case
+  * @desc Make it independent from three.js to be able reuse it for 2d case
   * @private */
 function buildSurf3D(histo, handle, ilevels, meshFunc, linesFunc) {
    const main_grz = handle.grz,
@@ -76562,7 +76561,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
          for (let j = j1; j < j2; ++j)
             min = Math.min(min, histo.getBinContent(i + 1, j + 1));
       }
-      if (min > 0) return; // if all points positive, no chance for autoscale
+      if (min > 0) return; // if all points positive, no chance for auto-scale
 
       let ileft = i2, iright = i1, jleft = j2, jright = j1;
 
@@ -76779,7 +76778,6 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
                   stat_sumy1 += yy * zz;
                   stat_sumx2 += xx**2 * zz;
                   stat_sumy2 += yy**2 * zz;
-                  // stat_sumxy += xx * yy * zz;
                }
             }
          }
@@ -76792,7 +76790,6 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
          stat_sumx2 = histo.fTsumwx2;
          stat_sumy1 = histo.fTsumwy;
          stat_sumy2 = histo.fTsumwy2;
-         // stat_sumxy = histo.fTsumwxy;
       }
 
       if (Math.abs(stat_sum0) > 1e-300) {
@@ -77500,7 +77497,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
                   text = `#splitline{${text}}{#pm${lble}}`;
             }
 
-            if (rotate /* || (histo.fMarkerSize !== 1) */) {
+            if (rotate) {
                x = Math.round(handle.grx[i] + binw*0.5);
                y = Math.round(handle.gry[j+1] + binh*(0.5 + text_offset));
                width = height = 0;
@@ -77883,14 +77880,11 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
          cmarkers += swapXY ? attrcmarkers.create(y, x) : attrcmarkers.create(x, y);
       };
 
-      // if ((histo.fFillStyle === 0) && (histo.fFillColor > 0) && (!this.fillatt || this.fillatt.empty()))
-      //     this.createAttFill({ color: this.getColor(histo.fFillColor), pattern: 1001 });
-
       if (histo.fMarkerColor === 1) histo.fMarkerColor = histo.fLineColor;
 
       handle.candle = []; // array of drawn points
 
-      // Determining the quantiles
+      // Determining the quintiles
       const wRange = gStyle.fCandleWhiskerRange, bRange = gStyle.fCandleBoxRange,
             prob = [(wRange >= 1) ? 1e-15 : 0.5 - wRange/2.0,
                      (bRange >= 1) ? 1E-14 : 0.5 - bRange/2.0,
@@ -107165,7 +107159,7 @@ class HierarchyPainter extends BasePainter {
    async listServerDir(dirname) {
       return httpRequest(dirname, 'text').then(res => {
          if (!res) return false;
-         const h = { _name: 'Files', _kind: kTopFolder, _childs: [], _isopen: true };
+         const h = { _name: 'Files', _kind: kTopFolder, _childs: [], _isopen: true }, fmap = {};
          let p = 0;
          while (p < res.length) {
             p = res.indexOf('a href="', p+1);
@@ -107176,6 +107170,10 @@ class HierarchyPainter extends BasePainter {
 
             const fname = res.slice(p, p2);
             p = p2 + 1;
+
+            if (fmap[fname]) continue;
+            fmap[fname] = true;
+
             if ((fname.lastIndexOf('.root') === fname.length - 5) && (fname.length > 5)) {
                h._childs.push({
                   _name: fname, _title: dirname + fname, _url: dirname + fname, _kind: kindTFile,
@@ -111468,7 +111466,7 @@ let THStackPainter$2 = class THStackPainter extends ObjectPainter {
          });
       }
 
-      // special handling of stacked histograms - set $baseh object for correct drawing
+      // special handling of stacked histograms
       // also used to provide tooltips
       if ((rindx > 0) && !this.options.nostack)
          hist.$baseh = hlst.arr[rindx - 1];
@@ -111518,7 +111516,7 @@ let THStackPainter$2 = class THStackPainter extends ObjectPainter {
       if (d.check('STACK')) this.options.nostack = false;
       this.options.same = d.check('SAME');
 
-      d.check('NOCLEAR'); // ignore noclear option
+      d.check('NOCLEAR'); // ignore option
 
       ['PFC', 'PLC', 'PMC'].forEach(f => { if (d.check(f)) this.options.auto += ' ' + f; });
 
@@ -111578,7 +111576,7 @@ let THStackPainter$2 = class THStackPainter extends ObjectPainter {
       return histo;
    }
 
-   /** @summary Update thstack object */
+   /** @summary Update THStack object */
    updateObject(obj) {
       if (!this.matchObjectType(obj)) return false;
 
@@ -111667,7 +111665,7 @@ let THStackPainter$2 = class THStackPainter extends ObjectPainter {
       });
    }
 
-   /** @summary Fill hstack context menu */
+   /** @summary Fill THStack context menu */
    fillContextMenuItems(menu) {
       menu.addRedrawMenu(this);
       if (!this.options.pads) {
@@ -111743,7 +111741,7 @@ let THStackPainter$2 = class THStackPainter extends ObjectPainter {
             pr = this.drawHist(this.getDrawDom(), stack.fHistogram, this.options.hopt + mm.hopt).then(subp => {
                this.firstpainter = subp;
                subp.$stack_hist = true;
-               subp.setSecondaryId(this, 'hist'); // mark hist painter as created by hstack
+               subp.setSecondaryId(this, 'hist'); // mark hist painter as created by THStack
             });
          }
       }
@@ -115090,13 +115088,13 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
       this.painters = []; // keep painters to be able update objects
    }
 
-   /** @summary Cleanup multigraph painter */
+   /** @summary Cleanup TMultiGraph painter */
    cleanup() {
       this.painters = [];
       super.cleanup();
    }
 
-   /** @summary Update multigraph object */
+   /** @summary Update TMultiGraph object */
    updateObject(obj) {
       if (!this.matchObjectType(obj))
          return false;
@@ -115127,7 +115125,7 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
       return isany;
    }
 
-   /** @summary Redraw multigraph
+   /** @summary Redraw TMultiGraph
      * @desc may redraw histogram which was used to draw axes
      * @return {Promise} for ready */
     async redraw(reason) {
@@ -115157,11 +115155,6 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
       if (pad) {
          logx = pad.fLogx;
          logy = pad.fLogv ?? pad.fLogy;
-         // rw.xmin = pad.fUxmin;
-         // rw.xmax = pad.fUxmax;
-         // rw.ymin = pad.fUymin;
-         // rw.ymax = pad.fUymax;
-         // rw.first = false;
       }
 
       // ignore existing histogram in 3d case
@@ -115348,12 +115341,12 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
       });
    }
 
-   /** @summary Fill multigraph context menu */
+   /** @summary Fill TMultiGraph context menu */
    fillContextMenuItems(menu) {
       menu.addRedrawMenu(this);
    }
 
-   /** @summary Redraw multigraph object using provided option
+   /** @summary Redraw TMultiGraph object using provided option
      * @private */
    async redrawWith(opt, skip_cleanup) {
       if (!skip_cleanup) {
@@ -119037,7 +119030,7 @@ class RFramePainter extends RObjectPainter {
 
    /** @summary Update graphical attributes */
    updateAttributes(force) {
-      if ((this.fX1NDC === undefined) || (force && !this.modified_NDC)) {
+      if ((this.fX1NDC === undefined) || (force && !this.$modifiedNDC)) {
          const rect = this.getPadPainter().getPadRect();
          this.fX1NDC = this.v7EvalLength('margins_left', rect.width, gStyle.fPadLeftMargin) / rect.width;
          this.fY1NDC = this.v7EvalLength('margins_bottom', rect.height, gStyle.fPadBottomMargin) / rect.height;
