@@ -4,11 +4,13 @@ import terser from '@rollup/plugin-terser';
 import modify from 'rollup-plugin-modify';
 import ascii from 'rollup-plugin-ascii';
 import ignore from 'rollup-plugin-ignore';
-import meta from '../package.json' assert {type: 'json'};
+import meta from '../package.json' assert { type: 'json' };
 
-const ignore_modules = ['fs', 'zlib', 'gl', './base/lzma.mjs', './base/zstd.mjs', '../../scripts/jspdf.es.min.js', '../../scripts/svg2pdf.es.min.js'];
+const ignore_modules_jsroot = ['./base/lzma.mjs', './base/zstd.mjs', '../../scripts/jspdf.es.min.js', '../../scripts/svg2pdf.es.min.js'];
 
 const importMetaUrlPolyfill = `(typeof document === 'undefined' && typeof location === 'undefined' ? undefined : typeof document === 'undefined' ? location.href : (document.currentScript && document.currentScript.src || new URL('jsroot.js', document.baseURI).href));`;
+
+const ignore_modules = ['fs', 'zlib', 'gl'].concat(ignore_modules_jsroot);
 
 for(let key in meta.dependencies)
    ignore_modules.push(key);
@@ -85,8 +87,8 @@ const config_jsroot_r162 = {
       "from '../three_addons.mjs'": "from '../../libs/r162/three_addons.mjs'",
       'import.meta?.url': importMetaUrlPolyfill
      }),
-     ignore(ignore_modules),
-     nodeResolve(),
+     ignore(ignore_modules_jsroot),
+     // nodeResolve(),
      json(),
      ascii()
   ],
