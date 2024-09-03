@@ -13,7 +13,7 @@ Data can be read and displayed from ROOT binary and JSON files.
 ```javascript
 ...
    <body>
-      <div id="drawing" style="width:800px; height:600px"></div>
+      <div id="drawing" style="position: relative; width: 800px; height: 600px;"></div>
    </body>
    <script type='module'>
       import { openFile, draw } from 'https://root.cern/js/latest/modules/main.mjs';
@@ -30,7 +30,7 @@ import { openFile, makeSVG } from 'jsroot';
 import { writeFileSync } from 'fs';
 let file = await openFile('https://root.cern/js/files/hsimple.root');
 let obj = await file.readObject('hpxpy;1');
-let svg = await makeSVG({ object: obj, option: 'lego2,pal50', width: 1200, height: 800 });
+let svg = await makeSVG({ object: obj, option: 'lego2,pal50', width: 800, height: 600 });
 writeFileSync('lego2.svg', svg);
 ```
 
