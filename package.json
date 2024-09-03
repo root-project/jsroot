@@ -25,6 +25,7 @@
     "./latex": "./modules/base/latex.mjs",
     "./geom": "./modules/geom/TGeoPainter.mjs",
     "./geom_nothreejs": "./build/geom_nothreejs.mjs",
+    "./r162": "./build/jsroot_r162.mjs",
     "./testing": "./modules/testing.mjs"
   },
   "contributors": [

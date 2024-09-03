@@ -9,3 +9,4 @@ declare module "jsroot/latex";
 declare module "jsroot/geom";
 declare module "jsroot/geom_nothreejs";
 declare module "jsroot/testing";
+declare module "jsroot/r162";
