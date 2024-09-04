@@ -1,6 +1,6 @@
+import { writeFileSync } from 'fs';
 import { version, openFile, makeSVG } from 'jsroot';
 
-import { writeFileSync } from 'fs';
 
 console.log(`JSROOT version ${version}`);
 

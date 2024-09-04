@@ -1,9 +1,9 @@
 // Example for makeImage
 // Create svg, pdf, png, jpeg images for different kinds of data
 
+import { writeFileSync } from 'fs';
 import { version, openFile, makeSVG, makeImage } from 'jsroot';
 
-import { writeFileSync } from 'fs';
 
 const width = 1200, height = 800;
 
