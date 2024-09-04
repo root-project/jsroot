@@ -53,7 +53,8 @@
     "specificity": "^0.4.1",
     "svgpath": "^2.3.0",
     "tmp": "^0.2.1",
-    "xhr2": "^0.2.1"
+    "xhr2": "^0.2.1",
+    "three": "0.162.0"
   },
   "repository": {
     "type": "git",
