@@ -1,4 +1,5 @@
 import { select as d3_select, color as d3_color } from '../d3.mjs';
+import { browser, settings, constants, isBatchMode, nsSVG, isNodeJs, isObject, isFunc, isStr, getDocument } from '../core.mjs';
 import { WebGLRenderer, WebGLRenderTarget, CanvasTexture, TextureLoader, Raycaster,
          BufferGeometry, BufferAttribute, Float32BufferAttribute,
          Vector2, Vector3, Color, Points, PointsMaterial,
@@ -10,7 +11,6 @@ import { WebGLRenderer, WebGLRenderTarget, CanvasTexture, TextureLoader, Raycast
          Group, PlaneHelper, Euler, Quaternion, BoxGeometry, CircleGeometry, SphereGeometry, Fog,
          AmbientLight, HemisphereLight, DirectionalLight } from '../three.mjs';
 import { Font, OrbitControls, SVGRenderer, TextGeometry, EffectComposer, RenderPass, UnrealBloomPass } from '../three_addons.mjs';
-import { browser, settings, constants, isBatchMode, nsSVG, isNodeJs, isObject, isFunc, isStr, getDocument } from '../core.mjs';
 import { prSVG, getElementRect, getAbsPosInCanvas, makeTranslate } from './BasePainter.mjs';
 import { TAttMarkerHandler } from './TAttMarkerHandler.mjs';
 import { getSvgLineStyle } from './TAttLineHandler.mjs';
@@ -18,6 +18,7 @@ import { getSvgLineStyle } from './TAttLineHandler.mjs';
 
 const THREE = {
    REVISION, DoubleSide, FrontSide, Object3D, Color, Vector2, Vector3, Matrix4, Line3, Raycaster,
+   WebGLRenderer, WebGLRenderTarget, SVGRenderer, Font,
    BufferGeometry, BufferAttribute, Float32BufferAttribute, Mesh, MeshBasicMaterial, MeshLambertMaterial,
    LineSegments, LineDashedMaterial, LineBasicMaterial, Points, PointsMaterial,
    Plane, Scene, PerspectiveCamera, OrthographicCamera, ShapeUtils,
@@ -30,7 +31,6 @@ const THREE = {
    TextGeometry, EffectComposer, RenderPass, UnrealBloomPass, OrbitControls
 };
 
-
 /** @summary Create three.js Font with Helvetica
   * @private */
 function createHelveticaFont() {
@@ -39,7 +39,7 @@ const glyphs={"0":{x_min:73,x_max:715,ha:792,o:"m 394 -29 q 153 129 242 -29 q 73
 // eslint-disable-next-line
 const cssFontWeight='normal', ascender=1189, underlinePosition=-100, cssFontStyle='normal', boundingBox={yMin:-334,xMin:-111,yMax:1189,xMax:1672}, resolution = 1000, original_font_information={postscript_name:"Helvetiker-Regular",version_string:"Version 1.00 2004 initial release",vendor_url:"http://www.magenta.gr/",full_font_name:"Helvetiker",font_family_name:"Helvetiker",copyright:"Copyright (c) Μagenta ltd, 2004",description:"",trademark:"",designer:"",designer_url:"",unique_font_identifier:"Μagenta ltd:Helvetiker:22-10-104",license_url:"http://www.ellak.gr/fonts/MgOpen/license.html",license_description:"Copyright (c) 2004 by MAGENTA Ltd. All Rights Reserved.\r\n\r\nPermission is hereby granted, free of charge, to any person obtaining a copy of the fonts accompanying this license (\"Fonts\") and associated documentation files (the \"Font Software\"), to reproduce and distribute the Font Software, including without limitation the rights to use, copy, merge, publish, distribute, and/or sell copies of the Font Software, and to permit persons to whom the Font Software is furnished to do so, subject to the following conditions: \r\n\r\nThe above copyright and this permission notice shall be included in all copies of one or more of the Font Software typefaces.\r\n\r\nThe Font Software may be modified, altered, or added to, and in particular the designs of glyphs or characters in the Fonts may be modified and additional glyphs or characters may be added to the Fonts, only if the fonts are renamed to names not containing the word \"MgOpen\", or if the modifications are accepted for inclusion in the Font Software itself by the each appointed Administrator.\r\n\r\nThis License becomes null and void to the extent applicable to Fonts or Font Software that has been modified and is distributed under the \"MgOpen\" name.\r\n\r\nThe Font Software may be sold as part of a larger software package but no copy of one or more of the Font Software typefaces may be sold by itself. \r\n\r\nTHE FONT SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL MAGENTA OR PERSONS OR BODIES IN CHARGE OF ADMINISTRATION AND MAINTENANCE OF THE FONT SOFTWARE BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.",manufacturer_name:"Μagenta ltd",font_sub_family_name:"Regular"}, descender = -334, familyName = 'Helvetiker', lineHeight = 1522, underlineThickness = 50, helvetiker_regular_typeface = {glyphs, cssFontWeight, ascender, underlinePosition, cssFontStyle, boundingBox, resolution,original_font_information, descender, familyName, lineHeight, underlineThickness};
 
-   return new Font({
+   return new THREE.Font({
       ascender, boundingBox, cssFontStyle, cssFontWeight, default: helvetiker_regular_typeface, descender, familyName, glyphs,
       lineHeight, original_font_information, resolution, underlinePosition, underlineThickness
    });
@@ -55,11 +55,11 @@ function getMaterialArgs(color, args) {
 
    if (isStr(color) && (((color[0] === '#') && (color.length === 9)) || (color.indexOf('rgba') >= 0))) {
       const col = d3_color(color);
-      args.color = new Color(col.r, col.g, col.b);
+      args.color = new THREE.Color(col.r, col.g, col.b);
       args.opacity = col.opacity ?? 1;
       args.transparent = args.opacity < 1;
    } else
-      args.color = new Color(color);
+      args.color = new THREE.Color(color);
    return args;
 }
 
@@ -67,7 +67,7 @@ function createSVGRenderer(as_is, precision, doc) {
    if (as_is) {
       if (doc !== undefined)
          globalThis.docuemnt = doc;
-      const rndr = new SVGRenderer();
+      const rndr = new THREE.SVGRenderer();
       rndr.setPrecision(precision);
       return rndr;
    }
@@ -128,7 +128,7 @@ function createSVGRenderer(as_is, precision, doc) {
       globalThis.document = doc_wrapper;
    }
 
-   const rndr = new SVGRenderer();
+   const rndr = new THREE.SVGRenderer();
 
    if (isNodeJs())
       globalThis.document = originalDocument;
@@ -491,18 +491,18 @@ async function createRender3D(width, height, render3d, args) {
          args.context = gl;
          gl.canvas = args.canvas;
 
-         const r = new WebGLRenderer(args);
-         r.jsroot_output = new WebGLRenderTarget(width, height);
+         const r = new THREE.WebGLRenderer(args);
+         r.jsroot_output = new THREE.WebGLRenderTarget(width, height);
          r.setRenderTarget(r.jsroot_output);
          r.jsroot_dom = doc.createElementNS(nsSVG, 'image');
          return r;
       });
    } else if (render3d === rc.WebGL) {
       // interactive WebGL Rendering
-      promise = Promise.resolve(new WebGLRenderer(args));
+      promise = Promise.resolve(new THREE.WebGLRenderer(args));
    } else {
       // rendering with WebGL directly into svg image
-      const r = new WebGLRenderer(args);
+      const r = new THREE.WebGLRenderer(args);
       r.jsroot_dom = doc.createElementNS(nsSVG, 'image');
       promise = Promise.resolve(r);
    }
@@ -955,7 +955,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       // domElement gives correct coordinate with canvas render, but isn't always right for webgl renderer
       if (!this.renderer) return [];
 
-      const sz = (this.renderer instanceof SVGRenderer) ? this.renderer.domElement : this.renderer.getSize(new Vector2()),
+      const sz = (this.renderer instanceof THREE.SVGRenderer) ? this.renderer.domElement : this.renderer.getSize(new THREE.Vector2()),
             pnt = { x: mouse.x / sz.width * 2 - 1, y: -mouse.y / sz.height * 2 + 1 };
 
       this.camera.updateMatrix();
@@ -1335,10 +1335,10 @@ function createLineSegments(arr, material, index = undefined, only_geometry = fa
 /** @summary Help structures for calculating Box mesh
   * @private */
 const Box3D = {
-    Vertices: [new Vector3(1, 1, 1), new Vector3(1, 1, 0),
-               new Vector3(1, 0, 1), new Vector3(1, 0, 0),
-               new Vector3(0, 1, 0), new Vector3(0, 1, 1),
-               new Vector3(0, 0, 0), new Vector3(0, 0, 1)],
+    Vertices: [new THREE.Vector3(1, 1, 1), new THREE.Vector3(1, 1, 0),
+               new THREE.Vector3(1, 0, 1), new THREE.Vector3(1, 0, 0),
+               new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 1, 1),
+               new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 1)],
     Indexes: [0, 2, 1, 2, 3, 1, 4, 6, 5, 6, 7, 5, 4, 5, 1, 5, 0, 1,
               7, 6, 2, 6, 3, 2, 5, 7, 0, 7, 2, 0, 1, 3, 4, 3, 6, 4],
     Normals: [1, 0, 0, -1, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 1, 0, 0, -1],
