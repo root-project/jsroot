@@ -12,7 +12,7 @@ import { ExtrudeGeometry, ShapePath, Ray, Plane, MathUtils, EventDispatcher, Vec
  *  font: <THREE.Font>, // font
  *
  *  size: <float>, // size of the text
- *  height: <float>, // thickness to extrude text
+ *  depth: <float>, // thickness to extrude text
  *  curveSegments: <int>, // number of points on the curves
  *
  *  bevelEnabled: <bool>, // turn on bevel
@@ -39,7 +39,15 @@ class TextGeometry extends ExtrudeGeometry {
 
 			// translate parameters to ExtrudeGeometry API
 
-			parameters.depth = parameters.height !== undefined ? parameters.height : 50;
+			if ( parameters.depth === undefined && parameters.height !== undefined ) {
+
+				console.warn( 'THREE.TextGeometry: .height is now depreciated. Please use .depth instead' ); // @deprecated, r163
+
+			}
+
+			parameters.depth = parameters.depth !== undefined ?
+				parameters.depth : parameters.height !== undefined ?
+					parameters.height : 50;
 
 			// defaults
 

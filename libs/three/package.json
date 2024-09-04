@@ -1,6 +1,6 @@
 {
   "name": "three_jsroot",
-  "version": "0.162.0",
+  "version": "0.164.0",
   "type": "module",
   "description": "JavaScript 3D library",
   "main": "Three_jsroot.js",
