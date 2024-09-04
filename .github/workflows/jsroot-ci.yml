@@ -93,13 +93,13 @@ jobs:
       - name: Dependencies jsroot
         run: |
           cd jsroot
-          npm install
+          npm ci
           npm install gl
 
       - name: Dependencies jsroot-test
         run: |
           cd jsroot-test
-          npm install
+          npm ci
 
       - name: Run all tests
         run: |
