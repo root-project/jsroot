@@ -1,10 +1,8 @@
 import { gStyle, settings, kInspect, clTF1, clTF3, clTProfile3D, BIT, isFunc } from '../core.mjs';
-import { Matrix4, BufferGeometry, BufferAttribute, Mesh, MeshBasicMaterial, MeshLambertMaterial,
-         LineBasicMaterial, SphereGeometry } from '../three.mjs';
 import { TRandom, floatToString } from '../base/BasePainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { TAxisPainter } from '../gpad/TAxisPainter.mjs';
-import { createLineSegments, PointsCreator, Box3D } from '../base/base3d.mjs';
+import { createLineSegments, PointsCreator, Box3D, THREE } from '../base/base3d.mjs';
 import { THistPainter } from '../hist2d/THistPainter.mjs';
 import { assignFrame3DMethods } from './hist3d.mjs';
 import { proivdeEvalPar, getTF1Value } from '../base/func.mjs';
@@ -399,8 +397,8 @@ class TH3Painter extends THistPainter {
          use_lambert = true;
          if (this.options.GLBox === 12) use_colors = true;
 
-         const geom = main.webgl ? new SphereGeometry(0.5, 16, 12) : new SphereGeometry(0.5, 8, 6);
-         geom.applyMatrix4(new Matrix4().makeRotationX(Math.PI/2));
+         const geom = new THREE.SphereGeometry(0.5, main.webgl ? 16 : 8, main.webgl ? 12 : 6);
+         geom.applyMatrix4(new THREE.Matrix4().makeRotationX(Math.PI/2));
          geom.computeVertexNormals();
 
          const indx = geom.getIndex().array,
@@ -642,11 +640,11 @@ class TH3Painter extends THistPainter {
 
       for (const colindx in cols_size) {
          const nseq = cols_sequence[colindx],
-               all_bins_buffgeom = new BufferGeometry(); // BufferGeometries that store geometry of all bins
+               all_bins_buffgeom = new THREE.BufferGeometry(); // BufferGeometries that store geometry of all bins
 
          // Create mesh from bin buffer geometry
-         all_bins_buffgeom.setAttribute('position', new BufferAttribute(bin_verts[nseq], 3));
-         all_bins_buffgeom.setAttribute('normal', new BufferAttribute(bin_norms[nseq], 3));
+         all_bins_buffgeom.setAttribute('position', new THREE.BufferAttribute(bin_verts[nseq], 3));
+         all_bins_buffgeom.setAttribute('normal', new THREE.BufferAttribute(bin_norms[nseq], 3));
 
          let opacity = use_opacity;
 
@@ -656,9 +654,9 @@ class TH3Painter extends THistPainter {
          }
 
          const material = use_lambert
-                            ? new MeshLambertMaterial({ color: fillcolor, opacity, transparent: opacity < 1, vertexColors: false })
-                            : new MeshBasicMaterial({ color: fillcolor, opacity, transparent: opacity < 1, vertexColors: false }),
-              combined_bins = new Mesh(all_bins_buffgeom, material);
+                            ? new THREE.MeshLambertMaterial({ color: fillcolor, opacity, transparent: opacity < 1, vertexColors: false })
+                            : new THREE.MeshBasicMaterial({ color: fillcolor, opacity, transparent: opacity < 1, vertexColors: false }),
+              combined_bins = new THREE.Mesh(all_bins_buffgeom, material);
 
          combined_bins.bins = bin_tooltips[nseq];
          combined_bins.bins_faces = buffer_size/9;
@@ -697,7 +695,7 @@ class TH3Painter extends THistPainter {
          main.add3DMesh(combined_bins);
 
          if (helper_kind[nseq] > 0) {
-            const helper_material = new LineBasicMaterial({ color: this.getColor(histo.fLineColor) }),
+            const helper_material = new THREE.LineBasicMaterial({ color: this.getColor(histo.fLineColor) }),
                 lines = (helper_kind[nseq] === 1)
                    // reuse positions from the mesh - only special index was created
                    ? createLineSegments(bin_verts[nseq], helper_material, helper_indexes[nseq])

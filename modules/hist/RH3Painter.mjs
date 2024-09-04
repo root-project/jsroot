@@ -1,11 +1,9 @@
 import { gStyle, settings, kNoZoom, kInspect } from '../core.mjs';
-import { Matrix4, Mesh, MeshBasicMaterial, MeshLambertMaterial, SphereGeometry,
-         LineBasicMaterial, BufferAttribute, BufferGeometry } from '../three.mjs';
 import { floatToString, TRandom } from '../base/BasePainter.mjs';
 import { ensureRCanvas } from '../gpad/RCanvasPainter.mjs';
 import { RAxisPainter } from '../gpad/RAxisPainter.mjs';
 import { RHistPainter } from '../hist2d/RHistPainter.mjs';
-import { createLineSegments, PointsCreator, Box3D } from '../base/base3d.mjs';
+import { THREE, createLineSegments, PointsCreator, Box3D } from '../base/base3d.mjs';
 import { RH1Painter } from './RH1Painter.mjs';
 import { RH2Painter } from './RH2Painter.mjs';
 import { assignFrame3DMethods } from './hist3d.mjs';
@@ -283,8 +281,8 @@ class RH3Painter extends RHistPainter {
          use_lambert = true;
          if (this.options.Sphere === 11) use_colors = true;
 
-         const geom = main.webgl ? new SphereGeometry(0.5, 16, 12) : new SphereGeometry(0.5, 8, 6);
-         geom.applyMatrix4(new Matrix4().makeRotationX(Math.PI/2));
+         const geom = new THREE.SphereGeometry(0.5, main.webgl ? 16 : 8, main.webgl ? 12 : 6);
+         geom.applyMatrix4(new THREE.Matrix4().makeRotationX(Math.PI/2));
          geom.computeVertexNormals();
 
          const indx = geom.getIndex().array,
@@ -493,18 +491,18 @@ class RH3Painter extends RHistPainter {
 
          const nseq = cols_sequence[ncol],
               // BufferGeometries that store geometry of all bins
-              all_bins_buffgeom = new BufferGeometry();
+              all_bins_buffgeom = new THREE.BufferGeometry();
 
          // Create mesh from bin buffer geometry
-         all_bins_buffgeom.setAttribute('position', new BufferAttribute(bin_verts[nseq], 3));
-         all_bins_buffgeom.setAttribute('normal', new BufferAttribute(bin_norms[nseq], 3));
+         all_bins_buffgeom.setAttribute('position', new THREE.BufferAttribute(bin_verts[nseq], 3));
+         all_bins_buffgeom.setAttribute('normal', new THREE.BufferAttribute(bin_norms[nseq], 3));
 
          if (use_colors) fillcolor = palette.getColor(ncol);
 
          const material = use_lambert
-                           ? new MeshLambertMaterial({ color: fillcolor, opacity: use_opacity, transparent: use_opacity < 1, vertexColors: false })
-                           : new MeshBasicMaterial({ color: fillcolor, opacity: use_opacity, transparent: use_opacity < 1, vertexColors: false }),
-               combined_bins = new Mesh(all_bins_buffgeom, material);
+                           ? new THREE.MeshLambertMaterial({ color: fillcolor, opacity: use_opacity, transparent: use_opacity < 1, vertexColors: false })
+                           : new THREE.MeshBasicMaterial({ color: fillcolor, opacity: use_opacity, transparent: use_opacity < 1, vertexColors: false }),
+               combined_bins = new THREE.Mesh(all_bins_buffgeom, material);
 
          combined_bins.bins = bin_tooltips[nseq];
          combined_bins.bins_faces = buffer_size/9;
@@ -543,7 +541,7 @@ class RH3Painter extends RHistPainter {
 
          if (helper_kind[nseq] > 0) {
             const lcolor = this.v7EvalColor('line_color', 'lightblue'),
-                  helper_material = new LineBasicMaterial({ color: lcolor }),
+                  helper_material = new THREE.LineBasicMaterial({ color: lcolor }),
                   lines = (helper_kind[nseq] === 1)
                           // reuse positions from the mesh - only special index was created
                           ? createLineSegments(bin_verts[nseq], helper_material, helper_indexes[nseq])

@@ -1,10 +1,9 @@
 import { settings, createHistogram, setHistogramTitle, kNoZoom,
          clTH2F, clTGraph2DErrors, clTGraph2DAsymmErrors, clTPaletteAxis, kNoStats } from '../core.mjs';
-import { Color, DoubleSide, LineBasicMaterial, MeshBasicMaterial, Mesh } from '../three.mjs';
 import { ObjectPainter, DrawOptions } from '../base/ObjectPainter.mjs';
 import { TH2Painter } from './TH2Painter.mjs';
 import { Triangles3DHandler } from '../hist2d/TH2Painter.mjs';
-import { createLineSegments, PointsCreator, getMaterialArgs } from '../base/base3d.mjs';
+import { createLineSegments, PointsCreator, getMaterialArgs, THREE } from '../base/base3d.mjs';
 import { convertLegoBuf, createLegoGeom } from './hist3d.mjs';
 
 function getMax(arr) {
@@ -1062,16 +1061,16 @@ class TGraph2DPainter extends ObjectPainter {
       triangles.callFuncs((lvl, pos) => {
          const geometry = createLegoGeom(this.getMainPainter(), pos, null, 100, 100),
                color = plain_mode ? this.getColor(graph.fFillColor) : palette.calcColor(lvl, levels.length),
-               material = new MeshBasicMaterial(getMaterialArgs(color, { side: DoubleSide, vertexColors: false })),
+               material = new THREE.MeshBasicMaterial(getMaterialArgs(color, { side: THREE.DoubleSide, vertexColors: false })),
 
-          mesh = new Mesh(geometry, material);
+          mesh = new THREE.Mesh(geometry, material);
 
          fp.add3DMesh(mesh, this);
 
          mesh.painter = this; // to let use it with context menu
       }, (_isgrid, lpos) => {
          const lcolor = this.getColor(graph.fLineColor),
-              material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: graph.fLineWidth }),
+              material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: graph.fLineWidth }),
               linemesh = createLineSegments(convertLegoBuf(this.getMainPainter(), lpos, 100, 100), material);
          fp.add3DMesh(linemesh, this);
       });
@@ -1261,7 +1260,7 @@ class TGraph2DPainter extends ObjectPainter {
 
          if (line && (iline > 3) && (line.length === iline)) {
             const lcolor = this.getColor(graph.fLineColor),
-                  material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: graph.fLineWidth }),
+                  material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: graph.fLineWidth }),
                   linemesh = createLineSegments(line, material);
             fp.add3DMesh(linemesh, this);
 
@@ -1279,7 +1278,7 @@ class TGraph2DPainter extends ObjectPainter {
 
          if (err) {
             const lcolor = this.getColor(graph.fLineColor),
-                  material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: graph.fLineWidth }),
+                  material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: graph.fLineWidth }),
                   errmesh = createLineSegments(err, material);
             fp.add3DMesh(errmesh, this);
 

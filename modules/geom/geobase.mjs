@@ -1,12 +1,7 @@
-import { DoubleSide, FrontSide, Object3D, Box3, Mesh, InstancedMesh, Vector2, Vector3, Matrix4,
-         MeshLambertMaterial, MeshBasicMaterial, MeshStandardMaterial, MeshNormalMaterial,
-         MeshPhysicalMaterial, MeshPhongMaterial, MeshDepthMaterial, MeshMatcapMaterial, MeshToonMaterial,
-         Color, PerspectiveCamera, Frustum, Raycaster,
-         ShapeUtils, BufferGeometry, BufferAttribute } from '../three.mjs';
 import { isObject, isFunc, BIT } from '../core.mjs';
+import { THREE } from '../base/base3d.mjs';
 import { createBufferGeometry, createNormal,
          Vertex as CsgVertex, Geometry as CsgGeometry, Polygon as CsgPolygon } from './csg.mjs';
-
 
 const cfg = {
    GradPerSegm: 6,       // grad per segment in cylinder/spherical symmetry shapes
@@ -23,6 +18,9 @@ function geoCfg(name, value) {
 const kindGeo = 0,    // TGeoNode / TGeoShape
       kindEve = 1,    // TEveShape / TEveGeoShapeExtract
       kindShape = 2,  // special kind for single shape handling
+
+Vector3 = THREE.Vector3, // used very often
+Matrix4 = THREE.Matrix4, // used very often
 
 /** @summary TGeo-related bits
   * @private */
@@ -172,10 +170,10 @@ function checkDuplicates(parent, chlds) {
   * @private */
 function produceNormal(x1, y1, z1, x2, y2, z2, x3, y3, z3) {
    const pA = new Vector3(x1, y1, z1),
-       pB = new Vector3(x2, y2, z2),
-       pC = new Vector3(x3, y3, z3),
-       cb = new Vector3(),
-       ab = new Vector3();
+         pB = new Vector3(x2, y2, z2),
+         pC = new Vector3(x3, y3, z3),
+         cb = new Vector3(),
+         ab = new Vector3();
 
    cb.subVectors(pC, pB);
    ab.subVectors(pA, pB);
@@ -388,9 +386,9 @@ class GeometryCreator {
       if (this.nfaces !== this.indx/9)
          console.error(`Mismatch with created ${this.nfaces} and filled ${this.indx/9} number of faces`);
 
-      const geometry = new BufferGeometry();
-      geometry.setAttribute('position', new BufferAttribute(this.pos, 3));
-      geometry.setAttribute('normal', new BufferAttribute(this.norm, 3));
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.BufferAttribute(this.pos, 3));
+      geometry.setAttribute('normal', new THREE.BufferAttribute(this.norm, 3));
       return geometry;
    }
 
@@ -1219,9 +1217,9 @@ function createPolygonBuffer(shape, faces_limit) {
 
          if (pnts !== null) {
             if (side === 0)
-               pnts.push(new Vector2(factor*rad, layerz));
+               pnts.push(new THREE.Vector2(factor*rad, layerz));
              else if (rad < shape.fRmax[layer])
-               pnts.unshift(new Vector2(factor*rad, layerz));
+               pnts.unshift(new THREE.Vector2(factor*rad, layerz));
          }
       }
    }
@@ -1245,7 +1243,7 @@ function createPolygonBuffer(shape, faces_limit) {
       } else {
          // let three.js calculate our faces
          // console.log(`triangulate polygon ${shape.fShapeId}`);
-         cut_faces = ShapeUtils.triangulateShape(pnts, []);
+         cut_faces = THREE.ShapeUtils.triangulateShape(pnts, []);
       }
       numfaces += cut_faces.length*2;
    }
@@ -1343,14 +1341,15 @@ function createPolygonBuffer(shape, faces_limit) {
 function createXtruBuffer(shape, faces_limit) {
    let nfaces = (shape.fNz-1) * shape.fNvert * 2;
 
-   if (faces_limit < 0) return nfaces + shape.fNvert*3;
+   if (faces_limit < 0)
+      return nfaces + shape.fNvert*3;
 
    // create points
    const pnts = [];
    for (let vert = 0; vert < shape.fNvert; ++vert)
-      pnts.push(new Vector2(shape.fX[vert], shape.fY[vert]));
+      pnts.push(new THREE.Vector2(shape.fX[vert], shape.fY[vert]));
 
-   let faces = ShapeUtils.triangulateShape(pnts, []);
+   let faces = THREE.ShapeUtils.triangulateShape(pnts, []);
    if (faces.length < pnts.length-2) {
       geoWarn(`Problem with XTRU shape ${shape.fName} with ${pnts.length} vertices`);
       faces = [];
@@ -1768,7 +1767,7 @@ function geomBoundingBox(geom) {
       polygons = geom.polygons;
 
    if (polygons !== null) {
-      const box = new Box3();
+      const box = new THREE.Box3();
       for (let n = 0; n < polygons.length; ++n) {
          const polygon = polygons[n], nvert = polygon.vertices.length;
          for (let k = 0; k < nvert; ++k)
@@ -1801,16 +1800,16 @@ function createHalfSpace(shape, geom) {
       if (box) sz = box.getSize(new Vector3()).length() * 1000;
    }
 
-   const v0 = new Vector3(-sz, -sz/2, 0),
-       v1 = new Vector3(0, sz, 0),
-       v2 = new Vector3(sz, -sz/2, 0),
-       v3 = new Vector3(0, 0, -sz),
-       geometry = new BufferGeometry(),
-       positions = new Float32Array([v0.x, v0.y, v0.z, v2.x, v2.y, v2.z, v1.x, v1.y, v1.z,
+   const v0 = new THREE.Vector3(-sz, -sz/2, 0),
+         v1 = new THREE.Vector3(0, sz, 0),
+         v2 = new THREE.Vector3(sz, -sz/2, 0),
+         v3 = new THREE.Vector3(0, 0, -sz),
+         geometry = new THREE.BufferGeometry(),
+         positions = new Float32Array([v0.x, v0.y, v0.z, v2.x, v2.y, v2.z, v1.x, v1.y, v1.z,
                                       v0.x, v0.y, v0.z, v1.x, v1.y, v1.z, v3.x, v3.y, v3.z,
                                       v1.x, v1.y, v1.z, v2.x, v2.y, v2.z, v3.x, v3.y, v3.z,
                                       v2.x, v2.y, v2.z, v0.x, v0.y, v0.z, v3.x, v3.y, v3.z]);
-   geometry.setAttribute('position', new BufferAttribute(positions, 3));
+   geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
    geometry.computeVertexNormals();
 
    geometry.lookAt(normal);
@@ -2049,9 +2048,9 @@ function makeEveGeometry(rd) {
    if (rd.idxBuff.length !== nVert)
       throw Error('Expect single list of triangles in index buffer.');
 
-   const body = new BufferGeometry();
-   body.setAttribute('position', new BufferAttribute(rd.vtxBuff, 3));
-   body.setIndex(new BufferAttribute(rd.idxBuff, 1));
+   const body = new THREE.BufferGeometry();
+   body.setAttribute('position', new THREE.BufferAttribute(rd.vtxBuff, 3));
+   body.setIndex(new THREE.BufferAttribute(rd.idxBuff, 1));
    body.computeVertexNormals();
 
    return body;
@@ -2062,9 +2061,9 @@ function makeEveGeometry(rd) {
 function makeViewerGeometry(rd) {
    const vtxBuff = new Float32Array(rd.raw.buffer, 0, rd.raw.buffer.byteLength/4),
 
-    body = new BufferGeometry();
-   body.setAttribute('position', new BufferAttribute(vtxBuff, 3));
-   body.setIndex(new BufferAttribute(new Uint32Array(rd.idx), 1));
+   body = new THREE.BufferGeometry();
+   body.setAttribute('position', new THREE.BufferAttribute(vtxBuff, 3));
+   body.setIndex(new THREE.BufferAttribute(new Uint32Array(rd.idx), 1));
    body.computeVertexNormals();
    return body;
 }
@@ -2210,10 +2209,10 @@ function createProjectionMatrix(camera) {
 function createFrustum(source) {
    if (!source) return null;
 
-   if (source instanceof PerspectiveCamera)
+   if (source instanceof THREE.PerspectiveCamera)
       source = createProjectionMatrix(source);
 
-   const frustum = new Frustum();
+   const frustum = new THREE.Frustum();
    frustum.setFromProjectionMatrix(source);
 
    frustum.corners = new Float32Array([
@@ -2283,41 +2282,41 @@ function createMaterial(cfg, args0) {
 
    args.wireframe = cfg.wireframe ?? false;
    if (!args.color) args.color = 'red';
-   args.side = FrontSide;
+   args.side = THREE.FrontSide;
    args.transparent = args.opacity < 1;
    args.depthWrite = args.opactity === 1;
 
    let material;
 
    if (cfg.material_kind === 'basic')
-      material = new MeshBasicMaterial(args);
+      material = new THREE.MeshBasicMaterial(args);
     else if (cfg.material_kind === 'depth') {
       delete args.color;
-      material = new MeshDepthMaterial(args);
+      material = new THREE.MeshDepthMaterial(args);
    } else if (cfg.material_kind === 'toon')
-      material = new MeshToonMaterial(args);
+      material = new THREE.MeshToonMaterial(args);
     else if (cfg.material_kind === 'matcap') {
       delete args.wireframe;
-      material = new MeshMatcapMaterial(args);
+      material = new THREE.MeshMatcapMaterial(args);
    } else if (cfg.material_kind === 'standard') {
       args.metalness = cfg.metalness ?? 0.5;
       args.roughness = cfg.roughness ?? 0.1;
-      material = new MeshStandardMaterial(args);
+      material = new THREE.MeshStandardMaterial(args);
    } else if (cfg.material_kind === 'normal') {
       delete args.color;
-      material = new MeshNormalMaterial(args);
+      material = new THREE.MeshNormalMaterial(args);
    } else if (cfg.material_kind === 'physical') {
       args.metalness = cfg.metalness ?? 0.5;
       args.roughness = cfg.roughness ?? 0.1;
       args.reflectivity = cfg.reflectivity ?? 0.5;
       args.emissive = args.color;
-      material = new MeshPhysicalMaterial(args);
+      material = new THREE.MeshPhysicalMaterial(args);
    } else if (cfg.material_kind === 'phong') {
       args.shininess = cfg.shininess ?? 0.9;
-      material = new MeshPhongMaterial(args);
+      material = new THREE.MeshPhongMaterial(args);
    } else {
       args.vertexColors = false;
-      material = new MeshLambertMaterial(args);
+      material = new THREE.MeshLambertMaterial(args);
    }
 
    if ((material.flatShading !== undefined) && (cfg.flatShading !== undefined))
@@ -3066,7 +3065,7 @@ class ClonedNodes {
       if (clone.kind === kindShape) {
          const prop = { name: clone.name, nname: clone.name, shape: null, material: null, chlds: null },
              opacity = entry.opacity || 1, col = entry.color || '#0000FF';
-         prop.fillcolor = new Color(col[0] === '#' ? col : `rgb(${col})`);
+         prop.fillcolor = new THREE.Color(col[0] === '#' ? col : `rgb(${col})`);
          prop.material = createMaterial(this._cfg, { opacity, color: prop.fillcolor });
          return prop;
       }
@@ -3087,7 +3086,7 @@ class ClonedNodes {
 
          if (visible) {
             const opacity = Math.min(1, node.fRGBA[3]);
-            prop.fillcolor = new Color(node.fRGBA[0], node.fRGBA[1], node.fRGBA[2]);
+            prop.fillcolor = new THREE.Color(node.fRGBA[0], node.fRGBA[1], node.fRGBA[2]);
             prop.material = createMaterial(this._cfg, { opacity, color: prop.fillcolor });
          }
 
@@ -3173,7 +3172,7 @@ class ClonedNodes {
 
          if (!force) return null;
 
-         obj3d = new Object3D();
+         obj3d = new THREE.Object3D();
 
          if (this._cfg?.set_names)
             obj3d.name = this.getNodeName(node.id);
@@ -3257,11 +3256,11 @@ class ClonedNodes {
 
       prop.material.wireframe = ctrl.wireframe;
 
-      prop.material.side = ctrl.doubleside ? DoubleSide : FrontSide;
+      prop.material.side = ctrl.doubleside ? THREE.DoubleSide : THREE.FrontSide;
 
       let mesh;
       if (matrix.determinant() > -0.9)
-         mesh = new Mesh(shape.geom, prop.material);
+         mesh = new THREE.Mesh(shape.geom, prop.material);
        else
          mesh = createFlippedMesh(shape, prop.material);
 
@@ -3351,7 +3350,7 @@ class ClonedNodes {
 
             prop.material.wireframe = ctrl.wireframe;
 
-            prop.material.side = ctrl.doubleside ? DoubleSide : FrontSide;
+            prop.material.side = ctrl.doubleside ? THREE.DoubleSide : THREE.FrontSide;
 
             if (instance.entries.length === 1)
                this.createEntryMesh(ctrl, toplevel, entry0, shape, colors);
@@ -3373,7 +3372,7 @@ class ClonedNodes {
                });
 
                if (arr1.length > 0) {
-                  const mesh1 = new InstancedMesh(shape.geom, prop.material, arr1.length);
+                  const mesh1 = new THREE.InstancedMesh(shape.geom, prop.material, arr1.length);
 
                   mesh1.stacks = stacks1;
                   arr1.forEach((matrix, i) => mesh1.setMatrixAt(i, matrix));
@@ -3399,7 +3398,7 @@ class ClonedNodes {
                   if (shape.geomZ === undefined)
                      shape.geomZ = createFlippedGeom(shape.geom);
 
-                  const mesh2 = new InstancedMesh(shape.geomZ, prop.material, arr2.length);
+                  const mesh2 = new THREE.InstancedMesh(shape.geomZ, prop.material, arr2.length);
 
                   mesh2.stacks = stacks2;
                   const m = new Matrix4().makeScale(1, 1, -1);
@@ -3810,9 +3809,9 @@ function createFlippedGeom(geom) {
       shift+=3; if (shift===6) shift=-3; // values 0,3,-3
    }
 
-   const geomZ = new BufferGeometry();
-   geomZ.setAttribute('position', new BufferAttribute(newpos, 3));
-   geomZ.setAttribute('normal', new BufferAttribute(newnorm, 3));
+   const geomZ = new THREE.BufferGeometry();
+   geomZ.setAttribute('position', new THREE.BufferAttribute(newpos, 3));
+   geomZ.setAttribute('normal', new THREE.BufferAttribute(newnorm, 3));
 
    return geomZ;
 }
@@ -3828,7 +3827,7 @@ function createFlippedMesh(shape, material) {
    if (shape.geomZ === undefined)
       shape.geomZ = createFlippedGeom(shape.geom);
 
-   const mesh = new Mesh(shape.geomZ, material);
+   const mesh = new THREE.Mesh(shape.geomZ, material);
    mesh.scale.copy(new Vector3(1, 1, -1));
    mesh.updateMatrix();
 
@@ -3843,10 +3842,10 @@ function createFlippedMesh(shape, material) {
 function getBoundingBox(node, box3, local_coordinates) {
    if (!node?.geometry) return box3;
 
-   if (!box3) box3 = new Box3().makeEmpty();
+   if (!box3) box3 = new THREE.Box3().makeEmpty();
 
    if (node.isInstancedMesh) {
-      const m = new Matrix4(), b = new Box3().makeEmpty();
+      const m = new Matrix4(), b = new THREE.Box3().makeEmpty();
 
       node.geometry.computeBoundingBox();
 
@@ -3895,7 +3894,7 @@ function cleanupShape(shape) {
   * @param origin - camera position used to provide sorting
   * @param method - name of sorting method like 'pnt', 'ray', 'size', 'dflt'  */
 function produceRenderOrder(toplevel, origin, method, clones) {
-   const raycast = new Raycaster();
+   const raycast = new THREE.Raycaster();
 
    function setdefaults(top) {
       if (!top) return;

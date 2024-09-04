@@ -2,12 +2,33 @@ import { select as d3_select, color as d3_color } from '../d3.mjs';
 import { WebGLRenderer, WebGLRenderTarget, CanvasTexture, TextureLoader, Raycaster,
          BufferGeometry, BufferAttribute, Float32BufferAttribute,
          Vector2, Vector3, Color, Points, PointsMaterial,
-         LineSegments, LineDashedMaterial, LineBasicMaterial } from '../three.mjs';
-import { Font, OrbitControls, SVGRenderer } from '../three_addons.mjs';
+         LineSegments, LineDashedMaterial, LineBasicMaterial,
+         REVISION, DoubleSide, Object3D, Matrix4, Line3, Mesh, MeshBasicMaterial, MeshLambertMaterial,
+         Plane, Scene, PerspectiveCamera, OrthographicCamera, ShapeUtils,
+         FrontSide, Box3, InstancedMesh, MeshStandardMaterial, MeshNormalMaterial,
+         MeshPhysicalMaterial, MeshPhongMaterial, MeshDepthMaterial, MeshMatcapMaterial, MeshToonMaterial,
+         Group, PlaneHelper, Euler, Quaternion, BoxGeometry, CircleGeometry, SphereGeometry, Fog,
+         AmbientLight, HemisphereLight, DirectionalLight } from '../three.mjs';
+import { Font, OrbitControls, SVGRenderer, TextGeometry, EffectComposer, RenderPass, UnrealBloomPass } from '../three_addons.mjs';
 import { browser, settings, constants, isBatchMode, nsSVG, isNodeJs, isObject, isFunc, isStr, getDocument } from '../core.mjs';
 import { prSVG, getElementRect, getAbsPosInCanvas, makeTranslate } from './BasePainter.mjs';
 import { TAttMarkerHandler } from './TAttMarkerHandler.mjs';
 import { getSvgLineStyle } from './TAttLineHandler.mjs';
+
+
+const THREE = {
+   REVISION, DoubleSide, FrontSide, Object3D, Color, Vector2, Vector3, Matrix4, Line3, Raycaster,
+   BufferGeometry, BufferAttribute, Float32BufferAttribute, Mesh, MeshBasicMaterial, MeshLambertMaterial,
+   LineSegments, LineDashedMaterial, LineBasicMaterial, Points, PointsMaterial,
+   Plane, Scene, PerspectiveCamera, OrthographicCamera, ShapeUtils,
+   Box3, InstancedMesh, MeshStandardMaterial, MeshNormalMaterial,
+   MeshPhysicalMaterial, MeshPhongMaterial, MeshDepthMaterial, MeshMatcapMaterial, MeshToonMaterial,
+   Group, PlaneHelper, Euler, Quaternion, BoxGeometry, CircleGeometry, SphereGeometry, Fog,
+   AmbientLight, HemisphereLight, DirectionalLight,
+   CanvasTexture, TextureLoader,
+
+   TextGeometry, EffectComposer, RenderPass, UnrealBloomPass, OrbitControls
+};
 
 
 /** @summary Create three.js Font with Helvetica
@@ -851,7 +872,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       renderer.domElement.addEventListener('pointerup', control_mouseup);
    }
 
-   control = new OrbitControls(camera, renderer.domElement);
+   control = new THREE.OrbitControls(camera, renderer.domElement);
 
    control.enableDamping = false;
    control.dampingFactor = 1.0;
@@ -870,7 +891,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
    control.camera = camera;
    control.scene = scene;
    control.renderer = renderer;
-   control.raycaster = new Raycaster();
+   control.raycaster = new THREE.Raycaster();
    control.raycaster.params.Line.threshold = 10;
    control.raycaster.params.Points.threshold = 5;
    control.mouse_zoom_mesh = null; // zoom mesh, currently used in the zooming
@@ -1275,14 +1296,14 @@ function disposeThreejsObject(obj, only_childs) {
   * @desc If required, calculates lineDistance attribute for dashed geometries
   * @private */
 function createLineSegments(arr, material, index = undefined, only_geometry = false) {
-   const geom = new BufferGeometry();
+   const geom = new THREE.BufferGeometry();
 
-   geom.setAttribute('position', arr instanceof Float32Array ? new BufferAttribute(arr, 3) : new Float32BufferAttribute(arr, 3));
-   if (index) geom.setIndex(new BufferAttribute(index, 1));
+   geom.setAttribute('position', arr instanceof Float32Array ? new THREE.BufferAttribute(arr, 3) : new THREE.Float32BufferAttribute(arr, 3));
+   if (index) geom.setIndex(new THREE.BufferAttribute(index, 1));
 
    if (material.isLineDashedMaterial) {
-      const v1 = new Vector3(),
-            v2 = new Vector3();
+      const v1 = new THREE.Vector3(),
+            v2 = new THREE.Vector3();
       let d = 0, distances = null;
 
       if (index) {
@@ -1305,10 +1326,10 @@ function createLineSegments(arr, material, index = undefined, only_geometry = fa
             distances[n/3+1] = d;
          }
       }
-      geom.setAttribute('lineDistance', new BufferAttribute(distances, 1));
+      geom.setAttribute('lineDistance', new THREE.BufferAttribute(distances, 1));
    }
 
-   return only_geometry ? geom : new LineSegments(geom, material);
+   return only_geometry ? geom : new THREE.LineSegments(geom, material);
 }
 
 /** @summary Help structures for calculating Box mesh
@@ -1423,17 +1444,17 @@ class PointsControl extends InteractiveControl {
       }
 
       if (!m.js_special) {
-         const geom = new BufferGeometry();
+         const geom = new THREE.BufferGeometry();
          geom.setAttribute('position', m.geometry.getAttribute('position'));
-         const material = new PointsMaterial({ size: m.material.size*2, color });
+         const material = new THREE.PointsMaterial({ size: m.material.size*2, color });
          material.sizeAttenuation = m.material.sizeAttenuation;
 
-         m.js_special = new Points(geom, material);
+         m.js_special = new THREE.Points(geom, material);
          m.js_special.jsroot_special = true; // special object, exclude from intersections
          m.add(m.js_special);
       }
 
-      m.js_special.material.color = new Color(color);
+      m.js_special.material.color = new THREE.Color(color);
       if (index !== undefined) m.js_special.geometry.setDrawRange(index, 1);
    }
 
@@ -1457,8 +1478,8 @@ class PointsCreator {
       this.scale = scale || 1;
 
       this.pos = new Float32Array(number*3);
-      this.geom = new BufferGeometry();
-      this.geom.setAttribute('position', new BufferAttribute(this.pos, 3));
+      this.geom = new THREE.BufferGeometry();
+      this.geom.setAttribute('position', new THREE.BufferAttribute(this.pos, 3));
       this.indx = 0;
    }
 
@@ -1493,7 +1514,7 @@ class PointsCreator {
          } else
             material_args.color = args.color || 'black';
 
-         const pnts = new Points(this.geom, new PointsMaterial(material_args));
+         const pnts = new THREE.Points(this.geom, new THREE.PointsMaterial(material_args));
          pnts.nvertex = 1;
          return pnts;
       };
@@ -1518,14 +1539,14 @@ class PointsCreator {
                const canvas = handle.default.createCanvas(64, 64),
                      ctx = canvas.getContext('2d');
                ctx.drawImage(img, 0, 0, 64, 64);
-               return new CanvasTexture(canvas);
+               return new THREE.CanvasTexture(canvas);
             }));
       } else if (this.noPromise) {
          // only for v6 support
-         return makePoints(new TextureLoader().load(dataUrl));
+         return makePoints(new THREE.TextureLoader().load(dataUrl));
       } else {
          promise = new Promise((resolveFunc, rejectFunc) => {
-            const loader = new TextureLoader();
+            const loader = new THREE.TextureLoader();
             // eslint-disable-next-line prefer-promise-reject-errors
             loader.load(dataUrl, res => resolveFunc(res), undefined, () => rejectFunc());
          });
@@ -1557,15 +1578,15 @@ function create3DLineMaterial(painter, arg, is_v7 = false) {
    const style = lstyle ? getSvgLineStyle(lstyle) : '',
          dash = style ? style.split(',') : [],
          material = (dash && dash.length >= 2)
-            ? new LineDashedMaterial({ color, dashSize: parseInt(dash[0]), gapSize: parseInt(dash[1]) })
-            : new LineBasicMaterial({ color });
+            ? new THREE.LineDashedMaterial({ color, dashSize: parseInt(dash[0]), gapSize: parseInt(dash[1]) })
+            : new THREE.LineBasicMaterial({ color });
 
    if (lwidth && (lwidth > 1)) material.linewidth = lwidth;
 
    return material;
 }
 
-export { assign3DHandler, disposeThreejsObject, createOrbitControl,
+export { THREE, assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, create3DLineMaterial, Box3D, getMaterialArgs,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind, cleanupRender3D,
          HelveticerRegularFont, InteractiveControl, PointsControl, PointsCreator, createSVGRenderer };
