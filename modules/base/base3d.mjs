@@ -18,7 +18,7 @@ import { getSvgLineStyle } from './TAttLineHandler.mjs';
 
 const THREE = {
    REVISION, DoubleSide, FrontSide, Object3D, Color, Vector2, Vector3, Matrix4, Line3, Raycaster,
-   WebGLRenderer, WebGLRenderTarget, SVGRenderer, Font,
+   WebGLRenderer, WebGLRenderTarget,
    BufferGeometry, BufferAttribute, Float32BufferAttribute, Mesh, MeshBasicMaterial, MeshLambertMaterial,
    LineSegments, LineDashedMaterial, LineBasicMaterial, Points, PointsMaterial,
    Plane, Scene, PerspectiveCamera, OrthographicCamera, ShapeUtils,
@@ -28,15 +28,27 @@ const THREE = {
    AmbientLight, HemisphereLight, DirectionalLight,
    CanvasTexture, TextureLoader,
 
-   TextGeometry, EffectComposer, RenderPass, UnrealBloomPass, OrbitControls
+   Font, OrbitControls, SVGRenderer, TextGeometry, EffectComposer, RenderPass, UnrealBloomPass
 };
 
-/** @summary Use old three.js version compatible with node.js gl package */
-function useThreeJsForNode() {
-   return Promise.all([import('../r162/three.mjs'), import('../r162/three_addons.mjs')]).then(arr => {
-      Object.assign(THREE, arr[0], arr[1]);
-      return THREE;
-   });
+/** @summary Use old three.js version compatible with node.js gl package
+ * @desc In node.js script install 0.162.0 version of three and do following
+ * @example
+ * import * as three from 'three';
+ * import * as three_addons from 'three/addons';
+ * import { useThreeJs } from 'jsroot';
+ * useThreeJs(three, three_addons); */
+function useThreeJs(three, three_addons) {
+   if (!three?.REVISION || !three?.Mesh)
+      console.error('No REVISION specified - is it THREE?');
+   else {
+      if ((three.REVISION > 162) && isNodeJs())
+         console.log(`Newer THREE revision ${three.REVISION} is not supports WebGL v1 and cannot be used with node.js`);
+
+      Object.assign(THREE, three, three_addons);
+   }
+
+   return THREE;
 }
 
 /** @summary Create three.js Font with Helvetica
@@ -1594,7 +1606,7 @@ function create3DLineMaterial(painter, arg, is_v7 = false) {
    return material;
 }
 
-export { THREE, useThreeJsForNode,
+export { THREE, useThreeJs,
          assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, create3DLineMaterial, Box3D, getMaterialArgs,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind, cleanupRender3D,
