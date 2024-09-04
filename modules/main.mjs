@@ -11,7 +11,7 @@ export * from './base/ObjectPainter.mjs';
 
 export { getColor, extendRootColors, createRootColors } from './base/colors.mjs';
 
-export { THREE, useThreeJs } from './base/base3d.mjs';
+export { THREE } from './base/base3d.mjs';
 
 export { loadMathjax } from './base/latex.mjs';
 

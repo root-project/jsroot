@@ -31,26 +31,6 @@ const THREE = {
    Font, OrbitControls, SVGRenderer, TextGeometry, EffectComposer, RenderPass, UnrealBloomPass
 };
 
-/** @summary Use old three.js version compatible with node.js gl package
- * @desc In node.js script install 0.162.0 version of three and do following
- * @example
- * import * as three from 'three';
- * import * as three_addons from 'three/addons';
- * import { useThreeJs } from 'jsroot';
- * useThreeJs(three, three_addons); */
-function useThreeJs(three, three_addons) {
-   if (!three?.REVISION || !three?.Mesh)
-      console.error('No REVISION specified - is it THREE?');
-   else {
-      if ((three.REVISION > 162) && isNodeJs())
-         console.log(`Newer THREE revision ${three.REVISION} is not supports WebGL v1 and cannot be used with node.js`);
-
-      Object.assign(THREE, three, three_addons);
-   }
-
-   return THREE;
-}
-
 async function importThreeJs() {
    if (THREE.REVISION === 162)
       return THREE;
@@ -1628,8 +1608,7 @@ function createTextGeometry(lbl, size) {
 }
 
 
-export { THREE, useThreeJs,
-         assign3DHandler, disposeThreejsObject, createOrbitControl,
+export { THREE, assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, create3DLineMaterial, Box3D, getMaterialArgs,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind, cleanupRender3D,
          HelveticerRegularFont, createTextGeometry, InteractiveControl, PointsControl, PointsCreator, createSVGRenderer };
