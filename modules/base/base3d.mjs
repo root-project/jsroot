@@ -51,6 +51,15 @@ function useThreeJs(three, three_addons) {
    return THREE;
 }
 
+async function importThreeJs() {
+   if (THREE.REVISION === 162)
+      return THREE;
+   return Promise.all([ import('three'), import('three/addons')]).then(arr => {
+      Object.assign(THREE, arr[0], arr[1]);
+      return THREE;
+   });
+}
+
 /** @summary Create three.js Font with Helvetica
   * @private */
 function createHelveticaFont() {
@@ -499,7 +508,7 @@ async function createRender3D(width, height, render3d, args) {
       promise = Promise.resolve(r);
    } else if (isNodeJs()) {
       // try to use WebGL inside node.js - need to create headless context
-      promise = import('canvas').then(node_canvas => {
+      promise = importThreeJs().then(() => import('canvas')).then(node_canvas => {
          args.canvas = node_canvas.default.createCanvas(width, height);
          args.canvas.addEventListener = () => {}; // dummy
          args.canvas.removeEventListener = () => {}; // dummy
