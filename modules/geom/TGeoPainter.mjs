@@ -7,7 +7,7 @@ import { GUI } from '../gui/lil-gui.mjs';
 import { THREE, assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, InteractiveControl, PointsCreator,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind, cleanupRender3D,
-         HelveticerRegularFont } from '../base/base3d.mjs';
+         createTextGeometry } from '../base/base3d.mjs';
 import { getColor, getRootColors } from '../base/colors.mjs';
 import { ObjectPainter, DrawOptions } from '../base/ObjectPainter.mjs';
 import { createMenu, closeMenu } from '../gui/menu.mjs';
@@ -4435,7 +4435,7 @@ class TGeoPainter extends ObjectPainter {
          buf[pos+ii[2]] = z ?? gridZ;
          pos += 3;
       }, createText = (lbl, size) => {
-         const text3d = new THREE.TextGeometry(lbl, { font: HelveticerRegularFont, size, height: 0, curveSegments: 5 });
+         const text3d = createTextGeometry(lbl, size);
          text3d.computeBoundingBox();
          text3d._width = text3d.boundingBox.max.x - text3d.boundingBox.min.x;
          text3d._height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
@@ -4661,7 +4661,7 @@ class TGeoPainter extends ObjectPainter {
             }
          }
 
-         let text3d = new THREE.TextGeometry(lbl, { font: HelveticerRegularFont, size: text_size, height: 0, curveSegments: 5 });
+         let text3d = createTextGeometry(lbl, text_size);
          mesh = new THREE.Mesh(text3d, textMaterial);
          mesh._no_clip = true; // skip from clipping
 
@@ -4743,7 +4743,7 @@ class TGeoPainter extends ObjectPainter {
 
          container.add(mesh);
 
-         text3d = new THREE.TextGeometry(valueToString(box.min[name]), { font: HelveticerRegularFont, size: text_size, height: 0, curveSegments: 5 });
+         text3d = createTextGeometry(valueToString(box.min[name]), text_size);
 
          mesh = new THREE.Mesh(text3d, textMaterial);
          mesh._no_clip = true; // skip from clipping

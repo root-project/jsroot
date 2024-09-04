@@ -1606,8 +1606,21 @@ function create3DLineMaterial(painter, arg, is_v7 = false) {
    return material;
 }
 
+/** @summary Create plain text geometry
+  * @private */
+function createTextGeometry(lbl, size) {
+   const geom_args = { font: HelveticerRegularFont, size, height: 0, curveSegments: 5 };
+   if (THREE.REVISION > 162)
+      geom_args.depth = 0;
+   else
+      geom_args.height = 0;
+
+   return new THREE.TextGeometry(lbl, geom_args);
+}
+
+
 export { THREE, useThreeJs,
          assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, create3DLineMaterial, Box3D, getMaterialArgs,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind, cleanupRender3D,
-         HelveticerRegularFont, InteractiveControl, PointsControl, PointsCreator, createSVGRenderer };
+         HelveticerRegularFont, createTextGeometry, InteractiveControl, PointsControl, PointsCreator, createSVGRenderer };
