@@ -9,9 +9,15 @@ import { kCARTESIAN, kPOLAR, kCYLINDRICAL, kSPHERICAL, kRAPIDITY } from '../hist
 import { buildHist2dContour, buildSurf3D } from '../hist2d/TH2Painter.mjs';
 
 
-function createTextGeometry(painter, lbl, size) {
+function createLatexGeometry(painter, lbl, size) {
+   const geom_args = { font: HelveticerRegularFont, size, height: 0, curveSegments: 5 };
+   if (THREE.REVISION > 162)
+      geom_args.depth = 0;
+   else
+      geom_args.height = 0;
+
    if (isPlainText(lbl))
-      return new THREE.TextGeometry(translateLaTeX(lbl), { font: HelveticerRegularFont, size, height: 0, curveSegments: 5 });
+      return new THREE.TextGeometry(translateLaTeX(lbl), geom_args);
 
    const font_size = size * 100, geoms = [];
    let stroke_width = 5;
@@ -124,7 +130,8 @@ function createTextGeometry(painter, lbl, size) {
 
       text(v) {
          if (this.kind === 'text') {
-            this.geom = new THREE.TextGeometry(v, { font: HelveticerRegularFont, size: Math.round(0.01*this.font_size), height: 0, curveSegments: 5 });
+            geom_args.size = Math.round(0.01*this.font_size);
+            this.geom = new THREE.TextGeometry(v, geom_args);
             geoms.push(this.geom);
          }
       }
@@ -136,8 +143,10 @@ function createTextGeometry(painter, lbl, size) {
 
    produceLatex(painter, node, arg);
 
-   if (!geoms.length)
-      return new THREE.TextGeometry(translateLaTeX(lbl), { font: HelveticerRegularFont, size, height: 0, curveSegments: 5 });
+   if (!geoms.length) {
+      geom_args.size = size;
+      return new THREE.TextGeometry(translateLaTeX(lbl), geom_args);
+   }
 
    node.translate(); // apply translate attributes
 
@@ -938,7 +947,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          const mod = xticks.get_modifier();
          if (mod?.fLabText) lbl = mod.fLabText;
 
-         const text3d = createTextGeometry(this, lbl, this.x_handle.labelsFont.size);
+         const text3d = createLatexGeometry(this, lbl, this.x_handle.labelsFont.size);
          text3d.computeBoundingBox();
          const draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
                draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
@@ -969,7 +978,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    }
 
    if (this.x_handle.fTitle && opts.draw) {
-      const text3d = createTextGeometry(this, this.x_handle.fTitle, this.x_handle.titleFont.size);
+      const text3d = createLatexGeometry(this, this.x_handle.fTitle, this.x_handle.titleFont.size);
       text3d.computeBoundingBox();
       text3d.center = this.x_handle.titleCenter;
       text3d.opposite = this.x_handle.titleOpposite;
@@ -1164,7 +1173,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          const mod = yticks.get_modifier();
          if (mod?.fLabText) lbl = mod.fLabText;
 
-         const text3d = createTextGeometry(this, lbl, this.y_handle.labelsFont.size);
+         const text3d = createLatexGeometry(this, lbl, this.y_handle.labelsFont.size);
          text3d.computeBoundingBox();
          const draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
@@ -1192,7 +1201,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    }
 
    if (this.y_handle.fTitle && opts.draw) {
-      const text3d = createTextGeometry(this, this.y_handle.fTitle, this.y_handle.titleFont.size);
+      const text3d = createLatexGeometry(this, this.y_handle.fTitle, this.y_handle.titleFont.size);
       text3d.computeBoundingBox();
       text3d.center = this.y_handle.titleCenter;
       text3d.opposite = this.y_handle.titleOpposite;
@@ -1275,7 +1284,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          const mod = zticks.get_modifier();
          if (mod?.fLabText) lbl = mod.fLabText;
 
-         const text3d = createTextGeometry(this, lbl, this.z_handle.labelsFont.size);
+         const text3d = createLatexGeometry(this, lbl, this.z_handle.labelsFont.size);
          text3d.computeBoundingBox();
          const draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
@@ -1360,7 +1369,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       });
 
       if (this.z_handle.fTitle && opts.draw) {
-         const text3d = createTextGeometry(this, this.z_handle.fTitle, this.z_handle.titleFont.size);
+         const text3d = createLatexGeometry(this, this.z_handle.fTitle, this.z_handle.titleFont.size);
          text3d.computeBoundingBox();
          const draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              posz = this.z_handle.titleCenter ? (grmaxz + grminz - draw_width)/2 : (this.z_handle.titleOpposite ? grminz : grmaxz - draw_width);
