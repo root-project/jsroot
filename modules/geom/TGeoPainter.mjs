@@ -4508,7 +4508,7 @@ class TGeoPainter extends ObjectPainter {
                lineMaterial = new THREE.LineBasicMaterial({ color: new Color('black') }),
                gridMaterial1 = show_grid ? new THREE.LineBasicMaterial({ color: new Color(0xbbbbbb) }) : null,
                gridMaterial2 = show_grid ? new THREE.LineDashedMaterial({ color: new Color(0xdddddd), dashSize: grid_gap, gapSize: grid_gap }) : null,
-               textMaterial = THREE.BasicMaterial({ color: 'black', vertexColors: false }),
+               textMaterial = new THREE.MeshBasicMaterial({ color: 'black', vertexColors: false }),
                xticks = x_handle.createTicks();
 
          while (xticks.next()) {
