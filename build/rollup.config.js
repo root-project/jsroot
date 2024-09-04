@@ -6,7 +6,11 @@ import ascii from 'rollup-plugin-ascii';
 import ignore from 'rollup-plugin-ignore';
 import meta from '../package.json' assert { type: 'json' };
 
-const ignore_jsroot_modules = ['./base/lzma.mjs', './base/zstd.mjs', '../../scripts/jspdf.es.min.js', '../../scripts/svg2pdf.es.min.js'];
+const ignore_jsroot_modules = [
+  './base/lzma.mjs', './base/zstd.mjs', './base/zstd.mjs',
+  '../../scripts/jspdf.es.min.js', '../../scripts/svg2pdf.es.min.js',
+  '../r162/three.mjs',  '../r162/three_addons.mjs'
+];
 
 const external_node_modules = ['mathjax', 'jsdom', 'fs', 'canvas', 'tmp', 'zlib', 'xhr2', '@oneidentity/zstd-js', 'gl'];
 
@@ -73,28 +77,6 @@ const config_geom = {
     file: 'build/geom.mjs',
     inlineDynamicImports: true
   }
-}
-
-const config_jsroot_r162 = {
-  ...config,
-  input: "libs/r162/main.mjs",
-  output: {
-    ...config.output,
-    format: 'es',
-    file: 'build/jsroot_r162.mjs',
-    inlineDynamicImports: true
-  },
-  external: external_node_modules,
-  plugins: [
-    modify({
-      "from '../three.mjs'": "from '../../libs/r162/three.mjs'",
-      "from '../three_addons.mjs'": "from '../../libs/r162/three_addons.mjs'",
-      'import.meta?.url': importMetaUrlPolyfill
-    }),
-    ignore(ignore_jsroot_modules),
-    json(),
-    ascii()
-  ],
 }
 
 const config_geom_nothreejs = {
@@ -165,7 +147,6 @@ const config_2d_minified = {
 
 export default [
   config,
-  config_jsroot_r162,
   config_hist,
   config_2d,
   config_geom,

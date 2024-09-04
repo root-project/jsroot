@@ -31,6 +31,14 @@ const THREE = {
    TextGeometry, EffectComposer, RenderPass, UnrealBloomPass, OrbitControls
 };
 
+/** @summary Use old three.js version compatible with node.js gl package */
+function useThreeJsForNode() {
+   return Promise.all([import('../r162/three.mjs'), import('../r162/three_addons.mjs')]).then(arr => {
+      Object.assign(THREE, arr[0], arr[1]);
+      return THREE;
+   });
+}
+
 /** @summary Create three.js Font with Helvetica
   * @private */
 function createHelveticaFont() {
@@ -1586,7 +1594,8 @@ function create3DLineMaterial(painter, arg, is_v7 = false) {
    return material;
 }
 
-export { THREE, assign3DHandler, disposeThreejsObject, createOrbitControl,
+export { THREE, useThreeJsForNode,
+         assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, create3DLineMaterial, Box3D, getMaterialArgs,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind, cleanupRender3D,
          HelveticerRegularFont, InteractiveControl, PointsControl, PointsCreator, createSVGRenderer };

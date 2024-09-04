@@ -23,7 +23,6 @@ build/hist.js
 build/hist.min.js
 build/geom.mjs
 build/geom_nothreejs.mjs
-build/jsroot_r162.mjs
 openui5dist
 httpcontrol.C
 httpserver.C

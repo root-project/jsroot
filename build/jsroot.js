@@ -2040,7 +2040,7 @@ function extend(parent, definition) {
   return prototype;
 }
 
-function Color$1() {}
+function Color$2() {}
 
 var darker = 0.7;
 var brighter = 1 / darker;
@@ -2207,7 +2207,7 @@ var named = {
   yellowgreen: 0x9acd32
 };
 
-define(Color$1, color, {
+define(Color$2, color, {
   copy(channels) {
     return Object.assign(new this.constructor, this, channels);
   },
@@ -2267,7 +2267,7 @@ function rgba(r, g, b, a) {
 }
 
 function rgbConvert(o) {
-  if (!(o instanceof Color$1)) o = color(o);
+  if (!(o instanceof Color$2)) o = color(o);
   if (!o) return new Rgb;
   o = o.rgb();
   return new Rgb(o.r, o.g, o.b, o.opacity);
@@ -2284,7 +2284,7 @@ function Rgb(r, g, b, opacity) {
   this.opacity = +opacity;
 }
 
-define(Rgb, rgb, extend(Color$1, {
+define(Rgb, rgb, extend(Color$2, {
   brighter(k) {
     k = k == null ? brighter : Math.pow(brighter, k);
     return new Rgb(this.r * k, this.g * k, this.b * k, this.opacity);
@@ -2347,7 +2347,7 @@ function hsla(h, s, l, a) {
 
 function hslConvert(o) {
   if (o instanceof Hsl) return new Hsl(o.h, o.s, o.l, o.opacity);
-  if (!(o instanceof Color$1)) o = color(o);
+  if (!(o instanceof Color$2)) o = color(o);
   if (!o) return new Hsl;
   if (o instanceof Hsl) return o;
   o = o.rgb();
@@ -2382,7 +2382,7 @@ function Hsl(h, s, l, opacity) {
   this.opacity = +opacity;
 }
 
-define(Hsl, hsl, extend(Color$1, {
+define(Hsl, hsl, extend(Color$2, {
   brighter(k) {
     k = k == null ? brighter : Math.pow(brighter, k);
     return new Hsl(this.h, this.s, this.l * k, this.opacity);
@@ -2474,7 +2474,7 @@ function Lab(l, a, b, opacity) {
   this.opacity = +opacity;
 }
 
-define(Lab, lab, extend(Color$1, {
+define(Lab, lab, extend(Color$2, {
   brighter(k) {
     return new Lab(this.l + K * (k == null ? 1 : k), this.a, this.b, this.opacity);
   },
@@ -2538,7 +2538,7 @@ function hcl2lab(o) {
   return new Lab(o.l, Math.cos(h) * o.c, Math.sin(h) * o.c, o.opacity);
 }
 
-define(Hcl, hcl, extend(Color$1, {
+define(Hcl, hcl, extend(Color$2, {
   brighter(k) {
     return new Hcl(this.h, this.c, this.l + K * (k == null ? 1 : k), this.opacity);
   },
@@ -2584,7 +2584,7 @@ function Cubehelix(h, s, l, opacity) {
   this.opacity = +opacity;
 }
 
-define(Cubehelix, cubehelix, extend(Color$1, {
+define(Cubehelix, cubehelix, extend(Color$2, {
   brighter(k) {
     k = k == null ? brighter : Math.pow(brighter, k);
     return new Cubehelix(this.h, this.s, this.l * k, this.opacity);
@@ -16902,7 +16902,7 @@ function hue2rgb( p, q, t ) {
 
 }
 
-class Color {
+let Color$1 = class Color {
 
 	constructor( r, g, b ) {
 
@@ -17475,11 +17475,11 @@ class Color {
 
 	}
 
-}
+};
 
-const _color = /*@__PURE__*/ new Color();
+const _color = /*@__PURE__*/ new Color$1();
 
-Color.NAMES = _colorKeywords;
+Color$1.NAMES = _colorKeywords;
 
 class Quaternion {
 
@@ -18164,7 +18164,7 @@ class Quaternion {
 
 }
 
-class Vector3 {
+let Vector3$2 = class Vector3 {
 
 	constructor( x = 0, y = 0, z = 0 ) {
 
@@ -18879,14 +18879,14 @@ class Vector3 {
 
 	}
 
-}
+};
 
-const _vector$8 = /*@__PURE__*/ new Vector3();
+const _vector$8 = /*@__PURE__*/ new Vector3$2();
 const _quaternion$2 = /*@__PURE__*/ new Quaternion();
 
 class Box3 {
 
-	constructor( min = new Vector3( + Infinity, + Infinity, + Infinity ), max = new Vector3( - Infinity, - Infinity, - Infinity ) ) {
+	constructor( min = new Vector3$2( + Infinity, + Infinity, + Infinity ), max = new Vector3$2( - Infinity, - Infinity, - Infinity ) ) {
 
 		this.isBox3 = true;
 
@@ -19358,36 +19358,36 @@ class Box3 {
 }
 
 const _points = [
-	/*@__PURE__*/ new Vector3(),
-	/*@__PURE__*/ new Vector3(),
-	/*@__PURE__*/ new Vector3(),
-	/*@__PURE__*/ new Vector3(),
-	/*@__PURE__*/ new Vector3(),
-	/*@__PURE__*/ new Vector3(),
-	/*@__PURE__*/ new Vector3(),
-	/*@__PURE__*/ new Vector3()
+	/*@__PURE__*/ new Vector3$2(),
+	/*@__PURE__*/ new Vector3$2(),
+	/*@__PURE__*/ new Vector3$2(),
+	/*@__PURE__*/ new Vector3$2(),
+	/*@__PURE__*/ new Vector3$2(),
+	/*@__PURE__*/ new Vector3$2(),
+	/*@__PURE__*/ new Vector3$2(),
+	/*@__PURE__*/ new Vector3$2()
 ];
 
-const _vector$7 = /*@__PURE__*/ new Vector3();
+const _vector$7 = /*@__PURE__*/ new Vector3$2();
 
 const _box$3 = /*@__PURE__*/ new Box3();
 
 // triangle centered vertices
 
-const _v0$2 = /*@__PURE__*/ new Vector3();
-const _v1$6 = /*@__PURE__*/ new Vector3();
-const _v2$3 = /*@__PURE__*/ new Vector3();
+const _v0$2 = /*@__PURE__*/ new Vector3$2();
+const _v1$6 = /*@__PURE__*/ new Vector3$2();
+const _v2$3 = /*@__PURE__*/ new Vector3$2();
 
 // triangle edge vectors
 
-const _f0 = /*@__PURE__*/ new Vector3();
-const _f1 = /*@__PURE__*/ new Vector3();
-const _f2 = /*@__PURE__*/ new Vector3();
+const _f0 = /*@__PURE__*/ new Vector3$2();
+const _f1 = /*@__PURE__*/ new Vector3$2();
+const _f2 = /*@__PURE__*/ new Vector3$2();
 
-const _center = /*@__PURE__*/ new Vector3();
-const _extents = /*@__PURE__*/ new Vector3();
-const _triangleNormal = /*@__PURE__*/ new Vector3();
-const _testAxis = /*@__PURE__*/ new Vector3();
+const _center = /*@__PURE__*/ new Vector3$2();
+const _extents = /*@__PURE__*/ new Vector3$2();
+const _triangleNormal = /*@__PURE__*/ new Vector3$2();
+const _testAxis = /*@__PURE__*/ new Vector3$2();
 
 function satForAxes( axes, v0, v1, v2, extents ) {
 
@@ -19416,12 +19416,12 @@ function satForAxes( axes, v0, v1, v2, extents ) {
 }
 
 const _box$2 = /*@__PURE__*/ new Box3();
-const _v1$5 = /*@__PURE__*/ new Vector3();
-const _v2$2 = /*@__PURE__*/ new Vector3();
+const _v1$5 = /*@__PURE__*/ new Vector3$2();
+const _v2$2 = /*@__PURE__*/ new Vector3$2();
 
 class Sphere {
 
-	constructor( center = new Vector3(), radius = - 1 ) {
+	constructor( center = new Vector3$2(), radius = - 1 ) {
 
 		this.isSphere = true;
 
@@ -19656,13 +19656,13 @@ class Sphere {
 
 }
 
-const _vector1 = /*@__PURE__*/ new Vector3();
-const _vector2$1 = /*@__PURE__*/ new Vector3();
+const _vector1 = /*@__PURE__*/ new Vector3$2();
+const _vector2$1 = /*@__PURE__*/ new Vector3$2();
 const _normalMatrix = /*@__PURE__*/ new Matrix3();
 
 class Plane {
 
-	constructor( normal = new Vector3( 1, 0, 0 ), constant = 0 ) {
+	constructor( normal = new Vector3$2( 1, 0, 0 ), constant = 0 ) {
 
 		this.isPlane = true;
 
@@ -19858,7 +19858,7 @@ class Plane {
 }
 
 const _sphere$6 = /*@__PURE__*/ new Sphere();
-const _vector$6 = /*@__PURE__*/ new Vector3();
+const _vector$6 = /*@__PURE__*/ new Vector3$2();
 
 class Frustum {
 
@@ -20036,7 +20036,7 @@ class Frustum {
 
 }
 
-class Matrix4 {
+let Matrix4$2 = class Matrix4 {
 
 	constructor( n11, n12, n13, n14, n21, n22, n23, n24, n31, n32, n33, n34, n41, n42, n43, n44 ) {
 
@@ -20937,15 +20937,15 @@ class Matrix4 {
 
 	}
 
-}
+};
 
-const _v1$4 = /*@__PURE__*/ new Vector3();
-const _m1$4 = /*@__PURE__*/ new Matrix4();
-const _zero = /*@__PURE__*/ new Vector3( 0, 0, 0 );
-const _one = /*@__PURE__*/ new Vector3( 1, 1, 1 );
-const _x = /*@__PURE__*/ new Vector3();
-const _y = /*@__PURE__*/ new Vector3();
-const _z = /*@__PURE__*/ new Vector3();
+const _v1$4 = /*@__PURE__*/ new Vector3$2();
+const _m1$4 = /*@__PURE__*/ new Matrix4$2();
+const _zero = /*@__PURE__*/ new Vector3$2( 0, 0, 0 );
+const _one = /*@__PURE__*/ new Vector3$2( 1, 1, 1 );
+const _x = /*@__PURE__*/ new Vector3$2();
+const _y = /*@__PURE__*/ new Vector3$2();
+const _z = /*@__PURE__*/ new Vector3$2();
 
 function WebGLAnimation() {
 
@@ -21226,7 +21226,7 @@ function WebGLAttributes( gl, capabilities ) {
 
 }
 
-const _vector$5 = /*@__PURE__*/ new Vector3();
+const _vector$5 = /*@__PURE__*/ new Vector3$2();
 const _vector2 = /*@__PURE__*/ new Vector2();
 
 class BufferAttribute {
@@ -21640,7 +21640,7 @@ class Float32BufferAttribute extends BufferAttribute {
 
 }
 
-const _matrix$2 = /*@__PURE__*/ new Matrix4();
+const _matrix$2 = /*@__PURE__*/ new Matrix4$2();
 const _quaternion$1 = /*@__PURE__*/ new Quaternion();
 
 class Euler {
@@ -22010,18 +22010,18 @@ class Layers {
 
 let _object3DId = 0;
 
-const _v1$3 = /*@__PURE__*/ new Vector3();
+const _v1$3 = /*@__PURE__*/ new Vector3$2();
 const _q1 = /*@__PURE__*/ new Quaternion();
-const _m1$3 = /*@__PURE__*/ new Matrix4();
-const _target = /*@__PURE__*/ new Vector3();
+const _m1$3 = /*@__PURE__*/ new Matrix4$2();
+const _target = /*@__PURE__*/ new Vector3$2();
 
-const _position$1 = /*@__PURE__*/ new Vector3();
-const _scale = /*@__PURE__*/ new Vector3();
+const _position$1 = /*@__PURE__*/ new Vector3$2();
+const _scale = /*@__PURE__*/ new Vector3$2();
 const _quaternion = /*@__PURE__*/ new Quaternion();
 
-const _xAxis = /*@__PURE__*/ new Vector3( 1, 0, 0 );
-const _yAxis = /*@__PURE__*/ new Vector3( 0, 1, 0 );
-const _zAxis = /*@__PURE__*/ new Vector3( 0, 0, 1 );
+const _xAxis = /*@__PURE__*/ new Vector3$2( 1, 0, 0 );
+const _yAxis = /*@__PURE__*/ new Vector3$2( 0, 1, 0 );
+const _zAxis = /*@__PURE__*/ new Vector3$2( 0, 0, 1 );
 
 const _addedEvent = { type: 'added' };
 const _removedEvent = { type: 'removed' };
@@ -22049,10 +22049,10 @@ class Object3D extends EventDispatcher {
 
 		this.up = Object3D.DEFAULT_UP.clone();
 
-		const position = new Vector3();
+		const position = new Vector3$2();
 		const rotation = new Euler();
 		const quaternion = new Quaternion();
-		const scale = new Vector3( 1, 1, 1 );
+		const scale = new Vector3$2( 1, 1, 1 );
 
 		function onRotationChange() {
 
@@ -22091,15 +22091,15 @@ class Object3D extends EventDispatcher {
 				value: scale
 			},
 			modelViewMatrix: {
-				value: new Matrix4()
+				value: new Matrix4$2()
 			},
 			normalMatrix: {
 				value: new Matrix3()
 			}
 		} );
 
-		this.matrix = new Matrix4();
-		this.matrixWorld = new Matrix4();
+		this.matrix = new Matrix4$2();
+		this.matrixWorld = new Matrix4$2();
 
 		this.matrixAutoUpdate = Object3D.DEFAULT_MATRIX_AUTO_UPDATE;
 
@@ -23013,18 +23013,18 @@ class Object3D extends EventDispatcher {
 
 }
 
-Object3D.DEFAULT_UP = /*@__PURE__*/ new Vector3( 0, 1, 0 );
+Object3D.DEFAULT_UP = /*@__PURE__*/ new Vector3$2( 0, 1, 0 );
 Object3D.DEFAULT_MATRIX_AUTO_UPDATE = true;
 Object3D.DEFAULT_MATRIX_WORLD_AUTO_UPDATE = true;
 
 let _id$1 = 0;
 
-const _m1$2 = /*@__PURE__*/ new Matrix4();
+const _m1$2 = /*@__PURE__*/ new Matrix4$2();
 const _obj = /*@__PURE__*/ new Object3D();
-const _offset = /*@__PURE__*/ new Vector3();
+const _offset = /*@__PURE__*/ new Vector3$2();
 const _box$1 = /*@__PURE__*/ new Box3();
 const _boxMorphTargets = /*@__PURE__*/ new Box3();
-const _vector$4 = /*@__PURE__*/ new Vector3();
+const _vector$4 = /*@__PURE__*/ new Vector3$2();
 
 class BufferGeometry extends EventDispatcher {
 
@@ -23310,8 +23310,8 @@ class BufferGeometry extends EventDispatcher {
 			console.error( 'THREE.BufferGeometry.computeBoundingBox(): GLBufferAttribute requires a manual bounding box.', this );
 
 			this.boundingBox.set(
-				new Vector3( - Infinity, - Infinity, - Infinity ),
-				new Vector3( + Infinity, + Infinity, + Infinity )
+				new Vector3$2( - Infinity, - Infinity, - Infinity ),
+				new Vector3$2( + Infinity, + Infinity, + Infinity )
 			);
 
 			return;
@@ -23379,7 +23379,7 @@ class BufferGeometry extends EventDispatcher {
 
 			console.error( 'THREE.BufferGeometry.computeBoundingSphere(): GLBufferAttribute requires a manual bounding sphere.', this );
 
-			this.boundingSphere.set( new Vector3(), Infinity );
+			this.boundingSphere.set( new Vector3$2(), Infinity );
 
 			return;
 
@@ -23510,21 +23510,21 @@ class BufferGeometry extends EventDispatcher {
 
 		for ( let i = 0; i < positionAttribute.count; i ++ ) {
 
-			tan1[ i ] = new Vector3();
-			tan2[ i ] = new Vector3();
+			tan1[ i ] = new Vector3$2();
+			tan2[ i ] = new Vector3$2();
 
 		}
 
-		const vA = new Vector3(),
-			vB = new Vector3(),
-			vC = new Vector3(),
+		const vA = new Vector3$2(),
+			vB = new Vector3$2(),
+			vC = new Vector3$2(),
 
 			uvA = new Vector2(),
 			uvB = new Vector2(),
 			uvC = new Vector2(),
 
-			sdir = new Vector3(),
-			tdir = new Vector3();
+			sdir = new Vector3$2(),
+			tdir = new Vector3$2();
 
 		function handleTriangle( a, b, c ) {
 
@@ -23591,8 +23591,8 @@ class BufferGeometry extends EventDispatcher {
 
 		}
 
-		const tmp = new Vector3(), tmp2 = new Vector3();
-		const n = new Vector3(), n2 = new Vector3();
+		const tmp = new Vector3$2(), tmp2 = new Vector3$2();
+		const n = new Vector3$2(), n2 = new Vector3$2();
 
 		function handleVertex( v ) {
 
@@ -23661,9 +23661,9 @@ class BufferGeometry extends EventDispatcher {
 
 			}
 
-			const pA = new Vector3(), pB = new Vector3(), pC = new Vector3();
-			const nA = new Vector3(), nB = new Vector3(), nC = new Vector3();
-			const cb = new Vector3(), ab = new Vector3();
+			const pA = new Vector3$2(), pB = new Vector3$2(), pC = new Vector3$2();
+			const nA = new Vector3$2(), nB = new Vector3$2(), nC = new Vector3$2();
+			const cb = new Vector3$2(), ab = new Vector3$2();
 
 			// indexed elements
 
@@ -24145,7 +24145,7 @@ class BoxGeometry extends BufferGeometry {
 			let vertexCounter = 0;
 			let groupCount = 0;
 
-			const vector = new Vector3();
+			const vector = new Vector3$2();
 
 			// generate vertices, normals and uvs
 
@@ -24377,7 +24377,7 @@ class Material extends EventDispatcher {
 		this.blendSrcAlpha = null;
 		this.blendDstAlpha = null;
 		this.blendEquationAlpha = null;
-		this.blendColor = new Color( 0, 0, 0 );
+		this.blendColor = new Color$1( 0, 0, 0 );
 		this.blendAlpha = 0;
 
 		this.depthFunc = LessEqualDepth;
@@ -25150,18 +25150,18 @@ class ShaderMaterial extends Material {
 
 }
 
-const _vector$3 = /*@__PURE__*/ new Vector3();
-const _segCenter = /*@__PURE__*/ new Vector3();
-const _segDir = /*@__PURE__*/ new Vector3();
-const _diff = /*@__PURE__*/ new Vector3();
+const _vector$3 = /*@__PURE__*/ new Vector3$2();
+const _segCenter = /*@__PURE__*/ new Vector3$2();
+const _segDir = /*@__PURE__*/ new Vector3$2();
+const _diff = /*@__PURE__*/ new Vector3$2();
 
-const _edge1 = /*@__PURE__*/ new Vector3();
-const _edge2 = /*@__PURE__*/ new Vector3();
-const _normal$1 = /*@__PURE__*/ new Vector3();
+const _edge1 = /*@__PURE__*/ new Vector3$2();
+const _edge2 = /*@__PURE__*/ new Vector3$2();
+const _normal$1 = /*@__PURE__*/ new Vector3$2();
 
 class Ray {
 
-	constructor( origin = new Vector3(), direction = new Vector3( 0, 0, - 1 ) ) {
+	constructor( origin = new Vector3$2(), direction = new Vector3$2( 0, 0, - 1 ) ) {
 
 		this.origin = origin;
 		this.direction = direction;
@@ -25640,21 +25640,21 @@ class Ray {
 
 }
 
-const _v0$1 = /*@__PURE__*/ new Vector3();
-const _v1$2 = /*@__PURE__*/ new Vector3();
-const _v2$1 = /*@__PURE__*/ new Vector3();
-const _v3$1 = /*@__PURE__*/ new Vector3();
+const _v0$1 = /*@__PURE__*/ new Vector3$2();
+const _v1$2 = /*@__PURE__*/ new Vector3$2();
+const _v2$1 = /*@__PURE__*/ new Vector3$2();
+const _v3$1 = /*@__PURE__*/ new Vector3$2();
 
-const _vab = /*@__PURE__*/ new Vector3();
-const _vac = /*@__PURE__*/ new Vector3();
-const _vbc = /*@__PURE__*/ new Vector3();
-const _vap = /*@__PURE__*/ new Vector3();
-const _vbp = /*@__PURE__*/ new Vector3();
-const _vcp = /*@__PURE__*/ new Vector3();
+const _vab = /*@__PURE__*/ new Vector3$2();
+const _vac = /*@__PURE__*/ new Vector3$2();
+const _vbc = /*@__PURE__*/ new Vector3$2();
+const _vap = /*@__PURE__*/ new Vector3$2();
+const _vbp = /*@__PURE__*/ new Vector3$2();
+const _vcp = /*@__PURE__*/ new Vector3$2();
 
 class Triangle {
 
-	constructor( a = new Vector3(), b = new Vector3(), c = new Vector3() ) {
+	constructor( a = new Vector3$2(), b = new Vector3$2(), c = new Vector3$2() ) {
 
 		this.a = a;
 		this.b = b;
@@ -25958,7 +25958,7 @@ class MeshBasicMaterial extends Material {
 
 		this.type = 'MeshBasicMaterial';
 
-		this.color = new Color( 0xffffff ); // emissive
+		this.color = new Color$1( 0xffffff ); // emissive
 
 		this.map = null;
 
@@ -26026,28 +26026,28 @@ class MeshBasicMaterial extends Material {
 
 }
 
-const _inverseMatrix$3 = /*@__PURE__*/ new Matrix4();
+const _inverseMatrix$3 = /*@__PURE__*/ new Matrix4$2();
 const _ray$3 = /*@__PURE__*/ new Ray();
 const _sphere$5 = /*@__PURE__*/ new Sphere();
-const _sphereHitAt = /*@__PURE__*/ new Vector3();
+const _sphereHitAt = /*@__PURE__*/ new Vector3$2();
 
-const _vA$1 = /*@__PURE__*/ new Vector3();
-const _vB$1 = /*@__PURE__*/ new Vector3();
-const _vC$1 = /*@__PURE__*/ new Vector3();
+const _vA$1 = /*@__PURE__*/ new Vector3$2();
+const _vB$1 = /*@__PURE__*/ new Vector3$2();
+const _vC$1 = /*@__PURE__*/ new Vector3$2();
 
-const _tempA = /*@__PURE__*/ new Vector3();
-const _morphA = /*@__PURE__*/ new Vector3();
+const _tempA = /*@__PURE__*/ new Vector3$2();
+const _morphA = /*@__PURE__*/ new Vector3$2();
 
 const _uvA$1 = /*@__PURE__*/ new Vector2();
 const _uvB$1 = /*@__PURE__*/ new Vector2();
 const _uvC$1 = /*@__PURE__*/ new Vector2();
 
-const _normalA = /*@__PURE__*/ new Vector3();
-const _normalB = /*@__PURE__*/ new Vector3();
-const _normalC = /*@__PURE__*/ new Vector3();
+const _normalA = /*@__PURE__*/ new Vector3$2();
+const _normalB = /*@__PURE__*/ new Vector3$2();
+const _normalC = /*@__PURE__*/ new Vector3$2();
 
-const _intersectionPoint = /*@__PURE__*/ new Vector3();
-const _intersectionPointWorld = /*@__PURE__*/ new Vector3();
+const _intersectionPoint = /*@__PURE__*/ new Vector3$2();
+const _intersectionPointWorld = /*@__PURE__*/ new Vector3$2();
 
 class Mesh extends Object3D {
 
@@ -26414,7 +26414,7 @@ function checkGeometryIntersection( object, material, raycaster, ray, uv, uv1, n
 			_normalB.fromBufferAttribute( normal, b );
 			_normalC.fromBufferAttribute( normal, c );
 
-			intersection.normal = Triangle.getInterpolation( _intersectionPoint, _vA$1, _vB$1, _vC$1, _normalA, _normalB, _normalC, new Vector3() );
+			intersection.normal = Triangle.getInterpolation( _intersectionPoint, _vA$1, _vB$1, _vC$1, _normalA, _normalB, _normalC, new Vector3$2() );
 
 			if ( intersection.normal.dot( ray.direction ) > 0 ) {
 
@@ -26428,7 +26428,7 @@ function checkGeometryIntersection( object, material, raycaster, ray, uv, uv1, n
 			a: a,
 			b: b,
 			c: c,
-			normal: new Vector3(),
+			normal: new Vector3$2(),
 			materialIndex: 0
 		};
 
@@ -26880,7 +26880,7 @@ const UniformsLib = {
 
 	common: {
 
-		diffuse: { value: /*@__PURE__*/ new Color( 0xffffff ) },
+		diffuse: { value: /*@__PURE__*/ new Color$1( 0xffffff ) },
 		opacity: { value: 1.0 },
 
 		map: { value: null },
@@ -26984,7 +26984,7 @@ const UniformsLib = {
 		fogDensity: { value: 0.00025 },
 		fogNear: { value: 1 },
 		fogFar: { value: 2000 },
-		fogColor: { value: /*@__PURE__*/ new Color( 0xffffff ) }
+		fogColor: { value: /*@__PURE__*/ new Color$1( 0xffffff ) }
 
 	},
 
@@ -27070,7 +27070,7 @@ const UniformsLib = {
 
 	points: {
 
-		diffuse: { value: /*@__PURE__*/ new Color( 0xffffff ) },
+		diffuse: { value: /*@__PURE__*/ new Color$1( 0xffffff ) },
 		opacity: { value: 1.0 },
 		size: { value: 1.0 },
 		scale: { value: 1.0 },
@@ -27084,7 +27084,7 @@ const UniformsLib = {
 
 	sprite: {
 
-		diffuse: { value: /*@__PURE__*/ new Color( 0xffffff ) },
+		diffuse: { value: /*@__PURE__*/ new Color$1( 0xffffff ) },
 		opacity: { value: 1.0 },
 		center: { value: /*@__PURE__*/ new Vector2( 0.5, 0.5 ) },
 		rotation: { value: 0.0 },
@@ -27131,7 +27131,7 @@ const ShaderLib = {
 			UniformsLib.fog,
 			UniformsLib.lights,
 			{
-				emissive: { value: /*@__PURE__*/ new Color( 0x000000 ) }
+				emissive: { value: /*@__PURE__*/ new Color$1( 0x000000 ) }
 			}
 		] ),
 
@@ -27155,8 +27155,8 @@ const ShaderLib = {
 			UniformsLib.fog,
 			UniformsLib.lights,
 			{
-				emissive: { value: /*@__PURE__*/ new Color( 0x000000 ) },
-				specular: { value: /*@__PURE__*/ new Color( 0x111111 ) },
+				emissive: { value: /*@__PURE__*/ new Color$1( 0x000000 ) },
+				specular: { value: /*@__PURE__*/ new Color$1( 0x111111 ) },
 				shininess: { value: 30 }
 			}
 		] ),
@@ -27182,7 +27182,7 @@ const ShaderLib = {
 			UniformsLib.fog,
 			UniformsLib.lights,
 			{
-				emissive: { value: /*@__PURE__*/ new Color( 0x000000 ) },
+				emissive: { value: /*@__PURE__*/ new Color$1( 0x000000 ) },
 				roughness: { value: 1.0 },
 				metalness: { value: 0.0 },
 				envMapIntensity: { value: 1 } // temporary
@@ -27208,7 +27208,7 @@ const ShaderLib = {
 			UniformsLib.fog,
 			UniformsLib.lights,
 			{
-				emissive: { value: /*@__PURE__*/ new Color( 0x000000 ) }
+				emissive: { value: /*@__PURE__*/ new Color$1( 0x000000 ) }
 			}
 		] ),
 
@@ -27363,7 +27363,7 @@ const ShaderLib = {
 			UniformsLib.common,
 			UniformsLib.displacementmap,
 			{
-				referencePosition: { value: /*@__PURE__*/ new Vector3() },
+				referencePosition: { value: /*@__PURE__*/ new Vector3$2() },
 				nearDistance: { value: 1 },
 				farDistance: { value: 1000 }
 			}
@@ -27380,7 +27380,7 @@ const ShaderLib = {
 			UniformsLib.lights,
 			UniformsLib.fog,
 			{
-				color: { value: /*@__PURE__*/ new Color( 0x00000 ) },
+				color: { value: /*@__PURE__*/ new Color$1( 0x00000 ) },
 				opacity: { value: 1.0 }
 			},
 		] ),
@@ -27415,7 +27415,7 @@ ShaderLib.physical = {
 			iridescenceThicknessMap: { value: null },
 			iridescenceThicknessMapTransform: { value: /*@__PURE__*/ new Matrix3() },
 			sheen: { value: 0 },
-			sheenColor: { value: /*@__PURE__*/ new Color( 0x000000 ) },
+			sheenColor: { value: /*@__PURE__*/ new Color$1( 0x000000 ) },
 			sheenColorMap: { value: null },
 			sheenColorMapTransform: { value: /*@__PURE__*/ new Matrix3() },
 			sheenRoughness: { value: 1 },
@@ -27430,8 +27430,8 @@ ShaderLib.physical = {
 			thicknessMap: { value: null },
 			thicknessMapTransform: { value: /*@__PURE__*/ new Matrix3() },
 			attenuationDistance: { value: 0 },
-			attenuationColor: { value: /*@__PURE__*/ new Color( 0x000000 ) },
-			specularColor: { value: /*@__PURE__*/ new Color( 1, 1, 1 ) },
+			attenuationColor: { value: /*@__PURE__*/ new Color$1( 0x000000 ) },
+			specularColor: { value: /*@__PURE__*/ new Color$1( 1, 1, 1 ) },
 			specularColorMap: { value: null },
 			specularColorMapTransform: { value: /*@__PURE__*/ new Matrix3() },
 			specularIntensity: { value: 1 },
@@ -27450,11 +27450,11 @@ ShaderLib.physical = {
 
 const _rgb = { r: 0, b: 0, g: 0 };
 const _e1$1 = /*@__PURE__*/ new Euler();
-const _m1$1 = /*@__PURE__*/ new Matrix4();
+const _m1$1 = /*@__PURE__*/ new Matrix4$2();
 
 function WebGLBackground( renderer, cubemaps, cubeuvmaps, state, objects, alpha, premultipliedAlpha ) {
 
-	const clearColor = new Color( 0x000000 );
+	const clearColor = new Color$1( 0x000000 );
 	let clearAlpha = alpha === true ? 0 : 1;
 
 	let planeMesh;
@@ -28702,10 +28702,10 @@ class Camera extends Object3D {
 
 		this.type = 'Camera';
 
-		this.matrixWorldInverse = new Matrix4();
+		this.matrixWorldInverse = new Matrix4$2();
 
-		this.projectionMatrix = new Matrix4();
-		this.projectionMatrixInverse = new Matrix4();
+		this.projectionMatrix = new Matrix4$2();
+		this.projectionMatrixInverse = new Matrix4$2();
 
 		this.coordinateSystem = WebGLCoordinateSystem;
 
@@ -28756,7 +28756,7 @@ class Camera extends Object3D {
 
 }
 
-const _v3 = /*@__PURE__*/ new Vector3();
+const _v3 = /*@__PURE__*/ new Vector3$2();
 const _minTarget = /*@__PURE__*/ new Vector2();
 const _maxTarget = /*@__PURE__*/ new Vector2();
 
@@ -29592,7 +29592,7 @@ const EXTRA_LOD_SIGMA = [ 0.125, 0.215, 0.35, 0.446, 0.526, 0.582 ];
 const MAX_SAMPLES = 20;
 
 const _flatCamera = /*@__PURE__*/ new OrthographicCamera();
-const _clearColor = /*@__PURE__*/ new Color();
+const _clearColor = /*@__PURE__*/ new Color$1();
 let _oldTarget = null;
 let _oldActiveCubeFace = 0;
 let _oldActiveMipmapLevel = 0;
@@ -29604,16 +29604,16 @@ const INV_PHI = 1 / PHI;
 // Vertices of a dodecahedron (except the opposites, which represent the
 // same axis), used as axis directions evenly spread on a sphere.
 const _axisDirections = [
-	/*@__PURE__*/ new Vector3( 1, 1, 1 ),
-	/*@__PURE__*/ new Vector3( - 1, 1, 1 ),
-	/*@__PURE__*/ new Vector3( 1, 1, - 1 ),
-	/*@__PURE__*/ new Vector3( - 1, 1, - 1 ),
-	/*@__PURE__*/ new Vector3( 0, PHI, INV_PHI ),
-	/*@__PURE__*/ new Vector3( 0, PHI, - INV_PHI ),
-	/*@__PURE__*/ new Vector3( INV_PHI, 0, PHI ),
-	/*@__PURE__*/ new Vector3( - INV_PHI, 0, PHI ),
-	/*@__PURE__*/ new Vector3( PHI, INV_PHI, 0 ),
-	/*@__PURE__*/ new Vector3( - PHI, INV_PHI, 0 ) ];
+	/*@__PURE__*/ new Vector3$2( 1, 1, 1 ),
+	/*@__PURE__*/ new Vector3$2( - 1, 1, 1 ),
+	/*@__PURE__*/ new Vector3$2( 1, 1, - 1 ),
+	/*@__PURE__*/ new Vector3$2( - 1, 1, - 1 ),
+	/*@__PURE__*/ new Vector3$2( 0, PHI, INV_PHI ),
+	/*@__PURE__*/ new Vector3$2( 0, PHI, - INV_PHI ),
+	/*@__PURE__*/ new Vector3$2( INV_PHI, 0, PHI ),
+	/*@__PURE__*/ new Vector3$2( - INV_PHI, 0, PHI ),
+	/*@__PURE__*/ new Vector3$2( PHI, INV_PHI, 0 ),
+	/*@__PURE__*/ new Vector3$2( - PHI, INV_PHI, 0 ) ];
 
 /**
  * This class generates a Prefiltered, Mipmapped Radiance Environment Map
@@ -30224,7 +30224,7 @@ function _setViewport( target, x, y, width, height ) {
 function _getBlurShader( lodMax, width, height ) {
 
 	const weights = new Float32Array( MAX_SAMPLES );
-	const poleAxis = new Vector3( 0, 1, 0 );
+	const poleAxis = new Vector3$2( 0, 1, 0 );
 	const shaderMaterial = new ShaderMaterial( {
 
 		name: 'SphericalGaussianBlur',
@@ -34908,16 +34908,16 @@ function UniformsCache() {
 
 				case 'DirectionalLight':
 					uniforms = {
-						direction: new Vector3(),
-						color: new Color()
+						direction: new Vector3$2(),
+						color: new Color$1()
 					};
 					break;
 
 				case 'SpotLight':
 					uniforms = {
-						position: new Vector3(),
-						direction: new Vector3(),
-						color: new Color(),
+						position: new Vector3$2(),
+						direction: new Vector3$2(),
+						color: new Color$1(),
 						distance: 0,
 						coneCos: 0,
 						penumbraCos: 0,
@@ -34927,8 +34927,8 @@ function UniformsCache() {
 
 				case 'PointLight':
 					uniforms = {
-						position: new Vector3(),
-						color: new Color(),
+						position: new Vector3$2(),
+						color: new Color$1(),
 						distance: 0,
 						decay: 0
 					};
@@ -34936,18 +34936,18 @@ function UniformsCache() {
 
 				case 'HemisphereLight':
 					uniforms = {
-						direction: new Vector3(),
-						skyColor: new Color(),
-						groundColor: new Color()
+						direction: new Vector3$2(),
+						skyColor: new Color$1(),
+						groundColor: new Color$1()
 					};
 					break;
 
 				case 'RectAreaLight':
 					uniforms = {
-						color: new Color(),
-						position: new Vector3(),
-						halfWidth: new Vector3(),
-						halfHeight: new Vector3()
+						color: new Color$1(),
+						position: new Vector3$2(),
+						halfWidth: new Vector3$2(),
+						halfHeight: new Vector3$2()
 					};
 					break;
 
@@ -35083,11 +35083,11 @@ function WebGLLights( extensions, capabilities ) {
 
 	};
 
-	for ( let i = 0; i < 9; i ++ ) state.probe.push( new Vector3() );
+	for ( let i = 0; i < 9; i ++ ) state.probe.push( new Vector3$2() );
 
-	const vector3 = new Vector3();
-	const matrix4 = new Matrix4();
-	const matrix42 = new Matrix4();
+	const vector3 = new Vector3$2();
+	const matrix4 = new Matrix4$2();
+	const matrix42 = new Matrix4$2();
 
 	function setup( lights, useLegacyLights ) {
 
@@ -36399,7 +36399,7 @@ function WebGLState( gl, extensions, capabilities ) {
 	let currentBlendEquationAlpha = null;
 	let currentBlendSrcAlpha = null;
 	let currentBlendDstAlpha = null;
-	let currentBlendColor = new Color( 0, 0, 0 );
+	let currentBlendColor = new Color$1( 0, 0, 0 );
 	let currentBlendAlpha = 0;
 	let currentPremultipledAlpha = false;
 
@@ -37313,7 +37313,7 @@ function WebGLState( gl, extensions, capabilities ) {
 		currentBlendEquationAlpha = null;
 		currentBlendSrcAlpha = null;
 		currentBlendDstAlpha = null;
-		currentBlendColor = new Color( 0, 0, 0 );
+		currentBlendColor = new Color$1( 0, 0, 0 );
 		currentBlendAlpha = 0;
 		currentPremultipledAlpha = false;
 
@@ -39936,9 +39936,9 @@ class WebXRController {
 			this._targetRay.matrixAutoUpdate = false;
 			this._targetRay.visible = false;
 			this._targetRay.hasLinearVelocity = false;
-			this._targetRay.linearVelocity = new Vector3();
+			this._targetRay.linearVelocity = new Vector3$2();
 			this._targetRay.hasAngularVelocity = false;
-			this._targetRay.angularVelocity = new Vector3();
+			this._targetRay.angularVelocity = new Vector3$2();
 
 		}
 
@@ -39954,9 +39954,9 @@ class WebXRController {
 			this._grip.matrixAutoUpdate = false;
 			this._grip.visible = false;
 			this._grip.hasLinearVelocity = false;
-			this._grip.linearVelocity = new Vector3();
+			this._grip.linearVelocity = new Vector3$2();
 			this._grip.hasAngularVelocity = false;
-			this._grip.angularVelocity = new Vector3();
+			this._grip.angularVelocity = new Vector3$2();
 
 		}
 
@@ -40773,8 +40773,8 @@ class WebXRManager extends EventDispatcher {
 
 		//
 
-		const cameraLPos = new Vector3();
-		const cameraRPos = new Vector3();
+		const cameraLPos = new Vector3$2();
+		const cameraRPos = new Vector3$2();
 
 		/**
 		 * Assumes 2 cameras that are parallel and share an X-axis, and that
@@ -41146,7 +41146,7 @@ class WebXRManager extends EventDispatcher {
 }
 
 const _e1 = /*@__PURE__*/ new Euler();
-const _m1 = /*@__PURE__*/ new Matrix4();
+const _m1 = /*@__PURE__*/ new Matrix4$2();
 
 function WebGLMaterials( renderer, properties ) {
 
@@ -42229,7 +42229,7 @@ class WebGLRenderer {
 		const _currentScissor = new Vector4();
 		let _currentScissorTest = null;
 
-		const _currentClearColor = new Color( 0x000000 );
+		const _currentClearColor = new Color$1( 0x000000 );
 		let _currentClearAlpha = 0;
 
 		//
@@ -42260,10 +42260,10 @@ class WebGLRenderer {
 
 		// camera matrices cache
 
-		const _projScreenMatrix = new Matrix4();
+		const _projScreenMatrix = new Matrix4$2();
 
 		const _vector2 = new Vector2();
-		const _vector3 = new Vector3();
+		const _vector3 = new Vector3$2();
 
 		const _emptyScene = { background: null, fog: null, environment: null, overrideMaterial: null, isScene: true };
 
@@ -44661,7 +44661,7 @@ class Fog {
 
 		this.name = '';
 
-		this.color = new Color( color );
+		this.color = new Color$1( color );
 
 		this.near = near;
 		this.far = far;
@@ -44809,13 +44809,13 @@ class DataTexture extends Texture {
 
 }
 
-const _instanceLocalMatrix = /*@__PURE__*/ new Matrix4();
-const _instanceWorldMatrix = /*@__PURE__*/ new Matrix4();
+const _instanceLocalMatrix = /*@__PURE__*/ new Matrix4$2();
+const _instanceWorldMatrix = /*@__PURE__*/ new Matrix4$2();
 
 const _instanceIntersects = [];
 
 const _box3 = /*@__PURE__*/ new Box3();
-const _identity = /*@__PURE__*/ new Matrix4();
+const _identity = /*@__PURE__*/ new Matrix4$2();
 const _mesh$1 = /*@__PURE__*/ new Mesh();
 const _sphere$4 = /*@__PURE__*/ new Sphere();
 
@@ -45077,7 +45077,7 @@ class LineBasicMaterial extends Material {
 
 		this.type = 'LineBasicMaterial';
 
-		this.color = new Color( 0xffffff );
+		this.color = new Color$1( 0xffffff );
 
 		this.map = null;
 
@@ -45112,9 +45112,9 @@ class LineBasicMaterial extends Material {
 
 }
 
-const _start$1 = /*@__PURE__*/ new Vector3();
-const _end$1 = /*@__PURE__*/ new Vector3();
-const _inverseMatrix$2 = /*@__PURE__*/ new Matrix4();
+const _start$1 = /*@__PURE__*/ new Vector3$2();
+const _end$1 = /*@__PURE__*/ new Vector3$2();
+const _inverseMatrix$2 = /*@__PURE__*/ new Matrix4$2();
 const _ray$2 = /*@__PURE__*/ new Ray();
 const _sphere$3 = /*@__PURE__*/ new Sphere();
 
@@ -45204,10 +45204,10 @@ class Line extends Object3D {
 		const localThreshold = threshold / ( ( this.scale.x + this.scale.y + this.scale.z ) / 3 );
 		const localThresholdSq = localThreshold * localThreshold;
 
-		const vStart = new Vector3();
-		const vEnd = new Vector3();
-		const interSegment = new Vector3();
-		const interRay = new Vector3();
+		const vStart = new Vector3$2();
+		const vEnd = new Vector3$2();
+		const interSegment = new Vector3$2();
+		const interRay = new Vector3$2();
 		const step = this.isLineSegments ? 2 : 1;
 
 		const index = geometry.index;
@@ -45324,8 +45324,8 @@ class Line extends Object3D {
 
 }
 
-const _start = /*@__PURE__*/ new Vector3();
-const _end = /*@__PURE__*/ new Vector3();
+const _start = /*@__PURE__*/ new Vector3$2();
+const _end = /*@__PURE__*/ new Vector3$2();
 
 class LineSegments extends Line {
 
@@ -45384,7 +45384,7 @@ class PointsMaterial extends Material {
 
 		this.type = 'PointsMaterial';
 
-		this.color = new Color( 0xffffff );
+		this.color = new Color$1( 0xffffff );
 
 		this.map = null;
 
@@ -45420,10 +45420,10 @@ class PointsMaterial extends Material {
 
 }
 
-const _inverseMatrix$1 = /*@__PURE__*/ new Matrix4();
+const _inverseMatrix$1 = /*@__PURE__*/ new Matrix4$2();
 const _ray$1 = /*@__PURE__*/ new Ray();
 const _sphere$2 = /*@__PURE__*/ new Sphere();
-const _position = /*@__PURE__*/ new Vector3();
+const _position = /*@__PURE__*/ new Vector3$2();
 
 class Points extends Object3D {
 
@@ -45553,7 +45553,7 @@ function testPoint( point, index, localThresholdSq, matrixWorld, raycaster, inte
 
 	if ( rayPointDistanceSq < localThresholdSq ) {
 
-		const intersectPoint = new Vector3();
+		const intersectPoint = new Vector3$2();
 
 		_ray$1.closestPointToPoint( point, intersectPoint );
 		intersectPoint.applyMatrix4( matrixWorld );
@@ -45830,7 +45830,7 @@ class Curve {
 		const pt1 = this.getPoint( t1 );
 		const pt2 = this.getPoint( t2 );
 
-		const tangent = optionalTarget || ( ( pt1.isVector2 ) ? new Vector2() : new Vector3() );
+		const tangent = optionalTarget || ( ( pt1.isVector2 ) ? new Vector2() : new Vector3$2() );
 
 		tangent.copy( pt2 ).sub( pt1 ).normalize();
 
@@ -45849,14 +45849,14 @@ class Curve {
 
 		// see http://www.cs.indiana.edu/pub/techreports/TR425.pdf
 
-		const normal = new Vector3();
+		const normal = new Vector3$2();
 
 		const tangents = [];
 		const normals = [];
 		const binormals = [];
 
-		const vec = new Vector3();
-		const mat = new Matrix4();
+		const vec = new Vector3$2();
+		const mat = new Matrix4$2();
 
 		// compute the tangent vectors for each segment on the curve
 
@@ -45864,15 +45864,15 @@ class Curve {
 
 			const u = i / segments;
 
-			tangents[ i ] = this.getTangentAt( u, new Vector3() );
+			tangents[ i ] = this.getTangentAt( u, new Vector3$2() );
 
 		}
 
 		// select an initial normal vector perpendicular to the first tangent vector,
 		// and in the direction of the minimum tangent xyz component
 
-		normals[ 0 ] = new Vector3();
-		binormals[ 0 ] = new Vector3();
+		normals[ 0 ] = new Vector3$2();
+		binormals[ 0 ] = new Vector3$2();
 		let min = Number.MAX_VALUE;
 		const tx = Math.abs( tangents[ 0 ].x );
 		const ty = Math.abs( tangents[ 0 ].y );
@@ -46243,7 +46243,7 @@ function CubicPoly() {
 
 //
 
-const tmp = /*@__PURE__*/ new Vector3();
+const tmp = /*@__PURE__*/ new Vector3$2();
 const px = /*@__PURE__*/ new CubicPoly();
 const py = /*@__PURE__*/ new CubicPoly();
 const pz = /*@__PURE__*/ new CubicPoly();
@@ -46265,7 +46265,7 @@ class CatmullRomCurve3 extends Curve {
 
 	}
 
-	getPoint( t, optionalTarget = new Vector3() ) {
+	getPoint( t, optionalTarget = new Vector3$2() ) {
 
 		const point = optionalTarget;
 
@@ -46403,7 +46403,7 @@ class CatmullRomCurve3 extends Curve {
 		for ( let i = 0, l = json.points.length; i < l; i ++ ) {
 
 			const point = json.points[ i ];
-			this.points.push( new Vector3().fromArray( point ) );
+			this.points.push( new Vector3$2().fromArray( point ) );
 
 		}
 
@@ -46570,7 +46570,7 @@ class CubicBezierCurve extends Curve {
 
 class CubicBezierCurve3 extends Curve {
 
-	constructor( v0 = new Vector3(), v1 = new Vector3(), v2 = new Vector3(), v3 = new Vector3() ) {
+	constructor( v0 = new Vector3$2(), v1 = new Vector3$2(), v2 = new Vector3$2(), v3 = new Vector3$2() ) {
 
 		super();
 
@@ -46585,7 +46585,7 @@ class CubicBezierCurve3 extends Curve {
 
 	}
 
-	getPoint( t, optionalTarget = new Vector3() ) {
+	getPoint( t, optionalTarget = new Vector3$2() ) {
 
 		const point = optionalTarget;
 
@@ -46732,7 +46732,7 @@ class LineCurve extends Curve {
 
 class LineCurve3 extends Curve {
 
-	constructor( v1 = new Vector3(), v2 = new Vector3() ) {
+	constructor( v1 = new Vector3$2(), v2 = new Vector3$2() ) {
 
 		super();
 
@@ -46745,7 +46745,7 @@ class LineCurve3 extends Curve {
 
 	}
 
-	getPoint( t, optionalTarget = new Vector3() ) {
+	getPoint( t, optionalTarget = new Vector3$2() ) {
 
 		const point = optionalTarget;
 
@@ -46771,7 +46771,7 @@ class LineCurve3 extends Curve {
 
 	}
 
-	getTangent( t, optionalTarget = new Vector3() ) {
+	getTangent( t, optionalTarget = new Vector3$2() ) {
 
 		return optionalTarget.subVectors( this.v2, this.v1 ).normalize();
 
@@ -46889,7 +46889,7 @@ class QuadraticBezierCurve extends Curve {
 
 class QuadraticBezierCurve3 extends Curve {
 
-	constructor( v0 = new Vector3(), v1 = new Vector3(), v2 = new Vector3() ) {
+	constructor( v0 = new Vector3$2(), v1 = new Vector3$2(), v2 = new Vector3$2() ) {
 
 		super();
 
@@ -46903,7 +46903,7 @@ class QuadraticBezierCurve3 extends Curve {
 
 	}
 
-	getPoint( t, optionalTarget = new Vector3() ) {
+	getPoint( t, optionalTarget = new Vector3$2() ) {
 
 		const point = optionalTarget;
 
@@ -47525,7 +47525,7 @@ class CircleGeometry extends BufferGeometry {
 
 		// helper variables
 
-		const vertex = new Vector3();
+		const vertex = new Vector3$2();
 		const uv = new Vector2();
 
 		// center point
@@ -48666,9 +48666,9 @@ class ExtrudeGeometry extends BufferGeometry {
 
 				// console.log(splineTube, 'splineTube', splineTube.normals.length, 'steps', steps, 'extrudePts', extrudePts.length);
 
-				binormal = new Vector3();
-				normal = new Vector3();
-				position2 = new Vector3();
+				binormal = new Vector3$2();
+				normal = new Vector3$2();
+				position2 = new Vector3$2();
 
 			}
 
@@ -49398,8 +49398,8 @@ class SphereGeometry extends BufferGeometry {
 		let index = 0;
 		const grid = [];
 
-		const vertex = new Vector3();
-		const normal = new Vector3();
+		const vertex = new Vector3$2();
+		const normal = new Vector3$2();
 
 		// buffers
 
@@ -49516,7 +49516,7 @@ class MeshStandardMaterial extends Material {
 
 		this.type = 'MeshStandardMaterial';
 
-		this.color = new Color( 0xffffff ); // diffuse
+		this.color = new Color$1( 0xffffff ); // diffuse
 		this.roughness = 1.0;
 		this.metalness = 0.0;
 
@@ -49528,7 +49528,7 @@ class MeshStandardMaterial extends Material {
 		this.aoMap = null;
 		this.aoMapIntensity = 1.0;
 
-		this.emissive = new Color( 0x000000 );
+		this.emissive = new Color$1( 0x000000 );
 		this.emissiveIntensity = 1.0;
 		this.emissiveMap = null;
 
@@ -49670,7 +49670,7 @@ class MeshPhysicalMaterial extends MeshStandardMaterial {
 		this.iridescenceThicknessRange = [ 100, 400 ];
 		this.iridescenceThicknessMap = null;
 
-		this.sheenColor = new Color( 0x000000 );
+		this.sheenColor = new Color$1( 0x000000 );
 		this.sheenColorMap = null;
 		this.sheenRoughness = 1.0;
 		this.sheenRoughnessMap = null;
@@ -49680,11 +49680,11 @@ class MeshPhysicalMaterial extends MeshStandardMaterial {
 		this.thickness = 0;
 		this.thicknessMap = null;
 		this.attenuationDistance = Infinity;
-		this.attenuationColor = new Color( 1, 1, 1 );
+		this.attenuationColor = new Color$1( 1, 1, 1 );
 
 		this.specularIntensity = 1.0;
 		this.specularIntensityMap = null;
-		this.specularColor = new Color( 1, 1, 1 );
+		this.specularColor = new Color$1( 1, 1, 1 );
 		this.specularColorMap = null;
 
 		this._anisotropy = 0;
@@ -49852,8 +49852,8 @@ class MeshPhongMaterial extends Material {
 
 		this.type = 'MeshPhongMaterial';
 
-		this.color = new Color( 0xffffff ); // diffuse
-		this.specular = new Color( 0x111111 );
+		this.color = new Color$1( 0xffffff ); // diffuse
+		this.specular = new Color$1( 0x111111 );
 		this.shininess = 30;
 
 		this.map = null;
@@ -49864,7 +49864,7 @@ class MeshPhongMaterial extends Material {
 		this.aoMap = null;
 		this.aoMapIntensity = 1.0;
 
-		this.emissive = new Color( 0x000000 );
+		this.emissive = new Color$1( 0x000000 );
 		this.emissiveIntensity = 1.0;
 		this.emissiveMap = null;
 
@@ -49970,7 +49970,7 @@ class MeshToonMaterial extends Material {
 
 		this.type = 'MeshToonMaterial';
 
-		this.color = new Color( 0xffffff );
+		this.color = new Color$1( 0xffffff );
 
 		this.map = null;
 		this.gradientMap = null;
@@ -49981,7 +49981,7 @@ class MeshToonMaterial extends Material {
 		this.aoMap = null;
 		this.aoMapIntensity = 1.0;
 
-		this.emissive = new Color( 0x000000 );
+		this.emissive = new Color$1( 0x000000 );
 		this.emissiveIntensity = 1.0;
 		this.emissiveMap = null;
 
@@ -50120,7 +50120,7 @@ class MeshLambertMaterial extends Material {
 
 		this.type = 'MeshLambertMaterial';
 
-		this.color = new Color( 0xffffff ); // diffuse
+		this.color = new Color$1( 0xffffff ); // diffuse
 
 		this.map = null;
 
@@ -50130,7 +50130,7 @@ class MeshLambertMaterial extends Material {
 		this.aoMap = null;
 		this.aoMapIntensity = 1.0;
 
-		this.emissive = new Color( 0x000000 );
+		this.emissive = new Color$1( 0x000000 );
 		this.emissiveIntensity = 1.0;
 		this.emissiveMap = null;
 
@@ -50234,7 +50234,7 @@ class MeshMatcapMaterial extends Material {
 
 		this.type = 'MeshMatcapMaterial';
 
-		this.color = new Color( 0xffffff ); // diffuse
+		this.color = new Color$1( 0xffffff ); // diffuse
 
 		this.matcap = null;
 
@@ -50709,7 +50709,7 @@ class Light extends Object3D {
 
 		this.type = 'Light';
 
-		this.color = new Color( color );
+		this.color = new Color$1( color );
 		this.intensity = intensity;
 
 	}
@@ -50766,7 +50766,7 @@ class HemisphereLight extends Light {
 		this.position.copy( Object3D.DEFAULT_UP );
 		this.updateMatrix();
 
-		this.groundColor = new Color( groundColor );
+		this.groundColor = new Color$1( groundColor );
 
 	}
 
@@ -50782,9 +50782,9 @@ class HemisphereLight extends Light {
 
 }
 
-const _projScreenMatrix$1 = /*@__PURE__*/ new Matrix4();
-const _lightPositionWorld$1 = /*@__PURE__*/ new Vector3();
-const _lookTarget$1 = /*@__PURE__*/ new Vector3();
+const _projScreenMatrix$1 = /*@__PURE__*/ new Matrix4$2();
+const _lightPositionWorld$1 = /*@__PURE__*/ new Vector3$2();
+const _lookTarget$1 = /*@__PURE__*/ new Vector3$2();
 
 class LightShadow {
 
@@ -50801,7 +50801,7 @@ class LightShadow {
 
 		this.map = null;
 		this.mapPass = null;
-		this.matrix = new Matrix4();
+		this.matrix = new Matrix4$2();
 
 		this.autoUpdate = true;
 		this.needsUpdate = false;
@@ -50986,7 +50986,7 @@ class AmbientLight extends Light {
 
 }
 
-const _matrix = /*@__PURE__*/ new Matrix4();
+const _matrix = /*@__PURE__*/ new Matrix4$2();
 
 class Raycaster {
 
@@ -51463,12 +51463,12 @@ class Box2 {
 
 }
 
-const _startP = /*@__PURE__*/ new Vector3();
-const _startEnd = /*@__PURE__*/ new Vector3();
+const _startP = /*@__PURE__*/ new Vector3$2();
+const _startEnd = /*@__PURE__*/ new Vector3$2();
 
 class Line3 {
 
-	constructor( start = new Vector3(), end = new Vector3() ) {
+	constructor( start = new Vector3$2(), end = new Vector3$2() ) {
 
 		this.start = start;
 		this.end = end;
@@ -51635,7 +51635,7 @@ class ShapePath {
 
 		this.type = 'ShapePath';
 
-		this.color = new Color();
+		this.color = new Color$1();
 
 		this.subPaths = [];
 		this.currentPath = null;
@@ -52167,10 +52167,10 @@ class OrbitControls extends EventDispatcher {
 		this.enabled = true;
 
 		// "target" sets the location of focus, where the object orbits around
-		this.target = new Vector3();
+		this.target = new Vector3$2();
 
 		// Sets the 3D cursor (similar to Blender), from which the maxTargetRadius takes effect
-		this.cursor = new Vector3();
+		this.cursor = new Vector3$2();
 
 		// How far you can dolly in and out ( PerspectiveCamera only )
 		this.minDistance = 0;
@@ -52305,15 +52305,15 @@ class OrbitControls extends EventDispatcher {
 		// this method is exposed, but perhaps it would be better if we can make it private...
 		this.update = function () {
 
-			const offset = new Vector3();
+			const offset = new Vector3$2();
 
 			// so camera.up is the orbit axis
-			const quat = new Quaternion().setFromUnitVectors( object.up, new Vector3( 0, 1, 0 ) );
+			const quat = new Quaternion().setFromUnitVectors( object.up, new Vector3$2( 0, 1, 0 ) );
 			const quatInverse = quat.clone().invert();
 
-			const lastPosition = new Vector3();
+			const lastPosition = new Vector3$2();
 			const lastQuaternion = new Quaternion();
-			const lastTargetPosition = new Vector3();
+			const lastTargetPosition = new Vector3$2();
 
 			const twoPI = 2 * Math.PI;
 
@@ -52454,7 +52454,7 @@ class OrbitControls extends EventDispatcher {
 					} else if ( scope.object.isOrthographicCamera ) {
 
 						// adjust the ortho camera position based on zoom changes
-						const mouseBefore = new Vector3( mouse.x, mouse.y, 0 );
+						const mouseBefore = new Vector3$2( mouse.x, mouse.y, 0 );
 						mouseBefore.unproject( scope.object );
 
 						const prevZoom = scope.object.zoom;
@@ -52463,7 +52463,7 @@ class OrbitControls extends EventDispatcher {
 
 						zoomChanged = prevZoom !== scope.object.zoom;
 
-						const mouseAfter = new Vector3( mouse.x, mouse.y, 0 );
+						const mouseAfter = new Vector3$2( mouse.x, mouse.y, 0 );
 						mouseAfter.unproject( scope.object );
 
 						scope.object.position.sub( mouseAfter ).add( mouseBefore );
@@ -52606,7 +52606,7 @@ class OrbitControls extends EventDispatcher {
 		const sphericalDelta = new Spherical();
 
 		let scale = 1;
-		const panOffset = new Vector3();
+		const panOffset = new Vector3$2();
 
 		const rotateStart = new Vector2();
 		const rotateEnd = new Vector2();
@@ -52620,7 +52620,7 @@ class OrbitControls extends EventDispatcher {
 		const dollyEnd = new Vector2();
 		const dollyDelta = new Vector2();
 
-		const dollyDirection = new Vector3();
+		const dollyDirection = new Vector3$2();
 		const mouse = new Vector2();
 		let performCursorZoom = false;
 
@@ -52664,7 +52664,7 @@ class OrbitControls extends EventDispatcher {
 
 		const panLeft = function () {
 
-			const v = new Vector3();
+			const v = new Vector3$2();
 
 			return function panLeft( distance, objectMatrix ) {
 
@@ -52679,7 +52679,7 @@ class OrbitControls extends EventDispatcher {
 
 		const panUp = function () {
 
-			const v = new Vector3();
+			const v = new Vector3$2();
 
 			return function panUp( distance, objectMatrix ) {
 
@@ -52705,7 +52705,7 @@ class OrbitControls extends EventDispatcher {
 		// deltaX and deltaY are in pixels; right and down are positive
 		const pan = function () {
 
-			const offset = new Vector3();
+			const offset = new Vector3$2();
 
 			return function pan( deltaX, deltaY ) {
 
@@ -54200,7 +54200,7 @@ class RenderPass extends Pass {
 		this.clear = true;
 		this.clearDepth = false;
 		this.needsSwap = false;
-		this._oldClearColor = new Color();
+		this._oldClearColor = new Color$1();
 
 	}
 
@@ -54292,7 +54292,7 @@ const LuminosityHighPassShader = {
 		'tDiffuse': { value: null },
 		'luminosityThreshold': { value: 1.0 },
 		'smoothWidth': { value: 1.0 },
-		'defaultColor': { value: new Color( 0x000000 ) },
+		'defaultColor': { value: new Color$1( 0x000000 ) },
 		'defaultOpacity': { value: 0.0 }
 
 	},
@@ -54358,7 +54358,7 @@ class UnrealBloomPass extends Pass {
 		this.resolution = ( resolution !== undefined ) ? new Vector2( resolution.x, resolution.y ) : new Vector2( 256, 256 );
 
 		// create color only once here, reuse it later inside the render function
-		this.clearColor = new Color( 0, 0, 0 );
+		this.clearColor = new Color$1( 0, 0, 0 );
 
 		// render targets
 		this.renderTargetsHorizontal = [];
@@ -54439,7 +54439,7 @@ class UnrealBloomPass extends Pass {
 
 		const bloomFactors = [ 1.0, 0.8, 0.6, 0.4, 0.2 ];
 		this.compositeMaterial.uniforms[ 'bloomFactors' ].value = bloomFactors;
-		this.bloomTintColors = [ new Vector3( 1, 1, 1 ), new Vector3( 1, 1, 1 ), new Vector3( 1, 1, 1 ), new Vector3( 1, 1, 1 ), new Vector3( 1, 1, 1 ) ];
+		this.bloomTintColors = [ new Vector3$2( 1, 1, 1 ), new Vector3$2( 1, 1, 1 ), new Vector3$2( 1, 1, 1 ), new Vector3$2( 1, 1, 1 ), new Vector3$2( 1, 1, 1 ) ];
 		this.compositeMaterial.uniforms[ 'bloomTintColors' ].value = this.bloomTintColors;
 
 		// blend material
@@ -54461,7 +54461,7 @@ class UnrealBloomPass extends Pass {
 		this.enabled = true;
 		this.needsSwap = false;
 
-		this._oldClearColor = new Color();
+		this._oldClearColor = new Color$1();
 		this.oldClearAlpha = 1;
 
 		this.basic = new MeshBasicMaterial();
@@ -54762,12 +54762,12 @@ class RenderableFace {
 		this.v2 = new RenderableVertex();
 		this.v3 = new RenderableVertex();
 
-		this.normalModel = new Vector3();
+		this.normalModel = new Vector3$2();
 
-		this.vertexNormalsModel = [ new Vector3(), new Vector3(), new Vector3() ];
+		this.vertexNormalsModel = [ new Vector3$2(), new Vector3$2(), new Vector3$2() ];
 		this.vertexNormalsLength = 0;
 
-		this.color = new Color();
+		this.color = new Color$1();
 		this.material = null;
 		this.uvs = [ new Vector2(), new Vector2(), new Vector2() ];
 
@@ -54784,8 +54784,8 @@ class RenderableVertex {
 
 	constructor() {
 
-		this.position = new Vector3();
-		this.positionWorld = new Vector3();
+		this.position = new Vector3$2();
+		this.positionWorld = new Vector3$2();
 		this.positionScreen = new Vector4();
 
 		this.visible = true;
@@ -54812,7 +54812,7 @@ class RenderableLine {
 		this.v1 = new RenderableVertex();
 		this.v2 = new RenderableVertex();
 
-		this.vertexColors = [ new Color(), new Color() ];
+		this.vertexColors = [ new Color$1(), new Color$1() ];
 		this.material = null;
 
 		this.z = 0;
@@ -54863,17 +54863,17 @@ class Projector {
 
 			_renderData = { objects: [], lights: [], elements: [] },
 
-			_vector3 = new Vector3(),
+			_vector3 = new Vector3$2(),
 			_vector4 = new Vector4(),
 
-			_clipBox = new Box3( new Vector3( - 1, - 1, - 1 ), new Vector3( 1, 1, 1 ) ),
+			_clipBox = new Box3( new Vector3$2( - 1, - 1, - 1 ), new Vector3$2( 1, 1, 1 ) ),
 			_boundingBox = new Box3(),
 			_points3 = new Array( 3 ),
 
-			_viewMatrix = new Matrix4(),
-			_viewProjectionMatrix = new Matrix4(),
+			_viewMatrix = new Matrix4$2(),
+			_viewProjectionMatrix = new Matrix4$2(),
 
-			_modelViewProjectionMatrix = new Matrix4(),
+			_modelViewProjectionMatrix = new Matrix4$2(),
 
 			_frustum = new Frustum(),
 
@@ -55662,20 +55662,20 @@ class SVGRenderer {
 			_clipBox = new Box2(),
 			_elemBox = new Box2(),
 
-			_color = new Color(),
-			_diffuseColor = new Color(),
-			_ambientLight = new Color(),
-			_directionalLights = new Color(),
-			_pointLights = new Color(),
-			_clearColor = new Color(),
+			_color = new Color$1(),
+			_diffuseColor = new Color$1(),
+			_ambientLight = new Color$1(),
+			_directionalLights = new Color$1(),
+			_pointLights = new Color$1(),
+			_clearColor = new Color$1(),
 
-			_vector3 = new Vector3(), // Needed for PointLight
-			_centroid = new Vector3(),
-			_normal = new Vector3(),
+			_vector3 = new Vector3$2(), // Needed for PointLight
+			_centroid = new Vector3$2(),
+			_normal = new Vector3$2(),
 			_normalViewMatrix = new Matrix3(),
 
-			_viewMatrix = new Matrix4(),
-			_viewProjectionMatrix = new Matrix4(),
+			_viewMatrix = new Matrix4$2(),
+			_viewProjectionMatrix = new Matrix4$2(),
 
 			_svgPathPool = [],
 
@@ -56167,6 +56167,21 @@ class SVGRenderer {
 
 }
 
+const THREE = {
+   REVISION, DoubleSide, FrontSide, Object3D, Color: Color$1, Vector2, Vector3: Vector3$2, Matrix4: Matrix4$2, Line3, Raycaster,
+   WebGLRenderer, WebGLRenderTarget, SVGRenderer, Font,
+   BufferGeometry, BufferAttribute, Float32BufferAttribute, Mesh, MeshBasicMaterial, MeshLambertMaterial,
+   LineSegments, LineDashedMaterial, LineBasicMaterial, Points, PointsMaterial,
+   Plane, Scene, PerspectiveCamera, OrthographicCamera, ShapeUtils,
+   Box3, InstancedMesh, MeshStandardMaterial, MeshNormalMaterial,
+   MeshPhysicalMaterial, MeshPhongMaterial, MeshDepthMaterial, MeshMatcapMaterial, MeshToonMaterial,
+   Group, PlaneHelper, Euler, Quaternion, BoxGeometry, CircleGeometry, SphereGeometry, Fog,
+   AmbientLight, HemisphereLight, DirectionalLight,
+   CanvasTexture, TextureLoader,
+
+   TextGeometry, EffectComposer, RenderPass, UnrealBloomPass, OrbitControls
+};
+
 /** @summary Create three.js Font with Helvetica
   * @private */
 function createHelveticaFont() {
@@ -56175,7 +56190,7 @@ const glyphs={"0":{x_min:73,x_max:715,ha:792,o:"m 394 -29 q 153 129 242 -29 q 73
 // eslint-disable-next-line
 const cssFontWeight='normal', ascender=1189, underlinePosition=-100, cssFontStyle='normal', boundingBox={yMin:-334,xMin:-111,yMax:1189,xMax:1672}, resolution = 1000, original_font_information={postscript_name:"Helvetiker-Regular",version_string:"Version 1.00 2004 initial release",vendor_url:"http://www.magenta.gr/",full_font_name:"Helvetiker",font_family_name:"Helvetiker",copyright:"Copyright (c) Μagenta ltd, 2004",description:"",trademark:"",designer:"",designer_url:"",unique_font_identifier:"Μagenta ltd:Helvetiker:22-10-104",license_url:"http://www.ellak.gr/fonts/MgOpen/license.html",license_description:"Copyright (c) 2004 by MAGENTA Ltd. All Rights Reserved.\r\n\r\nPermission is hereby granted, free of charge, to any person obtaining a copy of the fonts accompanying this license (\"Fonts\") and associated documentation files (the \"Font Software\"), to reproduce and distribute the Font Software, including without limitation the rights to use, copy, merge, publish, distribute, and/or sell copies of the Font Software, and to permit persons to whom the Font Software is furnished to do so, subject to the following conditions: \r\n\r\nThe above copyright and this permission notice shall be included in all copies of one or more of the Font Software typefaces.\r\n\r\nThe Font Software may be modified, altered, or added to, and in particular the designs of glyphs or characters in the Fonts may be modified and additional glyphs or characters may be added to the Fonts, only if the fonts are renamed to names not containing the word \"MgOpen\", or if the modifications are accepted for inclusion in the Font Software itself by the each appointed Administrator.\r\n\r\nThis License becomes null and void to the extent applicable to Fonts or Font Software that has been modified and is distributed under the \"MgOpen\" name.\r\n\r\nThe Font Software may be sold as part of a larger software package but no copy of one or more of the Font Software typefaces may be sold by itself. \r\n\r\nTHE FONT SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL MAGENTA OR PERSONS OR BODIES IN CHARGE OF ADMINISTRATION AND MAINTENANCE OF THE FONT SOFTWARE BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.",manufacturer_name:"Μagenta ltd",font_sub_family_name:"Regular"}, descender = -334, familyName = 'Helvetiker', lineHeight = 1522, underlineThickness = 50, helvetiker_regular_typeface = {glyphs, cssFontWeight, ascender, underlinePosition, cssFontStyle, boundingBox, resolution,original_font_information, descender, familyName, lineHeight, underlineThickness};
 
-   return new Font({
+   return new THREE.Font({
       ascender, boundingBox, cssFontStyle, cssFontWeight, default: helvetiker_regular_typeface, descender, familyName, glyphs,
       lineHeight, original_font_information, resolution, underlinePosition, underlineThickness
    });
@@ -56191,11 +56206,11 @@ function getMaterialArgs(color$1, args) {
 
    if (isStr(color$1) && (((color$1[0] === '#') && (color$1.length === 9)) || (color$1.indexOf('rgba') >= 0))) {
       const col = color(color$1);
-      args.color = new Color(col.r, col.g, col.b);
+      args.color = new THREE.Color(col.r, col.g, col.b);
       args.opacity = col.opacity ?? 1;
       args.transparent = args.opacity < 1;
    } else
-      args.color = new Color(color$1);
+      args.color = new THREE.Color(color$1);
    return args;
 }
 
@@ -56203,7 +56218,7 @@ function createSVGRenderer(as_is, precision, doc) {
    if (as_is) {
       if (doc !== undefined)
          globalThis.docuemnt = doc;
-      const rndr = new SVGRenderer();
+      const rndr = new THREE.SVGRenderer();
       rndr.setPrecision(precision);
       return rndr;
    }
@@ -56264,7 +56279,7 @@ function createSVGRenderer(as_is, precision, doc) {
       globalThis.document = doc_wrapper;
    }
 
-   const rndr = new SVGRenderer();
+   const rndr = new THREE.SVGRenderer();
 
    if (isNodeJs())
       globalThis.document = originalDocument;
@@ -56627,18 +56642,18 @@ async function createRender3D(width, height, render3d, args) {
          args.context = gl;
          gl.canvas = args.canvas;
 
-         const r = new WebGLRenderer(args);
-         r.jsroot_output = new WebGLRenderTarget(width, height);
+         const r = new THREE.WebGLRenderer(args);
+         r.jsroot_output = new THREE.WebGLRenderTarget(width, height);
          r.setRenderTarget(r.jsroot_output);
          r.jsroot_dom = doc.createElementNS(nsSVG, 'image');
          return r;
       });
    } else if (render3d === rc.WebGL) {
       // interactive WebGL Rendering
-      promise = Promise.resolve(new WebGLRenderer(args));
+      promise = Promise.resolve(new THREE.WebGLRenderer(args));
    } else {
       // rendering with WebGL directly into svg image
-      const r = new WebGLRenderer(args);
+      const r = new THREE.WebGLRenderer(args);
       r.jsroot_dom = doc.createElementNS(nsSVG, 'image');
       promise = Promise.resolve(r);
    }
@@ -57008,7 +57023,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       renderer.domElement.addEventListener('pointerup', control_mouseup);
    }
 
-   control = new OrbitControls(camera, renderer.domElement);
+   control = new THREE.OrbitControls(camera, renderer.domElement);
 
    control.enableDamping = false;
    control.dampingFactor = 1.0;
@@ -57027,7 +57042,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
    control.camera = camera;
    control.scene = scene;
    control.renderer = renderer;
-   control.raycaster = new Raycaster();
+   control.raycaster = new THREE.Raycaster();
    control.raycaster.params.Line.threshold = 10;
    control.raycaster.params.Points.threshold = 5;
    control.mouse_zoom_mesh = null; // zoom mesh, currently used in the zooming
@@ -57091,7 +57106,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       // domElement gives correct coordinate with canvas render, but isn't always right for webgl renderer
       if (!this.renderer) return [];
 
-      const sz = (this.renderer instanceof SVGRenderer) ? this.renderer.domElement : this.renderer.getSize(new Vector2()),
+      const sz = (this.renderer instanceof THREE.SVGRenderer) ? this.renderer.domElement : this.renderer.getSize(new THREE.Vector2()),
             pnt = { x: mouse.x / sz.width * 2 - 1, y: -mouse.y / sz.height * 2 + 1 };
 
       this.camera.updateMatrix();
@@ -57432,14 +57447,14 @@ function disposeThreejsObject(obj, only_childs) {
   * @desc If required, calculates lineDistance attribute for dashed geometries
   * @private */
 function createLineSegments(arr, material, index = undefined, only_geometry = false) {
-   const geom = new BufferGeometry();
+   const geom = new THREE.BufferGeometry();
 
-   geom.setAttribute('position', arr instanceof Float32Array ? new BufferAttribute(arr, 3) : new Float32BufferAttribute(arr, 3));
-   if (index) geom.setIndex(new BufferAttribute(index, 1));
+   geom.setAttribute('position', arr instanceof Float32Array ? new THREE.BufferAttribute(arr, 3) : new THREE.Float32BufferAttribute(arr, 3));
+   if (index) geom.setIndex(new THREE.BufferAttribute(index, 1));
 
    if (material.isLineDashedMaterial) {
-      const v1 = new Vector3(),
-            v2 = new Vector3();
+      const v1 = new THREE.Vector3(),
+            v2 = new THREE.Vector3();
       let d = 0, distances = null;
 
       if (index) {
@@ -57462,19 +57477,19 @@ function createLineSegments(arr, material, index = undefined, only_geometry = fa
             distances[n/3+1] = d;
          }
       }
-      geom.setAttribute('lineDistance', new BufferAttribute(distances, 1));
+      geom.setAttribute('lineDistance', new THREE.BufferAttribute(distances, 1));
    }
 
-   return only_geometry ? geom : new LineSegments(geom, material);
+   return only_geometry ? geom : new THREE.LineSegments(geom, material);
 }
 
 /** @summary Help structures for calculating Box mesh
   * @private */
 const Box3D = {
-    Vertices: [new Vector3(1, 1, 1), new Vector3(1, 1, 0),
-               new Vector3(1, 0, 1), new Vector3(1, 0, 0),
-               new Vector3(0, 1, 0), new Vector3(0, 1, 1),
-               new Vector3(0, 0, 0), new Vector3(0, 0, 1)],
+    Vertices: [new THREE.Vector3(1, 1, 1), new THREE.Vector3(1, 1, 0),
+               new THREE.Vector3(1, 0, 1), new THREE.Vector3(1, 0, 0),
+               new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 1, 1),
+               new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 1)],
     Indexes: [0, 2, 1, 2, 3, 1, 4, 6, 5, 6, 7, 5, 4, 5, 1, 5, 0, 1,
               7, 6, 2, 6, 3, 2, 5, 7, 0, 7, 2, 0, 1, 3, 4, 3, 6, 4],
     Normals: [1, 0, 0, -1, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 1, 0, 0, -1],
@@ -57533,8 +57548,8 @@ class PointsCreator {
       this.scale = scale || 1;
 
       this.pos = new Float32Array(number*3);
-      this.geom = new BufferGeometry();
-      this.geom.setAttribute('position', new BufferAttribute(this.pos, 3));
+      this.geom = new THREE.BufferGeometry();
+      this.geom.setAttribute('position', new THREE.BufferAttribute(this.pos, 3));
       this.indx = 0;
    }
 
@@ -57569,7 +57584,7 @@ class PointsCreator {
          } else
             material_args.color = args.color || 'black';
 
-         const pnts = new Points(this.geom, new PointsMaterial(material_args));
+         const pnts = new THREE.Points(this.geom, new THREE.PointsMaterial(material_args));
          pnts.nvertex = 1;
          return pnts;
       };
@@ -57594,14 +57609,14 @@ class PointsCreator {
                const canvas = handle.default.createCanvas(64, 64),
                      ctx = canvas.getContext('2d');
                ctx.drawImage(img, 0, 0, 64, 64);
-               return new CanvasTexture(canvas);
+               return new THREE.CanvasTexture(canvas);
             }));
       } else if (this.noPromise) {
          // only for v6 support
-         return makePoints(new TextureLoader().load(dataUrl));
+         return makePoints(new THREE.TextureLoader().load(dataUrl));
       } else {
          promise = new Promise((resolveFunc, rejectFunc) => {
-            const loader = new TextureLoader();
+            const loader = new THREE.TextureLoader();
             // eslint-disable-next-line prefer-promise-reject-errors
             loader.load(dataUrl, res => resolveFunc(res), undefined, () => rejectFunc());
          });
@@ -57633,8 +57648,8 @@ function create3DLineMaterial(painter, arg, is_v7 = false) {
    const style = lstyle ? getSvgLineStyle(lstyle) : '',
          dash = style ? style.split(',') : [],
          material = (dash && dash.length >= 2)
-            ? new LineDashedMaterial({ color, dashSize: parseInt(dash[0]), gapSize: parseInt(dash[1]) })
-            : new LineBasicMaterial({ color });
+            ? new THREE.LineDashedMaterial({ color, dashSize: parseInt(dash[0]), gapSize: parseInt(dash[1]) })
+            : new THREE.LineBasicMaterial({ color });
 
    if (lwidth && (lwidth > 1)) material.linewidth = lwidth;
 
@@ -79059,7 +79074,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
 function createTextGeometry(painter, lbl, size) {
    if (isPlainText(lbl))
-      return new TextGeometry(translateLaTeX(lbl), { font: HelveticerRegularFont, size, height: 0, curveSegments: 5 });
+      return new THREE.TextGeometry(translateLaTeX(lbl), { font: HelveticerRegularFont, size, height: 0, curveSegments: 5 });
 
    const font_size = size * 100, geoms = [];
    let stroke_width = 5;
@@ -79160,8 +79175,8 @@ function createTextGeometry(painter, lbl, size) {
 
             const pos = new Float32Array(pnts);
 
-            this.geom = new BufferGeometry();
-            this.geom.setAttribute('position', new BufferAttribute(pos, 3));
+            this.geom = new THREE.BufferGeometry();
+            this.geom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
             this.geom.scale(0.01, -0.01, 0.01);
             this.geom.computeVertexNormals();
 
@@ -79172,7 +79187,7 @@ function createTextGeometry(painter, lbl, size) {
 
       text(v) {
          if (this.kind === 'text') {
-            this.geom = new TextGeometry(v, { font: HelveticerRegularFont, size: Math.round(0.01*this.font_size), height: 0, curveSegments: 5 });
+            this.geom = new THREE.TextGeometry(v, { font: HelveticerRegularFont, size: Math.round(0.01*this.font_size), height: 0, curveSegments: 5 });
             geoms.push(this.geom);
          }
       }
@@ -79185,7 +79200,7 @@ function createTextGeometry(painter, lbl, size) {
    produceLatex(painter, node, arg);
 
    if (!geoms.length)
-      return new TextGeometry(translateLaTeX(lbl), { font: HelveticerRegularFont, size, height: 0, curveSegments: 5 });
+      return new THREE.TextGeometry(translateLaTeX(lbl), { font: HelveticerRegularFont, size, height: 0, curveSegments: 5 });
 
    node.translate(); // apply translate attributes
 
@@ -79203,16 +79218,16 @@ function createTextGeometry(painter, lbl, size) {
 
    geoms.forEach(geom => {
       const p1 = geom.getAttribute('position').array,
-          n1 = geom.getAttribute('normal').array;
+            n1 = geom.getAttribute('normal').array;
       for (let i = 0; i < p1.length; ++i, ++indx) {
          pos[indx] = p1[i];
          norm[indx] = n1[i];
       }
    });
 
-   const fullgeom = new BufferGeometry();
-   fullgeom.setAttribute('position', new BufferAttribute(pos, 3));
-   fullgeom.setAttribute('normal', new BufferAttribute(norm, 3));
+   const fullgeom = new THREE.BufferGeometry();
+   fullgeom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+   fullgeom.setAttribute('normal', new THREE.BufferAttribute(norm, 3));
    return fullgeom;
 }
 
@@ -79333,16 +79348,16 @@ function convertLegoBuf(painter, pos, binsx, binsy) {
 }
 
 function createLegoGeom(painter, positions, normals, binsx, binsy) {
-   const geometry = new BufferGeometry();
+   const geometry = new THREE.BufferGeometry();
    if (painter.options.System === kCARTESIAN) {
-      geometry.setAttribute('position', new BufferAttribute(positions, 3));
+      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
       if (normals)
-         geometry.setAttribute('normal', new BufferAttribute(normals, 3));
+         geometry.setAttribute('normal', new THREE.BufferAttribute(normals, 3));
       else
          geometry.computeVertexNormals();
    } else {
       convertLegoBuf(painter, positions, binsx, binsy);
-      geometry.setAttribute('position', new BufferAttribute(positions, 3));
+      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
       geometry.computeVertexNormals();
    }
 
@@ -79357,16 +79372,16 @@ function create3DCamera(fp, orthographic) {
    }
 
    if (orthographic)
-      fp.camera = new OrthographicCamera(-1.3*fp.size_x3d, 1.3*fp.size_x3d, 2.3*fp.size_z3d, -0.7*fp.size_z3d, 0.001, 40*fp.size_z3d);
+      fp.camera = new THREE.OrthographicCamera(-1.3*fp.size_x3d, 1.3*fp.size_x3d, 2.3*fp.size_z3d, -0.7*fp.size_z3d, 0.001, 40*fp.size_z3d);
    else
-      fp.camera = new PerspectiveCamera(45, fp.scene_width / fp.scene_height, 1, 40*fp.size_z3d);
+      fp.camera = new THREE.PerspectiveCamera(45, fp.scene_width / fp.scene_height, 1, 40*fp.size_z3d);
 
    fp.camera.up.set(0, 0, 1);
 
-   fp.pointLight = new DirectionalLight(0xffffff, 3);
+   fp.pointLight = new THREE.DirectionalLight(0xffffff, 3);
    fp.pointLight.position.set(fp.size_x3d/2, fp.size_y3d/2, fp.size_z3d/2);
    fp.camera.add(fp.pointLight);
-   fp.lookat = new Vector3(0, 0, orthographic ? 0.3*fp.size_z3d : 0.8*fp.size_z3d);
+   fp.lookat = new THREE.Vector3(0, 0, orthographic ? 0.3*fp.size_z3d : 0.8*fp.size_z3d);
    fp.scene.add(fp.camera);
 }
 
@@ -79559,7 +79574,7 @@ function create3DScene(render3d, x3dscale, y3dscale, orthographic) {
       delete this.toplevel;
       if (this.control) this.control.HideTooltip();
 
-      const newtop = new Object3D();
+      const newtop = new THREE.Object3D();
       this.scene.add(newtop);
       this.toplevel = newtop;
 
@@ -79582,10 +79597,10 @@ function create3DScene(render3d, x3dscale, y3dscale, orthographic) {
    if (y3dscale) this.size_y3d *= y3dscale;
 
    // three.js 3D drawing
-   this.scene = new Scene();
+   this.scene = new THREE.Scene();
    // scene.fog = new Fog(0xffffff, 500, 3000);
 
-   this.toplevel = new Object3D();
+   this.toplevel = new THREE.Object3D();
    this.scene.add(this.toplevel);
    this.scene_width = sz.width;
    this.scene_height = sz.height;
@@ -79721,7 +79736,7 @@ function render3D(tmout) {
       this.first_render_tm = tm2.getTime() - tm1.getTime();
       this.enable_highlight = (this.first_render_tm < 1200) && this.isTooltipAllowed();
       if (this.first_render_tm > 500)
-         console.log(`three.js r${REVISION}, first render tm = ${this.first_render_tm}`);
+         console.log(`three.js r${THREE.REVISION}, first render tm = ${this.first_render_tm}`);
    } else
       getCameraPosition(this);
 
@@ -79785,7 +79800,7 @@ function highlightBin3D(tip, selfmesh) {
 
    if (tip.use_itself) {
       selfmesh.save_color = selfmesh.material.color;
-      selfmesh.material.color = new Color(tip.color);
+      selfmesh.material.color = new THREE.Color(tip.color);
       this.tooltip_selfmesh = selfmesh;
       changed = changed_self;
    } else {
@@ -79794,7 +79809,7 @@ function highlightBin3D(tip, selfmesh) {
       const indicies = Box3D.Indexes,
             normals = Box3D.Normals,
             vertices = Box3D.Vertices,
-            color = new Color(tip.color ? tip.color : 0xFF0000),
+            color = new THREE.Color(tip.color ? tip.color : 0xFF0000),
             opacity = tip.opacity || 1;
 
       let pos, norm;
@@ -79802,11 +79817,11 @@ function highlightBin3D(tip, selfmesh) {
       if (!tooltip_mesh) {
          pos = new Float32Array(indicies.length*3);
          norm = new Float32Array(indicies.length*3);
-         const geom = new BufferGeometry();
-         geom.setAttribute('position', new BufferAttribute(pos, 3));
-         geom.setAttribute('normal', new BufferAttribute(norm, 3));
-         const material = new MeshBasicMaterial({ color, opacity, vertexColors: false });
-         tooltip_mesh = new Mesh(geom, material);
+         const geom = new THREE.BufferGeometry();
+         geom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+         geom.setAttribute('normal', new THREE.BufferAttribute(norm, 3));
+         const material = new THREE.MeshBasicMaterial({ color, opacity, vertexColors: false });
+         tooltip_mesh = new THREE.Mesh(geom, material);
       } else {
          pos = tooltip_mesh.geometry.attributes.position.array;
          tooltip_mesh.geometry.attributes.position.needsUpdate = true;
@@ -79953,19 +79968,19 @@ function drawXYZ(toplevel, AxisPainter, opts) {
           linewidth = (kind === 'ticks') ? handle.ticksWidth : handle.lineatt.width,
        name = `${col}_${linewidth}`;
       if (!lineMaterials[name])
-         lineMaterials[name] = new LineBasicMaterial(getMaterialArgs(col, { linewidth, vertexColors: false }));
+         lineMaterials[name] = new THREE.LineBasicMaterial(getMaterialArgs(col, { linewidth, vertexColors: false }));
       return lineMaterials[name];
    }
 
    function getTextMaterial(handle, kind, custom_color) {
       const col = custom_color || ((kind === 'title') ? handle.titleFont?.color : handle.labelsFont?.color) || 'black';
       if (!textMaterials[col])
-         textMaterials[col] = new MeshBasicMaterial(getMaterialArgs(col, { vertexColors: false }));
+         textMaterials[col] = new THREE.MeshBasicMaterial(getMaterialArgs(col, { vertexColors: false }));
       return textMaterials[col];
    }
 
    // main element, where all axis elements are placed
-   const top = new Object3D();
+   const top = new THREE.Object3D();
    top.axis_draw = true; // mark element as axis drawing
    toplevel.add(top);
 
@@ -80046,38 +80061,38 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    };
 
    const createZoomMesh = (kind, size_3d, use_y_for_z) => {
-      const geom = new BufferGeometry(), tsz = Math.max(this[kind+'_handle'].ticksSize, 0.005 * size_3d);
+      const geom = new THREE.BufferGeometry(), tsz = Math.max(this[kind+'_handle'].ticksSize, 0.005 * size_3d);
       let positions;
       if (kind === 'z')
          positions = new Float32Array([0, 0, 0, tsz*4, 0, 2*size_3d, tsz*4, 0, 0, 0, 0, 0, 0, 0, 2*size_3d, tsz*4, 0, 2*size_3d]);
       else
          positions = new Float32Array([-size_3d, 0, 0, size_3d, -tsz*4, 0, size_3d, 0, 0, -size_3d, 0, 0, -size_3d, -tsz*4, 0, size_3d, -tsz*4, 0]);
 
-      geom.setAttribute('position', new BufferAttribute(positions, 3));
+      geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
       geom.computeVertexNormals();
 
-      const material = new MeshBasicMaterial({ transparent: true, vertexColors: false, side: DoubleSide, opacity: 0 }),
-          mesh = new Mesh(geom, material);
+      const material = new THREE.MeshBasicMaterial({ transparent: true, vertexColors: false, side: THREE.DoubleSide, opacity: 0 }),
+            mesh = new THREE.Mesh(geom, material);
       mesh.zoom = kind;
       mesh.size_3d = size_3d;
       mesh.tsz = tsz;
       mesh.use_y_for_z = use_y_for_z;
       if (kind === 'y') mesh.rotateZ(Math.PI/2).rotateX(Math.PI);
 
-      mesh.v1 = new Vector3(positions[0], positions[1], positions[2]);
-      mesh.v2 = new Vector3(positions[6], positions[7], positions[8]);
-      mesh.v3 = new Vector3(positions[3], positions[4], positions[5]);
+      mesh.v1 = new THREE.Vector3(positions[0], positions[1], positions[2]);
+      mesh.v2 = new THREE.Vector3(positions[6], positions[7], positions[8]);
+      mesh.v3 = new THREE.Vector3(positions[3], positions[4], positions[5]);
 
       mesh.globalIntersect = function(raycaster) {
          if (!this.v1 || !this.v2 || !this.v3) return undefined;
 
-         const plane = new Plane();
+         const plane = new THREE.Plane();
          plane.setFromCoplanarPoints(this.v1, this.v2, this.v3);
          plane.applyMatrix4(this.matrixWorld);
 
          const v1 = raycaster.ray.origin.clone(),
              v2 = v1.clone().addScaledVector(raycaster.ray.direction, 1e10),
-             pnt = plane.intersectLine(new Line3(v1, v2), new Vector3());
+             pnt = plane.intersectLine(new THREE.Line3(v1, v2), new THREE.Vector3());
 
          if (!pnt) return undefined;
 
@@ -80114,7 +80129,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
             // original vertices [0, 2, 1, 0, 3, 2]
             if (kind === 'z') pos[6] = pos[3] = pos[15] = this.tsz;
                          else pos[4] = pos[16] = pos[13] = -this.tsz;
-            tgtmesh = new Mesh(gg, new MeshBasicMaterial({ color: 0xFF00, side: DoubleSide, vertexColors: false }));
+            tgtmesh = new THREE.Mesh(gg, new THREE.MeshBasicMaterial({ color: 0xFF00, side: THREE.DoubleSide, vertexColors: false }));
             this.add(tgtmesh);
          } else
             gg = tgtmesh.geometry;
@@ -80138,7 +80153,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       return mesh;
    };
 
-   let xcont = new Object3D(), xtickslines;
+   let xcont = new THREE.Object3D(), xtickslines;
    xcont.position.set(0, grminy, grminz);
    xcont.rotation.x = 1/4*Math.PI;
    xcont.xyid = 2;
@@ -80151,7 +80166,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    lbls.forEach(lbl => {
       const w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
           posx = lbl.center ? lbl.grx - w/2 : (lbl.opposite ? grminx : grmaxx - w),
-          m = new Matrix4();
+          m = new THREE.Matrix4();
 
       // matrix to swap y and z scales and shift along z to its position
       m.set(text_scale, 0, 0, posx,
@@ -80159,7 +80174,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
             0, 0, 1, 0,
             0, 0, 0, 1);
 
-      const mesh = new Mesh(lbl, getTextMaterial(this.x_handle, lbl.kind, lbl.color));
+      const mesh = new THREE.Mesh(lbl, getTextMaterial(this.x_handle, lbl.kind, lbl.color));
       mesh.applyMatrix4(m);
       xcont.add(mesh);
    });
@@ -80168,24 +80183,24 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       xcont.add(createZoomMesh('x', this.size_x3d));
    top.add(xcont);
 
-   xcont = new Object3D();
+   xcont = new THREE.Object3D();
    xcont.position.set(0, grmaxy, grminz);
    xcont.rotation.x = 3/4*Math.PI;
 
    if (opts.draw)
-      xcont.add(new LineSegments(xtickslines.geometry, xtickslines.material));
+      xcont.add(new THREE.LineSegments(xtickslines.geometry, xtickslines.material));
 
    lbls.forEach(lbl => {
       const w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
             posx = (lbl.center ? lbl.grx + w/2 : lbl.opposite ? grminx + w : grmaxx),
-            m = new Matrix4();
+            m = new THREE.Matrix4();
 
       // matrix to swap y and z scales and shift along z to its position
       m.set(-text_scale, 0, 0, posx,
             0, text_scale, 0, -maxtextheight*text_scale - this.x_handle.ticksSize - lbl.offsety,
             0, 0, -1, 0,
             0, 0, 0, 1);
-      const mesh = new Mesh(lbl, getTextMaterial(this.x_handle, lbl.kind, lbl.color));
+      const mesh = new THREE.Mesh(lbl, getTextMaterial(this.x_handle, lbl.kind, lbl.color));
       mesh.applyMatrix4(m);
       xcont.add(mesh);
    });
@@ -80251,7 +80266,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    }
 
    if (!opts.use_y_for_z) {
-      let yticksline, ycont = new Object3D();
+      let yticksline, ycont = new THREE.Object3D();
       ycont.position.set(grminx, 0, grminz);
       ycont.rotation.y = -1/4*Math.PI;
       if (opts.draw) {
@@ -80262,14 +80277,14 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       lbls.forEach(lbl => {
          const w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
              posy = lbl.center ? lbl.gry + w/2 : (lbl.opposite ? grminy + w : grmaxy),
-             m = new Matrix4();
+             m = new THREE.Matrix4();
          // matrix to swap y and z scales and shift along z to its position
          m.set(0, text_scale, 0, -maxtextheight*text_scale - this.y_handle.ticksSize - lbl.offsetx,
                -text_scale, 0, 0, posy,
                0, 0, 1, 0,
                0, 0, 0, 1);
 
-         const mesh = new Mesh(lbl, getTextMaterial(this.y_handle, lbl.kind, lbl.color));
+         const mesh = new THREE.Mesh(lbl, getTextMaterial(this.y_handle, lbl.kind, lbl.color));
          mesh.applyMatrix4(m);
          ycont.add(mesh);
       });
@@ -80279,22 +80294,22 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          ycont.add(createZoomMesh('y', this.size_y3d));
       top.add(ycont);
 
-      ycont = new Object3D();
+      ycont = new THREE.Object3D();
       ycont.position.set(grmaxx, 0, grminz);
       ycont.rotation.y = -3/4*Math.PI;
       if (opts.draw)
-         ycont.add(new LineSegments(yticksline.geometry, yticksline.material));
+         ycont.add(new THREE.LineSegments(yticksline.geometry, yticksline.material));
 
       lbls.forEach(lbl => {
          const w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
              posy = lbl.center ? lbl.gry - w/2 : (lbl.opposite ? grminy : grmaxy - w),
-             m = new Matrix4();
+             m = new THREE.Matrix4();
          m.set(0, text_scale, 0, -maxtextheight*text_scale - this.y_handle.ticksSize - lbl.offsetx,
                text_scale, 0, 0, posy,
                0, 0, -1, 0,
                0, 0, 0, 1);
 
-         const mesh = new Mesh(lbl, getTextMaterial(this.y_handle, lbl.kind, lbl.color));
+         const mesh = new THREE.Mesh(lbl, getTextMaterial(this.y_handle, lbl.kind, lbl.color));
          mesh.applyMatrix4(m);
          ycont.add(mesh);
       });
@@ -80352,7 +80367,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    }
 
    if (zgridx && (zgridx.length > 0)) {
-      const material = new LineDashedMaterial({ color: this.x_handle.ticksColor, dashSize: 2, gapSize: 2 }),
+      const material = new THREE.LineDashedMaterial({ color: this.x_handle.ticksColor, dashSize: 2, gapSize: 2 }),
             lines1 = createLineSegments(zgridx, material);
 
       lines1.position.set(0, grmaxy, 0);
@@ -80360,7 +80375,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       lines1.visible = false;
       top.add(lines1);
 
-      const lines2 = new LineSegments(lines1.geometry, material);
+      const lines2 = new THREE.LineSegments(lines1.geometry, material);
       lines2.position.set(0, grminy, 0);
       lines2.grid = 4; // mark as grid
       lines2.visible = false;
@@ -80368,7 +80383,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    }
 
    if (zgridy && (zgridy.length > 0)) {
-      const material = new LineDashedMaterial({ color: this.y_handle.ticksColor, dashSize: 2, gapSize: 2 }),
+      const material = new THREE.LineDashedMaterial({ color: this.y_handle.ticksColor, dashSize: 2, gapSize: 2 }),
             lines1 = createLineSegments(zgridy, material);
 
       lines1.position.set(grmaxx, 0, 0);
@@ -80376,7 +80391,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       lines1.visible = false;
       top.add(lines1);
 
-      const lines2 = new LineSegments(lines1.geometry, material);
+      const lines2 = new THREE.LineSegments(lines1.geometry, material);
       lines2.position.set(grminx, 0, 0);
       lines2.grid = 1; // mark as grid
       lines2.visible = false;
@@ -80385,10 +80400,10 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
    const zcont = [], zticksline = opts.draw ? createLineSegments(ticks, getLineMaterial(this.z_handle, 'ticks')) : null;
    for (let n = 0; n < 4; ++n) {
-      zcont.push(new Object3D());
+      zcont.push(new THREE.Object3D());
 
       lbls.forEach((lbl, indx) => {
-         const m = new Matrix4();
+         const m = new THREE.Matrix4();
          let grz = lbl.grz;
 
          if (this.z_handle.isCenteredLabels()) {
@@ -80402,7 +80417,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          m.set(-text_scale, 0, 0, this.z_handle.ticksSize + (grmaxx - grminx) * 0.005 + this.z_handle.labelsOffset,
                          0, 0, 1, 0,
                          0, text_scale, 0, grz);
-         const mesh = new Mesh(lbl, getTextMaterial(this.z_handle));
+         const mesh = new THREE.Mesh(lbl, getTextMaterial(this.z_handle));
          mesh.applyMatrix4(m);
          zcont[n].add(mesh);
       });
@@ -80415,17 +80430,17 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
          text3d.rotateZ(Math.PI/2);
 
-         const m = new Matrix4();
+         const m = new THREE.Matrix4();
          m.set(-text_scale, 0, 0, this.z_handle.ticksSize + (grmaxx - grminx) * 0.005 + maxzlblwidth + this.z_handle.titleOffset,
                          0, 0, 1, 0,
                          0, text_scale, 0, posz);
-         const mesh = new Mesh(text3d, getTextMaterial(this.z_handle, 'title'));
+         const mesh = new THREE.Mesh(text3d, getTextMaterial(this.z_handle, 'title'));
          mesh.applyMatrix4(m);
          zcont[n].add(mesh);
       }
 
       if (opts.draw && zticksline)
-         zcont[n].add(n === 0 ? zticksline : new LineSegments(zticksline.geometry, zticksline.material));
+         zcont[n].add(n === 0 ? zticksline : new THREE.LineSegments(zticksline.geometry, zticksline.material));
 
       if (opts.zoom && opts.drawany)
          zcont[n].add(createZoomMesh('z', this.size_z3d, opts.use_y_for_z));
@@ -80452,12 +80467,12 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    const linex_material = getLineMaterial(this.x_handle),
        linex_geom = createLineSegments([grminx, 0, 0, grmaxx, 0, 0], linex_material, null, true);
    for (let n = 0; n < 2; ++n) {
-      let line = new LineSegments(linex_geom, linex_material);
+      let line = new THREE.LineSegments(linex_geom, linex_material);
       line.position.set(0, grminy, n === 0 ? grminz : grmaxz);
       line.xyboxid = 2; line.bottom = (n === 0);
       top.add(line);
 
-      line = new LineSegments(linex_geom, linex_material);
+      line = new THREE.LineSegments(linex_geom, linex_material);
       line.position.set(0, grmaxy, n === 0 ? grminz : grmaxz);
       line.xyboxid = 4; line.bottom = (n === 0);
       top.add(line);
@@ -80466,12 +80481,12 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    const liney_material = getLineMaterial(this.y_handle),
        liney_geom = createLineSegments([0, grminy, 0, 0, grmaxy, 0], liney_material, null, true);
    for (let n = 0; n < 2; ++n) {
-      let line = new LineSegments(liney_geom, liney_material);
+      let line = new THREE.LineSegments(liney_geom, liney_material);
       line.position.set(grminx, 0, n === 0 ? grminz : grmaxz);
       line.xyboxid = 3; line.bottom = (n === 0);
       top.add(line);
 
-      line = new LineSegments(liney_geom, liney_material);
+      line = new THREE.LineSegments(liney_geom, liney_material);
       line.position.set(grmaxx, 0, n === 0 ? grminz : grmaxz);
       line.xyboxid = 1; line.bottom = (n === 0);
       top.add(line);
@@ -80480,7 +80495,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    const linez_material = getLineMaterial(this.z_handle),
        linez_geom = createLineSegments([0, 0, grminz, 0, 0, grmaxz], linez_material, null, true);
    for (let n = 0; n < 4; ++n) {
-      const line = new LineSegments(linez_geom, linez_material);
+      const line = new THREE.LineSegments(linez_geom, linez_material);
       line.zboxid = zcont[n].zid;
       line.position.copy(zcont[n].position);
       top.add(line);
@@ -80495,7 +80510,7 @@ function convert3DtoPadNDC(x, y, z) {
    y = this.y_handle.gr(y);
    z = this.z_handle.gr(z);
 
-   const vector = new Vector3().set(x, y, z);
+   const vector = new THREE.Vector3().set(x, y, z);
 
    // map to normalized device coordinate (NDC) space
    vector.project(this.camera);
@@ -80535,7 +80550,7 @@ function drawBinsLego(painter, is_v7 = false) {
          // reduced line segments
          rsegments = [0, 1, 1, 2, 2, 3, 3, 0],
          // reduced vertices
-         rvertices = [new Vector3(0, 0, 0), new Vector3(0, 1, 0), new Vector3(1, 1, 0), new Vector3(1, 0, 0)],
+         rvertices = [new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(1, 1, 0), new THREE.Vector3(1, 0, 0)],
          main = painter.getFramePainter(),
          handle = painter.prepareDraw({ rounding: false, use3d: true, extra: 1 }),
          test_cutg = painter.options.cutg,
@@ -80720,8 +80735,8 @@ function drawBinsLego(painter, is_v7 = false) {
          fcolor = 'white';
       }
 
-      const material = new MeshBasicMaterial(getMaterialArgs(fcolor, { vertexColors: false })),
-          mesh = new Mesh(geometry, material);
+      const material = new THREE.MeshBasicMaterial(getMaterialArgs(fcolor, { vertexColors: false })),
+          mesh = new THREE.Mesh(geometry, material);
 
       mesh.face_to_bins_index = face_to_bins_index;
       mesh.painter = painter;
@@ -80767,9 +80782,9 @@ function drawBinsLego(painter, is_v7 = false) {
 
       if (num2vertices > 0) {
          const geom2 = createLegoGeom(painter, pos2, norm2),
-               color2 = (rootcolor < 2) ? new Color(0xFF0000) : new Color(rgb(fcolor).darker(0.5).toString()),
-               material2 = new MeshBasicMaterial({ color: color2, vertexColors: false }),
-               mesh2 = new Mesh(geom2, material2);
+               color2 = new THREE.Color(rootcolor < 2 ? 0xFF0000 : rgb(fcolor).darker(0.5).toString()),
+               material2 = new THREE.MeshBasicMaterial({ color: color2, vertexColors: false }),
+               mesh2 = new THREE.Mesh(geom2, material2);
          mesh2.face_to_bins_index = face_to_bins_indx2;
          mesh2.painter = painter;
          mesh2.handle = mesh.handle;
@@ -80860,7 +80875,7 @@ function drawBinsLego(painter, is_v7 = false) {
 
    // create boxes
    const lcolor = is_v7 ? painter.v7EvalColor('line_color', 'lightblue') : painter.getColor(histo.fLineColor),
-         material = new LineBasicMaterial(getMaterialArgs(lcolor, { linewidth: is_v7 ? painter.v7EvalAttr('line_width', 1) : histo.fLineWidth })),
+         material = new THREE.LineBasicMaterial(getMaterialArgs(lcolor, { linewidth: is_v7 ? painter.v7EvalAttr('line_width', 1) : histo.fLineWidth })),
          line = createLineSegments(convertLegoBuf(painter, lpositions), material, uselineindx ? lindicies : null);
 
    /*
@@ -80945,7 +80960,7 @@ function drawBinsError3D(painter, is_v7 = false) {
 
     // create lines
     const lcolor = is_v7 ? painter.v7EvalColor('line_color', 'lightblue') : painter.getColor(histo.fLineColor),
-          material = new LineBasicMaterial(getMaterialArgs(lcolor, { linewidth: is_v7 ? painter.v7EvalAttr('line_width', 1) : histo.fLineWidth })),
+          material = new THREE.LineBasicMaterial(getMaterialArgs(lcolor, { linewidth: is_v7 ? painter.v7EvalAttr('line_width', 1) : histo.fLineWidth })),
           line = createLineSegments(lpos, material);
 
     line.painter = painter;
@@ -81123,11 +81138,11 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
       if (!color) color = 'white';
       if (painter.options.Surf === 14)
-         material = new MeshLambertMaterial(getMaterialArgs(color, { side: DoubleSide, vertexColors: false }));
+         material = new THREE.MeshLambertMaterial(getMaterialArgs(color, { side: THREE.DoubleSide, vertexColors: false }));
       else
-         material = new MeshBasicMaterial(getMaterialArgs(color, { side: DoubleSide, vertexColors: false }));
+         material = new THREE.MeshBasicMaterial(getMaterialArgs(color, { side: THREE.DoubleSide, vertexColors: false }));
 
-      const mesh = new Mesh(geometry, material);
+      const mesh = new THREE.Mesh(geometry, material);
 
       main.add3DMesh(mesh);
 
@@ -81138,10 +81153,10 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
       if (isgrid) {
          material = (painter.options.Surf === 1)
-                      ? new LineDashedMaterial({ color: 0x0, dashSize: 2, gapSize: 2 })
-                      : new LineBasicMaterial(getMaterialArgs(color));
+                      ? new THREE.LineDashedMaterial({ color: 0x0, dashSize: 2, gapSize: 2 })
+                      : new THREE.LineBasicMaterial(getMaterialArgs(color));
       } else
-         material = new LineBasicMaterial(getMaterialArgs(color, { linewidth: histo.fLineWidth }));
+         material = new THREE.LineBasicMaterial(getMaterialArgs(color, { linewidth: histo.fLineWidth }));
 
 
       const line = createLineSegments(convertLegoBuf(painter, lpos, handle.i2 - handle.i1, handle.j2 - handle.j1), material);
@@ -81172,12 +81187,12 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
              for (let i = iminus; i <= iplus; ++i) {
                 if ((i === iminus) || (xp[i] !== xp[i-1]) || (yp[i] !== yp[i-1]))
-                   pnts.push(new Vector2(xp[i], yp[i]));
+                   pnts.push(new THREE.Vector2(xp[i], yp[i]));
              }
 
              if (pnts.length < 3) return;
 
-             const faces = ShapeUtils.triangulateShape(pnts, []);
+             const faces = THREE.ShapeUtils.triangulateShape(pnts, []);
 
              if (!faces || (faces.length === 0)) return;
 
@@ -81206,8 +81221,8 @@ function drawBinsSurf3D(painter, is_v7 = false) {
              }
 
              const geometry = createLegoGeom(painter, pos, norm, handle.i2 - handle.i1, handle.j2 - handle.j1),
-                   material = new MeshBasicMaterial(getMaterialArgs(palette.getColor(colindx), { side: DoubleSide, opacity: 0.5, vertexColors: false })),
-                   mesh = new Mesh(geometry, material);
+                   material = new THREE.MeshBasicMaterial(getMaterialArgs(palette.getColor(colindx), { side: THREE.DoubleSide, opacity: 0.5, vertexColors: false })),
+                   mesh = new THREE.Mesh(geometry, material);
              mesh.painter = painter;
              main.add3DMesh(mesh);
          }
@@ -82825,7 +82840,7 @@ function drawTH2PolyLego(painter) {
                if (vert > 0)
                   dist2 = (currx-lastx)*(currx-lastx) + (curry-lasty)*(curry-lasty);
                if (dist2 > dist2limit) {
-                  pnts.push(new Vector2(currx, curry));
+                  pnts.push(new THREE.Vector2(currx, curry));
                   lastx = currx;
                   lasty = curry;
                }
@@ -82833,7 +82848,7 @@ function drawTH2PolyLego(painter) {
 
             try {
                if (pnts.length > 2)
-                  faces = ShapeUtils.triangulateShape(pnts, []);
+                  faces = THREE.ShapeUtils.triangulateShape(pnts, []);
             } catch (e) {
                faces = null;
             }
@@ -82917,12 +82932,12 @@ function drawTH2PolyLego(painter) {
          }
       }
 
-      const geometry = new BufferGeometry();
-      geometry.setAttribute('position', new BufferAttribute(pos, 3));
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.BufferAttribute(pos, 3));
       geometry.computeVertexNormals();
 
-      const material = new MeshBasicMaterial(getMaterialArgs(painter._color_palette?.getColor(colindx), { vertexColors: false })),
-            mesh = new Mesh(geometry, material);
+      const material = new THREE.MeshBasicMaterial(getMaterialArgs(painter._color_palette?.getColor(colindx), { vertexColors: false })),
+            mesh = new THREE.Mesh(geometry, material);
 
       pmain.add3DMesh(mesh);
 
@@ -83439,8 +83454,8 @@ class TH3Painter extends THistPainter {
          use_lambert = true;
          if (this.options.GLBox === 12) use_colors = true;
 
-         const geom = main.webgl ? new SphereGeometry(0.5, 16, 12) : new SphereGeometry(0.5, 8, 6);
-         geom.applyMatrix4(new Matrix4().makeRotationX(Math.PI/2));
+         const geom = new THREE.SphereGeometry(0.5, main.webgl ? 16 : 8, main.webgl ? 12 : 6);
+         geom.applyMatrix4(new THREE.Matrix4().makeRotationX(Math.PI/2));
          geom.computeVertexNormals();
 
          const indx = geom.getIndex().array,
@@ -83682,11 +83697,11 @@ class TH3Painter extends THistPainter {
 
       for (const colindx in cols_size) {
          const nseq = cols_sequence[colindx],
-               all_bins_buffgeom = new BufferGeometry(); // BufferGeometries that store geometry of all bins
+               all_bins_buffgeom = new THREE.BufferGeometry(); // BufferGeometries that store geometry of all bins
 
          // Create mesh from bin buffer geometry
-         all_bins_buffgeom.setAttribute('position', new BufferAttribute(bin_verts[nseq], 3));
-         all_bins_buffgeom.setAttribute('normal', new BufferAttribute(bin_norms[nseq], 3));
+         all_bins_buffgeom.setAttribute('position', new THREE.BufferAttribute(bin_verts[nseq], 3));
+         all_bins_buffgeom.setAttribute('normal', new THREE.BufferAttribute(bin_norms[nseq], 3));
 
          let opacity = use_opacity;
 
@@ -83696,9 +83711,9 @@ class TH3Painter extends THistPainter {
          }
 
          const material = use_lambert
-                            ? new MeshLambertMaterial({ color: fillcolor, opacity, transparent: opacity < 1, vertexColors: false })
-                            : new MeshBasicMaterial({ color: fillcolor, opacity, transparent: opacity < 1, vertexColors: false }),
-              combined_bins = new Mesh(all_bins_buffgeom, material);
+                            ? new THREE.MeshLambertMaterial({ color: fillcolor, opacity, transparent: opacity < 1, vertexColors: false })
+                            : new THREE.MeshBasicMaterial({ color: fillcolor, opacity, transparent: opacity < 1, vertexColors: false }),
+              combined_bins = new THREE.Mesh(all_bins_buffgeom, material);
 
          combined_bins.bins = bin_tooltips[nseq];
          combined_bins.bins_faces = buffer_size/9;
@@ -83737,7 +83752,7 @@ class TH3Painter extends THistPainter {
          main.add3DMesh(combined_bins);
 
          if (helper_kind[nseq] > 0) {
-            const helper_material = new LineBasicMaterial({ color: this.getColor(histo.fLineColor) }),
+            const helper_material = new THREE.LineBasicMaterial({ color: this.getColor(histo.fLineColor) }),
                 lines = (helper_kind[nseq] === 1)
                    // reuse positions from the mesh - only special index was created
                    ? createLineSegments(bin_verts[nseq], helper_material, helper_indexes[nseq])
@@ -84362,9 +84377,9 @@ function createBufferGeometry(polygons) {
       }
    }
 
-   const geometry = new BufferGeometry();
-   geometry.setAttribute('position', new BufferAttribute(positions_buf, 3));
-   geometry.setAttribute('normal', new BufferAttribute(normals_buf, 3));
+   const geometry = new THREE.BufferGeometry();
+   geometry.setAttribute('position', new THREE.BufferAttribute(positions_buf, 3));
+   geometry.setAttribute('normal', new THREE.BufferAttribute(normals_buf, 3));
 
    // geometry.computeVertexNormals();
    return geometry;
@@ -84376,7 +84391,7 @@ class Geometry {
    constructor(geometry, transfer_matrix, nodeid, flippedMesh) {
       // Convert BufferGeometry to ThreeBSP
 
-      if (geometry instanceof Mesh) {
+      if (geometry instanceof THREE.Mesh) {
          // #todo: add hierarchy support
          geometry.updateMatrix();
          transfer_matrix = this.matrix = geometry.matrix.clone();
@@ -84385,7 +84400,7 @@ class Geometry {
          this.tree = geometry;
          this.matrix = null; // new Matrix4;
          return this;
-      } else if (geometry instanceof BufferGeometry) {
+      } else if (geometry instanceof THREE.BufferGeometry) {
          const pos_buf = geometry.getAttribute('position').array,
                norm_buf = geometry.getAttribute('normal').array,
                polygons = [];
@@ -84450,21 +84465,21 @@ class Geometry {
 
          vertex = geometry.vertices[face.a];
          if (useVertexNormals) normal = face.vertexNormals[0];
-         // uvs = faceVertexUvs ? new Vector2( faceVertexUvs[0].x, faceVertexUvs[0].y ) : null;
+         // uvs = faceVertexUvs ? new THREE.Vector2( faceVertexUvs[0].x, faceVertexUvs[0].y ) : null;
          vertex = new Vertex(vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z /* face.normal, uvs */);
          if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
          polygon.vertices.push(vertex);
 
          vertex = geometry.vertices[face.b];
          if (useVertexNormals) normal = face.vertexNormals[1];
-         // uvs = faceVertexUvs ? new Vector2( faceVertexUvs[1].x, faceVertexUvs[1].y ) : null;
+         // uvs = faceVertexUvs ? new THREE.Vector2( faceVertexUvs[1].x, faceVertexUvs[1].y ) : null;
          vertex = new Vertex(vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z /* face.normal, uvs */);
          if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
          polygon.vertices.push(vertex);
 
          vertex = geometry.vertices[face.c];
          if (useVertexNormals) normal = face.vertexNormals[2];
-         // uvs = faceVertexUvs ? new Vector2( faceVertexUvs[2].x, faceVertexUvs[2].y ) : null;
+         // uvs = faceVertexUvs ? new THREE.Vector2( faceVertexUvs[2].x, faceVertexUvs[2].y ) : null;
          vertex = new Vertex(vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z /* face.normal, uvs */);
          if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
          polygon.vertices.push(vertex);
@@ -84674,7 +84689,7 @@ class Geometry {
 
    toMesh(material) {
       const geometry = this.toBufferGeometry(),
-            mesh = new Mesh(geometry, material);
+            mesh = new THREE.Mesh(geometry, material);
 
       if (this.matrix) {
          mesh.position.setFromMatrixPosition(this.matrix);
@@ -84731,6 +84746,9 @@ function geoCfg(name, value) {
 const kindGeo = 0,    // TGeoNode / TGeoShape
       kindEve = 1,    // TEveShape / TEveGeoShapeExtract
       kindShape = 2,  // special kind for single shape handling
+
+Vector3$1 = THREE.Vector3, // used very often
+Matrix4$1 = THREE.Matrix4, // used very often
 
 /** @summary TGeo-related bits
   * @private */
@@ -84879,11 +84897,11 @@ function checkDuplicates(parent, chlds) {
 /** @summary Create normal to plane, defined with three points
   * @private */
 function produceNormal(x1, y1, z1, x2, y2, z2, x3, y3, z3) {
-   const pA = new Vector3(x1, y1, z1),
-       pB = new Vector3(x2, y2, z2),
-       pC = new Vector3(x3, y3, z3),
-       cb = new Vector3(),
-       ab = new Vector3();
+   const pA = new Vector3$1(x1, y1, z1),
+         pB = new Vector3$1(x2, y2, z2),
+         pC = new Vector3$1(x3, y3, z3),
+         cb = new Vector3$1(),
+         ab = new Vector3$1();
 
    cb.subVectors(pC, pB);
    ab.subVectors(pA, pB);
@@ -85022,11 +85040,11 @@ class GeometryCreator {
    /** @summary Calculate normal */
    calcNormal() {
       if (!this.cb) {
-         this.pA = new Vector3();
-         this.pB = new Vector3();
-         this.pC = new Vector3();
-         this.cb = new Vector3();
-         this.ab = new Vector3();
+         this.pA = new Vector3$1();
+         this.pB = new Vector3$1();
+         this.pC = new Vector3$1();
+         this.cb = new Vector3$1();
+         this.ab = new Vector3$1();
       }
 
       this.pA.fromArray(this.pos, this.indx - 9);
@@ -85096,9 +85114,9 @@ class GeometryCreator {
       if (this.nfaces !== this.indx/9)
          console.error(`Mismatch with created ${this.nfaces} and filled ${this.indx/9} number of faces`);
 
-      const geometry = new BufferGeometry();
-      geometry.setAttribute('position', new BufferAttribute(this.pos, 3));
-      geometry.setAttribute('normal', new BufferAttribute(this.norm, 3));
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.BufferAttribute(this.pos, 3));
+      geometry.setAttribute('normal', new THREE.BufferAttribute(this.norm, 3));
       return geometry;
    }
 
@@ -85219,11 +85237,11 @@ class PolygonsCreator {
    /** @summary Calculate normal */
    calcNormal() {
       if (!this.cb) {
-         this.pA = new Vector3();
-         this.pB = new Vector3();
-         this.pC = new Vector3();
-         this.cb = new Vector3();
-         this.ab = new Vector3();
+         this.pA = new Vector3$1();
+         this.pB = new Vector3$1();
+         this.pC = new Vector3$1();
+         this.cb = new Vector3$1();
+         this.ab = new Vector3$1();
       }
 
       this.pA.set(this.v1.x, this.v1.y, this.v1.z);
@@ -85426,9 +85444,9 @@ function createArb8Buffer(shape, faces_limit) {
       if ((i1 >= 0) && (i4 >= 0) && faces_limit) {
          // try to identify two faces with same normal - very useful if one can create face4
          if (n === 0)
-            norm = new Vector3(0, 0, 1);
+            norm = new Vector3$1(0, 0, 1);
          else if (n === 30)
-            norm = new Vector3(0, 0, -1);
+            norm = new Vector3$1(0, 0, -1);
          else {
             const norm1 = produceNormal(vertices[i1], vertices[i1+1], vertices[i1+2],
                                       vertices[i2], vertices[i2+1], vertices[i2+2],
@@ -85815,9 +85833,9 @@ function createTorusBuffer(shape, faces_limit) {
 
    const creator = faces_limit ? new PolygonsCreator() : new GeometryCreator(numfaces),
          // use vectors for normals calculation
-         p1 = new Vector3(), p2 = new Vector3(), p3 = new Vector3(), p4 = new Vector3(),
-         n1 = new Vector3(), n2 = new Vector3(), n3 = new Vector3(), n4 = new Vector3(),
-         center1 = new Vector3(), center2 = new Vector3();
+         p1 = new Vector3$1(), p2 = new Vector3$1(), p3 = new Vector3$1(), p4 = new Vector3$1(),
+         n1 = new Vector3$1(), n2 = new Vector3$1(), n3 = new Vector3$1(), n4 = new Vector3$1(),
+         center1 = new Vector3$1(), center2 = new Vector3$1();
 
    for (let side = 0; side < 2; ++side) {
       if ((side > 0) && (shape.fRmin <= 0)) break;
@@ -85927,9 +85945,9 @@ function createPolygonBuffer(shape, faces_limit) {
 
          if (pnts !== null) {
             if (side === 0)
-               pnts.push(new Vector2(factor*rad, layerz));
+               pnts.push(new THREE.Vector2(factor*rad, layerz));
              else if (rad < shape.fRmax[layer])
-               pnts.unshift(new Vector2(factor*rad, layerz));
+               pnts.unshift(new THREE.Vector2(factor*rad, layerz));
          }
       }
    }
@@ -85953,7 +85971,7 @@ function createPolygonBuffer(shape, faces_limit) {
       } else {
          // let three.js calculate our faces
          // console.log(`triangulate polygon ${shape.fShapeId}`);
-         cut_faces = ShapeUtils.triangulateShape(pnts, []);
+         cut_faces = THREE.ShapeUtils.triangulateShape(pnts, []);
       }
       numfaces += cut_faces.length*2;
    }
@@ -86051,14 +86069,15 @@ function createPolygonBuffer(shape, faces_limit) {
 function createXtruBuffer(shape, faces_limit) {
    let nfaces = (shape.fNz-1) * shape.fNvert * 2;
 
-   if (faces_limit < 0) return nfaces + shape.fNvert*3;
+   if (faces_limit < 0)
+      return nfaces + shape.fNvert*3;
 
    // create points
    const pnts = [];
    for (let vert = 0; vert < shape.fNvert; ++vert)
-      pnts.push(new Vector2(shape.fX[vert], shape.fY[vert]));
+      pnts.push(new THREE.Vector2(shape.fX[vert], shape.fY[vert]));
 
-   let faces = ShapeUtils.triangulateShape(pnts, []);
+   let faces = THREE.ShapeUtils.triangulateShape(pnts, []);
    if (faces.length < pnts.length-2) {
       geoWarn(`Problem with XTRU shape ${shape.fName} with ${pnts.length} vertices`);
       faces = [];
@@ -86328,7 +86347,7 @@ function createMatrix(matrix) {
 
    if (!translation && !rotation && !scale) return null;
 
-   const res = new Matrix4();
+   const res = new Matrix4$1();
 
    if (rotation) {
       res.set(rotation[0], rotation[1], rotation[2], 0,
@@ -86341,7 +86360,7 @@ function createMatrix(matrix) {
       res.setPosition(translation[0], translation[1], translation[2]);
 
    if (scale)
-      res.scale(new Vector3(scale[0], scale[1], scale[2]));
+      res.scale(new Vector3$1(scale[0], scale[1], scale[2]));
 
    return res;
 }
@@ -86355,7 +86374,7 @@ function getNodeMatrix(kind, node) {
    if (kind === kindEve) {
       // special handling for EVE nodes
 
-      matrix = new Matrix4();
+      matrix = new Matrix4$1();
 
       if (node.fTrans) {
          matrix.set(node.fTrans[0], node.fTrans[4], node.fTrans[8], 0,
@@ -86386,7 +86405,7 @@ function getNodeMatrix(kind, node) {
         case 'TGeoPatternParaZ': {
            const _shift = node.fFinder.fStart + (node.fIndex + 0.5) * node.fFinder.fStep;
 
-           matrix = new Matrix4();
+           matrix = new Matrix4$1();
 
            switch (node.fFinder._typename[node.fFinder._typename.length-1]) {
               case 'X': matrix.setPosition(_shift, 0, 0); break;
@@ -86400,7 +86419,7 @@ function getNodeMatrix(kind, node) {
            const phi = (Math.PI/180)*(node.fFinder.fStart+(node.fIndex+0.5)*node.fFinder.fStep),
                _cos = Math.cos(phi), _sin = Math.sin(phi);
 
-           matrix = new Matrix4();
+           matrix = new Matrix4$1();
 
            matrix.set(_cos, -_sin, 0, 0,
                       _sin, _cos, 0, 0,
@@ -86411,12 +86430,12 @@ function getNodeMatrix(kind, node) {
 
         case 'TGeoPatternCylR':
             // seems to be, require no transformation
-            matrix = new Matrix4();
+            matrix = new Matrix4$1();
             break;
 
         case 'TGeoPatternTrapZ': {
            const dz = node.fFinder.fStart + (node.fIndex+0.5)*node.fFinder.fStep;
-           matrix = new Matrix4();
+           matrix = new Matrix4$1();
            matrix.setPosition(node.fFinder.fTxz*dz, node.fFinder.fTyz*dz, dz);
            break;
         }
@@ -86460,7 +86479,7 @@ function geomBoundingBox(geom) {
       polygons = geom.polygons;
 
    if (polygons !== null) {
-      const box = new Box3();
+      const box = new THREE.Box3();
       for (let n = 0; n < polygons.length; ++n) {
          const polygon = polygons[n], nvert = polygon.vertices.length;
          for (let k = 0; k < nvert; ++k)
@@ -86481,8 +86500,8 @@ function geomBoundingBox(geom) {
 function createHalfSpace(shape, geom) {
    if (!shape?.fN || !shape?.fP) return null;
 
-   const vertex = new Vector3(shape.fP[0], shape.fP[1], shape.fP[2]),
-       normal = new Vector3(shape.fN[0], shape.fN[1], shape.fN[2]);
+   const vertex = new Vector3$1(shape.fP[0], shape.fP[1], shape.fP[2]),
+       normal = new Vector3$1(shape.fN[0], shape.fN[1], shape.fN[2]);
 
    normal.normalize();
 
@@ -86490,19 +86509,19 @@ function createHalfSpace(shape, geom) {
    if (geom) {
       // using real size of other geometry, we probably improve precision
       const box = geomBoundingBox(geom);
-      if (box) sz = box.getSize(new Vector3()).length() * 1000;
+      if (box) sz = box.getSize(new Vector3$1()).length() * 1000;
    }
 
-   const v0 = new Vector3(-sz, -sz/2, 0),
-       v1 = new Vector3(0, sz, 0),
-       v2 = new Vector3(sz, -sz/2, 0),
-       v3 = new Vector3(0, 0, -sz),
-       geometry = new BufferGeometry(),
-       positions = new Float32Array([v0.x, v0.y, v0.z, v2.x, v2.y, v2.z, v1.x, v1.y, v1.z,
+   const v0 = new THREE.Vector3(-sz, -sz/2, 0),
+         v1 = new THREE.Vector3(0, sz, 0),
+         v2 = new THREE.Vector3(sz, -sz/2, 0),
+         v3 = new THREE.Vector3(0, 0, -sz),
+         geometry = new THREE.BufferGeometry(),
+         positions = new Float32Array([v0.x, v0.y, v0.z, v2.x, v2.y, v2.z, v1.x, v1.y, v1.z,
                                       v0.x, v0.y, v0.z, v1.x, v1.y, v1.z, v3.x, v3.y, v3.z,
                                       v1.x, v1.y, v1.z, v2.x, v2.y, v2.z, v3.x, v3.y, v3.z,
                                       v2.x, v2.y, v2.z, v0.x, v0.y, v0.z, v3.x, v3.y, v3.z]);
-   geometry.setAttribute('position', new BufferAttribute(positions, 3));
+   geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
    geometry.computeVertexNormals();
 
    geometry.lookAt(normal);
@@ -86741,9 +86760,9 @@ function makeEveGeometry(rd) {
    if (rd.idxBuff.length !== nVert)
       throw Error('Expect single list of triangles in index buffer.');
 
-   const body = new BufferGeometry();
-   body.setAttribute('position', new BufferAttribute(rd.vtxBuff, 3));
-   body.setIndex(new BufferAttribute(rd.idxBuff, 1));
+   const body = new THREE.BufferGeometry();
+   body.setAttribute('position', new THREE.BufferAttribute(rd.vtxBuff, 3));
+   body.setIndex(new THREE.BufferAttribute(rd.idxBuff, 1));
    body.computeVertexNormals();
 
    return body;
@@ -86754,9 +86773,9 @@ function makeEveGeometry(rd) {
 function makeViewerGeometry(rd) {
    const vtxBuff = new Float32Array(rd.raw.buffer, 0, rd.raw.buffer.byteLength/4),
 
-    body = new BufferGeometry();
-   body.setAttribute('position', new BufferAttribute(vtxBuff, 3));
-   body.setIndex(new BufferAttribute(new Uint32Array(rd.idx), 1));
+   body = new THREE.BufferGeometry();
+   body.setAttribute('position', new THREE.BufferAttribute(vtxBuff, 3));
+   body.setIndex(new THREE.BufferAttribute(new Uint32Array(rd.idx), 1));
    body.computeVertexNormals();
    return body;
 }
@@ -86887,7 +86906,7 @@ function provideObjectInfo(obj) {
 /** @summary Creates projection matrix for the camera
   * @private */
 function createProjectionMatrix(camera) {
-   const cameraProjectionMatrix = new Matrix4();
+   const cameraProjectionMatrix = new Matrix4$1();
 
    camera.updateMatrixWorld();
 
@@ -86902,10 +86921,10 @@ function createProjectionMatrix(camera) {
 function createFrustum(source) {
    if (!source) return null;
 
-   if (source instanceof PerspectiveCamera)
+   if (source instanceof THREE.PerspectiveCamera)
       source = createProjectionMatrix(source);
 
-   const frustum = new Frustum();
+   const frustum = new THREE.Frustum();
    frustum.setFromProjectionMatrix(source);
 
    frustum.corners = new Float32Array([
@@ -86920,7 +86939,7 @@ function createFrustum(source) {
        0, 0, 0 // also check center of the shape
    ]);
 
-   frustum.test = new Vector3(0, 0, 0);
+   frustum.test = new Vector3$1(0, 0, 0);
 
    frustum.CheckShape = function(matrix, shape) {
       const pnt = this.test, len = this.corners.length, corners = this.corners;
@@ -86975,41 +86994,41 @@ function createMaterial(cfg, args0) {
 
    args.wireframe = cfg.wireframe ?? false;
    if (!args.color) args.color = 'red';
-   args.side = FrontSide;
+   args.side = THREE.FrontSide;
    args.transparent = args.opacity < 1;
    args.depthWrite = args.opactity === 1;
 
    let material;
 
    if (cfg.material_kind === 'basic')
-      material = new MeshBasicMaterial(args);
+      material = new THREE.MeshBasicMaterial(args);
     else if (cfg.material_kind === 'depth') {
       delete args.color;
-      material = new MeshDepthMaterial(args);
+      material = new THREE.MeshDepthMaterial(args);
    } else if (cfg.material_kind === 'toon')
-      material = new MeshToonMaterial(args);
+      material = new THREE.MeshToonMaterial(args);
     else if (cfg.material_kind === 'matcap') {
       delete args.wireframe;
-      material = new MeshMatcapMaterial(args);
+      material = new THREE.MeshMatcapMaterial(args);
    } else if (cfg.material_kind === 'standard') {
       args.metalness = cfg.metalness ?? 0.5;
       args.roughness = cfg.roughness ?? 0.1;
-      material = new MeshStandardMaterial(args);
+      material = new THREE.MeshStandardMaterial(args);
    } else if (cfg.material_kind === 'normal') {
       delete args.color;
-      material = new MeshNormalMaterial(args);
+      material = new THREE.MeshNormalMaterial(args);
    } else if (cfg.material_kind === 'physical') {
       args.metalness = cfg.metalness ?? 0.5;
       args.roughness = cfg.roughness ?? 0.1;
       args.reflectivity = cfg.reflectivity ?? 0.5;
       args.emissive = args.color;
-      material = new MeshPhysicalMaterial(args);
+      material = new THREE.MeshPhysicalMaterial(args);
    } else if (cfg.material_kind === 'phong') {
       args.shininess = cfg.shininess ?? 0.9;
-      material = new MeshPhongMaterial(args);
+      material = new THREE.MeshPhongMaterial(args);
    } else {
       args.vertexColors = false;
-      material = new MeshLambertMaterial(args);
+      material = new THREE.MeshLambertMaterial(args);
    }
 
    if ((material.flatShading !== undefined) && (cfg.flatShading !== undefined))
@@ -87478,7 +87497,7 @@ class ClonedNodes {
 
          if (arg.domatrix) {
             arg.matrices = [];
-            arg.mpool = [new Matrix4()]; // pool of Matrix objects to avoid permanent creation
+            arg.mpool = [new Matrix4$1()]; // pool of Matrix objects to avoid permanent creation
             arg.getmatrix = function() { return this.matrices[this.last]; };
          }
 
@@ -87505,9 +87524,9 @@ class ClonedNodes {
 
       if (arg.domatrix) {
          if (!arg.mpool[arg.last+1])
-            arg.mpool[arg.last+1] = new Matrix4();
+            arg.mpool[arg.last+1] = new Matrix4$1();
 
-         const prnt = (arg.last > 0) ? arg.matrices[arg.last-1] : new Matrix4();
+         const prnt = (arg.last > 0) ? arg.matrices[arg.last-1] : new Matrix4$1();
          if (node.matrix) {
             arg.matrices[arg.last] = arg.mpool[arg.last].fromArray(prnt.elements);
             arg.matrices[arg.last].multiply(arg.mpool[arg.last+1].fromArray(node.matrix));
@@ -87585,7 +87604,7 @@ class ClonedNodes {
       // if (!this.toplevel || (this.nodes.length === 1) || (res.node.kind === 1)) res.name = '';
 
       if (withmatrix) {
-         res.matrix = new Matrix4();
+         res.matrix = new Matrix4$1();
          if (res.node.matrix) res.matrix.fromArray(res.node.matrix);
       }
 
@@ -87610,7 +87629,7 @@ class ClonedNodes {
             }
 
             if (withmatrix && res.node.matrix)
-               res.matrix.multiply(new Matrix4().fromArray(res.node.matrix));
+               res.matrix.multiply(new Matrix4$1().fromArray(res.node.matrix));
          }
       }
 
@@ -87758,7 +87777,7 @@ class ClonedNodes {
       if (clone.kind === kindShape) {
          const prop = { name: clone.name, nname: clone.name, shape: null, material: null, chlds: null },
              opacity = entry.opacity || 1, col = entry.color || '#0000FF';
-         prop.fillcolor = new Color(col[0] === '#' ? col : `rgb(${col})`);
+         prop.fillcolor = new THREE.Color(col[0] === '#' ? col : `rgb(${col})`);
          prop.material = createMaterial(this._cfg, { opacity, color: prop.fillcolor });
          return prop;
       }
@@ -87779,7 +87798,7 @@ class ClonedNodes {
 
          {
             const opacity = Math.min(1, node.fRGBA[3]);
-            prop.fillcolor = new Color(node.fRGBA[0], node.fRGBA[1], node.fRGBA[2]);
+            prop.fillcolor = new THREE.Color(node.fRGBA[0], node.fRGBA[1], node.fRGBA[2]);
             prop.material = createMaterial(this._cfg, { opacity, color: prop.fillcolor });
          }
 
@@ -87865,7 +87884,7 @@ class ClonedNodes {
 
          if (!force) return null;
 
-         obj3d = new Object3D();
+         obj3d = new THREE.Object3D();
 
          if (this._cfg?.set_names)
             obj3d.name = this.getNodeName(node.id);
@@ -87874,7 +87893,7 @@ class ClonedNodes {
             obj3d.userData = this.origin[node.id];
 
          if (node.abs_matrix) {
-            obj3d.absMatrix = new Matrix4();
+            obj3d.absMatrix = new Matrix4$1();
             obj3d.absMatrix.fromArray(node.matrix);
          } else if (node.matrix) {
             obj3d.matrix.fromArray(node.matrix);
@@ -87949,11 +87968,11 @@ class ClonedNodes {
 
       prop.material.wireframe = ctrl.wireframe;
 
-      prop.material.side = ctrl.doubleside ? DoubleSide : FrontSide;
+      prop.material.side = ctrl.doubleside ? THREE.DoubleSide : THREE.FrontSide;
 
       let mesh;
       if (matrix.determinant() > -0.9)
-         mesh = new Mesh(shape.geom, prop.material);
+         mesh = new THREE.Mesh(shape.geom, prop.material);
        else
          mesh = createFlippedMesh(shape, prop.material);
 
@@ -88043,7 +88062,7 @@ class ClonedNodes {
 
             prop.material.wireframe = ctrl.wireframe;
 
-            prop.material.side = ctrl.doubleside ? DoubleSide : FrontSide;
+            prop.material.side = ctrl.doubleside ? THREE.DoubleSide : THREE.FrontSide;
 
             if (instance.entries.length === 1)
                this.createEntryMesh(ctrl, toplevel, entry0, shape, colors);
@@ -88065,7 +88084,7 @@ class ClonedNodes {
                });
 
                if (arr1.length > 0) {
-                  const mesh1 = new InstancedMesh(shape.geom, prop.material, arr1.length);
+                  const mesh1 = new THREE.InstancedMesh(shape.geom, prop.material, arr1.length);
 
                   mesh1.stacks = stacks1;
                   arr1.forEach((matrix, i) => mesh1.setMatrixAt(i, matrix));
@@ -88091,10 +88110,10 @@ class ClonedNodes {
                   if (shape.geomZ === undefined)
                      shape.geomZ = createFlippedGeom(shape.geom);
 
-                  const mesh2 = new InstancedMesh(shape.geomZ, prop.material, arr2.length);
+                  const mesh2 = new THREE.InstancedMesh(shape.geomZ, prop.material, arr2.length);
 
                   mesh2.stacks = stacks2;
-                  const m = new Matrix4().makeScale(1, 1, -1);
+                  const m = new Matrix4$1().makeScale(1, 1, -1);
                   arr2.forEach((matrix, i) => {
                      mesh2.setMatrixAt(i, matrix.multiply(m));
                   });
@@ -88502,9 +88521,9 @@ function createFlippedGeom(geom) {
       shift+=3; if (shift===6) shift=-3; // values 0,3,-3
    }
 
-   const geomZ = new BufferGeometry();
-   geomZ.setAttribute('position', new BufferAttribute(newpos, 3));
-   geomZ.setAttribute('normal', new BufferAttribute(newnorm, 3));
+   const geomZ = new THREE.BufferGeometry();
+   geomZ.setAttribute('position', new THREE.BufferAttribute(newpos, 3));
+   geomZ.setAttribute('normal', new THREE.BufferAttribute(newnorm, 3));
 
    return geomZ;
 }
@@ -88520,8 +88539,8 @@ function createFlippedMesh(shape, material) {
    if (shape.geomZ === undefined)
       shape.geomZ = createFlippedGeom(shape.geom);
 
-   const mesh = new Mesh(shape.geomZ, material);
-   mesh.scale.copy(new Vector3(1, 1, -1));
+   const mesh = new THREE.Mesh(shape.geomZ, material);
+   mesh.scale.copy(new Vector3$1(1, 1, -1));
    mesh.updateMatrix();
 
    mesh._flippedMesh = true;
@@ -88535,10 +88554,10 @@ function createFlippedMesh(shape, material) {
 function getBoundingBox(node, box3, local_coordinates) {
    if (!node?.geometry) return box3;
 
-   if (!box3) box3 = new Box3().makeEmpty();
+   if (!box3) box3 = new THREE.Box3().makeEmpty();
 
    if (node.isInstancedMesh) {
-      const m = new Matrix4(), b = new Box3().makeEmpty();
+      const m = new Matrix4$1(), b = new THREE.Box3().makeEmpty();
 
       node.geometry.computeBoundingBox();
 
@@ -88552,7 +88571,7 @@ function getBoundingBox(node, box3, local_coordinates) {
 
    if (!local_coordinates) node.updateWorldMatrix(false, false);
 
-   const v1 = new Vector3(), attribute = node.geometry.attributes?.position;
+   const v1 = new Vector3$1(), attribute = node.geometry.attributes?.position;
 
    if (attribute !== undefined) {
       for (let i = 0, l = attribute.count; i < l; i++) {
@@ -88587,7 +88606,7 @@ function cleanupShape(shape) {
   * @param origin - camera position used to provide sorting
   * @param method - name of sorting method like 'pnt', 'ray', 'size', 'dflt'  */
 function produceRenderOrder(toplevel, origin, method, clones) {
-   const raycast = new Raycaster();
+   const raycast = new THREE.Raycaster();
 
    function setdefaults(top) {
       if (!top) return;
@@ -88629,7 +88648,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
          return false;
       }
 
-      const tmp_vect = new Vector3();
+      const tmp_vect = new Vector3$1();
 
       // first calculate distance to the camera
       // it gives preliminary order of volumes
@@ -88641,7 +88660,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
             mesh.$jsroot_box3 = box3 = getBoundingBox(mesh);
 
          if (method === 'size') {
-            const sz = box3.getSize(new Vector3());
+            const sz = box3.getSize(new Vector3$1());
             mesh.$jsroot_distance = sz.x*sz.y*sz.z;
             continue;
          }
@@ -88652,7 +88671,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
          }
 
          let dist = Math.min(origin.distanceTo(box3.min), origin.distanceTo(box3.max));
-         const pnt = new Vector3(box3.min.x, box3.min.y, box3.max.z);
+         const pnt = new Vector3$1(box3.min.x, box3.min.y, box3.max.z);
 
          dist = Math.min(dist, origin.distanceTo(pnt));
          pnt.set(box3.min.x, box3.max.y, box3.min.z);
@@ -88706,7 +88725,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
 
                const pos = mesh.geometry.attributes.position.array;
 
-               direction = new Vector3((pos[0]+pos[3]+pos[6])/3, (pos[1]+pos[4]+pos[7])/3, (pos[2]+pos[5]+pos[8])/3);
+               direction = new Vector3$1((pos[0]+pos[3]+pos[6])/3, (pos[1]+pos[4]+pos[7])/3, (pos[2]+pos[5]+pos[8])/3);
 
                direction.applyMatrix4(mesh.matrixWorld);
             }
@@ -91194,7 +91213,10 @@ const _ENTIRE_SCENE = 0, _BLOOM_SCENE = 1,
       clTGeoManager = 'TGeoManager', clTEveGeoShapeExtract = 'TEveGeoShapeExtract',
       clTGeoOverlap = 'TGeoOverlap', clTGeoVolumeAssembly = 'TGeoVolumeAssembly',
       clTEveTrack = 'TEveTrack', clTEvePointSet = 'TEvePointSet',
-      clREveGeoShapeExtract = `${nsREX}REveGeoShapeExtract`;
+      clREveGeoShapeExtract = `${nsREX}REveGeoShapeExtract`,
+      Color = THREE.Color, // used very often
+      Matrix4 = THREE.Matrix4, // used very often
+      Vector3 = THREE.Vector3; // used very often
 
 /** @summary Function used to build hierarchy of elements of overlap object
   * @private */
@@ -91563,7 +91585,7 @@ class GeoDrawingControl extends InteractiveControl {
          }
 
          if (col && indx !== undefined) {
-            const h = new Mesh(c.geometry, c.material.clone());
+            const h = new THREE.Mesh(c.geometry, c.material.clone());
 
             if (this.bloom) {
                h.layers.enable(_BLOOM_SCENE);
@@ -91865,7 +91887,7 @@ class TGeoPainter extends ObjectPainter {
    initVRMode() {
       // Dolly contains camera and controllers in VR Mode
       // Allows moving the user in the scene
-      this._dolly = new Group();
+      this._dolly = new THREE.Group();
       this._scene.add(this._dolly);
       this._standingMatrix = new Matrix4();
 
@@ -91888,14 +91910,14 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Init VR controllers geometry
      * @private */
    initVRControllersGeometry() {
-      const geometry = new SphereGeometry(0.025, 18, 36),
-          material = new MeshBasicMaterial({ color: 'grey', vertexColors: false }),
-          rayMaterial = new MeshBasicMaterial({ color: 'fuchsia', vertexColors: false }),
-          rayGeometry = new BoxGeometry(0.001, 0.001, 2),
-          ray1Mesh = new Mesh(rayGeometry, rayMaterial),
-          ray2Mesh = new Mesh(rayGeometry, rayMaterial),
-          sphere1 = new Mesh(geometry, material),
-          sphere2 = new Mesh(geometry, material);
+      const geometry = new THREE.SphereGeometry(0.025, 18, 36),
+            material = new THREE.MeshBasicMaterial({ color: 'grey', vertexColors: false }),
+            rayMaterial = new THREE.MeshBasicMaterial({ color: 'fuchsia', vertexColors: false }),
+            rayGeometry = new THREE.BoxGeometry(0.001, 0.001, 2),
+            ray1Mesh = new THREE.Mesh(rayGeometry, rayMaterial),
+            ray2Mesh = new THREE.Mesh(rayGeometry, rayMaterial),
+            sphere1 = new THREE.Mesh(geometry, material),
+            sphere2 = new THREE.Mesh(geometry, material);
 
       this._controllersMeshes = [];
       this._controllersMeshes.push(sphere1);
@@ -92506,7 +92528,7 @@ class TGeoPainter extends ObjectPainter {
                   mesh.getMatrixAt(i, item.matrix0);
                   item.minvert.copy(item.matrix0).invert();
 
-                  const box3 = new Box3().copy(mesh.geometry.boundingBox).applyMatrix4(item.matrix0);
+                  const box3 = new THREE.Box3().copy(mesh.geometry.boundingBox).applyMatrix4(item.matrix0);
 
                   item.vect0 = new Vector3((box3.max.x + box3.min.x) / 2, (box3.max.y + box3.min.y) / 2, (box3.max.z + box3.min.z) / 2);
                   item.vect1 = new Vector3(0, 0, 0).applyMatrix4(item.minvert);
@@ -92889,9 +92911,9 @@ class TGeoPainter extends ObjectPainter {
 
       if (on && !this._bloomComposer) {
          this._camera.layers.enable(_BLOOM_SCENE);
-         this._bloomComposer = new EffectComposer(this._renderer);
-         this._bloomComposer.addPass(new RenderPass(this._scene, this._camera));
-         const pass = new UnrealBloomPass(new Vector2(this._scene_width, this._scene_height), 1.5, 0.4, 0.85);
+         this._bloomComposer = new THREE.EffectComposer(this._renderer);
+         this._bloomComposer.addPass(new THREE.RenderPass(this._scene, this._camera));
+         const pass = new THREE.UnrealBloomPass(new THREE.Vector2(this._scene_width, this._scene_height), 1.5, 0.4, 0.85);
          pass.threshold = 0;
          pass.radius = 0;
          pass.renderToScreen = true;
@@ -93156,13 +93178,15 @@ class TGeoPainter extends ObjectPainter {
          const extras = this.getExtrasContainer();
          if (extras) {
             extras.traverse(obj3d => {
-               if ((obj3d.geo_object === geo_object) && (active_mesh.indexOf(obj3d) < 0)) active_mesh.push(obj3d);
+               if ((obj3d.geo_object === geo_object) && (active_mesh.indexOf(obj3d) < 0))
+                  active_mesh.push(obj3d);
             });
          }
       } else if (geo_stack && this._toplevel) {
          active_mesh = [];
          this._toplevel.traverse(mesh => {
-            if ((mesh instanceof Mesh) && isSameStack(mesh.stack, geo_stack)) active_mesh.push(mesh);
+            if ((mesh instanceof THREE.Mesh) && isSameStack(mesh.stack, geo_stack))
+               active_mesh.push(mesh);
          });
       } else
          active_mesh = active_mesh ? [active_mesh] : [];
@@ -93682,7 +93706,7 @@ class TGeoPainter extends ObjectPainter {
    extendCustomBoundingBox(box) {
       if (!box) return;
       if (!this._customBoundingBox)
-         this._customBoundingBox = new Box3().makeEmpty();
+         this._customBoundingBox = new THREE.Box3().makeEmpty();
 
       const origin = this._customBoundingBox.clone();
       this._customBoundingBox.union(box);
@@ -93693,7 +93717,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Calculate geometry bounding box */
    getGeomBoundingBox(topitem, scalar) {
-      const box3 = new Box3(), check_any = !this._clones;
+      const box3 = new THREE.Box3(), check_any = !this._clones;
       if (topitem === undefined)
          topitem = this._toplevel;
 
@@ -93711,8 +93735,8 @@ class TGeoPainter extends ObjectPainter {
       }
 
       topitem.traverse(mesh => {
-         if (check_any || (mesh.stack && (mesh instanceof Mesh)) ||
-             (mesh.main_track && (mesh instanceof LineSegments)) || (mesh.stacks && (mesh instanceof InstancedMesh)))
+         if (check_any || (mesh.stack && (mesh instanceof THREE.Mesh)) ||
+             (mesh.main_track && (mesh instanceof THREE.LineSegments)) || (mesh.stacks && (mesh instanceof THREE.InstancedMesh)))
             getBoundingBox(mesh, box3);
       });
 
@@ -93747,13 +93771,13 @@ class TGeoPainter extends ObjectPainter {
       }
 
       toplevel.traverse(mesh => {
-         if (!(mesh instanceof Mesh) || !mesh.stack) return;
+         if (!(mesh instanceof THREE.Mesh) || !mesh.stack) return;
 
          const geom2 = projectGeometry(mesh.geometry, mesh.parent.absMatrix || mesh.parent.matrixWorld, this.ctrl.project, this.ctrl.projectPos, mesh._flippedMesh);
 
          if (!geom2) return;
 
-         const mesh2 = new Mesh(geom2, mesh.material.clone());
+         const mesh2 = new THREE.Mesh(geom2, mesh.material.clone());
 
          this._toplevel.add(mesh2);
 
@@ -93783,14 +93807,14 @@ class TGeoPainter extends ObjectPainter {
          this._camera._lights = this.ctrl.light.kind;
 
          switch (this._camera._lights) {
-            case 'ambient' : this._camera.add(new AmbientLight(0xefefef, p)); break;
-            case 'hemisphere' : this._camera.add(new HemisphereLight(0xffffbb, 0x080820, p)); break;
-            case 'mix': this._camera.add(new AmbientLight(0xefefef, p)); // intentionally without break
+            case 'ambient' : this._camera.add(new THREE.AmbientLight(0xefefef, p)); break;
+            case 'hemisphere' : this._camera.add(new THREE.HemisphereLight(0xffffbb, 0x080820, p)); break;
+            case 'mix': this._camera.add(new THREE.AmbientLight(0xefefef, p)); // intentionally without break
 
             // eslint-disable-next-line no-fallthrough
             default: // 6 point lights
                for (let n = 0; n < 6; ++n) {
-                  const l = new DirectionalLight(0xefefef, p);
+                  const l = new THREE.DirectionalLight(0xefefef, p);
                   this._camera.add(l);
                   l._id = n;
                }
@@ -93837,14 +93861,14 @@ class TGeoPainter extends ObjectPainter {
        }
 
       if (this.isOrthoCamera())
-         this._camera = new OrthographicCamera(-this._scene_width/2, this._scene_width/2, this._scene_height/2, -this._scene_height/2, 1, 10000);
+         this._camera = new THREE.OrthographicCamera(-this._scene_width/2, this._scene_width/2, this._scene_height/2, -this._scene_height/2, 1, 10000);
        else {
-         this._camera = new PerspectiveCamera(25, this._scene_width / this._scene_height, 1, 10000);
+         this._camera = new THREE.PerspectiveCamera(25, this._scene_width / this._scene_height, 1, 10000);
          this._camera.up = this.ctrl._yup ? new Vector3(0, 1, 0) : new Vector3(0, 0, 1);
       }
 
       // Light - add default directional light, adjust later
-      const light = new DirectionalLight(0xefefef, 0.1);
+      const light = new THREE.DirectionalLight(0xefefef, 0.1);
       light.position.set(10, 10, 10);
       this._camera.add(light);
 
@@ -93855,8 +93879,8 @@ class TGeoPainter extends ObjectPainter {
    createSpecialEffects() {
       if (this._webgl && this.ctrl.outline && isFunc(this.createOutline)) {
          // code used with jsroot-based geometry drawing in EVE7, not important any longer
-         this._effectComposer = new EffectComposer(this._renderer);
-         this._effectComposer.addPass(new RenderPass(this._scene, this._camera));
+         this._effectComposer = new THREE.EffectComposer(this._renderer);
+         this._effectComposer.addPass(new THREE.RenderPass(this._scene, this._camera));
          this.createOutline(this._scene_width, this._scene_height);
       }
 
@@ -93875,7 +93899,7 @@ class TGeoPainter extends ObjectPainter {
             this._renderer = cfg.renderer;
             this._webgl = (this._renderer.jsroot_render3d === constants$1.Render3D.WebGL);
 
-            this._toplevel = new Object3D();
+            this._toplevel = new THREE.Object3D();
             this._scene.add(this._toplevel);
 
             if (cfg.scale_x || cfg.scale_y || cfg.scale_z)
@@ -93892,11 +93916,11 @@ class TGeoPainter extends ObjectPainter {
       }
 
       // three.js 3D drawing
-      this._scene = new Scene();
-      this._fog = new Fog(0xffffff, 1, 10000);
+      this._scene = new THREE.Scene();
+      this._fog = new THREE.Fog(0xffffff, 1, 10000);
       this._scene.fog = this.ctrl.use_fog ? this._fog : null;
 
-      this._scene.overrideMaterial = new MeshLambertMaterial({ color: 0x7000ff, vertexColors: false, transparent: true, opacity: 0.2, depthTest: false });
+      this._scene.overrideMaterial = new THREE.MeshLambertMaterial({ color: 0x7000ff, vertexColors: false, transparent: true, opacity: 0.2, depthTest: false });
 
       this._scene_width = w;
       this._scene_height = h;
@@ -93907,7 +93931,7 @@ class TGeoPainter extends ObjectPainter {
 
       this._overall_size = 10;
 
-      this._toplevel = new Object3D();
+      this._toplevel = new THREE.Object3D();
 
       this._scene.add(this._toplevel);
 
@@ -93981,7 +94005,7 @@ class TGeoPainter extends ObjectPainter {
             if (this._full_geom)
                this.changeStage(stageBuildProj);
              else
-               this._full_geom = new Object3D();
+               this._full_geom = new THREE.Object3D();
          } else
             this.changeStage(stageWaitMain);
       }
@@ -94076,7 +94100,7 @@ class TGeoPainter extends ObjectPainter {
       pos1.normalize();
       pos2.normalize();
 
-      const quat = new Quaternion(), euler = new Euler();
+      const quat = new THREE.Quaternion(), euler = new THREE.Euler();
 
       quat.setFromUnitVectors(pos1, pos2);
       euler.setFromQuaternion(quat, 'YZX');
@@ -94111,7 +94135,7 @@ class TGeoPainter extends ObjectPainter {
           only_set = (arg === 'only_set'),
           box = this.getGeomBoundingBox();
 
-      // let box2 = new Box3().makeEmpty();
+      // let box2 = new THREE.Box3().makeEmpty();
       // box2.expandByObject(this._toplevel, true);
       // console.log('min,max', box.min.x, box.max.x, box.min.y, box.max.y, box.min.z, box.max.z );
 
@@ -94190,7 +94214,7 @@ class TGeoPainter extends ObjectPainter {
          const prev_zoom = this.calculateZoom();
          if (keep_zoom && prev_zoom) k = 2*prev_zoom;
 
-         const euler = new Euler(0, this.ctrl.rotatey/180*Math.PI, this.ctrl.rotatez/180*Math.PI, 'YZX');
+         const euler = new THREE.Euler(0, this.ctrl.rotatey/180*Math.PI, this.ctrl.rotatez/180*Math.PI, 'YZX');
 
          this._camera.position.set(-k*max_all, 0, 0);
          this._camera.position.applyEuler(euler);
@@ -94358,10 +94382,10 @@ class TGeoPainter extends ObjectPainter {
          return this.render3D();
       }
 
-      let box = new Box3();
+      let box = new THREE.Box3();
       if (focus === undefined)
          box = this.getGeomBoundingBox();
-       else if (focus instanceof Mesh)
+       else if (focus instanceof THREE.Mesh)
          box.setFromObject(focus);
        else {
          const center = new Vector3().setFromMatrixPosition(focus.matrix),
@@ -94740,7 +94764,7 @@ class TGeoPainter extends ObjectPainter {
       }
 
       if ((action !== 'get') && !extras) {
-         extras = new Object3D();
+         extras = new THREE.Object3D();
          extras._extras = name;
          this._toplevel.add(extras);
       }
@@ -94782,7 +94806,7 @@ class TGeoPainter extends ObjectPainter {
          buf[pos+5] = projz ? projv : track.fPoints[k*4+6];
       }
 
-      const lineMaterial = new LineBasicMaterial({ color, linewidth }),
+      const lineMaterial = new THREE.LineBasicMaterial({ color, linewidth }),
             line = createLineSegments(buf, lineMaterial);
 
       line.defaultOrder = line.renderOrder = 1000000; // to bring line to the front
@@ -94821,7 +94845,7 @@ class TGeoPainter extends ObjectPainter {
          buf[pos+5] = projz ? projv : fP[k*3+5];
       }
 
-      const lineMaterial = new LineBasicMaterial({ color, linewidth }),
+      const lineMaterial = new THREE.LineBasicMaterial({ color, linewidth }),
           line3d = createLineSegments(buf, lineMaterial);
 
       line3d.defaultOrder = line3d.renderOrder = 1000000; // to bring line to the front
@@ -94855,7 +94879,7 @@ class TGeoPainter extends ObjectPainter {
          buf[pos+5] = projz ? projv : track.fP[k*3+5];
       }
 
-      const lineMaterial = new LineBasicMaterial({ color, linewidth }),
+      const lineMaterial = new THREE.LineBasicMaterial({ color, linewidth }),
             line = createLineSegments(buf, lineMaterial);
 
       line.defaultOrder = line.renderOrder = 1000000; // to bring line to the front
@@ -95421,7 +95445,7 @@ class TGeoPainter extends ObjectPainter {
       if ((this.first_render_tm === 0) && (measure === true)) {
          this.first_render_tm = tm2.getTime() - tm1.getTime();
          if (this.first_render_tm > 500)
-            console.log(`three.js r${REVISION}, first render tm = ${this.first_render_tm}`);
+            console.log(`three.js r${THREE.REVISION}, first render tm = ${this.first_render_tm}`);
       }
 
       afterRender3D(this._renderer);
@@ -95518,10 +95542,10 @@ class TGeoPainter extends ObjectPainter {
                   console.error(`item.buf_pos.length ${item.buf_pos.length} !== item.buf_norm.length ${item.buf_norm.length}`);
                   origin.geom = null;
                } else {
-                  origin.geom = new BufferGeometry();
+                  origin.geom = new THREE.BufferGeometry();
 
-                  origin.geom.setAttribute('position', new BufferAttribute(item.buf_pos, 3));
-                  origin.geom.setAttribute('normal', new BufferAttribute(item.buf_norm, 3));
+                  origin.geom.setAttribute('position', new THREE.BufferAttribute(item.buf_pos, 3));
+                  origin.geom.setAttribute('normal', new THREE.BufferAttribute(item.buf_norm, 3));
                }
 
                origin.ready = true;
@@ -95599,7 +95623,7 @@ class TGeoPainter extends ObjectPainter {
          buf[pos+ii[2]] = z ?? gridZ;
          pos += 3;
       }, createText = (lbl, size) => {
-         const text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size, height: 0, curveSegments: 5 });
+         const text3d = new THREE.TextGeometry(lbl, { font: HelveticerRegularFont, size, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          text3d._width = text3d.boundingBox.max.x - text3d.boundingBox.min.x;
          text3d._height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
@@ -95617,7 +95641,7 @@ class TGeoPainter extends ObjectPainter {
          tgt[ii[0]] = x;
          tgt[ii[1]] = y;
          tgt[ii[2]] = z ?? gridZ;
-         const mesh = new Mesh(geom, material);
+         const mesh = new THREE.Mesh(geom, material);
          mesh.translateX(tgt[0]).translateY(tgt[1]).translateZ(tgt[2]);
          return mesh;
       };
@@ -95647,8 +95671,8 @@ class TGeoPainter extends ObjectPainter {
          addPoint(x2, y1, midZ);
          addPoint(x2, y2, midZ);
 
-         const lineMaterial = new LineBasicMaterial({ color: 'green' }),
-               textMaterial = new MeshBasicMaterial({ color: 'green', vertexColors: false });
+         const lineMaterial = new THREE.LineBasicMaterial({ color: 'green' }),
+               textMaterial = new THREE.MeshBasicMaterial({ color: 'green', vertexColors: false });
 
          container.add(createLineSegments(buf, lineMaterial));
 
@@ -95669,10 +95693,10 @@ class TGeoPainter extends ObjectPainter {
 
       if ((this.ctrl.camera_overlay === 'axis') || show_grid) {
          const container = this.getExtrasContainer('create', 'overlay'),
-               lineMaterial = new LineBasicMaterial({ color: new Color('black') }),
-               gridMaterial1 = show_grid ? new LineBasicMaterial({ color: new Color(0xbbbbbb) }) : null,
-               gridMaterial2 = show_grid ? new LineDashedMaterial({ color: new Color(0xdddddd), dashSize: grid_gap, gapSize: grid_gap }) : null,
-               textMaterial = new MeshBasicMaterial({ color: 'black', vertexColors: false }),
+               lineMaterial = new THREE.LineBasicMaterial({ color: new Color('black') }),
+               gridMaterial1 = show_grid ? new THREE.LineBasicMaterial({ color: new Color(0xbbbbbb) }) : null,
+               gridMaterial2 = show_grid ? new THREE.LineDashedMaterial({ color: new Color(0xdddddd), dashSize: grid_gap, gapSize: grid_gap }) : null,
+               textMaterial = THREE.BasicMaterial({ color: 'black', vertexColors: false }),
                xticks = x_handle.createTicks();
 
          while (xticks.next()) {
@@ -95804,19 +95828,19 @@ class TGeoPainter extends ObjectPainter {
                if ((k % 3) !== naxis) buf[k] = center[k%3];
          }
 
-         const lineMaterial = new LineBasicMaterial({ color });
+         const lineMaterial = new THREE.LineBasicMaterial({ color });
          let mesh = createLineSegments(buf, lineMaterial);
 
          mesh._no_clip = true; // skip from clipping
 
          container.add(mesh);
 
-         const textMaterial = new MeshBasicMaterial({ color, vertexColors: false });
+         const textMaterial = new THREE.MeshBasicMaterial({ color, vertexColors: false });
 
          if ((center[naxis] === 0) && (center[naxis] >= box.min[name]) && (center[naxis] <= box.max[name])) {
             if ((this.ctrl._axis !== 2) || (naxis === 0)) {
-               const geom = ortho ? new CircleGeometry(text_size*0.25) : new SphereGeometry(text_size*0.25);
-               mesh = new Mesh(geom, textMaterial);
+               const geom = ortho ? new THREE.CircleGeometry(text_size*0.25) : new THREE.SphereGeometry(text_size*0.25);
+               mesh = new THREE.Mesh(geom, textMaterial);
                mesh.translateX(naxis === 0 ? center[0] : buf[0]);
                mesh.translateY(naxis === 1 ? center[1] : buf[1]);
                mesh.translateZ(naxis === 2 ? center[2] : buf[2]);
@@ -95825,8 +95849,8 @@ class TGeoPainter extends ObjectPainter {
             }
          }
 
-         let text3d = new TextGeometry(lbl, { font: HelveticerRegularFont, size: text_size, height: 0, curveSegments: 5 });
-         mesh = new Mesh(text3d, textMaterial);
+         let text3d = new THREE.TextGeometry(lbl, { font: HelveticerRegularFont, size: text_size, height: 0, curveSegments: 5 });
+         mesh = new THREE.Mesh(text3d, textMaterial);
          mesh._no_clip = true; // skip from clipping
 
          function setSideRotation(mesh, normal) {
@@ -95858,7 +95882,7 @@ class TGeoPainter extends ObjectPainter {
             };
          }
 
-         let textbox = new Box3().setFromObject(mesh);
+         let textbox = new THREE.Box3().setFromObject(mesh);
 
          text3d.translate(-textbox.max.x*0.5, -textbox.max.y/2, 0);
 
@@ -95907,11 +95931,11 @@ class TGeoPainter extends ObjectPainter {
 
          container.add(mesh);
 
-         text3d = new TextGeometry(valueToString(box.min[name]), { font: HelveticerRegularFont, size: text_size, height: 0, curveSegments: 5 });
+         text3d = new THREE.TextGeometry(valueToString(box.min[name]), { font: HelveticerRegularFont, size: text_size, height: 0, curveSegments: 5 });
 
-         mesh = new Mesh(text3d, textMaterial);
+         mesh = new THREE.Mesh(text3d, textMaterial);
          mesh._no_clip = true; // skip from clipping
-         textbox = new Box3().setFromObject(mesh);
+         textbox = new THREE.Box3().setFromObject(mesh);
 
          text3d.translate(-textbox.max.x*0.5, -textbox.max.y/2, 0);
 
@@ -96009,7 +96033,7 @@ class TGeoPainter extends ObjectPainter {
       if (!this._toplevel) return;
       const flag = this.ctrl.depthTest;
       this._toplevel.traverse(node => {
-         if (node instanceof Mesh)
+         if (node instanceof THREE.Mesh)
             node.material.depthTest = flag;
       });
 
@@ -96030,9 +96054,9 @@ class TGeoPainter extends ObjectPainter {
       if (this._renderer?.jsroot_render3d === constants$1.Render3D.SVG) return;
 
       if (!this._clipPlanes) {
-         this._clipPlanes = [new Plane(new Vector3(1, 0, 0), 0),
-                             new Plane(new Vector3(0, this.ctrl._yup ? -1 : 1, 0), 0),
-                             new Plane(new Vector3(0, 0, this.ctrl._yup ? 1 : -1), 0)];
+         this._clipPlanes = [new THREE.Plane(new Vector3(1, 0, 0), 0),
+                             new THREE.Plane(new Vector3(0, this.ctrl._yup ? -1 : 1, 0), 0),
+                             new THREE.Plane(new Vector3(0, 0, this.ctrl._yup ? 1 : -1), 0)];
       }
 
       const clip = this.ctrl.clip,
@@ -96052,7 +96076,7 @@ class TGeoPainter extends ObjectPainter {
             panels.push(this._clipPlanes[k]);
 
          if (container && clip[k].enabled) {
-            const helper = new PlaneHelper(this._clipPlanes[k], (clip[k].max - clip[k].min));
+            const helper = new THREE.PlaneHelper(this._clipPlanes[k], (clip[k].max - clip[k].min));
             helper._no_clip = true;
             container.add(helper);
          }
@@ -96066,7 +96090,7 @@ class TGeoPainter extends ObjectPainter {
       this._clipCfg = clip_cfg;
 
       const any_clipping = !!panels, ci = this.ctrl.clipIntersect,
-          material_side = any_clipping ? DoubleSide : FrontSide;
+          material_side = any_clipping ? THREE.DoubleSide : THREE.FrontSide;
 
       if (force_traverse || changed) {
          this._scene.traverse(node => {
@@ -97062,7 +97086,7 @@ function build(obj, opt) {
 
    clones.buildShapes(shapes, opt.numfaces);
 
-   const toplevel = new Object3D();
+   const toplevel = new THREE.Object3D();
    toplevel.clones = clones; // keep reference on JSROOT data
 
    const colors = getRootColors();
@@ -113105,16 +113129,16 @@ class TGraph2DPainter extends ObjectPainter {
       triangles.callFuncs((lvl, pos) => {
          const geometry = createLegoGeom(this.getMainPainter(), pos, null, 100, 100),
                color = plain_mode ? this.getColor(graph.fFillColor) : palette.calcColor(lvl, levels.length),
-               material = new MeshBasicMaterial(getMaterialArgs(color, { side: DoubleSide, vertexColors: false })),
+               material = new THREE.MeshBasicMaterial(getMaterialArgs(color, { side: THREE.DoubleSide, vertexColors: false })),
 
-          mesh = new Mesh(geometry, material);
+          mesh = new THREE.Mesh(geometry, material);
 
          fp.add3DMesh(mesh, this);
 
          mesh.painter = this; // to let use it with context menu
       }, (_isgrid, lpos) => {
          const lcolor = this.getColor(graph.fLineColor),
-              material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: graph.fLineWidth }),
+              material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: graph.fLineWidth }),
               linemesh = createLineSegments(convertLegoBuf(this.getMainPainter(), lpos, 100, 100), material);
          fp.add3DMesh(linemesh, this);
       });
@@ -113304,7 +113328,7 @@ class TGraph2DPainter extends ObjectPainter {
 
          if (line && (iline > 3) && (line.length === iline)) {
             const lcolor = this.getColor(graph.fLineColor),
-                  material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: graph.fLineWidth }),
+                  material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: graph.fLineWidth }),
                   linemesh = createLineSegments(line, material);
             fp.add3DMesh(linemesh, this);
 
@@ -113322,7 +113346,7 @@ class TGraph2DPainter extends ObjectPainter {
 
          if (err) {
             const lcolor = this.getColor(graph.fLineColor),
-                  material = new LineBasicMaterial({ color: new Color(lcolor), linewidth: graph.fLineWidth }),
+                  material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: graph.fLineWidth }),
                   errmesh = createLineSegments(err, material);
             fp.add3DMesh(errmesh, this);
 
@@ -127074,8 +127098,8 @@ class RH3Painter extends RHistPainter {
          use_lambert = true;
          if (this.options.Sphere === 11) use_colors = true;
 
-         const geom = main.webgl ? new SphereGeometry(0.5, 16, 12) : new SphereGeometry(0.5, 8, 6);
-         geom.applyMatrix4(new Matrix4().makeRotationX(Math.PI/2));
+         const geom = new THREE.SphereGeometry(0.5, main.webgl ? 16 : 8, main.webgl ? 12 : 6);
+         geom.applyMatrix4(new THREE.Matrix4().makeRotationX(Math.PI/2));
          geom.computeVertexNormals();
 
          const indx = geom.getIndex().array,
@@ -127284,18 +127308,18 @@ class RH3Painter extends RHistPainter {
 
          const nseq = cols_sequence[ncol],
               // BufferGeometries that store geometry of all bins
-              all_bins_buffgeom = new BufferGeometry();
+              all_bins_buffgeom = new THREE.BufferGeometry();
 
          // Create mesh from bin buffer geometry
-         all_bins_buffgeom.setAttribute('position', new BufferAttribute(bin_verts[nseq], 3));
-         all_bins_buffgeom.setAttribute('normal', new BufferAttribute(bin_norms[nseq], 3));
+         all_bins_buffgeom.setAttribute('position', new THREE.BufferAttribute(bin_verts[nseq], 3));
+         all_bins_buffgeom.setAttribute('normal', new THREE.BufferAttribute(bin_norms[nseq], 3));
 
          if (use_colors) fillcolor = palette.getColor(ncol);
 
          const material = use_lambert
-                           ? new MeshLambertMaterial({ color: fillcolor, opacity: use_opacity, transparent: use_opacity < 1, vertexColors: false })
-                           : new MeshBasicMaterial({ color: fillcolor, opacity: use_opacity, transparent: use_opacity < 1, vertexColors: false }),
-               combined_bins = new Mesh(all_bins_buffgeom, material);
+                           ? new THREE.MeshLambertMaterial({ color: fillcolor, opacity: use_opacity, transparent: use_opacity < 1, vertexColors: false })
+                           : new THREE.MeshBasicMaterial({ color: fillcolor, opacity: use_opacity, transparent: use_opacity < 1, vertexColors: false }),
+               combined_bins = new THREE.Mesh(all_bins_buffgeom, material);
 
          combined_bins.bins = bin_tooltips[nseq];
          combined_bins.bins_faces = buffer_size/9;
@@ -127334,7 +127358,7 @@ class RH3Painter extends RHistPainter {
 
          if (helper_kind[nseq] > 0) {
             const lcolor = this.v7EvalColor('line_color', 'lightblue'),
-                  helper_material = new LineBasicMaterial({ color: lcolor }),
+                  helper_material = new THREE.LineBasicMaterial({ color: lcolor }),
                   lines = (helper_kind[nseq] === 1)
                           // reuse positions from the mesh - only special index was created
                           ? createLineSegments(bin_verts[nseq], helper_material, helper_indexes[nseq])
