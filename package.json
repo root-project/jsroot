@@ -47,7 +47,6 @@
     "cssesc": "^3.0.0",
     "fflate": "^0.4.8",
     "font-family-papandreou": "^0.2.0-patch1",
-    "gl": "^8.0.2",
     "jsdom": "^22.1.0",
     "mathjax": "3.2.2",
     "specificity": "^0.4.1",
