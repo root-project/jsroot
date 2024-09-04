@@ -8,8 +8,7 @@ import meta from '../package.json' assert { type: 'json' };
 
 const ignore_jsroot_modules = [
   './base/lzma.mjs', './base/zstd.mjs', './base/zstd.mjs',
-  '../../scripts/jspdf.es.min.js', '../../scripts/svg2pdf.es.min.js',
-  '../r162/three.mjs',  '../r162/three_addons.mjs'
+  '../../scripts/jspdf.es.min.js', '../../scripts/svg2pdf.es.min.js'
 ];
 
 const external_node_modules = ['mathjax', 'jsdom', 'fs', 'canvas', 'tmp', 'zlib', 'xhr2', '@oneidentity/zstd-js', 'gl'];
