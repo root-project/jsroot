@@ -34,7 +34,7 @@ const THREE = {
 async function importThreeJs() {
    if (THREE.REVISION === 162)
       return THREE;
-   return Promise.all([ import('three'), import('three/addons')]).then(arr => {
+   return Promise.all([import('three'), import('three/addons')]).then(arr => {
       Object.assign(THREE, arr[0], arr[1]);
       return THREE;
    });

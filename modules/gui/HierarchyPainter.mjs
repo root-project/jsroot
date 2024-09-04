@@ -4031,6 +4031,5 @@ async function drawInspector(dom, obj, opt) {
 
 internals.drawInspector = drawInspector;
 
-export { getHPainter, HierarchyPainter,
-         drawInspector, drawStreamerInfo, drawList, markAsStreamerInfo,
+export { HierarchyPainter, drawInspector, drawStreamerInfo, drawList, markAsStreamerInfo,
          folderHierarchy, taskHierarchy, listHierarchy, objectHierarchy, keysHierarchy };
