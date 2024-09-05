@@ -23,10 +23,10 @@
 20. Using importmap for 'jsroot' in all major HTML files and in demos
 21. Implement `settings.CutAxisLabels` flag to remove labels which may exceed graphical range
 22. Let save canvas as JSON file from context menu, object as JSON from inspector
-23. Upgrade three.js r162 -> r166, use r162 only in node.js
-23. Fix - properly save zoomed ranges in drawingJSON()
-24. Fix - properly redraw TMultuGraph
-25. Fix - show empty bin in TProfile2D if it has entries #316
+23. Upgrade three.js r162 -> r168, use r162 only in node.js because of "gl" module
+24. Fix - properly save zoomed ranges in drawingJSON()
+25. Fix - properly redraw TMultuGraph
+26. Fix - show empty bin in TProfile2D if it has entries #316
 
 
 ## Changes in 7.7.3
