@@ -7,6 +7,8 @@ docs/jsdocfull/
 *.root
 *.json
 *.html
+*.svg
+*.png
 demo/node/node_modules
 demo/node/*.svg
 demo/node/*.png
