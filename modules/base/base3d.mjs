@@ -61,7 +61,7 @@ let _hfont;
 /** @summary Create three.js Helvetica Regular Font instance
   * @private */
 function getHelveticaFont() {
-   if (_hfont?._three_revision === THREE.REVISION)
+   if (_hfont && _hfont instanceof THREE.Font)
       return _hfont;
 
 // eslint-disable-next-line
@@ -74,7 +74,6 @@ const cssFontWeight='normal', ascender=1189, underlinePosition=-100, cssFontStyl
       lineHeight, original_font_information, resolution, underlinePosition, underlineThickness
    });
 
-   _hfont._three_revision = THREE.REVISION;
    return _hfont;
 }
 
