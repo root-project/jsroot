@@ -37,7 +37,7 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci
-          npm install gl
+          npm install gl --no-save
 
       - name: Run eslint
         run: |
@@ -94,7 +94,7 @@ jobs:
         run: |
           cd jsroot
           npm ci
-          npm install gl
+          npm install gl --no-save
 
       - name: Dependencies jsroot-test
         run: |
@@ -134,7 +134,7 @@ jobs:
         run: |
           brew install python-setuptools pango librsvg
           npm ci
-          npm install gl
+          npm install gl --no-save
 
       - name: Run eslint
         run: |
@@ -175,7 +175,7 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci
-          npm install gl
+          npm install gl --no-save
 
       - name: Run eslint
         run: |
