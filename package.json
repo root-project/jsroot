@@ -41,8 +41,6 @@
   "dependencies": {
     "@babel/runtime": "^7.14.0",
     "@oneidentity/zstd-js": "^1.0.3",
-    "atob": "^2.1.2",
-    "btoa": "^1.2.1",
     "canvas": "^2.11.2",
     "cssesc": "^3.0.0",
     "fflate": "^0.4.8",
