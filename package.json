@@ -42,7 +42,6 @@
     "@babel/runtime": "^7.14.0",
     "@oneidentity/zstd-js": "^1.0.3",
     "canvas": "^2.11.2",
-    "cssesc": "^3.0.0",
     "fflate": "^0.4.8",
     "font-family-papandreou": "^0.2.0-patch1",
     "jsdom": "^22.1.0",
