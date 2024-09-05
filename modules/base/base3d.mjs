@@ -17,7 +17,7 @@ import { TAttMarkerHandler } from './TAttMarkerHandler.mjs';
 import { getSvgLineStyle } from './TAttLineHandler.mjs';
 
 
-const THREE = {
+const originalTHREE = {
    REVISION, DoubleSide, FrontSide, Object3D, Color, Vector2, Vector3, Matrix4, Line3, Raycaster,
    WebGLRenderer, WebGLRenderTarget,
    BufferGeometry, BufferAttribute, Float32BufferAttribute, Mesh, MeshBasicMaterial, MeshLambertMaterial,
@@ -30,14 +30,20 @@ const THREE = {
    CanvasTexture, TextureLoader,
 
    Font, OrbitControls, SVGRenderer, TextGeometry, EffectComposer, RenderPass, UnrealBloomPass
-};
+}, THREE = Object.assign({}, originalTHREE);
 
 
 /** @summary Import proper three.js version
   * @desc in node.js only r162 supports WebGL1 which can be emulated with "gl" package.
   * Therefore only this version can be used for working in node.js
   * @private */
-async function importThreeJs() {
+async function importThreeJs(original) {
+   if (original) {
+      Object.keys(THREE).forEach(key => delete THREE[key]);
+      Object.assign(THREE, originalTHREE);
+      return THREE;
+   }
+
    if (!isNodeJs() || (THREE.REVISION <= 162))
       return THREE;
    return import('../r162/three.mjs').then(h1 => {
