@@ -3,14 +3,14 @@ import { rgb as d3_rgb } from '../d3.mjs';
 import { THREE, assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, Box3D, getMaterialArgs, importThreeJs,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind,
-         cleanupRender3D, HelveticerRegularFont, createSVGRenderer, create3DLineMaterial } from '../base/base3d.mjs';
+         cleanupRender3D, getHelveticaFont, createSVGRenderer, create3DLineMaterial } from '../base/base3d.mjs';
 import { isPlainText, translateLaTeX, produceLatex } from '../base/latex.mjs';
 import { kCARTESIAN, kPOLAR, kCYLINDRICAL, kSPHERICAL, kRAPIDITY } from '../hist2d/THistPainter.mjs';
 import { buildHist2dContour, buildSurf3D } from '../hist2d/TH2Painter.mjs';
 
 
 function createLatexGeometry(painter, lbl, size) {
-   const geom_args = { font: HelveticerRegularFont, size, height: 0, curveSegments: 5 };
+   const geom_args = { font: getHelveticaFont(), size, height: 0, curveSegments: 5 };
    if (THREE.REVISION > 162)
       geom_args.depth = 0;
    else
