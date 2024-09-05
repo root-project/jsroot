@@ -2631,7 +2631,7 @@ function compareValue(compare) {
 }
 
 function chord() {
-  return chord$1(false, false);
+  return chord$1(false);
 }
 
 function chord$1(directed, transpose) {
@@ -2648,9 +2648,7 @@ function chord$1(directed, transpose) {
         groups = new Array(n),
         k = 0, dx;
 
-    matrix = Float64Array.from({length: n * n}, transpose
-        ? (_, i) => matrix[i % n][i / n | 0]
-        : (_, i) => matrix[i / n | 0][i % n]);
+    matrix = Float64Array.from({length: n * n}, (_, i) => matrix[i / n | 0][i % n]);
 
     // Compute the scaling factor from value to angle in [0, 2pi].
     for (let i = 0; i < n; ++i) {
@@ -2667,20 +2665,7 @@ function chord$1(directed, transpose) {
       if (sortGroups) groupIndex.sort((a, b) => sortGroups(groupSums[a], groupSums[b]));
       for (const i of groupIndex) {
         const x0 = x;
-        if (directed) {
-          const subgroupIndex = range$1(~n + 1, n).filter(j => j < 0 ? matrix[~j * n + i] : matrix[i * n + j]);
-          if (sortSubgroups) subgroupIndex.sort((a, b) => sortSubgroups(a < 0 ? -matrix[~a * n + i] : matrix[i * n + a], b < 0 ? -matrix[~b * n + i] : matrix[i * n + b]));
-          for (const j of subgroupIndex) {
-            if (j < 0) {
-              const chord = chords[~j * n + i] || (chords[~j * n + i] = {source: null, target: null});
-              chord.target = {index: i, startAngle: x, endAngle: x += matrix[~j * n + i] * k, value: matrix[~j * n + i]};
-            } else {
-              const chord = chords[i * n + j] || (chords[i * n + j] = {source: null, target: null});
-              chord.source = {index: i, startAngle: x, endAngle: x += matrix[i * n + j] * k, value: matrix[i * n + j]};
-            }
-          }
-          groups[i] = {index: i, startAngle: x0, endAngle: x, value: groupSums[i]};
-        } else {
+        {
           const subgroupIndex = range$1(0, n).filter(j => matrix[i * n + j] || matrix[j * n + i]);
           if (sortSubgroups) subgroupIndex.sort((a, b) => sortSubgroups(matrix[i * n + a], matrix[i * n + b]));
           for (const j of subgroupIndex) {
@@ -2950,12 +2935,7 @@ function ribbon(headRadius) {
     context.moveTo(sr * cos$1(sa0), sr * sin$1(sa0));
     context.arc(0, 0, sr, sa0, sa1);
     if (sa0 !== ta0 || sa1 !== ta1) {
-      if (headRadius) {
-        var hr = +headRadius.apply(this, arguments), tr2 = tr - hr, ta2 = (ta0 + ta1) / 2;
-        context.quadraticCurveTo(0, 0, tr2 * cos$1(ta0), tr2 * sin$1(ta0));
-        context.lineTo(tr * cos$1(ta2), tr * sin$1(ta2));
-        context.lineTo(tr2 * cos$1(ta1), tr2 * sin$1(ta1));
-      } else {
+      {
         context.quadraticCurveTo(0, 0, tr * cos$1(ta0), tr * sin$1(ta0));
         context.arc(0, 0, tr, ta0, ta1);
       }
@@ -2965,10 +2945,6 @@ function ribbon(headRadius) {
 
     if (buffer) return context = null, buffer + "" || null;
   }
-
-  if (headRadius) ribbon.headRadius = function(_) {
-    return arguments.length ? (headRadius = typeof _ === "function" ? _ : constant$4(+_), ribbon) : headRadius;
-  };
 
   ribbon.radius = function(_) {
     return arguments.length ? (sourceRadius = targetRadius = typeof _ === "function" ? _ : constant$4(+_), ribbon) : sourceRadius;
@@ -9882,7 +9858,7 @@ function createDefaultPalette(grayscale) {
       if (t < 2 / 3) return p + (q - p) * (2/3 - t) * 6;
       return p;
    }, HLStoRGB = (h, l, s) => {
-      const q = (l < 0.5) ? l * (1 + s) : l + s - l * s,
+      const q = l + s - l * s,
             p = 2 * l - q,
             r = hue2rgb(p, q, h + 1/3),
             g = hue2rgb(p, q, h),
@@ -56402,11 +56378,6 @@ const originalTHREE = {
   * Therefore only this version can be used for working in node.js
   * @private */
 async function importThreeJs(original) {
-   if (original) {
-      Object.keys(THREE).forEach(key => delete THREE[key]);
-      Object.assign(THREE, originalTHREE);
-      return THREE;
-   }
 
    if (!isNodeJs() || (THREE.REVISION <= 162))
       return THREE;
@@ -56457,13 +56428,6 @@ function getMaterialArgs(color$1, args) {
 }
 
 function createSVGRenderer(as_is, precision, doc) {
-   if (as_is) {
-      if (doc !== undefined)
-         globalThis.docuemnt = doc;
-      const rndr = new THREE.SVGRenderer();
-      rndr.setPrecision(precision);
-      return rndr;
-   }
 
    const excl_style1 = ';stroke-opacity:1;stroke-width:1;stroke-linecap:round',
          excl_style2 = ';fill-opacity:1',
@@ -56867,7 +56831,7 @@ async function createRender3D(width, height, render3d, args) {
 
    if (render3d === rc.SVG) {
       // SVG rendering
-      const r = createSVGRenderer(false, 0, doc);
+      const r = createSVGRenderer(false, 0);
       r.jsroot_dom = doc.createElementNS(nsSVG, 'svg');
       promise = Promise.resolve(r);
    } else if (isNodeJs()) {
@@ -56893,7 +56857,7 @@ async function createRender3D(width, height, render3d, args) {
       }).catch(() => {
          console.log('gl module is not available - fallback to SVGRenderer');
          render3d = rc.SVG;
-         const r = createSVGRenderer(false, 0, doc);
+         const r = createSVGRenderer(false, 0);
          r.jsroot_dom = doc.createElementNS(nsSVG, 'svg');
          return r;
       });
@@ -79962,7 +79926,7 @@ function render3D(tmout) {
    if (tmout === -1111) {
       // special handling for direct SVG renderer
       const doc = getDocument(),
-          rrr = createSVGRenderer(false, 0, doc);
+          rrr = createSVGRenderer(false, 0);
       rrr.setSize(this.scene_width, this.scene_height);
       rrr.render(this.scene, this.camera);
       if (rrr.makeOuterHTML) {
