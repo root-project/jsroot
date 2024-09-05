@@ -1,17 +1,19 @@
 diff --git a/examples/jsm/controls/OrbitControls.js b/examples/jsm/controls/OrbitControls.js
-index dc3b42b56a..518fc543e1 100644
+index 7360aab9b3..8862897d32 100644
 --- a/examples/jsm/controls/OrbitControls.js
 +++ b/examples/jsm/controls/OrbitControls.js
-@@ -161,6 +161,12 @@ class OrbitControls extends EventDispatcher {
+@@ -289,6 +289,14 @@ class OrbitControls extends Controls {
  
- 		};
+ 	}
  
-+		this.resetOrthoPanZoom = function () {
-+         panOffset.set(0,0,0);
-+         scope.object.zoom = 1;
-+         scope.object.updateProjectionMatrix();
-+      };
++	resetOrthoPanZoom() {
 +
- 		// this method is exposed, but perhaps it would be better if we can make it private...
- 		this.update = function () {
++		this._panOffset.set(0, 0, 0);
++		this.object.zoom = 1;
++		this.object.updateProjectionMatrix();
++
++	}
++
+ 	update( deltaTime = null ) {
  
+ 		const position = this.object.position;

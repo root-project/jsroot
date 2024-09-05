@@ -150,6 +150,7 @@ export { Curve } from './extras/core/Curve.js';
 export * as DataUtils from './extras/DataUtils.js';
 // export { ImageUtils } from './extras/ImageUtils.js';
 export { ShapeUtils } from './extras/ShapeUtils.js';
+export { Controls } from './extras/Controls.js';
 // export { PMREMGenerator } from './extras/PMREMGenerator.js';
 // export { WebGLUtils } from './renderers/webgl/WebGLUtils.js';
 export * from './constants.js';
