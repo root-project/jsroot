@@ -19,9 +19,6 @@ const kindGeo = 0,    // TGeoNode / TGeoShape
       kindEve = 1,    // TEveShape / TEveGeoShapeExtract
       kindShape = 2,  // special kind for single shape handling
 
-Vector3 = THREE.Vector3, // used very often
-Matrix4 = THREE.Matrix4, // used very often
-
 /** @summary TGeo-related bits
   * @private */
  geoBITS = {
@@ -169,11 +166,11 @@ function checkDuplicates(parent, chlds) {
 /** @summary Create normal to plane, defined with three points
   * @private */
 function produceNormal(x1, y1, z1, x2, y2, z2, x3, y3, z3) {
-   const pA = new Vector3(x1, y1, z1),
-         pB = new Vector3(x2, y2, z2),
-         pC = new Vector3(x3, y3, z3),
-         cb = new Vector3(),
-         ab = new Vector3();
+   const pA = new THREE.Vector3(x1, y1, z1),
+         pB = new THREE.Vector3(x2, y2, z2),
+         pC = new THREE.Vector3(x3, y3, z3),
+         cb = new THREE.Vector3(),
+         ab = new THREE.Vector3();
 
    cb.subVectors(pC, pB);
    ab.subVectors(pA, pB);
@@ -312,11 +309,11 @@ class GeometryCreator {
    /** @summary Calculate normal */
    calcNormal() {
       if (!this.cb) {
-         this.pA = new Vector3();
-         this.pB = new Vector3();
-         this.pC = new Vector3();
-         this.cb = new Vector3();
-         this.ab = new Vector3();
+         this.pA = new THREE.Vector3();
+         this.pB = new THREE.Vector3();
+         this.pC = new THREE.Vector3();
+         this.cb = new THREE.Vector3();
+         this.ab = new THREE.Vector3();
       }
 
       this.pA.fromArray(this.pos, this.indx - 9);
@@ -509,11 +506,11 @@ class PolygonsCreator {
    /** @summary Calculate normal */
    calcNormal() {
       if (!this.cb) {
-         this.pA = new Vector3();
-         this.pB = new Vector3();
-         this.pC = new Vector3();
-         this.cb = new Vector3();
-         this.ab = new Vector3();
+         this.pA = new THREE.Vector3();
+         this.pB = new THREE.Vector3();
+         this.pC = new THREE.Vector3();
+         this.cb = new THREE.Vector3();
+         this.ab = new THREE.Vector3();
       }
 
       this.pA.set(this.v1.x, this.v1.y, this.v1.z);
@@ -716,9 +713,9 @@ function createArb8Buffer(shape, faces_limit) {
       if ((i1 >= 0) && (i4 >= 0) && faces_limit) {
          // try to identify two faces with same normal - very useful if one can create face4
          if (n === 0)
-            norm = new Vector3(0, 0, 1);
+            norm = new THREE.Vector3(0, 0, 1);
          else if (n === 30)
-            norm = new Vector3(0, 0, -1);
+            norm = new THREE.Vector3(0, 0, -1);
          else {
             const norm1 = produceNormal(vertices[i1], vertices[i1+1], vertices[i1+2],
                                       vertices[i2], vertices[i2+1], vertices[i2+2],
@@ -1105,9 +1102,9 @@ function createTorusBuffer(shape, faces_limit) {
 
    const creator = faces_limit ? new PolygonsCreator() : new GeometryCreator(numfaces),
          // use vectors for normals calculation
-         p1 = new Vector3(), p2 = new Vector3(), p3 = new Vector3(), p4 = new Vector3(),
-         n1 = new Vector3(), n2 = new Vector3(), n3 = new Vector3(), n4 = new Vector3(),
-         center1 = new Vector3(), center2 = new Vector3();
+         p1 = new THREE.Vector3(), p2 = new THREE.Vector3(), p3 = new THREE.Vector3(), p4 = new THREE.Vector3(),
+         n1 = new THREE.Vector3(), n2 = new THREE.Vector3(), n3 = new THREE.Vector3(), n4 = new THREE.Vector3(),
+         center1 = new THREE.Vector3(), center2 = new THREE.Vector3();
 
    for (let side = 0; side < 2; ++side) {
       if ((side > 0) && (shape.fRmin <= 0)) break;
@@ -1619,7 +1616,7 @@ function createMatrix(matrix) {
 
    if (!translation && !rotation && !scale) return null;
 
-   const res = new Matrix4();
+   const res = new THREE.Matrix4();
 
    if (rotation) {
       res.set(rotation[0], rotation[1], rotation[2], 0,
@@ -1632,7 +1629,7 @@ function createMatrix(matrix) {
       res.setPosition(translation[0], translation[1], translation[2]);
 
    if (scale)
-      res.scale(new Vector3(scale[0], scale[1], scale[2]));
+      res.scale(new THREE.Vector3(scale[0], scale[1], scale[2]));
 
    return res;
 }
@@ -1646,7 +1643,7 @@ function getNodeMatrix(kind, node) {
    if (kind === kindEve) {
       // special handling for EVE nodes
 
-      matrix = new Matrix4();
+      matrix = new THREE.Matrix4();
 
       if (node.fTrans) {
          matrix.set(node.fTrans[0], node.fTrans[4], node.fTrans[8], 0,
@@ -1677,7 +1674,7 @@ function getNodeMatrix(kind, node) {
         case 'TGeoPatternParaZ': {
            const _shift = node.fFinder.fStart + (node.fIndex + 0.5) * node.fFinder.fStep;
 
-           matrix = new Matrix4();
+           matrix = new THREE.Matrix4();
 
            switch (node.fFinder._typename[node.fFinder._typename.length-1]) {
               case 'X': matrix.setPosition(_shift, 0, 0); break;
@@ -1691,7 +1688,7 @@ function getNodeMatrix(kind, node) {
            const phi = (Math.PI/180)*(node.fFinder.fStart+(node.fIndex+0.5)*node.fFinder.fStep),
                _cos = Math.cos(phi), _sin = Math.sin(phi);
 
-           matrix = new Matrix4();
+           matrix = new THREE.Matrix4();
 
            matrix.set(_cos, -_sin, 0, 0,
                       _sin, _cos, 0, 0,
@@ -1702,12 +1699,12 @@ function getNodeMatrix(kind, node) {
 
         case 'TGeoPatternCylR':
             // seems to be, require no transformation
-            matrix = new Matrix4();
+            matrix = new THREE.Matrix4();
             break;
 
         case 'TGeoPatternTrapZ': {
            const dz = node.fFinder.fStart + (node.fIndex+0.5)*node.fFinder.fStep;
-           matrix = new Matrix4();
+           matrix = new THREE.Matrix4();
            matrix.setPosition(node.fFinder.fTxz*dz, node.fFinder.fTyz*dz, dz);
            break;
         }
@@ -1788,8 +1785,8 @@ function geomBoundingBox(geom) {
 function createHalfSpace(shape, geom) {
    if (!shape?.fN || !shape?.fP) return null;
 
-   const vertex = new Vector3(shape.fP[0], shape.fP[1], shape.fP[2]),
-       normal = new Vector3(shape.fN[0], shape.fN[1], shape.fN[2]);
+   const vertex = new THREE.Vector3(shape.fP[0], shape.fP[1], shape.fP[2]),
+         normal = new THREE.Vector3(shape.fN[0], shape.fN[1], shape.fN[2]);
 
    normal.normalize();
 
@@ -1797,7 +1794,7 @@ function createHalfSpace(shape, geom) {
    if (geom) {
       // using real size of other geometry, we probably improve precision
       const box = geomBoundingBox(geom);
-      if (box) sz = box.getSize(new Vector3()).length() * 1000;
+      if (box) sz = box.getSize(new THREE.Vector3()).length() * 1000;
    }
 
    const v0 = new THREE.Vector3(-sz, -sz/2, 0),
@@ -2194,7 +2191,7 @@ function provideObjectInfo(obj) {
 /** @summary Creates projection matrix for the camera
   * @private */
 function createProjectionMatrix(camera) {
-   const cameraProjectionMatrix = new Matrix4();
+   const cameraProjectionMatrix = new THREE.Matrix4();
 
    camera.updateMatrixWorld();
 
@@ -2227,7 +2224,7 @@ function createFrustum(source) {
        0, 0, 0 // also check center of the shape
    ]);
 
-   frustum.test = new Vector3(0, 0, 0);
+   frustum.test = new THREE.Vector3(0, 0, 0);
 
    frustum.CheckShape = function(matrix, shape) {
       const pnt = this.test, len = this.corners.length, corners = this.corners;
@@ -2785,7 +2782,7 @@ class ClonedNodes {
 
          if (arg.domatrix) {
             arg.matrices = [];
-            arg.mpool = [new Matrix4()]; // pool of Matrix objects to avoid permanent creation
+            arg.mpool = [new THREE.Matrix4()]; // pool of Matrix objects to avoid permanent creation
             arg.getmatrix = function() { return this.matrices[this.last]; };
          }
 
@@ -2812,9 +2809,9 @@ class ClonedNodes {
 
       if (arg.domatrix) {
          if (!arg.mpool[arg.last+1])
-            arg.mpool[arg.last+1] = new Matrix4();
+            arg.mpool[arg.last+1] = new THREE.Matrix4();
 
-         const prnt = (arg.last > 0) ? arg.matrices[arg.last-1] : new Matrix4();
+         const prnt = (arg.last > 0) ? arg.matrices[arg.last-1] : new THREE.Matrix4();
          if (node.matrix) {
             arg.matrices[arg.last] = arg.mpool[arg.last].fromArray(prnt.elements);
             arg.matrices[arg.last].multiply(arg.mpool[arg.last+1].fromArray(node.matrix));
@@ -2892,7 +2889,7 @@ class ClonedNodes {
       // if (!this.toplevel || (this.nodes.length === 1) || (res.node.kind === 1)) res.name = '';
 
       if (withmatrix) {
-         res.matrix = new Matrix4();
+         res.matrix = new THREE.Matrix4();
          if (res.node.matrix) res.matrix.fromArray(res.node.matrix);
       }
 
@@ -2917,7 +2914,7 @@ class ClonedNodes {
             }
 
             if (withmatrix && res.node.matrix)
-               res.matrix.multiply(new Matrix4().fromArray(res.node.matrix));
+               res.matrix.multiply(new THREE.Matrix4().fromArray(res.node.matrix));
          }
       }
 
@@ -3181,7 +3178,7 @@ class ClonedNodes {
             obj3d.userData = this.origin[node.id];
 
          if (node.abs_matrix) {
-            obj3d.absMatrix = new Matrix4();
+            obj3d.absMatrix = new THREE.Matrix4();
             obj3d.absMatrix.fromArray(node.matrix);
          } else if (node.matrix) {
             obj3d.matrix.fromArray(node.matrix);
@@ -3401,7 +3398,7 @@ class ClonedNodes {
                   const mesh2 = new THREE.InstancedMesh(shape.geomZ, prop.material, arr2.length);
 
                   mesh2.stacks = stacks2;
-                  const m = new Matrix4().makeScale(1, 1, -1);
+                  const m = new THREE.Matrix4().makeScale(1, 1, -1);
                   arr2.forEach((matrix, i) => {
                      mesh2.setMatrixAt(i, matrix.multiply(m));
                   });
@@ -3828,7 +3825,7 @@ function createFlippedMesh(shape, material) {
       shape.geomZ = createFlippedGeom(shape.geom);
 
    const mesh = new THREE.Mesh(shape.geomZ, material);
-   mesh.scale.copy(new Vector3(1, 1, -1));
+   mesh.scale.copy(new THREE.Vector3(1, 1, -1));
    mesh.updateMatrix();
 
    mesh._flippedMesh = true;
@@ -3845,7 +3842,7 @@ function getBoundingBox(node, box3, local_coordinates) {
    if (!box3) box3 = new THREE.Box3().makeEmpty();
 
    if (node.isInstancedMesh) {
-      const m = new Matrix4(), b = new THREE.Box3().makeEmpty();
+      const m = new THREE.Matrix4(), b = new THREE.Box3().makeEmpty();
 
       node.geometry.computeBoundingBox();
 
@@ -3859,7 +3856,7 @@ function getBoundingBox(node, box3, local_coordinates) {
 
    if (!local_coordinates) node.updateWorldMatrix(false, false);
 
-   const v1 = new Vector3(), attribute = node.geometry.attributes?.position;
+   const v1 = new THREE.Vector3(), attribute = node.geometry.attributes?.position;
 
    if (attribute !== undefined) {
       for (let i = 0, l = attribute.count; i < l; i++) {
@@ -3936,7 +3933,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
          return false;
       }
 
-      const tmp_vect = new Vector3();
+      const tmp_vect = new THREE.Vector3();
 
       // first calculate distance to the camera
       // it gives preliminary order of volumes
@@ -3948,7 +3945,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
             mesh.$jsroot_box3 = box3 = getBoundingBox(mesh);
 
          if (method === 'size') {
-            const sz = box3.getSize(new Vector3());
+            const sz = box3.getSize(new THREE.Vector3());
             mesh.$jsroot_distance = sz.x*sz.y*sz.z;
             continue;
          }
@@ -3959,7 +3956,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
          }
 
          let dist = Math.min(origin.distanceTo(box3.min), origin.distanceTo(box3.max));
-         const pnt = new Vector3(box3.min.x, box3.min.y, box3.max.z);
+         const pnt = new THREE.Vector3(box3.min.x, box3.min.y, box3.max.z);
 
          dist = Math.min(dist, origin.distanceTo(pnt));
          pnt.set(box3.min.x, box3.max.y, box3.min.z);
@@ -4013,7 +4010,7 @@ function produceRenderOrder(toplevel, origin, method, clones) {
 
                const pos = mesh.geometry.attributes.position.array;
 
-               direction = new Vector3((pos[0]+pos[3]+pos[6])/3, (pos[1]+pos[4]+pos[7])/3, (pos[2]+pos[5]+pos[8])/3);
+               direction = new THREE.Vector3((pos[0]+pos[3]+pos[6])/3, (pos[1]+pos[4]+pos[7])/3, (pos[2]+pos[5]+pos[8])/3);
 
                direction.applyMatrix4(mesh.matrixWorld);
             }

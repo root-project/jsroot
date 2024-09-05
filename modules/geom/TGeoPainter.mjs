@@ -26,9 +26,7 @@ const _ENTIRE_SCENE = 0, _BLOOM_SCENE = 1,
       clTGeoManager = 'TGeoManager', clTEveGeoShapeExtract = 'TEveGeoShapeExtract',
       clTGeoOverlap = 'TGeoOverlap', clTGeoVolumeAssembly = 'TGeoVolumeAssembly',
       clTEveTrack = 'TEveTrack', clTEvePointSet = 'TEvePointSet',
-      clREveGeoShapeExtract = `${nsREX}REveGeoShapeExtract`,
-      Matrix4 = THREE.Matrix4, // used very often
-      Vector3 = THREE.Vector3; // used very often
+      clREveGeoShapeExtract = `${nsREX}REveGeoShapeExtract`;
 
 /** @summary Function used to build hierarchy of elements of overlap object
   * @private */
@@ -406,7 +404,7 @@ class GeoDrawingControl extends InteractiveControl {
                h.material.color = new THREE.Color(col);
                h.material.opacity = 1.0;
             }
-            const m = new Matrix4();
+            const m = new THREE.Matrix4();
             c.getMatrixAt(indx, m);
             h.applyMatrix4(m);
             c.add(h);
@@ -528,7 +526,7 @@ class TGeoPainter extends ObjectPainter {
          ],
          trans_radial: 0,
          trans_z: 0,
-         scale: new Vector3(1, 1, 1),
+         scale: new THREE.Vector3(1, 1, 1),
          zoom: 1.0, rotatey: 0, rotatez: 0,
          depthMethodItems: [
             { name: 'Default', value: 'dflt' },
@@ -701,11 +699,11 @@ class TGeoPainter extends ObjectPainter {
       // Allows moving the user in the scene
       this._dolly = new THREE.Group();
       this._scene.add(this._dolly);
-      this._standingMatrix = new Matrix4();
+      this._standingMatrix = new THREE.Matrix4();
 
       // Raycaster temp variables to avoid one per frame allocation.
-      this._raycasterEnd = new Vector3();
-      this._raycasterOrigin = new Vector3();
+      this._raycasterEnd = new THREE.Vector3();
+      this._raycasterOrigin = new THREE.Vector3();
 
       navigator.getVRDisplays().then(displays => {
          const vrDisplay = displays[0];
@@ -1085,7 +1083,7 @@ class TGeoPainter extends ObjectPainter {
                const m1 = mesh.matrixWorld;
                if (m1.equals(m2)) return true;
                if ((m1.determinant() > 0) && (m2.determinant() < -0.9)) {
-                  const flip = new Vector3(1, 1, -1);
+                  const flip = new THREE.Vector3(1, 1, -1);
                   m2 = m2.clone().scale(flip);
                   if (m1.equals(m2)) return true;
                }
@@ -1273,8 +1271,8 @@ class TGeoPainter extends ObjectPainter {
       if (!this._toplevel) return;
 
       const ctrl = this.ctrl,
-          translation = new Matrix4(),
-          vect2 = new Vector3();
+            translation = new THREE.Matrix4(),
+            vect2 = new THREE.Vector3();
 
       if (arg === 'reset')
          ctrl.trans_z = ctrl.trans_radial = 0;
@@ -1298,14 +1296,14 @@ class TGeoPainter extends ObjectPainter {
 
             if (node.vect0 === undefined) {
                node.matrix0 = node.matrix.clone();
-               node.minvert = new Matrix4().copy(node.matrixWorld).invert();
+               node.minvert = new THREE.Matrix4().copy(node.matrixWorld).invert();
 
                const box3 = getBoundingBox(mesh, null, true),
                    signz = mesh._flippedMesh ? -1 : 1;
 
                // real center of mesh in local coordinates
-               node.vect0 = new Vector3((box3.max.x + box3.min.x) / 2, (box3.max.y + box3.min.y) / 2, signz * (box3.max.z + box3.min.z) / 2).applyMatrix4(node.matrixWorld);
-               node.vect1 = new Vector3(0, 0, 0).applyMatrix4(node.minvert);
+               node.vect0 = new THREE.Vector3((box3.max.x + box3.min.x) / 2, (box3.max.y + box3.min.y) / 2, signz * (box3.max.z + box3.min.z) / 2).applyMatrix4(node.matrixWorld);
+               node.vect1 = new THREE.Vector3(0, 0, 0).applyMatrix4(node.minvert);
             }
 
             vect2.set(ctrl.trans_radial * node.vect0.x, ctrl.trans_radial * node.vect0.y, ctrl.trans_z * node.vect0.z).applyMatrix4(node.minvert).sub(node.vect1);
@@ -1331,8 +1329,8 @@ class TGeoPainter extends ObjectPainter {
 
                for (let i = 0; i < mesh.count; i++) {
                   const item = {
-                     matrix0: new Matrix4(),
-                     minvert: new Matrix4()
+                     matrix0: new THREE.Matrix4(),
+                     minvert: new THREE.Matrix4()
                   };
 
                   mesh.trans[i] = item;
@@ -1342,12 +1340,12 @@ class TGeoPainter extends ObjectPainter {
 
                   const box3 = new THREE.Box3().copy(mesh.geometry.boundingBox).applyMatrix4(item.matrix0);
 
-                  item.vect0 = new Vector3((box3.max.x + box3.min.x) / 2, (box3.max.y + box3.min.y) / 2, (box3.max.z + box3.min.z) / 2);
-                  item.vect1 = new Vector3(0, 0, 0).applyMatrix4(item.minvert);
+                  item.vect0 = new THREE.Vector3((box3.max.x + box3.min.x) / 2, (box3.max.y + box3.min.y) / 2, (box3.max.z + box3.min.z) / 2);
+                  item.vect1 = new THREE.Vector3(0, 0, 0).applyMatrix4(item.minvert);
                }
             }
 
-            const mm = new Matrix4();
+            const mm = new THREE.Matrix4();
 
             mesh.trans?.forEach((item, i) => {
                vect2.set(ctrl.trans_radial * item.vect0.x, ctrl.trans_radial * item.vect0.y, ctrl.trans_z * item.vect0.z).applyMatrix4(item.minvert).sub(item.vect1);
@@ -2553,11 +2551,11 @@ class TGeoPainter extends ObjectPainter {
       });
 
       if (scalar === 'original') {
-         box3.translate(new Vector3(-topitem.position.x, -topitem.position.y, -topitem.position.z));
-         box3.min.multiply(new Vector3(1/topitem.scale.x, 1/topitem.scale.y, 1/topitem.scale.z));
-         box3.max.multiply(new Vector3(1/topitem.scale.x, 1/topitem.scale.y, 1/topitem.scale.z));
+         box3.translate(new THREE.Vector3(-topitem.position.x, -topitem.position.y, -topitem.position.z));
+         box3.min.multiply(new THREE.Vector3(1/topitem.scale.x, 1/topitem.scale.y, 1/topitem.scale.z));
+         box3.max.multiply(new THREE.Vector3(1/topitem.scale.x, 1/topitem.scale.y, 1/topitem.scale.z));
       } else if (scalar !== undefined)
-         box3.expandByVector(box3.getSize(new Vector3()).multiplyScalar(scalar));
+         box3.expandByVector(box3.getSize(new THREE.Vector3()).multiplyScalar(scalar));
 
       return box3;
    }
@@ -2676,7 +2674,7 @@ class TGeoPainter extends ObjectPainter {
          this._camera = new THREE.OrthographicCamera(-this._scene_width/2, this._scene_width/2, this._scene_height/2, -this._scene_height/2, 1, 10000);
        else {
          this._camera = new THREE.PerspectiveCamera(25, this._scene_width / this._scene_height, 1, 10000);
-         this._camera.up = this.ctrl._yup ? new Vector3(0, 1, 0) : new Vector3(0, 0, 1);
+         this._camera.up = this.ctrl._yup ? new THREE.Vector3(0, 1, 0) : new THREE.Vector3(0, 0, 1);
       }
 
       // Light - add default directional light, adjust later
@@ -2906,9 +2904,9 @@ class TGeoPainter extends ObjectPainter {
       if (!this._lookat || !this._camera0pos)
          return '';
 
-      const pos1 = new Vector3().add(this._camera0pos).sub(this._lookat),
-          pos2 = new Vector3().add(this._camera.position).sub(this._lookat),
-          zoom = Math.min(10000, Math.max(1, this.ctrl.zoom * pos2.length() / pos1.length() * 100));
+      const pos1 = new THREE.Vector3().add(this._camera0pos).sub(this._lookat),
+            pos2 = new THREE.Vector3().add(this._camera.position).sub(this._lookat),
+            zoom = Math.min(10000, Math.max(1, this.ctrl.zoom * pos2.length() / pos1.length() * 100));
 
       pos1.normalize();
       pos2.normalize();
@@ -2929,8 +2927,8 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Calculates current zoom factor */
    calculateZoom() {
       if (this._camera0pos && this._camera && this._lookat) {
-         const pos1 = new Vector3().add(this._camera0pos).sub(this._lookat),
-             pos2 = new Vector3().add(this._camera.position).sub(this._lookat);
+         const pos1 = new THREE.Vector3().add(this._camera0pos).sub(this._lookat),
+               pos2 = new THREE.Vector3().add(this._camera.position).sub(this._lookat);
          return pos2.length() / pos1.length();
       }
 
@@ -3017,8 +3015,8 @@ class TGeoPainter extends ObjectPainter {
       const max_all = Math.max(sizex, sizey, sizez),
             sign = this.ctrl.camera_kind.indexOf('N') > 0 ? -1 : 1;
 
-      this._lookat = new Vector3(midx, midy, midz);
-      this._camera0pos = new Vector3(-2*max_all, 0, 0); // virtual 0 position, where rotation starts
+      this._lookat = new THREE.Vector3(midx, midy, midz);
+      this._camera0pos = new THREE.Vector3(-2*max_all, 0, 0); // virtual 0 position, where rotation starts
 
       this._camera.updateMatrixWorld();
       this._camera.updateProjectionMatrix();
@@ -3031,7 +3029,7 @@ class TGeoPainter extends ObjectPainter {
 
          this._camera.position.set(-k*max_all, 0, 0);
          this._camera.position.applyEuler(euler);
-         this._camera.position.add(new Vector3(midx, midy, midz));
+         this._camera.position.add(new THREE.Vector3(midx, midy, midz));
 
          if (keep_zoom && prev_zoom) {
             const actual_zoom = this.calculateZoom();
@@ -3039,7 +3037,7 @@ class TGeoPainter extends ObjectPainter {
 
             this._camera.position.set(-k*max_all, 0, 0);
             this._camera.position.applyEuler(euler);
-            this._camera.position.add(new Vector3(midx, midy, midz));
+            this._camera.position.add(new THREE.Vector3(midx, midy, midz));
          }
       } else if (this.ctrl.camx !== undefined && this.ctrl.camy !== undefined && this.ctrl.camz !== undefined) {
          this._camera.position.set(this.ctrl.camx, this.ctrl.camy, this.ctrl.camz);
@@ -3201,9 +3199,9 @@ class TGeoPainter extends ObjectPainter {
        else if (focus instanceof THREE.Mesh)
          box.setFromObject(focus);
        else {
-         const center = new Vector3().setFromMatrixPosition(focus.matrix),
+         const center = new THREE.Vector3().setFromMatrixPosition(focus.matrix),
              node = focus.node,
-             halfDelta = new Vector3(node.fDX, node.fDY, node.fDZ).multiplyScalar(0.5);
+             halfDelta = new THREE.Vector3(node.fDX, node.fDY, node.fDZ).multiplyScalar(0.5);
          box.min = center.clone().sub(halfDelta);
          box.max = center.clone().add(halfDelta);
       }
@@ -3217,11 +3215,11 @@ class TGeoPainter extends ObjectPainter {
 
       let position, frames = 50, step = 0;
       if (this.ctrl._yup)
-         position = new Vector3(midx-2*Math.max(sizex, sizez), midy+2*sizey, midz-2*Math.max(sizex, sizez));
+         position = new THREE.Vector3(midx-2*Math.max(sizex, sizez), midy+2*sizey, midz-2*Math.max(sizex, sizez));
       else
-         position = new Vector3(midx-2*Math.max(sizex, sizey), midy-2*Math.max(sizex, sizey), midz+2*sizez);
+         position = new THREE.Vector3(midx-2*Math.max(sizex, sizey), midy-2*Math.max(sizex, sizey), midz+2*sizez);
 
-      const target = new Vector3(midx, midy, midz),
+      const target = new THREE.Vector3(midx, midy, midz),
             oldTarget = this._controls.target,
             // Amount to change camera position at each step
             posIncrement = position.sub(this._camera.position).divideScalar(frames),
@@ -4668,7 +4666,7 @@ class TGeoPainter extends ObjectPainter {
 
          function setSideRotation(mesh, normal) {
             mesh._other_side = false;
-            mesh._axis_norm = normal ?? new Vector3(1, 0, 0);
+            mesh._axis_norm = normal ?? new THREE.Vector3(1, 0, 0);
             mesh._axis_flip = function(vect) {
                const other_side = vect.dot(this._axis_norm) < 0;
                if (this._other_side !== other_side) {
@@ -4709,9 +4707,9 @@ class TGeoPainter extends ObjectPainter {
             if (ortho && ckind.indexOf('OX') > 0)
                setTopRotation(mesh, 0);
              else if (ortho ? ckind.indexOf('OY') > 0 : this.ctrl._yup)
-               setSideRotation(mesh, new Vector3(0, 0, -1));
+               setSideRotation(mesh, new THREE.Vector3(0, 0, -1));
              else {
-               setSideRotation(mesh, new Vector3(0, 1, 0));
+               setSideRotation(mesh, new THREE.Vector3(0, 1, 0));
                mesh.rotateX(Math.PI/2);
             }
 
@@ -4731,7 +4729,7 @@ class TGeoPainter extends ObjectPainter {
          } else if (naxis === 2) {
             if (ortho ? ckind.indexOf('OZ') < 0 : this.ctrl._yup) {
                const zox = ortho && (ckind.indexOf('ZOX') > 0 || ckind.indexOf('ZNOX') > 0);
-               setSideRotation(mesh, zox ? new Vector3(0, -1, 0) : undefined);
+               setSideRotation(mesh, zox ? new THREE.Vector3(0, -1, 0) : undefined);
                mesh.rotateY(-Math.PI/2);
                if (zox) mesh.rotateX(-Math.PI/2);
             } else {
@@ -4762,9 +4760,9 @@ class TGeoPainter extends ObjectPainter {
             if (ortho && ckind.indexOf('OX') > 0)
                setTopRotation(mesh, 0);
              else if (ortho ? ckind.indexOf('OY') > 0 : this.ctrl._yup)
-               setSideRotation(mesh, new Vector3(0, 0, -1));
+               setSideRotation(mesh, new THREE.Vector3(0, 0, -1));
              else {
-               setSideRotation(mesh, new Vector3(0, 1, 0));
+               setSideRotation(mesh, new THREE.Vector3(0, 1, 0));
                mesh.rotateX(Math.PI/2);
             }
             mesh.translateX(-text_size*0.5 - textbox.max.x*0.5);
@@ -4783,7 +4781,7 @@ class TGeoPainter extends ObjectPainter {
          } else if (naxis === 2) {
             if (ortho ? ckind.indexOf('OZ') < 0 : this.ctrl._yup) {
                const zox = ortho && (ckind.indexOf('ZOX') > 0 || ckind.indexOf('ZNOX') > 0);
-               setSideRotation(mesh, zox ? new Vector3(0, -1, 0) : undefined);
+               setSideRotation(mesh, zox ? new THREE.Vector3(0, -1, 0) : undefined);
                mesh.rotateY(-Math.PI/2);
                if (zox) mesh.rotateX(-Math.PI/2);
             } else {
@@ -4867,9 +4865,9 @@ class TGeoPainter extends ObjectPainter {
       if (this._renderer?.jsroot_render3d === constants.Render3D.SVG) return;
 
       if (!this._clipPlanes) {
-         this._clipPlanes = [new THREE.Plane(new Vector3(1, 0, 0), 0),
-                             new THREE.Plane(new Vector3(0, this.ctrl._yup ? -1 : 1, 0), 0),
-                             new THREE.Plane(new Vector3(0, 0, this.ctrl._yup ? 1 : -1), 0)];
+         this._clipPlanes = [new THREE.Plane(new THREE.Vector3(1, 0, 0), 0),
+                             new THREE.Plane(new THREE.Vector3(0, this.ctrl._yup ? -1 : 1, 0), 0),
+                             new THREE.Plane(new THREE.Vector3(0, 0, this.ctrl._yup ? 1 : -1), 0)];
       }
 
       const clip = this.ctrl.clip,
