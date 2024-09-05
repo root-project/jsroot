@@ -40,9 +40,9 @@ const THREE = {
 async function importThreeJs() {
    if (!isNodeJs() || (THREE.REVISION <= 162))
       return THREE;
-   return import('three').then(h1 => {
+   return import('../r162/three.mjs').then(h1 => {
       Object.assign(THREE, h1);
-      return import('three/addons');
+      return import('../r162/three_addons.mjs');
    }).then(h2 => {
       Object.assign(THREE, h2);
       return THREE;
@@ -502,7 +502,6 @@ async function createRender3D(width, height, render3d, args) {
          args.canvas.addEventListener = () => {}; // dummy
          args.canvas.removeEventListener = () => {}; // dummy
          args.canvas.style = {};
-         console.log('internals._node_gl', typeof internals._node_gl);
          return internals._node_gl || import('gl');
       }).then(node_gl => {
          internals._node_gl = node_gl;
@@ -517,7 +516,7 @@ async function createRender3D(width, height, render3d, args) {
          r.jsroot_dom = doc.createElementNS(nsSVG, 'image');
          return r;
       }).catch(() => {
-         console.log('gl module is not installed - fallback to SVGRenderer');
+         console.log('gl module is not available - fallback to SVGRenderer');
          render3d = rc.SVG;
          const r = createSVGRenderer(false, 0, doc);
          r.jsroot_dom = doc.createElementNS(nsSVG, 'svg');
