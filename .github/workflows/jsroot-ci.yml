@@ -99,7 +99,7 @@ jobs:
       - name: Dependencies jsroot-test
         run: |
           cd jsroot-test
-          npm ci
+          npm install
 
       - name: Run all tests
         run: |
@@ -174,7 +174,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm ci
+          npm install
           npm install gl --no-save
 
       - name: Run eslint
