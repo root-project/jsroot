@@ -5,7 +5,7 @@ import { httpRequest, browser, source_dir, settings, internals, constants, creat
 import { showProgress, injectStyle, ToolbarIcons } from '../gui/utils.mjs';
 import { GUI } from '../gui/lil-gui.mjs';
 import { THREE, assign3DHandler, disposeThreejsObject, createOrbitControl,
-         createLineSegments, InteractiveControl, PointsCreator,
+         createLineSegments, InteractiveControl, PointsCreator, importThreeJs,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind, cleanupRender3D,
          createTextGeometry } from '../base/base3d.mjs';
 import { getColor, getRootColors } from '../base/colors.mjs';
@@ -27,7 +27,6 @@ const _ENTIRE_SCENE = 0, _BLOOM_SCENE = 1,
       clTGeoOverlap = 'TGeoOverlap', clTGeoVolumeAssembly = 'TGeoVolumeAssembly',
       clTEveTrack = 'TEveTrack', clTEvePointSet = 'TEvePointSet',
       clREveGeoShapeExtract = `${nsREX}REveGeoShapeExtract`,
-      Color = THREE.Color, // used very often
       Matrix4 = THREE.Matrix4, // used very often
       Vector3 = THREE.Vector3; // used very often
 
@@ -402,9 +401,9 @@ class GeoDrawingControl extends InteractiveControl {
 
             if (this.bloom) {
                h.layers.enable(_BLOOM_SCENE);
-               h.material.emissive = new Color(0x00ff00);
+               h.material.emissive = new THREE.Color(0x00ff00);
             } else {
-               h.material.color = new Color(col);
+               h.material.color = new THREE.Color(col);
                h.material.opacity = 1.0;
             }
             const m = new Matrix4();
@@ -431,9 +430,9 @@ class GeoDrawingControl extends InteractiveControl {
          }
          if (this.bloom) {
             c.layers.enable(_BLOOM_SCENE);
-            c.material.emissive = new Color(0x00ff00);
+            c.material.emissive = new THREE.Color(0x00ff00);
          } else {
-            c.material.color = new Color(col);
+            c.material.color = new THREE.Color(col);
             c.material.opacity = 1.0;
          }
 
@@ -689,7 +688,7 @@ class TGeoPainter extends ObjectPainter {
          });
       }
 
-      const bkgr = new Color(this.ctrl.background);
+      const bkgr = new THREE.Color(this.ctrl.background);
 
       this._toolbar = new Toolbar(this.selectDom(), (bkgr.r + bkgr.g + bkgr.b) < 1, buttonList);
 
@@ -977,7 +976,7 @@ class TGeoPainter extends ObjectPainter {
                   bckgr = getColor(col);
             }
          }
-         if (bckgr) res.background = '#' + new Color(bckgr).getHexString();
+         if (bckgr) res.background = '#' + new THREE.Color(bckgr).getHexString();
       }
 
       if (d.check('R3D_', true))
@@ -1384,12 +1383,12 @@ class TGeoPainter extends ObjectPainter {
    changedBackground(val) {
       if (val !== undefined)
          this.ctrl.background = val;
-      this._scene.background = new Color(this.ctrl.background);
+      this._scene.background = new THREE.Color(this.ctrl.background);
       this._renderer.setClearColor(this._scene.background, 1);
       this.render3D(0);
 
       if (this._toolbar) {
-         const bkgr = new Color(this.ctrl.background);
+         const bkgr = new THREE.Color(this.ctrl.background);
          this._toolbar.changeBrightness((bkgr.r + bkgr.g + bkgr.b) < 1);
       }
    }
@@ -2056,7 +2055,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (active_mesh) {
          for (let k = 0; k < active_mesh.length; ++k)
-            get_ctrl(active_mesh[k]).setHighlight(color || new Color(this.ctrl.highlight_color), geo_index);
+            get_ctrl(active_mesh[k]).setHighlight(color || new THREE.Color(this.ctrl.highlight_color), geo_index);
       }
 
       this.render3D(0);
@@ -2728,47 +2727,48 @@ class TGeoPainter extends ObjectPainter {
          return this._renderer?.jsroot_dom;
       }
 
-      // three.js 3D drawing
-      this._scene = new THREE.Scene();
-      this._fog = new THREE.Fog(0xffffff, 1, 10000);
-      this._scene.fog = this.ctrl.use_fog ? this._fog : null;
+      return importThreeJs().then(() => {
+         // three.js 3D drawing
+         this._scene = new THREE.Scene();
+         this._fog = new THREE.Fog(0xffffff, 1, 10000);
+         this._scene.fog = this.ctrl.use_fog ? this._fog : null;
 
-      this._scene.overrideMaterial = new THREE.MeshLambertMaterial({ color: 0x7000ff, vertexColors: false, transparent: true, opacity: 0.2, depthTest: false });
+         this._scene.overrideMaterial = new THREE.MeshLambertMaterial({ color: 0x7000ff, vertexColors: false, transparent: true, opacity: 0.2, depthTest: false });
 
-      this._scene_width = w;
-      this._scene_height = h;
+         this._scene_width = w;
+         this._scene_height = h;
 
-      this.createCamera();
+         this.createCamera();
 
-      this._selected_mesh = null;
+         this._selected_mesh = null;
 
-      this._overall_size = 10;
+         this._overall_size = 10;
 
-      this._toplevel = new THREE.Object3D();
+         this._toplevel = new THREE.Object3D();
 
-      this._scene.add(this._toplevel);
+         this._scene.add(this._toplevel);
 
-      this._scene.background = new Color(this.ctrl.background);
+         this._scene.background = new THREE.Color(this.ctrl.background);
 
-      return createRender3D(w, h, render3d, { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true })
-        .then(r => {
+         return createRender3D(w, h, render3d, { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true });
+      }).then(r => {
          this._renderer = r;
 
          if (this.batch_format)
             r.jsroot_image_format = this.batch_format;
 
-         this._webgl = (this._renderer.jsroot_render3d === constants.Render3D.WebGL);
+         this._webgl = (r.jsroot_render3d === constants.Render3D.WebGL);
 
-         if (this._renderer.setPixelRatio && !isNodeJs())
-            this._renderer.setPixelRatio(window.devicePixelRatio);
-         this._renderer.setSize(w, h, !this._fit_main_area);
-         this._renderer.localClippingEnabled = true;
+         if (isFunc(r.setPixelRatio) && !isNodeJs())
+            r.setPixelRatio(window.devicePixelRatio);
+         r.setSize(w, h, !this._fit_main_area);
+         r.localClippingEnabled = true;
 
-         this._renderer.setClearColor(this._scene.background, 1);
+         r.setClearColor(this._scene.background, 1);
 
          if (this._fit_main_area && this._webgl) {
-            this._renderer.domElement.style.width = '100%';
-            this._renderer.domElement.style.height = '100%';
+            r.domElement.style.width = '100%';
+            r.domElement.style.height = '100%';
             const main = this.selectDom();
             if (main.style('position') === 'static')
                main.style('position', 'relative');
@@ -4506,9 +4506,9 @@ class TGeoPainter extends ObjectPainter {
 
       if ((this.ctrl.camera_overlay === 'axis') || show_grid) {
          const container = this.getExtrasContainer('create', 'overlay'),
-               lineMaterial = new THREE.LineBasicMaterial({ color: new Color('black') }),
-               gridMaterial1 = show_grid ? new THREE.LineBasicMaterial({ color: new Color(0xbbbbbb) }) : null,
-               gridMaterial2 = show_grid ? new THREE.LineDashedMaterial({ color: new Color(0xdddddd), dashSize: grid_gap, gapSize: grid_gap }) : null,
+               lineMaterial = new THREE.LineBasicMaterial({ color: new THREE.Color('black') }),
+               gridMaterial1 = show_grid ? new THREE.LineBasicMaterial({ color: new THREE.Color(0xbbbbbb) }) : null,
+               gridMaterial2 = show_grid ? new THREE.LineDashedMaterial({ color: new THREE.Color(0xdddddd), dashSize: grid_gap, gapSize: grid_gap }) : null,
                textMaterial = new THREE.MeshBasicMaterial({ color: 'black', vertexColors: false }),
                xticks = x_handle.createTicks();
 

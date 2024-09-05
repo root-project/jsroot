@@ -1,11 +1,12 @@
 import { select as d3_select, color as d3_color } from '../d3.mjs';
-import { browser, settings, constants, isBatchMode, nsSVG, isNodeJs, isObject, isFunc, isStr, getDocument } from '../core.mjs';
+import { browser, settings, internals, constants, isBatchMode, nsSVG,
+         isNodeJs, isObject, isFunc, isStr, getDocument } from '../core.mjs';
 import { WebGLRenderer, WebGLRenderTarget, CanvasTexture, TextureLoader, Raycaster,
          BufferGeometry, BufferAttribute, Float32BufferAttribute,
          Vector2, Vector3, Color, Points, PointsMaterial,
          LineSegments, LineDashedMaterial, LineBasicMaterial,
          REVISION, DoubleSide, Object3D, Matrix4, Line3, Mesh, MeshBasicMaterial, MeshLambertMaterial,
-         Plane, Scene, Camera, PerspectiveCamera, OrthographicCamera, ShapeUtils,
+         Plane, Scene, PerspectiveCamera, OrthographicCamera, ShapeUtils,
          FrontSide, Box3, InstancedMesh, MeshStandardMaterial, MeshNormalMaterial,
          MeshPhysicalMaterial, MeshPhongMaterial, MeshDepthMaterial, MeshMatcapMaterial, MeshToonMaterial,
          Group, PlaneHelper, Euler, Quaternion, BoxGeometry, CircleGeometry, SphereGeometry, Fog,
@@ -21,7 +22,7 @@ const THREE = {
    WebGLRenderer, WebGLRenderTarget,
    BufferGeometry, BufferAttribute, Float32BufferAttribute, Mesh, MeshBasicMaterial, MeshLambertMaterial,
    LineSegments, LineDashedMaterial, LineBasicMaterial, Points, PointsMaterial,
-   Plane, Scene, Camera, PerspectiveCamera, OrthographicCamera, ShapeUtils,
+   Plane, Scene, PerspectiveCamera, OrthographicCamera, ShapeUtils,
    Box3, InstancedMesh, MeshStandardMaterial, MeshNormalMaterial,
    MeshPhysicalMaterial, MeshPhongMaterial, MeshDepthMaterial, MeshMatcapMaterial, MeshToonMaterial,
    Group, PlaneHelper, Euler, Quaternion, BoxGeometry, CircleGeometry, SphereGeometry, Fog,
@@ -31,11 +32,19 @@ const THREE = {
    Font, OrbitControls, SVGRenderer, TextGeometry, EffectComposer, RenderPass, UnrealBloomPass
 };
 
+
+/** @summary Import proper three.js version
+  * @desc in node.js only r162 supports WebGL1 which can be emulated with "gl" package.
+  * Therefore only this version can be used for working in node.js
+  * @private */
 async function importThreeJs() {
-   if (THREE.REVISION === 162)
+   if (!isNodeJs() || (THREE.REVISION <= 162))
       return THREE;
-   return Promise.all([import('three'), import('three/addons')]).then(arr => {
-      Object.assign(THREE, arr[0], arr[1]);
+   return import('three').then(h1 => {
+      Object.assign(THREE, h1);
+      return import('three/addons');
+   }).then(h2 => {
+      Object.assign(THREE, h2);
       return THREE;
    });
 }
@@ -488,14 +497,16 @@ async function createRender3D(width, height, render3d, args) {
       promise = Promise.resolve(r);
    } else if (isNodeJs()) {
       // try to use WebGL inside node.js - need to create headless context
-      promise = importThreeJs().then(() => import('canvas')).then(node_canvas => {
+      promise = import('canvas').then(node_canvas => {
          args.canvas = node_canvas.default.createCanvas(width, height);
          args.canvas.addEventListener = () => {}; // dummy
          args.canvas.removeEventListener = () => {}; // dummy
          args.canvas.style = {};
-         return import('gl');
+         console.log('internals._node_gl', typeof internals._node_gl);
+         return internals._node_gl || import('gl');
       }).then(node_gl => {
-         const gl = node_gl.default(width, height, { preserveDrawingBuffer: true });
+         internals._node_gl = node_gl;
+         const gl = node_gl?.default(width, height, { preserveDrawingBuffer: true });
          if (!gl) throw Error('Fail to create headless-gl');
          args.context = gl;
          gl.canvas = args.canvas;
@@ -1614,7 +1625,7 @@ function createTextGeometry(lbl, size) {
 }
 
 
-export { THREE, assign3DHandler, disposeThreejsObject, createOrbitControl,
+export { THREE, importThreeJs, assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, create3DLineMaterial, Box3D, getMaterialArgs,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind, cleanupRender3D,
          HelveticerRegularFont, createTextGeometry, InteractiveControl, PointsControl, PointsCreator, createSVGRenderer };

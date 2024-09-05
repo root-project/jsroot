@@ -1,7 +1,7 @@
 import { constants, isFunc, isStr, getDocument, isNodeJs } from '../core.mjs';
 import { rgb as d3_rgb } from '../d3.mjs';
 import { THREE, assign3DHandler, disposeThreejsObject, createOrbitControl,
-         createLineSegments, Box3D, getMaterialArgs,
+         createLineSegments, Box3D, getMaterialArgs, importThreeJs,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind,
          cleanupRender3D, HelveticerRegularFont, createSVGRenderer, create3DLineMaterial } from '../base/base3d.mjs';
 import { isPlainText, translateLaTeX, produceLatex } from '../base/latex.mjs';
@@ -542,29 +542,31 @@ function create3DScene(render3d, x3dscale, y3dscale, orthographic) {
    if (x3dscale) this.size_x3d *= x3dscale;
    if (y3dscale) this.size_y3d *= y3dscale;
 
-   // three.js 3D drawing
-   this.scene = new THREE.Scene();
-   // scene.fog = new Fog(0xffffff, 500, 3000);
+   return importThreeJs().then(() => {
+      // three.js 3D drawing
+      this.scene = new THREE.Scene();
+      // scene.fog = new Fog(0xffffff, 500, 3000);
 
-   this.toplevel = new THREE.Object3D();
-   this.scene.add(this.toplevel);
-   this.scene_width = sz.width;
-   this.scene_height = sz.height;
-   this.scene_x = sz.x ?? 0;
-   this.scene_y = sz.y ?? 0;
+      this.toplevel = new THREE.Object3D();
+      this.scene.add(this.toplevel);
+      this.scene_width = sz.width;
+      this.scene_height = sz.height;
+      this.scene_x = sz.x ?? 0;
+      this.scene_y = sz.y ?? 0;
 
-   this.camera_Phi = 30;
-   this.camera_Theta = 30;
+      this.camera_Phi = 30;
+      this.camera_Theta = 30;
 
-   create3DCamera(this, orthographic);
+      create3DCamera(this, orthographic);
 
-   setCameraPosition(this, true);
+      setCameraPosition(this, true);
 
-   return createRender3D(this.scene_width, this.scene_height, render3d).then(r => {
+      return createRender3D(this.scene_width, this.scene_height, render3d);
+   }).then(r => {
       this.renderer = r;
 
-      this.webgl = (render3d === constants.Render3D.WebGL);
-      this.add3dCanvas(sz, this.renderer.jsroot_dom, this.webgl);
+      this.webgl = (r.jsroot_render3d === constants.Render3D.WebGL);
+      this.add3dCanvas(sz, r.jsroot_dom, this.webgl);
 
       this.first_render_tm = 0;
       this.enable_highlight = false;
