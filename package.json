@@ -47,7 +47,6 @@
     "font-family-papandreou": "^0.2.0-patch1",
     "jsdom": "^22.1.0",
     "mathjax": "3.2.2",
-    "specificity": "^0.4.1",
     "svgpath": "^2.3.0",
     "tmp": "^0.2.1",
     "xhr2": "^0.2.1"
