@@ -5,7 +5,7 @@ import { WebGLRenderer, WebGLRenderTarget, CanvasTexture, TextureLoader, Raycast
          Vector2, Vector3, Color, Points, PointsMaterial,
          LineSegments, LineDashedMaterial, LineBasicMaterial,
          REVISION, DoubleSide, Object3D, Matrix4, Line3, Mesh, MeshBasicMaterial, MeshLambertMaterial,
-         Plane, Scene, PerspectiveCamera, OrthographicCamera, ShapeUtils,
+         Plane, Scene, Camera, PerspectiveCamera, OrthographicCamera, ShapeUtils,
          FrontSide, Box3, InstancedMesh, MeshStandardMaterial, MeshNormalMaterial,
          MeshPhysicalMaterial, MeshPhongMaterial, MeshDepthMaterial, MeshMatcapMaterial, MeshToonMaterial,
          Group, PlaneHelper, Euler, Quaternion, BoxGeometry, CircleGeometry, SphereGeometry, Fog,
@@ -21,7 +21,7 @@ const THREE = {
    WebGLRenderer, WebGLRenderTarget,
    BufferGeometry, BufferAttribute, Float32BufferAttribute, Mesh, MeshBasicMaterial, MeshLambertMaterial,
    LineSegments, LineDashedMaterial, LineBasicMaterial, Points, PointsMaterial,
-   Plane, Scene, PerspectiveCamera, OrthographicCamera, ShapeUtils,
+   Plane, Scene, Camera, PerspectiveCamera, OrthographicCamera, ShapeUtils,
    Box3, InstancedMesh, MeshStandardMaterial, MeshNormalMaterial,
    MeshPhysicalMaterial, MeshPhongMaterial, MeshDepthMaterial, MeshMatcapMaterial, MeshToonMaterial,
    Group, PlaneHelper, Euler, Quaternion, BoxGeometry, CircleGeometry, SphereGeometry, Fog,
@@ -504,6 +504,12 @@ async function createRender3D(width, height, render3d, args) {
          r.jsroot_output = new THREE.WebGLRenderTarget(width, height);
          r.setRenderTarget(r.jsroot_output);
          r.jsroot_dom = doc.createElementNS(nsSVG, 'image');
+         return r;
+      }).catch(() => {
+         console.log('gl module is not installed - fallback to SVGRenderer');
+         render3d = rc.SVG;
+         const r = createSVGRenderer(false, 0, doc);
+         r.jsroot_dom = doc.createElementNS(nsSVG, 'svg');
          return r;
       });
    } else if (render3d === rc.WebGL) {
