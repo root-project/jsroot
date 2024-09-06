@@ -708,7 +708,7 @@ class TGeoPainter extends ObjectPainter {
       navigator.getVRDisplays().then(displays => {
          const vrDisplay = displays[0];
          if (!vrDisplay) return;
-         this._renderer.vr.setDevice(vrDisplay);
+         this.renderer.vr.setDevice(vrDisplay);
          this._vrDisplay = vrDisplay;
          if (vrDisplay.stageParameters)
             this._standingMatrix.fromArray(vrDisplay.stageParameters.sittingToStandingTransform);
@@ -808,20 +808,20 @@ class TGeoPainter extends ObjectPainter {
       }
       this._previousCameraPosition = this._camera.position.clone();
       this._previousCameraRotation = this._camera.rotation.clone();
-      this._vrDisplay.requestPresent([{ source: this._renderer.domElement }]).then(() => {
+      this._vrDisplay.requestPresent([{ source: this.renderer.domElement }]).then(() => {
          this._previousCameraNear = this._camera.near;
          this._dolly.position.set(this._camera.position.x/4, -this._camera.position.y/8, -this._camera.position.z/4);
          this._camera.position.set(0, 0, 0);
          this._dolly.add(this._camera);
          this._camera.near = 0.1;
          this._camera.updateProjectionMatrix();
-         this._renderer.vr.enabled = true;
-         this._renderer.setAnimationLoop(() => {
+         this.renderer.vr.enabled = true;
+         this.renderer.setAnimationLoop(() => {
             this.updateVRControllers();
             this.render3D(0);
          });
       });
-      this._renderer.vr.enabled = true;
+      this.renderer.vr.enabled = true;
 
       window.addEventListener('keydown', evnt => {
          // Esc Key turns VR mode off
@@ -833,7 +833,7 @@ class TGeoPainter extends ObjectPainter {
      * @private */
    exitVRMode() {
       if (!this._vrDisplay.isPresenting) return;
-      this._renderer.vr.enabled = false;
+      this.renderer.vr.enabled = false;
       this._dolly.remove(this._camera);
       this._scene.add(this._camera);
       // Restore Camera pose
@@ -1382,7 +1382,7 @@ class TGeoPainter extends ObjectPainter {
       if (val !== undefined)
          this.ctrl.background = val;
       this._scene.background = new THREE.Color(this.ctrl.background);
-      this._renderer.setClearColor(this._scene.background, 1);
+      this.renderer.setClearColor(this._scene.background, 1);
       this.render3D(0);
 
       if (this._toolbar) {
@@ -1412,7 +1412,7 @@ class TGeoPainter extends ObjectPainter {
          return;
       }
 
-      if (!on || !this._renderer)
+      if (!on || !this.renderer)
          return;
 
 
@@ -1721,19 +1721,19 @@ class TGeoPainter extends ObjectPainter {
 
       if (on && !this._bloomComposer) {
          this._camera.layers.enable(_BLOOM_SCENE);
-         this._bloomComposer = new THREE.EffectComposer(this._renderer);
+         this._bloomComposer = new THREE.EffectComposer(this.renderer);
          this._bloomComposer.addPass(new THREE.RenderPass(this._scene, this._camera));
          const pass = new THREE.UnrealBloomPass(new THREE.Vector2(this._scene_width, this._scene_height), 1.5, 0.4, 0.85);
          pass.threshold = 0;
          pass.radius = 0;
          pass.renderToScreen = true;
          this._bloomComposer.addPass(pass);
-         this._renderer.autoClear = false;
+         this.renderer.autoClear = false;
       } else if (!on && this._bloomComposer) {
          this._bloomComposer.dispose();
          delete this._bloomComposer;
-         if (this._renderer)
-            this._renderer.autoClear = true;
+         if (this.renderer)
+            this.renderer.autoClear = true;
          this._camera?.layers.disable(_BLOOM_SCENE);
          this._camera?.layers.set(_ENTIRE_SCENE);
       }
@@ -2111,7 +2111,7 @@ class TGeoPainter extends ObjectPainter {
       if (!this.getCanvPainter())
          this.setTooltipAllowed(settings.Tooltip);
 
-      this._controls = createOrbitControl(this, this._camera, this._scene, this._renderer, this._lookat);
+      this._controls = createOrbitControl(this, this._camera, this._scene, this.renderer, this._lookat);
 
       this._controls.mouse_tmout = this.ctrl.mouse_tmout; // set larger timeout for geometry processing
 
@@ -2689,7 +2689,7 @@ class TGeoPainter extends ObjectPainter {
    createSpecialEffects() {
       if (this._webgl && this.ctrl.outline && isFunc(this.createOutline)) {
          // code used with jsroot-based geometry drawing in EVE7, not important any longer
-         this._effectComposer = new THREE.EffectComposer(this._renderer);
+         this._effectComposer = new THREE.EffectComposer(this.renderer);
          this._effectComposer.addPass(new THREE.RenderPass(this._scene, this._camera));
          this.createOutline(this._scene_width, this._scene_height);
       }
@@ -2706,8 +2706,8 @@ class TGeoPainter extends ObjectPainter {
             this._scene = cfg.scene;
             this._scene_width = cfg.scene_width;
             this._scene_height = cfg.scene_height;
-            this._renderer = cfg.renderer;
-            this._webgl = (this._renderer.jsroot_render3d === constants.Render3D.WebGL);
+            this.renderer = cfg.renderer;
+            this._webgl = (this.renderer.jsroot_render3d === constants.Render3D.WebGL);
 
             this._toplevel = new THREE.Object3D();
             this._scene.add(this._toplevel);
@@ -2722,7 +2722,7 @@ class TGeoPainter extends ObjectPainter {
             this._camera = cfg.camera;
          }
 
-         return this._renderer?.jsroot_dom;
+         return this.renderer?.jsroot_dom;
       }
 
       return importThreeJs().then(() => {
@@ -2750,7 +2750,7 @@ class TGeoPainter extends ObjectPainter {
 
          return createRender3D(w, h, render3d, { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true });
       }).then(r => {
-         this._renderer = r;
+         this.renderer = r;
 
          if (this.batch_format)
             r.jsroot_image_format = this.batch_format;
@@ -2783,11 +2783,11 @@ class TGeoPainter extends ObjectPainter {
                   svg = doc.createElementNS(nsSVG, 'svg');
             svg.setAttribute('width', w);
             svg.setAttribute('height', h);
-            svg.appendChild(this._renderer.jsroot_dom);
+            svg.appendChild(this.renderer.jsroot_dom);
             return svg;
          }
 
-         return this._renderer.jsroot_dom;
+         return this.renderer.jsroot_dom;
       });
    }
 
@@ -2855,9 +2855,9 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Create png image with drawing snapshot. */
    createSnapshot(filename) {
-      if (!this._renderer) return;
+      if (!this.renderer) return;
       this.render3D(0);
-      const dataUrl = this._renderer.domElement.toDataURL('image/png');
+      const dataUrl = this.renderer.domElement.toDataURL('image/png');
       if (filename === 'asis') return dataUrl;
       dataUrl.replace('image/png', 'image/octet-stream');
       const doc = getDocument(),
@@ -3283,7 +3283,7 @@ class TGeoPainter extends ObjectPainter {
       let last = new Date();
 
       const animate = () => {
-         if (!this._renderer || !this.ctrl) return;
+         if (!this.renderer || !this.ctrl) return;
 
          const current = new Date();
 
@@ -4080,7 +4080,7 @@ class TGeoPainter extends ObjectPainter {
    showDrawInfo(msg) {
       if (this.isBatchMode() || !this._first_drawing || !this._start_drawing_time) return;
 
-      const main = this._renderer.domElement.parentNode;
+      const main = this.renderer.domElement.parentNode;
       if (!main) return;
 
       let info = main.querySelector('.geo_info');
@@ -4190,7 +4190,7 @@ class TGeoPainter extends ObjectPainter {
      * Several special values are used:
      *   -1    - force recheck of rendering order based on camera position */
    render3D(tmout, measure) {
-      if (!this._renderer) {
+      if (!this.renderer) {
          if (!this.did_cleanup)
             console.warn('renderer object not exists - check code');
          else
@@ -4224,7 +4224,7 @@ class TGeoPainter extends ObjectPainter {
          delete this.render_tmout;
       }
 
-      beforeRender3D(this._renderer);
+      beforeRender3D(this.renderer);
 
       const tm1 = new Date();
 
@@ -4239,14 +4239,14 @@ class TGeoPainter extends ObjectPainter {
       if (this._webgl && this._effectComposer && (this._effectComposer.passes.length > 0))
          this._effectComposer.render();
        else if (this._webgl && this._bloomComposer && (this._bloomComposer.passes.length > 0)) {
-         this._renderer.clear();
+         this.renderer.clear();
          this._camera.layers.set(_BLOOM_SCENE);
          this._bloomComposer.render();
-         this._renderer.clearDepth();
+         this.renderer.clearDepth();
          this._camera.layers.set(_ENTIRE_SCENE);
-         this._renderer.render(this._scene, this._camera);
+         this.renderer.render(this._scene, this._camera);
       } else
-         this._renderer.render(this._scene, this._camera);
+         this.renderer.render(this._scene, this._camera);
 
 
       const tm2 = new Date();
@@ -4259,7 +4259,7 @@ class TGeoPainter extends ObjectPainter {
             console.log(`three.js r${THREE.REVISION}, first render tm = ${this.first_render_tm}`);
       }
 
-      afterRender3D(this._renderer);
+      afterRender3D(this.renderer);
 
       if (this._render_resolveFuncs) {
          const arr = this._render_resolveFuncs;
@@ -4862,7 +4862,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Assign clipping attributes to the meshes - supported only for webgl */
    updateClipping(without_render, force_traverse) {
       // do not try clipping with SVG renderer
-      if (this._renderer?.jsroot_render3d === constants.Render3D.SVG) return;
+      if (this.renderer?.jsroot_render3d === constants.Render3D.SVG) return;
 
       if (!this._clipPlanes) {
          this._clipPlanes = [new THREE.Plane(new THREE.Vector3(1, 0, 0), 0),
@@ -5092,7 +5092,7 @@ class TGeoPainter extends ObjectPainter {
          this._controls?.cleanup();
 
          if (this._context_menu)
-            this._renderer.domElement.removeEventListener('contextmenu', this._context_menu, false);
+            this.renderer.domElement.removeEventListener('contextmenu', this._context_menu, false);
 
          this._gui?.destroy();
 
@@ -5148,7 +5148,7 @@ class TGeoPainter extends ObjectPainter {
       }
 
       if (!this.superimpose)
-         cleanupRender3D(this._renderer);
+         cleanupRender3D(this.renderer);
 
       this.ensureBloom(false);
       delete this._effectComposer;
@@ -5157,7 +5157,7 @@ class TGeoPainter extends ObjectPainter {
       delete this._scene_size;
       this._scene_width = 0;
       this._scene_height = 0;
-      this._renderer = null;
+      this.renderer = null;
       this._toplevel = null;
       delete this._full_geom;
       delete this._fog;
@@ -5199,13 +5199,13 @@ class TGeoPainter extends ObjectPainter {
       this._scene_width = width;
       this._scene_height = height;
 
-      if (this._camera && this._renderer) {
+      if (this._camera && this.renderer) {
          if (this._camera.isPerspectiveCamera)
             this._camera.aspect = this._scene_width / this._scene_height;
          else if (this._camera.isOrthographicCamera)
             this.adjustCameraPosition(true, true);
          this._camera.updateProjectionMatrix();
-         this._renderer.setSize(this._scene_width, this._scene_height, !this._fit_main_area);
+         this.renderer.setSize(this._scene_width, this._scene_height, !this._fit_main_area);
          this._effectComposer?.setSize(this._scene_width, this._scene_height);
          this._bloomComposer?.setSize(this._scene_width, this._scene_height);
 
