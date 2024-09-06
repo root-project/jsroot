@@ -744,7 +744,7 @@ async function svgToPDF(args, as_buffer) {
    const nodejs = isNodeJs();
    let _jspdf, _svg2pdf, need_symbols = false;
 
-   const pr = import('../../scripts/jspdf.es.min.js').then(h1 => { _jspdf = h1; return import('../../scripts/svg2pdf.es.min.js'); }).then(h2 => { _svg2pdf = h2; }),
+   const pr = import('../jspdf.mjs').then(h1 => { _jspdf = h1; return import('../svg2pdf.mjs'); }).then(h2 => { _svg2pdf = h2; }),
         restore_fonts = [], restore_dominant = [], restore_text = [],
         node_transform = args.node.getAttribute('transform'), custom_fonts = {};
 
