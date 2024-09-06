@@ -742,16 +742,15 @@ function addHighlightStyle(elem, drag) {
   * @private */
 async function svgToPDF(args, as_buffer) {
    const nodejs = isNodeJs();
-   let _jspdf, _svg2pdf, need_symbols = false;
+   let jspdf, need_symbols = false;
 
-   const pr = import('../jspdf.mjs').then(h1 => { _jspdf = h1; return import('../svg2pdf.mjs'); }).then(h2 => { _svg2pdf = h2; }),
-        restore_fonts = [], restore_dominant = [], restore_text = [],
-        node_transform = args.node.getAttribute('transform'), custom_fonts = {};
+   const restore_fonts = [], restore_dominant = [], restore_text = [],
+         node_transform = args.node.getAttribute('transform'), custom_fonts = {};
 
    if (args.reset_tranform)
       args.node.removeAttribute('transform');
 
-   return pr.then(() => {
+   return import('../jspdf.mjs').then(h1 => { jspdf = h1; return import('../svg2pdf.mjs'); }).then(svg2pdf => {
       d3_select(args.node).selectAll('g').each(function() {
          if (this.hasAttribute('font-family')) {
             const name = this.getAttribute('font-family');
@@ -800,7 +799,7 @@ async function svgToPDF(args, as_buffer) {
       }
 
       // eslint-disable-next-line new-cap
-      const doc = new _jspdf.jsPDF({
+      const doc = new jspdf.jsPDF({
          orientation: 'landscape',
          unit: 'px',
          format: [args.width + 10, args.height + 10]
@@ -843,7 +842,7 @@ async function svgToPDF(args, as_buffer) {
          });
       }
 
-      return pr2.then(() => _svg2pdf.svg2pdf(args.node, doc, { x: 5, y: 5, width: args.width, height: args.height }))
+      return pr2.then(() => svg2pdf.svg2pdf(args.node, doc, { x: 5, y: 5, width: args.width, height: args.height }))
          .then(() => {
             if (args.reset_tranform && !args.can_modify && node_transform)
                args.node.setAttribute('transform', node_transform);
