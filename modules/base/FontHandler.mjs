@@ -80,7 +80,6 @@ class FontHandler {
          defs = svg.insert('svg:defs', ':first-child').attr('class', 'canvas_defs');
       const entry = defs.selectChild('.' + clname);
       if (entry.empty()) {
-         console.log('Adding style entry for class', clname);
          defs.append('style')
                .attr('class', clname)
                .property('$fonthandler', this)
