@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '5/09/2024',
+version_date = '6/09/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -8032,7 +8032,6 @@ class FontHandler {
          defs = svg.insert('svg:defs', ':first-child').attr('class', 'canvas_defs');
       const entry = defs.selectChild('.' + clname);
       if (entry.empty()) {
-         console.log('Adding style entry for class', clname);
          defs.append('style')
                .attr('class', clname)
                .property('$fonthandler', this)
@@ -10830,18 +10829,15 @@ function addHighlightStyle(elem, drag) {
   * @private */
 async function svgToPDF(args, as_buffer) {
    const nodejs = isNodeJs();
-   let _jspdf, _svg2pdf, need_symbols = false;
+   let jspdf, need_symbols = false;
 
-   const pr = nodejs
-      ? Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(h1 => { _jspdf = h1; return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }); }).then(h2 => { _svg2pdf = h2; })
-      : loadScript(exports.source_dir + 'scripts/jspdf.umd.min.js').then(() => loadScript(exports.source_dir + 'scripts/svg2pdf.umd.min.js')).then(() => { _jspdf = globalThis.jspdf; _svg2pdf = globalThis.svg2pdf; }),
-        restore_fonts = [], restore_dominant = [], restore_text = [],
-        node_transform = args.node.getAttribute('transform'), custom_fonts = {};
+   const restore_fonts = [], restore_dominant = [], restore_text = [],
+         node_transform = args.node.getAttribute('transform'), custom_fonts = {};
 
    if (args.reset_tranform)
       args.node.removeAttribute('transform');
 
-   return pr.then(() => {
+   return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(h1 => { jspdf = h1; return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }); }).then(svg2pdf => {
       select(args.node).selectAll('g').each(function() {
          if (this.hasAttribute('font-family')) {
             const name = this.getAttribute('font-family');
@@ -10890,7 +10886,7 @@ async function svgToPDF(args, as_buffer) {
       }
 
       // eslint-disable-next-line new-cap
-      const doc = new _jspdf.jsPDF({
+      const doc = new jspdf.jsPDF({
          orientation: 'landscape',
          unit: 'px',
          format: [args.width + 10, args.height + 10]
@@ -10933,7 +10929,7 @@ async function svgToPDF(args, as_buffer) {
          });
       }
 
-      return pr2.then(() => _svg2pdf.svg2pdf(args.node, doc, { x: 5, y: 5, width: args.width, height: args.height }))
+      return pr2.then(() => svg2pdf.svg2pdf(args.node, doc, { x: 5, y: 5, width: args.width, height: args.height }))
          .then(() => {
             if (args.reset_tranform && !args.can_modify && node_transform)
                args.node.setAttribute('transform', node_transform);
