@@ -28,6 +28,7 @@
 25. Fix - properly save zoomed ranges in drawingJSON()
 26. Fix - properly redraw TMultuGraph
 27. Fix - show empty bin in TProfile2D if it has entries #316
+28. Fix - saving embed TGeo in TCanvas into image
 
 
 ## Changes in 7.7.3
