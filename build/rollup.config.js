@@ -8,7 +8,7 @@ import meta from '../package.json' assert { type: 'json' };
 
 const ignore_jsroot_modules = [
   './base/lzma.mjs', './base/zstd.mjs', './base/zstd.mjs',
-  '../../scripts/jspdf.es.min.js', '../../scripts/svg2pdf.es.min.js',
+  '../jspdf.mjs', '../svg2pdf.mjs',
   '../r162/three.mjs',  '../r162/three_addons.mjs'
 ];
 
