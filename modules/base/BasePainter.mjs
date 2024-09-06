@@ -1,5 +1,5 @@
 import { select as d3_select } from '../d3.mjs';
-import { settings, internals, isNodeJs, isFunc, isStr, isObject, btoa_func, getDocument, source_dir, loadScript, httpRequest } from '../core.mjs';
+import { settings, internals, isNodeJs, isFunc, isStr, isObject, btoa_func, getDocument, source_dir, httpRequest } from '../core.mjs';
 import { detectFont, addCustomFont, getCustomFont, FontHandler } from './FontHandler.mjs';
 import { approximateLabelWidth, replaceSymbolsInTextNode } from './latex.mjs';
 import { getColor } from './colors.mjs';
