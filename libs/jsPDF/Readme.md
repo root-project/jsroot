@@ -4,7 +4,7 @@
 
 https://github.com/parallax/jsPDF
 
-## Modiufication in original version
+## Modification in original version
 
 https://github.com/linev/jsPDF/commits/jsroot/
 

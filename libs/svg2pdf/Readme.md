@@ -4,7 +4,7 @@
 
 https://github.com/yWorks/svg2pdf.js
 
-## Modiufication in original version
+## Modification in original version
 
 https://github.com/linev/svg2pdf.js/commits/jsroot/
 
