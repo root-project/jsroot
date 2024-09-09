@@ -1,8 +1,13 @@
+import stylisticJs from '@stylistic/eslint-plugin-js';
+
 export default [
   {
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: "module",
+    },
+    plugins: {
+      '@stylistic/js': stylisticJs
     },
     ignores: ["modules/base/zstd.mjs", "modules/base/lzma.mjs", "modules/d3.mjs", "modules/svg2pdf.mjs", "modules/jspdf.mjs", "modules/three.mjs", "modules/three_addons.mjs", "modules/gui/lil-gui.mjs", "modules/r162/**"],
     rules: {
@@ -17,7 +22,7 @@ export default [
         "no-new-func": "off",
 
         // deprecated, no idea how to replace
-        "object-curly-spacing": "off",
+        "@stylistic/js/object-curly-spacing": ["error", "always"],
         "array-bracket-spacing": "warn",
         "keyword-spacing": "warn",
         "semi-spacing": "warn",
