@@ -183,7 +183,7 @@ async function loadOpenui5(args) {
    });
 }
 
-/* eslint-disable key-spacing */
+/* eslint-disable @stylistic/js/key-spacing */
 /* eslint-disable @stylistic/js/comma-spacing */
 /* eslint-disable @stylistic/js/object-curly-spacing */
 

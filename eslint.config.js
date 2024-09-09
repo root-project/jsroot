@@ -31,19 +31,19 @@ export default [
         '@stylistic/js/no-multiple-empty-lines': ['warn', { max: 2, maxEOF: 0 }],
         '@stylistic/js/object-curly-spacing': ['warn', 'always'],
         '@stylistic/js/space-in-parens': 'warn',
-        "key-spacing": "warn",
-        "object-property-newline": "off",
-        "spaced-comment": "warn",
-        "computed-property-spacing": "warn",
-        "object-curly-newline": ["warn", {
-          "ObjectExpression": { "consistent": true },
-          "ObjectPattern": { "consistent": true },
-          "ImportDeclaration": "never",
-          "ExportDeclaration": "never"
+        '@stylistic/js/key-spacing': 'warn',
+        '@stylistic/js/object-property-newline': 'off',
+        '@stylistic/js/spaced-comment': 'warn',
+        '@stylistic/js/computed-property-spacing': 'warn',
+        '@stylistic/js/object-curly-newline': ['warn', {
+          ObjectExpression: { 'consistent': true },
+          ObjectPattern: { 'consistent': true },
+          ImportDeclaration: 'never',
+          ExportDeclaration: 'never'
         }],
-        "padded-blocks": ["warn", { "blocks": "never", "classes": "always", "switches": "never" }],
-        "space-infix-ops": "off",
-        "space-before-function-paren": ["warn", "never"]
+        '@stylistic/js/padded-blocks': ['warn', { blocks: 'never', classes: 'always', switches: "never" }],
+        '@stylistic/js/space-infix-ops': 'off',
+        '@stylistic/js/space-before-function-paren': ['warn', 'never']
     }
   }
 ];
