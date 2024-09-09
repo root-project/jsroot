@@ -6,8 +6,8 @@
 
 /* eslint-disable space-in-parens */
 /* eslint-disable curly */
-/* eslint-disable no-floating-decimal */
 /* eslint-disable comma-spacing */
+/* eslint-disable @stylistic/js/no-floating-decimal */
 
 // this can be improved later
 

@@ -22,11 +22,11 @@ export default [
         "no-new-func": "off",
 
         // deprecated, no idea how to replace
-        "@stylistic/js/object-curly-spacing": ["error", "always"],
-        "array-bracket-spacing": "warn",
-        "keyword-spacing": "warn",
-        "semi-spacing": "warn",
-        "no-floating-decimal": "warn",
+        '@stylistic/js/object-curly-spacing': ['warn', 'always'],
+        '@stylistic/js/array-bracket-spacing': 'warn',
+        '@stylistic/js/keyword-spacing': 'warn',
+        '@stylistic/js/semi-spacing': 'warn',
+        '@stylistic/js/no-floating-decimal': 'warn',
         "no-multi-spaces": ["warn", { ignoreEOLComments: true }],
         "no-multiple-empty-lines": "off",
         "space-in-parens": "warn",
