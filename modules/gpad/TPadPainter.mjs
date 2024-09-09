@@ -2306,7 +2306,7 @@ class TPadPainter extends ObjectPainter {
             canvas = fp.renderer?.domElement;
          } else {
             main = fp.getMainPainter();
-            canvas = main?.renderer?.domElement;
+            canvas = main?._renderer?.domElement;
          }
          if (!isFunc(main?.render3D) || !isObject(canvas)) return;
 
