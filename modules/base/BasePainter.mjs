@@ -890,9 +890,8 @@ async function svgToImage(svg, image_format, as_buffer) {
        return c === '%' ? '%25' : c;
    });
 
-   // was before, now try to use standard conversion
-   // const img_src = 'data:image/svg+xml;base64,' + btoa_func(decodeURIComponent(svg));
-   const img_src = prSVG + svg;
+   // Cannot use prSVG because of some special cases like RCanvas/rh2
+   const img_src = 'data:image/svg+xml;base64,' + btoa_func(decodeURIComponent(svg));
 
    if (isNodeJs()) {
       return import('canvas').then(async handle => {
