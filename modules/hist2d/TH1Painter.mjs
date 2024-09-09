@@ -481,8 +481,6 @@ class TH1Painter extends THistPainter {
              .style('fill', d3_rgb(this.fillatt.color).brighter(0.5).formatRgb());
       }
 
-
-
       if (barsr) {
          this.draw_g.append('svg:path')
                .attr('d', barsr)

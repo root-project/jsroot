@@ -3911,7 +3911,6 @@ class HierarchyPainter extends BasePainter {
 } // class HierarchyPainter
 
 
-
 /** @summary Show object in inspector for provided object
   * @protected */
 ObjectPainter.prototype.showInspector = function(opt, obj) {

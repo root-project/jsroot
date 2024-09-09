@@ -193,7 +193,6 @@ const symbols_map = {
 },
 
 
-
 /** @summary Create a single regex to detect any symbol to replace, apply longer symbols first
   * @private */
 symbolsRegexCache = new RegExp(Object.keys(symbols_map).sort((a, b) => (a.length < b.length ? 1 : (a.length > b.length ? -1 : 0))).join('|'), 'g'),

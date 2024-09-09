@@ -861,7 +861,6 @@ function graph2DTooltip(intersect) {
 }
 
 
-
 /**
  * @summary Painter for TGraph2D classes
  * @private
