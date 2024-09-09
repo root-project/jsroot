@@ -12,32 +12,32 @@ export default [
         camelcase: "off",
         "prefer-const": "warn",
         eqeqeq: "warn",
+        curly: ["warn", "multi-or-nest"],
+        "one-var": ["warn", "consecutive"],
+        "no-new-func": "off",
+
+        // deprecated, no idea how to replace
+        "object-curly-spacing": "off",
         "array-bracket-spacing": "warn",
+        "keyword-spacing": "warn",
+        "semi-spacing": "warn",
+        "no-floating-decimal": "warn",
+        "no-multi-spaces": ["warn", { ignoreEOLComments: true }],
+        "no-multiple-empty-lines": "off",
+        "space-in-parens": "warn",
+        "comma-spacing": "warn",
+        "key-spacing": "warn",
+        "object-property-newline": "off",
+        "spaced-comment": "warn",
+        "computed-property-spacing": "warn",
         "object-curly-newline": ["warn", {
           "ObjectExpression": { "consistent": true },
           "ObjectPattern": { "consistent": true },
           "ImportDeclaration": "never",
           "ExportDeclaration": "never"
         }],
-        curly: ["warn", "multi-or-nest"],
-        "one-var": ["warn", "consecutive"],
-        "space-infix-ops": "off",
-        "no-multi-spaces": ["warn", { ignoreEOLComments: true }],
-        "no-multiple-empty-lines": "off",
-        "object-property-newline": "off",
-        "no-new-func": "off",
         "padded-blocks": ["warn", { "blocks": "never", "classes": "always", "switches": "never" }],
-
-        // deprecated, no idea how to replace
-        // "object-curly-spacing": "off",
-        "keyword-spacing": "warn",
-        "semi-spacing": "warn",
-        "no-floating-decimal": "warn",
-        "space-in-parens": "warn",
-        "comma-spacing": "warn",
-        "key-spacing": "warn",
-        "spaced-comment": "warn",
-        "computed-property-spacing": "warn",
+        "space-infix-ops": "off",
         "space-before-function-paren": ["warn", "never"]
     }
   }
