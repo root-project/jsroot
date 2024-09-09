@@ -115,7 +115,7 @@ class RH3Painter extends RHistPainter {
    }
 
    /** @summary Fill statistic */
-   fillStatistic(stat, dostat /*, dofit */) {
+   fillStatistic(stat, dostat /* , dofit */) {
       const data = this.countStat(),
           print_name = dostat % 10,
           print_entries = Math.floor(dostat / 10) % 10,

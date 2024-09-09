@@ -157,7 +157,7 @@ function createList(parent, lst, name, title) {
        _more: true,
        _geoobj: lst,
        _parent: parent,
-       _get(item /*, itemname */) {
+       _get(item /* , itemname */) {
           return Promise.resolve(item._geoobj || null);
        },
        _expand(node, lst) {
@@ -4276,7 +4276,7 @@ class TGeoPainter extends ObjectPainter {
       this._worker_jobs = 0; // counter how many requests send to worker
 
       // TODO: modules not yet working, see https://www.codedread.com/blog/archives/2017/10/19/web-workers-can-be-es6-modules-too/
-      this._worker = new Worker(source_dir + 'scripts/geoworker.js' /*, { type: 'module' } */);
+      this._worker = new Worker(source_dir + 'scripts/geoworker.js' /* , { type: 'module' } */);
 
       this._worker.onmessage = e => {
          if (!isObject(e.data)) return;
@@ -5691,7 +5691,7 @@ function createItem(node, obj, name) {
       } else if (shape && (shape._typename === clTGeoCompositeShape) && shape.fNode) {
          sub._more = true;
          sub._shape = shape;
-         sub._expand = function(node /*, obj */) {
+         sub._expand = function(node /* , obj */) {
             createItem(node, node._shape.fNode.fLeft, 'Left');
             createItem(node, node._shape.fNode.fRight, 'Right');
             return true;

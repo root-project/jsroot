@@ -360,7 +360,7 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Check if user range can be un-zommed
      * @desc Used when graph points covers larger range than provided histogram */
-   unzoomUserRange(dox, doy /*, doz */) {
+   unzoomUserRange(dox, doy /* , doz */) {
       const graph = this.getGraph();
       if (this._own_histogram || !graph) return false;
 

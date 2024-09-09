@@ -1,5 +1,5 @@
-/// top module, export all major functions from JSROOT
-/// Used by default in node.js
+// top module, export all major functions from JSROOT
+// Used by default in node.js
 
 export * from './core.mjs';
 
