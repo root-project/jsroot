@@ -3691,7 +3691,6 @@ class TNodejsFile extends TFile {
          const blobs = [];
          let cnt = 0;
 
-         // eslint-disable-next-line n/handle-callback-err
          const readfunc = (_err, _bytesRead, buf) => {
             const res = new DataView(buf.buffer, buf.byteOffset, place[cnt + 1]);
             if (place.length === 2) return resolve(res);
