@@ -221,7 +221,7 @@ exports.define = function(req, factoryFunc) {
    sync_promises.push(pr); // will wait until other PRs are finished
 }
 
-/// duplicate function here, used before loading any other functionality
+// duplicate function here, used before loading any other functionality
 exports.decodeUrl = function(url) {
    let res = {
       opts: {},

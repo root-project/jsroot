@@ -1,4 +1,4 @@
-/// CSG library for THREE.js
+// CSG library for THREE.js
 
 import { THREE } from '../base/base3d.mjs';
 
@@ -195,7 +195,7 @@ class Polygon {
    }
 
    flip() {
-      /// normal is not changed, only sign variable
+      // normal is not changed, only sign variable
       // this.normal.multiplyScalar( -1 );
       // this.w *= -1;
 
