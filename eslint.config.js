@@ -22,15 +22,15 @@ export default [
         "no-new-func": "off",
 
         // deprecated, no idea how to replace
-        '@stylistic/js/object-curly-spacing': ['warn', 'always'],
         '@stylistic/js/array-bracket-spacing': 'warn',
+        '@stylistic/js/comma-spacing': 'warn',
         '@stylistic/js/keyword-spacing': 'warn',
         '@stylistic/js/semi-spacing': 'warn',
         '@stylistic/js/no-floating-decimal': 'warn',
         '@stylistic/js/no-multi-spaces': ['warn', { ignoreEOLComments: true }],
         '@stylistic/js/no-multiple-empty-lines': ['warn', { max: 2, maxEOF: 0 }],
-        "space-in-parens": "warn",
-        "comma-spacing": "warn",
+        '@stylistic/js/object-curly-spacing': ['warn', 'always'],
+        '@stylistic/js/space-in-parens': 'warn',
         "key-spacing": "warn",
         "object-property-newline": "off",
         "spaced-comment": "warn",

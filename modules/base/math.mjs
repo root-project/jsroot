@@ -4,10 +4,10 @@
  * @namespace Math
  */
 
-/* eslint-disable space-in-parens */
 /* eslint-disable curly */
-/* eslint-disable comma-spacing */
+/* eslint-disable @stylistic/js/comma-spacing */
 /* eslint-disable @stylistic/js/no-floating-decimal */
+/* eslint-disable @stylistic/js/space-in-parens */
 
 // this can be improved later
 

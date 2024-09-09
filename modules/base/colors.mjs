@@ -263,8 +263,7 @@ function createGrayPalette() {
    return new ColorPalette(palette);
 }
 
-/* eslint-disable comma-spacing */
-
+/* eslint-disable @stylistic/js/comma-spacing */
 
 /** @summary Create color palette
   * @private */
