@@ -2300,11 +2300,17 @@ class TPadPainter extends ObjectPainter {
          const can3d = fp.access3dKind();
          if ((can3d !== constants.Embed3D.Overlay) && (can3d !== constants.Embed3D.Embed)) return;
 
-         const main = isFunc(fp.render3D) ? fp : fp.getMainPainter();
-         if (!isFunc(main?.render3D) || !isObject(main?.renderer)) return;
+         let main, canvas;
+         if (isFunc(fp.render3D)) {
+            main = fp;
+            canvas = fp.renderer?.domElement;
+         } else {
+            main = fp.getMainPainter();
+            canvas = main?.renderer?.domElement;
+         }
+         if (!isFunc(main?.render3D) || !isObject(canvas)) return;
 
-         const sz2 = fp.getSizeFor3d(constants.Embed3D.Embed), // get size and position of DOM element as it will be embed
-               canvas = main.renderer.domElement;
+         const sz2 = fp.getSizeFor3d(constants.Embed3D.Embed); // get size and position of DOM element as it will be embed
          main.render3D(0); // WebGL clears buffers, therefore we should render scene and convert immediately
          const dataUrl = canvas.toDataURL('image/png');
 
