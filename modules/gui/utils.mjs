@@ -185,6 +185,7 @@ async function loadOpenui5(args) {
 
 /* eslint-disable key-spacing */
 /* eslint-disable comma-spacing */
+/* eslint-disable @stylistic/js/object-curly-spacing */
 
 // some icons taken from http://uxrepo.com/
 const ToolbarIcons = {
