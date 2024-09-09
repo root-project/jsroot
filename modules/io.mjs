@@ -889,7 +889,6 @@ function createMemberStreamer(element, file) {
       case kOffsetL + kDouble32:
       case kOffsetP + kDouble32:
          member.double32 = true;
-      // eslint-disable-next-line no-fallthrough
       case kFloat16:
       case kOffsetL + kFloat16:
       case kOffsetP + kFloat16:
@@ -1499,7 +1498,7 @@ function ZIP_inflate(arr, tgt) {
                for (o = 0; o < z; ++o)
                   q[o] = { e: 0, b: 0, n: 0, t: null }; // new zip_HuftNode
 
-               if (tail == null)
+               if (tail === null)
                   tail = res.root = { next: null, list: null }; // new zip_HuftList();
                else
                   tail = tail.next = { next: null, list: null }; // new zip_HuftList();
@@ -1685,7 +1684,7 @@ function ZIP_inflate(arr, tgt) {
          Huffman tables. */
 
       // if first time, set up tables for fixed blocks
-      if (zip_fixed_tl == null) {
+      if (zip_fixed_tl === null) {
          // literal table
          const l = Array(288).fill(8, 0, 144).fill(9, 144, 256).fill(7, 256, 280).fill(8, 280, 288);
          // make a complete, but wrong code set
@@ -1878,14 +1877,14 @@ function ZIP_inflate(arr, tgt) {
                break;
 
             case 1: // zip_STATIC_TREES
-               if (zip_tl != null)
+               if (zip_tl !== null)
                   i = zip_inflate_codes(buff, off + n, size - n);
                else
                   i = zip_inflate_fixed(buff, off + n, size - n);
                break;
 
             case 2: // zip_DYN_TREES
-               if (zip_tl != null)
+               if (zip_tl !== null)
                   i = zip_inflate_codes(buff, off + n, size - n);
                else
                   i = zip_inflate_dynamic(buff, off + n, size - n);
@@ -2176,7 +2175,6 @@ class TBuffer {
       * @desc string either contains all symbols or until 0 symbol */
    readFastString(n) {
       let res = '', code, closed = false;
-      // eslint-disable-next-line no-unmodified-loop-condition
       for (let i = 0; (n < 0) || (i < n); ++i) {
          code = this.ntou1();
          if (code === 0) { closed = true; if (n < 0) break; }
@@ -3611,7 +3609,7 @@ class TLocalFile extends TFile {
 
    /** @summary read buffer from local file
      * @return {Promise} with read data */
-   async readBuffer(place, filename /*, progress_callback */) {
+   async readBuffer(place, filename /* , progress_callback */) {
       const file = this.fLocalFile;
 
       return new Promise((resolve, reject) => {
@@ -3680,7 +3678,7 @@ class TNodejsFile extends TFile {
 
    /** @summary Read buffer from node.js file
      * @return {Promise} with requested blocks */
-   async readBuffer(place, filename /*, progress_callback */) {
+   async readBuffer(place, filename /* , progress_callback */) {
       return new Promise((resolve, reject) => {
          if (filename)
             return reject(Error(`Cannot access other local file ${filename}`));
@@ -3762,7 +3760,7 @@ class TProxyFile extends TFile {
 
    /** @summary Read buffer from FileProxy
      * @return {Promise} with requested blocks */
-   async readBuffer(place, filename /*, progress_callback */) {
+   async readBuffer(place, filename /* , progress_callback */) {
       if (filename)
          return Promise.reject(Error(`Cannot access other file ${filename}`));
 
@@ -3834,4 +3832,4 @@ export { kChar, kShort, kInt, kLong, kFloat, kCounter,
    kAnyP, kStreamer, kStreamLoop, kSTLp, kSTL, kBaseClass,
    clTStreamerInfoList, clTDirectory, clTDirectoryFile, nameStreamerInfo, clTBasket,
    R__unzip, addUserStreamer, createStreamerElement, createMemberStreamer,
-   openFile, reconstructObject, FileProxy, TBuffer }; /*, TDirectory, TFile, TLocalFile, TNodejsFile */
+   openFile, reconstructObject, FileProxy, TBuffer };
