@@ -11,17 +11,17 @@ export default [
     },
     ignores: ["modules/base/zstd.mjs", "modules/base/lzma.mjs", "modules/d3.mjs", "modules/svg2pdf.mjs", "modules/jspdf.mjs", "modules/three.mjs", "modules/three_addons.mjs", "modules/gui/lil-gui.mjs", "modules/r162/**"],
     rules: {
-        semi: "warn",
-        quotes: ["warn", "single"],
-        indent: "off",
-        camelcase: "off",
-        "prefer-const": "warn",
-        eqeqeq: "warn",
-        curly: ["warn", "multi-or-nest"],
-        "one-var": ["warn", "consecutive"],
-        "no-new-func": "off",
+        camelcase: 'off',
+        'prefer-const': 'warn',
+        eqeqeq: 'warn',
+        curly: ['warn', 'multi-or-nest'],
+        'one-var': ['warn', 'consecutive'],
+        'no-new-func': 'off',
 
-        // deprecated, no idea how to replace
+        // moved to @stylistic/js
+        '@stylistic/js/semi': 'warn',
+        '@stylistic/js/quotes': ['warn', 'single'],
+        '@stylistic/js/indent': 'off',
         '@stylistic/js/array-bracket-spacing': 'warn',
         '@stylistic/js/comma-spacing': 'warn',
         '@stylistic/js/keyword-spacing': 'warn',
