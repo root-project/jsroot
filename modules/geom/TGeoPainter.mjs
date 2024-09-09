@@ -2347,7 +2347,7 @@ class TGeoPainter extends ObjectPainter {
             }
 
             if (cnt > 0) {
-               /// only if some geom missing, submit job to the worker
+               // only if some geom missing, submit job to the worker
                this.submitToWorker(job);
                this.changeStage(stageWorkerBuild);
                return 2;
@@ -2392,7 +2392,7 @@ class TGeoPainter extends ObjectPainter {
                const entry = this._draw_nodes[n];
                if (entry.done) continue;
 
-               /// shape can be provided with entry itself
+               // shape can be provided with entry itself
                const shape = entry.server_shape || this._build_shapes[entry.shapeid];
 
                this.createEntryMesh(entry, shape, toplevel);
@@ -2620,8 +2620,6 @@ class TGeoPainter extends ObjectPainter {
             case 'ambient' : this._camera.add(new THREE.AmbientLight(0xefefef, p)); break;
             case 'hemisphere' : this._camera.add(new THREE.HemisphereLight(0xffffbb, 0x080820, p)); break;
             case 'mix': this._camera.add(new THREE.AmbientLight(0xefefef, p)); // intentionally without break
-
-            // eslint-disable-next-line no-fallthrough
             default: // 6 point lights
                for (let n = 0; n < 6; ++n) {
                   const l = new THREE.DirectionalLight(0xefefef, p);
