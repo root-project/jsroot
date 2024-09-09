@@ -41,9 +41,6 @@
   "dependencies": {
     "@oneidentity/zstd-js": "^1.0.3",
     "canvas": "^2.11.2",
-    "eslint-plugin-compat": "^6.0.0",
-    "eslint-plugin-n": "^17.10.2",
-    "eslint-plugin-promise": "^7.1.0",
     "jsdom": "^22.1.0",
     "mathjax": "3.2.2",
     "tmp": "^0.2.1",
