@@ -55,7 +55,6 @@ async function importThreeJs(original) {
    });
 }
 
-// eslint-disable-next-line
 let _hfont;
 
 /** @summary Create three.js Helvetica Regular Font instance
@@ -1583,7 +1582,6 @@ class PointsCreator {
       } else {
          promise = new Promise((resolveFunc, rejectFunc) => {
             const loader = new THREE.TextureLoader();
-            // eslint-disable-next-line prefer-promise-reject-errors
             loader.load(dataUrl, res => resolveFunc(res), undefined, () => rejectFunc());
          });
       }

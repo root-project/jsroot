@@ -798,7 +798,6 @@ async function svgToPDF(args, as_buffer) {
          };
       }
 
-      // eslint-disable-next-line new-cap
       const doc = new jspdf.jsPDF({
          orientation: 'landscape',
          unit: 'px',

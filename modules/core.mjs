@@ -1016,7 +1016,6 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
    if (isNodeJs()) {
       if (!use_promise)
          throw Error('Not allowed to create http requests in node.js without promise');
-      // eslint-disable-next-line new-cap
       return import('xhr2').then(h => configureXhr(new h.default()));
    }
 

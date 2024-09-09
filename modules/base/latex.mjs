@@ -1011,7 +1011,6 @@ async function loadMathjax() {
          svg,
          startup: {
             ready() {
-               // eslint-disable-next-line no-undef
                MathJax.startup.defaultReady();
                const arr = _mj_loading;
                _mj_loading = undefined;
@@ -1050,7 +1049,6 @@ async function loadMathjax() {
           startup: {
              typeset: false,
              ready() {
-                // eslint-disable-next-line no-undef
                 const mj = MathJax;
 
                 mj.startup.registerConstructor('jsdomAdaptor', () => {

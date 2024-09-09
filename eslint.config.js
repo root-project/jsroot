@@ -4,7 +4,7 @@ export default [
       ecmaVersion: 2022,
       sourceType: "module",
     },
-    ignores: ["modules/base/zstd.mjs", "modules/d3.mjs", "modules/svg2pdf.mjs", "modules/jspdf.mjs", "modules/three.mjs", "modules/three_addons.mjs", "modules/gui/lil-gui.mjs", "modules/r162/**"],
+    ignores: ["modules/base/zstd.mjs", "modules/base/lzma.mjs", "modules/d3.mjs", "modules/svg2pdf.mjs", "modules/jspdf.mjs", "modules/three.mjs", "modules/three_addons.mjs", "modules/gui/lil-gui.mjs", "modules/r162/**"],
     rules: {
         semi: "warn",
         quotes: ["warn", "single"],
