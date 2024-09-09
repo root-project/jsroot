@@ -817,7 +817,8 @@ class TGraphDelaunay {
    SetMarginBinsContent(z) {
       this.fZout = z;
    }
-}
+
+} // class TGraphDelaunay
 
    /** @summary Function handles tooltips in the mesh */
 function graph2DTooltip(intersect) {

@@ -939,7 +939,7 @@ async function ensureTCanvas(painter, frame_kind) {
 
 /** @summary draw TPad snapshot from TWebCanvas
   * @private */
-async function drawTPadSnapshot(dom, snap  /* , opt */) {
+async function drawTPadSnapshot(dom, snap /* , opt */) {
    const can = create(clTCanvas),
          painter = new TCanvasPainter(dom, can);
    painter.normal_canvas = false;
