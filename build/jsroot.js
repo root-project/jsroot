@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '6/09/2024',
+version_date = '9/09/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -1022,7 +1022,6 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
    if (isNodeJs()) {
       if (!use_promise)
          throw Error('Not allowed to create http requests in node.js without promise');
-      // eslint-disable-next-line new-cap
       return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(h => configureXhr(new h.default()));
    }
 
@@ -8352,7 +8351,6 @@ const symbols_map = {
 },
 
 
-
 /** @summary Create a single regex to detect any symbol to replace, apply longer symbols first
   * @private */
 symbolsRegexCache = new RegExp(Object.keys(symbols_map).sort((a, b) => (a.length < b.length ? 1 : (a.length > b.length ? -1 : 0))).join('|'), 'g'),
@@ -9170,7 +9168,6 @@ async function loadMathjax() {
          svg,
          startup: {
             ready() {
-               // eslint-disable-next-line no-undef
                MathJax.startup.defaultReady();
                const arr = _mj_loading;
                _mj_loading = undefined;
@@ -9209,7 +9206,6 @@ async function loadMathjax() {
           startup: {
              typeset: false,
              ready() {
-                // eslint-disable-next-line no-undef
                 const mj = MathJax;
 
                 mj.startup.registerConstructor('jsdomAdaptor', () => {
@@ -9880,8 +9876,7 @@ function createGrayPalette() {
    return new ColorPalette(palette);
 }
 
-/* eslint-disable comma-spacing */
-
+/* eslint-disable @stylistic/js/comma-spacing */
 
 /** @summary Create color palette
   * @private */
@@ -10885,7 +10880,6 @@ async function svgToPDF(args, as_buffer) {
          };
       }
 
-      // eslint-disable-next-line new-cap
       const doc = new jspdf.jsPDF({
          orientation: 'landscape',
          unit: 'px',
@@ -10977,9 +10971,8 @@ async function svgToImage(svg, image_format, as_buffer) {
        return c === '%' ? '%25' : c;
    });
 
-   // was before, now try to use standard conversion
-   // const img_src = 'data:image/svg+xml;base64,' + btoa_func(decodeURIComponent(svg));
-   const img_src = prSVG + svg;
+   // Cannot use prSVG because of some special cases like RCanvas/rh2
+   const img_src = 'data:image/svg+xml;base64,' + btoa_func(decodeURIComponent(svg));
 
    if (isNodeJs()) {
       return Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(async handle => {
@@ -12318,7 +12311,7 @@ class ObjectPainter extends BasePainter {
      * @param {object} obj - object with new data
      * @param {string} [opt] - option which will be used for redrawing
      * @protected */
-   updateObject(obj /*, opt */) {
+   updateObject(obj /* , opt */) {
       if (!this.matchObjectType(obj)) return false;
       Object.assign(this.getObject(), obj);
       return true;
@@ -56386,7 +56379,6 @@ async function importThreeJs(original) {
    });
 }
 
-// eslint-disable-next-line
 let _hfont;
 
 /** @summary Create three.js Helvetica Regular Font instance
@@ -56582,7 +56574,7 @@ const Handling3DDrawings = {
    /** @summary Returns size which availble for 3D drawing.
      * @desc One uses frame sizes for the 3D drawing - like TH2/TH3 objects
      * @private */
-   getSizeFor3d(can3d /*, render3d */) {
+   getSizeFor3d(can3d /* , render3d */) {
       if (can3d === undefined) {
          // analyze which render/embed mode can be used
          can3d = getRender3DKind();
@@ -57826,7 +57818,6 @@ class PointsCreator {
       } else {
          promise = new Promise((resolveFunc, rejectFunc) => {
             const loader = new THREE.TextureLoader();
-            // eslint-disable-next-line prefer-promise-reject-errors
             loader.load(dataUrl, res => resolveFunc(res), undefined, () => rejectFunc());
          });
       }
@@ -57883,17 +57874,13 @@ function createTextGeometry(lbl, size) {
  * @namespace Math
  */
 
-/* eslint-disable no-loss-of-precision */
-/* eslint-disable space-in-parens */
 /* eslint-disable curly */
-/* eslint-disable operator-linebreak */
-/* eslint-disable no-floating-decimal */
-/* eslint-disable brace-style */
-/* eslint-disable comma-spacing */
+/* eslint-disable @stylistic/js/comma-spacing */
+/* eslint-disable @stylistic/js/no-floating-decimal */
+/* eslint-disable @stylistic/js/space-in-parens */
 
 // this can be improved later
 
-/* eslint-disable no-unreachable-loop */
 /* eslint-disable eqeqeq */
 
 const kMACHEP = 1.11022302462515654042363166809e-16,
@@ -60232,9 +60219,9 @@ async function loadOpenui5(args) {
    });
 }
 
-/* eslint-disable key-spacing */
-/* eslint-disable comma-spacing */
-/* eslint-disable object-curly-spacing */
+/* eslint-disable @stylistic/js/key-spacing */
+/* eslint-disable @stylistic/js/comma-spacing */
+/* eslint-disable @stylistic/js/object-curly-spacing */
 
 // some icons taken from http://uxrepo.com/
 const ToolbarIcons = {
@@ -70762,11 +70749,17 @@ class TPadPainter extends ObjectPainter {
          const can3d = fp.access3dKind();
          if ((can3d !== constants$1.Embed3D.Overlay) && (can3d !== constants$1.Embed3D.Embed)) return;
 
-         const main = isFunc(fp.render3D) ? fp : fp.getMainPainter();
-         if (!isFunc(main?.render3D) || !isObject(main?.renderer)) return;
+         let main, canvas;
+         if (isFunc(fp.render3D)) {
+            main = fp;
+            canvas = fp.renderer?.domElement;
+         } else {
+            main = fp.getMainPainter();
+            canvas = main?._renderer?.domElement;
+         }
+         if (!isFunc(main?.render3D) || !isObject(canvas)) return;
 
-         const sz2 = fp.getSizeFor3d(constants$1.Embed3D.Embed), // get size and position of DOM element as it will be embed
-               canvas = main.renderer.domElement;
+         const sz2 = fp.getSizeFor3d(constants$1.Embed3D.Embed); // get size and position of DOM element as it will be embed
          main.render3D(0); // WebGL clears buffers, therefore we should render scene and convert immediately
          const dataUrl = canvas.toDataURL('image/png');
 
@@ -71985,7 +71978,7 @@ async function ensureTCanvas(painter, frame_kind) {
 
 /** @summary draw TPad snapshot from TWebCanvas
   * @private */
-async function drawTPadSnapshot(dom, snap /*, opt */) {
+async function drawTPadSnapshot(dom, snap /* , opt */) {
    const can = create$1(clTCanvas),
          painter = new TCanvasPainter(dom, can);
    painter.normal_canvas = false;
@@ -82103,8 +82096,6 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
              .style('fill', rgb(this.fillatt.color).brighter(0.5).formatRgb());
       }
 
-
-
       if (barsr) {
          this.draw_g.append('svg:path')
                .attr('d', barsr)
@@ -84157,7 +84148,7 @@ __proto__: null,
 TH3Painter: TH3Painter
 });
 
-/// CSG library for THREE.js
+// CSG library for THREE.js
 
 
 const EPSILON = 1e-5,
@@ -84353,7 +84344,7 @@ class Polygon {
    }
 
    flip() {
-      /// normal is not changed, only sign variable
+      // normal is not changed, only sign variable
       // this.normal.multiplyScalar( -1 );
       // this.w *= -1;
 
@@ -86560,7 +86551,6 @@ function createMatrix(matrix) {
       case 'TGeoScale': scale = matrix.fScale; break;
       case 'TGeoGenTrans':
          scale = matrix.fScale; // no break, translation and rotation follows
-      // eslint-disable-next-line no-fallthrough
       case 'TGeoCombiTrans':
          translation = matrix.fTranslation;
          if (matrix.fRotation) rotation = matrix.fRotation.fRotationMatrix;
@@ -86938,8 +86928,7 @@ function createGeometry(shape, limit) {
          }
          case clTGeoHalfSpace:
             if (limit < 0) return 1; // half space if just plane used in composite
-            // no break here - warning should appear
-         // eslint-disable-next-line no-fallthrough
+            // no break here - warning may appear
          default:
             geoWarn(`unsupported shape type ${shape._typename}`);
       }
@@ -87080,7 +87069,6 @@ function provideObjectInfo(obj) {
       case clTGeoBBox: break;
       case clTGeoPara: info.push(`Alpha=${shape.fAlpha} Phi=${shape.fPhi} Theta=${shape.fTheta}`); break;
       case clTGeoTrd2: info.push(`Dy1=${conv(shape.fDy1)} Dy2=${conv(shape.fDy1)}`); // no break
-      // eslint-disable-next-line no-fallthrough
       case clTGeoTrd1: info.push(`Dx1=${conv(shape.fDx1)} Dx2=${conv(shape.fDx1)}`); break;
       case clTGeoArb8: break;
       case clTGeoTrap: break;
@@ -87092,8 +87080,7 @@ function provideObjectInfo(obj) {
          break;
       case clTGeoConeSeg:
          info.push(`Phi1=${shape.fPhi1} Phi2=${shape.fPhi2}`);
-         // no break;
-      // eslint-disable-next-line no-fallthrough
+         // intentional no break;
       case clTGeoCone:
          info.push(`Rmin1=${conv(shape.fRmin1)} Rmax1=${conv(shape.fRmax1)}`,
                    `Rmin2=${conv(shape.fRmin2)} Rmax2=${conv(shape.fRmax2)}`);
@@ -87101,8 +87088,7 @@ function provideObjectInfo(obj) {
       case clTGeoCtub:
       case clTGeoTubeSeg:
          info.push(`Phi1=${shape.fPhi1} Phi2=${shape.fPhi2}`);
-         // no break
-      // eslint-disable-next-line no-fallthrough
+         // intentional no break
       case clTGeoEltu:
       case clTGeoTube:
          info.push(`Rmin=${conv(shape.fRmin)} Rmax=${conv(shape.fRmax)}`);
@@ -88253,7 +88239,7 @@ class ClonedNodes {
          const entry = draw_nodes[n];
          if (entry.done) continue;
 
-         /// shape can be provided with entry itself
+         // shape can be provided with entry itself
          const shape = entry.server_shape || build_shapes[entry.shapeid];
          if (!shape || !shape.ready) {
             console.warn(`Problem with shape id ${entry.shapeid} when building`);
@@ -91575,7 +91561,7 @@ function createList(parent, lst, name, title) {
        _more: true,
        _geoobj: lst,
        _parent: parent,
-       _get(item /*, itemname */) {
+       _get(item /* , itemname */) {
           return Promise.resolve(item._geoobj || null);
        },
        _expand(node, lst) {
@@ -92126,7 +92112,7 @@ class TGeoPainter extends ObjectPainter {
       navigator.getVRDisplays().then(displays => {
          const vrDisplay = displays[0];
          if (!vrDisplay) return;
-         this.renderer.vr.setDevice(vrDisplay);
+         this._renderer.vr.setDevice(vrDisplay);
          this._vrDisplay = vrDisplay;
          if (vrDisplay.stageParameters)
             this._standingMatrix.fromArray(vrDisplay.stageParameters.sittingToStandingTransform);
@@ -92226,20 +92212,20 @@ class TGeoPainter extends ObjectPainter {
       }
       this._previousCameraPosition = this._camera.position.clone();
       this._previousCameraRotation = this._camera.rotation.clone();
-      this._vrDisplay.requestPresent([{ source: this.renderer.domElement }]).then(() => {
+      this._vrDisplay.requestPresent([{ source: this._renderer.domElement }]).then(() => {
          this._previousCameraNear = this._camera.near;
          this._dolly.position.set(this._camera.position.x/4, -this._camera.position.y/8, -this._camera.position.z/4);
          this._camera.position.set(0, 0, 0);
          this._dolly.add(this._camera);
          this._camera.near = 0.1;
          this._camera.updateProjectionMatrix();
-         this.renderer.vr.enabled = true;
-         this.renderer.setAnimationLoop(() => {
+         this._renderer.vr.enabled = true;
+         this._renderer.setAnimationLoop(() => {
             this.updateVRControllers();
             this.render3D(0);
          });
       });
-      this.renderer.vr.enabled = true;
+      this._renderer.vr.enabled = true;
 
       window.addEventListener('keydown', evnt => {
          // Esc Key turns VR mode off
@@ -92251,7 +92237,7 @@ class TGeoPainter extends ObjectPainter {
      * @private */
    exitVRMode() {
       if (!this._vrDisplay.isPresenting) return;
-      this.renderer.vr.enabled = false;
+      this._renderer.vr.enabled = false;
       this._dolly.remove(this._camera);
       this._scene.add(this._camera);
       // Restore Camera pose
@@ -92800,7 +92786,7 @@ class TGeoPainter extends ObjectPainter {
       if (val !== undefined)
          this.ctrl.background = val;
       this._scene.background = new THREE.Color(this.ctrl.background);
-      this.renderer.setClearColor(this._scene.background, 1);
+      this._renderer.setClearColor(this._scene.background, 1);
       this.render3D(0);
 
       if (this._toolbar) {
@@ -92830,7 +92816,7 @@ class TGeoPainter extends ObjectPainter {
          return;
       }
 
-      if (!on || !this.renderer)
+      if (!on || !this._renderer)
          return;
 
 
@@ -93139,19 +93125,19 @@ class TGeoPainter extends ObjectPainter {
 
       if (on && !this._bloomComposer) {
          this._camera.layers.enable(_BLOOM_SCENE);
-         this._bloomComposer = new THREE.EffectComposer(this.renderer);
+         this._bloomComposer = new THREE.EffectComposer(this._renderer);
          this._bloomComposer.addPass(new THREE.RenderPass(this._scene, this._camera));
          const pass = new THREE.UnrealBloomPass(new THREE.Vector2(this._scene_width, this._scene_height), 1.5, 0.4, 0.85);
          pass.threshold = 0;
          pass.radius = 0;
          pass.renderToScreen = true;
          this._bloomComposer.addPass(pass);
-         this.renderer.autoClear = false;
+         this._renderer.autoClear = false;
       } else if (!on && this._bloomComposer) {
          this._bloomComposer.dispose();
          delete this._bloomComposer;
-         if (this.renderer)
-            this.renderer.autoClear = true;
+         if (this._renderer)
+            this._renderer.autoClear = true;
          this._camera?.layers.disable(_BLOOM_SCENE);
          this._camera?.layers.set(_ENTIRE_SCENE);
       }
@@ -93529,7 +93515,7 @@ class TGeoPainter extends ObjectPainter {
       if (!this.getCanvPainter())
          this.setTooltipAllowed(settings.Tooltip);
 
-      this._controls = createOrbitControl(this, this._camera, this._scene, this.renderer, this._lookat);
+      this._controls = createOrbitControl(this, this._camera, this._scene, this._renderer, this._lookat);
 
       this._controls.mouse_tmout = this.ctrl.mouse_tmout; // set larger timeout for geometry processing
 
@@ -93765,7 +93751,7 @@ class TGeoPainter extends ObjectPainter {
             }
 
             if (cnt > 0) {
-               /// only if some geom missing, submit job to the worker
+               // only if some geom missing, submit job to the worker
                this.submitToWorker(job);
                this.changeStage(stageWorkerBuild);
                return 2;
@@ -93810,7 +93796,7 @@ class TGeoPainter extends ObjectPainter {
                const entry = this._draw_nodes[n];
                if (entry.done) continue;
 
-               /// shape can be provided with entry itself
+               // shape can be provided with entry itself
                const shape = entry.server_shape || this._build_shapes[entry.shapeid];
 
                this.createEntryMesh(entry, shape, toplevel);
@@ -94038,8 +94024,6 @@ class TGeoPainter extends ObjectPainter {
             case 'ambient' : this._camera.add(new THREE.AmbientLight(0xefefef, p)); break;
             case 'hemisphere' : this._camera.add(new THREE.HemisphereLight(0xffffbb, 0x080820, p)); break;
             case 'mix': this._camera.add(new THREE.AmbientLight(0xefefef, p)); // intentionally without break
-
-            // eslint-disable-next-line no-fallthrough
             default: // 6 point lights
                for (let n = 0; n < 6; ++n) {
                   const l = new THREE.DirectionalLight(0xefefef, p);
@@ -94107,7 +94091,7 @@ class TGeoPainter extends ObjectPainter {
    createSpecialEffects() {
       if (this._webgl && this.ctrl.outline && isFunc(this.createOutline)) {
          // code used with jsroot-based geometry drawing in EVE7, not important any longer
-         this._effectComposer = new THREE.EffectComposer(this.renderer);
+         this._effectComposer = new THREE.EffectComposer(this._renderer);
          this._effectComposer.addPass(new THREE.RenderPass(this._scene, this._camera));
          this.createOutline(this._scene_width, this._scene_height);
       }
@@ -94124,8 +94108,8 @@ class TGeoPainter extends ObjectPainter {
             this._scene = cfg.scene;
             this._scene_width = cfg.scene_width;
             this._scene_height = cfg.scene_height;
-            this.renderer = cfg.renderer;
-            this._webgl = (this.renderer.jsroot_render3d === constants$1.Render3D.WebGL);
+            this._renderer = cfg.renderer;
+            this._webgl = (this._renderer.jsroot_render3d === constants$1.Render3D.WebGL);
 
             this._toplevel = new THREE.Object3D();
             this._scene.add(this._toplevel);
@@ -94140,7 +94124,7 @@ class TGeoPainter extends ObjectPainter {
             this._camera = cfg.camera;
          }
 
-         return this.renderer?.jsroot_dom;
+         return this._renderer?.jsroot_dom;
       }
 
       return importThreeJs().then(() => {
@@ -94168,7 +94152,7 @@ class TGeoPainter extends ObjectPainter {
 
          return createRender3D(w, h, render3d, { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true });
       }).then(r => {
-         this.renderer = r;
+         this._renderer = r;
 
          if (this.batch_format)
             r.jsroot_image_format = this.batch_format;
@@ -94201,11 +94185,11 @@ class TGeoPainter extends ObjectPainter {
                   svg = doc.createElementNS(nsSVG, 'svg');
             svg.setAttribute('width', w);
             svg.setAttribute('height', h);
-            svg.appendChild(this.renderer.jsroot_dom);
+            svg.appendChild(this._renderer.jsroot_dom);
             return svg;
          }
 
-         return this.renderer.jsroot_dom;
+         return this._renderer.jsroot_dom;
       });
    }
 
@@ -94273,9 +94257,9 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Create png image with drawing snapshot. */
    createSnapshot(filename) {
-      if (!this.renderer) return;
+      if (!this._renderer) return;
       this.render3D(0);
-      const dataUrl = this.renderer.domElement.toDataURL('image/png');
+      const dataUrl = this._renderer.domElement.toDataURL('image/png');
       if (filename === 'asis') return dataUrl;
       dataUrl.replace('image/png', 'image/octet-stream');
       const doc = getDocument(),
@@ -94701,7 +94685,7 @@ class TGeoPainter extends ObjectPainter {
       let last = new Date();
 
       const animate = () => {
-         if (!this.renderer || !this.ctrl) return;
+         if (!this._renderer || !this.ctrl) return;
 
          const current = new Date();
 
@@ -95498,7 +95482,7 @@ class TGeoPainter extends ObjectPainter {
    showDrawInfo(msg) {
       if (this.isBatchMode() || !this._first_drawing || !this._start_drawing_time) return;
 
-      const main = this.renderer.domElement.parentNode;
+      const main = this._renderer.domElement.parentNode;
       if (!main) return;
 
       let info = main.querySelector('.geo_info');
@@ -95608,7 +95592,7 @@ class TGeoPainter extends ObjectPainter {
      * Several special values are used:
      *   -1    - force recheck of rendering order based on camera position */
    render3D(tmout, measure) {
-      if (!this.renderer) {
+      if (!this._renderer) {
          if (!this.did_cleanup)
             console.warn('renderer object not exists - check code');
          else
@@ -95642,7 +95626,7 @@ class TGeoPainter extends ObjectPainter {
          delete this.render_tmout;
       }
 
-      beforeRender3D(this.renderer);
+      beforeRender3D(this._renderer);
 
       const tm1 = new Date();
 
@@ -95657,14 +95641,14 @@ class TGeoPainter extends ObjectPainter {
       if (this._webgl && this._effectComposer && (this._effectComposer.passes.length > 0))
          this._effectComposer.render();
        else if (this._webgl && this._bloomComposer && (this._bloomComposer.passes.length > 0)) {
-         this.renderer.clear();
+         this._renderer.clear();
          this._camera.layers.set(_BLOOM_SCENE);
          this._bloomComposer.render();
-         this.renderer.clearDepth();
+         this._renderer.clearDepth();
          this._camera.layers.set(_ENTIRE_SCENE);
-         this.renderer.render(this._scene, this._camera);
+         this._renderer.render(this._scene, this._camera);
       } else
-         this.renderer.render(this._scene, this._camera);
+         this._renderer.render(this._scene, this._camera);
 
 
       const tm2 = new Date();
@@ -95677,7 +95661,7 @@ class TGeoPainter extends ObjectPainter {
             console.log(`three.js r${THREE.REVISION}, first render tm = ${this.first_render_tm}`);
       }
 
-      afterRender3D(this.renderer);
+      afterRender3D(this._renderer);
 
       if (this._render_resolveFuncs) {
          const arr = this._render_resolveFuncs;
@@ -95694,7 +95678,7 @@ class TGeoPainter extends ObjectPainter {
       this._worker_jobs = 0; // counter how many requests send to worker
 
       // TODO: modules not yet working, see https://www.codedread.com/blog/archives/2017/10/19/web-workers-can-be-es6-modules-too/
-      this._worker = new Worker(exports.source_dir + 'scripts/geoworker.js' /*, { type: 'module' } */);
+      this._worker = new Worker(exports.source_dir + 'scripts/geoworker.js' /* , { type: 'module' } */);
 
       this._worker.onmessage = e => {
          if (!isObject(e.data)) return;
@@ -96280,7 +96264,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Assign clipping attributes to the meshes - supported only for webgl */
    updateClipping(without_render, force_traverse) {
       // do not try clipping with SVG renderer
-      if (this.renderer?.jsroot_render3d === constants$1.Render3D.SVG) return;
+      if (this._renderer?.jsroot_render3d === constants$1.Render3D.SVG) return;
 
       if (!this._clipPlanes) {
          this._clipPlanes = [new THREE.Plane(new THREE.Vector3(1, 0, 0), 0),
@@ -96510,7 +96494,7 @@ class TGeoPainter extends ObjectPainter {
          this._controls?.cleanup();
 
          if (this._context_menu)
-            this.renderer.domElement.removeEventListener('contextmenu', this._context_menu, false);
+            this._renderer.domElement.removeEventListener('contextmenu', this._context_menu, false);
 
          this._gui?.destroy();
 
@@ -96566,7 +96550,7 @@ class TGeoPainter extends ObjectPainter {
       }
 
       if (!this.superimpose)
-         cleanupRender3D(this.renderer);
+         cleanupRender3D(this._renderer);
 
       this.ensureBloom(false);
       delete this._effectComposer;
@@ -96575,7 +96559,7 @@ class TGeoPainter extends ObjectPainter {
       delete this._scene_size;
       this._scene_width = 0;
       this._scene_height = 0;
-      this.renderer = null;
+      this._renderer = null;
       this._toplevel = null;
       delete this._full_geom;
       delete this._fog;
@@ -96617,13 +96601,13 @@ class TGeoPainter extends ObjectPainter {
       this._scene_width = width;
       this._scene_height = height;
 
-      if (this._camera && this.renderer) {
+      if (this._camera && this._renderer) {
          if (this._camera.isPerspectiveCamera)
             this._camera.aspect = this._scene_width / this._scene_height;
          else if (this._camera.isOrthographicCamera)
             this.adjustCameraPosition(true, true);
          this._camera.updateProjectionMatrix();
-         this.renderer.setSize(this._scene_width, this._scene_height, !this._fit_main_area);
+         this._renderer.setSize(this._scene_width, this._scene_height, !this._fit_main_area);
          this._effectComposer?.setSize(this._scene_width, this._scene_height);
          this._bloomComposer?.setSize(this._scene_width, this._scene_height);
 
@@ -97109,7 +97093,7 @@ function createItem(node, obj, name) {
       } else if (shape && (shape._typename === clTGeoCompositeShape) && shape.fNode) {
          sub._more = true;
          sub._shape = shape;
-         sub._expand = function(node /*, obj */) {
+         sub._expand = function(node /* , obj */) {
             createItem(node, node._shape.fNode.fLeft, 'Left');
             createItem(node, node._shape.fNode.fRight, 'Right');
             return true;
@@ -98237,7 +98221,6 @@ function createMemberStreamer(element, file) {
       case kOffsetL + kDouble32:
       case kOffsetP + kDouble32:
          member.double32 = true;
-      // eslint-disable-next-line no-fallthrough
       case kFloat16:
       case kOffsetL + kFloat16:
       case kOffsetP + kFloat16:
@@ -98847,7 +98830,7 @@ function ZIP_inflate(arr, tgt) {
                for (o = 0; o < z; ++o)
                   q[o] = { e: 0, b: 0, n: 0, t: null }; // new zip_HuftNode
 
-               if (tail == null)
+               if (tail === null)
                   tail = res.root = { next: null, list: null }; // new zip_HuftList();
                else
                   tail = tail.next = { next: null, list: null }; // new zip_HuftList();
@@ -99033,7 +99016,7 @@ function ZIP_inflate(arr, tgt) {
          Huffman tables. */
 
       // if first time, set up tables for fixed blocks
-      if (zip_fixed_tl == null) {
+      if (zip_fixed_tl === null) {
          // literal table
          const l = Array(288).fill(8, 0, 144).fill(9, 144, 256).fill(7, 256, 280).fill(8, 280, 288);
          // make a complete, but wrong code set
@@ -99226,14 +99209,14 @@ function ZIP_inflate(arr, tgt) {
                break;
 
             case 1: // zip_STATIC_TREES
-               if (zip_tl != null)
+               if (zip_tl !== null)
                   i = zip_inflate_codes(buff, off + n, size - n);
                else
                   i = zip_inflate_fixed(buff, off + n, size - n);
                break;
 
             case 2: // zip_DYN_TREES
-               if (zip_tl != null)
+               if (zip_tl !== null)
                   i = zip_inflate_codes(buff, off + n, size - n);
                else
                   i = zip_inflate_dynamic(buff, off + n, size - n);
@@ -99524,7 +99507,6 @@ class TBuffer {
       * @desc string either contains all symbols or until 0 symbol */
    readFastString(n) {
       let res = '', code, closed = false;
-      // eslint-disable-next-line no-unmodified-loop-condition
       for (let i = 0; (n < 0) || (i < n); ++i) {
          code = this.ntou1();
          if (code === 0) { closed = true; if (n < 0) break; }
@@ -100918,7 +100900,7 @@ class TLocalFile extends TFile {
 
    /** @summary read buffer from local file
      * @return {Promise} with read data */
-   async readBuffer(place, filename /*, progress_callback */) {
+   async readBuffer(place, filename /* , progress_callback */) {
       const file = this.fLocalFile;
 
       return new Promise((resolve, reject) => {
@@ -100987,7 +100969,7 @@ class TNodejsFile extends TFile {
 
    /** @summary Read buffer from node.js file
      * @return {Promise} with requested blocks */
-   async readBuffer(place, filename /*, progress_callback */) {
+   async readBuffer(place, filename /* , progress_callback */) {
       return new Promise((resolve, reject) => {
          if (filename)
             return reject(Error(`Cannot access other local file ${filename}`));
@@ -100998,7 +100980,6 @@ class TNodejsFile extends TFile {
          const blobs = [];
          let cnt = 0;
 
-         // eslint-disable-next-line n/handle-callback-err
          const readfunc = (_err, _bytesRead, buf) => {
             const res = new DataView(buf.buffer, buf.byteOffset, place[cnt + 1]);
             if (place.length === 2) return resolve(res);
@@ -101070,7 +101051,7 @@ class TProxyFile extends TFile {
 
    /** @summary Read buffer from FileProxy
      * @return {Promise} with requested blocks */
-   async readBuffer(place, filename /*, progress_callback */) {
+   async readBuffer(place, filename /* , progress_callback */) {
       if (filename)
          return Promise.reject(Error(`Cannot access other file ${filename}`));
 
@@ -105288,7 +105269,6 @@ function parseAsArray(val) {
          case '"': ndouble++; break;
          case '[': nbr++; break;
          case ']': if (indx < val.length - 1) { nbr--; break; }
-         // eslint-disable-next-line no-fallthrough
          case ',':
             if (nbr === 0) {
                let sub = val.substring(last, indx).trim();
@@ -106742,7 +106722,7 @@ class HierarchyPainter extends BasePainter {
 
    /** @summary Enable drag of the element
      * @private  */
-   enableDrag(d3elem /*, itemname */) {
+   enableDrag(d3elem /* , itemname */) {
       d3elem.attr('draggable', 'true').on('dragstart', function(ev) {
          const itemname = this.parentNode.parentNode.getAttribute('item');
          ev.dataTransfer.setData('item', itemname);
@@ -107982,7 +107962,7 @@ class HierarchyPainter extends BasePainter {
          obj = obj[handle?.draw_field];
 
       let isany = false;
-      mdi.forEachPainter((p /*, frame */) => {
+      mdi.forEachPainter((p /* , frame */) => {
          if ((p === painter) || (p.getItemName() !== painter.getItemName())) return;
 
          // do not activate frame when doing update
@@ -108519,7 +108499,6 @@ class HierarchyPainter extends BasePainter {
    }
 
 } // class HierarchyPainter
-
 
 
 /** @summary Show object in inspector for provided object
@@ -109660,7 +109639,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
 
    /** @summary Check if user range can be un-zommed
      * @desc Used when graph points covers larger range than provided histogram */
-   unzoomUserRange(dox, doy /*, doz */) {
+   unzoomUserRange(dox, doy /* , doz */) {
       const graph = this.getGraph();
       if (this._own_histogram || !graph) return false;
 
@@ -112316,7 +112295,7 @@ function getMin(arr) {
    return v;
 }
 
-function TMath_Sort(np, values, indicies /*, down */) {
+function TMath_Sort(np, values, indicies /* , down */) {
    const arr = new Array(np);
    for (let i = 0; i < np; ++i)
       arr[i] = { v: values[i], i };
@@ -112420,7 +112399,7 @@ class TGraphDelaunay {
    }
 
 
-   /// Is point e inside the triangle t1-t2-t3 ?
+   // Is point e inside the triangle t1-t2-t3 ?
 
    Enclose(t1, t2, t3, e) {
       const x = [this.fXN[t1], this.fXN[t2], this.fXN[t3], this.fXN[t1]],
@@ -112441,9 +112420,9 @@ class TGraphDelaunay {
    }
 
 
-   /// Files the triangle defined by the 3 vertices p, n and m into the
-   /// fxTried arrays. If these arrays are to small they are automatically
-   /// expanded.
+   // Files the triangle defined by the 3 vertices p, n and m into the
+   // fxTried arrays. If these arrays are to small they are automatically
+   // expanded.
 
    FileIt(p, n, m) {
       let swap, tmp, ps = p, ns = n, ms = m;
@@ -112463,16 +112442,16 @@ class TGraphDelaunay {
    }
 
 
-   /// Attempt to find all the Delaunay triangles of the point set. It is not
-   /// guaranteed that it will fully succeed, and no check is made that it has
-   /// fully succeeded (such a check would be possible by referencing the points
-   /// that make up the convex hull). The method is to check if each triangle
-   /// shares all three of its sides with other triangles. If not, a point is
-   /// generated just outside the triangle on the side(s) not shared, and a new
-   /// triangle is found for that point. If this method is not working properly
-   /// (many triangles are not being found) it's probably because the new points
-   /// are too far beyond or too close to the non-shared sides. Fiddling with
-   /// the size of the `alittlebit' parameter may help.
+   // Attempt to find all the Delaunay triangles of the point set. It is not
+   // guaranteed that it will fully succeed, and no check is made that it has
+   // fully succeeded (such a check would be possible by referencing the points
+   // that make up the convex hull). The method is to check if each triangle
+   // shares all three of its sides with other triangles. If not, a point is
+   // generated just outside the triangle on the side(s) not shared, and a new
+   // triangle is found for that point. If this method is not working properly
+   // (many triangles are not being found) it's probably because the new points
+   // are too far beyond or too close to the non-shared sides. Fiddling with
+   // the size of the `alittlebit' parameter may help.
 
    FindAllTriangles() {
       if (this.fAllTri) return;
@@ -112600,11 +112579,11 @@ class TGraphDelaunay {
       }
    }
 
-   /// Finds those points which make up the convex hull of the set. If the xy
-   /// plane were a sheet of wood, and the points were nails hammered into it
-   /// at the respective coordinates, then if an elastic band were stretched
-   /// over all the nails it would form the shape of the convex hull. Those
-   /// nails in contact with it are the points that make up the hull.
+   // Finds those points which make up the convex hull of the set. If the xy
+   // plane were a sheet of wood, and the points were nails hammered into it
+   // at the respective coordinates, then if an elastic band were stretched
+   // over all the nails it would form the shape of the convex hull. Those
+   // nails in contact with it are the points that make up the hull.
 
    FindHull() {
       if (!this.fHullPoints)
@@ -112627,7 +112606,7 @@ class TGraphDelaunay {
    }
 
 
-   /// Is point e inside the hull defined by all points apart from x ?
+   // Is point e inside the hull defined by all points apart from x ?
 
    InHull(e, x) {
       let n1, n2, n, m, ntry,
@@ -112727,9 +112706,8 @@ class TGraphDelaunay {
       return deTinhull;
    }
 
-
-   /// Finds the z-value at point e given that it lies
-   /// on the plane defined by t1,t2,t3
+   // Finds the z-value at point e given that it lies
+   // on the plane defined by t1,t2,t3
 
    InterpolateOnPlane(TI1, TI2, TI3, e) {
       let tmp, swap, t1 = TI1, t2 = TI2, t3 = TI3;
@@ -112757,9 +112735,9 @@ class TGraphDelaunay {
       return u*this.fXN[e] + v*this.fYN[e] + w;
    }
 
-   /// Finds the Delaunay triangle that the point (xi,yi) sits in (if any) and
-   /// calculate a z-value for it by linearly interpolating the z-values that
-   /// make up that triangle.
+   // Finds the Delaunay triangle that the point (xi,yi) sits in (if any) and
+   // calculate a z-value for it by linearly interpolating the z-values that
+   // make up that triangle.
 
    Interpolate(xx, yy) {
       let thevalue,
@@ -112824,7 +112802,7 @@ class TGraphDelaunay {
       }
 
       // sort array 'fDist' to find closest points
-      TMath_Sort(this.fNpoints, this.fDist, this.fOrder /*, false */);
+      TMath_Sort(this.fNpoints, this.fDist, this.fOrder /* , false */);
       for (it=0; it<this.fNpoints; it++) this.fOrder[it]++;
 
       // loop over triplets of close points to try to find a triangle that
@@ -112838,9 +112816,9 @@ class TGraphDelaunay {
                p = this.fOrder[i-1];
                if (ntris_tried > this.fMaxIter) {
                   // perhaps this point isn't in the hull after all
-   ///            Warning("Interpolate",
-   ///                    "Abandoning the effort to find a Delaunay triangle (and thus interpolated z-value) for point %g %g"
-   ///                    ,xx,yy);
+                  /* Warning("Interpolate",
+                             "Abandoning the effort to find a Delaunay triangle (and thus interpolated z-value) for point %g %g"
+                              ,xx,yy); */
                   return thevalue;
                }
                ntris_tried++;
@@ -112939,7 +112917,7 @@ class TGraphDelaunay {
 
                   if (skip_this_triangle) break; // deepscan-disable-line
 
-   ///            Error("Interpolate", "Should not get to here");
+                  /* Error("Interpolate", "Should not get to here"); */
                   // may as well soldier on
                   // SL: initialize before try to find better values
                   f = m;
@@ -113040,12 +113018,12 @@ class TGraphDelaunay {
                if (ndegen > 0) {
                   // but is degenerate with at least one other,
                   // haven't figured out what to do if more than 4 points are involved
-   ///            if (ndegen > 1) {
-   ///               Error("Interpolate",
-   ///                     "More than 4 points lying on a circle. No decision making process formulated for triangulating this region in a non-arbitrary way %d %d %d %d",
-   ///                     p,n,m,degen);
-   ///               return thevalue;
-   ///            }
+                  /* if (ndegen > 1) {
+                     Error("Interpolate",
+                            "More than 4 points lying on a circle. No decision making process formulated for triangulating this region in a non-arbitrary way %d %d %d %d",
+                             p,n,m,degen);
+                     return thevalue;
+                  } */
 
                   // we have a quadrilateral which can be split down either diagonal
                   // (d<->f or o1<->o2) to form valid Delaunay triangles. Choose diagonal
@@ -113099,22 +113077,22 @@ class TGraphDelaunay {
       return thevalue;
    }
 
-   /// Defines the number of triangles tested for a Delaunay triangle
-   /// (number of iterations) before abandoning the search
+   // Defines the number of triangles tested for a Delaunay triangle
+   // (number of iterations) before abandoning the search
 
    SetMaxIter(n = 100000) {
       this.fAllTri = false;
       this.fMaxIter = n;
    }
 
-   /// Sets the histogram bin height for points lying outside the convex hull ie:
-   /// the bins in the margin.
+   // Sets the histogram bin height for points lying outside the convex hull ie:
+   // the bins in the margin.
 
    SetMarginBinsContent(z) {
       this.fZout = z;
    }
 
-}
+} // class TGraphDelaunay
 
    /** @summary Function handles tooltips in the mesh */
 function graph2DTooltip(intersect) {
@@ -113155,7 +113133,6 @@ function graph2DTooltip(intersect) {
              ]
    };
 }
-
 
 
 /**
@@ -114258,7 +114235,7 @@ class TF1Painter extends TH1Painter$2 {
    getPrimaryObject() { return this.$func; }
 
    /** @summary Update function */
-   updateObject(obj /*, opt */) {
+   updateObject(obj /* , opt */) {
       if (!obj || (this.getClassName() !== obj._typename)) return false;
       delete obj.evalPar;
       const histo = this.getHisto();
@@ -115545,7 +115522,7 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
    }
 
    /** @summary Draw graph  */
-   async drawGraph(dom, gr, opt /*, pos3d */) {
+   async drawGraph(dom, gr, opt /* , pos3d */) {
       return TGraphPainter$1.draw(dom, gr, opt);
    }
 
@@ -115881,7 +115858,7 @@ class TF2Painter extends TH2Painter {
    getPrimaryObject() { return this.$func; }
 
    /** @summary Update histogram */
-   updateObject(obj /*, opt */) {
+   updateObject(obj /* , opt */) {
       if (!obj || (this.getClassName() !== obj._typename)) return false;
       delete obj.evalPar;
       const histo = this.getHisto();
@@ -116231,7 +116208,7 @@ class TF3Painter extends TH2Painter {
    getPrimaryObject() { return this.$func; }
 
    /** @summary Update histogram */
-   updateObject(obj /*, opt */) {
+   updateObject(obj /* , opt */) {
       if (!obj || (this.getClassName() !== obj._typename)) return false;
       delete obj.evalPar;
       const histo = this.getHisto();
@@ -121778,18 +121755,24 @@ class RPadPainter extends RObjectPainter {
                btns.remove();
             }
 
-            const main = pp.getFramePainter();
-            if (!isFunc(main?.render3D) || !isFunc(main?.access3dKind)) return;
+            const fp = pp.getFramePainter();
+            if (!isFunc(fp?.access3dKind)) return;
 
-            const can3d = main.access3dKind();
-
+            const can3d = fp.access3dKind();
             if ((can3d !== constants$1.Embed3D.Overlay) && (can3d !== constants$1.Embed3D.Embed)) return;
 
-            const sz2 = main.getSizeFor3d(constants$1.Embed3D.Embed), // get size and position of DOM element as it will be embed
-                  canvas = main.renderer.domElement;
+            let main, canvas;
+            if (isFunc(fp.render3D)) {
+               main = fp;
+               canvas = fp.renderer?.domElement;
+            } else {
+               main = fp.getMainPainter();
+               canvas = main?._renderer?.domElement;
+            }
+            if (!isFunc(main?.render3D) || !isObject(canvas)) return;
 
+            const sz2 = fp.getSizeFor3d(constants$1.Embed3D.Embed); // get size and position of DOM element as it will be embed
             main.render3D(0); // WebGL clears buffers, therefore we should render scene and convert immediately
-
             const dataUrl = canvas.toDataURL('image/png');
 
             // remove 3D drawings
@@ -122717,7 +122700,7 @@ class RCanvasPainter extends RPadPainter {
    }
 
    /** @summary draw RCanvas object */
-   static async draw(dom, can /*, opt */) {
+   static async draw(dom, can /* , opt */) {
       const nocanvas = !can;
       if (nocanvas)
          can = create$1(`${nsREX}RCanvas`);
@@ -122741,7 +122724,7 @@ class RCanvasPainter extends RPadPainter {
 
 /** @summary draw RPadSnapshot object
   * @private */
-function drawRPadSnapshot(dom, snap /*, opt */) {
+function drawRPadSnapshot(dom, snap /* , opt */) {
    const painter = new RCanvasPainter(dom, null);
    painter.normal_canvas = false;
    painter.batch_mode = isBatchMode();
@@ -122819,7 +122802,7 @@ function drawRFrameTitle(reason, drag) {
    );
 }
 
-/// /////////////////////////////////////////////////////////////////////////////////////////
+// ==========================================================
 
 registerMethods(`${nsREX}RPalette`, {
 
@@ -124887,7 +124870,7 @@ let RH1Painter$2 = class RH1Painter extends RHistPainter {
    }
 
    /** @summary Fill statistic */
-   fillStatistic(stat, dostat/*, dofit */) {
+   fillStatistic(stat, dostat /* , dofit */) {
       const histo = this.getHisto(),
           data = this.countStat(),
           print_name = dostat % 10,
@@ -125015,7 +124998,7 @@ let RH1Painter$2 = class RH1Painter extends RHistPainter {
    }
 
    /** @summary Draw histogram as filled errors */
-   async drawFilledErrors(handle, funcs /*, width, height */) {
+   async drawFilledErrors(handle, funcs /* , width, height */) {
       this.createG(true);
 
       const left = handle.i1, right = handle.i2, di = handle.stepi,
@@ -126117,7 +126100,7 @@ let RH2Painter$2 = class RH2Painter extends RHistPainter {
    }
 
    /** @summary Fill statistic into statistic box */
-   fillStatistic(stat, dostat /*, dofit */) {
+   fillStatistic(stat, dostat /* , dofit */) {
       const data = this.countStat(),
           print_name = Math.floor(dostat % 10),
           print_entries = Math.floor(dostat / 10) % 10,
@@ -126939,8 +126922,8 @@ let RH2Painter$2 = class RH2Painter extends RHistPainter {
                              FrontBox: false, BackBox: false };
 
          const kind = painter.v7EvalAttr('kind', ''),
-             sub = painter.v7EvalAttr('sub', 0),
-             o = painter.options;
+               sub = painter.v7EvalAttr('sub', 0),
+               o = painter.options;
 
          o.Text = painter.v7EvalAttr('drawtext', false);
 
@@ -127160,7 +127143,7 @@ class RH3Painter extends RHistPainter {
    }
 
    /** @summary Fill statistic */
-   fillStatistic(stat, dostat /*, dofit */) {
+   fillStatistic(stat, dostat /* , dofit */) {
       const data = this.countStat(),
           print_name = dostat % 10,
           print_entries = Math.floor(dostat / 10) % 10,

@@ -25,10 +25,11 @@
 22. Let save canvas as JSON file from context menu, object as JSON from inspector
 23. Upgrade three.js r162 -> r168, use r162 only in node.js because of "gl" module
 24. Create unified svg2pdf/jspdf ES6 module, works both in browsers and node.js
-25. Fix - properly save zoomed ranges in drawingJSON()
-26. Fix - properly redraw TMultuGraph
-27. Fix - show empty bin in TProfile2D if it has entries #316
-28. Fix - saving embed TGeo in TCanvas into image
+25. Internals - upgrade to eslint 9
+26. Fix - properly save zoomed ranges in drawingJSON()
+27. Fix - properly redraw TMultuGraph
+28. Fix - show empty bin in TProfile2D if it has entries #316
+29. Fix - saving embed TGeo in TCanvas into image
 
 
 ## Changes in 7.7.3
