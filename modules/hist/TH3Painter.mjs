@@ -708,6 +708,320 @@ class TH3Painter extends THistPainter {
       return true;
    }
 
+   /** @summary Drawing of 3D histogram */
+   async draw3DBinsnew() {
+      if (!this.draw_content)
+         return false;
+
+      let box_option = this.options.Box ? this.options.BoxStyle : 0;
+
+      if (!box_option && this.options.Scat) {
+         const promise = this.draw3DScatter();
+         if (promise !== false) return promise;
+         box_option = 12; // fall back to box2 draw option
+      } else if (!box_option && !this.options.GLBox && !this.options.GLColor && !this.options.Lego)
+         box_option = 12; // default draw option
+
+      const histo = this.getHisto(),
+            main = this.getFramePainter();
+
+      let buffer_size = 0, use_lambert = false,
+          use_helper = false, use_colors = false, use_opacity = 1, exclude_content = -1,
+          logv = this.getPadPainter()?.getRootPad()?.fLogv,
+          use_scale = true, scale_offset = 0,
+          single_bin_verts, single_bin_norms,
+          fillcolor = this.getColor(histo.fFillColor),
+          tipscale = 0.5;
+
+      if (!box_option && this.options.Lego)
+         box_option = (this.options.Lego === 1) ? 10 : this.options.Lego;
+
+      let single_bin_geom;
+
+      if ((this.options.GLBox === 11) || (this.options.GLBox === 12)) {
+         tipscale = 0.4;
+         use_lambert = true;
+         if (this.options.GLBox === 12) use_colors = true;
+
+         single_bin_geom = new THREE.SphereGeometry(0.5, main.webgl ? 16 : 8, main.webgl ? 12 : 6);
+         single_bin_geom.applyMatrix4(new THREE.Matrix4().makeRotationX(Math.PI/2));
+         single_bin_geom.computeVertexNormals();
+
+      } else {
+         const indicies = Box3D.Indexes,
+               normals = Box3D.Normals,
+               vertices = Box3D.Vertices;
+
+         buffer_size = indicies.length*3;
+         single_bin_verts = new Float32Array(buffer_size);
+         single_bin_norms = new Float32Array(buffer_size);
+
+         for (let k = 0, nn = -3; k < indicies.length; ++k) {
+            const vert = vertices[indicies[k]];
+            single_bin_verts[k*3] = vert.x-0.5;
+            single_bin_verts[k*3+1] = vert.y-0.5;
+            single_bin_verts[k*3+2] = vert.z-0.5;
+
+            if (k%6 === 0) nn+=3;
+            single_bin_norms[k*3] = normals[nn];
+            single_bin_norms[k*3+1] = normals[nn+1];
+            single_bin_norms[k*3+2] = normals[nn+2];
+         }
+         use_helper = true;
+
+         if (box_option === 12)
+            use_colors = true;
+            else if (box_option === 13) {
+            use_colors = true;
+            use_helper = false;
+         } else if (this.options.GLColor) {
+            use_colors = true;
+            use_opacity = 0.5;
+            use_scale = false;
+            use_helper = false;
+            exclude_content = 0;
+            use_lambert = true;
+         }
+
+         single_bin_geom = new THREE.BufferGeometry();
+         single_bin_geom.setAttribute('position', new THREE.BufferAttribute(single_bin_verts, 3));
+         single_bin_geom.setAttribute('normal', new THREE.BufferAttribute(single_bin_norms, 3));
+      }
+
+      this._box_option = box_option;
+
+      if (use_scale && logv) {
+         if (this.gminposbin && (this.gmaxbin > this.gminposbin)) {
+            scale_offset = Math.log(this.gminposbin) - 0.1;
+            use_scale = 1/(Math.log(this.gmaxbin) - scale_offset);
+         } else {
+            logv = 0;
+            use_scale = 1;
+         }
+      } else if (use_scale)
+         use_scale = (this.gminbin || this.gmaxbin) ? 1 / Math.max(Math.abs(this.gminbin), Math.abs(this.gmaxbin)) : 1;
+
+      const get_bin_weight = content => {
+         if ((exclude_content >= 0) && (content < exclude_content)) return 0;
+         if (!use_scale) return 1;
+         if (logv) {
+            if (content <= 0) return 0;
+            content = Math.log(content) - scale_offset;
+         }
+         return Math.pow(Math.abs(content*use_scale), 0.3333);
+      }, i1 = this.getSelectIndex('x', 'left', 0.5),
+         i2 = this.getSelectIndex('x', 'right', 0),
+         j1 = this.getSelectIndex('y', 'left', 0.5),
+         j2 = this.getSelectIndex('y', 'right', 0),
+         k1 = this.getSelectIndex('z', 'left', 0.5),
+         k2 = this.getSelectIndex('z', 'right', 0);
+
+      if ((i2 <= i1) || (j2 <= j1) || (k2 <= k1))
+         return false;
+
+      const cols_size = {}, cols_sequence = {},
+            cntr = use_colors ? this.getContour() : null,
+            palette = use_colors ? this.getHistPalette() : null;
+      let nbins = 0, i, j, k, wei, bin_content, num_colors = 0, transfer = null;
+
+      if (this.transferFunc && proivdeEvalPar(this.transferFunc, true))
+         transfer = this.transferFunc;
+      const getOpacityIndex = colindx => {
+         const bin_opactity = getTF1Value(transfer, bin_content, false) * 3; // try to get opacity
+         if (!bin_opactity || (bin_opactity < 0) || (bin_opactity >= 1))
+            return colindx;
+         return colindx + Math.round(bin_opactity * 200) * 10000; // 200 steps between 0..1
+      };
+
+      for (i = i1; i < i2; ++i) {
+         for (j = j1; j < j2; ++j) {
+            for (k = k1; k < k2; ++k) {
+               bin_content = histo.getBinContent(i+1, j+1, k+1);
+               if (!this.options.GLColor && ((bin_content === 0) || (bin_content < this.gminbin))) continue;
+
+               wei = get_bin_weight(bin_content);
+               if (wei < 1e-3) continue; // do not draw empty or very small bins
+
+               nbins++;
+
+               if (!use_colors) continue;
+
+               let colindx = cntr.getPaletteIndex(palette, bin_content);
+               if (colindx !== null) {
+                  if (transfer)
+                     colindx = getOpacityIndex(colindx);
+
+                  if (cols_size[colindx] === undefined) {
+                     cols_size[colindx] = 0;
+                     cols_sequence[colindx] = num_colors++;
+                  }
+                  cols_size[colindx] += 1;
+               } else
+                  console.error(`not found color for value = ${bin_content}`);
+            }
+         }
+      }
+
+      if (!use_colors) {
+         cols_size[0] = nbins;
+         num_colors = 1;
+         cols_sequence[0] = 0;
+      }
+
+      const bins_matrixes = [],
+            cols_nbins = new Array(num_colors),
+            bin_tooltips = new Array(num_colors),
+            helper_kind = use_helper ? 2 : 0,
+            helper_positions = new Array(num_colors);  // helper_kind === 2, all vertices copied into separate buffer
+
+      for (const colindx in cols_size) {
+         nbins = cols_size[colindx]; // how many bins with specified color
+         const nseq = cols_sequence[colindx];
+
+         cols_nbins[nseq] = 0; // counter for the filled bins
+
+         bin_tooltips[nseq] = new Int32Array(nbins);
+
+         if (helper_kind === 2)
+            helper_positions[nseq] = new Float32Array(nbins * Box3D.Segments.length * 3);
+      }
+
+      let grx1, grx2, gry1, gry2, grz1, grz2;
+
+      for (i = i1; i < i2; ++i) {
+         grx1 = main.grx(histo.fXaxis.GetBinLowEdge(i+1));
+         grx2 = main.grx(histo.fXaxis.GetBinLowEdge(i+2));
+         for (j = j1; j < j2; ++j) {
+            gry1 = main.gry(histo.fYaxis.GetBinLowEdge(j+1));
+            gry2 = main.gry(histo.fYaxis.GetBinLowEdge(j+2));
+            for (k = k1; k < k2; ++k) {
+               bin_content = histo.getBinContent(i+1, j+1, k+1);
+               if (!this.options.GLColor && ((bin_content === 0) || (bin_content < this.gminbin))) continue;
+
+               wei = get_bin_weight(bin_content);
+               if (wei < 1e-3) continue; // do not show very small bins
+
+               let nseq = 0;
+               if (use_colors) {
+                  let colindx = cntr.getPaletteIndex(palette, bin_content);
+                  if (colindx === null) continue;
+                  if (transfer)
+                     colindx = getOpacityIndex(colindx);
+                  nseq = cols_sequence[colindx];
+               }
+
+               nbins = cols_nbins[nseq];
+
+               grz1 = main.grz(histo.fZaxis.GetBinLowEdge(k+1));
+               grz2 = main.grz(histo.fZaxis.GetBinLowEdge(k+2));
+
+               // remember bin index for tooltip
+               bin_tooltips[nseq][nbins] = histo.getBin(i+1, j+1, k+1);
+
+               const bin_matrix = new THREE.Matrix4();
+               bin_matrix.scale(new THREE.Vector3((grx2 - grx1) * wei, (gry2 - gry1) * wei, (grz2 - grz1) * wei));
+               bin_matrix.setPosition((grx2 + grx1) / 2, (gry2 + gry1) / 2, (grz2 + grz1) / 2);
+               bins_matrixes.push(bin_matrix);
+
+               if (helper_kind === 2) {
+                  const helper_segments = Box3D.Segments,
+                        helper_p = helper_positions[nseq];
+                  let vvv = nbins * helper_segments.length * 3;
+                  for (let n = 0; n < helper_segments.length; ++n, vvv += 3) {
+                     const vert = Box3D.Vertices[helper_segments[n]];
+                     helper_p[vvv] = (grx2 + grx1) / 2 + (vert.x - 0.5) * (grx2 - grx1) * wei;
+                     helper_p[vvv+1] = (gry2 + gry1) / 2 + (vert.y - 0.5) * (gry2 - gry1) * wei;
+                     helper_p[vvv+2] = (grz2 + grz1) / 2 + (vert.z - 0.5) * (grz2 - grz1) * wei;
+                  }
+               }
+
+               cols_nbins[nseq] = nbins+1;
+            }
+         }
+      }
+
+      const opacity = 1,
+
+            material = use_lambert ? new THREE.MeshLambertMaterial({ color: fillcolor, opacity, transparent: opacity < 1, vertexColors: false })
+                                   : new THREE.MeshBasicMaterial({ color: fillcolor, opacity, transparent: opacity < 1, vertexColors: false }),
+
+            all_bins_mesh = new THREE.InstancedMesh(single_bin_geom, material, bins_matrixes.length);
+
+      for (let n = 0; n < bins_matrixes.length; ++n) {
+         all_bins_mesh.setMatrixAt(n, bins_matrixes[n]);
+      }
+
+      main.add3DMesh(all_bins_mesh);
+
+      for (const colindx in cols_size) {
+         const nseq = cols_sequence[colindx]; // BufferGeometries that store geometry of all bins
+
+         // Create mesh from bin buffer geometry
+         /*
+         all_bins_buffgeom.setAttribute('position', new THREE.BufferAttribute(bin_verts[nseq], 3));
+         all_bins_buffgeom.setAttribute('normal', new THREE.BufferAttribute(bin_norms[nseq], 3));
+
+         let opacity = use_opacity;
+
+         if (use_colors) {
+            fillcolor = this._color_palette.getColor(colindx % 10000);
+            if (colindx > 10000) opacity = Math.floor(colindx / 10000) / 200;
+         }
+
+         const material = use_lambert
+                              ? new THREE.MeshLambertMaterial({ color: fillcolor, opacity, transparent: opacity < 1, vertexColors: false })
+                              : new THREE.MeshBasicMaterial({ color: fillcolor, opacity, transparent: opacity < 1, vertexColors: false }),
+               combined_bins = new THREE.Mesh(all_bins_buffgeom, material);
+
+         combined_bins.bins = bin_tooltips[nseq];
+         combined_bins.bins_faces = buffer_size/9;
+         combined_bins.painter = this;
+         combined_bins.tipscale = tipscale;
+         combined_bins.tip_color = (histo.fFillColor === 3) ? 0xFF0000 : 0x00FF00;
+         combined_bins.get_weight = get_bin_weight;
+
+         combined_bins.tooltip = function(intersect) {
+            const indx = Math.floor(intersect.faceIndex / this.bins_faces);
+            if ((indx < 0) || (indx >= this.bins.length)) return null;
+
+            const p = this.painter,
+                  histo = p.getHisto(),
+                  main = p.getFramePainter(),
+                  tip = p.get3DToolTip(this.bins[indx]),
+                  grx1 = main.grx(histo.fXaxis.GetBinCoord(tip.ix-1)),
+                  grx2 = main.grx(histo.fXaxis.GetBinCoord(tip.ix)),
+                  gry1 = main.gry(histo.fYaxis.GetBinCoord(tip.iy-1)),
+                  gry2 = main.gry(histo.fYaxis.GetBinCoord(tip.iy)),
+                  grz1 = main.grz(histo.fZaxis.GetBinCoord(tip.iz-1)),
+                  grz2 = main.grz(histo.fZaxis.GetBinCoord(tip.iz)),
+                  wei2 = this.get_weight(tip.value) * this.tipscale;
+
+            tip.x1 = (grx2 + grx1) / 2 - (grx2 - grx1) * wei2;
+            tip.x2 = (grx2 + grx1) / 2 + (grx2 - grx1) * wei2;
+            tip.y1 = (gry2 + gry1) / 2 - (gry2 - gry1) * wei2;
+            tip.y2 = (gry2 + gry1) / 2 + (gry2 - gry1) * wei2;
+            tip.z1 = (grz2 + grz1) / 2 - (grz2 - grz1) * wei2;
+            tip.z2 = (grz2 + grz1) / 2 + (grz2 - grz1) * wei2;
+            tip.color = this.tip_color;
+
+            return tip;
+         };
+
+         main.add3DMesh(combined_bins);
+         */
+
+         if (helper_kind > 0) {
+            const helper_material = new THREE.LineBasicMaterial({ color: this.getColor(histo.fLineColor) }),
+                  lines = createLineSegments(helper_positions[nseq], helper_material);
+
+            main.add3DMesh(lines);
+         }
+      }
+
+      return true;
+   }
+
+
    /** @summary Redraw TH3 histogram */
    async redraw(reason) {
       const main = this.getFramePainter(), // who makes axis and 3D drawing
@@ -723,7 +1037,7 @@ class TH3Painter extends THistPainter {
             main.set3DOptions(this.options);
             main.drawXYZ(main.toplevel, TAxisPainter, { zoom: settings.Zooming, ndim: 3,
                    draw: this.options.Axis !== -1, drawany: this.options.isCartesian() });
-            return this.draw3DBins();
+            return this.draw3DBinsnew();
          }).then(() => {
             main.render3D();
             this.updateStatWebCanvas();
