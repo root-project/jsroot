@@ -820,31 +820,28 @@ class TH3Painter extends THistPainter {
          return false;
 
       const cntr = use_colors ? this.getContour() : null,
-            palette = use_colors ? this.getHistPalette() : null;
-      let i, j, k, wei, bin_content, transfer = null;
+            palette = use_colors ? this.getHistPalette() : null,
+            bins_matrixes = [], bins_colors = [], bin_tooltips = [], bin_opacities = [],
+            transfer = (this.transferFunc && proivdeEvalPar(this.transferFunc, true)) ? this.transferFunc : null;
 
-      if (this.transferFunc && proivdeEvalPar(this.transferFunc, true))
-         transfer = this.transferFunc;
-      const getBinOpacity = content => {
+      function getBinOpacity(content) {
          const bin_opacity = getTF1Value(transfer, content, false) * 3; // try to get opacity
          if (!bin_opacity || (bin_opacity < 0)) return 0;
          if (bin_opacity >= 1) return 1;
          return bin_opacity;
-      }, bins_matrixes = [], bins_colors = [], bin_tooltips = [], bin_opacities = [];
+      }
 
-      let grx1, grx2, gry1, gry2, grz1, grz2;
-
-      for (i = i1; i < i2; ++i) {
-         grx1 = main.grx(histo.fXaxis.GetBinLowEdge(i+1));
-         grx2 = main.grx(histo.fXaxis.GetBinLowEdge(i+2));
-         for (j = j1; j < j2; ++j) {
-            gry1 = main.gry(histo.fYaxis.GetBinLowEdge(j+1));
-            gry2 = main.gry(histo.fYaxis.GetBinLowEdge(j+2));
-            for (k = k1; k < k2; ++k) {
-               bin_content = histo.getBinContent(i+1, j+1, k+1);
+      for (let i = i1; i < i2; ++i) {
+         const grx1 = main.grx(histo.fXaxis.GetBinLowEdge(i+1)),
+               grx2 = main.grx(histo.fXaxis.GetBinLowEdge(i+2));
+         for (let j = j1; j < j2; ++j) {
+            const gry1 = main.gry(histo.fYaxis.GetBinLowEdge(j+1)),
+                  gry2 = main.gry(histo.fYaxis.GetBinLowEdge(j+2));
+            for (let k = k1; k < k2; ++k) {
+               const bin_content = histo.getBinContent(i+1, j+1, k+1);
                if (!this.options.GLColor && ((bin_content === 0) || (bin_content < this.gminbin))) continue;
 
-               wei = get_bin_weight(bin_content);
+               const wei = get_bin_weight(bin_content);
                if (wei < 1e-3) continue; // do not show very small bins
 
                let color, opacity = 1;
@@ -856,8 +853,8 @@ class TH3Painter extends THistPainter {
                      opacity = getBinOpacity(bin_content);
                }
 
-               grz1 = main.grz(histo.fZaxis.GetBinLowEdge(k+1));
-               grz2 = main.grz(histo.fZaxis.GetBinLowEdge(k+2));
+               const grz1 = main.grz(histo.fZaxis.GetBinLowEdge(k+1)),
+                     grz2 = main.grz(histo.fZaxis.GetBinLowEdge(k+2));
 
                // remember bin index for tooltip
                bin_tooltips.push(histo.getBin(i+1, j+1, k+1));
