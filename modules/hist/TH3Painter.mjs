@@ -907,11 +907,11 @@ class TH3Painter extends THistPainter {
          }
       }
 
-      if (use_colors && transfer) {
+      if (use_colors && (transfer || (use_opacity !== 1))) {
          // create individual meshes for each bin
 
          for (let n = 0; n < bins_matrixes.length; ++n) {
-            const opacity = transfer ? bin_opacities[n] : 1,
+            const opacity = transfer ? bin_opacities[n] : use_opacity,
                   color = new THREE.Color(bins_colors[n]),
                   material = use_lambert ? new THREE.MeshLambertMaterial({ color, opacity, transparent: opacity < 1, vertexColors: false })
                                          : new THREE.MeshBasicMaterial({ color, opacity, transparent: opacity < 1, vertexColors: false }),
@@ -927,10 +927,8 @@ class TH3Painter extends THistPainter {
          if (use_colors)
             fillcolor = new THREE.Color(1,1,1);
 
-         const opacity = 1,
-
-               material = use_lambert ? new THREE.MeshLambertMaterial({ color: fillcolor, opacity, transparent: opacity < 1, vertexColors: false })
-                                      : new THREE.MeshBasicMaterial({ color: fillcolor, opacity, transparent: opacity < 1, vertexColors: false }),
+         const material = use_lambert ? new THREE.MeshLambertMaterial({ color: fillcolor, vertexColors: false })
+                                      : new THREE.MeshBasicMaterial({ color: fillcolor, vertexColors: false }),
 
                all_bins_mesh = new THREE.InstancedMesh(single_bin_geom, material, bins_matrixes.length);
 
