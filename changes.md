@@ -15,7 +15,7 @@
 12. Support 'pads' draw options for TMultiGraph, support context menu for it
 13. Let drop object on sub-pads
 14. Properly loads ES6 modules for web canvas
-15. Internals - do not select pad (aka gPad) for objects drawing, always use assigned pad painter
+15. Improve performance of TH3 drawing by using THREE.InstancedMesh
 16. Implement batch mode with '&batch' URL parameter to create SVG/PNG images with default GUI
 17. Adjust node.js implementation to produce identical output with normal browser
 18. Create necessary infrastructure for testing with 'puppeteer'
@@ -26,10 +26,11 @@
 23. Upgrade three.js r162 -> r168, use r162 only in node.js because of "gl" module
 24. Create unified svg2pdf/jspdf ES6 module, works both in browsers and node.js
 25. Internals - upgrade to eslint 9
-26. Fix - properly save zoomed ranges in drawingJSON()
-27. Fix - properly redraw TMultuGraph
-28. Fix - show empty bin in TProfile2D if it has entries #316
-29. Fix - saving embed TGeo in TCanvas into image
+26. Internals - do not select pad (aka gPad) for objects drawing, always use assigned pad painter
+27. Fix - properly save zoomed ranges in drawingJSON()
+28. Fix - properly redraw TMultuGraph
+29. Fix - show empty bin in TProfile2D if it has entries #316
+30. Fix - saving embed TGeo in TCanvas into image
 
 
 ## Changes in 7.7.3

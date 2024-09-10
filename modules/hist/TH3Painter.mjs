@@ -402,7 +402,6 @@ class TH3Painter extends THistPainter {
          single_bin_geom = new THREE.SphereGeometry(0.5, main.webgl ? 16 : 8, main.webgl ? 12 : 6);
          single_bin_geom.applyMatrix4(new THREE.Matrix4().makeRotationX(Math.PI/2));
          single_bin_geom.computeVertexNormals();
-
       } else {
          const indicies = Box3D.Indexes,
                normals = Box3D.Normals,
@@ -490,9 +489,9 @@ class TH3Painter extends THistPainter {
       function getBinTooltip(intersect) {
          let binid = 0;
 
-         if (this.binid !== undefined) {
+         if (this.binid !== undefined)
             binid = this.binid;
-         } else {
+         else {
             if ((intersect.instanceId === undefined) || (intersect.instanceId >= this.bins.length)) return;
             binid = this.bins[intersect.instanceId];
          }
@@ -535,7 +534,7 @@ class TH3Painter extends THistPainter {
 
                let color, opacity = 1;
                if (use_colors) {
-                  let colindx = cntr.getPaletteIndex(palette, bin_content);
+                  const colindx = cntr.getPaletteIndex(palette, bin_content);
                   if (colindx === null) continue;
                   color = this._color_palette.getColor(colindx);
                   if (transfer)
@@ -564,7 +563,6 @@ class TH3Painter extends THistPainter {
 
       if (use_colors && (transfer || (use_opacity !== 1))) {
          // create individual meshes for each bin
-
          for (let n = 0; n < bins_matrixes.length; ++n) {
             const opacity = transfer ? bin_opacities[n] : use_opacity,
                   color = new THREE.Color(bins_colors[n]),
@@ -583,11 +581,9 @@ class TH3Painter extends THistPainter {
 
             main.add3DMesh(bin_mesh);
          }
-
       } else {
-
          if (use_colors)
-            fillcolor = new THREE.Color(1,1,1);
+            fillcolor = new THREE.Color(1, 1, 1);
 
          const material = use_lambert ? new THREE.MeshLambertMaterial({ color: fillcolor, vertexColors: false })
                                       : new THREE.MeshBasicMaterial({ color: fillcolor, vertexColors: false }),
