@@ -825,11 +825,11 @@ class TH3Painter extends THistPainter {
 
       if (this.transferFunc && proivdeEvalPar(this.transferFunc, true))
          transfer = this.transferFunc;
-      const getOpacityIndex = colindx => {
-         const bin_opactity = getTF1Value(transfer, bin_content, false) * 3; // try to get opacity
-         if (!bin_opactity || (bin_opactity < 0) || (bin_opactity >= 1))
-            return colindx;
-         return colindx + Math.round(bin_opactity * 200) * 10000; // 200 steps between 0..1
+      const getBinOpacity = content => {
+         const bin_opacity = getTF1Value(transfer, content, false) * 3; // try to get opacity
+         if (!bin_opacity || (bin_opacity < 0)) return 0;
+         if (bin_opacity >= 1) return 1;
+         return bin_opacity;
       };
 
       for (i = i1; i < i2; ++i) {
@@ -849,6 +849,7 @@ class TH3Painter extends THistPainter {
       const bins_matrixes = [],
             bins_colors = [],
             bin_tooltips = [],
+            bin_opacities = [],
             helper_kind = use_helper ? 2 : 0,
             helper_positions = use_helper ? new Float32Array(nbins * Box3D.Segments.length * 3) : null;
 
@@ -867,11 +868,13 @@ class TH3Painter extends THistPainter {
                wei = get_bin_weight(bin_content);
                if (wei < 1e-3) continue; // do not show very small bins
 
-               let color;
+               let color, opacity = 1;
                if (use_colors) {
                   let colindx = cntr.getPaletteIndex(palette, bin_content);
                   if (colindx === null) continue;
                   color = this._color_palette.getColor(colindx);
+                  if (transfer)
+                     opacity = getBinOpacity(bin_content);
                }
 
                grz1 = main.grz(histo.fZaxis.GetBinLowEdge(k+1));
@@ -884,8 +887,11 @@ class TH3Painter extends THistPainter {
                bin_matrix.scale(new THREE.Vector3((grx2 - grx1) * wei, (gry2 - gry1) * wei, (grz2 - grz1) * wei));
                bin_matrix.setPosition((grx2 + grx1) / 2, (gry2 + gry1) / 2, (grz2 + grz1) / 2);
                bins_matrixes.push(bin_matrix);
-               if (use_colors)
+               if (use_colors) {
                   bins_colors.push(color);
+                  if (transfer)
+                     bin_opacities.push(opacity);
+               }
 
                if (helper_kind === 2) {
                   const helper_segments = Box3D.Segments;
@@ -901,55 +907,73 @@ class TH3Painter extends THistPainter {
          }
       }
 
-      if (use_colors)
-         fillcolor = new THREE.Color(1,1,1);
+      if (use_colors && transfer) {
+         // create individual meshes for each bin
 
-      const opacity = 1,
+         for (let n = 0; n < bins_matrixes.length; ++n) {
+            const opacity = transfer ? bin_opacities[n] : 1,
+                  color = new THREE.Color(bins_colors[n]),
+                  material = use_lambert ? new THREE.MeshLambertMaterial({ color, opacity, transparent: opacity < 1, vertexColors: false })
+                                         : new THREE.MeshBasicMaterial({ color, opacity, transparent: opacity < 1, vertexColors: false }),
+                  bin_mesh = new THREE.Mesh(single_bin_geom, material);
 
-            material = use_lambert ? new THREE.MeshLambertMaterial({ color: fillcolor, opacity, transparent: opacity < 1, vertexColors: false })
-                                   : new THREE.MeshBasicMaterial({ color: fillcolor, opacity, transparent: opacity < 1, vertexColors: false }),
+            bin_mesh.applyMatrix4(bins_matrixes[n]);
 
-            all_bins_mesh = new THREE.InstancedMesh(single_bin_geom, material, bins_matrixes.length);
+            main.add3DMesh(bin_mesh);
+         }
 
-      for (let n = 0; n < bins_matrixes.length; ++n) {
-         all_bins_mesh.setMatrixAt(n, bins_matrixes[n]);
+      } else {
+
          if (use_colors)
-            all_bins_mesh.setColorAt(n, new THREE.Color(bins_colors[n]));
+            fillcolor = new THREE.Color(1,1,1);
+
+         const opacity = 1,
+
+               material = use_lambert ? new THREE.MeshLambertMaterial({ color: fillcolor, opacity, transparent: opacity < 1, vertexColors: false })
+                                      : new THREE.MeshBasicMaterial({ color: fillcolor, opacity, transparent: opacity < 1, vertexColors: false }),
+
+               all_bins_mesh = new THREE.InstancedMesh(single_bin_geom, material, bins_matrixes.length);
+
+         for (let n = 0; n < bins_matrixes.length; ++n) {
+            all_bins_mesh.setMatrixAt(n, bins_matrixes[n]);
+            if (use_colors)
+               all_bins_mesh.setColorAt(n, new THREE.Color(bins_colors[n]));
+         }
+
+         all_bins_mesh.painter = this;
+         all_bins_mesh.bins = bin_tooltips;
+         all_bins_mesh.tipscale = tipscale;
+         all_bins_mesh.tip_color = (histo.fFillColor === 3) ? 0xFF0000 : 0x00FF00;
+         all_bins_mesh.get_weight = get_bin_weight;
+
+         all_bins_mesh.tooltip = function(intersect) {
+            if ((intersect.instanceId === undefined) || (intersect.instanceId >= this.bins.length)) return;
+
+            const p = this.painter,
+                  histo = p.getHisto(),
+                  main = p.getFramePainter(),
+                  tip = p.get3DToolTip(this.bins[intersect.instanceId]),
+                  grx1 = main.grx(histo.fXaxis.GetBinCoord(tip.ix-1)),
+                  grx2 = main.grx(histo.fXaxis.GetBinCoord(tip.ix)),
+                  gry1 = main.gry(histo.fYaxis.GetBinCoord(tip.iy-1)),
+                  gry2 = main.gry(histo.fYaxis.GetBinCoord(tip.iy)),
+                  grz1 = main.grz(histo.fZaxis.GetBinCoord(tip.iz-1)),
+                  grz2 = main.grz(histo.fZaxis.GetBinCoord(tip.iz)),
+                  wei2 = this.get_weight(tip.value) * this.tipscale;
+
+            tip.x1 = (grx2 + grx1) / 2 - (grx2 - grx1) * wei2;
+            tip.x2 = (grx2 + grx1) / 2 + (grx2 - grx1) * wei2;
+            tip.y1 = (gry2 + gry1) / 2 - (gry2 - gry1) * wei2;
+            tip.y2 = (gry2 + gry1) / 2 + (gry2 - gry1) * wei2;
+            tip.z1 = (grz2 + grz1) / 2 - (grz2 - grz1) * wei2;
+            tip.z2 = (grz2 + grz1) / 2 + (grz2 - grz1) * wei2;
+            tip.color = this.tip_color;
+
+            return tip;
+         }
+
+         main.add3DMesh(all_bins_mesh);
       }
-
-      all_bins_mesh.painter = this;
-      all_bins_mesh.bins = bin_tooltips;
-      all_bins_mesh.tipscale = tipscale;
-      all_bins_mesh.tip_color = (histo.fFillColor === 3) ? 0xFF0000 : 0x00FF00;
-      all_bins_mesh.get_weight = get_bin_weight;
-
-      all_bins_mesh.tooltip = function(intersect) {
-         if ((intersect.instanceId === undefined) || (intersect.instanceId >= this.bins.length)) return;
-
-         const p = this.painter,
-               histo = p.getHisto(),
-               main = p.getFramePainter(),
-               tip = p.get3DToolTip(this.bins[intersect.instanceId]),
-               grx1 = main.grx(histo.fXaxis.GetBinCoord(tip.ix-1)),
-               grx2 = main.grx(histo.fXaxis.GetBinCoord(tip.ix)),
-               gry1 = main.gry(histo.fYaxis.GetBinCoord(tip.iy-1)),
-               gry2 = main.gry(histo.fYaxis.GetBinCoord(tip.iy)),
-               grz1 = main.grz(histo.fZaxis.GetBinCoord(tip.iz-1)),
-               grz2 = main.grz(histo.fZaxis.GetBinCoord(tip.iz)),
-               wei2 = this.get_weight(tip.value) * this.tipscale;
-
-         tip.x1 = (grx2 + grx1) / 2 - (grx2 - grx1) * wei2;
-         tip.x2 = (grx2 + grx1) / 2 + (grx2 - grx1) * wei2;
-         tip.y1 = (gry2 + gry1) / 2 - (gry2 - gry1) * wei2;
-         tip.y2 = (gry2 + gry1) / 2 + (gry2 - gry1) * wei2;
-         tip.z1 = (grz2 + grz1) / 2 - (grz2 - grz1) * wei2;
-         tip.z2 = (grz2 + grz1) / 2 + (grz2 - grz1) * wei2;
-         tip.color = this.tip_color;
-
-         return tip;
-      }
-
-      main.add3DMesh(all_bins_mesh);
 
       if (helper_kind > 0) {
          const helper_material = new THREE.LineBasicMaterial({ color: this.getColor(histo.fLineColor) }),
