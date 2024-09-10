@@ -821,7 +821,7 @@ class TH3Painter extends THistPainter {
 
       const cntr = use_colors ? this.getContour() : null,
             palette = use_colors ? this.getHistPalette() : null;
-      let nbins = 0, i, j, k, wei, bin_content, transfer = null;
+      let i, j, k, wei, bin_content, transfer = null;
 
       if (this.transferFunc && proivdeEvalPar(this.transferFunc, true))
          transfer = this.transferFunc;
@@ -830,28 +830,7 @@ class TH3Painter extends THistPainter {
          if (!bin_opacity || (bin_opacity < 0)) return 0;
          if (bin_opacity >= 1) return 1;
          return bin_opacity;
-      };
-
-      for (i = i1; i < i2; ++i) {
-         for (j = j1; j < j2; ++j) {
-            for (k = k1; k < k2; ++k) {
-               bin_content = histo.getBinContent(i+1, j+1, k+1);
-               if (!this.options.GLColor && ((bin_content === 0) || (bin_content < this.gminbin))) continue;
-
-               wei = get_bin_weight(bin_content);
-               if (wei < 1e-3) continue; // do not draw empty or very small bins
-
-               nbins++;
-            }
-         }
-      }
-
-      const bins_matrixes = [],
-            bins_colors = [],
-            bin_tooltips = [],
-            bin_opacities = [],
-            helper_kind = use_helper ? 2 : 0,
-            helper_positions = use_helper ? new Float32Array(nbins * Box3D.Segments.length * 3) : null;
+      }, bins_matrixes = [], bins_colors = [], bin_tooltips = [], bin_opacities = [];
 
       let grx1, grx2, gry1, gry2, grz1, grz2;
 
@@ -892,17 +871,6 @@ class TH3Painter extends THistPainter {
                   bins_colors.push(color);
                   if (transfer)
                      bin_opacities.push(opacity);
-               }
-
-               if (helper_kind === 2) {
-                  const helper_segments = Box3D.Segments;
-                  let vvv = (bins_matrixes.length - 1) * helper_segments.length * 3;
-                  for (let n = 0; n < helper_segments.length; ++n, vvv += 3) {
-                     const vert = Box3D.Vertices[helper_segments[n]], m = bin_matrix.elements;
-                     helper_positions[vvv] = m[12] + (vert.x - 0.5) * m[0];
-                     helper_positions[vvv+1] = m[13] + (vert.y - 0.5) * m[5];
-                     helper_positions[vvv+2] = m[14] + (vert.z - 0.5) * m[10];
-                  }
                }
             }
          }
@@ -974,7 +942,20 @@ class TH3Painter extends THistPainter {
          main.add3DMesh(all_bins_mesh);
       }
 
-      if (helper_kind > 0) {
+      if (use_helper) {
+         const helper_segments = Box3D.Segments,
+               helper_positions = new Float32Array(bins_matrixes.length * Box3D.Segments.length * 3);
+         let vvv = 0;
+         for (let i = 0; i < bins_matrixes.length; ++i) {
+            const m = bins_matrixes[i].elements;
+            for (let n = 0; n < helper_segments.length; ++n, vvv += 3) {
+               const vert = Box3D.Vertices[helper_segments[n]];
+               helper_positions[vvv] = m[12] + (vert.x - 0.5) * m[0];
+               helper_positions[vvv+1] = m[13] + (vert.y - 0.5) * m[5];
+               helper_positions[vvv+2] = m[14] + (vert.z - 0.5) * m[10];
+            }
+         }
+
          const helper_material = new THREE.LineBasicMaterial({ color: this.getColor(histo.fLineColor) }),
                lines = createLineSegments(helper_positions, helper_material);
 
