@@ -477,7 +477,7 @@ class TH3Painter extends THistPainter {
 
       const cntr = use_colors ? this.getContour() : null,
             palette = use_colors ? this.getHistPalette() : null,
-            bins_matrixes = [], bins_colors = [], bin_tooltips = [], bin_opacities = [],
+            bins_matrixes = [], bins_colors = [], bins_ids = [], bin_opacities = [],
             transfer = (this.transferFunc && proivdeEvalPar(this.transferFunc, true)) ? this.transferFunc : null;
 
       function getBinOpacity(content) {
@@ -485,6 +485,39 @@ class TH3Painter extends THistPainter {
          if (!bin_opacity || (bin_opacity < 0)) return 0;
          if (bin_opacity >= 1) return 1;
          return bin_opacity;
+      }
+
+      function getBinTooltip(intersect) {
+         let binid = 0;
+
+         if (this.binid !== undefined) {
+            binid = this.binid;
+         } else {
+            if ((intersect.instanceId === undefined) || (intersect.instanceId >= this.bins.length)) return;
+            binid = this.bins[intersect.instanceId];
+         }
+
+         const p = this.painter,
+               histo = p.getHisto(),
+               main = p.getFramePainter(),
+               tip = p.get3DToolTip(binid),
+               grx1 = main.grx(histo.fXaxis.GetBinCoord(tip.ix-1)),
+               grx2 = main.grx(histo.fXaxis.GetBinCoord(tip.ix)),
+               gry1 = main.gry(histo.fYaxis.GetBinCoord(tip.iy-1)),
+               gry2 = main.gry(histo.fYaxis.GetBinCoord(tip.iy)),
+               grz1 = main.grz(histo.fZaxis.GetBinCoord(tip.iz-1)),
+               grz2 = main.grz(histo.fZaxis.GetBinCoord(tip.iz)),
+               wei2 = this.get_weight(tip.value) * this.tipscale;
+
+         tip.x1 = (grx2 + grx1) / 2 - (grx2 - grx1) * wei2;
+         tip.x2 = (grx2 + grx1) / 2 + (grx2 - grx1) * wei2;
+         tip.y1 = (gry2 + gry1) / 2 - (gry2 - gry1) * wei2;
+         tip.y2 = (gry2 + gry1) / 2 + (gry2 - gry1) * wei2;
+         tip.z1 = (grz2 + grz1) / 2 - (grz2 - grz1) * wei2;
+         tip.z2 = (grz2 + grz1) / 2 + (grz2 - grz1) * wei2;
+         tip.color = this.tip_color;
+
+         return tip;
       }
 
       for (let i = i1; i < i2; ++i) {
@@ -513,7 +546,7 @@ class TH3Painter extends THistPainter {
                      grz2 = main.grz(histo.fZaxis.GetBinLowEdge(k+2));
 
                // remember bin index for tooltip
-               bin_tooltips.push(histo.getBin(i+1, j+1, k+1));
+               bins_ids.push(histo.getBin(i+1, j+1, k+1));
 
                const bin_matrix = new THREE.Matrix4();
                bin_matrix.scale(new THREE.Vector3((grx2 - grx1) * wei, (gry2 - gry1) * wei, (grz2 - grz1) * wei));
@@ -541,6 +574,13 @@ class TH3Painter extends THistPainter {
 
             bin_mesh.applyMatrix4(bins_matrixes[n]);
 
+            bin_mesh.painter = this;
+            bin_mesh.binid = bins_ids[n];
+            bin_mesh.tipscale = tipscale;
+            bin_mesh.tip_color = (histo.fFillColor === 3) ? 0xFF0000 : 0x00FF00;
+            bin_mesh.get_weight = get_bin_weight;
+            bin_mesh.tooltip = getBinTooltip;
+
             main.add3DMesh(bin_mesh);
          }
 
@@ -561,36 +601,11 @@ class TH3Painter extends THistPainter {
          }
 
          all_bins_mesh.painter = this;
-         all_bins_mesh.bins = bin_tooltips;
+         all_bins_mesh.bins = bins_ids;
          all_bins_mesh.tipscale = tipscale;
          all_bins_mesh.tip_color = (histo.fFillColor === 3) ? 0xFF0000 : 0x00FF00;
          all_bins_mesh.get_weight = get_bin_weight;
-
-         all_bins_mesh.tooltip = function(intersect) {
-            if ((intersect.instanceId === undefined) || (intersect.instanceId >= this.bins.length)) return;
-
-            const p = this.painter,
-                  histo = p.getHisto(),
-                  main = p.getFramePainter(),
-                  tip = p.get3DToolTip(this.bins[intersect.instanceId]),
-                  grx1 = main.grx(histo.fXaxis.GetBinCoord(tip.ix-1)),
-                  grx2 = main.grx(histo.fXaxis.GetBinCoord(tip.ix)),
-                  gry1 = main.gry(histo.fYaxis.GetBinCoord(tip.iy-1)),
-                  gry2 = main.gry(histo.fYaxis.GetBinCoord(tip.iy)),
-                  grz1 = main.grz(histo.fZaxis.GetBinCoord(tip.iz-1)),
-                  grz2 = main.grz(histo.fZaxis.GetBinCoord(tip.iz)),
-                  wei2 = this.get_weight(tip.value) * this.tipscale;
-
-            tip.x1 = (grx2 + grx1) / 2 - (grx2 - grx1) * wei2;
-            tip.x2 = (grx2 + grx1) / 2 + (grx2 - grx1) * wei2;
-            tip.y1 = (gry2 + gry1) / 2 - (gry2 - gry1) * wei2;
-            tip.y2 = (gry2 + gry1) / 2 + (gry2 - gry1) * wei2;
-            tip.z1 = (grz2 + grz1) / 2 - (grz2 - grz1) * wei2;
-            tip.z2 = (grz2 + grz1) / 2 + (grz2 - grz1) * wei2;
-            tip.color = this.tip_color;
-
-            return tip;
-         }
+         all_bins_mesh.tooltip = getBinTooltip;
 
          main.add3DMesh(all_bins_mesh);
       }
