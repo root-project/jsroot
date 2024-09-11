@@ -15,7 +15,7 @@
 12. Support 'pads' draw options for TMultiGraph, support context menu for it
 13. Let drop object on sub-pads
 14. Properly loads ES6 modules for web canvas
-15. Improve performance of TH3 drawing by using THREE.InstancedMesh
+15. Improve performance of TH3/RH3 drawing by using THREE.InstancedMesh
 16. Implement batch mode with '&batch' URL parameter to create SVG/PNG images with default GUI
 17. Adjust node.js implementation to produce identical output with normal browser
 18. Create necessary infrastructure for testing with 'puppeteer'
