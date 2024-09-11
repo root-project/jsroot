@@ -381,18 +381,15 @@ class TH3Painter extends THistPainter {
       const histo = this.getHisto(),
             main = this.getFramePainter();
 
-      let buffer_size = 0, use_lambert = false,
+      let use_lambert = false,
           use_helper = false, use_colors = false, use_opacity = 1, exclude_content = -1,
           logv = this.getPadPainter()?.getRootPad()?.fLogv,
           use_scale = true, scale_offset = 0,
-          single_bin_verts, single_bin_norms,
           fillcolor = this.getColor(histo.fFillColor),
-          tipscale = 0.5;
+          tipscale = 0.5, single_bin_geom;
 
       if (!box_option && this.options.Lego)
          box_option = (this.options.Lego === 1) ? 10 : this.options.Lego;
-
-      let single_bin_geom;
 
       if ((this.options.GLBox === 11) || (this.options.GLBox === 12)) {
          tipscale = 0.4;
@@ -405,11 +402,10 @@ class TH3Painter extends THistPainter {
       } else {
          const indicies = Box3D.Indexes,
                normals = Box3D.Normals,
-               vertices = Box3D.Vertices;
-
-         buffer_size = indicies.length*3;
-         single_bin_verts = new Float32Array(buffer_size);
-         single_bin_norms = new Float32Array(buffer_size);
+               vertices = Box3D.Vertices,
+               buffer_size = indicies.length*3,
+               single_bin_verts = new Float32Array(buffer_size),
+               single_bin_norms = new Float32Array(buffer_size);
 
          for (let k = 0, nn = -3; k < indicies.length; ++k) {
             const vert = vertices[indicies[k]];
