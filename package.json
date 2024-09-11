@@ -41,9 +41,9 @@
   "dependencies": {
     "@oneidentity/zstd-js": "^1.0.3",
     "canvas": "^2.11.2",
-    "jsdom": "^22.1.0",
+    "jsdom": "^25.0.0",
     "mathjax": "3.2.2",
-    "tmp": "^0.2.1",
+    "tmp": "^0.2.3",
     "xhr2": "^0.2.1"
   },
   "repository": {
