@@ -3,7 +3,6 @@ import { select as d3_select, pointer as d3_pointer, drag as d3_drag, color as d
 import { prSVG, BasePainter } from '../base/BasePainter.mjs';
 import { resize } from '../base/ObjectPainter.mjs';
 import { getRootColors } from '../base/colors.mjs';
-import { setDefaultDrawOpt } from '../draw.mjs';
 
 
 /** @summary Display progress message in the left bottom corner.
@@ -472,10 +471,8 @@ function saveSettings(expires = 365, name = 'settings') {
 function readSettings(only_check = false, name = 'settings') {
    const s = readLocalStorage(name);
    if (!s) return false;
-   if (!only_check) {
+   if (!only_check)
       Object.assign(settings, s);
-      setDefaultDrawOpt(s._dflt_drawopt);
-   }
    return true;
 }
 
