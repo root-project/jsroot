@@ -306,7 +306,9 @@ settings = {
    /** @summary Extra parameters which will be append to the url when item shown in new tab */
    NewTabUrlPars: '',
    /** @summary Export different settings in output URL */
-   NewTabUrlExportSettings: false
+   NewTabUrlExportSettings: false,
+   /** @summary Custom default draw options for classes like 'TH2:colz;TGraph:al' */
+   DefaultDrawOptions: ''
 },
 
 /** @namespace

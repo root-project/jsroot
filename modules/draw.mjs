@@ -315,9 +315,20 @@ function getDrawSettings(kind, selector) {
   setDefaultDrawOpt('TH1', 'text');
   setDefaultDrawOpt('TH2', 'col');  */
 function setDefaultDrawOpt(classname, opt) {
-   const handle = getDrawHandle(prROOT + classname, 0);
-   if (handle)
-      handle.dflt = opt;
+   if (!classname)
+      return;
+   if ((opt === undefined) && isStr(classname) && (classname.indexOf(':') > 0)) {
+      // special usage to set list of options like TH2:lego2;TH1:hist
+      opt.split(';').forEach(part => {
+         const arr = part.split(':');
+         if (arr.length >= 1)
+            setDefaultDrawOpt(arr[0], arr[1] || '');
+      });
+   } else {
+      const handle = getDrawHandle(prROOT + classname, 0);
+      if (handle)
+         handle.dflt = opt;
+   }
 }
 
 /** @summary Draw object in specified HTML element with given draw options.
