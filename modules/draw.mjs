@@ -318,7 +318,7 @@ function setDefaultDrawOpt(classname, opt) {
    if (!classname)
       return;
    if ((opt === undefined) && isStr(classname) && (classname.indexOf(':') > 0)) {
-      // special usage to set list of options like TH2:lego2;TH1:hist
+      // special usage to set list of options like TH2:lego2;TH3:glbox2
       opt.split(';').forEach(part => {
          const arr = part.split(':');
          if (arr.length >= 1)

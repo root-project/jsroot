@@ -474,7 +474,7 @@ function readSettings(only_check = false, name = 'settings') {
    if (!s) return false;
    if (!only_check) {
       Object.assign(settings, s);
-      setDefaultDrawOpt(s.DefaultDrawOptions);
+      setDefaultDrawOpt(s._dflt_drawopt);
    }
    return true;
 }
