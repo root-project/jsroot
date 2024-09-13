@@ -1206,8 +1206,10 @@ class HierarchyPainter extends BasePainter {
       // build indent
       let prnt = isroot ? null : hitem._parent;
       while (prnt && (prnt !== this.h)) {
-         d3line.insert('div', ':first-child')
-               .attr('class', this.isLastSibling(prnt) ? 'img_empty' : 'img_line');
+         const is_last = this.isLastSibling(prnt),
+               d3icon = d3line.insert('div', ':first-child').attr('class', is_last ? 'img_empty' : 'img_line');
+         if (!is_last)
+            d3icon.style('cursor', 'pointer').on('click', function(evnt) { h.tree_click(evnt, this, 'parentminus'); });
          prnt = prnt._parent;
       }
 
@@ -1540,11 +1542,17 @@ class HierarchyPainter extends BasePainter {
    tree_click(evnt, node, place) {
       if (!node) return;
 
-      const d3cont = d3_select(node.parentNode.parentNode),
+      let d3cont = d3_select(node.parentNode.parentNode),
           itemname = d3cont.attr('item'),
           hitem = itemname ? this.findItem(itemname) : null;
 
       if (!hitem) return;
+
+      if (place === 'parentminus') {
+         hitem = hitem._parent;
+         itemname = this.itemFullName(hitem);
+         d3cont = d3_select(hitem?._d3cont || null);
+      }
 
       if (hitem._break_point) {
          // special case of more item
@@ -1555,7 +1563,7 @@ class HierarchyPainter extends BasePainter {
          this.addItemHtml(hitem, d3cont, 'update');
 
          const prnt = hitem._parent, indx = prnt._childs.indexOf(hitem),
-             d3chlds = d3_select(d3cont.node().parentNode);
+               d3chlds = d3_select(d3cont.node().parentNode);
 
          if (indx < 0) return console.error('internal error');
 
@@ -1598,7 +1606,6 @@ class HierarchyPainter extends BasePainter {
       if (((place === 'plusminus') && !('_childs' in hitem) && hitem._more) ||
           ((place === 'item') && (dflt === 'expand')))
          return this.expandItem(itemname, d3cont);
-
 
       if (place === 'item') {
          if (hitem._player)
