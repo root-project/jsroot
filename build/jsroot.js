@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '12/09/2024',
+version_date = '13/09/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -76701,8 +76701,7 @@ async function makeSVG(args) {
 internals.addDrawFunc = addDrawFunc;
 
 function assignPadPainterDraw(PadPainterClass) {
-   PadPainterClass.prototype.drawObject = (...args) =>
-      draw(...args).catch(err => { console.log(`Error ${err?.message ?? err}  at ${err?.stack ?? 'uncknown place'}`); return null; });
+   PadPainterClass.prototype.drawObject = draw;
    PadPainterClass.prototype.getObjectDrawSettings = getDrawSettings;
 }
 
@@ -78688,6 +78687,11 @@ class TCanvasPainter extends TPadPainter {
                 if (ranges) ranges = ':' + ranges;
                 handle.send(`READY6:${version}${ranges}`); // send ready message back when drawing completed
                 this.confirmDraw();
+             }).catch(err => {
+               if (isFunc(this.showConsoleError))
+                  this.showConsoleError(err);
+               else
+                  console.log(err);
              });
       } else if (msg.slice(0, 5) === 'MENU:') {
          // this is menu with exact identifier for object
@@ -83330,7 +83334,7 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
          for (k = 0; k < 4; k++)
             ir[k] = LevelSearch(zc[k]);
 
-         if ((ir[0] !== ir[1]) || (ir[1] !== ir[2]) || (ir[2] !== ir[3]) || (ir[3] !== ir[0])) { // deepscan-disable-line
+         if ((ir[0] !== ir[1]) || (ir[1] !== ir[2]) || (ir[2] !== ir[3]) || (ir[3] !== ir[0])) {
             x[3] = x[0] = (arrx[i] + arrx[i+1])/2;
             x[2] = x[1] = (arrx[i+1] + arrx[i+2])/2;
 
@@ -83622,7 +83626,7 @@ class Triangles3DHandler {
 
                // check if any(contours for given level exists
                if (((side1 > 0) || (side2 > 0) || (side3 > 0)) &&
-                   ((side1 !== side2) || (side2 !== side3) || (side3 !== side1))) // deepscan-disable-line
+                   ((side1 !== side2) || (side2 !== side3) || (side3 !== side1)))
                       ++ngridsegments;
 
                continue;
@@ -94641,7 +94645,7 @@ class ClonedNodes {
                   issimple = (clone.matrix[k] === ((k === 5) || (k === 10) || (k === 15) ? 1 : 0));
                if (issimple) delete clone.matrix;
             }
-            if (clone.matrix && (kind === kindEve))  // deepscan-disable-line INSUFFICIENT_NULL_CHECK
+            if (clone.matrix && (kind === kindEve))
                clone.abs_matrix = true;
          }
          if (shape) {
@@ -98820,7 +98824,7 @@ function expandGeoObject(parent, obj) {
    }
 
    if (!subnodes && (shape?._typename === clTGeoCompositeShape) && shape?.fNode) {
-      if (!parent._childs) { // deepscan-disable-line
+      if (!parent._childs) {
          createItem(parent, shape.fNode.fLeft, 'Left');
          createItem(parent, shape.fNode.fRight, 'Right');
       }
@@ -107038,7 +107042,7 @@ class HierarchyPainter extends BasePainter {
             hitem = d.last;
          }
 
-         if (hitem) { // deepscan-disable-line
+         if (hitem) {
             // check that item is visible (opened), otherwise should enable parent
 
             let prnt = hitem._parent;
@@ -112834,7 +112838,7 @@ class TGraphDelaunay {
                      continue; // goto L50;
                   }
 
-                  if (skip_this_triangle) break; // deepscan-disable-line
+                  if (skip_this_triangle) break;
 
                   /* Error("Interpolate", "Should not get to here"); */
                   // may as well soldier on
@@ -112872,7 +112876,7 @@ class TGraphDelaunay {
                         // vector (dx3,dy3) is expressible as a sum of the other two vectors
                         // with positive coefficients -> i.e. it lies between the other two vectors
                         if (l === 1) {
-                           f = m; o1 = p; o2 = n; // deepscan-disable-line
+                           f = m; o1 = p; o2 = n;
                         } else if (l === 2) {
                            f = p; o1 = n; o2 = m;
                         } else {
@@ -112991,7 +112995,7 @@ class TGraphDelaunay {
             }
          }
       }
-      if (shouldbein) // deepscan-disable-line
+      if (shouldbein)
          console.error(`Interpolate Point outside hull when expected inside: this point could be dodgy ${xx}  ${yy} ${ntris_tried}`);
       return thevalue;
    }
@@ -122250,7 +122254,12 @@ class RCanvasPainter extends RPadPainter {
                  this.addPadInteractive();
                  handle.send(`SNAPDONE:${snapid}`); // send ready message back when drawing completed
                  this.confirmDraw();
-              });
+             }).catch(err => {
+               if (isFunc(this.showConsoleError))
+                  this.showConsoleError(err);
+               else
+                  console.log(err);
+             });
       } else if (msg.slice(0, 4) === 'JSON') {
          const obj = parse(msg.slice(4));
          // console.log('get JSON ', msg.length-4, obj._typename);
