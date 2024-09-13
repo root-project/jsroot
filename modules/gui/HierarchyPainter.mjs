@@ -13,7 +13,7 @@ import { BatchDisplay, GridDisplay, TabsDisplay, FlexibleDisplay, BrowserLayout,
 import { showProgress, ToolbarIcons, registerForResize, injectStyle, saveFile } from './utils.mjs';
 
 
-const kTopFolder = 'TopFolder';
+const kTopFolder = 'TopFolder', kExpand = 'expand', kPM = 'plusminus';
 
 function injectHStyle(node) {
    function img(name, sz, fmt, code) {
@@ -621,7 +621,7 @@ function markAsStreamerInfo(h, item, obj) {
 /** @summary Create hierarchy for object inspector
   * @private */
 function createInspectorContent(obj) {
-   const h = { _name: 'Object', _title: '', _click_action: 'expand', _nosimple: false, _do_context: true };
+   const h = { _name: 'Object', _title: '', _click_action: kExpand, _nosimple: false, _do_context: true };
 
    if (isStr(obj.fName) && obj.fName)
       h._name = obj.fName;
@@ -1229,7 +1229,7 @@ class HierarchyPainter extends BasePainter {
          if (break_list || this.isLastSibling(hitem)) icon_class += 'bottom';
          const d3icon = d3line.append('div').attr('class', icon_class);
          if (plusminus)
-            d3icon.style('cursor', 'pointer').on('click', function(evnt) { h.tree_click(evnt, this, 'plusminus'); });
+            d3icon.style('cursor', 'pointer').on('click', function(evnt) { h.tree_click(evnt, this, kPM); });
       }
 
       // make node icons
@@ -1555,6 +1555,7 @@ class HierarchyPainter extends BasePainter {
          if (!hitem) return;
          itemname = this.itemFullName(hitem);
          d3cont = d3_select(hitem?._d3cont || null);
+         place = kPM;
       }
 
       if (hitem._break_point) {
@@ -1603,11 +1604,11 @@ class HierarchyPainter extends BasePainter {
       }
 
       // special feature - all items with '_expand' function are not drawn by click
-      if ((place === 'item') && ('_expand' in hitem) && !evnt.ctrlKey && !evnt.shiftKey) place = 'plusminus';
+      if ((place === 'item') && ('_expand' in hitem) && !evnt.ctrlKey && !evnt.shiftKey) place = kPM;
 
       // special case - one should expand item
-      if (((place === 'plusminus') && !('_childs' in hitem) && hitem._more) ||
-          ((place === 'item') && (dflt === 'expand')))
+      if (((place === kPM) && !('_childs' in hitem) && hitem._more) ||
+          ((place === 'item') && (dflt === kExpand)))
          return this.expandItem(itemname, d3cont);
 
       if (place === 'item') {
@@ -1622,7 +1623,7 @@ class HierarchyPainter extends BasePainter {
 
          if (handle?.ignore_online && this.isOnlineItem(hitem)) return;
 
-         const dflt_expand = (this.default_by_click === 'expand');
+         const dflt_expand = (this.default_by_click === kExpand);
          let can_draw = hitem._can_draw,
              can_expand = hitem._more,
              drawopt = '';
@@ -1653,7 +1654,7 @@ class HierarchyPainter extends BasePainter {
          if (can_draw && can_expand && !drawopt) {
             // if default action specified as expand, disable drawing
             // if already displayed, try to expand
-            if (dflt_expand || (handle?.dflt === 'expand') || (handle?.exapnd_after_draw && this.isItemDisplayed(itemname))) can_draw = false;
+            if (dflt_expand || (handle?.dflt === kExpand) || (handle?.exapnd_after_draw && this.isItemDisplayed(itemname))) can_draw = false;
          }
 
          if (can_draw && !drawopt)
@@ -2095,7 +2096,7 @@ class HierarchyPainter extends BasePainter {
                handle = obj._typename ? getDrawHandle(prROOT + obj._typename) : null;
             }
 
-            if (use_dflt_opt && !drawopt && handle?.dflt && (handle.dflt !== 'expand'))
+            if (use_dflt_opt && !drawopt && handle?.dflt && (handle.dflt !== kExpand))
                drawopt = handle.dflt;
 
             if (dom) {
@@ -2830,7 +2831,7 @@ class HierarchyPainter extends BasePainter {
             if ((fname.lastIndexOf('.root') === fname.length - 5) && (fname.length > 5)) {
                h._childs.push({
                   _name: fname, _title: dirname + fname, _url: dirname + fname, _kind: kindTFile,
-                  _click_action: 'expand', _more: true, _obj: {},
+                  _click_action: kExpand, _more: true, _obj: {},
                   _expand: item => {
                      return openFile(item._url).then(file => {
                         if (!file) return false;
@@ -3985,7 +3986,7 @@ async function drawInspector(dom, obj, opt) {
       return painter;
    }
 
-   painter.default_by_click = 'expand'; // default action
+   painter.default_by_click = kExpand; // default action
    painter.with_icons = false;
    painter._inspector = true; // keep
    let expand_level = 0;
