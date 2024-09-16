@@ -82,7 +82,10 @@ function getAbsPosInCanvas(sel, pos) {
   * @return {string|Array} - converted value or array with value and actual format
   * @private */
 function floatToString(value, fmt, ret_fmt) {
-   if (!fmt) fmt = '6.4g';
+   if (!fmt)
+      fmt = '6.4g';
+   else if (fmt === 'g')
+      fmt = '8.6g';
 
    fmt = fmt.trim();
    const len = fmt.length;
@@ -142,7 +145,7 @@ function floatToString(value, fmt, ret_fmt) {
       }
    }
 
-   return ret_fmt ? [sg, '5.'+prec+'f'] : sg;
+   return ret_fmt ? [sg, `5.${prec}f`] : sg;
 }
 
 
