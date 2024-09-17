@@ -184,7 +184,7 @@ const AxisPainterMethods = {
          return res;
       }
 
-      return floatToString(val, fmt || 'g');
+      return floatToString(val, fmt || 'c');
    },
 
    /** @summary Provide label for exponential form */

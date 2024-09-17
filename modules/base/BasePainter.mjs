@@ -86,6 +86,8 @@ function floatToString(value, fmt, ret_fmt, significance) {
       fmt = '6.4g';
    else if (fmt === 'g')
       fmt = '8.6g';
+   else if (fmt === 'c')
+      fmt = '8.6c';
 
    fmt = fmt.trim();
    const len = fmt.length;
@@ -104,9 +106,18 @@ function floatToString(value, fmt, ret_fmt, significance) {
       case 'f':
          isexp = false;
          break;
+      case 'c':
       case 'g': {
          const se = floatToString(value, fmt+'e', true, true);
          let sg = floatToString(value, fmt+'f', true, true);
+         const pnt = sg[0].indexOf('.');
+         if ((kind === 'c') && (pnt > 0)) {
+            let len = sg[0].length;
+            while ((len > pnt) && (sg[0][len-1] === '0'))
+               len--;
+            if (len === pnt) len--;
+            sg[0] = sg[0].slice(0, len);
+         }
          if (se[0].length < sg[0].length) sg = se;
          return ret_fmt ? sg : sg[0];
       }
