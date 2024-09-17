@@ -99,7 +99,7 @@ function floatToString(value, fmt, ret_fmt, significance) {
    prec = (prec < 0) ? 4 : parseInt(fmt.slice(prec+1));
    if (!Number.isInteger(prec) || (prec <= 0)) prec = 4;
 
-   switch(kind) {
+   switch (kind) {
       case 'e':
          isexp = true;
          break;
