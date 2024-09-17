@@ -81,7 +81,7 @@ function getAbsPosInCanvas(sel, pos) {
   * @param {boolean} [ret_fmt] - when true returns array with value and actual format like ['0.1','6.4f']
   * @return {string|Array} - converted value or array with value and actual format
   * @private */
-function floatToString(value, fmt, ret_fmt) {
+function floatToString(value, fmt, ret_fmt, significance) {
    if (!fmt)
       fmt = '6.4g';
    else if (fmt === 'g')
@@ -97,25 +97,16 @@ function floatToString(value, fmt, ret_fmt) {
    prec = (prec < 0) ? 4 : parseInt(fmt.slice(prec+1));
    if (!Number.isInteger(prec) || (prec <= 0)) prec = 4;
 
-   let significance = false;
    switch(kind) {
       case 'e':
          isexp = true;
          break;
-      case 'q':
-         isexp = true;
-         significance = true;
-         break;
       case 'f':
          isexp = false;
          break;
-      case 'w':
-         isexp = false;
-         significance = true;
-         break;
       case 'g': {
-         const se = floatToString(value, fmt+'q', true);
-         let sg = floatToString(value, fmt+'w', true);
+         const se = floatToString(value, fmt+'e', true, true);
+         let sg = floatToString(value, fmt+'f', true, true);
          if (se[0].length < sg[0].length) sg = se;
          return ret_fmt ? sg : sg[0];
       }
@@ -130,7 +121,7 @@ function floatToString(value, fmt, ret_fmt) {
       if (prec < 0) prec = 0;
 
       const se = value.toExponential(prec);
-      return ret_fmt ? [se, `5.${prec}e`] : se;
+      return ret_fmt ? [se, `${prec+2}.${prec}e`] : se;
    }
 
    let sg = value.toFixed(prec);
@@ -157,7 +148,7 @@ function floatToString(value, fmt, ret_fmt) {
       }
    }
 
-   return ret_fmt ? [sg, `5.${prec}f`] : sg;
+   return ret_fmt ? [sg, `${prec+2}.${prec}f`] : sg;
 }
 
 
