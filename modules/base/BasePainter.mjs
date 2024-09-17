@@ -91,25 +91,37 @@ function floatToString(value, fmt, ret_fmt) {
    const len = fmt.length;
    if (len < 2)
       return ret_fmt ? [value.toFixed(4), '6.4f'] : value.toFixed(4);
-   const last = fmt[len-1];
+   const kind = fmt[len-1].toLowerCase();
    fmt = fmt.slice(0, len-1);
    let isexp, prec = fmt.indexOf('.');
    prec = (prec < 0) ? 4 : parseInt(fmt.slice(prec+1));
    if (!Number.isInteger(prec) || (prec <= 0)) prec = 4;
 
    let significance = false;
-   if ((last === 'e') || (last === 'E')) isexp = true; else
-   if (last === 'Q') { isexp = true; significance = true; } else
-   if ((last === 'f') || (last === 'F')) isexp = false; else
-   if (last === 'W') { isexp = false; significance = true; } else
-   if ((last === 'g') || (last === 'G')) {
-      const se = floatToString(value, fmt+'Q', true);
-      let sg = floatToString(value, fmt+'W', true);
-      if (se[0].length < sg[0].length) sg = se;
-      return ret_fmt ? sg : sg[0];
-   } else {
-      isexp = false;
-      prec = 4;
+   switch(kind) {
+      case 'e':
+         isexp = true;
+         break;
+      case 'q':
+         isexp = true;
+         significance = true;
+         break;
+      case 'f':
+         isexp = false;
+         break;
+      case 'w':
+         isexp = false;
+         significance = true;
+         break;
+      case 'g': {
+         const se = floatToString(value, fmt+'q', true);
+         let sg = floatToString(value, fmt+'w', true);
+         if (se[0].length < sg[0].length) sg = se;
+         return ret_fmt ? sg : sg[0];
+      }
+      default:
+         isexp = false;
+         prec = 4;
    }
 
    if (isexp) {
