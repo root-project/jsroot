@@ -98,9 +98,9 @@ class TLinePainter extends ObjectPainter {
 
    /** @summary Redraw line */
    redraw() {
-      this.createG(this.use_frame ? 'frame2d' : undefined);
-
       this.prepareDraw();
+
+      this.createG(this.use_frame ? 'frame2d' : undefined);
 
       const elem = this.draw_g.append('svg:path')
                        .attr('d', this.createPath())
