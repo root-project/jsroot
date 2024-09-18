@@ -529,6 +529,9 @@ class TGraphPainter extends ObjectPainter {
       if (!graph?.fNpoints) return;
 
       let excl_width = 0, drawbins = null;
+      // if markers or errors drawn - no need handle events for line drawing
+      // this improves interactivity like zooming around graph points
+      const line_events_handling = !this.isBatchMode() && (options.Line || options.Errors) ? 'none' : null;
 
       if (main_block && lineatt.excl_side) {
          excl_width = lineatt.excl_width;
@@ -592,7 +595,9 @@ class TGraphPainter extends ObjectPainter {
          if (excl_width)
              this.appendExclusion(false, path, drawbins, excl_width);
 
-         const elem = draw_g.append('svg:path').attr('d', path + close_symbol);
+         const elem = draw_g.append('svg:path')
+                            .attr('d', path + close_symbol)
+                            .style('pointer-events', line_events_handling);
          if (options.Line)
             elem.call(lineatt.func);
 
@@ -623,7 +628,8 @@ class TGraphPainter extends ObjectPainter {
          draw_g.append('svg:path')
                .attr('d', path)
                .call(lineatt.func)
-               .style('fill', 'none');
+               .style('fill', 'none')
+               .style('pointer-events', line_events_handling);
          if (main_block)
             this.draw_kind = 'lines'; // handled same way as lines
       }
