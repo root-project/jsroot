@@ -427,6 +427,7 @@ class TAxisPainter extends ObjectPainter {
       this.vertical = vertical;
       this.log = opts.log || 0;
       this.minposbin = opts.minposbin;
+      this.ignore_labels = opts.ignore_labels;
       this.noexp_changed = opts.noexp_changed;
       this.symlog = opts.symlog || false;
       this.reverse = opts.reverse || false;
@@ -444,7 +445,7 @@ class TAxisPainter extends ObjectPainter {
       } else if (opts.axis_func)
          this.kind = kAxisFunc;
       else
-         this.kind = !axis.fLabels ? kAxisNormal : kAxisLabels;
+         this.kind = !axis.fLabels || this.ignore_labels ? kAxisNormal : kAxisLabels;
 
       if (this.kind === kAxisTime)
          this.func = d3_scaleTime().domain([this.convertDate(smin), this.convertDate(smax)]);

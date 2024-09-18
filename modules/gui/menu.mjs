@@ -712,7 +712,14 @@ class JSRootMenu {
                if (lbl === id)
                   return frame_painter.zoom(kind, Math.max(0, bin - 4), Math.min(faxis.fNbins, bin + 5));
             }
-         }));
+         }), 'Zoom into region around specific label');
+      }
+      if (frame_painter && faxis.fLabels) {
+         const ignore = `${kind}_ignore_labels`;
+         this.addchk(!frame_painter[ignore], 'Custom', flag => {
+            frame_painter[ignore] = !flag;
+            painter.interactiveRedraw('pad');
+         }, `Use of custom labels in axis ${kind}`);
       }
       this.endsub();
 
