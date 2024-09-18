@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in 7.7.4
+1. Fix - TGraph Y range selection, do not cross 0
+
+
 ## Changes in 7.7.3
 1. Fix - correctly handle in I/O empty std::map
 2. Fix - reading of small (<1KB) ROOT files
