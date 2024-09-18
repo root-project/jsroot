@@ -2647,18 +2647,7 @@ class TFramePainter extends ObjectPainter {
          if ((kind === 'z') && isFunc(main?.fillPaletteMenu))
             main.fillPaletteMenu(menu, !is_pal);
 
-         if ((handle?.kind === kAxisLabels) && (faxis.fNbins > 20)) {
-            menu.add('Find label', () => menu.input('Label id').then(id => {
-               if (!id) return;
-               for (let bin = 0; bin < faxis.fNbins; ++bin) {
-                  const lbl = handle.formatLabels(bin);
-                  if (lbl === id)
-                     return this.zoom(kind, Math.max(0, bin - 4), Math.min(faxis.fNbins, bin+5));
-                }
-            }));
-         }
-
-         menu.addTAxisMenu(EAxisBits, main || this, faxis, kind);
+         menu.addTAxisMenu(EAxisBits, main || this, faxis, kind, handle, this);
          return true;
       }
 
