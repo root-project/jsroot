@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '17/09/2024',
+version_date = '18/09/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -67634,6 +67634,7 @@ class TAxisPainter extends ObjectPainter {
       this.vertical = vertical;
       this.log = opts.log || 0;
       this.minposbin = opts.minposbin;
+      this.ignore_labels = opts.ignore_labels;
       this.noexp_changed = opts.noexp_changed;
       this.symlog = opts.symlog || false;
       this.reverse = opts.reverse || false;
@@ -67651,7 +67652,7 @@ class TAxisPainter extends ObjectPainter {
       } else if (opts.axis_func)
          this.kind = kAxisFunc;
       else
-         this.kind = !axis.fLabels ? kAxisNormal : kAxisLabels;
+         this.kind = !axis.fLabels || this.ignore_labels ? kAxisNormal : kAxisLabels;
 
       if (this.kind === kAxisTime)
          this.func = time().domain([this.convertDate(smin), this.convertDate(smax)]);
@@ -67764,7 +67765,7 @@ class TAxisPainter extends ObjectPainter {
 
          this.regular_labels = true;
 
-         if (axis && axis.fNbins && axis.fLabels) {
+         if (axis?.fNbins && axis?.fLabels) {
             if ((axis.fNbins !== Math.round(axis.fXmax - axis.fXmin)) ||
                 (axis.fXmin !== 0) || (axis.fXmax !== axis.fNbins))
                this.regular_labels = false;
@@ -67807,10 +67808,12 @@ class TAxisPainter extends ObjectPainter {
          indx = Math.round((indx - a.fXmin)/(a.fXmax - a.fXmin) * a.fNbins);
       else
          indx = Math.floor(indx);
-      if ((indx < 0) || (indx >= a.fNbins)) return null;
-      for (let i = 0; i < a.fLabels.arr.length; ++i) {
-         const tstr = a.fLabels.arr[i];
-         if (tstr.fUniqueID === indx+1) return tstr.fString;
+      if ((indx < 0) || (indx >= a.fNbins))
+         return null;
+      const arr = a.fLabels.arr;
+      for (let i = 0; i < arr.length; ++i) {
+         if (arr[i].fUniqueID === indx+1)
+            return arr[i].fString;
       }
       return null;
    }
@@ -70537,6 +70540,7 @@ class TFramePainter extends ObjectPainter {
       this.x_handle.configureAxis('xaxis', this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, this.swap_xy, this.swap_xy ? [0, h] : [0, w],
                                       { reverse: this.reverse_x,
                                         log: this.swap_xy ? pad_logy : pad_logx,
+                                        ignore_labels: this.x_ignore_labels,
                                         noexp_changed: this.x_noexp_changed,
                                         symlog: this.swap_xy ? opts.symlog_y : opts.symlog_x,
                                         logcheckmin: this.swap_xy,
@@ -70551,6 +70555,7 @@ class TFramePainter extends ObjectPainter {
                                       { value_axis: opts.ndim === 1,
                                         reverse: this.reverse_y,
                                         log: this.swap_xy ? pad_logx : pad_logy,
+                                        ignore_labels: this.y_ignore_labels,
                                         noexp_changed: this.y_noexp_changed,
                                         symlog: this.swap_xy ? opts.symlog_x : opts.symlog_y,
                                         logcheckmin: (opts.ndim < 2) || this.swap_xy,
@@ -70610,6 +70615,7 @@ class TFramePainter extends ObjectPainter {
          this.x2_handle.configureAxis('x2axis', this.x2min, this.x2max, this.scale_x2min, this.scale_x2max, this.swap_xy, this.swap_xy ? [0, h] : [0, w],
                                          { reverse: this.reverse_x2,
                                            log: this.swap_xy ? pad.fLogy : pad.fLogx,
+                                           ignore_labels: this.x2_ignore_labels,
                                            noexp_changed: this.x2_noexp_changed,
                                            logcheckmin: this.swap_xy,
                                            logminfactor: logminfactorX });
@@ -70624,6 +70630,7 @@ class TFramePainter extends ObjectPainter {
          this.y2_handle.configureAxis('y2axis', this.y2min, this.y2max, this.scale_y2min, this.scale_y2max, !this.swap_xy, this.swap_xy ? [0, w] : [0, h],
                                          { reverse: this.reverse_y2,
                                            log: this.swap_xy ? pad.fLogx : pad.fLogy,
+                                           ignore_labels: this.y2_ignore_labels,
                                            noexp_changed: this.y2_noexp_changed,
                                            logcheckmin: (opts.ndim < 2) || this.swap_xy,
                                            log_min_nz: opts.ymin_nz && (opts.ymin_nz < this.y2max) ? 0.5 * opts.ymin_nz : 0,
@@ -71242,18 +71249,7 @@ class TFramePainter extends ObjectPainter {
          if ((kind === 'z') && isFunc(main?.fillPaletteMenu))
             main.fillPaletteMenu(menu, !is_pal);
 
-         if ((handle?.kind === kAxisLabels) && (faxis.fNbins > 20)) {
-            menu.add('Find label', () => menu.input('Label id').then(id => {
-               if (!id) return;
-               for (let bin = 0; bin < faxis.fNbins; ++bin) {
-                  const lbl = handle.formatLabels(bin);
-                  if (lbl === id)
-                     return this.zoom(kind, Math.max(0, bin - 4), Math.min(faxis.fNbins, bin+5));
-                }
-            }));
-         }
-
-         menu.addTAxisMenu(EAxisBits, main || this, faxis, kind);
+         menu.addTAxisMenu(EAxisBits, main || this, faxis, kind, handle, this);
          return true;
       }
 
@@ -77430,7 +77426,7 @@ class JSRootMenu {
 
    /** @summary Fill context menu for axis
      * @private */
-   addTAxisMenu(EAxisBits, painter, faxis, kind) {
+   addTAxisMenu(EAxisBits, painter, faxis, kind, axis_painter, frame_painter) {
       const is_gaxis = faxis._typename === clTGaxis;
 
       this.add('Divisions', () => this.input('Set Ndivisions', faxis.fNdivisions, 'int', 0).then(val => {
@@ -77449,7 +77445,26 @@ class JSRootMenu {
       let a = faxis.fLabelSize >= 1;
       this.addSizeMenu('Size', a ? 2 : 0.02, a ? 30 : 0.11, a ? 2 : 0.01, faxis.fLabelSize,
             arg => { faxis.fLabelSize = arg; painter.interactiveRedraw('pad', `exec:SetLabelSize(${arg})`, kind); });
+
+      if (frame_painter && (axis_painter?.kind === kAxisLabels) && (faxis.fNbins > 20)) {
+         this.add('Find label', () => this.input('Label id').then(id => {
+            if (!id) return;
+            for (let bin = 0; bin < faxis.fNbins; ++bin) {
+               const lbl = axis_painter.formatLabels(bin);
+               if (lbl === id)
+                  return frame_painter.zoomSingle(kind, Math.max(0, bin - 4), Math.min(faxis.fNbins, bin + 5));
+            }
+         }), 'Zoom into region around specific label');
+      }
+      if (frame_painter && faxis.fLabels) {
+         const ignore = `${kind}_ignore_labels`;
+         this.addchk(!frame_painter[ignore], 'Custom', flag => {
+            frame_painter[ignore] = !flag;
+            painter.interactiveRedraw('pad');
+         }, `Use of custom labels in axis ${kind}`);
+      }
       this.endsub();
+
       this.sub('Title');
       this.add('SetTitle', () => {
          this.input('Enter axis title', faxis.fTitle).then(t => {
@@ -77476,6 +77491,7 @@ class JSRootMenu {
       this.addSizeMenu('Size', a ? 2 : 0.02, a ? 30 : 0.11, a ? 2 : 0.01, faxis.fTitleSize,
                       arg => { faxis.fTitleSize = arg; painter.interactiveRedraw('pad', `exec:SetTitleSize(${arg})`, kind); });
       this.endsub();
+
       this.sub('Ticks');
       if (is_gaxis) {
          this.addColorMenu('Color', faxis.fLineColor,
