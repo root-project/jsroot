@@ -557,7 +557,7 @@ class TAxisPainter extends ObjectPainter {
 
          this.regular_labels = true;
 
-         if (axis && axis.fNbins && axis.fLabels) {
+         if (axis?.fNbins && axis?.fLabels) {
             if ((axis.fNbins !== Math.round(axis.fXmax - axis.fXmin)) ||
                 (axis.fXmin !== 0) || (axis.fXmax !== axis.fNbins))
                this.regular_labels = false;
@@ -600,10 +600,12 @@ class TAxisPainter extends ObjectPainter {
          indx = Math.round((indx - a.fXmin)/(a.fXmax - a.fXmin) * a.fNbins);
       else
          indx = Math.floor(indx);
-      if ((indx < 0) || (indx >= a.fNbins)) return null;
-      for (let i = 0; i < a.fLabels.arr.length; ++i) {
-         const tstr = a.fLabels.arr[i];
-         if (tstr.fUniqueID === indx+1) return tstr.fString;
+      if ((indx < 0) || (indx >= a.fNbins))
+         return null;
+      const arr = a.fLabels.arr;
+      for (let i = 0; i < arr.length; ++i) {
+         if (arr[i].fUniqueID === indx+1)
+            return arr[i].fString;
       }
       return null;
    }
