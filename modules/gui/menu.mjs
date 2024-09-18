@@ -710,7 +710,7 @@ class JSRootMenu {
             for (let bin = 0; bin < faxis.fNbins; ++bin) {
                const lbl = axis_painter.formatLabels(bin);
                if (lbl === id)
-                  return frame_painter.zoom(kind, Math.max(0, bin - 4), Math.min(faxis.fNbins, bin + 5));
+                  return frame_painter.zoomSingle(kind, Math.max(0, bin - 4), Math.min(faxis.fNbins, bin + 5));
             }
          }), 'Zoom into region around specific label');
       }
