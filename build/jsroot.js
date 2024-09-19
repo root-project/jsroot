@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '18/09/2024',
+version_date = '19/09/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -78972,13 +78972,13 @@ class TCanvasPainter extends TPadPainter {
 
    /** @summary Send command to start fit panel code on the server
      * @private */
-   startFitPanel() {
+   startFitPanel(standalone) {
       if (!this._websocket)
          return false;
 
-      const new_conn = this._websocket.createChannel();
+      const new_conn = standalone ? null : this._websocket.createChannel();
 
-      this.sendWebsocket('FITPANEL:' + new_conn.getChannelId());
+      this.sendWebsocket('FITPANEL:' + (standalone ? 'standalone' : new_conn.getChannelId()));
 
       return new_conn;
    }
