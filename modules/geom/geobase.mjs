@@ -1658,12 +1658,15 @@ function getNodeMatrix(kind, node) {
    } else if (node.fMatrix)
       matrix = createMatrix(node.fMatrix);
     else if ((node._typename === 'TGeoNodeOffset') && node.fFinder) {
-      const kPatternReflected = BIT(14), typ = node.fFinder._typename;
-      if ((node.fFinder.fBits & kPatternReflected) !== 0)
+      const kPatternReflected = BIT(14),
+            finder = node.fFinder,
+            typ = finder._typename;
+      if ((finder.fBits & kPatternReflected) !== 0)
          geoWarn(`Unsupported reflected pattern ${typ}`);
       if (typ.indexOf('TGeoPattern') !== 0)
          geoWarn(`Abnormal pattern type ${typ}`);
       const part = typ.slice(11);
+      matrix = new THREE.Matrix4();
       switch (part) {
          case 'X':
          case 'Y':
@@ -1671,8 +1674,7 @@ function getNodeMatrix(kind, node) {
          case 'ParaX':
          case 'ParaY':
          case 'ParaZ': {
-            const _shift = node.fFinder.fStart + (node.fIndex + 0.5) * node.fFinder.fStep;
-            matrix = new THREE.Matrix4();
+            const _shift = finder.fStart + (node.fIndex + 0.5) * finder.fStep;
             switch (part[part.length-1]) {
                case 'X': matrix.setPosition(_shift, 0, 0); break;
                case 'Y': matrix.setPosition(0, _shift, 0); break;
@@ -1681,9 +1683,8 @@ function getNodeMatrix(kind, node) {
             break;
          }
          case 'CylPhi': {
-            const phi = (Math.PI/180)*(node.fFinder.fStart+(node.fIndex+0.5)*node.fFinder.fStep),
+            const phi = (Math.PI/180)*(finder.fStart+(node.fIndex+0.5)*finder.fStep),
                  _cos = Math.cos(phi), _sin = Math.sin(phi);
-            matrix = new THREE.Matrix4();
             matrix.set(_cos, -_sin, 0, 0,
                        _sin, _cos, 0, 0,
                        0, 0, 1, 0,
@@ -1692,12 +1693,10 @@ function getNodeMatrix(kind, node) {
          }
          case 'CylR':
             // seems to be, require no transformation
-            matrix = new THREE.Matrix4();
             break;
          case 'TrapZ': {
-            const dz = node.fFinder.fStart + (node.fIndex+0.5)*node.fFinder.fStep;
-            matrix = new THREE.Matrix4();
-            matrix.setPosition(node.fFinder.fTxz*dz, node.fFinder.fTyz*dz, dz);
+            const dz = finder.fStart + (node.fIndex+0.5)*finder.fStep;
+            matrix.setPosition(finder.fTxz*dz, finder.fTyz*dz, dz);
             break;
          }
          // case 'CylR': break;
@@ -1743,8 +1742,7 @@ function numGeometryVertices(geom) {
    if (geom.polygons)
       return geom.polygons.length * 4;
 
-   const attr = geom.getAttribute('position');
-   return attr?.count || 0;
+   return geom.getAttribute('position')?.count || 0;
 }
 
 /** @summary Returns geometry bounding box
@@ -2114,12 +2112,12 @@ function provideObjectInfo(obj) {
    }
 
    const sz = Math.max(shape.fDX, shape.fDY, shape.fDZ),
-       useexp = (sz > 1e7) || (sz < 1e-7),
-       conv = (v) => {
-          if (v === undefined) return '???';
-          if ((v === Math.round(v) && v < 1e7)) return Math.round(v);
-          return useexp ? v.toExponential(4) : v.toPrecision(7);
-       };
+         useexp = (sz > 1e7) || (sz < 1e-7),
+         conv = (v) => {
+            if (v === undefined) return '???';
+            if ((v === Math.round(v) && v < 1e7)) return Math.round(v);
+            return useexp ? v.toExponential(4) : v.toPrecision(7);
+         };
 
    info.push(shape._typename);
 
@@ -2315,7 +2313,6 @@ function createMaterial(cfg, args0) {
 
    return material;
 }
-
 
 /** @summary Compares two stacks.
   * @return {Number} 0 if same, -1 when stack1 < stack2, +1 when stack1 > stack2
@@ -2560,15 +2557,13 @@ class ClonedNodes {
       // indicate that just plain shape is used
       this.plain_shape = obj;
 
-      const node = {
-            id: 0, sortid: 0, kind: kindShape,
-            name: 'Shape',
-            nfaces: obj.nfaces,
-            fDX: 1, fDY: 1, fDZ: 1, vol: 1,
-            vis: true
-         };
-
-      this.nodes = [node];
+      this.nodes = [{
+         id: 0, sortid: 0, kind: kindShape,
+         name: 'Shape',
+         nfaces: obj.nfaces,
+         fDX: 1, fDY: 1, fDZ: 1, vol: 1,
+         vis: true
+      }];
    }
 
    /** @summary Count all visible nodes */
@@ -2576,7 +2571,7 @@ class ClonedNodes {
       const len = this.nodes?.length || 0;
       let cnt = 0;
       for (let k = 0; k < len; ++k)
-          if (this.nodes[k].vis) cnt++;
+         if (this.nodes[k].vis) cnt++;
       return cnt;
    }
 
@@ -2739,7 +2734,7 @@ class ClonedNodes {
          return null;
       for (let indx = 0; indx < this.fVisibility.length; ++indx) {
          const item = this.fVisibility[indx],
-             res = compare_stacks(item.stack, stack);
+               res = compare_stacks(item.stack, stack);
          if (res === 0)
             return item;
          if (res > 0)
@@ -2877,8 +2872,6 @@ class ClonedNodes {
      * @desc If specified, absolute matrix is also calculated */
    resolveStack(stack, withmatrix) {
       const res = { id: 0, obj: null, node: this.nodes[0], name: this.name_prefix || '' };
-
-      // if (!this.toplevel || (this.nodes.length === 1) || (res.node.kind === 1)) res.name = '';
 
       if (withmatrix) {
          res.matrix = new THREE.Matrix4();
@@ -3020,8 +3013,8 @@ class ClonedNodes {
       this.use_dflt_colors = on;
       if (this.use_dflt_colors && !this.dflt_table) {
          const dflt = { kWhite: 0, kBlack: 1, kGray: 920,
-                      kRed: 632, kGreen: 416, kBlue: 600, kYellow: 400, kMagenta: 616, kCyan: 432,
-                      kOrange: 800, kSpring: 820, kTeal: 840, kAzure: 860, kViolet: 880, kPink: 900 },
+                        kRed: 632, kGreen: 416, kBlue: 600, kYellow: 400, kMagenta: 616, kCyan: 432,
+                        kOrange: 800, kSpring: 820, kTeal: 840, kAzure: 860, kViolet: 880, kPink: 900 },
 
           nmax = 110, col = [];
          for (let i=0; i<nmax; i++) col.push(dflt.kGray);
@@ -3060,7 +3053,7 @@ class ClonedNodes {
       }
 
       if (!this.origin) {
-         console.error('origin not there - kind', clone.kind, entry.nodeid, clone);
+         console.error(`origin not there - kind ${clone.kind} id ${entry.nodeid}`);
          return null;
       }
 
@@ -3467,7 +3460,6 @@ class ClonedNodes {
             this.facecnt = 0;
             this.viscnt.fill(0);
          },
-         // nodes: this.nodes,
          func(node) {
             this.total++;
             this.facecnt += node.nfaces;
@@ -3707,9 +3699,9 @@ class ClonedNodes {
 
          if (res.faces >= limit)
             res.done = true;
-          else if ((created > 0.01*lst.length) && (timelimit !== undefined)) {
+         else if ((created > 0.01*lst.length) && (timelimit !== undefined)) {
             const tm2 = new Date().getTime();
-            if (tm2-tm1 > timelimit) return res;
+            if (tm2 - tm1 > timelimit) return res;
          }
       }
 
@@ -3751,7 +3743,7 @@ class ClonedNodes {
       return elem;
    }
 
-}
+} // class ClonedNodes
 
 function createFlippedGeom(geom) {
    let pos = geom.getAttribute('position').array,
@@ -3782,8 +3774,8 @@ function createFlippedGeom(geom) {
    }
 
    const len = pos.length,
-       newpos = new Float32Array(len),
-       newnorm = new Float32Array(len);
+         newpos = new Float32Array(len),
+         newnorm = new Float32Array(len);
 
    // we should swap second and third point in each face
    for (let n = 0, shift = 0; n < len; n += 3) {
