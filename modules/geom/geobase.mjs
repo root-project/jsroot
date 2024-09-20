@@ -629,7 +629,7 @@ function createTrapezoidBuffer(shape, faces_limit) {
    let y1, y2;
    if (shape._typename === clTGeoTrd1)
       y1 = y2 = shape.fDY;
-    else {
+   else {
       y1 = shape.fDy1; y2 = shape.fDy2;
    }
 
@@ -860,9 +860,9 @@ function createSphereBuffer(shape, faces_limit) {
 
    // cut left/right sides
    if (phiLength < 360) {
-      for (let side=0; side<=widthSegments; side+=widthSegments) {
+      for (let side = 0; side <= widthSegments; side += widthSegments) {
          const ss = _sinp[side], cc = _cosp[side],
-             d1 = (side === 0) ? 1 : 0, d2 = 1 - d1;
+               d1 = (side === 0) ? 1 : 0, d2 = 1 - d1;
 
          for (let k=0; k<heightSegments; ++k) {
             creator.addFace4(
@@ -1029,9 +1029,9 @@ function createEltuBuffer(shape, faces_limit) {
    const x = new Float32Array(radiusSegments+1),
          y = new Float32Array(radiusSegments+1);
    for (let seg=0; seg<=radiusSegments; ++seg) {
-       const phi = seg/radiusSegments*2*Math.PI;
-       x[seg] = shape.fRmin*Math.cos(phi);
-       y[seg] = shape.fRmax*Math.sin(phi);
+      const phi = seg/radiusSegments*2*Math.PI;
+      x[seg] = shape.fRmin*Math.cos(phi);
+      y[seg] = shape.fRmax*Math.sin(phi);
    }
 
    const creator = faces_limit ? new PolygonsCreator() : new GeometryCreator(radiusSegments*4);
@@ -1143,15 +1143,15 @@ function createTorusBuffer(shape, faces_limit) {
    if (shape.fDphi !== 360) {
       for (let t = 0; t <= tubularSegments; t += tubularSegments) {
          const tube1 = shape.fRmax, tube2 = shape.fRmin,
-             d1 = t > 0 ? 0 : 1, d2 = 1 - d1,
-             skip = shape.fRmin > 0 ? 0 : 1,
-             nsign = t > 0 ? 1 : -1;
+               d1 = t > 0 ? 0 : 1, d2 = 1 - d1,
+               skip = shape.fRmin > 0 ? 0 : 1,
+               nsign = t > 0 ? 1 : -1;
          for (let n = 0; n < radialSegments; ++n) {
             creator.addFace4((radius + tube1 * _cosr[n+d1]) * _cost[t], (radius + tube1 * _cosr[n+d1]) * _sint[t], tube1*_sinr[n+d1],
                              (radius + tube2 * _cosr[n+d1]) * _cost[t], (radius + tube2 * _cosr[n+d1]) * _sint[t], tube2*_sinr[n+d1],
                              (radius + tube2 * _cosr[n+d2]) * _cost[t], (radius + tube2 * _cosr[n+d2]) * _sint[t], tube2*_sinr[n+d2],
                              (radius + tube1 * _cosr[n+d2]) * _cost[t], (radius + tube1 * _cosr[n+d2]) * _sint[t], tube1*_sinr[n+d2], skip);
-            creator.setNormal(-nsign* _sint[t], nsign * _cost[t], 0);
+            creator.setNormal(-nsign * _sint[t], nsign * _cost[t], 0);
          }
       }
    }
@@ -1164,7 +1164,7 @@ function createTorusBuffer(shape, faces_limit) {
   * @private */
 function createPolygonBuffer(shape, faces_limit) {
    const thetaStart = shape.fPhi1,
-       thetaLength = shape.fDphi;
+         thetaLength = shape.fDphi;
    let radiusSegments, factor;
 
    if (shape._typename === clTGeoPgon) {
@@ -1179,10 +1179,11 @@ function createPolygonBuffer(shape, faces_limit) {
    let numusedlayers = 0, hasrmin = false;
 
    for (let layer = 0; layer < shape.fNz; ++layer)
-      if (shape.fRmin[layer] > 0) hasrmin = true;
+      hasrmin = hasrmin || (shape.fRmin[layer] > 0);
 
    // return very rough estimation, number of faces may be much less
-   if (faces_limit < 0) return (hasrmin ? 4 : 2) * radiusSegments * (shape.fNz-1);
+   if (faces_limit < 0)
+      return (hasrmin ? 4 : 2) * radiusSegments * (shape.fNz-1);
 
    // coordinate of point on cut edge (x,z)
    const pnts = (thetaLength === 360) ? null : [];
