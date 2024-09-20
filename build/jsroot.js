@@ -67664,17 +67664,25 @@ class TAxisPainter extends ObjectPainter {
          else
             this.logbase = Math.round(this.log);
 
-         if (smax <= 0) smax = 1;
+         if (smax <= 0)
+            smax = 1;
 
-         if ((smin <= 0) && axis && !opts.logcheckmin) {
+         if (opts.log_min_nz)
+            this.log_min_nz = opts.log_min_nz;
+         else if (axis && opts.logcheckmin) {
+            let v = 0;
             for (let i = 0; i < axis.fNbins; ++i) {
-               smin = Math.max(smin, axis.GetBinLowEdge(i+1));
-               if (smin > 0) break;
+               v = axis.GetBinLowEdge(i+1);
+               if (v > 0) break;
+               v = axis.GetBinCenter(i+1);
+               if (v > 0) break;
             }
+            if (v > 0)
+               this.log_min_nz = v;
          }
 
-         if ((smin <= 0) && opts.log_min_nz)
-            smin = this.log_min_nz = opts.log_min_nz;
+         if ((smin <= 0) && this.log_min_nz)
+            smin = this.log_min_nz;
 
          if ((smin <= 0) || (smin >= smax))
             smin = smax * (opts.logminfactor || 1e-4);
@@ -67779,6 +67787,12 @@ class TAxisPainter extends ObjectPainter {
          this.ndig = 0;
          this.format = this.formatNormal;
       }
+   }
+
+   /** @summary Check zooming value for log scale
+    * @private */
+   checkZoomMin(value) {
+      return this.log && this.log_min_nz ? Math.max(value, this.log_min_nz) : value;
    }
 
    /** @summary Return scale min */
@@ -70543,7 +70557,7 @@ class TFramePainter extends ObjectPainter {
                                         ignore_labels: this.x_ignore_labels,
                                         noexp_changed: this.x_noexp_changed,
                                         symlog: this.swap_xy ? opts.symlog_y : opts.symlog_x,
-                                        logcheckmin: this.swap_xy,
+                                        logcheckmin: (opts.ndim > 1) || !this.swap_xy,
                                         logminfactor: logminfactorX });
 
       this.x_handle.assignFrameMembers(this, 'x');
@@ -70558,8 +70572,8 @@ class TFramePainter extends ObjectPainter {
                                         ignore_labels: this.y_ignore_labels,
                                         noexp_changed: this.y_noexp_changed,
                                         symlog: this.swap_xy ? opts.symlog_x : opts.symlog_y,
-                                        logcheckmin: (opts.ndim < 2) || this.swap_xy,
                                         log_min_nz: opts.ymin_nz && (opts.ymin_nz <= this.ymax) ? 0.5*opts.ymin_nz : 0,
+                                        logcheckmin: (opts.ndim > 1) || this.swap_xy,
                                         logminfactor: logminfactorY });
 
       this.y_handle.assignFrameMembers(this, 'y');
@@ -70617,7 +70631,7 @@ class TFramePainter extends ObjectPainter {
                                            log: this.swap_xy ? pad.fLogy : pad.fLogx,
                                            ignore_labels: this.x2_ignore_labels,
                                            noexp_changed: this.x2_noexp_changed,
-                                           logcheckmin: this.swap_xy,
+                                           logcheckmin: (opts.ndim > 1) || !this.swap_xy,
                                            logminfactor: logminfactorX });
 
          this.x2_handle.assignFrameMembers(this, 'x2');
@@ -70632,7 +70646,7 @@ class TFramePainter extends ObjectPainter {
                                            log: this.swap_xy ? pad.fLogx : pad.fLogy,
                                            ignore_labels: this.y2_ignore_labels,
                                            noexp_changed: this.y2_noexp_changed,
-                                           logcheckmin: (opts.ndim < 2) || this.swap_xy,
+                                           logcheckmin: (opts.ndim > 1) || this.swap_xy,
                                            log_min_nz: opts.ymin_nz && (opts.ymin_nz < this.y2max) ? 0.5 * opts.ymin_nz : 0,
                                            logminfactor: logminfactorY });
 
@@ -71373,6 +71387,7 @@ class TFramePainter extends ObjectPainter {
 
       if (zoom_x) {
          let cnt = 0;
+         xmin = this.x_handle?.checkZoomMin(xmin) ?? xmin;
          if (xmin <= this.xmin) { xmin = this.xmin; cnt++; }
          if (xmax >= this.xmax) { xmax = this.xmax; cnt++; }
          if (cnt === 2) { zoom_x = false; unzoom_x = true; }
@@ -71381,11 +71396,8 @@ class TFramePainter extends ObjectPainter {
 
       if (zoom_y) {
          let cnt = 0;
-         if ((ymin <= this.ymin) || (!this.ymin && this.logy &&
-              ((!this.y_handle?.log_min_nz && ymin < logminfactorY*this.ymax) || (ymin < this.y_handle?.log_min_nz)))) {
-                 ymin = this.ymin;
-                 cnt++;
-              }
+         ymin = this.y_handle?.checkZoomMin(ymin) ?? ymin;
+         if (ymin <= this.ymin) { ymin = this.ymin; cnt++; }
          if (ymax >= this.ymax) { ymax = this.ymax; cnt++; }
          if ((cnt === 2) && (this.scales_ndim !== 1)) {
             zoom_y = false;
@@ -71396,6 +71408,7 @@ class TFramePainter extends ObjectPainter {
 
       if (zoom_z) {
          let cnt = 0;
+         zmin = this.z_handle?.checkZoomMin(zmin) ?? zmin;
          if (zmin <= this.zmin) { zmin = this.zmin; cnt++; }
          if (zmax >= this.zmax) { zmax = this.zmax; cnt++; }
          if ((cnt === 2) && (this.scales_ndim > 2)) { zoom_z = false; unzoom_z = true; }
@@ -71482,19 +71495,20 @@ class TFramePainter extends ObjectPainter {
      * @param {Boolean} [interactive] - if change was performed interactively
      * @protected */
    async zoomSingle(name, vmin, vmax, interactive) {
-      if (!this[`${name}_handle`] && (name !== 'z'))
+      const handle = this[`${name}_handle`];
+      if (!handle && (name !== 'z'))
          return false;
 
       let zoom_v = (vmin !== vmax), unzoom_v = false;
 
       if (zoom_v) {
          let cnt = 0;
+         vmin = handle?.checkZoomMin(vmin) ?? vmin;
          if (vmin <= this[name+'min']) { vmin = this[name+'min']; cnt++; }
          if (vmax >= this[name+'max']) { vmax = this[name+'max']; cnt++; }
          if (cnt === 2) { zoom_v = false; unzoom_v = true; }
       } else
          unzoom_v = (vmin === vmax) && (vmin === 0);
-
 
       let changed = false;
 
@@ -87486,7 +87500,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       this.x_handle.snapid = this.snapid;
    }
    this.x_handle.configureAxis('xaxis', this.xmin, this.xmax, xmin, xmax, false, [grminx, grmaxx],
-                               { log: pad?.fLogx ?? 0, reverse: opts.reverse_x });
+                               { log: pad?.fLogx ?? 0, reverse: opts.reverse_x, logcheckmin: true });
    this.x_handle.assignFrameMembers(this, 'x');
    this.x_handle.extractDrawAttributes(scalingSize);
 
@@ -87496,7 +87510,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       this.y_handle.snapid = this.snapid;
    }
    this.y_handle.configureAxis('yaxis', this.ymin, this.ymax, ymin, ymax, false, [grminy, grmaxy],
-                               { log: pad && !opts.use_y_for_z ? pad.fLogy : 0, reverse: opts.reverse_y });
+                               { log: pad && !opts.use_y_for_z ? pad.fLogy : 0, reverse: opts.reverse_y, logcheckmin: opts.ndim > 1 });
    this.y_handle.assignFrameMembers(this, 'y');
    this.y_handle.extractDrawAttributes(scalingSize);
 
@@ -87508,7 +87522,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    this.z_handle.configureAxis('zaxis', this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz],
                                { value_axis: (opts.ndim === 1) || (opts.ndim === 2),
                                  log: ((opts.use_y_for_z || (opts.ndim === 2)) ? pad?.fLogv : undefined) ?? pad?.fLogz ?? 0,
-                                 reverse: opts.reverse_z });
+                                 reverse: opts.reverse_z, logcheckmin: opts.ndim > 2 });
    this.z_handle.assignFrameMembers(this, 'z');
    this.z_handle.extractDrawAttributes(scalingSize);
 
@@ -118179,7 +118193,7 @@ class RAxisPainter extends RObjectPainter {
       this.vertical = vertical;
       this.log = false;
       const _log = this.v7EvalAttr('log', 0),
-          _symlog = this.v7EvalAttr('symlog', 0);
+            _symlog = this.v7EvalAttr('symlog', 0);
       this.reverse = opts.reverse || false;
 
       if (this.v7EvalAttr('time')) {
@@ -118197,7 +118211,6 @@ class RAxisPainter extends RObjectPainter {
          this.kind = kAxisLabels;
        else
          this.kind = kAxisNormal;
-
 
       if (this.kind === kAxisTime)
          this.func = time().domain([this.convertDate(smin), this.convertDate(smax)]);
@@ -119496,7 +119509,7 @@ class RFramePainter extends RObjectPainter {
                                       { reverse: this.reverse_x,
                                         log: this.swap_xy ? this.logy : this.logx,
                                         symlog: this.swap_xy ? opts.symlog_y : opts.symlog_x,
-                                        logcheckmin: this.swap_xy,
+                                        logcheckmin: (opts.ndim > 1) || !this.swap_xy,
                                         logminfactor: 0.0001 });
 
       this.x_handle.assignFrameMembers(this, 'x');
@@ -119508,7 +119521,7 @@ class RFramePainter extends RObjectPainter {
                                       { reverse: this.reverse_y,
                                         log: this.swap_xy ? this.logx : this.logy,
                                         symlog: this.swap_xy ? opts.symlog_x : opts.symlog_y,
-                                        logcheckmin: (opts.ndim < 2) || this.swap_xy,
+                                        logcheckmin: (opts.ndim > 1) || this.swap_xy,
                                         log_min_nz: opts.ymin_nz && (opts.ymin_nz < this.ymax) ? 0.5 * opts.ymin_nz : 0,
                                         logminfactor: 3e-4 });
 

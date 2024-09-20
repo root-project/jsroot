@@ -33,6 +33,7 @@
 30. Fix - properly redraw TMultiGraph
 31. Fix - show empty bin in TProfile2D if it has entries #316
 32. Fix - saving embed TGeo in TCanvas into image
+33. Fix - unzooming on log scale was extending range forevever
 
 
 ## Changes in 7.7.3
