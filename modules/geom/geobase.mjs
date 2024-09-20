@@ -1223,8 +1223,10 @@ function createPolygonBuffer(shape, faces_limit) {
    }
 
    let numfaces = numusedlayers*radiusSegments*2;
-   if (shape.fRmin[0] !== shape.fRmax[0]) numfaces += radiusSegments * (hasrmin ? 2 : 1);
-   if (shape.fRmin[shape.fNz-1] !== shape.fRmax[shape.fNz-1]) numfaces += radiusSegments * (hasrmin ? 2 : 1);
+   if (shape.fRmin[0] !== shape.fRmax[0])
+      numfaces += radiusSegments * (hasrmin ? 2 : 1);
+   if (shape.fRmin[shape.fNz-1] !== shape.fRmax[shape.fNz-1])
+      numfaces += radiusSegments * (hasrmin ? 2 : 1);
 
    let cut_faces = null;
 
@@ -1246,10 +1248,11 @@ function createPolygonBuffer(shape, faces_limit) {
       numfaces += cut_faces.length*2;
    }
 
-   const phi0 = thetaStart*Math.PI/180, dphi = thetaLength/radiusSegments*Math.PI/180,
-      // calculate all sin/cos tables in advance
-      _sin = new Float32Array(radiusSegments+1),
-      _cos = new Float32Array(radiusSegments+1);
+   const phi0 = thetaStart*Math.PI/180,
+         dphi = thetaLength/radiusSegments*Math.PI/180,
+         // calculate all sin/cos tables in advance
+         _sin = new Float32Array(radiusSegments+1),
+         _cos = new Float32Array(radiusSegments+1);
    for (let seg = 0; seg <= radiusSegments; ++seg) {
       _cos[seg] = Math.cos(phi0+seg*dphi);
       _sin[seg] = Math.sin(phi0+seg*dphi);
@@ -1417,18 +1420,17 @@ function createParaboloidBuffer(shape, faces_limit) {
    let zmin = -shape.fDZ, zmax = shape.fDZ;
 
    // if no radius at -z, find intersection
-   if (shape.fA >= 0) {
-      if (shape.fB > zmin) zmin = shape.fB;
-   } else
-      if (shape.fB < zmax) zmax = shape.fB;
+   if (shape.fA >= 0)
+      zmin = Math.max(zmin, shape.fB);
+   else
+      zmax = Math.min(shape.fB, zmax);
 
-
-   const ttmin = Math.atan2(zmin, rmin), ttmax = Math.atan2(zmax, rmax),
-
-   // calculate all sin/cos tables in advance
-    _sin = new Float32Array(radiusSegments+1),
+   const ttmin = Math.atan2(zmin, rmin),
+         ttmax = Math.atan2(zmax, rmax),
+         // calculate all sin/cos tables in advance
+         _sin = new Float32Array(radiusSegments+1),
          _cos = new Float32Array(radiusSegments+1);
-   for (let seg=0; seg<=radiusSegments; ++seg) {
+   for (let seg = 0; seg <= radiusSegments; ++seg) {
       _cos[seg] = Math.cos(seg/radiusSegments*2*Math.PI);
       _sin[seg] = Math.sin(seg/radiusSegments*2*Math.PI);
    }
@@ -1524,9 +1526,9 @@ function createHypeBuffer(shape, faces_limit) {
       // vertical layers
       for (let layer = 0; layer < heightSegments; ++layer) {
          const z1 = -shape.fDz + layer/heightSegments*2*shape.fDz,
-             z2 = -shape.fDz + (layer+1)/heightSegments*2*shape.fDz,
-             r1 = Math.sqrt(r0**2 + tsq*z1**2),
-             r2 = Math.sqrt(r0**2 + tsq*z2**2);
+               z2 = -shape.fDz + (layer+1)/heightSegments*2*shape.fDz,
+               r1 = Math.sqrt(r0**2 + tsq*z1**2),
+               r2 = Math.sqrt(r0**2 + tsq*z2**2);
 
          for (let seg = 0; seg < radiusSegments; ++seg) {
             creator.addFace4(r1 * _cos[seg+d1], r1 * _sin[seg+d1], z1,
@@ -1622,7 +1624,7 @@ function createMatrix(matrix) {
       res.set(rotation[0], rotation[1], rotation[2], 0,
               rotation[3], rotation[4], rotation[5], 0,
               rotation[6], rotation[7], rotation[8], 0,
-                        0, 0, 0, 1);
+              0, 0, 0, 1);
    }
 
    if (translation)
@@ -1649,69 +1651,63 @@ function getNodeMatrix(kind, node) {
          matrix.set(node.fTrans[0], node.fTrans[4], node.fTrans[8], 0,
                     node.fTrans[1], node.fTrans[5], node.fTrans[9], 0,
                     node.fTrans[2], node.fTrans[6], node.fTrans[10], 0,
-                                 0, 0, 0, 1);
+                    0, 0, 0, 1);
          // second - set position with proper sign
          matrix.setPosition(node.fTrans[12], node.fTrans[13], node.fTrans[14]);
       }
    } else if (node.fMatrix)
       matrix = createMatrix(node.fMatrix);
     else if ((node._typename === 'TGeoNodeOffset') && node.fFinder) {
-      const kPatternReflected = BIT(14);
+      const kPatternReflected = BIT(14), typ = node.fFinder._typename;
       if ((node.fFinder.fBits & kPatternReflected) !== 0)
-         geoWarn('Unsupported reflected pattern ' + node.fFinder._typename);
-
-      // if (node.fFinder._typename === 'TGeoPatternCylR') {}
-      // if (node.fFinder._typename === 'TGeoPatternSphR') {}
-      // if (node.fFinder._typename === 'TGeoPatternSphTheta') {}
-      // if (node.fFinder._typename === 'TGeoPatternSphPhi') {}
-      // if (node.fFinder._typename === 'TGeoPatternHoneycomb') {}
-      switch (node.fFinder._typename) {
-        case 'TGeoPatternX':
-        case 'TGeoPatternY':
-        case 'TGeoPatternZ':
-        case 'TGeoPatternParaX':
-        case 'TGeoPatternParaY':
-        case 'TGeoPatternParaZ': {
-           const _shift = node.fFinder.fStart + (node.fIndex + 0.5) * node.fFinder.fStep;
-
-           matrix = new THREE.Matrix4();
-
-           switch (node.fFinder._typename[node.fFinder._typename.length-1]) {
-              case 'X': matrix.setPosition(_shift, 0, 0); break;
-              case 'Y': matrix.setPosition(0, _shift, 0); break;
-              case 'Z': matrix.setPosition(0, 0, _shift); break;
-           }
-           break;
-        }
-
-        case 'TGeoPatternCylPhi': {
-           const phi = (Math.PI/180)*(node.fFinder.fStart+(node.fIndex+0.5)*node.fFinder.fStep),
-               _cos = Math.cos(phi), _sin = Math.sin(phi);
-
-           matrix = new THREE.Matrix4();
-
-           matrix.set(_cos, -_sin, 0, 0,
-                      _sin, _cos, 0, 0,
-                         0, 0, 1, 0,
-                         0, 0, 0, 1);
-           break;
-        }
-
-        case 'TGeoPatternCylR':
+         geoWarn(`Unsupported reflected pattern ${typ}`);
+      if (typ.indexOf('TGeoPattern') !== 0)
+         geoWarn(`Abnormal pattern type ${typ}`);
+      const part = typ.slice(11);
+      switch (part) {
+         case 'X':
+         case 'Y':
+         case 'Z':
+         case 'ParaX':
+         case 'ParaY':
+         case 'ParaZ': {
+            const _shift = node.fFinder.fStart + (node.fIndex + 0.5) * node.fFinder.fStep;
+            matrix = new THREE.Matrix4();
+            switch (part[part.length-1]) {
+               case 'X': matrix.setPosition(_shift, 0, 0); break;
+               case 'Y': matrix.setPosition(0, _shift, 0); break;
+               case 'Z': matrix.setPosition(0, 0, _shift); break;
+            }
+            break;
+         }
+         case 'CylPhi': {
+            const phi = (Math.PI/180)*(node.fFinder.fStart+(node.fIndex+0.5)*node.fFinder.fStep),
+                 _cos = Math.cos(phi), _sin = Math.sin(phi);
+            matrix = new THREE.Matrix4();
+            matrix.set(_cos, -_sin, 0, 0,
+                       _sin, _cos, 0, 0,
+                       0, 0, 1, 0,
+                       0, 0, 0, 1);
+            break;
+         }
+         case 'CylR':
             // seems to be, require no transformation
             matrix = new THREE.Matrix4();
             break;
-
-        case 'TGeoPatternTrapZ': {
-           const dz = node.fFinder.fStart + (node.fIndex+0.5)*node.fFinder.fStep;
-           matrix = new THREE.Matrix4();
-           matrix.setPosition(node.fFinder.fTxz*dz, node.fFinder.fTyz*dz, dz);
-           break;
-        }
-
-        default:
-           geoWarn(`Unsupported pattern type ${node.fFinder._typename}`);
-           break;
+         case 'TrapZ': {
+            const dz = node.fFinder.fStart + (node.fIndex+0.5)*node.fFinder.fStep;
+            matrix = new THREE.Matrix4();
+            matrix.setPosition(node.fFinder.fTxz*dz, node.fFinder.fTyz*dz, dz);
+            break;
+         }
+         // case 'CylR': break;
+         // case 'SphR': break;
+         // case 'SphTheta': break;
+         // case 'SphPhi': break;
+         // case 'Honeycomb': break;
+         default:
+            geoWarn(`Unsupported pattern type ${typ}`);
+            break;
       }
    }
 
