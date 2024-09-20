@@ -2775,7 +2775,7 @@ class TFramePainter extends ObjectPainter {
 
       if (zoom_x) {
          let cnt = 0;
-         xmin = this.x_handle.checkZoomMin(xmin);
+         xmin = this.x_handle?.checkZoomMin(xmin) ?? xmin;
          if (xmin <= this.xmin) { xmin = this.xmin; cnt++; }
          if (xmax >= this.xmax) { xmax = this.xmax; cnt++; }
          if (cnt === 2) { zoom_x = false; unzoom_x = true; }
@@ -2784,7 +2784,7 @@ class TFramePainter extends ObjectPainter {
 
       if (zoom_y) {
          let cnt = 0;
-         ymin = this.y_handle.checkZoomMin(ymin);
+         ymin = this.y_handle?.checkZoomMin(ymin) ?? ymin;
          if (ymin <= this.ymin) { ymin = this.ymin; cnt++; }
          if (ymax >= this.ymax) { ymax = this.ymax; cnt++; }
          if ((cnt === 2) && (this.scales_ndim !== 1)) {
@@ -2796,6 +2796,7 @@ class TFramePainter extends ObjectPainter {
 
       if (zoom_z) {
          let cnt = 0;
+         zmin = this.z_handle?.checkZoomMin(zmin) ?? zmin;
          if (zmin <= this.zmin) { zmin = this.zmin; cnt++; }
          if (zmax >= this.zmax) { zmax = this.zmax; cnt++; }
          if ((cnt === 2) && (this.scales_ndim > 2)) { zoom_z = false; unzoom_z = true; }
@@ -2882,13 +2883,15 @@ class TFramePainter extends ObjectPainter {
      * @param {Boolean} [interactive] - if change was performed interactively
      * @protected */
    async zoomSingle(name, vmin, vmax, interactive) {
-      if (!this[`${name}_handle`] && (name !== 'z'))
+      const handle = this[`${name}_handle`];
+      if (!handle && (name !== 'z'))
          return false;
 
       let zoom_v = (vmin !== vmax), unzoom_v = false;
 
       if (zoom_v) {
          let cnt = 0;
+         vmin = handle?.checkZoomMin(vmin) ?? vmin;
          if (vmin <= this[name+'min']) { vmin = this[name+'min']; cnt++; }
          if (vmax >= this[name+'max']) { vmax = this[name+'max']; cnt++; }
          if (cnt === 2) { zoom_v = false; unzoom_v = true; }
