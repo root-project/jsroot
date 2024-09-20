@@ -949,7 +949,7 @@ JSROOT provides `loadOpenui5` function to load supported OpenUI5:
 </script>
 ```
 
-JSROOT uses <https://openui5.hana.ondemand.com> when no other source is specified.
+JSROOT uses <https://openui5.hana.ondemand.com/1.128.0/> when no other source is specified.
 
 There are small details when using OpenUI5 with THttpServer. First of all, location of JSROOT modules should be specified
 as `/jsrootsys/modules/main.mjs`. And then trying to access files from local disk, one should specify `/currentdir/` folder:
