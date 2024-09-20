@@ -1945,7 +1945,7 @@ class TFramePainter extends ObjectPainter {
                                         ignore_labels: this.x_ignore_labels,
                                         noexp_changed: this.x_noexp_changed,
                                         symlog: this.swap_xy ? opts.symlog_y : opts.symlog_x,
-                                        logcheckmin: this.swap_xy,
+                                        logcheckmin: (opts.ndim > 1) || !this.swap_xy,
                                         logminfactor: logminfactorX });
 
       this.x_handle.assignFrameMembers(this, 'x');
@@ -1960,8 +1960,8 @@ class TFramePainter extends ObjectPainter {
                                         ignore_labels: this.y_ignore_labels,
                                         noexp_changed: this.y_noexp_changed,
                                         symlog: this.swap_xy ? opts.symlog_x : opts.symlog_y,
-                                        logcheckmin: (opts.ndim < 2) || this.swap_xy,
                                         log_min_nz: opts.ymin_nz && (opts.ymin_nz <= this.ymax) ? 0.5*opts.ymin_nz : 0,
+                                        logcheckmin: (opts.ndim > 1) || this.swap_xy,
                                         logminfactor: logminfactorY });
 
       this.y_handle.assignFrameMembers(this, 'y');
@@ -2019,7 +2019,7 @@ class TFramePainter extends ObjectPainter {
                                            log: this.swap_xy ? pad.fLogy : pad.fLogx,
                                            ignore_labels: this.x2_ignore_labels,
                                            noexp_changed: this.x2_noexp_changed,
-                                           logcheckmin: this.swap_xy,
+                                           logcheckmin: (opts.ndim > 1) || !this.swap_xy,
                                            logminfactor: logminfactorX });
 
          this.x2_handle.assignFrameMembers(this, 'x2');
@@ -2034,7 +2034,7 @@ class TFramePainter extends ObjectPainter {
                                            log: this.swap_xy ? pad.fLogx : pad.fLogy,
                                            ignore_labels: this.y2_ignore_labels,
                                            noexp_changed: this.y2_noexp_changed,
-                                           logcheckmin: (opts.ndim < 2) || this.swap_xy,
+                                           logcheckmin: (opts.ndim > 1) || this.swap_xy,
                                            log_min_nz: opts.ymin_nz && (opts.ymin_nz < this.y2max) ? 0.5 * opts.ymin_nz : 0,
                                            logminfactor: logminfactorY });
 
@@ -2775,6 +2775,7 @@ class TFramePainter extends ObjectPainter {
 
       if (zoom_x) {
          let cnt = 0;
+         xmin = this.x_handle.checkZoomMin(xmin);
          if (xmin <= this.xmin) { xmin = this.xmin; cnt++; }
          if (xmax >= this.xmax) { xmax = this.xmax; cnt++; }
          if (cnt === 2) { zoom_x = false; unzoom_x = true; }
@@ -2783,11 +2784,8 @@ class TFramePainter extends ObjectPainter {
 
       if (zoom_y) {
          let cnt = 0;
-         if ((ymin <= this.ymin) || (!this.ymin && this.logy &&
-              ((!this.y_handle?.log_min_nz && ymin < logminfactorY*this.ymax) || (ymin < this.y_handle?.log_min_nz)))) {
-                 ymin = this.ymin;
-                 cnt++;
-              }
+         ymin = this.y_handle.checkZoomMin(ymin);
+         if (ymin <= this.ymin) { ymin = this.ymin; cnt++; }
          if (ymax >= this.ymax) { ymax = this.ymax; cnt++; }
          if ((cnt === 2) && (this.scales_ndim !== 1)) {
             zoom_y = false;
@@ -2896,7 +2894,6 @@ class TFramePainter extends ObjectPainter {
          if (cnt === 2) { zoom_v = false; unzoom_v = true; }
       } else
          unzoom_v = (vmin === vmax) && (vmin === 0);
-
 
       let changed = false;
 

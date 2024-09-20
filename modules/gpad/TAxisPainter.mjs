@@ -457,19 +457,25 @@ class TAxisPainter extends ObjectPainter {
          else
             this.logbase = Math.round(this.log);
 
-         if (smax <= 0) smax = 1;
+         if (smax <= 0)
+            smax = 1;
 
-         if ((smin <= 0) && axis && !opts.logcheckmin) {
+         if (opts.log_min_nz)
+            this.log_min_nz = opts.log_min_nz;
+         else if (axis && opts.logcheckmin) {
+            let v = 0;
             for (let i = 0; i < axis.fNbins; ++i) {
-               smin = Math.max(smin, axis.GetBinLowEdge(i+1));
-               if (smin > 0) break;
-               smin = Math.max(smin, axis.GetBinCenter(i+1));
-               if (smin > 0) break;
+               v = axis.GetBinLowEdge(i+1);
+               if (v > 0) break;
+               v = axis.GetBinCenter(i+1);
+               if (v > 0) break;
             }
+            if (v > 0)
+               this.log_min_nz = v;
          }
 
-         if ((smin <= 0) && opts.log_min_nz)
-            smin = this.log_min_nz = opts.log_min_nz;
+         if ((smin <= 0) && this.log_min_nz)
+            smin = this.log_min_nz;
 
          if ((smin <= 0) || (smin >= smax))
             smin = smax * (opts.logminfactor || 1e-4);
@@ -574,6 +580,12 @@ class TAxisPainter extends ObjectPainter {
          this.ndig = 0;
          this.format = this.formatNormal;
       }
+   }
+
+   /** @summary Check zooming value for log scale
+    * @private */
+   checkZoomMin(value) {
+      return this.log && this.log_min_nz ? Math.max(value, this.log_min_nz) : value;
    }
 
    /** @summary Return scale min */
