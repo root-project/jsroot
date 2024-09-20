@@ -79,7 +79,7 @@ class RAxisPainter extends RObjectPainter {
       this.vertical = vertical;
       this.log = false;
       const _log = this.v7EvalAttr('log', 0),
-          _symlog = this.v7EvalAttr('symlog', 0);
+            _symlog = this.v7EvalAttr('symlog', 0);
       this.reverse = opts.reverse || false;
 
       if (this.v7EvalAttr('time')) {
@@ -97,7 +97,6 @@ class RAxisPainter extends RObjectPainter {
          this.kind = kAxisLabels;
        else
          this.kind = kAxisNormal;
-
 
       if (this.kind === kAxisTime)
          this.func = d3_scaleTime().domain([this.convertDate(smin), this.convertDate(smax)]);
