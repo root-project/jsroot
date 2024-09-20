@@ -582,7 +582,7 @@ import { httpRequest, draw } from './jsrootsys/modules/core.mjs';
 let res = await httpRequest("your_server/multi.json?number=3", "multi",
                              "Files/job1.root/hpx/root.json\nFiles/job1.root/hpxpy/root.json\nFiles/job1.root/hprof/root.json\n");
 for (let n = 0; n < res.length; ++n) {
-   console.log('Requested element of type', ${res[n]._typename});
+   console.log('Requested element of type', res[n]._typename);
    // draw('drawid', res[n], 'hist');
 }
 ```
