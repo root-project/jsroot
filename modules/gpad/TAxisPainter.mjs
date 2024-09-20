@@ -463,6 +463,8 @@ class TAxisPainter extends ObjectPainter {
             for (let i = 0; i < axis.fNbins; ++i) {
                smin = Math.max(smin, axis.GetBinLowEdge(i+1));
                if (smin > 0) break;
+               smin = Math.max(smin, axis.GetBinCenter(i+1));
+               if (smin > 0) break;
             }
          }
 
