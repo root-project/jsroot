@@ -1,3 +1,6 @@
+import { isNodeJs, httpRequest, btoa_func, source_dir } from '../core.mjs';
+
+
 const kArial = 'Arial', kTimes = 'Times New Roman', kCourier = 'Courier New', kVerdana = 'Verdana', kSymbol = 'Symbol', kWingdings = 'Wingdings',
 // average width taken from symbols.html, counted only for letters and digits
 root_fonts = [null,  // index 0 not exists
@@ -215,4 +218,31 @@ function detectFont(node) {
    return handler;
 }
 
-export { FontHandler, addCustomFont, getCustomFont, detectFont };
+/** @summary Read font file from some pre-configured locations
+  * @return {Promise} with base64 code of the font
+  * @private */
+async function loadFontFile(fname) {
+   const locations = [source_dir + 'fonts/'];
+   if (isNodeJs())
+      locations.push('../../fonts/');
+
+   console.log('Trying to load ', fname, 'from', locations);
+
+   async function tryNext() {
+      if (locations.length === 0)
+         throw new Error(`Fail to load ${fname} font`);
+      let path = locations.shift() + fname;
+      const pr = isNodeJs() ? import('fs').then(fs => {
+         if (path.indexOf('file://') === 0)
+            path = path.slice(7);
+         return fs.readFileSync(path).toString('base64');
+      }) : httpRequest(path, 'bin').then(buf => btoa_func(buf));
+
+      return pr.catch(() => tryNext());
+   }
+
+   return tryNext();
+}
+
+
+export { FontHandler, addCustomFont, getCustomFont, detectFont, loadFontFile };

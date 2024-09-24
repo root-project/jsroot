@@ -1,6 +1,6 @@
 import { select as d3_select } from '../d3.mjs';
-import { settings, internals, isNodeJs, isFunc, isStr, isObject, btoa_func, getDocument, source_dir, httpRequest } from '../core.mjs';
-import { detectFont, addCustomFont, getCustomFont, FontHandler } from './FontHandler.mjs';
+import { settings, internals, isNodeJs, isFunc, isStr, isObject, btoa_func, getDocument } from '../core.mjs';
+import { detectFont, addCustomFont, getCustomFont, loadFontFile, FontHandler } from './FontHandler.mjs';
 import { approximateLabelWidth, replaceSymbolsInTextNode } from './latex.mjs';
 import { getColor } from './colors.mjs';
 
@@ -754,20 +754,6 @@ function addHighlightStyle(elem, drag) {
    }
 }
 
-/** @summary Read font file from some pre-configured locations
-  * @return {Promise} with base64 code of the font
-  * @private */
-async function readFontFile(fname) {
-   return isNodeJs() ? import('fs').then(fs => {
-      let path = 'fonts/' + fname;
-      if (source_dir.indexOf('file://') === 0)
-         path = source_dir.slice(7) + path;
-      else
-         path = '../../' + path;
-      return fs.readFileSync(path).toString('base64');
-   }) : httpRequest(source_dir + 'fonts/' + fname, 'bin').then(buf => btoa_func(buf));
-}
-
 /** @summary Create pdf for existing SVG element
   * @return {Promise} with produced PDF file as url string
   * @private */
@@ -856,7 +842,7 @@ async function svgToPDF(args, as_buffer) {
 
       if (need_symbols && !custom_fonts.symbol) {
          if (!getCustomFont('symbol'))
-            pr2 = readFontFile('symbol.ttf').then(base64 => addCustomFont(25, 'symbol', 'ttf', base64));
+            pr2 = loadFontFile('symbol.ttf').then(base64 => addCustomFont(25, 'symbol', 'ttf', base64));
 
          pr2 = pr2.then(() => {
             const fh = getCustomFont('symbol'),
