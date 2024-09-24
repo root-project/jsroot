@@ -17,12 +17,64 @@ root_fonts = [null,  // index 0 not exists
       { n: kCourier, s: 'oblique', w: 'bold', aw: 0.6005 },
       { n: kSymbol, aw: 0.5521 },
       { n: kTimes, aw: 0.5521 },
-      { n: kWingdings, aw: 0.5664 },
+      { n: kWingdings, aw: 0.5664, file: 'wingding.ttf' },
       { n: kSymbol, s: 'italic', aw: 0.5314 },
       { n: kVerdana, aw: 0.5664 },
       { n: kVerdana, s: 'italic', aw: 0.5495 },
       { n: kVerdana, w: 'bold', aw: 0.5748 },
       { n: kVerdana, s: 'italic', w: 'bold', aw: 0.5578 }];
+
+
+/** @summary Read font file from some pre-configured locations
+  * @return {Promise} with base64 code of the font
+  * @private */
+async function loadFontFile(fname) {
+   const locations = [source_dir + 'fonts/'];
+   if (isNodeJs())
+      locations.push('../../fonts/');
+
+   async function tryNext() {
+      if (locations.length === 0)
+         throw new Error(`Fail to load ${fname} font`);
+      let path = locations.shift() + fname;
+      const pr = isNodeJs() ? import('fs').then(fs => {
+         const prefix = 'file://' + (process?.platform === 'win32' ? '/' : '');
+         if (path.indexOf(prefix) === 0)
+            path = path.slice(prefix.length);
+         return fs.readFileSync(path).toString('base64');
+      }) : httpRequest(path, 'bin').then(buf => btoa_func(buf));
+
+      return pr.catch(() => tryNext());
+   }
+
+   return tryNext();
+}
+
+async function loadCfg(cfg) {
+   if (!cfg)
+      return '';
+
+   if (cfg.base64)
+      return cfg.base64;
+
+   if (cfg.promises !== undefined) {
+      return new Promise(resolveFunc => {
+         cfg.promises.push(resolveFunc);
+      });
+   }
+
+   cfg.promises = [];
+
+   return loadFontFile(cfg.file).then(base64 => {
+      cfg.base64 = base64;
+      cfg.format = 'ttf';
+      const arr = cfg.promises;
+      delete cfg.promises;
+      arr.forEach(func => func(base64));
+      return base64;
+   });
+}
+
 
 /**
  * @summary Helper class for font handling
@@ -46,19 +98,26 @@ class FontHandler {
       const indx = (fontIndex && Number.isInteger(fontIndex)) ? Math.floor(fontIndex / 10) : 0,
             cfg = root_fonts[indx];
 
-      if (cfg)
+      if (cfg) {
+         this.cfg = cfg;
          this.setNameStyleWeight(cfg.n, cfg.s, cfg.w, cfg.aw, cfg.format, cfg.base64);
-      else
+      } else
          this.setNameStyleWeight(kArial);
    }
 
    /** @summary Should returns true if font has to be loaded before
     * @private */
-   needLoad() { return false; }
+   needLoad() { return this.cfg?.file && !this.base64; }
 
    /** @summary Async function to load font
     * @private */
-   async load() { return true; }
+   async load() {
+      return loadCfg(this.cfg).then(base64 => {
+         this.base64 = base64;
+         this.format = 'ttf';
+         return !!base64;
+      })
+   }
 
    /** @summary Directly set name, style and weight for the font
     * @private */
@@ -69,7 +128,7 @@ class FontHandler {
       this.aver_width = aver_width || (weight ? 0.58 : 0.55);
       this.format = format; // format of custom font, ttf by default
       this.base64 = base64; // indication of custom font
-      if ((this.name === kSymbol) || (this.name === kWingdings)) {
+      if (this.name === kSymbol) {
          this.isSymbol = this.name;
          this.name = kTimes;
       } else
@@ -226,30 +285,5 @@ function detectFont(node) {
    return handler;
 }
 
-/** @summary Read font file from some pre-configured locations
-  * @return {Promise} with base64 code of the font
-  * @private */
-async function loadFontFile(fname) {
-   const locations = [source_dir + 'fonts/'];
-   if (isNodeJs())
-      locations.push('../../fonts/');
 
-   async function tryNext() {
-      if (locations.length === 0)
-         throw new Error(`Fail to load ${fname} font`);
-      let path = locations.shift() + fname;
-      const pr = isNodeJs() ? import('fs').then(fs => {
-         const prefix = 'file://' + (process?.platform === 'win32' ? '/' : '');
-         if (path.indexOf(prefix) === 0)
-            path = path.slice(prefix.length);
-         return fs.readFileSync(path).toString('base64');
-      }) : httpRequest(path, 'bin').then(buf => btoa_func(buf));
-
-      return pr.catch(() => tryNext());
-   }
-
-   return tryNext();
-}
-
-
-export { FontHandler, kWingdings, addCustomFont, getCustomFont, detectFont, loadFontFile };
+export { FontHandler, addCustomFont, getCustomFont, detectFont, loadFontFile };

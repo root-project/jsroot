@@ -850,7 +850,7 @@ class ObjectPainter extends BasePainter {
      * @private */
    executeMenuCommand(method) {
       if (method.fName === 'Inspect')
-         // primitve inspector, keep it here
+         // primitive inspector, keep it here
          return this.showInspector();
 
       return false;
