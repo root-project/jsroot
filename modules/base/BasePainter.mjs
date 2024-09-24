@@ -754,6 +754,20 @@ function addHighlightStyle(elem, drag) {
    }
 }
 
+/** @summary Read font file from some pre-configured locations
+  * @return {Promise} with base64 code of the font
+  * @private */
+async function readFontFile(fname) {
+   return isNodeJs() ? import('fs').then(fs => {
+      let path = 'fonts/' + fname;
+      if (source_dir.indexOf('file://') === 0)
+         path = source_dir.slice(7) + path;
+      else
+         path = '../../' + path;
+      return fs.readFileSync(path).toString('base64');
+   }) : httpRequest(source_dir + 'fonts/' + fname, 'bin').then(buf => btoa_func(buf));
+}
+
 /** @summary Create pdf for existing SVG element
   * @return {Promise} with produced PDF file as url string
   * @private */
@@ -841,20 +855,8 @@ async function svgToPDF(args, as_buffer) {
       let pr2 = Promise.resolve(true);
 
       if (need_symbols && !custom_fonts.symbol) {
-         if (!getCustomFont('symbol')) {
-            pr2 = nodejs ? import('fs').then(fs => {
-               let path = 'fonts/symbol.ttf';
-               if (source_dir.indexOf('file://') === 0)
-                  path = source_dir.slice(7) + path;
-               else
-                  path = '../../' + path;
-               const base64 = fs.readFileSync(path).toString('base64');
-               addCustomFont(25, 'symbol', 'ttf', base64);
-            }) : httpRequest(source_dir + 'fonts/symbol.ttf', 'bin').then(buf => {
-               const base64 = btoa_func(buf);
-               addCustomFont(25, 'symbol', 'ttf', base64);
-            });
-         }
+         if (!getCustomFont('symbol'))
+            pr2 = readFontFile('symbol.ttf').then(base64 => addCustomFont(25, 'symbol', 'ttf', base64));
 
          pr2 = pr2.then(() => {
             const fh = getCustomFont('symbol'),
