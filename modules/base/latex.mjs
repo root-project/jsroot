@@ -1,6 +1,6 @@
 import { loadScript, settings, isNodeJs, isStr, source_dir, browser } from '../core.mjs';
 import { getElementRect, _loadJSDOM, makeTranslate } from './BasePainter.mjs';
-import { FontHandler } from './FontHandler.mjs';
+import { FontHandler, kWingdings } from './FontHandler.mjs';
 
 
 const symbols_map = {
@@ -354,7 +354,7 @@ function replaceSymbolsInTextNode(node) {
 }
 
 function replaceSymbols(s, kind) {
-   const m = (kind === 'Wingdings') ? wingdingsMap : symbolsMap;
+   const m = (kind === kWingdings) ? wingdingsMap : symbolsMap;
    let res = '';
    for (let k = 0; k < s.length; ++k) {
       const code = s.charCodeAt(k),
@@ -557,7 +557,7 @@ function parseLatex(node, arg, label, curr) {
             if (curr.fisze !== curr.font.size)
                elem.attr('font-size', Math.round(curr.fsize));
 
-            if (curr.font && curr.font.isSymbol)
+            if (curr.font?.isSymbol)
                elem.text(replaceSymbols(s, curr.font.isSymbol));
             else
                elem.text(s);

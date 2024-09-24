@@ -244,4 +244,4 @@ async function loadFontFile(fname) {
 }
 
 
-export { FontHandler, addCustomFont, getCustomFont, detectFont, loadFontFile };
+export { FontHandler, kWingdings, addCustomFont, getCustomFont, detectFont, loadFontFile };
