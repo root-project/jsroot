@@ -2,6 +2,8 @@
 
 ## Changes in 7.7.4
 1. Fix - TGraph Y range selection, do not cross 0
+2. Fix - correctly handle `#font[id]` in latex
+3. Fix - store canvas with embed geometry drawing
 
 
 ## Changes in 7.7.3
