@@ -8166,6 +8166,31 @@ function detectFont(node) {
    return handler;
 }
 
+/** @summary Read font file from some pre-configured locations
+  * @return {Promise} with base64 code of the font
+  * @private */
+async function loadFontFile(fname) {
+   const locations = [exports.source_dir + 'fonts/'];
+   if (isNodeJs())
+      locations.push('../../fonts/');
+
+   async function tryNext() {
+      if (locations.length === 0)
+         throw new Error(`Fail to load ${fname} font`);
+      let path = locations.shift() + fname;
+      const pr = isNodeJs() ? Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(fs => {
+         const prefix = 'file://' + (process?.platform === 'win32' ? '/' : '');
+         if (path.indexOf(prefix) === 0)
+            path = path.slice(prefix.length);
+         return fs.readFileSync(path).toString('base64');
+      }) : httpRequest(path, 'bin').then(buf => btoa_func(buf));
+
+      return pr.catch(() => tryNext());
+   }
+
+   return tryNext();
+}
+
 const symbols_map = {
    // greek letters from symbols.ttf
    '#alpha': '\u03B1',
@@ -10929,18 +10954,8 @@ async function svgToPDF(args, as_buffer) {
       let pr2 = Promise.resolve(true);
 
       if (need_symbols && !custom_fonts.symbol) {
-         if (!getCustomFont('symbol')) {
-            pr2 = nodejs ? Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(fs => {
-               let path = exports.source_dir + 'fonts/symbol.ttf';
-               if (path.indexOf('file://') === 0)
-                  path = path.slice(7);
-               const base64 = fs.readFileSync(path).toString('base64');
-               addCustomFont(25, 'symbol', 'ttf', base64);
-            }) : httpRequest(exports.source_dir + 'fonts/symbol.ttf', 'bin').then(buf => {
-               const base64 = btoa_func(buf);
-               addCustomFont(25, 'symbol', 'ttf', base64);
-            });
-         }
+         if (!getCustomFont('symbol'))
+            pr2 = loadFontFile('symbol.ttf').then(base64 => addCustomFont(25, 'symbol', 'ttf', base64));
 
          pr2 = pr2.then(() => {
             const fh = getCustomFont('symbol'),
