@@ -226,8 +226,6 @@ async function loadFontFile(fname) {
    if (isNodeJs())
       locations.push('../../fonts/');
 
-   console.log('Trying to load ', fname, 'from', locations);
-
    async function tryNext() {
       if (locations.length === 0)
          throw new Error(`Fail to load ${fname} font`);
@@ -239,7 +237,7 @@ async function loadFontFile(fname) {
          return fs.readFileSync(path).toString('base64');
       }) : httpRequest(path, 'bin').then(buf => btoa_func(buf));
 
-      return pr.catch(() => { console.log('fail loading', path); return tryNext(); });
+      return pr.catch(() => tryNext());
    }
 
    return tryNext();
