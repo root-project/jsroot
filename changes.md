@@ -34,6 +34,7 @@
 31. Fix - show empty bin in TProfile2D if it has entries #316
 32. Fix - saving embed TGeo in TCanvas into image
 33. Fix - unzooming on log scale was extending range forevever
+34. Fix - correct `#font[id]` handling in latex
 
 
 ## Changes in 7.7.3

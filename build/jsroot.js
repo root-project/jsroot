@@ -11,7 +11,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '20/09/2024',
+version_date = '24/09/2024',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -8021,6 +8021,11 @@ class FontHandler {
       this.painter = painter;
    }
 
+   /** @summary Force setting of style and weight, used in latex */
+   setUseFullStyle(flag) {
+      this.full_style = flag;
+   }
+
    /** @summary Assigns font-related attributes */
    addCustomFontToSvg(svg) {
       if (!this.base64 || !this.name)
@@ -8046,8 +8051,8 @@ class FontHandler {
       selection.attr('font-family', this.name)
                .attr('font-size', this.size)
                .attr(':xml:space', 'preserve')
-               .attr('font-weight', this.weight || null)
-               .attr('font-style', this.style || null);
+               .attr('font-weight', this.weight || (this.full_style ? 'normal' : null))
+               .attr('font-style', this.style || (this.full_style ? 'normal' : null));
    }
 
    /** @summary Set font size (optional) */
@@ -9059,6 +9064,7 @@ function parseLatex(node, arg, label, curr) {
             subpos.color = curr.painter.getColor(foundarg);
          else if (found.name === '#font[') {
             subpos.font = new FontHandler(foundarg);
+            subpos.font.setUseFullStyle(true); // while embedding - need to enforce full style
             subpos.ufont = true; // mark that custom font is applied
          } else
             subpos.fsize *= foundarg;
@@ -10843,7 +10849,7 @@ async function svgToPDF(args, as_buffer) {
    const nodejs = isNodeJs();
    let jspdf, need_symbols = false;
 
-   const restore_fonts = [], restore_dominant = [], restore_text = [],
+   const restore_fonts = [], restore_dominant = [], restore_oblique = [], restore_text = [],
          node_transform = args.node.getAttribute('transform'), custom_fonts = {};
 
    if (args.reset_tranform)
@@ -10856,6 +10862,13 @@ async function svgToPDF(args, as_buffer) {
             if (name === 'Courier New') {
                this.setAttribute('font-family', 'courier');
                if (!args.can_modify) restore_fonts.push(this); // keep to restore it
+            }
+            if (((name === 'Arial') || (name === 'Courier New')) && (this.getAttribute('font-weight') === 'bold') && (this.getAttribute('font-style') === 'oblique')) {
+               this.setAttribute('font-style', 'italic');
+               if (!args.can_modify) restore_oblique.push(this); // keep to restore it
+            } else if ((name === 'Courier New') && (this.getAttribute('font-style') === 'oblique')) {
+               this.setAttribute('font-style', 'italic');
+               if (!args.can_modify) restore_oblique.push(this); // keep to restore it
             }
          }
       });
@@ -10917,13 +10930,13 @@ async function svgToPDF(args, as_buffer) {
 
       if (need_symbols && !custom_fonts.symbol) {
          if (!getCustomFont('symbol')) {
-            pr2 = nodejs
-              ? Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(fs => {
-                 const base64 = fs.readFileSync('../../fonts/symbol.ttf').toString('base64');
-                 console.log('reading symbol.ttf', base64.length);
-                 addCustomFont(25, 'symbol', 'ttf', base64);
-              })
-              : httpRequest(exports.source_dir+'fonts/symbol.ttf', 'bin').then(buf => {
+            pr2 = nodejs ? Promise.resolve().then(function () { return _rollup_plugin_ignore_empty_module_placeholder$1; }).then(fs => {
+               let path = exports.source_dir + 'fonts/symbol.ttf';
+               if (path.indexOf('file://') === 0)
+                  path = path.slice(7);
+               const base64 = fs.readFileSync(path).toString('base64');
+               addCustomFont(25, 'symbol', 'ttf', base64);
+            }) : httpRequest(exports.source_dir + 'fonts/symbol.ttf', 'bin').then(buf => {
                const base64 = btoa_func(buf);
                addCustomFont(25, 'symbol', 'ttf', base64);
             });
@@ -10946,6 +10959,7 @@ async function svgToPDF(args, as_buffer) {
                args.node.setAttribute('transform', node_transform);
 
             restore_fonts.forEach(node => node.setAttribute('font-family', 'Courier New'));
+            restore_oblique.forEach(node => node.setAttribute('font-style', 'oblique'));
             restore_dominant.forEach(node => {
                node.setAttribute('dominant-baseline', 'middle');
                node.removeAttribute('dy');
@@ -10961,7 +10975,8 @@ async function svgToPDF(args, as_buffer) {
                internals.nodejs_document.createElementNS = internals.nodejs_document.oldFunc;
                if (as_buffer) return Buffer.from(res);
             }
-             return res;
+
+            return res;
          });
    });
 }
@@ -60195,7 +60210,7 @@ async function loadOpenui5(args) {
    }
 
    const openui5_sources = [];
-   let openui5_dflt = 'https://openui5.hana.ondemand.com/1.128.0/',
+   let openui5_dflt = 'https://openui5.hana.ondemand.com/' + (browser.qt5 ? '1.108.35/' : '1.128.0/'),
        openui5_root = rootui5sys ? rootui5sys + 'distribution/' : '';
 
    if (isStr(args.openui5src)) {
@@ -60209,7 +60224,7 @@ async function loadOpenui5(args) {
    } else if (args.ui5dbg)
       openui5_root = ''; // exclude ROOT version in debug mode
 
-   if (openui5_root && (openui5_sources.indexOf(openui5_root) < 0))
+   if (openui5_root && (openui5_sources.indexOf(openui5_root) < 0) && !browser.qt5)
       openui5_sources.push(openui5_root);
    if (openui5_dflt && (openui5_sources.indexOf(openui5_dflt) < 0))
       openui5_sources.push(openui5_dflt);
