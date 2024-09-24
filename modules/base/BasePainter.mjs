@@ -843,9 +843,11 @@ async function svgToPDF(args, as_buffer) {
       if (need_symbols && !custom_fonts.symbol) {
          if (!getCustomFont('symbol')) {
             pr2 = nodejs ? import('fs').then(fs => {
-               let path = source_dir + 'fonts/symbol.ttf';
-               if (path.indexOf('file://') === 0)
-                  path = path.slice(7);
+               let path = 'fonts/symbol.ttf';
+               if (source_dir.indexOf('file://') === 0)
+                  path = source_dir.slice(7) + path;
+               else
+                  path = '../../' + path;
                const base64 = fs.readFileSync(path).toString('base64');
                addCustomFont(25, 'symbol', 'ttf', base64);
             }) : httpRequest(source_dir + 'fonts/symbol.ttf', 'bin').then(buf => {
