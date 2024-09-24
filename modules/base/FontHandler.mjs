@@ -233,8 +233,9 @@ async function loadFontFile(fname) {
          throw new Error(`Fail to load ${fname} font`);
       let path = locations.shift() + fname;
       const pr = isNodeJs() ? import('fs').then(fs => {
-         if (path.indexOf('file://') === 0)
-            path = path.slice(7);
+         const prefix = 'file://' + (process?.platform === 'win32' ? '/' : '');
+         if (path.indexOf(prefix) === 0)
+            path = path.slice(prefix.length);
          return fs.readFileSync(path).toString('base64');
       }) : httpRequest(path, 'bin').then(buf => btoa_func(buf));
 
