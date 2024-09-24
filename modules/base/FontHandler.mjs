@@ -52,6 +52,14 @@ class FontHandler {
          this.setNameStyleWeight(kArial);
    }
 
+   /** @summary Should returns true if font has to be loaded before
+    * @private */
+   needLoad() { return false; }
+
+   /** @summary Async function to load font
+    * @private */
+   async load() { return true; }
+
    /** @summary Directly set name, style and weight for the font
     * @private */
    setNameStyleWeight(name, style, weight, aver_width, format, base64) {
