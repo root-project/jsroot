@@ -761,7 +761,7 @@ async function svgToPDF(args, as_buffer) {
    const nodejs = isNodeJs();
    let jspdf, need_symbols = false;
 
-   const restore_fonts = [], restore_dominant = [], restore_text = [],
+   const restore_fonts = [], restore_dominant = [], restore_arial = [], restore_text = [],
          node_transform = args.node.getAttribute('transform'), custom_fonts = {};
 
    if (args.reset_tranform)
@@ -774,6 +774,9 @@ async function svgToPDF(args, as_buffer) {
             if (name === 'Courier New') {
                this.setAttribute('font-family', 'courier');
                if (!args.can_modify) restore_fonts.push(this); // keep to restore it
+            } else if ((name === 'Arial') && (this.getAttribute('font-weight') === 'bold') && (this.getAttribute('font-style') === 'oblique')) {
+               this.setAttribute('font-style', 'italic');
+               if (!args.can_modify) restore_arial.push(this); // keep to restore it
             }
          }
       });
@@ -864,6 +867,7 @@ async function svgToPDF(args, as_buffer) {
                args.node.setAttribute('transform', node_transform);
 
             restore_fonts.forEach(node => node.setAttribute('font-family', 'Courier New'));
+            restore_arial.forEach(node => node.setAttribute('font-style', 'oblique'));
             restore_dominant.forEach(node => {
                node.setAttribute('dominant-baseline', 'middle');
                node.removeAttribute('dy');
