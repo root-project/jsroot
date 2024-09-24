@@ -238,7 +238,7 @@ async function loadFontFile(fname) {
          return fs.readFileSync(path).toString('base64');
       }) : httpRequest(path, 'bin').then(buf => btoa_func(buf));
 
-      return pr.catch(() => tryNext());
+      return pr.catch(() => { console.log('fail loading', path); return tryNext(); });
    }
 
    return tryNext();
