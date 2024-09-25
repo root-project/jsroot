@@ -360,7 +360,7 @@
      { "name": "feynman", "file": "tutorials_graphics.root", "item": "feynman",  "title": "Usage of TCulyLine/Arc, tutorials/graphics/feynman.C" },
      { "name": "pie", "file": "tutorials_graphics.root", "item": "piechart",  "title": "TPie, tutorials/graphics/piechart.C" },
      { "name": "fill", "file": "fillpatterns.root", "item": "patterns",  "title": "Different fill patterns" },
-     { "name": "mass_spectrum", "file": "mass_spectrum.root", "item": "C",  "title": "Output of graphics/mass_spectrum.C tutorial", "interactive": true },
+     { "name": "mass_spectrum", "file": "mass_spectrum.root", "item": "C",  "title": "Output of graphics/mass_spectrum.C tutorial", "interactive": true, "pdf": true },
      { "name": "legend", "url": "nobrowser&file=$$$graph_twopad.root&item=[c1/pad1/[0],c1/pad2/[0],$legend]&opt=[alp,ly+;yaxis_red]", "title": "Display legend for the drawn objects" },
      { "name": "scatter", "file": "scatter.root", "item": "c2",  "title": "Canvas with new TScatter class, tutorials/graphs/scatter.C" },
      { "name": "ann3d", "file": "tutorials_graphs.root", "item": "annotation3d_new",  "title": "Usage of new TAnnotation class, tutorials/graphs/annotation3d.C" }
