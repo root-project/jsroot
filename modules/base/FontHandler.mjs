@@ -15,10 +15,10 @@ root_fonts = [null,  // index 0 not exists
       { n: kCourier, s: 'oblique', aw: 0.6004 },
       { n: kCourier, w: 'bold', aw: 0.6003 },
       { n: kCourier, s: 'oblique', w: 'bold', aw: 0.6005 },
-      { n: kSymbol, aw: 0.5521 },
+      { n: kSymbol, aw: 0.5521, file: 'symbol.ttf' },
       { n: kTimes, aw: 0.5521 },
       { n: kWingdings, aw: 0.5664, file: 'wingding.ttf' },
-      { n: kSymbol, s: 'italic', aw: 0.5314 },
+      { n: kSymbol, s: 'italic', aw: 0.5314, file: 'symbol.ttf' },
       { n: kVerdana, aw: 0.5664 },
       { n: kVerdana, s: 'italic', aw: 0.5495 },
       { n: kVerdana, w: 'bold', aw: 0.5748 },
@@ -128,10 +128,10 @@ class FontHandler {
       this.aver_width = aver_width || (weight ? 0.58 : 0.55);
       this.format = format; // format of custom font, ttf by default
       this.base64 = base64; // indication of custom font
-      if (this.name === kSymbol) {
-         this.isSymbol = this.name;
-         this.name = kTimes;
-      } else
+      //if (this.name === kSymbol) {
+      //   this.isSymbol = this.name;
+      //   this.name = kTimes;
+      //} else
          this.isSymbol = '';
    }
 
