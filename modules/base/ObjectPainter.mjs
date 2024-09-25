@@ -1299,12 +1299,12 @@ class ObjectPainter extends BasePainter {
 
          arg.simple_latex = arg.latex && (settings.Latex === cl.Symbols);
 
-         if (!arg.plain || arg.simple_latex || (arg.font && arg.font.isSymbol)) {
+         if (!arg.plain || arg.simple_latex) {
             if (arg.simple_latex || isPlainText(arg.text) || arg.plain) {
                arg.simple_latex = true;
                producePlainText(this, arg.txt_node, arg);
             } else {
-               arg.txt_node.remove(); // just remove text node,
+               arg.txt_node.remove(); // just remove text node
                delete arg.txt_node;
                arg.txt_g = arg.draw_g.append('svg:g');
                produceLatex(this, arg.txt_g, arg);

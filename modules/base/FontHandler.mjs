@@ -131,11 +131,6 @@ class FontHandler {
       this.aver_width = aver_width || (weight ? 0.58 : 0.55);
       this.format = format; // format of custom font, ttf by default
       this.base64 = base64; // indication of custom font
-      //if (this.name === kSymbol) {
-      //   this.isSymbol = this.name;
-      //   this.name = kTimes;
-      //} else
-         this.isSymbol = '';
    }
 
    /** @summary Set painter for which font will be applied */
@@ -172,8 +167,13 @@ class FontHandler {
 
       selection.attr('font-family', this.name)
                .attr('font-size', this.size)
-               .attr(':xml:space', 'preserve')
-               .attr('font-weight', this.weight || (this.full_style ? 'normal' : null))
+               .attr(':xml:space', 'preserve');
+      this.setFontStyle(selection);
+   }
+
+   /** @summary Assigns only font style attributes */
+   setFontStyle(selection) {
+      selection.attr('font-weight', this.weight || (this.full_style ? 'normal' : null))
                .attr('font-style', this.style || (this.full_style ? 'normal' : null));
    }
 
@@ -227,7 +227,7 @@ class FontHandler {
 
    /** @summary Returns font name */
    getFontName() {
-      return this.isSymbol || this.name || 'none';
+      return this.name || 'none';
    }
 
 } // class FontHandler

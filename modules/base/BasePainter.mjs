@@ -833,13 +833,12 @@ async function svgToPDF(args, as_buffer) {
          const fcfg = this.$fontcfg;
          if (!fcfg?.n || !fcfg?.base64) return;
          let name = fcfg.n;
-         if (fcfg.s === 'italic') name += ' Italic';
          if (custom_fonts[name]) return;
          custom_fonts[name] = true;
 
          const filename = name.toLowerCase().replace(/\s/g, '') + '.ttf';
          doc.addFileToVFS(filename, fcfg.base64);
-         doc.addFont(filename, fcfg.n, 'normal', 'normal', (fcfg.n === kSymbol) ? 'StandardEncoding' : 'Identity-H');
+         doc.addFont(filename, fcfg.n, 'normal');
       });
 
       let pr2 = Promise.resolve(true);
@@ -849,7 +848,7 @@ async function svgToPDF(args, as_buffer) {
          pr2 = handler.load().then(() => {
             handler.addCustomFontToSvg(d3_select(args.node));
             doc.addFileToVFS(kSymbol + '.ttf', handler.base64);
-            doc.addFont(kSymbol + '.ttf', kSymbol, 'normal', 'normal', 'StandardEncoding' /* 'WinAnsiEncoding' */);
+            doc.addFont(kSymbol + '.ttf', kSymbol, 'normal');
          });
       }
 

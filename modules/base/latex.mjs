@@ -353,7 +353,9 @@ function replaceSymbolsInTextNode(node) {
    return true;
 }
 
-function replaceSymbols(s, kind) {
+/** @summary Replace codes from symbols.ttf into normal font - when symbols.ttf cannot be used
+  * @private */
+function replaceSymbolTtfSymbols(s) {
    const m = symbolsMap;
    let res = '';
    for (let k = 0; k < s.length; ++k) {
@@ -370,10 +372,7 @@ function producePlainText(painter, txt_node, arg) {
    arg.plain = true;
    if (arg.simple_latex)
       arg.text = translateLaTeX(arg.text); // replace latex symbols
-   if (arg.font && arg.font.isSymbol)
-      txt_node.text(replaceSymbols(arg.text, arg.font.isSymbol));
-   else
-      txt_node.text(arg.text);
+   txt_node.text(arg.text);
 }
 
 /** @summary Check if plain text
@@ -541,7 +540,10 @@ function parseLatex(node, arg, label, curr) {
             // apply font attributes only once, inherited by all other elements
             if (curr.ufont) {
                curr.font.setPainter(arg.painter);
-               curr.font.setFont(curr.g);
+               if (curr.font.asSymbol)
+                  curr.font.setFontStyle(curr.g);
+               else
+                  curr.font.setFont(curr.g);
             }
 
             if (curr.bold !== undefined)
@@ -557,8 +559,8 @@ function parseLatex(node, arg, label, curr) {
             if (curr.fisze !== curr.font.size)
                elem.attr('font-size', Math.round(curr.fsize));
 
-            if (curr.font?.isSymbol)
-               elem.text(replaceSymbols(s, curr.font.isSymbol));
+            if (curr.font?.asSymbol)
+               elem.text(replaceSymbolTtfSymbols(s));
             else
                elem.text(s);
 
@@ -901,6 +903,7 @@ function parseLatex(node, arg, label, curr) {
             subpos.color = curr.painter.getColor(foundarg);
          else if (found.name === '#font[') {
             subpos.font = new FontHandler(foundarg);
+            subpos.font.asSymbol = (subpos.font.name === kSymbol);
             subpos.font.setUseFullStyle(true); // while embedding - need to enforce full style
             subpos.ufont = true; // mark that custom font is applied
          } else
