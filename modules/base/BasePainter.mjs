@@ -1,6 +1,6 @@
 import { select as d3_select } from '../d3.mjs';
 import { settings, internals, isNodeJs, isFunc, isStr, isObject, btoa_func, getDocument } from '../core.mjs';
-import { detectFont, addCustomFont, getCustomFont, loadFontFile, FontHandler } from './FontHandler.mjs';
+import { detectFont, kSymbol, FontHandler } from './FontHandler.mjs';
 import { approximateLabelWidth, replaceSymbolsInTextNode } from './latex.mjs';
 import { getColor } from './colors.mjs';
 
@@ -830,28 +830,26 @@ async function svgToPDF(args, as_buffer) {
 
       // add custom fonts to PDF document, only TTF format supported
       d3_select(args.node).selectAll('style').each(function() {
-         const fh = this.$fonthandler;
-         if (!fh || custom_fonts[fh.name] || (fh.format !== 'ttf')) return;
-         const filename = fh.name.toLowerCase().replace(/\s/g, '') + '.ttf';
-         doc.addFileToVFS(filename, fh.base64);
-         doc.addFont(filename, fh.name, 'normal', 'normal', (fh.name === 'symbol') ? 'StandardEncoding' : 'Identity-H');
-         custom_fonts[fh.name] = true;
+         const fcfg = this.$fontcfg;
+         if (!fcfg?.n || !fcfg?.base64) return;
+         let name = fcfg.n;
+         if (fcfg.s === 'italic') name += ' Italic';
+         if (custom_fonts[name]) return;
+         custom_fonts[name] = true;
+
+         const filename = name.toLowerCase().replace(/\s/g, '') + '.ttf';
+         doc.addFileToVFS(filename, fcfg.base64);
+         doc.addFont(filename, fcfg.n, 'normal', 'normal', (fcfg.n === kSymbol) ? 'StandardEncoding' : 'Identity-H');
       });
 
       let pr2 = Promise.resolve(true);
 
-      if (need_symbols && !custom_fonts.symbol) {
-         if (!getCustomFont('symbol'))
-            pr2 = loadFontFile('symbol.ttf').then(base64 => addCustomFont(25, 'symbol', 'ttf', base64));
-
-         pr2 = pr2.then(() => {
-            const fh = getCustomFont('symbol'),
-                  handler = new FontHandler(1242, 10);
-            handler.name = 'symbol';
-            handler.base64 = fh.base64;
+      if (need_symbols && !custom_fonts[kSymbol]) {
+         const handler = new FontHandler(122, 10);
+         pr2 = handler.load().then(() => {
             handler.addCustomFontToSvg(d3_select(args.node));
-            doc.addFileToVFS('symbol.ttf', fh.base64);
-            doc.addFont('symbol.ttf', 'symbol', 'normal', 'normal', 'StandardEncoding' /* 'WinAnsiEncoding' */);
+            doc.addFileToVFS(kSymbol + '.ttf', handler.base64);
+            doc.addFont(kSymbol + '.ttf', kSymbol, 'normal', 'normal', 'StandardEncoding' /* 'WinAnsiEncoding' */);
          });
       }
 

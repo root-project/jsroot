@@ -1,6 +1,6 @@
 import { loadScript, settings, isNodeJs, isStr, source_dir, browser } from '../core.mjs';
 import { getElementRect, _loadJSDOM, makeTranslate } from './BasePainter.mjs';
-import { FontHandler } from './FontHandler.mjs';
+import { FontHandler, kSymbol } from './FontHandler.mjs';
 
 
 const symbols_map = {
@@ -337,7 +337,7 @@ function replaceSymbolsInTextNode(node) {
       const code = txt.charCodeAt(i),
             newcode = remapSymbolTtfCode(code);
       if (code !== newcode) {
-         new_html += txt.slice(lasti+1, i) + '<tspan font-family="symbol" font-style="normal" font-weight="normal">'+String.fromCharCode(newcode)+'</tspan>';
+         new_html += txt.slice(lasti+1, i) + `<tspan font-family="${kSymbol}" font-style="normal" font-weight="normal">${String.fromCharCode(newcode)}</tspan>`;
          lasti = i;
       }
    }

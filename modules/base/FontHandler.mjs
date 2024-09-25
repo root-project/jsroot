@@ -1,4 +1,4 @@
-import { isNodeJs, httpRequest, btoa_func, source_dir } from '../core.mjs';
+import { isNodeJs, httpRequest, btoa_func, source_dir, isStr } from '../core.mjs';
 
 
 const kArial = 'Arial', kTimes = 'Times New Roman', kCourier = 'Courier New', kVerdana = 'Verdana', kSymbol = 'Symbol', kWingdings = 'Wingdings',
@@ -50,7 +50,10 @@ async function loadFontFile(fname) {
    return tryNext();
 }
 
-async function loadCfg(cfg) {
+async function loadRootFont(cfg) {
+   if (isStr(cfg))
+      cfg = root_fonts.find(elem => { return elem?.n === cfg; });
+
    if (!cfg)
       return '';
 
@@ -112,7 +115,7 @@ class FontHandler {
    /** @summary Async function to load font
     * @private */
    async load() {
-      return loadCfg(this.cfg).then(base64 => {
+      return loadRootFont(this.cfg).then(base64 => {
          this.base64 = base64;
          this.format = 'ttf';
          return !!base64;
@@ -157,7 +160,7 @@ class FontHandler {
       if (entry.empty()) {
          defs.append('style')
                .attr('class', clname)
-               .property('$fonthandler', this)
+               .property('$fontcfg', this.cfg || null)
                .text(`@font-face { font-family: "${this.name}"; font-weight: normal; font-style: normal; src: url(data:application/font-${fmt};charset=utf-8;base64,${this.base64}); }`);
       }
    }
@@ -286,4 +289,4 @@ function detectFont(node) {
 }
 
 
-export { FontHandler, addCustomFont, getCustomFont, detectFont, loadFontFile };
+export { FontHandler, addCustomFont, getCustomFont, detectFont, loadFontFile, loadRootFont, kSymbol };

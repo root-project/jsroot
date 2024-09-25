@@ -953,7 +953,7 @@ function drawRFont() {
                is_ttf = font.fSrc.indexOf('data:application/font-ttf') > 0;
          // TODO: for the moment only ttf format supported by jsPDF
          if (is_ttf)
-            entry.property('$fonthandler', { name: font.fFamily, format: 'ttf', base64 });
+            entry.property('$fontcfg', { n: font.fFamily, base64 });
       }
    }
 
