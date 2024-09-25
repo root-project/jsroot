@@ -320,7 +320,7 @@ function remapSymbolTtfCode(code) {
       }
       for (let k = 0; k < symbolsMap.length; ++k ) {
          const code = symbolsMap[k];
-         if (code && !symbolsPdfMap[code])
+         if (code)
             symbolsPdfMap[code] = k + 33;
       }
    }
