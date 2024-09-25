@@ -136,7 +136,7 @@ function createLatexGeometry(painter, lbl, size) {
          }
       }
 
-}
+   } // class TextParseWrapper
 
    const node = new TextParseWrapper(),
          arg = { font_size, latex: 1, x: 0, y: 0, text: lbl, align: ['start', 'top'], fast: true, font: { size: font_size, isMonospace: () => false, aver_width: 0.9 } };
