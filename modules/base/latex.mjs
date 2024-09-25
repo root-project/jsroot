@@ -318,6 +318,11 @@ function remapSymbolTtfCode(code) {
          }
          if (++cnt > 54 + 82) break;
       }
+      for (let k = 0; k < symbolsMap.length; ++k ) {
+         const code = symbolsMap[k];
+         if (code && !symbolsPdfMap[code])
+            symbolsPdfMap[code] = k + 33;
+      }
    }
    return symbolsPdfMap[code] ?? code;
 }
