@@ -1,4 +1,4 @@
-import { isNodeJs, httpRequest, btoa_func, source_dir, isStr } from '../core.mjs';
+import { isNodeJs, httpRequest, btoa_func, source_dir, isStr, isObject } from '../core.mjs';
 
 
 const kArial = 'Arial', kTimes = 'Times New Roman', kCourier = 'Courier New', kVerdana = 'Verdana', kSymbol = 'Symbol', kWingdings = 'Wingdings',
@@ -18,7 +18,7 @@ root_fonts = [null,  // index 0 not exists
       { n: kSymbol, aw: 0.5521, file: 'symbol.ttf' },
       { n: kTimes, aw: 0.5521 },
       { n: kWingdings, aw: 0.5664, file: 'wingding.ttf' },
-      { n: kSymbol, s: 'italic', aw: 0.5314, file: 'symbol.ttf' },
+      { n: kSymbol, s: 'oblique', aw: 0.5314, file: 'symbol.ttf' },
       { n: kVerdana, aw: 0.5664 },
       { n: kVerdana, s: 'italic', aw: 0.5495 },
       { n: kVerdana, w: 'bold', aw: 0.5748 },
@@ -98,8 +98,14 @@ class FontHandler {
 
       this.func = this.setFont.bind(this);
 
-      const indx = (fontIndex && Number.isInteger(fontIndex)) ? Math.floor(fontIndex / 10) : 0,
-            cfg = root_fonts[indx];
+      let cfg = null;
+
+      if (fontIndex && isObject(fontIndex)) {
+         cfg = fontIndex;
+      } else {
+         const indx = (fontIndex && Number.isInteger(fontIndex)) ? Math.floor(fontIndex / 10) : 0;
+         cfg = root_fonts[indx];
+      }
 
       if (cfg) {
          this.cfg = cfg;
@@ -251,40 +257,33 @@ function getCustomFont(name) {
   * @private */
 function detectFont(node) {
    const sz = node.getAttribute('font-size'),
-         family = node.getAttribute('font-family'),
          p = sz.indexOf('px'),
          sz_pixels = p > 0 ? Number.parseInt(sz.slice(0, p)) : 12;
-   let style = node.getAttribute('font-style'),
-       weight = node.getAttribute('font-weight'),
-      fontIndx = null, name = '';
+
+   let  family = node.getAttribute('font-family'),
+        style = node.getAttribute('font-style'),
+        weight = node.getAttribute('font-weight');
+
+   if (family === 'times')
+      family = kTimes;
+   else if (family === 'symbol')
+      family = kSymbol;
+   else if (family === 'arial')
+      family = kArial;
+   else if (family === 'verdana')
+      family = kVerdana;
    if (weight === 'normal')
       weight = '';
-   else if (weight === 'bold')
-      name += 'b';
    if (style === 'normal')
       style = '';
-   else if (style === 'italic')
-      name += 'i';
-   else if (style === 'oblique')
-      name += 'o';
 
-   if (family === 'arial')
-      name += 'Arial';
-   else if (family === 'times')
-      name += 'Times New Roman';
-   else if (family === 'verdana')
-      name += 'Verdana';
+   const fcfg = root_fonts.find(elem => {
+      return (elem?.n === family) &&
+             ((!weight && !elem.w) || (elem.w === weight)) &&
+             ((!style && !elem.s) || (elem.s === style));
+   });
 
-   for (let n = 1; n < root_fonts.length; ++n) {
-      if (name === root_fonts[n]) {
-         fontIndx = n*10 + 2;
-         break;
-      }
-   }
-
-   const handler = new FontHandler(fontIndx, sz_pixels);
-   if (!fontIndx)
-      handler.setNameStyleWeight(family, style, weight);
+   const handler = new FontHandler(fcfg || root_fonts[13], sz_pixels);
    return handler;
 }
 

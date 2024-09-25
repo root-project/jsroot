@@ -813,7 +813,7 @@ async function svgToPDF(args, as_buffer) {
                   // TODO: use jsDOC fonts for label width estimation
                   const font = detectFont(this);
                   width = approximateLabelWidth(this.textContent, font);
-                  height = font.size;
+                  height = font.size * 1.2;
                }
 
                return { x: 0, y: 0, width, height };
@@ -838,7 +838,7 @@ async function svgToPDF(args, as_buffer) {
 
          const filename = name.toLowerCase().replace(/\s/g, '') + '.ttf';
          doc.addFileToVFS(filename, fcfg.base64);
-         doc.addFont(filename, fcfg.n, 'normal');
+         doc.addFont(filename, fcfg.n, fcfg.s || 'normal');
       });
 
       let pr2 = Promise.resolve(true);
