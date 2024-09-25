@@ -1,6 +1,6 @@
 import { select as d3_select } from '../d3.mjs';
 import { settings, internals, isNodeJs, isFunc, isStr, isObject, btoa_func, getDocument } from '../core.mjs';
-import { detectFont, kSymbol, FontHandler } from './FontHandler.mjs';
+import { detectFont, kSymbol, kWingdings } from './FontHandler.mjs';
 import { approximateLabelWidth, replaceSymbolsInTextNode } from './latex.mjs';
 import { getColor } from './colors.mjs';
 
@@ -761,7 +761,7 @@ async function svgToPDF(args, as_buffer) {
    const nodejs = isNodeJs();
    let jspdf, need_symbols = false;
 
-   const restore_fonts = [], restore_dominant = [], restore_oblique = [], restore_text = [],
+   const restore_fonts = [], restore_symb = [], restore_wing = [], restore_dominant = [], restore_oblique = [], restore_text = [],
          node_transform = args.node.getAttribute('transform'), custom_fonts = {};
 
    if (args.reset_tranform)
@@ -775,6 +775,15 @@ async function svgToPDF(args, as_buffer) {
                this.setAttribute('font-family', 'courier');
                if (!args.can_modify) restore_fonts.push(this); // keep to restore it
             }
+            if (name === kSymbol) {
+               this.setAttribute('font-family', 'symbol');
+               if (!args.can_modify) restore_symb.push(this); // keep to restore it
+            }
+            if (name === kWingdings) {
+               this.setAttribute('font-family', 'zapfdingbats');
+               if (!args.can_modify) restore_wing.push(this); // keep to restore it
+            }
+
             if (((name === 'Arial') || (name === 'Courier New')) && (this.getAttribute('font-weight') === 'bold') && (this.getAttribute('font-style') === 'oblique')) {
                this.setAttribute('font-style', 'italic');
                if (!args.can_modify) restore_oblique.push(this); // keep to restore it
@@ -833,6 +842,7 @@ async function svgToPDF(args, as_buffer) {
          const fcfg = this.$fontcfg;
          if (!fcfg?.n || !fcfg?.base64) return;
          let name = fcfg.n;
+         if ((name === kSymbol) || (name === kWingdings)) return;
          if (custom_fonts[name]) return;
          custom_fonts[name] = true;
 
@@ -843,6 +853,7 @@ async function svgToPDF(args, as_buffer) {
 
       let pr2 = Promise.resolve(true);
 
+      /*
       if (need_symbols && !custom_fonts[kSymbol]) {
          const handler = new FontHandler(122, 10);
          pr2 = handler.load().then(() => {
@@ -851,6 +862,7 @@ async function svgToPDF(args, as_buffer) {
             doc.addFont(kSymbol + '.ttf', kSymbol, 'normal');
          });
       }
+      */
 
       return pr2.then(() => svg2pdf.svg2pdf(args.node, doc, { x: 5, y: 5, width: args.width, height: args.height }))
          .then(() => {
@@ -858,6 +870,8 @@ async function svgToPDF(args, as_buffer) {
                args.node.setAttribute('transform', node_transform);
 
             restore_fonts.forEach(node => node.setAttribute('font-family', 'Courier New'));
+            restore_symb.forEach(node => node.setAttribute('font-family', kSymbol));
+            restore_wing.forEach(node => node.setAttribute('font-family', kWingdings));
             restore_oblique.forEach(node => node.setAttribute('font-style', 'oblique'));
             restore_dominant.forEach(node => {
                node.setAttribute('dominant-baseline', 'middle');

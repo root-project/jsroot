@@ -1,7 +1,7 @@
 import { isNodeJs, httpRequest, btoa_func, source_dir, isStr, isObject } from '../core.mjs';
 
 
-const kArial = 'Arial', kTimes = 'Times New Roman', kCourier = 'Courier New', kVerdana = 'Verdana', kSymbol = 'Symbol', kWingdings = 'Wingdings',
+const kArial = 'Arial', kTimes = 'Times New Roman', kCourier = 'Courier New', kVerdana = 'Verdana', kSymbol = 'RootSymbol', kWingdings = 'Wingdings',
 // average width taken from symbols.html, counted only for letters and digits
 root_fonts = [null,  // index 0 not exists
       { n: kTimes, s: 'italic', aw: 0.5314 },
@@ -288,4 +288,4 @@ function detectFont(node) {
 }
 
 
-export { FontHandler, addCustomFont, getCustomFont, detectFont, loadFontFile, loadRootFont, kSymbol };
+export { FontHandler, addCustomFont, getCustomFont, detectFont, loadFontFile, loadRootFont, kSymbol, kWingdings };
