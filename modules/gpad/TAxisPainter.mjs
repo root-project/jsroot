@@ -1155,7 +1155,7 @@ class TAxisPainter extends ObjectPainter {
                this.scaleTextDrawing(applied_scale, label_g[lcnt]);
 
             return this.finishTextDrawing(label_g[lcnt], true);
-         })
+         });
       }
 
       return pr.then(() => {

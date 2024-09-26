@@ -1702,7 +1702,6 @@ class TH2Painter extends THistPainter {
                text_size = ((histo.fMarkerSize !== 1) && rotate) ? Math.round(0.02*h*histo.fMarkerSize) : 12;
 
          pr = this.startTextDrawingAsync(42, text_size, text_g, text_size).then(() => {
-
             for (i = 0; i < textbins.length; ++i) {
                const textbin = textbins[i];
 
@@ -2659,7 +2658,6 @@ class TH2Painter extends THistPainter {
       const nbins = Math.min(this.nbinsx, this.nbinsy);
 
       return this.startTextDrawingAsync(42, text_size, this.draw_g).then(() => {
-
          const pnts = [];
 
          for (let n = 0; n < nbins; n++) {

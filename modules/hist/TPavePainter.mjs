@@ -398,7 +398,6 @@ class TPavePainter extends ObjectPainter {
       this.createAttText({ attr: pt, can_rotate: false });
 
       return this.startTextDrawingAsync(this.textatt.font, height/(nlines * 1.2)).then(() => {
-
          if (nlines === 1)
             this.drawText(this.textatt.createArg({ width, height, text: lines[0], latex: 1, norotate: true }));
          else {
@@ -498,7 +497,6 @@ class TPavePainter extends ObjectPainter {
       const pr = (num_txt > num_custom) ? this.startTextDrawingAsync(this.textatt.font, 0.85*height/nlines, text_g, max_font_size) : Promise.resolve();
 
       return pr.then(() => {
-
          for (let nline = 0; nline < nlines; ++nline) {
             const entry = arr[nline], texty = nline*stepy;
 
@@ -804,9 +802,8 @@ class TPavePainter extends ObjectPainter {
                   text_promises.push(this.startTextDrawingAsync(textatt.font, textatt.getSize(pp.getPadHeight()), arg.draw_g, max_font_size)
                                        .then(() => this.drawText(arg))
                                        .then(() => this.finishTextDrawing(arg.draw_g)));
-               } else {
+               } else
                   this.drawText(arg);
-               }
             }
          }
 

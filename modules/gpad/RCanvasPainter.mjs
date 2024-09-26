@@ -762,7 +762,7 @@ function drawRFrameTitle(reason, drag) {
       return this.finishTextDrawing();
    }).then(() => {
       addDragHandler(this, { x: fx, y: Math.round(fy-title_margin-title_height), width: title_width, height: title_height,
-                             minwidth: 20, minheight: 20, no_change_x: true, redraw: d => this.redraw('drag', d) })
+                             minwidth: 20, minheight: 20, no_change_x: true, redraw: d => this.redraw('drag', d) });
    });
 }
 

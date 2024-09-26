@@ -399,7 +399,6 @@ class RH1Painter extends RHistPainter {
       }
 
       return pr.then(() => {
-
          // if there are too many points, exclude many vertical drawings at the same X position
          // instead define min and max value and made min-max drawing
          let use_minmax = ((right-left) > 3*width);

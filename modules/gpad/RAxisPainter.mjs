@@ -651,7 +651,6 @@ class RAxisPainter extends RObjectPainter {
       label_g.property('fix_offset', fix_offset);
 
       return this.startTextDrawingAsync(this.labelsFont, 'font', label_g).then(() => {
-
          for (let nmajor = 0; nmajor < lbl_pos.length; ++nmajor) {
             const lbl = this.format(lbl_pos[nmajor], true);
             if (lbl === null) continue;

@@ -227,7 +227,6 @@ class TGraphPolargramPainter extends ObjectPainter {
       }).then(() => {
          return this.startTextDrawingAsync(polar.fPolarLabelFont, fontsize);
       }).then(() => {
-
          lbls = (nmajor === 8) ? ['0', '#frac{#pi}{4}', '#frac{#pi}{2}', '#frac{3#pi}{4}', '#pi', '#frac{5#pi}{4}', '#frac{3#pi}{2}', '#frac{7#pi}{4}'] : ['0', '#frac{2#pi}{3}', '#frac{4#pi}{3}'];
          const aligns = [12, 11, 21, 31, 32, 33, 23, 13];
 

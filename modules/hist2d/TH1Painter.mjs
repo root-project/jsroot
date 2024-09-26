@@ -405,7 +405,7 @@ class TH1Painter extends THistPainter {
             xaxis = histo.fXaxis,
             show_text = this.options.Text;
       let text_col, text_angle, text_size,
-          side = (this.options.BarStyle > 10) ? this.options.BarStyle % 10 : 0 , pr = Promise.resolve();
+          side = (this.options.BarStyle > 10) ? this.options.BarStyle % 10 : 0, pr = Promise.resolve();
 
       if (side > 4) side = 4;
       const gry2 = this.getBarBaseline(funcs, height);
@@ -425,18 +425,18 @@ class TH1Painter extends THistPainter {
          let bars = '', barsl = '', barsr = '';
 
          for (let i = left; i < right; ++i) {
-            let x1 = xaxis.GetBinLowEdge(i + 1),
-                x2 = xaxis.GetBinLowEdge(i + 2);
+            const x1 = xaxis.GetBinLowEdge(i + 1),
+                  x2 = xaxis.GetBinLowEdge(i + 2);
 
             if (funcs.logx && (x2 <= 0)) continue;
 
             let grx1 = Math.round(funcs.grx(x1)),
-                grx2 = Math.round(funcs.grx(x2));
-
-            let y = histo.getBinContent(i+1);
-            if (funcs.logy && (y < funcs.scale_ymin)) continue;
-            let gry1 = Math.round(funcs.gry(y)),
+                grx2 = Math.round(funcs.grx(x2)),
                 w = grx2 - grx1;
+            const y = histo.getBinContent(i+1);
+
+            if (funcs.logy && (y < funcs.scale_ymin)) continue;
+            const gry1 = Math.round(funcs.gry(y));
 
             grx1 += Math.round(histo.fBarOffset/1000*w);
             w = Math.round(histo.fBarWidth/1000*w);

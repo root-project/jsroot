@@ -178,7 +178,6 @@ class RLegendPainter extends RPavePainter {
 
       textFont.setSize(height/(nlines * 1.2));
       return this.startTextDrawingAsync(textFont, 'font').then(() => {
-
          let posy = 0;
 
          if (legend.fTitle) {
@@ -417,7 +416,6 @@ class RHistStatsPainter extends RPavePainter {
 
       textFont.setSize(height/(nlines * 1.2));
       return this.startTextDrawingAsync(textFont, 'font', text_g).then(() => {
-
          if (nlines === 1)
             this.drawText({ width, height, text: lines[0], latex: 1, draw_g: text_g });
          else {

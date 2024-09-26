@@ -536,14 +536,13 @@ class RH2Painter extends RHistPainter {
             profile2d = false;
 
       return this.startTextDrawingAsync(textFont, 'font', text_g).then(() => {
-
          for (let i = handle.i1; i < handle.i2; i += di) {
             for (let j = handle.j1; j < handle.j2; j += dj) {
                let binz = histo.getBinContent(i+1, j+1);
                if ((binz === 0) && !this._show_empty_bins) continue;
 
-               let binw = handle.grx[i+di] - handle.grx[i],
-                   binh = handle.gry[j] - handle.gry[j+dj];
+               const binw = handle.grx[i+di] - handle.grx[i],
+                     binh = handle.gry[j] - handle.gry[j+dj];
 
                if (profile2d)
                   binz = histo.getBinEntries(i+1, j+1);
