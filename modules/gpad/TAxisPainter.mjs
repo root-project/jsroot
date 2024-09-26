@@ -1048,120 +1048,119 @@ class TAxisPainter extends ObjectPainter {
          }
       }
 
+      let pr = Promise.resolve();
+
       for (let lcnt = 0; lcnt < label_g.length; ++lcnt) {
          if (lcnt > 0) side = -side;
 
-         let lastpos = 0;
-         const fix_coord = this.vertical ? -labeloffset * side : labeloffset * side + ticksPlusMinus * tickSize;
+         pr = pr.then(() => this.startTextDrawingAsync(labelsFont, 'font', label_g[lcnt])).then(() => {
+            let lastpos = 0;
+            const fix_coord = this.vertical ? -labeloffset * side : labeloffset * side + ticksPlusMinus * tickSize;
 
-         this.startTextDrawing(labelsFont, 'font', label_g[lcnt]);
+            for (let nmajor = 0; nmajor < lbl_pos.length; ++nmajor) {
+               let text = this.format(lbl_pos[nmajor], true);
+               if (text === null) continue;
 
-         for (let nmajor = 0; nmajor < lbl_pos.length; ++nmajor) {
-            let text = this.format(lbl_pos[nmajor], true);
-            if (text === null) continue;
+               const mod = this.findLabelModifier(axis, nmajor, lbl_pos);
+               if (mod?.fTextSize === 0) continue;
 
-            const mod = this.findLabelModifier(axis, nmajor, lbl_pos);
-            if (mod?.fTextSize === 0) continue;
+               if (mod) any_modified = true;
+               if (mod?.fLabText) text = mod.fLabText;
 
-            if (mod) any_modified = true;
-            if (mod?.fLabText) text = mod.fLabText;
+               const arg = { text, color: labelsFont.color, latex: 1, draw_g: label_g[lcnt], normal_side: (lcnt === 0) };
+               let pos = Math.round(this.func(lbl_pos[nmajor]));
 
-            const arg = { text, color: labelsFont.color, latex: 1, draw_g: label_g[lcnt], normal_side: (lcnt === 0) };
-            let pos = Math.round(this.func(lbl_pos[nmajor]));
+               if (mod?.fTextColor > 0) arg.color = this.getColor(mod.fTextColor);
 
-            if (mod?.fTextColor > 0) arg.color = this.getColor(mod.fTextColor);
+               arg.gap_before = (nmajor > 0) ? Math.abs(Math.round(pos - this.func(lbl_pos[nmajor - 1]))) : 0;
 
-            arg.gap_before = (nmajor > 0) ? Math.abs(Math.round(pos - this.func(lbl_pos[nmajor - 1]))) : 0;
+               arg.gap_after = (nmajor < lbl_pos.length - 1) ? Math.abs(Math.round(this.func(lbl_pos[nmajor + 1]) - pos)) : 0;
 
-            arg.gap_after = (nmajor < lbl_pos.length - 1) ? Math.abs(Math.round(this.func(lbl_pos[nmajor + 1]) - pos)) : 0;
-
-            if (center_lbls) {
-               const gap = arg.gap_after || arg.gap_before;
-               pos = Math.round(pos - ((this.vertical !== this.reverse) ? 0.5 * gap : -0.5 * gap));
-               if ((pos < -5) || (pos > (this.vertical ? h : w) + 5)) continue;
-            }
-
-            maxtextlen = Math.max(maxtextlen, text.length);
-
-            if (this.vertical) {
-               arg.x = fix_coord;
-               arg.y = pos;
-               arg.align = rotate_lbls ? ((side < 0) ? 23 : 20) : ((side < 0) ? 12 : 32);
-
-               if (this.cutLabels()) {
-                  const gap = labelsFont.size * (rotate_lbls ? 1.5 : 0.6);
-                  if ((pos < gap) || (pos > h - gap)) continue;
+               if (center_lbls) {
+                  const gap = arg.gap_after || arg.gap_before;
+                  pos = Math.round(pos - ((this.vertical !== this.reverse) ? 0.5 * gap : -0.5 * gap));
+                  if ((pos < -5) || (pos > (this.vertical ? h : w) + 5)) continue;
                }
-            } else {
-               arg.x = pos;
-               arg.y = fix_coord;
-               arg.align = rotate_lbls ? ((side < 0) ? 12 : 32) : ((side < 0) ? 20 : 23);
-               if (this.log && !this.noexp && !this.vertical && arg.align === 23) {
-                  arg.align = 21;
-                  arg.y += labelsFont.size;
-               } else if (arg.align % 10 === 3)
-                  arg.y -= labelsFont.size*0.1; // font takes 10% more by top align
 
-               if (this.cutLabels()) {
-                  const gap = labelsFont.size * (rotate_lbls ? 0.4 : 1.5);
-                  if ((pos < gap) || (pos > w - gap)) continue;
+               maxtextlen = Math.max(maxtextlen, text.length);
+
+               if (this.vertical) {
+                  arg.x = fix_coord;
+                  arg.y = pos;
+                  arg.align = rotate_lbls ? ((side < 0) ? 23 : 20) : ((side < 0) ? 12 : 32);
+
+                  if (this.cutLabels()) {
+                     const gap = labelsFont.size * (rotate_lbls ? 1.5 : 0.6);
+                     if ((pos < gap) || (pos > h - gap)) continue;
+                  }
+               } else {
+                  arg.x = pos;
+                  arg.y = fix_coord;
+                  arg.align = rotate_lbls ? ((side < 0) ? 12 : 32) : ((side < 0) ? 20 : 23);
+                  if (this.log && !this.noexp && !this.vertical && arg.align === 23) {
+                     arg.align = 21;
+                     arg.y += labelsFont.size;
+                  } else if (arg.align % 10 === 3)
+                     arg.y -= labelsFont.size*0.1; // font takes 10% more by top align
+
+                  if (this.cutLabels()) {
+                     const gap = labelsFont.size * (rotate_lbls ? 0.4 : 1.5);
+                     if ((pos < gap) || (pos > w - gap)) continue;
+                  }
                }
+
+               if (rotate_lbls)
+                  arg.rotate = 270;
+               else if (mod && mod.fTextAngle !== -1)
+                  arg.rotate = -mod.fTextAngle;
+
+               // only for major text drawing scale factor need to be checked
+               if (lcnt === 0)
+                  arg.post_process = process_drawtext_ready;
+
+               this.drawText(arg);
+
+               // workaround for symlog where labels can be compressed to close
+               if (this.symlog && lastpos && (pos !== lastpos) && ((this.vertical && !rotate_lbls) || (!this.vertical && rotate_lbls))) {
+                  const axis_step = Math.abs(pos - lastpos);
+                  textscale = Math.min(textscale, 1.1*axis_step/labelsFont.size);
+               }
+
+               lastpos = pos;
             }
 
-            if (rotate_lbls)
-               arg.rotate = 270;
-            else if (mod && mod.fTextAngle !== -1)
-               arg.rotate = -mod.fTextAngle;
+            if (this.order) {
+               let xoff = 0, yoff = 0;
+               if (this.name === 'xaxis') {
+                  xoff = gStyle.fXAxisExpXOffset || 0;
+                  yoff = gStyle.fXAxisExpYOffset || 0;
+               } else if (this.name === 'yaxis') {
+                  xoff = gStyle.fYAxisExpXOffset || 0;
+                  yoff = gStyle.fYAxisExpYOffset || 0;
+               }
 
-            // only for major text drawing scale factor need to be checked
-            if (lcnt === 0)
-               arg.post_process = process_drawtext_ready;
+               if (xoff) xoff = Math.round(xoff * (this.getPadPainter()?.getPadWidth() ?? 0));
+               if (yoff) yoff = Math.round(yoff * (this.getPadPainter()?.getPadHeight() ?? 0));
 
-            this.drawText(arg);
-
-            // workaround for symlog where labels can be compressed to close
-            if (this.symlog && lastpos && (pos !== lastpos) && ((this.vertical && !rotate_lbls) || (!this.vertical && rotate_lbls))) {
-               const axis_step = Math.abs(pos - lastpos);
-               textscale = Math.min(textscale, 1.1*axis_step/labelsFont.size);
+               this.drawText({ color: labelsFont.color,
+                              x: xoff + (this.vertical ? side*5 : w+5),
+                              y: yoff + (this.has_obstacle ? fix_coord : (this.vertical ? -3 : -3*side)),
+                              align: this.vertical ? ((side < 0) ? 30 : 10) : ((this.has_obstacle ^ (side < 0)) ? 13 : 10),
+                              latex: 1,
+                              text: '#times' + this.formatExp(10, this.order),
+                              draw_g: label_g[lcnt] });
             }
 
-            lastpos = pos;
-         }
+            if ((lcnt > 1) && applied_scale)
+               this.scaleTextDrawing(applied_scale, label_g[lcnt]);
 
-         if (this.order) {
-            let xoff = 0, yoff = 0;
-            if (this.name === 'xaxis') {
-               xoff = gStyle.fXAxisExpXOffset || 0;
-               yoff = gStyle.fXAxisExpYOffset || 0;
-            } else if (this.name === 'yaxis') {
-               xoff = gStyle.fYAxisExpXOffset || 0;
-               yoff = gStyle.fYAxisExpYOffset || 0;
-            }
-
-            if (xoff) xoff = Math.round(xoff * (this.getPadPainter()?.getPadWidth() ?? 0));
-            if (yoff) yoff = Math.round(yoff * (this.getPadPainter()?.getPadHeight() ?? 0));
-
-            this.drawText({ color: labelsFont.color,
-                            x: xoff + (this.vertical ? side*5 : w+5),
-                            y: yoff + (this.has_obstacle ? fix_coord : (this.vertical ? -3 : -3*side)),
-                            align: this.vertical ? ((side < 0) ? 30 : 10) : ((this.has_obstacle ^ (side < 0)) ? 13 : 10),
-                            latex: 1,
-                            text: '#times' + this.formatExp(10, this.order),
-                            draw_g: label_g[lcnt] });
-         }
+            return this.finishTextDrawing(label_g[lcnt], true);
+         })
       }
 
-      this._maxlbllen = maxtextlen; // for internal use in palette painter
+      return pr.then(() => {
+         this._maxlbllen = maxtextlen; // for internal use in palette painter
 
-      // first complete major labels drawing
-      return this.finishTextDrawing(label_g[0], true).then(() => {
-         if (label_g.length > 1) {
-            // now complete drawing of second half with scaling if necessary
-            if (applied_scale)
-               this.scaleTextDrawing(applied_scale, label_g[1]);
-            return this.finishTextDrawing(label_g[1], true);
-         }
-      }).then(() => {
          if (lbl_tilt) {
             label_g[0].selectAll('text').each(function() {
                const txt = d3_select(this), tr = txt.attr('transform');
