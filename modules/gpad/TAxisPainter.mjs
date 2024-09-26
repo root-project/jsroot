@@ -1366,12 +1366,13 @@ class TAxisPainter extends ObjectPainter {
 
          title_g = axis_g.append('svg:g').attr('class', 'axis_title');
 
+         return this.startTextDrawingAsync(this.titleFont, 'font', title_g);
+      }).then(() => {
+
+         const rotate = axis.TestBit(EAxisBits.kRotateTitle) ? -1 : 1,
+               xor_reverse = swap_side ^ this.titleOpposite, myxor = (rotate < 0) ^ xor_reverse;
+
          let title_offest_k = side;
-         const rotate = axis.TestBit(EAxisBits.kRotateTitle) ? -1 : 1;
-
-         this.startTextDrawing(this.titleFont, 'font', title_g);
-
-         const xor_reverse = swap_side ^ this.titleOpposite, myxor = (rotate < 0) ^ xor_reverse;
 
          this.title_align = this.titleCenter ? 'middle' : (myxor ? 'begin' : 'end');
 
@@ -1412,5 +1413,6 @@ class TAxisPainter extends ObjectPainter {
    }
 
 } // class TAxisPainter
+
 
 export { EAxisBits, chooseTimeFormat, AxisPainterMethods, TAxisPainter };
