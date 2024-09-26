@@ -15,7 +15,8 @@ https://github.com/linev/svg2pdf.js/commits/jsroot/
 
     npm install
     npm run build
-    sed '$ d' ./dist/svg2pdf.es.min.js | sed 's/from"jspdf"/from".\/jspdf.mjs"/g' > ~/git/jsroot/modules/svg2pdf.mjs
+    sed '$ d' ./dist/svg2pdf.es.js | sed 's/from "jspdf"/from ".\/jspdf.mjs"/g' > ~/git/jsroot/modules/base/svg2pdf.mjs
+    sed '$ d' ./dist/svg2pdf.es.min.js | sed 's/from"jspdf"/from".\/jspdf.mjs"/g' > ~/git/jsroot/modules/libs/svg2pdf.mjs
 
-Last line remove reference on map and modifies import
+Command sed '$ d' removew reference on map and modifies import
 

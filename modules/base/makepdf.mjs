@@ -17,7 +17,7 @@ async function svgToPDF(args, as_buffer) {
    if (args.reset_tranform)
       args.node.removeAttribute('transform');
 
-   return import('../jspdf.mjs').then(h1 => { jspdf = h1; return import('../svg2pdf.mjs'); }).then(svg2pdf => {
+   return import('./jspdf.mjs').then(h1 => { jspdf = h1; return import('./svg2pdf.mjs'); }).then(svg2pdf => {
       d3_select(args.node).selectAll('g').each(function() {
          if (this.hasAttribute('font-family')) {
             const name = this.getAttribute('font-family');

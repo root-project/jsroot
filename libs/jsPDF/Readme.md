@@ -19,7 +19,8 @@ https://github.com/linev/jsPDF/commits/jsroot/
 
     npm install
     npm run build
-    sed '$ d' ./dist/jspdf.es.min.js > ~/git/jsroot/modules/jspdf.mjs
+    sed '$ d' ./dist/jspdf.es.min.js > ~/git/jsroot/libs/jspdf.mjs
+    sed '$ d' ./dist/jspdf.es.js > ~/git/jsroot/modules/base/jspdf.mjs
 
-Last line remove reference on map
+Command `sed '$ d'` removes last line in the script which referencing map
 
