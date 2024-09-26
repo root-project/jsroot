@@ -4,7 +4,7 @@ import { selectgStyle, saveSettings, readSettings, saveStyle, getColorExec, chan
 import { getColor } from '../base/colors.mjs';
 import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
 import { getSvgLineStyle } from '../base/TAttLineHandler.mjs';
-import { FontHandler } from '../base/FontHandler.mjs';
+import { FontHandler, kArial } from '../base/FontHandler.mjs';
 import { kAxisLabels } from '../base/ObjectPainter.mjs';
 import { setDefaultDrawOpt } from '../draw.mjs';
 
@@ -438,7 +438,7 @@ class JSRootMenu {
       else
          this.addSizeMenu('size', 6, 20, 2, fontHandler.size, value => set_func({ name: 'size', value }));
 
-      this.addSelectMenu('family', ['Arial', 'Times New Roman', 'Courier New', 'Symbol'], fontHandler.name, value => set_func({ name: 'font_family', value }));
+      this.addSelectMenu('family', [kArial, 'Times New Roman', 'Courier New', 'Symbol'], fontHandler.name, value => set_func({ name: 'font_family', value }));
 
       this.addSelectMenu('style', ['normal', 'italic', 'oblique'], fontHandler.style || 'normal', res => set_func({ name: 'font_style', value: res === 'normal' ? null : res }));
 

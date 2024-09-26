@@ -100,12 +100,10 @@ class FontHandler {
 
       let cfg = null;
 
-      if (fontIndex && isObject(fontIndex)) {
+      if (fontIndex && isObject(fontIndex))
          cfg = fontIndex;
-      } else {
-         const indx = (fontIndex && Number.isInteger(fontIndex)) ? Math.floor(fontIndex / 10) : 0;
-         cfg = root_fonts[indx];
-      }
+      else
+         cfg = root_fonts[(fontIndex && Number.isInteger(fontIndex)) ? Math.floor(fontIndex / 10) : 0];
 
       if (cfg) {
          this.cfg = cfg;
@@ -125,7 +123,7 @@ class FontHandler {
          this.base64 = base64;
          this.format = 'ttf';
          return !!base64;
-      })
+      });
    }
 
    /** @summary Directly set name, style and weight for the font
@@ -255,14 +253,14 @@ function getCustomFont(name) {
 
 /** @summary Try to detect and create font handler for SVG text node
   * @private */
-function detectFont(node) {
+function detectPdfFont(node) {
    const sz = node.getAttribute('font-size'),
          p = sz.indexOf('px'),
          sz_pixels = p > 0 ? Number.parseInt(sz.slice(0, p)) : 12;
 
-   let  family = node.getAttribute('font-family'),
-        style = node.getAttribute('font-style'),
-        weight = node.getAttribute('font-weight');
+   let family = node.getAttribute('font-family'),
+       style = node.getAttribute('font-style'),
+       weight = node.getAttribute('font-weight');
 
    if (family === 'times')
       family = kTimes;
@@ -283,9 +281,9 @@ function detectFont(node) {
              ((!style && !elem.s) || (elem.s === style));
    });
 
-   const handler = new FontHandler(fcfg || root_fonts[13], sz_pixels);
-   return handler;
+   return new FontHandler(fcfg || root_fonts[13], sz_pixels);
 }
 
 
-export { FontHandler, addCustomFont, getCustomFont, detectFont, loadFontFile, loadRootFont, kSymbol, kWingdings };
+export { kArial, kCourier, kSymbol, kWingdings,
+         FontHandler, addCustomFont, getCustomFont, detectPdfFont, loadFontFile, loadRootFont };
