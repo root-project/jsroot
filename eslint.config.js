@@ -3,13 +3,12 @@ import stylisticJs from '@stylistic/eslint-plugin-js';
 export default [
   {
     languageOptions: {
-      ecmaVersion: 2022,
-      sourceType: "module",
+      ecmaVersion: 'latest',
+      sourceType: 'module'
     },
     plugins: {
       '@stylistic/js': stylisticJs
     },
-    ignores: ["modules/base/zstd.mjs", "modules/base/lzma.mjs", "modules/d3.mjs", "modules/base/jspdf.mjs", "modules/base/svg2pdf.mjs", "modules/three.mjs", "modules/three_addons.mjs", "modules/gui/lil-gui.mjs", "modules/r162/**"],
     rules: {
         camelcase: 'off',
         'prefer-const': 'warn',
@@ -41,7 +40,7 @@ export default [
           ImportDeclaration: 'never',
           ExportDeclaration: 'never'
         }],
-        '@stylistic/js/padded-blocks': ['warn', { blocks: 'never', classes: 'always', switches: "never" }],
+        '@stylistic/js/padded-blocks': ['warn', { blocks: 'never', classes: 'always', switches: 'never' }],
         '@stylistic/js/space-infix-ops': 'off',
         '@stylistic/js/space-before-function-paren': ['warn', 'never']
     }
