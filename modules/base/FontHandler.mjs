@@ -32,6 +32,8 @@ async function loadFontFile(fname) {
    const locations = [source_dir + 'fonts/'];
    if (isNodeJs())
       locations.push('../../fonts/');
+   else if (source_dir.indexOf('jsrootsys/') >= 0)
+      locations.unshift(source_dir.replace(/jsrootsys/g, 'rootsys_fonts'));
 
    async function tryNext() {
       if (locations.length === 0)
