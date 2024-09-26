@@ -25,19 +25,48 @@ root_fonts = [null,  // index 0 not exists
       { n: kVerdana, s: 'italic', w: 'bold', aw: 0.5578 }];
 
 
+const gFontFiles = {};
+
 /** @summary Read font file from some pre-configured locations
   * @return {Promise} with base64 code of the font
   * @private */
 async function loadFontFile(fname) {
-   const locations = [source_dir + 'fonts/'];
-   if (isNodeJs())
-      locations.push('../../fonts/');
-   else if (source_dir.indexOf('jsrootsys/') >= 0)
-      locations.unshift(source_dir.replace(/jsrootsys/g, 'rootsys_fonts'));
+   let entry = gFontFiles[fname];
+   if (entry?.base64)
+      return entry?.base64;
+
+   if (entry?.promises !== undefined) {
+      return new Promise(resolveFunc => {
+         cfg.promises.push(resolveFunc);
+      });
+   }
+
+   entry = gFontFiles[fname] = { promises: [] };
+
+   const locations = [];
+   if (fname.indexOf('/') >= 0)
+      locations.push(''); // just use file name as is
+   else {
+      locations.push(source_dir + 'fonts/');
+      if (isNodeJs())
+         locations.push('../../fonts/');
+      else if (source_dir.indexOf('jsrootsys/') >= 0)
+         locations.unshift(source_dir.replace(/jsrootsys/g, 'rootsys_fonts'));
+   }
+
+   function completeReading(base64) {
+      entry.base64 = base64;
+      const arr = entry.promises;
+      delete entry.promises;
+      arr.forEach(func => func(base64));
+      return base64;
+   }
 
    async function tryNext() {
-      if (locations.length === 0)
+      if (locations.length === 0) {
+         completeReading(null);
          throw new Error(`Fail to load ${fname} font`);
+      }
       let path = locations.shift() + fname;
       const pr = isNodeJs() ? import('fs').then(fs => {
          const prefix = 'file://' + (process?.platform === 'win32' ? '/' : '');
@@ -46,38 +75,10 @@ async function loadFontFile(fname) {
          return fs.readFileSync(path).toString('base64');
       }) : httpRequest(path, 'bin').then(buf => btoa_func(buf));
 
-      return pr.catch(() => tryNext());
+      return pr.then(res => res ? completeReading(res) : tryNext()).catch(() => tryNext());
    }
 
    return tryNext();
-}
-
-async function loadRootFont(cfg) {
-   if (isStr(cfg))
-      cfg = root_fonts.find(elem => { return elem?.n === cfg; });
-
-   if (!cfg)
-      return '';
-
-   if (cfg.base64)
-      return cfg.base64;
-
-   if (cfg.promises !== undefined) {
-      return new Promise(resolveFunc => {
-         cfg.promises.push(resolveFunc);
-      });
-   }
-
-   cfg.promises = [];
-
-   return loadFontFile(cfg.file).then(base64 => {
-      cfg.base64 = base64;
-      cfg.format = 'ttf';
-      const arr = cfg.promises;
-      delete cfg.promises;
-      arr.forEach(func => func(base64));
-      return base64;
-   });
 }
 
 
@@ -121,8 +122,10 @@ class FontHandler {
    /** @summary Async function to load font
     * @private */
    async load() {
-      return loadRootFont(this.cfg).then(base64 => {
-         this.base64 = base64;
+      if (!this.needLoad())
+         return true;
+      return loadFontFile(this.cfg.file).then(base64 => {
+         this.cfg.base64 = this.base64 = base64;
          this.format = 'ttf';
          return !!base64;
       });
@@ -288,4 +291,4 @@ function detectPdfFont(node) {
 
 
 export { kArial, kCourier, kSymbol, kWingdings,
-         FontHandler, addCustomFont, getCustomFont, detectPdfFont, loadFontFile, loadRootFont };
+         FontHandler, addCustomFont, getCustomFont, detectPdfFont };
