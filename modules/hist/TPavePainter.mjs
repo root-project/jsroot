@@ -786,21 +786,19 @@ class TPavePainter extends ObjectPainter {
             pos_x = x0 + padding_x;
 
          if (entry.fLabel) {
-            let lbl_g = this.draw_g;
-            const textatt = this.createAttText({ attr: entry, std: false, attr_alt: legend });
+            const textatt = this.createAttText({ attr: entry, std: false, attr_alt: legend }),
+                  arg = { draw_g: this.draw_g, align: textatt.align, x: pos_x, y: pos_y,
+                          scale: (custom_textg && !entry.fTextSize) || !legend.fTextSize,
+                          width: x0+column_width-pos_x-padding_x, height: step_y,
+                          text: entry.fLabel, color: textatt.color };
             if (custom_textg) {
-               lbl_g = this.draw_g.append('svg:g');
-               const entry_font_size = textatt.getSize(pp.getPadHeight());
-               this.startTextDrawing(textatt.font, entry_font_size, lbl_g, max_font_size);
+               arg.draw_g = this.draw_g.append('svg:g');
+               text_promises.push(this.startTextDrawingAsync(textatt.font, textatt.getSize(pp.getPadHeight()), arg.draw_g, max_font_size)
+                                      .then(() => this.drawText(arg))
+                                      .then(() => this.finishTextDrawing(arg.draw_g)));
+            } else {
+               this.drawText(arg);
             }
-
-            this.drawText({ draw_g: lbl_g, align: textatt.align, x: pos_x, y: pos_y,
-                            scale: (custom_textg && !entry.fTextSize) || !legend.fTextSize,
-                            width: x0+column_width-pos_x-padding_x, height: step_y,
-                            text: entry.fLabel, color: textatt.color });
-
-            if (custom_textg)
-               text_promises.push(this.finishTextDrawing(lbl_g));
          }
       }
 
