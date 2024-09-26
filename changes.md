@@ -26,7 +26,7 @@
 23. Let configure default draw options via context menu, they can be preserved in the local storage
 24. Let save canvas as JSON file from context menu, object as JSON from inspector
 25. Upgrade three.js r162 -> r168, use r162 only in node.js because of "gl" module
-26. Create unified svg2pdf/jspdf ES6 module, works both in browsers and node.js
+26. Create unified svg2pdf/jspdf ES6 modules, integrate in jsroot builds
 27. Internals - upgrade to eslint 9
 28. Internals - do not select pad (aka gPad) for objects drawing, always use assigned pad painter
 29. Fix - properly save zoomed ranges in drawingJSON()
