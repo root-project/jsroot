@@ -14,7 +14,7 @@ import { clTBranchFunc } from './tree.mjs';
 import { BasePainter, compressSVG, svgToImage, _loadJSDOM } from './base/BasePainter.mjs';
 import { ObjectPainter, cleanup, drawRawText, getElementCanvPainter, getElementMainPainter } from './base/ObjectPainter.mjs';
 import { TPadPainter, clTButton } from './gpad/TPadPainter.mjs';
-// import { makePDF } from './base/makepdf.mjs';
+import { makePDF } from './base/makepdf.mjs';
 
 
 async function import_more() { return import('./draw/more.mjs'); }
@@ -724,10 +724,7 @@ async function init_v7(arg) {
 
 
 // to avoid cross-dependency between modules
-Object.assign(internals, { addStreamerInfosForPainter, addDrawFunc, setDefaultDrawOpt });
-
-// to avoid dependency between base graphics and jspdf
-// internals.makePDF = makePDF;
+Object.assign(internals, { addStreamerInfosForPainter, addDrawFunc, setDefaultDrawOpt, makePDF });
 
 
 /** @summary Draw TRooPlot
