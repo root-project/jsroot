@@ -485,17 +485,17 @@ class TPavePainter extends ObjectPainter {
       if (!text_g) text_g = this.draw_g;
 
       const fast = (nlines === 1) && pp._fast_drawing;
-      let num_default = 0, is_any_text = false, is_custom_text = false;
+      let num_txt = 0, num_custom = 0;
 
       arr.forEach(entry => {
          if ((entry._typename !== clTText) && (entry._typename !== clTLatex)) return;
          if (!entry.fTitle || !entry.fTitle.trim()) return;
-         is_any_text = true;
+         num_txt++;
          if (entry.fX || entry.fY || entry.fTextSize)
-            is_custom_text = true;
+            num_custom++;
       });
 
-      const pr = is_any_text && !is_custom_text ? this.startTextDrawingAsync(this.textatt.font, 0.85*height/nlines, text_g, max_font_size) : Promise.resolve();
+      const pr = (num_txt > num_custom) ? this.startTextDrawingAsync(this.textatt.font, 0.85*height/nlines, text_g, max_font_size) : Promise.resolve();
 
       return pr.then(() => {
 
@@ -509,7 +509,6 @@ class TPavePainter extends ObjectPainter {
 
                   let color = entry.fTextColor ? this.getColor(entry.fTextColor) : '';
                   if (!color) color = this.textatt.color;
-                  is_any_text = true;
                   if (entry.fX || entry.fY || entry.fTextSize) {
                      // individual positioning
                      const align = entry.fTextAlign || this.textatt.align,
@@ -524,8 +523,6 @@ class TPavePainter extends ObjectPainter {
                                                                    latex: (entry._typename === clTText) ? 0 : 1, draw_g, fast }))
                                        .then(() => this.finishTextDrawing(draw_g)));
                   } else {
-                     num_default++;
-
                      this.drawText({ x: margin_x, y: texty, width: width - 2*margin_x, height: stepy,
                                     align: entry.fTextAlign || this.textatt.align,
                                     draw_g: text_g, latex: (entry._typename === clTText) ? 0 : 1,
@@ -559,11 +556,11 @@ class TPavePainter extends ObjectPainter {
             }
          }
 
-         if (is_any_text && !is_custom_text)
-            promises.push(this.finishTextDrawing(text_g, num_default > 1));
+         if (num_txt > num_custom)
+            promises.push(this.finishTextDrawing(text_g, num_txt > num_custom + 1));
 
          if (this.isTitle())
-            this.draw_g.style('display', !is_any_text ? 'none' : null);
+            this.draw_g.style('display', !num_txt ? 'none' : null);
 
          if (draw_header) {
             const x = Math.round(width*0.25),
