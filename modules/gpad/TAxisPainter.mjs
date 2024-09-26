@@ -1323,7 +1323,7 @@ class TAxisPainter extends ObjectPainter {
                .call(this.lineatt.func);
       }
 
-      let title_shift_x = 0, title_shift_y = 0, title_g = null, labelsMaxWidth = 0;
+      let title_shift_x = 0, title_shift_y = 0, title_g, labelsMaxWidth = 0;
       // draw labels (sometime on both sides)
       const labelSize = Math.max(this.labelsFont.size, 5),
             pr = (disable_axis_drawing || this.optionUnlab)
@@ -1362,12 +1362,15 @@ class TAxisPainter extends ObjectPainter {
                console.warn('Why PAD element missing when search for position');
          }
 
-         if (!this.fTitle || disable_axis_drawing) return true;
+         if (!this.fTitle || disable_axis_drawing)
+            return;
 
          title_g = axis_g.append('svg:g').attr('class', 'axis_title');
 
          return this.startTextDrawingAsync(this.titleFont, 'font', title_g);
       }).then(() => {
+         if (!title_g)
+            return;
 
          const rotate = axis.TestBit(EAxisBits.kRotateTitle) ? -1 : 1,
                xor_reverse = swap_side ^ this.titleOpposite, myxor = (rotate < 0) ^ xor_reverse;
@@ -1384,16 +1387,16 @@ class TAxisPainter extends ObjectPainter {
             title_shift_y = Math.round(this.titleCenter ? h/2 : (xor_reverse ? h : 0));
 
             this.drawText({ align: this.title_align+';middle',
-                            rotate: (rotate < 0) ? 90 : 270,
-                            text: this.fTitle, color: this.titleFont.color, draw_g: title_g });
+                           rotate: (rotate < 0) ? 90 : 270,
+                           text: this.fTitle, color: this.titleFont.color, draw_g: title_g });
          } else {
             title_offest_k *= 1.6;
 
             title_shift_x = Math.round(this.titleCenter ? w/2 : (xor_reverse ? 0 : w));
             title_shift_y = Math.round(title_offest_k * this.titleOffset);
             this.drawText({ align: this.title_align+';middle',
-                            rotate: (rotate < 0) ? 180 : 0,
-                            text: this.fTitle, color: this.titleFont.color, draw_g: title_g });
+                           rotate: (rotate < 0) ? 180 : 0,
+                           text: this.fTitle, color: this.titleFont.color, draw_g: title_g });
          }
 
          this.addTitleDrag(title_g, this.vertical, title_offest_k, swap_side, this.vertical ? h : w);
@@ -1405,7 +1408,7 @@ class TAxisPainter extends ObjectPainter {
                title_shift_x = Math.round(-side * ((labelsMaxWidth || labelSize) + 0.7*this.offsetScaling*this.titleSize));
             makeTranslate(title_g, title_shift_x, title_shift_y);
             title_g.property('shift_x', title_shift_x)
-                   .property('shift_y', title_shift_y);
+                  .property('shift_y', title_shift_y);
          }
 
          return this;
