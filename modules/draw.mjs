@@ -698,8 +698,6 @@ async function makeSVG(args) {
    return makeImage(args);
 }
 
-internals.addDrawFunc = addDrawFunc;
-
 function assignPadPainterDraw(PadPainterClass) {
    PadPainterClass.prototype.drawObject = draw;
    PadPainterClass.prototype.getObjectDrawSettings = getDrawSettings;
@@ -725,9 +723,8 @@ async function init_v7(arg) {
 }
 
 
-// to avoid cross-dependency between io.mjs and draw.mjs
-internals.addStreamerInfosForPainter = addStreamerInfosForPainter;
-
+// to avoid cross-dependency between modules
+Object.assign(internals, { addStreamerInfosForPainter, addDrawFunc, setDefaultDrawOpt });
 
 // to avoid dependency between base graphics and jspdf
 // internals.makePDF = makePDF;
