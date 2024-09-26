@@ -1,4 +1,4 @@
-import { gStyle, settings, create, isFunc, isStr, clTAxis, nsREX } from '../core.mjs';
+import { gStyle, settings, internals, create, isFunc, isStr, clTAxis, nsREX } from '../core.mjs';
 import { pointer as d3_pointer } from '../d3.mjs';
 import { getSvgLineStyle } from '../base/TAttLineHandler.mjs';
 import { makeTranslate } from '../base/BasePainter.mjs';
@@ -1125,7 +1125,9 @@ class RFramePainter extends RObjectPainter {
       menu.separator();
 
       menu.sub('Save as');
-      ['svg', 'png', 'jpeg', 'pdf', 'webp'].forEach(fmt => menu.add(`frame.${fmt}`, () => this.getPadPainter().saveAs(fmt, 'frame', `frame.${fmt}`)));
+      const fmts = ['svg', 'png', 'jpeg', 'webp'];
+      if (internals.makePDF) fmts.push('pdf');
+      fmts.forEach(fmt => menu.add(`frame.${fmt}`, () => this.getPadPainter().saveAs(fmt, 'frame', `frame.${fmt}`)));
       menu.endsub();
 
       return true;

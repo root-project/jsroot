@@ -9,7 +9,7 @@ import { svg2pdf } from './svg2pdf.mjs';
 /** @summary Create pdf for existing SVG element
   * @return {Promise} with produced PDF file as url string
   * @private */
-async function svgToPDF(args, as_buffer) {
+async function makePDF(args, as_buffer) {
    const nodejs = isNodeJs();
    let need_symbols = false;
 
@@ -143,4 +143,4 @@ async function svgToPDF(args, as_buffer) {
 }
 
 
-export { svgToPDF };
+export { makePDF };

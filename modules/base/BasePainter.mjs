@@ -1,7 +1,6 @@
 import { select as d3_select } from '../d3.mjs';
 import { settings, internals, isNodeJs, isFunc, isStr, isObject, btoa_func, getDocument } from '../core.mjs';
 import { getColor } from './colors.mjs';
-import { svgToPDF } from './makepdf.mjs';
 
 /** @summary Standard prefix for SVG file context as data url
  * @private */
@@ -763,7 +762,7 @@ async function svgToImage(svg, image_format, as_buffer) {
       return svg;
 
    if (image_format === 'pdf')
-      return svgToPDF(svg, as_buffer);
+      return internals.makePDF ? internals.makePDF(svg, as_buffer) : null;
 
    // required with df104.py/df105.py example with RCanvas or any special symbols in TLatex
    const doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
