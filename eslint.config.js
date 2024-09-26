@@ -9,7 +9,7 @@ export default [
     plugins: {
       '@stylistic/js': stylisticJs
     },
-    ignores: ["modules/base/zstd.mjs", "modules/base/lzma.mjs", "modules/d3.mjs", "modules/svg2pdf.mjs", "modules/jspdf.mjs", "modules/three.mjs", "modules/three_addons.mjs", "modules/gui/lil-gui.mjs", "modules/r162/**"],
+    ignores: ["modules/base/zstd.mjs", "modules/base/lzma.mjs", "modules/d3.mjs", "modules/base/jspdf.mjs", "modules/base/svg2pdf.mjs", "modules/three.mjs", "modules/three_addons.mjs", "modules/gui/lil-gui.mjs", "modules/r162/**"],
     rules: {
         camelcase: 'off',
         'prefer-const': 'warn',
