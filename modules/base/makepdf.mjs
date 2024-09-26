@@ -1,5 +1,5 @@
 import { select as d3_select } from '../d3.mjs';
-import { isNodeJs } from '../core.mjs';
+import { isNodeJs, internals } from '../core.mjs';
 import { detectPdfFont, kArial, kCourier, kSymbol, kWingdings } from './FontHandler.mjs';
 import { approximateLabelWidth, replaceSymbolsInTextNode } from './latex.mjs';
 import { jsPDF } from './jspdf.mjs';
