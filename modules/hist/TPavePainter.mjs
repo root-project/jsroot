@@ -359,11 +359,9 @@ class TPavePainter extends ObjectPainter {
 
       this.createAttText({ attr: pave, can_rotate: false });
 
-      this.startTextDrawing(this.textatt.font, height/1.2);
-
-      this.drawText(this.textatt.createArg({ width, height, text: pave.fLabel, norotate: true }));
-
-      return this.finishTextDrawing();
+      return this.startTextDrawingAsync(this.textatt.font, height/1.2)
+                 .then(() => this.drawText(this.textatt.createArg({ width, height, text: pave.fLabel, norotate: true })))
+                 .then(() => this.finishTextDrawing());
    }
 
    /** @summary draw TPaveStats object */
@@ -399,69 +397,70 @@ class TPavePainter extends ObjectPainter {
 
       this.createAttText({ attr: pt, can_rotate: false });
 
-      this.startTextDrawing(this.textatt.font, height/(nlines * 1.2));
+      return this.startTextDrawingAsync(this.textatt.font, height/(nlines * 1.2)).then(() => {
 
-      if (nlines === 1)
-         this.drawText(this.textatt.createArg({ width, height, text: lines[0], latex: 1, norotate: true }));
-       else {
-          for (let j = 0; j < nlines; ++j) {
-            const y = j*stepy,
-                  color = (colors[j] > 1) ? this.getColor(colors[j]) : this.textatt.color;
+         if (nlines === 1)
+            this.drawText(this.textatt.createArg({ width, height, text: lines[0], latex: 1, norotate: true }));
+         else {
+            for (let j = 0; j < nlines; ++j) {
+               const y = j*stepy,
+                     color = (colors[j] > 1) ? this.getColor(colors[j]) : this.textatt.color;
 
-            if (first_stat && (j >= first_stat)) {
-               const parts = lines[j].split('|');
-               for (let n = 0; n < parts.length; ++n) {
-                  this.drawText({ align: 'middle', x: width * n / num_cols, y, latex: 0,
-                                  width: width/num_cols, height: stepy, text: parts[n], color });
+               if (first_stat && (j >= first_stat)) {
+                  const parts = lines[j].split('|');
+                  for (let n = 0; n < parts.length; ++n) {
+                     this.drawText({ align: 'middle', x: width * n / num_cols, y, latex: 0,
+                                    width: width/num_cols, height: stepy, text: parts[n], color });
+                  }
+               } else if (lines[j].indexOf('=') < 0) {
+                  if (j === 0) {
+                     has_head = true;
+                     const max_hlen = Math.max(maxlen, Math.round((width-2*margin_x)/stepy/0.65));
+                     if (lines[j].length > max_hlen + 5)
+                        lines[j] = lines[j].slice(0, max_hlen+2) + '...';
+                  }
+                  this.drawText({ align: (j === 0) ? 'middle' : 'start', x: margin_x, y,
+                                 width: width-2*margin_x, height: stepy, text: lines[j], color });
+               } else {
+                  const parts = lines[j].split('='), args = [];
+
+                  for (let n = 0; n < 2; ++n) {
+                     const arg = {
+                        align: (n === 0) ? 'start' : 'end', x: margin_x, y,
+                        width: width - 2*margin_x, height: stepy, text: n > 0 ? parts[n].trimStart() : parts[n].trimEnd(), color,
+                        _expected_width: width-2*margin_x, _args: args,
+                        post_process(painter) {
+                           if (this._args[0].ready && this._args[1].ready)
+                              painter.scaleTextDrawing(1.05*(this._args[0].result_width+this._args[1].result_width)/this._expected_width, painter.draw_g);
+                        }
+                     };
+                     args.push(arg);
+                  }
+
+                  for (let n = 0; n < 2; ++n)
+                     this.drawText(args[n]);
                }
-            } else if (lines[j].indexOf('=') < 0) {
-               if (j === 0) {
-                  has_head = true;
-                  const max_hlen = Math.max(maxlen, Math.round((width-2*margin_x)/stepy/0.65));
-                  if (lines[j].length > max_hlen + 5)
-                     lines[j] = lines[j].slice(0, max_hlen+2) + '...';
-               }
-               this.drawText({ align: (j === 0) ? 'middle' : 'start', x: margin_x, y,
-                               width: width-2*margin_x, height: stepy, text: lines[j], color });
-            } else {
-               const parts = lines[j].split('='), args = [];
-
-               for (let n = 0; n < 2; ++n) {
-                  const arg = {
-                     align: (n === 0) ? 'start' : 'end', x: margin_x, y,
-                     width: width - 2*margin_x, height: stepy, text: n > 0 ? parts[n].trimStart() : parts[n].trimEnd(), color,
-                     _expected_width: width-2*margin_x, _args: args,
-                     post_process(painter) {
-                        if (this._args[0].ready && this._args[1].ready)
-                           painter.scaleTextDrawing(1.05*(this._args[0].result_width+this._args[1].result_width)/this._expected_width, painter.draw_g);
-                     }
-                  };
-                  args.push(arg);
-               }
-
-               for (let n = 0; n < 2; ++n)
-                  this.drawText(args[n]);
             }
          }
-      }
 
-      let lpath = '';
+         let lpath = '';
 
-      if ((pt.fBorderSize > 0) && has_head)
-         lpath += `M0,${Math.round(stepy)}h${width}`;
+         if ((pt.fBorderSize > 0) && has_head)
+            lpath += `M0,${Math.round(stepy)}h${width}`;
 
-      if ((first_stat > 0) && (num_cols > 1)) {
-         for (let nrow = first_stat; nrow < nlines; ++nrow)
-            lpath += `M0,${Math.round(nrow * stepy)}h${width}`;
-         for (let ncol = 0; ncol < num_cols - 1; ++ncol)
-            lpath += `M${Math.round(width / num_cols * (ncol + 1))},${Math.round(first_stat * stepy)}V${height}`;
-      }
+         if ((first_stat > 0) && (num_cols > 1)) {
+            for (let nrow = first_stat; nrow < nlines; ++nrow)
+               lpath += `M0,${Math.round(nrow * stepy)}h${width}`;
+            for (let ncol = 0; ncol < num_cols - 1; ++ncol)
+               lpath += `M${Math.round(width / num_cols * (ncol + 1))},${Math.round(first_stat * stepy)}V${height}`;
+         }
 
-      if (lpath) this.draw_g.append('svg:path').attr('d', lpath).call(this.lineatt.func);
+         if (lpath) this.draw_g.append('svg:path').attr('d', lpath).call(this.lineatt.func);
 
-      // this.draw_g.classed('most_upper_primitives', true); // this primitive will remain on top of list
+         // this.draw_g.classed('most_upper_primitives', true); // this primitive will remain on top of list
 
-      return this.finishTextDrawing(undefined, (nlines > 1));
+         return this.finishTextDrawing(undefined, (nlines > 1));
+      });
    }
 
    /** @summary draw TPaveText object */
@@ -508,12 +507,10 @@ class TPavePainter extends ObjectPainter {
                         y = entry.fY ? (1 - entry.fY)*height : (texty + (valign === 2 ? stepy / 2 : (valign === 3 ? stepy : 0))),
                         sub_g = text_g.append('svg:g');
 
-                  this.startTextDrawing(this.textatt.font, this.textatt.getAltSize(entry.fTextSize, pad_height), sub_g);
-
-                  this.drawText({ align, x, y, text: entry.fTitle, color,
-                                  latex: (entry._typename === clTText) ? 0 : 1, draw_g: sub_g, fast });
-
-                  promises.push(this.finishTextDrawing(sub_g));
+                  promises.push(this.startTextDrawingAsync(this.textatt.font, this.textatt.getAltSize(entry.fTextSize, pad_height), sub_g)
+                                    .then(() => this.drawText({ align, x, y, text: entry.fTitle, color,
+                                             latex: (entry._typename === clTText) ? 0 : 1, draw_g: sub_g, fast }))
+                                    .then(() => this.finishTextDrawing(sub_g)));
                } else {
                   // default position
                   if (num_default++ === 0)
@@ -570,11 +567,9 @@ class TPavePainter extends ObjectPainter {
                .call(this.fillatt.func)
                .call(this.lineatt.func);
 
-         this.startTextDrawing(this.textatt.font, h/1.5, lbl_g);
-
-         this.drawText({ align: 22, x, y, width: w, height: h, text: pt.fLabel, color: this.textatt.color, draw_g: lbl_g });
-
-         promises.push(this.finishTextDrawing(lbl_g));
+         promises.push(this.startTextDrawingAsync(this.textatt.font, h/1.5, lbl_g)
+                           .then(() => this.drawText({ align: 22, x, y, width: w, height: h, text: pt.fLabel, color: this.textatt.color, draw_g: lbl_g }))
+                           .then(() => promises.push(this.finishTextDrawing(lbl_g))));
       }
 
       return Promise.all(promises).then(() => this);
