@@ -757,16 +757,13 @@ function drawRFrameTitle(reason, drag) {
 
    makeTranslate(this.draw_g, fx, Math.round(fy-title_margin-title_height));
 
-   const arg = { x: title_width/2, y: title_height/2, text: title.fText, latex: 1 };
-
-   this.startTextDrawing(textFont, 'font');
-
-   this.drawText(arg);
-
-   return this.finishTextDrawing().then(() =>
+   return this.startTextDrawingAsync(textFont, 'font').then(() => {
+      this.drawText({ x: title_width/2, y: title_height/2, text: title.fText, latex: 1 });
+      return this.finishTextDrawing();
+   }).then(() => {
       addDragHandler(this, { x: fx, y: Math.round(fy-title_margin-title_height), width: title_width, height: title_height,
                              minwidth: 20, minheight: 20, no_change_x: true, redraw: d => this.redraw('drag', d) })
-   );
+   });
 }
 
 // ==========================================================
