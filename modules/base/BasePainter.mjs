@@ -754,15 +754,19 @@ function addHighlightStyle(elem, drag) {
 /** @summary Create image based on SVG
   * @param {string} svg - svg code of the image
   * @param {string} [image_format] - image format like 'png', 'jpeg' or 'webp'
-  * @param {boolean} [as_buffer] - return Buffer object for image
+  * @param {Objects} [args] - optional arguments
+  * @param {boolean} [args.as_buffer] - return image as buffer
   * @return {Promise} with produced image in base64 form or as Buffer (or canvas when no image_format specified)
   * @private */
-async function svgToImage(svg, image_format, as_buffer) {
+async function svgToImage(svg, image_format, args) {
+   if ((args === true) || (args === false))
+      args = { as_buffer: args };
+
    if (image_format === 'svg')
       return svg;
 
    if (image_format === 'pdf')
-      return internals.makePDF ? internals.makePDF(svg, as_buffer) : null;
+      return internals.makePDF ? internals.makePDF(svg, args) : null;
 
    // required with df104.py/df105.py example with RCanvas or any special symbols in TLatex
    const doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
@@ -782,7 +786,7 @@ async function svgToImage(svg, image_format, as_buffer) {
 
             canvas.getContext('2d').drawImage(img, 0, 0, img.width, img.height);
 
-            if (as_buffer) return canvas.toBuffer('image/' + image_format);
+            if (args?.as_buffer) return canvas.toBuffer('image/' + image_format);
 
             return image_format ? canvas.toDataURL('image/' + image_format) : canvas;
          });
@@ -799,7 +803,7 @@ async function svgToImage(svg, image_format, as_buffer) {
 
          canvas.getContext('2d').drawImage(image, 0, 0);
 
-         if (as_buffer && image_format)
+         if (args?.as_buffer && image_format)
             canvas.toBlob(blob => blob.arrayBuffer().then(resolveFunc), 'image/' + image_format);
          else
             resolveFunc(image_format ? canvas.toDataURL('image/' + image_format) : canvas);

@@ -2255,7 +2255,7 @@ class TPadPainter extends ObjectPainter {
 
    /** @summary Produce image for the pad
      * @return {Promise} with created image */
-   async produceImage(full_canvas, file_format) {
+   async produceImage(full_canvas, file_format, args) {
       if (file_format === 'json')
          return isFunc(this.produceJSON) ? this.produceJSON(full_canvas ? 2 : 0) : '';
 
@@ -2349,7 +2349,7 @@ class TPadPainter extends ObjectPainter {
          ? { node: elem.node(), width, height, reset_tranform: use_frame }
          : compressSVG(`<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">${elem.node().innerHTML}</svg>`);
 
-      return svgToImage(arg, file_format).then(res => {
+      return svgToImage(arg, file_format, args).then(res => {
          // reactivate border
          active_pp?.drawActiveBorder(null, true);
 

@@ -666,7 +666,7 @@ async function makeImage(args) {
                return complete(svg);
          }
 
-         return svgToImage(svg, args.format, args.as_buffer).then(complete);
+         return svgToImage(svg, args.format, args).then(complete);
       });
    }
 

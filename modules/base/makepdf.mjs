@@ -9,53 +9,53 @@ import { approximateLabelWidth, replaceSymbolsInTextNode } from './latex.mjs';
 /** @summary Create pdf for existing SVG element
   * @return {Promise} with produced PDF file as url string
   * @private */
-async function makePDF(args, as_buffer) {
+async function makePDF(svg, args) {
    const nodejs = isNodeJs();
    let need_symbols = false;
 
    const restore_fonts = [], restore_symb = [], restore_wing = [], restore_dominant = [], restore_oblique = [], restore_text = [],
-         node_transform = args.node.getAttribute('transform'), custom_fonts = {};
+         node_transform = svg.node.getAttribute('transform'), custom_fonts = {};
 
-   if (args.reset_tranform)
-      args.node.removeAttribute('transform');
+   if (svg.reset_tranform)
+      svg.node.removeAttribute('transform');
 
-   d3_select(args.node).selectAll('g').each(function() {
+   d3_select(svg.node).selectAll('g').each(function() {
       if (this.hasAttribute('font-family')) {
          const name = this.getAttribute('font-family');
          if (name === kCourier) {
             this.setAttribute('font-family', 'courier');
-            if (!args.can_modify) restore_fonts.push(this); // keep to restore it
+            if (!svg.can_modify) restore_fonts.push(this); // keep to restore it
          }
          if (name === kSymbol) {
             this.setAttribute('font-family', 'symbol');
-            if (!args.can_modify) restore_symb.push(this); // keep to restore it
+            if (!svg.can_modify) restore_symb.push(this); // keep to restore it
          }
          if (name === kWingdings) {
             this.setAttribute('font-family', 'zapfdingbats');
-            if (!args.can_modify) restore_wing.push(this); // keep to restore it
+            if (!svg.can_modify) restore_wing.push(this); // keep to restore it
          }
 
          if (((name === kArial) || (name === kCourier)) && (this.getAttribute('font-weight') === 'bold') && (this.getAttribute('font-style') === 'oblique')) {
             this.setAttribute('font-style', 'italic');
-            if (!args.can_modify) restore_oblique.push(this); // keep to restore it
+            if (!svg.can_modify) restore_oblique.push(this); // keep to restore it
          } else if ((name === kCourier) && (this.getAttribute('font-style') === 'oblique')) {
             this.setAttribute('font-style', 'italic');
-            if (!args.can_modify) restore_oblique.push(this); // keep to restore it
+            if (!svg.can_modify) restore_oblique.push(this); // keep to restore it
          }
       }
    });
 
-   d3_select(args.node).selectAll('text').each(function() {
+   d3_select(svg.node).selectAll('text').each(function() {
       if (this.hasAttribute('dominant-baseline')) {
          this.setAttribute('dy', '.2em'); // slightly different as in plain text
          this.removeAttribute('dominant-baseline');
-         if (!args.can_modify) restore_dominant.push(this); // keep to restore it
-      } else if (args.can_modify && nodejs && this.getAttribute('dy') === '.4em')
+         if (!svg.can_modify) restore_dominant.push(this); // keep to restore it
+      } else if (svg.can_modify && nodejs && this.getAttribute('dy') === '.4em')
          this.setAttribute('dy', '.2em'); // better alignment in PDF
 
       if (replaceSymbolsInTextNode(this)) {
          need_symbols = true;
-         if (!args.can_modify) restore_text.push(this); // keep to restore it
+         if (!svg.can_modify) restore_text.push(this); // keep to restore it
       }
    });
 
@@ -85,11 +85,11 @@ async function makePDF(args, as_buffer) {
    const doc = new jsPDF({
       orientation: 'landscape',
       unit: 'px',
-      format: [args.width + 10, args.height + 10]
+      format: [svg.width + 10, svg.height + 10]
    });
 
    // add custom fonts to PDF document, only TTF format supported
-   d3_select(args.node).selectAll('style').each(function() {
+   d3_select(svg.node).selectAll('style').each(function() {
       const fcfg = this.$fontcfg;
       if (!fcfg?.n || !fcfg?.base64) return;
       const name = fcfg.n;
@@ -106,15 +106,15 @@ async function makePDF(args, as_buffer) {
    if (need_symbols && !custom_fonts[kSymbol] && settings.LoadSymbolTtf) {
       const handler = new FontHandler(122, 10);
       pr = handler.load().then(() => {
-         handler.addCustomFontToSvg(d3_select(args.node));
+         handler.addCustomFontToSvg(d3_select(svg.node));
          doc.addFileToVFS(kSymbol + '.ttf', handler.base64);
          doc.addFont(kSymbol + '.ttf', kSymbol, 'normal');
       });
    }
 
-   return pr.then(() => svg2pdf(args.node, doc, { x: 5, y: 5, width: args.width, height: args.height })).then(() => {
-      if (args.reset_tranform && !args.can_modify && node_transform)
-         args.node.setAttribute('transform', node_transform);
+   return pr.then(() => svg2pdf(svg.node, doc, { x: 5, y: 5, width: svg.width, height: svg.height })).then(() => {
+      if (svg.reset_tranform && !svg.can_modify && node_transform)
+         svg.node.setAttribute('transform', node_transform);
 
       restore_fonts.forEach(node => node.setAttribute('font-family', kCourier));
       restore_symb.forEach(node => node.setAttribute('font-family', kSymbol));
@@ -127,13 +127,13 @@ async function makePDF(args, as_buffer) {
 
       restore_text.forEach(node => { node.innerHTML = node.$originalHTML; node.setAttribute('font-family', node.$originalFont); });
 
-      const res = as_buffer ? doc.output('arraybuffer') : doc.output('dataurlstring');
+      const res = args?.as_buffer ? doc.output('arraybuffer') : doc.output('dataurlstring');
       if (nodejs) {
          globalThis.document = undefined;
          globalThis.CSSStyleSheet = undefined;
          globalThis.CSSStyleRule = undefined;
          internals.nodejs_document.createElementNS = internals.nodejs_document.originalCreateElementNS;
-         if (as_buffer) return Buffer.from(res);
+         if (args?.as_buffer) return Buffer.from(res);
       }
 
       return res;
