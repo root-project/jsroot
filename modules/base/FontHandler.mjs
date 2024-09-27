@@ -1,4 +1,4 @@
-import { isNodeJs, httpRequest, btoa_func, source_dir, isStr, isObject } from '../core.mjs';
+import { isNodeJs, httpRequest, btoa_func, source_dir, settings, isObject } from '../core.mjs';
 
 
 const kArial = 'Arial', kTimes = 'Times New Roman', kCourier = 'Courier New', kVerdana = 'Verdana', kSymbol = 'RootSymbol', kWingdings = 'Wingdings',
@@ -142,7 +142,7 @@ class FontHandler {
       this.aver_width = aver_width || (weight ? 0.58 : 0.55);
       this.format = format; // format of custom font, ttf by default
       this.base64 = base64; // indication of custom font
-      if ((this.name === kSymbol) || (this.name === kWingdings)) {
+      if (!settings.LoadSymbolTtf && ((this.name === kSymbol) || (this.name === kWingdings))) {
          this.isSymbol = this.name;
          this.name = kTimes;
       } else

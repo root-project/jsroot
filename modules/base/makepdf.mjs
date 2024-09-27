@@ -1,9 +1,9 @@
 import { select as d3_select } from '../d3.mjs';
-import { isNodeJs, internals } from '../core.mjs';
-import { detectPdfFont, kArial, kCourier, kSymbol, kWingdings } from './FontHandler.mjs';
-import { approximateLabelWidth, replaceSymbolsInTextNode } from './latex.mjs';
 import { jsPDF } from './jspdf.mjs';
 import { svg2pdf } from './svg2pdf.mjs';
+import { isNodeJs, internals, settings } from '../core.mjs';
+import { FontHandler, detectPdfFont, kArial, kCourier, kSymbol, kWingdings } from './FontHandler.mjs';
+import { approximateLabelWidth, replaceSymbolsInTextNode } from './latex.mjs';
 
 
 /** @summary Create pdf for existing SVG element
@@ -102,19 +102,17 @@ async function makePDF(args, as_buffer) {
       doc.addFont(filename, fcfg.n, fcfg.s || 'normal');
    });
 
-   /*
-   const pr2 = Promise.resolve(true);
-   if (need_symbols && !custom_fonts[kSymbol]) {
+   let pr = Promise.resolve();
+   if (need_symbols && !custom_fonts[kSymbol] && settings.LoadSymbolTtf) {
       const handler = new FontHandler(122, 10);
-      pr2 = handler.load().then(() => {
+      pr = handler.load().then(() => {
          handler.addCustomFontToSvg(d3_select(args.node));
          doc.addFileToVFS(kSymbol + '.ttf', handler.base64);
          doc.addFont(kSymbol + '.ttf', kSymbol, 'normal');
       });
    }
-   */
 
-   return svg2pdf(args.node, doc, { x: 5, y: 5, width: args.width, height: args.height }).then(() => {
+   return pr.then(() => svg2pdf(args.node, doc, { x: 5, y: 5, width: args.width, height: args.height })).then(() => {
       if (args.reset_tranform && !args.can_modify && node_transform)
          args.node.setAttribute('transform', node_transform);
 

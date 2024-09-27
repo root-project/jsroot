@@ -331,15 +331,17 @@ function remapSymbolTtfCode(code) {
 /** @summary Reformat text node if it includes greek or special symbols
  * @desc Used in PDF generation where greek symbols are not available
  * @private */
-
 function replaceSymbolsInTextNode(node) {
    if (node.$text && node.$font) {
       node.$originalHTML = node.innerHTML;
       node.$originalFont = node.getAttribute('font-family');
 
       node.innerHTML = node.$text;
-      node.setAttribute('font-family', (node.$font.isSymbol === kWingdings) ? 'zapfdingbats' : 'symbol');
-      return true;
+      if (settings.LoadSymbolTtf)
+         node.setAttribute('font-family', node.$font.isSymbol);
+      else
+         node.setAttribute('font-family', (node.$font.isSymbol === kWingdings) ? 'zapfdingbats' : 'symbol');
+      return node.$font.isSymbol;
    }
 
    if (node.childNodes.length !== 1)
@@ -352,7 +354,7 @@ function replaceSymbolsInTextNode(node) {
       const code = txt.charCodeAt(i),
             newcode = remapSymbolTtfCode(code);
       if (code !== newcode) {
-         new_html += txt.slice(lasti+1, i) + `<tspan font-family="symbol" font-style="normal" font-weight="normal">${String.fromCharCode(newcode)}</tspan>`;
+         new_html += txt.slice(lasti+1, i) + `<tspan font-family="${settings.LoadSymbolTtf ? kSymbol : 'symbol'}" font-style="normal" font-weight="normal">${String.fromCharCode(newcode)} </tspan>`;
          lasti = i;
       }
    }
@@ -366,7 +368,7 @@ function replaceSymbolsInTextNode(node) {
    node.$originalHTML = node.innerHTML;
    node.$originalFont = node.getAttribute('font-family');
    node.innerHTML = new_html;
-   return true;
+   return kSymbol;
 }
 
 
