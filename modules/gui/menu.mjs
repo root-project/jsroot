@@ -795,7 +795,7 @@ class JSRootMenu {
       this.addchk(settings.UseStamp, 'Use stamp arg', flag => { settings.UseStamp = flag; });
       this.addSizeMenu('Max ranges', 1, 1000, [1, 10, 20, 50, 200, 1000], settings.MaxRanges, value => { settings.MaxRanges = value; }, 'Maximal number of ranges in single http request');
 
-      this.addchk(settings.HandleWrongHttpResponse, 'Handle wrong http response', flag => { settings.HandleWrongHttpResponse = flag; });
+      this.addchk(settings.HandleWrongHttpResponse, 'Handle wrong http response', flag => { settings.HandleWrongHttpResponse = flag; }, 'Let detect and solve problem when server returns wrong Content-Length header, see https://github.com/root-project/jsroot/issues/189');
       this.addchk(settings.WithCredentials, 'With credentials', flag => { settings.WithCredentials = flag; }, 'Submit http request with user credentials');
 
       this.endsub();
@@ -837,6 +837,8 @@ class JSRootMenu {
       this.endsub();
       this.addPaletteMenu(settings.Palette, pal => { settings.Palette = pal; });
       this.addchk(settings.AutoStat, 'Auto stat box', flag => { settings.AutoStat = flag; });
+      this.addchk(settings.LoadSymbolTtf, 'Load symbol.ttf', flag => { settings.LoadSymbolTtf = flag; }, 'Use symbol.ttf font file to render greek symbols, also used in PDF');
+
       this.sub('Axis');
       this.addchk(settings.StripAxisLabels, 'Strip labels', flag => { settings.StripAxisLabels = flag; }, 'Provide shorter labels like 10^0 -> 1');
       this.addchk(settings.CutAxisLabels, 'Cut labels', flag => { settings.CutAxisLabels = flag; }, 'Remove labels which may exceed graphical range');

@@ -268,7 +268,7 @@ settings = {
    YValuesFormat: undefined,
    /** @summary custom format for all Z values, when not specified {@link gStyle.fStatFormat} is used */
    ZValuesFormat: undefined,
-   /** @summary Let detect and solve problem when browser returns wrong content-length parameter
+   /** @summary Let detect and solve problem when server returns wrong Content-Length header
      * @desc See [jsroot#189]{@link https://github.com/root-project/jsroot/issues/189} for more info
      * Can be enabled by adding 'wrong_http_response' parameter to URL when using JSROOT UI
      * @default false */

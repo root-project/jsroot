@@ -43,8 +43,6 @@ async function loadFontFile(fname) {
 
    entry = gFontFiles[fname] = { promises: [] };
 
-   console.log('loading', fname)
-
    const locations = [];
    if (fname.indexOf('/') >= 0)
       locations.push(''); // just use file name as is
@@ -52,8 +50,10 @@ async function loadFontFile(fname) {
       locations.push(source_dir + 'fonts/');
       if (isNodeJs())
          locations.push('../../fonts/');
-      else if (source_dir.indexOf('jsrootsys/') >= 0)
+      else if (source_dir.indexOf('jsrootsys/') >= 0) {
          locations.unshift(source_dir.replace(/jsrootsys/g, 'rootsys_fonts'));
+         locations.unshift(source_dir.replace(/jsrootsys/g, 'rootsys/fonts'));
+      }
    }
 
    function completeReading(base64) {
@@ -70,6 +70,7 @@ async function loadFontFile(fname) {
          throw new Error(`Fail to load ${fname} font`);
       }
       let path = locations.shift() + fname;
+      console.log('loading font', path);
       const pr = isNodeJs() ? import('fs').then(fs => {
          const prefix = 'file://' + (process?.platform === 'win32' ? '/' : '');
          if (path.indexOf(prefix) === 0)
