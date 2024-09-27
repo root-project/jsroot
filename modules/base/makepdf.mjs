@@ -82,11 +82,27 @@ async function makePDF(svg, args) {
       };
    }
 
-   const doc = new jsPDF({
-      orientation: 'landscape',
-      unit: 'px',
-      format: [svg.width + 10, svg.height + 10]
-   });
+
+   let doc;
+
+   if (args?.as_doc)
+      doc = args?.doc;
+
+   if (doc) {
+      doc.addPage({
+         orientation: 'landscape',
+         unit: 'px',
+         format: [svg.width + 10, svg.height + 10]
+      });
+   } else {
+      doc = new jsPDF({
+         orientation: 'landscape',
+         unit: 'px',
+         format: [svg.width + 10, svg.height + 10]
+      });
+      if (args?.as_doc)
+         args.doc = doc;
+   }
 
    // add custom fonts to PDF document, only TTF format supported
    d3_select(svg.node).selectAll('style').each(function() {
