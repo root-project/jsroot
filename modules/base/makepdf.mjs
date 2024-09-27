@@ -127,7 +127,7 @@ async function makePDF(args, as_buffer) {
          node.removeAttribute('dy');
       });
 
-      restore_text.forEach(node => { node.innerHTML = node.$originalHTML; });
+      restore_text.forEach(node => { node.innerHTML = node.$originalHTML; node.setAttribute('font-family', node.$originalFont); });
 
       const res = as_buffer ? doc.output('arraybuffer') : doc.output('dataurlstring');
       if (nodejs) {

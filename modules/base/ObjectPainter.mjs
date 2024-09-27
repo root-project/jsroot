@@ -1299,7 +1299,7 @@ class ObjectPainter extends BasePainter {
 
          arg.simple_latex = arg.latex && (settings.Latex === cl.Symbols);
 
-         if (!arg.plain || arg.simple_latex) {
+         if (!arg.plain || arg.simple_latex || arg.font?.isSymbol) {
             if (arg.simple_latex || isPlainText(arg.text) || arg.plain) {
                arg.simple_latex = true;
                producePlainText(this, arg.txt_node, arg);

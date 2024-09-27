@@ -43,6 +43,8 @@ async function loadFontFile(fname) {
 
    entry = gFontFiles[fname] = { promises: [] };
 
+   console.log('loading', fname)
+
    const locations = [];
    if (fname.indexOf('/') >= 0)
       locations.push(''); // just use file name as is
@@ -117,7 +119,7 @@ class FontHandler {
 
    /** @summary Should returns true if font has to be loaded before
     * @private */
-   needLoad() { return this.cfg?.file && !this.base64; }
+   needLoad() { return this.cfg?.file && !this.isSymbol && !this.base64; }
 
    /** @summary Async function to load font
     * @private */
@@ -140,6 +142,11 @@ class FontHandler {
       this.aver_width = aver_width || (weight ? 0.58 : 0.55);
       this.format = format; // format of custom font, ttf by default
       this.base64 = base64; // indication of custom font
+      if ((this.name === kSymbol) || (this.name === kWingdings)) {
+         this.isSymbol = this.name;
+         this.name = kTimes;
+      } else
+         this.isSymbol = '';
    }
 
    /** @summary Set painter for which font will be applied */
@@ -236,7 +243,7 @@ class FontHandler {
 
    /** @summary Returns font name */
    getFontName() {
-      return this.name || 'none';
+      return this.isSymbol || this.name || 'none';
    }
 
 } // class FontHandler
@@ -290,5 +297,5 @@ function detectPdfFont(node) {
 }
 
 
-export { kArial, kCourier, kSymbol, kWingdings,
+export { kArial, kCourier, kSymbol, kWingdings, kTimes,
          FontHandler, addCustomFont, getCustomFont, detectPdfFont };
