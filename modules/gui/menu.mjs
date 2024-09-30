@@ -480,22 +480,21 @@ class JSRootMenu {
       supported.push(3144, 3244, 3344, 3305, 3315, 3325, 3490, 3481, 3472);
 
       for (let n = 0; n < supported.length; ++n) {
-         if (n % 7  === 0) this.add('column:');
+         if (n % 7 === 0) this.add('column:');
 
          const selected = (value === supported[n]);
 
          if (typeof document !== 'undefined') {
-            const svgelement = d3_select(document.createElement('svg'));
-            const handler = new TAttFillHandler({ color: color_index || 1, pattern: supported[n], svg: svgelement  });
+            const svgelement = d3_select(document.createElement('svg')),
+                  handler = new TAttFillHandler({ color: color_index || 1, pattern: supported[n], svg: svgelement });
             svgelement.attr('width', 60).attr('height', 24);
             if (selected)
-               svgelement.append('rect').attr('x', 0).attr('y', 0).attr('width', 60).attr('height', 24).style('stroke', 'red').style('fill', 'none').style('stroke-width','3px');
+               svgelement.append('rect').attr('x', 0).attr('y', 0).attr('width', 60).attr('height', 24).style('stroke', 'red').style('fill', 'none').style('stroke-width', '3px');
             svgelement.append('rect').attr('x', 3).attr('y', 3).attr('width', 54).attr('height', 18).style('stroke', 'none').call(handler.func);
             this.add(svgelement.node().outerHTML, supported[n], arg => set_func(parseInt(arg)), `Pattern : ${supported[n]}` + (selected ? ' Active' : ''));
-         } else {
+         } else
             this.addchk(selected, supported[n].toString(), supported[n], arg => set_func(parseInt(arg)));
-         }
-         if (n % 7  === 6) this.add('endcolumn:');
+         if (n % 7 === 6) this.add('endcolumn:');
       }
       this.endsub();
    }
