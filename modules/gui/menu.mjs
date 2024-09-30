@@ -469,24 +469,30 @@ class JSRootMenu {
      * @private */
    addFillStyleMenu(name, value, color_index, set_func) {
       this.sub('' + name, () => {
-         this.input('Enter fill style id (1001-solid, 3000..3010)', value, 'int', 0, 4000).then(id => {
+         this.input('Enter fill style id (1001-solid, 3100..4000)', value, 'int', 0, 4000).then(id => {
             if ((id >= 0) && (id <= 4000)) set_func(id);
          });
       });
 
-      const supported = [1, 1001, 3001, 3002, 3003, 3004, 3005, 3006, 3007, 3010, 3021, 3022];
+      const supported = [1, 1001];
+      for (let k = 3001; k < 3025; ++k)
+         supported.push(k);
+      supported.push(3144, 3244, 3344, 3305, 3315, 3325, 3490, 3481, 3472);
 
       for (let n = 0; n < supported.length; ++n) {
+         if (n % 7  === 0) this.add('column:');
+
          let html = supported[n].toString();
          if (typeof document !== 'undefined') {
             const svgelement = d3_select(document.createElement('svg'));
             const handler = new TAttFillHandler({ color: color_index || 1, pattern: supported[n], svg: svgelement  });
-            svgelement.attr('width', 100).attr('height', 18);
+            svgelement.attr('width', 80).attr('height', 18);
             svgelement.append('text').attr('x',1).attr('y',12).style('font-size', '12px').text(supported[n].toString());
-            svgelement.append('rect').attr('x', 40).attr('y', 0).attr('width', 60).attr('height', 18).style('stroke', 'none').call(handler.func);
+            svgelement.append('rect').attr('x', 36).attr('y', 0).attr('width', 38).attr('height', 18).style('stroke', 'none').call(handler.func);
             html = svgelement.node().outerHTML;
          }
          this.addchk(value === supported[n], html, supported[n], arg => set_func(parseInt(arg)));
+         if (n % 7  === 6) this.add('endcolumn:');
       }
       this.endsub();
    }
