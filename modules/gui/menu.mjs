@@ -482,19 +482,18 @@ class JSRootMenu {
       for (let n = 0; n < supported.length; ++n) {
          if (n % 7  === 0) this.add('column:');
 
+         const selected = (value === supported[n]);
+
          if (typeof document !== 'undefined') {
             const svgelement = d3_select(document.createElement('svg'));
             const handler = new TAttFillHandler({ color: color_index || 1, pattern: supported[n], svg: svgelement  });
-            svgelement.attr('width', 80).attr('height', 18);
-            svgelement.append('text').attr('x',1).attr('y',12)
-                      .style('font-size', '12px').style('fill', value === supported[n] ? 'blue' : 'black')
-                      .text(supported[n].toString());
-            if (value === supported[n])
-               svgelement.append('rect').attr('x', 0).attr('y', 0).attr('width', 34).attr('height', 18).style('stroke', 'black').style('fill', 'none');
-            svgelement.append('rect').attr('x', 36).attr('y', 0).attr('width', 38).attr('height', 18).style('stroke', 'none').call(handler.func);
-            this.add(svgelement.node().outerHTML, supported[n], arg => set_func(parseInt(arg)));
+            svgelement.attr('width', 60).attr('height', 24);
+            if (selected)
+               svgelement.append('rect').attr('x', 0).attr('y', 0).attr('width', 60).attr('height', 24).style('stroke', 'red').style('fill', 'none').style('stroke-width','3px');
+            svgelement.append('rect').attr('x', 3).attr('y', 3).attr('width', 54).attr('height', 18).style('stroke', 'none').call(handler.func);
+            this.add(svgelement.node().outerHTML, supported[n], arg => set_func(parseInt(arg)), `Pattern : ${supported[n]}` + (selected ? ' Active' : ''));
          } else {
-            this.addchk(value === supported[n], supported[n].toString(), supported[n], arg => set_func(parseInt(arg)));
+            this.addchk(selected, supported[n].toString(), supported[n], arg => set_func(parseInt(arg)));
          }
          if (n % 7  === 6) this.add('endcolumn:');
       }
