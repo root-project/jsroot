@@ -35,7 +35,13 @@
 32. Fix - show empty bin in TProfile2D if it has entries #316
 33. Fix - saving embed TGeo in TCanvas into image
 34. Fix - unzooming on log scale was extending range forevever
-35. Fix - correct `#font[id]` handling in latex
+
+
+## Changes in 7.7.4
+1. Fix - TGraph Y range selection, do not cross 0
+2. Fix - correctly handle `#font[id]` in latex
+3. Fix - store canvas with embed geometry drawing
+4. Fix - upgrade rollup and import.meta polyfill
 
 
 ## Changes in 7.7.3
