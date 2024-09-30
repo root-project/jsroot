@@ -16,11 +16,6 @@ const external_node_modules = ['mathjax', 'jsdom', 'fs', 'canvas', 'tmp', 'zlib'
 // TODO: maybe keep node modules as external to be able use produced builds as well?
 const ignore_modules = ignore_jsroot_modules.concat(external_node_modules);
 
-const importMetaUrlPolyfill = `(typeof document === 'undefined' && typeof location === 'undefined' ? undefined : typeof document === 'undefined' ? location.href : (document.currentScript && document.currentScript.src || new URL('jsroot.js', document.baseURI).href));`;
-
-//for(let key in meta.dependencies)
-//   ignore_modules.push(key);
-
 const config = {
   input: "modules/main.mjs",
   output: {
@@ -33,9 +28,6 @@ const config = {
     banner: `// ${meta.homepage} v${meta.version}`
   },
   plugins: [
-    modify({
-      'import.meta?.url': importMetaUrlPolyfill
-    }),
     ignore(ignore_modules),
     nodeResolve(),
     json(),
@@ -91,8 +83,7 @@ const config_geom_nothreejs = {
   plugins: [
     modify({
       "from '../three.mjs'": "from 'three'",
-      "from '../three_addons.mjs'": "from 'three/addons'",
-      'import.meta?.url': importMetaUrlPolyfill
+      "from '../three_addons.mjs'": "from 'three/addons'"
     }),
     ignore(ignore_modules),
     nodeResolve(),
