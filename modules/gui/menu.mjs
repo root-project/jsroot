@@ -4,6 +4,7 @@ import { selectgStyle, saveSettings, readSettings, saveStyle, getColorExec, chan
 import { getColor } from '../base/colors.mjs';
 import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
 import { getSvgLineStyle } from '../base/TAttLineHandler.mjs';
+import { TAttFillHandler } from '../base/TAttFillHandler.mjs';
 import { FontHandler, kArial } from '../base/FontHandler.mjs';
 import { kAxisLabels } from '../base/ObjectPainter.mjs';
 
@@ -476,12 +477,16 @@ class JSRootMenu {
       const supported = [1, 1001, 3001, 3002, 3003, 3004, 3005, 3006, 3007, 3010, 3021, 3022];
 
       for (let n = 0; n < supported.length; ++n) {
-         let svg = supported[n];
-         if (painter) {
-            const sample = painter.createAttFill({ std: false, pattern: supported[n], color: color_index || 1 });
-            svg = `<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>${supported[n].toString()}</text><rect x='40' y='0' width='60' height='18' stroke='none' fill='${sample.getFillColor()}'></rect></svg>`;
+         let html = supported[n].toString();
+         if (typeof document !== 'undefined') {
+            const svgelement = d3_select(document.createElement('svg'));
+            const handler = new TAttFillHandler({ color: color_index || 1, pattern: supported[n], svg: svgelement  });
+            svgelement.attr('width', 100).attr('height', 18);
+            svgelement.append('text').attr('x',1).attr('y',12).style('font-size', '12px').text(supported[n].toString());
+            svgelement.append('rect').attr('x', 40).attr('y', 0).attr('width', 60).attr('height', 18).style('stroke', 'none').call(handler.func);
+            html = svgelement.node().outerHTML;
          }
-         this.addchk(value === supported[n], svg, supported[n], arg => set_func(parseInt(arg)));
+         this.addchk(value === supported[n], html, supported[n], arg => set_func(parseInt(arg)));
       }
       this.endsub();
    }
