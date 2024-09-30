@@ -84,7 +84,7 @@
     "jsdoc": "^4.0.2",
     "magic-string": "^0.30.0",
     "mocha": "9",
-    "rollup": "3",
+    "rollup": "3.29.5",
     "rollup-plugin-ascii": "0.0",
     "rollup-plugin-ignore": "1.0.10",
     "rollup-plugin-modify": "^3.0.0"
