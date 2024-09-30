@@ -221,7 +221,7 @@ class JSRootMenu {
 
             let col = (n < 0) ? 'none' : getColor(n);
             if ((n === 0) && (fill_kind === 1)) col = 'none';
-            const lbl = (n <= 0) || (col[0] !== '#') ? col : `col ${n}`,
+            const lbl = (n <= 0) || ((col[0] !== '#') && (col.indexOf('rgb') < 0)) ? col : `col ${n}`,
                   fill = (n === 1) ? 'white' : 'black',
                   stroke = (n === 1) ? 'red' : 'black',
                   rect = (value === (useid ? n : col)) ? `<rect width="50" height="18" style="fill:none;stroke-width:3px;stroke:${stroke}"></rect>` : '',
