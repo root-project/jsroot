@@ -467,7 +467,7 @@ class JSRootMenu {
 
    /** @summary Add fill style menu
      * @private */
-   addFillStyleMenu(name, value, color_index, painter, set_func) {
+   addFillStyleMenu(name, value, color_index, set_func) {
       this.sub('' + name, () => {
          this.input('Enter fill style id (1001-solid, 3000..3010)', value, 'int', 0, 4000).then(id => {
             if ((id >= 0) && (id <= 4000)) set_func(id);
@@ -609,7 +609,7 @@ class JSRootMenu {
             if (pp) changeObjectMember(pp, 'fFrameFillColor', arg, true);
             painter.interactiveRedraw(redraw_arg, getColorExec(arg, 'SetFillColor'));
          }, painter.fillatt.kind);
-         this.addFillStyleMenu('style', painter.fillatt.pattern, painter.fillatt.colorindx, painter, id => {
+         this.addFillStyleMenu('style', painter.fillatt.pattern, painter.fillatt.colorindx, id => {
             painter.fillatt.change(undefined, id, painter.getCanvSvg());
             changeObjectMember(painter, 'fFillStyle', id);
             if (pp) changeObjectMember(pp, 'fFrameFillStyle', id);
@@ -917,7 +917,7 @@ class JSRootMenu {
 
       this.sub('Frame');
       this.addColorMenu('Fill color', gStyle.fFrameFillColor, col => { gStyle.fFrameFillColor = col; });
-      this.addFillStyleMenu('Fill style', gStyle.fFrameFillStyle, gStyle.fFrameFillColor, null, id => { gStyle.fFrameFillStyle = id; });
+      this.addFillStyleMenu('Fill style', gStyle.fFrameFillStyle, gStyle.fFrameFillColor, id => { gStyle.fFrameFillStyle = id; });
       this.addColorMenu('Line color', gStyle.fFrameLineColor, col => { gStyle.fFrameLineColor = col; });
       this.addSizeMenu('Line width', 1, 10, 1, gStyle.fFrameLineWidth, w => { gStyle.fFrameLineWidth = w; });
       this.addLineStyleMenu('Line style', gStyle.fFrameLineStyle, st => { gStyle.fFrameLineStyle = st; });
@@ -933,7 +933,7 @@ class JSRootMenu {
 
       this.sub('Title');
       this.addColorMenu('Fill color', gStyle.fTitleColor, col => { gStyle.fTitleColor = col; });
-      this.addFillStyleMenu('Fill style', gStyle.fTitleStyle, gStyle.fTitleColor, null, id => { gStyle.fTitleStyle = id; });
+      this.addFillStyleMenu('Fill style', gStyle.fTitleStyle, gStyle.fTitleColor, id => { gStyle.fTitleStyle = id; });
       this.addColorMenu('Text color', gStyle.fTitleTextColor, col => { gStyle.fTitleTextColor = col; });
       this.addSizeMenu('Border size', 0, 10, 1, gStyle.fTitleBorderSize, sz => { gStyle.fTitleBorderSize = sz; });
       this.addSizeMenu('Font size', 0.01, 0.1, 0.01, gStyle.fTitleFontSize, sz => { gStyle.fTitleFontSize = sz; });
@@ -946,7 +946,7 @@ class JSRootMenu {
 
       this.sub('Stat box');
       this.addColorMenu('Fill color', gStyle.fStatColor, col => { gStyle.fStatColor = col; });
-      this.addFillStyleMenu('Fill style', gStyle.fStatStyle, gStyle.fStatColor, null, id => { gStyle.fStatStyle = id; });
+      this.addFillStyleMenu('Fill style', gStyle.fStatStyle, gStyle.fStatColor, id => { gStyle.fStatStyle = id; });
       this.addColorMenu('Text color', gStyle.fStatTextColor, col => { gStyle.fStatTextColor = col; });
       this.addSizeMenu('Border size', 0, 10, 1, gStyle.fStatBorderSize, sz => { gStyle.fStatBorderSize = sz; });
       this.addSizeMenu('Font size', 0, 30, 5, gStyle.fStatFontSize, sz => { gStyle.fStatFontSize = sz; });
@@ -960,7 +960,7 @@ class JSRootMenu {
 
       this.sub('Legend');
       this.addColorMenu('Fill color', gStyle.fLegendFillColor, col => { gStyle.fLegendFillColor = col; });
-      this.addFillStyleMenu('Fill style', gStyle.fLegendFillStyle, gStyle.fLegendFillColor, null, id => { gStyle.fLegendFillStyle = id; });
+      this.addFillStyleMenu('Fill style', gStyle.fLegendFillStyle, gStyle.fLegendFillColor, id => { gStyle.fLegendFillStyle = id; });
       this.addSizeMenu('Border size', 0, 10, 1, gStyle.fLegendBorderSize, sz => { gStyle.fLegendBorderSize = sz; });
       this.addFontMenu('Font', gStyle.fLegendFont, fnt => { gStyle.fLegendFont = fnt; });
       this.addSizeMenu('Text size', 0, 0.1, 0.01, gStyle.fLegendTextSize, v => { gStyle.fLegendTextSize = v; }, 'legend text size, when 0 - auto adjustment is used');
@@ -976,7 +976,7 @@ class JSRootMenu {
       this.addSizeMenu('End error', 0, 12, 1, gStyle.fEndErrorSize, v => { gStyle.fEndErrorSize = v; }, 'size in pixels of end error for E1 draw options, gStyle.fEndErrorSize');
       this.addSizeMenu('Top margin', 0.0, 0.5, 0.05, gStyle.fHistTopMargin, v => { gStyle.fHistTopMargin = v; }, 'Margin between histogram top and frame top');
       this.addColorMenu('Fill color', gStyle.fHistFillColor, col => { gStyle.fHistFillColor = col; });
-      this.addFillStyleMenu('Fill style', gStyle.fHistFillStyle, gStyle.fHistFillColor, null, id => { gStyle.fHistFillStyle = id; });
+      this.addFillStyleMenu('Fill style', gStyle.fHistFillStyle, gStyle.fHistFillColor, id => { gStyle.fHistFillStyle = id; });
       this.addColorMenu('Line color', gStyle.fHistLineColor, col => { gStyle.fHistLineColor = col; });
       this.addSizeMenu('Line width', 1, 10, 1, gStyle.fHistLineWidth, w => { gStyle.fHistLineWidth = w; });
       this.addLineStyleMenu('Line style', gStyle.fHistLineStyle, st => { gStyle.fHistLineStyle = st; });
