@@ -394,7 +394,7 @@ function producePlainText(painter, txt_node, arg) {
    if (arg.font?.isSymbol) {
       txt_node.text(replaceSymbols(arg.text, arg.font.isSymbol));
       txt_node.property('$text', arg.text);
-      txt_node.property('$font', arg.font)
+      txt_node.property('$font', arg.font);
    } else
       txt_node.text(arg.text);
 }
@@ -583,7 +583,7 @@ function parseLatex(node, arg, label, curr) {
             if (curr.font?.isSymbol) {
                elem.text(replaceSymbols(s, curr.font.isSymbol));
                elem.property('$text', s);
-               elem.property('$font', curr.font)
+               elem.property('$font', curr.font);
             } else
                elem.text(s);
 
