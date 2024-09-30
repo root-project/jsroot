@@ -59,9 +59,16 @@ async function drawText() {
       fact = 0.8;
    }
 
-   return this.startTextDrawingAsync(this.textatt.font, this.textatt.getSize(w, h, fact, 0.05))
+   let draw_g = this.draw_g;
+   if (text.fName.startsWith('http://') || text.fName.startsWith('https://')) {
+      const a = draw_g.append('a').attr('href', text.fName).attr('title', `Link on ${text.fName}`);
+      draw_g = a;
+      arg.draw_g = a;
+   }
+
+   return this.startTextDrawingAsync(this.textatt.font, this.textatt.getSize(w, h, fact, 0.05), draw_g)
               .then(() => this.drawText(arg))
-              .then(() => this.finishTextDrawing())
+              .then(() => this.finishTextDrawing(draw_g))
               .then(() => {
       if (this.isBatchMode()) return this;
 
