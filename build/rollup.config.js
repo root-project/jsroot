@@ -8,8 +8,6 @@ import meta from '../package.json' assert {type: 'json'};
 
 const ignore_modules = ['fs', 'zlib', 'gl', './base/lzma.mjs', './base/zstd.mjs', '../../scripts/jspdf.es.min.js', '../../scripts/svg2pdf.es.min.js'];
 
-const importMetaUrlPolyfill = `(typeof document === 'undefined' && typeof location === 'undefined' ? undefined : typeof document === 'undefined' ? location.href : (document.currentScript && document.currentScript.src || new URL('jsroot.js', document.baseURI).href));`;
-
 for(let key in meta.dependencies)
    ignore_modules.push(key);
 
@@ -25,9 +23,6 @@ const config = {
     banner: `// ${meta.homepage} v${meta.version}`
   },
   plugins: [
-    modify({
-      'import.meta?.url': importMetaUrlPolyfill
-     }),
     ignore(ignore_modules),
     nodeResolve(),
     json(),
@@ -83,8 +78,7 @@ const config_geom_nothreejs = {
   plugins: [
     modify({
       "from '../three.mjs'": "from 'three'",
-      "from '../three_addons.mjs'": "from 'three/addons'",
-      'import.meta?.url': importMetaUrlPolyfill
+      "from '../three_addons.mjs'": "from 'three/addons'"
      }),
      ignore(ignore_modules),
      nodeResolve(),
