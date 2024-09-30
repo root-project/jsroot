@@ -482,16 +482,20 @@ class JSRootMenu {
       for (let n = 0; n < supported.length; ++n) {
          if (n % 7  === 0) this.add('column:');
 
-         let html = supported[n].toString();
          if (typeof document !== 'undefined') {
             const svgelement = d3_select(document.createElement('svg'));
             const handler = new TAttFillHandler({ color: color_index || 1, pattern: supported[n], svg: svgelement  });
             svgelement.attr('width', 80).attr('height', 18);
-            svgelement.append('text').attr('x',1).attr('y',12).style('font-size', '12px').text(supported[n].toString());
+            svgelement.append('text').attr('x',1).attr('y',12)
+                      .style('font-size', '12px').style('fill', value === supported[n] ? 'blue' : 'black')
+                      .text(supported[n].toString());
+            if (value === supported[n])
+               svgelement.append('rect').attr('x', 0).attr('y', 0).attr('width', 34).attr('height', 18).style('stroke', 'black').style('fill', 'none');
             svgelement.append('rect').attr('x', 36).attr('y', 0).attr('width', 38).attr('height', 18).style('stroke', 'none').call(handler.func);
-            html = svgelement.node().outerHTML;
+            this.add(svgelement.node().outerHTML, supported[n], arg => set_func(parseInt(arg)));
+         } else {
+            this.addchk(value === supported[n], supported[n].toString(), supported[n], arg => set_func(parseInt(arg)));
          }
-         this.addchk(value === supported[n], html, supported[n], arg => set_func(parseInt(arg)));
          if (n % 7  === 6) this.add('endcolumn:');
       }
       this.endsub();
