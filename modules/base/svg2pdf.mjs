@@ -1202,9 +1202,8 @@ function getBoundingBoxByChildren(context, svgnode) {
         if ((nodeBox[0] === 0) && (nodeBox[1] === 0) && (nodeBox[2] === 0) && (nodeBox[3] === 0))
             return;
         var transform = child.computeNodeTransform(context);
-        // TODO: check and apply rotation matrix if any
-        nodeBox[0] += transform.tx;
-        nodeBox[1] += transform.ty;
+        nodeBox[0] = nodeBox[0] * transform.sx + transform.tx;
+        nodeBox[1] = nodeBox[1] * transform.sy + transform.ty;
         if (boundingBox.length === 0)
             boundingBox = nodeBox;
         else
@@ -5234,7 +5233,7 @@ var GroupA = /** @class */ (function (_super) {
                             box = this.getBoundingBox(context);
                             scale = context.pdf.internal.scaleFactor;
                             ph = context.pdf.internal.pageSize.getHeight();
-                            context.pdf.link(scale * (box[0] + context.transform.tx), ph - scale * (box[1] + context.transform.ty), scale * box[2], scale * box[3], { url: href });
+                            context.pdf.link(scale * (box[0] * context.transform.sx + context.transform.tx), ph - scale * (box[1] * context.transform.sy + context.transform.ty), scale * box[2], scale * box[3], { url: href });
                         }
                         return [2 /*return*/];
                 }
