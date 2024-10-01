@@ -378,9 +378,10 @@ function addMoveHandler(painter, enabled = true, hover_handler = false) {
           .property('assigned_move', true)
           .call(drag_move);
 
-   if (hover_handler)
+   if (hover_handler) {
       painter.draw_g.on('mouseenter', () => painter.draw_g.style('text-decoration', 'underline'))
                     .on('mouseleave', () => painter.draw_g.style('text-decoration', null));
+   }
 }
 
 /** @summary Inject style
