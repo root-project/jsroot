@@ -95,7 +95,7 @@ async function drawText() {
       }
 
       if (annot !== '3d')
-         addMoveHandler(this);
+         addMoveHandler(this, true, is_url);
       else {
          fp.processRender3D = true;
          this.handleRender3D = () => {
