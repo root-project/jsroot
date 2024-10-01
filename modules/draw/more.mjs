@@ -11,7 +11,8 @@ async function drawText() {
          pp = this.getPadPainter(),
          w = pp.getPadWidth(),
          h = pp.getPadHeight(),
-         fp = this.getFramePainter();
+         fp = this.getFramePainter(),
+         is_url = text.fName.startsWith('http://') || text.fName.startsWith('https://');
    let pos_x = text.fX, pos_y = text.fY, use_frame = false,
        fact = 1,
        annot = this.matchObjectType(clTAnnotation);
@@ -38,7 +39,7 @@ async function drawText() {
       text.fTextAlign = 22;
    }
 
-   this.createG(use_frame ? 'frame2d' : undefined);
+   this.createG(use_frame ? 'frame2d' : undefined, is_url);
 
    this.draw_g.attr('transform', null); // remove transform from interactive changes
 
@@ -59,17 +60,12 @@ async function drawText() {
       fact = 0.8;
    }
 
-   let draw_g = this.draw_g;
-   if (text.fName.startsWith('http://') || text.fName.startsWith('https://')) {
-      const a = draw_g.append('a').attr('href', text.fName);
-      draw_g = a;
-      a.append('title').text(`Link on ${text.fName}`)
-      arg.draw_g = a;
-   }
+   if (is_url)
+      this.draw_g.attr('href', text.fName).append('title').text(`Link on ${text.fName}`);
 
-   return this.startTextDrawingAsync(this.textatt.font, this.textatt.getSize(w, h, fact, 0.05), draw_g)
+   return this.startTextDrawingAsync(this.textatt.font, this.textatt.getSize(w, h, fact, 0.05))
               .then(() => this.drawText(arg))
-              .then(() => this.finishTextDrawing(draw_g))
+              .then(() => this.finishTextDrawing())
               .then(() => {
       if (this.isBatchMode()) return this;
 
