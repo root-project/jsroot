@@ -5234,7 +5234,7 @@ var GroupA = /** @class */ (function (_super) {
                             box = this.getBoundingBox(context);
                             scale = context.pdf.internal.scaleFactor;
                             ph = context.pdf.internal.pageSize.getHeight();
-                            context.pdf.link(scale * box[0], ph - scale * box[1], scale * box[2], scale * box[3], { url: href });
+                            context.pdf.link(scale * (box[0] + context.transform.tx), ph - scale * (box[1] + context.transform.ty), scale * box[2], scale * box[3], { url: href });
                         }
                         return [2 /*return*/];
                 }
