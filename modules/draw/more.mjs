@@ -61,8 +61,9 @@ async function drawText() {
 
    let draw_g = this.draw_g;
    if (text.fName.startsWith('http://') || text.fName.startsWith('https://')) {
-      const a = draw_g.append('a').attr('href', text.fName).attr('title', `Link on ${text.fName}`);
+      const a = draw_g.append('a').attr('href', text.fName);
       draw_g = a;
+      a.append('title').text(`Link on ${text.fName}`)
       arg.draw_g = a;
    }
 
