@@ -925,8 +925,11 @@ function parseLatex(node, arg, label, curr) {
                subpos = createSubPos();
 
          gg.attr('href', foundarg);
-         if (!isBatchMode())
-            gg.append('svg:title').text(`link on ${foundarg}`);
+         if (!isBatchMode()) {
+            gg.on('mouseenter', () => gg.style('text-decoration', 'underline'))
+              .on('mouseleave', () => gg.style('text-decoration', null))
+              .append('svg:title').text(`link on ${foundarg}`);
+         }
 
          parseLatex(gg, arg, sublabel, subpos);
 
