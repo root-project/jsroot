@@ -3,6 +3,10 @@ import { select as d3_select } from '../d3.mjs';
 import { getColor } from './colors.mjs';
 
 
+// list of marker types which can have line widths
+const root_50_67 = [2, 3, 5, 4, 25, 26, 27, 28, 30, 32, 35, 36, 37, 38, 40, 42, 44, 46];
+
+// internal recoding of root markers
 const root_markers = [
       0, 1, 2, 3, 4,           //  0..4
       5, 106, 107, 104, 1,     //  5..9
@@ -135,8 +139,15 @@ class TAttMarkerHandler {
       }
 
       this.optimized = false;
+      this.lwidth = 1;
 
-      const marker_kind = root_markers[this.style] ?? 104,
+      let style = this.style;
+      if (style >= 50) {
+         this.lwidth = 2 + Math.floor((style - 50) / root_50_67.length);
+         style = root_50_67[(style - 50) % root_50_67.length];
+      }
+
+      const marker_kind = root_markers[style] ?? 104,
             shape = marker_kind % 100;
 
       this.fill = (marker_kind >= 100);
@@ -271,6 +282,7 @@ class TAttMarkerHandler {
    apply(selection) {
       this.used = true;
       selection.style('stroke', this.stroke ? this.color : 'none')
+               .style('stroke-width', this.stroke && (this.lwidth > 1) ? this.lwidth : null)
                .style('fill', this.fill ? this.color : 'none');
    }
 
