@@ -363,7 +363,8 @@
      { "name": "mass_spectrum", "file": "mass_spectrum.root", "item": "C",  "title": "Output of graphics/mass_spectrum.C tutorial", "interactive": true, "pdf": true },
      { "name": "legend", "url": "nobrowser&file=$$$graph_twopad.root&item=[c1/pad1/[0],c1/pad2/[0],$legend]&opt=[alp,ly+;yaxis_red]", "title": "Display legend for the drawn objects" },
      { "name": "scatter", "file": "scatter.root", "item": "c2",  "title": "Canvas with new TScatter class, tutorials/graphs/scatter.C" },
-     { "name": "ann3d", "file": "tutorials_graphs.root", "item": "annotation3d_new",  "title": "Usage of new TAnnotation class, tutorials/graphs/annotation3d.C" }
+     { "name": "ann3d", "file": "tutorials_graphs.root", "item": "annotation3d_new",  "title": "Usage of new TAnnotation class, tutorials/graphs/annotation3d.C" },
+     { "name": "marker", "file": "marker_types.root", "item": "c1",  "title": "Canvases from TAttMarker documentaion with different types and lines width" }
    ],
    "User" : [
       { "name": "div", "url": "nobrowser&inject=../demo/custom/divhist.mjs&file=demo/custom/divhist.root&item=DivHist", "title": "Draw division of two histograms from user class, see demo/custom/ dir for details" },
