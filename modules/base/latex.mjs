@@ -246,6 +246,7 @@ const latex_features = [
    { name: '#scale[', arg: 'float' },  // font scale
    { name: '#color[', arg: 'int' },   // font color
    { name: '#font[', arg: 'int' },    // font face
+   { name: '#url[', arg: 'string' },   // url link
    { name: '_{', low_up: 'low' },  // subscript
    { name: '^{', low_up: 'up' },   // superscript
    { name: '#bar{', deco: 'overline' /* accent: '\u02C9' */ }, // '\u0305'
@@ -457,14 +458,14 @@ function parseLatex(node, arg, label, curr) {
    },
 
    /** Create special sub-container for elements like sqrt or braces  */
-   createGG = () => {
+   createGG = (is_a) => {
       const gg = currG();
 
       // this is indicator that gg element will be the only one, one can use directly main container
       if ((nelements === 1) && !label && !curr.x && !curr.y)
          return gg;
 
-      return makeTranslate(gg.append('svg:g'), curr.x, curr.y);
+      return makeTranslate(gg.append(is_a ? 'svg:a' : 'svg:g'), curr.x, curr.y);
    },
 
    extractSubLabel = (check_first, lbrace, rbrace) => {
@@ -913,6 +914,22 @@ function parseLatex(node, arg, label, curr) {
 
          shiftX(subpos.rect.width * (shiftx > 0 ? 1 + foundarg : 1));
 
+         continue;
+      }
+
+      if (found.name === '#url[') {
+         const sublabel = extractSubLabel();
+         if (sublabel === -1) return false;
+
+         const gg = createGG(true),
+               subpos = createSubPos();
+
+         gg.attr('href', foundarg);
+
+         parseLatex(gg, arg, sublabel, subpos);
+
+         positionGNode(subpos, 0, 0, true);
+         shiftX(subpos.rect.width);
          continue;
       }
 
