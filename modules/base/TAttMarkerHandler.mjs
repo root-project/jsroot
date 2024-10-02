@@ -4,10 +4,9 @@ import { getColor } from './colors.mjs';
 
 
 // list of marker types which can have line widths
-const root_50_67 = [2, 3, 5, 4, 25, 26, 27, 28, 30, 32, 35, 36, 37, 38, 40, 42, 44, 46];
-
-// internal recoding of root markers
-const root_markers = [
+const root_50_67 = [2, 3, 5, 4, 25, 26, 27, 28, 30, 32, 35, 36, 37, 38, 40, 42, 44, 46],
+    // internal recoding of root markers
+    root_markers = [
       0, 1, 2, 3, 4,           //  0..4
       5, 106, 107, 104, 1,     //  5..9
       1, 1, 1, 1, 1,           // 10..14
