@@ -1,4 +1,4 @@
-import { loadScript, settings, isNodeJs, isStr, source_dir, browser } from '../core.mjs';
+import { loadScript, settings, isNodeJs, isStr, source_dir, browser, isBatchMode } from '../core.mjs';
 import { getElementRect, _loadJSDOM, makeTranslate } from './BasePainter.mjs';
 import { FontHandler, kSymbol, kWingdings, kTimes } from './FontHandler.mjs';
 
@@ -925,6 +925,8 @@ function parseLatex(node, arg, label, curr) {
                subpos = createSubPos();
 
          gg.attr('href', foundarg);
+         if (!isBatchMode())
+            gg.append('svg:title').text(`link on ${foundarg}`);
 
          parseLatex(gg, arg, sublabel, subpos);
 
