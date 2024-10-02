@@ -184,8 +184,8 @@ class TAttMarkerHandler {
             this.marker = `a${s2},${s2},0,1,0,${s1},0a${s2},${s2},0,1,0,-${s1},0z`;
             break;
          case 5: // multiply
-            this.x0 = this.y0 = -size / 2;
-            this.marker = `l${s1},${s1}m0,-${s1}l-${s1},${s1}`;
+            this.x0 = this.y0 = -3 / 8 * size;
+            this.marker = `l${s34},${s34}m0,-${s34}l-${s34},${s34}`;
             break;
          case 6: // small dot
             this.x0 = -1;
