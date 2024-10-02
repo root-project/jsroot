@@ -163,7 +163,8 @@ class TAttMarkerHandler {
             s3 = (size/3).toFixed(this.ndig),
             s4 = (size/4).toFixed(this.ndig),
             s8 = (size/8).toFixed(this.ndig),
-            s38 = (size*3/8).toFixed(this.ndig);
+            s38 = (size*3/8).toFixed(this.ndig),
+            s34 = (size*3/4).toFixed(this.ndig);
 
       switch (shape) {
          case 1: // dot
@@ -174,8 +175,8 @@ class TAttMarkerHandler {
             this.marker = `v${s1}m-${s2},-${s2}h${s1}`;
             break;
          case 3: // asterisk
-            this.x0 = this.y0 = -size / 2;
-            this.marker = `l${s1},${s1}m0,-${s1}l-${s1},${s1}m0,-${s2}h${s1}m-${s2},-${s2}v${s1}`;
+            this.y0 = -size / 2;
+            this.marker = `v${s1}m-${s2},-${s2}h${s1}m-${s8},-${s38}l-${s34},${s34}m${s34},0l-${s34},-${s34}`;
             break;
          case 4: // circle
             this.x0 = -parseFloat(s2);
