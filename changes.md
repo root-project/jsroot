@@ -1,5 +1,10 @@
 # JSROOT changelog
 
+## Changes in 7.7.x
+1. Fix - can enable exponent only for log10 axis scale
+2. Fix - proper set custom font size in latex
+
+
 ## Changes in 7.7.4
 1. Fix - TGraph Y range selection, do not cross 0
 2. Fix - correctly handle `#font[id]` in latex
