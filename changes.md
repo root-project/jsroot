@@ -4,6 +4,7 @@
 1. Fix - can enable exponent only for log10 axis scale
 2. Fix - proper set custom font size in latex
 3. Fix - do not force style 8 for hist markers
+4. Fix - ensure minimal hist title height
 
 
 ## Changes in 7.7.4
