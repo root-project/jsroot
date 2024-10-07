@@ -236,8 +236,8 @@ function approximateLabelWidth(label, font, fsize) {
 /** @summary array defines features supported by latex parser, used by both old and new parsers
   * @private */
 const latex_features = [
-   { name: '#it{' }, // italic
-   { name: '#bf{' }, // bold
+   { name: '#it{', bi: 'italic' }, // italic
+   { name: '#bf{', bi: 'bold' }, // bold
    { name: '#underline{', deco: 'underline' }, // underline
    { name: '#overline{', deco: 'overline' }, // overline
    { name: '#strike{', deco: 'line-through' }, // line through
@@ -522,7 +522,7 @@ function parseLatex(node, arg, label, curr) {
    },
 
    createSubPos = fscale => {
-      return { lvl: curr.lvl + 1, x: 0, y: 0, fsize: curr.fsize*(fscale || 1), color: curr.color, font: curr.font, parent: curr, painter: curr.painter, bold: curr.bold, italic: curr.italic };
+      return { lvl: curr.lvl + 1, x: 0, y: 0, fsize: curr.fsize*(fscale || 1), color: curr.color, font: curr.font, parent: curr, painter: curr.painter };
    };
 
    while (label) {
@@ -863,16 +863,18 @@ function parseLatex(node, arg, label, curr) {
          continue;
       }
 
-      if (found.name === '#bf{' || found.name === '#it{') {
+      if (found.bi) { // bold or italic
          const sublabel = extractSubLabel();
-         if (sublabel === -1) return false;
+         if (sublabel === -1)
+            return false;
 
          const subpos = createSubPos();
 
-         if (found.name === '#bf{')
-            subpos.bold = !subpos.bold;
-         else
-            subpos.italic = !subpos.italic;
+         let value;
+         for (let c = curr; c && (value === undefined && c); c = c.parent)
+            value = c[found.bi];
+
+         subpos[found.bi] = !value;
 
          parseLatex(currG(), arg, sublabel, subpos);
 
@@ -908,7 +910,10 @@ function parseLatex(node, arg, label, curr) {
          parseLatex(currG(), arg, sublabel, subpos);
 
          let shiftx = 0, shifty = 0;
-         if (found.name === 'kern[') shiftx = foundarg; else shifty = foundarg;
+         if (found.name === 'kern[')
+            shiftx = foundarg;
+         else
+            shifty = foundarg;
 
          positionGNode(subpos, curr.x + shiftx * subpos.rect.width, curr.y + shifty * subpos.rect.height);
 
