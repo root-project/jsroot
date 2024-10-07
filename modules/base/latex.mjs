@@ -241,8 +241,8 @@ const latex_features = [
    { name: '#underline{', deco: 'underline' }, // underline
    { name: '#overline{', deco: 'overline' }, // overline
    { name: '#strike{', deco: 'line-through' }, // line through
-   { name: '#kern[', arg: 'float' }, // horizontal shift
-   { name: '#lower[', arg: 'float' },  // vertical shift
+   { name: '#kern[', arg: 'float', shift: 'x' }, // horizontal shift
+   { name: '#lower[', arg: 'float', shift: 'y' },  // vertical shift
    { name: '#scale[', arg: 'float' },  // font scale
    { name: '#color[', arg: 'int' },   // font color
    { name: '#font[', arg: 'int' },    // font face
@@ -901,7 +901,7 @@ function parseLatex(node, arg, label, curr) {
          label = label.slice(pos + 2);
       }
 
-      if ((found.name === '#kern[') || (found.name === '#lower[')) {
+      if (found.shift) {
          const sublabel = extractSubLabel();
          if (sublabel === -1) return false;
 
@@ -910,12 +910,12 @@ function parseLatex(node, arg, label, curr) {
          parseLatex(currG(), arg, sublabel, subpos);
 
          let shiftx = 0, shifty = 0;
-         if (found.name === 'kern[')
-            shiftx = foundarg;
+         if (found.shift === 'x')
+            shiftx = foundarg * subpos.rect.width;
          else
-            shifty = foundarg;
+            shifty = foundarg * subpos.rect.height;
 
-         positionGNode(subpos, curr.x + shiftx * subpos.rect.width, curr.y + shifty * subpos.rect.height);
+         positionGNode(subpos, curr.x + shiftx, curr.y + shifty);
 
          shiftX(subpos.rect.width * (shiftx > 0 ? 1 + foundarg : 1));
 
