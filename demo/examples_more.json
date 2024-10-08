@@ -248,7 +248,8 @@
       { "name": "plain", "file": "latex.root", "layout": "grid2x2", "latex": "off", "items": ["lva","ex1","ex2","ex3"], "title": "Disable TLatex processor completely" },
       { "name": "math2", "file": "latex.root", "item": "math2", "reset_mathjax": true, "title": "Output of graphics/tmathtext2.C macro with all special symbols" },
       { "name": "latex4", "file": "tutorials_graphics.root", "item": "latex4", "title": "Output of graphics/latex4.C macro" },
-      { "name": "latex5", "file": "tutorials_graphics.root", "item": "latex5", "title": "Output of graphics/latex5.C macro" }
+      { "name": "latex5", "file": "tutorials_graphics.root", "item": "latex5", "title": "Output of graphics/latex5.C macro" },
+      { "name": "kern", "file": "latex.root", "item": "kern", "title": "TLatex with #kern and #bf, from stressGraphics" }
    ],
    "TASImage" : [
       { "name": "n4254_json", "json": "image.json.gz", "title": "TASImage with binary data, see tutorials/image/galaxy_image.C macro" },
