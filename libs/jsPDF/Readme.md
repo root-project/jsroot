@@ -14,6 +14,7 @@ https://github.com/linev/jsPDF/commits/jsroot/
 4. Comment out svg.js, html.js, fileloading.js - not used with svg2pdf
 5. Remove API.save
 6. Remove 'fflate' from externals - include into build
+7. Remove several outpus - code with </script> confuses browser when loaded directly
 
 ## How to build
 
