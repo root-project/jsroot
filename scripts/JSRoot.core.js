@@ -332,9 +332,7 @@ if ((typeof globalThis !== 'undefined') && !globalThis.JSROOT) {
 
       globalThis.JSROOT._ = arr[0].internals;
 
-      getHPainter = arr[2].getHPainter;
-
-      globalThis.JSROOT.hpainter = getHPainter();
+      globalThis.JSROOT.hpainter = arr[2].getHPainter();
    });
 
    sync_promises.push(pr);
