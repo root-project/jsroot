@@ -5,6 +5,7 @@
 2. Fix - proper set custom font size in latex
 3. Fix - do not force style 8 for hist markers
 4. Fix - ensure minimal hist title height
+5. Fix - disable Bloom effect on Android
 
 
 ## Changes in 7.7.4
