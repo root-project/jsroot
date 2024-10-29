@@ -80,7 +80,7 @@
   "scripts": {
     "build": "rollup -c build/rollup.config.js",
     "doc": "jsdoc -c docs/jsdoc.json -R docs/main.md  && jsdoc -c docs/jsdoc.json -p -d docs/jsdocfull -R docs/main.md",
-    "check": "eslint modules/*.mjs modules/*/*.mjs --ignore-pattern modules/three.mjs --ignore-pattern modules/three_addons.mjs --ignore-pattern modules/r162/three.mjs --ignore-pattern modules/r162/three_addons.mjs --ignore-pattern modules/d3.mjs --ignore-pattern modules/base/jspdf.mjs --ignore-pattern modules/base/svg2pdf.mjs --ignore-pattern modules/base/lzma.mjs --ignore-pattern modules/base/zstd.mjs --ignore-pattern modules/gui/lil-gui.mjs --no-warn-ignored"
+    "check": "eslint modules/*.mjs modules/*/*.mjs --ignore-pattern modules/three.mjs --ignore-pattern modules/three_addons.mjs --ignore-pattern modules/d3.mjs --ignore-pattern modules/base/jspdf.mjs --ignore-pattern modules/base/svg2pdf.mjs --ignore-pattern modules/base/lzma.mjs --ignore-pattern modules/base/zstd.mjs --ignore-pattern modules/gui/lil-gui.mjs --no-warn-ignored"
   },
   "keywords": [
     "ROOT",
