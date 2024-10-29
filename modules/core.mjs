@@ -35,7 +35,11 @@ let source_dir = '';
 if (_src_dir[0] !== '$')
    source_dir = _src_dir;
 else if (_src && isStr(_src)) {
-   const pos = _src.indexOf('modules/core.mjs');
+   let pos = _src.indexOf('modules/core.mjs');
+   if (pos < 0)
+      pos = _src.indexOf('build/jsroot.js');
+   if (pos < 0)
+      pos = _src.indexOf('build/jsroot.min.js');
    if (pos >= 0)
       source_dir = _src.slice(0, pos);
    else
