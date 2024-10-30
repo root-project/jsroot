@@ -7,6 +7,7 @@
 4. Fix - ensure minimal hist title height
 5. Fix - disable Bloom effect on Android
 6. Fix - handle reordering of fragments in multipart reply #319
+7. Fix - properly show non-zero entries #320
 
 
 ## Changes in 7.7.4
