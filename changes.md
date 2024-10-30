@@ -6,6 +6,7 @@
 3. Fix - do not force style 8 for hist markers
 4. Fix - ensure minimal hist title height
 5. Fix - disable Bloom effect on Android
+6. Fix - handle reordering of fragments in multipart reply #319
 
 
 ## Changes in 7.7.4
