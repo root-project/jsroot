@@ -584,6 +584,7 @@ class TH1Painter extends THistPainter {
       const draw_markers = show_errors || show_markers,
             draw_any_but_hist = draw_markers || show_text || show_line || show_curve,
             draw_hist = this.options.Hist && (!this.lineatt.empty() || !this.fillatt.empty()),
+            check_sumw2 = show_errors && histo.fSumw2?.length,
             // if there are too many points, exclude many vertical drawings at the same X position
             // instead define min and max value and made min-max drawing
             use_minmax = draw_any_but_hist || ((right - left) > 3*width);
@@ -614,7 +615,8 @@ class TH1Painter extends THistPainter {
          // just to get correct values for the specified bin
          const extract_bin = bin => {
             bincont = histo.getBinContent(bin+1);
-            if (exclude_zero && (bincont === 0)) return false;
+            if (exclude_zero && (bincont === 0) && (!check_sumw2 || !histo.fSumw2[bin+1]))
+               return false;
             mx1 = Math.round(funcs.grx(xaxis.GetBinLowEdge(bin+1)));
             mx2 = Math.round(funcs.grx(xaxis.GetBinLowEdge(bin+2)));
             midx = Math.round((mx1 + mx2) / 2);
