@@ -1095,7 +1095,7 @@ class TH1Painter extends THistPainter {
             findbin = null;
          else if ((pnt_x < grx1 - gapx) || (pnt_x > grx2 + gapx))
             findbin = null; // if bars option used check that bar is not match
-         else if (!this.options.Zero && (histo.getBinContent(findbin+1) === 0) && (!histo.fSumw2 || !histo.fSumw2[findbin+1]))
+         else if (!this.options.Zero && (histo.getBinContent(findbin+1) === 0) && (histo.getBinError(findbin+1) === 0))
             findbin = null; // exclude empty bin if empty bins suppressed
       }
 
