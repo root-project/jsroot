@@ -1,7 +1,7 @@
 import { gStyle, settings, constants, browser, internals, BIT,
          create, toJSON, isBatchMode, loadModules, loadScript, injectCode, isPromise, getPromise, postponePromise,
-         isObject, isFunc, isStr, clTObjArray, clTPaveText, clTColor, clTPad, clTFrame, clTStyle, clTLegend,
-         clTHStack, clTMultiGraph, clTLegendEntry, nsSVG, kTitle, clTList } from '../core.mjs';
+         isObject, isFunc, isStr, clTObjArray, clTPaveText, clTColor, clTPad, clTCanvas, clTFrame, clTStyle, clTLegend,
+         clTHStack, clTMultiGraph, clTLegendEntry, nsSVG, kTitle, clTList, urlClassPrefix } from '../core.mjs';
 import { select as d3_select, rgb as d3_rgb } from '../d3.mjs';
 import { ColorPalette, adoptRootColors, getColorPalette, getGrayColors, extendRootColors,
          getRGBfromTColor, decodeWebCanvasColors } from '../base/colors.mjs';
@@ -1261,9 +1261,9 @@ class TPadPainter extends ObjectPainter {
      * @private */
    fillContextMenu(menu) {
       if (this.pad)
-         menu.header(`${this.pad._typename}::${this.pad.fName}`);
+         menu.header(`${this.pad._typename}::${this.pad.fName}`, `${urlClassPrefix}${this.pad._typename}.html`);
       else
-         menu.header('Canvas');
+         menu.header('Canvas', `${urlClassPrefix}${clTCanvas}.html`);
 
       menu.addchk(this.isTooltipAllowed(), 'Show tooltips', () => this.setTooltipAllowed('toggle'));
 

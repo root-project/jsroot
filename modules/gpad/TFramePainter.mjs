@@ -1,4 +1,5 @@
-import { gStyle, settings, internals, isFunc, isStr, postponePromise, browser, clTAxis, kNoZoom } from '../core.mjs';
+import { gStyle, settings, internals, isFunc, isStr, postponePromise, browser,
+         clTAxis, clTFrame, kNoZoom, urlClassPrefix } from '../core.mjs';
 import { select as d3_select, pointer as d3_pointer, pointers as d3_pointers, drag as d3_drag } from '../d3.mjs';
 import { getElementRect, getAbsPosInCanvas, makeTranslate, addHighlightStyle } from '../base/BasePainter.mjs';
 import { getActivePad, ObjectPainter, EAxisBits, kAxisLabels } from '../base/ObjectPainter.mjs';
@@ -2586,7 +2587,7 @@ class TFramePainter extends ObjectPainter {
                handle = this[`${kind}_handle`];
          if (!isFunc(faxis?.TestBit))
             return false;
-         menu.header(`${kind.toUpperCase()} axis`);
+         menu.header(`${kind.toUpperCase()} axis`, `${urlClassPrefix}${clTAxis}.html`);
 
          menu.sub('Range');
          menu.add('Zoom', () => {
@@ -2662,7 +2663,7 @@ class TFramePainter extends ObjectPainter {
       const alone = menu.size() === 0;
 
       if (alone)
-         menu.header('Frame');
+         menu.header('Frame', `${urlClassPrefix}${clTFrame}.html`);
       else
          menu.separator();
 
