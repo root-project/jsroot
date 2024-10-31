@@ -1,5 +1,5 @@
-import { gStyle, settings, browser, constants, internals, addMethods,
-         isPromise, getPromise, postponePromise, isBatchMode, isObject, isFunc, isStr, clTPad, clTFrame, nsREX } from '../core.mjs';
+import { gStyle, settings, browser, constants, internals, addMethods, isPromise, getPromise, postponePromise,
+         isBatchMode, isObject, isFunc, isStr, clTPad, clTFrame, nsREX, urlClassPrefix } from '../core.mjs';
 import { ColorPalette, addColor, getRootColors, convertColor } from '../base/colors.mjs';
 import { RObjectPainter } from '../base/RObjectPainter.mjs';
 import { prSVG, getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG, makeTranslate, svgToImage } from '../base/BasePainter.mjs';
@@ -749,7 +749,9 @@ class RPadPainter extends RObjectPainter {
    /** @summary Fill pad context menu
      * @private */
    fillContextMenu(menu) {
-      menu.header(this.iscan ? 'RCanvas' : 'RPad');
+      const clname = this.iscan ? 'RCanvas' : 'RPad';
+
+      menu.header(clname, `${urlClassPrefix}ROOT_1_1Experimental_1_1${clname}.html`);
 
       menu.addchk(this.isTooltipAllowed(), 'Show tooltips', () => this.setTooltipAllowed('toggle'));
 
