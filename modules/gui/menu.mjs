@@ -1284,17 +1284,16 @@ class StandaloneMenu extends JSRootMenu {
 
             let url = '', title = '';
             if (d.title) {
-               let p = d.title.indexOf('https://');
+               const p = d.title.indexOf('https://');
                if (p >= 0) {
                   url = d.title.slice(p);
                   title = d.title.slice(0, p);
-               } else {
+               } else
                   title = d.title;
-               }
             }
-            if (!url) {
+            if (!url)
                item.innerHTML = d.text;
-            } else {
+            else {
                const txt = doc.createElement('span');
                txt.innerHTML = d.text;
                txt.style = 'display: inline-block; margin: 0;';

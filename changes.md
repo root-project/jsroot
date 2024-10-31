@@ -30,18 +30,19 @@
 27. Let create multipage PDF document - in TWebCanvas batch mode
 28. Let add external links via `#url[link]{label}` syntax - including jsPDF support
 29. Support TAttMarker style with line width bigger than 1
-30. Internals - upgrade to eslint 9
-31. Internals - do not select pad (aka gPad) for objects drawing, always use assigned pad painter
-32. Fix - properly save zoomed ranges in drawingJSON()
-33. Fix - properly redraw TMultiGraph
-34. Fix - show empty bin in TProfile2D if it has entries #316
-35. Fix - unzooming on log scale was extending range forevever
-36. Fix - do not force style 8 for hist markers
-37. Fix - ensure minimal hist title height
-38. Fix - disable Bloom effects on Android TGeo displays
-39. Fix - handle reordering of fragments in multipart reply #319
-40. Fix - properly show non-zero entries #320
-41. Fix - display empty hist bin if fSumw2 not zero
+30. Provide link to ROOT class documentation from context menus
+31. Internals - upgrade to eslint 9
+32. Internals - do not select pad (aka gPad) for objects drawing, always use assigned pad painter
+33. Fix - properly save zoomed ranges in drawingJSON()
+34. Fix - properly redraw TMultiGraph
+35. Fix - show empty bin in TProfile2D if it has entries #316
+36. Fix - unzooming on log scale was extending range forevever
+37. Fix - do not force style 8 for hist markers
+38. Fix - ensure minimal hist title height
+39. Fix - disable Bloom effects on Android TGeo displays
+40. Fix - handle reordering of fragments in multipart reply #319
+41. Fix - properly show non-zero entries #320
+42. Fix - display empty hist bin if fSumw2 not zero
 
 
 ## Changes in 7.7.4
