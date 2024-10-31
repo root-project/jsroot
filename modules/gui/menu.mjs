@@ -1301,10 +1301,12 @@ class StandaloneMenu extends JSRootMenu {
                item.appendChild(txt);
 
                const anchor = doc.createElement('span');
-               anchor.style = 'margin: 0; padding: 3px 7px; color: rgba(0, 0, 0, 0.1); cursor: pointer;';
+               anchor.style = 'margin: 0; color: blue; opacity: 0.1; margin-left: 7px; float: right; cursor: pointer;';
                anchor.textContent = '?';
                anchor.title = url;
-               anchor.onclick = d.func;
+               anchor.addEventListener('click', d.func);
+               anchor.addEventListener('mouseenter', () => { anchor.style.opacity = 1; });
+               anchor.addEventListener('mouseleave', () => { anchor.style.opacity = 0.1; });
                item.appendChild(anchor);
             }
             if (title)
@@ -1314,11 +1316,7 @@ class StandaloneMenu extends JSRootMenu {
          }
 
          const hovArea = doc.createElement('div');
-         hovArea.style.width = '100%';
-         hovArea.style.height = '100%';
-         hovArea.style.display = 'flex';
-         hovArea.style.justifyContent = 'space-between';
-         hovArea.style.cursor = 'pointer';
+         hovArea.style = 'width: 100%; height: 100%; display: flex; justify-content: space-between; cursor: pointer;';
          if (d.title) hovArea.setAttribute('title', d.title);
 
          item.appendChild(hovArea);
