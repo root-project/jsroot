@@ -103,8 +103,8 @@ class JSRootMenu {
    }
 
    /** @summary Add menu header - must be first entry */
-   header(name) {
-      this.add(sHeader + name);
+   header(name, func, title) {
+      this.add(sHeader + name, undefined, func, title);
    }
 
    /** @summary Add draw sub-menu with draw options
@@ -1173,7 +1173,7 @@ class StandaloneMenu extends JSRootMenu {
          return curr.push({ divider: true });
 
       if (name.indexOf(sHeader) === 0)
-         return curr.push({ text: name.slice(sHeader.length), header: true });
+         return curr.push({ text: name.slice(sHeader.length), header: true, func, title });
 
       if (name === sEndsub) {
          this.stack.pop();
@@ -1281,7 +1281,35 @@ class StandaloneMenu extends JSRootMenu {
 
          if (d.header) {
             item.style = 'background-color: lightblue; padding: 3px 7px; font-weight: bold; border-bottom: 1px;';
-            item.innerHTML = d.text;
+
+            let url = '', title = '';
+            if (d.title) {
+               let p = d.title.indexOf('https://');
+               if (p >= 0) {
+                  url = d.title.slice(p);
+                  title = d.title.slice(0, p);
+               } else {
+                  title = d.title;
+               }
+            }
+            if (!url || !d.func) {
+               item.innerHTML = d.text;
+            } else {
+               const txt = doc.createElement('span');
+               txt.innerHTML = d.text;
+               txt.style = 'display: inline-block; margin: 0;';
+               item.appendChild(txt);
+
+               const anchor = doc.createElement('span');
+               anchor.style = 'margin: 0; padding: 3px 7px; color: rgba(0, 0, 0, 0.1); cursor: pointer;';
+               anchor.textContent = '?';
+               anchor.title = url;
+               anchor.onclick = d.func;
+               item.appendChild(anchor);
+            }
+            if (title)
+               item.setAttribute('title', title);
+
             return;
          }
 
@@ -1347,7 +1375,7 @@ class StandaloneMenu extends JSRootMenu {
          if (d.extraText || d.sub) {
             const extraText = doc.createElement('span');
             extraText.className = 'jsroot_ctxt_extraText';
-            extraText.style = 'margin: 0; padding: 3px 7px; color: rgb(0, 0, 0, 0.6);';
+            extraText.style = 'margin: 0; padding: 3px 7px; color: rgba(0, 0, 0, 0.6);';
             extraText.textContent = d.sub ? '\u25B6' : d.extraText;
             hovArea.appendChild(extraText);
 
