@@ -277,6 +277,10 @@ class TCanvasPainter extends TPadPainter {
          return this.sendWebsocket(`OBJEXEC:${snapid}:${exec}`);
    }
 
+   /** @summary Return true if message can be send via web socket
+    * @private */
+   canSendWebSocket() { this._websocket?.canSend(); }
+
    /** @summary Send text message with web socket
      * @desc used for communication with server-side of web canvas
      * @private */
