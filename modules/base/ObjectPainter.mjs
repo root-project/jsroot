@@ -891,9 +891,16 @@ class ObjectPainter extends BasePainter {
       let cl = this.getClassName();
       const p = cl.lastIndexOf('::');
       if (p > 0) cl = cl.slice(p+2);
-      const title = (cl && name) ? `${cl}:${name}` : (cl || name || 'object');
+      const hdr = (cl && name) ? `${cl}:${name}` : (cl || name || 'object'),
+            url = (p < 0) ? `https://root.cern/doc/master/class${cl}.html` : '';
 
-      menu.header(title);
+      menu.header(hdr, () => {
+         const cp = this.getCanvPainter();
+         if (cp?.canSendWebSocket())
+            cp.sendWebsocket('SHOWURL:' + url);
+         else
+            window.open(url, '_blank');
+      }, url);
 
       const size0 = menu.size();
 
