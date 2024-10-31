@@ -103,8 +103,8 @@ class JSRootMenu {
    }
 
    /** @summary Add menu header - must be first entry */
-   header(name, func, title) {
-      this.add(sHeader + name, undefined, func, title);
+   header(name, title) {
+      this.add(sHeader + name, undefined, undefined, title);
    }
 
    /** @summary Add draw sub-menu with draw options
@@ -1173,7 +1173,7 @@ class StandaloneMenu extends JSRootMenu {
          return curr.push({ divider: true });
 
       if (name.indexOf(sHeader) === 0)
-         return curr.push({ text: name.slice(sHeader.length), header: true, func, title });
+         return curr.push({ text: name.slice(sHeader.length), header: true, title });
 
       if (name === sEndsub) {
          this.stack.pop();
@@ -1292,7 +1292,7 @@ class StandaloneMenu extends JSRootMenu {
                   title = d.title;
                }
             }
-            if (!url || !d.func) {
+            if (!url) {
                item.innerHTML = d.text;
             } else {
                const txt = doc.createElement('span');
@@ -1304,7 +1304,13 @@ class StandaloneMenu extends JSRootMenu {
                anchor.style = 'margin: 0; color: blue; opacity: 0.1; margin-left: 7px; float: right; cursor: pointer;';
                anchor.textContent = '?';
                anchor.title = url;
-               anchor.addEventListener('click', d.func);
+               anchor.addEventListener('click', () => {
+                  const cp = this.painter?.getCanvPainter();
+                  if (cp?.canSendWebSocket())
+                     cp.sendWebsocket(`SHOWURL:${url}`);
+                  else
+                     window.open(url);
+               });
                anchor.addEventListener('mouseenter', () => { anchor.style.opacity = 1; });
                anchor.addEventListener('mouseleave', () => { anchor.style.opacity = 0.1; });
                item.appendChild(anchor);

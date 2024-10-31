@@ -894,13 +894,7 @@ class ObjectPainter extends BasePainter {
       const hdr = (cl && name) ? `${cl}:${name}` : (cl || name || 'object'),
             url = (p < 0) ? `https://root.cern/doc/master/class${cl}.html` : '';
 
-      menu.header(hdr, () => {
-         const cp = this.getCanvPainter();
-         if (cp?.canSendWebSocket())
-            cp.sendWebsocket('SHOWURL:' + url);
-         else
-            window.open(url, '_blank');
-      }, url);
+      menu.header(hdr, url);
 
       const size0 = menu.size();
 
