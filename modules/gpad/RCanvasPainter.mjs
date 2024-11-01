@@ -207,7 +207,7 @@ class RCanvasPainter extends RPadPainter {
 
    /** @summary Return true if message can be send via web socket
     * @private */
-   canSendWebSocket() { this._websocket?.canSend(); }
+   canSendWebSocket() { return this._websocket?.canSend(); }
 
    /** @summary Send message via web socket
      * @private */
