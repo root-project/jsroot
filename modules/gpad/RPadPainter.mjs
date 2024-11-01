@@ -1,5 +1,5 @@
 import { gStyle, settings, browser, constants, internals, addMethods, isPromise, getPromise, postponePromise,
-         isBatchMode, isObject, isFunc, isStr, clTPad, clTFrame, nsREX, urlClassPrefix } from '../core.mjs';
+         isBatchMode, isObject, isFunc, isStr, clTPad, clTFrame, nsREX, nsSVG, urlClassPrefix } from '../core.mjs';
 import { ColorPalette, addColor, getRootColors, convertColor } from '../base/colors.mjs';
 import { RObjectPainter } from '../base/RObjectPainter.mjs';
 import { prSVG, getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG, makeTranslate, svgToImage } from '../base/BasePainter.mjs';
@@ -1435,7 +1435,7 @@ class RPadPainter extends RObjectPainter {
 
       const arg = (file_format === 'pdf')
          ? { node: elem.node(), width, height, reset_tranform: use_frame }
-         : compressSVG(`<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">${elem.node().innerHTML}</svg>`);
+         : compressSVG(`<svg width="${width}" height="${height}" xmlns="${nsSVG}">${elem.node().innerHTML}</svg>`);
 
       return svgToImage(arg, file_format, args).then(res => {
          for (let k = 0; k < items.length; ++k) {

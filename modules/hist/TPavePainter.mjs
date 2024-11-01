@@ -1,6 +1,6 @@
 import { gStyle, browser, settings, clone, isObject, isFunc, isStr, BIT,
          clTPave, clTPaveText, clTPavesText, clTPaveStats, clTPaveLabel, clTPaveClass, clTDiamond, clTLegend, clTPaletteAxis,
-         clTText, clTLatex, clTLine, clTBox, kTitle, isNodeJs } from '../core.mjs';
+         clTText, clTLatex, clTLine, clTBox, kTitle, isNodeJs, nsSVG } from '../core.mjs';
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer } from '../d3.mjs';
 import { Prob } from '../base/math.mjs';
 import { floatToString, makeTranslate, compressSVG, svgToImage, addHighlightStyle } from '../base/BasePainter.mjs';
@@ -49,7 +49,7 @@ class TPavePainter extends ObjectPainter {
 
       svg_code = compressSVG(svg_code);
 
-      svg_code = '<svg xmlns="http://www.w3.org/2000/svg"' + svg_code.slice(4);
+      svg_code = `<svg xmlns="${nsSVG}"` + svg_code.slice(4);
 
       const lm = pad?.fLeftMargin ?? gStyle.fPadLeftMargin,
             rm = pad?.fRightMargin ?? gStyle.fPadRightMargin,

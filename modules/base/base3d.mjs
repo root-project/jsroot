@@ -185,7 +185,7 @@ function createSVGRenderer(as_is, precision, doc) {
            _textSizeAttr = `viewBox="${wrap.svg_attr.viewBox}" width="${wrap.svg_attr.width}" height="${wrap.svg_attr.height}"`,
            _textClearAttr = wrap.svg_style.backgroundColor ? ` style="background:${wrap.svg_style.backgroundColor}"` : '';
 
-      return `<svg xmlns="http://www.w3.org/2000/svg" ${_textSizeAttr}${_textClearAttr}>${wrap.accPath}</svg>`;
+      return `<svg xmlns="${nsSVG}" ${_textSizeAttr}${_textClearAttr}>${wrap.accPath}</svg>`;
    };
 
    rndr.fillTargetSVG = function(svg) {
@@ -1563,7 +1563,7 @@ class PointsCreator {
 
       const handler = new TAttMarkerHandler({ style: args.style, color: args.color, size: 7 }),
             w = handler.fill ? 1 : 7,
-            imgdata = '<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">' +
+            imgdata = `<svg width="64" height="64" xmlns="${nsSVG}">` +
                       `<path d="${handler.create(32, 32)}" style="stroke: ${handler.getStrokeColor()}; stroke-width: ${w}; fill: ${handler.getFillColor()}"></path>`+
                       '</svg>',
             dataUrl = prSVG + (isNodeJs() ? imgdata : encodeURIComponent(imgdata));
