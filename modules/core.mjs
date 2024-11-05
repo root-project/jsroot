@@ -271,8 +271,8 @@ settings = {
      * @desc When specified, extra URL parameter like ```?stamp=unique_value``` append to each files loaded
      * In such case browser will be forced to load file content disregards of server cache settings
      * Can be disabled by providing &usestamp=false in URL or via Settings/Files sub-menu
-     * @default true */
-   UseStamp: true,
+     * Disabled by default on node.js, enabled in the web browsers */
+   UseStamp: !nodejs,
    /** @summary Maximal number of bytes ranges in http 'Range' header
      * @desc Some http server has limitations for number of bytes rannges therefore let change maximal number via setting
      * @default 200 */
