@@ -1294,13 +1294,16 @@ class StandaloneMenu extends JSRootMenu {
             if (!url)
                item.innerHTML = d.text;
             else {
+               item.style.display = 'flex';
+               item.style['justify-content'] = 'space-between';
+
                const txt = doc.createElement('span');
                txt.innerHTML = d.text;
                txt.style = 'display: inline-block; margin: 0;';
                item.appendChild(txt);
 
                const anchor = doc.createElement('span');
-               anchor.style = 'margin: 0; color: blue; opacity: 0.1; margin-left: 7px; float: right; cursor: pointer;';
+               anchor.style = 'margin: 0; color: blue; opacity: 0.1; margin-left: 7px; right: 3px; display: inline-block; cursor: pointer;';
                anchor.textContent = '?';
                anchor.title = url;
                anchor.addEventListener('click', () => {
