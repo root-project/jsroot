@@ -794,7 +794,7 @@ class TAxisPainter extends ObjectPainter {
    addTitleDrag(title_g, vertical, offset_k, reverse, axis_length) {
       if (!settings.MoveResize || this.isBatchMode()) return;
 
-      let drag_rect = null,
+      let drag_rect = null, x_0, y_0, i_0,
           acc_x, acc_y, new_x, new_y, sign_0, alt_pos, curr_indx;
       const drag_move = d3_drag().subject(Object);
 
@@ -805,8 +805,8 @@ class TAxisPainter extends ObjectPainter {
          const box = title_g.node().getBBox(), // check that elements visible, request precise value
              title_length = vertical ? box.height : box.width;
 
-         new_x = acc_x = title_g.property('shift_x');
-         new_y = acc_y = title_g.property('shift_y');
+         x_0 = new_x = acc_x = title_g.property('shift_x');
+         y_0 = new_y = acc_y = title_g.property('shift_y');
 
          sign_0 = vertical ? (acc_x > 0) : (acc_y > 0); // sign should remain
 
@@ -831,6 +831,7 @@ class TAxisPainter extends ObjectPainter {
             curr_indx = 2;
 
          alt_pos[curr_indx] = vertical ? acc_y : acc_x;
+         i_0 = curr_indx;
 
          drag_rect = title_g.append('rect')
             .attr('x', box.x)
@@ -853,7 +854,8 @@ class TAxisPainter extends ObjectPainter {
          const p = vertical ? acc_y : acc_x;
 
          for (let i = 1; i < 3; ++i)
-            if (Math.abs(p - alt_pos[i]) < Math.abs(p - alt_pos[besti])) besti = i;
+            if (Math.abs(p - alt_pos[i]) < Math.abs(p - alt_pos[besti]))
+               besti = i;
 
          if (vertical) {
             set_x = acc_x;
@@ -901,7 +903,8 @@ class TAxisPainter extends ObjectPainter {
          drag_rect.remove();
          drag_rect = null;
 
-         this.submitAxisExec(`SetTitleOffset(${offset});;SetBit(${EAxisBits.kCenterTitle},${this.titleCenter?1:0})`);
+         if ((x_0 !== new_x) || (y_0 !== new_y) || (i_0 !== curr_indx))
+            this.submitAxisExec(`SetTitleOffset(${offset});;SetBit(${EAxisBits.kCenterTitle},${this.titleCenter?1:0})`);
 
          if (this.hist_painter && this.hist_axis)
             this.hist_painter.getCanvPainter()?.producePadEvent('select', this.hist_painter.getPadPainter(), this);
