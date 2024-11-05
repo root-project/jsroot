@@ -523,9 +523,10 @@ class TPadPainter extends ObjectPainter {
    /** @summary method redirect call to pad events receiver */
    selectObjectPainter(painter, pos, place) {
       const istoppad = this.iscan || !this.has_canvas,
-          canp = istoppad ? this : this.getCanvPainter();
+            canp = istoppad ? this : this.getCanvPainter();
 
-      if (painter === undefined) painter = this;
+      if (painter === undefined)
+         painter = this;
 
       if (pos && !istoppad)
          pos = getAbsPosInCanvas(this.svg_this_pad(), pos);

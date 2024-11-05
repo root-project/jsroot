@@ -898,10 +898,13 @@ class TAxisPainter extends ObjectPainter {
             setBit(EAxisBits.kOppositeTitle, false); this.titleOpposite = false;
          }
 
-         this.submitAxisExec(`SetTitleOffset(${offset});;SetBit(${EAxisBits.kCenterTitle},${this.titleCenter?1:0})`);
-
          drag_rect.remove();
          drag_rect = null;
+
+         this.submitAxisExec(`SetTitleOffset(${offset});;SetBit(${EAxisBits.kCenterTitle},${this.titleCenter?1:0})`);
+
+         if (this.hist_painter && this.hist_axis)
+            this.hist_painter.getCanvPainter()?.producePadEvent('select', this.hist_painter.getPadPainter(), this);
       });
 
       title_g.style('cursor', 'move').call(drag_move);
