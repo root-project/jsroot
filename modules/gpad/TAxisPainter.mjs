@@ -409,6 +409,9 @@ class TAxisPainter extends ObjectPainter {
    /** @summary cleanup painter */
    cleanup() {
       this.cleanupAxisPainter();
+      delete this.hist_painter;
+      delete this.hist_axis;
+      delete this.is_gaxis;
       super.cleanup();
    }
 
