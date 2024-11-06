@@ -914,7 +914,8 @@ const TooltipHandler = {
 
       if (exact) {
          const handler = dblckick ? this._dblclick_handler : this._click_handler;
-         if (handler) res = handler(exact.user_info, pnt);
+         if (isFunc(handler))
+            res = handler(exact.user_info, pnt);
       }
 
       if (!dblckick) {
