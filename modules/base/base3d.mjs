@@ -1018,7 +1018,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       return null;
    };
 
-   control.getInfoAtMousePosition = function(mouse_pos) {
+   control.getInfoAtMousePosition = function(mouse_pos, only_painter) {
       const intersects = this.getMouseIntersects(mouse_pos);
       let tip = null, painter = null;
 
@@ -1029,6 +1029,9 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
             break;
          }
       }
+
+      if (only_painter)
+         return painter;
 
       if (tip && painter) {
          return { obj: painter.getObject(), name: painter.getObject().fName,
@@ -1245,6 +1248,13 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
          const intersects = this.getMouseIntersects(mouse_pos);
          this.processSingleClick(intersects);
       }
+
+      if (kind === 3) {
+         const objpainter = this.getInfoAtMousePosition(mouse_pos, true),
+               padp = objpainter?.getPadPainter(),
+               canvp = objpainter?.getCanvPainter();
+         canvp?.producePadEvent('select', padp, objpainter);
+      }
    };
 
    control.lstn_click = function(evnt) {
@@ -1258,9 +1268,11 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
 
       let kind = 0;
       if (isFunc(this.painter?.getFramePainter()?._click_handler))
-         kind = 1; // user click handler
+         kind = 1;  // user click handler
       else if (this.processSingleClick && this.painter?.options?.mouse_click)
          kind = 2;  // eve7 click handler
+      else if (this.painter?.getCanvPainter())
+         kind = 3;  // select event for GED
 
       // if normal event, set longer timeout waiting if double click not detected
       if (kind)
