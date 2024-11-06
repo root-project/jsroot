@@ -1179,10 +1179,10 @@ const TooltipHandler = {
             this.processFrameClick(pnt);
             break;
          case 2:
-            this.getPadPainter()?.selectObjectPainter(this, null, 'xaxis');
+            this.getPadPainter()?.selectObjectPainter(this.x_handle);
             break;
          case 3:
-            this.getPadPainter()?.selectObjectPainter(this, null, 'yaxis');
+            this.getPadPainter()?.selectObjectPainter(this.y_handle);
             break;
       }
 

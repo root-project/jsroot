@@ -316,16 +316,16 @@ class RPadPainter extends RObjectPainter {
    /** @summary Generate pad events, normally handled by GED
      * @desc in pad painter, while pad may be drawn without canvas
      * @private */
-   producePadEvent(what, padpainter, painter, position, place) {
+   producePadEvent(what, padpainter, painter, position) {
       if ((what === 'select') && isFunc(this.selectActivePad))
          this.selectActivePad(padpainter, painter, position);
 
-      if (this.pad_events_receiver)
-         this.pad_events_receiver({ what, padpainter, painter, position, place });
+      if (isFunc(this.pad_events_receiver))
+         this.pad_events_receiver({ what, padpainter, painter, position });
    }
 
    /** @summary method redirect call to pad events receiver */
-   selectObjectPainter(painter, pos, place) {
+   selectObjectPainter(painter, pos) {
       const istoppad = (this.iscan || !this.has_canvas),
           canp = istoppad ? this : this.getCanvPainter();
 
@@ -336,7 +336,7 @@ class RPadPainter extends RObjectPainter {
 
       selectActivePad({ pp: this, active: true });
 
-      canp.producePadEvent('select', this, painter, pos, place);
+      canp.producePadEvent('select', this, painter, pos);
    }
 
    /** @summary Set fast drawing property depending on the size

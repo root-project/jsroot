@@ -471,7 +471,7 @@ class TAxisPainter extends ObjectPainter {
                v = axis.GetBinLowEdge(i+1);
                if (v > 0) break;
                v = axis.GetBinCenter(i+1);
-               if (v > 0) break;
+               if (v > 0) break;this.is_gaxis
             }
             if (v > 0)
                this.log_min_nz = v;
@@ -798,7 +798,7 @@ class TAxisPainter extends ObjectPainter {
       if (!settings.MoveResize || this.isBatchMode()) return;
 
       let drag_rect = null, x_0, y_0, i_0,
-          acc_x, acc_y, new_x, new_y, sign_0, alt_pos, curr_indx;
+          acc_x, acc_y, new_x, new_y, sign_0, alt_pos, curr_indx, can_indx0 = true;
       const drag_move = d3_drag().subject(Object);
 
       drag_move.on('start', evnt => {
@@ -812,6 +812,7 @@ class TAxisPainter extends ObjectPainter {
          y_0 = new_y = acc_y = title_g.property('shift_y');
 
          sign_0 = vertical ? (acc_x > 0) : (acc_y > 0); // sign should remain
+         can_indx0 = !this.hist_painter?.snapid; // online canvas does not allow alternate position
 
          alt_pos = vertical ? [axis_length, axis_length/2, 0] : [0, axis_length/2, axis_length]; // possible positions
          const off = vertical ? -title_length/2 : title_length/2;
@@ -828,7 +829,7 @@ class TAxisPainter extends ObjectPainter {
 
          if (this.titleCenter)
             curr_indx = 1;
-         else if (reverse ^ this.titleOpposite)
+         else if ((reverse ^ this.titleOpposite) && can_indx0)
             curr_indx = 0;
          else
             curr_indx = 2;
@@ -853,7 +854,7 @@ class TAxisPainter extends ObjectPainter {
          acc_x += evnt.dx;
          acc_y += evnt.dy;
 
-         let set_x, set_y, besti = 0;
+         let set_x, set_y, besti = can_indx0 ? 0 : 1;
          const p = vertical ? acc_y : acc_x;
 
          for (let i = 1; i < 3; ++i)
@@ -869,7 +870,9 @@ class TAxisPainter extends ObjectPainter {
          }
 
          if (sign_0 === (vertical ? (set_x > 0) : (set_y > 0))) {
-            new_x = set_x; new_y = set_y; curr_indx = besti;
+            new_x = set_x;
+            new_y = set_y;
+            curr_indx = besti;
             makeTranslate(title_g, new_x, new_y);
          }
       }).on('end', evnt => {
