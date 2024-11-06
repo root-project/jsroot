@@ -1018,7 +1018,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       return null;
    };
 
-   control.getInfoAtMousePosition = function(mouse_pos, only_painter) {
+   control.getInfoAtMousePosition = function(mouse_pos) {
       const intersects = this.getMouseIntersects(mouse_pos);
       let tip = null, painter = null;
 
@@ -1029,9 +1029,6 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
             break;
          }
       }
-
-      if (only_painter)
-         return painter;
 
       if (tip && painter) {
          return { obj: painter.getObject(), name: painter.getObject().fName,
@@ -1250,8 +1247,12 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       }
 
       if (kind === 3) {
-         const objpainter = this.getInfoAtMousePosition(mouse_pos, true),
-               padp = objpainter?.getPadPainter(),
+         const intersects = this.getMouseIntersects(mouse_pos);
+         let objpainter = null;
+         for (let i = 0; !objpainter && (i < intersects.length); ++i)
+            objpainter = intersects[i].object.painter;
+
+         const padp = objpainter?.getPadPainter(),
                canvp = objpainter?.getCanvPainter();
          canvp?.producePadEvent('select', padp, objpainter);
       }
