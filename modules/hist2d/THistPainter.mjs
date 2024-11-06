@@ -69,6 +69,9 @@ class THistDrawOptions {
 
    /** @summary Is palette can be used with current draw options */
    canHavePalette() {
+      if (this.ndim === 3)
+         return this.BoxStyle === 12 || this.BoxStyle === 13 || this.GLBox === 12;
+
       if (this.ndim !== 2)
          return false;
 
