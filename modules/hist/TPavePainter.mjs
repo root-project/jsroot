@@ -822,6 +822,7 @@ class TPavePainter extends ObjectPainter {
             can_move = isStr(arg) && (arg.indexOf('can_move') >= 0),
             postpone_draw = isStr(arg) && (arg.indexOf('postpone') >= 0),
             cjust = isStr(arg) && (arg.indexOf('cjust') >= 0),
+            bring_stats_front = isStr(arg) && (arg.indexOf('bring_stats_front') >= 0),
             pp = this.getPadPainter(),
             width = pp.getPadWidth(),
             height = pp.getPadHeight(),
@@ -959,6 +960,9 @@ class TPavePainter extends ObjectPainter {
                r.on('dblclick', () => this.getFramePainter().unzoomSingle('z'));
          }
       }
+
+      if (bring_stats_front)
+         this.getPadPainter()?.findPainterFor(null, '', clTPaveStats)?.bringToFront();
 
       return this.z_handle.drawAxis(this.draw_g, s_width, s_height, axis_transform, axis_second).then(() => {
          let rect;

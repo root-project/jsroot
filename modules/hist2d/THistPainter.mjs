@@ -2189,7 +2189,7 @@ class THistPainter extends ObjectPainter {
       // TODO: use weak reference (via pad list of painters and any kind of string)
       pal.$main_painter = this;
 
-      let arg = '', pr;
+      let arg = 'bring_stats_front', pr;
       if (postpone_draw) arg += ';postpone';
       if (can_move && !this.do_redraw_palette) arg += ';can_move';
       if (this.options.Cjust) arg += ';cjust';
