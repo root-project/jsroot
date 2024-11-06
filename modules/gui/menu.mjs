@@ -744,8 +744,10 @@ class JSRootMenu {
       });
       this.addchk(faxis.TestBit(EAxisBits.kCenterTitle), 'Center',
             arg => { faxis.InvertBit(EAxisBits.kCenterTitle); painter.interactiveRedraw('pad', `exec:CenterTitle(${arg})`, kind); });
-      this.addchk(faxis.TestBit(EAxisBits.kOppositeTitle), 'Opposite',
-             () => { faxis.InvertBit(EAxisBits.kOppositeTitle); painter.redrawPad(); });
+      if (!painter?.snapid) {
+         this.addchk(faxis.TestBit(EAxisBits.kOppositeTitle), 'Opposite',
+                () => { faxis.InvertBit(EAxisBits.kOppositeTitle); painter.redrawPad(); });
+      }
       this.addchk(faxis.TestBit(EAxisBits.kRotateTitle), 'Rotate',
             arg => { faxis.InvertBit(EAxisBits.kRotateTitle); painter.interactiveRedraw('pad', is_gaxis ? `exec:SetBit(TAxis::kRotateTitle, ${arg})` : `exec:RotateTitle(${arg})`, kind); });
       if (is_gaxis) {

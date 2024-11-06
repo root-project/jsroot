@@ -2588,6 +2588,8 @@ class TFramePainter extends ObjectPainter {
                handle = this[`${kind}_handle`];
          if (!isFunc(faxis?.TestBit))
             return false;
+         const hist_painter = handle?.hist_painter || main;
+
          menu.header(`${kind.toUpperCase()} axis`, `${urlClassPrefix}${clTAxis}.html`);
 
          menu.sub('Range');
@@ -2638,8 +2640,8 @@ class TFramePainter extends ObjectPainter {
          }
          menu.addchk(faxis.TestBit(EAxisBits.kMoreLogLabels), 'More log', flag => {
             faxis.InvertBit(EAxisBits.kMoreLogLabels);
-            if (main?.snapid && (kind.length === 1))
-               main.interactiveRedraw('pad', `exec:SetMoreLogLabels(${flag})`, kind);
+            if (hist_painter?.snapid && (kind.length === 1))
+               hist_painter.interactiveRedraw('pad', `exec:SetMoreLogLabels(${flag})`, kind);
             else
                this.interactiveRedraw('pad');
          });
@@ -2648,16 +2650,16 @@ class TFramePainter extends ObjectPainter {
                faxis.InvertBit(EAxisBits.kNoExponent);
             if (handle) handle.noexp_changed = true;
             this[`${kind}_noexp_changed`] = true;
-            if (main?.snapid && (kind.length === 1))
-               main.interactiveRedraw('pad', `exec:SetNoExponent(${flag})`, kind);
+            if (hist_painter?.snapid && (kind.length === 1))
+               hist_painter.interactiveRedraw('pad', `exec:SetNoExponent(${flag})`, kind);
             else
                this.interactiveRedraw('pad');
          });
 
-         if ((kind === 'z') && isFunc(main?.fillPaletteMenu))
-            main.fillPaletteMenu(menu, !is_pal);
+         if ((kind === 'z') && isFunc(hist_painter?.fillPaletteMenu))
+            hist_painter.fillPaletteMenu(menu, !is_pal);
 
-         menu.addTAxisMenu(EAxisBits, main || this, faxis, kind, handle, this);
+         menu.addTAxisMenu(EAxisBits, hist_painter || this, faxis, kind, handle, this);
          return true;
       }
 
