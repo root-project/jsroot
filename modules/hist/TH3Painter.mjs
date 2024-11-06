@@ -655,6 +655,7 @@ class TH3Painter extends THistPainter {
       pp.addPadButton('auto_zoom', 'Unzoom all axes', 'ToggleZoom', 'Ctrl *');
       if (this.draw_content)
          pp.addPadButton('statbox', 'Toggle stat box', 'ToggleStatBox');
+      pp.addPadButton('th2colorz', 'Toggle color palette', 'ToggleColorZ');
       pp.showPadButtons();
    }
 

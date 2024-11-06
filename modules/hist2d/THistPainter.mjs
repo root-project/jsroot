@@ -1889,6 +1889,7 @@ class THistPainter extends ObjectPainter {
          case 'ToggleLogY': return fp.toggleAxisLog('y');
          case 'ToggleLogZ': return fp.toggleAxisLog('z');
          case 'ToggleStatBox': return getPromise(this.toggleStat());
+         case 'ToggleColorZ': return this.toggleColz();
       }
       return false;
    }
