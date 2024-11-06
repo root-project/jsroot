@@ -369,7 +369,7 @@ class TH3Painter extends THistPainter {
       if (!this.draw_content)
          return false;
 
-      let box_option = this.options.Box ? this.options.BoxStyle : 0;
+      let box_option = this.options.BoxStyle;
 
       if (!box_option && this.options.Scat) {
          const promise = this.draw3DScatter();
@@ -394,7 +394,8 @@ class TH3Painter extends THistPainter {
       if ((this.options.GLBox === 11) || (this.options.GLBox === 12)) {
          tipscale = 0.4;
          use_lambert = true;
-         if (this.options.GLBox === 12) use_colors = true;
+         if (this.options.GLBox === 12)
+            use_colors = true;
 
          single_bin_geom = new THREE.SphereGeometry(0.5, main.webgl ? 16 : 8, main.webgl ? 12 : 6);
          single_bin_geom.applyMatrix4(new THREE.Matrix4().makeRotationX(Math.PI/2));
@@ -422,7 +423,7 @@ class TH3Painter extends THistPainter {
 
          if (box_option === 12)
             use_colors = true;
-            else if (box_option === 13) {
+         else if (box_option === 13) {
             use_colors = true;
             use_helper = false;
          } else if (this.options.GLColor) {
