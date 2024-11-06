@@ -1249,12 +1249,16 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       if (kind === 3) {
          const intersects = this.getMouseIntersects(mouse_pos);
          let objpainter = null;
-         for (let i = 0; !objpainter && (i < intersects.length); ++i)
-            objpainter = intersects[i].object.painter;
-
-         const padp = objpainter?.getPadPainter(),
-               canvp = objpainter?.getCanvPainter();
-         canvp?.producePadEvent('select', padp, objpainter);
+         for (let i = 0; !objpainter && (i < intersects.length); ++i) {
+            const obj3d = intersects[i].object;
+            objpainter = obj3d.painter || obj3d.parent?.painter; // check one top level
+         }
+         if (objpainter) {
+            // while axis painter not directly appears in the list of primitives, pad and canvas take from frame
+            const padp = this.painter?.getPadPainter(),
+                  canvp = this.painter?.getCanvPainter();
+            canvp?.producePadEvent('select', padp, objpainter);
+         }
       }
    };
 
