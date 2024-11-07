@@ -38,15 +38,6 @@
       "email": "s.linev@gsi.de"
     }
   ],
-  "dependencies": {
-    "@oneidentity/zstd-js": "^1.0.3",
-    "canvas": "^2.11.2",
-    "jsdom": "^25.0.1",
-    "mathjax": "3.2.2",
-    "tmp": "^0.2.3",
-    "xhr2": "^0.2.1",
-    "three": "0.162.0"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/root-project/jsroot.git"
@@ -64,7 +55,17 @@
     "types.d.ts",
     "LICENSE"
   ],
+  "dependencies": {
+    "@oneidentity/zstd-js": "^1.0.3",
+    "canvas": "^2.11.2",
+    "jsdom": "^25.0.1",
+    "mathjax": "3.2.2",
+    "tmp": "^0.2.3",
+    "xhr2": "^0.2.1",
+    "three": "0.162.0"
+  },
   "devDependencies": {
+    "gl": "8.1.6",
     "@rollup/plugin-json": "6",
     "@rollup/plugin-node-resolve": "15",
     "@rollup/plugin-terser": "0",
