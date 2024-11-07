@@ -936,7 +936,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    top.axis_draw = true; // mark element as axis drawing
    toplevel.add(top);
 
-   let ticks = [], lbls = [], maxtextheight = 0;
+   let ticks = [], lbls = [], maxtextheight = 0, maxtextwidth = 0;
 
    while (xticks.next()) {
       const grx = xticks.grpos;
@@ -961,6 +961,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
          text3d.offsety = this.x_handle.labelsOffset + (grmaxy - grminy) * 0.005;
 
+         maxtextwidth = Math.max(maxtextwidth, draw_width);
          maxtextheight = Math.max(maxtextheight, draw_height);
 
          if (mod?.fTextColor) text3d.color = this.getColor(mod.fTextColor);
@@ -973,6 +974,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
             if ((draw_width > 0) && (space > 0))
                text_scale = Math.min(text_scale, 0.9*space/draw_width);
          }
+         if (this.x_handle.isRotateLabels())
+            text3d.rotate = 1;
 
          if (this.x_handle.isCenteredLabels()) {
             if (!space) space = Math.min(grx - grminx, grmaxx - grx);
@@ -1117,17 +1120,26 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    }
 
    lbls.forEach(lbl => {
-      const w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
-          posx = lbl.center ? lbl.grx - w/2 : (lbl.opposite ? grminx : grmaxx - w),
-          m = new THREE.Matrix4();
+      const dx = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
+            dy = lbl.boundingBox.max.y - lbl.boundingBox.min.y,
+            w = (lbl.rotate === 1) ? dy : dx,
+            posx = lbl.center ? lbl.grx - w/2 : (lbl.opposite ? grminx : grmaxx - w),
+            posy = -text_scale * (lbl.rotate === 1 ? maxtextwidth : maxtextheight) - this.x_handle.ticksSize - lbl.offsety,
+            m = new THREE.Matrix4();
 
       // matrix to swap y and z scales and shift along z to its position
       m.set(text_scale, 0, 0, posx,
-            0, text_scale, 0, -maxtextheight*text_scale - this.x_handle.ticksSize - lbl.offsety,
+            0, text_scale, 0, posy,
             0, 0, 1, 0,
             0, 0, 0, 1);
 
       const mesh = new THREE.Mesh(lbl, getTextMaterial(this.x_handle, lbl.kind, lbl.color));
+
+      if(lbl.rotate)
+         mesh.rotateZ(lbl.rotate * Math.PI / 2);
+      if (lbl.rotate === 1)
+         mesh.translateY(-dy);
+
       mesh.applyMatrix4(m);
       xcont.add(mesh);
    });
