@@ -793,6 +793,11 @@ class TAxisPainter extends ObjectPainter {
       return this.getObject()?.TestBit(EAxisBits.kCenterLabels);
    }
 
+   /** @summary Is labels should be rotated */
+   isRotateLabels() {
+      return this.getObject()?.TestBit(EAxisBits.kLabelsVert);
+   }
+
    /** @summary Add interactive elements to draw axes title */
    addTitleDrag(title_g, vertical, offset_k, reverse, axis_length) {
       if (!settings.MoveResize || this.isBatchMode()) return;
@@ -996,7 +1001,7 @@ class TAxisPainter extends ObjectPainter {
             label_g = [axis_g.append('svg:g').attr('class', 'axis_labels')],
             lbl_pos = handle.lbl_pos || handle.major,
             tilt_angle = gStyle.AxisTiltAngle ?? 25;
-      let rotate_lbls = axis.TestBit(EAxisBits.kLabelsVert),
+      let rotate_lbls = this.isRotateLabels(),
           textscale = 1, flipscale = 1, maxtextlen = 0, applied_scale = 0,
           lbl_tilt = false, any_modified = false, max_textwidth = 0, max_tiltsize = 0;
 
