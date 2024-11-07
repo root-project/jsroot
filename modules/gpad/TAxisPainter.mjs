@@ -471,7 +471,7 @@ class TAxisPainter extends ObjectPainter {
                v = axis.GetBinLowEdge(i+1);
                if (v > 0) break;
                v = axis.GetBinCenter(i+1);
-               if (v > 0) break;this.is_gaxis
+               if (v > 0) break;
             }
             if (v > 0)
                this.log_min_nz = v;
@@ -857,9 +857,10 @@ class TAxisPainter extends ObjectPainter {
          let set_x, set_y, besti = can_indx0 ? 0 : 1;
          const p = vertical ? acc_y : acc_x;
 
-         for (let i = 1; i < 3; ++i)
+         for (let i = 1; i < 3; ++i) {
             if (Math.abs(p - alt_pos[i]) < Math.abs(p - alt_pos[besti]))
                besti = i;
+         }
 
          if (vertical) {
             set_x = acc_x;
