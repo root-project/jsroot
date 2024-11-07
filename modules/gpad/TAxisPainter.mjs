@@ -798,6 +798,11 @@ class TAxisPainter extends ObjectPainter {
       return this.getObject()?.TestBit(EAxisBits.kLabelsVert);
    }
 
+   /** @summary Is title should be rotated */
+   isRotateTitle() {
+      return this.getObject()?.TestBit(EAxisBits.kRotateTitle);
+   }
+
    /** @summary Add interactive elements to draw axes title */
    addTitleDrag(title_g, vertical, offset_k, reverse, axis_length) {
       if (!settings.MoveResize || this.isBatchMode()) return;
@@ -1391,7 +1396,7 @@ class TAxisPainter extends ObjectPainter {
          if (!title_g)
             return;
 
-         const rotate = axis.TestBit(EAxisBits.kRotateTitle) ? -1 : 1,
+         const rotate = this.isRotateTitle() ? -1 : 1,
                xor_reverse = swap_side ^ this.titleOpposite, myxor = (rotate < 0) ^ xor_reverse;
 
          let title_offest_k = side;
