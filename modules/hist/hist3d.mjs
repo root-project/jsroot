@@ -1138,7 +1138,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
       const mesh = new THREE.Mesh(lbl, getTextMaterial(this.x_handle, lbl.kind, lbl.color));
 
-      if(lbl.rotate)
+      if (lbl.rotate)
          mesh.rotateZ(lbl.rotate * Math.PI / 2);
       if (lbl.rotate === 1)
          mesh.translateY(-dy);
@@ -1162,7 +1162,6 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       xcont.add(new THREE.LineSegments(xtickslines.geometry, xtickslines.material));
 
    lbls.forEach(lbl => {
-
       const dx = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
             dy = lbl.boundingBox.max.y - lbl.boundingBox.min.y,
             w = (lbl.rotate === 1) ? dy : dx,
@@ -1177,7 +1176,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
             0, 0, 0, 1);
 
       const mesh = new THREE.Mesh(lbl, getTextMaterial(this.x_handle, lbl.kind, lbl.color));
-      if(lbl.rotate)
+      if (lbl.rotate)
          mesh.rotateZ(lbl.rotate * Math.PI / 2);
       if (lbl.rotate === 1)
          mesh.translateY(-dy);
@@ -1192,7 +1191,10 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       xcont.add(createZoomMesh('x', this.size_x3d));
    top.add(xcont);
 
-   lbls = []; text_scale = 1; maxtextheight = 0; ticks = [];
+   lbls = [];
+   text_scale = 1;
+   maxtextwidth = maxtextheight = 0;
+   ticks = [];
 
    while (yticks.next()) {
       const gry = yticks.grpos;
@@ -1212,9 +1214,10 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          const text3d = createLatexGeometry(this, lbl, this.y_handle.labelsFont.size);
          text3d.computeBoundingBox();
          const draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
-             draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
+               draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
          text3d.center = true;
 
+         maxtextwidth = Math.max(maxtextwidth, draw_width);
          maxtextheight = Math.max(maxtextheight, draw_height);
 
          if (mod?.fTextColor) text3d.color = this.getColor(mod.fTextColor);
@@ -1262,7 +1265,6 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       }
 
       lbls.forEach(lbl => {
-
          const dx = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
                dy = lbl.boundingBox.max.y - lbl.boundingBox.min.y,
                w = (lbl.rotate === 1) ? dy : dx,
@@ -1275,7 +1277,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
                0, 0, 0, 1);
 
          const mesh = new THREE.Mesh(lbl, getTextMaterial(this.y_handle, lbl.kind, lbl.color));
-         if(lbl.rotate)
+         if (lbl.rotate)
             mesh.rotateZ(lbl.rotate * Math.PI / 2);
          if (lbl.rotate === 1)
             mesh.translateY(-dy);
@@ -1312,7 +1314,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
                0, 0, 0, 1);
 
          const mesh = new THREE.Mesh(lbl, getTextMaterial(this.y_handle, lbl.kind, lbl.color));
-         if(lbl.rotate)
+         if (lbl.rotate)
             mesh.rotateZ(lbl.rotate * Math.PI / 2);
          if (lbl.rotate === 1)
             mesh.translateY(-dy);
@@ -1441,9 +1443,9 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          const dx = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
                dy = text3d.boundingBox.max.y - text3d.boundingBox.min.y,
                rotate = this.z_handle.isRotateTitle(),
-               posz = this.z_handle.titleCenter ? (grmaxz + grminz - dx)/2 : (this.z_handle.titleOpposite ? grminz : grmaxz - dx) + (rotate ? dx : 0);
+               posz = this.z_handle.titleCenter ? (grmaxz + grminz - dx)/2 : (this.z_handle.titleOpposite ? grminz : grmaxz - dx) + (rotate ? dx : 0),
+               m = new THREE.Matrix4();
 
-         const m = new THREE.Matrix4();
          m.set(-text_scale, 0, 0, this.z_handle.ticksSize + (grmaxx - grminx) * 0.005 + maxzlblwidth + this.z_handle.titleOffset,
                          0, 0, 1, 0,
                          0, text_scale, 0, posz);
