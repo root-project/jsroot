@@ -1246,7 +1246,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       text3d.offsetx = 1.6 * this.y_handle.titleOffset + (grmaxx - grminx) * 0.005;
       text3d.gry = (grminy + grmaxy)/2; // default position for centered title
       text3d.kind = 'title';
-      if (this.x_handle.isRotateTitle())
+      if (this.y_handle.isRotateTitle())
          text3d.rotate = 2;
       lbls.push(text3d);
    }
@@ -1269,8 +1269,6 @@ function drawXYZ(toplevel, AxisPainter, opts) {
                posx = -text_scale * (lbl.rotate === 1 ? maxtextwidth : maxtextheight) - this.y_handle.ticksSize - lbl.offsetx,
                posy = lbl.center ? lbl.gry + w/2 : (lbl.opposite ? grminy + w : grmaxy),
                m = new THREE.Matrix4();
-
-         // matrix to swap y and z scales and shift along z to its position
          m.set(0, text_scale, 0, posx,
                -text_scale, 0, 0, posy,
                0, 0, 1, 0,
@@ -1301,7 +1299,6 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          ycont.add(new THREE.LineSegments(yticksline.geometry, yticksline.material));
 
       lbls.forEach(lbl => {
-
          const dx = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
                dy = lbl.boundingBox.max.y - lbl.boundingBox.min.y,
                w = (lbl.rotate === 1) ? dy : dx,
@@ -1309,7 +1306,6 @@ function drawXYZ(toplevel, AxisPainter, opts) {
                posy = lbl.center ? lbl.gry - w/2 : (lbl.opposite ? grminy : grmaxy - w),
                m = new THREE.Matrix4();
 
-         // matrix to swap y and z scales and shift along z to its position
          m.set(0, text_scale, 0, posx,
                text_scale, 0, 0, posy,
                0, 0, -1, 0,
@@ -1354,7 +1350,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          const text3d = createLatexGeometry(this, lbl, this.z_handle.labelsFont.size);
          text3d.computeBoundingBox();
          const draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
-             draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
+               draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
          text3d.translate(-draw_width, -draw_height/2, 0);
 
         if (mod?.fTextColor) text3d.color = this.getColor(mod.fTextColor);
@@ -1416,7 +1412,9 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       zcont.push(new THREE.Object3D());
 
       lbls.forEach((lbl, indx) => {
-         const m = new THREE.Matrix4();
+         const m = new THREE.Matrix4(),
+               dx = lbl.boundingBox.max.x - lbl.boundingBox.min.x;
+
          let grz = lbl.grz;
 
          if (this.z_handle.isCenteredLabels()) {
@@ -1431,6 +1429,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
                          0, 0, 1, 0,
                          0, text_scale, 0, grz);
          const mesh = new THREE.Mesh(lbl, getTextMaterial(this.z_handle));
+         if (this.z_handle.isRotateLabels())
+            mesh.rotateZ(-Math.PI/2).translateX(dx/2);
          mesh.applyMatrix4(m);
          zcont[n].add(mesh);
       });
@@ -1438,16 +1438,19 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       if (this.z_handle.fTitle && opts.draw) {
          const text3d = createLatexGeometry(this, this.z_handle.fTitle, this.z_handle.titleFont.size);
          text3d.computeBoundingBox();
-         const draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
-             posz = this.z_handle.titleCenter ? (grmaxz + grminz - draw_width)/2 : (this.z_handle.titleOpposite ? grminz : grmaxz - draw_width);
-
-         text3d.rotateZ(Math.PI/2);
+         const dx = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
+               dy = text3d.boundingBox.max.y - text3d.boundingBox.min.y,
+               rotate = this.z_handle.isRotateTitle(),
+               posz = this.z_handle.titleCenter ? (grmaxz + grminz - dx)/2 : (this.z_handle.titleOpposite ? grminz : grmaxz - dx) + (rotate ? dx : 0);
 
          const m = new THREE.Matrix4();
          m.set(-text_scale, 0, 0, this.z_handle.ticksSize + (grmaxx - grminx) * 0.005 + maxzlblwidth + this.z_handle.titleOffset,
                          0, 0, 1, 0,
                          0, text_scale, 0, posz);
          const mesh = new THREE.Mesh(text3d, getTextMaterial(this.z_handle, 'title'));
+         mesh.rotateZ(Math.PI*(rotate ? 1.5 : 0.5));
+         if (rotate) mesh.translateY(-dy);
+
          mesh.applyMatrix4(m);
          zcont[n].add(mesh);
       }
