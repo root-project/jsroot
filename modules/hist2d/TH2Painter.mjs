@@ -2488,7 +2488,7 @@ class TH2Painter extends THistPainter {
       if (this.maxbin > 0.7) factor = 0.7/this.maxbin;
 
       const nlevels = Math.round(handle.max - handle.min),
-          cntr = this.createContour((nlevels > 50) ? 50 : nlevels, this.minposbin, this.maxbin, this.minposbin);
+            cntr = this.createContour((nlevels > 50) ? 50 : nlevels, this.minposbin, this.maxbin, this.minposbin);
 
       // now start build
       for (i = handle.i1; i < handle.i2; ++i) {

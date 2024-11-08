@@ -2444,7 +2444,7 @@ class THistPainter extends ObjectPainter {
                this.maxbin = Math.max(this.maxbin, binz);
                this.minbin = Math.min(this.minbin, binz);
             }
-            if ((binz > 0) && (this.minposbin === 0) || (binz < this.minposbin))
+            if ((binz > 0) && ((this.minposbin === 0) || (binz < this.minposbin)))
                this.minposbin = binz;
          }
       }
