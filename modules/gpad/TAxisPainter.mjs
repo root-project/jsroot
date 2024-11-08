@@ -1306,9 +1306,6 @@ class TAxisPainter extends ObjectPainter {
       if (this.is_gaxis)
          draw_lines = axis.fLineColor !== 0;
 
-      // indicate that attributes created not for TAttLine, therefore cannot be updated as TAttLine in GED
-      this.lineatt.not_standard = true;
-
       if (!this.is_gaxis || (this.name === 'zaxis')) {
          axis_g = layer.selectChild(`.${this.name}_container`);
          if (axis_g.empty())
