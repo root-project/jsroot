@@ -2538,6 +2538,8 @@ class TFramePainter extends ObjectPainter {
       main_svg.attr('width', this._frame_width)
               .attr('height', this._frame_height)
               .attr('viewBox', `0 0 ${this._frame_width} ${this._frame_height}`);
+
+      return this;
    }
 
    /** @summary Change log state of specified axis
