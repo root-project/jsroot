@@ -937,6 +937,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    toplevel.add(top);
 
    let ticks = [], lbls = [], maxtextheight = 0, maxtextwidth = 0;
+   const center_x = this.x_handle.isCenteredLabels(),
+         rotate_x = this.x_handle.isRotateLabels();
 
    while (xticks.next()) {
       const grx = xticks.grpos;
@@ -949,7 +951,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          is_major = false; lbl = '';
       }
 
-      if (is_major && lbl && opts.draw) {
+      if (is_major && lbl && opts.draw && (!center_x || !xticks.last_major())) {
          const mod = xticks.get_modifier();
          if (mod?.fLabText) lbl = mod.fLabText;
 
@@ -974,10 +976,10 @@ function drawXYZ(toplevel, AxisPainter, opts) {
             if ((draw_width > 0) && (space > 0))
                text_scale = Math.min(text_scale, 0.9*space/draw_width);
          }
-         if (this.x_handle.isRotateLabels())
+         if (rotate_x)
             text3d.rotate = 1;
 
-         if (this.x_handle.isCenteredLabels()) {
+         if (center_x) {
             if (!space) space = Math.min(grx - grminx, grmaxx - grx);
             text3d.grx += space/2;
          }
@@ -1196,6 +1198,9 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    maxtextwidth = maxtextheight = 0;
    ticks = [];
 
+   const center_y = this.y_handle.isCenteredLabels(),
+         rotate_y = this.y_handle.isRotateLabels();
+
    while (yticks.next()) {
       const gry = yticks.grpos;
       let is_major = (yticks.kind === 1),
@@ -1207,7 +1212,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          is_major = false; lbl = '';
       }
 
-      if (is_major && lbl && opts.draw) {
+      if (is_major && lbl && opts.draw && (!center_y || !yticks.last_major())) {
          const mod = yticks.get_modifier();
          if (mod?.fLabText) lbl = mod.fLabText;
 
@@ -1231,11 +1236,11 @@ function drawXYZ(toplevel, AxisPainter, opts) {
             if (draw_width > 0)
                text_scale = Math.min(text_scale, 0.9*space/draw_width);
          }
-         if (this.y_handle.isCenteredLabels()) {
+         if (center_y) {
             if (!space) space = Math.min(gry - grminy, grmaxy - gry);
             text3d.gry += space/2;
          }
-         if (this.y_handle.isRotateLabels())
+         if (rotate_y)
             text3d.rotate = 1;
       }
       ticks.push(0, gry, 0, this.y_handle.ticksSize*(is_major ? -1 : -0.6), gry, 0);
@@ -1334,6 +1339,9 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
    let zgridx = null, zgridy = null, lastmajorz = null, maxzlblwidth = 0;
 
+   const center_z = this.z_handle.isCenteredLabels(),
+         rotate_z = this.z_handle.isRotateLabels();
+
    if (this.size_z3d && opts.drawany) {
       zgridx = []; zgridy = [];
    }
@@ -1345,7 +1353,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
       if (lbl === null) { is_major = false; lbl = ''; }
 
-      if (is_major && lbl && opts.draw) {
+      if (is_major && lbl && opts.draw && (!center_z || !zticks.last_major())) {
          const mod = zticks.get_modifier();
          if (mod?.fLabText) lbl = mod.fLabText;
 
@@ -1419,7 +1427,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
          let grz = lbl.grz;
 
-         if (this.z_handle.isCenteredLabels()) {
+         if (center_z) {
             if (indx < lbls.length - 1)
                grz = (grz + lbls[indx+1].grz) / 2;
             else if (indx > 0)
@@ -1431,7 +1439,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
                          0, 0, 1, 0,
                          0, text_scale, 0, grz);
          const mesh = new THREE.Mesh(lbl, getTextMaterial(this.z_handle));
-         if (this.z_handle.isRotateLabels())
+         if (rotate_z)
             mesh.rotateZ(-Math.PI/2).translateX(dx/2);
          mesh.applyMatrix4(m);
          zcont[n].add(mesh);
