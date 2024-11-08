@@ -370,5 +370,11 @@
       { "name": "div", "url": "nobrowser&inject=../demo/custom/divhist.mjs&file=demo/custom/divhist.root&item=DivHist", "title": "Draw division of two histograms from user class, see demo/custom/ dir for details" },
       { "name": "sub", "url": "nobrowser&inject=../demo/custom/divhist.mjs&file=demo/custom/divhist.root&item=DivHist/Num", "title": "Draw subelement of user class, accessed via exapnd function implemented in demo/custom/divhist.js" },
       { "name": "pads", "url": "nobrowser&inject=../demo/custom/divhist.mjs&file=demo/custom/divhist.root&item=DivHist&opt=pads", "title": "Create canvas and draw all elements in sub pads" }
+   ],
+   "TWebCanvas": [
+      { "name": "colorwheel", "json": "web6canv/colorwheel.json.gz", "title": "TColowWheel painting on web canvas" },
+      { "name": "greyscale", "json": "web6canv/greyscale.json.gz", "title": "40K TBox objects with different fill attributes" },
+      { "name": "para", "json": "web6canv/StandAloneaPara.json.gz", "title": "TTree drawing into TParallelCoord object" }
    ]
+
 }
