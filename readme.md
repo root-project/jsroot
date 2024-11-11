@@ -45,7 +45,7 @@ writeFileSync('lego2.svg', svg);
 npm install jsroot
 ```
 For 3D rendering jsroot uses [gl](https://www.npmjs.com/package/gl) package which may have problems
-during installation. To use jsroot without `gl` one can mit development packages:
+during installation. To use jsroot without `gl` one can omit development packages:
 ```
 npm install jsroot --omit=dev
 ```
