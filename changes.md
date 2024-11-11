@@ -1,6 +1,6 @@
 # JSROOT changelog
 
-## Changes in dev
+## Changes in 7.8.0
 1. Let use custom time zone for time display, support '&utc' and '&cet' in URL parameters
 2. Support gStyle.fLegendFillStyle
 3. Let change histogram min/max values via context menu
@@ -22,12 +22,12 @@
 19. Support inject of ES6 modules via '&inject=path.mjs'
 20. Using importmap for 'jsroot' in all major HTML files and in demos
 21. Implement `settings.CutAxisLabels` flag to remove labels which may exceed graphical range
-22. Let disable usage of TAxis custom labels via context menu
+22. Let disable usage of `TAxis` custom labels via context menu
 23. Let configure default draw options via context menu, they can be preserved in the local storage
 24. Let save canvas as JSON file from context menu, object as JSON from inspector
 25. Upgrade three.js r162 -> r168, use r162 only in node.js because of "gl" module
 26. Create unified svg2pdf/jspdf ES6 modules, integrate in jsroot builds
-27. Let create multipage PDF document - in TWebCanvas batch mode
+27. Let create multipage PDF document - in `TWebCanvas` batch mode
 28. Let add external links via `#url[link]{label}` syntax - including jsPDF support
 29. Support `TAttMarker` style with line width bigger than 1
 30. Provide link to ROOT class documentation from context menus
