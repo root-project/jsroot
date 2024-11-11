@@ -39,6 +39,7 @@
 36. Fix - show empty bin in `TProfile2D` if it has entries #316
 37. Fix - unzooming on log scale was extending range forevever
 38. Fix - display empty hist bin if fSumw2 not zero
+39. Fix - geometry display on android devices
 
 
 ## Changes in 7.7.5
