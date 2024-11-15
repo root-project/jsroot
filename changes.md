@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in 7.8.x
+1. Fix - correctly position title according to gStyle->GetTitleAlign()
+
+
 ## Changes in 7.8.0
 1. Let use custom time zone for time display, support '&utc' and '&cet' in URL parameters
 2. Support gStyle.fLegendFillStyle
