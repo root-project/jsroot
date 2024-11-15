@@ -2,6 +2,7 @@
 
 ## Changes in dev
 1. Implement cont5 draw option for TGraph2D using Delaunay algorithm
+1. Fix - correctly position title according to gStyle->GetTitleAlign()
 
 
 ## Changes in 7.8.0

@@ -1403,7 +1403,7 @@ class TPavePainter extends ObjectPainter {
                const st = gStyle, fp = painter.getFramePainter();
                if (st && fp) {
                   const midx = st.fTitleX, y2 = st.fTitleY,
-                        valign = st.fTitleAlign % 10, halign = (st.fTitleAlign  - valign) / 10,
+                        valign = st.fTitleAlign % 10, halign = (st.fTitleAlign - valign) / 10,
                         title = pave.fLines?.arr[0]?.fTitle;
                   let w = st.fTitleW, h = st.fTitleH, fsz = st.fTitleFontSize;
                   if (fsz > 1) fsz = fsz / fp.getFrameWidth();
@@ -1412,7 +1412,7 @@ class TPavePainter extends ObjectPainter {
                   if (!Number.isFinite(h) || (h <= 0)) h = 0.06;
                   if (!Number.isFinite(w) || (w <= 0)) w = 0.44;
 
-                  pave.fX1NDC = halign < 2 ? midx : (halign > 2 ? midx - w :  midx - w/2);
+                  pave.fX1NDC = halign < 2 ? midx : (halign > 2 ? midx - w : midx - w/2);
                   pave.fY1NDC = valign === 3 ? y2 - h : (valign === 2 ? y2 - h / 2 : y2);
                   pave.fX2NDC = pave.fX1NDC + w;
                   pave.fY2NDC = pave.fY1NDC + h;
