@@ -1,6 +1,6 @@
 import { settings, createHistogram, setHistogramTitle, kNoZoom,
          clTH2F, clTGraph2DErrors, clTGraph2DAsymmErrors, clTPaletteAxis, kNoStats } from '../core.mjs';
-import { DrawOptions } from '../base/BasePainter.mjs';
+import { buildSvgCurve, DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { TH2Painter } from './TH2Painter.mjs';
 import { Triangles3DHandler } from '../hist2d/TH2Painter.mjs';
@@ -1332,17 +1332,32 @@ class TGraph2DPainter extends ObjectPainter {
    }
 
    async drawContour(fp, main, graph) {
-      console.log('drawing contour');
-
       const dulaunay = this.buildDelaunay(graph);
       if (!dulaunay)
          return this;
 
-      const levels = main.getContourLevels();
+      const cntr = main.getContour(),
+            palette = main.getHistPalette(),
+            levels = cntr.getLevels(),
+            funcs = fp.getGrFuncs();
+
+      this.createG(true);
 
       for (let k = 0; k < levels.length; ++k) {
-         const lst = dulaunay.GetContourList(levels[k]);
-         console.log(`lvl ${k} value ${levels[k]} nseg ${lst.length}`)
+         const lst = dulaunay.GetContourList(levels[k]),
+               color = cntr.getPaletteColor(palette, levels[k]);
+         let path = '';
+         for (let i = 0; i < lst.length; ++i) {
+            const gr = lst[i], arr = [];
+            for (let n = 0; n < gr.length; n += 2)
+               arr.push({ grx: funcs.grx(gr[n]), gry: funcs.gry(gr[n+1]) });
+            path += buildSvgCurve(arr, { cmd: 'M', line: true });
+         }
+
+         this.draw_g.append('svg:path')
+             .attr('d', path)
+             .style('fill', 'none')
+             .style('stroke', color);
       }
 
       return this;
