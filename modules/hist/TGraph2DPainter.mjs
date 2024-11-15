@@ -1343,6 +1343,8 @@ class TGraph2DPainter extends ObjectPainter {
 
       this.createG(true);
 
+      this.createAttLine({ attr: graph, nocolor: true });
+
       for (let k = 0; k < levels.length; ++k) {
          const lst = dulaunay.GetContourList(levels[k]),
                color = cntr.getPaletteColor(palette, levels[k]);
@@ -1354,10 +1356,12 @@ class TGraph2DPainter extends ObjectPainter {
             path += buildSvgCurve(arr, { cmd: 'M', line: true });
          }
 
+         this.lineatt.color = color;
+
          this.draw_g.append('svg:path')
              .attr('d', path)
              .style('fill', 'none')
-             .style('stroke', color);
+             .call(this.lineatt.func);
       }
 
       return this;

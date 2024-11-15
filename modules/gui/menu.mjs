@@ -579,12 +579,14 @@ class JSRootMenu {
             if (pp) changeObjectMember(pp, 'fFrameLineWidth', arg);
             painter.interactiveRedraw(redraw_arg, `exec:SetLineWidth(${arg})`);
          });
-         this.addColorMenu('color', painter.lineatt.color, arg => {
-            painter.lineatt.change(arg);
-            changeObjectMember(painter, 'fLineColor', arg, true);
-            if (pp) changeObjectMember(pp, 'fFrameLineColor', arg, true);
-            painter.interactiveRedraw(redraw_arg, getColorExec(arg, 'SetLineColor'));
-         });
+         if (!painter.lineatt.nocolor) {
+            this.addColorMenu('color', painter.lineatt.color, arg => {
+               painter.lineatt.change(arg);
+               changeObjectMember(painter, 'fLineColor', arg, true);
+               if (pp) changeObjectMember(pp, 'fFrameLineColor', arg, true);
+               painter.interactiveRedraw(redraw_arg, getColorExec(arg, 'SetLineColor'));
+            });
+         }
          this.addLineStyleMenu('style', painter.lineatt.style, id => {
             painter.lineatt.change(undefined, undefined, id);
             changeObjectMember(painter, 'fLineStyle', id);
