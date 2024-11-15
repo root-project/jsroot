@@ -1402,7 +1402,8 @@ class TPavePainter extends ObjectPainter {
             } else if ((opt === 'postitle') || painter.isDummyPos(pave)) {
                const st = gStyle, fp = painter.getFramePainter();
                if (st && fp) {
-                  const midx = st.fTitleX, y2 = st.fTitleY, fsz = st.fTitleFontSize;
+                  const midx = st.fTitleX, y2 = st.fTitleY, fsz = st.fTitleFontSize,
+                        halign = Math.floor(st.fTitleAlign / 10);
                   let w = st.fTitleW, h = st.fTitleH;
 
                   if (!h) h = Math.max((y2 - fp.fY2NDC) * 0.7, (fsz < 1) ? 1.1 * fsz : 1.1 * fsz / fp.getFrameWidth());
@@ -1410,7 +1411,7 @@ class TPavePainter extends ObjectPainter {
                   if (!Number.isFinite(h) || (h <= 0)) h = 0.06;
                   if (!Number.isFinite(w) || (w <= 0)) w = 0.44;
 
-                  pave.fX1NDC = midx - w/2;
+                  pave.fX1NDC = halign < 2 ? midx : (halign > 2 ? midx + w/2 :  midx - w/2);
                   pave.fY1NDC = y2 - h;
                   pave.fX2NDC = midx + w/2;
                   pave.fY2NDC = y2;
