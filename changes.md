@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in dev
+1. Implement cont5 draw option for TGraph2D using Delaunay algorithm
+
+
 ## Changes in 7.8.0
 1. Let use custom time zone for time display, support '&utc' and '&cet' in URL parameters
 2. Support gStyle.fLegendFillStyle
