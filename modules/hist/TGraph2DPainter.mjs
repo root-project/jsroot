@@ -884,7 +884,9 @@ class TGraph2DPainter extends ObjectPainter {
          gr2d.fLineColor = d.color;
 
       d.check('SAME');
-      if (d.check('TRI1'))
+      if (d.check('CONT5'))
+         res.Contour = 15;
+      else if (d.check('TRI1'))
          res.Triangles = 11; // wire-frame and colors
       else if (d.check('TRI2'))
          res.Triangles = 10; // only color triangles
@@ -907,15 +909,15 @@ class TGraph2DPainter extends ObjectPainter {
 
       if (!res.Markers) res.Color = false;
 
-      if (res.Color || res.Triangles >= 10)
+      if (res.Color || res.Triangles >= 10 || res.Contour)
          res.Zscale = d.check('Z');
 
       res.isAny = function() {
-         return this.Markers || this.Error || this.Circles || this.Line || this.Triangles;
+         return this.Markers || this.Error || this.Circles || this.Line || this.Triangles || res.Contour;
       };
 
       if (res.isAny()) {
-         res.Axis = 'lego2';
+         res.Axis = res.Contour ? 'axis' : 'lego2';
          if (res.Zscale) res.Axis += 'z';
       } else
          res.Axis = opt;
@@ -1112,14 +1114,25 @@ class TGraph2DPainter extends ObjectPainter {
       return promise.then(() => this.drawGraph2D());
    }
 
+   async drawContour(fp, main, graph) {
+      console.log('drawing contour');
+      return this;
+   }
+
    /** @summary Actual drawing of TGraph2D object
      * @return {Promise} for drawing ready */
    async drawGraph2D() {
-      const main = this.getMainPainter(),
-            fp = this.getFramePainter(),
+      const fp = this.getFramePainter(),
+            main = this.getMainPainter(),
             graph = this.getObject();
 
-      if (!graph || !main || !fp || !fp.mode3d)
+      if (!graph || !main || !fp)
+         return this;
+
+      if (this.options.Contour)
+         return this.drawContour(fp, main, graph);
+
+      if (!fp.mode3d)
          return this;
 
       fp.remove3DMeshes(this);
