@@ -1103,8 +1103,10 @@ class TGraph2DPainter extends ObjectPainter {
          return this.Markers || this.Error || this.Circles || this.Line || this.Triangles || res.Contour;
       };
 
-      if (res.isAny()) {
-         res.Axis = res.Contour ? 'axis' : 'lego2';
+      if (res.Contour)
+         res.Axis = '';
+      else if (res.isAny()) {
+         res.Axis = 'lego2';
          if (res.Zscale) res.Axis += 'z';
       } else
          res.Axis = opt;
