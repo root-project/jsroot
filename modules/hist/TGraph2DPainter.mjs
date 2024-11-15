@@ -958,13 +958,11 @@ class TGraphDelaunay {
             js = 0;
 
             while(true)  {
-            // L01:
-
                findNew = false;
-               if (js < nbSeg && segUsed[js]) {
+               while (js < nbSeg && segUsed[js])
                   js++;
-                  continue; // goto L01
-               } else if (xc === xs0[js] && yc === ys0[js]) {
+
+               if (xc === xs0[js] && yc === ys0[js]) {
                   xc      = xs1[js];
                   yc      = ys1[js];
                   findNew = true;
@@ -975,16 +973,12 @@ class TGraphDelaunay {
                }
                if (findNew) {
                   segUsed[js] = true;
-                  graph.push(xc,yc); // npg++;
+                  graph.push(xc,yc);
                   js = 0;
-                  continue; // goto L01
-               }
-               js++;
-               if (js<nbSeg) continue; // goto L01;
-
-               break;
+               } else if (++js >= nbSeg)
+                  break;
             }
-            list.push(graph); // npg = 0;
+            list.push(graph);
          }
       }
 
@@ -1000,35 +994,29 @@ class TGraphDelaunay {
          xc = xs0[is];
          yc = ys0[is];
          js = 0;
-         graph.push(xc,yc); // npg++;
-         while(true) {
-         // L02:
-            findNew = false;
-            if (js < nbSeg && segUsed[js]) {
+         graph.push(xc, yc);
+         while (true) {
+            while (js < nbSeg && segUsed[js])
                js++;
-               continue; // goto L02;
-            } else if (xc===xs0[js] && yc===ys0[js]) {
-               xc      = xs1[js];
-               yc      = ys1[js];
+            findNew = false;
+            if (xc === xs0[js] && yc === ys0[js]) {
+               xc = xs1[js];
+               yc = ys1[js];
                findNew = true;
-            } else if (xc===xs1[js] && yc===ys1[js]) {
-               xc      = xs0[js];
-               yc      = ys0[js];
+            } else if (xc === xs1[js] && yc === ys1[js]) {
+               xc = xs0[js];
+               yc = ys0[js];
                findNew = true;
             }
             if (findNew) {
                segUsed[js] = true;
-               graph.push(xc,yc); // npg++;
+               graph.push(xc, yc); // npg++;
                js = 0;
-               continue; // goto L02;
-            }
-            js++;
-            if (js<nbSeg) continue; // goto L02;
-            // Close the contour
-            break;
+            } else if (++js >= nbSeg)
+               break;
          }
-         graph.push(xs0[is],ys0[is]); // npg++;
-         list.push(graph); // npg = 0;
+         graph.push(xs0[is],ys0[is]);
+         list.push(graph);
       }
 
       return list;
