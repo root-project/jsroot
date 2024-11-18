@@ -155,8 +155,16 @@ class TPavePainter extends ObjectPainter {
                pt.fY2NDC = 0.9;
             }
          } else if (opt.indexOf('NDC') >= 0) {
-            pt.fX1NDC = pt.fX1; pt.fX2NDC = pt.fX2;
-            pt.fY1NDC = pt.fY1; pt.fY2NDC = pt.fY2;
+            // check if NDC was modified but fInit was not set
+            // happens in stressGraphics.cxx, sg30 where stats box not initialized when call C->Update() in batch mode
+            if (pt.fX1NDC < 1e-20 && pt.fX2NDC < 1e-20) {
+               pt.fX1NDC = pt.fX1;
+               pt.fX2NDC = pt.fX2;
+            }
+            if (pt.fY1NDC < 1e-20 && pt.fY2NDC < 1e-20) {
+               pt.fY1NDC = pt.fY1;
+               pt.fY2NDC = pt.fY2;
+            }
          } else if (pad && (pad.fX1 === 0) && (pad.fX2 === 1) && (pad.fY1 === 0) && (pad.fY2 === 1) && isStr(arg) && (arg.indexOf('postpone') >= 0)) {
             // special case when pad not yet initialized
             pt.fInit = 0; // do not init until axes drawn
@@ -208,20 +216,28 @@ class TPavePainter extends ObjectPainter {
                if (main.fillStatistic(this, dostat, dofit)) {
                   // adjust the size of the stats box with the number of lines
                   let nlines = pt.fLines?.arr.length || 0;
-                  if ((nlines > 0) && !this.moved_interactive && isDefaultStatPosition(pt)) {
-                     // in ROOT TH2 and TH3 always add full stats for fit parameters
-                     const extrah = this._has_fit && (this._fit_dim > 1) ? gStyle.fStatH : 0;
+                  const set_default = (nlines > 0) && !this.moved_interactive && isDefaultStatPosition(pt),
+                        // in ROOT TH2 and TH3 always add full stats for fit parameters
+                        extrah = this._has_fit && (this._fit_dim > 1) ? gStyle.fStatH : 0;
+                  if (extrah) nlines -= this._fit_cnt;
+                  let stath = gStyle.fStatH, statw = gStyle.fStatW;
+                  if (this._has_fit)
+                     statw = 1.8 * gStyle.fStatW;
+                  if ((gStyle.fStatFontSize <= 0) || (gStyle.fStatFont % 10 === 3))
+                     stath = nlines * 0.25 * gStyle.fStatH;
+                  else if (gStyle.fStatFontSize < 1)
+                     stath = nlines * gStyle.fStatFontSize;
+
+                  if (set_default) {
                      // but fit parameters not used in full size calculations
-                     if (extrah) nlines -= this._fit_cnt;
-                     let stath = gStyle.fStatH, statw = gStyle.fStatW;
-                     if (this._has_fit)
-                        statw = 1.8 * gStyle.fStatW;
-                     if ((gStyle.fStatFontSize <= 0) || (gStyle.fStatFont % 10 === 3))
-                        stath = nlines * 0.25 * gStyle.fStatH;
-                     else if (gStyle.fStatFontSize < 1)
-                        stath = nlines * gStyle.fStatFontSize;
                      pt.fX1NDC = Math.max(0.02, pt.fX2NDC - statw);
                      pt.fY1NDC = Math.max(0.02, pt.fY2NDC - stath - extrah);
+                  } else {
+                     // when some NDC values are set directly and not match with each other
+                     if (pt.fY1NDC > pt.fY2NDC)
+                        pt.fY2NDC = Math.min(0.98, pt.fY1NDC + stath + extrah);
+                     if (pt.fX1NDC > pt.fX2NDC)
+                        pt.fY2NDC = Math.min(0.98, pt.fX1NDC + statw);
                   }
                }
             }
