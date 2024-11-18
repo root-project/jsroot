@@ -506,7 +506,6 @@ let _saveFileFunc = null;
 /** @summary Returns image file content as it should be stored on the disc
   * @desc Replaces all kind of base64 coding
   * @private */
-
 function getBinFileContent(content) {
    if (content.indexOf(prSVG) === 0)
       return decodeURIComponent(content.slice(prSVG.length));
@@ -523,6 +522,16 @@ function getBinFileContent(content) {
    return content;
 }
 
+/** @summary Returns type of file content
+  * @private */
+function getContentType(content) {
+   if (content.indexOf('data:') !== 0)
+      return '';
+
+   const p = content.indexOf(';');
+   return (p > 0) ? content.slice(5, p) : '';
+}
+
 /** @summary Function store content as file with filename
   * @private */
 async function saveFile(filename, content) {
@@ -533,18 +542,39 @@ async function saveFile(filename, content) {
          fs.writeFileSync(filename, getBinFileContent(content));
          return true;
       });
-   } else if (typeof document !== 'undefined') {
-      const a = document.createElement('a');
-      a.download = filename;
-      a.href = content;
-      document.body.appendChild(a);
+   } else if (typeof document === 'undefined')
+      return false;
 
-      return new Promise(resolve => {
-         a.addEventListener('click', () => { a.parentNode.removeChild(a); resolve(true); });
-         a.click();
+   const a = document.createElement('a');
+   a.download = filename;
+   a.style.display = 'none';
+   let fileURL = '';
+   const contentType = getContentType(content);
+
+   if ((content.length > 1e6) && (contentType === 'application/pdf')) {
+      // large PDF files do not work in the browser with plain base64 coding
+      const bindata = getBinFileContent(content);
+      const blob = new Blob([bindata], { type: contentType });
+      fileURL = URL.createObjectURL(blob);
+      a.href = fileURL;
+   } else
+      a.href = content;
+
+   document.body.appendChild(a);
+
+   return new Promise(resolve => {
+      a.addEventListener('click', () => {
+         if (fileURL) {
+            setTimeout(() => {
+               a.parentNode.removeChild(a);
+               URL.revokeObjectURL(fileURL);
+            }, 3000);
+         } else
+            a.parentNode.removeChild(a);
+         resolve(true);
       });
-   }
-   return false;
+      a.click();
+   });
 }
 
 /** @summary Function store content as file with filename
