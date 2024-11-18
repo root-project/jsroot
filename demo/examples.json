@@ -65,7 +65,7 @@
      { "opt": "surf1", "title": "3D SURF plot with colors levels" },
      { "opt": "surf2", "title": "3D colored SURF without lines" },
      { "opt": "surf3", "title": "3D SURF with contour plot on the top" },
-     { "opt": "surf4", "title": "3D SURF with Gouraud shading" },
+     { "name": "surf4", "title": "3D SURF with Gouraud shading", "opt" : "surf4,fill_48" },
      { "opt": "surf6", "title": "Only contour lines in 3D space" },
      { "opt": "surf7", "title": "3D colored SURF with contours on the top" },
      { "opt": "e", "title": "3D plot with errors" },
