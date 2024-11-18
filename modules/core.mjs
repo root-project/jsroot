@@ -1149,7 +1149,7 @@ function create(typename, target) {
          break;
       case clTPave:
          create(clTBox, obj);
-         extend(obj, { fX1NDC: 0, fY1NDC: 0, fX2NDC: 1, fY2NDC: 1,
+         extend(obj, { fX1NDC: 0, fY1NDC: 0, fX2NDC: 0, fY2NDC: 0,
                        fBorderSize: 0, fInit: 1, fShadowColor: 1,
                        fCornerRadius: 0, fOption: 'brNDC', fName: '' });
          break;
