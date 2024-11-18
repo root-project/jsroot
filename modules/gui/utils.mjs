@@ -1,6 +1,6 @@
 import { settings, internals, browser, gStyle, isBatchMode, isNodeJs, isObject, isFunc, isStr, source_dir, atob_func, btoa_func } from '../core.mjs';
 import { select as d3_select, pointer as d3_pointer, drag as d3_drag, color as d3_color } from '../d3.mjs';
-import { prSVG, BasePainter } from '../base/BasePainter.mjs';
+import { prSVG, prJSON, BasePainter } from '../base/BasePainter.mjs';
 import { resize } from '../base/ObjectPainter.mjs';
 import { getRootColors } from '../base/colors.mjs';
 
@@ -511,12 +511,13 @@ function getBinFileContent(content) {
    if (content.indexOf(prSVG) === 0)
       return decodeURIComponent(content.slice(prSVG.length));
 
-   if (content.indexOf('data:image/') === 0) {
+   if (content.indexOf(prJSON) === 0)
+      return decodeURIComponent(content.slice(prJSON.length));
+
+   if ((content.indexOf('data:image/') === 0) || (content.indexOf('data:application/pdf') === 0)) {
       const p = content.indexOf('base64,');
-      if (p > 0) {
-         const base64 = content.slice(p + 7);
-         return atob_func(base64);
-      }
+      if (p > 0)
+         return atob_func(content.slice(p + 7));
    }
 
    return content;
