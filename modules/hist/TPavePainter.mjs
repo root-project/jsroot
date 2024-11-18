@@ -230,14 +230,14 @@ class TPavePainter extends ObjectPainter {
 
                   if (set_default) {
                      // but fit parameters not used in full size calculations
-                     pt.fX1NDC = Math.max(0.02, pt.fX2NDC - statw);
-                     pt.fY1NDC = Math.max(0.02, pt.fY2NDC - stath - extrah);
+                     pt.fX1NDC = Math.max(0.005, pt.fX2NDC - statw);
+                     pt.fY1NDC = Math.max(0.005, pt.fY2NDC - stath - extrah);
                   } else {
                      // when some NDC values are set directly and not match with each other
                      if (pt.fY1NDC > pt.fY2NDC)
-                        pt.fY2NDC = Math.min(0.98, pt.fY1NDC + stath + extrah);
+                        pt.fY2NDC = Math.min(0.995, pt.fY1NDC + stath + extrah);
                      if (pt.fX1NDC > pt.fX2NDC)
-                        pt.fY2NDC = Math.min(0.98, pt.fX1NDC + statw);
+                        pt.fY2NDC = Math.min(0.995, pt.fX1NDC + statw);
                   }
                }
             }
