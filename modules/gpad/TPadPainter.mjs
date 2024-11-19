@@ -294,6 +294,7 @@ class TPadPainter extends ObjectPainter {
       delete this._snap_primitives;
       delete this._last_grayscale;
       delete this._custom_colors;
+      delete this._custom_gstyle;
       delete this._custom_palette_indexes;
       delete this._custom_palette_colors;
       delete this.root_colors;
@@ -1639,6 +1640,7 @@ class TPadPainter extends ObjectPainter {
    /** @summary Process snap with style
      * @private */
    processSnapStyle(snap) {
+      this._custom_gstyle = snap.fSnapshot;
       Object.assign(gStyle, snap.fSnapshot);
    }
 
