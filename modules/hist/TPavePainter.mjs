@@ -486,7 +486,6 @@ class TPavePainter extends ObjectPainter {
             pp = this.getPadPainter(),
             pad_width = pp.getPadWidth(),
             pad_height = pp.getPadHeight(),
-
             draw_header = (pt.fLabel.length > 0),
             promises = [],
             margin_x = pt.fMargin * width,
@@ -553,7 +552,13 @@ class TPavePainter extends ObjectPainter {
                         arg.align = align;
                         arg.x = (halign === 1) ? margin_x : 0;
                         arg.width = (halign === 2) ? width : width - margin_x;
-                        arg.height = stepy;
+                        arg.y = texty + 0.05 * stepy;
+                        arg.height = 0.9*stepy;
+                        // prevent expand of normal title on full width
+                        // if (this.isTitle()  && (halign === 2) && (arg.width > 0.1*pad_width) && (arg.width < 0.7*pad_width)) {
+                        //   arg.width -= 0.02*pad_width;
+                        //   arg.x = 0.01*pad_width;
+                        // }
                      }
 
                      this.drawText(arg);
