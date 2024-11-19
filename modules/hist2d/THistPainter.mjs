@@ -1505,14 +1505,15 @@ class THistPainter extends ObjectPainter {
    /** @summary Create stat box for histogram if required */
    createStat(force) {
       const histo = this.getHisto();
-      if (!histo) return null;
+      if (!histo)
+         return null;
 
       if (!force && !this.options.ForceStat) {
          if (this.options.NoStat || histo.TestBit(kNoStats) || !settings.AutoStat) return null;
          if (!this.isMainPainter()) return null;
       }
 
-      const st = gStyle;
+      const st = this.getgStyle();
       let stats = this.findStat(),
           optstat = this.options.optstat,
           optfit = this.options.optfit;
@@ -1529,7 +1530,8 @@ class THistPainter extends ObjectPainter {
       } else
          optfit = st.fOptFit;
 
-      if (!stats && !optstat && !optfit) return null;
+      if (!stats && !optstat && !optfit)
+         return null;
 
       this.create_stats = true;
 
