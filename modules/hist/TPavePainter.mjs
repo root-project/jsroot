@@ -547,7 +547,7 @@ class TPavePainter extends ObjectPainter {
                         // remember box produced by title text
                         arg.post_process = function(painter) {
                            painter.$titlebox = this.box;
-                        }
+                        };
                      } else {
                         arg.align = align;
                         arg.x = (halign === 1) ? margin_x : 0;
@@ -1427,18 +1427,18 @@ class TPavePainter extends ObjectPainter {
       let w = gStyle.fTitleW, h = gStyle.fTitleH, need_readjust = false;
 
       if (h <= 0) {
-         if (text_height) {
+         if (text_height)
             h = 1.1 * text_height / this.getPadPainter().getPadHeight();
-         } else {
+         else {
             h = 0.05;
             need_readjust = true;
          }
       }
 
       if (w <= 0) {
-         if (text_width) {
-            w = Math.min(0.7, 0.02 + text_width / this.getPadPainter().getPadWidth())
-         } else {
+         if (text_width)
+            w = Math.min(0.7, 0.02 + text_width / this.getPadPainter().getPadWidth());
+         else {
             w = 0.5;
             need_readjust = true;
          }

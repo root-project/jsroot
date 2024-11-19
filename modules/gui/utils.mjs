@@ -553,8 +553,8 @@ async function saveFile(filename, content) {
 
    if ((content.length > 1e6) && (contentType === 'application/pdf')) {
       // large PDF files do not work in the browser with plain base64 coding
-      const bindata = getBinFileContent(content);
-      const blob = new Blob([bindata], { type: contentType });
+      const bindata = getBinFileContent(content),
+            blob = new Blob([bindata], { type: contentType });
       fileURL = URL.createObjectURL(blob);
       a.href = fileURL;
    } else
