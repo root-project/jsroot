@@ -484,7 +484,9 @@ class TPavePainter extends ObjectPainter {
             arr = pt.fLines?.arr || [],
             nlines = arr.length,
             pp = this.getPadPainter(),
+            pad_width = pp.getPadWidth(),
             pad_height = pp.getPadHeight(),
+
             draw_header = (pt.fLabel.length > 0),
             promises = [],
             margin_x = pt.fMargin * width,
@@ -510,7 +512,7 @@ class TPavePainter extends ObjectPainter {
             num_custom++;
       });
 
-      const pr = (num_txt > num_custom) ? this.startTextDrawingAsync(this.textatt.font, 0.85*height/nlines, text_g, max_font_size) : Promise.resolve();
+      const pr = (num_txt > num_custom) ? this.startTextDrawingAsync(this.textatt.font, this.$postitle ? this.textatt.getSize(pad_width, pad_height, 1, 0.05) : 0.85*height/nlines, text_g, max_font_size) : Promise.resolve();
 
       return pr.then(() => {
          for (let nline = 0; nline < nlines; ++nline) {
@@ -523,12 +525,13 @@ class TPavePainter extends ObjectPainter {
 
                   let color = entry.fTextColor ? this.getColor(entry.fTextColor) : '';
                   if (!color) color = this.textatt.color;
+                  const align = entry.fTextAlign || this.textatt.align,
+                        valign = align % 10,
+                        halign = (align - valign) / 10;
+
                   if (entry.fX || entry.fY || entry.fTextSize) {
                      // individual positioning
-                     const align = entry.fTextAlign || this.textatt.align,
-                           halign = Math.floor(align/10),
-                           valign = align % 10,
-                           x = entry.fX ? entry.fX*width : (halign === 1 ? margin_x : (halign === 2 ? width / 2 : width - margin_x)),
+                     const x = entry.fX ? entry.fX*width : (halign === 1 ? margin_x : (halign === 2 ? width / 2 : width - margin_x)),
                            y = entry.fY ? (1 - entry.fY)*height : (texty + (valign === 2 ? stepy / 2 : (valign === 3 ? stepy : 0))),
                            draw_g = text_g.append('svg:g');
 
@@ -537,10 +540,23 @@ class TPavePainter extends ObjectPainter {
                                                                    latex: (entry._typename === clTText) ? 0 : 1, draw_g, fast }))
                                        .then(() => this.finishTextDrawing(draw_g)));
                   } else {
-                     this.drawText({ x: margin_x, y: texty, width: width - 2*margin_x, height: stepy,
-                                    align: entry.fTextAlign || this.textatt.align,
-                                    draw_g: text_g, latex: (entry._typename === clTText) ? 0 : 1,
-                                    text: entry.fTitle, color, fast });
+                     const arg = { x: 0, y: texty, draw_g: text_g,
+                                   latex: (entry._typename === clTText) ? 0 : 1,
+                                   text: entry.fTitle, color, fast };
+
+                     if (this.$postitle) {
+                        // remember box produced by title text
+                        arg.post_process = function(painter) {
+                           painter.$titlebox = this.box;
+                        }
+                     } else {
+                        arg.align = align;
+                        arg.x = (halign === 1) ? margin_x : 0;
+                        arg.width = (halign === 2) ? width : width - margin_x;
+                        arg.height = stepy;
+                     }
+
+                     this.drawText(arg);
                   }
                   break;
                }
@@ -1398,6 +1414,40 @@ class TPavePainter extends ObjectPainter {
       super.cleanup();
    }
 
+   /** @summary Set position of title
+     * @private */
+   setTitlePosition(pave, text_width, text_height) {
+      const posx = gStyle.fTitleX, posy = gStyle.fTitleY,
+            valign = gStyle.fTitleAlign % 10, halign = (gStyle.fTitleAlign - valign) / 10;
+      let w = gStyle.fTitleW, h = gStyle.fTitleH, need_readjust = false;
+
+      if (h <= 0) {
+         if (text_height) {
+            h = 1.1 * text_height / this.getPadPainter().getPadHeight();
+         } else {
+            h = 0.05;
+            need_readjust = true;
+         }
+      }
+
+      if (w <= 0) {
+         if (text_width) {
+            w = Math.min(0.7, 0.02 + text_width / this.getPadPainter().getPadWidth())
+         } else {
+            w = 0.5;
+            need_readjust = true;
+         }
+      }
+
+      pave.fX1NDC = halign < 2 ? posx : (halign > 2 ? posx - w : posx - w/2);
+      pave.fY1NDC = valign < 2 ? posy : (valign > 2 ? posy - h : posy - h/2);
+      pave.fX2NDC = pave.fX1NDC + w;
+      pave.fY2NDC = pave.fY1NDC + h;
+      pave.fInit = 1;
+
+      return need_readjust;
+   }
+
    /** @summary Returns true if object is supported */
    static canDraw(obj) {
       const typ = obj?._typename;
@@ -1410,30 +1460,14 @@ class TPavePainter extends ObjectPainter {
       const painter = new TPavePainter(dom, pave);
 
       return ensureTCanvas(painter, false).then(() => {
-         if ((pave.fName === kTitle) && (pave._typename === clTPaveText)) {
-            const tpainter = painter.getPadPainter().findPainterFor(null, kTitle, clTPaveText);
-            if (tpainter && (tpainter !== painter)) {
-               tpainter.removeFromPadPrimitives();
-               tpainter.cleanup();
+         if (painter.isTitle()) {
+            const prev_painter = painter.getPadPainter().findPainterFor(null, kTitle, clTPaveText);
+            if (prev_painter && (prev_painter !== painter)) {
+               prev_painter.removeFromPadPrimitives();
+               prev_painter.cleanup();
             } else if ((opt === 'postitle') || painter.isDummyPos(pave)) {
-               const st = gStyle, fp = painter.getFramePainter();
-               if (st && fp) {
-                  const midx = st.fTitleX, y2 = st.fTitleY,
-                        valign = st.fTitleAlign % 10, halign = (st.fTitleAlign - valign) / 10,
-                        title = pave.fLines?.arr[0]?.fTitle;
-                  let w = st.fTitleW, h = st.fTitleH, fsz = st.fTitleFontSize;
-                  if (fsz > 1) fsz = fsz / fp.getFrameWidth();
-                  if (!h) h = Math.max((y2 - fp.fY2NDC) * 0.7, 1.1 * fsz);
-                  if (!w) w = (halign !== 2 && title) ? title.length * fsz * 0.2 : fp.fX2NDC - fp.fX1NDC;
-                  if (!Number.isFinite(h) || (h <= 0)) h = 0.06;
-                  if (!Number.isFinite(w) || (w <= 0)) w = 0.44;
-
-                  pave.fX1NDC = halign < 2 ? midx : (halign > 2 ? midx - w : midx - w/2);
-                  pave.fY1NDC = valign === 3 ? y2 - h : (valign === 2 ? y2 - h / 2 : y2);
-                  pave.fX2NDC = pave.fX1NDC + w;
-                  pave.fY2NDC = pave.fY1NDC + h;
-                  pave.fInit = 1;
-               }
+               if (painter.setTitlePosition(pave))
+                  painter.$postitle = true;
             }
          } else if (pave._typename === clTPaletteAxis) {
             pave.fBorderSize = 1;
@@ -1475,7 +1509,17 @@ class TPavePainter extends ObjectPainter {
                break;
          }
 
-         return painter.drawPave(opt);
+         return painter.drawPave(opt).then(() => {
+            const adjust_title = painter.$postitle && painter.$titlebox;
+
+            if (adjust_title)
+               painter.setTitlePosition(pave, painter.$titlebox.width, painter.$titlebox.height);
+
+            delete painter.$postitle;
+            delete painter.$titlebox;
+
+            return adjust_title ? painter.drawPave(opt) : painter;
+         });
       });
    }
 
