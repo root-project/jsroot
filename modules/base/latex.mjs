@@ -560,7 +560,8 @@ function parseLatex(node, arg, label, curr) {
             const g = curr.g || (alone ? node : currG()),
                   elem = g.append('svg:text');
 
-            if (alone && !curr.g) curr.g = elem;
+            if (alone && !curr.g)
+               curr.g = elem;
 
             // apply font attributes only once, inherited by all other elements
             if (curr.ufont) {
@@ -607,7 +608,7 @@ function parseLatex(node, arg, label, curr) {
                elem.attr('text-decoration', curr.deco);
                delete curr.deco; // inform that decoration was applied
             } else
-               curr.xgap = xgap; // may be used in accent or somewere else
+               curr.xgap = xgap; // may be used in accent or somewhere else
          } else
             addSpaces(nendspaces);
       }
