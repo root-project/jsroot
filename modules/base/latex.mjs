@@ -951,7 +951,7 @@ function parseLatex(node, arg, label, curr) {
          if (found.name === '#color[')
             subpos.color = curr.painter.getColor(foundarg);
          else if (found.name === '#font[') {
-            subpos.font = new FontHandler(foundarg);
+            subpos.font = new FontHandler(foundarg, subpos.fsize);
             // here symbols embedding not works, use replacement
             if ((subpos.font.name === kSymbol) && !subpos.font.isSymbol) {
                subpos.font.isSymbol = kSymbol;
