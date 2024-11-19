@@ -66,7 +66,7 @@ async function drawText() {
          this.draw_g.append('svg:title').text(`link on ${text.fName}`);
    }
 
-   return this.startTextDrawingAsync(this.textatt.font, this.textatt.getSize(w, h, fact /*, 0.05 */))
+   return this.startTextDrawingAsync(this.textatt.font, this.textatt.getSize(w, h, fact /* , 0.05 */))
               .then(() => this.drawText(arg))
               .then(() => this.finishTextDrawing())
               .then(() => {
