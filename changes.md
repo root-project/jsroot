@@ -3,6 +3,7 @@
 ## Changes in dev
 1. Implement cont5 draw option for TGraph2D using Delaunay algorithm
 1. Adjust histogram title drawing with native implementation
+1. Use infividual gStyle instances for each web canvas
 1. Fix - handle TPave NDC position also when fInit is not set
 1. Fix - correctly position title according to gStyle->GetTitleAlign()
 
