@@ -130,7 +130,6 @@ class TGraphPolargramPainter extends ObjectPainter {
 
    /** @summary Process mouse wheel event */
    mouseWheel(evnt) {
-      console.log('mouse whell event');
       evnt.stopPropagation();
       evnt.preventDefault();
 
@@ -219,7 +218,8 @@ class TGraphPolargramPainter extends ObjectPainter {
          indx++;
       }
 
-      let exclude_last = false, pointer_events = this.isBatchMode() ? null : 'visibleFill';
+      let exclude_last = false;
+      const pointer_events = this.isBatchMode() ? null : 'visibleFill';
 
       if ((ticks[ticks.length-1] < polar.fRwrmax) && (this.zoom_rmin === this.zoom_rmax)) {
          ticks.push(polar.fRwrmax);
@@ -304,26 +304,31 @@ class TGraphPolargramPainter extends ObjectPainter {
 
          TooltipHandler.assign(this);
 
-         // last_ellipse.style('pointer-events', 'visibleFill');
-         this.draw_g.on('mouseenter', evnt => this.mouseEvent('enter', evnt))
-                     .on('mousemove', evnt => this.mouseEvent('move', evnt))
-                     .on('mouseleave', evnt => this.mouseEvent('leave', evnt));
-
-         if (settings.Zooming && settings.ZoomWheel)
-            this.draw_g.on('wheel', evnt => this.mouseWheel(evnt));
-
          assignContextMenu(this, kNoReorder);
+
+         this.assignZoomHandler(this.draw_g);
       });
    }
 
    /** @summary Fill TGraphPolargram context menu */
    fillContextMenuItems(menu) {
       const pp = this.getObject();
-      menu.sub("Angle axis");
+      menu.sub('Angle axis');
       menu.addchk(pp.fRadian, 'Radian', flag => { pp.fRadian = flag; pp.fDegree = pp.fGrad = false; this.interactiveRedraw('pad', flag ? 'exec:SetToRadian()' : 'exec:SetTwoPi()'); }, 'Handle data angles as radian range 0..2*Pi');
       menu.addchk(pp.fDegree, 'Degree', flag => { pp.fDegree = flag; pp.fRadian = pp.fGrad = false; this.interactiveRedraw('pad', flag ? 'exec:SetToDegree()' : 'exec:SetTwoPi()'); }, 'Handle data angles as degree range 0..360');
-      menu.addchk(pp.fGrad, 'Grad', flag => { pp.fGrad = flag; pp.fRadian = pp.fDegree = false;  this.interactiveRedraw('pad', flag ? 'exec:SetToGrad()' : 'exec:SetTwoPi()'); }, 'Handle data angles as grad range 0..200');
+      menu.addchk(pp.fGrad, 'Grad', flag => { pp.fGrad = flag; pp.fRadian = pp.fDegree = false; this.interactiveRedraw('pad', flag ? 'exec:SetToGrad()' : 'exec:SetTwoPi()'); }, 'Handle data angles as grad range 0..200');
       menu.endsub();
+   }
+
+   /** @summary Assign zoom handler to element
+    * @private */
+   assignZoomHandler(elem) {
+      elem.on('mouseenter', evnt => this.mouseEvent('enter', evnt))
+          .on('mousemove', evnt => this.mouseEvent('move', evnt))
+          .on('mouseleave', evnt => this.mouseEvent('leave', evnt));
+
+      if (settings.Zooming && settings.ZoomWheel)
+         elem.on('wheel', evnt => this.mouseWheel(evnt));
    }
 
    /** @summary Draw TGraphPolargram */
@@ -409,7 +414,7 @@ class TGraphPolarPainter extends ObjectPainter {
       this.draw_g.attr('transform', main.draw_g.attr('transform'));
 
       let mpath = '', epath = '';
-      const bins = [], pointer_events = this.isBatchMode() ? null : 'none';
+      const bins = [], pointer_events = this.isBatchMode() ? null : 'visibleFill';
 
       for (let n = 0; n < graph.fNpoints; ++n) {
          if (graph.fY[n] > main.scale_rmax)
@@ -473,6 +478,11 @@ class TGraphPolarPainter extends ObjectPainter {
                .attr('d', mpath)
                .style('pointer-events', pointer_events)
                .call(this.markeratt.func);
+      }
+
+      if (!this.isBatchMode()) {
+         assignContextMenu(this, kNoReorder);
+         main.assignZoomHandler(this.draw_g);
       }
    }
 
