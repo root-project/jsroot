@@ -115,7 +115,8 @@ function floatToString(value, fmt, ret_fmt, significance) {
             if (len === pnt) len--;
             sg[0] = sg[0].slice(0, len);
          }
-         if (se[0].length < sg[0].length) sg = se;
+         if (se[0].length < sg[0].length)
+            sg = se;
          return ret_fmt ? sg : sg[0];
       }
       default:
