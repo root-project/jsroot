@@ -1276,7 +1276,7 @@ function create(typename, target) {
          create(clTNamed, obj);
          create(clTAttText, obj);
          create(clTAttLine, obj);
-         extend(obj, { fRadian: true, fDegree: false, fGrad: false, fPolarLabelColor: 1, fRadialLabelColor: 1,
+         extend(obj, { fRadian: false, fDegree: false, fGrad: false, fPolarLabelColor: 1, fRadialLabelColor: 1,
                        fAxisAngle: 0, fPolarOffset: 0.04, fPolarTextSize: 0.04, fRadialOffset: 0.025, fRadialTextSize: 0.035,
                        fRwrmin: 0, fRwrmax: 1, fRwtmin: 0, fRwtmax: 2*Math.PI, fTickpolarSize: 0.02,
                        fPolarLabelFont: 62, fRadialLabelFont: 62, fCutRadial: 0, fNdivRad: 508, fNdivPol: 508 });

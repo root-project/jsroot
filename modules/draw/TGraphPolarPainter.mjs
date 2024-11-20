@@ -20,14 +20,31 @@ class TGraphPolargramPainter extends ObjectPainter {
       super(dom, polargram);
       this.$polargram = true; // indicate that this is polargram
       this.zoom_rmin = this.zoom_rmax = 0;
+      this.k = 1;
+      this.t0 = 0;
+      this.mult = 1;
+   }
+
+   /** @summary Returns true if fixed coordinates are configured */
+   isNormalAngles() {
+      const obj = this.getObject();
+      return obj?.fRadian || obj?.fGrad || obj?.fDegree;
+   }
+
+   setAnglesAutoRange(tmin, tmax) {
+      this.k = 1;
+      this.t0 = tmin;
+      this.mult = 2*Math.PI/(tmax - tmin);
    }
 
    /** @summary Translate coordinates */
-   translate(angle, radius, keep_float) {
+   translate(input_angle, radius, keep_float) {
+      // recalculate angle
+      const angle = (input_angle * this.k - this.t0) * this.mult;
       let rx = this.r(radius),
           ry = rx/this.szx*this.szy,
-          grx = rx * Math.cos(-angle - this.angle),
-          gry = ry * Math.sin(-angle - this.angle);
+          grx = rx * Math.cos(-angle),
+          gry = ry * Math.sin(-angle);
 
       if (!keep_float) {
          grx = Math.round(grx);
@@ -124,7 +141,8 @@ class TGraphPolargramPainter extends ObjectPainter {
       // rmin -= delta*range;
       rmax += delta*range;
 
-      if ((rmin<polar.fRwrmin) || (rmax>polar.fRwrmax)) rmin = rmax = 0;
+      if ((rmin < polar.fRwrmin) || (rmax > polar.fRwrmax))
+         rmin = rmax = 0;
 
       if ((this.zoom_rmin !== rmin) || (this.zoom_rmax !== rmax)) {
          this.zoom_rmin = rmin;
@@ -155,7 +173,6 @@ class TGraphPolargramPainter extends ObjectPainter {
       }
 
       this.r = scaleLinear().domain([this.scale_rmin, this.scale_rmax]).range([0, this.szx]);
-      this.angle = polar.fAxisAngle || 0;
 
       const ticks = this.r.ticks(5),
             fontsize = Math.round(polar.fPolarTextSize * this.szy * 2);
@@ -165,7 +182,8 @@ class TGraphPolargramPainter extends ObjectPainter {
          nmajor = 8;
 
       this.createAttLine({ attr: polar });
-      if (!this.gridatt) this.gridatt = this.createAttLine({ color: polar.fLineColor, style: 2, width: 1, std: false });
+      if (!this.gridatt)
+         this.gridatt = this.createAttLine({ color: polar.fLineColor, style: 2, width: 1, std: false });
 
       const range = Math.abs(polar.fRwrmax - polar.fRwrmin);
       this.ndig = (range <= 0) ? -3 : Math.round(Math.log10(ticks.length / range));
@@ -222,7 +240,6 @@ class TGraphPolargramPainter extends ObjectPainter {
             }
          }
 
-
          return this.finishTextDrawing();
       }).then(() => {
          return this.startTextDrawingAsync(polar.fPolarLabelFont, fontsize);
@@ -231,7 +248,7 @@ class TGraphPolargramPainter extends ObjectPainter {
          const aligns = [12, 11, 21, 31, 32, 33, 23, 13];
 
          for (let n = 0; n < nmajor; ++n) {
-            const angle = -n*2*Math.PI/nmajor - this.angle;
+            const angle = -n*2*Math.PI/nmajor;
             this.draw_g.append('svg:path')
                 .attr('d', `M0,0L${Math.round(this.szx*Math.cos(angle))},${Math.round(this.szy*Math.sin(angle))}`)
                 .call(this.lineatt.func);
@@ -252,7 +269,7 @@ class TGraphPolargramPainter extends ObjectPainter {
          if (nminor > 1) {
             for (let n = 0; n < nmajor*nminor; ++n) {
                if (n % nminor === 0) continue;
-               const angle = -n*2*Math.PI/nmajor/nminor - this.angle;
+               const angle = -n*2*Math.PI/nmajor/nminor;
                this.draw_g.append('svg:path')
                    .attr('d', `M0,0L${Math.round(this.szx*Math.cos(angle))},${Math.round(this.szy*Math.sin(angle))}`)
                    .call(this.gridatt.func);
@@ -325,14 +342,16 @@ class TGraphPolarPainter extends ObjectPainter {
    decodeOptions(opt) {
       const d = new DrawOptions(opt || 'L');
 
-      if (!this.options) this.options = {};
+      if (!this.options)
+         this.options = {};
 
       Object.assign(this.options, {
           mark: d.check('P'),
           err: d.check('E'),
           fill: d.check('F'),
           line: d.check('L'),
-          curve: d.check('C')
+          curve: d.check('C'),
+          axis: d.check('A')
       });
 
       this.storeDrawOpt(opt);
@@ -343,13 +362,30 @@ class TGraphPolarPainter extends ObjectPainter {
       const graph = this.getObject(),
             main = this.getMainPainter();
 
-      if (!graph || !main?.$polargram) return;
+      if (!graph || !main?.$polargram)
+         return;
 
-      if (this.options.mark) this.createAttMarker({ attr: graph });
-      if (this.options.err || this.options.line || this.options.curve) this.createAttLine({ attr: graph });
-      if (this.options.fill) this.createAttFill({ attr: graph });
+      if (this.options.mark)
+         this.createAttMarker({ attr: graph });
+      if (this.options.err || this.options.line || this.options.curve)
+         this.createAttLine({ attr: graph });
+      if (this.options.fill)
+         this.createAttFill({ attr: graph });
 
       this.createG();
+
+      if (this.options.axis && !main.isNormalAngles()) {
+         const has_err = graph.fEX?.length;
+         let rwtmin = graph.fX[0],
+             rwtmax = graph.fX[0];
+         for (let n = 0; n < graph.fNpoints; ++n) {
+            rwtmin = Math.min(rwtmin, has_err ? graph.fX[n] - graph.fEX[n] : graph.fX[n]);
+            rwtmax = Math.max(rwtmax, has_err ? graph.fX[n] + graph.fEX[n] : graph.fX[n]);
+         }
+
+         rwtmax += (rwtmax - rwtmin) / graph.fNpoints;
+         main.setAnglesAutoRange(rwtmin, rwtmax);
+      }
 
       this.draw_g.attr('transform', main.draw_g.attr('transform'));
 
@@ -523,6 +559,8 @@ class TGraphPolarPainter extends ObjectPainter {
 
       let pr = Promise.resolve(null);
       if (!main) {
+         // indicate that axis defined by this graph
+         painter.options.axis = true;
          if (!graph.fPolargram)
             graph.fPolargram = painter.createPolargram();
          pr = TGraphPolargramPainter.draw(dom, graph.fPolargram);
