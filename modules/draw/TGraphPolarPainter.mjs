@@ -485,20 +485,21 @@ class TGraphPolarPainter extends ObjectPainter {
 
 
    /** @summary Create polargram object */
-   createPolargram() {
-      const polargram = create('TGraphPolargram'),
-            gr = this.getObject();
+   createPolargram(gr) {
+      if (!gr.fPolargram)
+         gr.fPolargram = create('TGraphPolargram');
 
       let rmin = gr.fY[0] || 0, rmax = rmin;
+      const has_err = gr.fEY?.length;
       for (let n = 0; n < gr.fNpoints; ++n) {
-         rmin = Math.min(rmin, gr.fY[n] - gr.fEY[n]);
-         rmax = Math.max(rmax, gr.fY[n] + gr.fEY[n]);
+         rmin = Math.min(rmin, gr.fY[n] - (has_err ? gr.fEY[n] : 0));
+         rmax = Math.max(rmax, gr.fY[n] + (has_err ? gr.fEY[n] : 0));
       }
 
-      polargram.fRwrmin = rmin - (rmax-rmin)*0.1;
-      polargram.fRwrmax = rmax + (rmax-rmin)*0.1;
+      gr.fPolargram.fRwrmin = rmin - (rmax-rmin)*0.1;
+      gr.fPolargram.fRwrmax = rmax + (rmax-rmin)*0.1;
 
-      return polargram;
+      return gr.fPolargram;
    }
 
    /** @summary Provide tooltip at specified point */
@@ -593,12 +594,11 @@ class TGraphPolarPainter extends ObjectPainter {
       if (!main) {
          // indicate that axis defined by this graph
          painter.options.axis = true;
-         if (!graph.fPolargram)
-            graph.fPolargram = painter.createPolargram();
-         pr = TGraphPolargramPainter.draw(dom, graph.fPolargram);
+         pr = TGraphPolargramPainter.draw(dom, painter.createPolargram(graph));
       }
 
-      return pr.then(() => {
+      return pr.then(gram_painter => {
+         gram_painter?.setSecondaryId(painter, 'polargram');
          painter.addToPadPrimitives();
          painter.drawGraphPolar();
          return painter;
