@@ -358,11 +358,6 @@ class TGraphPolargramPainter extends ObjectPainter {
 
 class TGraphPolarPainter extends ObjectPainter {
 
-   /** @summary Redraw TGraphPolar */
-   redraw() {
-      this.drawGraphPolar();
-   }
-
    /** @summary Decode options for drawing TGraphPolar */
    decodeOptions(opt) {
       const d = new DrawOptions(opt || 'L');
@@ -375,12 +370,37 @@ class TGraphPolarPainter extends ObjectPainter {
           err: d.check('E'),
           fill: d.check('F'),
           line: d.check('L'),
-          curve: d.check('C'),
-          axis: d.check('A')
+          curve: d.check('C')
       });
+
+      if (d.check('A'))
+         this._draw_axis = true;
 
       this.storeDrawOpt(opt);
    }
+
+   /** @summary Update TGraphPolar with polargram */
+   updateObject(obj, opt) {
+      if (!this.matchObjectType(obj))
+         return false;
+
+      if (opt && (opt !== this.options.original))
+         this.decodeOptions(opt);
+
+      if (this._draw_axis && obj.fPolargram)
+         this.getMainPainter().updateObject(obj.fPolargram);
+
+      delete obj.fPolargram;
+      // copy all properties but not polargram
+      Object.assign(this.getObject(), obj);
+      return true;
+   }
+
+   /** @summary Redraw TGraphPolar */
+   redraw() {
+      return this.drawGraphPolar();
+   }
+
 
    /** @summary Drawing TGraphPolar */
    drawGraphPolar() {
@@ -399,7 +419,7 @@ class TGraphPolarPainter extends ObjectPainter {
 
       this.createG();
 
-      if (this.options.axis && !main.isNormalAngles()) {
+      if (this._draw_axis && !main.isNormalAngles()) {
          const has_err = graph.fEX?.length;
          let rwtmin = graph.fX[0],
              rwtmax = graph.fX[0];
@@ -602,7 +622,7 @@ class TGraphPolarPainter extends ObjectPainter {
       let pr = Promise.resolve(null);
       if (!main) {
          // indicate that axis defined by this graph
-         painter.options.axis = true;
+         painter._draw_axis = true;
          pr = TGraphPolargramPainter.draw(dom, painter.createPolargram(graph));
       }
 
