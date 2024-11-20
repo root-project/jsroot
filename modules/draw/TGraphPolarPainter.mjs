@@ -123,7 +123,6 @@ class TGraphPolargramPainter extends ObjectPainter {
          const pos = d3_pointer(evnt, interactive.node());
          pnt = { x: pos[0], y: pos[1], touch: false };
       }
-
       this.processFrameTooltipEvent(pnt);
    }
 
@@ -512,19 +511,25 @@ class TGraphPolarPainter extends ObjectPainter {
 
       for (let n = 0; n < graph.fNpoints; ++n) {
          const pos = main.translate(graph.fX[n], graph.fY[n]),
-               dist2 = (pos.x-pnt.x)**2 + (pos.y-pnt.y)**2;
-         if (dist2 < best_dist2) { best_dist2 = dist2; bestindx = n; bestpos = pos; }
+               dist2 = (pos.grx - pnt.x)**2 + (pos.gry - pnt.y)**2;
+         if (dist2 < best_dist2) {
+            best_dist2 = dist2;
+            bestindx = n;
+            bestpos = pos;
+         }
       }
 
       let match_distance = 5;
-      if (this.markeratt?.used) match_distance = this.markeratt.getFullSize();
+      if (this.markeratt?.used)
+         match_distance = this.markeratt.getFullSize();
 
-      if (Math.sqrt(best_dist2) > match_distance) return null;
+      if (Math.sqrt(best_dist2) > match_distance)
+         return null;
 
       const res = {
          name: this.getObject().fName, title: this.getObject().fTitle,
-         x: bestpos.x, y: bestpos.y,
-         color1: this.markeratt?.used ? this.markeratt.color : this.lineatt.color,
+         x: bestpos.grx, y: bestpos.gry,
+         color1: (this.markeratt?.used ? this.markeratt.color : undefined) ?? this.fillatt?.color ?? this.lineatt?.color,
          exact: Math.sqrt(best_dist2) < 4,
          lines: [this.getObjectHint()],
          binindx: bestindx,
@@ -575,7 +580,8 @@ class TGraphPolarPainter extends ObjectPainter {
    /** @summary Process tooltip event */
    processTooltipEvent(pnt) {
       const hint = this.extractTooltip(pnt);
-      if (!pnt || !pnt.disabled) this.showTooltip(hint);
+      if (!pnt || !pnt.disabled)
+         this.showTooltip(hint);
       return hint;
    }
 
