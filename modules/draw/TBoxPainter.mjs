@@ -3,7 +3,7 @@ import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { addMoveHandler } from '../gui/utils.mjs';
-import { assignContextMenu, kToFront } from '../gui/menu.mjs';
+import { assignContextMenu } from '../gui/menu.mjs';
 
 
 class TBoxPainter extends ObjectPainter {
@@ -13,10 +13,10 @@ class TBoxPainter extends ObjectPainter {
    moveStart(x, y) {
       const ww = Math.abs(this.x2 - this.x1), hh = Math.abs(this.y1 - this.y2);
 
-      this.c_x1 = Math.abs(x - this.x2) > ww*0.1;
-      this.c_x2 = Math.abs(x - this.x1) > ww*0.1;
-      this.c_y1 = Math.abs(y - this.y2) > hh*0.1;
-      this.c_y2 = Math.abs(y - this.y1) > hh*0.1;
+      this.c_x1 = Math.abs(x - this.x2) > ww * 0.1;
+      this.c_x2 = Math.abs(x - this.x1) > ww * 0.1;
+      this.c_y1 = Math.abs(y - this.y2) > hh * 0.1;
+      this.c_y2 = Math.abs(y - this.y1) > hh * 0.1;
       if (this.c_x1 !== this.c_x2 && this.c_y1 && this.c_y2)
          this.c_y1 = this.c_y2 = false;
       if (this.c_y1 !== this.c_y2 && this.c_x1 && this.c_x2)

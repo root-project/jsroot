@@ -1,7 +1,7 @@
 import { BIT, isFunc, clTLatex, clTMathText, clTAnnotation } from '../core.mjs';
 import { BasePainter, makeTranslate, DrawOptions } from '../base/BasePainter.mjs';
 import { addMoveHandler } from '../gui/utils.mjs';
-import { assignContextMenu, kToFront } from '../gui/menu.mjs';
+import { assignContextMenu } from '../gui/menu.mjs';
 
 
 /** @summary Draw TText
