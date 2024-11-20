@@ -73,8 +73,10 @@ class TGraphPolargramPainter extends ObjectPainter {
    /** @summary Convert axis values to text */
    axisAsText(axis, value) {
       if (axis === 'r') {
-         if (value === Math.round(value)) return value.toString();
-         if (this.ndig>10) return value.toExponential(4);
+         if (value === Math.round(value))
+            return value.toString();
+         if (this.ndig > 10)
+            return value.toExponential(4);
          return value.toFixed(this.ndig+2);
       }
 
@@ -113,14 +115,14 @@ class TGraphPolargramPainter extends ObjectPainter {
 
    /** @summary Process mouse event */
    mouseEvent(kind, evnt) {
-      const layer = this.getLayerSvg('primitives_layer'),
-            interactive = layer.select('.interactive_ellipse');
-      if (interactive.empty()) return;
+//      const layer = this.getLayerSvg('primitives_layer'),
+//            interactive = layer.select('.interactive_ellipse');
+//      if (interactive.empty()) return;
 
       let pnt = null;
 
       if (kind !== 'leave') {
-         const pos = d3_pointer(evnt, interactive.node());
+         const pos = d3_pointer(evnt, this.draw_g.node());
          pnt = { x: pos[0], y: pos[1], touch: false };
       }
       this.processFrameTooltipEvent(pnt);
@@ -128,6 +130,7 @@ class TGraphPolargramPainter extends ObjectPainter {
 
    /** @summary Process mouse wheel event */
    mouseWheel(evnt) {
+      console.log('mouse whell event');
       evnt.stopPropagation();
       evnt.preventDefault();
 
@@ -216,7 +219,7 @@ class TGraphPolargramPainter extends ObjectPainter {
          indx++;
       }
 
-      let exclude_last = false;
+      let exclude_last = false, pointer_events = this.isBatchMode() ? null : 'visibleFill';
 
       if ((ticks[ticks.length-1] < polar.fRwrmax) && (this.zoom_rmin === this.zoom_rmax)) {
          ticks.push(polar.fRwrmax);
@@ -225,13 +228,15 @@ class TGraphPolargramPainter extends ObjectPainter {
 
       return this.startTextDrawingAsync(polar.fRadialLabelFont, Math.round(polar.fRadialTextSize * this.szy * 2)).then(() => {
          for (let n = 0; n < ticks.length; ++n) {
-            let rx = this.r(ticks[n]), ry = rx/this.szx*this.szy;
+            let rx = this.r(ticks[n]),
+                ry = rx / this.szx * this.szy;
             this.draw_g.append('ellipse')
                .attr('cx', 0)
                .attr('cy', 0)
                .attr('rx', Math.round(rx))
                .attr('ry', Math.round(ry))
                .style('fill', 'none')
+               .style('pointer-events', pointer_events)
                .call(this.lineatt.func);
 
             if ((n < ticks.length-1) || !exclude_last) {
@@ -239,18 +244,20 @@ class TGraphPolargramPainter extends ObjectPainter {
                               text: this.format(ticks[n]), color: this.getColor(polar.fRadialLabelColor), latex: 0 });
             }
 
-            if ((nminor>1) && ((n < ticks.length-1) || !exclude_last)) {
+            if ((nminor > 1) && ((n < ticks.length - 1) || !exclude_last)) {
                const dr = (ticks[1] - ticks[0]) / nminor;
                for (let nn = 1; nn < nminor; ++nn) {
                   const gridr = ticks[n] + dr*nn;
                   if (gridr > this.scale_rmax) break;
-                  rx = this.r(gridr); ry = rx/this.szx*this.szy;
+                  rx = this.r(gridr);
+                  ry = rx / this.szx * this.szy;
                   this.draw_g.append('ellipse')
                      .attr('cx', 0)
                      .attr('cy', 0)
                      .attr('rx', Math.round(rx))
                      .attr('ry', Math.round(ry))
                      .style('fill', 'none')
+                     .style('pointer-events', pointer_events)
                      .call(this.gridatt.func);
                }
             }
@@ -292,34 +299,31 @@ class TGraphPolargramPainter extends ObjectPainter {
             }
          }
 
-         if (this.isBatchMode()) return;
+         if (this.isBatchMode())
+            return;
 
          TooltipHandler.assign(this);
 
-         const layer = this.getLayerSvg('primitives_layer');
-         let interactive = layer.select('.interactive_ellipse');
-
-         if (interactive.empty()) {
-            interactive = layer.append('g')
-                               .classed('most_upper_primitives', true)
-                               .append('ellipse')
-                               .classed('interactive_ellipse', true)
-                               .attr('cx', 0)
-                               .attr('cy', 0)
-                               .style('fill', 'none')
-                               .style('pointer-events', 'visibleFill')
-                               .on('mouseenter', evnt => this.mouseEvent('enter', evnt))
-                               .on('mousemove', evnt => this.mouseEvent('move', evnt))
-                               .on('mouseleave', evnt => this.mouseEvent('leave', evnt));
-         }
-
-         interactive.attr('rx', this.szx).attr('ry', this.szy);
-
-         d3_select(interactive.node().parentNode).attr('transform', this.draw_g.attr('transform'));
+         // last_ellipse.style('pointer-events', 'visibleFill');
+         this.draw_g.on('mouseenter', evnt => this.mouseEvent('enter', evnt))
+                     .on('mousemove', evnt => this.mouseEvent('move', evnt))
+                     .on('mouseleave', evnt => this.mouseEvent('leave', evnt));
 
          if (settings.Zooming && settings.ZoomWheel)
-            interactive.on('wheel', evnt => this.mouseWheel(evnt));
+            this.draw_g.on('wheel', evnt => this.mouseWheel(evnt));
+
+         assignContextMenu(this, kNoReorder);
       });
+   }
+
+   /** @summary Fill TGraphPolargram context menu */
+   fillContextMenuItems(menu) {
+      const pp = this.getObject();
+      menu.sub("Angle axis");
+      menu.addchk(pp.fRadian, 'Radian', flag => { pp.fRadian = flag; pp.fDegree = pp.fGrad = false; this.interactiveRedraw('pad', flag ? 'exec:SetToRadian()' : 'exec:SetTwoPi()'); }, 'Handle data angles as radian range 0..2*Pi');
+      menu.addchk(pp.fDegree, 'Degree', flag => { pp.fDegree = flag; pp.fRadian = pp.fGrad = false; this.interactiveRedraw('pad', flag ? 'exec:SetToDegree()' : 'exec:SetTwoPi()'); }, 'Handle data angles as degree range 0..360');
+      menu.addchk(pp.fGrad, 'Grad', flag => { pp.fGrad = flag; pp.fRadian = pp.fDegree = false;  this.interactiveRedraw('pad', flag ? 'exec:SetToGrad()' : 'exec:SetTwoPi()'); }, 'Handle data angles as grad range 0..200');
+      menu.endsub();
    }
 
    /** @summary Draw TGraphPolargram */
@@ -405,7 +409,7 @@ class TGraphPolarPainter extends ObjectPainter {
       this.draw_g.attr('transform', main.draw_g.attr('transform'));
 
       let mpath = '', epath = '';
-      const bins = [];
+      const bins = [], pointer_events = this.isBatchMode() ? null : 'none';
 
       for (let n = 0; n < graph.fNpoints; ++n) {
          if (graph.fY[n] > main.scale_rmax)
@@ -435,6 +439,7 @@ class TGraphPolarPainter extends ObjectPainter {
          if (this.options.fill) {
             this.draw_g.append('svg:path')
                 .attr('d', lpath + 'Z')
+                .style('pointer-events', pointer_events)
                 .call(this.fillatt.func);
          }
 
@@ -442,6 +447,7 @@ class TGraphPolarPainter extends ObjectPainter {
             this.draw_g.append('svg:path')
                 .attr('d', lpath)
                 .style('fill', 'none')
+                .style('pointer-events', pointer_events)
                 .call(this.lineatt.func);
          }
       }
@@ -450,6 +456,7 @@ class TGraphPolarPainter extends ObjectPainter {
          this.draw_g.append('svg:path')
                  .attr('d', buildSvgCurve(bins))
                  .style('fill', 'none')
+                 .style('pointer-events', pointer_events)
                  .call(this.lineatt.func);
       }
 
@@ -457,31 +464,17 @@ class TGraphPolarPainter extends ObjectPainter {
          this.draw_g.append('svg:path')
              .attr('d', epath)
              .style('fill', 'none')
+             .style('pointer-events', pointer_events)
              .call(this.lineatt.func);
       }
 
       if (mpath) {
          this.draw_g.append('svg:path')
                .attr('d', mpath)
+               .style('pointer-events', pointer_events)
                .call(this.markeratt.func);
       }
-
-      assignContextMenu(this);
    }
-
-   /** @summary Fill TGraphPolar context menu */
-   fillContextMenuItems(menu) {
-      const p = this.getMainPainter();
-      if (this.options.axis && p?.$polargram) {
-         const pp = p.getObject();
-         menu.sub("Angle axis");
-         menu.addchk(pp.fRadian, 'Radian', flag => { pp.fRadian = flag; pp.fDegree = pp.fGrad = false; p.interactiveRedraw('pad', flag ? 'exec:SetToRadian()' : 'exec:SetTwoPi()'); }, 'Handle data angles as radian range 0..2*Pi');
-         menu.addchk(pp.fDegree, 'Degree', flag => { pp.fDegree = flag; pp.fRadian = pp.fGrad = false; p.interactiveRedraw('pad', flag ? 'exec:SetToDegree()' : 'exec:SetTwoPi()'); }, 'Handle data angles as degree range 0..360');
-         menu.addchk(pp.fGrad, 'Grad', flag => { pp.fGrad = flag; pp.fRadian = pp.fDegree = false;  p.interactiveRedraw('pad', flag ? 'exec:SetToGrad()' : 'exec:SetTwoPi()'); }, 'Handle data angles as grad range 0..200');
-         menu.endsub();
-      }
-   }
-
 
    /** @summary Create polargram object */
    createPolargram(gr) {
@@ -529,7 +522,7 @@ class TGraphPolarPainter extends ObjectPainter {
       const res = {
          name: this.getObject().fName, title: this.getObject().fTitle,
          x: bestpos.grx, y: bestpos.gry,
-         color1: (this.markeratt?.used ? this.markeratt.color : undefined) ?? this.fillatt?.color ?? this.lineatt?.color,
+         color1: (this.markeratt?.used ? this.markeratt.color : undefined) ?? (this.fillatt?.used ? this.fillatt.color : undefined) ?? this.lineatt?.color,
          exact: Math.sqrt(best_dist2) < 4,
          lines: [this.getObjectHint()],
          binindx: bestindx,
