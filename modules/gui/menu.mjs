@@ -9,7 +9,8 @@ import { FontHandler, kArial } from '../base/FontHandler.mjs';
 import { kAxisLabels } from '../base/ObjectPainter.mjs';
 
 
-const kToFront = '__front__', sDfltName = 'root_ctx_menu', sDfltDlg = '_dialog',
+const kToFront = '__front__', kNoReorder = '__no_reorder',
+      sDfltName = 'root_ctx_menu', sDfltDlg = '_dialog',
       sSub = 'sub:', sEndsub = 'endsub:', sSeparator = 'separator', sHeader = 'header:';
 
 /**
@@ -1636,10 +1637,12 @@ function showPainterMenu(evnt, painter, kind) {
 
    createMenu(evnt, painter).then(menu => {
       painter.fillContextMenu(menu);
-      if ((kind === kToFront) && isFunc(painter.bringToFront)) {
-         menu.add('Bring to front', () => painter.bringToFront(true));
+      if (kind === kNoReorder)
          kind = undefined;
-      }
+      else if (isFunc(painter.bringToFront))
+         menu.add('Bring to front', () => painter.bringToFront(true));
+      if (kind === kToFront)
+         kind = undefined;
       return painter.fillObjectExecMenu(menu, kind);
    }).then(menu => menu.show());
 }
@@ -1668,6 +1671,6 @@ function assignContextMenu(painter, kind) {
       painter.draw_g.on('contextmenu', settings.ContextMenu ? evnt => showPainterMenu(evnt, painter, kind) : null);
 }
 
-Object.assign(internals.jsroot, { createMenu, closeMenu, assignContextMenu, kToFront });
+Object.assign(internals.jsroot, { createMenu, closeMenu, assignContextMenu, kToFront, kNoReorder });
 
-export { createMenu, closeMenu, showPainterMenu, assignContextMenu, hasMenu, kToFront };
+export { createMenu, closeMenu, showPainterMenu, assignContextMenu, hasMenu, kToFront, kNoReorder };

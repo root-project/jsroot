@@ -109,7 +109,7 @@ async function drawText() {
          };
       }
 
-      assignContextMenu(this, kToFront);
+      assignContextMenu(this);
 
       this.fillContextMenuItems = function(menu) {
          menu.add('Change text', () => menu.input('Enter new text', text.fTitle).then(t => {
@@ -207,7 +207,7 @@ function drawEllipse() {
       .call(this.lineatt.func)
       .call(this.fillatt.func);
 
-   assignContextMenu(this, kToFront);
+   assignContextMenu(this);
 
    addMoveHandler(this);
 
@@ -296,7 +296,7 @@ function drawMarker() {
           .call(this.markeratt.func);
    }
 
-   assignContextMenu(this, kToFront);
+   assignContextMenu(this);
 
    addMoveHandler(this);
 
@@ -342,7 +342,7 @@ function drawPolyMarker() {
           .call(this.markeratt.func);
    }
 
-   assignContextMenu(this, kToFront);
+   assignContextMenu(this);
 
    addMoveHandler(this);
 

@@ -20,19 +20,25 @@ class TGraphPolargramPainter extends ObjectPainter {
       super(dom, polargram);
       this.$polargram = true; // indicate that this is polargram
       this.zoom_rmin = this.zoom_rmax = 0;
-      this.k = 1;
       this.t0 = 0;
       this.mult = 1;
    }
 
    /** @summary Returns true if fixed coordinates are configured */
    isNormalAngles() {
-      const obj = this.getObject();
-      return obj?.fRadian || obj?.fGrad || obj?.fDegree;
+      const polar = this.getObject();
+      return polar?.fRadian || polar?.fGrad || polar?.fDegree;
    }
 
-   setAnglesAutoRange(tmin, tmax) {
-      this.k = 1;
+   /** @summary Set angles range displayed by the polargram */
+   setAnglesRange(tmin, tmax, set_obj) {
+      if (tmin >= tmax)
+         tmax = tmin + 1;
+      if (set_obj) {
+         const polar = this.getObject();
+         polar.fRwtmin = tmin;
+         polar.fRwtmax = tmax;
+      }
       this.t0 = tmin;
       this.mult = 2*Math.PI/(tmax - tmin);
    }
@@ -40,7 +46,7 @@ class TGraphPolargramPainter extends ObjectPainter {
    /** @summary Translate coordinates */
    translate(input_angle, radius, keep_float) {
       // recalculate angle
-      const angle = (input_angle * this.k - this.t0) * this.mult;
+      const angle = (input_angle - this.t0) * this.mult;
       let rx = this.r(radius),
           ry = rx/this.szx*this.szy,
           grx = rx * Math.cos(-angle),
@@ -173,6 +179,16 @@ class TGraphPolargramPainter extends ObjectPainter {
       }
 
       this.r = scaleLinear().domain([this.scale_rmin, this.scale_rmax]).range([0, this.szx]);
+
+      if (polar.fRadian) {
+         polar.fRwtmin = 0; polar.fRwtmax = 2*Math.PI;
+      } else if (polar.fDegree) {
+         polar.fRwtmin = 0; polar.fRwtmax = 360;
+      } else if (polar.fGrad) {
+         polar.fRwtmin = 0; polar.fRwtmax = 200;
+      }
+
+      this.setAnglesRange(polar.fRwtmin, polar.fRwtmax);
 
       const ticks = this.r.ticks(5),
             fontsize = Math.round(polar.fPolarTextSize * this.szy * 2);
@@ -384,7 +400,7 @@ class TGraphPolarPainter extends ObjectPainter {
          }
 
          rwtmax += (rwtmax - rwtmin) / graph.fNpoints;
-         main.setAnglesAutoRange(rwtmin, rwtmax);
+         main.setAnglesRange(rwtmin, rwtmax, true);
       }
 
       this.draw_g.attr('transform', main.draw_g.attr('transform'));

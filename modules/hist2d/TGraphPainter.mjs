@@ -7,7 +7,7 @@ import { FunctionsHandler } from './THistPainter.mjs';
 import { TH1Painter, PadDrawOptions } from './TH1Painter.mjs';
 import { kBlack, kWhite } from '../base/colors.mjs';
 import { addMoveHandler } from '../gui/utils.mjs';
-import { assignContextMenu } from '../gui/menu.mjs';
+import { assignContextMenu, kNoReorder } from '../gui/menu.mjs';
 
 
 const kNotEditable = BIT(18),   // bit set if graph is non editable
@@ -964,7 +964,7 @@ class TGraphPainter extends ObjectPainter {
 
       if (!this.isBatchMode()) {
          addMoveHandler(this, this.testEditable());
-         assignContextMenu(this);
+         assignContextMenu(this, kNoReorder);
       }
    }
 

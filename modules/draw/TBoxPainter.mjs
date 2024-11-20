@@ -126,7 +126,7 @@ class TBoxPainter extends ObjectPainter {
                     .style('fill', d3_rgb(this.fillatt.color).darker(0.5).formatRgb());
       }
 
-      assignContextMenu(this, kToFront);
+      assignContextMenu(this);
 
       addMoveHandler(this);
 
