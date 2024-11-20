@@ -4,6 +4,7 @@ import { DrawOptions, buildSvgCurve, makeTranslate } from '../base/BasePainter.m
 import { ObjectPainter, getElementMainPainter } from '../base/ObjectPainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { TooltipHandler } from '../gpad/TFramePainter.mjs';
+import { assignContextMenu, kNoReorder } from '../gui/menu.mjs';
 
 
 /**
@@ -395,10 +396,9 @@ class TGraphPolarPainter extends ObjectPainter {
          let rwtmin = graph.fX[0],
              rwtmax = graph.fX[0];
          for (let n = 0; n < graph.fNpoints; ++n) {
-            rwtmin = Math.min(rwtmin, has_err ? graph.fX[n] - graph.fEX[n] : graph.fX[n]);
-            rwtmax = Math.max(rwtmax, has_err ? graph.fX[n] + graph.fEX[n] : graph.fX[n]);
+            rwtmin = Math.min(rwtmin, graph.fX[n] - (has_err ? graph.fEX[n] : 0));
+            rwtmax = Math.max(rwtmax, graph.fX[n] + (has_err ? graph.fEX[n] : 0));
          }
-
          rwtmax += (rwtmax - rwtmin) / graph.fNpoints;
          main.setAnglesRange(rwtmin, rwtmax, true);
       }
@@ -409,17 +409,17 @@ class TGraphPolarPainter extends ObjectPainter {
       const bins = [];
 
       for (let n = 0; n < graph.fNpoints; ++n) {
-         if (graph.fY[n] > main.scale_rmax) continue;
+         if (graph.fY[n] > main.scale_rmax)
+            continue;
 
          if (this.options.err) {
-            let pos1 = main.translate(graph.fX[n], graph.fY[n] - graph.fEY[n]),
-                pos2 = main.translate(graph.fX[n], graph.fY[n] + graph.fEY[n]);
-            epath += `M${pos1.grx},${pos1.gry}L${pos2.grx},${pos2.gry}`;
+            const p1 = main.translate(graph.fX[n], graph.fY[n] - graph.fEY[n]),
+                  p2 = main.translate(graph.fX[n], graph.fY[n] + graph.fEY[n]),
+                  p3 = main.translate(graph.fX[n] + graph.fEX[n], graph.fY[n]),
+                  p4 = main.translate(graph.fX[n] - graph.fEX[n], graph.fY[n]);
 
-            pos1 = main.translate(graph.fX[n] + graph.fEX[n], graph.fY[n]);
-            pos2 = main.translate(graph.fX[n] - graph.fEX[n], graph.fY[n]);
-
-            epath += `M${pos1.grx},${pos1.gry}A${pos2.rx},${pos2.ry},0,0,1,${pos2.grx},${pos2.gry}`;
+            epath += `M${p1.grx},${p1.gry}L${p2.grx},${p2.gry}` +
+                     `M${p3.grx},${p3.gry}A${p4.rx},${p4.ry},0,0,1,${p4.grx},${p4.gry}`;
          }
 
          const pos = main.translate(graph.fX[n], graph.fY[n]);
@@ -466,7 +466,23 @@ class TGraphPolarPainter extends ObjectPainter {
                .attr('d', mpath)
                .call(this.markeratt.func);
       }
+
+      assignContextMenu(this);
    }
+
+   /** @summary Fill TGraphPolar context menu */
+   fillContextMenuItems(menu) {
+      const p = this.getMainPainter();
+      if (this.options.axis && p?.$polargram) {
+         const pp = p.getObject();
+         menu.sub("Angle axis");
+         menu.addchk(pp.fRadian, 'Radian', flag => { pp.fRadian = flag; pp.fDegree = pp.fGrad = false; p.interactiveRedraw('pad', flag ? 'exec:SetToRadian()' : 'exec:SetTwoPi()'); }, 'Handle data angles as radian range 0..2*Pi');
+         menu.addchk(pp.fDegree, 'Degree', flag => { pp.fDegree = flag; pp.fRadian = pp.fGrad = false; p.interactiveRedraw('pad', flag ? 'exec:SetToDegree()' : 'exec:SetTwoPi()'); }, 'Handle data angles as degree range 0..360');
+         menu.addchk(pp.fGrad, 'Grad', flag => { pp.fGrad = flag; pp.fRadian = pp.fDegree = false;  p.interactiveRedraw('pad', flag ? 'exec:SetToGrad()' : 'exec:SetTwoPi()'); }, 'Handle data angles as grad range 0..200');
+         menu.endsub();
+      }
+   }
+
 
    /** @summary Create polargram object */
    createPolargram() {

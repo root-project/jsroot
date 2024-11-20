@@ -307,7 +307,7 @@ class TASImagePainter extends ObjectPainter {
       });
    }
 
-   /** @summary Fill TASImage context */
+   /** @summary Fill TASImage context menu */
    fillContextMenuItems(menu) {
       const obj = this.getObject();
       if (obj) {
