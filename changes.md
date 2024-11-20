@@ -2,6 +2,7 @@
 
 ## Changes in 7.8.x
 1. Fix - correctly position title according to gStyle->GetTitleAlign()
+2. Fix - tooltips on TGraphPolar
 
 
 ## Changes in 7.8.0
