@@ -79,8 +79,10 @@ function getAbsPosInCanvas(sel, pos) {
   * @return {string|Array} - converted value or array with value and actual format
   * @private */
 function floatToString(value, fmt, ret_fmt) {
-   if (!fmt || (fmt === 'g'))
+   if (!fmt)
       fmt = '6.4g';
+   else if (fmt === 'g')
+      fmt = '7.5g';
 
    fmt = fmt.trim();
    const len = fmt.length;
@@ -116,10 +118,6 @@ function floatToString(value, fmt, ret_fmt) {
    }
 
    if (isexp) {
-      // for exponential representation only one significant digit before point
-      if (compact) prec--;
-      if (prec < 0) prec = 0;
-
       let se = value.toExponential(prec);
 
       if (compact) {
@@ -142,11 +140,6 @@ function floatToString(value, fmt, ret_fmt) {
    let sg = value.toFixed(prec);
 
    if (compact) {
-      // when using fixed representation, one could get 0
-      if ((value !== 0) && (Number(sg) === 0) && (prec > 0)) {
-         prec = 20; sg = value.toFixed(prec);
-      }
-
       let l = 0;
       while ((l < sg.length) && (sg[l] === '0' || sg[l] === '-' || sg[l] === '.'))
          l++;
@@ -172,6 +165,9 @@ function floatToString(value, fmt, ret_fmt) {
             p--;
          sg = sg.slice(0, p);
       }
+
+      if (sg === '-0')
+         sg = '0';
    }
 
    return ret_fmt ? [sg, `${prec+2}.${prec}${compact}f`] : sg;
