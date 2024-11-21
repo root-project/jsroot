@@ -1380,7 +1380,7 @@ class THistPainter extends ObjectPainter {
       if (!tpainter || !pt)
          return this;
 
-      const histo = this.getHisto(), st = gStyle,
+      const histo = this.getHisto(), st = this.getgStyle(),
             draw_title = !histo.TestBit(kNoTitle) && (st.fOptTitle > 0);
 
       pt.Clear();
@@ -1395,7 +1395,7 @@ class THistPainter extends ObjectPainter {
       if (!this.isMainPainter() || this.options.Same || (this.options.Axis > 0))
          return this;
 
-      const histo = this.getHisto(), st = gStyle,
+      const histo = this.getHisto(), st = this.getgStyle(),
             draw_title = !histo.TestBit(kNoTitle) && (st.fOptTitle > 0),
             pp = this.getPadPainter();
 
@@ -1403,7 +1403,8 @@ class THistPainter extends ObjectPainter {
 
       if (pt) {
          pt.Clear();
-         if (draw_title) pt.AddText(histo.fTitle);
+         if (draw_title)
+            pt.AddText(histo.fTitle);
          return this;
       }
 
@@ -1412,7 +1413,7 @@ class THistPainter extends ObjectPainter {
                           fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: 22 });
 
       if (draw_title) pt.AddText(histo.fTitle);
-      return TPavePainter.draw(pp, pt, 'postitle').then(p => p?.setSecondaryId(this, kTitle));
+      return TPavePainter.draw(pp, pt, 'postitle').then(p => { p?.setSecondaryId(this, kTitle); return this; });
    }
 
    /** @summary Live change and update of title drawing
