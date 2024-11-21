@@ -1,11 +1,13 @@
-import { settings, create } from '../core.mjs';
+import { settings, create, BIT, clTPaveText, kTitle } from '../core.mjs';
 import { scaleLinear, select as d3_select, pointer as d3_pointer } from '../d3.mjs';
 import { DrawOptions, buildSvgCurve, makeTranslate } from '../base/BasePainter.mjs';
 import { ObjectPainter, getElementMainPainter } from '../base/ObjectPainter.mjs';
+import { TPavePainter } from '../hist/TPavePainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { TooltipHandler } from '../gpad/TFramePainter.mjs';
 import { assignContextMenu, kNoReorder } from '../gui/menu.mjs';
 
+const kNoTitle = BIT(17);
 
 /**
  * @summary Painter for TGraphPolargram objects.
@@ -398,12 +400,11 @@ class TGraphPolarPainter extends ObjectPainter {
 
    /** @summary Redraw TGraphPolar */
    redraw() {
-      return this.drawGraphPolar();
+      return this.drawGraphPolar().then(() => this.updateTitle());
    }
 
-
    /** @summary Drawing TGraphPolar */
-   drawGraphPolar() {
+   async drawGraphPolar() {
       const graph = this.getObject(),
             main = this.getMainPainter();
 
@@ -572,6 +573,59 @@ class TGraphPolarPainter extends ObjectPainter {
       return res;
    }
 
+   /** @summary Only redraw histogram title
+     * @return {Promise} with painter */
+   async updateTitle() {
+      // case when histogram drawn over other histogram (same option)
+      if (!this._draw_axis)
+         return this;
+
+      const tpainter = this.getPadPainter()?.findPainterFor(null, kTitle, clTPaveText),
+            pt = tpainter?.getObject();
+
+      if (!tpainter || !pt)
+         return this;
+
+      const gr = this.getObject(), st = this.getgStyle(),
+            draw_title = !gr.TestBit(kNoTitle) && (st.fOptTitle > 0);
+
+      pt.Clear();
+      if (draw_title) pt.AddText(gr.fTitle);
+      return tpainter.redraw().then(() => this);
+   }
+
+
+   /** @summary Draw histogram title
+     * @return {Promise} with painter */
+   async drawTitle() {
+      // case when histogram drawn over other histogram (same option)
+      if (!this._draw_axis)
+         return this;
+
+      const gr = this.getObject(),
+            st = this.getgStyle(),
+            draw_title = !gr.TestBit(kNoTitle) && (st.fOptTitle > 0),
+            pp = this.getPadPainter();
+
+      let pt = pp.findInPrimitives(kTitle, clTPaveText);
+
+      if (pt) {
+         pt.Clear();
+         if (draw_title)
+            pt.AddText(gr.fTitle);
+         return this;
+      }
+
+      pt = create(clTPaveText);
+      Object.assign(pt, { fName: kTitle, fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
+                           fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: 22 });
+
+      if (draw_title)
+         pt.AddText(gr.fTitle);
+      return TPavePainter.draw(pp, pt, 'postitle')
+                         .then(p => { p?.setSecondaryId(this, kTitle); return this; });
+   }
+
    /** @summary Show tooltip */
    showTooltip(hint) {
       let ttcircle = this.draw_g?.selectChild('.tooltip_bin');
@@ -629,9 +683,8 @@ class TGraphPolarPainter extends ObjectPainter {
       return pr.then(gram_painter => {
          gram_painter?.setSecondaryId(painter, 'polargram');
          painter.addToPadPrimitives();
-         painter.drawGraphPolar();
-         return painter;
-      });
+         return painter.drawGraphPolar();
+      }).then(() => painter.drawTitle());
    }
 
 } // class TGraphPolarPainter
