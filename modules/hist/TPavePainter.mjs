@@ -1270,6 +1270,23 @@ class TPavePainter extends ObjectPainter {
       this.getObject().AddText(txt);
    }
 
+   /** @summary Remade version of THistPainter::GetBestFormat
+     * @private */
+   getBestFormat(tv, e) {
+      const ie = tv.indexOf('e'), id = tv.indexOf('.');
+
+      if (ie >= 0) {
+         if ((tv.indexOf('+') < 0) || (e >= 1))
+            return `.${ie-id-1}e`;
+         else
+            return '.1f';
+      } else if (id < 0)
+         return '.1f';
+
+      return `.${tv.length-id-1}f`;
+   }
+
+
    /** @summary Fill function parameters */
    fillFunctionStat(f1, dofit, ndim = 1) {
       this._has_fit = false;
@@ -1297,12 +1314,16 @@ class TPavePainter extends ObjectPainter {
          for (let n = 0; n < f1.GetNumPars(); ++n) {
             const parname = f1.GetParName(n);
             let parvalue = f1.GetParValue(n), parerr = f1.GetParError(n);
-
-            parvalue = (parvalue === undefined) ? '<not avail>' : this.format(Number(parvalue), 'fit');
-            if (parerr !== undefined) {
-               parerr = this.format(parerr, 'last');
-               if ((Number(parerr) === 0) && (f1.GetParError(n) !== 0))
-                  parerr = this.format(f1.GetParError(n), '4.2g');
+            if (parvalue === undefined) {
+               parvalue = '<not avail>';
+               parerr = null;
+            } else {
+               parvalue = this.format(Number(parvalue), 'fit');
+               if (print_ferrors && (parerr !== undefined)) {
+                  parerr = floatToString(parerr, this.getBestFormat(parvalue, parerr));
+                  if ((Number(parerr) === 0) && (f1.GetParError(n) !== 0))
+                     parerr = floatToString(f1.GetParError(n), '4.2g');
+               }
             }
 
             if (print_ferrors && parerr)
