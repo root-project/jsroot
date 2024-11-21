@@ -78,8 +78,8 @@ function getAbsPosInCanvas(sel, pos) {
   * @param {boolean} [ret_fmt] - when true returns array with value and actual format like ['0.1','6.4f']
   * @return {string|Array} - converted value or array with value and actual format
   * @private */
-function floatToString(value, fmt, ret_fmt, significance) {
-   if (!fmt)
+function floatToString(value, fmt, ret_fmt) {
+   if (!fmt || (fmt === 'g'))
       fmt = '6.4g';
 
    fmt = fmt.trim();
@@ -90,6 +90,13 @@ function floatToString(value, fmt, ret_fmt, significance) {
    const kind = fmt[len-1].toLowerCase(),
          compact = (len > 1) && (fmt[len-2] === 'c') ? 'c' : '';
    fmt = fmt.slice(0, len - (compact ? 2 : 1));
+
+   if (kind === 'g') {
+      const se = floatToString(value, fmt+'ce', true),
+            sg = floatToString(value, fmt+'cf', true),
+            res = se[0].length < sg[0].length || ((sg[0] === '0') && value) ? se : sg;
+      return ret_fmt ? res : res[0];
+   }
 
    let isexp, prec = fmt.indexOf('.');
    prec = (prec < 0) ? 4 : parseInt(fmt.slice(prec+1));
@@ -103,13 +110,6 @@ function floatToString(value, fmt, ret_fmt, significance) {
       case 'f':
          isexp = false;
          break;
-      case 'g': {
-         const se = floatToString(value, fmt+'ce', true, true),
-               sg = floatToString(value, fmt+'cf', true, true),
-               res = se[0].length < sg[0].length ? se : sg;
-
-         return ret_fmt ? res : res[0];
-      }
       default:
          isexp = false;
          prec = 4;
@@ -117,7 +117,7 @@ function floatToString(value, fmt, ret_fmt, significance) {
 
    if (isexp) {
       // for exponential representation only one significant digit before point
-      if (significance) prec--;
+      if (compact) prec--;
       if (prec < 0) prec = 0;
 
       let se = value.toExponential(prec);
@@ -141,14 +141,15 @@ function floatToString(value, fmt, ret_fmt, significance) {
 
    let sg = value.toFixed(prec);
 
-   if (significance) {
+   if (compact) {
       // when using fixed representation, one could get 0
       if ((value !== 0) && (Number(sg) === 0) && (prec > 0)) {
          prec = 20; sg = value.toFixed(prec);
       }
 
       let l = 0;
-      while ((l < sg.length) && (sg[l] === '0' || sg[l] === '-' || sg[l] === '.')) l++;
+      while ((l < sg.length) && (sg[l] === '0' || sg[l] === '-' || sg[l] === '.'))
+         l++;
 
       let diff = sg.length - l - prec;
       if (sg.indexOf('.') > l) diff--;
@@ -161,9 +162,7 @@ function floatToString(value, fmt, ret_fmt, significance) {
             prec = 20;
          sg = value.toFixed(prec);
       }
-   }
 
-   if (compact) {
       const pnt = sg.indexOf('.');
       if (pnt > 0) {
          let p = sg.length;
