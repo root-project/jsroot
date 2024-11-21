@@ -81,20 +81,20 @@ function getAbsPosInCanvas(sel, pos) {
 function floatToString(value, fmt, ret_fmt, significance) {
    if (!fmt)
       fmt = '6.4g';
-   else if (fmt === 'g')
-      fmt = '8.6g';
-   else if (fmt === 'c')
-      fmt = '8.6c';
 
    fmt = fmt.trim();
    const len = fmt.length;
    if (len < 2)
       return ret_fmt ? [value.toFixed(4), '6.4f'] : value.toFixed(4);
-   const kind = fmt[len-1].toLowerCase();
-   fmt = fmt.slice(0, len-1);
+
+   const kind = fmt[len-1].toLowerCase(),
+         compact = (len > 1) && (fmt[len-2] === 'c') ? 'c' : '';
+   fmt = fmt.slice(0, len - (compact ? 2 : 1));
+
    let isexp, prec = fmt.indexOf('.');
    prec = (prec < 0) ? 4 : parseInt(fmt.slice(prec+1));
-   if (!Number.isInteger(prec) || (prec <= 0)) prec = 4;
+   if (!Number.isInteger(prec) || (prec <= 0))
+      prec = 4;
 
    switch (kind) {
       case 'e':
@@ -103,21 +103,12 @@ function floatToString(value, fmt, ret_fmt, significance) {
       case 'f':
          isexp = false;
          break;
-      case 'c':
       case 'g': {
-         const se = floatToString(value, fmt+'e', true, true);
-         let sg = floatToString(value, fmt+'f', true, true);
-         const pnt = sg[0].indexOf('.');
-         if ((kind === 'c') && (pnt > 0)) {
-            let len = sg[0].length;
-            while ((len > pnt) && (sg[0][len-1] === '0'))
-               len--;
-            if (len === pnt) len--;
-            sg[0] = sg[0].slice(0, len);
-         }
-         if (se[0].length < sg[0].length)
-            sg = se;
-         return ret_fmt ? sg : sg[0];
+         const se = floatToString(value, fmt+'ce', true, true),
+               sg = floatToString(value, fmt+'cf', true, true),
+               res = se[0].length < sg[0].length ? se : sg;
+
+         return ret_fmt ? res : res[0];
       }
       default:
          isexp = false;
@@ -129,8 +120,23 @@ function floatToString(value, fmt, ret_fmt, significance) {
       if (significance) prec--;
       if (prec < 0) prec = 0;
 
-      const se = value.toExponential(prec);
-      return ret_fmt ? [se, `${prec+2}.${prec}e`] : se;
+      let se = value.toExponential(prec);
+
+      if (compact) {
+         const pnt = se.indexOf('.'),
+               pe = se.toLowerCase().indexOf('e');
+         if ((pnt > 0) && (pe > pnt)) {
+            let p = pe;
+            while ((p > pnt) && (se[p-1] === '0'))
+               p--;
+            if (p === pnt + 1)
+               p--;
+            if (p !== pe)
+               se = se.slice(0, p) + se.slice(pe);
+         }
+      }
+
+      return ret_fmt ? [se, `${prec+2}.${prec}${compact}e`] : se;
    }
 
    let sg = value.toFixed(prec);
@@ -157,7 +163,19 @@ function floatToString(value, fmt, ret_fmt, significance) {
       }
    }
 
-   return ret_fmt ? [sg, `${prec+2}.${prec}f`] : sg;
+   if (compact) {
+      const pnt = sg.indexOf('.');
+      if (pnt > 0) {
+         let p = sg.length;
+         while ((p > pnt) && (sg[p-1] === '0'))
+            p--;
+         if (p === pnt + 1)
+            p--;
+         sg = sg.slice(0, p);
+      }
+   }
+
+   return ret_fmt ? [sg, `${prec+2}.${prec}${compact}f`] : sg;
 }
 
 
