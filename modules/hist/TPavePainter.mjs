@@ -633,14 +633,9 @@ class TPavePainter extends ObjectPainter {
                return value.toFixed(0);
             fmt = '14.7g';
             break;
-         case 'last': fmt = this.lastformat; break;
       }
 
-      const res = floatToString(value, fmt || '6.4g', true);
-
-      this.lastformat = res[1];
-
-      return res[0];
+      return floatToString(value, fmt || '6.4g');
    }
 
    /** @summary Draw TLegend object */
@@ -1285,7 +1280,6 @@ class TPavePainter extends ObjectPainter {
 
       return `.${tv.length-id-1}f`;
    }
-
 
    /** @summary Fill function parameters */
    fillFunctionStat(f1, dofit, ndim = 1) {
