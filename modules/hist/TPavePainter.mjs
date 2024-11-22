@@ -1153,6 +1153,18 @@ class TPavePainter extends ObjectPainter {
          pave.fShadowColor = arg;
          this.interactiveRedraw(true, getColorExec(arg, 'SetShadowColor'));
       });
+      const posarr = ['nb', 'tr', 'tl', 'br', 'bl'];
+      let value = '', remain = pave.fOption;
+      posarr.forEach(nn => {
+         const p = remain.indexOf(nn);
+         if ((p >= 0) && !value) {
+            value = nn; remain = remain.slice(0, p) + remain.slice(p + nn.length);
+         }
+      });
+      menu.addSelectMenu('positon', posarr, value || 'nb', arg => {
+         pave.fOption = arg + remain;
+         this.interactiveRedraw(true, getColorExec(arg, `exec:SetOption("${pave.fOption}")`));
+      }, 'Direction of pave shadow or nb - off');
       menu.endsub();
 
       if (this.isStats()) {
