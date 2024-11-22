@@ -858,6 +858,16 @@ function convertDate(dt) {
    return res || dt.toLocaleString('en-GB');
 }
 
+/** @summary Box decorations
+  * @private */
+function getBoxDecorations(xx, yy, ww, hh, bmode, pww, phh)
+{
+   const side1 = `M${xx},${yy}h${ww}l${-pww},${phh}h${2*pww-ww}v${hh-2*phh}l${-pww},${phh}z`,
+         side2 = `M${xx+ww},${yy+hh}v${-hh}l${-pww},${phh}v${hh-2*phh}h${2*pww-ww}l${-pww},${phh}z`;
+   return bmode > 0 ? [side1, side2] : [side2, side1];
+}
+
+
 export { prSVG, prJSON, getElementRect, getAbsPosInCanvas, getTDatime, convertDate,
-         DrawOptions, TRandom, floatToString, buildSvgCurve, compressSVG,
+         DrawOptions, TRandom, floatToString, buildSvgCurve, compressSVG, getBoxDecorations,
          BasePainter, _loadJSDOM, makeTranslate, addHighlightStyle, svgToImage };

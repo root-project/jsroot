@@ -2,7 +2,7 @@ import { gStyle, createHistogram, createTPolyLine, isFunc, isStr,
          clTMultiGraph, clTH1D, clTF2, clTProfile2D, kInspect } from '../core.mjs';
 import { rgb as d3_rgb, chord as d3_chord, arc as d3_arc, ribbon as d3_ribbon } from '../d3.mjs';
 import { kBlack } from '../base/colors.mjs';
-import { TRandom, floatToString, makeTranslate, addHighlightStyle } from '../base/BasePainter.mjs';
+import { TRandom, floatToString, makeTranslate, addHighlightStyle, getBoxDecorations } from '../base/BasePainter.mjs';
 import { EAxisBits } from '../base/ObjectPainter.mjs';
 import { THistPainter } from './THistPainter.mjs';
 
@@ -1937,12 +1937,9 @@ class TH2Painter extends THistPainter {
                cross += `M${xx},${yy}l${ww},${hh}m0,${-hh}l${-ww},${hh}`;
 
             if ((this.options.BoxStyle === 11) && (ww > 5) && (hh > 5)) {
-               const pww = Math.round(ww*0.1),
-                     phh = Math.round(hh*0.1),
-                     side1 = `M${xx},${yy}h${ww}l${-pww},${phh}h${2*pww-ww}v${hh-2*phh}l${-pww},${phh}z`,
-                     side2 = `M${xx+ww},${yy+hh}v${-hh}l${-pww},${phh}v${hh-2*phh}h${2*pww-ww}l${-pww},${phh}z`;
-               btn1 += (binz < 0) ? side2 : side1;
-               btn2 += (binz < 0) ? side1 : side2;
+               const arr = getBoxDecorations(xx, yy, ww, hh, binz, Math.round(ww*0.1), Math.round(hh*0.1))
+               btn1 += arr[0];
+               btn2 += arr[1];
             }
          }
       }

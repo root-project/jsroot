@@ -1,10 +1,9 @@
 import { rgb as d3_rgb, select as d3_select } from '../d3.mjs';
-import { DrawOptions } from '../base/BasePainter.mjs';
+import { DrawOptions, getBoxDecorations } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { addMoveHandler } from '../gui/utils.mjs';
 import { assignContextMenu } from '../gui/menu.mjs';
-
 
 class TBoxPainter extends ObjectPainter {
 
@@ -70,14 +69,10 @@ class TBoxPainter extends ObjectPainter {
             path = `M${xx},${yy}h${ww}v${hh}h${-ww}z`;
       if (!this.borderMode)
          return [path];
-      const pww = this.borderSize, phh = this.borderSize,
-            side1 = `M${xx},${yy}h${ww}l${-pww},${phh}h${2*pww-ww}v${hh-2*phh}l${-pww},${phh}z`,
-            side2 = `M${xx+ww},${yy+hh}v${-hh}l${-pww},${phh}v${hh-2*phh}h${2*pww-ww}l${-pww},${phh}z`;
-
-      return (this.borderMode > 0) ? [path, side1, side2] : [path, side2, side1];
+      return [path].concat(getBoxDecorations(xx, yy, ww, hh, this.borderMode, this.borderSize, this.borderSize));
    }
 
-   /** @summary Redraw line */
+   /** @summary Redraw box */
    redraw() {
       const box = this.getObject(),
             d = new DrawOptions(this.getDrawOpt()),
