@@ -563,7 +563,7 @@ class TPadPainter extends ObjectPainter {
      * @private */
    setFastDrawing(w, h) {
       const was_fast = this._fast_drawing;
-      this._fast_drawing = settings.SmallPad && ((w < settings.SmallPad.width) || (h < settings.SmallPad.height));
+      this._fast_drawing = (this.snapid === undefined) && settings.SmallPad && ((w < settings.SmallPad.width) || (h < settings.SmallPad.height));
       if (was_fast !== this._fast_drawing)
          this.showPadButtons();
    }
