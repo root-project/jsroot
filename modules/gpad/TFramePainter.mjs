@@ -2309,8 +2309,8 @@ class TFramePainter extends ObjectPainter {
      * @private */
    updateAttributes(force) {
       const pp = this.getPadPainter(),
-          pad = pp?.getRootPad(true),
-          tframe = this.getObject();
+            pad = pp?.getRootPad(true),
+            tframe = this.getObject();
 
       if ((this.fX1NDC === undefined) || (force && !this.$modifiedNDC)) {
          if (!pad) {
@@ -2326,10 +2326,10 @@ class TFramePainter extends ObjectPainter {
          }
       }
 
-      if (this.fillatt === undefined) {
-         if (tframe)
-            this.createAttFill({ attr: tframe });
-         else if (pad?.fFrameFillColor)
+      if (tframe)
+         this.createAttFill({ attr: tframe });
+      else if (this.fillatt === undefined) {
+         if (pad?.fFrameFillColor)
             this.createAttFill({ pattern: pad.fFrameFillStyle, color: pad.fFrameFillColor });
          else if (pad)
             this.createAttFill({ attr: pad });
