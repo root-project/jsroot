@@ -2542,8 +2542,8 @@ class TFramePainter extends ObjectPainter {
 
       this.draw_g.selectAll('.frame_deco').remove();
       const frame = this.getObject();
-      if (frame?.fBorderMode && frame?.fBorderSize && this.fillatt.hasColor()) {
-         const paths = getBoxDecorations(0, 0, this._frame_width, this._frame_height, frame.fBorderMode, frame.fBorderSize, frame.fBorderSize);
+      if (frame?.fBorderMode && this.fillatt.hasColor()) {
+         const paths = getBoxDecorations(0, 0, this._frame_width, this._frame_height, frame.fBorderMode, frame.fBorderSize || 2, frame.fBorderSize || 2);
          this.draw_g.insert('svg:path','.main_layer')
                     .attr('class','frame_deco')
                     .attr('d', paths[0])

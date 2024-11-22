@@ -98,8 +98,8 @@ class TBoxPainter extends ObjectPainter {
       if (this.swap_xy)
          [this.x1, this.x2, this.y1, this.y2] = [this.y1, this.y2, this.x1, this.x2];
 
-      this.borderMode = (box.fBorderMode && box.fBorderSize && this.fillatt.hasColor()) ? box.fBorderMode : 0;
-      this.borderSize = box.fBorderSize;
+      this.borderMode = (box.fBorderMode && this.fillatt.hasColor()) ? box.fBorderMode : 0;
+      this.borderSize = box.fBorderSize || 2;
 
       const paths = this.getPathes();
 
