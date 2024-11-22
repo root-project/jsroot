@@ -328,16 +328,15 @@ class TPavePainter extends ObjectPainter {
    drawBorder(draw_g, width, height, diamond) {
       const pt = this.getObject(),
             opt = pt.fOption.toUpperCase(),
-            brd = pt.fBorderSize,
             noborder = opt.indexOf('NB') >= 0,
             dx = (opt.indexOf('L') >= 0) ? -1 : ((opt.indexOf('R') >= 0) ? 1 : 0),
             dy = (opt.indexOf('T') >= 0) ? -1 : ((opt.indexOf('B') >= 0) ? 1 : 0);
 
-      if ((brd < 2) || (pt.fShadowColor === 0) || (!dx && !dy) || noborder)
+      if ((pt.fBorderSize < 2) || (pt.fShadowColor === 0) || (!dx && !dy) || noborder)
          return;
 
-      const scol = this.getColor(pt.fShadowColor);
-
+      const scol = this.getColor(pt.fShadowColor),
+            brd = pt.fBorderSize;
 
       if (diamond) {
          draw_g.append('svg:path')
@@ -349,13 +348,13 @@ class TPavePainter extends ObjectPainter {
          let spath = '';
 
          if ((dx < 0) && (dy < 0))
-            spath = `M0,0v${height-brd}h${-brd}v${-height}h${width}v${brd}z`;
+            spath = `M0,0v${height-brd-1}h${-brd+1}v${-height+2}h${width-2}v${brd-1}z`;
          else if ((dx < 0) && (dy > 0))
-            spath = `M0,${height}v${brd-height}h${-brd}v${height}h${width}v${-brd}z`;
+            spath = `M0,${height}v${brd+1-height}h${-brd+1}v${height-2}h${width-2}v${-brd+1}z`;
          else if ((dx > 0) && (dy < 0))
-            spath = `M${brd},0v${-brd}h${width}v${height}h${-brd}v${brd-height}z`;
+            spath = `M${brd+1},0v${-brd+1}h${width-2}v${height-2}h${-brd+1}v${brd+1-height}z`;
          else
-            spath = `M${width},${brd}h${brd}v${height}h${-width}v${-brd}h${width-brd}z`;
+            spath = `M${width},${brd+1}h${brd-1}v${height-2}h${-width+2}v${-brd+1}h${width-brd-2}z`;
 
          draw_g.append('svg:path')
                .attr('d', spath)
