@@ -1519,15 +1519,18 @@ class TGraphPainter extends ObjectPainter {
    /** @summary Create stat box */
    createStat() {
       const func = this.findFunc();
-      if (!func) return null;
+      if (!func)
+         return null;
 
       let stats = this.findStat();
-      if (stats) return stats;
+      if (stats)
+         return stats;
 
       const st = this.getgStyle();
 
       // do not create stats box when drawing canvas
-      if (this.getCanvPainter()?.normal_canvas) return null;
+      if (!st.fOptFit || this.getCanvPainter()?.normal_canvas)
+         return null;
 
       this.create_stats = true;
 
