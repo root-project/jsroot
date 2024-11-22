@@ -297,10 +297,7 @@ class TGraphPainter extends ObjectPainter {
      * @desc graph bins should be created when calling this function
      * @param {boolean} [set_x] - set X axis range
      * @param {boolean} [set_y] - set Y axis range */
-   createHistogram(set_x, set_y) {
-      if (!set_x && !set_y)
-         set_x = set_y = true;
-
+   createHistogram(set_x = true, set_y = true) {
       const graph = this.getGraph(),
             xmin = this.xmin,
             margin = this.getHistRangeMargin();
@@ -372,13 +369,15 @@ class TGraphPainter extends ObjectPainter {
      * @desc Used when graph points covers larger range than provided histogram */
    unzoomUserRange(dox, doy /* , doz */) {
       const graph = this.getGraph();
-      if (this._own_histogram || !graph) return false;
+      if (this._own_histogram || !graph)
+         return false;
 
       const histo = this.getHistogram();
 
       dox = dox && histo && ((histo.fXaxis.fXmin > this.xmin) || (histo.fXaxis.fXmax < this.xmax));
       doy = doy && histo && ((histo.fYaxis.fXmin > this.ymin) || (histo.fYaxis.fXmax < this.ymax));
-      if (!dox && !doy) return false;
+      if (!dox && !doy)
+         return false;
 
       this.createHistogram(dox, doy);
       this.getMainPainter()?.extractAxesProperties(1); // just to enforce ranges extraction
@@ -1424,6 +1423,11 @@ class TGraphPainter extends ObjectPainter {
       graph.fTitle = obj.fTitle;
       graph.fX = obj.fX;
       graph.fY = obj.fY;
+      ['fEX', 'fEY', 'fExL', 'fExH', 'fEXlow', 'fEXhigh', 'fEYlow', 'fEYhigh',
+        'fEXlowd', 'fEXhighd', 'fEYlowd', 'fEYhighd'].forEach(member => {
+         if (obj[member] !== undefined)
+            graph[member] = obj[member];
+      });
       graph.fNpoints = obj.fNpoints;
       graph.fMinimum = obj.fMinimum;
       graph.fMaximum = obj.fMaximum;
@@ -1450,7 +1454,8 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Update TGraph object */
    updateObject(obj, opt) {
-      if (!this.matchObjectType(obj)) return false;
+      if (!this.matchObjectType(obj))
+         return false;
 
       if (opt && (opt !== this.options.original))
          this.decodeOptions(opt);
@@ -1567,7 +1572,8 @@ class TGraphPainter extends ObjectPainter {
    /** @summary Draw axis histogram
      * @private */
    async drawAxisHisto() {
-      const histo = this.createHistogram();
+      const need_histo = !this.getHistogram();
+      const histo = this.createHistogram(need_histo, need_histo);
       return TH1Painter.draw(this.getDrawDom(), histo, this.options.Axis);
    }
 
