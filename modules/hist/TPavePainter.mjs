@@ -6,6 +6,7 @@ import { Prob } from '../base/math.mjs';
 import { floatToString, makeTranslate, compressSVG, svgToImage, addHighlightStyle } from '../base/BasePainter.mjs';
 import { ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
 import { showPainterMenu } from '../gui/menu.mjs';
+import { getColorExec } from '../gui/utils.mjs';
 import { TAxisPainter } from '../gpad/TAxisPainter.mjs';
 import { addDragHandler } from '../gpad/TFramePainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
@@ -1143,6 +1144,17 @@ class TPavePainter extends ObjectPainter {
    fillContextMenuItems(menu) {
       const pave = this.getObject();
 
+      menu.sub('Shadow');
+      menu.addSizeMenu('size', 0, 12, 1, pave.fBorderSize, arg => {
+         pave.fBorderSize = arg;
+         this.interactiveRedraw(true, `exec:SetBorderSize(${arg})`);
+      });
+      menu.addColorMenu('color', pave.fShadowColor, arg => {
+         pave.fShadowColor = arg;
+         this.interactiveRedraw(true, getColorExec(arg, 'SetShadowColor'));
+      });
+      menu.endsub();
+
       if (this.isStats()) {
          menu.add('Default position', () => {
             pave.fX2NDC = gStyle.fStatX;
@@ -1232,7 +1244,7 @@ class TPavePainter extends ObjectPainter {
                if (res) this.interactiveRedraw(true, 'pave_moved');
             });
          });
-      } else if (pave.fName === kTitle) {
+      } else if (this.isTitle()) {
          menu.add('Default position', () => {
             pave.fX1NDC = gStyle.fTitleW > 0 ? gStyle.fTitleX - gStyle.fTitleW/2 : gStyle.fPadLeftMargin;
             pave.fY1NDC = gStyle.fTitleY - Math.min(gStyle.fTitleFontSize*1.1, 0.06);
@@ -1251,8 +1263,6 @@ class TPavePainter extends ObjectPainter {
             gStyle.fTitleFont = pave.fTextFont;
          }, 'Store title position and graphical attributes to gStyle');
       }
-
-      menu.add('Bring to front', () => this.bringToFront(!this.isStats() && !this.z_handle));
    }
 
    /** @summary Show pave context menu */
