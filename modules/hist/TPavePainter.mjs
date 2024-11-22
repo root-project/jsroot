@@ -280,9 +280,6 @@ class TPavePainter extends ObjectPainter {
 
             return this.drawPaveText(w2, h2, arg, text_g);
          } else {
-            if (!pt.fNpaves)
-               this.drawBorder(this.draw_g, width, height);
-
             if (pt.fNpaves) {
                for (let n = pt.fNpaves-1; n > 0; --n) {
                   this.draw_g.append('svg:path')
@@ -290,7 +287,8 @@ class TPavePainter extends ObjectPainter {
                       .call(this.fillatt.func)
                       .call(this.lineatt.func);
                }
-            }
+            } else
+               this.drawBorder(this.draw_g, width, height);
 
             if (!this.isBatchMode() || !this.fillatt.empty() || (!this.lineatt.empty() && !noborder)) {
                interactive_element = this.draw_g.append('svg:path')
