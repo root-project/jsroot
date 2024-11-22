@@ -54,7 +54,6 @@ async function drawText() {
 
    if ((text._typename === clTLatex) || annot) {
       arg.latex = 1;
-      fact = 0.9;
    } else if (text._typename === clTMathText) {
       arg.latex = 2;
       fact = 0.8;
