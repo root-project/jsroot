@@ -267,13 +267,8 @@ class TPavePainter extends ObjectPainter {
             const h2 = Math.round(height/2), w2 = Math.round(width/2),
                   dpath = `l${w2},${-h2}l${w2},${h2}l${-w2},${h2}z`;
 
-            if ((brd > 1) && (pt.fShadowColor > 0) && (dx || dy) && !this.fillatt.empty() && !noborder) {
-                this.draw_g.append('svg:path')
-                    .attr('d', 'M0,'+(h2+brd) + dpath)
-                    .style('fill', this.getColor(pt.fShadowColor))
-                    .style('stroke', this.getColor(pt.fShadowColor))
-                    .style('stroke-width', '1px');
-            }
+            if (!this.fillatt.empty())
+               this.drawBorder(this.draw_g, width, height, dpath);
 
             interactive_element = this.draw_g.append('svg:path')
                                       .attr('d', 'M0,'+h2 +dpath)
@@ -285,26 +280,8 @@ class TPavePainter extends ObjectPainter {
 
             return this.drawPaveText(w2, h2, arg, text_g);
          } else {
-            // add shadow decoration before main rect
-            if ((brd > 1) && (pt.fShadowColor > 0) && !pt.fNpaves && (dx || dy) && !noborder) {
-               const scol = this.getColor(pt.fShadowColor);
-               let spath = '';
-
-               if ((dx < 0) && (dy < 0))
-                  spath = `M0,0v${height-brd}h${-brd}v${-height}h${width}v${brd}z`;
-               else if ((dx < 0) && (dy > 0))
-                  spath = `M0,${height}v${brd-height}h${-brd}v${height}h${width}v${-brd}z`;
-               else if ((dx > 0) && (dy < 0))
-                  spath = `M${brd},0v${-brd}h${width}v${height}h${-brd}v${brd-height}z`;
-               else
-                  spath = `M${width},${brd}h${brd}v${height}h${-width}v${-brd}h${width-brd}z`;
-
-               this.draw_g.append('svg:path')
-                          .attr('d', spath)
-                          .style('fill', scol)
-                          .style('stroke', scol)
-                          .style('stroke-width', '1px');
-            }
+            if (!pt.fNpaves)
+               this.drawBorder(this.draw_g, width, height);
 
             if (pt.fNpaves) {
                for (let n = pt.fNpaves-1; n > 0; --n) {
@@ -346,6 +323,46 @@ class TPavePainter extends ObjectPainter {
 
          return this;
       });
+   }
+
+   drawBorder(draw_g, width, height, diamond) {
+      const pt = this.getObject(),
+            opt = pt.fOption.toUpperCase(),
+            brd = pt.fBorderSize,
+            noborder = opt.indexOf('NB') >= 0,
+            dx = (opt.indexOf('L') >= 0) ? -1 : ((opt.indexOf('R') >= 0) ? 1 : 0),
+            dy = (opt.indexOf('T') >= 0) ? -1 : ((opt.indexOf('B') >= 0) ? 1 : 0);
+
+      if ((brd < 2) || (pt.fShadowColor === 0) || (!dx && !dy) || noborder)
+         return;
+
+      const scol = this.getColor(pt.fShadowColor);
+
+
+      if (diamond) {
+         draw_g.append('svg:path')
+               .attr('d', `M0,${Math.round(height/2)+brd}${diamond}`)
+               .style('fill', scol)
+               .style('stroke', scol)
+               .style('stroke-width', '1px');
+      } else {
+         let spath = '';
+
+         if ((dx < 0) && (dy < 0))
+            spath = `M0,0v${height-brd}h${-brd}v${-height}h${width}v${brd}z`;
+         else if ((dx < 0) && (dy > 0))
+            spath = `M0,${height}v${brd-height}h${-brd}v${height}h${width}v${-brd}z`;
+         else if ((dx > 0) && (dy < 0))
+            spath = `M${brd},0v${-brd}h${width}v${height}h${-brd}v${brd-height}z`;
+         else
+            spath = `M${width},${brd}h${brd}v${height}h${-width}v${-brd}h${width-brd}z`;
+
+         draw_g.append('svg:path')
+               .attr('d', spath)
+               .style('fill', scol)
+               .style('stroke', scol)
+               .style('stroke-width', '1px');
+      }
    }
 
    /** @summary Fill option object used in TWebCanvas */
@@ -597,25 +614,31 @@ class TPavePainter extends ObjectPainter {
          if (this.isTitle())
             this.draw_g.style('display', !num_txt ? 'none' : null);
 
-         if (draw_header) {
-            const x = Math.round(width*0.25),
-               y = Math.round(-height*0.02),
-               w = Math.round(width*0.5),
-               h = Math.round(height*0.04),
-               lbl_g = text_g.append('svg:g');
-
-            lbl_g.append('svg:path')
-                  .attr('d', `M${x},${y}h${w}v${h}h${-w}z`)
-                  .call(this.fillatt.func)
-                  .call(this.lineatt.func);
-
-            promises.push(this.startTextDrawingAsync(this.textatt.font, h/1.5, lbl_g)
-                              .then(() => this.drawText({ align: 22, x, y, width: w, height: h, text: pt.fLabel, color: this.textatt.color, draw_g: lbl_g }))
-                              .then(() => promises.push(this.finishTextDrawing(lbl_g))));
-         }
 
          return Promise.all(promises).then(() => this);
-      });
+      }).then(() => {
+
+         if (!draw_header)
+            return;
+
+         const x = Math.round(width*0.25),
+               y = Math.round(-pad_height*0.02),
+               w = Math.round(width*0.5),
+               h = Math.round(pad_height*0.04),
+               lbl_g = text_g.append('svg:g').attr('transform', makeTranslate(x,y));
+
+         this.drawBorder(lbl_g, w, h);
+
+         lbl_g.append('svg:path')
+               .attr('d', `M${0},${0}h${w}v${h}h${-w}z`)
+               .call(this.fillatt.func)
+               .call(this.lineatt.func);
+
+         return this.startTextDrawingAsync(this.textatt.font, 0.9*h, lbl_g)
+                    .then(() => this.drawText({ align: 22, x: 0, y: 0, width: w, height: h, text: pt.fLabel, color: this.textatt.color, draw_g: lbl_g }))
+                    .then(() => promises.push(this.finishTextDrawing(lbl_g)));
+
+      }).then(() => { return this; })
    }
 
    /** @summary Method used to convert value to string according specified format
