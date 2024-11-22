@@ -454,7 +454,7 @@ class JSRootMenu {
    /** @summary Add line style menu
      * @private */
    addLineStyleMenu(name, value, set_func) {
-      this.sub(''+name, () => this.input('Enter line style id (1-solid)', value, 'int', 1, 11).then(val => {
+      this.sub(name, () => this.input('Enter line style id (1-solid)', value, 'int', 1, 11).then(val => {
          if (getSvgLineStyle(val)) set_func(val);
       }));
       for (let n = 1; n < 11; ++n) {
