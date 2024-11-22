@@ -1,7 +1,8 @@
 import { gStyle, settings, internals, isFunc, isStr, postponePromise, browser,
          clTAxis, clTFrame, kNoZoom, urlClassPrefix } from '../core.mjs';
-import { select as d3_select, pointer as d3_pointer, pointers as d3_pointers, drag as d3_drag } from '../d3.mjs';
-import { getElementRect, getAbsPosInCanvas, makeTranslate, addHighlightStyle } from '../base/BasePainter.mjs';
+import { select as d3_select, pointer as d3_pointer,
+         pointers as d3_pointers, drag as d3_drag, rgb as d3_rgb } from '../d3.mjs';
+import { getElementRect, getAbsPosInCanvas, makeTranslate, addHighlightStyle, getBoxDecorations } from '../base/BasePainter.mjs';
 import { getActivePad, ObjectPainter, EAxisBits, kAxisLabels } from '../base/ObjectPainter.mjs';
 import { getSvgLineStyle } from '../base/TAttLineHandler.mjs';
 import { TAxisPainter } from './TAxisPainter.mjs';
@@ -2538,6 +2539,22 @@ class TFramePainter extends ObjectPainter {
       main_svg.attr('width', this._frame_width)
               .attr('height', this._frame_height)
               .attr('viewBox', `0 0 ${this._frame_width} ${this._frame_height}`);
+
+      this.draw_g.selectAll('.frame_deco').remove();
+      const frame = this.getObject();
+      if (frame?.fBorderMode && frame?.fBorderSize && this.fillatt.hasColor()) {
+         const paths = getBoxDecorations(0, 0, this._frame_width, this._frame_height, frame.fBorderMode, frame.fBorderSize, frame.fBorderSize);
+         this.draw_g.insert('svg:path','.main_layer')
+                    .attr('class','frame_deco')
+                    .attr('d', paths[0])
+                    .call(this.fillatt.func)
+                    .style('fill', d3_rgb(this.fillatt.color).brighter(0.5).formatRgb());
+         this.draw_g.insert('svg:path','.main_layer')
+                    .attr('class','frame_deco')
+                    .attr('d', paths[1])
+                    .call(this.fillatt.func)
+                    .style('fill', d3_rgb(this.fillatt.color).darker(0.5).formatRgb());
+      }
 
       return this;
    }
