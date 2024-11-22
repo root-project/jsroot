@@ -1524,15 +1524,15 @@ class TGraphPainter extends ObjectPainter {
       let stats = this.findStat();
       if (stats) return stats;
 
+      const st = this.getgStyle();
+
       // do not create stats box when drawing canvas
       if (this.getCanvPainter()?.normal_canvas) return null;
 
       this.create_stats = true;
 
-      const st = gStyle;
-
       stats = create(clTPaveStats);
-      Object.assign(stats, { fName: 'stats', fOptStat: 0, fOptFit: st.fOptFit || 111, fBorderSize: 1,
+      Object.assign(stats, { fName: 'stats', fOptStat: 0, fOptFit: st.fOptFit, fBorderSize: 1,
                              fX1NDC: st.fStatX - st.fStatW, fY1NDC: st.fStatY - st.fStatH, fX2NDC: st.fStatX, fY2NDC: st.fStatY,
                              fFillColor: st.fStatColor, fFillStyle: st.fStatStyle });
 
@@ -1553,13 +1553,11 @@ class TGraphPainter extends ObjectPainter {
    /** @summary Fill statistic */
    fillStatistic(stat, _dostat, dofit) {
       const func = this.findFunc();
-
-      if (!func || !dofit) return false;
+      if (!func || !dofit)
+         return false;
 
       stat.clearPave();
-
       stat.fillFunctionStat(func, (dofit === 1) ? 111 : dofit, 1);
-
       return true;
    }
 

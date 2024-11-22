@@ -842,7 +842,6 @@ class FunctionsHandler {
 
       return promise.then(fpainter => {
          fpainter.setSecondaryId(this.painter, func_secondary_id);
-
          return this.drawNext(indx+1);
       });
    }
