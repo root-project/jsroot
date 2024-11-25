@@ -317,7 +317,7 @@ class TPavePainter extends ObjectPainter {
          if (this.UseContextMenu && settings.ContextMenu)
              this.draw_g.on('contextmenu', evnt => this.paveContextMenu(evnt));
 
-         if (pt._typename === clTPaletteAxis)
+         if (this.isPalette())
             this.interactivePaletteAxis(width, height);
 
          return this;
@@ -327,7 +327,7 @@ class TPavePainter extends ObjectPainter {
    drawBorder(draw_g, width, height, diamond) {
       const pt = this.getObject(),
             opt = pt.fOption.toUpperCase(),
-            noborder = opt.indexOf('NB') >= 0,
+            noborder = this.isPalette() || (opt.indexOf('NB') >= 0),
             dx = (opt.indexOf('L') >= 0) ? -1 : ((opt.indexOf('R') >= 0) ? 1 : 0),
             dy = (opt.indexOf('T') >= 0) ? -1 : ((opt.indexOf('B') >= 0) ? 1 : 0);
 
@@ -1288,6 +1288,11 @@ class TPavePainter extends ObjectPainter {
    /** @summary Returns true when stat box is drawn */
    isStats() {
       return this.matchObjectType(clTPaveStats);
+   }
+
+   /** @summary Returns true when stat box is drawn */
+   isPalette() {
+      return this.matchObjectType(clTPaletteAxis);
    }
 
    /** @summary Returns true when title is drawn */
