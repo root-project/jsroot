@@ -1468,11 +1468,11 @@ class TPavePainter extends ObjectPainter {
 
    /** @summary cleanup pave painter */
    cleanup() {
-      if (this.z_handle) {
-         this.z_handle.cleanup();
-         delete this.z_handle;
-      }
-
+      this.z_handle?.cleanup();
+      delete this.z_handle;
+      const pp = this.getObject();
+      if (pp)
+         delete pp.$main_painter;
       super.cleanup();
    }
 
