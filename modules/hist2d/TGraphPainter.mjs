@@ -432,8 +432,8 @@ class TGraphPainter extends ObjectPainter {
    /** @summary Returns tooltip for specified bin */
    getTooltips(d) {
       const pmain = this.get_main(), lines = [],
-          funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
-          gme = this.get_gme();
+            funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
+            gme = this.get_gme();
 
       lines.push(this.getObjectHint());
 
