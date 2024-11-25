@@ -3,6 +3,7 @@
 ## Changes in 7.8.x
 1. Fix - correctly position title according to gStyle->GetTitleAlign()
 2. Fix - tooltips on TGraphPolar
+3. Fix - use 'portrait' orientation for PDF pages where width smaller than height
 
 
 ## Changes in 7.8.0
