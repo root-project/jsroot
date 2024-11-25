@@ -72,8 +72,8 @@ class THistDrawOptions {
       if (this.ndim === 3)
          return this.BoxStyle === 12 || this.BoxStyle === 13 || this.GLBox === 12;
 
-      if (this.ndim !== 2)
-         return false;
+      if (this.ndim === 1)
+         return this.Lego === 12 || this.options.Lego === 14;
 
       if (this.Mode3D)
          return this.Lego === 12 || this.Lego === 14 || this.Surf === 11 || this.Surf === 12;
@@ -1369,9 +1369,6 @@ class THistPainter extends ObjectPainter {
 
       let pt = pp.findInPrimitives(kTitle, clTPaveText);
 
-      console.log('drawing hist title', histo.fTitle, this.options.original);
-
-
       if (pt) {
          pt.Clear();
          if (draw_title)
@@ -2053,7 +2050,7 @@ class THistPainter extends ObjectPainter {
      * @return {Promise} when done */
    async drawColorPalette(enabled, postpone_draw, can_move) {
       // in special cases like scatter palette drawing is ignored
-      if (this.options.IgnorePalette)
+      if (this.options.IgnorePalette || this._ignore_frame)
          return null;
 
       // only when create new palette, one could change frame size

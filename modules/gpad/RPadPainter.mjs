@@ -360,6 +360,12 @@ class RPadPainter extends RObjectPainter {
       console.error('grayscale mode not implemented for RCanvas');
    }
 
+   /** @summary Returns true if default pad range is configured
+     * @private */
+   isDefaultPadRange() {
+      return true;
+   }
+
    /** @summary Create SVG element for the canvas */
    createCanvasSvg(check_resize, new_size) {
       const lmt = 5;
