@@ -1377,7 +1377,7 @@ class THistPainter extends ObjectPainter {
       }
 
       pt = create(clTPaveText);
-      Object.assign(pt, { fName: kTitle, fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
+      Object.assign(pt, { fName: kTitle, fOption: 'blNDC', fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
                           fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: 22 });
 
       if (draw_title) pt.AddText(histo.fTitle);
