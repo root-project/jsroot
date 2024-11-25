@@ -1,4 +1,4 @@
-import { settings, create, BIT, clTPaveText, kTitle } from '../core.mjs';
+import { settings, gStyle, create, BIT, clTPaveText, kTitle } from '../core.mjs';
 import { scaleLinear, select as d3_select, pointer as d3_pointer } from '../d3.mjs';
 import { DrawOptions, buildSvgCurve, makeTranslate } from '../base/BasePainter.mjs';
 import { ObjectPainter, getElementMainPainter } from '../base/ObjectPainter.mjs';
