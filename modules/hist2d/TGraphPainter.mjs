@@ -460,42 +460,43 @@ class TGraphPainter extends ObjectPainter {
    get_main() {
       let pmain = this.getFramePainter();
 
-      if (pmain?.grx && pmain?.gry) return pmain;
+      if (pmain?.grx && pmain?.gry)
+         return pmain;
 
       // FIXME: check if needed, can be removed easily
       const pp = this.getPadPainter(),
             rect = pp?.getPadRect() || { width: 800, height: 600 };
 
       pmain = {
-          pad_layer: true,
-          pad: pp?.getRootPad(true) ?? create(clTPad),
-          pw: rect.width,
-          ph: rect.height,
-          fX1NDC: 0.1, fX2NDC: 0.9, fY1NDC: 0.1, fY2NDC: 0.9,
-          getFrameWidth() { return this.pw; },
-          getFrameHeight() { return this.ph; },
-          grx(value) {
-             if (this.pad.fLogx)
-                value = (value > 0) ? Math.log10(value) : this.pad.fUxmin;
-             else
-                value = (value - this.pad.fX1) / (this.pad.fX2 - this.pad.fX1);
-             return value * this.pw;
-          },
-          gry(value) {
-             if (this.pad.fLogv ?? this.pad.fLogy)
-                value = (value > 0) ? Math.log10(value) : this.pad.fUymin;
-             else
-                value = (value - this.pad.fY1) / (this.pad.fY2 - this.pad.fY1);
-             return (1 - value) * this.ph;
-          },
-          revertAxis(name, v) {
+         pad_layer: true,
+         pad: pp?.getRootPad(true) ?? create(clTPad),
+         pw: rect.width,
+         ph: rect.height,
+         fX1NDC: 0.1, fX2NDC: 0.9, fY1NDC: 0.1, fY2NDC: 0.9,
+         getFrameWidth() { return this.pw; },
+         getFrameHeight() { return this.ph; },
+         grx(value) {
+            if (this.pad.fLogx)
+               value = (value > 0) ? Math.log10(value) : this.pad.fUxmin;
+            else
+               value = (value - this.pad.fX1) / (this.pad.fX2 - this.pad.fX1);
+            return value * this.pw;
+         },
+         gry(value) {
+            if (this.pad.fLogv ?? this.pad.fLogy)
+               value = (value > 0) ? Math.log10(value) : this.pad.fUymin;
+            else
+               value = (value - this.pad.fY1) / (this.pad.fY2 - this.pad.fY1);
+            return (1 - value) * this.ph;
+         },
+         revertAxis(name, v) {
             if (name === 'x')
                return v / this.pw * (this.pad.fX2 - this.pad.fX1) + this.pad.fX1;
             if (name === 'y')
                return (1 - v / this.ph) * (this.pad.fY2 - this.pad.fY1) + this.pad.fY1;
             return v;
-          },
-          getGrFuncs() { return this; }
+         },
+         getGrFuncs() { return this; }
       };
 
       return pmain.pad ? pmain : null;
