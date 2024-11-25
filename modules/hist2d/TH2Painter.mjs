@@ -2583,6 +2583,12 @@ class TH2Painter extends THistPainter {
       if (this._hide_frame && this.isMainPainter()) {
          this.getFrameSvg().style('display', null);
          delete this._hide_frame;
+      } else if (this.options.Same) {
+         const pp = this.getPadPainter();
+         if (!pp?.getMainPainter() && !pp?.isDefaultPadRange()) {
+            this._ignore_frame = true;
+            this.getFrameSvg().style('display', 'none');
+         }
       }
 
       if (!this.draw_content)
@@ -2590,7 +2596,7 @@ class TH2Painter extends THistPainter {
 
       this.createHistDrawAttributes();
 
-      this.createG(true);
+      this.createG(!this._ignore_frame);
 
       let handle, pr;
 

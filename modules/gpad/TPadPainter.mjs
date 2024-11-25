@@ -575,6 +575,14 @@ class TPadPainter extends ObjectPainter {
       return this.pad?.TestBit(kIsGrayscale) ?? false;
    }
 
+   /** @summary Returns true if default pad range is configured
+     * @private */
+   isDefaultPadRange() {
+      if (!this.pad)
+         return true;
+      return (this.pad.fX1 === 0) && (this.pad.fX2 === 1) && (this.pad.fY1 === 0) && (this.pad.fY2 === 1);
+   }
+
    /** @summary Set grayscale mode for the canvas
      * @private */
    setGrayscale(flag) {
