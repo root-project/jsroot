@@ -1,5 +1,5 @@
 import { select as d3_select, pointer as d3_pointer } from '../d3.mjs';
-import { settings, gStyle, constants, internals, isNodeJs, isBatchMode, getPromise, BIT,
+import { settings, constants, internals, isNodeJs, isBatchMode, getPromise, BIT,
          prROOT, clTObjString, clTAxis, isObject, isFunc, isStr, getDocument, urlClassPrefix } from '../core.mjs';
 import { isPlainText, producePlainText, produceLatex, produceMathjax, typesetMathjax, approximateLabelWidth } from './latex.mjs';
 import { getElementRect, BasePainter, makeTranslate } from './BasePainter.mjs';
@@ -252,13 +252,6 @@ class ObjectPainter extends BasePainter {
          this.root_colors = this.getCanvPainter()?.root_colors || getRootColors();
 
       return this.root_colors[indx];
-   }
-
-   /** @summary returns gStyle instance for this object
-    * @desc different web canvases can have different instances of gStyle
-    * @protected */
-   getgStyle() {
-      return this.getCanvPainter()?._custom_gstyle || gStyle;
    }
 
    /** @summary Add color to list of colors

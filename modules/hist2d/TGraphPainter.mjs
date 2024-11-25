@@ -1532,7 +1532,7 @@ class TGraphPainter extends ObjectPainter {
       if (stats)
          return stats;
 
-      const st = this.getgStyle();
+      const st = gStyle;
 
       // do not create stats box when drawing canvas
       if (!st.fOptFit || this.getCanvPainter()?.normal_canvas)

@@ -961,7 +961,7 @@ class TH2Painter extends THistPainter {
 
       const histo = this.getHisto(), xaxis = histo.fXaxis, yaxis = histo.fYaxis,
             fp = this.getFramePainter(),
-            funcs = fp.getGrFuncs(this.options.second_x, this.options.second_y),
+            funcs = this.getHistGrFuncs(fp),
             res = { name: histo.fName, entries: 0, eff_entries: 0, integral: 0,
                     meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix: [0, 0, 0, 0, 0, 0, 0, 0, 0],
                     xmax: 0, ymax: 0, wmax: null, skewx: 0, skewy: 0, skewd: 0, kurtx: 0, kurty: 0, kurtd: 0 },
@@ -1303,7 +1303,7 @@ class TH2Painter extends THistPainter {
    drawBinsProjected() {
       const handle = this.prepareDraw({ rounding: false, nozoom: true, extra: 100, original: true }),
             main = this.getFramePainter(),
-            funcs = main.getGrFuncs(this.options.second_x, this.options.second_y),
+            funcs = this.getHistGrFuncs(main),
             ilevels = this.getContourLevels(),
             palette = this.getHistPalette(),
             func = main.getProjectionFunc();
@@ -1555,7 +1555,7 @@ class TH2Painter extends THistPainter {
    async drawPolyBins() {
       const histo = this.getObject(),
             fp = this.getFramePainter(),
-            funcs = fp.getGrFuncs(this.options.second_x, this.options.second_y),
+            funcs = this.getHistGrFuncs(fp),
             draw_colors = this.options.Color || (!this.options.Line && !this.options.Fill && !this.options.Text && !this.options.Mark),
             draw_lines = this.options.Line || (this.options.Text && !draw_colors),
             draw_fill = this.options.Fill && !draw_colors,
@@ -2101,7 +2101,7 @@ class TH2Painter extends THistPainter {
             handle = this.prepareDraw(),
             fp = this.getFramePainter(), // used for axis values conversions
             cp = this.getCanvPainter(),
-            funcs = fp.getGrFuncs(this.options.second_x, this.options.second_y),
+            funcs = this.getHistGrFuncs(fp),
             swapXY = isOption(kHorizontal);
       let bars = '', lines = '', dashed_lines = '',
           hists = '', hlines = '',
@@ -2893,7 +2893,7 @@ class TH2Painter extends THistPainter {
    /** @summary Provide text information (tooltips) for candle bin */
    getCandleTooltips(p) {
       const fp = this.getFramePainter(),
-            funcs = fp.getGrFuncs(this.options.second_x, this.options.second_y),
+            funcs = this.getHistGrFuncs(fp),
             histo = this.getHisto();
 
       return [this.getObjectHint(),
@@ -2909,7 +2909,7 @@ class TH2Painter extends THistPainter {
       const histo = this.getHisto(),
             bin = histo.fBins.arr[binindx],
             fp = this.getFramePainter(),
-            funcs = fp.getGrFuncs(this.options.second_x, this.options.second_y),
+            funcs = this.getHistGrFuncs(fp),
             lines = [];
       let binname = bin.fPoly.fName, numpoints = 0;
 
@@ -2964,7 +2964,7 @@ class TH2Painter extends THistPainter {
       if (h.poly) {
          // process tooltips from TH2Poly
          const fp = this.getFramePainter(),
-               funcs = fp.getGrFuncs(this.options.second_x, this.options.second_y),
+               funcs = this.getHistGrFuncs(fp),
                realx = funcs.revertAxis('x', pnt.x),
                realy = funcs.revertAxis('y', pnt.y);
          let foundindx = -1, bin;

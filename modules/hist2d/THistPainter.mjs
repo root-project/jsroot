@@ -1348,8 +1348,8 @@ class THistPainter extends ObjectPainter {
       if (!tpainter || !pt)
          return this;
 
-      const histo = this.getHisto(), st = this.getgStyle(),
-            draw_title = !histo.TestBit(kNoTitle) && (st.fOptTitle > 0);
+      const histo = this.getHisto(),
+            draw_title = !histo.TestBit(kNoTitle) && (gStyle.fOptTitle > 0);
 
       pt.Clear();
       if (draw_title) pt.AddText(histo.fTitle);
@@ -1363,7 +1363,7 @@ class THistPainter extends ObjectPainter {
       if (!this.isMainPainter() || this.options.Same || (this.options.Axis > 0))
          return this;
 
-      const histo = this.getHisto(), st = this.getgStyle(),
+      const histo = this.getHisto(), st = gStyle,
             draw_title = !histo.TestBit(kNoTitle) && (st.fOptTitle > 0),
             pp = this.getPadPainter();
 
@@ -1482,7 +1482,7 @@ class THistPainter extends ObjectPainter {
          if (!this.isMainPainter()) return null;
       }
 
-      const st = this.getgStyle();
+      const st = gStyle;
       let stats = this.findStat(),
           optstat = this.options.optstat,
           optfit = this.options.optfit;
@@ -2279,10 +2279,15 @@ class THistPainter extends ObjectPainter {
 
       const funcs = this.getAxisToSvgFunc(false, rounding, false);
       if (funcs) {
+         funcs.painter = this;
          funcs.grx = funcs.x;
          funcs.gry = funcs.y;
          funcs.logx = funcs.pad?.fLogx;
          funcs.logy = funcs.pad?.fLogy;
+         funcs.getFrameWidth = function() { return this.painter.getPadPainter().getPadWidth(); };
+         funcs.getFrameHeight = function() { return this.painter.getPadPainter().getPadHeight(); };
+         funcs.revertAxis = function(name, v) { return this.painter.svgToAxis(name, v); };
+         funcs.axisAsText = function(_name, v) { return v.toString(); };
       }
       return funcs;
    }

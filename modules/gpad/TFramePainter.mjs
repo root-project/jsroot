@@ -2079,7 +2079,9 @@ class TFramePainter extends ObjectPainter {
             if ((name === 'x') && this.use_x2) name = 'x2';
             if ((name === 'y') && this.use_y2) name = 'y2';
             return this.fp.axisAsText(name, v);
-         }
+         },
+         getFrameWidth() { return this.fp.getFrameWidth(); },
+         getFrameHeight() { return this.fp.getFrameHeight(); }
       };
    }
 

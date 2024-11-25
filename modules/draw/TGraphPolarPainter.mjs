@@ -586,8 +586,8 @@ class TGraphPolarPainter extends ObjectPainter {
       if (!tpainter || !pt)
          return this;
 
-      const gr = this.getObject(), st = this.getgStyle(),
-            draw_title = !gr.TestBit(kNoTitle) && (st.fOptTitle > 0);
+      const gr = this.getObject(),
+            draw_title = !gr.TestBit(kNoTitle) && (gStyle.fOptTitle > 0);
 
       pt.Clear();
       if (draw_title) pt.AddText(gr.fTitle);
@@ -603,7 +603,7 @@ class TGraphPolarPainter extends ObjectPainter {
          return this;
 
       const gr = this.getObject(),
-            st = this.getgStyle(),
+            st = gStyle,
             draw_title = !gr.TestBit(kNoTitle) && (st.fOptTitle > 0),
             pp = this.getPadPainter();
 

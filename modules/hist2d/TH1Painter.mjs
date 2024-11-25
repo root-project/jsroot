@@ -921,7 +921,7 @@ class TH1Painter extends THistPainter {
       const tips = [],
             name = this.getObjectHint(),
             pmain = this.getFramePainter(),
-            funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
+            funcs = this.getHistGrFuncs(pmain),
             histo = this.getHisto(),
             x1 = histo.fXaxis.GetBinLowEdge(bin+1),
             x2 = histo.fXaxis.GetBinLowEdge(bin+2),
@@ -956,7 +956,7 @@ class TH1Painter extends THistPainter {
       }
 
       const pmain = this.getFramePainter(),
-            funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
+            funcs = this.getHistGrFuncs(pmain),
             histo = this.getHisto(),
             left = this.getSelectIndex('x', 'left', -1),
             right = this.getSelectIndex('x', 'right', 2);
