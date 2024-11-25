@@ -73,7 +73,7 @@ class THistDrawOptions {
          return this.BoxStyle === 12 || this.BoxStyle === 13 || this.GLBox === 12;
 
       if (this.ndim === 1)
-         return this.Lego === 12 || this.options.Lego === 14;
+         return this.Lego === 12 || this.Lego === 14;
 
       if (this.Mode3D)
          return this.Lego === 12 || this.Lego === 14 || this.Surf === 11 || this.Surf === 12;
@@ -2050,7 +2050,7 @@ class THistPainter extends ObjectPainter {
      * @return {Promise} when done */
    async drawColorPalette(enabled, postpone_draw, can_move) {
       // in special cases like scatter palette drawing is ignored
-      if (this.options.IgnorePalette || this._ignore_frame)
+      if (this.options.IgnorePalette)
          return null;
 
       // only when create new palette, one could change frame size
