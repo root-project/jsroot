@@ -615,7 +615,6 @@ class TPavePainter extends ObjectPainter {
 
          return Promise.all(promises).then(() => this);
       }).then(() => {
-
          if (!draw_header)
             return;
 
@@ -623,7 +622,7 @@ class TPavePainter extends ObjectPainter {
                y = Math.round(-pad_height*0.02),
                w = Math.round(width*0.5),
                h = Math.round(pad_height*0.04),
-               lbl_g = text_g.append('svg:g').attr('transform', makeTranslate(x,y));
+               lbl_g = text_g.append('svg:g').attr('transform', makeTranslate(x, y));
 
          this.drawBorder(lbl_g, w, h);
 
@@ -635,8 +634,7 @@ class TPavePainter extends ObjectPainter {
          return this.startTextDrawingAsync(this.textatt.font, 0.9*h, lbl_g)
                     .then(() => this.drawText({ align: 22, x: 0, y: 0, width: w, height: h, text: pt.fLabel, color: this.textatt.color, draw_g: lbl_g }))
                     .then(() => promises.push(this.finishTextDrawing(lbl_g)));
-
-      }).then(() => { return this; })
+      }).then(() => { return this; });
    }
 
    /** @summary Method used to convert value to string according specified format

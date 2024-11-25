@@ -1937,7 +1937,7 @@ class TH2Painter extends THistPainter {
                cross += `M${xx},${yy}l${ww},${hh}m0,${-hh}l${-ww},${hh}`;
 
             if ((this.options.BoxStyle === 11) && (ww > 5) && (hh > 5)) {
-               const arr = getBoxDecorations(xx, yy, ww, hh, binz, Math.round(ww*0.1), Math.round(hh*0.1))
+               const arr = getBoxDecorations(xx, yy, ww, hh, binz, Math.round(ww*0.1), Math.round(hh*0.1));
                btn1 += arr[0];
                btn2 += arr[1];
             }

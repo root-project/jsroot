@@ -52,9 +52,9 @@ async function drawText() {
 
    const arg = this.textatt.createArg({ x: this.pos_x, y: this.pos_y, text: text.fTitle, latex: 0 });
 
-   if ((text._typename === clTLatex) || annot) {
+   if ((text._typename === clTLatex) || annot)
       arg.latex = 1;
-   } else if (text._typename === clTMathText) {
+   else if (text._typename === clTMathText) {
       arg.latex = 2;
       fact = 0.8;
    }

@@ -1573,8 +1573,8 @@ class TGraphPainter extends ObjectPainter {
    /** @summary Draw axis histogram
      * @private */
    async drawAxisHisto() {
-      const need_histo = !this.getHistogram();
-      const histo = this.createHistogram(need_histo, need_histo);
+      const need_histo = !this.getHistogram(),
+            histo = this.createHistogram(need_histo, need_histo);
       return TH1Painter.draw(this.getDrawDom(), histo, this.options.Axis);
    }
 
