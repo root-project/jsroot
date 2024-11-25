@@ -2963,7 +2963,6 @@ class TH2Painter extends THistPainter {
 
       if (h.poly) {
          // process tooltips from TH2Poly
-
          const fp = this.getFramePainter(),
                funcs = fp.getGrFuncs(this.options.second_x, this.options.second_y),
                realx = funcs.revertAxis('x', pnt.x),
@@ -3284,15 +3283,6 @@ class TH2Painter extends THistPainter {
      * @return {Promise} when ready */
    async draw2D(/* reason */) {
       this.clear3DScene();
-
-      if (this.options.Same) {
-         this._ignore_frame = !this.getPadPainter()?.getMainPainter();
-         /*const pp = this.getPadPainter();
-         if (!pp?.getMainPainter() && !pp?.isDefaultPadRange()) {
-            this._ignore_frame = true;
-         }
-         */
-      }
 
       const need_palette = this.options.Zscale && this.options.canHavePalette() && !this._ignore_frame;
 

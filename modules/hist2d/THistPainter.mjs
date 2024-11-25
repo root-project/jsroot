@@ -2272,9 +2272,25 @@ class THistPainter extends ObjectPainter {
       return this.interactiveRedraw('pad', 'drawopt');
    }
 
+   /** @summary Get graphics conversion functions for this histogram */
+   getHistGrFuncs(fp, rounding = true) {
+      if (!this._ignore_frame)
+         return fp?.getGrFuncs(this.options.second_x, this.options.second_y);
+
+      const funcs = this.getAxisToSvgFunc(false, rounding, false);
+      if (funcs) {
+         funcs.grx = funcs.x;
+         funcs.gry = funcs.y;
+         funcs.logx = funcs.pad?.fLogx;
+         funcs.logy = funcs.pad?.fLogy;
+      }
+      return funcs;
+   }
+
    /** @summary Prepare handle for color draw */
    prepareDraw(args) {
-      if (!args) args = { rounding: true, extra: 0, middle: 0 };
+      if (!args)
+         args = { rounding: true, extra: 0, middle: 0 };
 
       if (args.extra === undefined)
          args.extra = 0;
@@ -2284,8 +2300,7 @@ class THistPainter extends ObjectPainter {
       const histo = this.getHisto(),
             xaxis = histo.fXaxis,
             yaxis = histo.fYaxis,
-            in_frame = !this._ignore_frame,
-            pmain = in_frame ? this.getFramePainter() : null,
+            pmain = this._ignore_frame ? null : this.getFramePainter(),
             hdim = this.getDimension(),
             res = {
                i1: args.nozoom ? 0 : this.getSelectIndex('x', 'left', 0 - args.extra),
@@ -2344,19 +2359,11 @@ class THistPainter extends ObjectPainter {
       if (args.pixel_density)
          args.rounding = true;
 
-      if (!pmain && in_frame) {
-         console.warn('cannot draw histogram without frame');
+      const funcs = this.getHistGrFuncs(pmain, args.rounding);
+
+      if (!funcs) {
+         console.warn('cannot draw histogram without frame or pad');
          return res;
-      }
-
-      const funcs = in_frame ? pmain.getGrFuncs(this.options.second_x, this.options.second_y)
-                             : this.getAxisToSvgFunc(false, args.rounding, false);
-
-      if (!in_frame && funcs) {
-         funcs.grx = funcs.x;
-         funcs.gry = funcs.y;
-         funcs.logx = funcs.pad?.fLogx;
-         funcs.logy = funcs.pad?.fLogy;
       }
 
       // calculate graphical coordinates in advance
@@ -2478,6 +2485,8 @@ class THistPainter extends ObjectPainter {
          painter.decodeOptions(opt);
          if (!painter.options.Same)
             painter.setAsMainPainter();
+         else
+            painter._ignore_frame = !painter.getPadPainter()?.getMainPainter();
 
          if (painter.isTH2Poly()) {
             if (painter.options.Mode3D)

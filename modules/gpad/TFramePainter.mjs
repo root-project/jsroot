@@ -2052,7 +2052,8 @@ class TFramePainter extends ObjectPainter {
    getGrFuncs(second_x, second_y) {
       const use_x2 = second_x && this.grx2,
             use_y2 = second_y && this.gry2;
-      if (!use_x2 && !use_y2) return this;
+      if (!use_x2 && !use_y2)
+         return this;
 
       return {
          use_x2,
