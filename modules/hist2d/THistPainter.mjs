@@ -1283,6 +1283,7 @@ class THistPainter extends ObjectPainter {
                     zoom_xmax: this.zoom_xmax,
                     zoom_ymin: this.zoom_ymin,
                     zoom_ymax: this.zoom_ymax,
+                    xmin_nz: histo.$xmin_nz,
                     ymin_nz: this.ymin_nz ?? histo.$ymin_nz,
                     swap_xy: this.options.swap_xy(),
                     reverse_x: this.options.RevX,

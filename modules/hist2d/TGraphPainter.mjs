@@ -360,6 +360,7 @@ class TGraphPainter extends ObjectPainter {
          }
       }
 
+      histo.$xmin_nz = xmin > 0 ? xmin : undefined;
       histo.$ymin_nz = ymin > 0 ? ymin : undefined;
 
       return histo;

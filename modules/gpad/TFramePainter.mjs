@@ -1949,6 +1949,7 @@ class TFramePainter extends ObjectPainter {
                                         ignore_labels: this.x_ignore_labels,
                                         noexp_changed: this.x_noexp_changed,
                                         symlog: this.swap_xy ? opts.symlog_y : opts.symlog_x,
+                                        log_min_nz: opts.xmin_nz && (opts.xmin_nz <= this.xmax) ? 0.9*opts.xmin_nz : 0,
                                         logcheckmin: (opts.ndim > 1) || !this.swap_xy,
                                         logminfactor: logminfactorX });
 
