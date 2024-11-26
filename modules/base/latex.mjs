@@ -668,15 +668,17 @@ function parseLatex(node, arg, label, curr) {
          curr.twolines = true;
 
          const line1 = extractSubLabel(), line2 = extractSubLabel(true);
-         if ((line1 === -1) || (line2 === -1)) return false;
+         if ((line1 === -1) || (line2 === -1))
+            return false;
 
          const gg = createGG(),
-               fscale = (curr.parent && curr.parent.twolines) ? 0.7 : 1,
+               is_line = found.twolines === 'line',
+               fscale = curr.parent?.twolines ? 0.7 : 1,
                subpos1 = createSubPos(fscale);
 
          parseLatex(gg, arg, line1, subpos1);
 
-         const path = (found.twolines === 'line') ? createPath(gg) : null,
+         const path = is_line ? createPath(gg) : null,
                subpos2 = createSubPos(fscale);
 
          parseLatex(gg, arg, line2, subpos2);
@@ -685,9 +687,9 @@ function parseLatex(node, arg, label, curr) {
                dw = subpos1.rect.width - subpos2.rect.width,
                dy = -curr.fsize*0.35; // approximate position of middle line
 
-         positionGNode(subpos1, (dw < 0 ? -dw/2 : 0), dy - subpos1.rect.y2, true);
+         positionGNode(subpos1, is_line && (dw < 0) ? -dw/2 : 0, dy - subpos1.rect.y2, true);
 
-         positionGNode(subpos2, (dw > 0 ? dw/2 : 0), dy - subpos2.rect.y1, true);
+         positionGNode(subpos2, is_line && (dw > 0) ? dw/2 : 0, dy - subpos2.rect.y1, true);
 
          path?.attr('d', `M0,${Math.round(dy)}h${Math.round(w - curr.fsize*0.1)}`);
 
