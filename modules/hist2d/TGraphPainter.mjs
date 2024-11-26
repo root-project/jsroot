@@ -288,6 +288,12 @@ class TGraphPainter extends ObjectPainter {
             this.ymax = Math.max(this.ymax, bin.y);
          }
       }
+
+      // workaround, are there better way to show marker at 0,0 on the top of the frame?
+      this._frame_layer = true;
+      if ((this.xmin === 0) && (this.ymin === 0) && this.options.Mark && !this.options.Line && !this.options.Curve && !this.options.Fill)
+         this._frame_layer = 'upper_layer';
+
    }
 
    /** @summary Return margins for histogram ranges */
@@ -924,7 +930,8 @@ class TGraphPainter extends ObjectPainter {
    drawGraph() {
       const pmain = this.get_main(),
             graph = this.getGraph();
-      if (!pmain || !this.options) return;
+      if (!pmain || !this.options)
+         return;
 
       // special mode for TMultiGraph 3d drawing
       if (this.options.pos3d)
@@ -935,7 +942,7 @@ class TGraphPainter extends ObjectPainter {
             w = pmain.getFrameWidth(),
             h = pmain.getFrameHeight();
 
-      this.createG(!pmain.pad_layer);
+      this.createG(pmain.pad_layer ? false : this._frame_layer);
 
       this.createGraphDrawAttributes();
 
