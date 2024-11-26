@@ -1531,7 +1531,7 @@ class TGraph2DPainter extends ObjectPainter {
             if (!this.options.Circles || this.options.Color)
                color = palette?.calcColor(lvl, levels.length) ?? this.getColor(graph.fMarkerColor);
 
-            const pr = pnts.createPoints({ color, style: this.options.Circles ? 4 : graph.fMarkerStyle }).then(mesh => {
+            const pr = pnts.createPoints({ color, fill: 'white', style: this.options.Circles ? 4 : graph.fMarkerStyle }).then(mesh => {
                mesh.graph = graph;
                mesh.fp = fp;
                mesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
