@@ -291,9 +291,9 @@ class TGraphPainter extends ObjectPainter {
 
       // workaround, are there better way to show marker at 0,0 on the top of the frame?
       this._frame_layer = true;
-      if ((this.xmin === 0) && (this.ymin === 0) && this.options.Mark && !this.options.Line && !this.options.Curve && !this.options.Fill)
+      if ((npoints > 0) && (this.bins[0].x === 0) && (this.bins[0].y === 0) &&
+          this.options.Mark && !this.options.Line && !this.options.Curve && !this.options.Fill)
          this._frame_layer = 'upper_layer';
-
    }
 
    /** @summary Return margins for histogram ranges */
