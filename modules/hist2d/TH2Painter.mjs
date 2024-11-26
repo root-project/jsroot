@@ -1768,7 +1768,7 @@ class TH2Painter extends THistPainter {
                   if (this.options.TextLine)
                      text += '\xB1' + lble;
                   else
-                     text = `#splitline{${text}}{#pm${lble}}`;
+                     text = `#splitmline{${text}}{#pm${lble}}`;
                }
 
                let x, y, width, height;

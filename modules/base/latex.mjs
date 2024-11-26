@@ -259,7 +259,8 @@ const latex_features = [
    { name: '#tilde{', accent: '\u02DC', hasw: true }, // '\u0303'
    { name: '#slash{', accent: '\u2215' }, // '\u0337'
    { name: '#vec{', accent: '\u02ED', hasw: true }, // '\u0350' arrowhead
-   { name: '#frac{', twolines: 'line' },
+   { name: '#frac{', twolines: 'line', middle: true },
+   { name: '#splitmline{', twolines: true, middle: true },
    { name: '#splitline{', twolines: true },
    { name: '#sqrt[', arg: 'int', sqrt: true }, // root with arbitrary power
    { name: '#sqrt{', sqrt: true },             // square root
@@ -672,13 +673,12 @@ function parseLatex(node, arg, label, curr) {
             return false;
 
          const gg = createGG(),
-               is_line = found.twolines === 'line',
                fscale = curr.parent?.twolines ? 0.7 : 1,
                subpos1 = createSubPos(fscale);
 
          parseLatex(gg, arg, line1, subpos1);
 
-         const path = is_line ? createPath(gg) : null,
+         const path = found.twolines === 'line' ? createPath(gg) : null,
                subpos2 = createSubPos(fscale);
 
          parseLatex(gg, arg, line2, subpos2);
@@ -687,9 +687,9 @@ function parseLatex(node, arg, label, curr) {
                dw = subpos1.rect.width - subpos2.rect.width,
                dy = -curr.fsize*0.35; // approximate position of middle line
 
-         positionGNode(subpos1, is_line && (dw < 0) ? -dw/2 : 0, dy - subpos1.rect.y2, true);
+         positionGNode(subpos1, found.middle && (dw < 0) ? -dw/2 : 0, dy - subpos1.rect.y2, true);
 
-         positionGNode(subpos2, is_line && (dw > 0) ? dw/2 : 0, dy - subpos2.rect.y1, true);
+         positionGNode(subpos2, found.middle && (dw > 0) ? dw/2 : 0, dy - subpos2.rect.y1, true);
 
          path?.attr('d', `M0,${Math.round(dy)}h${Math.round(w - curr.fsize*0.1)}`);
 
