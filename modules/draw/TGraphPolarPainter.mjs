@@ -68,7 +68,6 @@ class TGraphPolargramPainter extends ObjectPainter {
    format(radius) {
       if (radius === Math.round(radius)) return radius.toString();
       if (this.ndig > 10) return radius.toExponential(4);
-
       return radius.toFixed((this.ndig > 0) ? this.ndig : 0);
    }
 
@@ -372,7 +371,10 @@ class TGraphPolarPainter extends ObjectPainter {
           err: d.check('E'),
           fill: d.check('F'),
           line: d.check('L'),
-          curve: d.check('C')
+          curve: d.check('C'),
+          radian: d.check('R'),
+          degree: d.check('D'),
+          grad: d.check('G')
       });
 
       if (d.check('A'))
@@ -509,8 +511,15 @@ class TGraphPolarPainter extends ObjectPainter {
 
    /** @summary Create polargram object */
    createPolargram(gr) {
-      if (!gr.fPolargram)
+      if (!gr.fPolargram) {
          gr.fPolargram = create('TGraphPolargram');
+         if (this.options.radian)
+            gr.fPolargram.fRadian = true;
+         else if (this.options.degree)
+            gr.fPolargram.fDegree = true;
+         else if (this.options.grad)
+            gr.fPolargram.fGrad = true;
+      }
 
       let rmin = gr.fY[0] || 0, rmax = rmin;
       const has_err = gr.fEY?.length;
