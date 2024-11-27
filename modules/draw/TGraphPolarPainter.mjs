@@ -19,12 +19,13 @@ class TGraphPolargramPainter extends ObjectPainter {
    /** @summary Create painter
      * @param {object|string} dom - DOM element for drawing or element id
      * @param {object} polargram - object to draw */
-   constructor(dom, polargram) {
-      super(dom, polargram);
+   constructor(dom, polargram, opt) {
+      super(dom, polargram, opt);
       this.$polargram = true; // indicate that this is polargram
       this.zoom_rmin = this.zoom_rmax = 0;
       this.t0 = 0;
       this.mult = 1;
+      this.options = { NoLabels: opt === 'N '}
    }
 
    /** @summary Returns true if fixed coordinates are configured */
@@ -101,10 +102,10 @@ class TGraphPolargramPainter extends ObjectPainter {
          rect.szy = Math.round(0.5*h);
       }
 
-      rect.width = 2*rect.szx;
-      rect.height = 2*rect.szy;
-      rect.x = Math.round(w/2 - rect.szx);
-      rect.y = Math.round(h/2 - rect.szy);
+      rect.width = 2 * rect.szx;
+      rect.height = 2 * rect.szy;
+      rect.x = Math.round(w / 2 - rect.szx);
+      rect.y = Math.round(h / 2 - rect.szy);
 
       rect.hint_delta_x = rect.szx;
       rect.hint_delta_y = rect.szy;
@@ -160,6 +161,34 @@ class TGraphPolargramPainter extends ObjectPainter {
       }
    }
 
+   /** @summary Draw polargram polar labels */
+   async drawPolarLabels(polar, nmajor) {
+      const fontsize = Math.round(polar.fPolarTextSize * this.szy * 2);
+
+      return this.startTextDrawingAsync(polar.fPolarLabelFont, fontsize)
+                 .then(() => {
+         const lbls = (nmajor === 8) ? ['0', '#frac{#pi}{4}', '#frac{#pi}{2}', '#frac{3#pi}{4}', '#pi', '#frac{5#pi}{4}', '#frac{3#pi}{2}', '#frac{7#pi}{4}'] : ['0', '#frac{2#pi}{3}', '#frac{4#pi}{3}'],
+               aligns = [12, 11, 21, 31, 32, 33, 23, 13];
+
+         for (let n = 0; n < nmajor; ++n) {
+            const angle = -n*2*Math.PI/nmajor;
+            this.draw_g.append('svg:path')
+               .attr('d', `M0,0L${Math.round(this.szx*Math.cos(angle))},${Math.round(this.szy*Math.sin(angle))}`)
+               .call(this.lineatt.func);
+
+            const aindx = Math.round(16 -angle/Math.PI*4) % 8; // index in align table, here absolute angle is important
+
+            this.drawText({ align: aligns[aindx],
+                           x: Math.round((this.szx + fontsize)*Math.cos(angle)),
+                           y: Math.round((this.szy + fontsize/this.szx*this.szy)*(Math.sin(angle))),
+                           text: lbls[n],
+                           color: this.getColor(polar.fPolarLabelColor), latex: 1 });
+         }
+
+         return this.finishTextDrawing();
+      });
+   }
+
    /** @summary Redraw polargram */
    async redraw() {
       if (!this.isMainPainter())
@@ -193,8 +222,7 @@ class TGraphPolargramPainter extends ObjectPainter {
 
       this.setAnglesRange(polar.fRwtmin, polar.fRwtmax);
 
-      const ticks = this.r.ticks(5),
-            fontsize = Math.round(polar.fPolarTextSize * this.szy * 2);
+      const ticks = this.r.ticks(5);
       let nminor = Math.floor((polar.fNdivRad % 10000) / 100),
           nmajor = polar.fNdivPol % 100;
       if (nmajor !== 3)
@@ -222,7 +250,7 @@ class TGraphPolargramPainter extends ObjectPainter {
       let exclude_last = false;
       const pointer_events = this.isBatchMode() ? null : 'visibleFill';
 
-      if ((ticks[ticks.length-1] < polar.fRwrmax) && (this.zoom_rmin === this.zoom_rmax)) {
+      if ((ticks[ticks.length - 1] < polar.fRwrmax) && (this.zoom_rmin === this.zoom_rmax)) {
          ticks.push(polar.fRwrmax);
          exclude_last = true;
       }
@@ -266,32 +294,12 @@ class TGraphPolargramPainter extends ObjectPainter {
 
          return this.finishTextDrawing();
       }).then(() => {
-         return this.startTextDrawingAsync(polar.fPolarLabelFont, fontsize);
-      }).then(() => {
-         lbls = (nmajor === 8) ? ['0', '#frac{#pi}{4}', '#frac{#pi}{2}', '#frac{3#pi}{4}', '#pi', '#frac{5#pi}{4}', '#frac{3#pi}{2}', '#frac{7#pi}{4}'] : ['0', '#frac{2#pi}{3}', '#frac{4#pi}{3}'];
-         const aligns = [12, 11, 21, 31, 32, 33, 23, 13];
-
-         for (let n = 0; n < nmajor; ++n) {
-            const angle = -n*2*Math.PI/nmajor;
-            this.draw_g.append('svg:path')
-                .attr('d', `M0,0L${Math.round(this.szx*Math.cos(angle))},${Math.round(this.szy*Math.sin(angle))}`)
-                .call(this.lineatt.func);
-
-            const aindx = Math.round(16 -angle/Math.PI*4) % 8; // index in align table, here absolute angle is important
-
-            this.drawText({ align: aligns[aindx],
-                            x: Math.round((this.szx+fontsize)*Math.cos(angle)),
-                            y: Math.round((this.szy + fontsize/this.szx*this.szy)*(Math.sin(angle))),
-                            text: lbls[n],
-                            color: this.getColor(polar.fPolarLabelColor), latex: 1 });
-         }
-
-         return this.finishTextDrawing();
+         return this.options.NoLabels ? true : this.drawPolarLabels(polar, nmajor);
       }).then(() => {
          nminor = Math.floor((polar.fNdivPol % 10000) / 100);
 
          if (nminor > 1) {
-            for (let n = 0; n < nmajor*nminor; ++n) {
+            for (let n = 0; n < nmajor * nminor; ++n) {
                if (n % nminor === 0) continue;
                const angle = -n*2*Math.PI/nmajor/nminor;
                this.draw_g.append('svg:path')
@@ -333,7 +341,7 @@ class TGraphPolargramPainter extends ObjectPainter {
    }
 
    /** @summary Draw TGraphPolargram */
-   static async draw(dom, polargram /* , opt */) {
+   static async draw(dom, polargram, opt) {
       const main = getElementMainPainter(dom);
       if (main) {
          if (main.getObject() === polargram)
@@ -341,7 +349,7 @@ class TGraphPolargramPainter extends ObjectPainter {
          throw Error('Cannot superimpose TGraphPolargram with any other drawings');
       }
 
-      const painter = new TGraphPolargramPainter(dom, polargram);
+      const painter = new TGraphPolargramPainter(dom, polargram, opt);
       return ensureTCanvas(painter, false).then(() => {
          painter.setAsMainPainter();
          return painter.redraw();
@@ -374,11 +382,9 @@ class TGraphPolarPainter extends ObjectPainter {
           curve: d.check('C'),
           radian: d.check('R'),
           degree: d.check('D'),
-          grad: d.check('G')
+          grad: d.check('G'),
+          Axis: d.check('N') ? 'N' : ''
       });
-
-      if (d.check('A'))
-         this._draw_axis = true;
 
       this.storeDrawOpt(opt);
    }
@@ -673,7 +679,7 @@ class TGraphPolarPainter extends ObjectPainter {
 
    /** @summary Draw TGraphPolar */
    static async draw(dom, graph, opt) {
-      const painter = new TGraphPolarPainter(dom, graph);
+      const painter = new TGraphPolarPainter(dom, graph, opt);
       painter.decodeOptions(opt);
 
       const main = painter.getMainPainter();
@@ -686,7 +692,7 @@ class TGraphPolarPainter extends ObjectPainter {
       if (!main) {
          // indicate that axis defined by this graph
          painter._draw_axis = true;
-         pr = TGraphPolargramPainter.draw(dom, painter.createPolargram(graph));
+         pr = TGraphPolargramPainter.draw(dom, painter.createPolargram(graph), painter.options.Axis);
       }
 
       return pr.then(gram_painter => {
