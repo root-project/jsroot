@@ -25,13 +25,28 @@ class TGraphPolargramPainter extends ObjectPainter {
       this.zoom_rmin = this.zoom_rmax = 0;
       this.t0 = 0;
       this.mult = 1;
-      this.options = { NoLabels: opt === 'N '}
+      this.decodeOptions(opt);
    }
 
    /** @summary Returns true if fixed coordinates are configured */
    isNormalAngles() {
       const polar = this.getObject();
       return polar?.fRadian || polar?.fGrad || polar?.fDegree;
+   }
+
+   /** @summary Decode draw options */
+   decodeOptions(opt) {
+      const d = new DrawOptions(opt);
+
+      if (!this.options)
+         this.options = {};
+
+      Object.assign(this.options, {
+          NoLabels: d.check('N'),
+          OrthoLabels: d.check('O')
+      });
+
+      this.storeDrawOpt(opt);
    }
 
    /** @summary Set angles range displayed by the polargram */
@@ -176,9 +191,19 @@ class TGraphPolargramPainter extends ObjectPainter {
                .attr('d', `M0,0L${Math.round(this.szx*Math.cos(angle))},${Math.round(this.szy*Math.sin(angle))}`)
                .call(this.lineatt.func);
 
-            const aindx = Math.round(16 -angle/Math.PI*4) % 8; // index in align table, here absolute angle is important
+            let align = 12, rotate = 0;
 
-            this.drawText({ align: aligns[aindx],
+            if (this.options.OrthoLabels) {
+               rotate = -n/nmajor*360;
+               if ((rotate > -271) && (rotate < -91)) {
+                  align = 32; rotate += 180;
+               }
+            } else {
+               const aindx = Math.round(16 - angle/Math.PI*4) % 8; // index in align table, here absolute angle is important
+               align = aligns[aindx];
+            }
+
+            this.drawText({ align, rotate,
                            x: Math.round((this.szx + fontsize)*Math.cos(angle)),
                            y: Math.round((this.szy + fontsize/this.szx*this.szy)*(Math.sin(angle))),
                            text: lbls[n],
@@ -385,6 +410,9 @@ class TGraphPolarPainter extends ObjectPainter {
           grad: d.check('G'),
           Axis: d.check('N') ? 'N' : ''
       });
+
+      if (d.check('O'))
+         this.options.Axis += 'O';
 
       this.storeDrawOpt(opt);
    }
