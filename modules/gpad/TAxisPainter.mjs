@@ -423,6 +423,8 @@ class TAxisPainter extends ObjectPainter {
      * Therefore one should distinguish when calculated coordinates used for axis drawing itself or for calculation of frame coordinates
      * @private */
    configureAxis(name, min, max, smin, smax, vertical, range, opts) {
+      const axis = this.getObject();
+
       this.name = name;
       this.full_min = min;
       this.full_max = max;
@@ -434,11 +436,13 @@ class TAxisPainter extends ObjectPainter {
       this.noexp_changed = opts.noexp_changed;
       this.symlog = opts.symlog || false;
       this.reverse = opts.reverse || false;
+      // special flag to change align of labels on vertical axis
+      // it is workaround shown in TGaxis docu
+      this.reverseAlign = this.vertical && this.reverse && this.is_gaxis && (axis.fX1 !== axis.fX2);
       this.swap_side = opts.swap_side || false;
       this.fixed_ticks = opts.fixed_ticks || null;
       this.maxTickSize = opts.maxTickSize || 0;
       this.value_axis = opts.value_axis ?? false; // use fMinimum/fMaximum from source object
-      const axis = this.getObject();
 
       if (opts.time_scale || axis.fTimeDisplay) {
          this.kind = kAxisTime;
@@ -1110,7 +1114,7 @@ class TAxisPainter extends ObjectPainter {
                if (this.vertical) {
                   arg.x = fix_coord;
                   arg.y = pos;
-                  arg.align = rotate_lbls ? (this.optionLeft || this.reverse ? 23 : 21) : (this.optionLeft || this.reverse ? 12 : 32);
+                  arg.align = rotate_lbls ? (this.optionLeft || this.reverseAlign ? 23 : 21) : (this.optionLeft || this.reverseAlign ? 12 : 32);
                   if (this.cutLabels()) {
                      const gap = labelsFont.size * (rotate_lbls ? 1.5 : 0.6);
                      if ((pos < gap) || (pos > h - gap)) continue;
@@ -1228,7 +1232,8 @@ class TAxisPainter extends ObjectPainter {
          titleColor = this.getColor(axis.fTextColor);
          titleFontId = axis.fTextFont;
          offset = axis.fLabelOffset;
-         if ((this.vertical && axis.fY1 > axis.fY2 && !this.optionMinus) || (!this.vertical && axis.fX1 > axis.fX2))
+         // workaround for old reverse axes where offset is not properly working
+         if (this.reverse && (!this.vertical || (!this.optionMinus && (axis.fX1 !== axis.fX2))))
             offset = -offset;
       } else {
          this.optionUnlab = false;
