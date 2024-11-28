@@ -2219,6 +2219,8 @@ class TFramePainter extends ObjectPainter {
       let pr = Promise.resolve(true);
 
       if (!disable_x_draw || !disable_y_draw || draw_grids) {
+         draw_vertical.optionLeft = draw_vertical.invert_side; // text align
+
          const can_adjust_frame = !shrink_forbidden && settings.CanAdjustFrame,
 
          pr1 = draw_horiz.drawAxis(layer, w, h,
@@ -2296,6 +2298,7 @@ class TFramePainter extends ObjectPainter {
       }
 
       if (draw_vertical) {
+         draw_vertical.optionLeft = draw_vertical.invert_side;
          pr2 = draw_vertical.drawAxis(layer, w, h,
                                       draw_vertical.invert_side ? `translate(${w})` : null,
                                       pad?.fTicky ? w : 0, false,

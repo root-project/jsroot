@@ -438,7 +438,6 @@ class TAxisPainter extends ObjectPainter {
       this.fixed_ticks = opts.fixed_ticks || null;
       this.maxTickSize = opts.maxTickSize || 0;
       this.value_axis = opts.value_axis ?? false; // use fMinimum/fMaximum from source object
-
       const axis = this.getObject();
 
       if (opts.time_scale || axis.fTimeDisplay) {
@@ -1111,8 +1110,7 @@ class TAxisPainter extends ObjectPainter {
                if (this.vertical) {
                   arg.x = fix_coord;
                   arg.y = pos;
-                  arg.align = rotate_lbls ? ((side < 0) ? 23 : 21) : ((side < 0) ? 12 : 32);
-
+                  arg.align = rotate_lbls ? (this.optionLeft || this.reverse ? 23 : 21) : (this.optionLeft || this.reverse ? 12 : 32);
                   if (this.cutLabels()) {
                      const gap = labelsFont.size * (rotate_lbls ? 1.5 : 0.6);
                      if ((pos < gap) || (pos > h - gap)) continue;
@@ -1222,6 +1220,9 @@ class TAxisPainter extends ObjectPainter {
          this.optionNoopt = (axis.fChopt.indexOf('N') >= 0);  // no ticks position optimization
          this.optionInt = (axis.fChopt.indexOf('I') >= 0);  // integer labels
          this.optionText = (axis.fChopt.indexOf('T') >= 0);  // text scaling?
+         this.optionLeft = (axis.fChopt.indexOf('L') >= 0);  // left text align
+         this.optionRight = (axis.fChopt.indexOf('R') >= 0);  // right text align
+         this.optionCenter = (axis.fChopt.indexOf('C') >= 0);  // center text align
          this.createAttLine({ attr: axis });
          tickSize = optionSize ? axis.fTickSize : 0.03;
          titleColor = this.getColor(axis.fTextColor);
