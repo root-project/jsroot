@@ -1641,6 +1641,8 @@ class TFramePainter extends ObjectPainter {
       this.axes_drawn = false;
       this.axes2_drawn = false;
       this.keys_handler = null;
+      this._borderMode = 0;
+      this._borderSize = 0;
       this.projection = 0; // different projections
    }
 
@@ -2333,9 +2335,11 @@ class TFramePainter extends ObjectPainter {
          }
       }
 
-      if (tframe)
+      if (tframe) {
          this.createAttFill({ attr: tframe });
-      else if (this.fillatt === undefined) {
+         this._borderMode = tframe.fBorderMode;
+         this._borderSize = tframe.fBorderSize;
+      } else if (this.fillatt === undefined) {
          if (pad?.fFrameFillColor)
             this.createAttFill({ pattern: pad.fFrameFillStyle, color: pad.fFrameFillColor });
          else if (pad)
@@ -2548,9 +2552,8 @@ class TFramePainter extends ObjectPainter {
               .attr('viewBox', `0 0 ${this._frame_width} ${this._frame_height}`);
 
       this.draw_g.selectAll('.frame_deco').remove();
-      const frame = this.getObject();
-      if (frame?.fBorderMode && this.fillatt.hasColor()) {
-         const paths = getBoxDecorations(0, 0, this._frame_width, this._frame_height, frame.fBorderMode, frame.fBorderSize || 2, frame.fBorderSize || 2);
+      if (this._borderMode && this.fillatt.hasColor()) {
+         const paths = getBoxDecorations(0, 0, this._frame_width, this._frame_height, this._borderMode, this._borderSize || 2, this._borderSize || 2);
          this.draw_g.insert('svg:path', '.main_layer')
                     .attr('class', 'frame_deco')
                     .attr('d', paths[0])
@@ -2722,6 +2725,18 @@ class TFramePainter extends ObjectPainter {
 
       menu.addchk(this.isTooltipAllowed(), 'Show tooltips', () => this.setTooltipAllowed('toggle'));
       menu.addAttributesMenu(this, alone ? '' : 'Frame ');
+
+      menu.sub('Border');
+      menu.addSelectMenu('Mode', ['Down', 'Off', 'Up'], this._borderMode + 1, v => {
+         this._borderMode = v - 1;
+         this.interactiveRedraw(true, `exec:SetBorderMode(${v-1})`);
+      }, 'Frame border mode');
+      menu.addSizeMenu('Size', 0, 20, 2, this._borderSize, v => {
+         this._borderSize = v;
+         this.interactiveRedraw(true, `exec:SetBorderSize(${v})`);
+      }, 'Frame border size');
+      menu.endsub();
+
       menu.add('Save to gStyle', () => {
          gStyle.fPadBottomMargin = this.fY1NDC;
          gStyle.fPadTopMargin = 1 - this.fY2NDC;

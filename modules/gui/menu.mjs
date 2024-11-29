@@ -389,7 +389,7 @@ class JSRootMenu {
    /** @summary Add selection menu entries
      * @param {String} name - name of submenu
      * @param {Array} values - array of string entries used as list for selection
-     * @param {String|Number} value - currently elected value, either name or index
+     * @param {String|Number} value - currently selected value, either name or index
      * @param {Function} set_func - function called when item selected, either name or index depending from value parameter
      * @param {String} [title] - optional title for menu items
      * @protected */
