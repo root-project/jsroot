@@ -2485,15 +2485,16 @@ class THistPainter extends ObjectPainter {
       return `[${funcs.axisAsText(name, x1)}, ${funcs.axisAsText(name, x2)})`;
    }
 
-   /** @summary Internal method to extract up/down errors for the bin */
-   static getBinErrors(histo, bin) {
+   /** @summary Internal method to extract up/down errors for the bin
+    * @private */
+   getBinErrors(histo, bin) {
       const err = histo.getBinError(bin),
-            res = { low: err, up: err },
-            /* kNormal = 0,  kPoisson = 1, */ kPoisson2 = 2;
+            res = { low: err, up: err };
       if (!histo.fBinStatErrOpt || (histo.fSumw2.fN && histo.fTsumw != histo.fTsumw2))
          return res;
 
-      const alpha = (histo.fBinStatErrOpt === kPoisson2) ? 0.05 : 1 - 0.682689492,
+      const /* kNormal = 0,  kPoisson = 1, */ kPoisson2 = 2,
+            alpha = (histo.fBinStatErrOpt === kPoisson2) ? 0.05 : 1 - 0.682689492,
             c = histo.getBinContent(bin),
             n = Math.round(c);
 

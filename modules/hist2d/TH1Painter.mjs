@@ -94,7 +94,7 @@ class TH1Painter extends THistPainter {
          }
 
          if (this.options.Error)
-            errs = TH1Painter.getBinErrors(histo, i + 1);
+            errs = this.getBinErrors(histo, i + 1);
 
          hmin = Math.min(hmin, value - errs.low);
          hmax = Math.max(hmax, value + errs.up);
@@ -508,7 +508,7 @@ class TH1Painter extends THistPainter {
          if (funcs.logx && (x <= 0)) continue;
          const grx = Math.round(funcs.grx(x)),
                y = histo.getBinContent(i+1),
-               yerrs = TH1Painter.getBinErrors(histo, i + 1);
+               yerrs = this.getBinErrors(histo, i + 1);
          if (funcs.logy && (y - yerrs.low < funcs.scale_ymin))
             continue;
 
@@ -625,7 +625,7 @@ class TH1Painter extends THistPainter {
             if (startmidx === undefined) startmidx = midx;
             my = Math.round(funcs.gry(bincont));
             if (show_errors) {
-               binerr = TH1Painter.getBinErrors(histo, bin + 1);
+               binerr = this.getBinErrors(histo, bin + 1);
                yerr1 = Math.round(my - funcs.gry(bincont + binerr.up)); // up
                yerr2 = Math.round(funcs.gry(bincont - binerr.low) - my); // low
             } else
@@ -936,7 +936,7 @@ class TH1Painter extends THistPainter {
          tips.push(`x = ${xlbl}`, `y = ${funcs.axisAsText('y', cont)}`);
          if (this.options.Error) {
             if (xlbl[0] === '[') tips.push(`error x = ${((x2 - x1) / 2).toPrecision(4)}`);
-            const errs = TH1Painter.getBinErrors(histo, bin + 1);
+            const errs = this.getBinErrors(histo, bin + 1);
             if (errs.poisson)
                tips.push(`error low = ${errs.low.toPrecision(4)}`, `error up = ${errs.up.toPrecision(4)}`);
             else
@@ -1058,7 +1058,7 @@ class TH1Painter extends THistPainter {
 
          if (this.options.Error) {
             const cont = histo.getBinContent(findbin + 1),
-                  binerrs = TH1Painter.getBinErrors(histo, findbin + 1);
+                  binerrs = this.getBinErrors(histo, findbin + 1);
 
             gry1 = Math.round(funcs.gry(cont + binerrs.up)); // up
             gry2 = Math.round(funcs.gry(cont - binerrs.low)); // low
