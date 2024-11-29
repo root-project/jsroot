@@ -335,7 +335,7 @@ class TPavePainter extends ObjectPainter {
 
    drawBorder(draw_g, width, height, arc_radius, diamond) {
       const pt = this.getObject(),
-            opt = pt.fOption.toUpperCase().replaceAll("ARC","").replaceAll("NDC",""),
+            opt = pt.fOption.toUpperCase().replaceAll('ARC', '').replaceAll('NDC', ''),
             noborder = this.isPalette() || (opt.indexOf('NB') >= 0),
             dx = (opt.indexOf('L') >= 0) ? -1 : ((opt.indexOf('R') >= 0) ? 1 : 0),
             dy = (opt.indexOf('T') >= 0) ? -1 : ((opt.indexOf('B') >= 0) ? 1 : 0);

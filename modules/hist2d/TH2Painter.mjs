@@ -2145,14 +2145,14 @@ class TH2Painter extends THistPainter {
       }, make_marker = (x, y) => {
          if (!markers) {
             const mw = gStyle.fCandleCrossLineWidth ?? 1;
-            this.createAttMarker({ attr: histo, style: isOption(kPointsAllScat) ? 0 : (mw === 1 ? 5 : 18*mw+16)});
+            this.createAttMarker({ attr: histo, style: isOption(kPointsAllScat) ? 0 : (mw === 1 ? 5 : 18 * mw + 16) });
             this.markeratt.resetPos();
          }
          markers += swapXY ? this.markeratt.create(y, x) : this.markeratt.create(x, y);
       }, make_cmarker = (x, y) => {
          if (!attrcmarkers) {
             const mw = gStyle.fCandleCircleLineWidth ?? 1;
-            attrcmarkers = this.createAttMarker({ attr: histo, style: (mw === 1 ? 24 : 18*mw+17), std: false });
+            attrcmarkers = this.createAttMarker({ attr: histo, style: (mw === 1 ? 24 : 18 * mw + 17), std: false });
             attrcmarkers.resetPos();
          }
          cmarkers += swapXY ? attrcmarkers.create(y, x) : attrcmarkers.create(x, y);
