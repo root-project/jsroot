@@ -1763,12 +1763,20 @@ class TH2Painter extends THistPainter {
                let text = (binz === Math.round(binz)) ? binz.toString() : floatToString(binz, gStyle.fPaintTextFormat);
 
                if (show_err) {
-                  const errz = histo.getBinError(histo.getBin(i+1, j+1)),
-                     lble = (errz === Math.round(errz)) ? errz.toString() : floatToString(errz, gStyle.fPaintTextFormat);
-                  if (this.options.TextLine)
-                     text += '\xB1' + lble;
-                  else
-                     text = `#splitmline{${text}}{#pm${lble}}`;
+                  const errs = TH2Painter.getBinErrors(histo, histo.getBin(i + 1, j + 1));
+                  if (errs.poisson) {
+                     const lble = `-${floatToString(errs.low, gStyle.fPaintTextFormat)}  +${floatToString(errs.up, gStyle.fPaintTextFormat)}`;
+                     if (this.options.TextLine)
+                        text += ' ' + lble;
+                     else
+                        text = `#splitmline{${text}}{${lble}}`;
+                  } else {
+                     const lble = (errs.up === Math.round(errs.up)) ? errs.up.toString() : floatToString(errs.up, gStyle.fPaintTextFormat);
+                     if (this.options.TextLine)
+                        text += '\xB1' + lble;
+                     else
+                        text = `#splitmline{${text}}{#pm${lble}}`;
+                  }
                }
 
                let x, y, width, height;
@@ -2880,8 +2888,11 @@ class TH2Painter extends THistPainter {
                    'content = ' + ((binz === Math.round(binz)) ? binz : floatToString(binz, gStyle.fStatFormat))];
 
       if ((this.options.TextKind === 'E') || profile2d) {
-         const errz = histo.getBinError(histo.getBin(i+1, j+1));
-         lines.push('error = ' + ((errz === Math.round(errz)) ? errz.toString() : floatToString(errz, gStyle.fPaintTextFormat)));
+         const errs = TH2Painter.getBinErrors(histo, histo.getBin(i + 1, j + 1));
+         if (errs.poisson)
+            lines.push('error low = ' + floatToString(errs.low, gStyle.fPaintTextFormat), 'error up = ' + floatToString(errs.up, gStyle.fPaintTextFormat));
+         else
+            lines.push('error = ' + floatToString(errs.up, gStyle.fPaintTextFormat));
       }
 
       if (profile2d) {

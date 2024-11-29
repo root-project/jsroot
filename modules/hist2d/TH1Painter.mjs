@@ -937,10 +937,10 @@ class TH1Painter extends THistPainter {
          if (this.options.Error) {
             if (xlbl[0] === '[') tips.push(`error x = ${((x2 - x1) / 2).toPrecision(4)}`);
             const errs = TH1Painter.getBinErrors(histo, bin + 1);
-            if (!histo.fBinStatErrOpt)
-               tips.push(`error y = ${errs.up.toPrecision(4)}`);
-            else
+            if (errs.poisson)
                tips.push(`error low = ${errs.low.toPrecision(4)}`, `error up = ${errs.up.toPrecision(4)}`);
+            else
+               tips.push(`error y = ${errs.up.toPrecision(4)}`);
          }
       } else {
          tips.push(`bin = ${bin+1}`, `x = ${xlbl}`);

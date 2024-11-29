@@ -2489,8 +2489,8 @@ class THistPainter extends ObjectPainter {
    static getBinErrors(histo, bin) {
       const err = histo.getBinError(bin),
             res = { low: err, up: err },
-            kNormal = 0, /* kPoisson = 1, */ kPoisson2 = 2;
-      if ((histo.fBinStatErrOpt === kNormal) || (histo.fSumw2.fN && histo.fTsumw != histo.fTsumw2))
+            /* kNormal = 0,  kPoisson = 1, */ kPoisson2 = 2;
+      if (!histo.fBinStatErrOpt || (histo.fSumw2.fN && histo.fTsumw != histo.fTsumw2))
          return res;
 
       const alpha = (histo.fBinStatErrOpt === kPoisson2) ? 0.05 : 1 - 0.682689492,
@@ -2499,6 +2499,8 @@ class THistPainter extends ObjectPainter {
 
       if (c < 0)
          return res;
+
+      res.poisson = true; // indicate poisson error
 
       if (n === 0)
          res.low = 0;
