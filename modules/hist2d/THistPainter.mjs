@@ -10,7 +10,7 @@ import { gamma_quantile, gamma_quantile_c } from '../base/math.mjs';
 
 
 const kCARTESIAN = 1, kPOLAR = 2, kCYLINDRICAL = 3, kSPHERICAL = 4, kRAPIDITY = 5,
-      kNormal = 0,  kPoisson = 1, kPoisson2 = 2;
+      kNormal = 0, kPoisson = 1, kPoisson2 = 2;
 /**
  * @summary Class to decode histograms draw options
  * @desc All options started from capital letter are major drawing options
