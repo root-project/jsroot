@@ -1763,7 +1763,7 @@ class TH2Painter extends THistPainter {
                let text = (binz === Math.round(binz)) ? binz.toString() : floatToString(binz, gStyle.fPaintTextFormat);
 
                if (show_err) {
-                  const errs = this.getBinErrors(histo, histo.getBin(i + 1, j + 1));
+                  const errs = this.getBinErrors(histo, histo.getBin(i + 1, j + 1), binz);
                   if (errs.poisson) {
                      const lble = `-${floatToString(errs.low, gStyle.fPaintTextFormat)}  +${floatToString(errs.up, gStyle.fPaintTextFormat)}`;
                      if (this.options.TextLine)
@@ -2875,8 +2875,9 @@ class TH2Painter extends THistPainter {
    /** @summary Provide text information (tooltips) for histogram bin */
    getBinTooltips(i, j) {
       const histo = this.getHisto(),
-            profile2d = this.matchObjectType(clTProfile2D) && isFunc(histo.getBinEntries);
-      let binz = histo.getBinContent(i+1, j+1);
+            profile2d = this.matchObjectType(clTProfile2D) && isFunc(histo.getBinEntries),
+            bincontent = histo.getBinContent(i+1, j+1);
+      let binz = bincontent;
 
       if (histo.$baseh)
          binz -= histo.$baseh.getBinContent(i+1, j+1);
@@ -2888,7 +2889,7 @@ class TH2Painter extends THistPainter {
                    'content = ' + ((binz === Math.round(binz)) ? binz : floatToString(binz, gStyle.fStatFormat))];
 
       if ((this.options.TextKind === 'E') || profile2d) {
-         const errs = this.getBinErrors(histo, histo.getBin(i + 1, j + 1));
+         const errs = this.getBinErrors(histo, histo.getBin(i + 1, j + 1), bincontent);
          if (errs.poisson)
             lines.push('error low = ' + floatToString(errs.low, gStyle.fPaintTextFormat), 'error up = ' + floatToString(errs.up, gStyle.fPaintTextFormat));
          else

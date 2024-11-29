@@ -529,7 +529,7 @@ class RHistPainter extends RObjectPainter {
 
    /** @summary Return histo bin errors
     * @private */
-   getBinErrors(histo, bin) {
+   getBinErrors(histo, bin /* , binz */) {
       const err = histo.getBinError(bin);
       return { low: err, up: err };
    }

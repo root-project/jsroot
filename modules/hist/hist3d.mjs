@@ -1938,7 +1938,7 @@ function drawBinsError3D(painter, is_v7 = false) {
        return !painter.options.ShowEmpty;
    };
 
-    // loop over the points - first loop counts points, second fill arrays
+   // loop over the points - first loop counts points, second fill arrays
    for (let loop = 0; loop < 2; ++loop) {
       for (i = handle.i1; i < handle.i2; ++i) {
          x1 = handle.grx[i];
@@ -1955,7 +1955,7 @@ function drawBinsError3D(painter, is_v7 = false) {
             if (loop === 0) { nsegments += 3; continue; }
 
             bin = histo.getBin(i + 1, j + 1);
-            errs = painter.getBinErrors(histo, bin);
+            errs = painter.getBinErrors(histo, bin, binz);
             binindx[lindx / 18] = bin;
 
             y1 = handle.gry[j];

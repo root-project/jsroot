@@ -11,6 +11,7 @@ import { gamma_quantile, gamma_quantile_c } from '../base/math.mjs';
 
 const kCARTESIAN = 1, kPOLAR = 2, kCYLINDRICAL = 3, kSPHERICAL = 4, kRAPIDITY = 5;
 
+const kNormal = 0,  kPoisson = 1, kPoisson2 = 2;
 /**
  * @summary Class to decode histograms draw options
  * @desc All options started from capital letter are major drawing options
@@ -34,7 +35,7 @@ class THistDrawOptions {
               Text: false, TextAngle: 0, TextKind: '', Char: 0, Color: false, Contour: 0, Cjust: false,
               Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0, Ortho: gStyle.fOrthoCamera,
               Spec: false, Pie: false, List: false, Zscale: false, Zvert: true, PadPalette: false,
-              Candle: '', Violin: '', Scaled: null, Circular: 0,
+              Candle: '', Violin: '', Scaled: null, Circular: 0, Poisson: kNormal,
               GLBox: 0, GLColor: false, Project: '', ProfileProj: '', Profile2DProj: '', System: kCARTESIAN,
               AutoColor: false, NoStat: false, ForceStat: false, PadStats: false, PadTitle: false, AutoZoom: false,
               HighRes: 0, Zero: 1, Palette: 0, BaseLine: false, ShowEmpty: false,
@@ -153,6 +154,8 @@ class THistDrawOptions {
       if (d.check('XTITLE:', true)) histo.fXaxis.fTitle = decodeURIComponent(d.part.toLowerCase());
       if (d.check('YTITLE:', true)) histo.fYaxis.fTitle = decodeURIComponent(d.part.toLowerCase());
       if (d.check('ZTITLE:', true)) histo.fZaxis.fTitle = decodeURIComponent(d.part.toLowerCase());
+      if (d.check('POISSON2')) this.Poisson = kPoisson2;
+      if (d.check('POISSON')) this.Poisson = kPoisson;
 
       if (d.check('SHOWEMPTY')) this.ShowEmpty = true;
 
@@ -2487,18 +2490,18 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Internal method to extract up/down errors for the bin
     * @private */
-   getBinErrors(histo, bin) {
+   getBinErrors(histo, bin, content) {
       const err = histo.getBinError(bin),
-            res = { low: err, up: err };
-      if (!histo.fBinStatErrOpt || (histo.fSumw2.fN && histo.fTsumw != histo.fTsumw2))
+            res = { low: err, up: err },
+            kind = this.options.Poisson || histo.fBinStatErrOpt;
+
+      if (!kind || (histo.fSumw2.fN && histo.fTsumw != histo.fTsumw2))
          return res;
 
-      const /* kNormal = 0,  kPoisson = 1, */ kPoisson2 = 2,
-            alpha = (histo.fBinStatErrOpt === kPoisson2) ? 0.05 : 1 - 0.682689492,
-            c = histo.getBinContent(bin),
-            n = Math.round(c);
+      const alpha = (kind === kPoisson2) ? 0.05 : 1 - 0.682689492,
+            n = Math.round(content);
 
-      if (c < 0)
+      if (content < 0)
          return res;
 
       res.poisson = true; // indicate poisson error
@@ -2506,9 +2509,9 @@ class THistPainter extends ObjectPainter {
       if (n === 0)
          res.low = 0;
       else
-         res.low = c - gamma_quantile(alpha/2, n, 1);
+         res.low = content - gamma_quantile(alpha/2, n, 1);
 
-      res.up = gamma_quantile_c(alpha/2, n + 1, 1) - c;
+      res.up = gamma_quantile_c(alpha/2, n + 1, 1) - content;
       return res;
    }
 
