@@ -6,6 +6,7 @@ import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter, EAxisBits, kAxisTime, kAxisLabels } from '../base/ObjectPainter.mjs';
 import { TPavePainter } from '../hist/TPavePainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
+import { gamma_quantile, gamma_quantile_c } from '../base/math.mjs';
 
 
 const kCARTESIAN = 1, kPOLAR = 2, kCYLINDRICAL = 3, kSPHERICAL = 4, kRAPIDITY = 5;
@@ -2482,6 +2483,30 @@ class THistPainter extends ObjectPainter {
          return funcs.axisAsText(name, (x1+x2)/2);
 
       return `[${funcs.axisAsText(name, x1)}, ${funcs.axisAsText(name, x2)})`;
+   }
+
+   /** @summary Internal method to extract up/down errors for the bin */
+   static getBinErrors(histo, bin) {
+      const err = histo.getBinError(bin),
+            res = { low: err, up: err },
+            kNormal = 0, /* kPoisson = 1, */ kPoisson2 = 2;
+      if ((histo.fBinStatErrOpt === kNormal) || (histo.fSumw2.fN && histo.fTsumw != histo.fTsumw2))
+         return res;
+
+      const alpha = (histo.fBinStatErrOpt === kPoisson2) ? 0.05 : 1 - 0.682689492,
+            c = histo.getBinContent(bin),
+            n = Math.round(c);
+
+      if (c < 0)
+         return res;
+
+      if (n === 0)
+         res.low = 0;
+      else
+         res.low = c - gamma_quantile(alpha/2, n, 1);
+
+      res.up = gamma_quantile_c(alpha/2, n + 1, 1) - c;
+      return res;
    }
 
    /** @summary generic draw function for histograms
