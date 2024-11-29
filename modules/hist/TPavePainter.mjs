@@ -258,6 +258,8 @@ class TPavePainter extends ObjectPainter {
          width = Math.round((pt.fX2NDC - pt.fX1NDC) * pad_rect.width);
          height = Math.round((pt.fY2NDC - pt.fY1NDC) * pad_rect.height);
 
+         const arc_radius = opt.indexOf('ARC') >= 0 && (pt.fCornerRadius > 0) ? Math.round(Math.min(width, height) * pt.fCornerRadius) : 0;
+
          makeTranslate(this.draw_g, this._pave_x, this._pave_y);
 
          this.createAttLine({ attr: pt, width: (brd > 0) ? pt.fLineWidth : 0 });
@@ -269,7 +271,7 @@ class TPavePainter extends ObjectPainter {
                   dpath = `l${w2},${-h2}l${w2},${h2}l${-w2},${h2}z`;
 
             if (!this.fillatt.empty())
-               this.drawBorder(this.draw_g, width, height, dpath);
+               this.drawBorder(this.draw_g, width, height, 0, dpath);
 
             interactive_element = this.draw_g.append('svg:path')
                                       .attr('d', 'M0,'+h2 +dpath)
@@ -289,12 +291,19 @@ class TPavePainter extends ObjectPainter {
                       .call(this.lineatt.func);
                }
             } else
-               this.drawBorder(this.draw_g, width, height);
+               this.drawBorder(this.draw_g, width, height, arc_radius);
 
             if (!this.isBatchMode() || !this.fillatt.empty() || (!this.lineatt.empty() && !noborder)) {
-               interactive_element = this.draw_g.append('svg:path')
-                                                .attr('d', `M0,0H${width}V${height}H0Z`)
-                                                .call(this.fillatt.func);
+               if (arc_radius) {
+                  interactive_element = this.draw_g.append('svg:rect')
+                                            .attr('width', width)
+                                            .attr('height', height)
+                                            .attr('rx', arc_radius);
+               } else {
+                  interactive_element = this.draw_g.append('svg:path')
+                                                   .attr('d', `M0,0H${width}V${height}H0Z`);
+               }
+               interactive_element.call(this.fillatt.func);
                if (!noborder)
                   interactive_element.call(this.lineatt.func);
             }
@@ -324,9 +333,9 @@ class TPavePainter extends ObjectPainter {
       });
    }
 
-   drawBorder(draw_g, width, height, diamond) {
+   drawBorder(draw_g, width, height, arc_radius, diamond) {
       const pt = this.getObject(),
-            opt = pt.fOption.toUpperCase(),
+            opt = pt.fOption.toUpperCase().replaceAll("ARC","").replaceAll("NDC",""),
             noborder = this.isPalette() || (opt.indexOf('NB') >= 0),
             dx = (opt.indexOf('L') >= 0) ? -1 : ((opt.indexOf('R') >= 0) ? 1 : 0),
             dy = (opt.indexOf('T') >= 0) ? -1 : ((opt.indexOf('B') >= 0) ? 1 : 0);
@@ -335,14 +344,25 @@ class TPavePainter extends ObjectPainter {
          return;
 
       const scol = this.getColor(pt.fShadowColor),
-            brd = pt.fBorderSize;
+            brd = pt.fBorderSize,
+            brd_width = !this.lineatt.empty() && (this.lineatt.width > 2) ? `${this.lineatt.width-1}px` : '1px';
 
       if (diamond) {
          draw_g.append('svg:path')
                .attr('d', `M0,${Math.round(height/2)+brd}${diamond}`)
                .style('fill', scol)
                .style('stroke', scol)
-               .style('stroke-width', '1px');
+               .style('stroke-width', brd_width);
+      } else if (arc_radius) {
+         draw_g.append('svg:rect')
+               .attr('width', width)
+               .attr('height', height)
+               .attr('rx', arc_radius)
+               .attr('x', dx*brd)
+               .attr('y', dy*brd)
+               .style('fill', scol)
+               .style('stroke', scol)
+               .style('stroke-width', brd_width);
       } else {
          let spath = '';
 
@@ -359,7 +379,7 @@ class TPavePainter extends ObjectPainter {
                .attr('d', spath)
                .style('fill', scol)
                .style('stroke', scol)
-               .style('stroke-width', '1px');
+               .style('stroke-width', brd_width);
       }
    }
 
