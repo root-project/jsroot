@@ -435,6 +435,8 @@ gStyle = {
    fCandleBoxRange: 0.5,
    fCandleScaled: false,
    fViolinScaled: true,
+   fCandleCircleLineWidth: 1,
+   fCandleCrossLineWidth : 1,
    fOrthoCamera: false,
    fXAxisExpXOffset: 0,
    fXAxisExpYOffset: 0,
