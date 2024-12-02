@@ -1641,8 +1641,8 @@ class TFramePainter extends ObjectPainter {
       this.axes_drawn = false;
       this.axes2_drawn = false;
       this.keys_handler = null;
-      this._borderMode = 0;
-      this._borderSize = 0;
+      this._borderMode = gStyle.fFrameBorderMode;
+      this._borderSize = gStyle.fFrameBorderSize;
       this.projection = 0; // different projections
    }
 
