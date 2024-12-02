@@ -2345,7 +2345,7 @@ class TFramePainter extends ObjectPainter {
          else if (pad)
             this.createAttFill({ attr: pad });
          else
-            this.createAttFill({ pattern: 1001, color: 0 });
+            this.createAttFill({ pattern: gStyle.fFrameFillStyle, color: gStyle.fFrameFillColor });
 
          // force white color for the canvas frame
          if (!tframe && this.fillatt.empty() && pp?.iscan)
@@ -2356,8 +2356,10 @@ class TFramePainter extends ObjectPainter {
 
       if (!tframe && (pad?.fFrameLineColor !== undefined))
          this.createAttLine({ color: pad.fFrameLineColor, width: pad.fFrameLineWidth, style: pad.fFrameLineStyle });
-      else
+      else if (tframe)
          this.createAttLine({ attr: tframe, color: 'black' });
+      else
+         this.createAttLine({ color: gStyle.fFrameLineColor, width: gStyle.fFrameLineWidth, style: gStyle.fFrameLineStyle });
    }
 
    /** @summary Function called at the end of resize of frame
