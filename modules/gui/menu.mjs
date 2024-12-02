@@ -935,6 +935,8 @@ class JSRootMenu {
       this.addSizeMenu('Line width', 1, 10, 1, gStyle.fFrameLineWidth, w => { gStyle.fFrameLineWidth = w; });
       this.addLineStyleMenu('Line style', gStyle.fFrameLineStyle, st => { gStyle.fFrameLineStyle = st; });
       this.addSizeMenu('Border size', 0, 10, 1, gStyle.fFrameBorderSize, sz => { gStyle.fFrameBorderSize = sz; });
+      this.addSelectMenu('Border mode', ['Down', 'Off', 'Up'], gStyle.fFrameBorderMode + 1, v => { gStyle.fFrameBorderMode = v - 1; });
+
       // fFrameBorderMode: 0,
       this.sub('Margins');
       this.addSizeMenu('Bottom', 0, 0.5, 0.05, gStyle.fPadBottomMargin, v => { gStyle.fPadBottomMargin = v; });
