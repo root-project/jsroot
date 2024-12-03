@@ -1291,6 +1291,15 @@ class TPavePainter extends ObjectPainter {
          menu.endsub();
 
          menu.separator();
+      } else if (this.isPaveText()) {
+         menu.addSizeMenu('Margin', 0, 0.2, 0.02, pave.fMargin, val => {
+            pave.fMargin = val;
+            this.interactiveRedraw(true, `exec:SetMargin(${val})`);
+         });
+         menu.add('Label', () => menu.input('Enter new label', pave.fLabel).then(lbl => {
+            pave.fLabel = lbl;
+            this.interactiveRedraw('pad', `exec:SetLabel("${lbl}")`);
+         }));
       } else if (pave._typename === clTLegend) {
          menu.add('Autoplace', () => {
             this.autoPlaceLegend(pave, this.getPadPainter()?.getRootPad(true), true).then(res => {
@@ -1331,6 +1340,11 @@ class TPavePainter extends ObjectPainter {
    /** @summary Returns true when stat box is drawn */
    isStats() {
       return this.matchObjectType(clTPaveStats);
+   }
+
+   /** @summary Returns true when stat box is drawn */
+   isPaveText() {
+      return this.matchObjectType(clTPaveText);
    }
 
    /** @summary Returns true when stat box is drawn */
