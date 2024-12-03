@@ -1207,7 +1207,7 @@ class TPavePainter extends ObjectPainter {
          }
       });
       menu.addSelectMenu('positon', posarr, value || 'nb', arg => {
-         arg = arg + remain
+         arg += remain;
          this.setPaveDrawOption(arg);
          this.interactiveRedraw(true, `exec:${set_opt}("${arg}")`);
       }, 'Direction of pave shadow or nb - off');
