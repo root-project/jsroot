@@ -133,7 +133,7 @@ class TPavePainter extends ObjectPainter {
       let opt = this.getDrawOpt();
       if (this.isStats() || !opt)
          opt = this.getObject()?.fOption;
-      return opt ?? kDefaultDrawOpt;
+      return opt || kDefaultDrawOpt;
    }
 
    /** @summary Change pave draw option */
