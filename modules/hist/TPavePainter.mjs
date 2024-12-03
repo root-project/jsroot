@@ -704,6 +704,7 @@ class TPavePainter extends ObjectPainter {
    drawLegend(w, h) {
       const legend = this.getObject(),
             nlines = legend.fPrimitives.arr.length,
+            gap_x = legend.fColumnSeparation,
             gap_y = Math.min(0.45, legend.fEntrySeparation);
       let ncols = legend.fNColumns,
           nrows = nlines,
@@ -730,7 +731,8 @@ class TPavePainter extends ObjectPainter {
          }
       }
 
-      if (nrows < 1) nrows = 1;
+      if (nrows < 1)
+         nrows = 1;
 
       // calculate positions of columns by weight - means more letters, more weight
       const column_pos = new Array(ncols + 1).fill(0);
@@ -772,15 +774,32 @@ class TPavePainter extends ObjectPainter {
       return pr.then(() => {
          for (let ii = 0, i = -1; ii < nlines; ++ii) {
             const entry = legend.fPrimitives.arr[ii];
-            if (isEmpty(entry)) continue; // let discard empty entry
+            if (isEmpty(entry))
+               continue; // let discard empty entry
 
-            if (ncols === 1) ++i; else i = ii;
+            if (ncols === 1)
+               ++i;
+            else
+               i = ii;
 
             const lopt = entry.fOption.toLowerCase(),
-                  icol = i % ncols, irow = (i - icol) / ncols,
-                  x0 = Math.round(column_pos[icol]),
-                  column_width = Math.round(column_pos[icol + 1] - column_pos[icol]),
-                  tpos_x = x0 + Math.round(legend.fMargin*w/ncols),
+                  icol = i % ncols, irow = (i - icol) / ncols;
+            let x0 = column_pos[icol],
+                column_width = column_pos[icol + 1] - column_pos[icol];
+
+            if (legend.fColumnSeparation) {
+               if (icol > 0)
+                  x0 += column_width*legend.fColumnSeparation;
+               let k = ncols > 1 ? 1 : 0;
+               if ((ncols > 2) && (icol > 0) && (icol < ncols - 1))
+                  k = 2;
+               column_width -= k * legend.fColumnSeparation * column_width;
+            }
+
+            x0 = Math.round(x0);
+            column_width = Math.round(column_width);
+
+            const tpos_x = Math.round(x0 + legend.fMargin*column_width),
                   mid_x = Math.round((x0 + tpos_x)/2),
                   pos_y = Math.round(irow*step_y + padding_y), // top corner
                   mid_y = Math.round((irow+0.5)*step_y + padding_y), // center line
@@ -1363,6 +1382,10 @@ class TPavePainter extends ObjectPainter {
             pave.fEntrySeparation = v;
             this.interactiveRedraw(true, `exec:SetEntrySeparation(${v})`);
          }, 'Vertical entries separation, meaningful values between 0 and 0.4');
+         menu.addSizeMenu('Columns separation', 0, 0.4, 0.05, pave.fColumnSeparation, v => {
+            pave.fColumnSeparation = v;
+            this.interactiveRedraw(true, `exec:SetColumnSeparation(${v})`);
+         }, 'Horizontal columns separation, meaningful values between 0 and 0.4');
          menu.add('Autoplace', () => {
             this.autoPlaceLegend(pave, this.getPadPainter()?.getRootPad(true), true).then(res => {
                if (res) this.interactiveRedraw(true, 'pave_moved');
