@@ -1291,7 +1291,7 @@ class TPavePainter extends ObjectPainter {
          menu.endsub();
 
          menu.separator();
-      } else if (this.isPaveText()) {
+      } else if (this.isPaveText() || this.isPavesText()) {
          menu.addSizeMenu('Margin', 0, 0.2, 0.02, pave.fMargin, val => {
             pave.fMargin = val;
             this.interactiveRedraw(true, `exec:SetMargin(${val})`);
@@ -1300,30 +1300,39 @@ class TPavePainter extends ObjectPainter {
             pave.fLabel = lbl;
             this.interactiveRedraw('pad', `exec:SetLabel("${lbl}")`);
          }));
+
+         if (this.isPavesText()) {
+            menu.addSizeMenu('Paves', 1, 10, 1, pave.fNpaves, val => {
+               pave.fNpaves = val;
+               this.interactiveRedraw(true, `exec:SetNpaves(${val})`);
+            });
+         }
+
+         if (this.isTitle()) {
+            menu.add('Default position', () => {
+               pave.fX1NDC = gStyle.fTitleW > 0 ? gStyle.fTitleX - gStyle.fTitleW/2 : gStyle.fPadLeftMargin;
+               pave.fY1NDC = gStyle.fTitleY - Math.min(gStyle.fTitleFontSize*1.1, 0.06);
+               pave.fX2NDC = gStyle.fTitleW > 0 ? gStyle.fTitleX + gStyle.fTitleW/2 : 1 - gStyle.fPadRightMargin;
+               pave.fY2NDC = gStyle.fTitleY;
+               pave.fInit = 1;
+               this.interactiveRedraw(true, 'pave_moved');
+            });
+
+            menu.add('Save to gStyle', () => {
+               gStyle.fTitleX = (pave.fX2NDC + pave.fX1NDC)/2;
+               gStyle.fTitleY = pave.fY2NDC;
+               this.fillatt?.saveToStyle('fTitleColor', 'fTitleStyle');
+               gStyle.fTitleTextColor = pave.fTextColor;
+               gStyle.fTitleFontSize = pave.fTextSize;
+               gStyle.fTitleFont = pave.fTextFont;
+            }, 'Store title position and graphical attributes to gStyle');
+         }
       } else if (pave._typename === clTLegend) {
          menu.add('Autoplace', () => {
             this.autoPlaceLegend(pave, this.getPadPainter()?.getRootPad(true), true).then(res => {
                if (res) this.interactiveRedraw(true, 'pave_moved');
             });
          });
-      } else if (this.isTitle()) {
-         menu.add('Default position', () => {
-            pave.fX1NDC = gStyle.fTitleW > 0 ? gStyle.fTitleX - gStyle.fTitleW/2 : gStyle.fPadLeftMargin;
-            pave.fY1NDC = gStyle.fTitleY - Math.min(gStyle.fTitleFontSize*1.1, 0.06);
-            pave.fX2NDC = gStyle.fTitleW > 0 ? gStyle.fTitleX + gStyle.fTitleW/2 : 1 - gStyle.fPadRightMargin;
-            pave.fY2NDC = gStyle.fTitleY;
-            pave.fInit = 1;
-            this.interactiveRedraw(true, 'pave_moved');
-         });
-
-         menu.add('Save to gStyle', () => {
-            gStyle.fTitleX = (pave.fX2NDC + pave.fX1NDC)/2;
-            gStyle.fTitleY = pave.fY2NDC;
-            this.fillatt?.saveToStyle('fTitleColor', 'fTitleStyle');
-            gStyle.fTitleTextColor = pave.fTextColor;
-            gStyle.fTitleFontSize = pave.fTextSize;
-            gStyle.fTitleFont = pave.fTextFont;
-         }, 'Store title position and graphical attributes to gStyle');
       }
    }
 
@@ -1348,13 +1357,18 @@ class TPavePainter extends ObjectPainter {
    }
 
    /** @summary Returns true when stat box is drawn */
+   isPavesText() {
+      return this.matchObjectType(clTPavesText);
+   }
+
+   /** @summary Returns true when stat box is drawn */
    isPalette() {
       return this.matchObjectType(clTPaletteAxis);
    }
 
    /** @summary Returns true when title is drawn */
    isTitle() {
-      return this.matchObjectType(clTPaveText) && (this.getObject()?.fName === kTitle);
+      return this.isPaveText() && (this.getObject()?.fName === kTitle);
    }
 
    /** @summary Clear text in the pave */
