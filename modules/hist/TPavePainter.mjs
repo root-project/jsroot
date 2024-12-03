@@ -285,6 +285,9 @@ class TPavePainter extends ObjectPainter {
          this.createAttLine({ attr: pt, width: (brd > 0) ? pt.fLineWidth : 0 });
 
          this.createAttFill({ attr: pt });
+         // need to fill pave while
+         if (this.fillatt.empty() && arc_radius)
+            this.fillatt.setSolidColor(this.getColor(pt.fFillColor) || 'white');
 
          if (pt._typename === clTDiamond) {
             const h2 = Math.round(height/2), w2 = Math.round(width/2),
@@ -1628,7 +1631,7 @@ class TPavePainter extends ObjectPainter {
             pos_title = (opt === kPosTitle),
             is_auto = (opt === kAutoPlace);
       if (pos_title || is_auto || (isStr(opt) && (opt.indexOf(';') >= 0)))
-         opt = kDefaultDrawOpt; // default for TPave
+         opt = ''; // use default - or stored in TPave itself
 
       const painter = new TPavePainter(dom, pave, opt);
 
