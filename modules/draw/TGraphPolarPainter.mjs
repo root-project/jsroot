@@ -2,7 +2,7 @@ import { settings, gStyle, create, BIT, clTPaveText, kTitle } from '../core.mjs'
 import { scaleLinear, select as d3_select, pointer as d3_pointer } from '../d3.mjs';
 import { DrawOptions, buildSvgCurve, makeTranslate } from '../base/BasePainter.mjs';
 import { ObjectPainter, getElementMainPainter } from '../base/ObjectPainter.mjs';
-import { TPavePainter } from '../hist/TPavePainter.mjs';
+import { TPavePainter, kPosTitle } from '../hist/TPavePainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { TooltipHandler } from '../gpad/TFramePainter.mjs';
 import { assignContextMenu, kNoReorder } from '../gui/menu.mjs';
@@ -665,7 +665,7 @@ class TGraphPolarPainter extends ObjectPainter {
 
       if (draw_title)
          pt.AddText(gr.fTitle);
-      return TPavePainter.draw(pp, pt, 'postitle')
+      return TPavePainter.draw(pp, pt, kPosTitle)
                          .then(p => { p?.setSecondaryId(this, kTitle); return this; });
    }
 

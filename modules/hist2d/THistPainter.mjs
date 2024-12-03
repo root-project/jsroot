@@ -4,7 +4,7 @@ import { gStyle, BIT, settings, constants, create, isObject, isFunc, isStr, getP
 import { getColor, getColorPalette } from '../base/colors.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter, EAxisBits, kAxisTime, kAxisLabels } from '../base/ObjectPainter.mjs';
-import { TPavePainter } from '../hist/TPavePainter.mjs';
+import { TPavePainter, kPosTitle } from '../hist/TPavePainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { gamma_quantile, gamma_quantile_c } from '../base/math.mjs';
 
@@ -1385,7 +1385,7 @@ class THistPainter extends ObjectPainter {
                           fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: 22 });
 
       if (draw_title) pt.AddText(histo.fTitle);
-      return TPavePainter.draw(pp, pt, 'postitle').then(p => { p?.setSecondaryId(this, kTitle); return this; });
+      return TPavePainter.draw(pp, pt, kPosTitle).then(p => { p?.setSecondaryId(this, kTitle); return this; });
    }
 
    /** @summary Live change and update of title drawing

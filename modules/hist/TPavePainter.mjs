@@ -11,7 +11,8 @@ import { TAxisPainter } from '../gpad/TAxisPainter.mjs';
 import { addDragHandler } from '../gpad/TFramePainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
-const kTakeStyle = BIT(17);
+
+const kTakeStyle = BIT(17), kPosTitle = 'postitle', kAutoPlace = 'autoplace', kDefaultDrawOpt = 'brNDC';
 
 /** @summary Returns true if stat box on default place and can be adjusted
   * @private */
@@ -35,8 +36,8 @@ class TPavePainter extends ObjectPainter {
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
      * @param {object} pave - TPave-based object */
-   constructor(dom, pave) {
-      super(dom, pave);
+   constructor(dom, pave, opt) {
+      super(dom, pave, opt);
       this.Enabled = true;
       this.UseContextMenu = true;
    }
@@ -126,6 +127,23 @@ class TPavePainter extends ObjectPainter {
       });
    }
 
+   /** @summary Get draw option for the pave
+     * @desc only stats using fOption directly, all other classes - stored in the pad */
+   getPaveDrawOption() {
+      let opt = this.getDrawOpt();
+      if (this.isStats() || !opt)
+         opt = this.getObject()?.fOption;
+      return opt ?? kDefaultDrawOpt;
+   }
+
+   /** @summary Change pave draw option */
+   setPaveDrawOption(opt) {
+      if (this.isStats())
+         this.getObject().fOption = opt;
+      else
+         this.storeDrawOpt(opt);
+   }
+
    /** @summary Draw pave and content
      * @return {Promise} */
    async drawPave(arg) {
@@ -134,7 +152,8 @@ class TPavePainter extends ObjectPainter {
          return this;
       }
 
-      const pt = this.getObject(), opt = pt.fOption.toUpperCase(),
+      const pt = this.getObject(),
+            opt = this.getPaveDrawOption().toUpperCase(),
             fp = this.getFramePainter(), pp = this.getPadPainter(),
             pad = pp.getRootPad(true);
       let interactive_element, width, height;
@@ -155,8 +174,9 @@ class TPavePainter extends ObjectPainter {
                pt.fY1NDC = 0.1;
                pt.fY2NDC = 0.9;
             }
-         } else if (opt.indexOf('NDC') >= 0) {
+         } else if (pt.fOption.indexOf('NDC') >= 0) {
             // check if NDC was modified but fInit was not set
+            // wired - ROOT checks fOption even when absolutely different draw option may be specified,
             // happens in stressGraphics.cxx, sg30 where stats box not initialized when call C->Update() in batch mode
             if (pt.fX1NDC < 1e-20 && pt.fX2NDC < 1e-20) {
                pt.fX1NDC = pt.fX1;
@@ -335,7 +355,7 @@ class TPavePainter extends ObjectPainter {
 
    drawBorder(draw_g, width, height, arc_radius, diamond) {
       const pt = this.getObject(),
-            opt = pt.fOption.toUpperCase().replaceAll('ARC', '').replaceAll('NDC', ''),
+            opt = this.getPaveDrawOption().toUpperCase().replaceAll('ARC', '').replaceAll('NDC', ''),
             noborder = this.isPalette() || (opt.indexOf('NB') >= 0),
             dx = (opt.indexOf('L') >= 0) ? -1 : ((opt.indexOf('R') >= 0) ? 1 : 0),
             dy = (opt.indexOf('T') >= 0) ? -1 : ((opt.indexOf('B') >= 0) ? 1 : 0);
@@ -1163,7 +1183,8 @@ class TPavePainter extends ObjectPainter {
 
    /** @summary Fill context menu items for the TPave object */
    fillContextMenuItems(menu) {
-      const pave = this.getObject();
+      const pave = this.getObject(),
+            set_opt = this.isStats() ? 'SetOption' : 'SetDrawOption';
 
       menu.sub('Shadow');
       menu.addSizeMenu('size', 0, 12, 1, pave.fBorderSize, arg => {
@@ -1175,7 +1196,7 @@ class TPavePainter extends ObjectPainter {
          this.interactiveRedraw(true, getColorExec(arg, 'SetShadowColor'));
       });
       const posarr = ['nb', 'tr', 'tl', 'br', 'bl'];
-      let value = '', remain = pave.fOption;
+      let value = '', opt = this.getPaveDrawOption(), remain = opt;
       posarr.forEach(nn => {
          const p = remain.indexOf(nn);
          if ((p >= 0) && !value) {
@@ -1183,25 +1204,38 @@ class TPavePainter extends ObjectPainter {
          }
       });
       menu.addSelectMenu('positon', posarr, value || 'nb', arg => {
-         pave.fOption = arg + remain;
-         this.interactiveRedraw(true, `exec:SetOption("${pave.fOption}")`);
+         arg = arg + remain
+         this.setPaveDrawOption(arg);
+         this.interactiveRedraw(true, `exec:${set_opt}("${arg}")`);
       }, 'Direction of pave shadow or nb - off');
       menu.endsub();
 
       menu.sub('Corner');
-      const parc = pave.fOption.toLowerCase().indexOf('arc');
+      const parc = opt.toLowerCase().indexOf('arc');
       menu.addchk(parc >= 0, 'arc', flag => {
          if (flag)
-            pave.fOption += ' arc';
+            opt += ' arc';
          else
-            pave.fOption = pave.fOption.slice(0, parc) + pave.fOption.slice(parc + 3);
-         this.interactiveRedraw(true, `exec:SetOption("${pave.fOption}")`);
+            opt = opt.slice(0, parc) + opt.slice(parc + 3);
+         this.setPaveDrawOption(opt);
+         this.interactiveRedraw(true, `exec:${set_opt}("${opt}")`);
       }, 'Usage of ARC draw option');
       menu.addSizeMenu('radius', 0, 0.2, 0.02, pave.fCornerRadius, val => {
          pave.fCornerRadius = val;
          this.interactiveRedraw(true, `exec:SetCornerRadius(${val})`);
       }, 'Corner radius when ARC is enabled');
       menu.endsub();
+
+      if (this.isStats() || this.isPaveText() || this.isPavesText()) {
+         menu.add('Label', () => menu.input('Enter new label', pave.fLabel).then(lbl => {
+            pave.fLabel = lbl;
+            this.interactiveRedraw('pad', `exec:SetLabel("${lbl}")`);
+         }));
+         menu.addSizeMenu('Margin', 0, 0.2, 0.02, pave.fMargin, val => {
+            pave.fMargin = val;
+            this.interactiveRedraw(true, `exec:SetMargin(${val})`);
+         });
+      }
 
       if (this.isStats()) {
          menu.add('Default position', () => {
@@ -1292,15 +1326,6 @@ class TPavePainter extends ObjectPainter {
 
          menu.separator();
       } else if (this.isPaveText() || this.isPavesText()) {
-         menu.addSizeMenu('Margin', 0, 0.2, 0.02, pave.fMargin, val => {
-            pave.fMargin = val;
-            this.interactiveRedraw(true, `exec:SetMargin(${val})`);
-         });
-         menu.add('Label', () => menu.input('Enter new label', pave.fLabel).then(lbl => {
-            pave.fLabel = lbl;
-            this.interactiveRedraw('pad', `exec:SetLabel("${lbl}")`);
-         }));
-
          if (this.isPavesText()) {
             menu.addSizeMenu('Paves', 1, 10, 1, pave.fNpaves, val => {
                pave.fNpaves = val;
@@ -1457,9 +1482,11 @@ class TPavePainter extends ObjectPainter {
 
    /** @summary Update TPave object  */
    updateObject(obj, opt) {
-      if (!this.matchObjectType(obj)) return false;
+      if (!this.matchObjectType(obj))
+         return false;
 
-      const pave = this.getObject();
+      const pave = this.getObject(),
+            is_auto = opt === kAutoPlace;
 
       if (!pave.$modifiedNDC && !this.isDummyPos(obj)) {
          // if position was not modified interactively, update from source object
@@ -1497,24 +1524,24 @@ class TPavePainter extends ObjectPainter {
          case clTDiamond:
          case clTPaveText:
             pave.fLines = clone(obj.fLines);
-            return true;
+            break;
          case clTPavesText:
             pave.fLines = clone(obj.fLines);
             pave.fNpaves = obj.fNpaves;
-            return true;
+            break;
          case clTPaveLabel:
          case clTPaveClass:
             pave.fLabel = obj.fLabel;
-            return true;
+            break;
          case clTPaveStats:
             pave.fOptStat = obj.fOptStat;
             pave.fOptFit = obj.fOptFit;
-            return true;
+            break;
          case clTLegend: {
             const oldprim = pave.fPrimitives;
             pave.fPrimitives = obj.fPrimitives;
             pave.fNColumns = obj.fNColumns;
-            this.AutoPlace = opt === 'autoplace';
+            this.AutoPlace = is_auto;
             if (oldprim?.arr?.length && (oldprim?.arr?.length === pave.fPrimitives?.arr?.length)) {
                // try to sync object reference, new object does not displayed automatically
                // in ideal case one should use snapids in the entries
@@ -1529,10 +1556,14 @@ class TPavePainter extends ObjectPainter {
          case clTPaletteAxis:
             pave.fBorderSize = 1;
             pave.fShadowColor = 0;
-            return true;
+            break;
+         default:
+            return false;
       }
 
-      return false;
+      this.storeDrawOpt(is_auto ? kDefaultDrawOpt : opt);
+
+      return true;
    }
 
    /** @summary redraw pave object */
@@ -1593,7 +1624,13 @@ class TPavePainter extends ObjectPainter {
 
    /** @summary Draw TPave */
    static async draw(dom, pave, opt) {
-      const painter = new TPavePainter(dom, pave);
+      const arg_opt = opt,
+            pos_title = (opt === kPosTitle),
+            is_auto = (opt === kAutoPlace);
+      if (pos_title || is_auto || (isStr(opt) && (opt.indexOf(';') >= 0)))
+         opt = kDefaultDrawOpt; // default for TPave
+
+      const painter = new TPavePainter(dom, pave, opt);
 
       return ensureTCanvas(painter, false).then(() => {
          if (painter.isTitle()) {
@@ -1601,7 +1638,7 @@ class TPavePainter extends ObjectPainter {
             if (prev_painter && (prev_painter !== painter)) {
                prev_painter.removeFromPadPrimitives();
                prev_painter.cleanup();
-            } else if ((opt === 'postitle') || painter.isDummyPos(pave)) {
+            } else if (pos_title || painter.isDummyPos(pave)) {
                if (painter.setTitlePosition(pave))
                   painter.$postitle = true;
             }
@@ -1621,7 +1658,7 @@ class TPavePainter extends ObjectPainter {
             painter.UseContextMenu = true;
          }
 
-         painter.NoFillStats = (opt === 'nofillstats') || (pave.fName !== 'stats');
+         painter.NoFillStats = pave.fName !== 'stats';
 
          switch (pave._typename) {
             case clTPaveLabel:
@@ -1637,7 +1674,7 @@ class TPavePainter extends ObjectPainter {
                painter.paveDrawFunc = painter.drawPaveText;
                break;
             case clTLegend:
-               painter.AutoPlace = (opt === 'autoplace');
+               painter.AutoPlace = is_auto;
                painter.paveDrawFunc = painter.drawLegend;
                break;
             case clTPaletteAxis:
@@ -1645,7 +1682,7 @@ class TPavePainter extends ObjectPainter {
                break;
          }
 
-         return painter.drawPave(opt).then(() => {
+         return painter.drawPave(arg_opt).then(() => {
             const adjust_title = painter.$postitle && painter.$titlebox;
 
             if (adjust_title)
@@ -1654,7 +1691,7 @@ class TPavePainter extends ObjectPainter {
             delete painter.$postitle;
             delete painter.$titlebox;
 
-            return adjust_title ? painter.drawPave(opt) : painter;
+            return adjust_title ? painter.drawPave(arg_opt) : painter;
          });
       });
    }
@@ -1662,4 +1699,4 @@ class TPavePainter extends ObjectPainter {
 } // class TPavePainter
 
 
-export { TPavePainter };
+export { TPavePainter, kPosTitle };

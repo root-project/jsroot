@@ -1607,7 +1607,8 @@ class TPadPainter extends ObjectPainter {
          leg.fY1NDC = (1 - szy) * (1 - pad.fTopMargin) + szy * pad.fBottomMargin;
          leg.fX2NDC = 0.99 - pad.fRightMargin;
          leg.fY2NDC = 0.99 - pad.fTopMargin;
-         if (opt === undefined) opt = 'autoplace';
+         if (opt === undefined)
+            opt = 'autoplace';
       } else {
          leg.fX1NDC = x1;
          leg.fY1NDC = y1;
