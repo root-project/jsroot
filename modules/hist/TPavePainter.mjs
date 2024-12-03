@@ -704,8 +704,8 @@ class TPavePainter extends ObjectPainter {
    drawLegend(w, h) {
       const legend = this.getObject(),
             nlines = legend.fPrimitives.arr.length,
-            gap_x = legend.fColumnSeparation,
-            gap_y = Math.min(0.45, legend.fEntrySeparation);
+            gap_x = Math.min(0.45, 0.5*legend.fColumnSeparation),
+            gap_y = Math.min(0.45, 0.5*legend.fEntrySeparation);
       let ncols = legend.fNColumns,
           nrows = nlines,
           any_text = false,
@@ -861,8 +861,8 @@ class TPavePainter extends ObjectPainter {
                      }
 
                      const eoff = (endcaps === 3) ? 0.03 : 0,
-                           ey1 = Math.round(pos_y+step_y*(0.1 + eoff)),
-                           ey2 = Math.round(pos_y+step_y*(0.9 - eoff)),
+                           ey1 = Math.round(pos_y+step_y*(gap_y + eoff)),
+                           ey2 = Math.round(pos_y+step_y*(1 - gap_y - eoff)),
                            edy = Math.round(edx * 0.66);
                      edx = Math.round(edx);
                      let path = `M${mid_x},${ey1}V${ey2}`;
@@ -908,9 +908,12 @@ class TPavePainter extends ObjectPainter {
 
             if (entry.fLabel) {
                const textatt = this.createAttText({ attr: entry, std: false, attr_alt: legend }),
-                     arg = { draw_g: this.draw_g, align: textatt.align, x: pos_x, y: pos_y,
+                     arg = { draw_g: this.draw_g, align: textatt.align,
+                             x: pos_x,
+                             y: pos_y + step_y * gap_y,
                              scale: (custom_textg && !entry.fTextSize) || !legend.fTextSize,
-                             width: x0+column_width - pos_x - padding_x, height: step_y * (1 - gap_y),
+                             width: x0 + column_width - pos_x - padding_x,
+                             height: step_y * (1 - gap_y),
                              text: entry.fLabel, color: textatt.color };
                if (custom_textg) {
                   arg.draw_g = this.draw_g.append('svg:g');
@@ -1378,14 +1381,14 @@ class TPavePainter extends ObjectPainter {
             }, 'Store title position and graphical attributes to gStyle');
          }
       } else if (pave._typename === clTLegend) {
-         menu.addSizeMenu('Entry separation', 0, 0.45, 0.05, pave.fEntrySeparation, v => {
+         menu.addSizeMenu('Entry separation', 0, 0.9, 0.1, pave.fEntrySeparation, v => {
             pave.fEntrySeparation = v;
             this.interactiveRedraw(true, `exec:SetEntrySeparation(${v})`);
-         }, 'Vertical entries separation, meaningful values between 0 and 0.4');
-         menu.addSizeMenu('Columns separation', 0, 0.4, 0.05, pave.fColumnSeparation, v => {
+         }, 'Vertical entries separation, meaningful values between 0 and 0.9');
+         menu.addSizeMenu('Columns separation', 0, 0.9, 0.1, pave.fColumnSeparation, v => {
             pave.fColumnSeparation = v;
             this.interactiveRedraw(true, `exec:SetColumnSeparation(${v})`);
-         }, 'Horizontal columns separation, meaningful values between 0 and 0.4');
+         }, 'Horizontal columns separation, meaningful values between 0 and 0.9');
          menu.add('Autoplace', () => {
             this.autoPlaceLegend(pave, this.getPadPainter()?.getRootPad(true), true).then(res => {
                if (res) this.interactiveRedraw(true, 'pave_moved');
