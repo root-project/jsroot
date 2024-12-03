@@ -209,9 +209,9 @@ class TPavePainter extends ObjectPainter {
             const main = pt.$main_painter || this.getMainPainter();
 
             if (isFunc(main?.fillStatistic)) {
-               let dostat = parseInt(pt.fOptStat), dofit = parseInt(pt.fOptFit);
-               if (!Number.isInteger(dostat) || pt.TestBit(kTakeStyle)) dostat = gStyle.fOptStat;
-               if (!Number.isInteger(dofit)|| pt.TestBit(kTakeStyle)) dofit = gStyle.fOptFit;
+               let dostat = pt.fOptStat, dofit = pt.fOptFit;
+               if (pt.TestBit(kTakeStyle) || !Number.isInteger(dostat)) dostat = gStyle.fOptStat;
+               if (pt.TestBit(kTakeStyle) || !Number.isInteger(dofit)) dofit = gStyle.fOptFit;
 
                // we take statistic from main painter
                if (main.fillStatistic(this, dostat, dofit)) {
@@ -1197,7 +1197,7 @@ class TPavePainter extends ObjectPainter {
             pave.fOption = pave.fOption.slice(0, parc) + pave.fOption.slice(parc + 3);
          this.interactiveRedraw(true, `exec:SetOption("${pave.fOption}")`);
       }, 'Usage of ARC draw option');
-      menu.addSizeMenu('Radius', 0, 0.2, 0.02, pave.fCornerRadius, val => {
+      menu.addSizeMenu('radius', 0, 0.2, 0.02, pave.fCornerRadius, val => {
          pave.fCornerRadius = val;
          this.interactiveRedraw(true, `exec:SetCornerRadius(${val})`);
       }, 'Corner radius when ARC is enabled');
@@ -1222,7 +1222,13 @@ class TPavePainter extends ObjectPainter {
             gStyle.fStatTextColor = pave.fTextColor;
             gStyle.fStatFontSize = pave.fTextSize;
             gStyle.fStatFont = pave.fTextFont;
-         }, 'Store stats position and graphical attributes to gStyle');
+            gStyle.fFitFormat = pave.fFitFormat;
+            gStyle.fStatFormat = pave.fStatFormat;
+            gStyle.fOptStat = pave.fOptStat;
+            gStyle.fOptFit = pave.fOptFit;
+         }, 'Store stats attributes to gStyle');
+
+         menu.separator();
 
          menu.add('SetStatFormat', () => {
             menu.input('Enter StatFormat', pave.fStatFormat).then(fmt => {
@@ -1238,7 +1244,6 @@ class TPavePainter extends ObjectPainter {
                this.interactiveRedraw(true, `exec:SetFitFormat("${fmt}")`);
             });
          });
-         menu.separator();
          menu.sub('SetOptStat', () => {
             menu.input('Enter OptStat', pave.fOptStat, 'int').then(fmt => {
                pave.fOptStat = fmt;

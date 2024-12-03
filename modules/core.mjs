@@ -1168,7 +1168,7 @@ function create(typename, target) {
          extend(obj, { fFillColor: gStyle.fStatColor, fFillStyle: gStyle.fStatStyle,
                        fTextFont: gStyle.fStatFont, fTextSize: gStyle.fStatFontSize, fTextColor: gStyle.fStatTextColor,
                        fBorderSize: gStyle.fStatBorderSize,
-                       fOptFit: 0, fOptStat: 0, fFitFormat: '', fStatFormat: '', fParent: null });
+                       fOptFit: gStyle.fOptFit, fOptStat: gStyle.fOptStat, fFitFormat: gStyle.fFitFormat, fStatFormat: gStyle.fStatFormat, fParent: null });
          break;
       case clTLegend:
          create(clTPave, obj);
