@@ -1184,8 +1184,23 @@ class TPavePainter extends ObjectPainter {
       });
       menu.addSelectMenu('positon', posarr, value || 'nb', arg => {
          pave.fOption = arg + remain;
-         this.interactiveRedraw(true, getColorExec(arg, `exec:SetOption("${pave.fOption}")`));
+         this.interactiveRedraw(true, `exec:SetOption("${pave.fOption}")`);
       }, 'Direction of pave shadow or nb - off');
+      menu.endsub();
+
+      menu.sub('Corner');
+      const parc = pave.fOption.toLowerCase().indexOf('arc');
+      menu.addchk(parc >= 0, 'arc', flag => {
+         if (flag)
+            pave.fOption += ' arc';
+         else
+            pave.fOption = pave.fOption.slice(0, parc) + pave.fOption.slice(parc + 3);
+         this.interactiveRedraw(true, `exec:SetOption("${pave.fOption}")`);
+      }, 'Usage of ARC draw option');
+      menu.addSizeMenu('Radius', 0, 0.2, 0.02, pave.fCornerRadius, val => {
+         pave.fCornerRadius = val;
+         this.interactiveRedraw(true, `exec:SetCornerRadius(${val})`);
+      }, 'Corner radius when ARC is enabled');
       menu.endsub();
 
       if (this.isStats()) {
