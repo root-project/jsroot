@@ -372,11 +372,15 @@ class TGraphPolargramPainter extends ObjectPainter {
    /** @summary Fill TGraphPolargram context menu */
    fillContextMenuItems(menu) {
       const pp = this.getObject();
-      menu.sub('Angle axis');
+      menu.sub('Axis range');
       menu.addchk(pp.fRadian, 'Radian', flag => { pp.fRadian = flag; pp.fDegree = pp.fGrad = false; this.interactiveRedraw('pad', flag ? 'exec:SetToRadian()' : 'exec:SetTwoPi()'); }, 'Handle data angles as radian range 0..2*Pi');
       menu.addchk(pp.fDegree, 'Degree', flag => { pp.fDegree = flag; pp.fRadian = pp.fGrad = false; this.interactiveRedraw('pad', flag ? 'exec:SetToDegree()' : 'exec:SetTwoPi()'); }, 'Handle data angles as degree range 0..360');
       menu.addchk(pp.fGrad, 'Grad', flag => { pp.fGrad = flag; pp.fRadian = pp.fDegree = false; this.interactiveRedraw('pad', flag ? 'exec:SetToGrad()' : 'exec:SetTwoPi()'); }, 'Handle data angles as grad range 0..200');
       menu.endsub();
+      menu.addSizeMenu('Axis angle', 0, 315, 45, this.options.rangle || pp.fAxisAngle, v => {
+         this.options.rangle = pp.fAxisAngle = v;
+         this.interactiveRedraw('pad', `exec:SetAxisAngle(${v})`);
+      });
    }
 
    /** @summary Assign zoom handler to element
