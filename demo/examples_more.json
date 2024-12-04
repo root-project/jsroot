@@ -242,6 +242,9 @@
    "TGraph2D": [
      { "name": "fit", "file": "tutorials_fit.root", "item": "graph2dflt;1", "title": "Fitting with TGraph2D, output from tutorials/fit/graph2dfit" }
    ],
+   "TGraphPolar" : [
+    { "name": "angle", "url": "nobrowser&file=$$$tutorials_graphs.root&layout=grid2x2&items=[graphpolar2/[0],graphpolar2/[0],graphpolar2/[0],graphpolar2/[0]]&opts=[rdot_PE_rangle45,rdot_PE_rangle135,rdot_PE_rangle225,rdot_PE_rangle315]", "title": "Different axis angle for polargram" }
+   ],
    "TLatex" : [
       { "name": "symbols", "file": "latex.root", "layout": "grid2x2", "latex": "symbols", "items": ["lva","ex1","ex2","ex3"], "title": "Replace only known TLatex symbols" },
       { "name": "plain", "file": "latex.root", "layout": "grid2x2", "latex": "off", "items": ["lva","ex1","ex2","ex3"], "title": "Disable TLatex processor completely" },
