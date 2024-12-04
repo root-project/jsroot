@@ -1272,10 +1272,10 @@ class TPadPainter extends ObjectPainter {
    /** @summary Fill pad context menu
      * @private */
    fillContextMenu(menu) {
-      if (this.pad)
-         menu.header(`${this.pad._typename}::${this.pad.fName}`, `${urlClassPrefix}${this.pad._typename}.html`);
-      else
-         menu.header('Canvas', `${urlClassPrefix}${clTCanvas}.html`);
+      if (!this.pad)
+         return false;
+
+      menu.header(`${this.pad._typename}::${this.pad.fName}`, `${urlClassPrefix}${this.pad._typename}.html`);
 
       menu.addchk(this.isTooltipAllowed(), 'Show tooltips', () => this.setTooltipAllowed('toggle'));
 
