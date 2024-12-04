@@ -1296,7 +1296,7 @@ class TPadPainter extends ObjectPainter {
          this.pad.fTickx = 1;
          this.interactiveRedraw('pad', 'exec:SetTickx(1)');
       });
-      menu.addchk(this.pad.fTickx === 2, 'labels on both sides',  () => {
+      menu.addchk(this.pad.fTickx === 2, 'labels on both sides', () => {
          this.pad.fTickx = 2;
          this.interactiveRedraw('pad', 'exec:SetTickx(2)');
       });
@@ -1306,7 +1306,7 @@ class TPadPainter extends ObjectPainter {
          this.pad.fTicky = 0;
          this.interactiveRedraw('pad', 'exec:SetTicky(0)');
       });
-      menu.addchk(this.pad.fTicky === 1, 'ticks on both sides',() => {
+      menu.addchk(this.pad.fTicky === 1, 'ticks on both sides', () => {
          this.pad.fTicky = 1;
          this.interactiveRedraw('pad', 'exec:SetTicky(1)');
       });
