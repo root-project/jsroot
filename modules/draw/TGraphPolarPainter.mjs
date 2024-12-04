@@ -178,6 +178,14 @@ class TGraphPolargramPainter extends ObjectPainter {
       }
    }
 
+   /** @summary Process mouse double click event */
+   mouseDoubleClick(evnt) {
+      if (this.zoom_rmin || this.zoom_rmax) {
+         this.zoom_rmin = this.zoom_rmax = 0;
+         this.redrawPad();
+      }
+   }
+
    /** @summary Draw polargram polar labels */
    async drawPolarLabels(polar, nmajor) {
       const fontsize = Math.round(polar.fPolarTextSize * this.szy * 2);
@@ -389,6 +397,9 @@ class TGraphPolargramPainter extends ObjectPainter {
       elem.on('mouseenter', evnt => this.mouseEvent('enter', evnt))
           .on('mousemove', evnt => this.mouseEvent('move', evnt))
           .on('mouseleave', evnt => this.mouseEvent('leave', evnt));
+
+      if (settings.Zooming)
+         elem.on('dblclick', evnt => this.mouseDoubleClick(evnt));
 
       if (settings.Zooming && settings.ZoomWheel)
          elem.on('wheel', evnt => this.mouseWheel(evnt));
