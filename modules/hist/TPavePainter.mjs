@@ -1389,6 +1389,12 @@ class TPavePainter extends ObjectPainter {
             }, 'Store title position and graphical attributes to gStyle');
          }
       } else if (pave._typename === clTLegend) {
+         menu.sub('Legend');
+         menu.add('Autoplace', () => {
+            this.autoPlaceLegend(pave, this.getPadPainter()?.getRootPad(true), true).then(res => {
+               if (res) this.interactiveRedraw(true, 'pave_moved');
+            });
+         });
          menu.addSizeMenu('Entry separation', 0, 0.9, 0.1, pave.fEntrySeparation, v => {
             pave.fEntrySeparation = v;
             this.interactiveRedraw(true, `exec:SetEntrySeparation(${v})`);
@@ -1397,11 +1403,11 @@ class TPavePainter extends ObjectPainter {
             pave.fColumnSeparation = v;
             this.interactiveRedraw(true, `exec:SetColumnSeparation(${v})`);
          }, 'Horizontal columns separation, meaningful values between 0 and 0.9');
-         menu.add('Autoplace', () => {
-            this.autoPlaceLegend(pave, this.getPadPainter()?.getRootPad(true), true).then(res => {
-               if (res) this.interactiveRedraw(true, 'pave_moved');
-            });
-         });
+         menu.addSizeMenu('Num columns', 1, 7, 1, pave.fNColumns, v => {
+            pave.fNColumns = v;
+            this.interactiveRedraw(true, `exec:SetNColumns(${v})`);
+         }, 'Number of columns in the legend');
+         menu.endsub();
       }
    }
 
