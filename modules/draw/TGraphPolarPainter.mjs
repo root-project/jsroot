@@ -41,14 +41,11 @@ class TGraphPolargramPainter extends ObjectPainter {
       if (!this.options)
          this.options = {};
 
-      if (d.check('RANGLE', true))
-         this.options.rangle = d.partAsInt();
-      else
-         this.options.rangle = 0;
-
       Object.assign(this.options, {
-          NoLabels: d.check('N'),
-          OrthoLabels: d.check('O')
+         rdot: d.check('RDOT'),
+         rangle: d.check('RANGLE', true) ? d.partAsInt() : 0,
+         NoLabels: d.check('N'),
+         OrthoLabels: d.check('O')
       });
 
       this.storeDrawOpt(opt);
@@ -309,12 +306,14 @@ class TGraphPolargramPainter extends ObjectPainter {
                                y: Math.round(ry*sa),
                                text: this.format(ticks[n]),
                                color: this.getColor(polar.fRadialLabelColor), latex: 0 });
-               this.draw_g.append('ellipse')
-                  .attr('cx', Math.round(rx*ca))
-                  .attr('cy', Math.round(ry*sa))
-                  .attr('rx', 3)
-                  .attr('ry', 3)
-                  .style('fill', 'red');
+               if (this.options.rdot) {
+                  this.draw_g.append('ellipse')
+                     .attr('cx', Math.round(rx * ca))
+                     .attr('cy', Math.round(ry * sa))
+                     .attr('rx', 3)
+                     .attr('ry', 3)
+                     .style('fill', 'red');
+               }
             }
 
             if ((nminor > 1) && ((n < ticks.length - 1) || !exclude_last)) {
@@ -424,24 +423,26 @@ class TGraphPolarPainter extends ObjectPainter {
 
       if (!this.options)
          this.options = {};
-      let rangle = 0;
-      if (d.check('RANGLE', true))
-         rangle = d.partAsInt();
+
+      const rdot = d.check('RDOT'),
+            rangle = d.check('RANGLE', true) ? d.partAsInt() : 0;
 
       Object.assign(this.options, {
-          mark: d.check('P'),
-          err: d.check('E'),
-          fill: d.check('F'),
-          line: d.check('L'),
-          curve: d.check('C'),
-          radian: d.check('R'),
-          degree: d.check('D'),
-          grad: d.check('G'),
-          Axis: d.check('N') ? 'N' : ''
+         mark: d.check('P'),
+         err: d.check('E'),
+         fill: d.check('F'),
+         line: d.check('L'),
+         curve: d.check('C'),
+         radian: d.check('R'),
+         degree: d.check('D'),
+         grad: d.check('G'),
+         Axis: d.check('N') ? 'N' : ''
       });
 
       if (d.check('O'))
          this.options.Axis += 'O';
+      if (rdot)
+         this.options.Axis += '_rdot';
       if (rangle)
          this.options.Axis += `_rangle${rangle}`;
 
