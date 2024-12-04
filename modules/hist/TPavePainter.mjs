@@ -703,9 +703,7 @@ class TPavePainter extends ObjectPainter {
    /** @summary Draw TLegend object */
    drawLegend(w, h) {
       const legend = this.getObject(),
-            nlines = legend.fPrimitives.arr.length,
-            gap_x = Math.min(0.45, 0.5*legend.fColumnSeparation),
-            gap_y = Math.min(0.45, 0.5*legend.fEntrySeparation);
+            nlines = legend.fPrimitives.arr.length;
       let ncols = legend.fNColumns,
           nrows = nlines,
           any_text = false,
@@ -713,8 +711,10 @@ class TPavePainter extends ObjectPainter {
 
       if (ncols < 2)
          ncols = 1;
-      else
-         while ((nrows-1)*ncols >= nlines) nrows--;
+      else {
+         while ((nrows - 1) * ncols >= nlines)
+            nrows--;
+      }
 
       const isEmpty = entry => !entry.fObject && !entry.fOption && (!entry.fLabel || (entry.fLabel === ' '));
 
@@ -759,7 +759,7 @@ class TPavePainter extends ObjectPainter {
             step_y = (h - 2*padding_y)/nrows,
             text_promises = [],
             pp = this.getPadPainter();
-      let font_size = (1-gap_y)*step_y,
+      let font_size = (1 - legend.fEntrySeparation)*step_y,
           max_font_size = 0, // not limited in the beginning
           any_opt = false;
 
@@ -785,7 +785,9 @@ class TPavePainter extends ObjectPainter {
             const lopt = entry.fOption.toLowerCase(),
                   icol = i % ncols, irow = (i - icol) / ncols;
             let x0 = column_pos[icol],
-                column_width = column_pos[icol + 1] - column_pos[icol];
+                column_width = column_pos[icol + 1] - column_pos[icol],
+                y0 = padding_y + irow*step_y,
+                row_height = step_y;
 
             if (legend.fColumnSeparation) {
                if (icol > 0)
@@ -796,13 +798,23 @@ class TPavePainter extends ObjectPainter {
                column_width -= k * legend.fColumnSeparation * column_width;
             }
 
+            if (legend.fEntrySeparation) {
+               if (irow > 0)
+                  y0 += row_height * 0.5 * legend.fEntrySeparation;
+               let k = (nrows > 1 ? 1 : 0);
+               if ((nrows > 2) && (irow > 0) && (irow < nrows - 1))
+                  k = 2;
+               row_height -= k * 0.5 * legend.fEntrySeparation * row_height;
+            }
+
             x0 = Math.round(x0);
-            column_width = Math.round(column_width);
+            y0 = Math.round(y0);
 
             const tpos_x = Math.round(x0 + legend.fMargin*column_width),
                   mid_x = Math.round((x0 + tpos_x)/2),
-                  pos_y = Math.round(irow*step_y + padding_y), // top corner
-                  mid_y = Math.round((irow+0.5)*step_y + padding_y), // center line
+                  box_y = Math.round(y0 + row_height * 0.1),
+                  box_height = Math.round(row_height * 0.8),
+                  mid_y = Math.round(y0 + row_height * 0.5), // center line
                   mo = entry.fObject,
                   draw_fill = lopt.indexOf('f') !== -1,
                   draw_line = lopt.indexOf('l') !== -1,
@@ -830,11 +842,9 @@ class TPavePainter extends ObjectPainter {
 
                if (!fillatt.empty() || lineatt) {
                   isany = true;
-                  const box_h = Math.round(step_y*(1-2*gap_y));
-                  // box total height is yspace*0.7
                   // define x,y as the center of the symbol for this entry
                   this.draw_g.append('svg:path')
-                           .attr('d', `M${x0 + padding_x},${Math.round(pos_y+step_y*gap_y)}v${box_h}h${tpos_x-2*padding_x-x0}v${-box_h}z`)
+                           .attr('d', `M${x0 + padding_x},${box_y}v${box_height}h${tpos_x-2*padding_x-x0}v${-box_height}z`)
                            .call(fillatt.func)
                            .call(lineatt ? lineatt.func : () => {});
                }
@@ -860,9 +870,9 @@ class TPavePainter extends ObjectPainter {
                         if (endcaps > 1) edx = Math.max(edx, mo.fMarkerSize*8*0.66);
                      }
 
-                     const eoff = (endcaps === 3) ? 0.03 : 0,
-                           ey1 = Math.round(pos_y+step_y*(gap_y + eoff)),
-                           ey2 = Math.round(pos_y+step_y*(1 - gap_y - eoff)),
+                     const eoff = (endcaps === 3) ? 0.2 : 0,
+                           ey1 = Math.round(y0 + row_height*eoff),
+                           ey2 = Math.round(y0 + row_height*(1 - eoff)),
                            edy = Math.round(edx * 0.66);
                      edx = Math.round(edx);
                      let path = `M${mid_x},${ey1}V${ey2}`;
@@ -895,7 +905,7 @@ class TPavePainter extends ObjectPainter {
             // special case - nothing draw, try to show rect with line attributes
             if (!isany && painter?.lineatt && !painter.lineatt.empty()) {
                this.draw_g.append('svg:path')
-                        .attr('d', `M${x0 + padding_x},${Math.round(pos_y+step_y*0.1)}v${Math.round(step_y*0.8)}h${tpos_x-2*padding_x-x0}v${-Math.round(step_y*0.8)}z`)
+                        .attr('d', `M${x0 + padding_x},${box_y}v${box_height}h${tpos_x-2*padding_x-x0}v${-box_height}z`)
                         .style('fill', 'none')
                         .call(painter.lineatt.func);
             }
@@ -909,11 +919,9 @@ class TPavePainter extends ObjectPainter {
             if (entry.fLabel) {
                const textatt = this.createAttText({ attr: entry, std: false, attr_alt: legend }),
                      arg = { draw_g: this.draw_g, align: textatt.align,
-                             x: pos_x,
-                             y: pos_y + step_y * gap_y,
+                             x: pos_x, width: Math.round(x0 + column_width - pos_x - padding_x),
+                             y: y0, height: Math.round(row_height),
                              scale: (custom_textg && !entry.fTextSize) || !legend.fTextSize,
-                             width: x0 + column_width - pos_x - padding_x,
-                             height: step_y * (1 - gap_y),
                              text: entry.fLabel, color: textatt.color };
                if (custom_textg) {
                   arg.draw_g = this.draw_g.append('svg:g');
