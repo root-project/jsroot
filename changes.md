@@ -7,7 +7,7 @@
 1. Support "same" option for first histogram, draw direcly on pad
 1. Support different angle coordiantes in `TGraphPolargram`, handle 'N' and 'O' draw options
 1. Implement 'arc' draw option for `TPave`
-1. Provide extensive context menus for all derived from `TPave` classes
+1. Provide context menus for all derived from `TPave` classes
 1. Support Poisson errors for `TH1`/`TH2`, https://root-forum.cern.ch/t/62335/
 1. Fix - handle `TPave` NDC position also when fInit is not set
 1. Fix - correctly position title according to gStyle->GetTitleAlign()

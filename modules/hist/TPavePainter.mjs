@@ -703,9 +703,9 @@ class TPavePainter extends ObjectPainter {
    /** @summary Draw TLegend object */
    drawLegend(w, h) {
       const legend = this.getObject(),
-            nlines = legend.fPrimitives.arr.length;
-      let ncols = Math.max(1, legend.fNColumns),
-          nrows = Math.round(nlines / ncols),
+            nlines = legend.fPrimitives.arr.length,
+            ncols = Math.max(1, legend.fNColumns);
+      let nrows = Math.round(nlines / ncols),
           any_text = false,
           custom_textg = false; // each text entry has own attributes
 
@@ -745,7 +745,7 @@ class TPavePainter extends ObjectPainter {
 
       // calculate positions of columns by weight - means more letters, more weight
       const column_pos = new Array(ncols + 1).fill(padding_x),
-            column_boxwidth =  column_width0 * legend.fMargin;
+            column_boxwidth = column_width0 * legend.fMargin;
       if (ncols > 1) {
          const column_weight = new Array(ncols).fill(1),
                space_for_text = w - 2 * padding_x - (ncols - 1) * gap_x - ncols * column_boxwidth;
@@ -792,15 +792,11 @@ class TPavePainter extends ObjectPainter {
                i = ii;
 
             const lopt = entry.fOption.toLowerCase(),
-                  icol = i % ncols, irow = (i - icol) / ncols;
-            let x0 = column_pos[icol],
-                column_width = column_pos[icol + 1] - column_pos[icol],
-                y0 = padding_y + irow * (row_height + gap_y);
-
-            x0 = Math.round(x0);
-            y0 = Math.round(y0);
-
-            const tpos_x = Math.round(x0 + column_boxwidth),
+                  icol = i % ncols, irow = (i - icol) / ncols,
+                  column_width = column_pos[icol + 1] - column_pos[icol],
+                  x0 = Math.round(column_pos[icol]),
+                  y0 = Math.round(padding_y + irow * (row_height + gap_y)),
+                  tpos_x = Math.round(x0 + column_boxwidth),
                   mid_x = Math.round(x0 + (column_boxwidth - padding_x)/2),
                   box_y = Math.round(y0 + row_height * 0.1),
                   box_height = Math.round(row_height * 0.8),
