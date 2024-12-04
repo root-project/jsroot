@@ -1279,11 +1279,70 @@ class TPadPainter extends ObjectPainter {
 
       menu.addchk(this.isTooltipAllowed(), 'Show tooltips', () => this.setTooltipAllowed('toggle'));
 
+      menu.addchk(this.pad.fGridx, 'Grid x', flag => {
+         this.pad.fGridx = flag ? 1 : 0;
+         this.interactiveRedraw('pad', `exec:SetGridx(${flag ? 1 : 0})`);
+      });
+      menu.addchk(this.pad.fGridy, 'Grid y', flag => {
+         this.pad.fGridy = flag ? 1 : 0;
+         this.interactiveRedraw('pad', `exec:SetGridy(${flag ? 1 : 0})`);
+      });
+      menu.sub('Ticks x');
+      menu.addchk(this.pad.fTickx === 0, 'normal', () => {
+         this.pad.fTickx = 0;
+         this.interactiveRedraw('pad', 'exec:SetTickx(0)');
+      });
+      menu.addchk(this.pad.fTickx === 1, 'ticks on both sides', () => {
+         this.pad.fTickx = 1;
+         this.interactiveRedraw('pad', 'exec:SetTickx(1)');
+      });
+      menu.addchk(this.pad.fTickx === 2, 'labels on both sides',  () => {
+         this.pad.fTickx = 2;
+         this.interactiveRedraw('pad', 'exec:SetTickx(2)');
+      });
+      menu.endsub();
+      menu.sub('Ticks y');
+      menu.addchk(this.pad.fTicky === 0, 'normal', () => {
+         this.pad.fTicky = 0;
+         this.interactiveRedraw('pad', 'exec:SetTicky(0)');
+      });
+      menu.addchk(this.pad.fTicky === 1, 'ticks on both sides',() => {
+         this.pad.fTicky = 1;
+         this.interactiveRedraw('pad', 'exec:SetTicky(1)');
+      });
+      menu.addchk(this.pad.fTicky === 2, 'labels on both sides', () => {
+         this.pad.fTicky = 2;
+         this.interactiveRedraw('pad', 'exec:SetTicky(2)');
+      });
+      menu.endsub();
+
+      menu.addchk(this.pad.fEditable, 'Editable', flag => {
+         this.pad.fEditable = flag;
+         this.interactiveRedraw('pad', `exec:SetEditable(${flag})`);
+      });
+
+      if (this.iscan) {
+         menu.addchk(this.pad.TestBit(kIsGrayscale), 'Gray scale', flag => {
+            this.setGrayscale(flag);
+            this.interactiveRedraw('pad', `exec:SetGrayscale(${flag})`);
+         });
+      }
+
+      menu.sub('Border');
+      menu.addSelectMenu('Mode', ['Down', 'Off', 'Up'], this.pad.fBorderMode + 1, v => {
+         this.pad.fBorderMode = v - 1;
+         this.interactiveRedraw(true, `exec:SetBorderMode(${v-1})`);
+      }, 'Pad border mode');
+      menu.addSizeMenu('Size', 0, 20, 2, this.pad.fBorderSize, v => {
+         this.pad.fBorderSize = v;
+         this.interactiveRedraw(true, `exec:SetBorderSize(${v})`);
+      }, 'Pad border size');
+      menu.endsub();
+
+      menu.addAttributesMenu(this);
+
       if (!this._websocket) {
-         const set_pad_field = arg => {
-            this.pad[arg.slice(1)] = Number.parseInt(arg[0]);
-            this.interactiveRedraw('pad', arg.slice(1));
-         }, do_divide = arg => {
+         const do_divide = arg => {
             if (!arg || !isStr(arg))
                return;
             const arr = arg.split('x');
@@ -1294,41 +1353,13 @@ class TPadPainter extends ObjectPainter {
                this.divide(Number.parseInt(arr[0]), Number.parseInt(arr[1]));
          };
 
-         menu.addchk(this.pad?.fGridx, 'Grid x', (this.pad?.fGridx ? '0' : '1') + 'fGridx', set_pad_field);
-         menu.addchk(this.pad?.fGridy, 'Grid y', (this.pad?.fGridy ? '0' : '1') + 'fGridy', set_pad_field);
-         menu.sub('Ticks x');
-         menu.addchk(this.pad?.fTickx === 0, 'normal', '0fTickx', set_pad_field);
-         menu.addchk(this.pad?.fTickx === 1, 'ticks on both sides', '1fTickx', set_pad_field);
-         menu.addchk(this.pad?.fTickx === 2, 'labels on both sides', '2fTickx', set_pad_field);
-         menu.endsub();
-         menu.sub('Ticks y');
-         menu.addchk(this.pad?.fTicky === 0, 'normal', '0fTicky', set_pad_field);
-         menu.addchk(this.pad?.fTicky === 1, 'ticks on both sides', '1fTicky', set_pad_field);
-         menu.addchk(this.pad?.fTicky === 2, 'labels on both sides', '2fTicky', set_pad_field);
-         menu.endsub();
-         menu.addchk(this.pad?.fEditable, 'Editable', flag => { this.pad.fEditable = flag; this.interactiveRedraw('pad'); });
-         if (this.iscan)
-            menu.addchk(this.pad?.TestBit(kIsGrayscale), 'Gray scale', flag => { this.setGrayscale(flag); this.interactiveRedraw('pad'); });
-
          if (isFunc(this.drawObject))
             menu.add('Build legend', () => this.buildLegend());
-
-         menu.sub('Border');
-         menu.addSelectMenu('Mode', ['Down', 'Off', 'Up'], this.pad.fBorderMode + 1, v => {
-            this.pad.fBorderMode = v - 1;
-            this.interactiveRedraw(true, `exec:SetBorderMode(${v-1})`);
-         }, 'Pad border mode');
-         menu.addSizeMenu('Size', 0, 20, 2, this.pad.fBorderSize, v => {
-            this.pad.fBorderSize = v;
-            this.interactiveRedraw(true, `exec:SetBorderSize(${v})`);
-         }, 'Pad border size');
-         menu.endsub();
 
          menu.sub('Divide', () => menu.input('Input divide arg', '2x2').then(do_divide), 'Divide on sub-pads');
          ['1x2', '2x1', '2x2', '2x3', '3x2', '3x3', '4x4', '0'].forEach(item => menu.add(item, item, do_divide));
          menu.endsub();
 
-         menu.addAttributesMenu(this);
          menu.add('Save to gStyle', () => {
             if (!this.pad) return;
             this.fillatt?.saveToStyle(this.iscan ? 'fCanvasColor' : 'fPadColor');
