@@ -6,6 +6,7 @@
 1. Improve float to string convertion when 'g' is specified
 1. Support "same" option for first histogram, draw direcly on pad
 1. Support different angle coordiantes in `TGraphPolargram`, handle 'N' and 'O' draw options
+1. Suppor fAxisAngle in `TGraphPolargram`, provide 'rangleNN' draw option
 1. Implement 'arc' draw option for `TPave`
 1. Provide context menus for all derived from `TPave` classes
 1. Support Poisson errors for `TH1`/`TH2`, https://root-forum.cern.ch/t/62335/
