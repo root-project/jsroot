@@ -704,19 +704,15 @@ class TPavePainter extends ObjectPainter {
    drawLegend(w, h) {
       const legend = this.getObject(),
             nlines = legend.fPrimitives.arr.length;
-      let ncols = legend.fNColumns,
-          nrows = nlines,
+      let ncols = Math.max(1, legend.fNColumns),
+          nrows = Math.round(nlines / ncols),
           any_text = false,
           custom_textg = false; // each text entry has own attributes
 
-      if (ncols < 2)
-         ncols = 1;
-      else {
-         while ((nrows - 1) * ncols >= nlines)
-            nrows--;
-      }
+      if (nrows * ncols < nlines)
+         nrows++;
 
-      const isEmpty = entry => !entry.fObject && !entry.fOption && (!entry.fLabel || (entry.fLabel === ' '));
+      const isEmpty = entry => !entry.fObject && !entry.fOption && (!entry.fLabel || !entry.fLabel.trim());
 
       for (let ii = 0; ii < nlines; ++ii) {
          const entry = legend.fPrimitives.arr[ii];
@@ -734,10 +730,25 @@ class TPavePainter extends ObjectPainter {
       if (nrows < 1)
          nrows = 1;
 
+      const padding_x = Math.round(0.03*w/ncols),
+            padding_y = Math.round(0.03*h),
+            row_height = (h - 2*padding_y) / (nrows + (nrows - 1) * legend.fEntrySeparation),
+            gap_y = row_height * legend.fEntrySeparation;
+
+      let gap_x = padding_x,
+          column_width0 = (w - 2*padding_x - (ncols - 1)* gap_x) / ncols;
+
+      if (legend.fColumnSeparation) {
+         column_width0 = (w - 2*padding_x) / (ncols + (ncols - 1) * legend.fColumnSeparation);
+         gap_x = column_width0 * legend.fColumnSeparation;
+      }
+
       // calculate positions of columns by weight - means more letters, more weight
-      const column_pos = new Array(ncols + 1).fill(0);
+      const column_pos = new Array(ncols + 1).fill(padding_x),
+            column_boxwidth =  column_width0 * legend.fMargin;
       if (ncols > 1) {
-         const column_weight = new Array(ncols).fill(1);
+         const column_weight = new Array(ncols).fill(1),
+               space_for_text = w - 2 * padding_x - (ncols - 1) * gap_x - ncols * column_boxwidth;
 
          for (let ii = 0; ii < nlines; ++ii) {
             const entry = legend.fPrimitives.arr[ii];
@@ -749,27 +760,25 @@ class TPavePainter extends ObjectPainter {
          let sum_weight = 0;
          for (let icol = 0; icol < ncols; ++icol)
             sum_weight += column_weight[icol];
-         for (let icol = 0; icol < ncols-1; ++icol)
-            column_pos[icol+1] = column_pos[icol] + legend.fMargin*w/ncols + column_weight[icol] * (1-legend.fMargin) * w / sum_weight;
-      }
-      column_pos[ncols] = w;
 
-      const padding_x = Math.round(0.03*w/ncols),
-            padding_y = Math.round(0.03*h),
-            step_y = (h - 2*padding_y)/nrows,
-            text_promises = [],
-            pp = this.getPadPainter();
-      let font_size = (1 - legend.fEntrySeparation)*step_y,
+         for (let icol = 0; icol < ncols-1; ++icol)
+            column_pos[icol+1] = column_pos[icol] + column_boxwidth + column_weight[icol] / sum_weight * space_for_text + gap_x;
+      }
+      column_pos[ncols] = w - padding_x;
+
+      let font_size = row_height,
           max_font_size = 0, // not limited in the beginning
           any_opt = false;
 
       this.createAttText({ attr: legend, can_rotate: false });
 
-      const tsz = this.textatt.getSize(pp.getPadHeight());
+      const pp = this.getPadPainter(),
+            tsz = this.textatt.getSize(pp.getPadHeight());
       if (tsz && (tsz < font_size))
          font_size = max_font_size = tsz;
 
-      const pr = any_text && !custom_textg ? this.startTextDrawingAsync(this.textatt.font, font_size, this.draw_g, max_font_size) : Promise.resolve();
+      const text_promises = [],
+            pr = any_text && !custom_textg ? this.startTextDrawingAsync(this.textatt.font, font_size, this.draw_g, max_font_size) : Promise.resolve();
 
       return pr.then(() => {
          for (let ii = 0, i = -1; ii < nlines; ++ii) {
@@ -786,32 +795,13 @@ class TPavePainter extends ObjectPainter {
                   icol = i % ncols, irow = (i - icol) / ncols;
             let x0 = column_pos[icol],
                 column_width = column_pos[icol + 1] - column_pos[icol],
-                y0 = padding_y + irow*step_y,
-                row_height = step_y;
-
-            if (legend.fColumnSeparation) {
-               if (icol > 0)
-                  x0 += column_width*legend.fColumnSeparation;
-               let k = ncols > 1 ? 1 : 0;
-               if ((ncols > 2) && (icol > 0) && (icol < ncols - 1))
-                  k = 2;
-               column_width -= k * legend.fColumnSeparation * column_width;
-            }
-
-            if (legend.fEntrySeparation) {
-               if (irow > 0)
-                  y0 += row_height * 0.5 * legend.fEntrySeparation;
-               let k = (nrows > 1 ? 1 : 0);
-               if ((nrows > 2) && (irow > 0) && (irow < nrows - 1))
-                  k = 2;
-               row_height -= k * 0.5 * legend.fEntrySeparation * row_height;
-            }
+                y0 = padding_y + irow * (row_height + gap_y);
 
             x0 = Math.round(x0);
             y0 = Math.round(y0);
 
-            const tpos_x = Math.round(x0 + legend.fMargin*column_width),
-                  mid_x = Math.round((x0 + tpos_x)/2),
+            const tpos_x = Math.round(x0 + column_boxwidth),
+                  mid_x = Math.round(x0 + (column_boxwidth - padding_x)/2),
                   box_y = Math.round(y0 + row_height * 0.1),
                   box_height = Math.round(row_height * 0.8),
                   mid_y = Math.round(y0 + row_height * 0.5), // center line
@@ -822,7 +812,7 @@ class TPavePainter extends ObjectPainter {
                   draw_marker = lopt.indexOf('p') !== -1;
 
             let o_fill = entry, o_marker = entry, o_line = entry,
-               painter = null, isany = false;
+                painter = null, isany = false;
 
             if (isObject(mo)) {
                if ('fLineColor' in mo) o_line = mo;
@@ -844,7 +834,7 @@ class TPavePainter extends ObjectPainter {
                   isany = true;
                   // define x,y as the center of the symbol for this entry
                   this.draw_g.append('svg:path')
-                           .attr('d', `M${x0 + padding_x},${box_y}v${box_height}h${tpos_x-2*padding_x-x0}v${-box_height}z`)
+                           .attr('d', `M${x0},${box_y}v${box_height}h${tpos_x-padding_x-x0}v${-box_height}z`)
                            .call(fillatt.func)
                            .call(lineatt ? lineatt.func : () => {});
                }
@@ -857,11 +847,11 @@ class TPavePainter extends ObjectPainter {
                   isany = true;
                   if (draw_line) {
                      this.draw_g.append('svg:path')
-                        .attr('d', `M${x0 + padding_x},${mid_y}H${tpos_x - padding_x}`)
+                        .attr('d', `M${x0},${mid_y}h${tpos_x-padding_x-x0}`)
                         .call(lineatt.func);
                   }
                   if (draw_error) {
-                     let endcaps = 0, edx = step_y*0.05;
+                     let endcaps = 0, edx = row_height*0.05;
                      if (isFunc(painter?.getHisto) && painter.options?.ErrorKind === 1)
                         endcaps = 1; // draw bars for e1 option in histogram
                      else if (isFunc(painter?.getGraph) && mo?.fLineWidth !== undefined && mo?.fMarkerSize !== undefined) {
@@ -897,7 +887,7 @@ class TPavePainter extends ObjectPainter {
                   isany = true;
                   this.draw_g
                      .append('svg:path')
-                     .attr('d', marker.create((x0 + tpos_x)/2, mid_y))
+                     .attr('d', marker.create(mid_x, mid_y))
                      .call(marker.func);
                }
             }
@@ -905,7 +895,7 @@ class TPavePainter extends ObjectPainter {
             // special case - nothing draw, try to show rect with line attributes
             if (!isany && painter?.lineatt && !painter.lineatt.empty()) {
                this.draw_g.append('svg:path')
-                        .attr('d', `M${x0 + padding_x},${box_y}v${box_height}h${tpos_x-2*padding_x-x0}v${-box_height}z`)
+                        .attr('d', `M${x0},${box_y}v${box_height}h${tpos_x-padding_x-x0}v${-box_height}z`)
                         .style('fill', 'none')
                         .call(painter.lineatt.func);
             }
@@ -919,7 +909,7 @@ class TPavePainter extends ObjectPainter {
             if (entry.fLabel) {
                const textatt = this.createAttText({ attr: entry, std: false, attr_alt: legend }),
                      arg = { draw_g: this.draw_g, align: textatt.align,
-                             x: pos_x, width: Math.round(x0 + column_width - pos_x - padding_x),
+                             x: pos_x, width: Math.round(column_pos[icol + 1] - pos_x),
                              y: y0, height: Math.round(row_height),
                              scale: (custom_textg && !entry.fTextSize) || !legend.fTextSize,
                              text: entry.fLabel, color: textatt.color };
@@ -1395,14 +1385,14 @@ class TPavePainter extends ObjectPainter {
                if (res) this.interactiveRedraw(true, 'pave_moved');
             });
          });
-         menu.addSizeMenu('Entry separation', 0, 0.9, 0.1, pave.fEntrySeparation, v => {
+         menu.addSizeMenu('Entry separation', 0, 1, 0.1, pave.fEntrySeparation, v => {
             pave.fEntrySeparation = v;
             this.interactiveRedraw(true, `exec:SetEntrySeparation(${v})`);
-         }, 'Vertical entries separation, meaningful values between 0 and 0.9');
-         menu.addSizeMenu('Columns separation', 0, 0.9, 0.1, pave.fColumnSeparation, v => {
+         }, 'Vertical entries separation, meaningful values between 0 and 1');
+         menu.addSizeMenu('Columns separation', 0, 1, 0.1, pave.fColumnSeparation, v => {
             pave.fColumnSeparation = v;
             this.interactiveRedraw(true, `exec:SetColumnSeparation(${v})`);
-         }, 'Horizontal columns separation, meaningful values between 0 and 0.9');
+         }, 'Horizontal columns separation, meaningful values between 0 and 1');
          menu.addSizeMenu('Num columns', 1, 7, 1, pave.fNColumns, v => {
             pave.fNColumns = v;
             this.interactiveRedraw(true, `exec:SetNColumns(${v})`);
