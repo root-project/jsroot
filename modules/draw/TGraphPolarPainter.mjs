@@ -41,6 +41,11 @@ class TGraphPolargramPainter extends ObjectPainter {
       if (!this.options)
          this.options = {};
 
+      if (d.check('RANGLE', true))
+         this.options.rangle = d.partAsInt();
+      else
+         this.options.rangle = 0;
+
       Object.assign(this.options, {
           NoLabels: d.check('N'),
           OrthoLabels: d.check('O')
@@ -281,6 +286,9 @@ class TGraphPolargramPainter extends ObjectPainter {
       }
 
       return this.startTextDrawingAsync(polar.fRadialLabelFont, Math.round(polar.fRadialTextSize * this.szy * 2)).then(() => {
+         const axis_angle = - (this.options.rangle || polar.fAxisAngle) / 180 * Math.PI,
+               ca = Math.cos(axis_angle),
+               sa = Math.sin(axis_angle);
          for (let n = 0; n < ticks.length; ++n) {
             let rx = this.r(ticks[n]),
                 ry = rx / this.szx * this.szy;
@@ -294,8 +302,19 @@ class TGraphPolargramPainter extends ObjectPainter {
                .call(this.lineatt.func);
 
             if ((n < ticks.length-1) || !exclude_last) {
-               this.drawText({ align: 23, x: Math.round(rx), y: Math.round(polar.fRadialTextSize * this.szy * 0.5),
-                              text: this.format(ticks[n]), color: this.getColor(polar.fRadialLabelColor), latex: 0 });
+               const halign = ca > 0.7 ? 1 : (ca > 0 ? 3 : (ca > -0.7 ? 1 : 3)),
+                     valign = Math.abs(ca) < 0.7 ? 1 : 3;
+               this.drawText({ align: 10 * halign + valign,
+                               x: Math.round(rx*ca),
+                               y: Math.round(ry*sa),
+                               text: this.format(ticks[n]),
+                               color: this.getColor(polar.fRadialLabelColor), latex: 0 });
+               this.draw_g.append('ellipse')
+                  .attr('cx', Math.round(rx*ca))
+                  .attr('cy', Math.round(ry*sa))
+                  .attr('rx', 3)
+                  .attr('ry', 3)
+                  .style('fill', 'red');
             }
 
             if ((nminor > 1) && ((n < ticks.length - 1) || !exclude_last)) {
@@ -315,6 +334,13 @@ class TGraphPolargramPainter extends ObjectPainter {
                      .call(this.gridatt.func);
                }
             }
+         }
+
+         if (ca < 0.999) {
+            this.draw_g.append('path')
+                .attr('d', `M0,0L${Math.round(this.szx*ca)},${Math.round(this.szy*sa)}`)
+                .style('pointer-events', pointer_events)
+                .call(this.lineatt.func);
          }
 
          return this.finishTextDrawing();
@@ -398,6 +424,9 @@ class TGraphPolarPainter extends ObjectPainter {
 
       if (!this.options)
          this.options = {};
+      let rangle = 0;
+      if (d.check('RANGLE', true))
+         rangle = d.partAsInt();
 
       Object.assign(this.options, {
           mark: d.check('P'),
@@ -413,6 +442,8 @@ class TGraphPolarPainter extends ObjectPainter {
 
       if (d.check('O'))
          this.options.Axis += 'O';
+      if (rangle)
+         this.options.Axis += `_rangle${rangle}`;
 
       this.storeDrawOpt(opt);
    }
