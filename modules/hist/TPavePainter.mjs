@@ -904,7 +904,7 @@ class TPavePainter extends ObjectPainter {
             if (isStr(lopt) && (lopt.toLowerCase() !== 'h'))
                any_opt = true;
             else if (!any_opt)
-               pos_x = x0 + padding_x;
+               pos_x = x0;
 
             if (entry.fLabel) {
                const textatt = this.createAttText({ attr: entry, std: false, attr_alt: legend }),
