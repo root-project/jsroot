@@ -318,6 +318,9 @@ class TPadPainter extends ObjectPainter {
    /** @summary get pad height */
    getPadHeight() { return this._pad_height || 0; }
 
+   /** @summary get pad height */
+   getPadScale() { return this._pad_scale || 1; }
+
    /** @summary get pad rect */
    getPadRect() {
       return {
@@ -2395,16 +2398,24 @@ class TPadPainter extends ObjectPainter {
                         .attr('href', dataUrl);
       }, 'pads');
 
-      let width = elem.property('draw_width'), height = elem.property('draw_height');
+      let width = elem.property('draw_width'),
+          height = elem.property('draw_height'),
+          viewBox = '';
       if (use_frame) {
          const fp = this.getFramePainter();
          width = fp.getFrameWidth();
          height = fp.getFrameHeight();
       }
+      const scale = this.getCanvPainter()?.getPadScale() ?? 1;
+      if (scale !== 1) {
+         viewBox = `viewBox="0 0 ${width} ${height}"`;
+         width = Math.round(width / scale);
+         height = Math.round(height / scale);
+      }
 
       const arg = (file_format === 'pdf')
-         ? { node: elem.node(), width, height, reset_tranform: use_frame }
-         : compressSVG(`<svg width="${width}" height="${height}" xmlns="${nsSVG}">${elem.node().innerHTML}</svg>`);
+         ? { node: elem.node(), width, height, scale, reset_tranform: use_frame }
+         : compressSVG(`<svg width="${width}" height="${height}" ${viewBox} xmlns="${nsSVG}">${elem.node().innerHTML}</svg>`);
 
       return svgToImage(arg, file_format, args).then(res => {
          // reactivate border
