@@ -144,7 +144,7 @@ const PadButtonsHandler = {
                         item.tooltip + (iscan ? '' : (` on pad ${this.this_pad_name}`)) + (item.keyname ? ` (keyshortcut ${item.keyname})` : ''), false);
 
             if (group.property('vertical'))
-                svg.attr('x', y).attr('y', x);
+               svg.attr('x', y).attr('y', x);
             else
                svg.attr('x', x).attr('y', y);
 
@@ -713,13 +713,11 @@ class TPadPainter extends ObjectPainter {
 
       svg.style('filter', settings.DarkMode || this.pad?.$dark ? 'invert(100%)' : null);
 
-      this._pad_scale = settings.CanvasScale;
+      this._pad_scale = settings.CanvasScale || 1;
       this._pad_x = 0;
       this._pad_y = 0;
       this._pad_width = rect.width * this._pad_scale;
       this._pad_height = rect.height * this._pad_scale;
-
-      console.log('canvas sizes', this._pad_width, this._pad_height);
 
       svg.attr('viewBox', `0 0 ${this._pad_width} ${this._pad_height}`)
          .attr('preserveAspectRatio', 'none')  // we do not preserve relative ratio
@@ -731,20 +729,20 @@ class TPadPainter extends ObjectPainter {
 
       this.addPadBorder(svg, frect);
 
-      this.setFastDrawing(rect.width * (1 - this.pad.fLeftMargin - this.pad.fRightMargin), rect.height * (1 - this.pad.fBottomMargin - this.pad.fTopMargin));
+      this.setFastDrawing(this._pad_width * (1 - this.pad.fLeftMargin - this.pad.fRightMargin), this._pad_height * (1 - this.pad.fBottomMargin - this.pad.fTopMargin));
 
       if (this.alignButtons && btns)
-         this.alignButtons(btns, rect.width, rect.height);
+         this.alignButtons(btns, this._pad_width, this._pad_height);
 
       let dt = info.selectChild('.canvas_date');
       if (!gStyle.fOptDate)
          dt.remove();
        else {
          if (dt.empty())
-             dt = info.append('text').attr('class', 'canvas_date');
-         const posy = Math.round(rect.height * (1 - gStyle.fDateY)),
+            dt = info.append('text').attr('class', 'canvas_date');
+         const posy = Math.round(this._pad_height * (1 - gStyle.fDateY)),
                date = new Date();
-         let posx = Math.round(rect.width * gStyle.fDateX);
+         let posx = Math.round(this._pad_width * gStyle.fDateX);
          if (!is_batch && (posx < 25))
             posx = 25;
          if (gStyle.fOptDate > 3)
@@ -901,6 +899,7 @@ class TPadPainter extends ObjectPainter {
              .property('draw_width', w)
              .property('draw_height', h);
 
+      this._pad_scale = 1; // subpads always use scale 1 while placed inside canvas viewBox
       this._pad_x = x;
       this._pad_y = y;
       this._pad_width = w;
@@ -917,7 +916,7 @@ class TPadPainter extends ObjectPainter {
       }
 
       if (this.alignButtons && btns)
-         this.alignButtons(btns, w, h);
+         this.alignButtons(btns, this._pad_width, this._pad_height);
 
       return pad_visible;
    }
