@@ -208,6 +208,8 @@ settings = {
    CanvasWidth: 1200,
    /** @summary Default canvas height */
    CanvasHeight: 800,
+   /** @summary Canvas pixel ratio between viewport and display, default 1 */
+   CanvasScale: 1,
    /** @summary Enable or disable tooltips, default on */
    Tooltip: !nodejs,
    /** @summary Time in msec for appearance of tooltips, 0 - no animation */

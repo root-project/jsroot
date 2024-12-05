@@ -713,18 +713,21 @@ class TPadPainter extends ObjectPainter {
 
       svg.style('filter', settings.DarkMode || this.pad?.$dark ? 'invert(100%)' : null);
 
-      svg.attr('viewBox', `0 0 ${rect.width} ${rect.height}`)
-         .attr('preserveAspectRatio', 'none')  // we do not preserve relative ratio
-         .property('height_factor', factor)
-         .property('draw_x', 0)
-         .property('draw_y', 0)
-         .property('draw_width', rect.width)
-         .property('draw_height', rect.height);
-
+      this._pad_scale = settings.CanvasScale;
       this._pad_x = 0;
       this._pad_y = 0;
-      this._pad_width = rect.width;
-      this._pad_height = rect.height;
+      this._pad_width = rect.width * this._pad_scale;
+      this._pad_height = rect.height * this._pad_scale;
+
+      console.log('canvas sizes', this._pad_width, this._pad_height);
+
+      svg.attr('viewBox', `0 0 ${this._pad_width} ${this._pad_height}`)
+         .attr('preserveAspectRatio', 'none')  // we do not preserve relative ratio
+         .property('height_factor', factor)
+         .property('draw_x', this._pad_x)
+         .property('draw_y', this._pad_y)
+         .property('draw_width', this._pad_width)
+         .property('draw_height', this._pad_height);
 
       this.addPadBorder(svg, frect);
 
