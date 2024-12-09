@@ -987,7 +987,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       delete this.mouse_zoom_mesh;
    };
 
-   control.HideTooltip = function() {
+   control.hideTooltip = function() {
       this.tooltip.hide();
    };
 

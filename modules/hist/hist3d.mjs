@@ -528,7 +528,7 @@ function create3DScene(render3d, x3dscale, y3dscale, orthographic) {
       disposeThreejsObject(this.toplevel);
       delete this.tooltip_mesh;
       delete this.toplevel;
-      if (this.control) this.control.HideTooltip();
+      this.control?.hideTooltip();
 
       const newtop = new THREE.Object3D();
       this.scene.add(newtop);
@@ -713,9 +713,11 @@ function resize3D() {
 
    this.apply3dSize(sz);
 
-   if ((this.scene_width === sz.width) && (this.scene_height === sz.height)) return false;
+   if ((this.scene_width === sz.width) && (this.scene_height === sz.height))
+      return false;
 
-   if ((sz.width < 10) || (sz.height < 10)) return false;
+   if ((sz.width < 10) || (sz.height < 10))
+      return false;
 
    this.scene_width = sz.width;
    this.scene_height = sz.height;
