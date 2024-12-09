@@ -666,6 +666,7 @@ class TooltipFor3D {
       this.parent = prnt || getDocument().body;
       this.canvas = canvas; // we need canvas to recalculate mouse events
       this.abspos = !prnt;
+      this.scale = 1;
    }
 
    /** @summary check parent */
@@ -676,10 +677,16 @@ class TooltipFor3D {
       }
    }
 
+   /** @summary set scaling factor */
+   setScale(v) {
+      this.scale = v;
+   }
+
    /** @summary extract position from event
      * @desc can be used to process it later when event is gone */
    extract_pos(e) {
-      if (isObject(e) && (e.u !== undefined) && (e.l !== undefined)) return e;
+      if (isObject(e) && (e.u !== undefined) && (e.l !== undefined))
+         return e;
       const res = { u: 0, l: 0 };
       if (this.abspos) {
          res.l = e.pageX;
@@ -688,6 +695,8 @@ class TooltipFor3D {
          res.l = e.offsetX;
          res.u = e.offsetY;
       }
+      res.l /= this.scale;
+      res.u /= this.scale;
       return res;
    }
 
@@ -695,7 +704,8 @@ class TooltipFor3D {
      * @desc event is delivered from canvas,
      * but position should be calculated relative to the element where tooltip is placed */
    pos(e) {
-      if (!this.tt) return;
+      if (!this.tt)
+         return;
 
       const pos = this.extract_pos(e);
       if (!this.abspos) {
@@ -737,10 +747,12 @@ class TooltipFor3D {
 
    /** @summary Show tooltip */
    show(v /* , mouse_pos, status_func */) {
-      if (!v) return this.hide();
+      if (!v)
+         return this.hide();
 
       if (isObject(v) && (v.lines || v.line)) {
-         if (v.only_status) return this.hide();
+         if (v.only_status)
+            return this.hide();
 
          if (v.line)
             v = v.line;
@@ -1184,7 +1196,6 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       this.cursor_changed = false;
       if (tip && this.painter?.isTooltipAllowed()) {
          this.tooltip.checkParent(this.painter.selectDom().node());
-
          this.tooltip.show(tip, mouse);
          this.tooltip.pos(this.tmout_ttpos);
       } else {

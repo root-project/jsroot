@@ -405,7 +405,10 @@ function getCameraPosition(fp) {
 function create3DControl(fp) {
    fp.control = createOrbitControl(fp, fp.camera, fp.scene, fp.renderer, fp.lookat);
 
-   const frame_painter = fp, obj_painter = fp.getMainPainter();
+   const frame_painter = fp, obj_painter = fp.getMainPainter(), scale = fp.getCanvPainter()?.getPadScale();
+
+   if (scale)
+      fp.control.tooltip?.setScale(scale);
 
    fp.control.processMouseMove = function(intersects) {
       let tip = null, mesh = null, zoom_mesh = null;
@@ -568,7 +571,7 @@ function create3DScene(render3d, x3dscale, y3dscale, orthographic) {
    }).then(r => {
       this.renderer = r;
 
-      this.webgl = (r.jsroot_render3d === constants.Render3D.WebGL);
+      this.webgl = r.jsroot_render3d === constants.Render3D.WebGL;
       this.add3dCanvas(sz, r.jsroot_dom, this.webgl);
 
       this.first_render_tm = 0;
