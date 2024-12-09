@@ -405,10 +405,14 @@ function getCameraPosition(fp) {
 function create3DControl(fp) {
    fp.control = createOrbitControl(fp, fp.camera, fp.scene, fp.renderer, fp.lookat);
 
-   const frame_painter = fp, obj_painter = fp.getMainPainter(), scale = fp.getCanvPainter()?.getPadScale();
+   const frame_painter = fp, obj_painter = fp.getMainPainter();
 
-   if (scale)
-      fp.control.tooltip?.setScale(scale);
+   if (fp.access3dKind() === constants.Embed3D.Embed) {
+      // tooltip scaling only need when GL canvas embed into
+      const scale = fp.getCanvPainter()?.getPadScale();
+      if (scale)
+         fp.control.tooltip?.setScale(scale);
+   }
 
    fp.control.processMouseMove = function(intersects) {
       let tip = null, mesh = null, zoom_mesh = null;

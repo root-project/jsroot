@@ -246,11 +246,13 @@ const Handling3DDrawings = {
      * @private */
    access3dKind(new_value) {
       const svg = this.getPadSvg();
-      if (svg.empty()) return -1;
+      if (svg.empty())
+         return -1;
 
       // returns kind of currently created 3d canvas
       const kind = svg.property('can3d');
-      if (new_value !== undefined) svg.property('can3d', new_value);
+      if (new_value !== undefined)
+         svg.property('can3d', new_value);
       return ((kind === null) || (kind === undefined)) ? -1 : kind;
    },
 
@@ -269,7 +271,7 @@ const Handling3DDrawings = {
          else if (browser.isFirefox)
             can3d = constants.Embed3D.Embed;
          else if (browser.chromeVersion > 95)
-         // version 96 works partially, 97 works fine
+            // version 96 works partially, 97 works fine
             can3d = constants.Embed3D.Embed;
          else
             can3d = constants.Embed3D.Overlay;
@@ -316,14 +318,22 @@ const Handling3DDrawings = {
          // while 3D canvas uses area also for the axis labels, extend area relative to normal frame
          const dx = Math.round(size.width*0.07), dy = Math.round(size.height*0.05);
 
-         size.x = Math.max(0, size.x-dx);
-         size.y = Math.max(0, size.y-dy);
+         size.x = Math.max(0, size.x - dx);
+         size.y = Math.max(0, size.y - dy);
          size.width = Math.min(size.width + 2*dx, rect.width - size.x);
          size.height = Math.min(size.height + 2*dy, rect.height - size.y);
       }
 
-      if (can3d === 1)
+      if (can3d === constants.Embed3D.Overlay) {
          size = getAbsPosInCanvas(this.getPadSvg(), size);
+         const scale = this.getCanvPainter().getPadScale();
+         if (scale && scale !== 1) {
+            size.x /= scale;
+            size.y /= scale;
+            size.width /= scale;
+            size.height /= scale;
+         }
+      }
 
       return size;
    },
