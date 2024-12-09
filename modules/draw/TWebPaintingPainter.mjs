@@ -1,5 +1,6 @@
 import { getColor } from '../base/colors.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
+import { urlClassPrefix } from '../core.mjs';
 import { assignContextMenu } from '../gui/menu.mjs';
 
 
@@ -16,9 +17,19 @@ class TWebPaintingPainter extends ObjectPainter {
       return true;
    }
 
+   /** @summary Fill context menu
+    * @desc Create only header, items will be requested from server */
+   fillContextMenu(menu) {
+      const cl = this.getObject()?.fClassName || 'TWebPainting';
+      menu.header(cl, `${urlClassPrefix}${cl}.html`);
+      return true;
+   }
+
    /** @summary draw TWebPainting object */
    async redraw() {
       const obj = this.getObject(), func = this.getAxisToSvgFunc();
+
+      console.log('drawing ', obj.fClassName);
 
       if (!obj?.fOper || !func)
          return this;
