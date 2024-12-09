@@ -445,7 +445,8 @@ const TooltipHandler = {
          hint.height = Math.round(hint.lines.length * textheight * hstep + 2 * hmargin - textheight * (hstep - 1));
 
          if ((hint.color1 !== undefined) && (hint.color1 !== 'none')) {
-            if ((lastcolor1 !== 0) && (lastcolor1 !== hint.color1)) usecolor1 = true;
+            if ((lastcolor1 !== 0) && (lastcolor1 !== hint.color1))
+               usecolor1 = true;
             lastcolor1 = hint.color1;
          }
       }
@@ -476,21 +477,27 @@ const TooltipHandler = {
          if (!hint) hint = hints[k];
 
          // select exact hint if this is the only one
-         if (hints[k].exact && (nexact < 2) && (!hint || !hint.exact)) { hint = hints[k]; break; }
+         if (hints[k].exact && (nexact < 2) && (!hint || !hint.exact)) {
+            hint = hints[k];
+            break;
+         }
 
-         if (!pnt || (hints[k].x === undefined) || (hints[k].y === undefined)) continue;
+         if (!pnt || (hints[k].x === undefined) || (hints[k].y === undefined))
+            continue;
 
          const dist2 = (pnt.x - hints[k].x) ** 2 + (pnt.y - hints[k].y) ** 2;
          if (dist2 < best_dist2) { best_dist2 = dist2; best_hint = hints[k]; }
       }
 
-      if ((!hint || !hint.exact) && (best_dist2 < 400)) hint = best_hint;
+      if ((!hint || !hint.exact) && (best_dist2 < 400))
+         hint = best_hint;
 
       if (hint) {
          name = (hint.lines && hint.lines.length > 1) ? hint.lines[0] : hint.name;
          title = hint.title || '';
          info = hint.line;
-         if (!info && hint.lines) info = hint.lines.slice(1).join(' ');
+         if (!info && hint.lines)
+            info = hint.lines.slice(1).join(' ');
       }
 
       this.showObjectStatus(name, title, info, coordinates);
