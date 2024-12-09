@@ -17,10 +17,15 @@ class TWebPaintingPainter extends ObjectPainter {
       return true;
    }
 
+   /** @summary Provides menu header */
+   getMenuHeader() {
+      return this.getObject()?.fClassName || 'TWebPainting';
+   }
+
    /** @summary Fill context menu
     * @desc Create only header, items will be requested from server */
    fillContextMenu(menu) {
-      const cl = this.getObject()?.fClassName || 'TWebPainting';
+      const cl = this.getMenuHeader();
       menu.header(cl, `${urlClassPrefix}${cl}.html`);
       return true;
    }

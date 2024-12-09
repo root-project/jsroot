@@ -888,12 +888,12 @@ class ObjectPainter extends BasePainter {
    /** @summary Fill context menu for the object
      * @private */
    fillContextMenu(menu) {
-      const name = this.getObjectName();
-      let cl = this.getClassName();
-      const p = cl.lastIndexOf('::');
-      if (p > 0) cl = cl.slice(p+2);
-      const hdr = (cl && name) ? `${cl}:${name}` : (cl || name || 'object'),
-            url = (p < 0) ? `${urlClassPrefix}${cl}.html` : '';
+      const cl = this.getClassName(),
+            name = this.getObjectName(),
+            p = cl.lastIndexOf('::'),
+            cl0 = (p > 0) ? cl.slice(p+2) : cl,
+            hdr = (cl0 && name) ? `${cl0}:${name}` : (cl0 || name || 'object'),
+            url = cl ? `${urlClassPrefix}${cl.replaceAll('::', '_1_1')}.html` : '';
 
       menu.header(hdr, url);
 

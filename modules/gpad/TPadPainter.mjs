@@ -2485,10 +2485,16 @@ class TPadPainter extends ObjectPainter {
                const shown = [];
                this.painters.forEach((pp, indx) => {
                   const obj = pp?.getObject();
-                  if (!obj || (shown.indexOf(obj) >= 0)) return;
-                  let name = isFunc(pp.getClassName) ? pp.getClassName() : (obj._typename || '');
-                  if (name) name += '::';
-                  name += isFunc(pp.getObjectName) ? pp.getObjectName() : (obj.fName || `item${indx}`);
+                  if (!obj || (shown.indexOf(obj) >= 0))
+                     return;
+                  let name = '';
+                  if (isFunc(pp.getMenuHeader))
+                     name = pp.getMenuHeader();
+                  else {
+                     name = isFunc(pp.getClassName) ? pp.getClassName() : (obj._typename || '');
+                     if (name) name += '::';
+                     name += isFunc(pp.getObjectName) ? pp.getObjectName() : (obj.fName || `item${indx}`);
+                  }
                   menu.add(name, indx, this.itemContextMenu);
                   shown.push(obj);
                });
