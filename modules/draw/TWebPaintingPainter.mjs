@@ -1,5 +1,6 @@
 import { getColor } from '../base/colors.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
+import { pointer as d3_pointer } from '../d3.mjs';
 import { urlClassPrefix } from '../core.mjs';
 import { assignContextMenu } from '../gui/menu.mjs';
 
@@ -30,11 +31,21 @@ class TWebPaintingPainter extends ObjectPainter {
       return true;
    }
 
+   /** @summary Mouse click handler
+    * @desc Redirect mouse click events to the ROOT application
+    * @private */
+   handleMouseClick(evnt) {
+      const pos = d3_pointer(evnt, this.draw_g.node()),
+            pp = this.getPadPainter(),
+            rect = pp?.getPadRect();
+
+      if (pp && rect && this.snapid)
+         pp.deliverWebCanvasEvent('click', pos[0] + rect.x, pos[1] + rect.y, this.snapid);
+   }
+
    /** @summary draw TWebPainting object */
    async redraw() {
       const obj = this.getObject(), func = this.getAxisToSvgFunc();
-
-      console.log('drawing ', obj.fClassName);
 
       if (!obj?.fOper || !func)
          return this;
@@ -181,6 +192,8 @@ class TWebPaintingPainter extends ObjectPainter {
       return process(-1).then(() => {
          check_attributes();
          assignContextMenu(this);
+         if (!this.isBatchMode())
+            this.draw_g.on('click', evnt => this.handleMouseClick(evnt));
          return this;
       });
    }

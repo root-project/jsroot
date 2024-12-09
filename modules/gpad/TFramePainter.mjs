@@ -410,8 +410,8 @@ const TooltipHandler = {
       // collect tooltips from pad painter - it has list of all drawn objects
       const hints = pp?.processPadTooltipEvent(pnt) ?? [];
 
-      if (pp?._deliver_webcanvas_events && pp?.is_active_pad && pnt && isFunc(pp?.deliverWebCanvasEvent))
-         pp.deliverWebCanvasEvent('move', frame_rect.x + pnt.x, frame_rect.y + pnt.y, hints);
+      if (pnt && frame_rect)
+         pp.deliverWebCanvasEvent('move', frame_rect.x + pnt.x, frame_rect.y + pnt.y, hints ? hints[0]?.painter?.snapid : '');
 
       for (let n = 0; n < hints.length; ++n) {
          const hint = hints[n];

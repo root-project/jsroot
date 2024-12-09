@@ -1919,7 +1919,7 @@ class TPadPainter extends ObjectPainter {
       first.fPrimitives = null; // primitives are not interesting, they are disabled in IO
 
       // if there are execs in the pad, deliver events to the server
-      this._deliver_webcanvas_events = first.fExecs?.arr?.length > 0;
+      this._deliver_move_events = first.fExecs?.arr?.length > 0;
 
       if (this.snapid === undefined) {
          // first time getting snap, create all gui elements first
@@ -2056,7 +2056,8 @@ class TPadPainter extends ObjectPainter {
             fp.cleanFrameDrawings();
             fp.redraw();
          }
-         if (isFunc(this.removePadButtons)) this.removePadButtons();
+         if (isFunc(this.removePadButtons))
+            this.removePadButtons();
          this.addPadButtons(true);
       }
 
@@ -2072,16 +2073,16 @@ class TPadPainter extends ObjectPainter {
 
    /** @summary Deliver mouse move or click event to the web canvas
      * @private */
-   deliverWebCanvasEvent(kind, x, y, hints) {
-      if (!this._deliver_webcanvas_events || !this.is_active_pad || this.doingDraw() || x === undefined || y === undefined) return;
+   deliverWebCanvasEvent(kind, x, y, snapid) {
+      if (!this.is_active_pad || this.doingDraw() || x === undefined || y === undefined)
+         return;
+      if ((kind === 'move') && !this._deliver_move_events)
+         return;
       const cp = this.getCanvPainter();
-      if (!cp || !cp._websocket || !cp._websocket.canSend(2) || cp._readonly) return;
+      if (!cp || !cp._websocket || !cp._websocket.canSend(2) || cp._readonly)
+         return;
 
-      let selobj_snapid = '';
-      if (hints && hints[0] && hints[0].painter?.snapid)
-         selobj_snapid = hints[0].painter.snapid.toString();
-
-      const msg = JSON.stringify([this.snapid, kind, x.toString(), y.toString(), selobj_snapid]);
+      const msg = JSON.stringify([this.snapid, kind, x.toString(), y.toString(), snapid ? snapid.toString() : '']);
 
       cp.sendWebsocket(`EVENT:${msg}`);
    }
