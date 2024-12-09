@@ -392,11 +392,13 @@ const TooltipHandler = {
          }
       }
 
-      let nhints = 0, nexact = 0, maxlen = 0, lastcolor1 = 0, usecolor1 = false, textheight = 11;
+      let nhints = 0, nexact = 0, maxlen = 0, lastcolor1 = 0, usecolor1 = false;
       const hmargin = 3, wmargin = 3, hstep = 1.2,
             frame_rect = this.getFrameRect(),
             pp = this.getPadPainter(),
             pad_width = pp?.getPadWidth(),
+            scale = this.getCanvPainter()?.getPadScale() ?? 1,
+            textheight = (pnt?.touch ? 15 : 11) * scale,
             font = new FontHandler(160, textheight),
             disable_tootlips = !this.isTooltipAllowed() || !this.tooltip_enabled;
 
@@ -410,8 +412,6 @@ const TooltipHandler = {
 
       if (pp?._deliver_webcanvas_events && pp?.is_active_pad && pnt && isFunc(pp?.deliverWebCanvasEvent))
          pp.deliverWebCanvasEvent('move', frame_rect.x + pnt.x, frame_rect.y + pnt.y, hints);
-
-      if (pnt?.touch) textheight = 15;
 
       for (let n = 0; n < hints.length; ++n) {
          const hint = hints[n];
@@ -522,7 +522,7 @@ const TooltipHandler = {
             .property('hints_pad', this.getPadName());
 
       let viewmode = hintsg.property('viewmode') || '',
-         actualw = 0, posx = pnt.x + frame_rect.hint_delta_x;
+          actualw = 0, posx = pnt.x + frame_rect.hint_delta_x;
 
       if (show_only_best || (nhints === 1)) {
          viewmode = 'single';
@@ -592,7 +592,8 @@ const TooltipHandler = {
                   n = -1;
                }
             }
-            if ((gapminx === -1111) && (gapmaxx === -1111)) gapminx = gapmaxx = hint.x;
+            if ((gapminx === -1111) && (gapmaxx === -1111))
+               gapminx = gapmaxx = hint.x;
             gapminx = Math.min(gapminx, hint.x);
             gapmaxx = Math.min(gapmaxx, hint.x);
          }
