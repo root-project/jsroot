@@ -72,6 +72,9 @@ async function drawText() {
       if (this.isBatchMode())
          return this;
 
+      if (!pp.isEditable() && pp.isButton())
+         return this;
+
       this.pos_dx = this.pos_dy = 0;
 
       if (!this.moveDrag) {

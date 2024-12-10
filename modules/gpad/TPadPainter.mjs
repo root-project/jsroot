@@ -243,22 +243,19 @@ class TPadPainter extends ObjectPainter {
    isRoot6() { return true; }
 
    /** @summary Returns true if pad is editable */
-   isEditable() {
-      return this.pad?.fEditable ?? true;
-   }
+   isEditable() { return this.pad?.fEditable ?? true; }
+
+   /** @summary Returns true if button */
+   isButton() { return this.matchObjectType(clTButton); }
 
    /** @summary Returns SVG element for the pad itself
     * @private */
-   svg_this_pad() {
-      return this.getPadSvg(this.this_pad_name);
-   }
+   svg_this_pad() { return this.getPadSvg(this.this_pad_name); }
 
    /** @summary Returns main painter on the pad
      * @desc Typically main painter is TH1/TH2 object which is drawing axes
     * @private */
-   getMainPainter() {
-      return this.main_painter_ref || null;
-   }
+   getMainPainter() { return this.main_painter_ref || null; }
 
    /** @summary Assign main painter on the pad
      * @desc Typically main painter is TH1/TH2 object which is drawing axes
@@ -968,7 +965,7 @@ class TPadPainter extends ObjectPainter {
          delete this.$userInteractive;
       }
 
-      if (this.isBatchMode() || this.iscan)
+      if (this.isBatchMode() || this.iscan || !this.isEditable())
          return;
 
       const svg_can = this.getCanvSvg(),
