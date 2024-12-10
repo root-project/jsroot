@@ -72,8 +72,10 @@ async function drawText() {
       if (this.isBatchMode())
          return this;
 
-      if (!pp.isEditable() && pp.isButton())
+      if (pp.isButton() && !pp.isEditable()) {
+         this.draw_g.on('click', () => this.getCanvPainter().selectActivePad(pp));
          return this;
+      }
 
       this.pos_dx = this.pos_dy = 0;
 
