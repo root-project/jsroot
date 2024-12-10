@@ -40,7 +40,8 @@ class TWebPaintingPainter extends ObjectPainter {
             rect = pp?.getPadRect();
 
       if (pp && rect && this.snapid)
-         pp.deliverWebCanvasEvent('click', pos[0] + rect.x, pos[1] + rect.y, this.snapid);
+         pp.selectObjectPainter(this, { x: pos[0] + rect.x, y: pos[1] + rect.y });
+         // pp.deliverWebCanvasEvent('click', pos[0] + rect.x, pos[1] + rect.y, this.snapid);
    }
 
    /** @summary draw TWebPainting object */
