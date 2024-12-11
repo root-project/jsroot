@@ -983,11 +983,11 @@ class TPadPainter extends ObjectPainter {
          minwidth: 20, minheight: 20,
          move_resize: (_x, _y, _w, _h) => {
             const x0 = this.pad.fAbsXlowNDC,
-                y0 = this.pad.fAbsYlowNDC,
-                scale_w = _w / width / this.pad.fAbsWNDC,
-                scale_h = _h / height / this.pad.fAbsHNDC,
-                shift_x = _x / width - x0,
-                shift_y = 1 - (_y + _h) / height - y0;
+                  y0 = this.pad.fAbsYlowNDC,
+                  scale_w = _w / width / this.pad.fAbsWNDC,
+                  scale_h = _h / height / this.pad.fAbsHNDC,
+                  shift_x = _x / width - x0,
+                  shift_y = 1 - (_y + _h) / height - y0;
             this.forEachPainterInPad(p => {
                p.pad.fAbsXlowNDC += (p.pad.fAbsXlowNDC - x0) * (scale_w - 1) + shift_x;
                p.pad.fAbsYlowNDC += (p.pad.fAbsYlowNDC - y0) * (scale_h - 1) + shift_y;
@@ -1560,6 +1560,12 @@ class TPadPainter extends ObjectPainter {
       this.pad.fY1 = obj.fY1;
       this.pad.fY2 = obj.fY2;
 
+      // this is main coordinates for subpad relative to canvas
+      this.pad.fAbsWNDC = obj.fAbsWNDC;
+      this.pad.fAbsHNDC = obj.fAbsHNDC;
+      this.pad.fAbsXlowNDC = obj.fAbsXlowNDC;
+      this.pad.fAbsYlowNDC = obj.fAbsYlowNDC;
+
       this.pad.fLeftMargin = obj.fLeftMargin;
       this.pad.fRightMargin = obj.fRightMargin;
       this.pad.fBottomMargin = obj.fBottomMargin;
@@ -1579,9 +1585,10 @@ class TPadPainter extends ObjectPainter {
          this.checkSpecialsInPrimitives(obj);
 
       const fp = this.getFramePainter();
-      if (fp) fp.updateAttributes(!fp.$modifiedNDC);
+      fp?.updateAttributes(!fp.$modifiedNDC);
 
-      if (!obj.fPrimitives) return false;
+      if (!obj.fPrimitives)
+         return false;
 
       let isany = false, p = 0;
       for (let n = 0; n < obj.fPrimitives.arr?.length; ++n) {
@@ -1589,7 +1596,8 @@ class TPadPainter extends ObjectPainter {
             continue;
          while (p < this.painters.length) {
             const op = this.painters[p++];
-            if (!op._primitive) continue;
+            if (!op._primitive)
+               continue;
             if (op.updateObject(obj.fPrimitives.arr[n], obj.fPrimitives.opt[n]))
                isany = true;
             break;
