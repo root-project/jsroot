@@ -125,9 +125,8 @@ async function drawText() {
 
       if (this.matchObjectType(clTLink)) {
          this.draw_g.style('cursor', 'pointer')
-                    .on('click', () => this.submitCanvExec(`ExecuteEvent(kButton1Up, 0, 0);;`));
+                    .on('click', () => this.submitCanvExec('ExecuteEvent(kButton1Up, 0, 0);;'));
       }
-
 
       return this;
    });

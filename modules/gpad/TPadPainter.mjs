@@ -2025,9 +2025,10 @@ class TPadPainter extends ObjectPainter {
             const sub = this.painters[k];
 
             // skip secondary painters or painters without snapid
-            if (!isStr(sub.snapid) || sub.isSecondary()) continue; // look only for painters with snapid
+            if (!isStr(sub.snapid) || sub.isSecondary())
+               continue; // look only for painters with snapid
 
-            const prim = snap.fPrimitives.find(prim => (prim.fObjectID === sub.snapid && !prim.$checked));
+            const prim = snap.fPrimitives.find(prim => ((prim.fObjectID === sub.snapid) && !prim.$checked));
             if (prim) {
                isanyfound = true;
                prim.$checked = true;
