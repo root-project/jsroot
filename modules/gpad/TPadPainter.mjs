@@ -1774,7 +1774,7 @@ class TPadPainter extends ObjectPainter {
       if (indx === undefined) {
          indx = -1;
          this._snaps_map = {}; // to control how much snaps are drawn
-         this._num_primitives = lst ? lst.length : 0;
+         this._num_primitives = lst?.length ?? 0;
       }
 
       ++indx; // change to the next snap
