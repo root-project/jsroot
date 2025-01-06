@@ -1798,13 +1798,14 @@ class TPadPainter extends ObjectPainter {
       // try to locate existing object painter, only allowed when redrawing pad snap
       let objpainter = null;
       if ((pindx !== undefined) && (pindx < this.painters.length))  {
-         const subp = this.painters[pindx++];
-         if (subp.snapid === snap.fObjectID)
+         while ((pindx < this.painters.length) && (!this.painters[pindx].snapid || this.painters[pindx].isSecondary()))
+            pindx++;
+
+         const subp = pindx < this.painters.length ? this.painters[pindx++] : null;
+         if (subp && (subp.snapid === snap.fObjectID))
             objpainter = subp;
          else
-            console.warn('Mismatch in painters - why????', subp.snapid, snap.fKind, snap.fObjectID);
-         while ((pindx < this.painters.length) && this.painters[pindx].isSecondary())
-            pindx++;
+            console.warn(`Mismatch in snapid between painter ${subp?.snapid} and primitive ${snap.fObjectID} kind ${snap.fKind}`);
       }
 
       if (objpainter) {
@@ -1977,7 +1978,7 @@ class TPadPainter extends ObjectPainter {
 
       let missmatch = false;
 
-      // find and remove painters which no longer exists in the list
+      // match painters with new list of primitives
       if (!snap.fWithoutPrimitives) {
          let i = 0, k = 0;
          while (k < this.painters.length) {
@@ -2643,4 +2644,4 @@ class TPadPainter extends ObjectPainter {
 
 } // class TPadPainter
 
-export { TPadPainter, PadButtonsHandler, clTButton, kIsGrayscale, createWebObjectOptions };
+export { TPadPainter, PadButtonsHandler, clTButton, kIsGrayscale, createWebObjectOptions, webSnapIds };
