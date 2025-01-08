@@ -1239,6 +1239,12 @@ class THistPainter extends ObjectPainter {
 
       if (ndim > 1) {
          this.nbinsy = histo.fYaxis.fNbins;
+         if (histo.fYaxis.TestBit(EAxisBits.kAxisRange) && (histo.fYaxis.fFirst !== histo.fYaxis.fLast)) {
+            if (histo.fYaxis.fFirst === 0)
+               this.ymin = histo.fYaxis.GetBinLowEdge(0);
+            if (histo.fYaxis.fLast === this.nbinsy + 1)
+               this.ymax = histo.fYaxis.GetBinLowEdge(this.nbinsy + 2);
+         }
          assignTAxisFuncs(histo.fYaxis);
 
          this.zmin = histo.fZaxis.fXmin;
@@ -1252,6 +1258,12 @@ class THistPainter extends ObjectPainter {
 
       if (ndim > 2) {
          this.nbinsz = histo.fZaxis.fNbins;
+         if (histo.fZaxis.TestBit(EAxisBits.kAxisRange) && (histo.fZaxis.fFirst !== histo.fZaxis.fLast)) {
+            if (histo.fZaxis.fFirst === 0)
+               this.zmin = histo.fZaxis.GetBinLowEdge(0);
+            if (histo.fZaxis.fLast === this.nbinsz + 1)
+               this.zmax = histo.fZaxis.GetBinLowEdge(this.nbinsz + 2);
+         }
          assignTAxisFuncs(histo.fZaxis);
        }
    }
@@ -2354,8 +2366,8 @@ class THistPainter extends ObjectPainter {
 
       let i, j, x, y, binz, binarea;
 
-      res.grx = new Float32Array(res.i2+1);
-      res.gry = new Float32Array(res.j2+1);
+      res.grx = res.i1 < 0 ? {} : new Float32Array(res.i2 + 1);
+      res.gry = res.j1 < 0 ? {} : new Float32Array(res.j2 + 1);
 
       if ((typeof histo.fBarOffset === 'number') && (typeof histo.fBarWidth === 'number') &&
            (histo.fBarOffset || histo.fBarWidth !== 1000)) {
@@ -2377,8 +2389,8 @@ class THistPainter extends ObjectPainter {
 
       if (args.original) {
          res.original = true;
-         res.origx = new Float32Array(res.i2+1);
-         res.origy = new Float32Array(res.j2+1);
+         res.origx = res.i1 < 0 ? {} : new Float32Array(res.i2 + 1);
+         res.origy = res.j1 < 0 ? {} : new Float32Array(res.j2 + 1);
       }
 
       if (args.pixel_density)
