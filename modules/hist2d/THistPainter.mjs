@@ -1218,10 +1218,12 @@ class THistPainter extends ObjectPainter {
       this.nbinsx = histo.fXaxis.fNbins;
       this.xmin = histo.fXaxis.fXmin;
       this.xmax = histo.fXaxis.fXmax;
-      if (histo.fXaxis.fFirst === 0)
-         this.xmin = histo.fXaxis.GetBinLowEdge(0);
-      if (histo.fXaxis.fLast === this.nbinsx + 1)
-         this.xmax = histo.fXaxis.GetBinLowEdge(this.nbinsx + 2);
+      if (histo.fXaxis.TestBit(EAxisBits.kAxisRange) && (histo.fXaxis.fFirst !== histo.fXaxis.fLast)) {
+         if (histo.fXaxis.fFirst === 0)
+            this.xmin = histo.fXaxis.GetBinLowEdge(0);
+         if (histo.fXaxis.fLast === this.nbinsx + 1)
+            this.xmax = histo.fXaxis.GetBinLowEdge(this.nbinsx + 2);
+      }
 
       assignTAxisFuncs(histo.fXaxis);
 
