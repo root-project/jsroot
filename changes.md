@@ -5,6 +5,7 @@
 1. Adjust histogram title drawing with native implementation
 1. Improve float to string convertion when 'g' is specified
 1. Support "same" option for first histogram, draw direcly on pad
+1. Display underflow/overflow bins when configured for the axis
 1. Support different angle coordiantes in `TGraphPolargram`, handle 'N' and 'O' draw options
 1. Suppor fAxisAngle in `TGraphPolargram`, provide 'rangleNN' draw option
 1. Implement 'arc' draw option for `TPave`
