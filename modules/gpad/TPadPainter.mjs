@@ -1797,7 +1797,7 @@ class TPadPainter extends ObjectPainter {
 
       // try to locate existing object painter, only allowed when redrawing pad snap
       let objpainter = null;
-      if ((pindx !== undefined) && (pindx < this.painters.length))  {
+      if ((pindx !== undefined) && (pindx < this.painters.length)) {
          while ((pindx < this.painters.length) && (!this.painters[pindx].snapid || this.painters[pindx].isSecondary()))
             pindx++;
 

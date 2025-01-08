@@ -1086,7 +1086,7 @@ class RPadPainter extends RObjectPainter {
 
       // try to locate existing object painter, only allowed when redrawing pad snap
       let objpainter = null;
-      if ((pindx !== undefined) && (pindx < this.painters.length))  {
+      if ((pindx !== undefined) && (pindx < this.painters.length)) {
          while ((pindx < this.painters.length) && (!this.painters[pindx].snapid || this.painters[pindx].isSecondary()))
             pindx++;
          const subp = pindx < this.painters.length ? this.painters[pindx++] : null;
@@ -1225,8 +1225,8 @@ class RPadPainter extends RObjectPainter {
       let missmatch = false, i = 0, k = 0;
 
       // match painters with new list of primitives
-      while(k < this.painters.length) {
-         let sub = this.painters[k];
+      while (k < this.painters.length) {
+         const sub = this.painters[k];
 
          // skip check secondary painters or painters without snapid
          // also frame painter will be excluded here
@@ -1240,7 +1240,7 @@ class RPadPainter extends RObjectPainter {
 
          const prim = snap.fPrimitives[i];
          // ignore primitives without snapid or which are not produce drawings
-         if (prim.fDummy || !prim.fObjectID || ((prim._typename === `${nsREX}TObjectDisplayItem`) && ((prim.fKind === webSnapIds.kStyle) || (prim.fKind === webSnapIds.kColors) || (prim.fKind === webSnapIds.kPalette) || (prim.fKind === webSnapIds.kFont) ))) {
+         if (prim.fDummy || !prim.fObjectID || ((prim._typename === `${nsREX}TObjectDisplayItem`) && ((prim.fKind === webSnapIds.kStyle) || (prim.fKind === webSnapIds.kColors) || (prim.fKind === webSnapIds.kPalette) || (prim.fKind === webSnapIds.kFont)))) {
             i++;
             continue;
          }

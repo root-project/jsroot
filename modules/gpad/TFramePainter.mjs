@@ -2657,12 +2657,12 @@ class TFramePainter extends ObjectPainter {
                   } else
                      faxis.fLast = faxis.fNbins;
                   if (flag !== faxis.TestBit(EAxisBits.kAxisRange))
-                     faxis.InvertBit(EAxisBits.kAxisRange)
+                     faxis.InvertBit(EAxisBits.kAxisRange);
                   hist_painter?.scanContent();
                   this.zoomSingle(kind, arr[0], arr[1], true).then(res => {
                      if (!res && flag)
                         this.interactiveRedraw('pad');
-                  })
+                  });
                }
             });
          });
@@ -2673,7 +2673,7 @@ class TFramePainter extends ObjectPainter {
                   hist_painter?.scanContent();
                   this.interactiveRedraw('pad');
                }
-            })
+            });
          });
          if (handle?.value_axis && isFunc(wrk?.accessMM)) {
             menu.add('Minimum', () => {
