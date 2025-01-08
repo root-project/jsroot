@@ -1218,6 +1218,11 @@ class THistPainter extends ObjectPainter {
       this.nbinsx = histo.fXaxis.fNbins;
       this.xmin = histo.fXaxis.fXmin;
       this.xmax = histo.fXaxis.fXmax;
+      if (histo.fXaxis.fFirst === 0)
+         this.xmin = histo.fXaxis.GetBinLowEdge(0);
+      if (histo.fXaxis.fLast === this.nbinsx + 1)
+         this.xmax = histo.fXaxis.GetBinLowEdge(this.nbinsx + 2);
+
       assignTAxisFuncs(histo.fXaxis);
 
       this.ymin = histo.fYaxis.fXmin;
@@ -1612,7 +1617,7 @@ class THistPainter extends ObjectPainter {
       // TAxis object of histogram, where user range can be stored
       if (taxis) {
          if ((taxis.fFirst === taxis.fLast) || !taxis.TestBit(EAxisBits.kAxisRange) ||
-             ((taxis.fFirst <= 1) && (taxis.fLast >= nbin)))
+             ((taxis.fFirst === 1) && (taxis.fLast === nbin)))
                taxis = null;
       }
 
@@ -1620,10 +1625,14 @@ class THistPainter extends ObjectPainter {
          indx = Math.max(indx, 0);
          if (taxis && (taxis.fFirst > 1) && (indx < taxis.fFirst))
             indx = taxis.fFirst - 1;
+         else if (taxis?.fFirst === 0) // showing underflow bin
+            indx = -1;
       } else {
          indx = Math.min(indx, nbin);
          if (taxis && (taxis.fLast <= nbin) && (indx > taxis.fLast))
             indx = taxis.fLast;
+         else if (taxis?.fLast === nbin + 1)
+            indx = nbin + 1;
       }
 
       return indx;
