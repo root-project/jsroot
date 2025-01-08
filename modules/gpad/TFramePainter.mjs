@@ -2648,7 +2648,15 @@ class TFramePainter extends ObjectPainter {
                   this.zoomSingle(kind, arr[0], arr[1], true);
             });
          });
-         menu.add('Unzoom', () => this.unzoom(kind));
+         menu.add('Unzoom', () => {
+            this.unzoomSingle(kind).then(res => {
+               if (!res && (faxis.fFirst !== faxis.fLast)) {
+                  faxis.fFirst = faxis.fLast = 0;
+                  hist_painter?.scanContent();
+                  this.interactiveRedraw('pad');
+               }
+            })
+         });
          if (handle?.value_axis && isFunc(wrk?.accessMM)) {
             menu.add('Minimum', () => {
                menu.input(`Enter minimum value or ${kNoZoom} as default`, wrk.accessMM(true), 'float').then(v => {
