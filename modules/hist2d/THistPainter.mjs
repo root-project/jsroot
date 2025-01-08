@@ -1588,8 +1588,10 @@ class THistPainter extends ObjectPainter {
       let indx = 0, taxis = this.getAxis(axis);
       const nbin = this[`nbins${axis}`] ?? 0;
 
-      if (this.options.second_x && axis === 'x') axis = 'x2';
-      if (this.options.second_y && axis === 'y') axis = 'y2';
+      if (this.options.second_x && axis === 'x')
+         axis = 'x2';
+      if (this.options.second_y && axis === 'y')
+         axis = 'y2';
       const main = this.getFramePainter(),
             min = main ? main[`zoom_${axis}min`] : 0,
             max = main ? main[`zoom_${axis}max`] : 0;
@@ -1600,8 +1602,8 @@ class THistPainter extends ObjectPainter {
          else
             indx = taxis.FindBin(max, (add || 0) + 0.5);
          if (indx < 0)
-            indx = 0; else
-         if (indx > nbin)
+            indx = 0;
+         else if (indx > nbin)
             indx = nbin;
       } else
          indx = (side === 'left') ? 0 : nbin;
@@ -1610,15 +1612,18 @@ class THistPainter extends ObjectPainter {
       // TAxis object of histogram, where user range can be stored
       if (taxis) {
          if ((taxis.fFirst === taxis.fLast) || !taxis.TestBit(EAxisBits.kAxisRange) ||
-             ((taxis.fFirst <= 1) && (taxis.fLast >= nbin))) taxis = undefined;
+             ((taxis.fFirst <= 1) && (taxis.fLast >= nbin)))
+               taxis = null;
       }
 
       if (side === 'left') {
-         if (indx < 0) indx = 0;
-         if (taxis && (taxis.fFirst > 1) && (indx < taxis.fFirst)) indx = taxis.fFirst - 1;
+         indx = Math.max(indx, 0);
+         if (taxis && (taxis.fFirst > 1) && (indx < taxis.fFirst))
+            indx = taxis.fFirst - 1;
       } else {
-         if (indx > nbin) indx = nbin;
-         if (taxis && (taxis.fLast <= nbin) && (indx>taxis.fLast)) indx = taxis.fLast;
+         indx = Math.min(indx, nbin);
+         if (taxis && (taxis.fLast <= nbin) && (indx > taxis.fLast))
+            indx = taxis.fLast;
       }
 
       return indx;
