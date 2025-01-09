@@ -4,7 +4,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '8/01/2025',
+version_date = '9/01/2025',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -1536,7 +1536,7 @@ function getMethods(typename, obj) {
       if (typeof m.TestBit === 'undefined') {
          m.TestBit = function(f) { return (this.fBits & f) !== 0; };
          m.InvertBit = function(f) { this.fBits = this.fBits ^ (f & 0xffffff); };
-         m.SetBit = function(f, on = true) { this.fBits = on ? this.fBits | f : this.fBits & ~f; }
+         m.SetBit = function(f, on = true) { this.fBits = on ? this.fBits | f : this.fBits & ~f; };
       }
    }
 
