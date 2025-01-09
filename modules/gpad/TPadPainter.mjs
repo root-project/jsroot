@@ -585,7 +585,8 @@ class TPadPainter extends ObjectPainter {
    /** @summary Set grayscale mode for the canvas
      * @private */
    setGrayscale(flag) {
-      if (!this.iscan) return;
+      if (!this.iscan)
+         return;
 
       let changed = false;
 
