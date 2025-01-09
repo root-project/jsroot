@@ -168,8 +168,8 @@ class THistDrawOptions {
       if (d.check('OPTSTAT', true)) this.optstat = d.partAsInt();
       if (d.check('OPTFIT', true)) this.optfit = d.partAsInt();
 
-      if ((this.optstat || this.optfit) && histo?.TestBit(kNoStats))
-         histo?.InvertBit(kNoStats);
+      if (this.optstat || this.optfit)
+         histo?.SetBit(kNoStats, false);
 
       if (d.check('ALLBINS') && histo) {
          histo.fXaxis.fFirst = 0;
@@ -190,8 +190,10 @@ class THistDrawOptions {
       if (d.check('NOSTAT')) this.NoStat = true;
       if (d.check('STAT')) this.ForceStat = true;
 
-      if (d.check('NOTOOLTIP') && painter) painter.setTooltipAllowed(false);
-      if (d.check('TOOLTIP') && painter) painter.setTooltipAllowed(true);
+      if (d.check('NOTOOLTIP'))
+         painter?.setTooltipAllowed(false);
+      if (d.check('TOOLTIP'))
+         painter?.setTooltipAllowed(true);
 
       if (d.check('SYMLOGX', true)) this.SymlogX = d.partAsInt(0, 3);
       if (d.check('SYMLOGY', true)) this.SymlogY = d.partAsInt(0, 3);
