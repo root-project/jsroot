@@ -1536,6 +1536,7 @@ function getMethods(typename, obj) {
       if (typeof m.TestBit === 'undefined') {
          m.TestBit = function(f) { return (this.fBits & f) !== 0; };
          m.InvertBit = function(f) { this.fBits = this.fBits ^ (f & 0xffffff); };
+         m.SetBit = function(f, on = true) { this.fBits = on ? this.fBits | f : this.fBits & ~f; }
       }
    }
 
