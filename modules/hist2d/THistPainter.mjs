@@ -102,7 +102,8 @@ class THistDrawOptions {
 
       const d = new DrawOptions(opt);
 
-      if (hdim === 1) this.decodeSumw2(histo, true);
+      if (hdim === 1)
+         this.decodeSumw2(histo, true);
 
       this.ndim = hdim || 1; // keep dimensions, used for now in GED
 
@@ -169,6 +170,22 @@ class THistDrawOptions {
 
       if ((this.optstat || this.optstat) && histo?.TestBit(kNoStats))
          histo?.InvertBit(kNoStats);
+
+      if (d.check('ALLBINS') && histo) {
+         histo.fXaxis.fFirst = 0;
+         histo.fXaxis.fLast = histo.fXaxis.fNbins + 1;
+         histo.fXaxis.SetBit(EAxisBits.kAxisRange);
+         if (this.ndim > 1) {
+            histo.fYaxis.fFirst = 0;
+            histo.fYaxis.fLast = histo.fYaxis.fNbins + 1;
+            histo.fYaxis.SetBit(EAxisBits.kAxisRange);
+         }
+         if (this.ndim > 2) {
+            histo.fZaxis.fFirst = 0;
+            histo.fZaxis.fLast = histo.fZaxis.fNbins + 1;
+            histo.fZaxis.SetBit(EAxisBits.kAxisRange);
+         }
+      }
 
       if (d.check('NOSTAT')) this.NoStat = true;
       if (d.check('STAT')) this.ForceStat = true;
