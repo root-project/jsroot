@@ -1,12 +1,10 @@
-name: JSROOT CI
+name: JSROOT CI Old
 
 on:
   push:
     branches:
-      - "master"
-  pull_request:
-    branches:
-      - "master"
+      - "7.7"
+      - "7.8"
 
 jobs:
   build-ubuntu:
@@ -14,12 +12,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [18.x, 20.x, 22.x]
-        cxx: [g++-12, g++-13, g++-14]
+        node-version: [18.x, 20.x]
+        cxx: [g++-11, g++-12, g++-13]
 
     steps:
       - uses: actions/checkout@v4
-
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
@@ -38,6 +35,7 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci
+          npm install gl --no-save
 
       - name: Run eslint
         run: |
@@ -60,11 +58,8 @@ jobs:
   tests_ubuntu:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix:
-        node-version: [18.x, 20.x, 22.x]
-        cxx: [g++-12, g++-13, g++-14]
-
+        node-version: [18.x, 20.x]
     steps:
       - name: Checkout jsroot
         uses: actions/checkout@v4
@@ -75,38 +70,29 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: 'linev/jsroot-test'
+          ref: '${{ github.ref }}'
           path: 'jsroot-test'
 
       - name: Show jsroot status
         run: |
-            cd jsroot
-            git status
+          cd jsroot
+          git status
 
       - name: Show jsroot-test status
         run: |
-            cd jsroot-test
-            git status
+          cd jsroot-test
+          git status
 
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          cache-dependency-path: jsroot/package-lock.json
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-
-      - name: Set up C++ compiler (Ubuntu)
+      - name: Install System Dependencies for headless-gl
         run: |
           sudo apt-get update
-          sudo apt-get install -y ${{ matrix.cxx }}
-          sudo apt-get install -y xutils-dev libxi-dev libxxf86vm-dev x11proto-xf86vidmode-dev mesa-utils xvfb libgl1-mesa-dri libglapi-mesa libosmesa6 musl-dev libgl1-mesa-dev
-          sudo apt-get install -y build-essential libxi-dev libglu1-mesa-dev libglew-dev pkg-config
-          echo "CXX=${{ matrix.cxx }}" >> $GITHUB_ENV
-          echo "LIBGL_ALWAYS_SOFTWARE=1" >> $GITHUB_ENV
+          sudo apt-get install -y build-essential libxi-dev libglu1-mesa-dev libglew-dev xvfb
 
       - name: Dependencies jsroot
         run: |
           cd jsroot
           npm ci
+          npm install gl --no-save
 
       - name: Dependencies jsroot-test
         run: |
@@ -123,7 +109,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [18.x, 20.x]
 
     steps:
       - uses: actions/checkout@v4
@@ -146,6 +132,7 @@ jobs:
         run: |
           brew install python-setuptools pango librsvg
           npm ci
+          npm install gl --no-save
 
       - name: Run eslint
         run: |
@@ -169,7 +156,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [18.x, 20.x]
 
     steps:
       - uses: actions/checkout@v4
@@ -186,6 +173,7 @@ jobs:
       - name: Install dependencies
         run: |
           npm install
+          npm install gl --no-save
 
       - name: Run eslint
         run: |
