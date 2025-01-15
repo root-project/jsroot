@@ -331,35 +331,50 @@ function create3DCamera(fp, orthographic) {
    fp.scene.add(fp.camera);
 }
 
-/** @summary Set default camera position
+/** @summary Returns camera default position
   * @private */
-function setCameraPosition(fp, first_time) {
+function getCameraDefaultPosition(fp, first_time) {
    const pad = fp.getPadPainter().getRootPad(true),
          kz = fp.camera.isOrthographicCamera ? 1 : 1.4;
    let max3dx = Math.max(0.75*fp.size_x3d, fp.size_z3d),
-       max3dy = Math.max(0.75*fp.size_y3d, fp.size_z3d);
+       max3dy = Math.max(0.75*fp.size_y3d, fp.size_z3d),
+       pos = null;
 
    if (first_time) {
+      pos = new THREE.Vector3();
       if (max3dx === max3dy)
-         fp.camera.position.set(-1.6*max3dx, -3.5*max3dy, kz*fp.size_z3d);
+         pos.set(-1.6*max3dx, -3.5*max3dy, kz*fp.size_z3d);
       else if (max3dx > max3dy)
-         fp.camera.position.set(-2*max3dx, -3.5*max3dy, kz*fp.size_z3d);
+         pos.set(-2*max3dx, -3.5*max3dy, kz*fp.size_z3d);
       else
-         fp.camera.position.set(-3.5*max3dx, -2*max3dy, kz*fp.size_z3d);
+         pos.set(-3.5*max3dx, -2*max3dy, kz*fp.size_z3d);
    }
 
    if (pad && (first_time || !fp.zoomChangedInteractive())) {
       if (Number.isFinite(pad.fTheta) && Number.isFinite(pad.fPhi) && ((pad.fTheta !== fp.camera_Theta) || (pad.fPhi !== fp.camera_Phi))) {
-         fp.camera_Phi = pad.fPhi;
-         fp.camera_Theta = pad.fTheta;
+         if (!pos)
+            pos = new THREE.Vector3();
          max3dx = 3*Math.max(fp.size_x3d, fp.size_z3d);
          max3dy = 3*Math.max(fp.size_y3d, fp.size_z3d);
-         const phi = (270 - pad.fPhi)/180*Math.PI, theta = (pad.fTheta - 10)/180*Math.PI;
-         fp.camera.position.set(max3dx*Math.cos(phi)*Math.cos(theta),
-                                max3dy*Math.sin(phi)*Math.cos(theta),
-                                fp.size_z3d + (kz-0.9)*(max3dx+max3dy)*Math.sin(theta));
-         first_time = true;
+         const phi = (270 - pad.fPhi) / 180 * Math.PI,
+               theta = (pad.fTheta - 10) / 180 * Math.PI;
+         pos.set(max3dx*Math.cos(phi)*Math.cos(theta),
+                 max3dy*Math.sin(phi)*Math.cos(theta),
+                 fp.size_z3d + (kz-0.9)*(max3dx+max3dy)*Math.sin(theta));
       }
+   }
+
+   return pos;
+}
+
+/** @summary Set default camera position
+  * @private */
+function setCameraPosition(fp, first_time) {
+   const pos = getCameraDefaultPosition(fp, first_time);
+
+   if (pos) {
+      fp.camera.position.copy(pos);
+      first_time = true;
    }
 
    if (first_time)
@@ -367,7 +382,8 @@ function setCameraPosition(fp, first_time) {
 
    if (first_time && fp.camera.isOrthographicCamera && fp.scene_width && fp.scene_height) {
       const screen_ratio = fp.scene_width / fp.scene_height,
-          szx = fp.camera.right - fp.camera.left, szy = fp.camera.top - fp.camera.bottom;
+            szx = fp.camera.right - fp.camera.left,
+            szy = fp.camera.top - fp.camera.bottom;
 
       if (screen_ratio > szx / szy) {
          // screen wider than actual geometry
@@ -390,7 +406,7 @@ function getCameraPosition(fp) {
          dist = p.distanceTo(p0),
          dist_xy = Math.sqrt((p.x-p0.x)**2 + (p.y-p0.y)**2),
          new_theta = Math.atan2((p.z - p0.z)/dist, dist_xy/dist) / Math.PI * 180,
-         new_phi = 270 - Math.atan2((p.y - p0.y)/dist_xy, (p.x - p0.x)/dist_xy)/ Math.PI * 180,
+         new_phi = 270 - Math.atan2((p.y - p0.y)/dist_xy, (p.x - p0.x)/dist_xy) / Math.PI * 180,
          pad = fp.getPadPainter()?.getRootPad(true);
 
    fp.camera_Phi = new_phi >= 360 ? new_phi - 360 : new_phi;
@@ -430,7 +446,8 @@ function create3DControl(fp) {
          const delta_x = 1e-4*frame_painter.size_x3d,
                delta_y = 1e-4*frame_painter.size_y3d,
                delta_z = 1e-4*frame_painter.size_z3d;
-         if ((tip.x1 > tip.x2) || (tip.y1 > tip.y2) || (tip.z1 > tip.z2)) console.warn('check 3D hints coordinates');
+         if ((tip.x1 > tip.x2) || (tip.y1 > tip.y2) || (tip.z1 > tip.z2))
+            console.warn('check 3D hints coordinates');
          tip.x1 -= delta_x; tip.x2 += delta_x;
          tip.y1 -= delta_y; tip.y2 += delta_y;
          tip.z1 -= delta_z; tip.z2 += delta_z;
@@ -738,6 +755,9 @@ function resize3D() {
    if ((Math.abs(x3d - this.size_x3d) > 0.1*this.size_z3d) || (Math.abs(y3d - this.size_y3d) > 0.1*this.size_z3d)) {
       this.size_x3d = x3d;
       this.size_y3d = y3d;
+      const pos = getCameraDefaultPosition(this, true);
+      if (pos)
+         this.control.position0.copy(pos);
       return 1; // indicate significant resize
    }
 
