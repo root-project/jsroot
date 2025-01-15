@@ -548,9 +548,11 @@ function create3DScene(render3d, x3dscale, y3dscale, orthographic) {
    const sz = this.getSizeFor3d(undefined, render3d);
 
    this.size_z3d = 100;
-   this.size_x3d = this.size_y3d = (sz.height > 10) && (sz.width > 10) ? Math.round(sz.width/sz.height*this.size_z3d) : this.size_z3d;
-   if (x3dscale) this.size_x3d *= x3dscale;
-   if (y3dscale) this.size_y3d *= y3dscale;
+   this.x3dscale = x3dscale || 1;
+   this.y3dscale = y3dscale || 1;
+   const xy3d = (sz.height > 10) && (sz.width > 10) ? Math.round(sz.width/sz.height*this.size_z3d) : this.size_z3d;
+   this.size_x3d = xy3d * this.x3dscale;
+   this.size_y3d = xy3d * this.y3dscale;
 
    return importThreeJs().then(() => {
       // three.js 3D drawing
@@ -660,7 +662,8 @@ function render3D(tmout) {
       return rrr.domElement;
    }
 
-   if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
+   if (tmout === undefined)
+      tmout = 5; // by default, rendering happens with timeout
 
    const batch_mode = this.isBatchMode();
 
@@ -675,7 +678,8 @@ function render3D(tmout) {
       delete this.render_tmout;
    }
 
-   if (!this.renderer) return;
+   if (!this.renderer)
+      return;
 
    beforeRender3D(this.renderer);
 
@@ -726,6 +730,16 @@ function resize3D() {
    this.camera.updateProjectionMatrix();
 
    this.renderer.setSize(this.scene_width, this.scene_height);
+
+   const xy3d = (sz.height > 10) && (sz.width > 10) ? Math.round(sz.width/sz.height*this.size_z3d) : this.size_z3d,
+         x3d = xy3d * this.x3dscale,
+         y3d = xy3d * this.y3dscale;
+
+   if ((Math.abs(x3d - this.size_x3d) > 0.1*this.size_z3d) || (Math.abs(y3d - this.size_y3d) > 0.1*this.size_z3d)) {
+      this.size_x3d = x3d;
+      this.size_y3d = y3d;
+      return 1; // indicate significant resize
+   }
 
    return true;
 }
