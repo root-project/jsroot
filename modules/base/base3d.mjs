@@ -1076,9 +1076,9 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
             fp._dblclick_handler(info);
             return;
          }
-       }
+      }
 
-       this.reset();
+      this.reset();
    };
 
    control.changeEvent = function() {
