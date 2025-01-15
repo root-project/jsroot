@@ -42,7 +42,8 @@
      { "name": "optdate", "url": "nobrowser&file=$$$hsimple.root&item=hpx;1&optdate=2&optfile&utc", "title": "Draw on canvas file date and file name using optdate=2&optfile&utc URL parameters" },
      { "name": "opttitle", "url": "nobrowser&file=$$$hsimple.root&item=hpx;1&opttitle=0", "title": "Disable title drawing for histogram using opttitle=0 URL parameter" },
      { "name": "histmargin", "url": "nobrowser&file=$$$hsimple.root&item=hpx;1&histmargin=0.5", "title": "Setting gStyle.fHistTopMargin = 0.5 to demonstrate it usage, &histmargin=0.5 in URL" },
-     { "name": "haxis", "file": "haxis.root", "item": "chaxis", "title": "haxis draw option for swapped axis drawing plus bar chart and markers" }
+     { "name": "haxis", "file": "haxis.root", "item": "chaxis", "title": "haxis draw option for swapped axis drawing plus bar chart and markers" },
+     { "name": "canvas_scale", "url": "nobrowser&file=$$$hsimple.root&item=hpx&scale=4", "title": "Scale canvas by factor 4 to reduce visible line widths, see settings.CanvasScale" }
    ],
    "TH2" : [
      { "opt": "", "file": "hsimple.root", "item": "hpxpy;1", "title": "default draw mode for TH2", "pdf": true },
@@ -104,7 +105,8 @@
      { "name": "twoscales", "url": "nobrowser&file=$$$histpainter6.root&item=[draw_boxsame/[1],draw_boxsame/[2]]&opt=[box,box;x+y+;xaxis_red;yaxis_red]", "title": "interactive second X and Y scale for second histogram" },
      { "name": "cjust", "file": "cjust.root", "item": "c1;1", "title": "Demo for cjust draw option with fixed palette colors, see TPaletteAxis docu" },
      { "name": "same0", "file": "histpainter6.root", "item": "same0;1", "title": "Use of SAME0 draw option to ignore main histogram scale, see THistPainter docu" },
-     { "name": "image", "file": "hsimple.root", "item": "hpxpy;1", "opt": "colz", "title": "Create PNG image with makeImage() function", "aspng": "true" }
+     { "name": "image", "file": "hsimple.root", "item": "hpxpy;1", "opt": "colz", "title": "Create PNG image with makeImage() function", "aspng": "true" },
+     { "name": "canvas_scale", "url": "nobrowser&file=$$$hsimple.root&item=hpxpy&scale=4", "title": "Scale canvas by factor 4 to reduce visible line widths, see settings.CanvasScale" }
    ],
    "Candle" : [
      { "name": "plot", "file": "candleplot.root", "item": "candleplot;1", "title": "output from candleplot.C macro, use European time zone", "timezone" : "Europe/Berlin" },
