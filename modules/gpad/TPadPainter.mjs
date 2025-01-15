@@ -19,7 +19,8 @@ import { BrowserLayout, getHPainter } from '../gui/display.mjs';
 const clTButton = 'TButton', kIsGrayscale = BIT(22);
 
 function getButtonSize(handler, fact) {
-   return Math.round((fact || 1) * (handler.getCanvPainter()?._pad_scale || 1) * (handler.iscan || !handler.has_canvas ? 16 : 12));
+   const cp = handler.getCanvPainter();
+   return Math.round((fact || 1) * (cp?._pad_scale || 1) * (cp === handler ? 16 : 12));
 }
 
 function isPadPainter(p) {
