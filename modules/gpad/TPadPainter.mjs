@@ -19,7 +19,7 @@ import { BrowserLayout, getHPainter } from '../gui/display.mjs';
 const clTButton = 'TButton', kIsGrayscale = BIT(22);
 
 function getButtonSize(handler, fact) {
-   return Math.round((fact || 1) * (handler.iscan || !handler.has_canvas ? 16 : 12));
+   return Math.round((fact || 1) * (handler.getCanvPainter()?._pad_scale || 1) * (handler.iscan || !handler.has_canvas ? 16 : 12));
 }
 
 function isPadPainter(p) {
@@ -2513,17 +2513,19 @@ class TPadPainter extends ObjectPainter {
       const iscan = this.iscan || !this.has_canvas;
       if (!iscan && (funcname.indexOf('Pad') !== 0) && (funcname !== 'enlargePad')) {
          const cp = this.getCanvPainter();
-         if (cp && (cp !== this)) cp.addPadButton(btn, tooltip, funcname);
+         if (cp && (cp !== this))
+            cp.addPadButton(btn, tooltip, funcname);
       }
    }
 
    /** @summary Show pad buttons
      * @private */
    showPadButtons() {
-      if (!this._buttons) return;
+      if (!this._buttons)
+         return;
 
-       PadButtonsHandler.assign(this);
-       this.showPadButtons();
+      PadButtonsHandler.assign(this);
+      this.showPadButtons();
    }
 
    /** @summary Add buttons for pad or canvas
