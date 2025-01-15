@@ -752,12 +752,10 @@ function resize3D() {
          x3d = xy3d * this.x3dscale,
          y3d = xy3d * this.y3dscale;
 
-   if ((Math.abs(x3d - this.size_x3d) > 0.1*this.size_z3d) || (Math.abs(y3d - this.size_y3d) > 0.1*this.size_z3d)) {
+   if ((Math.abs(x3d - this.size_x3d) > 0.2*this.size_z3d) || (Math.abs(y3d - this.size_y3d) > 0.2*this.size_z3d)) {
       this.size_x3d = x3d;
       this.size_y3d = y3d;
-      const pos = getCameraDefaultPosition(this, true);
-      if (pos)
-         this.control.position0.copy(pos);
+      this.control.position0.copy(getCameraDefaultPosition(this, true));
       return 1; // indicate significant resize
    }
 
