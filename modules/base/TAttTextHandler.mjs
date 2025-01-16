@@ -90,14 +90,13 @@ class TAttTextHandler {
    }
 
    /** @summary Provides pixel size */
-   getSize(w, h, fact, zero_size) {
+   getSize(pp, fact, zero_size) {
       if (this.size >= 1)
          return Math.round(this.size);
-      if (!w) w = 1000;
-      if (!h) h = w;
-      if (!fact) fact = 1;
+      const w = pp?.getPadWidth() ?? 1000,
+            h = pp?.getPadHeight() ?? w;
 
-      return Math.round((this.size || zero_size || 0) * Math.min(w, h) * fact);
+      return Math.round((this.size || zero_size || 0) * Math.min(w, h) * (fact || 1));
    }
 
    /** @summary Returns alternating size - which defined by sz1 variable */

@@ -542,7 +542,6 @@ class TPavePainter extends ObjectPainter {
             arr = pt.fLines?.arr || [],
             nlines = arr.length,
             pp = this.getPadPainter(),
-            pad_width = pp.getPadWidth(),
             pad_height = pp.getPadHeight(),
             draw_header = (pt.fLabel.length > 0),
             promises = [],
@@ -554,7 +553,7 @@ class TPavePainter extends ObjectPainter {
 
       // for single line (typically title) limit font size
       if ((nlines === 1) && (this.textatt.size > 0))
-         max_font_size = Math.max(3, this.textatt.getSize(pad_width, pad_height));
+         max_font_size = Math.max(3, this.textatt.getSize(pp));
 
       if (!text_g)
          text_g = this.draw_g;
@@ -570,7 +569,7 @@ class TPavePainter extends ObjectPainter {
             num_custom++;
       });
 
-      const pr = (num_txt > num_custom) ? this.startTextDrawingAsync(this.textatt.font, this.$postitle ? this.textatt.getSize(pad_width, pad_height, 1, 0.05) : 0.85*height/nlines, text_g, max_font_size) : Promise.resolve();
+      const pr = (num_txt > num_custom) ? this.startTextDrawingAsync(this.textatt.font, this.$postitle ? this.textatt.getSize(pp, 1, 0.05) : 0.85*height/nlines, text_g, max_font_size) : Promise.resolve();
 
       return pr.then(() => {
          for (let nline = 0; nline < nlines; ++nline) {
@@ -774,7 +773,7 @@ class TPavePainter extends ObjectPainter {
       this.createAttText({ attr: legend, can_rotate: false });
 
       const pp = this.getPadPainter(),
-            tsz = this.textatt.getSize(pp.getPadWidth(), pp.getPadHeight());
+            tsz = this.textatt.getSize(pp);
       if (tsz && (tsz < font_size))
          font_size = max_font_size = tsz;
 
@@ -912,7 +911,7 @@ class TPavePainter extends ObjectPainter {
                              text: entry.fLabel, color: textatt.color };
                if (custom_textg) {
                   arg.draw_g = this.draw_g.append('svg:g');
-                  text_promises.push(this.startTextDrawingAsync(textatt.font, textatt.getSize(pp.getPadWidth(), pp.getPadHeight()), arg.draw_g, max_font_size)
+                  text_promises.push(this.startTextDrawingAsync(textatt.font, textatt.getSize(pp), arg.draw_g, max_font_size)
                                        .then(() => this.drawText(arg))
                                        .then(() => this.finishTextDrawing(arg.draw_g)));
                } else
