@@ -1230,16 +1230,17 @@ class ObjectPainter extends BasePainter {
       arg.font = font; // use in latex conversion
 
       if (font) {
-         if (font.color && !arg.color) arg.color = font.color;
-         if (font.align && !arg.align) arg.align = font.align;
-         if (font.angle && !arg.rotate) arg.rotate = font.angle;
+         arg.color = arg.color || font.color;
+         arg.align = arg.align || font.align;
+         arg.rotate = arg.rotate || font.angle;
       }
 
       let align = ['start', 'middle'];
 
       if (isStr(arg.align)) {
          align = arg.align.split(';');
-         if (align.length === 1) align.push('middle');
+         if (align.length === 1)
+            align.push('middle');
       } else if (typeof arg.align === 'number') {
          if ((arg.align / 10) >= 3)
             align[0] = 'end';
