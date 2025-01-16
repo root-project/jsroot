@@ -64,7 +64,6 @@ function createLatexGeometry(painter, lbl, size) {
       }
 
       attr(name, value) {
-
          const get = () => {
                   if (!value) return '';
                   const res = value[0];
