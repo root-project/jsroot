@@ -102,7 +102,8 @@ class TAttTextHandler {
 
    /** @summary Returns alternating size - which defined by sz1 variable */
    getAltSize(sz1, h) {
-      if (!sz1) sz1 = this.size;
+      if (!sz1)
+         sz1 = this.size;
       return Math.round(sz1 >= 1 ? sz1 : sz1 * h);
    }
 
