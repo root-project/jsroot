@@ -1044,9 +1044,9 @@ class ObjectPainter extends BasePainter {
       }
 
       all_args.forEach(arg => {
-         if (arg.mj_node && arg.applyAttributesToMathJax) {
+         if (arg.mj_node && arg.mj_func) {
             const svg = arg.mj_node.select('svg'); // MathJax svg
-            arg.applyAttributesToMathJax(this, arg.mj_node, svg, arg, font_size, f);
+            arg.mj_func(this, arg.mj_node, svg, arg, font_size, f);
             delete arg.mj_node; // remove reference
             only_text = false;
          } else if (arg.txt_g)

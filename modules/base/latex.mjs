@@ -1440,7 +1440,7 @@ function applyAttributesToMathJax(painter, mj_node, svg, arg, font_size, svg_fac
 
    if (isNodeJs()) {
       // workaround for NaN in viewBox produced by MathJax
-      let vb = svg.attr('viewBox');
+      const vb = svg.attr('viewBox');
       if (isStr(vb) && vb.indexOf('NaN') > 0)
          svg.attr('viewBox', vb.replaceAll('NaN', '600'));
       // console.log('Problematic viewBox', vb, svg.select('text').node()?.innerHTML);
@@ -1490,8 +1490,6 @@ function applyAttributesToMathJax(painter, mj_node, svg, arg, font_size, svg_fac
    if (arg.rotate)
       trans += `${trans?' ':''}rotate(${arg.rotate})`;
 
-
-
    mj_node.attr('transform', trans || null).attr('visibility', null);
 }
 
@@ -1511,7 +1509,7 @@ async function produceMathjax(painter, mj_node, arg) {
 
               repairMathJaxSvgSize(painter, mj_node, svg, arg);
 
-              arg.applyAttributesToMathJax = applyAttributesToMathJax;
+              arg.mj_func = applyAttributesToMathJax;
               return true;
            });
 }
