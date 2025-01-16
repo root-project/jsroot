@@ -752,10 +752,10 @@ function resize3D() {
          x3d = xy3d * this.x3dscale,
          y3d = xy3d * this.y3dscale;
 
-   if ((Math.abs(x3d - this.size_x3d) > 0.2*this.size_z3d) || (Math.abs(y3d - this.size_y3d) > 0.2*this.size_z3d)) {
+   if ((Math.abs(x3d - this.size_x3d) > 0.15*this.size_z3d) || (Math.abs(y3d - this.size_y3d) > 0.15*this.size_z3d)) {
       this.size_x3d = x3d;
       this.size_y3d = y3d;
-      this.control.position0.copy(getCameraDefaultPosition(this, true));
+      this.control?.position0?.copy(getCameraDefaultPosition(this, true));
       return 1; // indicate significant resize
    }
 
@@ -768,7 +768,8 @@ function highlightBin3D(tip, selfmesh) {
    const want_remove = !tip || (tip.x1 === undefined) || !this.enable_highlight;
    let changed = false, tooltip_mesh = null, changed_self = true, mainp = this.getMainPainter();
 
-   if (mainp && (!mainp.provideUserTooltip || !mainp.hasUserTooltip())) mainp = null;
+   if (!mainp?.provideUserTooltip || !mainp?.hasUserTooltip())
+      mainp = null;
 
    if (this.tooltip_selfmesh) {
       changed_self = (this.tooltip_selfmesh !== selfmesh);
