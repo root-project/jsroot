@@ -1138,7 +1138,11 @@ class ObjectPainter extends BasePainter {
          } else
             console.error('text rect not calcualted - please check code');
 
-         if (!arg.rotate) { arg.x += dx; arg.y += dy; dx = dy = 0; }
+         if (!arg.rotate) {
+            arg.x += dx;
+            arg.y += dy;
+            dx = dy = 0;
+         }
 
          // use translate and then rotate to avoid complex sign calculations
          let trans = makeTranslate(Math.round(arg.x), Math.round(arg.y)) || '';
@@ -1224,7 +1228,8 @@ class ObjectPainter extends BasePainter {
          arg.text = '';
 
       arg.draw_g = arg.draw_g || this.draw_g;
-      if (!arg.draw_g || arg.draw_g.empty()) return;
+      if (!arg.draw_g || arg.draw_g.empty())
+         return;
 
       const font = arg.draw_g.property('text_font');
       arg.font = font; // use in latex conversion
@@ -1255,7 +1260,8 @@ class ObjectPainter extends BasePainter {
       } else if (isObject(arg.align) && (arg.align.length === 2))
          align = arg.align;
 
-      if (arg.latex === undefined) arg.latex = 1; //  latex 0-text, 1-latex, 2-math
+      if (arg.latex === undefined)
+         arg.latex = 1; //  0: text, 1: latex, 2: math
       arg.align = align;
       arg.x = arg.x || 0;
       arg.y = arg.y || 0;
@@ -1267,10 +1273,12 @@ class ObjectPainter extends BasePainter {
       if (arg.draw_g.property('_fast_drawing')) {
          if (arg.scale) {
             // area too small - ignore such drawing
-            if (arg.height < 4) return 0;
+            if (arg.height < 4)
+               return 0;
          } else if (arg.font_size) {
             // font size too small
-            if (arg.font_size < 4) return 0;
+            if (arg.font_size < 4)
+               return 0;
          } else if (arg.draw_g.property('_font_too_small')) {
             // configure font is too small - ignore drawing
             return 0;
@@ -1293,10 +1301,13 @@ class ObjectPainter extends BasePainter {
       if (!use_mathjax || arg.nomathjax) {
          arg.txt_node = arg.draw_g.append('svg:text');
 
-         if (arg.color) arg.txt_node.attr('fill', arg.color);
+         if (arg.color)
+            arg.txt_node.attr('fill', arg.color);
 
-         if (arg.font_size) arg.txt_node.attr('font-size', arg.font_size);
-                       else arg.font_size = font.size;
+         if (arg.font_size)
+            arg.txt_node.attr('font-size', arg.font_size);
+         else
+            arg.font_size = font.size;
 
          arg.plain = !arg.latex || (settings.Latex === cl.Off) || (settings.Latex === cl.Symbols);
 
