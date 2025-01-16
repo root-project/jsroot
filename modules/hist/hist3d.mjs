@@ -64,7 +64,6 @@ function createLatexGeometry(painter, lbl, size) {
       }
 
       attr(name, value) {
-         // console.log(`attr ${name} = ${value}`);
 
          const get = () => {
                   if (!value) return '';
@@ -786,8 +785,10 @@ function highlightBin3D(tip, selfmesh) {
    }
 
    if (want_remove) {
-      if (changed) this.render3D();
-      if (changed && mainp) mainp.provideUserTooltip(null);
+      if (changed) {
+         this.render3D();
+         mainp?.provideUserTooltip(null);
+      }
       return;
    }
 
@@ -822,8 +823,10 @@ function highlightBin3D(tip, selfmesh) {
          tooltip_mesh.material.opacity = opacity;
       }
 
-      if (tip.x1 === tip.x2) console.warn(`same tip X ${tip.x1} ${tip.x2}`);
-      if (tip.y1 === tip.y2) console.warn(`same tip Y ${tip.y1} ${tip.y2}`);
+      if (tip.x1 === tip.x2)
+         console.warn(`same tip X ${tip.x1} ${tip.x2}`);
+      if (tip.y1 === tip.y2)
+         console.warn(`same tip Y ${tip.y1} ${tip.y2}`);
       if (tip.z1 === tip.z2) tip.z2 = tip.z1 + 0.0001;  // avoid zero faces
 
       for (let k = 0, nn = -3; k < indicies.length; ++k) {
