@@ -554,9 +554,10 @@ class TPavePainter extends ObjectPainter {
 
       // for single line (typically title) limit font size
       if ((nlines === 1) && (this.textatt.size > 0))
-         max_font_size = Math.max(3, this.textatt.getSize(pad_height));
+         max_font_size = Math.max(3, this.textatt.getSize(pad_width, pad_height));
 
-      if (!text_g) text_g = this.draw_g;
+      if (!text_g)
+         text_g = this.draw_g;
 
       const fast = (nlines === 1) && pp._fast_drawing;
       let num_txt = 0, num_custom = 0;
@@ -773,7 +774,7 @@ class TPavePainter extends ObjectPainter {
       this.createAttText({ attr: legend, can_rotate: false });
 
       const pp = this.getPadPainter(),
-            tsz = this.textatt.getSize(pp.getPadHeight());
+            tsz = this.textatt.getSize(pp.getPadWidth(), pp.getPadHeight());
       if (tsz && (tsz < font_size))
          font_size = max_font_size = tsz;
 
@@ -911,7 +912,7 @@ class TPavePainter extends ObjectPainter {
                              text: entry.fLabel, color: textatt.color };
                if (custom_textg) {
                   arg.draw_g = this.draw_g.append('svg:g');
-                  text_promises.push(this.startTextDrawingAsync(textatt.font, textatt.getSize(pp.getPadHeight()), arg.draw_g, max_font_size)
+                  text_promises.push(this.startTextDrawingAsync(textatt.font, textatt.getSize(pp.getPadWidth(), pp.getPadHeight()), arg.draw_g, max_font_size)
                                        .then(() => this.drawText(arg))
                                        .then(() => this.finishTextDrawing(arg.draw_g)));
                } else
