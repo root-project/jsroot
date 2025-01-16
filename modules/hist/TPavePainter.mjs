@@ -592,7 +592,7 @@ class TPavePainter extends ObjectPainter {
                            y = entry.fY ? (1 - entry.fY)*height : (texty + (valign === 2 ? stepy / 2 : (valign === 3 ? stepy : 0))),
                            draw_g = text_g.append('svg:g');
 
-                     promises.push(this.startTextDrawingAsync(this.textatt.font, this.textatt.getAltSize(entry.fTextSize, pad_height), draw_g)
+                     promises.push(this.startTextDrawingAsync(this.textatt.font, this.textatt.getAltSize(entry.fTextSize, pp), draw_g)
                                        .then(() => this.drawText({ align, x, y, text: entry.fTitle, color,
                                                                    latex: (entry._typename === clTText) ? 0 : 1, draw_g, fast }))
                                        .then(() => this.finishTextDrawing(draw_g)));
