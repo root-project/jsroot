@@ -392,12 +392,13 @@ class RAxisPainter extends RObjectPainter {
 
       if (this.vertical) {
          offset += Math.round(pos[0] - this.drag_pos0);
-         label_g.attr('transform', `translate(${offset})`);
+         makeTranslate(label_g, offset);
       } else {
          offset += Math.round(pos[1] - this.drag_pos0);
-         label_g.attr('transform', `translate(0,${offset})`);
+         makeTranslate(label_g, 0, offset);
       }
-      if (!offset) label_g.attr('transform', null);
+      if (!offset)
+         makeTranslate(label_g);
 
       if (arg === 'stop') {
          label_g.select('rect.drag').remove();
@@ -650,7 +651,7 @@ class RAxisPainter extends RObjectPainter {
       let lastpos = 0;
 
       if (fix_offset)
-         label_g.attr('transform', this.vertical ? `translate(${fix_offset})` : `translate(0,${fix_offset})`);
+         makeTranslate(label_g, this.vertical ? fix_offset : 0, this.vertical ? 0 : fix_offset);
 
       label_g.property('fix_offset', fix_offset);
 
@@ -844,7 +845,8 @@ class RAxisPainter extends RObjectPainter {
    async drawAxis(layer, transform, side) {
       let axis_g = layer;
 
-      if (side === undefined) side = 1;
+      if (side === undefined)
+         side = 1;
 
       if (!this.standalone) {
          axis_g = layer.selectChild(`.${this.name}_container`);
