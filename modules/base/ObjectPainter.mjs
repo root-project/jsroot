@@ -1155,7 +1155,8 @@ class ObjectPainter extends BasePainter {
             append(`scale(${scale.toFixed(3)})`);
          if (dtrans)
             append(dtrans);
-         if (trans) txt.attr('transform', trans);
+         if (trans)
+            txt.attr('transform', trans);
       });
 
 
