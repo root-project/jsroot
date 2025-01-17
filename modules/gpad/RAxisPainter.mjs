@@ -932,13 +932,12 @@ class RAxisPainter extends RObjectPainter {
 
       axis_g.attr('transform', transform);
 
-      if (this.ticksSide === 'invert') side = -side;
+      if (this.ticksSide === 'invert')
+         side = -side;
 
-      // draw ticks again
+      // draw ticks and labels again
       const tgaps = this.drawTicks(axis_g, side, false),
-
-           // draw labels again
-           promise = this.optionUnlab || only_ticks ? Promise.resolve(tgaps) : this.drawLabels(axis_g, side, tgaps);
+            promise = this.optionUnlab || only_ticks ? Promise.resolve(tgaps) : this.drawLabels(axis_g, side, tgaps);
 
       return promise.then(lgaps => {
          this.addZoomingRect(axis_g, side, lgaps);

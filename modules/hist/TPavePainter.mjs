@@ -661,11 +661,11 @@ class TPavePainter extends ObjectPainter {
          if (!draw_header)
             return;
 
-         const x = Math.round(width*0.25),
-               y = Math.round(-pad_height*0.02),
-               w = Math.round(width*0.5),
+         const w = Math.round(width*0.5),
                h = Math.round(pad_height*0.04),
-               lbl_g = text_g.append('svg:g').attr('transform', makeTranslate(x, y));
+               lbl_g = text_g.append('svg:g');
+
+         makeTranslate(lbl_g, Math.round(width*0.25), Math.round(-pad_height*0.02));
 
          this.drawBorder(lbl_g, w, h);
 
