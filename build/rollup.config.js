@@ -4,7 +4,7 @@ import terser from '@rollup/plugin-terser';
 import modify from 'rollup-plugin-modify';
 import ascii from 'rollup-plugin-ascii';
 import ignore from 'rollup-plugin-ignore';
-import meta from '../package.json' assert { type: 'json' };
+import meta from '../package.json' with { type: 'json' };
 
 const ignore_jsroot_modules = [ './base/lzma.mjs', './base/zstd.mjs', './base/zstd.mjs' ];
 
