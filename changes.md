@@ -13,10 +13,14 @@
 1. Support Poisson errors for `TH1`/`TH2`, https://root-forum.cern.ch/t/62335/
 1. Support `TLink` and `TButton` object, used in `TInspectCanvas`
 1. Fix - handle `TPave` NDC position also when fInit is not set
+
+
+## Changes in 7.8.1
 1. Fix - correctly position title according to gStyle->GetTitleAlign()
-1. Fix - correctly handle tooltip events for `TGraphPolar`
-1. Fix - font corruption after PDF generation
-1. Fix - support drawing of `RooEllipse` class
+2. Fix - tooltips on TGraphPolar
+3. Fix - use 'portrait' orientation for PDF pages where width smaller than height
+4. Fix - font corruption after PDF generation
+5. Fix - support drawing of `RooEllipse` class
 
 
 ## Changes in 7.8.0
