@@ -1982,9 +1982,7 @@ function LZ4_uncompress(input, output, sIdx, eIdx) {
   * @return {Promise} with unzipped content
   * @private */
 async function R__unzip(arr, tgtsize, noalert, src_shift) {
-   const HDRSIZE = 9, totallen = arr.byteLength,
-         checkChar = (o, symb) => { return String.fromCharCode(arr.getUint8(o)) === symb; },
-         getCode = o => arr.getUint8(o)
+   const HDRSIZE = 9, totallen = arr.byteLength;
 
    let curr = src_shift || 0, fullres = 0, tgtbuf = null;
 
@@ -1997,7 +1995,9 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
             return Promise.resolve(null);
          }
 
-         const checkFmt = (a, b, c) => { return checkChar(curr, a) && checkChar(curr + 1, b) && (getCode(curr + 2) === c); };
+         const getCode = o => arr.getUint8(o),
+               checkChar = (o, symb) => { return getCode(o) === symb.charCodeAt(0); },
+               checkFmt = (a, b, c) => { return checkChar(curr, a) && checkChar(curr + 1, b) && (getCode(curr + 2) === c); };
 
          if (checkFmt('Z', 'L', 8)) {
             fmt = 'new';
@@ -2008,7 +2008,7 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
             fmt = 'LZMA';
          else if (checkFmt('Z', 'S', 1))
             fmt = 'ZSTD';
-         else if (checkChar(curr, 'L') && checkChar(curr+1, '4')) {
+         else if (checkChar(curr, 'L') && checkChar(curr + 1, '4')) {
             fmt = 'LZ4'; CHKSUM = 8;
          }
 
