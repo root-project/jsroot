@@ -1984,7 +1984,7 @@ function LZ4_uncompress(input, output, sIdx, eIdx) {
 async function R__unzip(arr, tgtsize, noalert, src_shift) {
    const HDRSIZE = 9, totallen = arr.byteLength,
          checkChar = (o, symb) => { return String.fromCharCode(arr.getUint8(o)) === symb; },
-         getCode = o => arr.getUint8(o);
+         getCode = o => arr.getUint8(o)
 
    let curr = src_shift || 0, fullres = 0, tgtbuf = null;
 
@@ -1997,11 +1997,20 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
             return Promise.resolve(null);
          }
 
-         if (checkChar(curr, 'Z') && checkChar(curr+1, 'L') && getCode(curr + 2) === 8) { fmt = 'new'; off = 2; } else
-         if (checkChar(curr, 'C') && checkChar(curr+1, 'S') && getCode(curr + 2) === 8) { fmt = 'old'; off = 0; } else
-         if (checkChar(curr, 'X') && checkChar(curr+1, 'Z') && getCode(curr + 2) === 0) { fmt = 'LZMA'; off = 0; } else
-         if (checkChar(curr, 'Z') && checkChar(curr+1, 'S') && getCode(curr + 2) === 1) fmt = 'ZSTD'; else
-         if (checkChar(curr, 'L') && checkChar(curr+1, '4')) { fmt = 'LZ4'; off = 0; CHKSUM = 8; }
+         const checkFmt = (a, b, c) => { return checkChar(curr, a) && checkChar(curr + 1, b) && (getCode(curr + 2) === c); };
+
+         if (checkFmt('Z', 'L', 8)) {
+            fmt = 'new';
+            off = 2;
+         } else if (checkFmt('C', 'S', 8))
+            fmt = 'old';
+         else if (checkFmt('X', 'Z', 0))
+            fmt = 'LZMA';
+         else if (checkFmt('Z', 'S', 1))
+            fmt = 'ZSTD';
+         else if (checkChar(curr, 'L') && checkChar(curr+1, '4')) {
+            fmt = 'LZ4'; CHKSUM = 8;
+         }
 
          /*   C H E C K   H E A D E R   */
          if ((fmt !== 'new') && (fmt !== 'old') && (fmt !== 'LZ4') && (fmt !== 'ZSTD') && (fmt !== 'LZMA')) {
