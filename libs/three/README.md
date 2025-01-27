@@ -3,12 +3,15 @@
 ## Checkout appropriate three.js version
 
 In directory on the same level as jsroot, checkout three.js
-into `threejs` subdirectory
+into `threejs` subdirectory. Do not forget to checkout proper version:
+
+    git checkout r172
 
 ## Run script
 
     npm install
-    npm run-script build
-    npm uninstall
+    npm run build
+    rm -rf node_modules package-lock.json
+
 
 ## Run tests and commit package
