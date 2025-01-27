@@ -109,14 +109,18 @@ function checkArrayPrototype(arr, check_content) {
    if (!isObject(arr)) return 0;
 
    const arr_kind = isArrayProto(Object.prototype.toString.apply(arr));
-   if (!check_content || (arr_kind !== 1)) return arr_kind;
+   if (!check_content || (arr_kind !== 1))
+      return arr_kind;
 
    let typ, plain = true;
    for (let k = 0; k < arr.length; ++k) {
       const sub = typeof arr[k];
-      if (!typ) typ = sub;
-      if (sub !== typ) { plain = false; break; }
-      if (isObject(sub) && checkArrayPrototype(arr[k])) { plain = false; break; }
+      if (!typ)
+         typ = sub;
+      if ((sub !== typ) || (isObject(sub) && checkArrayPrototype(arr[k]))) {
+         plain = false;
+         break;
+      }
    }
 
    return plain ? 2 : 1;
@@ -215,7 +219,8 @@ class ArrayIterator {
                   }
             }
          } else {
-            if (cnt < 0) return false;
+            if (cnt < 0)
+               return false;
 
             this.value = obj;
             if (this.select[cnt] === undefined) {
@@ -270,8 +275,10 @@ function getBranchObjectClass(branch, tree, with_clones = false, with_leafs = fa
    }
 
    if ((branch.fType === kLeafNode) && s_elem && with_leafs) {
-      if ((s_elem.fType === kObject) || (s_elem.fType === kAny)) return s_elem.fTypeName;
-      if (s_elem.fType === kObjectp) return s_elem.fTypeName.slice(0, s_elem.fTypeName.length - 1);
+      if ((s_elem.fType === kObject) || (s_elem.fType === kAny))
+         return s_elem.fTypeName;
+      if (s_elem.fType === kObjectp)
+         return s_elem.fTypeName.slice(0, s_elem.fTypeName.length - 1);
    }
 
    return '';
@@ -325,9 +332,13 @@ function findBranchComplex(tree, name, lst = undefined, only_search = false) {
          brname = brname.slice(0, p1) + brname.slice(p2 + 1);
       }
 
-      if (brname === search) { res = { branch: lst.arr[n], rest: '' }; break; }
+      if (brname === search) {
+         res = { branch: lst.arr[n], rest: '' };
+         break;
+      }
 
-      if (search.indexOf(brname) !== 0) continue;
+      if (search.indexOf(brname) !== 0)
+         continue;
 
       // this is a case when branch name is in the begin of the search string
 
@@ -351,9 +362,11 @@ function findBranchComplex(tree, name, lst = undefined, only_search = false) {
       if (br) res = { branch: br, rest: search.slice(p) };
    }
 
-   if (!top_search || !res) return res;
+   if (!top_search || !res)
+      return res;
 
-   if (name.length > search.length) res.rest += name.slice(search.length);
+   if (name.length > search.length)
+      res.rest += name.slice(search.length);
 
    return res;
 }
@@ -999,7 +1012,7 @@ class TDrawSelector extends TSelector {
             res.fLabels.Add(s);
          }
       } else if ((axisid === 0) && (this.hist_name === 'bits') && (this.hist_args.length <= 1)) {
-         this.fill1DHistogram = this.FillBitsHistogram;
+         this.fill1DHistogram = this.fillBitsHistogram;
          return this.getBitsBins(this.hist_args[0] || 32, res);
       } else if (axisid * 3 + 2 < this.hist_args.length) {
          res.nbins = this.hist_args[axisid * 3];
@@ -1204,7 +1217,7 @@ class TDrawSelector extends TSelector {
    }
 
    /** @summary Fill bits histogram */
-   FillBitsHistogram(xvalue, weight) {
+   fillBitsHistogram(xvalue, weight) {
       if (!weight) return;
 
       for (let bit = 0, mask = 1; bit < this.x.nbins; ++bit) {
@@ -1486,18 +1499,23 @@ function findBrachStreamerElement(branch, file) {
 function defineMemberTypeName(file, parent_class, member_name) {
    const s_i = file.findStreamerInfo(parent_class),
          arr = s_i?.fElements?.arr;
-   if (!arr) return '';
+   if (!arr)
+      return '';
 
    let elem = null;
    for (let k = 0; k < arr.length; ++k) {
       if (arr[k].fTypeName === kBaseClass) {
          const res = defineMemberTypeName(file, arr[k].fName, member_name);
-         if (res) return res;
-      } else
-         if (arr[k].fName === member_name) { elem = arr[k]; break; }
+         if (res)
+            return res;
+      } else if (arr[k].fName === member_name) {
+         elem = arr[k];
+         break;
+      }
    }
 
-   if (!elem) return '';
+   if (!elem)
+      return '';
 
    let clname = elem.fTypeName;
    if (clname[clname.length - 1] === '*')
@@ -1600,8 +1618,8 @@ async function treeProcess(tree, selector, args) {
    function addBranchForReading(branch, target_object, target_name, read_mode) {
       // central method to add branch for reading
       // read_mode == true - read only this branch
-      // read_mode == '$child$' is just member of object from for STL or clonesarray
-      // read_mode == '<any class name>' is sub-object from STL or clonesarray, happens when such new object need to be created
+      // read_mode == '$child$' is just member of object from for STL or clones array
+      // read_mode == '<any class name>' is sub-object from STL or clones array, happens when such new object need to be created
       // read_mode == '.member_name' select only reading of member_name instead of complete object
 
       if (isStr(branch))
@@ -2143,7 +2161,8 @@ async function treeProcess(tree, selector, args) {
    for (let h = 1; (h < handle.arr.length) && handle.simple_read; ++h) {
       const item = handle.arr[h], item0 = handle.arr[0];
 
-      if ((item.numentries !== item0.numentries) || (item.numbaskets !== item0.numbaskets)) handle.simple_read = false;
+      if ((item.numentries !== item0.numentries) || (item.numbaskets !== item0.numbaskets))
+         handle.simple_read = false;
       for (let n = 0; n < item.numbaskets; ++n) {
          if (item.getBasketEntry(n) !== item0.getBasketEntry(n))
             handle.simple_read = false;
@@ -2211,8 +2230,8 @@ async function treeProcess(tree, selector, args) {
       handle.process_arrays = false;
 
    /** read basket with tree data, selecting different files */
-   function ReadBaskets(bitems) {
-      function ExtractPlaces() {
+   function readBaskets(bitems) {
+      function extractPlaces() {
          // extract places to read and define file name
 
          const places = [];
@@ -2236,7 +2255,7 @@ async function treeProcess(tree, selector, args) {
          return places.length > 0 ? { places, filename } : null;
       }
 
-      function ReadProgress(value) {
+      function readProgress(value) {
          if ((handle.staged_prev === handle.staged_now) ||
             (handle.process_max <= handle.process_min)) return;
 
@@ -2249,13 +2268,14 @@ async function treeProcess(tree, selector, args) {
         return handle.selector.ShowProgress(portion);
       }
 
-      function ProcessBlobs(blobs, places) {
+      function processBlobs(blobs, places) {
          if (!blobs || ((places.length > 2) && (blobs.length * 2 !== places.length)))
             return Promise.resolve(null);
 
-         if (places.length === 2) blobs = [blobs];
+         if (places.length === 2)
+            blobs = [blobs];
 
-         function DoProcessing(k) {
+         function doProcessing(k) {
             for (; k < bitems.length; ++k) {
                if (!bitems[k].selected) continue;
 
@@ -2299,30 +2319,30 @@ async function treeProcess(tree, selector, args) {
                   if (bitems[k].branch.fEntryOffsetLen > 0)
                      buf.readBasketEntryOffset(basket, buf.raw_shift);
 
-                  return DoProcessing(k+1);  // continue processing
+                  return doProcessing(k+1);  // continue processing
                });
             }
 
-            const req = ExtractPlaces();
+            const req = extractPlaces();
             if (req)
-               return handle.file.readBuffer(req.places, req.filename, ReadProgress).then(blobs => ProcessBlobs(blobs)).catch(() => { return null; });
+               return handle.file.readBuffer(req.places, req.filename, readProgress).then(blobs => processBlobs(blobs)).catch(() => { return null; });
 
             return Promise.resolve(bitems);
           }
 
-          return DoProcessing(0);
+          return doProcessing(0);
       }
 
-      const req = ExtractPlaces();
+      const req = extractPlaces();
 
       // extract places where to read
       if (req)
-         return handle.file.readBuffer(req.places, req.filename, ReadProgress).then(blobs => ProcessBlobs(blobs, req.places)).catch(() => { return null; });
+         return handle.file.readBuffer(req.places, req.filename, readProgress).then(blobs => processBlobs(blobs, req.places)).catch(() => { return null; });
 
       return Promise.resolve(null);
    }
 
-   function ReadNextBaskets() {
+   function readNextBaskets() {
       const bitems = [];
       let totalsz = 0, isany = true, is_direct = false, min_staged = handle.process_max;
 
@@ -2413,14 +2433,14 @@ async function treeProcess(tree, selector, args) {
       handle.progress_showtm = new Date().getTime();
 
       if (totalsz > 0)
-         return ReadBaskets(bitems).then(ProcessBaskets);
+         return readBaskets(bitems).then(processBaskets);
 
-      if (is_direct) return ProcessBaskets([]); // directly process baskets
+      if (is_direct) return processBaskets([]); // directly process baskets
 
       throw new Error('No any data is requested - never come here');
    }
 
-   function ProcessBaskets(bitems) {
+   function processBaskets(bitems) {
       // this is call-back when next baskets are read
 
       if ((handle.selector._break !== 0) || (bitems === null)) {
@@ -2467,7 +2487,7 @@ async function treeProcess(tree, selector, args) {
                   }
 
                   // try to read next portion of tree data
-                  return ReadNextBaskets();
+                  return readNextBaskets();
                }
 
                elem.raw = bitem.raw;
@@ -2544,7 +2564,7 @@ async function treeProcess(tree, selector, args) {
       // call begin before first entry is read
       handle.selector.Begin(tree);
 
-      ReadNextBaskets();
+      readNextBaskets();
    });
 }
 
