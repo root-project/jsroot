@@ -1579,7 +1579,8 @@ function getMethods(typename, obj) {
    if ((typename.indexOf(clTF1) === 0) || (typename === clTF2)) {
       m.addFormula = function(obj) {
          if (!obj) return;
-         if (this.formulas === undefined) this.formulas = [];
+         if (this.formulas === undefined)
+            this.formulas = [];
          this.formulas.push(obj);
       };
       m.GetParName = function(n) {
