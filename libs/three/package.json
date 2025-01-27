@@ -51,7 +51,7 @@
     }
   },
   "scripts": {
-    "build": "cp Three_jsroot.js Three_addons.js ../../../threejs/src && rollup -c rollup.jsroot.config.js && rm -f ../../../threejs/src/Three_jsroot.js ../../../threejs/src/Three_addons.js"
+    "build": "cp Three_jsroot.js Three_addons.js ../../../threejs/src && rollup -c rollup_three.config.js && rm -f ../../../threejs/src/Three_jsroot.js ../../../threejs/src/Three_addons.js"
   },
   "keywords": [
     "three",
