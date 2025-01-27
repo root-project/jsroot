@@ -13,7 +13,7 @@ import { BatchDisplay, GridDisplay, TabsDisplay, FlexibleDisplay, BrowserLayout,
 import { showProgress, ToolbarIcons, registerForResize, injectStyle, saveFile } from './utils.mjs';
 
 
-const kTopFolder = 'TopFolder', kExpand = 'expand', kPM = 'plusminus',
+const kTopFolder = 'TopFolder', kExpand = 'expand', kPM = 'plusminus', kDfltDrawOpt = '__default_draw_option__',
       cssValueNum = 'h_value_num', cssButton = 'h_button', cssItem = 'h_item', cssTree = 'h_tree';
 
 function injectHStyle(node) {
@@ -180,7 +180,8 @@ function taskHierarchy(item, obj) {
 /** @summary Create hierarchy elements for TList object
   * @private */
 function listHierarchy(folder, lst) {
-   if (!isRootCollection(lst)) return false;
+   if (!isRootCollection(lst))
+      return false;
 
    if ((lst.arr === undefined) || (lst.arr.length === 0)) {
       folder._more = false;
@@ -314,7 +315,8 @@ function keysHierarchy(folder, keys, file, dirname) {
 /** @summary Create hierarchy for arbitrary object
   * @private */
 function objectHierarchy(top, obj, args = undefined) {
-   if (!top || (obj === null)) return false;
+   if (!top || (obj === null))
+      return false;
 
    top._childs = [];
 
@@ -354,11 +356,15 @@ function objectHierarchy(top, obj, args = undefined) {
       return true;
    }
 
-   // check nosimple property in all parents
+   // check _nosimple property in all parents
    let nosimple = true, do_context = false, prnt = top;
    while (prnt) {
-      if (prnt._do_context) do_context = true;
-      if ('_nosimple' in prnt) { nosimple = prnt._nosimple; break; }
+      if (prnt._do_context)
+         do_context = true;
+      if ('_nosimple' in prnt) {
+         nosimple = prnt._nosimple;
+         break;
+      }
       prnt = prnt._parent;
    }
 
@@ -559,7 +565,8 @@ function createStreamerInfoContent(lst) {
    for (let i = 0; i < lst.arr.length; ++i) {
       const entry = lst.arr[i];
 
-      if (entry._typename === clTList) continue;
+      if (entry._typename === clTList)
+         continue;
 
       if (typeof entry.fName === 'undefined') {
          console.warn(`strange element in StreamerInfo with type ${entry._typename}`);
@@ -994,10 +1001,13 @@ class HierarchyPainter extends BasePainter {
 
       while (node) {
          // online items never includes top-level folder
-         if ((node._online !== undefined) && !uptoparent) return res;
+         if ((node._online !== undefined) && !uptoparent)
+            return res;
 
-         if ((node === uptoparent) || (node._kind === kTopFolder)) break;
-         if (compact && !node._parent) break; // in compact form top-parent is not included
+         if ((node === uptoparent) || (node._kind === kTopFolder))
+            break;
+         if (compact && !node._parent)
+            break; // in compact form top-parent is not included
          if (res) res = '/' + res;
          res = node._name + res;
          node = node._parent;
@@ -1492,14 +1502,14 @@ class HierarchyPainter extends BasePainter {
    /** @summary Update item background
      * @private */
    updateBackground(hitem, scroll_into_view) {
-      if (!hitem || !hitem._d3cont) return;
+      if (!hitem || !hitem._d3cont)
+         return;
 
       const d3cont = d3_select(hitem._d3cont);
-
-      if (d3cont.empty()) return;
+      if (d3cont.empty())
+         return;
 
       const d3a = d3cont.select(`.${cssItem}`);
-
       d3a.style('background', hitem._background ? hitem._background : null);
 
       if (scroll_into_view && hitem._background)
@@ -1659,7 +1669,7 @@ class HierarchyPainter extends BasePainter {
          }
 
          if (can_draw && !drawopt)
-            drawopt = '__default_draw_option__';
+            drawopt = kDfltDrawOpt;
 
          if (can_draw)
             return this.display(itemname, drawopt, null, true);
@@ -1970,7 +1980,7 @@ class HierarchyPainter extends BasePainter {
    async player(itemname, option) {
       const item = this.findItem(itemname);
 
-      if (!item || !item._player || !isStr(item._player))
+      if (!isStr(item?._player))
          return null;
 
       let player_func = null;
@@ -1994,10 +2004,14 @@ class HierarchyPainter extends BasePainter {
    /** @summary Checks if item can be displayed with given draw option
      * @private */
    canDisplay(item, drawopt) {
-      if (!item) return false;
-      if (item._player) return true;
-      if (item._can_draw !== undefined) return item._can_draw;
-      if (isStr(drawopt) && (drawopt.indexOf(kInspect) === 0)) return true;
+      if (!item)
+         return false;
+      if (item._player)
+         return true;
+      if (item._can_draw !== undefined)
+         return item._can_draw;
+      if (isStr(drawopt) && (drawopt.indexOf(kInspect) === 0))
+         return true;
       const handle = getDrawHandle(item._kind, drawopt);
       return canDrawHandle(handle);
    }
@@ -2006,7 +2020,7 @@ class HierarchyPainter extends BasePainter {
      * @param {string} itemname - item name */
    isItemDisplayed(itemname) {
       const mdi = this.getDisplay();
-      return mdi ? mdi.findFrame(itemname) !== null : false;
+      return mdi?.findFrame(itemname) !== null;
    }
 
    /** @summary Display specified item
@@ -2033,13 +2047,17 @@ class HierarchyPainter extends BasePainter {
       }
 
       const complete = (respainter, err) => {
-         if (err) console.log('When display ', itemname, 'got', err);
+         if (err)
+            console.log('When display ', itemname, 'got', err);
 
-         if (updating && item) delete item._doing_update;
-         if (!updating) showProgress();
+         if (updating && item)
+            delete item._doing_update;
+         if (!updating)
+            showProgress();
          if (isFunc(respainter?.setItemName)) {
             respainter.setItemName(display_itemname, updating ? null : drawopt, this); // mark painter as created from hierarchy
-            if (item && !item._painter) item._painter = respainter;
+            if (item && !item._painter)
+               item._painter = respainter;
          }
 
          return respainter || painter;
@@ -2072,12 +2090,13 @@ class HierarchyPainter extends BasePainter {
             drawopt = drawopt.slice(0, pos);
          }
 
-         if (drawopt === '__default_draw_option__') {
+         if (drawopt === kDfltDrawOpt) {
             use_dflt_opt = true;
             drawopt = '';
          }
 
-         if (!updating) showProgress(`Loading ${display_itemname} ...`);
+         if (!updating)
+            showProgress(`Loading ${display_itemname} ...`);
 
          return this.getObject(display_itemname, drawopt).then(result => {
             if (!updating) showProgress();
@@ -2308,7 +2327,7 @@ class HierarchyPainter extends BasePainter {
 
       if (!options) options = [];
       while (options.length < items.length)
-         options.push('__default_draw_option__');
+         options.push(kDfltDrawOpt);
 
       if ((options.length === 1) && (options[0] === 'iotest')) {
          this.clearHierarchy();
@@ -2691,9 +2710,12 @@ class HierarchyPainter extends BasePainter {
          return item;
       }
 
-      if (!this.h) return null;
-      if ('_online' in this.h) return this.h;
-      if (this.h._childs && ('_online' in this.h._childs[0])) return this.h._childs[0];
+      if (!this.h)
+         return null;
+      if ('_online' in this.h)
+         return this.h;
+      if (this.h._childs && ('_online' in this.h._childs[0]))
+         return this.h._childs[0];
       return null;
    }
 
@@ -2918,9 +2940,11 @@ class HierarchyPainter extends BasePainter {
      * @return string or null if item is not online
      * @private */
    getOnlineItemUrl(item) {
-      if (isStr(item)) item = this.findItem(item);
+      if (isStr(item))
+         item = this.findItem(item);
       let prnt = item;
-      while (prnt && (prnt._online === undefined)) prnt = prnt._parent;
+      while (prnt && (prnt._online === undefined))
+         prnt = prnt._parent;
       return prnt ? (prnt._online + this.itemFullName(item, prnt)) : null;
    }
 
