@@ -1,61 +1,37 @@
 import terser from '@rollup/plugin-terser';
-import json from '@rollup/plugin-json';
 import MagicString from 'magic-string';
 
-function addons(output_file) {
+export function glsl() {
 
 	return {
 
 		transform( code, id ) {
 
-			if ( /\/examples\/jsm\//.test( id ) === false ) return;
+			if ( /\.glsl.js$/.test( id ) === false ) return;
 
-         code = new MagicString( code );
+			code = new MagicString( code );
 
-			code = code.replace(output_file, '../../../threejs/src/Three_jsroot.js' ).replace( 'three', '../../../src/Three_jsroot.js' );
+			code.replace( /\/\* glsl \*\/\`(.*?)\`/sg, function ( match, p1 ) {
+
+				return JSON.stringify(
+					p1
+						.trim()
+						.replace( /\r/g, '' )
+						.replace( /[ \t]*\/\/.*\n/g, '' ) // remove //
+						.replace( /[ \t]*\/\*[\s\S]*?\*\//g, '' ) // remove /* */
+						.replace( /\n{2,}/g, '\n' ) // # \n+ to \n
+				);
+
+			} );
 
 			return {
 				code: code.toString(),
-				map: code.generateMap().toString()
+				map: code.generateMap()
 			};
 
 		}
 
 	};
-
-}
-
-export function glsl() {
-
-   return {
-
-      transform( code, id ) {
-
-         if ( /\.glsl.js$/.test( id ) === false ) return;
-
-         code = new MagicString( code );
-
-         code.replace( /\/\* glsl \*\/\`(.*?)\`/sg, function ( match, p1 ) {
-
-            return JSON.stringify(
-               p1
-                  .trim()
-                  .replace( /\r/g, '' )
-                  .replace( /[ \t]*\/\/.*\n/g, '' ) // remove //
-                  .replace( /[ \t]*\/\*[\s\S]*?\*\//g, '' ) // remove /* */
-                  .replace( /\n{2,}/g, '\n' ) // # \n+ to \n
-            );
-
-         } );
-
-         return {
-            code: code.toString(),
-            map: code.generateMap().toString()
-         };
-
-      }
-
-   };
 
 }
 
@@ -65,12 +41,18 @@ function header() {
 
 		renderChunk( code ) {
 
-			return `/**
+			code = new MagicString( code );
+
+			code.prepend( `/**
  * @license
- * Copyright 2010-2023 Three.js Authors
+ * Copyright 2010-2024 Three.js Authors
  * SPDX-License-Identifier: MIT
- */
-${ code }`;
+ */\n` );
+
+			return {
+				code: code.toString(),
+				map: code.generateMap()
+			};
 
 		}
 
@@ -87,88 +69,89 @@ function import_three() {
 	};
 }
 
-
-
-let builds = [
+/**
+ * @type {Array<import('rollup').RollupOptions>}
+ */
+const builds = [
 	{
-		input: '../../../threejs/src/Three_jsroot.js',
+		input: {
+			'three.mjs': '../../../threejs/src/Three_jsroot.js'
+		},
 		plugins: [
-			addons('../../modules/three.mjs'),
 			glsl(),
-			json({ compact: true, indent: "" }),
 			header()
 		],
+		preserveEntrySignatures: 'allow-extension',
 		output: [
 			{
-				format: 'es',
-				name: 'THREE',
-				file: '../../modules/three.mjs',
-				indent: '\t'
+				format: 'esm',
+				dir: '../../modules',
+				minifyInternalExports: false,
+				entryFileNames: '[name]',
 			}
 		]
 	},
 	{
-		input: '../../../threejs/src/Three_jsroot.js',
+		input: {
+			'three.mjs': '../../../threejs/src/Three_jsroot.js'
+		},
 		plugins: [
-			addons('../three.mjs'),
 			glsl(),
-			json({ compact: true, indent: "" }),
-			terser(),
-			header()
+			header(),
+			terser()
 		],
+		preserveEntrySignatures: 'allow-extension',
 		output: [
 			{
-				format: 'es',
-				name: 'THREE',
-				file: '../three.mjs'
+				format: 'esm',
+				dir: '..',
+				minifyInternalExports: false,
+				entryFileNames: '[name]',
 			}
 		]
 	},
 	{
-		input: '../../../threejs/src/Three_addons.js',
+		input: {
+			'three_addons.mjs': '../../../threejs/src/Three_addons.js'
+		},
 		external: ['three'],
 		plugins: [
-			json({ compact: true, indent: "" }),
+			glsl(),
 			import_three(),
 			header()
 		],
+		preserveEntrySignatures: 'allow-extension',
 		output: [
 			{
-				format: 'es',
-				name: 'THREE',
-				file: '../../modules/three_addons.mjs',
-				inlineDynamicImports: true,
-				indent: '\t'
+				format: 'esm',
+				dir: '../../modules',
+				minifyInternalExports: false,
+				entryFileNames: '[name]',
 			}
 		]
 	},
 	{
-		input: '../../../threejs/src/Three_addons.js',
+		input: {
+			'three_addons.mjs': '../../../threejs/src/Three_addons.js'
+		},
 		external: ['three'],
 		plugins: [
-			json({ compact: true, indent: "" }),
+			glsl(),
 			import_three(),
-			terser(),
-			header()
+			header(),
+			terser()
 		],
+		preserveEntrySignatures: 'allow-extension',
 		output: [
 			{
-				format: 'es',
-				name: 'THREE',
-				inlineDynamicImports: true,
-				file: '../three_addons.mjs'
+				format: 'esm',
+				dir: '..',
+				minifyInternalExports: false,
+				entryFileNames: '[name]',
 			}
 		]
 	},
-
 
 ];
-
-
-if ( process.env.ONLY_MODULE === 'true' ) {
-
-	builds = builds[ 0 ];
-
-}
 
 export default builds;
