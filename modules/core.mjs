@@ -1746,23 +1746,18 @@ function getMethods(typename, obj) {
          m.getBin = function(x, y) { return (x + (this.fXaxis.fNbins+2) * y); };
          m.getBinContent = function(x, y) {
             const bin = this.getBin(x, y);
-            if (bin < 0 || bin >= this.fNcells) return 0;
-            if (this.fBinEntries[bin] < 1e-300) return 0;
-            if (!this.fArray) return 0;
-            return this.fArray[bin]/this.fBinEntries[bin];
+            if (bin < 0 || bin >= this.fNcells || this.fBinEntries[bin] < 1e-300) return 0;
+            return this.fArray ? this.fArray[bin]/this.fBinEntries[bin] : 0;
          };
          m.getBinEntries = function(x, y) {
             const bin = this.getBin(x, y);
-            if (bin < 0 || bin >= this.fNcells) return 0;
-            return this.fBinEntries[bin];
+            return (bin < 0 || bin >= this.fNcells) ? 0 : this.fBinEntries[bin];
          };
       } else {
          m.getBin = function(x) { return x; };
          m.getBinContent = function(bin) {
-            if (bin < 0 || bin >= this.fNcells) return 0;
-            if (this.fBinEntries[bin] < 1e-300) return 0;
-            if (!this.fArray) return 0;
-            return this.fArray[bin]/this.fBinEntries[bin];
+            if (bin < 0 || bin >= this.fNcells || this.fBinEntries[bin] < 1e-300) return 0;
+            return this.fArray ? this.fArray[bin]/this.fBinEntries[bin] : 0;
          };
          m.getBinEntries = function(bin) {
             return (bin < 0) || (bin >= this.fNcells) ? 0 : this.fBinEntries[bin];
