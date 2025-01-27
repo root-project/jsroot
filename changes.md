@@ -12,6 +12,7 @@
 1. Provide context menus for all derived from `TPave` classes
 1. Support Poisson errors for `TH1`/`TH2`, https://root-forum.cern.ch/t/62335/
 1. Support `TLink` and `TButton` object, used in `TInspectCanvas`
+1. Upgrade three.js r168 -> r172
 1. Fix - handle `TPave` NDC position also when fInit is not set
 
 
