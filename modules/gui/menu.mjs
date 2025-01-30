@@ -1235,6 +1235,9 @@ class StandaloneMenu extends JSRootMenu {
    _buildContextmenu(menu, left, top, loc) {
       const doc = getDocument(),
             outer = doc.createElement('div'),
+            clname = 'jsroot_ctxt_container',
+            clfocus = 'jsroot_ctxt_focus',
+            clcolumn = 'jsroot_ctxt_column',
             container_style =
          'position: absolute; top: 0; user-select: none; z-index: 100000; background-color: rgb(250, 250, 250); margin: 0; padding: 0px; width: auto;'+
          'min-width: 100px; box-shadow: 0px 0px 10px rgb(0, 0, 0, 0.2); border: 3px solid rgb(215, 215, 215); font-family: Arial, helvetica, sans-serif, serif;'+
@@ -1242,23 +1245,23 @@ class StandaloneMenu extends JSRootMenu {
 
       // if loc !== doc.body then its a submenu, so it needs to have position: relative;
       if (loc === doc.body) {
-         // delete all elements with className jsroot_ctxt_container
-         const deleteElems = doc.getElementsByClassName('jsroot_ctxt_container');
+         // delete all elements with menu className
+         const deleteElems = doc.getElementsByClassName(clname);
          for (let k = deleteElems.length - 1; k >= 0; --k)
             deleteElems[k].parentNode.removeChild(deleteElems[k]);
 
-         outer.className = 'jsroot_ctxt_container';
+         outer.className = clname;
          outer.style = container_style;
          outer.style.position = 'fixed';
          outer.style.left = left + 'px';
          outer.style.top = top + 'px';
       } else if ((left < 0) && (top === left)) {
          // column
-         outer.className = 'jsroot_ctxt_column';
+         outer.className = clcolumn;
          outer.style.float = 'left';
          outer.style.width = (100/-left).toFixed(1) + '%';
       } else {
-         outer.className = 'jsroot_ctxt_container';
+         outer.className = clname;
          outer.style = container_style;
          outer.style.left = -loc.offsetLeft + loc.offsetWidth + 'px';
       }
@@ -1377,12 +1380,12 @@ class StandaloneMenu extends JSRootMenu {
 
          function changeFocus(item, on) {
             if (on) {
-               item.classList.add('jsroot_ctxt_focus');
+               item.classList.add(clfocus);
                item.style['background-color'] = 'rgb(220, 220, 220)';
-            } else if (item.classList.contains('jsroot_ctxt_focus')) {
+            } else if (item.classList.contains(clfocus)) {
                item.style['background-color'] = null;
-               item.classList.remove('jsroot_ctxt_focus');
-               item.querySelector('.jsroot_ctxt_container')?.remove();
+               item.classList.remove(clfocus);
+               item.querySelector(`.${clname}`)?.remove();
             }
          }
 
@@ -1397,7 +1400,7 @@ class StandaloneMenu extends JSRootMenu {
                extraText.addEventListener('click', evnt => {
                   evnt.preventDefault();
                   evnt.stopPropagation();
-                  const was_active = item.parentNode.querySelector('.jsroot_ctxt_focus');
+                  const was_active = item.parentNode.querySelector(`.${clfocus}`);
 
                   if (was_active)
                      changeFocus(was_active, false);
@@ -1456,7 +1459,7 @@ class StandaloneMenu extends JSRootMenu {
             // Does contextmenu overflow window height?
             outer.style.top = (docHeight - outer.offsetHeight) + 'px';
          }
-      } else if (outer.className !== 'jsroot_ctxt_column') {
+      } else if (outer.className !== clcolumn) {
          // if its sub-contextmenu
          const dimensionsLoc = loc.getBoundingClientRect(), dimensionsOuter = outer.getBoundingClientRect();
 
@@ -1490,7 +1493,8 @@ class StandaloneMenu extends JSRootMenu {
    async show(event) {
       this.remove();
 
-      if (!event && this.show_evnt) event = this.show_evnt;
+      if (!event && this.show_evnt)
+         event = this.show_evnt;
 
       const doc = getDocument(),
             woffset = typeof window === 'undefined' ? { x: 0, y: 0 } : { x: window.scrollX, y: window.scrollY };
