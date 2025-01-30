@@ -232,7 +232,8 @@ class JSRootMenu {
          }
 
          this.add('endcolumn:');
-         if (!this.native()) break;
+         if (!this.native())
+            break;
       }
 
       this.endsub();
@@ -245,7 +246,8 @@ class JSRootMenu {
 
       let values = [], miss_current = false;
       if (isObject(step)) {
-         values = step; step = 1;
+         values = step;
+         step = 1;
       } else {
          for (let sz = min; sz <= max; sz += step)
             values.push(sz);
@@ -285,7 +287,6 @@ class JSRootMenu {
       this.sub('Palette', () => this.input('Enter palette code [1..113]', curr, 'int', 1, 113).then(set_func));
 
       this.add('column:');
-
       add(57, 'Bird', 'Default color palette', (curr > 113));
       add(55, 'Rainbow');
       add(51, 'Deep Sea');
@@ -299,14 +300,12 @@ class JSRootMenu {
       add(59, '', 'Green Red Violet');
       add(60, '', 'Blue Red Yellow');
       add(61, 'Ocean');
-
       this.add('endcolumn:');
 
       if (!this.native())
          return this.endsub();
 
       this.add('column:');
-
       add(62, '', 'Color Printable On Grey');
       add(63, 'Alpine');
       add(64, 'Aquamarine');
@@ -320,10 +319,9 @@ class JSRootMenu {
       add(72, 'Brown Cyan');
       add(73, 'CMYK');
       add(74, 'Candy');
-
       this.add('endcolumn:');
-      this.add('column:');
 
+      this.add('column:');
       add(75, 'Cherry');
       add(76, 'Coffee');
       add(77, '', 'Dark Rain Bow');
@@ -337,10 +335,9 @@ class JSRootMenu {
       add(85, 'Island');
       add(86, 'Lake');
       add(87, '', 'Light Temperature');
-
       this.add('endcolumn:');
-      this.add('column:');
 
+      this.add('column:');
       add(88, '', 'Light Terrain');
       add(89, 'Mint');
       add(90, 'Neon');
@@ -354,10 +351,9 @@ class JSRootMenu {
       add(98, '', 'Sandy Terrain');
       add(99, 'Sienna');
       add(100, 'Solar');
-
       this.add('endcolumn:');
-      this.add('column:');
 
+      this.add('column:');
       add(101, '', 'South West');
       add(102, '', 'Starry Night');
       add(103, '', 'Sunset');
@@ -371,7 +367,6 @@ class JSRootMenu {
       add(111, '', 'Gist Earth');
       add(112, 'Viridis');
       add(113, 'Cividis');
-
       this.add('endcolumn:');
 
       this.endsub();
@@ -481,7 +476,8 @@ class JSRootMenu {
       supported.push(3144, 3244, 3344, 3305, 3315, 3325, 3490, 3481, 3472);
 
       for (let n = 0; n < supported.length; ++n) {
-         if (n % 7 === 0) this.add('column:');
+         if (n % 7 === 0)
+            this.add('column:');
 
          const selected = (value === supported[n]);
 
@@ -495,7 +491,8 @@ class JSRootMenu {
             this.add(svgelement.node().outerHTML, supported[n], arg => set_func(parseInt(arg)), `Pattern : ${supported[n]}` + (selected ? ' Active' : ''));
          } else
             this.addchk(selected, supported[n].toString(), supported[n], arg => set_func(parseInt(arg)));
-         if (n % 7 === 6) this.add('endcolumn:');
+         if (n % 7 === 6)
+            this.add('endcolumn:');
       }
       this.endsub();
    }
@@ -1013,7 +1010,8 @@ class JSRootMenu {
       }, 'Store settings and gStyle in browser local storage');
       this.add('Delete settings', () => { saveSettings(-1); saveStyle(-1); }, 'Delete settings and gStyle from browser local storage');
 
-      if (!alone) this.endsub();
+      if (!alone)
+         this.endsub();
    }
 
    /** @summary Run modal dialog
@@ -1501,8 +1499,7 @@ class StandaloneMenu extends JSRootMenu {
 
       doc.body.addEventListener('click', this.remove_handler);
 
-      const oldmenu = doc.getElementById(this.menuname);
-      if (oldmenu) oldmenu.remove();
+      doc.getElementById(this.menuname)?.remove();
 
       this.element = this._buildContextmenu(this.code, (event?.clientX || 0) + woffset.x, (event?.clientY || 0) + woffset.y, doc.body);
 
@@ -1513,9 +1510,11 @@ class StandaloneMenu extends JSRootMenu {
 
    /** @summary Run modal elements with standalone code */
    createModal(title, main_content, args) {
-      if (!args) args = {};
+      if (!args)
+         args = {};
 
-      if (!args.Ok) args.Ok = 'Ok';
+      if (!args.Ok)
+         args.Ok = 'Ok';
 
       const modal = { args }, dlg_id = (this?.menuname ?? sDfltName) + sDfltDlg;
       d3_select(`#${dlg_id}`).remove();
@@ -1582,8 +1581,10 @@ class StandaloneMenu extends JSRootMenu {
       });
 
       let f = modal.element.select('.jsroot_dialog_content').select('input');
-      if (f.empty()) f = modal.element.select('.jsroot_dialog_footer').select('button');
-      if (!f.empty()) f.node().focus();
+      if (f.empty())
+         f = modal.element.select('.jsroot_dialog_footer').select('button');
+      if (!f.empty())
+         f.node().focus();
       return modal;
    }
 
