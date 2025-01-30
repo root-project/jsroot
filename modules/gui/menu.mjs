@@ -1244,8 +1244,8 @@ class StandaloneMenu extends JSRootMenu {
       if (loc === doc.body) {
          // delete all elements with className jsroot_ctxt_container
          const deleteElems = doc.getElementsByClassName('jsroot_ctxt_container');
-         while (deleteElems.length > 0)
-            deleteElems[0].parentNode.removeChild(deleteElems[0]);
+         for (let k = deleteElems.length - 1; k >= 0; --k)
+            deleteElems[k].parentNode.removeChild(deleteElems[k]);
 
          outer.className = 'jsroot_ctxt_container';
          outer.style = container_style;
