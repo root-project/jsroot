@@ -1127,7 +1127,7 @@ class JSRootMenu {
       for (let n = 0; n < args.length; ++n) {
          main_content += `<label for="${dlg_id}_inp${n}">arg${n+1}</label>`+
                          `<input type='text' id="${dlg_id}_inp${n}" value="${args[n]}" style="width:100%;display:block"/>`;
-     }
+      }
 
       main_content += '</fieldset></form>';
 
