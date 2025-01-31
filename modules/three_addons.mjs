@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2010-2024 Three.js Authors
+ * Copyright 2010-2025 Three.js Authors
  * SPDX-License-Identifier: MIT
  */
 import { ExtrudeGeometry, ShapePath, Ray, Plane, MathUtils, Vector3, Controls, MOUSE, TOUCH, Quaternion, Spherical, Vector2, OrthographicCamera, BufferGeometry, Float32BufferAttribute, Mesh, ShaderMaterial, UniformsUtils, WebGLRenderTarget, HalfFloatType, NoBlending, Clock, Color, AdditiveBlending, MeshBasicMaterial, Vector4, Box3, Matrix4, Frustum, Matrix3, DoubleSide, Box2, SRGBColorSpace, Camera } from './three.mjs';
@@ -37,20 +37,9 @@ class TextGeometry extends ExtrudeGeometry {
 
 			const shapes = font.generateShapes( text, parameters.size );
 
-			// translate parameters to ExtrudeGeometry API
-
-			if ( parameters.depth === undefined && parameters.height !== undefined ) {
-
-				console.warn( 'THREE.TextGeometry: .height is now depreciated. Please use .depth instead' ); // @deprecated, r163
-
-			}
-
-			parameters.depth = parameters.depth !== undefined ?
-				parameters.depth : parameters.height !== undefined ?
-					parameters.height : 50;
-
 			// defaults
 
+			if ( parameters.depth === undefined ) parameters.depth = 50;
 			if ( parameters.bevelThickness === undefined ) parameters.bevelThickness = 10;
 			if ( parameters.bevelSize === undefined ) parameters.bevelSize = 8;
 			if ( parameters.bevelEnabled === undefined ) parameters.bevelEnabled = false;
