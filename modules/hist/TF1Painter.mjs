@@ -1,4 +1,4 @@
-import { settings, gStyle, isStr, isFunc, clTH1D, createHistogram, setHistogramTitle, clTF1, kNoStats } from '../core.mjs';
+import { settings, gStyle, isStr, isFunc, clTH1D, createHistogram, setHistogramTitle, clTF1, clTF12, kNoStats } from '../core.mjs';
 import { floatToString } from '../base/BasePainter.mjs';
 import { getElementMainPainter, ObjectPainter } from '../base/ObjectPainter.mjs';
 import { THistPainter } from '../hist2d/THistPainter.mjs';
@@ -64,6 +64,8 @@ class TF1Painter extends TH1Painter {
 
    /** @summary Returns true while function is drawn */
    isTF1() { return true; }
+
+   isTF12() { return this.getClassName() === clTF12; }
 
    /** @summary Returns primary function which was then drawn as histogram */
    getPrimaryObject() { return this.$func; }
@@ -135,7 +137,14 @@ class TF1Painter extends TH1Painter {
 
          if (!tf1.evalPar) {
             try {
-               if (!proivdeEvalPar(tf1))
+               if (this.isTF12()) {
+                  if (proivdeEvalPar(tf1.fF2)) {
+                     tf1.evalPar = function(x) {
+                        return this.fCase ? this.fF2.evalPar(x, this.fXY) : this.fF2.evalPar(this.fXY, x);
+                     }
+                  } else
+                     iserror = true;
+               } else if (!proivdeEvalPar(tf1))
                   iserror = true;
             } catch {
                iserror = true;
