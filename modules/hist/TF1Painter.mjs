@@ -141,7 +141,7 @@ class TF1Painter extends TH1Painter {
                   if (proivdeEvalPar(tf1.fF2)) {
                      tf1.evalPar = function(x) {
                         return this.fCase ? this.fF2.evalPar(x, this.fXY) : this.fF2.evalPar(this.fXY, x);
-                     }
+                     };
                   } else
                      iserror = true;
                } else if (!proivdeEvalPar(tf1))
