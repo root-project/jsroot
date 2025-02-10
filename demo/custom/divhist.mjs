@@ -15,7 +15,7 @@ addDrawFunc({
    func: (dom, obj, opt) => {
 
       // clone histogram
-      let hdiv = Object.assign({}, obj.fNum);
+      const hdiv = Object.assign({}, obj.fNum);
 
       hdiv.fName = 'ratio';
       hdiv.fTitle = 'ratio histogram';
@@ -27,8 +27,8 @@ addDrawFunc({
 
       // calculate division of two histograms
       for (let i = 1; i <= nbins; i++) {
-         let v1 = obj.fNum.fArray[i], v2 = obj.fDen.fArray[i];
-         hdiv.fArray[i] = (v2 !== 0) ? v1/v2 : 0;
+         const v1 = obj.fNum.fArray[i], v2 = obj.fDen.fArray[i];
+         hdiv.fArray[i] = (v2 !== 0) ? v1 / v2 : 0;
       }
 
       // draw new histogram
@@ -45,7 +45,7 @@ addDrawFunc({
 
    },
 
-   // exapnd user object, provide elements which should be seen
+   // expand user object, provide elements which should be seen
    expand: (parent, obj) => {
       parent._childs = [{
          _kind: `ROOT.${obj.fNum._typename}`,
