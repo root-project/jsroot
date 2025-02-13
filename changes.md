@@ -14,6 +14,7 @@
 1. Support `TLink` and `TButton` object, used in `TInspectCanvas`
 1. Support `TF12` - projection of `TF2`
 1. Upgrade three.js r168 -> r173
+1. Internals - use private members in JSROOT classes like `#draw_object`
 1. Fix - handle `TPave` NDC position also when fInit is not set
 
 
