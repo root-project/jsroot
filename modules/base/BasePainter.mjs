@@ -462,8 +462,8 @@ function compressSVG(svg) {
 
 class BasePainter {
 
-   #divid;  ///< either id of DOM element or element itself
-   #selected_main; ///< d3.select for dom elements
+   #divid;  // either id of DOM element or element itself
+   #selected_main; // d3.select for dom elements
 
    /** @summary constructor
      * @param {object|string} [dom] - dom element or id of dom element */

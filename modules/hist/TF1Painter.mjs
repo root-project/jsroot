@@ -56,6 +56,8 @@ function scanTF1Options(opt) {
 
 class TF1Painter extends TH1Painter {
 
+   #use_saved_points; // use saved points for drawing
+
    /** @summary Returns drawn object name */
    getObjectName() { return this.$func?.fName ?? 'func'; }
 
@@ -91,7 +93,7 @@ class TF1Painter extends TH1Painter {
    /** @summary Redraw TF1
      * @private */
    redraw(reason) {
-      if (!this._use_saved_points && (reason === 'logx' || reason === 'zoom')) {
+      if (!this.#use_saved_points && (reason === 'logx' || reason === 'zoom')) {
          this.createTF1Histogram(this.$func, this.getHisto());
          this.scanContent();
       }
@@ -116,7 +118,7 @@ class TF1Painter extends TH1Painter {
             xmax = Math.min(xmax, gr.zoom_xmax + dx);
       }
 
-      this._use_saved_points = (tf1.fSave.length > 3) && (settings.PreferSavedPoints || (this.use_saved > 1));
+      this.#use_saved_points = (tf1.fSave.length > 3) && (settings.PreferSavedPoints || (this.use_saved > 1));
 
       const ensureBins = num => {
          if (hist.fNcells !== num + 2) {
@@ -130,9 +132,9 @@ class TF1Painter extends TH1Painter {
 
       delete this._fail_eval;
 
-      // this._use_saved_points = true;
+      // this.#use_saved_points = true;
 
-      if (!this._use_saved_points) {
+      if (!this.#use_saved_points) {
          let iserror = false;
 
          if (!tf1.evalPar) {
@@ -177,12 +179,12 @@ class TF1Painter extends TH1Painter {
             this._fail_eval = true;
 
          if (iserror && (tf1.fSave.length > 3))
-            this._use_saved_points = true;
+            this.#use_saved_points = true;
       }
 
       // in the case there were points have saved and we cannot calculate function
       // if we don't have the user's function
-      if (this._use_saved_points) {
+      if (this.#use_saved_points) {
          np = tf1.fSave.length - 3;
          let custom_xaxis = null;
          xmin = tf1.fSave[np + 1];
@@ -236,7 +238,7 @@ class TF1Painter extends TH1Painter {
 
       const func = this.$func, nsave = func?.fSave.length ?? 0;
 
-      if (nsave > 3 && this._use_saved_points) {
+      if (nsave > 3 && this.#use_saved_points) {
          this.xmin = Math.min(this.xmin, func.fSave[nsave - 2]);
          this.xmax = Math.max(this.xmax, func.fSave[nsave - 1]);
       }
@@ -249,7 +251,7 @@ class TF1Painter extends TH1Painter {
    /** @summary Checks if it makes sense to zoom inside specified axis range */
    canZoomInside(axis, min, max) {
       const nsave = this.$func?.fSave.length ?? 0;
-      if ((nsave > 3) && this._use_saved_points && (axis === 'x')) {
+      if ((nsave > 3) && this.#use_saved_points && (axis === 'x')) {
          // in the case where the points have been saved, useful for example
          // if we don't have the user's function
          const nb_points = nsave - 2,
@@ -294,7 +296,7 @@ class TF1Painter extends TH1Painter {
 
    /** @summary process tooltip event for TF1 object */
    processTooltipEvent(pnt) {
-      if (this._use_saved_points)
+      if (this.#use_saved_points)
          return super.processTooltipEvent(pnt);
 
       let ttrect = this.draw_g?.selectChild('.tooltip_bin');
