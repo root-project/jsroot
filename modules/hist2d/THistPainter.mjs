@@ -776,7 +776,7 @@ class FunctionsHandler {
       // find painters associated with histogram/graph/...
       if (!only_draw) {
          pp?.forEachPainterInPad(objp => {
-            if (objp.isSecondary(painter) && objp._secondary_id?.match(/^func_|^indx_/))
+            if (objp.isSecondary(painter) && objp.getSecondaryId()?.match(/^func_|^indx_/))
                painters.push(objp);
          }, 'objects');
       }
@@ -849,7 +849,7 @@ class FunctionsHandler {
       if (!func || this.pp?.findPainterFor(func))
          return this.drawNext(indx+1);
 
-      const func_secondary_id = func?.fName ? `func_${func.fName}` : `indx_${indx}`;
+      const func_id = func?.fName ? `func_${func.fName}` : `indx_${indx}`;
 
       // Required to correctly draw multiple stats boxes
       // TODO: set reference via weak pointer
@@ -860,7 +860,7 @@ class FunctionsHandler {
             : this.pp.drawObject(this.pp, func, fopt);
 
       return promise.then(fpainter => {
-         fpainter.setSecondaryId(this.painter, func_secondary_id);
+         fpainter.setSecondaryId(this.painter, func_id);
          return this.drawNext(indx+1);
       });
    }

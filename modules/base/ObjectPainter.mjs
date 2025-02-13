@@ -18,7 +18,10 @@ import { getRootColors } from './colors.mjs';
 
 class ObjectPainter extends BasePainter {
 
-   #draw_object;
+   #draw_object;     // drawn object
+   #main_painter;    // main painter in the pad - temporary pointer on the painter
+   #primary_id; // unique id of primary painter
+   #secondary_id;    // id of this painter in relation to primary painter
 
    /** @summary constructor
      * @param {object|string} dom - dom element or identifier or pad painter
@@ -34,7 +37,6 @@ class ObjectPainter extends BasePainter {
       super(dom);
 
       // this.draw_g = undefined; // container for all drawn objects
-      // this._main_painter = undefined;  // main painter in the correspondent pad
       this.pad_name = pp?.this_pad_name ?? ''; // name of pad where object is drawn
       this.assignObject(obj);
       if (isStr(opt))
@@ -88,7 +90,7 @@ class ObjectPainter extends BasePainter {
 
       // cleanup all existing references
       delete this.pad_name;
-      delete this._main_painter;
+      this.#main_painter = null;
       this.#draw_object = null;
       delete this.snapid;
 
@@ -395,7 +397,8 @@ class ObjectPainter extends BasePainter {
       return c;
    }
 
-   /** @summary Assign unique identifier for the painter
+   /** @summary Returns unique identifier for the painter
+     * @param {boolean} [only_read] if not specified, also assign unique id to the painter
      * @private */
    getUniqueId(only_read = false) {
       if (!only_read && (this._unique_painter_id === undefined))
@@ -405,18 +408,24 @@ class ObjectPainter extends BasePainter {
 
    /** @summary Assign secondary id
      * @private */
-   setSecondaryId(main, name) {
-      this._main_painter_id = main.getUniqueId();
-      this._secondary_id = name;
+   setSecondaryId(primary, name) {
+      this.#primary_id = primary.getUniqueId();
+      this.#secondary_id = name;
+   }
+
+   /** @summary Returns secondary id
+     * @private */
+   getSecondaryId() {
+      return this.#secondary_id;
    }
 
    /** @summary Check if this is secondary painter
-     * @desc if main painter provided - check if this really main for this
+     * @desc if primary painter provided - check if this really main for this
      * @private */
-   isSecondary(main) {
-      if (this._main_painter_id === undefined)
+   isSecondary(primary) {
+      if (this.#primary_id === undefined)
          return false;
-      return !isObject(main) ? true : this._main_painter_id === main.getUniqueId(true);
+      return !isObject(primary) ? true : this.#primary_id === primary.getUniqueId(true);
    }
 
    /** @summary Return primary object
@@ -604,13 +613,14 @@ class ObjectPainter extends BasePainter {
      * @param {boolean} [not_store] - if true, prevent temporary storage of main painter reference
      * @protected */
    getMainPainter(not_store) {
-      let res = this._main_painter;
+      let res = this.#main_painter;
       if (!res) {
          const pp = this.getPadPainter();
          res = pp ? pp.getMainPainter() : this.getTopPainter();
-         if (!res) res = null;
+         if (!res)
+            res = null;
          if (!not_store)
-            this._main_painter = res;
+            this.#main_painter = res;
       }
       return res;
    }
