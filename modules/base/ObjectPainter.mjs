@@ -1016,10 +1016,10 @@ class ObjectPainter extends BasePainter {
 
    /** @summary Analyze if all text draw operations are completed
      * @private */
-   _checkAllTextDrawing(draw_g, resolveFunc, try_optimize) {
+   #checkAllTextDrawing(draw_g, resolveFunc, try_optimize) {
       let all_args = draw_g.property('all_args'), missing = 0;
       if (!all_args) {
-         console.log('Text drawing is finished - why calling _checkAllTextDrawing?????');
+         console.log('Text drawing is finished - why calling #checkAllTextDrawing?????');
          all_args = [];
       }
 
@@ -1337,7 +1337,7 @@ class ObjectPainter extends BasePainter {
             this.#postprocessDrawText(arg, arg.txt_g || arg.txt_node);
 
             if (arg.draw_g.property('draw_text_completed'))
-               this._checkAllTextDrawing(arg.draw_g); // check if all other elements are completed
+               this.#checkAllTextDrawing(arg.draw_g); // check if all other elements are completed
             return 0;
          }
 
@@ -1353,7 +1353,7 @@ class ObjectPainter extends BasePainter {
       produceMathjax(this, arg.mj_node, arg).then(() => {
          arg.ready = true;
          if (arg.draw_g.property('draw_text_completed'))
-            this._checkAllTextDrawing(arg.draw_g);
+            this.#checkAllTextDrawing(arg.draw_g);
       });
 
       return 0;
@@ -1365,14 +1365,15 @@ class ObjectPainter extends BasePainter {
      * @return {Promise} when text drawing completed
      * @protected */
    async finishTextDrawing(draw_g, try_optimize) {
-      if (!draw_g) draw_g = this.draw_g;
+      if (!draw_g)
+         draw_g = this.draw_g;
       if (!draw_g || draw_g.empty())
          return false;
 
       draw_g.property('draw_text_completed', true); // mark that text drawing is completed
 
       return new Promise(resolveFunc => {
-         this._checkAllTextDrawing(draw_g, resolveFunc, try_optimize);
+         this.#checkAllTextDrawing(draw_g, resolveFunc, try_optimize);
       });
    }
 
