@@ -234,7 +234,7 @@ class ObjectPainter extends BasePainter {
    /** @summary Returns string with object hint
      * @desc It is either item name or object name or class name.
      * Such string typically used as object tooltip.
-     * If result string larger than 20 symbols, it will be cutted. */
+     * If result string larger than 20 symbols, it will be shorten. */
    getObjectHint() {
       const iname = this.getItemName();
       if (iname)
@@ -1572,7 +1572,8 @@ class ObjectPainter extends BasePainter {
       // only after timeout user function will be called
       this._user_tooltip_handle = setTimeout(() => {
          delete this._user_tooltip_handle;
-         if (this._user_tooltip_handler) this._user_tooltip_handler(data);
+         if (this._user_tooltip_handler)
+            this._user_tooltip_handler(data);
       }, this._user_tooltip_timeout);
    }
 
