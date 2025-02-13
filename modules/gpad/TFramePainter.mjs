@@ -1013,7 +1013,8 @@ const TooltipHandler = {
       }
 
       // ignore all events from non-left button
-      if (evnt.button !== 0) return;
+      if (evnt.button !== 0)
+         return;
 
       evnt.preventDefault();
 

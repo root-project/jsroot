@@ -2213,39 +2213,40 @@ class TPadPainter extends ObjectPainter {
    /** @summary Show context menu for specified item
      * @private */
    itemContextMenu(name) {
-       const rrr = this.svg_this_pad().node().getBoundingClientRect(),
-             evnt = { clientX: rrr.left + 10, clientY: rrr.top + 10 };
+      const rrr = this.svg_this_pad().node().getBoundingClientRect(),
+            evnt = { clientX: rrr.left + 10, clientY: rrr.top + 10 };
 
-       // use timeout to avoid conflict with mouse click and automatic menu close
-       if (name === 'pad')
-          return postponePromise(() => this.padContextMenu(evnt), 50);
+      // use timeout to avoid conflict with mouse click and automatic menu close
+      if (name === 'pad')
+         return postponePromise(() => this.padContextMenu(evnt), 50);
 
-       let selp = null, selkind;
+      let selp = null, selkind;
 
-       switch (name) {
-          case 'xaxis':
-          case 'yaxis':
-          case 'zaxis':
-             selp = this.getFramePainter();
-             selkind = name[0];
-             break;
-          case 'frame':
-             selp = this.getFramePainter();
-             break;
-          default: {
-             const indx = parseInt(name);
-             if (Number.isInteger(indx))
-                selp = this.painters[indx];
-          }
-       }
+      switch (name) {
+         case 'xaxis':
+         case 'yaxis':
+         case 'zaxis':
+            selp = this.getFramePainter();
+            selkind = name[0];
+            break;
+         case 'frame':
+            selp = this.getFramePainter();
+            break;
+         default: {
+            const indx = parseInt(name);
+            if (Number.isInteger(indx))
+               selp = this.painters[indx];
+         }
+      }
 
-       if (!isFunc(selp?.fillContextMenu)) return;
+      if (!isFunc(selp?.fillContextMenu))
+         return;
 
-       return createMenu(evnt, selp).then(menu => {
-          const offline_menu = selp.fillContextMenu(menu, selkind);
-          if (offline_menu || selp.snapid)
-             return selp.fillObjectExecMenu(menu, selkind).then(() => postponePromise(() => menu.show(), 50));
-       });
+      return createMenu(evnt, selp).then(menu => {
+         const offline_menu = selp.fillContextMenu(menu, selkind);
+         if (offline_menu || selp.snapid)
+            return selp.fillObjectExecMenu(menu, selkind).then(() => postponePromise(() => menu.show(), 50));
+      });
    }
 
    /** @summary Save pad as image
