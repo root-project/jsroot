@@ -18,6 +18,8 @@ import { getRootColors } from './colors.mjs';
 
 class ObjectPainter extends BasePainter {
 
+   #draw_object;
+
    /** @summary constructor
      * @param {object|string} dom - dom element or identifier or pad painter
      * @param {object} obj - object to draw
@@ -42,11 +44,11 @@ class ObjectPainter extends BasePainter {
    /** @summary Assign object to the painter
      * @protected */
    assignObject(obj) {
-      if (isObject(obj))
-         this.draw_object = obj;
-      else
-         delete this.draw_object;
+      this.#draw_object = isObject(obj) ? obj : null;
    }
+
+   /** @summary Returns drawn object */
+   getObject() { return this.#draw_object; }
 
    /** @summary Assigns pad name where element will be drawn
      * @desc Should happened before first draw of element is performed, only for special use case
@@ -87,7 +89,7 @@ class ObjectPainter extends BasePainter {
       // cleanup all existing references
       delete this.pad_name;
       delete this._main_painter;
-      this.draw_object = null;
+      this.#draw_object = null;
       delete this.snapid;
 
       // remove attributes objects (if any)
@@ -105,9 +107,6 @@ class ObjectPainter extends BasePainter {
 
       super.cleanup(keep_origin);
    }
-
-   /** @summary Returns drawn object */
-   getObject() { return this.draw_object; }
 
    /** @summary Returns drawn object name */
    getObjectName() { return this.getObject()?.fName ?? ''; }

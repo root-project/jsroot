@@ -1923,7 +1923,8 @@ class TPadPainter extends ObjectPainter {
 
          this.snapid = snap.fObjectID;
 
-         this.draw_object = this.pad = first; // first object is pad
+         this.assignObject(first);
+         this.pad = first; // first object is pad
 
          // this._fixed_size = true;
 

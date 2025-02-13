@@ -109,7 +109,7 @@ class RPadPainter extends RObjectPainter {
 
       this.painters = [];
       this.pad = null;
-      this.draw_object = null;
+      this.assignObject(null);
       this.pad_frame = null;
       this.this_pad_name = undefined;
       this.has_canvas = false;
@@ -1187,7 +1187,7 @@ class RPadPainter extends RObjectPainter {
 
          this.assignSnapId(snap.fObjectID);
 
-         this.draw_object = snap;
+         this.assignObject(snap);
          this.pad = snap;
 
          if (this.isBatchMode() && this.iscan)
