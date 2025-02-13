@@ -526,7 +526,7 @@ class BasePainter {
 
    /** @summary Access/change top painter
      * @private */
-   _accessTopPainter(on) {
+   #accessTopPainter(on) {
       const chld = this.selectDom().node()?.firstChild;
       if (!chld) return null;
       if (on === true)
@@ -539,21 +539,15 @@ class BasePainter {
    /** @summary Set painter, stored in first child element
      * @desc Only make sense after first drawing is completed and any child element add to configured DOM
      * @protected */
-   setTopPainter() {
-      this._accessTopPainter(true);
-   }
+   setTopPainter() { this.#accessTopPainter(true); }
 
    /** @summary Return top painter set for the selected dom element
      * @protected */
-   getTopPainter() {
-      return this._accessTopPainter();
-   }
+   getTopPainter() { return this.#accessTopPainter(); }
 
    /** @summary Clear reference on top painter
      * @protected */
-   clearTopPainter() {
-      this._accessTopPainter(false);
-   }
+   clearTopPainter() { this.#accessTopPainter(false); }
 
    /** @summary Generic method to cleanup painter
      * @desc Removes all visible elements and all internal data */

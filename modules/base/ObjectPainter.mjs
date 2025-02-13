@@ -1193,7 +1193,7 @@ class ObjectPainter extends BasePainter {
 
    /** @summary Post-process plain text drawing
      * @private */
-   _postprocessDrawText(arg, txt_node) {
+   #postprocessDrawText(arg, txt_node) {
       // complete rectangle with very rough size estimations
       arg.box = !isNodeJs() && !settings.ApproxTextSize && !arg.fast
                  ? getElementRect(txt_node, 'bbox')
@@ -1334,7 +1334,7 @@ class ObjectPainter extends BasePainter {
                produceLatex(this, arg.txt_g, arg);
             }
             arg.ready = true;
-            this._postprocessDrawText(arg, arg.txt_g || arg.txt_node);
+            this.#postprocessDrawText(arg, arg.txt_g || arg.txt_node);
 
             if (arg.draw_g.property('draw_text_completed'))
                this._checkAllTextDrawing(arg.draw_g); // check if all other elements are completed
@@ -1345,7 +1345,7 @@ class ObjectPainter extends BasePainter {
          arg.txt_node.text(arg.text);
          arg.ready = true;
 
-         return this._postprocessDrawText(arg, arg.txt_node);
+         return this.#postprocessDrawText(arg, arg.txt_node);
       }
 
       arg.mj_node = arg.draw_g.append('svg:g').attr('visibility', 'hidden'); // hide text until drawing is finished
