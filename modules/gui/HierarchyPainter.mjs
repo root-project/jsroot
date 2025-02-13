@@ -2222,8 +2222,8 @@ class HierarchyPainter extends BasePainter {
    async dropItem(itemname, dom, opt) {
       if (!opt || !isStr(opt)) opt = '';
 
-      const drop_complete = (drop_painter, is_main_painter) => {
-         if (!is_main_painter && isFunc(drop_painter?.setItemName))
+      const drop_complete = (drop_painter, is_main) => {
+         if (!is_main && isFunc(drop_painter?.setItemName))
             drop_painter.setItemName(itemname, null, this);
          return drop_painter;
       };
@@ -2239,13 +2239,14 @@ class HierarchyPainter extends BasePainter {
       return this.getObject(itemname).then(res => {
          if (!res.obj) return null;
 
-         const main_painter = getElementMainPainter(dom);
+         const mp = getElementMainPainter(dom);
 
-         if (isFunc(main_painter?.performDrop))
-            return main_painter.performDrop(res.obj, itemname, res.item, opt).then(p => drop_complete(p, main_painter === p));
+         if (isFunc(mp?.performDrop))
+            return mp.performDrop(res.obj, itemname, res.item, opt).then(p => drop_complete(p, mp === p));
 
          const sett = res.obj._typename ? getDrawSettings(prROOT + res.obj._typename) : null;
-         if (!sett?.draw) return null;
+         if (!sett?.draw)
+            return null;
 
          const cp = getElementCanvPainter(dom);
 
@@ -2255,7 +2256,7 @@ class HierarchyPainter extends BasePainter {
          } else
             this.cleanupFrame(dom);
 
-         return draw(dom, res.obj, opt).then(p => drop_complete(p, main_painter === p));
+         return draw(dom, res.obj, opt).then(p => drop_complete(p, mp === p));
       });
    }
 
