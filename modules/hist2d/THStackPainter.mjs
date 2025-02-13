@@ -523,7 +523,7 @@ class THStackPainter extends ObjectPainter {
       });
    }
 
-   /** @summary draw THStack object in 2D */
+   /** @summary draw THStack object in 2D only */
    static async draw(dom, stack, opt) {
       if (!stack.fHists || !stack.fHists.arr)
          return null; // drawing not needed

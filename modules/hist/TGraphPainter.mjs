@@ -49,6 +49,7 @@ class TGraphPainter extends TGraphPainter2D {
       return TH1Painter.draw(this.getDrawDom(), this.createHistogram(), this.options.Axis);
    }
 
+   /** @summary Draw TGraph */
    static async draw(dom, graph, opt) {
       return TGraphPainter._drawGraph(new TGraphPainter(dom, graph), opt);
    }

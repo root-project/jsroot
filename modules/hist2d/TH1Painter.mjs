@@ -1336,7 +1336,7 @@ class TH1Painter extends THistPainter {
       return this.callDrawFunc(reason);
    }
 
-   /** @summary draw TH1 object */
+   /** @summary draw TH1 object in 2D only */
    static async draw(dom, histo, opt) {
       return THistPainter._drawHist(new TH1Painter(dom, histo), opt);
    }

@@ -1616,6 +1616,7 @@ class TGraphPainter extends ObjectPainter {
       });
    }
 
+   /** @summary Draw TGraph in 2D only */
    static async draw(dom, graph, opt) {
       return TGraphPainter._drawGraph(new TGraphPainter(dom, graph), opt);
    }

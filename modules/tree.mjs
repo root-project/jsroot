@@ -2435,7 +2435,8 @@ async function treeProcess(tree, selector, args) {
       if (totalsz > 0)
          return readBaskets(bitems).then(processBaskets);
 
-      if (is_direct) return processBaskets([]); // directly process baskets
+      if (is_direct)
+         return processBaskets([]); // directly process baskets
 
       throw new Error('No any data is requested - never come here');
    }
@@ -2577,7 +2578,7 @@ async function treeProcess(tree, selector, args) {
   * @param {number} [args.numentries=undefined] - number of entries to process, all by default
   * @param {object} [args.branch=undefined] - TBranch object from TTree itself for the direct drawing
   * @param {function} [args.progress=undefined] - function called during histogram accumulation with obj argument
-  * @return {Promise} with produced object  */
+  * @return {Promise} with produced object */
 async function treeDraw(tree, args) {
    if (isStr(args)) args = { expr: args };
 

@@ -478,7 +478,7 @@ class Triangles3DHandler {
 
 
 /** @summary Build 3d surface
-  * @desc Make it independent from three.js to be able reuse it for 2d case
+  * @desc Make it independent from three.js to be able reuse it for 2D case
   * @private */
 function buildSurf3D(histo, handle, ilevels, meshFunc, linesFunc) {
    const main_grz = handle.grz,
@@ -3340,7 +3340,7 @@ class TH2Painter extends THistPainter {
       return this.callDrawFunc(reason);
    }
 
-   /** @summary draw TH2 object */
+   /** @summary draw TH2 object in 2D only */
    static async draw(dom, histo, opt) {
       return THistPainter._drawHist(new TH2Painter(dom, histo), opt);
    }

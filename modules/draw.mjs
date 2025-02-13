@@ -710,7 +710,7 @@ function assignPadPainterDraw(PadPainterClass) {
 // only now one can draw primitives in the canvas
 assignPadPainterDraw(TPadPainter);
 
-// load v7 only by demand
+// load v7 only on demand
 async function init_v7(arg) {
    return import('./gpad/RCanvasPainter.mjs').then(h => {
       // only now one can draw primitives in the canvas
