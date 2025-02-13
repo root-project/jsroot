@@ -462,10 +462,13 @@ function compressSVG(svg) {
 
 class BasePainter {
 
+   #divid;  ///< either id of DOM element or element itself
+   #selected_main; ///< d3.select for dom elements
+
    /** @summary constructor
      * @param {object|string} [dom] - dom element or id of dom element */
    constructor(dom) {
-      this.divid = null; // either id of DOM element or element itself
+      this.#divid = null; // either id of DOM element or element itself
       if (dom) this.setDom(dom);
    }
 
@@ -475,36 +478,37 @@ class BasePainter {
      * @protected */
    setDom(elem) {
       if (elem !== undefined) {
-         this.divid = elem;
-         delete this._selected_main;
+         this.#divid = elem;
+         this.#selected_main = null;
       }
    }
 
    /** @summary Returns assigned dom element */
-   getDom() {
-      return this.divid;
-   }
+   getDom() { return this.#divid; }
 
    /** @summary Selects main HTML element assigned for drawing
      * @desc if main element was layout, returns main element inside layout
      * @param {string} [is_direct] - if 'origin' specified, returns original element even if actual drawing moved to some other place
      * @return {object} d3.select object for main element for drawing */
    selectDom(is_direct) {
-      if (!this.divid) return d3_select(null);
+      if (!this.#divid)
+         return d3_select(null);
 
-      let res = this._selected_main;
+      let res = this.#selected_main;
       if (!res) {
-         if (isStr(this.divid)) {
-            let id = this.divid;
+         if (isStr(this.#divid)) {
+            let id = this.#divid;
             if (id[0] !== '#') id = '#' + id;
             res = d3_select(id);
-            if (!res.empty()) this.divid = res.node();
+            if (!res.empty())
+               this.#divid = res.node();
          } else
-            res = d3_select(this.divid);
-         this._selected_main = res;
+            res = d3_select(this.#divid);
+         this.#selected_main = res;
       }
 
-      if (!res || res.empty() || (is_direct === 'origin')) return res;
+      if (!res || res.empty() || (is_direct === 'origin'))
+         return res;
 
       const use_enlarge = res.property('use_enlarge'),
             layout = res.property('layout') || 'simple',
@@ -557,8 +561,8 @@ class BasePainter {
       this.clearTopPainter();
       const origin = this.selectDom('origin');
       if (!origin.empty() && !keep_origin) origin.html('');
-      this.divid = null;
-      delete this._selected_main;
+      this.#divid = null;
+      this.#selected_main = undefined;
 
       if (isFunc(this._hpainter?.removePainter))
          this._hpainter.removePainter(this);

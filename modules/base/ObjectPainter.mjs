@@ -18,10 +18,10 @@ import { getRootColors } from './colors.mjs';
 
 class ObjectPainter extends BasePainter {
 
-   #draw_object;     // drawn object
-   #main_painter;    // main painter in the pad - temporary pointer on the painter
-   #primary_id; // unique id of primary painter
-   #secondary_id;    // id of this painter in relation to primary painter
+   #draw_object;     ///< drawn object
+   #main_painter;    ///< main painter in the pad - temporary pointer on the painter
+   #primary_id;      ///< unique id of primary painter
+   #secondary_id;    ///< id of this painter in relation to primary painter
 
    /** @summary constructor
      * @param {object|string} dom - dom element or identifier or pad painter
