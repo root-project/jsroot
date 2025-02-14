@@ -18,6 +18,8 @@ import { PadButtonsHandler, webSnapIds } from './TPadPainter.mjs';
 
 class RPadPainter extends RObjectPainter {
 
+   #pad_scale;  // scaling factor of the pad
+
    /** @summary constructor */
    constructor(dom, pad, iscan) {
       super(dom, pad, '', 'pad');
@@ -130,7 +132,7 @@ class RPadPainter extends RObjectPainter {
    getPadHeight() { return this._pad_height || 0; }
 
    /** @summary get pad height */
-   getPadScale() { return this._pad_scale || 1; }
+   getPadScale() { return this.#pad_scale || 1; }
 
    /** @summary return pad log state x or y are allowed */
    getPadLog(name) { return false; }

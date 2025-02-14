@@ -26,7 +26,7 @@ const PadButtonsHandler = {
 
    getButtonSize(fact) {
       const cp = this.getCanvPainter();
-      return Math.round((fact || 1) * (cp?._pad_scale || 1) * (cp === this ? 16 : 12));
+      return Math.round((fact || 1) * (cp?.getPadScale() || 1) * (cp === this ? 16 : 12));
    },
 
    toggleButtonsVisibility(action, evnt) {
@@ -204,6 +204,8 @@ function createWebObjectOptions(painter) {
 
 class TPadPainter extends ObjectPainter {
 
+   #pad_scale;  // scale factor of the pad
+
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
      * @param {object} pad - TPad object to draw
@@ -320,7 +322,7 @@ class TPadPainter extends ObjectPainter {
    getPadHeight() { return this._pad_height || 0; }
 
    /** @summary get pad height */
-   getPadScale() { return this._pad_scale || 1; }
+   getPadScale() { return this.#pad_scale || 1; }
 
    /** @summary get pad rect */
    getPadRect() {
@@ -718,11 +720,11 @@ class TPadPainter extends ObjectPainter {
 
       svg.style('filter', settings.DarkMode || this.pad?.$dark ? 'invert(100%)' : null);
 
-      this._pad_scale = settings.CanvasScale || 1;
+      this.#pad_scale = settings.CanvasScale || 1;
       this._pad_x = 0;
       this._pad_y = 0;
-      this._pad_width = rect.width * this._pad_scale;
-      this._pad_height = rect.height * this._pad_scale;
+      this._pad_width = rect.width * this.#pad_scale;
+      this._pad_height = rect.height * this.#pad_scale;
 
       svg.attr('viewBox', `0 0 ${this._pad_width} ${this._pad_height}`)
          .attr('preserveAspectRatio', 'none')  // we do not preserve relative ratio
@@ -908,7 +910,7 @@ class TPadPainter extends ObjectPainter {
              .property('draw_width', w)
              .property('draw_height', h);
 
-      this._pad_scale = this.getCanvPainter().getPadScale();
+      this.#pad_scale = this.getCanvPainter().getPadScale();
       this._pad_x = x;
       this._pad_y = y;
       this._pad_width = w;
