@@ -210,6 +210,10 @@ class TPadPainter extends ObjectPainter {
    #pad_width;  // pad width
    #pad_height; // pad height
    #doing_draw; // drawing handles
+   #last_grayscale; // grayscale change flag
+   #custom_colors;  // custom colors
+   #custom_palette_indexes; // custom palette indexes
+   #custom_palette_colors; // custom palette colors
 
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -297,10 +301,10 @@ class TPadPainter extends ObjectPainter {
       this.#doing_draw = undefined;
       delete this._interactively_changed;
       delete this._snap_primitives;
-      delete this._last_grayscale;
-      delete this._custom_colors;
-      delete this._custom_palette_indexes;
-      delete this._custom_palette_colors;
+      this.#last_grayscale = undefined;
+      this.#custom_colors = undefined;
+      this.#custom_palette_indexes = undefined;
+      this.#custom_palette_colors = undefined;
       delete this.root_colors;
 
       this.painters = [];
@@ -468,6 +472,8 @@ class TPadPainter extends ObjectPainter {
      * @private */
    getNumPainters() { return this.painters.length; }
 
+   _getCustomPaletteIndexes() { return this.#custom_palette_indexes; }
+
    /** @summary Provides automatic color
     * @desc Uses ROOT colors palette if possible
     * @private */
@@ -480,7 +486,12 @@ class TPadPainter extends ObjectPainter {
       this._auto_color = (indx + 1) % numprimitives;
       if (indx >= numprimitives) indx = numprimitives - 1;
 
-      const indexes = this._custom_palette_indexes || this.getCanvPainter()?._custom_palette_indexes;
+      let indexes = this._getCustomPaletteIndexes();
+      if (!indexes) {
+         const cp = this.getCanvPainter();
+         if (isFunc(cp?._getCustomPaletteIndexes) && (cp !== this))
+            indexes = cp._getCustomPaletteIndexes();
+      }
 
       if (indexes?.length) {
          const p = Math.round(indx * (indexes.length - 3) / (numprimitives - 1));
@@ -578,7 +589,8 @@ class TPadPainter extends ObjectPainter {
    /** @summary Returns true if canvas configured with grayscale
      * @private */
    isGrayscale() {
-      if (!this.iscan) return false;
+      if (!this.iscan)
+         return false;
       return this.pad?.TestBit(kIsGrayscale) ?? false;
    }
 
@@ -600,7 +612,7 @@ class TPadPainter extends ObjectPainter {
 
       if (flag === undefined) {
          flag = this.pad?.TestBit(kIsGrayscale) ?? false;
-         changed = (this._last_grayscale !== undefined) && (this._last_grayscale !== flag);
+         changed = (this.#last_grayscale !== undefined) && (this.#last_grayscale !== flag);
       } else if (flag !== this.pad?.TestBit(kIsGrayscale)) {
          this.pad?.InvertBit(kIsGrayscale);
          changed = true;
@@ -609,11 +621,11 @@ class TPadPainter extends ObjectPainter {
       if (changed)
          this.forEachPainter(p => { delete p._color_palette; });
 
-      this.root_colors = flag ? getGrayColors(this._custom_colors) : this._custom_colors;
+      this.root_colors = flag ? getGrayColors(this.#custom_colors) : this.#custom_colors;
 
-      this._last_grayscale = flag;
+      this.#last_grayscale = flag;
 
-      this.custom_palette = this._custom_palette_colors ? new ColorPalette(this._custom_palette_colors, flag) : null;
+      this.custom_palette = this.#custom_palette_colors ? new ColorPalette(this.#custom_palette_colors, flag) : null;
    }
 
    /** @summary Create SVG element for canvas */
@@ -1047,7 +1059,7 @@ class TPadPainter extends ObjectPainter {
             adoptRootColors(obj);
 
          // copy existing colors and extend with new values
-         this._custom_colors = this.options?.LocalColors ? extendRootColors(null, obj) : null;
+         this.#custom_colors = this.options?.LocalColors ? extendRootColors(null, obj) : null;
          return true;
       }
 
@@ -1066,8 +1078,8 @@ class TPadPainter extends ObjectPainter {
          }
 
          const apply = (!this.options || (!missing && !this.options.IgnorePalette));
-         this._custom_palette_indexes = apply ? indx : null;
-         this._custom_palette_colors = apply ? arr : null;
+         this.#custom_palette_indexes = apply ? indx : null;
+         this.#custom_palette_colors = apply ? arr : null;
 
          return true;
       }
@@ -1732,7 +1744,7 @@ class TPadPainter extends ObjectPainter {
             colors = extendRootColors(null, ListOfColors, greyscale);
 
       // copy existing colors and extend with new values
-      this._custom_colors = this.options?.LocalColors ? colors : null;
+      this.#custom_colors = this.options?.LocalColors ? colors : null;
 
       // set palette
       if (snap.fSnapshot.fBuf && (!this.options || !this.options.IgnorePalette)) {
@@ -1741,12 +1753,11 @@ class TPadPainter extends ObjectPainter {
             indexes[n] = Math.round(snap.fSnapshot.fBuf[n]);
             palette[n] = colors[indexes[n]];
          }
-         this._custom_palette_indexes = indexes;
-         this._custom_palette_colors = palette;
+         this.#custom_palette_indexes = indexes;
+         this.#custom_palette_colors = palette;
          this.custom_palette = new ColorPalette(palette, greyscale);
       } else {
-         delete this._custom_palette_indexes;
-         delete this._custom_palette_colors;
+         this.#custom_palette_indexes = this.#custom_palette_colors = undefined;
          delete this.custom_palette;
       }
    }
