@@ -303,7 +303,6 @@ class TPadPainter extends ObjectPainter {
       delete this._snap_primitives;
       this.#last_grayscale = undefined;
       this.#custom_palette = this.#custom_colors = this.#custom_palette_indexes = this.#custom_palette_colors = undefined;
-      delete this.root_colors;
 
       this.painters = [];
       this.pad = null;
@@ -462,8 +461,8 @@ class TPadPainter extends ObjectPainter {
 
   /** @summary returns custom palette associated with pad or top canvas
     * @private */
-   getCustomPalette() {
-      return this.#custom_palette || (this.iscan ? null : this.getCanvPainter()?.getCustomPalette());
+   getCustomPalette(no_recursion) {
+      return this.#custom_palette || (no_recursion ? null : this.getCanvPainter()?.getCustomPalette(true));
    }
 
    /** @summary Returns number of painters
@@ -485,9 +484,9 @@ class TPadPainter extends ObjectPainter {
       if (indx >= numprimitives) indx = numprimitives - 1;
 
       let indexes = this._getCustomPaletteIndexes();
-      if (!indexes && !this.iscan) {
+      if (!indexes) {
          const cp = this.getCanvPainter();
-         if (isFunc(cp?._getCustomPaletteIndexes))
+         if ((cp !== this) && isFunc(cp?._getCustomPaletteIndexes))
             indexes = cp._getCustomPaletteIndexes();
       }
 
@@ -619,7 +618,7 @@ class TPadPainter extends ObjectPainter {
       if (changed)
          this.forEachPainter(p => { delete p._color_palette; });
 
-      this.root_colors = flag ? getGrayColors(this.#custom_colors) : this.#custom_colors;
+      this._root_colors = flag ? getGrayColors(this.#custom_colors) : this.#custom_colors;
 
       this.#last_grayscale = flag;
 

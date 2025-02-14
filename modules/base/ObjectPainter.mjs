@@ -22,6 +22,7 @@ class ObjectPainter extends BasePainter {
    #main_painter;    // main painter in the pad - temporary pointer on the painter
    #primary_id;      // unique id of primary painter
    #secondary_id;    // id of this painter in relation to primary painter
+   #options_store;   // stored draw options used to check changes
 
    /** @summary constructor
      * @param {object|string} dom - dom element or identifier or pad painter
@@ -98,10 +99,9 @@ class ObjectPainter extends BasePainter {
       delete this.fillatt;
       delete this.lineatt;
       delete this.markeratt;
-      delete this.bins;
-      delete this.root_colors;
+      delete this._root_colors;
       delete this.options;
-      delete this.options_store;
+      this.#options_store = undefined;
 
       // remove extra fields from v7 painters
       delete this.rstyle;
@@ -152,7 +152,7 @@ class ObjectPainter extends BasePainter {
       const pp = original.indexOf(';;');
       if (pp >= 0) original = original.slice(0, pp);
       this.options.original = original;
-      this.options_store = Object.assign({}, this.options);
+      this.#options_store = Object.assign({}, this.options);
    }
 
    /** @summary Return dom argument for object drawing
@@ -171,11 +171,11 @@ class ObjectPainter extends BasePainter {
       if (isFunc(this.options.asString)) {
          let changed = false;
          const pp = this.getPadPainter();
-         if (!this.options_store || pp?._interactively_changed)
+         if (!this.#options_store || pp?._interactively_changed)
             changed = true;
          else {
-            for (const k in this.options_store) {
-               if (this.options[k] !== this.options_store[k]) {
+            for (const k in this.#options_store) {
+               if (this.options[k] !== this.#options_store[k]) {
                   if ((k[0] !== '_') && (k[0] !== '$') && (k[0].toLowerCase() !== k[0]))
                      changed = true;
                }
@@ -249,10 +249,10 @@ class ObjectPainter extends BasePainter {
      * @return {string} with SVG color name or rgb()
      * @protected */
    getColor(indx) {
-      if (!this.root_colors)
-         this.root_colors = this.getCanvPainter()?.root_colors || getRootColors();
+      if (!this._root_colors)
+         this._root_colors = this.getCanvPainter()?._root_colors || getRootColors();
 
-      return this.root_colors[indx];
+      return this._root_colors[indx];
    }
 
    /** @summary Add color to list of colors
@@ -260,12 +260,13 @@ class ObjectPainter extends BasePainter {
      * @return {number} new color index
      * @protected */
    addColor(color) {
-      if (!this.root_colors)
-         this.root_colors = this.getCanvPainter()?.root_colors || getRootColors();
-      const indx = this.root_colors.indexOf(color);
-      if (indx >= 0) return indx;
-      this.root_colors.push(color);
-      return this.root_colors.length - 1;
+      if (!this._root_colors)
+         this._root_colors = this.getCanvPainter()?._root_colors || getRootColors();
+      const indx = this._root_colors.indexOf(color);
+      if (indx >= 0)
+         return indx;
+      this._root_colors.push(color);
+      return this._root_colors.length - 1;
    }
 
    /** @summary returns tooltip allowed flag

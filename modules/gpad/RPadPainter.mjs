@@ -298,8 +298,8 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary Returns custom palette
      * @private */
-   getCustomPalette() {
-      return this.#custom_palette || (this.iscan ? null : this.getCanvPainter()?.getCustomPalette());
+   getCustomPalette(no_recursion) {
+      return this.#custom_palette || (no_recursion ? null : this.getCanvPainter()?.getCustomPalette(true));
    }
 
    /** @summary Returns number of painters
@@ -979,7 +979,7 @@ class RPadPainter extends RObjectPainter {
    /** @summary Extract properties from TObjectDisplayItem */
    extractTObjectProp(snap) {
       if (snap.fColIndex && snap.fColValue) {
-         const colors = this.root_colors || getRootColors();
+         const colors = this._root_colors || getRootColors();
          for (let k = 0; k < snap.fColIndex.length; ++k)
             colors[snap.fColIndex[k]] = convertColor(snap.fColValue[k]);
        }
@@ -994,7 +994,7 @@ class RPadPainter extends RObjectPainter {
 
       const extract_color = (member_name, attr_name) => {
          const col = pattr.v7EvalColor(attr_name, '');
-         if (col) obj[member_name] = addColor(col, this.root_colors);
+         if (col) obj[member_name] = addColor(col, this._root_colors);
       };
 
       // handle TAttLine
@@ -1069,7 +1069,7 @@ class RPadPainter extends RObjectPainter {
                   colors[parseInt(name.slice(0, p))] = convertColor(name.slice(p+1));
             }
 
-            this.root_colors = colors;
+            this._root_colors = colors;
             // set global list of colors
             // adoptRootColors(ListOfColors);
             return this.drawNextSnap(lst, pindx, indx);
