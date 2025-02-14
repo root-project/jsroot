@@ -783,33 +783,42 @@ async function svgToImage(svg, image_format, args) {
 
    // required with df104.py/df105.py example with RCanvas or any special symbols in TLatex
    const doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
-   svg = encodeURIComponent(doctype + svg);
-   svg = svg.replace(/%([0-9A-F]{2})/g, (match, p1) => {
-       const c = String.fromCharCode('0x'+p1);
-       return c === '%' ? '%25' : c;
-   });
-
-   // Cannot use prSVG because of some special cases like RCanvas/rh2
-   const img_src = 'data:image/svg+xml;base64,' + btoa_func(decodeURIComponent(svg));
 
    if (isNodeJs()) {
+      svg = encodeURIComponent(doctype + svg);
+      svg = svg.replace(/%([0-9A-F]{2})/g, (match, p1) => {
+         const c = String.fromCharCode('0x'+p1);
+         return c === '%' ? '%25' : c;
+      });
+
+      const img_src = 'data:image/svg+xml;base64,' + btoa_func(decodeURIComponent(svg));
+
       return import('canvas').then(async handle => {
          return handle.default.loadImage(img_src).then(img => {
             const canvas = handle.default.createCanvas(img.width, img.height);
 
             canvas.getContext('2d').drawImage(img, 0, 0, img.width, img.height);
 
-            if (args?.as_buffer) return canvas.toBuffer('image/' + image_format);
+            if (args?.as_buffer)
+               return canvas.toBuffer('image/' + image_format);
 
             return image_format ? canvas.toDataURL('image/' + image_format) : canvas;
          });
       });
    }
 
+   const blob = new Blob([doctype + svg], {
+      type: "image/svg+xml;charset=utf-8"
+   });
+
+   const img_src = URL.createObjectURL(blob);
+
    return new Promise(resolveFunc => {
       const image = document.createElement('img');
 
       image.onload = function() {
+         URL.revokeObjectURL(img_src);
+
          const canvas = document.createElement('canvas');
          canvas.width = image.width;
          canvas.height = image.height;
@@ -822,11 +831,12 @@ async function svgToImage(svg, image_format, args) {
             resolveFunc(image_format ? canvas.toDataURL('image/' + image_format) : canvas);
       };
       image.onerror = function(arg) {
+         URL.revokeObjectURL(img_src);
          console.log(`IMAGE ERROR ${arg}`);
          resolveFunc(null);
       };
 
-      image.src = img_src;
+      image.setAttribute('src', img_src);
    });
 }
 
