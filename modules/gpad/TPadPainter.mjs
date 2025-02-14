@@ -209,6 +209,7 @@ class TPadPainter extends ObjectPainter {
    #pad_y;      // pad y coordinate
    #pad_width;  // pad width
    #pad_height; // pad height
+   #doing_draw; // drawing handles
 
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -277,7 +278,7 @@ class TPadPainter extends ObjectPainter {
 
    /** @summary cleanup pad and all primitives inside */
    cleanup() {
-      if (this._doing_draw)
+      if (this.#doing_draw)
          console.error('pad drawing is not completed when cleanup is called');
 
       this.painters.forEach(p => p.cleanup());
@@ -292,8 +293,8 @@ class TPadPainter extends ObjectPainter {
       delete this.frame_painter_ref;
       delete this.pads_cache;
       delete this.custom_palette;
-      this.#pad_x = this.#pad_y = this.#pad_width = this.#pad_height = 0;
-      delete this._doing_draw;
+      this.#pad_x = this.#pad_y = this.#pad_width = this.#pad_height = undefined;
+      this.#doing_draw = undefined;
       delete this._interactively_changed;
       delete this._snap_primitives;
       delete this._last_grayscale;
@@ -1133,14 +1134,14 @@ class TPadPainter extends ObjectPainter {
      * @private */
    syncDraw(kind) {
       const entry = { kind: kind || 'redraw' };
-      if (this._doing_draw === undefined) {
-         this._doing_draw = [entry];
+      if (this.#doing_draw === undefined) {
+         this.#doing_draw = [entry];
          return Promise.resolve(true);
       }
       // if queued operation registered, ignore next calls, indx === 0 is running operation
-      if ((entry.kind !== true) && (this._doing_draw.findIndex((e, i) => (i > 0) && (e.kind === entry.kind)) > 0))
+      if ((entry.kind !== true) && (this.#doing_draw.findIndex((e, i) => (i > 0) && (e.kind === entry.kind)) > 0))
          return false;
-      this._doing_draw.push(entry);
+      this.#doing_draw.push(entry);
       return new Promise(resolveFunc => {
          entry.func = resolveFunc;
       });
@@ -1149,19 +1150,19 @@ class TPadPainter extends ObjectPainter {
    /** @summary indicates if painter performing objects draw
      * @private */
    doingDraw() {
-      return this._doing_draw !== undefined;
+      return this.#doing_draw !== undefined;
    }
 
    /** @summary confirms that drawing is completed, may trigger next drawing immediately
      * @private */
    confirmDraw() {
-      if (this._doing_draw === undefined)
+      if (this.#doing_draw === undefined)
          return console.warn('failure, should not happen');
-      this._doing_draw.shift();
-      if (this._doing_draw.length === 0)
-         delete this._doing_draw;
+      this.#doing_draw.shift();
+      if (this.#doing_draw.length === 0)
+         this.#doing_draw = undefined;
        else {
-         const entry = this._doing_draw[0];
+         const entry = this.#doing_draw[0];
          if (entry.func) { entry.func(); delete entry.func; }
       }
    }
