@@ -24,6 +24,7 @@ class RPadPainter extends RObjectPainter {
    #pad_width;  // pad width
    #pad_height; // pad height
    #doing_draw; // drawing handles
+   #custom_palette; // custom palette
 
    /** @summary constructor */
    constructor(dom, pad, iscan) {
@@ -293,6 +294,12 @@ class RPadPainter extends RObjectPainter {
       }
 
       return this.fDfltPalette;
+   }
+
+   /** @summary Returns custom palette
+     * @private */
+   getCustomPalette() {
+      return this.#custom_palette || (this.iscan ? null : this.getCanvPainter()?.getCustomPalette());
    }
 
    /** @summary Returns number of painters
@@ -1072,7 +1079,7 @@ class RPadPainter extends RObjectPainter {
             const arr = snap.fObject.arr, palette = [];
             for (let n = 0; n < arr.length; ++n)
                palette[n] = arr[n].fString;
-            this.custom_palette = new ColorPalette(palette);
+            this.#custom_palette = new ColorPalette(palette);
             return this.drawNextSnap(lst, pindx, indx);
          }
 

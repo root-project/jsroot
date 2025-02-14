@@ -211,6 +211,7 @@ class TPadPainter extends ObjectPainter {
    #pad_height; // pad height
    #doing_draw; // drawing handles
    #last_grayscale; // grayscale change flag
+   #custom_palette; // custom palette
    #custom_colors;  // custom colors
    #custom_palette_indexes; // custom palette indexes
    #custom_palette_colors; // custom palette colors
@@ -296,15 +297,12 @@ class TPadPainter extends ObjectPainter {
       delete this.main_painter_ref;
       delete this.frame_painter_ref;
       delete this.pads_cache;
-      delete this.custom_palette;
       this.#pad_x = this.#pad_y = this.#pad_width = this.#pad_height = undefined;
       this.#doing_draw = undefined;
       delete this._interactively_changed;
       delete this._snap_primitives;
       this.#last_grayscale = undefined;
-      this.#custom_colors = undefined;
-      this.#custom_palette_indexes = undefined;
-      this.#custom_palette_colors = undefined;
+      this.#custom_palette = this.#custom_colors = this.#custom_palette_indexes = this.#custom_palette_colors = undefined;
       delete this.root_colors;
 
       this.painters = [];
@@ -465,7 +463,7 @@ class TPadPainter extends ObjectPainter {
   /** @summary returns custom palette associated with pad or top canvas
     * @private */
    getCustomPalette() {
-      return this.custom_palette || this.getCanvPainter()?.custom_palette;
+      return this.#custom_palette || (this.iscan ? null : this.getCanvPainter()?.getCustomPalette());
    }
 
    /** @summary Returns number of painters
@@ -487,9 +485,9 @@ class TPadPainter extends ObjectPainter {
       if (indx >= numprimitives) indx = numprimitives - 1;
 
       let indexes = this._getCustomPaletteIndexes();
-      if (!indexes) {
+      if (!indexes && !this.iscan) {
          const cp = this.getCanvPainter();
-         if (isFunc(cp?._getCustomPaletteIndexes) && (cp !== this))
+         if (isFunc(cp?._getCustomPaletteIndexes))
             indexes = cp._getCustomPaletteIndexes();
       }
 
@@ -625,7 +623,7 @@ class TPadPainter extends ObjectPainter {
 
       this.#last_grayscale = flag;
 
-      this.custom_palette = this.#custom_palette_colors ? new ColorPalette(this.#custom_palette_colors, flag) : null;
+      this.#custom_palette = this.#custom_palette_colors ? new ColorPalette(this.#custom_palette_colors, flag) : null;
    }
 
    /** @summary Create SVG element for canvas */
@@ -1052,7 +1050,8 @@ class TPadPainter extends ObjectPainter {
                if (!col) { console.log('Fail to create color for palette'); arr = null; break; }
                arr.push(col);
             }
-            if (arr) this.custom_palette = new ColorPalette(arr);
+            if (arr.length)
+               this.#custom_palette = new ColorPalette(arr);
          }
 
          if (!this.options || this.options.GlobalColors) // set global list of colors
@@ -1755,11 +1754,9 @@ class TPadPainter extends ObjectPainter {
          }
          this.#custom_palette_indexes = indexes;
          this.#custom_palette_colors = palette;
-         this.custom_palette = new ColorPalette(palette, greyscale);
-      } else {
-         this.#custom_palette_indexes = this.#custom_palette_colors = undefined;
-         delete this.custom_palette;
-      }
+         this.#custom_palette = new ColorPalette(palette, greyscale);
+      } else
+         this.#custom_palette = this.#custom_palette_indexes = this.#custom_palette_colors = undefined;
    }
 
    /** @summary Process snap with custom font
