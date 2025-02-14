@@ -21,6 +21,8 @@ class RPadPainter extends RObjectPainter {
    #pad_scale;  // scaling factor of the pad
    #pad_x;      // pad x coordinate
    #pad_y;      // pad y coordinate
+   #pad_width;  // pad width
+   #pad_height; // pad height
 
    /** @summary constructor */
    constructor(dom, pad, iscan) {
@@ -104,10 +106,7 @@ class RPadPainter extends RObjectPainter {
       delete this.main_painter_ref;
       delete this.frame_painter_ref;
       delete this.pads_cache;
-      this.#pad_x = undefined;
-      this.#pad_y = undefined;
-      delete this._pad_width;
-      delete this._pad_height;
+      this.#pad_x = this.#pad_y = this.#pad_width = this.#pad_height = 0;
       delete this._doing_draw;
       delete this._dfltRFont;
 
@@ -128,10 +127,10 @@ class RPadPainter extends RObjectPainter {
    getFramePainter() { return this.frame_painter_ref; }
 
    /** @summary get pad width */
-   getPadWidth() { return this._pad_width || 0; }
+   getPadWidth() { return this.#pad_width || 0; }
 
    /** @summary get pad height */
-   getPadHeight() { return this._pad_height || 0; }
+   getPadHeight() { return this.#pad_height || 0; }
 
    /** @summary get pad height */
    getPadScale() { return this.#pad_scale || 1; }
@@ -483,8 +482,8 @@ class RPadPainter extends RObjectPainter {
 
       this.#pad_x = 0;
       this.#pad_y = 0;
-      this._pad_width = rect.width;
-      this._pad_height = rect.height;
+      this.#pad_width = rect.width;
+      this.#pad_height = rect.height;
 
       frect.attr('d', `M0,0H${rect.width}V${rect.height}H0Z`)
            .call(this.fillatt.func);
@@ -623,8 +622,8 @@ class RPadPainter extends RObjectPainter {
 
       this.#pad_x = x;
       this.#pad_y = y;
-      this._pad_width = w;
-      this._pad_height = h;
+      this.#pad_width = w;
+      this.#pad_height = h;
 
       svg_rect.attr('d', `M0,0H${w}V${h}H0Z`)
               .call(this.fillatt.func)

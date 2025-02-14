@@ -207,6 +207,8 @@ class TPadPainter extends ObjectPainter {
    #pad_scale;  // scale factor of the pad
    #pad_x;      // pad x coordinate
    #pad_y;      // pad y coordinate
+   #pad_width;  // pad width
+   #pad_height; // pad height
 
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -290,10 +292,7 @@ class TPadPainter extends ObjectPainter {
       delete this.frame_painter_ref;
       delete this.pads_cache;
       delete this.custom_palette;
-      this.#pad_x = undefined;
-      this.#pad_y = undefined;
-      delete this._pad_width;
-      delete this._pad_height;
+      this.#pad_x = this.#pad_y = this.#pad_width = this.#pad_height = 0;
       delete this._doing_draw;
       delete this._interactively_changed;
       delete this._snap_primitives;
@@ -318,10 +317,10 @@ class TPadPainter extends ObjectPainter {
    getFramePainter() { return this.frame_painter_ref; }
 
    /** @summary get pad width */
-   getPadWidth() { return this._pad_width || 0; }
+   getPadWidth() { return this.#pad_width || 0; }
 
    /** @summary get pad height */
-   getPadHeight() { return this._pad_height || 0; }
+   getPadHeight() { return this.#pad_height || 0; }
 
    /** @summary get pad height */
    getPadScale() { return this.#pad_scale || 1; }
@@ -701,10 +700,10 @@ class TPadPainter extends ObjectPainter {
       if ((rect.width <= lmt) || (rect.height <= lmt)) {
          svg.style('display', 'none');
          console.warn(`Hide canvas while geometry too small w=${rect.width} h=${rect.height}`);
-         if (this._pad_width && this._pad_height) {
+         if (this.#pad_width && this.#pad_height) {
             // use last valid dimensions
-            rect.width = this._pad_width;
-            rect.height = this._pad_height;
+            rect.width = this.#pad_width;
+            rect.height = this.#pad_height;
          } else {
             // just to complete drawing.
             rect.width = 800;
@@ -725,23 +724,23 @@ class TPadPainter extends ObjectPainter {
       this.#pad_scale = settings.CanvasScale || 1;
       this.#pad_x = 0;
       this.#pad_y = 0;
-      this._pad_width = rect.width * this.#pad_scale;
-      this._pad_height = rect.height * this.#pad_scale;
+      this.#pad_width = rect.width * this.#pad_scale;
+      this.#pad_height = rect.height * this.#pad_scale;
 
-      svg.attr('viewBox', `0 0 ${this._pad_width} ${this._pad_height}`)
+      svg.attr('viewBox', `0 0 ${this.#pad_width} ${this.#pad_height}`)
          .attr('preserveAspectRatio', 'none')  // we do not preserve relative ratio
          .property('height_factor', factor)
          .property('draw_x', this.#pad_x)
          .property('draw_y', this.#pad_y)
-         .property('draw_width', this._pad_width)
-         .property('draw_height', this._pad_height);
+         .property('draw_width', this.#pad_width)
+         .property('draw_height', this.#pad_height);
 
       this.addPadBorder(svg, frect);
 
-      this.setFastDrawing(this._pad_width * (1 - this.pad.fLeftMargin - this.pad.fRightMargin), this._pad_height * (1 - this.pad.fBottomMargin - this.pad.fTopMargin));
+      this.setFastDrawing(this.#pad_width * (1 - this.pad.fLeftMargin - this.pad.fRightMargin), this.#pad_height * (1 - this.pad.fBottomMargin - this.pad.fTopMargin));
 
       if (this.alignButtons && btns)
-         this.alignButtons(btns, this._pad_width, this._pad_height);
+         this.alignButtons(btns, this.#pad_width, this.#pad_height);
 
       let dt = info.selectChild('.canvas_date');
       if (!gStyle.fOptDate)
@@ -749,9 +748,9 @@ class TPadPainter extends ObjectPainter {
        else {
          if (dt.empty())
             dt = info.append('text').attr('class', 'canvas_date');
-         const posy = Math.round(this._pad_height * (1 - gStyle.fDateY)),
+         const posy = Math.round(this.#pad_height * (1 - gStyle.fDateY)),
                date = new Date();
-         let posx = Math.round(this._pad_width * gStyle.fDateX);
+         let posx = Math.round(this.#pad_width * gStyle.fDateX);
          if (!is_batch && (posx < 25))
             posx = 25;
          if (gStyle.fOptDate > 3)
@@ -915,8 +914,8 @@ class TPadPainter extends ObjectPainter {
       this.#pad_scale = this.getCanvPainter().getPadScale();
       this.#pad_x = x;
       this.#pad_y = y;
-      this._pad_width = w;
-      this._pad_height = h;
+      this.#pad_width = w;
+      this.#pad_height = h;
 
       this.addPadBorder(svg_pad, svg_border, true);
 
@@ -929,7 +928,7 @@ class TPadPainter extends ObjectPainter {
       }
 
       if (this.alignButtons && btns)
-         this.alignButtons(btns, this._pad_width, this._pad_height);
+         this.alignButtons(btns, this.#pad_width, this.#pad_height);
 
       return pad_visible;
    }
@@ -940,7 +939,7 @@ class TPadPainter extends ObjectPainter {
       if (!svg_border)
          return;
 
-      svg_border.attr('d', `M0,0H${this._pad_width}V${this._pad_height}H0Z`)
+      svg_border.attr('d', `M0,0H${this.#pad_width}V${this.#pad_height}H0Z`)
                 .call(this.fillatt.func);
       if (draw_line)
          svg_border.call(this.lineatt.func);
@@ -951,7 +950,7 @@ class TPadPainter extends ObjectPainter {
           svg_border2 = svg_pad.selectChild('.root_pad_border2');
 
       if (this.pad.fBorderMode && this.pad.fBorderSize) {
-         const arr = getBoxDecorations(0, 0, this._pad_width, this._pad_height, this.pad.fBorderMode, this.pad.fBorderSize, this.pad.fBorderSize);
+         const arr = getBoxDecorations(0, 0, this.#pad_width, this.#pad_height, this.pad.fBorderMode, this.pad.fBorderSize, this.pad.fBorderSize);
 
          if (svg_border2.empty())
             svg_border2 = svg_pad.insert('svg:path', '.primitives_layer').attr('class', 'root_pad_border2');
@@ -987,7 +986,7 @@ class TPadPainter extends ObjectPainter {
 
       addDragHandler(this, {
          cleanup, // do cleanup to let assign new handlers later on
-         x: this.#pad_x, y: this.#pad_y, width: this._pad_width, height: this._pad_height, no_transform: true,
+         x: this.#pad_x, y: this.#pad_y, width: this.#pad_width, height: this.#pad_height, no_transform: true,
          only_resize: true, // !cleanup && (this._disable_dragging || this.getFramePainter()?.mode3d),
          is_disabled: kind => svg_can.property('pad_enlarged') || this.btns_active_flag ||
                              (kind === 'move' && (this._disable_dragging || this.getFramePainter()?.mode3d)),
