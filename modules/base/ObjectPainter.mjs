@@ -926,11 +926,14 @@ class ObjectPainter extends BasePainter {
    showObjectStatus(name, title, info, info2) {
       let cp = this.getCanvPainter();
 
-      if (cp && !isFunc(cp.showCanvasStatus)) cp = null;
+      if (!isFunc(cp?.showCanvasStatus))
+         cp = null;
 
-      if (!cp && !isFunc(internals.showStatus)) return false;
+      if (!cp && !isFunc(internals.showStatus))
+         return false;
 
-      if (this.enlargeMain('state') === 'on') return false;
+      if (this.enlargeMain('state') === 'on')
+         return false;
 
       if ((name === undefined) && (title === undefined)) {
          const obj = this.getObject();
@@ -1790,6 +1793,5 @@ const EAxisBits = {
 Object.assign(internals.jsroot, { ObjectPainter, cleanup, resize });
 
 export { getElementCanvPainter, getElementMainPainter, drawingJSON,
-         selectActivePad, getActivePad, cleanup, resize,
-         ObjectPainter, drawRawText,
-         EAxisBits, kAxisLabels, kAxisNormal, kAxisFunc, kAxisTime };
+         selectActivePad, getActivePad, cleanup, resize, drawRawText,
+         ObjectPainter, EAxisBits, kAxisLabels, kAxisNormal, kAxisFunc, kAxisTime };
