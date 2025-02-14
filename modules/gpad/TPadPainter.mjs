@@ -22,57 +22,60 @@ function isPadPainter(p) {
    return p?.pad && isFunc(p.forEachPainterInPad);
 }
 
-function toggleButtonsVisibility(handler, action, evnt) {
-   evnt?.preventDefault();
-   evnt?.stopPropagation();
-
-   const group = handler.getLayerSvg('btns_layer', handler.this_pad_name),
-         btn = group.select('[name=\'Toggle\']');
-
-   if (btn.empty()) return;
-
-   let state = btn.property('buttons_state');
-
-   if (btn.property('timout_handler')) {
-      if (action !== 'timeout') clearTimeout(btn.property('timout_handler'));
-      btn.property('timout_handler', null);
-   }
-
-   let is_visible = false;
-   switch (action) {
-      case 'enable':
-         is_visible = true;
-         handler.btns_active_flag = true;
-         break;
-      case 'enterbtn':
-         handler.btns_active_flag = true;
-         return; // do nothing, just cleanup timeout
-      case 'timeout': is_visible = false; break;
-      case 'toggle':
-         state = !state;
-         btn.property('buttons_state', state);
-         is_visible = state;
-         break;
-      case 'disable':
-      case 'leavebtn':
-         handler.btns_active_flag = false;
-         if (!state)
-            btn.property('timout_handler', setTimeout(() => toggleButtonsVisibility(handler, 'timeout'), 1200));
-         return;
-   }
-
-   group.selectAll('svg').each(function() {
-      if (this !== btn.node())
-         d3_select(this).style('display', is_visible ? '' : 'none');
-   });
-}
-
 const PadButtonsHandler = {
 
    getButtonSize(fact) {
       const cp = this.getCanvPainter();
       return Math.round((fact || 1) * (cp?._pad_scale || 1) * (cp === this ? 16 : 12));
    },
+
+   toggleButtonsVisibility(action, evnt) {
+      evnt?.preventDefault();
+      evnt?.stopPropagation();
+
+      const group = this.getLayerSvg('btns_layer', this.this_pad_name),
+            btn = group.select('[name=\'Toggle\']');
+
+      if (btn.empty()) return;
+
+      let state = btn.property('buttons_state');
+
+      if (btn.property('timout_handler')) {
+         if (action !== 'timeout')
+            clearTimeout(btn.property('timout_handler'));
+         btn.property('timout_handler', null);
+      }
+
+      let is_visible = false;
+      switch (action) {
+         case 'enable':
+            is_visible = true;
+            this.btns_active_flag = true;
+            break;
+         case 'enterbtn':
+            this.btns_active_flag = true;
+            return; // do nothing, just cleanup timeout
+         case 'timeout':
+            break;
+         case 'toggle':
+            state = !state;
+            btn.property('buttons_state', state);
+            is_visible = state;
+            break;
+         case 'disable':
+         case 'leavebtn':
+            this.btns_active_flag = false;
+            if (!state)
+               btn.property('timout_handler', setTimeout(() => this.toggleButtonsVisibility('timeout'), 1200));
+            return;
+      }
+
+      group.selectAll('svg').each(function() {
+         if (this !== btn.node())
+            d3_select(this).style('display', is_visible ? '' : 'none');
+      });
+   },
+
 
    alignButtons(btns, width, height) {
       const sz0 = this.getButtonSize(1.25), nextx = (btns.property('nextx') || 0) + sz0;
@@ -128,9 +131,9 @@ const PadButtonsHandler = {
          ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.rect, this.getButtonSize(), 'Toggle tool buttons', false)
                             .attr('name', 'Toggle').attr('x', 0).attr('y', 0)
                             .property('buttons_state', (settings.ToolBar !== 'popup') || browser.touches)
-                            .on('click', evnt => toggleButtonsVisibility(this, 'toggle', evnt));
-         ctrl.node()._mouseenter = () => toggleButtonsVisibility(this, 'enable');
-         ctrl.node()._mouseleave = () => toggleButtonsVisibility(this, 'disable');
+                            .on('click', evnt => this.toggleButtonsVisibility('toggle', evnt));
+         ctrl.node()._mouseenter = () => this.toggleButtonsVisibility('enable');
+         ctrl.node()._mouseleave = () => this.toggleButtonsVisibility('disable');
 
          for (let k = 0; k < this._buttons.length; ++k) {
             const item = this._buttons[k];
@@ -154,8 +157,8 @@ const PadButtonsHandler = {
                .attr('key', item.keyname || null)
                .on('click', evnt => this.clickPadButton(item.funcname, evnt));
 
-            svg.node()._mouseenter = () => toggleButtonsVisibility(this, 'enterbtn');
-            svg.node()._mouseleave = () => toggleButtonsVisibility(this, 'leavebtn');
+            svg.node()._mouseenter = () => this.toggleButtonsVisibility('enterbtn');
+            svg.node()._mouseleave = () => this.toggleButtonsVisibility('leavebtn');
 
             x += this.getButtonSize(1.25);
          }
