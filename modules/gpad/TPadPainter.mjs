@@ -205,6 +205,8 @@ function createWebObjectOptions(painter) {
 class TPadPainter extends ObjectPainter {
 
    #pad_scale;  // scale factor of the pad
+   #pad_x;      // pad x coordinate
+   #pad_y;      // pad y coordinate
 
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -288,8 +290,8 @@ class TPadPainter extends ObjectPainter {
       delete this.frame_painter_ref;
       delete this.pads_cache;
       delete this.custom_palette;
-      delete this._pad_x;
-      delete this._pad_y;
+      this.#pad_x = undefined;
+      this.#pad_y = undefined;
       delete this._pad_width;
       delete this._pad_height;
       delete this._doing_draw;
@@ -327,8 +329,8 @@ class TPadPainter extends ObjectPainter {
    /** @summary get pad rect */
    getPadRect() {
       return {
-         x: this._pad_x || 0,
-         y: this._pad_y || 0,
+         x: this.#pad_x || 0,
+         y: this.#pad_y || 0,
          width: this.getPadWidth(),
          height: this.getPadHeight()
       };
@@ -721,16 +723,16 @@ class TPadPainter extends ObjectPainter {
       svg.style('filter', settings.DarkMode || this.pad?.$dark ? 'invert(100%)' : null);
 
       this.#pad_scale = settings.CanvasScale || 1;
-      this._pad_x = 0;
-      this._pad_y = 0;
+      this.#pad_x = 0;
+      this.#pad_y = 0;
       this._pad_width = rect.width * this.#pad_scale;
       this._pad_height = rect.height * this.#pad_scale;
 
       svg.attr('viewBox', `0 0 ${this._pad_width} ${this._pad_height}`)
          .attr('preserveAspectRatio', 'none')  // we do not preserve relative ratio
          .property('height_factor', factor)
-         .property('draw_x', this._pad_x)
-         .property('draw_y', this._pad_y)
+         .property('draw_x', this.#pad_x)
+         .property('draw_y', this.#pad_y)
          .property('draw_width', this._pad_width)
          .property('draw_height', this._pad_height);
 
@@ -911,8 +913,8 @@ class TPadPainter extends ObjectPainter {
              .property('draw_height', h);
 
       this.#pad_scale = this.getCanvPainter().getPadScale();
-      this._pad_x = x;
-      this._pad_y = y;
+      this.#pad_x = x;
+      this.#pad_y = y;
       this._pad_width = w;
       this._pad_height = h;
 
@@ -985,7 +987,7 @@ class TPadPainter extends ObjectPainter {
 
       addDragHandler(this, {
          cleanup, // do cleanup to let assign new handlers later on
-         x: this._pad_x, y: this._pad_y, width: this._pad_width, height: this._pad_height, no_transform: true,
+         x: this.#pad_x, y: this.#pad_y, width: this._pad_width, height: this._pad_height, no_transform: true,
          only_resize: true, // !cleanup && (this._disable_dragging || this.getFramePainter()?.mode3d),
          is_disabled: kind => svg_can.property('pad_enlarged') || this.btns_active_flag ||
                              (kind === 'move' && (this._disable_dragging || this.getFramePainter()?.mode3d)),

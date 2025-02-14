@@ -19,6 +19,8 @@ import { PadButtonsHandler, webSnapIds } from './TPadPainter.mjs';
 class RPadPainter extends RObjectPainter {
 
    #pad_scale;  // scaling factor of the pad
+   #pad_x;      // pad x coordinate
+   #pad_y;      // pad y coordinate
 
    /** @summary constructor */
    constructor(dom, pad, iscan) {
@@ -102,8 +104,8 @@ class RPadPainter extends RObjectPainter {
       delete this.main_painter_ref;
       delete this.frame_painter_ref;
       delete this.pads_cache;
-      delete this._pad_x;
-      delete this._pad_y;
+      this.#pad_x = undefined;
+      this.#pad_y = undefined;
       delete this._pad_width;
       delete this._pad_height;
       delete this._doing_draw;
@@ -140,8 +142,8 @@ class RPadPainter extends RObjectPainter {
    /** @summary get pad rect */
    getPadRect() {
       return {
-         x: this._pad_x || 0,
-         y: this._pad_y || 0,
+         x: this.#pad_x || 0,
+         y: this.#pad_y || 0,
          width: this.getPadWidth(),
          height: this.getPadHeight()
       };
@@ -479,8 +481,8 @@ class RPadPainter extends RObjectPainter {
          .property('draw_width', rect.width)
          .property('draw_height', rect.height);
 
-      this._pad_x = 0;
-      this._pad_y = 0;
+      this.#pad_x = 0;
+      this.#pad_y = 0;
       this._pad_width = rect.width;
       this._pad_height = rect.height;
 
@@ -619,8 +621,8 @@ class RPadPainter extends RObjectPainter {
              .property('draw_width', w)
              .property('draw_height', h);
 
-      this._pad_x = x;
-      this._pad_y = y;
+      this.#pad_x = x;
+      this.#pad_y = y;
       this._pad_width = w;
       this._pad_height = h;
 
