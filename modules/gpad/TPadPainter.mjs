@@ -18,11 +18,6 @@ import { BrowserLayout, getHPainter } from '../gui/display.mjs';
 
 const clTButton = 'TButton', kIsGrayscale = BIT(22);
 
-function getButtonSize(handler, fact) {
-   const cp = handler.getCanvPainter();
-   return Math.round((fact || 1) * (cp?._pad_scale || 1) * (cp === handler ? 16 : 12));
-}
-
 function isPadPainter(p) {
    return p?.pad && isFunc(p.forEachPainterInPad);
 }
@@ -74,8 +69,13 @@ function toggleButtonsVisibility(handler, action, evnt) {
 
 const PadButtonsHandler = {
 
+   getButtonSize(fact) {
+      const cp = this.getCanvPainter();
+      return Math.round((fact || 1) * (cp?._pad_scale || 1) * (cp === this ? 16 : 12));
+   },
+
    alignButtons(btns, width, height) {
-      const sz0 = getButtonSize(this, 1.25), nextx = (btns.property('nextx') || 0) + sz0;
+      const sz0 = this.getButtonSize(1.25), nextx = (btns.property('nextx') || 0) + sz0;
       let btns_x, btns_y;
 
       if (btns.property('vertical')) {
@@ -118,14 +118,14 @@ const PadButtonsHandler = {
       if (!this._buttons) return;
 
       const iscan = this.iscan || !this.has_canvas, y = 0;
-      let ctrl, x = group.property('leftside') ? getButtonSize(this, 1.25) : 0;
+      let ctrl, x = group.property('leftside') ? this.getButtonSize(1.25) : 0;
 
       if (this._fast_drawing) {
-         ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.circle, getButtonSize(this), 'enlargePad', false)
+         ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.circle, this.getButtonSize(), 'enlargePad', false)
                             .attr('name', 'Enlarge').attr('x', 0).attr('y', 0)
                             .on('click', evnt => this.clickPadButton('enlargePad', evnt));
       } else {
-         ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.rect, getButtonSize(this), 'Toggle tool buttons', false)
+         ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.rect, this.getButtonSize(), 'Toggle tool buttons', false)
                             .attr('name', 'Toggle').attr('x', 0).attr('y', 0)
                             .property('buttons_state', (settings.ToolBar !== 'popup') || browser.touches)
                             .on('click', evnt => toggleButtonsVisibility(this, 'toggle', evnt));
@@ -141,7 +141,7 @@ const PadButtonsHandler = {
             if (!btn)
                btn = ToolbarIcons.circle;
 
-            const svg = ToolbarIcons.createSVG(group, btn, getButtonSize(this),
+            const svg = ToolbarIcons.createSVG(group, btn, this.getButtonSize(),
                         item.tooltip + (iscan ? '' : (` on pad ${this.this_pad_name}`)) + (item.keyname ? ` (keyshortcut ${item.keyname})` : ''), false);
 
             if (group.property('vertical'))
@@ -157,7 +157,7 @@ const PadButtonsHandler = {
             svg.node()._mouseenter = () => toggleButtonsVisibility(this, 'enterbtn');
             svg.node()._mouseleave = () => toggleButtonsVisibility(this, 'leavebtn');
 
-            x += getButtonSize(this, 1.25);
+            x += this.getButtonSize(1.25);
          }
       }
 
@@ -1566,7 +1566,7 @@ class TPadPainter extends ObjectPainter {
       this.pad.fY1 = obj.fY1;
       this.pad.fY2 = obj.fY2;
 
-      // this is main coordinates for subpad relative to canvas
+      // this is main coordinates for sub-pad relative to canvas
       this.pad.fAbsWNDC = obj.fAbsWNDC;
       this.pad.fAbsHNDC = obj.fAbsHNDC;
       this.pad.fAbsXlowNDC = obj.fAbsXlowNDC;
