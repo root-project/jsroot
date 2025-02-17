@@ -1621,12 +1621,15 @@ class ObjectPainter extends BasePainter {
      * @param {Object} evnt - object with clientX and clientY positions
      * @private */
    getToolTip(evnt) {
-      if ((evnt?.clientX === undefined) || (evnt?.clientY === undefined)) return null;
+      if ((evnt?.clientX === undefined) || (evnt?.clientY === undefined))
+         return null;
 
       const frame = this.getFrameSvg();
-      if (frame.empty()) return null;
+      if (frame.empty())
+         return null;
       const layer = frame.selectChild('.main_layer');
-      if (layer.empty()) return null;
+      if (layer.empty())
+         return null;
 
       const pos = d3_pointer(evnt, layer.node()),
             pnt = { touch: false, x: pos[0], y: pos[1] };

@@ -1707,13 +1707,13 @@ class TPadPainter extends ObjectPainter {
          if (this.painters.indexOf(objpainter) < 0)
             this.painters.push(objpainter);
 
-         objpainter.snapid = lst[indx].fObjectID;
+         objpainter.assignSnapId(lst[indx].fObjectID);
          const setSubSnaps = p => {
             if (!p.getUniqueId(true)) return;
             for (let k = 0; k < this.painters.length; ++k) {
                const sub = this.painters[k];
                if (sub.isSecondary(p) && sub.getSecondaryId()) {
-                  sub.snapid = p.snapid + '#' + sub.getSecondaryId();
+                  sub.assignSnapId(p.snapid + '#' + sub.getSecondaryId());
                   setSubSnaps(sub);
                }
             }
@@ -1853,7 +1853,7 @@ class TPadPainter extends ObjectPainter {
          const padpainter = new TPadPainter(this, subpad, false);
          padpainter.decodeOptions(snap.fOption);
          padpainter.addToPadPrimitives();
-         padpainter.snapid = snap.fObjectID;
+         padpainter.assignSnapId(snap.fObjectID);
          padpainter.is_active_pad = !!snap.fActive; // enforce boolean flag
          padpainter._readonly = snap.fReadOnly ?? false; // readonly flag
          padpainter._snap_primitives = snap.fPrimitives; // keep list to be able find primitive
@@ -1935,7 +1935,7 @@ class TPadPainter extends ObjectPainter {
       if (this.snapid === undefined) {
          // first time getting snap, create all gui elements first
 
-         this.snapid = snap.fObjectID;
+         this.assignSnapId(snap.fObjectID);
 
          this.assignObject(first);
          this.pad = first; // first object is pad

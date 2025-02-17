@@ -329,8 +329,8 @@ class RObjectPainter extends ObjectPainter {
       this.snapid = id;
       if (this.snapid && this._pending_request) {
          const p = this._pending_request;
-         this.v7SubmitRequest(p.kind, p.req, p.method);
          delete this._pending_request;
+         this.v7SubmitRequest(p.kind, p.req, p.method);
       }
    }
 
