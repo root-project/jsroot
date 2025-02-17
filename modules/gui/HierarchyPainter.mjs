@@ -3489,17 +3489,20 @@ class HierarchyPainter extends BasePainter {
 
       getOptionAsArray = opt => {
          let res = getUrlOptionAsArray(opt);
-         if (res.length > 0 || !gui_div || gui_div.empty()) return res;
+         if (res.length > 0 || !gui_div || gui_div.empty())
+            return res;
          while (opt) {
             const separ = opt.indexOf(';');
             let part = separ > 0 ? opt.slice(0, separ) : opt;
-            if (separ > 0) opt = opt.slice(separ+1); else opt = '';
+            opt = separ > 0 ? opt.slice(separ+1) : '';
 
             let canarray = true;
-            if (part[0] === '#') { part = part.slice(1); canarray = false; }
-            if (part === 'files') continue; // special case for normal UI
-
-            if (!gui_div.node().hasAttribute(part)) continue;
+            if (part[0] === '#') {
+               part = part.slice(1);
+               canarray = false;
+            }
+            if (part === 'files' || !gui_div.node().hasAttribute(part))
+               continue;
 
             const val = gui_div.attr(part);
 
@@ -3756,7 +3759,8 @@ class HierarchyPainter extends BasePainter {
      * @desc works only when inspector or streamer info is displayed
      * @private */
    redrawObject(obj) {
-      if (!this._inspector && !this._streamer_info) return false;
+      if (!this._inspector && !this._streamer_info)
+         return false;
       if (this._streamer_info)
          this.h = createStreamerInfoContent(obj);
       else
