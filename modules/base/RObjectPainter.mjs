@@ -8,6 +8,8 @@ const kNormal = 1, /* kLessTraffic = 2, */ kOffline = 3;
 
 class RObjectPainter extends ObjectPainter {
 
+   #pending_request;
+
    constructor(dom, obj, opt, csstype) {
       super(dom, obj, opt);
       this.csstype = csstype;
@@ -316,7 +318,7 @@ class RObjectPainter extends ObjectPainter {
       // special situation when snapid not yet assigned - just keep ref until snapid is there
       // maybe keep full list - for now not clear if really needed
       if (!this.snapid) {
-         this._pending_request = { kind, req, method };
+         this.#pending_request = { kind, req, method };
          return req;
       }
 
@@ -327,9 +329,9 @@ class RObjectPainter extends ObjectPainter {
      * @desc Overwrite default method */
    assignSnapId(id) {
       this.snapid = id;
-      if (this.snapid && this._pending_request) {
-         const p = this._pending_request;
-         delete this._pending_request;
+      if (this.snapid && this.#pending_request) {
+         const p = this.#pending_request;
+         this.#pending_request = undefined;
          this.v7SubmitRequest(p.kind, p.req, p.method);
       }
    }
