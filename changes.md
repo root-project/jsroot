@@ -16,6 +16,7 @@
 1. Upgrade three.js r168 -> r173
 1. Internals - use private members in JSROOT classes like `#draw_object`
 1. Fix - handle `TPave` NDC position also when fInit is not set
+1. Fix - properly handle image sizes in svg2pdf
 
 
 ## Changes in 7.8.1
