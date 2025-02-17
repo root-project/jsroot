@@ -807,11 +807,7 @@ async function svgToImage(svg, image_format, args) {
       });
    }
 
-   const blob = new Blob([doctype + svg], {
-      type: "image/svg+xml;charset=utf-8"
-   });
-
-   const img_src = URL.createObjectURL(blob);
+   const img_src = URL.createObjectURL(new Blob([doctype + svg], { type: 'image/svg+xml;charset=utf-8' }));
 
    return new Promise(resolveFunc => {
       const image = document.createElement('img');
