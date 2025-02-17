@@ -3401,15 +3401,12 @@ class HierarchyPainter extends BasePainter {
    /** @summary function updates object drawings for other painters
      * @private */
    updateOnOtherFrames(painter, obj) {
-      const mdi = this.disp;
-      if (!mdi) return false;
-
       const handle = obj._typename ? getDrawHandle(prROOT + obj._typename) : null;
       if (handle?.draw_field && obj[handle?.draw_field])
          obj = obj[handle?.draw_field];
 
       let isany = false;
-      mdi.forEachPainter((p /* , frame */) => {
+      this.disp?.forEachPainter((p /* , frame */) => {
          if ((p === painter) || (p.getItemName() !== painter.getItemName())) return;
 
          // do not activate frame when doing update
@@ -3422,7 +3419,7 @@ class HierarchyPainter extends BasePainter {
    /** @summary Process resize event
      * @private */
    checkResize(size) {
-      if (this.disp) this.disp.checkMDIResize(null, size);
+      this.disp?.checkMDIResize(null, size);
    }
 
    /** @summary Load and execute scripts, kept to support v6 applications
