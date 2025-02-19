@@ -1,14 +1,10 @@
-name: JSROOT CI
+name: JSROOT CI 7.7 and 7.8
 
 on:
   push:
     branches:
-      - "master"
       - "7.7"
       - "7.8"
-  pull_request:
-    branches:
-      - "master"
 
 jobs:
   build-ubuntu:
