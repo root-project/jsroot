@@ -1392,7 +1392,16 @@ class TGraphPainter extends ObjectPainter {
    fillContextMenuItems(menu) {
       if (!this.snapid) {
          menu.addchk(this.testEditable(), 'Editable', () => { this.testEditable('toggle'); this.drawGraph(); });
-
+         if (this.axes_draw) {
+            menu.add('Title', () => menu.input('Enter graph title', this.getObject().fTitle).then(res => {
+               this.getObject().fTitle = res;
+               const hist_painter = this.getMainPainter();
+               if (hist_painter?.isSecondary(this)) {
+                  setHistogramTitle(hist_painter.getHisto(), res);
+                  this.interactiveRedraw('pad');
+               }
+            }));
+         }
          menu.addRedrawMenu(this.getPrimary());
       }
    }
@@ -1400,7 +1409,8 @@ class TGraphPainter extends ObjectPainter {
    /** @summary Execute menu command
      * @private */
    executeMenuCommand(method, args) {
-      if (super.executeMenuCommand(method, args)) return true;
+      if (super.executeMenuCommand(method, args))
+         return true;
 
       const canp = this.getCanvPainter(), pmain = this.get_main();
 
