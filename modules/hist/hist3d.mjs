@@ -1698,7 +1698,7 @@ function drawBinsLego(painter, is_v7 = false) {
       zmax = levels[nlevel+1];
 
       // artificially extend last level of color palette to maximal visible value
-      if (palette && (nlevel === levels.length-2) && zmax < axis_zmax) zmax = axis_zmax;
+      if (palette && (nlevel === levels.length - 2) && zmax < axis_zmax) zmax = axis_zmax;
 
       const grzmin = main.grz(zmin), grzmax = main.grz(zmax);
       let z1 = 0, z2 = 0, numvertices = 0, num2vertices = 0;
@@ -1710,7 +1710,7 @@ function drawBinsLego(painter, is_v7 = false) {
             if (!getBinContent(i, j, nlevel)) continue;
 
             nobottom = !reduced && (nlevel > 0);
-            notop = !reduced && (binz2 > zmax) && (nlevel < levels.length-2);
+            notop = !reduced && (binz2 > zmax) && (nlevel < levels.length - 2);
 
             numvertices += (reduced ? 12 : indicies.length);
             if (nobottom) numvertices -= 6;
@@ -1739,7 +1739,7 @@ function drawBinsLego(painter, is_v7 = false) {
             if (!getBinContent(i, j, nlevel)) continue;
 
             nobottom = !reduced && (nlevel > 0);
-            notop = !reduced && (binz2 > zmax) && (nlevel < levels.length-2);
+            notop = !reduced && (binz2 > zmax) && (nlevel < levels.length - 2);
 
             y1 = handle.gry[j] + handle.ybar1*(handle.gry[j+1] - handle.gry[j]);
             y2 = handle.gry[j] + handle.ybar2*(handle.gry[j+1] - handle.gry[j]);

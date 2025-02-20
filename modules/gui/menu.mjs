@@ -1370,7 +1370,7 @@ class StandaloneMenu extends JSRootMenu {
 
             const sub = doc.createElement('span');
             if (d.text.indexOf('<nobr>') === 0)
-               sub.textContent = d.text.slice(6, d.text.length-7);
+               sub.textContent = d.text.slice(6, d.text.length - 7);
             else
                sub.textContent = d.text;
             text.appendChild(sub);

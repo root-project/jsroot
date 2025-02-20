@@ -1455,7 +1455,7 @@ class TPavePainter extends ObjectPainter {
       } else if (id < 0)
          return '.1f';
 
-      return `.${tv.length-id-1}f`;
+      return `.${tv.length - id - 1}f`;
    }
 
    /** @summary Fill function parameters */

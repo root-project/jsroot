@@ -1269,7 +1269,7 @@ class HierarchyPainter extends BasePainter {
 
       if (break_list) {
          hitem._break_point = true; // indicate that list was broken here
-         d3a.attr('title', 'there are ' + (hitem._parent._childs.length-arg) + ' more items')
+         d3a.attr('title', 'there are ' + (hitem._parent._childs.length - arg) + ' more items')
             .text('...more...');
          return false;
       }
@@ -3079,11 +3079,11 @@ class HierarchyPainter extends BasePainter {
             if (item._autoload) {
                const arr = item._autoload.split(';');
                arr.forEach(name => {
-                  if ((name.length > 4) && (name.lastIndexOf('.mjs') === name.length-4))
+                  if ((name.length > 4) && (name.lastIndexOf('.mjs') === name.length - 4))
                      v7_imports.push(this.importModule(name));
-                   else if ((name.length > 3) && (name.lastIndexOf('.js') === name.length-3)) {
+                   else if ((name.length > 3) && (name.lastIndexOf('.js') === name.length - 3)) {
                      if (!scripts.find(elem => elem === name)) scripts.push(name);
-                  } else if ((name.length > 4) && (name.lastIndexOf('.css') === name.length-4)) {
+                  } else if ((name.length > 4) && (name.lastIndexOf('.css') === name.length - 4)) {
                      if (!styles.find(elem => elem === name)) styles.push(name);
                   } else if (name && !v6_modules.find(elem => elem === name))
                      v6_modules.push(name);

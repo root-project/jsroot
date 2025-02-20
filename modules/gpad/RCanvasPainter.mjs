@@ -295,7 +295,6 @@ class RCanvasPainter extends RPadPainter {
              });
       } else if (msg.slice(0, 4) === 'JSON') {
          const obj = parse(msg.slice(4));
-         // console.log('get JSON ', msg.length-4, obj._typename);
          this.redrawObject(obj);
       } else if (msg.slice(0, 9) === 'REPL_REQ:')
          this.processDrawableReply(msg.slice(9));
@@ -354,7 +353,7 @@ class RCanvasPainter extends RPadPainter {
       } else if (msg.slice(0, 5) === 'SHOW:') {
          const that = msg.slice(5),
              on = that.at(-1) === '1';
-         this.showSection(that.slice(0, that.length-2), on);
+         this.showSection(that.slice(0, that.length - 2), on);
       } else
          console.log(`unrecognized msg len: ${msg.length} msg: ${msg.slice(0, 30)}`);
    }
