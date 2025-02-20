@@ -429,7 +429,7 @@ function buildSvgCurve(p, args) {
    }
 
    if (args.height)
-      args.close = `L${conv(p[p.length-1].grx)},${conv(Math.max(args.maxy, args.height))}H${conv(p[0].grx)}Z`;
+      args.close = `L${conv(p.at(-1).grx)},${conv(Math.max(args.maxy, args.height))}H${conv(p[0].grx)}Z`;
 
    return path;
 }

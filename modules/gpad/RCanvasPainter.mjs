@@ -353,7 +353,7 @@ class RCanvasPainter extends RPadPainter {
          this.drawProjection(kind, hist);
       } else if (msg.slice(0, 5) === 'SHOW:') {
          const that = msg.slice(5),
-             on = that[that.length-1] === '1';
+             on = that.at(-1) === '1';
          this.showSection(that.slice(0, that.length-2), on);
       } else
          console.log(`unrecognized msg len: ${msg.length} msg: ${msg.slice(0, 30)}`);
@@ -780,15 +780,20 @@ registerMethods(`${nsREX}RPalette`, {
 
    getContourIndex(zc) {
       const cntr = this.fContour;
-      let l = 0, r = cntr.length-1, mid;
+      let l = 0, r = cntr.length - 1;
 
-      if (zc < cntr[0]) return -1;
-      if (zc >= cntr[r]) return r-1;
+      if (zc < cntr[0])
+         return -1;
+      if (zc >= cntr[r])
+         return r-1;
 
       if (this.fCustomContour) {
          while (l < r-1) {
-            mid = Math.round((l+r)/2);
-            if (cntr[mid] > zc) r = mid; else l = mid;
+            const mid = Math.round((l+r)/2);
+            if (cntr[mid] > zc)
+               r = mid;
+            else
+               l = mid;
          }
          return l;
       }
@@ -864,7 +869,7 @@ registerMethods(`${nsREX}RPalette`, {
       // TODO: implement better way to find index
 
       let entry, next = this.fColors[0];
-      for (let indx = 0; indx < this.fColors.length-1; ++indx) {
+      for (let indx = 0; indx < this.fColors.length - 1; ++indx) {
          entry = next;
 
          if (Math.abs(entry.fOrdinal - value) < 0.0001)

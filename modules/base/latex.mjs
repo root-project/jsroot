@@ -364,8 +364,8 @@ function replaceSymbolsInTextNode(node) {
    if (lasti < 0)
       return false;
 
-   if (lasti < txt.length-1)
-      new_html += txt.slice(lasti+1, txt.length);
+   if (lasti < txt.length - 1)
+      new_html += txt.slice(lasti + 1, txt.length);
 
    node.$originalHTML = node.innerHTML;
    node.$originalFont = node.getAttribute('font-family');

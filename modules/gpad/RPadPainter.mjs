@@ -186,7 +186,7 @@ class RPadPainter extends RObjectPainter {
       if (!isFunc(selector))
          return;
 
-      for (let k = this.painters.length-1; k >= 0; --k) {
+      for (let k = this.painters.length - 1; k >= 0; --k) {
          if (selector(this.painters[k])) {
             this.painters[k].cleanup();
             this.painters.splice(k, 1);
@@ -221,7 +221,7 @@ class RPadPainter extends RObjectPainter {
 
       let len0 = 0;
       while (len0 < arr.length) {
-         for (let k = this.painters.length-1; k >= 0; --k) {
+         for (let k = this.painters.length - 1; k >= 0; --k) {
             if (this.painters[k].isSecondary(arr[len0])) {
                arr.push(this.painters[k]);
                this.painters.splice(k, 1);

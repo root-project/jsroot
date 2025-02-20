@@ -4465,8 +4465,8 @@ class TGeoPainter extends ObjectPainter {
                ticks = x_handle.createTicks();
 
          if (ticks.major?.length > 1) {
-            x1 = ticks.major[ticks.major.length-2];
-            x2 = ticks.major[ticks.major.length-1];
+            x1 = ticks.major.at(-2);
+            x2 = ticks.major.at(-1);
          }
 
          buf = new Float32Array(3*6); pos = 0;
@@ -5721,8 +5721,8 @@ function createItem(node, obj, name) {
    if (!sub._name) {
       if (isStr(node._name)) {
          sub._name = node._name;
-         if (sub._name.lastIndexOf('s') === sub._name.length-1)
-            sub._name = sub._name.slice(0, sub._name.length-1);
+         if (sub._name.at(-1) === 's')
+            sub._name = sub._name.slice(0, sub._name.length - 1);
          sub._name += '_' + node._childs.length;
       } else
          sub._name = 'item_' + node._childs.length;

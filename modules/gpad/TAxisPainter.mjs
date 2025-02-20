@@ -233,8 +233,8 @@ const AxisPainterMethods = {
             sum1 += diff;
             sum2 += diff**2;
          }
-         const mean = sum1/(arr.length-1),
-             dev = sum2/(arr.length-1) - mean**2;
+         const mean = sum1/(arr.length - 1),
+             dev = sum2/(arr.length - 1) - mean**2;
 
          if (dev <= 0) return true;
          if (Math.abs(mean) < 1e-100) return false;
@@ -660,9 +660,11 @@ class TAxisPainter extends ObjectPainter {
       handle.minor = handle.middle = handle.major = ticks;
 
       if (only_major_as_array) {
-         const res = handle.major, delta = (this.scale_max - this.scale_min)*1e-5;
-         if (res[0] > this.scale_min + delta) res.unshift(this.scale_min);
-         if (res[res.length-1] < this.scale_max - delta) res.push(this.scale_max);
+         const res = handle.major, delta = (this.scale_max - this.scale_min) * 1e-5;
+         if (res.at(0) > this.scale_min + delta)
+            res.unshift(this.scale_min);
+         if (res.at(-1) < this.scale_max - delta)
+            res.push(this.scale_max);
          return res;
       }
 

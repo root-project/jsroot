@@ -163,7 +163,7 @@ class RObjectPainter extends ObjectPainter {
             val = '';
          }
       } else if (val[0] === '[') {
-         const ordinal = parseFloat(val.slice(1, val.length-1));
+         const ordinal = parseFloat(val.slice(1, val.length - 1));
          val = 'black';
          if (Number.isFinite(ordinal)) {
              const pal = this.getPadPainter()?.getHistPalette();
