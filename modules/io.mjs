@@ -695,7 +695,7 @@ function createStreamerElement(name, typename, file) {
       return elem;
    }
 
-   const isptr = (typename.lastIndexOf('*') === typename.length - 1);
+   const isptr = typename.at(-1) == '*';
 
    if (isptr)
       elem.fTypeName = typename = typename.slice(0, typename.length - 1);
@@ -949,7 +949,7 @@ function createMemberStreamer(element, file) {
       case kObjectp:
       case kObject: {
          let classname = (element.fTypeName === kBaseClass) ? element.fName : element.fTypeName;
-         if (classname[classname.length - 1] === '*')
+         if (classname.at(-1) === '*')
             classname = classname.slice(0, classname.length - 1);
 
          const arrkind = getArrayKind(classname);
@@ -979,7 +979,7 @@ function createMemberStreamer(element, file) {
       case kOffsetL + kAnyp:
       case kOffsetL + kObjectp: {
          let classname = element.fTypeName;
-         if (classname[classname.length - 1] === '*')
+         if (classname.at(-1) === '*')
             classname = classname.slice(0, classname.length - 1);
 
          member.arrkind = getArrayKind(classname);
@@ -1132,7 +1132,7 @@ function createMemberStreamer(element, file) {
             } else {
                member.isptr = false;
 
-               if (member.conttype.lastIndexOf('*') === member.conttype.length - 1) {
+               if (member.conttype.at(-1) === '*') {
                   member.isptr = true;
                   member.conttype = member.conttype.slice(0, member.conttype.length - 1);
                }
@@ -2652,17 +2652,17 @@ class TFile {
 
       if (!isStr(this.fURL)) return this;
 
-      if (this.fURL[this.fURL.length - 1] === '+') {
+      if (this.fURL.at(-1) === '+') {
          this.fURL = this.fURL.slice(0, this.fURL.length - 1);
          this.fAcceptRanges = false;
       }
 
-      if (this.fURL[this.fURL.length - 1] === '^') {
+      if (this.fURL.at(-1) === '^') {
          this.fURL = this.fURL.slice(0, this.fURL.length - 1);
          this.fSkipHeadRequest = true;
       }
 
-      if (this.fURL[this.fURL.length - 1] === '-') {
+      if (this.fURL.at(-1) === '-') {
          this.fURL = this.fURL.slice(0, this.fURL.length - 1);
          this.fUseStampPar = false;
       }
@@ -2894,7 +2894,7 @@ class TFile {
          let boundary = '', n = first, o = 0, normal_order = true;
          if (indx > 0) {
             boundary = hdr.slice(indx + 9);
-            if ((boundary[0] === '"') && (boundary[boundary.length - 1] === '"'))
+            if ((boundary[0] === '"') && (boundary.at(-1) === '"'))
                boundary = boundary.slice(1, boundary.length - 1);
             boundary = '--' + boundary;
          } else
@@ -3172,7 +3172,7 @@ class TFile {
             if (typ >= 60) {
                if ((typ === kStreamer) && (elem._typename === clTStreamerSTL) && elem.fSTLtype && elem.fCtype && (elem.fCtype < 20)) {
                   const prefix = (StlNames[elem.fSTLtype] || 'undef') + '<';
-                  if ((typname.indexOf(prefix) === 0) && (typname[typname.length - 1] === '>')) {
+                  if ((typname.indexOf(prefix) === 0) && (typname.at(-1) === '>')) {
                      typ = elem.fCtype;
                      typname = typname.slice(prefix.length, typname.length - 1).trim();
 
@@ -3186,7 +3186,8 @@ class TFile {
                }
                if (typ >= 60) continue;
             } else {
-               if ((typ > 20) && (typname[typname.length - 1] === '*')) typname = typname.slice(0, typname.length - 1);
+               if ((typ > 20) && (typname.at(-1) === '*'))
+                  typname = typname.slice(0, typname.length - 1);
                typ = typ % 20;
             }
 
