@@ -2355,7 +2355,7 @@ class HierarchyPainter extends BasePainter {
 
          if (item?.indexOf('img:') === 0) { images[i] = true; continue; }
 
-         if ((item?.length > 1) && (item[0] === '\'') && (item[item.length - 1] === '\'')) {
+         if ((item?.length > 1) && (item.at(0) === '\'') && (item.at(-1) === '\'')) {
             items[i] = item.slice(1, item.length-1);
             can_split = false;
          }
@@ -2363,7 +2363,7 @@ class HierarchyPainter extends BasePainter {
          let elem = h.findItem({ name: items[i], check_keys: true });
          if (elem) { items[i] = h.itemFullName(elem); continue; }
 
-         if (can_split && (items[i][0] === '[') && (items[i][items[i].length - 1] === ']')) {
+         if (can_split && (items[i].at(0) === '[') && (items[i].at(-1) === ']')) {
             dropitems[i] = parseAsArray(items[i]);
             items[i] = dropitems[i].shift();
          } else if (can_split && (items[i].indexOf('+') > 0)) {

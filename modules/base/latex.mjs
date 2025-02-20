@@ -200,7 +200,7 @@ symbolsRegexCache = new RegExp(Object.keys(symbols_map).sort((a, b) => (a.length
 /** @summary Simple replacement of latex letters
   * @private */
 translateLaTeX = str => {
-   while ((str.length > 2) && (str[0] === '{') && (str[str.length - 1] === '}'))
+   while ((str.length > 2) && (str.at(0) === '{') && (str.at(-1) === '}'))
       str = str.slice(1, str.length - 1);
 
    return str.replace(symbolsRegexCache, ch => symbols_map[ch]).replace(/\{\}/g, '');

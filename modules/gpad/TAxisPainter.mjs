@@ -178,7 +178,7 @@ const AxisPainterMethods = {
          let res = val.toFixed(this.ndig);
          const p = res.indexOf('.');
          if ((p > 0) && settings.StripAxisLabels) {
-            while ((res.length >= p) && ((res[res.length-1] === '0') || (res[res.length-1] === '.')))
+            while ((res.length >= p) && ((res.at(-1) === '0') || (res.at(-1) === '.')))
                res = res.slice(0, res.length - 1);
          }
          return res;

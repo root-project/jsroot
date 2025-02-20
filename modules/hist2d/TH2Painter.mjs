@@ -1306,8 +1306,8 @@ class TH2Painter extends THistPainter {
             func = main.getProjectionFunc();
 
       handle.grz = z => z;
-      handle.grz_min = ilevels[0];
-      handle.grz_max = ilevels[ilevels.length - 1];
+      handle.grz_min = ilevels.at(0);
+      handle.grz_max = ilevels.at(-1);
 
       buildSurf3D(this.getHisto(), handle, ilevels, (lvl, pos) => {
          let dd = '', lastx, lasty;
