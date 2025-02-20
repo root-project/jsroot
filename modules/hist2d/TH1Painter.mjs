@@ -624,7 +624,8 @@ class TH1Painter extends THistPainter {
             mx1 = Math.round(funcs.grx(xaxis.GetBinLowEdge(bin+1)));
             mx2 = Math.round(funcs.grx(xaxis.GetBinLowEdge(bin+2)));
             midx = Math.round((mx1 + mx2) / 2);
-            if (startmidx === undefined) startmidx = midx;
+            if (startmidx === undefined)
+               startmidx = midx;
             my = Math.round(funcs.gry(bincont));
             if (show_errors) {
                binerr = this.getBinErrors(histo, bin + 1, bincont);
@@ -762,9 +763,11 @@ class TH1Painter extends THistPainter {
                      if (bestimin === bestimax)
                         draw_bin(bestimin);
                      else if (bestimin < bestimax) {
-                        draw_bin(bestimin); draw_bin(bestimax);
+                        draw_bin(bestimin);
+                        draw_bin(bestimax);
                      } else {
-                        draw_bin(bestimax); draw_bin(bestimin);
+                        draw_bin(bestimax);
+                        draw_bin(bestimin);
                      }
                   }
 
@@ -800,8 +803,10 @@ class TH1Painter extends THistPainter {
                }
                // end of use_minmax
             } else if ((gry !== curry) || lastbin) {
-               if (grx !== currx) res += `h${grx-currx}`;
-               if (gry !== curry) res += `v${gry-curry}`;
+               if (grx !== currx)
+                  res += `h${grx-currx}`;
+               if (gry !== curry)
+                  res += `v${gry-curry}`;
                curry = gry;
                currx = grx;
             }
