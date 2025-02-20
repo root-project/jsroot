@@ -1423,7 +1423,9 @@ class THistPainter extends ObjectPainter {
       Object.assign(pt, { fName: kTitle, fOption: 'blNDC', fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
                           fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: 22 });
 
-      if (draw_title) pt.AddText(histo.fTitle);
+      if (draw_title)
+         pt.AddText(histo.fTitle);
+
       return TPavePainter.draw(pp, pt, kPosTitle).then(p => { p?.setSecondaryId(this, kTitle); return this; });
    }
 
@@ -1799,13 +1801,21 @@ class THistPainter extends ObjectPainter {
    fillContextMenuItems(menu) {
       const histo = this.getHisto(),
             fp = this.getFramePainter();
-      if (!histo) return;
+      if (!histo)
+         return;
 
       if ((this.options.Axis <= 0) && !this.isTF1())
          menu.addchk(this.toggleStat('only-check'), 'Show statbox', () => this.toggleStat());
 
-      if (histo.fTitle && this.isMainPainter())
-         menu.addchk(this.toggleTitle('only-check'), 'Show title', () => this.toggleTitle());
+      if (this.isMainPainter()) {
+         menu.sub('Title');
+         menu.addchk(this.toggleTitle('only-check'), 'Show', () => this.toggleTitle());
+         menu.add('Edit', () => menu.input('Enter histogram title', histo.fTitle).then(res => {
+            histo.fTitle = res;
+            this.interactiveRedraw();
+         }));
+         menu.endsub();
+      }
 
       if (this.draw_content) {
          if (this.getDimension() === 1)
