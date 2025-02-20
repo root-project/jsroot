@@ -10,6 +10,7 @@
 1. Support fAxisAngle in `TGraphPolargram`, provide 'rangleNN' draw option
 1. Implement 'arc' draw option for `TPave`
 1. Provide context menus for all derived from `TPave` classes
+1. Let edit histograms and graphs title via context menu
 1. Support Poisson errors for `TH1`/`TH2`, https://root-forum.cern.ch/t/62335/
 1. Support `TLink` and `TButton` object, used in `TInspectCanvas`
 1. Support `TF12` - projection of `TF2`
