@@ -514,7 +514,7 @@ class TGraphPainter extends ObjectPainter {
    /** @summary append exclusion area to created path */
    appendExclusion(is_curve, path, drawbins, excl_width) {
       const extrabins = [];
-      for (let n = drawbins.length-1; n >= 0; --n) {
+      for (let n = drawbins.length - 1; n >= 0; --n) {
          const bin = drawbins[n],
              dlen = Math.sqrt(bin.dgrx**2 + bin.dgry**2);
          if (dlen > 1e-10) {
@@ -562,7 +562,7 @@ class TGraphPainter extends ObjectPainter {
          const path1 = buildSvgCurve(drawbins, { line: options.EF < 2, qubic: true }),
              bins2 = [];
 
-         for (let n = drawbins.length-1; n >= 0; --n) {
+         for (let n = drawbins.length - 1; n >= 0; --n) {
             const bin = drawbins[n];
             bin.gry = funcs.gry(bin.y + bin.eyhigh);
             bins2.push(bin);

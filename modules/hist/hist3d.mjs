@@ -1684,8 +1684,8 @@ function drawBinsLego(painter, is_v7 = false) {
          palette = main.getHistPalette();
          painter.createContour(main, palette, { full_z_range: true });
          levels = palette.getContour();
-         axis_zmin = levels[0];
-         axis_zmax = levels[levels.length-1];
+         axis_zmin = levels.at(0);
+         axis_zmax = levels.at(-1);
       } else {
          const cntr = painter.createContour(histo.fContour ? histo.fContour.length : 20, main.lego_zmin, main.lego_zmax);
          levels = cntr.arr;
@@ -1693,7 +1693,7 @@ function drawBinsLego(painter, is_v7 = false) {
       }
    }
 
-   for (let nlevel = 0; nlevel < levels.length-1; ++nlevel) {
+   for (let nlevel = 0; nlevel < levels.length - 1; ++nlevel) {
       zmin = levels[nlevel];
       zmax = levels[nlevel+1];
 

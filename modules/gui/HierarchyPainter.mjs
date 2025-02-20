@@ -663,7 +663,7 @@ function parseAsArray(val) {
    if (!val) return res;
 
    // return as array with single element
-   if ((val.length < 2) || (val[0] !== '[') || (val[val.length-1] !== ']')) {
+   if ((val.length < 2) || (val.at(0) !== '[') || (val.at(-1) !== ']')) {
       res.push(val);
       return res;
    }
@@ -688,8 +688,8 @@ function parseAsArray(val) {
          case ',':
             if (nbr === 0) {
                let sub = val.substring(last, indx).trim();
-               if ((sub.length > 1) && (sub[0] === sub[sub.length-1]) && ((sub[0] === '"') || (sub[0] === '\'')))
-                  sub = sub.slice(1, sub.length-1);
+               if ((sub.length > 1) && (sub.at(0) === sub.at(-1)) && ((sub[0] === '"') || (sub[0] === '\'')))
+                  sub = sub.slice(1, sub.length - 1);
                res.push(sub);
                last = indx+1;
             }
@@ -698,7 +698,7 @@ function parseAsArray(val) {
    }
 
    if (res.length === 0)
-      res.push(val.slice(1, val.length-1).trim());
+      res.push(val.slice(1, val.length - 1).trim());
 
    return res;
 }
@@ -900,7 +900,7 @@ class HierarchyPainter extends BasePainter {
             // set parent pointer when searching child
             if (!ignore_prnt) child._parent = top;
 
-            if ((pos >= fullname.length-1) || (pos < 0)) return child;
+            if ((pos >= fullname.length - 1) || (pos < 0)) return child;
 
             return find_in_hierarchy(child, fullname.slice(pos + 1));
          }
@@ -937,10 +937,10 @@ class HierarchyPainter extends BasePainter {
                }
 
                let allow_index = arg.allow_index;
-               if ((localname[0] === '[') && (localname[localname.length-1] === ']') &&
-                    /^\d+$/.test(localname.slice(1, localname.length-1))) {
+               if ((localname.at(0) === '[') && (localname.at(-1) === ']') &&
+                    /^\d+$/.test(localname.slice(1, localname.length - 1))) {
                   allow_index = true;
-                  localname = localname.slice(1, localname.length-1);
+                  localname = localname.slice(1, localname.length - 1);
                }
 
                // when search for the elements it could be allowed to check index
@@ -2356,7 +2356,7 @@ class HierarchyPainter extends BasePainter {
          if (item?.indexOf('img:') === 0) { images[i] = true; continue; }
 
          if ((item?.length > 1) && (item.at(0) === '\'') && (item.at(-1) === '\'')) {
-            items[i] = item.slice(1, item.length-1);
+            items[i] = item.slice(1, item.length - 1);
             can_split = false;
          }
 
@@ -2382,7 +2382,7 @@ class HierarchyPainter extends BasePainter {
                if (elem) dropitems[i][j] = h.itemFullName(elem);
             }
 
-            if ((options[i][0] === '[') && (options[i][options[i].length-1] === ']')) {
+            if ((options[i].at(0) === '[') && (options[i].at(-1) === ']')) {
                dropopts[i] = parseAsArray(options[i]);
                options[i] = dropopts[i].shift();
             } else if (options[i].indexOf('+') > 0) {
@@ -2528,7 +2528,7 @@ class HierarchyPainter extends BasePainter {
       this.forEachItem(item => { if (item._background) { active.push(item); delete item._background; } });
 
       const mark_active = () => {
-         for (let n = update.length-1; n >= 0; --n)
+         for (let n = update.length - 1; n >= 0; --n)
             this.updateTreeNode(update[n]);
 
          for (let n = 0; n < active.length; ++n)

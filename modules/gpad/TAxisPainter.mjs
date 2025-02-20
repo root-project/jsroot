@@ -728,8 +728,8 @@ class TAxisPainter extends ObjectPainter {
          let maxorder = 0, minorder = 0, exclorder3 = false;
 
          if (!optionNoexp && !this.cutLabels()) {
-            const maxtick = Math.max(Math.abs(handle.major[0]), Math.abs(handle.major[handle.major.length-1])),
-                  mintick = Math.min(Math.abs(handle.major[0]), Math.abs(handle.major[handle.major.length-1])),
+            const maxtick = Math.max(Math.abs(handle.major.at(0)), Math.abs(handle.major.at(-1))),
+                  mintick = Math.min(Math.abs(handle.major.at(0)), Math.abs(handle.major.at(-1))),
                   ord1 = (maxtick > 0) ? Math.round(Math.log10(maxtick)/3)*3 : 0,
                   ord2 = (mintick > 0) ? Math.round(Math.log10(mintick)/3)*3 : 0;
 

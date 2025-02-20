@@ -262,7 +262,7 @@ class Triangles3DHandler {
       const nfaces = [], posbuf = [], posbufindx = [],    // buffers for faces
             pntbuf = new Float32Array(6*3), // maximal 6 points
             gridpnts = new Float32Array(2*3),
-            levels_eps = (levels[levels.length-1] - levels[0]) / levels.length / 1e2;
+            levels_eps = (levels.at(-1) - levels.at(0)) / levels.length / 1e2;
       let nsegments = 0, lpos = null, lindx = 0,  // buffer for lines
           ngridsegments = 0, grid = null, gindx = 0, // buffer for grid lines segments
           normindx = [],                             // buffer to remember place of vertex for each bin
@@ -2090,8 +2090,8 @@ class TH2Painter extends THistPainter {
          }
 
          while (cnt < prob.length) {
-            res.indx[cnt] = proj.length-1;
-            res.quantiles[cnt++] = xx[xx.length-1];
+            res.indx[cnt] = proj.length - 1;
+            res.quantiles[cnt++] = xx.at(-1);
          }
 
          return res;

@@ -910,7 +910,7 @@ function decodeUrl(url) {
       else if (eq > 0) {
          let val = url.slice(eq + 1, pos);
          if (((val[0] === '\'') || (val[0] === '"')) && (val.at(0) === val.at(-1)))
-            val = val.slice(1, val.length-1);
+            val = val.slice(1, val.length - 1);
          res.opts[url.slice(0, eq)] = val;
       }
 

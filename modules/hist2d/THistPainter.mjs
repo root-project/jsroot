@@ -706,7 +706,7 @@ class HistContour {
       for (let n = 0; n < levels.length; ++n)
          this.arr.push(levels[n]);
 
-      if (this.colzmax > this.arr[this.arr.length-1])
+      if (this.colzmax > this.arr.at(-1))
          this.arr.push(this.colzmax);
    }
 
@@ -727,9 +727,9 @@ class HistContour {
          return this.exact_min_indx;
 
       if (!this.custom)
-         return Math.floor(0.01+(zc-this.colzmin)*(this.arr.length-1)/(this.colzmax-this.colzmin));
+         return Math.floor(0.01 + (zc - this.colzmin) * (this.arr.length - 1) / (this.colzmax - this.colzmin));
 
-      let l = 0, r = this.arr.length-1;
+      let l = 0, r = this.arr.length - 1;
       if (zc < this.arr[0]) return -1;
       if (zc >= this.arr[r]) return r;
       while (l < r-1) {

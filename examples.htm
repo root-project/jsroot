@@ -849,11 +849,10 @@
             content.appendChild( aaa );
             setListener(aaa, shortname, url, filename, itemname, opt, jsonname, key, entry, n);
 
-            if (n < opts.length-1) {
+            if (n < opts.length - 1)
                content.appendChild(document.createTextNode(', '));
-            } else {
+            else
                content.appendChild(document.createElement('br'));
-            }
 
             const wh = window.location.hash;
             if ((wh === '#' + shortname) || (entry.syn && (wh === '#' + entry.syn))) {

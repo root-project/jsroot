@@ -156,8 +156,8 @@ class THStackPainter extends ObjectPainter {
             }
          }
       } else {
-         themin = getHistMinMax(this.fStack.arr[0], iserr).min;
-         themax = getHistMinMax(this.fStack.arr[this.fStack.arr.length-1], iserr).max;
+         themin = getHistMinMax(this.fStack.arr.at(0), iserr).min;
+         themax = getHistMinMax(this.fStack.arr.at(-1), iserr).max;
       }
 
       if (logscale)

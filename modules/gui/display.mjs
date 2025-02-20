@@ -676,11 +676,12 @@ class TabsDisplay extends MDIDisplay {
 
       if (lbl.length > 15) {
          let p = lbl.lastIndexOf('/');
-         if (p === lbl.length-1) p = lbl.lastIndexOf('/', p-1);
+         if (p === lbl.length - 1)
+            p = lbl.lastIndexOf('/', p-1);
          if ((p > 0) && (lbl.length - p < 20) && (lbl.length - p > 1))
             lbl = lbl.slice(p+1);
          else
-            lbl = '...' + lbl.slice(lbl.length-17);
+            lbl = '...' + lbl.slice(lbl.length - 17);
       }
 
       labels.append('span')

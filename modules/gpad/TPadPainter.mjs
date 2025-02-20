@@ -392,7 +392,7 @@ class TPadPainter extends ObjectPainter {
 
       let pad_cleanup = false, is_any = false;
 
-      for (let k = this.painters.length-1; k >= 0; --k) {
+      for (let k = this.painters.length - 1; k >= 0; --k) {
          const subp = this.painters[k];
          if (selector(subp)) {
             if (isPadPainter(subp))
@@ -433,7 +433,7 @@ class TPadPainter extends ObjectPainter {
       // loop to extract all dependent painters
       let len0 = 0;
       while (len0 < arr.length) {
-         for (let k = this.painters.length-1; k >= 0; --k) {
+         for (let k = this.painters.length - 1; k >= 0; --k) {
             if (this.painters[k].isSecondary(arr[len0])) {
                arr.push(this.painters[k]);
                this.painters.splice(k, 1);
