@@ -444,8 +444,8 @@ function compressSVG(svg) {
             .replace(/ title=""/g, '')                                 // remove all empty titles
             .replace(/ style=""/g, '')                                 // remove all empty styles
             .replace(/<g objname="\w*" objtype="\w*"/g, '<g')          // remove object ids
-            .replace(/<g transform="translate\(\d+,\d+\)"><\/g>/g, '') // remove all empty groups with transform
-            .replace(/<g transform="translate\(\d+,\d+\)" style="display: none;"><\/g>/g, '') // remove hidden title
+            .replace(/<g transform="translate\([0-9,]+\)"><\/g>/g, '')  // remove all empty groups with transform
+            .replace(/<g transform="translate\([0-9,]+\)" style="display: none;"><\/g>/g, '') // remove hidden title
             .replace(/<g><\/g>/g, '');                                 // remove all empty groups
 
    // remove all empty frame svg, typically appears in 3D drawings, maybe should be improved in frame painter itself
