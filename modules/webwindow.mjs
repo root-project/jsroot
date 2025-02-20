@@ -564,7 +564,7 @@ class WebWindowHandle {
          return this.href;
       let addr = this.href;
       if (relative_path.indexOf('../') === 0) {
-         const ddd = addr.lastIndexOf('/', addr.length-2);
+         const ddd = addr.lastIndexOf('/', addr.length - 2);
          addr = addr.slice(0, ddd) + relative_path.slice(2);
       } else
          addr += relative_path;

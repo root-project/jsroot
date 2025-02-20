@@ -82,7 +82,7 @@ function drawTH2PolyLego(painter) {
                faces = null;
             }
 
-            if (faces && (faces.length > pnts.length-3)) break;
+            if (faces && (faces.length > pnts.length - 3)) break;
          }
 
          if (faces?.length && pnts) {

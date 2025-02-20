@@ -695,7 +695,7 @@ function createStreamerElement(name, typename, file) {
       return elem;
    }
 
-   const isptr = typename.at(-1) == '*';
+   const isptr = typename.at(-1) === '*';
 
    if (isptr)
       elem.fTypeName = typename = typename.slice(0, typename.length - 1);

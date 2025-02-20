@@ -1351,7 +1351,7 @@ function createXtruBuffer(shape, faces_limit) {
       pnts.push(new THREE.Vector2(shape.fX[vert], shape.fY[vert]));
 
    let faces = THREE.ShapeUtils.triangulateShape(pnts, []);
-   if (faces.length < pnts.length-2) {
+   if (faces.length < pnts.length - 2) {
       geoWarn(`Problem with XTRU shape ${shape.fName} with ${pnts.length} vertices`);
       faces = [];
    } else
