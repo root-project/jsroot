@@ -1322,16 +1322,47 @@ class TH2Painter extends THistPainter {
       if (skip_zero && (histo?._typename === clTProfile2D))
          skip_zero = 1;
 
-      const x0 = handle.width/2, y0 = handle.height/2;
+      handle.getBinPath = function(i, j) {
+         const a1 = 2 * Math.PI * Math.max(0, this.grx[i]) / this.width,
+               a2 = 2 * Math.PI * Math.min(this.grx[i + 1], this.width) / this.width,
+               r2 = Math.min(this.gry[j], this.height) / this.height,
+               r1 = Math.max(0, this.gry[j + 1]) / this.height;
+
+         // do not process bins outside visible range
+         if ((a2 <= a1) || (r2 <= r1))
+            return '';
+
+         const x0 = this.width/2,
+               y0 = this.height/2,
+               x11 = r1 * Math.cos(a1) * this.width/2,
+               x12 = r1 * Math.cos(a2) * this.width/2,
+               y11 = r1 * Math.sin(a1) * this.height/2,
+               y12 = r1 * Math.sin(a2) * this.height/2,
+               x21 = r2 * Math.cos(a1) * this.width/2,
+               x22 = r2 * Math.cos(a2) * this.width/2,
+               y21 = r2 * Math.sin(a1) * this.height/2,
+               y22 = r2 * Math.sin(a2) * this.height/2;
+
+         let cmd = `M${x0+x11},${y0+y11}`;
+
+         let rx = r1 * this.width/2,
+             ry = r1 * this.height/2;
+
+         cmd += `A${rx},${ry},0,0,1,${x0+x12},${y0+y12}`;
+
+         cmd += `L${x0+x22},${y0+y22}`;
+
+         rx = r2 * this.width/2;
+         ry = r2 * this.height/2;
+
+         cmd += `A${rx},${ry},0,0,0,${x0+x21},${y0+y21}`;
+         cmd += 'Z';
+
+         return cmd;
+      }
 
       // now start build
       for (let i = handle.i1; i < handle.i2; ++i) {
-
-         let a1 = 2 * Math.PI * Math.max(0, handle.grx[i]) / handle.width,
-             a2 = 2 * Math.PI * Math.min(handle.grx[i + 1], handle.width) / handle.width;
-
-         //a1 = -100/180*Math.PI;
-         //a2 = -130/180*Math.PI;
 
          for (let j = handle.j2 - 1; j >= handle.j1; --j) {
             binz = histo.getBinContent(i + 1, j + 1);
@@ -1352,36 +1383,8 @@ class TH2Painter extends THistPainter {
                   continue;
             }
 
-            let r2 = Math.min(handle.gry[j], handle.height) / handle.height,
-                r1 = Math.max(0, handle.gry[j + 1]) / handle.height;
-
-            //r1 = 0.5;
-            //r2 = 0.55;
-
-            let x11 = r1 * Math.cos(a1) * handle.width/2,
-                x12 = r1 * Math.cos(a2) * handle.width/2,
-                y11 = r1 * Math.sin(a1) * handle.height/2,
-                y12 = r1 * Math.sin(a2) * handle.height/2,
-                x21 = r2 * Math.cos(a1) * handle.width/2,
-                x22 = r2 * Math.cos(a2) * handle.width/2,
-                y21 = r2 * Math.sin(a1) * handle.height/2,
-                y22 = r2 * Math.sin(a2) * handle.height/2;
-
-            let cmd = `M${x0+x11},${y0+y11}`;
-
-            let rx = r1 * handle.width/2,
-                ry = r1 * handle.height/2;
-
-            cmd += `A${rx},${ry},0,0,1,${x0+x12},${y0+y12}`;
-
-            cmd += `L${x0+x22},${y0+y22}`;
-
-            rx = r2 * handle.width/2;
-            ry = r2 * handle.height/2;
-
-            cmd += `A${rx},${ry},0,0,0,${x0+x21},${y0+y21}`;
-
-            cmd += 'Z';
+            const cmd = handle.getBinPath(i, j);
+            if (!cmd) continue;
 
             const entry = entries[colindx];
             if (!entry)
