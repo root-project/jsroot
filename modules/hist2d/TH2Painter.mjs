@@ -3134,14 +3134,20 @@ class TH2Painter extends THistPainter {
             y2 = Math.round(y1 + dy*h.ybar2);
             y1 = Math.round(y1 + dy*h.ybar1);
             if (fp.reverse_x) {
-               if ((pnt.x > x1) || (pnt.x <= x2)) match = false;
-            } else
-               if ((pnt.x < x1) || (pnt.x >= x2)) match = false;
+               if ((pnt.x > x1) || (pnt.x <= x2))
+                  match = false;
+            } else {
+               if ((pnt.x < x1) || (pnt.x >= x2))
+                  match = false;
+            }
 
             if (fp.reverse_y) {
-               if ((pnt.y > y1) || (pnt.y <= y2)) match = false;
-            } else
-               if ((pnt.y < y1) || (pnt.y >= y2)) match = false;
+               if ((pnt.y > y1) || (pnt.y <= y2))
+                  match = false;
+            } else {
+               if ((pnt.y < y1) || (pnt.y >= y2))
+                  match = false;
+            }
          }
 
          binz = histo.getBinContent(i+1, j+1);

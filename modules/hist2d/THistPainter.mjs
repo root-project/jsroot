@@ -919,9 +919,7 @@ class THistPainter extends ObjectPainter {
    isTF1() { return false; }
 
    /** @summary Returns true if TH1K */
-   isTH1K() {
-      return this.matchObjectType('TH1K');
-   }
+   isTH1K() { return this.matchObjectType('TH1K'); }
 
    /** @summary Returns true if TH2Poly */
    isTH2Poly() {

@@ -715,14 +715,15 @@ function createStreamerElement(name, typename, file) {
   * @private */
 function getPairStreamer(si, typname, file) {
    if (!si) {
-      if (typname.indexOf('pair') !== 0) return null;
+      if (typname.indexOf('pair') !== 0)
+         return null;
 
       si = file.findStreamerInfo(typname);
 
       if (!si) {
          let p1 = typname.indexOf('<');
          const p2 = typname.lastIndexOf('>');
-         function GetNextName() {
+         function getNextName() {
             let res = '', p = p1 + 1, cnt = 0;
             while ((p < p2) && (cnt >= 0)) {
                switch (typname[p]) {
@@ -737,8 +738,8 @@ function getPairStreamer(si, typname, file) {
             return res.trim();
          }
          si = { _typename: 'TStreamerInfo', fVersion: 1, fName: typname, fElements: create(clTList) };
-         si.fElements.Add(createStreamerElement('first', GetNextName(), file));
-         si.fElements.Add(createStreamerElement('second', GetNextName(), file));
+         si.fElements.Add(createStreamerElement('first', getNextName(), file));
+         si.fElements.Add(createStreamerElement('second', getNextName(), file));
       }
    }
 
