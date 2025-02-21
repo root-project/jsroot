@@ -51,6 +51,7 @@
      { "opt": "colpal77", "title": "example how color palette 77 can be used for drawing" },
      { "opt": "colz", "title": "color draw with palette", "interactive": true },
      { "opt": "colhz", "title": "color draw with horizontal palette", "reset_funcs": true },
+     { "opt": "col_pol", "title": "color draw in polar coordinates", "interactive": true },
      { "name": "tickz", "opt": "colz,tickz,logz", "title": "palette ticks on both sides, log on Z (color) axis" },
      { "opt": "acol", "title": "disable axes drawing with col option" },
      { "opt": "col_rx_ry", "title": "reverse x and y axis with col drawing" },
