@@ -1327,8 +1327,8 @@ class TH2Painter extends THistPainter {
       // now start build
       for (let i = handle.i1; i < handle.i2; ++i) {
 
-         let a1 = -2 * Math.PI * Math.max(0, handle.grx[i]) / handle.width,
-             a2 = -2 * Math.PI * Math.min(handle.grx[i + 1], handle.width) / handle.width;
+         let a1 = 2 * Math.PI * Math.max(0, handle.grx[i]) / handle.width,
+             a2 = 2 * Math.PI * Math.min(handle.grx[i + 1], handle.width) / handle.width;
 
          //a1 = -100/180*Math.PI;
          //a2 = -130/180*Math.PI;
@@ -1369,26 +1369,25 @@ class TH2Painter extends THistPainter {
 
             let cmd = `M${x0+x11},${y0+y11}`;
 
-            let rad1 = r1 * handle.width/2;
-            let rad2 = r1 * handle.height/2;
+            let rx = r1 * handle.width/2,
+                ry = r1 * handle.height/2;
 
-            cmd += `A${rad1},${rad2},0,0,0,${x0+x12},${y0+y12}`;
+            cmd += `A${rx},${ry},0,0,1,${x0+x12},${y0+y12}`;
 
             cmd += `L${x0+x22},${y0+y22}`;
 
-            rad1 = r2 * handle.width/2;
-            rad2 = r2 * handle.height/2;
+            rx = r2 * handle.width/2;
+            ry = r2 * handle.height/2;
 
-            cmd += `A${rad1},${rad2},0,0,1,${x0+x21},${y0+y21}`;
+            cmd += `A${rx},${ry},0,0,0,${x0+x21},${y0+y21}`;
 
             cmd += 'Z';
 
-            let entry = entries[colindx];
-            if (!entry) {
-               console.log('r1,r2', r1, r2, r2 > r1, 'angles', a1, a2, a2 < a1);
-               entry = entries[colindx] = { path: cmd };
-            } else
-              entry.path += cmd;
+            const entry = entries[colindx];
+            if (!entry)
+               entries[colindx] = { path: cmd };
+            else
+               entry.path += cmd;
 
          }
       }
