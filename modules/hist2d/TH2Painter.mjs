@@ -1305,12 +1305,10 @@ class TH2Painter extends THistPainter {
             palette = this.getHistPalette(),
             entries = [],
             show_empty = this.options.ShowEmpty,
-            can_merge_x = (handle.xbar2 === 1) && (handle.xbar1 === 0),
-            can_merge_y = (handle.ybar2 === 1) && (handle.ybar1 === 0),
             colindx0 = cntr.getPaletteIndex(palette, 0);
 
-      let dx, dy, x1, y2, binz, is_zero, colindx, last_entry = null,
-            skip_zero = !this.options.Zero, skip_bin;
+      let binz, is_zero, colindx,
+          skip_zero = !this.options.Zero, skip_bin;
 
       const test_cutg = this.options.cutg;
 
@@ -1350,45 +1348,41 @@ class TH2Painter extends THistPainter {
                 `A${rx1.toFixed(2)},${ry1.toFixed(2)},0,0,1,${x12.toFixed(2)},${y12.toFixed(2)}` +
                 `L${x22.toFixed(2)},${y22.toFixed(2)}` +
                 `A${rx2.toFixed(2)},${ry2.toFixed(2)},0,0,0,${x21.toFixed(2)},${y21.toFixed(2)}Z`;
-      }
+      };
 
       handle.findBin = function(x, y) {
-         let x0 = this.width/2, y0 = this.height/2,
-             angle = Math.atan2((y - y0) / this.height, (x - x0) / this.width),
-             radius = Math.abs(Math.cos(angle)) > 0.5 ? (x - x0) / Math.cos(angle) / this.width * 2 : (y - y0) / Math.sin(angle) / this.height * 2;
+         const x0 = this.width/2, y0 = this.height/2;
+         let angle = Math.atan2((y - y0) / this.height, (x - x0) / this.width), i, j;
+         const radius = Math.abs(Math.cos(angle)) > 0.5 ? (x - x0) / Math.cos(angle) / this.width * 2 : (y - y0) / Math.sin(angle) / this.height * 2;
 
          if (angle < 0)
             angle += 2*Math.PI;
 
-         let i, j;
-
-         for(i = this.i1; i < this.i2; ++i) {
+         for (i = this.i1; i < this.i2; ++i) {
             const a1 = 2 * Math.PI * this.grx[i] / this.width,
                   a2 = 2 * Math.PI * this.grx[i + 1] / this.width;
             if ((a1 <= angle) && (angle <= a2)) break;
          }
 
-         for(j = this.j1; j < this.j2; ++j) {
+         for (j = this.j1; j < this.j2; ++j) {
             const r2 = this.gry[j] / this.height,
                   r1 = this.gry[j + 1] / this.height;
             if ((r1 <= radius) && (radius <= r2)) break;
          }
 
          return { i, j };
-      }
+      };
 
       // now start build
       for (let i = handle.i1; i < handle.i2; ++i) {
-
          for (let j = handle.j2 - 1; j >= handle.j1; --j) {
             binz = histo.getBinContent(i + 1, j + 1);
             is_zero = (binz === 0);
 
             skip_bin = is_zero && ((skip_zero === 1) ? !histo.getBinEntries(i + 1, j + 1) : skip_zero);
 
-            if (skip_bin || (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i + 0.5), histo.fYaxis.GetBinCoord(j + 0.5)))) {
+            if (skip_bin || (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i + 0.5), histo.fYaxis.GetBinCoord(j + 0.5))))
                continue;
-            }
 
             colindx = cntr.getPaletteIndex(palette, binz);
 
@@ -1407,7 +1401,6 @@ class TH2Painter extends THistPainter {
                entries[colindx] = { path: cmd };
             else
                entry.path += cmd;
-
          }
       }
 
@@ -3353,7 +3346,7 @@ class TH2Painter extends THistPainter {
             }
          }
 
-         if(is_pol)
+         if (is_pol)
             path = h.getBinPath(i, j);
          else if (this.is_projection === 'X') {
             x1 = 0; x2 = fp.getFrameWidth();

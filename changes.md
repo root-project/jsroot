@@ -1,10 +1,11 @@
 # JSROOT changelog
 
 ## Changes in dev
-1. Implement cont5 draw option for `TGraph2D` using Delaunay algorithm
+1. Implement 'cont5' draw option for `TGraph2D` using Delaunay algorithm
+1. Implement 'pol' draw option for `TH2`
 1. Adjust histogram title drawing with native implementation
 1. Improve float to string conversion when 'g' is specified
-1. Support "same" option for first histogram, draw directly on pad
+1. Support 'same' option for first histogram, draw directly on pad
 1. Display underflow/overflow bins when configured for the axis, implement 'allbins' draw option for histograms
 1. Support different angle coordinates in `TGraphPolargram`, handle 'N' and 'O' draw options
 1. Support fAxisAngle in `TGraphPolargram`, provide 'rangleNN' draw option
