@@ -1346,10 +1346,35 @@ class TH2Painter extends THistPainter {
                y21 = y0 + ry2 * Math.sin(a1),
                y22 = y0 + ry2 * Math.sin(a2);
 
-         return `M${x11},${y11}` +
-                `A${rx1},${ry1},0,0,1,${x12},${y12}` +
-                `L${x22},${y22}` +
-                `A${rx2},${ry2},0,0,0,${x21},${y21}` + 'Z';
+         return `M${x11.toFixed(2)},${y11.toFixed(2)}` +
+                `A${rx1.toFixed(2)},${ry1.toFixed(2)},0,0,1,${x12.toFixed(2)},${y12.toFixed(2)}` +
+                `L${x22.toFixed(2)},${y22.toFixed(2)}` +
+                `A${rx2.toFixed(2)},${ry2.toFixed(2)},0,0,0,${x21.toFixed(2)},${y21.toFixed(2)}Z`;
+      }
+
+      handle.findBin = function(x, y) {
+         let x0 = this.width/2, y0 = this.height/2,
+             angle = Math.atan2((y - y0) / this.height, (x - x0) / this.width),
+             radius = Math.abs(Math.cos(angle)) > 0.5 ? (x - x0) / Math.cos(angle) / this.width * 2 : (y - y0) / Math.sin(angle) / this.height * 2;
+
+         if (angle < 0)
+            angle += 2*Math.PI;
+
+         let i, j;
+
+         for(i = this.i1; i < this.i2; ++i) {
+            const a1 = 2 * Math.PI * this.grx[i] / this.width,
+                  a2 = 2 * Math.PI * this.grx[i + 1] / this.width;
+            if ((a1 <= angle) && (angle <= a2)) break;
+         }
+
+         for(j = this.j1; j < this.j2; ++j) {
+            const r2 = this.gry[j] / this.height,
+                  r1 = this.gry[j + 1] / this.height;
+            if ((r1 <= radius) && (radius <= r2)) break;
+         }
+
+         return { i, j };
       }
 
       // now start build
@@ -3203,24 +3228,31 @@ class TH2Painter extends THistPainter {
       }
 
       const fp = this.getFramePainter();
-      let i, j, binz = 0, colindx = null,
+      let i, j, binz = 0, colindx = null, is_pol = false,
           i1, i2, j1, j2, x1, x2, y1, y2;
 
-      // search bins position
-      if (fp.reverse_x) {
-         for (i = h.i1; i < h.i2; ++i)
-            if ((pnt.x <= h.grx[i]) && (pnt.x >= h.grx[i+1])) break;
+      if (isFunc(h.findBin)) {
+         const bin = h.findBin(pnt.x, pnt.y);
+         i = bin?.i ?? h.i2;
+         j = bin?.j ?? h.j2;
+         is_pol = true;
       } else {
-         for (i = h.i1; i < h.i2; ++i)
-            if ((pnt.x >= h.grx[i]) && (pnt.x <= h.grx[i+1])) break;
-      }
+         // search bins position
+         if (fp.reverse_x) {
+            for (i = h.i1; i < h.i2; ++i)
+               if ((pnt.x <= h.grx[i]) && (pnt.x >= h.grx[i+1])) break;
+         } else {
+            for (i = h.i1; i < h.i2; ++i)
+               if ((pnt.x >= h.grx[i]) && (pnt.x <= h.grx[i+1])) break;
+         }
 
-      if (fp.reverse_y) {
-         for (j = h.j1; j < h.j2; ++j)
-            if ((pnt.y <= h.gry[j+1]) && (pnt.y >= h.gry[j])) break;
-      } else {
-         for (j = h.j1; j < h.j2; ++j)
-            if ((pnt.y >= h.gry[j+1]) && (pnt.y <= h.gry[j])) break;
+         if (fp.reverse_y) {
+            for (j = h.j1; j < h.j2; ++j)
+               if ((pnt.y <= h.gry[j+1]) && (pnt.y >= h.gry[j])) break;
+         } else {
+            for (j = h.j1; j < h.j2; ++j)
+               if ((pnt.y >= h.gry[j+1]) && (pnt.y <= h.gry[j])) break;
+         }
       }
 
       if ((i < h.i2) && (j < h.j2)) {
@@ -3230,7 +3262,7 @@ class TH2Painter extends THistPainter {
 
          let match = true;
 
-         if (this.options.Color) {
+         if (this.options.Color && !is_pol) {
             // take into account bar settings
             const dx = x2 - x1, dy = y2 - y1;
             x2 = Math.round(x1 + dx*h.xbar2);
@@ -3321,7 +3353,9 @@ class TH2Painter extends THistPainter {
             }
          }
 
-         if (this.is_projection === 'X') {
+         if(is_pol)
+            path = h.getBinPath(i, j);
+         else if (this.is_projection === 'X') {
             x1 = 0; x2 = fp.getFrameWidth();
             y1 = h.gry[j2]; y2 = h.gry[j1];
             binid = j1*777 + j2*333;
