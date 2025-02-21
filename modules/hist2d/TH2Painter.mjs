@@ -1332,33 +1332,24 @@ class TH2Painter extends THistPainter {
          if ((a2 <= a1) || (r2 <= r1))
             return '';
 
-         const x0 = this.width/2,
-               y0 = this.height/2,
-               x11 = r1 * Math.cos(a1) * this.width/2,
-               x12 = r1 * Math.cos(a2) * this.width/2,
-               y11 = r1 * Math.sin(a1) * this.height/2,
-               y12 = r1 * Math.sin(a2) * this.height/2,
-               x21 = r2 * Math.cos(a1) * this.width/2,
-               x22 = r2 * Math.cos(a2) * this.width/2,
-               y21 = r2 * Math.sin(a1) * this.height/2,
-               y22 = r2 * Math.sin(a2) * this.height/2;
+         const x0 = this.width/2, y0 = this.height/2,
+               rx1 = r1 * this.width/2,
+               rx2 = r2 * this.width/2,
+               ry1 = r1 * this.height/2,
+               ry2 = r2 * this.height/2,
+               x11 = x0 + rx1 * Math.cos(a1),
+               x12 = x0 + rx1 * Math.cos(a2),
+               y11 = y0 + ry1 * Math.sin(a1),
+               y12 = y0 + ry1 * Math.sin(a2),
+               x21 = x0 + rx2 * Math.cos(a1),
+               x22 = x0 + rx2 * Math.cos(a2),
+               y21 = y0 + ry2 * Math.sin(a1),
+               y22 = y0 + ry2 * Math.sin(a2);
 
-         let cmd = `M${x0+x11},${y0+y11}`;
-
-         let rx = r1 * this.width/2,
-             ry = r1 * this.height/2;
-
-         cmd += `A${rx},${ry},0,0,1,${x0+x12},${y0+y12}`;
-
-         cmd += `L${x0+x22},${y0+y22}`;
-
-         rx = r2 * this.width/2;
-         ry = r2 * this.height/2;
-
-         cmd += `A${rx},${ry},0,0,0,${x0+x21},${y0+y21}`;
-         cmd += 'Z';
-
-         return cmd;
+         return `M${x11},${y11}` +
+                `A${rx1},${ry1},0,0,1,${x12},${y12}` +
+                `L${x22},${y22}` +
+                `A${rx2},${ry2},0,0,0,${x21},${y21}` + 'Z';
       }
 
       // now start build
