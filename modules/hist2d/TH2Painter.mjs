@@ -4,7 +4,7 @@ import { rgb as d3_rgb, chord as d3_chord, arc as d3_arc, ribbon as d3_ribbon } 
 import { kBlack } from '../base/colors.mjs';
 import { TRandom, floatToString, makeTranslate, addHighlightStyle, getBoxDecorations } from '../base/BasePainter.mjs';
 import { EAxisBits } from '../base/ObjectPainter.mjs';
-import { THistPainter } from './THistPainter.mjs';
+import { THistPainter, kPOLAR } from './THistPainter.mjs';
 
 
 /** @summary Build histogram contour lines
@@ -1236,8 +1236,9 @@ class TH2Painter extends THistPainter {
                if (last_entry)
                   flush_last_entry();
                continue;
-            } else
-               colindx = cntr.getPaletteIndex(palette, binz);
+            }
+
+            colindx = cntr.getPaletteIndex(palette, binz);
 
             if (colindx === null) {
                if (is_zero && (show_empty || (skip_zero === 1)))
@@ -1292,6 +1293,114 @@ class TH2Painter extends THistPainter {
                 .attr('d', entry.path);
          }
       });
+
+      return handle;
+   }
+
+   /** @summary Draw TH2 bins as colors in polar coordinates */
+   drawBinsPolar() {
+      const histo = this.getHisto(),
+            handle = this.prepareDraw(),
+            cntr = this.getContour(),
+            palette = this.getHistPalette(),
+            entries = [],
+            show_empty = this.options.ShowEmpty,
+            can_merge_x = (handle.xbar2 === 1) && (handle.xbar1 === 0),
+            can_merge_y = (handle.ybar2 === 1) && (handle.ybar1 === 0),
+            colindx0 = cntr.getPaletteIndex(palette, 0);
+
+      let dx, dy, x1, y2, binz, is_zero, colindx, last_entry = null,
+            skip_zero = !this.options.Zero, skip_bin;
+
+      const test_cutg = this.options.cutg;
+
+      // check in the beginning if zero can be skipped
+      if (!skip_zero && !show_empty && (colindx0 === null))
+         skip_zero = true;
+
+      // special check for TProfile2D - empty bin with no entries shown
+      if (skip_zero && (histo?._typename === clTProfile2D))
+         skip_zero = 1;
+
+      const x0 = handle.width/2, y0 = handle.height/2;
+
+      // now start build
+      for (let i = handle.i1; i < handle.i2; ++i) {
+
+         let a1 = -2 * Math.PI * Math.max(0, handle.grx[i]) / handle.width,
+             a2 = -2 * Math.PI * Math.min(handle.grx[i + 1], handle.width) / handle.width;
+
+         //a1 = -100/180*Math.PI;
+         //a2 = -130/180*Math.PI;
+
+         for (let j = handle.j2 - 1; j >= handle.j1; --j) {
+            binz = histo.getBinContent(i + 1, j + 1);
+            is_zero = (binz === 0);
+
+            skip_bin = is_zero && ((skip_zero === 1) ? !histo.getBinEntries(i + 1, j + 1) : skip_zero);
+
+            if (skip_bin || (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i + 0.5), histo.fYaxis.GetBinCoord(j + 0.5)))) {
+               continue;
+            }
+
+            colindx = cntr.getPaletteIndex(palette, binz);
+
+            if (colindx === null) {
+               if (is_zero && (show_empty || (skip_zero === 1)))
+                  colindx = colindx0 || 0;
+               else
+                  continue;
+            }
+
+            let r2 = Math.min(handle.gry[j], handle.height) / handle.height,
+                r1 = Math.max(0, handle.gry[j + 1]) / handle.height;
+
+            //r1 = 0.5;
+            //r2 = 0.55;
+
+            let x11 = r1 * Math.cos(a1) * handle.width/2,
+                x12 = r1 * Math.cos(a2) * handle.width/2,
+                y11 = r1 * Math.sin(a1) * handle.height/2,
+                y12 = r1 * Math.sin(a2) * handle.height/2,
+                x21 = r2 * Math.cos(a1) * handle.width/2,
+                x22 = r2 * Math.cos(a2) * handle.width/2,
+                y21 = r2 * Math.sin(a1) * handle.height/2,
+                y22 = r2 * Math.sin(a2) * handle.height/2;
+
+            let cmd = `M${x0+x11},${y0+y11}`;
+
+            let rad1 = r1 * handle.width/2;
+            let rad2 = r1 * handle.height/2;
+
+            cmd += `A${rad1},${rad2},0,0,0,${x0+x12},${y0+y12}`;
+
+            cmd += `L${x0+x22},${y0+y22}`;
+
+            rad1 = r2 * handle.width/2;
+            rad2 = r2 * handle.height/2;
+
+            cmd += `A${rad1},${rad2},0,0,1,${x0+x21},${y0+y21}`;
+
+            cmd += 'Z';
+
+            let entry = entries[colindx];
+            if (!entry) {
+               console.log('r1,r2', r1, r2, r2 > r1, 'angles', a1, a2, a2 < a1);
+               entry = entries[colindx] = { path: cmd };
+            } else
+              entry.path += cmd;
+
+         }
+      }
+
+      entries.forEach((entry, colindx) => {
+         if (entry) {
+            this.draw_g.append('svg:path')
+                .attr('fill', palette.getColor(colindx))
+                .attr('d', entry.path);
+         }
+      });
+
 
       return handle;
    }
@@ -2608,7 +2717,9 @@ class TH2Painter extends THistPainter {
          if (this.options.Scat)
             handle = this.drawBinsScatter();
 
-         if (this.options.Color)
+         if (this.options.System === kPOLAR)
+            handle = this.drawBinsPolar();
+         else if (this.options.Color)
             handle = this.drawBinsColor();
          else if (this.options.Box)
             handle = this.drawBinsBox();
