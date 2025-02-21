@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="utf-8">
+      <title>Replace tooltip lines</title>
+      <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+      <script type="importmap">
+         { "imports": { "jsroot": "../modules/main.mjs" } }
+      </script>
+   </head>
+
+   <body>
+      <div id="histogram_draw" style="position: relative; width: 1200px; height: 800px;"></div>
+   </body>
+
+   <script type='module'>
+
+      import { createHistogram, draw, TH2Painter } from 'jsroot';
+
+      TH2Painter.prototype.originalgetBinTooltips = TH2Painter.prototype.getBinTooltips;
+
+      TH2Painter.prototype.getBinTooltips = function(i, j) {
+         const res = this.originalgetBinTooltips(i, j);
+         res.shift(); // remove first line
+         res.push(`Custom info for bin ${i} ${j}`);
+         return res;
+      }
+
+      // this is just generation of histogram
+      let histo = createHistogram('TH2F', 20, 20);
+      for (let iy = 0; iy < 20; iy++)
+         for (let ix = 0; ix < 20; ix++) {
+            const bin = histo.getBin(ix+1, iy+1);
+            histo.setBinContent(bin, 1 + (ix-10)**2 + (iy-10)**2);
+         }
+
+      histo.fName = 'generated';
+      histo.fTitle = 'Demo of modified tootltips';
+
+      draw('histogram_draw', histo);
+   </script>
+</html>
