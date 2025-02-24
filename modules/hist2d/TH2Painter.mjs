@@ -1324,7 +1324,8 @@ class TH2Painter extends THistPainter {
          const a1 = 2 * Math.PI * Math.max(0, this.grx[i]) / this.width,
                a2 = 2 * Math.PI * Math.min(this.grx[i + 1], this.width) / this.width,
                r2 = Math.min(this.gry[j], this.height) / this.height,
-               r1 = Math.max(0, this.gry[j + 1]) / this.height;
+               r1 = Math.max(0, this.gry[j + 1]) / this.height,
+               side = a2 - a1 > Math.PI ? 1 : 0; // handle very large sector
 
          // do not process bins outside visible range
          if ((a2 <= a1) || (r2 <= r1))
@@ -1345,9 +1346,9 @@ class TH2Painter extends THistPainter {
                y22 = y0 + ry2 * Math.sin(a2);
 
          return `M${x11.toFixed(2)},${y11.toFixed(2)}` +
-                `A${rx1.toFixed(2)},${ry1.toFixed(2)},0,0,1,${x12.toFixed(2)},${y12.toFixed(2)}` +
+                `A${rx1.toFixed(2)},${ry1.toFixed(2)},0,${side},1,${x12.toFixed(2)},${y12.toFixed(2)}` +
                 `L${x22.toFixed(2)},${y22.toFixed(2)}` +
-                `A${rx2.toFixed(2)},${ry2.toFixed(2)},0,0,0,${x21.toFixed(2)},${y21.toFixed(2)}Z`;
+                `A${rx2.toFixed(2)},${ry2.toFixed(2)},0,${side},0,${x21.toFixed(2)},${y21.toFixed(2)}Z`;
       };
 
       handle.findBin = function(x, y) {
