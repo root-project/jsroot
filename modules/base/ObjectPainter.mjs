@@ -19,7 +19,7 @@ import { getRootColors } from './colors.mjs';
 class ObjectPainter extends BasePainter {
 
    #draw_object;     // drawn object
-   #main_painter;    // main painter in the pad - temporary pointer on the painter
+   #main_painter;    // WeakRef to main painter in the pad
    #primary_id;      // unique id of primary painter
    #secondary_id;    // id of this painter in relation to primary painter
    #options_store;   // stored draw options used to check changes
@@ -614,16 +614,13 @@ class ObjectPainter extends BasePainter {
      * @param {boolean} [not_store] - if true, prevent temporary storage of main painter reference
      * @protected */
    getMainPainter(not_store) {
-      let res = this.#main_painter;
+      let res = this.#main_painter?.deref();
       if (!res) {
          const pp = this.getPadPainter();
          res = pp ? pp.getMainPainter() : this.getTopPainter();
-         if (!res)
-            res = null;
-         if (!not_store)
-            this.#main_painter = res;
+         this.#main_painter = not_store || !res ? null : new WeakRef(res);
       }
-      return res;
+      return res || null;
    }
 
    /** @summary Returns true if this is main painter
