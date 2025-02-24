@@ -25,7 +25,7 @@
       TH2Painter.prototype.getBinTooltips = function(i, j) {
          const res = this.originalgetBinTooltips(i, j);
          res.shift(); // remove first line
-         res.push(`Custom info for bin ${i} ${j}`);
+         res.push(`Custom info for bin ${i+1} ${j+1}`); // show bin index, +1 for underflow
          return res;
       }
 
@@ -60,7 +60,7 @@
       painter.getTooltips = function(d) {
          const res = this.originalgetTooltips(d);
          res.shift(); // remove first line
-         res.push(`Custom info for graph index ${d.indx}`);
+         res.push(`Custom info for graph index ${d.indx}`); // show point index
          return res;
       }
    </script>
