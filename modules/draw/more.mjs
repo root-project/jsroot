@@ -181,15 +181,15 @@ function drawEllipse() {
          path = `M0,0L${x1},${y1}A${rx},${ry},0,1,1,${x2},${y2}Z`;
       }
    } else {
-     const ct = Math.cos(ellipse.fTheta*Math.PI/180),
-           st = Math.sin(ellipse.fTheta*Math.PI/180),
-           phi1 = ellipse.fPhimin*Math.PI/180,
-           phi2 = ellipse.fPhimax*Math.PI/180,
-           np = 200,
-           dphi = (phi2-phi1) / (np - (closed_ellipse ? 0 : 1));
-     let lastx = 0, lasty = 0;
-     if (!closed_ellipse) path = 'M0,0';
-     for (let n = 0; n < np; ++n) {
+      const ct = Math.cos(ellipse.fTheta*Math.PI/180),
+            st = Math.sin(ellipse.fTheta*Math.PI/180),
+            phi1 = ellipse.fPhimin*Math.PI/180,
+            phi2 = ellipse.fPhimax*Math.PI/180,
+            np = 200,
+            dphi = (phi2-phi1) / (np - (closed_ellipse ? 0 : 1));
+      let lastx = 0, lasty = 0;
+      if (!closed_ellipse) path = 'M0,0';
+      for (let n = 0; n < np; ++n) {
          const angle = phi1 + n*dphi,
                dx = ellipse.fR1 * Math.cos(angle),
                dy = ellipse.fR2 * Math.sin(angle),
@@ -204,8 +204,8 @@ function drawEllipse() {
          else
             path += `l${px-lastx},${py-lasty}`;
          lastx = px; lasty = py;
-     }
-     path += 'Z';
+      }
+      path += 'Z';
    }
 
    this.x = x;
