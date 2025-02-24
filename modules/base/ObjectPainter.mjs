@@ -20,7 +20,7 @@ class ObjectPainter extends BasePainter {
 
    #draw_object;     // drawn object
    #main_painter;    // WeakRef to main painter in the pad
-   #primary_id;      // unique id of primary painter
+   #primary_ref;     // reference of primary painter - if any
    #secondary_id;    // id of this painter in relation to primary painter
    #options_store;   // stored draw options used to check changes
 
@@ -94,6 +94,9 @@ class ObjectPainter extends BasePainter {
       this.#main_painter = null;
       this.#draw_object = null;
       delete this.snapid;
+      this._is_primary = undefined;
+      this.#primary_ref = undefined;
+      this.#secondary_id = undefined;
 
       // remove attributes objects (if any)
       delete this.fillatt;
@@ -398,49 +401,30 @@ class ObjectPainter extends BasePainter {
       return c;
    }
 
-   /** @summary Returns unique identifier for the painter
-     * @param {boolean} [only_read] if not specified, also assign unique id to the painter
-     * @private */
-   getUniqueId(only_read = false) {
-      if (!only_read && (this._unique_painter_id === undefined))
-         this._unique_painter_id = internals.id_counter++; // assign unique identifier
-      return this._unique_painter_id;
-   }
-
    /** @summary Assign secondary id
      * @private */
    setSecondaryId(primary, name) {
-      this.#primary_id = primary.getUniqueId();
+      primary._is_primary = true; // mark as primary, used later
+      this.#primary_ref = new WeakRef(primary);
       this.#secondary_id = name;
    }
 
    /** @summary Returns secondary id
      * @private */
-   getSecondaryId() {
-      return this.#secondary_id;
-   }
+   getSecondaryId() { return this.#secondary_id; }
 
    /** @summary Check if this is secondary painter
      * @desc if primary painter provided - check if this really main for this
      * @private */
    isSecondary(primary) {
-      if (this.#primary_id === undefined)
+      if (!this.#primary_ref)
          return false;
-      return !isObject(primary) ? true : this.#primary_id === primary.getUniqueId(true);
+      return !isObject(primary) ? true : this.#primary_ref.deref() === primary;
    }
 
    /** @summary Return primary object
      * @private */
-   getPrimary() {
-      let res = null;
-      if (this.isSecondary()) {
-         this.forEachPainter(p => {
-            if (this.isSecondary(p))
-               res = p;
-         });
-      }
-      return res;
-   }
+   getPrimary() { return this.#primary_ref?.deref(); }
 
    /** @summary Provides identifier on server for requested sub-element */
    getSnapId(subelem) {
