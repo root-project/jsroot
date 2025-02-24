@@ -151,8 +151,9 @@ function drawEllipse() {
    let path = '';
 
    if (is_crown && (ellipse.fR1 > 0)) {
-      const rx1 = rx, ry2 = ry,
-            ry1 = y - funcs.y(ellipse.fY1 + ellipse.fR1),
+      const ratio = ellipse.fYXRatio ?? 1,
+            rx1 = rx, ry2 = ratio * ry,
+            ry1 = ratio * (y - funcs.y(ellipse.fY1 + ellipse.fR1)),
             rx2 = funcs.x(ellipse.fX1 + ellipse.fR2) - x;
 
       if (closed_ellipse) {
