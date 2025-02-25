@@ -592,39 +592,25 @@ class TH3Painter extends THistPainter {
       }
 
       if (use_helper) {
-         const helper_segments = Box3D.Segments,
-               helper_positions = new Float32Array(bins_matrixes.length * Box3D.Segments.length * 3);
-         let vvv = 0;
-         for (let i = 0; i < bins_matrixes.length; ++i) {
-            const m = bins_matrixes[i].elements;
-            for (let n = 0; n < helper_segments.length; ++n, vvv += 3) {
-               const vert = Box3D.Vertices[helper_segments[n]];
-               helper_positions[vvv] = m[12] + (vert.x - 0.5) * m[0];
-               helper_positions[vvv+1] = m[13] + (vert.y - 0.5) * m[5];
-               helper_positions[vvv+2] = m[14] + (vert.z - 0.5) * m[10];
-            }
-         }
-
-         const helper_material = new THREE.LineBasicMaterial({ color: this.getColor(histo.fLineColor) }),
-               lines = createLineSegments(helper_positions, helper_material);
-
-         main.add3DMesh(lines);
-
-         if (negative_matrixes.length > 0) {
-            const helper2_segments = Box3D.Crosses,
-                  helper2_positions = new Float32Array(negative_matrixes.length * Box3D.Crosses.length * 3);
-            vvv = 0;
-            for (let i = 0; i < negative_matrixes.length; ++i) {
-               const m = negative_matrixes[i].elements;
-               for (let n = 0; n < helper2_segments.length; ++n, vvv += 3) {
-                  const vert = Box3D.Vertices[helper2_segments[n]];
-                  helper2_positions[vvv] = m[12] + (vert.x - 0.5) * m[0];
-                  helper2_positions[vvv+1] = m[13] + (vert.y - 0.5) * m[5];
-                  helper2_positions[vvv+2] = m[14] + (vert.z - 0.5) * m[10];
+         const helper_material = new THREE.LineBasicMaterial({ color: this.getColor(histo.fLineColor) });
+         function addLines(segments, matrixes) {
+            if (!matrixes)
+               return;
+            const positions = new Float32Array(matrixes.length * segments.length * 3);
+            for (let i = 0, vvv = 0; i < matrixes.length; ++i) {
+               const m = matrixes[i].elements;
+               for (let n = 0; n < segments.length; ++n, vvv += 3) {
+                  const vert = Box3D.Vertices[segments[n]];
+                  positions[vvv] = m[12] + (vert.x - 0.5) * m[0];
+                  positions[vvv+1] = m[13] + (vert.y - 0.5) * m[5];
+                  positions[vvv+2] = m[14] + (vert.z - 0.5) * m[10];
                }
             }
-            main.add3DMesh(createLineSegments(helper2_positions, helper_material));
-         }
+            main.add3DMesh(createLineSegments(positions, helper_material));
+         };
+
+         addLines(Box3D.Segments, bins_matrixes);
+         addLines(Box3D.Crosses, negative_matrixes);
       }
 
       return true;
