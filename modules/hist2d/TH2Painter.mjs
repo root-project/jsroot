@@ -1984,15 +1984,14 @@ class TH2Painter extends THistPainter {
                      if (palette && cntr) {
                         const colindx = cntr.getPaletteIndex(palette, bincont);
                         if (colindx !== null) {
-                           let entry = entries[colindx];
+                           const entry = entries[colindx];
                            if (!entry)
                               entries[colindx] = { path: cmd };
                            else
                               entry.path += cmd;
                         }
-                     } else {
+                     } else
                         plain += cmd;
-                     }
                   }
                }
             }
