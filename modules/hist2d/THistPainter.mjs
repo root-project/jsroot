@@ -234,6 +234,9 @@ class THistDrawOptions {
       if (d.check('LINE_', 'color'))
          this.histoLineColor = getColor(d.color);
 
+      if (d.check('WIDTH_', true))
+         this.histoLineWidth = d.partAsInt();
+
       if (d.check('XAXIS_', 'color'))
          histo.fXaxis.fAxisColor = histo.fXaxis.fLabelColor = histo.fXaxis.fTitleColor = d.color;
 
@@ -1039,7 +1042,7 @@ class THistPainter extends ObjectPainter {
          this.deleteAttr();
       else {
          this.createAttFill({ attr: histo, color: this.options.histoFillColor, pattern: this.options.histoFillPattern, kind: 1 });
-         this.createAttLine({ attr: histo, color0: this.options.histoLineColor });
+         this.createAttLine({ attr: histo, color0: this.options.histoLineColor, width: this.options.histoLineWidth });
       }
    }
 
