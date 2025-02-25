@@ -34,8 +34,8 @@ class TAttFillHandler {
      * @param {string} [args.color_as_svg] - color in SVG format */
    setArgs(args) {
       if (isObject(args.attr)) {
-         if ((args.pattern === undefined) && (args.attr.fFillStyle !== undefined)) args.pattern = args.attr.fFillStyle;
-         if ((args.color === undefined) && (args.attr.fFillColor !== undefined)) args.color = args.attr.fFillColor;
+         args.pattern ??= args.attr.fFillStyle;
+         args.color ??= args.attr.fFillColor;
       }
 
       if (args.enable !== undefined)
