@@ -472,7 +472,7 @@ class TH3Painter extends THistPainter {
 
       const cntr = use_colors ? this.getContour() : null,
             palette = use_colors ? this.getHistPalette() : null,
-            bins_matrixes = [], bins_colors = [], bins_ids = [], bin_opacities = [],
+            bins_matrixes = [], bins_colors = [], bins_ids = [], negative_matrixes = [], bin_opacities = [],
             transfer = (this.transferFunc && proivdeEvalPar(this.transferFunc, true)) ? this.transferFunc : null;
 
       for (let i = i1; i < i2; ++i) {
@@ -508,6 +508,8 @@ class TH3Painter extends THistPainter {
                bin_matrix.scale(new THREE.Vector3((grx2 - grx1) * wei, (gry2 - gry1) * wei, (grz2 - grz1) * wei));
                bin_matrix.setPosition((grx2 + grx1) / 2, (gry2 + gry1) / 2, (grz2 + grz1) / 2);
                bins_matrixes.push(bin_matrix);
+               if (bin_content < 0)
+                  negative_matrixes.push(bin_matrix);
             }
          }
       }
@@ -607,6 +609,22 @@ class TH3Painter extends THistPainter {
                lines = createLineSegments(helper_positions, helper_material);
 
          main.add3DMesh(lines);
+
+         if (negative_matrixes.length > 0) {
+            const helper2_segments = Box3D.Crosses,
+                  helper2_positions = new Float32Array(negative_matrixes.length * Box3D.Crosses.length * 3);
+            vvv = 0;
+            for (let i = 0; i < negative_matrixes.length; ++i) {
+               const m = negative_matrixes[i].elements;
+               for (let n = 0; n < helper2_segments.length; ++n, vvv += 3) {
+                  const vert = Box3D.Vertices[helper2_segments[n]];
+                  helper2_positions[vvv] = m[12] + (vert.x - 0.5) * m[0];
+                  helper2_positions[vvv+1] = m[13] + (vert.y - 0.5) * m[5];
+                  helper2_positions[vvv+2] = m[14] + (vert.z - 0.5) * m[10];
+               }
+            }
+            main.add3DMesh(createLineSegments(helper2_positions, helper_material));
+         }
       }
 
       return true;
