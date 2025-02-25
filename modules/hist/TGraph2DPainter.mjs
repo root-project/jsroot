@@ -1398,7 +1398,8 @@ class TGraph2DPainter extends ObjectPainter {
       if (this.options.Circles)
          scale = 0.06 * fp.size_x3d;
 
-      if (fp.usesvg) scale *= 0.3;
+      if (fp.usesvg)
+         scale *= 0.3;
 
       scale *= 7 * Math.max(fp.size_x3d / fp.getFrameWidth(), fp.size_z3d / fp.getFrameHeight());
 
@@ -1417,20 +1418,13 @@ class TGraph2DPainter extends ObjectPainter {
          if (lvl_zmin >= lvl_zmax) continue;
 
          const size = Math.floor(countSelected(lvl_zmin, lvl_zmax) / step),
-               index = new Int32Array(size);
-         let pnts = null, select = 0, icnt = 0,
-             err = null, asymm = false, line = null, ierr = 0, iline = 0;
+               index = new Int32Array(size),
+               pnts = this.options.Markers || this.options.Circles ? new PointsCreator(size, fp.webgl, scale/3) : null,
+               err = this.options.Error ? new Float32Array(size*6*3) : null,
+               asymm = err && this.matchObjectType(clTGraph2DAsymmErrors),
+               line = this.options.Line ? new Float32Array((size-1)*6) : null;
 
-         if (this.options.Markers || this.options.Circles)
-            pnts = new PointsCreator(size, fp.webgl, scale/3);
-
-         if (this.options.Error) {
-            err = new Float32Array(size*6*3);
-            asymm = this.matchObjectType(clTGraph2DAsymmErrors);
-          }
-
-         if (this.options.Line)
-            line = new Float32Array((size-1)*6);
+         let select = 0, icnt = 0, ierr = 0, iline = 0;
 
          for (let i = 0; i < graph.fNpoints; ++i) {
             if ((graph.fX[i] < fp.scale_xmin) || (graph.fX[i] > fp.scale_xmax) ||
@@ -1444,11 +1438,9 @@ class TGraph2DPainter extends ObjectPainter {
 
             index[icnt++] = i; // remember point index for tooltip
 
-            const x = fp.grx(graph.fX[i]),
-                y = fp.gry(graph.fY[i]),
-                z = fp.grz(graph.fZ[i]);
+            const x = fp.grx(graph.fX[i]), y = fp.gry(graph.fY[i]), z = fp.grz(graph.fZ[i]);
 
-            if (pnts) pnts.addPoint(x, y, z);
+            pnts?.addPoint(x, y, z);
 
             if (err) {
                err[ierr] = fp.grx(graph.fX[i] - (asymm ? graph.fEXlow[i] : graph.fEX[i]));
@@ -1475,11 +1467,11 @@ class TGraph2DPainter extends ObjectPainter {
             }
 
             if (line) {
-               if (iline>=6) {
+               if (iline >= 6) {
                   line[iline] = line[iline-3];
                   line[iline+1] = line[iline-2];
                   line[iline+2] = line[iline-1];
-                  iline+=3;
+                  iline += 3;
                }
                line[iline] = x;
                line[iline+1] = y;
