@@ -3028,15 +3028,20 @@ class TH2Painter extends THistPainter {
          .append('title')
          .text(d => `${formatValue(d.source.value)} ${labels[d.target.index]} → ${labels[d.source.index]}${d.source.index === d.target.index ? '' : `\n${formatValue(d.target.value)} ${labels[d.source.index]} → ${labels[d.target.index]}`}`);
 
-      if (settings.Zooming && settings.ZoomWheel && !this.isBatchMode())
+      if (settings.Zooming && settings.ZoomWheel && !this.isBatchMode()) {
          this.draw_g.on('wheel', evnt => {
             let cur = d3_pointer(evnt, this.draw_g.node());
             const delta = evnt.wheelDelta ? -evnt.wheelDelta : (evnt.deltaY || evnt.detail);
             if (!this.zoom)
                this.zoom = 1;
             this.zoom *= (delta < 0) ? 0.8 : 1.2;
-            this.interactiveRedraw('pad');
+            this.interactiveRedraw();
          });
+         this.draw_g.on('dblclick', () => {
+            delete this.zoom;
+            this.interactiveRedraw();
+         });
+      }
 
       return true;
    }
