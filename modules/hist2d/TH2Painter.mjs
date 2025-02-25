@@ -1195,8 +1195,8 @@ class TH2Painter extends THistPainter {
             palette = this.getHistPalette(),
             entries = [],
             show_empty = this.options.ShowEmpty,
-            can_merge_x = (handle.xbar2 === 1) && (handle.xbar1 === 0),
-            can_merge_y = (handle.ybar2 === 1) && (handle.ybar1 === 0),
+            can_merge_x = (this.options.Color !== 7) || ((handle.xbar1 === 0) && (handle.xbar2 === 1)),
+            can_merge_y = (this.options.Color !== 7) || ((handle.ybar1 === 0) && (handle.ybar2 === 1)),
             colindx0 = cntr.getPaletteIndex(palette, 0);
 
       let dx, dy, x1, y2, binz, is_zero, colindx, last_entry = null,

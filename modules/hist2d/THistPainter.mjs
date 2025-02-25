@@ -347,6 +347,7 @@ class THistDrawOptions {
       this.Box = this.BoxStyle > 0;
 
       if (d.check('CJUST')) this.Cjust = true;
+      if (d.check('COL7')) this.Color = 7; // special color mode with use of bar offset
       if (d.check('COL')) this.Color = true;
       if (d.check('CHAR')) this.Char = 1;
       if (d.check('ALLFUNC')) this.AllFunc = true;
@@ -2405,23 +2406,22 @@ class THistPainter extends ObjectPainter {
       res.grx = res.i1 < 0 ? {} : new Float32Array(res.i2 + 1);
       res.gry = res.j1 < 0 ? {} : new Float32Array(res.j2 + 1);
 
-      if ((typeof histo.fBarOffset === 'number') && (typeof histo.fBarWidth === 'number') &&
-           (histo.fBarOffset || histo.fBarWidth !== 1000)) {
-             if (histo.fBarOffset <= 1000)
-                res.xbar1 = res.ybar1 = 0.001*histo.fBarOffset;
-             else if (histo.fBarOffset <= 3000)
-                res.xbar1 = 0.001*(histo.fBarOffset-2000);
-             else if (histo.fBarOffset <= 5000)
-                res.ybar1 = 0.001*(histo.fBarOffset-4000);
+      if ((typeof histo.fBarOffset === 'number') && (typeof histo.fBarWidth === 'number') && (histo.fBarOffset || (histo.fBarWidth !== 1000))) {
+         if (histo.fBarOffset <= 1000)
+            res.xbar1 = res.ybar1 = 0.001 * histo.fBarOffset;
+         else if (histo.fBarOffset <= 3000)
+            res.xbar1 = 0.001 * (histo.fBarOffset - 2000);
+         else if (histo.fBarOffset <= 5000)
+            res.ybar1 = 0.001 * (histo.fBarOffset - 4000);
 
-             if (histo.fBarWidth <= 1000) {
-                res.xbar2 = Math.min(1, res.xbar1 + 0.001*histo.fBarWidth);
-                res.ybar2 = Math.min(1, res.ybar1 + 0.001*histo.fBarWidth);
-             } else if (histo.fBarWidth <= 3000)
-                res.xbar2 = Math.min(1, res.xbar1 + 0.001*(histo.fBarWidth-2000));
-             else if (histo.fBarWidth <= 5000)
-                res.ybar2 = Math.min(1, res.ybar1 + 0.001*(histo.fBarWidth-4000));
-         }
+         if (histo.fBarWidth <= 1000) {
+            res.xbar2 = Math.min(1, res.xbar1 + 0.001 * histo.fBarWidth);
+            res.ybar2 = Math.min(1, res.ybar1 + 0.001 * histo.fBarWidth);
+         } else if (histo.fBarWidth <= 3000)
+            res.xbar2 = Math.min(1, res.xbar1 + 0.001 * (histo.fBarWidth - 2000));
+         else if (histo.fBarWidth <= 5000)
+            res.ybar2 = Math.min(1, res.ybar1 + 0.001 * (histo.fBarWidth - 4000));
+      }
 
       if (args.original) {
          res.original = true;
