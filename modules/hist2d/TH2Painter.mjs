@@ -1,6 +1,6 @@
-import { gStyle, createHistogram, createTPolyLine, isFunc, isStr,
+import { gStyle, settings, createHistogram, createTPolyLine, isFunc, isStr,
          clTMultiGraph, clTH1D, clTF2, clTProfile2D, kInspect } from '../core.mjs';
-import { rgb as d3_rgb, chord as d3_chord, arc as d3_arc, ribbon as d3_ribbon } from '../d3.mjs';
+import { pointer as d3_pointer, rgb as d3_rgb, chord as d3_chord, arc as d3_arc, ribbon as d3_ribbon } from '../d3.mjs';
 import { kBlack } from '../base/colors.mjs';
 import { TRandom, floatToString, makeTranslate, addHighlightStyle, getBoxDecorations } from '../base/BasePainter.mjs';
 import { EAxisBits } from '../base/ObjectPainter.mjs';
@@ -2913,7 +2913,15 @@ class TH2Painter extends THistPainter {
 
       let ndig = 0, tickStep = 1;
       const rect = this.getPadPainter().getFrameRect(),
-            palette = this.getHistPalette(),
+            midx = Math.round(rect.x + rect.width/2),
+            midy = Math.round(rect.y + rect.height/2);
+
+      if (this.zoom) {
+         rect.width *= this.zoom;
+         rect.height *= this.zoom;
+      }
+
+      const palette = this.getHistPalette(),
             outerRadius = Math.max(10, Math.min(rect.width, rect.height) * 0.5 - 60),
             innerRadius = Math.max(2, outerRadius - 10),
             data = [], labels = [],
@@ -2953,7 +2961,7 @@ class TH2Painter extends THistPainter {
 
       this.createG();
 
-      makeTranslate(this.draw_g, Math.round(rect.x + rect.width/2), Math.round(rect.y + rect.height/2));
+      makeTranslate(this.draw_g, midx, midy);
 
       const chord = d3_chord()
          .padAngle(10 / innerRadius)
@@ -3019,6 +3027,16 @@ class TH2Painter extends THistPainter {
          .attr('d', ribbon)
          .append('title')
          .text(d => `${formatValue(d.source.value)} ${labels[d.target.index]} → ${labels[d.source.index]}${d.source.index === d.target.index ? '' : `\n${formatValue(d.target.value)} ${labels[d.source.index]} → ${labels[d.target.index]}`}`);
+
+      if (settings.Zooming && settings.ZoomWheel && !this.isBatchMode())
+         this.draw_g.on('wheel', evnt => {
+            let cur = d3_pointer(evnt, this.draw_g.node());
+            const delta = evnt.wheelDelta ? -evnt.wheelDelta : (evnt.deltaY || evnt.detail);
+            if (!this.zoom)
+               this.zoom = 1;
+            this.zoom *= (delta < 0) ? 0.8 : 1.2;
+            this.interactiveRedraw('pad');
+         });
 
       return true;
    }
