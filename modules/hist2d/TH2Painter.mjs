@@ -1931,16 +1931,16 @@ class TH2Painter extends THistPainter {
             scale_y = (handle.gry[handle.j2] - handle.gry[handle.j1])/(handle.j2 - handle.j1 + 1)/2,
             makeLine = (dx, dy) => dx ? (dy ? `l${dx},${dy}` : `h${dx}`) : (dy ? `v${dy}` : ''),
             entries = [];
-      let i, j, dn = 1e-30, dx, dy, xc, yc, cmd = '', plain = '',
-          dxn, dyn, x1, x2, y1, y2, anr, si, co, bincont, colindx;
+      let dn = 1e-30, dx, dy, xc, yc, plain = '',
+          dxn, dyn, x1, x2, y1, y2;
 
       for (let loop = 0; loop < 2; ++loop) {
-         for (i = handle.i1; i < handle.i2; ++i) {
-            for (j = handle.j1; j < handle.j2; ++j) {
+         for (let i = handle.i1; i < handle.i2; ++i) {
+            for (let j = handle.j1; j < handle.j2; ++j) {
                if (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i + 0.5),
                      histo.fYaxis.GetBinCoord(j + 0.5))) continue;
 
-               bincont = histo.getBinContent(i+1, j+1);
+               const bincont = histo.getBinContent(i+1, j+1);
 
                if (i === handle.i1)
                   dx = histo.getBinContent(i+2, j+1) - bincont;
@@ -1971,18 +1971,18 @@ class TH2Painter extends THistPainter {
                   dy = Math.round(y2-y1);
 
                   if (dx || dy) {
-                     cmd = `M${Math.round(x1)},${Math.round(y1)}${makeLine(dx, dy)}`;
+                     let cmd = `M${Math.round(x1)},${Math.round(y1)}${makeLine(dx, dy)}`;
 
                      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-                        anr = Math.sqrt(9/(dx**2 + dy**2));
-                        si = Math.round(anr*(dx + dy));
-                        co = Math.round(anr*(dx - dy));
+                        const anr = Math.sqrt(9/(dx**2 + dy**2)),
+                              si = Math.round(anr*(dx + dy)),
+                              co = Math.round(anr*(dx - dy));
                         if (si || co)
                            cmd += `m${-si},${co}${makeLine(si, -co)}${makeLine(-co, -si)}`;
                      }
 
                      if (palette && cntr) {
-                        colindx = cntr.getPaletteIndex(palette, bincont);
+                        const colindx = cntr.getPaletteIndex(palette, bincont);
                         if (colindx !== null) {
                            let entry = entries[colindx];
                            if (!entry)
@@ -1998,12 +1998,14 @@ class TH2Painter extends THistPainter {
             }
          }
       }
-      if (plain)
+
+      if (plain) {
          this.draw_g
             .append('svg:path')
             .attr('d', plain)
             .style('fill', 'none')
             .call(this.lineatt.func);
+      }
 
       entries.forEach((entry, colindx) => {
          if (entry) {
