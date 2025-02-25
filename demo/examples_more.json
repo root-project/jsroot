@@ -14,7 +14,7 @@
      { "name": "tut4", "file": "tutorials_hist.root", "layout": "grid2x2", "items": ["thstackpalettecolor", "statsEditing", "testSmooth",  "xyplot"], "opts": ["pfc_nostack"], "title": "Macro outputs from $ROOTSYS/tutorials/hist" },
      { "name": "version", "file": "download_versions.root", "item": "c1", "opt": "logy", "title": "Many custom labels on x axis, tutorials/dataframe/df030_SQliteVersionsOfROOT.C" },
      { "name": "mly", "file": "hsimple.root", "item": "hpx;1", "opt": "logy_mly", "title": "enable more log labels on logy scale, testing axis labeling" },
-     { "name": "poisson2", "file": "hsimple.root", "item": "hpx;1", "opt": "poisson_E", "title": "draw histogram errros as poisson2" }
+     { "name": "poisson2", "opt": "poisson_E", "title": "draw histogram errros as poisson2" }
    ],
    "TH2": [
      { "opt": "axis", "file": "hsimple.root", "item": "hpxpy;1", "title": "Draw only histogram axes" },
