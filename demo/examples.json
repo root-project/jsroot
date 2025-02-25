@@ -136,6 +136,7 @@
      { "opt": "", "file": "histpainter6.root", "item": "draw_th3_scat;1", "title": "Default TH3 draw option" },
      { "name": "scat", "asurl": true, "file": "histpainter6.root", "item": "draw_th3_scat;1/h3scat", "opt": "scat", "title": "Scatter plot" },
      { "opt": "box", "file": "histpainter6.root", "item": "draw_th3_box;1/h3box", "interactive": true },
+     { "opt": "box1", "file": "h3_box1.root", "item": "c", "title" : "TH3 box1 drawing with negative bins" },
      { "name": "box2", "file": "hsimple.root", "item": "ntuple", "opt": "px:py:pz;hbins:15;drawopt:box2", "title": "Draw boxes with colors and lines" },
      { "name": "box2z", "file": "hsimple.root", "item": "ntuple", "opt": "px:py:pz;hbins:15;drawopt:box2z", "title": "Draw boxes with colors and lines, add color palette " },
      { "name": "box3", "file": "hsimple.root", "item": "ntuple", "opt": "px:py:pz;hbins:15;drawopt:box3", "title": "Draw boxes only with fill colors - no lines" },
