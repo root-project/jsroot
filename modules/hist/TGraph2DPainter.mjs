@@ -1370,11 +1370,9 @@ class TGraph2DPainter extends ObjectPainter {
       const countSelected = (zmin, zmax) => {
          let cnt = 0;
          for (let i = 0; i < graph.fNpoints; ++i) {
-            if ((graph.fX[i] < fp.scale_xmin) || (graph.fX[i] > fp.scale_xmax) ||
-                (graph.fY[i] < fp.scale_ymin) || (graph.fY[i] > fp.scale_ymax) ||
-                (graph.fZ[i] < zmin) || (graph.fZ[i] >= zmax)) continue;
-
-            ++cnt;
+            if ((graph.fX[i] >= fp.scale_xmin) && (graph.fX[i] <= fp.scale_xmax) &&
+                (graph.fY[i] >= fp.scale_ymin) && (graph.fY[i] <= fp.scale_ymax) &&
+                (graph.fZ[i] >= zmin) && (graph.fZ[i] < zmax)) ++cnt;
          }
          return cnt;
       };
