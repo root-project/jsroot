@@ -1925,11 +1925,14 @@ class TH2Painter extends THistPainter {
       const histo = this.getObject(),
             test_cutg = this.options.cutg,
             handle = this.prepareDraw({ rounding: false }),
+            cntr = this.options.Color ? this.getContour() : null,
+            palette = this.options.Color ? this.getHistPalette() : null,
             scale_x = (handle.grx[handle.i2] - handle.grx[handle.i1])/(handle.i2 - handle.i1 + 1)/2,
             scale_y = (handle.gry[handle.j2] - handle.gry[handle.j1])/(handle.j2 - handle.j1 + 1)/2,
-            makeLine = (dx, dy) => dx ? (dy ? `l${dx},${dy}` : `h${dx}`) : (dy ? `v${dy}` : '');
-      let i, j, dn = 1e-30, dx, dy, xc, yc, cmd = '',
-          dxn, dyn, x1, x2, y1, y2, anr, si, co;
+            makeLine = (dx, dy) => dx ? (dy ? `l${dx},${dy}` : `h${dx}`) : (dy ? `v${dy}` : ''),
+            entries = [];
+      let i, j, dn = 1e-30, dx, dy, xc, yc, cmd = '', plain = '',
+          dxn, dyn, x1, x2, y1, y2, anr, si, co, bincont, colindx;
 
       for (let loop = 0; loop < 2; ++loop) {
          for (i = handle.i1; i < handle.i2; ++i) {
@@ -1937,17 +1940,19 @@ class TH2Painter extends THistPainter {
                if (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i + 0.5),
                      histo.fYaxis.GetBinCoord(j + 0.5))) continue;
 
+               bincont = histo.getBinContent(i+1, j+1);
+
                if (i === handle.i1)
-                  dx = histo.getBinContent(i+2, j+1) - histo.getBinContent(i+1, j+1);
+                  dx = histo.getBinContent(i+2, j+1) - bincont;
                else if (i === handle.i2-1)
-                  dx = histo.getBinContent(i+1, j+1) - histo.getBinContent(i, j+1);
+                  dx = bincont - histo.getBinContent(i, j+1);
                else
                   dx = 0.5*(histo.getBinContent(i+2, j+1) - histo.getBinContent(i, j+1));
 
                if (j === handle.j1)
-                  dy = histo.getBinContent(i+1, j+2) - histo.getBinContent(i+1, j+1);
+                  dy = histo.getBinContent(i+1, j+2) - bincont;
                else if (j === handle.j2-1)
-                  dy = histo.getBinContent(i+1, j+1) - histo.getBinContent(i+1, j);
+                  dy = bincont - histo.getBinContent(i+1, j);
                else
                   dy = 0.5*(histo.getBinContent(i+1, j+2) - histo.getBinContent(i+1, j));
 
@@ -1966,7 +1971,7 @@ class TH2Painter extends THistPainter {
                   dy = Math.round(y2-y1);
 
                   if (dx || dy) {
-                     cmd += `M${Math.round(x1)},${Math.round(y1)}${makeLine(dx, dy)}`;
+                     cmd = `M${Math.round(x1)},${Math.round(y1)}${makeLine(dx, dy)}`;
 
                      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
                         anr = Math.sqrt(9/(dx**2 + dy**2));
@@ -1975,17 +1980,42 @@ class TH2Painter extends THistPainter {
                         if (si || co)
                            cmd += `m${-si},${co}${makeLine(si, -co)}${makeLine(-co, -si)}`;
                      }
+
+                     if (palette && cntr) {
+                        colindx = cntr.getPaletteIndex(palette, bincont);
+                        if (colindx !== null) {
+                           let entry = entries[colindx];
+                           if (!entry)
+                              entries[colindx] = { path: cmd };
+                           else
+                              entry.path += cmd;
+                        }
+                     } else {
+                        plain += cmd;
+                     }
                   }
                }
             }
          }
       }
+      if (plain)
+         this.draw_g
+            .append('svg:path')
+            .attr('d', plain)
+            .style('fill', 'none')
+            .call(this.lineatt.func);
 
-      this.draw_g
-         .append('svg:path')
-         .attr('d', cmd)
-         .style('fill', 'none')
-         .call(this.lineatt.func);
+      entries.forEach((entry, colindx) => {
+         if (entry) {
+            const col0 = this.lineatt.color;
+            this.lineatt.color = palette.getColor(colindx);
+            this.draw_g.append('svg:path')
+                  .attr('fill', 'none')
+                  .attr('d', entry.path)
+                  .call(this.lineatt.func);
+            this.lineatt.color = col0;
+         }
+      });
 
       return handle;
    }
@@ -2731,12 +2761,12 @@ class TH2Painter extends THistPainter {
 
          if (this.options.System === kPOLAR)
             handle = this.drawBinsPolar();
+         else if (this.options.Arrow)
+            handle = this.drawBinsArrow();
          else if (this.options.Color)
             handle = this.drawBinsColor();
          else if (this.options.Box)
             handle = this.drawBinsBox();
-         else if (this.options.Arrow)
-            handle = this.drawBinsArrow();
          else if (this.options.Proj)
             handle = this.drawBinsProjected();
          else if (this.options.Contour)
