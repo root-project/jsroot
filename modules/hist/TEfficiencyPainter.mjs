@@ -152,9 +152,8 @@ class TEfficiencyPainter extends ObjectPainter {
 
       for (let i = 0; i < nbinsx+2; ++i) {
          for (let j = 0; j < nbinsy+2; ++j) {
-            const bin = hist.getBin(i, j),
-                value = this.getEfficiency(eff, bin);
-            hist.fArray[bin] = value;
+            const bin = hist.getBin(i, j);
+            hist.fArray[bin] = this.getEfficiency(eff, bin);
          }
       }
 
