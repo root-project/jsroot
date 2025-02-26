@@ -17,6 +17,12 @@ export default [
         'one-var': ['warn', 'consecutive'],
         'no-new-func': 'off',
         'no-unused-vars': 'error',
+        'no-use-before-define': ['error', {
+           functions: true,
+           classes: true,
+           variables: true,
+           allowNamedExports: false
+        }],
 
         // moved to @stylistic/js
         '@stylistic/js/semi': 'warn',
