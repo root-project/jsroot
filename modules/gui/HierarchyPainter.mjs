@@ -149,34 +149,6 @@ function folderHierarchy(item, obj) {
    return true;
 }
 
-/** @summary Create hierarchy elements for TTask object
-  * @private */
-function taskHierarchy(item, obj) {
-   // function can be used for different derived classes
-   // we show not only child tasks, but all complex data members
-
-   if (!obj?.fTasks) return false;
-
-   objectHierarchy(item, obj, { exclude: ['fTasks', 'fName'] });
-
-   if ((obj.fTasks.arr.length === 0) && (item._childs.length === 0)) {
-      item._more = false;
-      return true;
-   }
-
-   // item._childs = [];
-
-   for (let i = 0; i < obj.fTasks.arr.length; ++i) {
-      const chld = obj.fTasks.arr[i];
-      item._childs.push({
-         _name: chld.fName,
-         _kind: prROOT + chld._typename,
-         _obj: chld
-      });
-   }
-   return true;
-}
-
 /** @summary Create hierarchy elements for TList object
   * @private */
 function listHierarchy(folder, lst) {
@@ -553,6 +525,33 @@ function objectHierarchy(top, obj, args = undefined) {
 
    if (compress && lastitem && (cnt > 0))
       lastitem._name += '..' + lastkey;
+
+   return true;
+}
+
+/** @summary Create hierarchy elements for TTask object
+  * @desc function can be used for different derived classes
+  * we show not only child tasks, but all complex data members
+  * @private */
+function taskHierarchy(item, obj) {
+   if (!obj?.fTasks)
+      return false;
+
+   objectHierarchy(item, obj, { exclude: ['fTasks', 'fName'] });
+
+   if ((obj.fTasks.arr.length === 0) && (item._childs.length === 0)) {
+      item._more = false;
+      return true;
+   }
+
+   for (let i = 0; i < obj.fTasks.arr.length; ++i) {
+      const chld = obj.fTasks.arr[i];
+      item._childs.push({
+         _name: chld.fName,
+         _kind: prROOT + chld._typename,
+         _obj: chld
+      });
+   }
 
    return true;
 }
@@ -1212,7 +1211,7 @@ class HierarchyPainter extends BasePainter {
       d3cont.attr('item', itemname);
 
       // line with all html elements for this item (excluding childs)
-      const d3line = d3cont.append('div').attr('class', 'h_line');
+      const h = this, d3line = d3cont.append('div').attr('class', 'h_line');
 
       // build indent
       let prnt = isroot ? null : hitem._parent, upcnt = 1;
@@ -1233,8 +1232,6 @@ class HierarchyPainter extends BasePainter {
          plusminus = true;
       } else
          icon_class = 'img_join';
-
-      const h = this;
 
       if (icon_class) {
          if (break_list || this.isLastSibling(hitem)) icon_class += 'bottom';
@@ -3948,33 +3945,7 @@ class HierarchyPainter extends BasePainter {
 
 } // class HierarchyPainter
 
-
-/** @summary Show object in inspector for provided object
-  * @protected */
-ObjectPainter.prototype.showInspector = function(opt, obj) {
-   if (opt === 'check')
-      return true;
-
-   const main = this.selectDom(),
-         rect = getElementRect(main),
-         w = Math.round(rect.width * 0.05) + 'px',
-         h = Math.round(rect.height * 0.05) + 'px',
-         id = 'root_inspector_' + internals.id_counter++;
-
-   main.append('div')
-       .attr('id', id)
-       .attr('class', 'jsroot_inspector')
-       .style('position', 'absolute')
-       .style('top', h)
-       .style('bottom', h)
-       .style('left', w)
-       .style('right', w);
-
-   if (!obj?._typename)
-      obj = isFunc(this.getPrimaryObject) ? this.getPrimaryObject() : this.getObject();
-
-   return drawInspector(id, obj, opt);
-};
+// ======================================================================================
 
 
 /** @summary Display streamer info
@@ -3998,8 +3969,6 @@ async function drawStreamerInfo(dom, lst) {
       return painter;
    });
 }
-
-// ======================================================================================
 
 /** @summary Display inspector
   * @private */
@@ -4064,6 +4033,35 @@ async function drawInspector(dom, obj, opt) {
       return painter.exapndToLevel(expand_level);
    });
 }
+
+
+/** @summary Show object in inspector for provided object
+  * @protected */
+ObjectPainter.prototype.showInspector = function(opt, obj) {
+   if (opt === 'check')
+      return true;
+
+   const main = this.selectDom(),
+         rect = getElementRect(main),
+         w = Math.round(rect.width * 0.05) + 'px',
+         h = Math.round(rect.height * 0.05) + 'px',
+         id = 'root_inspector_' + internals.id_counter++;
+
+   main.append('div')
+       .attr('id', id)
+       .attr('class', 'jsroot_inspector')
+       .style('position', 'absolute')
+       .style('top', h)
+       .style('bottom', h)
+       .style('left', w)
+       .style('right', w);
+
+   if (!obj?._typename)
+      obj = isFunc(this.getPrimaryObject) ? this.getPrimaryObject() : this.getObject();
+
+   return drawInspector(id, obj, opt);
+};
+
 
 internals.drawInspector = drawInspector;
 

@@ -812,14 +812,7 @@ class TH1Painter extends THistPainter {
             }
          }
 
-         const fill_for_interactive = want_tooltip && this.fillatt.empty() && draw_hist && !draw_markers && !show_line && !show_curve && !this._ignore_frame,
-         add_hist = () => {
-            this.draw_g.append('svg:path')
-                     .attr('d', res + ((!this.fillatt.empty() || fill_for_interactive) ? close_path : ''))
-                     .style('stroke-linejoin', 'miter')
-                     .call(this.lineatt.func)
-                     .call(this.fillatt.func);
-         };
+         const fill_for_interactive = want_tooltip && this.fillatt.empty() && draw_hist && !draw_markers && !show_line && !show_curve && !this._ignore_frame;
          let h0 = height + 3;
          if (!fill_for_interactive) {
             const gry0 = Math.round(funcs.gry(0));
@@ -828,7 +821,13 @@ class TH1Painter extends THistPainter {
             else if (gry0 < height)
                h0 = gry0;
          }
-         const close_path = `L${currx},${h0}H${startx}Z`;
+         const close_path = `L${currx},${h0}H${startx}Z`, add_hist = () => {
+            this.draw_g.append('svg:path')
+                       .attr('d', res + ((!this.fillatt.empty() || fill_for_interactive) ? close_path : ''))
+                       .style('stroke-linejoin', 'miter')
+                       .call(this.lineatt.func)
+                       .call(this.fillatt.func);
+         };
 
          if (res && draw_hist && !this.fillatt.empty()) {
             add_hist();
