@@ -2072,29 +2072,26 @@ function createServerGeometry(rd, nsegm) {
 
    rd.nsegm = nsegm;
 
-   let g = null;
+   let geom;
 
    if (rd.shape) {
       // case when TGeoShape provided as is
-      g = createGeometry(rd.shape);
+      geom = createGeometry(rd.shape);
    } else {
       if (!rd.raw?.buffer) {
          console.error('No raw data at all');
          return null;
       }
 
-      if (rd.sz)
-         g = makeEveGeometry(rd);
-      else
-         g = makeViewerGeometry(rd);
+      geom = rd.sz ? makeEveGeometry(rd) : makeViewerGeometry(rd);
    }
 
    // shape handle is similar to created in TGeoPainter
    return {
       _typename: '$$Shape$$', // indicate that shape can be used as is
       ready: true,
-      geom: g,
-      nfaces: numGeometryFaces(g)
+      geom,
+      nfaces: numGeometryFaces(geom)
    };
 }
 
@@ -2543,7 +2540,7 @@ class ClonedNodes {
       this.origin.push(obj);
       if (sublevel > this.maxdepth) this.maxdepth = sublevel;
 
-      let chlds = null;
+      let chlds;
       if (kind === kindGeo)
          chlds = obj.fVolume?.fNodes?.arr || null;
       else
@@ -2555,7 +2552,8 @@ class ClonedNodes {
             this.createClones(chlds[i], sublevel + 1, kind);
       }
 
-      if (sublevel > 1) return;
+      if (sublevel > 1)
+         return;
 
       this.nodes = [];
 
@@ -3047,13 +3045,15 @@ class ClonedNodes {
 
    /** @summary Returns true if stack includes at any place provided nodeid */
    isIdInStack(nodeid, stack) {
-      if (!nodeid) return true;
+      if (!nodeid)
+         return true;
 
-      let node = this.nodes[0], id = 0;
+      let node = this.nodes[0];
 
       for (let lvl = 0; lvl < stack.length; ++lvl) {
-         id = node.chlds[stack[lvl]];
-         if (id === nodeid) return true;
+         const id = node.chlds[stack[lvl]];
+         if (id === nodeid)
+            return true;
          node = this.nodes[id];
       }
 
@@ -3569,7 +3569,7 @@ class ClonedNodes {
 
       this.actual_level = arg.vislvl; // not used, can be shown somewhere in the gui
 
-      let minVol = 0, maxVol = 0, camVol = -1, camFact = 10, sortidcut = this.nodes.length + 1;
+      let minVol = 0, maxVol, camVol = -1, camFact = 10, sortidcut = this.nodes.length + 1;
 
       if (arg.facecnt > maxnumfaces) {
          const bignumfaces = maxnumfaces * (frustum ? 0.8 : 1.0),
