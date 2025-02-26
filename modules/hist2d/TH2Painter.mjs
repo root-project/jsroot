@@ -3023,7 +3023,7 @@ class TH2Painter extends THistPainter {
          .append('title')
          .text(d => `${formatValue(d.source.value)} ${labels[d.target.index]} → ${labels[d.source.index]}${d.source.index === d.target.index ? '' : `\n${formatValue(d.target.value)} ${labels[d.source.index]} → ${labels[d.target.index]}`}`);
 
-      if (settings.Zooming && settings.ZoomWheel && !this.isBatchMode()) {
+      if (!this.isBatchMode() && settings.Zooming && settings.ZoomWheel) {
          this.draw_g.insert('ellipse', ':first-child')
                     .attr('cx', 0)
                     .attr('cy', 0)
@@ -3039,25 +3039,19 @@ class TH2Painter extends THistPainter {
                this._shifty = 0;
             }
             const pos = d3_pointer(evnt, this.draw_g.node()),
-                  delta = evnt.wheelDelta ? -evnt.wheelDelta : (evnt.deltaY || evnt.detail);
+                  delta = evnt.wheelDelta ? -evnt.wheelDelta : (evnt.deltaY || evnt.detail),
+                  prev_zoom = this._zoom;
 
-            const pixel_dx_old = pos[0] * this._zoom,
-                  pixel_dy_old = pos[1] * this._zoom;
             this._zoom *= (delta > 0) ? 0.8 : 1.2;
-
-            const pixel_dx_new = pos[0] * this._zoom,
-                  pixel_dy_new = pos[1] * this._zoom;
-
-            this._shiftx += (pixel_dx_old - pixel_dx_new);
-            this._shifty += (pixel_dy_old - pixel_dy_new);
+            this._shiftx += pos[0] * (prev_zoom - this._zoom);
+            this._shifty += pos[1] * (prev_zoom - this._zoom);
 
             makeTranslate(this.draw_g, midx + this._shiftx, midy + this._shifty, this._zoom);
-
          }).on('dblclick', () => {
             delete this._zoom;
             delete this._shiftx;
             delete this._shifty;
-            makeTranslate(this.draw_g, midx, midy, this._zoom);
+            makeTranslate(this.draw_g, midx, midy);
          });
       }
 
