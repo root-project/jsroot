@@ -793,7 +793,6 @@ class TPavePainter extends ObjectPainter {
 
             const lopt = entry.fOption.toLowerCase(),
                   icol = i % ncols, irow = (i - icol) / ncols,
-                  column_width = column_pos[icol + 1] - column_pos[icol],
                   x0 = Math.round(column_pos[icol]),
                   y0 = Math.round(padding_y + irow * (row_height + gap_y)),
                   tpos_x = Math.round(x0 + column_boxwidth),

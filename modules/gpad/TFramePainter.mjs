@@ -939,11 +939,11 @@ const TooltipHandler = {
    shiftMoveHanlder(evnt, pos0) {
       if (evnt.buttons === this._shifting_buttons) {
          const frame = this.getFrameSvg(),
-             pos = d3_pointer(evnt, frame.node()),
-             main_svg = this.draw_g.selectChild('.main_layer'),
-             dx = pos0[0] - pos[0],
-             dy = (this.scales_ndim === 1) ? 0 : pos0[1] - pos[1],
-             w = this.getFrameWidth(), h = this.getFrameHeight();
+               pos = d3_pointer(evnt, frame.node()),
+               main_svg = this.draw_g.selectChild('.main_layer'),
+               dx = pos0[0] - pos[0],
+               dy = (this.scales_ndim === 1) ? 0 : pos0[1] - pos[1],
+               w = this.getFrameWidth(), h = this.getFrameHeight();
 
          this._shifting_dx = dx;
          this._shifting_dy = dy;
@@ -1570,7 +1570,7 @@ const TooltipHandler = {
 
       try {
         pos = get_touch_pointers(evnt, frame.node())[0];
-      } catch (err) {
+      } catch {
         pos = [0, 0];
         if (evnt?.changedTouches)
            pos = [evnt.changedTouches[0].clientX, evnt.changedTouches[0].clientY];

@@ -126,7 +126,7 @@ const AxisPainterMethods = {
             const ms = dt.getMilliseconds();
             res = new Date(dt.toLocaleString('en-US', { timeZone: settings.TimeZone }));
             res.setMilliseconds(ms);
-         } catch (err) {
+         } catch {
             res = dt;
          }
       }

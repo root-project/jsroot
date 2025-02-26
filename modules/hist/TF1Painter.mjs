@@ -167,7 +167,7 @@ class TF1Painter extends TH1Painter {
             let y = 0;
             try {
                y = tf1.evalPar(x);
-            } catch (err) {
+            } catch {
                iserror = true;
             }
 

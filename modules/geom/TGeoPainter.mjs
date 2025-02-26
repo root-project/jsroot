@@ -3849,7 +3849,8 @@ class TGeoPainter extends ObjectPainter {
          while (indx < lines.length) {
             let line = lines[indx++].trim();
 
-            if (line.indexOf('//') === 0) continue;
+            if (line.indexOf('//') === 0)
+               continue;
 
             if (line.indexOf('gGeoManager') < 0) continue;
             line = line.replace('->GetVolume', '.GetVolume');
@@ -3860,12 +3861,13 @@ class TGeoPainter extends ObjectPainter {
             line = line.replace('->SetTransparency', '.SetTransparency');
             line = line.replace('->SetLineColor', '.SetLineColor');
             line = line.replace('->SetVisLevel', '.SetVisLevel');
-            if (line.indexOf('->') >= 0) continue;
+            if (line.indexOf('->') >= 0)
+               continue;
 
             try {
                const func = new Function('gGeoManager', line);
                func(mgr);
-            } catch (err) {
+            } catch {
                console.error(`Problem by processing ${line}`);
             }
          }

@@ -138,7 +138,7 @@ class RPadPainter extends RObjectPainter {
    getPadScale() { return this.#pad_scale || 1; }
 
    /** @summary return pad log state x or y are allowed */
-   getPadLog(name) { return false; }
+   getPadLog(/* name */) { return false; }
 
    /** @summary get pad rect */
    getPadRect() {
@@ -246,7 +246,7 @@ class RPadPainter extends RObjectPainter {
    /** @summary try to find object by name in list of pad primitives
      * @desc used to find title drawing
      * @private */
-   findInPrimitives(objname, objtype) {
+   findInPrimitives(/* objname, objtype */) {
       console.warn('findInPrimitives not implemented for RPad');
       return null;
    }
@@ -652,7 +652,7 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary Add pad interactive features like dragging and resize
     * @private */
-   addPadInteractive(cleanup = false) {
+   addPadInteractive(/* cleanup = false */) {
       if (isFunc(this.$userInteractive)) {
          this.$userInteractive();
          delete this.$userInteractive;

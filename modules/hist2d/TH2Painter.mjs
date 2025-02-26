@@ -2921,7 +2921,6 @@ class TH2Painter extends THistPainter {
             outerRadius = Math.max(10, Math.min(rect.width, rect.height) * 0.5 - 60),
             innerRadius = Math.max(2, outerRadius - 10),
             data = [], labels = [],
-            getColor = indx => palette.calcColor(indx, used.length),
             formatValue = v => v.toString(),
             formatTicks = v => ndig > 3 ? v.toExponential(0) : v.toFixed(ndig),
             d3_descending = (a, b) => { return b < a ? -1 : b > a ? 1 : b >= a ? 0 : Number.NaN; };

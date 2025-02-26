@@ -78,7 +78,7 @@ function drawTH2PolyLego(painter) {
             try {
                if (pnts.length > 2)
                   faces = THREE.ShapeUtils.triangulateShape(pnts, []);
-            } catch (e) {
+            } catch {
                faces = null;
             }
 

@@ -826,7 +826,7 @@ class TGraphDelaunay {
       let graph = null,     // current graph
           // Find all the segments making the contour
           r21, r20, r10, p0, p1, p2, x0, y0, z0, x1, y1, z1, x2, y2, z2,
-          i, it, i0, i1, i2, nbSeg = 0,
+          it, i0, i1, i2, nbSeg = 0,
           // Allocate space to store the segments. They cannot be more than the
           // number of triangles.
           xs0c, ys0c, xs1c, ys1c;
@@ -1056,7 +1056,7 @@ function graph2DTooltip(intersect) {
 class TGraph2DPainter extends ObjectPainter {
 
    /** @summary Decode options string  */
-   decodeOptions(opt, _gr) {
+   decodeOptions(opt) {
       const d = new DrawOptions(opt);
 
       if (!this.options)

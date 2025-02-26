@@ -1,5 +1,5 @@
 import { settings, isFunc, isStr, gStyle, nsREX } from '../core.mjs';
-import { floatToString, makeTranslate } from '../base/BasePainter.mjs';
+import { makeTranslate } from '../base/BasePainter.mjs';
 import { RObjectPainter } from '../base/RObjectPainter.mjs';
 import { ensureRCanvas } from '../gpad/RCanvasPainter.mjs';
 import { addDragHandler } from '../gpad/TFramePainter.mjs';
