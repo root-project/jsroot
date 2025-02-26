@@ -2621,7 +2621,7 @@ class TBuffer {
 /** @summary Direct streamer for TBasket,
   * @desc uses TBuffer therefore defined later
   * @private */
-DirectStreamers.TBasket = function(buf, obj) {
+DirectStreamers[clTBasket] = function(buf, obj) {
    buf.classStreamer(obj, clTKey);
    const ver = buf.readVersion();
    obj.fBufferSize = buf.ntoi4();
