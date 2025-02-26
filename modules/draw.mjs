@@ -25,13 +25,7 @@ async function import_tree() { return import('./draw/TTree.mjs'); }
 
 async function import_h() { return import('./gui/HierarchyPainter.mjs'); }
 
-async function import_geo() {
-   return import('./geom/TGeoPainter.mjs').then(geo => {
-      const handle = getDrawHandle(prROOT + 'TGeoVolumeAssembly');
-      if (handle) handle.icon = 'img_geoassembly';
-      return geo;
-   });
-}
+let import_v7 = null, import_geo = null;
 
 const clTGraph2D = 'TGraph2D', clTH2Poly = 'TH2Poly', clTEllipse = 'TEllipse',
       clTSpline3 = 'TSpline3', clTTree = 'TTree', clTCanvasWebSnapshot = 'TCanvasWebSnapshot',
@@ -153,25 +147,25 @@ drawFuncs = { lst: [
    { name: 'Session', icon: 'img_globe' },
    { name: 'kind:TopFolder', icon: 'img_base' },
    { name: 'kind:Folder', icon: 'img_folder', icon2: 'img_folderopen', noinspect: true },
-   { name: nsREX+'RCanvas', icon: 'img_canvas', class: () => init_v7().then(h => h.RCanvasPainter), opt: '', expand_item: fPrimitives },
-   { name: nsREX+'RCanvasDisplayItem', icon: 'img_canvas', draw: () => init_v7().then(h => h.drawRPadSnapshot), opt: '', expand_item: fPrimitives },
-   { name: nsREX+'RHist1Drawable', icon: 'img_histo1d', class: () => init_v7('rh1').then(h => h.RH1Painter), opt: '' },
-   { name: nsREX+'RHist2Drawable', icon: 'img_histo2d', class: () => init_v7('rh2').then(h => h.RH2Painter), opt: '' },
-   { name: nsREX+'RHist3Drawable', icon: 'img_histo3d', class: () => init_v7('rh3').then(h => h.RH3Painter), opt: '' },
-   { name: nsREX+'RHistDisplayItem', icon: 'img_histo1d', draw: () => init_v7('rh3').then(h => h.drawHistDisplayItem), opt: '' },
-   { name: nsREX+'RText', icon: 'img_text', draw: () => init_v7('more').then(h => h.drawText), opt: '', direct: 'v7', csstype: 'text' },
-   { name: nsREX+'RFrameTitle', icon: 'img_text', draw: () => init_v7().then(h => h.drawRFrameTitle), opt: '', direct: 'v7', csstype: 'title' },
-   { name: nsREX+'RPaletteDrawable', icon: 'img_text', class: () => init_v7('more').then(h => h.RPalettePainter), opt: '' },
-   { name: nsREX+'RDisplayHistStat', icon: 'img_pavetext', class: () => init_v7('pave').then(h => h.RHistStatsPainter), opt: '' },
-   { name: nsREX+'RLine', icon: 'img_graph', draw: () => init_v7('more').then(h => h.drawLine), opt: '', direct: 'v7', csstype: 'line' },
-   { name: nsREX+'RBox', icon: 'img_graph', draw: () => init_v7('more').then(h => h.drawBox), opt: '', direct: 'v7', csstype: 'box' },
-   { name: nsREX+'RMarker', icon: 'img_graph', draw: () => init_v7('more').then(h => h.drawMarker), opt: '', direct: 'v7', csstype: 'marker' },
-   { name: nsREX+'RPave', icon: 'img_pavetext', class: () => init_v7('pave').then(h => h.RPavePainter), opt: '' },
-   { name: nsREX+'RLegend', icon: 'img_graph', class: () => init_v7('pave').then(h => h.RLegendPainter), opt: '' },
-   { name: nsREX+'RPaveText', icon: 'img_pavetext', class: () => init_v7('pave').then(h => h.RPaveTextPainter), opt: '' },
-   { name: nsREX+'RFrame', icon: 'img_frame', draw: () => init_v7().then(h => h.drawRFrame), opt: '' },
-   { name: nsREX+'RFont', icon: 'img_text', draw: () => init_v7().then(h => h.drawRFont), opt: '', direct: 'v7', csstype: 'font' },
-   { name: nsREX+'RAxisDrawable', icon: 'img_frame', draw: () => init_v7().then(h => h.drawRAxis), opt: '' }
+   { name: nsREX+'RCanvas', icon: 'img_canvas', class: () => import_v7().then(h => h.RCanvasPainter), opt: '', expand_item: fPrimitives },
+   { name: nsREX+'RCanvasDisplayItem', icon: 'img_canvas', draw: () => import_v7().then(h => h.drawRPadSnapshot), opt: '', expand_item: fPrimitives },
+   { name: nsREX+'RHist1Drawable', icon: 'img_histo1d', class: () => import_v7('rh1').then(h => h.RH1Painter), opt: '' },
+   { name: nsREX+'RHist2Drawable', icon: 'img_histo2d', class: () => import_v7('rh2').then(h => h.RH2Painter), opt: '' },
+   { name: nsREX+'RHist3Drawable', icon: 'img_histo3d', class: () => import_v7('rh3').then(h => h.RH3Painter), opt: '' },
+   { name: nsREX+'RHistDisplayItem', icon: 'img_histo1d', draw: () => import_v7('rh3').then(h => h.drawHistDisplayItem), opt: '' },
+   { name: nsREX+'RText', icon: 'img_text', draw: () => import_v7('more').then(h => h.drawText), opt: '', direct: 'v7', csstype: 'text' },
+   { name: nsREX+'RFrameTitle', icon: 'img_text', draw: () => import_v7().then(h => h.drawRFrameTitle), opt: '', direct: 'v7', csstype: 'title' },
+   { name: nsREX+'RPaletteDrawable', icon: 'img_text', class: () => import_v7('more').then(h => h.RPalettePainter), opt: '' },
+   { name: nsREX+'RDisplayHistStat', icon: 'img_pavetext', class: () => import_v7('pave').then(h => h.RHistStatsPainter), opt: '' },
+   { name: nsREX+'RLine', icon: 'img_graph', draw: () => import_v7('more').then(h => h.drawLine), opt: '', direct: 'v7', csstype: 'line' },
+   { name: nsREX+'RBox', icon: 'img_graph', draw: () => import_v7('more').then(h => h.drawBox), opt: '', direct: 'v7', csstype: 'box' },
+   { name: nsREX+'RMarker', icon: 'img_graph', draw: () => import_v7('more').then(h => h.drawMarker), opt: '', direct: 'v7', csstype: 'marker' },
+   { name: nsREX+'RPave', icon: 'img_pavetext', class: () => import_v7('pave').then(h => h.RPavePainter), opt: '' },
+   { name: nsREX+'RLegend', icon: 'img_graph', class: () => import_v7('pave').then(h => h.RLegendPainter), opt: '' },
+   { name: nsREX+'RPaveText', icon: 'img_pavetext', class: () => import_v7('pave').then(h => h.RPaveTextPainter), opt: '' },
+   { name: nsREX+'RFrame', icon: 'img_frame', draw: () => import_v7().then(h => h.drawRFrame), opt: '' },
+   { name: nsREX+'RFont', icon: 'img_text', draw: () => import_v7().then(h => h.drawRFont), opt: '', direct: 'v7', csstype: 'font' },
+   { name: nsREX+'RAxisDrawable', icon: 'img_frame', draw: () => import_v7().then(h => h.drawRAxis), opt: '' }
 ], cache: {} };
 
 
@@ -710,8 +704,16 @@ function assignPadPainterDraw(PadPainterClass) {
 // only now one can draw primitives in the canvas
 assignPadPainterDraw(TPadPainter);
 
+import_geo = async function() {
+   return import('./geom/TGeoPainter.mjs').then(geo => {
+      const handle = getDrawHandle(prROOT + 'TGeoVolumeAssembly');
+      if (handle) handle.icon = 'img_geoassembly';
+      return geo;
+   });
+};
+
 // load v7 only on demand
-async function init_v7(arg) {
+import_v7 = async function(arg) {
    return import('./gpad/RCanvasPainter.mjs').then(h => {
       // only now one can draw primitives in the canvas
       assignPadPainterDraw(h.RPadPainter);
@@ -724,8 +726,7 @@ async function init_v7(arg) {
       }
       return h;
    });
-}
-
+};
 
 // to avoid cross-dependency between modules
 Object.assign(internals, { addStreamerInfosForPainter, addDrawFunc, setDefaultDrawOpt, makePDF });
