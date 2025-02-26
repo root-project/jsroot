@@ -1,10 +1,17 @@
 import stylisticJs from '@stylistic/eslint-plugin-js';
 
+import globals from 'globals';
+
 export default [
   {
     languageOptions: {
-      ecmaVersion: 'latest',
-      sourceType: 'module'
+       ecmaVersion: 'latest',
+       sourceType: 'module',
+       globals: {
+         ...globals.browser,
+         ...globals.node,
+         MathJax: 'readonly'
+    }
     },
     plugins: {
       '@stylistic/js': stylisticJs
@@ -28,6 +35,7 @@ export default [
         'no-constant-condition': 'error',
         'no-unmodified-loop-condition': 'error',
         'for-direction': 'error',
+        'no-undef': 'warn',
 
         // moved to @stylistic/js
         '@stylistic/js/semi': 'warn',
