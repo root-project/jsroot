@@ -130,7 +130,7 @@ class ObjectPainter extends BasePainter {
          return arg === clname;
       if (isStr(arg._typename))
          return arg._typename === clname;
-      return !!clname.match(arg);
+      return Boolean(clname.match(arg));
    }
 
    /** @summary Change item name
@@ -355,7 +355,7 @@ class ObjectPainter extends BasePainter {
                     .attr('objtype', (clname || 'type').replace(/[^\w]/g, '_'));
       }
 
-      this.draw_g.property('in_frame', !!frame_layer); // indicates coordinate system
+      this.draw_g.property('in_frame', Boolean(frame_layer)); // indicates coordinate system
 
       return this.draw_g;
    }

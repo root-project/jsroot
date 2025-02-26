@@ -957,7 +957,7 @@ async function connectWebWindow(arg) {
    const main = new Promise(resolveFunc => {
       const handle = new WebWindowHandle(arg.socket_kind, arg.credits);
       handle.setUserArgs(arg.user_args);
-      handle._can_modify_url = !!d_key; // if key appears in URL, we can put there new key
+      handle._can_modify_url = Boolean(d_key); // if key appears in URL, we can put there new key
       if (arg.href)
          handle.setHRef(arg.href); // apply href now  while connect can be called from other place
       else {

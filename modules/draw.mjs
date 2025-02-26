@@ -303,7 +303,7 @@ function getDrawSettings(kind, selector) {
 
    res.inspect = !noinspect;
    res.expand = canexpand;
-   res.draw = !!res.opts;
+   res.draw = Boolean(res.opts);
 
    return res;
 }

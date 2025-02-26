@@ -133,7 +133,7 @@ class FontHandler {
       return loadFontFile(this.cfg.file).then(base64 => {
          this.cfg.base64 = this.base64 = base64;
          this.format = 'ttf';
-         return !!base64;
+         return Boolean(base64);
       });
    }
 

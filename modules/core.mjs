@@ -13,7 +13,7 @@ version = version_id + ' ' + version_date,
 
 /** @summary Is node.js flag
   * @private */
-nodejs = !!((typeof process === 'object') && process.versions?.node && process.versions.v8),
+nodejs = Boolean((typeof process === 'object') && process.versions?.node && process.versions.v8),
 
 /** @summary internal data
   * @private */
@@ -94,7 +94,7 @@ function isBatchMode() { return batch_mode; }
 
 /** @summary Set batch mode
   * @private */
-function setBatchMode(on) { batch_mode = !!on; }
+function setBatchMode(on) { batch_mode = Boolean(on); }
 
 /** @summary Indicates if running inside Node.js */
 function isNodeJs() { return nodejs; }
@@ -128,7 +128,7 @@ if ((typeof document !== 'undefined') && (typeof window !== 'undefined') && (typ
    } else {
       browser.isFirefox = navigator.userAgent.indexOf('Firefox') >= 0;
       browser.isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
-      browser.isChrome = !!window.chrome;
+      browser.isChrome = Boolean(window.chrome);
       browser.isChromeHeadless = navigator.userAgent.indexOf('HeadlessChrome') >= 0;
       browser.chromeVersion = (browser.isChrome || browser.isChromeHeadless) ? parseInt(navigator.userAgent.match(/Chrom(?:e|ium)\/([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/)[1]) : 0;
       browser.isWin = navigator.userAgent.indexOf('Windows') >= 0;
