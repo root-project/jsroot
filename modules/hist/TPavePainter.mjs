@@ -1306,9 +1306,9 @@ class TPavePainter extends ObjectPainter {
             });
          });
          const addStatOpt = (pos, name) => {
-            let opt = (pos < 10) ? pave.fOptStat : pave.fOptFit;
-            opt = parseInt(parseInt(opt) / parseInt(Math.pow(10, pos % 10))) % 10;
-            menu.addchk(opt, name, opt * 100 + pos, arg => {
+            let sopt = (pos < 10) ? pave.fOptStat : pave.fOptFit;
+            sopt = parseInt(parseInt(sopt) / parseInt(Math.pow(10, pos % 10))) % 10;
+            menu.addchk(sopt, name, sopt * 100 + pos, arg => {
                const oldopt = parseInt(arg / 100);
                let newopt = (arg % 100 < 10) ? pave.fOptStat : pave.fOptFit;
                newopt -= (oldopt > 0 ? oldopt : -1) * parseInt(Math.pow(10, arg % 10));
