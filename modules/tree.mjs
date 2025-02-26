@@ -480,7 +480,7 @@ class TDrawVariable {
 
       this.code = (only_branch?.fName ?? '') + code;
 
-      let pos = 0, pos2 = 0, br = null;
+      let pos = 0, pos2 = 0, br;
       while ((pos < code.length) || only_branch) {
          let arriter = [];
 
@@ -866,7 +866,7 @@ class TDrawSelector extends TSelector {
       // parse option for histogram creation
       this.hist_title = `drawing '${expr}' from ${tree.fName}`;
 
-      let pos = 0;
+      let pos;
       if (args.cut)
          cut = args.cut;
       else {
@@ -1588,7 +1588,7 @@ async function treeProcess(tree, selector, args) {
       process_arrays: true // one can process all branches as arrays
    }, createLeafElem = (leaf, name) => {
       // function creates TStreamerElement which corresponds to the elementary leaf
-      let datakind = 0;
+      let datakind;
       switch (leaf._typename) {
          case 'TLeafF': datakind = kFloat; break;
          case 'TLeafD': datakind = kDouble; break;
@@ -1712,7 +1712,7 @@ async function treeProcess(tree, selector, args) {
       let elem = null, // TStreamerElement used to create reader
           member = null, // member for actual reading of the branch
           child_scan = 0, // scan child branches after main branch is appended
-          item_cnt = null, item_cnt2 = null, object_class = '';
+          item_cnt = null, item_cnt2 = null, object_class;
 
       if (branch.fBranchCount) {
          item_cnt = findInHandle(branch.fBranchCount);

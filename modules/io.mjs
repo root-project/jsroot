@@ -697,12 +697,14 @@ function createStreamerElement(name, typename, file) {
 function readVectorElement(buf) {
    if (this.member_wise) {
       const n = buf.ntou4(), ver = this.stl_version;
-      let streamer = null;
 
-      if (n === 0) return []; // for empty vector no need to search split streamers
+      if (n === 0)
+         return []; // for empty vector no need to search split streamers
 
       if (n > 1000000)
          throw new Error(`member-wise streaming of ${this.conttype} num ${n} member ${this.name}`);
+
+      let streamer;
 
       if ((ver.val === this.member_ver) && (ver.checksum === this.member_checksum))
          streamer = this.member_streamer;
@@ -1471,7 +1473,7 @@ function ZIP_inflate(arr, tgt) {
       x = Array(BMAX+1).fill(0), // bit offsets, then code stack
       r = { e: 0, b: 0, n: 0, t: null }, // new zip_HuftNode(), // table entry for structure assignment
       el = (n > 256) ? b[256] : BMAX; // set length of EOB code, if any
-      let rr = null, // temporary variable, use in assignment
+      let rr,        // temporary variable, use in assignment
           a,         // counter for codes of length k
           f,         // i repeats in table every f entries
           h,         // table level
