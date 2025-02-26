@@ -1086,7 +1086,7 @@ class TH2Painter extends THistPainter {
       res.eff_entries = stat_sumw2 ? stat_sum0*stat_sum0/stat_sumw2 : Math.abs(stat_sum0);
 
       if (count_skew && !this.isTH2Poly()) {
-         let sumx3 = 0, sumy3 = 0, sumx4 = 0, sumy4 = 0, np = 0, w = 0;
+         let sumx3 = 0, sumy3 = 0, sumx4 = 0, sumy4 = 0, np = 0, w;
          for (let xi = xleft; xi < xright; ++xi) {
             xx = xaxis.GetBinCoord(xi + 0.5);
             for (let yi = yleft; yi < yright; ++yi) {
@@ -2427,7 +2427,7 @@ class TH2Painter extends THistPainter {
                 show_scat = isOption(kPointsAllScat);
             for (let ii = 0; ii < proj.length; ++ii) {
                const bin_content = proj[ii], binx = (xx[ii] + xx[ii+1])/2;
-               let marker_x = center, marker_y = 0;
+               let marker_x = center, marker_y;
 
                if (!bin_content) continue;
                if (!show_all && (binx >= fWhiskerDown) && (binx <= fWhiskerUp)) continue;

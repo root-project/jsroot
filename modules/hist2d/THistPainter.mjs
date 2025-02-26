@@ -1628,7 +1628,7 @@ class THistPainter extends ObjectPainter {
    /** @summary Returns selected index for specified axis
      * @desc be aware - here indexes starts from 0 */
    getSelectIndex(axis, side, add) {
-      let indx = 0, taxis = this.getAxis(axis);
+      let indx, taxis = this.getAxis(axis);
       const nbin = this[`nbins${axis}`] ?? 0;
 
       if (this.options.second_x && axis === 'x')
@@ -1650,7 +1650,6 @@ class THistPainter extends ObjectPainter {
             indx = nbin;
       } else
          indx = (side === 'left') ? 0 : nbin;
-
 
       // TAxis object of histogram, where user range can be stored
       if (taxis) {

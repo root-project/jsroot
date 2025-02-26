@@ -242,7 +242,7 @@ class TH1Painter extends THistPainter {
                     eff_entries: 0, xmax: 0, wmax: 0, skewx: 0, skewd: 0, kurtx: 0, kurtd: 0 },
             has_counted_stat = !fp.isAxisZoomed('x') && (Math.abs(histo.fTsumw) > 1e-300);
       let stat_sumw = 0, stat_sumw2 = 0, stat_sumwx = 0, stat_sumwx2 = 0, stat_sumwy = 0, stat_sumwy2 = 0,
-          i, xx = 0, w = 0, xmax = null, wmax = null;
+          i, xx, w, xmax = null, wmax = null;
 
       if (!isFunc(cond)) cond = null;
 
@@ -974,8 +974,7 @@ class TH1Painter extends THistPainter {
             right = this.getSelectIndex('x', 'right', 2);
       let width = pmain.getFrameWidth(),
           height = pmain.getFrameHeight(),
-          findbin = null, show_rect,
-          grx1, grx2, gry1, gry2, gapx = 2,
+          show_rect, grx1, grx2, gry1, gry2, gapx = 2,
           l = left, r = right, pnt_x = pnt.x, pnt_y = pnt.y;
 
       const GetBinGrX = i => {
@@ -1002,7 +1001,7 @@ class TH1Painter extends THistPainter {
           else { l++; r--; }
       }
 
-      findbin = r = l;
+      let findbin = r = l;
       grx1 = GetBinGrX(findbin);
 
       if (descent_order) {
