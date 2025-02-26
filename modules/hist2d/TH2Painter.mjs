@@ -24,29 +24,27 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
          arrx = handle.grx,
          arry = handle.gry;
 
-   let lj = 0, ipoly, poly, np, npmax = 0,
-       i, j, k, n, m, ljfill, count,
-       xsave, ysave, itars, ix, jx;
+   let lj = 0;
 
-   const LinearSearch = zc => {
-      if (zc >= last_level)
-         return nlevels-1;
+   const LinearSearch = zvalue => {
+      if (zvalue >= last_level)
+         return nlevels - 1;
 
       for (let kk = 0; kk < nlevels; ++kk) {
-         if (zc < levels[kk])
+         if (zvalue < levels[kk])
             return kk-1;
-       }
-      return nlevels-1;
-   }, BinarySearch = zc => {
-      if (zc < first_level)
+      }
+      return nlevels - 1;
+   }, BinarySearch = zvalue => {
+      if (zvalue < first_level)
          return -1;
-      if (zc >= last_level)
+      if (zvalue >= last_level)
          return nlevels - 1;
 
       let l = 0, r = nlevels - 1, m;
       while (r - l > 1) {
         m = Math.round((r + l) / 2);
-        if (zc < levels[m])
+        if (zvalue < levels[m])
            r = m;
         else
            l = m;
@@ -83,6 +81,10 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
       }
       return icount;
    };
+
+   let ipoly, poly, npmax = 0,
+       i, j, k, m, n, ljfill, count,
+       xsave, ysave, itars, ix, jx;
 
    for (j = handle.j1; j < handle.j2-1; ++j) {
       y[1] = y[0] = (arry[j] + arry[j+1])/2;
@@ -156,7 +158,7 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
                   if (!poly)
                      poly = polys[ipoly] = createTPolyLine(kMAXCONTOUR*4, true);
 
-                  np = poly.fLastPoint;
+                  const np = poly.fLastPoint;
                   if (np < poly.fN-2) {
                      poly.fX[np+1] = Math.round(xarr[ix-1]);
                      poly.fY[np+1] = Math.round(yarr[ix-1]);
@@ -194,7 +196,7 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
       if (!poly) continue;
 
       const colindx = has_func ? palette.calcColorIndex(ipoly, levels.length) : ipoly,
-            xx = poly.fX, yy = poly.fY, np = poly.fLastPoint+1,
+            xx = poly.fX, yy = poly.fY, np2 = poly.fLastPoint+1,
             xmin = 0, ymin = 0;
       let istart = 0, iminus, iplus, nadd;
 
@@ -207,7 +209,7 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
          yy[istart] = yy[istart+1] = ymin;
          while (true) {
             nadd = 0;
-            for (i = 2; i < np; i += 2) {
+            for (i = 2; i < np2; i += 2) {
                if ((iplus < 2*npmax-1) && (xx[i] === xp[iplus]) && (yy[i] === yp[iplus])) {
                   iplus++;
                   xp[iplus] = xx[i+1]; yp[iplus] = yy[i+1];
@@ -230,7 +232,7 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
             contour_func(colindx, xp, yp, iminus, iplus, ipoly);
 
          istart = 0;
-         for (i = 2; i < np; i += 2) {
+         for (i = 2; i < np2; i += 2) {
             if (xx[i] !== xmin && yy[i] !== ymin) {
                istart = i;
                break;
