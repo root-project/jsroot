@@ -742,11 +742,17 @@ async function _loadJSDOM() {
 /** @summary Return translate string for transform attribute of some svg element
   * @return string or null if x and y are zeros
   * @private */
-function makeTranslate(g, x, y) {
+function makeTranslate(g, x, y, scale = 1) {
    if (!isObject(g)) {
-      y = x; x = g; g = null;
+      scale = y; y = x; x = g; g = null;
    }
-   const res = y ? `translate(${x},${y})` : (x ? `translate(${x})` : null);
+   let res = y ? `translate(${x},${y})` : (x ? `translate(${x})` : null);
+   if (scale && scale !== 1) {
+      if (res) res += ' ';
+          else res = '';
+      res += `scale(${scale.toFixed(3)})`;
+   }
+
    return g ? g.attr('transform', res) : res;
 }
 
