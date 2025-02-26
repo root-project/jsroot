@@ -16,6 +16,7 @@ export default [
         curly: ['warn', 'multi-or-nest'],
         'one-var': ['warn', 'consecutive'],
         'no-new-func': 'off',
+        'no-unused-vars': 'error',
 
         // moved to @stylistic/js
         '@stylistic/js/semi': 'warn',
