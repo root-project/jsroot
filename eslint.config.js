@@ -48,6 +48,7 @@ export default [
         'no-promise-executor-return': 'error',
         'no-self-compare': 'error',
         'no-template-curly-in-string': 'warn',
+        'no-useless-assignment': 'warn',
 
         // moved to @stylistic/js
         '@stylistic/js/semi': 'warn',
