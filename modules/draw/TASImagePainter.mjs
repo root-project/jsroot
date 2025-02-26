@@ -112,7 +112,7 @@ class TASImagePainter extends ObjectPainter {
                arr[dst++] = this.rgba[iii++];
                arr[dst++] = this.rgba[iii++];
                arr[dst++] = this.rgba[iii++];
-               arr[dst++] = this.rgba[iii++];
+               arr[dst++] = this.rgba[iii];
             }
          }
 

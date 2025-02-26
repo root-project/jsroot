@@ -1439,11 +1439,13 @@ function createParaboloidBuffer(shape, faces_limit) {
    let lastz = zmin, lastr = 0, lastnxy = 0, lastnz = -1;
 
    for (let layer = 0; layer <= heightSegments + 1; ++layer) {
-      let layerz = 0, radius = 0, nxy = 0, nz = -1;
+      if ((layer === 0) && (rmin === 0))
+         continue;
 
-      if ((layer === 0) && (rmin === 0)) continue;
+      if ((layer === heightSegments + 1) && (lastr === 0))
+         break;
 
-      if ((layer === heightSegments + 1) && (lastr === 0)) break;
+      let layerz, radius;
 
       switch (layer) {
          case 0: layerz = zmin; radius = rmin; break;
@@ -1458,10 +1460,9 @@ function createParaboloidBuffer(shape, faces_limit) {
          }
       }
 
-      nxy = shape.fA * radius;
-      nz = (shape.fA > 0) ? -1 : 1;
-
-      const skip = (lastr === 0) ? 1 : ((radius === 0) ? 2 : 0);
+      const nxy = shape.fA * radius,
+            nz = (shape.fA > 0) ? -1 : 1,
+            skip = (lastr === 0) ? 1 : ((radius === 0) ? 2 : 0);
 
       for (let seg = 0; seg < radiusSegments; ++seg) {
          creator.addFace4(radius*_cos[seg], radius*_sin[seg], layerz,

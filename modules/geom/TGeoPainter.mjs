@@ -2230,18 +2230,15 @@ class TGeoPainter extends ObjectPainter {
             const job = { limit: this._current_face_limit, shapes: [] };
             let cnt = 0;
             for (let n = 0; n < this._build_shapes.length; ++n) {
-               let cl = null;
                const item = this._build_shapes[n];
                // only submit not-done items
                if (item.ready || item.geom) {
                   // this is place holder for existing geometry
-                  cl = { id: item.id, ready: true, nfaces: countGeometryFaces(item.geom), refcnt: item.refcnt };
+                  job.shapes.push({ id: item.id, ready: true, nfaces: countGeometryFaces(item.geom), refcnt: item.refcnt });
                } else {
-                  cl = clone(item, null, true);
+                  job.shapes.push(clone(item, null, true));
                   cnt++;
                }
-
-               job.shapes.push(cl);
             }
 
             if (cnt > 0) {
@@ -4579,7 +4576,7 @@ class TGeoPainter extends ObjectPainter {
          function setTopRotation(mesh, first_angle = -1) {
             mesh._last_angle = first_angle;
             mesh._axis_flip = function(vect) {
-               let angle = 0;
+               let angle;
                switch (this._axis_name) {
                   case 'x': angle = -Math.atan2(vect.y, vect.z); break;
                   case 'y': angle = -Math.atan2(vect.z, vect.x); break;
@@ -5809,7 +5806,7 @@ function build(obj, opt) {
 
    opt.info = { num_meshes: 0, num_faces: 0 };
 
-   let clones = null, visibles = null;
+   let clones, visibles;
 
    if (obj.visibles && obj.nodes && obj.numnodes) {
       // case of draw message from geometry viewer
