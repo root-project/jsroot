@@ -60,13 +60,10 @@ class TEfficiencyPainter extends ObjectPainter {
             bb = total - passed + beta;
          }
 
-         if (!obj.TestBit(kPosteriorMode))
-            return BetaMean(aa, bb);
-         else
-            return BetaMode(aa, bb);
+         return !obj.TestBit(kPosteriorMode) ? BetaMean(aa, bb) : BetaMode(aa, bb);
       }
 
-      return total ? passed/total : 0;
+      return total ? passed / total : 0;
    }
 
    /** @summary Calculate efficiency error low */

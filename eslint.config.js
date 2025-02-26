@@ -21,7 +21,9 @@ export default [
     },
     rules: {
         'array-callback-return': 'error',
+        'consistent-return': 'off',
         camelcase: 'off',
+        'default-case-last': 'error',
         'prefer-const': 'warn',
         eqeqeq: 'warn',
         curly: ['warn', 'multi-or-nest'],
@@ -38,6 +40,7 @@ export default [
         'no-unreachable': 'error',
         'no-constant-condition': 'error',
         'no-unmodified-loop-condition': 'error',
+        'no-else-return': 'warn',
         'for-direction': 'error',
         'no-undef': 'warn',
         'no-await-in-loop': 'warn',

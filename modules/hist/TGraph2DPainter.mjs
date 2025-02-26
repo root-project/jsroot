@@ -1555,8 +1555,8 @@ class TGraph2DPainter extends ObjectPainter {
 
          if (this.options.Zscale)
             return pal_painter.drawPave();
-         else
-            pal_painter.removeG(); // completely remove drawing without need to redraw complete pad
+
+         pal_painter.removeG(); // completely remove drawing without need to redraw complete pad
       }).then(() => {
          fp.render3D(100);
          return this;

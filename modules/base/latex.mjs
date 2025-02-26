@@ -480,8 +480,8 @@ function parseLatex(node, arg, label, curr) {
          if (!match(lbrace)) {
             console.log(`not starting with ${lbrace} in ${label}`);
             return -1;
-         } else
-            label = label.slice(lbrace.length);
+         }
+         label = label.slice(lbrace.length);
       }
 
       while ((n !== 0) && (pos < label.length)) {

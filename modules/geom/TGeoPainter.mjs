@@ -4285,12 +4285,12 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Draw axes and camera overlay */
    drawAxesAndOverlay(norender) {
       const res1 = this.drawAxes(),
-          res2 = this.drawOverlay();
+            res2 = this.drawOverlay();
 
       if (!res1 && !res2)
          return norender ? null : this.render3D();
-      else
-         return this.changedDepthMethod(norender ? 'norender' : undefined);
+
+      return this.changedDepthMethod(norender ? 'norender' : undefined);
    }
 
    /** @summary Draw overlay for the orthographic cameras */

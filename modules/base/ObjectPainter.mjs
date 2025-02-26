@@ -1414,10 +1414,8 @@ class ObjectPainter extends BasePainter {
             return;
 
          if (!item.fArgs) {
-            if (cp?.v7canvas)
-               return cp.submitExec(execp, item.fExec, kind);
-            else
-               return execp.submitCanvExec(item.fExec, item.$execid);
+            return cp?.v7canvas ? cp.submitExec(execp, item.fExec, kind)
+                                : execp.submitCanvExec(item.fExec, item.$execid);
          }
 
          menu.showMethodArgsDialog(item).then(args => {

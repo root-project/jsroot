@@ -305,34 +305,34 @@ class TPavePainter extends ObjectPainter {
             makeTranslate(text_g, Math.round(width/4), Math.round(height/4));
 
             return this.drawPaveText(w2, h2, arg, text_g);
-         } else {
-            if (pt.fNpaves) {
-               for (let n = pt.fNpaves-1; n > 0; --n) {
-                  this.draw_g.append('svg:path')
-                      .attr('d', `M${dx*4*n},${dy*4*n}h${width}v${height}h${-width}z`)
-                      .call(this.fillatt.func)
-                      .call(this.lineatt.func);
-               }
-            } else
-               this.drawBorder(this.draw_g, width, height, arc_radius);
-
-            if (!this.isBatchMode() || !this.fillatt.empty() || (!this.lineatt.empty() && !noborder)) {
-               if (arc_radius) {
-                  interactive_element = this.draw_g.append('svg:rect')
-                                            .attr('width', width)
-                                            .attr('height', height)
-                                            .attr('rx', arc_radius);
-               } else {
-                  interactive_element = this.draw_g.append('svg:path')
-                                                   .attr('d', `M0,0H${width}V${height}H0Z`);
-               }
-               interactive_element.call(this.fillatt.func);
-               if (!noborder)
-                  interactive_element.call(this.lineatt.func);
-            }
-
-            return isFunc(this.paveDrawFunc) ? this.paveDrawFunc(width, height, arg) : true;
          }
+
+         if (pt.fNpaves) {
+            for (let n = pt.fNpaves-1; n > 0; --n) {
+               this.draw_g.append('svg:path')
+                     .attr('d', `M${dx*4*n},${dy*4*n}h${width}v${height}h${-width}z`)
+                     .call(this.fillatt.func)
+                     .call(this.lineatt.func);
+            }
+         } else
+            this.drawBorder(this.draw_g, width, height, arc_radius);
+
+         if (!this.isBatchMode() || !this.fillatt.empty() || (!this.lineatt.empty() && !noborder)) {
+            if (arc_radius) {
+               interactive_element = this.draw_g.append('svg:rect')
+                                          .attr('width', width)
+                                          .attr('height', height)
+                                          .attr('rx', arc_radius);
+            } else {
+               interactive_element = this.draw_g.append('svg:path')
+                                                .attr('d', `M0,0H${width}V${height}H0Z`);
+            }
+            interactive_element.call(this.fillatt.func);
+            if (!noborder)
+               interactive_element.call(this.lineatt.func);
+         }
+
+         return isFunc(this.paveDrawFunc) ? this.paveDrawFunc(width, height, arg) : true;
       }).then(() => {
          if (this.isBatchMode() || (pt._typename === clTPave))
             return this;
@@ -1446,12 +1446,9 @@ class TPavePainter extends ObjectPainter {
    getBestFormat(tv, e) {
       const ie = tv.indexOf('e'), id = tv.indexOf('.');
 
-      if (ie >= 0) {
-         if ((tv.indexOf('+') < 0) || (e >= 1))
-            return `.${ie-id-1}e`;
-         else
-            return '.1f';
-      } else if (id < 0)
+      if (ie >= 0)
+         return (tv.indexOf('+') < 0) || (e >= 1) ? `.${ie-id-1}e` : '.1f';
+      if (id < 0)
          return '.1f';
 
       return `.${tv.length - id - 1}f`;
