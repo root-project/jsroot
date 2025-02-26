@@ -387,7 +387,7 @@ class TPavePainter extends ObjectPainter {
                .style('stroke', scol)
                .style('stroke-width', brd_width);
       } else {
-         let spath = '';
+         let spath;
 
          if ((dx < 0) && (dy < 0))
             spath = `M0,0v${height-brd-1}h${-brd+1}v${-height+2}h${width-2}v${brd-1}z`;
@@ -949,7 +949,7 @@ class TPavePainter extends ObjectPainter {
             zaxis = is_scatter ? main.getZaxis() : main.getObject()?.fZaxis,
             sizek = pad?.fTickz ? 0.35 : 0.7;
 
-      let zmin = 0, zmax = 100, gzmin, gzmax, axis_transform = '', axis_second = 0;
+      let zmin = 0, zmax = 100, gzmin, gzmax, axis_transform, axis_second = 0;
 
       this._palette_vertical = (palette.fX2NDC - palette.fX1NDC) < (palette.fY2NDC - palette.fY1NDC);
 

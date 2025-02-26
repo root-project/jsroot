@@ -469,6 +469,7 @@ class TGraphDelaunay {
       let thevalue,
           it, ntris_tried, p, n, m,
           i, j, k, l, z, f, d, o1, o2, a, b, t1, t2, t3,
+          /* eslint-disable-next-line no-useless-assignment */
           ndegen = 0, degen = 0, fdegen = 0, o1degen = 0, o2degen = 0,
           vxN, vyN,
           d1, d2, d3, c1, c2, dko1, dko2, dfo1,
@@ -854,6 +855,7 @@ class TGraphDelaunay {
 
          // Order along Z axis the points (xi,yi,zi) where "i" belongs to {0,1,2}
          // After this z0 < z1 < z2
+         /* eslint-disable-next-line no-useless-assignment */
          i0 = i1 = i2 = 0;
          if (this.fZ[p1] <= z0) { z0 = this.fZ[p1]; x0 = this.fX[p1]; y0 = this.fY[p1]; i0 = 1; }
          if (this.fZ[p1] > z2) { z2 = this.fZ[p1]; x2 = this.fX[p1]; y2 = this.fY[p1]; i2 = 1; }

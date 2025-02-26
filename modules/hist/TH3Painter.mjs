@@ -134,7 +134,7 @@ class TH3Painter extends THistPainter {
       res.eff_entries = stat_sumw2 ? stat_sum0*stat_sum0/stat_sumw2 : Math.abs(stat_sum0);
 
       if (count_skew && !this.isTH2Poly()) {
-         let sumx3 = 0, sumy3 = 0, sumz3 = 0, sumx4 = 0, sumy4 = 0, sumz4 = 0, np = 0, w = 0;
+         let sumx3 = 0, sumy3 = 0, sumz3 = 0, sumx4 = 0, sumy4 = 0, sumz4 = 0, np = 0;
          for (let xi = i1; xi < i2; ++xi) {
             xx = xaxis.GetBinCoord(xi + 0.5);
             for (let yi = j1; yi < j2; ++yi) {
@@ -142,7 +142,7 @@ class TH3Painter extends THistPainter {
                for (let zi = k1; zi < k2; ++zi) {
                   zz = zaxis.GetBinCoord(zi + 0.5);
                   if (cond && !cond(xx, yy, zz)) continue;
-                  w = histo.getBinContent(xi + 1, yi + 1, zi + 1);
+                  const w = histo.getBinContent(xi + 1, yi + 1, zi + 1);
                   np += w;
                   sumx3 += w * Math.pow(xx - res.meanx, 3);
                   sumy3 += w * Math.pow(yy - res.meany, 3);
@@ -515,12 +515,11 @@ class TH3Painter extends THistPainter {
       }
 
       function getBinTooltip(intersect) {
-         let binid = 0;
+         let binid = this.binid;
 
-         if (this.binid !== undefined)
-            binid = this.binid;
-         else {
-            if ((intersect.instanceId === undefined) || (intersect.instanceId >= this.bins.length)) return;
+         if (binid === undefined) {
+            if ((intersect.instanceId === undefined) || (intersect.instanceId >= this.bins.length))
+               return;
             binid = this.bins[intersect.instanceId];
          }
 

@@ -1636,7 +1636,7 @@ function drawBinsLego(painter, is_v7 = false) {
 
    if ((i1 >= i2) || (j1 >= j2)) return;
 
-   let zmin, zmax, i, j, k, vert, x1, x2, y1, y2, binz1, binz2, reduced, nobottom, notop,
+   let zmin, zmax, i, j, k, vert, binz1, binz2, reduced, nobottom, notop,
        axis_zmin = main.z_handle.getScaleMin(),
        axis_zmax = main.z_handle.getScaleMax();
 
@@ -1701,7 +1701,7 @@ function drawBinsLego(painter, is_v7 = false) {
       if (palette && (nlevel === levels.length - 2) && zmax < axis_zmax) zmax = axis_zmax;
 
       const grzmin = main.grz(zmin), grzmax = main.grz(zmax);
-      let z1 = 0, z2 = 0, numvertices = 0, num2vertices = 0;
+      let numvertices = 0, num2vertices = 0;
 
       // now calculate size of buffer geometry for boxes
 
@@ -1733,19 +1733,18 @@ function drawBinsLego(painter, is_v7 = false) {
       let v = 0, v2 = 0, vert, k, nn;
 
       for (i = i1; i < i2; ++i) {
-         x1 = handle.grx[i] + handle.xbar1*(handle.grx[i+1] - handle.grx[i]);
-         x2 = handle.grx[i] + handle.xbar2*(handle.grx[i+1] - handle.grx[i]);
+         const x1 = handle.grx[i] + handle.xbar1*(handle.grx[i+1] - handle.grx[i]),
+               x2 = handle.grx[i] + handle.xbar2*(handle.grx[i+1] - handle.grx[i]);
          for (j = j1; j < j2; ++j) {
             if (!getBinContent(i, j, nlevel)) continue;
 
             nobottom = !reduced && (nlevel > 0);
             notop = !reduced && (binz2 > zmax) && (nlevel < levels.length - 2);
 
-            y1 = handle.gry[j] + handle.ybar1*(handle.gry[j+1] - handle.gry[j]);
-            y2 = handle.gry[j] + handle.ybar2*(handle.gry[j+1] - handle.gry[j]);
-
-            z1 = (binz1 <= zmin) ? grzmin : main.grz(binz1);
-            z2 = (binz2 > zmax) ? grzmax : main.grz(binz2);
+            const y1 = handle.gry[j] + handle.ybar1*(handle.gry[j+1] - handle.gry[j]),
+                  y2 = handle.gry[j] + handle.ybar2*(handle.gry[j+1] - handle.gry[j]),
+                  z1 = (binz1 <= zmin) ? grzmin : main.grz(binz1),
+                  z2 = (binz2 > zmax) ? grzmax : main.grz(binz2);
 
             nn = 0; // counter over the normals, each normals correspond to 6 vertices
             k = 0; // counter over vertices
@@ -1810,7 +1809,7 @@ function drawBinsLego(painter, is_v7 = false) {
       }
 
       const material = new THREE.MeshBasicMaterial(getMaterialArgs(fcolor, { vertexColors: false })),
-          mesh = new THREE.Mesh(geometry, material);
+            mesh = new THREE.Mesh(geometry, material);
 
       mesh.face_to_bins_index = face_to_bins_index;
       mesh.painter = painter;
@@ -1896,27 +1895,26 @@ function drawBinsLego(painter, is_v7 = false) {
    // skip index usage at all. It happens for relatively large histograms (100x100 bins)
    const uselineindx = (numlinevertices <= 0xFFF0);
 
-   if (!uselineindx) numlinevertices = numsegments*3;
+   if (!uselineindx)
+      numlinevertices = numsegments * 3;
 
    const lpositions = new Float32Array(numlinevertices * 3),
          lindicies = uselineindx ? new Uint16Array(numsegments) : null,
          grzmin = main.grz(axis_zmin),
          grzmax = main.grz(axis_zmax);
-   let z1 = 0, z2 = 0, ll = 0, ii = 0;
+   let ll = 0, ii = 0;
 
    for (i = i1; i < i2; ++i) {
-      x1 = handle.grx[i] + handle.xbar1*(handle.grx[i+1] - handle.grx[i]);
-      x2 = handle.grx[i] + handle.xbar2*(handle.grx[i+1] - handle.grx[i]);
+      const x1 = handle.grx[i] + handle.xbar1*(handle.grx[i+1] - handle.grx[i]),
+            x2 = handle.grx[i] + handle.xbar2*(handle.grx[i+1] - handle.grx[i]);
       for (j = j1; j < j2; ++j) {
          if (!getBinContent(i, j, 0)) continue;
 
-         y1 = handle.gry[j] + handle.ybar1*(handle.gry[j+1] - handle.gry[j]);
-         y2 = handle.gry[j] + handle.ybar2*(handle.gry[j+1] - handle.gry[j]);
-
-         z1 = (binz1 <= axis_zmin) ? grzmin : main.grz(binz1);
-         z2 = (binz2 > axis_zmax) ? grzmax : main.grz(binz2);
-
-         const seg = reduced ? rsegments : segments,
+         const y1 = handle.gry[j] + handle.ybar1*(handle.gry[j+1] - handle.gry[j]),
+               y2 = handle.gry[j] + handle.ybar2*(handle.gry[j+1] - handle.gry[j]),
+               z1 = (binz1 <= axis_zmin) ? grzmin : main.grz(binz1),
+               z2 = (binz2 > axis_zmax) ? grzmax : main.grz(binz2),
+               seg = reduced ? rsegments : segments,
                vvv = reduced ? rvertices : vertices;
 
          if (uselineindx) {
