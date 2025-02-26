@@ -387,13 +387,14 @@ class GridDisplay extends MDIDisplay {
          handle = separ.property('handle'),
          id = separ.property('separator_id'),
          group = handle.groups[id];
-      let needResize = false, needSetSize = false;
 
       if (action === 'start') {
          group.startpos = group.position;
          group.acc_drag = 0;
          return;
       }
+
+      let needResize, needSetSize = false;
 
       if (action === 'end') {
          if (Math.abs(group.startpos - group.position) < 0.5)

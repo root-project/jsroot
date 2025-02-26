@@ -105,7 +105,7 @@ class RPavePainter extends RObjectPainter {
             rect = this.getPadPainter().getPadRect(),
             fr = this.onFrame ? this.getFramePainter().getFrameRect() : rect,
             changes = {};
-      let offsetx = 0, offsety = 0;
+      let offsetx, offsety;
 
       switch (this.corner) {
          case ECorner.kTopLeft:

@@ -823,7 +823,7 @@ class TGraphDelaunay {
       if (!this.fNdt)
          return null;
 
-      let graph = null,     // current graph
+      let graph,     // current graph
           // Find all the segments making the contour
           r21, r20, r10, p0, p1, p2, x0, y0, z0, x1, y1, z1, x2, y2, z2,
           it, i0, i1, i2, nbSeg = 0,
@@ -1010,7 +1010,8 @@ class TGraphDelaunay {
    /** @summary Function handles tooltips in the mesh */
 function graph2DTooltip(intersect) {
    let indx = Math.floor(intersect.index / this.nvertex);
-   if ((indx < 0) || (indx >= this.index.length)) return null;
+   if ((indx < 0) || (indx >= this.index.length))
+      return null;
    const sqr = v => v*v;
 
    indx = this.index[indx];

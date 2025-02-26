@@ -966,7 +966,7 @@ class HierarchyPainter extends BasePainter {
          return arg.last_exists ? { last: top, rest: fullname } : null;
       }
 
-      let top = this.h, itemname = '';
+      let top = this.h, itemname;
 
       if (isStr(arg)) {
          itemname = arg;
@@ -1981,7 +1981,7 @@ class HierarchyPainter extends BasePainter {
       if (!isStr(item?._player))
          return null;
 
-      let player_func = null;
+      let player_func;
 
       if (item._module) {
          const hh = await this.importModule(item._module);

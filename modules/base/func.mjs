@@ -155,7 +155,7 @@ function getTF1Value(func, x, skip_eval = undefined) {
       try {
          return func.evalPar(x);
       } catch {
-         /* eslint-disable  no-useless-assignment */
+         /* eslint-disable-next-line  no-useless-assignment */
          iserr = true;
       }
    }

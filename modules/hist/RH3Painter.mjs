@@ -373,12 +373,11 @@ class RH3Painter extends RHistPainter {
       }
 
       function getBinTooltip(intersect) {
-         let binid = 0;
+         let binid = this.binid;
 
-         if (this.binid !== undefined)
-            binid = this.binid;
-         else {
-            if ((intersect.instanceId === undefined) || (intersect.instanceId >= this.bins.length)) return;
+         if (binid === undefined) {
+            if ((intersect.instanceId === undefined) || (intersect.instanceId >= this.bins.length))
+               return;
             binid = this.bins[intersect.instanceId];
          }
 
