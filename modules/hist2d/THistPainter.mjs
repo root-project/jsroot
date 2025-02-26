@@ -424,14 +424,14 @@ class THistDrawOptions {
       if (d.check('PMC') && !this._pmc)
          this._pmc = 2;
 
-      const check_axis_bit = (opt, axis, bit) => {
+      const check_axis_bit = (aopt, axis, bit) => {
          // ignore Z scale options for 2D plots
          if ((axis === 'fZaxis') && (hdim < 3) && !this.Lego && !this.Surf)
             return;
-         let flag = d.check(opt);
-         if (pad && pad['$'+opt]) {
+         let flag = d.check(aopt);
+         if (pad && pad['$'+aopt]) {
             flag = true;
-            pad['$'+opt] = undefined;
+            pad['$'+aopt] = undefined;
          }
          if (flag && histo)
             histo[axis].SetBit(bit, true);
@@ -2302,8 +2302,8 @@ class THistPainter extends ObjectPainter {
 
          fp.redraw();
 
-         const pr = !postpone_draw ? this.redraw() : Promise.resolve(true);
-         return pr.then(() => {
+         const pr2 = !postpone_draw ? this.redraw() : Promise.resolve(true);
+         return pr2.then(() => {
              delete this.do_redraw_palette;
              return pal_painter;
          });

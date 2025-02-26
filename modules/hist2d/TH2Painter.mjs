@@ -1287,10 +1287,10 @@ class TH2Painter extends THistPainter {
          if (last_entry) flush_last_entry();
       }
 
-      entries.forEach((entry, colindx) => {
+      entries.forEach((entry, ecolindx) => {
          if (entry) {
             this.draw_g.append('svg:path')
-                .attr('fill', palette.getColor(colindx))
+                .attr('fill', palette.getColor(ecolindx))
                 .attr('d', entry.path);
          }
       });
@@ -1406,14 +1406,13 @@ class TH2Painter extends THistPainter {
          }
       }
 
-      entries.forEach((entry, colindx) => {
+      entries.forEach((entry, ecolindx) => {
          if (entry) {
             this.draw_g.append('svg:path')
-                .attr('fill', palette.getColor(colindx))
+                .attr('fill', palette.getColor(ecolindx))
                 .attr('d', entry.path);
          }
       });
-
 
       return handle;
    }
@@ -1531,8 +1530,8 @@ class TH2Painter extends THistPainter {
 
          const points = [{ x: 0, y: 0 }, { x: frame_w, y: 0 }, { x: frame_w, y: frame_h }, { x: 0, y: frame_h }],
 
-          get_intersect = (i, di) => {
-            const segm = { x1: xp[i], y1: yp[i], x2: 2*xp[i] - xp[i+di], y2: 2*yp[i] - yp[i+di] };
+          get_intersect = (indx, di) => {
+            const segm = { x1: xp[indx], y1: yp[indx], x2: 2*xp[indx] - xp[indx+di], y2: 2*yp[indx] - yp[indx+di] };
             for (let i = 0; i < 4; ++i) {
                const res = get_segm_intersection(segm, { x1: points[i].x, y1: points[i].y, x2: points[(i+1)%4].x, y2: points[(i+1)%4].y });
                if (res) {
@@ -1697,10 +1696,10 @@ class TH2Painter extends THistPainter {
 
       const cntr = draw_colors ? this.getContour(true) : null,
             palette = cntr ? this.getHistPalette() : null,
-            rejectBin = bin => {
+            rejectBin = bin2 => {
                // check if bin outside visible range
-               return ((bin.fXmin > funcs.scale_xmax) || (bin.fXmax < funcs.scale_xmin) ||
-                       (bin.fYmin > funcs.scale_ymax) || (bin.fYmax < funcs.scale_ymin));
+               return ((bin2.fXmin > funcs.scale_xmax) || (bin2.fXmax < funcs.scale_xmin) ||
+                       (bin2.fYmin > funcs.scale_ymax) || (bin2.fYmax < funcs.scale_ymin));
             };
 
       // check if similar fill attributes
@@ -1799,13 +1798,13 @@ class TH2Painter extends THistPainter {
                      markeratt = this.createAttMarker({ attr: gr, style: this.options.MarkStyle, std: false });
                if (!npnts || markeratt.empty())
                   continue;
-               let cmd = '';
 
+               let cmdm = '';
                for (let n = 0; n < npnts; ++n)
-                  cmd += markeratt.create(funcs.grx(gr.fX[n]), funcs.gry(gr.fY[n]));
+                  cmdm += markeratt.create(funcs.grx(gr.fX[n]), funcs.gry(gr.fY[n]));
 
                this.draw_g.append('svg:path')
-                   .attr('d', cmd)
+                   .attr('d', cmdm)
                    .call(markeratt.func);
             } // loop over graphs
          } // loop over bins
@@ -2261,13 +2260,10 @@ class TH2Painter extends THistPainter {
             cp = this.getCanvPainter(),
             funcs = this.getHistGrFuncs(fp),
             swapXY = isOption(kHorizontal);
-      let bars = '', lines = '', dashed_lines = '',
-          hists = '', hlines = '',
-          markers = '', cmarkers = '', attrcmarkers = null,
-          xx, proj,
-          scaledViolin = gStyle.fViolinScaled,
+      let scaledViolin = gStyle.fViolinScaled,
           scaledCandle = gStyle.fCandleScaled,
-          maxContent = 0, maxIntegral = 0;
+          maxContent = 0,
+          markers = '', cmarkers = '', attrcmarkers = null;
 
       if (this.options.Scaled !== null)
          scaledViolin = scaledCandle = this.options.Scaled;
@@ -2316,9 +2312,13 @@ class TH2Painter extends THistPainter {
          cmarkers += swapXY ? attrcmarkers.create(y, x) : attrcmarkers.create(x, y);
       };
 
-      if (histo.fMarkerColor === 1) histo.fMarkerColor = histo.fLineColor;
+      if (histo.fMarkerColor === 1)
+         histo.fMarkerColor = histo.fLineColor;
 
       handle.candle = []; // array of drawn points
+
+      let xx, bars = '', lines = '', dashed_lines = '', hists = '', hlines = '',
+          proj, maxIntegral = 0;
 
       // Determining the quintiles
       const wRange = gStyle.fCandleWhiskerRange, bRange = gStyle.fCandleBoxRange,
