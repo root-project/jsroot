@@ -5,6 +5,7 @@ import { cleanup, getElementCanvPainter } from './base/ObjectPainter.mjs';
 import { draw } from './draw.mjs';
 import { closeMenu } from './gui/menu.mjs';
 
+/* eslint-disable no-await-in-loop */
 
 async function _test_timeout(args, portion = 1) {
    if (!args?.timeout)
