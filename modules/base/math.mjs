@@ -5,6 +5,7 @@
  */
 
 /* eslint-disable curly */
+/* eslint-disable no-loss-of-precision */
 /* eslint-disable no-use-before-define */
 /* eslint-disable @stylistic/js/comma-spacing */
 /* eslint-disable @stylistic/js/no-floating-decimal */
