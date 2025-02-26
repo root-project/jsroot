@@ -862,7 +862,7 @@ function convertDate(dt) {
    if (settings.TimeZone && isStr(settings.TimeZone)) {
      try {
         res = dt.toLocaleString('en-GB', { timeZone: settings.TimeZone });
-     } catch (err) {
+     } catch {
         res = '';
      }
    }

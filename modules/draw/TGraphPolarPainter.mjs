@@ -179,7 +179,7 @@ class TGraphPolargramPainter extends ObjectPainter {
    }
 
    /** @summary Process mouse double click event */
-   mouseDoubleClick(evnt) {
+   mouseDoubleClick() {
       if (this.zoom_rmin || this.zoom_rmax) {
          this.zoom_rmin = this.zoom_rmax = 0;
          this.redrawPad();

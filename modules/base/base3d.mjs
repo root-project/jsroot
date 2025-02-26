@@ -138,11 +138,11 @@ function createSVGRenderer(as_is, precision, doc) {
            setAttribute(name, value) {
               this._wrapper.svg_attr[name] = value;
            },
-           appendChild(_node) {
+           appendChild(/* node */) {
               this._wrapper.accPath += `<path style="${this._wrapper.path_attr.style}" d="${this._wrapper.path_attr.d}"/>`;
               this._wrapper.path_attr = {};
            },
-           removeChild(_node) {
+           removeChild(/* node */) {
               this.childNodes = [];
            }
         };
@@ -465,10 +465,13 @@ const Handling3DDrawings = {
          const pos0 = prnt.getBoundingClientRect(), doc = getDocument();
 
          while (prnt) {
-            if (prnt === doc) { prnt = null; break; }
+            if (prnt === doc) {
+               prnt = null;
+               break;
+            }
             try {
                if (getComputedStyle(prnt).position !== 'static') break;
-            } catch (err) {
+            } catch {
                break;
             }
             prnt = prnt.parentNode;
