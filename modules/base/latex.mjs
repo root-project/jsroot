@@ -295,7 +295,7 @@ function remapSymbolTtfCode(code) {
       for (const key in symbols_map) {
          const symbol = symbols_map[key];
          if (symbol.length === 1) {
-            let letter = 0;
+            let letter;
             if (cnt < 54) {
                const opGreek = cnt;
                // see code in TLatex.cxx, line 1302

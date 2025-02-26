@@ -1389,7 +1389,7 @@ function createLineSegments(arr, material, index = undefined, only_geometry = fa
    if (material.isLineDashedMaterial) {
       const v1 = new THREE.Vector3(),
             v2 = new THREE.Vector3();
-      let d = 0, distances = null;
+      let d = 0, distances;
 
       if (index) {
          distances = new Float32Array(index.length);
