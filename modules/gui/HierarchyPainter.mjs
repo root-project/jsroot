@@ -2275,7 +2275,7 @@ class HierarchyPainter extends BasePainter {
          if (arg === undefined)
            arg = !this.isMonitoring();
          want_update_all = true;
-         only_auto_items = !!arg;
+         only_auto_items = Boolean(arg);
       }
 
       // first collect items
@@ -2923,7 +2923,7 @@ class HierarchyPainter extends BasePainter {
       while (item._parent) {
          item = item._parent;
          if ('_file' in item)
-            return { kind: 'file', fileurl: item._file.fURL, itemname: subname, localfile: !!item._file.fLocalFile };
+            return { kind: 'file', fileurl: item._file.fURL, itemname: subname, localfile: Boolean(item._file.fLocalFile) };
 
          if ('_jsonfile' in item)
             return { kind: 'json', fileurl: item._jsonfile, itemname: subname };
@@ -3529,7 +3529,7 @@ class HierarchyPainter extends BasePainter {
           monitor = getOption('monitoring'),
           statush = 0, status = getOption('status'),
           browser_kind = getOption('browser'),
-          browser_configured = !!browser_kind;
+          browser_configured = Boolean(browser_kind);
 
       if (monitor === null)
          monitor = 0;

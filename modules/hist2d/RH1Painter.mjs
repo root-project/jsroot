@@ -980,9 +980,9 @@ class RH1Painter extends RHistPainter {
             painter.options.Render3D = constants.Render3D.fromString(d.part.toLowerCase());
 
          const kind = painter.v7EvalAttr('kind', 'hist'),
-             sub = painter.v7EvalAttr('sub', 0),
-             has_main = !!painter.getMainPainter(),
-             o = painter.options;
+               sub = painter.v7EvalAttr('sub', 0),
+               has_main = Boolean(painter.getMainPainter()),
+               o = painter.options;
 
          o.Text = painter.v7EvalAttr('drawtext', false);
          o.BarOffset = painter.v7EvalAttr('baroffset', 0.0);

@@ -1856,7 +1856,7 @@ class TPadPainter extends ObjectPainter {
          padpainter.decodeOptions(snap.fOption);
          padpainter.addToPadPrimitives();
          padpainter.assignSnapId(snap.fObjectID);
-         padpainter.is_active_pad = !!snap.fActive; // enforce boolean flag
+         padpainter.is_active_pad = Boolean(snap.fActive); // enforce boolean flag
          padpainter._readonly = snap.fReadOnly ?? false; // readonly flag
          padpainter._snap_primitives = snap.fPrimitives; // keep list to be able find primitive
          padpainter._has_execs = snap.fHasExecs ?? false; // are there pad execs, enables some interactive features
@@ -1923,7 +1923,7 @@ class TPadPainter extends ObjectPainter {
       if (!snap?.fPrimitives)
          return this;
 
-      this.is_active_pad = !!snap.fActive; // enforce boolean flag
+      this.is_active_pad = Boolean(snap.fActive); // enforce boolean flag
       this._readonly = snap.fReadOnly ?? false; // readonly flag
       this._snap_primitives = snap.fPrimitives; // keep list to be able find primitive
       this._has_execs = snap.fHasExecs ?? false; // are there pad execs, enables some interactive features
@@ -2117,7 +2117,7 @@ class TPadPainter extends ObjectPainter {
 
       if (this.snapid) {
          elem = { _typename: 'TWebPadOptions', snapid: this.snapid.toString(),
-                  active: !!this.is_active_pad,
+                  active: Boolean(this.is_active_pad),
                   cw: 0, ch: 0, w: [],
                   bits: 0, primitives: [],
                   logx: this.pad.fLogx, logy: this.pad.fLogy, logz: this.pad.fLogz,

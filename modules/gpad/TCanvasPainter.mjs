@@ -610,7 +610,7 @@ class TCanvasPainter extends TPadPainter {
       switch (that) {
          case 'Menu': break;
          case 'StatusBar': this.activateStatusBar(on); break;
-         case 'Editor': return this.activateGed(this, null, !!on);
+         case 'Editor': return this.activateGed(this, null, on);
          case 'ToolBar': break;
          case 'ToolTips': this.setTooltipAllowed(on); break;
       }

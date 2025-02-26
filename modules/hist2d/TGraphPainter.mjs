@@ -89,8 +89,8 @@ class TGraphPainter extends ObjectPainter {
          opt = opt.slice(5);
 
       const graph = this.getGraph(),
-          is_gme = !!this.get_gme(),
-          has_main = first_time ? !!this.getMainPainter() : !this.axes_draw;
+          is_gme = Boolean(this.get_gme()),
+          has_main = first_time ? Boolean(this.getMainPainter()) : !this.axes_draw;
       let blocks_gme = [];
 
       if (!this.options) this.options = {};
@@ -935,7 +935,7 @@ class TGraphPainter extends ObjectPainter {
       if (this.options.pos3d)
          return this.drawBins3D(pmain, graph);
 
-      const is_gme = !!this.get_gme(),
+      const is_gme = Boolean(this.get_gme()),
             funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
             w = pmain.getFrameWidth(),
             h = pmain.getFrameHeight();
@@ -1611,7 +1611,7 @@ class TGraphPainter extends ObjectPainter {
       if ((!painter.getMainPainter() || painter.options.second_x || painter.options.second_y) && painter.options.Axis) {
          promise = painter.drawAxisHisto().then(hist_painter => {
             hist_painter?.setSecondaryId(painter, 'hist');
-            painter.axes_draw = !!hist_painter;
+            painter.axes_draw = Boolean(hist_painter);
          });
       }
 

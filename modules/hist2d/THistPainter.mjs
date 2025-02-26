@@ -243,8 +243,8 @@ class THistDrawOptions {
       if (d.check('YAXIS_', 'color'))
          histo.fYaxis.fAxisColor = histo.fYaxis.fLabelColor = histo.fYaxis.fTitleColor = d.color;
 
-      if (d.check('X+')) { this.AxisPos = 10; this.second_x = !!painter?.getMainPainter(); }
-      if (d.check('Y+')) { this.AxisPos += 1; this.second_y = !!painter?.getMainPainter(); }
+      if (d.check('X+')) { this.AxisPos = 10; this.second_x = Boolean(painter?.getMainPainter()); }
+      if (d.check('Y+')) { this.AxisPos += 1; this.second_y = Boolean(painter?.getMainPainter()); }
 
       if (d.check('SAME0')) { this.Same = true; this.IgnoreMainScale = true; }
       if (d.check('SAMES')) { this.Same = true; this.ForceStat = true; }
@@ -2130,7 +2130,7 @@ class THistPainter extends ObjectPainter {
       let pal = this.findFunction(clTPaletteAxis),
           pal_painter = pp?.findPainterFor(pal);
 
-      const found_in_func = !!pal;
+      const found_in_func = Boolean(pal);
 
       if (this._can_move_colz) {
          delete this._can_move_colz;

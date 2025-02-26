@@ -2773,8 +2773,9 @@ class ClonedNodes {
          do_clear = true;
          if (!this.fVisibility) return;
       } else
-         on = !!on;
-      if (!stack) return;
+         on = Boolean(on);
+      if (!stack)
+         return;
 
       if (!this.fVisibility)
          this.fVisibility = [];

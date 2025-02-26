@@ -1035,7 +1035,7 @@ class JSRootMenu {
      * @return {Promise} with true when 'Ok' pressed or false when 'Cancel' pressed
      * @protected */
    async confirm(title, message) {
-      return this.runModal(title, message, { btns: true, height: 120, width: 400 }).then(elem => { return !!elem; });
+      return this.runModal(title, message, { btns: true, height: 120, width: 400 }).then(elem => Boolean(elem));
    }
 
    /** @summary Input value
@@ -1623,7 +1623,7 @@ function createMenu(evnt, handler, menuname) {
 function closeMenu(menuname) {
    const element = getDocument().getElementById(menuname || sDfltName);
    element?.remove();
-   return !!element;
+   return Boolean(element);
 }
 
 /** @summary Returns true if menu or modal dialog present

@@ -1940,7 +1940,8 @@ class TGeoPainter extends ObjectPainter {
          for (let k = 0; (k < curr_mesh.length) && same; ++k)
             if ((curr_mesh[k] !== active_mesh[k]) || get_ctrl(curr_mesh[k]).checkHighlightIndex(geo_index)) same = false;
       }
-      if (same) return !!curr_mesh;
+      if (same)
+         return Boolean(curr_mesh);
 
       if (curr_mesh) {
          for (let k = 0; k < curr_mesh.length; ++k)
@@ -1956,7 +1957,7 @@ class TGeoPainter extends ObjectPainter {
 
       this.render3D(0);
 
-      return !!active_mesh;
+      return Boolean(active_mesh);
    }
 
    /** @summary handle mouse click event */
@@ -2122,7 +2123,7 @@ class TGeoPainter extends ObjectPainter {
              matrix = null, frustum = null;
 
          if (!numvis)
-            numvis = this._clones.markVisibles(false, false, !!this.geo_manager && !this.ctrl.showtop);
+            numvis = this._clones.markVisibles(false, false, Boolean(this.geo_manager) && !this.ctrl.showtop);
 
          if (this.ctrl.select_in_view && !this._first_drawing) {
             // extract camera projection matrix for selection
@@ -3354,10 +3355,11 @@ class TGeoPainter extends ObjectPainter {
          if (indx >= 0) this._extraObjects.opt[indx] = itemname;
       }
 
-      if (indx < 0) return;
+      if (indx < 0)
+         return;
 
       const obj = this._extraObjects.arr[indx];
-      let res = !!obj.$hidden_via_menu;
+      let res = Boolean(obj.$hidden_via_menu);
 
       if (toggle) {
          obj.$hidden_via_menu = res;
@@ -3880,7 +3882,7 @@ class TGeoPainter extends ObjectPainter {
 
          this._clones.name_prefix = name_prefix;
 
-         const hide_top_volume = !!this.geo_manager && !this.ctrl.showtop;
+         const hide_top_volume = Boolean(this.geo_manager) && !this.ctrl.showtop;
          let uniquevis = this.ctrl.no_screen ? 0 : this._clones.markVisibles(true, false, hide_top_volume);
 
          if (uniquevis <= 0)
@@ -3906,7 +3908,7 @@ class TGeoPainter extends ObjectPainter {
 
          const pp = this.getPadPainter();
 
-         this._on_pad = !!pp;
+         this._on_pad = Boolean(pp);
 
          if (this._on_pad) {
             let size, render3d, fp;
@@ -4720,13 +4722,13 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Specify wireframe mode */
    setWireFrame(on) {
-      this.ctrl.wireframe = !!on;
+      this.ctrl.wireframe = Boolean(on);
       this.changedWireFrame();
    }
 
    /** @summary Specify showtop draw options, relevant only for TGeoManager */
    setShowTop(on) {
-      this.ctrl.showtop = !!on;
+      this.ctrl.showtop = Boolean(on);
       this.redrawObject('same');
    }
 
@@ -4797,8 +4799,8 @@ class TGeoPainter extends ObjectPainter {
 
       this._clipCfg = clip_cfg;
 
-      const any_clipping = !!panels, ci = this.ctrl.clipIntersect,
-          material_side = any_clipping ? THREE.DoubleSide : THREE.FrontSide;
+      const any_clipping = Boolean(panels), ci = this.ctrl.clipIntersect,
+            material_side = any_clipping ? THREE.DoubleSide : THREE.FrontSide;
 
       if (force_traverse || changed) {
          this._scene.traverse(node => {
