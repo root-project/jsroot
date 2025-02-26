@@ -361,9 +361,9 @@ class RH2Painter extends RHistPainter {
       if ((print_under > 0) || (print_over > 0)) {
          const m = data.matrix;
 
-         stat.addText('' + m[6].toFixed(0) + ' | ' + m[7].toFixed(0) + ' | ' + m[7].toFixed(0));
-         stat.addText('' + m[3].toFixed(0) + ' | ' + m[4].toFixed(0) + ' | ' + m[5].toFixed(0));
-         stat.addText('' + m[0].toFixed(0) + ' | ' + m[1].toFixed(0) + ' | ' + m[2].toFixed(0));
+         stat.addText(m[6].toFixed(0) + ' | ' + m[7].toFixed(0) + ' | ' + m[7].toFixed(0));
+         stat.addText(m[3].toFixed(0) + ' | ' + m[4].toFixed(0) + ' | ' + m[5].toFixed(0));
+         stat.addText(m[0].toFixed(0) + ' | ' + m[1].toFixed(0) + ' | ' + m[2].toFixed(0));
       }
 
       return true;

@@ -1039,7 +1039,7 @@ function createEltuBuffer(shape, faces_limit) {
 
    // create tube faces
    for (let seg = 0; seg < radiusSegments; ++seg) {
-      creator.addFace4(x[seg], y[seg], +shape.fDZ,
+      creator.addFace4(x[seg], y[seg], shape.fDZ,
                        x[seg], y[seg], -shape.fDZ,
                        x[seg+1], y[seg+1], -shape.fDZ,
                        x[seg+1], y[seg+1], shape.fDZ);
