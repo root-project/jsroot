@@ -1374,8 +1374,6 @@ function disposeThreejsObject(obj, only_childs) {
    delete obj.tooltip;
    delete obj.stack; // used in geom painter
    delete obj.drawn_highlight; // special highlight object
-
-   obj = undefined;
 }
 
 

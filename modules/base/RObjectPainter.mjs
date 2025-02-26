@@ -270,7 +270,6 @@ class RObjectPainter extends ObjectPainter {
       if (this.cssprefix) name = this.cssprefix + name;
       req.ids.push(this.snapid);
       req.names.push(name);
-      let obj = null;
 
       if ((value === null) || (value === undefined)) {
         if (!kind) kind = 'none';
@@ -284,7 +283,7 @@ class RObjectPainter extends ObjectPainter {
          }
       }
 
-      obj = { _typename: `${nsREX}RAttrMap::` };
+      const obj = { _typename: `${nsREX}RAttrMap::` };
       switch (kind) {
          case 'none': obj._typename += 'NoValue_t'; break;
          case 'boolean': obj._typename += 'BoolValue_t'; obj.v = !!value; break;

@@ -104,7 +104,7 @@ class FontHandler {
 
       this.func = this.setFont.bind(this);
 
-      let cfg = null;
+      let cfg;
 
       if (fontIndex && isObject(fontIndex))
          cfg = fontIndex;

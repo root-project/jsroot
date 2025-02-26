@@ -194,7 +194,7 @@ class TAttFillHandler {
 
       if (!svg || svg.empty()) return false;
 
-      let id = '', lines = '', lfill = null, fills = '', fills2 = '', w = 2, h = 2;
+      let id, lines = '', lfill = null, fills = '', fills2 = '', w = 2, h = 2;
 
       if (this.gradient)
          id = `grad_${this.gradient.fNumber}`;
