@@ -2916,11 +2916,6 @@ class TH2Painter extends THistPainter {
             midx = Math.round(rect.x + rect.width/2),
             midy = Math.round(rect.y + rect.height/2);
 
-      if (this.zoom) {
-         rect.width *= this.zoom;
-         rect.height *= this.zoom;
-      }
-
       const palette = this.getHistPalette(),
             outerRadius = Math.max(10, Math.min(rect.width, rect.height) * 0.5 - 60),
             innerRadius = Math.max(2, outerRadius - 10),
@@ -2961,7 +2956,7 @@ class TH2Painter extends THistPainter {
 
       this.createG();
 
-      makeTranslate(this.draw_g, midx, midy);
+      makeTranslate(this.draw_g, midx, midy, this._zoom);
 
       const chord = d3_chord()
          .padAngle(10 / innerRadius)
@@ -3030,16 +3025,16 @@ class TH2Painter extends THistPainter {
 
       if (settings.Zooming && settings.ZoomWheel && !this.isBatchMode()) {
          this.draw_g.on('wheel', evnt => {
-            let cur = d3_pointer(evnt, this.draw_g.node());
+            // let cur = d3_pointer(evnt, this.draw_g.node());
             const delta = evnt.wheelDelta ? -evnt.wheelDelta : (evnt.deltaY || evnt.detail);
-            if (!this.zoom)
-               this.zoom = 1;
-            this.zoom *= (delta < 0) ? 0.8 : 1.2;
-            this.interactiveRedraw();
+            if (!this._zoom)
+               this._zoom = 1;
+            this._zoom *= (delta > 0) ? 0.8 : 1.2;
+            makeTranslate(this.draw_g, midx, midy, this._zoom);
          });
          this.draw_g.on('dblclick', () => {
-            delete this.zoom;
-            this.interactiveRedraw();
+            delete this._zoom;
+            makeTranslate(this.draw_g, midx, midy, this._zoom);
          });
       }
 
