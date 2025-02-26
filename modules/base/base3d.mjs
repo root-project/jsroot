@@ -166,14 +166,14 @@ function createSVGRenderer(as_is, precision, doc) {
    rndr.originalRender = rndr.render;
 
    rndr.render = function(scene, camera) {
-      const originalDocument = globalThis.document;
+      const _doc = globalThis.document;
       if (isNodeJs())
          globalThis.document = this.doc_wrapper;
 
       this.originalRender(scene, camera);
 
       if (isNodeJs())
-         globalThis.document = originalDocument;
+         globalThis.document = _doc;
    };
 
    rndr.clearHTML = function() {
@@ -571,13 +571,13 @@ async function createRender3D(width, height, render3d, args) {
       renderer.originalSetSize = renderer.setSize;
 
       // apply size to dom element
-      renderer.setSize = function(width, height, updateStyle) {
+      renderer.setSize = function(w, h, updateStyle) {
          if (this.jsroot_custom_dom) {
-            this.jsroot_dom.setAttribute('width', width);
-            this.jsroot_dom.setAttribute('height', height);
+            this.jsroot_dom.setAttribute('width', w);
+            this.jsroot_dom.setAttribute('height', h);
          }
 
-         this.originalSetSize(width, height, updateStyle);
+         this.originalSetSize(w, h, updateStyle);
       };
 
       renderer.setSize(width, height);
@@ -879,9 +879,11 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       }
    }
 
-   function render3DFired(painter) {
-      if (!painter || painter.renderer === undefined) return false;
-      return painter.render_tmout !== undefined; // when timeout configured, object is prepared for rendering
+   function render3DFired(_painter) {
+      if (_painter?.renderer === undefined)
+         return false;
+      // when timeout configured, object is prepared for rendering
+      return _painter.render_tmout !== undefined;
    }
 
    function control_mousewheel(evnt) {
@@ -1046,18 +1048,19 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
 
    control.getInfoAtMousePosition = function(mouse_pos) {
       const intersects = this.getMouseIntersects(mouse_pos);
-      let tip = null, painter = null;
+      let tip = null, _painter = null;
 
       for (let i = 0; i < intersects.length; ++i) {
          if (intersects[i].object.tooltip) {
             tip = intersects[i].object.tooltip(intersects[i]);
-            painter = intersects[i].object.painter;
+            _painter = intersects[i].object.painter;
             break;
          }
       }
 
-      if (tip && painter) {
-         return { obj: painter.getObject(), name: painter.getObject().fName,
+      if (tip && _painter) {
+         return { obj: _painter.getObject(),
+                  name: _painter.getObject().fName,
                   bin: tip.bin, cont: tip.value,
                   binx: tip.ix, biny: tip.iy, binz: tip.iz,
                   grx: (tip.x1+tip.x2)/2, gry: (tip.y1+tip.y2)/2, grz: (tip.z1+tip.z2)/2 };

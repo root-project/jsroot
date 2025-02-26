@@ -316,10 +316,10 @@ function buildSvgCurve(p, args) {
    }, conv = val => {
       if (!args.ndig || (Math.round(val) === val))
          return val.toFixed(0);
-      let s = val.toFixed(args.ndig), p = s.length - 1;
-      while (s[p] === '0') p--;
-      if (s[p] === '.') p--;
-      s = s.slice(0, p+1);
+      let s = val.toFixed(args.ndig), p1 = s.length - 1;
+      while (s[p1] === '0') p1--;
+      if (s[p1] === '.') p1--;
+      s = s.slice(0, p1+1);
       return (s === '-0') ? '0' : s;
    };
 

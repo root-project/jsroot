@@ -289,17 +289,17 @@ class TAttFillHandler {
                         pos.push(0, y1, w, y2);
                      y1 += step;
                   }
-                  for (let k = 0; k < pos.length; k += 4) {
+                  for (let b = 0; b < pos.length; b += 4) {
                      if (swap) {
-                        x1 = pos[k+1];
-                        y1 = pos[k];
-                        x2 = pos[k+3];
-                        y2 = pos[k+2];
+                        x1 = pos[b+1];
+                        y1 = pos[b];
+                        x2 = pos[b+3];
+                        y2 = pos[b+2];
                      } else {
-                        x1 = pos[k];
-                        y1 = pos[k+1];
-                        x2 = pos[k+2];
-                        y2 = pos[k+3];
+                        x1 = pos[b];
+                        y1 = pos[b+1];
+                        x2 = pos[b+2];
+                        y2 = pos[b+3];
                      }
                      lines += `M${x1},${y1}`;
                      if (y2 === y1)
