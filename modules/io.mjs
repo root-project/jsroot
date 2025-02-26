@@ -947,8 +947,8 @@ function createMemberStreamer(element, file) {
             member.arrlength = element.fMaxIndex[element.fArrayDim - 1];
             member.minus1 = true;
             member.func = function(buf, obj) {
-               obj[this.name] = buf.readNdimArray(this, (buf, handle) =>
-                  buf.readFastArray(handle.arrlength, handle.type - kOffsetL));
+               obj[this.name] = buf.readNdimArray(this, (buf2, handle) =>
+                  buf2.readFastArray(handle.arrlength, handle.type - kOffsetL));
             };
          }
          break;
@@ -962,8 +962,8 @@ function createMemberStreamer(element, file) {
             member.minus1 = true; // one dimension used for char*
             member.arrlength = element.fMaxIndex[element.fArrayDim - 1];
             member.func = function(buf, obj) {
-               obj[this.name] = buf.readNdimArray(this, (buf, handle) =>
-                  buf.readFastString(handle.arrlength));
+               obj[this.name] = buf.readNdimArray(this, (buf2, handle) =>
+                  buf2.readFastString(handle.arrlength));
             };
          }
          break;
@@ -1039,7 +1039,7 @@ function createMemberStreamer(element, file) {
                   member.arrlength = element.fMaxIndex[element.fArrayDim - 1];
                   member.minus1 = true;
                   member.func = function(buf, obj) {
-                     obj[this.name] = buf.readNdimArray(this, (buf, handle) => handle.readarr(buf, handle.arrlength));
+                     obj[this.name] = buf.readNdimArray(this, (buf2, handle) => handle.readarr(buf2, handle.arrlength));
                   };
                }
          break;
@@ -1047,7 +1047,7 @@ function createMemberStreamer(element, file) {
       case kAnyP:
       case kObjectP:
          member.func = function(buf, obj) {
-            obj[this.name] = buf.readNdimArray(this, buf => buf.readObjectAny());
+            obj[this.name] = buf.readNdimArray(this, buf2 => buf2.readObjectAny());
          };
          break;
 
@@ -1071,7 +1071,7 @@ function createMemberStreamer(element, file) {
 
             if (element.fArrayLength > 1) {
                member.func = function(buf, obj) {
-                  obj[this.name] = buf.readNdimArray(this, (buf, handle) => buf.classStreamer({}, handle.classname));
+                  obj[this.name] = buf.readNdimArray(this, (buf2, handle) => buf2.classStreamer({}, handle.classname));
                };
             } else {
                member.func = function(buf, obj) {
@@ -1092,10 +1092,12 @@ function createMemberStreamer(element, file) {
          member.arrkind = getArrayKind(classname);
          if (member.arrkind < 0) member.classname = classname;
          member.func = function(buf, obj) {
-            obj[this.name] = buf.readNdimArray(this, (buf, handle) => {
-               if (handle.arrkind > 0) return buf.readFastArray(buf.ntou4(), handle.arrkind);
-               if (handle.arrkind === 0) return buf.readTString();
-               return buf.classStreamer({}, handle.classname);
+            obj[this.name] = buf.readNdimArray(this, (buf2, handle) => {
+               if (handle.arrkind > 0)
+                  return buf2.readFastArray(buf.ntou4(), handle.arrkind);
+               if (handle.arrkind === 0)
+                  return buf2.readTString();
+               return buf2.classStreamer({}, handle.classname);
             });
          };
          break;
@@ -1123,9 +1125,10 @@ function createMemberStreamer(element, file) {
          member.typename = element.fTypeName;
          member.func = function(buf, obj) {
             const ver = buf.readVersion();
-            obj[this.name] = buf.readNdimArray(this, (buf, handle) => {
-               if (handle.typename === clTString) return buf.readTString();
-               return buf.classStreamer({}, handle.typename);
+            obj[this.name] = buf.readNdimArray(this, (buf2, handle) => {
+               if (handle.typename === clTString)
+                  return buf2.readTString();
+               return buf2.classStreamer({}, handle.typename);
             });
             buf.checkByteCount(ver, this.typename + '[]');
          };

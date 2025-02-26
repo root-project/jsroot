@@ -985,11 +985,11 @@ async function connectWebWindow(arg) {
       handle.setReceiver({
          onWebsocketOpened() {}, // dummy function when websocket connected
 
-         onWebsocketMsg(handle, msg) {
+         onWebsocketMsg(h, msg) {
             if (msg.indexOf(arg.first_recv) !== 0)
-               return handle.close();
-            handle.first_msg = msg.slice(arg.first_recv.length);
-            resolveFunc(handle);
+               return h.close();
+            h.first_msg = msg.slice(arg.first_recv.length);
+            resolveFunc(h);
          },
 
          onWebsocketClosed() { closeCurrentWindow(); } // when connection closed, close panel as well

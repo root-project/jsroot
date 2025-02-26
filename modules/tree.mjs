@@ -1777,15 +1777,18 @@ async function treeProcess(tree, selector, args) {
             if ((chld_kind > 0) && (br.fType !== chld_kind)) continue;
 
             if (br.fType === kBaseClassNode) {
-               if (!scanBranches(br.fBranches, master_target, chld_kind)) return false;
+               if (!scanBranches(br.fBranches, master_target, chld_kind))
+                  return false;
                continue;
             }
 
-            const elem = findBrachStreamerElement(br, handle.file);
-            if (elem?.fTypeName === kBaseClass) {
+            const elem2 = findBrachStreamerElement(br, handle.file);
+            if (elem2?.fTypeName === kBaseClass) {
                // if branch is data of base class, map it to original target
-               if (br.fTotBytes && !addBranchForReading(br, target_object, target_name, read_mode)) return false;
-               if (!scanBranches(br.fBranches, master_target, chld_kind)) return false;
+               if (br.fTotBytes && !addBranchForReading(br, target_object, target_name, read_mode))
+                  return false;
+               if (!scanBranches(br.fBranches, master_target, chld_kind))
+                  return false;
                continue;
             }
 
@@ -2325,7 +2328,7 @@ async function treeProcess(tree, selector, args) {
 
             const req = extractPlaces();
             if (req)
-               return handle.file.readBuffer(req.places, req.filename, readProgress).then(blobs => processBlobs(blobs)).catch(() => { return null; });
+               return handle.file.readBuffer(req.places, req.filename, readProgress).then(blobs2 => processBlobs(blobs2)).catch(() => null);
 
             return Promise.resolve(bitems);
           }
@@ -2690,9 +2693,10 @@ function treeIOTest(tree, args) {
 
 /** @summary Create hierarchy of TTree object
   * @private */
-function treeHierarchy(node, obj) {
+function treeHierarchy(tree_node, obj) {
    function createBranchItem(node, branch, tree, parent_branch) {
-      if (!node || !branch) return false;
+      if (!node || !branch)
+         return false;
 
       const nb_branches = branch.fBranches?.arr?.length ?? 0,
             nb_leaves = branch.fLeaves?.arr?.length ?? 0;
@@ -2792,11 +2796,11 @@ function treeHierarchy(node, obj) {
    if (obj.fBranches === undefined)
       return false;
 
-   node._childs = [];
-   node._tree = obj;  // set reference, will be used later by TTree::Draw
+   tree_node._childs = [];
+   tree_node._tree = obj;  // set reference, will be used later by TTree::Draw
 
    for (let i = 0; i < obj.fBranches.arr?.length; ++i)
-      createBranchItem(node, obj.fBranches.arr[i], obj);
+      createBranchItem(tree_node, obj.fBranches.arr[i], obj);
 
    return true;
 }
