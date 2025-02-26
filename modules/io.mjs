@@ -2265,17 +2265,22 @@ class TBuffer {
    }
 
     /** @summary read Char_t array as string
-      * @desc string either contains all symbols or until 0 symbol */
+      * @desc stops when 0 is found */
+    readNullTerminatedString() {
+      let res = '', code;
+      while ((code = this.ntou1()) !== 0)
+         res += String.fromCharCode(code);
+      return res;
+   }
+
+    /** @summary read Char_t array as string */
    readFastString(n) {
-      let res = '', closed = false;
-      for (let i = 0; (i < n) || (n < 0); ++i) {
+      let res = '', reading = true;
+      for (let i = 0; i < n; ++i) {
          const code = this.ntou1();
-         if (code === 0) {
-            closed = true;
-            if (n < 0)
-               n = 0;
-         }
-         if (!closed)
+         if (code === 0)
+            reading = false;
+         if (reading)
             res += String.fromCharCode(code);
       }
 
@@ -2547,7 +2552,7 @@ class TBuffer {
       }
       if (tag === kNewClassTag) {
          // got a new class description followed by a new object
-         classInfo.name = this.readFastString(-1);
+         classInfo.name = this.readNullTerminatedString();
 
          if (this.getMappedClass(this.fTagOffset + startpos + kMapOffset) === -1)
             this.mapClass(this.fTagOffset + startpos + kMapOffset, classInfo.name);
