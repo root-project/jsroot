@@ -251,6 +251,49 @@ class ArrayIterator {
 } // class ArrayIterator
 
 
+/** @summary return TStreamerElement associated with the branch - if any
+  * @desc unfortunately, branch.fID is not number of element in streamer info
+  * @private */
+function findBrachStreamerElement(branch, file) {
+   if (!branch || !file || (branch._typename !== clTBranchElement) || (branch.fID < 0) || (branch.fStreamerType < 0)) return null;
+
+   const s_i = file.findStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum),
+         arr = (s_i && s_i.fElements) ? s_i.fElements.arr : null;
+   if (!arr) return null;
+
+   let match_name = branch.fName,
+      pos = match_name.indexOf('[');
+   if (pos > 0) match_name = match_name.slice(0, pos);
+   pos = match_name.lastIndexOf('.');
+   if (pos > 0) match_name = match_name.slice(pos + 1);
+
+   function match_elem(elem) {
+      if (!elem) return false;
+      if (elem.fName !== match_name) return false;
+      if (elem.fType === branch.fStreamerType) return true;
+      if ((elem.fType === kBool) && (branch.fStreamerType === kUChar)) return true;
+      if (((branch.fStreamerType === kSTL) || (branch.fStreamerType === kSTL + kOffsetL) ||
+           (branch.fStreamerType === kSTLp) || (branch.fStreamerType === kSTLp + kOffsetL)) &&
+          (elem.fType === kStreamer)) return true;
+      console.warn(`Should match element ${elem.fType} with branch ${branch.fStreamerType}`);
+      return false;
+   }
+
+   // first check branch fID - in many cases gut guess
+   if (match_elem(arr[branch.fID]))
+      return arr[branch.fID];
+
+   for (let k = 0; k < arr.length; ++k) {
+      if ((k !== branch.fID) && match_elem(arr[k]))
+         return arr[k];
+   }
+
+   console.error(`Did not found/match element for branch ${branch.fName} class ${branch.fClassName}`);
+
+   return null;
+}
+
+
 /** @summary return class name of the object, stored in the branch
   * @private */
 function getBranchObjectClass(branch, tree, with_clones = false, with_leafs = false) {
@@ -1451,48 +1494,6 @@ class TDrawSelector extends TSelector {
 
 } // class TDrawSelector
 
-
-/** @summary return TStreamerElement associated with the branch - if any
-  * @desc unfortunately, branch.fID is not number of element in streamer info
-  * @private */
-function findBrachStreamerElement(branch, file) {
-   if (!branch || !file || (branch._typename !== clTBranchElement) || (branch.fID < 0) || (branch.fStreamerType < 0)) return null;
-
-   const s_i = file.findStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum),
-         arr = (s_i && s_i.fElements) ? s_i.fElements.arr : null;
-   if (!arr) return null;
-
-   let match_name = branch.fName,
-      pos = match_name.indexOf('[');
-   if (pos > 0) match_name = match_name.slice(0, pos);
-   pos = match_name.lastIndexOf('.');
-   if (pos > 0) match_name = match_name.slice(pos + 1);
-
-   function match_elem(elem) {
-      if (!elem) return false;
-      if (elem.fName !== match_name) return false;
-      if (elem.fType === branch.fStreamerType) return true;
-      if ((elem.fType === kBool) && (branch.fStreamerType === kUChar)) return true;
-      if (((branch.fStreamerType === kSTL) || (branch.fStreamerType === kSTL + kOffsetL) ||
-           (branch.fStreamerType === kSTLp) || (branch.fStreamerType === kSTLp + kOffsetL)) &&
-          (elem.fType === kStreamer)) return true;
-      console.warn(`Should match element ${elem.fType} with branch ${branch.fStreamerType}`);
-      return false;
-   }
-
-   // first check branch fID - in many cases gut guess
-   if (match_elem(arr[branch.fID]))
-      return arr[branch.fID];
-
-   for (let k = 0; k < arr.length; ++k) {
-      if ((k !== branch.fID) && match_elem(arr[k]))
-         return arr[k];
-   }
-
-   console.error(`Did not found/match element for branch ${branch.fName} class ${branch.fClassName}`);
-
-   return null;
-}
 
 /** @summary return type name of given member in the class
   * @private */

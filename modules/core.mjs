@@ -449,6 +449,22 @@ gStyle = {
    fBarWidth: 1
 };
 
+/** @summary Check if argument is a not-null Object
+  * @private */
+function isObject(arg) { return arg && typeof arg === 'object'; }
+
+/** @summary Check if argument is a Function
+  * @private */
+function isFunc(arg) { return typeof arg === 'function'; }
+
+/** @summary Check if argument is a String
+  * @private */
+function isStr(arg) { return typeof arg === 'string'; }
+
+/** @summary Check if object is a Promise
+  * @private */
+function isPromise(obj) { return isObject(obj) && isFunc(obj.then); }
+
 /** @summary Method returns current document in use
   * @private */
 function getDocument() {
@@ -1891,22 +1907,6 @@ function isRootCollection(lst, typename) {
    return (typename === clTList) || (typename === clTHashList) || (typename === clTMap) ||
           (typename === clTObjArray) || (typename === clTClonesArray);
 }
-
-/** @summary Check if argument is a not-null Object
-  * @private */
-function isObject(arg) { return arg && typeof arg === 'object'; }
-
-/** @summary Check if argument is a Function
-  * @private */
-function isFunc(arg) { return typeof arg === 'function'; }
-
-/** @summary Check if argument is a String
-  * @private */
-function isStr(arg) { return typeof arg === 'string'; }
-
-/** @summary Check if object is a Promise
-  * @private */
-function isPromise(obj) { return isObject(obj) && isFunc(obj.then); }
 
 /** @summary Postpone func execution and return result in promise
   * @private */
