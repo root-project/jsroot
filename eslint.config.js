@@ -23,6 +23,11 @@ export default [
            variables: true,
            allowNamedExports: false
         }],
+        'no-unreachable-loop': 'error',
+        'no-unreachable': 'error',
+        'no-constant-condition': 'error',
+        'no-unmodified-loop-condition': 'error',
+        'for-direction': 'error',
 
         // moved to @stylistic/js
         '@stylistic/js/semi': 'warn',
