@@ -59,6 +59,8 @@ export default [
         'no-invalid-this': 'off',
         'no-labels': 'error',
         'no-lonely-if': 'warn',
+        'no-return-assign': 'warn',
+        'no-shadow': 'warn',
 
         // moved to @stylistic/js
         '@stylistic/js/semi': 'warn',
