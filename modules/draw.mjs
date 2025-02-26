@@ -82,7 +82,7 @@ drawFuncs = { lst: [
    { name: /^RooCurve/, sameas: clTGraph },
    { name: /^RooEllipse/, sameas: clTGraph },
    { name: 'TScatter', icon: 'img_graph', class: () => import('./hist2d/TScatterPainter.mjs').then(h => h.TScatterPainter), opt: ';A' },
-   { name: 'RooPlot', icon: 'img_canvas', func: drawRooPlot },
+   { name: 'RooPlot', icon: 'img_canvas', draw: () => import('./hist/TGraphTimePainter.mjs').then(h => h.drawRooPlot) },
    { name: 'TRatioPlot', icon: 'img_mgraph', class: () => import('./draw/TRatioPlotPainter.mjs').then(h => h.TRatioPlotPainter), opt: '' },
    { name: clTMultiGraph, icon: 'img_mgraph', class: () => import('./hist/TMultiGraphPainter.mjs').then(h => h.TMultiGraphPainter), opt: ';ac;l;p;3d;pads', expand_item: 'fGraphs' },
    { name: clTStreamerInfoList, icon: 'img_question', draw: () => import_h().then(h => h.drawStreamerInfo) },
@@ -733,17 +733,5 @@ Object.assign(internals, { addStreamerInfosForPainter, addDrawFunc, setDefaultDr
 
 Object.assign(internals.jsroot, { draw, redraw, makeSVG, makeImage, addDrawFunc });
 
-
-/** @summary Draw TRooPlot
-  * @private */
-async function drawRooPlot(dom, plot) {
-   return draw(dom, plot._hist, 'hist').then(async hp => {
-      const arr = [];
-      for (let i = 0; i < plot._items.arr.length; ++i)
-         arr.push(draw(dom, plot._items.arr[i], plot._items.opt[i]));
-      return Promise.all(arr).then(() => hp);
-   });
-}
-
 export { addDrawFunc, getDrawHandle, canDrawHandle, getDrawSettings, setDefaultDrawOpt,
-         draw, redraw, cleanup, makeSVG, makeImage, drawRooPlot, assignPadPainterDraw };
+         draw, redraw, cleanup, makeSVG, makeImage, assignPadPainterDraw };
