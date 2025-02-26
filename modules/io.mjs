@@ -2253,8 +2253,10 @@ class TBuffer {
    readTString() {
       let len = this.ntou1();
       // large strings
-      if (len === 255) len = this.ntou4();
-      if (len === 0) return '';
+      if (len === 255)
+         len = this.ntou4();
+      if (len === 0)
+         return '';
 
       const pos = this.o;
       this.o += len;
@@ -2265,11 +2267,16 @@ class TBuffer {
     /** @summary read Char_t array as string
       * @desc string either contains all symbols or until 0 symbol */
    readFastString(n) {
-      let res = '', code, closed = false;
-      for (let i = 0; (n < 0) || (i < n); ++i) {
-         code = this.ntou1();
-         if (code === 0) { closed = true; if (n < 0) break; }
-         if (!closed) res += String.fromCharCode(code);
+      let res = '', closed = false;
+      for (let i = 0; (i < n) || (n < 0); ++i) {
+         const code = this.ntou1();
+         if (code === 0) {
+            closed = true;
+            if (n < 0)
+               n = 0;
+         }
+         if (!closed)
+            res += String.fromCharCode(code);
       }
 
       return res;
