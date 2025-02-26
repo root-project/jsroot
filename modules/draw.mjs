@@ -649,7 +649,8 @@ async function makeImage(args) {
 
          function clear_element() {
             const elem = d3_select(this);
-            if (elem.style('display') === 'none') elem.remove();
+            if (elem.style('display') === 'none')
+               elem.remove();
          }
 
          main.selectAll('g.root_frame').each(clear_element);

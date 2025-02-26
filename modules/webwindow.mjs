@@ -182,10 +182,8 @@ class LongPollSocket {
          if (isFunc(this.onclose))
             this.onclose();
          return;
-      } else {
-         if (isFunc(this.onmessage) && res)
-            this.onmessage({ data: res, offset: _offset });
-      }
+      } else if (isFunc(this.onmessage) && res)
+         this.onmessage({ data: res, offset: _offset });
 
       // minimal timeout to reduce load, generate dummy only if client not submit new request immediately
       if (!this.req)

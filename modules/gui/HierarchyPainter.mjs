@@ -2650,10 +2650,8 @@ class HierarchyPainter extends BasePainter {
                   _item._parent._isopen = true; // also show parent
                   if (!silent)
                      hpainter.updateTreeNode(_item._parent);
-               } else {
-                  if (!silent)
-                     hpainter.updateTreeNode(_item, d3cont);
-               }
+               } else if (!silent)
+                  hpainter.updateTreeNode(_item, d3cont);
                return _item;
             }
          }
@@ -2663,10 +2661,8 @@ class HierarchyPainter extends BasePainter {
             if (_item._parent && !_item._parent._isopen) {
                _item._parent._isopen = true; // also show parent
                if (!silent) hpainter.updateTreeNode(_item._parent);
-            } else {
-               if (!silent)
-                  hpainter.updateTreeNode(_item, d3cont);
-            }
+            } else if (!silent)
+               hpainter.updateTreeNode(_item, d3cont);
             return _item;
          }
 

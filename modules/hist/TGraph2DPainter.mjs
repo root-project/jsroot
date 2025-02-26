@@ -628,15 +628,13 @@ class TGraphDelaunay {
                            // different fZ's. If they don't then this is harmless.
                            console.warn(`Interpolate Two of these three points are coincident ${a} ${b} ${z}`);
                         }
-                     } else {
-                        if (((this.fYN[z]-this.fYN[a])*(this.fYN[z]-this.fYN[b])) < 0) {
-                           skip_this_triangle = true;
-                           break;
-                           // goto L90;
-                        } else if (((this.fYN[z]-this.fYN[a])*(this.fYN[z]-this.fYN[b])) === 0) {
-                           // At least two points are sitting on top of each other - see above.
-                           console.warn(`Interpolate Two of these three points are coincident ${a} ${b} ${z}`);
-                        }
+                     } else if (((this.fYN[z]-this.fYN[a])*(this.fYN[z]-this.fYN[b])) < 0) {
+                        skip_this_triangle = true;
+                        break;
+                        // goto L90;
+                     } else if (((this.fYN[z]-this.fYN[a])*(this.fYN[z]-this.fYN[b])) === 0) {
+                        // At least two points are sitting on top of each other - see above.
+                        console.warn(`Interpolate Two of these three points are coincident ${a} ${b} ${z}`);
                      }
                      // point is outside the circle, move to next point
                      continue; // goto L50;

@@ -140,14 +140,12 @@ class TH1Painter extends THistPainter {
             } else {
                this.ymin = 0; this.ymax = hmin * 2;
             }
+         } else if (pad_logy) {
+            this.ymin = (hmin_nz || hmin) * 0.5;
+            this.ymax = hmax*2*(0.9/0.95);
          } else {
-            if (pad_logy) {
-               this.ymin = (hmin_nz || hmin) * 0.5;
-               this.ymax = hmax*2*(0.9/0.95);
-            } else {
-               this.ymin = hmin;
-               this.ymax = hmax;
-            }
+            this.ymin = hmin;
+            this.ymax = hmax;
          }
       }
 

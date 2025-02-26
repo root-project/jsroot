@@ -3142,10 +3142,8 @@ class TGeoPainter extends ObjectPainter {
 
          if (this._animating)
             requestAnimationFrame(animate);
-          else {
-            if (!this._geom_viewer)
-               this.startDrawGeometry();
-         }
+          else if (!this._geom_viewer)
+            this.startDrawGeometry();
          const smoothFactor = -Math.cos((2.0*Math.PI*step)/frames) + 1.0;
          this._camera.position.add(posIncrement.clone().multiplyScalar(smoothFactor));
          oldTarget.add(targetIncrement.clone().multiplyScalar(smoothFactor));

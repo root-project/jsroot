@@ -1992,12 +1992,10 @@ function eff_Bayesian(total,passed,level,bUpper,alpha,beta) {
          return beta_quantile((1+level)/2,a,b);
       else
          return 1;
-   } else {
-      if ((a > 0) && (b > 0))
-         return beta_quantile((1-level)/2,a,b);
-      else
-         return 0;
-   }
+   } else if ((a > 0) && (b > 0))
+      return beta_quantile((1-level)/2,a,b);
+
+   return 0;
 }
 
 /** @summary Return function to calculate boundary of TEfficiency
