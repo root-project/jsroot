@@ -967,18 +967,22 @@ async function connectWebWindow(arg) {
 
       if (typeof window !== 'undefined') {
          window.onbeforeunload = () => handle.close(true);
-         if (browser.qt5 || browser.qt6) window.onqt5unload = window.onbeforeunload;
+         if (browser.qt5 || browser.qt6)
+            window.onqt5unload = window.onbeforeunload;
       }
 
       if (arg.receiver) {
          // when receiver exists, it handles itself callbacks
          handle.setReceiver(arg.receiver);
          handle.connect();
-         return resolveFunc(handle);
+         resolveFunc(handle);
+         return;
       }
 
-      if (!arg.first_recv)
-         return resolveFunc(handle);
+      if (!arg.first_recv) {
+         resolveFunc(handle);
+         return;
+      }
 
       handle.setReceiver({
          onWebsocketOpened() {}, // dummy function when websocket connected

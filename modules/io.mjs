@@ -3673,19 +3673,27 @@ class TLocalFile extends TFile {
       const file = this.fLocalFile;
 
       return new Promise((resolve, reject) => {
-         if (filename)
-            return reject(Error(`Cannot access other local file ${filename}`));
+         if (filename) {
+            reject(Error(`Cannot access other local file ${filename}`));
+            return;
+         }
 
          const reader = new FileReader(), blobs = [];
          let cnt = 0;
 
          reader.onload = function(evnt) {
             const res = new DataView(evnt.target.result);
-            if (place.length === 2) return resolve(res);
+            if (place.length === 2) {
+               resolve(res);
+               return;
+            }
 
             blobs.push(res);
             cnt += 2;
-            if (cnt >= place.length) return resolve(blobs);
+            if (cnt >= place.length) {
+               resolve(blobs);
+               return;
+            }
             reader.readAsArrayBuffer(file.slice(place[cnt], place[cnt] + place[cnt + 1]));
          };
 
@@ -3721,16 +3729,16 @@ class TNodejsFile extends TFile {
          this.fs = fs;
 
          return new Promise((resolve, reject) =>
-
             this.fs.open(this.fFileName, 'r', (status, fd) => {
                if (status) {
                   console.log(status.message);
-                  return reject(Error(`Not possible to open ${this.fFileName} inside node.js`));
+                  reject(Error(`Not possible to open ${this.fFileName} inside node.js`));
+               } else {
+                  const stats = this.fs.fstatSync(fd);
+                  this.fEND = stats.size;
+                  this.fd = fd;
+                  this.readKeys().then(resolve).catch(reject);
                }
-               const stats = this.fs.fstatSync(fd);
-               this.fEND = stats.size;
-               this.fd = fd;
-               this.readKeys().then(resolve).catch(reject);
             })
          );
       });
@@ -3740,11 +3748,15 @@ class TNodejsFile extends TFile {
      * @return {Promise} with requested blocks */
    async readBuffer(place, filename /* , progress_callback */) {
       return new Promise((resolve, reject) => {
-         if (filename)
-            return reject(Error(`Cannot access other local file ${filename}`));
+         if (filename) {
+            reject(Error(`Cannot access other local file ${filename}`));
+            return;
+         }
 
-         if (!this.fs || !this.fd)
-            return reject(Error(`File is not opened ${this.fFileName}`));
+         if (!this.fs || !this.fd) {
+            reject(Error(`File is not opened ${this.fFileName}`));
+            return;
+         }
 
          const blobs = [];
          let cnt = 0;
