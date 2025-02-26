@@ -2538,13 +2538,10 @@ class TBuffer {
 
    /** @summary read class definition from I/O buffer */
    readClass() {
-      const classInfo = { name: -1 }, bcnt = this.ntou4(), startpos = this.o;
-      let tag;
-
-      if (!(bcnt & kByteCountMask) || (bcnt === kNewClassTag))
-         tag = bcnt;
-      else
-         tag = this.ntou4();
+      const classInfo = { name: -1 },
+            bcnt = this.ntou4(),
+            startpos = this.o,
+            tag = !(bcnt & kByteCountMask) || (bcnt === kNewClassTag) ? bcnt : this.ntou4();
 
       if (!(tag & kClassMask)) {
          classInfo.objtag = tag + this.fDisplacement; // indicate that we have deal with objects tag
@@ -2574,10 +2571,11 @@ class TBuffer {
             clRef = this.readClass();
 
       // class identified as object and should be handled so
-      if ('objtag' in clRef)
+      if (clRef.objtag !== undefined)
          return this.getMappedObject(clRef.objtag);
 
-      if (clRef.name === -1) return null;
+      if (clRef.name === -1)
+         return null;
 
       const arrkind = getArrayKind(clRef.name);
       let obj;
