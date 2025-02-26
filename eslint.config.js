@@ -55,6 +55,10 @@ export default [
         'no-self-compare': 'error',
         'no-template-curly-in-string': 'warn',
         'no-useless-assignment': 'warn',
+        'no-implicit-globals': 'warn',
+        'no-invalid-this': 'off',
+        'no-labels': 'error',
+        'no-lonely-if': 'warn',
 
         // moved to @stylistic/js
         '@stylistic/js/semi': 'warn',
