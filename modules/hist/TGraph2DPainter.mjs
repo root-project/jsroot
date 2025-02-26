@@ -1539,12 +1539,12 @@ class TGraph2DPainter extends ObjectPainter {
       }
 
       return Promise.all(promises).then(() => {
-         const main = this.getMainPainter(),
-               handle_palette = this.axes_draw || (main?.draw_content === false);
+         const main2 = this.getMainPainter(),
+               handle_palette = this.axes_draw || (main2?.draw_content === false);
          if (!handle_palette)
             return;
 
-         const pal = main?.findFunction(clTPaletteAxis),
+         const pal = main2?.findFunction(clTPaletteAxis),
                pal_painter = this.getPadPainter()?.findPainterFor(pal);
          if (!pal_painter)
             return;

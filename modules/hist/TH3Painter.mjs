@@ -73,7 +73,8 @@ class TH3Painter extends THistPainter {
           stat_sum0 = 0, stat_sumw2 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
           stat_sumz1 = 0, stat_sumx2 = 0, stat_sumy2 = 0, stat_sumz2 = 0;
 
-      if (!isFunc(cond)) cond = null;
+      if (!isFunc(cond))
+         cond = null;
 
       for (xi = 0; xi < this.nbinsx+2; ++xi) {
          xx = xaxis.GetBinCoord(xi - 0.5);
@@ -135,11 +136,11 @@ class TH3Painter extends THistPainter {
 
       if (count_skew && !this.isTH2Poly()) {
          let sumx3 = 0, sumy3 = 0, sumz3 = 0, sumx4 = 0, sumy4 = 0, sumz4 = 0, np = 0;
-         for (let xi = i1; xi < i2; ++xi) {
+         for (xi = i1; xi < i2; ++xi) {
             xx = xaxis.GetBinCoord(xi + 0.5);
-            for (let yi = j1; yi < j2; ++yi) {
+            for (yi = j1; yi < j2; ++yi) {
                yy = yaxis.GetBinCoord(yi + 0.5);
-               for (let zi = k1; zi < k2; ++zi) {
+               for (zi = k1; zi < k2; ++zi) {
                   zz = zaxis.GetBinCoord(zi + 0.5);
                   if (cond && !cond(xx, yy, zz)) continue;
                   const w = histo.getBinContent(xi + 1, yi + 1, zi + 1);
@@ -343,16 +344,17 @@ class TH3Painter extends THistPainter {
             const indx = Math.floor(intersect.index / this.nvertex);
             if ((indx < 0) || (indx >= this.bins.length)) return null;
 
-            const p = this.painter, histo = p.getHisto(),
-                main = p.getFramePainter(),
-                tip = p.get3DToolTip(this.bins[indx]);
+            const p = this.painter,
+                  thisto = p.getHisto(),
+                  fp = p.getFramePainter(),
+                  tip = p.get3DToolTip(this.bins[indx]);
 
-            tip.x1 = main.grx(histo.fXaxis.GetBinLowEdge(tip.ix));
-            tip.x2 = main.grx(histo.fXaxis.GetBinLowEdge(tip.ix+1));
-            tip.y1 = main.gry(histo.fYaxis.GetBinLowEdge(tip.iy));
-            tip.y2 = main.gry(histo.fYaxis.GetBinLowEdge(tip.iy+1));
-            tip.z1 = main.grz(histo.fZaxis.GetBinLowEdge(tip.iz));
-            tip.z2 = main.grz(histo.fZaxis.GetBinLowEdge(tip.iz+1));
+            tip.x1 = fp.grx(thisto.fXaxis.GetBinLowEdge(tip.ix));
+            tip.x2 = fp.grx(thisto.fXaxis.GetBinLowEdge(tip.ix+1));
+            tip.y1 = fp.gry(thisto.fYaxis.GetBinLowEdge(tip.iy));
+            tip.y2 = fp.gry(thisto.fYaxis.GetBinLowEdge(tip.iy+1));
+            tip.z1 = fp.grz(thisto.fZaxis.GetBinLowEdge(tip.iz));
+            tip.z2 = fp.grz(thisto.fZaxis.GetBinLowEdge(tip.iz+1));
             tip.color = this.tip_color;
             tip.opacity = 0.3;
 
@@ -524,15 +526,15 @@ class TH3Painter extends THistPainter {
          }
 
          const p = this.painter,
-               histo = p.getHisto(),
-               main = p.getFramePainter(),
+               thisto = p.getHisto(),
+               fp = p.getFramePainter(),
                tip = p.get3DToolTip(binid),
-               grx1 = main.grx(histo.fXaxis.GetBinCoord(tip.ix-1)),
-               grx2 = main.grx(histo.fXaxis.GetBinCoord(tip.ix)),
-               gry1 = main.gry(histo.fYaxis.GetBinCoord(tip.iy-1)),
-               gry2 = main.gry(histo.fYaxis.GetBinCoord(tip.iy)),
-               grz1 = main.grz(histo.fZaxis.GetBinCoord(tip.iz-1)),
-               grz2 = main.grz(histo.fZaxis.GetBinCoord(tip.iz)),
+               grx1 = fp.grx(thisto.fXaxis.GetBinCoord(tip.ix-1)),
+               grx2 = fp.grx(thisto.fXaxis.GetBinCoord(tip.ix)),
+               gry1 = fp.gry(thisto.fYaxis.GetBinCoord(tip.iy-1)),
+               gry2 = fp.gry(thisto.fYaxis.GetBinCoord(tip.iy)),
+               grz1 = fp.grz(thisto.fZaxis.GetBinCoord(tip.iz-1)),
+               grz2 = fp.grz(thisto.fZaxis.GetBinCoord(tip.iz)),
                wei2 = this.get_weight(tip.value) * this.tipscale;
 
          tip.x1 = (grx2 + grx1) / 2 - (grx2 - grx1) * wei2;
