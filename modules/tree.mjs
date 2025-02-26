@@ -1819,8 +1819,7 @@ async function treeProcess(tree, selector, args) {
             typename: branch.fClassName,
             virtual: leaf.fVirtual,
             func(buf, obj) {
-               let clname = this.typename;
-               if (this.virtual) clname = buf.readFastString(buf.ntou1() + 1);
+               const clname = this.virtual ? buf.readFastString(buf.ntou1() + 1) : this.typename;
                obj[this.name] = buf.classStreamer({}, clname);
             }
          };
