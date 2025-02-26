@@ -2788,7 +2788,8 @@ class TFile {
       this.fStreamers = [];
       this.fBasicTypes = {}; // custom basic types, in most case enumerations
 
-      if (!isStr(this.fURL)) return this;
+      if (!isStr(this.fURL))
+         return;
 
       if (this.fURL.at(-1) === '+') {
          this.fURL = this.fURL.slice(0, this.fURL.length - 1);
