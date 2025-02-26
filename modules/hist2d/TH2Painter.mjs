@@ -2956,10 +2956,7 @@ class TH2Painter extends THistPainter {
 
       this.createG();
 
-      makeTranslate(this.draw_g, midx, midy, this._zoom);
-
-      let ellipse = null;
-
+      makeTranslate(this.draw_g, midx + (this._shiftx ?? 0), midy + (this._shifty ?? 0), this._zoom);
 
       const chord = d3_chord()
          .padAngle(10 / innerRadius)
@@ -3036,14 +3033,30 @@ class TH2Painter extends THistPainter {
                     .style('fill', 'none')
                     .style('pointer-events', 'visibleFill');
          this.draw_g.on('wheel', evnt => {
-            // let cur = d3_pointer(evnt, this.draw_g.node());
-            const delta = evnt.wheelDelta ? -evnt.wheelDelta : (evnt.deltaY || evnt.detail);
-            if (!this._zoom)
+            if (!this._zoom) {
                this._zoom = 1;
+               this._shiftx = 0;
+               this._shifty = 0;
+            }
+            const pos = d3_pointer(evnt, this.draw_g.node()),
+                  delta = evnt.wheelDelta ? -evnt.wheelDelta : (evnt.deltaY || evnt.detail);
+
+            const pixel_dx_old = pos[0] * this._zoom,
+                  pixel_dy_old = pos[1] * this._zoom;
             this._zoom *= (delta > 0) ? 0.8 : 1.2;
-            makeTranslate(this.draw_g, midx, midy, this._zoom);
+
+            const pixel_dx_new = pos[0] * this._zoom,
+                  pixel_dy_new = pos[1] * this._zoom;
+
+            this._shiftx += (pixel_dx_old - pixel_dx_new);
+            this._shifty += (pixel_dy_old - pixel_dy_new);
+
+            makeTranslate(this.draw_g, midx + this._shiftx, midy + this._shifty, this._zoom);
+
          }).on('dblclick', () => {
             delete this._zoom;
+            delete this._shiftx;
+            delete this._shifty;
             makeTranslate(this.draw_g, midx, midy, this._zoom);
          });
       }
