@@ -13,7 +13,7 @@ version = version_id + ' ' + version_date,
 
 /** @summary Is node.js flag
   * @private */
-nodejs = !!((typeof process === 'object') && isObject(process.versions) && process.versions.node && process.versions.v8),
+nodejs = !!((typeof process === 'object') && process.versions?.node && process.versions.v8),
 
 /** @summary internal data
   * @private */
@@ -25,6 +25,38 @@ internals = {
 _src = import.meta?.url,
 
 _src_dir = '$jsrootsys';
+
+
+/** @summary Check if argument is a not-null Object
+  * @private */
+function isObject(arg) { return arg && typeof arg === 'object'; }
+
+/** @summary Check if argument is a Function
+  * @private */
+function isFunc(arg) { return typeof arg === 'function'; }
+
+/** @summary Check if argument is a String
+  * @private */
+function isStr(arg) { return typeof arg === 'string'; }
+
+/** @summary Check if object is a Promise
+  * @private */
+function isPromise(obj) { return isObject(obj) && isFunc(obj.then); }
+
+/** @summary Postpone func execution and return result in promise
+  * @private */
+function postponePromise(func, timeout) {
+   return new Promise(resolveFunc => {
+      setTimeout(() => {
+         const res = isFunc(func) ? func() : func;
+         resolveFunc(res);
+      }, timeout);
+   });
+}
+
+/** @summary Provide promise in any case
+  * @private */
+function getPromise(obj) { return isPromise(obj) ? obj : Promise.resolve(obj); }
 
 
 /** @summary Location of JSROOT modules
@@ -449,22 +481,6 @@ gStyle = {
    fBarWidth: 1
 };
 
-/** @summary Check if argument is a not-null Object
-  * @private */
-function isObject(arg) { return arg && typeof arg === 'object'; }
-
-/** @summary Check if argument is a Function
-  * @private */
-function isFunc(arg) { return typeof arg === 'function'; }
-
-/** @summary Check if argument is a String
-  * @private */
-function isStr(arg) { return typeof arg === 'string'; }
-
-/** @summary Check if object is a Promise
-  * @private */
-function isPromise(obj) { return isObject(obj) && isFunc(obj.then); }
-
 /** @summary Method returns current document in use
   * @private */
 function getDocument() {
@@ -476,6 +492,10 @@ function getDocument() {
       return window.document;
    return undefined;
 }
+
+/** @summary Ensure global JSROOT and v6 support methods
+  * @private */
+let _ensureJSROOT = null;
 
 /** @summary Inject javascript code
   * @desc Replacement for eval
@@ -614,6 +634,16 @@ async function loadScript(url) {
       document.head.appendChild(element);
    });
 }
+
+_ensureJSROOT = async function() {
+   const pr = globalThis.JSROOT ? Promise.resolve(true) : loadScript(source_dir + 'scripts/JSRoot.core.js');
+
+   return pr.then(() => {
+      if (globalThis.JSROOT?._complete_loading)
+         return globalThis.JSROOT._complete_loading();
+   }).then(() => globalThis.JSROOT);
+};
+
 
 /** @summary Generate mask for given bit
   * @param {number} n bit number
@@ -1908,31 +1938,6 @@ function isRootCollection(lst, typename) {
           (typename === clTObjArray) || (typename === clTClonesArray);
 }
 
-/** @summary Postpone func execution and return result in promise
-  * @private */
-function postponePromise(func, timeout) {
-   return new Promise(resolveFunc => {
-      setTimeout(() => {
-         const res = isFunc(func) ? func() : func;
-         resolveFunc(res);
-      }, timeout);
-   });
-}
-
-/** @summary Provide promise in any case
-  * @private */
-function getPromise(obj) { return isPromise(obj) ? obj : Promise.resolve(obj); }
-
-/** @summary Ensure global JSROOT and v6 support methods
-  * @private */
-async function _ensureJSROOT() {
-   const pr = globalThis.JSROOT ? Promise.resolve(true) : loadScript(source_dir + 'scripts/JSRoot.core.js');
-
-   return pr.then(() => {
-      if (globalThis.JSROOT?._complete_loading)
-         return globalThis.JSROOT._complete_loading();
-   }).then(() => globalThis.JSROOT);
-}
 
 /** @summary Internal collection of functions potentially used by batch scripts
   * @private */
