@@ -205,7 +205,7 @@ class RPadPainter extends RObjectPainter {
      * @return new index to continue loop or -111 if main painter removed
      * @private */
    removePrimitive(arg, clean_only_secondary) {
-      let indx = -1, prim = null;
+      let indx, prim = null;
       if (Number.isInteger(arg)) {
          indx = arg; prim = this.painters[indx];
       } else {
@@ -384,7 +384,7 @@ class RPadPainter extends RObjectPainter {
    /** @summary Create SVG element for the canvas */
    createCanvasSvg(check_resize, new_size) {
       const lmt = 5;
-      let factor = null, svg = null, rect = null, btns, frect;
+      let factor, svg, rect, btns, frect;
 
       if (check_resize > 0) {
          if (this._fixed_size)
@@ -556,7 +556,7 @@ class RPadPainter extends RObjectPainter {
             pad_enlarged = svg_can.property('pad_enlarged');
       let pad_visible = true,
           w = width, h = height, x = 0, y = 0,
-          svg_pad = null, svg_rect = null, btns = null;
+          svg_pad, svg_rect, btns = null;
 
       if (this.pad?.fPos && this.pad?.fSize) {
          x = Math.round(width * this.pad.fPos.fHoriz.fArr[0]);

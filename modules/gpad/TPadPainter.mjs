@@ -416,11 +416,13 @@ class TPadPainter extends ObjectPainter {
      * @return new index to continue loop or -111 if main painter removed
      * @private */
    removePrimitive(arg, clean_only_secondary) {
-      let indx = -1, prim = null;
+      let indx, prim;
       if (Number.isInteger(arg)) {
-         indx = arg; prim = this.painters[indx];
+         indx = arg;
+         prim = this.painters[indx];
       } else {
-         indx = this.painters.indexOf(arg); prim = arg;
+         indx = this.painters.indexOf(arg);
+         prim = arg;
       }
       if (indx < 0)
          return indx;
@@ -628,7 +630,7 @@ class TPadPainter extends ObjectPainter {
    /** @summary Create SVG element for canvas */
    createCanvasSvg(check_resize, new_size) {
       const is_batch = this.isBatchMode(), lmt = 5;
-      let factor = null, svg = null, rect = null, btns, info, frect;
+      let factor, svg, rect, btns, info, frect;
 
       if (check_resize > 0) {
          if (this._fixed_size)
@@ -2481,7 +2483,7 @@ class TPadPainter extends ObjectPainter {
                   const obj = pp?.getObject();
                   if (!obj || (shown.indexOf(obj) >= 0))
                      return;
-                  let name = '';
+                  let name;
                   if (isFunc(pp.getMenuHeader))
                      name = pp.getMenuHeader();
                   else {

@@ -1214,7 +1214,7 @@ class TAxisPainter extends ObjectPainter {
             tickScalingSize = scalingSize || (this.vertical ? h/pad_h*pad_w : w/pad_w*pad_h),
             bit_plus = axis.TestBit(EAxisBits.kTickPlus), bit_minus = axis.TestBit(EAxisBits.kTickMinus);
 
-      let tickSize = 0, titleColor, titleFontId, offset;
+      let tickSize, titleColor, titleFontId, offset;
 
       this.scalingSize = scalingSize || Math.max(Math.min(pad_w, pad_h), 10);
 

@@ -578,7 +578,7 @@ class RAxisPainter extends RObjectPainter {
       }
 
       while (this.handle.next(true)) {
-         let h1 = Math.round(this.ticksSize/4), h2 = 0;
+         let h1 = Math.round(this.ticksSize/4), h2;
 
          if (this.handle.kind < 3)
             h1 = Math.round(this.ticksSize/2);
@@ -763,7 +763,7 @@ class RAxisPainter extends RObjectPainter {
             rotated = this.isTitleRotated();
 
       return this.startTextDrawingAsync(this.titleFont, 'font', title_g).then(() => {
-         let title_shift_x = 0, title_shift_y = 0, title_basepos = 0;
+         let title_shift_x, title_shift_y, title_basepos;
 
          this.title_align = this.titleCenter ? 'middle' : (this.titleOpposite ^ (this.isReverseAxis() || rotated) ? 'begin' : 'end');
 
