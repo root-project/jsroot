@@ -40,6 +40,14 @@ export default [
         'no-unmodified-loop-condition': 'error',
         'for-direction': 'error',
         'no-undef': 'warn',
+        'no-await-in-loop': 'warn',
+        'no-class-assign': 'error',
+        'no-cond-assign': 'warn',
+        'no-constructor-return': 'error',
+        'no-duplicate-imports': 'error',
+        'no-promise-executor-return': 'error',
+        'no-self-compare': 'error',
+        'no-template-curly-in-string': 'warn',
 
         // moved to @stylistic/js
         '@stylistic/js/semi': 'warn',

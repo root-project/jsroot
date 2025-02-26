@@ -3728,7 +3728,7 @@ class TNodejsFile extends TFile {
       return import('fs').then(fs => {
          this.fs = fs;
 
-         return new Promise((resolve, reject) =>
+         return new Promise((resolve, reject) => {
             this.fs.open(this.fFileName, 'r', (status, fd) => {
                if (status) {
                   console.log(status.message);
@@ -3739,8 +3739,8 @@ class TNodejsFile extends TFile {
                   this.fd = fd;
                   this.readKeys().then(resolve).catch(reject);
                }
-            })
-         );
+            });
+         });
       });
    }
 
