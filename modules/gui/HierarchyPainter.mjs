@@ -104,20 +104,21 @@ async function drawList(dom, lst, opt) {
       return null;
 
    const handle = {
-     dom, lst, opt,
-     indx: -1, painter: null,
-     draw_next() {
-        while (++this.indx < this.lst.arr.length) {
-           const item = this.lst.arr[this.indx],
-               opt = (this.lst.opt && this.lst.opt[this.indx]) ? this.lst.opt[this.indx] : this.opt;
-           if (!item) continue;
-           return draw(this.dom, item, opt).then(p => {
-              if (p && !this.painter) this.painter = p;
-              return this.draw_next(); // reenter loop
-           });
-        }
-        return this.painter;
-     }
+      dom, lst, opt,
+      indx: -1, painter: null,
+      draw_next() {
+         while (++this.indx < this.lst.arr.length) {
+            const item = this.lst.arr[this.indx],
+                  opt2 = (this.lst.opt && this.lst.opt[this.indx]) ? this.lst.opt[this.indx] : this.opt;
+            if (!item)
+               continue;
+            return draw(this.dom, item, opt2).then(p => {
+               if (p && !this.painter) this.painter = p;
+               return this.draw_next(); // reenter loop
+            });
+         }
+         return this.painter;
+      }
    };
 
    return handle.draw_next();
@@ -799,51 +800,54 @@ class HierarchyPainter extends BasePainter {
       folder._had_direct_read = false;
       // this is central get method, item or itemname can be used, returns promise
       folder._get = function(item, itemname) {
-            if (item?._readobj)
-               return Promise.resolve(item._readobj);
+         if (item?._readobj)
+            return Promise.resolve(item._readobj);
 
-            if (item) itemname = painter.itemFullName(item, this);
+         if (item)
+            itemname = painter.itemFullName(item, this);
 
-            const readFileObject = file => {
-               if (!this._file) this._file = file;
+         const readFileObject = file2 => {
+            if (!this._file)
+               this._file = file2;
 
-               if (!file) return Promise.resolve(null);
+            if (!file2)
+               return Promise.resolve(null);
 
-               return file.readObject(itemname).then(obj => {
-                  // if object was read even when item did not exist try to reconstruct new hierarchy
-                  if (!item && obj) {
-                     // first try to found last read directory
-                     const d = painter.findItem({ name: itemname, top: this, last_exists: true, check_keys: true });
-                     if ((d?.last !== undefined) && (d.last !== this)) {
-                        // reconstruct only sub-directory hierarchy
-                        const dir = file.getDir(painter.itemFullName(d.last, this));
-                        if (dir) {
-                           d.last._name = d.last._keyname;
-                           const dirname = painter.itemFullName(d.last, this);
-                           keysHierarchy(d.last, dir.fKeys, file, dirname + '/');
-                        }
-                     } else {
-                        // reconstruct full file hierarchy
-                        keysHierarchy(this, file.fKeys, file, '');
+            return file2.readObject(itemname).then(obj => {
+               // if object was read even when item did not exist try to reconstruct new hierarchy
+               if (!item && obj) {
+                  // first try to found last read directory
+                  const d = painter.findItem({ name: itemname, top: this, last_exists: true, check_keys: true });
+                  if ((d?.last !== undefined) && (d.last !== this)) {
+                     // reconstruct only sub-directory hierarchy
+                     const dir = file2.getDir(painter.itemFullName(d.last, this));
+                     if (dir) {
+                        d.last._name = d.last._keyname;
+                        const dirname = painter.itemFullName(d.last, this);
+                        keysHierarchy(d.last, dir.fKeys, file2, dirname + '/');
                      }
-                     item = painter.findItem({ name: itemname, top: this });
+                  } else {
+                     // reconstruct full file hierarchy
+                     keysHierarchy(this, file2.fKeys, file2, '');
                   }
+                  item = painter.findItem({ name: itemname, top: this });
+               }
 
-                  if (item) {
-                     item._readobj = obj;
-                     // remove cycle number for objects supporting expand
-                     if ('_expand' in item) item._name = item._keyname;
-                  }
+               if (item) {
+                  item._readobj = obj;
+                  // remove cycle number for objects supporting expand
+                  if ('_expand' in item) item._name = item._keyname;
+               }
 
-                  return obj;
-               });
-            };
-
-            if (this._file) return readFileObject(this._file);
-            if (this._localfile) return openFile(this._localfile).then(f => readFileObject(f));
-            if (this._fullurl) return openFile(this._fullurl).then(f => readFileObject(f));
-            return Promise.resolve(null);
+               return obj;
+            });
          };
+
+         if (this._file) return readFileObject(this._file);
+         if (this._localfile) return openFile(this._localfile).then(f => readFileObject(f));
+         if (this._fullurl) return openFile(this._fullurl).then(f => readFileObject(f));
+         return Promise.resolve(null);
+      };
 
       keysHierarchy(folder, file.fKeys, file, '');
 
@@ -2473,7 +2477,7 @@ class HierarchyPainter extends BasePainter {
                if (items[cnt] === null) continue; // ignore completed item
                if (items_wait[cnt] && items.indexOf(items[cnt]) === cnt) {
                   items_wait[cnt] = false;
-                  return h.display(items[cnt], options[cnt], doms[cnt]).then(painter => dropNextItem(cnt, painter));
+                  return h.display(items[cnt], options[cnt], doms[cnt]).then(drop_painter => dropNextItem(cnt, drop_painter));
                }
             }
          }
@@ -2682,17 +2686,20 @@ class HierarchyPainter extends BasePainter {
             return;
          }
 
-         if (hitem._obj) promise = doExpandItem(hitem, hitem._obj);
+         if (hitem._obj)
+            promise = doExpandItem(hitem, hitem._obj);
       }
 
       return promise.then(res => {
-         if (res !== -1) return res; // done
+         if (res !== -1)
+            return res; // done
 
          showProgress('Loading ' + itemname);
 
-         return this.getObject(itemname, silent ? 'hierarchy_expand' : 'hierarchy_expand_verbose').then(res => {
+         return this.getObject(itemname, silent ? 'hierarchy_expand' : 'hierarchy_expand_verbose').then(res2 => {
             showProgress();
-            if (res.obj) return doExpandItem(res.item, res.obj).then(res => { return (res !== -1) ? res : undefined; });
+            if (res2.obj)
+               return doExpandItem(res2.item, res2.obj).then(res3 => { return res3 !== -1 ? res3 : undefined; });
          });
       });
    }
@@ -2737,17 +2744,17 @@ class HierarchyPainter extends BasePainter {
       this.forEachJsonFile(item => { if (item._jsonfile === filepath) isfileopened = true; });
       if (isfileopened) return;
 
-      return httpRequest(filepath, 'object').then(res => {
-         if (!res) return;
-         const h1 = { _jsonfile: filepath, _kind: prROOT + res._typename, _jsontmp: res, _name: filepath.split('/').pop() };
-         if (res.fTitle) h1._title = res.fTitle;
+      return httpRequest(filepath, 'object').then(res2 => {
+         if (!res2) return;
+         const h1 = { _jsonfile: filepath, _kind: prROOT + res2._typename, _jsontmp: res2, _name: filepath.split('/').pop() };
+         if (res2.fTitle) h1._title = res2.fTitle;
          h1._get = function(item /* ,itemname */) {
             if (item._jsontmp)
                return Promise.resolve(item._jsontmp);
             return httpRequest(item._jsonfile, 'object')
-                         .then(res => {
-                             item._jsontmp = res;
-                             return res;
+                         .then(res3 => {
+                             item._jsontmp = res3;
+                             return res3;
                           });
          };
          if (!this.h)
@@ -2868,13 +2875,13 @@ class HierarchyPainter extends BasePainter {
                h._childs.push({
                   _name: fname, _title: dirname + fname, _jsonfile: dirname + fname, _can_draw: true,
                   _get: item => {
-                     return httpRequest(item._jsonfile, 'object').then(res => {
-                        if (res) {
-                          item._kind = prROOT + res._typename;
-                          item._jsontmp = res;
+                     return httpRequest(item._jsonfile, 'object').then(res2 => {
+                        if (res2) {
+                          item._kind = prROOT + res2._typename;
+                          item._jsontmp = res2;
                           this.updateTreeNode(item);
                         }
-                        return res;
+                        return res2;
                      });
                   }
                });
@@ -4009,16 +4016,16 @@ async function drawInspector(dom, obj, opt) {
       if (sett.opts) {
          menu.addDrawMenu('nosub:Draw', sett.opts, arg => {
             if (!hitem?._obj) return;
-            const obj = hitem._obj;
+            const obj2 = hitem._obj;
             let ddom = this.selectDom().node();
             if (isFunc(this.removeInspector)) {
                ddom = ddom.parentNode;
                this.removeInspector();
                if (arg.indexOf(kInspect) === 0)
-                  return this.showInspector(arg, obj);
+                  return this.showInspector(arg, obj2);
             }
             cleanup(ddom);
-            draw(ddom, obj, arg);
+            draw(ddom, obj2, arg);
          });
       }
    };

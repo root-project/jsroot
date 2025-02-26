@@ -817,8 +817,8 @@ class FlexibleDisplay extends MDIDisplay {
    /** @summary change frame state */
    changeFrameState(frame, newstate, no_redraw) {
       const main = d3_select(frame.parentNode),
-          state = main.property('state'),
-          top = this.selectDom().select('.jsroot_flex_top');
+            state = main.property('state'),
+            top = this.selectDom().select('.jsroot_flex_top');
 
       if (state === newstate)
          return false;
@@ -859,7 +859,6 @@ class FlexibleDisplay extends MDIDisplay {
       // adjust position of new minified rect
       if (newstate === 'min') {
          const rect = this.getFrameRect(frame),
-               top = this.selectDom().select('.jsroot_flex_top'),
                ww = top.node().clientWidth,
                hh = top.node().clientHeight,
                arr = [], step = 4,
@@ -969,25 +968,26 @@ class FlexibleDisplay extends MDIDisplay {
 
          if (detectRightButton(evnt.sourceEvent)) return;
 
-         const main = d3_select(this.parentNode);
-         if (!main.classed('jsroot_flex_frame') || (main.property('state') === 'max')) return;
+         const mframe = d3_select(this.parentNode);
+         if (!mframe.classed('jsroot_flex_frame') || (mframe.property('state') === 'max'))
+            return;
 
          doing_move = !d3_select(this).classed('jsroot_flex_resize');
-         if (!doing_move && (main.property('state') === 'min')) return;
+         if (!doing_move && (mframe.property('state') === 'min')) return;
 
-         mdi.activateFrame(main.select('.jsroot_flex_draw').node());
+         mdi.activateFrame(mframe.select('.jsroot_flex_draw').node());
 
-         moving_div = top.append('div').attr('style', main.attr('style')).style('border', '2px dotted #00F');
+         moving_div = top.append('div').attr('style', mframe.attr('style')).style('border', '2px dotted #00F');
 
-         if (main.property('state') === 'min') {
-            moving_div.style('width', main.node().clientWidth + 'px')
-                      .style('height', main.node().clientHeight + 'px');
+         if (mframe.property('state') === 'min') {
+            moving_div.style('width', mframe.node().clientWidth + 'px')
+                      .style('height', mframe.node().clientHeight + 'px');
          }
 
          evnt.sourceEvent.preventDefault();
          evnt.sourceEvent.stopPropagation();
 
-         moving_frame = main;
+         moving_frame = mframe;
          current = [];
       }).on('drag', function(evnt) {
          if (!moving_div) return;

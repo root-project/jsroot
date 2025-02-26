@@ -1378,14 +1378,14 @@ class StandaloneMenu extends JSRootMenu {
 
          hovArea.appendChild(text);
 
-         function changeFocus(item, on) {
+         function changeFocus(fitem, on) {
             if (on) {
-               item.classList.add(clfocus);
-               item.style['background-color'] = 'rgb(220, 220, 220)';
-            } else if (item.classList.contains(clfocus)) {
-               item.style['background-color'] = null;
-               item.classList.remove(clfocus);
-               item.querySelector(`.${clname}`)?.remove();
+               fitem.classList.add(clfocus);
+               fitem.style['background-color'] = 'rgb(220, 220, 220)';
+            } else if (fitem.classList.contains(clfocus)) {
+               fitem.style['background-color'] = null;
+               fitem.classList.remove(clfocus);
+               fitem.querySelector(`.${clname}`)?.remove();
             }
          }
 

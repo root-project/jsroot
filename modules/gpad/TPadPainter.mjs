@@ -1108,10 +1108,9 @@ class TPadPainter extends ObjectPainter {
      * @private */
    findInPrimitives(objname, objtype) {
       const match = obj => obj && (obj?.fName === objname) && (objtype ? (obj?._typename === objtype) : true),
-            snap = this._snap_primitives?.find(snap => match((snap.fKind === webSnapIds.kObject) ? snap.fSnapshot : null));
-      if (snap) return snap.fSnapshot;
+            snap = this._snap_primitives?.find(s => match((s.fKind === webSnapIds.kObject) ? s.fSnapshot : null));
 
-      return this.pad?.fPrimitives?.arr.find(match);
+      return snap ? snap.fSnapshot : this.pad?.fPrimitives?.arr.find(match);
    }
 
    /** @summary Try to find painter for specified object
@@ -1880,8 +1879,8 @@ class TPadPainter extends ObjectPainter {
 
       // here the case of normal drawing, will be handled in promise
       if (((snap.fKind === webSnapIds.kObject) || (snap.fKind === webSnapIds.kSVG)) && (snap.fOption !== '__ignore_drawing__')) {
-         return this.drawObject(this, snap.fSnapshot, snap.fOption).then(objpainter => {
-            this.addObjectPainter(objpainter, lst, indx);
+         return this.drawObject(this, snap.fSnapshot, snap.fOption).then(objpainter2 => {
+            this.addObjectPainter(objpainter2, lst, indx);
             return this.drawNextSnap(lst, pindx, indx);
          });
       }
