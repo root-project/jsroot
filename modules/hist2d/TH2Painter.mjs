@@ -2910,14 +2910,14 @@ class TH2Painter extends THistPainter {
       }
 
       // do not show less than 2 elements
-      if (used.length < 2) return true;
+      if (used.length < 2)
+         return true;
 
       let ndig = 0, tickStep = 1;
       const rect = this.getPadPainter().getFrameRect(),
             midx = Math.round(rect.x + rect.width/2),
-            midy = Math.round(rect.y + rect.height/2);
-
-      const palette = this.getHistPalette(),
+            midy = Math.round(rect.y + rect.height/2),
+            palette = this.getHistPalette(),
             outerRadius = Math.max(10, Math.min(rect.width, rect.height) * 0.5 - 60),
             innerRadius = Math.max(2, outerRadius - 10),
             data = [], labels = [],
@@ -2986,7 +2986,7 @@ class TH2Painter extends THistPainter {
       }
 
       group.append('path')
-         .attr('fill', d => getColor(d.index))
+         .attr('fill', d => palette.calcColor(d.index, used.length))
          .attr('d', arc);
 
       group.append('title').text(d => `${labels[d.index]} ${formatValue(d.value)}`);
@@ -3019,7 +3019,7 @@ class TH2Painter extends THistPainter {
          .data(chords)
          .join('path')
          .style('mix-blend-mode', 'multiply')
-         .attr('fill', d => getColor(d.source.index))
+         .attr('fill', d => palette.calcColor(d.source.index, used.length))
          .attr('d', ribbon)
          .append('title')
          .text(d => `${formatValue(d.source.value)} ${labels[d.target.index]} → ${labels[d.source.index]}${d.source.index === d.target.index ? '' : `\n${formatValue(d.target.value)} ${labels[d.source.index]} → ${labels[d.target.index]}`}`);

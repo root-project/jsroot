@@ -4,6 +4,7 @@
 1. Implement 'cont5' draw option for `TGraph2D` using Delaunay algorithm
 1. Implement 'pol' and 'arr_colz' draw option for `TH2`
 1. Only 'col7' draw option uses bar offset and width for color `TH2` drawing
+1. Interactive zooming and context menu on 'chord' `TH2` drawing
 1. Implement 'box1' for `TH3` with negative bins
 1. Adjust histogram title drawing with native implementation
 1. Improve float to string conversion when 'g' is specified
