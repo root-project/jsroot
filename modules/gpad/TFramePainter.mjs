@@ -469,16 +469,18 @@ const TooltipHandler = {
             coordinates = pnt ? Math.round(pnt.x) + ',' + Math.round(pnt.y) : '';
       let hintsg = layer.selectChild('.objects_hints'), // group with all tooltips
           title = '', name = '', info = '',
-          hint = null, best_dist2 = 1e10, best_hint = null;
+          hint0 = null, best_dist2 = 1e10, best_hint = null;
 
       // try to select hint with exact match of the position when several hints available
       for (let k = 0; k < hints.length; ++k) {
-         if (!hints[k]) continue;
-         if (!hint) hint = hints[k];
+         if (!hints[k])
+            continue;
+         if (!hint0)
+            hint0 = hints[k];
 
          // select exact hint if this is the only one
-         if (hints[k].exact && (nexact < 2) && (!hint || !hint.exact)) {
-            hint = hints[k];
+         if (hints[k].exact && (nexact < 2) && (!hint0 || !hint0.exact)) {
+            hint0 = hints[k];
             break;
          }
 
@@ -489,15 +491,15 @@ const TooltipHandler = {
          if (dist2 < best_dist2) { best_dist2 = dist2; best_hint = hints[k]; }
       }
 
-      if ((!hint || !hint.exact) && (best_dist2 < 400))
-         hint = best_hint;
+      if ((!hint0 || !hint0.exact) && (best_dist2 < 400))
+         hint0 = best_hint;
 
-      if (hint) {
-         name = (hint.lines && hint.lines.length > 1) ? hint.lines[0] : hint.name;
-         title = hint.title || '';
-         info = hint.line;
-         if (!info && hint.lines)
-            info = hint.lines.slice(1).join(' ');
+      if (hint0) {
+         name = (hint0.lines && hint0.lines.length > 1) ? hint0.lines[0] : hint0.name;
+         title = hint0.title || '';
+         info = hint0.line;
+         if (!info && hint0.lines)
+            info = hint0.lines.slice(1).join(' ');
       }
 
       this.showObjectStatus(name, title, info, coordinates);
@@ -586,17 +588,18 @@ const TooltipHandler = {
                .attr('opacity', 0) // use attribute, not style to make animation with d3.transition()
                .style('overflow', 'hidden')
                .style('pointer-events', 'none');
-          }
+         }
 
          if (viewmode === 'single')
             curry = pnt.touch ? (pnt.y - hint.height - 5) : Math.min(pnt.y + 15, maxhinty - hint.height - 3) + frame_rect.hint_delta_y;
-          else {
-            for (let n = 0; (n < hints.length) && (gapy < maxhinty); ++n) {
-               const hint = hints[n];
-               if (!hint) continue;
-               if ((hint.y >= gapy - 5) && (hint.y <= gapy + hint.height + 5)) {
-                  gapy = hint.y + 10;
-                  n = -1;
+         else {
+            for (let n2 = 0; (n2 < hints.length) && (gapy < maxhinty); ++n2) {
+               const hint2 = hints[n2];
+               if (!hint2)
+                  continue;
+               if ((hint2.y >= gapy - 5) && (hint2.y <= gapy + hint2.height + 5)) {
+                  gapy = hint2.y + 10;
+                  n2 = -1;
                }
             }
             if ((gapminx === -1111) && (gapmaxx === -1111))
@@ -1002,8 +1005,8 @@ const TooltipHandler = {
          this._shifting_buttons = evnt.buttons;
 
          if (!evnt.$emul) {
-            d3_select(window).on('mousemove.shiftHandler', evnt => this.shiftMoveHanlder(evnt, pos))
-                             .on('mouseup.shiftHandler', evnt => this.shiftUpHanlder(evnt), true);
+            d3_select(window).on('mousemove.shiftHandler', evnt2 => this.shiftMoveHanlder(evnt2, pos))
+                             .on('mouseup.shiftHandler', evnt2 => this.shiftUpHanlder(evnt2), true);
          }
 
          setPainterTooltipEnabled(this, false);
@@ -1047,8 +1050,8 @@ const TooltipHandler = {
       }
 
       if (!evnt.$emul) {
-         d3_select(window).on('mousemove.zoomRect', evnt => this.moveRectSel(evnt))
-                          .on('mouseup.zoomRect', evnt => this.endRectSel(evnt), true);
+         d3_select(window).on('mousemove.zoomRect', evnt2 => this.moveRectSel(evnt2))
+                          .on('mouseup.zoomRect', evnt2 => this.endRectSel(evnt2), true);
       }
 
       this.zoom_rect = null;
@@ -1309,9 +1312,9 @@ const TooltipHandler = {
             .call(addHighlightStyle, true);
 
       if (!evnt.$emul) {
-         d3_select(window).on('touchmove.zoomRect', evnt => this.moveTouchZoom(evnt))
-                          .on('touchcancel.zoomRect', evnt => this.endTouchZoom(evnt))
-                          .on('touchend.zoomRect', evnt => this.endTouchZoom(evnt));
+         d3_select(window).on('touchmove.zoomRect', evnt2 => this.moveTouchZoom(evnt2))
+                          .on('touchcancel.zoomRect', evnt2 => this.endTouchZoom(evnt2))
+                          .on('touchend.zoomRect', evnt2 => this.endTouchZoom(evnt2));
       }
    },
 
@@ -1530,10 +1533,10 @@ const TooltipHandler = {
             domenu = fp.fillContextMenu(menu);
 
          if (domenu) {
-            return exec_painter.fillObjectExecMenu(menu, kind).then(menu => {
+            return exec_painter.fillObjectExecMenu(menu, kind).then(menu2 => {
                 // suppress any running zooming
-                setPainterTooltipEnabled(menu.painter, false);
-                return menu.show().then(() => setPainterTooltipEnabled(menu.painter, true));
+                setPainterTooltipEnabled(menu2.painter, false);
+                return menu2.show().then(() => setPainterTooltipEnabled(menu2.painter, true));
             });
          }
       });
@@ -1556,9 +1559,9 @@ const TooltipHandler = {
 
       setPainterTooltipEnabled(this, false);
 
-      d3_select(window).on('touchmove.singleTouch', kind ? null : evnt => this.moveTouchHandling(evnt, kind, arr[0]))
-                       .on('touchcancel.singleTouch', evnt => this.endSingleTouchHandling(evnt, kind, arr[0], tm))
-                       .on('touchend.singleTouch', evnt => this.endSingleTouchHandling(evnt, kind, arr[0], tm));
+      d3_select(window).on('touchmove.singleTouch', kind ? null : evnt2 => this.moveTouchHandling(evnt2, kind, arr[0]))
+                       .on('touchcancel.singleTouch', evnt2 => this.endSingleTouchHandling(evnt2, kind, arr[0], tm))
+                       .on('touchend.singleTouch', evnt2 => this.endSingleTouchHandling(evnt2, kind, arr[0], tm));
    },
 
    /** @summary Moving of touch pointer
