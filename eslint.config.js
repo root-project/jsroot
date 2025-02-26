@@ -2,7 +2,10 @@ import stylisticJs from '@stylistic/eslint-plugin-js';
 
 import globals from 'globals';
 
+import js from "@eslint/js"
+
 export default [
+  js.configs.recommended,
   {
     languageOptions: {
        ecmaVersion: 'latest',
@@ -17,6 +20,7 @@ export default [
       '@stylistic/js': stylisticJs
     },
     rules: {
+        'array-callback-return': 'error',
         camelcase: 'off',
         'prefer-const': 'warn',
         eqeqeq: 'warn',
