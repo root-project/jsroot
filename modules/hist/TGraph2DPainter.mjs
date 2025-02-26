@@ -861,7 +861,7 @@ class TGraphDelaunay {
          if (this.fZ[p2] > z2) { z2 = this.fZ[p2]; x2 = this.fX[p2]; y2 = this.fY[p2]; i2 = 2; }
          if (i0 === 0 && i2 === 0) {
             console.error('GetContourList: wrong vertices ordering');
-            return nullptr;
+            return null;
          }
 
          i1 = 3 - i2 - i0;
