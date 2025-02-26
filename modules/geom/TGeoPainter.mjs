@@ -145,110 +145,6 @@ function getHistPainter3DCfg(painter) {
 }
 
 
-/** @summary create list entity for geo object
-  * @private */
-function createList(parent, lst, name, title) {
-   if (!lst?.arr?.length) return;
-
-   const list_item = {
-       _name: name,
-       _kind: prROOT + clTList,
-       _title: title,
-       _more: true,
-       _geoobj: lst,
-       _parent: parent,
-       _get(item /* , itemname */) {
-          return Promise.resolve(item._geoobj || null);
-       },
-       _expand(node, lst) {
-          // only childs
-
-          if (lst.fVolume)
-             lst = lst.fVolume.fNodes;
-
-          if (!lst.arr) return false;
-
-          node._childs = [];
-
-          checkDuplicates(null, lst.arr);
-
-          for (const n in lst.arr)
-             createItem(node, lst.arr[n]);
-
-          return true;
-       }
-   };
-
-   if (!parent._childs)
-      parent._childs = [];
-   parent._childs.push(list_item);
-}
-
-
-/** @summary Expand geo object
-  * @private */
-function expandGeoObject(parent, obj) {
-   injectGeoStyle();
-
-   if (!parent || !obj) return false;
-
-   const isnode = (obj._typename.indexOf(clTGeoNode) === 0),
-         isvolume = (obj._typename.indexOf(clTGeoVolume) === 0),
-         ismanager = (obj._typename === clTGeoManager),
-         iseve = ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract)),
-         isoverlap = (obj._typename === clTGeoOverlap);
-
-   if (!isnode && !isvolume && !ismanager && !iseve && !isoverlap) return false;
-
-   if (parent._childs) return true;
-
-   if (ismanager) {
-      createList(parent, obj.fMaterials, 'Materials', 'list of materials');
-      createList(parent, obj.fMedia, 'Media', 'list of media');
-      createList(parent, obj.fTracks, 'Tracks', 'list of tracks');
-      createList(parent, obj.fOverlaps, 'Overlaps', 'list of detected overlaps');
-      createItem(parent, obj.fMasterVolume);
-      return true;
-   }
-
-   if (isoverlap) {
-      createItem(parent, obj.fVolume1);
-      createItem(parent, obj.fVolume2);
-      createItem(parent, obj.fMarker, 'Marker');
-      return true;
-   }
-
-   let volume, subnodes, shape;
-
-   if (iseve) {
-      subnodes = obj.fElements?.arr;
-      shape = obj.fShape;
-   } else {
-      volume = isnode ? obj.fVolume : obj;
-      subnodes = volume?.fNodes?.arr;
-      shape = volume?.fShape;
-   }
-
-   if (!subnodes && (shape?._typename === clTGeoCompositeShape) && shape?.fNode) {
-      if (!parent._childs) {
-         createItem(parent, shape.fNode.fLeft, 'Left');
-         createItem(parent, shape.fNode.fRight, 'Right');
-      }
-
-      return true;
-   }
-
-   if (!subnodes) return false;
-
-   checkDuplicates(obj, subnodes);
-
-   for (let i = 0; i < subnodes.length; ++i)
-      createItem(parent, subnodes[i]);
-
-   return true;
-}
-
-
 /** @summary find item with 3d painter
   * @private */
 function findItemWithPainter(hitem, funcname) {
@@ -1496,6 +1392,9 @@ class TGeoPainter extends ObjectPainter {
       // Scene Options
 
       const scene = this._gui.addFolder('Scene');
+      // following items used in handlers and cannot be constants
+      // eslint-disable-next-line prefer-const
+      let light_pnts, strength, hcolor, overlay;
 
       scene.add(this.ctrl.light, 'kind', makeLil(this.ctrl.lightKindItems)).name('Light')
            .listen().onChange(() => {
@@ -1504,7 +1403,7 @@ class TGeoPainter extends ObjectPainter {
            });
 
       this.ctrl.light._pnts = this.ctrl.light.specular ? 0 : (this.ctrl.light.front ? 1 : 2);
-      const light_pnts = scene.add(this.ctrl.light, '_pnts', { specular: 0, front: 1, box: 2 })
+      light_pnts = scene.add(this.ctrl.light, '_pnts', { specular: 0, front: 1, box: 2 })
                 .name('Positions')
                 .show(this.ctrl.light.kind === 'mix' || this.ctrl.light.kind === 'points')
                 .onChange(v => {
@@ -1533,9 +1432,9 @@ class TGeoPainter extends ObjectPainter {
                    hcolor.show(this.ctrl._highlight === 1);
                 });
 
-      const hcolor = appearance.addColor(this.ctrl, 'highlight_color').name('Hightlight color')
-                         .show(this.ctrl._highlight === 1),
-            strength = appearance.add(this.ctrl, 'bloom_strength', 0, 3).name('Bloom strength')
+      hcolor = appearance.addColor(this.ctrl, 'highlight_color').name('Hightlight color')
+                         .show(this.ctrl._highlight === 1);
+      strength = appearance.add(this.ctrl, 'bloom_strength', 0, 3).name('Bloom strength')
                            .listen().onChange(() => this.changedHighlight())
                            .show(this.ctrl._highlight === 2);
 
@@ -1603,7 +1502,7 @@ class TGeoPainter extends ObjectPainter {
 
       camera.add(this, 'focusCamera').name('Reset position');
 
-      const overlay = camera.add(this.ctrl, 'camera_overlay', makeLil(this.ctrl.cameraOverlayItems))
+      overlay = camera.add(this.ctrl, 'camera_overlay', makeLil(this.ctrl.cameraOverlayItems))
                       .name('Overlay').listen().onChange(() => this.changeCamera())
                       .show(this.ctrl.camera_kind.indexOf('ortho') === 0);
 
@@ -3734,6 +3633,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Draw extra shape on the geometry */
    drawExtraShape(obj, itemname) {
+      // eslint-disable-next-line no-use-before-define
       const mesh = build(obj);
       if (!mesh) return false;
 
@@ -5378,7 +5278,6 @@ class TGeoPainter extends ObjectPainter {
       } else
          obj = null;
 
-
       if (isStr(opt) && opt.indexOf('comp') === 0 && shape && (shape._typename === clTGeoCompositeShape) && shape.fNode) {
          let maxlvl = 1;
          opt = opt.slice(4);
@@ -5386,13 +5285,13 @@ class TGeoPainter extends ObjectPainter {
          obj = buildCompositeVolume(shape, maxlvl);
       }
 
-      if (!obj && shape) {
-         obj = Object.assign(create(clTNamed),
-                   { _typename: clTEveGeoShapeExtract, fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
-      }
+      if (!obj && shape)
+         obj = Object.assign(create(clTNamed), { _typename: clTEveGeoShapeExtract, fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
 
-      if (!obj) return null;
+      if (!obj)
+         return null;
 
+      // eslint-disable-next-line no-use-before-define
       const painter = createGeoPainter(dom, obj, opt);
 
       if (painter.ctrl.is_main && !obj.$geo_painter)
@@ -5640,6 +5539,110 @@ function getBrowserIcon(hitem, hpainter) {
    return icon;
 }
 
+/** @summary create list entity for geo object
+  * @private */
+function createList(parent, lst, name, title) {
+   if (!lst?.arr?.length) return;
+
+   const list_item = {
+      _name: name,
+      _kind: prROOT + clTList,
+      _title: title,
+      _more: true,
+      _geoobj: lst,
+      _parent: parent,
+      _get(item /* , itemname */) {
+         return Promise.resolve(item._geoobj || null);
+      },
+      _expand(node, lst) {
+         // only childs
+
+         if (lst.fVolume)
+            lst = lst.fVolume.fNodes;
+
+         if (!lst.arr) return false;
+
+         node._childs = [];
+
+         checkDuplicates(null, lst.arr);
+
+         for (const n in lst.arr)
+            createItem(node, lst.arr[n]);
+
+         return true;
+      }
+   };
+
+   if (!parent._childs)
+      parent._childs = [];
+   parent._childs.push(list_item);
+}
+
+
+/** @summary Expand geo object
+  * @private */
+function expandGeoObject(parent, obj) {
+   injectGeoStyle();
+
+   if (!parent || !obj) return false;
+
+   const isnode = (obj._typename.indexOf(clTGeoNode) === 0),
+         isvolume = (obj._typename.indexOf(clTGeoVolume) === 0),
+         ismanager = (obj._typename === clTGeoManager),
+         iseve = ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract)),
+         isoverlap = (obj._typename === clTGeoOverlap);
+
+   if (!isnode && !isvolume && !ismanager && !iseve && !isoverlap) return false;
+
+   if (parent._childs) return true;
+
+   if (ismanager) {
+      createList(parent, obj.fMaterials, 'Materials', 'list of materials');
+      createList(parent, obj.fMedia, 'Media', 'list of media');
+      createList(parent, obj.fTracks, 'Tracks', 'list of tracks');
+      createList(parent, obj.fOverlaps, 'Overlaps', 'list of detected overlaps');
+      createItem(parent, obj.fMasterVolume);
+      return true;
+   }
+
+   if (isoverlap) {
+      createItem(parent, obj.fVolume1);
+      createItem(parent, obj.fVolume2);
+      createItem(parent, obj.fMarker, 'Marker');
+      return true;
+   }
+
+   let volume, subnodes, shape;
+
+   if (iseve) {
+      subnodes = obj.fElements?.arr;
+      shape = obj.fShape;
+   } else {
+      volume = isnode ? obj.fVolume : obj;
+      subnodes = volume?.fNodes?.arr;
+      shape = volume?.fShape;
+   }
+
+   if (!subnodes && (shape?._typename === clTGeoCompositeShape) && shape?.fNode) {
+      if (!parent._childs) {
+         createItem(parent, shape.fNode.fLeft, 'Left');
+         createItem(parent, shape.fNode.fRight, 'Right');
+      }
+
+      return true;
+   }
+
+   if (!subnodes)
+      return false;
+
+   checkDuplicates(obj, subnodes);
+
+   for (let i = 0; i < subnodes.length; ++i)
+      createItem(parent, subnodes[i]);
+
+   return true;
+}
+
 
 /** @summary create hierarchy item for geo object
   * @private */
@@ -5718,7 +5721,8 @@ function createItem(node, obj, name) {
       sub._icon_click = browserIconClick;
    }
 
-   if (!node._childs) node._childs = [];
+   if (!node._childs)
+      node._childs = [];
 
    if (!sub._name) {
       if (isStr(node._name)) {

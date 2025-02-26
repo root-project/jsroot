@@ -2347,6 +2347,79 @@ function isSameStack(stack1, stack2) {
 }
 
 
+function createFlippedGeom(geom) {
+   let pos = geom.getAttribute('position').array,
+       norm = geom.getAttribute('normal').array;
+   const index = geom.getIndex();
+
+   if (index) {
+      // we need to unfold all points to
+      const arr = index.array,
+            i0 = geom.drawRange.start;
+      let ilen = geom.drawRange.count;
+      if (i0 + ilen > arr.length) ilen = arr.length - i0;
+
+      const dpos = new Float32Array(ilen*3), dnorm = new Float32Array(ilen*3);
+      for (let ii = 0; ii < ilen; ++ii) {
+         const k = arr[i0 + ii];
+         if ((k < 0) || (k*3 >= pos.length))
+            console.log(`strange index ${k*3} totallen = ${pos.length}`);
+         dpos[ii*3] = pos[k*3];
+         dpos[ii*3+1] = pos[k*3+1];
+         dpos[ii*3+2] = pos[k*3+2];
+         dnorm[ii*3] = norm[k*3];
+         dnorm[ii*3+1] = norm[k*3+1];
+         dnorm[ii*3+2] = norm[k*3+2];
+      }
+
+      pos = dpos; norm = dnorm;
+   }
+
+   const len = pos.length,
+         newpos = new Float32Array(len),
+         newnorm = new Float32Array(len);
+
+   // we should swap second and third point in each face
+   for (let n = 0, shift = 0; n < len; n += 3) {
+      newpos[n] = pos[n+shift];
+      newpos[n+1] = pos[n+1+shift];
+      newpos[n+2] = -pos[n+2+shift];
+
+      newnorm[n] = norm[n+shift];
+      newnorm[n+1] = norm[n+1+shift];
+      newnorm[n+2] = -norm[n+2+shift];
+
+      shift+=3; if (shift===6) shift=-3; // values 0,3,-3
+   }
+
+   const geomZ = new THREE.BufferGeometry();
+   geomZ.setAttribute('position', new THREE.BufferAttribute(newpos, 3));
+   geomZ.setAttribute('normal', new THREE.BufferAttribute(newnorm, 3));
+
+   return geomZ;
+}
+
+
+/** @summary Create flipped mesh for the shape
+  * @desc When transformation matrix includes one or several inversion of axis,
+  * one should inverse geometry object, otherwise three.js cannot correctly draw it
+  * @param {Object} shape - TGeoShape object
+  * @param {Object} material - material
+  * @private */
+function createFlippedMesh(shape, material) {
+   if (shape.geomZ === undefined)
+      shape.geomZ = createFlippedGeom(shape.geom);
+
+   const mesh = new THREE.Mesh(shape.geomZ, material);
+   mesh.scale.copy(new THREE.Vector3(1, 1, -1));
+   mesh.updateMatrix();
+
+   mesh._flippedMesh = true;
+
+   return mesh;
+}
+
+
 /**
   * @summary class for working with cloned nodes
   *
@@ -3744,78 +3817,6 @@ class ClonedNodes {
    }
 
 } // class ClonedNodes
-
-function createFlippedGeom(geom) {
-   let pos = geom.getAttribute('position').array,
-       norm = geom.getAttribute('normal').array;
-   const index = geom.getIndex();
-
-   if (index) {
-      // we need to unfold all points to
-      const arr = index.array,
-            i0 = geom.drawRange.start;
-      let ilen = geom.drawRange.count;
-      if (i0 + ilen > arr.length) ilen = arr.length - i0;
-
-      const dpos = new Float32Array(ilen*3), dnorm = new Float32Array(ilen*3);
-      for (let ii = 0; ii < ilen; ++ii) {
-         const k = arr[i0 + ii];
-         if ((k < 0) || (k*3 >= pos.length))
-            console.log(`strange index ${k*3} totallen = ${pos.length}`);
-         dpos[ii*3] = pos[k*3];
-         dpos[ii*3+1] = pos[k*3+1];
-         dpos[ii*3+2] = pos[k*3+2];
-         dnorm[ii*3] = norm[k*3];
-         dnorm[ii*3+1] = norm[k*3+1];
-         dnorm[ii*3+2] = norm[k*3+2];
-      }
-
-      pos = dpos; norm = dnorm;
-   }
-
-   const len = pos.length,
-         newpos = new Float32Array(len),
-         newnorm = new Float32Array(len);
-
-   // we should swap second and third point in each face
-   for (let n = 0, shift = 0; n < len; n += 3) {
-      newpos[n] = pos[n+shift];
-      newpos[n+1] = pos[n+1+shift];
-      newpos[n+2] = -pos[n+2+shift];
-
-      newnorm[n] = norm[n+shift];
-      newnorm[n+1] = norm[n+1+shift];
-      newnorm[n+2] = -norm[n+2+shift];
-
-      shift+=3; if (shift===6) shift=-3; // values 0,3,-3
-   }
-
-   const geomZ = new THREE.BufferGeometry();
-   geomZ.setAttribute('position', new THREE.BufferAttribute(newpos, 3));
-   geomZ.setAttribute('normal', new THREE.BufferAttribute(newnorm, 3));
-
-   return geomZ;
-}
-
-
-/** @summary Create flipped mesh for the shape
-  * @desc When transformation matrix includes one or several inversion of axis,
-  * one should inverse geometry object, otherwise three.js cannot correctly draw it
-  * @param {Object} shape - TGeoShape object
-  * @param {Object} material - material
-  * @private */
-function createFlippedMesh(shape, material) {
-   if (shape.geomZ === undefined)
-      shape.geomZ = createFlippedGeom(shape.geom);
-
-   const mesh = new THREE.Mesh(shape.geomZ, material);
-   mesh.scale.copy(new THREE.Vector3(1, 1, -1));
-   mesh.updateMatrix();
-
-   mesh._flippedMesh = true;
-
-   return mesh;
-}
 
 /** @summary extract code of Box3.expandByObject
   * @desc Major difference - do not traverse hierarchy, support InstancedMesh
