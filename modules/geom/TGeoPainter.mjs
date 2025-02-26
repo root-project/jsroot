@@ -1393,8 +1393,7 @@ class TGeoPainter extends ObjectPainter {
 
       const scene = this._gui.addFolder('Scene');
       // following items used in handlers and cannot be constants
-      // eslint-disable-next-line prefer-const
-      let light_pnts, strength, hcolor, overlay;
+      let light_pnts = null, strength = null, hcolor = null, overlay = null;
 
       scene.add(this.ctrl.light, 'kind', makeLil(this.ctrl.lightKindItems)).name('Light')
            .listen().onChange(() => {
@@ -5318,6 +5317,55 @@ class TGeoPainter extends ObjectPainter {
 
 let add_settings = false;
 
+/** @summary Get icon for the browser
+  * @private */
+function getBrowserIcon(hitem, hpainter) {
+   let icon = '';
+   switch (hitem._kind) {
+      case prROOT + clTEveTrack: icon = 'img_evetrack'; break;
+      case prROOT + clTEvePointSet: icon = 'img_evepoints'; break;
+      case prROOT + clTPolyMarker3D: icon = 'img_evepoints'; break;
+   }
+   if (icon) {
+      const drawitem = findItemWithPainter(hitem);
+      if (drawitem?._painter?.extraObjectVisible(hpainter, hitem))
+         icon += ' geovis_this';
+   }
+   return icon;
+}
+
+/** @summary handle click on browser icon
+  * @private */
+function browserIconClick(hitem, hpainter) {
+   if (hitem._volume) {
+      if (hitem._more && hitem._volume.fNodes?.arr?.length)
+         toggleGeoBit(hitem._volume, geoBITS.kVisDaughters);
+      else
+         toggleGeoBit(hitem._volume, geoBITS.kVisThis);
+
+      updateBrowserIcons(hitem._volume, hpainter);
+
+      findItemWithPainter(hitem, 'testGeomChanges');
+      return false; // no need to update icon - we did it ourself
+   }
+
+   if (hitem._geoobj && ((hitem._geoobj._typename === clTEveGeoShapeExtract) || (hitem._geoobj._typename === clREveGeoShapeExtract))) {
+      hitem._geoobj.fRnrSelf = !hitem._geoobj.fRnrSelf;
+
+      updateBrowserIcons(hitem._geoobj, hpainter);
+      findItemWithPainter(hitem, 'testGeomChanges');
+      return false; // no need to update icon - we did it ourself
+   }
+
+   // first check that geo painter assigned with the item
+   const drawitem = findItemWithPainter(hitem),
+         newstate = drawitem?._painter?.extraObjectVisible(hpainter, hitem, true);
+
+   // return true means browser should update icon for the item
+   return newstate !== undefined;
+}
+
+
 /** @summary Create geo-related css entries
   * @private */
 function injectGeoStyle() {
@@ -5490,54 +5538,7 @@ function provideMenu(menu, item, hpainter) {
    return true;
 }
 
-/** @summary handle click on browser icon
-  * @private */
-function browserIconClick(hitem, hpainter) {
-   if (hitem._volume) {
-      if (hitem._more && hitem._volume.fNodes?.arr?.length)
-         toggleGeoBit(hitem._volume, geoBITS.kVisDaughters);
-      else
-         toggleGeoBit(hitem._volume, geoBITS.kVisThis);
-
-      updateBrowserIcons(hitem._volume, hpainter);
-
-      findItemWithPainter(hitem, 'testGeomChanges');
-      return false; // no need to update icon - we did it ourself
-   }
-
-   if (hitem._geoobj && ((hitem._geoobj._typename === clTEveGeoShapeExtract) || (hitem._geoobj._typename === clREveGeoShapeExtract))) {
-      hitem._geoobj.fRnrSelf = !hitem._geoobj.fRnrSelf;
-
-      updateBrowserIcons(hitem._geoobj, hpainter);
-      findItemWithPainter(hitem, 'testGeomChanges');
-      return false; // no need to update icon - we did it ourself
-   }
-
-   // first check that geo painter assigned with the item
-   const drawitem = findItemWithPainter(hitem),
-       newstate = drawitem?._painter?.extraObjectVisible(hpainter, hitem, true);
-
-   // return true means browser should update icon for the item
-   return newstate !== undefined;
-}
-
-
-/** @summary Get icon for the browser
-  * @private */
-function getBrowserIcon(hitem, hpainter) {
-   let icon = '';
-   switch (hitem._kind) {
-      case prROOT + clTEveTrack: icon = 'img_evetrack'; break;
-      case prROOT + clTEvePointSet: icon = 'img_evepoints'; break;
-      case prROOT + clTPolyMarker3D: icon = 'img_evepoints'; break;
-   }
-   if (icon) {
-      const drawitem = findItemWithPainter(hitem);
-      if (drawitem?._painter?.extraObjectVisible(hpainter, hitem))
-         icon += ' geovis_this';
-   }
-   return icon;
-}
+let createItem = null;
 
 /** @summary create list entity for geo object
   * @private */
@@ -5646,7 +5647,7 @@ function expandGeoObject(parent, obj) {
 
 /** @summary create hierarchy item for geo object
   * @private */
-function createItem(node, obj, name) {
+createItem = function(node, obj, name) {
    const sub = {
       _kind: prROOT + obj._typename,
       _name: name || getObjectName(obj),
@@ -5737,7 +5738,7 @@ function createItem(node, obj, name) {
    node._childs.push(sub);
 
    return sub;
-}
+};
 
 /** @summary Draw dummy geometry
   * @private */

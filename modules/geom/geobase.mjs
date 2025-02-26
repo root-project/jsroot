@@ -1832,6 +1832,8 @@ function countGeometryFaces(geom) {
    return attr?.count ? Math.round(attr.count / 3) : 0;
 }
 
+let createGeometry = null;
+
 /** @summary Creates geometry for composite shape
   * @private */
 function createComposite(shape, faces_limit) {
@@ -1950,7 +1952,7 @@ function projectGeometry(geom, matrix, projection, position, flippedMesh) {
   *  - if limit < 0 just returns estimated number of faces
   *  - if limit > 0 return list of CsgPolygons (used only for composite shapes)
   * @private */
-function createGeometry(shape, limit) {
+createGeometry = function(shape, limit) {
    if (limit === undefined) limit = 0;
 
    try {
@@ -2001,7 +2003,7 @@ function createGeometry(shape, limit) {
    }
 
    return limit < 0 ? 0 : null;
-}
+};
 
 
 /** @summary Create single shape from EVE7 render date
