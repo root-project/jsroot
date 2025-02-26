@@ -2343,6 +2343,8 @@ async function treeProcess(tree, selector, args) {
       return Promise.resolve(null);
    }
 
+   let processBaskets = null;
+
    function readNextBaskets() {
       const bitems = [];
       let totalsz = 0, isany = true, is_direct = false, min_staged = handle.process_max;
@@ -2442,7 +2444,7 @@ async function treeProcess(tree, selector, args) {
       throw new Error('No any data is requested - never come here');
    }
 
-   function processBaskets(bitems) {
+   processBaskets = function(bitems) {
       // this is call-back when next baskets are read
 
       if ((handle.selector._break !== 0) || (bitems === null)) {
@@ -2557,7 +2559,7 @@ async function treeProcess(tree, selector, args) {
             return resolveFunc(handle.selector);
          }
       }
-   }
+   };
 
    return new Promise((resolve, reject) => {
       resolveFunc = resolve;
