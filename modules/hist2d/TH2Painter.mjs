@@ -2958,6 +2958,9 @@ class TH2Painter extends THistPainter {
 
       makeTranslate(this.draw_g, midx, midy, this._zoom);
 
+      let ellipse = null;
+
+
       const chord = d3_chord()
          .padAngle(10 / innerRadius)
          .sortSubgroups(d3_descending)
@@ -3024,6 +3027,14 @@ class TH2Painter extends THistPainter {
          .text(d => `${formatValue(d.source.value)} ${labels[d.target.index]} → ${labels[d.source.index]}${d.source.index === d.target.index ? '' : `\n${formatValue(d.target.value)} ${labels[d.source.index]} → ${labels[d.target.index]}`}`);
 
       if (settings.Zooming && settings.ZoomWheel && !this.isBatchMode()) {
+         this.draw_g.insert('ellipse', ':first-child')
+                    .attr('cx', 0)
+                    .attr('cy', 0)
+                    .attr('rx', outerRadius)
+                    .attr('ry', outerRadius)
+                    .style('opacity', 0)
+                    .style('fill', 'none')
+                    .style('pointer-events', 'visibleFill');
          this.draw_g.on('wheel', evnt => {
             // let cur = d3_pointer(evnt, this.draw_g.node());
             const delta = evnt.wheelDelta ? -evnt.wheelDelta : (evnt.deltaY || evnt.detail);
@@ -3031,8 +3042,7 @@ class TH2Painter extends THistPainter {
                this._zoom = 1;
             this._zoom *= (delta > 0) ? 0.8 : 1.2;
             makeTranslate(this.draw_g, midx, midy, this._zoom);
-         });
-         this.draw_g.on('dblclick', () => {
+         }).on('dblclick', () => {
             delete this._zoom;
             makeTranslate(this.draw_g, midx, midy, this._zoom);
          });
