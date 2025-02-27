@@ -484,7 +484,7 @@ class TGeoPainter extends ObjectPainter {
             { name: 'MeshMatcapMaterial', value: 'matcap' },
             { name: 'MeshToonMaterial', value: 'toon' }
          ],
-         getMaterialCfg: function() {
+         getMaterialCfg() {
              let cfg;
              this.materialKinds.forEach(item => {
                 if (item.value === this.material_kind)

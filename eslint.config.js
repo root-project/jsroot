@@ -64,6 +64,14 @@ export default [
         'no-throw-literal': 'warn',
         'no-unneeded-ternary': 'warn',
         'no-unused-expressions': 'warn',
+        'no-useless-call': 'warn',
+        'no-useless-computed-key': 'warn',
+        'no-useless-constructor': 'warn',
+        'no-useless-rename': 'warn',
+        'no-useless-return': 'warn',
+        'no-var': 'error',
+        'no-void': 'error',
+        'object-shorthand': 'warn',
 
         // moved to @stylistic/js
         '@stylistic/js/semi': 'warn',
