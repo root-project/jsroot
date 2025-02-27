@@ -1027,16 +1027,14 @@ class HierarchyPainter extends BasePainter {
       * @param [arg1] - first optional argument
       * @param [arg2] - second optional argument and so on
       * @return {Promise} with command result */
-   async executeCommand(itemname, elem) {
+   async executeCommand(itemname, elem, ...userargs) {
       const hitem = this.findItem(itemname),
             url = this.getOnlineItemUrl(hitem) + '/cmd.json',
             d3node = d3_select(elem),
             cmdargs = [];
 
-      if ('_numargs' in hitem) {
-         for (let n = 0; n < hitem._numargs; ++n)
-            cmdargs.push((n+2 < arguments.length) ? arguments[n+2] : '');
-      }
+      for (let n = 0; n < (hitem._numargs ?? 0); ++n)
+         cmdargs.push(n < userargs.length ? userargs[n] : '');
 
       const promise = (cmdargs.length === 0) || !elem
                        ? Promise.resolve(cmdargs)

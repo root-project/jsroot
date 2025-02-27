@@ -1032,12 +1032,12 @@ class RAxisPainter extends RObjectPainter {
 
    /** @summary Change axis attribute, submit changes to server and redraw axis when specified
      * @desc Arguments as redraw_mode, name1, value1, name2, value2, ... */
-   changeAxisAttr(redraw_mode) {
+   changeAxisAttr(redraw_mode, ...args) {
       const changes = {};
-      let indx = 1;
-      while (indx < arguments.length - 1) {
-         this.v7AttrChange(changes, arguments[indx], arguments[indx+1]);
-         this.v7SetAttr(arguments[indx], arguments[indx+1]);
+      let indx = 0;
+      while (indx < args.length) {
+         this.v7AttrChange(changes, args[indx], args[indx + 1]);
+         this.v7SetAttr(args[indx], args[indx+1]);
          indx += 2;
       }
       this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server

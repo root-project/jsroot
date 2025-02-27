@@ -1544,10 +1544,10 @@ function createTGraph(npoints, xpts, ypts) {
   * let h2 = createHistogram('TH1F', nbinsx);
   * let h3 = createHistogram('TH1F', nbinsx);
   * let stack = createTHStack(h1, h2, h3); */
-function createTHStack() {
+function createTHStack(...args) {
    const stack = create(clTHStack);
-   for (let i = 0; i < arguments.length; ++i)
-      stack.fHists.Add(arguments[i], '');
+   for (let i = 0; i < args.length; ++i)
+      stack.fHists.Add(args[i], '');
    return stack;
 }
 
@@ -1559,10 +1559,10 @@ function createTHStack() {
   * let gr2 = createTGraph(100);
   * let gr3 = createTGraph(100);
   * let mgr = createTMultiGraph(gr1, gr2, gr3); */
-function createTMultiGraph() {
+function createTMultiGraph(...args) {
    const mgraph = create(clTMultiGraph);
-   for (let i = 0; i < arguments.length; ++i)
-       mgraph.fGraphs.Add(arguments[i], '');
+   for (let i = 0; i < args.length; ++i)
+      mgraph.fGraphs.Add(args[i], '');
    return mgraph;
 }
 

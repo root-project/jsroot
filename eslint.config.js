@@ -77,6 +77,7 @@ export default [
         'prefer-numeric-literals': 'warn',
         'prefer-object-has-own': 'warn',
         'prefer-promise-reject-errors': 'warn',
+        'prefer-rest-params': 'warn',
 
         // moved to @stylistic/js
         '@stylistic/js/semi': 'warn',
