@@ -78,6 +78,8 @@ export default [
         'prefer-object-has-own': 'warn',
         'prefer-promise-reject-errors': 'warn',
         'prefer-rest-params': 'warn',
+        'prefer-spread': 'warn',
+        'prefer-template': 'off',
 
         // moved to @stylistic/js
         '@stylistic/js/semi': 'warn',
