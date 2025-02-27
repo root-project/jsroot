@@ -1147,8 +1147,8 @@ class RPadPainter extends RObjectPainter {
       this.next_rstyle = snap.fStyle || this.rstyle;
 
       // TODO - fDrawable is v7, fObject from v6, maybe use same data member?
-      return this.drawObject(this, snap.fDrawable || snap.fObject || snap, snap.fOption || '').then(objpainter => {
-         this.addObjectPainter(objpainter, lst, indx);
+      return this.drawObject(this, snap.fDrawable || snap.fObject || snap, snap.fOption || '').then(objp => {
+         this.addObjectPainter(objp, lst, indx);
          return this.drawNextSnap(lst, pindx, indx);
       });
    }

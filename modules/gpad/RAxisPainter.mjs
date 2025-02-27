@@ -1006,11 +1006,12 @@ class RAxisPainter extends RObjectPainter {
                evnt.stopPropagation();
                evnt.preventDefault();
 
-               const pos = d3_pointer(evnt, this.draw_g.node()),
-                   coord = this.vertical ? (1 - pos[1] / len) : pos[0] / len,
-                   item = this.analyzeWheelEvent(evnt, coord);
+               const pos2 = d3_pointer(evnt, this.draw_g.node()),
+                     coord = this.vertical ? (1 - pos2[1] / len) : pos2[0] / len,
+                     item = this.analyzeWheelEvent(evnt, coord);
 
-               if (item.changed) this.zoomStandalone(item.min, item.max);
+               if (item.changed)
+                  this.zoomStandalone(item.min, item.max);
             });
          }
       });
