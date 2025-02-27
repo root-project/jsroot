@@ -2569,18 +2569,12 @@ class ClonedNodes {
 
       // than fill children lists
       for (let n = 0; n < this.origin.length; ++n) {
-         const obj = this.origin[n], clone = this.nodes[n];
-         let chlds = null, shape = null;
+         const obj2 = this.origin[n],
+               clone = this.nodes[n],
+               shape = kind === kindEve ? obj2.fShape : obj2.fVolume.fShape,
+               chlds2 = kind === kindEve ? obj2.fElements?.arr : obj2.fVolume.fNodes?.arr,
+               matrix = getNodeMatrix(kind, obj2);
 
-         if (kind === kindEve) {
-            shape = obj.fShape;
-            if (obj.fElements) chlds = obj.fElements.arr;
-         } else if (obj.fVolume) {
-            shape = obj.fVolume.fShape;
-            if (obj.fVolume.fNodes) chlds = obj.fVolume.fNodes.arr;
-         }
-
-         const matrix = getNodeMatrix(kind, obj);
          if (matrix) {
             clone.matrix = matrix.elements; // take only matrix elements, matrix will be constructed in worker
             if (clone.matrix && (clone.matrix[0] === 1)) {
@@ -2600,15 +2594,16 @@ class ClonedNodes {
             if (shape.$nfaces === undefined)
                shape.$nfaces = createGeometry(shape, -1);
             clone.nfaces = shape.$nfaces;
-            if (clone.nfaces <= 0) clone.vol = 0;
+            if (clone.nfaces <= 0)
+               clone.vol = 0;
          }
 
-         if (!chlds) continue;
-
-         // in cloned object children is only list of ids
-         clone.chlds = new Array(chlds.length);
-         for (let k = 0; k < chlds.length; ++k)
-            clone.chlds[k] = chlds[k]._refid;
+         if (chlds2) {
+            // in cloned object children is only list of ids
+            clone.chlds = new Array(chlds2.length);
+            for (let k = 0; k < chlds2.length; ++k)
+               clone.chlds[k] = chlds2[k]._refid;
+         }
       }
 
       // remove _refid identifiers from original objects
@@ -2889,10 +2884,10 @@ class ClonedNodes {
       if ((arg.nodeid === 0) && arg.main_visible)
          node_vis = vislvl + 1;
       else if (arg.testPhysVis) {
-         const res = arg.testPhysVis();
-         if (res !== undefined) {
-            node_vis = res && !node.chlds ? vislvl + 1 : 0;
-            node_nochlds = !res;
+         const res2 = arg.testPhysVis();
+         if (res2 !== undefined) {
+            node_vis = res2 && !node.chlds ? vislvl + 1 : 0;
+            node_nochlds = !res2;
          }
       }
 
