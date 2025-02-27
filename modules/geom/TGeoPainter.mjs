@@ -4300,18 +4300,18 @@ class TGeoPainter extends ObjectPainter {
          return false;
 
       const zoom = 0.5 / this._camera.zoom,
-          midx = (this._camera.left + this._camera.right) / 2,
-          midy = (this._camera.bottom + this._camera.top) / 2,
-          xmin = midx - (this._camera.right - this._camera.left) * zoom,
-          xmax = midx + (this._camera.right - this._camera.left) * zoom,
-          ymin = midy - (this._camera.top - this._camera.bottom) * zoom,
-          ymax = midy + (this._camera.top - this._camera.bottom) * zoom,
-          tick_size = (ymax - ymin) * 0.02,
-          text_size = (ymax - ymin) * 0.015,
-          grid_gap = (ymax - ymin) * 0.001,
-          x1 = xmin + text_size * 5, x2 = xmax - text_size * 5,
-          y1 = ymin + text_size * 3, y2 = ymax - text_size * 3,
-          x_handle = new TAxisPainter(null, create(clTAxis));
+            midx = (this._camera.left + this._camera.right) / 2,
+            midy = (this._camera.bottom + this._camera.top) / 2,
+            xmin = midx - (this._camera.right - this._camera.left) * zoom,
+            xmax = midx + (this._camera.right - this._camera.left) * zoom,
+            ymin = midy - (this._camera.top - this._camera.bottom) * zoom,
+            ymax = midy + (this._camera.top - this._camera.bottom) * zoom,
+            tick_size = (ymax - ymin) * 0.02,
+            text_size = (ymax - ymin) * 0.015,
+            grid_gap = (ymax - ymin) * 0.001,
+            x1 = xmin + text_size * 5, x2 = xmax - text_size * 5,
+            y1 = ymin + text_size * 3, y2 = ymax - text_size * 3,
+            x_handle = new TAxisPainter(null, create(clTAxis));
 
       x_handle.configureAxis('xaxis', x1, x2, x1, x2, false, [x1, x2],
                              { log: 0, reverse: false });
@@ -4357,36 +4357,37 @@ class TGeoPainter extends ObjectPainter {
       if (this.ctrl.camera_overlay === 'bar') {
          const container = this.getExtrasContainer('create', 'overlay');
 
-         let x1 = xmin * 0.15 + xmax * 0.85,
-             x2 = xmin * 0.05 + xmax * 0.95;
-         const y1 = ymax * 0.9 + ymin * 0.1,
-               y2 = ymax * 0.86 + ymin * 0.14,
+         let ox1 = xmin * 0.15 + xmax * 0.85,
+             ox2 = xmin * 0.05 + xmax * 0.95;
+         const oy1 = ymax * 0.9 + ymin * 0.1,
+               oy2 = ymax * 0.86 + ymin * 0.14,
                ticks = x_handle.createTicks();
 
          if (ticks.major?.length > 1) {
-            x1 = ticks.major.at(-2);
-            x2 = ticks.major.at(-1);
+            ox1 = ticks.major.at(-2);
+            ox2 = ticks.major.at(-1);
          }
 
-         buf = new Float32Array(3*6); pos = 0;
+         buf = new Float32Array(3*6);
+         pos = 0;
 
-         addPoint(x1, y1, midZ);
-         addPoint(x1, y2, midZ);
+         addPoint(ox1, oy1, midZ);
+         addPoint(ox1, oy2, midZ);
 
-         addPoint(x1, (y1 + y2) / 2, midZ);
-         addPoint(x2, (y1 + y2) / 2, midZ);
+         addPoint(ox1, (oy1 + oy2) / 2, midZ);
+         addPoint(ox2, (oy1 + oy2) / 2, midZ);
 
-         addPoint(x2, y1, midZ);
-         addPoint(x2, y2, midZ);
+         addPoint(ox2, oy1, midZ);
+         addPoint(ox2, oy2, midZ);
 
          const lineMaterial = new THREE.LineBasicMaterial({ color: 'green' }),
                textMaterial = new THREE.MeshBasicMaterial({ color: 'green', vertexColors: false });
 
          container.add(createLineSegments(buf, lineMaterial));
 
-         const text3d = createText(x_handle.format(x2-x1, true), Math.abs(y2-y1));
+         const text3d = createText(x_handle.format(ox2 - ox1, true), Math.abs(oy2 - oy1));
 
-         container.add(createTextMesh(text3d, textMaterial, (x2 + x1) / 2, (y1 + y2) / 2 + text3d._height * 0.8, midZ));
+         container.add(createTextMesh(text3d, textMaterial, (ox2 + ox1) / 2, (oy1 + oy2) / 2 + text3d._height * 0.8, midZ));
          return true;
       }
 
@@ -4561,10 +4562,10 @@ class TGeoPainter extends ObjectPainter {
          mesh = new THREE.Mesh(text3d, textMaterial);
          mesh._no_clip = true; // skip from clipping
 
-         function setSideRotation(mesh, normal) {
-            mesh._other_side = false;
-            mesh._axis_norm = normal ?? new THREE.Vector3(1, 0, 0);
-            mesh._axis_flip = function(vect) {
+         function setSideRotation(mesh2, normal) {
+            mesh2._other_side = false;
+            mesh2._axis_norm = normal ?? new THREE.Vector3(1, 0, 0);
+            mesh2._axis_flip = function(vect) {
                const other_side = vect.dot(this._axis_norm) < 0;
                if (this._other_side !== other_side) {
                   this._other_side = other_side;
@@ -4573,9 +4574,9 @@ class TGeoPainter extends ObjectPainter {
             };
          }
 
-         function setTopRotation(mesh, first_angle = -1) {
-            mesh._last_angle = first_angle;
-            mesh._axis_flip = function(vect) {
+         function setTopRotation(mesh2, first_angle = -1) {
+            mesh2._last_angle = first_angle;
+            mesh2._axis_flip = function(vect) {
                let angle;
                switch (this._axis_name) {
                   case 'x': angle = -Math.atan2(vect.y, vect.z); break;
@@ -5440,25 +5441,26 @@ function provideMenu(menu, item, hpainter) {
    const obj = item._geoobj, vol = item._volume,
          iseve = ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract));
 
-   if (!vol && !iseve) return false;
+   if (!vol && !iseve)
+      return false;
 
    menu.separator();
 
-   const scanEveVisible = (obj, arg, skip_this) => {
+   const scanEveVisible = (obj2, arg, skip_this) => {
       if (!arg) arg = { visible: 0, hidden: 0 };
 
       if (!skip_this) {
          if (arg.assign !== undefined)
-            obj.fRnrSelf = arg.assign;
-         else if (obj.fRnrSelf)
+            obj2.fRnrSelf = arg.assign;
+         else if (obj2.fRnrSelf)
             arg.vis++;
          else
             arg.hidden++;
       }
 
-      if (obj.fElements) {
-         for (let n = 0; n < obj.fElements.arr.length; ++n)
-            scanEveVisible(obj.fElements.arr[n], arg, false);
+      if (obj2.fElements) {
+         for (let n = 0; n < obj2.fElements.arr.length; ++n)
+            scanEveVisible(obj2.fElements.arr[n], arg, false);
       }
 
       return arg;
@@ -5541,7 +5543,8 @@ let createItem = null;
 /** @summary create list entity for geo object
   * @private */
 function createList(parent, lst, name, title) {
-   if (!lst?.arr?.length) return;
+   if (!lst?.arr?.length)
+      return;
 
    const list_item = {
       _name: name,
@@ -5553,20 +5556,21 @@ function createList(parent, lst, name, title) {
       _get(item /* , itemname */) {
          return Promise.resolve(item._geoobj || null);
       },
-      _expand(node, lst) {
+      _expand(node, lst2) {
          // only childs
 
-         if (lst.fVolume)
-            lst = lst.fVolume.fNodes;
+         if (lst2.fVolume)
+            lst2 = lst2.fVolume.fNodes;
 
-         if (!lst.arr) return false;
+         if (!lst2.arr)
+            return false;
 
          node._childs = [];
 
-         checkDuplicates(null, lst.arr);
+         checkDuplicates(null, lst2.arr);
 
-         for (const n in lst.arr)
-            createItem(node, lst.arr[n]);
+         for (const n in lst2.arr)
+            createItem(node, lst2.arr[n]);
 
          return true;
       }
@@ -5693,9 +5697,9 @@ createItem = function(node, obj, name) {
       } else if (shape && (shape._typename === clTGeoCompositeShape) && shape.fNode) {
          sub._more = true;
          sub._shape = shape;
-         sub._expand = function(node /* , obj */) {
-            createItem(node, node._shape.fNode.fLeft, 'Left');
-            createItem(node, node._shape.fNode.fRight, 'Right');
+         sub._expand = function(node2 /* , obj */) {
+            createItem(node2, node2._shape.fNode.fLeft, 'Left');
+            createItem(node2, node2._shape.fNode.fRight, 'Right');
             return true;
          };
       }
