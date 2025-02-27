@@ -1030,11 +1030,18 @@ async function loadMathjax() {
    if (!loading && (typeof globalThis.MathJax !== 'undefined'))
       return globalThis.MathJax;
 
-   if (!loading) _mj_loading = [];
+   if (!loading)
+      _mj_loading = [];
 
-   const promise = new Promise(resolve => { _mj_loading ? _mj_loading.push(resolve) : resolve(globalThis.MathJax); });
+   const promise = new Promise(resolve => {
+      if (_mj_loading)
+         _mj_loading.push(resolve);
+      else
+         resolve(globalThis.MathJax);
+   });
 
-   if (loading) return promise;
+   if (loading)
+      return promise;
 
    const svg = {
        scale: 1,                      // global scaling factor for all expressions
