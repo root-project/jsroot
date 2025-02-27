@@ -3,40 +3,44 @@ import { THREE } from '../base/base3d.mjs';
 import { createBufferGeometry, createNormal,
          Vertex as CsgVertex, Geometry as CsgGeometry, Polygon as CsgPolygon } from './csg.mjs';
 
-const cfg = {
+const _cfg = {
    GradPerSegm: 6,       // grad per segment in cylinder/spherical symmetry shapes
    CompressComp: true    // use faces compression in composite shapes
 };
 
+/** @summary Returns or set geometry config values
+ * @desc Supported 'GradPerSegm' and 'CompressComp'
+ * @private */
+
 function geoCfg(name, value) {
    if (value === undefined)
-      return cfg[name];
+      return _cfg[name];
 
-   cfg[name] = value;
+   _cfg[name] = value;
 }
 
 const kindGeo = 0,    // TGeoNode / TGeoShape
       kindEve = 1,    // TEveShape / TEveGeoShapeExtract
       kindShape = 2,  // special kind for single shape handling
 
-/** @summary TGeo-related bits
-  * @private */
- geoBITS = {
-   kVisOverride: BIT(0),  // volume's vis. attributes are overwritten
-   kVisNone: BIT(1),  // the volume/node is invisible, as well as daughters
-   kVisThis: BIT(2),  // this volume/node is visible
-   kVisDaughters: BIT(3),  // all leaves are visible
-   kVisOneLevel: BIT(4),  // first level daughters are visible (not used)
-   kVisStreamed: BIT(5),  // true if attributes have been streamed
-   kVisTouched: BIT(6),  // true if attributes are changed after closing geom
-   kVisOnScreen: BIT(7),  // true if volume is visible on screen
-   kVisContainers: BIT(12), // all containers visible
-   kVisOnly: BIT(13), // just this visible
-   kVisBranch: BIT(14), // only a given branch visible
-   kVisRaytrace: BIT(15)  // raytracing flag
-},
+      /** @summary TGeo-related bits
+       * @private */
+      geoBITS = {
+         kVisOverride: BIT(0),  // volume's vis. attributes are overwritten
+         kVisNone: BIT(1),  // the volume/node is invisible, as well as daughters
+         kVisThis: BIT(2),  // this volume/node is visible
+         kVisDaughters: BIT(3),  // all leaves are visible
+         kVisOneLevel: BIT(4),  // first level daughters are visible (not used)
+         kVisStreamed: BIT(5),  // true if attributes have been streamed
+         kVisTouched: BIT(6),  // true if attributes are changed after closing geom
+         kVisOnScreen: BIT(7),  // true if volume is visible on screen
+         kVisContainers: BIT(12), // all containers visible
+         kVisOnly: BIT(13), // just this visible
+         kVisBranch: BIT(14), // only a given branch visible
+         kVisRaytrace: BIT(15)  // raytracing flag
+      },
 
- clTGeoBBox = 'TGeoBBox',
+      clTGeoBBox = 'TGeoBBox',
       clTGeoArb8 = 'TGeoArb8',
       clTGeoCone = 'TGeoCone',
       clTGeoConeSeg = 'TGeoConeSeg',
@@ -899,7 +903,7 @@ function createTubeBuffer(shape, faces_limit) {
       thetaLength = shape.fPhi2 - shape.fPhi1;
    }
 
-   const radiusSegments = Math.max(4, Math.round(thetaLength/cfg.GradPerSegm));
+   const radiusSegments = Math.max(4, Math.round(thetaLength / _cfg.GradPerSegm));
 
    // external surface
    let numfaces = radiusSegments * (((outerR[0] <= 0) || (outerR[1] <= 0)) ? 1 : 2);
@@ -1021,7 +1025,7 @@ function createTubeBuffer(shape, faces_limit) {
 /** @summary Creates eltu geometry
   * @private */
 function createEltuBuffer(shape, faces_limit) {
-   const radiusSegments = Math.max(4, Math.round(360/cfg.GradPerSegm));
+   const radiusSegments = Math.max(4, Math.round(360 / _cfg.GradPerSegm));
 
    if (faces_limit < 0) return radiusSegments*4;
 
@@ -1072,8 +1076,8 @@ function createEltuBuffer(shape, faces_limit) {
   * @private */
 function createTorusBuffer(shape, faces_limit) {
    const radius = shape.fR;
-   let radialSegments = Math.max(6, Math.round(360/cfg.GradPerSegm)),
-       tubularSegments = Math.max(8, Math.round(shape.fDphi/cfg.GradPerSegm)),
+   let radialSegments = Math.max(6, Math.round(360 / _cfg.GradPerSegm)),
+       tubularSegments = Math.max(8, Math.round(shape.fDphi / _cfg.GradPerSegm)),
        numfaces = (shape.fRmin > 0 ? 4 : 2) * radialSegments * (tubularSegments + (shape.fDphi !== 360 ? 1 : 0));
 
    if (faces_limit < 0) return numfaces;
@@ -1171,7 +1175,7 @@ function createPolygonBuffer(shape, faces_limit) {
       radiusSegments = shape.fNedges;
       factor = 1.0 / Math.cos(Math.PI/180 * thetaLength / radiusSegments / 2);
    } else {
-      radiusSegments = Math.max(5, Math.round(thetaLength/cfg.GradPerSegm));
+      radiusSegments = Math.max(5, Math.round(thetaLength / _cfg.GradPerSegm));
       factor = 1;
    }
 
@@ -1398,7 +1402,7 @@ function createXtruBuffer(shape, faces_limit) {
 /** @summary Creates para geometry
   * @private */
 function createParaboloidBuffer(shape, faces_limit) {
-   let radiusSegments = Math.max(4, Math.round(360/cfg.GradPerSegm)),
+   let radiusSegments = Math.max(4, Math.round(360 / _cfg.GradPerSegm)),
        heightSegments = 30;
 
    if (faces_limit > 0) {
@@ -1494,11 +1498,12 @@ function createHypeBuffer(shape, faces_limit) {
    if ((shape.fTin === 0) && (shape.fTout === 0))
       return createTubeBuffer(shape, faces_limit);
 
-   let radiusSegments = Math.max(4, Math.round(360/cfg.GradPerSegm)),
+   let radiusSegments = Math.max(4, Math.round(360 / _cfg.GradPerSegm)),
        heightSegments = 30,
        numfaces = radiusSegments * (heightSegments + 1) * ((shape.fRmin > 0) ? 4 : 2);
 
-   if (faces_limit < 0) return numfaces;
+   if (faces_limit < 0)
+      return numfaces;
 
    if ((faces_limit > 0) && (faces_limit > numfaces)) {
       radiusSegments = Math.max(4, Math.floor(radiusSegments/Math.sqrt(numfaces/faces_limit)));
@@ -1885,7 +1890,7 @@ function createComposite(shape, faces_limit) {
       return geom1;
    }
 
-   let bsp1 = new CsgGeometry(geom1, matrix1, cfg.CompressComp ? 0 : undefined);
+   let bsp1 = new CsgGeometry(geom1, matrix1, _cfg.CompressComp ? 0 : undefined);
 
    const bsp2 = new CsgGeometry(geom2, matrix2, bsp1.maxid);
 
