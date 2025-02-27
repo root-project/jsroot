@@ -204,7 +204,7 @@ function addDragHandler(_painter, arg) {
    drag_move_off.on('start', null).on('drag', null).on('end', null);
 
    drag_move
-      .on('start', function(evnt) {
+      .on('start', evnt => {
          if (detectRightButton(evnt.sourceEvent) || drag_kind) return;
          if (isFunc(arg.is_disabled) && arg.is_disabled('move')) return;
 
@@ -232,8 +232,9 @@ function addDragHandler(_painter, arg) {
             .style('pointer-events', 'none') // let forward double click to underlying elements
             .property('drag_handle', handle)
             .call(addHighlightStyle, true);
-      }).on('drag', function(evnt) {
-         if (!is_dragging(painter, 'move')) return;
+      }).on('drag', evnt => {
+         if (!is_dragging(painter, 'move'))
+            return;
 
          evnt.sourceEvent.preventDefault();
          evnt.sourceEvent.stopPropagation();
@@ -249,8 +250,9 @@ function addDragHandler(_painter, arg) {
          handle.y = Math.min(Math.max(handle.acc_y1, 0), handle.pad_h);
 
          drag_rect.attr('d', `M${handle.x},${handle.y}${handle.path}`);
-      }).on('end', function(evnt) {
-         if (!is_dragging(painter, 'move')) return;
+      }).on('end', evnt => {
+         if (!is_dragging(painter, 'move'))
+            return;
 
          evnt.sourceEvent.stopPropagation();
          evnt.sourceEvent.preventDefault();
@@ -337,8 +339,9 @@ function addDragHandler(_painter, arg) {
          handle.height = Math.abs(y2 - y1);
 
          drag_rect.attr('x', handle.x).attr('y', handle.y).attr('width', handle.width).attr('height', handle.height);
-      }).on('end', function(evnt) {
-         if (!is_dragging(painter, 'resize')) return;
+      }).on('end', evnt => {
+         if (!is_dragging(painter, 'resize'))
+            return;
 
          evnt.sourceEvent.preventDefault();
 

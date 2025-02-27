@@ -886,7 +886,6 @@ class FlexibleDisplay extends MDIDisplay {
       } else if (!no_redraw)
          resize(frame);
 
-
       return true;
    }
 
@@ -989,7 +988,7 @@ class FlexibleDisplay extends MDIDisplay {
 
          moving_frame = mframe;
          current = [];
-      }).on('drag', function(evnt) {
+      }).on('drag', evnt => {
          if (!moving_div) return;
          evnt.sourceEvent.preventDefault();
          evnt.sourceEvent.stopPropagation();
@@ -1008,7 +1007,7 @@ class FlexibleDisplay extends MDIDisplay {
             changeProp(0, 'width', evnt.dx);
             changeProp(1, 'height', evnt.dy);
          }
-      }).on('end', function(evnt) {
+      }).on('end', evnt => {
          if (!moving_div) return;
          evnt.sourceEvent.preventDefault();
          evnt.sourceEvent.stopPropagation();

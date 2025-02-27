@@ -2176,7 +2176,7 @@ class HierarchyPainter extends BasePainter {
      * @private  */
    enableDrop(frame) {
       const h = this;
-      d3_select(frame).on('dragover', function(ev) {
+      d3_select(frame).on('dragover', ev => {
          const itemname = ev.dataTransfer.getData('item'),
               ditem = h.findItem(itemname);
          if (isStr(ditem?._kind) && (ditem._kind.indexOf(prROOT) === 0))
