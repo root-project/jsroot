@@ -1701,8 +1701,8 @@ class TGeoPainter extends ObjectPainter {
                      menu.add('Hide all before', n, indx => {
                         const items = [];
                         for (let i = 0; i < indx; ++i) {
-                           const stack = getIntersectStack(intersects[i]);
-                           if (stack) items.push(this.getStackFullName(stack));
+                           const stack2 = getIntersectStack(intersects[i]);
+                           if (stack2) items.push(this.getStackFullName(stack2));
                         }
                         this.hidePhysicalNode(items);
                      });
@@ -1734,15 +1734,14 @@ class TGeoPainter extends ObjectPainter {
                      if (this._last_manifest)
                         this._last_manifest.wireframe = !this._last_manifest.wireframe;
 
-                     if (this._last_hidden)
-                        this._last_hidden.forEach(obj => { obj.visible = true; });
+                     this._last_hidden?.forEach(obj2 => { obj2.visible = true; });
 
                      this._last_hidden = [];
 
                      for (let i = 0; i < indx; ++i)
                         this._last_hidden.push(intersects[i].object);
 
-                     this._last_hidden.forEach(obj => { obj.visible = false; });
+                     this._last_hidden.forEach(obj2 => { obj2.visible = false; });
 
                      this._last_manifest = intersects[indx].object.material;
 
@@ -3947,7 +3946,7 @@ class TGeoPainter extends ObjectPainter {
             this._fit_main_area = (size.can3d === -1);
 
             promise = this.createScene(size.width, size.height, render3d)
-                          .then(dom => this.add3dCanvas(size, dom, this._webgl));
+                          .then(dom2 => this.add3dCanvas(size, dom2, this._webgl));
          }
       }
 
