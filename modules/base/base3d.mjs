@@ -1641,7 +1641,7 @@ class PointsCreator {
       } else {
          promise = new Promise((resolveFunc, rejectFunc) => {
             const loader = new THREE.TextureLoader();
-            loader.load(dataUrl, res => resolveFunc(res), undefined, () => rejectFunc());
+            loader.load(dataUrl, res => resolveFunc(res), undefined, () => rejectFunc(Error(`Fail to load ${dataUrl}`)));
          });
       }
 

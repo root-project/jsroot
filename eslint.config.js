@@ -24,7 +24,6 @@ export default [
         'consistent-return': 'off',
         camelcase: 'off',
         'default-case-last': 'error',
-        'prefer-const': 'warn',
         eqeqeq: 'warn',
         curly: ['warn', 'multi-or-nest'],
         'one-var': ['warn', 'consecutive'],
@@ -74,6 +73,10 @@ export default [
         'object-shorthand': 'warn',
         'operator-assignment': ['warn', 'always'],
         'prefer-arrow-callback': 'warn',
+        'prefer-const': 'warn',
+        'prefer-numeric-literals': 'warn',
+        'prefer-object-has-own': 'warn',
+        'prefer-promise-reject-errors': 'warn',
 
         // moved to @stylistic/js
         '@stylistic/js/semi': 'warn',
