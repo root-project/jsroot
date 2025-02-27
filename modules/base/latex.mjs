@@ -314,16 +314,16 @@ function remapSymbolTtfCode(code) {
                   case 81: letter = 0o44; break; // #exists
                }
             }
-            const code = symbol.charCodeAt(0);
-            if (code > 0x80)
-               symbolsPdfMap[code] = letter;
+            const scode = symbol.charCodeAt(0);
+            if (scode > 0x80)
+               symbolsPdfMap[scode] = letter;
          }
          if (++cnt > 54 + 82) break;
       }
       for (let k = 0; k < symbolsMap.length; ++k) {
-         const code = symbolsMap[k];
-         if (code)
-            symbolsPdfMap[code] = k + 33;
+         const scode2 = symbolsMap[k];
+         if (scode2)
+            symbolsPdfMap[scode2] = k + 33;
       }
    }
    return symbolsPdfMap[code] ?? code;
@@ -1088,9 +1088,9 @@ async function loadMathjax() {
    return _loadJSDOM().then(handle => {
       JSDOM = handle.JSDOM;
       return import('mathjax');
-   }).then(mj => {
+   }).then(mj0 => {
       // return Promise with mathjax loading
-      mj.init({
+      mj0.init({
          loader: {
             load: ['input/tex', 'output/svg', '[tex]/color', '[tex]/upgreek', '[tex]/mathtools', '[tex]/physics']
           },

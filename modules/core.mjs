@@ -4,7 +4,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '26/02/2025',
+version_date = '27/02/2025',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -632,8 +632,8 @@ function parse(json) {
             const buf = atob_func(value.b);
             if (arr.buffer) {
                const dv = new DataView(arr.buffer, value.o || 0),
-                     len = Math.min(buf.length, dv.byteLength);
-               for (let k = 0; k < len; ++k)
+                     blen = Math.min(buf.length, dv.byteLength);
+               for (let k = 0; k < blen; ++k)
                   dv.setUint8(k, buf.charCodeAt(k));
             } else
                throw new Error('base64 coding supported only for native arrays with binary data');
@@ -1594,12 +1594,12 @@ function getMethods(typename, obj) {
          this.arr = [];
          this.opt = [];
       };
-      m.Add = function(obj, opt) {
-         this.arr.push(obj);
+      m.Add = function(elem, opt) {
+         this.arr.push(elem);
          this.opt.push(isStr(opt) ? opt : '');
       };
-      m.AddFirst = function(obj, opt) {
-         this.arr.unshift(obj);
+      m.AddFirst = function(elem, opt) {
+         this.arr.unshift(elem);
          this.opt.unshift(isStr(opt) ? opt : '');
       };
       m.RemoveAt = function(indx) {
@@ -1624,11 +1624,11 @@ function getMethods(typename, obj) {
    }
 
    if ((typename.indexOf(clTF1) === 0) || (typename === clTF12) || (typename === clTF2)) {
-      m.addFormula = function(obj) {
-         if (!obj) return;
+      m.addFormula = function(formula) {
+         if (!formula) return;
          if (this.formulas === undefined)
             this.formulas = [];
-         this.formulas.push(obj);
+         this.formulas.push(formula);
       };
       m.GetParName = function(n) {
          if (this.fParams?.fParNames)
