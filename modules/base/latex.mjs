@@ -1455,8 +1455,8 @@ function applyAttributesToMathJax(painter, mj_node, svg, arg, font_size, svg_fac
 
    if (Number.isInteger(mh) && Number.isInteger(mw)) {
       if (svg_factor > 0) {
-         mw = mw / svg_factor;
-         mh = mh / svg_factor;
+         mw /= svg_factor;
+         mh /= svg_factor;
          svg.attr('width', Math.round(mw)).attr('height', Math.round(mh));
       }
    } else {
@@ -1466,7 +1466,7 @@ function applyAttributesToMathJax(painter, mj_node, svg, arg, font_size, svg_fac
    }
 
    if ((svg_factor > 0) && arg.valign)
-      arg.valign = arg.valign / svg_factor;
+      arg.valign /= svg_factor;
 
    if (arg.valign === null)
       arg.valign = (font_size - mh) / 2;

@@ -72,6 +72,7 @@ export default [
         'no-var': 'error',
         'no-void': 'error',
         'object-shorthand': 'warn',
+        'operator-assignment': ['warn', 'always'],
 
         // moved to @stylistic/js
         '@stylistic/js/semi': 'warn',

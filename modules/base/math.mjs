@@ -10,6 +10,7 @@
 /* eslint-disable no-use-before-define */
 /* eslint-disable no-else-return */
 /* eslint-disable no-shadow */
+/* eslint-disable operator-assignment */
 /* eslint-disable @stylistic/js/comma-spacing */
 /* eslint-disable @stylistic/js/no-floating-decimal */
 /* eslint-disable @stylistic/js/space-in-parens */

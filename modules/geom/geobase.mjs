@@ -83,7 +83,7 @@ function setGeoBit(volume, f, value) {
   * @private */
 function toggleGeoBit(volume, f) {
    if (volume.fGeoAtt !== undefined)
-      volume.fGeoAtt = volume.fGeoAtt ^ (f & 0xffffff);
+      volume.fGeoAtt ^= f & 0xffffff;
 }
 
 /** @summary Implementation of TGeoVolume::InvisibleAll
@@ -1053,7 +1053,8 @@ function createEltuBuffer(shape, faces_limit) {
       nx2 = x[seg+1] * shape.fRmax / shape.fRmin;
       ny2 = y[seg+1] * shape.fRmin / shape.fRmax;
       const dist = Math.sqrt(nx2**2 + ny2**2);
-      nx2 = nx2 / dist; ny2 = ny2/dist;
+      nx2 /= dist;
+      ny2 /= dist;
 
       creator.setNormal_12_34(nx1, ny1, 0, nx2, ny2, 0);
    }
@@ -1814,9 +1815,9 @@ function createHalfSpace(shape, geom) {
    geometry.computeVertexNormals();
 
    for (let k = 0; k < positions.length; k += 3) {
-      positions[k] = positions[k] + vertex.x;
-      positions[k+1] = positions[k+1] + vertex.y;
-      positions[k+2] = positions[k+2] + vertex.z;
+      positions[k] += vertex.x;
+      positions[k+1] += vertex.y;
+      positions[k+2] += vertex.z;
    }
 
    return geometry;
