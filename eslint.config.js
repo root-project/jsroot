@@ -61,6 +61,9 @@ export default [
         'no-lonely-if': 'warn',
         'no-return-assign': 'warn',
         'no-shadow': 'warn',
+        'no-throw-literal': 'warn',
+        'no-unneeded-ternary': 'warn',
+        'no-unused-expressions': 'warn',
 
         // moved to @stylistic/js
         '@stylistic/js/semi': 'warn',
