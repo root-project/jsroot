@@ -2179,7 +2179,8 @@ function drawBinsSurf3D(painter, is_v7 = false) {
             for (let jj = handle.j1; jj < handle.j2; ++jj) {
                const bin = ((ii-handle.i1) * (handle.j2 - handle.j1) + (jj - handle.j1)) * 8;
 
-               if (normindx[bin] === -1) continue; // nothing there
+               if (normindx[bin] === -1)
+                  continue; // nothing there
 
                const beg = (normindx[bin] >= 0) ? bin : bin + 9 + normindx[bin],
                      end = bin + 8;
@@ -2193,7 +2194,9 @@ function drawBinsSurf3D(painter, is_v7 = false) {
                   sumz += normals[indx+2];
                }
 
-               sumx = sumx/(end-beg); sumy = sumy/(end-beg); sumz = sumz/(end-beg);
+               sumx /= end - beg;
+               sumy /= end - beg;
+               sumz /= end - beg;
 
                for (let kk = beg; kk < end; ++kk) {
                   const indx = normindx[kk];

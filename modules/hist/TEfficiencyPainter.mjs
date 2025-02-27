@@ -155,7 +155,7 @@ class TEfficiencyPainter extends ObjectPainter {
       }
 
       hist.fTitle = eff.fTitle;
-      hist.fBits = hist.fBits | kNoStats;
+      hist.fBits |= kNoStats;
       this.copyAttributes(hist, eff);
    }
 

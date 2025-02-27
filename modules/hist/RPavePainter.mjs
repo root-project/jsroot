@@ -338,11 +338,11 @@ class RHistStatsPainter extends RPavePainter {
 
    /** @summary Change mask */
    changeMask(nbit) {
-      const obj = this.getObject(), mask = (1<<nbit);
+      const obj = this.getObject(), mask = 1 << nbit;
       if (obj.fShowMask & mask)
-         obj.fShowMask = obj.fShowMask & ~mask;
+         obj.fShowMask &= ~mask;
       else
-         obj.fShowMask = obj.fShowMask | mask;
+         obj.fShowMask |= mask;
 
       if (this.fillStatistic())
          this.drawStatistic(this.stats_lines);

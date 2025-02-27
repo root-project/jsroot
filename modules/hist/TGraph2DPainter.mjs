@@ -278,8 +278,8 @@ class TGraphDelaunay {
                nx = sy;
                ny = -sx;
                nn = Math.sqrt(nx*nx+ny*ny);
-               nx = nx/nn;
-               ny = ny/nn;
+               nx /= nn;
+               ny /= nn;
                mx = this.fXN[p3]-xm;
                my = this.fYN[p3]-ym;
                mdotn = mx*nx+my*ny;

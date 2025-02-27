@@ -152,7 +152,8 @@ const AxisPainterMethods = {
       if (val <= 0) return null;
       let vlog = Math.log10(val);
       const base = this.logbase;
-      if (base !== 10) vlog = vlog / Math.log10(base);
+      if (base !== 10)
+         vlog /= Math.log10(base);
       if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog)) < 0.001)) {
          if (!this.noexp && (asticks !== 2))
             return this.formatExp(base, Math.floor(vlog + 0.01), val);
@@ -167,7 +168,7 @@ const AxisPainterMethods = {
    formatNormal(d, asticks, fmt) {
       let val = parseFloat(d);
       if (asticks && this.order)
-         val = val / Math.pow(10, this.order);
+         val /= Math.pow(10, this.order);
 
       if (gStyle.fStripDecimals && (val === Math.round(val)))
          return Math.abs(val) < 1e9 ? val.toFixed(0) : val.toExponential(4);
@@ -328,8 +329,8 @@ const AxisPainterMethods = {
                factor = 10;
             else if (factor < 0.01)
                factor = 0.01;
-            item.min = item.min / Math.pow(10, factor * delta_left * dmin);
-            item.max = item.max * Math.pow(10, factor * delta_right * (1 - dmin));
+            item.min /= Math.pow(10, factor * delta_left * dmin);
+            item.max *= Math.pow(10, factor * delta_right * (1 - dmin));
             // special handling for Z scale - limit zooming of color scale
             if (this.minposbin && this.name === 'zaxis')
                item.min = Math.max(item.min, 0.3*this.minposbin);

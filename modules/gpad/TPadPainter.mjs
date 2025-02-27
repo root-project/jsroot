@@ -2204,7 +2204,7 @@ class TPadPainter extends ObjectPainter {
          if (!log) return value;
          if (value <= 0) return err;
          value = Math.log10(value);
-         if (log > 1) value = value/Math.log10(log);
+         if (log > 1) value /= Math.log10(log);
          return value;
       }, frect = main.getFrameRect();
 
