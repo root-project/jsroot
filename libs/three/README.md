@@ -5,7 +5,7 @@
 In directory on the same level as jsroot, checkout three.js
 into `threejs` subdirectory. Do not forget to checkout proper version:
 
-    git checkout r172
+    git checkout r174
 
 ## Run script
 
