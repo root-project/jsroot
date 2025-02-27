@@ -995,8 +995,8 @@ class TH2Painter extends THistPainter {
             }
 
             if (numpoints > 1) {
-               xx = xx / numpoints;
-               yy = yy / numpoints;
+               xx /= numpoints;
+               yy /= numpoints;
             }
 
             zz = bin.fContent;
@@ -3138,8 +3138,8 @@ class TH2Painter extends THistPainter {
          }
 
          if (numpoints > 1) {
-            realx = realx / numpoints;
-            realy = realy / numpoints;
+            realx /= numpoints;
+            realy /= numpoints;
          }
       }
 

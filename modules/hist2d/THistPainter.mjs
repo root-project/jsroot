@@ -2505,11 +2505,12 @@ class THistPainter extends ObjectPainter {
             binz = histo.getBinContent(i + 1, j + 1);
             res.sumz += binz;
             if (args.pixel_density) {
-               binarea = (res.grx[i+1]-res.grx[i])*(res.gry[j]-res.gry[j+1]);
+               binarea = (res.grx[i+1] - res.grx[i]) * (res.gry[j] - res.gry[j+1]);
                if (binarea <= 0) continue;
                res.max = Math.max(res.max, binz);
-               if ((binz > 0) && ((binz < res.min) || (res.min === 0))) res.min = binz;
-               binz = binz/binarea;
+               if ((binz > 0) && ((binz < res.min) || (res.min === 0)))
+                  res.min = binz;
+               binz /= binarea;
             }
             if (is_first) {
                this.maxbin = this.minbin = binz;

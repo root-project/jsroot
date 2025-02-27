@@ -1298,7 +1298,7 @@ function createMemberStreamer(element, file) {
 
                   this.stl_version = undefined;
                   if (this.member_wise) {
-                     ver.val = ver.val & ~kStreamedMemberWise;
+                     ver.val &= ~kStreamedMemberWise;
                      this.stl_version = { val: buf.ntoi2() };
                      if (this.stl_version.val <= 0) this.stl_version.checksum = buf.ntou4();
                   }
@@ -3328,18 +3328,19 @@ class TFile {
                      }
                   }
                }
-               if (typ >= 60) continue;
+               if (typ >= 60)
+                  continue;
             } else {
                if ((typ > 20) && (typname.at(-1) === '*'))
                   typname = typname.slice(0, typname.length - 1);
-               typ = typ % 20;
+               typ %= 20;
             }
 
             const kind = getTypeId(typname);
-            if (kind === typ) continue;
-
-            if ((typ === kBits) && (kind === kUInt)) continue;
-            if ((typ === kCounter) && (kind === kInt)) continue;
+            if ((kind === typ) ||
+               ((typ === kBits) && (kind === kUInt)) ||
+               ((typ === kCounter) && (kind === kInt)))
+               continue;
 
             if (typname && typ && (this.fBasicTypes[typname] !== typ))
                this.fBasicTypes[typname] = typ;

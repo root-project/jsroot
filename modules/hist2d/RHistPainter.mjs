@@ -834,11 +834,11 @@ class RHistPainter extends RObjectPainter {
             if (!Number.isFinite(binz)) continue;
             res.sumz += binz;
             if (args.pixel_density) {
-               binarea = (res.grx[i+res.stepi]-res.grx[i])*(res.gry[j]-res.gry[j+res.stepj]);
+               binarea = (res.grx[i+res.stepi] - res.grx[i]) * (res.gry[j] - res.gry[j+res.stepj]);
                if (binarea <= 0) continue;
                res.max = Math.max(res.max, binz);
                if ((binz > 0) && ((binz < res.min) || (res.min === 0))) res.min = binz;
-               binz = binz/binarea;
+               binz /= binarea;
             }
             if (is_first) {
                this.maxbin = this.minbin = binz;

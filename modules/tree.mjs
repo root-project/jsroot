@@ -500,7 +500,7 @@ class TDrawVariable {
                }
                if (repl) {
                   code = code.slice(0, pos) + repl + code.slice(pos2 + 1);
-                  pos = pos + repl.length;
+                  pos += repl.length;
                   continue;
                }
             }
@@ -619,7 +619,7 @@ class TDrawVariable {
 
          const replace = 'arg.var' + (this.branches.length - 1);
          code = code.slice(0, pos) + replace + code.slice(pos2);
-         pos = pos + replace.length;
+         pos += replace.length;
       }
 
       // support usage of some standard TMath functions
@@ -1157,7 +1157,7 @@ class TDrawSelector extends TSelector {
          this.y = y;
          this.z = z;
       } else
-         hist.fBits = hist.fBits | kNoStats;
+         hist.fBits |= kNoStats;
 
       return hist;
    }
