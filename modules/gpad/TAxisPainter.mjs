@@ -335,27 +335,30 @@ const AxisPainterMethods = {
                item.min = Math.max(item.min, 0.3*this.minposbin);
          } else if ((delta_left === -delta_right) && !item.reverse) {
             // shift left/right, try to keep range constant
-            let delta = (item.max - item.min) * delta_right * dmin;
+            let delta_shift = (item.max - item.min) * delta_right * dmin;
 
-            if ((Math.round(item.max) === item.max) && (Math.round(item.min) === item.min) && (Math.abs(delta) > 1)) delta = Math.round(delta);
+            if ((Math.round(item.max) === item.max) && (Math.round(item.min) === item.min) && (Math.abs(delta_shift) > 1))
+               delta_shift = Math.round(delta_shift);
 
-            if (item.min + delta < gmin)
-               delta = gmin - item.min;
-            else if (item.max + delta > gmax)
-               delta = gmax - item.max;
+            if (item.min + delta_shift < gmin)
+               delta_shift = gmin - item.min;
+            else if (item.max + delta_shift > gmax)
+               delta_shift = gmax - item.max;
 
-            if (delta !== 0) {
-               item.min += delta;
-               item.max += delta;
+            if (delta_shift !== 0) {
+               item.min += delta_shift;
+               item.max += delta_shift;
              } else {
                delete item.min;
                delete item.max;
             }
          } else {
             let rx_left = (item.max - item.min), rx_right = rx_left;
-            if (delta_left > 0) rx_left = 1.001 * rx_left / (1-delta_left);
+            if (delta_left > 0)
+               rx_left = 1.001 * rx_left / (1-delta_left);
             item.min += -delta_left*dmin*rx_left;
-            if (delta_right > 0) rx_right = 1.001 * rx_right / (1-delta_right);
+            if (delta_right > 0)
+               rx_right = 1.001 * rx_right / (1-delta_right);
             item.max -= -delta_right*(1-dmin)*rx_right;
          }
          if (item.min >= item.max)
@@ -366,8 +369,8 @@ const AxisPainterMethods = {
                 ((item.max > gmax) && (lmax === gmax)))
                    item.min = item.max = undefined;
          } else {
-            if (item.min < gmin) item.min = gmin;
-            if (item.max > gmax) item.max = gmax;
+            item.min = Math.max(item.min, gmin);
+            item.max = Math.min(item.max, gmax);
          }
       } else
          item.min = item.max = undefined;
