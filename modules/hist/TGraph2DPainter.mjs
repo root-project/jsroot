@@ -1416,7 +1416,8 @@ class TGraph2DPainter extends ObjectPainter {
          const lvl_zmin = Math.max(levels[lvl], fp.scale_zmin),
                lvl_zmax = Math.min(levels[lvl+1], fp.scale_zmax);
 
-         if (lvl_zmin >= lvl_zmax) continue;
+         if (lvl_zmin >= lvl_zmax)
+            continue;
 
          const size = Math.floor(countSelected(lvl_zmin, lvl_zmax) / step),
                index = new Int32Array(size),
@@ -1522,7 +1523,7 @@ class TGraph2DPainter extends ObjectPainter {
             if (!this.options.Circles || this.options.Color)
                color = palette?.calcColor(lvl, levels.length) ?? this.getColor(graph.fMarkerColor);
 
-            const pr = pnts.createPoints({ color, fill: 'white', style: this.options.Circles ? 4 : graph.fMarkerStyle }).then(mesh => {
+            const pr = pnts.createPoints({ color, fill: this.options.Circles ? 'white' : undefined, style: this.options.Circles ? 4 : graph.fMarkerStyle }).then(mesh => {
                mesh.graph = graph;
                mesh.fp = fp;
                mesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
