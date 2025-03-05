@@ -17,7 +17,7 @@ When required, there are following alternatives to install JSROOT on other web s
    - use [npm](https://npmjs.com/package/jsroot) package manager and invoke `npm install jsroot`
    - clone master branch from [repository](https://github.com/root-project/jsroot/)
 
-In case if Apache server will be used, one need to add following entry to `.htaccess` file:
+When Apache server will be used one need to add following entry to `.htaccess` file:
 ```
 <FilesMatch "\.mjs">
   ForceType text/javascript
