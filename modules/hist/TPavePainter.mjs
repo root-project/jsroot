@@ -5,6 +5,7 @@ import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer } from '../d3
 import { Prob } from '../base/math.mjs';
 import { floatToString, makeTranslate, compressSVG, svgToImage, addHighlightStyle } from '../base/BasePainter.mjs';
 import { ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
+import { approximateLabelWidth } from '../base/latex.mjs';
 import { showPainterMenu } from '../gui/menu.mjs';
 import { getColorExec } from '../gui/utils.mjs';
 import { TAxisPainter } from '../gpad/TAxisPainter.mjs';
@@ -559,15 +560,24 @@ class TPavePainter extends ObjectPainter {
          text_g = this.draw_g;
 
       const fast = (nlines === 1) && pp._fast_drawing;
-      let num_txt = 0, num_custom = 0;
+      let num_txt = 0, num_custom = 0, longest_line = 0;
 
       arr.forEach(entry => {
-         if ((entry._typename !== clTText) && (entry._typename !== clTLatex)) return;
-         if (!entry.fTitle || !entry.fTitle.trim()) return;
+         if (((entry._typename !== clTText) && (entry._typename !== clTLatex)) || !entry.fTitle?.trim())
+            return;
          num_txt++;
          if (entry.fX || entry.fY || entry.fTextSize)
             num_custom++;
+         if (!entry.fTextSize && !max_font_size)
+            longest_line = Math.max(longest_line, approximateLabelWidth(entry.fTitle, this.textatt.font, 0.85 * stepy));
       });
+
+      if (!max_font_size && longest_line) {
+         max_font_size = 0.85 * stepy;
+         if (longest_line > 0.92 * width)
+            max_font_size *= (0.92 * width / longest_line);
+         max_font_size = Math.round(max_font_size);
+      }
 
       const pr = (num_txt > num_custom) ? this.startTextDrawingAsync(this.textatt.font, this.$postitle ? this.textatt.getSize(pp, 1, 0.05) : 0.85*height/nlines, text_g, max_font_size) : Promise.resolve();
 
@@ -592,7 +602,7 @@ class TPavePainter extends ObjectPainter {
                            y = entry.fY ? (1 - entry.fY)*height : (texty + (valign === 2 ? stepy / 2 : (valign === 3 ? stepy : 0))),
                            draw_g = text_g.append('svg:g');
 
-                     promises.push(this.startTextDrawingAsync(this.textatt.font, this.textatt.getAltSize(entry.fTextSize, pp), draw_g)
+                     promises.push(this.startTextDrawingAsync(this.textatt.font, this.textatt.getAltSize(entry.fTextSize, pp) || max_font_size, draw_g)
                                        .then(() => this.drawText({ align, x, y, text: entry.fTitle, color,
                                                                    latex: (entry._typename === clTText) ? 0 : 1, draw_g, fast }))
                                        .then(() => this.finishTextDrawing(draw_g)));
