@@ -24,6 +24,7 @@
 1. Internals - use negative indexes in arrays and Strings
 1. Fix - handle `TPave` NDC position also when fInit is not set
 1. Fix - properly handle image sizes in svg2pdf
+1. Fix - drawing `TPaveText` with zero text size
 
 
 ## Changes in 7.8.1

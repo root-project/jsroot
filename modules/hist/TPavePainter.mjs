@@ -547,7 +547,8 @@ class TPavePainter extends ObjectPainter {
             draw_header = (pt.fLabel.length > 0),
             promises = [],
             margin_x = pt.fMargin * width,
-            stepy = height / (nlines || 1);
+            stepy = height / (nlines || 1),
+            dflt_font_size = 0.85 * stepy;
       let max_font_size = 0;
 
       this.createAttText({ attr: pt, can_rotate: false });
@@ -560,7 +561,7 @@ class TPavePainter extends ObjectPainter {
          text_g = this.draw_g;
 
       const fast = (nlines === 1) && pp._fast_drawing;
-      let num_txt = 0, num_custom = 0, longest_line = 0;
+      let num_txt = 0, num_custom = 0, longest_line = 0, alt_text_size = 0;
 
       arr.forEach(entry => {
          if (((entry._typename !== clTText) && (entry._typename !== clTLatex)) || !entry.fTitle?.trim())
@@ -568,18 +569,19 @@ class TPavePainter extends ObjectPainter {
          num_txt++;
          if (entry.fX || entry.fY || entry.fTextSize)
             num_custom++;
-         if (!entry.fTextSize && !max_font_size)
-            longest_line = Math.max(longest_line, approximateLabelWidth(entry.fTitle, this.textatt.font, 0.85 * stepy));
+
+         if (!entry.fTextSize && !this.textatt.size)
+            longest_line = Math.max(longest_line, approximateLabelWidth(entry.fTitle, this.textatt.font, dflt_font_size));
       });
 
-      if (!max_font_size && longest_line) {
-         max_font_size = 0.85 * stepy;
+      if (longest_line) {
+         alt_text_size = dflt_font_size;
          if (longest_line > 0.92 * width)
-            max_font_size *= (0.92 * width / longest_line);
-         max_font_size = Math.round(max_font_size);
+            alt_text_size *= (0.92 * width / longest_line);
+         alt_text_size = Math.round(alt_text_size);
       }
 
-      const pr = (num_txt > num_custom) ? this.startTextDrawingAsync(this.textatt.font, this.$postitle ? this.textatt.getSize(pp, 1, 0.05) : 0.85*height/nlines, text_g, max_font_size) : Promise.resolve();
+      const pr = (num_txt > num_custom) ? this.startTextDrawingAsync(this.textatt.font, this.$postitle ? this.textatt.getSize(pp, 1, 0.05) : dflt_font_size, text_g, max_font_size) : Promise.resolve();
 
       return pr.then(() => {
          for (let nline = 0; nline < nlines; ++nline) {
@@ -602,7 +604,7 @@ class TPavePainter extends ObjectPainter {
                            y = entry.fY ? (1 - entry.fY)*height : (texty + (valign === 2 ? stepy / 2 : (valign === 3 ? stepy : 0))),
                            draw_g = text_g.append('svg:g');
 
-                     promises.push(this.startTextDrawingAsync(this.textatt.font, this.textatt.getAltSize(entry.fTextSize, pp) || max_font_size, draw_g)
+                     promises.push(this.startTextDrawingAsync(this.textatt.font, this.textatt.getAltSize(entry.fTextSize, pp) || alt_text_size, draw_g)
                                        .then(() => this.drawText({ align, x, y, text: entry.fTitle, color,
                                                                    latex: (entry._typename === clTText) ? 0 : 1, draw_g, fast }))
                                        .then(() => this.finishTextDrawing(draw_g)));
