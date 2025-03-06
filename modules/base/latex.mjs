@@ -216,6 +216,9 @@ extra_symbols_width = {945:1002,946:996,967:917,948:953,949:834,966:1149,947:847
 /** @summary Calculate approximate labels width
   * @private */
 function approximateLabelWidth(label, font, fsize) {
+   if (Number.isInteger(font))
+      font = new FontHandler(font, fsize);
+
    const len = label.length,
          symbol_width = (fsize || font.size) * font.aver_width;
    if (font.isMonospace())
