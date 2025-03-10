@@ -25,6 +25,7 @@
 1. Fix - handle `TPave` NDC position also when fInit is not set
 1. Fix - properly handle image sizes in svg2pdf
 1. Fix - drawing `TPaveText` with zero text size
+1. Fix - hidden canvas in Jupyter Lab, https://root-forum.cern.ch/t/63097/
 
 
 ## Changes in 7.8.1
