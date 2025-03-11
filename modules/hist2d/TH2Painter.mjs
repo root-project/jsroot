@@ -1197,6 +1197,7 @@ class TH2Painter extends THistPainter {
             cntr = this.getContour(),
             palette = this.getHistPalette(),
             entries = [],
+            has_sumw2 = histo.fSumw2?.length,
             show_empty = this.options.ShowEmpty,
             can_merge_x = (this.options.Color !== 7) || ((handle.xbar1 === 0) && (handle.xbar2 === 1)),
             can_merge_y = (this.options.Color !== 7) || ((handle.ybar1 === 0) && (handle.ybar2 === 1)),
@@ -1231,7 +1232,7 @@ class TH2Painter extends THistPainter {
 
          for (let j = handle.j2 - 1; j >= handle.j1; --j) {
             binz = histo.getBinContent(i + 1, j + 1);
-            is_zero = (binz === 0);
+            is_zero = (binz === 0) && (has_sumw2 && histo.fSumw2[histo.getBin(i+1, j+1)] === 0);
 
             skip_bin = is_zero && ((skip_zero === 1) ? !histo.getBinEntries(i + 1, j + 1) : skip_zero);
 
