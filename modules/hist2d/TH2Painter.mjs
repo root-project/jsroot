@@ -1232,7 +1232,7 @@ class TH2Painter extends THistPainter {
 
          for (let j = handle.j2 - 1; j >= handle.j1; --j) {
             binz = histo.getBinContent(i + 1, j + 1);
-            is_zero = (binz === 0) && (has_sumw2 && histo.fSumw2[histo.getBin(i + 1, j + 1)] === 0);
+            is_zero = (binz === 0) && (!has_sumw2 || histo.fSumw2[histo.getBin(i + 1, j + 1)] === 0);
 
             skip_bin = is_zero && ((skip_zero === 1) ? !histo.getBinEntries(i + 1, j + 1) : skip_zero);
 
@@ -1383,7 +1383,7 @@ class TH2Painter extends THistPainter {
       for (let i = handle.i1; i < handle.i2; ++i) {
          for (let j = handle.j2 - 1; j >= handle.j1; --j) {
             binz = histo.getBinContent(i + 1, j + 1);
-            is_zero = (binz === 0) && (has_sumw2 && histo.fSumw2[histo.getBin(i + 1, j + 1)] === 0);
+            is_zero = (binz === 0) && (!has_sumw2 || histo.fSumw2[histo.getBin(i + 1, j + 1)] === 0);
 
             skip_bin = is_zero && ((skip_zero === 1) ? !histo.getBinEntries(i + 1, j + 1) : skip_zero);
 
