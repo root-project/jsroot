@@ -3070,19 +3070,19 @@ class TH2Painter extends THistPainter {
    getBinTooltips(i, j) {
       const histo = this.getHisto(),
             profile2d = this.matchObjectType(clTProfile2D) && isFunc(histo.getBinEntries),
-            bincontent = histo.getBinContent(i+1, j+1);
+            bincontent = histo.getBinContent(i + 1, j + 1);
       let binz = bincontent;
 
       if (histo.$baseh)
-         binz -= histo.$baseh.getBinContent(i+1, j+1);
+         binz -= histo.$baseh.getBinContent(i + 1, j + 1);
 
       const lines = [this.getObjectHint(),
                    'x = ' + this.getAxisBinTip('x', histo.fXaxis, i),
                    'y = ' + this.getAxisBinTip('y', histo.fYaxis, j),
-                   `bin = ${histo.getBin(i+1, j+1)}  x: ${i+1}  y: ${j+1}`,
+                   `bin = ${histo.getBin(i + 1, j + 1)}  x: ${i + 1}  y: ${j + 1}`,
                    'content = ' + ((binz === Math.round(binz)) ? binz : floatToString(binz, gStyle.fStatFormat))];
 
-      if ((this.options.TextKind === 'E') || profile2d) {
+      if ((this.options.TextKind === 'E') || profile2d || histo.fSumw2?.length) {
          const errs = this.getBinErrors(histo, histo.getBin(i + 1, j + 1), bincontent);
          if (errs.poisson)
             lines.push('error low = ' + floatToString(errs.low, gStyle.fPaintTextFormat), 'error up = ' + floatToString(errs.up, gStyle.fPaintTextFormat));
