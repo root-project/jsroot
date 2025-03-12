@@ -787,7 +787,7 @@ createPairStreamer = function(typename, file) {
       p1 = p - 1;
       return res.trim();
    }
-   si = { _typename: 'TStreamerInfo', fVersion: 0, fName: typename, fElements: create(clTList), $artificial: true };
+   si = { _typename: 'TStreamerInfo', fClassVersion: 0, fName: typename, fElements: create(clTList) };
    si.fElements.Add(createStreamerElement('first', getNextName(), file));
    si.fElements.Add(createStreamerElement('second', getNextName(), file));
    file.fStreamerInfos.arr.push(si);
@@ -3474,13 +3474,16 @@ class TFile {
 
          for (let i = 0; i < len; ++i) {
             si = arr[i];
-            if ((si.fCheckSum === checksum) || (si.$artificial && (si.fName === clname))) {
+            if (si.fCheckSum === checksum) {
                cache[checksum] = si;
-               return si;
+               if (!clname || (si.fName === clname))
+                  return si;
             }
          }
          cache[checksum] = null; // checksum did not found, do not try again
-      } else {
+      }
+
+      if (clname) {
          for (let i = 0; i < len; ++i) {
             const si = arr[i];
             if ((si.fName === clname) && ((si.fClassVersion === clversion) || (clversion === undefined)))
@@ -3527,7 +3530,8 @@ class TFile {
       }
 
       // check element in streamer infos, one can have special cases
-      if (!s_i) s_i = this.findStreamerInfo(clname, ver.val, ver.checksum);
+      if (!s_i)
+         s_i = this.findStreamerInfo(clname, ver.val, ver.checksum);
 
       if (!s_i) {
          delete this.fStreamers[fullname];
