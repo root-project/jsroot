@@ -638,6 +638,34 @@ function getArrayKind(type_name) {
    return type_name === 'TArrayL64' ? kLong64 : -1;
 }
 
+
+function createPairStreamer(typename, file) {
+   let si = file?.findStreamerInfo(typename);
+   if (si)
+      return si;
+   let p1 = typename.indexOf('<');
+   const p2 = typename.lastIndexOf('>');
+   function getNextName() {
+      let res = '', p = p1 + 1, cnt = 0;
+      while ((p < p2) && (cnt >= 0)) {
+         switch (typename[p]) {
+            case '<': cnt++; break;
+            case ',': if (cnt === 0) cnt--; break;
+            case '>': cnt--; break;
+         }
+         if (cnt >= 0) res += typename[p];
+         p++;
+      }
+      p1 = p - 1;
+      return res.trim();
+   }
+   si = { _typename: 'TStreamerInfo', fVersion: 0, fName: typename, fElements: create(clTList), $artificial: true };
+   si.fElements.Add(createStreamerElement('first', getNextName(), file));
+   si.fElements.Add(createStreamerElement('second', getNextName(), file));
+   file.fStreamerInfos.arr.push(si);
+   return si;
+}
+
 /** @summary create element of the streamer
   * @private  */
 function createStreamerElement(name, typename, file) {
@@ -656,7 +684,8 @@ function createStreamerElement(name, typename, file) {
       typename = elem.fTypeName = BasicTypeNames[elem.fType] || 'int';
    }
 
-   if (elem.fType > 0) return elem; // basic type
+   if (elem.fType > 0)
+      return elem; // basic type
 
    // check if there are STL containers
    const pos = typename.indexOf('<');
@@ -676,6 +705,9 @@ function createStreamerElement(name, typename, file) {
       elem.fCtype = 0;
       return elem;
    }
+
+   if ((pos > 0) && (typename.slice(0, pos) == 'pair') && file)
+      createPairStreamer(typename, file);
 
    const isptr = typename.at(-1) === '*';
 
@@ -763,34 +795,8 @@ function readVectorElement(buf) {
 /** @summary Function creates streamer for std::pair object
   * @private */
 function getPairStreamer(si, typname, file) {
-   if (!si) {
-      if (typname.indexOf('pair') !== 0)
-         return null;
-
-      si = file.findStreamerInfo(typname);
-
-      if (!si) {
-         let p1 = typname.indexOf('<');
-         const p2 = typname.lastIndexOf('>');
-         function getNextName() {
-            let res = '', p = p1 + 1, cnt = 0;
-            while ((p < p2) && (cnt >= 0)) {
-               switch (typname[p]) {
-                  case '<': cnt++; break;
-                  case ',': if (cnt === 0) cnt--; break;
-                  case '>': cnt--; break;
-               }
-               if (cnt >= 0) res += typname[p];
-               p++;
-            }
-            p1 = p - 1;
-            return res.trim();
-         }
-         si = { _typename: 'TStreamerInfo', fVersion: 1, fName: typname, fElements: create(clTList) };
-         si.fElements.Add(createStreamerElement('first', getNextName(), file));
-         si.fElements.Add(createStreamerElement('second', getNextName(), file));
-      }
-   }
+   if (!si)
+      si = createPairStreamer(typname, file);
 
    const streamer = file.getStreamer(typname, null, si);
    if (!streamer) return null;
@@ -1254,7 +1260,7 @@ function createMemberStreamer(element, file) {
                member.readelem = readVectorElement;
 
                if (!member.isptr && (member.arrkind < 0)) {
-                  const subelem = createStreamerElement('temp', member.conttype);
+                  const subelem = createStreamerElement('temp', member.conttype, file);
                   if (subelem.fType === kStreamer) {
                      subelem.$fictional = true;
                      member.submember = createMemberStreamer(subelem, file);
@@ -1262,6 +1268,7 @@ function createMemberStreamer(element, file) {
                }
             }
          } else if ((stl === kSTLmap) || (stl === kSTLmultimap)) {
+
             const p1 = member.typename.indexOf('<'),
                   p2 = member.typename.lastIndexOf('>');
 
@@ -3469,7 +3476,7 @@ class TFile {
 
          for (let i = 0; i < len; ++i) {
             si = arr[i];
-            if (si.fCheckSum === checksum) {
+            if ((si.fCheckSum === checksum) || (si.$artificial && (si.fName === clname))) {
                cache[checksum] = si;
                return si;
             }
