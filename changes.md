@@ -28,6 +28,7 @@
 1. Fix - drawing `TPaveText` with zero text size
 1. Fix - hidden canvas in Jupyter Lab, https://root-forum.cern.ch/t/63097/
 1. Fix - latex super-script without leading symbol, https://root-forum.cern.ch/t/63114/
+1. Fix - correctly read std::pair<> without dictionary, https://root-forum.cern.ch/t/63114/
 
 
 ## Changes in 7.8.1
