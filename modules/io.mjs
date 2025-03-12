@@ -3469,7 +3469,7 @@ class TFile {
          let cache = this.fStreamerInfos.cache;
          if (!cache) cache = this.fStreamerInfos.cache = {};
          let si = cache[checksum];
-         if (si !== undefined)
+         if (si && (!clname || (si.fName === clname)))
             return si;
 
          for (let i = 0; i < len; ++i) {
