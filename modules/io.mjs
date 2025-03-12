@@ -3583,7 +3583,7 @@ function readMapElement(buf) {
 
    if (this.member_wise) {
       // when member-wise streaming is used, version is written
-      const si = buf.fFile.findStreamerInfo(this.pairtype, this.stl_version.val /* , this.stl_version.checksum */);
+      const si = buf.fFile.findStreamerInfo(this.pairtype, this.stl_version.val , this.stl_version.checksum);
 
       if (si && (this.si !== si)) {
          streamer = getPairStreamer(si, this.pairtype, buf.fFile);
