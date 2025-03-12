@@ -2,6 +2,7 @@
 
 ## Changes in 7.7.x
 1. Fix - latex super-script without leading symbol, https://root-forum.cern.ch/t/63114/
+2. Fix - correctly read std::pair<> without dictionary, https://root-forum.cern.ch/t/63114/
 
 
 ## Changes in 7.7.5
