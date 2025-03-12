@@ -638,33 +638,7 @@ function getArrayKind(type_name) {
    return type_name === 'TArrayL64' ? kLong64 : -1;
 }
 
-
-function createPairStreamer(typename, file) {
-   let si = file?.findStreamerInfo(typename);
-   if (si)
-      return si;
-   let p1 = typename.indexOf('<');
-   const p2 = typename.lastIndexOf('>');
-   function getNextName() {
-      let res = '', p = p1 + 1, cnt = 0;
-      while ((p < p2) && (cnt >= 0)) {
-         switch (typename[p]) {
-            case '<': cnt++; break;
-            case ',': if (cnt === 0) cnt--; break;
-            case '>': cnt--; break;
-         }
-         if (cnt >= 0) res += typename[p];
-         p++;
-      }
-      p1 = p - 1;
-      return res.trim();
-   }
-   si = { _typename: 'TStreamerInfo', fVersion: 0, fName: typename, fElements: create(clTList), $artificial: true };
-   si.fElements.Add(createStreamerElement('first', getNextName(), file));
-   si.fElements.Add(createStreamerElement('second', getNextName(), file));
-   file.fStreamerInfos.arr.push(si);
-   return si;
-}
+let createPairStreamer;
 
 /** @summary create element of the streamer
   * @private  */
@@ -706,7 +680,7 @@ function createStreamerElement(name, typename, file) {
       return elem;
    }
 
-   if ((pos > 0) && (typename.slice(0, pos) == 'pair') && file)
+   if ((pos > 0) && (typename.slice(0, pos) == 'pair') && file && isFunc(createPairStreamer))
       createPairStreamer(typename, file);
 
    const isptr = typename.at(-1) === '*';
@@ -791,6 +765,34 @@ function readVectorElement(buf) {
    return res;
 }
 
+/** @summary Create streamer info for pair object
+  * @private */
+createPairStreamer = function(typename, file) {
+   let si = file.findStreamerInfo(typename);
+   if (si)
+      return si;
+   let p1 = typename.indexOf('<');
+   const p2 = typename.lastIndexOf('>');
+   function getNextName() {
+      let res = '', p = p1 + 1, cnt = 0;
+      while ((p < p2) && (cnt >= 0)) {
+         switch (typename[p]) {
+            case '<': cnt++; break;
+            case ',': if (cnt === 0) cnt--; break;
+            case '>': cnt--; break;
+         }
+         if (cnt >= 0) res += typename[p];
+         p++;
+      }
+      p1 = p - 1;
+      return res.trim();
+   }
+   si = { _typename: 'TStreamerInfo', fVersion: 0, fName: typename, fElements: create(clTList), $artificial: true };
+   si.fElements.Add(createStreamerElement('first', getNextName(), file));
+   si.fElements.Add(createStreamerElement('second', getNextName(), file));
+   file.fStreamerInfos.arr.push(si);
+   return si;
+}
 
 /** @summary Function creates streamer for std::pair object
   * @private */
@@ -825,17 +827,13 @@ function readMapElement(buf) {
 
    if (this.member_wise) {
       // when member-wise streaming is used, version is written
-      const ver = this.stl_version;
+      const si = buf.fFile.findStreamerInfo(this.pairtype, this.stl_version.val /*, this.stl_version.checksum */);
 
-      if (this.si) {
-         const si = buf.fFile.findStreamerInfo(this.pairtype, ver.val, ver.checksum);
-
-         if (this.si !== si) {
-            streamer = getPairStreamer(si, this.pairtype, buf.fFile);
-            if (!streamer || streamer.length !== 2) {
-               console.log(`Fail to produce streamer for ${this.pairtype}`);
-               return null;
-            }
+      if (si && (this.si !== si)) {
+         streamer = getPairStreamer(si, this.pairtype, buf.fFile);
+         if (streamer?.length !== 2) {
+            console.log(`Fail to produce streamer for ${this.pairtype}`);
+            return null;
          }
       }
    }
