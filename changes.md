@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in 7.7.x
+1. Fix - latex super-script without leading symbol, https://root-forum.cern.ch/t/63114/
+
+
 ## Changes in 7.7.5
 1. Fix - can enable exponent only for log10 axis scale
 2. Fix - proper set custom font size in latex
