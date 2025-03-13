@@ -1147,7 +1147,8 @@ class TAxisPainter extends ObjectPainter {
                   arg.rotate = -mod.fTextAngle;
 
                // only for major text drawing scale factor need to be checked
-               if (lcnt === 0)
+               // for modified labels ignore scaling
+               if ((lcnt === 0) && !mod?.fLabText)
                   arg.post_process = process_drawtext_ready;
 
                this.drawText(arg);
