@@ -1623,7 +1623,7 @@ function getMethods(typename, obj) {
       };
    }
 
-   if ((typename.indexOf(clTF1) === 0) || (typename === clTF12) || (typename === clTF2)) {
+   if ((typename.indexOf(clTF1) === 0) || (typename === clTF12) || (typename === clTF2) || (typename === clTF3)) {
       m.addFormula = function(formula) {
          if (!formula) return;
          if (this.formulas === undefined)
