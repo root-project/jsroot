@@ -1816,7 +1816,7 @@ class TPadPainter extends ObjectPainter {
       let objpainter = null;
       while ((pindx !== undefined) && (pindx < this.painters.length)) {
          const subp = this.painters[pindx++];
-         if (subp?.snapid === snap.fObjectID) {
+         if (subp.snapid === snap.fObjectID) {
             objpainter = subp;
             break;
          } else if (subp.snapid && !subp.isSecondary() && !is_pad) {
@@ -1825,8 +1825,10 @@ class TPadPainter extends ObjectPainter {
          }
       }
 
+      let promise;
+
       if (objpainter) {
-         let promise;
+         // painter exists - try to update drawing
          if (is_pad) // sub-pad
             promise = objpainter.redrawPadSnap(snap);
          else if (snap.fKind === webSnapIds.kObject) { // object itself
@@ -1836,11 +1838,7 @@ class TPadPainter extends ObjectPainter {
             if (objpainter.updateObject(snap.fSnapshot))
                promise = objpainter.redraw();
          }
-
-         return getPromise(promise).then(() => this.drawNextSnap(lst, pindx, indx)); // call next
-      }
-
-      if (is_pad) { // sub-pad
+      } else if (is_pad) {
          const subpad = snap.fSnapshot;
 
          subpad.fPrimitives = null; // clear primitives, they just because of I/O
@@ -1865,21 +1863,13 @@ class TPadPainter extends ObjectPainter {
             padpainter.addPadButtons(true);
 
          // we select current pad, where all drawing is performed
-         return padpainter.drawNextSnap(snap.fPrimitives).then(() => {
-            padpainter.addPadInteractive();
-            return this.drawNextSnap(lst, pindx, indx); // call next
-         });
+         promise = padpainter.drawNextSnap(snap.fPrimitives).then(() => padpainter.addPadInteractive());
+      } else if (((snap.fKind === webSnapIds.kObject) || (snap.fKind === webSnapIds.kSVG)) && (snap.fOption !== '__ignore_drawing__')) {
+         // here the case of normal drawing
+         promise = this.drawObject(this, snap.fSnapshot, snap.fOption).then(objp => this.addObjectPainter(objp, lst, indx));
       }
 
-      // here the case of normal drawing, will be handled in promise
-      if (((snap.fKind === webSnapIds.kObject) || (snap.fKind === webSnapIds.kSVG)) && (snap.fOption !== '__ignore_drawing__')) {
-         return this.drawObject(this, snap.fSnapshot, snap.fOption).then(objpainter2 => {
-            this.addObjectPainter(objpainter2, lst, indx);
-            return this.drawNextSnap(lst, pindx, indx);
-         });
-      }
-
-      return this.drawNextSnap(lst, pindx, indx);
+      return getPromise(promise).then(() => this.drawNextSnap(lst, pindx, indx)); // call next
    }
 
    /** @summary Return painter with specified id
