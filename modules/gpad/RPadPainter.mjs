@@ -1133,7 +1133,7 @@ class RPadPainter extends RObjectPainter {
             promise = objpainter.redrawPadSnap(snap);
          else if (objpainter.updateObject(snap.fDrawable || snap.fObject || snap, snap.fOption || '', true))
             promise = objpainter.redraw();
-      } if (is_subpad) {
+      } else if (is_subpad) {
          const subpad = snap, // not sub-pad, but just attributes
                padpainter = new RPadPainter(this, subpad, false);
          padpainter.decodeOptions('');
