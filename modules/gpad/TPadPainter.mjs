@@ -1814,16 +1814,15 @@ class TPadPainter extends ObjectPainter {
 
       // try to locate existing object painter, only allowed when redrawing pad snap
       let objpainter = null;
-      if ((pindx !== undefined) && (pindx < this.painters.length)) {
-         while ((pindx < this.painters.length) &&
-                (!this.painters[pindx].snapid || this.painters[pindx].isSecondary() || (is_pad && (this.painters[pindx].snapid !== snap.fObjectID))))
-            pindx++;
-
-         const subp = pindx < this.painters.length ? this.painters[pindx++] : null;
-         if (subp?.snapid === snap.fObjectID)
+      while ((pindx !== undefined) && (pindx < this.painters.length)) {
+         const subp = this.painters[pindx++];
+         if (subp?.snapid === snap.fObjectID) {
             objpainter = subp;
-         else if (objpainter)
-            console.warn(`Mismatch in snapid between painter ${subp?.snapid} second: ${subp?.isSecondary()} type: ${subp?.getClassName()} and primitive ${snap.fObjectID} kind ${snap.fKind} type ${snap.fSnapshot?._typename}`);
+            break;
+         } else if (subp.snapid && !subp.isSecondary() && !is_pad) {
+            console.warn(`Mismatch in snapid between painter ${subp?.snapid} secondary: ${subp?.isSecondary()} type: ${subp?.getClassName()} and primitive ${snap.fObjectID} kind ${snap.fKind} type ${snap.fSnapshot?._typename}`);
+            break;
+         }
       }
 
       if (objpainter) {
