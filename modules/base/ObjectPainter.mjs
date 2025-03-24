@@ -387,7 +387,8 @@ class ObjectPainter extends BasePainter {
          pad_name = this.pad_name;
 
       let c = this.getCanvSvg();
-      if (!pad_name || c.empty()) return c;
+      if (!pad_name || c.empty())
+         return c;
 
       const cp = c.property('pad_painter');
       if (cp?.pads_cache && cp.pads_cache[pad_name])
@@ -395,7 +396,8 @@ class ObjectPainter extends BasePainter {
 
       c = c.select('.primitives_layer .__root_pad_' + pad_name);
       if (cp) {
-         if (!cp.pads_cache) cp.pads_cache = {};
+         if (!cp.pads_cache)
+            cp.pads_cache = {};
          cp.pads_cache[pad_name] = c.node();
       }
       return c;
