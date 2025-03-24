@@ -130,7 +130,7 @@ if ((typeof document !== 'undefined') && (typeof window !== 'undefined') && (typ
       browser.isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
       browser.isChrome = Boolean(window.chrome);
       browser.isChromeHeadless = navigator.userAgent.indexOf('HeadlessChrome') >= 0;
-      browser.chromeVersion = (browser.isChrome || browser.isChromeHeadless) ? parseInt(navigator.userAgent.match(/Chrom(?:e|ium)\/([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/)[1]) : 0;
+      browser.chromeVersion = (browser.isChrome || browser.isChromeHeadless) ? (navigator.userAgent.indexOf('Chrom') > 0 ? parseInt(navigator.userAgent.match(/Chrom(?:e|ium)\/([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/)[1]) : 134) : 0;
       browser.isWin = navigator.userAgent.indexOf('Windows') >= 0;
    }
    browser.android = /android/i.test(navigator.userAgent);
