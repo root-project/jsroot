@@ -5,6 +5,7 @@
 2. Fix - latex super-script without leading symbol, https://root-forum.cern.ch/t/63114/
 3. Fix - correctly read `std::pair<>` without dictionary, https://root-forum.cern.ch/t/63114/
 4. Fix - repair small bug in TF3 painting
+5. Fix - chrome on some Apple mobile devices, https://root-forum.cern.ch/t/63201/
 
 
 ## Changes in 7.8.1
