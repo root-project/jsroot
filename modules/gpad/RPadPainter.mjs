@@ -1065,7 +1065,7 @@ class RPadPainter extends RObjectPainter {
          return this;
       }
 
-      const snap = lst[indx];
+      const snap = lst[indx], is_pad = snap._typename === `${nsREX}RPadDisplayItem`;
 
       // empty object, no need to do something, take next
       if (snap.fDummy)
@@ -1115,34 +1115,31 @@ class RPadPainter extends RObjectPainter {
 
       // try to locate existing object painter, only allowed when redrawing pad snap
       let objpainter = null;
-      if ((pindx !== undefined) && (pindx < this.painters.length)) {
-         while ((pindx < this.painters.length) && (!this.painters[pindx].snapid || this.painters[pindx].isSecondary()))
-            pindx++;
-         const subp = pindx < this.painters.length ? this.painters[pindx++] : null;
-         if (subp && (subp.snapid === snap.fObjectID))
+      while ((pindx !== undefined) && (pindx < this.painters.length)) {
+         const subp = this.painters[pindx++];
+
+         if (subp.snapid === snap.fObjectID) {
             objpainter = subp;
-         else
-            console.warn(`Mismatch in snapid between painter ${subp?.snapid} and primitive ${snap.fObjectID}`);
+            break;
+         } else if (subp.snapid && !subp.isSecondary() && !is_pad) {
+            console.warn(`Mismatch in snapid between painter ${subp?.snapid} secondary: ${subp?.isSecondary()} type: ${subp?.getClassName()} and primitive ${snap.fObjectID} kind ${snap.fKind} type ${snap.fDrawable?._typename}`);
+            break;
+         }
       }
 
       if (objpainter) {
-         if (snap._typename === `${nsREX}RPadDisplayItem`) {
-            // sub-pad
-            return objpainter.redrawPadSnap(snap).then(ppainter => {
-               this.addObjectPainter(ppainter, lst, indx);
-               return this.drawNextSnap(lst, pindx, indx);
-            });
-         }
-
          let promise;
 
-         if (objpainter.updateObject(snap.fDrawable || snap.fObject || snap, snap.fOption || '', true))
+         if (is_pad)
+            // sub-pad
+            promise = objpainter.redrawPadSnap(snap).then(ppainter => this.addObjectPainter(ppainter, lst, indx));
+         else if (objpainter.updateObject(snap.fDrawable || snap.fObject || snap, snap.fOption || '', true))
             promise = objpainter.redraw();
 
          return getPromise(promise).then(() => this.drawNextSnap(lst, pindx, indx)); // call next
       }
 
-      if (snap._typename === `${nsREX}RPadDisplayItem`) { // sub-pad
+      if (is_pad) { // sub-pad
          const subpad = snap, // not sub-pad, but just attributes
                padpainter = new RPadPainter(this, subpad, false);
          padpainter.decodeOptions('');
