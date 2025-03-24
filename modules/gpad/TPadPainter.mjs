@@ -296,7 +296,8 @@ class TPadPainter extends ObjectPainter {
 
       delete this.main_painter_ref;
       delete this.frame_painter_ref;
-      delete this.pads_cache;
+      const cp = this.iscan || !this.has_canvas ? this : this.getCanvPainter();
+      if (cp) delete cp.pads_cache;
       this.#pad_x = this.#pad_y = this.#pad_width = this.#pad_height = undefined;
       this.#doing_draw = undefined;
       delete this._interactively_changed;
@@ -390,22 +391,15 @@ class TPadPainter extends ObjectPainter {
       if (!isFunc(selector))
          return false;
 
-      let pad_cleanup = false, is_any = false;
+      let is_any = false;
 
       for (let k = this.painters.length - 1; k >= 0; --k) {
          const subp = this.painters[k];
          if (selector(subp)) {
-            if (isPadPainter(subp))
-               pad_cleanup = true;
             subp.cleanup();
             this.painters.splice(k, 1);
             is_any = true;
          }
-      }
-
-      if (pad_cleanup) {
-         const cp = this.getCanvPainter();
-         if (cp) delete cp.pads_cache;
       }
 
       return is_any;
@@ -2045,8 +2039,7 @@ class TPadPainter extends ObjectPainter {
       }
 
       if (missmatch) {
-         delete this.pads_cache;
-
+         delete this.pads_cache; // invalidate pads cache
          const old_painters = this.painters;
          this.painters = [];
          old_painters.forEach(objp => objp.cleanup());
