@@ -1004,11 +1004,8 @@ class ObjectPainter extends BasePainter {
    /** @summary Analyze if all text draw operations are completed
      * @private */
    #checkAllTextDrawing(draw_g, resolveFunc, try_optimize) {
-      let all_args = draw_g.property('all_args'), missing = 0;
-      if (!all_args) {
-         console.log('Text drawing is finished - why calling #checkAllTextDrawing?????');
-         all_args = [];
-      }
+      const all_args = draw_g.property('all_args') || [];
+      let missing = 0;
 
       all_args.forEach(arg => { if (!arg.ready) missing++; });
 
