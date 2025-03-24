@@ -1798,7 +1798,7 @@ class TPadPainter extends ObjectPainter {
       if (!lst || (indx >= lst.length))
          return this;
 
-      const snap = lst[indx], is_pad = (snap.fKind === webSnapIds.kSubPad);
+      const snap = lst[indx], is_subpad = (snap.fKind === webSnapIds.kSubPad);
 
       // gStyle object
       if (snap.fKind === webSnapIds.kStyle) {
@@ -1813,23 +1813,22 @@ class TPadPainter extends ObjectPainter {
       }
 
       // try to locate existing object painter, only allowed when redrawing pad snap
-      let objpainter = null;
+      let objpainter, promise;
+
       while ((pindx !== undefined) && (pindx < this.painters.length)) {
          const subp = this.painters[pindx++];
          if (subp.snapid === snap.fObjectID) {
             objpainter = subp;
             break;
-         } else if (subp.snapid && !subp.isSecondary() && !is_pad) {
+         } else if (subp.snapid && !subp.isSecondary() && !is_subpad) {
             console.warn(`Mismatch in snapid between painter ${subp?.snapid} secondary: ${subp?.isSecondary()} type: ${subp?.getClassName()} and primitive ${snap.fObjectID} kind ${snap.fKind} type ${snap.fSnapshot?._typename}`);
             break;
          }
       }
 
-      let promise;
-
       if (objpainter) {
          // painter exists - try to update drawing
-         if (is_pad) // sub-pad
+         if (is_subpad)
             promise = objpainter.redrawPadSnap(snap);
          else if (snap.fKind === webSnapIds.kObject) { // object itself
             if (objpainter.updateObject(snap.fSnapshot, snap.fOption, true))
@@ -1838,7 +1837,7 @@ class TPadPainter extends ObjectPainter {
             if (objpainter.updateObject(snap.fSnapshot))
                promise = objpainter.redraw();
          }
-      } else if (is_pad) {
+      } else if (is_subpad) {
          const subpad = snap.fSnapshot;
 
          subpad.fPrimitives = null; // clear primitives, they just because of I/O
