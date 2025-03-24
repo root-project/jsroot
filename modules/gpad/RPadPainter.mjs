@@ -105,9 +105,11 @@ class RPadPainter extends RObjectPainter {
          if (!this.iscan) svg_p.remove();
       }
 
+      const cp = this.iscan || !this.has_canvas ? this : this.getCanvPainter();
+      if (cp) delete cp.pads_cache;
+
       delete this.main_painter_ref;
       delete this.frame_painter_ref;
-      delete this.pads_cache;
       this.#pad_x = this.#pad_y = this.#pad_width = this.#pad_height = undefined;
       this.#doing_draw = undefined;
       delete this._dfltRFont;
