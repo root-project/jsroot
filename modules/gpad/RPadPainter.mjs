@@ -186,14 +186,20 @@ class RPadPainter extends RObjectPainter {
          selector = () => true;
 
       if (!isFunc(selector))
-         return;
+         return false;
+
+      let is_any = false;
 
       for (let k = this.painters.length - 1; k >= 0; --k) {
-         if (selector(this.painters[k])) {
-            this.painters[k].cleanup();
+         const subp = this.painters[k];
+         if (selector(subp)) {
+            subp.cleanup();
             this.painters.splice(k, 1);
+            is_any = true;
          }
       }
+
+      return is_any;
    }
 
    /** @summary Divide pad on sub-pads */
