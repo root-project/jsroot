@@ -2837,12 +2837,12 @@ class TFile {
 
    /** @summary Assign remap for web servers
     * @desc Allows to specify fallback server if main server fails
-    * @param {Object} remap - looks like { 'https://original.server': 'https://fallback.server' } */
+    * @param {Object} remap - looks like { 'https://original.server/': 'https://fallback.server/' } */
    assignRemap(remap) {
       if (!remap && !isObject(remap))
          return;
 
-      for (let key in remap) {
+      for (const key in remap) {
          if (this.fURL.indexOf(key) === 0) {
             this.fURL2 = remap[key] + this.fURL.slice(key.length);
             if (!this.fTimeout)
@@ -3926,7 +3926,8 @@ class TProxyFile extends TFile {
   *  - [FileProxy]{@link FileProxy} let access arbitrary files via tiny proxy API
   * @param {string|object} arg - argument for file open like url, see details
   * @param {object} [opts] - extra arguments
-  * @param {Number} [opts.timeout=0] - read timeout for http requests
+  * @param {Number} [opts.timeout=0] - read timeout for http requests in ms
+  * @param {Object} [opts.remap={}] - http server remap to fallback when main server fails, like { 'https://original.server/': 'https://fallback.server/' }
   * @return {object} - Promise with {@link TFile} instance when file is opened
   * @example
   *
@@ -3934,7 +3935,7 @@ class TProxyFile extends TFile {
   * let f = await openFile('https://root.cern/js/files/hsimple.root');
   * console.log(`Open file ${f.getFileName()}`); */
 function openFile(arg, opts) {
-   let file, plain_file, alt_url;
+   let file, plain_file;
 
    if (isNodeJs() && isStr(arg)) {
       if (arg.indexOf('file://') === 0)

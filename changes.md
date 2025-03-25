@@ -6,6 +6,8 @@
 1. Only 'col7' draw option uses bar offset and width for color `TH2` drawing
 1. Interactive zooming and context menu on 'chord' `TH2` drawing
 1. Implement 'box1' for `TH3` with negative bins
+1. Introduce `settings.FilesTimeout` to configure global timeout for file reading operations
+1. Introduce `settings.FilesRemap` to let provide fallback address for http server, used for `root.cern`
 1. Adjust histogram title drawing with native implementation
 1. Improve float to string conversion when 'g' is specified
 1. Support 'same' option for first histogram, draw directly on pad
@@ -29,8 +31,8 @@
 1. Fix - hidden canvas in Jupyter Lab, https://root-forum.cern.ch/t/63097/
 1. Fix - latex super-script without leading symbol, https://root-forum.cern.ch/t/63114/
 1. Fix - correctly read std::pair<> without dictionary, https://root-forum.cern.ch/t/63114/
-1. Fix - TF3 painting error
-1. Fix - correct axis range in TScatter drawing
+1. Fix - `TF3` painting error
+1. Fix - correct axis range in `TScatter` drawing
 1. Fix - chromium in mobile device emulation mode, https://root-forum.cern.ch/t/63201/
 
 
