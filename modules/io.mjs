@@ -2685,6 +2685,9 @@ class TFile {
          this.fAcceptRanges = false;
       }
 
+      if (isNodeJs())
+         this.fUseStampPar = false;
+
       const pos = Math.max(this.fURL.lastIndexOf('/'), this.fURL.lastIndexOf('\\'));
       this.fFileName = pos >= 0 ? this.fURL.slice(pos + 1) : this.fURL;
    }
