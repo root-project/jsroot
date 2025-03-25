@@ -4,7 +4,7 @@ import terser from '@rollup/plugin-terser';
 import modify from 'rollup-plugin-modify';
 import ascii from 'rollup-plugin-ascii';
 import ignore from 'rollup-plugin-ignore';
-import meta from '../package.json' assert {type: 'json'};
+import meta from '../package.json' with { type: 'json' };
 
 const ignore_modules = ['fs', 'zlib', 'gl', './base/lzma.mjs', './base/zstd.mjs', '../../scripts/jspdf.es.min.js', '../../scripts/svg2pdf.es.min.js'];
 
