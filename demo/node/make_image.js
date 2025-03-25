@@ -36,11 +36,11 @@ function processResults(name, title, svg, pdf, png, jpeg) {
 
 
 // loading data
-const file = await openFile('https://root-eos.web.cern.ch/js/files/hsimple.root'),
+const file = await openFile('https://root.cern/js/files/hsimple.root'),
       hpxpy = await file.readObject('hpxpy;1'),
-      file2 = await openFile('https://root-eos.web.cern.ch/js/files/geom/rootgeom.root'),
+      file2 = await openFile('https://root.cern/js/files/geom/rootgeom.root'),
       geom = await file2.readObject('simple1;1'),
-      file3 = await openFile('https://root-eos.web.cern.ch/js/files/latex.root'),
+      file3 = await openFile('https://root.cern/js/files/latex.root'),
       latex = await file3.readObject('ex1;1');
 
 console.log('Read all data');
