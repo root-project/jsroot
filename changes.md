@@ -4,6 +4,7 @@
 1. Fix - latex super-script without leading symbol, https://root-forum.cern.ch/t/63114/
 2. Fix - correctly read std::pair<> without dictionary, https://root-forum.cern.ch/t/63114/
 3. Fix - chromium in mobile device emulation mode, https://root-forum.cern.ch/t/63201/
+4. Fix - introduce files remap for root.cern site using fallback URL
 
 
 ## Changes in 7.7.5
