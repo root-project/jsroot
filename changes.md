@@ -6,6 +6,7 @@
 3. Fix - correctly read `std::pair<>` without dictionary, https://root-forum.cern.ch/t/63114/
 4. Fix - repair small bug in TF3 painting
 5. Fix - chromium in mobile device emulation mode, https://root-forum.cern.ch/t/63201/
+6. Fix - introduce files remap for root.cern site using fallback URL
 
 
 ## Changes in 7.8.1
