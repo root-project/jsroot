@@ -2856,12 +2856,14 @@ class TFile {
          }
 
          if (!res) {
+            if (file.fURL2) {
+               setFileUrl(true);
+               return send_new_request();
+            }
+
             if ((first === 0) && (last > 2) && (file.fMaxRanges > 1)) {
                // server return no response with multi request - try to decrease ranges count or fail
-
-               if (file.fURL2)
-                  setFileUrl(true);
-               else if (last / 2 > 200)
+               if (last / 2 > 200)
                   file.fMaxRanges = 200;
                else if (last / 2 > 50)
                   file.fMaxRanges = 50;
@@ -2873,11 +2875,6 @@ class TFile {
                   file.fMaxRanges = 1;
                last = Math.min(last, file.fMaxRanges * 2);
                // console.log(`Change maxranges to ${file.fMaxRanges} last ${last}`);
-               return send_new_request();
-            }
-
-            if (first_block && file.fURL2) {
-               setFileUrl(true);
                return send_new_request();
             }
 
