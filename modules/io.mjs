@@ -2875,7 +2875,7 @@ class TFile {
 
                if (file.fURL2)
                   setFileUrl(true);
-               if (last / 2 > 200)
+               else if (last / 2 > 200)
                   file.fMaxRanges = 200;
                else if (last / 2 > 50)
                   file.fMaxRanges = 50;
