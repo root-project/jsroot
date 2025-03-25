@@ -2843,8 +2843,11 @@ class TFile {
          return;
 
       for (let key in remap) {
-         if (this.fURL.indexOf(key) === 0)
+         if (this.fURL.indexOf(key) === 0) {
             this.fURL2 = remap[key] + this.fURL.slice(key.length);
+            if (!this.fTimeout)
+               this.fTimeout = 10000;
+         }
       }
    }
 
