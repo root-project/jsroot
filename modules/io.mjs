@@ -2969,12 +2969,10 @@ class TFile {
                file.fUseStampPar = false;
                return send_new_request();
             }
-
             if (file.fURL2) {
                setFileUrl(true);
                return send_new_request();
             }
-
             if (file.fAcceptRanges) {
                file.fAcceptRanges = false;
                first_block_retry = true;
@@ -3009,9 +3007,12 @@ class TFile {
          }
 
          if (!res) {
+            if (file.fURL2) {
+               setFileUrl(true);
+               return send_new_request();
+            }
             if ((first === 0) && (last > 2) && (file.fMaxRanges > 1)) {
                // server return no response with multi request - try to decrease ranges count or fail
-
                if (last / 2 > 200)
                   file.fMaxRanges = 200;
                else if (last / 2 > 50)
@@ -3023,15 +3024,8 @@ class TFile {
                else
                   file.fMaxRanges = 1;
                last = Math.min(last, file.fMaxRanges * 2);
-               // console.log(`Change maxranges to ${file.fMaxRanges} last ${last}`);
                return send_new_request();
             }
-
-            if (first_block && file.fURL2) {
-               setFileUrl(true);
-               return send_new_request();
-            }
-
             return rejectFunc(Error(`Fail to read with ${place.length/2} ranges max = ${file.fMaxRanges}`));
          }
 
