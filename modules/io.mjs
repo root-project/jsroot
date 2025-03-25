@@ -2795,7 +2795,7 @@ class TFile {
       this.fStreamers = 0;
       this.fStreamerInfos = null;
       this.fFileName = '';
-      this.fTimeout = 0;
+      this.fTimeout = settings.FileTimeout ?? 0;
       this.fStreamers = [];
       this.fBasicTypes = {}; // custom basic types, in most case enumerations
 
@@ -2835,6 +2835,19 @@ class TFile {
       this.fTimeout = v;
    }
 
+   /** @summary Assign remap for web servers
+    * @desc Allows to specify fallback server if main server fails
+    * @param {Object} remap - looks like { 'https://original.server' : 'https://fallback.server' } */
+   assignRemap(remap) {
+      if (!remap && !isObject(remap))
+         return;
+
+      for (let key in remap) {
+         if (this.fURL.indexOf(key) === 0)
+            this.fURL2 = remap[key] + this.fURL.slice(key.length);
+      }
+   }
+
    /** @summary Assign BufferArray with file contentOpen file
      * @private */
    assignFileContent(bufArray) {
@@ -2862,22 +2875,31 @@ class TFile {
             blobs = [], // array of requested segments
             promise = new Promise((resolve, reject) => { resolveFunc = resolve; rejectFunc = reject; });
 
-      let fileurl = file.fURL,
-          first = 0, last = 0,
+      let fileurl, first = 0, last = 0,
           // eslint-disable-next-line prefer-const
           read_callback, first_req,
           first_block_retry = false;
 
-      if (isStr(filename) && filename) {
-         const pos = fileurl.lastIndexOf('/');
-         fileurl = (pos < 0) ? filename : fileurl.slice(0, pos + 1) + filename;
+      function setFileUrl(use_second) {
+         if (use_second) {
+            console.log('Failure - try to repait with URL2', file.fURL2);
+            file.fURL = file.fURL2;
+            delete file.fURL2;
+         }
+
+         fileurl = file.fURL;
+         if (isStr(filename) && filename) {
+            const pos = fileurl.lastIndexOf('/');
+            fileurl = (pos < 0) ? filename : fileurl.slice(0, pos + 1) + filename;
+         }
       }
 
       function send_new_request(increment) {
          if (increment) {
             first = last;
             last = Math.min(first + file.fMaxRanges * 2, place.length);
-            if (first >= place.length) return resolveFunc(blobs);
+            if (first >= place.length)
+               return resolveFunc(blobs);
          }
 
          let fullurl = fileurl, ranges = 'bytes', totalsz = 0;
@@ -2944,6 +2966,12 @@ class TFile {
                file.fUseStampPar = false;
                return send_new_request();
             }
+
+            if (file.fURL2) {
+               setFileUrl(true);
+               return send_new_request();
+            }
+
             if (file.fAcceptRanges) {
                file.fAcceptRanges = false;
                first_block_retry = true;
@@ -2993,6 +3021,11 @@ class TFile {
                   file.fMaxRanges = 1;
                last = Math.min(last, file.fMaxRanges * 2);
                // console.log(`Change maxranges to ${file.fMaxRanges} last ${last}`);
+               return send_new_request();
+            }
+
+            if (first_block && file.fURL2) {
+               setFileUrl(true);
                return send_new_request();
             }
 
@@ -3141,6 +3174,8 @@ class TFile {
 
          send_new_request(true);
       };
+
+      setFileUrl();
 
       return send_new_request(true).then(() => promise);
    }
@@ -3896,7 +3931,7 @@ class TProxyFile extends TFile {
   * let f = await openFile('https://root.cern/js/files/hsimple.root');
   * console.log(`Open file ${f.getFileName()}`); */
 function openFile(arg, opts) {
-   let file;
+   let file, plain_file, alt_url;
 
    if (isNodeJs() && isStr(arg)) {
       if (arg.indexOf('file://') === 0)
@@ -3916,11 +3951,17 @@ function openFile(arg, opts) {
    if (!file && isObject(arg) && arg.size && arg.name)
       file = new TLocalFile(arg);
 
-   if (!file)
+   if (!file) {
       file = new TFile(arg);
+      plain_file = true;
+   }
 
-   if (opts && isObject(opts) && opts.timeout)
-      file.setTimeout(opts.timeout);
+   if (opts && isObject(opts)) {
+      if (opts.timeout)
+         file.setTimeout(opts.timeout);
+      if (plain_file && opts.remap)
+         file.assignRemap(opts.remap);
+   }
 
    return file._open();
 }
