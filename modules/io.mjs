@@ -2983,7 +2983,7 @@ class TFile {
                return send_new_request();
             }
 
-            return rejectFunc(Error('Fail to read with several ranges'));
+            return rejectFunc(Error(`Fail to read with ${place.length/2} ranges max = ${file.fMaxRanges}`));
          }
 
          // if only single segment requested, return result as is
