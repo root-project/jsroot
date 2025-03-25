@@ -3957,7 +3957,7 @@ function openFile(arg, opts) {
    if (!file) {
       file = new TFile(arg);
       plain_file = true;
-      settings.assignRemap(settings.FilesRemap);
+      file.assignRemap(settings.FilesRemap);
    }
 
    if (opts && isObject(opts)) {
