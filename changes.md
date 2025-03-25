@@ -31,7 +31,7 @@
 1. Fix - correctly read std::pair<> without dictionary, https://root-forum.cern.ch/t/63114/
 1. Fix - TF3 painting error
 1. Fix - correct axis range in TScatter drawing
-1. Fix - chrome on some Apple mobile devices, https://root-forum.cern.ch/t/63201/
+1. Fix - chromium in mobile device emulation mode, https://root-forum.cern.ch/t/63201/
 
 
 ## Changes in 7.8.1
