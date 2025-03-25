@@ -2795,6 +2795,7 @@ class TFile {
       this.fStreamers = 0;
       this.fStreamerInfos = null;
       this.fFileName = '';
+      this.fTimeout = 0;
       this.fStreamers = [];
       this.fBasicTypes = {}; // custom basic types, in most case enumerations
 
@@ -2823,6 +2824,12 @@ class TFile {
 
       const pos = Math.max(this.fURL.lastIndexOf('/'), this.fURL.lastIndexOf('\\'));
       this.fFileName = pos >= 0 ? this.fURL.slice(pos + 1) : this.fURL;
+   }
+
+   /** @summary Set timeout for File instance
+    * @desc Timeout used when submitting http requests to the server */
+   setTimeout(v) {
+      this.fTimeout = v;
    }
 
    /** @summary Assign BufferArray with file contentOpen file
@@ -2891,6 +2898,9 @@ class TFile {
                xhr.setRequestHeader('Range', ranges);
                xhr.expected_size = Math.max(Math.round(1.1 * totalsz), totalsz + 200); // 200 if offset for the potential gzip
             }
+
+            if (file.fTimeout)
+               xhr.timeout = file.fTimeout;
 
             if (isFunc(progress_callback) && isFunc(xhr.addEventListener)) {
                let sum1 = 0, sum2 = 0, sum_total = 0;
@@ -3874,13 +3884,15 @@ class TProxyFile extends TFile {
   *  - [ArrayBuffer]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer} instance with complete file content
   *  - [FileProxy]{@link FileProxy} let access arbitrary files via tiny proxy API
   * @param {string|object} arg - argument for file open like url, see details
+  * @param {object} [opts] - extra arguments
+  * @param {Number} [opts.timeout=0] - read timeout for http requests
   * @return {object} - Promise with {@link TFile} instance when file is opened
   * @example
   *
   * import { openFile } from 'https://root.cern/js/latest/modules/io.mjs';
   * let f = await openFile('https://root.cern/js/files/hsimple.root');
   * console.log(`Open file ${f.getFileName()}`); */
-function openFile(arg) {
+function openFile(arg, opts) {
    let file;
 
    if (isNodeJs() && isStr(arg)) {
@@ -3903,6 +3915,9 @@ function openFile(arg) {
 
    if (!file)
       file = new TFile(arg);
+
+   if (opts && isObject(opts) && opts.timeout)
+      file.setTimeout(opts.timeout);
 
    return file._open();
 }
