@@ -2795,7 +2795,7 @@ class TFile {
       this.fStreamers = 0;
       this.fStreamerInfos = null;
       this.fFileName = '';
-      this.fTimeout = settings.FileTimeout ?? 0;
+      this.fTimeout = settings.FilesTimeout ?? 0;
       this.fStreamers = [];
       this.fBasicTypes = {}; // custom basic types, in most case enumerations
 
@@ -2837,7 +2837,7 @@ class TFile {
 
    /** @summary Assign remap for web servers
     * @desc Allows to specify fallback server if main server fails
-    * @param {Object} remap - looks like { 'https://original.server' : 'https://fallback.server' } */
+    * @param {Object} remap - looks like { 'https://original.server': 'https://fallback.server' } */
    assignRemap(remap) {
       if (!remap && !isObject(remap))
          return;
@@ -3954,6 +3954,7 @@ function openFile(arg, opts) {
    if (!file) {
       file = new TFile(arg);
       plain_file = true;
+      settings.assignRemap(settings.FilesRemap);
    }
 
    if (opts && isObject(opts)) {

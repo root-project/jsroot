@@ -331,8 +331,12 @@ settings = {
    /** @summary File read timeout in ms
      * @desc Configures timeout for each http operation for reading ROOT files
      * @default 0 */
-   FileTimeout: 0,
-  /** @summary Configure xhr.withCredentials = true when submitting http requests from JSROOT */
+   FilesTimeout: 0,
+   /** @summary Default remap object for files loading
+     * @desc Allows to retry files reading if original URL fails
+     * @private */
+   FilesRemap: { 'https://root.cern/': 'https://root-eos.web.cern.ch/' },
+   /** @summary Configure xhr.withCredentials = true when submitting http requests from JSROOT */
    WithCredentials: false,
    /** @summary Skip streamer infos from the GUI */
    SkipStreamerInfos: false,
