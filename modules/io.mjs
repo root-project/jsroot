@@ -2873,6 +2873,8 @@ class TFile {
             if ((first === 0) && (last > 2) && (file.fMaxRanges > 1)) {
                // server return no response with multi request - try to decrease ranges count or fail
 
+               if (file.fURL2)
+                  setFileUrl(true);
                if (last / 2 > 200)
                   file.fMaxRanges = 200;
                else if (last / 2 > 50)
@@ -2893,7 +2895,7 @@ class TFile {
                return send_new_request();
             }
 
-            return rejectFunc(Error('Fail to read with several ranges'));
+            return rejectFunc(Error(`Fail to read with ${last/2} ranges`));
          }
 
          // if only single segment requested, return result as is
