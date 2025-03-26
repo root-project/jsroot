@@ -2,7 +2,7 @@
 
 ## Changes in 7.8.2
 1. Fix - hidden canvas in Jupyter Lab, https://root-forum.cern.ch/t/63097/
-4. Fix - repair small bug in `TF3` painting
+2. Fix - repair small bug in `TF3` painting
 
 
 ## Changes in 7.8.1
