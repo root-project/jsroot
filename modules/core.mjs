@@ -891,7 +891,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
 
          if (this.readyState !== 4) return;
 
-         if ((this.status !== 200) && (this.status !== 206) && !browser.qt5 &&
+         if ((this.status !== 200) && (this.status !== 206) && !browser.qt6 &&
              // in these special cases browsers not always set status
              !((this.status === 0) && ((url.indexOf('file://') === 0) || (url.indexOf('blob:') === 0))))
                return this.error_callback(Error(`Fail to load url ${url}`), this.status);
