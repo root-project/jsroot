@@ -2882,7 +2882,8 @@ class TFile {
 
       function setFileUrl(use_second) {
          if (use_second) {
-            console.log('Failure - try to repait with URL2', file.fURL2);
+            console.log('Failure - try to repair with URL2', file.fURL2);
+            internals.RemapCounter = (internals.RemapCounter ?? 0) + 1;
             file.fURL = file.fURL2;
             delete file.fURL2;
          }
