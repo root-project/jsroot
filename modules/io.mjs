@@ -2969,7 +2969,6 @@ class TFile {
             if (file.fUseStampPar) {
                file.fUseStampPar = false;
                return send_new_request();
-
             }
             if (file.fURL2 && (this.did_abort !== 'large')) {
                setFileUrl(true);
