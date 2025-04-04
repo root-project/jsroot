@@ -885,7 +885,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
          if ((this.readyState === 2) && this.expected_size) {
             const len = parseInt(this.getResponseHeader('Content-Length'));
             if (Number.isInteger(len) && (len > this.expected_size) && !settings.HandleWrongHttpResponse) {
-               this.did_abort = true;
+               this.did_abort = 'large';
                this.abort();
                return this.error_callback(Error(`Server response size ${len} larger than expected ${this.expected_size}. Abort I/O operation`), 599);
             }
