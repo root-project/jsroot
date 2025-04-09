@@ -731,9 +731,9 @@ class TDrawSelector extends TSelector {
       this.vars = []; // array of expression variables
       this.cut = null; // cut variable
       this.hist = null;
-      this.histo_drawopt = '';
+      this.drawopt = '';
       this.hist_name = '$htemp';
-      this.hist_title = 'Result of TTree::Draw';
+      this.draw_title = 'Result of TTree::Draw';
       this.graph = false;
       this.hist_args = []; // arguments for histogram creation
       this.arr_limit = 1000;  // number of accumulated items before create histogram
@@ -864,7 +864,7 @@ class TDrawSelector extends TSelector {
       let expr = this.parseParameters(tree, args, args.expr), cut = '';
 
       // parse option for histogram creation
-      this.hist_title = `drawing '${expr}' from ${tree.fName}`;
+      this.draw_title = `drawing '${expr}' from ${tree.fName}`;
 
       let pos;
       if (args.cut)
@@ -930,9 +930,9 @@ class TDrawSelector extends TSelector {
       this.graph = args.graph;
 
       if (args.drawopt !== undefined)
-         this.histo_drawopt = args.drawopt;
+         this.drawopt = args.drawopt;
       else
-         this.histo_drawopt = (this.ndim === 2) ? 'col' : '';
+         this.drawopt = (this.ndim === 2) ? 'col' : '';
 
       return true;
    }
@@ -970,7 +970,7 @@ class TDrawSelector extends TSelector {
 
       this.vars[0] = new TDrawVariable(this.globals);
       if (!this.vars[0].parse(tree, this, expr, branch, args.direct_branch)) return false;
-      this.hist_title = `drawing branch ${branch.fName} ${expr?' expr:'+expr:''} from ${tree.fName}`;
+      this.draw_title = `drawing branch ${branch.fName} ${expr?' expr:'+expr:''} from ${tree.fName}`;
 
       this.cut = new TDrawVariable(this.globals);
 
@@ -1147,8 +1147,8 @@ class TDrawSelector extends TSelector {
       hist.fZaxis.fLabels = z.fLabels;
 
       hist.fName = this.hist_name;
-      hist.fTitle = this.hist_title;
-      hist.fOption = this.histo_drawopt;
+      hist.fTitle = this.draw_title;
+      hist.fOption = this.drawopt;
       hist.$custom_stat = (this.hist_name === '$htemp') ? 111110 : 111111;
 
       if (set_hist) {
@@ -1180,11 +1180,11 @@ class TDrawSelector extends TSelector {
             // A 1-dimensional graph will just have the x axis as an index
             res = createTGraph(N, Array.from(Array(N).keys()), this.vars[0].buf);
             res.fName = 'Graph';
-            res.fTitle = this.hist_title;
+            res.fTitle = this.draw_title;
          } else if (this.ndim === 2) {
             res = createTGraph(N, this.vars[0].buf, this.vars[1].buf);
             res.fName = 'Graph';
-            res.fTitle = this.hist_title;
+            res.fTitle = this.draw_title;
             delete this.vars[1].buf;
          } else if (this.ndim === 3) {
             res = create(clTPolyMarker3D);
