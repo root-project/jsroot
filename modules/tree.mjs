@@ -779,7 +779,8 @@ class TDrawSelector extends TSelector {
                   args.numentries = intvalue;
                break;
             case 'first':
-               if (intvalue !== undefined) args.firstentry = intvalue;
+               if (intvalue !== undefined)
+                  args.firstentry = intvalue;
                break;
             case 'mon':
             case 'monitor':
@@ -793,10 +794,12 @@ class TDrawSelector extends TSelector {
                break;
             case 'maxseg':
             case 'maxrange':
-               if (intvalue) tree.$file.fMaxRanges = intvalue;
+               if (intvalue)
+                  tree.$file.fMaxRanges = intvalue;
                break;
             case 'accum':
-               if (intvalue) this.arr_limit = intvalue;
+               if (intvalue)
+                  this.arr_limit = intvalue;
                break;
             case 'htype':
                if (parvalue && (parvalue.length === 1)) {
@@ -896,9 +899,11 @@ class TDrawSelector extends TSelector {
                break;
          }
       }
-      if (!nbr1 && !nbr2 && (pos > prev)) names.push(expr.slice(prev, pos));
+      if (!nbr1 && !nbr2 && (pos > prev))
+         names.push(expr.slice(prev, pos));
 
-      if ((names.length < 1) || (names.length > 3)) return false;
+      if ((names.length < 1) || (names.length > 3))
+         return false;
 
       this.ndim = names.length;
 
@@ -911,15 +916,16 @@ class TDrawSelector extends TSelector {
       }
 
       this.cut = new TDrawVariable(this.globals);
-      if (cut)
-         if (!this.cut.parse(tree, this, cut)) return false;
+      if (cut && !this.cut.parse(tree, this, cut))
+         return false;
 
       if (!this.numBranches()) {
          console.warn('no any branch is selected');
          return false;
       }
 
-      if (is_direct) this.ProcessArrays = this.ProcessArraysFunc;
+      if (is_direct)
+         this.ProcessArrays = this.ProcessArraysFunc;
 
       this.monitoring = args.monitoring;
 
@@ -941,7 +947,8 @@ class TDrawSelector extends TSelector {
    drawOnlyBranch(tree, branch, expr, args) {
       this.ndim = 1;
 
-      if (expr.indexOf('dump') === 0) expr = ';' + expr;
+      if (expr.indexOf('dump') === 0)
+         expr = ';' + expr;
 
       expr = this.parseParameters(tree, args, expr);
 
@@ -969,12 +976,14 @@ class TDrawSelector extends TSelector {
       }
 
       this.vars[0] = new TDrawVariable(this.globals);
-      if (!this.vars[0].parse(tree, this, expr, branch, args.direct_branch)) return false;
+      if (!this.vars[0].parse(tree, this, expr, branch, args.direct_branch))
+         return false;
       this.draw_title = `drawing branch ${branch.fName} ${expr?' expr:'+expr:''} from ${tree.fName}`;
 
       this.cut = new TDrawVariable(this.globals);
 
-      if (this.vars[0].direct_branch) this.ProcessArrays = this.ProcessArraysFunc;
+      if (this.vars[0].direct_branch)
+         this.ProcessArrays = this.ProcessArraysFunc;
 
       return true;
    }
