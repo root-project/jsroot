@@ -932,7 +932,7 @@ class TDrawSelector extends TSelector {
       if (args.drawopt !== undefined)
          this.drawopt = args.drawopt;
       else
-         this.drawopt = (this.ndim === 2) ? 'col' : '';
+         this.drawopt = this.graph ? 'P' : '';
 
       return true;
    }
