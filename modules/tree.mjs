@@ -875,8 +875,12 @@ class TDrawSelector extends TSelector {
 
       if (args.drawopt !== undefined)
          this.histo_drawopt = args.drawopt;
+      else if (this.graph)
+         this.histo_drawopt = 'P';
       else
          this.histo_drawopt = (this.ndim === 2) ? 'col' : '';
+
+      args.drawopt = this.histo_drawopt;
 
       return true;
    }
