@@ -31,6 +31,7 @@
 1. Fix - properly handle image sizes in svg2pdf
 1. Fix - drawing `TPaveText` with zero text size
 1. Fix - correct axis range in `TScatter` drawing
+1. Fix - use draw option also for graph drawing in TTree::Draw
 
 
 ## Changes in 7.8.2
