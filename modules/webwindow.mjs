@@ -435,8 +435,8 @@ class WebWindowHandle {
       if (!Number.isInteger(chid))
          chid = 1; // when not configured, channel 1 is used - main widget
 
-      if (this.cansend <= 0)
-         console.error(`should be queued before sending cansend: ${this.cansend}`);
+      if (this.cansend === 0)
+         console.error('No credits for send, increase "WebGui.ConnCredits" value on server');
 
       const prefix = `${this.send_seq++}:${this.ackn}:${this.cansend}:${chid}:`;
       this.ackn = 0;
