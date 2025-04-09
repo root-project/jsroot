@@ -855,7 +855,8 @@ class TDrawSelector extends TSelector {
       if (args.dump) {
          this.dump_values = true;
          args.reallocate_objects = true;
-         if (args.numentries === undefined) args.numentries = 10;
+         if (args.numentries === undefined)
+            args.numentries = 10;
       }
 
       return expr;
