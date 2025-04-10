@@ -329,6 +329,7 @@ At the end of expression one can add several parameters with the syntax:
 Following parameters are supported:
   - "first" - id of the first entry to process
   - "entries" - number of entries to process
+  - "nmatch" - abort processing after accumulated number of matched entries
   - "monitor" - periodically show intermediate draw results (interval in milliseconds)
   - "maxrange" - maximal number of ranges in single HTTP request
   - "accum" - number of accumulated values before creating histogram

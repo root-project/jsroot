@@ -8,6 +8,8 @@
 1. Implement 'box1' for `TH3` with negative bins
 1. Introduce `settings.FilesTimeout` to configure global timeout for file reading operations
 1. Introduce `settings.FilesRemap` to let provide fallback address for http server, used for `root.cern`
+1. Implement 'nmatch' parameter in TTree drawing to limit processed events
+1. Introduce 'settings.TreeReadBunchSize' to configure bunch read size for TTree readingevents
 1. Adjust histogram title drawing with native implementation
 1. Improve float to string conversion when 'g' is specified
 1. Support 'same' option for first histogram, draw directly on pad
