@@ -2369,10 +2369,10 @@ async function treeProcess(tree, selector, args) {
    let processBaskets = null;
 
    function readNextBaskets() {
-      const bitems = [];
-      let totalsz = 0, isany = true, is_direct = false, min_staged = handle.process_max;
+      const bitems = [], max_ranges = tree.$file?.fMaxRanges || settings.MaxRanges;
+      let total_size = 0, total_nsegm = 0, isany = true, is_direct = false, min_staged = handle.process_max;
 
-      while ((totalsz < settings.TreeReadBunchSize) && isany) {
+      while (isany && (total_size < settings.TreeReadBunchSize) && (!total_nsegm || (total_nsegm + handle.arr.length <= max_ranges))) {
          isany = false;
          // very important, loop over branches in reverse order
          // let check counter branch after reading of normal branch is prepared
@@ -2426,7 +2426,8 @@ async function treeProcess(tree, selector, args) {
                   elem.baskets[k] = bitem;
                } else {
                   bitems.push(bitem);
-                  totalsz += elem.branch.fBasketBytes[k];
+                  total_size += elem.branch.fBasketBytes[k];
+                  total_nsegm++;
                   isany = true;
                }
 
@@ -2439,7 +2440,7 @@ async function treeProcess(tree, selector, args) {
          }
       }
 
-      if ((totalsz === 0) && !is_direct) {
+      if ((total_size === 0) && !is_direct) {
          handle.selector.Terminate(true);
          return resolveFunc(handle.selector);
       }
@@ -2458,7 +2459,7 @@ async function treeProcess(tree, selector, args) {
 
       handle.progress_showtm = new Date().getTime();
 
-      if (totalsz > 0)
+      if (total_size > 0)
          return readBaskets(bitems).then(processBaskets);
 
       if (is_direct)
