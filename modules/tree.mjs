@@ -782,6 +782,10 @@ class TDrawSelector extends TSelector {
                if (intvalue !== undefined)
                   args.firstentry = intvalue;
                break;
+            case 'nmatch':
+               if (intvalue !== undefined)
+                  this.nmatch = intvalue;
+               break;
             case 'mon':
             case 'monitor':
                args.monitoring = (intvalue !== undefined) ? intvalue : 5000;
@@ -1417,7 +1421,8 @@ class TDrawSelector extends TSelector {
       this.globals.entry = entry; // can be used in any expression
 
       this.cut.produce(this.tgtobj);
-      if (!this.dump_values && !this.cut.value) return;
+      if (!this.dump_values && !this.cut.value)
+         return;
 
       for (let n = 0; n < this.ndim; ++n)
          this.vars[n].produce(this.tgtobj);
@@ -1488,6 +1493,12 @@ class TDrawSelector extends TSelector {
             if (isFunc(this.progress_callback))
                this.progress_callback(this.hist);
          }
+      }
+
+      if ((this.nmatch !== undefined) && (--this.nmatch <= 0)) {
+         if (!this.hist)
+            this.createOutputObject();
+         this.Abort();
       }
    }
 
