@@ -1,4 +1,4 @@
-import { BIT, isArrayProto, isRootCollection, isObject, isFunc, isStr, getMethods,
+import { BIT, settings, isArrayProto, isRootCollection, isObject, isFunc, isStr, getMethods,
          create, createHistogram, createTGraph, prROOT,
          clTObject, clTObjString, clTHashList, clTPolyMarker3D, clTH1, clTH2, clTH3, kNoStats } from './core.mjs';
 import { kChar, kShort, kInt, kFloat,
@@ -2361,7 +2361,7 @@ async function treeProcess(tree, selector, args) {
       const bitems = [];
       let totalsz = 0, isany = true, is_direct = false, min_staged = handle.process_max;
 
-      while ((totalsz < 1e6) && isany) {
+      while ((totalsz < settings.TreeReadBunchSize) && isany) {
          isany = false;
          // very important, loop over branches in reverse order
          // let check counter branch after reading of normal branch is prepared

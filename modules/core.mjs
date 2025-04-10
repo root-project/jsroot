@@ -330,6 +330,10 @@ settings = {
      * @desc Some http server has limitations for number of bytes ranges therefore let change maximal number via setting
      * @default 200 */
    MaxRanges: 200,
+   /** @summary Number of bytes requested once by TTree::Draw processing
+     * @desc TTree can be very large and data from baskets read by portion specified by this variable
+     * @default 1e6 */
+   TreeReadBunchSize: 1e6,
    /** @summary File read timeout in ms
      * @desc Configures timeout for each http operation for reading ROOT files
      * @default 0 */
