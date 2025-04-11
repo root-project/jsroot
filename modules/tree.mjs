@@ -801,6 +801,9 @@ class TDrawSelector extends TSelector {
             case 'dump':
                args.dump = true;
                break;
+            case 'staged':
+               args.staged = true;
+               break;
             case 'maxseg':
             case 'maxrange':
                if (intvalue)
@@ -857,11 +860,15 @@ class TDrawSelector extends TSelector {
                harg[n] = (n % 3 === 0) ? parseInt(harg[n]) : parseFloat(harg[n]);
                if (!Number.isFinite(harg[n])) isok = false;
             }
-            if (isok) this.hist_args = harg;
+            if (isok)
+               this.hist_args = harg;
          }
       }
 
-      if (args.dump) {
+      if (args.dump_entries) {
+         this.dump_entries = true;
+         this.hist = [];
+      } else if (args.dump) {
          this.dump_values = true;
          args.reallocate_objects = true;
          if (args.numentries === undefined)
@@ -915,9 +922,9 @@ class TDrawSelector extends TSelector {
       if ((names.length < 1) || (names.length > 3))
          return false;
 
-      this.ndim = names.length;
-
       let is_direct = !cut;
+
+      this.ndim = names.length;
 
       for (let n = 0; n < this.ndim; ++n) {
          this.vars[n] = new TDrawVariable(this.globals);
@@ -1183,9 +1190,10 @@ class TDrawSelector extends TSelector {
 
    /** @summary Create output object - histogram, graph, dump array */
    createOutputObject() {
-      if (this.hist || !this.vars[0].buf) return;
+      if (this.hist || !this.vars[0].buf)
+         return;
 
-      if (this.dump_values) {
+      if (this.dump_values || this.dump_entries) {
          // just create array where dumped values will be collected
          this.hist = [];
 
@@ -1339,6 +1347,12 @@ class TDrawSelector extends TSelector {
 
    /** @summary Dump values */
    dumpValues(v1, v2, v3, v4) {
+      if (this.dump_entries) {
+         this.hist.push(this.globals.entry);
+         console.log('Push entry', this.globals.entry);
+         return;
+      }
+
       let obj;
       switch (this.ndim) {
          case 1: obj = { x: v1, weight: v2 }; break;
@@ -1429,7 +1443,10 @@ class TDrawSelector extends TSelector {
       if (!this.dump_values && !this.cut.value)
          return;
 
-      console.log('Process', entry, this.tgtobj)
+      if (this.dump_entries) {
+         this.hist.push(entry);
+         return;
+      }
 
       for (let n = 0; n < this.ndim; ++n)
          this.vars[n].produce(this.tgtobj);
@@ -2388,7 +2405,7 @@ async function treeProcess(tree, selector, args) {
       const bitems = [], max_ranges = tree.$file?.fMaxRanges || settings.MaxRanges, check_needed = handle.process_entries !== undefined;
       let total_size = 0, total_nsegm = 0, isany = true, is_direct = false, min_staged = handle.process_max;
 
-      console.log('read next baskets for entry', handle.current_entry);
+      // console.log('read next baskets for entry', handle.current_entry);
 
       while (isany && (total_size < settings.TreeReadBunchSize) && (!total_nsegm || ((total_nsegm + handle.arr.length <= max_ranges) && !check_needed))) {
          isany = false;
@@ -2454,7 +2471,7 @@ async function treeProcess(tree, selector, args) {
                   elem.baskets[k] = bitem;
                } else {
                   bitems.push(bitem);
-                  console.log('submit bitem', bitem.id, 'basket', bitem.basket);
+                  // console.log('submit bitem', bitem.id, 'basket', bitem.basket);
                   total_size += elem.branch.fBasketBytes[k];
                   total_nsegm++;
                   isany = true;
@@ -2642,7 +2659,7 @@ async function treeProcess(tree, selector, args) {
 /** @summary implementation of TTree::Draw
   * @param {object|string} args - different setting or simply draw expression
   * @param {string} args.expr - draw expression
-  * @param {string} [args.cut=undefined]   - cut expression (also can be part of 'expr' after '::')
+  * @param {string} [args.cut=undefined] - cut expression (also can be part of 'expr' after '::')
   * @param {string} [args.drawopt=undefined] - draw options for result histogram
   * @param {number} [args.firstentry=0] - first entry to process
   * @param {number} [args.numentries=undefined] - number of entries to process, all by default
@@ -2650,9 +2667,11 @@ async function treeProcess(tree, selector, args) {
   * @param {function} [args.progress=undefined] - function called during histogram accumulation with obj argument
   * @return {Promise} with produced object */
 async function treeDraw(tree, args) {
-   if (isStr(args)) args = { expr: args };
+   if (isStr(args))
+      args = { expr: args };
 
-   if (!isStr(args.expr)) args.expr = '';
+   if (!isStr(args.expr))
+      args.expr = '';
 
    const selector = new TDrawSelector();
 
@@ -2664,7 +2683,31 @@ async function treeDraw(tree, args) {
 
    selector.setCallback(null, args.progress);
 
-   return treeProcess(tree, selector, args).then(() => selector.hist);
+   if (!args.staged)
+      return treeProcess(tree, selector, args).then(() => selector.hist);
+
+   const staged_selector = new TDrawSelector(),
+         staged_args = Object.assign({}, args);
+   staged_args.staged = false;
+   staged_args.expr = 'Entry$';
+   staged_args.cut = args.parse_cut;
+   staged_args.dump_entries = true; // dump entries
+   staged_args.graph = false;
+   staged_selector.setCallback(null, args.progress);
+
+   console.log('process staged', staged_args.cut)
+
+   if (!staged_selector.parseDrawExpression(tree, staged_args))
+      return Promise.reject(Error(`Fail to create draw expression ${args.expr}`));
+
+   staged_selector.arr_limit = 0;
+   staged_selector.graph = false;
+
+   return treeProcess(tree, staged_selector, staged_args).then(entries => {
+      console.log('entries', entries.hist)
+      args.entries = entries.hist;
+      return treeProcess(tree, selector, args).then(() => selector.hist);
+   });
 }
 
 /** @summary Performs generic I/O test for all branches in the TTree
