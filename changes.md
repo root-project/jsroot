@@ -1,6 +1,8 @@
 # JSROOT changelog
 
 ## Changes in dev
+1. Implement 'staged' method for `TTree::Draw` to first select entries and then apply draw expression
+1. Implement 'nmatch' parameter for `TTree::Draw` to limit processed events
 1. Implement 'cont5' draw option for `TGraph2D` using Delaunay algorithm
 1. Implement 'pol' and 'arr_colz' draw option for `TH2`
 1. Only 'col7' draw option uses bar offset and width for color `TH2` drawing
@@ -8,7 +10,6 @@
 1. Implement 'box1' for `TH3` with negative bins
 1. Introduce `settings.FilesTimeout` to configure global timeout for file reading operations
 1. Introduce `settings.FilesRemap` to let provide fallback address for http server, used for `root.cern`
-1. Implement 'nmatch' parameter in TTree drawing to limit processed events
 1. Introduce 'settings.TreeReadBunchSize' to configure bunch read size for TTree readingevents
 1. Adjust histogram title drawing with native implementation
 1. Improve float to string conversion when 'g' is specified
@@ -33,7 +34,7 @@
 1. Fix - properly handle image sizes in svg2pdf
 1. Fix - drawing `TPaveText` with zero text size
 1. Fix - correct axis range in `TScatter` drawing
-1. Fix - use draw option also for graph drawing in TTree::Draw
+1. Fix - use draw option also for graph drawing in `TTree::Draw`
 
 
 ## Changes in 7.8.2

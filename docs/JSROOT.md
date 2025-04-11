@@ -328,8 +328,9 @@ At the end of expression one can add several parameters with the syntax:
 
 Following parameters are supported:
   - "first" - id of the first entry to process
-  - "entries" - number of entries to process
+  - "entries" - number of entries to process or array of selected entries like `[7,12,25]`
   - "nmatch" - abort processing after accumulated number of matched entries
+  - "staged" - first search entries for cut selection and then performed TTree::Draw
   - "monitor" - periodically show intermediate draw results (interval in milliseconds)
   - "maxrange" - maximal number of ranges in single HTTP request
   - "accum" - number of accumulated values before creating histogram
