@@ -869,8 +869,10 @@ class TDrawSelector extends TSelector {
       if (args.dump) {
          this.dump_values = true;
          args.reallocate_objects = true;
-         if (args.numentries === undefined)
+         if (args.numentries === undefined) {
             args.numentries = 10;
+            args._dflt_entries = true;
+         }
       }
 
       return expr;
@@ -878,6 +880,16 @@ class TDrawSelector extends TSelector {
 
    /** @summary Create draw expression for N-dim with cut */
    createDrawExpression(tree, names, cut, args) {
+      if (args.dump && names.length === 1 && names[0] === 'Entry$') {
+         this.dump_entries = true;
+         this.hist = [];
+         args.dump = false;
+         if (args._dflt_entries) {
+            delete args._dflt_entries;
+            delete args.numentries;
+         }
+      }
+
       let is_direct = !cut && !this.dump_entries;
 
       this.ndim = names.length;
