@@ -2404,8 +2404,6 @@ async function treeProcess(tree, selector, args) {
       const bitems = [], max_ranges = tree.$file?.fMaxRanges || settings.MaxRanges, check_needed = handle.process_entries !== undefined;
       let total_size = 0, total_nsegm = 0, isany = true, is_direct = false, min_staged = handle.process_max;
 
-      // console.log('read next baskets for entry', handle.current_entry);
-
       while (isany && (total_size < settings.TreeReadBunchSize) && (!total_nsegm || ((total_nsegm + handle.arr.length <= max_ranges) && !check_needed))) {
          isany = false;
          // very important, loop over branches in reverse order
@@ -2470,7 +2468,6 @@ async function treeProcess(tree, selector, args) {
                   elem.baskets[k] = bitem;
                } else {
                   bitems.push(bitem);
-                  // console.log('submit bitem', bitem.id, 'basket', bitem.basket);
                   total_size += elem.branch.fBasketBytes[k];
                   total_nsegm++;
                   isany = true;
@@ -2693,6 +2690,10 @@ async function treeDraw(tree, args) {
 
       if (!selector2.createDrawExpression(tree, args.staged_names, '', args2))
          return Promise.reject(Error(`Fail to create final draw expression ${args.expr}`));
+
+      ['arr_limit', 'htype', 'nmatch', 'want_hist', 'hist_nbins', 'hist_name', 'hist_args', 'draw_title'].forEach(
+         name => { selector2[name] = selector[name]; }
+      );
 
       return treeProcess(tree, selector2, args2)
 
