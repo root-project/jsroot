@@ -155,6 +155,7 @@
       { "name": "dump", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "px+py+pz>>dump;num:30", "title": "Three-dimensional TTree::Draw" },
       { "name": "hist", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "px:py>>hist(50,-5,5,50,-5,5)", "title": "TTree::Draw into custom histogram" },
       { "name": "cut", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "px:py::pz>5", "title": "TTree::Draw with cut condition" },
+      { "name": "staged", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "px:py::pz>5;staged", "title": "TTree::Draw with cut condition, staged selection and then drawing" },
       { "name": "player", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "px:py::pz>5;player", "title": "Enable player to let change draw expression", "notest":true },
       { "name": "lhcb2", "asurl": true, "file": "https://root.cern/files/lhcb2.root", "item": "E;1//Event/Gen/Header/m_evtNumber", "title": "Histogram data of sub-sub-branches from lhcb2.root file" },
       { "name": "atlas", "asurl": true, "file": "https://root.cern/files/atlas30new.root", "item": "CollectionTree", "opt": "TileMuContainer_p1_TileMuObj.vector.m_phi", "title": "Histogram data of tree from atlas30new.root file" },
