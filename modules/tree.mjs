@@ -865,10 +865,7 @@ class TDrawSelector extends TSelector {
          }
       }
 
-      if (args.dump_entries) {
-         this.dump_entries = true;
-         this.hist = [];
-      } else if (args.dump) {
+      if (args.dump) {
          this.dump_values = true;
          args.reallocate_objects = true;
          if (args.numentries === undefined)
@@ -878,51 +875,9 @@ class TDrawSelector extends TSelector {
       return expr;
    }
 
-   /** @summary Parse draw expression */
-   parseDrawExpression(tree, args) {
-      // parse complete expression
-      let expr = this.parseParameters(tree, args, args.expr), cut = '';
-
-      // parse option for histogram creation
-      this.draw_title = `drawing '${expr}' from ${tree.fName}`;
-
-      let pos;
-      if (args.cut)
-         cut = args.cut;
-      else {
-         pos = expr.replace(/TMath::/g, 'TMath__').lastIndexOf('::'); // avoid confusion due-to :: in the namespace
-         if (pos > 0) {
-            cut = expr.slice(pos + 2).trim();
-            expr = expr.slice(0, pos).trim();
-         }
-      }
-
-      args.parse_expr = expr;
-      args.parse_cut = cut;
-
-      // let names = expr.split(':'); // to allow usage of ? operator, we need to handle : as well
-      const names = [];
-      let nbr1 = 0, nbr2 = 0, prev = 0;
-      for (pos = 0; pos < expr.length; ++pos) {
-         switch (expr[pos]) {
-            case '(': nbr1++; break;
-            case ')': nbr1--; break;
-            case '[': nbr2++; break;
-            case ']': nbr2--; break;
-            case ':':
-               if (expr[pos + 1] === ':') { pos++; continue; }
-               if (!nbr1 && !nbr2 && (pos > prev)) names.push(expr.slice(prev, pos));
-               prev = pos + 1;
-               break;
-         }
-      }
-      if (!nbr1 && !nbr2 && (pos > prev))
-         names.push(expr.slice(prev, pos));
-
-      if ((names.length < 1) || (names.length > 3))
-         return false;
-
-      let is_direct = !cut;
+   /** @summary Create draw expression for N-dim with cut */
+   createDrawExpression(tree, names, cut, args) {
+      let is_direct = !cut && !this.dump_entries;
 
       this.ndim = names.length;
 
@@ -958,6 +913,59 @@ class TDrawSelector extends TSelector {
          args.drawopt = this.drawopt = this.graph ? 'P' : '';
 
       return true;
+   }
+
+   /** @summary Parse draw expression */
+   parseDrawExpression(tree, args) {
+      // parse complete expression
+      let expr = this.parseParameters(tree, args, args.expr), cut = '';
+
+      // parse option for histogram creation
+      this.draw_title = `drawing '${expr}' from ${tree.fName}`;
+
+      let pos;
+      if (args.cut)
+         cut = args.cut;
+      else {
+         pos = expr.replace(/TMath::/g, 'TMath__').lastIndexOf('::'); // avoid confusion due-to :: in the namespace
+         if (pos > 0) {
+            cut = expr.slice(pos + 2).trim();
+            expr = expr.slice(0, pos).trim();
+         }
+      }
+
+      args.parse_expr = expr;
+      args.parse_cut = cut;
+
+      // let names = expr.split(':'); // to allow usage of ? operator, we need to handle : as well
+      let names = [], nbr1 = 0, nbr2 = 0, prev = 0;
+      for (pos = 0; pos < expr.length; ++pos) {
+         switch (expr[pos]) {
+            case '(': nbr1++; break;
+            case ')': nbr1--; break;
+            case '[': nbr2++; break;
+            case ']': nbr2--; break;
+            case ':':
+               if (expr[pos + 1] === ':') { pos++; continue; }
+               if (!nbr1 && !nbr2 && (pos > prev)) names.push(expr.slice(prev, pos));
+               prev = pos + 1;
+               break;
+         }
+      }
+      if (!nbr1 && !nbr2 && (pos > prev))
+         names.push(expr.slice(prev, pos));
+
+      if ((names.length < 1) || (names.length > 3))
+         return false;
+
+      if (args.staged) {
+         args.staged_names = names;
+         names = ['Entry$'];
+         this.dump_entries = true;
+         this.hist = [];
+      }
+
+      return this.createDrawExpression(tree, names, cut, args);
    }
 
    /** @summary Draw only specified branch */
@@ -1193,7 +1201,7 @@ class TDrawSelector extends TSelector {
       if (this.hist || !this.vars[0].buf)
          return;
 
-      if (this.dump_values || this.dump_entries) {
+      if (this.dump_values) {
          // just create array where dumped values will be collected
          this.hist = [];
 
@@ -1347,12 +1355,6 @@ class TDrawSelector extends TSelector {
 
    /** @summary Dump values */
    dumpValues(v1, v2, v3, v4) {
-      if (this.dump_entries) {
-         this.hist.push(this.globals.entry);
-         console.log('Push entry', this.globals.entry);
-         return;
-      }
-
       let obj;
       switch (this.ndim) {
          case 1: obj = { x: v1, weight: v2 }; break;
@@ -1443,17 +1445,14 @@ class TDrawSelector extends TSelector {
       if (!this.dump_values && !this.cut.value)
          return;
 
-      if (this.dump_entries) {
-         this.hist.push(entry);
-         return;
-      }
-
       for (let n = 0; n < this.ndim; ++n)
          this.vars[n].produce(this.tgtobj);
 
       const var0 = this.vars[0], var1 = this.vars[1], var2 = this.vars[2], cut = this.cut;
 
-      if (this.graph || this.arr_limit) {
+      if (this.dump_entries) {
+         this.hist.push(entry);
+      } else if (this.graph || this.arr_limit) {
          switch (this.ndim) {
             case 1:
                for (let n0 = 0; n0 < var0.length; ++n0) {
@@ -2683,31 +2682,21 @@ async function treeDraw(tree, args) {
 
    selector.setCallback(null, args.progress);
 
-   if (!args.staged)
-      return treeProcess(tree, selector, args).then(() => selector.hist);
+   return treeProcess(tree, selector, args).then(sel => {
+      if (!args.staged)
+         return sel;
 
-   const staged_selector = new TDrawSelector(),
-         staged_args = Object.assign({}, args);
-   staged_args.staged = false;
-   staged_args.expr = 'Entry$';
-   staged_args.cut = args.parse_cut;
-   staged_args.dump_entries = true; // dump entries
-   staged_args.graph = false;
-   staged_selector.setCallback(null, args.progress);
+      const selector2 = new TDrawSelector(),
+            args2 = Object.assign({}, args);
+      args2.staged = false;
+      args2.entries = sel.hist; // assign entries found in first selection
 
-   console.log('process staged', staged_args.cut)
+      if (!selector2.createDrawExpression(tree, args.staged_names, '', args2))
+         return Promise.reject(Error(`Fail to create final draw expression ${args.expr}`));
 
-   if (!staged_selector.parseDrawExpression(tree, staged_args))
-      return Promise.reject(Error(`Fail to create draw expression ${args.expr}`));
+      return treeProcess(tree, selector2, args2)
 
-   staged_selector.arr_limit = 0;
-   staged_selector.graph = false;
-
-   return treeProcess(tree, staged_selector, staged_args).then(entries => {
-      console.log('entries', entries.hist)
-      args.entries = entries.hist;
-      return treeProcess(tree, selector, args).then(() => selector.hist);
-   });
+   }).then(sel => sel.hist);
 }
 
 /** @summary Performs generic I/O test for all branches in the TTree
