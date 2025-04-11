@@ -770,10 +770,11 @@ class TDrawSelector extends TSelector {
 
          switch (parname) {
             case 'entries':
-               if ((parvalue.at(0) == '[') && (parvalue.at(-1) == ']')) {
+               if ((parvalue.at(0) === '[') && (parvalue.at(-1) === ']')) {
                   args.entries = JSON.parse(parvalue);
                   break;
                }
+            // eslint-disable-next-line  no-fallthrough
             case 'num':
             case 'numentries':
                if (parvalue === 'all')
@@ -1450,9 +1451,9 @@ class TDrawSelector extends TSelector {
 
       const var0 = this.vars[0], var1 = this.vars[1], var2 = this.vars[2], cut = this.cut;
 
-      if (this.dump_entries) {
+      if (this.dump_entries)
          this.hist.push(entry);
-      } else if (this.graph || this.arr_limit) {
+      else if (this.graph || this.arr_limit) {
          switch (this.ndim) {
             case 1:
                for (let n0 = 0; n0 < var0.length; ++n0) {
@@ -2404,6 +2405,7 @@ async function treeProcess(tree, selector, args) {
       const bitems = [], max_ranges = tree.$file?.fMaxRanges || settings.MaxRanges, check_needed = handle.process_entries !== undefined;
       let total_size = 0, total_nsegm = 0, isany = true, is_direct = false, min_staged = handle.process_max;
 
+      // eslint-disable-next-line no-unmodified-loop-condition
       while (isany && (total_size < settings.TreeReadBunchSize) && (!total_nsegm || ((total_nsegm + handle.arr.length <= max_ranges) && !check_needed))) {
          isany = false;
          // very important, loop over branches in reverse order
@@ -2659,6 +2661,8 @@ async function treeProcess(tree, selector, args) {
   * @param {string} [args.drawopt=undefined] - draw options for result histogram
   * @param {number} [args.firstentry=0] - first entry to process
   * @param {number} [args.numentries=undefined] - number of entries to process, all by default
+  * @param {Array} [args.entries] - array of entries to process
+  * @param {boolean} [args.staged] - staged processing, first cut selection and then perform drawing
   * @param {object} [args.branch=undefined] - TBranch object from TTree itself for the direct drawing
   * @param {function} [args.progress=undefined] - function called during histogram accumulation with obj argument
   * @return {Promise} with produced object */
@@ -2687,16 +2691,11 @@ async function treeDraw(tree, args) {
             args2 = Object.assign({}, args);
       args2.staged = false;
       args2.entries = sel.hist; // assign entries found in first selection
-
       if (!selector2.createDrawExpression(tree, args.staged_names, '', args2))
          return Promise.reject(Error(`Fail to create final draw expression ${args.expr}`));
-
-      ['arr_limit', 'htype', 'nmatch', 'want_hist', 'hist_nbins', 'hist_name', 'hist_args', 'draw_title'].forEach(
-         name => { selector2[name] = selector[name]; }
-      );
-
-      return treeProcess(tree, selector2, args2)
-
+      ['arr_limit', 'htype', 'nmatch', 'want_hist', 'hist_nbins', 'hist_name', 'hist_args', 'draw_title']
+        .forEach(name => { selector2[name] = selector[name]; });
+      return treeProcess(tree, selector2, args2);
    }).then(sel => sel.hist);
 }
 
