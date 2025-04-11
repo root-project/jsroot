@@ -765,11 +765,16 @@ class TDrawSelector extends TSelector {
          if (separ > 0) { parvalue = parname.slice(separ + 1); parname = parname.slice(0, separ); }
 
          let intvalue = parseInt(parvalue);
-         if (!parvalue || !Number.isInteger(intvalue)) intvalue = undefined;
+         if (!parvalue || !Number.isInteger(intvalue))
+            intvalue = undefined;
 
          switch (parname) {
-            case 'num':
             case 'entries':
+               if ((parvalue.at(0) == '[') && (parvalue.at(-1) == ']')) {
+                  args.entries = JSON.parse(parvalue);
+                  break;
+               }
+            case 'num':
             case 'numentries':
                if (parvalue === 'all')
                   args.numentries = tree.fEntries;
@@ -1424,6 +1429,8 @@ class TDrawSelector extends TSelector {
       if (!this.dump_values && !this.cut.value)
          return;
 
+      console.log('Process', entry, this.tgtobj)
+
       for (let n = 0; n < this.ndim; ++n)
          this.vars[n].produce(this.tgtobj);
 
@@ -1588,6 +1595,7 @@ function detectBranchMemberClass(brlst, prefix, start) {
   * @param {object} [args] - different arguments
   * @param {number} [args.firstentry] - first entry to process, 0 when not specified
   * @param {number} [args.numentries] - number of entries to process, all when not specified
+  * @param {Array} [args.entries] - entries id to process
   * @return {Promise} with TSelector instance */
 async function treeProcess(tree, selector, args) {
    if (!args) args = {};
@@ -2213,6 +2221,14 @@ async function treeProcess(tree, selector, args) {
 
    let resolveFunc, rejectFunc; // Promise methods
 
+   if (args.entries) {
+      args.firstentry = args.entries.at(0);
+      args.numentries = args.entries.at(-1) - args.entries.at(0) + 1;
+      handle.process_entries = args.entries;
+      handle.process_entries_indx = 0;
+      handle.process_arrays = false; // do not use arrays process for selected entries
+   }
+
    if (Number.isInteger(args.firstentry) && (args.firstentry > handle.firstentry) && (args.firstentry < handle.lastentry))
       handle.process_min = args.firstentry;
 
@@ -2369,10 +2385,12 @@ async function treeProcess(tree, selector, args) {
    let processBaskets = null;
 
    function readNextBaskets() {
-      const bitems = [], max_ranges = tree.$file?.fMaxRanges || settings.MaxRanges;
+      const bitems = [], max_ranges = tree.$file?.fMaxRanges || settings.MaxRanges, check_needed = handle.process_entries !== undefined;
       let total_size = 0, total_nsegm = 0, isany = true, is_direct = false, min_staged = handle.process_max;
 
-      while (isany && (total_size < settings.TreeReadBunchSize) && (!total_nsegm || (total_nsegm + handle.arr.length <= max_ranges))) {
+      console.log('read next baskets for entry', handle.current_entry);
+
+      while (isany && (total_size < settings.TreeReadBunchSize) && (!total_nsegm || ((total_nsegm + handle.arr.length <= max_ranges) && !check_needed))) {
          isany = false;
          // very important, loop over branches in reverse order
          // let check counter branch after reading of normal branch is prepared
@@ -2385,8 +2403,8 @@ async function treeProcess(tree, selector, args) {
                // no need to read more baskets, process_max is not included
                if (elem.getBasketEntry(k) >= handle.process_max) break;
 
-               // check which baskets need to be read
                if (elem.first_readentry < 0) {
+                  // check which first baskets need to be read
                   const lmt = elem.getBasketEntry(k + 1),
                         not_needed = (lmt <= handle.process_min);
 
@@ -2395,11 +2413,21 @@ async function treeProcess(tree, selector, args) {
                   //    if (dep.first_readentry < lmt) not_needed = false; // check that counter provide required data
                   // }
 
-                  if (not_needed) continue; // if that basket not required, check next
+                  if (not_needed)
+                     continue; // if that basket not required, check next
 
                   elem.curr_basket = k; // basket where reading will start
 
                   elem.first_readentry = elem.getBasketEntry(k); // remember which entry will be read first
+               } else if (check_needed && (k < elem.numbaskets - 1)) {
+                  // check if next basket has to be read
+                  const lmt = elem.getBasketEntry(k + 1),
+                        not_needed = (lmt <= handle.current_entry);
+
+                  elem.curr_basket = k; // basket where reading continued
+
+                  if (not_needed)
+                     continue; // if that basket not required, check next
                }
 
                // check if basket already loaded in the branch
@@ -2426,6 +2454,7 @@ async function treeProcess(tree, selector, args) {
                   elem.baskets[k] = bitem;
                } else {
                   bitems.push(bitem);
+                  console.log('submit bitem', bitem.id, 'basket', bitem.basket);
                   total_size += elem.branch.fBasketBytes[k];
                   total_nsegm++;
                   isany = true;
@@ -2503,7 +2532,7 @@ async function treeProcess(tree, selector, args) {
                   continue; // ignore non-master branch
                }
 
-               // this is single response from the tree, includes branch, bakset number, raw data
+               // this is single response from the tree, includes branch, basket number, raw data
                const bitem = elem.baskets[elem.curr_basket];
 
                // basket not read
@@ -2560,7 +2589,7 @@ async function treeProcess(tree, selector, args) {
             isanyprocessed = true;
          } else {
             // main processing loop
-            while (loopentries--) {
+            while (loopentries > 0) {
                for (n = 0; n < handle.arr.length; ++n) {
                   elem = handle.arr[n];
 
@@ -2572,9 +2601,23 @@ async function treeProcess(tree, selector, args) {
 
                handle.selector.Process(handle.current_entry);
 
-               handle.current_entry++;
-
                isanyprocessed = true;
+
+               if (handle.process_entries) {
+                  handle.process_entries_indx++;
+                  if (handle.process_entries_indx >= handle.process_entries.length) {
+                     handle.current_entry++;
+                     loopentries = 0;
+                  } else {
+                     const next_entry = handle.process_entries[handle.process_entries_indx],
+                           diff = next_entry - handle.current_entry;
+                     handle.current_entry = next_entry;
+                     loopentries -= diff;
+                  }
+               } else {
+                  handle.current_entry++;
+                  loopentries--;
+               }
             }
          }
 
