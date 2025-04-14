@@ -848,6 +848,8 @@ class TDrawSelector extends TSelector {
          }
          if (harg === 'dump')
             args.dump = true;
+         else if (harg === 'elist')
+            args.dump_entries = true;
          else if (harg.indexOf('Graph') === 0)
             args.graph = true;
          else if (pos < 0) {
@@ -881,9 +883,13 @@ class TDrawSelector extends TSelector {
    /** @summary Create draw expression for N-dim with cut */
    createDrawExpression(tree, names, cut, args) {
       if (args.dump && names.length === 1 && names[0] === 'Entry$') {
+         args.dump_entries = true;
+         args.dump = false;
+      }
+
+      if (args.dump_entries) {
          this.dump_entries = true;
          this.hist = [];
-         args.dump = false;
          if (args._dflt_entries) {
             delete args._dflt_entries;
             delete args.numentries;
@@ -941,7 +947,7 @@ class TDrawSelector extends TSelector {
          cut = args.cut;
       else {
          pos = expr.replace(/TMath::/g, 'TMath__').lastIndexOf('::'); // avoid confusion due-to :: in the namespace
-         if (pos > 0) {
+         if (pos >= 0) {
             cut = expr.slice(pos + 2).trim();
             expr = expr.slice(0, pos).trim();
          }
@@ -968,15 +974,14 @@ class TDrawSelector extends TSelector {
       if (!nbr1 && !nbr2 && (pos > prev))
          names.push(expr.slice(prev, pos));
 
-      if ((names.length < 1) || (names.length > 3))
-         return false;
-
       if (args.staged) {
          args.staged_names = names;
          names = ['Entry$'];
-         this.dump_entries = true;
-         this.hist = [];
-      }
+         args.dump_entries = true;
+      } else if (cut && args.dump_entries) {
+         names = ['Entry$'];
+      } else if ((names.length < 1) || (names.length > 3))
+         return false;
 
       return this.createDrawExpression(tree, names, cut, args);
    }
@@ -2698,6 +2703,8 @@ async function treeDraw(tree, args) {
    return treeProcess(tree, selector, args).then(sel => {
       if (!args.staged)
          return sel;
+
+      delete args.dump_entries;
 
       const selector2 = new TDrawSelector(),
             args2 = Object.assign({}, args);

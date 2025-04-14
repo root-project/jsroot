@@ -83,8 +83,9 @@ async function treeDrawProgress(obj, final) {
    if (!final && !this.last_pr)
       return;
 
-   if (this.dump || this.testio) {
-      if (!final) return;
+   if (this.dump || this.dump_entries || this.testio) {
+      if (!final)
+         return;
       if (isBatchMode()) {
          const painter = new BasePainter(this.drawid);
          painter.selectDom().property('_json_object_', obj);
