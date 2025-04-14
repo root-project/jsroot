@@ -2457,7 +2457,6 @@ async function treeProcess(tree, selector, args) {
             select_entries = handle.process_entries !== undefined;
       let total_size = 0, total_nsegm = 0, isany = true, is_direct = false, min_staged = handle.process_max;
 
-      // eslint-disable-next-line no-unmodified-loop-condition
       while (isany && (total_size < settings.TreeReadBunchSize) && (!total_nsegm || (total_nsegm + handle.arr.length <= max_ranges))) {
          isany = false;
          // very important, loop over branches in reverse order
@@ -2497,13 +2496,13 @@ async function treeProcess(tree, selector, args) {
                      elem.curr_basket = k;
                }
 
-               // remember which baskets are required
                if (select_entries) {
-                  elem.eindx++;
                   // also check next entries which may belong to this basket
-                  while ((elem.eindx < handle.process_entries.length) && (handle.process_entries[elem.eindx] >= bskt_emin) && (handle.process_entries[elem.eindx] < bskt_emax))
+                  do
                      elem.eindx++;
+                  while ((elem.eindx < handle.process_entries.length) && (handle.process_entries[elem.eindx] >= bskt_emin) && (handle.process_entries[elem.eindx] < bskt_emax));
 
+                  // remember which baskets are required
                   elem.selected_baskets.push(k);
                }
 
