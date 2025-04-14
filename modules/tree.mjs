@@ -1753,6 +1753,8 @@ async function treeProcess(tree, selector, args) {
          staged_entry: -1, // entry which is staged for reading
          first_readentry: -1, // first entry to read
          staged_basket: 0,  // last basket staged for reading
+         eindx: 0, // index of last checked entry when selecting baskets
+         selected_baskets: [],   // array of selected baskets, used when specific events are selected
          numentries: branch.fEntries,
          numbaskets: branch.fWriteBasket, // number of baskets which can be read from the file
          counters: null, // branch indexes used as counters
@@ -2451,11 +2453,12 @@ async function treeProcess(tree, selector, args) {
    let processBaskets = null;
 
    function readNextBaskets() {
-      const bitems = [], max_ranges = tree.$file?.fMaxRanges || settings.MaxRanges, check_needed = handle.process_entries !== undefined;
+      const bitems = [], max_ranges = tree.$file?.fMaxRanges || settings.MaxRanges,
+            select_entries = handle.process_entries !== undefined;
       let total_size = 0, total_nsegm = 0, isany = true, is_direct = false, min_staged = handle.process_max;
 
       // eslint-disable-next-line no-unmodified-loop-condition
-      while (isany && (total_size < settings.TreeReadBunchSize) && (!total_nsegm || ((total_nsegm + handle.arr.length <= max_ranges) && !check_needed))) {
+      while (isany && (total_size < settings.TreeReadBunchSize) && (!total_nsegm || (total_nsegm + handle.arr.length <= max_ranges))) {
          isany = false;
          // very important, loop over branches in reverse order
          // let check counter branch after reading of normal branch is prepared
@@ -2463,36 +2466,45 @@ async function treeProcess(tree, selector, args) {
             const elem = handle.arr[n];
 
             while (elem.staged_basket < elem.numbaskets) {
-               const k = elem.staged_basket++;
+               const k = elem.staged_basket++,
+                     bskt_emin = elem.getBasketEntry(k),
+                     bskt_emax = k < elem.numbaskets - 1 ? elem.getBasketEntry(k + 1) : bskt_emin + 1e6;
+
+               // first baskets can be ignored
+               if (bskt_emax <= handle.process_min)
+                  continue;
 
                // no need to read more baskets, process_max is not included
-               if (elem.getBasketEntry(k) >= handle.process_max) break;
+               if (bskt_emin >= handle.process_max)
+                  break;
 
                if (elem.first_readentry < 0) {
-                  // check which first baskets need to be read
-                  const lmt = elem.getBasketEntry(k + 1),
-                        not_needed = (lmt <= handle.process_min);
-
-                  // for (let d=0;d<elem.ascounter.length;++d) {
-                  //    let dep = handle.arr[elem.ascounter[d]]; // dependent element
-                  //    if (dep.first_readentry < lmt) not_needed = false; // check that counter provide required data
-                  // }
-
-                  if (not_needed)
-                     continue; // if that basket not required, check next
-
-                  elem.curr_basket = k; // basket where reading will start
+                  // basket where reading will start
+                  elem.curr_basket = k;
 
                   elem.first_readentry = elem.getBasketEntry(k); // remember which entry will be read first
-               } else if (check_needed && (k < elem.numbaskets - 1)) {
-                  // check if next basket has to be read
-                  const lmt = elem.getBasketEntry(k + 1),
-                        not_needed = (lmt <= handle.current_entry);
+               } else if (select_entries) {
+                  // all entries from process entries are analyzed
+                  if (elem.eindx >= handle.process_entries.length)
+                     break;
 
-                  elem.curr_basket = k; // basket where reading continued
+                  // check if this basket required
+                  if ((handle.process_entries[elem.eindx] < bskt_emin) || (handle.process_entries[elem.eindx] >= bskt_emax))
+                      continue;
 
-                  if (not_needed)
-                     continue; // if that basket not required, check next
+                  // when all previous baskets were processed, continue with selected
+                  if (elem.curr_basket < 0)
+                     elem.curr_basket = k;
+               }
+
+               // remember which baskets are required
+               if (select_entries) {
+                  elem.eindx++;
+                  // also check next entries which may belong to this basket
+                  while ((elem.eindx < handle.process_entries.length) && (handle.process_entries[elem.eindx] >= bskt_emin) && (handle.process_entries[elem.eindx] < bskt_emax))
+                     elem.eindx++;
+
+                  elem.selected_baskets.push(k);
                }
 
                // check if basket already loaded in the branch
@@ -2620,6 +2632,12 @@ async function treeProcess(tree, selector, args) {
                bitem.branch = null; // remove reference on the branch
                bitem.bskt_obj = null; // remove reference on the branch
                elem.baskets[elem.curr_basket++] = undefined; // remove from array
+
+               if (handle.process_entries !== undefined) {
+                  elem.selected_baskets.shift();
+                  // -1 means that basket is not yet found for following entries
+                  elem.curr_basket = (elem.selected_baskets.length > 0) ? elem.selected_baskets[0] : -1;
+               }
             }
 
             // define how much entries can be processed before next raw buffer will be finished
