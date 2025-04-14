@@ -752,7 +752,8 @@ class TDrawSelector extends TSelector {
 
    /** @summary Parse parameters */
    parseParameters(tree, args, expr) {
-      if (!expr || !isStr(expr)) return '';
+      if (!expr || !isStr(expr))
+         return '';
 
       // parse parameters which defined at the end as expression;par1name:par1value;par2name:par2value
       let pos = expr.lastIndexOf(';');
@@ -769,12 +770,12 @@ class TDrawSelector extends TSelector {
             intvalue = undefined;
 
          switch (parname) {
-            case 'entries':
+            case 'elist':
                if ((parvalue.at(0) === '[') && (parvalue.at(-1) === ']')) {
-                  args.entries = JSON.parse(parvalue);
-                  break;
+                  args.elist = JSON.parse(parvalue);
                }
-            // eslint-disable-next-line  no-fallthrough
+               break;
+            case 'entries':
             case 'num':
             case 'numentries':
                if (parvalue === 'all')
@@ -1629,7 +1630,7 @@ function detectBranchMemberClass(brlst, prefix, start) {
   * @param {object} [args] - different arguments
   * @param {number} [args.firstentry] - first entry to process, 0 when not specified
   * @param {number} [args.numentries] - number of entries to process, all when not specified
-  * @param {Array} [args.entries] - entries id to process
+  * @param {Array} [args.elist] - arrays of entries id to process
   * @return {Promise} with TSelector instance */
 async function treeProcess(tree, selector, args) {
    if (!args) args = {};
@@ -2255,10 +2256,10 @@ async function treeProcess(tree, selector, args) {
 
    let resolveFunc, rejectFunc; // Promise methods
 
-   if (args.entries) {
-      args.firstentry = args.entries.at(0);
-      args.numentries = args.entries.at(-1) - args.entries.at(0) + 1;
-      handle.process_entries = args.entries;
+   if (args.elist) {
+      args.firstentry = args.elist.at(0);
+      args.numentries = args.elist.at(-1) - args.elist.at(0) + 1;
+      handle.process_entries = args.elist;
       handle.process_entries_indx = 0;
       handle.process_arrays = false; // do not use arrays process for selected entries
    }
@@ -2678,8 +2679,8 @@ async function treeProcess(tree, selector, args) {
   * @param {string} [args.drawopt=undefined] - draw options for result histogram
   * @param {number} [args.firstentry=0] - first entry to process
   * @param {number} [args.numentries=undefined] - number of entries to process, all by default
-  * @param {Array} [args.entries] - array of entries to process
-  * @param {boolean} [args.staged] - staged processing, first cut selection and then perform drawing
+  * @param {Array} [args.elist=undefined] - array of entries id to process, all by default
+  * @param {boolean} [args.staged] - staged processing, first apply cut to select entries and then perform drawing for selected entries
   * @param {object} [args.branch=undefined] - TBranch object from TTree itself for the direct drawing
   * @param {function} [args.progress=undefined] - function called during histogram accumulation with obj argument
   * @return {Promise} with produced object */
@@ -2709,7 +2710,7 @@ async function treeDraw(tree, args) {
       const selector2 = new TDrawSelector(),
             args2 = Object.assign({}, args);
       args2.staged = false;
-      args2.entries = sel.hist; // assign entries found in first selection
+      args2.elist = sel.hist; // assign entries found in first selection
       if (!selector2.createDrawExpression(tree, args.staged_names, '', args2))
          return Promise.reject(Error(`Fail to create final draw expression ${args.expr}`));
       ['arr_limit', 'htype', 'nmatch', 'want_hist', 'hist_nbins', 'hist_name', 'hist_args', 'draw_title']

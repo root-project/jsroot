@@ -313,6 +313,11 @@ Or one could dump values produced with draw expression (also first 10 entries by
 
    - [opt=px:py::pz>>dump](https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple&opt=px:py::pz>>dump)
 
+One also can dump list of entries which match cut expression and use these entries ids to perform other draw operations:
+
+   - [opt=::pz>5>>elist](https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple&opt=::pz>5>>elist)
+   - [opt=px:py;elist:[7,12,25,29]](https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple&opt=px:py;elist:[7,12,25,29])
+
 Working with array indexes is supported. By default, all elements in array are used for the drawing.
 One could specify index for any array dimension (-1 means last element in the array). For instance, dump last element from `event.fTracks` array:
 
@@ -328,9 +333,10 @@ At the end of expression one can add several parameters with the syntax:
 
 Following parameters are supported:
   - "first" - id of the first entry to process
-  - "entries" - number of entries to process or array of selected entries like `[7,12,25]`
+  - "entries" - number of entries to process
+  - "elist" - array of selected entries like `[7,12,25]`
   - "nmatch" - abort processing after accumulated number of matched entries
-  - "staged" - first search entries for cut selection and then performed TTree::Draw
+  - "staged" - first search entries with cut selection and then performed TTree::Draw
   - "monitor" - periodically show intermediate draw results (interval in milliseconds)
   - "maxrange" - maximal number of ranges in single HTTP request
   - "accum" - number of accumulated values before creating histogram
