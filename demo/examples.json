@@ -156,7 +156,7 @@
       { "name": "hist", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "px:py>>hist(50,-5,5,50,-5,5)", "title": "TTree::Draw into custom histogram" },
       { "name": "cut", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "px:py::pz>5", "title": "TTree::Draw with cut condition" },
       { "name": "elist", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "::pz>5>>elist", "title": "Create list of entries which match cut condition" },
-      { "name": "use_elist", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "px:py;elist:[1,101,202,303,5005,9009,12000]", "title": "Use of elist parameter to select specific entries" },
+      { "name": "use_elist", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "px:py;elist:[0..99,300,500..599,11000,15000..15099]", "title": "Use of elist parameter to select specific entries" },
       { "name": "staged", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "px:py::pz>5;staged", "title": "TTree::Draw with staged drawing - first select entries with cut condition and then draw only for selected entries" },
       { "name": "player", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "px:py::pz>5;player", "title": "Enable player to let change draw expression", "notest":true },
       { "name": "lhcb2", "asurl": true, "file": "https://root.cern/files/lhcb2.root", "item": "E;1//Event/Gen/Header/m_evtNumber", "title": "Histogram data of sub-sub-branches from lhcb2.root file" },

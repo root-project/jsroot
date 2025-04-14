@@ -316,7 +316,7 @@ Or one could dump values produced with draw expression (also first 10 entries by
 One also can dump list of entries which match cut expression and use these entries ids to perform other draw operations:
 
    - [opt=::pz>5>>elist](https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple&opt=::pz>5>>elist)
-   - [opt=px:py;elist:[7,12,25,29]](https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple&opt=px:py;elist:[7,12,25,29])
+   - [opt=px:py;elist:[7..12,20,35..49]](https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple&opt=px:py;elist:[7..12,20,35..49])
 
 Working with array indexes is supported. By default, all elements in array are used for the drawing.
 One could specify index for any array dimension (-1 means last element in the array). For instance, dump last element from `event.fTracks` array:

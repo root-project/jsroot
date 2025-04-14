@@ -772,7 +772,38 @@ class TDrawSelector extends TSelector {
          switch (parname) {
             case 'elist':
                if ((parvalue.at(0) === '[') && (parvalue.at(-1) === ']')) {
-                  args.elist = JSON.parse(parvalue);
+                  parvalue = parvalue.slice(1, parvalue.length - 1).replaceAll(/\s/g,'');
+                  args.elist = [];
+                  let p = 0, last_v = -1;
+                  const getInt = () => {
+                     const p0 = p;
+                     while ((p < parvalue.length) && (parvalue.charCodeAt(p) >= 48) && (parvalue.charCodeAt(p) < 58))
+                        p++;
+                     return parseInt(parvalue.slice(p0, p));
+                  }
+
+                  while (p < parvalue.length) {
+                     const v1 = getInt();
+                     if (v1 <= last_v) {
+                        console.log('position', p);
+                        throw Error(`Wrong entry id ${v1} in elist last ${last_v}`);
+                     }
+                     let v2 = v1;
+                     if (parvalue[p] === '.' && parvalue[p + 1] === '.') {
+                        p += 2;
+                        v2 = getInt();
+                        if (v2 < v1)
+                           throw Error(`Wrong entry id ${v2} in range ${v1}`);
+                     }
+                     if (parvalue[p] === ',' || p === parvalue.length) {
+                        for (let v = v1; v <= v2; ++v) {
+                           args.elist.push(v);
+                           last_v = v;
+                        }
+                        p++;
+                     } else
+                        throw Error(`Wrong syntax for elist`);
+                  }
                }
                break;
             case 'entries':
