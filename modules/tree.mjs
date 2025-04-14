@@ -772,7 +772,7 @@ class TDrawSelector extends TSelector {
          switch (parname) {
             case 'elist':
                if ((parvalue.at(0) === '[') && (parvalue.at(-1) === ']')) {
-                  parvalue = parvalue.slice(1, parvalue.length - 1).replaceAll(/\s/g,'');
+                  parvalue = parvalue.slice(1, parvalue.length - 1).replaceAll(/\s/g, '');
                   args.elist = [];
                   let p = 0, last_v = -1;
                   const getInt = () => {
@@ -780,7 +780,7 @@ class TDrawSelector extends TSelector {
                      while ((p < parvalue.length) && (parvalue.charCodeAt(p) >= 48) && (parvalue.charCodeAt(p) < 58))
                         p++;
                      return parseInt(parvalue.slice(p0, p));
-                  }
+                  };
 
                   while (p < parvalue.length) {
                      const v1 = getInt();
@@ -802,7 +802,7 @@ class TDrawSelector extends TSelector {
                         }
                         p++;
                      } else
-                        throw Error(`Wrong syntax for elist`);
+                        throw Error('Wrong syntax for elist');
                   }
                }
                break;
@@ -1010,9 +1010,9 @@ class TDrawSelector extends TSelector {
          args.staged_names = names;
          names = ['Entry$'];
          args.dump_entries = true;
-      } else if (cut && args.dump_entries) {
+      } else if (cut && args.dump_entries)
          names = ['Entry$'];
-      } else if ((names.length < 1) || (names.length > 3))
+      else if ((names.length < 1) || (names.length > 3))
          return false;
 
       return this.createDrawExpression(tree, names, cut, args);

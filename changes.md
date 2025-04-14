@@ -1,7 +1,8 @@
 # JSROOT changelog
 
 ## Changes in dev
-1. Implement 'staged' method for `TTree::Draw` to first select entries and then apply draw expression
+1. Implement 'nmatch' parameter for `TTree::Draw` to limit processed events
+1. Implement 'elist' parameter for `TTree::Draw` to specify entries list for processing
 1. Implement 'nmatch' parameter for `TTree::Draw` to limit processed events
 1. Implement 'cont5' draw option for `TGraph2D` using Delaunay algorithm
 1. Implement 'pol' and 'arr_colz' draw option for `TH2`
@@ -10,7 +11,7 @@
 1. Implement 'box1' for `TH3` with negative bins
 1. Introduce `settings.FilesTimeout` to configure global timeout for file reading operations
 1. Introduce `settings.FilesRemap` to let provide fallback address for http server, used for `root.cern`
-1. Introduce 'settings.TreeReadBunchSize' to configure bunch read size for TTree readingevents
+1. Introduce `settings.TreeReadBunchSize` to configure bunch read size for `TTree` processing
 1. Adjust histogram title drawing with native implementation
 1. Improve float to string conversion when 'g' is specified
 1. Support 'same' option for first histogram, draw directly on pad
