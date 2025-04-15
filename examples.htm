@@ -550,14 +550,14 @@
 
          if (durl.length > 0) {
             return drawUrl(durl + (opt ? `&opt=${opt}` : '') + extra_opts);
-          } else if (jsonname) {
-             return httpRequest(jsonname, 'object')
+         } else if (jsonname) {
+            return httpRequest(jsonname, 'object')
                       .then(obj => drawEntry(entry, obj, opt));
-           } else {
-              return openFile(filename)
-                       .then(file => file.readObject(itemname))
-                       .then(obj => drawEntry(entry, obj, opt));
-          }
+         } else {
+            return openFile(filename)
+                      .then(file => file.readObject(itemname))
+                      .then(obj => drawEntry(entry, obj, opt));
+         }
       }
 
       function setPageTitle(title) {
@@ -570,20 +570,21 @@
       }
 
       function setListener(elem, shortname, durl, filename, itemname, opt, jsonname, key, entry, id) {
-          elem.addEventListener('click', event => {
-             event.preventDefault();
+         elem.addEventListener('click', event => {
+            event.preventDefault();
 
-             if (show_debug)
-                console.log(`click -k ${key} -o ${id}   url: ${durl}`);
+            if (show_debug)
+               console.log(`click -k ${key} -o ${id}   url: ${durl} opt: ${opt}`);
 
-             if (event.ctrlKey)
-                return window.open(elem.href.replace('?nobrowser&', '?'), '_blank');
+            if (event.ctrlKey)
+               return window.open(elem.href.replace('?nobrowser&', '?'), '_blank');
 
-             window.location.hash = shortname;
-             if (elem.title) setPageTitle(elem.title);
-             processClick(durl, filename, itemname, opt, jsonname, entry).then(() => {
-                document.getElementById('panel').classList.toggle('open');
-             })
+            window.location.hash = shortname;
+            if (elem.title)
+               setPageTitle(elem.title);
+            processClick(durl, filename, itemname, opt, jsonname, entry).then(() => {
+               document.getElementById('panel').classList.toggle('open');
+            })
          });
       }
 
@@ -697,7 +698,8 @@
          createRootColors(); // ensure default colors
 
          if (url.length > 0) {
-            if (no_interactive) url += '&interactive=0';
+            if (no_interactive)
+               url += '&interactive=0';
 
             testfile = testobj = null;
             // if (keyid == 'TGeo') return runBigTest(0);  // ignore TGeo URLs - too complex
@@ -710,16 +712,16 @@
                return drawEntry(entry, obj, opt).then(TestContinue, TestFailure);
             });
          } else if (filename.length > 0) {
-             openFile(filename)
-                   .then(file => { testfile = file; return testfile.readObject(itemname); })
+            openFile(filename)
+                  .then(file => { testfile = file; return testfile.readObject(itemname); })
+                  .then(obj => { testobj = obj; return drawEntry(entry, obj, opt); })
+                  .then(TestContinue, TestFailure);
+         } else if (itemname.length > 0) {
+            testfile.readObject(itemname)
                    .then(obj => { testobj = obj; return drawEntry(entry, obj, opt); })
                    .then(TestContinue, TestFailure);
-         } else if (itemname.length > 0) {
-             testfile.readObject(itemname)
-                      .then(obj => { testobj = obj; return drawEntry(entry, obj, opt); })
-                      .then(TestContinue, TestFailure);
          } else {
-             drawEntry(entry, testobj, opt).then(TestContinue, TestFailure);
+            drawEntry(entry, testobj, opt).then(TestContinue, TestFailure);
          }
       }
 
@@ -728,7 +730,7 @@
       examples_main = JSON.parse(txt);
       if (window.location.search.indexOf('?more') == 0) {
          const txt_more = await httpRequest(demo_path + 'examples_more.json', 'text'),
-                examples_more = JSON.parse(txt_more);
+               examples_more = JSON.parse(txt_more);
          for (let key in examples_more) {
             if (key in examples_main) {
                for (let n in examples_more[key])
@@ -866,66 +868,66 @@
       }
 
       if (window.location.search.indexOf('?more') == 0) {
-          let div = document.createElement('h2');
-          div.textContent = 'Testing';
-          content.appendChild( div );
+         let div = document.createElement('h2');
+         div.textContent = 'Testing';
+         content.appendChild( div );
 
-          let aaa = document.createElement('a');
-          aaa.textContent = 'run';
-          aaa.title = 'Run all examples after each other';
-          content.appendChild( aaa );
-          aaa.addEventListener('click', event => {
-             event.preventDefault();
-             window.location.hash = 'run';
-             runBigTest(10, true);
-          });
+         let aaa = document.createElement('a');
+         aaa.textContent = 'run';
+         aaa.title = 'Run all examples after each other';
+         content.appendChild( aaa );
+         aaa.addEventListener('click', event => {
+            event.preventDefault();
+            window.location.hash = 'run';
+            runBigTest(10, true);
+         });
 
-          content.appendChild(document.createTextNode(', '));
+         content.appendChild(document.createTextNode(', '));
 
-          aaa = document.createElement('a');
-          aaa.textContent = 'slow';
-          aaa.title = 'Run all examples slowly after each other';
-          content.appendChild( aaa );
-          aaa.addEventListener('click', event => {
-             event.preventDefault();
-             window.location.hash = 'slow';
-             runBigTest(5000, true);
-          });
+         aaa = document.createElement('a');
+         aaa.textContent = 'slow';
+         aaa.title = 'Run all examples slowly after each other';
+         content.appendChild( aaa );
+         aaa.addEventListener('click', event => {
+            event.preventDefault();
+            window.location.hash = 'slow';
+            runBigTest(5000, true);
+         });
 
-          content.appendChild(document.createTextNode(', '));
+         content.appendChild(document.createTextNode(', '));
 
-          aaa = document.createElement('a');
-          aaa.textContent = 'fast';
-          aaa.title = 'Run all examples very fast';
-          content.appendChild( aaa );
-          aaa.addEventListener('click', event => {
-             event.preventDefault();
-             window.location.hash = 'fast';
-             runBigTest(1, true);
-          });
+         aaa = document.createElement('a');
+         aaa.textContent = 'fast';
+         aaa.title = 'Run all examples very fast';
+         content.appendChild( aaa );
+         aaa.addEventListener('click', event => {
+            event.preventDefault();
+            window.location.hash = 'fast';
+            runBigTest(1, true);
+         });
 
-          content.appendChild(document.createTextNode(', '));
+         content.appendChild(document.createTextNode(', '));
 
-          aaa = document.createElement('a');
-          aaa.textContent = 'interactivity';
-          aaa.title = 'Run all examples with interactivity tests';
-          content.appendChild( aaa );
-          aaa.addEventListener('click', event => {
-             event.preventDefault();
-             window.location.hash = 'interactivity';
-             runBigTest(100, 'full');
-          });
+         aaa = document.createElement('a');
+         aaa.textContent = 'interactivity';
+         aaa.title = 'Run all examples with interactivity tests';
+         content.appendChild( aaa );
+         aaa.addEventListener('click', event => {
+            event.preventDefault();
+            window.location.hash = 'interactivity';
+            runBigTest(100, 'full');
+         });
 
-          content.appendChild(document.createTextNode(', '));
+         content.appendChild(document.createTextNode(', '));
 
-          aaa = document.createElement('a');
-          aaa.textContent = 'stop';
-          aaa.title = 'Stop running example';
-          content.appendChild( aaa );
-          aaa.addEventListener('click', event => {
-             event.preventDefault();
-             keyid = null;
-          });
+         aaa = document.createElement('a');
+         aaa.textContent = 'stop';
+         aaa.title = 'Stop running example';
+         content.appendChild( aaa );
+         aaa.addEventListener('click', event => {
+            event.preventDefault();
+            keyid = null;
+         });
       }
 
       if (window.location.hash == '#run')
