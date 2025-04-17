@@ -58,7 +58,7 @@
   "dependencies": {
     "@oneidentity/zstd-js": "^1.0.3",
     "canvas": "^3.1.0",
-    "jsdom": "^26.0.0",
+    "jsdom": "^26.1.0",
     "mathjax": "3.2.2",
     "tmp": "^0.2.3",
     "xhr2": "^0.2.1",
@@ -69,11 +69,11 @@
     "@rollup/plugin-json": "6",
     "@rollup/plugin-node-resolve": "15",
     "@rollup/plugin-terser": "0",
-    "eslint": "^9.22.0",
+    "eslint": "^9.24.0",
     "@stylistic/eslint-plugin-js": "^4.1.0",
     "docdash": "^2.0.2",
-    "jsdoc": "^4.0.3",
-    "rollup": "4.22.4",
+    "jsdoc": "^4.0.4",
+    "rollup": "4.40.0",
     "rollup-plugin-ascii": "0.0",
     "rollup-plugin-ignore": "1.0.10",
     "rollup-plugin-modify": "^3.0.0"
