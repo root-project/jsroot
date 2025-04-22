@@ -3,7 +3,7 @@
 ## Changes in dev
 1. Implement 'nmatch' parameter for `TTree::Draw` to limit processed events
 1. Implement 'elist' parameter for `TTree::Draw` to specify entries list for processing
-1. Implement 'nmatch' parameter for `TTree::Draw` to limit processed events
+1. Implement 'staged' algorithm for `TTree::Draw` to first select entries and then process only these entries
 1. Implement 'cont5' draw option for `TGraph2D` using Delaunay algorithm
 1. Implement 'pol' and 'arr_colz' draw option for `TH2`
 1. Only 'col7' draw option uses bar offset and width for color `TH2` drawing
@@ -26,7 +26,7 @@
 1. Support `TLink` and `TButton` object, used in `TInspectCanvas`
 1. Support `TF12` - projection of `TF2`
 1. Upgrade three.js r168 -> r174
-1. Remove support of qt5 webengine, only qt6web is supported
+1. Remove support of qt5 webengine, only qt6web can be used
 1. Set 'user-select: none' style in drawings to exclude text selection, using `settings.UserSelect` value
 1. Internals - use private members and methods
 1. Internals - use `WeakRef` class for cross-referencing of painters
