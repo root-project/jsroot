@@ -97,7 +97,7 @@ function tryOpenOpenUI(sources, args) {
    element.setAttribute('src', src + (args.ui5dbg ? 'resources/sap-ui-core-dbg.js' : 'resources/sap-ui-core.js')); // latest openui5 version
 
    element.setAttribute('data-sap-ui-libs', args.openui5libs ?? 'sap.m, sap.ui.layout, sap.ui.unified, sap.ui.commons');
-   element.setAttribute('sap-ui-language', args.openui5language ?? 'en');
+   // element.setAttribute('data-sap-ui-language', args.openui5language ?? 'en');
    element.setAttribute('data-sap-ui-theme', args.openui5theme || 'sap_belize');
    element.setAttribute('data-sap-ui-compatVersion', 'edge');
    element.setAttribute('data-sap-ui-async', 'true');
