@@ -39,7 +39,7 @@
    - drawing `TPaveText` with zero text size
    - correct axis range in `TScatter` drawing
    - use draw option also for graph drawing in `TTree::Draw`
-6. Internals:
+7. Internals:
    - upgrade three.js r168 -> r174
    - use private members and methods
    - use `WeakRef` class for cross-referencing of painters
