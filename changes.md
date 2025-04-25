@@ -5,11 +5,11 @@
    - 'pol' and 'arr_colz' draw option for `TH2`
    - 'col7' uses bar offset and width for `TH2`
    - 'cont5' for `TGraph2D` using Delaunay algorithm
-   - 'chord' drawiong of `TH2` implements zooming
+   - 'chord' drawing of `TH2` implements zooming
    - 'box1' for `TH3` with negative bins
    - 'same' option for first histogram on pad, draw without creating `TFrame`
    - 'rangleNN' for `TGraphPolargram`, also support fAxisAngle member
-   - 'N' and 'O' for `TGraphPolargram` for angle coordiante systems
+   - 'N' and 'O' for `TGraphPolargram` for angle coordinate systems
    - 'arc' for `TPave` and derived classes
    - 'allbins' for histograms to display underflow/overflow bins
    - Poisson errors for `TH1`/`TH2`, https://root-forum.cern.ch/t/62335/
@@ -18,7 +18,7 @@
    - `TF12` - projection of `TF2`
    - `TLink` and `TButton`, used in `TInspectCanvas`
 3. New partameters in `TTree::Draw`:
-   - '>>elist' to request enries matching cut conditions
+   - '>>elist' to request entries matching cut conditions
    - 'elist' to specify entries for processing
    - 'nmatch' to process exactly the specified number of entries, break processing afterwards
    - 'staged' algorithm to first select entries and then process only these entries
