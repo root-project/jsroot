@@ -395,8 +395,8 @@ class TPadPainter extends ObjectPainter {
 
       for (let k = this.painters.length - 1; k >= 0; --k) {
          const subp = this.painters[k];
-         if (selector(subp)) {
-            subp.cleanup();
+         if (!subp || selector(subp)) {
+            subp?.cleanup();
             this.painters.splice(k, 1);
             is_any = true;
          }
