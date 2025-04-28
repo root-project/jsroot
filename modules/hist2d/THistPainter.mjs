@@ -2169,7 +2169,7 @@ class THistPainter extends ObjectPainter {
       }
 
       if (!enabled) {
-         if (pal_painter) {
+         if (pal_painter && !this.options.Same) {
             this.options.Zvert = pal_painter._palette_vertical;
             pal_painter.Enabled = false;
             pal_painter.removeG(); // completely remove drawing without need to redraw complete pad
