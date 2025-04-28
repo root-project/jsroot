@@ -2,6 +2,7 @@
 
 ## Changes in dev
 1. Fix - colz handling on `THStack`, avoid multiple palette drawings
+2. Fix - palette not adjusted when 'same' draw option used for histogram
 
 
 ## Changes in 7.9.0
