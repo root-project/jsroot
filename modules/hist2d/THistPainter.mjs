@@ -133,6 +133,8 @@ class THistDrawOptions {
          this.omaximum = false;
          this.maximum = histo.fMaximum;
       }
+      if (!this.ominimum && !this.omaximum && this.minimum === this.maximum)
+         this.minimum = this.maximum = kNoZoom;
       if (d.check('HMIN:', true)) {
          this.ohmin = true;
          this.hmin = parseFloat(d.part);
@@ -1160,8 +1162,10 @@ class THistPainter extends ObjectPainter {
          histo.fMaximum = obj.fMaximum;
          histo.fSumw2 = obj.fSumw2;
 
-         if (!o.ominimum) o.minimum = histo.fMinimum;
-         if (!o.omaximum) o.maximum = histo.fMaximum;
+         if (!o.ominimum)
+            o.minimum = histo.fMinimum;
+         if (!o.omaximum)
+            o.maximum = histo.fMaximum;
 
          if (this.getDimension() === 1)
             o.decodeSumw2(histo);
@@ -1188,6 +1192,9 @@ class THistPainter extends ObjectPainter {
          o.minimum = histo.fMinimum;
       if (!o.omaximum)
          o.maximum = histo.fMaximum;
+
+      if (!o.ominimum && !o.omaximum && o.minimum === o.maximum)
+         o.minimum = o.maximum = kNoZoom;
 
       if (!fp || !fp.zoomChangedInteractive())
          this.checkPadRange();
@@ -2031,11 +2038,22 @@ class THistPainter extends ObjectPainter {
       let nlevels = 0, apply_min,
           zmin = src.minbin, zmax = src.maxbin, zminpos = src.minposbin,
           custom_levels;
-      if (zmin === zmax) { zmin = src.gminbin; zmax = src.gmaxbin; zminpos = src.gminposbin; }
+      if (zmin === zmax) {
+         if (this.options.ohmin && this.options.ohmax && this.options.Zscale) {
+            zmin = this.options.hmin;
+            zmax = this.options.hmax;
+            zminpos = Math.max(zmin, zmax * 1e-10);
+         } else {
+            zmin = src.gminbin;
+            zmax = src.gmaxbin;
+            zminpos = src.gminposbin;
+         }
+      }
 
       let gzmin = zmin, gzmax = zmax;
       if (this.options.minimum !== kNoZoom) { zmin = this.options.minimum; gzmin = Math.min(gzmin, zmin); apply_min = true; }
       if (this.options.maximum !== kNoZoom) { zmax = this.options.maximum; gzmax = Math.max(gzmax, zmax); apply_min = false; }
+
       if (zmin >= zmax) {
          if (apply_min || !zmin)
             zmax = zmin + 1;
