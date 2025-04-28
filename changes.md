@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in 7.9.x
+1. Fix - colz handling on `THStack`, avoid multiple palette drawings
+
+
 ## Changes in 7.9.0
 1. New draw options:
    - 'pol' and 'arr_colz' draw option for `TH2`
