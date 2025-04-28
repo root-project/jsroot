@@ -257,20 +257,12 @@ class THStackPainter extends ObjectPainter {
 
    /** @summary Decode draw options of THStack painter */
    decodeOptions(opt) {
-      if (!this.options) this.options = {};
+      if (!this.options)
+         this.options = {};
       Object.assign(this.options, { ndim: 1, nostack: false, same: false, horder: true, has_errors: false, draw_errors: false, hopt: '', auto: '' });
 
       const stack = this.getObject(),
-            hist = stack.fHistogram || (stack.fHists ? stack.fHists.arr[0] : null) || (this.fStack ? this.fStack.arr[0] : null),
-
-       hasErrors = hist2 => {
-         const len = hist2.fSumw2?.length ?? 0;
-         for (let n = 0; n < len; ++n) {
-            if (hist2.fSumw2[n] > 0)
-               return true;
-         }
-         return false;
-      };
+            hist = stack.fHistogram || (stack.fHists ? stack.fHists.arr[0] : null) || (this.fStack ? this.fStack.arr[0] : null);
 
       if (hist?._typename.indexOf(clTH2) === 0)
          this.options.ndim = 2;
@@ -278,9 +270,16 @@ class THStackPainter extends ObjectPainter {
       if ((this.options.ndim === 2) && !opt)
          opt = 'lego1';
 
-      if (stack.fHists && !this.options.nostack) {
-         for (let k = 0; k < stack.fHists.arr.length; ++k)
-            this.options.has_errors = this.options.has_errors || hasErrors(stack.fHists.arr[k]);
+      if (!this.options.nostack) {
+         stack.fHists?.arr.forEach(h => {
+            const len = h.fSumw2?.length ?? 0;
+            for (let n = 0; n < len; ++n) {
+               if (h.fSumw2[n] > 0) {
+                  this.options.has_errors = true;
+                  break;
+               }
+            }
+         });
       }
 
       this.options.nhist = stack.fHists?.arr?.length ?? 1;
