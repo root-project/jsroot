@@ -2181,8 +2181,11 @@ class THistPainter extends ObjectPainter {
       if (!pal) {
          pal = create(clTPaletteAxis);
 
+         if (!can_move)
+            can_move = !this.options.Same;
+
          pal.fInit = 1;
-         pal.$can_move = true;
+         pal.$can_move = can_move;
          pal.$generated = true;
 
          if (this.options.Zvert)
@@ -2203,8 +2206,6 @@ class THistPainter extends ObjectPainter {
 
          // place colz in the beginning, that stat box is always drawn on the top
          this.addFunction(pal, true);
-
-         can_move = true;
       } else if (pp?._palette_vertical !== undefined)
          this.options.Zvert = pp._palette_vertical;
 
