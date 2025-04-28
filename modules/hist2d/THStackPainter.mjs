@@ -294,7 +294,7 @@ class THStackPainter extends ObjectPainter {
       this.options.pads = d.check('PADS');
       if (this.options.pads) this.options.nostack = true;
 
-      this.options.hopt = d.remain(); // use remaining draw options for histogram draw
+      this.options.hopt = d.remain().trim(); // use remaining draw options for histogram draw
 
       const dolego = d.check('LEGO');
 
