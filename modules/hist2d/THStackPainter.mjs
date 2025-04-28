@@ -316,7 +316,7 @@ class THStackPainter extends ObjectPainter {
    /** @summary Create main histogram for THStack axis drawing */
    createHistogram(stack) {
       const histos = stack.fHists,
-            numhistos = histos ? histos.arr.length : 0;
+            numhistos = histos?.arr.length ?? 0;
 
       if (!numhistos) {
          const histo = createHistogram(clTH1F, 100);
@@ -327,6 +327,7 @@ class THStackPainter extends ObjectPainter {
 
       const h0 = histos.arr[0],
             histo = createHistogram((this.options.ndim === 1) ? clTH1F : clTH2F, h0.fXaxis.fNbins, h0.fYaxis.fNbins);
+
       histo.fName = 'axis_hist';
       histo.fBits |= kNoStats;
       Object.assign(histo.fXaxis, h0.fXaxis);
@@ -466,7 +467,6 @@ class THStackPainter extends ObjectPainter {
       const func = (this.options.ndim === 1) ? TH1Painter.draw : TH2Painter.draw;
       return func(dom, hist, hopt);
    }
-
 
    /** @summary Access or modify histogram min/max
     * @private */
