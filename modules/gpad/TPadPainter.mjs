@@ -216,6 +216,7 @@ class TPadPainter extends ObjectPainter {
    #custom_palette_indexes; // custom palette indexes
    #custom_palette_colors; // custom palette colors
    #frame_painter_ref; // frame painter
+   #main_painter_ref; // main painter on the pad
 
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -272,14 +273,14 @@ class TPadPainter extends ObjectPainter {
    /** @summary Returns main painter on the pad
      * @desc Typically main painter is TH1/TH2 object which is drawing axes
     * @private */
-   getMainPainter() { return this.main_painter_ref || null; }
+   getMainPainter() { return this.#main_painter_ref || null; }
 
    /** @summary Assign main painter on the pad
      * @desc Typically main painter is TH1/TH2 object which is drawing axes
     * @private */
    setMainPainter(painter, force) {
-      if (!this.main_painter_ref || force)
-         this.main_painter_ref = painter;
+      if (!this.#main_painter_ref || force)
+         this.#main_painter_ref = painter;
    }
 
    /** @summary cleanup pad and all primitives inside */
@@ -295,7 +296,7 @@ class TPadPainter extends ObjectPainter {
          if (!this.iscan) svg_p.remove();
       }
 
-      delete this.main_painter_ref;
+      this.#main_painter_ref = undefined;
       this.#frame_painter_ref = undefined;
       const cp = this.iscan || !this.has_canvas ? this : this.getCanvPainter();
       if (cp) delete cp.pads_cache;
@@ -452,8 +453,8 @@ class TPadPainter extends ObjectPainter {
       arr.forEach(painter => {
          if ((painter !== prim) || !clean_only_secondary)
             painter.cleanup();
-         if (this.main_painter_ref === painter) {
-            delete this.main_painter_ref;
+         if (this.getMainPainter() === painter) {
+            this.setMainPainter(undefined, true);
             resindx = -111;
          }
       });
@@ -2043,7 +2044,7 @@ class TPadPainter extends ObjectPainter {
          const old_painters = this.painters;
          this.painters = [];
          old_painters.forEach(objp => objp.cleanup());
-         delete this.main_painter_ref;
+         this.setMainPainter(undefined, true);
          if (isFunc(this.removePadButtons))
             this.removePadButtons();
          this.addPadButtons(true);

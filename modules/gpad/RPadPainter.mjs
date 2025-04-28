@@ -26,6 +26,7 @@ class RPadPainter extends RObjectPainter {
    #doing_draw; // drawing handles
    #custom_palette; // custom palette
    #frame_painter_ref; // frame painter
+   #main_painter_ref; // main painter on the pad
 
    /** @summary constructor */
    constructor(dom, pad, iscan) {
@@ -75,22 +76,18 @@ class RPadPainter extends RObjectPainter {
 
   /** @summary Returns SVG element for the pad itself
     * @private */
-   svg_this_pad() {
-      return this.getPadSvg(this.this_pad_name);
-   }
+   svg_this_pad() { return this.getPadSvg(this.this_pad_name); }
 
    /** @summary Returns main painter on the pad
      * @desc Typically main painter is TH1/TH2 object which is drawing axes
     * @private */
-   getMainPainter() {
-      return this.main_painter_ref || null;
-   }
+   getMainPainter() { return this.#main_painter_ref || null; }
 
    /** @summary Assign main painter on the pad
     * @private */
    setMainPainter(painter, force) {
-      if (!this.main_painter_ref || force)
-         this.main_painter_ref = painter;
+      if (!this.#main_painter_ref || force)
+         this.#main_painter_ref = painter;
    }
 
    /** @summary cleanup pad and all primitives inside */
@@ -109,7 +106,7 @@ class RPadPainter extends RObjectPainter {
       const cp = this.iscan || !this.has_canvas ? this : this.getCanvPainter();
       if (cp) delete cp.pads_cache;
 
-      delete this.main_painter_ref;
+      this.#main_painter_ref = undefined;
       this.#frame_painter_ref = undefined;
       this.#pad_x = this.#pad_y = this.#pad_width = this.#pad_height = undefined;
       this.#doing_draw = undefined;
@@ -252,8 +249,8 @@ class RPadPainter extends RObjectPainter {
       arr.forEach(painter => {
          if ((painter !== prim) || !clean_only_secondary)
             painter.cleanup();
-         if (this.main_painter_ref === painter) {
-            delete this.main_painter_ref;
+         if (this.getMainPainter() === painter) {
+            delete this.setMainPainter(undefined, true);
             resindx = -111;
          }
       });
@@ -1298,7 +1295,7 @@ class RPadPainter extends RObjectPainter {
          const old_painters = this.painters;
          this.painters = [];
          old_painters.forEach(objp => objp.cleanup());
-         delete this.main_painter_ref;
+         this.setMainPainter(undefined, true);
          if (isFunc(this.removePadButtons))
             this.removePadButtons();
          this.addPadButtons(true);
