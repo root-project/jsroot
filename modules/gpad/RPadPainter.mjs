@@ -25,6 +25,7 @@ class RPadPainter extends RObjectPainter {
    #pad_height; // pad height
    #doing_draw; // drawing handles
    #custom_palette; // custom palette
+   #frame_painter_ref; // frame painter
 
    /** @summary constructor */
    constructor(dom, pad, iscan) {
@@ -109,7 +110,7 @@ class RPadPainter extends RObjectPainter {
       if (cp) delete cp.pads_cache;
 
       delete this.main_painter_ref;
-      delete this.frame_painter_ref;
+      this.#frame_painter_ref = undefined;
       this.#pad_x = this.#pad_y = this.#pad_width = this.#pad_height = undefined;
       this.#doing_draw = undefined;
       delete this._dfltRFont;
@@ -128,7 +129,16 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary Returns frame painter inside the pad
     * @private */
-   getFramePainter() { return this.frame_painter_ref; }
+   getFramePainter() { return this.#frame_painter_ref; }
+
+   /** @summary Assign actual frame painter
+     * @private */
+   setFramePainter(fp, on) {
+      if (on)
+         this.#frame_painter_ref = fp;
+      else if (this.#frame_painter_ref === fp)
+         this.#frame_painter_ref = undefined;
+   }
 
    /** @summary get pad width */
    getPadWidth() { return this.#pad_width || 0; }

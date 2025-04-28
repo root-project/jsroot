@@ -215,6 +215,7 @@ class TPadPainter extends ObjectPainter {
    #custom_colors;  // custom colors
    #custom_palette_indexes; // custom palette indexes
    #custom_palette_colors; // custom palette colors
+   #frame_painter_ref; // frame painter
 
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -295,7 +296,7 @@ class TPadPainter extends ObjectPainter {
       }
 
       delete this.main_painter_ref;
-      delete this.frame_painter_ref;
+      this.#frame_painter_ref = undefined;
       const cp = this.iscan || !this.has_canvas ? this : this.getCanvPainter();
       if (cp) delete cp.pads_cache;
       this.#pad_x = this.#pad_y = this.#pad_width = this.#pad_height = undefined;
@@ -317,7 +318,16 @@ class TPadPainter extends ObjectPainter {
 
    /** @summary Returns frame painter inside the pad
      * @private */
-   getFramePainter() { return this.frame_painter_ref; }
+   getFramePainter() { return this.#frame_painter_ref; }
+
+   /** @summary Assign actual frame painter
+     * @private */
+   setFramePainter(fp, on) {
+      if (on)
+         this.#frame_painter_ref = fp;
+      else if (this.#frame_painter_ref === fp)
+         this.#frame_painter_ref = undefined;
+   }
 
    /** @summary get pad width */
    getPadWidth() { return this.#pad_width || 0; }
