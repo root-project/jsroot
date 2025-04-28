@@ -199,6 +199,11 @@ class THStackPainter extends ObjectPainter {
          hopt += ' ' + this.options.hopt;
       if (this.options.draw_errors && !hopt)
          hopt = 'E';
+      if (this.options.zscale) {
+         const p = hopt.toUpperCase().indexOf('COLZ');
+         if (p >= 0)
+            hopt = hopt.slice(0, p + 3) + hopt.slice(p + 4);
+      }
       if (!this.options.pads)
          hopt += ' same nostat' + this.options.auto;
       return hopt;
@@ -299,6 +304,8 @@ class THStackPainter extends ObjectPainter {
       const dolego = d.check('LEGO');
 
       this.options.errors = d.check('E');
+
+      this.options.zscale = d.check('COLZ');
 
       // if any histogram appears with pre-calculated errors, use E for all histograms
       if (!this.options.nostack && this.options.has_errors && !dolego && !d.check('HIST') && (this.options.hopt.indexOf('E') < 0))
