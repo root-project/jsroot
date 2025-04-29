@@ -85,7 +85,7 @@ class ObjectPainter extends BasePainter {
 
       if (this.isMainPainter()) {
          const pp = this.getPadPainter();
-         if (!pp || (pp.normal_canvas === false))
+         if (!pp || pp._auto_canvas)
             keep_origin = false;
       }
 

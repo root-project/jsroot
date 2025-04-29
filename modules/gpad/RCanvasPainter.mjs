@@ -671,7 +671,6 @@ class RCanvasPainter extends RPadPainter {
          can = create(`${nsREX}RCanvas`);
 
       const painter = new RCanvasPainter(dom, can);
-      painter.normal_canvas = !nocanvas;
       painter.createCanvasSvg(0);
 
       selectActivePad({ pp: painter, active: false });
@@ -691,7 +690,6 @@ class RCanvasPainter extends RPadPainter {
   * @private */
 function drawRPadSnapshot(dom, snap /* , opt */) {
    const painter = new RCanvasPainter(dom, null);
-   painter.normal_canvas = false;
    painter.batch_mode = isBatchMode();
    return painter.syncDraw(true).then(() => painter.redrawPadSnap(snap)).then(() => {
       painter.confirmDraw();

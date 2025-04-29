@@ -1406,9 +1406,8 @@ class TPadPainter extends ObjectPainter {
          const do_divide = arg => {
             if (!arg || !isStr(arg))
                return;
-            // workaround - prevent full deletion of canvas
-            if (this.normal_canvas === false)
-               this.normal_canvas = true;
+            // delete auto_canvas flag to prevent deletion
+            delete this._auto_canvas;
             this.cleanPrimitives(true);
             if (arg === 'reset')
                return;

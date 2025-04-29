@@ -796,11 +796,17 @@ class TCanvasPainter extends TPadPainter {
 
    /** @summary produce JSON for TCanvas, which can be used to display canvas once again */
    produceJSON(spacing) {
-      const canv = this.getObject(),
-            fill0 = (canv.fFillStyle === 0),
-            axes = [], hists = [];
+      const canv = this.getObject();
 
-      if (fill0) canv.fFillStyle = 1001;
+      if ((canv._typename !== clTCanvas) || !canv.fPrimitives)
+         return;
+
+      const fill0 = (canv.fFillStyle === 0),
+            axes = [], hists = [],
+            build_primitives = (this.painters.length > 0) && !canv.fPrimitives.arr.length;
+
+      if (fill0)
+         canv.fFillStyle = 1001;
 
       // write selected range into TAxis properties
       this.forEachPainterInPad(pp => {
@@ -831,7 +837,7 @@ class TCanvasPainter extends TPadPainter {
          }
       }, 'pads');
 
-      if (!this.normal_canvas) {
+      if (build_primitives) {
          // fill list of primitives from painters
          this.forEachPainterInPad(p => {
             // ignore all secondary painters
@@ -848,7 +854,8 @@ class TCanvasPainter extends TPadPainter {
 
       const res = toJSON(canv, spacing);
 
-      if (fill0) canv.fFillStyle = 0;
+      if (fill0)
+         canv.fFillStyle = 0;
 
       axes.forEach(e => {
          e.axis.fFirst = e.f;
@@ -861,7 +868,7 @@ class TCanvasPainter extends TPadPainter {
          e.hist.fMaximum = e.max;
       });
 
-      if (!this.normal_canvas)
+      if (build_primitives)
          canv.fPrimitives.Clear();
 
       return res;
@@ -907,7 +914,7 @@ class TCanvasPainter extends TPadPainter {
       }
 
       painter.decodeOptions(opt);
-      painter.normal_canvas = !nocanvas;
+      painter._auto_canvas = nocanvas;
       painter.createCanvasSvg(0);
 
       painter.addPadButtons();
@@ -971,7 +978,6 @@ async function ensureTCanvas(painter, frame_kind) {
 async function drawTPadSnapshot(dom, snap /* , opt */) {
    const can = create(clTCanvas),
          painter = new TCanvasPainter(dom, can);
-   painter.normal_canvas = false;
    painter.addPadButtons();
 
    return painter.syncDraw(true).then(() => painter.redrawPadSnap(snap)).then(() => {
