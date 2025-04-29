@@ -2075,7 +2075,7 @@ class TPadPainter extends ObjectPainter {
       if ((kind === 'move') && !this.#deliver_move_events)
          return;
       const cp = this.getCanvPainter();
-      if (!cp || !cp._websocket || !cp._websocket.canSend(2) || cp.isReadonly())
+      if (!cp || !cp.canSendWebsocket(2) || cp.isReadonly())
          return;
 
       const msg = JSON.stringify([this.snapid, kind, x.toString(), y.toString(), snapid ? snapid.toString() : '']);
