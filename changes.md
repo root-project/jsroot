@@ -4,6 +4,7 @@
 1. Fix - colz handling on `THStack`, avoid multiple palette drawings
 1. Fix - bug in pad.Divide context menu command
 1. Fix - palette not adjusted when 'same' draw option used for histogram
+1. Fix - drag and drop of histograms on empty sub-pads
 
 
 ## Changes in 7.9.0
