@@ -281,13 +281,16 @@ class FileDumpSocket {
 class WebWindowHandle {
 
    #ws; // websocket or emulation
+   #ask_reload; // flag set when page reload is triggered
+   #credits; // configured number of credits
+   #secondary; // true when created as extra connection, not need to use keys
 
    constructor(socket_kind, credits) {
       this.kind = socket_kind;
       this.state = 0;
-      this.credits = Math.max(3, credits || 10);
-      this.cansend = this.credits;
-      this.ackn = this.credits; // this number will be send to server with first message
+      this.#credits = Math.max(3, credits || 10);
+      this.cansend = this.#credits;
+      this.ackn = this.#credits; // this number will be send to server with first message
       this.send_seq = 1; // sequence counter of send messages
       this.recv_seq = 0; // sequence counter of received messages
    }
@@ -422,7 +425,7 @@ class WebWindowHandle {
    canSend(numsend) { return this.cansend >= (numsend || 1); }
 
    /** @summary Returns number of possible send operations relative to number of credits */
-   getRelCanSend() { return !this.credits ? 1 : this.cansend / this.credits; }
+   getRelCanSend() { return !this.#credits ? 1 : this.cansend / this.#credits; }
 
    /** @summary Send text message via the connection.
      * @param {string} msg - text message to send
@@ -512,7 +515,7 @@ class WebWindowHandle {
       if (this.master)
          return this.master.createChannel();
 
-      const channel = new WebWindowHandle('channel', this.credits);
+      const channel = new WebWindowHandle('channel', this.#credits);
       channel.wait_first_recv = true; // first received message via the channel is confirmation of established connection
 
       if (!this.channels) {
@@ -596,7 +599,7 @@ class WebWindowHandle {
       this.close();
 
       if (href) {
-         this._secondary = true;
+         this.#secondary = true;
          this.setHRef(href);
       }
 
@@ -656,7 +659,7 @@ class WebWindowHandle {
             if (ntry > 2) showProgress();
             this.state = 1;
 
-            const reply = (this._secondary ? '' : 'generate_key;') + (this.key || '');
+            const reply = (this.#secondary ? '' : 'generate_key;') + (this.key || '');
             this.send(`READY=${reply}`, 0); // need to confirm connection and request new key
             this.invokeReceiver(false, 'onWebsocketOpened');
          };
@@ -744,7 +747,7 @@ class WebWindowHandle {
                   this.new_key = msg.slice(8);
                   // console.log('get new key', this.new_key);
                   this.storeKeyInUrl();
-                  if (this._ask_reload)
+                  if (this.#ask_reload)
                      this.askReload(true);
                }
             } else if (msg.slice(0, 10) === '$$binary$$') {
@@ -755,7 +758,7 @@ class WebWindowHandle {
             else
                this.provideData(chid, msg);
 
-            if (this.ackn > Math.max(2, this.credits*0.7))
+            if (this.ackn > Math.max(2, this.#credits * 0.7))
                this.send('READY', 0); // send dummy message to server
          };
 
@@ -795,7 +798,7 @@ class WebWindowHandle {
          if (typeof location !== 'undefined')
             location.reload(true);
       } else {
-         this._ask_reload = true;
+         this.#ask_reload = true;
          this.send('GENERATE_KEY', 0);
       }
    }
@@ -826,7 +829,7 @@ class WebWindowHandle {
      * @private */
    storeKeyInUrl() {
       // do not modify document URLs by secondary widgets
-      if (this._secondary)
+      if (this.#secondary)
          return;
 
       let href = (typeof document !== 'undefined') ? document.URL : null;
@@ -855,7 +858,7 @@ class WebWindowHandle {
     * @private */
    createNewInstance(url) {
       const handle = new WebWindowHandle(this.kind);
-      handle._secondary = true;
+      handle.#secondary = true;
       handle.setHRef(this.getHRef(url));
       return handle;
    }
