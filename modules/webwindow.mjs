@@ -626,8 +626,8 @@ class WebWindowHandle {
          this.href = href;
          ntry++;
 
-         if (first_time)
-            console.log(`Opening web socket at ${href}`);
+         //if (first_time)
+         //   console.log(`Opening web socket at ${href}`);
 
          if (ntry > 2)
             showProgress(`Trying to connect ${href}`);
@@ -637,15 +637,15 @@ class WebWindowHandle {
          if (this.kind === 'file') {
             path += 'root.filedump';
             this.#ws = new FileDumpSocket(this);
-            console.log(`configure protocol log ${path}`);
+            console.log(`Configure FileDumpSocket ${path}`);
          } else if ((this.kind === 'websocket') && first_time) {
             path = path.replace('http://', 'ws://').replace('https://', 'wss://') + 'root.websocket';
-            console.log(`configure websocket ${path}`);
+            console.log(`Configure websocket ${path}`);
             path += '?' + this.getConnArgs(ntry);
             this.#ws = new WebSocket(path);
          } else {
             path += 'root.longpoll';
-            console.log(`configure longpoll ${path}`);
+            console.log(`Configure longpoll ${path}`);
             this.#ws = new LongPollSocket(path, (this.kind === 'rawlongpoll'), this, ntry);
          }
 
