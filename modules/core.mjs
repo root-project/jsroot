@@ -1747,7 +1747,7 @@ function getMethods(typename, obj) {
    }
 
    if (typename === clTPad || typename === clTCanvas) {
-      m.Divide = function(nx, ny, xmargin = 0.01, ymargin = 0.01) {
+      m.Divide = function(nx, ny, xmargin = 0.01, ymargin = 0.01, color = 0) {
          if (!ny) {
             const ndiv = nx;
             if (ndiv < 2) return this;
@@ -1784,10 +1784,7 @@ function getMethods(typename, obj) {
                   pad.fAbsYlowNDC = y1;
                }
 
-               if (this.fFillColor < 15)
-                  pad.fFillColor = 19;
-               else if (this.fFillColor < 20)
-                  pad.fFillColor = this.fFillColor - 1;
+               pad.fFillColor = color || this.fFillColor;
 
                this.fPrimitives.Add(pad);
             }

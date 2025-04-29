@@ -1253,6 +1253,14 @@ class TPadPainter extends ObjectPainter {
      * @return {Promise} when finished
      * @private */
    async divide(nx, ny, use_existing) {
+      let color = this.pad.fFillColor;
+      if (!use_existing) {
+         if (color < 15)
+            color = 19;
+         else if (color < 20)
+            color--;
+      }
+
       if (nx && !ny && use_existing) {
          for (let k = 0; k < nx; ++k) {
             if (!this.getSubPadPainter(k+1)) {
@@ -1269,7 +1277,7 @@ class TPadPainter extends ObjectPainter {
          this.pad.fPrimitives = create(clTList);
       this.pad.fPrimitives.Clear();
 
-      if ((!nx && !ny) || !this.pad.Divide(nx, ny))
+      if ((!nx && !ny) || !this.pad.Divide(nx, ny, 0.01, 0.01, color))
          return this;
 
       const drawNext = indx => {
