@@ -196,13 +196,15 @@ class RCanvasPainter extends RPadPainter {
    /** @summary Send command to server to save canvas with specified name
      * @desc Should be only used in web-based canvas
      * @private */
-   sendSaveCommand(fname) {
-      this.sendWebsocket('PRODUCE:' + fname);
-   }
+   sendSaveCommand(fname) { this.sendWebsocket('PRODUCE:' + fname); }
+
+   /** @summary Return assigned web socket
+    * @private */
+   getWebsocket() { return this._websocket; }
 
    /** @summary Return true if message can be send via web socket
     * @private */
-   canSendWebSocket() { return this._websocket?.canSend(); }
+   canSendWebsocket() { return this._websocket?.canSend(); }
 
    /** @summary Send message via web socket
      * @private */
