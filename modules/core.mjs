@@ -1784,6 +1784,11 @@ function getMethods(typename, obj) {
                   pad.fAbsYlowNDC = y1;
                }
 
+               if (this.fFillColor < 15)
+                  pad.fFillColor = 19;
+               else if (this.fFillColor < 20)
+                  pad.fFillColor = this.fFillColor - 1;
+
                this.fPrimitives.Add(pad);
             }
          }
