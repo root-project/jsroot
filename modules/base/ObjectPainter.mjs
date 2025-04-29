@@ -1382,7 +1382,7 @@ class ObjectPainter extends BasePainter {
 
       const canvp = this.getCanvPainter();
 
-      if (!this.snapid || !canvp || canvp?._readonly || !canvp?._websocket)
+      if (!this.snapid || !canvp || canvp?.isReadonly() || !canvp?._websocket)
          return menu;
 
       function doExecMenu(arg) {

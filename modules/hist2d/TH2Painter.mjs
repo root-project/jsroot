@@ -625,7 +625,7 @@ class TH2Painter extends THistPainter {
 
       const canp = this.getCanvPainter();
 
-      if (canp && !canp._readonly && (this.snapid !== undefined)) {
+      if (canp && !canp.isReadonly() && (this.snapid !== undefined)) {
          // this is when projection should be created on the server side
          if (((this.is_projection === 'X') || (this.is_projection === 'XY')) && !canp.websocketTimeout('projX')) {
             if (canp.sendWebsocket(`EXECANDSEND:DXPROJ:${this.snapid}:ProjectionX("_projx",${jj1+1},${jj2},"")`))

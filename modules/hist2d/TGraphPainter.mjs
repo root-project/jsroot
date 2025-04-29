@@ -1413,7 +1413,8 @@ class TGraphPainter extends ObjectPainter {
       const canp = this.getCanvPainter(), pmain = this.get_main();
 
       if ((method.fName === 'RemovePoint') || (method.fName === 'InsertPoint')) {
-         if (!canp || canp._readonly) return true; // ignore function
+         if (!canp || canp.isReadonly())
+            return true; // ignore function
 
          const pnt = isFunc(pmain?.getLastEventPos) ? pmain.getLastEventPos() : null,
              hint = this.extractTooltip(pnt);

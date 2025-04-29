@@ -217,6 +217,10 @@ class TPadPainter extends ObjectPainter {
    #custom_palette_colors; // custom palette colors
    #frame_painter_ref; // frame painter
    #main_painter_ref; // main painter on the pad
+   #snap_primitives; // stored snap primitives from web canvas
+   #has_execs; // indicate is pad has TExec objects assigned
+   #deliver_move_events; // deliver move events to server
+   #readonly; // if changes on pad is not allowed
 
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -266,6 +270,9 @@ class TPadPainter extends ObjectPainter {
    /** @summary Returns true if button */
    isButton() { return this.matchObjectType(clTButton); }
 
+   /** @summary Returns true if read-only mode is enabled */
+   isReadonly() { return this.#readonly; }
+
    /** @summary Returns SVG element for the pad itself
     * @private */
    svg_this_pad() { return this.getPadSvg(this.this_pad_name); }
@@ -303,7 +310,7 @@ class TPadPainter extends ObjectPainter {
       this.#pad_x = this.#pad_y = this.#pad_width = this.#pad_height = undefined;
       this.#doing_draw = undefined;
       delete this._interactively_changed;
-      delete this._snap_primitives;
+      this.#snap_primitives = undefined;
       this.#last_grayscale = undefined;
       this.#custom_palette = this.#custom_colors = this.#custom_palette_indexes = this.#custom_palette_colors = undefined;
 
@@ -1118,7 +1125,7 @@ class TPadPainter extends ObjectPainter {
      * @private */
    findInPrimitives(objname, objtype) {
       const match = obj => obj && (obj?.fName === objname) && (objtype ? (obj?._typename === objtype) : true),
-            snap = this._snap_primitives?.find(s => match((s.fKind === webSnapIds.kObject) ? s.fSnapshot : null));
+            snap = this.#snap_primitives?.find(s => match((s.fKind === webSnapIds.kObject) ? s.fSnapshot : null));
 
       return snap ? snap.fSnapshot : this.pad?.fPrimitives?.arr.find(match);
    }
@@ -1861,9 +1868,9 @@ class TPadPainter extends ObjectPainter {
          padpainter.addToPadPrimitives();
          padpainter.assignSnapId(snap.fObjectID);
          padpainter.is_active_pad = Boolean(snap.fActive); // enforce boolean flag
-         padpainter._readonly = snap.fReadOnly ?? false; // readonly flag
-         padpainter._snap_primitives = snap.fPrimitives; // keep list to be able find primitive
-         padpainter._has_execs = snap.fHasExecs ?? false; // are there pad execs, enables some interactive features
+         padpainter.#readonly = snap.fReadOnly ?? false; // readonly flag
+         padpainter.#snap_primitives = snap.fPrimitives; // keep list to be able find primitive
+         padpainter.#has_execs = snap.fHasExecs ?? false; // are there pad execs, enables some interactive features
 
          if (subpad.$disable_drawing)
             padpainter.pad_draw_disabled = true;
@@ -1920,15 +1927,15 @@ class TPadPainter extends ObjectPainter {
          return this;
 
       this.is_active_pad = Boolean(snap.fActive); // enforce boolean flag
-      this._readonly = snap.fReadOnly ?? false; // readonly flag
-      this._snap_primitives = snap.fPrimitives; // keep list to be able find primitive
-      this._has_execs = snap.fHasExecs ?? false; // are there pad execs, enables some interactive features
+      this.#readonly = snap.fReadOnly ?? false; // readonly flag
+      this.#snap_primitives = snap.fPrimitives; // keep list to be able find primitive
+      this.#has_execs = snap.fHasExecs ?? false; // are there pad execs, enables some interactive features
 
       const first = snap.fSnapshot;
       first.fPrimitives = null; // primitives are not interesting, they are disabled in IO
 
       // if there are execs in the pad, deliver events to the server
-      this._deliver_move_events = first.fExecs?.arr?.length > 0;
+      this.#deliver_move_events = this.#has_execs || (first.fExecs?.arr?.length > 0);
 
       if (this.snapid === undefined) {
          // first time getting snap, create all gui elements first
@@ -2065,10 +2072,10 @@ class TPadPainter extends ObjectPainter {
    deliverWebCanvasEvent(kind, x, y, snapid) {
       if (!this.is_active_pad || this.doingDraw() || x === undefined || y === undefined)
          return;
-      if ((kind === 'move') && !this._deliver_move_events)
+      if ((kind === 'move') && !this.#deliver_move_events)
          return;
       const cp = this.getCanvPainter();
-      if (!cp || !cp._websocket || !cp._websocket.canSend(2) || cp._readonly)
+      if (!cp || !cp._websocket || !cp._websocket.canSend(2) || cp.isReadonly())
          return;
 
       const msg = JSON.stringify([this.snapid, kind, x.toString(), y.toString(), snapid ? snapid.toString() : '']);
@@ -2098,7 +2105,7 @@ class TPadPainter extends ObjectPainter {
    getWebPadOptions(arg, cp) {
       let is_top = (arg === undefined), elem = null, scan_subpads = true;
       // no any options need to be collected in readonly mode
-      if (is_top && this._readonly)
+      if (is_top && this.isReadonly())
          return '';
       if (arg === 'only_this') {
          is_top = true;

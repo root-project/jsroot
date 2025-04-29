@@ -265,7 +265,8 @@ class TCanvasPainter extends TPadPainter {
    /** @summary Submit object exec request
      * @private */
    submitExec(painter, exec, snapid) {
-      if (this._readonly || !painter) return;
+      if (this.isReadonly() || !painter)
+         return;
 
       if (!snapid) snapid = painter.snapid;
       if (snapid && isStr(snapid) && exec)
@@ -688,7 +689,7 @@ class TCanvasPainter extends TPadPainter {
      * @private */
    processChanges(kind, painter, subelem) {
       // check if we could send at least one message more - for some meaningful actions
-      if (!this._websocket || this._readonly || !this._websocket.canSend(2) || !isStr(kind)) return;
+      if (!this._websocket || this.isReadonly() || !this._websocket.canSend(2) || !isStr(kind)) return;
 
       let msg = '';
       if (!painter) painter = this;
