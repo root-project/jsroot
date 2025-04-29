@@ -1406,6 +1406,9 @@ class TPadPainter extends ObjectPainter {
             if (!arg || !isStr(arg))
                return;
             const arr = arg.split('x');
+            // workaround - prevent full deletion of canvas
+            if (this.normal_canvas === false)
+               this.normal_canvas = true;
             this.cleanPrimitives(true);
             if (arr.length === 1)
                this.divide(Number.parseInt(arr[0]));
