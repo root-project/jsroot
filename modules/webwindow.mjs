@@ -613,7 +613,7 @@ class WebWindowHandle {
 
          if (this.#ws) {
             this.#ws.close();
-            this.#ws = undefined
+            this.#ws = undefined;
          }
 
          if (!href) {
@@ -626,7 +626,7 @@ class WebWindowHandle {
          this.href = href;
          ntry++;
 
-         //if (first_time)
+         // if (first_time)
          //   console.log(`Opening web socket at ${href}`);
 
          if (ntry > 2)
@@ -742,7 +742,7 @@ class WebWindowHandle {
                   this.invokeReceiver(true, 'onWebsocketClosed');
                } else if (msg.indexOf('NEW_KEY=') === 0) {
                   this.new_key = msg.slice(8);
-                  console.log('get new key', this.new_key);
+                  // console.log('get new key', this.new_key);
                   this.storeKeyInUrl();
                   if (this._ask_reload)
                      this.askReload(true);
@@ -760,7 +760,7 @@ class WebWindowHandle {
          };
 
          this.#ws.onclose = arg => {
-            this.#ws = undefined
+            this.#ws = undefined;
             if ((this.state > 0) || (arg === 'force_close')) {
                console.log('websocket closed');
                this.state = 0;
