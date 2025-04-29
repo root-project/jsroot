@@ -88,6 +88,9 @@ function tryOpenOpenUI(sources, args) {
    if ((src.indexOf('roothandler') === 0) && (src.indexOf('://') < 0))
       src = src.replace(/:\//g, '://');
 
+   if (settings.Debug)
+      console.log('Try openui5 from ' + src);
+
    const element = document.createElement('script');
    element.setAttribute('type', 'text/javascript');
    element.setAttribute('id', 'sap-ui-bootstrap');
