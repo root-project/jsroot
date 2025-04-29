@@ -798,25 +798,39 @@ class TCanvasPainter extends TPadPainter {
    produceJSON(spacing) {
       const canv = this.getObject();
 
-      if ((canv._typename !== clTCanvas) || !canv.fPrimitives)
+      if (canv._typename !== clTCanvas)
          return;
 
       const fill0 = (canv.fFillStyle === 0),
-            axes = [], hists = [],
-            build_primitives = (this.painters.length > 0) && !canv.fPrimitives.arr.length;
+            axes = [], hists = [], prims = [];
 
       if (fill0)
          canv.fFillStyle = 1001;
 
-      // write selected range into TAxis properties
       this.forEachPainterInPad(pp => {
+         if (pp.painters.length && pp.pad.fPrimitives && !pp.pad.fPrimitives.arr.length) {
+            // create list of primitives when missing
+            prims.push(pp.pad.fPrimitives);
+            pp.forEachPainterInPad(p => {
+               // ignore all secondary painters
+               if (p.isSecondary())
+                  return;
+               const subobj = p.getObject();
+               if (subobj?._typename)
+                  pp.pad.fPrimitives.Add(subobj, p.getDrawOpt());
+            }, 'objects');
+         }
+
          const main = pp.getMainPainter(),
                fp = pp.getFramePainter();
-         if (!isFunc(main?.getHisto) || !isFunc(main?.getDimension)) return;
+         if (!isFunc(main?.getHisto) || !isFunc(main?.getDimension))
+            return;
 
+         // write selected range into TAxis properties
          const hist = main.getHisto(),
                ndim = main.getDimension();
-         if (!hist?.fXaxis) return;
+         if (!hist?.fXaxis)
+            return;
 
          const setAxisRange = (name, axis) => {
             if (fp?.zoomChangedInteractive(name)) {
@@ -828,29 +842,16 @@ class TCanvasPainter extends TPadPainter {
          };
 
          setAxisRange('x', hist.fXaxis);
-         if (ndim > 1) setAxisRange('y', hist.fYaxis);
-         if (ndim > 2) setAxisRange('z', hist.fZaxis);
+         if (ndim > 1)
+            setAxisRange('y', hist.fYaxis);
+         if (ndim > 2)
+            setAxisRange('z', hist.fZaxis);
          if ((ndim === 2) && fp?.zoomChangedInteractive('z')) {
             hists.push({ hist, min: hist.fMinimum, max: hist.fMaximum });
             hist.fMinimum = fp.zoom_zmin ?? fp.zmin;
             hist.fMaximum = fp.zoom_zmax ?? fp.zmax;
          }
       }, 'pads');
-
-      if (build_primitives) {
-         // fill list of primitives from painters
-         this.forEachPainterInPad(p => {
-            // ignore all secondary painters
-            if (p.isSecondary())
-               return;
-            const subobj = p.getObject();
-            if (subobj?._typename)
-               canv.fPrimitives.Add(subobj, p.getDrawOpt());
-         }, 'objects');
-      }
-
-      // const fp = this.getFramePainter();
-      // fp?.setRootPadRange(this.getRootPad());
 
       const res = toJSON(canv, spacing);
 
@@ -868,8 +869,7 @@ class TCanvasPainter extends TPadPainter {
          e.hist.fMaximum = e.max;
       });
 
-      if (build_primitives)
-         canv.fPrimitives.Clear();
+      prims.forEach(lst => lst.Clear());
 
       return res;
    }
