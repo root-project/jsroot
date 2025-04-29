@@ -1382,7 +1382,7 @@ class TPadPainter extends ObjectPainter {
             menu.add('Build legend', () => this.buildLegend());
 
          menu.sub('Divide', () => menu.input('Input divide arg', '2x2').then(do_divide), 'Divide on sub-pads');
-         ['1x2', '2x1', '2x2', '2x3', '3x2', '3x3', '4x4', '0'].forEach(item => menu.add(item, item, do_divide));
+         ['1x2', '2x1', '2x2', '2x3', '3x2', '3x3', '4x4'].forEach(item => menu.add(item, item, do_divide));
          menu.endsub();
 
          menu.add('Save to gStyle', () => {
