@@ -630,7 +630,7 @@ class WebWindowHandle {
          ntry++;
 
          if (first_time && settings.Debug)
-            console.log(`Opening web socket at ${href}`);
+            console.log(`Opening websocket at ${href}`);
 
          if (ntry > 2)
             showProgress(`Trying to connect ${href}`);
@@ -746,7 +746,7 @@ class WebWindowHandle {
                } else if (msg.indexOf('NEW_KEY=') === 0) {
                   this.new_key = msg.slice(8);
                   if (settings.Debug)
-                     console.log('new key', this.new_key);
+                     console.log('Got new key', this.new_key);
                   this.storeKeyInUrl();
                   if (this.#ask_reload)
                      this.askReload(true);
