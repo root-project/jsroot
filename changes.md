@@ -2,6 +2,7 @@
 
 ## Changes in 7.9.x
 1. Fix - colz handling on `THStack`, avoid multiple palette drawings
+2. Fix - bug in pad.Divide context menu command
 
 
 ## Changes in 7.9.0
