@@ -629,8 +629,8 @@ class WebWindowHandle {
          this.href = href;
          ntry++;
 
-         // if (first_time)
-         //   console.log(`Opening web socket at ${href}`);
+         if (first_time && settings.Debug)
+            console.log(`Opening web socket at ${href}`);
 
          if (ntry > 2)
             showProgress(`Trying to connect ${href}`);
@@ -745,7 +745,8 @@ class WebWindowHandle {
                   this.invokeReceiver(true, 'onWebsocketClosed');
                } else if (msg.indexOf('NEW_KEY=') === 0) {
                   this.new_key = msg.slice(8);
-                  // console.log('get new key', this.new_key);
+                  if (settings.Debug)
+                     console.log('new key', this.new_key);
                   this.storeKeyInUrl();
                   if (this.#ask_reload)
                      this.askReload(true);
@@ -917,6 +918,9 @@ async function connectWebWindow(arg) {
       // special holder script, prevents headless chrome browser from too early exit
       if (d.has('headless') && d_key && (browser.isChromeHeadless || browser.isChrome) && !arg.ignore_chrome_batch_holder)
          loadScript('root_batch_holder.js?key=' + (new_key || d_key));
+
+      if (arg.debug || d.has('debug'))
+         settings.Debug = true;
 
       if (!arg.platform)
          arg.platform = d.get('platform');

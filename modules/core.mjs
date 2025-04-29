@@ -4,7 +4,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '28/04/2025',
+version_date = '29/04/2025',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -367,7 +367,9 @@ settings = {
    /** @summary Extra parameters which will be append to the url when item shown in new tab */
    NewTabUrlPars: '',
    /** @summary Export different settings in output URL */
-   NewTabUrlExportSettings: false
+   NewTabUrlExportSettings: false,
+   /** @summary Enable more debug output, also via 'WebGui.Debug: yes' on ROOT side */
+   Debug: false
 },
 
 /** @namespace
