@@ -2256,6 +2256,10 @@ class HierarchyPainter extends BasePainter {
          } else
             this.cleanupFrame(dom);
 
+         // if drop on sub-pad painter - call add pad buttons
+         if (isFunc(dom?.addPadButtons))
+            dom.addPadButtons();
+
          return draw(dom, res.obj, opt).then(p => drop_complete(p, mp === p));
       });
    }
