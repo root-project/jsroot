@@ -1776,7 +1776,7 @@ function getMethods(typename, obj) {
                   pad.fAbsWNDC = (x2-x1) * this.fAbsWNDC;
                   pad.fAbsHNDC = (y2-y1) * this.fAbsHNDC;
                   pad.fAbsXlowNDC = this.fAbsXlowNDC + x1 * this.fAbsWNDC;
-                  pad.fAbsYlowNDC = this.fAbsYlowNDC + y1 * this.fAbsWNDC;
+                  pad.fAbsYlowNDC = this.fAbsYlowNDC + y1 * this.fAbsHNDC;
                } else {
                   pad.fAbsWNDC = x2 - x1;
                   pad.fAbsHNDC = y2 - y1;
