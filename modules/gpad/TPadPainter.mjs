@@ -273,6 +273,14 @@ class TPadPainter extends ObjectPainter {
    /** @summary Returns true if read-only mode is enabled */
    isReadonly() { return this.#readonly; }
 
+   /** @summary Returns true if it is canvas
+    * @param {Boolean} [is_online = false] - if specified, checked if it is canvas with configured connection to server */
+   isCanvas(is_online = false) {
+      if (!this.iscan)
+         return false;
+      return is_online ? isFunc(this.getWebsocket) && this.getWebsocket() : true;
+   }
+
    /** @summary Returns SVG element for the pad itself
     * @private */
    svg_this_pad() { return this.getPadSvg(this.this_pad_name); }
@@ -835,8 +843,8 @@ class TPadPainter extends ObjectPainter {
       evnt?.preventDefault();
       evnt?.stopPropagation();
 
-      // ignore double click on canvas itself for enlarge
-      if (is_dblclick && this._websocket && (this.enlargeMain('state') === 'off'))
+      // ignore double click on online canvas itself for enlarge
+      if (is_dblclick && this.isCanvas(true) && (this.enlargeMain('state') === 'off'))
          return;
 
       const svg_can = this.getCanvSvg(),
@@ -1384,7 +1392,8 @@ class TPadPainter extends ObjectPainter {
 
       menu.addAttributesMenu(this);
 
-      if (!this._websocket) {
+      if (!this.isCanvas(true)) {
+         // if not online canvas -
          const do_divide = arg => {
             if (!arg || !isStr(arg))
                return;
