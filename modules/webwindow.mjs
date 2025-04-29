@@ -280,6 +280,8 @@ class FileDumpSocket {
 
 class WebWindowHandle {
 
+   #ws; // websocket or emulation
+
    constructor(socket_kind, credits) {
       this.kind = socket_kind;
       this.state = 0;
@@ -406,11 +408,11 @@ class WebWindowHandle {
          delete this.timerid;
       }
 
-      if (this._websocket && (this.state > 0)) {
+      if (this.#ws && (this.state > 0)) {
          this.state = force ? -1 : 0; // -1 prevent socket from reopening
-         this._websocket.onclose = null; // hide normal handler
-         this._websocket.close();
-         delete this._websocket;
+         this.#ws.onclose = null; // hide normal handler
+         this.#ws.close();
+         this.#ws = undefined;
       }
    }
 
@@ -429,7 +431,7 @@ class WebWindowHandle {
       if (this.master)
          return this.master.send(msg, this.channelid);
 
-      if (!this._websocket || (this.state <= 0))
+      if (!this.#ws || (this.state <= 0))
          return false;
 
       if (!Number.isInteger(chid))
@@ -444,7 +446,7 @@ class WebWindowHandle {
       this.ackn = 0;
       this.cansend--; // decrease number of allowed send packets
 
-      this._websocket.send(`${hash}:${prefix}${msg}`);
+      this.#ws.send(`${hash}:${prefix}${msg}`);
 
       if ((this.kind === 'websocket') || (this.kind === 'longpoll')) {
          if (this.timerid) clearTimeout(this.timerid);
@@ -603,14 +605,15 @@ class WebWindowHandle {
       let ntry = 0;
 
       const retry_open = first_time => {
-         if (this.state !== 0) return;
+         if (this.state !== 0)
+            return;
 
          if (!first_time)
             console.log(`try connect window again ${new Date().toString()}`);
 
-         if (this._websocket) {
-            this._websocket.close();
-            delete this._websocket;
+         if (this.#ws) {
+            this.#ws.close();
+            this.#ws = undefined
          }
 
          if (!href) {
@@ -623,30 +626,33 @@ class WebWindowHandle {
          this.href = href;
          ntry++;
 
-         if (first_time) console.log(`Opening web socket at ${href}`);
+         if (first_time)
+            console.log(`Opening web socket at ${href}`);
 
-         if (ntry > 2) showProgress(`Trying to connect ${href}`);
+         if (ntry > 2)
+            showProgress(`Trying to connect ${href}`);
 
          let path = href;
 
          if (this.kind === 'file') {
             path += 'root.filedump';
-            this._websocket = new FileDumpSocket(this);
+            this.#ws = new FileDumpSocket(this);
             console.log(`configure protocol log ${path}`);
          } else if ((this.kind === 'websocket') && first_time) {
             path = path.replace('http://', 'ws://').replace('https://', 'wss://') + 'root.websocket';
             console.log(`configure websocket ${path}`);
             path += '?' + this.getConnArgs(ntry);
-            this._websocket = new WebSocket(path);
+            this.#ws = new WebSocket(path);
          } else {
             path += 'root.longpoll';
             console.log(`configure longpoll ${path}`);
-            this._websocket = new LongPollSocket(path, (this.kind === 'rawlongpoll'), this, ntry);
+            this.#ws = new LongPollSocket(path, (this.kind === 'rawlongpoll'), this, ntry);
          }
 
-         if (!this._websocket) return;
+         if (!this.#ws)
+            return;
 
-         this._websocket.onopen = () => {
+         this.#ws.onopen = () => {
             if (ntry > 2) showProgress();
             this.state = 1;
 
@@ -655,7 +661,7 @@ class WebWindowHandle {
             this.invokeReceiver(false, 'onWebsocketOpened');
          };
 
-         this._websocket.onmessage = e => {
+         this.#ws.onmessage = e => {
             let msg = e.data;
 
             if (this.next_binary) {
@@ -753,8 +759,8 @@ class WebWindowHandle {
                this.send('READY', 0); // send dummy message to server
          };
 
-         this._websocket.onclose = arg => {
-            delete this._websocket;
+         this.#ws.onclose = arg => {
+            this.#ws = undefined
             if ((this.state > 0) || (arg === 'force_close')) {
                console.log('websocket closed');
                this.state = 0;
@@ -762,7 +768,7 @@ class WebWindowHandle {
             }
          };
 
-         this._websocket.onerror = err => {
+         this.#ws.onerror = err => {
             console.log(`websocket error ${err} state ${this.state}`);
             if (this.state > 0) {
                this.invokeReceiver(true, 'onWebsocketError', err);
