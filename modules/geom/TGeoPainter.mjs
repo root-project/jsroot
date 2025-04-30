@@ -4175,8 +4175,8 @@ class TGeoPainter extends ObjectPainter {
       this._worker_ready = false;
       this._worker_jobs = 0; // counter how many requests send to worker
 
-      // TODO: modules not yet working, see https://www.codedread.com/blog/archives/2017/10/19/web-workers-can-be-es6-modules-too/
-      this._worker = new Worker(source_dir + 'scripts/geoworker.js' /* , { type: 'module' } */);
+      // Finally use ES6 module, see https://www.codedread.com/blog/archives/2017/10/19/web-workers-can-be-es6-modules-too/
+      this._worker = new Worker(source_dir + 'modules/geom/geoworker.mjs' , { type: 'module' });
 
       this._worker.onmessage = e => {
          if (!e.data || !isObject(e.data))

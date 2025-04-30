@@ -1,18 +1,8 @@
+import { THREE } from '../base/base3d.mjs';
+import { ClonedNodes, createFrustum } from './geobase.mjs';
 
-let THREE,  ClonedNodes, createFrustum;
-
-import('../modules/base/base3d.mjs').then(handle => {
-   THREE = handle.THREE;
-   if (console) console.log(`geoworker started three.js r${THREE.REVISION}`);
-});
-
-import('../modules/geom/geobase.mjs').then(handle => {
-   ClonedNodes = handle.ClonedNodes;
-   createFrustum = handle.createFrustum;
-});
-
-// importScripts("three.min.js", "JSRoot.csg.js", "JSRoot.geobase.js");
-
+if (typeof console !== 'undefined')
+   console.log(`geoworker started three.js r${THREE.REVISION}`);
 
 let clones = null;
 
@@ -23,7 +13,8 @@ onmessage = function(e) {
       return;
    }
 
-   if (typeof e.data != 'object') return;
+   if (typeof e.data != 'object')
+      return;
 
    // simple workaround to wait until modules are loaded
    if (!THREE || !ClonedNodes)
