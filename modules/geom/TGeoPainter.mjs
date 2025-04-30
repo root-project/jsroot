@@ -365,6 +365,10 @@ const stageInit = 0, stageCollect = 1, stageWorkerCollect = 2, stageAnalyze = 3,
 
 class TGeoPainter extends ObjectPainter {
 
+   #worker;       // extra Worker to run different calculations
+   #worker_ready; // is worker started and initialized
+   #worker_jobs;  // number of submitted to worker jobs
+
    /** @summary Constructor
      * @param {object|string} dom - DOM element for drawing or element id
      * @param {object} obj - supported TGeo object */
@@ -2114,11 +2118,11 @@ class TGeoPainter extends ObjectPainter {
 
          // wait until worker is really started
          if (this.ctrl.use_worker > 0) {
-            if (!this._worker) {
+            if (!this.#worker) {
                this.startWorker();
                return 1;
             }
-            if (!this._worker_ready)
+            if (!this.#worker_ready)
                return 1;
          }
 
@@ -2156,10 +2160,10 @@ class TGeoPainter extends ObjectPainter {
             need_worker = false;
          }
 
-         if (need_worker && !this._worker && (this.ctrl.use_worker >= 0))
+         if (need_worker && !this.#worker && (this.ctrl.use_worker >= 0))
             this.startWorker(); // we starting worker, but it may not be ready so fast
 
-         if (!need_worker || !this._worker_ready) {
+         if (!need_worker || !this.#worker_ready) {
             const res = this._clones.collectVisibles(this._current_face_limit, frustum);
             this._new_draw_nodes = res.lst;
             this._draw_all_nodes = res.complete;
@@ -4170,11 +4174,11 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Start geo worker */
    async startWorker() {
-      if (this._worker)
+      if (this.#worker)
          return;
 
-      this._worker_ready = false;
-      this._worker_jobs = 0; // counter how many requests send to worker
+      this.#worker_ready = false;
+      this.#worker_jobs = 0; // counter how many requests send to worker
 
       let pr;
 
@@ -4192,7 +4196,7 @@ class TGeoPainter extends ObjectPainter {
       }
 
       return pr.then(wrk => {
-         this._worker = wrk;
+         this.#worker = wrk;
          // send initialization message with clones
          wrk.postMessage({
             init: true,   // indicate init command for worker
@@ -4208,20 +4212,18 @@ class TGeoPainter extends ObjectPainter {
    /** @summary check if one can submit request to worker
      * @private */
    canSubmitToWorker(force) {
-      if (!this._worker)
-         return false;
-
-      return this._worker_ready && ((this._worker_jobs === 0) || force);
+      return this.#worker ? this.#worker_ready && ((this.#worker_jobs === 0) || force) : false;
    }
 
    /** @summary submit request to worker
      * @private */
    submitToWorker(job) {
-      if (!this._worker) return false;
+      if (!this.#worker)
+         return false;
 
-      this._worker_jobs++;
+      this.#worker_jobs++;
       job.tm0 = new Date().getTime();
-      this._worker.postMessage(job);
+      this.#worker.postMessage(job);
    }
 
    /** @summary process reply from worker
@@ -4239,11 +4241,11 @@ class TGeoPainter extends ObjectPainter {
       job.tm3 = new Date().getTime();
 
       if (job.init) {
-         this._worker_ready = true;
+         this.#worker_ready = true;
          return;
       }
 
-      this._worker_jobs--;
+      this.#worker_jobs--;
 
       if ('collect' in job) {
          this._new_draw_nodes = job.new_nodes;
@@ -5011,7 +5013,7 @@ class TGeoPainter extends ObjectPainter {
 
          this._gui?.destroy();
 
-         this._worker?.terminate();
+         this.#worker?.terminate();
 
          delete this._animating;
 
@@ -5103,7 +5105,7 @@ class TGeoPainter extends ObjectPainter {
       delete this._context_menu;
       delete this._toolbar;
 
-      delete this._worker;
+      this.#worker = undefined;
    }
 
    /** @summary perform resize */
