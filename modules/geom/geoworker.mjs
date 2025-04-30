@@ -12,4 +12,4 @@ onmessage = function(e) {
    }
 
    runGeoWorker(ctxt, e.data, postMessage);
-}
+};

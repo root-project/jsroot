@@ -1,4 +1,4 @@
-import { isObject, isFunc, BIT } from '../core.mjs';
+import { isObject, isFunc, isStr, BIT } from '../core.mjs';
 import { THREE } from '../base/base3d.mjs';
 import { createBufferGeometry, createNormal,
          Vertex as CsgVertex, Geometry as CsgGeometry, Polygon as CsgPolygon } from './csg.mjs';
@@ -4091,12 +4091,12 @@ function getShapeIcon(shape) {
 }
 
 function runGeoWorker(ctxt, data, doPost) {
-   if (typeof data == 'string') {
+   if (isStr(data)) {
       console.log(`Worker get message ${data}`);
       return;
    }
 
-   if (typeof data != 'object')
+   if (!isObject(data))
       return;
 
    data.tm1 = new Date().getTime();
@@ -4104,14 +4104,13 @@ function runGeoWorker(ctxt, data, doPost) {
    if (data.init) {
       // console.log(`start worker ${data.tm1 -  data.tm0}`);
 
-      let nodes = data.clones;
-      if (nodes) {
+      if (data.clones) {
          // console.log(`get clones ${nodes.length}`);
-         ctxt.clones = new ClonedNodes(null, nodes);
+         ctxt.clones = new ClonedNodes(null, data.clones);
          ctxt.clones.setVisLevel(data.vislevel);
          ctxt.clones.setMaxVisNodes(data.maxvisnodes);
-         delete data.clones;
          ctxt.clones.sortmap = data.sortmap;
+         delete data.clones;
       }
 
       data.tm2 = new Date().getTime();
@@ -4122,26 +4121,24 @@ function runGeoWorker(ctxt, data, doPost) {
    if (data.shapes) {
       // this is task to create geometries in the worker
 
-      let shapes = data.shapes, transferables = [];
+      const shapes = data.shapes, transferables = [];
 
       // build all shapes up to specified limit, also limit execution time
       for (let n = 0; n < 100; ++n) {
-         let res = ctxt.clones.buildShapes(shapes, data.limit, 1000);
+         const res = ctxt.clones.buildShapes(shapes, data.limit, 1000);
          if (res.done) break;
-         doPost({ progress: "Worker creating: " + res.shapes + " / " + shapes.length + " shapes,  "  + res.faces + " faces" });
+         doPost({ progress: `Worker creating: ${res.shapes} / ${shapes.length} shapes, ${res.faces} faces` });
       }
 
-      for (let n=0;n<shapes.length;++n) {
-         let item = shapes[n];
+      for (let n = 0; n < shapes.length; ++n) {
+         const item = shapes[n];
 
          if (item.geom) {
             let bufgeom;
-            if (item.geom instanceof THREE.BufferGeometry) {
+            if (item.geom instanceof THREE.BufferGeometry)
                bufgeom = item.geom;
-            } else {
-               let bufgeom = new THREE.BufferGeometry();
-               bufgeom.fromGeometry(item.geom);
-            }
+            else
+               bufgeom = new THREE.BufferGeometry().fromGeometry(item.geom);
 
             item.buf_pos = bufgeom.attributes.position.array;
             item.buf_norm = bufgeom.attributes.normal.array;
@@ -4179,7 +4176,7 @@ function runGeoWorker(ctxt, data, doPost) {
          matrix = new THREE.Matrix4().fromArray(data.matrix);
       delete data.matrix;
 
-      let res = ctxt.clones.collectVisibles(data.collect, createFrustum(matrix));
+      const res = ctxt.clones.collectVisibles(data.collect, createFrustum(matrix));
 
       data.new_nodes = res.lst;
       data.complete = res.complete; // inform if all nodes are selected

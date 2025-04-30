@@ -4180,13 +4180,13 @@ class TGeoPainter extends ObjectPainter {
 
       if (isNodeJs()) {
          pr = import('node:worker_threads').then(h => {
-            const wrk = new h.Worker(source_dir.slice(7) + 'modules/geom/nodeworker.mjs' , { type: 'module' });
+            const wrk = new h.Worker(source_dir.slice(7) + 'modules/geom/nodeworker.mjs', { type: 'module' });
             wrk.on('message', msg => this.processWorkerReply(msg));
             return wrk;
-         })
+         });
       } else {
          // Finally use ES6 module, see https://www.codedread.com/blog/archives/2017/10/19/web-workers-can-be-es6-modules-too/
-         const wrk = new Worker(source_dir + 'modules/geom/geoworker.mjs' , { type: 'module' });
+         const wrk = new Worker(source_dir + 'modules/geom/geoworker.mjs', { type: 'module' });
          wrk.onmessage = e => this.processWorkerReply(e?.data);
          pr = Promise.resolve(wrk);
       }
@@ -4202,7 +4202,6 @@ class TGeoPainter extends ObjectPainter {
             clones: this._clones.nodes,
             sortmap: this._clones.sortmap
          });
-
       });
    }
 
@@ -4228,7 +4227,6 @@ class TGeoPainter extends ObjectPainter {
    /** @summary process reply from worker
      * @private */
    processWorkerReply(job) {
-
       if (!job || !isObject(job))
          return;
 
