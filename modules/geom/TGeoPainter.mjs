@@ -373,8 +373,8 @@ class TGeoPainter extends ObjectPainter {
    #draw_nodes;   // drawn nodes from geometry
    #build_shapes; // build shapes required for drawings
    #drawing_ready; // if drawing completed
-
    #new_draw_nodes; // temporary list of new draw nodes
+   #new_append_nodes; // temporary list of new append nodes
 
    /** @summary Constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -2216,10 +2216,10 @@ class TGeoPainter extends ObjectPainter {
          // here we merge new and old list of nodes for drawing,
          // normally operation is fast and can be implemented with one c
 
-         if (this._new_append_nodes) {
-            this.#new_draw_nodes = this.#draw_nodes.concat(this._new_append_nodes);
+         if (this.#new_append_nodes) {
+            this.#new_draw_nodes = this.#draw_nodes.concat(this.#new_append_nodes);
 
-            delete this._new_append_nodes;
+            this.#new_append_nodes = undefined;
          } else if (this.#draw_nodes) {
             let del;
             if (this._geom_viewer)
@@ -3878,7 +3878,7 @@ class TGeoPainter extends ObjectPainter {
          return null;
 
       if (name_prefix === '__geom_viewer_append__') {
-         this._new_append_nodes = draw_obj;
+         this.#new_append_nodes = draw_obj;
          this.ctrl.use_worker = 0;
          this._geom_viewer = true; // indicate that working with geom viewer
       } else if ((name_prefix === '__geom_viewer_selection__') && this.#clones) {
@@ -4887,8 +4887,7 @@ class TGeoPainter extends ObjectPainter {
          check_extras = false;
          // if extra object where append, redraw them at the end
          this.getExtrasContainer('delete'); // delete old container
-         const extras = (this._master_painter ? this._master_painter._extraObjects : null) || this._extraObjects;
-         promise = this.drawExtras(extras, '', false);
+         promise = this.drawExtras(this._master_painter?._extraObjects || this._extraObjects, '', false);
       } else if ((this._first_drawing || this._full_redrawing) && this.ctrl.tracks && this.geo_manager)
          promise = this.drawExtras(this.geo_manager.fTracks, '<prnt>/Tracks');
       else
@@ -4929,8 +4928,7 @@ class TGeoPainter extends ObjectPainter {
          if (check_extras) {
             // if extra object where append, redraw them at the end
             this.getExtrasContainer('delete'); // delete old container
-            const extras = this._master_painter?._extraObjects || this._extraObjects;
-            return this.drawExtras(extras, '', false);
+            return this.drawExtras(this._master_painter?._extraObjects || this._extraObjects, '', false);
          }
       }).then(() => {
          this.updateClipping(true); // do not render
@@ -5048,7 +5046,8 @@ class TGeoPainter extends ObjectPainter {
 
          for (let k = 0; k < this._slave_painters?.length; ++k) {
             const slave = this._slave_painters[k];
-            if (slave?._master_painter === this) slave._master_painter = null;
+            if (slave?._master_painter === this)
+               slave._master_painter = null;
          }
 
          delete this.geo_manager;
@@ -5061,7 +5060,8 @@ class TGeoPainter extends ObjectPainter {
 
          this.did_cleanup = true;
 
-         if (can3d < 0) this.selectDom().html('');
+         if (can3d < 0)
+            this.selectDom().html('');
       }
 
       this._slave_painters?.forEach(slave => {
@@ -5099,7 +5099,7 @@ class TGeoPainter extends ObjectPainter {
 
       this.assignClones(undefined, undefined);
       this.#new_draw_nodes = undefined;
-      delete this._new_append_nodes;
+      this.#new_append_nodes = undefined;
       delete this._last_camera_position;
 
       this.first_render_tm = 0; // time needed for first rendering
