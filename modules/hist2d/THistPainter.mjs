@@ -2018,7 +2018,7 @@ class THistPainter extends ObjectPainter {
    }
 
    /** @summary Return Z-scale ranges to create contour */
-   getContourRanges(main, fp) {
+   #getContourRanges(main, fp) {
       const src = (this !== main) && ((main?.minbin !== undefined) || main?.options.ohmin) && !this.options.IgnoreMainScale && !main?.tt_handle?.ScatterPlot ? main : this;
       let apply_min, zmin = src.minbin, zmax = src.maxbin, zminpos = src.minposbin;
 
@@ -2071,7 +2071,7 @@ class THistPainter extends ObjectPainter {
       // difference from ROOT - fContour includes also last element with maxbin, which makes easier to build logz
       // when no same0 draw option specified, use main painter for creating contour, also ignore scatter drawing for main painter
       const histo = this.getObject(),
-            r = this.getContourRanges(main, fp);
+            r = this.#getContourRanges(main, fp);
       let nlevels = 0, custom_levels;
 
       if (histo.fContour?.length > 1) {
@@ -2561,7 +2561,7 @@ class THistPainter extends ObjectPainter {
       this.fContour = null;
 
       if (args.zrange)
-         Object.assign(res, this.getContourRanges(this.getMainPainter(), this.getFramePainter()));
+         Object.assign(res, this.#getContourRanges(this.getMainPainter(), this.getFramePainter()));
 
       return res;
    }
@@ -2591,23 +2591,15 @@ class THistPainter extends ObjectPainter {
             res = { low: err, up: err },
             kind = this.options.Poisson || histo.fBinStatErrOpt;
 
-      if (!kind || (histo.fSumw2.fN && histo.fTsumw !== histo.fTsumw2))
+      if (!kind || (histo.fSumw2.fN && histo.fTsumw !== histo.fTsumw2) || (content < 0))
          return res;
 
       const alpha = (kind === kPoisson2) ? 0.05 : 1 - 0.682689492,
             n = Math.round(content);
 
-      if (content < 0)
-         return res;
-
       res.poisson = true; // indicate poisson error
-
-      if (n === 0)
-         res.low = 0;
-      else
-         res.low = content - gamma_quantile(alpha/2, n, 1);
-
-      res.up = gamma_quantile_c(alpha/2, n + 1, 1) - content;
+      res.low = (n === 0) ? 0 : content - gamma_quantile(alpha / 2, n, 1);
+      res.up = gamma_quantile_c(alpha / 2, n + 1, 1) - content;
       return res;
    }
 
