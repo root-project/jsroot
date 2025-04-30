@@ -3857,7 +3857,6 @@ class TGeoPainter extends ObjectPainter {
       } else if (this._master_painter) {
          this._clones_owner = false;
          this._clones = this._master_painter._clones;
-         console.log(`Reuse clones ${this._clones.nodes.length} from main painter`);
       } else if (!draw_obj) {
          this._clones_owner = false;
          this._clones = null;
@@ -3891,7 +3890,7 @@ class TGeoPainter extends ObjectPainter {
 
          const spent = new Date().getTime() - this._start_drawing_time;
 
-         if (!this._scene)
+         if (!this._scene && (settings.Debug || spent > 1000))
             console.log(`Creating clones ${this._clones.nodes.length} takes ${spent} ms uniquevis ${uniquevis}`);
 
          if (this.ctrl._count)
@@ -4037,7 +4036,7 @@ class TGeoPainter extends ObjectPainter {
 
       const take_time = now - this._startm;
 
-      if (this._first_drawing || this._full_redrawing)
+      if ((this._first_drawing || this._full_redrawing) && (settings.Debug || take_time > 1000))
          console.log(`Create tm = ${take_time} meshes ${this.ctrl.info.num_meshes} faces ${this.ctrl.info.num_faces}`);
 
       if (take_time > 300) {
