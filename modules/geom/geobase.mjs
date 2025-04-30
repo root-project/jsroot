@@ -4090,9 +4090,110 @@ function getShapeIcon(shape) {
    return 'img_geotube';
 }
 
+function runGeoWorker(ctxt, data, doPost) {
+   if (typeof data == 'string') {
+      console.log(`Worker get message ${data}`);
+      return;
+   }
+
+   if (typeof data != 'object')
+      return;
+
+   data.tm1 = new Date().getTime();
+
+   if (data.init) {
+      // console.log(`start worker ${data.tm1 -  data.tm0}`);
+
+      let nodes = data.clones;
+      if (nodes) {
+         // console.log(`get clones ${nodes.length}`);
+         ctxt.clones = new ClonedNodes(null, nodes);
+         ctxt.clones.setVisLevel(data.vislevel);
+         ctxt.clones.setMaxVisNodes(data.maxvisnodes);
+         delete data.clones;
+         ctxt.clones.sortmap = data.sortmap;
+      }
+
+      data.tm2 = new Date().getTime();
+
+      return doPost(data);
+   }
+
+   if (data.shapes) {
+      // this is task to create geometries in the worker
+
+      let shapes = data.shapes, transferables = [];
+
+      // build all shapes up to specified limit, also limit execution time
+      for (let n = 0; n < 100; ++n) {
+         let res = ctxt.clones.buildShapes(shapes, data.limit, 1000);
+         if (res.done) break;
+         doPost({ progress: "Worker creating: " + res.shapes + " / " + shapes.length + " shapes,  "  + res.faces + " faces" });
+      }
+
+      for (let n=0;n<shapes.length;++n) {
+         let item = shapes[n];
+
+         if (item.geom) {
+            let bufgeom;
+            if (item.geom instanceof THREE.BufferGeometry) {
+               bufgeom = item.geom;
+            } else {
+               let bufgeom = new THREE.BufferGeometry();
+               bufgeom.fromGeometry(item.geom);
+            }
+
+            item.buf_pos = bufgeom.attributes.position.array;
+            item.buf_norm = bufgeom.attributes.normal.array;
+
+            // use nice feature of HTML workers with transferable
+            // we allow to take ownership of buffer from local array
+            // therefore buffer content not need to be copied
+            transferables.push(item.buf_pos.buffer, item.buf_norm.buffer);
+
+            delete item.geom;
+         }
+
+         delete item.shape; // no need to send back shape
+      }
+
+      data.tm2 = new Date().getTime();
+
+      return doPost(data, transferables);
+   }
+
+   if (data.collect !== undefined) {
+      // this is task to collect visible nodes using camera position
+
+      // first mark all visible flags
+      ctxt.clones.setVisibleFlags(data.flags);
+      ctxt.clones.setVisLevel(data.vislevel);
+      ctxt.clones.setMaxVisNodes(data.maxvisnodes);
+
+      delete data.flags;
+
+      ctxt.clones.produceIdShifts();
+
+      let matrix = null;
+      if (data.matrix)
+         matrix = new THREE.Matrix4().fromArray(data.matrix);
+      delete data.matrix;
+
+      let res = ctxt.clones.collectVisibles(data.collect, createFrustum(matrix));
+
+      data.new_nodes = res.lst;
+      data.complete = res.complete; // inform if all nodes are selected
+
+      data.tm2 = new Date().getTime();
+
+      return doPost(data);
+   }
+}
+
 export { kindGeo, kindEve, kindShape,
          clTGeoBBox, clTGeoCompositeShape,
          geoCfg, geoBITS, ClonedNodes, isSameStack, checkDuplicates, getObjectName, testGeoBit, setGeoBit, toggleGeoBit,
          setInvisibleAll, countNumShapes, getNodeKind, produceRenderOrder, createFlippedGeom, createFlippedMesh, cleanupShape,
          createGeometry, numGeometryFaces, numGeometryVertices, createServerGeometry, createMaterial,
-         projectGeometry, countGeometryFaces, createFrustum, createProjectionMatrix, getBoundingBox, provideObjectInfo, getShapeIcon };
+         projectGeometry, countGeometryFaces, createFrustum, createProjectionMatrix,
+         getBoundingBox, provideObjectInfo, getShapeIcon, runGeoWorker };
