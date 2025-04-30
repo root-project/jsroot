@@ -370,6 +370,11 @@ class TGeoPainter extends ObjectPainter {
    #worker_jobs;  // number of submitted to worker jobs
    #clones;       // instance of ClonedNodes
    #clones_owner; // is instance managed by the painter
+   #draw_nodes;   // drawn nodes from geometry
+   #build_shapes; // build shapes required for drawings
+   #drawing_ready; // if drawing completed
+
+   #new_draw_nodes; // temporary list of new draw nodes
 
    /** @summary Constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -975,10 +980,10 @@ class TGeoPainter extends ObjectPainter {
     * @desc Used by ROOT geometry painter, where clones are handled by the server */
    assignClones(clones, owner = true) {
       if (this.#clones_owner)
-         this.#clones?.cleanup(this._draw_nodes, this._build_shapes);
-      this._draw_nodes = undefined;
-      this._build_shapes = undefined;
-      this._drawing_ready = undefined;
+         this.#clones?.cleanup(this.#draw_nodes, this.#build_shapes);
+      this.#draw_nodes = undefined;
+      this.#build_shapes = undefined;
+      this.#drawing_ready = false;
 
       this.#clones = clones;
       this.#clones_owner = owner;
@@ -2181,7 +2186,7 @@ class TGeoPainter extends ObjectPainter {
 
          if (!need_worker || !this.#worker_ready) {
             const res = this.#clones.collectVisibles(this._current_face_limit, frustum);
-            this._new_draw_nodes = res.lst;
+            this.#new_draw_nodes = res.lst;
             this._draw_all_nodes = res.complete;
             this.changeStage(stageAnalyze);
             return true;
@@ -2212,15 +2217,15 @@ class TGeoPainter extends ObjectPainter {
          // normally operation is fast and can be implemented with one c
 
          if (this._new_append_nodes) {
-            this._new_draw_nodes = this._draw_nodes.concat(this._new_append_nodes);
+            this.#new_draw_nodes = this.#draw_nodes.concat(this._new_append_nodes);
 
             delete this._new_append_nodes;
-         } else if (this._draw_nodes) {
+         } else if (this.#draw_nodes) {
             let del;
             if (this._geom_viewer)
-               del = this._draw_nodes;
+               del = this.#draw_nodes;
             else
-               del = this.#clones.mergeVisibles(this._new_draw_nodes, this._draw_nodes);
+               del = this.#clones.mergeVisibles(this.#new_draw_nodes, this.#draw_nodes);
 
             // remove should be fast, do it here
             for (let n = 0; n < del.length; ++n)
@@ -2230,18 +2235,18 @@ class TGeoPainter extends ObjectPainter {
                this.drawing_log = `Delete ${del.length} nodes`;
          }
 
-         this._draw_nodes = this._new_draw_nodes;
-         delete this._new_draw_nodes;
+         this.#draw_nodes = this.#new_draw_nodes;
+         this.#new_draw_nodes = undefined;
          this.changeStage(stageCollShapes);
          return true;
       }
 
       if (this.isStage(stageCollShapes)) {
          // collect shapes
-         const shapes = this.#clones.collectShapes(this._draw_nodes);
+         const shapes = this.#clones.collectShapes(this.#draw_nodes);
 
          // merge old and new list with produced shapes
-         this._build_shapes = this.#clones.mergeShapesLists(this._build_shapes, shapes);
+         this.#build_shapes = this.#clones.mergeShapesLists(this.#build_shapes, shapes);
 
          this.changeStage(stageStartBuild);
          return true;
@@ -2254,8 +2259,8 @@ class TGeoPainter extends ObjectPainter {
          if (this.canSubmitToWorker()) {
             const job = { limit: this._current_face_limit, shapes: [] };
             let cnt = 0;
-            for (let n = 0; n < this._build_shapes.length; ++n) {
-               const item = this._build_shapes[n];
+            for (let n = 0; n < this.#build_shapes.length; ++n) {
+               const item = this.#build_shapes[n];
                // only submit not-done items
                if (item.ready || item.geom) {
                   // this is place holder for existing geometry
@@ -2286,13 +2291,13 @@ class TGeoPainter extends ObjectPainter {
          if (this.isStage(stageBuild)) {
             // building shapes
 
-            const res = this.#clones.buildShapes(this._build_shapes, this._current_face_limit, 500);
+            const res = this.#clones.buildShapes(this.#build_shapes, this._current_face_limit, 500);
             if (res.done) {
-               this.ctrl.info.num_shapes = this._build_shapes.length;
+               this.ctrl.info.num_shapes = this.#build_shapes.length;
                this.changeStage(stageBuildReady);
             } else {
                this.ctrl.info.num_shapes = res.shapes;
-               this.drawing_log = `Creating: ${res.shapes} / ${this._build_shapes.length} shapes,  ${res.faces} faces`;
+               this.drawing_log = `Creating: ${res.shapes} / ${this.#build_shapes.length} shapes,  ${res.faces} faces`;
                return true;
                // if (res.notusedshapes < 30) return true;
             }
@@ -2305,15 +2310,15 @@ class TGeoPainter extends ObjectPainter {
          let build_instanced = false, ready = true;
 
          if (!this.ctrl.project)
-            build_instanced = this.#clones.createInstancedMeshes(this.ctrl, toplevel, this._draw_nodes, this._build_shapes, getRootColors());
+            build_instanced = this.#clones.createInstancedMeshes(this.ctrl, toplevel, this.#draw_nodes, this.#build_shapes, getRootColors());
 
          if (!build_instanced) {
-            for (let n = 0; n < this._draw_nodes.length; ++n) {
-               const entry = this._draw_nodes[n];
+            for (let n = 0; n < this.#draw_nodes.length; ++n) {
+               const entry = this.#draw_nodes[n];
                if (entry.done) continue;
 
                // shape can be provided with entry itself
-               const shape = entry.server_shape || this._build_shapes[entry.shapeid];
+               const shape = entry.server_shape || this.#build_shapes[entry.shapeid];
 
                this.createEntryMesh(entry, shape, toplevel);
 
@@ -2343,7 +2348,8 @@ class TGeoPainter extends ObjectPainter {
             this.changeStage(stageInit, 'Lost main painter');
             return false;
          }
-         if (!this._master_painter._drawing_ready) return 1;
+         if (!this._master_painter.isDrawingReady())
+            return 1;
 
          this.changeStage(stageBuildProj); // just do projection
       }
@@ -2421,11 +2427,7 @@ class TGeoPainter extends ObjectPainter {
    getProjectionSource() {
       if (this.#clones_owner)
          return this._full_geom;
-      if (!this._master_painter) {
-         console.warn('MAIN PAINTER DISAPPER');
-         return null;
-      }
-      if (!this._master_painter._drawing_ready) {
+      if (!this._master_painter?.isDrawingReady()) {
          console.warn('MAIN PAINTER NOT READY WHEN DO PROJECTION');
          return null;
       }
@@ -2724,7 +2726,7 @@ class TGeoPainter extends ObjectPainter {
       this._last_render_tm = this._startm;
       this._last_render_meshes = 0;
       this.changeStage(stageCollect);
-      this._drawing_ready = false;
+      this.#drawing_ready = false;
       this.ctrl.info.num_meshes = 0;
       this.ctrl.info.num_faces = 0;
       this.ctrl.info.num_shapes = 0;
@@ -3707,6 +3709,18 @@ class TGeoPainter extends ObjectPainter {
       return res;
    }
 
+   /** @summary Search for created shape for nodeid
+    * @desc Used in ROOT geometry painter */
+   findNodeShape(nodeid) {
+      if ((nodeid !== undefined) && !this.#draw_nodes) {
+         for (let k = 0; k < this.#draw_nodes.length; ++k) {
+            const item = this.geo_painter._draw_nodes[k];
+            if ((item.nodeid === nodeid) && item.server_shape)
+               return item.server_shape;
+         }
+      }
+   }
+
    /** @summary Process script option - load and execute some gGeoManager-related calls */
    async loadMacro(script_name) {
       const result = { obj: this.getGeometry(), prefix: '' };
@@ -3869,14 +3883,14 @@ class TGeoPainter extends ObjectPainter {
          this._geom_viewer = true; // indicate that working with geom viewer
       } else if ((name_prefix === '__geom_viewer_selection__') && this.#clones) {
          // these are selection done from geom viewer
-         this._new_draw_nodes = draw_obj;
+         this.#new_draw_nodes = draw_obj;
          this.ctrl.use_worker = 0;
          this._geom_viewer = true; // indicate that working with geom viewer
-      } else if (this._master_painter) {
+      } else if (this._master_painter)
          this.assignClones(this._master_painter.getClones(), false);
-      } else if (!draw_obj) {
+      else if (!draw_obj)
          this.assignClones(undefined, undefined);
-      } else {
+      else {
          this._start_drawing_time = new Date().getTime();
          this.assignClones(new ClonedNodes(draw_obj), true);
          let lvl = this.ctrl.vislevel, maxnodes = this.ctrl.maxnodes;
@@ -4254,7 +4268,7 @@ class TGeoPainter extends ObjectPainter {
       this.#worker_jobs--;
 
       if ('collect' in job) {
-         this._new_draw_nodes = job.new_nodes;
+         this.#new_draw_nodes = job.new_nodes;
          this._draw_all_nodes = job.complete;
          this.changeStage(stageAnalyze);
          // invoke methods immediately
@@ -4264,7 +4278,7 @@ class TGeoPainter extends ObjectPainter {
       if ('shapes' in job) {
          for (let n=0; n<job.shapes.length; ++n) {
             const item = job.shapes[n],
-                origin = this._build_shapes[n];
+                  origin = this.#build_shapes[n];
 
             if (item.buf_pos && item.buf_norm) {
                if (item.buf_pos.length === 0)
@@ -4954,33 +4968,31 @@ class TGeoPainter extends ObjectPainter {
          if (this._draw_nodes_again)
             this.startDrawGeometry(); // relaunch drawing
          else
-            this._drawing_ready = true; // indicate that drawing is completed
+            this.#drawing_ready = true; // indicate that drawing is completed
 
          return this;
       });
    }
 
    /** @summary Returns true if geometry drawing is completed */
-   isDrawingReady() {
-      return this._drawing_ready || false;
-   }
+   isDrawingReady() { return this.#drawing_ready ?? false; }
 
    /** @summary Remove already drawn node. Used by geom viewer */
    removeDrawnNode(nodeid) {
-      if (!this._draw_nodes) return;
+      if (!this.#draw_nodes) return;
 
       const new_nodes = [];
 
-      for (let n = 0; n < this._draw_nodes.length; ++n) {
-         const entry = this._draw_nodes[n];
+      for (let n = 0; n < this.#draw_nodes.length; ++n) {
+         const entry = this.#draw_nodes[n];
          if ((entry.nodeid === nodeid) || this.#clones.isIdInStack(nodeid, entry.stack))
             this.#clones.createObject3D(entry.stack, this._toplevel, 'delete_mesh');
           else
             new_nodes.push(entry);
       }
 
-      if (new_nodes.length < this._draw_nodes.length) {
-         this._draw_nodes = new_nodes;
+      if (new_nodes.length < this.#draw_nodes.length) {
+         this.#draw_nodes = new_nodes;
          this.render3D();
       }
    }
@@ -5086,7 +5098,7 @@ class TGeoPainter extends ObjectPainter {
       delete this._selected_mesh;
 
       this.assignClones(undefined, undefined);
-      delete this._new_draw_nodes;
+      this.#new_draw_nodes = undefined;
       delete this._new_append_nodes;
       delete this._last_camera_position;
 
