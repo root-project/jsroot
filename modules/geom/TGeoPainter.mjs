@@ -368,6 +368,8 @@ class TGeoPainter extends ObjectPainter {
    #worker;       // extra Worker to run different calculations
    #worker_ready; // is worker started and initialized
    #worker_jobs;  // number of submitted to worker jobs
+   #clones;       // instance of ClonedNodes
+   #clones_owner; // is instance managed by the painter
 
    /** @summary Constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -966,47 +968,61 @@ class TGeoPainter extends ObjectPainter {
       }
    }
 
+   /** @summary  Return ClonedNodes instance from the painter */
+   getClones() { return this.#clones; }
+
+   /** @summary Assign clones, created outside.
+    * @desc Used by ROOT geometry painter, where clones are handled by the server */
+   assignClones(clones, owner = true) {
+      if (this.#clones_owner)
+         this.#clones?.cleanup(this._draw_nodes, this._build_shapes);
+      this._draw_nodes = undefined;
+      this._build_shapes = undefined;
+      this._drawing_ready = undefined;
+
+      this.#clones = clones;
+      this.#clones_owner = owner;
+   }
+
    /** @summary  method used to check matrix calculations performance with current three.js model */
    testMatrixes() {
       let errcnt = 0, totalcnt = 0, totalmax = 0;
 
       const arg = {
-            domatrix: true,
-            func: (/* node */) => {
-               let m2 = this.getmatrix();
-               const entry = this.copyStack(),
-                     mesh = this._clones.createObject3D(entry.stack, this._toplevel, 'mesh');
-               if (!mesh) return true;
+         domatrix: true,
+         func: (/* node */) => {
+            let m2 = this.getmatrix();
+            const entry = this.copyStack(),
+                  mesh = this.#clones.createObject3D(entry.stack, this._toplevel, 'mesh');
+            if (!mesh) return true;
 
-               totalcnt++;
+            totalcnt++;
 
-               const m1 = mesh.matrixWorld;
+            const m1 = mesh.matrixWorld;
+            if (m1.equals(m2)) return true;
+            if ((m1.determinant() > 0) && (m2.determinant() < -0.9)) {
+               const flip = new THREE.Vector3(1, 1, -1);
+               m2 = m2.clone().scale(flip);
                if (m1.equals(m2)) return true;
-               if ((m1.determinant() > 0) && (m2.determinant() < -0.9)) {
-                  const flip = new THREE.Vector3(1, 1, -1);
-                  m2 = m2.clone().scale(flip);
-                  if (m1.equals(m2)) return true;
-               }
-
-               let max = 0;
-               for (let k = 0; k < 16; ++k)
-                  max = Math.max(max, Math.abs(m1.elements[k] - m2.elements[k]));
-
-               totalmax = Math.max(max, totalmax);
-
-               if (max < 1e-4) return true;
-
-               console.log(`${this._clones.resolveStack(entry.stack).name} maxdiff ${max} determ ${m1.determinant()} ${m2.determinant()}`);
-
-               errcnt++;
-
-               return false;
             }
-         },
 
-       tm1 = new Date().getTime();
+            let max = 0;
+            for (let k = 0; k < 16; ++k)
+               max = Math.max(max, Math.abs(m1.elements[k] - m2.elements[k]));
 
-      /* let cnt = */ this._clones.scanVisible(arg);
+            totalmax = Math.max(max, totalmax);
+
+            if (max < 1e-4) return true;
+
+            console.log(`${this.#clones.resolveStack(entry.stack).name} maxdiff ${max} determ ${m1.determinant()} ${m2.determinant()}`);
+
+            errcnt++;
+
+            return false;
+         }
+      }, tm1 = new Date().getTime();
+
+      this.#clones.scanVisible(arg);
 
       const tm2 = new Date().getTime();
 
@@ -1340,9 +1356,9 @@ class TGeoPainter extends ObjectPainter {
          const selection = this._gui.addFolder('Selection');
 
          if (!this.ctrl.maxnodes)
-            this.ctrl.maxnodes = this._clones?.getMaxVisNodes() ?? 10000;
+            this.ctrl.maxnodes = this.#clones?.getMaxVisNodes() ?? 10000;
          if (!this.ctrl.vislevel)
-            this.ctrl.vislevel = this._clones?.getVisLevel() ?? 3;
+            this.ctrl.vislevel = this.#clones?.getVisLevel() ?? 3;
          if (!this.ctrl.maxfaces)
             this.ctrl.maxfaces = 200000 * this.ctrl.more;
          this.ctrl.more = 1;
@@ -1677,7 +1693,7 @@ class TGeoPainter extends ObjectPainter {
                   if (!name) name = itemname;
                   hdr = name;
                } else if (stack) {
-                  name = this._clones.getStackName(stack);
+                  name = this.#clones.getStackName(stack);
                   itemname = this.getStackFullName(stack);
                   hdr = this.getItemName();
                   if (name.indexOf('Nodes/') === 0)
@@ -1761,7 +1777,7 @@ class TGeoPainter extends ObjectPainter {
 
                if (!this._geom_viewer) {
                   menu.add('Hide', n, indx => {
-                     const resolve = this._clones.resolveStack(intersects[indx].object.stack);
+                     const resolve = this.#clones.resolveStack(intersects[indx].object.stack);
                      if (resolve.obj && (resolve.node.kind === kindGeo) && resolve.obj.fVolume) {
                         setGeoBit(resolve.obj.fVolume, geoBITS.kVisThis, false);
                         updateBrowserIcons(resolve.obj.fVolume, this._hpainter);
@@ -1773,13 +1789,13 @@ class TGeoPainter extends ObjectPainter {
                      this.testGeomChanges();// while many volumes may disappear, recheck all of them
                   }, 'Hide all logical nodes of that kind');
                   menu.add('Hide only this', n, indx => {
-                     this._clones.setPhysNodeVisibility(getIntersectStack(intersects[indx]), false);
+                     this.#clones.setPhysNodeVisibility(getIntersectStack(intersects[indx]), false);
                      this.testGeomChanges();
                   }, 'Hide only this physical node');
                   if (n > 1) {
                     menu.add('Hide all before', n, indx => {
                         for (let k = 0; k < indx; ++k)
-                           this._clones.setPhysNodeVisibility(getIntersectStack(intersects[k]), false);
+                           this.#clones.setPhysNodeVisibility(getIntersectStack(intersects[k]), false);
                         this.testGeomChanges();
                      }, 'Hide all physical nodes before that');
                   }
@@ -1860,7 +1876,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Resolve stack */
    resolveStack(stack) {
-      return this._clones && stack ? this._clones.resolveStack(stack) : null;
+      return this.#clones && stack ? this.#clones.resolveStack(stack) : null;
    }
 
    /** @summary Returns stack full name
@@ -2106,7 +2122,7 @@ class TGeoPainter extends ObjectPainter {
      * - 1 when call after short timeout required
      * - 2 when call must be done from processWorkerReply */
    nextDrawAction() {
-      if (!this._clones || this.isStage(stageInit))
+      if (!this.#clones || this.isStage(stageInit))
          return false;
 
       if (this.isStage(stageCollect)) {
@@ -2127,11 +2143,11 @@ class TGeoPainter extends ObjectPainter {
          }
 
          // first copy visibility flags and check how many unique visible nodes exists
-         let numvis = this._first_drawing ? this._clones.countVisibles() : 0,
+         let numvis = this._first_drawing ? this.#clones.countVisibles() : 0,
              matrix = null, frustum = null;
 
          if (!numvis)
-            numvis = this._clones.markVisibles(false, false, Boolean(this.geo_manager) && !this.ctrl.showtop);
+            numvis = this.#clones.markVisibles(false, false, Boolean(this.geo_manager) && !this.ctrl.showtop);
 
          if (this.ctrl.select_in_view && !this._first_drawing) {
             // extract camera projection matrix for selection
@@ -2152,7 +2168,7 @@ class TGeoPainter extends ObjectPainter {
 
          // here we decide if we need worker for the drawings
          // main reason - too large geometry and large time to scan all camera positions
-         let need_worker = !this.isBatchMode() && browser.isChrome && ((numvis > 10000) || (matrix && (this._clones.scanVisible() > 1e5)));
+         let need_worker = !this.isBatchMode() && browser.isChrome && ((numvis > 10000) || (matrix && (this.#clones.scanVisible() > 1e5)));
 
          // worker does not work when starting from file system
          if (need_worker && source_dir.indexOf('file://') === 0) {
@@ -2164,7 +2180,7 @@ class TGeoPainter extends ObjectPainter {
             this.startWorker(); // we starting worker, but it may not be ready so fast
 
          if (!need_worker || !this.#worker_ready) {
-            const res = this._clones.collectVisibles(this._current_face_limit, frustum);
+            const res = this.#clones.collectVisibles(this._current_face_limit, frustum);
             this._new_draw_nodes = res.lst;
             this._draw_all_nodes = res.complete;
             this.changeStage(stageAnalyze);
@@ -2173,10 +2189,10 @@ class TGeoPainter extends ObjectPainter {
 
          const job = {
             collect: this._current_face_limit,   // indicator for the command
-            flags: this._clones.getVisibleFlags(),
+            flags: this.#clones.getVisibleFlags(),
             matrix: matrix ? matrix.elements : null,
-            vislevel: this._clones.getVisLevel(),
-            maxvisnodes: this._clones.getMaxVisNodes()
+            vislevel: this.#clones.getVisLevel(),
+            maxvisnodes: this.#clones.getMaxVisNodes()
          };
 
          this.submitToWorker(job);
@@ -2204,11 +2220,11 @@ class TGeoPainter extends ObjectPainter {
             if (this._geom_viewer)
                del = this._draw_nodes;
             else
-               del = this._clones.mergeVisibles(this._new_draw_nodes, this._draw_nodes);
+               del = this.#clones.mergeVisibles(this._new_draw_nodes, this._draw_nodes);
 
             // remove should be fast, do it here
             for (let n = 0; n < del.length; ++n)
-               this._clones.createObject3D(del[n].stack, this._toplevel, 'delete_mesh');
+               this.#clones.createObject3D(del[n].stack, this._toplevel, 'delete_mesh');
 
             if (del.length > 0)
                this.drawing_log = `Delete ${del.length} nodes`;
@@ -2222,10 +2238,10 @@ class TGeoPainter extends ObjectPainter {
 
       if (this.isStage(stageCollShapes)) {
          // collect shapes
-         const shapes = this._clones.collectShapes(this._draw_nodes);
+         const shapes = this.#clones.collectShapes(this._draw_nodes);
 
          // merge old and new list with produced shapes
-         this._build_shapes = this._clones.mergeShapesLists(this._build_shapes, shapes);
+         this._build_shapes = this.#clones.mergeShapesLists(this._build_shapes, shapes);
 
          this.changeStage(stageStartBuild);
          return true;
@@ -2270,7 +2286,7 @@ class TGeoPainter extends ObjectPainter {
          if (this.isStage(stageBuild)) {
             // building shapes
 
-            const res = this._clones.buildShapes(this._build_shapes, this._current_face_limit, 500);
+            const res = this.#clones.buildShapes(this._build_shapes, this._current_face_limit, 500);
             if (res.done) {
                this.ctrl.info.num_shapes = this._build_shapes.length;
                this.changeStage(stageBuildReady);
@@ -2289,7 +2305,7 @@ class TGeoPainter extends ObjectPainter {
          let build_instanced = false, ready = true;
 
          if (!this.ctrl.project)
-            build_instanced = this._clones.createInstancedMeshes(this.ctrl, toplevel, this._draw_nodes, this._build_shapes, getRootColors());
+            build_instanced = this.#clones.createInstancedMeshes(this.ctrl, toplevel, this._draw_nodes, this._build_shapes, getRootColors());
 
          if (!build_instanced) {
             for (let n = 0; n < this._draw_nodes.length; ++n) {
@@ -2353,7 +2369,7 @@ class TGeoPainter extends ObjectPainter {
             entry.custom_color = 'blue';
       }
 
-      this._clones.createEntryMesh(this.ctrl, toplevel, entry, shape, getRootColors());
+      this.#clones.createEntryMesh(this.ctrl, toplevel, entry, shape, getRootColors());
 
       return true;
    }
@@ -2371,7 +2387,7 @@ class TGeoPainter extends ObjectPainter {
       if (this._more_nodes) {
          for (let n = 0; n < this._more_nodes.length; ++n) {
             const entry = this._more_nodes[n],
-                obj3d = this._clones.createObject3D(entry.stack, this._toplevel, 'delete_mesh');
+                obj3d = this.#clones.createObject3D(entry.stack, this._toplevel, 'delete_mesh');
             disposeThreejsObject(obj3d);
             cleanupShape(entry.server_shape);
             delete entry.server_shape;
@@ -2403,7 +2419,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Returns hierarchy of 3D objects used to produce projection.
      * @desc Typically external master painter is used, but also internal data can be used */
    getProjectionSource() {
-      if (this._clones_owner)
+      if (this.#clones_owner)
          return this._full_geom;
       if (!this._master_painter) {
          console.warn('MAIN PAINTER DISAPPER');
@@ -2431,7 +2447,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Calculate geometry bounding box */
    getGeomBoundingBox(topitem, scalar) {
-      const box3 = new THREE.Box3(), check_any = !this._clones;
+      const box3 = new THREE.Box3(), check_any = !this.#clones;
       if (topitem === undefined)
          topitem = this._toplevel;
 
@@ -2701,8 +2717,8 @@ class TGeoPainter extends ObjectPainter {
          return;
       }
 
-      if (this._clones_owner && this._clones)
-         this._clones.setDefaultColors(this.ctrl.dflt_colors);
+      if (this.#clones_owner)
+         this.#clones?.setDefaultColors(this.ctrl.dflt_colors);
 
       this._startm = new Date().getTime();
       this._last_render_tm = this._startm;
@@ -2715,7 +2731,7 @@ class TGeoPainter extends ObjectPainter {
       this._selected_mesh = null;
 
       if (this.ctrl.project) {
-         if (this._clones_owner) {
+         if (this.#clones_owner) {
             if (this._full_geom)
                this.changeStage(stageBuildProj);
              else
@@ -3081,12 +3097,13 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary focus on item */
    focusOnItem(itemname) {
-      if (!itemname || !this._clones) return;
+      if (!itemname || !this.#clones)
+         return;
 
-      const stack = this._clones.findStackByName(itemname);
+      const stack = this.#clones.findStackByName(itemname);
 
       if (stack)
-         this.focusCamera(this._clones.resolveStack(stack, true), false);
+         this.focusCamera(this.#clones.resolveStack(stack, true), false);
    }
 
    /** @summary focus camera on specified position */
@@ -3213,16 +3230,16 @@ class TGeoPainter extends ObjectPainter {
    async drawCount(unqievis, clonetm) {
       const makeTime = tm => (this.isBatchMode() ? 'anytime' : tm.toString()) + ' ms',
 
-       res = ['Unique nodes: ' + this._clones.nodes.length,
+       res = ['Unique nodes: ' + this.#clones.nodes.length,
                   'Unique visible: ' + unqievis,
                   'Time to clone: ' + makeTime(clonetm)];
 
       // need to fill cached value line numvischld
-      this._clones.scanVisible();
+      this.#clones.scanVisible();
 
       let nshapes = 0;
       const arg = {
-         clones: this._clones,
+         clones: this.#clones,
          cnt: [],
          func(node) {
             if (this.cnt[this.last] === undefined)
@@ -3236,7 +3253,7 @@ class TGeoPainter extends ObjectPainter {
       };
 
       let tm1 = new Date().getTime(),
-          numvis = this._clones.scanVisible(arg),
+          numvis = this.#clones.scanVisible(arg),
           tm2 = new Date().getTime();
 
       res.push(`Total visible nodes: ${numvis}`, `Total shapes: ${nshapes}`);
@@ -3258,7 +3275,7 @@ class TGeoPainter extends ObjectPainter {
       return postponePromise(() => {
          arg.domatrix = true;
          tm1 = new Date().getTime();
-         numvis = this._clones.scanVisible(arg);
+         numvis = this.#clones.scanVisible(arg);
          tm2 = new Date().getTime();
 
          const last_str = `Time to scan with matrix: ${makeTime(tm2-tm1)}`;
@@ -3784,15 +3801,8 @@ class TGeoPainter extends ObjectPainter {
       });
    }
 
-   /** @summary Assign clones, created outside.
-     * @desc Used by geometry painter, where clones are handled by the server */
-   assignClones(clones) {
-      this._clones_owner = true;
-      this._clones = clones;
-   }
-
-    /** @summary Extract shapes from draw message of geometry painter
-      * @desc For the moment used in batch production */
+   /** @summary Extract shapes from draw message of geometry painter
+     * @desc For the moment used in batch production */
    extractRawShapes(draw_msg, recreate) {
       let nodes = null, old_gradpersegm = 0;
 
@@ -3808,20 +3818,19 @@ class TGeoPainter extends ObjectPainter {
          if (nodes)
             nodes[node.id] = node;
          else
-            this._clones.updateNode(node);
+            this.#clones.updateNode(node);
       });
 
       if (recreate) {
-         this._clones_owner = true;
-         this._clones = new ClonedNodes(null, nodes);
-         this._clones.name_prefix = this._clones.getNodeName(0);
-         this._clones.setConfig(this.ctrl);
+         this.assignClones(new ClonedNodes(null, nodes), true);
+         this.#clones.name_prefix = this.#clones.getNodeName(0);
+         this.#clones.setConfig(this.ctrl);
 
          // normally only need when making selection, not used in geo viewer
-         // this.geo_clones.setMaxVisNodes(draw_msg.maxvisnodes);
-         // this.geo_clones.setVisLevel(draw_msg.vislevel);
+         // this.geo#clones.setMaxVisNodes(draw_msg.maxvisnodes);
+         // this.geo#clones.setVisLevel(draw_msg.vislevel);
          // TODO: provide from server
-         this._clones.maxdepth = 20;
+         this.#clones.maxdepth = 20;
       }
 
       let nsegm = 0;
@@ -3858,21 +3867,18 @@ class TGeoPainter extends ObjectPainter {
          this._new_append_nodes = draw_obj;
          this.ctrl.use_worker = 0;
          this._geom_viewer = true; // indicate that working with geom viewer
-      } else if ((name_prefix === '__geom_viewer_selection__') && this._clones) {
+      } else if ((name_prefix === '__geom_viewer_selection__') && this.#clones) {
          // these are selection done from geom viewer
          this._new_draw_nodes = draw_obj;
          this.ctrl.use_worker = 0;
          this._geom_viewer = true; // indicate that working with geom viewer
       } else if (this._master_painter) {
-         this._clones_owner = false;
-         this._clones = this._master_painter._clones;
+         this.assignClones(this._master_painter.getClones(), false);
       } else if (!draw_obj) {
-         this._clones_owner = false;
-         this._clones = null;
+         this.assignClones(undefined, undefined);
       } else {
          this._start_drawing_time = new Date().getTime();
-         this._clones_owner = true;
-         this._clones = new ClonedNodes(draw_obj);
+         this.assignClones(new ClonedNodes(draw_obj), true);
          let lvl = this.ctrl.vislevel, maxnodes = this.ctrl.maxnodes;
          if (this.geo_manager) {
             if (!lvl && this.geo_manager.fVisLevel)
@@ -3881,26 +3887,26 @@ class TGeoPainter extends ObjectPainter {
                maxnodes = this.geo_manager.fMaxVisNodes;
          }
 
-         this._clones.setVisLevel(lvl);
-         this._clones.setMaxVisNodes(maxnodes, this.ctrl.more);
-         this._clones.setConfig(this.ctrl);
+         this.#clones.setVisLevel(lvl);
+         this.#clones.setMaxVisNodes(maxnodes, this.ctrl.more);
+         this.#clones.setConfig(this.ctrl);
 
-         this._clones.name_prefix = name_prefix;
+         this.#clones.name_prefix = name_prefix;
 
          const hide_top_volume = Boolean(this.geo_manager) && !this.ctrl.showtop;
-         let uniquevis = this.ctrl.no_screen ? 0 : this._clones.markVisibles(true, false, hide_top_volume);
+         let uniquevis = this.ctrl.no_screen ? 0 : this.#clones.markVisibles(true, false, hide_top_volume);
 
          if (uniquevis <= 0)
-            uniquevis = this._clones.markVisibles(false, false, hide_top_volume);
+            uniquevis = this.#clones.markVisibles(false, false, hide_top_volume);
          else
-            uniquevis = this._clones.markVisibles(true, true, hide_top_volume); // copy bits once and use normal visibility bits
+            uniquevis = this.#clones.markVisibles(true, true, hide_top_volume); // copy bits once and use normal visibility bits
 
-         this._clones.produceIdShifts();
+         this.#clones.produceIdShifts();
 
          const spent = new Date().getTime() - this._start_drawing_time;
 
          if (!this._scene && (settings.Debug || spent > 1000))
-            console.log(`Creating clones ${this._clones.nodes.length} takes ${spent} ms uniquevis ${uniquevis}`);
+            console.log(`Creating clones ${this.#clones.nodes.length} takes ${spent} ms uniquevis ${uniquevis}`);
 
          if (this.ctrl._count)
             return this.drawCount(uniquevis, spent);
@@ -3969,7 +3975,7 @@ class TGeoPainter extends ObjectPainter {
          this.createToolbar();
 
          // just draw extras and complete drawing if there are no main model
-         if (!this._clones)
+         if (!this.#clones)
             return this.completeDraw();
 
          return new Promise(resolveFunc => {
@@ -4082,7 +4088,7 @@ class TGeoPainter extends ObjectPainter {
       }
 
       if (!this.ctrl.project)
-         produceRenderOrder(this._toplevel, origin, this.ctrl.depthMethod, this._clones);
+         produceRenderOrder(this._toplevel, origin, this.ctrl.depthMethod, this.#clones);
    }
 
    /** @summary Call 3D rendering of the geometry
@@ -4201,10 +4207,10 @@ class TGeoPainter extends ObjectPainter {
          wrk.postMessage({
             init: true,   // indicate init command for worker
             tm0: new Date().getTime(),
-            vislevel: this._clones.getVisLevel(),
-            maxvisnodes: this._clones.getMaxVisNodes(),
-            clones: this._clones.nodes,
-            sortmap: this._clones.sortmap
+            vislevel: this.#clones.getVisLevel(),
+            maxvisnodes: this.#clones.getMaxVisNodes(),
+            clones: this.#clones.nodes,
+            sortmap: this.#clones.sortmap
          });
       });
    }
@@ -4259,8 +4265,6 @@ class TGeoPainter extends ObjectPainter {
          for (let n=0; n<job.shapes.length; ++n) {
             const item = job.shapes[n],
                 origin = this._build_shapes[n];
-
-            // let shape = this._clones.getNodeShape(item.nodeid);
 
             if (item.buf_pos && item.buf_norm) {
                if (item.buf_pos.length === 0)
@@ -4863,18 +4867,18 @@ class TGeoPainter extends ObjectPainter {
          return this;
       }
 
-      let promise = Promise.resolve(true);
+      let promise;
 
-      if (!this._clones) {
+      if (!this.#clones) {
          check_extras = false;
          // if extra object where append, redraw them at the end
          this.getExtrasContainer('delete'); // delete old container
          const extras = (this._master_painter ? this._master_painter._extraObjects : null) || this._extraObjects;
          promise = this.drawExtras(extras, '', false);
-      } else if (this._first_drawing || this._full_redrawing) {
-         if (this.ctrl.tracks && this.geo_manager)
-            promise = this.drawExtras(this.geo_manager.fTracks, '<prnt>/Tracks');
-      }
+      } else if ((this._first_drawing || this._full_redrawing) && this.ctrl.tracks && this.geo_manager)
+         promise = this.drawExtras(this.geo_manager.fTracks, '<prnt>/Tracks');
+      else
+         promise = Promise.resolve(true);
 
       return promise.then(() => {
          if (this._full_redrawing) {
@@ -4969,8 +4973,8 @@ class TGeoPainter extends ObjectPainter {
 
       for (let n = 0; n < this._draw_nodes.length; ++n) {
          const entry = this._draw_nodes[n];
-         if ((entry.nodeid === nodeid) || this._clones.isIdInStack(nodeid, entry.stack))
-            this._clones.createObject3D(entry.stack, this._toplevel, 'delete_mesh');
+         if ((entry.nodeid === nodeid) || this.#clones.isIdInStack(nodeid, entry.stack))
+            this.#clones.createObject3D(entry.stack, this._toplevel, 'delete_mesh');
           else
             new_nodes.push(entry);
       }
@@ -5048,13 +5052,11 @@ class TGeoPainter extends ObjectPainter {
          if (can3d < 0) this.selectDom().html('');
       }
 
-      if (this._slave_painters) {
-         for (const k in this._slave_painters) {
-            const slave = this._slave_painters[k];
-            slave._master_painter = null;
-            if (slave._clones === this._clones) slave._clones = null;
-         }
-      }
+      this._slave_painters?.forEach(slave => {
+         slave._master_painter = null;
+         if (slave.getClones() === this.getClones())
+            slave.assignClones(undefined, undefined);
+      });
 
       this._master_painter = null;
       this._slave_painters = [];
@@ -5083,13 +5085,7 @@ class TGeoPainter extends ObjectPainter {
       delete this._lookat;
       delete this._selected_mesh;
 
-      if (this._clones && this._clones_owner)
-         this._clones.cleanup(this._draw_nodes, this._build_shapes);
-      delete this._clones;
-      delete this._clones_owner;
-      delete this._draw_nodes;
-      delete this._drawing_ready;
-      delete this._build_shapes;
+      this.assignClones(undefined, undefined);
       delete this._new_draw_nodes;
       delete this._new_append_nodes;
       delete this._last_camera_position;
@@ -5205,13 +5201,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Cleanup TGeo drawings */
    clearDrawings() {
-      if (this._clones && this._clones_owner)
-         this._clones.cleanup(this._draw_nodes, this._build_shapes);
-      delete this._clones;
-      delete this._clones_owner;
-      delete this._draw_nodes;
-      delete this._drawing_ready;
-      delete this._build_shapes;
+      this.assignClones(undefined, undefined);
 
       delete this._extraObjects;
       delete this._clipCfg;
@@ -5529,14 +5519,14 @@ function provideMenu(menu, item, hpainter) {
       if (res.hidden + res.visible > 0)
          menu.addchk((res.hidden === 0), 'Daughters', res.hidden !== 0 ? 'true' : 'false', toggleEveVisibility);
    } else {
-      const stack = drawitem?._painter?._clones?.findStackByName(fullname),
-          phys_vis = stack ? drawitem._painter._clones.getPhysNodeVisibility(stack) : null,
-          is_visible = testGeoBit(vol, geoBITS.kVisThis);
+      const stack = drawitem?._painter?.getClones()?.findStackByName(fullname),
+            phys_vis = stack ? drawitem._painter.getClones().getPhysNodeVisibility(stack) : null,
+            is_visible = testGeoBit(vol, geoBITS.kVisThis);
 
       menu.addchk(testGeoBit(vol, geoBITS.kVisNone), 'Invisible', geoBITS.kVisNone, toggleMenuBit);
       if (stack) {
          const changePhysVis = arg => {
-            drawitem._painter._clones.setPhysNodeVisibility(stack, (arg === 'off') ? false : arg);
+            drawitem._painter.getClones().setPhysNodeVisibility(stack, (arg === 'off') ? false : arg);
             findItemWithPainter(item, 'testGeomChanges');
          };
 
