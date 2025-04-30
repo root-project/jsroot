@@ -2028,23 +2028,14 @@ class TH2Painter extends THistPainter {
    /** @summary Draw TH2 bins as boxes */
    drawBinsBox() {
       const histo = this.getObject(),
-          handle = this.prepareDraw({ rounding: false }),
-          main = this.getMainPainter();
+            handle = this.prepareDraw({ rounding: false }),
+            r = this.getContourRanges();
 
-      if (main === this) {
-         if (main.maxbin === main.minbin) {
-            main.maxbin = main.gmaxbin;
-            main.minbin = main.gminbin;
-            main.minposbin = main.gminposbin;
-         }
-         if (main.maxbin === main.minbin)
-            main.minbin = Math.min(0, main.maxbin-1);
-      }
-
-      const absmax = Math.max(Math.abs(main.maxbin), Math.abs(main.minbin)),
-            absmin = Math.max(0, main.minbin),
+      const absmax = Math.max(Math.abs(r.zmin), Math.abs(r.zmax)),
+            absmin = Math.max(0, r.zmin),
             pad = this.getPadPainter().getRootPad(true),
             test_cutg = this.options.cutg;
+
       let i, j, binz, absz, res = '', cross = '', btn1 = '', btn2 = '',
           zdiff, dgrx, dgry, xx, yy, ww, hh, xyfactor,
           uselogz = false, logmin = 0;
@@ -2054,10 +2045,10 @@ class TH2Painter extends THistPainter {
          const logmax = Math.log(absmax);
          if (absmin > 0)
             logmin = Math.log(absmin);
-         else if ((main.minposbin >= 1) && (main.minposbin < 100))
+         else if ((r.zminpos >= 1) && (r.zminpos < 100))
             logmin = Math.log(0.7);
          else
-            logmin = (main.minposbin > 0) ? Math.log(0.7*main.minposbin) : logmax - 10;
+            logmin = (r.zminpos > 0) ? Math.log(0.7*r.zminpos) : logmax - 10;
          if (logmin >= logmax) logmin = logmax - 10;
          xyfactor = 1.0 / (logmax - logmin);
       } else

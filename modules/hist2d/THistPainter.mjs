@@ -2017,31 +2017,17 @@ class THistPainter extends ObjectPainter {
       return cntr;
    }
 
-   /** @summary Return contour object */
-   getContour(force_recreate) {
-      if (this.fContour && !force_recreate)
-         return this.fContour;
-
+   /** @summary Return Z-scale ranges to create contour */
+   getContourRanges() {
       const main = this.getMainPainter(),
-            fp = this.getFramePainter();
+            fp = this.getFramePainter(),
+            src = (this !== main) && ((main?.minbin !== undefined) || main?.options.ohmin) && !this.options.IgnoreMainScale && !main?.tt_handle?.ScatterPlot ? main : this;
+      let apply_min, zmin = src.minbin, zmax = src.maxbin, zminpos = src.minposbin;
 
-      if (main?.fContour && (main !== this) && !this.options.IgnoreMainScale) {
-         this.fContour = main.fContour;
-         return this.fContour;
-      }
-
-      // if not initialized, first create contour array
-      // difference from ROOT - fContour includes also last element with maxbin, which makes easier to build logz
-      // when no same0 draw option specified, use main painter for creating contour, also ignore scatter drawing for main painter
-      const histo = this.getObject(),
-            src = (this !== main) && (main?.minbin !== undefined) && !this.options.IgnoreMainScale && !main?.tt_handle?.ScatterPlot ? main : this;
-      let nlevels = 0, apply_min,
-          zmin = src.minbin, zmax = src.maxbin, zminpos = src.minposbin,
-          custom_levels;
       if (zmin === zmax) {
-         if (this.options.ohmin && this.options.ohmax && this.options.Zscale) {
-            zmin = this.options.hmin;
-            zmax = this.options.hmax;
+         if (src.options.ohmin && src.options.ohmax) {
+            zmin = src.options.hmin;
+            zmax = src.options.hmax;
             zminpos = Math.max(zmin, zmax * 1e-10);
          } else {
             zmin = src.gminbin;
@@ -2067,6 +2053,29 @@ class THistPainter extends ObjectPainter {
          zmax = mod ? fp.zoom_zmax : gzmax;
       }
 
+      return { zmin, zmax, zminpos, gzmin, gzmax };
+   }
+
+   /** @summary Return contour object */
+   getContour(force_recreate) {
+      if (this.fContour && !force_recreate)
+         return this.fContour;
+
+      const main = this.getMainPainter(),
+            fp = this.getFramePainter();
+
+      if (main?.fContour && (main !== this) && !this.options.IgnoreMainScale) {
+         this.fContour = main.fContour;
+         return this.fContour;
+      }
+
+      // if not initialized, first create contour array
+      // difference from ROOT - fContour includes also last element with maxbin, which makes easier to build logz
+      // when no same0 draw option specified, use main painter for creating contour, also ignore scatter drawing for main painter
+      const histo = this.getObject(),
+            r = this.getContourRanges();
+      let nlevels = 0, custom_levels;
+
       if (histo.fContour?.length > 1) {
          if (histo.TestBit(kUserContour))
             custom_levels = histo.fContour;
@@ -2074,13 +2083,13 @@ class THistPainter extends ObjectPainter {
             nlevels = histo.fContour.length;
       }
 
-      const cntr = this.createContour(nlevels, zmin, zmax, zminpos, custom_levels);
+      const cntr = this.createContour(nlevels, r.zmin, r.zmax, r.zminpos, custom_levels);
 
       if ((this.getDimension() < 3) && fp) {
-         fp.zmin = gzmin;
-         fp.zmax = gzmax;
+         fp.zmin = r.gzmin;
+         fp.zmax = r.gzmax;
 
-         if ((gzmin !== cntr.colzmin) || (gzmax !== cntr.colzmax)) {
+         if ((r.gzmin !== cntr.colzmin) || (r.gzmax !== cntr.colzmax)) {
             fp.zoom_zmin = cntr.colzmin;
             fp.zoom_zmax = cntr.colzmax;
          } else
