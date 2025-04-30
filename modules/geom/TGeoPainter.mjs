@@ -375,6 +375,9 @@ class TGeoPainter extends ObjectPainter {
    #drawing_ready; // if drawing completed
    #new_draw_nodes; // temporary list of new draw nodes
    #new_append_nodes; // temporary list of new append nodes
+   #gui;            // dat.GUI instance
+   #toolbar;        // tool buttons
+   #controls;       // orbit control
 
    /** @summary Constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -543,9 +546,12 @@ class TGeoPainter extends ObjectPainter {
 
    isBatchMode() { return isBatchMode() || this.batch_mode; }
 
+   getControls() { return this.#controls; }
+
    /** @summary Create toolbar */
    createToolbar() {
-      if (this._toolbar || !this._webgl || this.ctrl.notoolbar || this.isBatchMode()) return;
+      if (this.#toolbar || !this._webgl || this.ctrl.notoolbar || this.isBatchMode())
+         return;
       const buttonList = [{
          name: 'toImage',
          title: 'Save as PNG',
@@ -595,9 +601,9 @@ class TGeoPainter extends ObjectPainter {
 
       const bkgr = new THREE.Color(this.ctrl.background);
 
-      this._toolbar = new Toolbar(this.selectDom(), (bkgr.r + bkgr.g + bkgr.b) < 1, buttonList);
+      this.#toolbar = new Toolbar(this.selectDom(), (bkgr.r + bkgr.g + bkgr.b) < 1, buttonList);
 
-      this._toolbar.createButtons();
+      this.#toolbar.createButtons();
    }
 
    /** @summary Initialize VR mode */
@@ -678,11 +684,11 @@ class TGeoPainter extends ObjectPainter {
                end = controller.localToWorld(this._raycasterEnd.set(0, 0, -1)),
                origin = controller.localToWorld(this._raycasterOrigin.set(0, 0, 0));
          end.sub(origin).normalize();
-         intersects = intersects.concat(this._controls.getOriginDirectionIntersects(origin, end));
+         intersects = intersects.concat(this.#controls.getOriginDirectionIntersects(origin, end));
       }
       // Remove duplicates.
       intersects = intersects.filter((item, pos) => { return intersects.indexOf(item) === pos; });
-      this._controls.processMouseMove(intersects);
+      this.#controls.processMouseMove(intersects);
    }
 
    /** @summary Update VR controllers
@@ -1306,9 +1312,9 @@ class TGeoPainter extends ObjectPainter {
       this._renderer.setClearColor(this._scene.background, 1);
       this.render3D(0);
 
-      if (this._toolbar) {
+      if (this.#toolbar) {
          const bkgr = new THREE.Color(this.ctrl.background);
-         this._toolbar.changeBrightness((bkgr.r + bkgr.g + bkgr.b) < 1);
+         this.#toolbar.changeBrightness((bkgr.r + bkgr.g + bkgr.b) < 1);
       }
    }
 
@@ -1318,17 +1324,16 @@ class TGeoPainter extends ObjectPainter {
       if (!this.ctrl) return;
 
       if (on === 'toggle')
-         on = !this._gui;
+         on = !this.#gui;
        else if (on === undefined)
          on = this.ctrl.show_controls;
 
-
       this.ctrl.show_controls = on;
 
-      if (this._gui) {
+      if (this.#gui) {
          if (!on) {
-            this._gui.destroy();
-            delete this._gui;
+            this.#gui.destroy();
+            this.#gui = undefined;
          }
          return;
       }
@@ -1336,20 +1341,19 @@ class TGeoPainter extends ObjectPainter {
       if (!on || !this._renderer)
          return;
 
-
       const main = this.selectDom();
       if (main.style('position') === 'static')
          main.style('position', 'relative');
 
-      this._gui = new GUI({ container: main.node(), closeFolders: true, width: Math.min(300, this._scene_width / 2),
+      this.#gui = new GUI({ container: main.node(), closeFolders: true, width: Math.min(300, this._scene_width / 2),
                             title: 'Settings' });
 
-      const dom = this._gui.domElement;
+      const dom = this.#gui.domElement;
       dom.style.position = 'absolute';
       dom.style.top = 0;
       dom.style.right = 0;
 
-      this._gui.painter = this;
+      this.#gui.painter = this;
 
       const makeLil = items => {
          const lil = {};
@@ -1358,7 +1362,7 @@ class TGeoPainter extends ObjectPainter {
       };
 
       if (!this.ctrl.project) {
-         const selection = this._gui.addFolder('Selection');
+         const selection = this.#gui.addFolder('Selection');
 
          if (!this.ctrl.maxnodes)
             this.ctrl.maxnodes = this.#clones?.getMaxVisNodes() ?? 10000;
@@ -1386,13 +1390,13 @@ class TGeoPainter extends ObjectPainter {
          if (this.ctrl.projectPos === undefined)
             this.ctrl.projectPos = (bound.min[axis] + bound.max[axis])/2;
 
-         this._gui.add(this.ctrl, 'projectPos', bound.min[axis], bound.max[axis])
+         this.#gui.add(this.ctrl, 'projectPos', bound.min[axis], bound.max[axis])
              .name(axis.toUpperCase() + ' projection')
              .onChange(() => this.startDrawGeometry());
       } else {
          // Clipping Options
 
-         const clipFolder = this._gui.addFolder('Clipping');
+         const clipFolder = this.#gui.addFolder('Clipping');
 
          for (let naxis = 0; naxis < 3; ++naxis) {
             const cc = this.ctrl.clip[naxis],
@@ -1416,7 +1420,7 @@ class TGeoPainter extends ObjectPainter {
 
       // Scene Options
 
-      const scene = this._gui.addFolder('Scene');
+      const scene = this.#gui.addFolder('Scene');
       // following items used in handlers and cannot be constants
       let light_pnts = null, strength = null, hcolor = null, overlay = null;
 
@@ -1446,7 +1450,7 @@ class TGeoPainter extends ObjectPainter {
 
       // Appearance Options
 
-      const appearance = this._gui.addFolder('Appearance');
+      const appearance = this.#gui.addFolder('Appearance');
 
       this.ctrl._highlight = !this.ctrl.highlight ? 0 : this.ctrl.highlight_bloom ? 2 : 1;
       appearance.add(this.ctrl, '_highlight', { none: 0, normal: 1, bloom: 2 }).name('Highlight Selection')
@@ -1475,7 +1479,7 @@ class TGeoPainter extends ObjectPainter {
 
       // Material options
 
-      const material = this._gui.addFolder('Material');
+      const material = this.#gui.addFolder('Material');
       let material_props = [];
 
       const addMaterialProp = () => {
@@ -1513,7 +1517,7 @@ class TGeoPainter extends ObjectPainter {
 
 
       // Camera options
-      const camera = this._gui.addFolder('Camera');
+      const camera = this.#gui.addFolder('Camera');
 
       camera.add(this.ctrl, 'camera_kind', makeLil(this.ctrl.cameraKindItems))
             .name('Kind').listen().onChange(() => {
@@ -1532,7 +1536,7 @@ class TGeoPainter extends ObjectPainter {
 
       // Advanced Options
       if (this._webgl) {
-         const advanced = this._gui.addFolder('Advanced');
+         const advanced = this.#gui.addFolder('Advanced');
 
          advanced.add(this.ctrl, 'depthTest').name('Depth test')
             .listen().onChange(() => this.changedDepthTest());
@@ -1546,7 +1550,7 @@ class TGeoPainter extends ObjectPainter {
 
       // Transformation Options
       if (!this.ctrl.project) {
-         const transform = this._gui.addFolder('Transform');
+         const transform = this.#gui.addFolder('Transform');
          transform.add(this.ctrl, 'trans_z', 0.0, 3.0, 0.01)
                      .name('Z axis')
                      .listen().onChange(() => this.changedTransformation());
@@ -1592,8 +1596,8 @@ class TGeoPainter extends ObjectPainter {
    changeCanRotate(on) {
       if (on !== undefined)
          this.ctrl.can_rotate = on;
-      if (this._controls)
-         this._controls.enableRotate = this.ctrl.can_rotate;
+      if (this.#controls)
+         this.#controls.enableRotate = this.ctrl.can_rotate;
    }
 
    /** @summary Change use fog property */
@@ -1606,9 +1610,9 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Handle change of camera kind */
    changeCamera() {
       // force control recreation
-      if (this._controls) {
-          this._controls.cleanup();
-          delete this._controls;
+      if (this.#controls) {
+          this.#controls.cleanup();
+          this.#controls = undefined;
       }
 
       this.ensureBloom(false);
@@ -2007,8 +2011,8 @@ class TGeoPainter extends ObjectPainter {
       if (this.ctrl)
          this.ctrl.mouse_tmout = val;
 
-      if (this._controls)
-         this._controls.mouse_tmout = val;
+      if (this.#controls)
+         this.#controls.mouse_tmout = val;
    }
 
    /** @summary Configure depth method, used for render order production.
@@ -2029,23 +2033,23 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Add orbit control */
    addOrbitControls() {
-      if (this._controls || !this._webgl || this.isBatchMode() || this.superimpose || isNodeJs()) return;
+      if (this.#controls || !this._webgl || this.isBatchMode() || this.superimpose || isNodeJs()) return;
 
       if (!this.getCanvPainter())
          this.setTooltipAllowed(settings.Tooltip);
 
-      this._controls = createOrbitControl(this, this._camera, this._scene, this._renderer, this._lookat);
+      this.#controls = createOrbitControl(this, this._camera, this._scene, this._renderer, this._lookat);
 
-      this._controls.mouse_tmout = this.ctrl.mouse_tmout; // set larger timeout for geometry processing
+      this.#controls.mouse_tmout = this.ctrl.mouse_tmout; // set larger timeout for geometry processing
 
       if (!this.canRotateCamera())
-         this._controls.enableRotate = false;
+         this.#controls.enableRotate = false;
 
-      this._controls.contextMenu = this.orbitContext.bind(this);
+      this.#controls.contextMenu = this.orbitContext.bind(this);
 
-      this._controls.processMouseMove = intersects => {
+      this.#controls.processMouseMove = intersects => {
          // painter already cleaned up, ignore any incoming events
-         if (!this.ctrl || !this._controls) return;
+         if (!this.ctrl || !this.#controls) return;
 
          let active_mesh = null, tooltip = null, resolve = null, names = [], geo_object, geo_index, geo_stack;
 
@@ -2099,13 +2103,13 @@ class TGeoPainter extends ObjectPainter {
          return { name: resolve.obj.fName, title: resolve.obj.fTitle || resolve.obj._typename, lines };
       };
 
-      this._controls.processMouseLeave = function() {
+      this.#controls.processMouseLeave = function() {
          this.processMouseMove([]); // to disable highlight and reset browser
       };
 
-      this._controls.processDblClick = () => {
+      this.#controls.processDblClick = () => {
          // painter already cleaned up, ignore any incoming events
-         if (!this.ctrl || !this._controls) return;
+         if (!this.ctrl || !this.#controls) return;
 
          if (this._last_manifest) {
             this._last_manifest.wireframe = !this._last_manifest.wireframe;
@@ -2808,7 +2812,7 @@ class TGeoPainter extends ObjectPainter {
         kind = this.ctrl.camera_kind + ',';
 
       if (arg === true) {
-         const p = this._camera?.position, t = this._controls?.target;
+         const p = this._camera?.position, t = this.#controls?.target;
          if (!p || !t) return '';
 
          const conv = v => {
@@ -3059,9 +3063,9 @@ class TGeoPainter extends ObjectPainter {
 
       this.changedLight(box);
 
-      if (this._controls) {
-         this._controls.target.copy(this._lookat);
-         if (!only_set) this._controls.update();
+      if (this.#controls) {
+         this.#controls.target.copy(this._lookat);
+         if (!only_set) this.#controls.update();
       }
 
       // recheck which elements to draw
@@ -3142,7 +3146,7 @@ class TGeoPainter extends ObjectPainter {
          position = new THREE.Vector3(midx-2*Math.max(sizex, sizey), midy-2*Math.max(sizex, sizey), midz+2*sizez);
 
       const target = new THREE.Vector3(midx, midy, midz),
-            oldTarget = this._controls.target,
+            oldTarget = this.#controls.target,
             // Amount to change camera position at each step
             posIncrement = position.sub(this._camera.position).divideScalar(frames),
             // Amount to change 'lookAt' so it will end pointed at target
@@ -3194,7 +3198,7 @@ class TGeoPainter extends ObjectPainter {
 
       animate();
 
-   //   this._controls.update();
+   //   this.#controls.update();
    }
 
    /** @summary activate auto rotate */
@@ -3210,10 +3214,10 @@ class TGeoPainter extends ObjectPainter {
          if (this.ctrl.rotate)
             requestAnimationFrame(animate);
 
-         if (this._controls) {
-            this._controls.autoRotate = this.ctrl.rotate;
-            this._controls.autoRotateSpeed = rotSpeed * (current.getTime() - last.getTime()) / 16.6666;
-            this._controls.update();
+         if (this.#controls) {
+            this.#controls.autoRotate = this.ctrl.rotate;
+            this.#controls.autoRotateSpeed = rotSpeed * (current.getTime() - last.getTime()) / 16.6666;
+            this.#controls.update();
          }
          last = new Date();
          this.render3D(0);
@@ -4094,7 +4098,7 @@ class TGeoPainter extends ObjectPainter {
       this._last_camera_position = origin; // remember current camera position
 
       if (this.ctrl._axis) {
-         const vect = (this._controls?.target || this._lookat).clone().sub(this._camera.position).normalize();
+         const vect = (this.#controls?.target || this._lookat).clone().sub(this._camera.position).normalize();
          this.getExtrasContainer('get', 'axis')?.traverse(obj3d => {
             if (isFunc(obj3d._axis_flip))
                obj3d._axis_flip(vect);
@@ -5016,16 +5020,13 @@ class TGeoPainter extends ObjectPainter {
             disposeThreejsObject(this._scene);
          }
 
-         this._toolbar?.cleanup(); // remove toolbar
+         this.#toolbar?.cleanup(); // remove toolbar
 
          disposeThreejsObject(this._full_geom);
 
-         this._controls?.cleanup();
+         this.#controls?.cleanup();
 
-         if (this._context_menu)
-            this._renderer.domElement.removeEventListener('contextmenu', this._context_menu, false);
-
-         this._gui?.destroy();
+         this.#gui?.destroy();
 
          this.#worker?.terminate();
 
@@ -5108,10 +5109,9 @@ class TGeoPainter extends ObjectPainter {
       this.changeStage(stageInit, 'cleanup');
       delete this.drawing_log;
 
-      delete this._gui;
-      delete this._controls;
-      delete this._context_menu;
-      delete this._toolbar;
+      this.#gui = undefined;
+      this.#controls = undefined;
+      this.#toolbar = undefined;
 
       this.#worker = undefined;
    }
