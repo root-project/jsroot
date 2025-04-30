@@ -2600,7 +2600,7 @@ class TH2Painter extends THistPainter {
 
       handle.ScatterPlot = true;
 
-      if (scale*handle.sumz < 1e5) {
+      if (scale * handle.sumz < 1e5) {
          // one can use direct drawing of scatter plot without any patterns
 
          this.createAttMarker({ attr: histo });
@@ -2637,7 +2637,8 @@ class TH2Painter extends THistPainter {
       }
 
       // limit filling factor, do not try to produce as many points as filled area;
-      if (this.maxbin > 0.7) factor = 0.7/this.maxbin;
+      if (this.maxbin > 0.7)
+         factor = 0.7 / this.maxbin;
 
       const nlevels = Math.round(handle.max - handle.min),
             cntr = this.createContour((nlevels > 50) ? 50 : nlevels, this.minposbin, this.maxbin, this.minposbin);
@@ -2686,48 +2687,47 @@ class TH2Painter extends THistPainter {
 
       for (colindx = 0; colindx < colPaths.length; ++colindx) {
          if ((colPaths[colindx] !== undefined) && (colindx < cntr.arr.length)) {
-           const pattern_id = (this.pad_name || 'canv') + `_scatter_${colindx}`;
-           let pattern = defs.selectChild(`#${pattern_id}`);
-           if (pattern.empty()) {
-              pattern = defs.append('svg:pattern')
-                            .attr('id', pattern_id)
-                            .attr('patternUnits', 'userSpaceOnUse');
-           } else
-              pattern.selectAll('*').remove();
+            const pattern_id = (this.pad_name || 'canv') + `_scatter_${colindx}`;
+            let pattern = defs.selectChild(`#${pattern_id}`);
+            if (pattern.empty()) {
+               pattern = defs.append('svg:pattern')
+                             .attr('id', pattern_id)
+                             .attr('patternUnits', 'userSpaceOnUse');
+            } else
+               pattern.selectAll('*').remove();
 
-           let npix = Math.round(factor*cntr.arr[colindx]*cell_w[colindx]*cell_h[colindx]);
-           if (npix < 1) npix = 1;
+            let npix = Math.round(factor*cntr.arr[colindx]*cell_w[colindx]*cell_h[colindx]);
+            if (npix < 1) npix = 1;
 
-           const arrx = new Float32Array(npix), arry = new Float32Array(npix);
+            const arrx = new Float32Array(npix), arry = new Float32Array(npix);
 
-           if (npix === 1)
+            if (npix === 1)
               arrx[0] = arry[0] = 0.5;
             else {
               for (let n = 0; n < npix; ++n) {
                  arrx[n] = rnd.random();
                  arry[n] = rnd.random();
               }
-           }
+            }
 
-           this.markeratt.resetPos();
+            this.markeratt.resetPos();
 
-           let path = '';
+            let path = '';
+            for (let n = 0; n < npix; ++n)
+               path += this.markeratt.create(arrx[n] * cell_w[colindx], arry[n] * cell_h[colindx]);
 
-           for (let n = 0; n < npix; ++n)
-              path += this.markeratt.create(arrx[n] * cell_w[colindx], arry[n] * cell_h[colindx]);
+            pattern.attr('width', cell_w[colindx])
+                   .attr('height', cell_h[colindx])
+                   .append('svg:path')
+                   .attr('d', path)
+                   .call(this.markeratt.func);
 
-           pattern.attr('width', cell_w[colindx])
-                  .attr('height', cell_h[colindx])
-                  .append('svg:path')
-                  .attr('d', path)
-                  .call(this.markeratt.func);
-
-           this.draw_g
-               .append('svg:path')
-               .attr('scatter-index', colindx)
-               .style('fill', `url(#${pattern_id})`)
-               .attr('d', colPaths[colindx]);
-        }
+            this.draw_g
+                .append('svg:path')
+                .attr('scatter-index', colindx)
+                .style('fill', `url(#${pattern_id})`)
+                .attr('d', colPaths[colindx]);
+         }
       }
 
       return handle;
