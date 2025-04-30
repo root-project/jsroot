@@ -203,6 +203,7 @@
      { "name": "cms_style", "url": "nobrowser&file=$$$cms_style_canvases.root&layout=grid4x3&items=[[0],[1],[2],[3],[4],[5],[6],[7],[8],[9]]&one_by_one", "title": "canvases from https://github.com/cms-cat/cms-root-style" }
    ],
    "TGeo" : [
+     { "name": "worker", "asurl": true, "file": "geom/rootgeom.root", "item": "simple1;1", "opt": "worker", "r3d": "svg", "title": "Text usage of Worker for geometry drawing" },
      { "name": "prim_can", "file": "geom/geodemo.root", "layout": "vert333", "items": ["box_can","para_can","arb8_can","trap_can","gtra_can","trd1_can","trd2_can","xtru_can"], "title": "Basic TGeo primitives in TCanvas from tutorials/geom/geodemo.C, group 1" },
      { "name": "prim2_can", "file": "geom/geodemo.root", "layout": "vert333", "items": ["cone_can","coneseg_can","tube_can","tubeseg_can","ctub_can","eltu_can","pcon_can","pgon_can"], "title": "Basic TGeo primitives in TCanvas from tutorials/geom/geodemo.C, group 2" },
      { "name": "prim3_can", "file": "geom/geodemo.root", "layout": "grid3x2", "items": ["sphere_can","torus_can","parab_can","hype_can","comp_can"], "title": "Basic TGeo primitives in TCanvas from tutorials/geom/geodemo.C, group 3" },
