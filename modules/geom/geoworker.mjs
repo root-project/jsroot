@@ -1,55 +1,52 @@
+import { isNodeJs } from '../core.mjs';
 import { THREE } from '../base/base3d.mjs';
 import { ClonedNodes, createFrustum } from './geobase.mjs';
 
 if (typeof console !== 'undefined')
    console.log(`geoworker started three.js r${THREE.REVISION}`);
 
-let clones = null;
+let clones = null, doPost;
 
-onmessage = function(e) {
+function processMessage(data) {
 
-   if (typeof e.data == 'string') {
-      console.log(`Worker get message ${e.data}`);
+   if (typeof data == 'string') {
+      console.log(`Worker get message ${data}`);
       return;
    }
 
-   if (typeof e.data != 'object')
+   if (typeof data != 'object')
       return;
 
-   // simple workaround to wait until modules are loaded
-   if (!THREE || !ClonedNodes)
-      return setTimeout(() => onmessage(e), 100);
+   data.tm1 = new Date().getTime();
 
-   e.data.tm1 = new Date().getTime();
+   if (data.init) {
+      // console.log(`start worker ${data.tm1 -  data.tm0}`);
 
-   if (e.data.init) {
-      // console.log(`start worker ${e.data.tm1 -  e.data.tm0}`);
-
-      let nodes = e.data.clones;
+      let nodes = data.clones;
       if (nodes) {
          // console.log(`get clones ${nodes.length}`);
          clones = new ClonedNodes(null, nodes);
-         clones.setVisLevel(e.data.vislevel);
-         clones.setMaxVisNodes(e.data.maxvisnodes);
-         delete e.data.clones;
-         clones.sortmap = e.data.sortmap;
+         clones.setVisLevel(data.vislevel);
+         clones.setMaxVisNodes(data.maxvisnodes);
+         delete data.clones;
+         clones.sortmap = data.sortmap;
       }
 
-      e.data.tm2 = new Date().getTime();
+      data.tm2 = new Date().getTime();
 
-      return postMessage(e.data);
+      return doPost(data);
    }
 
-   if (e.data.shapes) {
+   if (data.shapes) {
       // this is task to create geometries in the worker
 
-      let shapes = e.data.shapes, transferables = [];
+      let shapes = data.shapes, transferables = [];
 
       // build all shapes up to specified limit, also limit execution time
       for (let n = 0; n < 100; ++n) {
-         let res = clones.buildShapes(shapes, e.data.limit, 1000);
+         let res = clones.buildShapes(shapes, data.limit, 1000);
          if (res.done) break;
-         postMessage({ progress: "Worker creating: " + res.shapes + " / " + shapes.length + " shapes,  "  + res.faces + " faces" });
+         doPost({ progress: "Worker creating: " + res.shapes + " / " + shapes.length + " shapes,  "  + res.faces + " faces" });
       }
 
       for (let n=0;n<shapes.length;++n) {
@@ -78,38 +75,58 @@ onmessage = function(e) {
          delete item.shape; // no need to send back shape
       }
 
-      e.data.tm2 = new Date().getTime();
+      data.tm2 = new Date().getTime();
 
-      return postMessage(e.data, transferables);
+      return doPost(data, transferables);
    }
 
-   if (e.data.collect !== undefined) {
+   if (data.collect !== undefined) {
       // this is task to collect visible nodes using camera position
 
       // first mark all visible flags
-      clones.setVisibleFlags(e.data.flags);
-      clones.setVisLevel(e.data.vislevel);
-      clones.setMaxVisNodes(e.data.maxvisnodes);
+      clones.setVisibleFlags(data.flags);
+      clones.setVisLevel(data.vislevel);
+      clones.setMaxVisNodes(data.maxvisnodes);
 
-      delete e.data.flags;
+      delete data.flags;
 
       clones.produceIdShifts();
 
       let matrix = null;
-      if (e.data.matrix)
-         matrix = new THREE.Matrix4().fromArray(e.data.matrix);
-      delete e.data.matrix;
+      if (data.matrix)
+         matrix = new THREE.Matrix4().fromArray(data.matrix);
+      delete data.matrix;
 
-      let res = clones.collectVisibles(e.data.collect, createFrustum(matrix));
+      let res = clones.collectVisibles(data.collect, createFrustum(matrix));
 
-      e.data.new_nodes = res.lst;
-      e.data.complete = res.complete; // inform if all nodes are selected
+      data.new_nodes = res.lst;
+      data.complete = res.complete; // inform if all nodes are selected
 
-      e.data.tm2 = new Date().getTime();
+      data.tm2 = new Date().getTime();
 
-      // console.log(`Collect visibles in worker ${e.data.new_nodes.length} takes ${e.data.tm2-e.data.tm1}`);
+      // console.log(`Collect visibles in worker ${data.new_nodes.length} takes ${data.tm2-data.tm1}`);
 
-      return postMessage(e.data);
+      return doPost(data);
    }
 
+}
+
+if (isNodeJs()) {
+   import('node:worker_threads').then(h => {
+      doPost = msg => h.parentPort.postMessage(msg);
+      h.parentPort.on('message', msg => processMessage(msg));
+   });
+} else {
+   doPost = postMessage;
+   onmessage = function(e) {
+      if (!e?.data)
+         return;
+
+      if (typeof e.data === 'string') {
+         console.log(`Worker get message ${e.data}`);
+         return;
+      }
+
+      processMessage(e.data);
+   }
 }

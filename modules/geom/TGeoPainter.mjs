@@ -2102,7 +2102,8 @@ class TGeoPainter extends ObjectPainter {
      * - 1 when call after short timeout required
      * - 2 when call must be done from processWorkerReply */
    nextDrawAction() {
-      if (!this._clones || this.isStage(stageInit)) return false;
+      if (!this._clones || this.isStage(stageInit))
+         return false;
 
       if (this.isStage(stageCollect)) {
          if (this._geom_viewer) {
@@ -4168,51 +4169,66 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Start geo worker */
-   startWorker() {
+   async startWorker() {
       if (this._worker)
          return;
 
       this._worker_ready = false;
       this._worker_jobs = 0; // counter how many requests send to worker
 
-      // Finally use ES6 module, see https://www.codedread.com/blog/archives/2017/10/19/web-workers-can-be-es6-modules-too/
-      this._worker = new Worker(source_dir + 'modules/geom/geoworker.mjs' , { type: 'module' });
+      let pr;
 
-      this._worker.onmessage = e => {
-         if (!e.data || !isObject(e.data))
+      const processMessage = data => {
+         if (!data || !isObject(data))
             return;
 
-         if (e.data.log)
-            return console.log(`geo: ${e.data.log}`);
+         if (data.log)
+            return console.log(`geo: ${data.log}`);
 
-         if (e.data.progress)
-            return showProgress(e.data.progress);
+         if (data.progress)
+            return showProgress(data.progress);
 
-         e.data.tm3 = new Date().getTime();
+         data.tm3 = new Date().getTime();
 
-         if (e.data.init) {
+         if (data.init)
             this._worker_ready = true;
-            console.log(`Worker ready: ${e.data.tm3 - e.data.tm0}`);
-         } else
-            this.processWorkerReply(e.data);
+         else
+            this.processWorkerReply(data);
       };
 
-      // send initialization message with clones
-      this._worker.postMessage({
-         init: true,   // indicate init command for worker
-         browser,
-         tm0: new Date().getTime(),
-         vislevel: this._clones.getVisLevel(),
-         maxvisnodes: this._clones.getMaxVisNodes(),
-         clones: this._clones.nodes,
-         sortmap: this._clones.sortmap
+      if (isNodeJs()) {
+         pr = import('node:worker_threads').then(h => {
+            const wrk = new h.Worker(source_dir.slice(7) + 'modules/geom/geoworker.mjs' , { type: 'module' });
+            wrk.on('message', msg => processMessage(msg));
+            return wrk;
+         })
+      } else {
+         // Finally use ES6 module, see https://www.codedread.com/blog/archives/2017/10/19/web-workers-can-be-es6-modules-too/
+         const wrk = new Worker(source_dir + 'modules/geom/geoworker.mjs' , { type: 'module' });
+         wrk.onmessage = e => processMessage(e?.data);
+         pr = Promise.resolve(wrk);
+      }
+
+      return pr.then(wrk => {
+         this._worker = wrk;
+         // send initialization message with clones
+         wrk.postMessage({
+            init: true,   // indicate init command for worker
+            tm0: new Date().getTime(),
+            vislevel: this._clones.getVisLevel(),
+            maxvisnodes: this._clones.getMaxVisNodes(),
+            clones: this._clones.nodes,
+            sortmap: this._clones.sortmap
+         });
+
       });
    }
 
    /** @summary check if one can submit request to worker
      * @private */
    canSubmitToWorker(force) {
-      if (!this._worker) return false;
+      if (!this._worker)
+         return false;
 
       return this._worker_ready && ((this._worker_jobs === 0) || force);
    }
