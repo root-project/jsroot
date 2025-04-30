@@ -2028,9 +2028,8 @@ class TH2Painter extends THistPainter {
    /** @summary Draw TH2 bins as boxes */
    drawBinsBox() {
       const histo = this.getObject(),
-            handle = this.prepareDraw({ rounding: false, zrange: true });
-
-      const absmax = Math.max(Math.abs(handle.zmin), Math.abs(handle.zmax)),
+            handle = this.prepareDraw({ rounding: false, zrange: true }),
+            absmax = Math.max(Math.abs(handle.zmin), Math.abs(handle.zmax)),
             absmin = Math.max(0, handle.zmin),
             pad = this.getPadPainter().getRootPad(true),
             test_cutg = this.options.cutg;
