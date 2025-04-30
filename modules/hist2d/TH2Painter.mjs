@@ -1962,7 +1962,7 @@ class TH2Painter extends THistPainter {
 
                if (loop === 0)
                   dn = Math.max(dn, Math.abs(dx), Math.abs(dy));
-                else {
+               else {
                   xc = (handle.grx[i] + handle.grx[i+1])/2;
                   yc = (handle.gry[j] + handle.gry[j+1])/2;
                   dxn = scale_x*dx/dn;
