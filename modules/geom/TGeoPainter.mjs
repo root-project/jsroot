@@ -2113,8 +2113,12 @@ class TGeoPainter extends ObjectPainter {
 
          // wait until worker is really started
          if (this.ctrl.use_worker > 0) {
-            if (!this._worker) { this.startWorker(); return 1; }
-            if (!this._worker_ready) return 1;
+            if (!this._worker) {
+               this.startWorker();
+               return 1;
+            }
+            if (!this._worker_ready)
+               return 1;
          }
 
          // first copy visibility flags and check how many unique visible nodes exists
@@ -4165,7 +4169,8 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Start geo worker */
    startWorker() {
-      if (this._worker) return;
+      if (this._worker)
+         return;
 
       this._worker_ready = false;
       this._worker_jobs = 0; // counter how many requests send to worker
@@ -4174,17 +4179,18 @@ class TGeoPainter extends ObjectPainter {
       this._worker = new Worker(source_dir + 'scripts/geoworker.js' /* , { type: 'module' } */);
 
       this._worker.onmessage = e => {
-         if (!isObject(e.data)) return;
+         if (!e.data || !isObject(e.data))
+            return;
 
-         if ('log' in e.data)
+         if (e.data.log)
             return console.log(`geo: ${e.data.log}`);
 
-         if ('progress' in e.data)
+         if (e.data.progress)
             return showProgress(e.data.progress);
 
          e.data.tm3 = new Date().getTime();
 
-         if ('init' in e.data) {
+         if (e.data.init) {
             this._worker_ready = true;
             console.log(`Worker ready: ${e.data.tm3 - e.data.tm0}`);
          } else
