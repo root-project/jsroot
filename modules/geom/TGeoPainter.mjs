@@ -4178,34 +4178,16 @@ class TGeoPainter extends ObjectPainter {
 
       let pr;
 
-      const processMessage = data => {
-         if (!data || !isObject(data))
-            return;
-
-         if (data.log)
-            return console.log(`geo: ${data.log}`);
-
-         if (data.progress)
-            return showProgress(data.progress);
-
-         data.tm3 = new Date().getTime();
-
-         if (data.init)
-            this._worker_ready = true;
-         else
-            this.processWorkerReply(data);
-      };
-
       if (isNodeJs()) {
          pr = import('node:worker_threads').then(h => {
-            const wrk = new h.Worker(source_dir.slice(7) + 'modules/geom/geoworker.mjs' , { type: 'module' });
-            wrk.on('message', msg => processMessage(msg));
+            const wrk = new h.Worker(source_dir.slice(7) + 'modules/geom/nodeworker.mjs' , { type: 'module' });
+            wrk.on('message', msg => this.processWorkerReply(msg));
             return wrk;
          })
       } else {
          // Finally use ES6 module, see https://www.codedread.com/blog/archives/2017/10/19/web-workers-can-be-es6-modules-too/
          const wrk = new Worker(source_dir + 'modules/geom/geoworker.mjs' , { type: 'module' });
-         wrk.onmessage = e => processMessage(e?.data);
+         wrk.onmessage = e => this.processWorkerReply(e?.data);
          pr = Promise.resolve(wrk);
       }
 
@@ -4246,6 +4228,23 @@ class TGeoPainter extends ObjectPainter {
    /** @summary process reply from worker
      * @private */
    processWorkerReply(job) {
+
+      if (!job || !isObject(job))
+         return;
+
+      if (job.log)
+         return console.log(`geo: ${job.log}`);
+
+      if (job.progress)
+         return showProgress(job.progress);
+
+      job.tm3 = new Date().getTime();
+
+      if (job.init) {
+         this._worker_ready = true;
+         return;
+      }
+
       this._worker_jobs--;
 
       if ('collect' in job) {
