@@ -190,7 +190,8 @@
      { "name": "nostackb", "item": "draw_nostackb;1", "title": "example of bar chart with stacked histograms" },
      { "name": "err", "item": "draw_stacke;1", "title": "error draw options for stacked histograms" },
      { "name": "lego", "file": "tutorials_hist.root", "item": "multicolor", "title": "Several histograms with different colors, tutorials/hist/multicolor.C" },
-     { "name": "colz", "opt": "colz,nostack", "title": "Draw several TH2 with color and palette, from tutorials/hist/multicolor.C" }
+     { "name": "colz", "opt": "colz,nostack", "title": "Draw several TH2 with color and palette, from tutorials/hist/multicolor.C" },
+     { "name": "box", "opt": "box,nostack", "title": "Draw several TH2 with box option, reusing tutorials/hist/multicolor.C" }
    ],
    "TF1" : [
      { "name": "func", "file": "fillrandom.root", "item": "sqroot;1", "title": "default drawing of TF1", "interactive": true },
