@@ -2028,11 +2028,10 @@ class TH2Painter extends THistPainter {
    /** @summary Draw TH2 bins as boxes */
    drawBinsBox() {
       const histo = this.getObject(),
-            handle = this.prepareDraw({ rounding: false }),
-            r = this.getContourRanges();
+            handle = this.prepareDraw({ rounding: false, zrange: true });
 
-      const absmax = Math.max(Math.abs(r.zmin), Math.abs(r.zmax)),
-            absmin = Math.max(0, r.zmin),
+      const absmax = Math.max(Math.abs(handle.zmin), Math.abs(handle.zmax)),
+            absmin = Math.max(0, handle.zmin),
             pad = this.getPadPainter().getRootPad(true),
             test_cutg = this.options.cutg;
 
@@ -2045,11 +2044,12 @@ class TH2Painter extends THistPainter {
          const logmax = Math.log(absmax);
          if (absmin > 0)
             logmin = Math.log(absmin);
-         else if ((r.zminpos >= 1) && (r.zminpos < 100))
+         else if ((handle.zminpos >= 1) && (handle.zminpos < 100))
             logmin = Math.log(0.7);
          else
-            logmin = (r.zminpos > 0) ? Math.log(0.7*r.zminpos) : logmax - 10;
-         if (logmin >= logmax) logmin = logmax - 10;
+            logmin = (handle.zminpos > 0) ? Math.log(0.7 * handle.zminpos) : logmax - 10;
+         if (logmin >= logmax)
+            logmin = logmax - 10;
          xyfactor = 1.0 / (logmax - logmin);
       } else
          xyfactor = 1.0 / (absmax - absmin);

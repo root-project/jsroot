@@ -2018,10 +2018,8 @@ class THistPainter extends ObjectPainter {
    }
 
    /** @summary Return Z-scale ranges to create contour */
-   getContourRanges() {
-      const main = this.getMainPainter(),
-            fp = this.getFramePainter(),
-            src = (this !== main) && ((main?.minbin !== undefined) || main?.options.ohmin) && !this.options.IgnoreMainScale && !main?.tt_handle?.ScatterPlot ? main : this;
+   getContourRanges(main, fp) {
+      const src = (this !== main) && ((main?.minbin !== undefined) || main?.options.ohmin) && !this.options.IgnoreMainScale && !main?.tt_handle?.ScatterPlot ? main : this;
       let apply_min, zmin = src.minbin, zmax = src.maxbin, zminpos = src.minposbin;
 
       if (zmin === zmax) {
@@ -2073,7 +2071,7 @@ class THistPainter extends ObjectPainter {
       // difference from ROOT - fContour includes also last element with maxbin, which makes easier to build logz
       // when no same0 draw option specified, use main painter for creating contour, also ignore scatter drawing for main painter
       const histo = this.getObject(),
-            r = this.getContourRanges();
+            r = this.getContourRanges(main, fp);
       let nlevels = 0, custom_levels;
 
       if (histo.fContour?.length > 1) {
@@ -2561,6 +2559,9 @@ class THistPainter extends ObjectPainter {
 
       // force recalculation of z levels
       this.fContour = null;
+
+      if (args.zrange)
+         Object.assign(res, this.getContourRanges(this.getMainPainter(), this.getFramePainter()));
 
       return res;
    }
