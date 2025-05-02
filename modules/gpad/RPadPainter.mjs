@@ -219,7 +219,8 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary Divide pad on sub-pads */
    async divide(/* nx, ny, use_existing */) {
-      console.warn('RPadPainter.divide not implemented');
+      if (settings.Debug)
+         console.warn('RPadPainter.divide not implemented');
       return this;
    }
 
@@ -270,7 +271,8 @@ class RPadPainter extends RObjectPainter {
      * @desc used to find title drawing
      * @private */
    findInPrimitives(/* objname, objtype */) {
-      console.warn('findInPrimitives not implemented for RPad');
+      if (settings.Debug)
+         console.warn('findInPrimitives not implemented for RPad');
       return null;
    }
 
@@ -534,7 +536,7 @@ class RPadPainter extends RObjectPainter {
 
       this.setFastDrawing(rect.width, rect.height);
 
-      if (this.alignButtons && btns)
+      if (isFunc(this.alignButtons) && btns)
          this.alignButtons(btns, rect.width, rect.height);
 
       return true;
