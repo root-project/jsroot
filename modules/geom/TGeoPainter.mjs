@@ -374,6 +374,7 @@ class TGeoPainter extends ObjectPainter {
    #build_shapes; // build shapes required for drawings
    #drawing_ready; // if drawing completed
    #render_resolveFuncs; // resolve call-backs from render calls
+   #effectComposer;  // extra composer for special effects, used in EVE
    #new_draw_nodes; // temporary list of new draw nodes
    #new_append_nodes; // temporary list of new append nodes
    #more_nodes;      // more nodes from ROOT geometry viewer
@@ -2621,13 +2622,16 @@ class TGeoPainter extends ObjectPainter {
    createSpecialEffects() {
       if (this._webgl && this.ctrl.outline && isFunc(this.createOutline)) {
          // code used with jsroot-based geometry drawing in EVE7, not important any longer
-         this._effectComposer = new THREE.EffectComposer(this._renderer);
-         this._effectComposer.addPass(new THREE.RenderPass(this._scene, this._camera));
+         this.#effectComposer = new THREE.EffectComposer(this._renderer);
+         this.#effectComposer.addPass(new THREE.RenderPass(this._scene, this._camera));
          this.createOutline(this._scene_width, this._scene_height);
       }
 
       this.ensureBloom();
    }
+
+   /** @summary Return current effect composer */
+   getEffectComposer() { return this.#effectComposer; }
 
    /** @summary Initial scene creation */
    async createScene(w, h, render3d) {
@@ -4171,9 +4175,9 @@ class TGeoPainter extends ObjectPainter {
       this.testCameraPosition(tmout === -1);
 
       // its needed for outlinePass - do rendering, most consuming time
-      if (this._webgl && this._effectComposer && (this._effectComposer.passes.length > 0))
-         this._effectComposer.render();
-       else if (this._webgl && this._bloomComposer && (this._bloomComposer.passes.length > 0)) {
+      if (this._webgl && this.#effectComposer?.passes)
+         this.#effectComposer.render();
+       else if (this._webgl && this._bloomComposer?.passes) {
          this._renderer.clear();
          this._camera.layers.set(_BLOOM_SCENE);
          this._bloomComposer.render();
@@ -5085,7 +5089,7 @@ class TGeoPainter extends ObjectPainter {
          cleanupRender3D(this._renderer);
 
       this.ensureBloom(false);
-      delete this._effectComposer;
+      this.#effectComposer = undefined;
 
       delete this._scene;
       delete this._scene_size;
@@ -5135,7 +5139,7 @@ class TGeoPainter extends ObjectPainter {
             this.adjustCameraPosition(true, true);
          this._camera.updateProjectionMatrix();
          this._renderer.setSize(this._scene_width, this._scene_height, !this._fit_main_area);
-         this._effectComposer?.setSize(this._scene_width, this._scene_height);
+         this.#effectComposer?.setSize(this._scene_width, this._scene_height);
          this._bloomComposer?.setSize(this._scene_width, this._scene_height);
 
          if (this.isStage(stageInit))
