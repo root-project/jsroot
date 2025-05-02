@@ -374,6 +374,8 @@ class TGeoPainter extends ObjectPainter {
    #build_shapes; // build shapes required for drawings
    #drawing_ready; // if drawing completed
    #render_resolveFuncs; // resolve call-backs from render calls
+   #central_painter; // pointer on central painter
+   #subordinate_painters; // list of subordinate painters
    #effectComposer;  // extra composer for special effects, used in EVE
    #new_draw_nodes; // temporary list of new draw nodes
    #new_append_nodes; // temporary list of new append nodes
@@ -518,6 +520,31 @@ class TGeoPainter extends ObjectPainter {
 
       this.cleanup(true);
    }
+
+   /** @summary Assign or remove subordinate painter */
+   assignSubordinate(painter, do_assign = true) {
+      if (this.#subordinate_painters === undefined)
+         this.#subordinate_painters = [];
+      const pos = this.#subordinate_painters.indexOf(painter);
+      if (do_assign && pos < 0)
+         this.#subordinate_painters.push(painter);
+      else if (!do_assign && pos >= 0)
+         this.#subordinate_painters.splice(pos, 1);
+   }
+
+   /** @summary Return list of subordinate painters */
+   getSubordinates() { return this.#subordinate_painters ?? []; }
+
+   /** @summary Assign or cleanup central painter */
+   assignCentral(painter, do_assign = true) {
+      if (do_assign)
+         this.#central_painter = painter;
+      else if (this.#central_painter === painter)
+         this.#central_painter = undefined;
+   }
+
+   /** @summary Returns central painter */
+   getCentral() { return this.#central_painter; }
 
    /** @summary Function called by framework when dark mode is changed
      * @private */
@@ -1592,7 +1619,7 @@ class TGeoPainter extends ObjectPainter {
       if (!this.ctrl.highlight)
          this.highlightMesh(null);
 
-      this._slave_painters?.forEach(p => {
+      this.getSubordinates()?.forEach(p => {
          p.ctrl.highlight = this.ctrl.highlight;
          p.ctrl.highlight_bloom = this.ctrl.highlight_bloom;
          p.ctrl.bloom_strength = this.ctrl.bloom_strength;
@@ -1955,7 +1982,7 @@ class TGeoPainter extends ObjectPainter {
             if (!geo_stack) geo_stack = active_mesh[0].stack;
          }
 
-         const lst = this.#highlight_handlers || (!this._master_painter ? this._slave_painters : this._master_painter._slave_painters.concat([this._master_painter]));
+         const lst = this.#highlight_handlers || this.getCentral()?.getSubordinates().concat([this.getCentral()]) || this.getSubordinates();
 
          for (let k = 0; k < lst?.length; ++k) {
             if (lst[k] !== this)
@@ -2356,12 +2383,11 @@ class TGeoPainter extends ObjectPainter {
 
       if (this.isStage(stageWaitMain)) {
          // wait for main painter to be ready
-
-         if (!this._master_painter) {
+         if (!this.getCentral()) {
             this.changeStage(stageInit, 'Lost main painter');
             return false;
          }
-         if (!this._master_painter.isDrawingReady())
+         if (!this.getCentral().isDrawingReady())
             return 1;
 
          this.changeStage(stageBuildProj); // just do projection
@@ -2439,11 +2465,11 @@ class TGeoPainter extends ObjectPainter {
    getProjectionSource() {
       if (this.#clones_owner)
          return this._full_geom;
-      if (!this._master_painter?.isDrawingReady()) {
+      if (!this.getCentral()?.isDrawingReady()) {
          console.warn('MAIN PAINTER NOT READY WHEN DO PROJECTION');
          return null;
       }
-      return this._master_painter._toplevel;
+      return this.getCentral()._toplevel;
    }
 
    /** @summary Extend custom geometry bounding box */
@@ -3900,8 +3926,8 @@ class TGeoPainter extends ObjectPainter {
          this.#new_draw_nodes = draw_obj;
          this.ctrl.use_worker = 0;
          this._geom_viewer = true; // indicate that working with geom viewer
-      } else if (this._master_painter)
-         this.assignClones(this._master_painter.getClones(), false);
+      } else if (this.getCentral())
+         this.assignClones(this.getCentral().getClones(), false);
       else if (!draw_obj)
          this.assignClones(undefined, undefined);
       else {
@@ -4319,16 +4345,15 @@ class TGeoPainter extends ObjectPainter {
       }
    }
 
-   /** @summary start draw geometries on master and all slaves
+   /** @summary start draw geometries on central and all subordinate painters
      * @private */
    testGeomChanges() {
-      if (this._master_painter) {
-         console.warn('Get testGeomChanges call for slave painter');
-         return this._master_painter.testGeomChanges();
+      if (this.getCentral()) {
+         console.warn('Get testGeomChanges call for subordinate painter');
+         return this.getCentral().testGeomChanges();
       }
       this.startDrawGeometry();
-      for (let k = 0; k < this._slave_painters.length; ++k)
-         this._slave_painters[k].startDrawGeometry();
+      this.getSubordinates()?.forEach(p => p.startDrawGeometry());
    }
 
    /** @summary Draw axes and camera overlay */
@@ -4899,7 +4924,7 @@ class TGeoPainter extends ObjectPainter {
          check_extras = false;
          // if extra object where append, redraw them at the end
          this.getExtrasContainer('delete'); // delete old container
-         promise = this.drawExtras(this._master_painter?._extraObjects || this._extraObjects, '', false);
+         promise = this.drawExtras(this.getCentral()?._extraObjects || this._extraObjects, '', false);
       } else if ((this._first_drawing || this._full_redrawing) && this.ctrl.tracks && this.geo_manager)
          promise = this.drawExtras(this.geo_manager.fTracks, '<prnt>/Tracks');
       else
@@ -4940,7 +4965,7 @@ class TGeoPainter extends ObjectPainter {
          if (check_extras) {
             // if extra object where append, redraw them at the end
             this.getExtrasContainer('delete'); // delete old container
-            return this.drawExtras(this._master_painter?._extraObjects || this._extraObjects, '', false);
+            return this.drawExtras(this.getCentral()?._extraObjects || this._extraObjects, '', false);
          }
       }).then(() => {
          this.updateClipping(true); // do not render
@@ -5047,16 +5072,12 @@ class TGeoPainter extends ObjectPainter {
                delete obj.fVolume.$geo_painter;
          }
 
-         if (this._master_painter?._slave_painters) {
-            const pos = this._master_painter._slave_painters.indexOf(this);
-            if (pos >= 0) this._master_painter._slave_painters.splice(pos, 1);
-         }
-
-         for (let k = 0; k < this._slave_painters?.length; ++k) {
-            const slave = this._slave_painters[k];
-            if (slave?._master_painter === this)
-               slave._master_painter = null;
-         }
+         this.#central_painter?.assignSubordinate(this, false);
+         this.#subordinate_painters?.forEach(p => {
+            p.assignCentral(this, false);
+            if (p.getClones() === this.getClones())
+               p.assignClones(undefined, undefined);
+         });
 
          delete this.geo_manager;
          this.#highlight_handlers = undefined;
@@ -5072,14 +5093,8 @@ class TGeoPainter extends ObjectPainter {
             this.selectDom().html('');
       }
 
-      this._slave_painters?.forEach(slave => {
-         slave._master_painter = null;
-         if (slave.getClones() === this.getClones())
-            slave.assignClones(undefined, undefined);
-      });
-
-      this._master_painter = null;
-      this._slave_painters = [];
+      this.#central_painter = undefined;
+      this.#subordinate_painters = [];
 
       const arr = this.#render_resolveFuncs;
       this.#render_resolveFuncs = undefined;
@@ -5325,8 +5340,8 @@ class TGeoPainter extends ObjectPainter {
          obj.$geo_painter = painter;
 
       if (!painter.ctrl.is_main && painter.ctrl.project && obj.$geo_painter) {
-         painter._master_painter = obj.$geo_painter;
-         painter._master_painter._slave_painters.push(painter);
+         painter.assignCentral(obj.$geo_painter);
+         obj.$geo_painter.assignSubordinate(painter);
       }
 
       if (is_eve && (!painter.ctrl.vislevel || (painter.ctrl.vislevel < 9)))
