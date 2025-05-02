@@ -369,6 +369,9 @@ const stageInit = 0, stageCollect = 1, stageWorkerCollect = 2, stageAnalyze = 3,
 
 class TGeoPainter extends ObjectPainter {
 
+   #geo_manager;  // TGeoManager instance - if assigned in drawing
+   #superimpose;  // set when superimposed with other 3D drawings
+   #complete_handler; // callback, assigned by ROOT GeomViewer
    #worker;       // extra Worker to run different calculations
    #worker_ready; // is worker started and initialized
    #worker_jobs;  // number of submitted to worker jobs
@@ -376,8 +379,17 @@ class TGeoPainter extends ObjectPainter {
    #clones_owner; // is instance managed by the painter
    #draw_nodes;   // drawn nodes from geometry
    #build_shapes; // build shapes required for drawings
+   #draw_nodes_again; // flag set if drawing should be started again when completed
    #drawing_ready; // if drawing completed
+   #drawing_log;   // current drawing log information
+   #start_drawing_time; // time when drawing started
+   #start_render_tm; // time when rendering started
+   #first_render_tm; // first time when rendering was performed
+   #last_render_tm;  // last time when rendering was performed
+   #last_render_meshes; // last value of rendered meshes
    #render_resolveFuncs; // resolve call-backs from render calls
+   #first_drawing;   // true when very first drawing is performed
+   #full_redrawing;  // if full redraw must be performed
    #central_painter; // pointer on central painter
    #subordinate_painters; // list of subordinate painters
    #effectComposer;  // extra composer for special effects, used in EVE
@@ -405,7 +417,16 @@ class TGeoPainter extends ObjectPainter {
    #renderer;       // three.js renderer object
    #toplevel;       // three.js top level Object3D
    #camera0pos;     // camera on opposite side
+   #vrControllers;  // used in VR display
+   #controllersMeshes; // used in VR display
+   #dolly;          // used in VR display
+   #vrDisplay;      // used in VR display
+   #vr_camera_position; // used in VR display
+   #vr_camera_rotation; // used in VR display
+   #vr_camera_near;  // used in VR display
+   #standingMatrix;  // used in VR display
    #adjust_camera_with_render; // flag to readjust camera when rendering
+   #did_cleanup;    // flag set after cleanup
 
    /** @summary Constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -423,14 +444,15 @@ class TGeoPainter extends ObjectPainter {
       super(dom, obj);
 
       if (getHistPainter3DCfg(this.getMainPainter()))
-         this.superimpose = true;
+         this.#superimpose = true;
 
-      if (gm) this.geo_manager = gm;
+      if (gm)
+         this.#geo_manager = gm;
 
       this.no_default_title = true; // do not set title to main DIV
       this.mode3d = true; // indication of 3D mode
       this.drawing_stage = stageInit; //
-      this.drawing_log = 'Init';
+      this.#drawing_log = 'Init';
       this.ctrl = {
          clipIntersect: true,
          clipVisualize: false,
@@ -603,7 +625,7 @@ class TGeoPainter extends ObjectPainter {
             default: msg = `stage ${value}`;
          }
       }
-      this.drawing_log = msg;
+      this.#drawing_log = msg;
    }
 
    /** @summary Check drawing stage */
@@ -675,9 +697,9 @@ class TGeoPainter extends ObjectPainter {
    initVRMode() {
       // Dolly contains camera and controllers in VR Mode
       // Allows moving the user in the scene
-      this._dolly = new THREE.Group();
-      this.#scene.add(this._dolly);
-      this._standingMatrix = new THREE.Matrix4();
+      this.#dolly = new THREE.Group();
+      this.#scene.add(this.#dolly);
+      this.#standingMatrix = new THREE.Matrix4();
 
       // Raycaster temp variables to avoid one per frame allocation.
       this._raycasterEnd = new THREE.Vector3();
@@ -687,9 +709,9 @@ class TGeoPainter extends ObjectPainter {
          const vrDisplay = displays[0];
          if (!vrDisplay) return;
          this.#renderer.vr.setDevice(vrDisplay);
-         this._vrDisplay = vrDisplay;
+         this.#vrDisplay = vrDisplay;
          if (vrDisplay.stageParameters)
-            this._standingMatrix.fromArray(vrDisplay.stageParameters.sittingToStandingTransform);
+            this.#standingMatrix.fromArray(vrDisplay.stageParameters.sittingToStandingTransform);
 
          this.initVRControllersGeometry();
       });
@@ -707,15 +729,15 @@ class TGeoPainter extends ObjectPainter {
             sphere1 = new THREE.Mesh(geometry, material),
             sphere2 = new THREE.Mesh(geometry, material);
 
-      this._controllersMeshes = [];
-      this._controllersMeshes.push(sphere1);
-      this._controllersMeshes.push(sphere2);
+      this.#controllersMeshes = [];
+      this.#controllersMeshes.push(sphere1);
+      this.#controllersMeshes.push(sphere2);
       ray1Mesh.position.z -= 1;
       ray2Mesh.position.z -= 1;
       sphere1.add(ray1Mesh);
       sphere2.add(ray2Mesh);
-      this._dolly.add(sphere1);
-      this._dolly.add(sphere2);
+      this.#dolly.add(sphere1);
+      this.#dolly.add(sphere2);
       // Controller mesh hidden by default
       sphere1.visible = false;
       sphere2.visible = false;
@@ -726,17 +748,17 @@ class TGeoPainter extends ObjectPainter {
    updateVRControllersList() {
       const gamepads = navigator.getGamepads && navigator.getGamepads();
       // Has controller list changed?
-      if (this.vrControllers && (gamepads.length === this.vrControllers.length)) return;
+      if (this.#vrControllers && (gamepads.length === this.#vrControllers.length)) return;
       // Hide meshes.
-      this._controllersMeshes.forEach(mesh => { mesh.visible = false; });
-      this._vrControllers = [];
+      this.#controllersMeshes.forEach(mesh => { mesh.visible = false; });
+      this.#vrControllers = [];
       for (let i = 0; i < gamepads.length; ++i) {
          if (!gamepads[i] || !gamepads[i].pose) continue;
-         this._vrControllers.push({
+         this.#vrControllers.push({
             gamepad: gamepads[i],
-            mesh: this._controllersMeshes[i]
+            mesh: this.#controllersMeshes[i]
          });
-         this._controllersMeshes[i].visible = true;
+         this.#controllersMeshes[i].visible = true;
       }
    }
 
@@ -744,8 +766,8 @@ class TGeoPainter extends ObjectPainter {
      * @private */
    processVRControllerIntersections() {
       let intersects = [];
-      for (let i = 0; i < this._vrControllers.length; ++i) {
-         const controller = this._vrControllers[i].mesh,
+      for (let i = 0; i < this.#vrControllers.length; ++i) {
+         const controller = this.#vrControllers[i].mesh,
                end = controller.localToWorld(this._raycasterEnd.set(0, 0, -1)),
                origin = controller.localToWorld(this._raycasterOrigin.set(0, 0, 0));
          end.sub(origin).normalize();
@@ -761,15 +783,15 @@ class TGeoPainter extends ObjectPainter {
    updateVRControllers() {
       this.updateVRControllersList();
       // Update pose.
-      for (let i = 0; i < this._vrControllers.length; ++i) {
-         const controller = this._vrControllers[i],
+      for (let i = 0; i < this.#vrControllers.length; ++i) {
+         const controller = this.#vrControllers[i],
                orientation = controller.gamepad.pose.orientation,
                position = controller.gamepad.pose.position,
                controllerMesh = controller.mesh;
          if (orientation) controllerMesh.quaternion.fromArray(orientation);
          if (position) controllerMesh.position.fromArray(position);
          controllerMesh.updateMatrix();
-         controllerMesh.applyMatrix4(this._standingMatrix);
+         controllerMesh.applyMatrix4(this.#standingMatrix);
          controllerMesh.matrixWorldNeedsUpdate = true;
       }
       this.processVRControllerIntersections();
@@ -778,19 +800,20 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Toggle VR mode
      * @private */
    toggleVRMode() {
-      if (!this._vrDisplay) return;
+      if (!this.#vrDisplay)
+         return;
       // Toggle VR mode off
-      if (this._vrDisplay.isPresenting) {
+      if (this.#vrDisplay.isPresenting) {
          this.exitVRMode();
          return;
       }
-      this._previousCameraPosition = this.#camera.position.clone();
-      this._previousCameraRotation = this.#camera.rotation.clone();
-      this._vrDisplay.requestPresent([{ source: this.#renderer.domElement }]).then(() => {
-         this._previousCameraNear = this.#camera.near;
-         this._dolly.position.set(this.#camera.position.x/4, -this.#camera.position.y/8, -this.#camera.position.z/4);
+      this.#vr_camera_position = this.#camera.position.clone();
+      this.#vr_camera_rotation = this.#camera.rotation.clone();
+      this.#vrDisplay.requestPresent([{ source: this.#renderer.domElement }]).then(() => {
+         this.#vr_camera_near = this.#camera.near;
+         this.#dolly.position.set(this.#camera.position.x/4, -this.#camera.position.y/8, -this.#camera.position.z/4);
          this.#camera.position.set(0, 0, 0);
-         this._dolly.add(this.#camera);
+         this.#dolly.add(this.#camera);
          this.#camera.near = 0.1;
          this.#camera.updateProjectionMatrix();
          this.#renderer.vr.enabled = true;
@@ -810,28 +833,28 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Exit VR mode
      * @private */
    exitVRMode() {
-      if (!this._vrDisplay.isPresenting) return;
+      if (!this.#vrDisplay.isPresenting)
+         return;
       this.#renderer.vr.enabled = false;
-      this._dolly.remove(this.#camera);
+      this.#dolly.remove(this.#camera);
       this.#scene.add(this.#camera);
       // Restore Camera pose
-      this.#camera.position.copy(this._previousCameraPosition);
-      this._previousCameraPosition = undefined;
-      this.#camera.rotation.copy(this._previousCameraRotation);
-      this._previousCameraRotation = undefined;
-      this.#camera.near = this._previousCameraNear;
+      this.#camera.position.copy(this.#vr_camera_position);
+      this.#vr_camera_position = undefined;
+      this.#camera.rotation.copy(this.#vr_camera_rotation);
+      this.#vr_camera_rotation = undefined;
+      this.#camera.near = this.#vr_camera_near;
       this.#camera.updateProjectionMatrix();
-      this._vrDisplay.exitPresent();
+      this.#vrDisplay.exitPresent();
    }
 
    /** @summary Returns main geometry object */
-   getGeometry() {
-      return this.getObject();
-   }
+   getGeometry() { return this.getObject(); }
 
    /** @summary Modify visibility of provided node by name */
    modifyVisisbility(name, sign) {
-      if (getNodeKind(this.getGeometry()) !== 0) return;
+      if (getNodeKind(this.getGeometry()) !== 0)
+         return;
 
       if (!name)
          return setGeoBit(this.getGeometry().fVolume, geoBITS.kVisThis, (sign === '+'));
@@ -855,9 +878,10 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Decode drawing options */
    decodeOptions(opt) {
-      if (!isStr(opt)) opt = '';
+      if (!isStr(opt))
+         opt = '';
 
-      if (this.superimpose && (opt.indexOf('same') === 0))
+      if (this.#superimpose && (opt.indexOf('same') === 0))
          opt = opt.slice(4);
 
       const res = this.ctrl,
@@ -1121,7 +1145,7 @@ class TGeoPainter extends ObjectPainter {
       menu.addchk(this.ctrl._axis === 2, 'center', 2, arg => this.setAxesDraw(parseInt(arg)));
       menu.endsub();
 
-      if (this.geo_manager)
+      if (this.#geo_manager)
          menu.addchk(this.ctrl.showtop, 'Show top volume', () => this.setShowTop(!this.ctrl.showtop));
 
       menu.addchk(this.ctrl.wireframe, 'Wire frame', () => this.toggleWireFrame());
@@ -1697,7 +1721,7 @@ class TGeoPainter extends ObjectPainter {
 
       // this.#scene_size = undefined; // ensure reassign of camera position
 
-      // this._first_drawing = true;
+      // this.#first_drawing = true;
       // this.startDrawGeometry(true);
    }
 
@@ -2098,7 +2122,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Add orbit control */
    addOrbitControls() {
-      if (this.#controls || !this._webgl || this.isBatchMode() || this.superimpose || isNodeJs()) return;
+      if (this.#controls || !this._webgl || this.isBatchMode() || this.#superimpose || isNodeJs()) return;
 
       if (!this.getCanvPainter())
          this.setTooltipAllowed(settings.Tooltip);
@@ -2217,13 +2241,13 @@ class TGeoPainter extends ObjectPainter {
          }
 
          // first copy visibility flags and check how many unique visible nodes exists
-         let numvis = this._first_drawing ? this.#clones.countVisibles() : 0,
+         let numvis = this.#first_drawing ? this.#clones.countVisibles() : 0,
              matrix = null, frustum = null;
 
          if (!numvis)
-            numvis = this.#clones.markVisibles(false, false, Boolean(this.geo_manager) && !this.ctrl.showtop);
+            numvis = this.#clones.markVisibles(false, false, Boolean(this.#geo_manager) && !this.ctrl.showtop);
 
-         if (this.ctrl.select_in_view && !this._first_drawing) {
+         if (this.ctrl.select_in_view && !this.#first_drawing) {
             // extract camera projection matrix for selection
 
             matrix = createProjectionMatrix(this.#camera);
@@ -2301,7 +2325,7 @@ class TGeoPainter extends ObjectPainter {
                this.#clones.createObject3D(del[n].stack, this.#toplevel, 'delete_mesh');
 
             if (del.length > 0)
-               this.drawing_log = `Delete ${del.length} nodes`;
+               this.#drawing_log = `Delete ${del.length} nodes`;
          }
 
          this.#draw_nodes = this.#new_draw_nodes;
@@ -2366,7 +2390,7 @@ class TGeoPainter extends ObjectPainter {
                this.changeStage(stageBuildReady);
             } else {
                this.ctrl.info.num_shapes = res.shapes;
-               this.drawing_log = `Creating: ${res.shapes} / ${this.#build_shapes.length} shapes,  ${res.faces} faces`;
+               this.#drawing_log = `Creating: ${res.shapes} / ${this.#build_shapes.length} shapes,  ${res.faces} faces`;
                return true;
                // if (res.notusedshapes < 30) return true;
             }
@@ -2406,7 +2430,7 @@ class TGeoPainter extends ObjectPainter {
          }
 
          if (!this.isStage(stageBuild))
-            this.drawing_log = `Building meshes ${this.ctrl.info.num_meshes} / ${this.ctrl.info.num_faces}`;
+            this.#drawing_log = `Building meshes ${this.ctrl.info.num_meshes} / ${this.ctrl.info.num_faces}`;
          return true;
       }
 
@@ -2691,7 +2715,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Initial scene creation */
    async createScene(w, h, render3d) {
-      if (this.superimpose) {
+      if (this.#superimpose) {
          const cfg = getHistPainter3DCfg(this.getMainPainter());
 
          if (cfg?.renderer) {
@@ -2786,16 +2810,15 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Start geometry drawing */
    startDrawGeometry(force) {
       if (!force && !this.isStage(stageInit)) {
-         this._draw_nodes_again = true;
+         this.#draw_nodes_again = true;
          return;
       }
 
       if (this.#clones_owner)
          this.#clones?.setDefaultColors(this.ctrl.dflt_colors);
 
-      this._startm = new Date().getTime();
-      this._last_render_tm = this._startm;
-      this._last_render_meshes = 0;
+      this.#last_render_tm = this.#start_render_tm = new Date().getTime();
+      this.#last_render_meshes = 0;
       this.changeStage(stageCollect);
       this.#drawing_ready = false;
       this.ctrl.info.num_meshes = 0;
@@ -2816,7 +2839,7 @@ class TGeoPainter extends ObjectPainter {
       delete this._last_manifest;
       delete this._last_hidden; // clear list of hidden objects
 
-      delete this._draw_nodes_again; // forget about such flag
+      this.#draw_nodes_again = undefined; // forget about such flag
 
       this.continueDraw();
    }
@@ -2931,7 +2954,8 @@ class TGeoPainter extends ObjectPainter {
      * @param arg - true forces camera readjustment, 'first' is called when suppose to be first after complete drawing
      * @param keep_zoom - tries to keep zooming factor of the camera */
    adjustCameraPosition(arg, keep_zoom) {
-      if (!this.#toplevel || this.superimpose) return;
+      if (!this.#toplevel || this.#superimpose)
+         return;
 
       const force = (arg === true),
             first_time = (arg === 'first') || force,
@@ -3746,7 +3770,7 @@ class TGeoPainter extends ObjectPainter {
       if (!prnt) {
          prnt = this.getGeometry();
          if (!prnt && (getNodeKind(prnt) !== 0)) return null;
-         itemname = this.geo_manager ? prnt.fName : '';
+         itemname = this.#geo_manager ? prnt.fName : '';
          first_level = true;
          volumes = [];
       } else {
@@ -3795,7 +3819,7 @@ class TGeoPainter extends ObjectPainter {
    async loadMacro(script_name) {
       const result = { obj: this.getGeometry(), prefix: '' };
 
-      if (this.geo_manager)
+      if (this.#geo_manager)
          result.prefix = result.obj.fName;
 
       if (!script_name || (script_name.length < 3) || (getNodeKind(result.obj) !== 0))
@@ -3944,7 +3968,7 @@ class TGeoPainter extends ObjectPainter {
      * @desc Return value used as promise for painter */
    async prepareObjectDraw(draw_obj, name_prefix) {
       // if did cleanup - ignore all kind of activity
-      if (this.did_cleanup)
+      if (this.#did_cleanup)
          return null;
 
       if (name_prefix === '__geom_viewer_append__') {
@@ -3961,14 +3985,14 @@ class TGeoPainter extends ObjectPainter {
       else if (!draw_obj)
          this.assignClones(undefined, undefined);
       else {
-         this._start_drawing_time = new Date().getTime();
+         this.#start_drawing_time = new Date().getTime();
          this.assignClones(new ClonedNodes(draw_obj), true);
          let lvl = this.ctrl.vislevel, maxnodes = this.ctrl.maxnodes;
-         if (this.geo_manager) {
-            if (!lvl && this.geo_manager.fVisLevel)
-               lvl = this.geo_manager.fVisLevel;
+         if (this.#geo_manager) {
+            if (!lvl && this.#geo_manager.fVisLevel)
+               lvl = this.#geo_manager.fVisLevel;
             if (!maxnodes)
-               maxnodes = this.geo_manager.fMaxVisNodes;
+               maxnodes = this.#geo_manager.fMaxVisNodes;
          }
 
          this.#clones.setVisLevel(lvl);
@@ -3977,7 +4001,7 @@ class TGeoPainter extends ObjectPainter {
 
          this.#clones.name_prefix = name_prefix;
 
-         const hide_top_volume = Boolean(this.geo_manager) && !this.ctrl.showtop;
+         const hide_top_volume = Boolean(this.#geo_manager) && !this.ctrl.showtop;
          let uniquevis = this.ctrl.no_screen ? 0 : this.#clones.markVisibles(true, false, hide_top_volume);
 
          if (uniquevis <= 0)
@@ -3987,7 +4011,7 @@ class TGeoPainter extends ObjectPainter {
 
          this.#clones.produceIdShifts();
 
-         const spent = new Date().getTime() - this._start_drawing_time;
+         const spent = new Date().getTime() - this.#start_drawing_time;
 
          if (!this.#scene && (settings.Debug || spent > 1000))
             console.log(`Creating clones ${this.#clones.nodes.length} takes ${spent} ms uniquevis ${uniquevis}`);
@@ -3999,7 +4023,7 @@ class TGeoPainter extends ObjectPainter {
       let promise = Promise.resolve(true);
 
       if (!this.#scene) {
-         this._first_drawing = true;
+         this.#first_drawing = true;
 
          const pp = this.getPadPainter();
 
@@ -4050,7 +4074,7 @@ class TGeoPainter extends ObjectPainter {
 
       return promise.then(() => {
          // this is limit for the visible faces, number of volumes does not matter
-         if (this._first_drawing && !this.ctrl.maxfaces)
+         if (this.#first_drawing && !this.ctrl.maxfaces)
             this.ctrl.maxfaces = 200000 * this.ctrl.more;
 
          // set top painter only when first child exists
@@ -4072,7 +4096,8 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary methods show info when first geometry drawing is performed */
    showDrawInfo(msg) {
-      if (this.isBatchMode() || !this._first_drawing || !this._start_drawing_time) return;
+      if (this.isBatchMode() || !this.#first_drawing || !this.#start_drawing_time)
+         return;
 
       const main = this.#renderer.domElement.parentNode;
       if (!main) return;
@@ -4082,7 +4107,7 @@ class TGeoPainter extends ObjectPainter {
       if (!msg)
          info?.remove();
        else {
-         const spent = (new Date().getTime() - this._start_drawing_time)*1e-3;
+         const spent = (new Date().getTime() - this.#start_drawing_time)*1e-3;
          if (!info) {
             info = getDocument().createElement('p');
             info.setAttribute('class', 'geo_info');
@@ -4099,7 +4124,7 @@ class TGeoPainter extends ObjectPainter {
       if (this.isStage(stageInit)) return;
 
       const tm0 = new Date().getTime(),
-            interval = this._first_drawing ? 1000 : 200;
+            interval = this.#first_drawing ? 1000 : 200;
       let now = tm0;
 
       while (true) {
@@ -4109,33 +4134,35 @@ class TGeoPainter extends ObjectPainter {
          now = new Date().getTime();
 
          // stop creation after 100 sec, render as is
-         if (now - this._startm > 1e5) {
+         if (now - this.#start_render_tm > 1e5) {
             this.changeStage(stageInit, 'Abort build after 100s');
             break;
          }
 
          // if we are that fast, do next action
-         if ((res === true) && (now - tm0 < interval)) continue;
+         if ((res === true) && (now - tm0 < interval))
+            continue;
 
          if ((now - tm0 > interval) || (res === 1) || (res === 2)) {
-            showProgress(this.drawing_log);
+            showProgress(this.#drawing_log);
 
-            this.showDrawInfo(this.drawing_log);
+            this.showDrawInfo(this.#drawing_log);
 
-            if (this._first_drawing && this._webgl && (this._num_meshes - this._last_render_meshes > 100) && (now - this._last_render_tm > 2.5*interval)) {
+            if (this.#first_drawing && this._webgl && (this.ctrl.info.num_meshes - this.#last_render_meshes > 100) && (now - this.#last_render_tm > 2.5*interval)) {
                this.adjustCameraPosition();
                this.render3D(-1);
-               this._last_render_meshes = this.ctrl.info.num_meshes;
+               this.#last_render_meshes = this.ctrl.info.num_meshes;
             }
-            if (res !== 2) setTimeout(() => this.continueDraw(), (res === 1) ? 100 : 1);
+            if (res !== 2)
+               setTimeout(() => this.continueDraw(), (res === 1) ? 100 : 1);
 
             return;
          }
       }
 
-      const take_time = now - this._startm;
+      const take_time = now - this.#start_render_tm;
 
-      if ((this._first_drawing || this._full_redrawing) && (settings.Debug || take_time > 1000))
+      if ((this.#first_drawing || this.#full_redrawing) && (settings.Debug || take_time > 1000))
          console.log(`Create tm = ${take_time} meshes ${this.ctrl.info.num_meshes} faces ${this.ctrl.info.num_faces}`);
 
       if (take_time > 300) {
@@ -4185,10 +4212,10 @@ class TGeoPainter extends ObjectPainter {
      *   -1    - force recheck of rendering order based on camera position */
    render3D(tmout, measure) {
       if (!this.#renderer) {
-         if (!this.did_cleanup)
-            console.warn('renderer object not exists - check code');
-         else
+         if (this.#did_cleanup)
             console.warn('try to render after cleanup');
+         else
+            console.warn('renderer object not exists - check code');
          return this;
       }
 
@@ -4245,12 +4272,12 @@ class TGeoPainter extends ObjectPainter {
 
       const tm2 = new Date();
 
-      this.last_render_tm = tm2.getTime();
+      this.#last_render_tm = tm2.getTime();
 
-      if ((this.first_render_tm === 0) && (measure === true)) {
-         this.first_render_tm = tm2.getTime() - tm1.getTime();
-         if (this.first_render_tm > 500)
-            console.log(`three.js r${THREE.REVISION}, first render tm = ${this.first_render_tm}`);
+      if ((this.#first_render_tm === 0) && (measure === true)) {
+         this.#first_render_tm = tm2.getTime() - tm1.getTime();
+         if (this.#first_render_tm > 500)
+            console.log(`three.js r${THREE.REVISION}, first render tm = ${this.#first_render_tm}`);
       }
 
       afterRender3D(this.#renderer);
@@ -4581,7 +4608,7 @@ class TGeoPainter extends ObjectPainter {
       if (!this.ctrl._axis)
          return false;
 
-      const box = this.getGeomBoundingBox(this.#toplevel, this.superimpose ? 'original' : undefined),
+      const box = this.getGeomBoundingBox(this.#toplevel, this.#superimpose ? 'original' : undefined),
           container = this.getExtrasContainer('create', 'axis'),
           text_size = 0.02 * Math.max(box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z),
           center = [0, 0, 0],
@@ -4935,7 +4962,7 @@ class TGeoPainter extends ObjectPainter {
      * @desc Used together with web-based geometry viewer
      * @private */
    setCompleteHandler(callback) {
-      this._complete_handler = callback;
+      this.#complete_handler = callback;
    }
 
    /** @summary Completes drawing procedure
@@ -4955,23 +4982,23 @@ class TGeoPainter extends ObjectPainter {
          // if extra object where append, redraw them at the end
          this.getExtrasContainer('delete'); // delete old container
          promise = this.drawExtras(this.getCentral()?._extraObjects || this._extraObjects, '', false);
-      } else if ((this._first_drawing || this._full_redrawing) && this.ctrl.tracks && this.geo_manager)
-         promise = this.drawExtras(this.geo_manager.fTracks, '<prnt>/Tracks');
+      } else if ((this.#first_drawing || this.#full_redrawing) && this.ctrl.tracks && this.#geo_manager)
+         promise = this.drawExtras(this.#geo_manager.fTracks, '<prnt>/Tracks');
       else
          promise = Promise.resolve(true);
 
       return promise.then(() => {
-         if (this._full_redrawing) {
+         if (this.#full_redrawing) {
             this.adjustCameraPosition('first');
-            this._full_redrawing = false;
+            this.#full_redrawing = false;
             full_redraw = true;
             this.changedDepthMethod('norender');
          }
 
-         if (this._first_drawing) {
+         if (this.#first_drawing) {
             this.adjustCameraPosition('first');
             this.showDrawInfo();
-            this._first_drawing = false;
+            this.#first_drawing = false;
             first_time = true;
             full_redraw = true;
          }
@@ -5009,15 +5036,17 @@ class TGeoPainter extends ObjectPainter {
          if (first_time && !this.isBatchMode()) {
             // after first draw check if highlight can be enabled
             if (this.ctrl.highlight === 0)
-               this.ctrl.highlight = (this.first_render_tm < 1000);
+               this.ctrl.highlight = (this.#first_render_tm < 1000);
 
             // also highlight of scene object can be assigned at the first draw
             if (this.ctrl.highlight_scene === 0)
                this.ctrl.highlight_scene = this.ctrl.highlight;
 
             // if rotation was enabled, do it
-            if (this._webgl && this.ctrl.rotate && !this.ctrl.project) this.autorotate(2.5);
-            if (this._webgl && this.ctrl.show_controls) this.showControlGui(true);
+            if (this._webgl && this.ctrl.rotate && !this.ctrl.project)
+               this.autorotate(2.5);
+            if (this._webgl && this.ctrl.show_controls)
+               this.showControlGui(true);
          }
 
          this.setAsMainPainter();
@@ -5027,10 +5056,10 @@ class TGeoPainter extends ObjectPainter {
             delete this._resolveFunc;
          }
 
-         if (isFunc(this._complete_handler))
-            this._complete_handler(this);
+         if (isFunc(this.#complete_handler))
+            this.#complete_handler(this);
 
-         if (this._draw_nodes_again)
+         if (this.#draw_nodes_again)
             this.startDrawGeometry(); // relaunch drawing
          else
             this.#drawing_ready = true; // indicate that drawing is completed
@@ -5067,7 +5096,7 @@ class TGeoPainter extends ObjectPainter {
       if (!first_time) {
          let can3d = 0;
 
-         if (!this.superimpose) {
+         if (!this.#superimpose) {
             this.clearTopPainter(); // remove as pointer
 
             if (this.#on_pad) {
@@ -5109,7 +5138,7 @@ class TGeoPainter extends ObjectPainter {
                p.assignClones(undefined, undefined);
          });
 
-         delete this.geo_manager;
+         this.#geo_manager = undefined;
          this.#highlight_handlers = undefined;
 
          super.cleanup();
@@ -5117,7 +5146,7 @@ class TGeoPainter extends ObjectPainter {
          delete this.ctrl;
          delete this.options;
 
-         this.did_cleanup = true;
+         this.#did_cleanup = true;
 
          if (can3d < 0)
             this.selectDom().html('');
@@ -5130,7 +5159,7 @@ class TGeoPainter extends ObjectPainter {
       this.#render_resolveFuncs = undefined;
       arr?.forEach(func => func(this));
 
-      if (!this.superimpose)
+      if (!this.#superimpose)
          cleanupRender3D(this.#renderer);
 
       this.ensureBloom(false);
@@ -5156,11 +5185,12 @@ class TGeoPainter extends ObjectPainter {
 
       this.#on_pad = undefined;
 
-      this.first_render_tm = 0; // time needed for first rendering
-      this.last_render_tm = 0;
+      this.#start_render_tm = 0;
+      this.#first_render_tm = 0; // time needed for first rendering
+      this.#last_render_tm = 0;
 
       this.changeStage(stageInit, 'cleanup');
-      delete this.drawing_log;
+      this.#drawing_log = undefined;
 
       this.#gui = undefined;
       this.#controls = undefined;
@@ -5251,8 +5281,8 @@ class TGeoPainter extends ObjectPainter {
       if (obj._typename.indexOf(clTGeoVolume) === 0)
          obj = { _typename: clTGeoNode, fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
 
-      if (this.geo_manager && gm) {
-         this.geo_manager = gm;
+      if (this.#geo_manager && gm) {
+         this.#geo_manager = gm;
          this.assignObject(obj);
          this._did_update = true;
          return true;
@@ -5276,12 +5306,12 @@ class TGeoPainter extends ObjectPainter {
       // only remove all childs from top level object
       disposeThreejsObject(this.#toplevel, true);
 
-      this._full_redrawing = true;
+      this.#full_redrawing = true;
    }
 
     /** @summary Redraw TGeo object inside TPad */
    redraw() {
-      if (this.superimpose) {
+      if (this.#superimpose) {
          const cfg = getHistPainter3DCfg(this.getMainPainter());
 
          if (cfg) {
@@ -5325,7 +5355,7 @@ class TGeoPainter extends ObjectPainter {
 
       this.clearDrawings();
       const draw_obj = this.getGeometry(),
-            name_prefix = this.geo_manager ? draw_obj.fName : '';
+            name_prefix = this.#geo_manager ? draw_obj.fName : '';
       return this.prepareObjectDraw(draw_obj, name_prefix);
    }
 
