@@ -3063,11 +3063,11 @@ class ClonedNodes {
    /** @summary Find stack by name which include names of all parents */
    findStackByName(fullname) {
       const names = fullname.split('/'), stack = [];
+      let currid = 0;
 
       if (this.getNodeName(currid) !== names[0])
          return null;
 
-      let currid = 0;
       for (let n = 1; n < names.length; ++n) {
          const node = this.nodes[currid];
          if (!node.chlds) return null;

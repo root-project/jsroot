@@ -377,6 +377,7 @@ class TGeoPainter extends ObjectPainter {
    #central_painter; // pointer on central painter
    #subordinate_painters; // list of subordinate painters
    #effectComposer;  // extra composer for special effects, used in EVE
+   #bloomComposer;   // extra composer for bloom highlight
    #new_draw_nodes; // temporary list of new draw nodes
    #new_append_nodes; // temporary list of new append nodes
    #more_nodes;      // more nodes from ROOT geometry viewer
@@ -388,6 +389,13 @@ class TGeoPainter extends ObjectPainter {
    #highlight_handlers; // highlight handlers
    #animating;      // set when animation started
    #last_camera_position; // last camera position
+   #fullgeom_proj;  // full geometry to produce projection
+   #selected_mesh;  // used in highlight
+   #fog;            // fog for the scene
+   #lookat;         // position to which camera looks at
+   #scene_size;     // stored scene size to control changes
+   #scene_width;    // actual scene width
+   #scene_height;    // actual scene width
 
    /** @summary Constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -1380,7 +1388,7 @@ class TGeoPainter extends ObjectPainter {
       if (main.style('position') === 'static')
          main.style('position', 'relative');
 
-      this.#gui = new GUI({ container: main.node(), closeFolders: true, width: Math.min(300, this._scene_width / 2),
+      this.#gui = new GUI({ container: main.node(), closeFolders: true, width: Math.min(300, this.#scene_width / 2),
                             title: 'Settings' });
 
       const dom = this.#gui.domElement;
@@ -1481,7 +1489,6 @@ class TGeoPainter extends ObjectPainter {
 
       scene.add(this.ctrl, 'use_fog').name('Fog')
            .listen().onChange(() => this.changedUseFog());
-
 
       // Appearance Options
 
@@ -1666,7 +1673,7 @@ class TGeoPainter extends ObjectPainter {
 
       this.render3D();
 
-      // delete this._scene_size; // ensure reassign of camera position
+      // this.#scene_size = undefined; // ensure reassign of camera position
 
       // this._first_drawing = true;
       // this.startDrawGeometry(true);
@@ -1681,27 +1688,27 @@ class TGeoPainter extends ObjectPainter {
          on = this.ctrl.highlight_bloom && this.ctrl.getMaterialCfg()?.emissive;
       }
 
-      if (on && !this._bloomComposer) {
+      if (on && !this.#bloomComposer) {
          this._camera.layers.enable(_BLOOM_SCENE);
-         this._bloomComposer = new THREE.EffectComposer(this._renderer);
-         this._bloomComposer.addPass(new THREE.RenderPass(this._scene, this._camera));
-         const pass = new THREE.UnrealBloomPass(new THREE.Vector2(this._scene_width, this._scene_height), 1.5, 0.4, 0.85);
+         this.#bloomComposer = new THREE.EffectComposer(this._renderer);
+         this.#bloomComposer.addPass(new THREE.RenderPass(this._scene, this._camera));
+         const pass = new THREE.UnrealBloomPass(new THREE.Vector2(this.#scene_width, this.#scene_height), 1.5, 0.4, 0.85);
          pass.threshold = 0;
          pass.radius = 0;
          pass.renderToScreen = true;
-         this._bloomComposer.addPass(pass);
+         this.#bloomComposer.addPass(pass);
          this._renderer.autoClear = false;
-      } else if (!on && this._bloomComposer) {
-         this._bloomComposer.dispose();
-         delete this._bloomComposer;
+      } else if (!on && this.#bloomComposer) {
+         this.#bloomComposer.dispose();
+         this.#bloomComposer = undefined;
          if (this._renderer)
             this._renderer.autoClear = true;
          this._camera?.layers.disable(_BLOOM_SCENE);
          this._camera?.layers.set(_ENTIRE_SCENE);
       }
 
-      if (this._bloomComposer?.passes)
-         this._bloomComposer.passes[1].strength = this.ctrl.bloom_strength;
+      if (this.#bloomComposer?.passes)
+         this.#bloomComposer.passes[1].strength = this.ctrl.bloom_strength;
    }
 
 
@@ -1969,9 +1976,11 @@ class TGeoPainter extends ObjectPainter {
       if (active_mesh) {
          // check if highlight is disabled for correspondent objects kinds
          if (active_mesh[0].geo_object) {
-            if (!this.ctrl.highlight_scene) active_mesh = null;
+            if (!this.ctrl.highlight_scene)
+               active_mesh = null;
          } else
-            if (!this.ctrl.highlight) active_mesh = null;
+            if (!this.ctrl.highlight)
+               active_mesh = null;
       }
 
       if (!no_recursive) {
@@ -1990,34 +1999,30 @@ class TGeoPainter extends ObjectPainter {
          }
       }
 
-      const curr_mesh = this._selected_mesh;
+      const curr_mesh = this.#selected_mesh;
+      if (!curr_mesh && !active_mesh)
+         return false;
 
-      if (!curr_mesh && !active_mesh) return false;
-
-      const get_ctrl = mesh => mesh.get_ctrl ? mesh.get_ctrl() : new GeoDrawingControl(mesh, this.ctrl.highlight_bloom && this._bloomComposer);
+      const get_ctrl = mesh => mesh.get_ctrl ? mesh.get_ctrl() : new GeoDrawingControl(mesh, this.ctrl.highlight_bloom && this.#bloomComposer);
 
       let same = false;
 
       // check if selections are the same
       if (curr_mesh && active_mesh && (curr_mesh.length === active_mesh.length)) {
          same = true;
-         for (let k = 0; (k < curr_mesh.length) && same; ++k)
-            if ((curr_mesh[k] !== active_mesh[k]) || get_ctrl(curr_mesh[k]).checkHighlightIndex(geo_index)) same = false;
+         for (let k = 0; (k < curr_mesh.length) && same; ++k) {
+            if ((curr_mesh[k] !== active_mesh[k]) || get_ctrl(curr_mesh[k]).checkHighlightIndex(geo_index))
+               same = false;
+         }
       }
       if (same)
          return Boolean(curr_mesh);
 
-      if (curr_mesh) {
-         for (let k = 0; k < curr_mesh.length; ++k)
-            get_ctrl(curr_mesh[k]).setHighlight();
-      }
+      curr_mesh?.forEach(mesh => get_ctrl(mesh).setHighlight());
 
-      this._selected_mesh = active_mesh;
+      this.#selected_mesh = active_mesh;
 
-      if (active_mesh) {
-         for (let k = 0; k < active_mesh.length; ++k)
-            get_ctrl(active_mesh[k]).setHighlight(color || new THREE.Color(this.ctrl.highlight_color), geo_index);
-      }
+      active_mesh?.forEach(mesh => get_ctrl(mesh).setHighlight(color || new THREE.Color(this.ctrl.highlight_color), geo_index));
 
       this.render3D(0);
 
@@ -2026,13 +2031,15 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary handle mouse click event */
    processMouseClick(pnt, intersects, evnt) {
-      if (!intersects.length) return;
+      if (!intersects.length)
+         return;
 
       const mesh = intersects[0].object;
-      if (!mesh.get_ctrl) return;
+      if (!mesh.get_ctrl)
+         return;
 
       const ctrl = mesh.get_ctrl(),
-          click_indx = ctrl.extractIndex(intersects[0]);
+            click_indx = ctrl.extractIndex(intersects[0]);
 
       ctrl.evnt = evnt;
 
@@ -2074,7 +2081,7 @@ class TGeoPainter extends ObjectPainter {
       if (!this.getCanvPainter())
          this.setTooltipAllowed(settings.Tooltip);
 
-      this.#controls = createOrbitControl(this, this._camera, this._scene, this._renderer, this._lookat);
+      this.#controls = createOrbitControl(this, this._camera, this._scene, this._renderer, this.#lookat);
 
       this.#controls.mouse_tmout = this.ctrl.mouse_tmout; // set larger timeout for geometry processing
 
@@ -2346,7 +2353,7 @@ class TGeoPainter extends ObjectPainter {
          // final stage, create all meshes
 
          const tm0 = new Date().getTime(),
-               toplevel = this.ctrl.project ? this._full_geom : this._toplevel;
+               toplevel = this.ctrl.project ? this.#fullgeom_proj : this._toplevel;
          let build_instanced = false, ready = true;
 
          if (!this.ctrl.project)
@@ -2464,7 +2471,7 @@ class TGeoPainter extends ObjectPainter {
      * @desc Typically external master painter is used, but also internal data can be used */
    getProjectionSource() {
       if (this.#clones_owner)
-         return this._full_geom;
+         return this.#fullgeom_proj;
       if (!this.getCentral()?.isDrawingReady()) {
          console.warn('MAIN PAINTER NOT READY WHEN DO PROJECTION');
          return null;
@@ -2630,9 +2637,9 @@ class TGeoPainter extends ObjectPainter {
        }
 
       if (this.isOrthoCamera())
-         this._camera = new THREE.OrthographicCamera(-this._scene_width/2, this._scene_width/2, this._scene_height/2, -this._scene_height/2, 1, 10000);
+         this._camera = new THREE.OrthographicCamera(-this.#scene_width/2, this.#scene_width/2, this.#scene_height/2, -this.#scene_height/2, 1, 10000);
        else {
-         this._camera = new THREE.PerspectiveCamera(25, this._scene_width / this._scene_height, 1, 10000);
+         this._camera = new THREE.PerspectiveCamera(25, this.#scene_width / this.#scene_height, 1, 10000);
          this._camera.up = this.ctrl._yup ? new THREE.Vector3(0, 1, 0) : new THREE.Vector3(0, 0, 1);
       }
 
@@ -2650,7 +2657,7 @@ class TGeoPainter extends ObjectPainter {
          // code used with jsroot-based geometry drawing in EVE7, not important any longer
          this.#effectComposer = new THREE.EffectComposer(this._renderer);
          this.#effectComposer.addPass(new THREE.RenderPass(this._scene, this._camera));
-         this.createOutline(this._scene_width, this._scene_height);
+         this.createOutline(this.#scene_width, this.#scene_height);
       }
 
       this.ensureBloom();
@@ -2666,8 +2673,8 @@ class TGeoPainter extends ObjectPainter {
 
          if (cfg?.renderer) {
             this._scene = cfg.scene;
-            this._scene_width = cfg.scene_width;
-            this._scene_height = cfg.scene_height;
+            this.#scene_width = cfg.scene_width;
+            this.#scene_height = cfg.scene_height;
             this._renderer = cfg.renderer;
             this._webgl = (this._renderer.jsroot_render3d === constants.Render3D.WebGL);
 
@@ -2690,17 +2697,17 @@ class TGeoPainter extends ObjectPainter {
       return importThreeJs().then(() => {
          // three.js 3D drawing
          this._scene = new THREE.Scene();
-         this._fog = new THREE.Fog(0xffffff, 1, 10000);
-         this._scene.fog = this.ctrl.use_fog ? this._fog : null;
+         this.#fog = new THREE.Fog(0xffffff, 1, 10000);
+         this._scene.fog = this.ctrl.use_fog ? this.#fog : null;
 
          this._scene.overrideMaterial = new THREE.MeshLambertMaterial({ color: 0x7000ff, vertexColors: false, transparent: true, opacity: 0.2, depthTest: false });
 
-         this._scene_width = w;
-         this._scene_height = h;
+         this.#scene_width = w;
+         this.#scene_height = h;
 
          this.createCamera();
 
-         this._selected_mesh = null;
+         this.#selected_mesh = null;
 
          this._overall_size = 10;
 
@@ -2771,14 +2778,14 @@ class TGeoPainter extends ObjectPainter {
       this.ctrl.info.num_meshes = 0;
       this.ctrl.info.num_faces = 0;
       this.ctrl.info.num_shapes = 0;
-      this._selected_mesh = null;
+      this.#selected_mesh = null;
 
       if (this.ctrl.project) {
          if (this.#clones_owner) {
-            if (this._full_geom)
+            if (this.#fullgeom_proj)
                this.changeStage(stageBuildProj);
-             else
-               this._full_geom = new THREE.Object3D();
+            else
+               this.#fullgeom_proj = new THREE.Object3D();
          } else
             this.changeStage(stageWaitMain);
       }
@@ -2863,11 +2870,11 @@ class TGeoPainter extends ObjectPainter {
          return res;
       }
 
-      if (!this._lookat || !this._camera0pos)
+      if (!this.#lookat || !this._camera0pos)
          return '';
 
-      const pos1 = new THREE.Vector3().add(this._camera0pos).sub(this._lookat),
-            pos2 = new THREE.Vector3().add(this._camera.position).sub(this._lookat),
+      const pos1 = new THREE.Vector3().add(this._camera0pos).sub(this.#lookat),
+            pos2 = new THREE.Vector3().add(this._camera.position).sub(this.#lookat),
             zoom = Math.min(10000, Math.max(1, this.ctrl.zoom * pos2.length() / pos1.length() * 100));
 
       pos1.normalize();
@@ -2888,9 +2895,9 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Calculates current zoom factor */
    calculateZoom() {
-      if (this._camera0pos && this._camera && this._lookat) {
-         const pos1 = new THREE.Vector3().add(this._camera0pos).sub(this._lookat),
-               pos2 = new THREE.Vector3().add(this._camera.position).sub(this._lookat);
+      if (this._camera0pos && this._camera && this.#lookat) {
+         const pos1 = new THREE.Vector3().add(this._camera0pos).sub(this.#lookat),
+               pos2 = new THREE.Vector3().add(this._camera.position).sub(this.#lookat);
          return pos2.length() / pos1.length();
       }
 
@@ -2926,13 +2933,13 @@ class TGeoPainter extends ObjectPainter {
             midz = (box.max.z + box.min.z)/2,
             more = this.ctrl._axis || (this.ctrl.camera_overlay === 'bar') ? 0.2 : 0.1;
 
-      if (this._scene_size && !force) {
-         const d = this._scene_size, test = (v1, v2, scale) => {
+      if (this.#scene_size && !force) {
+         const d = this.#scene_size, test = (v1, v2, scale) => {
             if (!scale) scale = Math.abs((v1+v2)/2);
             return scale <= 1e-20 ? true : Math.abs(v2-v1)/scale > 0.01;
          },
           large_change = test(sizex, d.sizex) || test(sizey, d.sizey) || test(sizez, d.sizez) ||
-                            test(midx, d.midx, d.sizex) || test(midy, d.midy, d.sizey) || test(midz, d.midz, d.sizez);
+                         test(midx, d.midx, d.sizex) || test(midy, d.midy, d.sizey) || test(midz, d.midz, d.sizez);
          if (!large_change) {
             if (this.ctrl.select_in_view)
                this.startDrawGeometry();
@@ -2940,14 +2947,14 @@ class TGeoPainter extends ObjectPainter {
          }
       }
 
-      this._scene_size = { sizex, sizey, sizez, midx, midy, midz };
+      this.#scene_size = { sizex, sizey, sizez, midx, midy, midz };
 
       this._overall_size = 2 * Math.max(sizex, sizey, sizez);
 
       this._camera.near = this._overall_size / 350;
       this._camera.far = this._overall_size * 100;
-      this._fog.near = this._overall_size * 0.5;
-      this._fog.far = this._overall_size * 5;
+      this.#fog.near = this._overall_size * 0.5;
+      this.#fog.far = this._overall_size * 5;
 
       if (first_time) {
          for (let naxis = 0; naxis < 3; ++naxis) {
@@ -2977,7 +2984,7 @@ class TGeoPainter extends ObjectPainter {
       const max_all = Math.max(sizex, sizey, sizez),
             sign = this.ctrl.camera_kind.indexOf('N') > 0 ? -1 : 1;
 
-      this._lookat = new THREE.Vector3(midx, midy, midz);
+      this.#lookat = new THREE.Vector3(midx, midy, midz);
       this._camera0pos = new THREE.Vector3(-2*max_all, 0, 0); // virtual 0 position, where rotation starts
 
       this._camera.updateMatrixWorld();
@@ -3003,12 +3010,12 @@ class TGeoPainter extends ObjectPainter {
          }
       } else if (this.ctrl.camx !== undefined && this.ctrl.camy !== undefined && this.ctrl.camz !== undefined) {
          this._camera.position.set(this.ctrl.camx, this.ctrl.camy, this.ctrl.camz);
-         this._lookat.set(this.ctrl.camlx || 0, this.ctrl.camly || 0, this.ctrl.camlz || 0);
+         this.#lookat.set(this.ctrl.camlx || 0, this.ctrl.camly || 0, this.ctrl.camlz || 0);
          this.ctrl.camx = this.ctrl.camy = this.ctrl.camz = this.ctrl.camlx = this.ctrl.camly = this.ctrl.camlz = undefined;
       } else if ((this.ctrl.camera_kind === 'orthoXOY') || (this.ctrl.camera_kind === 'orthoXNOY')) {
          this._camera.up.set(0, 1, 0);
          this._camera.position.set(sign < 0 ? midx*2 : 0, 0, midz + sign*sizez*2);
-         this._lookat.set(sign < 0 ? midx*2 : 0, 0, midz);
+         this.#lookat.set(sign < 0 ? midx*2 : 0, 0, midz);
          this._camera.left = box.min.x - more*sizex;
          this._camera.right = box.max.x + more*sizex;
          this._camera.top = box.max.y + more*sizey;
@@ -3019,7 +3026,7 @@ class TGeoPainter extends ObjectPainter {
       } else if ((this.ctrl.camera_kind === 'orthoXOZ') || (this.ctrl.camera_kind === 'orthoXNOZ')) {
          this._camera.up.set(0, 0, 1);
          this._camera.position.set(sign < 0 ? midx*2 : 0, midy - sign*sizey*2, 0);
-         this._lookat.set(sign < 0 ? midx*2 : 0, midy, 0);
+         this.#lookat.set(sign < 0 ? midx*2 : 0, midy, 0);
          this._camera.left = box.min.x - more*sizex;
          this._camera.right = box.max.x + more*sizex;
          this._camera.top = box.max.z + more*sizez;
@@ -3032,7 +3039,7 @@ class TGeoPainter extends ObjectPainter {
       } else if ((this.ctrl.camera_kind === 'orthoZOY') || (this.ctrl.camera_kind === 'orthoZNOY')) {
          this._camera.up.set(0, 1, 0);
          this._camera.position.set(midx - sign*sizex*2, 0, sign < 0 ? midz*2 : 0);
-         this._lookat.set(midx, 0, sign < 0 ? midz*2 : 0);
+         this.#lookat.set(midx, 0, sign < 0 ? midz*2 : 0);
          this._camera.left = box.min.z - more*sizez;
          this._camera.right = box.max.z + more*sizez;
          this._camera.top = box.max.y + more*sizey;
@@ -3045,7 +3052,7 @@ class TGeoPainter extends ObjectPainter {
       } else if ((this.ctrl.camera_kind === 'orthoZOX') || (this.ctrl.camera_kind === 'orthoZNOX')) {
          this._camera.up.set(1, 0, 0);
          this._camera.position.set(0, midy - sign*sizey*2, sign > 0 ? midz*2 : 0);
-         this._lookat.set(0, midy, sign > 0 ? midz*2 : 0);
+         this.#lookat.set(0, midy, sign > 0 ? midz*2 : 0);
          this._camera.left = box.min.z - more*sizez;
          this._camera.right = box.max.z + more*sizez;
          this._camera.top = box.max.x + more*sizex;
@@ -3078,9 +3085,9 @@ class TGeoPainter extends ObjectPainter {
          this._camera.position.set(midx-k*Math.max(sizex, sizey), midy-k*Math.max(sizex, sizey), midz+k*sizez);
       }
 
-      if (this._camera.isOrthographicCamera && this.isOrthoCamera() && this._scene_width && this._scene_height) {
-         const screen_ratio = this._scene_width / this._scene_height,
-             szx = this._camera.right - this._camera.left, szy = this._camera.top - this._camera.bottom;
+      if (this._camera.isOrthographicCamera && this.isOrthoCamera() && this.#scene_width && this.#scene_height) {
+         const screen_ratio = this.#scene_width / this.#scene_height,
+               szx = this._camera.right - this._camera.left, szy = this._camera.top - this._camera.bottom;
 
          if (screen_ratio > szx / szy) {
             // screen wider than actual geometry
@@ -3095,13 +3102,13 @@ class TGeoPainter extends ObjectPainter {
          }
       }
 
-      this._camera.lookAt(this._lookat);
+      this._camera.lookAt(this.#lookat);
       this._camera.updateProjectionMatrix();
 
       this.changedLight(box);
 
       if (this.#controls) {
-         this.#controls.target.copy(this._lookat);
+         this.#controls.target.copy(this.#lookat);
          if (!only_set) this.#controls.update();
       }
 
@@ -3214,8 +3221,8 @@ class TGeoPainter extends ObjectPainter {
          const smoothFactor = -Math.cos((2.0*Math.PI*step)/frames) + 1.0;
          this._camera.position.add(posIncrement.clone().multiplyScalar(smoothFactor));
          oldTarget.add(targetIncrement.clone().multiplyScalar(smoothFactor));
-         this._lookat = oldTarget;
-         this._camera.lookAt(this._lookat);
+         this.#lookat = oldTarget;
+         this._camera.lookAt(this.#lookat);
          this._camera.updateProjectionMatrix();
 
          const tm1 = new Date().getTime();
@@ -4134,7 +4141,7 @@ class TGeoPainter extends ObjectPainter {
       this.#last_camera_position = origin; // remember current camera position
 
       if (this.ctrl._axis) {
-         const vect = (this.#controls?.target || this._lookat).clone().sub(this._camera.position).normalize();
+         const vect = (this.#controls?.target || this.#lookat).clone().sub(this._camera.position).normalize();
          this.getExtrasContainer('get', 'axis')?.traverse(obj3d => {
             if (isFunc(obj3d._axis_flip))
                obj3d._axis_flip(vect);
@@ -4203,10 +4210,10 @@ class TGeoPainter extends ObjectPainter {
       // its needed for outlinePass - do rendering, most consuming time
       if (this._webgl && this.#effectComposer?.passes)
          this.#effectComposer.render();
-       else if (this._webgl && this._bloomComposer?.passes) {
+       else if (this._webgl && this.#bloomComposer?.passes) {
          this._renderer.clear();
          this._camera.layers.set(_BLOOM_SCENE);
-         this._bloomComposer.render();
+         this.#bloomComposer.render();
          this._renderer.clearDepth();
          this._camera.layers.set(_ENTIRE_SCENE);
          this._renderer.render(this._scene, this._camera);
@@ -5054,7 +5061,7 @@ class TGeoPainter extends ObjectPainter {
 
          this.#toolbar?.cleanup(); // remove toolbar
 
-         disposeThreejsObject(this._full_geom);
+         disposeThreejsObject(this.#fullgeom_proj);
 
          this.#controls?.cleanup();
 
@@ -5107,17 +5114,17 @@ class TGeoPainter extends ObjectPainter {
       this.#effectComposer = undefined;
 
       delete this._scene;
-      delete this._scene_size;
-      this._scene_width = 0;
-      this._scene_height = 0;
+      this.#scene_size = undefined;
+      this.#scene_width = 0;
+      this.#scene_height = 0;
       this._renderer = null;
       this._toplevel = null;
-      delete this._full_geom;
-      delete this._fog;
+      this.#fullgeom_proj = undefined;
+      this.#fog = undefined;
       delete this._camera;
       delete this._camera0pos;
-      delete this._lookat;
-      delete this._selected_mesh;
+      this.#lookat = undefined;
+      this.#selected_mesh = undefined;
 
       this.assignClones(undefined, undefined);
       this.#new_draw_nodes = undefined;
@@ -5141,21 +5148,22 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary perform resize */
    performResize(width, height) {
-      if ((this._scene_width === width) && (this._scene_height === height)) return false;
+      if ((this.#scene_width === width) && (this.#scene_height === height))
+         return false;
       if ((width < 10) || (height < 10)) return false;
 
-      this._scene_width = width;
-      this._scene_height = height;
+      this.#scene_width = width;
+      this.#scene_height = height;
 
       if (this._camera && this._renderer) {
          if (this._camera.isPerspectiveCamera)
-            this._camera.aspect = this._scene_width / this._scene_height;
+            this._camera.aspect = this.#scene_width / this.#scene_height;
          else if (this._camera.isOrthographicCamera)
             this.adjustCameraPosition(true, true);
          this._camera.updateProjectionMatrix();
-         this._renderer.setSize(this._scene_width, this._scene_height, !this._fit_main_area);
-         this.#effectComposer?.setSize(this._scene_width, this._scene_height);
-         this._bloomComposer?.setSize(this._scene_width, this._scene_height);
+         this._renderer.setSize(this.#scene_width, this.#scene_height, !this._fit_main_area);
+         this.#effectComposer?.setSize(this.#scene_width, this.#scene_height);
+         this.#bloomComposer?.setSize(this.#scene_width, this.#scene_height);
 
          if (this.isStage(stageInit))
             this.render3D();
@@ -5170,10 +5178,10 @@ class TGeoPainter extends ObjectPainter {
 
       // firefox is the only browser which correctly supports resize of embedded canvas,
       // for others we should force canvas redrawing at every step
-      if (cp && !cp.checkCanvasResize(arg)) return false;
+      if (cp && !cp.checkCanvasResize(arg))
+         return false;
 
       const sz = this.getSizeFor3d();
-
       return this.performResize(sz.width, sz.height);
    }
 
@@ -5187,7 +5195,8 @@ class TGeoPainter extends ObjectPainter {
      * @return undefined when wireframe cannot be accessed
      * @private */
    accessObjectWireFrame(obj, on) {
-      if (!obj?.material) return;
+      if (!obj?.material)
+         return;
 
       if ((on !== undefined) && obj.stack)
          obj.material.wireframe = on;
