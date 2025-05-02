@@ -3019,7 +3019,8 @@ class ClonedNodes {
 
    /** @summary Returns ids array which correspond to the stack */
    buildIdsByStack(stack) {
-      if (!stack) return null;
+      if (!stack)
+         return null;
       let node = this.nodes[0];
       const ids = [0];
       for (let k = 0; k < stack.length; ++k) {
@@ -3062,10 +3063,11 @@ class ClonedNodes {
    /** @summary Find stack by name which include names of all parents */
    findStackByName(fullname) {
       const names = fullname.split('/'), stack = [];
+
+      if (this.getNodeName(currid) !== names[0])
+         return null;
+
       let currid = 0;
-
-      if (this.getNodeName(currid) !== names[0]) return null;
-
       for (let n = 1; n < names.length; ++n) {
          const node = this.nodes[currid];
          if (!node.chlds) return null;
@@ -3080,7 +3082,8 @@ class ClonedNodes {
          }
 
          // no new entry - not found stack
-         if (stack.length === n - 1) return null;
+         if (stack.length === n - 1)
+            return null;
       }
 
       return stack;
@@ -3090,12 +3093,11 @@ class ClonedNodes {
    setDefaultColors(on) {
       this.use_dflt_colors = on;
       if (this.use_dflt_colors && !this.dflt_table) {
-         const dflt = { kWhite: 0, kBlack: 1, kGray: 920,
-                        kRed: 632, kGreen: 416, kBlue: 600, kYellow: 400, kMagenta: 616, kCyan: 432,
-                        kOrange: 800, kSpring: 820, kTeal: 840, kAzure: 860, kViolet: 880, kPink: 900 },
-
-          nmax = 110, col = [];
-         for (let i=0; i<nmax; i++) col.push(dflt.kGray);
+         const nmax = 110, col = [], dflt = { kWhite: 0, kBlack: 1, kGray: 920,
+               kRed: 632, kGreen: 416, kBlue: 600, kYellow: 400, kMagenta: 616, kCyan: 432,
+               kOrange: 800, kSpring: 820, kTeal: 840, kAzure: 860, kViolet: 880, kPink: 900 };
+         for (let i = 0; i < nmax; i++)
+            col.push(dflt.kGray);
 
          //  here we should create a new TColor with the same rgb as in the default
          //  ROOT colors used below
@@ -3276,7 +3278,8 @@ class ClonedNodes {
             }
          }
 
-         if ((options === 'mesh') || !mesh) return mesh;
+         if ((options === 'mesh') || !mesh)
+            return mesh;
 
          const res = three_prnt;
          while (mesh && (mesh !== toplevel)) {

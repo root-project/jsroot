@@ -378,6 +378,7 @@ class TGeoPainter extends ObjectPainter {
    #gui;            // dat.GUI instance
    #toolbar;        // tool buttons
    #controls;       // orbit control
+   #animating;      // set when animation started
 
    /** @summary Constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -2697,7 +2698,7 @@ class TGeoPainter extends ObjectPainter {
                main.style('position', 'relative');
          }
 
-         this._animating = false;
+         this.#animating = false;
 
          this.ctrl.doubleside = false; // both sides need for clipping
          this.createSpecialEffects();
@@ -3164,14 +3165,13 @@ class TGeoPainter extends ObjectPainter {
          this.updateClipping();
       }
 
-      this._animating = true;
-
-      // Interpolate //
+      this.#animating = true;
 
       const animate = () => {
-         if (this._animating === undefined) return;
+         if (this.#animating === undefined)
+            return;
 
-         if (this._animating)
+         if (this.#animating)
             requestAnimationFrame(animate);
           else if (!this._geom_viewer)
             this.startDrawGeometry();
@@ -3193,7 +3193,7 @@ class TGeoPainter extends ObjectPainter {
          const tm2 = new Date().getTime();
          if ((step === 0) && (tm2-tm1 > 200)) frames = 20;
          step++;
-         this._animating = step < frames;
+         this.#animating = step < frames;
       };
 
       animate();
@@ -5030,7 +5030,7 @@ class TGeoPainter extends ObjectPainter {
 
          this.#worker?.terminate();
 
-         delete this._animating;
+         this.#animating = undefined;
 
          const obj = this.getGeometry();
          if (obj && this.ctrl.is_main) {
