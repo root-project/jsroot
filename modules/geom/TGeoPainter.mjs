@@ -372,6 +372,8 @@ class TGeoPainter extends ObjectPainter {
    #geo_manager;  // TGeoManager instance - if assigned in drawing
    #superimpose;  // set when superimposed with other 3D drawings
    #complete_handler; // callback, assigned by ROOT GeomViewer
+   #geom_viewer;  // true when processing drawing from ROOT GeomViewer
+   #extra_objects; // TList with extra objects configured for drawing
    #worker;       // extra Worker to run different calculations
    #worker_ready; // is worker started and initialized
    #worker_jobs;  // number of submitted to worker jobs
@@ -379,17 +381,23 @@ class TGeoPainter extends ObjectPainter {
    #clones_owner; // is instance managed by the painter
    #draw_nodes;   // drawn nodes from geometry
    #build_shapes; // build shapes required for drawings
+   #draw_all_nodes; // flag using in drawing
    #draw_nodes_again; // flag set if drawing should be started again when completed
    #drawing_ready; // if drawing completed
    #drawing_log;   // current drawing log information
+   #draw_resolveFuncs; // resolve call-backs for start drawing calls
    #start_drawing_time; // time when drawing started
    #start_render_tm; // time when rendering started
    #first_render_tm; // first time when rendering was performed
    #last_render_tm;  // last time when rendering was performed
    #last_render_meshes; // last value of rendered meshes
    #render_resolveFuncs; // resolve call-backs from render calls
+   #render_tmout;    // timeout used in Render3D()
    #first_drawing;   // true when very first drawing is performed
    #full_redrawing;  // if full redraw must be performed
+   #last_clip_cfg;   // last config of clip panels
+   #redraw_timer;    // timer used in redraw
+   #did_update;     // flag used in update
    #central_painter; // pointer on central painter
    #subordinate_painters; // list of subordinate painters
    #effectComposer;  // extra composer for special effects, used in EVE
@@ -412,6 +420,8 @@ class TGeoPainter extends ObjectPainter {
    #scene_size;     // stored scene size to control changes
    #scene_width;    // actual scene width
    #scene_height;   // actual scene width
+   #fit_main_area;  // true if drawing must fit to DOM
+   #overall_size;   // overall size
    #scene;          // three.js Scene object
    #camera;         // three.js camera object
    #renderer;       // three.js renderer object
@@ -425,6 +435,8 @@ class TGeoPainter extends ObjectPainter {
    #vr_camera_rotation; // used in VR display
    #vr_camera_near;  // used in VR display
    #standingMatrix;  // used in VR display
+   #raycasterEnd;    // used in VR display
+   #raycasterOrigin;  // used in VR display
    #adjust_camera_with_render; // flag to readjust camera when rendering
    #did_cleanup;    // flag set after cleanup
 
@@ -558,6 +570,9 @@ class TGeoPainter extends ObjectPainter {
          }
       };
 
+      this.#draw_resolveFuncs = [];
+      this.#render_resolveFuncs = [];
+
       this.cleanup(true);
    }
 
@@ -597,6 +612,9 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Returns central painter */
    getCentral() { return this.#central_painter; }
+
+   /** @summary Returns extra objects configured for drawing */
+   getExtraObjects() { return this.#extra_objects; }
 
    /** @summary Function called by framework when dark mode is changed
      * @private */
@@ -702,8 +720,8 @@ class TGeoPainter extends ObjectPainter {
       this.#standingMatrix = new THREE.Matrix4();
 
       // Raycaster temp variables to avoid one per frame allocation.
-      this._raycasterEnd = new THREE.Vector3();
-      this._raycasterOrigin = new THREE.Vector3();
+      this.#raycasterEnd = new THREE.Vector3();
+      this.#raycasterOrigin = new THREE.Vector3();
 
       navigator.getVRDisplays().then(displays => {
          const vrDisplay = displays[0];
@@ -768,8 +786,8 @@ class TGeoPainter extends ObjectPainter {
       let intersects = [];
       for (let i = 0; i < this.#vrControllers.length; ++i) {
          const controller = this.#vrControllers[i].mesh,
-               end = controller.localToWorld(this._raycasterEnd.set(0, 0, -1)),
-               origin = controller.localToWorld(this._raycasterOrigin.set(0, 0, 0));
+               end = controller.localToWorld(this.#raycasterEnd.set(0, 0, -1)),
+               origin = controller.localToWorld(this.#raycasterOrigin.set(0, 0, 0));
          end.sub(origin).normalize();
          intersects = intersects.concat(this.#controls.getOriginDirectionIntersects(origin, end));
       }
@@ -914,6 +932,8 @@ class TGeoPainter extends ObjectPainter {
       const d = new DrawOptions(opt);
 
       if (d.check('MAIN')) res.is_main = true;
+
+      if (d.check('DUMMY')) res.dummy = true;
 
       if (d.check('TRACKS')) res.tracks = true; // only for TGeoManager
       if (d.check('SHOWTOP')) res.showtop = true; // only for TGeoManager
@@ -1184,7 +1204,7 @@ class TGeoPainter extends ObjectPainter {
       if (!this.ctrl.project)
           menu.addchk(this.ctrl.rotate, 'Autorotate', () => this.setAutoRotate(!this.ctrl.rotate));
 
-      if (!this._geom_viewer) {
+      if (!this.#geom_viewer) {
          menu.addchk(this.canRotateCamera(), 'Can rotate', () => this.changeCanRotate(!this.ctrl.can_rotate));
 
          menu.add('Get position', () => menu.info('Position (as url)', '&opt=' + this.produceCameraUrl()));
@@ -1690,7 +1710,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Change use fog property */
    changedUseFog() {
-      this.#scene.fog = this.ctrl.use_fog ? this._fog : null;
+      this.#scene.fog = this.ctrl.use_fog ? this.#fog : null;
 
       this.render3D();
    }
@@ -1872,7 +1892,7 @@ class TGeoPainter extends ObjectPainter {
                   this.focusCamera(intersects[indx].object);
                });
 
-               if (!this._geom_viewer) {
+               if (!this.#geom_viewer) {
                   menu.add('Hide', n, indx => {
                      const resolve = this.#clones.resolveStack(intersects[indx].object.stack);
                      if (resolve.obj && (resolve.node.kind === kindGeo) && resolve.obj.fVolume) {
@@ -1961,10 +1981,11 @@ class TGeoPainter extends ObjectPainter {
      * @desc function analyzes camera position and start redraw of geometry
      *  if objects in view may be changed */
    testCameraPositionChange() {
-      if (!this.ctrl.select_in_view || this._draw_all_nodes) return;
+      if (!this.ctrl.select_in_view || this.#draw_all_nodes)
+         return;
 
       const matrix = createProjectionMatrix(this.#camera),
-          frustum = createFrustum(matrix);
+            frustum = createFrustum(matrix);
 
       // check if overall bounding box seen
       if (!frustum.CheckBox(this.getGeomBoundingBox()))
@@ -2224,8 +2245,8 @@ class TGeoPainter extends ObjectPainter {
          return false;
 
       if (this.isStage(stageCollect)) {
-         if (this._geom_viewer) {
-            this._draw_all_nodes = false;
+         if (this.#geom_viewer) {
+            this.#draw_all_nodes = false;
             this.changeStage(stageAnalyze);
             return true;
          }
@@ -2280,7 +2301,7 @@ class TGeoPainter extends ObjectPainter {
          if (!need_worker || !this.#worker_ready) {
             const res = this.#clones.collectVisibles(this._current_face_limit, frustum);
             this.#new_draw_nodes = res.lst;
-            this._draw_all_nodes = res.complete;
+            this.#draw_all_nodes = res.complete;
             this.changeStage(stageAnalyze);
             return true;
          }
@@ -2315,7 +2336,7 @@ class TGeoPainter extends ObjectPainter {
             this.#new_append_nodes = undefined;
          } else if (this.#draw_nodes) {
             let del;
-            if (this._geom_viewer)
+            if (this.#geom_viewer)
                del = this.#draw_nodes;
             else
                del = this.#clones.mergeVisibles(this.#new_draw_nodes, this.#draw_nodes);
@@ -2756,7 +2777,7 @@ class TGeoPainter extends ObjectPainter {
 
          this.#selected_mesh = null;
 
-         this._overall_size = 10;
+         this.#overall_size = 10;
 
          this.#toplevel = new THREE.Object3D();
 
@@ -2775,12 +2796,12 @@ class TGeoPainter extends ObjectPainter {
 
          if (isFunc(r.setPixelRatio) && !isNodeJs() && !browser.android)
             r.setPixelRatio(window.devicePixelRatio);
-         r.setSize(w, h, !this._fit_main_area);
+         r.setSize(w, h, !this.#fit_main_area);
          r.localClippingEnabled = true;
 
          r.setClearColor(this.#scene.background, 1);
 
-         if (this._fit_main_area && this._webgl) {
+         if (this.#fit_main_area && this._webgl) {
             r.domElement.style.width = '100%';
             r.domElement.style.height = '100%';
             const main = this.selectDom();
@@ -2793,7 +2814,7 @@ class TGeoPainter extends ObjectPainter {
          this.ctrl.doubleside = false; // both sides need for clipping
          this.createSpecialEffects();
 
-         if (this._fit_main_area && !this._webgl) {
+         if (this.#fit_main_area && !this._webgl) {
             // create top-most SVG for geometry drawings
             const doc = getDocument(),
                   svg = doc.createElementNS(nsSVG, 'svg');
@@ -2856,16 +2877,16 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary returns maximal dimension */
    getOverallSize(force) {
-      if (!this._overall_size || force || this._customBoundingBox) {
+      if (!this.#overall_size || force || this._customBoundingBox) {
          const box = this.getGeomBoundingBox();
 
          // if detect of coordinates fails - ignore
          if (!Number.isFinite(box.min.x)) return 1000;
 
-         this._overall_size = 2 * Math.max(box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z);
+         this.#overall_size = 2 * Math.max(box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z);
       }
 
-      return this._overall_size;
+      return this.#overall_size;
    }
 
    /** @summary Create png image with drawing snapshot. */
@@ -2996,12 +3017,12 @@ class TGeoPainter extends ObjectPainter {
 
       this.#scene_size = { sizex, sizey, sizez, midx, midy, midz };
 
-      this._overall_size = 2 * Math.max(sizex, sizey, sizez);
+      this.#overall_size = 2 * Math.max(sizex, sizey, sizez);
 
-      this.#camera.near = this._overall_size / 350;
-      this.#camera.far = this._overall_size * 100;
-      this.#fog.near = this._overall_size * 0.5;
-      this.#fog.far = this._overall_size * 5;
+      this.#camera.near = this.#overall_size / 350;
+      this.#camera.far = this.#overall_size * 100;
+      this.#fog.near = this.#overall_size * 0.5;
+      this.#fog.far = this.#overall_size * 5;
 
       if (first_time) {
          for (let naxis = 0; naxis < 3; ++naxis) {
@@ -3263,7 +3284,7 @@ class TGeoPainter extends ObjectPainter {
 
          if (this.#animating)
             requestAnimationFrame(animate);
-          else if (!this._geom_viewer)
+          else if (!this.#geom_viewer)
             this.startDrawGeometry();
          const smoothFactor = -Math.cos((2.0*Math.PI*step)/frames) + 1.0;
          this.#camera.position.add(posIncrement.clone().multiplyScalar(smoothFactor));
@@ -3426,7 +3447,8 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary function called when mouse is going over the item in the browser */
    mouseOverHierarchy(on, itemname, hitem) {
-      if (!this.ctrl) return; // protection for cleaned-up painter
+      if (!this.ctrl)
+         return; // protection for cleaned-up painter
 
       const obj = hitem._obj;
 
@@ -3439,7 +3461,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary clear extra drawn objects like tracks or hits */
    clearExtras() {
       this.getExtrasContainer('delete');
-      delete this._extraObjects; // workaround, later will be normal function
+      this.#extra_objects = undefined; // workaround, later will be normal function
       this.render3D();
    }
 
@@ -3447,13 +3469,13 @@ class TGeoPainter extends ObjectPainter {
     * @desc Rendered after main geometry volumes are created
     * Check if object already exists to prevent duplication */
    addExtra(obj, itemname) {
-      if (this._extraObjects === undefined)
-         this._extraObjects = create(clTList);
+      if (!this.#extra_objects)
+         this.#extra_objects = create(clTList);
 
-      if (this._extraObjects.arr.indexOf(obj) >= 0)
+      if (this.#extra_objects.arr.indexOf(obj) >= 0)
          return false;
 
-      this._extraObjects.Add(obj, itemname);
+      this.#extra_objects.Add(obj, itemname);
 
       delete obj.$hidden_via_menu; // remove previous hidden property
 
@@ -3463,21 +3485,22 @@ class TGeoPainter extends ObjectPainter {
    /** @summary manipulate visibility of extra objects, used for HierarchyPainter
      * @private */
    extraObjectVisible(hpainter, hitem, toggle) {
-      if (!this._extraObjects) return;
+      if (!this.#extra_objects)
+         return;
 
       const itemname = hpainter.itemFullName(hitem);
-      let indx = this._extraObjects.opt.indexOf(itemname);
+      let indx = this.#extra_objects.opt.indexOf(itemname);
 
       if ((indx < 0) && hitem._obj) {
-         indx = this._extraObjects.arr.indexOf(hitem._obj);
+         indx = this.#extra_objects.arr.indexOf(hitem._obj);
          // workaround - if object found, replace its name
-         if (indx >= 0) this._extraObjects.opt[indx] = itemname;
+         if (indx >= 0) this.#extra_objects.opt[indx] = itemname;
       }
 
       if (indx < 0)
          return;
 
-      const obj = this._extraObjects.arr[indx];
+      const obj = this.#extra_objects.arr[indx];
       let res = Boolean(obj.$hidden_via_menu);
 
       if (toggle) {
@@ -3730,7 +3753,7 @@ class TGeoPainter extends ObjectPainter {
             projx = (this.ctrl.project === 'x'),
             projy = (this.ctrl.project === 'y'),
             projz = (this.ctrl.project === 'z'),
-            hit_scale = Math.max(hit.fMarkerSize * this.getOverallSize() * (this._dummy ? 0.015 : 0.005), 0.2),
+            hit_scale = Math.max(hit.fMarkerSize * this.getOverallSize() * (this.options.dummy ? 0.015 : 0.005), 0.2),
             pnts = new PointsCreator(nhits, this._webgl, hit_scale);
 
       for (let i = 0; i < nhits; i++) {
@@ -3974,12 +3997,12 @@ class TGeoPainter extends ObjectPainter {
       if (name_prefix === '__geom_viewer_append__') {
          this.#new_append_nodes = draw_obj;
          this.ctrl.use_worker = 0;
-         this._geom_viewer = true; // indicate that working with geom viewer
+         this.#geom_viewer = true; // indicate that working with geom viewer
       } else if ((name_prefix === '__geom_viewer_selection__') && this.#clones) {
          // these are selection done from geom viewer
          this.#new_draw_nodes = draw_obj;
          this.ctrl.use_worker = 0;
-         this._geom_viewer = true; // indicate that working with geom viewer
+         this.#geom_viewer = true; // indicate that working with geom viewer
       } else if (this.getCentral())
          this.assignClones(this.getCentral().getClones(), false);
       else if (!draw_obj)
@@ -4044,7 +4067,7 @@ class TGeoPainter extends ObjectPainter {
 
                size = fp.getSizeFor3d(undefined, render3d);
 
-               this._fit_main_area = (size.can3d === -1);
+               this.#fit_main_area = (size.can3d === -1);
 
                return this.createScene(size.width, size.height, render3d)
                           .then(dom => fp.add3dCanvas(size, dom, render3d === constants.Render3D.WebGL));
@@ -4065,7 +4088,7 @@ class TGeoPainter extends ObjectPainter {
 
             const size = this.getSizeFor3d(undefined, render3d);
 
-            this._fit_main_area = (size.can3d === -1);
+            this.#fit_main_area = (size.can3d === -1);
 
             promise = this.createScene(size.width, size.height, render3d)
                           .then(dom2 => this.add3dCanvas(size, dom2, this._webgl));
@@ -4087,7 +4110,7 @@ class TGeoPainter extends ObjectPainter {
             return this.completeDraw();
 
          return new Promise(resolveFunc => {
-            this._resolveFunc = resolveFunc;
+            this.#draw_resolveFuncs.push(resolveFunc);
             this.showDrawInfo('Drawing geometry');
             this.startDrawGeometry(true);
          });
@@ -4185,7 +4208,7 @@ class TGeoPainter extends ObjectPainter {
       if (!force && this.#last_camera_position) {
          // if camera position does not changed a lot, ignore such change
          const dist = this.#last_camera_position.distanceTo(origin);
-         if (dist < (this._overall_size || 1000)*1e-4) return;
+         if (dist < (this.#overall_size || 1000)*1e-4) return;
       }
 
       this.#last_camera_position = origin; // remember current camera position
@@ -4221,29 +4244,28 @@ class TGeoPainter extends ObjectPainter {
 
       const ret_promise = (tmout !== undefined) && (tmout > 0) && (measure !== 'nopromise');
 
-      if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
+      if (tmout === undefined)
+         tmout = 5; // by default, rendering happens with timeout
 
       if ((tmout > 0) && this._webgl) {
          if (this.isBatchMode())
             tmout = 1; // use minimal timeout in batch mode
          if (ret_promise) {
             return new Promise(resolveFunc => {
-               if (!this.#render_resolveFuncs)
-                  this.#render_resolveFuncs = [];
                this.#render_resolveFuncs.push(resolveFunc);
-               if (!this.render_tmout)
-                  this.render_tmout = setTimeout(() => this.render3D(0), tmout);
+               if (!this.#render_tmout)
+                  this.#render_tmout = setTimeout(() => this.render3D(0), tmout);
             });
          }
 
-         if (!this.render_tmout)
-            this.render_tmout = setTimeout(() => this.render3D(0), tmout);
+         if (!this.#render_tmout)
+            this.#render_tmout = setTimeout(() => this.render3D(0), tmout);
          return this;
       }
 
-      if (this.render_tmout) {
-         clearTimeout(this.render_tmout);
-         delete this.render_tmout;
+      if (this.#render_tmout) {
+         clearTimeout(this.#render_tmout);
+         this.#render_tmout = undefined;
       }
 
       beforeRender3D(this.#renderer);
@@ -4283,7 +4305,7 @@ class TGeoPainter extends ObjectPainter {
       afterRender3D(this.#renderer);
 
       const arr = this.#render_resolveFuncs;
-      this.#render_resolveFuncs = undefined;
+      this.#render_resolveFuncs = [];
       arr?.forEach(func => func(this));
    }
 
@@ -4364,7 +4386,7 @@ class TGeoPainter extends ObjectPainter {
 
       if ('collect' in job) {
          this.#new_draw_nodes = job.new_nodes;
-         this._draw_all_nodes = job.complete;
+         this.#draw_all_nodes = job.complete;
          this.changeStage(stageAnalyze);
          // invoke methods immediately
          return this.continueDraw();
@@ -4924,10 +4946,10 @@ class TGeoPainter extends ObjectPainter {
       if (panels.length === 0)
          panels = null;
 
-      if (this._clipCfg !== clip_cfg)
+      if (this.#last_clip_cfg !== clip_cfg)
          changed = true;
 
-      this._clipCfg = clip_cfg;
+      this.#last_clip_cfg = clip_cfg;
 
       const any_clipping = Boolean(panels), ci = this.ctrl.clipIntersect,
             material_side = any_clipping ? THREE.DoubleSide : THREE.FrontSide;
@@ -4981,7 +5003,7 @@ class TGeoPainter extends ObjectPainter {
          check_extras = false;
          // if extra object where append, redraw them at the end
          this.getExtrasContainer('delete'); // delete old container
-         promise = this.drawExtras(this.getCentral()?._extraObjects || this._extraObjects, '', false);
+         promise = this.drawExtras(this.getCentral()?.getExtraObjects() || this.getExtraObjects(), '', false);
       } else if ((this.#first_drawing || this.#full_redrawing) && this.ctrl.tracks && this.#geo_manager)
          promise = this.drawExtras(this.#geo_manager.fTracks, '<prnt>/Tracks');
       else
@@ -5022,14 +5044,15 @@ class TGeoPainter extends ObjectPainter {
          if (check_extras) {
             // if extra object where append, redraw them at the end
             this.getExtrasContainer('delete'); // delete old container
-            return this.drawExtras(this.getCentral()?._extraObjects || this._extraObjects, '', false);
+            return this.drawExtras(this.getCentral()?.getExtraObjects() || this.getExtraObjects(), '', false);
          }
       }).then(() => {
          this.updateClipping(true); // do not render
 
          this.render3D(0, true);
 
-         if (close_progress) showProgress();
+         if (close_progress)
+            showProgress();
 
          this.addOrbitControls();
 
@@ -5051,10 +5074,9 @@ class TGeoPainter extends ObjectPainter {
 
          this.setAsMainPainter();
 
-         if (isFunc(this._resolveFunc)) {
-            this._resolveFunc(this);
-            delete this._resolveFunc;
-         }
+         const arr = this.#draw_resolveFuncs;
+         this.#draw_resolveFuncs = [];
+         arr?.forEach(func => func(this));
 
          if (isFunc(this.#complete_handler))
             this.#complete_handler(this);
@@ -5156,7 +5178,7 @@ class TGeoPainter extends ObjectPainter {
       this.#subordinate_painters = [];
 
       const arr = this.#render_resolveFuncs;
-      this.#render_resolveFuncs = undefined;
+      this.#render_resolveFuncs = [];
       arr?.forEach(func => func(this));
 
       if (!this.#superimpose)
@@ -5214,7 +5236,7 @@ class TGeoPainter extends ObjectPainter {
          else if (this.#camera.isOrthographicCamera)
             this.adjustCameraPosition(true, true);
          this.#camera.updateProjectionMatrix();
-         this.#renderer.setSize(this.#scene_width, this.#scene_height, !this._fit_main_area);
+         this.#renderer.setSize(this.#scene_width, this.#scene_height, !this.#fit_main_area);
          this.#effectComposer?.setSize(this.#scene_width, this.#scene_height);
          this.#bloomComposer?.setSize(this.#scene_width, this.#scene_height);
 
@@ -5284,7 +5306,7 @@ class TGeoPainter extends ObjectPainter {
       if (this.#geo_manager && gm) {
          this.#geo_manager = gm;
          this.assignObject(obj);
-         this._did_update = true;
+         this.#did_update = true;
          return true;
       }
 
@@ -5292,7 +5314,7 @@ class TGeoPainter extends ObjectPainter {
          return false;
 
       this.assignObject(obj);
-      this._did_update = true;
+      this.#did_update = true;
       return true;
    }
 
@@ -5300,8 +5322,8 @@ class TGeoPainter extends ObjectPainter {
    clearDrawings() {
       this.assignClones(undefined, undefined);
 
-      delete this._extraObjects;
-      delete this._clipCfg;
+      this.#extra_objects = undefined;
+      this.#last_clip_cfg = undefined;
 
       // only remove all childs from top level object
       disposeThreejsObject(this.#toplevel, true);
@@ -5322,7 +5344,7 @@ class TGeoPainter extends ObjectPainter {
          }
       }
 
-      if (this._did_update)
+      if (this.#did_update)
          return this.startRedraw();
 
       const main = this.#on_pad ? this.getFramePainter() : null;
@@ -5344,14 +5366,14 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Start geometry redraw */
    startRedraw(tmout) {
       if (tmout) {
-         if (this._redraw_timer)
-            clearTimeout(this._redraw_timer);
-         this._redraw_timer = setTimeout(() => this.startRedraw(), tmout);
+         if (this.#redraw_timer)
+            clearTimeout(this.#redraw_timer);
+         this.#redraw_timer = setTimeout(() => this.startRedraw(), tmout);
          return;
       }
 
-      delete this._redraw_timer;
-      delete this._did_update;
+      this.#redraw_timer = undefined;
+      this.#did_update = undefined;
 
       this.clearDrawings();
       const draw_obj = this.getGeometry(),
@@ -5865,10 +5887,9 @@ async function drawDummy3DGeom(painter) {
                   fTrans: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
                   fShape: shape, fRGBA: [0, 0, 0, 0], fElements: null, fRnrSelf: false }),
          pp = painter.getPadPainter(),
-         opt = (pp?.pad?.fFillColor && (pp?.pad?.fFillStyle > 1000)) ? 'bkgr_' + pp.pad.fFillColor : '';
+         opt = 'dummy;' + (pp?.pad?.fFillColor && (pp?.pad?.fFillStyle > 1000)) ? 'bkgr_' + pp.pad.fFillColor : '';
 
-   return TGeoPainter.draw(pp, obj, opt)
-                     .then(geop => { geop._dummy = true; return geop; });
+   return TGeoPainter.draw(pp, obj, opt);
 }
 
 /** @summary Direct draw function for TAxis3D
