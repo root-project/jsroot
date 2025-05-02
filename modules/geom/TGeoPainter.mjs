@@ -373,12 +373,18 @@ class TGeoPainter extends ObjectPainter {
    #draw_nodes;   // drawn nodes from geometry
    #build_shapes; // build shapes required for drawings
    #drawing_ready; // if drawing completed
+   #render_resolveFuncs; // resolve call-backs from render calls
    #new_draw_nodes; // temporary list of new draw nodes
    #new_append_nodes; // temporary list of new append nodes
+   #more_nodes;      // more nodes from ROOT geometry viewer
+   #provided_more_nodes; // staged more nodes from ROOT geometry viewer
+   #on_pad;         // true when drawing done on TPad
    #gui;            // dat.GUI instance
    #toolbar;        // tool buttons
    #controls;       // orbit control
+   #highlight_handlers; // highlight handlers
    #animating;      // set when animation started
+   #last_camera_position; // last camera position
 
    /** @summary Constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -1902,10 +1908,11 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Add handler which will be called when element is highlighted in geometry drawing
      * @desc Handler should have highlightMesh function with same arguments as TGeoPainter  */
    addHighlightHandler(handler) {
-      if (!isFunc(handler?.highlightMesh)) return;
-      if (!this._highlight_handlers)
-         this._highlight_handlers = [];
-      this._highlight_handlers.push(handler);
+      if (!isFunc(handler?.highlightMesh))
+         return;
+      if (!this.#highlight_handlers)
+         this.#highlight_handlers = [];
+      this.#highlight_handlers.push(handler);
    }
 
    /** @summary perform mesh highlight */
@@ -1947,7 +1954,7 @@ class TGeoPainter extends ObjectPainter {
             if (!geo_stack) geo_stack = active_mesh[0].stack;
          }
 
-         const lst = this._highlight_handlers || (!this._master_painter ? this._slave_painters : this._master_painter._slave_painters.concat([this._master_painter]));
+         const lst = this.#highlight_handlers || (!this._master_painter ? this._slave_painters : this._master_painter._slave_painters.concat([this._master_painter]));
 
          for (let k = 0; k < lst?.length; ++k) {
             if (lst[k] !== this)
@@ -2390,27 +2397,25 @@ class TGeoPainter extends ObjectPainter {
      * Shape already should be created and assigned to the node */
    appendMoreNodes(nodes, from_drawing) {
       if (!this.isStage(stageInit) && !from_drawing) {
-         this._provided_more_nodes = nodes;
+         this.#provided_more_nodes = nodes;
          return;
       }
 
       // delete old nodes
-      if (this._more_nodes) {
-         for (let n = 0; n < this._more_nodes.length; ++n) {
-            const entry = this._more_nodes[n],
+      if (this.#more_nodes) {
+         for (let n = 0; n < this.#more_nodes.length; ++n) {
+            const entry = this.#more_nodes[n],
                 obj3d = this.#clones.createObject3D(entry.stack, this._toplevel, 'delete_mesh');
             disposeThreejsObject(obj3d);
             cleanupShape(entry.server_shape);
             delete entry.server_shape;
          }
+         this.#more_nodes = undefined;
       }
-
-      delete this._more_nodes;
 
       if (!nodes) return;
 
       const real_nodes = [];
-
       for (let k = 0; k < nodes.length; ++k) {
          const entry = nodes[k],
              shape = entry.server_shape;
@@ -2422,9 +2427,10 @@ class TGeoPainter extends ObjectPainter {
 
       // remember additional nodes only if they include shape - otherwise one can ignore them
       if (real_nodes.length > 0)
-         this._more_nodes = real_nodes;
+         this.#more_nodes = real_nodes;
 
-      if (!from_drawing) this.render3D();
+      if (!from_drawing)
+         this.render3D();
    }
 
    /** @summary Returns hierarchy of 3D objects used to produce projection.
@@ -3937,9 +3943,9 @@ class TGeoPainter extends ObjectPainter {
 
          const pp = this.getPadPainter();
 
-         this._on_pad = Boolean(pp);
+         this.#on_pad = Boolean(pp);
 
-         if (this._on_pad) {
+         if (this.#on_pad) {
             let size, render3d, fp;
             promise = ensureTCanvas(this, '3d').then(() => {
                if (pp.fillatt?.color)
@@ -4089,13 +4095,13 @@ class TGeoPainter extends ObjectPainter {
       this.drawOverlay();
 
       const origin = this._camera.position.clone();
-      if (!force && this._last_camera_position) {
+      if (!force && this.#last_camera_position) {
          // if camera position does not changed a lot, ignore such change
-         const dist = this._last_camera_position.distanceTo(origin);
+         const dist = this.#last_camera_position.distanceTo(origin);
          if (dist < (this._overall_size || 1000)*1e-4) return;
       }
 
-      this._last_camera_position = origin; // remember current camera position
+      this.#last_camera_position = origin; // remember current camera position
 
       if (this.ctrl._axis) {
          const vect = (this.#controls?.target || this._lookat).clone().sub(this._camera.position).normalize();
@@ -4131,12 +4137,13 @@ class TGeoPainter extends ObjectPainter {
       if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
 
       if ((tmout > 0) && this._webgl) {
-         if (this.isBatchMode()) tmout = 1; // use minimal timeout in batch mode
+         if (this.isBatchMode())
+            tmout = 1; // use minimal timeout in batch mode
          if (ret_promise) {
             return new Promise(resolveFunc => {
-               if (!this._render_resolveFuncs)
-                  this._render_resolveFuncs = [];
-               this._render_resolveFuncs.push(resolveFunc);
+               if (!this.#render_resolveFuncs)
+                  this.#render_resolveFuncs = [];
+               this.#render_resolveFuncs.push(resolveFunc);
                if (!this.render_tmout)
                   this.render_tmout = setTimeout(() => this.render3D(0), tmout);
             });
@@ -4176,7 +4183,6 @@ class TGeoPainter extends ObjectPainter {
       } else
          this._renderer.render(this._scene, this._camera);
 
-
       const tm2 = new Date();
 
       this.last_render_tm = tm2.getTime();
@@ -4189,11 +4195,9 @@ class TGeoPainter extends ObjectPainter {
 
       afterRender3D(this._renderer);
 
-      if (this._render_resolveFuncs) {
-         const arr = this._render_resolveFuncs;
-         delete this._render_resolveFuncs;
-         arr.forEach(func => func(this));
-      }
+      const arr = this.#render_resolveFuncs;
+      this.#render_resolveFuncs = undefined;
+      arr?.forEach(func => func(this));
    }
 
    /** @summary Start geo worker */
@@ -4793,7 +4797,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Should be called when depth method is changed */
    changedDepthMethod(arg) {
       // force recalculation of render order
-      delete this._last_camera_position;
+      this.#last_camera_position = undefined;
       if (arg !== 'norender')
          return this.render3D();
    }
@@ -4924,9 +4928,9 @@ class TGeoPainter extends ObjectPainter {
       }).then(() => {
          this._scene.overrideMaterial = null;
 
-         if (this._provided_more_nodes !== undefined) {
-            this.appendMoreNodes(this._provided_more_nodes, true);
-            delete this._provided_more_nodes;
+         if (this.#provided_more_nodes !== undefined) {
+            this.appendMoreNodes(this.#provided_more_nodes, true);
+            this.#provided_more_nodes = undefined;
          }
 
          if (check_extras) {
@@ -5007,7 +5011,7 @@ class TGeoPainter extends ObjectPainter {
          if (!this.superimpose) {
             this.clearTopPainter(); // remove as pointer
 
-            if (this._on_pad) {
+            if (this.#on_pad) {
                const fp = this.getFramePainter();
                if (fp?.mode3d) {
                   fp.clear3dCanvas();
@@ -5015,7 +5019,6 @@ class TGeoPainter extends ObjectPainter {
                }
             } else
                can3d = this.clear3dCanvas(); // remove 3d canvas from main HTML element
-
 
             disposeThreejsObject(this._scene);
          }
@@ -5052,7 +5055,7 @@ class TGeoPainter extends ObjectPainter {
          }
 
          delete this.geo_manager;
-         delete this._highlight_handlers;
+         this.#highlight_handlers = undefined;
 
          super.cleanup();
 
@@ -5074,10 +5077,9 @@ class TGeoPainter extends ObjectPainter {
       this._master_painter = null;
       this._slave_painters = [];
 
-      if (this._render_resolveFuncs) {
-         this._render_resolveFuncs.forEach(func => func(this));
-         delete this._render_resolveFuncs;
-      }
+      const arr = this.#render_resolveFuncs;
+      this.#render_resolveFuncs = undefined;
+      arr?.forEach(func => func(this));
 
       if (!this.superimpose)
          cleanupRender3D(this._renderer);
@@ -5101,7 +5103,9 @@ class TGeoPainter extends ObjectPainter {
       this.assignClones(undefined, undefined);
       this.#new_draw_nodes = undefined;
       this.#new_append_nodes = undefined;
-      delete this._last_camera_position;
+      this.#last_camera_position = undefined;
+
+      this.#on_pad = undefined;
 
       this.first_render_tm = 0; // time needed for first rendering
       this.last_render_tm = 0;
@@ -5240,7 +5244,7 @@ class TGeoPainter extends ObjectPainter {
       if (this._did_update)
          return this.startRedraw();
 
-      const main = this._on_pad ? this.getFramePainter() : null;
+      const main = this.#on_pad ? this.getFramePainter() : null;
       if (!main)
          return Promise.resolve(false);
       const sz = main.getSizeFor3d(main.access3dKind());
