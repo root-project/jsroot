@@ -41,13 +41,13 @@ function buildOverlapVolume(overlap) {
    node1.fName = overlap.fVolume1.fName || 'Overlap1';
    node1.fMatrix = overlap.fMatrix1;
    node1.fVolume = overlap.fVolume1;
-   // node1.fVolume.fLineColor = 2; // color assigned with _splitColors
+   // node1.fVolume.fLineColor = 2; // color assigned with ctrl.split_colors
 
    const node2 = create(clTGeoNodeMatrix);
    node2.fName = overlap.fVolume2.fName || 'Overlap2';
    node2.fMatrix = overlap.fMatrix2;
    node2.fVolume = overlap.fVolume2;
-   // node2.fVolume.fLineColor = 3;  // color assigned with _splitColors
+   // node2.fVolume.fLineColor = 3;  // color assigned with ctrl.split_colors
 
    vol.fNodes = create(clTList);
    vol.fNodes.Add(node1);
@@ -374,6 +374,7 @@ class TGeoPainter extends ObjectPainter {
    #complete_handler; // callback, assigned by ROOT GeomViewer
    #geom_viewer;  // true when processing drawing from ROOT GeomViewer
    #extra_objects; // TList with extra objects configured for drawing
+   #webgl;         // true when normal WebGL drawing is enabled
    #worker;       // extra Worker to run different calculations
    #worker_ready; // is worker started and initialized
    #worker_jobs;  // number of submitted to worker jobs
@@ -381,6 +382,7 @@ class TGeoPainter extends ObjectPainter {
    #clones_owner; // is instance managed by the painter
    #draw_nodes;   // drawn nodes from geometry
    #build_shapes; // build shapes required for drawings
+   #current_face_limit; // current face limit
    #draw_all_nodes; // flag using in drawing
    #draw_nodes_again; // flag set if drawing should be started again when completed
    #drawing_ready; // if drawing completed
@@ -398,6 +400,8 @@ class TGeoPainter extends ObjectPainter {
    #last_clip_cfg;   // last config of clip panels
    #redraw_timer;    // timer used in redraw
    #did_update;     // flag used in update
+   #custom_bounding_box; // custom bounding box for extra objects
+   #clip_planes;     // clip planes
    #central_painter; // pointer on central painter
    #subordinate_painters; // list of subordinate painters
    #effectComposer;  // extra composer for special effects, used in EVE
@@ -407,6 +411,8 @@ class TGeoPainter extends ObjectPainter {
    #more_nodes;      // more nodes from ROOT geometry viewer
    #provided_more_nodes; // staged more nodes from ROOT geometry viewer
    #on_pad;         // true when drawing done on TPad
+   #last_manifest;  // last node which was "manifest" via menu
+   #last_hidden;    // last node which was "hidden" via menu
    #gui;            // dat.GUI instance
    #toolbar;        // tool buttons
    #controls;       // orbit control
@@ -655,7 +661,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Create toolbar */
    createToolbar() {
-      if (this.#toolbar || !this._webgl || this.ctrl.notoolbar || this.isBatchMode())
+      if (this.#toolbar || !this.#webgl || this.ctrl.notoolbar || this.isBatchMode())
          return;
       const buttonList = [{
          name: 'toImage',
@@ -1075,7 +1081,8 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Activate specified items in the browser */
    activateInBrowser(names, force) {
-      if (isStr(names)) names = [names];
+      if (isStr(names))
+         names = [names];
 
       if (this._hpainter) {
          // show browser if it not visible
@@ -1643,7 +1650,7 @@ class TGeoPainter extends ObjectPainter {
                       .show(this.ctrl.camera_kind.indexOf('ortho') === 0);
 
       // Advanced Options
-      if (this._webgl) {
+      if (this.#webgl) {
          const advanced = this.#gui.addFolder('Advanced');
 
          advanced.add(this.ctrl, 'depthTest').name('Depth test')
@@ -1749,7 +1756,7 @@ class TGeoPainter extends ObjectPainter {
    ensureBloom(on) {
       if (on === undefined) {
          if (this.ctrl.highlight_bloom === 0)
-             this.ctrl.highlight_bloom = this._webgl && !browser.android;
+             this.ctrl.highlight_bloom = this.#webgl && !browser.android;
 
          on = this.ctrl.highlight_bloom && this.ctrl.getMaterialCfg()?.emissive;
       }
@@ -1868,21 +1875,21 @@ class TGeoPainter extends ObjectPainter {
 
                if (cnt > 1) {
                   menu.add('Manifest', n, indx => {
-                     if (this._last_manifest)
-                        this._last_manifest.wireframe = !this._last_manifest.wireframe;
+                     if (this.#last_manifest)
+                        this.#last_manifest.wireframe = !this.#last_manifest.wireframe;
 
-                     this._last_hidden?.forEach(obj2 => { obj2.visible = true; });
+                     this.#last_hidden?.forEach(obj2 => { obj2.visible = true; });
 
-                     this._last_hidden = [];
+                     this.#last_hidden = [];
 
                      for (let i = 0; i < indx; ++i)
-                        this._last_hidden.push(intersects[i].object);
+                        this.#last_hidden.push(intersects[i].object);
 
-                     this._last_hidden.forEach(obj2 => { obj2.visible = false; });
+                     this.#last_hidden.forEach(obj2 => { obj2.visible = false; });
 
-                     this._last_manifest = intersects[indx].object.material;
+                     this.#last_manifest = intersects[indx].object.material;
 
-                     this._last_manifest.wireframe = !this._last_manifest.wireframe;
+                     this.#last_manifest.wireframe = !this.#last_manifest.wireframe;
 
                      this.render3D();
                   }, 'Manifest selected node');
@@ -1964,9 +1971,9 @@ class TGeoPainter extends ObjectPainter {
             const point = intersects[i].point, special = (intersects[i].object.type === 'Points');
             let clipped = true;
 
-            if (clip[0].enabled && ((this._clipPlanes[0].normal.dot(point) > this._clipPlanes[0].constant) ^ special)) clipped = false;
-            if (clip[1].enabled && ((this._clipPlanes[1].normal.dot(point) > this._clipPlanes[1].constant) ^ special)) clipped = false;
-            if (clip[2].enabled && (this._clipPlanes[2].normal.dot(point) > this._clipPlanes[2].constant)) clipped = false;
+            if (clip[0].enabled && ((this.#clip_planes[0].normal.dot(point) > this.#clip_planes[0].constant) ^ special)) clipped = false;
+            if (clip[1].enabled && ((this.#clip_planes[1].normal.dot(point) > this.#clip_planes[1].constant) ^ special)) clipped = false;
+            if (clip[2].enabled && (this.#clip_planes[2].normal.dot(point) > this.#clip_planes[2].constant)) clipped = false;
 
             if (!clipped) clippedIntersects.push(intersects[i]);
          }
@@ -2143,7 +2150,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Add orbit control */
    addOrbitControls() {
-      if (this.#controls || !this._webgl || this.isBatchMode() || this.#superimpose || isNodeJs()) return;
+      if (this.#controls || !this.#webgl || this.isBatchMode() || this.#superimpose || isNodeJs()) return;
 
       if (!this.getCanvPainter())
          this.setTooltipAllowed(settings.Tooltip);
@@ -2221,12 +2228,12 @@ class TGeoPainter extends ObjectPainter {
          // painter already cleaned up, ignore any incoming events
          if (!this.ctrl || !this.#controls) return;
 
-         if (this._last_manifest) {
-            this._last_manifest.wireframe = !this._last_manifest.wireframe;
-            if (this._last_hidden)
-               this._last_hidden.forEach(obj => { obj.visible = true; });
-            delete this._last_hidden;
-            delete this._last_manifest;
+         if (this.#last_manifest) {
+            this.#last_manifest.wireframe = !this.#last_manifest.wireframe;
+            if (this.#last_hidden)
+               this.#last_hidden.forEach(obj => { obj.visible = true; });
+            this.#last_hidden = undefined;
+            this.#last_manifest = undefined;
          } else
             this.adjustCameraPosition(true);
 
@@ -2282,8 +2289,8 @@ class TGeoPainter extends ObjectPainter {
             }
          }
 
-         this._current_face_limit = this.ctrl.maxfaces;
-         if (matrix) this._current_face_limit *= 1.25;
+         this.#current_face_limit = this.ctrl.maxfaces;
+         if (matrix) this.#current_face_limit *= 1.25;
 
          // here we decide if we need worker for the drawings
          // main reason - too large geometry and large time to scan all camera positions
@@ -2299,7 +2306,7 @@ class TGeoPainter extends ObjectPainter {
             this.startWorker(); // we starting worker, but it may not be ready so fast
 
          if (!need_worker || !this.#worker_ready) {
-            const res = this.#clones.collectVisibles(this._current_face_limit, frustum);
+            const res = this.#clones.collectVisibles(this.#current_face_limit, frustum);
             this.#new_draw_nodes = res.lst;
             this.#draw_all_nodes = res.complete;
             this.changeStage(stageAnalyze);
@@ -2307,7 +2314,7 @@ class TGeoPainter extends ObjectPainter {
          }
 
          const job = {
-            collect: this._current_face_limit,   // indicator for the command
+            collect: this.#current_face_limit,   // indicator for the command
             flags: this.#clones.getVisibleFlags(),
             matrix: matrix ? matrix.elements : null,
             vislevel: this.#clones.getVisLevel(),
@@ -2371,7 +2378,7 @@ class TGeoPainter extends ObjectPainter {
          // one can ask worker to build them or do it ourself
 
          if (this.canSubmitToWorker()) {
-            const job = { limit: this._current_face_limit, shapes: [] };
+            const job = { limit: this.#current_face_limit, shapes: [] };
             let cnt = 0;
             for (let n = 0; n < this.#build_shapes.length; ++n) {
                const item = this.#build_shapes[n];
@@ -2405,7 +2412,7 @@ class TGeoPainter extends ObjectPainter {
          if (this.isStage(stageBuild)) {
             // building shapes
 
-            const res = this.#clones.buildShapes(this.#build_shapes, this._current_face_limit, 500);
+            const res = this.#clones.buildShapes(this.#build_shapes, this.#current_face_limit, 500);
             if (res.done) {
                this.ctrl.info.num_shapes = this.#build_shapes.length;
                this.changeStage(stageBuildReady);
@@ -2481,7 +2488,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Insert appropriate mesh for given entry */
    createEntryMesh(entry, shape, toplevel) {
       // workaround for the TGeoOverlap, where two branches should get predefined color
-      if (this._splitColors && entry.stack) {
+      if (this.ctrl.split_colors && entry.stack) {
          if (entry.stack[0] === 0)
             entry.custom_color = 'green';
          else if (entry.stack[0] === 1)
@@ -2549,13 +2556,13 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Extend custom geometry bounding box */
    extendCustomBoundingBox(box) {
       if (!box) return;
-      if (!this._customBoundingBox)
-         this._customBoundingBox = new THREE.Box3().makeEmpty();
+      if (!this.#custom_bounding_box)
+         this.#custom_bounding_box = new THREE.Box3().makeEmpty();
 
-      const origin = this._customBoundingBox.clone();
-      this._customBoundingBox.union(box);
+      const origin = this.#custom_bounding_box.clone();
+      this.#custom_bounding_box.union(box);
 
-      if (!this._customBoundingBox.equals(origin))
+      if (!this.#custom_bounding_box.equals(origin))
          this.#adjust_camera_with_render = true;
    }
 
@@ -2567,8 +2574,8 @@ class TGeoPainter extends ObjectPainter {
 
       box3.makeEmpty();
 
-      if (this._customBoundingBox && (topitem === this.#toplevel)) {
-         box3.union(this._customBoundingBox);
+      if (this.#custom_bounding_box && (topitem === this.#toplevel)) {
+         box3.union(this.#custom_bounding_box);
          return box3;
       }
 
@@ -2721,7 +2728,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Create special effects */
    createSpecialEffects() {
-      if (this._webgl && this.ctrl.outline && isFunc(this.createOutline)) {
+      if (this.#webgl && this.ctrl.outline && isFunc(this.createOutline)) {
          // code used with jsroot-based geometry drawing in EVE7, not important any longer
          this.#effectComposer = new THREE.EffectComposer(this.#renderer);
          this.#effectComposer.addPass(new THREE.RenderPass(this.#scene, this.#camera));
@@ -2744,7 +2751,7 @@ class TGeoPainter extends ObjectPainter {
             this.#scene_width = cfg.scene_width;
             this.#scene_height = cfg.scene_height;
             this.#renderer = cfg.renderer;
-            this._webgl = (this.#renderer.jsroot_render3d === constants.Render3D.WebGL);
+            this.#webgl = (this.#renderer.jsroot_render3d === constants.Render3D.WebGL);
 
             this.#toplevel = new THREE.Object3D();
             this.#scene.add(this.#toplevel);
@@ -2792,7 +2799,7 @@ class TGeoPainter extends ObjectPainter {
          if (this.batch_format)
             r.jsroot_image_format = this.batch_format;
 
-         this._webgl = (r.jsroot_render3d === constants.Render3D.WebGL);
+         this.#webgl = (r.jsroot_render3d === constants.Render3D.WebGL);
 
          if (isFunc(r.setPixelRatio) && !isNodeJs() && !browser.android)
             r.setPixelRatio(window.devicePixelRatio);
@@ -2801,7 +2808,7 @@ class TGeoPainter extends ObjectPainter {
 
          r.setClearColor(this.#scene.background, 1);
 
-         if (this.#fit_main_area && this._webgl) {
+         if (this.#fit_main_area && this.#webgl) {
             r.domElement.style.width = '100%';
             r.domElement.style.height = '100%';
             const main = this.selectDom();
@@ -2814,7 +2821,7 @@ class TGeoPainter extends ObjectPainter {
          this.ctrl.doubleside = false; // both sides need for clipping
          this.createSpecialEffects();
 
-         if (this.#fit_main_area && !this._webgl) {
+         if (this.#fit_main_area && !this.#webgl) {
             // create top-most SVG for geometry drawings
             const doc = getDocument(),
                   svg = doc.createElementNS(nsSVG, 'svg');
@@ -2857,8 +2864,8 @@ class TGeoPainter extends ObjectPainter {
             this.changeStage(stageWaitMain);
       }
 
-      delete this._last_manifest;
-      delete this._last_hidden; // clear list of hidden objects
+      this.#last_manifest = undefined;
+      this.#last_hidden = undefined; // clear list of hidden objects
 
       this.#draw_nodes_again = undefined; // forget about such flag
 
@@ -2877,7 +2884,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary returns maximal dimension */
    getOverallSize(force) {
-      if (!this.#overall_size || force || this._customBoundingBox) {
+      if (!this.#overall_size || force || this.#custom_bounding_box) {
          const box = this.getGeomBoundingBox();
 
          // if detect of coordinates fails - ignore
@@ -3264,7 +3271,7 @@ class TGeoPainter extends ObjectPainter {
             // Amount to change 'lookAt' so it will end pointed at target
             targetIncrement = target.sub(oldTarget).divideScalar(frames);
 
-      autoClip = autoClip && this._webgl;
+      autoClip = autoClip && this.#webgl;
 
       // Automatic Clipping
       if (autoClip) {
@@ -3334,7 +3341,7 @@ class TGeoPainter extends ObjectPainter {
          this.render3D(0);
       };
 
-      if (this._webgl) animate();
+      if (this.#webgl) animate();
    }
 
    /** @summary called at the end of scene drawing */
@@ -3754,7 +3761,7 @@ class TGeoPainter extends ObjectPainter {
             projy = (this.ctrl.project === 'y'),
             projz = (this.ctrl.project === 'z'),
             hit_scale = Math.max(hit.fMarkerSize * this.getOverallSize() * (this.options.dummy ? 0.015 : 0.005), 0.2),
-            pnts = new PointsCreator(nhits, this._webgl, hit_scale);
+            pnts = new PointsCreator(nhits, this.#webgl, hit_scale);
 
       for (let i = 0; i < nhits; i++) {
          pnts.addPoint(projx ? projv : hit.fP[i*3],
@@ -4091,7 +4098,7 @@ class TGeoPainter extends ObjectPainter {
             this.#fit_main_area = (size.can3d === -1);
 
             promise = this.createScene(size.width, size.height, render3d)
-                          .then(dom2 => this.add3dCanvas(size, dom2, this._webgl));
+                          .then(dom2 => this.add3dCanvas(size, dom2, this.#webgl));
          }
       }
 
@@ -4171,7 +4178,7 @@ class TGeoPainter extends ObjectPainter {
 
             this.showDrawInfo(this.#drawing_log);
 
-            if (this.#first_drawing && this._webgl && (this.ctrl.info.num_meshes - this.#last_render_meshes > 100) && (now - this.#last_render_tm > 2.5*interval)) {
+            if (this.#first_drawing && this.#webgl && (this.ctrl.info.num_meshes - this.#last_render_meshes > 100) && (now - this.#last_render_tm > 2.5*interval)) {
                this.adjustCameraPosition();
                this.render3D(-1);
                this.#last_render_meshes = this.ctrl.info.num_meshes;
@@ -4247,7 +4254,7 @@ class TGeoPainter extends ObjectPainter {
       if (tmout === undefined)
          tmout = 5; // by default, rendering happens with timeout
 
-      if ((tmout > 0) && this._webgl) {
+      if ((tmout > 0) && this.#webgl) {
          if (this.isBatchMode())
             tmout = 1; // use minimal timeout in batch mode
          if (ret_promise) {
@@ -4280,9 +4287,9 @@ class TGeoPainter extends ObjectPainter {
       this.testCameraPosition(tmout === -1);
 
       // its needed for outlinePass - do rendering, most consuming time
-      if (this._webgl && this.#effectComposer?.passes)
+      if (this.#webgl && this.#effectComposer?.passes)
          this.#effectComposer.render();
-       else if (this._webgl && this.#bloomComposer?.passes) {
+       else if (this.#webgl && this.#bloomComposer?.passes) {
          this.#renderer.clear();
          this.#camera.layers.set(_BLOOM_SCENE);
          this.#bloomComposer.render();
@@ -4653,8 +4660,8 @@ class TGeoPainter extends ObjectPainter {
          if (ortho && ckind.indexOf(labels[naxis]) < 0) continue;
 
          const buf = new Float32Array(6),
-             color = colors[naxis],
-             name = names[naxis],
+               color = colors[naxis],
+               name = names[naxis],
 
           valueToString = val => {
             if (!val) return '0';
@@ -4915,8 +4922,8 @@ class TGeoPainter extends ObjectPainter {
       // do not try clipping with SVG renderer
       if (this.#renderer?.jsroot_render3d === constants.Render3D.SVG) return;
 
-      if (!this._clipPlanes) {
-         this._clipPlanes = [new THREE.Plane(new THREE.Vector3(1, 0, 0), 0),
+      if (!this.#clip_planes) {
+         this.#clip_planes = [new THREE.Plane(new THREE.Vector3(1, 0, 0), 0),
                              new THREE.Plane(new THREE.Vector3(0, this.ctrl._yup ? -1 : 1, 0), 0),
                              new THREE.Plane(new THREE.Vector3(0, 0, this.ctrl._yup ? 1 : -1), 0)];
       }
@@ -4930,15 +4937,15 @@ class TGeoPainter extends ObjectPainter {
       for (let k = 0; k < 3; ++k) {
          if (clip[k].enabled)
             clip_cfg += 2 << k;
-         if (this._clipPlanes[k].constant !== clip_constants[k]) {
+         if (this.#clip_planes[k].constant !== clip_constants[k]) {
             if (clip[k].enabled) changed = true;
-            this._clipPlanes[k].constant = clip_constants[k];
+            this.#clip_planes[k].constant = clip_constants[k];
          }
          if (clip[k].enabled)
-            panels.push(this._clipPlanes[k]);
+            panels.push(this.#clip_planes[k]);
 
          if (container && clip[k].enabled) {
-            const helper = new THREE.PlaneHelper(this._clipPlanes[k], (clip[k].max - clip[k].min));
+            const helper = new THREE.PlaneHelper(this.#clip_planes[k], (clip[k].max - clip[k].min));
             helper._no_clip = true;
             container.add(helper);
          }
@@ -5066,9 +5073,9 @@ class TGeoPainter extends ObjectPainter {
                this.ctrl.highlight_scene = this.ctrl.highlight;
 
             // if rotation was enabled, do it
-            if (this._webgl && this.ctrl.rotate && !this.ctrl.project)
+            if (this.#webgl && this.ctrl.rotate && !this.ctrl.project)
                this.autorotate(2.5);
-            if (this._webgl && this.ctrl.show_controls)
+            if (this.#webgl && this.ctrl.show_controls)
                this.showControlGui(true);
          }
 
@@ -5199,6 +5206,7 @@ class TGeoPainter extends ObjectPainter {
       this.#camera0pos = undefined;
       this.#lookat = undefined;
       this.#selected_mesh = undefined;
+      this.#custom_bounding_box = undefined;
 
       this.assignClones(undefined, undefined);
       this.#new_draw_nodes = undefined;
@@ -5396,7 +5404,8 @@ class TGeoPainter extends ObjectPainter {
       } else if (obj._typename === clTGeoManager)
          shape = obj.fMasterVolume.fShape;
       else if (obj._typename === clTGeoOverlap) {
-         extras = obj.fMarker; extras_path = '<prnt>/Marker';
+         extras = obj.fMarker;
+         extras_path = '<prnt>/Marker';
          obj = buildOverlapVolume(obj);
          if (!opt) opt = 'wire';
       } else if ('fVolume' in obj) {
@@ -5432,7 +5441,7 @@ class TGeoPainter extends ObjectPainter {
          painter.ctrl.vislevel = 9;
 
       if (extras) {
-         painter._splitColors = true;
+         painter.ctrl.split_colors = true;
          painter.addExtra(extras, extras_path);
       }
 
