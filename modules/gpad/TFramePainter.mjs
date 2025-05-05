@@ -728,7 +728,7 @@ const TooltipHandler = {
    addBasicInteractivity() {
       TooltipHandler.assign(this);
 
-      if (!this._frame_rotate && !this._frame_fixpos) {
+      if (this.$can_drag) {
          addDragHandler(this, { obj: this, x: this.getFrameX(), y: this.getFrameY(), width: this.getFrameWidth(), height: this.getFrameHeight(),
                                 is_disabled: kind => { return (kind === 'move') && this.mode3d; },
                                 only_resize: true, minwidth: 20, minheight: 20, redraw: () => this.sizeChanged() });
@@ -2503,7 +2503,7 @@ class TFramePainter extends ObjectPainter {
       const rect = pp?.getPadRect() ?? { width: 10, height: 10 },
             lm = Math.round(rect.width * this.fX1NDC),
             tm = Math.round(rect.height * (1 - this.fY2NDC)),
-            rotate = pp?.options.RotateFrame;
+            rotate = pp?.options?.RotateFrame;
 
       let w = Math.round(rect.width * (this.fX2NDC - this.fX1NDC)),
           h = Math.round(rect.height * (this.fY2NDC - this.fY1NDC));
@@ -2515,9 +2515,8 @@ class TFramePainter extends ObjectPainter {
       this.#frame_y = tm;
       this.#frame_width = w;
       this.#frame_height = h;
-      this._frame_rotate = rotate;
-      this._frame_fixpos = pp?.options.FixFrame;
       this.#frame_trans = rotate ? `rotate(-90,${lm},${tm}) translate(${lm-h},${tm})` : makeTranslate(lm, tm);
+      this.$can_drag = !rotate && !pp?.options?.FixFrame;
 
       return this.mode3d ? this : this.createFrameG();
    }
