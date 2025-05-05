@@ -18,6 +18,9 @@ class RFramePainter extends RObjectPainter {
 
    #frame_x; // frame X coordinate
    #frame_y; // frame Y coordinate
+   #frame_width; // frame width
+   #frame_height; // frame height
+   #frame_trans; // transform of frame element
 
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -645,31 +648,22 @@ class RFramePainter extends RObjectPainter {
 
       const rect = pp?.getPadRect() ?? { width: 10, height: 10 },
             lm = Math.round(rect.width * this.fX1NDC),
-            tm = Math.round(rect.height * (1 - this.fY2NDC));
+            tm = Math.round(rect.height * (1 - this.fY2NDC)),
+            rotate = pp?.options.RotateFrame;
       let w = Math.round(rect.width * (this.fX2NDC - this.fX1NDC)),
-          h = Math.round(rect.height * (this.fY2NDC - this.fY1NDC)),
-          rotate = false, fixpos = false, trans;
+          h = Math.round(rect.height * (this.fY2NDC - this.fY1NDC));
 
-      if (pp?.options) {
-         if (pp.options.RotateFrame) rotate = true;
-         if (pp.options.FixFrame) fixpos = true;
-      }
-
-      if (rotate) {
-         trans = `rotate(-90,${lm},${tm}) translate(${lm-h},${tm})`;
+      if (rotate)
          [w, h] = [h, w];
-      } else
-         trans = makeTranslate(lm, tm);
-
 
       // update values here to let access even when frame is not really updated
       this.#frame_x = lm;
       this.#frame_y = tm;
-      this._frame_width = w;
-      this._frame_height = h;
+      this.#frame_width = w;
+      this.#frame_height = h;
       this._frame_rotate = rotate;
-      this._frame_fixpos = fixpos;
-      this._frame_trans = trans;
+      this._frame_fixpos = pp?.options.FixFrame;
+      this.#frame_trans = rotate ? `rotate(-90,${lm},${tm}) translate(${lm-h},${tm})` : makeTranslate(lm, tm);
 
       return this.mode3d ? this : this.createFrameG();
    }
@@ -705,20 +699,20 @@ class RFramePainter extends RObjectPainter {
 
       this.axes_drawn = false;
 
-      this.draw_g.attr('transform', this._frame_trans);
+      this.draw_g.attr('transform', this.#frame_trans);
 
       top_rect.attr('x', 0)
               .attr('y', 0)
-              .attr('width', this._frame_width)
-              .attr('height', this._frame_height)
+              .attr('width', this.#frame_width)
+              .attr('height', this.#frame_height)
               .attr('rx', this.lineatt.rx || null)
               .attr('ry', this.lineatt.ry || null)
               .call(this.fillatt.func)
               .call(this.lineatt.func);
 
-      main_svg.attr('width', this._frame_width)
-              .attr('height', this._frame_height)
-              .attr('viewBox', `0 0 ${this._frame_width} ${this._frame_height}`);
+      main_svg.attr('width', this.#frame_width)
+              .attr('height', this.#frame_height)
+              .attr('viewBox', `0 0 ${this.#frame_width} ${this.#frame_height}`);
 
       let pr = Promise.resolve(true);
 
@@ -738,10 +732,10 @@ class RFramePainter extends RObjectPainter {
    getFrameY() { return this.#frame_y || 0; }
 
    /** @summary Returns frame width */
-   getFrameWidth() { return this._frame_width || 0; }
+   getFrameWidth() { return this.#frame_width || 0; }
 
    /** @summary Returns frame height */
-   getFrameHeight() { return this._frame_height || 0; }
+   getFrameHeight() { return this.#frame_height || 0; }
 
    /** @summary Returns frame rectangle plus extra info for hint display */
    getFrameRect() {

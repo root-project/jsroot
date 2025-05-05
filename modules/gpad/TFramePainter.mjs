@@ -1644,6 +1644,9 @@ class TFramePainter extends ObjectPainter {
 
    #frame_x; // frame X coordinate
    #frame_y; // frame Y coordinate
+   #frame_width; // frame width
+   #frame_height; // frame height
+   #frame_trans; // transform of frame element
 
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -2510,11 +2513,11 @@ class TFramePainter extends ObjectPainter {
 
       this.#frame_x = lm;
       this.#frame_y = tm;
-      this._frame_width = w;
-      this._frame_height = h;
+      this.#frame_width = w;
+      this.#frame_height = h;
       this._frame_rotate = rotate;
       this._frame_fixpos = pp?.options.FixFrame;
-      this._frame_trans = rotate ? `rotate(-90,${lm},${tm}) translate(${lm-h},${tm})` : makeTranslate(lm, tm);
+      this.#frame_trans = rotate ? `rotate(-90,${lm},${tm}) translate(${lm-h},${tm})` : makeTranslate(lm, tm);
 
       return this.mode3d ? this : this.createFrameG();
    }
@@ -2551,19 +2554,19 @@ class TFramePainter extends ObjectPainter {
 
       this.axes_drawn = this.axes2_drawn = false;
 
-      this.draw_g.attr('transform', this._frame_trans);
+      this.draw_g.attr('transform', this.#frame_trans);
 
-      top_rect.attr('d', `M0,0H${this._frame_width}V${this._frame_height}H0Z`)
+      top_rect.attr('d', `M0,0H${this.#frame_width}V${this.#frame_height}H0Z`)
               .call(this.fillatt.func)
               .call(this.lineatt.func);
 
-      main_svg.attr('width', this._frame_width)
-              .attr('height', this._frame_height)
-              .attr('viewBox', `0 0 ${this._frame_width} ${this._frame_height}`);
+      main_svg.attr('width', this.#frame_width)
+              .attr('height', this.#frame_height)
+              .attr('viewBox', `0 0 ${this.#frame_width} ${this.#frame_height}`);
 
       this.draw_g.selectAll('.frame_deco').remove();
       if (this._borderMode && this.fillatt.hasColor()) {
-         const paths = getBoxDecorations(0, 0, this._frame_width, this._frame_height, this._borderMode, this._borderSize || 2, this._borderSize || 2);
+         const paths = getBoxDecorations(0, 0, this.#frame_width, this.#frame_height, this._borderMode, this._borderSize || 2, this._borderSize || 2);
          this.draw_g.insert('svg:path', '.main_layer')
                     .attr('class', 'frame_deco')
                     .attr('d', paths[0])
@@ -2808,10 +2811,10 @@ class TFramePainter extends ObjectPainter {
    getFrameY() { return this.#frame_y || 0; }
 
    /** @summary Returns frame width */
-   getFrameWidth() { return this._frame_width || 0; }
+   getFrameWidth() { return this.#frame_width || 0; }
 
    /** @summary Returns frame height */
-   getFrameHeight() { return this._frame_height || 0; }
+   getFrameHeight() { return this.#frame_height || 0; }
 
    /** @summary Returns frame rectangle plus extra info for hint display */
    getFrameRect() {
