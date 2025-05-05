@@ -22,6 +22,7 @@ class RFramePainter extends RObjectPainter {
    #frame_height; // frame height
    #frame_trans; // transform of frame element
    #axes_drawn; // when axes are drawn
+   #projection; // id of projection function
 
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -33,7 +34,7 @@ class RFramePainter extends RObjectPainter {
       this.ymin = this.ymax = 0; // no scale specified, wait for objects drawing
       this.#axes_drawn = false;
       this.keys_handler = null;
-      this.projection = 0; // different projections
+      this.#projection = 0; // different projections
       this.v7_frame = true; // indicator of v7, used in interactive part
    }
 
@@ -80,16 +81,16 @@ class RFramePainter extends RObjectPainter {
    }
 
    /** @summary Returns coordinates transformation func */
-   getProjectionFunc() { return getEarthProjectionFunc(this.projection); }
+   getProjectionFunc() { return getEarthProjectionFunc(this.#projection); }
 
    /** @summary Recalculate frame ranges using specified projection functions
      * @desc Not yet used in v7 */
    recalculateRange(Proj) {
-      this.projection = Proj || 0;
+      this.#projection = Proj || 0;
 
-      if ((this.projection === 2) && ((this.scale_ymin <= -90) || (this.scale_ymax >=90))) {
+      if ((this.#projection === 2) && ((this.scale_ymin <= -90) || (this.scale_ymax >=90))) {
          console.warn(`Mercator Projection: latitude out of range ${this.scale_ymin} ${this.scale_ymax}`);
-         this.projection = 0;
+         this.#projection = 0;
       }
 
       const func = this.getProjectionFunc();
@@ -648,18 +649,15 @@ class RFramePainter extends RObjectPainter {
       const rect = pp?.getPadRect() ?? { width: 10, height: 10 },
             lm = Math.round(rect.width * this.fX1NDC),
             tm = Math.round(rect.height * (1 - this.fY2NDC)),
-            rotate = pp?.options?.RotateFrame;
-      let w = Math.round(rect.width * (this.fX2NDC - this.fX1NDC)),
-          h = Math.round(rect.height * (this.fY2NDC - this.fY1NDC));
-
-      if (rotate)
-         [w, h] = [h, w];
+            rotate = pp?.options?.RotateFrame,
+            w = Math.round(rect.width * (this.fX2NDC - this.fX1NDC)),
+            h = Math.round(rect.height * (this.fY2NDC - this.fY1NDC));
 
       // update values here to let access even when frame is not really updated
       this.#frame_x = lm;
       this.#frame_y = tm;
-      this.#frame_width = w;
-      this.#frame_height = h;
+      this.#frame_width = rotate ? h : w;
+      this.#frame_height = rotate ? w : h;
       this.#frame_trans = rotate ? `rotate(-90,${lm},${tm}) translate(${lm-h},${tm})` : makeTranslate(lm, tm);
       this.$can_drag = !rotate && !pp?.options?.FixFrame;
 
@@ -774,7 +772,7 @@ class RFramePainter extends RObjectPainter {
      * @return {Promise} with boolean flag if zoom operation was performed */
    async zoom(xmin, xmax, ymin, ymax, zmin, zmax, interactive) {
       // disable zooming when axis conversion is enabled
-      if (this.projection)
+      if (this.#projection)
          return false;
 
       if (xmin === 'x') {
@@ -906,7 +904,7 @@ class RFramePainter extends RObjectPainter {
       const names = ['x', 'y', 'z', 'x2', 'y2'], indx = names.indexOf(name);
 
       // disable zooming when axis conversion is enabled
-      if (this.projection || (!this[`${name}_handle`] && (name !== 'z')) || (indx < 0))
+      if (this.#projection || (!this[`${name}_handle`] && (name !== 'z')) || (indx < 0))
          return false;
 
       let zoom_v = (vmin !== vmax), unzoom_v = false;

@@ -1651,6 +1651,8 @@ class TFramePainter extends ObjectPainter {
    #border_size; // frame border size
    #axes_drawn; // when axes are drawn
    #axes2_drawn; // when axes are drawn
+   #shrink_frame_left; // shrink frame on left side
+   #projection; // id of projection function
 
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -1659,7 +1661,7 @@ class TFramePainter extends ObjectPainter {
       super(dom, frame?.$dummy ? null : frame);
       this.zoom_kind = 0;
       this.mode3d = false;
-      this.shrink_frame_left = 0.0;
+      this.#shrink_frame_left = 0.0;
       this.xmin = this.xmax = 0; // no scale specified, wait for objects drawing
       this.ymin = this.ymax = 0; // no scale specified, wait for objects drawing
       this.ranges_set = false;
@@ -1668,7 +1670,7 @@ class TFramePainter extends ObjectPainter {
       this.keys_handler = null;
       this.#border_mode = gStyle.fFrameBorderMode;
       this.#border_size = gStyle.fFrameBorderSize;
-      this.projection = 0; // different projections
+      this.#projection = 0; // different projections
    }
 
    /** @summary Returns frame painter - object itself */
@@ -1711,15 +1713,15 @@ class TFramePainter extends ObjectPainter {
    getLastEventPos() { return this.fLastEventPnt; }
 
    /** @summary Returns coordinates transformation func */
-   getProjectionFunc() { return getEarthProjectionFunc(this.projection); }
+   getProjectionFunc() { return getEarthProjectionFunc(this.#projection); }
 
    /** @summary Recalculate frame ranges using specified projection functions */
    recalculateRange(Proj, change_x, change_y) {
-      this.projection = Proj || 0;
+      this.#projection = Proj || 0;
 
-      if ((this.projection === 2) && ((this.scale_ymin <= -90) || (this.scale_ymax >= 90))) {
+      if ((this.#projection === 2) && ((this.scale_ymin <= -90) || (this.scale_ymax >= 90))) {
          console.warn(`Mercator Projection: Latitude out of range ${this.scale_ymin} ${this.scale_ymax}`);
-         this.projection = 0;
+         this.#projection = 0;
       }
 
       const func = this.getProjectionFunc();
@@ -2267,10 +2269,10 @@ class TFramePainter extends ObjectPainter {
 
             if ((-0.2 * w < ypos) && (ypos < 0)) {
                shrink = -ypos / w + 0.001;
-               this.shrink_frame_left += shrink;
-            } else if ((ypos > 0) && (ypos < 0.3 * w) && (this.shrink_frame_left > 0) && (ypos / w > this.shrink_frame_left)) {
-               shrink = -this.shrink_frame_left;
-               this.shrink_frame_left = 0.0;
+               this.#shrink_frame_left += shrink;
+            } else if ((ypos > 0) && (ypos < 0.3 * w) && (this.#shrink_frame_left > 0) && (ypos / w > this.#shrink_frame_left)) {
+               shrink = -this.#shrink_frame_left;
+               this.#shrink_frame_left = 0.0;
             }
 
             if (!shrink) return;
@@ -2288,7 +2290,7 @@ class TFramePainter extends ObjectPainter {
    }
 
    /** @summary draw second axes (if any)  */
-   drawAxes2(second_x, second_y) {
+   async drawAxes2(second_x, second_y) {
       const layer = this.getFrameSvg().selectChild('.axis_layer'),
           w = this.getFrameWidth(),
           h = this.getFrameHeight(),
@@ -2505,18 +2507,14 @@ class TFramePainter extends ObjectPainter {
       const rect = pp?.getPadRect() ?? { width: 10, height: 10 },
             lm = Math.round(rect.width * this.fX1NDC),
             tm = Math.round(rect.height * (1 - this.fY2NDC)),
-            rotate = pp?.options?.RotateFrame;
-
-      let w = Math.round(rect.width * (this.fX2NDC - this.fX1NDC)),
-          h = Math.round(rect.height * (this.fY2NDC - this.fY1NDC));
-
-      if (rotate)
-         [w, h] = [h, w];
+            rotate = pp?.options?.RotateFrame,
+            w = Math.round(rect.width * (this.fX2NDC - this.fX1NDC)),
+            h = Math.round(rect.height * (this.fY2NDC - this.fY1NDC));
 
       this.#frame_x = lm;
       this.#frame_y = tm;
-      this.#frame_width = w;
-      this.#frame_height = h;
+      this.#frame_width = rotate ? h : w;
+      this.#frame_height = rotate ? w : h;
       this.#frame_trans = rotate ? `rotate(-90,${lm},${tm}) translate(${lm-h},${tm})` : makeTranslate(lm, tm);
       this.$can_drag = !rotate && !pp?.options?.FixFrame;
 
