@@ -1647,6 +1647,10 @@ class TFramePainter extends ObjectPainter {
    #frame_width; // frame width
    #frame_height; // frame height
    #frame_trans; // transform of frame element
+   #border_mode; // frame border mode
+   #border_size; // frame border size
+   #axes_drawn; // when axes are drawn
+   #axes2_drawn; // when axes are drawn
 
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -1659,11 +1663,11 @@ class TFramePainter extends ObjectPainter {
       this.xmin = this.xmax = 0; // no scale specified, wait for objects drawing
       this.ymin = this.ymax = 0; // no scale specified, wait for objects drawing
       this.ranges_set = false;
-      this.axes_drawn = false;
-      this.axes2_drawn = false;
+      this.#axes_drawn = false;
+      this.#axes2_drawn = false;
       this.keys_handler = null;
-      this._borderMode = gStyle.fFrameBorderMode;
-      this._borderSize = gStyle.fFrameBorderSize;
+      this.#border_mode = gStyle.fFrameBorderMode;
+      this.#border_size = gStyle.fFrameBorderSize;
       this.projection = 0; // different projections
    }
 
@@ -2202,9 +2206,7 @@ class TFramePainter extends ObjectPainter {
 
    /** @summary Identify if requested axes are drawn
      * @desc Checks if x/y axes are drawn. Also if second side is already there */
-   hasDrawnAxes(second_x, second_y) {
-      return !second_x && !second_y ? this.axes_drawn : this.axes2_drawn;
-   }
+   hasDrawnAxes(second_x, second_y) { return !second_x && !second_y ? this.#axes_drawn : this.#axes2_drawn; }
 
    /** @summary draw axes,
      * @return {Promise} which ready when drawing is completed  */
@@ -2278,11 +2280,11 @@ class TFramePainter extends ObjectPainter {
          });
       }
 
-     return pr.then(() => {
-        if (!shrink_forbidden)
-           this.axes_drawn = true;
-        return true;
-     });
+      return pr.then(() => {
+         if (!shrink_forbidden)
+            this.#axes_drawn = true;
+         return true;
+      });
    }
 
    /** @summary draw second axes (if any)  */
@@ -2327,10 +2329,10 @@ class TFramePainter extends ObjectPainter {
                                       draw_vertical.invert_side ? 0 : this.#frame_x, false);
       }
 
-       return Promise.all([pr1, pr2]).then(() => {
-         this.axes2_drawn = true;
+      return Promise.all([pr1, pr2]).then(() => {
+         this.#axes2_drawn = true;
          return true;
-       });
+      });
    }
 
 
@@ -2357,8 +2359,8 @@ class TFramePainter extends ObjectPainter {
 
       if (tframe) {
          this.createAttFill({ attr: tframe });
-         this._borderMode = tframe.fBorderMode;
-         this._borderSize = tframe.fBorderSize;
+         this.#border_mode = tframe.fBorderMode;
+         this.#border_size = tframe.fBorderSize;
       } else if (this.fillatt === undefined) {
          if (pad?.fFrameFillColor)
             this.createAttFill({ pattern: pad.fFrameFillStyle, color: pad.fFrameFillColor });
@@ -2429,7 +2431,7 @@ class TFramePainter extends ObjectPainter {
       this.y2_handle?.removeG();
 
       this.draw_g?.selectChild('.axis_layer').selectAll('*').remove();
-      this.axes_drawn = this.axes2_drawn = false;
+      this.#axes_drawn = this.#axes2_drawn = false;
    }
 
    /** @summary Returns frame rectangle plus extra info for hint display */
@@ -2551,7 +2553,7 @@ class TFramePainter extends ObjectPainter {
          main_svg = this.draw_g.selectChild('.main_layer');
       }
 
-      this.axes_drawn = this.axes2_drawn = false;
+      this.#axes_drawn = this.#axes2_drawn = false;
 
       this.draw_g.attr('transform', this.#frame_trans);
 
@@ -2564,8 +2566,8 @@ class TFramePainter extends ObjectPainter {
               .attr('viewBox', `0 0 ${this.#frame_width} ${this.#frame_height}`);
 
       this.draw_g.selectAll('.frame_deco').remove();
-      if (this._borderMode && this.fillatt.hasColor()) {
-         const paths = getBoxDecorations(0, 0, this.#frame_width, this.#frame_height, this._borderMode, this._borderSize || 2, this._borderSize || 2);
+      if (this.#border_mode && this.fillatt.hasColor()) {
+         const paths = getBoxDecorations(0, 0, this.#frame_width, this.#frame_height, this.#border_mode, this.#border_size || 2, this.#border_size || 2);
          this.draw_g.insert('svg:path', '.main_layer')
                     .attr('class', 'frame_deco')
                     .attr('d', paths[0])
@@ -2764,12 +2766,12 @@ class TFramePainter extends ObjectPainter {
       menu.addAttributesMenu(this, alone ? '' : 'Frame ');
 
       menu.sub('Border');
-      menu.addSelectMenu('Mode', ['Down', 'Off', 'Up'], this._borderMode + 1, v => {
-         this._borderMode = v - 1;
+      menu.addSelectMenu('Mode', ['Down', 'Off', 'Up'], this.#border_mode + 1, v => {
+         this.#border_mode = v - 1;
          this.interactiveRedraw(true, `exec:SetBorderMode(${v-1})`);
       }, 'Frame border mode');
-      menu.addSizeMenu('Size', 0, 20, 2, this._borderSize, v => {
-         this._borderSize = v;
+      menu.addSizeMenu('Size', 0, 20, 2, this.#border_size, v => {
+         this.#border_size = v;
          this.interactiveRedraw(true, `exec:SetBorderSize(${v})`);
       }, 'Frame border size');
       menu.endsub();
@@ -2781,8 +2783,8 @@ class TFramePainter extends ObjectPainter {
          gStyle.fPadRightMargin = 1 - this.fX2NDC;
          this.fillatt?.saveToStyle('fFrameFillColor', 'fFrameFillStyle');
          this.lineatt?.saveToStyle('fFrameLineColor', 'fFrameLineWidth', 'fFrameLineStyle');
-         gStyle.fFrameBorderMode = this._borderMode;
-         gStyle.fFrameBorderSize = this._borderSize;
+         gStyle.fFrameBorderMode = this.#border_mode;
+         gStyle.fFrameBorderSize = this.#border_size;
       }, 'Store frame position and graphical attributes to gStyle');
 
       menu.separator();

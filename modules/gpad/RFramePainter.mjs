@@ -21,6 +21,7 @@ class RFramePainter extends RObjectPainter {
    #frame_width; // frame width
    #frame_height; // frame height
    #frame_trans; // transform of frame element
+   #axes_drawn; // when axes are drawn
 
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -30,7 +31,7 @@ class RFramePainter extends RObjectPainter {
       this.mode3d = false;
       this.xmin = this.xmax = 0; // no scale specified, wait for objects drawing
       this.ymin = this.ymax = 0; // no scale specified, wait for objects drawing
-      this.axes_drawn = false;
+      this.#axes_drawn = false;
       this.keys_handler = null;
       this.projection = 0; // different projections
       this.v7_frame = true; // indicator of v7, used in interactive part
@@ -220,7 +221,7 @@ class RFramePainter extends RObjectPainter {
 
    /** @summary Set axes ranges for drawing, check configured attributes if range already specified */
    setAxesRanges(xaxis, xmin, xmax, yaxis, ymin, ymax, zaxis, zmin, zmax) {
-      if (this.axes_drawn) return;
+      if (this.#axes_drawn) return;
       this.xaxis = xaxis;
       this._setAxisRange('x', xmin, xmax);
       this.yaxis = yaxis;
@@ -329,15 +330,13 @@ class RFramePainter extends RObjectPainter {
 
    /** @summary Identify if requested axes are drawn
      * @desc Checks if x/y axes are drawn. Also if second side is already there */
-   hasDrawnAxes(second_x, second_y) {
-      return !second_x && !second_y ? this.axes_drawn : false;
-   }
+   hasDrawnAxes(second_x, second_y) { return !second_x && !second_y ? this.#axes_drawn : false; }
 
    /** @summary Draw configured axes on the frame
      * @desc axes can be drawn only for main histogram  */
    async drawAxes() {
-      if (this.axes_drawn || (this.xmin === this.xmax) || (this.ymin === this.ymax))
-         return this.axes_drawn;
+      if (this.#axes_drawn || (this.xmin === this.xmax) || (this.ymin === this.ymax))
+         return this.#axes_drawn;
 
       const ticksx = this.v7EvalAttr('ticksX', 1),
             ticksy = this.v7EvalAttr('ticksY', 1);
@@ -447,7 +446,7 @@ class RFramePainter extends RObjectPainter {
       }
 
       return pr.then(() => {
-         this.axes_drawn = true;
+         this.#axes_drawn = true;
          return true;
       });
    }
@@ -572,7 +571,7 @@ class RFramePainter extends RObjectPainter {
       this.cleanXY();
 
       this.draw_g?.selectChild('.axis_layer').selectAll('*').remove();
-      this.axes_drawn = false;
+      this.#axes_drawn = false;
    }
 
    /** @summary Removes all drawn elements of the frame
@@ -696,7 +695,7 @@ class RFramePainter extends RObjectPainter {
          main_svg = this.draw_g.selectChild('.main_layer');
       }
 
-      this.axes_drawn = false;
+      this.#axes_drawn = false;
 
       this.draw_g.attr('transform', this.#frame_trans);
 
