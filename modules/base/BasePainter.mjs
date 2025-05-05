@@ -1,6 +1,6 @@
 import { select as d3_select } from '../d3.mjs';
 import { settings, internals, isNodeJs, isFunc, isStr, isObject, btoa_func, getDocument } from '../core.mjs';
-import { getColor } from './colors.mjs';
+import { getColor, addColor } from './colors.mjs';
 
 /** @summary Standard prefix for SVG file context as data url
  * @private */
@@ -196,10 +196,12 @@ class DrawOptions {
    /** @summary Checks if given option exists */
    check(name, postpart) {
       const pos = this.opt.indexOf(name);
-      if (pos < 0) return false;
+      if (pos < 0)
+         return false;
       this.opt = this.opt.slice(0, pos) + this.opt.slice(pos + name.length);
       this.part = '';
-      if (!postpart) return true;
+      if (!postpart)
+         return true;
 
       let pos2 = pos;
       while ((pos2 < this.opt.length) && (this.opt[pos2] !== ' ') && (this.opt[pos2] !== ',') && (this.opt[pos2] !== ';')) pos2++;
@@ -211,8 +213,14 @@ class DrawOptions {
       if (postpart !== 'color')
          return true;
 
+      if (((this.part.length === 6) || (this.part.length === 8)) && this.part.match(/^[a-fA-F0-9]+/)) {
+         this.color = addColor('#' + this.part);
+         return true;
+      }
+
       this.color = this.partAsInt(1) - 1;
-      if (this.color >= 0) return true;
+      if (this.color >= 0)
+         return true;
       for (let col = 0; col < 8; ++col) {
          if (getColor(col).toUpperCase() === this.part) {
             this.color = col;
