@@ -3484,10 +3484,11 @@ class TH2Painter extends THistPainter {
 
    /** @summary Complete palette drawing */
    completePalette(pp) {
-      if (!pp) return true;
+      if (!pp)
+         return true;
 
       pp.$main_painter = this;
-      this.options.Zvert = pp._palette_vertical;
+      this.options.Zvert = pp.isPaletteVertical();
 
       // redraw palette till the end when contours are available
       return pp.drawPave(this.options.Cjust ? 'cjust' : '');

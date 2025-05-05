@@ -2177,7 +2177,7 @@ class THistPainter extends ObjectPainter {
 
       if (!enabled) {
          if (pal_painter && !this.options.Same) {
-            this.options.Zvert = pal_painter._palette_vertical;
+            this.options.Zvert = pal_painter.isPaletteVertical();
             pal_painter.Enabled = false;
             pal_painter.removeG(); // completely remove drawing without need to redraw complete pad
          }
@@ -2213,8 +2213,8 @@ class THistPainter extends ObjectPainter {
 
          // place colz in the beginning, that stat box is always drawn on the top
          this.addFunction(pal, true);
-      } else if (pp?._palette_vertical !== undefined)
-         this.options.Zvert = pp._palette_vertical;
+      } else if (pal_painter?.isPaletteVertical() !== undefined)
+         this.options.Zvert = pal_painter.isPaletteVertical();
 
       const fp = this.getFramePainter();
 
@@ -2278,7 +2278,7 @@ class THistPainter extends ObjectPainter {
 
       return pr.then(() => {
          // mark painter as secondary - not in list of TCanvas primitives
-         this.options.Zvert = pal_painter._palette_vertical;
+         this.options.Zvert = pal_painter.isPaletteVertical();
 
          // make dummy redraw, palette will be updated only from histogram painter
          pal_painter.redraw = () => {};
