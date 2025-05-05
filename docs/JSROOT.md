@@ -150,7 +150,9 @@ List of supported classes and draw options:
 [lego1](https://root.cern/js/latest/examples.htm#th2_lego1),
 [lego2](https://root.cern/js/latest/examples.htm#th2_lego2),
 [lego3](https://root.cern/js/latest/examples.htm#th2_lego3),
-[lego4](https://root.cern/js/latest/examples.htm#th2_lego4)
+[lego4](https://root.cern/js/latest/examples.htm#th2_lego4),
+[circ](https://root.cern/js/latest/examples.htm#th2_circ),
+[chord](https://root.cern/js/latest/examples.htm#th2_chord)
 - TH2Poly : [col](https://root.cern/js/latest/examples.htm#th2poly_honeycomb),
 [lego](https://root.cern/js/latest/examples.htm#th2poly_lego),
 [europe](https://root.cern/js/latest/examples.htm#th2poly_europe),
@@ -211,6 +213,16 @@ List of supported classes and draw options:
 - TPolyMarker3D: [dflt](https://root.cern/js/latest/examples.htm#misc_3dmark)
 
 More examples of supported classes can be found on: <https://root.cern/js/latest/examples.htm>
+
+One can change some histograms colors using draw options:
+
+- line_N: [line color](https://root.cern/js/latest/examples.htm#th1_line_n)
+- fill_N: [fill color](https://root.cern/js/latest/examples.htm#th1_fill_n)
+- xaxis_N: [X axis color](https://jsroot.gsi.de/dev/examples.htm#th1_xaxis_n)
+- yaxis_N: [Y axis color](https://jsroot.gsi.de/dev/examples.htm#th1_yaxis_n)
+
+Here N can be existing ROOT color index or hex6/hex8 values like [line_ff00ff](https://jsroot.gsi.de/dev/?nobrowser&file=../files/hsimple.root&item=hpx;1&opt=line_ff00ff) or [fill_7733ff34](https://jsroot.gsi.de/dev/?nobrowser&file=../files/hsimple.root&item=hpx;1&opt=fill_7733ff34).
+
 
 There are special JSROOT draw options which only can be used with for `TCanvas` or `TPad` objects:
 
