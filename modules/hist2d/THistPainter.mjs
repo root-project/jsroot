@@ -890,6 +890,8 @@ const kUserContour = BIT(10), // user specified contour levels
 
 class THistPainter extends ObjectPainter {
 
+   #doing_redraw_palette; // set during redrawing of palette
+
    /** @summary Constructor
      * @param {object|string} dom - DOM element for drawing or element id
      * @param {object} histo - TH1 derived histogram object */
@@ -901,9 +903,7 @@ class THistPainter extends ObjectPainter {
    }
 
    /** @summary Returns histogram object */
-   getHisto() {
-      return this.getObject();
-   }
+   getHisto() { return this.getObject(); }
 
    /** @summary Returns histogram axis */
    getAxis(name) {
@@ -917,9 +917,7 @@ class THistPainter extends ObjectPainter {
    }
 
    /** @summary Returns true if TProfile */
-   isTProfile() {
-      return this.matchObjectType(clTProfile);
-   }
+   isTProfile() { return this.matchObjectType(clTProfile); }
 
    /** @summary Returns true if histogram drawn instead of TF1/TF2 object */
    isTF1() { return false; }
@@ -987,7 +985,8 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Copy draw options from other painter */
    copyOptionsFrom(src) {
-      if (src === this) return;
+      if (src === this)
+         return;
       const o = this.options, o0 = src.options;
 
       o.Mode3D = o0.Mode3D;
@@ -2260,7 +2259,7 @@ class THistPainter extends ObjectPainter {
 
       let arg = 'bring_stats_front', pr;
       if (postpone_draw) arg += ';postpone';
-      if (can_move && !this.do_redraw_palette) arg += ';can_move';
+      if (can_move && !this.#doing_redraw_palette) arg += ';can_move';
       if (this.options.Cjust) arg += ';cjust';
 
       if (!pal_painter) {
@@ -2286,7 +2285,7 @@ class THistPainter extends ObjectPainter {
          let need_redraw = false;
 
          // special code to adjust frame position to actual position of palette
-         if (can_move && fp && !this.do_redraw_palette) {
+         if (can_move && fp && !this.#doing_redraw_palette) {
             const pad = pp?.getRootPad(true);
 
             if (this.options.Zvert) {
@@ -2328,13 +2327,13 @@ class THistPainter extends ObjectPainter {
          if (!need_redraw)
             return pal_painter;
 
-         this.do_redraw_palette = true;
+         this.#doing_redraw_palette = true;
 
          fp.redraw();
 
          const pr2 = !postpone_draw ? this.redraw() : Promise.resolve(true);
          return pr2.then(() => {
-             delete this.do_redraw_palette;
+             this.#doing_redraw_palette = undefined;
              return pal_painter;
          });
       });
