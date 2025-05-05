@@ -3,6 +3,7 @@
 ## Changes in dev
 1. Use ES6 modules to implement geoworker, enable node.js usage
 1. Upgrade three.js r174 -> r176
+1. Add missing colors 100 - 127
 1. Fix - colz handling on `THStack`, avoid multiple palette drawings
 1. Fix - bug in pad.Divide context menu command
 1. Fix - palette not adjusted when 'same' draw option used for histogram
