@@ -16,6 +16,9 @@ import { RObjectPainter } from '../base/RObjectPainter.mjs';
 
 class RFramePainter extends RObjectPainter {
 
+   #frame_x; // frame X coordinate
+   #frame_y; // frame Y coordinate
+
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
      * @param {object} frame - RFrame object */
@@ -417,7 +420,7 @@ class RFramePainter extends RObjectPainter {
           pr2 = draw_vertical.drawAxis(layer, w, h,
                                    draw_vertical.invert_side ? `translate(${w})` : null,
                                    (ticksy > 1) ? w : 0, disable_y_draw,
-                                   draw_vertical.invert_side ? 0 : this._frame_x, can_adjust_frame);
+                                   draw_vertical.invert_side ? 0 : this.#frame_x, can_adjust_frame);
 
          pr = Promise.all([pr1, pr2]).then(() => this.drawGrids());
       } else {
@@ -660,8 +663,8 @@ class RFramePainter extends RObjectPainter {
 
 
       // update values here to let access even when frame is not really updated
-      this._frame_x = lm;
-      this._frame_y = tm;
+      this.#frame_x = lm;
+      this.#frame_y = tm;
       this._frame_width = w;
       this._frame_height = h;
       this._frame_rotate = rotate;
@@ -729,10 +732,10 @@ class RFramePainter extends RObjectPainter {
    }
 
    /** @summary Returns frame X position */
-   getFrameX() { return this._frame_x || 0; }
+   getFrameX() { return this.#frame_x || 0; }
 
    /** @summary Returns frame Y position */
-   getFrameY() { return this._frame_y || 0; }
+   getFrameY() { return this.#frame_y || 0; }
 
    /** @summary Returns frame width */
    getFrameWidth() { return this._frame_width || 0; }
@@ -743,8 +746,8 @@ class RFramePainter extends RObjectPainter {
    /** @summary Returns frame rectangle plus extra info for hint display */
    getFrameRect() {
       return {
-         x: this._frame_x || 0,
-         y: this._frame_y || 0,
+         x: this.#frame_x || 0,
+         y: this.#frame_y || 0,
          width: this.getFrameWidth(),
          height: this.getFrameHeight(),
          transform: this.draw_g?.attr('transform') || '',
