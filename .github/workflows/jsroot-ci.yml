@@ -59,6 +59,7 @@ jobs:
           wget https://root.cern/js/files/hsimple.root
           node demo/node/file_proxy.js sync ./hsimple.root
           node demo/node/file_proxy.js promise ./hsimple.root
+          node demo/node/file_proxy.js multi ./hsimple.root
           node demo/node/file_proxy.js buffer ./hsimple.root
 
   tests_ubuntu:
@@ -170,6 +171,7 @@ jobs:
           wget https://root.cern/js/files/hsimple.root
           node demo/node/file_proxy.js sync ./hsimple.root
           node demo/node/file_proxy.js promise ./hsimple.root
+          node demo/node/file_proxy.js multi ./hsimple.root
           node demo/node/file_proxy.js buffer ./hsimple.root
 
   build-windows:
@@ -215,5 +217,6 @@ jobs:
           curl https://root.cern/js/files/hsimple.root --output hsimple.root
           node demo/node/file_proxy.js sync ./hsimple.root
           node demo/node/file_proxy.js promise ./hsimple.root
+          node demo/node/file_proxy.js multi ./hsimple.root
           node demo/node/file_proxy.js buffer ./hsimple.root
 
