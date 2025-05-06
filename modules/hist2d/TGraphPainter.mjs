@@ -22,7 +22,6 @@ const kNotEditable = BIT(18),   // bit set if graph is non editable
  * @private
  */
 
-
 class TGraphPainter extends ObjectPainter {
 
    constructor(dom, graph) {
@@ -72,7 +71,6 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Cleanup graph painter */
    cleanup() {
-      delete this.interactive_bin; // break mouse handling
       delete this.bins;
       super.cleanup();
    }
@@ -89,8 +87,8 @@ class TGraphPainter extends ObjectPainter {
          opt = opt.slice(5);
 
       const graph = this.getGraph(),
-          is_gme = Boolean(this.get_gme()),
-          has_main = first_time ? Boolean(this.getMainPainter()) : !this.axes_draw;
+            is_gme = Boolean(this.get_gme()),
+            has_main = first_time ? Boolean(this.getMainPainter()) : !this.axes_draw;
       let blocks_gme = [];
 
       if (!this.options) this.options = {};
