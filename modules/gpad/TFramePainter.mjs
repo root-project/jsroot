@@ -866,7 +866,7 @@ class FrameInteractive extends TooltipHandler {
             pp = this.getPadPainter();
       let key = evnt.key;
 
-      if (!settings.HandleKeys || main.empty() || (this.enabledKeys === false) ||
+      if (!settings.HandleKeys || main.empty() || (this.isEnabledKeys() === false) ||
           (getActivePad() !== pp) || (allowed.indexOf(key) < 0)) return false;
 
       if (evnt.shiftKey) key = `Shift ${key}`;
@@ -1663,6 +1663,8 @@ class TFramePainter extends FrameInteractive {
    #projection; // id of projection function
    #click_handler; // handle for click events
    #dblclick_handler; // handle for double click events
+   #enabled_keys;  // when keyboard press handling enabled
+   #last_event_pos; // position of last event
 
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -1700,11 +1702,15 @@ class TFramePainter extends FrameInteractive {
    /** @summary Set active flag for frame - can block some events
      * @private */
    setFrameActive(on) {
-      this.enabledKeys = on && settings.HandleKeys;
+      this.#enabled_keys = on && settings.HandleKeys;
       // used only in 3D mode where control is used
       if (this.control)
-         this.control.enableKeys = this.enabledKeys;
+         this.control.enableKeys = this.#enabled_keys;
    }
+
+   /** @summary Returns true if keys handling enabled
+     * @private */
+   isEnabledKeys() { return this.#enabled_keys; }
 
    /** @summary Shrink frame size
      * @private */
@@ -1713,14 +1719,13 @@ class TFramePainter extends FrameInteractive {
       this.fX2NDC -= shrink_right;
    }
 
-   /** @summary Set position of last context menu event */
-   setLastEventPos(pnt) {
-      this.fLastEventPnt = pnt;
-   }
+   /** @summary Set position of last context menu event
+    * @private */
+   setLastEventPos(pnt) { this.#last_event_pos = pnt; }
 
    /** @summary Return position of last event
      * @private */
-   getLastEventPos() { return this.fLastEventPnt; }
+   getLastEventPos() { return this.#last_event_pos; }
 
    /** @summary Returns coordinates transformation func */
    getProjectionFunc() { return getEarthProjectionFunc(this.#projection); }
@@ -2499,7 +2504,7 @@ class TFramePainter extends FrameInteractive {
       this.cleanFrameDrawings();
       this.#click_handler = undefined;
       this.#dblclick_handler = undefined;
-      delete this.enabledKeys;
+      this.#enabled_keys = undefined;
 
       this.getPadPainter()?.setFramePainter(this, false);
 

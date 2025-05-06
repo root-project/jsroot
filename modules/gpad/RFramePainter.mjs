@@ -25,6 +25,8 @@ class RFramePainter extends RObjectPainter {
    #projection; // id of projection function
    #click_handler; // handle for click events
    #dblclick_handler; // handle for double click events
+   #enabled_keys;  // when keyboard press handling enabled
+   #last_event_pos; // position of last event
 
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -50,21 +52,23 @@ class RFramePainter extends RObjectPainter {
    /** @summary Set active flag for frame - can block some events
     * @private */
    setFrameActive(on) {
-      this.enabledKeys = on && settings.HandleKeys;
+      this.#enabled_keys = on && settings.HandleKeys;
       // used only in 3D mode
       if (this.control)
-         this.control.enableKeys = this.enabledKeys;
+         this.control.enableKeys = this.#enabled_keys;
    }
 
-   setLastEventPos(pnt) {
-      // set position of last context menu event, can be
-      this.fLastEventPnt = pnt;
-   }
+   /** @summary Returns true if keys handling enabled
+   * @private */
+   isEnabledKeys() { return this.#enabled_keys; }
 
-   getLastEventPos() {
-      // return position of last event
-      return this.fLastEventPnt;
-   }
+   /** @summary Set position of last context menu event
+    * @private */
+   setLastEventPos(pnt) { this.#last_event_pos = pnt; }
+
+   /** @summary Return position of last event
+     * @private */
+   getLastEventPos() { return this.#last_event_pos; }
 
    /** @summary Update graphical attributes */
    updateAttributes(force) {
@@ -620,7 +624,7 @@ class RFramePainter extends RObjectPainter {
          window.removeEventListener('keydown', this.keys_handler, false);
          this.keys_handler = null;
       }
-      delete this.enabledKeys;
+      this.#enabled_keys = undefined;
       delete this.self_drawaxes;
 
       delete this.xaxis;
