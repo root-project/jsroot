@@ -10,6 +10,8 @@ import { open, stat } from 'node:fs/promises';
 
 console.log(`JSROOT version ${version}`);
 
+/** Class using sync  file I/O  */
+
 class FileProxySync extends FileProxy {
 
    constructor(filename) {
@@ -34,22 +36,17 @@ class FileProxySync extends FileProxy {
       if (!this.fd)
          return Promise.resolve(null);
 
-      let buffer = new ArrayBuffer(sz);
+      const buffer = new ArrayBuffer(sz),
+            view = new DataView(buffer, 0, sz),
+            bytesRead = readSync(this.fd, view, 0, sz, pos);
 
-      let view = new DataView(buffer, 0, sz);
-
-      let bytesRead = readSync(this.fd, view, 0, sz, pos);
-
-      // console.log(`Read at ${pos} size ${bytesRead}`);
-
-      if (bytesRead == sz)
-          return Promise.resolve(view);
-
-       return Promise.resolve(null);
+      return Promise.resolve(bytesRead == sz ? view : null);
    }
 
 } // class FileProxySync
 
+
+/** Class using async node.js file I/O  */
 
 class FileProxyPromise extends FileProxy {
 
@@ -59,8 +56,7 @@ class FileProxyPromise extends FileProxy {
       this.size = 0;
    }
 
-   openFile() {
-
+   async openFile() {
       return open(this.filename).then(fd => {
          if (!fd) return false;
          this.fd = fd;
@@ -77,23 +73,51 @@ class FileProxyPromise extends FileProxy {
 
    getFileSize() { return this.size; }
 
-   readBuffer(pos, sz) {
+   async readBuffer(pos, sz) {
       if (!this.fd)
          return Promise.resolve(null);
 
-      let buffer = new ArrayBuffer(sz);
-
-      let view = new DataView(buffer, 0, sz);
+      const buffer = new ArrayBuffer(sz),
+            view = new DataView(buffer, 0, sz);
 
       return this.fd.read(view, 0, sz, pos).then(res => {
-         // console.log(`Read ${pos} size ${res.bytesRead}`);
-         // console.trace();
 
          return res.bytesRead > 0 ? res.buffer : null;
       });
    }
 
 } // class FileProxyPromise
+
+
+/** Class supporting multi-range requests */
+class FileProxyMultiple extends FileProxyPromise {
+
+   /** example of reading several segments at once */
+   async readBuffers(places) {
+      if (places.length === 2)
+         return this.readBuffer(places[0], places[1]);
+
+      if (!this.fd)
+         return Promise.resolve([]);
+
+      const promises = [];
+      for (let k = 0; k < places.length; k += 2) {
+         const pos = places[k], sz = places[k + 1],
+               buffer = new ArrayBuffer(sz),
+               view = new DataView(buffer, 0, sz);
+
+         promises.push(this.fd.read(view, 0, sz, pos));
+      }
+
+      return Promise.all(promises).then(arr => {
+         const res = [];
+         for (let k = 0; k < arr.length; ++k)
+            res.push(arr[k].bytesRead > 0 ? arr[k].buffer : null);
+         return res;
+      });
+   }
+
+} // class FileProxyMultiple
 
 let filearg = null, fname = '../../../files/hsimple.root';
 
@@ -110,6 +134,9 @@ if (fname.indexOf('http') == 0) {
 } else if (process.argv && process.argv[2] == 'sync') {
    console.log('Using FileProxySync');
    filearg = new FileProxySync(fname);
+} else if (process.argv && process.argv[2] == 'multi') {
+   console.log('Using FileProxyMultiple');
+   filearg = new FileProxyMultiple(fname);
 } else {
    console.log('Using FileProxyPromise');
    filearg = new FileProxyPromise(fname);
