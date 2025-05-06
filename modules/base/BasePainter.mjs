@@ -472,6 +472,9 @@ class BasePainter {
 
    #divid;  // either id of DOM element or element itself
    #selected_main; // d3.select for dom elements
+   #hitemname; // item name in the hpainter
+   #hdrawopt; // draw option in the hpainter
+   #hpainter; // assigned hpainter
 
    /** @summary constructor
      * @param {object|string} [dom] - dom element or id of dom element */
@@ -566,12 +569,12 @@ class BasePainter {
       this.#divid = null;
       this.#selected_main = undefined;
 
-      if (isFunc(this._hpainter?.removePainter))
-         this._hpainter.removePainter(this);
+      if (isFunc(this.#hpainter?.removePainter))
+         this.#hpainter.removePainter(this);
 
-      delete this._hitemname;
-      delete this._hdrawopt;
-      delete this._hpainter;
+      this.#hitemname = undefined;
+      this.#hdrawopt = undefined;
+      this.#hpainter = undefined;
    }
 
    /** @summary Checks if draw elements were resized and drawing should be updated
@@ -711,24 +714,24 @@ class BasePainter {
      * @desc Used by {@link HierarchyPainter}
      * @private */
    setItemName(name, opt, hpainter) {
-      if (isStr(name))
-         this._hitemname = name;
-      else
-         delete this._hitemname;
+      this.#hitemname = isStr(name) ? name : undefined;
       // only update draw option, never delete.
       if (isStr(opt))
-         this._hdrawopt = opt;
+         this.#hdrawopt = opt;
 
-      this._hpainter = hpainter;
+      this.#hpainter = hpainter;
    }
+
+   /** @summary Returns assigned histogram painter */
+   getHPainter() { return this.#hpainter; }
 
    /** @summary Returns assigned item name
      * @desc Used with {@link HierarchyPainter} to identify drawn item name */
-   getItemName() { return this._hitemname ?? null; }
+   getItemName() { return this.#hitemname ?? null; }
 
    /** @summary Returns assigned item draw option
      * @desc Used with {@link HierarchyPainter} to identify drawn item option */
-   getItemDrawOpt() { return this._hdrawopt ?? ''; }
+   getItemDrawOpt() { return this.#hdrawopt ?? ''; }
 
 } // class BasePainter
 
