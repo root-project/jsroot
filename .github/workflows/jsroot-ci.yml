@@ -211,4 +211,9 @@ jobs:
           node demo/node/tree_draw.js
           node demo/node/geomsvg.js
           node demo/node/selector.js
-          cd demo/node; node make_image.js
+          cd demo/node; node make_image.js; cd ../..
+          curl https://root.cern/js/files/hsimple.root --output hsimple.root
+          node demo/node/file_proxy.js sync ./hsimple.root
+          node demo/node/file_proxy.js promise ./hsimple.root
+          node demo/node/file_proxy.js buffer ./hsimple.root
+
