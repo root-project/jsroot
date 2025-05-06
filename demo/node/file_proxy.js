@@ -4,7 +4,7 @@
 
 import { version, FileProxy, openFile, makeSVG, treeDraw } from 'jsroot';
 
-import { writeFileSync, openSync, readSync, statSync } from 'fs';
+import { writeFileSync, readFileSync, openSync, readSync, statSync } from 'fs';
 
 import { open, stat } from 'node:fs/promises';
 
@@ -30,8 +30,7 @@ class FileProxySync extends FileProxy {
 
    getFileSize() { return this.size; }
 
-   readBuffer(pos, sz)
-   {
+   readBuffer(pos, sz) {
       if (!this.fd)
          return Promise.resolve(null);
 
@@ -78,8 +77,7 @@ class FileProxyPromise extends FileProxy {
 
    getFileSize() { return this.size; }
 
-   readBuffer(pos, sz)
-   {
+   readBuffer(pos, sz) {
       if (!this.fd)
          return Promise.resolve(null);
 
@@ -97,45 +95,49 @@ class FileProxyPromise extends FileProxy {
 
 } // class FileProxyPromise
 
-let proxy = null, fname = '../../../files/hsimple.root';
+let filearg = null, fname = '../../../files/hsimple.root';
 
 if (process.argv && process.argv[3] && typeof process.argv[3] == 'string')
    fname = process.argv[3];
 
 if (fname.indexOf('http') == 0) {
    console.log('Using normal file API');
-   proxy = fname;
+   filearg = fname;
+} else if (process.argv && process.argv[2] == 'buffer') {
+   const nodeBuffer = readFileSync(fname);
+   filearg = new Uint8Array(nodeBuffer).buffer;
+   console.log('Using BufferArray', filearg.byteLength);
 } else if (process.argv && process.argv[2] == 'sync') {
    console.log('Using FileProxySync');
-   proxy = new FileProxySync(fname);
+   filearg = new FileProxySync(fname);
 } else {
    console.log('Using FileProxyPromise');
-   proxy = new FileProxyPromise(fname);
+   filearg = new FileProxyPromise(fname);
 }
 
 if (process.argv && process.argv[2] == 'sync') {
    console.log('Using sync API');
 
-   let file = await openFile(proxy);
-   if (!file) {
+   const file = await openFile(filearg);
+   if (!file)
       console.error('Fail to open file');
-   }
 
    // now read ntuple, perform Draw operation, create SVG file and sve to the disk
-   let ntuple = await file.readObject('ntuple');
-   let hist = await treeDraw(ntuple, 'px:py::pz>5');
-   let svg = await makeSVG({ object: hist, width: 1200, height: 800 });
+   const ntuple = await file.readObject('ntuple');
+   const hist = await treeDraw(ntuple, 'px:py::pz>5');
+   const svg = await makeSVG({ object: hist, width: 1200, height: 800 });
    writeFileSync('draw_proxy.svg', svg);
    console.log(`Create draw_proxy.svg size ${svg.length}`);
 } else {
    console.log('Using promise API');
 
-   openFile(proxy).then(file => file.readObject('ntuple'))
-                  .then(ntuple => treeDraw(ntuple, 'px:py::pz>5'))
-                  .then(hist => makeSVG({ object: hist, width: 1200, height: 800 }))
-                  .then(svg => {
-                     writeFileSync('draw_proxy.svg', svg);
-                     console.log(`Create draw_proxy.svg size ${svg.length}`);
-                  });
+   openFile(filearg)
+      .then(file => file.readObject('ntuple'))
+      .then(ntuple => treeDraw(ntuple, 'px:py::pz>5'))
+      .then(hist => makeSVG({ object: hist, width: 1200, height: 800 }))
+      .then(svg => {
+         writeFileSync('draw_proxy.svg', svg);
+         console.log(`Create draw_proxy.svg size ${svg.length}`);
+      });
 }
 
