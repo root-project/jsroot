@@ -808,7 +808,7 @@ class FrameInteractive extends TooltipHandler {
       }
 
       if (!svg.property('interactive_set')) {
-         this.addFrameKeysHandler();
+         this.addKeysHandler();
 
          this.zoom_kind = 0; // 0 - none, 1 - XY, 2 - only X, 3 - only Y, (+100 for touches)
          this.zoom_rect = null;
@@ -844,15 +844,6 @@ class FrameInteractive extends TooltipHandler {
       svg.property('interactive_set', true);
 
       return this;
-   }
-
-   /** @summary Add keys handler */
-   addFrameKeysHandler() {
-      if (this.keys_handler || (typeof window === 'undefined')) return;
-
-      this.keys_handler = evnt => this.processKeyPress(evnt);
-
-      window.addEventListener('keydown', this.keys_handler, false);
    }
 
    /** @summary Handle key press */
@@ -1663,6 +1654,7 @@ class TFramePainter extends FrameInteractive {
    #projection; // id of projection function
    #click_handler; // handle for click events
    #dblclick_handler; // handle for double click events
+   #keys_handler; // assigned handler for keyboard events
    #enabled_keys;  // when keyboard press handling enabled
    #last_event_pos; // position of last event
 
@@ -1679,7 +1671,6 @@ class TFramePainter extends FrameInteractive {
       this.ranges_set = false;
       this.#axes_drawn = false;
       this.#axes2_drawn = false;
-      this.keys_handler = null;
       this.#border_mode = gStyle.fFrameBorderMode;
       this.#border_size = gStyle.fFrameBorderSize;
       this.#projection = 0; // different projections
@@ -2493,9 +2484,9 @@ class TFramePainter extends FrameInteractive {
 
       delete this.draw_g; // frame <g> element managed by the pad
 
-      if (this.keys_handler) {
-         window.removeEventListener('keydown', this.keys_handler, false);
-         this.keys_handler = null;
+      if (this.#keys_handler) {
+         window.removeEventListener('keydown', this.#keys_handler, false);
+         this.#keys_handler = undefined;
       }
    }
 
@@ -3145,8 +3136,12 @@ class TFramePainter extends FrameInteractive {
    /** @summary Add interactive keys handlers
     * @private */
    addKeysHandler() {
-      if (!this.isBatchMode())
-         this.addFrameKeysHandler();
+      if (this.isBatchMode() || this.#keys_handler || (typeof window === 'undefined'))
+         return;
+
+      this.#keys_handler = evnt => this.processKeyPress(evnt);
+
+      window.addEventListener('keydown', this.#keys_handler, false);
    }
 
    /** @summary Add interactive functionality to the frame

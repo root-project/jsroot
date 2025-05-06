@@ -25,6 +25,7 @@ class RFramePainter extends RObjectPainter {
    #projection; // id of projection function
    #click_handler; // handle for click events
    #dblclick_handler; // handle for double click events
+   #keys_handler; // assigned handler for keyboard events
    #enabled_keys;  // when keyboard press handling enabled
    #last_event_pos; // position of last event
 
@@ -37,7 +38,6 @@ class RFramePainter extends RObjectPainter {
       this.xmin = this.xmax = 0; // no scale specified, wait for objects drawing
       this.ymin = this.ymax = 0; // no scale specified, wait for objects drawing
       this.#axes_drawn = false;
-      this.keys_handler = null;
       this.#projection = 0; // different projections
       this.v7_frame = true; // indicator of v7, used in interactive part
    }
@@ -620,9 +620,9 @@ class RFramePainter extends RObjectPainter {
                     .property('interactive_set', null);
       }
 
-      if (this.keys_handler) {
-         window.removeEventListener('keydown', this.keys_handler, false);
-         this.keys_handler = null;
+      if (this.#keys_handler) {
+         window.removeEventListener('keydown', this.#keys_handler, false);
+         this.#keys_handler = undefined;
       }
       this.#enabled_keys = undefined;
       delete this.self_drawaxes;
@@ -1162,9 +1162,14 @@ class RFramePainter extends RObjectPainter {
    /** @summary Add interactive keys handlers
     * @private */
    addKeysHandler() {
-      if (this.isBatchMode()) return;
+      if (this.isBatchMode() || this.#keys_handler || (typeof window === 'undefined'))
+         return;
+
       FrameInteractive.assign(this);
-      this.addFrameKeysHandler();
+
+      this.#keys_handler = evnt => this.processKeyPress(evnt);
+
+      window.addEventListener('keydown', this.#keys_handler, false);
    }
 
    /** @summary Add interactive functionality to the frame
