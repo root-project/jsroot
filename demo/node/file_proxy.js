@@ -92,11 +92,8 @@ class FileProxyPromise extends FileProxy {
 /** Class supporting multi-range requests */
 class FileProxyMultiple extends FileProxyPromise {
 
-   /** example of reading several segments at once */
+   /** example of reading several segments at once, always return array */
    async readBuffers(places) {
-      if (places.length === 2)
-         return this.readBuffer(places[0], places[1]);
-
       if (!this.fd)
          return Promise.resolve([]);
 
