@@ -720,7 +720,6 @@ class TooltipHandler extends ObjectPainter {
 
 /** @summary Frame interactivity class
   * @private */
-
 class FrameInteractive extends TooltipHandler {
 
    // cannot use private members because of RFramePainter
@@ -749,8 +748,8 @@ class FrameInteractive extends TooltipHandler {
             handlers_set = pp?._fast_drawing ? 0 : 1;
 
       if (main_svg.property('handlers_set') !== handlers_set) {
-         const close_handler = handlers_set ? this.processFrameTooltipEvent.bind(this, null) : null,
-               mouse_handler = handlers_set ? this.processFrameTooltipEvent.bind(this, { handler: true, touch: false }) : null;
+         const close_handler = handlers_set ? evnt => this.processFrameTooltipEvent(null, evnt) : null,
+               mouse_handler = handlers_set ? evnt => this.processFrameTooltipEvent({ handler: true, touch: false }, evnt) : null;
 
          main_svg.property('handlers_set', handlers_set)
                  .on('mouseenter', mouse_handler)
@@ -758,7 +757,7 @@ class FrameInteractive extends TooltipHandler {
                  .on('mouseleave', close_handler);
 
          if (browser.touches) {
-            const touch_handler = handlers_set ? this.processFrameTooltipEvent.bind(this, { handler: true, touch: true }) : null;
+            const touch_handler = handlers_set ? evnt => this.processFrameTooltipEvent({ handler: true, touch: true }, evnt) : null;
 
             main_svg.on('touchstart', touch_handler)
                     .on('touchmove', touch_handler)
@@ -775,7 +774,7 @@ class FrameInteractive extends TooltipHandler {
       const hintsg = this.hints_layer().selectChild('.objects_hints');
       // if tooltips were visible before, try to reconstruct them after short timeout
       if (!hintsg.empty() && this.isTooltipAllowed() && (hintsg.property('hints_pad') === this.getPadName()))
-         setTimeout(this.processFrameTooltipEvent.bind(this, hintsg.property('last_point'), null), 10);
+         setTimeout(() => this.processFrameTooltipEvent(hintsg.property('last_point'), null), 10);
    }
 
    /** @summary Add interactive handlers */
