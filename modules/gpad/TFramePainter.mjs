@@ -713,11 +713,6 @@ class TooltipHandler extends ObjectPainter {
          cp.processHighlightConnect(hints);
    }
 
-   /** @summary Assigns tooltip methods */
-   assign(painter) {
-      Object.assign(painter, this, { tooltip_enabled: true });
-   }
-
 } // class TooltipHandler
 
 
