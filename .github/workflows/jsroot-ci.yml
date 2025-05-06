@@ -166,7 +166,11 @@ jobs:
           node demo/node/tree_dump.js
           node demo/node/tree_draw.js
           node demo/node/selector.js
-          cd demo/node; node make_image.js
+          cd demo/node; node make_image.js; cd ../..
+          wget https://root.cern/js/files/hsimple.root
+          node demo/node/file_proxy.js sync ./hsimple.root
+          node demo/node/file_proxy.js promise ./hsimple.root
+          node demo/node/file_proxy.js buffer ./hsimple.root
 
   build-windows:
     runs-on: windows-latest
