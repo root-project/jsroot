@@ -357,6 +357,8 @@ function addDragHandler(_painter, arg) {
       makeResizeElements(arg.getDrawG(), drag_resize);
 }
 
+/** @summary Tooltip handler class
+  * @private */
 class TooltipHandler extends ObjectPainter {
 
    // cannot use private members because of RFramePainter
@@ -716,7 +718,7 @@ class TooltipHandler extends ObjectPainter {
 } // class TooltipHandler
 
 
-/** @summary Set of frame interactivity methods
+/** @summary Frame interactivity class
   * @private */
 
 class FrameInteractive extends TooltipHandler {
@@ -725,7 +727,6 @@ class FrameInteractive extends TooltipHandler {
 
    /** @summary Adding basic interactivity */
    addBasicInteractivity() {
-
       this.setTooltipEnabled(true);
 
       if (this.$can_drag) {
