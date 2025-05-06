@@ -357,13 +357,13 @@ function addDragHandler(_painter, arg) {
       makeResizeElements(arg.getDrawG(), drag_resize);
 }
 
-const TooltipHandler = {
+class TooltipHandler extends ObjectPainter {
 
    /** @desc only canvas info_layer can be used while other pads can overlay
      * @return layer where frame tooltips are shown */
    hints_layer() {
       return this.getCanvPainter()?.getLayerSvg('info_layer') ?? d3_select(null);
-   },
+   }
 
    /** @return true if tooltip is shown, use to prevent some other action */
    isTooltipShown() {
@@ -371,13 +371,13 @@ const TooltipHandler = {
          return false;
       const hintsg = this.hints_layer().selectChild('.objects_hints');
       return hintsg.empty() ? false : hintsg.property('hints_pad') === this.getPadName();
-   },
+   }
 
    /** @summary set tooltips enabled on/off */
    setTooltipEnabled(enabled) {
       if (enabled !== undefined)
          this.tooltip_enabled = enabled;
-   },
+   }
 
    /** @summary central function which let show selected hints for the object */
    processFrameTooltipEvent(pnt, evnt) {
@@ -709,24 +709,25 @@ const TooltipHandler = {
 
       if (cp._highlight_connect && isFunc(cp.processHighlightConnect))
          cp.processHighlightConnect(hints);
-   },
+   }
 
    /** @summary Assigns tooltip methods */
    assign(painter) {
       Object.assign(painter, this, { tooltip_enabled: true });
    }
 
-}, // TooltipHandler
+} // class TooltipHandler
 
 
 /** @summary Set of frame interactivity methods
   * @private */
 
- FrameInteractive = {
+class FrameInteractive extends TooltipHandler {
 
    /** @summary Adding basic interactivity */
    addBasicInteractivity() {
-      TooltipHandler.assign(this);
+
+      this.setTooltipEnabled(true);
 
       if (this.$can_drag) {
          addDragHandler(this, { obj: this, x: this.getFrameX(), y: this.getFrameY(), width: this.getFrameWidth(), height: this.getFrameHeight(),
@@ -745,7 +746,7 @@ const TooltipHandler = {
               .property('handlers_set', 0);
 
       const pp = this.getPadPainter(),
-          handlers_set = pp?._fast_drawing ? 0 : 1;
+            handlers_set = pp?._fast_drawing ? 0 : 1;
 
       if (main_svg.property('handlers_set') !== handlers_set) {
          const close_handler = handlers_set ? this.processFrameTooltipEvent.bind(this, null) : null,
@@ -775,7 +776,7 @@ const TooltipHandler = {
       // if tooltips were visible before, try to reconstruct them after short timeout
       if (!hintsg.empty() && this.isTooltipAllowed() && (hintsg.property('hints_pad') === this.getPadName()))
          setTimeout(this.processFrameTooltipEvent.bind(this, hintsg.property('last_point'), null), 10);
-   },
+   }
 
    /** @summary Add interactive handlers */
    async addFrameInteractivity(for_second_axes) {
@@ -844,7 +845,7 @@ const TooltipHandler = {
       svg.property('interactive_set', true);
 
       return this;
-   },
+   }
 
    /** @summary Add keys handler */
    addFrameKeysHandler() {
@@ -853,7 +854,7 @@ const TooltipHandler = {
       this.keys_handler = evnt => this.processKeyPress(evnt);
 
       window.addEventListener('keydown', this.keys_handler, false);
-   },
+   }
 
    /** @summary Handle key press */
    processKeyPress(evnt) {
@@ -908,7 +909,7 @@ const TooltipHandler = {
       }
 
       return true; // just process any key press
-   },
+   }
 
    /** @summary Function called when frame is clicked and object selection can be performed
      * @desc such event can be used to select */
@@ -939,7 +940,7 @@ const TooltipHandler = {
       }
 
       return res;
-   },
+   }
 
    /** @summary Check mouse moving  */
    shiftMoveHanlder(evnt, pos0) {
@@ -959,7 +960,7 @@ const TooltipHandler = {
          evnt.preventDefault();
          evnt.stopPropagation();
       }
-   },
+   }
 
    /** @summary mouse up handler for shifting */
    shiftUpHanlder(evnt) {
@@ -970,7 +971,7 @@ const TooltipHandler = {
 
       if ((this._shifting_dx !== undefined) && (this._shifting_dy !== undefined))
          this.performScalesShift();
-    },
+   }
 
     /** @summary Shift scales on defined positions */
    performScalesShift() {
@@ -993,7 +994,7 @@ const TooltipHandler = {
          this.zoomSingle('x', xmin, xmax);
       else
          this.zoom(xmin, xmax, ymin, ymax);
-   },
+   }
 
    /** @summary Start mouse rect zooming */
    startRectSel(evnt) {
@@ -1066,7 +1067,7 @@ const TooltipHandler = {
 
       if (this.zoom_kind !== 1)
          return postponePromise(() => this.startLabelsMove(), 500);
-   },
+   }
 
    /** @summary Starts labels move */
    startLabelsMove() {
@@ -1078,7 +1079,7 @@ const TooltipHandler = {
 
       if (handle.processLabelsMove('start', this.zoom_lastpos))
          this.zoom_labels = handle;
-   },
+   }
 
    /** @summary Process mouse rect zooming */
    moveRectSel(evnt) {
@@ -1118,7 +1119,7 @@ const TooltipHandler = {
       }
 
       this.zoom_rect.attr('x', x).attr('y', y).attr('width', w).attr('height', h);
-   },
+   }
 
    /** @summary Finish mouse rect zooming */
    endRectSel(evnt) {
@@ -1205,7 +1206,7 @@ const TooltipHandler = {
 
       // return promise - if any
       return pr;
-   },
+   }
 
    /** @summary Handle mouse double click on frame */
    mouseDoubleClick(evnt) {
@@ -1235,7 +1236,7 @@ const TooltipHandler = {
          const pp = this.getPadPainter(), rect = this.getFrameRect();
          return pp?.selectObjectPainter(pp, { x: m[0] + rect.x, y: m[1] + rect.y, dbl: true });
       });
-   },
+   }
 
    /** @summary Start touch zoom */
    startTouchZoom(evnt) {
@@ -1319,7 +1320,7 @@ const TooltipHandler = {
                           .on('touchcancel.zoomRect', evnt2 => this.endTouchZoom(evnt2))
                           .on('touchend.zoomRect', evnt2 => this.endTouchZoom(evnt2));
       }
-   },
+   }
 
    /** @summary Move touch zooming */
    moveTouchZoom(evnt) {
@@ -1352,7 +1353,7 @@ const TooltipHandler = {
          setPainterTooltipEnabled(this, false);
 
       evnt.stopPropagation();
-   },
+   }
 
    /** @summary End touch zooming handler */
    endTouchZoom(evnt) {
@@ -1398,7 +1399,7 @@ const TooltipHandler = {
          this.zoom(xmin, xmax, ymin, ymax, undefined, undefined, true);
 
       evnt.stopPropagation();
-   },
+   }
 
    /** @summary Analyze zooming with mouse wheel */
    analyzeMouseWheelEvent(event, item, dmin, test_ignore, second_side) {
@@ -1410,7 +1411,7 @@ const TooltipHandler = {
       }
       const handle = this[item.name + '_handle'];
       return handle?.analyzeWheelEvent(event, dmin, item, test_ignore);
-   },
+   }
 
     /** @summary return true if default Y zooming should be enabled
       * @desc it is typically for 2-Dim histograms or
@@ -1428,7 +1429,7 @@ const TooltipHandler = {
       }
 
       return false;
-   },
+   }
 
    /** @summary Handles mouse wheel event */
    mouseWheel(evnt) {
@@ -1456,7 +1457,7 @@ const TooltipHandler = {
          pr = pr.then(() => this.zoomSingle('y2', itemy.second.min, itemy.second.max, itemy.second.changed));
 
       return pr;
-   },
+   }
 
    /** @summary Show frame context menu */
    showContextMenu(kind, evnt, obj) {
@@ -1543,9 +1544,9 @@ const TooltipHandler = {
             });
          }
       });
-   },
+   }
 
-  /** @summary Activate touch handling on frame
+   /** @summary Activate touch handling on frame
     * @private */
    startSingleTouchHandling(kind, evnt) {
       const arr = get_touch_pointers(evnt, this.getFrameSvg().node());
@@ -1565,7 +1566,7 @@ const TooltipHandler = {
       d3_select(window).on('touchmove.singleTouch', kind ? null : evnt2 => this.moveTouchHandling(evnt2, kind, arr[0]))
                        .on('touchcancel.singleTouch', evnt2 => this.endSingleTouchHandling(evnt2, kind, arr[0], tm))
                        .on('touchend.singleTouch', evnt2 => this.endSingleTouchHandling(evnt2, kind, arr[0], tm));
-   },
+   }
 
    /** @summary Moving of touch pointer
     * @private */
@@ -1590,7 +1591,7 @@ const TooltipHandler = {
       this._shifting_dy = dy;
 
       main_svg.attr('viewBox', `${dx} ${dy} ${w} ${h}`);
-   },
+   }
 
    /** @summary Process end-touch event, which can cause content menu to appear
     * @private */
@@ -1610,7 +1611,7 @@ const TooltipHandler = {
          this.performScalesShift();
        else if (new Date().getTime() - tm > 700)
          this.showContextMenu(kind, { x: pos[0], y: pos[1] });
-   },
+   }
 
    /** @summary Clear frame interactive elements */
    clearInteractiveElements() {
@@ -1625,22 +1626,29 @@ const TooltipHandler = {
 
       // enable tooltip in frame painter
       setPainterTooltipEnabled(this, true);
-   },
-
-   /** @summary Assign frame interactive methods */
-   assign(painter) {
-      Object.assign(painter, this);
    }
 
-}; // FrameInteractive
+   static assign(fpainter) {
+      const src = FrameInteractive.prototype,
+            src2 = TooltipHandler.prototype;
+      Object.getOwnPropertyNames(src).forEach(name => {
+         if (name !== 'constructor')
+            fpainter[name] = src[name];
+      });
+      Object.getOwnPropertyNames(src2).forEach(name => {
+         if (name !== 'constructor')
+            fpainter[name] = src2[name];
+      });
+   }
 
+}; // class FrameInteractive
 
 /**
  * @summary Painter class for TFrame, main handler for interactivity
  * @private
  */
 
-class TFramePainter extends ObjectPainter {
+class TFramePainter extends FrameInteractive {
 
    #frame_x; // frame X coordinate
    #frame_y; // frame Y coordinate
@@ -3124,9 +3132,8 @@ class TFramePainter extends ObjectPainter {
    /** @summary Add interactive keys handlers
     * @private */
    addKeysHandler() {
-      if (this.isBatchMode()) return;
-      FrameInteractive.assign(this);
-      this.addFrameKeysHandler();
+      if (!this.isBatchMode())
+         this.addFrameKeysHandler();
    }
 
    /** @summary Add interactive functionality to the frame
@@ -3135,7 +3142,6 @@ class TFramePainter extends ObjectPainter {
       if (this.isBatchMode() || (!settings.Zooming && !settings.ContextMenu))
          return false;
 
-      FrameInteractive.assign(this);
       if (!for_second_axes)
          this.addBasicInteractivity();
 
