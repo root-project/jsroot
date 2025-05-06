@@ -115,6 +115,14 @@
      { "name": "image", "file": "hsimple.root", "item": "hpxpy;1", "opt": "colz", "title": "Create PNG image with makeImage() function", "aspng": "true" },
      { "name": "canvas_scale", "url": "nobrowser&file=$$$hsimple.root&item=hpxpy&scale=4", "title": "Scale canvas by factor 4 to reduce visible line widths, see settings.CanvasScale" }
    ],
+   "THStack" : [
+     { "opt": "", "file": "histpainter6.root", "item": "draw_hstack;1", "title": "several examples from THistPainter docu" },
+     { "name": "nostackb", "item": "draw_nostackb;1", "title": "example of bar chart with stacked histograms" },
+     { "name": "err", "item": "draw_stacke;1", "title": "error draw options for stacked histograms" },
+     { "name": "lego", "file": "tutorials_hist.root", "item": "multicolor", "title": "Several histograms with different colors, tutorials/hist/multicolor.C" },
+     { "name": "colz", "opt": "colz,nostack", "title": "Draw several TH2 with color and palette, from tutorials/hist/multicolor.C" },
+     { "name": "box", "opt": "box,nostack", "title": "Draw several TH2 with box option, reusing tutorials/hist/multicolor.C" }
+   ],
    "Candle" : [
      { "name": "plot", "file": "candleplot.root", "item": "candleplot;1", "title": "output from candleplot.C macro, use European time zone", "timezone" : "Europe/Berlin" },
      { "name": "decay", "file": "candleplot.root", "item": "candledecay;1", "title": "output from candledecay.C macro" },
@@ -150,22 +158,6 @@
      { "name": "optstat", "file": "histpainter6.root", "item": "draw_th3_box;1/h3box", "opt": "box,optstat111111111", "title": "Force stats box drawing with all possible entries", "asurl": true },
      { "name": "glvox2", "file": "tutorials_gl.root", "item": "glvox2n", "opt": "", "title": "Example of TH3 drawing with opacity transfer function, from tutorials/gl/glvox2.C macro" }
    ],
-   "TTree" : [
-      { "name": "Draw", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "px", "title": "Histogram data of TBranch object" },
-      { "name": "2d", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "px:py", "title": "Two-dimensional TTree::Draw" },
-      { "name": "3d", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "px:py:pz", "title": "Three-dimensional TTree::Draw" },
-      { "name": "dump", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "px+py+pz>>dump;num:30", "title": "Three-dimensional TTree::Draw" },
-      { "name": "hist", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "px:py>>hist(50,-5,5,50,-5,5)", "title": "TTree::Draw into custom histogram" },
-      { "name": "cut", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "px:py::pz>5", "title": "TTree::Draw with cut condition" },
-      { "name": "elist", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "::pz>5>>elist", "title": "Create list of entries which match cut condition" },
-      { "name": "use_elist", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "px:py;elist:[0..99,300,500..599,11000,15000..15099]", "title": "Use of elist parameter to select specific entries" },
-      { "name": "staged", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "px:py::pz>5;staged", "title": "TTree::Draw with staged drawing - first select entries with cut condition and then draw only for selected entries" },
-      { "name": "player", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "px:py::pz>5;player", "title": "Enable player to let change draw expression", "notest":true },
-      { "name": "lhcb2", "asurl": true, "file": "https://root.cern/files/lhcb2.root", "item": "E;1//Event/Gen/Header/m_evtNumber", "title": "Histogram data of sub-sub-branches from lhcb2.root file" },
-      { "name": "atlas", "asurl": true, "file": "https://root.cern/files/atlas30new.root", "item": "CollectionTree", "opt": "TileMuContainer_p1_TileMuObj.vector.m_phi", "title": "Histogram data of tree from atlas30new.root file" },
-      { "name": "expr", "asurl": true, "file": "WJets.root", "opt": "TMath::Abs(lep1_p4.M())", "item": "t", "title": "Use of expression and object methods" },
-      { "name": "vect_expr", "asurl": true, "file": "WJets.root", "item": "t", "opt": "jets.M()", "title": "Use of expression for objects, stored in the vector" }
-   ],
    "TProfile" : [
      { "opt": "", "file": "hsimple.root", "item": "hprof;1" },
      { "opt": "E" },
@@ -186,14 +178,6 @@
      { "name": "projxyc=e", "opt": "projxyc=e;colz", "file": "profile2d.root", "item": "c1/[1]", "title": "Draw TProfile2D::ProjectionXY('C=E') histogram", "asurl": true },
      { "name": "col1", "opt": "projxyc=e;col1z", "file": "profile2d.root", "item": "c1/[1]", "title": "Draw TProfile2D::ProjectionXY('C=E') histogram with col1 including zero content", "asurl": true },
      { "name": "projxyw", "opt": "projxyw;colz", "file": "profile2d.root", "item": "c1/[1]", "title": "Draw TProfile2D::ProjectionXY('W') histogram", "asurl": true }
-   ],
-   "THStack" : [
-     { "opt": "", "file": "histpainter6.root", "item": "draw_hstack;1", "title": "several examples from THistPainter docu" },
-     { "name": "nostackb", "item": "draw_nostackb;1", "title": "example of bar chart with stacked histograms" },
-     { "name": "err", "item": "draw_stacke;1", "title": "error draw options for stacked histograms" },
-     { "name": "lego", "file": "tutorials_hist.root", "item": "multicolor", "title": "Several histograms with different colors, tutorials/hist/multicolor.C" },
-     { "name": "colz", "opt": "colz,nostack", "title": "Draw several TH2 with color and palette, from tutorials/hist/multicolor.C" },
-     { "name": "box", "opt": "box,nostack", "title": "Draw several TH2 with box option, reusing tutorials/hist/multicolor.C" }
    ],
    "TF1" : [
      { "name": "func", "file": "fillrandom.root", "item": "sqroot;1", "title": "default drawing of TF1", "interactive": true },
@@ -266,7 +250,23 @@
      { "name": "half", "json": "geom/comp_half.json.gz", "title": "Use of TGeoHalfSpace for building composites" },
      { "name": "image", "aspng": true, "file": "geom/rootgeom.root", "item": "simple1;1", "title": "Using makeImage to produce PNG image for geometry" }
    ],
-   "TGraph" : [
+   "TTree" : [
+     { "name": "Draw", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "px", "title": "Histogram data of TBranch object" },
+     { "name": "2d", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "px:py", "title": "Two-dimensional TTree::Draw" },
+     { "name": "3d", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "px:py:pz", "title": "Three-dimensional TTree::Draw" },
+     { "name": "dump", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "px+py+pz>>dump;num:30", "title": "Three-dimensional TTree::Draw" },
+     { "name": "hist", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "px:py>>hist(50,-5,5,50,-5,5)", "title": "TTree::Draw into custom histogram" },
+     { "name": "cut", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "px:py::pz>5", "title": "TTree::Draw with cut condition" },
+     { "name": "elist", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "::pz>5>>elist", "title": "Create list of entries which match cut condition" },
+     { "name": "use_elist", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "px:py;elist:[0..99,300,500..599,11000,15000..15099]", "title": "Use of elist parameter to select specific entries" },
+     { "name": "staged", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "px:py::pz>5;staged", "title": "TTree::Draw with staged drawing - first select entries with cut condition and then draw only for selected entries" },
+     { "name": "player", "asurl": true, "file": "hsimple.root", "item": "ntuple", "opt": "px:py::pz>5;player", "title": "Enable player to let change draw expression", "notest":true },
+     { "name": "lhcb2", "asurl": true, "file": "https://root.cern/files/lhcb2.root", "item": "E;1//Event/Gen/Header/m_evtNumber", "title": "Histogram data of sub-sub-branches from lhcb2.root file" },
+     { "name": "atlas", "asurl": true, "file": "https://root.cern/files/atlas30new.root", "item": "CollectionTree", "opt": "TileMuContainer_p1_TileMuObj.vector.m_phi", "title": "Histogram data of tree from atlas30new.root file" },
+     { "name": "expr", "asurl": true, "file": "WJets.root", "opt": "TMath::Abs(lep1_p4.M())", "item": "t", "title": "Use of expression and object methods" },
+     { "name": "vect_expr", "asurl": true, "file": "WJets.root", "item": "t", "opt": "jets.M()", "title": "Use of expression for objects, stored in the vector" }
+    ],
+    "TGraph" : [
      { "opt": "", "file": "graph.root", "item": "Graph;1", "interactive": true },
      { "opt": "L" },
      { "opt": "C" },
