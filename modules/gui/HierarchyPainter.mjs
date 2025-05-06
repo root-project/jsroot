@@ -3164,9 +3164,9 @@ class HierarchyPainter extends BasePainter {
      * @private */
    fillOnlineMenu(menu, onlineprop, itemname) {
       const node = this.findItem(itemname),
-          sett = getDrawSettings(node._kind, 'nosame;noinspect'),
-          handle = getDrawHandle(node._kind),
-          root_type = isStr(node._kind) ? node._kind.indexOf(prROOT) === 0 : false;
+            sett = getDrawSettings(node._kind, 'nosame;noinspect'),
+            handle = getDrawHandle(node._kind),
+            root_type = isStr(node._kind) ? node._kind.indexOf(prROOT) === 0 : false;
 
       if (sett.opts && (node._can_draw !== false)) {
          sett.opts.push(kInspect);
@@ -3388,7 +3388,7 @@ class HierarchyPainter extends BasePainter {
 
       this.disp.cleanupFrame = this.cleanupFrame.bind(this);
       if (settings.DragAndDrop)
-          this.disp.setInitFrame(this.enableDrop.bind(this));
+         this.disp.setInitFrame(this.enableDrop.bind(this));
 
       return this.disp;
    }

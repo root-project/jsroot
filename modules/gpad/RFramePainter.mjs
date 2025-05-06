@@ -23,6 +23,8 @@ class RFramePainter extends RObjectPainter {
    #frame_trans; // transform of frame element
    #axes_drawn; // when axes are drawn
    #projection; // id of projection function
+   #click_handler; // handle for click events
+   #dblclick_handler; // handle for double click events
 
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -629,8 +631,8 @@ class RFramePainter extends RObjectPainter {
 
       delete this.draw_g; // frame <g> element managed by the pad
 
-      delete this._click_handler;
-      delete this._dblclick_handler;
+      this.#click_handler = undefined;
+      this.#dblclick_handler = undefined;
 
       this.getPadPainter()?.setFramePainter(this, false);
 
@@ -756,16 +758,22 @@ class RFramePainter extends RObjectPainter {
      * As argument, tooltip object with selected bins will be provided
      * If handler function returns true, default handling of click will be disabled */
    configureUserClickHandler(handler) {
-      this._click_handler = isFunc(handler) ? handler : null;
+      this.#click_handler = isFunc(handler) ? handler : null;
    }
+
+   /** @summary Returns actual click handler */
+   getClickHandler() { return this.#click_handler; }
 
    /** @summary Configure user-defined dblclick handler
      * @desc Function will be called every time when double click was called
      * As argument, tooltip object with selected bins will be provided
      * If handler function returns true, default handling of dblclick (unzoom) will be disabled */
    configureUserDblclickHandler(handler) {
-      this._dblclick_handler = isFunc(handler) ? handler : null;
+      this.#dblclick_handler = isFunc(handler) ? handler : null;
    }
+
+   /** @summary Returns actual double-click handler */
+   getDblclickHandler() { return this.#dblclick_handler; }
 
    /** @summary function can be used for zooming into specified range
      * @desc if both limits for each axis 0 (like xmin === xmax === 0), axis will be unzoomed

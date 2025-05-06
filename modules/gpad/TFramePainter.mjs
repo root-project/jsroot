@@ -928,7 +928,7 @@ class FrameInteractive extends TooltipHandler {
       }
 
       if (exact) {
-         const handler = dblckick ? this._dblclick_handler : this._click_handler;
+         const handler = dblckick ? this.getDblclickHandler() : this.getClickHandler();
          if (isFunc(handler))
             res = handler(exact.user_info, pnt);
       }
@@ -1217,7 +1217,7 @@ class FrameInteractive extends TooltipHandler {
       const valid_x = (m[0] >= 0) && (m[0] <= fw),
             valid_y = (m[1] >= 0) && (m[1] <= fh);
 
-      if (valid_x && valid_y && this._dblclick_handler)
+      if (valid_x && valid_y && this.getDblclickHandler())
          if (this.processFrameClick({ x: m[0], y: m[1] }, true)) return;
 
       let kind = (this.can_zoom_x ? 'x' : '') + (this.can_zoom_y ? 'y' : '') + 'z';
@@ -1661,6 +1661,8 @@ class TFramePainter extends FrameInteractive {
    #axes2_drawn; // when axes are drawn
    #shrink_frame_left; // shrink frame on left side
    #projection; // id of projection function
+   #click_handler; // handle for click events
+   #dblclick_handler; // handle for double click events
 
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -2495,8 +2497,8 @@ class TFramePainter extends FrameInteractive {
    /** @summary Cleanup frame */
    cleanup() {
       this.cleanFrameDrawings();
-      delete this._click_handler;
-      delete this._dblclick_handler;
+      this.#click_handler = undefined;
+      this.#dblclick_handler = undefined;
       delete this.enabledKeys;
 
       this.getPadPainter()?.setFramePainter(this, false);
@@ -2841,16 +2843,22 @@ class TFramePainter extends FrameInteractive {
      * As argument, tooltip object with selected bins will be provided
      * If handler function returns true, default handling of click will be disabled */
    configureUserClickHandler(handler) {
-      this._click_handler = isFunc(handler) ? handler : null;
+      this.#click_handler = isFunc(handler) ? handler : null;
    }
+
+   /** @summary Returns actual click handler */
+   getClickHandler() { return this.#click_handler; }
 
    /** @summary Configure user-defined dblclick handler
      * @desc Function will be called every time when double click was called
      * As argument, tooltip object with selected bins will be provided
      * If handler function returns true, default handling of dblclick (unzoom) will be disabled */
    configureUserDblclickHandler(handler) {
-      this._dblclick_handler = isFunc(handler) ? handler : null;
+      this.#dblclick_handler = isFunc(handler) ? handler : null;
    }
+
+   /** @summary Returns actual double-click handler */
+   getDblclickHandler() { return this.#dblclick_handler; }
 
    /** @summary Function can be used for zooming into specified range
      * @desc if both limits for each axis 0 (like xmin === xmax === 0), axis will be un-zoomed
