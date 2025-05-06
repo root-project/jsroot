@@ -3902,10 +3902,11 @@ class TProxyFile extends TFile {
       if (!this.proxy)
          return Promise.reject(Error(`File is not opened ${this.fFileName}`));
 
-      if (isFunc(this.proxy.readBuffers))
+      if (isFunc(this.proxy.readBuffers)) {
          return this.proxy.readBuffers(place).then(arr => {
             return arr?.length === 1 ? arr[0] : arr;
          });
+      }
 
       if (place.length === 2)
          return this.proxy.readBuffer(place[0], place[1]);
