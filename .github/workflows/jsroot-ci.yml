@@ -56,6 +56,10 @@ jobs:
           xvfb-run -s "-ac -screen 0 1280x1024x24" node demo/node/geomsvg.js
           node demo/node/selector.js
           cd demo/node; xvfb-run -s "-ac -screen 0 1280x1024x24" node make_image.js
+          wget https://root.cern/js/files/hsimple.root
+          node demo/node/file_proxy.js sync ./hsimple.root
+          node demo/node/file_proxy.js promise ./hsimple.root
+          node demo/node/file_proxy.js buffer ./hsimple.root
 
   tests_ubuntu:
     runs-on: ubuntu-latest
