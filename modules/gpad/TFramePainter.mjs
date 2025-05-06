@@ -359,6 +359,8 @@ function addDragHandler(_painter, arg) {
 
 class TooltipHandler extends ObjectPainter {
 
+   // cannot use private members because of RFramePainter
+
    /** @desc only canvas info_layer can be used while other pads can overlay
      * @return layer where frame tooltips are shown */
    hints_layer() {
@@ -723,6 +725,8 @@ class TooltipHandler extends ObjectPainter {
   * @private */
 
 class FrameInteractive extends TooltipHandler {
+
+   // cannot use private members because of RFramePainter
 
    /** @summary Adding basic interactivity */
    addBasicInteractivity() {
@@ -1628,6 +1632,7 @@ class FrameInteractive extends TooltipHandler {
       setPainterTooltipEnabled(this, true);
    }
 
+   /** @summary Assign interactive methods to RFrame painter */
    static assign(fpainter) {
       const src = FrameInteractive.prototype,
             src2 = TooltipHandler.prototype;
