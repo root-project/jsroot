@@ -24,6 +24,8 @@ const kNotEditable = BIT(18),   // bit set if graph is non editable
 
 class TGraphPainter extends ObjectPainter {
 
+   #redraw_hist; // indicate that histogram need to be redrawn
+
    constructor(dom, graph) {
       super(dom, graph);
       this.axes_draw = false; // indicate if graph histogram was drawn for axes
@@ -55,8 +57,8 @@ class TGraphPainter extends ObjectPainter {
    async redraw() {
       let promise = Promise.resolve(true);
 
-      if (this.$redraw_hist) {
-         delete this.$redraw_hist;
+      if (this.#redraw_hist) {
+         this.#redraw_hist = undefined;
          const hist_painter = this.getMainPainter();
          if (hist_painter?.isSecondary(this) && this.axes_draw)
             promise = hist_painter.redraw();
@@ -1482,7 +1484,7 @@ class TGraphPainter extends ObjectPainter {
 
       this.createBins();
 
-      delete this.$redraw_hist;
+      this.#redraw_hist = undefined;
 
       // if our own histogram was used as axis drawing, we need update histogram as well
       if (this.axes_draw) {
@@ -1490,7 +1492,7 @@ class TGraphPainter extends ObjectPainter {
                hist_painter = this.getMainPainter();
          if (hist_painter?.isSecondary(this)) {
             hist_painter.updateObject(histo, this.options.Axis);
-            this.$redraw_hist = true;
+            this.#redraw_hist = true;
          }
       }
 

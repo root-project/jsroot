@@ -20,6 +20,7 @@ class THStackPainter extends ObjectPainter {
    #firstpainter;  // first painter on stack
    #painters;      // array of sub-painters
    #stack;         // internal stack of histograms
+   #did_update;    // flag used in update
 
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -403,11 +404,11 @@ class THStackPainter extends ObjectPainter {
             nhists = hlst?.arr?.length ?? 0;
 
       if (nhists !== this.#painters.length) {
-         this.did_update = 1;
+         this.#did_update = 1;
          pp?.cleanPrimitives(objp => this.#painters.indexOf(objp) >= 0);
          this.#painters = [];
       } else {
-         this.did_update = 2;
+         this.#did_update = 2;
          for (let indx = 0; indx < nhists; ++indx) {
             const rindx = this.options.horder ? indx : nhists - indx - 1,
                   hist = hlst.arr[rindx];
@@ -421,11 +422,11 @@ class THStackPainter extends ObjectPainter {
    /** @summary Redraw THStack
      * @desc Do something if previous update had changed number of histograms */
    redraw(reason) {
-      if (!this.did_update)
+      if (!this.#did_update)
          return;
 
-      const full_redraw = this.did_update === 1;
-      delete this.did_update;
+      const full_redraw = this.#did_update === 1;
+      this.#did_update = undefined;
 
       let pr = Promise.resolve(this);
 
@@ -481,7 +482,7 @@ class THStackPainter extends ObjectPainter {
       if (v === undefined)
          return stack[name];
 
-      this.did_update = 2;
+      this.#did_update = 2;
 
       stack[name] = v;
 
