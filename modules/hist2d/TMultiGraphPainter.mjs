@@ -17,7 +17,7 @@ const kResetHisto = BIT(17);
 
 class TMultiGraphPainter extends ObjectPainter {
 
-   #firstpainter; //first painter
+   #firstpainter; // first painter
    #painters; // array of sub-painters
 
    /** @summary Create painter
