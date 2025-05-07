@@ -3,7 +3,7 @@ import { TH2Painter } from '../hist/TH2Painter.mjs';
 import { proivdeEvalPar } from '../base/func.mjs';
 import { produceTAxisLogScale, scanTF1Options } from '../hist/TF1Painter.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
-import { ObjectPainter } from '../base/ObjectPainter.mjs';
+import { getElementPadPainter } from '../base/ObjectPainter.mjs';
 import { THistPainter } from '../hist2d/THistPainter.mjs';
 
 
@@ -273,10 +273,8 @@ class TF3Painter extends TH2Painter {
 
       let hist;
 
-      if (web.webcanv_hist) {
-         const dummy = new ObjectPainter(dom);
-         hist = dummy.getPadPainter()?.findInPrimitives('Func', clTH2F);
-      }
+      if (web.webcanv_hist)
+         hist = getElementPadPainter(dom)?.findInPrimitives('Func', clTH2F);
 
       if (!hist) {
          hist = createHistogram(clTH2F, 20, 20);

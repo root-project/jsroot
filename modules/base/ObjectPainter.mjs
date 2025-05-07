@@ -1673,7 +1673,14 @@ function drawRawText(dom, txt /* , opt */) {
    return painter.drawText();
 }
 
-/** @summary Returns canvas painter (if any) for specified HTML element
+/** @summary Returns pad painter (if any) for specified DOM element
+  * @param {string|object} dom - id or DOM element
+  * @private */
+function getElementPadPainter(dom) {
+   return new ObjectPainter(dom).getPadPainter();
+}
+
+/** @summary Returns canvas painter (if any) for specified DOM element
   * @param {string|object} dom - id or DOM element
   * @private */
 function getElementCanvPainter(dom) {
@@ -1780,6 +1787,6 @@ const EAxisBits = {
 
 Object.assign(internals.jsroot, { ObjectPainter, cleanup, resize });
 
-export { getElementCanvPainter, getElementMainPainter, drawingJSON,
+export { getElementPadPainter, getElementCanvPainter, getElementMainPainter, drawingJSON,
          selectActivePad, getActivePad, cleanup, resize, drawRawText,
          ObjectPainter, EAxisBits, kAxisLabels, kAxisNormal, kAxisFunc, kAxisTime };

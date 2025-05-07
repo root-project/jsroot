@@ -1,6 +1,6 @@
 import { settings, gStyle, isStr, isFunc, clTH1D, createHistogram, setHistogramTitle, clTF1, clTF12, kNoStats } from '../core.mjs';
 import { floatToString } from '../base/BasePainter.mjs';
-import { getElementMainPainter, ObjectPainter } from '../base/ObjectPainter.mjs';
+import { getElementPadPainter, getElementMainPainter } from '../base/ObjectPainter.mjs';
 import { THistPainter } from '../hist2d/THistPainter.mjs';
 import { TH1Painter } from '../hist2d/TH1Painter.mjs';
 import { proivdeEvalPar, _getTF1Save } from '../base/func.mjs';
@@ -352,10 +352,8 @@ class TF1Painter extends TH1Painter {
       delete web.opt;
       let hist;
 
-      if (web.webcanv_hist) {
-         const dummy = new ObjectPainter(dom);
-         hist = dummy.getPadPainter()?.findInPrimitives('Func', clTH1D);
-      }
+      if (web.webcanv_hist)
+         hist = getElementPadPainter(dom)?.findInPrimitives('Func', clTH1D);
 
       if (!hist) {
          hist = createHistogram(clTH1D, 100);
