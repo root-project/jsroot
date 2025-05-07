@@ -27,6 +27,7 @@ class RPadPainter extends RObjectPainter {
    #custom_palette; // custom palette
    #frame_painter_ref; // frame painter
    #main_painter_ref; // main painter on the pad
+   #num_primitives; // number of primitives
 
    /** @summary constructor */
    constructor(dom, pad, iscan) {
@@ -751,12 +752,12 @@ class RPadPainter extends RObjectPainter {
             this._start_tm = new Date().getTime();
 
          // set number of primitives
-         this._num_primitives = this.pad?.fPrimitives?.length ?? 0;
+         this.#num_primitives = this.pad?.fPrimitives?.length ?? 0;
 
          return this.syncDraw(true).then(() => this.drawPrimitives(0));
       }
 
-      if (!this.pad || (indx >= this._num_primitives)) {
+      if (!this.pad || (indx >= this.#num_primitives)) {
          this.confirmDraw();
 
          if (this._start_tm) {
@@ -776,6 +777,15 @@ class RPadPainter extends RObjectPainter {
 
          return this.drawPrimitives(indx+1);
       });
+   }
+
+   /** @summary Provide autocolor
+     * @private */
+   getAutoColor() {
+      const pal = this.getHistPalette(),
+            cnt = this._auto_color_cnt++,
+            num = Math.max(this.#num_primitives - 1, 2);
+      return pal?.getColorOrdinal((cnt % num) / num) ?? 'blue';
    }
 
    /** @summary Process tooltip event in the pad
@@ -1073,7 +1083,7 @@ class RPadPainter extends RObjectPainter {
       if (indx === undefined) {
          indx = -1;
          // flag used to prevent immediate pad redraw during first draw
-         this._num_primitives = lst ? lst.length : 0;
+         this.#num_primitives = lst?.length ?? 0;
          this._auto_color_cnt = 0;
       }
 

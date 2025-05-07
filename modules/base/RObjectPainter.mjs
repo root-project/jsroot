@@ -149,13 +149,10 @@ class RObjectPainter extends ObjectPainter {
 
       if (val === 'auto') {
          const pp = this.getPadPainter();
-         if (pp?._auto_color_cnt !== undefined) {
-            const pal = pp.getHistPalette(),
-                  cnt = pp._auto_color_cnt++;
-            let num = pp._num_primitives - 1;
-            if (num < 2) num = 2;
-            val = pal ? pal.getColorOrdinal((cnt % num) / num) : 'blue';
-            if (!this._auto_colors) this._auto_colors = {};
+         if (pp) {
+            val = pp.getAutoColor();
+            if (!this._auto_colors)
+               this._auto_colors = {};
             this._auto_colors[name] = val;
          } else if (this._auto_colors && this._auto_colors[name])
             val = this._auto_colors[name];

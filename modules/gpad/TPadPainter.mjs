@@ -221,6 +221,7 @@ class TPadPainter extends ObjectPainter {
    #has_execs; // indicate is pad has TExec objects assigned
    #deliver_move_events; // deliver move events to server
    #readonly; // if changes on pad is not allowed
+   #num_primitives; // number of primitives
 
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -498,8 +499,9 @@ class TPadPainter extends ObjectPainter {
     * @private */
    getAutoColor(numprimitives) {
       if (!numprimitives)
-         numprimitives = (this._num_primitives || 5) - (this._num_specials || 0);
-      if (numprimitives < 2) numprimitives = 2;
+         numprimitives = (this.#num_primitives || 5) - (this._num_specials || 0);
+      if (numprimitives < 2)
+         numprimitives = 2;
 
       let indx = this._auto_color ?? 0;
       this._auto_color = (indx + 1) % numprimitives;
@@ -1219,13 +1221,13 @@ class TPadPainter extends ObjectPainter {
             this._start_tm = new Date().getTime();
 
          // set number of primitives
-         this._num_primitives = this.pad?.fPrimitives?.arr?.length || 0;
+         this.#num_primitives = this.pad?.fPrimitives?.arr?.length || 0;
 
          // sync to prevent immediate pad redraw during normal drawing sequence
          return this.syncDraw(true).then(() => this.drawPrimitives(0));
       }
 
-      if (!this.pad || (indx >= this._num_primitives)) {
+      if (!this.pad || (indx >= this.#num_primitives)) {
          if (this._start_tm) {
             const spenttm = new Date().getTime() - this._start_tm;
             if (spenttm > 1000) console.log(`Canvas ${this.pad?.fName || '---'} drawing took ${(spenttm*1e-3).toFixed(2)}s`);
@@ -1833,7 +1835,7 @@ class TPadPainter extends ObjectPainter {
    async drawNextSnap(lst, pindx, indx) {
       if (indx === undefined) {
          indx = -1;
-         this._num_primitives = lst?.length ?? 0;
+         this.#num_primitives = lst?.length ?? 0;
       }
 
       ++indx; // change to the next snap
