@@ -29,9 +29,9 @@ function produceTAxisLogScale(axis, num, min, max) {
 
 function scanTF1Options(opt) {
    if (!isStr(opt)) opt = '';
-   let p = opt.indexOf(';webcanv_hist'), webcanv_hist = false, _use_saved = 0;
+   let p = opt.indexOf(';webcanv_hist'), _webcanv_hist = false, _use_saved = 0;
    if (p >= 0) {
-      webcanv_hist = true;
+      _webcanv_hist = true;
       opt = opt.slice(0, p);
    }
    p = opt.indexOf(';force_saved');
@@ -41,10 +41,10 @@ function scanTF1Options(opt) {
    }
    p = opt.indexOf(';prefer_saved');
    if (p >= 0) {
-      use_saved = 1;
+      _use_saved = 1;
       opt = opt.slice(0, p);
    }
-   return { opt, webcanv_hist, _use_saved };
+   return { opt, _webcanv_hist, _use_saved };
 }
 
 
@@ -85,7 +85,7 @@ class TF1Painter extends TH1Painter {
       delete obj.evalPar;
       const histo = this.getHisto();
 
-      if (this.webcanv_hist) {
+      if (this._webcanv_hist) {
          const h0 = this.getPadPainter()?.findInPrimitives('Func', clTH1D);
          if (h0) this.updateAxes(histo, h0, this.getFramePainter());
       }
@@ -352,7 +352,7 @@ class TF1Painter extends TH1Painter {
       delete web.opt;
       let hist;
 
-      if (web.webcanv_hist)
+      if (web._webcanv_hist)
          hist = getElementPadPainter(dom)?.findInPrimitives('Func', clTH1D);
 
       if (!hist) {

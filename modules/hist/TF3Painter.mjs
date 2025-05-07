@@ -54,7 +54,7 @@ class TF3Painter extends TH2Painter {
       delete obj.evalPar;
       const histo = this.getHisto();
 
-      if (this.webcanv_hist) {
+      if (this._webcanv_hist) {
          const h0 = this.getPadPainter()?.findInPrimitives('Func', clTH2F);
          if (h0) this.updateAxes(histo, h0, this.getFramePainter());
       }
@@ -273,7 +273,7 @@ class TF3Painter extends TH2Painter {
 
       let hist;
 
-      if (web.webcanv_hist)
+      if (web._webcanv_hist)
          hist = getElementPadPainter(dom)?.findInPrimitives('Func', clTH2F);
 
       if (!hist) {
