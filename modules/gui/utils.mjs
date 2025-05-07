@@ -101,7 +101,7 @@ function tryOpenOpenUI(sources, args) {
 
    element.setAttribute('data-sap-ui-libs', args.openui5libs ?? 'sap.m, sap.ui.layout, sap.ui.unified, sap.ui.commons');
    // element.setAttribute('data-sap-ui-language', args.openui5language ?? 'en');
-   element.setAttribute('data-sap-ui-theme', args.openui5theme || (settings.DarkMode ? 'sap_horizon_dark' : 'sap_horizon'));
+   element.setAttribute('data-sap-ui-theme', args.openui5theme || (settings.DarkMode ? 'sap_fiori_3_dark' : 'sap_fiori_3'));
    element.setAttribute('data-sap-ui-compatVersion', 'edge');
    element.setAttribute('data-sap-ui-async', 'true');
    // element.setAttribute('data-sap-ui-bindingSyntax', 'complex');
