@@ -17,6 +17,7 @@ class TF2Painter extends TH2Painter {
 
    #use_saved_points; // use saved points for drawing
    #func; // func object
+   #fail_eval; // fail evaluation of function
 
    /** @summary Assign function  */
    setFunc(f) { this.#func = f; }
@@ -68,7 +69,7 @@ class TF2Painter extends TH2Painter {
       if ((nsave > 0) && (nsave !== (func.fSave[nsave+4]+1) * (func.fSave[nsave+5]+1)))
          nsave = 0;
 
-      this.#use_saved_points = (nsave > 0) && (settings.PreferSavedPoints || (this.use_saved > 1));
+      this.#use_saved_points = (nsave > 0) && (settings.PreferSavedPoints || (this._use_saved > 1));
 
       const fp = this.getFramePainter(),
             pad = this.getPadPainter()?.getRootPad(true),
@@ -107,7 +108,7 @@ class TF2Painter extends TH2Painter {
          hist.fYaxis.fXbins = [];
       };
 
-      delete this._fail_eval;
+      this.#fail_eval = undefined;
 
       if (!this.#use_saved_points) {
          let iserror = false;
@@ -144,7 +145,7 @@ class TF2Painter extends TH2Painter {
          }
 
          if (iserror)
-            this._fail_eval = true;
+            this.#fail_eval = true;
 
          if (iserror && (nsave > 6))
             this.#use_saved_points = true;
@@ -295,7 +296,7 @@ class TF2Painter extends TH2Painter {
      * @desc Used to inform web canvas when evaluation failed
      * @private */
    fillWebObjectOptions(opt) {
-      opt.fcust = this._fail_eval && !this.use_saved ? 'func_fail' : '';
+      opt.fcust = this.#fail_eval && !this._use_saved ? 'func_fail' : '';
    }
 
    /** @summary draw TF2 object */
