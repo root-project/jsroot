@@ -2,8 +2,11 @@ import { TLinePainter } from './TLinePainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
 
-/** @summary TArrow painter
-  * @private */
+/**
+ * @summary Painter for TArrow class
+ * @private
+ */
+
 class TArrowPainter extends TLinePainter {
 
    #beg;

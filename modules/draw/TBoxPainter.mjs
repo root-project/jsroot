@@ -5,6 +5,11 @@ import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { addMoveHandler } from '../gui/utils.mjs';
 import { assignContextMenu } from '../gui/menu.mjs';
 
+/**
+ * @summary Painter for TBox class
+ * @private
+ */
+
 class TBoxPainter extends ObjectPainter {
 
    /** @summary start of drag handler
