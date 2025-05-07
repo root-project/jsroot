@@ -976,7 +976,7 @@ JSROOT provides `loadOpenui5` function to load supported OpenUI5:
 </script>
 ```
 
-JSROOT uses <https://openui5.hana.ondemand.com/1.128.0/> when no other source is specified.
+JSROOT uses <https://openui5.hana.ondemand.com/1.135.0/> when no other source is specified.
 
 There are small details when using OpenUI5 with THttpServer. First of all, location of JSROOT modules should be specified
 as `/jsrootsys/modules/main.mjs`. And then trying to access files from local disk, one should specify `/currentdir/` folder:
@@ -994,7 +994,7 @@ JSROOT provides [example](https://root.cern/js/latest/demo/openui5/) showing usa
    * Core functionality should be imported from `main.mjs` module like:
 
 ```javascript
-import { create, parse, createHistogram, redraw } from 'https://root.cern/js/7.0.0/modules/main.mjs';
+import { create, parse, createHistogram, redraw } from 'https://root.cern/js/7.9.0/modules/main.mjs';
 ```
 
    * It is still possible to use `JSRoot.core.js` script, which provides very similar (but not identical!) functionality as with `v6` via global `JSROOT` object
@@ -1006,20 +1006,20 @@ import { create, parse, createHistogram, redraw } from 'https://root.cern/js/7.0
    * Global hierarchy painter `JSROOT.hpainter` no longer existing, one can use `getHPainter` function:
 
 ```javascript
-import { getHPainter } from 'https://root.cern/js/7.0.0/modules/main.mjs';
+import { getHPainter } from 'https://root.cern/js/7.9.0/modules/main.mjs';
 let hpainter = getHPainter();
 ```
 
    * All math functions previously available via `JSROOT.Math` should be imported from `base/math.mjs` module:
 
 ```javascript
-import * as math from 'https://root.cern/js/7.0.0/modules/base/math.mjs';
+import * as math from 'https://root.cern/js/7.9.0/modules/base/math.mjs';
 ```
 
    * Indication of batch mode `JSROOT.batch_mode` should be accessed via functions:
 
 ```javascript
-import { isBatchMode, setBatchMode } from 'https://root.cern/js/7.0.0/modules/main.mjs';
+import { isBatchMode, setBatchMode } from 'https://root.cern/js/7.9.0/modules/main.mjs';
 let was_batch = isBatchMode();
 if (!was_batch) setBatchMode(true);
 ```
