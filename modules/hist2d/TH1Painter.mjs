@@ -228,6 +228,35 @@ class TH1Painter extends THistPainter {
       this.wheel_zoomy = (this.getDimension() > 1) || !this.draw_content;
    }
 
+   /** @summary Provide histogram min/max used to create canvas ranges
+    * @private */
+   getUserRanges() {
+      const histo = this.getHisto();
+
+      let miny = 0, maxy = 0;
+
+      for (let i = 0; i < histo.fXaxis.fNbins; ++i) {
+         const value = histo.getBinContent(i + 1);
+         if (i === 0)
+            miny = maxy = value;
+         else {
+            miny = Math.min(miny, value);
+            maxy = Math.max(maxy, value);
+         }
+      }
+
+      if (histo.fMinimum !== kNoZoom)
+         miny = histo.fMinimum;
+
+      if (histo.fMaximum !== kNoZoom)
+         maxy = histo.fMaximum;
+
+      if (maxy <= miny)
+         maxy = miny + 1;
+
+      return { minx: histo.fXaxis.fXmin, maxx: histo.fXaxis.fXmax, miny, maxy };
+   }
+
    /** @summary Count histogram statistic */
    countStat(cond, count_skew) {
       const profile = this.isTProfile(),
