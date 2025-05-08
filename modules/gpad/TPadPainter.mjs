@@ -2662,6 +2662,13 @@ class TPadPainter extends ObjectPainter {
          if (d.check(name)) forEach(p => { p['$' + name] = true; });
       });
 
+      if (!d.empty() && pad?.fPrimitives) {
+         for (let n = 0; n < pad.fPrimitives.arr.length; ++n) {
+            if (d.check(`SUB${n}_`, true))
+               pad.fPrimitives.opt[n] = d.part;
+         }
+      }
+
       this.storeDrawOpt(opt);
    }
 
