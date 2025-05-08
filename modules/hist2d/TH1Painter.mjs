@@ -196,19 +196,19 @@ class TH1Painter extends THistPainter {
       }
 
       // final adjustment like in THistPainter.cxx line 7309
-      if (!this._exact_y_range && !pad_logy) {
+      if (!this.options.exact_values_range() && !pad_logy) {
          if (!fix_min) {
             if ((this.options.BaseLine !== false) && (this.ymin >= 0))
                this.ymin = 0;
             else {
                const positive = (this.ymin >= 0);
-               this.ymin -= gStyle.fHistTopMargin*(this.ymax - this.ymin);
+               this.ymin -= gStyle.fHistTopMargin * (this.ymax - this.ymin);
                if (positive && (this.ymin < 0))
                   this.ymin = 0;
             }
          }
          if (!fix_max)
-            this.ymax += gStyle.fHistTopMargin*(this.ymax - this.ymin);
+            this.ymax += gStyle.fHistTopMargin * (this.ymax - this.ymin);
       }
 
       // always set zoom when hmin/hmax is configured
