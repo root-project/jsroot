@@ -4,6 +4,9 @@
 1. Fix - colz handling on `THStack`, avoid multiple palette drawings
 2. Fix - bug in pad.Divide context menu command
 3. Fix - drag and drop of histograms on empty sub-pads
+4. Fix - add missing colors 100 - 127
+5. Fix - correct online context menu to title
+6. Fix - copy all x axis attribute for in multi-graph painter
 
 
 ## Changes in 7.9.0
