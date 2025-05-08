@@ -1094,7 +1094,8 @@ class THistPainter extends ObjectPainter {
             o = this.options;
 
       if (obj !== histo) {
-         if (!this.matchObjectType(obj)) return false;
+         if (!this.matchObjectType(obj))
+            return false;
 
          // simple replace of object does not help - one can have different
          // complex relations between histogram and stat box, histogram and colz axis,
