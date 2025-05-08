@@ -830,15 +830,17 @@ class TH2Painter extends THistPainter {
 
    /** @summary Perform automatic zoom inside non-zero region of histogram */
    autoZoom() {
-      if (this.isTH2Poly()) return; // not implemented
+      if (this.isTH2Poly())
+         return; // not implemented
 
       const i1 = this.getSelectIndex('x', 'left', -1),
-          i2 = this.getSelectIndex('x', 'right', 1),
-          j1 = this.getSelectIndex('y', 'left', -1),
-          j2 = this.getSelectIndex('y', 'right', 1),
-          histo = this.getObject();
+            i2 = this.getSelectIndex('x', 'right', 1),
+            j1 = this.getSelectIndex('y', 'left', -1),
+            j2 = this.getSelectIndex('y', 'right', 1),
+            histo = this.getHisto();
 
-      if ((i1 === i2) || (j1 === j2)) return;
+      if ((i1 === i2) || (j1 === j2))
+         return;
 
       // first find minimum
       let min = histo.getBinContent(i1 + 1, j1 + 1);
@@ -879,7 +881,7 @@ class TH2Painter extends THistPainter {
       }
 
       if (isany)
-         return this.getFramePainter().zoom(xmin, xmax, ymin, ymax);
+         return this.getFramePainter()?.zoom(xmin, xmax, ymin, ymax);
    }
 
    /** @summary Scan TH2 histogram content */
@@ -1484,9 +1486,6 @@ class TH2Painter extends THistPainter {
    /** @summary Draw histogram bins as contour */
    drawBinsContour() {
       const handle = this.prepareDraw({ rounding: false, extra: 100 }),
-            fp = this.getFramePainter(),
-            frame_w = fp.getFrameWidth(),
-            frame_h = fp.getFrameHeight(),
             levels = this.getContourLevels(),
             palette = this.getHistPalette(),
 
@@ -1544,7 +1543,7 @@ class TH2Painter extends THistPainter {
 
          // try to build path which fills area to outside borders
 
-         const points = [{ x: 0, y: 0 }, { x: frame_w, y: 0 }, { x: frame_w, y: frame_h }, { x: 0, y: frame_h }],
+         const points = [{ x: 0, y: 0 }, { x: handle.width, y: 0 }, { x: handle.width, y: handle.height }, { x: 0, y: handle.height }],
 
           get_intersect = (indx, di) => {
             const segm = { x1: xp[indx], y1: yp[indx], x2: 2*xp[indx] - xp[indx+di], y2: 2*yp[indx] - yp[indx+di] };
@@ -1587,7 +1586,7 @@ class TH2Painter extends THistPainter {
       if (this.options.Contour === 14) {
          this.draw_g
              .append('svg:path')
-             .attr('d', `M0,0h${frame_w}v${frame_h}h${-frame_w}z`)
+             .attr('d', `M0,0h${handle.width}v${handle.height}h${-handle.width}z`)
              .style('fill', palette.calcColor(0, levels.length));
       }
 
@@ -1687,7 +1686,7 @@ class TH2Painter extends THistPainter {
 
    /** @summary draw TH2Poly bins */
    async drawPolyBins() {
-      const histo = this.getObject(),
+      const histo = this.getHisto(),
             funcs = this.getHistGrFuncs(),
             draw_colors = this.options.Color || (!this.options.Line && !this.options.Fill && !this.options.Text && !this.options.Mark),
             draw_lines = this.options.Line || (this.options.Text && !draw_colors),
@@ -1869,7 +1868,10 @@ class TH2Painter extends THistPainter {
 
    /** @summary Draw TH2 bins as text */
    async drawBinsText(handle) {
-      const histo = this.getObject(),
+      if (!handle)
+         handle = this.prepareDraw({ rounding: false });
+
+      const histo = this.getHisto(),
             test_cutg = this.options.cutg,
             color = this.getColor(histo.fMarkerColor),
             rotate = -1*this.options.TextAngle,
@@ -1877,9 +1879,7 @@ class TH2Painter extends THistPainter {
             show_err = (this.options.TextKind === 'E'),
             latex = (show_err && !this.options.TextLine) ? 1 : 0,
             text_offset = histo.fBarOffset*1e-3,
-            text_size = ((histo.fMarkerSize === 1) || !rotate) ? 20 : Math.round(0.02*histo.fMarkerSize*this.getFramePainter().getFrameHeight());
-
-      if (!handle) handle = this.prepareDraw({ rounding: false });
+            text_size = ((histo.fMarkerSize === 1) || !rotate) ? 20 : Math.round(0.02 * histo.fMarkerSize * handle.height);
 
       return this.startTextDrawingAsync(42, text_size, draw_g, text_size).then(() => {
          for (let i = handle.i1; i < handle.i2; ++i) {
@@ -1937,7 +1937,7 @@ class TH2Painter extends THistPainter {
 
    /** @summary Draw TH2 bins as arrows */
    drawBinsArrow() {
-      const histo = this.getObject(),
+      const histo = this.getHisto(),
             test_cutg = this.options.cutg,
             handle = this.prepareDraw({ rounding: false }),
             cntr = this.options.Color ? this.getContour() : null,
@@ -2038,7 +2038,7 @@ class TH2Painter extends THistPainter {
 
    /** @summary Draw TH2 bins as boxes */
    drawBinsBox() {
-      const histo = this.getObject(),
+      const histo = this.getHisto(),
             handle = this.prepareDraw({ rounding: false, zrange: true }),
             absmax = Math.max(Math.abs(handle.zmin), Math.abs(handle.zmax)),
             absmin = Math.max(0, handle.zmin),
@@ -2599,7 +2599,7 @@ class TH2Painter extends THistPainter {
 
    /** @summary Draw TH2 bins as scatter plot */
    drawBinsScatter() {
-      const histo = this.getObject(),
+      const histo = this.getHisto(),
             handle = this.prepareDraw({ rounding: true, pixel_density: true }),
             test_cutg = this.options.cutg,
             colPaths = [], currx = [], curry = [], cell_w = [], cell_h = [],
