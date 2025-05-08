@@ -2368,26 +2368,26 @@ class THistPainter extends ObjectPainter {
    }
 
    /** @summary Get graphics conversion functions for this histogram */
-   getHistGrFuncs(fp, rounding = true) {
+   getHistGrFuncs(rounding = true) {
+      let funcs;
       if (this.isUseFrame()) {
-         if (fp === undefined)
-            fp = this.getFramePainter();
-         return fp?.getGrFuncs(this.options.second_x, this.options.second_y);
+         funcs = this.getFramePainter()?.getGrFuncs(this.options.second_x, this.options.second_y);
+         if (funcs)
+            return funcs;
       }
 
-      const funcs = this.getAxisToSvgFunc(false, rounding, false);
-      if (funcs) {
-         funcs.$painter = this;
-         funcs.grx = funcs.x;
-         funcs.gry = funcs.y;
-         funcs.logx = funcs.pad?.fLogx;
-         funcs.logy = funcs.pad?.fLogy;
-         funcs.getFrameWidth = function() { return this.$painter.getPadPainter().getPadWidth(); };
-         funcs.getFrameHeight = function() { return this.$painter.getPadPainter().getPadHeight(); };
-         funcs.isAxisZoomed = function() { return false; };
-         funcs.revertAxis = function(name, v) { return this.$painter.svgToAxis(name, v); };
-         funcs.axisAsText = function(_name, v) { return v.toString(); };
-      }
+      funcs = this.getAxisToSvgFunc(false, rounding, false) || { x: v => v, y: v => v };
+
+      funcs.$painter = this;
+      funcs.grx = funcs.x;
+      funcs.gry = funcs.y;
+      funcs.logx = funcs.pad?.fLogx;
+      funcs.logy = funcs.pad?.fLogy;
+      funcs.getFrameWidth = function() { return this.$painter.getPadPainter().getPadWidth(); };
+      funcs.getFrameHeight = function() { return this.$painter.getPadPainter().getPadHeight(); };
+      funcs.isAxisZoomed = function() { return false; };
+      funcs.revertAxis = function(name, v) { return this.$painter.svgToAxis(name, v); };
+      funcs.axisAsText = function(_name, v) { return v.toString(); };
       return funcs;
    }
 
@@ -2406,8 +2406,7 @@ class THistPainter extends ObjectPainter {
       const histo = this.getHisto(),
             xaxis = histo.fXaxis,
             yaxis = histo.fYaxis,
-            fp = this.isUseFrame() ? this.getFramePainter() : null,
-            funcs = this.getHistGrFuncs(fp, args.rounding),
+            funcs = this.getHistGrFuncs(args.rounding),
             hdim = this.getDimension(),
             res = {
                i1: args.nozoom ? 0 : this.getSelectIndex('x', 'left', 0 - args.extra),
@@ -2418,6 +2417,9 @@ class THistPainter extends ObjectPainter {
                width: funcs?.getFrameWidth() ?? 600,
                height: funcs?.getFrameHeight() ?? 400
             };
+
+      if (args.use3d && !funcs.size_x3d || !funcs.size_y3d)
+         args.use3d = false;
 
       if (args.cutg) {
          // if using cutg - define rectangular region
@@ -2464,11 +2466,6 @@ class THistPainter extends ObjectPainter {
          res.origy = res.j1 < 0 ? {} : new Float32Array(res.j2 + 1);
       }
 
-      if (!funcs) {
-         console.warn('cannot draw histogram without frame or pad');
-         return res;
-      }
-
       // calculate graphical coordinates in advance
       for (i = res.i1; i <= res.i2; ++i) {
          x = xaxis.GetBinCoord(i + args.middle);
@@ -2482,14 +2479,14 @@ class THistPainter extends ObjectPainter {
          if (args.rounding)
             res.grx[i] = Math.round(res.grx[i]);
 
-         if (args.use3d && fp) {
-            if (res.grx[i] < -fp.size_x3d) {
-               res.grx[i] = -fp.size_x3d;
+         if (args.use3d) {
+            if (res.grx[i] < -funcs.size_x3d) {
+               res.grx[i] = -funcs.size_x3d;
                if (this.options.RevX) res.i2 = i;
                                  else res.i1 = i;
             }
-            if (res.grx[i] > fp.size_x3d) {
-               res.grx[i] = fp.size_x3d;
+            if (res.grx[i] > funcs.size_x3d) {
+               res.grx[i] = funcs.size_x3d;
                if (this.options.RevX) res.i1 = i;
                                  else res.i2 = i;
             }
@@ -2512,14 +2509,14 @@ class THistPainter extends ObjectPainter {
             if (args.rounding)
                res.gry[j] = Math.round(res.gry[j]);
 
-            if (args.use3d && fp) {
-               if (res.gry[j] < -fp.size_y3d) {
-                  res.gry[j] = -fp.size_y3d;
+            if (args.use3d) {
+               if (res.gry[j] < -funcs.size_y3d) {
+                  res.gry[j] = -funcs.size_y3d;
                   if (this.options.RevY) res.j2 = j;
                                     else res.j1 = j;
                }
-               if (res.gry[j] > fp.size_y3d) {
-                  res.gry[j] = fp.size_y3d;
+               if (res.gry[j] > funcs.size_y3d) {
+                  res.gry[j] = funcs.size_y3d;
                   if (this.options.RevY) res.j1 = j;
                                     else res.j2 = j;
                }

@@ -2261,9 +2261,8 @@ class TH2Painter extends THistPainter {
 
       const histo = this.getHisto(),
             handle = this.prepareDraw(),
-            fp = this.getFramePainter(), // used for axis values conversions
             cp = this.getCanvPainter(),
-            funcs = this.getHistGrFuncs(fp),
+            funcs = this.getHistGrFuncs(),
             swapXY = isOption(kHorizontal);
       let scaledViolin = gStyle.fViolinScaled,
           scaledCandle = gStyle.fCandleScaled,
@@ -3106,8 +3105,7 @@ class TH2Painter extends THistPainter {
 
    /** @summary Provide text information (tooltips) for candle bin */
    getCandleTooltips(p) {
-      const fp = this.getFramePainter(),
-            funcs = this.getHistGrFuncs(fp),
+      const funcs = this.getHistGrFuncs(),
             histo = this.getHisto();
 
       return [this.getObjectHint(),
@@ -3122,8 +3120,7 @@ class TH2Painter extends THistPainter {
    getPolyBinTooltips(binindx, realx, realy) {
       const histo = this.getHisto(),
             bin = histo.fBins.arr[binindx],
-            fp = this.getFramePainter(),
-            funcs = this.getHistGrFuncs(fp),
+            funcs = this.getHistGrFuncs(),
             lines = [];
       let binname = bin.fPoly.fName, numpoints = 0;
 
@@ -3177,8 +3174,7 @@ class TH2Painter extends THistPainter {
 
       if (h.poly) {
          // process tooltips from TH2Poly
-         const fp = this.getFramePainter(),
-               funcs = this.getHistGrFuncs(fp),
+         const funcs = this.getHistGrFuncs(),
                realx = funcs.revertAxis('x', pnt.x),
                realy = funcs.revertAxis('y', pnt.y);
          let foundindx = -1, bin;
