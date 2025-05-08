@@ -1,4 +1,4 @@
-import { BIT, settings, internals, browser, create, parse, toJSON, loadScript, isFunc, isStr, clTCanvas } from '../core.mjs';
+import { BIT, settings, gStyle, internals, browser, create, parse, toJSON, loadScript, isFunc, isStr, clTCanvas } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { closeCurrentWindow, showProgress, loadOpenui5, ToolbarIcons, getColorExec } from '../gui/utils.mjs';
 import { GridDisplay, getHPainter } from '../gui/display.mjs';
@@ -954,10 +954,10 @@ async function ensureTCanvas(painter, frame_kind) {
             const canv = create(clTCanvas),
                   dx = (ranges.maxx - ranges.minx) || 1,
                   dy = (ranges.maxy - ranges.miny) || 1;
-            canv.fX1 = ranges.minx - dx * 0.1;
-            canv.fX2 = ranges.maxx + dx * 0.1;
-            canv.fY1 = ranges.miny - dy * 0.1;
-            canv.fY2 = ranges.maxy + dy * 0.1;
+            canv.fX1 = ranges.minx - dx * gStyle.fPadLeftMargin;
+            canv.fX2 = ranges.maxx + dx * gStyle.fPadRightMargin;
+            canv.fY1 = ranges.miny - dy * gStyle.fPadBottomMargin;
+            canv.fY2 = ranges.maxy + dy * gStyle.fPadTopMargin;
             return canv;
          },
          promise = painter.getCanvSvg().empty()
