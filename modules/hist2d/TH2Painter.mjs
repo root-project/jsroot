@@ -974,12 +974,11 @@ class TH2Painter extends THistPainter {
          cond = this.options.cutg ? (x, y) => this.options.cutg.IsInside(x, y) : null;
 
       const histo = this.getHisto(), xaxis = histo.fXaxis, yaxis = histo.fYaxis,
-            fp = this.getFramePainter(),
-            funcs = this.getHistGrFuncs(fp),
+            funcs = this.getHistGrFuncs(),
             res = { name: histo.fName, entries: 0, eff_entries: 0, integral: 0,
                     meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix: [0, 0, 0, 0, 0, 0, 0, 0, 0],
                     xmax: 0, ymax: 0, wmax: null, skewx: 0, skewy: 0, skewd: 0, kurtx: 0, kurty: 0, kurtd: 0 },
-            has_counted_stat = !fp.isAxisZoomed('x') && !fp.isAxisZoomed('y') && (Math.abs(histo.fTsumw) > 1e-300) && !cond;
+            has_counted_stat = !funcs.isAxisZoomed('x') && !funcs.isAxisZoomed('y') && (Math.abs(histo.fTsumw) > 1e-300) && !cond;
       let stat_sum0 = 0, stat_sumw2 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
           stat_sumx2 = 0, stat_sumy2 = 0,
           xside, yside, xx, yy, zz, xleft, xright, yleft, yright;
@@ -1438,11 +1437,10 @@ class TH2Painter extends THistPainter {
    /** @summary Draw histogram bins with projection function */
    drawBinsProjected() {
       const handle = this.prepareDraw({ rounding: false, nozoom: true, extra: 100, original: true }),
-            main = this.getFramePainter(),
-            funcs = this.getHistGrFuncs(main),
+            funcs = this.getHistGrFuncs(),
             ilevels = this.getContourLevels(),
             palette = this.getHistPalette(),
-            func = main.getProjectionFunc();
+            func = isFunc(funcs.getProjectionFunc) ? funcs.getProjectionFunc() : (x, y) => { return { x, y }; };
 
       handle.grz = z => z;
       handle.grz_min = ilevels.at(0);
@@ -1486,9 +1484,9 @@ class TH2Painter extends THistPainter {
    /** @summary Draw histogram bins as contour */
    drawBinsContour() {
       const handle = this.prepareDraw({ rounding: false, extra: 100 }),
-            main = this.getFramePainter(),
-            frame_w = main.getFrameWidth(),
-            frame_h = main.getFrameHeight(),
+            fp = this.getFramePainter(),
+            frame_w = fp.getFrameWidth(),
+            frame_h = fp.getFrameHeight(),
             levels = this.getContourLevels(),
             palette = this.getHistPalette(),
 
@@ -1690,13 +1688,12 @@ class TH2Painter extends THistPainter {
    /** @summary draw TH2Poly bins */
    async drawPolyBins() {
       const histo = this.getObject(),
-            fp = this.getFramePainter(),
-            funcs = this.getHistGrFuncs(fp),
+            funcs = this.getHistGrFuncs(),
             draw_colors = this.options.Color || (!this.options.Line && !this.options.Fill && !this.options.Text && !this.options.Mark),
             draw_lines = this.options.Line || (this.options.Text && !draw_colors),
             draw_fill = this.options.Fill && !draw_colors,
             draw_mark = this.options.Mark,
-            h = fp.getFrameHeight(),
+            h = funcs.getFrameHeight(),
             textbins = [],
             len = histo.fBins.arr.length;
        let colindx, cmd,

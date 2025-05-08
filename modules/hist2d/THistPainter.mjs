@@ -2369,8 +2369,11 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Get graphics conversion functions for this histogram */
    getHistGrFuncs(fp, rounding = true) {
-      if (this.isUseFrame())
+      if (this.isUseFrame()) {
+         if (fp === undefined)
+            fp = this.getFramePainter();
          return fp?.getGrFuncs(this.options.second_x, this.options.second_y);
+      }
 
       const funcs = this.getAxisToSvgFunc(false, rounding, false);
       if (funcs) {
@@ -2379,10 +2382,9 @@ class THistPainter extends ObjectPainter {
          funcs.gry = funcs.y;
          funcs.logx = funcs.pad?.fLogx;
          funcs.logy = funcs.pad?.fLogy;
-         funcs.size_x3d = 100; // dummy
-         funcs.size_y3d = 100; // dummy
          funcs.getFrameWidth = function() { return this.$painter.getPadPainter().getPadWidth(); };
          funcs.getFrameHeight = function() { return this.$painter.getPadPainter().getPadHeight(); };
+         funcs.isAxisZoomed = function() { return false; };
          funcs.revertAxis = function(name, v) { return this.$painter.svgToAxis(name, v); };
          funcs.axisAsText = function(_name, v) { return v.toString(); };
       }
@@ -2480,14 +2482,14 @@ class THistPainter extends ObjectPainter {
          if (args.rounding)
             res.grx[i] = Math.round(res.grx[i]);
 
-         if (args.use3d) {
-            if (res.grx[i] < -funcs.size_x3d) {
-               res.grx[i] = -funcs.size_x3d;
+         if (args.use3d && fp) {
+            if (res.grx[i] < -fp.size_x3d) {
+               res.grx[i] = -fp.size_x3d;
                if (this.options.RevX) res.i2 = i;
                                  else res.i1 = i;
             }
-            if (res.grx[i] > funcs.size_x3d) {
-               res.grx[i] = funcs.size_x3d;
+            if (res.grx[i] > fp.size_x3d) {
+               res.grx[i] = fp.size_x3d;
                if (this.options.RevX) res.i1 = i;
                                  else res.i2 = i;
             }
@@ -2510,14 +2512,14 @@ class THistPainter extends ObjectPainter {
             if (args.rounding)
                res.gry[j] = Math.round(res.gry[j]);
 
-            if (args.use3d) {
-               if (res.gry[j] < -funcs.size_y3d) {
-                  res.gry[j] = -funcs.size_y3d;
+            if (args.use3d && fp) {
+               if (res.gry[j] < -fp.size_y3d) {
+                  res.gry[j] = -fp.size_y3d;
                   if (this.options.RevY) res.j2 = j;
                                     else res.j1 = j;
                }
-               if (res.gry[j] > funcs.size_y3d) {
-                  res.gry[j] = funcs.size_y3d;
+               if (res.gry[j] > fp.size_y3d) {
+                  res.gry[j] = fp.size_y3d;
                   if (this.options.RevY) res.j1 = j;
                                     else res.j2 = j;
                }
@@ -2567,7 +2569,7 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Get tip text for axis bin */
    getAxisBinTip(name, axis, bin) {
-      const funcs = this.getHistGrFuncs(this.getFramePainter()),
+      const funcs = this.getHistGrFuncs(),
             handle = funcs[`${name}_handle`],
             x1 = axis.GetBinLowEdge(bin+1);
 

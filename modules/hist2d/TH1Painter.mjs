@@ -928,8 +928,7 @@ class TH1Painter extends THistPainter {
 
       this.createHistDrawAttributes();
 
-      const fp = this.getFramePainter(),
-            funcs = this.getHistGrFuncs(fp),
+      const funcs = this.getHistGrFuncs(),
             width = funcs.getFrameWidth(),
             height = funcs.getFrameHeight();
 
@@ -955,8 +954,7 @@ class TH1Painter extends THistPainter {
    getBinTooltips(bin) {
       const tips = [],
             name = this.getObjectHint(),
-            fp = this.getFramePainter(),
-            funcs = this.getHistGrFuncs(fp),
+            funcs = this.getHistGrFuncs(),
             histo = this.getHisto(),
             x1 = histo.fXaxis.GetBinLowEdge(bin+1),
             x2 = histo.fXaxis.GetBinLowEdge(bin+2),
@@ -995,8 +993,7 @@ class TH1Painter extends THistPainter {
          return null;
       }
 
-      const fp = this.getFramePainter(),
-            funcs = this.getHistGrFuncs(fp),
+      const funcs = this.getHistGrFuncs(),
             histo = this.getHisto(),
             left = this.getSelectIndex('x', 'left', -1),
             right = this.getSelectIndex('x', 'right', 2);
@@ -1018,7 +1015,7 @@ class TH1Painter extends THistPainter {
       if (funcs.swap_xy)
          [pnt_x, pnt_y, width, height] = [pnt_y, pnt_x, height, width];
 
-      const descent_order = funcs.swap_xy !== fp?.x_handle.reverse;
+      const descent_order = funcs.x_handle && (funcs.swap_xy !== funcs.x_handle.reverse);
 
       while (l < r-1) {
          const m = Math.round((l+r)*0.5), xx = GetBinGrX(m);
