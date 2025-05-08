@@ -2619,7 +2619,8 @@ class THistPainter extends ObjectPainter {
    /** @summary generic draw function for histograms
      * @private */
    static async _drawHist(painter, opt) {
-      return ensureTCanvas(painter).then(() => {
+      const no_frame = isStr(opt) && (opt.toLowerCase().indexOf('same') >= 0);
+      return ensureTCanvas(painter, !no_frame).then(() => {
          painter.decodeOptions(opt);
 
          painter._checkAssign();

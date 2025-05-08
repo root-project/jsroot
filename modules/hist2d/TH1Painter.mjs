@@ -238,7 +238,7 @@ class TH1Painter extends THistPainter {
             res = { name: histo.fName, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, integral: 0,
                     entries: (histo.fEntries > 0) ? histo.fEntries : this.stat_entries,
                     eff_entries: 0, xmax: 0, wmax: 0, skewx: 0, skewd: 0, kurtx: 0, kurtd: 0 },
-            has_counted_stat = !fp.isAxisZoomed('x') && (Math.abs(histo.fTsumw) > 1e-300);
+            has_counted_stat = !fp?.isAxisZoomed('x') && (Math.abs(histo.fTsumw) > 1e-300);
       let stat_sumw = 0, stat_sumw2 = 0, stat_sumwx = 0, stat_sumwx2 = 0, stat_sumwy = 0, stat_sumwy2 = 0,
           i, xx, w, xmax = null, wmax = null;
 
@@ -901,8 +901,8 @@ class TH1Painter extends THistPainter {
 
       const pmain = this.getFramePainter(),
             funcs = this.getHistGrFuncs(pmain),
-            width = pmain.getFrameWidth(),
-            height = pmain.getFrameHeight();
+            width = funcs.getFrameWidth(),
+            height = funcs.getFrameHeight();
 
       if (!this.draw_content || (width <= 0) || (height <= 0))
          return this.removeG();
