@@ -961,7 +961,7 @@ class TPavePainter extends ObjectPainter {
             is_th3 = isFunc(main.getDimension) && (main.getDimension() === 3),
             is_scatter = isFunc(main.getZaxis),
             log = pad?.fLogv ?? (is_th3 ? false : pad?.fLogz),
-            draw_palette = main._color_palette,
+            draw_palette = main.getHistPalette(),
             zaxis = is_scatter ? main.getZaxis() : main.getObject()?.fZaxis,
             sizek = pad?.fTickz ? 0.35 : 0.7;
 
@@ -1729,17 +1729,17 @@ class TPavePainter extends ObjectPainter {
                break;
          }
 
-         return painter.drawPave(arg_opt).then(() => {
-            const adjust_title = painter.$postitle && painter.$titlebox;
+         return painter.drawPave(arg_opt);
+      }).then(() => {
+         const adjust_title = painter.$postitle && painter.$titlebox;
 
-            if (adjust_title)
-               painter.setTitlePosition(pave, painter.$titlebox.width, painter.$titlebox.height);
+         if (adjust_title)
+            painter.setTitlePosition(pave, painter.$titlebox.width, painter.$titlebox.height);
 
-            delete painter.$postitle;
-            delete painter.$titlebox;
+         delete painter.$postitle;
+         delete painter.$titlebox;
 
-            return adjust_title ? painter.drawPave(arg_opt) : painter;
-         });
+         return adjust_title ? painter.drawPave(arg_opt) : painter;
       });
    }
 

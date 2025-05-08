@@ -492,8 +492,9 @@ class TH3Painter extends THistPainter {
 
                if (use_colors) {
                   const colindx = cntr.getPaletteIndex(palette, bin_content);
-                  if (colindx === null) continue;
-                  bins_colors.push(this._color_palette.getColor(colindx));
+                  if (colindx === null)
+                     continue;
+                  bins_colors.push(palette.getColor(colindx));
                   if (transfer) {
                      const op = getTF1Value(transfer, bin_content, false) * 3;
                      bin_opacities.push((!op || op < 0) ? 0 : (op > 1 ? 1 : op));

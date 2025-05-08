@@ -641,7 +641,7 @@ class TPadPainter extends ObjectPainter {
       }
 
       if (changed)
-         this.forEachPainter(p => { delete p._color_palette; });
+         this.forEachPainter(p => { if (isFunc(p.clearHistPalette)) p.clearHistPalette(); });
 
       this._root_colors = flag ? getGrayColors(this.#custom_colors) : this.#custom_colors;
 

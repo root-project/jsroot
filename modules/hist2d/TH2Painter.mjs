@@ -1772,7 +1772,7 @@ class TH2Painter extends THistPainter {
             else if ((colindx !== null) || draw_fill || draw_lines) {
                item = this.draw_g.append('svg:path').attr('d', cmd);
                if (draw_colors && (colindx !== null))
-                  item.style('fill', this._color_palette.getColor(colindx));
+                  item.style('fill', palette.getColor(colindx));
                else if (draw_fill)
                   item.call(this.createAttFill(gr).func);
                else

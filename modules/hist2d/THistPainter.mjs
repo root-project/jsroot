@@ -891,6 +891,7 @@ class THistPainter extends ObjectPainter {
 
    #doing_redraw_palette; // set during redrawing of palette
    #ignore_frame; // true when drawing without frame functionality
+   #color_palette;  // color palette used in histogram
 
    /** @summary Constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -942,7 +943,7 @@ class THistPainter extends ObjectPainter {
    cleanup() {
       this.clear3DScene();
 
-      delete this._color_palette;
+      this.clearHistPalette();
       delete this.fContour;
       delete this.options;
 
@@ -2104,15 +2105,23 @@ class THistPainter extends ObjectPainter {
    /** @summary Returns color palette associated with histogram
      * @desc Create if required, checks pad and canvas for custom palette */
    getHistPalette(force) {
-      if (force) this._color_palette = null;
+      let pal = force ? null : this.#color_palette;
+      if (pal)
+         return pal;
       const pp = this.getPadPainter();
-      if (!this._color_palette && !this.options.Palette) {
+      if (!this.options.Palette) {
          if (isFunc(pp?.getCustomPalette))
-            this._color_palette = pp.getCustomPalette();
+            pal = pp.getCustomPalette();
       }
-      if (!this._color_palette)
-         this._color_palette = getColorPalette(this.options.Palette, pp?.isGrayscale());
-      return this._color_palette;
+      if (!pal)
+         pal = getColorPalette(this.options.Palette, pp?.isGrayscale());
+      this.#color_palette = pal;
+      return pal;
+   }
+
+   /** @summary Remove palette */
+   clearHistPalette() {
+      this.#color_palette = undefined;
    }
 
    /** @summary Fill menu entries for palette */
