@@ -256,7 +256,8 @@
    ],
    "TASImage" : [
       { "name": "n4254_json", "json": "image.json.gz", "title": "TASImage with binary data, see tutorials/image/galaxy_image.C macro" },
-      { "name": "rose_json", "json": "rose.json.gz", "title": "TASImage with PNG and binary data, see tutorials/image/rose_image.C macro" }
+      { "name": "rose_json", "json": "rose.json.gz", "title": "TASImage with PNG and binary data, see tutorials/image/rose_image.C macro" },
+      { "name": "n4254_z", "file": "image.root", "item": "image", "opt": "sub1_z", "title": "TASImage with palette" }
    ],
    "Misc" : [
      { "name": "spline_axes", "url": "nobrowser&file=$$$tutorials_graphs.root&item=[splines_test/[1],splines_test/[9]]&opt=[,x+y+]", "title": "Draw TF1 and TSpline, last uses second axes" },
