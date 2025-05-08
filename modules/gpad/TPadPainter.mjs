@@ -225,6 +225,7 @@ class TPadPainter extends ObjectPainter {
    #num_specials;  // number of special objects - if counted
    #auto_color_cnt; // counter used in assigning auto colors
    #auto_palette; // palette for creating of automatic colors
+   #fixed_size; // fixed size flag
 
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -650,13 +651,17 @@ class TPadPainter extends ObjectPainter {
       this.#custom_palette = this.#custom_palette_colors ? new ColorPalette(this.#custom_palette_colors, flag) : null;
    }
 
+   /** @summary Set fixed-size canvas
+    * @private */
+   _setFixedSize(on) { this.#fixed_size = on; }
+
    /** @summary Create SVG element for canvas */
    createCanvasSvg(check_resize, new_size) {
       const is_batch = this.isBatchMode(), lmt = 5;
       let factor, svg, rect, btns, info, frect;
 
       if (check_resize > 0) {
-         if (this._fixed_size)
+         if (this.#fixed_size)
             return check_resize > 1; // flag used to force re-drawing of all sub-pads
 
          svg = this.getCanvSvg();
@@ -722,7 +727,7 @@ class TPadPainter extends ObjectPainter {
             if ((factor < 0.1) || (factor > 10)) factor = 0.66;
          }
 
-         if (this._fixed_size) {
+         if (this.#fixed_size) {
             render_to.style('overflow', 'auto');
             rect = { width: this.pad.fCw, height: this.pad.fCh };
             if (!rect.width || !rect.height)
@@ -754,7 +759,7 @@ class TPadPainter extends ObjectPainter {
 
       svg.attr('x', 0).attr('y', 0).style('position', 'absolute');
 
-      if (this._fixed_size)
+      if (this.#fixed_size)
          svg.attr('width', rect.width).attr('height', rect.height);
       else
          svg.style('width', '100%').style('height', '100%').style('left', 0).style('top', 0).style('bottom', 0).style('right', 0);
@@ -854,7 +859,8 @@ class TPadPainter extends ObjectPainter {
             pad_enlarged = svg_can.property('pad_enlarged');
 
       if (this.iscan || !this.has_canvas || (!pad_enlarged && !this.hasObjectsToDraw() && !this.painters)) {
-         if (this._fixed_size) return; // canvas cannot be enlarged in such mode
+         if (this.#fixed_size)
+            return; // canvas cannot be enlarged in such mode
          if (!this.enlargeMain(is_escape ? false : 'toggle')) return;
          if (this.enlargeMain('state') === 'off')
             svg_can.property('pad_enlarged', null);
@@ -1970,13 +1976,14 @@ class TPadPainter extends ObjectPainter {
          this.assignObject(first);
          this.pad = first; // first object is pad
 
-         // this._fixed_size = true;
+         // this._setFixedSize(true);
 
          // if canvas size not specified in batch mode, temporary use 900x700 size
          if (this.isBatchMode() && (!first.fCw || !first.fCh)) { first.fCw = 900; first.fCh = 700; }
 
          // case of ROOT7 with always dummy TPad as first entry
-         if (!first.fCw || !first.fCh) this._fixed_size = false;
+         if (!first.fCw || !first.fCh)
+            this._setFixedSize(false);
 
          const mainid = this.selectDom().attr('id');
 
@@ -2611,7 +2618,7 @@ class TPadPainter extends ObjectPainter {
       if (d.check('NOPALETTE') || d.check('NOPAL')) this.options.IgnorePalette = true;
       if (d.check('ROTATE')) this.options.RotateFrame = true;
       if (d.check('FIXFRAME')) this.options.FixFrame = true;
-      if (d.check('FIXSIZE') && this.iscan) this._fixed_size = true;
+      if (d.check('FIXSIZE') && this.iscan) this._setFixedSize(true);
 
       if (d.check('CP', true)) this.options.CreatePalette = d.partAsInt(0, 0);
 

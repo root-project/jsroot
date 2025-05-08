@@ -29,6 +29,7 @@ class RPadPainter extends RObjectPainter {
    #main_painter_ref; // main painter on the pad
    #num_primitives; // number of primitives
    #auto_color_cnt;  // counter for auto colors
+   #fixed_size;  // fixed size flag
 
    /** @summary constructor */
    constructor(dom, pad, iscan) {
@@ -414,7 +415,7 @@ class RPadPainter extends RObjectPainter {
       let factor, svg, rect, btns, frect;
 
       if (check_resize > 0) {
-         if (this._fixed_size)
+         if (this.#fixed_size)
             return check_resize > 1; // flag used to force re-drawing of all sub-pads
 
          svg = this.getCanvSvg();
@@ -475,7 +476,7 @@ class RPadPainter extends RObjectPainter {
             if ((factor < 0.1) || (factor > 10)) factor = 0.66;
          }
 
-         if (this._fixed_size) {
+         if (this.#fixed_size) {
             render_to.style('overflow', 'auto');
             rect = { width: this.pad.fWinSize[0], height: this.pad.fWinSize[1] };
             if (!rect.width || !rect.height)
@@ -503,7 +504,7 @@ class RPadPainter extends RObjectPainter {
       } else
          svg.style('display', null);
 
-      if (this._fixed_size) {
+      if (this.#fixed_size) {
          svg.attr('x', 0)
             .attr('y', 0)
             .attr('width', rect.width)
@@ -562,7 +563,7 @@ class RPadPainter extends RObjectPainter {
             pad_enlarged = svg_can.property('pad_enlarged');
 
       if (this.iscan || !this.has_canvas || (!pad_enlarged && !this.hasObjectsToDraw() && !this.painters)) {
-         if (this._fixed_size) return; // canvas cannot be enlarged in such mode
+         if (this.#fixed_size) return; // canvas cannot be enlarged in such mode
          if (!this.enlargeMain(is_escape ? false : 'toggle')) return;
          if (this.enlargeMain('state') === 'off')
             svg_can.property('pad_enlarged', null);
@@ -1242,7 +1243,7 @@ class RPadPainter extends RObjectPainter {
          this.pad = snap;
 
          if (this.isBatchMode() && this.iscan)
-             this._fixed_size = true;
+             this.#fixed_size = true;
 
          const mainid = this.selectDom().attr('id');
 

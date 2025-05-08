@@ -909,7 +909,7 @@ class TCanvasPainter extends TPadPainter {
          if (apply_size) {
             d.style('width', can.fCw + 'px').style('height', can.fCh + 'px')
               .attr('width', can.fCw).attr('height', can.fCh);
-            painter._fixed_size = true;
+            painter._setFixedSize(true);
          }
       }
 
