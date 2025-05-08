@@ -2743,7 +2743,7 @@ class TH2Painter extends THistPainter {
       if (this._hide_frame && this.isMainPainter()) {
          this.getFrameSvg().style('display', null);
          delete this._hide_frame;
-      } else if (this.options.Same && this._ignore_frame)
+      } else if (this.options.Same && !this.isUseFrame())
          this.getFrameSvg().style('display', 'none');
 
       if (!this.draw_content) {
@@ -2756,7 +2756,7 @@ class TH2Painter extends THistPainter {
 
       this.createHistDrawAttributes();
 
-      this.createG(!this._ignore_frame);
+      this.createG(this.isUseFrame());
 
       let handle, pr;
 
@@ -3505,7 +3505,7 @@ class TH2Painter extends THistPainter {
    async draw2D(/* reason */) {
       this.clear3DScene();
 
-      const need_palette = this.options.Zscale && this.options.canHavePalette() && !this._ignore_frame;
+      const need_palette = this.options.Zscale && this.options.canHavePalette() && this.isUseFrame();
 
       // draw new palette, resize frame if required
       return this.drawColorPalette(need_palette, true).then(async pp => {

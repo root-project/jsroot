@@ -892,6 +892,7 @@ const kUserContour = BIT(10), // user specified contour levels
 class THistPainter extends ObjectPainter {
 
    #doing_redraw_palette; // set during redrawing of palette
+   #ignore_frame; // true when drawing without frame functionality
 
    /** @summary Constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -2368,7 +2369,7 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Get graphics conversion functions for this histogram */
    getHistGrFuncs(fp, rounding = true) {
-      if (!this._ignore_frame)
+      if (this.isUseFrame())
          return fp?.getGrFuncs(this.options.second_x, this.options.second_y);
 
       const funcs = this.getAxisToSvgFunc(false, rounding, false);
@@ -2601,15 +2602,27 @@ class THistPainter extends ObjectPainter {
       return res;
    }
 
+   /** @summary Check assign as main painter
+     * @private */
+   _checkAssign() {
+      const has_main = this.getPadPainter()?.getMainPainter();
+      if (this.options.Same)
+         this.#ignore_frame = !has_main;
+      else if (!has_main)
+         this.setAsMainPainter();
+   }
+
+   /** @summary Return true when drawn normally on the frame
+     * @private */
+   isUseFrame() { return !this.#ignore_frame; }
+
    /** @summary generic draw function for histograms
      * @private */
    static async _drawHist(painter, opt) {
       return ensureTCanvas(painter).then(() => {
          painter.decodeOptions(opt);
-         if (!painter.options.Same)
-            painter.setAsMainPainter();
-         else
-            painter._ignore_frame = !painter.getPadPainter()?.getMainPainter();
+
+         painter._checkAssign();
 
          if (painter.isTH2Poly()) {
             if (painter.options.Mode3D)

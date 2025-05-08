@@ -810,7 +810,7 @@ class TH1Painter extends THistPainter {
             }
          }
 
-         const fill_for_interactive = want_tooltip && this.fillatt.empty() && draw_hist && !draw_markers && !show_line && !show_curve && !this._ignore_frame;
+         const fill_for_interactive = want_tooltip && this.fillatt.empty() && draw_hist && !draw_markers && !show_line && !show_curve && this.isUseFrame();
          let h0 = height + 3;
          if (!fill_for_interactive) {
             const gry0 = Math.round(funcs.gry(0));
@@ -894,7 +894,7 @@ class TH1Painter extends THistPainter {
    /** @summary Draw TH1 bins in SVG element
      * @return Promise or scalar value */
    draw1DBins() {
-      if (this.options.Same && this._ignore_frame)
+      if (this.options.Same && !this.isUseFrame())
          this.getFrameSvg().style('display', 'none');
 
       this.createHistDrawAttributes();
@@ -907,7 +907,7 @@ class TH1Painter extends THistPainter {
       if (!this.draw_content || (width <= 0) || (height <= 0))
          return this.removeG();
 
-      this.createG(!this._ignore_frame);
+      this.createG(this.isUseFrame());
 
       if (this.options.Bar) {
          return this.drawBars(funcs, height).then(() => {
