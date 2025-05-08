@@ -28,6 +28,7 @@ class RPadPainter extends RObjectPainter {
    #frame_painter_ref; // frame painter
    #main_painter_ref; // main painter on the pad
    #num_primitives; // number of primitives
+   #auto_color_cnt;  // counter for auto colors
 
    /** @summary constructor */
    constructor(dom, pad, iscan) {
@@ -783,7 +784,7 @@ class RPadPainter extends RObjectPainter {
      * @private */
    getAutoColor() {
       const pal = this.getHistPalette(),
-            cnt = this._auto_color_cnt++,
+            cnt = this.#auto_color_cnt++,
             num = Math.max(this.#num_primitives - 1, 2);
       return pal?.getColorOrdinal((cnt % num) / num) ?? 'blue';
    }
@@ -1084,7 +1085,7 @@ class RPadPainter extends RObjectPainter {
          indx = -1;
          // flag used to prevent immediate pad redraw during first draw
          this.#num_primitives = lst?.length ?? 0;
-         this._auto_color_cnt = 0;
+         this.#auto_color_cnt = 0;
       }
 
       delete this.next_rstyle;
@@ -1092,7 +1093,7 @@ class RPadPainter extends RObjectPainter {
       ++indx; // change to the next snap
 
       if (!lst || indx >= lst.length) {
-         delete this._auto_color_cnt;
+         this.#auto_color_cnt = undefined;
          return this;
       }
 

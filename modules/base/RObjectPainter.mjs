@@ -9,6 +9,7 @@ const kNormal = 1, /* kLessTraffic = 2, */ kOffline = 3;
 class RObjectPainter extends ObjectPainter {
 
    #pending_request;
+   #auto_colors; // handle for auto colors
 
    constructor(dom, obj, opt, csstype) {
       super(dom, obj, opt);
@@ -151,11 +152,11 @@ class RObjectPainter extends ObjectPainter {
          const pp = this.getPadPainter();
          if (pp) {
             val = pp.getAutoColor();
-            if (!this._auto_colors)
-               this._auto_colors = {};
-            this._auto_colors[name] = val;
-         } else if (this._auto_colors && this._auto_colors[name])
-            val = this._auto_colors[name];
+            if (!this.#auto_colors)
+               this.#auto_colors = {};
+            this.#auto_colors[name] = val;
+         } else if (this.#auto_colors && this.#auto_colors[name])
+            val = this.#auto_colors[name];
          else {
             console.error(`Autocolor ${name} not defined yet - please check code`);
             val = '';

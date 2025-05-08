@@ -222,6 +222,8 @@ class TPadPainter extends ObjectPainter {
    #deliver_move_events; // deliver move events to server
    #readonly; // if changes on pad is not allowed
    #num_primitives; // number of primitives
+   #num_specials;  // number of special objects - if counted
+   #auto_color_cnt; // counter used in assigning auto colors
 
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -498,13 +500,10 @@ class TPadPainter extends ObjectPainter {
     * @desc Uses ROOT colors palette if possible
     * @private */
    getAutoColor(numprimitives) {
-      if (!numprimitives)
-         numprimitives = (this.#num_primitives || 5) - (this._num_specials || 0);
-      if (numprimitives < 2)
-         numprimitives = 2;
+      numprimitives = Math.max(numprimitives || (this.#num_primitives || 5) - (this.#num_specials || 0), 2);
 
-      let indx = this._auto_color ?? 0;
-      this._auto_color = (indx + 1) % numprimitives;
+      let indx = this.#auto_color_cnt ?? 0;
+      this.#auto_color_cnt = (indx + 1) % numprimitives;
       if (indx >= numprimitives) indx = numprimitives - 1;
 
       let indexes = this._getCustomPaletteIndexes();
@@ -1120,13 +1119,14 @@ class TPadPainter extends ObjectPainter {
    checkSpecialsInPrimitives(can, count_specials) {
       const lst = can?.fPrimitives;
       if (count_specials)
-         this._num_specials = 0;
-      if (!lst) return;
+         this.#num_specials = 0;
+      if (!lst)
+         return;
       for (let i = 0; i < lst.arr?.length; ++i) {
          if (this.checkSpecial(lst.arr[i])) {
             lst.arr[i].$special = true; // mark object as special one, do not use in drawing
             if (count_specials)
-               this._num_specials++;
+               this.#num_specials++;
          }
       }
    }
