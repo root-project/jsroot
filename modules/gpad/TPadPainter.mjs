@@ -224,6 +224,7 @@ class TPadPainter extends ObjectPainter {
    #num_primitives; // number of primitives
    #num_specials;  // number of special objects - if counted
    #auto_color_cnt; // counter used in assigning auto colors
+   #auto_palette; // palette for creating of automatic colors
 
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -518,10 +519,10 @@ class TPadPainter extends ObjectPainter {
          return indexes[p];
       }
 
-      if (!this._auto_palette)
-         this._auto_palette = getColorPalette(settings.Palette, this.isGrayscale());
-      const palindx = Math.round(indx * (this._auto_palette.getLength()-3) / (numprimitives-1)),
-            colvalue = this._auto_palette.getColor(palindx);
+      if (!this.#auto_palette)
+         this.#auto_palette = getColorPalette(settings.Palette, this.isGrayscale());
+      const palindx = Math.round(indx * (this.#auto_palette.getLength() - 3) / (numprimitives - 1)),
+            colvalue = this.#auto_palette.getColor(palindx);
 
       return this.addColor(colvalue);
    }
