@@ -94,6 +94,7 @@
     "fs": false,
     "crypto": false,
     "@oneidentity/zstd-js": false,
+    "node:worker_threads": false,
     "zlib": false,
     "stream": false,
     "url": false,
