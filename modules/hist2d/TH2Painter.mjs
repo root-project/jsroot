@@ -959,6 +959,14 @@ class TH2Painter extends THistPainter {
          this.draw_content = is_content || this.options.ShowEmpty;
    }
 
+   /** @summary Provide histogram min/max used to create canvas ranges
+    * @private */
+   getUserRanges() {
+      const histo = this.getHisto();
+      return { minx: histo.fXaxis.fXmin, maxx: histo.fXaxis.fXmax, miny: histo.fYaxis.fXmin, maxy: histo.fYaxis.fXmax };
+   }
+
+
    /** @summary Count TH2 histogram statistic
      * @desc Optionally one could provide condition function to select special range */
    countStat(cond, count_skew) {
