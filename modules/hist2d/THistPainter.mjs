@@ -161,8 +161,6 @@ class THistDrawOptions {
       if (d.check('OPTSTAT', true)) this.optstat = d.partAsInt();
       if (d.check('OPTFIT', true)) this.optfit = d.partAsInt();
 
-      if (d.check('NOFRAME')) this.ignore_frame = true;
-
       if (this.optstat || this.optfit)
          histo?.SetBit(kNoStats, false);
 
@@ -1646,9 +1644,9 @@ class THistPainter extends ObjectPainter {
          axis = 'x2';
       if (this.options.second_y && axis === 'y')
          axis = 'y2';
-      const main = this.getFramePainter(),
-            min = main ? main[`zoom_${axis}min`] : 0,
-            max = main ? main[`zoom_${axis}max`] : 0;
+      const fp = this.getFramePainter(),
+            min = fp ? fp[`zoom_${axis}min`] : 0,
+            max = fp ? fp[`zoom_${axis}max`] : 0;
 
       if ((min !== max) && taxis) {
          if (side === 'left')
@@ -1922,7 +1920,8 @@ class THistPainter extends ObjectPainter {
    /** @summary Process click on histogram-defined buttons */
    clickButton(funcname) {
       const fp = this.getFramePainter();
-      if (!this.isMainPainter() || !fp) return false;
+      if (!this.isMainPainter() || !fp)
+         return false;
 
       switch (funcname) {
          case 'ToggleZoom':
@@ -2380,6 +2379,8 @@ class THistPainter extends ObjectPainter {
          funcs.gry = funcs.y;
          funcs.logx = funcs.pad?.fLogx;
          funcs.logy = funcs.pad?.fLogy;
+         funcs.size_x3d = 100; // dummy
+         funcs.size_y3d = 100; // dummy
          funcs.getFrameWidth = function() { return this.$painter.getPadPainter().getPadWidth(); };
          funcs.getFrameHeight = function() { return this.$painter.getPadPainter().getPadHeight(); };
          funcs.revertAxis = function(name, v) { return this.$painter.svgToAxis(name, v); };
@@ -2397,11 +2398,14 @@ class THistPainter extends ObjectPainter {
          args.extra = 0;
       if (args.middle === undefined)
          args.middle = 0;
+      if (args.pixel_density)
+         args.rounding = true;
 
       const histo = this.getHisto(),
             xaxis = histo.fXaxis,
             yaxis = histo.fYaxis,
-            pmain = this.options.ignore_frame ? null : this.getFramePainter(),
+            fp = this.isUseFrame() ? this.getFramePainter() : null,
+            funcs = this.getHistGrFuncs(fp, args.rounding),
             hdim = this.getDimension(),
             res = {
                i1: args.nozoom ? 0 : this.getSelectIndex('x', 'left', 0 - args.extra),
@@ -2409,8 +2413,8 @@ class THistPainter extends ObjectPainter {
                j1: (hdim === 1) ? 0 : (args.nozoom ? 0 : this.getSelectIndex('y', 'left', 0 - args.extra)),
                j2: (hdim === 1) ? 1 : (args.nozoom ? this.nbinsy : this.getSelectIndex('y', 'right', 1 + args.extra)),
                min: 0, max: 0, sumz: 0, xbar1: 0, xbar2: 1, ybar1: 0, ybar2: 1,
-               width: pmain?.getFrameWidth() ?? 600,
-               height: pmain?.getFrameHeight() ?? 400
+               width: funcs?.getFrameWidth() ?? 600,
+               height: funcs?.getFrameHeight() ?? 400
             };
 
       if (args.cutg) {
@@ -2458,11 +2462,6 @@ class THistPainter extends ObjectPainter {
          res.origy = res.j1 < 0 ? {} : new Float32Array(res.j2 + 1);
       }
 
-      if (args.pixel_density)
-         args.rounding = true;
-
-      const funcs = this.getHistGrFuncs(pmain, args.rounding);
-
       if (!funcs) {
          console.warn('cannot draw histogram without frame or pad');
          return res;
@@ -2482,13 +2481,13 @@ class THistPainter extends ObjectPainter {
             res.grx[i] = Math.round(res.grx[i]);
 
          if (args.use3d) {
-            if (res.grx[i] < -pmain.size_x3d) {
-               res.grx[i] = -pmain.size_x3d;
+            if (res.grx[i] < -funcs.size_x3d) {
+               res.grx[i] = -funcs.size_x3d;
                if (this.options.RevX) res.i2 = i;
                                  else res.i1 = i;
             }
-            if (res.grx[i] > pmain.size_x3d) {
-               res.grx[i] = pmain.size_x3d;
+            if (res.grx[i] > funcs.size_x3d) {
+               res.grx[i] = funcs.size_x3d;
                if (this.options.RevX) res.i1 = i;
                                  else res.i2 = i;
             }
@@ -2512,13 +2511,13 @@ class THistPainter extends ObjectPainter {
                res.gry[j] = Math.round(res.gry[j]);
 
             if (args.use3d) {
-               if (res.gry[j] < -pmain.size_y3d) {
-                  res.gry[j] = -pmain.size_y3d;
+               if (res.gry[j] < -funcs.size_y3d) {
+                  res.gry[j] = -funcs.size_y3d;
                   if (this.options.RevY) res.j2 = j;
                                     else res.j1 = j;
                }
-               if (res.gry[j] > pmain.size_y3d) {
-                  res.gry[j] = pmain.size_y3d;
+               if (res.gry[j] > funcs.size_y3d) {
+                  res.gry[j] = funcs.size_y3d;
                   if (this.options.RevY) res.j1 = j;
                                     else res.j2 = j;
                }
@@ -2568,8 +2567,7 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Get tip text for axis bin */
    getAxisBinTip(name, axis, bin) {
-      const pmain = this.getFramePainter(),
-            funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
+      const funcs = this.getHistGrFuncs(this.getFramePainter()),
             handle = funcs[`${name}_handle`],
             x1 = axis.GetBinLowEdge(bin+1);
 

@@ -2105,6 +2105,8 @@ class TFramePainter extends FrameInteractive {
          scale_ymax: use_y2 ? this.scale_y2max : this.scale_ymax,
          swap_xy: this.swap_xy,
          fp: this,
+         size_x3d: this.size_x3d,
+         size_y3d: this.size_y3d,
          revertAxis(name, v) {
             if ((name === 'x') && this.use_x2) name = 'x2';
             if ((name === 'y') && this.use_y2) name = 'y2';

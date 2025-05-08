@@ -928,8 +928,8 @@ class TH1Painter extends THistPainter {
 
       this.createHistDrawAttributes();
 
-      const pmain = this.getFramePainter(),
-            funcs = this.getHistGrFuncs(pmain),
+      const fp = this.getFramePainter(),
+            funcs = this.getHistGrFuncs(fp),
             width = funcs.getFrameWidth(),
             height = funcs.getFrameHeight();
 
@@ -955,15 +955,16 @@ class TH1Painter extends THistPainter {
    getBinTooltips(bin) {
       const tips = [],
             name = this.getObjectHint(),
-            pmain = this.getFramePainter(),
-            funcs = this.getHistGrFuncs(pmain),
+            fp = this.getFramePainter(),
+            funcs = this.getHistGrFuncs(fp),
             histo = this.getHisto(),
             x1 = histo.fXaxis.GetBinLowEdge(bin+1),
             x2 = histo.fXaxis.GetBinLowEdge(bin+2),
             xlbl = this.getAxisBinTip('x', histo.fXaxis, bin);
       let cont = histo.getBinContent(bin+1);
 
-      if (name) tips.push(name);
+      if (name)
+         tips.push(name);
 
       if (this.options.Error || this.options.Mark || this.isTF1()) {
          tips.push(`x = ${xlbl}`, `y = ${funcs.axisAsText('y', cont)}`);
@@ -994,13 +995,13 @@ class TH1Painter extends THistPainter {
          return null;
       }
 
-      const pmain = this.getFramePainter(),
-            funcs = this.getHistGrFuncs(pmain),
+      const fp = this.getFramePainter(),
+            funcs = this.getHistGrFuncs(fp),
             histo = this.getHisto(),
             left = this.getSelectIndex('x', 'left', -1),
             right = this.getSelectIndex('x', 'right', 2);
-      let width = pmain.getFrameWidth(),
-          height = pmain.getFrameHeight(),
+      let width = funcs.getFrameWidth(),
+          height = funcs.getFrameHeight(),
           show_rect, grx1, grx2, gry1, gry2, gapx = 2,
           l = left, r = right, pnt_x = pnt.x, pnt_y = pnt.y;
 
@@ -1017,7 +1018,7 @@ class TH1Painter extends THistPainter {
       if (funcs.swap_xy)
          [pnt_x, pnt_y, width, height] = [pnt_y, pnt_x, height, width];
 
-      const descent_order = funcs.swap_xy !== pmain.x_handle.reverse;
+      const descent_order = funcs.swap_xy !== fp?.x_handle.reverse;
 
       while (l < r-1) {
          const m = Math.round((l+r)*0.5), xx = GetBinGrX(m);
