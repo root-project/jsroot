@@ -58,8 +58,8 @@
             lbl.fUniqueID = i + 1;
             h1.fXaxis.fLabels.Add(lbl, '');
          }
-         h1.fYaxis.fXmin = -60;
-         h1.fYaxis.fXmax = +60;
+         h1.fMinimum = -60;
+         h1.fMaximum = 60;
          mgraph.fHistogram = h1;
 
          let leg = create('TLegend');
