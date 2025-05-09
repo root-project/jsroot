@@ -30,6 +30,7 @@ class TGraphPainter extends ObjectPainter {
    #frame_layer;   // frame layer used for drawing
    #cutg;          // is cutg object
    #cutg_lastsame; // indicate that last point is same as first
+   #own_histogram; // if histogram created by TGraphPainter
 
    constructor(dom, graph) {
       super(dom, graph);
@@ -56,6 +57,9 @@ class TGraphPainter extends ObjectPainter {
       if (obj) obj.fHistogram = histo;
    }
 
+   /** @summary Is TScatter object */
+   isScatter() { return false; }
+
    /** @summary Redraw graph
      * @desc may redraw histogram which was used to draw axes
      * @return {Promise} for ready */
@@ -79,6 +83,7 @@ class TGraphPainter extends ObjectPainter {
    /** @summary Cleanup graph painter */
    cleanup() {
       delete this.bins;
+      this.#own_histogram = undefined;
       super.cleanup();
    }
 
@@ -328,7 +333,7 @@ class TGraphPainter extends ObjectPainter {
       const minimum0 = minimum, maximum0 = maximum;
       let histo = this.getHistogram();
 
-      if (!this._not_adjust_hrange && !histo?.fXaxis.fTimeDisplay) {
+      if (!this.isScatter() && !histo?.fXaxis.fTimeDisplay) {
          const pad_logx = this.getPadPainter()?.getPadLog('x');
 
          if ((uxmin < 0) && (xmin >= 0))
@@ -338,10 +343,10 @@ class TGraphPainter extends ObjectPainter {
       }
 
       if (!histo) {
-         histo = this._is_scatter ? createHistogram(clTH2F, 30, 30) : createHistogram(clTH1F, 100);
+         histo = this.isScatter() ? createHistogram(clTH2F, 30, 30) : createHistogram(clTH1F, 100);
          histo.fName = graph.fName + '_h';
          histo.fBits |= kNoStats;
-         this._own_histogram = true;
+         this.#own_histogram = true;
          this.setHistogram(histo);
       } else if ((histo.fMaximum !== kNoZoom) && (histo.fMinimum !== kNoZoom)) {
          minimum = histo.fMinimum;
@@ -367,7 +372,7 @@ class TGraphPainter extends ObjectPainter {
       if (set_y && !histo.fYaxis.fLabels) {
          histo.fYaxis.fXmin = Math.min(minimum0, minimum);
          histo.fYaxis.fXmax = Math.max(maximum0, maximum);
-         if (!this._is_scatter) {
+         if (!this.isScatter()) {
             histo.fMinimum = minimum;
             histo.fMaximum = maximum;
          }
@@ -383,7 +388,7 @@ class TGraphPainter extends ObjectPainter {
      * @desc Used when graph points covers larger range than provided histogram */
    unzoomUserRange(dox, doy /* , doz */) {
       const graph = this.getGraph();
-      if (this._own_histogram || !graph)
+      if (this.#own_histogram || !graph)
          return false;
 
       const histo = this.getHistogram();
@@ -1515,7 +1520,7 @@ class TGraphPainter extends ObjectPainter {
          return false;
 
       let arr = gr.fX;
-      if (this._is_scatter)
+      if (this.isScatter())
          arr = (axis === 'x') ? gr.fX : gr.fY;
       else if (axis !== (this.options.pos3d ? 'y' : 'x'))
          return false;

@@ -17,8 +17,6 @@ class TScatterPainter extends TGraphPainter {
 
    constructor(dom, obj) {
       super(dom, obj);
-      this._is_scatter = true;
-      this._not_adjust_hrange = true;
    }
 
    /** @summary Cleanup painter */
@@ -29,6 +27,9 @@ class TScatterPainter extends TGraphPainter {
 
    /** @summary Return drawn graph object */
    getGraph() { return this.getObject()?.fGraph; }
+
+   /** @summary Is TScatter object */
+   isScatter() { return true; }
 
    /** @summary Return margins for histogram ranges */
    getHistRangeMargin() { return this.getObject()?.fMargin ?? 0.1; }

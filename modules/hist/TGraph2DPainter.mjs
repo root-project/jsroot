@@ -1170,8 +1170,6 @@ class TGraph2DPainter extends ObjectPainter {
       if (graph.fMinimum !== kNoZoom) uzmin = graph.fMinimum;
       if (graph.fMaximum !== kNoZoom) uzmax = graph.fMaximum;
 
-      this._own_histogram = true; // when histogram created on client side
-
       const histo = createHistogram(clTH2D, graph.fNpx, graph.fNpy);
       histo.fName = graph.fName + '_h';
       setHistogramTitle(histo, graph.fTitle);
