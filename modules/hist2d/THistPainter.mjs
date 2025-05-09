@@ -893,6 +893,7 @@ class THistPainter extends ObjectPainter {
    #ignore_frame; // true when drawing without frame functionality
    #color_palette;  // color palette used in histogram
    #auto_exec; // can be reused when sending option back to server
+   #funcs_handler; // special instance for functions drawing
 
    /** @summary Constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -1181,7 +1182,7 @@ class THistPainter extends ObjectPainter {
             histo.fBins = obj.fBins;
 
          // remove old functions, update existing, prepare to draw new one
-         this._funcHandler = new FunctionsHandler(this, pp, obj.fFunctions, statpainter);
+         this.#funcs_handler = new FunctionsHandler(this, pp, obj.fFunctions, statpainter);
 
          const changed_opt = (histo.fOption !== obj.fOption);
          histo.fOption = obj.fOption;
@@ -1631,8 +1632,8 @@ class THistPainter extends ObjectPainter {
    /** @summary Method used to update functions which are prepared before
      * @return {Promise} fulfilled when drawing is ready */
    async updateFunctions() {
-      const res = this._funcHandler?.drawNext(0) ?? this;
-      delete this._funcHandler;
+      const res = this.#funcs_handler?.drawNext(0) ?? this;
+      this.#funcs_handler = undefined;
       return res;
    }
 
@@ -2169,11 +2170,6 @@ class THistPainter extends ObjectPainter {
           pal_painter = pp?.findPainterFor(pal);
 
       const found_in_func = Boolean(pal);
-
-      if (this._can_move_colz) {
-         delete this._can_move_colz;
-         if (!can_move) can_move = true;
-      }
 
       if (!pal_painter && !pal && !this.options.Axis) {
          pal_painter = pp?.findPainterFor(undefined, undefined, clTPaletteAxis);

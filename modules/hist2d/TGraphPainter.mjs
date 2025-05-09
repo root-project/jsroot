@@ -26,6 +26,7 @@ class TGraphPainter extends ObjectPainter {
 
    #redraw_hist; // indicate that histogram need to be redrawn
    #auto_exec; // can be reused when sending option back to server
+   #funcs_handler; // special instance for functions drawing
 
    constructor(dom, graph) {
       super(dom, graph);
@@ -66,8 +67,8 @@ class TGraphPainter extends ObjectPainter {
       }
 
       return promise.then(() => this.drawGraph()).then(() => {
-         const res = this._funcHandler?.drawNext(0) ?? this;
-         delete this._funcHandler;
+         const res = this.#funcs_handler?.drawNext(0) ?? this;
+         this.#funcs_handler = undefined;
          return res;
       });
    }
@@ -1497,7 +1498,7 @@ class TGraphPainter extends ObjectPainter {
          }
       }
 
-      this._funcHandler = new FunctionsHandler(this, this.getPadPainter(), new_funcs);
+      this.#funcs_handler = new FunctionsHandler(this, this.getPadPainter(), new_funcs);
 
       return true;
    }

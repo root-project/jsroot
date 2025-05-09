@@ -534,6 +534,7 @@ class TH2Painter extends THistPainter {
    #projection_kind;  // kind of enabled histogram projection
    #projection_widthX; // X width of projection
    #projection_widthY; // Y width of projection
+   #can_move_colz; // temporary flag for readjust palette positions
 
    /** @summary constructor
      * @param {object} histo - histogram object */
@@ -821,7 +822,7 @@ class TH2Painter extends THistPainter {
          this.options.Scat = !this.options.Color;
       }
 
-      this._can_move_colz = true; // indicate that next redraw can move Z scale
+      this.#can_move_colz = true; // indicate that next redraw can move Z scale
 
       this.copyOptionsToOthers();
 
@@ -3509,7 +3510,8 @@ class TH2Painter extends THistPainter {
       const need_palette = this.options.Zscale && this.options.canHavePalette() && this.isUseFrame();
 
       // draw new palette, resize frame if required
-      return this.drawColorPalette(need_palette, true).then(async pp => {
+      return this.drawColorPalette(need_palette, true, this.#can_move_colz).then(async pp => {
+         this.#can_move_colz = undefined;
          let pr;
          if (this.options.Circular && this.isMainPainter())
             pr = this.drawBinsCircular();

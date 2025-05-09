@@ -19,6 +19,7 @@ class TMultiGraphPainter extends ObjectPainter {
 
    #firstpainter; // first painter
    #painters; // array of sub-painters
+   #funcs_handler; // special instance for functions drawing
 
    /** @summary Create painter
      * @param {object|string} dom - DOM element for drawing or element id
@@ -61,7 +62,7 @@ class TMultiGraphPainter extends ObjectPainter {
             isany = true;
       }
 
-      this._funcHandler = new FunctionsHandler(this, pp, obj.fFunctions);
+      this.#funcs_handler = new FunctionsHandler(this, pp, obj.fFunctions);
 
       return isany;
    }
@@ -78,8 +79,8 @@ class TMultiGraphPainter extends ObjectPainter {
             };
 
       return promise.then(() => redrawNext(0)).then(() => {
-         const res = this._funcHandler?.drawNext(0) ?? this;
-         delete this._funcHandler;
+         const res = this.#funcs_handler?.drawNext(0) ?? this;
+         this.#funcs_handler = undefined;
          return res;
       });
    }
