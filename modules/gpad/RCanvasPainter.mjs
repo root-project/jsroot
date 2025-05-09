@@ -21,11 +21,14 @@ import { addDragHandler } from './TFramePainter.mjs';
 class RCanvasPainter extends RPadPainter {
 
    #websocket; // WebWindow handle used for communication with server
+   #changed_layout; // modified layout
+   #submreq;  // submitted requests
 
    /** @summary constructor */
    constructor(dom, canvas, opt) {
       super(dom, canvas, opt, true);
       this.#websocket = null;
+      this.#submreq = {};
       this.tooltip_allowed = settings.Tooltip;
       this.v7canvas = true;
    }
@@ -33,11 +36,11 @@ class RCanvasPainter extends RPadPainter {
    /** @summary Cleanup canvas painter */
    cleanup() {
       this.#websocket = undefined;
-      delete this._submreq;
+      this.#submreq = {};
 
-     if (this._changed_layout)
+      if (this.#changed_layout)
          this.setLayoutKind('simple');
-      delete this._changed_layout;
+      this.#changed_layout = undefined;
 
       super.cleanup();
    }
@@ -65,7 +68,7 @@ class RCanvasPainter extends RPadPainter {
          if (!kind) kind = 'simple';
          origin.property('layout', kind);
          origin.property('layout_selector', (kind !== 'simple') && main_selector ? main_selector : null);
-         this._changed_layout = (kind !== 'simple'); // use in cleanup
+         this.#changed_layout = (kind !== 'simple'); // use in cleanup
       }
    }
 
@@ -405,8 +408,7 @@ class RCanvasPainter extends RPadPainter {
          req._method = method;
          req._tm = new Date().getTime();
 
-         if (!this._submreq) this._submreq = {};
-         this._submreq[req.reqid] = req; // fast access to submitted requests
+         this.#submreq[req.reqid] = req; // fast access to submitted requests
       }
 
       this.sendWebsocket('REQ:' + msg);
@@ -445,13 +447,13 @@ class RCanvasPainter extends RPadPainter {
    /** @summary Process reply from request to RDrawable */
    processDrawableReply(msg) {
       const reply = parse(msg);
-      if (!reply || !reply.reqid || !this._submreq) return false;
+      if (!reply?.reqid) return false;
 
-      const req = this._submreq[reply.reqid];
+      const req = this.#submreq[reply.reqid];
       if (!req) return false;
 
       // remove reference first
-      delete this._submreq[reply.reqid];
+      this.#submreq[reply.reqid] = undefined;
 
       // remove blocking reference for that kind
       if (req._kind && req._painter?._requests) {

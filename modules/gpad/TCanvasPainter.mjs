@@ -35,6 +35,7 @@ function directDrawTFrame(dom, obj, opt) {
 class TCanvasPainter extends TPadPainter {
 
    #websocket; // WebWindow handle used for communication with server
+   #changed_layout; // modified layout
 
    /** @summary Constructor */
    constructor(dom, canvas, opt, kind = true) {
@@ -45,16 +46,14 @@ class TCanvasPainter extends TPadPainter {
 
    /** @summary Cleanup canvas painter */
    cleanup() {
-      if (this._changed_layout)
+      if (this.#changed_layout)
          this.setLayoutKind('simple');
-      delete this._changed_layout;
+      this.#changed_layout = undefined;
       super.cleanup();
    }
 
    /** @summary Returns canvas name */
-   getCanvasName() {
-      return this.getObjectName();
-   }
+   getCanvasName() { return this.getObjectName(); }
 
    /** @summary Returns layout kind */
    getLayoutKind() {
@@ -71,7 +70,7 @@ class TCanvasPainter extends TPadPainter {
          if (!kind) kind = 'simple';
          origin.property('layout', kind);
          origin.property('layout_selector', (kind !== 'simple') && main_selector ? main_selector : null);
-         this._changed_layout = (kind !== 'simple'); // use in cleanup
+         this.#changed_layout = (kind !== 'simple'); // use in cleanup
       }
    }
 
