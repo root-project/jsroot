@@ -32,12 +32,12 @@ class RPadPainter extends RObjectPainter {
    #fixed_size;  // fixed size flag
 
    /** @summary constructor */
-   constructor(dom, pad, iscan) {
+   constructor(dom, pad, iscan = false) {
       super(dom, pad, '', 'pad');
       this.pad = pad;
       this.iscan = iscan; // indicate if working with canvas
       this.this_pad_name = '';
-      if (!this.iscan && (pad !== null)) {
+      if (!iscan && (pad !== null)) {
          if (pad.fObjectID)
             this.this_pad_name = 'pad' + pad.fObjectID; // use objectid as pad name
          else
@@ -61,7 +61,7 @@ class RPadPainter extends RObjectPainter {
       if (isBatchMode())
          return true;
 
-      if (!this.iscan && this.has_canvas)
+      if (!this.isCanvas() && this.has_canvas)
          return this.getCanvPainter()?.isBatchMode();
 
       return false;
@@ -113,10 +113,10 @@ class RPadPainter extends RObjectPainter {
       const svg_p = this.svg_this_pad();
       if (!svg_p.empty()) {
          svg_p.property('pad_painter', null);
-         if (!this.iscan) svg_p.remove();
+         if (!this.isCanvas()) svg_p.remove();
       }
 
-      const cp = this.iscan || !this.has_canvas ? this : this.getCanvPainter();
+      const cp = this.isCanvas() || !this.has_canvas ? this : this.getCanvPainter();
       if (cp) delete cp.pads_cache;
 
       this.#main_painter_ref = undefined;
@@ -371,10 +371,11 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary method redirect call to pad events receiver */
    selectObjectPainter(painter, pos) {
-      const istoppad = (this.iscan || !this.has_canvas),
-          canp = istoppad ? this : this.getCanvPainter();
+      const istoppad = this.isCanvas() || !this.has_canvas,
+            canp = istoppad ? this : this.getCanvPainter();
 
-      if (painter === undefined) painter = this;
+      if (painter === undefined)
+         painter = this;
 
       if (pos && !istoppad)
          pos = getAbsPosInCanvas(this.svg_this_pad(), pos);
@@ -564,7 +565,7 @@ class RPadPainter extends RObjectPainter {
       const svg_can = this.getCanvSvg(),
             pad_enlarged = svg_can.property('pad_enlarged');
 
-      if (this.iscan || !this.has_canvas || (!pad_enlarged && !this.hasObjectsToDraw() && !this.painters)) {
+      if (this.isCanvas() || !this.has_canvas || (!pad_enlarged && !this.hasObjectsToDraw() && !this.painters)) {
          if (this.#fixed_size) return; // canvas cannot be enlarged in such mode
          if (!this.enlargeMain(is_escape ? false : 'toggle')) return;
          if (this.enlargeMain('state') === 'off')
@@ -752,7 +753,7 @@ class RPadPainter extends RObjectPainter {
      * @private */
    async drawPrimitives(indx) {
       if (indx === undefined) {
-         if (this.iscan)
+         if (this.isCanvas())
             this._start_tm = new Date().getTime();
 
          // set number of primitives
@@ -822,7 +823,7 @@ class RPadPainter extends RObjectPainter {
    /** @summary Fill pad context menu
      * @private */
    fillContextMenu(menu) {
-      const clname = this.iscan ? 'RCanvas' : 'RPad';
+      const clname = this.isCanvas() ? 'RCanvas' : 'RPad';
 
       menu.header(clname, `${urlClassPrefix}ROOT_1_1Experimental_1_1${clname}.html`);
 
@@ -831,7 +832,7 @@ class RPadPainter extends RObjectPainter {
       if (!this.isCanvas(true)) {
          // if not online canvas
          menu.addAttributesMenu(this);
-         if (this.iscan) {
+         if (this.isCanvas()) {
             menu.addSettingsMenu(false, false, arg => {
                if (arg === 'dark') this.changeDarkMode();
             });
@@ -849,11 +850,11 @@ class RPadPainter extends RObjectPainter {
       }
 
       if (this.enlargeMain() || (this.has_canvas && this.hasObjectsToDraw()))
-         menu.addchk((this.enlargeMain('state') === 'on'), 'Enlarge ' + (this.iscan ? 'canvas' : 'pad'), () => this.enlargePad());
+         menu.addchk((this.enlargeMain('state') === 'on'), 'Enlarge ' + (this.isCanvas() ? 'canvas' : 'pad'), () => this.enlargePad());
 
-      const fname = this.this_pad_name || (this.iscan ? 'canvas' : 'pad');
+      const fname = this.this_pad_name || (this.isCanvas() ? 'canvas' : 'pad');
       menu.sub('Save as');
-      ['svg', 'png', 'jpeg', 'pdf', 'webp'].forEach(fmt => menu.add(`${fname}.${fmt}`, () => this.saveAs(fmt, this.iscan, `${fname}.${fmt}`)));
+      ['svg', 'png', 'jpeg', 'pdf', 'webp'].forEach(fmt => menu.add(`${fname}.${fmt}`, () => this.saveAs(fmt, this.isCanvas(), `${fname}.${fmt}`)));
       menu.endsub();
 
       return true;
@@ -910,7 +911,7 @@ class RPadPainter extends RObjectPainter {
       };
 
       return sync_promise.then(() => {
-         if (this.iscan)
+         if (this.isCanvas())
             this.createCanvasSvg(2);
           else
             showsubitems = this.createPadSvg(true);
@@ -950,7 +951,8 @@ class RPadPainter extends RObjectPainter {
       if (this._ignore_resize)
          return false;
 
-      if (!this.iscan && this.has_canvas) return false;
+      if (!this.isCanvas() && this.has_canvas)
+         return false;
 
       const sync_promise = this.syncDraw('canvas_resize');
       if (sync_promise === false) return false;
@@ -975,7 +977,7 @@ class RPadPainter extends RObjectPainter {
       return sync_promise.then(() => {
          changed = this.createCanvasSvg(force ? 2 : 1, size);
 
-         if (changed && this.iscan && this.pad && this.online_canvas && !this.embed_canvas && !this.isBatchMode()) {
+         if (changed && this.isCanvas() && this.pad && this.online_canvas && !this.embed_canvas && !this.isBatchMode()) {
             if (this._resize_tmout)
                clearTimeout(this._resize_tmout);
             this._resize_tmout = setTimeout(() => {
@@ -999,12 +1001,13 @@ class RPadPainter extends RObjectPainter {
    /** @summary update RPad object
      * @private */
    updateObject(obj) {
-      if (!obj) return false;
+      if (!obj)
+         return false;
 
       this.pad.fStyle = obj.fStyle;
       this.pad.fAttr = obj.fAttr;
 
-      if (this.iscan) {
+      if (this.isCanvas()) {
          this.pad.fTitle = obj.fTitle;
          this.pad.fWinSize = obj.fWinSize;
       } else {
@@ -1014,7 +1017,6 @@ class RPadPainter extends RObjectPainter {
 
       return true;
    }
-
 
    /** @summary Add object painter to list of primitives
      * @private */
@@ -1244,7 +1246,7 @@ class RPadPainter extends RObjectPainter {
          this.assignObject(snap);
          this.pad = snap;
 
-         if (this.isBatchMode() && this.iscan)
+         if (this.isBatchMode() && this.isCanvas())
              this.#fixed_size = true;
 
          const mainid = this.selectDom().attr('id');
@@ -1270,7 +1272,7 @@ class RPadPainter extends RObjectPainter {
       this.updateObject(snap);
 
       // apply all changes in the object (pad or canvas)
-      if (this.iscan)
+      if (this.isCanvas())
          this.createCanvasSvg(2);
        else
          this.createPadSvg(true);
@@ -1394,7 +1396,7 @@ class RPadPainter extends RObjectPainter {
      * @desc Used from context menu */
    saveAs(kind, full_canvas, filename) {
       if (!filename)
-         filename = (this.this_pad_name || (this.iscan ? 'canvas' : 'pad')) + '.' + kind;
+         filename = (this.this_pad_name || (this.isCanvas() ? 'canvas' : 'pad')) + '.' + kind;
 
       this.produceImage(full_canvas, kind).then(imgdata => {
          if (!imgdata)
@@ -1546,10 +1548,7 @@ class RPadPainter extends RObjectPainter {
          return createMenu(evnt, this).then(menu => {
             menu.header('Menus');
 
-            if (this.iscan)
-               menu.add('Canvas', 'pad', this.itemContextMenu);
-            else
-               menu.add('Pad', 'pad', this.itemContextMenu);
+            menu.add(this.isCanvas() ? 'Canvas' : 'Pad', 'pad', this.itemContextMenu);
 
             if (this.getFramePainter())
                menu.add('Frame', 'frame', this.itemContextMenu);
@@ -1614,7 +1613,7 @@ class RPadPainter extends RObjectPainter {
 
       this._buttons.push({ btn, tooltip, funcname, keyname });
 
-      const iscan = this.iscan || !this.has_canvas;
+      const iscan = this.isCanvas() || !this.has_canvas;
       if (!iscan && (funcname.indexOf('Pad') !== 0) && (funcname !== 'enlargePad')) {
          const cp = this.getCanvPainter();
          if (cp && (cp !== this)) cp.addPadButton(btn, tooltip, funcname);
@@ -1624,12 +1623,12 @@ class RPadPainter extends RObjectPainter {
    /** @summary Add buttons for pad or canvas
      * @private */
    addPadButtons(is_online) {
-      this.addPadButton('camera', 'Create PNG', this.iscan ? 'CanvasSnapShot' : 'PadSnapShot', 'Ctrl PrintScreen');
+      this.addPadButton('camera', 'Create PNG', this.isCanvas() ? 'CanvasSnapShot' : 'PadSnapShot', 'Ctrl PrintScreen');
 
       if (settings.ContextMenu)
          this.addPadButton('question', 'Access context menus', 'PadContextMenus');
 
-      const add_enlarge = !this.iscan && this.has_canvas && this.hasObjectsToDraw();
+      const add_enlarge = !this.isCanvas() && this.has_canvas && this.hasObjectsToDraw();
 
       if (add_enlarge || this.enlargeMain('verify'))
          this.addPadButton('circle', 'Enlarge canvas', 'enlargePad');
