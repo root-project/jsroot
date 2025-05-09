@@ -15,10 +15,6 @@ class TScatterPainter extends TGraphPainter {
 
    #color_palette; // color palette
 
-   constructor(dom, obj) {
-      super(dom, obj);
-   }
-
    /** @summary Cleanup painter */
    cleanup() {
       this.clearHistPalette();
