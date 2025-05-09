@@ -120,7 +120,7 @@ const PadButtonsHandler = {
       group.selectAll('*').remove();
       if (!this._buttons) return;
 
-      const iscan = this.isCanvas() || !this.has_canvas, y = 0;
+      const istop = this.isTopPad(), y = 0;
       let ctrl, x = group.property('leftside') ? this.getButtonSize(1.25) : 0;
 
       if (this._fast_drawing) {
@@ -145,7 +145,7 @@ const PadButtonsHandler = {
                btn = ToolbarIcons.circle;
 
             const svg = ToolbarIcons.createSVG(group, btn, this.getButtonSize(),
-                        item.tooltip + (iscan ? '' : (` on pad ${this.this_pad_name}`)) + (item.keyname ? ` (keyshortcut ${item.keyname})` : ''), false);
+                        item.tooltip + (istop ? '' : (` on pad ${this.this_pad_name}`)) + (item.keyname ? ` (keyshortcut ${item.keyname})` : ''), false);
 
             if (group.property('vertical'))
                svg.attr('x', y).attr('y', x);
@@ -226,6 +226,7 @@ class TPadPainter extends ObjectPainter {
    #auto_color_cnt; // counter used in assigning auto colors
    #auto_palette; // palette for creating of automatic colors
    #fixed_size; // fixed size flag
+   #has_canvas; // indicate if top canvas painter exists
 
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -246,7 +247,7 @@ class TPadPainter extends ObjectPainter {
             this.this_pad_name = 'jsroot_pad_' + internals.id_counter++;
       }
       this.painters = []; // complete list of all painters in the pad
-      this.has_canvas = true;
+      this.#has_canvas = true;
       this.forEachPainter = this.forEachPainterInPad;
       const d = this.selectDom();
       if (!d.empty() && d.property('_batch_mode'))
@@ -258,7 +259,7 @@ class TPadPainter extends ObjectPainter {
       if (add_to_primitives) {
          if ((add_to_primitives !== 'webpad') && this.getCanvSvg().empty()) {
             // one can draw pad without canvas
-            this.has_canvas = false;
+            this.#has_canvas = false;
             this.this_pad_name = '';
             this.setTopPainter();
          } else {
@@ -280,10 +281,7 @@ class TPadPainter extends ObjectPainter {
       if (isBatchMode())
          return true;
 
-      if (!this.isCanvas() && this.has_canvas)
-         return this.getCanvPainter()?.isBatchMode();
-
-      return false;
+      return this.isTopPad() ? false : this.getCanvPainter()?.isBatchMode();
    }
 
    /** @summary Indicates that is is Root6 pad painter
@@ -308,6 +306,9 @@ class TPadPainter extends ObjectPainter {
          return isFunc(this.getWebsocket) && this.getWebsocket();
       return isStr(is_online) ? this.iscan === is_online : true;
    }
+
+   /** @summary Returns true if it is canvas or top pad without canvas */
+   isTopPad() { return this.isCanvas() || !this.#has_canvas; }
 
    /** @summary Returns SVG element for the pad itself
     * @private */
@@ -342,7 +343,7 @@ class TPadPainter extends ObjectPainter {
 
       this.#main_painter_ref = undefined;
       this.#frame_painter_ref = undefined;
-      const cp = this.isCanvas() || !this.has_canvas ? this : this.getCanvPainter();
+      const cp = this.isTopPad() ? this : this.getCanvPainter();
       if (cp) delete cp.pads_cache;
       this.#pad_x = this.#pad_y = this.#pad_width = this.#pad_height = undefined;
       this.#doing_draw = undefined;
@@ -354,7 +355,7 @@ class TPadPainter extends ObjectPainter {
       this.painters = [];
       this.pad = null;
       this.this_pad_name = undefined;
-      this.has_canvas = false;
+      this.#has_canvas = false;
 
       selectActivePad({ pp: this, active: false });
 
@@ -587,13 +588,12 @@ class TPadPainter extends ObjectPainter {
 
    /** @summary method redirect call to pad events receiver */
    selectObjectPainter(painter, pos) {
-      const istoppad = this.isCanvas() || !this.has_canvas,
-            canp = istoppad ? this : this.getCanvPainter();
+      const canp = this.isTopPad() ? this : this.getCanvPainter();
 
       if (painter === undefined)
          painter = this;
 
-      if (pos && !istoppad)
+      if (pos && !this.isTopPad())
          pos = getAbsPosInCanvas(this.svg_this_pad(), pos);
 
       selectActivePad({ pp: this, active: true });
@@ -865,7 +865,7 @@ class TPadPainter extends ObjectPainter {
 
    /** @summary Return true if this pad enlarged */
    isPadEnlarged() {
-      if (this.isCanvas() || !this.has_canvas)
+      if (this.isTopPad())
          return this.enlargeMain('state') === 'on';
       return this.getCanvSvg().property('pad_enlarged') === this.pad;
    }
@@ -882,7 +882,7 @@ class TPadPainter extends ObjectPainter {
       const svg_can = this.getCanvSvg(),
             pad_enlarged = svg_can.property('pad_enlarged');
 
-      if (this.isCanvas() || !this.has_canvas || (!pad_enlarged && !this.hasObjectsToDraw() && !this.painters)) {
+      if (this.isTopPad() || (!pad_enlarged && !this.hasObjectsToDraw() && !this.painters)) {
          if (this.#fixed_size)
             return; // canvas cannot be enlarged in such mode
          if (!this.enlargeMain(is_escape ? false : 'toggle')) return;
@@ -906,7 +906,7 @@ class TPadPainter extends ObjectPainter {
    /** @summary Create main SVG element for pad
      * @return true when pad is displayed and all its items should be redrawn */
    createPadSvg(only_resize) {
-      if (!this.has_canvas) {
+      if (this.isTopPad()) {
          this.createCanvasSvg(only_resize ? 2 : 0);
          return true;
       }
@@ -1084,7 +1084,7 @@ class TPadPainter extends ObjectPainter {
    /** @summary Disable pad drawing
      * @desc Complete SVG element will be hidden */
    disablePadDrawing() {
-      if (!this.pad_draw_disabled && this.has_canvas && !this.isCanvas()) {
+      if (!this.pad_draw_disabled && !this.isTopPad()) {
          this.pad_draw_disabled = true;
          this.createPadSvg(true);
       }
@@ -1488,7 +1488,7 @@ class TPadPainter extends ObjectPainter {
             menu.addchk(this.hasEventStatus(), 'Event status', () => this.activateStatusBar('toggle'));
       }
 
-      if (this.enlargeMain() || (this.has_canvas && this.hasObjectsToDraw()))
+      if (this.enlargeMain() || (!this.isTopPad() && this.hasObjectsToDraw()))
          menu.addchk(this.isPadEnlarged(), 'Enlarge ' + (this.isCanvas() ? 'canvas' : 'pad'), () => this.enlargePad());
 
       const fname = this.this_pad_name || (this.isCanvas() ? 'canvas' : 'pad');
@@ -1587,10 +1587,7 @@ class TPadPainter extends ObjectPainter {
    /** @summary Check resize of canvas
      * @return {Promise} with result or false */
    checkCanvasResize(size, force) {
-      if (this._ignore_resize)
-         return false;
-
-      if (!this.isCanvas() && this.has_canvas)
+      if (this._ignore_resize || !this.isTopPad())
          return false;
 
       const sync_promise = this.syncDraw('canvas_resize');
@@ -2584,8 +2581,7 @@ class TPadPainter extends ObjectPainter {
 
       this._buttons.push({ btn, tooltip, funcname, keyname });
 
-      const iscan = this.isCanvas() || !this.has_canvas;
-      if (!iscan && (funcname.indexOf('Pad') !== 0) && (funcname !== 'enlargePad')) {
+      if (!this.isTopPad() && (funcname.indexOf('Pad') !== 0) && (funcname !== 'enlargePad')) {
          const cp = this.getCanvPainter();
          if (cp && (cp !== this))
             cp.addPadButton(btn, tooltip, funcname);
@@ -2610,7 +2606,7 @@ class TPadPainter extends ObjectPainter {
       if (settings.ContextMenu)
          this.addPadButton('question', 'Access context menus', 'PadContextMenus');
 
-      const add_enlarge = !this.isCanvas() && this.has_canvas && this.hasObjectsToDraw();
+      const add_enlarge = !this.isTopPad() && this.hasObjectsToDraw();
 
       if (add_enlarge || this.enlargeMain('verify'))
          this.addPadButton('circle', 'Enlarge canvas', 'enlargePad');
@@ -2698,7 +2694,7 @@ class TPadPainter extends ObjectPainter {
 
       painter.createPadSvg();
 
-      if (painter.matchObjectType(clTPad) && (!painter.has_canvas || painter.hasObjectsToDraw()))
+      if (painter.matchObjectType(clTPad) && (painter.isTopPad() || painter.hasObjectsToDraw()))
          painter.addPadButtons();
 
       // set active pad
