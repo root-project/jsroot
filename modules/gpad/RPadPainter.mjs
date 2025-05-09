@@ -129,9 +129,6 @@ class RPadPainter extends RObjectPainter {
          if (!this.isCanvas()) svg_p.remove();
       }
 
-      const cp = this.isTopPad() ? this : this.getCanvPainter();
-      if (cp) delete cp.pads_cache;
-
       this.#main_painter_ref = undefined;
       this.#frame_painter_ref = undefined;
       this.#pad_x = this.#pad_y = this.#pad_width = this.#pad_height = undefined;
@@ -1325,7 +1322,6 @@ class RPadPainter extends RObjectPainter {
          missmatch = true;
 
       if (missmatch) {
-         delete this.pads_cache;
          const old_painters = this.painters;
          this.painters = [];
          old_painters.forEach(objp => objp.cleanup());

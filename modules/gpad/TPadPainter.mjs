@@ -343,8 +343,6 @@ class TPadPainter extends ObjectPainter {
 
       this.#main_painter_ref = undefined;
       this.#frame_painter_ref = undefined;
-      const cp = this.isTopPad() ? this : this.getCanvPainter();
-      if (cp) delete cp.pads_cache;
       this.#pad_x = this.#pad_y = this.#pad_width = this.#pad_height = undefined;
       this.#doing_draw = undefined;
       delete this._interactively_changed;
@@ -2098,7 +2096,6 @@ class TPadPainter extends ObjectPainter {
       }
 
       if (missmatch) {
-         delete this.pads_cache; // invalidate pads cache
          const old_painters = this.painters;
          this.painters = [];
          old_painters.forEach(objp => objp.cleanup());

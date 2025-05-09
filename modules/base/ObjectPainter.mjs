@@ -392,17 +392,7 @@ class ObjectPainter extends BasePainter {
       if (!pad_name || c.empty())
          return c;
 
-      const cp = c.property('pad_painter');
-      if (cp?.pads_cache && cp.pads_cache[pad_name])
-         return d3_select(cp.pads_cache[pad_name]);
-
-      c = c.select('.primitives_layer .__root_pad_' + pad_name);
-      if (cp) {
-         if (!cp.pads_cache)
-            cp.pads_cache = {};
-         cp.pads_cache[pad_name] = c.node();
-      }
-      return c;
+      return c.select('.primitives_layer .__root_pad_' + pad_name);
    }
 
    /** @summary Assign secondary id
