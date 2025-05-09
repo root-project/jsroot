@@ -36,16 +36,16 @@ class ObjectPainter extends BasePainter {
      * @param {object} obj - object to draw
      * @param {string} [opt] - object draw options */
    constructor(dom, obj, opt) {
-      let pp = null;
-      if (isFunc(dom?.forEachPainterInPad) && (dom?.this_pad_name !== undefined)) {
-         pp = dom;
-         dom = pp.getDom();
+      let pad_name = '';
+      if (isFunc(dom?.forEachPainterInPad)) {
+         pad_name = dom.this_pad_name;
+         dom = dom.getDom();
       }
 
       super(dom);
 
       // this.draw_g = undefined; // container for all drawn objects
-      this.setPadName(pp?.this_pad_name ?? ''); // name of pad where object is drawn
+      this.setPadName(pad_name); // name of pad where object is drawn
       this.assignObject(obj);
       if (isStr(opt))
          this.options = { original: opt };
@@ -53,9 +53,7 @@ class ObjectPainter extends BasePainter {
 
    /** @summary Assign object to the painter
      * @protected */
-   assignObject(obj) {
-      this.#draw_object = isObject(obj) ? obj : null;
-   }
+   assignObject(obj) { this.#draw_object = isObject(obj) ? obj : null; }
 
    /** @summary Returns drawn object */
    getObject() { return this.#draw_object; }
