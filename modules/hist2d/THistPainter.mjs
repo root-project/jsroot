@@ -892,6 +892,7 @@ class THistPainter extends ObjectPainter {
    #doing_redraw_palette; // set during redrawing of palette
    #ignore_frame; // true when drawing without frame functionality
    #color_palette;  // color palette used in histogram
+   #auto_exec; // can be reused when sending option back to server
 
    /** @summary Constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -1034,10 +1035,10 @@ class THistPainter extends ObjectPainter {
          const pp = this.getPadPainter();
          if (isFunc(pp?.getAutoColor)) {
             const icolor = pp.getAutoColor(histo.$num_histos);
-            this._auto_exec = ''; // can be reused when sending option back to server
-            if (o._pfc > 1) { o._pfc = 1; histo.fFillColor = icolor; this._auto_exec += `SetFillColor(${icolor});;`; delete this.fillatt; }
-            if (o._plc > 1) { o._plc = 1; histo.fLineColor = icolor; this._auto_exec += `SetLineColor(${icolor});;`; delete this.lineatt; }
-            if (o._pmc > 1) { o._pmc = 1; histo.fMarkerColor = icolor; this._auto_exec += `SetMarkerColor(${icolor});;`; delete this.markeratt; }
+            this.#auto_exec = '';
+            if (o._pfc > 1) { o._pfc = 1; histo.fFillColor = icolor; this.#auto_exec += `SetFillColor(${icolor});;`; delete this.fillatt; }
+            if (o._plc > 1) { o._plc = 1; histo.fLineColor = icolor; this.#auto_exec += `SetLineColor(${icolor});;`; delete this.lineatt; }
+            if (o._pmc > 1) { o._pmc = 1; histo.fMarkerColor = icolor; this.#auto_exec += `SetMarkerColor(${icolor});;`; delete this.markeratt; }
          }
       }
 
@@ -1373,9 +1374,9 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Fill option object used in TWebCanvas */
    fillWebObjectOptions(res) {
-      if (this._auto_exec && res) {
-         res.fcust = 'auto_exec:' + this._auto_exec;
-         delete this._auto_exec;
+      if (this.#auto_exec && res) {
+         res.fcust = 'auto_exec:' + this.#auto_exec;
+         this.#auto_exec = undefined;
       }
    }
 

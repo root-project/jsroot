@@ -25,6 +25,7 @@ const kNotEditable = BIT(18),   // bit set if graph is non editable
 class TGraphPainter extends ObjectPainter {
 
    #redraw_hist; // indicate that histogram need to be redrawn
+   #auto_exec; // can be reused when sending option back to server
 
    constructor(dom, graph) {
       super(dom, graph);
@@ -909,10 +910,10 @@ class TGraphPainter extends ObjectPainter {
          const pp = this.getPadPainter();
          if (isFunc(pp?.getAutoColor)) {
             const icolor = pp.getAutoColor(graph.$num_graphs);
-            this._auto_exec = ''; // can be reused when sending option back to server
-            if (o._pfc > 1) { o._pfc = 1; graph.fFillColor = icolor; this._auto_exec += `SetFillColor(${icolor});;`; delete this.fillatt; }
-            if (o._plc > 1) { o._plc = 1; graph.fLineColor = icolor; this._auto_exec += `SetLineColor(${icolor});;`; delete this.lineatt; }
-            if (o._pmc > 1) { o._pmc = 1; graph.fMarkerColor = icolor; this._auto_exec += `SetMarkerColor(${icolor});;`; delete this.markeratt; }
+            this.#auto_exec = ''; // can be reused when sending option back to server
+            if (o._pfc > 1) { o._pfc = 1; graph.fFillColor = icolor; this.#auto_exec += `SetFillColor(${icolor});;`; delete this.fillatt; }
+            if (o._plc > 1) { o._plc = 1; graph.fLineColor = icolor; this.#auto_exec += `SetLineColor(${icolor});;`; delete this.lineatt; }
+            if (o._pmc > 1) { o._pmc = 1; graph.fMarkerColor = icolor; this.#auto_exec += `SetMarkerColor(${icolor});;`; delete this.markeratt; }
          }
       }
 
@@ -1380,9 +1381,9 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Fill option object used in TWebCanvas */
    fillWebObjectOptions(res) {
-      if (this._auto_exec && res) {
-         res.fcust = 'auto_exec:' + this._auto_exec;
-         delete this._auto_exec;
+      if (this.#auto_exec && res) {
+         res.fcust = 'auto_exec:' + this.#auto_exec;
+         this.#auto_exec = undefined;
       }
    }
 
