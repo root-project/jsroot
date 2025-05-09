@@ -527,7 +527,7 @@ class TooltipHandler extends ObjectPainter {
       }
 
       let frame_shift = { x: 0, y: 0 }, trans = frame_rect.transform || '';
-      if (!pp.iscan) {
+      if (!pp?.isCanvas()) {
          frame_shift = getAbsPosInCanvas(this.getPadSvg(), frame_shift);
          trans = `translate(${frame_shift.x},${frame_shift.y}) ${trans}`;
       }
@@ -2376,7 +2376,7 @@ class TFramePainter extends FrameInteractive {
             this.createAttFill({ pattern: gStyle.fFrameFillStyle, color: gStyle.fFrameFillColor });
 
          // force white color for the canvas frame
-         if (!tframe && this.fillatt.empty() && pp?.iscan)
+         if (!tframe && this.fillatt.empty() && pp?.isCanvas())
             this.fillatt.setSolidColor('white');
          else if ((pad?.fFillStyle === 4000) && !this.fillatt.empty()) // special case of transpad.C macro, which set transparent pad
             this.fillatt.setOpacity(0);

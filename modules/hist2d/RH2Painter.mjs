@@ -107,7 +107,7 @@ class RH2Painter extends RHistPainter {
 
    /** @summary Fill histogram context menu */
    fillHistContextMenu(menu) {
-      if (this.getPadPainter()?.iscan) {
+      if (this.getPadPainter()?.isCanvas()) {
          let kind = this.#projection_kind || '';
          if (kind) kind += this.#projection_widthX;
          if ((this.#projection_widthX !== this.#projection_widthY) && (this.#projection_kind === 'XY'))

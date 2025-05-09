@@ -745,7 +745,7 @@ class TH2Painter extends THistPainter {
 
    /** @summary Fill histogram context menu */
    fillHistContextMenu(menu) {
-      if (!this.isTH2Poly() && this.getPadPainter()?.iscan) {
+      if (!this.isTH2Poly() && this.getPadPainter()?.isCanvas()) {
          let kind = this.#projection_kind || '';
          if (kind) kind += this.#projection_widthX;
          if ((this.#projection_widthX !== this.#projection_widthY) && (this.#projection_kind === 'XY'))
