@@ -26,6 +26,7 @@ class ObjectPainter extends BasePainter {
    #user_tooltip_handler; // configured user tooltip handler
    #user_tooltip_timeout; // timeout configured with tooltip handler
    #special_draw_area; // current special draw area like projection
+   #root_colors;     // custom colors list
 
    /** @summary constructor
      * @param {object|string} dom - dom element or identifier or pad painter
@@ -105,7 +106,7 @@ class ObjectPainter extends BasePainter {
       delete this.fillatt;
       delete this.lineatt;
       delete this.markeratt;
-      delete this._root_colors;
+      this.#root_colors = undefined;
       delete this.options;
       this.#options_store = undefined;
 
@@ -249,30 +250,36 @@ class ObjectPainter extends BasePainter {
       return this.getObjectName() || this.getClassName() || '';
    }
 
+   /** @summary Set colors list
+    * @protected */
+   setColors(lst) { this.#root_colors = lst; }
+
+   /** @summary Return colors list
+    * @protected */
+   getColors(force) {
+      if (!this.#root_colors && force)
+         this.setColors(this.getCanvPainter()?.getColors() || getRootColors());
+      return this.#root_colors;
+   }
+
    /** @summary returns color from current list of colors
      * @desc First checks canvas painter and then just access global list of colors
      * @param {number} indx - color index
      * @return {string} with SVG color name or rgb()
      * @protected */
-   getColor(indx) {
-      if (!this._root_colors)
-         this._root_colors = this.getCanvPainter()?._root_colors || getRootColors();
-
-      return this._root_colors[indx];
-   }
+   getColor(indx) { return this.getColors(true)[indx]; }
 
    /** @summary Add color to list of colors
      * @desc Returned color index can be used as color number in all other draw functions
      * @return {number} new color index
      * @protected */
    addColor(color) {
-      if (!this._root_colors)
-         this._root_colors = this.getCanvPainter()?._root_colors || getRootColors();
-      const indx = this._root_colors.indexOf(color);
+      const lst = this.getColors(true),
+            indx = lst.indexOf(color);
       if (indx >= 0)
          return indx;
-      this._root_colors.push(color);
-      return this._root_colors.length - 1;
+      lst.push(color);
+      return lst.length - 1;
    }
 
    /** @summary returns tooltip allowed flag

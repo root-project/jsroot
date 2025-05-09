@@ -23,8 +23,8 @@ class RCanvasPainter extends RPadPainter {
    #websocket; // WebWindow handle used for communication with server
 
    /** @summary constructor */
-   constructor(dom, canvas) {
-      super(dom, canvas, true);
+   constructor(dom, canvas, opt) {
+      super(dom, canvas, opt, true);
       this.#websocket = null;
       this.tooltip_allowed = settings.Tooltip;
       this.v7canvas = true;
@@ -668,12 +668,12 @@ class RCanvasPainter extends RPadPainter {
    }
 
    /** @summary draw RCanvas object */
-   static async draw(dom, can /* , opt */) {
+   static async draw(dom, can, opt) {
       const nocanvas = !can;
       if (nocanvas)
          can = create(`${nsREX}RCanvas`);
 
-      const painter = new RCanvasPainter(dom, can);
+      const painter = new RCanvasPainter(dom, can, opt);
       painter.createCanvasSvg(0);
 
       selectActivePad({ pp: painter, active: false });
@@ -691,8 +691,8 @@ class RCanvasPainter extends RPadPainter {
 
 /** @summary draw RPadSnapshot object
   * @private */
-function drawRPadSnapshot(dom, snap /* , opt */) {
-   const painter = new RCanvasPainter(dom, null);
+function drawRPadSnapshot(dom, snap, opt) {
+   const painter = new RCanvasPainter(dom, null, opt);
    painter.batch_mode = isBatchMode();
    return painter.syncDraw(true).then(() => painter.redrawPadSnap(snap)).then(() => {
       painter.confirmDraw();

@@ -204,6 +204,7 @@ function createWebObjectOptions(painter) {
 
 class TPadPainter extends ObjectPainter {
 
+   #iscan;      // is canvas flag
    #pad_scale;  // scale factor of the pad
    #pad_x;      // pad x coordinate
    #pad_y;      // pad y coordinate
@@ -231,14 +232,14 @@ class TPadPainter extends ObjectPainter {
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
      * @param {object} pad - TPad object to draw
-     * @param {boolean} [iscan] - if TCanvas object
      * @param {String} [opt] - draw option
+     * @param {boolean} [iscan] - if TCanvas object
      * @param [add_to_primitives] - add pad painter to canvas
      * */
-   constructor(dom, pad, iscan, opt, add_to_primitives) {
+   constructor(dom, pad, opt, iscan, add_to_primitives) {
       super(dom, pad);
       this.pad = pad;
-      this.iscan = iscan; // indicate if working with canvas
+      this.#iscan = iscan; // indicate if working with canvas
       this.this_pad_name = '';
       if (!iscan && pad?.fName) {
          this.this_pad_name = pad.fName.replace(' ', '_'); // avoid empty symbol in pad name
@@ -300,11 +301,11 @@ class TPadPainter extends ObjectPainter {
    /** @summary Returns true if it is canvas
     * @param {Boolean} [is_online = false] - if specified, checked if it is canvas with configured connection to server */
    isCanvas(is_online = false) {
-      if (!this.iscan)
+      if (!this.#iscan)
          return false;
       if (is_online === true)
          return isFunc(this.getWebsocket) && this.getWebsocket();
-      return isStr(is_online) ? this.iscan === is_online : true;
+      return isStr(is_online) ? this.#iscan === is_online : true;
    }
 
    /** @summary Returns true if it is canvas or top pad without canvas */
@@ -650,7 +651,7 @@ class TPadPainter extends ObjectPainter {
    /** @summary Set grayscale mode for the canvas
      * @private */
    setGrayscale(flag) {
-      if (!this.isCanvas())
+      if (!this.isTopPad())
          return;
 
       let changed = false;
@@ -666,7 +667,7 @@ class TPadPainter extends ObjectPainter {
       if (changed)
          this.forEachPainter(p => { if (isFunc(p.clearHistPalette)) p.clearHistPalette(); });
 
-      this._root_colors = flag ? getGrayColors(this.#custom_colors) : this.#custom_colors;
+      this.setColors(flag ? getGrayColors(this.#custom_colors) : this.#custom_colors);
 
       this.#last_grayscale = flag;
 
@@ -1438,8 +1439,8 @@ class TPadPainter extends ObjectPainter {
             if (!arg || !isStr(arg))
                return;
             // delete auto_canvas flag to prevent deletion
-            if (this.iscan === 'auto')
-               this.iscan = true;
+            if (this.#iscan === 'auto')
+               this.#iscan = true;
             this.cleanPrimitives(true);
             if (arg === 'reset')
                return;
@@ -1916,7 +1917,7 @@ class TPadPainter extends ObjectPainter {
 
          subpad.fPrimitives = null; // clear primitives, they just because of I/O
 
-         const padpainter = new TPadPainter(this, subpad, false, snap.fOption, 'webpad');
+         const padpainter = new TPadPainter(this, subpad, snap.fOption, false, 'webpad');
          padpainter.assignSnapId(snap.fObjectID);
          padpainter.is_active_pad = Boolean(snap.fActive); // enforce boolean flag
          padpainter.#readonly = snap.fReadOnly ?? false; // readonly flag
@@ -2687,7 +2688,7 @@ class TPadPainter extends ObjectPainter {
 
    /** @summary draw TPad object */
    static async draw(dom, pad, opt) {
-      const painter = new TPadPainter(dom, pad, false, opt || '', true);
+      const painter = new TPadPainter(dom, pad, opt, false, true);
 
       painter.createPadSvg();
 

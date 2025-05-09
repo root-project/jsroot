@@ -18,6 +18,7 @@ import { PadButtonsHandler, webSnapIds } from './TPadPainter.mjs';
 
 class RPadPainter extends RObjectPainter {
 
+   #iscan;      // is canvas flag
    #pad_scale;  // scaling factor of the pad
    #pad_x;      // pad x coordinate
    #pad_y;      // pad y coordinate
@@ -33,10 +34,10 @@ class RPadPainter extends RObjectPainter {
    #has_canvas;  // when top-level canvas exists
 
    /** @summary constructor */
-   constructor(dom, pad, iscan, opt, add_to_primitives) {
+   constructor(dom, pad, opt, iscan, add_to_primitives) {
       super(dom, pad, '', 'pad');
       this.pad = pad;
-      this.iscan = iscan; // indicate if working with canvas
+      this.#iscan = iscan; // indicate if working with canvas
       this.this_pad_name = '';
       if (!iscan && pad) {
          if (pad.fObjectID)
@@ -90,11 +91,11 @@ class RPadPainter extends RObjectPainter {
    /** @summary Returns true if it is canvas
     * @param {Boolean} [is_online = false] - if specified, checked if it is canvas with configured connection to server */
    isCanvas(is_online = false) {
-      if (!this.iscan)
+      if (!this.#iscan)
          return false;
       if (is_online === true)
          return isFunc(this.getWebsocket) && this.getWebsocket();
-      return isStr(is_online) ? this.iscan === is_online : true;
+      return isStr(is_online) ? this.#iscan === is_online : true;
    }
 
    /** @summary Returns true if it is canvas or top pad without canvas */
@@ -1041,7 +1042,7 @@ class RPadPainter extends RObjectPainter {
    /** @summary Extract properties from TObjectDisplayItem */
    extractTObjectProp(snap) {
       if (snap.fColIndex && snap.fColValue) {
-         const colors = this._root_colors || getRootColors();
+         const colors = this.getColors() || getRootColors();
          for (let k = 0; k < snap.fColIndex.length; ++k)
             colors[snap.fColIndex[k]] = convertColor(snap.fColValue[k]);
        }
@@ -1056,7 +1057,7 @@ class RPadPainter extends RObjectPainter {
 
       const extract_color = (member_name, attr_name) => {
          const col = pattr.v7EvalColor(attr_name, '');
-         if (col) obj[member_name] = addColor(col, this._root_colors);
+         if (col) obj[member_name] = addColor(col, this.getColors());
       };
 
       // handle TAttLine
@@ -1131,7 +1132,7 @@ class RPadPainter extends RObjectPainter {
                   colors[parseInt(name.slice(0, p))] = convertColor(name.slice(p+1));
             }
 
-            this._root_colors = colors;
+            this.setColors(colors);
             // set global list of colors
             // adoptRootColors(ListOfColors);
             return this.drawNextSnap(lst, pindx, indx);
@@ -1178,7 +1179,7 @@ class RPadPainter extends RObjectPainter {
          else if (objpainter.updateObject(snap.fDrawable || snap.fObject || snap, snap.fOption || '', true))
             promise = objpainter.redraw();
       } else if (is_subpad) {
-         const padpainter = new RPadPainter(this, snap, false, '', 'webpad');
+         const padpainter = new RPadPainter(this, snap, '', false, 'webpad');
          padpainter.assignSnapId(snap.fObjectID);
          padpainter.rstyle = snap.fStyle;
 
@@ -1725,7 +1726,7 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary draw RPad object */
    static async draw(dom, pad, opt) {
-      const painter = new RPadPainter(dom, pad, false, opt, true);
+      const painter = new RPadPainter(dom, pad, opt, false, true);
 
       painter.createPadSvg();
 
