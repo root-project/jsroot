@@ -1,5 +1,5 @@
 import { gStyle, settings, browser, constants, internals, addMethods, isPromise, getPromise, postponePromise,
-         isBatchMode, isObject, isFunc, isStr, clTPad, clTFrame, nsREX, nsSVG, urlClassPrefix } from '../core.mjs';
+         isBatchMode, isObject, isFunc, isStr, clTFrame, nsREX, nsSVG, urlClassPrefix } from '../core.mjs';
 import { ColorPalette, addColor, getRootColors, convertColor } from '../base/colors.mjs';
 import { RObjectPainter } from '../base/RObjectPainter.mjs';
 import { prSVG, getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG, makeTranslate, svgToImage } from '../base/BasePainter.mjs';
@@ -98,6 +98,9 @@ class RPadPainter extends RObjectPainter {
          return isFunc(this.getWebsocket) && this.getWebsocket();
       return isStr(is_online) ? this.iscan === is_online : true;
    }
+
+   /** @summary Returns true if it is canvas or top pad without canvas */
+   isTopPad() { return this.isCanvas() || !this.has_canvas; }
 
    /** @summary Returns SVG element for the pad itself
      * @private */
@@ -1734,7 +1737,7 @@ class RPadPainter extends RObjectPainter {
 
       painter.createPadSvg();
 
-      if (painter.matchObjectType(clTPad) && (!painter.has_canvas || painter.hasObjectsToDraw()))
+      if (painter.matchObjectType(nsREX + 'RPad') && (!painter.has_canvas || painter.hasObjectsToDraw()))
          painter.addPadButtons();
 
       selectActivePad({ pp: painter, active: false });
