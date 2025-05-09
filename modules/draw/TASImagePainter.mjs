@@ -1,5 +1,5 @@
 import { create, settings, isNodeJs, isStr, btoa_func, clTAxis, clTPaletteAxis, clTImagePalette, getDocument } from '../core.mjs';
-import { toColor, getColorPalette } from '../base/colors.mjs';
+import { toColor } from '../base/colors.mjs';
 import { assignContextMenu, kNoReorder } from '../gui/menu.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
@@ -336,7 +336,9 @@ class TASImagePainter extends ObjectPainter {
       return false;
    }
 
-   getHistPalette() { return getColorPalette(); }
+   /** @summary Return palette - dummy here
+     * @private */
+   getHistPalette() { return true; }
 
    /** @summary Draw color palette
      * @private */
