@@ -603,7 +603,7 @@ class RPadPainter extends RObjectPainter {
          return true;
       }
 
-      const svg_parent = this.getPadSvg(this.pad_name), // this.pad_name MUST be here to select parent pad
+      const svg_parent = this.getPadSvg(this.getPadName()), // getPadName MUST be here to select parent pad
             svg_can = this.getCanvSvg(),
             width = svg_parent.property('draw_width'),
             height = svg_parent.property('draw_height'),

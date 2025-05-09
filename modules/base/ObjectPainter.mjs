@@ -18,6 +18,7 @@ import { getRootColors } from './colors.mjs';
 
 class ObjectPainter extends BasePainter {
 
+   #pad_name;        // pad name where object is drawn
    #draw_object;     // drawn object
    #main_painter;    // WeakRef to main painter in the pad
    #primary_ref;     // reference of primary painter - if any
@@ -25,6 +26,8 @@ class ObjectPainter extends BasePainter {
    #options_store;   // stored draw options used to check changes
    #user_tooltip_handler; // configured user tooltip handler
    #user_tooltip_timeout; // timeout configured with tooltip handler
+   #user_toottip_handle; // timeout handle processing user tooltip
+   #user_context_menu; // function for user context menu
    #special_draw_area; // current special draw area like projection
    #root_colors;     // custom colors list
 
@@ -42,7 +45,7 @@ class ObjectPainter extends BasePainter {
       super(dom);
 
       // this.draw_g = undefined; // container for all drawn objects
-      this.pad_name = pp?.this_pad_name ?? ''; // name of pad where object is drawn
+      this.setPadName(pp?.this_pad_name ?? ''); // name of pad where object is drawn
       this.assignObject(obj);
       if (isStr(opt))
          this.options = { original: opt };
@@ -60,15 +63,14 @@ class ObjectPainter extends BasePainter {
    /** @summary Assigns pad name where element will be drawn
      * @desc Should happened before first draw of element is performed, only for special use case
      * @param {string} [pad_name] - on which sub-pad element should be draw, if not specified - use current
-     * @protected
-     * @deprecated to be removed in v8 */
+     * @protected */
    setPadName(pad_name) {
       // console.warn('setPadName is deprecated, to be removed in v8');
-      this.pad_name = isStr(pad_name) ? pad_name : '';
+      this.#pad_name = isStr(pad_name) ? pad_name : '';
    }
 
    /** @summary Returns pad name where object is drawn */
-   getPadName() { return this.pad_name || ''; }
+   getPadName() { return this.#pad_name || ''; }
 
    /** @summary Indicates that drawing runs in batch mode
      * @private */
@@ -94,7 +96,7 @@ class ObjectPainter extends BasePainter {
       }
 
       // cleanup all existing references
-      delete this.pad_name;
+      this.#pad_name = undefined;
       this.#main_painter = null;
       this.#draw_object = null;
       delete this.snapid;
@@ -393,7 +395,7 @@ class ObjectPainter extends BasePainter {
      * @protected */
    getPadSvg(pad_name) {
       if (pad_name === undefined)
-         pad_name = this.pad_name;
+         pad_name = this.getPadName();
 
       const c = this.getCanvSvg();
       if (!pad_name || c.empty())
@@ -1368,17 +1370,14 @@ class ObjectPainter extends BasePainter {
      * Function should return promise with menu when items are filled
      * @param {function} fillmenu_func - function to fill custom context menu for object */
    configureUserContextMenu(fillmenu_func) {
-      if (!fillmenu_func || !isFunc(fillmenu_func))
-         delete this._userContextMenuFunc;
-      else
-         this._userContextMenuFunc = fillmenu_func;
+      this.#user_context_menu = isFunc(fillmenu_func) ? fillmenu_func : undefined;
    }
 
    /** @summary Fill object menu in web canvas
      * @private */
    async fillObjectExecMenu(menu, kind) {
-      if (isFunc(this._userContextMenuFunc))
-         return this._userContextMenuFunc(menu, kind);
+      if (isFunc(this.#user_context_menu))
+         return this.#user_context_menu(menu, kind);
 
       const canvp = this.getCanvPainter();
 
@@ -1554,17 +1553,17 @@ class ObjectPainter extends BasePainter {
       if (this.#user_tooltip_timeout <= 0)
          return this.#user_tooltip_handler(data);
 
-      if (this._user_tooltip_handle) {
-         clearTimeout(this._user_tooltip_handle);
-         delete this._user_tooltip_handle;
+      if (this.#user_toottip_handle) {
+         clearTimeout(this.#user_toottip_handle);
+         this.#user_toottip_handle = undefined;
       }
 
       if (!data)
          return this.#user_tooltip_handler(data);
 
       // only after timeout user function will be called
-      this._user_tooltip_handle = setTimeout(() => {
-         delete this._user_tooltip_handle;
+      this.#user_toottip_handle = setTimeout(() => {
+         this.#user_toottip_handle = undefined;
          if (this.#user_tooltip_handler)
             this.#user_tooltip_handler(data);
       }, this.#user_tooltip_timeout);

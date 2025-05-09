@@ -847,7 +847,7 @@ class RH2Painter extends RHistPainter {
 
       for (colindx = 0; colindx < colPaths.length; ++colindx) {
          if ((colPaths[colindx] !== undefined) && (colindx<cntr.length)) {
-            const pattern_id = (this.pad_name || 'canv') + `_scatter_${colindx}`;
+            const pattern_id = (this.getPadName() || 'canv') + `_scatter_${colindx}`;
             let pattern = defs.selectChild(`#${pattern_id}`);
             if (pattern.empty()) {
                pattern = defs.append('svg:pattern')

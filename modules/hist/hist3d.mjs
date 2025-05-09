@@ -924,7 +924,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
    this.x_handle = new AxisPainter(null, this.xaxis);
    if (opts.v7) {
-      this.x_handle.pad_name = this.pad_name;
+      this.x_handle.setPadName(this.getPadName());
       this.x_handle.assignSnapId(this.snapid);
    } else if (opts.hist_painter)
       this.x_handle.setHistPainter(opts.hist_painter, 'x');
@@ -936,7 +936,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
    this.y_handle = new AxisPainter(null, this.yaxis);
    if (opts.v7) {
-      this.y_handle.pad_name = this.pad_name;
+      this.y_handle.setPadName(this.getPadName());
       this.y_handle.assignSnapId(this.snapid);
    } else if (opts.hist_painter)
       this.y_handle.setHistPainter(opts.hist_painter, 'y');
@@ -947,7 +947,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
    this.z_handle = new AxisPainter(null, this.zaxis);
    if (opts.v7) {
-      this.z_handle.pad_name = this.pad_name;
+      this.z_handle.setPadName(this.getPadName());
       this.z_handle.assignSnapId(this.snapid);
    } else if (opts.hist_painter)
       this.z_handle.setHistPainter(opts.hist_painter, 'z');
