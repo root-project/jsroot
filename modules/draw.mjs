@@ -647,6 +647,9 @@ async function makeImage(args) {
          if (!mainsvg.attr('width') && !mainsvg.attr('height'))
             mainsvg.attr('width', args.width).attr('height', args.height);
 
+         if (settings.DarkMode)
+            mainsvg.style('filter', 'invert(100%)');
+
          function clear_element() {
             const elem = d3_select(this);
             if (elem.style('display') === 'none')

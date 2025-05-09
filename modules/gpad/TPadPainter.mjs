@@ -2453,14 +2453,16 @@ class TPadPainter extends ObjectPainter {
       }
       const scale = this.getPadScale();
       if (scale !== 1) {
-         viewBox = `viewBox="0 0 ${width} ${height}"`;
+         viewBox = ` viewBox="0 0 ${width} ${height}"`;
          width = Math.round(width / scale);
          height = Math.round(height / scale);
       }
+      if (settings.DarkMode || this.pad?.$dark)
+         viewBox += ' style="filter: invert(100%)"';
 
       const arg = (file_format === 'pdf')
          ? { node: elem.node(), width, height, scale, reset_tranform: use_frame }
-         : compressSVG(`<svg width="${width}" height="${height}" ${viewBox} xmlns="${nsSVG}">${elem.node().innerHTML}</svg>`);
+         : compressSVG(`<svg width="${width}" height="${height}"${viewBox} xmlns="${nsSVG}">${elem.node().innerHTML}</svg>`);
 
       return svgToImage(arg, file_format, args).then(res => {
          // reactivate border
