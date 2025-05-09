@@ -1221,7 +1221,7 @@ class BatchDisplay extends MDIDisplay {
       }
    }
 
-   /** @summary Create SVG for specified frame id */
+   /** @summary Create SVG for specified frame id - used in testing */
    makeSVG(id, keep_frame) {
       const frame = this.frames[id];
       if (!frame) return;
@@ -1230,11 +1230,16 @@ class BatchDisplay extends MDIDisplay {
       if (mainsvg.empty())
          return;
 
+      const style_filter = mainsvg.style('filter');
+
       mainsvg.attr('xmlns', nsSVG)
              .attr('title', null).attr('style', null).attr('class', null).attr('x', null).attr('y', null);
 
       if (!mainsvg.attr('width') && !mainsvg.attr('height'))
-            mainsvg.attr('width', this.width).attr('height', this.height);
+         mainsvg.attr('width', this.width).attr('height', this.height);
+
+      if (style_filter)
+         mainsvg.style('filter', style_filter);
 
       function clear_element() {
          const elem = d3_select(this);

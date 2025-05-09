@@ -639,7 +639,8 @@ async function makeImage(args) {
             }
          }
 
-         const mainsvg = main.select('svg');
+         const mainsvg = main.select('svg'),
+               style_filter = mainsvg.style('filter');
 
          mainsvg.attr('xmlns', nsSVG)
                 .attr('style', null).attr('class', null).attr('x', null).attr('y', null);
@@ -647,8 +648,8 @@ async function makeImage(args) {
          if (!mainsvg.attr('width') && !mainsvg.attr('height'))
             mainsvg.attr('width', args.width).attr('height', args.height);
 
-         if (settings.DarkMode)
-            mainsvg.style('filter', 'invert(100%)');
+         if (style_filter)
+            mainsvg.style('filter', style_filter);
 
          function clear_element() {
             const elem = d3_select(this);
