@@ -231,7 +231,7 @@ class TPadPainter extends ObjectPainter {
      * @param {object|string} dom - DOM element for drawing or element id
      * @param {object} pad - TPad object to draw
      * @param {boolean} [iscan] - if TCanvas object */
-   constructor(dom, pad, iscan) {
+   constructor(dom, pad, iscan = false) {
       super(dom, pad);
       this.pad = pad;
       this.iscan = iscan; // indicate if working with canvas
@@ -283,7 +283,9 @@ class TPadPainter extends ObjectPainter {
    isCanvas(is_online = false) {
       if (!this.iscan)
          return false;
-      return is_online ? isFunc(this.getWebsocket) && this.getWebsocket() : true;
+      if (is_online === true)
+         return isFunc(this.getWebsocket) && this.getWebsocket();
+      return isStr(is_online) ? this.iscan === is_online : true;
    }
 
    /** @summary Returns SVG element for the pad itself
@@ -1416,7 +1418,8 @@ class TPadPainter extends ObjectPainter {
             if (!arg || !isStr(arg))
                return;
             // delete auto_canvas flag to prevent deletion
-            delete this._auto_canvas;
+            if (this.iscan === 'auto')
+               this.iscan = true;
             this.cleanPrimitives(true);
             if (arg === 'reset')
                return;

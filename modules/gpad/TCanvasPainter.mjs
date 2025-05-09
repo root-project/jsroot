@@ -37,8 +37,8 @@ class TCanvasPainter extends TPadPainter {
    #websocket; // WebWindow handle used for communication with server
 
    /** @summary Constructor */
-   constructor(dom, canvas) {
-      super(dom, canvas, true);
+   constructor(dom, canvas, kind = true) {
+      super(dom, canvas, kind);
       this.#websocket = null;
       this.tooltip_allowed = settings.Tooltip;
    }
@@ -893,7 +893,7 @@ class TCanvasPainter extends TPadPainter {
       const nocanvas = !can;
       if (nocanvas) can = create(clTCanvas);
 
-      const painter = new TCanvasPainter(dom, can);
+      const painter = new TCanvasPainter(dom, can, nocanvas ? 'auto' : true);
       painter.checkSpecialsInPrimitives(can, true);
 
       if (!nocanvas && can.fCw && can.fCh) {
@@ -914,7 +914,6 @@ class TCanvasPainter extends TPadPainter {
       }
 
       painter.decodeOptions(opt);
-      painter._auto_canvas = nocanvas;
       painter.createCanvasSvg(0);
 
       painter.addPadButtons();

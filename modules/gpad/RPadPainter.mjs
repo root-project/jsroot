@@ -82,7 +82,9 @@ class RPadPainter extends RObjectPainter {
    isCanvas(is_online = false) {
       if (!this.iscan)
          return false;
-      return is_online ? isFunc(this.getWebsocket) && this.getWebsocket() : true;
+      if (is_online === true)
+         return isFunc(this.getWebsocket) && this.getWebsocket();
+      return isStr(is_online) ? this.iscan === is_online : true;
    }
 
    /** @summary Returns SVG element for the pad itself
