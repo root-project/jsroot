@@ -32,12 +32,12 @@ class RPadPainter extends RObjectPainter {
    #fixed_size;  // fixed size flag
 
    /** @summary constructor */
-   constructor(dom, pad, iscan = false) {
+   constructor(dom, pad, iscan, opt, add_to_primitives) {
       super(dom, pad, '', 'pad');
       this.pad = pad;
       this.iscan = iscan; // indicate if working with canvas
       this.this_pad_name = '';
-      if (!iscan && (pad !== null)) {
+      if (!iscan && pad) {
          if (pad.fObjectID)
             this.this_pad_name = 'pad' + pad.fObjectID; // use objectid as pad name
          else
@@ -50,7 +50,19 @@ class RPadPainter extends RObjectPainter {
       const d = this.selectDom();
       if (!d.empty() && d.property('_batch_mode'))
          this.batch_mode = true;
-   }
+
+      if (opt !== undefined)
+         this.decodeOptions(opt);
+
+      if (add_to_primitives) {
+         if ((add_to_primitives !== 'webpad') && this.getCanvSvg().empty()) {
+            this.has_canvas = false;
+            this.this_pad_name = '';
+            this.setTopPainter();
+         } else
+            this.addToPadPrimitives(); // must be here due to pad painter
+      }
+  }
 
    /** @summary Indicates that drawing runs in batch mode
      * @private */
@@ -1171,10 +1183,7 @@ class RPadPainter extends RObjectPainter {
          else if (objpainter.updateObject(snap.fDrawable || snap.fObject || snap, snap.fOption || '', true))
             promise = objpainter.redraw();
       } else if (is_subpad) {
-         const subpad = snap, // not sub-pad, but just attributes
-               padpainter = new RPadPainter(this, subpad, false);
-         padpainter.decodeOptions('');
-         padpainter.addToPadPrimitives();
+         const padpainter = new RPadPainter(this, snap, false, '', 'webpad');
          padpainter.assignSnapId(snap.fObjectID);
          padpainter.rstyle = snap.fStyle;
 
@@ -1721,15 +1730,7 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary draw RPad object */
    static async draw(dom, pad, opt) {
-      const painter = new RPadPainter(dom, pad, false);
-      painter.decodeOptions(opt);
-
-      if (painter.getCanvSvg().empty()) {
-         painter.has_canvas = false;
-         painter.this_pad_name = '';
-         painter.setTopPainter();
-      } else
-         painter.addToPadPrimitives(); // must be here due to pad painter
+      const painter = new RPadPainter(dom, pad, false, opt, true);
 
       painter.createPadSvg();
 

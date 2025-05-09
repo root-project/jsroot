@@ -230,8 +230,11 @@ class TPadPainter extends ObjectPainter {
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
      * @param {object} pad - TPad object to draw
-     * @param {boolean} [iscan] - if TCanvas object */
-   constructor(dom, pad, iscan = false) {
+     * @param {boolean} [iscan] - if TCanvas object
+     * @param {String} [opt] - draw option
+     * @param [add_to_primitives] - add pad painter to canvas
+     * */
+   constructor(dom, pad, iscan, opt, add_to_primitives) {
       super(dom, pad);
       this.pad = pad;
       this.iscan = iscan; // indicate if working with canvas
@@ -248,6 +251,24 @@ class TPadPainter extends ObjectPainter {
       const d = this.selectDom();
       if (!d.empty() && d.property('_batch_mode'))
          this.batch_mode = true;
+
+      if (opt !== undefined)
+         this.decodeOptions(opt);
+
+      if (add_to_primitives) {
+         if ((add_to_primitives !== 'webpad') && this.getCanvSvg().empty()) {
+            // one can draw pad without canvas
+            this.has_canvas = false;
+            this.this_pad_name = '';
+            this.setTopPainter();
+         } else {
+            // pad painter will be registered in the parent pad
+            this.addToPadPrimitives();
+         }
+      }
+
+      if (pad?.$disable_drawing)
+         this.pad_draw_disabled = true;
    }
 
    /** @summary Indicates that drawing runs in batch mode
@@ -1900,17 +1921,12 @@ class TPadPainter extends ObjectPainter {
 
          subpad.fPrimitives = null; // clear primitives, they just because of I/O
 
-         const padpainter = new TPadPainter(this, subpad, false);
-         padpainter.decodeOptions(snap.fOption);
-         padpainter.addToPadPrimitives();
+         const padpainter = new TPadPainter(this, subpad, false, snap.fOption, 'webpad');
          padpainter.assignSnapId(snap.fObjectID);
          padpainter.is_active_pad = Boolean(snap.fActive); // enforce boolean flag
          padpainter.#readonly = snap.fReadOnly ?? false; // readonly flag
          padpainter.#snap_primitives = snap.fPrimitives; // keep list to be able find primitive
          padpainter.#has_execs = snap.fHasExecs ?? false; // are there pad execs, enables some interactive features
-
-         if (subpad.$disable_drawing)
-            padpainter.pad_draw_disabled = true;
 
          padpainter.processSpecialSnaps(snap.fPrimitives); // need to process style and colors before creating graph elements
 
@@ -2678,21 +2694,7 @@ class TPadPainter extends ObjectPainter {
 
    /** @summary draw TPad object */
    static async draw(dom, pad, opt) {
-      const painter = new TPadPainter(dom, pad, false);
-      painter.decodeOptions(opt);
-
-      if (painter.getCanvSvg().empty()) {
-         // one can draw pad without canvas
-         painter.has_canvas = false;
-         painter.this_pad_name = '';
-         painter.setTopPainter();
-      } else {
-         // pad painter will be registered in the parent pad
-         painter.addToPadPrimitives();
-      }
-
-      if (pad?.$disable_drawing)
-         painter.pad_draw_disabled = true;
+      const painter = new TPadPainter(dom, pad, false, opt || '', true);
 
       painter.createPadSvg();
 
