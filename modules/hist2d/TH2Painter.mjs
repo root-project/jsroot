@@ -535,6 +535,8 @@ class TH2Painter extends THistPainter {
    #projection_widthX; // X width of projection
    #projection_widthY; // Y width of projection
    #can_move_colz; // temporary flag for readjust palette positions
+   #hide_frame; // hide frame when drawing
+   #chord; // zooming for chord drawing
 
    /** @summary constructor
      * @param {object} histo - histogram object */
@@ -546,6 +548,7 @@ class TH2Painter extends THistPainter {
    /** @summary cleanup painter */
    cleanup() {
       delete this.tt_handle;
+      this.#chord = undefined;
       super.cleanup();
    }
 
@@ -2745,9 +2748,9 @@ class TH2Painter extends THistPainter {
 
    /** @summary Draw TH2 bins in 2D mode */
    draw2DBins() {
-      if (this._hide_frame && this.isMainPainter()) {
+      if (this.#hide_frame && this.isMainPainter()) {
          this.getFrameSvg().style('display', null);
-         delete this._hide_frame;
+         this.#hide_frame = undefined;
       } else if (this.options.Same && !this.isUseFrame())
          this.getFrameSvg().style('display', 'none');
 
@@ -2802,7 +2805,7 @@ class TH2Painter extends THistPainter {
    /** @summary Draw TH2 in circular mode */
    async drawBinsCircular() {
       this.getFrameSvg().style('display', 'none');
-      this._hide_frame = true;
+      this.#hide_frame = true;
 
       const rect = this.getPadPainter().getFrameRect(),
             hist = this.getHisto(),
@@ -2822,7 +2825,7 @@ class TH2Painter extends THistPainter {
 
       this.createG();
 
-      makeTranslate(this.draw_g, Math.round(rect.x + rect.width/2), Math.round(rect.y + rect.height/2));
+      this.assignChordCircInteractive(Math.round(rect.x + rect.width/2), Math.round(rect.y + rect.height/2));
 
       const nbins = Math.min(this.nbinsx, this.nbinsy);
 
@@ -2894,13 +2897,55 @@ class TH2Painter extends THistPainter {
          }
 
          return this.finishTextDrawing();
+      }).then(() => {
+         if (!this.isBatchMode()) {
+            this.draw_g.insert('path', ':first-child')
+                       .attr('d', `M${-rect.width/2},${-rect.height/2}h${rect.width}v${rect.height}h${-rect.width}z`)
+                       .style('opacity', 0)
+                       .style('fill', 'none')
+                       .style('pointer-events', 'visibleFill');
+         }
+
+         return this;
       });
+   }
+
+   /** @summary Prepare translation and assign interactive handler */
+   assignChordCircInteractive(midx, midy) {
+      if (!this.#chord)
+         this.#chord = { x: 0, y: 0, zoom: 1 };
+
+      makeTranslate(this.draw_g, midx + this.#chord.x, midy + this.#chord.y, this.#chord.zoom);
+
+
+      if (this.isBatchMode())
+         return;
+
+      if (settings.Zooming && settings.ZoomWheel) {
+         this.draw_g.on('wheel', evnt => {
+            const pos = d3_pointer(evnt, this.draw_g.node()),
+                  delta = evnt.wheelDelta ? -evnt.wheelDelta : (evnt.deltaY || evnt.detail),
+                  prev_zoom = this.#chord.zoom;
+
+            this.#chord.zoom *= (delta > 0) ? 0.8 : 1.2;
+            this.#chord.x += pos[0] * (prev_zoom - this.#chord.zoom);
+            this.#chord.y += pos[1] * (prev_zoom - this.#chord.zoom);
+
+            makeTranslate(this.draw_g, midx + this.#chord.x, midy + this.#chord.y, this.#chord.zoom);
+         }).on('dblclick', () => {
+            this.#chord.x = this.#chord.y = 0;
+            this.#chord.zoom = 1;
+            makeTranslate(this.draw_g, midx, midy);
+         });
+      }
+
+      assignContextMenu(this);
    }
 
    /** @summary Draw histogram bins as chord diagram */
    async drawBinsChord() {
       this.getFrameSvg().style('display', 'none');
-      this._hide_frame = true;
+      this.#hide_frame = true;
 
       const used = [],
             nbins = Math.min(this.nbinsx, this.nbinsy),
@@ -2966,7 +3011,7 @@ class TH2Painter extends THistPainter {
 
       this.createG();
 
-      makeTranslate(this.draw_g, midx + (this._shiftx ?? 0), midy + (this._shifty ?? 0), this._zoom);
+      this.assignChordCircInteractive(midx, midy);
 
       const chord = d3_chord()
          .padAngle(10 / innerRadius)
@@ -3042,31 +3087,6 @@ class TH2Painter extends THistPainter {
                     .style('opacity', 0)
                     .style('fill', 'none')
                     .style('pointer-events', 'visibleFill');
-         if (settings.Zooming && settings.ZoomWheel) {
-            this.draw_g.on('wheel', evnt => {
-               if (!this._zoom) {
-                  this._zoom = 1;
-                  this._shiftx = 0;
-                  this._shifty = 0;
-               }
-               const pos = d3_pointer(evnt, this.draw_g.node()),
-                     delta = evnt.wheelDelta ? -evnt.wheelDelta : (evnt.deltaY || evnt.detail),
-                     prev_zoom = this._zoom;
-
-               this._zoom *= (delta > 0) ? 0.8 : 1.2;
-               this._shiftx += pos[0] * (prev_zoom - this._zoom);
-               this._shifty += pos[1] * (prev_zoom - this._zoom);
-
-               makeTranslate(this.draw_g, midx + this._shiftx, midy + this._shifty, this._zoom);
-            }).on('dblclick', () => {
-               delete this._zoom;
-               delete this._shiftx;
-               delete this._shifty;
-               makeTranslate(this.draw_g, midx, midy);
-            });
-         }
-
-         assignContextMenu(this);
       }
 
       return true;
