@@ -30,6 +30,7 @@ class RPadPainter extends RObjectPainter {
    #num_primitives; // number of primitives
    #auto_color_cnt;  // counter for auto colors
    #fixed_size;  // fixed size flag
+   #has_canvas;  // when top-level canvas exists
 
    /** @summary constructor */
    constructor(dom, pad, iscan, opt, add_to_primitives) {
@@ -44,7 +45,7 @@ class RPadPainter extends RObjectPainter {
             this.this_pad_name = 'ppp' + internals.id_counter++; // artificial name
       }
       this.painters = []; // complete list of all painters in the pad
-      this.has_canvas = true;
+      this.#has_canvas = true;
       this.forEachPainter = this.forEachPainterInPad;
 
       const d = this.selectDom();
@@ -56,7 +57,7 @@ class RPadPainter extends RObjectPainter {
 
       if (add_to_primitives) {
          if ((add_to_primitives !== 'webpad') && this.getCanvSvg().empty()) {
-            this.has_canvas = false;
+            this.#has_canvas = false;
             this.this_pad_name = '';
             this.setTopPainter();
          } else
@@ -73,10 +74,7 @@ class RPadPainter extends RObjectPainter {
       if (isBatchMode())
          return true;
 
-      if (!this.isCanvas() && this.has_canvas)
-         return this.getCanvPainter()?.isBatchMode();
-
-      return false;
+      return this.isTopPad() ? false : this.getCanvPainter()?.isBatchMode();
    }
 
    /** @summary Indicates that is not Root6 pad painter
@@ -100,7 +98,7 @@ class RPadPainter extends RObjectPainter {
    }
 
    /** @summary Returns true if it is canvas or top pad without canvas */
-   isTopPad() { return this.isCanvas() || !this.has_canvas; }
+   isTopPad() { return this.isCanvas() || !this.#has_canvas; }
 
    /** @summary Returns SVG element for the pad itself
      * @private */
@@ -131,7 +129,7 @@ class RPadPainter extends RObjectPainter {
          if (!this.isCanvas()) svg_p.remove();
       }
 
-      const cp = this.isCanvas() || !this.has_canvas ? this : this.getCanvPainter();
+      const cp = this.isTopPad() ? this : this.getCanvPainter();
       if (cp) delete cp.pads_cache;
 
       this.#main_painter_ref = undefined;
@@ -145,7 +143,7 @@ class RPadPainter extends RObjectPainter {
       this.assignObject(null);
       this.pad_frame = null;
       this.this_pad_name = undefined;
-      this.has_canvas = false;
+      this.#has_canvas = false;
 
       selectActivePad({ pp: this, active: false });
 
@@ -386,13 +384,12 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary method redirect call to pad events receiver */
    selectObjectPainter(painter, pos) {
-      const istoppad = this.isCanvas() || !this.has_canvas,
-            canp = istoppad ? this : this.getCanvPainter();
+      const canp = this.isTopPad() ? this : this.getCanvPainter();
 
       if (painter === undefined)
          painter = this;
 
-      if (pos && !istoppad)
+      if (pos && !this.isTopPad())
          pos = getAbsPosInCanvas(this.svg_this_pad(), pos);
 
       selectActivePad({ pp: this, active: true });
@@ -580,7 +577,7 @@ class RPadPainter extends RObjectPainter {
       const svg_can = this.getCanvSvg(),
             pad_enlarged = svg_can.property('pad_enlarged');
 
-      if (this.isCanvas() || !this.has_canvas || (!pad_enlarged && !this.hasObjectsToDraw() && !this.painters)) {
+      if (this.isTopPad() || (!pad_enlarged && !this.hasObjectsToDraw() && !this.painters)) {
          if (this.#fixed_size) return; // canvas cannot be enlarged in such mode
          if (!this.enlargeMain(is_escape ? false : 'toggle')) return;
          if (this.enlargeMain('state') === 'off')
@@ -603,7 +600,7 @@ class RPadPainter extends RObjectPainter {
    /** @summary Create SVG element for the pad
      * @return true when pad is displayed and all its items should be redrawn */
    createPadSvg(only_resize) {
-      if (!this.has_canvas) {
+      if (this.isTopPad()) {
          this.createCanvasSvg(only_resize ? 2 : 0);
          return true;
       }
@@ -864,7 +861,7 @@ class RPadPainter extends RObjectPainter {
             menu.addchk(this.hasEventStatus(), 'Event status', () => this.activateStatusBar('toggle'));
       }
 
-      if (this.enlargeMain() || (this.has_canvas && this.hasObjectsToDraw()))
+      if (this.enlargeMain() || (!this.isTopPad() && this.hasObjectsToDraw()))
          menu.addchk((this.enlargeMain('state') === 'on'), 'Enlarge ' + (this.isCanvas() ? 'canvas' : 'pad'), () => this.enlargePad());
 
       const fname = this.this_pad_name || (this.isCanvas() ? 'canvas' : 'pad');
@@ -963,14 +960,12 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary Check resize of canvas */
    checkCanvasResize(size, force) {
-      if (this._ignore_resize)
-         return false;
-
-      if (!this.isCanvas() && this.has_canvas)
+      if (this._ignore_resize || !this.isTopPad())
          return false;
 
       const sync_promise = this.syncDraw('canvas_resize');
-      if (sync_promise === false) return false;
+      if (sync_promise === false)
+         return false;
 
       if ((size === true) || (size === false)) { force = size; size = null; }
 
@@ -1615,9 +1610,11 @@ class RPadPainter extends RObjectPainter {
    /** @summary Add button to the pad
      * @private */
    addPadButton(btn, tooltip, funcname, keyname) {
-      if (!settings.ToolBar || this.isBatchMode()) return;
+      if (!settings.ToolBar || this.isBatchMode())
+         return;
 
-      if (!this._buttons) this._buttons = [];
+      if (!this._buttons)
+         this._buttons = [];
       // check if there are duplications
 
       for (let k = 0; k < this._buttons.length; ++k)
@@ -1625,8 +1622,7 @@ class RPadPainter extends RObjectPainter {
 
       this._buttons.push({ btn, tooltip, funcname, keyname });
 
-      const iscan = this.isCanvas() || !this.has_canvas;
-      if (!iscan && (funcname.indexOf('Pad') !== 0) && (funcname !== 'enlargePad')) {
+      if (!this.isTopPad() && (funcname.indexOf('Pad') !== 0) && (funcname !== 'enlargePad')) {
          const cp = this.getCanvPainter();
          if (cp && (cp !== this)) cp.addPadButton(btn, tooltip, funcname);
       }
@@ -1640,7 +1636,7 @@ class RPadPainter extends RObjectPainter {
       if (settings.ContextMenu)
          this.addPadButton('question', 'Access context menus', 'PadContextMenus');
 
-      const add_enlarge = !this.isCanvas() && this.has_canvas && this.hasObjectsToDraw();
+      const add_enlarge = !this.isTopPad() && this.hasObjectsToDraw();
 
       if (add_enlarge || this.enlargeMain('verify'))
          this.addPadButton('circle', 'Enlarge canvas', 'enlargePad');
@@ -1737,7 +1733,7 @@ class RPadPainter extends RObjectPainter {
 
       painter.createPadSvg();
 
-      if (painter.matchObjectType(nsREX + 'RPad') && (!painter.has_canvas || painter.hasObjectsToDraw()))
+      if (painter.matchObjectType(nsREX + 'RPad') && (painter.isTopPad() || painter.hasObjectsToDraw()))
          painter.addPadButtons();
 
       selectActivePad({ pp: painter, active: false });
