@@ -388,7 +388,7 @@ class ObjectPainter extends BasePainter {
       if (pad_name === undefined)
          pad_name = this.pad_name;
 
-      let c = this.getCanvSvg();
+      const c = this.getCanvSvg();
       if (!pad_name || c.empty())
          return c;
 
