@@ -27,6 +27,9 @@ class TGraphPainter extends ObjectPainter {
    #redraw_hist; // indicate that histogram need to be redrawn
    #auto_exec; // can be reused when sending option back to server
    #funcs_handler; // special instance for functions drawing
+   #frame_layer;   // frame layer used for drawing
+   #cutg;          // is cutg object
+   #cutg_lastsame; // indicate that last point is same as first
 
    constructor(dom, graph) {
       super(dom, graph);
@@ -201,8 +204,8 @@ class TGraphPainter extends ObjectPainter {
             res.Errors = 0;
       }
 
-      this._cutg = this.matchObjectType(clTCutG);
-      this._cutg_lastsame = this._cutg && (graph.fNpoints > 3) &&
+      this.#cutg = this.matchObjectType(clTCutG);
+      this.#cutg_lastsame = this.#cutg && (graph.fNpoints > 3) &&
                             (graph.fX[0] === graph.fX[graph.fNpoints-1]) && (graph.fY[0] === graph.fY[graph.fNpoints-1]);
 
       if (!res.Axis) {
@@ -240,7 +243,7 @@ class TGraphPainter extends ObjectPainter {
       if (!gr) return;
 
       let kind = 0, npoints = gr.fNpoints;
-      if (this._cutg && this._cutg_lastsame)
+      if (this.#cutg && this.#cutg_lastsame)
          npoints--;
 
       if (gr._typename === clTGraphErrors)
@@ -292,10 +295,10 @@ class TGraphPainter extends ObjectPainter {
       }
 
       // workaround, are there better way to show marker at 0,0 on the top of the frame?
-      this._frame_layer = true;
+      this.#frame_layer = true;
       if ((this.xmin === 0) && (this.ymin === 0) && (npoints > 0) && (this.bins[0].x === 0) && (this.bins[0].y === 0) &&
           this.options.Mark && !this.options.Line && !this.options.Curve && !this.options.Fill)
-         this._frame_layer = 'upper_layer';
+         this.#frame_layer = 'upper_layer';
    }
 
    /** @summary Return margins for histogram ranges */
@@ -585,7 +588,7 @@ class TGraphPainter extends ObjectPainter {
 
       if (options.Line || options.Fill) {
          let close_symbol = '';
-         if (this._cutg) {
+         if (this.#cutg) {
             close_symbol = 'Z';
             if (!options.original) options.Fill = 1;
          }
@@ -595,7 +598,8 @@ class TGraphPainter extends ObjectPainter {
             excl_width = 0;
          }
 
-         if (!drawbins) drawbins = this.optimizeBins(0);
+         if (!drawbins)
+            drawbins = this.optimizeBins(0);
 
          for (let n = 0; n < drawbins.length; ++n) {
             const bin = drawbins[n];
@@ -942,7 +946,7 @@ class TGraphPainter extends ObjectPainter {
             w = pmain.getFrameWidth(),
             h = pmain.getFrameHeight();
 
-      this.createG(pmain.pad_layer ? false : this._frame_layer);
+      this.createG(pmain.pad_layer ? false : this.#frame_layer);
 
       this.createGraphDrawAttributes();
 
@@ -1345,7 +1349,7 @@ class TGraphPainter extends ObjectPainter {
          exec += `SetPoint(${bin.indx},${bin.x},${bin.y});;`;
          graph.fX[bin.indx] = bin.x;
          graph.fY[bin.indx] = bin.y;
-         if ((bin.indx === 0) && this._cutg_lastsame) {
+         if ((bin.indx === 0) && this.#cutg_lastsame) {
             exec += `SetPoint(${last},${bin.x},${bin.y});;`;
             graph.fX[last] = bin.x;
             graph.fY[last] = bin.y;
