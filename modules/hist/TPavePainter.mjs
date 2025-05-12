@@ -334,7 +334,21 @@ class TPavePainter extends ObjectPainter {
                interactive_element.call(this.lineatt.func);
          }
 
-         return isFunc(this.paveDrawFunc) ? this.paveDrawFunc(width, height, arg) : true;
+         switch (pt._typename) {
+            case clTPaveLabel:
+            case clTPaveClass:
+               return this.drawPaveLabel(width, height, arg)
+            case clTPaveStats:
+               return this.drawPaveStats(width, height, arg);
+            case clTPaveText:
+            case clTPavesText:
+            case clTDiamond:
+               return this.drawPaveText(width, height, arg);
+            case clTLegend:
+               return this.drawLegend(width, height, arg)
+            case clTPaletteAxis:
+               return this.drawPaletteAxis(width, height, arg);
+         }
       }).then(() => {
          if (this.isBatchMode() || (pt._typename === clTPave))
             return this;
@@ -1703,31 +1717,10 @@ class TPavePainter extends ObjectPainter {
             painter.z_handle = new TAxisPainter(painter.getPadPainter(), pave.fAxis, true);
 
             painter.UseContextMenu = true;
-         }
+         } else if (pave._typename === clTLegend)
+            painter.AutoPlace = is_auto;
 
          painter.NoFillStats = pave.fName !== 'stats';
-
-         switch (pave._typename) {
-            case clTPaveLabel:
-            case clTPaveClass:
-               painter.paveDrawFunc = painter.drawPaveLabel;
-               break;
-            case clTPaveStats:
-               painter.paveDrawFunc = painter.drawPaveStats;
-               break;
-            case clTPaveText:
-            case clTPavesText:
-            case clTDiamond:
-               painter.paveDrawFunc = painter.drawPaveText;
-               break;
-            case clTLegend:
-               painter.AutoPlace = is_auto;
-               painter.paveDrawFunc = painter.drawLegend;
-               break;
-            case clTPaletteAxis:
-               painter.paveDrawFunc = painter.drawPaletteAxis;
-               break;
-         }
 
          return painter.drawPave(arg_opt);
       }).then(() => {
