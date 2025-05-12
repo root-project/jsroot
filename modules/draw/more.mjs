@@ -286,7 +286,8 @@ function drawMarker() {
 
    this.isndc = marker.TestBit(kMarkerNDC);
 
-   const use_frame = this.isndc ? false : new DrawOptions(this.getDrawOpt()).check('FRAME'),
+   const d = new DrawOptions(this.getDrawOpt()),
+         use_frame = this.isndc ? false : d.check('FRAME'),
          swap_xy = use_frame && this.getFramePainter()?.swap_xy;
 
    this.createAttMarker({ attr: marker });
@@ -305,6 +306,9 @@ function drawMarker() {
           .attr('d', path)
           .call(this.markeratt.func);
    }
+
+   if (d.check('NO_INTERACTIVE'))
+      return;
 
    assignContextMenu(this);
 

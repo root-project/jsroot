@@ -1,4 +1,4 @@
-import { internals } from '../core.mjs';
+import { internals, clTMarker } from '../core.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { TH1Painter } from '../hist2d/TH1Painter.mjs';
@@ -53,7 +53,10 @@ class TGraphTimePainter extends ObjectPainter {
       if (!lst || (indx >= lst.arr.length))
          return;
 
-      return draw(this.getPadPainter(), lst.arr[indx], lst.opt[indx]).then(p => {
+      const obj = lst.arr[indx],
+            opt = lst.opt[indx] + (obj._typename === clTMarker ? ';no_interactive' : '');
+
+      return draw(this.getPadPainter(), obj, opt).then(p => {
          if (p) {
             p.$grtimeid = this.#selfid; // indicator that painter created by ourself
             p.$grstep = this.#step; // remember step
