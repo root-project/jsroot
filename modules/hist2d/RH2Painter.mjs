@@ -16,6 +16,7 @@ class RH2Painter extends RHistPainter {
    #projection_kind;  // kind of enabled histogram projection
    #projection_widthX; // X width of projection
    #projection_widthY; // Y width of projection
+   #show_empty_bins; // show empty bins
 
    /** @summary constructor
      * @param {object|string} dom - DOM element or id
@@ -23,6 +24,7 @@ class RH2Painter extends RHistPainter {
    constructor(dom, histo) {
       super(dom, histo);
       this.wheel_zoomy = true;
+      this.#show_empty_bins = false;
    }
 
    /** @summary Cleanup painter */
@@ -401,7 +403,7 @@ class RH2Painter extends RHistPainter {
             if (binz === 0) {
                if (!this.options.Zero)
                   colindx = null;
-               else if ((colindx === null) && this._show_empty_bins)
+               else if ((colindx === null) && this.#show_empty_bins)
                   colindx = 0;
             }
             if (colindx === null) {
@@ -546,7 +548,7 @@ class RH2Painter extends RHistPainter {
          for (let i = handle.i1; i < handle.i2; i += di) {
             for (let j = handle.j1; j < handle.j2; j += dj) {
                let binz = histo.getBinContent(i+1, j+1);
-               if ((binz === 0) && !this._show_empty_bins) continue;
+               if ((binz === 0) && !this.#show_empty_bins) continue;
 
                const binw = handle.grx[i+di] - handle.grx[i],
                      binh = handle.gry[j] - handle.gry[j+dj];
@@ -1000,10 +1002,10 @@ class RH2Painter extends RHistPainter {
          if (this.#projection_kind)
             colindx = 0; // just to avoid hide
           else if (h.hide_only_zeros)
-            colindx = (binz === 0) && !this._show_empty_bins ? null : 0;
+            colindx = (binz === 0) && !this.#show_empty_bins ? null : 0;
           else {
             colindx = h.palette.getContourIndex(binz);
-            if ((colindx === null) && (binz === 0) && this._show_empty_bins) colindx = 0;
+            if ((colindx === null) && (binz === 0) && this.#show_empty_bins) colindx = 0;
          }
       }
 
@@ -1173,8 +1175,6 @@ class RH2Painter extends RHistPainter {
 
          // here we deciding how histogram will look like and how will be shown
          // painter.decodeOptions(opt);
-
-         painter._show_empty_bins = false;
 
          painter.scanContent();
 
