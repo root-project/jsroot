@@ -33,7 +33,13 @@ function isDefaultStatPosition(pt) {
 
 class TPavePainter extends ObjectPainter {
 
+   #pave_x; // x position of pave
+   #pave_y; // y position of pave
    #palette_vertical; // when palette drawing vertical
+   #swap_side; // swap palette side
+   #has_fit; // has fit info
+   #fit_dim; // dimension of fit function
+   #fit_cnt; // lines number in fit info
 
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -241,10 +247,10 @@ class TPavePainter extends ObjectPainter {
                   let nlines = pt.fLines?.arr.length || 0;
                   const set_default = (nlines > 0) && !this.moved_interactive && isDefaultStatPosition(pt),
                         // in ROOT TH2 and TH3 always add full stats for fit parameters
-                        extrah = this._has_fit && (this._fit_dim > 1) ? gStyle.fStatH : 0;
-                  if (extrah) nlines -= this._fit_cnt;
+                        extrah = this.#has_fit && (this.#fit_dim > 1) ? gStyle.fStatH : 0;
+                  if (extrah) nlines -= this.#fit_cnt;
                   let stath = gStyle.fStatH, statw = gStyle.fStatW;
-                  if (this._has_fit)
+                  if (this.#has_fit)
                      statw = 1.8 * gStyle.fStatW;
                   if ((gStyle.fStatFontSize <= 0) || (gStyle.fStatFont % 10 === 3))
                      stath = nlines * 0.25 * gStyle.fStatH;
@@ -275,14 +281,14 @@ class TPavePainter extends ObjectPainter {
          // container used to recalculate coordinates
          this.createG();
 
-         this._pave_x = Math.round(pt.fX1NDC * pad_rect.width);
-         this._pave_y = Math.round((1.0 - pt.fY2NDC) * pad_rect.height);
+         this.#pave_x = Math.round(pt.fX1NDC * pad_rect.width);
+         this.#pave_y = Math.round((1.0 - pt.fY2NDC) * pad_rect.height);
          width = Math.round((pt.fX2NDC - pt.fX1NDC) * pad_rect.width);
          height = Math.round((pt.fY2NDC - pt.fY1NDC) * pad_rect.height);
 
          const arc_radius = opt.indexOf('ARC') >= 0 && (pt.fCornerRadius > 0) ? Math.round(Math.min(width, height) * pt.fCornerRadius) : 0;
 
-         makeTranslate(this.draw_g, this._pave_x, this._pave_y);
+         makeTranslate(this.draw_g, this.#pave_x, this.#pave_y);
 
          this.createAttLine({ attr: pt, width: (brd > 0) ? pt.fLineWidth : 0 });
 
@@ -357,7 +363,7 @@ class TPavePainter extends ObjectPainter {
          interactive_element?.style('pointer-events', 'visibleFill')
                              .on('mouseenter', () => this.showObjectStatus());
 
-         addDragHandler(this, { obj: pt, x: this._pave_x, y: this._pave_y, width, height,
+         addDragHandler(this, { obj: pt, x: this.#pave_x, y: this.#pave_y, width, height,
                                 minwidth: 10, minheight: 20, canselect: true,
                         redraw: () => { this.moved_interactive = true; this.interactiveRedraw(false, 'pave_moved'); this.drawPave(); },
                         ctxmenu: browser.touches && settings.ContextMenu && this.UseContextMenu });
@@ -520,7 +526,7 @@ class TPavePainter extends ObjectPainter {
                         _expected_width: width-2*margin_x, _args: args,
                         post_process(painter) {
                            if (this._args[0].ready && this._args[1].ready)
-                              painter.scaleTextDrawing(1.05*(this._args[0].result_width+this._args[1].result_width)/this._expected_width, painter.draw_g);
+                              painter.scaleTextDrawing(1.05*(this._args[0].result_width + this._args[1].result_width) / this._expected_width, painter.draw_g);
                         }
                      };
                      args.push(arg);
@@ -1028,17 +1034,17 @@ class TPavePainter extends ObjectPainter {
       }
 
       if (this.#palette_vertical) {
-         this._swap_side = palette.fX2NDC < 0.5;
-         axis.fChopt = 'S+' + (this._swap_side ? 'R' : 'L'); // clearly configure text align
-         this.z_handle.configureAxis('zaxis', gzmin, gzmax, zmin, zmax, true, [0, s_height], { log, fixed_ticks: cjust ? levels : null, maxTickSize: Math.round(s_width*sizek), swap_side: this._swap_side, minposbin: main.gminposbin });
-         axis_transform = this._swap_side ? null : `translate(${s_width})`;
-         if (pad?.fTickz) axis_second = this._swap_side ? s_width : -s_width;
+         this.#swap_side = palette.fX2NDC < 0.5;
+         axis.fChopt = 'S+' + (this.#swap_side ? 'R' : 'L'); // clearly configure text align
+         this.z_handle.configureAxis('zaxis', gzmin, gzmax, zmin, zmax, true, [0, s_height], { log, fixed_ticks: cjust ? levels : null, maxTickSize: Math.round(s_width*sizek), swap_side: this.#swap_side, minposbin: main.gminposbin });
+         axis_transform = this.#swap_side ? null : `translate(${s_width})`;
+         if (pad?.fTickz) axis_second = this.#swap_side ? s_width : -s_width;
       } else {
-         this._swap_side = palette.fY1NDC > 0.5;
+         this.#swap_side = palette.fY1NDC > 0.5;
          axis.fChopt = 'S+';
-         this.z_handle.configureAxis('zaxis', gzmin, gzmax, zmin, zmax, false, [0, s_width], { log, fixed_ticks: cjust ? levels : null, maxTickSize: Math.round(s_height*sizek), swap_side: this._swap_side, minposbin: main.gminposbin });
-         axis_transform = this._swap_side ? null : `translate(0,${s_height})`;
-         if (pad?.fTickz) axis_second = this._swap_side ? s_height : -s_height;
+         this.z_handle.configureAxis('zaxis', gzmin, gzmax, zmin, zmax, false, [0, s_width], { log, fixed_ticks: cjust ? levels : null, maxTickSize: Math.round(s_height*sizek), swap_side: this.#swap_side, minposbin: main.gminposbin });
+         axis_transform = this.#swap_side ? null : `translate(0,${s_height})`;
+         if (pad?.fTickz) axis_second = this.#swap_side ? s_height : -s_height;
       }
 
       if (!contour || !draw_palette || postpone_draw) {
@@ -1113,15 +1119,15 @@ class TPavePainter extends ObjectPainter {
          if (can_move) {
             if (settings.ApproxTextSize || isNodeJs()) {
                // for batch testing provide approx estimation
-               rect = { x: this._pave_x, y: this._pave_y, width: s_width, height: s_height };
+               rect = { x: this.#pave_x, y: this.#pave_y, width: s_width, height: s_height };
                const fsz = this.z_handle.labelsFont?.size || 14;
                if (this.#palette_vertical) {
                   const dx = (this.z_handle._maxlbllen || 3) * 0.6 * fsz;
                   rect.width += dx;
-                  if (this._swap_side) rect.x -= dx;
+                  if (this.#swap_side) rect.x -= dx;
                } else {
                   rect.height += fsz;
-                  if (this._swap_side) rect.y -= fsz;
+                  if (this.#swap_side) rect.y -= fsz;
                }
             } else if ('getBoundingClientRect' in this.draw_g.node())
                rect = this.draw_g.node().getBoundingClientRect();
@@ -1130,19 +1136,19 @@ class TPavePainter extends ObjectPainter {
             return this;
 
          if (this.#palette_vertical) {
-            const shift = (this._pave_x + parseInt(rect.width)) - Math.round(0.995*width) + 3;
+            const shift = (this.#pave_x + parseInt(rect.width)) - Math.round(0.995*width) + 3;
 
             if (shift > 0) {
-               this._pave_x -= shift;
-               makeTranslate(this.draw_g, this._pave_x, this._pave_y);
+               this.#pave_x -= shift;
+               makeTranslate(this.draw_g, this.#pave_x, this.#pave_y);
                palette.fX1NDC -= shift/width;
                palette.fX2NDC -= shift/width;
             }
          } else {
             const shift = Math.round((1.05 - gStyle.fTitleY)*height) - rect.y;
             if (shift > 0) {
-               this._pave_y += shift;
-               makeTranslate(this.draw_g, this._pave_x, this._pave_y);
+               this.#pave_y += shift;
+               makeTranslate(this.draw_g, this.#pave_x, this.#pave_y);
                palette.fY1NDC -= shift/height;
                palette.fY2NDC -= shift/height;
             }
@@ -1485,13 +1491,13 @@ class TPavePainter extends ObjectPainter {
 
    /** @summary Fill function parameters */
    fillFunctionStat(f1, dofit, ndim = 1) {
-      this._has_fit = false;
+      this.#has_fit = dofit && f1;
 
-      if (!dofit || !f1) return false;
+      if (!this.#has_fit)
+         return false;
 
-      this._has_fit = true;
-      this._fit_dim = ndim;
-      this._fit_cnt = 0;
+      this.#fit_dim = ndim;
+      this.#fit_cnt = 0;
 
       const print_fval = (ndim === 1) ? dofit % 10 : 1,
             print_ferrors = (ndim === 1) ? Math.floor(dofit/10) % 10 : 1,
@@ -1500,11 +1506,11 @@ class TPavePainter extends ObjectPainter {
 
       if (print_fchi2) {
          this.addText('#chi^{2} / ndf = ' + this.format(f1.fChisquare, 'fit') + ' / ' + f1.fNDF);
-         this._fit_cnt++;
+         this.#fit_cnt++;
       }
       if (print_fprob) {
          this.addText('Prob = ' + this.format(Prob(f1.fChisquare, f1.fNDF)));
-         this._fit_cnt++;
+         this.#fit_cnt++;
       }
       if (print_fval) {
          for (let n = 0; n < f1.GetNumPars(); ++n) {
@@ -1526,10 +1532,9 @@ class TPavePainter extends ObjectPainter {
                this.addText(`${parname} = ${parvalue} #pm ${parerr}`);
             else
                this.addText(`${parname} = ${parvalue}`);
-            this._fit_cnt++;
+            this.#fit_cnt++;
          }
       }
-
 
       return true;
    }
