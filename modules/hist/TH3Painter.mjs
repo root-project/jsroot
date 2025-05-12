@@ -348,7 +348,6 @@ class TH3Painter extends THistPainter {
 
             const p = this.painter,
                   thisto = p.getHisto(),
-                  fp = p.getFramePainter(),
                   tip = p.get3DToolTip(this.bins[indx]);
 
             tip.x1 = fp.grx(thisto.fXaxis.GetBinLowEdge(tip.ix));
@@ -530,7 +529,6 @@ class TH3Painter extends THistPainter {
 
          const p = this.painter,
                thisto = p.getHisto(),
-               fp = p.getFramePainter(),
                tip = p.get3DToolTip(binid),
                grx1 = fp.grx(thisto.fXaxis.GetBinCoord(tip.ix-1)),
                grx2 = fp.grx(thisto.fXaxis.GetBinCoord(tip.ix)),

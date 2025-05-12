@@ -10,14 +10,14 @@ class RH1Painter extends RH1Painter2D {
    draw3D(reason) {
       this.mode3d = true;
 
-      const main = this.getFramePainter(), // who makes axis drawing
+      const fp = this.getFramePainter(), // who makes axis drawing
             is_main = this.isMainPainter(), // is main histogram
             zmult = 1 + 2*gStyle.fHistTopMargin;
       let pr = Promise.resolve(this);
 
       if (reason === 'resize') {
-         if (is_main && main.resize3D())
-            main.render3D();
+         if (is_main && fp.resize3D())
+            fp.render3D();
          return pr;
       }
 
@@ -26,20 +26,19 @@ class RH1Painter extends RH1Painter2D {
       this.scanContent(true); // may be required for axis drawings
 
       if (is_main) {
-         assignFrame3DMethods(main);
-         pr = main.create3DScene(this.options.Render3D).then(() => {
-            main.setAxesRanges(this.getAxis('x'), this.xmin, this.xmax, null, this.ymin, this.ymax, null, 0, 0);
-            main.set3DOptions(this.options);
-            main.drawXYZ(main.toplevel, RAxisPainter, { use_y_for_z: true, zmult, zoom: settings.Zooming, ndim: 1, draw: true, v7: true });
+         assignFrame3DMethods(fp);
+         pr = fp.create3DScene(this.options.Render3D).then(() => {
+            fp.setAxesRanges(this.getAxis('x'), this.xmin, this.xmax, null, this.ymin, this.ymax, null, 0, 0);
+            fp.set3DOptions(this.options);
+            fp.drawXYZ(fp.toplevel, RAxisPainter, { use_y_for_z: true, zmult, zoom: settings.Zooming, ndim: 1, draw: true, v7: true });
          });
       }
 
-      if (!main.mode3d)
+      if (!fp.mode3d)
          return pr;
 
       return pr.then(() => this.drawingBins(reason)).then(() => {
          // called when bins received from server, must be reentrant
-         const fp = this.getFramePainter();
 
          drawBinsLego(this, true);
          this.updatePaletteDraw();

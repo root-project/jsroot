@@ -1722,7 +1722,7 @@ function drawBinsLego(painter, is_v7 = false) {
 
       if (is_v7) {
          palette = fp.getHistPalette();
-         painter.createContour(main, palette, { full_z_range: true });
+         painter.createContour(fp, palette, { full_z_range: true });
          levels = palette.getContour();
          axis_zmin = levels.at(0);
          axis_zmax = levels.at(-1);
@@ -2146,7 +2146,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
       if (need_palette > 0) {
          palette = fp.getHistPalette();
          if (need_palette === 2)
-            painter.createContour(main, palette, { full_z_range: true });
+            painter.createContour(fp, palette, { full_z_range: true });
          ilevels = palette.getContour();
       }
    } else {

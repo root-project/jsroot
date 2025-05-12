@@ -250,8 +250,8 @@ class RHistPainter extends RObjectPainter {
    /** @summary Draw axes */
    async drawFrameAxes() {
       // return true when axes was drawn
-      const main = this.getFramePainter();
-      if (!main)
+      const fp = this.getFramePainter();
+      if (!fp)
          return false;
 
       if (!this.draw_content)
@@ -261,16 +261,16 @@ class RHistPainter extends RObjectPainter {
          if (!this.options.second_x && !this.options.second_y)
             return true;
 
-         main.setAxes2Ranges(this.options.second_x, this.getAxis('x'), this.xmin, this.xmax, this.options.second_y, this.getAxis('y'), this.ymin, this.ymax);
-         return main.drawAxes2(this.options.second_x, this.options.second_y);
+         fp.setAxes2Ranges(this.options.second_x, this.getAxis('x'), this.xmin, this.xmax, this.options.second_y, this.getAxis('y'), this.ymin, this.ymax);
+         return fp.drawAxes2(this.options.second_x, this.options.second_y);
       }
 
-      main.cleanupAxes();
-      main.xmin = main.xmax = 0;
-      main.ymin = main.ymax = 0;
-      main.zmin = main.zmax = 0;
-      main.setAxesRanges(this.getAxis('x'), this.xmin, this.xmax, this.getAxis('y'), this.ymin, this.ymax, this.getAxis('z'), this.zmin, this.zmax);
-      return main.drawAxes();
+      fp.cleanupAxes();
+      fp.xmin = fp.xmax = 0;
+      fp.ymin = fp.ymax = 0;
+      fp.zmin = fp.zmax = 0;
+      fp.setAxesRanges(this.getAxis('x'), this.xmin, this.xmax, this.getAxis('y'), this.ymin, this.ymax, this.getAxis('z'), this.zmin, this.zmax);
+      return fp.drawAxes();
    }
 
    /** @summary create attributes */
@@ -356,20 +356,20 @@ class RHistPainter extends RObjectPainter {
 
    /** @summary Get tip text for axis bin */
    getAxisBinTip(name, bin, step) {
-      const pmain = this.getFramePainter(),
-          handle = pmain[`${name}_handle`],
-          axis = this.getAxis(name),
-          x1 = axis.GetBinCoord(bin);
+      const fp = this.getFramePainter(),
+            handle = fp[`${name}_handle`],
+            axis = this.getAxis(name),
+            x1 = axis.GetBinCoord(bin);
 
       if (handle.kind === kAxisLabels)
-         return pmain.axisAsText(name, x1);
+         return fp.axisAsText(name, x1);
 
       const x2 = axis.GetBinCoord(bin+(step || 1));
 
       if (handle.kind === kAxisTime)
-         return pmain.axisAsText(name, (x1+x2)/2);
+         return fp.axisAsText(name, (x1+x2)/2);
 
-      return `[${pmain.axisAsText(name, x1)}, ${pmain.axisAsText(name, x2)})`;
+      return `[${fp.axisAsText(name, x1)}, ${fp.axisAsText(name, x2)})`;
    }
 
    /** @summary Extract axes ranges and bins numbers
@@ -468,9 +468,9 @@ class RHistPainter extends RObjectPainter {
       if (this.options.second_y && axis === 'y')
          axis = 'y2';
 
-      const main = this.getFramePainter(),
-            min = main ? main[`zoom_${axis}min`] : 0,
-            max = main ? main[`zoom_${axis}max`] : 0;
+      const fp = this.getFramePainter(),
+            min = fp ? fp[`zoom_${axis}min`] : 0,
+            max = fp ? fp[`zoom_${axis}max`] : 0;
 
       let indx;
 
@@ -570,8 +570,9 @@ class RHistPainter extends RObjectPainter {
    }
 
    /** @summary Create contour levels for currently selected Z range */
-   createContour(main, palette, args) {
-      if (!main || !palette) return;
+   createContour(fp, palette, args) {
+      if (!fp || !palette)
+         return;
 
       if (!args) args = {};
 
@@ -586,36 +587,37 @@ class RHistPainter extends RObjectPainter {
       if (zmin === zmax) { zmin = this.gminbin; zmax = this.gmaxbin; zminpos = this.gminposbin; }
 
       if (this.getDimension() < 3) {
-         if (main.zoom_zmin !== main.zoom_zmax) {
-            zmin = main.zoom_zmin;
-            zmax = main.zoom_zmax;
+         if (fp.zoom_zmin !== fp.zoom_zmax) {
+            zmin = fp.zoom_zmin;
+            zmax = fp.zoom_zmax;
          } else if (args.full_z_range) {
-            zmin = main.zmin;
-            zmax = main.zmax;
+            zmin = fp.zmin;
+            zmax = fp.zmax;
          }
       }
 
-      palette.setFullRange(main.zmin, main.zmax);
-      palette.createContour(main.logz, nlevels, zmin, zmax, zminpos);
+      palette.setFullRange(fp.zmin, fp.zmax);
+      palette.createContour(fp.logz, nlevels, zmin, zmax, zminpos);
 
       if (this.getDimension() < 3) {
-         main.scale_zmin = palette.colzmin;
-         main.scale_zmax = palette.colzmax;
+         fp.scale_zmin = palette.colzmin;
+         fp.scale_zmax = palette.colzmax;
       }
    }
 
    /** @summary Start dialog to modify range of axis where histogram values are displayed */
    changeValuesRange(menu, arg) {
-      const pmain = this.getFramePainter();
-      if (!pmain) return;
-      const prefix = pmain.isAxisZoomed(arg) ? 'zoom_' + arg : arg,
-          curr = '[' + pmain[`${prefix}min`] + ',' + pmain[`${prefix}max`] + ']';
+      const fp = this.getFramePainter();
+      if (!fp)
+         return;
+      const prefix = fp.isAxisZoomed(arg) ? 'zoom_' + arg : arg,
+            curr = '[' + fp[`${prefix}min`] + ',' + fp[`${prefix}max`] + ']';
       menu.input('Enter values range for axis ' + arg + ' like [0,100] or empty string to unzoom', curr).then(res => {
          res = res ? JSON.parse(res) : [];
          if (!isObject(res) || (res.length !== 2) || !Number.isFinite(res[0]) || !Number.isFinite(res[1]))
-            pmain.unzoom(arg);
+            fp.unzoom(arg);
          else
-            pmain.zoom(arg, res[0], res[1]);
+            fp.zoom(arg, res[0], res[1]);
       });
    }
 
@@ -721,7 +723,7 @@ class RHistPainter extends RObjectPainter {
       if (args.middle === undefined) args.middle = 0;
 
       const histo = this.getHisto(), xaxis = this.getAxis('x'), yaxis = this.getAxis('y'),
-            pmain = this.getFramePainter(),
+            fp = this.getFramePainter(),
             hdim = this.getDimension(),
             res = {
                i1: this.getSelectIndex('x', 'left', 0 - args.extra),
@@ -770,7 +772,7 @@ class RHistPainter extends RObjectPainter {
 
       if (args.pixel_density) args.rounding = true;
 
-      const funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y);
+      const funcs = fp.getGrFuncs(this.options.second_x, this.options.second_y);
 
        // calculate graphical coordinates in advance
       for (i = res.i1; i <= res.i2; ++i) {
@@ -781,8 +783,8 @@ class RHistPainter extends RObjectPainter {
          if (args.rounding) res.grx[i] = Math.round(res.grx[i]);
 
          if (args.use3d) {
-            if (res.grx[i] < -pmain.size_x3d) { res.i1 = i; res.grx[i] = -pmain.size_x3d; }
-            if (res.grx[i] > pmain.size_x3d) { res.i2 = i; res.grx[i] = pmain.size_x3d; }
+            if (res.grx[i] < -fp.size_x3d) { res.i1 = i; res.grx[i] = -fp.size_x3d; }
+            if (res.grx[i] > fp.size_x3d) { res.i2 = i; res.grx[i] = fp.size_x3d; }
          }
       }
 
@@ -807,8 +809,8 @@ class RHistPainter extends RObjectPainter {
             if (args.rounding) res.gry[j] = Math.round(res.gry[j]);
 
             if (args.use3d) {
-               if (res.gry[j] < -pmain.size_y3d) { res.j1 = j; res.gry[j] = -pmain.size_y3d; }
-               if (res.gry[j] > pmain.size_y3d) { res.j2 = j; res.gry[j] = pmain.size_y3d; }
+               if (res.gry[j] < -fp.size_y3d) { res.j1 = j; res.gry[j] = -fp.size_y3d; }
+               if (res.gry[j] > fp.size_y3d) { res.j2 = j; res.gry[j] = fp.size_y3d; }
             }
          }
       }
@@ -855,10 +857,10 @@ class RHistPainter extends RObjectPainter {
       if (is_first)
          this.maxbin = this.minbin = 0;
 
-      res.palette = pmain.getHistPalette();
+      res.palette = fp.getHistPalette();
 
       if (res.palette)
-         this.createContour(pmain, res.palette, args);
+         this.createContour(fp, res.palette, args);
 
       return res;
    }

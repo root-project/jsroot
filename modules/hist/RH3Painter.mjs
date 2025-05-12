@@ -177,7 +177,7 @@ class RH3Painter extends RHistPainter {
      * @desc If there are too many points, returns promise with false */
    async draw3DScatter(handle) {
       const histo = this.getHisto(),
-            main = this.getFramePainter(),
+            fp = this.getFramePainter(),
             i1 = handle.i1, i2 = handle.i2, di = handle.stepi,
             j1 = handle.j1, j2 = handle.j2, dj = handle.stepj,
             k1 = handle.k1, k2 = handle.k2, dk = handle.stepk;
@@ -202,10 +202,10 @@ class RH3Painter extends RHistPainter {
       }
 
       // too many pixels - use box drawing
-      if (numpixels > (main.webgl ? 100000 : 30000))
+      if (numpixels > (fp.webgl ? 100000 : 30000))
          return false;
 
-      const pnts = new PointsCreator(numpixels, main.webgl, main.size_x3d/200),
+      const pnts = new PointsCreator(numpixels, fp.webgl, fp.size_x3d/200),
             bins = new Int32Array(numpixels),
             xaxis = this.getAxis('x'), yaxis = this.getAxis('y'), zaxis = this.getAxis('z'),
             rnd = new TRandom(sumz);
@@ -226,14 +226,14 @@ class RH3Painter extends RHistPainter {
                   // remember bin index for tooltip
                   bins[nbin++] = histo.getBin(i+1, j+1, k+1);
 
-                  pnts.addPoint(main.grx(binx), main.gry(biny), main.grz(binz));
+                  pnts.addPoint(fp.grx(binx), fp.gry(biny), fp.grz(binz));
                }
             }
          }
       }
 
       return pnts.createPoints({ color: this.v7EvalColor('fill_color', 'red') }).then(mesh => {
-         main.add3DMesh(mesh);
+         fp.add3DMesh(mesh);
 
          mesh.bins = bins;
          mesh.painter = this;
@@ -244,7 +244,6 @@ class RH3Painter extends RHistPainter {
             if ((indx < 0) || (indx >= this.bins.length)) return null;
 
             const p = this.painter,
-                  fp = p.getFramePainter(),
                   tip = p.get3DToolTip(this.bins[indx]);
 
             tip.x1 = fp.grx(p.getAxis('x').GetBinLowEdge(tip.ix));
@@ -265,7 +264,7 @@ class RH3Painter extends RHistPainter {
 
    /** @summary Drawing of 3D histogram */
    draw3DBins(handle) {
-      const main = this.getFramePainter();
+      const fp = this.getFramePainter();
       let fillcolor = this.v7EvalColor('fill_color', 'red'),
           use_lambert = false,
           use_helper = false, use_colors = false, use_opacity = 1, use_scale = true,
@@ -277,7 +276,7 @@ class RH3Painter extends RHistPainter {
          use_lambert = true;
          if (this.options.Sphere === 11) use_colors = true;
 
-         single_bin_geom = new THREE.SphereGeometry(0.5, main.webgl ? 16 : 8, main.webgl ? 12 : 6);
+         single_bin_geom = new THREE.SphereGeometry(0.5, fp.webgl ? 16 : 8, fp.webgl ? 12 : 6);
          single_bin_geom.applyMatrix4(new THREE.Matrix4().makeRotationX(Math.PI/2));
          single_bin_geom.computeVertexNormals();
       } else {
@@ -330,8 +329,8 @@ class RH3Painter extends RHistPainter {
       let palette = null;
 
       if (use_colors) {
-         palette = main.getHistPalette();
-         this.createContour(main, palette);
+         palette = fp.getHistPalette();
+         this.createContour(fp, palette);
       }
 
       if ((i2 <= i1) || (j2 <= j1) || (k2 <= k1))
@@ -340,11 +339,11 @@ class RH3Painter extends RHistPainter {
       const xaxis = this.getAxis('x'), yaxis = this.getAxis('y'), zaxis = this.getAxis('z');
 
       for (let i = i1; i < i2; i += di) {
-         const grx1 = main.grx(xaxis.GetBinLowEdge(i+1)),
-               grx2 = main.grx(xaxis.GetBinLowEdge(i+2));
+         const grx1 = fp.grx(xaxis.GetBinLowEdge(i+1)),
+               grx2 = fp.grx(xaxis.GetBinLowEdge(i+2));
          for (let j = j1; j < j2; j += dj) {
-            const gry1 = main.gry(yaxis.GetBinLowEdge(j+1)),
-                  gry2 = main.gry(yaxis.GetBinLowEdge(j+2));
+            const gry1 = fp.gry(yaxis.GetBinLowEdge(j+1)),
+                  gry2 = fp.gry(yaxis.GetBinLowEdge(j+2));
             for (let k = k1; k < k2; k +=dk) {
                const bin_content = histo.getBinContent(i+1, j+1, k+1);
                if (!this.options.Color && ((bin_content === 0) || (bin_content < this.gminbin))) continue;
@@ -358,8 +357,8 @@ class RH3Painter extends RHistPainter {
                   bins_colors.push(palette.getColor(colindx));
                }
 
-               const grz1 = main.grz(zaxis.GetBinLowEdge(k+1)),
-                     grz2 = main.grz(zaxis.GetBinLowEdge(k+2));
+               const grz1 = fp.grz(zaxis.GetBinLowEdge(k+1)),
+                     grz2 = fp.grz(zaxis.GetBinLowEdge(k+2));
 
                // remember bin index for tooltip
                bins_ids.push(histo.getBin(i+1, j+1, k+1));
@@ -382,7 +381,6 @@ class RH3Painter extends RHistPainter {
          }
 
          const p = this.painter,
-               fp = p.getFramePainter(),
                tip = p.get3DToolTip(binid),
                grx1 = fp.grx(xaxis.GetBinCoord(tip.ix-1)),
                grx2 = fp.grx(xaxis.GetBinCoord(tip.ix)),
@@ -421,7 +419,7 @@ class RH3Painter extends RHistPainter {
             bin_mesh.use_scale = use_scale;
             bin_mesh.tooltip = getBinTooltip;
 
-            main.add3DMesh(bin_mesh);
+            fp.add3DMesh(bin_mesh);
          }
       } else {
          if (use_colors)
@@ -444,7 +442,7 @@ class RH3Painter extends RHistPainter {
          all_bins_mesh.use_scale = use_scale;
          all_bins_mesh.tooltip = getBinTooltip;
 
-         main.add3DMesh(all_bins_mesh);
+         fp.add3DMesh(all_bins_mesh);
       }
 
       if (use_helper) {
@@ -464,7 +462,7 @@ class RH3Painter extends RHistPainter {
          const helper_material = new THREE.LineBasicMaterial({ color: this.v7EvalColor('line_color', 'lightblue') }),
                lines = createLineSegments(helper_positions, helper_material);
 
-         main.add3DMesh(lines);
+         fp.add3DMesh(lines);
       }
 
       if (use_colors)
@@ -490,23 +488,23 @@ class RH3Painter extends RHistPainter {
 
    /** @summary Redraw histogram */
    redraw(reason) {
-      const main = this.getFramePainter(); // who makes axis and 3D drawing
+      const fp = this.getFramePainter(); // who makes axis and 3D drawing
 
       if (reason === 'resize') {
-         if (main.resize3D())
-            main.render3D();
+         if (fp.resize3D())
+            fp.render3D();
          return this;
       }
 
-      assignFrame3DMethods(main);
-      return main.create3DScene(this.options.Render3D).then(() => {
-         main.setAxesRanges(this.getAxis('x'), this.xmin, this.xmax, this.getAxis('y'), this.ymin, this.ymax, this.getAxis('z'), this.zmin, this.zmax);
-         main.set3DOptions(this.options);
-         main.drawXYZ(main.toplevel, RAxisPainter, { zoom: settings.Zooming, ndim: 3, draw: true, v7: true });
+      assignFrame3DMethods(fp);
+      return fp.create3DScene(this.options.Render3D).then(() => {
+         fp.setAxesRanges(this.getAxis('x'), this.xmin, this.xmax, this.getAxis('y'), this.ymin, this.ymax, this.getAxis('z'), this.zmin, this.zmax);
+         fp.set3DOptions(this.options);
+         fp.drawXYZ(fp.toplevel, RAxisPainter, { zoom: settings.Zooming, ndim: 3, draw: true, v7: true });
          return this.drawingBins(reason);
       }).then(() => this.draw3D()).then(() => {
-         main.render3D();
-         main.addKeysHandler();
+         fp.render3D();
+         fp.addKeysHandler();
          return this;
       });
    }

@@ -177,7 +177,7 @@ function drawTH2PolyLego(painter) {
       mesh.tip_color = 0x00FF00;
 
       mesh.tooltip = function(/* intersects */) {
-         const p = this.painter, fp = p.getFramePainter(),
+         const p = this.painter,
                tbin = p.getObject().fBins.arr[this.bins_index],
          tip = {
             use_itself: true, // indicate that use mesh itself for highlighting

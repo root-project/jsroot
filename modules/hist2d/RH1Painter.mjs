@@ -932,10 +932,10 @@ class RH1Painter extends RHistPainter {
 
    /** @summary Call appropriate draw function */
    async callDrawFunc(reason) {
-      const main = this.getFramePainter();
+      const fp = this.getFramePainter();
 
-      if (main && (main.mode3d !== this.options.Mode3D) && !this.isMainPainter())
-         this.options.Mode3D = main.mode3d;
+      if (fp && (fp.mode3d !== this.options.Mode3D) && !this.isMainPainter())
+         this.options.Mode3D = fp.mode3d;
 
       return this.options.Mode3D ? this.draw3D(reason) : this.draw2D(reason);
    }

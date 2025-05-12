@@ -26,41 +26,40 @@ class RH2Painter extends RH2Painter2D {
    draw3D(reason) {
       this.mode3d = true;
 
-      const main = this.getFramePainter(), // who makes axis drawing
+      const fp = this.getFramePainter(), // who makes axis drawing
             is_main = this.isMainPainter(); // is main histogram
       let pr = Promise.resolve(this);
 
       if (reason === 'resize') {
-         if (is_main && main.resize3D())
-            main.render3D();
+         if (is_main && fp.resize3D())
+            fp.render3D();
          return pr;
       }
 
       let zmult = 1 + 2*gStyle.fHistTopMargin;
 
-      this.zmin = main.logz ? this.gminposbin * 0.3 : this.gminbin;
+      this.zmin = fp.logz ? this.gminposbin * 0.3 : this.gminbin;
       this.zmax = this.gmaxbin;
       if (this.options.minimum !== kNoZoom) this.zmin = this.options.minimum;
       if (this.options.maximum !== kNoZoom) { this.zmax = this.options.maximum; zmult = 1; }
-      if (main.logz && (this.zmin <= 0)) this.zmin = this.zmax * 1e-5;
+      if (fp.logz && (this.zmin <= 0)) this.zmin = this.zmax * 1e-5;
 
       this.deleteAttr();
 
       if (is_main) {
-         assignFrame3DMethods(main);
-         pr = main.create3DScene(this.options.Render3D).then(() => {
-            main.setAxesRanges(this.getAxis('x'), this.xmin, this.xmax, this.getAxis('y'), this.ymin, this.ymax, null, this.zmin, this.zmax);
-            main.set3DOptions(this.options);
-            main.drawXYZ(main.toplevel, RAxisPainter, { zmult, zoom: settings.Zooming, ndim: 2, draw: true, v7: true });
+         assignFrame3DMethods(fp);
+         pr = fp.create3DScene(this.options.Render3D).then(() => {
+            fp.setAxesRanges(this.getAxis('x'), this.xmin, this.xmax, this.getAxis('y'), this.ymin, this.ymax, null, this.zmin, this.zmax);
+            fp.set3DOptions(this.options);
+            fp.drawXYZ(fp.toplevel, RAxisPainter, { zmult, zoom: settings.Zooming, ndim: 2, draw: true, v7: true });
          });
       }
 
-      if (!main.mode3d)
+      if (!fp.mode3d)
          return pr;
 
       return pr.then(() => this.drawingBins(reason)).then(() => {
          // called when bins received from server, must be reentrant
-         const fp = this.getFramePainter();
 
          this.draw3DBins();
          fp.render3D();

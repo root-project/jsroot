@@ -455,10 +455,10 @@ class RH2Painter extends RHistPainter {
    /** @summary Draw histogram bins as contour */
    drawBinsContour(funcs, frame_w, frame_h) {
       const handle = this.prepareDraw({ rounding: false, extra: 100 }),
-          main = this.getFramePainter(),
-          palette = main.getHistPalette(),
-          levels = palette.getContour(),
-          func = main.getProjectionFunc(),
+            fp = this.getFramePainter(),
+            palette = fp.getHistPalette(),
+            levels = palette.getContour(),
+            func = fp.getProjectionFunc(),
 
        BuildPath = (xp, yp, iminus, iplus, do_close) => {
          let cmd = '', last, pnt, first, isany;
@@ -653,32 +653,32 @@ class RH2Painter extends RHistPainter {
    drawBinsBox() {
       const histo = this.getHisto(),
             handle = this.prepareDraw({ rounding: false }),
-            main = this.getFramePainter();
+            fp = this.getFramePainter();
 
-      if (main.maxbin === main.minbin) {
-         main.maxbin = this.gmaxbin;
-         main.minbin = this.gminbin;
-         main.minposbin = this.gminposbin;
+      if (fp.maxbin === fp.minbin) {
+         fp.maxbin = this.gmaxbin;
+         fp.minbin = this.gminbin;
+         fp.minposbin = this.gminposbin;
       }
-      if (main.maxbin === main.minbin)
-         main.minbin = Math.min(0, main.maxbin-1);
+      if (fp.maxbin === fp.minbin)
+         fp.minbin = Math.min(0, fp.maxbin-1);
 
-      const absmax = Math.max(Math.abs(main.maxbin), Math.abs(main.minbin)),
-            absmin = Math.max(0, main.minbin),
+      const absmax = Math.max(Math.abs(fp.maxbin), Math.abs(fp.minbin)),
+            absmin = Math.max(0, fp.minbin),
             di = handle.stepi, dj = handle.stepj;
       let i, j, binz, absz, res = '', cross = '', btn1 = '', btn2 = '',
           zdiff, dgrx, dgry, xx, yy, ww, hh,
           xyfactor, uselogz = false, logmin = 0;
 
-      if (main.logz && (absmax > 0)) {
+      if (fp.logz && (absmax > 0)) {
          uselogz = true;
          const logmax = Math.log(absmax);
          if (absmin > 0)
             logmin = Math.log(absmin);
-         else if ((main.minposbin >= 1) && (main.minposbin < 100))
+         else if ((fp.minposbin >= 1) && (fp.minposbin < 100))
             logmin = Math.log(0.7);
           else
-            logmin = (main.minposbin > 0) ? Math.log(0.7*main.minposbin) : logmax - 10;
+            logmin = (fp.minposbin > 0) ? Math.log(0.7*fp.minposbin) : logmax - 10;
          if (logmin >= logmax) logmin = logmax - 10;
          xyfactor = 1.0 / (logmax - logmin);
       } else
@@ -907,9 +907,9 @@ class RH2Painter extends RHistPainter {
 
       this.createG(true);
 
-      const pmain = this.getFramePainter(),
-            rect = pmain.getFrameRect(),
-            funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y);
+      const fp = this.getFramePainter(),
+            rect = fp.getFrameRect(),
+            funcs = fp.getGrFuncs(this.options.second_x, this.options.second_y);
       let handle = null, pr = null;
 
       if (this.options.Scat)
@@ -1034,7 +1034,7 @@ class RH2Painter extends RHistPainter {
                                 .call(addHighlightStyle);
          }
 
-         const pmain = this.getFramePainter();
+         const fp = this.getFramePainter();
          let i1 = i, i2 = i+1,
              j1 = j, j2 = j+1,
              x1 = h.grx[i1], x2 = h.grx[i2],
@@ -1065,18 +1065,18 @@ class RH2Painter extends RHistPainter {
          }
 
          if (this.#projection_kind === 'X') {
-            x1 = 0; x2 = pmain.getFrameWidth();
+            x1 = 0; x2 = fp.getFrameWidth();
             y1 = h.gry[j2]; y2 = h.gry[j1];
             binid = j1*777 + j2*333;
          } else if (this.#projection_kind === 'Y') {
-            y1 = 0; y2 = pmain.getFrameHeight();
+            y1 = 0; y2 = fp.getFrameHeight();
             x1 = h.grx[i1]; x2 = h.grx[i2];
             binid = i1*777 + i2*333;
          } else if (this.#projection_kind === 'XY') {
             y1 = h.gry[j2]; y2 = h.gry[j1];
             x1 = h.grx[i1]; x2 = h.grx[i2];
             binid = i1*789 + i2*653 + j1*12345 + j2*654321;
-            path = `M${x1},0H${x2}V${y1}H${pmain.getFrameWidth()}V${y2}H${x2}V${pmain.getFrameHeight()}H${x1}V${y2}H0V${y1}H${x1}Z`;
+            path = `M${x1},0H${x2}V${y1}H${fp.getFrameWidth()}V${y2}H${x2}V${fp.getFrameHeight()}H${x1}V${y2}H0V${y1}H${x1}Z`;
          }
 
          res.changed = ttrect.property('current_bin') !== binid;
@@ -1128,10 +1128,10 @@ class RH2Painter extends RHistPainter {
 
    /** @summary Call drawing function depending from 3D mode */
    async callDrawFunc(reason) {
-      const main = this.getFramePainter();
+      const fp = this.getFramePainter();
 
-      if (main && (main.mode3d !== this.options.Mode3D) && !this.isMainPainter())
-         this.options.Mode3D = main.mode3d;
+      if (fp && (fp.mode3d !== this.options.Mode3D) && !this.isMainPainter())
+         this.options.Mode3D = fp.mode3d;
 
       return this.options.Mode3D ? this.draw3D(reason) : this.draw2D(reason);
    }
