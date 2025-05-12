@@ -15,6 +15,8 @@ import { proivdeEvalPar, getTF1Value } from '../base/func.mjs';
 
 class TH3Painter extends THistPainter {
 
+   #box_option; // actual box option
+
    /** @summary Returns number of histogram dimensions */
    getDimension() { return 3; }
 
@@ -441,7 +443,7 @@ class TH3Painter extends THistPainter {
          single_bin_geom.setAttribute('normal', new THREE.BufferAttribute(single_bin_norms, 3));
       }
 
-      this._box_option = box_option;
+      this.#box_option = box_option;
 
       if (use_scale && logv) {
          if (this.gminposbin && (this.gmaxbin > this.gminposbin)) {
@@ -652,7 +654,7 @@ class TH3Painter extends THistPainter {
       }
 
       if (this.isMainPainter())
-        pr = pr.then(() => this.drawColorPalette(this.options.Zscale && (this._box_option === 12 || this._box_option === 13 || this.options.GLBox === 12)));
+        pr = pr.then(() => this.drawColorPalette(this.options.Zscale && (this.#box_option === 12 || this.#box_option === 13 || this.options.GLBox === 12)));
 
       return pr.then(() => this.updateFunctions())
                .then(() => this.updateHistTitle())
