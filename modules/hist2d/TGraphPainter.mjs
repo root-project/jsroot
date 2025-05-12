@@ -450,8 +450,8 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Returns tooltip for specified bin */
    getTooltips(d) {
-      const pmain = this.get_main(), lines = [],
-            funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
+      const fp = this.get_fp(), lines = [],
+            funcs = fp.getGrFuncs(this.options.second_x, this.options.second_y),
             gme = this.get_gme();
 
       lines.push(this.getObjectHint());
@@ -476,17 +476,17 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Provide frame painter for graph
      * @desc If not exists, emulate its behavior */
-   get_main() {
-      let pmain = this.getFramePainter();
+   get_fp() {
+      let fp = this.getFramePainter();
 
-      if (pmain?.grx && pmain?.gry)
-         return pmain;
+      if (fp?.grx && fp?.gry)
+         return fp;
 
       // FIXME: check if needed, can be removed easily
       const pp = this.getPadPainter(),
             rect = pp?.getPadRect() || { width: 800, height: 600 };
 
-      pmain = {
+      fp = {
          pad_layer: true,
          pad: pp?.getRootPad(true) ?? create(clTPad),
          pw: rect.width,
@@ -518,7 +518,7 @@ class TGraphPainter extends ObjectPainter {
          getGrFuncs() { return this; }
       };
 
-      return pmain.pad ? pmain : null;
+      return fp.pad ? fp : null;
    }
 
    /** @summary append exclusion area to created path */
@@ -937,21 +937,21 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary draw TGraph */
    drawGraph() {
-      const pmain = this.get_main(),
+      const fp = this.get_fp(),
             graph = this.getGraph();
-      if (!pmain || !this.options)
+      if (!fp || !this.options)
          return;
 
       // special mode for TMultiGraph 3d drawing
       if (this.options.pos3d)
-         return this.drawBins3D(pmain, graph);
+         return this.drawBins3D(fp, graph);
 
       const is_gme = Boolean(this.get_gme()),
-            funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
-            w = pmain.getFrameWidth(),
-            h = pmain.getFrameHeight();
+            funcs = fp.getGrFuncs(this.options.second_x, this.options.second_y),
+            w = funcs.getFrameWidth(),
+            h = funcs.getFrameHeight();
 
-      this.createG(pmain.pad_layer ? false : this.#frame_layer);
+      this.createG(fp.pad_layer ? false : this.#frame_layer);
 
       this.createGraphDrawAttributes();
 
@@ -996,11 +996,11 @@ class TGraphPainter extends ObjectPainter {
 
       if (this.draw_kind !== 'nodes') return null;
 
-      const pmain = this.get_main(),
-            height = pmain.getFrameHeight(),
+      const fp = this.get_fp(),
+            height = fp.getFrameHeight(),
             esz = this.error_size,
             isbar1 = (this.options.Bar === 1),
-            funcs = isbar1 ? pmain.getGrFuncs(this.options.second_x, this.options.second_y) : null,
+            funcs = isbar1 ? fp.getGrFuncs(this.options.second_x, this.options.second_y) : null,
             msize = this.marker_size ? Math.round(this.marker_size/2 + 1.5) : 0;
       let findbin = null, best_dist2 = 1e10, best = null;
 
@@ -1106,10 +1106,11 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Find best bin index for specified point */
    findBestBin(pnt) {
-      if (!this.bins) return null;
+      if (!this.bins)
+         return null;
 
       const islines = (this.draw_kind === 'lines'),
-            funcs = this.get_main().getGrFuncs(this.options.second_x, this.options.second_y);
+            funcs = this.get_fp().getGrFuncs(this.options.second_x, this.options.second_y);
       let bestindx = -1,
           bestbin = null,
           bestdist = 1e10,
@@ -1209,16 +1210,16 @@ class TGraphPainter extends ObjectPainter {
       if (!best || (!best.bin && !best.closeline)) return null;
 
       const islines = (this.draw_kind === 'lines'),
-          ismark = (this.draw_kind === 'mark'),
-          pmain = this.get_main(),
-          funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
-          gr = this.getGraph(),
-          res = { name: gr.fName, title: gr.fTitle,
-                  x: best.bin ? funcs.grx(best.bin.x) : best.linex,
-                  y: best.bin ? funcs.gry(best.bin.y) : best.liney,
-                  color1: this.lineatt.color,
-                  lines: this.getTooltips(best.bin),
-                  usepath: true };
+            ismark = (this.draw_kind === 'mark'),
+            fp = this.get_fp(),
+            funcs = fp.getGrFuncs(this.options.second_x, this.options.second_y),
+            gr = this.getGraph(),
+            res = { name: gr.fName, title: gr.fTitle,
+                    x: best.bin ? funcs.grx(best.bin.x) : best.linex,
+                    y: best.bin ? funcs.gry(best.bin.y) : best.liney,
+                    color1: this.lineatt.color,
+                    lines: this.getTooltips(best.bin),
+                    usepath: true };
 
       res.user_info = { obj: gr, name: gr.fName, bin: 0, cont: 0, grx: res.x, gry: res.y };
 
@@ -1320,7 +1321,7 @@ class TGraphPainter extends ObjectPainter {
    /** @summary Start moving of TGraph */
    moveStart(x, y) {
       this.pos_dx = this.pos_dy = 0;
-      this.move_funcs = this.get_main().getGrFuncs(this.options.second_x, this.options.second_y);
+      this.move_funcs = this.get_fp().getGrFuncs(this.options.second_x, this.options.second_y);
       const hint = this.extractTooltip({ x, y });
       if (hint && hint.exact && (hint.binindx !== undefined)) {
          this.move_binindx = hint.binindx;
@@ -1421,25 +1422,24 @@ class TGraphPainter extends ObjectPainter {
       if (super.executeMenuCommand(method, args))
          return true;
 
-      const canp = this.getCanvPainter(), pmain = this.get_main();
+      const canp = this.getCanvPainter(), fp = this.get_fp();
 
       if ((method.fName === 'RemovePoint') || (method.fName === 'InsertPoint')) {
          if (!canp || canp.isReadonly())
             return true; // ignore function
 
-         const pnt = isFunc(pmain?.getLastEventPos) ? pmain.getLastEventPos() : null,
-             hint = this.extractTooltip(pnt);
+         const pnt = isFunc(fp?.getLastEventPos) ? fp.getLastEventPos() : null,
+               hint = this.extractTooltip(pnt);
 
          if (method.fName === 'InsertPoint') {
             if (pnt) {
-               const funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
+               const funcs = fp.getGrFuncs(this.options.second_x, this.options.second_y),
                      userx = funcs.revertAxis('x', pnt.x) ?? 0,
                      usery = funcs.revertAxis('y', pnt.y) ?? 0;
                this.submitCanvExec(`AddPoint(${userx.toFixed(3)}, ${usery.toFixed(3)})`, method.$execid);
             }
          } else if (method.$execid && (hint?.binindx !== undefined))
             this.submitCanvExec(`RemovePoint(${hint.binindx})`, method.$execid);
-
 
          return true; // call is processed
       }
