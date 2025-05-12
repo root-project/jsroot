@@ -749,6 +749,9 @@ class HierarchyPainter extends BasePainter {
    #monitoring_on; // if monitoring enabled
    #monitoring_handle; // timer handle for monitoring
    #monitoring_frame; // animation frame for monitoring
+   #one_by_one;  // process drop items one by one
+   #topname; // top item name
+   #cached_draw_object; // cached object for first draw
 
    /** @summary Create painter
      * @param {string} name - symbolic name
@@ -2510,7 +2513,7 @@ class HierarchyPainter extends BasePainter {
 
          const promises = [];
 
-         if (this._one_by_one) {
+         if (this.#one_by_one) {
             function processNext(indx) {
                if (indx >= items.length)
                   return true;
@@ -2840,7 +2843,7 @@ class HierarchyPainter extends BasePainter {
          h1._isopen = true;
          if (!this.h) {
             this.h = h1;
-            if (this._topname) h1._name = this._topname;
+            if (this.#topname) h1._name = this.#topname;
          } else if (this.h._kind === kTopFolder)
             this.h._childs.push(h1);
            else {
@@ -2994,6 +2997,12 @@ class HierarchyPainter extends BasePainter {
       return import(/* webpackIgnore: true */ module);
    }
 
+   /** @summary set cached object for gui drawing
+     * @private */
+   setCachedObject(obj) {
+      this.#cached_draw_object = obj;
+   }
+
    /** @summary method used to request object from the http server
      * @return {Promise} with requested object
      * @private */
@@ -3042,10 +3051,10 @@ class HierarchyPainter extends BasePainter {
            req = 'item.json.gz?compact=3';
       }
 
-      if (!itemname && item && this._cached_draw_object && !req) {
+      if (!itemname && item && this.#cached_draw_object && !req) {
          // special handling for online draw when cashed
-         const obj = this._cached_draw_object;
-         delete this._cached_draw_object;
+         const obj = this.#cached_draw_object;
+         this.#cached_draw_object = undefined;
          return obj;
       }
 
@@ -3540,7 +3549,7 @@ class HierarchyPainter extends BasePainter {
       style = getOptionAsArray('#style'),
       title = getOption('title');
 
-      this._one_by_one = settings.drop_items_one_by_one ?? (getOption('one_by_one') !== null);
+      this.#one_by_one = settings.drop_items_one_by_one ?? (getOption('one_by_one') !== null);
 
       let prereq = getOption('prereq') || '',
           load = getOption('load'),
@@ -3634,7 +3643,7 @@ class HierarchyPainter extends BasePainter {
       if (this.start_without_browser)
          browser_kind = '';
 
-      this._topname = getOption('topname');
+      this.#topname = getOption('topname');
 
       const openAllFiles = () => {
          let promise;
