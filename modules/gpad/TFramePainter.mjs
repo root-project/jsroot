@@ -975,8 +975,7 @@ class FrameInteractive extends TooltipHandler {
 
       main_svg.attr('viewBox', `0 0 ${w} ${h}`);
 
-      delete this._shifting_dx;
-      delete this._shifting_dy;
+      this._shifting_dx = this._shifting_dy = undefined;
 
       setPainterTooltipEnabled(this, true);
 
@@ -1599,7 +1598,7 @@ class FrameInteractive extends TooltipHandler {
 
       if (Math.abs(this._shifting_dx) > 2 || Math.abs(this._shifting_dy) > 2)
          this.performScalesShift();
-       else if (new Date().getTime() - tm > 700)
+      else if (new Date().getTime() - tm > 700)
          this.showContextMenu(kind, { x: pos[0], y: pos[1] });
    }
 
