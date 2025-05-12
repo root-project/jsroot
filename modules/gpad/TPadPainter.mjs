@@ -229,6 +229,8 @@ class TPadPainter extends ObjectPainter {
    #fixed_size; // fixed size flag
    #has_canvas; // indicate if top canvas painter exists
    #fast_drawing; // fast drawing flag
+   #resize_tmout; // timeout handle for resize
+   #start_draw_tm;  // time when start drawing primitives
 
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -1253,7 +1255,7 @@ class TPadPainter extends ObjectPainter {
    async drawPrimitives(indx) {
       if (indx === undefined) {
          if (this.isCanvas())
-            this._start_tm = new Date().getTime();
+            this.#start_draw_tm = new Date().getTime();
 
          // set number of primitives
          this.#num_primitives = this.pad?.fPrimitives?.arr?.length || 0;
@@ -1263,10 +1265,11 @@ class TPadPainter extends ObjectPainter {
       }
 
       if (!this.pad || (indx >= this.#num_primitives)) {
-         if (this._start_tm) {
-            const spenttm = new Date().getTime() - this._start_tm;
-            if (spenttm > 1000) console.log(`Canvas ${this.pad?.fName || '---'} drawing took ${(spenttm*1e-3).toFixed(2)}s`);
-            delete this._start_tm;
+         if (this.#start_draw_tm) {
+            const spenttm = new Date().getTime() - this.#start_draw_tm;
+            if (spenttm > 1000)
+               console.log(`Canvas ${this.pad?.fName || '---'} drawing took ${(spenttm*1e-3).toFixed(2)}s`);
+            this.#start_draw_tm = undefined;
          }
 
          this.confirmDraw();
@@ -1620,10 +1623,10 @@ class TPadPainter extends ObjectPainter {
          changed = this.createCanvasSvg(force ? 2 : 1, size);
 
          if (changed && this.isCanvas() && this.pad && this.online_canvas && !this.embed_canvas && !this.isBatchMode()) {
-            if (this._resize_tmout)
-               clearTimeout(this._resize_tmout);
-            this._resize_tmout = setTimeout(() => {
-               delete this._resize_tmout;
+            if (this.#resize_tmout)
+               clearTimeout(this.#resize_tmout);
+            this.#resize_tmout = setTimeout(() => {
+               this.#resize_tmout = undefined;
                if (isFunc(this.sendResized))
                   this.sendResized();
             }, 1000); // long enough delay to prevent multiple occurrence

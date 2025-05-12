@@ -36,6 +36,10 @@ class TCanvasPainter extends TPadPainter {
 
    #websocket; // WebWindow handle used for communication with server
    #changed_layout; // modified layout
+   #getmenu_callback;  // function called when menu items get from server
+   #online_fixed_size; // when size fixed for online canvas
+   #all_sections_showed; // set once after online canvas drawn
+   #last_highlight_msg; // last highligh msg send to server
 
    /** @summary Constructor */
    constructor(dom, canvas, opt, kind = true) {
@@ -258,7 +262,7 @@ class TCanvasPainter extends TPadPainter {
    async submitMenuRequest(_painter, _kind, reqid) {
       // only single request can be handled, no limit better in RCanvas
       return new Promise(resolveFunc => {
-         this._getmenu_callback = resolveFunc;
+         this.#getmenu_callback = resolveFunc;
          this.sendWebsocket('GETMENU:' + reqid); // request menu items for given painter
       });
    }
@@ -364,7 +368,7 @@ class TCanvasPainter extends TPadPainter {
                 if (!this.snapid)
                    this.resizeBrowser(snap.fSnapshot.fWindowWidth, snap.fSnapshot.fWindowHeight);
                 if (!this.snapid && isFunc(this.setFixedCanvasSize))
-                   this._online_fixed_size = this.setFixedCanvasSize(snap.fSnapshot.fCw, snap.fSnapshot.fCh, snap.fFixedSize);
+                   this.#online_fixed_size = this.setFixedCanvasSize(snap.fSnapshot.fCw, snap.fSnapshot.fCh, snap.fFixedSize);
              })
              .then(() => this.redrawPadSnap(snap))
              .then(() => {
@@ -382,9 +386,9 @@ class TCanvasPainter extends TPadPainter {
       } else if (msg.slice(0, 5) === 'MENU:') {
          // this is menu with exact identifier for object
          const lst = parse(msg.slice(5));
-         if (isFunc(this._getmenu_callback)) {
-            this._getmenu_callback(lst);
-            delete this._getmenu_callback;
+         if (isFunc(this.#getmenu_callback)) {
+            this.#getmenu_callback(lst);
+            this.#getmenu_callback = undefined;
          }
       } else if (msg.slice(0, 4) === 'CMD:') {
          msg = msg.slice(4);
@@ -418,7 +422,7 @@ class TCanvasPainter extends TPadPainter {
             resized = true;
          }
          if (ctrl.cw && ctrl.ch && isFunc(this.setFixedCanvasSize)) {
-            this._online_fixed_size = this.setFixedCanvasSize(Number.parseInt(ctrl.cw), Number.parseInt(ctrl.ch), true);
+            this.#online_fixed_size = this.setFixedCanvasSize(Number.parseInt(ctrl.cw), Number.parseInt(ctrl.ch), true);
             resized = true;
          }
          const kinds = ['Menu', 'StatusBar', 'Editor', 'ToolBar', 'ToolTips'];
@@ -456,7 +460,7 @@ class TCanvasPainter extends TPadPainter {
       const cw = this.getPadWidth(), ch = this.getPadHeight(),
             wx = window.screenLeft, wy = window.screenTop,
             ww = window.outerWidth, wh = window.outerHeight,
-            fixed = this._online_fixed_size ? 1 : 0;
+            fixed = this.#online_fixed_size ? 1 : 0;
       if (!force) {
          force = (cw > 0) && (ch > 0) && ((this.pad.fCw !== cw) || (this.pad.fCh !== ch));
          if (force) {
@@ -639,15 +643,16 @@ class TCanvasPainter extends TPadPainter {
    /** @summary Complete handling of online canvas drawing
      * @private */
    completeCanvasSnapDrawing() {
-      if (!this.pad) return;
+      if (!this.pad)
+         return;
 
       this.addPadInteractive();
 
       if ((typeof document !== 'undefined') && !this.embed_canvas && this.getWebsocket())
          document.title = this.pad.fTitle;
 
-      if (this._all_sections_showed) return;
-      this._all_sections_showed = true;
+      if (this.#all_sections_showed) return;
+      this.#all_sections_showed = true;
 
       // used in Canvas.controller.js to avoid browser resize because of initial sections show/hide
       this._ignore_section_resize = true;
@@ -683,8 +688,8 @@ class TCanvasPainter extends TPadPainter {
 
       const msg = JSON.stringify(arr);
 
-      if (this._last_highlight_msg !== msg) {
-         this._last_highlight_msg = msg;
+      if (this.#last_highlight_msg !== msg) {
+         this.#last_highlight_msg = msg;
          this.sendWebsocket(`HIGHLIGHT:${msg}`);
       }
    }

@@ -23,6 +23,7 @@ class RCanvasPainter extends RPadPainter {
    #websocket; // WebWindow handle used for communication with server
    #changed_layout; // modified layout
    #submreq;  // submitted requests
+   #nextreqid; // id of next request
 
    /** @summary constructor */
    constructor(dom, canvas, opt) {
@@ -394,8 +395,8 @@ class RCanvasPainter extends RPadPainter {
       req.id = painter.snapid;
 
       if (method) {
-         if (!this._nextreqid) this._nextreqid = 1;
-         req.reqid = this._nextreqid++;
+         if (!this.#nextreqid) this.#nextreqid = 1;
+         req.reqid = this.#nextreqid++;
       } else
          req.reqid = 0; // request will not be replied
 

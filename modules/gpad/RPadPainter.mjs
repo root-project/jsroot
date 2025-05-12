@@ -33,6 +33,8 @@ class RPadPainter extends RObjectPainter {
    #fixed_size;  // fixed size flag
    #has_canvas;  // when top-level canvas exists
    #fast_drawing; // fast drawing mode
+   #resize_tmout; // timeout handle for resize
+   #start_draw_tm;  // time when start drawing primitives
 
    /** @summary constructor */
    constructor(dom, pad, opt, iscan, add_to_primitives) {
@@ -767,7 +769,7 @@ class RPadPainter extends RObjectPainter {
    async drawPrimitives(indx) {
       if (indx === undefined) {
          if (this.isCanvas())
-            this._start_tm = new Date().getTime();
+            this.#start_draw_tm = new Date().getTime();
 
          // set number of primitives
          this.#num_primitives = this.pad?.fPrimitives?.length ?? 0;
@@ -778,10 +780,10 @@ class RPadPainter extends RObjectPainter {
       if (!this.pad || (indx >= this.#num_primitives)) {
          this.confirmDraw();
 
-         if (this._start_tm) {
-            const spenttm = new Date().getTime() - this._start_tm;
+         if (this.#start_draw_tm) {
+            const spenttm = new Date().getTime() - this.#start_draw_tm;
             if (spenttm > 3000) console.log(`Canvas drawing took ${(spenttm*1e-3).toFixed(2)}s`);
-            delete this._start_tm;
+            this.#start_draw_tm = undefined;
          }
 
          return;
@@ -989,11 +991,12 @@ class RPadPainter extends RObjectPainter {
          changed = this.createCanvasSvg(force ? 2 : 1, size);
 
          if (changed && this.isCanvas() && this.pad && this.online_canvas && !this.embed_canvas && !this.isBatchMode()) {
-            if (this._resize_tmout)
-               clearTimeout(this._resize_tmout);
-            this._resize_tmout = setTimeout(() => {
-               delete this._resize_tmout;
-               if (!this.pad?.fWinSize) return;
+            if (this.#resize_tmout)
+               clearTimeout(this.#resize_tmout);
+            this.#resize_tmout = setTimeout(() => {
+               this.#resize_tmout = undefined;
+               if (!this.pad?.fWinSize)
+                  return;
                const cw = this.getPadWidth(), ch = this.getPadHeight();
                if ((cw > 0) && (ch > 0) && ((this.pad.fWinSize[0] !== cw) || (this.pad.fWinSize[1] !== ch))) {
                   this.pad.fWinSize[0] = cw;
