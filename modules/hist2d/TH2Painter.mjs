@@ -3329,7 +3329,7 @@ class TH2Painter extends THistPainter {
          is_pol = true;
       } else {
          // search bins position
-         if (fp.reverse_x) {
+         if (fp.reverse_x()) {
             for (i = h.i1; i < h.i2; ++i)
                if ((pnt.x <= h.grx[i]) && (pnt.x >= h.grx[i+1])) break;
          } else {
@@ -3337,7 +3337,7 @@ class TH2Painter extends THistPainter {
                if ((pnt.x >= h.grx[i]) && (pnt.x <= h.grx[i+1])) break;
          }
 
-         if (fp.reverse_y) {
+         if (fp.reverse_y()) {
             for (j = h.j1; j < h.j2; ++j)
                if ((pnt.y <= h.gry[j+1]) && (pnt.y >= h.gry[j])) break;
          } else {
@@ -3360,13 +3360,13 @@ class TH2Painter extends THistPainter {
             x1 = Math.round(x1 + dx*h.xbar1);
             y2 = Math.round(y1 + dy*h.ybar2);
             y1 = Math.round(y1 + dy*h.ybar1);
-            if (fp.reverse_x) {
+            if (fp.reverse_x()) {
                if ((pnt.x > x1) || (pnt.x <= x2))
                   match = false;
             } else if ((pnt.x < x1) || (pnt.x >= x2))
                match = false;
 
-            if (fp.reverse_y) {
+            if (fp.reverse_y()) {
                if ((pnt.y > y1) || (pnt.y <= y2))
                   match = false;
             } else if ((pnt.y < y1) || (pnt.y >= y2))

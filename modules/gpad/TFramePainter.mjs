@@ -1426,8 +1426,8 @@ class FrameInteractive extends TooltipHandler {
       evnt.preventDefault();
       this.clearInteractiveElements();
 
-      const itemx = { name: 'x', reverse: this.reverse_x },
-            itemy = { name: 'y', reverse: this.reverse_y, ignore: !this.isAllowedDefaultYZooming() },
+      const itemx = { name: 'x', reverse: this.reverse_x() },
+            itemy = { name: 'y', reverse: this.reverse_y(), ignore: !this.isAllowedDefaultYZooming() },
             cur = d3_pointer(evnt, this.getFrameSvg().node()),
             w = this.getFrameWidth(), h = this.getFrameHeight();
 
@@ -1646,6 +1646,10 @@ class TFramePainter extends FrameInteractive {
    #frame_height; // frame height
    #frame_trans; // transform of frame element
    #swap_xy;  // swap X/Y axis on the frame
+   #reverse_x; // reverse X axis
+   #reverse_y; // reverse Y axis
+   #reverse_x2; // reverse X2 axis
+   #reverse_y2; // reverse Y2 axis
    #border_mode; // frame border mode
    #border_size; // frame border size
    #axes_drawn; // when axes are drawn
@@ -1705,6 +1709,12 @@ class TFramePainter extends FrameInteractive {
 
    /** @summary Returns true if X/Y axis swapped */
    swap_xy() { return this.#swap_xy; }
+
+   /** @summary Is reverse x */
+   reverse_x() { return this.#reverse_x; }
+
+   /** @summary Is reverse x */
+   reverse_y() { return this.#reverse_y; }
 
    /** @summary Shrink frame size
      * @private */
@@ -1911,8 +1921,8 @@ class TFramePainter extends FrameInteractive {
       if (!opts) opts = { ndim: 1 };
 
       this.#swap_xy = opts.swap_xy || false;
-      this.reverse_x = opts.reverse_x || false;
-      this.reverse_y = opts.reverse_y || false;
+      this.#reverse_x = opts.reverse_x || false;
+      this.#reverse_y = opts.reverse_y || false;
 
       this.logx = this.logy = 0;
 
@@ -1981,7 +1991,7 @@ class TFramePainter extends FrameInteractive {
       this.x_handle.setHistPainter(opts.hist_painter, 'x');
 
       this.x_handle.configureAxis('xaxis', this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, this.#swap_xy, this.#swap_xy ? [0, h] : [0, w],
-                                      { reverse: this.reverse_x,
+                                      { reverse: this.#reverse_x,
                                         log: this.#swap_xy ? pad_logy : pad_logx,
                                         ignore_labels: this.x_ignore_labels,
                                         noexp_changed: this.x_noexp_changed,
@@ -1997,7 +2007,7 @@ class TFramePainter extends FrameInteractive {
 
       this.y_handle.configureAxis('yaxis', this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, !this.#swap_xy, this.#swap_xy ? [0, w] : [0, h],
                                       { value_axis: opts.ndim === 1,
-                                        reverse: this.reverse_y,
+                                        reverse: this.#reverse_y,
                                         log: this.#swap_xy ? pad_logx : pad_logy,
                                         ignore_labels: this.y_ignore_labels,
                                         noexp_changed: this.y_noexp_changed,
@@ -2016,8 +2026,8 @@ class TFramePainter extends FrameInteractive {
    createXY2(opts) {
       if (!opts) opts = { ndim: this.scales_ndim ?? 1 };
 
-      this.reverse_x2 = opts.reverse_x || false;
-      this.reverse_y2 = opts.reverse_y || false;
+      this.#reverse_x2 = opts.reverse_x || false;
+      this.#reverse_y2 = opts.reverse_y || false;
 
       this.logx2 = this.logy2 = 0;
 
@@ -2057,7 +2067,7 @@ class TFramePainter extends FrameInteractive {
          this.x2_handle.setHistPainter(opts.hist_painter, 'x');
 
          this.x2_handle.configureAxis('x2axis', this.x2min, this.x2max, this.scale_x2min, this.scale_x2max, this.#swap_xy, this.#swap_xy ? [0, h] : [0, w],
-                                         { reverse: this.reverse_x2,
+                                         { reverse: this.#reverse_x2,
                                            log: this.#swap_xy ? pad.fLogy : pad.fLogx,
                                            ignore_labels: this.x2_ignore_labels,
                                            noexp_changed: this.x2_noexp_changed,
@@ -2072,7 +2082,7 @@ class TFramePainter extends FrameInteractive {
          this.y2_handle.setHistPainter(opts.hist_painter, 'y');
 
          this.y2_handle.configureAxis('y2axis', this.y2min, this.y2max, this.scale_y2min, this.scale_y2max, !this.#swap_xy, this.#swap_xy ? [0, w] : [0, h],
-                                         { reverse: this.reverse_y2,
+                                         { reverse: this.#reverse_y2,
                                            log: this.#swap_xy ? pad.fLogx : pad.fLogy,
                                            ignore_labels: this.y2_ignore_labels,
                                            noexp_changed: this.y2_noexp_changed,

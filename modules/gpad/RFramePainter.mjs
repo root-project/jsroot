@@ -22,6 +22,8 @@ class RFramePainter extends RObjectPainter {
    #frame_height; // frame height
    #frame_trans; // transform of frame element
    #swap_xy;  // swap X/Y axis on the frame
+   #reverse_x; // reverse X axis
+   #reverse_y; // reverse Y axis
    #axes_drawn; // when axes are drawn
    #projection; // id of projection function
    #click_handler; // handle for click events
@@ -65,6 +67,12 @@ class RFramePainter extends RObjectPainter {
 
    /** @summary Returns true if X/Y axis swapped */
    swap_xy() { return this.#swap_xy; }
+
+   /** @summary Is reverse x */
+   reverse_x() { return this.#reverse_x; }
+
+   /** @summary Is reverse x */
+   reverse_y() { return this.#reverse_y; }
 
    /** @summary Set position of last context menu event
     * @private */
@@ -265,8 +273,8 @@ class RFramePainter extends RObjectPainter {
 
       this.v6axes = true;
       this.#swap_xy = opts.swap_xy || false;
-      this.reverse_x = opts.reverse_x || false;
-      this.reverse_y = opts.reverse_y || false;
+      this.#reverse_x = opts.reverse_x || false;
+      this.#reverse_y = opts.reverse_y || false;
 
       this.logx = this.v7EvalAttr('x_log', 0);
       this.logy = this.v7EvalAttr('y_log', 0);
@@ -317,7 +325,7 @@ class RFramePainter extends RObjectPainter {
       this.x_handle.optionUnlab = this.v7EvalAttr('x_labels_hide', false);
 
       this.x_handle.configureAxis('xaxis', this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, this.#swap_xy, this.#swap_xy ? [0, h] : [0, w],
-                                      { reverse: this.reverse_x,
+                                      { reverse: this.#reverse_x,
                                         log: this.#swap_xy ? this.logy : this.logx,
                                         symlog: this.#swap_xy ? opts.symlog_y : opts.symlog_x,
                                         logcheckmin: (opts.ndim > 1) || !this.#swap_xy,
@@ -329,7 +337,7 @@ class RFramePainter extends RObjectPainter {
       this.y_handle.optionUnlab = this.v7EvalAttr('y_labels_hide', false);
 
       this.y_handle.configureAxis('yaxis', this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, !this.#swap_xy, this.#swap_xy ? [0, w] : [0, h],
-                                      { reverse: this.reverse_y,
+                                      { reverse: this.#reverse_y,
                                         log: this.#swap_xy ? this.logx : this.logy,
                                         symlog: this.#swap_xy ? opts.symlog_x : opts.symlog_y,
                                         logcheckmin: (opts.ndim > 1) || this.#swap_xy,
