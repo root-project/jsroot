@@ -2224,29 +2224,29 @@ class TPadPainter extends ObjectPainter {
    getPadRanges(r) {
       if (!r) return false;
 
-      const main = this.getFramePainter(),
+      const fp = this.getFramePainter(),
             p = this.svg_this_pad();
 
-      r.ranges = main?.ranges_set ?? false; // indicate that ranges are assigned
+      r.ranges = fp?.ranges_set ?? false; // indicate that ranges are assigned
 
-      r.ux1 = r.px1 = r.ranges ? main.scale_xmin : 0; // need to initialize for JSON reader
-      r.uy1 = r.py1 = r.ranges ? main.scale_ymin : 0;
-      r.ux2 = r.px2 = r.ranges ? main.scale_xmax : 0;
-      r.uy2 = r.py2 = r.ranges ? main.scale_ymax : 0;
-      r.uz1 = r.ranges ? (main.scale_zmin ?? 0) : 0;
-      r.uz2 = r.ranges ? (main.scale_zmax ?? 0) : 0;
+      r.ux1 = r.px1 = r.ranges ? fp.scale_xmin : 0; // need to initialize for JSON reader
+      r.uy1 = r.py1 = r.ranges ? fp.scale_ymin : 0;
+      r.ux2 = r.px2 = r.ranges ? fp.scale_xmax : 0;
+      r.uy2 = r.py2 = r.ranges ? fp.scale_ymax : 0;
+      r.uz1 = r.ranges ? (fp.scale_zmin ?? 0) : 0;
+      r.uz2 = r.ranges ? (fp.scale_zmax ?? 0) : 0;
 
-      if (main) {
-         if (main.zoom_xmin !== main.zoom_xmax) {
-            r.zx1 = main.zoom_xmin; r.zx2 = main.zoom_xmax;
+      if (fp) {
+         if (fp.zoom_xmin !== fp.zoom_xmax) {
+            r.zx1 = fp.zoom_xmin; r.zx2 = fp.zoom_xmax;
          }
 
-         if (main.zoom_ymin !== main.zoom_ymax) {
-            r.zy1 = main.zoom_ymin; r.zy2 = main.zoom_ymax;
+         if (fp.zoom_ymin !== fp.zoom_ymax) {
+            r.zy1 = fp.zoom_ymin; r.zy2 = fp.zoom_ymax;
          }
 
-         if (main.zoom_zmin !== main.zoom_zmax) {
-            r.zz1 = main.zoom_zmin; r.zz2 = main.zoom_zmax;
+         if (fp.zoom_zmin !== fp.zoom_zmax) {
+            r.zz1 = fp.zoom_zmin; r.zz2 = fp.zoom_zmax;
          }
       }
 
@@ -2259,17 +2259,17 @@ class TPadPainter extends ObjectPainter {
          value = Math.log10(value);
          if (log > 1) value /= Math.log10(log);
          return value;
-      }, frect = main.getFrameRect();
+      }, frect = fp.getFrameRect();
 
-      r.ux1 = func(main.logx, r.ux1, 0);
-      r.ux2 = func(main.logx, r.ux2, 1);
+      r.ux1 = func(fp.logx, r.ux1, 0);
+      r.ux2 = func(fp.logx, r.ux2, 1);
 
       let k = (r.ux2 - r.ux1)/(frect.width || 10);
       r.px1 = r.ux1 - k*frect.x;
       r.px2 = r.px1 + k*this.getPadWidth();
 
-      r.uy1 = func(main.logy, r.uy1, 0);
-      r.uy2 = func(main.logy, r.uy2, 1);
+      r.uy1 = func(fp.logy, r.uy1, 0);
+      r.uy2 = func(fp.logy, r.uy2, 1);
 
       k = (r.uy2 - r.uy1)/(frect.height || 10);
       r.py1 = r.uy1 - k*frect.y;

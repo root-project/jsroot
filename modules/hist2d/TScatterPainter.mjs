@@ -47,7 +47,7 @@ class TScatterPainter extends TGraphPainter {
       if (!pal && gr) {
          pal = create(clTPaletteAxis);
 
-         const fp = this.get_main();
+         const fp = this.get_fp();
          Object.assign(pal, { fX1NDC: fp.fX2NDC + 0.005, fX2NDC: fp.fX2NDC + 0.05, fY1NDC: fp.fY1NDC, fY2NDC: fp.fY2NDC, fInit: 1, $can_move: true });
          Object.assign(pal.fAxis, { fChopt: '+', fLineColor: 1, fLineSyle: 1, fLineWidth: 1, fTextAngle: 0, fTextAlign: 11, fNdiv: 510 });
          gr.fFunctions.AddFirst(pal, '');
@@ -115,13 +115,13 @@ class TScatterPainter extends TGraphPainter {
 
    /** @summary Actual drawing of TScatter */
    async drawGraph() {
-      const fpainter = this.get_main(),
+      const fp = this.get_fp(),
             hpainter = this.getMainPainter(),
             scatter = this.getObject(),
             hist = this.getHistogram();
 
       let scale = 1, offset = 0, palette;
-      if (!fpainter || !hpainter || !scatter)
+      if (!fp || !hpainter || !scatter)
          return;
 
       if (scatter.fColor) {
@@ -144,12 +144,12 @@ class TScatterPainter extends TGraphPainter {
          this.fContour.createNormal(30);
          this.fContour.configIndicies(0, 0);
 
-         fpainter.zmin = minc;
-         fpainter.zmax = maxc;
+         fp.zmin = minc;
+         fp.zmax = maxc;
 
-         if (!fpainter.zoomChangedInteractive('z') && hist && hist.fMinimum !== kNoZoom && hist.fMaximum !== kNoZoom) {
-            fpainter.zoom_zmin = hist.fMinimum;
-            fpainter.zoom_zmax = hist.fMaximum;
+         if (!fp.zoomChangedInteractive('z') && hist && hist.fMinimum !== kNoZoom && hist.fMaximum !== kNoZoom) {
+            fp.zoom_zmin = hist.fMinimum;
+            fp.zoom_zmax = hist.fMaximum;
          }
       }
 
@@ -168,13 +168,13 @@ class TScatterPainter extends TGraphPainter {
          offset = mins;
       }
 
-      this.createG(!fpainter.pad_layer);
+      this.createG(!fp.pad_layer);
 
-      const funcs = fpainter.getGrFuncs(),
-            is_zoom = (fpainter.zoom_zmin !== fpainter.zoom_zmax) && scatter.fColor;
+      const funcs = fp.getGrFuncs(),
+            is_zoom = (fp.zoom_zmin !== fp.zoom_zmax) && scatter.fColor;
 
       for (let i = 0; i < this.bins.length; ++i) {
-         if (is_zoom && ((scatter.fColor[i] < fpainter.zoom_zmin) || (scatter.fColor[i] > fpainter.zoom_zmax)))
+         if (is_zoom && ((scatter.fColor[i] < fp.zoom_zmin) || (scatter.fColor[i] > fp.zoom_zmax)))
             continue;
 
          const pnt = this.bins[i],

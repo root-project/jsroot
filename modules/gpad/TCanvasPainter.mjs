@@ -181,22 +181,22 @@ class TCanvasPainter extends TPadPainter {
 
          const canv = create(clTCanvas),
                pad = this.pad,
-               main = this.getFramePainter();
+               fp = this.getFramePainter();
          let drawopt;
 
          if (kind === 'X') {
             canv.fLeftMargin = pad.fLeftMargin;
             canv.fRightMargin = pad.fRightMargin;
-            canv.fLogx = main.logx;
-            canv.fUxmin = main.logx ? Math.log10(main.scale_xmin) : main.scale_xmin;
-            canv.fUxmax = main.logx ? Math.log10(main.scale_xmax) : main.scale_xmax;
+            canv.fLogx = fp.logx;
+            canv.fUxmin = fp.logx ? Math.log10(fp.scale_xmin) : fp.scale_xmin;
+            canv.fUxmax = fp.logx ? Math.log10(fp.scale_xmax) : fp.scale_xmax;
             drawopt = 'fixframe';
          } else if (kind === 'Y') {
             canv.fBottomMargin = pad.fBottomMargin;
             canv.fTopMargin = pad.fTopMargin;
-            canv.fLogx = main.logy;
-            canv.fUxmin = main.logy ? Math.log10(main.scale_ymin) : main.scale_ymin;
-            canv.fUxmax = main.logy ? Math.log10(main.scale_ymax) : main.scale_ymax;
+            canv.fLogx = fp.logy;
+            canv.fUxmin = fp.logy ? Math.log10(fp.scale_ymin) : fp.scale_ymin;
+            canv.fUxmax = fp.logy ? Math.log10(fp.scale_ymax) : fp.scale_ymax;
             drawopt = 'rotate';
          }
 

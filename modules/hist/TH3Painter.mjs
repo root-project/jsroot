@@ -277,7 +277,7 @@ class TH3Painter extends THistPainter {
      * @return {Promise|false} either Promise or just false that drawing cannot be performed */
    draw3DScatter() {
       const histo = this.getObject(),
-            main = this.getFramePainter(),
+            fp = this.getFramePainter(),
             i1 = this.getSelectIndex('x', 'left', 0.5),
             i2 = this.getSelectIndex('x', 'right', 0),
             j1 = this.getSelectIndex('y', 'left', 0.5),
@@ -306,10 +306,10 @@ class TH3Painter extends THistPainter {
       }
 
       // too many pixels - use box drawing
-      if (numpixels > (main.webgl ? 100000 : 30000))
+      if (numpixels > (fp.webgl ? 100000 : 30000))
          return false;
 
-      const pnts = new PointsCreator(numpixels, main.webgl, main.size_x3d/200),
+      const pnts = new PointsCreator(numpixels, fp.webgl, fp.size_x3d / 200),
             bins = new Int32Array(numpixels),
             rnd = new TRandom(sumz);
       let nbin = 0;
@@ -329,14 +329,14 @@ class TH3Painter extends THistPainter {
                   // remember bin index for tooltip
                   bins[nbin++] = histo.getBin(i+1, j+1, k+1);
 
-                  pnts.addPoint(main.grx(binx), main.gry(biny), main.grz(binz));
+                  pnts.addPoint(fp.grx(binx), fp.gry(biny), fp.grz(binz));
                }
             }
          }
       }
 
       return pnts.createPoints({ color: this.getColor(histo.fMarkerColor) }).then(mesh => {
-         main.add3DMesh(mesh);
+         fp.add3DMesh(mesh);
 
          mesh.bins = bins;
          mesh.painter = this;
@@ -382,7 +382,7 @@ class TH3Painter extends THistPainter {
          box_option = 12; // default draw option
 
       const histo = this.getHisto(),
-            main = this.getFramePainter();
+            fp = this.getFramePainter();
 
       let use_lambert = false,
           use_helper = false, use_colors = false, use_opacity = 1, exclude_content = -1,
@@ -400,7 +400,7 @@ class TH3Painter extends THistPainter {
          if (this.options.GLBox === 12)
             use_colors = true;
 
-         single_bin_geom = new THREE.SphereGeometry(0.5, main.webgl ? 16 : 8, main.webgl ? 12 : 6);
+         single_bin_geom = new THREE.SphereGeometry(0.5, fp.webgl ? 16 : 8, fp.webgl ? 12 : 6);
          single_bin_geom.applyMatrix4(new THREE.Matrix4().makeRotationX(Math.PI/2));
          single_bin_geom.computeVertexNormals();
       } else {
@@ -480,11 +480,11 @@ class TH3Painter extends THistPainter {
             transfer = (this.transferFunc && proivdeEvalPar(this.transferFunc, true)) ? this.transferFunc : null;
 
       for (let i = i1; i < i2; ++i) {
-         const grx1 = main.grx(histo.fXaxis.GetBinLowEdge(i+1)),
-               grx2 = main.grx(histo.fXaxis.GetBinLowEdge(i+2));
+         const grx1 = fp.grx(histo.fXaxis.GetBinLowEdge(i+1)),
+               grx2 = fp.grx(histo.fXaxis.GetBinLowEdge(i+2));
          for (let j = j1; j < j2; ++j) {
-            const gry1 = main.gry(histo.fYaxis.GetBinLowEdge(j+1)),
-                  gry2 = main.gry(histo.fYaxis.GetBinLowEdge(j+2));
+            const gry1 = fp.gry(histo.fYaxis.GetBinLowEdge(j+1)),
+                  gry2 = fp.gry(histo.fYaxis.GetBinLowEdge(j+2));
             for (let k = k1; k < k2; ++k) {
                const bin_content = histo.getBinContent(i+1, j+1, k+1);
                if (!this.options.GLColor && ((bin_content === 0) || (bin_content < this.gminbin))) continue;
@@ -503,8 +503,8 @@ class TH3Painter extends THistPainter {
                   }
                }
 
-               const grz1 = main.grz(histo.fZaxis.GetBinLowEdge(k+1)),
-                     grz2 = main.grz(histo.fZaxis.GetBinLowEdge(k+2));
+               const grz1 = fp.grz(histo.fZaxis.GetBinLowEdge(k+1)),
+                     grz2 = fp.grz(histo.fZaxis.GetBinLowEdge(k+2));
 
                // remember bin index for tooltip
                bins_ids.push(histo.getBin(i+1, j+1, k+1));
@@ -569,7 +569,7 @@ class TH3Painter extends THistPainter {
             bin_mesh.get_weight = get_bin_weight;
             bin_mesh.tooltip = getBinTooltip;
 
-            main.add3DMesh(bin_mesh);
+            fp.add3DMesh(bin_mesh);
          }
       } else {
          if (use_colors)
@@ -592,7 +592,7 @@ class TH3Painter extends THistPainter {
          all_bins_mesh.get_weight = get_bin_weight;
          all_bins_mesh.tooltip = getBinTooltip;
 
-         main.add3DMesh(all_bins_mesh);
+         fp.add3DMesh(all_bins_mesh);
       }
 
       if (use_helper) {
@@ -610,7 +610,7 @@ class TH3Painter extends THistPainter {
                   positions[vvv+2] = m[14] + (vert.z - 0.5) * m[10];
                }
             }
-            main.add3DMesh(createLineSegments(positions, helper_material));
+            fp.add3DMesh(createLineSegments(positions, helper_material));
          };
 
          addLines(Box3D.Segments, bins_matrixes);
@@ -623,33 +623,33 @@ class TH3Painter extends THistPainter {
 
    /** @summary Redraw TH3 histogram */
    async redraw(reason) {
-      const main = this.getFramePainter(), // who makes axis and 3D drawing
+      const fp = this.getFramePainter(), // who makes axis and 3D drawing
             histo = this.getHisto();
       let pr = Promise.resolve(true), full_draw = true;
 
       if (reason === 'resize') {
-         const res = main.resize3D();
+         const res = fp.resize3D();
          if (res !== 1) {
             full_draw = false;
             if (res)
-               main.render3D();
+               fp.render3D();
          }
       }
 
       if (full_draw) {
-         assignFrame3DMethods(main);
-         pr = main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale, this.options.Ortho).then(() => {
-            main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax, this);
-            main.set3DOptions(this.options);
-            main.drawXYZ(main.toplevel, TAxisPainter, {
+         assignFrame3DMethods(fp);
+         pr = fp.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale, this.options.Ortho).then(() => {
+            fp.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax, this);
+            fp.set3DOptions(this.options);
+            fp.drawXYZ(fp.toplevel, TAxisPainter, {
                ndim: 3, hist_painter: this, zoom: settings.Zooming,
                draw: this.options.Axis !== -1, drawany: this.options.isCartesian()
             });
             return this.draw3DBins();
          }).then(() => {
-            main.render3D();
+            fp.render3D();
             this.updateStatWebCanvas();
-            main.addKeysHandler();
+            fp.addKeysHandler();
          });
       }
 

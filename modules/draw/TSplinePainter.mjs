@@ -196,10 +196,10 @@ class TSplinePainter extends ObjectPainter {
      * @private */
    redraw() {
       const spline = this.getObject(),
-            pmain = this.getFramePainter(),
-            funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
-            w = pmain.getFrameWidth(),
-            h = pmain.getFrameHeight();
+            fp = this.getFramePainter(),
+            funcs = fp.getGrFuncs(this.options.second_x, this.options.second_y),
+            w = funcs.getFrameWidth(),
+            h = funcs.getFrameHeight();
 
       this.createG(true);
 
@@ -213,14 +213,14 @@ class TSplinePainter extends ObjectPainter {
              xmax = Math.min(funcs.scale_xmax, spline.fXmax),
              indx = this.findX(xmin);
 
-         if (pmain.logx) {
+         if (fp.logx) {
             xmin = Math.log(xmin);
             xmax = Math.log(xmax);
          }
 
          for (let n = 0; n < npx; ++n) {
             let x = xmin + (xmax-xmin)/npx*(n-1);
-            if (pmain.logx) x = Math.exp(x);
+            if (fp.logx) x = Math.exp(x);
 
             while ((indx < spline.fNp-1) && (x > spline.fPoly[indx+1].fX)) ++indx;
 
