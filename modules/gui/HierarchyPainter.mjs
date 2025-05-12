@@ -2105,19 +2105,9 @@ class HierarchyPainter extends BasePainter {
          if (item && !this.canDisplay(item, drawopt))
             return complete();
 
-         let use_dflt_opt = false;
-         // deprecated - drawing divid was possible to code in draw options
-         if (isStr(drawopt) && (drawopt.indexOf('divid:') >= 0)) {
-            const pos = drawopt.indexOf('divid:');
-            if (!dom)
-               dom = drawopt.slice(pos+6);
-            drawopt = drawopt.slice(0, pos);
-         }
-
-         if (drawopt === kDfltDrawOpt) {
-            use_dflt_opt = true;
+         const use_dflt_opt = drawopt === kDfltDrawOpt;
+         if (use_dflt_opt)
             drawopt = '';
-         }
 
          if (!updating)
             showProgress(`Loading ${display_itemname} ...`);
