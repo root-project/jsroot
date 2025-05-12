@@ -110,7 +110,8 @@ function addDragHandler(_painter, arg) {
    if (!settings.MoveResize) return;
 
    const painter = _painter, pp = painter.getPadPainter();
-   if (pp?._fast_drawing || pp?.isBatchMode()) return;
+   if (pp?.isFastDrawing() || pp?.isBatchMode())
+      return;
    // cleanup all drag elements when canvas is not editable
    if (pp?.isEditable() === false)
       arg.cleanup = true;
@@ -744,8 +745,7 @@ class FrameInteractive extends TooltipHandler {
               .style('cursor', 'default')
               .property('handlers_set', 0);
 
-      const pp = this.getPadPainter(),
-            handlers_set = pp?._fast_drawing ? 0 : 1;
+      const handlers_set = this.getPadPainter()?.isFastDrawing() ? 0 : 1;
 
       if (main_svg.property('handlers_set') !== handlers_set) {
          const close_handler = handlers_set ? evnt => this.processFrameTooltipEvent(null, evnt) : null,
@@ -781,7 +781,7 @@ class FrameInteractive extends TooltipHandler {
    async addFrameInteractivity(for_second_axes) {
       const pp = this.getPadPainter(),
             svg = this.getFrameSvg();
-      if (pp?._fast_drawing || svg.empty())
+      if (pp?.isFastDrawing() || svg.empty())
          return this;
 
       if (for_second_axes) {
@@ -2256,7 +2256,7 @@ class TFramePainter extends FrameInteractive {
       const draw_horiz = this.#swap_xy ? this.y_handle : this.x_handle,
             draw_vertical = this.#swap_xy ? this.x_handle : this.y_handle;
 
-      if ((!disable_x_draw || !disable_y_draw) && pp._fast_drawing)
+      if ((!disable_x_draw || !disable_y_draw) && pp.isFastDrawing())
          disable_x_draw = disable_y_draw = true;
 
       let pr = Promise.resolve(true);
@@ -2309,10 +2309,10 @@ class TFramePainter extends FrameInteractive {
    /** @summary draw second axes (if any)  */
    async drawAxes2(second_x, second_y) {
       const layer = this.getFrameSvg().selectChild('.axis_layer'),
-          w = this.getFrameWidth(),
-          h = this.getFrameHeight(),
-          pp = this.getPadPainter(),
-          pad = pp.getRootPad(true);
+             w = this.getFrameWidth(),
+             h = this.getFrameHeight(),
+             pp = this.getPadPainter(),
+             pad = pp.getRootPad(true);
 
       if (second_x) {
          this.x2_handle.invert_side = true;
@@ -2328,7 +2328,7 @@ class TFramePainter extends FrameInteractive {
       let draw_horiz = this.#swap_xy ? this.y2_handle : this.x2_handle,
           draw_vertical = this.#swap_xy ? this.x2_handle : this.y2_handle;
 
-      if ((draw_horiz || draw_vertical) && pp._fast_drawing)
+      if ((draw_horiz || draw_vertical) && pp.isFastDrawing())
          draw_horiz = draw_vertical = null;
 
       let pr1, pr2;

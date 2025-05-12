@@ -308,7 +308,8 @@ class RHistStatsPainter extends RPavePainter {
    /** @summary fill statistic */
    fillStatistic() {
       const pp = this.getPadPainter();
-      if (pp?._fast_drawing) return false;
+      if (pp?.isFastDrawing())
+         return false;
 
       const obj = this.getObject();
       if (obj.fLines !== undefined) {

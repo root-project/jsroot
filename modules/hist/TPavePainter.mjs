@@ -233,7 +233,7 @@ class TPavePainter extends ObjectPainter {
 
       return promise.then(() => {
          // fill stats before drawing to have coordinates early
-         if (this.isStats() && !this.NoFillStats && !pp._fast_drawing) {
+         if (this.isStats() && !this.NoFillStats && !pp.isFastDrawing()) {
             const main = pt.$main_painter || this.getMainPainter();
 
             if (isFunc(main?.fillStatistic)) {
@@ -581,7 +581,7 @@ class TPavePainter extends ObjectPainter {
       if (!text_g)
          text_g = this.draw_g;
 
-      const fast = (nlines === 1) && pp._fast_drawing;
+      const fast = (nlines === 1) && pp.isFastDrawing();
       let num_txt = 0, num_custom = 0, longest_line = 0, alt_text_size = 0;
 
       arr.forEach(entry => {
@@ -975,7 +975,7 @@ class TPavePainter extends ObjectPainter {
             height = pp.getPadHeight(),
             pad = pp.getRootPad(true),
             main = palette.$main_painter || this.getMainPainter(),
-            framep = this.getFramePainter(),
+            fp = this.getFramePainter(),
             contour = main.fContour,
             levels = contour?.getLevels(),
             is_th3 = isFunc(main.getDimension) && (main.getDimension() === 3),
@@ -1008,12 +1008,12 @@ class TPavePainter extends ObjectPainter {
          this.z_handle.source_axis = zaxis;
       }
 
-      if (contour && framep && !is_th3) {
-         if ((framep.zmin !== undefined) && (framep.zmax !== undefined) && (framep.zmin !== framep.zmax)) {
-            gzmin = framep.zmin;
-            gzmax = framep.zmax;
-            zmin = framep.zoom_zmin;
-            zmax = framep.zoom_zmax;
+      if (contour && fp && !is_th3) {
+         if ((fp.zmin !== undefined) && (fp.zmax !== undefined) && (fp.zmin !== fp.zmax)) {
+            gzmin = fp.zmin;
+            gzmax = fp.zmax;
+            zmin = fp.zoom_zmin;
+            zmax = fp.zoom_zmax;
             if (zmin === zmax) { zmin = gzmin; zmax = gzmax; }
          } else {
             zmin = levels.at(0);

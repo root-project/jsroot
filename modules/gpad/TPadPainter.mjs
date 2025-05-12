@@ -123,7 +123,7 @@ const PadButtonsHandler = {
       const istop = this.isTopPad(), y = 0;
       let ctrl, x = group.property('leftside') ? this.getButtonSize(1.25) : 0;
 
-      if (this._fast_drawing) {
+      if (this.isFastDrawing()) {
          ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.circle, this.getButtonSize(), 'enlargePad', false)
                             .attr('name', 'Enlarge').attr('x', 0).attr('y', 0)
                             .on('click', evnt => this.clickPadButton('enlargePad', evnt));
@@ -228,6 +228,7 @@ class TPadPainter extends ObjectPainter {
    #auto_palette; // palette for creating of automatic colors
    #fixed_size; // fixed size flag
    #has_canvas; // indicate if top canvas painter exists
+   #fast_drawing; // fast drawing flag
 
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -626,11 +627,15 @@ class TPadPainter extends ObjectPainter {
    /** @summary Set fast drawing property depending on the size
      * @private */
    setFastDrawing(w, h) {
-      const was_fast = this._fast_drawing;
-      this._fast_drawing = (this.snapid === undefined) && settings.SmallPad && ((w < settings.SmallPad.width) || (h < settings.SmallPad.height));
-      if (was_fast !== this._fast_drawing)
+      const was_fast = this.#fast_drawing;
+      this.#fast_drawing = (this.snapid === undefined) && settings.SmallPad && ((w < settings.SmallPad.width) || (h < settings.SmallPad.height));
+      if (was_fast !== this.#fast_drawing)
          this.showPadButtons();
    }
+
+   /** @summary Return fast drawing flag
+     * @private */
+   isFastDrawing() { return this.#fast_drawing; }
 
    /** @summary Returns true if canvas configured with grayscale
      * @private */

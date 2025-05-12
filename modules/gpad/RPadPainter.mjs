@@ -32,6 +32,7 @@ class RPadPainter extends RObjectPainter {
    #auto_color_cnt;  // counter for auto colors
    #fixed_size;  // fixed size flag
    #has_canvas;  // when top-level canvas exists
+   #fast_drawing; // fast drawing mode
 
    /** @summary constructor */
    constructor(dom, pad, opt, iscan, add_to_primitives) {
@@ -398,17 +399,19 @@ class RPadPainter extends RObjectPainter {
    /** @summary Set fast drawing property depending on the size
      * @private */
    setFastDrawing(w, h) {
-      const was_fast = this._fast_drawing;
-      this._fast_drawing = (this.snapid === undefined) && settings.SmallPad && ((w < settings.SmallPad.width) || (h < settings.SmallPad.height));
-      if (was_fast !== this._fast_drawing)
+      const was_fast = this.#fast_drawing;
+      this.#fast_drawing = (this.snapid === undefined) && settings.SmallPad && ((w < settings.SmallPad.width) || (h < settings.SmallPad.height));
+      if (was_fast !== this.#fast_drawing)
          this.showPadButtons();
    }
 
+   /** @summary Return fast drawing flag
+   * @private */
+   isFastDrawing() { return this.#fast_drawing; }
+
    /** @summary Returns true if canvas configured with grayscale
      * @private */
-   isGrayscale() {
-      return false;
-   }
+   isGrayscale() { return false; }
 
    /** @summary Set grayscale mode for the canvas
      * @private */

@@ -422,7 +422,7 @@ class RFramePainter extends RObjectPainter {
             draw_vertical = this.#swap_xy ? this.x_handle : this.y_handle;
       let pr;
 
-      if (this.getPadPainter()?._fast_drawing)
+      if (this.getPadPainter()?.isFastDrawing())
          pr = Promise.resolve(true); // do nothing
        else if (this.v6axes) {
          // in v7 ticksx/y values shifted by 1 relative to v6
