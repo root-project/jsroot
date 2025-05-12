@@ -745,6 +745,11 @@ const kindTFile = prROOT + clTFile;
 
 class HierarchyPainter extends BasePainter {
 
+   #monitoring_interval; // monitoring time interval
+   #monitoring_on; // if monitoring enabled
+   #monitoring_handle; // timer handle for monitoring
+   #monitoring_frame; // animation frame for monitoring
+
    /** @summary Create painter
      * @param {string} name - symbolic name
      * @param {string} frameid - element id where hierarchy is drawn
@@ -902,9 +907,11 @@ class HierarchyPainter extends BasePainter {
 
          function process_child(child, ignore_prnt) {
             // set parent pointer when searching child
-            if (!ignore_prnt) child._parent = top;
+            if (!ignore_prnt)
+               child._parent = top;
 
-            if ((pos >= fullname.length - 1) || (pos < 0)) return child;
+            if ((pos >= fullname.length - 1) || (pos < 0))
+               return child;
 
             return find_in_hierarchy(child, fullname.slice(pos + 1));
          }
@@ -3212,13 +3219,13 @@ class HierarchyPainter extends BasePainter {
       if (interval) {
          interval = parseInt(interval);
          if (Number.isInteger(interval) && (interval > 0)) {
-            this._monitoring_interval = Math.max(100, interval);
+            this.#monitoring_interval = Math.max(100, interval);
             monitor_on = true;
          } else
-            this._monitoring_interval = 3000;
+            this.#monitoring_interval = 3000;
       }
 
-      this._monitoring_on = monitor_on;
+      this.#monitoring_on = monitor_on;
 
       if (this.isMonitoring())
          this.#runMonitoring();
@@ -3228,42 +3235,38 @@ class HierarchyPainter extends BasePainter {
      * @private */
    #runMonitoring(arg) {
       if ((arg === 'cleanup') || !this.isMonitoring()) {
-         if (this._monitoring_handle) {
-            clearTimeout(this._monitoring_handle);
-            delete this._monitoring_handle;
+         if (this.#monitoring_handle) {
+            clearTimeout(this.#monitoring_handle);
+            this.#monitoring_handle = undefined;
          }
 
-         if (this._monitoring_frame) {
-            cancelAnimationFrame(this._monitoring_frame);
-            delete this._monitoring_frame;
+         if (this.#monitoring_frame) {
+            cancelAnimationFrame(this.#monitoring_frame);
+            this.#monitoring_frame = undefined;
          }
          return;
       }
 
       if (arg === 'frame') {
          // process of timeout, request animation frame
-         delete this._monitoring_handle;
-         this._monitoring_frame = requestAnimationFrame(() => this.#runMonitoring('draw'));
+         this.#monitoring_handle = undefined;
+         this.#monitoring_frame = requestAnimationFrame(() => this.#runMonitoring('draw'));
          return;
       }
 
       if (arg === 'draw') {
-         delete this._monitoring_frame;
+         this.#monitoring_frame = undefined;
          this.updateItems();
       }
 
-      this._monitoring_handle = setTimeout(() => this.#runMonitoring('frame'), this.getMonitoringInterval());
+      this.#monitoring_handle = setTimeout(() => this.#runMonitoring('frame'), this.getMonitoringInterval());
    }
 
    /** @summary Returns configured monitoring interval in ms */
-   getMonitoringInterval() {
-      return this._monitoring_interval || 3000;
-   }
+   getMonitoringInterval() { return this.#monitoring_interval || 3000; }
 
    /** @summary Returns true when monitoring is enabled */
-   isMonitoring() {
-      return this._monitoring_on;
-   }
+   isMonitoring() { return this.#monitoring_on; }
 
    /** @summary Assign default layout and place where drawing will be performed
      * @param {string} layout - layout like 'simple' or 'grid2x2'
