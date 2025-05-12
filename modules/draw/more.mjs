@@ -43,7 +43,7 @@ async function drawText() {
 
    this.pos_x = this.axisToSvg('x', pos_x, this.isndc);
    this.pos_y = this.axisToSvg('y', pos_y, this.isndc);
-   this.swap_xy = use_frame && fp?.swap_xy;
+   this.swap_xy = use_frame && fp?.swap_xy();
 
    if (this.swap_xy)
       [this.pos_x, this.pos_y] = [this.pos_y, this.pos_x];
@@ -288,7 +288,7 @@ function drawMarker() {
 
    const d = new DrawOptions(this.getDrawOpt()),
          use_frame = this.isndc ? false : d.check('FRAME'),
-         swap_xy = use_frame && this.getFramePainter()?.swap_xy;
+         swap_xy = use_frame && this.getFramePainter()?.swap_xy();
 
    this.createAttMarker({ attr: marker });
 

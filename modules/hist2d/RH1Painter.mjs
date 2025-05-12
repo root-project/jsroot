@@ -198,7 +198,7 @@ class RH1Painter extends RHistPainter {
    /** @summary Get baseline for bar drawings
     * @private */
    getBarBaseline(funcs, height) {
-      let gry = funcs.swap_xy ? 0 : height;
+      let gry = funcs.swap_xy() ? 0 : height;
       if (Number.isFinite(this.options.BaseLine) && (this.options.BaseLine >= funcs.scale_ymin))
          gry = Math.round(funcs.gry(this.options.BaseLine));
       return gry;
@@ -209,7 +209,7 @@ class RH1Painter extends RHistPainter {
       this.createG(true);
 
       const left = handle.i1, right = handle.i2, di = handle.stepi,
-            pmain = this.getFramePainter(),
+            fp = this.getFramePainter(),
             histo = this.getHisto(), xaxis = this.getAxis('x');
       let i, x1, x2, grx1, grx2, y, gry1, w,
           bars = '', barsl = '', barsr = '';
@@ -233,7 +233,7 @@ class RH1Painter extends RHistPainter {
          grx1 += Math.round(this.options.BarOffset*w);
          w = Math.round(this.options.BarWidth*w);
 
-         if (pmain.swap_xy)
+         if (fp.swap_xy())
             bars += `M${gry2},${grx1}h${gry1-gry2}v${w}h${gry2-gry1}z`;
          else
             bars += `M${grx1},${gry1}h${w}v${gry2-gry1}h${-w}z`;
@@ -241,7 +241,7 @@ class RH1Painter extends RHistPainter {
          if (this.options.BarStyle > 0) {
             grx2 = grx1 + w;
             w = Math.round(w / 10);
-            if (pmain.swap_xy) {
+            if (fp.swap_xy()) {
                barsl += `M${gry2},${grx1}h${gry1-gry2}v${w}h${gry2-gry1}z`;
                barsr += `M${gry2},${grx2}h${gry1-gry2}v${-w}h${gry2-gry1}z`;
             } else {
@@ -315,8 +315,8 @@ class RH1Painter extends RHistPainter {
 
    /** @summary Draw 1D histogram as SVG */
    async draw1DBins() {
-      const pmain = this.getFramePainter(),
-          rect = pmain.getFrameRect();
+      const fp = this.getFramePainter(),
+            rect = fp.getFrameRect();
 
       if (!this.draw_content || (rect.width <= 0) || (rect.height <= 0)) {
          this.removeG();
@@ -326,7 +326,7 @@ class RH1Painter extends RHistPainter {
       this.createHistDrawAttributes();
 
       const handle = this.prepareDraw({ extra: 1, only_indexes: true }),
-          funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y);
+            funcs = fp.getGrFuncs(this.options.second_x, this.options.second_y);
 
       if (this.options.Bar)
          return this.drawBars(handle, funcs, rect.width, rect.height);
@@ -603,7 +603,7 @@ class RH1Painter extends RHistPainter {
    getBinTooltips(bin) {
       const tips = [],
             name = this.getObjectHint(),
-            pmain = this.getFramePainter(),
+            fp = this.getFramePainter(),
             histo = this.getHisto(),
             xaxis = this.getAxis('x'),
             di = this.isDisplayItem() ? histo.stepx : 1,
@@ -616,7 +616,7 @@ class RH1Painter extends RHistPainter {
       if (name) tips.push(name);
 
       if (this.options.Error || this.options.Mark) {
-         tips.push(`x = ${xlbl}`, `y = ${pmain.axisAsText('y', cont)}`);
+         tips.push(`x = ${xlbl}`, `y = ${fp.axisAsText('y', cont)}`);
          if (this.options.Error) {
             if (xlbl[0] === '[') tips.push('error x = ' + ((x2 - x1) / 2).toPrecision(4));
             tips.push('error y = ' + histo.getBinError(bin + 1).toPrecision(4));
@@ -643,10 +643,10 @@ class RH1Painter extends RHistPainter {
          return null;
       }
 
-      const pmain = this.getFramePainter(),
-            funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
-            width = pmain.getFrameWidth(),
-            height = pmain.getFrameHeight(),
+      const fp = this.getFramePainter(),
+            funcs = fp.getGrFuncs(this.options.second_x, this.options.second_y),
+            width = funcs.getFrameWidth(),
+            height = funcs.getFrameHeight(),
             histo = this.getHisto(), xaxis = this.getAxis('x'),
             left = this.getSelectIndex('x', 'left', -1),
             right = this.getSelectIndex('x', 'right', 2);
@@ -662,27 +662,27 @@ class RH1Painter extends RHistPainter {
       function GetBinGrY(i) {
          const yy = histo.getBinContent(i + 1);
          if (funcs.logy && (yy < funcs.scale_ymin))
-            return funcs.swap_xy ? -1000 : 10*height;
+            return funcs.swap_xy() ? -1000 : 10*height;
          return Math.round(funcs.gry(yy));
       }
 
-      const pnt_x = funcs.swap_xy ? pnt.y : pnt.x,
-            pnt_y = funcs.swap_xy ? pnt.x : pnt.y;
+      const pnt_x = funcs.swap_xy() ? pnt.y : pnt.x,
+            pnt_y = funcs.swap_xy() ? pnt.x : pnt.y;
 
       while (l < r-1) {
          const m = Math.round((l+r)*0.5),
                xx = GetBinGrX(m);
          if ((xx === null) || (xx < pnt_x - 0.5))
-            if (funcs.swap_xy) r = m; else l = m;
+            if (funcs.swap_xy()) r = m; else l = m;
           else if (xx > pnt_x + 0.5)
-            if (funcs.swap_xy) l = m; else r = m;
+            if (funcs.swap_xy()) l = m; else r = m;
           else { l++; r--; }
       }
 
       let findbin = r = l;
       grx1 = GetBinGrX(findbin);
 
-      if (funcs.swap_xy) {
+      if (funcs.swap_xy()) {
          while ((l > left) && (GetBinGrX(l-1) < grx1 + 2)) --l;
          while ((r < right) && (GetBinGrX(r+1) > grx1 - 2)) ++r;
       } else {
@@ -825,10 +825,10 @@ class RH1Painter extends RHistPainter {
          res.changed = ttrect.property('current_bin') !== findbin;
 
          if (res.changed) {
-            ttrect.attr('x', pmain.swap_xy ? gry1 : grx1)
-                  .attr('width', pmain.swap_xy ? gry2-gry1 : grx2-grx1)
-                  .attr('y', pmain.swap_xy ? grx1 : gry1)
-                  .attr('height', pmain.swap_xy ? grx2-grx1 : gry2-gry1)
+            ttrect.attr('x', funcs.swap_xy() ? gry1 : grx1)
+                  .attr('width', funcs.swap_xy() ? gry2 - gry1 : grx2 - grx1)
+                  .attr('y', funcs.swap_xy() ? grx1 : gry1)
+                  .attr('height', funcs.swap_xy() ? grx2 - grx1 : gry2 - gry1)
                   .style('opacity', '0.3')
                   .property('current_bin', findbin);
          }

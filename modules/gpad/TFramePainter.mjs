@@ -1161,7 +1161,7 @@ class FrameInteractive extends TooltipHandler {
             isany = true;
          }
 
-         if (this.swap_xy && !this.zoom_second)
+         if (this.swap_xy() && !this.zoom_second)
             [xmin, xmax, ymin, ymax] = [ymin, ymax, xmin, xmax];
 
          if (namex === 'x2') {
@@ -1213,11 +1213,11 @@ class FrameInteractive extends TooltipHandler {
       let kind = (this.can_zoom_x ? 'x' : '') + (this.can_zoom_y ? 'y' : '') + 'z';
       if (!valid_x) {
          if (!this.can_zoom_y) return;
-         kind = this.swap_xy ? 'x' : 'y';
+         kind = this.swap_xy() ? 'x' : 'y';
          if ((m[0] > fw) && this[kind+'2_handle']) kind += '2'; // let unzoom second axis
       } else if (!valid_y) {
          if (!this.can_zoom_x) return;
-         kind = this.swap_xy ? 'y' : 'x';
+         kind = this.swap_xy() ? 'y' : 'x';
          if ((m[1] < 0) && this[kind+'2_handle']) kind += '2'; // let unzoom second axis
       }
       return this.unzoom(kind).then(changed => {
@@ -1358,7 +1358,7 @@ class FrameInteractive extends TooltipHandler {
       }
 
       let xmin, xmax, ymin, ymax, isany = false, namex = 'x', namey = 'y';
-      const xid = this.swap_xy ? 1 : 0, yid = 1 - xid, changed = [true, true];
+      const xid = this.swap_xy() ? 1 : 0, yid = 1 - xid, changed = [true, true];
 
       if (this.zoom_kind === 102) changed[1] = false;
       if (this.zoom_kind === 103) changed[0] = false;
@@ -1432,10 +1432,10 @@ class FrameInteractive extends TooltipHandler {
             w = this.getFrameWidth(), h = this.getFrameHeight();
 
       if (this.can_zoom_x)
-         this.analyzeMouseWheelEvent(evnt, this.swap_xy ? itemy : itemx, cur[0] / w, (cur[1] >= 0) && (cur[1] <= h), cur[1] < 0);
+         this.analyzeMouseWheelEvent(evnt, this.swap_xy() ? itemy : itemx, cur[0] / w, (cur[1] >= 0) && (cur[1] <= h), cur[1] < 0);
 
       if (this.can_zoom_y)
-         this.analyzeMouseWheelEvent(evnt, this.swap_xy ? itemx : itemy, 1 - cur[1] / h, (cur[0] >= 0) && (cur[0] <= w), cur[0] > w);
+         this.analyzeMouseWheelEvent(evnt, this.swap_xy() ? itemx : itemy, 1 - cur[1] / h, (cur[0] >= 0) && (cur[0] <= w), cur[0] > w);
 
       let pr = this.zoom(itemx.min, itemx.max, itemy.min, itemy.max, undefined, undefined, itemx.changed || itemy.changed);
 
@@ -1645,6 +1645,7 @@ class TFramePainter extends FrameInteractive {
    #frame_width; // frame width
    #frame_height; // frame height
    #frame_trans; // transform of frame element
+   #swap_xy;  // swap X/Y axis on the frame
    #border_mode; // frame border mode
    #border_size; // frame border size
    #axes_drawn; // when axes are drawn
@@ -1701,6 +1702,9 @@ class TFramePainter extends FrameInteractive {
    /** @summary Returns true if keys handling enabled
      * @private */
    isEnabledKeys() { return this.#enabled_keys; }
+
+   /** @summary Returns true if X/Y axis swapped */
+   swap_xy() { return this.#swap_xy; }
 
    /** @summary Shrink frame size
      * @private */
@@ -1863,7 +1867,7 @@ class TFramePainter extends FrameInteractive {
          umax = Math.exp(umax * Math.log(10));
       }
 
-      const aname = !this.swap_xy ? name : (name === 'x' ? 'y' : 'x'),
+      const aname = !this.#swap_xy ? name : (name === 'x' ? 'y' : 'x'),
             smin = this[`scale_${aname}min`],
             smax = this[`scale_${aname}max`];
 
@@ -1906,7 +1910,7 @@ class TFramePainter extends FrameInteractive {
 
       if (!opts) opts = { ndim: 1 };
 
-      this.swap_xy = opts.swap_xy || false;
+      this.#swap_xy = opts.swap_xy || false;
       this.reverse_x = opts.reverse_x || false;
       this.reverse_y = opts.reverse_y || false;
 
@@ -1926,7 +1930,7 @@ class TFramePainter extends FrameInteractive {
       this.scale_ymax = this.ymax;
 
       if (opts.extra_y_space) {
-         const log_scale = this.swap_xy ? pad_logx : pad_logy;
+         const log_scale = this.#swap_xy ? pad_logx : pad_logy;
          if (log_scale && (this.scale_ymax > 0))
             this.scale_ymax = Math.exp(Math.log(this.scale_ymax)*1.1);
          else
@@ -1976,14 +1980,14 @@ class TFramePainter extends FrameInteractive {
       this.x_handle = new TAxisPainter(pp, this.xaxis, true);
       this.x_handle.setHistPainter(opts.hist_painter, 'x');
 
-      this.x_handle.configureAxis('xaxis', this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, this.swap_xy, this.swap_xy ? [0, h] : [0, w],
+      this.x_handle.configureAxis('xaxis', this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, this.#swap_xy, this.#swap_xy ? [0, h] : [0, w],
                                       { reverse: this.reverse_x,
-                                        log: this.swap_xy ? pad_logy : pad_logx,
+                                        log: this.#swap_xy ? pad_logy : pad_logx,
                                         ignore_labels: this.x_ignore_labels,
                                         noexp_changed: this.x_noexp_changed,
-                                        symlog: this.swap_xy ? opts.symlog_y : opts.symlog_x,
+                                        symlog: this.#swap_xy ? opts.symlog_y : opts.symlog_x,
                                         log_min_nz: opts.xmin_nz && (opts.xmin_nz <= this.xmax) ? 0.9*opts.xmin_nz : 0,
-                                        logcheckmin: (opts.ndim > 1) || !this.swap_xy,
+                                        logcheckmin: (opts.ndim > 1) || !this.#swap_xy,
                                         logminfactor: logminfactorX });
 
       this.x_handle.assignFrameMembers(this, 'x');
@@ -1991,15 +1995,15 @@ class TFramePainter extends FrameInteractive {
       this.y_handle = new TAxisPainter(pp, this.yaxis, true);
       this.y_handle.setHistPainter(opts.hist_painter, 'y');
 
-      this.y_handle.configureAxis('yaxis', this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, !this.swap_xy, this.swap_xy ? [0, w] : [0, h],
+      this.y_handle.configureAxis('yaxis', this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, !this.#swap_xy, this.#swap_xy ? [0, w] : [0, h],
                                       { value_axis: opts.ndim === 1,
                                         reverse: this.reverse_y,
-                                        log: this.swap_xy ? pad_logx : pad_logy,
+                                        log: this.#swap_xy ? pad_logx : pad_logy,
                                         ignore_labels: this.y_ignore_labels,
                                         noexp_changed: this.y_noexp_changed,
-                                        symlog: this.swap_xy ? opts.symlog_x : opts.symlog_y,
+                                        symlog: this.#swap_xy ? opts.symlog_x : opts.symlog_y,
                                         log_min_nz: opts.ymin_nz && (opts.ymin_nz <= this.ymax) ? 0.5*opts.ymin_nz : 0,
-                                        logcheckmin: (opts.ndim > 1) || this.swap_xy,
+                                        logcheckmin: (opts.ndim > 1) || this.#swap_xy,
                                         logminfactor: logminfactorY });
 
       this.y_handle.assignFrameMembers(this, 'y');
@@ -2031,7 +2035,7 @@ class TFramePainter extends FrameInteractive {
       }
 
       if (opts.extra_y_space && opts.second_y) {
-         const log_scale = this.swap_xy ? pad.fLogx : pad.fLogy;
+         const log_scale = this.#swap_xy ? pad.fLogx : pad.fLogy;
          if (log_scale && (this.scale_y2max > 0))
             this.scale_y2max = Math.exp(Math.log(this.scale_y2max)*1.1);
          else
@@ -2052,12 +2056,12 @@ class TFramePainter extends FrameInteractive {
          this.x2_handle = new TAxisPainter(pp, this.x2axis, true);
          this.x2_handle.setHistPainter(opts.hist_painter, 'x');
 
-         this.x2_handle.configureAxis('x2axis', this.x2min, this.x2max, this.scale_x2min, this.scale_x2max, this.swap_xy, this.swap_xy ? [0, h] : [0, w],
+         this.x2_handle.configureAxis('x2axis', this.x2min, this.x2max, this.scale_x2min, this.scale_x2max, this.#swap_xy, this.#swap_xy ? [0, h] : [0, w],
                                          { reverse: this.reverse_x2,
-                                           log: this.swap_xy ? pad.fLogy : pad.fLogx,
+                                           log: this.#swap_xy ? pad.fLogy : pad.fLogx,
                                            ignore_labels: this.x2_ignore_labels,
                                            noexp_changed: this.x2_noexp_changed,
-                                           logcheckmin: (opts.ndim > 1) || !this.swap_xy,
+                                           logcheckmin: (opts.ndim > 1) || !this.#swap_xy,
                                            logminfactor: logminfactorX });
 
          this.x2_handle.assignFrameMembers(this, 'x2');
@@ -2067,12 +2071,12 @@ class TFramePainter extends FrameInteractive {
          this.y2_handle = new TAxisPainter(pp, this.y2axis, true);
          this.y2_handle.setHistPainter(opts.hist_painter, 'y');
 
-         this.y2_handle.configureAxis('y2axis', this.y2min, this.y2max, this.scale_y2min, this.scale_y2max, !this.swap_xy, this.swap_xy ? [0, w] : [0, h],
+         this.y2_handle.configureAxis('y2axis', this.y2min, this.y2max, this.scale_y2min, this.scale_y2max, !this.#swap_xy, this.#swap_xy ? [0, w] : [0, h],
                                          { reverse: this.reverse_y2,
-                                           log: this.swap_xy ? pad.fLogx : pad.fLogy,
+                                           log: this.#swap_xy ? pad.fLogx : pad.fLogy,
                                            ignore_labels: this.y2_ignore_labels,
                                            noexp_changed: this.y2_noexp_changed,
-                                           logcheckmin: (opts.ndim > 1) || this.swap_xy,
+                                           logcheckmin: (opts.ndim > 1) || this.#swap_xy,
                                            log_min_nz: opts.ymin_nz && (opts.ymin_nz < this.y2max) ? 0.5 * opts.ymin_nz : 0,
                                            logminfactor: logminfactorY });
 
@@ -2102,13 +2106,13 @@ class TFramePainter extends FrameInteractive {
          y_handle: use_y2 ? this.y2_handle : this.y_handle,
          scale_ymin: use_y2 ? this.scale_y2min : this.scale_ymin,
          scale_ymax: use_y2 ? this.scale_y2max : this.scale_ymax,
-         swap_xy: this.swap_xy,
          fp: this,
          _remap(name) {
             if ((name === 'x') && this.use_x2) return 'x2';
             if ((name === 'y') && this.use_y2) return 'y2';
             return name;
          },
+         swap_xy() { return this.fp.swap_xy(); },
          isAxisZoomed(name) { return this.fp.isAxisZoomed(this._remap(name)); },
          revertAxis(name, v) { return this.fp.revertAxis(this._remap(name), v); },
          axisAsText(name, v) { return this.fp.axisAsText(this._remap(name), v); },
@@ -2127,10 +2131,10 @@ class TFramePainter extends FrameInteractive {
          pad.fUxmin = pad.fUymin = -0.9;
          pad.fUxmax = pad.fUymax = 0.9;
       } else {
-         pad.fLogx = this.swap_xy ? this.logy : this.logx;
+         pad.fLogx = this.#swap_xy ? this.logy : this.logx;
          pad.fUxmin = pad.fLogx ? Math.log10(this.scale_xmin) : this.scale_xmin;
          pad.fUxmax = pad.fLogx ? Math.log10(this.scale_xmax) : this.scale_xmax;
-         pad.fLogy = this.swap_xy ? this.logx : this.logy;
+         pad.fLogy = this.#swap_xy ? this.logx : this.logy;
          pad.fUymin = pad.fLogy ? Math.log10(this.scale_ymin) : this.scale_ymin;
          pad.fUymax = pad.fLogy ? Math.log10(this.scale_ymax) : this.scale_ymax;
       }
@@ -2170,7 +2174,7 @@ class TFramePainter extends FrameInteractive {
          let gridx = '';
 
          this.x_handle.ticks.forEach(pos => {
-            gridx += this.swap_xy ? `M0,${pos}h${w}` : `M${pos},0v${h}`;
+            gridx += this.#swap_xy ? `M0,${pos}h${w}` : `M${pos},0v${h}`;
          });
 
          layer.append('svg:path')
@@ -2187,7 +2191,7 @@ class TFramePainter extends FrameInteractive {
          let gridy = '';
 
          this.y_handle.ticks.forEach(pos => {
-            gridy += this.swap_xy ? `M${pos},0v${h}` : `M0,${pos}h${w}`;
+            gridy += this.#swap_xy ? `M${pos},0v${h}` : `M0,${pos}h${w}`;
          });
 
          layer.append('svg:path')
@@ -2239,8 +2243,8 @@ class TFramePainter extends FrameInteractive {
       this.y_handle.lbls_both_sides = !this.y_handle.invert_side && (pad?.fTicky > 1); // labels on both sides
       this.y_handle.has_obstacle = has_y_obstacle;
 
-      const draw_horiz = this.swap_xy ? this.y_handle : this.x_handle,
-            draw_vertical = this.swap_xy ? this.x_handle : this.y_handle;
+      const draw_horiz = this.#swap_xy ? this.y_handle : this.x_handle,
+            draw_vertical = this.#swap_xy ? this.x_handle : this.y_handle;
 
       if ((!disable_x_draw || !disable_y_draw) && pp._fast_drawing)
          disable_x_draw = disable_y_draw = true;
@@ -2311,8 +2315,8 @@ class TFramePainter extends FrameInteractive {
          this.y2_handle.lbls_both_sides = false;
       }
 
-      let draw_horiz = this.swap_xy ? this.y2_handle : this.x2_handle,
-          draw_vertical = this.swap_xy ? this.x2_handle : this.y2_handle;
+      let draw_horiz = this.#swap_xy ? this.y2_handle : this.x2_handle,
+          draw_vertical = this.#swap_xy ? this.x2_handle : this.y2_handle;
 
       if ((draw_horiz || draw_vertical) && pp._fast_drawing)
          draw_horiz = draw_vertical = null;
@@ -2598,9 +2602,9 @@ class TFramePainter extends FrameInteractive {
 
       // do not allow log scale for labels
       if (!pad[name]) {
-         if (this.swap_xy && axis === 'x')
+         if (this.#swap_xy && axis === 'x')
             axis = 'y';
-         else if (this.swap_xy && axis === 'y')
+         else if (this.#swap_xy && axis === 'y')
             axis = 'x';
          const handle = this[`${axis}_handle`];
          if (handle?.kind === kAxisLabels) return;
@@ -3104,7 +3108,7 @@ class TFramePainter extends FrameInteractive {
 
    /** @summary Convert graphical coordinate into axis value */
    revertAxis(axis, pnt) {
-      if (this.swap_xy)
+      if (this.#swap_xy)
          axis = (axis[0] === 'x') ? 'y' : 'x';
       return this[`${axis}_handle`]?.revertPoint(pnt) ?? 0;
    }
@@ -3123,7 +3127,8 @@ class TFramePainter extends FrameInteractive {
          hint_name = taxis.fName;
          hint_title = taxis.fTitle || `TAxis object for ${axis_name}`;
       }
-      if (this.swap_xy) id = 1 - id;
+      if (this.#swap_xy)
+         id = 1 - id;
 
       const axis_value = this.revertAxis(axis_name, m[id]);
 

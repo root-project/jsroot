@@ -81,7 +81,7 @@ class TLinePainter extends ObjectPainter {
 
       this.createG(use_frame ? 'frame2d' : undefined);
 
-      this.swap_xy = use_frame && this.getFramePainter()?.swap_xy;
+      this.swap_xy = use_frame && this.getFramePainter()?.swap_xy();
 
       const func = this.getAxisToSvgFunc(this.isndc, true);
 

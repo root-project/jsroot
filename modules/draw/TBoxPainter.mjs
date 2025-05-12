@@ -87,7 +87,7 @@ class TBoxPainter extends ObjectPainter {
       this.createAttLine({ attr: box });
       this.createAttFill({ attr: box });
 
-      this.swap_xy = fp?.swap_xy;
+      this.swap_xy = fp?.swap_xy();
 
       // if box filled, contour line drawn only with 'L' draw option:
       if (!this.fillatt.empty() && !draw_line)

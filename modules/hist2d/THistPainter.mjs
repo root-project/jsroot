@@ -518,9 +518,7 @@ class THistDrawOptions {
    }
 
    /** @summary Is X/Y swap is configured */
-   swap_xy() {
-      return this.BarStyle >= 20 || this.SwapXY;
-   }
+   swap_xy() { return this.BarStyle >= 20 || this.SwapXY; }
 
    /** @summary Tries to reconstruct string with hist draw options */
    asString(is_main_hist, pad) {
