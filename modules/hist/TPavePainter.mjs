@@ -343,7 +343,7 @@ class TPavePainter extends ObjectPainter {
          switch (pt._typename) {
             case clTPaveLabel:
             case clTPaveClass:
-               return this.drawPaveLabel(width, height, arg)
+               return this.drawPaveLabel(width, height, arg);
             case clTPaveStats:
                return this.drawPaveStats(width, height, arg);
             case clTPaveText:
@@ -351,7 +351,7 @@ class TPavePainter extends ObjectPainter {
             case clTDiamond:
                return this.drawPaveText(width, height, arg);
             case clTLegend:
-               return this.drawLegend(width, height, arg)
+               return this.drawLegend(width, height, arg);
             case clTPaletteAxis:
                return this.drawPaletteAxis(width, height, arg);
          }
