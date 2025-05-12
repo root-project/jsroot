@@ -518,7 +518,7 @@ class TGraphPainter extends ObjectPainter {
          getGrFuncs() { return this; }
       };
 
-      return fp.pad ? fp : null;
+      return fp;
    }
 
    /** @summary append exclusion area to created path */

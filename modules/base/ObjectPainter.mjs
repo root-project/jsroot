@@ -487,20 +487,20 @@ class ObjectPainter extends BasePainter {
       const func = { isndc, nornd },
             use_frame = this.draw_g?.property('in_frame');
       if (use_frame || (use_frame_coordinates && !isndc))
-         func.main = this.getFramePainter();
-      if (func.main?.grx && func.main?.gry) {
-         func.x0 = (use_frame_coordinates && !isndc) ? func.main.getFrameX() : 0;
-         func.y0 = (use_frame_coordinates && !isndc) ? func.main.getFrameY() : 0;
+         func.fp = this.getFramePainter();
+      if (func.fp?.grx && func.fp?.gry) {
+         func.x0 = (use_frame_coordinates && !isndc) ? func.fp.getFrameX() : 0;
+         func.y0 = (use_frame_coordinates && !isndc) ? func.fp.getFrameY() : 0;
          if (nornd) {
-            func.x = function(x) { return this.x0 + this.main.grx(x); };
-            func.y = function(y) { return this.y0 + this.main.gry(y); };
+            func.x = function(x) { return this.x0 + this.fp.grx(x); };
+            func.y = function(y) { return this.y0 + this.fp.gry(y); };
          } else {
-            func.x = function(x) { return this.x0 + Math.round(this.main.grx(x)); };
-            func.y = function(y) { return this.y0 + Math.round(this.main.gry(y)); };
+            func.x = function(x) { return this.x0 + Math.round(this.fp.grx(x)); };
+            func.y = function(y) { return this.y0 + Math.round(this.fp.gry(y)); };
          }
       } else if (!use_frame) {
          const pp = this.getPadPainter();
-         if (!isndc) func.pad = pp?.getRootPad(true); // need for NDC conversion
+         func.pad = isndc ? null : pp?.getRootPad(true); // need for NDC conversion
          func.padw = pp?.getPadWidth() ?? 10;
          func.x = function(value) {
             if (this.pad) {

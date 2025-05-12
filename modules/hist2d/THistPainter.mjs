@@ -2387,6 +2387,7 @@ class THistPainter extends ObjectPainter {
       funcs.gry = funcs.y;
       funcs.logx = funcs.pad?.fLogx;
       funcs.logy = funcs.pad?.fLogy;
+      funcs.swap_xy = function() { return this.fp?.swap_xy() ?? false; };
       funcs.getFrameWidth = function() { return this.$painter.getPadPainter().getPadWidth(); };
       funcs.getFrameHeight = function() { return this.$painter.getPadPainter().getPadHeight(); };
       funcs.isAxisZoomed = function() { return false; };
