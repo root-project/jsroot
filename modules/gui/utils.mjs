@@ -363,20 +363,20 @@ function addMoveHandler(painter, enabled = true, hover_handler = false) {
          const pos = d3_pointer(evnt, this.draw_g.node());
          not_changed = true;
          if (this.moveStart)
-            this.moveStart(pos[0], pos[1]);
+            this.moveStart(pos[0], pos[1], evnt.sourceEvent);
       }.bind(painter)).on('drag', function(evnt) {
          if (move_disabled) return;
          evnt.sourceEvent.preventDefault();
          evnt.sourceEvent.stopPropagation();
          not_changed = false;
          if (this.moveDrag)
-            this.moveDrag(evnt.dx, evnt.dy);
+            this.moveDrag(evnt.dx, evnt.dy, evnt.sourceEvent);
       }.bind(painter)).on('end', function(evnt) {
          if (move_disabled) return;
          evnt.sourceEvent.preventDefault();
          evnt.sourceEvent.stopPropagation();
          if (this.moveEnd)
-            this.moveEnd(not_changed);
+            this.moveEnd(not_changed, evnt.sourceEvent);
 
          let arg = null;
          if (not_changed) {

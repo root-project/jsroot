@@ -1334,10 +1334,10 @@ class TGraphPainter extends ObjectPainter {
    }
 
    /** @summary Start moving of TGraph */
-   moveStart(x, y) {
+   moveStart(x, y, evnt) {
       this.#pos_dx = this.#pos_dy = 0;
       this.#move_funcs = this.get_fp().getGrFuncs(this.options.second_x, this.options.second_y);
-      const hint = this.extractTooltip({ x, y });
+      const hint = evnt?.shiftKey ? null : this.extractTooltip({ x, y });
       if (hint?.exact && (hint.binindx !== undefined)) {
          this.#move_binindx = hint.binindx;
          this.#move_bin = hint.bin;
