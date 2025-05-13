@@ -440,12 +440,12 @@ class TGraphPainter extends ObjectPainter {
    /** @summary Check if such function should be drawn directly */
    needDrawFunc(graph, func) {
       if (func._typename === clTPaveStats)
-          return (func.fName !== 'stats') || !graph.TestBit(kNoStats); // kNoStats is same for graph and histogram
+         return (func.fName !== 'stats') || !graph.TestBit(kNoStats); // kNoStats is same for graph and histogram
 
-       if ((func._typename === clTF1) || (func._typename === clTF2))
-          return !func.TestBit(BIT(9)); // TF1::kNotDraw
+      if ((func._typename === clTF1) || (func._typename === clTF2))
+         return !func.TestBit(BIT(9)); // TF1::kNotDraw
 
-       return true;
+      return true;
    }
 
    /** @summary Returns tooltip for specified bin */

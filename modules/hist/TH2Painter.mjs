@@ -178,8 +178,8 @@ function drawTH2PolyLego(painter) {
 
       mesh.tooltip = function(/* intersects */) {
          const p = this.painter,
-               tbin = p.getObject().fBins.arr[this.bins_index],
-         tip = {
+               tbin = p.getObject().fBins.arr[this.bins_index];
+         return {
             use_itself: true, // indicate that use mesh itself for highlighting
             x1: fp.grx(tbin.fXmin),
             x2: fp.grx(tbin.fXmax),
@@ -192,8 +192,6 @@ function drawTH2PolyLego(painter) {
             color: this.tip_color,
             lines: p.getPolyBinTooltips(this.bins_index)
          };
-
-         return tip;
       };
    }
 }
