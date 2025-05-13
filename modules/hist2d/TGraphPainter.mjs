@@ -32,6 +32,14 @@ class TGraphPainter extends ObjectPainter {
    #cutg;          // is cutg object
    #cutg_lastsame; // indicate that last point is same as first
    #own_histogram; // if histogram created by TGraphPainter
+   #marker_size;   // used marker size
+   #move_binindx;  // index of moving bin
+   #move_funcs;    // moving functions
+   #move_bin;      // moving bin
+   #move_x0;       // initial x position
+   #move_y0;       // initial y position
+   #pos_dx;        // accumulated x change
+   #pos_dy;        // accumulated y change
 
    constructor(dom, graph) {
       super(dom, graph);
@@ -832,12 +840,12 @@ class TGraphPainter extends ObjectPainter {
          // for tooltips use markers only if nodes were not created
          this.createAttMarker({ attr: graph, style: options.Mark - 100 });
 
-         this.marker_size = this.markeratt.getFullSize();
+         this.#marker_size = this.markeratt.getFullSize();
 
          this.markeratt.resetPos();
 
-         const want_tooltip = !this.isBatchMode() && settings.Tooltip && (!this.markeratt.fill || (this.marker_size < 7)) && !nodes && main_block,
-               hsz = Math.max(5, Math.round(this.marker_size*0.7)),
+         const want_tooltip = !this.isBatchMode() && settings.Tooltip && (!this.markeratt.fill || (this.#marker_size < 7)) && !nodes && main_block,
+               hsz = Math.max(5, Math.round(this.#marker_size*0.7)),
                maxnummarker = 1000000 / (this.markeratt.getMarkerLength() + 7); // let produce SVG at maximum 1MB
 
          let path = '', pnt, grx, gry,
@@ -851,9 +859,9 @@ class TGraphPainter extends ObjectPainter {
          for (let n = 0; n < drawbins.length; n += step) {
             pnt = drawbins[n];
             grx = funcs.grx(pnt.x);
-            if ((grx > -this.marker_size) && (grx < w + this.marker_size)) {
+            if ((grx > -this.#marker_size) && (grx < w + this.#marker_size)) {
                gry = funcs.gry(pnt.y);
-               if ((gry > -this.marker_size) && (gry < h + this.marker_size)) {
+               if ((gry > -this.#marker_size) && (gry < h + this.#marker_size)) {
                   path += this.markeratt.create(grx, gry);
                   if (want_tooltip) hints_marker += `M${grx-hsz},${gry-hsz}h${2*hsz}v${2*hsz}h${-2*hsz}z`;
                }
@@ -962,7 +970,7 @@ class TGraphPainter extends ObjectPainter {
       this.fillatt.used = false; // mark used only when really used
 
       this.draw_kind = 'none'; // indicate if special svg:g were created for each bin
-      this.marker_size = 0; // indicate if markers are drawn
+      this.#marker_size = 0; // indicate if markers are drawn
       const draw_g = is_gme ? this.draw_g.append('svg:g') : this.draw_g;
 
       this.drawBins(funcs, this.options, draw_g, w, h, this.lineatt, this.fillatt, true);
@@ -1007,7 +1015,7 @@ class TGraphPainter extends ObjectPainter {
             esz = this.error_size,
             isbar1 = (this.options.Bar === 1),
             funcs = isbar1 ? fp.getGrFuncs(this.options.second_x, this.options.second_y) : null,
-            msize = this.marker_size ? Math.round(this.marker_size / 2 + 1.5) : 0;
+            msize = this.#marker_size ? Math.round(this.#marker_size / 2 + 1.5) : 0;
       let findbin = null, best_dist2 = 1e10, best = null;
 
       this.draw_g.selectAll('.grpoint').each(function() {
@@ -1141,7 +1149,7 @@ class TGraphPainter extends ObjectPainter {
       // check last point
       if ((bestdist > 100) && islines) bestbin = null;
 
-      let radius = Math.max(this.lineatt.width + 3, 4, this.marker_size);
+      let radius = Math.max(this.lineatt.width + 3, 4, this.#marker_size);
 
       if (bestbin)
          bestdist = Math.sqrt((pnt.x-funcs.grx(bestbin.x))**2 + (pnt.y-funcs.gry(bestbin.y))**2);
@@ -1327,28 +1335,28 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Start moving of TGraph */
    moveStart(x, y) {
-      this.pos_dx = this.pos_dy = 0;
-      this.move_funcs = this.get_fp().getGrFuncs(this.options.second_x, this.options.second_y);
+      this.#pos_dx = this.#pos_dy = 0;
+      this.#move_funcs = this.get_fp().getGrFuncs(this.options.second_x, this.options.second_y);
       const hint = this.extractTooltip({ x, y });
       if (hint && hint.exact && (hint.binindx !== undefined)) {
-         this.move_binindx = hint.binindx;
-         this.move_bin = hint.bin;
-         this.move_x0 = this.move_funcs.grx(this.move_bin.x);
-         this.move_y0 = this.move_funcs.gry(this.move_bin.y);
+         this.#move_binindx = hint.binindx;
+         this.#move_bin = hint.bin;
+         this.#move_x0 = this.#move_funcs.grx(this.#move_bin.x);
+         this.#move_y0 = this.#move_funcs.gry(this.#move_bin.y);
       } else
-         delete this.move_binindx;
+         this.#move_binindx = undefined;
    }
 
    /** @summary Perform moving */
    moveDrag(dx, dy) {
-      this.pos_dx += dx;
-      this.pos_dy += dy;
+      this.#pos_dx += dx;
+      this.#pos_dy += dy;
 
-      if (this.move_binindx === undefined)
-         makeTranslate(this.draw_g, this.pos_dx, this.pos_dy);
-       else if (this.move_funcs && this.move_bin) {
-         this.move_bin.x = this.move_funcs.revertAxis('x', this.move_x0 + this.pos_dx);
-         this.move_bin.y = this.move_funcs.revertAxis('y', this.move_y0 + this.pos_dy);
+      if (this.#move_binindx === undefined)
+         makeTranslate(this.draw_g, this.#pos_dx, this.#pos_dy);
+       else if (this.#move_funcs && this.#move_bin) {
+         this.#move_bin.x = this.#move_funcs.revertAxis('x', this.#move_x0 + this.#pos_dx);
+         this.#move_bin.y = this.#move_funcs.revertAxis('y', this.#move_y0 + this.#pos_dy);
          this.drawGraph();
       }
    }
@@ -1369,14 +1377,14 @@ class TGraphPainter extends ObjectPainter {
          }
       };
 
-      if (this.move_binindx === undefined) {
+      if (this.#move_binindx === undefined) {
          this.draw_g.attr('transform', null);
 
-         if (this.move_funcs && this.#bins && !not_changed) {
+         if (this.#move_funcs && this.#bins && !not_changed) {
             for (let k = 0; k < this.#bins.length; ++k) {
                const bin = this.#bins[k];
-               bin.x = this.move_funcs.revertAxis('x', this.move_funcs.grx(bin.x) + this.pos_dx);
-               bin.y = this.move_funcs.revertAxis('y', this.move_funcs.gry(bin.y) + this.pos_dy);
+               bin.x = this.#move_funcs.revertAxis('x', this.#move_funcs.grx(bin.x) + this.#pos_dx);
+               bin.y = this.#move_funcs.revertAxis('y', this.#move_funcs.gry(bin.y) + this.#pos_dy);
                changeBin(bin);
             }
             if (graph.$redraw_pad)
@@ -1385,13 +1393,13 @@ class TGraphPainter extends ObjectPainter {
                this.drawGraph();
          }
       } else {
-         changeBin(this.move_bin);
-         delete this.move_binindx;
+         changeBin(this.#move_bin);
+         this.#move_binindx = undefined;
          if (graph.$redraw_pad)
             this.redrawPad();
       }
 
-      delete this.move_funcs;
+      this.#move_funcs = undefined;
 
       if (exec && !not_changed)
          this.submitCanvExec(exec);
