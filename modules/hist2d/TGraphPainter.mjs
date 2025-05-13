@@ -1147,9 +1147,10 @@ class TGraphPainter extends ObjectPainter {
       }
 
       // check last point
-      if ((bestdist > 100) && islines) bestbin = null;
+      if ((bestdist > 100) && islines)
+         bestbin = null;
 
-      let radius = Math.max(this.lineatt.width + 3, 4, this.#marker_size);
+      const radius = Math.max(this.lineatt.width + 3, 4, this.#marker_size);
 
       if (bestbin)
          bestdist = Math.sqrt((pnt.x-funcs.grx(bestbin.x))**2 + (pnt.y-funcs.gry(bestbin.y))**2);
