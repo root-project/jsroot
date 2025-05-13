@@ -307,7 +307,7 @@ function registerForResize(handle, delay) {
             const mdi = node.property('mdi');
             if (isFunc(mdi?.checkMDIResize))
                mdi.checkMDIResize();
-             else
+            else
                resize(node.node());
          }
       }
@@ -356,8 +356,8 @@ function addMoveHandler(painter, enabled = true, hover_handler = false) {
    drag_move
       .on('start', function(evnt) {
          move_disabled = this.moveEnabled ? !this.moveEnabled() : false;
-         if (move_disabled) return;
-         if (detectRightButton(evnt.sourceEvent)) return;
+         if (move_disabled || detectRightButton(evnt.sourceEvent))
+            return;
          evnt.sourceEvent.preventDefault();
          evnt.sourceEvent.stopPropagation();
          const pos = d3_pointer(evnt, this.draw_g.node());
