@@ -112,7 +112,6 @@ class TScatterPainter extends TGraphPainter {
       this.#color_palette = undefined;
    }
 
-
    /** @summary Actual drawing of TScatter */
    async drawGraph() {
       const fp = this.get_fp(),
@@ -171,13 +170,14 @@ class TScatterPainter extends TGraphPainter {
       this.createG(!fp.pad_layer);
 
       const funcs = fp.getGrFuncs(),
-            is_zoom = (fp.zoom_zmin !== fp.zoom_zmax) && scatter.fColor;
+            is_zoom = (fp.zoom_zmin !== fp.zoom_zmax) && scatter.fColor,
+            bins = this._getBins();
 
-      for (let i = 0; i < this.bins.length; ++i) {
+      for (let i = 0; i < bins.length; ++i) {
          if (is_zoom && ((scatter.fColor[i] < fp.zoom_zmin) || (scatter.fColor[i] > fp.zoom_zmax)))
             continue;
 
-         const pnt = this.bins[i],
+         const pnt = bins[i],
                grx = funcs.grx(pnt.x),
                gry = funcs.gry(pnt.y),
                size = scatter.fSize ? scatter.fMinMarkerSize + scale * (scatter.fSize[i] - offset) : scatter.fMarkerSize,

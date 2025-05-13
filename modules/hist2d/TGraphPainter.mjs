@@ -24,8 +24,9 @@ const kNotEditable = BIT(18),   // bit set if graph is non editable
 
 class TGraphPainter extends ObjectPainter {
 
-   #redraw_hist; // indicate that histogram need to be redrawn
-   #auto_exec; // can be reused when sending option back to server
+   #bins;          // extracted graph bins
+   #redraw_hist;   // indicate that histogram need to be redrawn
+   #auto_exec;     // can be reused when sending option back to server
    #funcs_handler; // special instance for functions drawing
    #frame_layer;   // frame layer used for drawing
    #cutg;          // is cutg object
@@ -35,7 +36,6 @@ class TGraphPainter extends ObjectPainter {
    constructor(dom, graph) {
       super(dom, graph);
       this.axes_draw = false; // indicate if graph histogram was drawn for axes
-      this.bins = null;
       this.xmin = this.ymin = this.xmax = this.ymax = 0;
       this.wheel_zoomy = true;
       this.is_bent = (graph._typename === clTGraphBentErrors);
@@ -82,7 +82,7 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Cleanup graph painter */
    cleanup() {
-      delete this.bins;
+      this.#bins = undefined;
       this.#own_histogram = undefined;
       super.cleanup();
    }
@@ -234,13 +234,16 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Extract errors for TGraphMultiErrors */
    extractGmeErrors(nblock) {
-      if (!this.bins) return;
       const gr = this.getGraph();
-      this.bins.forEach(bin => {
+      this.#bins?.forEach(bin => {
          bin.eylow = gr.fEyL[nblock][bin.indx];
          bin.eyhigh = gr.fEyH[nblock][bin.indx];
       });
    }
+
+   /** @summary Return prepared graph bins
+    * @protected */
+   _getBins() { return this.#bins; }
 
    /** @summary Create bins for TF1 drawing */
    createBins() {
@@ -258,10 +261,10 @@ class TGraphPainter extends ObjectPainter {
       else if (gr._typename === clTGraphAsymmErrors || gr._typename === clTGraphBentErrors || gr._typename.match(/^RooHist/))
          kind = 3;
 
-      this.bins = new Array(npoints);
+      this.#bins = new Array(npoints);
 
       for (let p = 0; p < npoints; ++p) {
-         const bin = this.bins[p] = { x: gr.fX[p], y: gr.fY[p], indx: p };
+         const bin = this.#bins[p] = { x: gr.fX[p], y: gr.fY[p], indx: p };
          switch (kind) {
             case 1:
                bin.exlow = bin.exhigh = gr.fEX[p];
@@ -301,7 +304,7 @@ class TGraphPainter extends ObjectPainter {
 
       // workaround, are there better way to show marker at 0,0 on the top of the frame?
       this.#frame_layer = true;
-      if ((this.xmin === 0) && (this.ymin === 0) && (npoints > 0) && (this.bins[0].x === 0) && (this.bins[0].y === 0) &&
+      if ((this.xmin === 0) && (this.ymin === 0) && (npoints > 0) && (this.#bins[0].x === 0) && (this.#bins[0].y === 0) &&
           this.options.Mark && !this.options.Line && !this.options.Curve && !this.options.Fill)
          this.#frame_layer = 'upper_layer';
    }
@@ -411,27 +414,28 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Returns optimized bins - if optimization enabled */
    optimizeBins(maxpnt, filter_func) {
-      if ((this.bins.length < 30) && !filter_func)
-         return this.bins;
+      if ((this.#bins.length < 30) && !filter_func)
+         return this.#bins;
 
       let selbins = null;
       if (isFunc(filter_func)) {
-         for (let n = 0; n < this.bins.length; ++n) {
-            if (filter_func(this.bins[n], n)) {
-               if (!selbins) selbins = (n === 0) ? [] : this.bins.slice(0, n);
+         for (let n = 0; n < this.#bins.length; ++n) {
+            if (filter_func(this.#bins[n], n)) {
+               if (!selbins) selbins = (n === 0) ? [] : this.#bins.slice(0, n);
             } else
-               if (selbins) selbins.push(this.bins[n]);
+               if (selbins) selbins.push(this.#bins[n]);
          }
       }
-      if (!selbins) selbins = this.bins;
+      if (!selbins)
+         selbins = this.#bins;
 
-      if (!maxpnt) maxpnt = 500000;
+      if (!maxpnt)
+         maxpnt = 500000;
 
-      if ((selbins.length < maxpnt) || !this.canOptimize()) return selbins;
-      let step = Math.floor(selbins.length / maxpnt);
-      if (step < 2) step = 2;
-      const optbins = [];
-      for (let n = 0; n < selbins.length; n+=step)
+      if ((selbins.length < maxpnt) || !this.canOptimize())
+         return selbins;
+      const optbins = [], step = Math.max(2, Math.floor(selbins.length / maxpnt));
+      for (let n = 0; n < selbins.length; n += step)
          optbins.push(selbins[n]);
 
       return optbins;
@@ -989,19 +993,21 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Provide tooltip at specified point */
    extractTooltip(pnt) {
-      if (!pnt) return null;
+      if (!pnt)
+         return null;
 
       if ((this.draw_kind === 'lines') || (this.draw_kind === 'path') || (this.draw_kind === 'mark'))
          return this.extractTooltipForPath(pnt);
 
-      if (this.draw_kind !== 'nodes') return null;
+      if (this.draw_kind !== 'nodes')
+         return null;
 
       const fp = this.get_fp(),
             height = fp.getFrameHeight(),
             esz = this.error_size,
             isbar1 = (this.options.Bar === 1),
             funcs = isbar1 ? fp.getGrFuncs(this.options.second_x, this.options.second_y) : null,
-            msize = this.marker_size ? Math.round(this.marker_size/2 + 1.5) : 0;
+            msize = this.marker_size ? Math.round(this.marker_size / 2 + 1.5) : 0;
       let findbin = null, best_dist2 = 1e10, best = null;
 
       this.draw_g.selectAll('.grpoint').each(function() {
@@ -1100,13 +1106,14 @@ class TGraphPainter extends ObjectPainter {
    /** @summary Process tooltip event */
    processTooltipEvent(pnt) {
       const hint = this.extractTooltip(pnt);
-      if (!pnt || !pnt.disabled) this.showTooltip(hint);
+      if (!pnt || !pnt.disabled)
+         this.showTooltip(hint);
       return hint;
    }
 
    /** @summary Find best bin index for specified point */
    findBestBin(pnt) {
-      if (!this.bins)
+      if (!this.#bins)
          return null;
 
       const islines = (this.draw_kind === 'lines'),
@@ -1116,8 +1123,8 @@ class TGraphPainter extends ObjectPainter {
           bestdist = 1e10,
           dist, grx, gry, n, bin;
 
-      for (n = 0; n < this.bins.length; ++n) {
-         bin = this.bins[n];
+      for (n = 0; n < this.#bins.length; ++n) {
+         bin = this.#bins[n];
 
          grx = funcs.grx(bin.x);
          gry = funcs.gry(bin.y);
@@ -1134,14 +1141,13 @@ class TGraphPainter extends ObjectPainter {
       // check last point
       if ((bestdist > 100) && islines) bestbin = null;
 
-      let radius = Math.max(this.lineatt.width + 3, 4);
-
-      if (this.marker_size > 0) radius = Math.max(this.marker_size, radius);
+      let radius = Math.max(this.lineatt.width + 3, 4, this.marker_size);
 
       if (bestbin)
          bestdist = Math.sqrt((pnt.x-funcs.grx(bestbin.x))**2 + (pnt.y-funcs.gry(bestbin.y))**2);
 
-      if (!islines && (bestdist > radius)) bestbin = null;
+      if (!islines && (bestdist > radius))
+         bestbin = null;
 
       if (!bestbin) bestindx = -1;
 
@@ -1152,9 +1158,9 @@ class TGraphPainter extends ObjectPainter {
 
          const IsInside = (x, x1, x2) => ((x1 >= x) && (x >= x2)) || ((x1 <= x) && (x <= x2));
 
-         let bin0 = this.bins[0], grx0 = funcs.grx(bin0.x), gry0, posy;
-         for (n = 1; n < this.bins.length; ++n) {
-            bin = this.bins[n];
+         let bin0 = this.#bins[0], grx0 = funcs.grx(bin0.x), gry0, posy;
+         for (n = 1; n < this.#bins.length; ++n) {
+            bin = this.#bins[n];
             grx = funcs.grx(bin.x);
 
             if (IsInside(pnt.x, grx0, grx)) {
@@ -1203,7 +1209,8 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Provide tooltip at specified point for path-based drawing */
    extractTooltipForPath(pnt) {
-      if (this.bins === null) return null;
+      if (!this.#bins)
+         return null;
 
       const best = this.findBestBin(pnt);
 
@@ -1365,9 +1372,9 @@ class TGraphPainter extends ObjectPainter {
       if (this.move_binindx === undefined) {
          this.draw_g.attr('transform', null);
 
-         if (this.move_funcs && this.bins && !not_changed) {
-            for (let k = 0; k < this.bins.length; ++k) {
-               const bin = this.bins[k];
+         if (this.move_funcs && this.#bins && !not_changed) {
+            for (let k = 0; k < this.#bins.length; ++k) {
+               const bin = this.#bins[k];
                bin.x = this.move_funcs.revertAxis('x', this.move_funcs.grx(bin.x) + this.pos_dx);
                bin.y = this.move_funcs.revertAxis('y', this.move_funcs.gry(bin.y) + this.pos_dy);
                changeBin(bin);
