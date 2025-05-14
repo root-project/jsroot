@@ -5136,7 +5136,7 @@ class TGeoPainter extends ObjectPainter {
                   fp.clear3dCanvas();
                   fp.mode3d = false;
                }
-            } else
+            } else if (isFunc(this.clear3dCanvas))
                can3d = this.clear3dCanvas(); // remove 3d canvas from main HTML element
 
             disposeThreejsObject(this.#scene);
