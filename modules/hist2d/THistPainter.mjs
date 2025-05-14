@@ -25,7 +25,7 @@ class THistDrawOptions {
    /** @summary Reset hist draw options */
    reset() {
       Object.assign(this,
-            { Axis: 0, RevX: false, RevY: false, SymlogX: 0, SymlogY: 0,
+            { Axis: 0, RevX: false, RevY: false, SymlogX: 0, SymlogY: 0, xticks: null, yticks: null,
               Bar: false, BarStyle: 0, Curve: false,
               Hist: 1, Line: false, Fill: false,
               Error: 0, ErrorKind: -1, errorX: gStyle.fErrorX,
@@ -160,6 +160,9 @@ class THistDrawOptions {
 
       if (d.check('OPTSTAT', true)) this.optstat = d.partAsInt();
       if (d.check('OPTFIT', true)) this.optfit = d.partAsInt();
+
+      if (d.check('XTICKS:', 'array')) this.xticks = d.array;
+      if ((this.ndim > 1) && d.check('YTICKS:', 'array')) this.yticks = d.array;
 
       if (this.optstat || this.optfit)
          histo?.SetBit(kNoStats, false);
@@ -1340,6 +1343,8 @@ class THistPainter extends ObjectPainter {
                     xmin_nz: histo.$xmin_nz,
                     ymin_nz: this.ymin_nz ?? histo.$ymin_nz,
                     swap_xy: this.options.swap_xy(),
+                    xticks: this.options.xticks,
+                    yticks: this.options.yticks,
                     reverse_x: this.options.RevX,
                     reverse_y: this.options.RevY,
                     symlog_x: this.options.SymlogX,
