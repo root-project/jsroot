@@ -92,7 +92,7 @@ class THistDrawOptions {
       this.cutg_name = '';
       if (isStr(opt) && (hdim === 2)) {
          const p1 = opt.lastIndexOf('['), p2 = opt.lastIndexOf(']');
-         if ((p1 >= 0) && (p2 > p1+1)) {
+         if ((p1 >= 0) && (p2 > p1+1) && (opt.at(p1 - 1) !== ':')) {
             this.cutg_name = opt.slice(p1+1, p2);
             opt = opt.slice(0, p1) + opt.slice(p2+1);
             this.cutg = pp?.findInPrimitives(this.cutg_name, clTCutG);
