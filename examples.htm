@@ -433,7 +433,7 @@
          filepath = 'https://root.cern/js/files/';
 
       let keyid = null, optid, testfile, testobj, testinterval = 10, hpainter = null,
-          init_style, init_palette, init_curve, init_scale, init_TimeZone;
+          init_style, init_palette, init_curve, init_dark, init_scale, init_TimeZone;
 
       function produceGlobalStyleCopy() {
          // copy style when painter is loaded
@@ -441,6 +441,7 @@
             init_style = Object.assign({}, gStyle);
             init_palette = settings.Palette;
             init_curve = settings.FuncAsCurve;
+            init_dark = settings.DarkMode;
             init_TimeZone = settings.TimeZone;
             init_scale = settings.CanvasScale;
          }
@@ -451,6 +452,7 @@
             Object.assign(gStyle, init_style);
          settings.Palette = init_palette;
          settings.FuncAsCurve = init_curve;
+         settings.DarkMode = init_dark;
          settings.TimeZone = init_TimeZone;
          settings.CanvasScale = init_scale;
       }
