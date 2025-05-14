@@ -2990,8 +2990,10 @@ class TFramePainter extends FrameInteractive {
             });
          }
       }
+      if (!changed)
+         return false;
 
-      return changed ? this.interactiveRedraw('pad', 'zoom').then(() => true) : false;
+      return this.interactiveRedraw('pad', 'zoom').then(() => true);
    }
 
    /** @summary Zooming of single axis
@@ -3001,7 +3003,7 @@ class TFramePainter extends FrameInteractive {
      * @param {Boolean} [interactive] - if change was performed interactively
      * @protected */
    async zoomSingle(name, vmin, vmax, interactive) {
-      const handle = this[`${name}_handle`];
+      const handle = this[`${name}_handle`], name_min = `zoom_${name}min`, name_max = `zoom_${name}max`;
       if (!handle && (name !== 'z'))
          return false;
 
@@ -3023,8 +3025,8 @@ class TFramePainter extends FrameInteractive {
          this.forEachPainter(obj => {
             if (!isFunc(obj.canZoomInside)) return;
             if (zoom_v && obj.canZoomInside(name[0], vmin, vmax)) {
-               this[`zoom_${name}min`] = vmin;
-               this[`zoom_${name}max`] = vmax;
+               this[name_min] = vmin;
+               this[name_max] = vmax;
                changed = true;
                zoom_v = false;
             }
@@ -3033,11 +3035,11 @@ class TFramePainter extends FrameInteractive {
 
       // and process unzoom, if any
       if (unzoom_v) {
-         if (this[`zoom_${name}min`] !== this[`zoom_${name}max`]) {
+         if (this[name_min] !== this[name_max]) {
             changed = true;
             if (name === 'y') unzoomHistogramYRange(this.getMainPainter());
          }
-         this[`zoom_${name}min`] = this[`zoom_${name}max`] = 0;
+         this[name_min] = this[name_max] = 0;
       }
 
       if (!changed)
