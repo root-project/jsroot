@@ -2559,7 +2559,8 @@ class HierarchyPainter extends BasePainter {
        find_next = (itemname, prev_found) => {
          if (itemname === undefined) {
             // extract next element
-            if (items.length === 0) return mark_active();
+            if (items.length === 0)
+               return mark_active();
             itemname = items.shift();
          }
 
@@ -2567,7 +2568,8 @@ class HierarchyPainter extends BasePainter {
 
          if (!hitem) {
             const d = this.findItem({ name: itemname, last_exists: true, check_keys: true, allow_index: true });
-            if (!d || !d.last) return find_next();
+            if (!d || !d.last)
+               return find_next();
             d.now_found = this.itemFullName(d.last);
 
             if (force) {
