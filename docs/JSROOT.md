@@ -124,7 +124,9 @@ List of supported classes and draw options:
 [e4](https://root.cern/js/latest/examples.htm#th1_e4),
 [lego](https://root.cern/js/latest/examples.htm#th1_lego),
 [text](https://root.cern/js/latest/examples.htm#th1_text),
-[X+Y+](https://root.cern/js/latest/examples.htm#th1_x+y+)
+[X+Y+](https://root.cern/js/latest/examples.htm#th1_x+y+),
+[tickxy](https://root.cern/js/latest/examples.htm#th1_tickxy),
+[xticks](https://root.cern/js/latest/examples.htm#th1_xticks)
 - TH2 : [scat](https://root.cern/js/latest/examples.htm#th2),
 [col](https://root.cern/js/latest/examples.htm#th2_col),
 [colz](https://root.cern/js/latest/examples.htm#th2_colz),
@@ -152,7 +154,8 @@ List of supported classes and draw options:
 [lego3](https://root.cern/js/latest/examples.htm#th2_lego3),
 [lego4](https://root.cern/js/latest/examples.htm#th2_lego4),
 [circ](https://root.cern/js/latest/examples.htm#th2_circ),
-[chord](https://root.cern/js/latest/examples.htm#th2_chord)
+[chord](https://root.cern/js/latest/examples.htm#th2_chord),
+[xyticks](https://root.cern/js/latest/examples.htm#th2_xyticks)
 - TH2Poly : [col](https://root.cern/js/latest/examples.htm#th2poly_honeycomb),
 [lego](https://root.cern/js/latest/examples.htm#th2poly_lego),
 [europe](https://root.cern/js/latest/examples.htm#th2poly_europe),
