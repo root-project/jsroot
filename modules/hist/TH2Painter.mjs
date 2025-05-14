@@ -126,7 +126,7 @@ function drawTH2PolyLego(painter) {
 
          if (z1 > z0) {
             for (let n = 0; n < pnts.length; ++n) {
-               const pnt1 = pnts[n], pnt2 = pnts[n > 0 ? n - 1 : pnts.length - 1];
+               const pnt1 = pnts.at(n), pnt2 = pnts.at(n > 0 ? n - 1 : - 1);
 
                pos[indx] = pnt1.x;
                pos[indx+1] = pnt1.y;
