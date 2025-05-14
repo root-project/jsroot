@@ -966,12 +966,12 @@ class FrameInteractive extends TooltipHandler {
     /** @summary Shift scales on defined positions */
    performScalesShift() {
       const w = this.getFrameWidth(), h = this.getFrameHeight(),
-          main_svg = this.draw_g.selectChild('.main_layer'),
-          gr = this.getGrFuncs(),
-          xmin = gr.revertAxis('x', this._shifting_dx),
-          xmax = gr.revertAxis('x', this._shifting_dx + w),
-          ymin = gr.revertAxis('y', this._shifting_dy + h),
-          ymax = gr.revertAxis('y', this._shifting_dy);
+            main_svg = this.draw_g.selectChild('.main_layer'),
+            gr = this.getGrFuncs(),
+            xmin = gr.revertAxis('x', this._shifting_dx),
+            xmax = gr.revertAxis('x', this._shifting_dx + w),
+            ymin = gr.revertAxis('y', this._shifting_dy + h),
+            ymax = gr.revertAxis('y', this._shifting_dy);
 
       main_svg.attr('viewBox', `0 0 ${w} ${h}`);
 

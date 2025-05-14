@@ -196,8 +196,7 @@ class TSplinePainter extends ObjectPainter {
      * @private */
    redraw() {
       const spline = this.getObject(),
-            fp = this.getFramePainter(),
-            funcs = fp.getGrFuncs(this.options.second_x, this.options.second_y),
+            funcs = this.getFramePainter().getGrFuncs(this.options.second_x, this.options.second_y),
             w = funcs.getFrameWidth(),
             h = funcs.getFrameHeight();
 
@@ -213,14 +212,14 @@ class TSplinePainter extends ObjectPainter {
              xmax = Math.min(funcs.scale_xmax, spline.fXmax),
              indx = this.findX(xmin);
 
-         if (fp.logx) {
+         if (funcs.logx) {
             xmin = Math.log(xmin);
             xmax = Math.log(xmax);
          }
 
          for (let n = 0; n < npx; ++n) {
             let x = xmin + (xmax-xmin)/npx*(n-1);
-            if (fp.logx) x = Math.exp(x);
+            if (funcs.logx) x = Math.exp(x);
 
             while ((indx < spline.fNp-1) && (x > spline.fPoly[indx+1].fX)) ++indx;
 
@@ -249,7 +248,7 @@ class TSplinePainter extends ObjectPainter {
 
          for (let n = 0; n < spline.fPoly.length; n++) {
             const knot = spline.fPoly[n],
-                grx = funcs.grx(knot.fX);
+                  grx = funcs.grx(knot.fX);
             if ((grx > -this.#knot_size) && (grx < w + this.#knot_size)) {
                const gry = funcs.gry(knot.fY);
                if ((gry > -this.#knot_size) && (gry < h + this.#knot_size))

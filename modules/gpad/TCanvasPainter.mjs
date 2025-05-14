@@ -62,7 +62,7 @@ class TCanvasPainter extends TPadPainter {
    /** @summary Returns layout kind */
    getLayoutKind() {
       const origin = this.selectDom('origin'),
-         layout = origin.empty() ? '' : origin.property('layout');
+            layout = origin.empty() ? '' : origin.property('layout');
 
       return layout || 'simple';
    }
