@@ -759,9 +759,14 @@ class TAxisPainter extends ObjectPainter {
                      lbl = this.format(v0, true);
 
                let bad_value = lbls.indexOf(lbl) >= 0;
-               if (!bad_value && this.fixed_ticks) {
-                  const v1 = parseFloat(lbl) * Math.pow(10, order);
-                  bad_value = (Math.abs(v0) > 1e-30) && (Math.abs(v1 - v0) / Math.abs(v0) > 1e-8);
+               if (!bad_value) {
+                  try {
+                     const v1 = parseFloat(lbl) * Math.pow(10, order);
+                     bad_value = (Math.abs(v0) > 1e-30) && (Math.abs(v1 - v0) / Math.abs(v0) > 1e-8);
+                  } catch {
+                     console.warn('Failure by parsing of', lbl)
+                     bad_value = true;
+                  }
                }
                if (bad_value) {
                   if (++this.ndig > 15) {
