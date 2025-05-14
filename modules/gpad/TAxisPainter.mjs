@@ -764,7 +764,7 @@ class TAxisPainter extends ObjectPainter {
                      const v1 = parseFloat(lbl) * Math.pow(10, order);
                      bad_value = (Math.abs(v0) > 1e-30) && (Math.abs(v1 - v0) / Math.abs(v0) > 1e-8);
                   } catch {
-                     console.warn('Failure by parsing of', lbl)
+                     console.warn('Failure by parsing of', lbl);
                      bad_value = true;
                   }
                }
