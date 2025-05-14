@@ -617,7 +617,7 @@ class TDrawVariable {
             return true;
          }
 
-         const replace = 'arg.var' + (this.branches.length - 1);
+         const replace = `arg.var${this.branches.length - 1}`;
          code = code.slice(0, pos) + replace + code.slice(pos2);
          pos += replace.length;
       }

@@ -788,10 +788,10 @@ registerMethods(`${nsREX}RPalette`, {
       if (zc < cntr[0])
          return -1;
       if (zc >= cntr[r])
-         return r-1;
+         return r - 1;
 
       if (this.fCustomContour) {
-         while (l < r-1) {
+         while (l < r - 1) {
             const mid = Math.round((l+r)/2);
             if (cntr[mid] > zc)
                r = mid;

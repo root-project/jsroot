@@ -228,6 +228,8 @@ const AxisPainterMethods = {
      * @desc Fixing following problem, described [here]{@link https://stackoverflow.com/questions/64649793} */
    poduceLogTicks(func, number) {
       const linearArray = arr => {
+         if (arr.length < 2)
+            return false;
          let sum1 = 0, sum2 = 0;
          for (let k = 1; k < arr.length; ++k) {
             const diff = (arr[k] - arr[k-1]);
@@ -235,7 +237,7 @@ const AxisPainterMethods = {
             sum2 += diff**2;
          }
          const mean = sum1/(arr.length - 1),
-             dev = sum2/(arr.length - 1) - mean**2;
+               dev = sum2/(arr.length - 1) - mean**2;
 
          if (dev <= 0) return true;
          if (Math.abs(mean) < 1e-100) return false;

@@ -673,7 +673,8 @@ class TabsDisplay extends MDIDisplay {
       const frame_id = this.cnt++, mdi = this;
       let lbl = title;
 
-      if (!lbl || !isStr(lbl)) lbl = `frame_${frame_id}`;
+      if (!lbl || !isStr(lbl))
+         lbl = `frame_${frame_id}`;
 
       if (lbl.length > 15) {
          let p = lbl.lastIndexOf('/');

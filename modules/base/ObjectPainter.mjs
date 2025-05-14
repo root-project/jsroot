@@ -1415,8 +1415,8 @@ class ObjectPainter extends BasePainter {
          }
 
          menu.showMethodArgsDialog(item).then(args => {
-            if (!args) return;
-            if (execp.executeMenuCommand(item, args)) return;
+            if (!args || execp.executeMenuCommand(item, args))
+               return;
 
             const exec = item.fExec.slice(0, item.fExec.length - 1) + args + ')';
             if (cp?.v7canvas)
