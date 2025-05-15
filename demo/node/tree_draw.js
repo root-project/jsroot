@@ -12,7 +12,7 @@ if (process.argv && (process.argv[2] == 'buf'))
 
 const file = await openFile(arg);
 
-// now read ntuple, perform Draw operation, create SVG file and sve to the disk
+// now read ntuple, perform Draw operation, create SVG file and save to the disk
 const ntuple = await file.readObject('ntuple');
 const hist = await treeDraw(ntuple, 'px:py::pz>5');
 hist.fTitle = 'Example of TTree::Draw';
