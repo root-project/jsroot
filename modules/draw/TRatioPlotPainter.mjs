@@ -103,8 +103,8 @@ class TRatioPlotPainter extends ObjectPainter {
             xmin = up_fp.xmin;
             xmax = up_fp.xmax;
          } else {
-            if (xmin < up_fp.xmin) xmin = up_fp.xmin;
-            if (xmax > up_fp.xmax) xmax = up_fp.xmax;
+            xmin = Math.min(xmin, up_fp.xmin);
+            xmax = Math.max(xmax, up_fp.xmax);
          }
          this._ratio_painter.setGridsRange(xmin, xmax, ymin, ymax);
          return this._ratio_up_fp.o_zoom(xmin, xmax).then(() => this.o_zoom(xmin, xmax, ymin, ymax, zmin, zmax));
