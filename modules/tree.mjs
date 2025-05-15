@@ -362,7 +362,8 @@ function findBranchComplex(tree, name, lst = undefined, only_search = false) {
       if (pos > 0) search = search.slice(0, pos);
    }
 
-   if (!lst || (lst.arr.length === 0)) return null;
+   if (!lst?.arr.length)
+      return null;
 
    for (let n = 0; n < lst.arr.length; ++n) {
       let brname = lst.arr[n].fName;
@@ -390,10 +391,9 @@ function findBranchComplex(tree, name, lst = undefined, only_search = false) {
       if (brname[pnt - 1] === '.') pnt--;
       if (search[pnt] !== '.') continue;
 
-      res = findBranchComplex(tree, search, lst.arr[n].fBranches);
-      if (!res) res = findBranchComplex(tree, search.slice(pnt + 1), lst.arr[n].fBranches);
-
-      if (!res) res = { branch: lst.arr[n], rest: search.slice(pnt) };
+      res = findBranchComplex(tree, search, lst.arr[n].fBranches) ||
+            findBranchComplex(tree, search.slice(pnt + 1), lst.arr[n].fBranches) ||
+            { branch: lst.arr[n], rest: search.slice(pnt) };
 
       break;
    }
@@ -1040,8 +1040,7 @@ class TDrawSelector extends TSelector {
          this.leaf = args.leaf;
 
          // branch object remains, therefore we need to copy fields to see them all
-         this.copy_fields = ((args.branch.fLeaves && (args.branch.fLeaves.arr.length > 1)) ||
-            (args.branch.fBranches && (args.branch.fBranches.arr.length > 0))) && !args.leaf;
+         this.copy_fields = ((args.branch.fLeaves?.arr.length > 1) || args.branch.fBranches?.arr.length) && !args.leaf;
 
          this.addBranch(branch, 'br0', args.direct_branch); // add branch
 
@@ -1972,9 +1971,8 @@ async function treeProcess(tree, selector, args) {
             newtgt[l] = target_object[l];
          newtgt[newtgt.length - 1] = { name: target_name, lst: makeMethodsList(object_class) };
 
-         if (!scanBranches(branch.fBranches, newtgt, 0)) return null;
-
-         return item; // this kind of branch does not have baskets and not need to be read
+         // this kind of branch does not have baskets and not need to be read
+         return scanBranches(branch.fBranches, newtgt, 0) ? item : null;
       } else if (is_brelem && (nb_leaves === 1) && (leaf.fName === branch.fName) && (branch.fID === -1)) {
          elem = createStreamerElement(target_name, branch.fClassName);
 
@@ -2774,7 +2772,8 @@ function treeIOTest(tree, args) {
    const branches = [], names = [], nchilds = [];
 
    function collectBranches(obj, prntname = '') {
-      if (!obj?.fBranches) return 0;
+      if (!obj?.fBranches)
+         return 0;
 
       let cnt = 0;
 
@@ -2964,7 +2963,7 @@ function treeHierarchy(tree_node, obj) {
    tree_node._childs = [];
    tree_node._tree = obj;  // set reference, will be used later by TTree::Draw
 
-   for (let i = 0; i < obj.fBranches.arr?.length; ++i)
+   for (let i = 0; i < obj.fBranches?.arr.length; ++i)
       createBranchItem(tree_node, obj.fBranches.arr[i], obj);
 
    return true;
