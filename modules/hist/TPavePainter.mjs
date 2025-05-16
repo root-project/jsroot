@@ -1523,7 +1523,7 @@ class TPavePainter extends ObjectPainter {
                parvalue = this.format(Number(parvalue), 'fit');
                if (print_ferrors && (parerr !== undefined)) {
                   parerr = floatToString(parerr, this.getBestFormat(parvalue, parerr));
-                  if ((Number(parerr) === 0) && (f1.GetParError(n) !== 0))
+                  if (!Number(parerr) && f1.GetParError(n))
                      parerr = floatToString(f1.GetParError(n), '4.2g');
                }
             }

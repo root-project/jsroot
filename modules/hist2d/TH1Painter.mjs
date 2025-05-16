@@ -334,10 +334,10 @@ class TH1Painter extends THistPainter {
          }
 
          const stddev3 = Math.pow(res.rmsx, 3), stddev4 = Math.pow(res.rmsx, 4);
-         if (np * stddev3 !== 0)
+         if (np * stddev3)
             res.skewx = sum3 / (np * stddev3);
          res.skewd = res.eff_entries > 0 ? Math.sqrt(6/res.eff_entries) : 0;
-         if (np * stddev4 !== 0)
+         if (np * stddev4)
             res.kurtx = sum4 / (np * stddev4) - 3;
          res.kurtd = res.eff_entries > 0 ? Math.sqrt(24/res.eff_entries) : 0;
       }
@@ -696,7 +696,7 @@ class TH1Painter extends THistPainter {
                if (show_text) {
                   const cont = text_profile ? histo.fBinEntries[bin+1] : bincont;
 
-                  if (cont !== 0) {
+                  if (cont) {
                      const arg = text_angle
                         ? { align: 12, x: midx, y: Math.round(my - 2 - text_size / 5), width: 0, height: 0, rotate: text_angle }
                         : { align: 22, x: Math.round(mx1 + (mx2 - mx1) * 0.1), y: Math.round(my - 2 - text_size), width: Math.round((mx2 - mx1) * 0.8), height: text_size };
