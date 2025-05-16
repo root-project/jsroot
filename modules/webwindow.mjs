@@ -285,10 +285,14 @@ class WebWindowHandle {
    #kind; // websocket kind - websocket, file, longpoll, rawlongpoll
    #key; // connection key
    #token; // connection token (alternative to key)
+   #new_key; // new key for reconnect
+   #can_modify_url; // if widget URL can be modified to store new key
    #ws; // websocket or emulation
    #href; // widget url
    #receiver; // receiver of messages
    #channels; // sub-channels
+   #master; // master connection
+   #channelid; // channel id if this is sub-channel in master connection
    #ask_reload; // flag set when page reload is triggered
    #credits; // configured number of credits
    #ackn; // number of acknowledged packets, regularly send to server to keep sending
@@ -303,8 +307,7 @@ class WebWindowHandle {
    #next_binary_hash; // hash of next binary message
    #wait_first_recv; // first received message via the channel is confirmation of established connection
    #user_args; // user arguments for web socket
-   #master; // master connection
-   #channelid; // channel id if this is sub-channel in master connection
+   #handling_reload; // true when Ctrl-R handler was installed
 
    constructor(socket_kind, credits, master, chid) {
       this.#kind = socket_kind;
@@ -337,12 +340,13 @@ class WebWindowHandle {
      * @desc Normally set via RWebWindow::SetUserArgs() method */
    setUserArgs(args) { this.#user_args = args; }
 
-
    /** @summary Set key and token
      * @private */
-   setKeyToken(key, token) {
+   setKeyToken(key, token, can_modify_url) {
       this.#key = key;
       this.#token = token;
+      if (can_modify_url !== undefined)
+         this.#can_modify_url = can_modify_url;
    }
 
    /** @summary Set callbacks receiver.
@@ -516,7 +520,8 @@ class WebWindowHandle {
       if (!immediate)
          return setTimeout(this.inject.bind(this, msg, chid, true), 0);
 
-      if (chid === undefined) chid = 1;
+      if (chid === undefined)
+         chid = 1;
 
       if (Array.isArray(msg)) {
          for (let k = 0; k < msg.length; ++k)
@@ -786,9 +791,9 @@ class WebWindowHandle {
                   this.close(true); // force closing of socket
                   this.invokeReceiver(true, 'onWebsocketClosed');
                } else if (msg.indexOf('NEW_KEY=') === 0) {
-                  this.new_key = msg.slice(8);
+                  this.#new_key = msg.slice(8);
                   if (settings.Debug)
-                     console.log('Got new key', this.new_key);
+                     console.log('Got new key', this.#new_key);
                   this.storeKeyInUrl();
                   if (this.#ask_reload)
                      this.askReload(true);
@@ -836,7 +841,7 @@ class WebWindowHandle {
      * WARNING - call only when knowing that you are doing
      * @private */
    askReload(force) {
-      if (this.new_key || force) {
+      if (this.#new_key || force) {
          this.close(true);
          if (typeof location !== 'undefined')
             location.reload(true);
@@ -851,12 +856,12 @@ class WebWindowHandle {
      * WARNING - only call when you know that you are doing
      * @private */
    addReloadKeyHandler() {
-      if (this.isStandalone() || this._handling_reload)
+      if (this.isStandalone() || this.#handling_reload)
          return;
 
       // this websocket will handle reload
       // embed widgets should not call this method
-      this._handling_reload = true;
+      this.#handling_reload = true;
 
       window.addEventListener('keydown', evnt => {
          if (((evnt.key === 'R') || (evnt.key === 'r')) && evnt.ctrlKey) {
@@ -877,23 +882,23 @@ class WebWindowHandle {
 
       let href = (typeof document !== 'undefined') ? document.URL : null;
 
-      if (this._can_modify_url && isStr(href) && (typeof window !== 'undefined')) {
+      if (this.#can_modify_url && isStr(href) && (typeof window !== 'undefined')) {
          let prefix = '&key=', p = href.indexOf(prefix);
          if (p < 0) {
             prefix = '?key=';
             p = href.indexOf(prefix);
          }
-         if ((p > 0) && this.new_key) {
+         if ((p > 0) && this.#new_key) {
             const p1 = href.indexOf('#', p+1), p2 = href.indexOf('&', p+1),
                   pp = (p1 < 0) ? p2 : (p2 < 0 ? p1 : Math.min(p1, p2));
-            href = href.slice(0, p) + prefix + this.new_key + (pp < 0 ? '' : href.slice(pp));
+            href = href.slice(0, p) + prefix + this.#new_key + (pp < 0 ? '' : href.slice(pp));
             window.history?.replaceState(window.history.state, undefined, href);
          }
       }
 
       if (typeof sessionStorage !== 'undefined') {
          sessionStorage.setItem('RWebWindow_SessionKey', sessionKey);
-         sessionStorage.setItem('RWebWindow_Key', this.new_key);
+         sessionStorage.setItem('RWebWindow_Key', this.#new_key);
       }
    }
 
@@ -1005,16 +1010,15 @@ async function connectWebWindow(arg) {
    const main = new Promise(resolveFunc => {
       const handle = new WebWindowHandle(arg.socket_kind, arg.credits);
       handle.setUserArgs(arg.user_args);
-      handle._can_modify_url = Boolean(d_key); // if key appears in URL, we can put there new key
       if (arg.href)
          handle.setHRef(arg.href); // apply href now  while connect can be called from other place
       else
-         handle.setKeyToken(new_key || d_key, d_token);
+         handle.setKeyToken(new_key || d_key, d_token, Boolean(d_key));
 
       if (typeof window !== 'undefined') {
          window.onbeforeunload = () => handle.close(true);
          if (browser.qt6)
-            window.onqt5unload = window.onbeforeunload;
+            window.onqt6unload = window.onbeforeunload;
       }
 
       if (arg.receiver) {
