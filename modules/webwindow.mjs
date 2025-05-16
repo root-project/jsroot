@@ -618,7 +618,7 @@ class WebWindowHandle {
       let ntry = 0;
 
       const retry_open = first_time => {
-         if (this.state !== 0)
+         if (this.state)
             return;
 
          if (!first_time)
@@ -1008,7 +1008,7 @@ async function connectWebWindow(arg) {
          onWebsocketOpened() {}, // dummy function when websocket connected
 
          onWebsocketMsg(h, msg) {
-            if (msg.indexOf(arg.first_recv) !== 0)
+            if (msg.indexOf(arg.first_recv))
                return h.close();
             h.first_msg = msg.slice(arg.first_recv.length);
             resolveFunc(h);

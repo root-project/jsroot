@@ -69,7 +69,7 @@ const kindGeo = 0,    // TGeoNode / TGeoShape
   * @private */
 function testGeoBit(volume, f) {
    const att = volume.fGeoAtt;
-   return att === undefined ? false : ((att & f) !== 0);
+   return att === undefined ? false : Boolean(att & f);
 }
 
 /** @summary Set fGeoAtt bit
@@ -1666,9 +1666,9 @@ function getNodeMatrix(kind, node) {
       const kPatternReflected = BIT(14),
             finder = node.fFinder,
             typ = finder._typename;
-      if ((finder.fBits & kPatternReflected) !== 0)
+      if (finder.fBits & kPatternReflected)
          geoWarn(`Unsupported reflected pattern ${typ}`);
-      if (typ.indexOf('TGeoPattern') !== 0)
+      if (typ.indexOf('TGeoPattern'))
          geoWarn(`Abnormal pattern type ${typ}`);
       const part = typ.slice(11);
       matrix = new THREE.Matrix4();
@@ -2991,9 +2991,10 @@ class ClonedNodes {
    /** @summary Create stack array based on nodes ids array.
     * @desc Ids list should correspond to existing nodes hierarchy */
    buildStackByIds(ids) {
-      if (!ids) return null;
+      if (!ids)
+         return null;
 
-      if (ids[0] !== 0) {
+      if (ids[0]) {
          console.error('wrong ids - first should be 0');
          return null;
       }

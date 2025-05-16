@@ -877,7 +877,7 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Modify visibility of provided node by name */
    modifyVisisbility(name, sign) {
-      if (getNodeKind(this.getGeometry()) !== 0)
+      if (getNodeKind(this.getGeometry()) !== kindGeo)
          return;
 
       if (!name)
@@ -1691,7 +1691,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Should be called when configuration of highlight is changed */
    changedHighlight(arg) {
       if (arg !== undefined) {
-         this.ctrl.highlight = arg !== 0;
+         this.ctrl.highlight = Boolean(arg);
          if (this.ctrl.highlight)
             this.ctrl.highlight_bloom = (arg === 2);
       }
@@ -3801,7 +3801,8 @@ class TGeoPainter extends ObjectPainter {
 
       if (!prnt) {
          prnt = this.getGeometry();
-         if (!prnt && (getNodeKind(prnt) !== 0)) return null;
+         if (!prnt && (getNodeKind(prnt) !== kindGeo))
+            return null;
          itemname = this.#geo_manager ? prnt.fName : '';
          first_level = true;
          volumes = [];
@@ -3854,7 +3855,7 @@ class TGeoPainter extends ObjectPainter {
       if (this.#geo_manager)
          result.prefix = result.obj.fName;
 
-      if (!script_name || (script_name.length < 3) || (getNodeKind(result.obj) !== 0))
+      if (!script_name || (script_name.length < 3) || (getNodeKind(result.obj) !== kindGeo))
          return result;
 
       const mgr = {
@@ -5647,7 +5648,7 @@ function provideMenu(menu, item, hpainter) {
       menu.addchk(obj.fRnrSelf, 'Visible', 'self', toggleEveVisibility);
       const res = scanEveVisible(obj, undefined, true);
       if (res.hidden + res.visible > 0)
-         menu.addchk((res.hidden === 0), 'Daughters', res.hidden !== 0 ? 'true' : 'false', toggleEveVisibility);
+         menu.addchk((res.hidden === 0), 'Daughters', res.hidden ? 'true' : 'false', toggleEveVisibility);
    } else {
       const stack = drawitem?._painter?.getClones()?.findStackByName(fullname),
             phys_vis = stack ? drawitem._painter.getClones().getPhysNodeVisibility(stack) : null,
