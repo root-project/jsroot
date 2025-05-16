@@ -1188,7 +1188,7 @@ class StandaloneMenu extends JSRootMenu {
       if (name === sEndsub) {
          this.stack.pop();
          curr = this.stack.at(-1);
-         if (curr.at(-1).sub.length === 0)
+         if (!curr.at(-1).sub.length)
             curr.at(-1).sub = undefined;
          return;
       }

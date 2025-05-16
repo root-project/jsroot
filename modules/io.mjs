@@ -266,8 +266,10 @@ CustomStreamers = {
             if (!Number.isInteger(nbits) || (nbits < 2) || (nbits > 32)) nbits = 32;
 
             const parse_range = val => {
-               if (!val) return 0;
-               if (val.indexOf('pi') < 0) return parseFloat(val);
+               if (!val)
+                  return 0;
+               if (val.indexOf('pi') < 0)
+                  return parseFloat(val);
                val = val.trim();
                let sign = 1;
                if (val[0] === '-') { sign = -1; val = val.slice(1); }
@@ -3119,7 +3121,8 @@ class TFile {
                         console.error(`Fail to decode content-range ${line} ${parts}`);
                   }
 
-                  if ((nline > 1) && (line.length === 0)) finish_header = true;
+                  if ((nline > 1) && !line)
+                     finish_header = true;
 
                   nline++; line = '';
                   if (code1 !== 10) {

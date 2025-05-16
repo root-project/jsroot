@@ -386,13 +386,14 @@ class WebWindowHandle {
    /** @summary Process completed messages in the queue
      * @private */
    processQueue() {
-      if (this._loop_msgqueue || !this.msgqueue) return;
+      if (this._loop_msgqueue || !this.msgqueue)
+         return;
       this._loop_msgqueue = true;
       while (this.msgqueue.length && this.msgqueue[0].ready) {
          const front = this.msgqueue.shift();
          this.invokeReceiver(false, 'onWebsocketMsg', front.msg, front.len);
       }
-      if (this.msgqueue.length === 0)
+      if (!this.msgqueue.length)
          delete this.msgqueue;
       delete this._loop_msgqueue;
    }

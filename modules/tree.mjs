@@ -525,7 +525,7 @@ class TDrawVariable {
 
          // now extract all levels of iterators
          while (pos2 < code.length) {
-            if ((code[pos2] === '@') && (code.slice(pos2, pos2 + 5) === '@size') && (arriter.length === 0)) {
+            if ((code[pos2] === '@') && (code.slice(pos2, pos2 + 5) === '@size') && !arriter.length) {
                pos2 += 5;
                branch_mode = true;
                break;
@@ -552,7 +552,7 @@ class TDrawVariable {
                if (code[pos2] === '(') { pos2 = prev - 1; break; }
 
                // this is selection of member, but probably we need to activate iterator for ROOT collection
-               if (arriter.length === 0) {
+               if (!arriter.length) {
                   // TODO: if selected member is simple data type - no need to make other checks - just break here
                   if ((br.fType === kClonesNode) || (br.fType === kSTLNode))
                      arriter.push(undefined);
@@ -597,7 +597,7 @@ class TDrawVariable {
             pos2++;
          }
 
-         if (arriter.length === 0)
+         if (!arriter.length)
             arriter = undefined;
          else if ((arriter.length === 1) && (arriter[0] === undefined))
             arriter = true;
@@ -634,7 +634,7 @@ class TDrawVariable {
    }
 
    /** @summary Check if it is dummy variable */
-   is_dummy() { return (this.branches.length === 0) && !this.func; }
+   is_dummy() { return !this.branches.length && !this.func; }
 
    /** @summary Produce variable
      * @desc after reading tree branches into the object, calculate variable value */
@@ -1429,7 +1429,7 @@ class TDrawSelector extends TSelector {
                var1 = this.vars[1],
                var2 = this.vars[2],
                len = this.tgtarr.br0.length;
-         if ((var0.buf.length === 0) && (len >= this.arr_limit) && !this.graph) {
+         if (!var0.buf.length && (len >= this.arr_limit) && !this.graph) {
             // special use case - first array large enough to create histogram directly base on it
             var0.buf = this.tgtarr.br0;
             if (var1) var1.buf = this.tgtarr.br1;

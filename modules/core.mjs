@@ -1039,7 +1039,7 @@ async function injectCode(code) {
 async function loadModules(arg) {
    if (isStr(arg))
       arg = arg.split(';');
-   if (arg.length === 0)
+   if (!arg.length)
       return true;
    return import(/* webpackIgnore: true */ arg.shift()).then(() => loadModules(arg));
 }
