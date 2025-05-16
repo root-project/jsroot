@@ -284,6 +284,7 @@ class WebWindowHandle {
    #state; // 0 - init, 1 - connected, -1 - closed
    #kind; // websocket kind - websocket, file, longpoll, rawlongpoll
    #ws; // websocket or emulation
+   #href; // widget url
    #receiver; // receiver of messages
    #channels; // sub-channels
    #ask_reload; // flag set when page reload is triggered
@@ -582,12 +583,12 @@ class WebWindowHandle {
    setHRef(path, secondary) {
       this.#secondary = secondary;
       if (isStr(path) && (path.indexOf('?') > 0)) {
-         this.href = path.slice(0, path.indexOf('?'));
+         this.#href = path.slice(0, path.indexOf('?'));
          const d = decodeUrl(path);
          this.key = d.get('key');
          this.token = d.get('token');
       } else {
-         this.href = path;
+         this.#href = path;
          delete this.key;
          delete this.token;
       }
@@ -597,9 +598,9 @@ class WebWindowHandle {
      * @param {string} [relative_path] - relative path to the handle
      * @private */
    getHRef(relative_path) {
-      if (!relative_path || !this.#kind || !this.href)
-         return this.href;
-      let addr = this.href;
+      if (!relative_path || !this.#kind || !this.#href)
+         return this.#href;
+      let addr = this.#href;
       if (relative_path.indexOf('../') === 0) {
          const ddd = addr.lastIndexOf('/', addr.length - 2);
          addr = addr.slice(0, ddd) + relative_path.slice(2);
@@ -637,7 +638,7 @@ class WebWindowHandle {
       if (href)
          this.setHRef(href, true);
 
-      href = this.href;
+      href = this.#href;
 
       let ntry = 0;
 
@@ -660,7 +661,7 @@ class WebWindowHandle {
             if (href && href.lastIndexOf('/') > 0)
                href = href.slice(0, href.lastIndexOf('/') + 1);
          }
-         this.href = href;
+         this.#href = href;
          ntry++;
 
          if (first_time && settings.Debug)
