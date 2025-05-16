@@ -288,7 +288,7 @@ class RAxisPainter extends RObjectPainter {
 
       // at the moment when drawing labels, we can try to find most optimal text representation for them
 
-      if ((this.kind === kAxisNormal) && !this.log && (handle.major.length > 0)) {
+      if ((this.kind === kAxisNormal) && !this.log && handle.major.length) {
          let maxorder = 0, minorder = 0, exclorder3 = false;
 
          if (!optionNoexp) {

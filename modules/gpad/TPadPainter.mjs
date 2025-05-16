@@ -1936,7 +1936,7 @@ class TPadPainter extends ObjectPainter {
 
          padpainter.createPadSvg();
 
-         if (padpainter.matchObjectType(clTPad) && (snap.fPrimitives.length > 0))
+         if (padpainter.matchObjectType(clTPad) && snap.fPrimitives.length)
             padpainter.addPadButtons(true);
          pindx++; // new painter will be add
          promise = padpainter.drawNextSnap(snap.fPrimitives).then(() => padpainter.addPadInteractive());
@@ -1992,7 +1992,7 @@ class TPadPainter extends ObjectPainter {
       first.fPrimitives = null; // primitives are not interesting, they are disabled in IO
 
       // if there are execs in the pad, deliver events to the server
-      this.#deliver_move_events = this.#has_execs || (first.fExecs?.arr?.length > 0);
+      this.#deliver_move_events = this.#has_execs || first.fExecs?.arr?.length;
 
       if (this.snapid === undefined) {
          // first time getting snap, create all gui elements first

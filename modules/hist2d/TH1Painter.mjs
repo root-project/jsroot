@@ -396,10 +396,10 @@ class TH1Painter extends THistPainter {
             stat.addText('Std Dev = ' + stat.format(data.rmsx));
 
          if (print_under > 0)
-            stat.addText('Underflow = ' + stat.format((histo.fArray.length > 0) ? histo.fArray[0] : 0, 'entries'));
+            stat.addText('Underflow = ' + stat.format(histo.fArray.length ? histo.fArray[0] : 0, 'entries'));
 
          if (print_over > 0)
-            stat.addText('Overflow = ' + stat.format((histo.fArray.length > 0) ? histo.fArray.at(-1) : 0, 'entries'));
+            stat.addText('Overflow = ' + stat.format(histo.fArray.length ? histo.fArray.at(-1) : 0, 'entries'));
 
          if (print_integral > 0)
             stat.addText('Integral = ' + stat.format(data.integral, 'entries'));
@@ -1247,7 +1247,7 @@ class TH1Painter extends THistPainter {
       if (nbins < 2) return;
 
       const arr = new Array(nbins+2),
-            xbins = (xaxis.fXbins.length > 0) ? new Array(nbins) : null;
+            xbins = xaxis.fXbins.length ? new Array(nbins) : null;
 
       arr[0] = histo.fArray[0];
       let indx = 1;

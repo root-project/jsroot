@@ -710,7 +710,7 @@ class BasePainter {
             }
          }
 
-         while (main.node().childNodes.length > 0)
+         while (main.node().childNodes.length)
             enlarge.node().appendChild(main.node().firstChild);
 
          origin.property('use_enlarge', true);
@@ -718,7 +718,7 @@ class BasePainter {
          return true;
       }
       if ((action === false) && (state !== 'off')) {
-         while (enlarge.node() && enlarge.node().childNodes.length > 0)
+         while (enlarge.node()?.childNodes.length)
             main.node().appendChild(enlarge.node().firstChild);
 
          enlarge.remove();

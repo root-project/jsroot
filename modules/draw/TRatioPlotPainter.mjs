@@ -173,7 +173,7 @@ class TRatioPlotPainter extends ObjectPainter {
          const arr = [];
 
          // add missing lines in old ratio painter
-         if ((ratio.fGridlinePositions.length > 0) && (ratio.fGridlines.length < ratio.fGridlinePositions.length)) {
+         if (ratio.fGridlinePositions.length && (ratio.fGridlines.length < ratio.fGridlinePositions.length)) {
             ratio.fGridlinePositions.forEach(gridy => {
                let found = false;
                ratio.fGridlines.forEach(line => {

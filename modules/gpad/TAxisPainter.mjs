@@ -258,7 +258,8 @@ const AxisPainterMethods = {
             const pow = Math.log10(val) / Math.log10(this.logbase);
             if (Math.abs(Math.round(pow) - pow) < 0.01) arr2.push(val);
          });
-         if (arr2.length > 0) arr = arr2;
+         if (arr2.length)
+            arr = arr2;
       }
 
       return arr;
@@ -730,7 +731,7 @@ class TAxisPainter extends ObjectPainter {
       this.ndig = 0;
 
       // at the moment when drawing labels, we can try to find most optimal text representation for them
-      if (((this.kind === kAxisNormal) || (this.kind === kAxisFunc)) && !this.log && (handle.major.length > 0)) {
+      if (((this.kind === kAxisNormal) || (this.kind === kAxisFunc)) && !this.log && handle.major.length) {
          let maxorder = 0, minorder = 0, exclorder3 = false;
 
          if (!optionNoexp && !this.cutLabels()) {

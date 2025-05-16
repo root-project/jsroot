@@ -565,7 +565,7 @@ class TPavePainter extends ObjectPainter {
             nlines = arr.length,
             pp = this.getPadPainter(),
             pad_height = pp.getPadHeight(),
-            draw_header = (pt.fLabel.length > 0),
+            draw_header = pt.fLabel.length,
             promises = [],
             margin_x = pt.fMargin * width,
             stepy = height / (nlines || 1),

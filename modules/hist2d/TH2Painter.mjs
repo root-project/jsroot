@@ -1830,7 +1830,7 @@ class TH2Painter extends THistPainter {
 
       let pr = Promise.resolve();
 
-      if (textbins.length > 0) {
+      if (textbins.length) {
          const color = this.getColor(histo.fMarkerColor),
                rotate = -1*this.options.TextAngle,
                text_g = this.draw_g.append('svg:g').attr('class', 'th2poly_text'),
@@ -2693,7 +2693,7 @@ class TH2Painter extends THistPainter {
 
       const layer = this.getFrameSvg().selectChild('.main_layer');
       let defs = layer.selectChild('defs');
-      if (defs.empty() && (colPaths.length > 0))
+      if (defs.empty() && colPaths.length)
          defs = layer.insert('svg:defs', ':first-child');
 
       this.createAttMarker({ attr: histo });
