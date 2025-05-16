@@ -281,6 +281,7 @@ class FileDumpSocket {
 
 class WebWindowHandle {
 
+   #state; // 0 - init, 1 - connected, -1 - closed
    #ws; // websocket or emulation
    #receiver; // receiver of messages
    #channels; // sub-channels
@@ -303,7 +304,7 @@ class WebWindowHandle {
 
    constructor(socket_kind, credits, master, chid) {
       this.kind = socket_kind;
-      this.state = 0;
+      this.#state = 0;
       this.#credits = Math.max(3, credits || 10);
       this.#cansend = this.#credits;
       this.#ackn = this.#credits;
@@ -365,7 +366,7 @@ class WebWindowHandle {
       if (this.#wait_first_recv) {
          // here dummy first recv like EMBED_DONE is handled
          this.#wait_first_recv = undefined;
-         this.state = 1;
+         this.#state = 1;
          return this.invokeReceiver(false, 'onWebsocketOpened');
       }
 
@@ -435,8 +436,8 @@ class WebWindowHandle {
          this.#timerid = undefined;
       }
 
-      if (this.#ws && (this.state > 0)) {
-         this.state = force ? -1 : 0; // -1 prevent socket from reopening
+      if (this.#ws && (this.#state > 0)) {
+         this.#state = force ? -1 : 0; // -1 prevent socket from reopening
          this.#ws.onclose = null; // hide normal handler
          this.#ws.close();
          this.#ws = undefined;
@@ -458,7 +459,7 @@ class WebWindowHandle {
       if (this.#master)
          return this.#master.send(msg, this.#channelid);
 
-      if (!this.#ws || (this.state <= 0))
+      if (!this.#ws || (this.#state <= 0))
          return false;
 
       if (!Number.isInteger(chid))
@@ -560,7 +561,7 @@ class WebWindowHandle {
    }
 
    /** @summary Returns true if socket connected */
-   isConnected() { return this.state > 0; }
+   isConnected() { return this.#state > 0; }
 
    /** @summary Returns used channel ID, 1 by default */
    getChannelId() { return this.#channelid && this.#master ? this.#channelid : 1; }
@@ -635,7 +636,7 @@ class WebWindowHandle {
       let ntry = 0;
 
       const retry_open = first_time => {
-         if (this.state)
+         if (this.#state)
             return;
 
          if (!first_time)
@@ -684,7 +685,7 @@ class WebWindowHandle {
 
          this.#ws.onopen = () => {
             if (ntry > 2) showProgress();
-            this.state = 1;
+            this.#state = 1;
 
             const reply = (this.#secondary ? '' : 'generate_key;') + (this.key || '');
             this.send(`READY=${reply}`, 0); // need to confirm connection and request new key
@@ -791,18 +792,18 @@ class WebWindowHandle {
 
          this.#ws.onclose = arg => {
             this.#ws = undefined;
-            if ((this.state > 0) || (arg === 'force_close')) {
+            if ((this.#state > 0) || (arg === 'force_close')) {
                console.log('websocket closed');
-               this.state = 0;
+               this.#state = 0;
                this.invokeReceiver(true, 'onWebsocketClosed');
             }
          };
 
          this.#ws.onerror = err => {
-            console.log(`websocket error ${err} state ${this.state}`);
-            if (this.state > 0) {
+            console.log(`websocket error ${err} state ${this.#state}`);
+            if (this.#state > 0) {
                this.invokeReceiver(true, 'onWebsocketError', err);
-               this.state = 0;
+               this.#state = 0;
             }
          };
 
