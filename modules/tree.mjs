@@ -198,7 +198,7 @@ class ArrayIterator {
             continue;
          }
 
-         if ((typ === 'array') && ((obj.length > 0) || (this.select[cnt + 1] === '$size$'))) {
+         if ((typ === 'array') && (obj.length || (this.select[cnt + 1] === '$size$'))) {
             this.arr[++cnt] = obj;
             switch (this.select[cnt]) {
                case undefined: this.indx[cnt] = 0; break;
@@ -2348,7 +2348,7 @@ async function treeProcess(tree, selector, args) {
 
             const branch = bitems[n].branch;
 
-            if (places.length === 0)
+            if (!places.length)
                filename = branch.fFileName;
             else if (filename !== branch.fFileName)
                continue;
@@ -2358,7 +2358,7 @@ async function treeProcess(tree, selector, args) {
             places.push(branch.fBasketSeek[bitems[n].basket], branch.fBasketBytes[bitems[n].basket]);
          }
 
-         return places.length > 0 ? { places, filename } : null;
+         return places.length ? { places, filename } : null;
       }
 
       function readProgress(value) {
@@ -2633,7 +2633,7 @@ async function treeProcess(tree, selector, args) {
                if (handle.process_entries !== undefined) {
                   elem.selected_baskets.shift();
                   // -1 means that basket is not yet found for following entries
-                  elem.curr_basket = (elem.selected_baskets.length > 0) ? elem.selected_baskets[0] : -1;
+                  elem.curr_basket = elem.selected_baskets.length ? elem.selected_baskets[0] : -1;
                }
             }
 
@@ -2918,7 +2918,7 @@ function treeHierarchy(tree_node, obj) {
             const object_class = getBranchObjectClass(bobj, bobj.$tree, true),
                   methods = object_class ? getMethods(object_class) : null;
 
-            if (methods && (bobj.fBranches.arr.length > 0)) {
+            if (methods && bobj.fBranches.arr.length) {
                for (const key in methods) {
                   if (!isFunc(methods[key])) continue;
                   const s = methods[key].toString();
@@ -2963,8 +2963,7 @@ function treeHierarchy(tree_node, obj) {
    tree_node._childs = [];
    tree_node._tree = obj;  // set reference, will be used later by TTree::Draw
 
-   for (let i = 0; i < obj.fBranches?.arr.length; ++i)
-      createBranchItem(tree_node, obj.fBranches.arr[i], obj);
+   obj.fBranches?.arr.forEach(branch => createBranchItem(tree_node, branch, obj));
 
    return true;
 }

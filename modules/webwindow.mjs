@@ -388,7 +388,7 @@ class WebWindowHandle {
    processQueue() {
       if (this._loop_msgqueue || !this.msgqueue) return;
       this._loop_msgqueue = true;
-      while ((this.msgqueue.length > 0) && this.msgqueue[0].ready) {
+      while (this.msgqueue.length && this.msgqueue[0].ready) {
          const front = this.msgqueue.shift();
          this.invokeReceiver(false, 'onWebsocketMsg', front.msg, front.len);
       }

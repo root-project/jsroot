@@ -550,7 +550,7 @@
          document.getElementById('plaindraw').innerHTML = '';
          document.getElementById('plaindraw').style['background-color'] = '';
 
-         if (durl.length > 0) {
+         if (durl) {
             return drawUrl(durl + (opt ? `&opt=${opt}` : '') + extra_opts);
          } else if (jsonname) {
             return httpRequest(jsonname, 'object')
@@ -699,7 +699,7 @@
 
          createRootColors(); // ensure default colors
 
-         if (url.length > 0) {
+         if (url) {
             if (no_interactive)
                url += '&interactive=0';
 
@@ -707,18 +707,18 @@
             // if (keyid == 'TGeo') return runBigTest(0);  // ignore TGeo URLs - too complex
 
             drawUrl(url).then(TestContinue, TestFailure);
-         } else if (jsonname.length > 0) {
+         } else if (jsonname) {
             testfile = testobj = null;
             httpRequest(jsonname, 'object').then(obj => {
                testobj = obj;
                return drawEntry(entry, obj, opt).then(TestContinue, TestFailure);
             });
-         } else if (filename.length > 0) {
+         } else if (filename) {
             openFile(filename)
                   .then(file => { testfile = file; return testfile.readObject(itemname); })
                   .then(obj => { testobj = obj; return drawEntry(entry, obj, opt); })
                   .then(TestContinue, TestFailure);
-         } else if (itemname.length > 0) {
+         } else if (itemname) {
             testfile.readObject(itemname)
                    .then(obj => { testobj = obj; return drawEntry(entry, obj, opt); })
                    .then(TestContinue, TestFailure);
