@@ -132,7 +132,7 @@ function folderHierarchy(item, obj) {
    if (!obj?.fFolders)
       return false;
 
-   if (obj.fFolders.arr.length === 0) {
+   if (!obj.fFolders.arr.length) {
       item._more = false;
       return true;
    }
@@ -156,14 +156,15 @@ function listHierarchy(folder, lst) {
    if (!isRootCollection(lst))
       return false;
 
-   if ((lst.arr === undefined) || (lst.arr.length === 0)) {
+   if (!lst.arr?.length) {
       folder._more = false;
       return true;
    }
 
    let do_context = false, prnt = folder;
    while (prnt) {
-      if (prnt._do_context) do_context = true;
+      if (prnt._do_context)
+         do_context = true;
       prnt = prnt._parent;
    }
 
@@ -438,7 +439,7 @@ function objectHierarchy(top, obj, args = undefined) {
          if (isArrayProto(proto) > 0) {
             item._title = 'array len=' + fld.length;
             simple = (proto !== '[object Array]');
-            if (fld.length === 0) {
+            if (!fld.length) {
                item._value = '[ ]';
                item._more = false; // hpainter will not try to expand again
             } else {
@@ -540,7 +541,7 @@ function taskHierarchy(item, obj) {
 
    objectHierarchy(item, obj, { exclude: ['fTasks', 'fName'] });
 
-   if ((obj.fTasks.arr.length === 0) && (item._childs.length === 0)) {
+   if (!obj.fTasks.arr.length && !item._childs.length) {
       item._more = false;
       return true;
    }
@@ -698,7 +699,7 @@ function parseAsArray(val) {
       }
    }
 
-   if (res.length === 0)
+   if (!res.length)
       res.push(val.slice(1, val.length - 1).trim());
 
    return res;
@@ -1046,7 +1047,7 @@ class HierarchyPainter extends BasePainter {
       for (let n = 0; n < (hitem._numargs ?? 0); ++n)
          cmdargs.push(n < userargs.length ? userargs[n] : '');
 
-      const promise = (cmdargs.length === 0) || !elem
+      const promise = !cmdargs.length || !elem
                        ? Promise.resolve(cmdargs)
                        : createMenu().then(menu => menu.showCommandArgsDialog(hitem._name, cmdargs));
 
@@ -2342,7 +2343,7 @@ class HierarchyPainter extends BasePainter {
      * @return {Promise} when drawing finished
      * @private */
    async displayItems(items, options) {
-      if (!items || (items.length === 0))
+      if (!items?.length)
          return true;
 
       const h = this;
@@ -2438,7 +2439,7 @@ class HierarchyPainter extends BasePainter {
          dropitems.splice(n, 1);
       }
 
-      if (items.length === 0)
+      if (!items.length)
          return true;
 
       const frame_names = new Array(items.length), items_wait = new Array(items.length);
@@ -2559,7 +2560,7 @@ class HierarchyPainter extends BasePainter {
        find_next = (itemname, prev_found) => {
          if (itemname === undefined) {
             // extract next element
-            if (items.length === 0)
+            if (!items.length)
                return mark_active();
             itemname = items.shift();
          }
@@ -3581,7 +3582,7 @@ class HierarchyPainter extends BasePainter {
       if (title && (typeof document !== 'undefined'))
          document.title = title;
 
-      if (expanditems.length === 0 && (getOption('expand') === ''))
+      if (!expanditems.length && (getOption('expand') === ''))
          expanditems.push('');
 
       if (filesdir) {
@@ -3591,7 +3592,7 @@ class HierarchyPainter extends BasePainter {
             jsonarr[i] = filesdir + jsonarr[i];
       }
 
-      if ((itemsarr.length === 0) && ((getOption('item') === '') || ((jsonarr.length === 1) && (expanditems.length === 0))))
+      if (!itemsarr.length && ((getOption('item') === '') || (jsonarr.length === 1 && !expanditems.length)))
          itemsarr.push('');
 
       if (!this.disp_kind) {
@@ -3700,10 +3701,10 @@ class HierarchyPainter extends BasePainter {
             if (('_monitoring' in this.h) && !monitor)
                monitor = this.h._monitoring;
 
-            if (this.h._loadfile && (filesarr.length === 0))
+            if (this.h._loadfile && !filesarr.length)
                filesarr = parseAsArray(this.h._loadfile);
 
-            if (('_drawitem' in this.h) && (itemsarr.length === 0)) {
+            if (('_drawitem' in this.h) && !itemsarr.length) {
                itemsarr = parseAsArray(this.h._drawitem);
                optionsarr = parseAsArray(this.h._drawopt);
             }
