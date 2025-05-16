@@ -349,7 +349,7 @@ const AxisPainterMethods = {
             else if (item.max + delta_shift > gmax)
                delta_shift = gmax - item.max;
 
-            if (delta_shift !== 0) {
+            if (delta_shift) {
                item.min += delta_shift;
                item.max += delta_shift;
              } else {
@@ -582,7 +582,7 @@ class TAxisPainter extends ObjectPainter {
 
          if (axis?.fNbins && axis?.fLabels) {
             if ((axis.fNbins !== Math.round(axis.fXmax - axis.fXmin)) ||
-                (axis.fXmin !== 0) || (axis.fXmax !== axis.fNbins))
+                axis.fXmin || (axis.fXmax !== axis.fNbins))
                this.regular_labels = false;
          }
 
@@ -1343,7 +1343,7 @@ class TAxisPainter extends ObjectPainter {
       this.extractDrawAttributes(undefined, w, h);
 
       if (this.is_gaxis)
-         draw_lines = axis.fLineColor !== 0;
+         draw_lines = Boolean(axis.fLineColor);
 
       if (!this.is_gaxis || (this.name === 'zaxis')) {
          axis_g = layer.selectChild(`.${this.name}_container`);

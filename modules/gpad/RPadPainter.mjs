@@ -1625,7 +1625,7 @@ class RPadPainter extends RObjectPainter {
 
       this._buttons.push({ btn, tooltip, funcname, keyname });
 
-      if (!this.isTopPad() && (funcname.indexOf('Pad') !== 0) && (funcname !== 'enlargePad')) {
+      if (!this.isTopPad() && funcname.indexOf('Pad') && (funcname !== 'enlargePad')) {
          const cp = this.getCanvPainter();
          if (cp && (cp !== this)) cp.addPadButton(btn, tooltip, funcname);
       }

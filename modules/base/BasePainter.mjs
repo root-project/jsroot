@@ -148,7 +148,7 @@ function floatToString(value, fmt, ret_fmt) {
       let diff = sg.length - l - prec;
       if (sg.indexOf('.') > l) diff--;
 
-      if (diff !== 0) {
+      if (diff) {
          prec -= diff;
          if (prec < 0)
             prec = 0;

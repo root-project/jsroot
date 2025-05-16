@@ -636,7 +636,7 @@ class RAxisPainter extends RObjectPainter {
      * @return {Promise} with gaps in both direction */
    async drawLabels(axis_g, side, gaps) {
       const center_lbls = this.isCenteredLabels(),
-            rotate_lbls = this.labelsFont.angle !== 0,
+            rotate_lbls = Boolean(this.labelsFont.angle),
             label_g = axis_g.append('svg:g').attr('class', 'axis_labels').property('side', side),
             lbl_pos = this.handle.lbl_pos || this.handle.major;
       let textscale = 1, maxtextlen = 0, lbls_tilt = false,
