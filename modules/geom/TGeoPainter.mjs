@@ -2354,7 +2354,7 @@ class TGeoPainter extends ObjectPainter {
             for (let n = 0; n < del.length; ++n)
                this.#clones.createObject3D(del[n].stack, this.#toplevel, 'delete_mesh');
 
-            if (del.length > 0)
+            if (del.length)
                this.#drawing_log = `Delete ${del.length} nodes`;
          }
 
@@ -2536,7 +2536,7 @@ class TGeoPainter extends ObjectPainter {
       }
 
       // remember additional nodes only if they include shape - otherwise one can ignore them
-      if (real_nodes.length > 0)
+      if (real_nodes.length)
          this.#more_nodes = real_nodes;
 
       if (!from_drawing)

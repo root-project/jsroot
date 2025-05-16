@@ -3434,7 +3434,7 @@ class ClonedNodes {
                   entry.done = true;
                });
 
-               if (arr1.length > 0) {
+               if (arr1.length) {
                   const mesh1 = new THREE.InstancedMesh(shape.geom, prop.material, arr1.length);
 
                   mesh1.stacks = stacks1;
@@ -3454,10 +3454,10 @@ class ClonedNodes {
 
                   mesh1.$jsroot_order = 1;
                   ctrl.info.num_meshes++;
-                  ctrl.info.num_faces += shape.nfaces*arr1.length;
+                  ctrl.info.num_faces += shape.nfaces * arr1.length;
                }
 
-               if (arr2.length > 0) {
+               if (arr2.length) {
                   if (shape.geomZ === undefined)
                      shape.geomZ = createFlippedGeom(shape.geom);
 
