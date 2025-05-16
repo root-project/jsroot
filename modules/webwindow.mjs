@@ -283,16 +283,23 @@ class WebWindowHandle {
    #ws; // websocket or emulation
    #ask_reload; // flag set when page reload is triggered
    #credits; // configured number of credits
+   #ackn; // number of acknowledged packets, regularly send to server to keep sending
+   #cansend; // number of packets client can send
+   #send_seq; // sequence counter of send messages
+   #recv_seq; // sequence counter of received messages
    #secondary; // true when created as extra connection, not need to use keys
+   #msgqueue; // messages queue
+   #loop_msgqueue; // flag when looping in message queue
+   #timerid; // keep alive timer
 
    constructor(socket_kind, credits) {
       this.kind = socket_kind;
       this.state = 0;
       this.#credits = Math.max(3, credits || 10);
-      this.cansend = this.#credits;
-      this.ackn = this.#credits; // this number will be send to server with first message
-      this.send_seq = 1; // sequence counter of send messages
-      this.recv_seq = 0; // sequence counter of received messages
+      this.#cansend = this.#credits;
+      this.#ackn = this.#credits;
+      this.#send_seq = 1;
+      this.#recv_seq = 0;
    }
 
    /** @summary Returns arguments specified in the RWebWindow::SetUserArgs() method
@@ -354,23 +361,24 @@ class WebWindowHandle {
       }
 
       const force_queue = len && (len < 0);
-      if (!force_queue && (!this.msgqueue || !this.msgqueue.length))
+      if (!force_queue && !this.#msgqueue?.length)
          return this.invokeReceiver(false, 'onWebsocketMsg', msg, len);
 
-      if (!this.msgqueue)
-         this.msgqueue = [];
+      if (!this.#msgqueue)
+         this.#msgqueue = [];
       if (force_queue)
          len = undefined;
 
-      this.msgqueue.push({ ready: true, msg, len });
+      this.#msgqueue.push({ ready: true, msg, len });
    }
 
    /** @summary Reserve entry in queue for data, which is not yet decoded.
     * @private */
    reserveQueueItem() {
-      if (!this.msgqueue) this.msgqueue = [];
+      if (!this.#msgqueue)
+         this.#msgqueue = [];
       const item = { ready: false, msg: null, len: 0 };
-      this.msgqueue.push(item);
+      this.#msgqueue.push(item);
       return item;
    }
 
@@ -386,16 +394,16 @@ class WebWindowHandle {
    /** @summary Process completed messages in the queue
      * @private */
    processQueue() {
-      if (this._loop_msgqueue || !this.msgqueue)
+      if (this.#loop_msgqueue || !this.#msgqueue)
          return;
-      this._loop_msgqueue = true;
-      while (this.msgqueue.length && this.msgqueue[0].ready) {
-         const front = this.msgqueue.shift();
+      this.#loop_msgqueue = true;
+      while (this.#msgqueue.length && this.#msgqueue[0].ready) {
+         const front = this.#msgqueue.shift();
          this.invokeReceiver(false, 'onWebsocketMsg', front.msg, front.len);
       }
-      if (!this.msgqueue.length)
-         delete this.msgqueue;
-      delete this._loop_msgqueue;
+      if (!this.#msgqueue.length)
+         this.#msgqueue = undefined;
+      this.#loop_msgqueue = undefined;
    }
 
    /** @summary Close connection */
@@ -407,9 +415,9 @@ class WebWindowHandle {
          return;
       }
 
-      if (this.timerid) {
-         clearTimeout(this.timerid);
-         delete this.timerid;
+      if (this.#timerid) {
+         clearTimeout(this.#timerid);
+         this.#timerid = undefined;
       }
 
       if (this.#ws && (this.state > 0)) {
@@ -423,10 +431,10 @@ class WebWindowHandle {
    /** @summary Checks number of credits for send operation
      * @param {number} [numsend = 1] - number of required send operations
      * @return true if one allow to send specified number of text message to server */
-   canSend(numsend) { return this.cansend >= (numsend || 1); }
+   canSend(numsend) { return this.#cansend >= (numsend || 1); }
 
    /** @summary Returns number of possible send operations relative to number of credits */
-   getRelCanSend() { return !this.#credits ? 1 : this.cansend / this.#credits; }
+   getRelCanSend() { return !this.#credits ? 1 : this.#cansend / this.#credits; }
 
    /** @summary Send text message via the connection.
      * @param {string} msg - text message to send
@@ -441,20 +449,21 @@ class WebWindowHandle {
       if (!Number.isInteger(chid))
          chid = 1; // when not configured, channel 1 is used - main widget
 
-      if (this.cansend === 0)
+      if (this.#cansend === 0)
          console.error('No credits for send, increase "WebGui.ConnCredits" value on server');
 
-      const prefix = `${this.send_seq++}:${this.ackn}:${this.cansend}:${chid}:`,
+      const prefix = `${this.#send_seq++}:${this.#ackn}:${this.#cansend}:${chid}:`,
             hash = this.key && sessionKey ? HMAC(this.key, `${prefix}${msg}`) : 'none';
 
-      this.ackn = 0;
-      this.cansend--; // decrease number of allowed send packets
+      this.#ackn = 0;
+      this.#cansend--; // decrease number of allowed send packets
 
       this.#ws.send(`${hash}:${prefix}${msg}`);
 
       if ((this.kind === 'websocket') || (this.kind === 'longpoll')) {
-         if (this.timerid) clearTimeout(this.timerid);
-         this.timerid = setTimeout(() => this.keepAlive(), 10000);
+         if (this.#timerid)
+            clearTimeout(this.#timerid);
+         this.#timerid = setTimeout(() => this.keepAlive(), 10000);
       }
 
       return true;
@@ -493,7 +502,7 @@ class WebWindowHandle {
      * @desc Only for internal use, only when used with web sockets
      * @private */
    keepAlive() {
-      delete this.timerid;
+      this.#timerid = undefined;
       this.send('KEEPALIVE', 0);
    }
 
@@ -730,12 +739,12 @@ class WebWindowHandle {
                   return console.log(`Failure checking server HMAC sum ${server_hash}`);
             }
 
-            if (seq_id <= this.recv_seq)
-               return console.log(`Failure with packet sequence ${seq_id} <= ${this.recv_seq}`);
+            if (seq_id <= this.#recv_seq)
+               return console.log(`Failure with packet sequence ${seq_id} <= ${this.#recv_seq}`);
 
-            this.recv_seq = seq_id; // sequence id of received packet
-            this.ackn++;            // count number of received packets,
-            this.cansend += credit; // how many packets client can send
+            this.#recv_seq = seq_id; // sequence id of received packet
+            this.#ackn++;            // count number of received packets,
+            this.#cansend += credit;  // how many packets client can send
 
             msg = msg.slice(i4 + 1);
 
@@ -760,7 +769,7 @@ class WebWindowHandle {
             else
                this.provideData(chid, msg);
 
-            if (this.ackn > Math.max(2, this.#credits * 0.7))
+            if (this.#ackn > Math.max(2, this.#credits * 0.7))
                this.send('READY', 0); // send dummy message to server
          };
 
