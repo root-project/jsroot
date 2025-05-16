@@ -563,6 +563,9 @@ class WebWindowHandle {
    /** @summary Returns true if socket connected */
    isConnected() { return this.#state > 0; }
 
+   /** @summary Standalone mode without server connection */
+   isStandalone() { this.kind === 'file'; }
+
    /** @summary Returns used channel ID, 1 by default */
    getChannelId() { return this.#channelid && this.#master ? this.#channelid : 1; }
 
@@ -572,7 +575,8 @@ class WebWindowHandle {
    /** @summary Assign href parameter
      * @param {string} [path] - absolute path, when not specified window.location.url will be used
      * @private */
-   setHRef(path) {
+   setHRef(path, secondary) {
+      this.#secondary = secondary;
       if (isStr(path) && (path.indexOf('?') > 0)) {
          this.href = path.slice(0, path.indexOf('?'));
          const d = decodeUrl(path);
@@ -626,10 +630,8 @@ class WebWindowHandle {
 
       this.close();
 
-      if (href) {
-         this.#secondary = true;
-         this.setHRef(href);
-      }
+      if (href)
+         this.setHRef(href, true);
 
       href = this.href;
 
@@ -665,7 +667,7 @@ class WebWindowHandle {
 
          let path = href;
 
-         if (this.kind === 'file') {
+         if (this.isStandalone()) {
             path += 'root.filedump';
             this.#ws = new FileDumpSocket(this);
             console.log(`Configure FileDumpSocket ${path}`);
@@ -836,7 +838,7 @@ class WebWindowHandle {
      * WARNING - only call when you know that you are doing
      * @private */
    addReloadKeyHandler() {
-      if ((this.kind === 'file') || this._handling_reload)
+      if (this.isStandalone() || this._handling_reload)
          return;
 
       // this websocket will handle reload
@@ -886,8 +888,7 @@ class WebWindowHandle {
     * @private */
    createNewInstance(url) {
       const handle = new WebWindowHandle(this.kind);
-      handle.#secondary = true;
-      handle.setHRef(this.getHRef(url));
+      handle.setHRef(this.getHRef(url), true);
       return handle;
    }
 
