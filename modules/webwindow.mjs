@@ -282,6 +282,7 @@ class FileDumpSocket {
 class WebWindowHandle {
 
    #state; // 0 - init, 1 - connected, -1 - closed
+   #kind; // websocket kind - websocket, file, longpoll, rawlongpoll
    #ws; // websocket or emulation
    #receiver; // receiver of messages
    #channels; // sub-channels
@@ -303,7 +304,7 @@ class WebWindowHandle {
    #channelid; // channel id if this is sub-channel in master connection
 
    constructor(socket_kind, credits, master, chid) {
-      this.kind = socket_kind;
+      this.#kind = socket_kind;
       this.#state = 0;
       this.#credits = Math.max(3, credits || 10);
       this.#cansend = this.#credits;
@@ -476,7 +477,7 @@ class WebWindowHandle {
 
       this.#ws.send(`${hash}:${prefix}${msg}`);
 
-      if ((this.kind === 'websocket') || (this.kind === 'longpoll')) {
+      if ((this.#kind === 'websocket') || (this.#kind === 'longpoll')) {
          if (this.#timerid)
             clearTimeout(this.#timerid);
          this.#timerid = setTimeout(() => this.keepAlive(), 10000);
@@ -563,8 +564,11 @@ class WebWindowHandle {
    /** @summary Returns true if socket connected */
    isConnected() { return this.#state > 0; }
 
+   /** @summary Return websocket kind - like 'websocket' or 'longpoll' */
+   getKind() { return this.#kind; }
+
    /** @summary Standalone mode without server connection */
-   isStandalone() { this.kind === 'file'; }
+   isStandalone() { this.#kind === 'file'; }
 
    /** @summary Returns used channel ID, 1 by default */
    getChannelId() { return this.#channelid && this.#master ? this.#channelid : 1; }
@@ -593,7 +597,7 @@ class WebWindowHandle {
      * @param {string} [relative_path] - relative path to the handle
      * @private */
    getHRef(relative_path) {
-      if (!relative_path || !this.kind || !this.href)
+      if (!relative_path || !this.#kind || !this.href)
          return this.href;
       let addr = this.href;
       if (relative_path.indexOf('../') === 0) {
@@ -671,7 +675,7 @@ class WebWindowHandle {
             path += 'root.filedump';
             this.#ws = new FileDumpSocket(this);
             console.log(`Configure FileDumpSocket ${path}`);
-         } else if ((this.kind === 'websocket') && first_time) {
+         } else if ((this.#kind === 'websocket') && first_time) {
             path = path.replace('http://', 'ws://').replace('https://', 'wss://') + 'root.websocket';
             console.log(`Configure websocket ${path}`);
             path += '?' + this.getConnArgs(ntry);
@@ -679,7 +683,7 @@ class WebWindowHandle {
          } else {
             path += 'root.longpoll';
             console.log(`Configure longpoll ${path}`);
-            this.#ws = new LongPollSocket(path, (this.kind === 'rawlongpoll'), this, ntry);
+            this.#ws = new LongPollSocket(path, (this.#kind === 'rawlongpoll'), this, ntry);
          }
 
          if (!this.#ws)
@@ -887,7 +891,7 @@ class WebWindowHandle {
    /** @summary Create new instance of same kind
     * @private */
    createNewInstance(url) {
-      const handle = new WebWindowHandle(this.kind);
+      const handle = new WebWindowHandle(this.#kind);
       handle.setHRef(this.getHRef(url), true);
       return handle;
    }
