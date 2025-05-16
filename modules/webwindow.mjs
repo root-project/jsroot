@@ -584,7 +584,7 @@ class WebWindowHandle {
    getKind() { return this.#kind; }
 
    /** @summary Standalone mode without server connection */
-   isStandalone() { this.#kind === 'file'; }
+   isStandalone() { return this.#kind === 'file'; }
 
    /** @summary Returns used channel ID, 1 by default */
    getChannelId() { return this.#channelid && this.#master ? this.#channelid : 1; }
