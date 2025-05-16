@@ -1512,13 +1512,13 @@ function ZIP_inflate(arr, tgt) {
 
       // Find minimum and maximum length, bound *m by those
       for (j = 1; j <= BMAX; ++j)
-         if (c[j] !== 0) break;
+         if (c[j]) break;
 
       k = j;         // minimum code length
       if (mm < j)
          mm = j;
-      for (i = BMAX; i !== 0; --i)
-         if (c[i] !== 0) break;
+      for (i = BMAX; i; --i)
+         if (c[i]) break;
 
       const g = i;         // maximum code length
       if (mm > i)
@@ -1551,7 +1551,7 @@ function ZIP_inflate(arr, tgt) {
       p = b; pidx = 0;
       i = 0;
       do {
-         if ((j = p[pidx++]) !== 0)
+         if ((j = p[pidx++]))
             v[x[j]++] = i;
       } while (++i < n);
       n = x[g];         // set n to length of v
@@ -1641,7 +1641,7 @@ function ZIP_inflate(arr, tgt) {
             }
 
             // backwards increment the k-bit code i
-            for (j = 1 << (k - 1); (i & j) !== 0; j >>= 1)
+            for (j = 1 << (k - 1); (i & j); j >>= 1)
                i ^= j;
             i ^= j;
 
@@ -1655,7 +1655,7 @@ function ZIP_inflate(arr, tgt) {
       res.m = lx[1];
 
       /* Return true (1) if we were given an incomplete table */
-      res.status = ((y !== 0 && g !== 1) ? 1 : 0);
+      res.status = (y && g !== 1) ? 1 : 0;
 
       return res;
    }
@@ -1788,7 +1788,7 @@ function ZIP_inflate(arr, tgt) {
          zip_fixed_bl = 7;
 
          let h = zip_HuftBuild(l, 288, 257, zip_cplens, zip_cplext, zip_fixed_bl);
-         if (h.status !== 0)
+         if (h.status)
             throw new Error('HufBuild error: ' + h.status);
          zip_fixed_tl = h.root;
          zip_fixed_bl = h.m;
@@ -1846,7 +1846,7 @@ function ZIP_inflate(arr, tgt) {
       // build decoding table for trees--single level, 7 bit lookup
       zip_bl = 7;
       h = zip_HuftBuild(ll, 19, 19, null, null, zip_bl);
-      if (h.status !== 0)
+      if (h.status)
          return -1;  // incomplete code set
 
       zip_tl = h.root;
@@ -1897,7 +1897,7 @@ function ZIP_inflate(arr, tgt) {
       h = zip_HuftBuild(ll, nl, 257, zip_cplens, zip_cplext, zip_bl);
       if (zip_bl === 0)  // no literals or lengths
          h.status = 1;
-      if (h.status !== 0)
+      if (h.status)
          return -1;     // incomplete code set
       zip_tl = h.root;
       zip_bl = h.m;
@@ -1910,7 +1910,7 @@ function ZIP_inflate(arr, tgt) {
       zip_bd = h.m;
 
       // incomplete distance tree
-      if ((zip_bd === 0 && nl > 257) || (h.status !== 0))   // lengths but no distances
+      if ((zip_bd === 0 && nl > 257) || h.status)   // lengths but no distances
          return -1;
 
       // decompress until an end-of-block code
@@ -1926,7 +1926,7 @@ function ZIP_inflate(arr, tgt) {
             return n;
 
          if (zip_copy_leng > 0) {
-            if (zip_method !== 0 /* zip_STORED_BLOCK */) {
+            if (zip_method /* zip_STORED_BLOCK */) {
                // STATIC_TREES or DYN_TREES
                while (zip_copy_leng > 0 && n < size) {
                   --zip_copy_leng;
@@ -1956,7 +1956,7 @@ function ZIP_inflate(arr, tgt) {
 
             // read in last block bit
             zip_NEEDBITS(1);
-            if (zip_GETBITS(1) !== 0)
+            if (zip_GETBITS(1))
                zip_eof = true;
             zip_DUMPBITS(1);
 
