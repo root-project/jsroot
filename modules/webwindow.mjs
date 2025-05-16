@@ -175,7 +175,8 @@ class LongPollSocket {
 
          this.connid = parseInt(res);
          dummy_tmout = 100; // when establishing connection, wait a bit longer to submit dummy package
-         console.log(`Get new longpoll connection with id ${this.connid}`);
+         if (settings.Debug)
+            console.log(`Get new longpoll connection with id ${this.connid}`);
          if (isFunc(this.onopen))
             this.onopen();
       } else if (this.connid === 'close') {
@@ -659,7 +660,7 @@ class WebWindowHandle {
          if (this.#state)
             return;
 
-         if (!first_time)
+         if (!first_time && settings.Debug)
             console.log(`try connect window again ${new Date().toString()}`);
 
          if (this.#ws) {
@@ -786,14 +787,11 @@ class WebWindowHandle {
             msg = msg.slice(i4 + 1);
 
             if (chid === 0) {
-               // console.log(`GET chid=0 message ${msg}`);
                if (msg === 'CLOSE') {
                   this.close(true); // force closing of socket
                   this.invokeReceiver(true, 'onWebsocketClosed');
                } else if (msg.indexOf('NEW_KEY=') === 0) {
                   this.#new_key = msg.slice(8);
-                  if (settings.Debug)
-                     console.log('Got new key', this.#new_key);
                   this.storeKeyInUrl();
                   if (this.#ask_reload)
                      this.askReload(true);
@@ -813,7 +811,8 @@ class WebWindowHandle {
          this.#ws.onclose = arg => {
             this.#ws = undefined;
             if ((this.#state > 0) || (arg === 'force_close')) {
-               console.log('websocket closed');
+               if (settings.Debug)
+                  console.log('websocket closed');
                this.#state = 0;
                this.invokeReceiver(true, 'onWebsocketClosed');
             }
