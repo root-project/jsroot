@@ -283,6 +283,8 @@ class WebWindowHandle {
 
    #state; // 0 - init, 1 - connected, -1 - closed
    #kind; // websocket kind - websocket, file, longpoll, rawlongpoll
+   #key; // connection key
+   #token; // connection token (alternative to key)
    #ws; // websocket or emulation
    #href; // widget url
    #receiver; // receiver of messages
@@ -334,6 +336,14 @@ class WebWindowHandle {
    /** @summary Set user args
      * @desc Normally set via RWebWindow::SetUserArgs() method */
    setUserArgs(args) { this.#user_args = args; }
+
+
+   /** @summary Set key and token
+     * @private */
+   setKeyToken(key, token) {
+      this.#key = key;
+      this.#token = token;
+   }
 
    /** @summary Set callbacks receiver.
      * @param {object} obj - object with receiver functions
@@ -471,7 +481,7 @@ class WebWindowHandle {
          console.error('No credits for send, increase "WebGui.ConnCredits" value on server');
 
       const prefix = `${this.#send_seq++}:${this.#ackn}:${this.#cansend}:${chid}:`,
-            hash = this.key && sessionKey ? HMAC(this.key, `${prefix}${msg}`) : 'none';
+            hash = this.#key && sessionKey ? HMAC(this.#key, `${prefix}${msg}`) : 'none';
 
       this.#ackn = 0;
       this.#cansend--; // decrease number of allowed send packets
@@ -585,12 +595,10 @@ class WebWindowHandle {
       if (isStr(path) && (path.indexOf('?') > 0)) {
          this.#href = path.slice(0, path.indexOf('?'));
          const d = decodeUrl(path);
-         this.key = d.get('key');
-         this.token = d.get('token');
+         this.setKeyToken(d.get('key'), d.get('token'));
       } else {
          this.#href = path;
-         delete this.key;
-         delete this.token;
+         this.setKeyToken();
       }
    }
 
@@ -614,13 +622,13 @@ class WebWindowHandle {
     * @private */
    getConnArgs(ntry) {
       let args = '';
-      if (this.key) {
-         const k = HMAC(this.key, `attempt_${ntry}`);
+      if (this.#key) {
+         const k = HMAC(this.#key, `attempt_${ntry}`);
          args += `key=${k}&ntry=${ntry}`;
       }
-      if (this.token) {
+      if (this.#token) {
          if (args) args += '&';
-         args += `token=${this.token}`;
+         args += `token=${this.#token}`;
       }
       return args;
    }
@@ -694,7 +702,7 @@ class WebWindowHandle {
             if (ntry > 2) showProgress();
             this.#state = 1;
 
-            const reply = (this.#secondary ? '' : 'generate_key;') + (this.key || '');
+            const reply = (this.#secondary ? '' : 'generate_key;') + (this.#key || '');
             this.send(`READY=${reply}`, 0); // need to confirm connection and request new key
             this.invokeReceiver(false, 'onWebsocketOpened');
          };
@@ -713,8 +721,8 @@ class WebWindowHandle {
                   // The file's text will be printed here
                   reader.onload = event => {
                      let result = event.target.result;
-                     if (this.key && sessionKey) {
-                        const hash = HMAC(this.key, result, 0);
+                     if (this.#key && sessionKey) {
+                        const hash = HMAC(this.#key, result, 0);
                         if (hash !== server_hash) {
                            console.log('Discard binary buffer because of HMAC mismatch');
                            result = new ArrayBuffer(0);
@@ -727,8 +735,8 @@ class WebWindowHandle {
                } else {
                   // this is from CEF or LongPoll handler
                   let result = msg;
-                  if (this.key && sessionKey) {
-                     const hash = HMAC(this.key, result, e.offset || 0);
+                  if (this.#key && sessionKey) {
+                     const hash = HMAC(this.#key, result, e.offset || 0);
                      if (hash !== server_hash) {
                         console.log('Discard binary buffer because of HMAC mismatch');
                         result = new ArrayBuffer(0);
@@ -757,8 +765,8 @@ class WebWindowHandle {
             // for authentication HMAC checksum and sequence id is important
             // HMAC used to authenticate server
             // sequence id is necessary to exclude submission of same packet again
-            if (this.key && sessionKey) {
-               const client_hash = HMAC(this.key, msg.slice(i0+1));
+            if (this.#key && sessionKey) {
+               const client_hash = HMAC(this.#key, msg.slice(i0+1));
                if (server_hash !== client_hash)
                   return console.log(`Failure checking server HMAC sum ${server_hash}`);
             }
@@ -994,19 +1002,14 @@ async function connectWebWindow(arg) {
    if (arg.settings)
       Object.assign(settings, arg.settings);
 
-   // only for debug purposes
-   // arg.socket_kind = 'longpoll';
-
    const main = new Promise(resolveFunc => {
       const handle = new WebWindowHandle(arg.socket_kind, arg.credits);
       handle.setUserArgs(arg.user_args);
       handle._can_modify_url = Boolean(d_key); // if key appears in URL, we can put there new key
       if (arg.href)
          handle.setHRef(arg.href); // apply href now  while connect can be called from other place
-      else {
-         handle.key = new_key || d_key;
-         handle.token = d_token;
-      }
+      else
+         handle.setKeyToken(new_key || d_key, d_token);
 
       if (typeof window !== 'undefined') {
          window.onbeforeunload = () => handle.close(true);
