@@ -168,7 +168,7 @@ CustomStreamers = {
       buf.classStreamer(obj, clTPad);
       obj.fDISPLAY = buf.readTString();
       obj.fDoubleBuffer = buf.ntoi4();
-      obj.fRetained = (buf.ntou1() !== 0);
+      obj.fRetained = buf.ntobool();
       obj.fXsizeUser = buf.ntoi4();
       obj.fYsizeUser = buf.ntoi4();
       obj.fXsizeReal = buf.ntoi4();
@@ -183,7 +183,7 @@ CustomStreamers = {
       buf.ntou1(); // ignore b << TestBit(kMoveOpaque);
       buf.ntou1(); // ignore b << TestBit(kResizeOpaque);
       obj.fHighLightColor = buf.ntoi2();
-      obj.fBatch = (buf.ntou1() !== 0);
+      obj.fBatch = buf.ntobool();
       buf.ntou1();   // ignore b << TestBit(kShowEventStatus);
       buf.ntou1();   // ignore b << TestBit(kAutoExec);
       buf.ntou1();   // ignore b << TestBit(kMenuBar);
@@ -434,7 +434,7 @@ CustomStreamers = {
    TAttImage: [
       { name: 'fImageQuality', func(buf, obj) { obj.fImageQuality = buf.ntoi4(); } },
       { name: 'fImageCompression', func(buf, obj) { obj.fImageCompression = buf.ntou4(); } },
-      { name: 'fConstRatio', func(buf, obj) { obj.fConstRatio = (buf.ntou1() !== 0); } },
+      { name: 'fConstRatio', func(buf, obj) { obj.fConstRatio = buf.ntobool(); } },
       { name: 'fPalette', func(buf, obj) { obj.fPalette = buf.classStreamer({}, clTImagePalette); } }
    ],
 
@@ -444,7 +444,7 @@ CustomStreamers = {
 
       buf.classStreamer(obj, clTNamed);
 
-      if (buf.ntou1() !== 0) {
+      if (buf.ntobool()) {
          const size = buf.ntoi4();
          obj.fPngBuf = buf.readFastArray(size, kUChar);
       } else {
@@ -930,7 +930,7 @@ function createMemberStreamer(element, file) {
       case kULong:
          member.func = function(buf, obj) { obj[this.name] = buf.ntou8(); }; break;
       case kBool:
-         member.func = function(buf, obj) { obj[this.name] = buf.ntou1() !== 0; }; break;
+         member.func = function(buf, obj) { obj[this.name] = buf.ntobool(); }; break;
       case kOffsetL + kBool:
       case kOffsetL + kInt:
       case kOffsetL + kCounter:
@@ -2302,6 +2302,9 @@ class TBuffer {
 
    /** @summary read uint8_t */
    ntou1() { return this.arr.getUint8(this.o++); }
+
+   /** @summary read boolean */
+   ntobool() { return Boolean(this.arr.getUint8(this.o++)); }
 
    /** @summary read uint16_t */
    ntou2() {
