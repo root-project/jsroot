@@ -209,9 +209,10 @@ class LongPollSocket {
 class FileDumpSocket {
 
    #wait_for_file;
+   #receiver;
 
    constructor(receiver) {
-      this.receiver = receiver;
+      this.#receiver = receiver;
       this.protocol = [];
       this.cnt = 0;
       this.sendcnt = 0;
@@ -263,8 +264,8 @@ class FileDumpSocket {
          if (!res) return;
          const p = fname.indexOf('_ch'),
                chid = (p > 0) ? Number.parseInt(fname.slice(p+3, fname.indexOf('.', p))) : 1;
-         if (isFunc(this.receiver.provideData))
-            this.receiver.provideData(chid, res, 0);
+         if (isFunc(this.#receiver?.provideData))
+            this.#receiver.provideData(chid, res, 0);
          setTimeout(() => this.nextOperation(), 10);
       });
    }
@@ -281,6 +282,8 @@ class FileDumpSocket {
 class WebWindowHandle {
 
    #ws; // websocket or emulation
+   #receiver; // receiver of messages
+   #channels; // sub-channels
    #ask_reload; // flag set when page reload is triggered
    #credits; // configured number of credits
    #ackn; // number of acknowledged packets, regularly send to server to keep sending
@@ -291,8 +294,14 @@ class WebWindowHandle {
    #msgqueue; // messages queue
    #loop_msgqueue; // flag when looping in message queue
    #timerid; // keep alive timer
+   #next_binary; // set to channel id when next binary message expected
+   #next_binary_hash; // hash of next binary message
+   #wait_first_recv; // first received message via the channel is confirmation of established connection
+   #user_args; // user arguments for web socket
+   #master; // master connection
+   #channelid; // channel id if this is sub-channel in master connection
 
-   constructor(socket_kind, credits) {
+   constructor(socket_kind, credits, master, chid) {
       this.kind = socket_kind;
       this.state = 0;
       this.#credits = Math.max(3, credits || 10);
@@ -300,6 +309,12 @@ class WebWindowHandle {
       this.#ackn = this.#credits;
       this.#send_seq = 1;
       this.#recv_seq = 0;
+
+      if (socket_kind === 'channel') {
+         this.#wait_first_recv = true;
+         this.#master = master;
+         this.#channelid = chid;
+      }
    }
 
    /** @summary Returns arguments specified in the RWebWindow::SetUserArgs() method
@@ -308,14 +323,14 @@ class WebWindowHandle {
      * @return user arguments object */
    getUserArgs(field) {
       if (field && isStr(field))
-         return isObject(this.user_args) ? this.user_args[field] : undefined;
+         return isObject(this.#user_args) ? this.#user_args[field] : undefined;
 
-      return this.user_args;
+      return this.#user_args;
    }
 
    /** @summary Set user args
      * @desc Normally set via RWebWindow::SetUserArgs() method */
-   setUserArgs(args) { this.user_args = args; }
+   setUserArgs(args) { this.#user_args = args; }
 
    /** @summary Set callbacks receiver.
      * @param {object} obj - object with receiver functions
@@ -323,39 +338,39 @@ class WebWindowHandle {
      * @param {function} obj.onWebsocketOpened - called when connection established
      * @param {function} obj.onWebsocketClosed - called when connection closed
      * @param {function} obj.onWebsocketError - called when get error via the connection */
-   setReceiver(obj) { this.receiver = obj; }
+   setReceiver(obj) { this.#receiver = obj; }
 
    /** @summary Cleanup and close connection. */
    cleanup() {
-      delete this.receiver;
+      this.#receiver = undefined;
       this.close(true);
    }
 
    /** @summary Invoke method in the receiver.
     * @private */
    invokeReceiver(brdcst, method, arg, arg2) {
-      if (this.receiver && isFunc(this.receiver[method]))
-         this.receiver[method](this, arg, arg2);
+      if (this.#receiver && isFunc(this.#receiver[method]))
+         this.#receiver[method](this, arg, arg2);
 
-      if (brdcst && this.channels) {
-         const ks = Object.keys(this.channels);
+      if (brdcst && this.#channels) {
+         const ks = Object.keys(this.#channels);
          for (let n = 0; n < ks.length; ++n)
-            this.channels[ks[n]].invokeReceiver(false, method, arg, arg2);
+            this.#channels[ks[n]].invokeReceiver(false, method, arg, arg2);
       }
    }
 
    /** @summary Provide data for receiver. When no queue - do it directly.
     * @private */
    provideData(chid, msg, len) {
-      if (this.wait_first_recv) {
+      if (this.#wait_first_recv) {
          // here dummy first recv like EMBED_DONE is handled
-         delete this.wait_first_recv;
+         this.#wait_first_recv = undefined;
          this.state = 1;
          return this.invokeReceiver(false, 'onWebsocketOpened');
       }
 
-      if ((chid > 1) && this.channels) {
-         const channel = this.channels[chid];
+      if ((chid > 1) && this.#channels) {
+         const channel = this.#channels[chid];
          if (channel)
             return channel.provideData(1, msg, len);
       }
@@ -408,10 +423,10 @@ class WebWindowHandle {
 
    /** @summary Close connection */
    close(force) {
-      if (this.master) {
-         this.master.send(`CLOSECH=${this.channelid}`, 0);
-         delete this.master.channels[this.channelid];
-         delete this.master;
+      if (this.#master) {
+         this.#master.send(`CLOSECH=${this.#channelid}`, 0);
+         this.#master.removeChannel(this.#channelid);
+         this.#master = undefined;
          return;
       }
 
@@ -440,8 +455,8 @@ class WebWindowHandle {
      * @param {string} msg - text message to send
      * @param {number} [chid] - channel id, 1 by default, 0 used only for internal communication */
    send(msg, chid) {
-      if (this.master)
-         return this.master.send(msg, this.channelid);
+      if (this.#master)
+         return this.#master.send(msg, this.#channelid);
 
       if (!this.#ws || (this.state <= 0))
          return false;
@@ -515,6 +530,13 @@ class WebWindowHandle {
          window.resizeTo(w, h);
    }
 
+      /** @summary Remove existing channel.
+    * @private */
+   removeChannel(chid) {
+      if (this.#channels)
+         this.#channels[chid] = undefined;
+   }
+
    /** @summary Method open channel, which will share same connection, but can be used independently from main
      * If @param url is provided - creates fully independent instance and perform connection with it
      * @private */
@@ -522,22 +544,16 @@ class WebWindowHandle {
       if (url)
          return this.createNewInstance(url);
 
-      if (this.master)
-         return this.master.createChannel();
+      if (this.#master)
+         return this.#master.createChannel();
 
-      const channel = new WebWindowHandle('channel', this.#credits);
-      channel.wait_first_recv = true; // first received message via the channel is confirmation of established connection
+      if (!this.#channels)
+         this.#channels = { freeid: 2 };
 
-      if (!this.channels) {
-         this.channels = {};
-         this.freechannelid = 2;
-      }
-
-      channel.master = this;
-      channel.channelid = this.freechannelid++;
+      const channel = new WebWindowHandle('channel', this.#credits, this, this.#channels.freeid++);
 
       // register
-      this.channels[channel.channelid] = channel;
+      this.#channels[channel.getChannelId()] = channel;
 
       // now server-side entity should be initialized and init message send from server side!
       return channel;
@@ -547,8 +563,9 @@ class WebWindowHandle {
    isConnected() { return this.state > 0; }
 
    /** @summary Returns used channel ID, 1 by default */
-   getChannelId() { return this.channelid && this.master ? this.channelid : 1; }
+   getChannelId() { return this.#channelid && this.#master ? this.#channelid : 1; }
 
+   /** @summary Returns true if sub-channel in master connection */
    isChannel() { return this.getChannelId() > 1; }
 
    /** @summary Assign href parameter
@@ -603,7 +620,7 @@ class WebWindowHandle {
      * @private */
    connect(href) {
       // ignore connect if channel from master connection configured
-      if (this.master && this.channelid)
+      if (this.isChannel())
          return;
 
       this.close();
@@ -677,11 +694,10 @@ class WebWindowHandle {
          this.#ws.onmessage = e => {
             let msg = e.data;
 
-            if (this.next_binary) {
-               const binchid = this.next_binary,
-                     server_hash = this.next_binary_hash;
-               delete this.next_binary;
-               delete this.next_binary_hash;
+            if (this.#next_binary) {
+               const binchid = this.#next_binary,
+                     server_hash = this.#next_binary_hash;
+               this.#next_binary = this.#next_binary_hash = undefined;
 
                if (msg instanceof Blob) {
                   // convert Blob object to BufferArray
@@ -762,8 +778,8 @@ class WebWindowHandle {
                      this.askReload(true);
                }
             } else if (msg.slice(0, 10) === '$$binary$$') {
-               this.next_binary = chid;
-               this.next_binary_hash = msg.slice(10);
+               this.#next_binary = chid;
+               this.#next_binary_hash = msg.slice(10);
             } else if (msg === '$$nullbinary$$')
                this.provideData(chid, new ArrayBuffer(0), 0);
             else
