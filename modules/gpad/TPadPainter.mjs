@@ -1235,7 +1235,7 @@ class TPadPainter extends ObjectPainter {
       if (this.#doing_draw === undefined)
          return console.warn('failure, should not happen');
       this.#doing_draw.shift();
-      if (this.#doing_draw.length === 0)
+      if (!this.#doing_draw.length)
          this.#doing_draw = undefined;
        else {
          const entry = this.#doing_draw[0];

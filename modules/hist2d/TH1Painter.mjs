@@ -714,7 +714,7 @@ class TH1Painter extends THistPainter {
                if (show_line) {
                   if (funcs.swap_xy())
                      path_line += (path_line ? 'L' : 'M') + `${my},${midx}`; // no optimization
-                  else if (path_line.length === 0)
+                  else if (!path_line)
                      path_line = `M${midx},${my}`;
                   else if (lx === midx)
                      path_line += `v${my-ly}`;
@@ -770,7 +770,7 @@ class TH1Painter extends THistPainter {
                gry = Math.round(funcs.gry(y));
             }
 
-            if (res.length === 0) {
+            if (!res) {
                bestimin = bestimax = i;
                prevx = startx = currx = grx;
                prevy = curry_min = curry_max = curry = gry;

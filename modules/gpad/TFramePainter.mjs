@@ -428,7 +428,7 @@ class TooltipHandler extends ObjectPainter {
          if (hint.user_info !== undefined)
             hint.painter?.provideUserTooltip(hint.user_info);
 
-         if (!hint.lines || (hint.lines.length === 0)) {
+         if (!hint.lines?.length) {
             hints[n] = null;
             continue;
          }
@@ -513,7 +513,7 @@ class TooltipHandler extends ObjectPainter {
       this.showObjectStatus(name, title, info, coordinates);
 
       // end of closing tooltips
-      if (!pnt || disable_tootlips || (hints.length === 0) || (maxlen === 0) || (show_only_best && !best_hint)) {
+      if (!pnt || disable_tootlips || !hints.length || (maxlen === 0) || (show_only_best && !best_hint)) {
          hintsg.remove();
          return;
       }

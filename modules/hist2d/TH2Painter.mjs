@@ -2478,11 +2478,11 @@ class TH2Painter extends THistPainter {
 
             if (isOption(kHistoLeft) || isOption(kHistoViolin)) {
                let prev_x = center, prev_y = Math.round(ff(xx[xindx2+1]));
-               if (arr.length === 0)
+               if (!arr.length)
                   arr.push(prev_x, prev_y);
                for (let ii = xindx2; ii >= xindx1; ii--) {
                   const curr_x = Math.round(center - scale*proj[ii]),
-                      curr_y = Math.round(ff(xx[ii]));
+                        curr_y = Math.round(ff(xx[ii]));
                   if (curr_x !== prev_x) {
                      if (ii !== xindx2) arr.push('V', prev_y);
                      arr.push('H', curr_x);
@@ -2497,7 +2497,8 @@ class TH2Painter extends THistPainter {
 
             hists += make_path(arr, 'array');
 
-            if (!this.fillatt.empty()) hists += 'Z';
+            if (!this.fillatt.empty())
+               hists += 'Z';
          }
 
          handle.candle.push(pnt); // keep point for the tooltip
@@ -3145,8 +3146,10 @@ class TH2Painter extends THistPainter {
             lines = [];
       let binname = bin.fPoly.fName, numpoints = 0;
 
-      if (binname === 'Graph') binname = '';
-      if (binname.length === 0) binname = bin.fNumber;
+      if (binname === 'Graph')
+         binname = '';
+      if (!binname)
+         binname = bin.fNumber;
 
       if ((realx === undefined) && (realy === undefined)) {
          realx = realy = 0;

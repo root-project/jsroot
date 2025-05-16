@@ -185,10 +185,7 @@ class DrawOptions {
    }
 
    /** @summary Returns true if remaining options are empty or contain only separators symbols. */
-   empty() {
-      if (this.opt.length === 0) return true;
-      return this.opt.replace(/[ ;_,]/g, '').length === 0;
-   }
+   empty() { return !this.opt ? true : !this.opt.replace(/[ ;_,]/g, ''); }
 
    /** @summary Returns remaining part of the draw options. */
    remain() { return this.opt; }

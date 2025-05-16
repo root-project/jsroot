@@ -829,10 +829,10 @@ class FunctionsHandler {
       }
 
       // remove all function which are not found in new list of functions
-      if (painters.length > 0)
+      if (painters.length)
          pp?.cleanPrimitives(p => painters.indexOf(p) >= 0);
 
-      if (update_painters.length > 0)
+      if (update_painters.length)
          this.#extra_painters = update_painters;
    }
 
@@ -840,7 +840,7 @@ class FunctionsHandler {
    drawNext(indx) {
       if (this.#extra_painters) {
          const p = this.#extra_painters.shift();
-         if (this.#extra_painters.length === 0)
+         if (!this.#extra_painters.length)
             this.#extra_painters = undefined;
          return getPromise(p.redraw()).then(() => this.drawNext(0));
       }
