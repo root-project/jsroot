@@ -691,7 +691,7 @@ class HistContour {
          this.arr.push(this.colzmax);
          this.custom = true;
       } else {
-         if ((this.colzmin === this.colzmax) && (this.colzmin !== 0)) {
+         if ((this.colzmin === this.colzmax) && this.colzmin) {
             this.colzmax += 0.01*Math.abs(this.colzmax);
             this.colzmin -= 0.01*Math.abs(this.colzmin);
          }
@@ -2011,7 +2011,7 @@ class THistPainter extends ObjectPainter {
          cntr.createNormal(nlevels, logv ?? 0, zminpositive);
       }
 
-      cntr.configIndicies(this.options.Zero && !is_th2poly ? -1 : 0, (cntr.colzmin !== 0) || !this.options.Zero || is_th2poly ? 0 : -1);
+      cntr.configIndicies(this.options.Zero && !is_th2poly ? -1 : 0, cntr.colzmin || !this.options.Zero || is_th2poly ? 0 : -1);
 
       if (fp && (ndim < 3) && !fp.mode3d) {
          fp.zmin = cntr.colzmin;

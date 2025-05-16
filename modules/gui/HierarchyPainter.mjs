@@ -1919,11 +1919,11 @@ class HierarchyPainter extends BasePainter {
                if (settings.NewTabUrlExportSettings) {
                   if (gStyle.fOptStat !== 1111)
                      arg0 += `&optstat=${gStyle.fOptStat}`;
-                  if (gStyle.fOptFit !== 0)
+                  if (gStyle.fOptFit)
                      arg0 += `&optfit=${gStyle.fOptFit}`;
-                  if (gStyle.fOptDate !== 0)
+                  if (gStyle.fOptDate)
                      arg0 += `&optdate=${gStyle.fOptDate}`;
-                  if (gStyle.fOptFile !== 0)
+                  if (gStyle.fOptFile)
                      arg0 += `&optfile=${gStyle.fOptFile}`;
                   if (gStyle.fOptTitle !== 1)
                      arg0 += `&opttitle=${gStyle.fOptTitle}`;
@@ -2446,7 +2446,8 @@ class HierarchyPainter extends BasePainter {
       for (let n = 0; n < items.length; ++n) {
          items_wait[n] = 0;
          let fname = items[n], k = 0;
-         if (items.indexOf(fname) < n) items_wait[n] = true; // if same item specified, one should wait first drawing before start next
+         if (items.indexOf(fname) < n)
+            items_wait[n] = true; // if same item specified, one should wait first drawing before start next
          const p = options[n].indexOf('frameid:');
          if (p >= 0) {
             fname = options[n].slice(p+8);
@@ -2480,7 +2481,7 @@ class HierarchyPainter extends BasePainter {
 
          // Than create empty frames for each item
          for (let i = 0; i < items.length; ++i) {
-            if (options[i].indexOf('update:') !== 0) {
+            if (options[i].indexOf('update:')) {
                mdi.createFrame(frame_names[i]);
                doms[i] = 'frame:' + frame_names[i];
             }
@@ -3040,7 +3041,7 @@ class HierarchyPainter extends BasePainter {
             }
          }
 
-         if (!req && (item._kind.indexOf(prROOT) !== 0))
+         if (!req && item._kind.indexOf(prROOT))
            req = 'item.json.gz?compact=3';
       }
 

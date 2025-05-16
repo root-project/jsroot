@@ -541,7 +541,7 @@ function getBinFileContent(content) {
 /** @summary Returns type of file content
   * @private */
 function getContentType(content) {
-   if (content.indexOf('data:') !== 0)
+   if (content.indexOf('data:'))
       return '';
 
    const p = content.indexOf(';');
