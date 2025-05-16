@@ -14,6 +14,7 @@
 1. Fix - bug in pad.Divide context menu command
 1. Fix - palette not adjusted when 'same' draw option used for histogram
 1. Fix - drag and drop of histograms on empty sub-pads
+1. Internal - ws members are private, new methods has to be used
 
 
 ## Changes in 7.9.0
