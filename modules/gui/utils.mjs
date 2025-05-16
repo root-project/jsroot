@@ -24,9 +24,11 @@ function showProgress(msg, tmout, click_handle) {
       return box.remove();
    }
 
-   if ((arguments.length === 0) || !msg) {
-      if ((tmout !== -1) || (!box.empty() && box.property('with_timeout'))) box.remove();
-      if (modal) modal();
+   if (!arguments.length || !msg) {
+      if ((tmout !== -1) || (!box.empty() && box.property('with_timeout')))
+         box.remove();
+      if (modal)
+         modal();
       return;
    }
 
@@ -74,7 +76,7 @@ function closeCurrentWindow() {
 /** @summary Tries to open ui5
   * @private */
 function tryOpenOpenUI(sources, args) {
-   if (!sources || (sources.length === 0)) {
+   if (!sources?.length) {
       if (isFunc(args.rejectFunc)) {
          args.rejectFunc(Error('openui5 was not possible to load'));
          args.rejectFunc = null;
