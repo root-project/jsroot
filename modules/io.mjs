@@ -623,8 +623,10 @@ function getTypeId(typname, norecursion) {
   * @private */
 function getArrayKind(type_name) {
    if ((type_name === clTString) || (type_name === 'string') ||
-      (CustomStreamers[type_name] === clTString)) return 0;
-   if ((type_name.length < 7) || (type_name.indexOf('TArray') !== 0)) return -1;
+      (CustomStreamers[type_name] === clTString))
+      return 0;
+   if ((type_name.length < 7) || type_name.indexOf('TArray'))
+      return -1;
    if (type_name.length === 7) {
       switch (type_name[6]) {
          case 'I': return kInt;
@@ -1006,7 +1008,7 @@ function createMemberStreamer(element, file) {
       case kFloat16:
       case kOffsetL + kFloat16:
       case kOffsetP + kFloat16:
-         if (element.fFactor !== 0) {
+         if (element.fFactor) {
             member.factor = 1 / element.fFactor;
             member.min = element.fXmin;
             member.read = function(buf) { return buf.ntou4() * this.factor + this.min; };
@@ -1301,7 +1303,7 @@ function createMemberStreamer(element, file) {
                member.read_version = function(buf, cnt) {
                   if (cnt === 0) return null;
                   const ver = buf.readVersion();
-                  this.member_wise = ((ver.val & kStreamedMemberWise) !== 0);
+                  this.member_wise = Boolean(ver.val & kStreamedMemberWise);
 
                   this.stl_version = undefined;
                   if (this.member_wise) {
@@ -2268,7 +2270,7 @@ class TBuffer {
       // large strings
       if (len === 255)
          len = this.ntou4();
-      if (len === 0)
+      if (!len)
          return '';
 
       const pos = this.o;
@@ -2281,7 +2283,7 @@ class TBuffer {
       * @desc stops when 0 is found */
     readNullTerminatedString() {
       let res = '', code;
-      while ((code = this.ntou1()) !== 0)
+      while ((code = this.ntou1()))
          res += String.fromCharCode(code);
       return res;
    }
@@ -3077,7 +3079,7 @@ class TFile {
                return send_new_request(true);
             }
 
-            if ((file.fMaxRanges === 1) || (first !== 0))
+            if ((file.fMaxRanges === 1) || !first)
                return rejectFunc(Error('Server returns normal response when multipart was requested, disable multirange support'));
 
             file.fMaxRanges = 1;
@@ -3947,9 +3949,9 @@ function openFile(arg, opts) {
    let file, plain_file;
 
    if (isNodeJs() && isStr(arg)) {
-      if (arg.indexOf('file://') === 0)
+      if (!arg.indexOf('file://'))
          file = new TNodejsFile(arg.slice(7));
-      else if (arg.indexOf('http') !== 0)
+      else if (arg.indexOf('http'))
          file = new TNodejsFile(arg);
    }
 

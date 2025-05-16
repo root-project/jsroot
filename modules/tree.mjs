@@ -371,7 +371,7 @@ function findBranchComplex(tree, name, lst = undefined, only_search = false) {
          brname = brname.slice(0, brname.indexOf('['));
 
       // special case when branch name includes STL map name
-      if ((search.indexOf(brname) !== 0) && (brname.indexOf('<') > 0)) {
+      if (search.indexOf(brname) && (brname.indexOf('<') > 0)) {
          const p1 = brname.indexOf('<'), p2 = brname.lastIndexOf('>');
          brname = brname.slice(0, p1) + brname.slice(p2 + 1);
       }
@@ -381,7 +381,7 @@ function findBranchComplex(tree, name, lst = undefined, only_search = false) {
          break;
       }
 
-      if (search.indexOf(brname) !== 0)
+      if (search.indexOf(brname))
          continue;
 
       // this is a case when branch name is in the begin of the search string
@@ -2573,7 +2573,7 @@ async function treeProcess(tree, selector, args) {
    processBaskets = function(bitems) {
       // this is call-back when next baskets are read
 
-      if ((handle.selector._break !== 0) || (bitems === null)) {
+      if (handle.selector._break || (bitems === null)) {
          handle.selector.Terminate(false);
          return resolveFunc(handle.selector);
       }
