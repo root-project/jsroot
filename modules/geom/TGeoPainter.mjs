@@ -4407,7 +4407,7 @@ class TGeoPainter extends ObjectPainter {
                   origin = this.#build_shapes[n];
 
             if (item.buf_pos && item.buf_norm) {
-               if (item.buf_pos.length === 0)
+               if (!item.buf_pos.length)
                   origin.geom = null;
                 else if (item.buf_pos.length !== item.buf_norm.length) {
                   console.error(`item.buf_pos.length ${item.buf_pos.length} !== item.buf_norm.length ${item.buf_norm.length}`);
@@ -4952,7 +4952,7 @@ class TGeoPainter extends ObjectPainter {
             container.add(helper);
          }
       }
-      if (panels.length === 0)
+      if (!panels.length)
          panels = null;
 
       if (this.#last_clip_cfg !== clip_cfg)

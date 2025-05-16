@@ -2785,7 +2785,7 @@ class ClonedNodes {
          if (res === 0) {
             if (do_clear) {
                this.fVisibility.splice(indx, 1);
-               if (this.fVisibility.length === 0)
+               if (!this.fVisibility.length)
                   delete this.fVisibility;
             } else
                item.visible = on;
@@ -3285,7 +3285,7 @@ class ClonedNodes {
          while (mesh && (mesh !== toplevel)) {
             three_prnt = mesh.parent;
             three_prnt.remove(mesh);
-            mesh = (three_prnt.children.length === 0) ? three_prnt : null;
+            mesh = !three_prnt.children.length ? three_prnt : null;
          }
 
          return res;
