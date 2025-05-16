@@ -492,7 +492,7 @@ function objectHierarchy(top, obj, args = undefined) {
                      if (isRootCollection(fld) && isObject(fld.arr)) {
                         item._value = fld.arr.length ? '[...]' : '[]';
                         item._title += ', size:' + fld.arr.length;
-                        if (fld.arr.length > 0) item._more = true;
+                        if (fld.arr.length) item._more = true;
                      } else {
                         item._more = true;
                         item._value = '{ }';
@@ -2392,7 +2392,7 @@ class HierarchyPainter extends BasePainter {
             items[i] = dropitems[i].shift();
          }
 
-         if (dropitems[i] && dropitems[i].length > 0) {
+         if (dropitems[i]?.length) {
             // allow to specify _same_ item in different file
             for (let j = 0; j < dropitems[i].length; ++j) {
                const pos = dropitems[i][j].indexOf('_same_');
@@ -2486,7 +2486,7 @@ class HierarchyPainter extends BasePainter {
          }
 
          function dropNextItem(indx, painter) {
-            if (painter && dropitems[indx] && (dropitems[indx].length > 0))
+            if (painter && dropitems[indx]?.length)
                return h.dropItem(dropitems[indx].shift(), painter.getDom(), dropopts[indx].shift()).then(() => dropNextItem(indx, painter));
 
             dropitems[indx] = null; // mark that all drop items are processed
@@ -2907,7 +2907,7 @@ class HierarchyPainter extends BasePainter {
                });
             }
          }
-         if (h._childs.length > 0)
+         if (h._childs.length)
             this.h = h;
          return true;
       });
@@ -3350,7 +3350,7 @@ class HierarchyPainter extends BasePainter {
       const lst = cleanup(frame);
 
       // we remove all painters references from items
-      if (lst.length > 0) {
+      if (lst.length) {
          this.forEachItem(item => {
             if (item._painter && lst.indexOf(item._painter) >= 0)
                delete item._painter;
@@ -3508,7 +3508,7 @@ class HierarchyPainter extends BasePainter {
 
       getOptionAsArray = opt => {
          let res = getUrlOptionAsArray(opt);
-         if (res.length > 0 || !gui_div || gui_div.empty())
+         if (res.length || !gui_div || gui_div.empty())
             return res;
          while (opt) {
             const separ = opt.indexOf(';');
@@ -3648,15 +3648,15 @@ class HierarchyPainter extends BasePainter {
             promise = this.createBrowser(browser_kind); browser_kind = '';
          } else if (status !== null) {
             promise = this.createStatusLine(statush, status); status = null;
-         } else if (jsonarr.length > 0)
+         } else if (jsonarr.length)
             promise = this.openJsonFile(jsonarr.shift());
-         else if (filesarr.length > 0)
+         else if (filesarr.length)
             promise = this.openRootFile(filesarr.shift());
          else if (dir) {
             promise = this.listServerDir(dir); dir = '';
-         } else if (expanditems.length > 0)
+         } else if (expanditems.length)
             promise = this.expandItem(expanditems.shift());
-         else if (style.length > 0)
+         else if (style.length)
             promise = this.applyStyle(style.shift());
          else {
             return this.refreshHtml()
@@ -4019,7 +4019,7 @@ async function drawInspector(dom, obj, opt) {
 
    if (isStr(opt) && opt.indexOf(kInspect) === 0) {
       opt = opt.slice(kInspect.length);
-      if (opt.length > 0)
+      if (opt)
          expand_level = Number.parseInt(opt);
    }
 
