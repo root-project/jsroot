@@ -22,6 +22,7 @@ class ObjectPainter extends BasePainter {
    #draw_object;     // drawn object
    #main_painter;    // WeakRef to main painter in the pad
    #primary_ref;     // reference of primary painter - if any
+   #snapid;          // assigned online identifier
    #secondary_id;    // id of this painter in relation to primary painter
    #options_store;   // stored draw options used to check changes
    #user_tooltip_handler; // configured user tooltip handler
@@ -77,13 +78,13 @@ class ObjectPainter extends BasePainter {
    /** @summary Assign snapid to the painter
     * @desc Identifier used to communicate with server side and identifies object on the server
     * @private */
-   assignSnapId(id) { this.snapid = id; }
+   assignSnapId(id) { this.#snapid = id; }
 
    /** @summary Provides identifier on server for requested sub-element */
-   getSnapId(subelem) { return !this.snapid ? '' : (this.snapid + (subelem ? '#' + subelem : '')); }
+   getSnapId(subelem) { return !this.#snapid ? '' : (this.#snapid + (subelem ? '#' + subelem : '')); }
 
    /** @summary Returns true if snapid was assigned */
-   hasSnapId() { return this.snapid !== undefined; }
+   hasSnapId() { return this.#snapid !== undefined; }
 
    /** @summary Generic method to cleanup painter.
      * @desc Remove object drawing and (in case of main painter) also main HTML components
@@ -103,7 +104,7 @@ class ObjectPainter extends BasePainter {
       this.#pad_name = undefined;
       this.#main_painter = null;
       this.#draw_object = null;
-      this.snapid = undefined;
+      this.#snapid = undefined;
       this._is_primary = undefined;
       this.#primary_ref = undefined;
       this.#secondary_id = undefined;
@@ -850,7 +851,7 @@ class ObjectPainter extends BasePainter {
    }
 
    /** @summary Invoke method for object via WebCanvas functionality
-     * @desc Requires that painter marked with object identifier (this.snapid) or identifier provided as second argument
+     * @desc Requires that painter marked with object identifier (this.#snapid) or identifier provided as second argument
      * Canvas painter should exists and in non-readonly mode
      * Execution string can look like 'Print()'.
      * Many methods call can be chained with 'Print();;Update();;Clear()'
