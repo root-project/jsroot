@@ -3542,10 +3542,17 @@ class TH2Painter extends THistPainter {
       const main = this.getMainPainter(),
             fp = this.getFramePainter();
 
-     if ((main !== this) && fp && (fp.mode3d !== this.options.Mode3D))
-        this.copyOptionsFrom(main);
+      if ((main !== this) && fp && (fp.mode3d !== this.options.Mode3D))
+         this.copyOptionsFrom(main);
 
-      return this.options.Mode3D ? this.draw3D(reason) : this.draw2D(reason);
+      if (!this.options.Mode3D)
+         return this.draw2D(reason);
+
+      return this.draw3D(reason).catch(() => {
+         console.error('Fail to draw histogram in 3D - back to 2D')
+         this.options.Mode3D = false;
+         return this.draw2D(reason);
+      });
    }
 
    /** @summary Redraw histogram */
