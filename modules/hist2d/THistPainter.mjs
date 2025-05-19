@@ -1080,9 +1080,9 @@ class THistPainter extends ObjectPainter {
          }
       };
 
-      copyTAxisMembers(tgt_histo.fXaxis, src_histo.fXaxis, this.snapid && !fp?.zoomChangedInteractive('x'));
-      copyTAxisMembers(tgt_histo.fYaxis, src_histo.fYaxis, this.snapid && !fp?.zoomChangedInteractive('y'));
-      copyTAxisMembers(tgt_histo.fZaxis, src_histo.fZaxis, this.snapid && !fp?.zoomChangedInteractive('z'));
+      copyTAxisMembers(tgt_histo.fXaxis, src_histo.fXaxis, this.hasSnapId() && !fp?.zoomChangedInteractive('x'));
+      copyTAxisMembers(tgt_histo.fYaxis, src_histo.fYaxis, this.hasSnapId() && !fp?.zoomChangedInteractive('y'));
+      copyTAxisMembers(tgt_histo.fZaxis, src_histo.fZaxis, this.hasSnapId() && !fp?.zoomChangedInteractive('z'));
    }
 
    /** @summary Update histogram object
@@ -1121,7 +1121,7 @@ class THistPainter extends ObjectPainter {
          histo.SetBit(kIsZoomed, obj.TestBit(kIsZoomed));
 
          // special treatment for web canvas - also name can be changed
-         if (this.snapid !== undefined) {
+         if (this.hasSnapId()) {
             histo.fName = obj.fName;
             o._pfc = o._plc = o._pmc = 0; // auto colors should be processed in web canvas
          }
@@ -1467,12 +1467,14 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Update statistics when web canvas is drawn */
    updateStatWebCanvas() {
-      if (!this.snapid) return;
+      if (!this.hasSnapId())
+         return;
 
       const stat = this.findStat(),
             statpainter = this.getPadPainter()?.findPainterFor(stat);
 
-      if (statpainter && !statpainter.snapid) statpainter.redraw();
+      if (statpainter && !statpainter.hasSnapId())
+         statpainter.redraw();
    }
 
    /** @summary Find stats box in list of functions */
@@ -1530,7 +1532,7 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Returns true if stats box fill can be ignored */
    isIgnoreStatsFill() {
-      return !this.getObject() || (!this.draw_content && !this.create_stats && !this.snapid); // || (this.options.Axis > 0);
+      return !this.getObject() || (!this.draw_content && !this.create_stats && !this.hasSnapId()); // || (this.options.Axis > 0);
    }
 
    /** @summary Create stat box for histogram if required */
@@ -1907,16 +1909,9 @@ class THistPainter extends ObjectPainter {
    /** @summary Returns snap id for object or sub-element
      * @private */
    getSnapId(subelem) {
-      if (!this.snapid)
-         return '';
-      let res = this.snapid.toString();
-      if (subelem) {
-         res += '#';
-         if (this.isTF1() && (subelem === 'x' || subelem === 'y' || subelem === 'z'))
-             res += 'hist#';
-         res += subelem;
-      }
-      return res;
+      if (this.isTF1() && (subelem === 'x' || subelem === 'y' || subelem === 'z'))
+         subelem = 'hist#' + subelem;
+      return super.getSnapId(subelem);
    }
 
    /** @summary Auto zoom into histogram non-empty range

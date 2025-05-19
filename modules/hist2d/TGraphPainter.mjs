@@ -1416,7 +1416,7 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Fill context menu */
    fillContextMenuItems(menu) {
-      if (!this.snapid) {
+      if (!this.hasSnapId()) {
          menu.addchk(this.testEditable(), 'Editable', () => { this.testEditable('toggle'); this.drawGraph(); });
          if (this.axes_draw) {
             menu.add('Title', () => menu.input('Enter graph title', this.getObject().fTitle).then(res => {
@@ -1481,7 +1481,7 @@ class TGraphPainter extends ObjectPainter {
 
       const o = this.options;
 
-      if (this.snapid !== undefined)
+      if (this.hasSnapId())
          o._pfc = o._plc = o._pmc = 0; // auto colors should be processed in web canvas
 
       if (!o._pfc)

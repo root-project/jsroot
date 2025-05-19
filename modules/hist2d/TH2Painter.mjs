@@ -635,14 +635,14 @@ class TH2Painter extends THistPainter {
 
       const canp = this.getCanvPainter();
 
-      if (canp && !canp.isReadonly() && (this.snapid !== undefined)) {
+      if (canp && !canp.isReadonly() && this.hasSnapId()) {
          // this is when projection should be created on the server side
          if (((this.#projection_kind === 'X') || (this.#projection_kind === 'XY')) && !canp.websocketTimeout('projX')) {
-            if (canp.sendWebsocket(`EXECANDSEND:DXPROJ:${this.snapid}:ProjectionX("_projx",${jj1+1},${jj2},"")`))
+            if (canp.sendWebsocket(`EXECANDSEND:DXPROJ:${this.getSnapId()}:ProjectionX("_projx",${jj1+1},${jj2},"")`))
                canp.websocketTimeout('projX', 1000);
          }
          if (((this.#projection_kind === 'Y') || (this.#projection_kind === 'XY')) && !canp.websocketTimeout('projY')) {
-            if (canp.sendWebsocket(`EXECANDSEND:DYPROJ:${this.snapid}:ProjectionY("_projy",${ii1+1},${ii2},"")`))
+            if (canp.sendWebsocket(`EXECANDSEND:DYPROJ:${this.getSnapId()}:ProjectionY("_projy",${ii1+1},${ii2},"")`))
                canp.websocketTimeout('projY', 1000);
          }
          return true;

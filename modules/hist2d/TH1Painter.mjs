@@ -1235,7 +1235,7 @@ class TH1Painter extends THistPainter {
          this.interactiveRedraw('pad', 'drawopt');
       });
 
-      if (!this.snapid && !this.isTProfile() && !this.isTF1())
+      if (!this.hasSnapId() && !this.isTProfile() && !this.isTF1())
          menu.addRebinMenu(sz => this.rebinHist(sz));
    }
 

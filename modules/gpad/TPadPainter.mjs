@@ -2070,7 +2070,7 @@ class TPadPainter extends ObjectPainter {
             const sub = this.painters[k];
 
             // skip check secondary painters or painters without snapid
-            if (!isStr(sub.snapid) || sub.isSecondary()) {
+            if (!sub.hasSnapId() || sub.isSecondary()) {
                k++;
                continue; // look only for painters with snapid
             }
@@ -2086,7 +2086,7 @@ class TPadPainter extends ObjectPainter {
                continue; // look only for primitives of real objects
             }
 
-            if (prim.fObjectID === sub.snapid) {
+            if (prim.fObjectID === sub.getSnapId()) {
                i++;
                k++;
             } else {
@@ -2136,8 +2136,7 @@ class TPadPainter extends ObjectPainter {
       if (!cp || !cp.canSendWebsocket(2) || cp.isReadonly())
          return;
 
-      const msg = JSON.stringify([this.snapid, kind, x.toString(), y.toString(), snapid ? snapid.toString() : '']);
-
+      const msg = JSON.stringify([this.getSnapId(), kind, x.toString(), y.toString(), snapid || '']);
       cp.sendWebsocket(`EVENT:${msg}`);
    }
 
@@ -2176,8 +2175,8 @@ class TPadPainter extends ObjectPainter {
       if (!cp)
          cp = this.isCanvas() ? this : this.getCanvPainter();
 
-      if (this.snapid) {
-         elem = { _typename: 'TWebPadOptions', snapid: this.snapid.toString(),
+      if (this.getSnapId()) {
+         elem = { _typename: 'TWebPadOptions', snapid: this.getSnapId(),
                   active: Boolean(this.is_active_pad),
                   cw: 0, ch: 0, w: [],
                   bits: 0, primitives: [],
@@ -2321,7 +2320,7 @@ class TPadPainter extends ObjectPainter {
 
       return createMenu(evnt, selp).then(menu => {
          const offline_menu = selp.fillContextMenu(menu, selkind);
-         if (offline_menu || selp.snapid)
+         if (offline_menu || selp.getSnapId())
             return selp.fillObjectExecMenu(menu, selkind).then(() => postponePromise(() => menu.show(), 50));
       });
    }
@@ -2343,7 +2342,7 @@ class TPadPainter extends ObjectPainter {
          if (!imgdata)
             return console.error(`Fail to produce image ${filename}`);
 
-         if ((browser.qt6 || browser.cef3) && this.snapid) {
+         if ((browser.qt6 || browser.cef3) && this.getSnapId()) {
             console.warn(`sending file ${filename} to server`);
             let res = imgdata;
             if (kind !== 'svg') {
