@@ -851,7 +851,7 @@ class TAxisPainter extends ObjectPainter {
          y_0 = new_y = acc_y = title_g.property('shift_y');
 
          sign_0 = vertical ? (acc_x > 0) : (acc_y > 0); // sign should remain
-         can_indx0 = !this.hist_painter?.snapid; // online canvas does not allow alternate position
+         can_indx0 = !this.hist_painter?.getSnapId(); // online canvas does not allow alternate position
 
          alt_pos = vertical ? [axis_length, axis_length/2, 0] : [0, axis_length/2, axis_length]; // possible positions
          const off = vertical ? -title_length/2 : title_length/2;
@@ -969,7 +969,7 @@ class TAxisPainter extends ObjectPainter {
    /** @summary Submit exec for the axis - if possible
      * @private */
    submitAxisExec(exec, only_gaxis) {
-      const snapid = this.hist_painter?.snapid;
+      const snapid = this.hist_painter?.getSnapId();
       if (snapid && this.hist_axis && !only_gaxis)
          this.submitCanvExec(exec, `${snapid}#${this.hist_axis}`);
       else if (this.is_gaxis)

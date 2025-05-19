@@ -291,7 +291,7 @@ class RCanvasPainter extends RPadPainter {
              snap = parse(msg.slice(p1+1));
          this.syncDraw(true)
              .then(() => {
-                if (!this.snapid && snap?.fWinSize)
+                if (!this.getSnapId() && snap?.fWinSize)
                    this.resizeBrowser(snap.fWinSize[0], snap.fWinSize[1]);
              }).then(() => this.redrawPadSnap(snap))
              .then(() => {
@@ -371,7 +371,7 @@ class RCanvasPainter extends RPadPainter {
 
    /** @summary Submit request to RDrawable object on server side */
    submitDrawableRequest(kind, req, painter, method) {
-      if (!this.getWebsocket() || !req?._typename || !painter.snapid || !isStr(painter.snapid))
+      if (!this.getWebsocket() || !req?._typename || !painter.getSnapId())
          return null;
 
       if (kind && method) {
@@ -392,7 +392,7 @@ class RCanvasPainter extends RPadPainter {
          painter._requests[kind] = req; // keep reference on the request
       }
 
-      req.id = painter.snapid;
+      req.id = painter.getSnapId();
 
       if (method) {
          if (!this.#nextreqid) this.#nextreqid = 1;
@@ -504,9 +504,9 @@ class RCanvasPainter extends RPadPainter {
             console.log('TPave is moved inside RCanvas - that to do?');
             break;
          default:
-            if ((kind.slice(0, 5) === 'exec:') && painter?.snapid)
+            if ((kind.slice(0, 5) === 'exec:') && painter?.getSnapId())
                this.submitExec(painter, kind.slice(5), subelem);
-             else
+            else
                console.log('UNPROCESSED CHANGES', kind);
       }
 

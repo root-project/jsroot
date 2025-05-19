@@ -402,7 +402,7 @@ class RPadPainter extends RObjectPainter {
      * @private */
    setFastDrawing(w, h) {
       const was_fast = this.#fast_drawing;
-      this.#fast_drawing = (this.snapid === undefined) && settings.SmallPad && ((w < settings.SmallPad.width) || (h < settings.SmallPad.height));
+      this.#fast_drawing = !this.hasSnapId() && settings.SmallPad && ((w < settings.SmallPad.width) || (h < settings.SmallPad.height));
       if (was_fast !== this.#fast_drawing)
          this.showPadButtons();
    }
@@ -506,7 +506,7 @@ class RPadPainter extends RObjectPainter {
       this.createAttFill({ pattern: 1001, color: 0 });
 
       if ((rect.width <= lmt) || (rect.height <= lmt)) {
-         if (this.snapid === undefined) {
+         if (!this.hasSnapId()) {
             svg.style('display', 'none');
             console.warn(`Hide canvas while geometry too small w=${rect.width} h=${rect.height}`);
          }
@@ -1035,7 +1035,7 @@ class RPadPainter extends RObjectPainter {
    /** @summary Add object painter to list of primitives
      * @private */
    addObjectPainter(objpainter, lst, indx) {
-      if (objpainter && lst && lst[indx] && (objpainter.snapid === undefined)) {
+      if (objpainter && lst && lst[indx] && !objpainter.hasSnapId()) {
          // keep snap id in painter, will be used for the
          if (this.painters.indexOf(objpainter) < 0)
             this.painters.push(objpainter);
@@ -1170,11 +1170,11 @@ class RPadPainter extends RObjectPainter {
       while ((pindx !== undefined) && (pindx < this.painters.length)) {
          const subp = this.painters[pindx++];
 
-         if (subp.snapid === snap.fObjectID) {
+         if (subp.getSnapId() === snap.fObjectID) {
             objpainter = subp;
             break;
-         } else if (subp.snapid && !subp.isSecondary() && !is_subpad) {
-            console.warn(`Mismatch in snapid between painter ${subp?.snapid} secondary: ${subp?.isSecondary()} type: ${subp?.getClassName()} and primitive ${snap.fObjectID} kind ${snap.fKind} type ${snap.fDrawable?._typename}`);
+         } else if (subp.getSnapId() && !subp.isSecondary() && !is_subpad) {
+            console.warn(`Mismatch in snapid between painter ${subp.getSnapId()} secondary: ${subp.isSecondary()} type: ${subp.getClassName()} and primitive ${snap.fObjectID} kind ${snap.fKind} type ${snap.fDrawable?._typename}`);
             break;
          }
       }
@@ -1219,16 +1219,18 @@ class RPadPainter extends RObjectPainter {
                 (checkid.indexOf(snapid) === (checkid.length - snapid.length));
       }
 
-      if (check(this.snapid)) return this;
+      if (check(this.getSnapId()))
+         return this;
 
-      if (!this.painters) return null;
+      if (!this.painters)
+         return null;
 
-      for (let k=0; k<this.painters.length; ++k) {
+      for (let k=0; k < this.painters.length; ++k) {
          let sub = this.painters[k];
 
          if (!onlyid && isFunc(sub.findSnap))
             sub = sub.findSnap(snapid);
-         else if (!check(sub.snapid))
+         else if (!check(sub.getSnapId()))
             sub = null;
 
          if (sub) return sub;
@@ -1249,7 +1251,7 @@ class RPadPainter extends RObjectPainter {
       if (this.isCanvas(true) && snap.fTitle && !this.embed_canvas && (typeof document !== 'undefined'))
          document.title = snap.fTitle;
 
-      if (this.snapid === undefined) {
+      if (!this.hasSnapId()) {
          // first time getting snap, create all gui elements first
 
          this.assignSnapId(snap.fObjectID);
@@ -1296,7 +1298,7 @@ class RPadPainter extends RObjectPainter {
 
          // skip check secondary painters or painters without snapid
          // also frame painter will be excluded here
-         if (!isStr(sub.snapid) || sub.isSecondary()) {
+         if (!sub.hasSnapId() || sub.isSecondary()) {
             k++;
             continue; // look only for painters with snapid
          }
@@ -1307,7 +1309,7 @@ class RPadPainter extends RObjectPainter {
 
          const prim = snap.fPrimitives[i];
 
-         if (prim.fObjectID === sub.snapid) {
+         if (prim.fObjectID === sub.getSnapId()) {
             i++;
             k++;
          } else if (prim.fDummy || !prim.fObjectID || ((prim._typename === `${nsREX}TObjectDisplayItem`) && ((prim.fKind === webSnapIds.kStyle) || (prim.fKind === webSnapIds.kColors) || (prim.fKind === webSnapIds.kPalette) || (prim.fKind === webSnapIds.kFont)))) {
@@ -1397,7 +1399,7 @@ class RPadPainter extends RObjectPainter {
 
       return createMenu(evnt, selp).then(menu => {
          const offline_menu = selp.fillContextMenu(menu, selkind);
-         if (offline_menu || selp.snapid)
+         if (offline_menu || selp.getSnapId())
             selp.fillObjectExecMenu(menu, selkind).then(() => postponePromise(() => menu.show(), 50));
       });
    }
@@ -1412,7 +1414,7 @@ class RPadPainter extends RObjectPainter {
          if (!imgdata)
             return console.error(`Fail to produce image ${filename}`);
 
-         if ((browser.qt6 || browser.cef3) && this.snapid) {
+         if ((browser.qt6 || browser.cef3) && this.getSnapId()) {
             console.warn(`sending file ${filename} to server`);
             let res = imgdata;
             if (kind !== 'svg') {

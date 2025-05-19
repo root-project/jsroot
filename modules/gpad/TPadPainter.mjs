@@ -187,10 +187,10 @@ webSnapIds = { kNone: 0, kObject: 1, kSVG: 2, kSubPad: 3, kColors: 4, kStyle: 5,
 /** @summary Fill TWebObjectOptions for painter
   * @private */
 function createWebObjectOptions(painter) {
-   if (!painter?.snapid)
+   if (!painter?.getSnapId())
       return null;
 
-   const obj = { _typename: 'TWebObjectOptions', snapid: painter.snapid.toString(), opt: painter.getDrawOpt(true), fcust: '', fopt: [] };
+   const obj = { _typename: 'TWebObjectOptions', snapid: painter.getSnapId(), opt: painter.getDrawOpt(true), fcust: '', fopt: [] };
    if (isFunc(painter.fillWebObjectOptions))
       painter.fillWebObjectOptions(obj);
    return obj;
@@ -630,7 +630,7 @@ class TPadPainter extends ObjectPainter {
      * @private */
    setFastDrawing(w, h) {
       const was_fast = this.#fast_drawing;
-      this.#fast_drawing = (this.snapid === undefined) && settings.SmallPad && ((w < settings.SmallPad.width) || (h < settings.SmallPad.height));
+      this.#fast_drawing = !this.hasSnapId() && settings.SmallPad && ((w < settings.SmallPad.width) || (h < settings.SmallPad.height));
       if (was_fast !== this.#fast_drawing)
          this.showPadButtons();
    }
@@ -771,7 +771,7 @@ class TPadPainter extends ObjectPainter {
       this.createAttFill({ attr: this.pad });
 
       if ((rect.width <= lmt) || (rect.height <= lmt)) {
-         if (this.snapid === undefined) {
+         if (this.hasSnapId()) {
             svg.style('display', 'none');
             console.warn(`Hide canvas while geometry too small w=${rect.width} h=${rect.height}`);
          }
@@ -1782,7 +1782,7 @@ class TPadPainter extends ObjectPainter {
    /** @summary Add object painter to list of primitives
      * @private */
    addObjectPainter(objpainter, lst, indx) {
-      if (objpainter && lst && lst[indx] && (objpainter.snapid === undefined)) {
+      if (objpainter && lst && lst[indx] && !objpainter.hasSnapId()) {
          // keep snap id in painter, will be used for the
          if (this.painters.indexOf(objpainter) < 0)
             this.painters.push(objpainter);
@@ -1793,7 +1793,7 @@ class TPadPainter extends ObjectPainter {
             for (let k = 0; k < this.painters.length; ++k) {
                const sub = this.painters[k];
                if (sub.isSecondary(p) && sub.getSecondaryId()) {
-                  sub.assignSnapId(p.snapid + '#' + sub.getSecondaryId());
+                  sub.assignSnapId(p.getSnapId() + '#' + sub.getSecondaryId());
                   setSubSnaps(sub);
                }
             }
@@ -1900,11 +1900,11 @@ class TPadPainter extends ObjectPainter {
 
       while ((pindx !== undefined) && (pindx < this.painters.length)) {
          const subp = this.painters[pindx++];
-         if (subp.snapid === snap.fObjectID) {
+         if (subp.getSnapId() === snap.fObjectID) {
             objpainter = subp;
             break;
-         } else if (subp.snapid && !subp.isSecondary() && !is_subpad) {
-            console.warn(`Mismatch in snapid between painter ${subp?.snapid} secondary: ${subp?.isSecondary()} type: ${subp?.getClassName()} and primitive ${snap.fObjectID} kind ${snap.fKind} type ${snap.fSnapshot?._typename}`);
+         } else if (subp.getSnapId() && !subp.isSecondary() && !is_subpad) {
+            console.warn(`Mismatch in snapid between painter ${subp.getSnapId()} secondary: ${subp.isSecondary()} type: ${subp.getClassName()} and primitive ${snap.fObjectID} kind ${snap.fKind} type ${snap.fSnapshot?._typename}`);
             break;
          }
       }
@@ -1952,7 +1952,7 @@ class TPadPainter extends ObjectPainter {
    /** @summary Return painter with specified id
      * @private */
    findSnap(snapid) {
-      if (this.snapid === snapid)
+      if (this.getSnapId() === snapid)
          return this;
 
       if (!this.painters)
@@ -1963,10 +1963,11 @@ class TPadPainter extends ObjectPainter {
 
          if (isFunc(sub.findSnap))
             sub = sub.findSnap(snapid);
-         else if (sub.snapid !== snapid)
+         else if (sub.getSnapId() !== snapid)
             sub = null;
 
-         if (sub) return sub;
+         if (sub)
+            return sub;
       }
 
       return null;
@@ -1994,7 +1995,7 @@ class TPadPainter extends ObjectPainter {
       // if there are execs in the pad, deliver events to the server
       this.#deliver_move_events = this.#has_execs || first.fExecs?.arr?.length;
 
-      if (this.snapid === undefined) {
+      if (!this.hasSnapId()) {
          // first time getting snap, create all gui elements first
 
          this.assignSnapId(snap.fObjectID);

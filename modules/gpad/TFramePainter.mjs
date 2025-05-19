@@ -419,7 +419,7 @@ class TooltipHandler extends ObjectPainter {
       const hints = pp?.processPadTooltipEvent(pnt) ?? [];
 
       if (pnt && frame_rect)
-         pp.deliverWebCanvasEvent('move', frame_rect.x + pnt.x, frame_rect.y + pnt.y, hints ? hints[0]?.painter?.snapid : '');
+         pp.deliverWebCanvasEvent('move', frame_rect.x + pnt.x, frame_rect.y + pnt.y, hints ? hints[0]?.painter?.getSnapId() : '');
 
       for (let n = 0; n < hints.length; ++n) {
          const hint = hints[n];
@@ -2729,7 +2729,7 @@ class TFramePainter extends FrameInteractive {
          }
          menu.addchk(faxis.TestBit(EAxisBits.kMoreLogLabels), 'More log', flag => {
             faxis.SetBit(EAxisBits.kMoreLogLabels, flag);
-            if (hist_painter?.snapid && (kind.length === 1))
+            if (hist_painter?.getSnapId() && (kind.length === 1))
                hist_painter.interactiveRedraw('pad', `exec:SetMoreLogLabels(${flag})`, kind);
             else
                this.interactiveRedraw('pad');
@@ -2738,7 +2738,7 @@ class TFramePainter extends FrameInteractive {
             faxis.SetBit(EAxisBits.kNoExponent, flag);
             if (handle) handle.noexp_changed = true;
             this[`${kind}_noexp_changed`] = true;
-            if (hist_painter?.snapid && (kind.length === 1))
+            if (hist_painter?.getSnapId() && (kind.length === 1))
                hist_painter.interactiveRedraw('pad', `exec:SetNoExponent(${flag})`, kind);
             else
                this.interactiveRedraw('pad');

@@ -273,7 +273,8 @@ class TCanvasPainter extends TPadPainter {
       if (this.isReadonly() || !painter)
          return;
 
-      if (!snapid) snapid = painter.snapid;
+      if (!snapid)
+         snapid = painter.getSnapId();
       if (snapid && isStr(snapid) && exec)
          return this.sendWebsocket(`OBJEXEC:${snapid}:${exec}`);
    }
@@ -365,9 +366,9 @@ class TCanvasPainter extends TPadPainter {
 
          this.syncDraw(true)
              .then(() => {
-                if (!this.snapid)
+                if (!this.getSnapId())
                    this.resizeBrowser(snap.fSnapshot.fWindowWidth, snap.fSnapshot.fWindowHeight);
-                if (!this.snapid && isFunc(this.setFixedCanvasSize))
+                if (!this.getSnapId() && isFunc(this.setFixedCanvasSize))
                    this.#online_fixed_size = this.setFixedCanvasSize(snap.fSnapshot.fCw, snap.fSnapshot.fCh, snap.fFixedSize);
              })
              .then(() => this.redrawPadSnap(snap))
@@ -673,11 +674,13 @@ class TCanvasPainter extends TPadPainter {
           this.doingDraw() || !this.canSendWebsocket(2)) return;
 
       const hint = hints[0] || hints[1];
-      if (!hint || !hint.painter || !hint.painter.snapid || !hint.user_info) return;
+      if (!hint || !hint.painter?.getSnapId() || !hint.user_info)
+         return;
       const pp = hint.painter.getPadPainter() || this;
-      if (!pp.snapid) return;
+      if (!pp.getSnapId())
+         return;
 
-      const arr = [pp.snapid, hint.painter.snapid, '0', '0'];
+      const arr = [pp.getSnapId(), hint.painter.getSnapId(), '0', '0'];
 
       if ((hint.user_info.binx !== undefined) && (hint.user_info.biny !== undefined)) {
          arr[2] = hint.user_info.binx.toString();
@@ -719,8 +722,8 @@ class TCanvasPainter extends TPadPainter {
             msg = 'OPTIONS6:' + painter.getWebPadOptions('with_subpads');
             break;
          case 'drawopt':
-            if (painter.snapid)
-               msg = 'DRAWOPT:' + JSON.stringify([painter.snapid.toString(), painter.getDrawOpt() || '']);
+            if (painter.getSnapId())
+               msg = 'DRAWOPT:' + JSON.stringify([painter.getSnapId(), painter.getDrawOpt() || '']);
             break;
          case 'pave_moved': {
             const info = createWebObjectOptions(painter);
@@ -731,8 +734,7 @@ class TCanvasPainter extends TPadPainter {
          case 'logy':
          case 'logz': {
             const pp = painter.getPadPainter();
-
-            if (pp?.snapid && pp?.pad) {
+            if (pp?.getSnapId() && pp?.pad) {
                const name = 'SetLog' + kind[3], value = pp.pad['fLog' + kind[3]];
                painter = pp;
                kind = `exec:${name}(${value})`;
@@ -758,23 +760,23 @@ class TCanvasPainter extends TPadPainter {
 
    /** @summary Select active pad on the canvas */
    selectActivePad(pad_painter, obj_painter, click_pos) {
-      if (!this.snapid || !pad_painter)
+      if (!this.getSnapId() || !pad_painter)
          return; // only interactive canvas
 
       let arg = null, ischanged = false;
       const is_button = pad_painter.matchObjectType(clTButton);
 
-      if (pad_painter.snapid && this.getWebsocket())
-         arg = { _typename: 'TWebPadClick', padid: pad_painter.snapid.toString(), objid: '', x: -1, y: -1, dbl: false };
+      if (pad_painter.getSnapId() && this.getWebsocket())
+         arg = { _typename: 'TWebPadClick', padid: pad_painter.getSnapId(), objid: '', x: -1, y: -1, dbl: false };
 
       if (!pad_painter.is_active_pad && !is_button) {
          ischanged = true;
          this.forEachPainterInPad(pp => pp.drawActiveBorder(null, pp === pad_painter), 'pads');
       }
 
-      if ((obj_painter?.snapid !== undefined) && arg) {
+      if (obj_painter?.hasSnapId() && arg) {
          ischanged = true;
-         arg.objid = obj_painter.snapid.toString();
+         arg.objid = obj_painter.getSnapId();
       }
 
       if (click_pos && arg) {

@@ -80,7 +80,10 @@ class ObjectPainter extends BasePainter {
    assignSnapId(id) { this.snapid = id; }
 
    /** @summary Provides identifier on server for requested sub-element */
-   getSnapId(subelem) { return !this.snapid ? '' : (this.snapid.toString() + (subelem ? '#' + subelem : '')); }
+   getSnapId(subelem) { return !this.snapid ? '' : (this.snapid + (subelem ? '#' + subelem : '')); }
+
+   /** @summary Returns true if snapid was assigned */
+   hasSnapId() { return this.snapid !== undefined; }
 
    /** @summary Generic method to cleanup painter.
      * @desc Remove object drawing and (in case of main painter) also main HTML components
@@ -853,7 +856,8 @@ class ObjectPainter extends BasePainter {
      * Many methods call can be chained with 'Print();;Update();;Clear()'
      * @private */
    submitCanvExec(exec, snapid) {
-      if (!exec || !isStr(exec)) return;
+      if (!exec || !isStr(exec))
+         return;
 
       const canp = this.getCanvPainter();
       if (isFunc(canp?.submitExec))
