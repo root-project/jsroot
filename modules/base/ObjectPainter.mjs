@@ -79,6 +79,9 @@ class ObjectPainter extends BasePainter {
     * @private */
    assignSnapId(id) { this.snapid = id; }
 
+   /** @summary Provides identifier on server for requested sub-element */
+   getSnapId(subelem) { return !this.snapid ? '' : (this.snapid.toString() + (subelem ? '#' + subelem : '')); }
+
    /** @summary Generic method to cleanup painter.
      * @desc Remove object drawing and (in case of main painter) also main HTML components
      * @protected */
@@ -97,7 +100,7 @@ class ObjectPainter extends BasePainter {
       this.#pad_name = undefined;
       this.#main_painter = null;
       this.#draw_object = null;
-      delete this.snapid;
+      this.snapid = undefined;
       this._is_primary = undefined;
       this.#primary_ref = undefined;
       this.#secondary_id = undefined;
@@ -371,15 +374,16 @@ class ObjectPainter extends BasePainter {
 
    /** @summary Bring draw element to the front */
    bringToFront(check_online) {
-      if (!this.draw_g) return;
+      if (!this.draw_g)
+         return;
       const prnt = this.draw_g.node().parentNode;
       prnt?.appendChild(this.draw_g.node());
 
-      if (!check_online || !this.snapid) return;
-      const pp = this.getPadPainter();
-      if (!pp?.snapid) return;
-
-      this.getCanvPainter()?.sendWebsocket('POPOBJ:'+JSON.stringify([pp.snapid.toString(), this.snapid.toString()]));
+      if (check_online && this.getSnapId()) {
+         const pp = this.getPadPainter();
+         if (pp?.getSnapId())
+            this.getCanvPainter()?.sendWebsocket('POPOBJ:'+JSON.stringify([pp.getSnapId(), this.getSnapId()]));
+      }
    }
 
    /** @summary Canvas main svg element
@@ -426,14 +430,6 @@ class ObjectPainter extends BasePainter {
    /** @summary Return primary object
      * @private */
    getPrimary() { return this.#primary_ref?.deref(); }
-
-   /** @summary Provides identifier on server for requested sub-element */
-   getSnapId(subelem) {
-      if (!this.snapid)
-         return '';
-
-      return this.snapid.toString() + (subelem ? '#'+subelem : '');
-   }
 
    /** @summary Method selects immediate layer under canvas/pad main element
      * @param {string} name - layer name, exits 'primitives_layer', 'btns_layer', 'info_layer'
@@ -1379,7 +1375,7 @@ class ObjectPainter extends BasePainter {
 
       const canvp = this.getCanvPainter();
 
-      if (!this.snapid || !canvp || canvp?.isReadonly() || !canvp?.getWebsocket())
+      if (!this.getSnapId() || !canvp || canvp?.isReadonly() || !canvp?.getWebsocket())
          return menu;
 
       function doExecMenu(arg) {
