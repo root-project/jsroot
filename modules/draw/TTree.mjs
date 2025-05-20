@@ -1,4 +1,4 @@
-import { internals, httpRequest, isBatchMode, isFunc, isStr, create, toJSON,
+import { internals, httpRequest, isBatchMode, isFunc, isStr, create, toJSON, getPromise,
          prROOT, clTObjString, clTGraph, clTPolyMarker3D, clTH1, clTH2, clTH3 } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { kTString, kObject, kAnyP } from '../io.mjs';
@@ -109,7 +109,7 @@ async function treeDrawProgress(obj, final) {
 
    return this.last_pr.then(() => {
       if (this.obj_painter)
-         this.last_pr = this.obj_painter.redrawObject(obj).then(() => this.obj_painter);
+         this.last_pr = getPromise(this.obj_painter.redrawObject(obj)).then(() => this.obj_painter);
       else if (!obj) {
          if (final) console.log('no result after tree drawing');
          this.last_pr = false; // return false indicating no drawing is done
