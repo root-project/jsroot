@@ -96,6 +96,19 @@ function getSizeStr(sz) {
    return (sz/1e9).toFixed(2) + 'GiB';
 }
 
+/** @summary Return ROOT version as string
+  * @private */
+function getVersionStr(version) {
+   const major = Math.floor(version / 10000);
+   let minor = Math.floor((version - major*10000)/100).toString(),
+       patch = (version % 100).toString();
+   if (minor.length < 2)
+      minor = '0' + minor;
+   if (patch.length < 2)
+      patch = '0' + patch;
+   return `${major}.${minor}.${patch}`;
+}
+
 /** @summary draw list content
   * @desc used to draw all items from TList or TObjArray inserted into the TCanvas list of primitives
   * @private */
@@ -801,7 +814,7 @@ class HierarchyPainter extends BasePainter {
       if (!folder) folder = {};
 
       folder._name = file.fFileName;
-      folder._title = (file.fTitle ? file.fTitle + ', path: ' : '') + file.fFullURL + `, size: ${getSizeStr(file.fEND)}, version: ${file.fVersion}, modified: ${convertDate(getTDatime(file.fDatimeM))}`;
+      folder._title = (file.fTitle ? file.fTitle + ', path: ' : '') + file.fFullURL + `, size: ${getSizeStr(file.fEND)}, version: ${getVersionStr(file.fVersion)}, modified: ${convertDate(getTDatime(file.fDatimeM))}`;
       folder._kind = kindTFile;
       folder._file = file;
       folder._fullurl = file.fFullURL;
