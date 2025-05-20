@@ -1311,9 +1311,8 @@ class TH2Painter extends THistPainter {
 
       entries.forEach((entry, ecolindx) => {
          if (entry) {
-            this.draw_g.append('svg:path')
-                .attr('fill', palette.getColor(ecolindx))
-                .attr('d', entry.path);
+            this.appendPath(entry.path)
+                .attr('fill', palette.getColor(ecolindx));
          }
       });
 
@@ -1431,9 +1430,8 @@ class TH2Painter extends THistPainter {
 
       entries.forEach((entry, ecolindx) => {
          if (entry) {
-            this.draw_g.append('svg:path')
-                .attr('fill', palette.getColor(ecolindx))
-                .attr('d', entry.path);
+            this.appendPath(entry.path)
+                .attr('fill', palette.getColor(ecolindx));
          }
       });
 
@@ -1478,9 +1476,7 @@ class TH2Painter extends THistPainter {
             lastx = x; lasty = y;
          }
 
-         this.draw_g
-             .append('svg:path')
-             .attr('d', dd)
+         this.appendPath(dd)
              .style('fill', palette.calcColor(lvl, ilevels.length));
       });
 
@@ -1588,9 +1584,7 @@ class TH2Painter extends THistPainter {
       };
 
       if (this.options.Contour === 14) {
-         this.draw_g
-             .append('svg:path')
-             .attr('d', `M0,0h${handle.width}v${handle.height}h${-handle.width}z`)
+         this.appendPath(`M0,0h${handle.width}v${handle.height}h${-handle.width}z`)
              .style('fill', palette.calcColor(0, levels.length));
       }
 
@@ -1607,12 +1601,11 @@ class TH2Painter extends THistPainter {
          }
 
          const dd = buildPath(xp, yp, iminus, iplus, fillcolor !== 'none', true);
-         if (!dd) return;
-
-         this.draw_g.append('svg:path')
-             .attr('d', dd)
-             .style('fill', fillcolor)
-             .call(lineatt ? lineatt.func : () => {});
+         if (dd) {
+            this.appendPath(dd)
+                .style('fill', fillcolor)
+                .call(lineatt ? lineatt.func : () => {});
+         }
       });
 
       handle.hide_only_zeros = true; // text drawing suppress only zeros
@@ -1774,7 +1767,7 @@ class TH2Painter extends THistPainter {
             if (optimize_draw)
                full_cmd += cmd;
             else if ((colindx !== null) || draw_fill || draw_lines) {
-               item = this.draw_g.append('svg:path').attr('d', cmd);
+               item = this.appendPath(cmd);
                if (draw_colors && (colindx !== null))
                   item.style('fill', palette.getColor(colindx));
                else if (draw_fill)
@@ -1791,7 +1784,7 @@ class TH2Painter extends THistPainter {
       } // loop over bins
 
       if (optimize_draw) {
-         item = this.draw_g.append('svg:path').attr('d', full_cmd);
+         item = this.appendPath(full_cmd);
          if (draw_fill && fillatt0)
             item.call(fillatt0.func);
          else
@@ -1801,9 +1794,8 @@ class TH2Painter extends THistPainter {
       }
 
       if (markeratt0 && !markeratt0.empty() && allmarkers_cmd) {
-         this.draw_g.append('svg:path')
-                    .attr('d', allmarkers_cmd)
-                    .call(markeratt0.func);
+         this.appendPath(allmarkers_cmd)
+             .call(markeratt0.func);
       } else if (draw_mark) {
          for (i = 0; i < len; ++i) {
             bin = histo.fBins.arr[i];
@@ -1821,8 +1813,7 @@ class TH2Painter extends THistPainter {
                for (let n = 0; n < npnts; ++n)
                   cmdm += markeratt.create(funcs.grx(gr.fX[n]), funcs.gry(gr.fY[n]));
 
-               this.draw_g.append('svg:path')
-                   .attr('d', cmdm)
+               this.appendPath(cmdm)
                    .call(markeratt.func);
             } // loop over graphs
          } // loop over bins
@@ -2018,21 +2009,18 @@ class TH2Painter extends THistPainter {
       }
 
       if (plain) {
-         this.draw_g
-            .append('svg:path')
-            .attr('d', plain)
-            .style('fill', 'none')
-            .call(this.lineatt.func);
+         this.appendPath(plain)
+             .style('fill', 'none')
+             .call(this.lineatt.func);
       }
 
       entries.forEach((entry, colindx) => {
          if (entry) {
             const col0 = this.lineatt.color;
             this.lineatt.color = palette.getColor(colindx);
-            this.draw_g.append('svg:path')
-                  .attr('fill', 'none')
-                  .attr('d', entry.path)
-                  .call(this.lineatt.func);
+            this.appendPath(entry.path)
+                .attr('fill', 'none')
+                .call(this.lineatt.func);
             this.lineatt.color = col0;
          }
       });
@@ -2111,31 +2099,25 @@ class TH2Painter extends THistPainter {
       }
 
       if (res) {
-         const elem = this.draw_g.append('svg:path')
-                               .attr('d', res)
-                               .call(this.fillatt.func);
+         const elem = this.appendPath(res).call(this.fillatt.func);
          if ((this.options.BoxStyle !== 11) && this.fillatt.empty())
             elem.call(this.lineatt.func);
       }
 
       if (btn1 && this.fillatt.hasColor()) {
-         this.draw_g.append('svg:path')
-                    .attr('d', btn1)
-                    .call(this.fillatt.func)
-                    .style('fill', d3_rgb(this.fillatt.color).brighter(0.5).formatRgb());
+         this.appendPath(btn1)
+             .call(this.fillatt.func)
+             .style('fill', d3_rgb(this.fillatt.color).brighter(0.5).formatRgb());
       }
 
       if (btn2) {
-         this.draw_g.append('svg:path')
-                    .attr('d', btn2)
-                    .call(this.fillatt.func)
-                    .style('fill', !this.fillatt.hasColor() ? 'red' : d3_rgb(this.fillatt.color).darker(0.5).formatRgb());
+         this.appendPath(btn2)
+             .call(this.fillatt.func)
+             .style('fill', !this.fillatt.hasColor() ? 'red' : d3_rgb(this.fillatt.color).darker(0.5).formatRgb());
       }
 
       if (cross) {
-         const elem = this.draw_g.append('svg:path')
-                               .attr('d', cross)
-                               .style('fill', 'none');
+         const elem = this.appendPath(cross).style('fill', 'none');
          if (!this.lineatt.empty())
             elem.call(this.lineatt.func);
          else
@@ -2551,51 +2533,44 @@ class TH2Painter extends THistPainter {
       }
 
       if (hlines && (histo.fFillColor > 0)) {
-         this.draw_g.append('svg:path')
-             .attr('d', hlines)
+         this.appendPath(hlines)
              .style('stroke', this.getColor(histo.fFillColor));
       }
 
       const hline_color = (isOption(kHistoZeroIndicator) && histo.fFillStyle) ? this.fillatt.color : this.lineatt.color;
       if (hists && (!this.fillatt.empty() || (hline_color !== 'none'))) {
-         this.draw_g.append('svg:path')
-             .attr('d', hists)
+         this.appendPath(hists)
              .style('stroke', (hline_color !== 'none') ? hline_color : null)
              .style('pointer-events', this.isBatchMode() ? null : 'visibleFill')
              .call(this.fillatt.func);
       }
 
       if (bars) {
-         this.draw_g.append('svg:path')
-             .attr('d', bars)
+         this.appendPath(bars)
              .call(this.lineatt.func)
              .call(this.fillatt.func);
       }
 
       if (lines) {
-         this.draw_g.append('svg:path')
-             .attr('d', lines)
+         this.appendPath(lines)
              .call(this.lineatt.func)
              .style('fill', 'none');
       }
 
       if (dashed_lines) {
          const dashed = this.createAttLine({ attr: histo, style: 2, std: false, color: kBlack });
-         this.draw_g.append('svg:path')
-             .attr('d', dashed_lines)
+         this.appendPath(dashed_lines)
              .call(dashed.func)
              .style('fill', 'none');
       }
 
       if (cmarkers) {
-         this.draw_g.append('svg:path')
-             .attr('d', cmarkers)
+         this.appendPath(cmarkers)
              .call(attrcmarkers.func);
       }
 
       if (markers) {
-         this.draw_g.append('svg:path')
-             .attr('d', markers)
+         this.appendPath(markers)
              .call(this.markeratt.func);
       }
 
@@ -2642,10 +2617,8 @@ class TH2Painter extends THistPainter {
             }
          }
 
-         this.draw_g
-              .append('svg:path')
-              .attr('d', path)
-              .call(this.markeratt.func);
+         this.appendPath(path)
+             .call(this.markeratt.func);
 
          return handle;
       }
@@ -2736,11 +2709,9 @@ class TH2Painter extends THistPainter {
                    .attr('d', path)
                    .call(this.markeratt.func);
 
-            this.draw_g
-                .append('svg:path')
+            this.appendPath(colPaths[colindx])
                 .attr('scatter-index', colindx)
-                .style('fill', `url(#${pattern_id})`)
-                .attr('d', colPaths[colindx]);
+                .style('fill', `url(#${pattern_id})`);
          }
       }
 
@@ -3241,7 +3212,7 @@ class TH2Painter extends THistPainter {
             res.changed = true;
          } else {
             if (ttrect.empty()) {
-               ttrect = this.draw_g.append('svg:path')
+               ttrect = this.appendPath()
                             .attr('class', 'tooltip_bin')
                             .style('pointer-events', 'none')
                             .call(addHighlightStyle);
@@ -3292,11 +3263,11 @@ class TH2Painter extends THistPainter {
             res.changed = true;
          } else {
             if (ttrect.empty()) {
-               ttrect = this.draw_g.append('svg:path')
-                                   .attr('class', 'tooltip_bin')
-                                   .style('pointer-events', 'none')
-                                   .call(addHighlightStyle)
-                                   .style('opacity', '0.7');
+               ttrect = this.appendPath()
+                            .attr('class', 'tooltip_bin')
+                            .style('pointer-events', 'none')
+                            .call(addHighlightStyle)
+                            .style('opacity', '0.7');
             }
 
             res.changed = ttrect.property('current_bin') !== i;
@@ -3407,10 +3378,10 @@ class TH2Painter extends THistPainter {
          res.changed = true;
       } else {
          if (ttrect.empty()) {
-            ttrect = this.draw_g.append('svg:path')
-                                .attr('class', 'tooltip_bin')
-                                .style('pointer-events', 'none')
-                                .call(addHighlightStyle);
+            ttrect = this.appendPath()
+                         .attr('class', 'tooltip_bin')
+                         .style('pointer-events', 'none')
+                         .call(addHighlightStyle);
          }
 
          let binid = i*10000 + j, path;

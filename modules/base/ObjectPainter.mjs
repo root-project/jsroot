@@ -337,6 +337,10 @@ class ObjectPainter extends BasePainter {
      * @protected */
    setG(g) { this.draw_g = g; return g; }
 
+   /** @summary Append svg::path to G
+     * @protected */
+   appendPath(d) { return this.draw_g.append('svg:path').attr('d', d); }
+
    /** @summary (re)creates svg:g element for object drawings
      * @desc either one attach svg:g to pad primitives (default)
      * or svg:g element created in specified frame layer ('main_layer' will be used when true specified)

@@ -362,7 +362,7 @@ function addMoveHandler(painter, enabled = true, hover_handler = false) {
             return;
          evnt.sourceEvent.preventDefault();
          evnt.sourceEvent.stopPropagation();
-         const pos = d3_pointer(evnt, this.draw_g.node());
+         const pos = d3_pointer(evnt, this.getG().node());
          not_changed = true;
          if (this.moveStart)
             this.moveStart(pos[0], pos[1], evnt.sourceEvent);
@@ -383,7 +383,7 @@ function addMoveHandler(painter, enabled = true, hover_handler = false) {
          let arg = null;
          if (not_changed) {
             // if not changed - provide click position
-            const pos = d3_pointer(evnt, this.draw_g.node());
+            const pos = d3_pointer(evnt, this.getG().node());
             arg = { x: pos[0], y: pos[1], dbl: false };
          }
          this.getPadPainter()?.selectObjectPainter(this, arg);

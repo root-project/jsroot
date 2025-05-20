@@ -305,9 +305,9 @@ class TF1Painter extends TH1Painter {
       if (this.#use_saved_points)
          return super.processTooltipEvent(pnt);
 
-      let ttrect = this.draw_g?.selectChild('.tooltip_bin');
+      let ttrect = this.getG()?.selectChild('.tooltip_bin');
 
-      if (!this.draw_g || !pnt) {
+      if (!this.getG() || !pnt) {
          ttrect?.remove();
          return null;
       }
@@ -322,11 +322,11 @@ class TF1Painter extends TH1Painter {
          ttrect.remove();
       else {
          if (ttrect.empty()) {
-            ttrect = this.draw_g.append('svg:circle')
-                             .attr('class', 'tooltip_bin')
-                             .style('pointer-events', 'none')
-                             .style('fill', 'none')
-                             .attr('r', (this.lineatt?.width ?? 1) + 4);
+            ttrect = this.getG().append('svg:circle')
+                         .attr('class', 'tooltip_bin')
+                         .style('pointer-events', 'none')
+                         .style('fill', 'none')
+                         .attr('r', (this.lineatt?.width ?? 1) + 4);
          }
 
          ttrect.attr('cx', pnt.x)

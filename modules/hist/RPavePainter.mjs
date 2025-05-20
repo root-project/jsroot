@@ -130,7 +130,7 @@ class RPavePainter extends RObjectPainter {
       this.v7AttrChange(changes, 'height', this.pave_height / rect.height);
       this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
 
-      this.draw_g.selectChild('rect')
+      this.getG().selectChild('rect')
                  .attr('width', this.pave_width)
                  .attr('height', this.pave_height);
 
@@ -199,30 +199,23 @@ class RLegendPainter extends RPavePainter {
             }
 
             if (entry.fFill && objp?.fillatt) {
-               this.draw_g
-                  .append('svg:path')
-                  .attr('d', `M${Math.round(margin_x)},${Math.round(posy + stepy*0.1)}h${w4}v${Math.round(stepy*0.8)}h${-w4}z`)
-                  .call(objp.fillatt.func);
+               this.appendPath(`M${Math.round(margin_x)},${Math.round(posy + stepy*0.1)}h${w4}v${Math.round(stepy*0.8)}h${-w4}z`)
+                   .call(objp.fillatt.func);
             }
 
             if (entry.fLine && objp?.lineatt) {
-               this.draw_g
-                  .append('svg:path')
-                  .attr('d', `M${Math.round(margin_x)},${Math.round(posy + stepy/2)}h${w4}`)
-                  .call(objp.lineatt.func);
+               this.appendPath(`M${Math.round(margin_x)},${Math.round(posy + stepy/2)}h${w4}`)
+                   .call(objp.lineatt.func);
             }
 
             if (entry.fError && objp?.lineatt) {
-               this.draw_g
-                  .append('svg:path')
-                  .attr('d', `M${Math.round(margin_x + width/8)},${Math.round(posy + stepy*0.2)}v${Math.round(stepy*0.6)}`)
-                  .call(objp.lineatt.func);
+               this.appendPath(`M${Math.round(margin_x + width/8)},${Math.round(posy + stepy*0.2)}v${Math.round(stepy*0.6)}`)
+                   .call(objp.lineatt.func);
             }
 
             if (entry.fMarker && objp?.markeratt) {
-               this.draw_g.append('svg:path')
-                  .attr('d', objp.markeratt.create(margin_x + width/8, posy + stepy/2))
-                  .call(objp.markeratt.func);
+               this.appendPath(objp.markeratt.create(margin_x + width/8, posy + stepy/2))
+                   .call(objp.markeratt.func);
             }
 
             posy += stepy;

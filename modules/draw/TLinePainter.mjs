@@ -109,8 +109,7 @@ class TLinePainter extends ObjectPainter {
    redraw() {
       this.prepareDraw();
 
-      const elem = this.getG().append('svg:path')
-                       .attr('d', this.createPath())
+      const elem = this.appendPath(this.createPath())
                        .call(this.lineatt.func);
 
       if (this.getObject()?.$do_not_draw)

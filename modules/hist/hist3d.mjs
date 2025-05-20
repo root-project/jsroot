@@ -529,7 +529,7 @@ function create3DScene(render3d, x3dscale, y3dscale, orthographic) {
 
       this.mode3d = false;
 
-      if (this.draw_g)
+      if (this.getG())
          this.createFrameG();
 
       return;
