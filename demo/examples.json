@@ -28,6 +28,7 @@
      { "opt": "gridy", "title": "enable grid on Y axis" },
      { "opt": "gridxy", "title": "enable grid on both axes" },
      { "opt": "logy", "title": "enable logy scale" },
+     { "name": "mly", "opt": "logy,mly", "title": "mly - more log y labels, used together with logy" },
      { "opt": "tickx", "title": "draw X ticks also on opposite frame side" },
      { "opt": "ticky", "title": "draw Y ticks also on opposite frame side" },
      { "opt": "tickxy", "title": "draw X and Y ticks also on opposite frame sides" },
