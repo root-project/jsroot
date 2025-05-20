@@ -150,7 +150,8 @@ class ObjectPainter extends BasePainter {
      * @private */
    setItemName(name, opt, hpainter) {
       super.setItemName(name, opt, hpainter);
-      if (this.no_default_title || !name) return;
+      if (this._no_default_title || !name)
+         return;
       const can = this.getCanvSvg();
       if (!can.empty()) can.select('title').text(name);
                    else this.selectDom().attr('title', name);
@@ -162,10 +163,13 @@ class ObjectPainter extends BasePainter {
    /** @summary Store actual this.options together with original string
      * @private */
    storeDrawOpt(original) {
-      if (!this.options) return;
-      if (!original) original = '';
+      if (!this.options)
+         return;
+      if (!original)
+         original = '';
       const pp = original.indexOf(';;');
-      if (pp >= 0) original = original.slice(0, pp);
+      if (pp >= 0)
+         original = original.slice(0, pp);
       this.options.original = original;
       this.#options_store = Object.assign({}, this.options);
    }
@@ -173,15 +177,14 @@ class ObjectPainter extends BasePainter {
    /** @summary Return dom argument for object drawing
     * @desc Can be used to draw other objects on same pad / same dom element
     * @protected */
-   getDrawDom() {
-      return this.getPadPainter() || this.getDom();
-   }
+   getDrawDom() { return this.getPadPainter() || this.getDom(); }
 
    /** @summary Return actual draw options as string
      * @param ignore_pad - do not include pad settings into histogram draw options
      * @desc if options are not modified - returns original string which was specified for object draw */
    getDrawOpt(ignore_pad) {
-      if (!this.options) return '';
+      if (!this.options)
+         return '';
 
       if (isFunc(this.options.asString)) {
          let changed = false;
@@ -226,7 +229,8 @@ class ObjectPainter extends BasePainter {
       * only way to control how object can be update while requested from the server
       * @protected */
    redrawObject(obj, opt) {
-      if (!this.updateObject(obj, opt)) return false;
+      if (!this.updateObject(obj, opt))
+         return false;
       const doc = getDocument(),
             current = doc.body.style.cursor;
       document.body.style.cursor = 'wait';

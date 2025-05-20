@@ -467,7 +467,7 @@ class TGeoPainter extends ObjectPainter {
       if (gm)
          this.#geo_manager = gm;
 
-      this.no_default_title = true; // do not set title to main DIV
+      this._no_default_title = true; // do not set title to main DIV
       this.mode3d = true; // indication of 3D mode
       this.drawing_stage = stageInit; //
       this.#drawing_log = 'Init';
