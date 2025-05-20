@@ -135,14 +135,9 @@ class TGraphPolargramPainter extends TooltipHandler {
 
    /** @summary Process mouse event */
    mouseEvent(kind, evnt) {
-//      const layer = this.getLayerSvg('primitives_layer'),
-//            interactive = layer.select('.interactive_ellipse');
-//      if (interactive.empty()) return;
-
       let pnt = null;
-
       if (kind !== 'leave') {
-         const pos = d3_pointer(evnt, this.draw_g.node());
+         const pos = d3_pointer(evnt, this.getG()?.node());
          pnt = { x: pos[0], y: pos[1], touch: false };
       }
       this.processFrameTooltipEvent(pnt);
@@ -198,7 +193,7 @@ class TGraphPolargramPainter extends TooltipHandler {
 
          for (let n = 0; n < nmajor; ++n) {
             const angle = -n*2*Math.PI/nmajor;
-            this.draw_g.append('svg:path')
+            this.getG().append('svg:path')
                .attr('d', `M0,0L${Math.round(this.szx*Math.cos(angle))},${Math.round(this.szy*Math.sin(angle))}`)
                .call(this.lineatt.func);
 
@@ -231,11 +226,10 @@ class TGraphPolargramPainter extends TooltipHandler {
          return;
 
       const polar = this.getObject(),
-            rect = this.getPadPainter().getFrameRect();
+            rect = this.getPadPainter().getFrameRect(),
+            g = this.createG();
 
-      this.createG();
-
-      makeTranslate(this.draw_g, Math.round(rect.x + rect.width/2), Math.round(rect.y + rect.height/2));
+      makeTranslate(g, Math.round(rect.x + rect.width/2), Math.round(rect.y + rect.height/2));
       this.szx = rect.szx;
       this.szy = rect.szy;
 
@@ -298,14 +292,14 @@ class TGraphPolargramPainter extends TooltipHandler {
          for (let n = 0; n < ticks.length; ++n) {
             let rx = this.r(ticks[n]),
                 ry = rx / this.szx * this.szy;
-            this.draw_g.append('ellipse')
-               .attr('cx', 0)
-               .attr('cy', 0)
-               .attr('rx', Math.round(rx))
-               .attr('ry', Math.round(ry))
-               .style('fill', 'none')
-               .style('pointer-events', pointer_events)
-               .call(this.lineatt.func);
+            g.append('ellipse')
+             .attr('cx', 0)
+             .attr('cy', 0)
+             .attr('rx', Math.round(rx))
+             .attr('ry', Math.round(ry))
+             .style('fill', 'none')
+             .style('pointer-events', pointer_events)
+             .call(this.lineatt.func);
 
             if ((n < ticks.length - 1) || !exclude_last) {
                const halign = ca > 0.7 ? 1 : (ca > 0 ? 3 : (ca > -0.7 ? 1 : 3)),
@@ -316,12 +310,12 @@ class TGraphPolargramPainter extends TooltipHandler {
                                text: this.format(ticks[n]),
                                color: this.getColor(polar.fRadialLabelColor), latex: 0 });
                if (this.options.rdot) {
-                  this.draw_g.append('ellipse')
-                     .attr('cx', Math.round(rx * ca))
-                     .attr('cy', Math.round(ry * sa))
-                     .attr('rx', 3)
-                     .attr('ry', 3)
-                     .style('fill', 'red');
+                  g.append('ellipse')
+                   .attr('cx', Math.round(rx * ca))
+                   .attr('cy', Math.round(ry * sa))
+                   .attr('rx', 3)
+                   .attr('ry', 3)
+                   .style('fill', 'red');
                }
             }
 
@@ -332,23 +326,23 @@ class TGraphPolargramPainter extends TooltipHandler {
                   if (gridr > this.scale_rmax) break;
                   rx = this.r(gridr);
                   ry = rx / this.szx * this.szy;
-                  this.draw_g.append('ellipse')
-                     .attr('cx', 0)
-                     .attr('cy', 0)
-                     .attr('rx', Math.round(rx))
-                     .attr('ry', Math.round(ry))
-                     .style('fill', 'none')
-                     .style('pointer-events', pointer_events)
-                     .call(this.gridatt.func);
+                  g.append('ellipse')
+                   .attr('cx', 0)
+                   .attr('cy', 0)
+                   .attr('rx', Math.round(rx))
+                   .attr('ry', Math.round(ry))
+                   .style('fill', 'none')
+                   .style('pointer-events', pointer_events)
+                   .call(this.gridatt.func);
                }
             }
          }
 
          if (ca < 0.999) {
-            this.draw_g.append('path')
-                .attr('d', `M0,0L${Math.round(this.szx*ca)},${Math.round(this.szy*sa)}`)
-                .style('pointer-events', pointer_events)
-                .call(this.lineatt.func);
+            g.append('path')
+             .attr('d', `M0,0L${Math.round(this.szx*ca)},${Math.round(this.szy*sa)}`)
+             .style('pointer-events', pointer_events)
+             .call(this.lineatt.func);
          }
 
          return this.finishTextDrawing();
@@ -361,9 +355,9 @@ class TGraphPolargramPainter extends TooltipHandler {
             for (let n = 0; n < nmajor * nminor; ++n) {
                if (n % nminor === 0) continue;
                const angle = -n*2*Math.PI/nmajor/nminor;
-               this.draw_g.append('svg:path')
-                   .attr('d', `M0,0L${Math.round(this.szx*Math.cos(angle))},${Math.round(this.szy*Math.sin(angle))}`)
-                   .call(this.gridatt.func);
+               g.append('svg:path')
+                .attr('d', `M0,0L${Math.round(this.szx*Math.cos(angle))},${Math.round(this.szy*Math.sin(angle))}`)
+                .call(this.gridatt.func);
             }
          }
 
@@ -372,7 +366,7 @@ class TGraphPolargramPainter extends TooltipHandler {
 
          assignContextMenu(this, kNoReorder);
 
-         this.assignZoomHandler(this.draw_g);
+         this.assignZoomHandler(g);
       });
    }
 
@@ -500,7 +494,7 @@ class TGraphPolarPainter extends ObjectPainter {
       if (this.options.fill)
          this.createAttFill({ attr: graph });
 
-      this.createG();
+      const g = this.createG();
 
       if (this._draw_axis && !main.isNormalAngles()) {
          const has_err = graph.fEX?.length;
@@ -514,7 +508,7 @@ class TGraphPolarPainter extends ObjectPainter {
          main.setAnglesRange(rwtmin, rwtmax, true);
       }
 
-      this.draw_g.attr('transform', main.draw_g.attr('transform'));
+      g.attr('transform', main.getG().attr('transform'));
 
       let mpath = '', epath = '';
       const bins = [], pointer_events = this.isBatchMode() ? null : 'visibleFill';
@@ -545,47 +539,47 @@ class TGraphPolarPainter extends ObjectPainter {
       if ((this.options.fill || this.options.line) && bins.length) {
          const lpath = buildSvgCurve(bins, { line: true });
          if (this.options.fill) {
-            this.draw_g.append('svg:path')
-                .attr('d', lpath + 'Z')
-                .style('pointer-events', pointer_events)
-                .call(this.fillatt.func);
+            g.append('svg:path')
+             .attr('d', lpath + 'Z')
+             .style('pointer-events', pointer_events)
+             .call(this.fillatt.func);
          }
 
          if (this.options.line) {
-            this.draw_g.append('svg:path')
-                .attr('d', lpath)
-                .style('fill', 'none')
-                .style('pointer-events', pointer_events)
-                .call(this.lineatt.func);
+            g.append('svg:path')
+             .attr('d', lpath)
+             .style('fill', 'none')
+             .style('pointer-events', pointer_events)
+             .call(this.lineatt.func);
          }
       }
 
       if (this.options.curve && bins.length) {
-         this.draw_g.append('svg:path')
-                 .attr('d', buildSvgCurve(bins))
-                 .style('fill', 'none')
-                 .style('pointer-events', pointer_events)
-                 .call(this.lineatt.func);
+         g.append('svg:path')
+          .attr('d', buildSvgCurve(bins))
+          .style('fill', 'none')
+          .style('pointer-events', pointer_events)
+          .call(this.lineatt.func);
       }
 
       if (epath) {
-         this.draw_g.append('svg:path')
-             .attr('d', epath)
-             .style('fill', 'none')
-             .style('pointer-events', pointer_events)
-             .call(this.lineatt.func);
+         g.append('svg:path')
+          .attr('d', epath)
+          .style('fill', 'none')
+          .style('pointer-events', pointer_events)
+          .call(this.lineatt.func);
       }
 
       if (mpath) {
-         this.draw_g.append('svg:path')
-               .attr('d', mpath)
-               .style('pointer-events', pointer_events)
-               .call(this.markeratt.func);
+         g.append('svg:path')
+          .attr('d', mpath)
+          .style('pointer-events', pointer_events)
+          .call(this.markeratt.func);
       }
 
       if (!this.isBatchMode()) {
          assignContextMenu(this, kNoReorder);
-         main.assignZoomHandler(this.draw_g);
+         main.assignZoomHandler(g);
       }
    }
 
@@ -717,15 +711,15 @@ class TGraphPolarPainter extends ObjectPainter {
 
    /** @summary Show tooltip */
    showTooltip(hint) {
-      let ttcircle = this.draw_g?.selectChild('.tooltip_bin');
+      let ttcircle = this.getG()?.selectChild('.tooltip_bin');
 
-      if (!hint || !this.draw_g) {
+      if (!hint || !this.getG()) {
          ttcircle?.remove();
          return;
       }
 
       if (ttcircle.empty()) {
-         ttcircle = this.draw_g.append('svg:ellipse')
+         ttcircle = this.getG().append('svg:ellipse')
                              .attr('class', 'tooltip_bin')
                              .style('pointer-events', 'none');
       }

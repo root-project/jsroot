@@ -28,21 +28,19 @@ function drawText() {
 /** @summary draw RLine object
   * @private */
 function drawLine() {
-    const line = this.getObject(),
-        pp = this.getPadPainter(),
-        onframe = this.v7EvalAttr('onFrame', false) ? pp.getFramePainter() : null,
-        clipping = onframe ? this.v7EvalAttr('clipping', false) : false,
-        p1 = pp.getCoordinate(line.fP1, onframe),
-        p2 = pp.getCoordinate(line.fP2, onframe);
+   const line = this.getObject(),
+         pp = this.getPadPainter(),
+         onframe = this.v7EvalAttr('onFrame', false) ? pp.getFramePainter() : null,
+         clipping = onframe ? this.v7EvalAttr('clipping', false) : false,
+         p1 = pp.getCoordinate(line.fP1, onframe),
+         p2 = pp.getCoordinate(line.fP2, onframe),
+         g = this.createG(clipping ? 'main_layer' : (onframe ? 'upper_layer' : false));
 
-    this.createG(clipping ? 'main_layer' : (onframe ? 'upper_layer' : false));
+   this.createv7AttLine();
 
-    this.createv7AttLine();
-
-    this.draw_g
-        .append('svg:path')
-        .attr('d', `M${p1.x},${p1.y}L${p2.x},${p2.y}`)
-        .call(this.lineatt.func);
+   g.append('svg:path')
+    .attr('d', `M${p1.x},${p1.y}L${p2.x},${p2.y}`)
+    .call(this.lineatt.func);
 }
 
 /** @summary draw RBox object
@@ -53,41 +51,38 @@ function drawBox() {
          onframe = this.v7EvalAttr('onFrame', false) ? pp.getFramePainter() : null,
          clipping = onframe ? this.v7EvalAttr('clipping', false) : false,
          p1 = pp.getCoordinate(box.fP1, onframe),
-         p2 = pp.getCoordinate(box.fP2, onframe);
-
-   this.createG(clipping ? 'main_layer' : (onframe ? 'upper_layer' : false));
+         p2 = pp.getCoordinate(box.fP2, onframe),
+         g = this.createG(clipping ? 'main_layer' : (onframe ? 'upper_layer' : false));
 
    this.createv7AttLine('border_');
 
    this.createv7AttFill();
 
-   this.draw_g
-       .append('svg:path')
-       .attr('d', `M${p1.x},${p1.y}H${p2.x}V${p2.y}H${p1.x}Z`)
-       .call(this.lineatt.func)
-       .call(this.fillatt.func);
+   g.append('svg:path')
+    .attr('d', `M${p1.x},${p1.y}H${p2.x}V${p2.y}H${p1.x}Z`)
+    .call(this.lineatt.func)
+    .call(this.fillatt.func);
 }
 
 /** @summary draw RMarker object
   * @private */
 function drawMarker() {
-    const marker = this.getObject(),
-          pp = this.getPadPainter(),
-          onframe = this.v7EvalAttr('onFrame', false) ? pp.getFramePainter() : null,
-          clipping = onframe ? this.v7EvalAttr('clipping', false) : false,
-          p = pp.getCoordinate(marker.fP, onframe);
+   const marker = this.getObject(),
+         pp = this.getPadPainter(),
+         onframe = this.v7EvalAttr('onFrame', false) ? pp.getFramePainter() : null,
+         clipping = onframe ? this.v7EvalAttr('clipping', false) : false,
+         p = pp.getCoordinate(marker.fP, onframe),
+         g = this.createG(clipping ? 'main_layer' : (onframe ? 'upper_layer' : false));
 
-    this.createG(clipping ? 'main_layer' : (onframe ? 'upper_layer' : false));
+   this.createv7AttMarker();
 
-    this.createv7AttMarker();
+   const path = this.markeratt.create(p.x, p.y);
 
-    const path = this.markeratt.create(p.x, p.y);
-
-    if (path) {
-       this.draw_g.append('svg:path')
-                  .attr('d', path)
-                  .call(this.markeratt.func);
-    }
+   if (path) {
+      g.append('svg:path')
+       .attr('d', path)
+       .call(this.markeratt.func);
+   }
 }
 
 /** @summary painter for RPalette
@@ -145,22 +140,22 @@ class RPalettePainter extends RObjectPainter {
          }
          this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
       } else {
-          if (vertical) {
+         if (vertical) {
             const margin = this.v7EvalLength('margin', pad_width, 0.02);
             palette_x = Math.round(rect.x + rect.width + margin);
             palette_width = this.v7EvalLength('width', pad_width, 0.05);
             palette_y = rect.y;
             palette_height = rect.height;
-          } else {
+         } else {
             const margin = this.v7EvalLength('margin', pad_height, 0.02);
             palette_x = rect.x;
             palette_width = rect.width;
             palette_y = Math.round(rect.y + rect.height + margin);
             palette_height = this.v7EvalLength('width', pad_height, 0.05);
-          }
+         }
 
-          // x,y,width,height attributes used for drag functionality
-          makeTranslate(this.draw_g, palette_x, palette_y);
+         // x,y,width,height attributes used for drag functionality
+         makeTranslate(this.draw_g, palette_x, palette_y);
       }
 
       let g_btns = this.draw_g.selectChild('.colbtns');

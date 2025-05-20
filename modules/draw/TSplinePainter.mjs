@@ -139,16 +139,16 @@ class TSplinePainter extends ObjectPainter {
          }
       }
 
-      let gbin = this.draw_g?.selectChild('.tooltip_bin');
+      let gbin = this.getG()?.selectChild('.tooltip_bin');
       const radius = this.lineatt.width + 3;
 
-      if (cleanup || !this.draw_g) {
+      if (cleanup || !this.getG()) {
          gbin?.remove();
          return null;
       }
 
       if (gbin.empty()) {
-         gbin = this.draw_g.append('svg:circle')
+         gbin = this.getG().append('svg:circle')
                            .attr('class', 'tooltip_bin')
                            .style('pointer-events', 'none')
                            .attr('r', radius)
@@ -198,9 +198,8 @@ class TSplinePainter extends ObjectPainter {
       const spline = this.getObject(),
             funcs = this.getFramePainter().getGrFuncs(this.options.second_x, this.options.second_y),
             w = funcs.getFrameWidth(),
-            h = funcs.getFrameHeight();
-
-      this.createG(true);
+            h = funcs.getFrameHeight(),
+            g = this.createG(true);
 
       this.#knot_size = 5; // used in tooltip handling
 
@@ -228,11 +227,11 @@ class TSplinePainter extends ObjectPainter {
             bins.push({ x, y, grx: funcs.grx(x), gry: funcs.gry(y) });
          }
 
-         this.draw_g.append('svg:path')
-             .attr('class', 'line')
-             .attr('d', buildSvgCurve(bins))
-             .style('fill', 'none')
-             .call(this.lineatt.func);
+         g.append('svg:path')
+          .attr('class', 'line')
+          .attr('d', buildSvgCurve(bins))
+          .style('fill', 'none')
+          .call(this.lineatt.func);
       }
 
       if (this.options.Mark) {
@@ -257,9 +256,9 @@ class TSplinePainter extends ObjectPainter {
          }
 
          if (path) {
-            this.draw_g.append('svg:path')
-                       .attr('d', path)
-                       .call(this.markeratt.func);
+            g.append('svg:path')
+             .attr('d', path)
+             .call(this.markeratt.func);
          }
       }
    }
