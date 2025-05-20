@@ -1646,10 +1646,9 @@ function drawRawText(dom, txt /* , opt */) {
    const painter = new BasePainter(dom);
    painter.txt = txt;
 
-   painter.redrawObject = function(obj) {
+   painter.redrawObject = async function(obj) {
       this.txt = obj;
-      this.drawText();
-      return true;
+      return this.drawText();
    };
 
    painter.drawText = async function() {
