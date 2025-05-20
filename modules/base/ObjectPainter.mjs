@@ -334,9 +334,13 @@ class ObjectPainter extends BasePainter {
      * @protected */
    getG() { return this.#draw_g; }
 
+   /** @summary introduce property for backward compatibility */
+   get draw_g() { return this.#draw_g; }
+
    /** @summary Assign G element used for object drawing
      * @protected */
    setG(g) { this.#draw_g = g; return g; }
+
 
    /** @summary Append svg::path to G
      * @protected */
