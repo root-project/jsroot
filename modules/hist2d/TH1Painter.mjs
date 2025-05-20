@@ -449,7 +449,7 @@ class TH1Painter extends THistPainter {
          if ((histo.fMarkerSize !== 1) && text_angle)
             text_size = 0.02*height*histo.fMarkerSize;
 
-         pr = this.startTextDrawingAsync(42, text_size, this.draw_g, text_size);
+         pr = this.startTextDrawingAsync(42, text_size, this.getG(), text_size);
       }
 
       return pr.then(() => {
@@ -502,23 +502,20 @@ class TH1Painter extends THistPainter {
          }
 
          if (bars) {
-            this.draw_g.append('svg:path')
-                     .attr('d', bars)
-                     .call(this.fillatt.func);
+            this.appendPath(bars)
+                .call(this.fillatt.func);
          }
 
          if (barsl) {
-            this.draw_g.append('svg:path')
-               .attr('d', barsl)
-               .call(this.fillatt.func)
-               .style('fill', d3_rgb(this.fillatt.color).brighter(0.5).formatRgb());
+            this.appendPath(barsl)
+                .call(this.fillatt.func)
+                .style('fill', d3_rgb(this.fillatt.color).brighter(0.5).formatRgb());
          }
 
          if (barsr) {
-            this.draw_g.append('svg:path')
-                  .attr('d', barsr)
-                  .call(this.fillatt.func)
-                  .style('fill', d3_rgb(this.fillatt.color).darker(0.5).formatRgb());
+            this.appendPath(barsr)
+                .call(this.fillatt.func)
+                .style('fill', d3_rgb(this.fillatt.color).darker(0.5).formatRgb());
          }
 
          if (show_text)
@@ -549,9 +546,8 @@ class TH1Painter extends THistPainter {
             path1 = buildSvgCurve(bins1, { line }),
             path2 = buildSvgCurve(bins2, { line, cmd: 'L' });
 
-      this.draw_g.append('svg:path')
-                 .attr('d', path1 + path2 + 'Z')
-                 .call(this.fillatt.func);
+      this.appendPath(path1 + path2 + 'Z')
+          .call(this.fillatt.func);
    }
 
    /** @summary Draw TH1 as hist/line/curve
@@ -639,7 +635,7 @@ class TH1Painter extends THistPainter {
              }
          }
 
-         pr = this.startTextDrawingAsync(42, text_size, this.draw_g, text_size);
+         pr = this.startTextDrawingAsync(42, text_size, this.getG(), text_size);
       }
 
       return pr.then(() => {
@@ -849,11 +845,10 @@ class TH1Painter extends THistPainter {
                h0 = gry0;
          }
          const close_path = `L${currx},${h0}H${startx}Z`, add_hist = () => {
-            this.draw_g.append('svg:path')
-                       .attr('d', res + ((!this.fillatt.empty() || fill_for_interactive) ? close_path : ''))
-                       .style('stroke-linejoin', 'miter')
-                       .call(this.lineatt.func)
-                       .call(this.fillatt.func);
+            this.appendPath(res + ((!this.fillatt.empty() || fill_for_interactive) ? close_path : ''))
+                .style('stroke-linejoin', 'miter')
+                .call(this.lineatt.func)
+                .call(this.fillatt.func);
          };
 
          if (res && draw_hist && !this.fillatt.empty()) {
@@ -869,44 +864,37 @@ class TH1Painter extends THistPainter {
             }
 
             if (path_fill) {
-               this.draw_g.append('svg:path')
-                        .attr('d', path_fill)
-                        .call(this.fillatt.func);
+               this.appendPath(path_fill)
+                   .call(this.fillatt.func);
             } else if (path_line && !this.fillatt.empty() && !draw_hist) {
-               this.draw_g.append('svg:path')
-                  .attr('d', path_line + `L${midx},${h0}H${startmidx}Z`)
+               this.appendPath(path_line + `L${midx},${h0}H${startmidx}Z`)
                   .call(this.fillatt.func);
             }
 
             if (path_err) {
-               this.draw_g.append('svg:path')
-                  .attr('d', path_err)
-                  .call(this.lineatt.func);
+               this.appendPath(path_err)
+                   .call(this.lineatt.func);
             }
 
             if (hints_err) {
-               this.draw_g.append('svg:path')
-                  .attr('d', hints_err)
-                  .style('fill', 'none')
-                  .style('pointer-events', this.isBatchMode() ? null : 'visibleFill');
+               this.appendPath(hints_err)
+                   .style('fill', 'none')
+                   .style('pointer-events', this.isBatchMode() ? null : 'visibleFill');
             }
 
             if (path_line) {
-               this.draw_g.append('svg:path')
-                  .attr('d', path_line)
+               this.appendPath(path_line)
                   .style('fill', 'none')
                   .call(this.lineatt.func);
             }
 
             if (path_marker) {
-               this.draw_g.append('svg:path')
-                  .attr('d', path_marker)
+               this.appendPath(path_marker)
                   .call(this.markeratt.func);
             }
 
             if (hints_marker) {
-               this.draw_g.append('svg:path')
-                  .attr('d', hints_marker)
+               this.appendPath(hints_marker)
                   .style('fill', 'none')
                   .style('pointer-events', this.isBatchMode() ? null : 'visibleFill');
             }

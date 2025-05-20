@@ -549,10 +549,9 @@ class TGraphPainter extends ObjectPainter {
 
       const path2 = buildSvgCurve(extrabins, { cmd: 'L', line: !is_curve });
 
-      this.draw_g.append('svg:path')
-                 .attr('d', path + path2 + 'Z')
-                 .call(this.fillatt.func)
-                 .style('opacity', 0.75);
+      this.appendPath(path + path2 + 'Z')
+          .call(this.fillatt.func)
+          .style('opacity', 0.75);
    }
 
    /** @summary draw TGraph bins with specified options
@@ -910,15 +909,13 @@ class TGraphPainter extends ObjectPainter {
       const latt1 = this.createAttLine({ style: 1, width: 1, color: kBlack, std: false }),
             latt2 = this.createAttLine({ style: 2, width: 1, color: kBlack, std: false });
 
-      this.draw_g.append('path')
-                 .attr('d', makeLine(xqmin, yqmin, xqmax, yqmax))
-                 .call(latt1.func)
-                 .style('fill', 'none');
+      this.appendPath(makeLine(xqmin, yqmin, xqmax, yqmax))
+          .call(latt1.func)
+          .style('fill', 'none');
 
-      this.draw_g.append('path')
-                 .attr('d', path2)
-                 .call(latt2.func)
-                 .style('fill', 'none');
+      this.appendPath(path2)
+          .call(latt2.func)
+          .style('fill', 'none');
    }
 
    drawBins3D(/* fp, graph */) {
