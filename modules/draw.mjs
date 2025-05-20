@@ -494,7 +494,8 @@ async function redraw(dom, obj, opt) {
    if (can_painter) {
       if (can_painter.matchObjectType(obj._typename)) {
          redraw_res = can_painter.redrawObject(obj, opt);
-         if (redraw_res) res_painter = can_painter;
+         if (redraw_res)
+            res_painter = can_painter;
       } else {
          for (let i = 0; i < can_painter.painters.length; ++i) {
             const painter = can_painter.painters[i];
@@ -513,7 +514,8 @@ async function redraw(dom, obj, opt) {
       // it can be object painter here or can be specially introduce method to handling redraw!
       if (isFunc(top?.redrawObject)) {
          redraw_res = top.redrawObject(obj, opt);
-         if (redraw_res) res_painter = top;
+         if (redraw_res)
+            res_painter = top;
       }
    }
 
@@ -529,7 +531,8 @@ async function redraw(dom, obj, opt) {
   * @desc Assign draw functions for such derived classes
   * @private */
 function addStreamerInfosForPainter(lst) {
-   if (!lst) return;
+   if (!lst)
+      return;
 
    const basics = [clTObject, clTNamed, clTString, 'TCollection', clTAttLine, clTAttFill, clTAttMarker, clTAttText];
 
