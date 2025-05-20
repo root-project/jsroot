@@ -2115,7 +2115,8 @@ class HierarchyPainter extends BasePainter {
             showProgress(`Loading ${display_itemname} ...`);
 
          return this.getObject(display_itemname, drawopt).then(result => {
-            if (!updating) showProgress();
+            if (!updating)
+               showProgress();
 
             if (!item) item = result.item;
             let obj = result.obj;
@@ -2141,12 +2142,15 @@ class HierarchyPainter extends BasePainter {
             }
 
             let did_activate = false;
+            const arr = [];
 
             mdi.forEachPainter((p, frame) => {
-               if (p.getItemName() !== display_itemname) return;
+               if (p.getItemName() !== display_itemname)
+                  return;
 
                const itemopt = p.getItemDrawOpt();
-               if (use_dflt_opt && interactive) drawopt = itemopt;
+               if (use_dflt_opt && interactive)
+                  drawopt = itemopt;
 
                // verify that object was drawn with same option as specified now (if any)
                if (!updating && drawopt && (itemopt !== drawopt))
@@ -2157,12 +2161,17 @@ class HierarchyPainter extends BasePainter {
                   mdi.activateFrame(frame);
                }
 
-               if (isFunc(p.redrawObject) && p.redrawObject(obj, drawopt))
-                  painter = p;
+               if (isFunc(p.redrawObject)) {
+                  const pr = p.redrawObject(obj, drawopt);
+                  if (pr) {
+                     painter = p;
+                     arr.push(pr);
+                  }
+               }
             });
 
             if (painter)
-               return complete();
+               return Promise.all(arr).then(() => complete());
 
             if (updating) {
                console.warn(`something went wrong - did not found painter when doing update of ${display_itemname}`);
