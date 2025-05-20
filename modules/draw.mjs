@@ -256,9 +256,11 @@ function canDrawHandle(h) {
   * @private */
 function getDrawSettings(kind, selector) {
    const res = { opts: null, inspect: false, expand: false, draw: false, handle: null };
-   if (!isStr(kind)) return res;
+   if (!isStr(kind))
+      return res;
    let isany = false, noinspect = false, canexpand = false;
-   if (!isStr(selector)) selector = '';
+   if (!isStr(selector))
+      selector = '';
 
    for (let cnt = 0; cnt < 1000; ++cnt) {
       const h = getDrawHandle(kind, cnt);
@@ -277,21 +279,27 @@ function getDrawSettings(kind, selector) {
          opts[i] = opts[i].toLowerCase();
          if (opts[i].indexOf('same') === 0) {
             res.has_same = true;
-            if (selector.indexOf('nosame') >= 0) continue;
+            if (selector.indexOf('nosame') >= 0)
+               continue;
          }
 
-         if (res.opts === null) res.opts = [];
-         if (res.opts.indexOf(opts[i]) < 0) res.opts.push(opts[i]);
+         if (res.opts === null)
+            res.opts = [];
+         if (res.opts.indexOf(opts[i]) < 0)
+            res.opts.push(opts[i]);
       }
       if (h.theonly) break;
    }
 
-   if (selector.indexOf('noinspect') >= 0) noinspect = true;
+   if (selector.indexOf('noinspect') >= 0)
+      noinspect = true;
 
-   if (isany && (res.opts === null)) res.opts = [''];
+   if (isany && (res.opts === null))
+      res.opts = [''];
 
    // if no any handle found, let inspect ROOT-based objects
-   if (!isany && (kind.indexOf(prROOT) === 0) && !noinspect) res.opts = [];
+   if (!isany && (kind.indexOf(prROOT) === 0) && !noinspect)
+      res.opts = [];
 
    if (!noinspect && res.opts)
       res.opts.push(kInspect);

@@ -10,7 +10,7 @@
 1. Upgrade lil-gui.mjs 0.19.2 -> 0.20.0
 1. Remove experimental RHist classes, deprecated in ROOT
 1. Internal - ws members are private, new methods has to be used
-1. Fix - ticks size and labels for kMoreLogLabels axis bit
+1. Fix - ticks size and labels with kMoreLogLabels axis bit
 
 
 ## Changes in 7.9.1
