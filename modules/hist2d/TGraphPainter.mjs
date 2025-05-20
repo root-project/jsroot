@@ -1014,7 +1014,7 @@ class TGraphPainter extends ObjectPainter {
             msize = this.#marker_size ? Math.round(this.#marker_size / 2 + 1.5) : 0;
       let findbin = null, best_dist2 = 1e10, best = null;
 
-      this.draw_g.selectAll('.grpoint').each(function() {
+      this.getG().selectAll('.grpoint').each(function() {
          const d = d3_select(this).datum();
          if (d === undefined) return;
          let dist2 = (pnt.x - d.grx1) ** 2;
@@ -1076,9 +1076,9 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Show tooltip */
    showTooltip(hint) {
-      let ttrect = this.draw_g?.selectChild('.tooltip_bin');
+      let ttrect = this.getG()?.selectChild('.tooltip_bin');
 
-      if (!hint || !this.draw_g) {
+      if (!hint || !this.getG()) {
          ttrect?.remove();
          return;
       }
@@ -1089,7 +1089,7 @@ class TGraphPainter extends ObjectPainter {
       const d = d3_select(hint.d3bin).datum();
 
       if (ttrect.empty()) {
-         ttrect = this.draw_g.append('svg:rect')
+         ttrect = this.getG().append('svg:rect')
                              .attr('class', 'tooltip_bin')
                              .style('pointer-events', 'none')
                              .call(addHighlightStyle);
@@ -1275,15 +1275,15 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Show tooltip for path drawing */
    showTooltipForPath(hint) {
-      let ttbin = this.draw_g?.selectChild('.tooltip_bin');
+      let ttbin = this.getG()?.selectChild('.tooltip_bin');
 
-      if (!hint?.bin || !this.draw_g) {
+      if (!hint?.bin || !this.getG()) {
          ttbin?.remove();
          return;
       }
 
       if (ttbin.empty())
-         ttbin = this.draw_g.append('svg:g').attr('class', 'tooltip_bin');
+         ttbin = this.getG().append('svg:g').attr('class', 'tooltip_bin');
 
       hint.changed = ttbin.property('current_bin') !== hint.bin;
 
@@ -1350,7 +1350,7 @@ class TGraphPainter extends ObjectPainter {
       this.#pos_dy += dy;
 
       if (this.#move_binindx === undefined)
-         makeTranslate(this.draw_g, this.#pos_dx, this.#pos_dy);
+         makeTranslate(this.getG(), this.#pos_dx, this.#pos_dy);
        else if (this.#move_funcs && this.#move_bin) {
          this.#move_bin.x = this.#move_funcs.revertAxis('x', this.#move_x0 + this.#pos_dx);
          this.#move_bin.y = this.#move_funcs.revertAxis('y', this.#move_y0 + this.#pos_dy);
@@ -1375,7 +1375,7 @@ class TGraphPainter extends ObjectPainter {
       };
 
       if (this.#move_binindx === undefined) {
-         this.draw_g.attr('transform', null);
+         this.getG().attr('transform', null);
 
          if (this.#move_funcs && this.#bins && !not_changed) {
             for (let k = 0; k < this.#bins.length; ++k) {

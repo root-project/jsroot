@@ -550,7 +550,7 @@ class TPavePainter extends ObjectPainter {
 
          if (lpath) this.appendPath(lpath).call(this.lineatt.func);
 
-         // this.draw_g.classed('most_upper_primitives', true); // this primitive will remain on top of list
+         // this.getG().classed('most_upper_primitives', true); // this primitive will remain on top of list
 
          return this.finishTextDrawing(undefined, (nlines > 1));
       });
@@ -809,7 +809,7 @@ class TPavePainter extends ObjectPainter {
          font_size = max_font_size = tsz;
 
       const text_promises = [],
-            pr = any_text && !custom_textg ? this.startTextDrawingAsync(this.textatt.font, font_size, this.draw_g, max_font_size) : Promise.resolve();
+            pr = any_text && !custom_textg ? this.startTextDrawingAsync(this.textatt.font, font_size, undefined, max_font_size) : Promise.resolve();
 
       return pr.then(() => {
          for (let ii = 0, i = -1; ii < nlines; ++ii) {
@@ -928,13 +928,13 @@ class TPavePainter extends ObjectPainter {
 
             if (entry.fLabel) {
                const textatt = this.createAttText({ attr: entry, std: false, attr_alt: legend }),
-                     arg = { draw_g: this.draw_g, align: textatt.align,
+                     arg = { draw_g: this.getG(), align: textatt.align,
                              x: pos_x, width: Math.round(column_pos[icol + 1] - pos_x),
                              y: y0, height: Math.round(row_height),
                              scale: (custom_textg && !entry.fTextSize) || !legend.fTextSize,
                              text: entry.fLabel, color: textatt.color };
                if (custom_textg) {
-                  arg.draw_g = this.draw_g.append('svg:g');
+                  arg.draw_g = this.getG().append('svg:g');
                   text_promises.push(this.startTextDrawingAsync(textatt.font, textatt.getSize(pp), arg.draw_g, max_font_size)
                                        .then(() => this.drawText(arg))
                                        .then(() => this.finishTextDrawing(arg.draw_g)));
@@ -958,6 +958,7 @@ class TPavePainter extends ObjectPainter {
    drawPaletteAxis(s_width, s_height, arg) {
       const palette = this.getObject(),
             axis = palette.fAxis,
+            g = this.getG(),
             can_move = isStr(arg) && (arg.indexOf('can_move') >= 0),
             postpone_draw = isStr(arg) && (arg.indexOf('postpone') >= 0),
             cjust = isStr(arg) && (arg.indexOf('cjust') >= 0),
@@ -1019,7 +1020,7 @@ class TPavePainter extends ObjectPainter {
          zmin = main.hmin; zmax = main.hmax;
       }
 
-      this.draw_g.selectAll('rect').style('fill', 'white');
+      g.selectAll('rect').style('fill', 'white');
 
       if ((gzmin === undefined) || (gzmax === undefined) || (gzmin === gzmax)) {
          gzmin = zmin; gzmax = zmax;
@@ -1104,7 +1105,7 @@ class TPavePainter extends ObjectPainter {
       if (bring_stats_front)
          this.getPadPainter()?.findPainterFor(null, '', clTPaveStats)?.bringToFront();
 
-      return this.z_handle.drawAxis(this.draw_g, s_width, s_height, axis_transform, axis_second).then(() => {
+      return this.z_handle.drawAxis(g, s_width, s_height, axis_transform, axis_second).then(() => {
          let rect;
          if (can_move) {
             if (settings.ApproxTextSize || isNodeJs()) {
@@ -1119,8 +1120,8 @@ class TPavePainter extends ObjectPainter {
                   rect.height += fsz;
                   if (this.#swap_side) rect.y -= fsz;
                }
-            } else if ('getBoundingClientRect' in this.draw_g.node())
-               rect = this.draw_g.node().getBoundingClientRect();
+            } else if ('getBoundingClientRect' in g.node())
+               rect = g.node().getBoundingClientRect();
          }
          if (!rect)
             return this;
@@ -1130,7 +1131,7 @@ class TPavePainter extends ObjectPainter {
 
             if (shift > 0) {
                this.#pave_x -= shift;
-               makeTranslate(this.draw_g, this.#pave_x, this.#pave_y);
+               makeTranslate(g, this.#pave_x, this.#pave_y);
                palette.fX1NDC -= shift/width;
                palette.fX2NDC -= shift/width;
             }
@@ -1138,7 +1139,7 @@ class TPavePainter extends ObjectPainter {
             const shift = Math.round((1.05 - gStyle.fTitleY)*height) - rect.y;
             if (shift > 0) {
                this.#pave_y += shift;
-               makeTranslate(this.draw_g, this.#pave_x, this.#pave_y);
+               makeTranslate(g, this.#pave_x, this.#pave_y);
                palette.fY1NDC -= shift/height;
                palette.fY2NDC -= shift/height;
             }
@@ -1156,7 +1157,7 @@ class TPavePainter extends ObjectPainter {
          if (!doing_zoom) return;
          evnt.preventDefault();
 
-         const m = d3_pointer(evnt, this.draw_g.node());
+         const m = d3_pointer(evnt, this.getG().node());
          if (this.#palette_vertical) {
             sel2 = Math.min(Math.max(m[1], 0), s_height);
             zoom_rect.attr('y', Math.min(sel1, sel2))
@@ -1188,9 +1189,9 @@ class TPavePainter extends ObjectPainter {
          evnt.preventDefault();
          evnt.stopPropagation();
 
-         const origin = d3_pointer(evnt, this.draw_g.node());
+         const origin = d3_pointer(evnt, this.getG().node());
 
-         zoom_rect = this.draw_g.append('svg:rect').attr('id', 'colzoomRect').call(addHighlightStyle, true);
+         zoom_rect = this.getG().append('svg:rect').attr('id', 'colzoomRect').call(addHighlightStyle, true);
 
          if (this.#palette_vertical) {
             sel1 = sel2 = origin[1];
@@ -1211,14 +1212,14 @@ class TPavePainter extends ObjectPainter {
       };
 
       if (settings.Zooming) {
-         this.draw_g.selectAll('.axis_zoom')
+         this.getG().selectAll('.axis_zoom')
                     .on('mousedown', startRectSel)
                     .on('dblclick', () => this.getFramePainter().zoomSingle('z', 0, 0, true));
       }
 
       if (settings.ZoomWheel) {
-         this.draw_g.on('wheel', evnt => {
-            const pos = d3_pointer(evnt, this.draw_g.node()),
+         this.getG().on('wheel', evnt => {
+            const pos = d3_pointer(evnt, this.getG().node()),
                   coord = this.#palette_vertical ? (1 - pos[1] / s_height) : pos[0] / s_width,
                   item = this.z_handle.analyzeWheelEvent(evnt, coord);
             if (item?.changed)

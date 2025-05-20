@@ -1824,7 +1824,7 @@ class TH2Painter extends THistPainter {
       if (textbins.length) {
          const color = this.getColor(histo.fMarkerColor),
                rotate = -1*this.options.TextAngle,
-               text_g = this.draw_g.append('svg:g').attr('class', 'th2poly_text'),
+               text_g = this.getG().append('svg:g').attr('class', 'th2poly_text'),
                text_size = ((histo.fMarkerSize !== 1) && rotate) ? Math.round(0.02*h*histo.fMarkerSize) : 12;
 
          pr = this.startTextDrawingAsync(42, text_size, text_g, text_size).then(() => {
@@ -1870,7 +1870,7 @@ class TH2Painter extends THistPainter {
             test_cutg = this.options.cutg,
             color = this.getColor(histo.fMarkerColor),
             rotate = -1*this.options.TextAngle,
-            draw_g = this.draw_g.append('svg:g').attr('class', 'th2_text'),
+            draw_g = this.getG().append('svg:g').attr('class', 'th2_text'),
             show_err = (this.options.TextKind === 'E'),
             latex = (show_err && !this.options.TextLine) ? 1 : 0,
             text_offset = histo.fBarOffset*1e-3,
@@ -2886,15 +2886,14 @@ class TH2Painter extends THistPainter {
       if (!this.#chord)
          this.#chord = { x: 0, y: 0, zoom: 1 };
 
-      makeTranslate(this.draw_g, midx + this.#chord.x, midy + this.#chord.y, this.#chord.zoom);
-
+      makeTranslate(this.getG(), midx + this.#chord.x, midy + this.#chord.y, this.#chord.zoom);
 
       if (this.isBatchMode())
          return;
 
       if (settings.Zooming && settings.ZoomWheel) {
-         this.draw_g.on('wheel', evnt => {
-            const pos = d3_pointer(evnt, this.draw_g.node()),
+         this.getG().on('wheel', evnt => {
+            const pos = d3_pointer(evnt, this.getG().node()),
                   delta = evnt.wheelDelta ? -evnt.wheelDelta : (evnt.deltaY || evnt.detail),
                   prev_zoom = this.#chord.zoom;
 
@@ -2902,11 +2901,11 @@ class TH2Painter extends THistPainter {
             this.#chord.x += pos[0] * (prev_zoom - this.#chord.zoom);
             this.#chord.y += pos[1] * (prev_zoom - this.#chord.zoom);
 
-            makeTranslate(this.draw_g, midx + this.#chord.x, midy + this.#chord.y, this.#chord.zoom);
+            makeTranslate(this.getG(), midx + this.#chord.x, midy + this.#chord.y, this.#chord.zoom);
          }).on('dblclick', () => {
             this.#chord.x = this.#chord.y = 0;
             this.#chord.zoom = 1;
-            makeTranslate(this.draw_g, midx, midy);
+            makeTranslate(this.getG(), midx, midy);
          });
       }
 
@@ -3155,9 +3154,9 @@ class TH2Painter extends THistPainter {
    processTooltipEvent(pnt) {
       const histo = this.getHisto(),
             h = this.tt_handle;
-      let ttrect = this.draw_g?.selectChild('.tooltip_bin');
+      let ttrect = this.getG()?.selectChild('.tooltip_bin');
 
-      if (!pnt || !this.draw_content || !this.draw_g || !h || this.options.Proj) {
+      if (!pnt || !this.draw_content || !this.getG() || !h || this.options.Proj) {
          ttrect?.remove();
          return null;
       }

@@ -449,7 +449,7 @@ class TH1Painter extends THistPainter {
          if ((histo.fMarkerSize !== 1) && text_angle)
             text_size = 0.02*height*histo.fMarkerSize;
 
-         pr = this.startTextDrawingAsync(42, text_size, this.getG(), text_size);
+         pr = this.startTextDrawingAsync(42, text_size, undefined, text_size);
       }
 
       return pr.then(() => {
@@ -635,7 +635,7 @@ class TH1Painter extends THistPainter {
              }
          }
 
-         pr = this.startTextDrawingAsync(42, text_size, this.getG(), text_size);
+         pr = this.startTextDrawingAsync(42, text_size, undefined, text_size);
       }
 
       return pr.then(() => {
@@ -976,8 +976,8 @@ class TH1Painter extends THistPainter {
 
    /** @summary Process tooltip event */
    processTooltipEvent(pnt) {
-      if (!pnt || !this.draw_content || !this.draw_g || this.options.Mode3D) {
-         this.draw_g?.selectChild('.tooltip_bin').remove();
+      if (!pnt || !this.draw_content || !this.getG() || this.options.Mode3D) {
+         this.getG()?.selectChild('.tooltip_bin').remove();
          return null;
       }
 
@@ -1128,7 +1128,7 @@ class TH1Painter extends THistPainter {
             findbin = null; // exclude empty bin if empty bins suppressed
       }
 
-      let ttrect = this.draw_g.selectChild('.tooltip_bin');
+      let ttrect = this.getG().selectChild('.tooltip_bin');
 
       if ((findbin === null) || ((gry2 <= 0) || (gry1 >= height))) {
          ttrect.remove();
@@ -1147,7 +1147,7 @@ class TH1Painter extends THistPainter {
          res.changed = true;
       } else if (show_rect) {
          if (ttrect.empty()) {
-            ttrect = this.draw_g.append('svg:rect')
+            ttrect = this.getG().append('svg:rect')
                                 .attr('class', 'tooltip_bin')
                                 .style('pointer-events', 'none')
                                 .call(addHighlightStyle);
@@ -1173,7 +1173,7 @@ class TH1Painter extends THistPainter {
          const radius = this.lineatt.width + 3;
 
          if (ttrect.empty()) {
-            ttrect = this.draw_g.append('svg:circle')
+            ttrect = this.getG().append('svg:circle')
                                 .attr('class', 'tooltip_bin')
                                 .style('pointer-events', 'none')
                                 .attr('r', radius)
