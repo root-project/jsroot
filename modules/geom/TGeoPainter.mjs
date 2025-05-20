@@ -5376,14 +5376,16 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Start geometry redraw */
    startRedraw(tmout) {
+      if (this.#redraw_timer) {
+         clearTimeout(this.#redraw_timer);
+         this.#redraw_timer = undefined;
+      }
+
       if (tmout) {
-         if (this.#redraw_timer)
-            clearTimeout(this.#redraw_timer);
          this.#redraw_timer = setTimeout(() => this.startRedraw(), tmout);
          return;
       }
 
-      this.#redraw_timer = undefined;
       this.#did_update = undefined;
 
       this.clearDrawings();
