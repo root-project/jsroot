@@ -2814,6 +2814,7 @@ class TH2Painter extends THistPainter {
             text_size = 20,
             circle_size = 16,
             axis = hist.fXaxis,
+            g = this.createG(),
             getBinLabel = indx => {
                if (axis.fLabels) {
                   for (let i = 0; i < axis.fLabels.arr.length; ++i) {
@@ -2824,13 +2825,11 @@ class TH2Painter extends THistPainter {
                return indx.toString();
             };
 
-      this.createG();
-
       this.assignChordCircInteractive(Math.round(rect.x + rect.width/2), Math.round(rect.y + rect.height/2));
 
       const nbins = Math.min(this.nbinsx, this.nbinsy);
 
-      return this.startTextDrawingAsync(42, text_size, this.draw_g).then(() => {
+      return this.startTextDrawingAsync(42, text_size, g).then(() => {
          const pnts = [];
 
          for (let n = 0; n < nbins; n++) {
@@ -2848,10 +2847,10 @@ class TH2Painter extends THistPainter {
 
             const s2 = Math.round(text_size/2), s1 = 2*s2;
 
-            this.draw_g.append('path')
-                     .attr('d', `M${cx-s2},${cy} a${s2},${s2},0,1,0,${s1},0a${s2},${s2},0,1,0,${-s1},0z`)
-                     .style('stroke', color)
-                     .style('fill', 'none');
+            g.append('path')
+             .attr('d', `M${cx-s2},${cy} a${s2},${s2},0,1,0,${s1},0a${s2},${s2},0,1,0,${-s1},0z`)
+             .style('stroke', color)
+             .style('fill', 'none');
 
             this.drawText({ align, rotate, x, y, text: getBinLabel(n) });
          }
@@ -2889,22 +2888,22 @@ class TH2Painter extends THistPainter {
 
                if ((this.options.Circular > 11) && (max_value > min_value)) {
                   const width = Math.round((cont - min_value) / (max_value - min_value) * (max_width - 1) + 1);
-                  this.draw_g.append('path').attr('d', path).style('stroke', pi.color).style('stroke-width', width).style('fill', 'none');
+                  g.append('path').attr('d', path).style('stroke', pi.color).style('stroke-width', width).style('fill', 'none');
                   path = '';
                }
             }
             if (path)
-               this.draw_g.append('path').attr('d', path).style('stroke', pi.color).style('fill', 'none');
+               g.append('path').attr('d', path).style('stroke', pi.color).style('fill', 'none');
          }
 
          return this.finishTextDrawing();
       }).then(() => {
          if (!this.isBatchMode()) {
-            this.draw_g.insert('path', ':first-child')
-                       .attr('d', `M${-rect.width/2},${-rect.height/2}h${rect.width}v${rect.height}h${-rect.width}z`)
-                       .style('opacity', 0)
-                       .style('fill', 'none')
-                       .style('pointer-events', 'visibleFill');
+            g.insert('path', ':first-child')
+             .attr('d', `M${-rect.width/2},${-rect.height/2}h${rect.width}v${rect.height}h${-rect.width}z`)
+             .style('opacity', 0)
+             .style('fill', 'none')
+             .style('pointer-events', 'visibleFill');
          }
 
          return this;
@@ -3010,27 +3009,23 @@ class TH2Painter extends THistPainter {
          labels.push(lbl);
       }
 
-      this.createG();
+      const g = this.createG();
 
       this.assignChordCircInteractive(midx, midy);
 
       const chord = d3_chord()
-         .padAngle(10 / innerRadius)
-         .sortSubgroups(d3_descending)
-         .sortChords(d3_descending),
-
-      chords = chord(data),
-
-      group = this.draw_g.append('g')
-         .attr('font-size', 10)
-         .attr('font-family', 'sans-serif')
-         .selectAll('g')
-         .data(chords.groups)
-         .join('g'),
-
-      arc = d3_arc().innerRadius(innerRadius).outerRadius(outerRadius),
-
-      ribbon = d3_ribbon().radius(innerRadius - 1).padAngle(1 / innerRadius);
+                    .padAngle(10 / innerRadius)
+                    .sortSubgroups(d3_descending)
+                    .sortChords(d3_descending),
+            chords = chord(data),
+            group = g.append('g')
+                     .attr('font-size', 10)
+                     .attr('font-family', 'sans-serif')
+                     .selectAll('g')
+                     .data(chords.groups)
+                     .join('g'),
+            arc = d3_arc().innerRadius(innerRadius).outerRadius(outerRadius),
+            ribbon = d3_ribbon().radius(innerRadius - 1).padAngle(1 / innerRadius);
 
       function ticks({ startAngle, endAngle, value }) {
          const k = (endAngle - startAngle) / value,
@@ -3068,26 +3063,26 @@ class TH2Painter extends THistPainter {
             return this.getAttribute('text-anchor') === 'end' ? `↑ ${labels[d.index]}` : `${labels[d.index]} ↓`;
          });
 
-      this.draw_g.append('g')
-         .attr('fill-opacity', 0.8)
-         .selectAll('path')
-         .data(chords)
-         .join('path')
-         .style('mix-blend-mode', 'multiply')
-         .attr('fill', d => palette.calcColor(d.source.index, used.length))
-         .attr('d', ribbon)
-         .append('title')
-         .text(d => `${formatValue(d.source.value)} ${labels[d.target.index]} → ${labels[d.source.index]}${d.source.index === d.target.index ? '' : `\n${formatValue(d.target.value)} ${labels[d.source.index]} → ${labels[d.target.index]}`}`);
+      g.append('g')
+       .attr('fill-opacity', 0.8)
+       .selectAll('path')
+       .data(chords)
+       .join('path')
+       .style('mix-blend-mode', 'multiply')
+       .attr('fill', d => palette.calcColor(d.source.index, used.length))
+       .attr('d', ribbon)
+       .append('title')
+       .text(d => `${formatValue(d.source.value)} ${labels[d.target.index]} → ${labels[d.source.index]}${d.source.index === d.target.index ? '' : `\n${formatValue(d.target.value)} ${labels[d.source.index]} → ${labels[d.target.index]}`}`);
 
       if (!this.isBatchMode()) {
-         this.draw_g.insert('ellipse', ':first-child')
-                    .attr('cx', 0)
-                    .attr('cy', 0)
-                    .attr('rx', outerRadius*1.2)
-                    .attr('ry', outerRadius*1.2)
-                    .style('opacity', 0)
-                    .style('fill', 'none')
-                    .style('pointer-events', 'visibleFill');
+         g.insert('ellipse', ':first-child')
+          .attr('cx', 0)
+          .attr('cy', 0)
+          .attr('rx', outerRadius*1.2)
+          .attr('ry', outerRadius*1.2)
+          .style('opacity', 0)
+          .style('fill', 'none')
+          .style('pointer-events', 'visibleFill');
       }
 
       return true;

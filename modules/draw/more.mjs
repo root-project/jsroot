@@ -138,9 +138,8 @@ function drawEllipse() {
    this.createAttLine({ attr: ellipse });
    this.createAttFill({ attr: ellipse });
 
-   const g = this.createG();
-
-   const funcs = this.getAxisToSvgFunc(),
+   const g = this.createG(),
+         funcs = this.getAxisToSvgFunc(),
          x = funcs.x(ellipse.fX1),
          y = funcs.y(ellipse.fY1),
          rx = is_crown && (ellipse.fR1 <= 0) ? (funcs.x(ellipse.fX1 + ellipse.fR2) - x) : (funcs.x(ellipse.fX1 + ellipse.fR1) - x),
@@ -237,9 +236,8 @@ function drawEllipse() {
 /** @summary Draw TPie
   * @private */
 function drawPie() {
-   const g = this.createG();
-
-   const pie = this.getObject(),
+   const g = this.createG(),
+         pie = this.getObject(),
          nb = pie.fPieSlices.length,
          xc = this.axisToSvg('x', pie.fX),
          yc = this.axisToSvg('y', pie.fY),

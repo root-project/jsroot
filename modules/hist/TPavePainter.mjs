@@ -276,10 +276,8 @@ class TPavePainter extends ObjectPainter {
                brd = pt.fBorderSize,
                noborder = opt.indexOf('NB') >= 0,
                dx = (opt.indexOf('L') >= 0) ? -1 : ((opt.indexOf('R') >= 0) ? 1 : 0),
-               dy = (opt.indexOf('T') >= 0) ? -1 : ((opt.indexOf('B') >= 0) ? 1 : 0);
-
-         // container used to recalculate coordinates
-         this.createG();
+               dy = (opt.indexOf('T') >= 0) ? -1 : ((opt.indexOf('B') >= 0) ? 1 : 0),
+               g = this.createG(); // container used to recalculate coordinates
 
          this.#pave_x = Math.round(pt.fX1NDC * pad_rect.width);
          this.#pave_y = Math.round((1.0 - pt.fY2NDC) * pad_rect.height);
@@ -288,7 +286,7 @@ class TPavePainter extends ObjectPainter {
 
          const arc_radius = opt.indexOf('ARC') >= 0 && (pt.fCornerRadius > 0) ? Math.round(Math.min(width, height) * pt.fCornerRadius) : 0;
 
-         makeTranslate(this.draw_g, this.#pave_x, this.#pave_y);
+         makeTranslate(g, this.#pave_x, this.#pave_y);
 
          this.createAttLine({ attr: pt, width: (brd > 0) ? pt.fLineWidth : 0 });
 
@@ -302,14 +300,14 @@ class TPavePainter extends ObjectPainter {
                   dpath = `l${w2},${-h2}l${w2},${h2}l${-w2},${h2}z`;
 
             if (!this.fillatt.empty())
-               this.drawBorder(this.draw_g, width, height, 0, dpath);
+               this.drawBorder(g, width, height, 0, dpath);
 
-            interactive_element = this.draw_g.append('svg:path')
-                                      .attr('d', 'M0,'+h2 +dpath)
-                                      .call(this.fillatt.func)
-                                      .call(this.lineatt.func);
+            interactive_element = g.append('svg:path')
+                                   .attr('d', 'M0,'+h2 +dpath)
+                                   .call(this.fillatt.func)
+                                   .call(this.lineatt.func);
 
-            const text_g = this.draw_g.append('svg:g');
+            const text_g = g.append('svg:g');
             makeTranslate(text_g, Math.round(width/4), Math.round(height/4));
 
             return this.drawPaveText(w2, h2, arg, text_g);
@@ -317,23 +315,23 @@ class TPavePainter extends ObjectPainter {
 
          if (pt.fNpaves) {
             for (let n = pt.fNpaves-1; n > 0; --n) {
-               this.draw_g.append('svg:path')
-                     .attr('d', `M${dx*4*n},${dy*4*n}h${width}v${height}h${-width}z`)
-                     .call(this.fillatt.func)
-                     .call(this.lineatt.func);
+               g.append('svg:path')
+                .attr('d', `M${dx*4*n},${dy*4*n}h${width}v${height}h${-width}z`)
+                .call(this.fillatt.func)
+                .call(this.lineatt.func);
             }
          } else
-            this.drawBorder(this.draw_g, width, height, arc_radius);
+            this.drawBorder(g, width, height, arc_radius);
 
          if (!this.isBatchMode() || !this.fillatt.empty() || (!this.lineatt.empty() && !noborder)) {
             if (arc_radius) {
-               interactive_element = this.draw_g.append('svg:rect')
-                                          .attr('width', width)
-                                          .attr('height', height)
-                                          .attr('rx', arc_radius);
+               interactive_element = g.append('svg:rect')
+                                      .attr('width', width)
+                                      .attr('height', height)
+                                      .attr('rx', arc_radius);
             } else {
-               interactive_element = this.draw_g.append('svg:path')
-                                                .attr('d', `M0,0H${width}V${height}H0Z`);
+               interactive_element = g.append('svg:path')
+                                      .attr('d', `M0,0H${width}V${height}H0Z`);
             }
             interactive_element.call(this.fillatt.func);
             if (!noborder)
@@ -369,7 +367,7 @@ class TPavePainter extends ObjectPainter {
                         ctxmenu: browser.touches && settings.ContextMenu && this.UseContextMenu });
 
          if (this.UseContextMenu && settings.ContextMenu)
-             this.draw_g.on('contextmenu', evnt => this.paveContextMenu(evnt));
+            this.getG().on('contextmenu', evnt => this.paveContextMenu(evnt));
 
          if (this.isPalette())
             this.interactivePaletteAxis(width, height);

@@ -961,9 +961,8 @@ class TGraphPainter extends ObjectPainter {
       const is_gme = Boolean(this.get_gme()),
             funcs = fp.getGrFuncs(this.options.second_x, this.options.second_y),
             w = funcs.getFrameWidth(),
-            h = funcs.getFrameHeight();
-
-      this.createG(fp.pad_layer ? false : this.#frame_layer);
+            h = funcs.getFrameHeight(),
+            g = this.createG(fp.pad_layer ? false : this.#frame_layer);
 
       this.createGraphDrawAttributes();
 
@@ -971,7 +970,7 @@ class TGraphPainter extends ObjectPainter {
 
       this.draw_kind = 'none'; // indicate if special svg:g were created for each bin
       this.#marker_size = 0; // indicate if markers are drawn
-      const draw_g = is_gme ? this.draw_g.append('svg:g') : this.draw_g;
+      const draw_g = is_gme ? g.append('svg:g') : g;
 
       this.drawBins(funcs, this.options, draw_g, w, h, this.lineatt, this.fillatt, true);
 
@@ -985,8 +984,8 @@ class TGraphPainter extends ObjectPainter {
                lineatt = this.createAttLine({ attr: graph.fAttLine[k], std: false });
                fillatt = this.createAttFill({ attr: graph.fAttFill[k], std: false });
             }
-            const sub_g = this.draw_g.append('svg:g'),
-                options = (k < this.options.blocks.length) ? this.options.blocks[k] : this.options;
+            const sub_g = g.append('svg:g'),
+                  options = (k < this.options.blocks.length) ? this.options.blocks[k] : this.options;
             this.extractGmeErrors(k);
             this.drawBins(funcs, options, sub_g, w, h, lineatt, fillatt);
          }

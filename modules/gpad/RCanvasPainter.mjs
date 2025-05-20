@@ -755,9 +755,9 @@ function drawRFrameTitle(reason, drag) {
       this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
    }
 
-   this.createG();
+   const g = this.createG();
 
-   makeTranslate(this.draw_g, fx, Math.round(fy-title_margin-title_height));
+   makeTranslate(g, fx, Math.round(fy-title_margin-title_height));
 
    return this.startTextDrawingAsync(textFont, 'font').then(() => {
       this.drawText({ x: title_width/2, y: title_height/2, text: title.fText, latex: 1 });

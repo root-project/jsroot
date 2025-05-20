@@ -167,9 +167,8 @@ class TScatterPainter extends TGraphPainter {
          offset = mins;
       }
 
-      this.createG(!fp.pad_layer);
-
-      const funcs = fp.getGrFuncs(),
+      const g = this.createG(!fp.pad_layer),
+            funcs = fp.getGrFuncs(),
             is_zoom = (fp.zoom_zmin !== fp.zoom_zmax) && scatter.fColor,
             bins = this._getBins();
 
@@ -184,9 +183,9 @@ class TScatterPainter extends TGraphPainter {
                color = scatter.fColor ? this.fContour.getPaletteColor(palette, scatter.fColor[i]) : this.getColor(scatter.fMarkerColor),
                handle = new TAttMarkerHandler({ color, size, style: scatter.fMarkerStyle });
 
-          this.draw_g.append('svg:path')
-                     .attr('d', handle.create(grx, gry))
-                     .call(handle.func);
+         g.append('svg:path')
+          .attr('d', handle.create(grx, gry))
+          .call(handle.func);
       }
 
       return this;

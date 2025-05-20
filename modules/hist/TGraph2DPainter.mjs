@@ -1310,9 +1310,8 @@ class TGraph2DPainter extends ObjectPainter {
       const cntr = main.getContour(),
             palette = main.getHistPalette(),
             levels = cntr.getLevels(),
-            funcs = fp.getGrFuncs();
-
-      this.createG(true);
+            funcs = fp.getGrFuncs(),
+            g = this.createG(true);
 
       this.createAttLine({ attr: graph, nocolor: true });
 
@@ -1329,10 +1328,10 @@ class TGraph2DPainter extends ObjectPainter {
 
          this.lineatt.color = color;
 
-         this.draw_g.append('svg:path')
-             .attr('d', path)
-             .style('fill', 'none')
-             .call(this.lineatt.func);
+         g.append('svg:path')
+          .attr('d', path)
+          .style('fill', 'none')
+          .call(this.lineatt.func);
       }
 
       return this;

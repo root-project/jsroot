@@ -121,7 +121,8 @@ class RPalettePainter extends RObjectPainter {
             pad_width = this.getPadPainter().getPadWidth(),
             pad_height = this.getPadPainter().getPadHeight(),
             visible = this.v7EvalAttr('visible', true),
-            vertical = this.v7EvalAttr('vertical', true);
+            vertical = this.v7EvalAttr('vertical', true),
+            g = this.getG();
       let gmin = palette.full_min,
           gmax = palette.full_max,
           palette_x, palette_y, palette_width, palette_height;
@@ -155,16 +156,17 @@ class RPalettePainter extends RObjectPainter {
          }
 
          // x,y,width,height attributes used for drag functionality
-         makeTranslate(this.draw_g, palette_x, palette_y);
+         makeTranslate(g, palette_x, palette_y);
       }
 
-      let g_btns = this.draw_g.selectChild('.colbtns');
+      let g_btns = g.selectChild('.colbtns');
       if (g_btns.empty())
-         g_btns = this.draw_g.append('svg:g').attr('class', 'colbtns');
+         g_btns = g.append('svg:g').attr('class', 'colbtns');
       else
          g_btns.selectAll('*').remove();
 
-      if (!visible) return;
+      if (!visible)
+         return;
 
       g_btns.append('svg:path')
           .attr('d', `M0,0H${palette_width}V${palette_height}H0Z`)
@@ -207,14 +209,14 @@ class RPalettePainter extends RObjectPainter {
 
       fp.z_handle.maxTickSize = Math.round(palette_width*0.3);
 
-      const promise = fp.z_handle.drawAxis(this.draw_g, makeTranslate(vertical ? palette_width : 0, palette_height), vertical ? -1 : 1);
+      const promise = fp.z_handle.drawAxis(g, makeTranslate(vertical ? palette_width : 0, palette_height), vertical ? -1 : 1);
 
       if (this.isBatchMode() || drag)
          return promise;
 
       return promise.then(() => {
          if (settings.ContextMenu) {
-            this.draw_g.on('contextmenu', evnt => {
+            g.on('contextmenu', evnt => {
                evnt.stopPropagation(); // disable main context menu
                evnt.preventDefault();  // disable browser context menu
                createMenu(evnt, this).then(menu => {
@@ -234,10 +236,11 @@ class RPalettePainter extends RObjectPainter {
          let doing_zoom = false, sel1 = 0, sel2 = 0, zoom_rect, zoom_rect_visible, moving_labels, last_pos;
 
          const moveRectSel = evnt => {
-            if (!doing_zoom) return;
+            if (!doing_zoom)
+               return;
             evnt.preventDefault();
 
-            last_pos = d3_pointer(evnt, this.draw_g.node());
+            last_pos = d3_pointer(evnt, this.getG().node());
 
             if (moving_labels)
                return fp.z_handle.processLabelsMove('move', last_pos);
@@ -282,7 +285,7 @@ class RPalettePainter extends RObjectPainter {
             evnt.preventDefault();
             evnt.stopPropagation();
 
-            last_pos = d3_pointer(evnt, this.draw_g.node());
+            last_pos = d3_pointer(evnt, this.getG().node());
             sel1 = sel2 = last_pos[vertical ? 1 : 0];
             zoom_rect_visible = false;
             moving_labels = false;
@@ -304,16 +307,16 @@ class RPalettePainter extends RObjectPainter {
                   moving_labels = fp.z_handle.processLabelsMove('start', last_pos);
             }, 500);
          }, assignHandlers = () => {
-            this.draw_g.selectAll('.axis_zoom, .axis_labels')
+            this.getG().selectAll('.axis_zoom, .axis_labels')
                        .on('mousedown', startRectSel)
                        .on('dblclick', () => fp.unzoom('z'));
 
             if (settings.ZoomWheel) {
-               this.draw_g.on('wheel', evnt => {
+               this.getG().on('wheel', evnt => {
                   evnt.stopPropagation();
                   evnt.preventDefault();
 
-                  const pos = d3_pointer(evnt, this.draw_g.node()),
+                  const pos = d3_pointer(evnt, this.getG().node()),
                       coord = vertical ? (1 - pos[1] / palette_height) : pos[0] / palette_width,
 
                    item = fp.z_handle.analyzeWheelEvent(evnt, coord);
