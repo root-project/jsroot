@@ -589,7 +589,7 @@ class RFramePainter extends RObjectPainter {
    cleanupAxes() {
       this.cleanXY();
 
-      this.draw_g?.selectChild('.axis_layer').selectAll('*').remove();
+      this.getG()?.selectChild('.axis_layer').selectAll('*').remove();
       this.#axes_drawn = false;
    }
 
@@ -614,8 +614,8 @@ class RFramePainter extends RObjectPainter {
       clean('x2');
       clean('y2');
 
-      this.draw_g?.selectChild('.main_layer').selectAll('*').remove();
-      this.draw_g?.selectChild('.upper_layer').selectAll('*').remove();
+      this.getG()?.selectChild('.main_layer').selectAll('*').remove();
+      this.getG()?.selectChild('.upper_layer').selectAll('*').remove();
    }
 
    /** @summary Fully cleanup frame
@@ -623,14 +623,12 @@ class RFramePainter extends RObjectPainter {
    cleanup() {
       this.cleanFrameDrawings();
 
-      if (this.draw_g) {
-         this.draw_g.selectAll('*').remove();
-         this.draw_g.on('mousedown', null)
-                    .on('dblclick', null)
-                    .on('wheel', null)
-                    .on('contextmenu', null)
-                    .property('interactive_set', null);
-      }
+      this.getG()?.selectAll('*').remove();
+      this.getG()?.on('mousedown', null)
+                  .on('dblclick', null)
+                  .on('wheel', null)
+                  .on('contextmenu', null)
+                  .property('interactive_set', null);
 
       if (this.#keys_handler) {
          window.removeEventListener('keydown', this.#keys_handler, false);
@@ -645,7 +643,7 @@ class RFramePainter extends RObjectPainter {
       delete this.x2axis;
       delete this.y2axis;
 
-      delete this.draw_g; // frame <g> element managed by the pad
+      this.setG(undefined); // frame <g> element managed by the pad
 
       this.#click_handler = undefined;
       this.#dblclick_handler = undefined;
@@ -686,34 +684,33 @@ class RFramePainter extends RObjectPainter {
      * @private */
    createFrameG() {
       // this is svg:g object - container for every other items belonging to frame
-      this.draw_g = this.getFrameSvg();
+      let g = this.setG(this.getFrameSvg()),
+          top_rect, main_svg;
 
-      let top_rect, main_svg;
-
-      if (this.draw_g.empty()) {
-         this.draw_g = this.getLayerSvg('primitives_layer').append('svg:g').attr('class', 'root_frame');
+      if (g.empty()) {
+         g = this.setG(this.getLayerSvg('primitives_layer').append('svg:g').attr('class', 'root_frame'));
 
          if (!this.isBatchMode())
-            this.draw_g.append('svg:title').text('');
+            g.append('svg:title').text('');
 
-         top_rect = this.draw_g.append('svg:rect');
+         top_rect = g.append('svg:rect');
 
-         main_svg = this.draw_g.append('svg:svg')
-                           .attr('class', 'main_layer')
-                           .attr('x', 0)
-                           .attr('y', 0)
-                           .attr('overflow', 'hidden');
+         main_svg = g.append('svg:svg')
+                     .attr('class', 'main_layer')
+                     .attr('x', 0)
+                     .attr('y', 0)
+                     .attr('overflow', 'hidden');
 
-         this.draw_g.append('svg:g').attr('class', 'axis_layer');
-         this.draw_g.append('svg:g').attr('class', 'upper_layer');
+         g.append('svg:g').attr('class', 'axis_layer');
+         g.append('svg:g').attr('class', 'upper_layer');
       } else {
-         top_rect = this.draw_g.selectChild('rect');
-         main_svg = this.draw_g.selectChild('.main_layer');
+         top_rect = g.selectChild('rect');
+         main_svg = g.selectChild('.main_layer');
       }
 
       this.#axes_drawn = false;
 
-      this.draw_g.attr('transform', this.#frame_trans);
+      g.attr('transform', this.#frame_trans);
 
       top_rect.attr('x', 0)
               .attr('y', 0)
@@ -758,7 +755,7 @@ class RFramePainter extends RObjectPainter {
          y: this.#frame_y || 0,
          width: this.getFrameWidth(),
          height: this.getFrameHeight(),
-         transform: this.draw_g?.attr('transform') || '',
+         transform: this.getG()?.attr('transform') || '',
          hint_delta_x: 0,
          hint_delta_y: 0
       };

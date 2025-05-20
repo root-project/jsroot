@@ -117,7 +117,7 @@ function addDragHandler(_painter, arg) {
       arg.cleanup = true;
 
    if (!isFunc(arg.getDrawG))
-      arg.getDrawG = () => painter?.draw_g;
+      arg.getDrawG = () => painter?.getG();
 
    function makeResizeElements(group, handler) {
       function addElement(cursor, d) {
@@ -388,7 +388,7 @@ class TooltipHandler extends ObjectPainter {
    processFrameTooltipEvent(pnt, evnt) {
       if (pnt?.handler) {
          // special use of interactive handler in the frame painter
-         const rect = this.draw_g?.selectChild('.main_layer');
+         const rect = this.getG()?.selectChild('.main_layer');
          if (!rect || rect.empty())
             pnt = null; // disable
          else if (pnt.touch && evnt) {
@@ -735,8 +735,8 @@ class FrameInteractive extends TooltipHandler {
                                 only_resize: true, minwidth: 20, minheight: 20, redraw: () => this.sizeChanged() });
       }
 
-      const top_rect = this.draw_g.selectChild('path'),
-            main_svg = this.draw_g.selectChild('.main_layer');
+      const top_rect = this.getG().selectChild('path'),
+            main_svg = this.getG().selectChild('.main_layer');
 
       top_rect.style('pointer-events', 'visibleFill')  // let process mouse events inside frame
               .style('cursor', 'default');             // show normal cursor
@@ -937,7 +937,7 @@ class FrameInteractive extends TooltipHandler {
       if (evnt.buttons === this._shifting_buttons) {
          const frame = this.getFrameSvg(),
                pos = d3_pointer(evnt, frame.node()),
-               main_svg = this.draw_g.selectChild('.main_layer'),
+               main_svg = this.getG().selectChild('.main_layer'),
                dx = pos0[0] - pos[0],
                dy = (this.scales_ndim === 1) ? 0 : pos0[1] - pos[1],
                w = this.getFrameWidth(), h = this.getFrameHeight();
@@ -966,7 +966,7 @@ class FrameInteractive extends TooltipHandler {
     /** @summary Shift scales on defined positions */
    performScalesShift() {
       const w = this.getFrameWidth(), h = this.getFrameHeight(),
-            main_svg = this.draw_g.selectChild('.main_layer'),
+            main_svg = this.getG().selectChild('.main_layer'),
             gr = this.getGrFuncs(),
             xmin = gr.revertAxis('x', this._shifting_dx),
             xmax = gr.revertAxis('x', this._shifting_dx + w),
@@ -1561,7 +1561,7 @@ class FrameInteractive extends TooltipHandler {
     * @private */
    moveTouchHandling(evnt, kind, pos0) {
       const frame = this.getFrameSvg(),
-            main_svg = this.draw_g.selectChild('.main_layer');
+            main_svg = this.getG().selectChild('.main_layer');
       let pos;
 
       try {
@@ -2451,7 +2451,7 @@ class TFramePainter extends FrameInteractive {
       this.x2_handle?.removeG();
       this.y2_handle?.removeG();
 
-      this.draw_g?.selectChild('.axis_layer').selectAll('*').remove();
+      this.getG()?.selectChild('.axis_layer').selectAll('*').remove();
       this.#axes_drawn = this.#axes2_drawn = false;
    }
 
@@ -2478,24 +2478,22 @@ class TFramePainter extends FrameInteractive {
       this.scale_ymin = this.scale_ymax = 0;
       this.scale_zmin = this.scale_zmax = 0;
 
-      this.draw_g?.selectChild('.main_layer').selectAll('*').remove();
-      this.draw_g?.selectChild('.upper_layer').selectAll('*').remove();
+      this.getG()?.selectChild('.main_layer').selectAll('*').remove();
+      this.getG()?.selectChild('.upper_layer').selectAll('*').remove();
 
       this.xaxis = null;
       this.yaxis = null;
       this.zaxis = null;
 
-      if (this.draw_g) {
-         this.draw_g.selectAll('*').remove();
-         this.draw_g.on('mousedown', null)
-                    .on('dblclick', null)
-                    .on('wheel', null)
-                    .on('contextmenu', null)
-                    .property('interactive_set', null);
-         this.draw_g.remove();
-      }
+      this.getG()?.selectAll('*').remove();
+      this.getG()?.on('mousedown', null)
+                  .on('dblclick', null)
+                  .on('wheel', null)
+                  .on('contextmenu', null)
+                  .property('interactive_set', null)
+                  .remove();
 
-      delete this.draw_g; // frame <g> element managed by the pad
+      this.setG(undefined); // frame <g> element managed by the pad
 
       if (this.#keys_handler) {
          window.removeEventListener('keydown', this.#keys_handler, false);
@@ -2544,35 +2542,34 @@ class TFramePainter extends FrameInteractive {
     * @private */
    createFrameG() {
       // this is svg:g object - container for every other items belonging to frame
-      this.draw_g = this.getFrameSvg();
+      let g = this.setG(this.getFrameSvg()),
+          top_rect, main_svg;
 
-      let top_rect, main_svg;
-
-      if (this.draw_g.empty()) {
-         this.draw_g = this.getLayerSvg('primitives_layer').append('svg:g').attr('class', 'root_frame');
+      if (g.empty()) {
+         g = this.setG(this.getLayerSvg('primitives_layer').append('svg:g').attr('class', 'root_frame'));
 
          // empty title on the frame required to suppress title of the canvas
          if (!this.isBatchMode())
-            this.draw_g.append('svg:title').text('');
+            g.append('svg:title').text('');
 
-         top_rect = this.draw_g.append('svg:path');
+         top_rect = g.append('svg:path');
 
-         main_svg = this.draw_g.append('svg:svg')
-                           .attr('class', 'main_layer')
-                           .attr('x', 0)
-                           .attr('y', 0)
-                           .attr('overflow', 'hidden');
+         main_svg = g.append('svg:svg')
+                     .attr('class', 'main_layer')
+                     .attr('x', 0)
+                     .attr('y', 0)
+                     .attr('overflow', 'hidden');
 
-         this.draw_g.append('svg:g').attr('class', 'axis_layer');
-         this.draw_g.append('svg:g').attr('class', 'upper_layer');
+         g.append('svg:g').attr('class', 'axis_layer');
+         g.append('svg:g').attr('class', 'upper_layer');
       } else {
-         top_rect = this.draw_g.selectChild('path');
-         main_svg = this.draw_g.selectChild('.main_layer');
+         top_rect = g.selectChild('path');
+         main_svg = g.selectChild('.main_layer');
       }
 
       this.#axes_drawn = this.#axes2_drawn = false;
 
-      this.draw_g.attr('transform', this.#frame_trans);
+      g.attr('transform', this.#frame_trans);
 
       top_rect.attr('d', `M0,0H${this.#frame_width}V${this.#frame_height}H0Z`)
               .call(this.fillatt.func)
@@ -2582,19 +2579,19 @@ class TFramePainter extends FrameInteractive {
               .attr('height', this.#frame_height)
               .attr('viewBox', `0 0 ${this.#frame_width} ${this.#frame_height}`);
 
-      this.draw_g.selectAll('.frame_deco').remove();
+      g.selectAll('.frame_deco').remove();
       if (this.#border_mode && this.fillatt.hasColor()) {
          const paths = getBoxDecorations(0, 0, this.#frame_width, this.#frame_height, this.#border_mode, this.#border_size || 2, this.#border_size || 2);
-         this.draw_g.insert('svg:path', '.main_layer')
-                    .attr('class', 'frame_deco')
-                    .attr('d', paths[0])
-                    .call(this.fillatt.func)
-                    .style('fill', d3_rgb(this.fillatt.color).brighter(0.5).formatRgb());
-         this.draw_g.insert('svg:path', '.main_layer')
-                    .attr('class', 'frame_deco')
-                    .attr('d', paths[1])
-                    .call(this.fillatt.func)
-                    .style('fill', d3_rgb(this.fillatt.color).darker(0.5).formatRgb());
+         g.insert('svg:path', '.main_layer')
+          .attr('class', 'frame_deco')
+          .attr('d', paths[0])
+          .call(this.fillatt.func)
+          .style('fill', d3_rgb(this.fillatt.color).brighter(0.5).formatRgb());
+         g.insert('svg:path', '.main_layer')
+          .attr('class', 'frame_deco')
+          .attr('d', paths[1])
+          .call(this.fillatt.func)
+          .style('fill', d3_rgb(this.fillatt.color).darker(0.5).formatRgb());
       }
 
       return this;
@@ -2841,7 +2838,7 @@ class TFramePainter extends FrameInteractive {
          y: this.#frame_y || 0,
          width: this.getFrameWidth(),
          height: this.getFrameHeight(),
-         transform: this.draw_g?.attr('transform') || '',
+         transform: this.getG()?.attr('transform') || '',
          hint_delta_x: 0,
          hint_delta_y: 0
       };

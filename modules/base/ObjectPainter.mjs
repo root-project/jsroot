@@ -333,6 +333,10 @@ class ObjectPainter extends BasePainter {
      * @protected */
    getG() { return this.draw_g; }
 
+   /** @summary Assign G element used for object drawing
+     * @protected */
+   setG(g) { this.draw_g = g; return g; }
+
    /** @summary (re)creates svg:g element for object drawings
      * @desc either one attach svg:g to pad primitives (default)
      * or svg:g element created in specified frame layer ('main_layer' will be used when true specified)
@@ -501,7 +505,7 @@ class ObjectPainter extends BasePainter {
      * @protected */
    getAxisToSvgFunc(isndc, nornd, use_frame_coordinates) {
       const func = { isndc, nornd },
-            use_frame = this.draw_g?.property('in_frame');
+            use_frame = this.getG()?.property('in_frame');
       if (use_frame || (use_frame_coordinates && !isndc))
          func.fp = this.getFramePainter();
       if (func.fp?.grx && func.fp?.gry) {
@@ -566,7 +570,7 @@ class ObjectPainter extends BasePainter {
      * @return {number} value of requested coordinates
      * @protected */
    svgToAxis(axis, coord, ndc) {
-      const use_frame = this.draw_g?.property('in_frame');
+      const use_frame = this.getG()?.property('in_frame');
 
       if (use_frame)
          return this.getFramePainter()?.revertAxis(axis, coord) ?? 0;
@@ -965,7 +969,8 @@ class ObjectPainter extends BasePainter {
      * @param {number} [max_font_size] - maximal font size, used when text can be scaled
      * @protected */
    startTextDrawing(font_face, font_size, draw_g, max_font_size, can_async) {
-      if (!draw_g) draw_g = this.draw_g;
+      if (!draw_g)
+         draw_g = this.getG();
       if (!draw_g || draw_g.empty())
          return false;
 
@@ -1012,8 +1017,10 @@ class ObjectPainter extends BasePainter {
      * @param {object} [draw_g] - drawing element for the text
      * @protected */
    scaleTextDrawing(factor, draw_g) {
-      if (!draw_g) draw_g = this.draw_g;
-      if (!draw_g || draw_g.empty()) return;
+      if (!draw_g)
+         draw_g = this.getG();
+      if (!draw_g || draw_g.empty())
+         return;
       if (factor && (factor > draw_g.property('text_factor')))
          draw_g.property('text_factor', factor);
    }
@@ -1238,7 +1245,7 @@ class ObjectPainter extends BasePainter {
       if (!arg.text)
          arg.text = '';
 
-      arg.draw_g = arg.draw_g || this.draw_g;
+      arg.draw_g = arg.draw_g || this.getG();
       if (!arg.draw_g || arg.draw_g.empty())
          return;
 
@@ -1362,12 +1369,12 @@ class ObjectPainter extends BasePainter {
 
    /** @summary Finish text drawing
      * @desc Should be called to complete all text drawing operations
-     * @param {function} [draw_g] - <g> element for text drawing, this.draw_g used when not specified
+     * @param {function} [draw_g] - <g> element for text drawing, default is getG()
      * @return {Promise} when text drawing completed
      * @protected */
    async finishTextDrawing(draw_g, try_optimize) {
       if (!draw_g)
-         draw_g = this.draw_g;
+         draw_g = this.getG();
       if (!draw_g || draw_g.empty())
          return false;
 
