@@ -4891,7 +4891,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Specify showtop draw options, relevant only for TGeoManager */
    setShowTop(on) {
       this.ctrl.showtop = Boolean(on);
-      this.redrawObject('same');
+      return this.startRedraw();
    }
 
    /** @summary Should be called when configuration of particular axis is changed */
