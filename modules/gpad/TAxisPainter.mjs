@@ -164,6 +164,17 @@ const AxisPainterMethods = {
       return null;
    },
 
+   /** @summary Detect if tick is extra-ticks */
+   isExtraLogTick(val) {
+      if (!this.log)
+         return false;
+      let vlog = Math.log10(val);
+      if (this.logbase !== 10)
+         vlog /= Math.log10(this.logbase);
+
+      return Math.abs(vlog - Math.round(vlog)) >= 0.001;
+   },
+
    /** @summary Provide label for normal axis */
    formatNormal(d, asticks, fmt) {
       let val = parseFloat(d);
@@ -270,7 +281,8 @@ const AxisPainterMethods = {
       if (!this.noticksopt) {
          const total = ndiv * (ndiv2 || 1);
 
-         if (this.log) return this.poduceLogTicks(this.func, total);
+         if (this.log)
+            return this.poduceLogTicks(this.func, total);
 
          const dom = this.func.domain(),
             check = ticks => {
@@ -676,6 +688,7 @@ class TAxisPainter extends ObjectPainter {
       }
 
       if ((this.nticks2 > 1) && (!this.log || (this.logbase === 10)) && !this.fixed_ticks) {
+
          handle.minor = handle.middle = this.produceTicks(handle.major.length, this.nticks2);
 
          const gr_range = Math.abs(this.func.range()[1] - this.func.range()[0]);
@@ -990,7 +1003,8 @@ class TAxisPainter extends ObjectPainter {
          if (handle.kind === 1) {
             // if not showing labels, not show large tick
             // FIXME: for labels last tick is smaller,
-            if (/* (this.kind === kAxisLabels) || */ (this.format(handle.tick, true) !== null)) h1 = tickSize;
+            if (!this.isExtraLogTick(handle.tick) && (this.format(handle.tick, true) !== null))
+               h1 = tickSize;
             this.ticks.push(handle.grpos); // keep graphical positions of major ticks
          }
 
