@@ -20,6 +20,7 @@ class ObjectPainter extends BasePainter {
 
    #pad_name;        // pad name where object is drawn
    #draw_object;     // drawn object
+   #draw_g;          // <g> element for object drawing
    #main_painter;    // WeakRef to main painter in the pad
    #primary_ref;     // reference of primary painter - if any
    #snapid;          // assigned online identifier
@@ -46,7 +47,7 @@ class ObjectPainter extends BasePainter {
 
       super(dom);
 
-      // this.draw_g = undefined; // container for all drawn objects
+      this.#draw_g = undefined; // container for all drawn objects
       this.setPadName(pad_name); // name of pad where object is drawn
       this.assignObject(obj);
       if (isStr(opt))
@@ -324,22 +325,22 @@ class ObjectPainter extends BasePainter {
      * @desc generic method to delete all graphical elements, associated with the painter
      * @protected */
    removeG() {
-      this.draw_g?.remove();
-      delete this.draw_g;
+      this.#draw_g?.remove();
+      this.#draw_g = undefined;
    }
 
    /** @summary Returns created <g> element used for object drawing
      * @desc Element should be created by {@link ObjectPainter#createG}
      * @protected */
-   getG() { return this.draw_g; }
+   getG() { return this.#draw_g; }
 
    /** @summary Assign G element used for object drawing
      * @protected */
-   setG(g) { this.draw_g = g; return g; }
+   setG(g) { this.#draw_g = g; return g; }
 
    /** @summary Append svg::path to G
      * @protected */
-   appendPath(d) { return this.draw_g.append('svg:path').attr('d', d); }
+   appendPath(d) { return this.#draw_g.append('svg:path').attr('d', d); }
 
    /** @summary (re)creates svg:g element for object drawings
      * @desc either one attach svg:g to pad primitives (default)
@@ -365,16 +366,16 @@ class ObjectPainter extends BasePainter {
       } else
          layer = this.getLayerSvg('primitives_layer');
 
-      if (this.draw_g && this.draw_g.node().parentNode !== layer.node()) {
+      if (this.#draw_g && this.#draw_g.node().parentNode !== layer.node()) {
          console.log('g element changes its layer!!');
          this.removeG();
       }
 
-      if (this.draw_g) {
+      if (this.#draw_g) {
          // clear all elements, keep g element on its place
-         this.draw_g.selectAll('*').remove();
+         this.#draw_g.selectAll('*').remove();
       } else {
-         this.draw_g = layer.append(use_a ? 'svg:a' : 'svg:g');
+         this.#draw_g = layer.append(use_a ? 'svg:a' : 'svg:g');
 
          if (!frame_layer)
             layer.selectChildren('.most_upper_primitives').raise();
@@ -383,21 +384,21 @@ class ObjectPainter extends BasePainter {
       // set attributes for debugging, both should be there for opt out them later
       const clname = this.getClassName(), objname = this.getObjectName();
       if (objname || clname) {
-         this.draw_g.attr('objname', (objname || 'name').replace(/[^\w]/g, '_'))
-                    .attr('objtype', (clname || 'type').replace(/[^\w]/g, '_'));
+         this.#draw_g.attr('objname', (objname || 'name').replace(/[^\w]/g, '_'))
+                     .attr('objtype', (clname || 'type').replace(/[^\w]/g, '_'));
       }
 
-      this.draw_g.property('in_frame', Boolean(frame_layer)); // indicates coordinate system
+      this.#draw_g.property('in_frame', Boolean(frame_layer)); // indicates coordinate system
 
-      return this.draw_g;
+      return this.#draw_g;
    }
 
    /** @summary Bring draw element to the front */
    bringToFront(check_online) {
-      if (!this.draw_g)
+      if (!this.#draw_g)
          return;
-      const prnt = this.draw_g.node().parentNode;
-      prnt?.appendChild(this.draw_g.node());
+      const prnt = this.#draw_g.node().parentNode;
+      prnt?.appendChild(this.#draw_g.node());
 
       if (check_online && this.getSnapId()) {
          const pp = this.getPadPainter();
