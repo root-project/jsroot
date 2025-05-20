@@ -688,11 +688,8 @@ class TAxisPainter extends ObjectPainter {
       }
 
       if ((this.nticks2 > 1) && (!this.log || (this.logbase === 10)) && !this.fixed_ticks) {
-
          handle.minor = handle.middle = this.produceTicks(handle.major.length, this.nticks2);
-
          const gr_range = Math.abs(this.func.range()[1] - this.func.range()[0]);
-
          // avoid black filling by middle-size
          if ((handle.middle.length <= handle.major.length) || (handle.middle.length > gr_range))
             handle.minor = handle.middle = handle.major;

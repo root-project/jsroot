@@ -98,10 +98,10 @@ function getSizeStr(sz) {
 
 /** @summary Return ROOT version as string
   * @private */
-function getVersionStr(version) {
-   const major = Math.floor(version / 10000);
-   let minor = Math.floor((version - major*10000)/100).toString(),
-       patch = (version % 100).toString();
+function getVersionStr(v) {
+   const major = Math.floor(v / 10000);
+   let minor = Math.floor((v - major*10000)/100).toString(),
+       patch = (v % 100).toString();
    if (minor.length < 2)
       minor = '0' + minor;
    if (patch.length < 2)
