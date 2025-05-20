@@ -231,12 +231,15 @@ class ObjectPainter extends BasePainter {
    redrawObject(obj, opt) {
       if (!this.updateObject(obj, opt))
          return false;
-      const doc = getDocument(),
-            current = doc.body.style.cursor;
-      document.body.style.cursor = 'wait';
-      const res = this.redrawPad();
-      doc.body.style.cursor = current;
-      return res;
+      const doc = this.isBatchMode() ? null : getDocument(),
+            current = doc?.body.style.cursor;
+      if (doc)
+         doc.body.style.cursor = 'wait';
+      return this.redrawPad().then(res => {
+         if (doc)
+            doc.body.style.cursor = current;
+         return res;
+      });
    }
 
    /** @summary Generic method to update object content.

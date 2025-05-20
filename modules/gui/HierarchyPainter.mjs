@@ -2087,7 +2087,8 @@ class HierarchyPainter extends BasePainter {
       };
 
       return this.createDisplay().then(mdi => {
-         if (!mdi) return complete();
+         if (!mdi)
+            return complete();
 
          item = this.findItem(display_itemname);
 
@@ -2148,17 +2149,20 @@ class HierarchyPainter extends BasePainter {
                if (use_dflt_opt && interactive) drawopt = itemopt;
 
                // verify that object was drawn with same option as specified now (if any)
-               if (!updating && drawopt && (itemopt !== drawopt)) return;
+               if (!updating && drawopt && (itemopt !== drawopt))
+                  return;
 
                if (interactive && !did_activate) {
                   did_activate = true;
                   mdi.activateFrame(frame);
                }
 
-               if (isFunc(p.redrawObject) && p.redrawObject(obj, drawopt)) painter = p;
+               if (isFunc(p.redrawObject) && p.redrawObject(obj, drawopt))
+                  painter = p;
             });
 
-            if (painter) return complete();
+            if (painter)
+               return complete();
 
             if (updating) {
                console.warn(`something went wrong - did not found painter when doing update of ${display_itemname}`);
@@ -3435,7 +3439,8 @@ class HierarchyPainter extends BasePainter {
 
          // do not activate frame when doing update
          // mdi.activateFrame(frame);
-         if (isFunc(p.redrawObject) && p.redrawObject(obj)) isany = true;
+         if (isFunc(p.redrawObject) && p.redrawObject(obj))
+            isany = true;
       });
       return isany;
    }
@@ -3791,7 +3796,7 @@ class HierarchyPainter extends BasePainter {
          this.h = createStreamerInfoContent(obj);
       else
          this.h = createInspectorContent(obj);
-      return this.refreshHtml().then(() => { this.setTopPainter(); });
+      return this.refreshHtml().then(() => this.setTopPainter());
    }
 
    /** @summary Create browser elements
