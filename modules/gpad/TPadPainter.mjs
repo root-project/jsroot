@@ -1789,7 +1789,8 @@ class TPadPainter extends ObjectPainter {
 
          objpainter.assignSnapId(lst[indx].fObjectID);
          const setSubSnaps = p => {
-            if (!p._is_primary) return;
+            if (!p.isPrimary())
+               return;
             for (let k = 0; k < this.painters.length; ++k) {
                const sub = this.painters[k];
                if (sub.isSecondary(p) && sub.getSecondaryId()) {

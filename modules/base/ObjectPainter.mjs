@@ -23,6 +23,7 @@ class ObjectPainter extends BasePainter {
    #main_painter;    // WeakRef to main painter in the pad
    #primary_ref;     // reference of primary painter - if any
    #snapid;          // assigned online identifier
+   #is_primary;      // if primary painter
    #secondary_id;    // id of this painter in relation to primary painter
    #options_store;   // stored draw options used to check changes
    #user_tooltip_handler; // configured user tooltip handler
@@ -105,7 +106,7 @@ class ObjectPainter extends BasePainter {
       this.#main_painter = null;
       this.#draw_object = null;
       this.#snapid = undefined;
-      this._is_primary = undefined;
+      this.#is_primary = undefined;
       this.#primary_ref = undefined;
       this.#secondary_id = undefined;
 
@@ -410,10 +411,18 @@ class ObjectPainter extends BasePainter {
       return c.select('.primitives_layer .__root_pad_' + pad_name);
    }
 
+   /** @summary Assign is_primary flag
+     * @private */
+   setPrimary(flag = true) { this.#is_primary = flag; }
+
+   /** @summary Return is_primary flag
+     * @private */
+   isPrimary() { return this.#is_primary; }
+
    /** @summary Assign secondary id
      * @private */
    setSecondaryId(primary, name) {
-      primary._is_primary = true; // mark as primary, used later
+      primary.setPrimary(true); // mark as primary, used later
       this.#primary_ref = new WeakRef(primary);
       this.#secondary_id = name;
    }
