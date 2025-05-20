@@ -1137,7 +1137,14 @@ class TAxisPainter extends ObjectPainter {
                const arg = { text, color: labelsFont.color, latex: 1, draw_g: label_g[lcnt], normal_side: (lcnt === 0) };
                let pos = Math.round(this.func(lbl_pos[nmajor]));
 
-               if (mod?.fTextColor > 0) arg.color = this.getColor(mod.fTextColor);
+               // exclude labels for extra log ticks
+               if (lastpos && this.vertical && (Math.abs(pos - lastpos) < labelsFont.size * 1.1) && this.isExtraLogTick(lbl_pos[nmajor])) {
+                  lastpos = pos;
+                  continue;
+               }
+
+               if (mod?.fTextColor > 0)
+                  arg.color = this.getColor(mod.fTextColor);
 
                arg.gap_before = (nmajor > 0) ? Math.abs(Math.round(pos - this.func(lbl_pos[nmajor - 1]))) : 0;
 
