@@ -2632,23 +2632,21 @@ class TPadPainter extends ObjectPainter {
       const pad = this.getObject();
       if (!pad) return;
 
-      const d = new DrawOptions(opt);
+      const d = new DrawOptions(opt),
+            o = this.setOptions({ GlobalColors: true, LocalColors: false, CreatePalette: 0, IgnorePalette: false, RotateFrame: false, FixFrame: false }, opt);
 
-      if (!this.options) this.options = {};
+      if (d.check('NOCOLORS') || d.check('NOCOL')) o.GlobalColors = o.LocalColors = false;
+      if (d.check('LCOLORS') || d.check('LCOL')) { o.GlobalColors = false; o.LocalColors = true; }
+      if (d.check('NOPALETTE') || d.check('NOPAL')) o.IgnorePalette = true;
+      if (d.check('ROTATE')) o.RotateFrame = true;
+      if (d.check('FIXFRAME')) o.FixFrame = true;
+      if (d.check('FIXSIZE') && this.isCanvas())
+         this._setFixedSize(true);
 
-      Object.assign(this.options, { GlobalColors: true, LocalColors: false, CreatePalette: 0, IgnorePalette: false, RotateFrame: false, FixFrame: false });
+      if (d.check('CP', true)) o.CreatePalette = d.partAsInt(0, 0);
 
-      if (d.check('NOCOLORS') || d.check('NOCOL')) this.options.GlobalColors = this.options.LocalColors = false;
-      if (d.check('LCOLORS') || d.check('LCOL')) { this.options.GlobalColors = false; this.options.LocalColors = true; }
-      if (d.check('NOPALETTE') || d.check('NOPAL')) this.options.IgnorePalette = true;
-      if (d.check('ROTATE')) this.options.RotateFrame = true;
-      if (d.check('FIXFRAME')) this.options.FixFrame = true;
-      if (d.check('FIXSIZE') && this.isCanvas()) this._setFixedSize(true);
-
-      if (d.check('CP', true)) this.options.CreatePalette = d.partAsInt(0, 0);
-
-      if (d.check('NOZOOMX')) this.options.NoZoomX = true;
-      if (d.check('NOZOOMY')) this.options.NoZoomY = true;
+      if (d.check('NOZOOMX')) o.NoZoomX = true;
+      if (d.check('NOZOOMY')) o.NoZoomY = true;
       if (d.check('GRAYSCALE'))
          pad.SetBit(kIsGrayscale, true);
 

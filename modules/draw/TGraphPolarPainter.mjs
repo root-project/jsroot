@@ -39,10 +39,7 @@ class TGraphPolargramPainter extends TooltipHandler {
    decodeOptions(opt) {
       const d = new DrawOptions(opt);
 
-      if (!this.options)
-         this.options = {};
-
-      Object.assign(this.options, {
+      this.setOptions({
          rdot: d.check('RDOT'),
          rangle: d.check('RANGLE', true) ? d.partAsInt() : 0,
          NoLabels: d.check('N'),
@@ -427,32 +424,27 @@ class TGraphPolarPainter extends ObjectPainter {
 
    /** @summary Decode options for drawing TGraphPolar */
    decodeOptions(opt) {
-      const d = new DrawOptions(opt || 'L');
-
-      if (!this.options)
-         this.options = {};
-
-      const rdot = d.check('RDOT'),
-            rangle = d.check('RANGLE', true) ? d.partAsInt() : 0;
-
-      Object.assign(this.options, {
-         mark: d.check('P'),
-         err: d.check('E'),
-         fill: d.check('F'),
-         line: d.check('L'),
-         curve: d.check('C'),
-         radian: d.check('R'),
-         degree: d.check('D'),
-         grad: d.check('G'),
-         Axis: d.check('N') ? 'N' : ''
-      });
+      const d = new DrawOptions(opt || 'L'),
+            rdot = d.check('RDOT'),
+            rangle = d.check('RANGLE', true) ? d.partAsInt() : 0,
+            o = this.setOptions({
+               mark: d.check('P'),
+               err: d.check('E'),
+               fill: d.check('F'),
+               line: d.check('L'),
+               curve: d.check('C'),
+               radian: d.check('R'),
+               degree: d.check('D'),
+               grad: d.check('G'),
+               Axis: d.check('N') ? 'N' : ''
+            }, opt);
 
       if (d.check('O'))
-         this.options.Axis += 'O';
+         o.Axis += 'O';
       if (rdot)
-         this.options.Axis += '_rdot';
+         o.Axis += '_rdot';
       if (rangle)
-         this.options.Axis += `_rangle${rangle}`;
+         o.Axis += `_rangle${rangle}`;
 
       this.storeDrawOpt(opt);
    }

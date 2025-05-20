@@ -161,6 +161,23 @@ class ObjectPainter extends BasePainter {
          cp.drawItemNameOnCanvas(name);
    }
 
+   /** @summary Create this.options and copy new args
+     * @return this.options
+     * @private */
+   setOptions(new_options, set_arg) {
+      if (set_arg === true)
+         this.options = new_options;
+      else {
+         if (!this.options)
+            this.options = {};
+         Object.assign(this.options, new_options);
+      }
+      return this.options;
+   }
+
+   /** @summary Return actual options */
+   getOptions() { return this.options; }
+
    /** @summary Store actual this.options together with original string
      * @private */
    storeDrawOpt(original) {
@@ -340,7 +357,6 @@ class ObjectPainter extends BasePainter {
    /** @summary Assign G element used for object drawing
      * @protected */
    setG(g) { this.#draw_g = g; return g; }
-
 
    /** @summary Append svg::path to G
      * @protected */

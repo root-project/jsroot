@@ -273,13 +273,8 @@ class TSplinePainter extends ObjectPainter {
 
    /** @summary Decode options for TSpline drawing */
    decodeOptions(opt) {
-      const d = new DrawOptions(opt);
-
-      if (!this.options) this.options = {};
-
-      const has_main = Boolean(this.getMainPainter());
-
-      Object.assign(this.options, {
+      const d = new DrawOptions(opt),
+            o = this.setOptions({
          Same: d.check('SAME'),
          Line: d.check('L'),
          Curve: d.check('C'),
@@ -289,11 +284,11 @@ class TSplinePainter extends ObjectPainter {
          second_y: false
       });
 
-      if (!this.options.Line && !this.options.Curve && !this.options.Mark)
-         this.options.Curve = true;
+      if (!o.Line && !o.Curve && !o.Mark)
+         o.Curve = true;
 
-      if (d.check('X+')) { this.options.Hopt += 'X+'; this.options.second_x = has_main; }
-      if (d.check('Y+')) { this.options.Hopt += 'Y+'; this.options.second_y = has_main; }
+      if (d.check('X+')) { o.Hopt += 'X+'; o.second_x = Boolean(this.getMainPainter()); }
+      if (d.check('Y+')) { o.Hopt += 'Y+'; o.second_y = Boolean(this.getMainPainter()); }
 
       this.storeDrawOpt(opt);
    }

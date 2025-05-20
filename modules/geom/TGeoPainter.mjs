@@ -1076,7 +1076,7 @@ class TGeoPainter extends ObjectPainter {
          res._yup = this.getCanvSvg().empty();
 
       // let reuse for storing origin options
-      this.options = res;
+      this.setOptions(res, true);
    }
 
    /** @summary Activate specified items in the browser */
@@ -5176,7 +5176,6 @@ class TGeoPainter extends ObjectPainter {
          super.cleanup();
 
          delete this.ctrl;
-         delete this.options;
 
          this.#did_cleanup = true;
 

@@ -16,18 +16,13 @@ class TASImagePainter extends ObjectPainter {
 
    /** @summary Decode options string  */
    decodeOptions(opt) {
-      const d = new DrawOptions(opt);
+      const d = new DrawOptions(opt),
+            obj = this.getObject();
 
-      this.options = { Zscale: false };
+      if (d.check('CONST') && obj)
+         obj.fConstRatio = true;
 
-      const obj = this.getObject();
-
-      if (d.check('CONST')) {
-         this.options.constRatio = true;
-         if (obj) obj.fConstRatio = true;
-      }
-      if (d.check('Z'))
-         this.options.Zscale = true;
+      this.setOptions({ Zscale: d.check('Z') });
    }
 
    /** @summary Create RGBA buffers */
