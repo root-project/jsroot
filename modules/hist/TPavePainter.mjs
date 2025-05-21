@@ -524,7 +524,7 @@ class TPavePainter extends ObjectPainter {
                         _expected_width: width-2*margin_x, _args: args,
                         post_process(painter) {
                            if (this._args[0].ready && this._args[1].ready)
-                              painter.scaleTextDrawing(1.05*(this._args[0].result_width + this._args[1].result_width) / this._expected_width, painter.draw_g);
+                              painter.scaleTextDrawing(1.05*(this._args[0].result_width + this._args[1].result_width) / this._expected_width, painter.getG());
                         }
                      };
                      args.push(arg);
