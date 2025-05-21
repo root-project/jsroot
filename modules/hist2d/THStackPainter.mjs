@@ -263,60 +263,57 @@ class THStackPainter extends ObjectPainter {
 
    /** @summary Decode draw options of THStack painter */
    decodeOptions(opt) {
-      if (!this.options)
-         this.options = {};
-      Object.assign(this.options, { ndim: 1, nostack: false, same: false, horder: true, has_errors: false, draw_errors: false, hopt: '', auto: '' });
-
-      const stack = this.getObject(),
+      const o = this.setOptions({ ndim: 1, nostack: false, same: false, horder: true, has_errors: false, draw_errors: false, hopt: '', auto: '' }),
+            stack = this.getObject(),
             hist = stack.fHistogram || stack.fHists?.arr[0] || this.#stack?.arr[0];
 
       if (hist?._typename.indexOf(clTH2) === 0)
-         this.options.ndim = 2;
+         o.ndim = 2;
 
-      if ((this.options.ndim === 2) && !opt)
+      if ((o.ndim === 2) && !opt)
          opt = 'lego1';
 
-      if (!this.options.nostack) {
+      if (!o.nostack) {
          stack.fHists?.arr.forEach(h => {
             const len = h.fSumw2?.length ?? 0;
             for (let n = 0; n < len; ++n) {
                if (h.fSumw2[n] > 0) {
-                  this.options.has_errors = true;
+                  o.has_errors = true;
                   break;
                }
             }
          });
       }
 
-      this.options.nhist = stack.fHists?.arr?.length ?? 1;
+      o.nhist = stack.fHists?.arr?.length ?? 1;
 
       const d = new DrawOptions(opt);
 
-      this.options.nostack = d.check('NOSTACK');
+      o.nostack = d.check('NOSTACK');
       if (d.check('STACK'))
-         this.options.nostack = false;
-      this.options.same = d.check('SAME');
+         o.nostack = false;
+      o.same = d.check('SAME');
 
       d.check('NOCLEAR'); // ignore option
 
-      ['PFC', 'PLC', 'PMC'].forEach(f => { if (d.check(f)) this.options.auto += ' ' + f; });
+      ['PFC', 'PLC', 'PMC'].forEach(f => { if (d.check(f)) o.auto += ' ' + f; });
 
-      this.options.pads = d.check('PADS');
-      if (this.options.pads) this.options.nostack = true;
+      o.pads = d.check('PADS');
+      if (o.pads) o.nostack = true;
 
-      this.options.hopt = d.remain().trim(); // use remaining draw options for histogram draw
+      o.hopt = d.remain().trim(); // use remaining draw options for histogram draw
 
       const dolego = d.check('LEGO');
 
-      this.options.errors = d.check('E');
+      o.errors = d.check('E');
 
-      this.options.zscale = d.check('COLZ');
+      o.zscale = d.check('COLZ');
 
       // if any histogram appears with pre-calculated errors, use E for all histograms
-      if (!this.options.nostack && this.options.has_errors && !dolego && !d.check('HIST') && (this.options.hopt.indexOf('E') < 0))
-         this.options.draw_errors = true;
+      if (!o.nostack && o.has_errors && !dolego && !d.check('HIST') && (o.hopt.indexOf('E') < 0))
+         o.draw_errors = true;
 
-      this.options.horder = this.options.nostack || dolego;
+      o.horder = o.nostack || dolego;
    }
 
    /** @summary Create main histogram for THStack axis drawing */

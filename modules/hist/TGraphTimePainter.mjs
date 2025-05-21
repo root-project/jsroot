@@ -34,13 +34,10 @@ class TGraphTimePainter extends ObjectPainter {
    decodeOptions(opt) {
       const d = new DrawOptions(opt || 'REPEAT');
 
-      if (!this.options)
-         this.options = {};
-
-      Object.assign(this.options, {
-          once: d.check('ONCE'),
-          repeat: d.check('REPEAT'),
-          first: d.check('FIRST')
+      this.setOptions({
+         once: d.check('ONCE'),
+         repeat: d.check('REPEAT'),
+         first: d.check('FIRST')
       });
 
       this.storeDrawOpt(opt);

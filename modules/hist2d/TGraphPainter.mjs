@@ -109,12 +109,8 @@ class TGraphPainter extends ObjectPainter {
       const graph = this.getGraph(),
             is_gme = Boolean(this.get_gme()),
             has_main = first_time ? Boolean(this.getMainPainter()) : !this.axes_draw;
-      let blocks_gme = [];
 
-      if (!this.options) this.options = {};
-
-      // decode main draw options for the graph
-      const decodeBlock = (d, res) => {
+      function decodeBlock(d, res) {
          Object.assign(res, { Line: 0, Curve: 0, Rect: 0, Mark: 0, Bar: 0, OutRange: 0, EF: 0, Fill: 0, MainError: 1, Ends: 1, ScaleErrX: 1 });
 
          if (is_gme && d.check('S=', true)) res.ScaleErrX = d.partAsFloat();
@@ -141,7 +137,12 @@ class TGraphPainter extends ObjectPainter {
          if (d.check('X')) res.Errors = 0;
       };
 
-      Object.assign(this.options, { Axis: '', NoOpt: 0, PadStats: false, PadPalette: false, original: opt, second_x: false, second_y: false, individual_styles: false });
+      const res = this.setOptions({
+               Axis: '', NoOpt: 0, PadStats: false, PadPalette: false, original: opt,
+               second_x: false, second_y: false, individual_styles: false
+            });
+
+      let blocks_gme = [];
 
       if (is_gme && opt) {
          if (opt.indexOf(';') > 0) {
@@ -153,7 +154,6 @@ class TGraphPainter extends ObjectPainter {
          }
       }
 
-      const res = this.options;
       let d = new DrawOptions(opt), hopt = '';
 
       PadDrawOptions.forEach(name => { if (d.check(name)) hopt += ';' + name; });
@@ -191,9 +191,8 @@ class TGraphPainter extends ObjectPainter {
 
       decodeBlock(d, res);
 
-      if (is_gme)
-         if (d.check('S')) res.individual_styles = true;
-
+      if (is_gme && d.check('S'))
+         res.individual_styles = true;
 
       // if (d.check('E')) res.Errors = 1; // E option only defined for TGraphPolar
 
@@ -206,7 +205,6 @@ class TGraphPainter extends ObjectPainter {
       // if no drawing option is selected and if opt === '' nothing is done.
       if (res.Line + res.Fill + res.Curve + res.Mark + res.Bar + res.EF + res.Rect + res.Errors === 0)
          if (d.empty()) res.Line = 1;
-
 
       if (this.matchObjectType(clTGraphErrors)) {
          const len = graph.fEX.length;

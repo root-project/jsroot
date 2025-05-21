@@ -948,7 +948,6 @@ class THistPainter extends ObjectPainter {
 
       this.clearHistPalette();
       delete this.fContour;
-      delete this.options;
 
       super.cleanup();
    }
@@ -971,18 +970,19 @@ class THistPainter extends ObjectPainter {
             hdim = this.getDimension(),
             pp = this.getPadPainter(),
             pad = pp?.getRootPad(true);
+      let o = this.getOptions(true);
 
-      if (!this.options)
-         this.options = new THistDrawOptions();
+      if (!o?.reset)
+         o = this.setOptions(new THistDrawOptions(), true);
       else
-         this.options.reset();
+         o.reset();
 
       // when changing draw option, reset attributes usage
       this.lineatt?.setUsed(false);
       this.fillatt?.setUsed(false);
       this.markeratt?.setUsed(false);
 
-      this.options.decode(opt || histo.fOption, hdim, histo, pp, pad, this);
+      o.decode(opt || histo.fOption, hdim, histo, pp, pad, this);
 
       this.storeDrawOpt(opt); // opt will be return as default draw option, used in web canvas
    }
@@ -991,7 +991,7 @@ class THistPainter extends ObjectPainter {
    copyOptionsFrom(src) {
       if (src === this)
          return;
-      const o = this.options, o0 = src.options;
+      const o = this.getOptions(), o0 = src.getOptions();
 
       o.Mode3D = o0.Mode3D;
       o.Zero = o0.Zero;
@@ -1031,7 +1031,7 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Create necessary histogram draw attributes */
    createHistDrawAttributes(only_check_auto) {
-      const histo = this.getHisto(), o = this.options;
+      const histo = this.getHisto(), o = this.getOptions();
 
       if (o._pfc > 1 || o._plc > 1 || o._pmc > 1) {
          const pp = this.getPadPainter();
@@ -1047,8 +1047,8 @@ class THistPainter extends ObjectPainter {
       if (only_check_auto)
          this.deleteAttr();
       else {
-         this.createAttFill({ attr: histo, color: this.options.histoFillColor, pattern: this.options.histoFillPattern, kind: 1 });
-         this.createAttLine({ attr: histo, color0: this.options.histoLineColor, width: this.options.histoLineWidth });
+         this.createAttFill({ attr: histo, color: o.histoFillColor, pattern: o.histoFillPattern, kind: 1 });
+         this.createAttLine({ attr: histo, color0: o.histoLineColor, width: o.histoLineWidth });
       }
    }
 
@@ -1093,7 +1093,7 @@ class THistPainter extends ObjectPainter {
       const histo = this.getHisto(),
             fp = this.getFramePainter(),
             pp = this.getPadPainter(),
-            o = this.options;
+            o = this.getOptions();
 
       if (obj !== histo) {
          if (!this.matchObjectType(obj))
@@ -1111,7 +1111,7 @@ class THistPainter extends ObjectPainter {
             histo.SetBit(kNoStats, obj.TestBit(kNoStats));
             // here check only stats bit
             if (statpainter) {
-               statpainter.Enabled = !histo.TestBit(kNoStats) && !this.options.NoStat; // && (!this.options.Same || this.options.ForceStat)
+               statpainter.Enabled = !histo.TestBit(kNoStats) && !o.NoStat; // && (!o.Same || o.ForceStat)
                // remove immediately when redraw not called for disabled stats
                if (!statpainter.Enabled)
                   statpainter.removeG();
@@ -1213,11 +1213,12 @@ class THistPainter extends ObjectPainter {
    /** @summary Access or modify histogram min/max
     * @private */
    accessMM(ismin, v) {
-      const name = ismin ? 'minimum' : 'maximum';
+      const name = ismin ? 'minimum' : 'maximum',
+            o = this.getOptions();
       if (v === undefined)
-         return this.options[name];
+         return o[name];
 
-      this.options[name] = v;
+      o[name] = v;
 
       this.interactiveRedraw('pad', ismin ? `exec:SetMinimum(${v})` : `exec:SetMaximum(${v})`);
    }
@@ -1532,34 +1533,35 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Returns true if stats box fill can be ignored */
    isIgnoreStatsFill() {
-      return !this.getObject() || (!this.draw_content && !this.create_stats && !this.hasSnapId()); // || (this.options.Axis > 0);
+      return !this.getObject() || (!this.draw_content && !this.create_stats && !this.hasSnapId());
    }
 
    /** @summary Create stat box for histogram if required */
    createStat(force) {
-      const histo = this.getHisto();
+      const histo = this.getHisto(),
+            o = this.getOptions();
       if (!histo)
          return null;
 
-      if (!force && !this.options.ForceStat) {
-         if (this.options.NoStat || histo.TestBit(kNoStats) || !settings.AutoStat) return null;
+      if (!force && !o.ForceStat) {
+         if (o.NoStat || histo.TestBit(kNoStats) || !settings.AutoStat) return null;
          if (!this.isMainPainter()) return null;
       }
 
       const st = gStyle;
       let stats = this.findStat(),
-          optstat = this.options.optstat,
-          optfit = this.options.optfit;
+          optstat = o.optstat,
+          optfit = o.optfit;
 
       if (optstat !== undefined) {
          if (stats) stats.fOptStat = optstat;
-         delete this.options.optstat;
+         o.optstat = undefined;
       } else
          optstat = histo.$custom_stat || st.fOptStat;
 
       if (optfit !== undefined) {
          if (stats) stats.fOptFit = optfit;
-         delete this.options.optfit;
+         o.optfit = undefined;
       } else
          optfit = st.fOptFit;
 

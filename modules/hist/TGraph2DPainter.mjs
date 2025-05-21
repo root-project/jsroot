@@ -1061,12 +1061,8 @@ class TGraph2DPainter extends ObjectPainter {
 
    /** @summary Decode options string  */
    decodeOptions(opt) {
-      const d = new DrawOptions(opt);
-
-      if (!this.options)
-         this.options = {};
-
-      const res = this.options, gr2d = this.getObject();
+      const d = new DrawOptions(opt),
+            gr2d = this.getObject();
 
       if (d.check('FILL_', 'color') && gr2d)
          gr2d.fFillColor = d.color;
@@ -1075,20 +1071,26 @@ class TGraph2DPainter extends ObjectPainter {
          gr2d.fLineColor = d.color;
 
       d.check('SAME');
+
+      let Triangles = 0, Contour = 0;
+
       if (d.check('CONT5'))
-         res.Contour = 15;
+         Contour = 15;
       else if (d.check('TRI1'))
-         res.Triangles = 11; // wire-frame and colors
+         Triangles = 11; // wire-frame and colors
       else if (d.check('TRI2'))
-         res.Triangles = 10; // only color triangles
+         Triangles = 10; // only color triangles
       else if (d.check('TRIW'))
-         res.Triangles = 1;
+         Triangles = 1;
       else if (d.check('TRI'))
-         res.Triangles = 2;
-      else
-         res.Triangles = 0;
-      res.Line = d.check('LINE');
-      res.Error = d.check('ERR') && (this.matchObjectType(clTGraph2DErrors) || this.matchObjectType(clTGraph2DAsymmErrors));
+         Triangles = 2;
+
+      const res = this.setOptions({
+         Triangles,
+         Contour,
+         Line: d.check('LINE'),
+         Error: d.check('ERR') && (this.matchObjectType(clTGraph2DErrors) || this.matchObjectType(clTGraph2DAsymmErrors))
+      });
 
       if (d.check('P0COL'))
          res.Color = res.Circles = res.Markers = true;
@@ -1098,7 +1100,8 @@ class TGraph2DPainter extends ObjectPainter {
          res.Markers = d.check('P');
       }
 
-      if (!res.Markers) res.Color = false;
+      if (!res.Markers)
+         res.Color = false;
 
       if (res.Color || res.Triangles >= 10 || res.Contour)
          res.Zscale = d.check('Z');
