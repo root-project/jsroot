@@ -19,6 +19,7 @@ import { PadButtonsHandler, webSnapIds } from './TPadPainter.mjs';
 class RPadPainter extends RObjectPainter {
 
    #iscan;      // is canvas flag
+   #painters;   // painters in the pad
    #pad_scale;  // scaling factor of the pad
    #pad_x;      // pad x coordinate
    #pad_y;      // pad y coordinate
@@ -48,7 +49,7 @@ class RPadPainter extends RObjectPainter {
          else
             this.this_pad_name = 'ppp' + internals.id_counter++; // artificial name
       }
-      this.painters = []; // complete list of all painters in the pad
+      this.#painters = []; // complete list of all painters in the pad
       this.#has_canvas = true;
       this.forEachPainter = this.forEachPainterInPad;
 
@@ -125,7 +126,7 @@ class RPadPainter extends RObjectPainter {
       if (this.#doing_draw)
          console.error('pad drawing is not completed when cleanup is called');
 
-      this.painters.forEach(p => p.cleanup());
+      this.#painters.forEach(p => p.cleanup());
 
       const svg_p = this.svg_this_pad();
       if (!svg_p.empty()) {
@@ -139,7 +140,7 @@ class RPadPainter extends RObjectPainter {
       this.#doing_draw = undefined;
       delete this._dfltRFont;
 
-      this.painters = [];
+      this.#painters = [];
       this.pad = null;
       this.assignObject(null);
       this.pad_frame = null;
@@ -224,11 +225,11 @@ class RPadPainter extends RObjectPainter {
 
       let is_any = false;
 
-      for (let k = this.painters.length - 1; k >= 0; --k) {
-         const subp = this.painters[k];
+      for (let k = this.#painters.length - 1; k >= 0; --k) {
+         const subp = this.#painters[k];
          if (selector(subp)) {
             subp.cleanup();
-            this.painters.splice(k, 1);
+            this.#painters.splice(k, 1);
             is_any = true;
          }
       }
@@ -250,9 +251,9 @@ class RPadPainter extends RObjectPainter {
    removePrimitive(arg, clean_only_secondary) {
       let indx, prim = null;
       if (Number.isInteger(arg)) {
-         indx = arg; prim = this.painters[indx];
+         indx = arg; prim = this.#painters[indx];
       } else {
-         indx = this.painters.indexOf(arg); prim = arg;
+         indx = this.#painters.indexOf(arg); prim = arg;
       }
       if (indx < 0)
          return indx;
@@ -260,14 +261,14 @@ class RPadPainter extends RObjectPainter {
       const arr = [];
       let resindx = indx - 1; // object removed itself
       arr.push(prim);
-      this.painters.splice(indx, 1);
+      this.#painters.splice(indx, 1);
 
       let len0 = 0;
       while (len0 < arr.length) {
-         for (let k = this.painters.length - 1; k >= 0; --k) {
-            if (this.painters[k].isSecondary(arr[len0])) {
-               arr.push(this.painters[k]);
-               this.painters.splice(k, 1);
+         for (let k = this.#painters.length - 1; k >= 0; --k) {
+            if (this.#painters[k].isSecondary(arr[len0])) {
+               arr.push(this.#painters[k]);
+               this.#painters.splice(k, 1);
                if (k <= indx) resindx--;
             }
          }
@@ -300,7 +301,7 @@ class RPadPainter extends RObjectPainter {
      * histogram functions
      * @private */
    findPainterFor(selobj, selname, seltype) {
-      return this.painters.find(p => {
+      return this.#painters.find(p => {
          const pobj = p.getObject();
          if (!pobj) return false;
 
@@ -348,13 +349,13 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary Returns number of painters
      * @protected */
-   getNumPainters() { return this.painters.length; }
+   getNumPainters() { return this.#painters.length; }
 
    /** @summary Add painter to pad list of painters
      * @protected */
    addToPrimitives(painter) {
-      if (this.painters.indexOf(painter) < 0)
-         this.painters.push(painter);
+      if (this.#painters.indexOf(painter) < 0)
+         this.#painters.push(painter);
       return this;
    }
 
@@ -366,8 +367,8 @@ class RPadPainter extends RObjectPainter {
       if (!kind)
          kind = 'all';
       if (kind !== 'objects') userfunc(this);
-      for (let k = 0; k < this.painters.length; ++k) {
-         const sub = this.painters[k];
+      for (let k = 0; k < this.#painters.length; ++k) {
+         const sub = this.#painters[k];
          if (isFunc(sub.forEachPainterInPad)) {
             if (kind !== 'objects') sub.forEachPainterInPad(userfunc, kind);
          } else if (kind !== 'pads') userfunc(sub);
@@ -589,7 +590,7 @@ class RPadPainter extends RObjectPainter {
       const svg_can = this.getCanvSvg(),
             pad_enlarged = svg_can.property('pad_enlarged');
 
-      if (this.isTopPad() || (!pad_enlarged && !this.hasObjectsToDraw() && !this.painters)) {
+      if (this.isTopPad() || (!pad_enlarged && !this.hasObjectsToDraw() && !this.#painters)) {
          if (this.#fixed_size) return; // canvas cannot be enlarged in such mode
          if (!this.enlargeMain(is_escape ? false : 'toggle')) return;
          if (this.enlargeMain('state') === 'off')
@@ -823,7 +824,7 @@ class RPadPainter extends RObjectPainter {
       const painters = [], hints = [];
 
       // first count - how many processors are there
-      this.painters?.forEach(obj => {
+      this.#painters?.forEach(obj => {
          if (isFunc(obj.processTooltipEvent)) painters.push(obj);
       });
 
@@ -832,7 +833,8 @@ class RPadPainter extends RObjectPainter {
       painters.forEach(obj => {
          const hint = obj.processTooltipEvent(pnt) || { user_info: null };
          hints.push(hint);
-         if (pnt?.painters) hint.painter = obj;
+         if (pnt?.painters)
+            hint.painter = obj;
       });
 
       return hints;
@@ -922,8 +924,8 @@ class RPadPainter extends RObjectPainter {
 
       let showsubitems = true;
       const redrawNext = indx => {
-         while (indx < this.painters.length) {
-            const sub = this.painters[indx++];
+         while (indx < this.#painters.length) {
+            const sub = this.#painters[indx++];
             let res = 0;
             if (showsubitems || sub.this_pad_name)
                res = sub.redraw(reason);
@@ -962,9 +964,9 @@ class RPadPainter extends RObjectPainter {
       const elem = this.svg_this_pad();
       if (!elem.empty() && elem.property('can3d') === constants.Embed3D.Overlay) return true;
 
-      for (let i = 0; i < this.painters.length; ++i) {
-         if (isFunc(this.painters[i].needRedrawByResize))
-            if (this.painters[i].needRedrawByResize()) return true;
+      for (let i = 0; i < this.#painters.length; ++i) {
+         if (isFunc(this.#painters[i].needRedrawByResize))
+            if (this.#painters[i].needRedrawByResize()) return true;
       }
 
       return false;
@@ -987,12 +989,12 @@ class RPadPainter extends RObjectPainter {
 
       let changed = false;
       const redrawNext = indx => {
-         if (!changed || (indx >= this.painters.length)) {
+         if (!changed || (indx >= this.#painters.length)) {
             this.confirmDraw();
             return changed;
          }
 
-         return getPromise(this.painters[indx].redraw(force ? 'redraw' : 'resize')).then(() => redrawNext(indx+1));
+         return getPromise(this.#painters[indx].redraw(force ? 'redraw' : 'resize')).then(() => redrawNext(indx+1));
       };
 
 
@@ -1046,8 +1048,8 @@ class RPadPainter extends RObjectPainter {
    addObjectPainter(objpainter, lst, indx) {
       if (objpainter && lst && lst[indx] && !objpainter.hasSnapId()) {
          // keep snap id in painter, will be used for the
-         if (this.painters.indexOf(objpainter) < 0)
-            this.painters.push(objpainter);
+         if (this.#painters.indexOf(objpainter) < 0)
+            this.#painters.push(objpainter);
          objpainter.assignSnapId(lst[indx].fObjectID);
          if (!objpainter.rstyle)
             objpainter.rstyle = lst[indx].fStyle || this.rstyle;
@@ -1176,8 +1178,8 @@ class RPadPainter extends RObjectPainter {
       // try to locate existing object painter, only allowed when redrawing pad snap
       let objpainter, promise;
 
-      while ((pindx !== undefined) && (pindx < this.painters.length)) {
-         const subp = this.painters[pindx++];
+      while ((pindx !== undefined) && (pindx < this.#painters.length)) {
+         const subp = this.#painters[pindx++];
 
          if (subp.getSnapId() === snap.fObjectID) {
             objpainter = subp;
@@ -1231,11 +1233,11 @@ class RPadPainter extends RObjectPainter {
       if (check(this.getSnapId()))
          return this;
 
-      if (!this.painters)
+      if (!this.#painters)
          return null;
 
-      for (let k=0; k < this.painters.length; ++k) {
-         let sub = this.painters[k];
+      for (let k=0; k < this.#painters.length; ++k) {
+         let sub = this.#painters[k];
 
          if (!onlyid && isFunc(sub.findSnap))
             sub = sub.findSnap(snapid);
@@ -1302,8 +1304,8 @@ class RPadPainter extends RObjectPainter {
       let missmatch = false, i = 0, k = 0;
 
       // match painters with new list of primitives
-      while (k < this.painters.length) {
-         const sub = this.painters[k];
+      while (k < this.#painters.length) {
+         const sub = this.#painters[k];
 
          // skip check secondary painters or painters without snapid
          // also frame painter will be excluded here
@@ -1332,7 +1334,7 @@ class RPadPainter extends RObjectPainter {
 
       let cnt = 1000;
       // remove painters without primitives, limit number of checks
-      while (!missmatch && (k < this.painters.length) && (--cnt >= 0)) {
+      while (!missmatch && (k < this.#painters.length) && (--cnt >= 0)) {
          if (this.removePrimitive(k) === -111)
             missmatch = true;
       }
@@ -1340,8 +1342,8 @@ class RPadPainter extends RObjectPainter {
          missmatch = true;
 
       if (missmatch) {
-         const old_painters = this.painters;
-         this.painters = [];
+         const old_painters = this.#painters;
+         this.#painters = [];
          old_painters.forEach(objp => objp.cleanup());
          this.setMainPainter(undefined, true);
          if (isFunc(this.removePadButtons))
@@ -1399,7 +1401,8 @@ class RPadPainter extends RObjectPainter {
             break;
          default: {
             const indx = parseInt(name);
-            if (Number.isInteger(indx)) selp = this.painters[indx];
+            if (Number.isInteger(indx))
+               selp = this.#painters[indx];
          }
       }
 
@@ -1583,10 +1586,10 @@ class RPadPainter extends RObjectPainter {
                   menu.add('Z axis', 'zaxis', this.itemContextMenu);
             }
 
-            if (this.painters?.length) {
+            if (this.#painters?.length) {
                menu.separator();
                const shown = [];
-               this.painters.forEach((pp, indx) => {
+               this.#painters.forEach((pp, indx) => {
                   const obj = pp?.getObject();
                   if (!obj || (shown.indexOf(obj) >= 0) || pp.isSecondary()) return;
                   let name = isFunc(pp.getClassName) ? pp.getClassName() : (obj._typename || '');
@@ -1606,8 +1609,8 @@ class RPadPainter extends RObjectPainter {
       let done = false;
       const prs = [];
 
-      for (let i = 0; i < this.painters.length; ++i) {
-         const pp = this.painters[i];
+      for (let i = 0; i < this.#painters.length; ++i) {
+         const pp = this.#painters[i];
 
          if (isFunc(pp.clickPadButton))
             prs.push(pp.clickPadButton(funcname, evnt));
