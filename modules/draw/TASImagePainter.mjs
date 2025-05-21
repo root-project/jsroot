@@ -14,6 +14,8 @@ import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
 class TASImagePainter extends ObjectPainter {
 
+   #contour;
+
    /** @summary Decode options string  */
    decodeOptions(opt) {
       const d = new DrawOptions(opt),
@@ -49,6 +51,17 @@ class TASImagePainter extends ObjectPainter {
       return rgba;
    }
 
+   /** @summary Cleanup painter
+     * @private */
+   cleanup() {
+      this.#contour = undefined;
+      super.cleanup();
+   }
+
+   /** @summary Return colors contour
+     * @private */
+   getContour() { return this.#contour; }
+
    /** @summary Create url using image buffer
      * @private */
    async makeUrlFromImageBuf(obj, fp) {
@@ -67,7 +80,7 @@ class TASImagePainter extends ObjectPainter {
       // max = Math.max.apply(null, obj.fImgBuf);
 
       // create contour like in hist painter to allow palette drawing
-      this.fContour = {
+      this.#contour = {
          arr: new Array(200),
          rgba: this.rgba,
          getLevels() { return this.arr; },
@@ -79,7 +92,7 @@ class TASImagePainter extends ObjectPainter {
          }
       };
       for (let k = 0; k < 200; k++)
-         this.fContour.arr[k] = min + (max-min)/(200-1)*k;
+         this.#contour.arr[k] = min + (max-min)/(200-1)*k;
 
       if (min >= max) max = min + 1;
 

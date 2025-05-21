@@ -815,7 +815,7 @@ registerMethods(`${nsREX}RPalette`, {
    },
 
    deleteContour() {
-      delete this.fContour;
+      this.fContour = undefined;
    },
 
    calcColor(value, entry1, entry2) {

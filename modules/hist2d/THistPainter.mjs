@@ -895,6 +895,7 @@ class THistPainter extends ObjectPainter {
    #color_palette;  // color palette used in histogram
    #auto_exec; // can be reused when sending option back to server
    #funcs_handler; // special instance for functions drawing
+   #contour;  // histogram colors contour
 
    /** @summary Constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -947,7 +948,7 @@ class THistPainter extends ObjectPainter {
       this.clear3DScene();
 
       this.clearHistPalette();
-      delete this.fContour;
+      this.#contour = undefined;
 
       super.cleanup();
    }
@@ -2032,7 +2033,7 @@ class THistPainter extends ObjectPainter {
          fp.zmax = cntr.colzmax;
       }
 
-      this.fContour = cntr;
+      this.#contour = cntr;
       return cntr;
    }
 
@@ -2076,15 +2077,16 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Return contour object */
    getContour(force_recreate) {
-      if (this.fContour && !force_recreate)
-         return this.fContour;
+      if ((force_recreate === false) || (this.#contour && (force_recreate !== true)))
+         return this.#contour;
 
       const main = this.getMainPainter(),
-            fp = this.getFramePainter();
+            fp = this.getFramePainter(),
+            main_cont = main?.getContour(false);
 
-      if (main?.fContour && (main !== this) && !this.getOptions().IgnoreMainScale) {
-         this.fContour = main.fContour;
-         return this.fContour;
+      if (main_cont && (main !== this) && !this.getOptions().IgnoreMainScale) {
+         this.#contour = main_cont;
+         return main_cont;
       }
 
       // if not initialized, first create contour array
@@ -2593,7 +2595,7 @@ class THistPainter extends ObjectPainter {
          this.maxbin = this.minbin = 0;
 
       // force recalculation of z levels
-      this.fContour = null;
+      this.#contour = undefined;
 
       if (args.zrange)
          Object.assign(res, this.#getContourRanges(this.getMainPainter(), this.getFramePainter()));

@@ -969,7 +969,7 @@ class TPavePainter extends ObjectPainter {
             pad = pp.getRootPad(true),
             main = palette.$main_painter || this.getMainPainter(),
             fp = this.getFramePainter(),
-            contour = main.fContour,
+            contour = main.getContour(false),
             levels = contour?.getLevels(),
             is_th3 = isFunc(main.getDimension) && (main.getDimension() === 3),
             is_scatter = isFunc(main.getZaxis),
