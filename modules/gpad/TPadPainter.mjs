@@ -560,12 +560,15 @@ class TPadPainter extends ObjectPainter {
      * @param {string} kind - 'all' for all objects (default), 'pads' only pads and sub-pads, 'objects' only for object in current pad
      * @private */
    forEachPainterInPad(userfunc, kind) {
-      if (!kind) kind = 'all';
-      if (kind !== 'objects') userfunc(this);
+      if (!kind)
+         kind = 'all';
+      if (kind !== 'objects')
+         userfunc(this);
       for (let k = 0; k < this.painters.length; ++k) {
          const sub = this.painters[k];
          if (isFunc(sub.forEachPainterInPad)) {
-            if (kind !== 'objects') sub.forEachPainterInPad(userfunc, kind);
+            if (kind !== 'objects')
+               sub.forEachPainterInPad(userfunc, kind);
          } else if (kind !== 'pads')
             userfunc(sub);
       }

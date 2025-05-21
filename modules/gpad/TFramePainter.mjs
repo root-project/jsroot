@@ -1406,18 +1406,14 @@ class FrameInteractive extends TooltipHandler {
       * @desc it is typically for 2-Dim histograms or
       * when histogram not draw, defined by other painters */
    isAllowedDefaultYZooming() {
-      if (this.self_drawaxes) return true;
+      if (this.self_drawaxes)
+         return true;
 
-      const pad_painter = this.getPadPainter();
-      if (pad_painter?.painters) {
-         for (let k = 0; k < pad_painter.painters.length; ++k) {
-            const subpainter = pad_painter.painters[k];
-            if (subpainter?.wheel_zoomy !== undefined)
-               return subpainter.wheel_zoomy;
-         }
-      }
-
-      return false;
+      let res;
+      this.forEachPainter(objp => {
+         res = res ?? objp.wheel_zoomy;
+      }, 'objects');
+      return res;
    }
 
    /** @summary Handles mouse wheel event */

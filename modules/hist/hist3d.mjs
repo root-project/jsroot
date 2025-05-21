@@ -718,10 +718,10 @@ function render3D(tmout) {
       getCameraPosition(this);
 
    if (this.processRender3D) {
-      this.getPadPainter()?.painters?.forEach(objp => {
+      this.forEachPainter(objp => {
          if (isFunc(objp.handleRender3D))
             objp.handleRender3D();
-      });
+      }, 'objects');
    }
 }
 
