@@ -929,9 +929,9 @@ class TGraphPainter extends ObjectPainter {
          if (isFunc(pp?.getAutoColor)) {
             const icolor = pp.getAutoColor(graph.$num_graphs);
             this.#auto_exec = ''; // can be reused when sending option back to server
-            if (o._pfc > 1) { o._pfc = 1; graph.fFillColor = icolor; this.#auto_exec += `SetFillColor(${icolor});;`; delete this.fillatt; }
-            if (o._plc > 1) { o._plc = 1; graph.fLineColor = icolor; this.#auto_exec += `SetLineColor(${icolor});;`; delete this.lineatt; }
-            if (o._pmc > 1) { o._pmc = 1; graph.fMarkerColor = icolor; this.#auto_exec += `SetMarkerColor(${icolor});;`; delete this.markeratt; }
+            if (o._pfc > 1) { o._pfc = 1; graph.fFillColor = icolor; this.#auto_exec += `SetFillColor(${icolor});;`; this.deleteAttr('fill'); }
+            if (o._plc > 1) { o._plc = 1; graph.fLineColor = icolor; this.#auto_exec += `SetLineColor(${icolor});;`; this.deleteAttr('line'); }
+            if (o._pmc > 1) { o._pmc = 1; graph.fMarkerColor = icolor; this.#auto_exec += `SetMarkerColor(${icolor});;`; this.deleteAttr('marker'); }
          }
       }
 

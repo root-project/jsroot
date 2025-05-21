@@ -2382,7 +2382,7 @@ class TFramePainter extends FrameInteractive {
          this.createAttFill({ attr: tframe });
          this.#border_mode = tframe.fBorderMode;
          this.#border_size = tframe.fBorderSize;
-      } else if (this.fillatt === undefined) {
+      } else if (!this.fillatt) {
          if (pad?.fFrameFillColor)
             this.createAttFill({ pattern: pad.fFrameFillStyle, color: pad.fFrameFillColor });
          else if (pad)

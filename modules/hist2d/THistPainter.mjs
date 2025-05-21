@@ -1038,9 +1038,9 @@ class THistPainter extends ObjectPainter {
          if (isFunc(pp?.getAutoColor)) {
             const icolor = pp.getAutoColor(histo.$num_histos);
             this.#auto_exec = '';
-            if (o._pfc > 1) { o._pfc = 1; histo.fFillColor = icolor; this.#auto_exec += `SetFillColor(${icolor});;`; delete this.fillatt; }
-            if (o._plc > 1) { o._plc = 1; histo.fLineColor = icolor; this.#auto_exec += `SetLineColor(${icolor});;`; delete this.lineatt; }
-            if (o._pmc > 1) { o._pmc = 1; histo.fMarkerColor = icolor; this.#auto_exec += `SetMarkerColor(${icolor});;`; delete this.markeratt; }
+            if (o._pfc > 1) { o._pfc = 1; histo.fFillColor = icolor; this.#auto_exec += `SetFillColor(${icolor});;`; this.deleteAttr('fill'); }
+            if (o._plc > 1) { o._plc = 1; histo.fLineColor = icolor; this.#auto_exec += `SetLineColor(${icolor});;`; this.deleteAttr('line'); }
+            if (o._pmc > 1) { o._pmc = 1; histo.fMarkerColor = icolor; this.#auto_exec += `SetMarkerColor(${icolor});;`; this.deleteAttr('marker'); }
          }
       }
 

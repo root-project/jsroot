@@ -34,6 +34,10 @@ class ObjectPainter extends BasePainter {
    #user_context_menu; // function for user context menu
    #special_draw_area; // current special draw area like projection
    #root_colors;     // custom colors list
+   #fillatt;         // fill attribute
+   #lineatt;         // line attribute
+   #markeratt;       // marker attribute
+   #textatt;         // text attribute
 
    /** @summary constructor
      * @param {object|string} dom - dom element or identifier or pad painter
@@ -113,9 +117,7 @@ class ObjectPainter extends BasePainter {
       this.#secondary_id = undefined;
 
       // remove attributes objects (if any)
-      delete this.fillatt;
-      delete this.lineatt;
-      delete this.markeratt;
+      this.deleteAttr();
       this.#root_colors = undefined;
       this.#options = undefined;
       this.#options_store = undefined;
@@ -725,7 +727,7 @@ class ObjectPainter extends BasePainter {
       if (args.painter === undefined)
          args.painter = this;
 
-      let handler = args.std ? this.markeratt : null;
+      let handler = args.std ? this.#markeratt : null;
 
       if (!handler)
          handler = new TAttMarkerHandler(args);
@@ -733,7 +735,7 @@ class ObjectPainter extends BasePainter {
          handler.setArgs(args);
 
       if (args.std)
-         this.markeratt = handler;
+         this.#markeratt = handler;
       return handler;
    }
 
@@ -756,7 +758,7 @@ class ObjectPainter extends BasePainter {
       if (args.painter === undefined)
          args.painter = this;
 
-      let handler = args.std ? this.lineatt : null;
+      let handler = args.std ? this.#lineatt : null;
 
       if (!handler)
          handler = new TAttLineHandler(args);
@@ -764,7 +766,7 @@ class ObjectPainter extends BasePainter {
          handler.setArgs(args);
 
       if (args.std)
-         this.lineatt = handler;
+         this.#lineatt = handler;
       return handler;
    }
 
@@ -784,7 +786,7 @@ class ObjectPainter extends BasePainter {
       if (args.painter === undefined)
          args.painter = this;
 
-      let handler = args.std ? this.textatt : null;
+      let handler = args.std ? this.#textatt : null;
 
       if (!handler)
          handler = new TAttTextHandler(args);
@@ -792,7 +794,7 @@ class ObjectPainter extends BasePainter {
          handler.setArgs(args);
 
       if (args.std)
-         this.textatt = handler;
+         this.#textatt = handler;
       return handler;
    }
 
@@ -823,7 +825,7 @@ class ObjectPainter extends BasePainter {
       if (args.painter === undefined)
          args.painter = this;
 
-      let handler = args.std ? this.fillatt : null;
+      let handler = args.std ? this.#fillatt : null;
 
       if (!args.svg)
          args.svg = this.getCanvSvg();
@@ -834,9 +836,14 @@ class ObjectPainter extends BasePainter {
          handler.setArgs(args);
 
       if (args.std)
-         this.fillatt = handler;
+         this.#fillatt = handler;
       return handler;
    }
+
+   get fillatt() { return this.#fillatt; }
+   get lineatt() { return this.#lineatt; }
+   get markeratt() { return this.#markeratt; }
+   get textatt() { return this.#textatt; }
 
    /** @summary call function for each painter in the pad
      * @desc Iterate over all known painters
@@ -920,10 +927,15 @@ class ObjectPainter extends BasePainter {
 
    /** @summary remove all created draw attributes
      * @protected */
-   deleteAttr() {
-      delete this.lineatt;
-      delete this.fillatt;
-      delete this.markeratt;
+   deleteAttr(name) {
+      if (!name || name === 'line')
+         this.#lineatt = undefined;
+      if (!name || name === 'fill')
+         this.#fillatt = undefined;
+      if (!name || name === 'marker')
+         this.#markeratt = undefined;
+      if (!name || name === 'text')
+         this.#textatt = undefined;
    }
 
    /** @summary Show object in inspector for provided object
