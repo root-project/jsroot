@@ -1100,17 +1100,20 @@ class TPadPainter extends ObjectPainter {
      * @desc It can be TStyle or list of colors or palette object
      * @return {boolean} true if any */
    checkSpecial(obj) {
-      if (!obj) return false;
+      if (!obj)
+         return false;
 
       if (obj._typename === clTStyle) {
          Object.assign(gStyle, obj);
          return true;
       }
 
+      const o = this.getOptions(true);
+
       if ((obj._typename === clTObjArray) && (obj.name === 'ListOfColors')) {
-         if (this.options?.CreatePalette) {
+         if (o?.CreatePalette) {
             let arr = [];
-            for (let n = obj.arr.length - this.options.CreatePalette; n < obj.arr.length; ++n) {
+            for (let n = obj.arr.length - o.CreatePalette; n < obj.arr.length; ++n) {
                const col = getRGBfromTColor(obj.arr[n]);
                if (!col) { console.log('Fail to create color for palette'); arr = null; break; }
                arr.push(col);
@@ -1119,11 +1122,11 @@ class TPadPainter extends ObjectPainter {
                this.#custom_palette = new ColorPalette(arr);
          }
 
-         if (!this.options || this.options.GlobalColors) // set global list of colors
+         if (!o || o.GlobalColors) // set global list of colors
             adoptRootColors(obj);
 
          // copy existing colors and extend with new values
-         this.#custom_colors = this.options?.LocalColors ? extendRootColors(null, obj) : null;
+         this.#custom_colors = o?.LocalColors ? extendRootColors(null, obj) : null;
          return true;
       }
 
@@ -1141,7 +1144,7 @@ class TPadPainter extends ObjectPainter {
             }
          }
 
-         const apply = (!this.options || (!missing && !this.options.IgnorePalette));
+         const apply = (!o || (!missing && !o.IgnorePalette));
          this.#custom_palette_indexes = apply ? indx : null;
          this.#custom_palette_colors = apply ? arr : null;
 
@@ -1813,20 +1816,21 @@ class TPadPainter extends ObjectPainter {
    /** @summary Process snap with colors
      * @private */
    processSnapColors(snap) {
-      const ListOfColors = decodeWebCanvasColors(snap.fSnapshot.fOper);
+      const ListOfColors = decodeWebCanvasColors(snap.fSnapshot.fOper),
+            o = this.getOptions(true);
 
       // set global list of colors
-      if (!this.options || this.options.GlobalColors)
+      if (!o || o.GlobalColors)
          adoptRootColors(ListOfColors);
 
       const greyscale = this.pad?.TestBit(kIsGrayscale) ?? false,
             colors = extendRootColors(null, ListOfColors, greyscale);
 
       // copy existing colors and extend with new values
-      this.#custom_colors = this.options?.LocalColors ? colors : null;
+      this.#custom_colors = o?.LocalColors ? colors : null;
 
       // set palette
-      if (snap.fSnapshot.fBuf && (!this.options || !this.options.IgnorePalette)) {
+      if (snap.fSnapshot.fBuf && (!o || !o.IgnorePalette)) {
          const indexes = [], palette = [];
          for (let n = 0; n < snap.fSnapshot.fBuf.length; ++n) {
             indexes[n] = Math.round(snap.fSnapshot.fBuf[n]);

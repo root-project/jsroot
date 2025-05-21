@@ -3762,7 +3762,7 @@ class TGeoPainter extends ObjectPainter {
             projx = (this.ctrl.project === 'x'),
             projy = (this.ctrl.project === 'y'),
             projz = (this.ctrl.project === 'z'),
-            hit_scale = Math.max(hit.fMarkerSize * this.getOverallSize() * (this.options.dummy ? 0.015 : 0.005), 0.2),
+            hit_scale = Math.max(hit.fMarkerSize * this.getOverallSize() * (this.getOptions().dummy ? 0.015 : 0.005), 0.2),
             pnts = new PointsCreator(nhits, this.#webgl, hit_scale);
 
       for (let i = 0; i < nhits; i++) {
@@ -4088,7 +4088,7 @@ class TGeoPainter extends ObjectPainter {
             this.batch_mode = isBatchMode() || (!dom.empty() && dom.property('_batch_mode'));
             this.batch_format = dom.property('_batch_format');
 
-            const render3d = getRender3DKind(this.options.Render3D, this.batch_mode);
+            const render3d = getRender3DKind(this.getOptions().Render3D, this.batch_mode);
 
             // activate worker
             if ((this.ctrl.use_worker > 0) && !this.batch_mode)
