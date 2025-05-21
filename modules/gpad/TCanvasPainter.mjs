@@ -814,7 +814,7 @@ class TCanvasPainter extends TPadPainter {
          canv.fFillStyle = 1001;
 
       this.forEachPainterInPad(pp => {
-         if (pp.painters.length && pp.pad.fPrimitives && !pp.pad.fPrimitives.arr.length) {
+         if (pp.getNumPainters() && pp.pad.fPrimitives && !pp.pad.fPrimitives.arr.length) {
             // create list of primitives when missing
             prims.push(pp.pad.fPrimitives);
             pp.forEachPainterInPad(p => {

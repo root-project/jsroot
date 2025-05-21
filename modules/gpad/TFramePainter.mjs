@@ -2975,12 +2975,12 @@ class TFramePainter extends FrameInteractive {
 
          // than try to unzoom all overlapped objects
          if (!changed) {
-            this.getPadPainter()?.painters?.forEach(painter => {
+            this.forEachPainter(painter => {
                if (isFunc(painter?.unzoomUserRange)) {
                   if (painter.unzoomUserRange(unzoom_x, unzoom_y, unzoom_z))
                      changed = true;
                   }
-            });
+            }, 'objects');
          }
       }
       if (!changed)

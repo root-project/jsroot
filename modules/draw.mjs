@@ -505,16 +505,13 @@ async function redraw(dom, obj, opt) {
          if (redraw_res)
             res_painter = can_painter;
       } else {
-         for (let i = 0; i < can_painter.painters.length; ++i) {
-            const painter = can_painter.painters[i];
-            if (painter.matchObjectType(obj._typename)) {
+         can_painter.forEachPainterInPad(painter => {
+            if (!res_painter && painter.matchObjectType(obj._typename)) {
                redraw_res = painter.redrawObject(obj, opt);
-               if (redraw_res) {
+               if (redraw_res)
                   res_painter = painter;
-                  break;
-               }
-            }
-         }
+            };
+         }, 'objects');
       }
    } else {
       const top = new BasePainter(dom).getTopPainter();

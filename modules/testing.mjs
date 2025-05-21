@@ -340,9 +340,10 @@ async function testPadItemContextMenu(node, args, pp) {
          await testPadItemContextMenu(node, args, sub_pads[k]);
    }
 
-   if (typeof cp?.itemContextMenu !== 'function') return;
+   if (typeof cp?.itemContextMenu !== 'function')
+      return;
 
-   const nprimitives = cp.painters?.length ?? 0,
+   const nprimitives = cp.getNumPainters() ?? 0,
          names = ['xaxis', 'yaxis', 'zaxis', 'pad', 'frame'];
 
    for (let i = -names.length; i < nprimitives; ++i) {
