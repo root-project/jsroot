@@ -39,7 +39,7 @@ class TH1Painter extends TH1Painter2D {
             assignFrame3DMethods(fp);
             pr = fp.create3DScene(o.Render3D, o.x3dscale, o.y3dscale, o.Ortho).then(() => {
                fp.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0, this);
-               fp.set3DOptions(this.options);
+               fp.set3DOptions(o);
                fp.drawXYZ(fp.toplevel, TAxisPainter, {
                   ndim: 1, hist_painter: this, use_y_for_z: true, zmult, zoom: settings.Zooming,
                   draw: (o.Axis !== -1), drawany: o.isCartesian()

@@ -253,7 +253,8 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Create bins for TF1 drawing */
    createBins() {
-      const gr = this.getGraph();
+      const gr = this.getGraph(),
+            o = this.getOptions();
       if (!gr) return;
 
       let kind = 0, npoints = gr.fNpoints;
@@ -311,7 +312,7 @@ class TGraphPainter extends ObjectPainter {
       // workaround, are there better way to show marker at 0,0 on the top of the frame?
       this.#frame_layer = true;
       if ((this.xmin === 0) && (this.ymin === 0) && (npoints > 0) && (this.#bins[0].x === 0) && (this.#bins[0].y === 0) &&
-          this.options.Mark && !this.options.Line && !this.options.Curve && !this.options.Fill)
+          o.Mark && !o.Line && !o.Curve && !o.Fill)
          this.#frame_layer = 'upper_layer';
    }
 
@@ -415,7 +416,7 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Returns true if graph drawing can be optimize */
    canOptimize() {
-      return (settings.OptimizeDraw > 0) && !this.options.NoOpt;
+      return (settings.OptimizeDraw > 0) && !this.getOptions().NoOpt;
    }
 
    /** @summary Returns optimized bins - if optimization enabled */
@@ -460,8 +461,8 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Returns tooltip for specified bin */
    getTooltips(d) {
-      const fp = this.get_fp(), lines = [],
-            funcs = fp.getGrFuncs(this.options.second_x, this.options.second_y),
+      const fp = this.get_fp(), lines = [], o = this.getOptions(),
+            funcs = fp.getGrFuncs(o.second_x, o.second_y),
             gme = this.get_gme();
 
       lines.push(this.getObjectHint());
@@ -472,13 +473,13 @@ class TGraphPainter extends ObjectPainter {
          lines.push('x = ' + funcs.axisAsText('x', d.x), 'y = ' + funcs.axisAsText('y', d.y));
          if (gme)
             lines.push('error x = -' + funcs.axisAsText('x', gme.fExL[d.indx]) + '/+' + funcs.axisAsText('x', gme.fExH[d.indx]));
-         else if (this.options.Errors && (funcs.x_handle.kind === kAxisNormal) && (d.exlow || d.exhigh))
+         else if (o.Errors && (funcs.x_handle.kind === kAxisNormal) && (d.exlow || d.exhigh))
             lines.push('error x = -' + funcs.axisAsText('x', d.exlow) + '/+' + funcs.axisAsText('x', d.exhigh));
 
          if (gme) {
             for (let ny = 0; ny < gme.fNYErrors; ++ny)
                lines.push(`error y${ny} = -${funcs.axisAsText('y', gme.fEyL[ny][d.indx])}/+${funcs.axisAsText('y', gme.fEyH[ny][d.indx])}`);
-         } else if ((this.options.Errors || (this.options.EF > 0)) && (funcs.y_handle.kind === kAxisNormal) && (d.eylow || d.eyhigh))
+         } else if ((o.Errors || (o.EF > 0)) && (funcs.y_handle.kind === kAxisNormal) && (d.eylow || d.eyhigh))
             lines.push('error y = -' + funcs.axisAsText('y', d.eylow) + '/+' + funcs.axisAsText('y', d.eyhigh));
       }
       return lines;
@@ -922,7 +923,7 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Create necessary histogram draw attributes */
    createGraphDrawAttributes(only_check_auto) {
-      const graph = this.getGraph(), o = this.options;
+      const graph = this.getGraph(), o = this.getOptions();
       if (o._pfc > 1 || o._plc > 1 || o._pmc > 1) {
          const pp = this.getPadPainter();
          if (isFunc(pp?.getAutoColor)) {
@@ -945,16 +946,17 @@ class TGraphPainter extends ObjectPainter {
    /** @summary draw TGraph */
    drawGraph() {
       const fp = this.get_fp(),
-            graph = this.getGraph();
-      if (!fp || !this.options)
+            graph = this.getGraph(),
+            o = this.getOptions();
+      if (!fp)
          return;
 
       // special mode for TMultiGraph 3d drawing
-      if (this.options.pos3d)
+      if (o.pos3d)
          return this.drawBins3D(fp, graph);
 
       const is_gme = Boolean(this.get_gme()),
-            funcs = fp.getGrFuncs(this.options.second_x, this.options.second_y),
+            funcs = fp.getGrFuncs(o.second_x, o.second_y),
             w = funcs.getFrameWidth(),
             h = funcs.getFrameHeight(),
             g = this.createG(fp.pad_layer ? false : this.#frame_layer);
@@ -967,7 +969,7 @@ class TGraphPainter extends ObjectPainter {
       this.#marker_size = 0; // indicate if markers are drawn
       const draw_g = is_gme ? g.append('svg:g') : g;
 
-      this.drawBins(funcs, this.options, draw_g, w, h, this.lineatt, this.fillatt, true);
+      this.drawBins(funcs, o, draw_g, w, h, this.lineatt, this.fillatt, true);
 
       if (graph._typename === 'TGraphQQ')
          this.appendQQ(funcs, graph);
@@ -975,12 +977,12 @@ class TGraphPainter extends ObjectPainter {
       if (is_gme) {
          for (let k = 0; k < graph.fNYErrors; ++k) {
             let lineatt = this.lineatt, fillatt = this.fillatt;
-            if (this.options.individual_styles) {
+            if (o.individual_styles) {
                lineatt = this.createAttLine({ attr: graph.fAttLine[k], std: false });
                fillatt = this.createAttFill({ attr: graph.fAttFill[k], std: false });
             }
             const sub_g = g.append('svg:g'),
-                  options = (k < this.options.blocks.length) ? this.options.blocks[k] : this.options;
+                  options = (k < o.blocks.length) ? o.blocks[k] : o;
             this.extractGmeErrors(k);
             this.drawBins(funcs, options, sub_g, w, h, lineatt, fillatt);
          }
@@ -1005,10 +1007,11 @@ class TGraphPainter extends ObjectPainter {
          return null;
 
       const fp = this.get_fp(),
+            o = this.getOptions(),
             height = fp.getFrameHeight(),
             esz = this.error_size,
-            isbar1 = (this.options.Bar === 1),
-            funcs = isbar1 ? fp.getGrFuncs(this.options.second_x, this.options.second_y) : null,
+            isbar1 = (o.Bar === 1),
+            funcs = isbar1 ? fp.getGrFuncs(o.second_x, o.second_y) : null,
             msize = this.#marker_size ? Math.round(this.#marker_size / 2 + 1.5) : 0;
       let findbin = null, best_dist2 = 1e10, best = null;
 
@@ -1119,7 +1122,8 @@ class TGraphPainter extends ObjectPainter {
          return null;
 
       const islines = (this.draw_kind === 'lines'),
-            funcs = this.get_fp().getGrFuncs(this.options.second_x, this.options.second_y);
+            o = this.getOptions(),
+            funcs = this.get_fp().getGrFuncs(o.second_x, o.second_y);
       let bestindx = -1,
           bestbin = null,
           bestdist = 1e10,
@@ -1222,7 +1226,8 @@ class TGraphPainter extends ObjectPainter {
       const islines = (this.draw_kind === 'lines'),
             ismark = (this.draw_kind === 'mark'),
             fp = this.get_fp(),
-            funcs = fp.getGrFuncs(this.options.second_x, this.options.second_y),
+            o = this.getOptions(),
+            funcs = fp.getGrFuncs(o.second_x, o.second_y),
             gr = this.getGraph(),
             res = { name: gr.fName, title: gr.fTitle,
                     x: best.bin ? funcs.grx(best.bin.x) : best.linex,
@@ -1240,7 +1245,7 @@ class TGraphPainter extends ObjectPainter {
          res.menu = res.exact = true;
          res.menu_dist = best.linedist;
       } else if (best.bin) {
-         if (this.options.EF && islines) {
+         if (o.EF && islines) {
             res.gry1 = funcs.gry(best.bin.y - best.bin.eylow);
             res.gry2 = funcs.gry(best.bin.y + best.bin.eyhigh);
          } else
@@ -1310,11 +1315,11 @@ class TGraphPainter extends ObjectPainter {
             if (!hint.islines)
                elem.style('stroke', hint.color1 === 'black' ? 'green' : 'black').style('fill', 'none');
              else {
-               if (this.options.Line || this.options.Curve)
+               if (o.Line || o.Curve)
                   elem.call(this.lineatt.func);
                else
                   elem.style('stroke', 'black');
-               if (this.options.Fill)
+               if (o.Fill)
                   elem.call(this.fillatt.func);
                else
                   elem.style('fill', 'none');
@@ -1330,8 +1335,9 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Start moving of TGraph */
    moveStart(x, y, evnt) {
+      const o = this.getOptions();
       this.#pos_dx = this.#pos_dy = 0;
-      this.#move_funcs = this.get_fp().getGrFuncs(this.options.second_x, this.options.second_y);
+      this.#move_funcs = this.get_fp().getGrFuncs(o.second_x, o.second_y);
       const hint = evnt?.shiftKey ? null : this.extractTooltip({ x, y });
       if (hint?.exact && (hint.binindx !== undefined)) {
          this.#move_binindx = hint.binindx;
@@ -1443,7 +1449,8 @@ class TGraphPainter extends ObjectPainter {
 
          if (method.fName === 'InsertPoint') {
             if (pnt) {
-               const funcs = fp.getGrFuncs(this.options.second_x, this.options.second_y),
+               const o = this.getOptions(),
+                     funcs = fp.getGrFuncs(o.second_x, o.second_y),
                      userx = funcs.revertAxis('x', pnt.x) ?? 0,
                      usery = funcs.revertAxis('y', pnt.y) ?? 0;
                this.submitCanvExec(`AddPoint(${userx.toFixed(3)}, ${usery.toFixed(3)})`, method.$execid);
@@ -1473,7 +1480,7 @@ class TGraphPainter extends ObjectPainter {
       graph.fMinimum = obj.fMinimum;
       graph.fMaximum = obj.fMaximum;
 
-      const o = this.options;
+      const o = this.getOptions();
 
       if (this.hasSnapId())
          o._pfc = o._plc = o._pmc = 0; // auto colors should be processed in web canvas
@@ -1498,7 +1505,9 @@ class TGraphPainter extends ObjectPainter {
       if (!this.matchObjectType(obj))
          return false;
 
-      if (opt && (opt !== this.options.original))
+      const o = this.getOptions();
+
+      if (opt && (opt !== o.original))
          this.decodeOptions(opt);
 
       const new_funcs = this._updateMembers(this.getObject(), obj);
@@ -1512,7 +1521,7 @@ class TGraphPainter extends ObjectPainter {
          const histo = this.createHistogram(),
                hist_painter = this.getMainPainter();
          if (hist_painter?.isSecondary(this)) {
-            hist_painter.updateObject(histo, this.options.Axis);
+            hist_painter.updateObject(histo, o.Axis);
             this.#redraw_hist = true;
          }
       }
@@ -1532,7 +1541,7 @@ class TGraphPainter extends ObjectPainter {
       let arr = gr.fX;
       if (this.isScatter())
          arr = (axis === 'x') ? gr.fX : gr.fY;
-      else if (axis !== (this.options.pos3d ? 'y' : 'x'))
+      else if (axis !== (this.getOptions().pos3d ? 'y' : 'x'))
          return false;
 
       for (let n = 0; n < gr.fNpoints; ++n) {
@@ -1615,7 +1624,7 @@ class TGraphPainter extends ObjectPainter {
    async drawAxisHisto() {
       const need_histo = !this.getHistogram(),
             histo = this.createHistogram(need_histo, need_histo);
-      return TH1Painter.draw(this.getDrawDom(), histo, this.options.Axis);
+      return TH1Painter.draw(this.getDrawDom(), histo, this.getOptions().Axis);
    }
 
    /** @summary Draw TGraph
