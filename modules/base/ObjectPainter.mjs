@@ -26,6 +26,7 @@ class ObjectPainter extends BasePainter {
    #snapid;          // assigned online identifier
    #is_primary;      // if primary painter
    #secondary_id;    // id of this painter in relation to primary painter
+   #options;         // current options object
    #options_store;   // stored draw options used to check changes
    #user_tooltip_handler; // configured user tooltip handler
    #user_tooltip_timeout; // timeout configured with tooltip handler
@@ -51,7 +52,7 @@ class ObjectPainter extends BasePainter {
       this.setPadName(pad_name); // name of pad where object is drawn
       this.assignObject(obj);
       if (isStr(opt))
-         this.options = { original: opt };
+         this.#options = { original: opt };
    }
 
    /** @summary Assign object to the painter
@@ -116,7 +117,7 @@ class ObjectPainter extends BasePainter {
       delete this.lineatt;
       delete this.markeratt;
       this.#root_colors = undefined;
-      delete this.options;
+      this.#options = undefined;
       this.#options_store = undefined;
 
       // remove extra fields from v7 painters
@@ -161,35 +162,42 @@ class ObjectPainter extends BasePainter {
          cp.drawItemNameOnCanvas(name);
    }
 
-   /** @summary Create this.options and copy new args
-     * @return this.options
+   /** @summary Create options and copy new args
+     * @return options
      * @private */
-   setOptions(new_options, set_arg) {
-      if (set_arg === true)
-         this.options = new_options;
+   setOptions(new_options, as_is) {
+      if (as_is)
+         this.#options = new_options;
       else {
-         if (!this.options)
-            this.options = {};
-         Object.assign(this.options, new_options);
+         if (!this.#options)
+            this.#options = {};
+         Object.assign(this.#options, new_options);
       }
-      return this.options;
+      return this.#options;
    }
 
    /** @summary Return actual options */
-   getOptions() { return this.options; }
+   getOptions(as_is) {
+      if (!as_is && !this.#options)
+         this.#options = {};
+      return this.#options;
+   }
 
-   /** @summary Store actual this.options together with original string
+   /** @summary Emulate old options property */
+   get options() { return this.getOptions(); };
+
+   /** @summary Store actual options together with original string
      * @private */
    storeDrawOpt(original) {
-      if (!this.options)
+      if (!this.#options)
          return;
       if (!original)
          original = '';
       const pp = original.indexOf(';;');
       if (pp >= 0)
          original = original.slice(0, pp);
-      this.options.original = original;
-      this.#options_store = Object.assign({}, this.options);
+      this.#options.original = original;
+      this.#options_store = Object.assign({}, this.#options);
    }
 
    /** @summary Return dom argument for object drawing
@@ -201,28 +209,28 @@ class ObjectPainter extends BasePainter {
      * @param ignore_pad - do not include pad settings into histogram draw options
      * @desc if options are not modified - returns original string which was specified for object draw */
    getDrawOpt(ignore_pad) {
-      if (!this.options)
+      if (!this.#options)
          return '';
 
-      if (isFunc(this.options.asString)) {
+      if (isFunc(this.#options.asString)) {
          let changed = false;
          const pp = this.getPadPainter();
          if (!this.#options_store || pp?._interactively_changed)
             changed = true;
          else {
             for (const k in this.#options_store) {
-               if (this.options[k] !== this.#options_store[k]) {
+               if (this.#options[k] !== this.#options_store[k]) {
                   if ((k[0] !== '_') && (k[0] !== '$') && (k[0].toLowerCase() !== k[0]))
                      changed = true;
                }
             }
          }
 
-         if (changed && isFunc(this.options.asString))
-            return this.options.asString(this.isMainPainter(), ignore_pad ? null : pp?.getRootPad());
+         if (changed && isFunc(this.#options.asString))
+            return this.#options.asString(this.isMainPainter(), ignore_pad ? null : pp?.getRootPad());
       }
 
-      return this.options.original || ''; // nothing better, return original draw option
+      return this.#options.original || ''; // nothing better, return original draw option
    }
 
    /** @summary Returns array with supported draw options as configured in draw.mjs
