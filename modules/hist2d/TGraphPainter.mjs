@@ -1308,7 +1308,8 @@ class TGraphPainter extends ObjectPainter {
             if (Math.abs(hint.gry1-hint.gry2) > 1)
                ttbin.append('svg:circle').attr('cy', Math.round(hint.gry2));
 
-            const elem = ttbin.selectAll('circle')
+            const o = this.getOptions(),
+                  elem = ttbin.selectAll('circle')
                             .attr('r', hint.radius)
                             .attr('cx', Math.round(hint.x));
 

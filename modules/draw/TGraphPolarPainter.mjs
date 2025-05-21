@@ -181,7 +181,8 @@ class TGraphPolargramPainter extends TooltipHandler {
 
    /** @summary Draw polargram polar labels */
    async drawPolarLabels(polar, nmajor) {
-      const fontsize = Math.round(polar.fPolarTextSize * this.szy * 2);
+      const fontsize = Math.round(polar.fPolarTextSize * this.szy * 2),
+            o = this.getOptions();
 
       return this.startTextDrawingAsync(polar.fPolarLabelFont, fontsize)
                  .then(() => {
@@ -196,7 +197,7 @@ class TGraphPolargramPainter extends TooltipHandler {
 
             let align = 12, rotate = 0;
 
-            if (this.options.OrthoLabels) {
+            if (o.OrthoLabels) {
                rotate = -n/nmajor*360;
                if ((rotate > -271) && (rotate < -91)) {
                   align = 32; rotate += 180;
@@ -223,6 +224,7 @@ class TGraphPolargramPainter extends TooltipHandler {
          return;
 
       const polar = this.getObject(),
+            o = this.getOptions(),
             rect = this.getPadPainter().getFrameRect(),
             g = this.createG();
 
@@ -283,7 +285,7 @@ class TGraphPolargramPainter extends TooltipHandler {
       }
 
       return this.startTextDrawingAsync(polar.fRadialLabelFont, Math.round(polar.fRadialTextSize * this.szy * 2)).then(() => {
-         const axis_angle = - (this.options.rangle || polar.fAxisAngle) / 180 * Math.PI,
+         const axis_angle = - (o.rangle || polar.fAxisAngle) / 180 * Math.PI,
                ca = Math.cos(axis_angle),
                sa = Math.sin(axis_angle);
          for (let n = 0; n < ticks.length; ++n) {
@@ -306,7 +308,7 @@ class TGraphPolargramPainter extends TooltipHandler {
                                y: Math.round(ry*sa),
                                text: this.format(ticks[n]),
                                color: this.getColor(polar.fRadialLabelColor), latex: 0 });
-               if (this.options.rdot) {
+               if (o.rdot) {
                   g.append('ellipse')
                    .attr('cx', Math.round(rx * ca))
                    .attr('cy', Math.round(ry * sa))
@@ -344,7 +346,7 @@ class TGraphPolargramPainter extends TooltipHandler {
 
          return this.finishTextDrawing();
       }).then(() => {
-         return this.options.NoLabels ? true : this.drawPolarLabels(polar, nmajor);
+         return o.NoLabels ? true : this.drawPolarLabels(polar, nmajor);
       }).then(() => {
          nminor = Math.floor((polar.fNdivPol % 10000) / 100);
 
@@ -369,14 +371,14 @@ class TGraphPolargramPainter extends TooltipHandler {
 
    /** @summary Fill TGraphPolargram context menu */
    fillContextMenuItems(menu) {
-      const pp = this.getObject();
+      const pp = this.getObject(), o = this.getOptions();
       menu.sub('Axis range');
       menu.addchk(pp.fRadian, 'Radian', flag => { pp.fRadian = flag; pp.fDegree = pp.fGrad = false; this.interactiveRedraw('pad', flag ? 'exec:SetToRadian()' : 'exec:SetTwoPi()'); }, 'Handle data angles as radian range 0..2*Pi');
       menu.addchk(pp.fDegree, 'Degree', flag => { pp.fDegree = flag; pp.fRadian = pp.fGrad = false; this.interactiveRedraw('pad', flag ? 'exec:SetToDegree()' : 'exec:SetTwoPi()'); }, 'Handle data angles as degree range 0..360');
       menu.addchk(pp.fGrad, 'Grad', flag => { pp.fGrad = flag; pp.fRadian = pp.fDegree = false; this.interactiveRedraw('pad', flag ? 'exec:SetToGrad()' : 'exec:SetTwoPi()'); }, 'Handle data angles as grad range 0..200');
       menu.endsub();
-      menu.addSizeMenu('Axis angle', 0, 315, 45, this.options.rangle || pp.fAxisAngle, v => {
-         this.options.rangle = pp.fAxisAngle = v;
+      menu.addSizeMenu('Axis angle', 0, 315, 45, o.rangle || pp.fAxisAngle, v => {
+         o.rangle = pp.fAxisAngle = v;
          this.interactiveRedraw('pad', `exec:SetAxisAngle(${v})`);
       });
    }
@@ -454,7 +456,7 @@ class TGraphPolarPainter extends ObjectPainter {
       if (!this.matchObjectType(obj))
          return false;
 
-      if (opt && (opt !== this.options.original))
+      if (opt && (opt !== this.getOptions().original))
          this.decodeOptions(opt);
 
       if (this._draw_axis && obj.fPolargram)
@@ -474,16 +476,17 @@ class TGraphPolarPainter extends ObjectPainter {
    /** @summary Drawing TGraphPolar */
    async drawGraphPolar() {
       const graph = this.getObject(),
+            o = this.getOptions(),
             main = this.getMainPainter();
 
       if (!graph || !main?.$polargram)
          return;
 
-      if (this.options.mark)
+      if (o.mark)
          this.createAttMarker({ attr: graph });
-      if (this.options.err || this.options.line || this.options.curve)
+      if (o.err || o.line || o.curve)
          this.createAttLine({ attr: graph });
-      if (this.options.fill)
+      if (o.fill)
          this.createAttFill({ attr: graph });
 
       const g = this.createG();
@@ -509,7 +512,7 @@ class TGraphPolarPainter extends ObjectPainter {
          if (graph.fY[n] > main.scale_rmax)
             continue;
 
-         if (this.options.err) {
+         if (o.err) {
             const p1 = main.translate(graph.fX[n], graph.fY[n] - graph.fEY[n]),
                   p2 = main.translate(graph.fX[n], graph.fY[n] + graph.fEY[n]),
                   p3 = main.translate(graph.fX[n] + graph.fEX[n], graph.fY[n]),
@@ -521,23 +524,23 @@ class TGraphPolarPainter extends ObjectPainter {
 
          const pos = main.translate(graph.fX[n], graph.fY[n]);
 
-         if (this.options.mark)
+         if (o.mark)
             mpath += this.markeratt.create(pos.grx, pos.gry);
 
-         if (this.options.curve || this.options.line || this.options.fill)
+         if (o.curve || o.line || o.fill)
             bins.push(pos);
       }
 
-      if ((this.options.fill || this.options.line) && bins.length) {
+      if ((o.fill || o.line) && bins.length) {
          const lpath = buildSvgCurve(bins, { line: true });
-         if (this.options.fill) {
+         if (o.fill) {
             g.append('svg:path')
              .attr('d', lpath + 'Z')
              .style('pointer-events', pointer_events)
              .call(this.fillatt.func);
          }
 
-         if (this.options.line) {
+         if (o.line) {
             g.append('svg:path')
              .attr('d', lpath)
              .style('fill', 'none')
@@ -546,7 +549,7 @@ class TGraphPolarPainter extends ObjectPainter {
          }
       }
 
-      if (this.options.curve && bins.length) {
+      if (o.curve && bins.length) {
          g.append('svg:path')
           .attr('d', buildSvgCurve(bins))
           .style('fill', 'none')
@@ -577,13 +580,14 @@ class TGraphPolarPainter extends ObjectPainter {
 
    /** @summary Create polargram object */
    createPolargram(gr) {
+      const o = this.getOptions();
       if (!gr.fPolargram) {
          gr.fPolargram = create('TGraphPolargram');
-         if (this.options.radian)
+         if (o.radian)
             gr.fPolargram.fRadian = true;
-         else if (this.options.degree)
+         else if (o.degree)
             gr.fPolargram.fDegree = true;
-         else if (this.options.grad)
+         else if (o.grad)
             gr.fPolargram.fGrad = true;
       }
 

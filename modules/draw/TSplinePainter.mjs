@@ -118,7 +118,8 @@ class TSplinePainter extends ObjectPainter {
      * @private */
    processTooltipEvent(pnt) {
       const spline = this.getObject(),
-            funcs = this.getFramePainter()?.getGrFuncs(this.options.second_x, this.options.second_y);
+            o = this.getOptions(),
+            funcs = this.getFramePainter()?.getGrFuncs(o.second_x, o.second_y);
       let cleanup = false, xx, yy, knot = null, indx = 0;
 
       if ((pnt === null) || !spline || !funcs)
@@ -196,7 +197,8 @@ class TSplinePainter extends ObjectPainter {
      * @private */
    redraw() {
       const spline = this.getObject(),
-            funcs = this.getFramePainter().getGrFuncs(this.options.second_x, this.options.second_y),
+            o = this.getOptions(),
+            funcs = this.getFramePainter().getGrFuncs(o.second_x, o.second_y),
             w = funcs.getFrameWidth(),
             h = funcs.getFrameHeight(),
             g = this.createG(true);
@@ -205,7 +207,7 @@ class TSplinePainter extends ObjectPainter {
 
       this.createAttLine({ attr: spline });
 
-      if (this.options.Line || this.options.Curve) {
+      if (o.Line || o.Curve) {
          const npx = Math.max(10, spline.fNpx), bins = []; // index of current knot
          let xmin = Math.max(funcs.scale_xmin, spline.fXmin),
              xmax = Math.min(funcs.scale_xmax, spline.fXmax),
@@ -234,7 +236,7 @@ class TSplinePainter extends ObjectPainter {
           .call(this.lineatt.func);
       }
 
-      if (this.options.Mark) {
+      if (o.Mark) {
          // for tooltips use markers only if nodes where not created
 
          this.createAttMarker({ attr: spline });

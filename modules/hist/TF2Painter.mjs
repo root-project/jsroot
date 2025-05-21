@@ -231,7 +231,8 @@ class TF2Painter extends TH2Painter {
    /** @summary return tooltips for TF2 */
    getTF2Tooltips(pnt) {
       const lines = [this.getObjectHint()],
-            funcs = this.getFramePainter()?.getGrFuncs(this.options.second_x, this.options.second_y);
+            o = this.getOptions(),
+            funcs = this.getFramePainter()?.getGrFuncs(o.second_x, o.second_y);
 
       if (!funcs || !isFunc(this.#func?.evalPar)) {
          lines.push('grx = ' + pnt.x, 'gry = ' + pnt.y);
