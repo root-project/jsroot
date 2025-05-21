@@ -688,23 +688,7 @@ class ObjectPainter extends BasePainter {
       if (!pp || (pp === this))
          return null;
 
-      if (pp.painters.indexOf(this) < 0)
-         pp.painters.push(this);
-
-      return pp;
-   }
-
-   /** @summary Remove painter from pad list of painters
-     * @protected */
-   removeFromPadPrimitives() {
-      const pp = this.getPadPainter();
-      if (!pp || (pp === this))
-         return false;
-
-      const k = pp.painters.indexOf(this);
-      if (k >= 0)
-         pp.painters.splice(k, 1);
-      return true;
+      return pp.addToPrimitives(this);
    }
 
    /** @summary Creates marker attributes object

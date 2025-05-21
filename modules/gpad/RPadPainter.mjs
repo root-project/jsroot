@@ -347,8 +347,16 @@ class RPadPainter extends RObjectPainter {
    }
 
    /** @summary Returns number of painters
-     * @private */
+     * @protected */
    getNumPainters() { return this.painters.length; }
+
+   /** @summary Add painter to pad list of painters
+     * @protected */
+   addToPrimitives(painter) {
+      if (this.painters.indexOf(painter) < 0)
+         this.painters.push(painter);
+      return this;
+   }
 
    /** @summary Call function for each painter in pad
      * @param {function} userfunc - function to call

@@ -538,12 +538,6 @@ class TH2Painter extends THistPainter {
    #hide_frame; // hide frame when drawing
    #chord; // zooming for chord drawing
 
-   /** @summary constructor
-     * @param {object} histo - histogram object */
-   constructor(dom, histo) {
-      super(dom, histo);
-   }
-
    /** @summary Use in frame painter to check zoom Y is allowed
     * @protected */
    get _wheel_zoomy() { return true; }

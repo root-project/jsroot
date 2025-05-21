@@ -519,10 +519,6 @@ class TPadPainter extends ObjectPainter {
       return this.#custom_palette || (no_recursion ? null : this.getCanvPainter()?.getCustomPalette(true));
    }
 
-   /** @summary Returns number of painters
-     * @private */
-   getNumPainters() { return this.painters.length; }
-
    _getCustomPaletteIndexes() { return this.#custom_palette_indexes; }
 
    /** @summary Provides automatic color
@@ -553,6 +549,18 @@ class TPadPainter extends ObjectPainter {
             colvalue = this.#auto_palette.getColor(palindx);
 
       return this.addColor(colvalue);
+   }
+
+   /** @summary Returns number of painters
+     * @protected */
+   getNumPainters() { return this.painters.length; }
+
+   /** @summary Add painter to pad list of painters
+     * @protected */
+   addToPrimitives(painter) {
+      if (this.painters.indexOf(painter) < 0)
+         this.painters.push(painter);
+      return this;
    }
 
    /** @summary Call function for each painter in pad

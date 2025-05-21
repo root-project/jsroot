@@ -1691,11 +1691,11 @@ class TPavePainter extends ObjectPainter {
 
       return ensureTCanvas(painter, false).then(() => {
          if (painter.isTitle()) {
-            const prev_painter = painter.getPadPainter().findPainterFor(null, kTitle, clTPaveText);
-            if (prev_painter && (prev_painter !== painter)) {
-               prev_painter.removeFromPadPrimitives();
-               prev_painter.cleanup();
-            } else if (pos_title || painter.isDummyPos(pave)) {
+            const pp = painter.getPadPainter(),
+                  prev_painter = pp.findPainterFor(null, kTitle, clTPaveText);
+            if (prev_painter && (prev_painter !== painter))
+               pp.removePrimitive(prev_painter);
+            else if (pos_title || painter.isDummyPos(pave)) {
                if (painter.setTitlePosition(pave))
                   painter.$postitle = true;
             }
