@@ -45,13 +45,16 @@ class TGraphPainter extends ObjectPainter {
       super(dom, graph);
       this.axes_draw = false; // indicate if graph histogram was drawn for axes
       this.xmin = this.ymin = this.xmax = this.ymax = 0;
-      this.wheel_zoomy = true;
       this.is_bent = (graph._typename === clTGraphBentErrors);
       this.has_errors = (graph._typename === clTGraphErrors) ||
                         (graph._typename === clTGraphMultiErrors) ||
                         (graph._typename === clTGraphAsymmErrors) ||
                          this.is_bent || graph._typename.match(/^RooHist/);
    }
+
+   /** @summary Use in frame painter to check zoom Y is allowed
+    * @protected */
+   get _wheel_zoomy() { return true; }
 
    /** @summary Return drawn graph object */
    getGraph() { return this.getObject(); }

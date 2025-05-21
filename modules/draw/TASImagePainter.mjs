@@ -226,13 +226,15 @@ class TASImagePainter extends ObjectPainter {
       });
    }
 
+   /** @summary Use in frame painter to check zoom Y is allowed
+    * @protected */
+   get _wheel_zoomy() { return true; }
+
    /** @summary Draw image */
    async drawImage() {
       const obj = this.getObject(),
             fp = this.getFramePainter(),
             rect = fp?.getFrameRect() ?? this.getPadPainter().getPadRect();
-
-      this.wheel_zoomy = true;
 
       if (obj._blob) {
          // try to process blob data due to custom streamer

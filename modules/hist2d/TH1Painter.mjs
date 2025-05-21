@@ -224,10 +224,11 @@ class TH1Painter extends THistPainter {
             delete this.zoom_ymax;
          }
       }
-
-      // used in FramePainter.isAllowedDefaultYZooming
-      this.wheel_zoomy = (this.getDimension() > 1) || !this.draw_content;
    }
+
+   /** @summary Use in frame painter to check zoom Y is allowed
+    * @protected */
+   get _wheel_zoomy() { return (this.getDimension() > 1) || !this.draw_content; }
 
    /** @summary Provide histogram min/max used to create canvas ranges
     * @private */

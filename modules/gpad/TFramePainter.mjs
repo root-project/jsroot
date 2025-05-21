@@ -1411,7 +1411,7 @@ class FrameInteractive extends TooltipHandler {
 
       let res;
       this.forEachPainter(objp => {
-         res = res ?? objp.wheel_zoomy;
+         res = res ?? objp._wheel_zoomy;
       }, 'objects');
       return res;
    }

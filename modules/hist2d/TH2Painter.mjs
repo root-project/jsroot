@@ -542,8 +542,11 @@ class TH2Painter extends THistPainter {
      * @param {object} histo - histogram object */
    constructor(dom, histo) {
       super(dom, histo);
-      this.wheel_zoomy = true;
    }
+
+   /** @summary Use in frame painter to check zoom Y is allowed
+    * @protected */
+   get _wheel_zoomy() { return true; }
 
    /** @summary cleanup painter */
    cleanup() {
