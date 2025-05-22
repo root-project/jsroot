@@ -115,26 +115,21 @@ class RPadPainter extends RObjectPainter {
    getCanvSvg() { return this.selectDom().select('.root_canvas'); }
 
    /** @summary Pad svg element
-     * @param {string} [pad_name] - pad name to select, if not specified - pad where object is drawn
      * @return {object} d3 selection with pad svg
      * @protected */
-   getPadSvg(pad_name) {
-      if (pad_name === undefined)
-         pad_name = this.this_pad_name;
-
+   getPadSvg() {
       const c = this.getCanvSvg();
-      if (!pad_name || c.empty())
+      if (!this.this_pad_name || c.empty())
          return c;
 
-      return c.select('.primitives_layer .__root_pad_' + pad_name);
+      return c.select('.primitives_layer .__root_pad_' + this.this_pad_name);
    }
 
    /** @summary Method selects immediate layer under canvas/pad main element
      * @param {string} name - layer name, exits 'primitives_layer', 'btns_layer', 'info_layer'
-     * @param {string} [pad_name] - pad name; current pad name  used by default
      * @protected */
-   getLayerSvg(name, pad_name) {
-      let svg = this.getPadSvg(pad_name);
+   getLayerSvg(name) {
+      let svg = this.getPadSvg();
       if (svg.empty()) return svg;
 
       if (name.indexOf('prim#') === 0) {
@@ -147,8 +142,8 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary Returns svg element for the frame in current pad
      * @protected */
-   getFrameSvg(pad_name) {
-      const layer = this.getLayerSvg('primitives_layer', pad_name);
+   getFrameSvg() {
+      const layer = this.getLayerSvg('primitives_layer');
       if (layer.empty()) return layer;
       let node = layer.node().firstChild;
       while (node) {
@@ -161,7 +156,7 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary Returns SVG element for the pad itself
      * @private */
-   svg_this_pad() { return this.getPadSvg(this.this_pad_name); }
+   svg_this_pad() { return this.getPadSvg(); }
 
    /** @summary Returns main painter on the pad
      * @desc Typically main painter is TH1/TH2 object which is drawing axes
@@ -512,7 +507,7 @@ class RPadPainter extends RObjectPainter {
             return false;
 
          if (!this.isBatchMode())
-            btns = this.getLayerSvg('btns_layer', this.this_pad_name);
+            btns = this.getLayerSvg('btns_layer');
 
          frect = svg.selectChild('.canvas_fillrect');
       } else {
@@ -672,7 +667,7 @@ class RPadPainter extends RObjectPainter {
          return true;
       }
 
-      const svg_parent = this.getPadSvg(this.getPadName()), // getPadName MUST be here to select parent pad
+      const svg_parent = this.getPadPainter()?.getPadSvg(),
             svg_can = this.getCanvSvg(),
             width = svg_parent.property('draw_width'),
             height = svg_parent.property('draw_height'),
@@ -702,7 +697,7 @@ class RPadPainter extends RObjectPainter {
          svg_pad = this.svg_this_pad();
          svg_rect = svg_pad.selectChild('.root_pad_border');
          if (!this.isBatchMode())
-            btns = this.getLayerSvg('btns_layer', this.this_pad_name);
+            btns = this.getLayerSvg('btns_layer');
          this.addPadInteractive(true);
       } else {
          svg_pad = svg_parent.selectChild('.primitives_layer')
@@ -1502,7 +1497,7 @@ class RPadPainter extends RObjectPainter {
      * @return {Promise} with created image */
    async produceImage(full_canvas, file_format, args) {
       const use_frame = (full_canvas === 'frame'),
-            elem = use_frame ? this.getFrameSvg(this.this_pad_name) : (full_canvas ? this.getCanvSvg() : this.svg_this_pad()),
+            elem = use_frame ? this.getFrameSvg() : (full_canvas ? this.getCanvSvg() : this.svg_this_pad()),
             painter = (full_canvas && !use_frame) ? this.getCanvPainter() : this,
             items = []; // keep list of replaced elements, which should be moved back at the end
 
@@ -1524,7 +1519,7 @@ class RPadPainter extends RObjectPainter {
             items.push(item);
 
             // remove buttons from each sub-pad
-            const btns = pp.getLayerSvg('btns_layer', this.this_pad_name);
+            const btns = pp.getLayerSvg('btns_layer');
             item.btns_node = btns.node();
             if (item.btns_node) {
                item.btns_prnt = item.btns_node.parentNode;

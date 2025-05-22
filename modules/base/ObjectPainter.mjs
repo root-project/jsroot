@@ -18,7 +18,6 @@ import { getRootColors } from './colors.mjs';
 
 class ObjectPainter extends BasePainter {
 
-   #pad_name;        // pad name where object is drawn
    #draw_object;     // drawn object
    #draw_g;          // <g> element for object drawing
    #pad_painter_ref; // reference of pad painter
@@ -45,10 +44,9 @@ class ObjectPainter extends BasePainter {
      * @param {object} obj - object to draw
      * @param {string} [opt] - object draw options */
    constructor(dom, obj, opt) {
-      let pad_name = '', pp;
+      let pp;
       if (isFunc(dom?.forEachPainterInPad)) {
          pp = dom;
-         pad_name = dom.this_pad_name;
          dom = dom.getDom();
       }
 
@@ -63,7 +61,6 @@ class ObjectPainter extends BasePainter {
          this.setPadPainter(pp);
 
       this.#draw_g = undefined; // container for all drawn objects
-      this.setPadName(pad_name); // name of pad where object is drawn
       this.assignObject(obj);
       if (isStr(opt))
          this.#options = { original: opt };
@@ -75,15 +72,6 @@ class ObjectPainter extends BasePainter {
 
    /** @summary Returns drawn object */
    getObject() { return this.#draw_object; }
-
-   /** @summary Assigns pad name where element will be drawn
-     * @desc Should happened before first draw of element is performed, only for special use case
-     * @param {string} [pad_name] - on which sub-pad element should be draw, if not specified - use current
-     * @protected */
-   setPadName(pad_name) {
-      // console.warn('setPadName is deprecated, to be removed in v8');
-      this.#pad_name = isStr(pad_name) ? pad_name : '';
-   }
 
    /** @summary Assign new pad painter
      * @protected */
@@ -104,9 +92,6 @@ class ObjectPainter extends BasePainter {
       }
       return pp;
    }
-
-   /** @summary Returns pad name where object is drawn */
-   getPadName() { return this.getPadPainter()?.getPadName() || ''; }
 
    /** @summary Indicates that drawing runs in batch mode
      * @private */
@@ -138,7 +123,6 @@ class ObjectPainter extends BasePainter {
       }
 
       // cleanup all existing references
-      this.#pad_name = undefined;
       this.#pad_painter_ref = undefined;
       this.#main_painter = null;
       this.#draw_object = null;
@@ -411,13 +395,15 @@ class ObjectPainter extends BasePainter {
    createG(frame_layer, use_a = false) {
       let layer;
 
+      const pp = this.getPadPainter();
+
       if (frame_layer === 'frame2d') {
          const fp = this.getFramePainter();
          frame_layer = fp && !fp.mode3d;
       }
 
       if (frame_layer) {
-         const frame = this.getFrameSvg();
+         const frame = pp.getFrameSvg();
          if (frame.empty()) {
             console.error('Not found frame to create g element inside');
             return frame;
@@ -425,7 +411,7 @@ class ObjectPainter extends BasePainter {
          if (!isStr(frame_layer)) frame_layer = 'main_layer';
          layer = frame.selectChild('.' + frame_layer);
       } else
-         layer = this.getLayerSvg('primitives_layer');
+         layer = pp.getLayerSvg('primitives_layer');
 
       if (this.#draw_g && this.#draw_g.node().parentNode !== layer.node()) {
          console.log('g element changes its layer!!');
@@ -505,20 +491,6 @@ class ObjectPainter extends BasePainter {
      * @return {object} d3 selection with canvas svg
      * @protected */
    getCanvSvg() { return this.selectDom().select('.root_canvas'); }
-
-   /** @summary Pad svg element
-     * @return {object} d3 selection with pad svg
-     * @protected */
-   getPadSvg() { return this.getPadPainter()?.svg_this_pad(); }
-
-   /** @summary Method selects immediate layer under canvas/pad main element
-     * @param {string} name - layer name, exits 'primitives_layer', 'btns_layer', 'info_layer'
-     * @protected */
-   getLayerSvg(name) { return this.getPadPainter()?.getLayerSvg(name); }
-
-   /** @summary Returns svg element for the frame in current pad
-     * @protected */
-   getFrameSvg() { return this.getPadPainter()?.getFrameSvg(); }
 
    /** @summary Method selects current pad name
      * @param {string} [new_name] - when specified, new current pad name will be configured
@@ -1641,8 +1613,8 @@ class ObjectPainter extends BasePainter {
       if ((evnt?.clientX === undefined) || (evnt?.clientY === undefined))
          return null;
 
-      const frame = this.getFrameSvg();
-      if (frame.empty())
+      const frame = this.getPadPainter()?.getFrameSvg();
+      if (!frame || frame.empty())
          return null;
       const layer = frame.selectChild('.main_layer');
       if (layer.empty())

@@ -53,7 +53,7 @@ class TPavePainter extends ObjectPainter {
    /** @summary Auto place legend on the frame
      * @return {Promise} with boolean flag if position was changed  */
    async autoPlaceLegend(pt, pad, keep_origin) {
-      const main_svg = this.getFrameSvg().selectChild('.main_layer');
+      const main_svg = this.getPadPainter().getFrameSvg().selectChild('.main_layer');
 
       let svg_code = main_svg.node().outerHTML;
 

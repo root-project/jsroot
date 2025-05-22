@@ -245,8 +245,8 @@ const Handling3DDrawings = {
      * @return current value
      * @private */
    access3dKind(new_value) {
-      const svg = this.getPadSvg();
-      if (svg.empty())
+      const svg = this.getPadPainter()?.getPadSvg();
+      if (!svg || svg.empty())
          return -1;
 
       // returns kind of currently created 3d canvas
@@ -277,10 +277,11 @@ const Handling3DDrawings = {
             can3d = constants.Embed3D.Overlay;
       }
 
-      const pad = this.getPadSvg(),
-            clname = 'draw3d_' + (this.getPadName() || 'canvas');
+      const pp = this.getPadPainter(),
+            pad = pp?.getPadSvg(),
+            clname = 'draw3d_' + (pp?.getPadName() || 'canvas');
 
-      if (pad.empty()) {
+      if (!pad || pad.empty()) {
          // this is a case when object drawn without canvas
 
          const rect = getElementRect(this.selectDom());
@@ -292,7 +293,7 @@ const Handling3DDrawings = {
          return rect;
       }
 
-      const fp = this.getFramePainter(), pp = this.getPadPainter();
+      const fp = this.getFramePainter();
       let size;
 
       if (fp?.mode3d && (can3d > 0))
@@ -304,7 +305,7 @@ const Handling3DDrawings = {
             size.width = pp.getPadWidth();
             size.height = pp.getPadHeight();
          } else if (fp && !fp.mode3d) {
-            elem = this.getFrameSvg();
+            elem = pp.getFrameSvg();
             size.x = elem.property('draw_x');
             size.y = elem.property('draw_y');
          }
@@ -325,7 +326,7 @@ const Handling3DDrawings = {
       }
 
       if (can3d === constants.Embed3D.Overlay) {
-         size = getAbsPosInCanvas(this.getPadSvg(), size);
+         size = getAbsPosInCanvas(pad, size);
          const scale = this.getCanvPainter().getPadScale();
          if (scale && scale !== 1) {
             size.x /= scale;
@@ -363,11 +364,13 @@ const Handling3DDrawings = {
          d3_select(this.getCanvSvg().node().nextSibling).remove(); // remove html5 canvas
          this.getCanvSvg().style('display', null); // show SVG canvas
       } else {
-         if (this.getPadSvg().empty()) return;
+         const pp = this.getPadPainter();
+         if (!pp || pp.getPadSvg().empty())
+            return;
 
          this.apply3dSize(size).remove();
 
-         this.getFrameSvg().style('display', null);  // clear display property
+         pp.getFrameSvg().style('display', null);  // clear display property
       }
       return can3d;
    },
@@ -400,10 +403,12 @@ const Handling3DDrawings = {
 
          this.getCanvSvg().node().parentNode.appendChild(canv); // add directly
       } else {
-         if (this.getPadSvg().empty()) return;
+         const pp = this.getPadPainter();
+         if (!pp || pp.getPadSvg().empty())
+            return;
 
          // first hide normal frame
-         this.getFrameSvg().style('display', 'none');
+         pp.getFrameSvg().style('display', 'none');
 
          const elem = this.apply3dSize(size);
          elem.attr('title', '').node().appendChild(canv);
@@ -419,11 +424,13 @@ const Handling3DDrawings = {
       let elem;
 
       if (size.can3d > 1) {
-         elem = this.getLayerSvg(size.clname);
+         const pp = this.getPadPainter();
+
+         elem = pp.getLayerSvg(size.clname);
          if (onlyget)
             return elem;
 
-         const svg = this.getPadSvg();
+         const svg = pp.getPadSvg();
 
          if (size.can3d === constants.Embed3D.EmbedSVG) {
             // this is SVG mode or image mode - just create group to hold element

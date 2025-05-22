@@ -2678,7 +2678,8 @@ class TH2Painter extends THistPainter {
          }
       }
 
-      const layer = this.getFrameSvg().selectChild('.main_layer');
+      const pp = this.getPadPainter(),
+            layer = pp.selectChild('.main_layer');
       let defs = layer.selectChild('defs');
       if (defs.empty() && colPaths.length)
          defs = layer.insert('svg:defs', ':first-child');
@@ -2687,7 +2688,7 @@ class TH2Painter extends THistPainter {
 
       for (colindx = 0; colindx < colPaths.length; ++colindx) {
          if ((colPaths[colindx] !== undefined) && (colindx < cntr.arr.length)) {
-            const pattern_id = (this.getPadName() || 'canv') + `_scatter_${colindx}`;
+            const pattern_id = (pp.getPadName() || 'canv') + `_scatter_${colindx}`;
             let pattern = defs.selectChild(`#${pattern_id}`);
             if (pattern.empty()) {
                pattern = defs.append('svg:pattern')
@@ -2736,10 +2737,10 @@ class TH2Painter extends THistPainter {
       const o = this.getOptions();
 
       if (this.#hide_frame && this.isMainPainter()) {
-         this.getFrameSvg().style('display', null);
+         this.getPadPainter().getFrameSvg().style('display', null);
          this.#hide_frame = undefined;
       } else if (o.Same && !this.isUseFrame())
-         this.getFrameSvg().style('display', 'none');
+         this.getPadPainter().getFrameSvg().style('display', 'none');
 
       if (!this.draw_content) {
          if (o.Zscale && o.ohmin && o.ohmax) {
@@ -2791,10 +2792,10 @@ class TH2Painter extends THistPainter {
 
    /** @summary Draw TH2 in circular mode */
    async drawBinsCircular() {
-      this.getFrameSvg().style('display', 'none');
       this.#hide_frame = true;
 
-      const rect = this.getPadPainter().getFrameRect(),
+      const pp = this.getPadPainter(),
+            rect = pp.getFrameRect(),
             hist = this.getHisto(),
             circ = this.getOptions().Circular,
             palette = circ > 10 ? this.getHistPalette() : null,
@@ -2811,6 +2812,8 @@ class TH2Painter extends THistPainter {
                }
                return indx.toString();
             };
+
+      pp.getFrameSvg().style('display', 'none');
 
       this.assignChordCircInteractive(Math.round(rect.x + rect.width/2), Math.round(rect.y + rect.height/2));
 
@@ -2930,7 +2933,7 @@ class TH2Painter extends THistPainter {
 
    /** @summary Draw histogram bins as chord diagram */
    async drawBinsChord() {
-      this.getFrameSvg().style('display', 'none');
+      this.getPadPainter().getFrameSvg().style('display', 'none');
       this.#hide_frame = true;
 
       const used = [],

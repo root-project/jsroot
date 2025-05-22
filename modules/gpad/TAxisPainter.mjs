@@ -1430,10 +1430,11 @@ class TAxisPainter extends ObjectPainter {
          this.position = 0;
 
          if (calculate_position) {
-            const node1 = axis_g.node(), node2 = this.getPadSvg().node();
+            const node1 = axis_g.node(),
+                  node2 = this.getPadPainter()?.getPadSvg().node();
             if (isFunc(node1?.getBoundingClientRect) && isFunc(node2?.getBoundingClientRect)) {
                const rect1 = node1.getBoundingClientRect(),
-                  rect2 = node2.getBoundingClientRect();
+                     rect2 = node2.getBoundingClientRect();
                this.position = rect1.left - rect2.left; // use to control left position of Y scale
             }
             if (node1 && !node2)

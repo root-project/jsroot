@@ -33,7 +33,7 @@ const PadButtonsHandler = {
       evnt?.preventDefault();
       evnt?.stopPropagation();
 
-      const group = this.getLayerSvg('btns_layer', this.this_pad_name),
+      const group = this.getLayerSvg('btns_layer'),
             btn = group.select('[name=\'Toggle\']');
 
       if (btn.empty()) return;
@@ -93,7 +93,7 @@ const PadButtonsHandler = {
    },
 
    findPadButton(keyname) {
-      const group = this.getLayerSvg('btns_layer', this.this_pad_name);
+      const group = this.getLayerSvg('btns_layer');
       let found_func = '';
       if (!group.empty()) {
          group.selectAll('svg').each(function() {
@@ -105,7 +105,7 @@ const PadButtonsHandler = {
    },
 
    removePadButtons() {
-      const group = this.getLayerSvg('btns_layer', this.this_pad_name);
+      const group = this.getLayerSvg('btns_layer');
       if (!group.empty()) {
          group.selectAll('*').remove();
          group.property('nextx', null);
@@ -113,7 +113,7 @@ const PadButtonsHandler = {
    },
 
    showPadButtons() {
-      const group = this.getLayerSvg('btns_layer', this.this_pad_name);
+      const group = this.getLayerSvg('btns_layer');
       if (group.empty()) return;
 
       // clean all previous buttons
@@ -325,26 +325,21 @@ class TPadPainter extends ObjectPainter {
    getCanvSvg() { return this.selectDom().select('.root_canvas'); }
 
    /** @summary Pad svg element
-     * @param {string} [pad_name] - pad name to select, if not specified - pad where object is drawn
      * @return {object} d3 selection with pad svg
      * @protected */
-   getPadSvg(pad_name) {
-      if (pad_name === undefined)
-         pad_name = this.getPadName();
-
+   getPadSvg() {
       const c = this.getCanvSvg();
-      if (!pad_name || c.empty())
+      if (!this.this_pad_name || c.empty())
          return c;
 
-      return c.select('.primitives_layer .__root_pad_' + pad_name);
+      return c.select('.primitives_layer .__root_pad_' + this.this_pad_name);
    }
 
    /** @summary Method selects immediate layer under canvas/pad main element
      * @param {string} name - layer name, exits 'primitives_layer', 'btns_layer', 'info_layer'
-     * @param {string} [pad_name] - pad name; current pad name  used by default
      * @protected */
-   getLayerSvg(name, pad_name) {
-      let svg = this.getPadSvg(pad_name);
+   getLayerSvg(name) {
+      let svg = this.getPadSvg();
       if (svg.empty()) return svg;
 
       if (name.indexOf('prim#') === 0) {
@@ -357,8 +352,8 @@ class TPadPainter extends ObjectPainter {
 
    /** @summary Returns svg element for the frame in current pad
      * @protected */
-   getFrameSvg(pad_name) {
-      const layer = this.getLayerSvg('primitives_layer', pad_name);
+   getFrameSvg() {
+      const layer = this.getLayerSvg('primitives_layer');
       if (layer.empty()) return layer;
       let node = layer.node().firstChild;
       while (node) {
@@ -371,7 +366,7 @@ class TPadPainter extends ObjectPainter {
 
    /** @summary Returns SVG element for the pad itself
     * @private */
-   svg_this_pad() { return this.getPadSvg(this.this_pad_name); }
+   svg_this_pad() { return this.getPadSvg(); }
 
    /** @summary Returns main painter on the pad
      * @desc Typically main painter is TH1/TH2 object which is drawing axes
@@ -772,9 +767,9 @@ class TPadPainter extends ObjectPainter {
             return false;
 
          if (!is_batch)
-            btns = this.getLayerSvg('btns_layer', this.this_pad_name);
+            btns = this.getLayerSvg('btns_layer');
 
-         info = this.getLayerSvg('info_layer', this.this_pad_name);
+         info = this.getLayerSvg('info_layer');
          frect = svg.selectChild('.canvas_fillrect');
       } else {
          const render_to = this.selectDom();
@@ -914,7 +909,7 @@ class TPadPainter extends ObjectPainter {
    /** @summary Draw item name on canvas if gStyle.fOptFile is configured
      * @private */
    drawItemNameOnCanvas(item_name) {
-      const info = this.getLayerSvg('info_layer', this.this_pad_name);
+      const info = this.getLayerSvg('info_layer');
       let df = info.selectChild('.canvas_item');
       const fitem = getHPainter().findRootFileForItem(item_name),
             fname = (gStyle.fOptFile === 3) ? item_name : ((gStyle.fOptFile === 2) ? fitem?._fullurl : fitem?._name);
@@ -1005,7 +1000,7 @@ class TPadPainter extends ObjectPainter {
          svg_pad = this.svg_this_pad();
          svg_border = svg_pad.selectChild('.root_pad_border');
          if (!is_batch)
-            btns = this.getLayerSvg('btns_layer', this.this_pad_name);
+            btns = this.getLayerSvg('btns_layer');
          this.addPadInteractive(true);
       } else {
          svg_pad = svg_can.selectChild('.primitives_layer')
@@ -2448,7 +2443,7 @@ class TPadPainter extends ObjectPainter {
          return isFunc(this.produceJSON) ? this.produceJSON(full_canvas ? 2 : 0) : '';
 
       const use_frame = (full_canvas === 'frame'),
-            elem = use_frame ? this.getFrameSvg(this.this_pad_name) : (full_canvas ? this.getCanvSvg() : this.svg_this_pad()),
+            elem = use_frame ? this.getFrameSvg() : (full_canvas ? this.getCanvSvg() : this.svg_this_pad()),
             painter = (full_canvas && !use_frame) ? this.getCanvPainter() : this,
             items = []; // keep list of replaced elements, which should be moved back at the end
 
@@ -2476,7 +2471,7 @@ class TPadPainter extends ObjectPainter {
          items.push(item);
 
          // remove buttons from each sub-pad
-         const btns = pp.getLayerSvg('btns_layer', pp.this_pad_name);
+         const btns = pp.getLayerSvg('btns_layer');
          item.btns_node = btns.node();
          if (item.btns_node) {
             item.btns_prnt = item.btns_node.parentNode;

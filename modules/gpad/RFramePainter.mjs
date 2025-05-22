@@ -688,7 +688,7 @@ class RFramePainter extends RObjectPainter {
           top_rect, main_svg;
 
       if (g.empty()) {
-         g = this.setG(this.getLayerSvg('primitives_layer').append('svg:g').attr('class', 'root_frame'));
+         g = this.setG(this.getPadPainter().getLayerSvg('primitives_layer').append('svg:g').attr('class', 'root_frame'));
 
          if (!this.isBatchMode())
             g.append('svg:title').text('');

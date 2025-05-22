@@ -918,7 +918,7 @@ class TH1Painter extends THistPainter {
    draw1DBins() {
       const o = this.getOptions();
       if (o.Same && !this.isUseFrame())
-         this.getFrameSvg().style('display', 'none');
+         this.getPadPainter().getFrameSvg().style('display', 'none');
 
       this.createHistDrawAttributes();
 
