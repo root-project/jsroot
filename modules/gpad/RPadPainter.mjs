@@ -68,7 +68,11 @@ class RPadPainter extends RObjectPainter {
          } else
             this.addToPadPrimitives(); // must be here due to pad painter
       }
-  }
+   }
+
+   /** @summary Returns pad name
+     * @protected */
+   getPadName() { return this.this_pad_name; }
 
    /** @summary Indicates that drawing runs in batch mode
      * @private */
@@ -104,6 +108,56 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary Returns true if it is canvas or top pad without canvas */
    isTopPad() { return this.isCanvas() || !this.#has_canvas; }
+
+   /** @summary Canvas main svg element
+     * @return {object} d3 selection with canvas svg
+     * @protected */
+   getCanvSvg() { return this.selectDom().select('.root_canvas'); }
+
+   /** @summary Pad svg element
+     * @param {string} [pad_name] - pad name to select, if not specified - pad where object is drawn
+     * @return {object} d3 selection with pad svg
+     * @protected */
+   getPadSvg(pad_name) {
+      if (pad_name === undefined)
+         pad_name = this.this_pad_name;
+
+      const c = this.getCanvSvg();
+      if (!pad_name || c.empty())
+         return c;
+
+      return c.select('.primitives_layer .__root_pad_' + pad_name);
+   }
+
+   /** @summary Method selects immediate layer under canvas/pad main element
+     * @param {string} name - layer name, exits 'primitives_layer', 'btns_layer', 'info_layer'
+     * @param {string} [pad_name] - pad name; current pad name  used by default
+     * @protected */
+   getLayerSvg(name, pad_name) {
+      let svg = this.getPadSvg(pad_name);
+      if (svg.empty()) return svg;
+
+      if (name.indexOf('prim#') === 0) {
+         svg = svg.selectChild('.primitives_layer');
+         name = name.slice(5);
+      }
+
+      return svg.selectChild('.' + name);
+   }
+
+   /** @summary Returns svg element for the frame in current pad
+     * @protected */
+   getFrameSvg(pad_name) {
+      const layer = this.getLayerSvg('primitives_layer', pad_name);
+      if (layer.empty()) return layer;
+      let node = layer.node().firstChild;
+      while (node) {
+         const elem = d3_select(node);
+         if (elem.classed('root_frame')) return elem;
+         node = node.nextSibling;
+      }
+      return d3_select(null);
+   }
 
    /** @summary Returns SVG element for the pad itself
      * @private */

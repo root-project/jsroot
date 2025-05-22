@@ -221,7 +221,7 @@ function createSVGRenderer(as_is, precision, doc) {
 
 
 /** @summary Define rendering kind which will be used for rendering of 3D elements
-  * @param {value} [render3d] - preconfigured value, will be used if applicable
+  * @param {value} [render3d] - pre-configured value, will be used if applicable
   * @param {value} [is_batch] - is batch mode is configured
   * @return {value} - rendering kind, see constants.Render3D
   * @private */
@@ -256,7 +256,7 @@ const Handling3DDrawings = {
       return ((kind === null) || (kind === undefined)) ? -1 : kind;
    },
 
-   /** @summary Returns size which availble for 3D drawing.
+   /** @summary Returns size which available for 3D drawing.
      * @desc One uses frame sizes for the 3D drawing - like TH2/TH3 objects
      * @private */
    getSizeFor3d(can3d /* , render3d */) {

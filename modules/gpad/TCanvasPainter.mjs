@@ -964,15 +964,15 @@ async function ensureTCanvas(painter, frame_kind) {
             canv.fY2 = ranges.maxy + dy * gStyle.fPadTopMargin;
             return canv;
          },
-         promise = painter.getCanvSvg().empty()
-                   ? TCanvasPainter.draw(painter.getDom(), createCanv(), noframe)
-                   : Promise.resolve(true);
+         pad_painter = painter.getPadPainter(),
+         promise = pad_painter ? Promise.resolve(pad_painter) :
+                     TCanvasPainter.draw(painter.getDom(), createCanv(), noframe);
 
-   return promise.then(() => {
-      if ((frame_kind !== false) && painter.getFrameSvg().selectChild('.main_layer').empty() && !painter.getFramePainter())
-         directDrawTFrame(painter.getPadPainter(), null, frame_kind);
+   return promise.then(pp => {
+      if ((frame_kind !== false) && pp.getFrameSvg().selectChild('.main_layer').empty() && !pp.getFramePainter())
+         directDrawTFrame(pp, null, frame_kind);
 
-      painter.addToPadPrimitives();
+      painter.addToPadPrimitives(pp);
       return painter;
    });
 }

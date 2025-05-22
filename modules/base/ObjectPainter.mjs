@@ -21,6 +21,7 @@ class ObjectPainter extends BasePainter {
    #pad_name;        // pad name where object is drawn
    #draw_object;     // drawn object
    #draw_g;          // <g> element for object drawing
+   #pad_painter_ref; // reference of pad painter
    #main_painter;    // WeakRef to main painter in the pad
    #primary_ref;     // reference of primary painter - if any
    #snapid;          // assigned online identifier
@@ -44,13 +45,22 @@ class ObjectPainter extends BasePainter {
      * @param {object} obj - object to draw
      * @param {string} [opt] - object draw options */
    constructor(dom, obj, opt) {
-      let pad_name = '';
+      let pad_name = '', pp;
       if (isFunc(dom?.forEachPainterInPad)) {
+         pp = dom;
          pad_name = dom.this_pad_name;
          dom = dom.getDom();
       }
 
       super(dom);
+
+      if (!pp) {
+         const elem = this.getCanvSvg();
+         pp = elem.empty() ? null : elem.property('pad_painter');
+      }
+
+      if (pp)
+         this.setPadPainter(pp);
 
       this.#draw_g = undefined; // container for all drawn objects
       this.setPadName(pad_name); // name of pad where object is drawn
@@ -75,8 +85,28 @@ class ObjectPainter extends BasePainter {
       this.#pad_name = isStr(pad_name) ? pad_name : '';
    }
 
+   /** @summary Assign new pad painter
+     * @protected */
+   setPadPainter(pp) { this.#pad_painter_ref = pp ? new WeakRef(pp) : undefined; }
+
+   /** @summary returns pad painter
+     * @protected */
+   getPadPainter() { return this.#pad_painter_ref?.deref(); }
+
+   /** @summary returns canvas painter
+     * @protected */
+   getCanvPainter() {
+      let pp = this.getPadPainter();
+      while (pp) {
+         const top = pp.getPadPainter();
+         if (!top) break;
+         pp = top;
+      }
+      return pp;
+   }
+
    /** @summary Returns pad name where object is drawn */
-   getPadName() { return this.#pad_name || ''; }
+   getPadName() { return this.getPadPainter()?.getPadName() || ''; }
 
    /** @summary Indicates that drawing runs in batch mode
      * @private */
@@ -109,6 +139,7 @@ class ObjectPainter extends BasePainter {
 
       // cleanup all existing references
       this.#pad_name = undefined;
+      this.#pad_painter_ref = undefined;
       this.#main_painter = null;
       this.#draw_object = null;
       this.#snapid = undefined;
@@ -437,26 +468,6 @@ class ObjectPainter extends BasePainter {
       }
    }
 
-   /** @summary Canvas main svg element
-     * @return {object} d3 selection with canvas svg
-     * @protected */
-   getCanvSvg() { return this.selectDom().select('.root_canvas'); }
-
-   /** @summary Pad svg element
-     * @param {string} [pad_name] - pad name to select, if not specified - pad where object is drawn
-     * @return {object} d3 selection with pad svg
-     * @protected */
-   getPadSvg(pad_name) {
-      if (pad_name === undefined)
-         pad_name = this.getPadName();
-
-      const c = this.getCanvSvg();
-      if (!pad_name || c.empty())
-         return c;
-
-      return c.select('.primitives_layer .__root_pad_' + pad_name);
-   }
-
    /** @summary Assign is_primary flag
      * @private */
    setPrimary(flag = true) { this.#is_primary = flag; }
@@ -490,21 +501,24 @@ class ObjectPainter extends BasePainter {
      * @private */
    getPrimary() { return this.#primary_ref?.deref(); }
 
+   /** @summary Canvas main svg element
+     * @return {object} d3 selection with canvas svg
+     * @protected */
+   getCanvSvg() { return this.selectDom().select('.root_canvas'); }
+
+   /** @summary Pad svg element
+     * @return {object} d3 selection with pad svg
+     * @protected */
+   getPadSvg() { return this.getPadPainter()?.svg_this_pad(); }
+
    /** @summary Method selects immediate layer under canvas/pad main element
      * @param {string} name - layer name, exits 'primitives_layer', 'btns_layer', 'info_layer'
-     * @param {string} [pad_name] - pad name; current pad name  used by default
      * @protected */
-   getLayerSvg(name, pad_name) {
-      let svg = this.getPadSvg(pad_name);
-      if (svg.empty()) return svg;
+   getLayerSvg(name) { return this.getPadPainter()?.getLayerSvg(name); }
 
-      if (name.indexOf('prim#') === 0) {
-         svg = svg.selectChild('.primitives_layer');
-         name = name.slice(5);
-      }
-
-      return svg.selectChild('.' + name);
-   }
+   /** @summary Returns svg element for the frame in current pad
+     * @protected */
+   getFrameSvg() { return this.getPadPainter()?.getFrameSvg(); }
 
    /** @summary Method selects current pad name
      * @param {string} [new_name] - when specified, new current pad name will be configured
@@ -514,21 +528,6 @@ class ObjectPainter extends BasePainter {
    selectCurrentPad() {
       console.warn('selectCurrentPad is deprecated, will be removed in v8');
       return '';
-   }
-
-   /** @summary returns pad painter
-     * @param {string} [pad_name] pad name or use current pad by default
-     * @protected */
-   getPadPainter(pad_name) {
-      const elem = this.getPadSvg(isStr(pad_name) ? pad_name : undefined);
-      return elem.empty() ? null : elem.property('pad_painter');
-   }
-
-   /** @summary returns canvas painter
-     * @protected */
-   getCanvPainter() {
-      const elem = this.getCanvSvg();
-      return elem.empty() ? null : elem.property('pad_painter');
    }
 
    /** @summary Return functor, which can convert x and y coordinates into pixels, used for drawing in the pad
@@ -627,20 +626,6 @@ class ObjectPainter extends BasePainter {
       return value;
    }
 
-   /** @summary Returns svg element for the frame in current pad
-     * @protected */
-   getFrameSvg(pad_name) {
-      const layer = this.getLayerSvg('primitives_layer', pad_name);
-      if (layer.empty()) return layer;
-      let node = layer.node().firstChild;
-      while (node) {
-         const elem = d3_select(node);
-         if (elem.classed('root_frame')) return elem;
-         node = node.nextSibling;
-      }
-      return d3_select(null);
-   }
-
    /** @summary Returns frame painter for current pad
      * @desc Pad has direct reference on frame if any
      * @protected */
@@ -682,13 +667,16 @@ class ObjectPainter extends BasePainter {
    /** @summary Add painter to pad list of painters
      * @desc Normally called from {@link ensureTCanvas} function when new painter is created
      * @protected */
-   addToPadPrimitives() {
-      const pp = this.getPadPainter();
+   addToPadPrimitives(pad_painter) {
+      if (this.#pad_painter_ref)
+         pad_painter = this.#pad_painter_ref.deref();
+      else if (pad_painter)
+         this.#pad_painter_ref = new WeakRef(pad_painter);
 
-      if (!pp || (pp === this))
+      if (!pad_painter || (pad_painter === this))
          return null;
 
-      return pp.addToPrimitives(this);
+      return pad_painter.addToPrimitives(this);
    }
 
    /** @summary Creates marker attributes object
