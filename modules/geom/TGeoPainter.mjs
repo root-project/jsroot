@@ -4062,7 +4062,7 @@ class TGeoPainter extends ObjectPainter {
       if (!this.#scene) {
          this.#first_drawing = true;
 
-         let pp = this.getPadPainter();
+         const pp = this.getPadPainter();
 
          this.#on_pad = Boolean(pp);
 

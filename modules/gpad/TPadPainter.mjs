@@ -16,9 +16,8 @@ import { ToolbarIcons, registerForResize, saveFile } from '../gui/utils.mjs';
 import { BrowserLayout, getHPainter } from '../gui/display.mjs';
 
 
-const clTButton = 'TButton', kIsGrayscale = BIT(22);
-
-const PadButtonsHandler = {
+const clTButton = 'TButton', kIsGrayscale = BIT(22),
+PadButtonsHandler = {
 
    getButtonSize(fact) {
       const cp = this.getCanvPainter();

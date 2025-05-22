@@ -710,7 +710,7 @@ function drawRPadSnapshot(dom, snap, opt) {
   * @desc Assigns DOM, creates and draw RCanvas and RFrame if necessary, add painter to pad list of painters
   * @return {Promise} for ready
   * @private */
-async function ensureRCanvas(painter /*, frame_kind */) {
+async function ensureRCanvas(painter /* , frame_kind */) {
    if (!painter)
       return Promise.reject(Error('Painter not provided in ensureRCanvas'));
 
