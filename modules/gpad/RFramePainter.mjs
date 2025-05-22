@@ -143,6 +143,9 @@ class RFramePainter extends RObjectPainter {
       }
    }
 
+   getFrameSvg() { return this.getPadPainter().getFrameSvg(); }
+
+
    /** @summary Draw axes grids
      * @desc Called immediately after axes drawing */
    drawGrids() {

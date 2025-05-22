@@ -2506,7 +2506,7 @@ class TPadPainter extends ObjectPainter {
             item.foreign.remove();
          }
 
-         const svg_frame = main.getFrameSvg();
+         const svg_frame = fp.getFrameSvg();
          item.frame_node = svg_frame.node();
          if (item.frame_node) {
             item.frame_next = item.frame_node.nextSibling;

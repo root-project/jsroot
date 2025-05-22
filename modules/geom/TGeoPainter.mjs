@@ -461,6 +461,10 @@ class TGeoPainter extends ObjectPainter {
 
       super(dom, obj);
 
+      // FIXME: id drawn on pad painter - provide it from the beginning
+      if (!this.getPadPainter())
+         this.setPadPainter(this.getCanvPainter(true));
+
       if (getHistPainter3DCfg(this.getMainPainter()))
          this.#superimpose = true;
 
@@ -4058,7 +4062,7 @@ class TGeoPainter extends ObjectPainter {
       if (!this.#scene) {
          this.#first_drawing = true;
 
-         const pp = this.getPadPainter();
+         let pp = this.getPadPainter();
 
          this.#on_pad = Boolean(pp);
 

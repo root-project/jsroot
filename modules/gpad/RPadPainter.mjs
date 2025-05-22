@@ -1,5 +1,6 @@
 import { gStyle, settings, browser, constants, internals, addMethods, isPromise, getPromise, postponePromise,
          isBatchMode, isObject, isFunc, isStr, clTFrame, nsREX, nsSVG, urlClassPrefix } from '../core.mjs';
+import { select as d3_select } from '../d3.mjs';
 import { ColorPalette, addColor, getRootColors, convertColor } from '../base/colors.mjs';
 import { RObjectPainter } from '../base/RObjectPainter.mjs';
 import { prSVG, getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG, makeTranslate, svgToImage } from '../base/BasePainter.mjs';
@@ -1558,7 +1559,7 @@ class RPadPainter extends RObjectPainter {
                item.foreign.remove();
             }
 
-            const svg_frame = main.getFrameSvg();
+            const svg_frame = fp.getFrameSvg();
             item.frame_node = svg_frame.node();
             if (item.frame_node) {
                item.frame_next = item.frame_node.nextSibling;
