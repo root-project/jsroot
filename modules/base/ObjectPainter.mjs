@@ -11,6 +11,11 @@ import { FontHandler } from './FontHandler.mjs';
 import { getRootColors } from './colors.mjs';
 
 
+/** @summary returns true if pad painter @private */
+function isPadPainter(p) {
+   return p?.pad && isFunc(p.forEachPainterInPad);
+}
+
 /**
  * @summary Painter class for ROOT objects
  *
@@ -45,7 +50,7 @@ class ObjectPainter extends BasePainter {
      * @param {string} [opt] - object draw options */
    constructor(dom, obj, opt) {
       let pp;
-      if (isFunc(dom?.forEachPainterInPad)) {
+      if (isPadPainter(dom)) {
          pp = dom;
          dom = dom.getDom();
       }
@@ -1685,25 +1690,25 @@ function drawRawText(dom, txt /* , opt */) {
    return painter.drawText();
 }
 
-/** @summary Returns pad painter (if any) for specified DOM element
-  * @param {string|object} dom - id or DOM element
-  * @private */
-function getElementPadPainter(dom) {
-   return new ObjectPainter(dom).getPadPainter();
-}
-
 /** @summary Returns canvas painter (if any) for specified DOM element
   * @param {string|object} dom - id or DOM element
   * @private */
 function getElementCanvPainter(dom) {
-   return new ObjectPainter(dom).getCanvPainter();
+   return isPadPainter(dom) ? dom.getCanvPainter() : new ObjectPainter(dom).getCanvPainter(true);
+}
+
+/** @summary Returns pad painter (if any) for specified DOM element
+  * @param {string|object} dom - id or DOM element
+  * @private */
+function getElementPadPainter(dom) {
+   return isPadPainter(dom) ? dom : new ObjectPainter(dom).getPadPainter();
 }
 
 /** @summary Returns main painter (if any) for specified HTML element - typically histogram painter
   * @param {string|object} dom - id or DOM element
   * @private */
 function getElementMainPainter(dom) {
-   return new ObjectPainter(dom).getMainPainter(true);
+   return isPadPainter(dom) ? dom.getMainPainter() : new ObjectPainter(dom).getMainPainter(true);
 }
 
 /** @summary Save object, drawn in specified element, as JSON.
@@ -1799,6 +1804,6 @@ const EAxisBits = {
 
 Object.assign(internals.jsroot, { ObjectPainter, cleanup, resize });
 
-export { getElementPadPainter, getElementCanvPainter, getElementMainPainter, drawingJSON,
+export { isPadPainter, getElementPadPainter, getElementCanvPainter, getElementMainPainter, drawingJSON,
          selectActivePad, getActivePad, cleanup, resize, drawRawText,
          ObjectPainter, EAxisBits, kAxisLabels, kAxisNormal, kAxisFunc, kAxisTime };

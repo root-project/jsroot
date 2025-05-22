@@ -7,7 +7,7 @@ import { ColorPalette, adoptRootColors, getColorPalette, getGrayColors, extendRo
          getRGBfromTColor, decodeWebCanvasColors } from '../base/colors.mjs';
 import { prSVG, prJSON, getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG, makeTranslate,
          getTDatime, convertDate, svgToImage, getBoxDecorations } from '../base/BasePainter.mjs';
-import { ObjectPainter, selectActivePad, getActivePad } from '../base/ObjectPainter.mjs';
+import { ObjectPainter, selectActivePad, getActivePad, isPadPainter } from '../base/ObjectPainter.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
 import { addCustomFont } from '../base/FontHandler.mjs';
 import { addDragHandler } from './TFramePainter.mjs';
@@ -17,10 +17,6 @@ import { BrowserLayout, getHPainter } from '../gui/display.mjs';
 
 
 const clTButton = 'TButton', kIsGrayscale = BIT(22);
-
-function isPadPainter(p) {
-   return p?.pad && isFunc(p.forEachPainterInPad);
-}
 
 const PadButtonsHandler = {
 

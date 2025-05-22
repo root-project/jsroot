@@ -964,7 +964,7 @@ async function ensureTCanvas(painter, frame_kind) {
             canv.fY2 = ranges.maxy + dy * gStyle.fPadTopMargin;
             return canv;
          },
-         pad_painter = painter.getPadPainter(),
+         pad_painter = painter.getPadPainter() || painter.getCanvPainter(true),
          promise = pad_painter ? Promise.resolve(pad_painter) :
                      TCanvasPainter.draw(painter.getDom(), createCanv(), noframe);
 

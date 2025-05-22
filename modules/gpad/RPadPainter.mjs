@@ -117,7 +117,6 @@ class RPadPainter extends RObjectPainter {
      * @protected */
    getCanvPainter(try_select) { return this.isTopPad() ? this : super.getCanvPainter(try_select); }
 
-
    /** @summary Canvas main svg element
      * @return {object} d3 selection with canvas svg
      * @protected */
