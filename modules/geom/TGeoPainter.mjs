@@ -3592,8 +3592,6 @@ class TGeoPainter extends ObjectPainter {
 
          this.updateClipping(true);
 
-         console.log('call render');
-
          const pr = this.render3D(100, not_wait_render ? 'nopromise' : false);
 
          return not_wait_render ? this : pr;
@@ -5905,8 +5903,8 @@ async function drawDummy3DGeom(painter) {
                 { _typename: clTEveGeoShapeExtract,
                   fTrans: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
                   fShape: shape, fRGBA: [0, 0, 0, 0], fElements: null, fRnrSelf: false }),
-         pp = painter.getPadPainter(),
-         opt = 'dummy;' + (pp?.pad?.fFillColor && (pp?.pad?.fFillStyle > 1000)) ? 'bkgr_' + pp.pad.fFillColor : '';
+         pp = painter.getDrawDom(),
+         opt = 'dummy;' + (pp?.pad?.fFillColor && (pp?.pad?.fFillStyle > 1000) ? 'bkgr_' + pp.pad.fFillColor : '');
 
    return TGeoPainter.draw(pp, obj, opt);
 }
