@@ -184,7 +184,7 @@ class TCanvasPainter extends TPadPainter {
          this.proj_painter[kind] = 'init';
 
          const canv = create(clTCanvas),
-               pad = this.pad,
+               pad = this.getRootPad(),
                fp = this.getFramePainter();
          let drawopt;
 
@@ -456,17 +456,18 @@ class TCanvasPainter extends TPadPainter {
    /** @summary Send RESIZED message to client to inform about changes in canvas/window geometry
      * @private */
    sendResized(force) {
-      if (!this.pad || (typeof window === 'undefined'))
+      const pad = this.getRootPad();
+      if (!pad || (typeof window === 'undefined'))
          return;
       const cw = this.getPadWidth(), ch = this.getPadHeight(),
             wx = window.screenLeft, wy = window.screenTop,
             ww = window.outerWidth, wh = window.outerHeight,
             fixed = this.#online_fixed_size ? 1 : 0;
       if (!force) {
-         force = (cw > 0) && (ch > 0) && ((this.pad.fCw !== cw) || (this.pad.fCh !== ch));
+         force = (cw > 0) && (ch > 0) && ((pad.fCw !== cw) || (pad.fCh !== ch));
          if (force) {
-            this.pad.fCw = cw;
-            this.pad.fCh = ch;
+            pad.fCw = cw;
+            pad.fCh = ch;
          }
       }
       if (force)
@@ -644,13 +645,14 @@ class TCanvasPainter extends TPadPainter {
    /** @summary Complete handling of online canvas drawing
      * @private */
    completeCanvasSnapDrawing() {
-      if (!this.pad)
+      const pad = this.getRootPad()
+      if (!pad)
          return;
 
       this.addPadInteractive();
 
       if ((typeof document !== 'undefined') && !this.embed_canvas && this.getWebsocket())
-         document.title = this.pad.fTitle;
+         document.title = pad.fTitle;
 
       if (this.#all_sections_showed) return;
       this.#all_sections_showed = true;
@@ -658,11 +660,11 @@ class TCanvasPainter extends TPadPainter {
       // used in Canvas.controller.js to avoid browser resize because of initial sections show/hide
       this._ignore_section_resize = true;
 
-      this.showSection('Menu', this.pad.TestBit(kMenuBar));
-      this.showSection('StatusBar', this.pad.TestBit(kShowEventStatus));
-      this.showSection('ToolBar', this.pad.TestBit(kShowToolBar));
-      this.showSection('Editor', this.pad.TestBit(kShowEditor));
-      this.showSection('ToolTips', this.pad.TestBit(kShowToolTips) || this._highlight_connect);
+      this.showSection('Menu', pad.TestBit(kMenuBar));
+      this.showSection('StatusBar', pad.TestBit(kShowEventStatus));
+      this.showSection('ToolBar', pad.TestBit(kShowToolBar));
+      this.showSection('Editor', pad.TestBit(kShowEditor));
+      this.showSection('ToolTips', pad.TestBit(kShowToolTips) || this._highlight_connect);
 
       this._ignore_section_resize = false;
    }
@@ -733,9 +735,10 @@ class TCanvasPainter extends TPadPainter {
          case 'logx':
          case 'logy':
          case 'logz': {
-            const pp = painter.getPadPainter();
-            if (pp?.getSnapId() && pp?.pad) {
-               const name = 'SetLog' + kind[3], value = pp.pad['fLog' + kind[3]];
+            const pp = painter.getPadPainter(),
+                  pad = pp?.getRootPad();
+            if (pp?.getSnapId() && pad) {
+               const name = 'SetLog' + kind[3], value = pad['fLog' + kind[3]];
                painter = pp;
                kind = `exec:${name}(${value})`;
             }
@@ -814,16 +817,17 @@ class TCanvasPainter extends TPadPainter {
          canv.fFillStyle = 1001;
 
       this.forEachPainterInPad(pp => {
-         if (pp.getNumPainters() && pp.pad.fPrimitives && !pp.pad.fPrimitives.arr.length) {
+         const pad = pp.getRootPad(true);
+         if (pp.getNumPainters() && pad?.fPrimitives && !pad.fPrimitives.arr.length) {
             // create list of primitives when missing
-            prims.push(pp.pad.fPrimitives);
+            prims.push(pad.fPrimitives);
             pp.forEachPainterInPad(p => {
                // ignore all secondary painters
                if (p.isSecondary())
                   return;
                const subobj = p.getObject();
                if (subobj?._typename)
-                  pp.pad.fPrimitives.Add(subobj, p.getDrawOpt());
+                  pad.fPrimitives.Add(subobj, p.getDrawOpt());
             }, 'objects');
          }
 

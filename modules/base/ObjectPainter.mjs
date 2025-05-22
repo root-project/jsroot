@@ -13,7 +13,7 @@ import { getRootColors } from './colors.mjs';
 
 /** @summary returns true if pad painter @private */
 function isPadPainter(p) {
-   return p?.pad && isFunc(p.forEachPainterInPad);
+   return isFunc(p?.getRootPad) && isFunc(p?.forEachPainterInPad);
 }
 
 /**

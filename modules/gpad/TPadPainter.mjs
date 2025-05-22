@@ -1138,10 +1138,11 @@ class TPadPainter extends ObjectPainter {
                   shift_x = _x / width - x0,
                   shift_y = 1 - (_y + _h) / height - y0;
             this.forEachPainterInPad(p => {
-               p.pad.fAbsXlowNDC += (p.pad.fAbsXlowNDC - x0) * (scale_w - 1) + shift_x;
-               p.pad.fAbsYlowNDC += (p.pad.fAbsYlowNDC - y0) * (scale_h - 1) + shift_y;
-               p.pad.fAbsWNDC *= scale_w;
-               p.pad.fAbsHNDC *= scale_h;
+               const subpad = p.getRootPad();
+               subpad.fAbsXlowNDC += (subpad.fAbsXlowNDC - x0) * (scale_w - 1) + shift_x;
+               subpad.fAbsYlowNDC += (subpad.fAbsYlowNDC - y0) * (scale_h - 1) + shift_y;
+               subpad.fAbsWNDC *= scale_w;
+               subpad.fAbsHNDC *= scale_h;
             }, 'pads');
          },
          redraw: () => this.interactiveRedraw('pad', 'padpos')
