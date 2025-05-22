@@ -3592,6 +3592,8 @@ class TGeoPainter extends ObjectPainter {
 
          this.updateClipping(true);
 
+         console.log('call render');
+
          const pr = this.render3D(100, not_wait_render ? 'nopromise' : false);
 
          return not_wait_render ? this : pr;
@@ -3708,7 +3710,7 @@ class TGeoPainter extends ObjectPainter {
       }
 
       const lineMaterial = new THREE.LineBasicMaterial({ color, linewidth }),
-          line3d = createLineSegments(buf, lineMaterial);
+            line3d = createLineSegments(buf, lineMaterial);
 
       line3d.defaultOrder = line3d.renderOrder = 1000000; // to bring line to the front
       line3d.geo_name = itemname;
