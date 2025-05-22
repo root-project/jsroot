@@ -277,6 +277,14 @@ class TPadPainter extends ObjectPainter {
          this.pad_draw_disabled = true;
    }
 
+  /** @summary returns pad painter
+    * @protected */
+   getPadPainter() { return this.isTopPad() ? null : super.getPadPainter(); }
+
+   /** @summary returns canvas painter
+     * @protected */
+   getCanvPainter(try_select) { return this.isTopPad() ? this : super.getCanvPainter(try_select); }
+
    /** @summary Returns pad name
      * @protected */
    getPadName() { return this.this_pad_name; }

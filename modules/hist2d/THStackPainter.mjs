@@ -257,7 +257,9 @@ class THStackPainter extends ObjectPainter {
       if (o.auto)
          hist.$num_histos = nhists;
 
-      return this.drawHist(this.getPadPainter(), hist, hopt).then(subp => {
+      const dom = this.#firstpainter?.getPadPainter() || this.getDrawDom();
+
+      return this.drawHist(dom, hist, hopt).then(subp => {
           subp.setSecondaryId(this, subid);
           this.#painters.push(subp);
           return this.drawNextHisto(indx+1, pad_painter);

@@ -19,8 +19,8 @@ class RObjectPainter extends ObjectPainter {
    /** @summary Add painter to pad list of painters
     * @desc For RCanvas also handles common style
     * @protected */
-   addToPadPrimitives() {
-      const pp = super.addToPadPrimitives();
+   addToPadPrimitives(pad_painter) {
+      const pp = super.addToPadPrimitives(pad_painter);
 
       if (pp && !this.rstyle && pp.next_rstyle)
          this.rstyle = pp.next_rstyle;

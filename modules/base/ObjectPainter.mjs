@@ -52,10 +52,8 @@ class ObjectPainter extends BasePainter {
 
       super(dom);
 
-      if (!pp) {
-         const elem = this.getCanvSvg();
-         pp = elem.empty() ? null : elem.property('pad_painter');
-      }
+      //if (!pp)
+      //   pp = this.getCanvPainter(true);
 
       if (pp)
          this.setPadPainter(pp);
@@ -77,14 +75,18 @@ class ObjectPainter extends BasePainter {
      * @protected */
    setPadPainter(pp) { this.#pad_painter_ref = pp ? new WeakRef(pp) : undefined; }
 
-   /** @summary returns pad painter
+   /** @summary returns pad painter where object is drawn
      * @protected */
    getPadPainter() { return this.#pad_painter_ref?.deref(); }
 
    /** @summary returns canvas painter
      * @protected */
-   getCanvPainter() {
+   getCanvPainter(try_select) {
       let pp = this.getPadPainter();
+      if (!pp && try_select) {
+         const elem = this.getCanvSvg();
+         return elem.empty() ? null : elem.property('pad_painter');
+      }
       while (pp) {
          const top = pp.getPadPainter();
          if (!top) break;
@@ -642,8 +644,12 @@ class ObjectPainter extends BasePainter {
    addToPadPrimitives(pad_painter) {
       if (this.#pad_painter_ref)
          pad_painter = this.#pad_painter_ref.deref();
-      else if (pad_painter)
-         this.#pad_painter_ref = new WeakRef(pad_painter);
+      else {
+         if (!pad_painter)
+            pad_painter = this.getCanvPainter(true); // try to detect in DOM
+         if (pad_painter)
+            this.#pad_painter_ref = new WeakRef(pad_painter);
+      }
 
       if (!pad_painter || (pad_painter === this))
          return null;
