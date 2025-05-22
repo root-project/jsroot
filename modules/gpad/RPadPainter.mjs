@@ -163,10 +163,6 @@ class RPadPainter extends RObjectPainter {
       return d3_select(null);
    }
 
-   /** @summary Returns SVG element for the pad itself
-     * @private */
-   svg_this_pad() { return this.getPadSvg(); }
-
    /** @summary Returns main painter on the pad
      * @desc Typically main painter is TH1/TH2 object which is drawing axes
      * @private */
@@ -186,7 +182,7 @@ class RPadPainter extends RObjectPainter {
 
       this.#painters.forEach(p => p.cleanup());
 
-      const svg_p = this.svg_this_pad();
+      const svg_p = this.getPadSvg();
       if (!svg_p.empty()) {
          svg_p.property('pad_painter', null);
          if (!this.isCanvas()) svg_p.remove();
@@ -459,7 +455,7 @@ class RPadPainter extends RObjectPainter {
          painter = this;
 
       if (pos && !this.isTopPad())
-         pos = getAbsPosInCanvas(this.svg_this_pad(), pos);
+         pos = getAbsPosInCanvas(this.getPadSvg(), pos);
 
       selectActivePad({ pp: this, active: true });
 
@@ -703,7 +699,7 @@ class RPadPainter extends RObjectPainter {
       }
 
       if (only_resize) {
-         svg_pad = this.svg_this_pad();
+         svg_pad = this.getPadSvg();
          svg_rect = svg_pad.selectChild('.root_pad_border');
          if (!this.isBatchMode())
             btns = this.getLayerSvg('btns_layer');
@@ -1019,7 +1015,7 @@ class RPadPainter extends RObjectPainter {
    /** @summary Checks if pad should be redrawn by resize
      * @private */
    needRedrawByResize() {
-      const elem = this.svg_this_pad();
+      const elem = this.getPadSvg();
       if (!elem.empty() && elem.property('can3d') === constants.Embed3D.Overlay) return true;
 
       for (let i = 0; i < this.#painters.length; ++i) {
@@ -1438,7 +1434,7 @@ class RPadPainter extends RObjectPainter {
    /** @summary Show context menu for specified item
      * @private */
    itemContextMenu(name) {
-      const rrr = this.svg_this_pad().node().getBoundingClientRect(),
+      const rrr = this.getPadSvg().node().getBoundingClientRect(),
             evnt = { clientX: rrr.left+10, clientY: rrr.top + 10 };
 
       // use timeout to avoid conflict with mouse click and automatic menu close
@@ -1506,7 +1502,7 @@ class RPadPainter extends RObjectPainter {
      * @return {Promise} with created image */
    async produceImage(full_canvas, file_format, args) {
       const use_frame = (full_canvas === 'frame'),
-            elem = use_frame ? this.getFrameSvg() : (full_canvas ? this.getCanvSvg() : this.svg_this_pad()),
+            elem = use_frame ? this.getFrameSvg() : (full_canvas ? this.getCanvSvg() : this.getPadSvg()),
             painter = (full_canvas && !use_frame) ? this.getCanvPainter() : this,
             items = []; // keep list of replaced elements, which should be moved back at the end
 
@@ -1524,7 +1520,7 @@ class RPadPainter extends RObjectPainter {
       if (!use_frame) {
          // do not make transformations for the frame
          painter.forEachPainterInPad(pp => {
-            const item = { prnt: pp.svg_this_pad() };
+            const item = { prnt: pp.getPadSvg() };
             items.push(item);
 
             // remove buttons from each sub-pad

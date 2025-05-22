@@ -2234,7 +2234,7 @@ class HierarchyPainter extends BasePainter {
              target = ev.target;
          pad_painter?.forEachPainter(pp => {
             painters.push(pp);
-            elements.push(pp.svg_this_pad().node());
+            elements.push(pp.getPadSvg().node());
          }, 'pads');
          // only if there are sub-pads - try to find them
          if (painters.length > 1) {

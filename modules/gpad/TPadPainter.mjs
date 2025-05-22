@@ -368,10 +368,6 @@ class TPadPainter extends ObjectPainter {
       return d3_select(null);
    }
 
-   /** @summary Returns SVG element for the pad itself
-    * @private */
-   svg_this_pad() { return this.getPadSvg(); }
-
    /** @summary Returns main painter on the pad
      * @desc Typically main painter is TH1/TH2 object which is drawing axes
     * @private */
@@ -392,7 +388,7 @@ class TPadPainter extends ObjectPainter {
 
       this.#painters.forEach(p => p.cleanup());
 
-      const svg_p = this.svg_this_pad();
+      const svg_p = this.getPadSvg();
       if (!svg_p.empty()) {
          svg_p.property('pad_painter', null);
          if (!this.isCanvas())
@@ -661,7 +657,7 @@ class TPadPainter extends ObjectPainter {
          painter = this;
 
       if (pos && !this.isTopPad())
-         pos = getAbsPosInCanvas(this.svg_this_pad(), pos);
+         pos = getAbsPosInCanvas(this.getPadSvg(), pos);
 
       selectActivePad({ pp: this, active: true });
 
@@ -680,7 +676,7 @@ class TPadPainter extends ObjectPainter {
          return;
 
       if (!svg_rect)
-         svg_rect = this.isCanvas() ? this.getCanvSvg().selectChild('.canvas_fillrect') : this.svg_this_pad().selectChild('.root_pad_border');
+         svg_rect = this.isCanvas() ? this.getCanvSvg().selectChild('.canvas_fillrect') : this.getPadSvg().selectChild('.root_pad_border');
 
       const cp = this.getCanvPainter();
 
@@ -1001,7 +997,7 @@ class TPadPainter extends ObjectPainter {
       }
 
       if (only_resize) {
-         svg_pad = this.svg_this_pad();
+         svg_pad = this.getPadSvg();
          svg_border = svg_pad.selectChild('.root_pad_border');
          if (!is_batch)
             btns = this.getLayerSvg('btns_layer');
@@ -1131,7 +1127,7 @@ class TPadPainter extends ObjectPainter {
          only_resize: true, // !cleanup && (this._disable_dragging || this.getFramePainter()?.mode3d),
          is_disabled: kind => svg_can.property('pad_enlarged') || this.btns_active_flag ||
                              (kind === 'move' && (this._disable_dragging || this.getFramePainter()?.mode3d)),
-         getDrawG: () => this.svg_this_pad(),
+         getDrawG: () => this.getPadSvg(),
          pad_rect: { width, height },
          minwidth: 20, minheight: 20,
          move_resize: (_x, _y, _w, _h) => {
@@ -1652,7 +1648,7 @@ class TPadPainter extends ObjectPainter {
    /** @summary Checks if pad should be redrawn by resize
      * @private */
    needRedrawByResize() {
-      const elem = this.svg_this_pad();
+      const elem = this.getPadSvg();
       if (!elem.empty() && elem.property('can3d') === constants.Embed3D.Overlay) return true;
 
       return this.#painters.findIndex(objp => {
@@ -2304,7 +2300,7 @@ class TPadPainter extends ObjectPainter {
       if (!r) return false;
 
       const fp = this.getFramePainter(),
-            p = this.svg_this_pad();
+            p = this.getPadSvg();
 
       r.ranges = fp?.ranges_set ?? false; // indicate that ranges are assigned
 
@@ -2360,7 +2356,7 @@ class TPadPainter extends ObjectPainter {
    /** @summary Show context menu for specified item
      * @private */
    itemContextMenu(name) {
-      const rrr = this.svg_this_pad().node().getBoundingClientRect(),
+      const rrr = this.getPadSvg().node().getBoundingClientRect(),
             evnt = { clientX: rrr.left + 10, clientY: rrr.top + 10 };
 
       // use timeout to avoid conflict with mouse click and automatic menu close
@@ -2447,7 +2443,7 @@ class TPadPainter extends ObjectPainter {
          return isFunc(this.produceJSON) ? this.produceJSON(full_canvas ? 2 : 0) : '';
 
       const use_frame = (full_canvas === 'frame'),
-            elem = use_frame ? this.getFrameSvg() : (full_canvas ? this.getCanvSvg() : this.svg_this_pad()),
+            elem = use_frame ? this.getFrameSvg() : (full_canvas ? this.getCanvSvg() : this.getPadSvg()),
             painter = (full_canvas && !use_frame) ? this.getCanvPainter() : this,
             items = []; // keep list of replaced elements, which should be moved back at the end
 
@@ -2471,7 +2467,7 @@ class TPadPainter extends ObjectPainter {
 
          if (use_frame) return; // do not make transformations for the frame
 
-         const item = { prnt: pp.svg_this_pad() };
+         const item = { prnt: pp.getPadSvg() };
          items.push(item);
 
          // remove buttons from each sub-pad

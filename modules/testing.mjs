@@ -319,7 +319,7 @@ async function testPadContextMenu(node, args, pp) {
 
    const pw = cp.getPadWidth(), ph = cp.getPadHeight(),
          evnt = new EmulationMouseEvent(),
-         rect = cp.svg_this_pad().node().getBoundingClientRect();
+         rect = cp.getPadSvg().node().getBoundingClientRect();
 
    for (let i = 1; i < 10; i++) {
       for (let j = 1; j < 10; j++) {
