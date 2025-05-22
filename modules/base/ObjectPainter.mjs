@@ -49,19 +49,11 @@ class ObjectPainter extends BasePainter {
      * @param {object} obj - object to draw
      * @param {string} [opt] - object draw options */
    constructor(dom, obj, opt) {
-      let pp;
-      if (isPadPainter(dom)) {
-         pp = dom;
-         dom = dom.getDom();
-      }
+      const pp = isPadPainter(dom) ? dom : null;
 
-      super(dom);
+      super(pp?.getDom() ?? dom);
 
-      //if (!pp)
-      //   pp = this.getCanvPainter(true);
-
-      if (pp)
-         this.setPadPainter(pp);
+      this.setPadPainter(pp);
 
       this.#draw_g = undefined; // container for all drawn objects
       this.assignObject(obj);
