@@ -209,6 +209,7 @@ class TPadPainter extends ObjectPainter {
    #pad_width;  // pad width
    #pad_height; // pad height
    #doing_draw; // drawing handles
+   #pad_draw_disabled; // disable drawing of the pad
    #last_grayscale; // grayscale change flag
    #custom_palette; // custom palette
    #custom_colors;  // custom colors
@@ -271,7 +272,7 @@ class TPadPainter extends ObjectPainter {
       }
 
       if (pad?.$disable_drawing)
-         this.pad_draw_disabled = true;
+         this.#pad_draw_disabled = true;
    }
 
   /** @summary returns pad painter
@@ -983,7 +984,7 @@ class TPadPainter extends ObjectPainter {
             width = svg_can.property('draw_width'),
             height = svg_can.property('draw_height'),
             pad_enlarged = svg_can.property('pad_enlarged'),
-            pad_visible = !this.pad_draw_disabled && (!pad_enlarged || (pad_enlarged === this.#pad)),
+            pad_visible = !this.#pad_draw_disabled && (!pad_enlarged || (pad_enlarged === this.#pad)),
             is_batch = this.isBatchMode();
       let w = Math.round(this.#pad.fAbsWNDC * width),
           h = Math.round(this.#pad.fAbsHNDC * height),
@@ -1153,8 +1154,8 @@ class TPadPainter extends ObjectPainter {
    /** @summary Disable pad drawing
      * @desc Complete SVG element will be hidden */
    disablePadDrawing() {
-      if (!this.pad_draw_disabled && !this.isTopPad()) {
-         this.pad_draw_disabled = true;
+      if (!this.#pad_draw_disabled && !this.isTopPad()) {
+         this.#pad_draw_disabled = true;
          this.createPadSvg(true);
       }
    }
