@@ -141,7 +141,7 @@ const PadButtonsHandler = {
                btn = ToolbarIcons.circle;
 
             const svg = ToolbarIcons.createSVG(group, btn, this.getButtonSize(),
-                        item.tooltip + (istop ? '' : (` on pad ${this.this_pad_name}`)) + (item.keyname ? ` (keyshortcut ${item.keyname})` : ''), false);
+                        item.tooltip + (istop ? '' : (` on pad ${this.getPadName()}`)) + (item.keyname ? ` (keyshortcut ${item.keyname})` : ''), false);
 
             if (group.property('vertical'))
                svg.attr('x', y).attr('y', x);
@@ -201,6 +201,7 @@ function createWebObjectOptions(painter) {
 class TPadPainter extends ObjectPainter {
 
    #iscan;      // is canvas flag
+   #pad_name;   // name of the pad
    #painters;   // painters in the pad
    #pad_scale;  // scale factor of the pad
    #pad_x;      // pad x coordinate
@@ -240,12 +241,12 @@ class TPadPainter extends ObjectPainter {
       super(dom, pad);
       this.pad = pad;
       this.#iscan = iscan; // indicate if working with canvas
-      this.this_pad_name = '';
+      this.#pad_name = '';
       if (!iscan && pad?.fName) {
-         this.this_pad_name = pad.fName.replace(' ', '_'); // avoid empty symbol in pad name
+         this.#pad_name = pad.fName.replace(' ', '_'); // avoid empty symbol in pad name
          const regexp = /^[A-Za-z][A-Za-z0-9_]*$/;
-         if (!regexp.test(this.this_pad_name) || ((this.this_pad_name === 'button') && (pad._typename === clTButton)))
-            this.this_pad_name = 'jsroot_pad_' + internals.id_counter++;
+         if (!regexp.test(this.#pad_name) || ((this.#pad_name === 'button') && (pad._typename === clTButton)))
+            this.#pad_name = 'jsroot_pad_' + internals.id_counter++;
       }
       this.#painters = []; // complete list of all painters in the pad
       this.#has_canvas = true;
@@ -261,7 +262,7 @@ class TPadPainter extends ObjectPainter {
          if ((add_to_primitives !== 'webpad') && this.getCanvSvg().empty()) {
             // one can draw pad without canvas
             this.#has_canvas = false;
-            this.this_pad_name = '';
+            this.#pad_name = '';
             this.setTopPainter();
          } else {
             // pad painter will be registered in the parent pad
@@ -283,7 +284,7 @@ class TPadPainter extends ObjectPainter {
 
    /** @summary Returns pad name
      * @protected */
-   getPadName() { return this.this_pad_name; }
+   getPadName() { return this.#pad_name; }
 
    /** @summary Indicates that drawing runs in batch mode
      * @private */
@@ -333,10 +334,10 @@ class TPadPainter extends ObjectPainter {
      * @protected */
    getPadSvg() {
       const c = this.getCanvSvg();
-      if (!this.this_pad_name || c.empty())
+      if (!this.#pad_name || c.empty())
          return c;
 
-      return c.select('.primitives_layer .__root_pad_' + this.this_pad_name);
+      return c.select('.primitives_layer .__root_pad_' + this.#pad_name);
    }
 
    /** @summary Method selects immediate layer under canvas/pad main element
@@ -406,7 +407,7 @@ class TPadPainter extends ObjectPainter {
 
       this.#painters = [];
       this.pad = null;
-      this.this_pad_name = undefined;
+      this.#pad_name = undefined;
       this.#has_canvas = false;
 
       selectActivePad({ pp: this, active: false });
@@ -1005,12 +1006,12 @@ class TPadPainter extends ObjectPainter {
       } else {
          svg_pad = svg_can.selectChild('.primitives_layer')
              .append('svg:svg') // svg used to blend all drawings outside
-             .classed('__root_pad_' + this.this_pad_name, true)
-             .attr('pad', this.this_pad_name) // set extra attribute  to mark pad name
+             .classed('__root_pad_' + this.#pad_name, true)
+             .attr('pad', this.#pad_name) // set extra attribute  to mark pad name
              .property('pad_painter', this); // this is custom property
 
          if (!is_batch)
-            svg_pad.append('svg:title').text('subpad ' + this.this_pad_name);
+            svg_pad.append('svg:title').text('subpad ' + this.#pad_name);
 
          // need to check attributes directly while attributes objects will be created later
          if (!is_batch || (this.pad.fFillStyle > 0) || ((this.pad.fLineStyle > 0) && (this.pad.fLineColor > 0)))
@@ -1060,7 +1061,7 @@ class TPadPainter extends ObjectPainter {
 
       // special case of 3D canvas overlay
       if (svg_pad.property('can3d') === constants.Embed3D.Overlay) {
-         this.selectDom().select('.draw3d_' + this.this_pad_name)
+         this.selectDom().select('.draw3d_' + this.#pad_name)
               .style('display', pad_visible ? '' : 'none');
       }
 
@@ -1563,7 +1564,7 @@ class TPadPainter extends ObjectPainter {
       if (this.enlargeMain() || (!this.isTopPad() && this.hasObjectsToDraw()))
          menu.addchk(this.isPadEnlarged(), 'Enlarge ' + (this.isCanvas() ? 'canvas' : 'pad'), () => this.enlargePad());
 
-      const fname = this.this_pad_name || (this.isCanvas() ? 'canvas' : 'pad');
+      const fname = this.#pad_name || (this.isCanvas() ? 'canvas' : 'pad');
       menu.sub('Save as');
       const fmts = ['svg', 'png', 'jpeg', 'webp'];
       if (internals.makePDF) fmts.push('pdf');
@@ -1615,7 +1616,7 @@ class TPadPainter extends ObjectPainter {
          while (indx < this.#painters.length) {
             const sub = this.#painters[indx++];
             let res = 0;
-            if (showsubitems || sub.this_pad_name)
+            if (showsubitems || isPadPainter(sub))
                res = sub.redraw(reason);
 
             if (isPromise(res))
@@ -2403,7 +2404,7 @@ class TPadPainter extends ObjectPainter {
      * canvas_painter.saveAs('png', true, 'canvas.png'); */
    saveAs(kind, full_canvas, filename) {
       if (!filename)
-         filename = (this.this_pad_name || (this.isCanvas() ? 'canvas' : 'pad')) + '.' + kind;
+         filename = (this.#pad_name || (this.isCanvas() ? 'canvas' : 'pad')) + '.' + kind;
 
       this.produceImage(full_canvas, kind).then(imgdata => {
          if (!imgdata)

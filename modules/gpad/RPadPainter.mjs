@@ -4,7 +4,7 @@ import { select as d3_select } from '../d3.mjs';
 import { ColorPalette, addColor, getRootColors, convertColor } from '../base/colors.mjs';
 import { RObjectPainter } from '../base/RObjectPainter.mjs';
 import { prSVG, getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG, makeTranslate, svgToImage } from '../base/BasePainter.mjs';
-import { selectActivePad, getActivePad } from '../base/ObjectPainter.mjs';
+import { selectActivePad, getActivePad, isPadPainter } from '../base/ObjectPainter.mjs';
 import { registerForResize, saveFile } from '../gui/utils.mjs';
 import { BrowserLayout, getHPainter } from '../gui/display.mjs';
 import { createMenu, closeMenu } from '../gui/menu.mjs';
@@ -20,6 +20,7 @@ import { PadButtonsHandler, webSnapIds } from './TPadPainter.mjs';
 class RPadPainter extends RObjectPainter {
 
    #iscan;      // is canvas flag
+   #pad_name;   // name of the pad
    #painters;   // painters in the pad
    #pad_scale;  // scaling factor of the pad
    #pad_x;      // pad x coordinate
@@ -43,12 +44,12 @@ class RPadPainter extends RObjectPainter {
       super(dom, pad, '', 'pad');
       this.pad = pad;
       this.#iscan = iscan; // indicate if working with canvas
-      this.this_pad_name = '';
+      this.#pad_name = '';
       if (!iscan && pad) {
          if (pad.fObjectID)
-            this.this_pad_name = 'pad' + pad.fObjectID; // use objectid as pad name
+            this.#pad_name = 'pad' + pad.fObjectID; // use objectid as pad name
          else
-            this.this_pad_name = 'ppp' + internals.id_counter++; // artificial name
+            this.#pad_name = 'ppp' + internals.id_counter++; // artificial name
       }
       this.#painters = []; // complete list of all painters in the pad
       this.#has_canvas = true;
@@ -64,7 +65,7 @@ class RPadPainter extends RObjectPainter {
       if (add_to_primitives) {
          if ((add_to_primitives !== 'webpad') && this.getCanvSvg().empty()) {
             this.#has_canvas = false;
-            this.this_pad_name = '';
+            this.#pad_name = '';
             this.setTopPainter();
          } else
             this.addToPadPrimitives(); // must be here due to pad painter
@@ -73,7 +74,7 @@ class RPadPainter extends RObjectPainter {
 
    /** @summary Returns pad name
      * @protected */
-   getPadName() { return this.this_pad_name; }
+   getPadName() { return this.#pad_name; }
 
    /** @summary Indicates that drawing runs in batch mode
      * @private */
@@ -128,10 +129,10 @@ class RPadPainter extends RObjectPainter {
      * @protected */
    getPadSvg() {
       const c = this.getCanvSvg();
-      if (!this.this_pad_name || c.empty())
+      if (!this.#pad_name || c.empty())
          return c;
 
-      return c.select('.primitives_layer .__root_pad_' + this.this_pad_name);
+      return c.select('.primitives_layer .__root_pad_' + this.#pad_name);
    }
 
    /** @summary Method selects immediate layer under canvas/pad main element
@@ -198,7 +199,7 @@ class RPadPainter extends RObjectPainter {
       this.pad = null;
       this.assignObject(null);
       this.pad_frame = null;
-      this.this_pad_name = undefined;
+      this.#pad_name = undefined;
       this.#has_canvas = false;
 
       selectActivePad({ pp: this, active: false });
@@ -707,8 +708,8 @@ class RPadPainter extends RObjectPainter {
       } else {
          svg_pad = svg_parent.selectChild('.primitives_layer')
              .append('svg:svg') // here was g before, svg used to blend all drawings outside
-             .classed('__root_pad_' + this.this_pad_name, true)
-             .attr('pad', this.this_pad_name) // set extra attribute  to mark pad name
+             .classed('__root_pad_' + this.#pad_name, true)
+             .attr('pad', this.#pad_name) // set extra attribute  to mark pad name
              .property('pad_painter', this); // this is custom property
 
          if (!this.isBatchMode())
@@ -764,7 +765,7 @@ class RPadPainter extends RObjectPainter {
 
       // special case of 3D canvas overlay
       if (svg_pad.property('can3d') === constants.Embed3D.Overlay) {
-         this.selectDom().select('.draw3d_' + this.this_pad_name)
+         this.selectDom().select('.draw3d_' + this.#pad_name)
              .style('display', pad_visible ? '' : 'none');
       }
 
@@ -932,7 +933,7 @@ class RPadPainter extends RObjectPainter {
       if (this.enlargeMain() || (!this.isTopPad() && this.hasObjectsToDraw()))
          menu.addchk((this.enlargeMain('state') === 'on'), 'Enlarge ' + (this.isCanvas() ? 'canvas' : 'pad'), () => this.enlargePad());
 
-      const fname = this.this_pad_name || (this.isCanvas() ? 'canvas' : 'pad');
+      const fname = this.#pad_name || (this.isCanvas() ? 'canvas' : 'pad');
       menu.sub('Save as');
       ['svg', 'png', 'jpeg', 'pdf', 'webp'].forEach(fmt => menu.add(`${fname}.${fmt}`, () => this.saveAs(fmt, this.isCanvas(), `${fname}.${fmt}`)));
       menu.endsub();
@@ -981,7 +982,7 @@ class RPadPainter extends RObjectPainter {
          while (indx < this.#painters.length) {
             const sub = this.#painters[indx++];
             let res = 0;
-            if (showsubitems || sub.this_pad_name)
+            if (showsubitems || isPadPainter(sub))
                res = sub.redraw(reason);
 
             if (isPromise(res))
@@ -1474,7 +1475,7 @@ class RPadPainter extends RObjectPainter {
      * @desc Used from context menu */
    saveAs(kind, full_canvas, filename) {
       if (!filename)
-         filename = (this.this_pad_name || (this.isCanvas() ? 'canvas' : 'pad')) + '.' + kind;
+         filename = (this.#pad_name || (this.isCanvas() ? 'canvas' : 'pad')) + '.' + kind;
 
       this.produceImage(full_canvas, kind).then(imgdata => {
          if (!imgdata)
