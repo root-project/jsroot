@@ -461,15 +461,8 @@ class TGeoPainter extends ObjectPainter {
 
       super(dom, obj);
 
-      // FIXME: id drawn on pad painter - provide it from the beginning
-      if (!this.getPadPainter())
-         this.setPadPainter(this.getCanvPainter(true));
-
-      if (getHistPainter3DCfg(this.getMainPainter()))
-         this.#superimpose = true;
-
-      if (gm)
-         this.#geo_manager = gm;
+      this.#superimpose = Boolean(getHistPainter3DCfg(this.getMainPainter()));
+      this.#geo_manager = gm;
 
       this._no_default_title = true; // do not set title to main DIV
       this.mode3d = true; // indication of 3D mode
@@ -5903,10 +5896,11 @@ async function drawDummy3DGeom(painter) {
                 { _typename: clTEveGeoShapeExtract,
                   fTrans: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
                   fShape: shape, fRGBA: [0, 0, 0, 0], fElements: null, fRnrSelf: false }),
-         pp = painter.getDrawDom(),
-         opt = 'dummy;' + (pp?.pad?.fFillColor && (pp?.pad?.fFillStyle > 1000) ? 'bkgr_' + pp.pad.fFillColor : '');
+         pp = painter.getPadPainter(),
+         pad = pp?.getRootPad(true),
+         opt = 'dummy;' + (pad?.fFillColor && (pad?.fFillStyle > 1000) ? 'bkgr_' + pad.fFillColor : '');
 
-   return TGeoPainter.draw(pp, obj, opt);
+   return TGeoPainter.draw(pp || painter.getDom(), obj, opt);
 }
 
 /** @summary Direct draw function for TAxis3D
