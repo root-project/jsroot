@@ -1430,7 +1430,7 @@ class TPadPainter extends ObjectPainter {
    /** @summary Fill pad context menu
      * @private */
    fillContextMenu(menu) {
-      const pad = this.getRootPad(true)
+      const pad = this.getRootPad(true);
       if (!pad)
          return false;
 

@@ -645,7 +645,7 @@ class TCanvasPainter extends TPadPainter {
    /** @summary Complete handling of online canvas drawing
      * @private */
    completeCanvasSnapDrawing() {
-      const pad = this.getRootPad()
+      const pad = this.getRootPad();
       if (!pad)
          return;
 
