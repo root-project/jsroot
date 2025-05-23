@@ -2,7 +2,7 @@ import { BIT, settings, gStyle, internals, browser, create, parse, toJSON, loadS
 import { select as d3_select } from '../d3.mjs';
 import { closeCurrentWindow, showProgress, loadOpenui5, ToolbarIcons, getColorExec } from '../gui/utils.mjs';
 import { GridDisplay, getHPainter } from '../gui/display.mjs';
-import { cleanup, resize, selectActivePad, EAxisBits } from '../base/ObjectPainter.mjs';
+import { cleanup, resize, selectActivePad, EAxisBits, getDomCanvasPainter } from '../base/ObjectPainter.mjs';
 import { TFramePainter } from './TFramePainter.mjs';
 import { TPadPainter, clTButton, createWebObjectOptions } from './TPadPainter.mjs';
 
@@ -968,7 +968,7 @@ async function ensureTCanvas(painter, frame_kind) {
             canv.fY2 = ranges.maxy + dy * gStyle.fPadTopMargin;
             return canv;
          },
-         pad_painter = painter.getPadPainter() || painter.getCanvPainter(true),
+         pad_painter = painter.getPadPainter() || getDomCanvasPainter(painter.selectDom()),
          promise = pad_painter ? Promise.resolve(pad_painter) :
                      TCanvasPainter.draw(painter.getDom(), createCanv(), noframe);
 

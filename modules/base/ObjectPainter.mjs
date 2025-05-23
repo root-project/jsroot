@@ -16,6 +16,12 @@ function isPadPainter(p) {
    return isFunc(p?.getRootPad) && isFunc(p?.forEachPainterInPad);
 }
 
+/** @summary returns canvas painter from DOM element @private */
+function getDomCanvasPainter(dom) {
+   const elem = dom?.select('.root_canvas');
+   return !elem || elem.empty() ? null : elem.property('pad_painter');
+}
+
 /**
  * @summary Painter class for ROOT objects
  *
@@ -78,18 +84,11 @@ class ObjectPainter extends BasePainter {
 
    /** @summary returns canvas painter
      * @protected */
-   getCanvPainter(try_select) {
+   getCanvPainter() {
       let pp = this.getPadPainter();
-      if (!pp && try_select) {
-         const elem = this.getCanvSvg();
-         return elem.empty() ? null : elem.property('pad_painter');
-      }
-      while (pp && !pp.isCanvas()) {
-         const top = pp.getPadPainter();
-         if (!top) break;
-         pp = top;
-      }
-      return pp?.isCanvas() ? pp : null;
+      while (pp && !pp.isCanvas())
+         pp = pp.getPadPainter();
+      return pp;
    }
 
    /** @summary Indicates that drawing runs in batch mode
@@ -643,7 +642,7 @@ class ObjectPainter extends BasePainter {
          pad_painter = this.#pad_painter_ref.deref();
       else {
          if (!pad_painter)
-            pad_painter = this.getCanvPainter(true); // try to detect in DOM
+            pad_painter = getDomCanvasPainter(this.selectDom()); // try to detect in DOM
          if (pad_painter)
             this.#pad_painter_ref = new WeakRef(pad_painter);
       }
@@ -1683,21 +1682,21 @@ function drawRawText(dom, txt /* , opt */) {
 }
 
 /** @summary Returns canvas painter (if any) for specified DOM element
-  * @param {string|object} dom - id or DOM element
+  * @param {string|object} dom - id or DOM element or pad painter
   * @private */
 function getElementCanvPainter(dom) {
-   return isPadPainter(dom) ? dom.getCanvPainter() : new ObjectPainter(dom).getCanvPainter(true);
+   return isPadPainter(dom) ? dom.getCanvPainter() : getDomCanvasPainter(new ObjectPainter(dom).selectDom());
 }
 
 /** @summary Returns pad painter (if any) for specified DOM element
-  * @param {string|object} dom - id or DOM element
+  * @param {string|object} dom - id or DOM element or pad painter
   * @private */
 function getElementPadPainter(dom) {
    return isPadPainter(dom) ? dom : new ObjectPainter(dom).getPadPainter();
 }
 
 /** @summary Returns main painter (if any) for specified HTML element - typically histogram painter
-  * @param {string|object} dom - id or DOM element
+  * @param {string|object} dom - id or DOM element or pad painter
   * @private */
 function getElementMainPainter(dom) {
    return isPadPainter(dom) ? dom.getMainPainter() : new ObjectPainter(dom).getMainPainter(true);
@@ -1796,6 +1795,6 @@ const EAxisBits = {
 
 Object.assign(internals.jsroot, { ObjectPainter, cleanup, resize });
 
-export { isPadPainter, getElementPadPainter, getElementCanvPainter, getElementMainPainter, drawingJSON,
+export { isPadPainter, getDomCanvasPainter, getElementPadPainter, getElementCanvPainter, getElementMainPainter, drawingJSON,
          selectActivePad, getActivePad, cleanup, resize, drawRawText,
          ObjectPainter, EAxisBits, kAxisLabels, kAxisNormal, kAxisFunc, kAxisTime };
