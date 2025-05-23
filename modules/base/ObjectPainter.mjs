@@ -84,12 +84,12 @@ class ObjectPainter extends BasePainter {
          const elem = this.getCanvSvg();
          return elem.empty() ? null : elem.property('pad_painter');
       }
-      while (pp) {
+      while (pp && !pp.isCanvas()) {
          const top = pp.getPadPainter();
          if (!top) break;
          pp = top;
       }
-      return pp;
+      return pp?.isCanvas() ? pp : null;
    }
 
    /** @summary Indicates that drawing runs in batch mode

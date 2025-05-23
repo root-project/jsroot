@@ -342,19 +342,9 @@ class TPadPainter extends ObjectPainter {
    }
 
    /** @summary Method selects immediate layer under canvas/pad main element
-     * @param {string} name - layer name, exits 'primitives_layer', 'btns_layer', 'info_layer'
+     * @param {string} name - layer name lik 'primitives_layer', 'btns_layer', 'info_layer'
      * @protected */
-   getLayerSvg(name) {
-      let svg = this.getPadSvg();
-      if (svg.empty()) return svg;
-
-      if (name.indexOf('prim#') === 0) {
-         svg = svg.selectChild('.primitives_layer');
-         name = name.slice(5);
-      }
-
-      return svg.selectChild('.' + name);
-   }
+   getLayerSvg(name) { return this.getPadSvg().selectChild('.' + name); }
 
    /** @summary Returns svg element for the frame in current pad
      * @protected */
