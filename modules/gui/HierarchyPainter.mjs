@@ -2570,25 +2570,21 @@ class HierarchyPainter extends BasePainter {
      * @param {boolean} [force] - if specified, all required sub-levels will be opened
      * @private */
    activateItems(items, force) {
-      if (isStr(items)) items = [items];
+      if (isStr(items))
+         items = [items];
 
       const active = [], // array of elements to activate
-          update = []; // array of elements to update
+            update = []; // array of elements to update
       this.forEachItem(item => { if (item._background) { active.push(item); delete item._background; } });
 
-      const mark_active = () => {
-         for (let n = update.length - 1; n >= 0; --n)
-            this.updateTreeNode(update[n]);
-
-         for (let n = 0; n < active.length; ++n)
-            this.updateBackground(active[n], force);
-      },
-
-       find_next = (itemname, prev_found) => {
+      const find_next = (itemname, prev_found) => {
          if (itemname === undefined) {
             // extract next element
-            if (!items.length)
-               return mark_active();
+            if (!items.length) {
+               update.reverse().forEach(node => this.updateTreeNode(node));
+               active.forEach(item => this.updateBackground(item, force));
+               return;
+            }
             itemname = items.shift();
          }
 
@@ -2602,7 +2598,8 @@ class HierarchyPainter extends BasePainter {
 
             if (force) {
                // if after last expand no better solution found - skip it
-               if ((prev_found !== undefined) && (d.now_found === prev_found)) return find_next();
+               if ((prev_found !== undefined) && (d.now_found === prev_found))
+                  return find_next();
 
                return this.expandItem(d.now_found).then(res => {
                   if (!res) return find_next();
@@ -2631,7 +2628,8 @@ class HierarchyPainter extends BasePainter {
             }
 
             hitem._background = 'LightSteelBlue';
-            if (active.indexOf(hitem) < 0) active.push(hitem);
+            if (active.indexOf(hitem) < 0)
+               active.push(hitem);
          }
 
          find_next();
