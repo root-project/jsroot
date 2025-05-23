@@ -2515,7 +2515,7 @@ class HierarchyPainter extends BasePainter {
 
          function dropNextItem(indx, painter) {
             if (painter && dropitems[indx]?.length)
-               return h.dropItem(dropitems[indx].shift(), painter.getDom(), dropopts[indx].shift()).then(() => dropNextItem(indx, painter));
+               return h.dropItem(dropitems[indx].shift(), painter.getDrawDom(), dropopts[indx].shift()).then(() => dropNextItem(indx, painter));
 
             dropitems[indx] = null; // mark that all drop items are processed
             items[indx] = null; // mark item as ready
