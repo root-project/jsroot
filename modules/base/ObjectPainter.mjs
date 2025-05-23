@@ -230,7 +230,7 @@ class ObjectPainter extends BasePainter {
       if (isFunc(this.#options.asString)) {
          let changed = false;
          const pp = this.getPadPainter();
-         if (!this.#options_store || pp?._interactively_changed)
+         if (!this.#options_store || pp?.options._interactively_changed)
             changed = true;
          else {
             for (const k in this.#options_store) {

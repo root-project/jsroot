@@ -2603,7 +2603,7 @@ class TFramePainter extends FrameInteractive {
             pad = pp?.getRootPad(true);
       if (!pad) return;
 
-      pp._interactively_changed = true;
+      pp.options._interactively_changed = true;
 
       const name = `fLog${axis}`;
 

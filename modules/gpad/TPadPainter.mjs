@@ -391,7 +391,6 @@ class TPadPainter extends ObjectPainter {
       this.#frame_painter_ref = undefined;
       this.#pad_x = this.#pad_y = this.#pad_width = this.#pad_height = undefined;
       this.#doing_draw = undefined;
-      delete this._interactively_changed;
       this.#snap_primitives = undefined;
       this.#last_grayscale = undefined;
       this.#custom_palette = this.#custom_colors = this.#custom_palette_indexes = this.#custom_palette_colors = undefined;
