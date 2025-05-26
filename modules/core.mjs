@@ -1209,7 +1209,7 @@ const prROOT = 'ROOT.', clTObject = 'TObject', clTNamed = 'TNamed', clTString = 
       clTH1 = 'TH1', clTH1I = 'TH1I', clTH1F = 'TH1F', clTH1D = 'TH1D', clTH2 = 'TH2', clTH2I = 'TH2I', clTH2F = 'TH2F', clTH2D = 'TH2D', clTH3 = 'TH3',
       clTF1 = 'TF1', clTF12 = 'TF12', clTF2 = 'TF2', clTF3 = 'TF3', clTProfile = 'TProfile', clTProfile2D = 'TProfile2D', clTProfile3D = 'TProfile3D',
       clTGeoVolume = 'TGeoVolume', clTGeoNode = 'TGeoNode', clTGeoNodeMatrix = 'TGeoNodeMatrix',
-      nsREX = 'ROOT::Experimental::', nsSVG = 'http://www.w3.org/2000/svg',
+      nsROOT = 'ROOT::', nsREX = nsROOT + 'Experimental::', nsSVG = 'http://www.w3.org/2000/svg',
       kNoZoom = -1111, kNoStats = BIT(9), kInspect = 'inspect', kTitle = 'title',
       urlClassPrefix = 'https://root.cern/doc/master/class';
 
@@ -1959,7 +1959,7 @@ function getMethods(typename, obj) {
       };
    }
 
-   if (typename.indexOf('ROOT::Math::LorentzVector') === 0) {
+   if (typename.indexOf(nsROOT + 'Math::LorentzVector') === 0) {
       m.Px = m.X = function() { return this.fCoordinates.Px(); };
       m.Py = m.Y = function() { return this.fCoordinates.Py(); };
       m.Pz = m.Z = function() { return this.fCoordinates.Pz(); };
@@ -1973,7 +1973,7 @@ function getMethods(typename, obj) {
       m.Eta = m.eta = function() { return Math.atanh(this.Pz()/this.P()); };
    }
 
-   if (typename.indexOf('ROOT::Math::PxPyPzE4D') === 0) {
+   if (typename.indexOf(nsROOT + 'Math::PxPyPzE4D') === 0) {
       m.Px = m.X = function() { return this.fX; };
       m.Py = m.Y = function() { return this.fY; };
       m.Pz = m.Z = function() { return this.fZ; };
@@ -2040,7 +2040,7 @@ export { version_id, version_date, version, source_dir, isNodeJs, isBatchMode, s
          clTGraph, clTGraph2DErrors, clTGraph2DAsymmErrors,
          clTGraphPolar, clTGraphPolargram, clTGraphTime, clTCutG,
          clTPolyLine3D, clTPolyMarker3D, clTGeoVolume, clTGeoNode, clTGeoNodeMatrix,
-         nsREX, nsSVG, kNoZoom, kNoStats, kInspect, kTitle, urlClassPrefix,
+         nsROOT, nsREX, nsSVG, kNoZoom, kNoStats, kInspect, kTitle, urlClassPrefix,
          isArrayProto, getDocument, BIT, clone, addMethods, parse, parseMulti, toJSON,
          decodeUrl, findFunction, createHttpRequest, httpRequest, loadModules, loadScript, injectCode,
          create, createHistogram, setHistogramTitle, createTPolyLine, createTGraph, createTHStack, createTMultiGraph,
