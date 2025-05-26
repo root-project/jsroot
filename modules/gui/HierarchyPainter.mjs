@@ -1,7 +1,7 @@
 import { version, gStyle, httpRequest, create, createHttpRequest, loadScript, loadModules, decodeUrl,
          source_dir, settings, internals, browser, findFunction, toJSON,
          isArrayProto, isRootCollection, isBatchMode, isNodeJs, isObject, isFunc, isStr, _ensureJSROOT,
-         prROOT, clTList, clTMap, clTObjString, clTKey, clTFile, clTText, clTLatex, clTColor, clTStyle, kInspect, isPromise } from '../core.mjs';
+         prROOT, clTList, clTMap, clTObjString, clTKey, clTFile, clTText, clTLatex, clTColor, clTStyle, nsROOT, kInspect, isPromise } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { openFile, kBaseClass, clTStreamerInfoList, clTDirectory, clTDirectoryFile, nameStreamerInfo, addUserStreamer } from '../io.mjs';
 import { getRGBfromTColor } from '../base/colors.mjs';
@@ -84,6 +84,29 @@ ${img('tf2', 16, 'png', 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAABGdBTUE
 `, node, 'jsroot_hstyle');
 }
 
+
+/** @summary Return kind string for type
+  * @private */
+function getKindForType(typ) {
+   return (!isStr(typ) || (typ.indexOf(nsROOT) !== 0)) ? prROOT + typ : typ;
+}
+
+/** @summary Return type name from kind string
+  * @private */
+function getTypeForKind(kind) {
+   if (!isStr(kind))
+      return null;
+   if (kind.indexOf(prROOT) === 0)
+      return kind.slice(prROOT.length);
+   if (kind.indexOf(nsROOT) === 0)
+      return kind;
+   return null;
+}
+
+/** @summary Return true if object kind belongs to ROOT
+  * @private */
+function isROOTKind(kind) { return Boolean(getTypeForKind(kind)); }
+
 /** @summary Return size as string with suffix like MB or KB
   * @private */
 function getSizeStr(sz) {
@@ -156,7 +179,7 @@ function folderHierarchy(item, obj) {
       const chld = obj.fFolders.arr[i];
       item._childs.push({
          _name: chld.fName,
-         _kind: prROOT + chld._typename,
+         _kind: getKindForType(chld._typename),
          _obj: chld
       });
    }
@@ -205,7 +228,7 @@ function listHierarchy(folder, lst) {
       if (!obj?._typename) {
          item = {
             _name: i.toString(),
-            _kind: prROOT + 'NULL',
+            _kind: getKindForType('NULL'),
             _title: 'NULL',
             _value: 'null',
             _obj: null
@@ -213,7 +236,7 @@ function listHierarchy(folder, lst) {
       } else {
          item = {
             _name: obj.fName || obj.name,
-            _kind: prROOT + obj._typename,
+            _kind: getKindForType(obj._typename),
             _title: `${obj.fTitle || ''} type:${obj._typename}`,
             _obj: obj
          };
@@ -262,7 +285,7 @@ function keysHierarchy(folder, keys, file, dirname) {
       const item = {
          _name: key.fName + ';' + key.fCycle,
          _cycle: key.fCycle,
-         _kind: prROOT + key.fClassName,
+         _kind: getKindForType(key.fClassName),
          _title: key.fTitle + ` (size: ${getSizeStr(key.fObjlen)})`,
          _keyname: key.fName,
          _readobj: null,
@@ -288,7 +311,7 @@ function keysHierarchy(folder, keys, file, dirname) {
       } else if ((key.fClassName === clTList) && (key.fName === nameStreamerInfo)) {
          if (settings.SkipStreamerInfos) continue;
          item._name = nameStreamerInfo;
-         item._kind = prROOT + clTStreamerInfoList;
+         item._kind = getKindForType(clTStreamerInfoList);
          item._title = 'List of streamer infos for binary I/O';
          item._readobj = file.fStreamerInfos;
       }
@@ -377,7 +400,7 @@ function objectHierarchy(top, obj, args = undefined) {
 
    if (!top._title) {
       if (obj._typename)
-         top._title = prROOT + obj._typename;
+         top._title = getKindForType(obj._typename);
       else if (isarray)
          top._title = 'Array len: ' + obj.length;
    }
@@ -474,7 +497,7 @@ function objectHierarchy(top, obj, args = undefined) {
             item._vclass = cssValueNum;
          } else {
             if (fld.$kind || fld._typename)
-               item._kind = item._title = prROOT + (fld.$kind || fld._typename);
+               item._kind = item._title = getKindForType(fld.$kind || fld._typename);
 
             if (fld._typename) {
                item._title = fld._typename;
@@ -563,7 +586,7 @@ function taskHierarchy(item, obj) {
       const chld = obj.fTasks.arr[i];
       item._childs.push({
          _name: chld.fName,
-         _kind: prROOT + chld._typename,
+         _kind: getKindForType(chld._typename),
          _obj: chld
       });
    }
@@ -742,7 +765,7 @@ function canExpandHandle(handle) {
    return handle?.expand || handle?.get_expand || handle?.expand_item;
 }
 
-const kindTFile = prROOT + clTFile;
+const kindTFile = getKindForType(clTFile);
 
 /**
   * @summary Painter of hierarchical structures
@@ -1635,7 +1658,7 @@ class HierarchyPainter extends BasePainter {
       }
 
       if (!place) place = 'item';
-      const selector = (hitem._kind === prROOT + clTKey && hitem._more) ? 'noinspect' : '',
+      const selector = (hitem._kind === getKindForType(clTKey) && hitem._more) ? 'noinspect' : '',
             sett = getDrawSettings(hitem._kind, selector), handle = sett.handle;
 
       if (place === 'icon') {
@@ -1732,7 +1755,7 @@ class HierarchyPainter extends BasePainter {
      * @private */
    tree_mouseover(on, elem) {
       const itemname = d3_select(elem.parentNode.parentNode).attr('item'),
-           hitem = this.findItem(itemname);
+            hitem = this.findItem(itemname);
 
       if (!hitem) return;
 
@@ -1990,7 +2013,7 @@ class HierarchyPainter extends BasePainter {
                }
             }
 
-            if (hitem._kind === prROOT + clTStyle)
+            if (hitem._kind === getKindForType(clTStyle))
                menu.add('Apply', () => this.applyStyle(itemname));
          }
 
@@ -2794,7 +2817,7 @@ class HierarchyPainter extends BasePainter {
 
       return httpRequest(filepath, 'object').then(res2 => {
          if (!res2) return;
-         const h1 = { _jsonfile: filepath, _kind: prROOT + res2._typename, _jsontmp: res2, _name: filepath.split('/').pop() };
+         const h1 = { _jsonfile: filepath, _kind: getKindForType(res2._typename), _jsontmp: res2, _name: filepath.split('/').pop() };
          if (res2.fTitle) h1._title = res2.fTitle;
          h1._get = function(item /* ,itemname */) {
             if (item._jsontmp)
@@ -2923,7 +2946,7 @@ class HierarchyPainter extends BasePainter {
                   _get: item => {
                      return httpRequest(item._jsonfile, 'object').then(res2 => {
                         if (res2) {
-                          item._kind = prROOT + res2._typename;
+                          item._kind = getKindForType(res2._typename);
                           item._jsontmp = res2;
                           this.updateTreeNode(item);
                         }
