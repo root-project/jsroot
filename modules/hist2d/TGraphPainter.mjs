@@ -175,6 +175,9 @@ class TGraphPainter extends ObjectPainter {
          res.graphFillPattern = 1001;
       }
 
+      if (d.check('FILLPAT_', true))
+         res.graphFillPattern = d.partAsInt();
+
       if (d.check('LINE_', 'color'))
          res.graphLineColor = this.getColor(d.color);
 

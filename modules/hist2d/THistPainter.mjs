@@ -227,6 +227,9 @@ class THistDrawOptions {
          this.histoFillPattern = 1001;
       }
 
+      if (d.check('FILLPAT_', true))
+         this.histoFillPattern = d.partAsInt();
+
       if (d.check('LINE_', 'color'))
          this.histoLineColor = painter.getColor(d.color);
 
