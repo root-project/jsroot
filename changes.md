@@ -5,6 +5,7 @@
 1. Let use hex colors in histogram draw options like "fill_00ff00" or "line_77aa1166"
 1. Let configure exact axis ticks position via draw option like "xticks:[-3,-1,1,3]"
 1. Support gStyle.fBarOffset for `TGraph` bar drawing
+1. Support "fill_<id>" and "line_<id>" draw options for `TGraph`
 1. Support dark mode when store images
 1. With 'Shift' key pressed whole graph is moved by dragging action
 1. Upgrade three.js r174 -> r176

@@ -176,7 +176,7 @@ class TGraphPainter extends ObjectPainter {
       }
 
       if (d.check('LINE_', 'color'))
-         res.graphLineColor = getColor(d.color);
+         res.graphLineColor = this.getColor(d.color);
 
       if (d.check('WIDTH_', true))
          res.graphLineWidth = d.partAsInt();
