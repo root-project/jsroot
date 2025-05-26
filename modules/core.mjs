@@ -2021,6 +2021,25 @@ function isRootCollection(lst, typename) {
           (typename === clTObjArray) || (typename === clTClonesArray);
 }
 
+/** @summary Return kind string for type
+  * @desc Used when internal objects without clear ROOT type are used
+  * For such objects abstract 'kind' is defined. Used in hpainter and draw handles
+  * @private */
+function getKindForType(typ) {
+   return (!isStr(typ) || (typ.indexOf(nsROOT) !== 0)) ? prROOT + typ : typ;
+}
+
+/** @summary Return type name from kind string
+  * @private */
+function getTypeForKind(kind) {
+   if (!isStr(kind))
+      return null;
+   if (kind.indexOf(prROOT) === 0)
+      return kind.slice(prROOT.length);
+   if (kind.indexOf(nsROOT) === 0)
+      return kind;
+   return null;
+}
 
 /** @summary Internal collection of functions potentially used by batch scripts
   * @private */
@@ -2044,4 +2063,5 @@ export { version_id, version_date, version, source_dir, isNodeJs, isBatchMode, s
          isArrayProto, getDocument, BIT, clone, addMethods, parse, parseMulti, toJSON,
          decodeUrl, findFunction, createHttpRequest, httpRequest, loadModules, loadScript, injectCode,
          create, createHistogram, setHistogramTitle, createTPolyLine, createTGraph, createTHStack, createTMultiGraph,
-         getMethods, registerMethods, isRootCollection, isObject, isFunc, isStr, isPromise, getPromise, postponePromise, _ensureJSROOT };
+         getMethods, registerMethods, isRootCollection, isObject, isFunc, isStr, isPromise, getPromise, postponePromise,
+         getKindForType, getTypeForKind, _ensureJSROOT };

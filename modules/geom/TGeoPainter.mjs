@@ -1,6 +1,6 @@
 import { httpRequest, browser, source_dir, settings, internals, constants, create, clone,
          findFunction, isBatchMode, isNodeJs, getDocument, isObject, isFunc, isStr, postponePromise, getPromise,
-         prROOT, clTNamed, clTList, clTAxis, clTObjArray, clTPolyMarker3D, clTPolyLine3D,
+         getKindForType, clTNamed, clTList, clTAxis, clTObjArray, clTPolyMarker3D, clTPolyLine3D,
          clTGeoVolume, clTGeoNode, clTGeoNodeMatrix, nsREX, nsSVG, kInspect } from '../core.mjs';
 import { showProgress, injectStyle, ToolbarIcons } from '../gui/utils.mjs';
 import { GUI } from '../gui/lil-gui.mjs';
@@ -5459,9 +5459,9 @@ let add_settings = false;
 function getBrowserIcon(hitem, hpainter) {
    let icon = '';
    switch (hitem._kind) {
-      case prROOT + clTEveTrack: icon = 'img_evetrack'; break;
-      case prROOT + clTEvePointSet: icon = 'img_evepoints'; break;
-      case prROOT + clTPolyMarker3D: icon = 'img_evepoints'; break;
+      case getKindForType(clTEveTrack): icon = 'img_evetrack'; break;
+      case getKindForType(clTEvePointSet): icon = 'img_evepoints'; break;
+      case getKindForType(clTPolyMarker3D): icon = 'img_evepoints'; break;
    }
    if (icon) {
       const drawitem = findItemWithGeoPainter(hitem);
@@ -5686,7 +5686,7 @@ function createList(parent, lst, name, title) {
 
    const list_item = {
       _name: name,
-      _kind: prROOT + clTList,
+      _kind: getKindForType(clTList),
       _title: title,
       _more: true,
       _geoobj: lst,
@@ -5789,7 +5789,7 @@ function expandGeoObject(parent, obj) {
   * @private */
 createItem = function(node, obj, name) {
    const sub = {
-      _kind: prROOT + obj._typename,
+      _kind: getKindForType(obj._typename),
       _name: name || getObjectName(obj),
       _title: obj.fTitle,
       _parent: node,

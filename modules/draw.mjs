@@ -1,6 +1,6 @@
 import { select as d3_select } from './d3.mjs';
 import { loadScript, loadModules, findFunction, internals, settings, getPromise, isNodeJs, isObject, isFunc, isStr,
-         _ensureJSROOT, prROOT,
+         _ensureJSROOT, getKindForType, getTypeForKind,
          clTObject, clTNamed, clTString, clTAttLine, clTAttFill, clTAttMarker, clTAttText,
          clTObjString, clTFile, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
          clTPave, clTPaveText, clTPavesText, clTPaveStats, clTPaveLabel, clTPaveClass, clTDiamond, clTLegend, clTPaletteAxis,
@@ -196,7 +196,7 @@ function getDrawHandle(kind, selector) {
    if ((selector === null) && (kind in drawFuncs.cache))
       return drawFuncs.cache[kind];
 
-   const search = (kind.indexOf(prROOT) === 0) ? kind.slice(5) : `kind:${kind}`;
+   const search = getTypeForKind(kind) || `kind:${kind}`;
    let counter = 0;
    for (let i = 0; i < drawFuncs.lst.length; ++i) {
       const h = drawFuncs.lst[i];
@@ -206,7 +206,7 @@ function getDrawHandle(kind, selector) {
          continue;
 
       if (h.sameas) {
-         const hs = getDrawHandle(prROOT + h.sameas, selector);
+         const hs = getDrawHandle(getKindForType(h.sameas), selector);
          if (hs) {
             for (const key in hs) {
                if (h[key] === undefined)
@@ -298,7 +298,7 @@ function getDrawSettings(kind, selector) {
       res.opts = [''];
 
    // if no any handle found, let inspect ROOT-based objects
-   if (!isany && (kind.indexOf(prROOT) === 0) && !noinspect)
+   if (!isany && getTypeForKind(kind) && !noinspect)
       res.opts = [];
 
    if (!noinspect && res.opts)
@@ -327,7 +327,7 @@ function setDefaultDrawOpt(classname, opt) {
             setDefaultDrawOpt(arr[0], arr[1] || '');
       });
    } else {
-      const handle = getDrawHandle(prROOT + classname, 0);
+      const handle = getDrawHandle(getKindForType(classname), 0);
       if (handle)
          handle.dflt = opt;
    }
@@ -356,7 +356,7 @@ async function draw(dom, obj, opt) {
    let handle, type_info;
    if ('_typename' in obj) {
       type_info = 'type ' + obj._typename;
-      handle = getDrawHandle(prROOT + obj._typename, opt);
+      handle = getDrawHandle(getKindForType(obj._typename), opt);
    } else if ('_kind' in obj) {
       type_info = 'kind ' + obj._kind;
       handle = getDrawHandle(obj._kind, opt);
@@ -495,7 +495,7 @@ async function redraw(dom, obj, opt) {
    const can_painter = getElementCanvPainter(dom);
    let handle, res_painter = null, redraw_res;
    if (obj._typename)
-      handle = getDrawHandle(prROOT + obj._typename);
+      handle = getDrawHandle(getKindForType(obj._typename));
    if (handle?.draw_field && obj[handle.draw_field])
       obj = obj[handle.draw_field];
 
@@ -549,7 +549,7 @@ function addStreamerInfosForPainter(lst) {
       if (basics.indexOf(element.fName) >= 0)
          return null;
 
-      let handle = getDrawHandle(prROOT + element.fName);
+      let handle = getDrawHandle(getKindForType(element.fName));
       if (handle && !handle.for_derived)
             handle = null;
 
@@ -567,7 +567,8 @@ function addStreamerInfosForPainter(lst) {
    }
 
    lst.arr.forEach(si => {
-      if (getDrawHandle(prROOT + si.fName) !== null) return;
+      if (getDrawHandle(getKindForType(si.fName)) !== null)
+         return;
 
       const handle = checkBaseClasses(si, 0);
       if (handle) {
@@ -714,7 +715,7 @@ assignPadPainterDraw(TPadPainter);
 
 import_geo = async function() {
    return import('./geom/TGeoPainter.mjs').then(geo => {
-      const handle = getDrawHandle(prROOT + 'TGeoVolumeAssembly');
+      const handle = getDrawHandle(getKindForType('TGeoVolumeAssembly'));
       if (handle) handle.icon = 'img_geoassembly';
       return geo;
    });

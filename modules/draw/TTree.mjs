@@ -1,5 +1,5 @@
 import { internals, httpRequest, isBatchMode, isFunc, isStr, create, toJSON, getPromise,
-         prROOT, clTObjString, clTGraph, clTPolyMarker3D, clTH1, clTH2, clTH3 } from '../core.mjs';
+         getKindForType, clTObjString, clTGraph, clTPolyMarker3D, clTH1, clTH2, clTH3 } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { kTString, kObject, kAnyP } from '../io.mjs';
 import { kClonesNode, kSTLNode, clTBranchFunc, treeDraw, treeIOTest, TDrawSelector } from '../tree.mjs';
@@ -354,7 +354,7 @@ function drawTreePlayer(hpainter, itemname, askey, asleaf) {
    if (item._childs && !asleaf) {
       for (let n = 0; n < item._childs.length; ++n) {
          const leaf = item._childs[n];
-         if (leaf && leaf._kind && (leaf._kind.indexOf(prROOT + 'TLeaf') === 0) && (leaf_cnt < 2)) {
+         if (isStr(leaf?._kind) && (leaf._kind.indexOf(getKindForType('TLeaf')) === 0) && (leaf_cnt < 2)) {
             if (leaf_cnt++ > 0) expr += ':';
             expr += leaf._name;
          }

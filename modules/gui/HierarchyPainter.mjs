@@ -1,7 +1,8 @@
 import { version, gStyle, httpRequest, create, createHttpRequest, loadScript, loadModules, decodeUrl,
          source_dir, settings, internals, browser, findFunction, toJSON,
          isArrayProto, isRootCollection, isBatchMode, isNodeJs, isObject, isFunc, isStr, _ensureJSROOT,
-         prROOT, clTList, clTMap, clTObjString, clTKey, clTFile, clTText, clTLatex, clTColor, clTStyle, nsROOT, kInspect, isPromise } from '../core.mjs';
+         prROOT, clTList, clTMap, clTObjString, clTKey, clTFile, clTText, clTLatex, clTColor, clTStyle,
+         getKindForType, getTypeForKind, kInspect, isPromise } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { openFile, kBaseClass, clTStreamerInfoList, clTDirectory, clTDirectoryFile, nameStreamerInfo, addUserStreamer } from '../io.mjs';
 import { getRGBfromTColor } from '../base/colors.mjs';
@@ -83,29 +84,6 @@ ${img('tf1', 16, 'png', 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAABGdBTUE
 ${img('tf2', 16, 'png', 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAADFBMVEX/////AP8A/wD////pL6WoAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAAHdElNRQfgCw4PNgzGaW1jAAAARUlEQVQI12NgEGDQZAASKkBigQKQ6GhgYBDiYgASIiAigIGBS8iBgUFhEpCnoAEkUkNDQxkagUIMrUDMMAVETAARQI0MAD5GCJ7tAr1aAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE2LTExLTE0VDE2OjUxOjUzKzAxOjAwi1Gz3gAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNi0xMS0xNFQxNjo1MTozNiswMTowMG5bLUIAAAAASUVORK5CYII=')}
 `, node, 'jsroot_hstyle');
 }
-
-
-/** @summary Return kind string for type
-  * @private */
-function getKindForType(typ) {
-   return (!isStr(typ) || (typ.indexOf(nsROOT) !== 0)) ? prROOT + typ : typ;
-}
-
-/** @summary Return type name from kind string
-  * @private */
-function getTypeForKind(kind) {
-   if (!isStr(kind))
-      return null;
-   if (kind.indexOf(prROOT) === 0)
-      return kind.slice(prROOT.length);
-   if (kind.indexOf(nsROOT) === 0)
-      return kind;
-   return null;
-}
-
-/** @summary Return true if object kind belongs to ROOT
-  * @private */
-function isROOTKind(kind) { return Boolean(getTypeForKind(kind)); }
 
 /** @summary Return size as string with suffix like MB or KB
   * @private */
