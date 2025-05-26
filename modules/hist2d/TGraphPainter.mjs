@@ -170,6 +170,17 @@ class TGraphPainter extends ObjectPainter {
          d = new DrawOptions(res.original);
       }
 
+      if (d.check('FILL_', 'color')) {
+         res.graphFillColor = d.color;
+         res.graphFillPattern = 1001;
+      }
+
+      if (d.check('LINE_', 'color'))
+         res.graphLineColor = getColor(d.color);
+
+      if (d.check('WIDTH_', true))
+         res.graphLineWidth = d.partAsInt();
+
       if (d.check('NOOPT')) res.NoOpt = 1;
 
       if (d.check('POS3D_', true)) res.pos3d = d.partAsInt() - 0.5;
@@ -943,8 +954,8 @@ class TGraphPainter extends ObjectPainter {
       if (only_check_auto)
          this.deleteAttr();
       else {
-         this.createAttLine({ attr: graph, can_excl: true });
-         this.createAttFill({ attr: graph });
+         this.createAttLine({ attr: graph, can_excl: true, color0: o.graphLineColor, width: o.graphLineWidth });
+         this.createAttFill({ attr: graph, color: o.graphFillColor, pattern: o.graphFillPattern, });
       }
    }
 

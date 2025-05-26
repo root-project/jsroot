@@ -225,7 +225,7 @@
      { "name": "macro2", "file":"macro2.root", "item": "c1;1" },
      { "name": "split", "file": "gr2.root", "item": "c1equi;1", "title": "TGraph class with split line in legend" },
      { "name": "approx", "file": "tutorials_graphs.root", "item": "approx;1", "title": "Output of tutorials/graphs/approx.C" },
-     { "name": "bar_width_offset",  "url": "nobrowser&barwidth=0.5&baroffset=0.5&file=$$$graph.root&item=Graph&opt=B", "title": "Custom &barwidth=0.5 and &baroffset=0.5 with bar plot" }
+     { "name": "bar_width_offset",  "url": "nobrowser&barwidth=0.5&baroffset=0.5&file=$$$graph.root&item=Graph&opt=B,fill_f72211", "title": "Custom &barwidth=0.5 and &baroffset=0.5 with bar plot" }
    ],
    "TMultiGraph": [
      { "name": "fit", "file": "tutorials_fit.root", "item": "fitMultiGraph;1", "title": "Fitting of TMultiGraph by pol2, output from tutorials/fit/fitMultiGraph.C, test for TMath::sq() function" },
