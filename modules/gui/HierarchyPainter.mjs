@@ -1,7 +1,7 @@
 import { version, gStyle, httpRequest, create, createHttpRequest, loadScript, loadModules, decodeUrl,
          source_dir, settings, internals, browser, findFunction, toJSON,
          isArrayProto, isRootCollection, isBatchMode, isNodeJs, isObject, isFunc, isStr, _ensureJSROOT,
-         prROOT, clTList, clTMap, clTObjString, clTKey, clTFile, clTText, clTLatex, clTColor, clTStyle,
+         clTList, clTMap, clTObjString, clTKey, clTFile, clTText, clTLatex, clTColor, clTStyle,
          getKindForType, getTypeForKind, kInspect, isPromise } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
 import { openFile, kBaseClass, clTStreamerInfoList, clTDirectory, clTDirectoryFile, nameStreamerInfo, addUserStreamer } from '../io.mjs';
@@ -1227,7 +1227,7 @@ class HierarchyPainter extends BasePainter {
          can_click = true;
 
       let can_menu = can_click;
-      if (!can_menu && isStr(hitem._kind) && (hitem._kind.indexOf(prROOT) === 0))
+      if (!can_menu && getTypeForKind(hitem._kind))
          can_menu = can_click = true;
 
       if (!img2) img2 = img1;
@@ -1715,7 +1715,7 @@ class HierarchyPainter extends BasePainter {
             return this.expandItem(itemname, d3cont);
 
          // cannot draw, but can inspect ROOT objects
-         if (isStr(hitem._kind) && (hitem._kind.indexOf(prROOT) === 0) && sett.inspect && (can_draw !== false))
+         if (getTypeForKind(hitem._kind) && sett.inspect && (can_draw !== false))
             return this.display(itemname, kInspect, null, true);
 
          if (!hitem._childs || (hitem === this.h)) return;
@@ -2139,12 +2139,12 @@ class HierarchyPainter extends BasePainter {
 
             if (!updating) showProgress(`Drawing ${display_itemname} ...`);
 
-            let handle = obj._typename ? getDrawHandle(prROOT + obj._typename) : null;
+            let handle = obj._typename ? getDrawHandle(getKindForType(obj._typename)) : null;
 
             if (handle?.draw_field && obj[handle.draw_field]) {
                obj = obj[handle.draw_field];
                if (!drawopt) drawopt = handle.draw_field_opt || '';
-               handle = obj._typename ? getDrawHandle(prROOT + obj._typename) : null;
+               handle = obj._typename ? getDrawHandle(getKindForType(obj._typename)) : null;
             }
 
             if (use_dflt_opt && !drawopt && handle?.dflt && (handle.dflt !== kExpand))
@@ -2219,7 +2219,7 @@ class HierarchyPainter extends BasePainter {
       d3_select(frame).on('dragover', ev => {
          const itemname = ev.dataTransfer.getData('item'),
               ditem = h.findItem(itemname);
-         if (isStr(ditem?._kind) && (ditem._kind.indexOf(prROOT) === 0))
+         if (getTypeForKind(ditem?._kind))
             ev.preventDefault(); // let accept drop, otherwise it will be refused
       }).on('dragenter', function() {
          d3_select(this).classed('jsroot_drag_area', true);
@@ -2286,7 +2286,7 @@ class HierarchyPainter extends BasePainter {
          if (isFunc(mp?.performDrop))
             return mp.performDrop(res.obj, itemname, res.item, opt).then(p => drop_complete(p, mp === p));
 
-         const sett = res.obj._typename ? getDrawSettings(prROOT + res.obj._typename) : null;
+         const sett = res.obj._typename ? getDrawSettings(getKindForType(res.obj._typename)) : null;
          if (!sett?.draw)
             return null;
 
@@ -2676,7 +2676,7 @@ class HierarchyPainter extends BasePainter {
             if (handle?.expand_item && !hpainter._inspector) {
                _obj = _obj[handle.expand_item];
                _item.expand_item = handle.expand_item; // remember that was expand item
-               handle = _obj?._typename ? getDrawHandle(prROOT + _obj._typename, '::expand') : null;
+               handle = _obj?._typename ? getDrawHandle(getKindForType(_obj._typename), '::expand') : null;
             }
 
             if (handle?.expand || handle?.get_expand) {
@@ -3066,7 +3066,7 @@ class HierarchyPainter extends BasePainter {
             }
          }
 
-         if (!req && item._kind.indexOf(prROOT))
+         if (!req && getTypeForKind(item._kind))
            req = 'item.json.gz?compact=3';
       }
 
@@ -3153,10 +3153,8 @@ class HierarchyPainter extends BasePainter {
                .then(() => {
                   this.forEachItem(item => {
                      if (!('_drawfunc' in item) || !('_kind' in item)) return;
-                     let typename = 'kind:' + item._kind;
-                     if (item._kind.indexOf(prROOT) === 0)
-                        typename = item._kind.slice(5);
-                     const drawopt = item._drawopt;
+                     const typename = getTypeForKind(item._kind) || `kind:${item._kind}`,
+                           drawopt = item._drawopt;
                      if (!canDrawHandle(typename) || drawopt)
                         addDrawFunc({ name: typename, func: item._drawfunc, script: item._drawscript, opt: drawopt });
                   });
@@ -3201,7 +3199,7 @@ class HierarchyPainter extends BasePainter {
       const node = this.findItem(itemname),
             sett = getDrawSettings(node._kind, 'nosame;noinspect'),
             handle = getDrawHandle(node._kind),
-            root_type = isStr(node._kind) ? node._kind.indexOf(prROOT) === 0 : false;
+            root_type = getTypeForKind(node._kind);
 
       if (sett.opts && (node._can_draw !== false)) {
          sett.opts.push(kInspect);
@@ -3450,7 +3448,7 @@ class HierarchyPainter extends BasePainter {
    /** @summary function updates object drawings for other painters
      * @private */
    updateOnOtherFrames(painter, obj) {
-      const handle = obj._typename ? getDrawHandle(prROOT + obj._typename) : null;
+      const handle = obj._typename ? getDrawHandle(getKindForType(obj._typename)) : null;
       if (handle?.draw_field && obj[handle?.draw_field])
          obj = obj[handle?.draw_field];
 
