@@ -386,9 +386,13 @@ gStyle = {
    fOptLogy: 0,
    /** @summary Default log z scale */
    fOptLogz: 0,
+   /** @summary Show date on canvas */
    fOptDate: 0,
+   /** @summary Show file name on canvas */
    fOptFile: 0,
+   /** @summary X position of date on canvas */
    fDateX: 0.01,
+   /** @summary Y position of date on canvas */
    fDateY: 0.01,
    /** @summary Draw histogram title */
    fOptTitle: 1,
@@ -396,19 +400,29 @@ gStyle = {
    fCanvasColor: 0,
    /** @summary Pad fill color */
    fPadColor: 0,
+   /** @summary Pad bottom margin */
    fPadBottomMargin: 0.1,
+   /** @summary Pad top margin */
    fPadTopMargin: 0.1,
+   /** @summary Pad left margin */
    fPadLeftMargin: 0.1,
+   /** @summary Pad right margin */
    fPadRightMargin: 0.1,
    /** @summary TPad.fGridx default value */
    fPadGridX: false,
    /** @summary TPad.fGridy default value */
    fPadGridY: false,
+   /** @summary TPad.fTickx default value */
    fPadTickX: 0,
+   /** @summary TPad.fTicky default value */
    fPadTickY: 0,
+   /** @summary Pad border size */
    fPadBorderSize: 2,
+   /** @summary Pad border mode */
    fPadBorderMode: 0,
+   /** @summary Canvas border size */
    fCanvasBorderSize: 2,
+   /** @summary Canvas border mode */
    fCanvasBorderMode: 0,
    /** @summary fill color for stat box */
    fStatColor: 0,
@@ -424,16 +438,27 @@ gStyle = {
    fStatBorderSize: 1,
    /** @summary Printing format for stats */
    fStatFormat: '6.4g',
+   /** @summary Stat box X position - top right corner */
    fStatX: 0.98,
+   /** @summary Stat box Y position - top right corner */
    fStatY: 0.935,
+   /** @summary Stat box width */
    fStatW: 0.2,
+   /** @summary Stat box height */
    fStatH: 0.16,
+   /** @summary Title text align */
    fTitleAlign: 23,
+   /** @summary Title fill color */
    fTitleColor: 0,
+   /** @summary Title text color */
    fTitleTextColor: 1,
+   /** @summary Title border size */
    fTitleBorderSize: 0,
+   /** @summary Title text font */
    fTitleFont: 42,
+   /** @summary Title font size */
    fTitleFontSize: 0.05,
+   /** @summary Title fill style */
    fTitleStyle: 0,
    /** @summary X position of top left corner of title box */
    fTitleX: 0.5,
@@ -445,18 +470,31 @@ gStyle = {
    fTitleH: 0,
    /** @summary Printing format for fit parameters */
    fFitFormat: '5.4g',
+   /** @summary Default optstat value */
    fOptStat: 1111,
+   /** @summary Default optfit value */
    fOptFit: 0,
+   /** @summary Default number of colors in contour */
    fNumberContours: 20,
+   /** @summary Grids color */
    fGridColor: 0,
+   /** @summary Grids line style */
    fGridStyle: 3,
+   /** @summary Grids line width */
    fGridWidth: 1,
+   /** @summary Frame fill color */
    fFrameFillColor: 0,
+   /** @summary Frame fill style */
    fFrameFillStyle: 1001,
+   /** @summary Frame line color */
    fFrameLineColor: 1,
+   /** @summary Frame line width */
    fFrameLineWidth: 1,
+   /** @summary Frame line style */
    fFrameLineStyle: 1,
+   /** @summary Frame border size */
    fFrameBorderSize: 1,
+   /** @summary Frame border mode */
    fFrameBorderMode: 0,
    /** @summary size in pixels of end error for E1 draw options */
    fEndErrorSize: 2,
@@ -466,20 +504,31 @@ gStyle = {
    fHistMinimumZero: false,
    /** @summary Margin between histogram's top and pad's top */
    fHistTopMargin: 0.05,
+   /** @summary Histogram fill color */
    fHistFillColor: 0,
+   /** @summary Histogram fill style */
    fHistFillStyle: 1001,
+   /** @summary Histogram line color */
    fHistLineColor: 602,
+   /** @summary Histogram line style */
    fHistLineStyle: 1,
+   /** @summary Histogram line width */
    fHistLineWidth: 1,
    /** @summary format for bin content */
    fPaintTextFormat: 'g',
    /** @summary default time offset, UTC time at 01/01/95   */
    fTimeOffset: 788918400,
+   /** @summary Legend border size */
    fLegendBorderSize: 1,
+   /** @summary Legend text font */
    fLegendFont: 42,
+   /** @summary Legend font size */
    fLegendTextSize: 0,
+   /** @summary Legend fill color */
    fLegendFillColor: 0,
+   /** @summary Legend fill style */
    fLegendFillStyle: 1001,
+   /** @summary Hatches line width in fill styles  */
    fHatchesLineWidth: 1,
    fHatchesSpacing: 1,
    fCandleWhiskerRange: 1.0,
