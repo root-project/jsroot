@@ -544,7 +544,10 @@ gStyle = {
    fYAxisExpYOffset: 0,
    fAxisMaxDigits: 5,
    fStripDecimals: true,
-   fBarWidth: 1
+   /** @summary Width of bar for graphs */
+   fBarWidth: 1,
+   /** @summary Offset of bar for graphs */
+   fBarOffset: 0
 };
 
 /** @summary Method returns current document in use

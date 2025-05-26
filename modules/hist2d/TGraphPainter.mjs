@@ -26,6 +26,7 @@ class TGraphPainter extends ObjectPainter {
 
    #bins;          // extracted graph bins
    #barwidth;      // width of each bar
+   #baroffset;     // offset of each bar
    #redraw_hist;   // indicate that histogram need to be redrawn
    #auto_exec;     // can be reused when sending option back to server
    #funcs_handler; // special instance for functions drawing
@@ -729,7 +730,9 @@ class TGraphPainter extends ObjectPainter {
             }
          }
 
-         const bw = drawbins.length < 2 ? w / 4 : (xmax - xmin) / drawbins.length * gStyle.fBarWidth,
+         const sz0 = drawbins.length < 2 ? w / 4 : (xmax - xmin) / drawbins.length,
+               bw = sz0 * gStyle.fBarWidth,
+               boff = sz0 * gStyle.fBarOffset,
                yy0 = Math.round(funcs.gry(0));
          let usefill = fillatt;
 
@@ -744,7 +747,7 @@ class TGraphPainter extends ObjectPainter {
          nodes.append('svg:path')
               .attr('d', d => {
                  d.bar = true; // element drawn as bar
-                 const dx = bw > 1 ? Math.round(-bw/2) : 0,
+                 const dx = bw > 1 ? Math.round(boff-bw/2) : 0,
                        dw = bw > 1 ? Math.round(bw) : 1,
                        dy = (options.Bar !== 1) ? 0 : ((d.gry1 > yy0) ? yy0-d.gry1 : 0),
                        dh = (options.Bar !== 1) ? (h > d.gry1 ? h - d.gry1 : 0) : Math.abs(yy0 - d.gry1);
@@ -753,6 +756,7 @@ class TGraphPainter extends ObjectPainter {
             .call(usefill.func);
 
          this.#barwidth = bw;
+         this.#baroffset = boff;
       }
 
       if (options.Rect) {
@@ -1011,6 +1015,7 @@ class TGraphPainter extends ObjectPainter {
             o = this.getOptions(),
             height = fp.getFrameHeight(),
             bw = this.#barwidth,
+            boff = this.#baroffset,
             esz = this.error_size,
             isbar1 = (o.Bar === 1),
             funcs = isbar1 ? fp.getGrFuncs(o.second_x, o.second_y) : null,
@@ -1032,7 +1037,7 @@ class TGraphPainter extends ObjectPainter {
                      y1: Math.min(-esz, d.gry2, -msize),
                      y2: Math.max(esz, d.gry0, msize) };
          } else if (d.bar) {
-             rect = { x1: -bw/2, x2: bw/2, y1: 0, y2: height - d.gry1 };
+             rect = { x1: boff - bw / 2, x2: boff + bw / 2, y1: 0, y2: height - d.gry1 };
 
              if (isbar1) {
                 const yy0 = funcs.gry(0);
