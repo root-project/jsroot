@@ -1,7 +1,7 @@
 import { gStyle, BIT, settings, constants, create, isObject, isFunc, isStr, getPromise,
          clTList, clTPaveText, clTPaveStats, clTPaletteAxis, clTProfile, clTProfile2D, clTProfile3D, clTPad,
          clTAxis, clTF1, clTF2, kNoZoom, clTCutG, kNoStats, kTitle, setHistogramTitle } from '../core.mjs';
-import { getColor, getColorPalette } from '../base/colors.mjs';
+import { getColorPalette } from '../base/colors.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter, EAxisBits, kAxisTime, kAxisLabels } from '../base/ObjectPainter.mjs';
 import { TPavePainter, kPosTitle } from '../hist/TPavePainter.mjs';
@@ -228,7 +228,7 @@ class THistDrawOptions {
       }
 
       if (d.check('LINE_', 'color'))
-         this.histoLineColor = getColor(d.color);
+         this.histoLineColor = painter.getColor(d.color);
 
       if (d.check('WIDTH_', true))
          this.histoLineWidth = d.partAsInt();
