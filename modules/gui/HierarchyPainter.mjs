@@ -1,6 +1,6 @@
 import { version, gStyle, httpRequest, create, createHttpRequest, loadScript, loadModules, decodeUrl,
          source_dir, settings, internals, browser, findFunction, toJSON,
-         isArrayProto, isRootCollection, isBatchMode, isNodeJs, isObject, isFunc, isStr, _ensureJSROOT,
+         isArrayProto, isRootCollection, isBatchMode, isNodeJs, isObject, isFunc, isStr, getPromise, _ensureJSROOT,
          clTList, clTMap, clTObjString, clTKey, clTFile, clTText, clTLatex, clTColor, clTStyle,
          getKindForType, getTypeForKind, kInspect, isPromise } from '../core.mjs';
 import { select as d3_select } from '../d3.mjs';
@@ -1367,7 +1367,8 @@ class HierarchyPainter extends BasePainter {
 
          if (this.with_icons) {
             // in normal hierarchy check precisely if item can be expand
-            if (!hitem._more && !hitem._expand && !this.canExpandItem(hitem)) return false;
+            if (!hitem._more && !hitem._expand && !this.canExpandItem(hitem))
+               return false;
          }
 
          const pr = this.expandItem(this.itemFullName(hitem));
@@ -1694,10 +1695,13 @@ class HierarchyPainter extends BasePainter {
             }
          }
 
-         if (hitem._childs) can_expand = false;
+         if (hitem._childs)
+            can_expand = false;
 
-         if (can_draw === undefined) can_draw = sett.draw;
-         if (can_expand === undefined) can_expand = sett.expand || sett.get_expand;
+         if (can_draw === undefined)
+            can_draw = sett.draw;
+         if (can_expand === undefined)
+            can_expand = sett.expand || sett.get_expand;
 
          if (can_draw && can_expand && !drawopt) {
             // if default action specified as expand, disable drawing
@@ -2650,8 +2654,10 @@ class HierarchyPainter extends BasePainter {
    /** @summary Check if item can be (potentially) expand
      * @private */
    canExpandItem(item) {
-      if (!item) return false;
-      if (item._expand) return true;
+      if (!item)
+         return false;
+      if (item._expand)
+         return true;
       const handle = getDrawHandle(item._kind, '::expand');
       return handle && canExpandHandle(handle);
    }
@@ -2696,15 +2702,18 @@ class HierarchyPainter extends BasePainter {
 
          // try to use expand function
          if (_obj && isFunc(_item._expand)) {
-            if (_item._expand(_item, _obj)) {
-               _item._isopen = true;
-               if (_item._parent && !_item._parent._isopen) {
-                  _item._parent._isopen = true; // also show parent
-                  if (!silent)
-                     hpainter.updateTreeNode(_item._parent);
-               } else if (!silent)
-                  hpainter.updateTreeNode(_item, d3cont);
-               return _item;
+            const res = _item._expand(_item, _obj);
+            if (res) {
+               return getPromise(res).then(() => {
+                  _item._isopen = true;
+                  if (_item._parent && !_item._parent._isopen) {
+                     _item._parent._isopen = true; // also show parent
+                     if (!silent)
+                        hpainter.updateTreeNode(_item._parent);
+                  } else if (!silent)
+                     hpainter.updateTreeNode(_item, d3cont);
+                  return _item;
+               });
             }
          }
 
