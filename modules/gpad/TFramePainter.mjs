@@ -2163,7 +2163,6 @@ class TFramePainter extends FrameInteractive {
       pad.fY2 = pad.fUymax + ry/my*pad.fTopMargin;
    }
 
-
    /** @summary Draw axes grids
      * @desc Called immediately after axes drawing */
    drawGrids(draw_grids) {
@@ -2173,16 +2172,15 @@ class TFramePainter extends FrameInteractive {
       layer.selectAll('.ygrid').remove();
 
       const pp = this.getPadPainter(),
-         pad = pp?.getRootPad(true),
-         h = this.getFrameHeight(),
-         w = this.getFrameWidth(),
-         grid_style = gStyle.fGridStyle;
+            pad = pp?.getRootPad(true),
+            h = this.getFrameHeight(),
+            w = this.getFrameWidth(),
+            grid_style = gStyle.fGridStyle;
 
       // add a grid on x axis, if the option is set
       if (pad?.fGridx && draw_grids && this.x_handle?.ticks) {
          const colid = (gStyle.fGridColor > 0) ? gStyle.fGridColor : (this.getAxis('x')?.fAxisColor ?? 1);
          let gridx = '';
-
          this.x_handle.ticks.forEach(pos => {
             gridx += this.#swap_xy ? `M0,${pos}h${w}` : `M${pos},0v${h}`;
          });
@@ -2199,7 +2197,6 @@ class TFramePainter extends FrameInteractive {
       if (pad?.fGridy && draw_grids && this.y_handle?.ticks) {
          const colid = (gStyle.fGridColor > 0) ? gStyle.fGridColor : (this.getAxis('y')?.fAxisColor ?? 1);
          let gridy = '';
-
          this.y_handle.ticks.forEach(pos => {
             gridy += this.#swap_xy ? `M${pos},0v${h}` : `M0,${pos}h${w}`;
          });
