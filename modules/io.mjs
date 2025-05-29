@@ -375,6 +375,11 @@ CustomStreamers = {
       func(buf, obj) { obj.$kind = 'TTree'; obj.$file = buf.fFile; }
    },
 
+   'ROOT::RNTuple': {
+      name: '$file',
+      func(buf, obj) { obj.$kind = 'ROOT::RNTuple'; obj.$file = buf.fFile; }
+   },
+
    RooRealVar(buf, obj) {
       const v = buf.last_read_version;
       buf.classStreamer(obj, 'RooAbsRealLValue');
