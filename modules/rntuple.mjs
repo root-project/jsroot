@@ -83,4 +83,4 @@ async function tupleHierarchy(tuple_node, tuple) {
    });
 }
 
-export { tupleHierarchy };
+export { tupleHierarchy, readHeaderFooter };
