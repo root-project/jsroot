@@ -20,6 +20,7 @@
     "./draw": "./modules/draw.mjs",
     "./io": "./modules/io.mjs",
     "./tree": "./modules/tree.mjs",
+    "./rntuple": "./modules/rntuple.mjs",
     "./colors": "./modules/base/colors.mjs",
     "./hierarchy": "./modules/gui/HierarchyPainter.mjs",
     "./latex": "./modules/base/latex.mjs",
