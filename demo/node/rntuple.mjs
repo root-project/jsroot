@@ -2,10 +2,10 @@ import { RBufferReader } from "./RNTuple_reader.js";
 
 //TEST 1
 {
-// creating a buffer with one 32-bit unsigned integer(42)
+// creating a buffer with one 32-bit unsigned integer
 let buffer = new ArrayBuffer(4);
 let view = new DataView(buffer);
-//  writes the number 42 into the buffer
+
 view.setUint32(0, 0x12345678, true)
 
 // read the buffer
