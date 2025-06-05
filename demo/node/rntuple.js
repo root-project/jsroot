@@ -1,5 +1,5 @@
-import { RBufferReader } from "./RNTuple_reader.js";
-
+import { RBufferReader } from '../../modules/rntuple.mjs';
+// This is a test script
 //TEST 1
 {
 // creating a buffer with one 32-bit unsigned integer
@@ -12,7 +12,10 @@ view.setUint32(0, 0x12345678, true)
 let reader = new RBufferReader(buffer);
 let value = reader.readU32();
 
-console.log("test-1 passed?", value === 0x12345678)
+if (value === 0x12345678)
+   console.log('test 1 passed');
+else
+   console.error('FAILURE: test 1 does not match')
 }
 
 // TEST 2: Read 16-bit and 8-bit integers
@@ -24,14 +27,22 @@ console.log("test-1 passed?", value === 0x12345678)
     const reader = new RBufferReader(buffer);
     const u16 = reader.readU16();
     const u8 = reader.readU8();
-    console.log("test - 2 - readU16 passed?", u16 === 0xABCD);
-    console.log("test- 2 - readU8 passed?", u8 === 0xEF);
+    
+    if (u16 === 0xABCD)
+       console.log('test - 2 - readU16 passed');
+    else
+       console.error('FAILURE: test - 2 - readU16 does not match')
+
+    if (u8 === 0xEF)
+       console.log('test- 2 - readU8 passed');
+    else
+       console.error('FAILURE: test - 2 - readU8 does not match')
   }
 
 //Test 3: Read a string 
 
 {
-  const text = "HELLO"
+  const text = 'HELLO';
   const buffer = new ArrayBuffer(4 + text.length) // 4 bytes for length and 5 for hello
 
   const view = new DataView(buffer)
@@ -44,7 +55,9 @@ console.log("test-1 passed?", value === 0x12345678)
   }
   const reader = new RBufferReader(buffer);
   const result = reader.readString();
-  console.log("test 3 - readString passed?",result===text);
+
+  if (result === text)
+     console.log('test 3 - readString passed');
+  else
+     console.error('FAILURE: test 3 - readString does not match');
 }
-
-

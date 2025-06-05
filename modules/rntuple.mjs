@@ -1,24 +1,121 @@
 import { R__unzip } from './io.mjs';
+const LITTLE_ENDIAN = true;
+class RBufferReader {
+   constructor(buffer) {
+    if (buffer instanceof ArrayBuffer) {
+      this.buffer = buffer;
+    } else if (ArrayBuffer.isView(buffer)) {
+      const bytes = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+      this.buffer = bytes.slice().buffer;
+    } else {
+      throw new TypeError(ERROR);
+    }
+    this.view = new DataView(this.buffer);
+    this.offset = 0;
+  }
+
+  // Moving to a specific position in the buffer
+  seek(position) {
+    this.offset = position;
+  }
+
+  // Read unsigned 8-bit integer (1 BYTE)
+  readU8() {
+    const val = this.view.getUint8(this.offset, LITTLE_ENDIAN);
+    this.offset += 1;
+    return val;
+  }
+
+  // Read unsigned 16-bit integer (2 BYTES)
+  readU16() {
+    const val = this.view.getUint16(this.offset, LITTLE_ENDIAN)
+    this.offset += 2;
+    return val;
+  }
+
+  // Read unsigned 32-bit integer (4 BYTES)
+  readU32() {
+    const val = this.view.getUint32(this.offset, LITTLE_ENDIAN)
+    this.offset += 4;
+    return val;
+  }
+
+  // Read signed 8-bit integer (1 BYTE)
+  readS8() {
+    const val = this.view.getInt8(this.offset, LITTLE_ENDIAN)
+    this.offset += 1;
+    return val;
+  }
+
+  // Read signed 16-bit integer (2 BYTES)
+  readS16() {
+    const val = this.view.getInt16(this.offset, LITTLE_ENDIAN)
+    this.offset += 2;
+    return val;
+  }
+
+  // Read signed 32-bit integer (4 BYTES)
+  readS32() {
+    const val = this.view.getInt32(this.offset, LITTLE_ENDIAN);
+    this.offset += 4;
+    return val;
+  }
+
+  // Read 32-bit float (4 BYTES)
+  readF32() {
+    const val = this.view.getFloat32(this.offset, LITTLE_ENDIAN);
+    this.offset += 4;
+    return val;
+  }
+
+
+
+  // Read a string with 32-bit length prefix
+  readString() {
+    // Reading the length
+    const length = this.readU32();
+    // Reading the payload
+    let str = '';
+    for (let i = 0; i < length; i++) 
+      str += String.fromCharCode(this.readU8());
+    return str;
+  }
+}
 
 
 class RNTupleDescriptorBuilder {
-
+      
    deserializeHeader(header_blob) {
-      if (!header_blob)
-         return;
+   if (!header_blob) return;
 
-      this.xxhash3 = 1234;
-      this.featuresFlags = [];
-      this.name = 'rntuple';
-      this.description = 'description';
-      // this.deserializeSchemaDescription ...
-   }
+   const reader = new RBufferReader(header_blob);
+
+   // 1. Read header version
+   this.version = reader.readU32();
+
+   // 2. Read feature flags
+   this.featureFlags = reader.readU32();
+
+}
+
 
    deserializeFooter(footer_blob) {
-      if (!footer_blob)
-         return;
-      this.xxhash3 = 1234;
-   }
+   if (!footer_blob) return;
+
+   const reader = new RBufferReader(footer_blob);
+
+   this.featureFlags = reader.readU32();
+   this.headerChecksum = reader.readU32();
+
+   // Optionally print some debug output
+   console.log('Footer decoded:', {
+      featureFlags: this.featureFlags,
+      headerChecksum: this.headerChecksum
+   });
+
+   // schemaExtensionFrames, clusterGroupFrames, etc. can be decoded later
+}
+
 
 }
 
@@ -83,4 +180,4 @@ async function tupleHierarchy(tuple_node, tuple) {
    });
 }
 
-export { tupleHierarchy, readHeaderFooter };
+export { tupleHierarchy, readHeaderFooter, RBufferReader };
