@@ -51,9 +51,7 @@ jobs:
       - name: Run demos
         run: |
           cd demo/node; npm install; cd ../..
-          xvfb-run -s "-ac -screen 0 1280x1024x24" 
-          node demo/node/rntuple.mjs
-          node demo/node/makesvg.js
+          xvfb-run -s "-ac -screen 0 1280x1024x24" node demo/node/makesvg.js
           node demo/node/tree_dump.js
           node demo/node/tree_draw.js
           xvfb-run -s "-ac -screen 0 1280x1024x24" node demo/node/geomsvg.js
@@ -64,6 +62,7 @@ jobs:
           node demo/node/file_proxy.js promise ./hsimple.root
           node demo/node/file_proxy.js multi ./hsimple.root
           node demo/node/file_proxy.js buffer ./hsimple.root
+          node demo/node/rntuple.js
 
   tests_ubuntu:
     runs-on: ubuntu-latest
@@ -176,6 +175,7 @@ jobs:
           node demo/node/file_proxy.js promise ./hsimple.root
           node demo/node/file_proxy.js multi ./hsimple.root
           node demo/node/file_proxy.js buffer ./hsimple.root
+          node demo/node/rntuple.js
 
   build-windows:
     runs-on: windows-latest
@@ -222,4 +222,5 @@ jobs:
           node demo/node/file_proxy.js promise ./hsimple.root
           node demo/node/file_proxy.js multi ./hsimple.root
           node demo/node/file_proxy.js buffer ./hsimple.root
+          node demo/node/rntuple.js
 
