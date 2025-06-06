@@ -2660,12 +2660,21 @@ DirectStreamers[clTBasket] = function(buf, obj) {
    const ver = buf.readVersion();
    obj.fBufferSize = buf.ntoi4();
    obj.fNevBufSize = buf.ntoi4();
+
+   if (obj.fNevBufSize < 0) {
+      obj.fNevBufSize = -obj.fNevBufSize;
+      obj.fIOBits = buf.ntoi1();
+   }
+
    obj.fNevBuf = buf.ntoi4();
    obj.fLast = buf.ntoi4();
-   if (obj.fLast > obj.fBufferSize) obj.fBufferSize = obj.fLast;
+
+   if (obj.fLast > obj.fBufferSize)
+      obj.fBufferSize = obj.fLast;
    const flag = buf.ntoi1();
 
-   if (flag === 0) return;
+   if (flag === 0)
+      return;
 
    if ((flag % 10) !== 2) {
       if (obj.fNevBuf) {
