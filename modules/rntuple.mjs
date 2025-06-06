@@ -86,35 +86,53 @@ class RBufferReader {
 class RNTupleDescriptorBuilder {
       
    deserializeHeader(header_blob) {
-   if (!header_blob) return;
+    if (!header_blob) return;
 
-   const reader = new RBufferReader(header_blob);
+    const reader = new RBufferReader(header_blob);
 
-   // 1. Read header version
-   this.version = reader.readU32();
+    // 1. Read header version (4 bytes)
+    this.version = reader.readU32();
 
-   // 2. Read feature flags
-   this.featureFlags = reader.readU32();
+    // 2. Read feature flags (4 bytes)
+    this.headerFeatureFlags = reader.readU32();
 
-}
+    // 3. Read xxhash3 (64-bit, 8 bytes)
+    const low = reader.readU32();
+    const high = reader.readU32();
+    // Combine high and low to a hex string or BigInt
+    this.xxhash3 = (BigInt(high) << 32n) | BigInt(low);
+
+    // 4. Read name (length-prefixed string)
+    this.name = reader.readString();
+
+    // 5. Read description (length-prefixed string)
+    this.description = reader.readString();
+   
+
+   // Console output to verify deserialization results
+    console.log('Version:', this.version);
+     console.log('Header Feature Flags:', this.headerFeatureFlags);
+    console.log('Low:', low, 'High:', high);
+    console.log('xxhash3:', '0x' + this.xxhash3.toString(16).padStart(16, '0'));
+    console.log('Name:', this.name);
+    console.log('Description:', this.description);
 
 
-   deserializeFooter(footer_blob) {
-   if (!footer_blob) return;
 
-   const reader = new RBufferReader(footer_blob);
+  }
 
-   this.featureFlags = reader.readU32();
-   this.headerChecksum = reader.readU32();
 
-   // Optionally print some debug output
-   console.log('Footer decoded:', {
-      featureFlags: this.featureFlags,
-      headerChecksum: this.headerChecksum
-   });
+deserializeFooter(footer_blob) {
+    if (!footer_blob) return;
 
-   // schemaExtensionFrames, clusterGroupFrames, etc. can be decoded later
-}
+    const reader = new RBufferReader(footer_blob);
+
+    this.footerFeatureFlags = reader.readU32();
+    this.headerChecksum = reader.readU32();
+
+    console.log('Footer Feature Flags:', this.footerFeatureFlags);
+    console.log('Header Checksum:', this.headerChecksum);
+  }
 
 
 }
