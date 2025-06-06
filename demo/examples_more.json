@@ -121,6 +121,7 @@
    "TTree" : [
       { "name": "wjets", "asurl": true, "file": "WJets.root", "item": "t;1/met", "title": "Histogram data of branch with vectors" },
       { "name": "index", "asurl": true, "file": "tree99.root", "item": "T;1", "opt": "ex3.fInt[ex3.fSize-2]", "title": "Use branch value as index in another branch draw" },
+      { "name": "leafc", "asurl": true, "file": "https://root.cern/files/lhcb2.root", "item": "Refs/Databases", "opt":"dump", "title": "Test reading TLeafC element" },
       { "name": "cms2", "asurl": true, "file": "https://root.cern/files/cms2.root", "item": "Events", "opt":"recoPhotons_photons__RECO.obj[].pt_", "title": "cms2.root file, example of draw subelement of the branch" },
       { "name": "brobj", "asurl": true, "file": "https://root.cern/files/mods.root", "item": "MODS/Particles", "opt": "dump",  "title": "TObjectBranch, appears in older ROOT files" },
       { "name": "bits", "asurl": true, "large": true, "file": "https://root.cern/files/Event100000.root", "item": "T", "opt": "event.fTracks.fBits>>bits(32);num:5000", "title": "Special 1-D histogram kind with bits values" },
