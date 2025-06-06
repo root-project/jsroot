@@ -11,9 +11,13 @@ let rntuple = await file.readObject('Staff');
 
 await readHeaderFooter(rntuple);
 
-console.log('some debug info', rntuple.builder?.name);
-console.log('JSROOT version', version);
-console.log('RNTuple name:', rntuple.builder.name);
-console.log('RNTuple description:', rntuple.builder.description);
-console.log('Header version:', rntuple.builder.version);
+console.log('some debug info', {
+  version: rntuple.builder?.version,
+  name: rntuple.builder?.name,
+  description: rntuple.builder?.description,
+  xxhash3: rntuple.builder?.xxhash3?.toString(16),
+  headerFeatureFlags: rntuple.builder?.headerFeatureFlags,
+  footerFeatureFlags: rntuple.builder?.footerFeatureFlags
+});
+
 
