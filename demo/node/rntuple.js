@@ -1,6 +1,7 @@
 import { RBufferReader } from '../../modules/rntuple.mjs';
 // This is a test script
 //TEST 1
+console.log('Perform basic RBufferReader test');
 {
 // creating a buffer with one 32-bit unsigned integer
 let buffer = new ArrayBuffer(4);
