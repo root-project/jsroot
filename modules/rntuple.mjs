@@ -1,20 +1,22 @@
 import { R__unzip } from './io.mjs';
 const LITTLE_ENDIAN = true;
 class RBufferReader {
-   constructor(buffer) {
-    if (buffer instanceof ArrayBuffer) {
+  
+  constructor(buffer) {
+    if (buffer instanceof ArrayBuffer) 
       this.buffer = buffer;
-    } else if (ArrayBuffer.isView(buffer)) {
+    else if (ArrayBuffer.isView(buffer)) {
       const bytes = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
       this.buffer = bytes.slice().buffer;
-    } else {
-      throw new TypeError(ERROR);
-    }
+    } else 
+      throw new TypeError('Invalid buffer type');
+    
+
     this.view = new DataView(this.buffer);
     this.offset = 0;
   }
 
-  // Moving to a specific position in the buffer
+  // Move to a specific position in the buffer
   seek(position) {
     this.offset = position;
   }
@@ -28,28 +30,28 @@ class RBufferReader {
 
   // Read unsigned 16-bit integer (2 BYTES)
   readU16() {
-    const val = this.view.getUint16(this.offset, LITTLE_ENDIAN)
+    const val = this.view.getUint16(this.offset, LITTLE_ENDIAN);
     this.offset += 2;
     return val;
   }
 
   // Read unsigned 32-bit integer (4 BYTES)
   readU32() {
-    const val = this.view.getUint32(this.offset, LITTLE_ENDIAN)
+    const val = this.view.getUint32(this.offset, LITTLE_ENDIAN);
     this.offset += 4;
     return val;
   }
 
   // Read signed 8-bit integer (1 BYTE)
   readS8() {
-    const val = this.view.getInt8(this.offset, LITTLE_ENDIAN)
+    const val = this.view.getInt8(this.offset, LITTLE_ENDIAN);
     this.offset += 1;
     return val;
   }
 
   // Read signed 16-bit integer (2 BYTES)
   readS16() {
-    const val = this.view.getInt16(this.offset, LITTLE_ENDIAN)
+    const val = this.view.getInt16(this.offset, LITTLE_ENDIAN);
     this.offset += 2;
     return val;
   }
@@ -68,18 +70,15 @@ class RBufferReader {
     return val;
   }
 
-
-
   // Read a string with 32-bit length prefix
   readString() {
-    // Reading the length
     const length = this.readU32();
-    // Reading the payload
     let str = '';
     for (let i = 0; i < length; i++) 
       str += String.fromCharCode(this.readU8());
     return str;
   }
+  
 }
 
 
@@ -97,8 +96,9 @@ class RNTupleDescriptorBuilder {
     this.headerFeatureFlags = reader.readU32();
 
     // 3. Read xxhash3 (64-bit, 8 bytes)
-    const low = reader.readU32();
-    const high = reader.readU32();
+    const low = reader.readU32(),
+    high = reader.readU32();
+
     // Combine high and low to a hex string or BigInt
     this.xxhash3 = (BigInt(high) << 32n) | BigInt(low);
 
@@ -116,9 +116,6 @@ class RNTupleDescriptorBuilder {
     console.log('xxhash3:', '0x' + this.xxhash3.toString(16).padStart(16, '0'));
     console.log('Name:', this.name);
     console.log('Description:', this.description);
-
-
-
   }
 
 
