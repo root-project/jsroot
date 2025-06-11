@@ -78,6 +78,20 @@ class RBufferReader {
       str += String.fromCharCode(this.readU8());
     return str;
   }
+    // Read unsigned 64-bit integer (8 BYTES)
+  readU64() {
+    const val = this.view.getBigUint64(this.offset, LITTLE_ENDIAN);
+    this.offset += 8;
+    return val;
+  }
+
+  // Read signed 64-bit integer (8 BYTES)
+  readS64() {
+    const val = this.view.getBigInt64(this.offset, LITTLE_ENDIAN);
+    this.offset += 8;
+    return val;
+  }
+
   
 }
 
@@ -96,11 +110,8 @@ class RNTupleDescriptorBuilder {
     this.headerFeatureFlags = reader.readU32();
 
     // 3. Read xxhash3 (64-bit, 8 bytes)
-    const low = reader.readU32(),
-    high = reader.readU32();
-
-    // Combine high and low to a hex string or BigInt
-    this.xxhash3 = (BigInt(high) << 32n) | BigInt(low);
+    this.xxhash3 = reader.readU64();
+    
 
     // 4. Read name (length-prefixed string)
     this.name = reader.readString();
@@ -111,9 +122,8 @@ class RNTupleDescriptorBuilder {
 
    // Console output to verify deserialization results
     console.log('Version:', this.version);
-     console.log('Header Feature Flags:', this.headerFeatureFlags);
-    console.log('Low:', low, 'High:', high);
-    console.log('xxhash3:', '0x' + this.xxhash3.toString(16).padStart(16, '0'));
+    console.log('Header Feature Flags:', this.headerFeatureFlags);
+    console.log('xxhash3:', '0x' + this.xxhash3.toString(16).padStart(16, '0')); 
     console.log('Name:', this.name);
     console.log('Description:', this.description);
   }
