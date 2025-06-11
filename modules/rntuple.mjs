@@ -23,10 +23,10 @@ class RBufferReader {
 
   // Read unsigned 8-bit integer (1 BYTE)
   readU8() {
-    const val = this.view.getUint8(this.offset, LITTLE_ENDIAN);
-    this.offset += 1;
-    return val;
-  }
+  const val = this.view.getUint8(this.offset);  
+  this.offset += 1;
+  return val;
+}
 
   // Read unsigned 16-bit integer (2 BYTES)
   readU16() {
@@ -41,13 +41,19 @@ class RBufferReader {
     this.offset += 4;
     return val;
   }
+  readI32() {
+  const val = this.view.getInt32(this.offset, LITTLE_ENDIAN);
+  this.offset += 4;
+  return val;
+}
 
   // Read signed 8-bit integer (1 BYTE)
   readS8() {
-    const val = this.view.getInt8(this.offset, LITTLE_ENDIAN);
-    this.offset += 1;
-    return val;
-  }
+  const val = this.view.getInt8(this.offset);  
+  this.offset += 1;
+  return val;
+}
+
 
   // Read signed 16-bit integer (2 BYTES)
   readS16() {
@@ -71,19 +77,22 @@ class RBufferReader {
   }
 
   // Read a string with 32-bit length prefix
-  readString() {
-    const length = this.readU32();
-    let str = '';
-    for (let i = 0; i < length; i++) 
-      str += String.fromCharCode(this.readU8());
-    return str;
+readString() {
+  const length = this.readU32(); // Read 4-byte length
+  let str = '';
+  for (let i = 0; i < length; i++) {
+    str += String.fromCharCode(this.readU8());
   }
+  return str;
+}
+
     // Read unsigned 64-bit integer (8 BYTES)
   readU64() {
-    const val = this.view.getBigUint64(this.offset, LITTLE_ENDIAN);
-    this.offset += 8;
-    return val;
-  }
+  const low = this.readU32();
+  const high = this.readU32();
+  return BigInt(high) << 32n | BigInt(low);
+}
+
 
   // Read signed 64-bit integer (8 BYTES)
   readS64() {
@@ -98,35 +107,49 @@ class RBufferReader {
 
 class RNTupleDescriptorBuilder {
       
-   deserializeHeader(header_blob) {
-    if (!header_blob) return;
+deserializeHeader(header_blob) {
+  if (!header_blob) return;
 
-    const reader = new RBufferReader(header_blob);
+  const reader = new RBufferReader(header_blob);
 
-    // 1. Read header version (4 bytes)
-    this.version = reader.readU32();
+  // --- Initial Header Metadata ---
+  this.version = reader.readU32();
+  this.headerFeatureFlags = reader.readU32();
+  this.xxhash3 = reader.readU64();
 
-    // 2. Read feature flags (4 bytes)
-    this.headerFeatureFlags = reader.readU32();
+  console.log("offset:", reader.offset, "before readString() for name");
+  this.name = reader.readString();
+  console.log("Name:", this.name);
 
-    // 3. Read xxhash3 (64-bit, 8 bytes)
-    this.xxhash3 = reader.readU64();
-    
+  console.log("offset:", reader.offset, "before readString() for description");
+  this.description = reader.readString();
+  console.log("Description:", this.description);
 
-    // 4. Read name (length-prefixed string)
-    this.name = reader.readString();
+  console.log("offset:", reader.offset, "before readString() for writerIdentifier");
+  this.writerIdentifier = reader.readString();   
+  console.log("Writer Identifier:", this.writerIdentifier);
+  console.log("Offset after writerIdentifier:", reader.offset);
 
-    // 5. Read description (length-prefixed string)
-    this.description = reader.readString();
-   
+  // -- First Frame (field list frame) --
+  const rawFrameSize = reader.readI32(); // signed
+  const frameSize = Math.abs(rawFrameSize);
+  const isListFrame = rawFrameSize < 0;
 
-   // Console output to verify deserialization results
-    console.log('Version:', this.version);
-    console.log('Header Feature Flags:', this.headerFeatureFlags);
-    console.log('xxhash3:', '0x' + this.xxhash3.toString(16).padStart(16, '0')); 
-    console.log('Name:', this.name);
-    console.log('Description:', this.description);
+  console.log("Frame Size:", frameSize, "Is List Frame:", isListFrame);
+  console.log("Offset after frame size:", reader.offset);
+
+  if (!isListFrame) {
+    throw new Error("Expected list frame but got record frame — file might be malformed or you're misaligned");
   }
+
+  console.log("Frame is a list, reading numItems and reserved");
+  const numItems = reader.readU32();     // number of fields
+  const reserved = reader.readU32();     // usually 0
+  console.log("Number of Items:", numItems);
+  console.log("Reserved:", reserved);
+
+  
+}
 
 
 deserializeFooter(footer_blob) {
@@ -137,8 +160,8 @@ deserializeFooter(footer_blob) {
     this.footerFeatureFlags = reader.readU32();
     this.headerChecksum = reader.readU32();
 
-    console.log('Footer Feature Flags:', this.footerFeatureFlags);
-    console.log('Header Checksum:', this.headerChecksum);
+    // console.log('Footer Feature Flags:', this.footerFeatureFlags);
+    // console.log('Header Checksum:', this.headerChecksum);
   }
 
 
