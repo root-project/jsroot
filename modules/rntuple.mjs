@@ -147,6 +147,24 @@ deserializeHeader(header_blob) {
 
   const fieldListCount = reader.readU32(); // number of field entries
   console.log('Field List Count:', fieldListCount);
+  for (let i = 0; i < fieldListCount; ++i) {
+    const fieldVersion = reader.readU32(),
+    typeVersion = reader.readU32(),
+    parentFieldId = reader.readU32(),
+    structRole = reader.readU8(),
+    flags = reader.readU8(),
+
+    fieldName = reader.readString(),
+    typeName = reader.readString(),
+    typeAlias = reader.readString(),
+    description = reader.readString();
+
+    if (flags & 0x1) reader.readU32(); // ArraySize
+    if (flags & 0x2) reader.readU32(); // SourceFieldId
+    if (flags & 0x4) reader.readU32(); // Checksum
+
+    console.log(`Field ${i + 1}:`, fieldName, "&&", typeName);
+}
 }
 
 deserializeFooter(footer_blob) {
