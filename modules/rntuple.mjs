@@ -27,6 +27,15 @@ class RBufferReader {
     this.offset += 1;
     return val;
   }
+  readU24() {
+    const b1 = this.view.getUint8(this.offset);     // MSB
+    const b2 = this.view.getUint8(this.offset + 1);
+    const b3 = this.view.getUint8(this.offset + 2); // LSB
+    this.offset += 3;
+    return (b1 << 16) | (b2 << 8) | b3;
+}
+
+
 
   // Read unsigned 16-bit integer (2 BYTES)
   readU16() {
@@ -103,28 +112,50 @@ deserializeHeader(header_blob) {
 
     const reader = new RBufferReader(header_blob);
 
-    // Step 1: Read basic metadata
-    this.version = reader.readU32();
-    this.headerFeatureFlags = reader.readU32();
-    this.xxhash3 = reader.readU64();
-    this.name = reader.readString();
-    this.description = reader.readString();
-    this.library = reader.readString();
+    // Read base metadata 
+    this.version = reader.readU32();            
+    this.headerFeatureFlags = reader.readU32(); 
+    this.xxhash3 = reader.readU64();            
+    this.name = reader.readString();         
+    this.description = reader.readString();  
+    this.library = reader.readString();      
 
     console.log('Version:', this.version);
-    console.log('Header Feature Flags:', this.headerFeatureFlags);
-    console.log('XXHash3:', this.xxhash3);
+    console.log('Header Feature Flags:', '0x' + this.headerFeatureFlags.toString(16).padStart(8, '0'));
+    console.log('xxhash3:', '0x' + this.xxhash3.toString(16).padStart(16, '0'));
     console.log('Name:', this.name);
     console.log('Description:', this.description);
+    console.log('Library:', this.library);
 
-    // Step 2: Read and handle field list frame
-    this.fieldListSize = reader.readS64();
-    const fieldListIsList = this.fieldListSize < 0;
+    //  Record Envelope 
+    const recordEnvelopeType = reader.readU8();    
+    const recordEnvelopeSize = reader.readU24();  
+    const recordEnvelopeChecksum = reader.readU32();
 
-    if (fieldListIsList) 
-        console.log('Field list is a list frame');
-     else 
-        console.log('Field list is not a list frame');
+    console.log(`Record Envelope Type: ${recordEnvelopeType}`);
+    console.log(`Record Envelope Size: ${recordEnvelopeSize}`);
+    console.log(`Record Envelope Checksum: ${recordEnvelopeChecksum}`);
+
+    //  Field List Envelope 
+    const fieldListType = reader.readU8();        
+    const fieldListSize = reader.readU24();      
+    const fieldListChecksum = reader.readU32(); 
+    console.log(`Field List Envelope Type: ${fieldListType}`);
+    console.log(`Field List Size: ${fieldListSize}`);
+    console.log(`Field List Checksum: ${fieldListChecksum}`);
+
+    //  Validate envelope type before reading list frame
+    if (fieldListType !== 1) 
+        console.warn('Unexpected field list envelope type:', fieldListType);
+    else
+    console.log('field list is a list frame');
+
+    //  Field List Frame inside the envelope payload 
+    const fieldListFrameSize = reader.readU32();  
+    const numFields = reader.readU32();          
+
+    console.log(`Field List Frame Size: ${fieldListFrameSize}`);
+    console.log(`Number of Fields: ${numFields}`);
 }
 
 deserializeFooter(footer_blob) {
