@@ -27,15 +27,6 @@ class RBufferReader {
     this.offset += 1;
     return val;
   }
-  readU24() {
-    const b1 = this.view.getUint8(this.offset);     // MSB
-    const b2 = this.view.getUint8(this.offset + 1);
-    const b3 = this.view.getUint8(this.offset + 2); // LSB
-    this.offset += 3;
-    return (b1 << 16) | (b2 << 8) | b3;
-}
-
-
 
   // Read unsigned 16-bit integer (2 BYTES)
   readU16() {
@@ -101,61 +92,59 @@ class RBufferReader {
     this.offset += 8;
     return val;
   }
-  
+
 }
 
 
 class RNTupleDescriptorBuilder {
-      
+
 deserializeHeader(header_blob) {
-    if (!header_blob) return;
+  if (!header_blob) return;
 
-    const reader = new RBufferReader(header_blob);
+  const reader = new RBufferReader(header_blob),
+        packed = reader.readU64();
 
-    // Read base metadata 
-    this.version = reader.readU32();            
-    this.headerFeatureFlags = reader.readU32(); 
-    this.xxhash3 = reader.readU64();            
-    this.name = reader.readString();         
-    this.description = reader.readString();  
-    this.library = reader.readString();      
+  // Step 0: Envelope metadata
+  this.envelopeType = Number(packed & 0xFFFFn);
+  this.envelopeLength = Number((packed >> 16n) & 0xFFFFFFFFFFFFn);
 
-    console.log('Version:', this.version);
-    console.log('Header Feature Flags:', '0x' + this.headerFeatureFlags.toString(16).padStart(8, '0'));
-    console.log('xxhash3:', '0x' + this.xxhash3.toString(16).padStart(16, '0'));
-    console.log('Name:', this.name);
-    console.log('Description:', this.description);
-    console.log('Library:', this.library);
+  console.log('Envelope Type ID:', this.envelopeType);
+  console.log('Envelope Length:', this.envelopeLength);
 
-    //  Record Envelope 
-    const recordEnvelopeType = reader.readU8();    
-    const recordEnvelopeSize = reader.readU24();  
-    const recordEnvelopeChecksum = reader.readU32();
+  // const payloadStart = reader.offset;(will use this later for checksum in the end)
 
-    console.log(`Record Envelope Type: ${recordEnvelopeType}`);
-    console.log(`Record Envelope Size: ${recordEnvelopeSize}`);
-    console.log(`Record Envelope Checksum: ${recordEnvelopeChecksum}`);
+  //  Read feature flags list (may span multiple 64-bit words)
+  this.featureFlags = [];
+  while (true) {
+    const val = reader.readU64();
+    this.featureFlags.push(val);
+    if ((val & 0x8000000000000000n) === 0n) break; // MSB not set: end of list
+  }
 
-    //  Field List Envelope 
-    const fieldListType = reader.readU8();        
-    const fieldListSize = reader.readU24();      
-    const fieldListChecksum = reader.readU32(); 
-    console.log(`Field List Envelope Type: ${fieldListType}`);
-    console.log(`Field List Size: ${fieldListSize}`);
-    console.log(`Field List Checksum: ${fieldListChecksum}`);
+  // verify all feature flags are zero
+  if (this.featureFlags.some(v => v !== 0n))
+    console.warn('Unexpected non-zero feature flags:', this.featureFlags);
 
-    //  Validate envelope type before reading list frame
-    if (fieldListType !== 1) 
-        console.warn('Unexpected field list envelope type:', fieldListType);
-    else
-    console.log('field list is a list frame');
+  //  Read basic metadata strings
+  this.name = reader.readString();
+  this.description = reader.readString();
+  this.writer = reader.readString();
 
-    //  Field List Frame inside the envelope payload 
-    const fieldListFrameSize = reader.readU32();  
-    const numFields = reader.readU32();          
+  console.log('Name:', this.name);
+  console.log('Description:', this.description);
+  console.log('Writer:', this.writer);
 
-    console.log(`Field List Frame Size: ${fieldListFrameSize}`);
-    console.log(`Number of Fields: ${numFields}`);
+  // Step 3: Parse the Field Record Frame header
+  this.fieldListSize = reader.readS64(); // signed 64-bit
+  const fieldListIsList = this.fieldListSize < 0;
+
+  if (!fieldListIsList)
+    throw new Error('Field list frame is not a list frame, which is required.');
+  else
+    console.log('Field list is a list frame with size:', this.fieldListSize);
+
+  const fieldListCount = reader.readU32(); // number of field entries
+  console.log('Field List Count:', fieldListCount);
 }
 
 deserializeFooter(footer_blob) {
