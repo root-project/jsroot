@@ -98,35 +98,34 @@ class RBufferReader {
 
 class RNTupleDescriptorBuilder {
       
-   deserializeHeader(header_blob) {
+deserializeHeader(header_blob) {
     if (!header_blob) return;
 
     const reader = new RBufferReader(header_blob);
 
-    // 1. Read header version (4 bytes)
+    // Step 1: Read basic metadata
     this.version = reader.readU32();
-
-    // 2. Read feature flags (4 bytes)
     this.headerFeatureFlags = reader.readU32();
-
-    // 3. Read xxhash3 (64-bit, 8 bytes)
     this.xxhash3 = reader.readU64();
-
-    // 4. Read name (length-prefixed string)
     this.name = reader.readString();
-
-    // 5. Read description (length-prefixed string)
     this.description = reader.readString();
-   
+    this.library = reader.readString();
 
-   // Console output to verify deserialization results
     console.log('Version:', this.version);
     console.log('Header Feature Flags:', this.headerFeatureFlags);
-    console.log('xxhash3:', '0x' + this.xxhash3.toString(16).padStart(16, '0'));
+    console.log('XXHash3:', this.xxhash3);
     console.log('Name:', this.name);
     console.log('Description:', this.description);
-  }
 
+    // Step 2: Read and handle field list frame
+    this.fieldListSize = reader.readS64();
+    const fieldListIsList = this.fieldListSize < 0;
+
+    if (fieldListIsList) 
+        console.log('Field list is a list frame');
+     else 
+        console.log('Field list is not a list frame');
+}
 
 deserializeFooter(footer_blob) {
     if (!footer_blob) return;
