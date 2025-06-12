@@ -101,17 +101,19 @@ class RNTupleDescriptorBuilder {
 deserializeHeader(header_blob) {
   if (!header_blob) return;
 
-  const reader = new RBufferReader(header_blob),
-        packed = reader.readU64();
+  const reader = new RBufferReader(header_blob);
+  const typeAndLength = reader.readU64();
 
-  // Step 0: Envelope metadata
-  this.envelopeType = Number(packed & 0xFFFFn);
-  this.envelopeLength = Number((packed >> 16n) & 0xFFFFFFFFFFFFn);
+  // Envelope metadata
+  // The 16 bits are the envelope type ID, and the 48 bits are the envelope length
+  this.envelopeType = Number(typeAndLength & 0xFFFFn);
+  this.envelopeLength = Number((typeAndLength >> 16n) & 0xFFFFFFFFFFFFn);
 
   console.log('Envelope Type ID:', this.envelopeType);
   console.log('Envelope Length:', this.envelopeLength);
 
-  // const payloadStart = reader.offset;(will use this later for checksum in the end)
+  // TODO: Validate the envelope checksum at the end of deserialization
+  //const payloadStart = reader.offset;
 
   //  Read feature flags list (may span multiple 64-bit words)
   this.featureFlags = [];
@@ -123,13 +125,13 @@ deserializeHeader(header_blob) {
 
   // verify all feature flags are zero
   if (this.featureFlags.some(v => v !== 0n))
-    console.warn('Unexpected non-zero feature flags:', this.featureFlags);
+  throw new Error('Unexpected non-zero feature flags: ' + this.featureFlags);
 
   //  Read basic metadata strings
   this.name = reader.readString();
   this.description = reader.readString();
   this.writer = reader.readString();
-
+  // TODO: Remove debug logs before finalizing
   console.log('Name:', this.name);
   console.log('Description:', this.description);
   console.log('Writer:', this.writer);
