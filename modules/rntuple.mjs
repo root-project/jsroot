@@ -70,6 +70,13 @@ class RBufferReader {
     return val;
   }
 
+  // Read 64-bit float (8 BYTES)
+  readF64() {
+    const val = this.view.getFloat64(this.offset, LITTLE_ENDIAN);
+    this.offset += 8;
+    return val;
+  }
+
   // Read a string with 32-bit length prefix
   readString() {
     const length = this.readU32();
@@ -102,6 +109,53 @@ deserializeHeader(header_blob) {
   if (!header_blob) return;
 
   const reader = new RBufferReader(header_blob);
+  // Read the envelope metadata
+  this._readEnvelopeMetadata(reader);
+
+  // TODO: Validate the envelope checksum at the end of deserialization
+  // const payloadStart = reader.offset;
+
+  //  Read feature flags list (may span multiple 64-bit words)
+  this._readFeatureFlags(reader);
+
+  //  Read metadata strings
+  this._readStrings(reader);
+
+  // List frame: list of field record frames
+  this._readFieldDescriptors(reader);
+  // List frame: list of column record frames
+  this._readColumnDescriptors(reader);
+  // Read alias column descriptors
+  this._readAliasColumn(reader);
+  // Read Extra Type Information
+  this._readExtraTypeInformation(reader);
+}
+
+
+deserializeFooter(footer_blob) {
+    if (!footer_blob) return;
+
+    const reader = new RBufferReader(footer_blob);
+    // Read the envelope metadata
+    this._readEnvelopeMetadata(reader);
+
+    // Feature flag(32 bits)
+    this.footerFeatureFlags = reader.readU32();
+    // Header checksum (64-bit xxhash3)
+    this.headerChecksum = reader.readU64(); 
+
+    // Schema extension record frame (4 list frames inside)
+    this._readFieldDescriptors(reader);
+    this._readColumnDescriptors(reader);
+    this._readAliasColumnDescriptors(reader);
+    this._readExtraTypeInfos(reader);
+
+    // Cluster Group record frame
+    this._readClusterGroups(reader); 
+  }
+
+
+_readEnvelopeMetadata(reader) {
   const typeAndLength = reader.readU64();
 
   // Envelope metadata
@@ -111,11 +165,8 @@ deserializeHeader(header_blob) {
 
   console.log('Envelope Type ID:', this.envelopeType);
   console.log('Envelope Length:', this.envelopeLength);
-
-  // TODO: Validate the envelope checksum at the end of deserialization
-  //const payloadStart = reader.offset;
-
-  //  Read feature flags list (may span multiple 64-bit words)
+}
+_readFeatureFlags(reader) {
   this.featureFlags = [];
   while (true) {
     const val = reader.readU64();
@@ -126,8 +177,8 @@ deserializeHeader(header_blob) {
   // verify all feature flags are zero
   if (this.featureFlags.some(v => v !== 0n))
   throw new Error('Unexpected non-zero feature flags: ' + this.featureFlags);
-
-  //  Read basic metadata strings
+}
+_readStrings(reader) {
   this.name = reader.readString();
   this.description = reader.readString();
   this.writer = reader.readString();
@@ -135,50 +186,153 @@ deserializeHeader(header_blob) {
   console.log('Name:', this.name);
   console.log('Description:', this.description);
   console.log('Writer:', this.writer);
-
-  // Step 3: Parse the Field Record Frame header
+}
+_readFieldDescriptors(reader) {
   this.fieldListSize = reader.readS64(); // signed 64-bit
   const fieldListIsList = this.fieldListSize < 0;
 
   if (!fieldListIsList)
     throw new Error('Field list frame is not a list frame, which is required.');
-  else
-    console.log('Field list is a list frame with size:', this.fieldListSize);
 
   const fieldListCount = reader.readU32(); // number of field entries
   console.log('Field List Count:', fieldListCount);
+
+  // List frame: list of field record frames
+
+  const fieldDescriptors = [];
   for (let i = 0; i < fieldListCount; ++i) {
     const fieldVersion = reader.readU32(),
     typeVersion = reader.readU32(),
     parentFieldId = reader.readU32(),
-    structRole = reader.readU8(),
-    flags = reader.readU8(),
+    structRole = reader.readU16(),
+    flags = reader.readU16(),
 
     fieldName = reader.readString(),
     typeName = reader.readString(),
     typeAlias = reader.readString(),
     description = reader.readString();
+    let arraySize = null, sourceFieldId = null, checksum = null;
 
-    if (flags & 0x1) reader.readU32(); // ArraySize
-    if (flags & 0x2) reader.readU32(); // SourceFieldId
-    if (flags & 0x4) reader.readU32(); // Checksum
+    if (flags & 0x1) arraySize = reader.readU32();
+    if (flags & 0x2) sourceFieldId = reader.readU32();
+    if (flags & 0x4) checksum = reader.readU32();
 
-    console.log(`Field ${i + 1}:`, fieldName, "&&", typeName);
+     fieldDescriptors.push({
+        fieldVersion,
+        typeVersion,
+        parentFieldId,
+        structRole,
+        flags,
+        fieldName,
+        typeName,
+        typeAlias,
+        description,
+        arraySize,
+        sourceFieldId,
+        checksum
+    });
+    console.log(`Field ${i + 1}:`, fieldName, '&&', typeName);
 }
+  this.fieldDescriptors = fieldDescriptors;
 }
+_readColumnDescriptors(reader) {
+  this.columnListSize = reader.readS64(); // signed 64-bit
+  const columnListIsList = this.columnListSize < 0;
+  if (!columnListIsList)
+    throw new Error('Column list frame is not a list frame, which is required.');
+  const columnListCount = reader.readU32(); // number of column entries
+  console.log('Column List Count:', columnListCount);
+  const columnDescriptors = [];
+  for (let i = 0; i < columnListCount; ++i) {
+  const coltype = reader.readU16(),
+  bitsOnStrorage = reader.readU16(),
+  fieldId = reader.readU32(),
+  flags = reader.readU16(),
+  representationIndex = reader.readU16();
 
-deserializeFooter(footer_blob) {
-    if (!footer_blob) return;
-
-    const reader = new RBufferReader(footer_blob);
-
-    this.footerFeatureFlags = reader.readU32();
-    this.headerChecksum = reader.readU32();
-
-    console.log('Footer Feature Flags:', this.footerFeatureFlags);
-    console.log('Header Checksum:', this.headerChecksum);
+   let firstElementIndex = null, minValue = null, maxValue = null;
+  if (flags & 0x1) firstElementIndex = reader.readU64();
+  if (flags & 0x2){
+    minValue = reader.readF64();
+    maxValue = reader.readF64();    
   }
 
+  columnDescriptors.push({
+    coltype,
+    bitsOnStrorage,
+    fieldId,
+    flags,
+    representationIndex,
+    firstElementIndex,
+    minValue,
+    maxValue,
+    isDeferred: (flags & 0x01) !== 0,
+    isSuppressed: (firstElementIndex !== null && firstElementIndex < 0)
+  }); 
+ }
+ this.columnDescriptors = columnDescriptors;
+}
+_readAliasColumn(reader){
+  this.aliasColumnListSize = reader.readS64(); // signed 64-bit
+  const aliasListisList = this.aliasColumnListSize < 0;
+  if (!aliasListisList)
+    throw new Error('Alias column list frame is not a list frame, which is required.');
+  const aliasColumnCount = reader.readU32(); // number of alias column entries
+  console.log('Alias Column List Count:', aliasColumnCount);
+  const aliasColumns = [];
+  for (let i = 0; i < aliasColumnCount; ++i){
+    const physicalColumnId = reader.readU32(),
+    fieldId = reader.readU32();
+    aliasColumns.push({
+      physicalColumnId,
+      fieldId
+    });
+  }
+  this.aliasColumns = aliasColumns;
+}
+_readExtraTypeInformation(reader) {
+  this.extraTypeInfoListSize = reader.readS64(); // signed 64-bit
+  const isList = this.extraTypeInfoListSize < 0;
+
+  if (!isList)
+    throw new Error('Extra type info frame is not a list frame, which is required.');
+
+  const entryCount = reader.readU32(); // number of extra type info entries
+  console.log('Extra Type Info Count:', entryCount);
+
+  const extraTypeInfo = [];
+  for (let i = 0; i < entryCount; ++i) {
+    const contentId = reader.readU32(),
+    typeVersion = reader.readU32();
+    extraTypeInfo.push({
+      contentId,
+      typeVersion
+    });
+  }
+  this.extraTypeInfo = extraTypeInfo;
+}
+_readClusterGroups(reader){
+  const clusterGroupListSize = reader.readS64(),
+  isList = clusterGroupListSize < 0;
+  if (!isList)
+   throw new Error('Cluster group frame is not a list frame.');
+
+  const clusterGroupCount = reader.readU32();
+  console.log('Cluster Group Count:', clusterGroupCount);
+
+  const clusterGroups = [];
+  for (let i = 0; i < clusterGroupCount; ++i) {
+    const minEntry = reader.readS64(),
+    entrySpan = reader.readS64(),
+    numClusters = reader.readU32();
+    clusterGroups.push({
+      minEntry,
+      entrySpan,
+      numClusters
+    });
+  }
+  this.clusterGroups = clusterGroups;
+}
 
 }
 
