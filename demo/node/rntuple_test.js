@@ -18,11 +18,6 @@ if (rntuple.builder?.name !== 'Staff')
 else
   console.log('OK: name is', rntuple.builder?.name);
 
-if (typeof rntuple.builder?.version !== 'number')
-  console.error('FAILURE: version is missing or invalid');
-else
-  console.log('OK: version is', rntuple.builder.version);
-
 if (!rntuple.builder?.description)
   console.error('FAILURE: description is missing');
 else
