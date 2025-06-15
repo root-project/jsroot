@@ -3,15 +3,17 @@ const LITTLE_ENDIAN = true;
 class RBufferReader {
   
   constructor(buffer) {
-    if (buffer instanceof ArrayBuffer) 
-      this.buffer = buffer;
-    else if (ArrayBuffer.isView(buffer)) {
-      const bytes = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
-      this.buffer = bytes.slice().buffer;
+    if (buffer instanceof ArrayBuffer) {
+    this.buffer = buffer;
+    this.byteOffset = 0;
+    this.byteLength = buffer.byteLength;
+    } else if (ArrayBuffer.isView(buffer)) {
+    this.buffer = buffer.buffer;
+    this.byteOffset = buffer.byteOffset;
+    this.byteLength = buffer.byteLength;
     } else 
       throw new TypeError('Invalid buffer type');
     
-
     this.view = new DataView(this.buffer);
     this.offset = 0;
   }
@@ -23,7 +25,7 @@ class RBufferReader {
 
   // Read unsigned 8-bit integer (1 BYTE)
   readU8() {
-    const val = this.view.getUint8(this.offset, LITTLE_ENDIAN);
+    const val = this.view.getUint8(this.offset);
     this.offset += 1;
     return val;
   }
@@ -44,7 +46,7 @@ class RBufferReader {
 
   // Read signed 8-bit integer (1 BYTE)
   readS8() {
-    const val = this.view.getInt8(this.offset, LITTLE_ENDIAN);
+    const val = this.view.getInt8(this.offset);
     this.offset += 1;
     return val;
   }
@@ -67,6 +69,13 @@ class RBufferReader {
   readF32() {
     const val = this.view.getFloat32(this.offset, LITTLE_ENDIAN);
     this.offset += 4;
+    return val;
+  }
+
+  // Read 64-bit float (8 BYTES)
+  readF64() {
+    const val = this.view.getFloat64(this.offset, LITTLE_ENDIAN);
+    this.offset += 8;
     return val;
   }
 
@@ -98,35 +107,32 @@ class RBufferReader {
 
 class RNTupleDescriptorBuilder {
       
-   deserializeHeader(header_blob) {
+deserializeHeader(header_blob) {
     if (!header_blob) return;
 
-    const reader = new RBufferReader(header_blob);
+  const reader = new RBufferReader(header_blob);
+  // Read the envelope metadata
+  this._readEnvelopeMetadata(reader);
 
-    // 1. Read header version (4 bytes)
-    this.version = reader.readU32();
+  // TODO: Validate the envelope checksum at the end of deserialization
+  // const payloadStart = reader.offset;
 
-    // 2. Read feature flags (4 bytes)
-    this.headerFeatureFlags = reader.readU32();
+  //  Read feature flags list (may span multiple 64-bit words)
+  this._readFeatureFlags(reader);
 
-    // 3. Read xxhash3 (64-bit, 8 bytes)
-    this.xxhash3 = reader.readU64();
+  //  Read metadata strings
+  this.name = reader.readString();
+  this.description = reader.readString();
+  this.writer = reader.readString();
+  // TODO: Remove debug logs before finalizing
+  console.log('Name:', this.name);
+  console.log('Description:', this.description);
+  console.log('Writer:', this.writer);
 
-    // 4. Read name (length-prefixed string)
-    this.name = reader.readString();
-
-    // 5. Read description (length-prefixed string)
-    this.description = reader.readString();
-   
-
-   // Console output to verify deserialization results
-    console.log('Version:', this.version);
-    console.log('Header Feature Flags:', this.headerFeatureFlags);
-    console.log('xxhash3:', '0x' + this.xxhash3.toString(16).padStart(16, '0'));
-    console.log('Name:', this.name);
-    console.log('Description:', this.description);
+  // List frame: list of field record frames
+  // TODO: Uncomment this section once the offset out of bounds issue is resolved
+  // this._readFieldDescriptors(reader);
   }
-
 
 deserializeFooter(footer_blob) {
     if (!footer_blob) return;
@@ -140,6 +146,82 @@ deserializeFooter(footer_blob) {
     console.log('Header Checksum:', this.headerChecksum);
   }
 
+
+_readEnvelopeMetadata(reader) {
+  const typeAndLength = reader.readU64(),
+
+  // Envelope metadata
+  // The 16 bits are the envelope type ID, and the 48 bits are the envelope length
+  envelopeType = Number(typeAndLength & 0xFFFFn),
+  envelopeLength = Number((typeAndLength >> 16n) & 0xFFFFFFFFFFFFn);
+
+  console.log('Envelope Type ID:', envelopeType);
+  console.log('Envelope Length:', envelopeLength);
+  return { envelopeType, envelopeLength };
+}
+
+_readFeatureFlags(reader) {
+  this.featureFlags = [];
+  while (true) {
+    const val = reader.readU64();
+    this.featureFlags.push(val);
+    if ((val & 0x8000000000000000n) === 0n) break; // MSB not set: end of list
+  }
+
+  // verify all feature flags are zero
+  if (this.featureFlags.some(v => v !== 0n))
+  throw new Error('Unexpected non-zero feature flags: ' + this.featureFlags);
+}
+
+_readFieldDescriptors(reader) {
+const fieldListSize = reader.readS64(), // signed 64-bit
+fieldListIsList = fieldListSize < 0;
+
+
+  if (!fieldListIsList)
+    throw new Error('Field list frame is not a list frame, which is required.');
+
+  const fieldListCount = reader.readU32(); // number of field entries
+  console.log('Field List Count:', fieldListCount);
+
+  // List frame: list of field record frames
+
+  const fieldDescriptors = [];
+  for (let i = 0; i < fieldListCount; ++i) {
+    const fieldVersion = reader.readU32(),
+    typeVersion = reader.readU32(),
+    parentFieldId = reader.readU32(),
+    structRole = reader.readU16(),
+    flags = reader.readU16(),
+
+    fieldName = reader.readString(),
+    typeName = reader.readString(),
+    typeAlias = reader.readString(),
+    description = reader.readString();
+    let arraySize = null, sourceFieldId = null, checksum = null;
+
+    if (flags & 0x1) arraySize = reader.readU32();
+    if (flags & 0x2) sourceFieldId = reader.readU32();
+    if (flags & 0x4) checksum = reader.readU32();
+
+     fieldDescriptors.push({
+        fieldVersion,
+        typeVersion,
+        parentFieldId,
+        structRole,
+        flags,
+        fieldName,
+        typeName,
+        typeAlias,
+        description,
+        arraySize,
+        sourceFieldId,
+        checksum
+    });
+    console.log(`Field ${i + 1}:`, fieldName, '&&', typeName);
+}
+  this.fieldDescriptors = fieldDescriptors;
+}
 
 }
 
