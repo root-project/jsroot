@@ -119,7 +119,13 @@ deserializeHeader(header_blob) {
   this._readFeatureFlags(reader);
 
   //  Read metadata strings
-  this._readStrings(reader);
+   this.name = reader.readString();
+  this.description = reader.readString();
+  this.writer = reader.readString();
+  // TODO: Remove debug logs before finalizing
+  console.log('Name:', this.name);
+  console.log('Description:', this.description);
+  console.log('Writer:', this.writer);
 
   // List frame: list of field record frames
   this._readFieldDescriptors(reader);
@@ -178,18 +184,11 @@ _readFeatureFlags(reader) {
   if (this.featureFlags.some(v => v !== 0n))
   throw new Error('Unexpected non-zero feature flags: ' + this.featureFlags);
 }
-_readStrings(reader) {
-  this.name = reader.readString();
-  this.description = reader.readString();
-  this.writer = reader.readString();
-  // TODO: Remove debug logs before finalizing
-  console.log('Name:', this.name);
-  console.log('Description:', this.description);
-  console.log('Writer:', this.writer);
-}
+
 _readFieldDescriptors(reader) {
-  this.fieldListSize = reader.readS64(); // signed 64-bit
-  const fieldListIsList = this.fieldListSize < 0;
+const fieldListSize = reader.readS64(), // signed 64-bit
+fieldListIsList = fieldListSize < 0;
+
 
   if (!fieldListIsList)
     throw new Error('Field list frame is not a list frame, which is required.');
@@ -257,19 +256,27 @@ _readColumnDescriptors(reader) {
     maxValue = reader.readF64();    
   }
 
-  columnDescriptors.push({
-    coltype,
-    bitsOnStrorage,
-    fieldId,
-    flags,
-    representationIndex,
-    firstElementIndex,
-    minValue,
-    maxValue,
-    isDeferred: (flags & 0x01) !== 0,
-    isSuppressed: (firstElementIndex !== null && firstElementIndex < 0)
-  }); 
- }
+  const column = {
+      coltype,
+      bitsOnStrorage,
+      fieldId,
+      flags,
+      representationIndex,
+      firstElementIndex,
+      minValue,
+      maxValue
+    };
+
+    column.isDeferred = function () {
+      return (this.flags & 0x01) !== 0;
+    };
+
+    column.isSuppressed = function () {
+      return this.firstElementIndex !== null && this.firstElementIndex < 0;
+    };
+
+    columnDescriptors.push(column);
+  }
  this.columnDescriptors = columnDescriptors;
 }
 _readAliasColumn(reader){

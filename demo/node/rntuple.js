@@ -62,3 +62,28 @@ else
   else
      console.error('FAILURE: test 3 - readString does not match');
 }
+if (!rntuple.builder?.fieldDescriptors?.length)
+  console.error('FAILURE: No fields deserialized');
+else {
+  console.log(`OK: ${rntuple.builder.fieldDescriptors.length} field(s) deserialized`);
+  for (let i = 0; i < rntuple.builder.fieldDescriptors.length; ++i) {
+    const field = rntuple.builder.fieldDescriptors[i];
+    if (!field.fieldName || !field.typeName)
+      console.error(`FAILURE: Field ${i} is missing name or type`);
+    else
+      console.log(`OK: Field ${i}: ${field.fieldName} (${field.typeName})`);
+  }
+}
+
+if (!rntuple.builder?.columnDescriptors?.length)
+  console.error('FAILURE: No columns deserialized');
+else {
+  console.log(`OK: ${rntuple.builder.columnDescriptors.length} column(s) deserialized`);
+  for (let i = 0; i < rntuple.builder.columnDescriptors.length; ++i) {
+    const col = rntuple.builder.columnDescriptors[i];
+    if (typeof col.fieldId !== 'number')
+      console.error(`FAILURE: Column ${i} is missing a valid fieldId`);
+    else
+      console.log(`OK: Column ${i}: fieldId = ${col.fieldId}, type = ${col.coltype}`);
+  }
+}
