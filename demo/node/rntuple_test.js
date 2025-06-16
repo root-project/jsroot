@@ -44,7 +44,6 @@ else {
   }
 }
 
-
 // Column Check
 
 if (!rntuple.builder?.columnDescriptors?.length)

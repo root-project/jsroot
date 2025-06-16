@@ -236,13 +236,14 @@ _readColumnDescriptors(reader) {
   fieldId = reader.readU32(),
   flags = reader.readU16(),
   representationIndex = reader.readU16();
-
+  console.log(`Column Record Size: ${columnRecordSize}`);
    let firstElementIndex = null, minValue = null, maxValue = null;
   if (flags & 0x1) firstElementIndex = reader.readU64();
   if (flags & 0x2){
     minValue = reader.readF64();
     maxValue = reader.readF64();    
   }
+
 
   const column = {
       coltype,
