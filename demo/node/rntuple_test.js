@@ -19,10 +19,8 @@ else
   console.log('OK: name is', rntuple.builder?.name);
 
 if (!rntuple.builder?.description){
-  if (rntuple.builder?.description === '')
-    console.warn('WARNING: description is empty');
-  else
-    console.error('FAILURE: description is missing');
+ if (rntuple.builder?.description !== '')
+  console.error('FAILURE: description should be the empty string');
 }
 else
   console.log('OK: description is', rntuple.builder.description);
