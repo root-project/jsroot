@@ -221,6 +221,7 @@ fieldListIsList = fieldListSize < 0;
 }
   this.fieldDescriptors = fieldDescriptors;
 }
+
 _readColumnDescriptors(reader) {
   this.columnListSize = reader.readS64(); // signed 64-bit
   const columnListIsList = this.columnListSize < 0;
@@ -230,7 +231,7 @@ _readColumnDescriptors(reader) {
   console.log('Column List Count:', columnListCount);
   const columnDescriptors = [];
   for (let i = 0; i < columnListCount; ++i) {
-    const columnRecordSize = reader.readS64(), 
+  const columnRecordSize = reader.readS64(), 
   coltype = reader.readU16(),
   bitsOnStrorage = reader.readU16(),
   fieldId = reader.readU32(),
@@ -255,20 +256,16 @@ _readColumnDescriptors(reader) {
       minValue,
       maxValue
     };
-
-    column.isDeferred = function () {
+    column.isDeferred = function() {
       return (this.flags & 0x01) !== 0;
     };
-
-    column.isSuppressed = function () {
+    column.isSuppressed = function() {
       return this.firstElementIndex !== null && this.firstElementIndex < 0;
     };
 
     columnDescriptors.push(column);
-   
   }
  this.columnDescriptors = columnDescriptors;
-
 }
 
 }
