@@ -1,6 +1,6 @@
 {
   "name": "jsroot",
-  "version": "7.9.1",
+  "version": "7.9.2",
   "engines": {
     "node": ">= 0.18.0"
   },
@@ -70,7 +70,7 @@
     "@rollup/plugin-node-resolve": "15",
     "@rollup/plugin-terser": "0",
     "eslint": "^9.24.0",
-    "@stylistic/eslint-plugin-js": "^4.1.0",
+    "@stylistic/eslint-plugin": "^4.4.1",
     "docdash": "^2.0.2",
     "jsdoc": "^4.0.4",
     "rollup": "4.40.0",

@@ -1,4 +1,4 @@
-import stylisticJs from '@stylistic/eslint-plugin-js';
+import stylisticJs from '@stylistic/eslint-plugin';
 
 import globals from 'globals';
 
