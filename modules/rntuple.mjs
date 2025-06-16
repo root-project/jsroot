@@ -1,7 +1,7 @@
 import { R__unzip } from './io.mjs';
 const LITTLE_ENDIAN = true;
 class RBufferReader {
-  
+
   constructor(buffer) {
     if (buffer instanceof ArrayBuffer) {
     this.buffer = buffer;
@@ -11,9 +11,9 @@ class RBufferReader {
     this.buffer = buffer.buffer;
     this.byteOffset = buffer.byteOffset;
     this.byteLength = buffer.byteLength;
-    } else 
+    } else
       throw new TypeError('Invalid buffer type');
-    
+
     this.view = new DataView(this.buffer);
     this.offset = 0;
   }
@@ -83,7 +83,7 @@ class RBufferReader {
   readString() {
     const length = this.readU32();
     let str = '';
-    for (let i = 0; i < length; i++) 
+    for (let i = 0; i < length; i++)
       str += String.fromCharCode(this.readU8());
     return str;
   }
@@ -101,12 +101,12 @@ class RBufferReader {
     this.offset += 8;
     return val;
   }
-  
+
 }
 
 
 class RNTupleDescriptorBuilder {
-      
+
 deserializeHeader(header_blob) {
     if (!header_blob) return;
 
@@ -183,7 +183,7 @@ fieldListIsList = fieldListSize < 0;
 
   const fieldDescriptors = [];
   for (let i = 0; i < fieldListCount; ++i) {
-    const fieldRecordSize = reader.readS64(), 
+    const fieldRecordSize = reader.readS64(),
     fieldVersion = reader.readU32(),
     typeVersion = reader.readU32(),
     parentFieldId = reader.readU32(),
@@ -267,16 +267,14 @@ async function tupleHierarchy(tuple_node, tuple) {
       if (!res)
          return res;
 
-      // just show which objects belongs to hierarchy
-      // one need to fill list of items from tuple.builder ... object
-      for (let k = 0; k < 3; ++k) {
-         tuple_node._childs.push({
-            _name: `dummy${k}`,
-            _kind: 'ROOT::SomeBranchName',
-            _title: `Any title for dummy${k}`,
-            _obj: null
+      tuple.builder?.fieldDescriptors.forEach(field => {
+          tuple_node._childs.push({
+            _name: field.fieldName,
+            _kind: 'ROOT::RNTupleField', // pseudo class name, used in draw.mjs
+            _title: `Filed of type ${field.typeName}`,
+            _obj: field
          });
-      }
+      });
 
       return true;
    });
