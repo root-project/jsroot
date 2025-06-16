@@ -223,8 +223,8 @@ fieldListIsList = fieldListSize < 0;
 }
 
 _readColumnDescriptors(reader) {
-  this.columnListSize = reader.readS64(); // signed 64-bit
-  const columnListIsList = this.columnListSize < 0;
+  const columnListSize = reader.readS64(),
+  columnListIsList = columnListSize < 0;
   if (!columnListIsList)
     throw new Error('Column list frame is not a list frame, which is required.');
   const columnListCount = reader.readU32(); // number of column entries
