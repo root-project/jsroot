@@ -233,7 +233,7 @@ _readColumnDescriptors(reader) {
   for (let i = 0; i < columnListCount; ++i) {
   const columnRecordSize = reader.readS64(), 
   coltype = reader.readU16(),
-  bitsOnStrorage = reader.readU16(),
+  bitsOnStorage = reader.readU16(),
   fieldId = reader.readU32(),
   flags = reader.readU16(),
   representationIndex = reader.readU16();
