@@ -127,6 +127,9 @@ deserializeHeader(header_blob) {
 
   // List frame: list of field record frames
   this._readFieldDescriptors(reader);
+   
+  // List frame: list of column record frames
+  this._readColumnDescriptors(reader);
   }
 
 deserializeFooter(footer_blob) {
@@ -217,6 +220,54 @@ fieldListIsList = fieldListSize < 0;
     });
 }
   this.fieldDescriptors = fieldDescriptors;
+}
+_readColumnDescriptors(reader) {
+  this.columnListSize = reader.readS64(); // signed 64-bit
+  const columnListIsList = this.columnListSize < 0;
+  if (!columnListIsList)
+    throw new Error('Column list frame is not a list frame, which is required.');
+  const columnListCount = reader.readU32(); // number of column entries
+  console.log('Column List Count:', columnListCount);
+  const columnDescriptors = [];
+  for (let i = 0; i < columnListCount; ++i) {
+    const columnRecordSize = reader.readS64(), 
+  coltype = reader.readU16(),
+  bitsOnStrorage = reader.readU16(),
+  fieldId = reader.readU32(),
+  flags = reader.readU16(),
+  representationIndex = reader.readU16();
+
+   let firstElementIndex = null, minValue = null, maxValue = null;
+  if (flags & 0x1) firstElementIndex = reader.readU64();
+  if (flags & 0x2){
+    minValue = reader.readF64();
+    maxValue = reader.readF64();    
+  }
+
+  const column = {
+      coltype,
+      bitsOnStrorage,
+      fieldId,
+      flags,
+      representationIndex,
+      firstElementIndex,
+      minValue,
+      maxValue
+    };
+
+    column.isDeferred = function () {
+      return (this.flags & 0x01) !== 0;
+    };
+
+    column.isSuppressed = function () {
+      return this.firstElementIndex !== null && this.firstElementIndex < 0;
+    };
+
+    columnDescriptors.push(column);
+   
+  }
+ this.columnDescriptors = columnDescriptors;
+
 }
 
 }

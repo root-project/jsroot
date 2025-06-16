@@ -43,3 +43,20 @@ else {
       console.log(`OK: Field ${i}: ${field.fieldName} (${field.typeName})`);
   }
 }
+
+
+// Column Check
+
+if (!rntuple.builder?.columnDescriptors?.length)
+  console.error('FAILURE: No columns deserialized');
+else {
+  console.log(`OK: ${rntuple.builder.columnDescriptors.length} column(s) deserialized`);
+  for (let i = 0; i < rntuple.builder.columnDescriptors.length; ++i) {
+    const column = rntuple.builder.columnDescriptors[i];
+    if (!column.fieldId)
+      console.error(`FAILURE: Column ${i} is missing fieldId`);
+    else
+      console.log(`OK: Column ${i} fieldId: ${column.fieldId} `);
+  }
+}
+
