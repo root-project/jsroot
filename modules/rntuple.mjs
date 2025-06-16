@@ -248,7 +248,7 @@ _readColumnDescriptors(reader) {
 
   const column = {
       coltype,
-      bitsOnStrorage,
+      bitsOnStorage,
       fieldId,
       flags,
       representationIndex,
