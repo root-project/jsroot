@@ -197,7 +197,7 @@ fieldListIsList = fieldListSize < 0;
     console.log(`Field Record Size: ${fieldRecordSize}`);
     let arraySize = null, sourceFieldId = null, checksum = null;
 
-    if (flags & 0x1) arraySize = reader.readU32();
+    if (flags & 0x1) arraySize = reader.readU64();
     if (flags & 0x2) sourceFieldId = reader.readU32();
     if (flags & 0x4) checksum = reader.readU32();
 
