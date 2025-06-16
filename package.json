@@ -71,7 +71,7 @@
     "@rollup/plugin-node-resolve": "16.0.1",
     "@rollup/plugin-terser": "0.4.4",
     "eslint": "^9.26.0",
-    "@stylistic/eslint-plugin-js": "^4.2.0",
+    "@stylistic/eslint-plugin": "^4.4.1",
     "docdash": "^2.0.2",
     "jsdoc": "^4.0.4",
     "rollup": "4.40.2",
