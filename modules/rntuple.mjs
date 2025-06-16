@@ -124,14 +124,9 @@ deserializeHeader(header_blob) {
   this.name = reader.readString();
   this.description = reader.readString();
   this.writer = reader.readString();
-  // TODO: Remove debug logs before finalizing
-  console.log('Name:', this.name);
-  console.log('Description:', this.description);
-  console.log('Writer:', this.writer);
 
   // List frame: list of field record frames
-  // TODO: Uncomment this section once the offset out of bounds issue is resolved
-  // this._readFieldDescriptors(reader);
+  this._readFieldDescriptors(reader);
   }
 
 deserializeFooter(footer_blob) {
@@ -188,7 +183,8 @@ fieldListIsList = fieldListSize < 0;
 
   const fieldDescriptors = [];
   for (let i = 0; i < fieldListCount; ++i) {
-    const fieldVersion = reader.readU32(),
+    const fieldRecordSize = reader.readS64(), 
+    fieldVersion = reader.readU32(),
     typeVersion = reader.readU32(),
     parentFieldId = reader.readU32(),
     structRole = reader.readU16(),
@@ -205,6 +201,7 @@ fieldListIsList = fieldListSize < 0;
     if (flags & 0x4) checksum = reader.readU32();
 
      fieldDescriptors.push({
+        fieldRecordSize,
         fieldVersion,
         typeVersion,
         parentFieldId,
@@ -218,7 +215,6 @@ fieldListIsList = fieldListSize < 0;
         sourceFieldId,
         checksum
     });
-    console.log(`Field ${i + 1}:`, fieldName, '&&', typeName);
 }
   this.fieldDescriptors = fieldDescriptors;
 }

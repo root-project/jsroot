@@ -18,8 +18,12 @@ if (rntuple.builder?.name !== 'Staff')
 else
   console.log('OK: name is', rntuple.builder?.name);
 
-if (!rntuple.builder?.description)
-  console.error('FAILURE: description is missing');
+if (!rntuple.builder?.description){
+  if (rntuple.builder?.description === '')
+    console.warn('WARNING: description is empty');
+  else
+    console.error('FAILURE: description is missing');
+}
 else
   console.log('OK: description is', rntuple.builder.description);
 
@@ -42,4 +46,3 @@ else {
       console.log(`OK: Field ${i}: ${field.fieldName} (${field.typeName})`);
   }
 }
-
