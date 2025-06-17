@@ -421,8 +421,6 @@ async function draw(dom, obj, opt) {
 
    let promise;
 
-   console.log('here', handle);
-
    if (isFunc(handle.class)) {
       // class coded as async function which returns class handle
       // simple extract class and access class.draw method
