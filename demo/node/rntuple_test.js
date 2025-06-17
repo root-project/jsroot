@@ -41,7 +41,17 @@ else {
       console.error(`FAILURE: Field ${i} is missing name or type`);
     else
       console.log(`OK: Field ${i}: ${field.fieldName} (${field.typeName})`);
+    if (i === 0) {
+      if (field.fieldName !== 'Category' || field.typeName !== 'std::int32_t') 
+        console.error(`FAILURE: First field should be 'Category (std::int32_t)' but got '${field.fieldName} (${field.typeName})'`);
+      
+    } else if (i === rntuple.builder.fieldDescriptors.length - 1){
+      if (field.fieldName !== 'Nation' || field.typeName !== 'std::string')
+        console.error(`FAILURE: Last field should be 'Nation (std::string)' but got '${field.fieldName} (${field.typeName})'`);
+      
+    }
   }
+  
 }
 
 // Column Check
@@ -56,6 +66,14 @@ else {
       console.error(`FAILURE: Column ${i} is missing fieldId`);
     else
       console.log(`OK: Column ${i} fieldId: ${column.fieldId} `);
+    if (i === 0) {
+      if (column.fieldId !== 0)
+        console.error(`FAILURE: First column should be for fieldId 0 (Category)`);
+    } else if (i === rntuple.builder.columnDescriptors.length - 1){
+      if (column.fieldId !== 10)
+        console.error(`FAILURE: Last column should be for fieldId 10 (Nation)`);
+    }
   }
 }
+
 
