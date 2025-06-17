@@ -62,7 +62,7 @@ else {
   console.log(`OK: ${rntuple.builder.columnDescriptors.length} column(s) deserialized`);
   for (let i = 0; i < rntuple.builder.columnDescriptors.length; ++i) {
     const column = rntuple.builder.columnDescriptors[i];
-    if (!column.fieldId)
+    if (column.fieldId === undefined || column.fieldId === null)
       console.error(`FAILURE: Column ${i} is missing fieldId`);
     else
       console.log(`OK: Column ${i} fieldId: ${column.fieldId} `);
