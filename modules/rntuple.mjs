@@ -130,6 +130,10 @@ deserializeHeader(header_blob) {
    
   // List frame: list of column record frames
   this._readColumnDescriptors(reader);
+  // Read alias column descriptors
+  this._readAliasColumn(reader);
+  // Read Extra Type Information
+  this._readExtraTypeInformation(reader);
   }
 
 deserializeFooter(footer_blob) {
@@ -266,6 +270,49 @@ _readColumnDescriptors(reader) {
     columnDescriptors.push(column);
   }
  this.columnDescriptors = columnDescriptors;
+}
+_readAliasColumn(reader){
+  const aliasColumnListSize = reader.readS64(); // signed 64-bit
+  const aliasListisList = aliasColumnListSize < 0;
+  if (!aliasListisList)
+    throw new Error('Alias column list frame is not a list frame, which is required.');
+  const aliasColumnCount = reader.readU32(); // number of alias column entries
+  console.log('Alias Column List Count:', aliasColumnCount);
+  const aliasColumns = [];
+  for (let i = 0; i < aliasColumnCount; ++i){
+  const aliasColumnRecordSize = reader.readS64(),
+    physicalColumnId = reader.readU32(),
+    fieldId = reader.readU32();
+    console.log(`Alias Column Record Size: ${aliasColumnRecordSize}`);
+    aliasColumns.push({
+      physicalColumnId,
+      fieldId
+    });
+  }
+  this.aliasColumns = aliasColumns;
+}
+_readExtraTypeInformation(reader) {
+  const extraTypeInfoListSize = reader.readS64(); // signed 64-bit
+  const isList = extraTypeInfoListSize < 0;
+
+  if (!isList)
+    throw new Error('Extra type info frame is not a list frame, which is required.');
+
+  const entryCount = reader.readU32(); 
+  console.log('Extra Type Info Count:', entryCount);
+
+  const extraTypeInfo = [];
+  for (let i = 0; i < entryCount; ++i) {
+    const extraTypeInfoRecordSize = reader.readS64(),
+    contentId = reader.readU32(),
+    typeVersion = reader.readU32();
+    console.log(`Extra Type Info Record Size: ${extraTypeInfoRecordSize}`);
+    extraTypeInfo.push({
+      contentId,
+      typeVersion
+    });
+  }
+  this.extraTypeInfo = extraTypeInfo;
 }
 
 }
