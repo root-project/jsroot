@@ -141,11 +141,30 @@ deserializeFooter(footer_blob) {
 
     const reader = new RBufferReader(footer_blob);
 
-    this.footerFeatureFlags = reader.readU32();
-    this.headerChecksum = reader.readU32();
+    // Read the envelope metadata
+    this._readEnvelopeMetadata(reader);
 
-    console.log('Footer Feature Flags:', this.footerFeatureFlags);
-    console.log('Header Checksum:', this.headerChecksum);
+
+    // Feature flag(32 bits)
+    this._readFeatureFlags(reader);
+    // Header checksum (64-bit xxhash3)
+    this.headerChecksum = reader.readU64(); 
+
+    const schemaExtensionSize = reader.readS64(); 
+
+    console.log('Schema extension frame size:', schemaExtensionSize);
+
+
+    // Schema extension record frame (4 list frames inside)
+    this._readFieldDescriptors(reader);
+    this._readColumnDescriptors(reader);
+    this._readAliasColumn(reader);
+    this._readExtraTypeInformation(reader);
+
+    // Cluster Group record frame
+    this._readClusterGroups(reader);
+
+   
   }
 
 
@@ -313,6 +332,34 @@ _readExtraTypeInformation(reader) {
     });
   }
   this.extraTypeInfo = extraTypeInfo;
+}
+_readClusterGroups(reader) {
+  const clusterGroupListSize = reader.readS64();
+  const isList = clusterGroupListSize < 0;
+  if (!isList) throw new Error('Cluster group frame is not a list frame');
+
+  const groupCount = reader.readU32();
+  console.log('Cluster Group Count:', groupCount);
+
+  const clusterGroups = [];
+
+  for (let i = 0; i < groupCount; ++i) {
+    const clusterRecordSize = reader.readS64(); 
+    const minEntry = reader.readU64();
+    const entrySpan = reader.readU64();
+    const numClusters = reader.readU32();
+
+    console.log(`Cluster Record Size: ${clusterRecordSize}`);
+    console.log(`Min Entry: ${minEntry}, Entry Span: ${entrySpan}, Num Clusters: ${numClusters}`);
+
+    clusterGroups.push({
+      minEntry,
+      entrySpan,
+      numClusters,
+    });
+  }
+
+  this.clusterGroups = clusterGroups;
 }
 
 }
