@@ -163,8 +163,6 @@ deserializeFooter(footer_blob) {
 
     // Cluster Group record frame
     this._readClusterGroups(reader);
-
-   
   }
 
 
@@ -291,8 +289,8 @@ _readColumnDescriptors(reader) {
  this.columnDescriptors = columnDescriptors;
 }
 _readAliasColumn(reader){
-  const aliasColumnListSize = reader.readS64(); // signed 64-bit
-  const aliasListisList = aliasColumnListSize < 0;
+  const aliasColumnListSize = reader.readS64(),
+  aliasListisList = aliasColumnListSize < 0;
   if (!aliasListisList)
     throw new Error('Alias column list frame is not a list frame, which is required.');
   const aliasColumnCount = reader.readU32(); // number of alias column entries
@@ -311,8 +309,8 @@ _readAliasColumn(reader){
   this.aliasColumns = aliasColumns;
 }
 _readExtraTypeInformation(reader) {
-  const extraTypeInfoListSize = reader.readS64(); // signed 64-bit
-  const isList = extraTypeInfoListSize < 0;
+  const extraTypeInfoListSize = reader.readS64(),
+  isList = extraTypeInfoListSize < 0;
 
   if (!isList)
     throw new Error('Extra type info frame is not a list frame, which is required.');
@@ -334,8 +332,8 @@ _readExtraTypeInformation(reader) {
   this.extraTypeInfo = extraTypeInfo;
 }
 _readClusterGroups(reader) {
-  const clusterGroupListSize = reader.readS64();
-  const isList = clusterGroupListSize < 0;
+  const clusterGroupListSize = reader.readS64(),
+  isList = clusterGroupListSize < 0;
   if (!isList) throw new Error('Cluster group frame is not a list frame');
 
   const groupCount = reader.readU32();
@@ -344,10 +342,10 @@ _readClusterGroups(reader) {
   const clusterGroups = [];
 
   for (let i = 0; i < groupCount; ++i) {
-    const clusterRecordSize = reader.readS64(); 
-    const minEntry = reader.readU64();
-    const entrySpan = reader.readU64();
-    const numClusters = reader.readU32();
+    const clusterRecordSize = reader.readS64(),
+    minEntry = reader.readU64(),
+    entrySpan = reader.readU64(),
+    numClusters = reader.readU32();
 
     console.log(`Cluster Record Size: ${clusterRecordSize}`);
     console.log(`Min Entry: ${minEntry}, Entry Span: ${entrySpan}, Num Clusters: ${numClusters}`);
