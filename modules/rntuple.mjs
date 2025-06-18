@@ -110,12 +110,20 @@ class RNTupleDescriptorBuilder {
 deserializeHeader(header_blob) {
     if (!header_blob) return;
 
-  const reader = new RBufferReader(header_blob);
+  const reader = new RBufferReader(header_blob),
+ 
+  payloadStart = reader.offset,
   // Read the envelope metadata
-  this._readEnvelopeMetadata(reader);
+  { envelopeLength } = this._readEnvelopeMetadata(reader),
 
-  // TODO: Validate the envelope checksum at the end of deserialization
-  // const payloadStart = reader.offset;
+  // Seek to end of envelope to get checksum
+  checksumPos = payloadStart + envelopeLength - 8,
+  currentPos = reader.offset;
+
+  reader.seek(checksumPos);
+  this.headerEnvelopeChecksum = reader.readU64(); 
+
+  reader.seek(currentPos);
 
   //  Read feature flags list (may span multiple 64-bit words)
   this._readFeatureFlags(reader);
@@ -148,7 +156,7 @@ deserializeFooter(footer_blob) {
     // Feature flag(32 bits)
     this._readFeatureFlags(reader);
     // Header checksum (64-bit xxhash3)
-    this.headerChecksum = reader.readU64(); 
+    this.headerChecksumFromFooter = reader.readU64(); 
 
     const schemaExtensionSize = reader.readS64(); 
 
