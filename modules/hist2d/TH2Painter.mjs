@@ -764,12 +764,12 @@ class TH2Painter extends THistPainter {
 
          menu.sub('Projections', () => menu.input('Input projection kind X1 or XY2 or X3_Y4', kind, 'string').then(val => this.toggleProjection(val)));
          ['X', 'Y', 'XY'].forEach(name => {
-            menu.add('column:');
+            menu.column();
             sizes.forEach(sz => {
                const id = sz ? name + sz : 'Off';
                menu.addchk(kind === id, id, id, arg => this.toggleProjection(arg));
             });
-            menu.add('endcolumn:');
+            menu.endcolumn();
          });
          menu.endsub();
       }

@@ -22,10 +22,10 @@
 
          createMenu(evnt).then(menu => {
             for (let ncol = 0; ncol < 3; ncol++) {
-               menu.add('column:');
+               menu.column();
                for (let n = 0; n < 10; n++)
                   menu.add(`item_${ncol}_${n}`, arg => console.log(`click ${arg}`));
-               menu.add('endcolumn:');
+               menu.endcolumn();
             }
 
             menu.show();
