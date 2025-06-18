@@ -759,12 +759,18 @@ class TH2Painter extends THistPainter {
          if ((this.#projection_widthX !== this.#projection_widthY) && (this.#projection_kind === 'XY'))
             kind = `X${this.#projection_widthX}_Y${this.#projection_widthY}`;
 
-         const kinds = ['X1', 'X2', 'X3', 'X5', 'X10', 'Y1', 'Y2', 'Y3', 'Y5', 'Y10', 'XY1', 'XY2', 'XY3', 'XY5', 'XY10'];
-         if (kind) kinds.unshift('Off');
+         const sizes = ['1', '2', '3', '5', '10', 'all'];
+         if (kind) sizes.unshift('');
 
          menu.sub('Projections', () => menu.input('Input projection kind X1 or XY2 or X3_Y4', kind, 'string').then(val => this.toggleProjection(val)));
-         for (let k = 0; k < kinds.length; ++k)
-            menu.addchk(kind === kinds[k], kinds[k], kinds[k], arg => this.toggleProjection(arg));
+         ['X', 'Y', 'XY'].forEach(name => {
+            menu.add('column:');
+            sizes.forEach(sz => {
+               const id = sz ? name + sz : 'Off';
+               menu.addchk(kind === id, id, id, arg => this.toggleProjection(arg));
+            });
+            menu.add('endcolumn:');
+         });
          menu.endsub();
       }
 
