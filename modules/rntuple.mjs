@@ -153,8 +153,8 @@ deserializeFooter(footer_blob) {
     const schemaExtensionSize = reader.readS64(); 
 
     console.log('Schema extension frame size:', schemaExtensionSize);
-    if( schemaExtensionSize < 0)
-      throw new Error('Schema extension frame is not a list frame, which is required.');
+    if( schemaExtensionSize<0)
+      throw new Error('Schema extension frame is not a record frame, which is unexpected.');      
     
     // Schema extension record frame (4 list frames inside)
     this._readFieldDescriptors(reader);
