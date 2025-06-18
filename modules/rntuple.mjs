@@ -133,15 +133,8 @@ deserializeHeader(header_blob) {
   this.description = reader.readString();
   this.writer = reader.readString();
 
-  // List frame: list of field record frames
-  this._readFieldDescriptors(reader);
-   
-  // List frame: list of column record frames
-  this._readColumnDescriptors(reader);
-  // Read alias column descriptors
-  this._readAliasColumn(reader);
-  // Read Extra Type Information
-  this._readExtraTypeInformation(reader);
+  // 4 list frames inside the header envelope
+  this._readSchemaExtension(reader);
   }
 
 deserializeFooter(footer_blob) {
@@ -165,10 +158,7 @@ deserializeFooter(footer_blob) {
       throw new Error('Schema extension frame is not a record frame, which is unexpected.');      
     
     // Schema extension record frame (4 list frames inside)
-    this._readFieldDescriptors(reader);
-    this._readColumnDescriptors(reader);
-    this._readAliasColumn(reader);
-    this._readExtraTypeInformation(reader);
+    this._readSchemaExtension(reader);
 
     // Cluster Group record frame
     this._readClusterGroups(reader);
@@ -187,6 +177,14 @@ _readEnvelopeMetadata(reader) {
   console.log('Envelope Length:', envelopeLength);
   return { envelopeType, envelopeLength };
 }
+
+_readSchemaExtension(reader) {
+  this._readFieldDescriptors(reader);
+  this._readColumnDescriptors(reader);
+  this._readAliasColumn(reader);
+  this._readExtraTypeInformation(reader);
+}
+
 
 _readFeatureFlags(reader) {
   this.featureFlags = [];
