@@ -574,6 +574,13 @@ class TH2Painter extends THistPainter {
       if ((kind === 'Projections') || (kind === 'Off'))
          kind = '';
 
+      const parseWidth = arg => {
+         if ((arg === 'all') || (arg === 'ALL'))
+            return 10000;
+         const res = parseInt(arg);
+         return res && Number.isInteger(res) ? res : 1;
+      };
+
       let widthX = width, widthY = width;
 
       if (isStr(kind) && (kind.indexOf('XY') === 0)) {
@@ -583,15 +590,15 @@ class TH2Painter extends THistPainter {
       } else if (isStr(kind) && (kind.length > 1)) {
          const ps = kind.indexOf('_');
          if ((ps > 0) && (kind[0] === 'X') && (kind[ps+1] === 'Y')) {
-            widthX = parseInt(kind.slice(1, ps)) || 1;
-            widthY = parseInt(kind.slice(ps+2)) || 1;
+            widthX = parseWidth(kind.slice(1, ps));
+            widthY = parseWidth(kind.slice(ps+2));
             kind = 'XY';
          } else if ((ps > 0) && (kind[0] === 'Y') && (kind[ps+1] === 'X')) {
-            widthY = parseInt(kind.slice(1, ps)) || 1;
-            widthX = parseInt(kind.slice(ps+2)) || 1;
+            widthY = parseWidth(kind.slice(1, ps));
+            widthX = parseWidth(kind.slice(ps+2));
             kind = 'XY';
          } else {
-            widthX = widthY = parseInt(kind.slice(1)) || 1;
+            widthX = widthY = parseWidth(kind.slice(1));
             kind = kind[0];
          }
       }

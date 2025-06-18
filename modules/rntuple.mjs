@@ -141,11 +141,29 @@ deserializeFooter(footer_blob) {
 
     const reader = new RBufferReader(footer_blob);
 
-    this.footerFeatureFlags = reader.readU32();
-    this.headerChecksum = reader.readU32();
+    // Read the envelope metadata
+    this._readEnvelopeMetadata(reader);
 
-    console.log('Footer Feature Flags:', this.footerFeatureFlags);
-    console.log('Header Checksum:', this.headerChecksum);
+
+    // Feature flag(32 bits)
+    this._readFeatureFlags(reader);
+    // Header checksum (64-bit xxhash3)
+    this.headerChecksum = reader.readU64(); 
+
+    const schemaExtensionSize = reader.readS64(); 
+
+    console.log('Schema extension frame size:', schemaExtensionSize);
+    if (schemaExtensionSize < 0)
+      throw new Error('Schema extension frame is not a record frame, which is unexpected.');      
+    
+    // Schema extension record frame (4 list frames inside)
+    this._readFieldDescriptors(reader);
+    this._readColumnDescriptors(reader);
+    this._readAliasColumn(reader);
+    this._readExtraTypeInformation(reader);
+
+    // Cluster Group record frame
+    this._readClusterGroups(reader);
   }
 
 
@@ -272,8 +290,8 @@ _readColumnDescriptors(reader) {
  this.columnDescriptors = columnDescriptors;
 }
 _readAliasColumn(reader){
-  const aliasColumnListSize = reader.readS64(); // signed 64-bit
-  const aliasListisList = aliasColumnListSize < 0;
+  const aliasColumnListSize = reader.readS64(),
+  aliasListisList = aliasColumnListSize < 0;
   if (!aliasListisList)
     throw new Error('Alias column list frame is not a list frame, which is required.');
   const aliasColumnCount = reader.readU32(); // number of alias column entries
@@ -292,8 +310,8 @@ _readAliasColumn(reader){
   this.aliasColumns = aliasColumns;
 }
 _readExtraTypeInformation(reader) {
-  const extraTypeInfoListSize = reader.readS64(); // signed 64-bit
-  const isList = extraTypeInfoListSize < 0;
+  const extraTypeInfoListSize = reader.readS64(),
+  isList = extraTypeInfoListSize < 0;
 
   if (!isList)
     throw new Error('Extra type info frame is not a list frame, which is required.');
@@ -313,6 +331,34 @@ _readExtraTypeInformation(reader) {
     });
   }
   this.extraTypeInfo = extraTypeInfo;
+}
+_readClusterGroups(reader) {
+  const clusterGroupListSize = reader.readS64(),
+  isList = clusterGroupListSize < 0;
+  if (!isList) throw new Error('Cluster group frame is not a list frame');
+
+  const groupCount = reader.readU32();
+  console.log('Cluster Group Count:', groupCount);
+
+  const clusterGroups = [];
+
+  for (let i = 0; i < groupCount; ++i) {
+    const clusterRecordSize = reader.readS64(),
+    minEntry = reader.readU64(),
+    entrySpan = reader.readU64(),
+    numClusters = reader.readU32();
+
+    console.log(`Cluster Record Size: ${clusterRecordSize}`);
+    console.log(`Min Entry: ${minEntry}, Entry Span: ${entrySpan}, Num Clusters: ${numClusters}`);
+
+    clusterGroups.push({
+      minEntry,
+      entrySpan,
+      numClusters,
+    });
+  }
+
+  this.clusterGroups = clusterGroups;
 }
 
 }
