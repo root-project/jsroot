@@ -110,12 +110,20 @@ class RNTupleDescriptorBuilder {
 deserializeHeader(header_blob) {
     if (!header_blob) return;
 
-  const reader = new RBufferReader(header_blob);
+  const reader = new RBufferReader(header_blob),
+ 
+  payloadStart = reader.offset,
   // Read the envelope metadata
-  this._readEnvelopeMetadata(reader);
+  { envelopeLength } = this._readEnvelopeMetadata(reader),
 
-  // TODO: Validate the envelope checksum at the end of deserialization
-  // const payloadStart = reader.offset;
+  // Seek to end of envelope to get checksum
+  checksumPos = payloadStart + envelopeLength - 8,
+  currentPos = reader.offset;
+
+  reader.seek(checksumPos);
+  this.headerEnvelopeChecksum = reader.readU64(); 
+
+  reader.seek(currentPos);
 
   //  Read feature flags list (may span multiple 64-bit words)
   this._readFeatureFlags(reader);
@@ -125,15 +133,8 @@ deserializeHeader(header_blob) {
   this.description = reader.readString();
   this.writer = reader.readString();
 
-  // List frame: list of field record frames
-  this._readFieldDescriptors(reader);
-   
-  // List frame: list of column record frames
-  this._readColumnDescriptors(reader);
-  // Read alias column descriptors
-  this._readAliasColumn(reader);
-  // Read Extra Type Information
-  this._readExtraTypeInformation(reader);
+  // 4 list frames inside the header envelope
+  this._readSchemaDescription(reader);
   }
 
 deserializeFooter(footer_blob) {
@@ -148,7 +149,9 @@ deserializeFooter(footer_blob) {
     // Feature flag(32 bits)
     this._readFeatureFlags(reader);
     // Header checksum (64-bit xxhash3)
-    this.headerChecksum = reader.readU64(); 
+    const headerChecksumFromFooter = reader.readU64(); 
+    if (headerChecksumFromFooter !== this.headerEnvelopeChecksum)
+    throw new Error('RNTuple corrupted: header checksum does not match footer checksum.');
 
     const schemaExtensionSize = reader.readS64(); 
 
@@ -157,10 +160,7 @@ deserializeFooter(footer_blob) {
       throw new Error('Schema extension frame is not a record frame, which is unexpected.');      
     
     // Schema extension record frame (4 list frames inside)
-    this._readFieldDescriptors(reader);
-    this._readColumnDescriptors(reader);
-    this._readAliasColumn(reader);
-    this._readExtraTypeInformation(reader);
+    this._readSchemaDescription(reader);
 
     // Cluster Group record frame
     this._readClusterGroups(reader);
@@ -179,6 +179,21 @@ _readEnvelopeMetadata(reader) {
   console.log('Envelope Length:', envelopeLength);
   return { envelopeType, envelopeLength };
 }
+
+_readSchemaDescription(reader) {
+  // Reading new descriptor arrays from the input
+  const newFields = this._readFieldDescriptors(reader),
+  newColumns = this._readColumnDescriptors(reader),
+  newAliases = this._readAliasColumn(reader),
+  newExtra = this._readExtraTypeInformation(reader);
+
+  // Merging these new arrays into existing arrays
+  this.fieldDescriptors = (this.fieldDescriptors || []).concat(newFields);
+  this.columnDescriptors = (this.columnDescriptors || []).concat(newColumns);
+  this.aliasColumns = (this.aliasColumns || []).concat(newAliases);
+  this.extraTypeInfo = (this.extraTypeInfo || []).concat(newExtra);
+}
+
 
 _readFeatureFlags(reader) {
   this.featureFlags = [];
@@ -241,7 +256,7 @@ fieldListIsList = fieldListSize < 0;
         checksum
     });
 }
-  this.fieldDescriptors = fieldDescriptors;
+  return fieldDescriptors;
 }
 
 _readColumnDescriptors(reader) {
@@ -287,7 +302,7 @@ _readColumnDescriptors(reader) {
 
     columnDescriptors.push(column);
   }
- this.columnDescriptors = columnDescriptors;
+ return columnDescriptors;
 }
 _readAliasColumn(reader){
   const aliasColumnListSize = reader.readS64(),
@@ -307,7 +322,7 @@ _readAliasColumn(reader){
       fieldId
     });
   }
-  this.aliasColumns = aliasColumns;
+  return aliasColumns;
 }
 _readExtraTypeInformation(reader) {
   const extraTypeInfoListSize = reader.readS64(),
@@ -330,7 +345,7 @@ _readExtraTypeInformation(reader) {
       typeVersion
     });
   }
-  this.extraTypeInfo = extraTypeInfo;
+  return extraTypeInfo;
 }
 _readClusterGroups(reader) {
   const clusterGroupListSize = reader.readS64(),
