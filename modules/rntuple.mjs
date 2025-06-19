@@ -400,7 +400,7 @@ _readPageListEnvelope(reader) {
   if ((flags & 0x01) !== 0)
     throw new Error('Reserved flag 0x01 for sharded clusters is set');
   }
-  //TODO: Read top-most list frame for clusters (page locations)
+  // TODO: Read top-most list frame for clusters (page locations)
 }
 
 }
