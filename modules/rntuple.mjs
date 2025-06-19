@@ -364,16 +364,58 @@ _readClusterGroups(reader) {
     numClusters = reader.readU32();
 
     console.log(`Cluster Record Size: ${clusterRecordSize}`);
-    console.log(`Min Entry: ${minEntry}, Entry Span: ${entrySpan}, Num Clusters: ${numClusters}`);
+    const pageListSeek = reader.readU64(),
+    pageListNBytes = reader.readU32(),
+    pageListLen = reader.readU32(),
 
-    clusterGroups.push({
+
+ group = {
       minEntry,
       entrySpan,
       numClusters,
-    });
+      pageListLocator: {
+        seek: pageListSeek,
+        nbytes: pageListNBytes,
+        len: pageListLen
+      }
+    };
+    console.log(`clusterGroup[${i}]:`, group);
+
+    clusterGroups.push(group);
   }
 
   this.clusterGroups = clusterGroups;
+  if (clusterGroups.length > 0)
+    this.pageListLocator = clusterGroups[0].pageListLocator;
+}
+
+_readPageListEnvelope(reader) {
+  // Read the envelope metadata
+  this._readEnvelopeMetadata(reader);  
+  // Page list checksum (64-bit xxhash3)
+  const pageListChecksum = reader.readU64();
+  console.log('Page List Checksum:', pageListChecksum);
+
+  // Cluster summary Record Frame
+  const clusterListSize = reader.readS64();
+  if (clusterListSize >= 0)
+    throw new Error('Expected list frame for cluster summary');
+
+  const clusterCount = reader.readU32();
+  console.log('Cluster Count:', clusterCount);
+
+  for (let i = 0; i < clusterCount; ++i) {
+  const recordSize = reader.readS64(),
+  firstEntry = reader.readU64(),
+  combined = reader.readU64(),
+  flags = Number(combined & 0xFFn), // lower 8 bits
+  numEntries = combined >> 8n; // higher 56 bits
+
+  console.log(`Cluster ${i}: RecordSize=${recordSize} First=${firstEntry} Num=${numEntries} Flags=${flags} `);
+  if ((flags & 0x01) !== 0)
+    throw new Error('Reserved flag 0x01 for sharded clusters is set');
+  }
+  //TODO: Read top-most list frame for clusters (page locations)
 }
 
 }
@@ -406,6 +448,7 @@ async function readHeaderFooter(tuple) {
          tuple.builder.deserializeHeader(header_blob);
 
          tuple.builder.deserializeFooter(footer_blob);
+
 
          return true;
       });
