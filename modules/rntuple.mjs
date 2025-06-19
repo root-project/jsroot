@@ -134,7 +134,7 @@ deserializeHeader(header_blob) {
   this.writer = reader.readString();
 
   // 4 list frames inside the header envelope
-  this._readSchemaExtension(reader);
+  this._readSchemaDescription(reader);
   }
 
 deserializeFooter(footer_blob) {
@@ -149,7 +149,9 @@ deserializeFooter(footer_blob) {
     // Feature flag(32 bits)
     this._readFeatureFlags(reader);
     // Header checksum (64-bit xxhash3)
-    this.headerChecksumFromFooter = reader.readU64(); 
+    const headerChecksumFromFooter = reader.readU64(); 
+    if (headerChecksumFromFooter !== this.headerEnvelopeChecksum)
+    throw new Error('RNTuple corrupted: header checksum does not match footer checksum.');
 
     const schemaExtensionSize = reader.readS64(); 
 
@@ -158,7 +160,7 @@ deserializeFooter(footer_blob) {
       throw new Error('Schema extension frame is not a record frame, which is unexpected.');      
     
     // Schema extension record frame (4 list frames inside)
-    this._readSchemaExtension(reader);
+    this._readSchemaDescription(reader);
 
     // Cluster Group record frame
     this._readClusterGroups(reader);
@@ -178,11 +180,18 @@ _readEnvelopeMetadata(reader) {
   return { envelopeType, envelopeLength };
 }
 
-_readSchemaExtension(reader) {
-  this._readFieldDescriptors(reader);
-  this._readColumnDescriptors(reader);
-  this._readAliasColumn(reader);
-  this._readExtraTypeInformation(reader);
+_readSchemaDescription(reader) {
+  // Reading new descriptor arrays from the input
+  const newFields = this._readFieldDescriptors(reader),
+  newColumns = this._readColumnDescriptors(reader),
+  newAliases = this._readAliasColumn(reader),
+  newExtra = this._readExtraTypeInformation(reader);
+
+  // Merging these new arrays into existing arrays
+  this.fieldDescriptors = (this.fieldDescriptors || []).concat(newFields);
+  this.columnDescriptors = (this.columnDescriptors || []).concat(newColumns);
+  this.aliasColumns = (this.aliasColumns || []).concat(newAliases);
+  this.extraTypeInfo = (this.extraTypeInfo || []).concat(newExtra);
 }
 
 
@@ -247,7 +256,7 @@ fieldListIsList = fieldListSize < 0;
         checksum
     });
 }
-  this.fieldDescriptors = fieldDescriptors;
+  return fieldDescriptors;
 }
 
 _readColumnDescriptors(reader) {
@@ -293,7 +302,7 @@ _readColumnDescriptors(reader) {
 
     columnDescriptors.push(column);
   }
- this.columnDescriptors = columnDescriptors;
+ return columnDescriptors;
 }
 _readAliasColumn(reader){
   const aliasColumnListSize = reader.readS64(),
@@ -313,7 +322,7 @@ _readAliasColumn(reader){
       fieldId
     });
   }
-  this.aliasColumns = aliasColumns;
+  return aliasColumns;
 }
 _readExtraTypeInformation(reader) {
   const extraTypeInfoListSize = reader.readS64(),
@@ -336,7 +345,7 @@ _readExtraTypeInformation(reader) {
       typeVersion
     });
   }
-  this.extraTypeInfo = extraTypeInfo;
+  return extraTypeInfo;
 }
 _readClusterGroups(reader) {
   const clusterGroupListSize = reader.readS64(),

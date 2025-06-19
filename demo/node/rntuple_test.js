@@ -72,14 +72,3 @@ else {
     }
   }
 }
-
-// Checksum Validation Test
-
-if (rntuple.builder?.headerEnvelopeChecksum === undefined)
-  console.warn('WARNING: Header envelope checksum was not read or stored');
-else if (rntuple.builder?.headerChecksumFromFooter === undefined)
-  console.warn('WARNING: Footer did not contain a stored copy of the header checksum');
-else if (rntuple.builder.headerEnvelopeChecksum !== rntuple.builder.headerChecksumFromFooter)
-  console.error('FAILURE: Header checksum mismatch between envelope and footer');
-else
-  console.log('OK: Header checksum matches the one in Footer');
