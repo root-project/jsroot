@@ -364,34 +364,27 @@ _readClusterGroups(reader) {
     numClusters = reader.readU32();
 
     console.log(`Cluster Record Size: ${clusterRecordSize}`);
-    const pageListSeek = reader.readU64(),
-    pageListNBytes = reader.readU32(),
-    pageListLen = reader.readU32(),
+    console.log(`Cluster Group ${i}: Min Entry=${minEntry}, Entry Span=${entrySpan}, Num Clusters=${numClusters}`);
 
-
- group = {
+ const group = {
       minEntry,
       entrySpan,
       numClusters,
-      pageListLocator: {
-        seek: pageListSeek,
-        nbytes: pageListNBytes,
-        len: pageListLen
-      }
     };
     console.log(`clusterGroup[${i}]:`, group);
 
     clusterGroups.push(group);
-  }
 
+     console.log(`Reading Page List Envelope for Cluster Group ${i}`);
+    const pageList = this._readPageListEnvelope(reader);
+    group.pageList = pageList;
+  }
   this.clusterGroups = clusterGroups;
-  if (clusterGroups.length > 0)
-    this.pageListLocator = clusterGroups[0].pageListLocator;
 }
 
 _readPageListEnvelope(reader) {
   // Read the envelope metadata
-  this._readEnvelopeMetadata(reader);  
+  this._readEnvelopeMetadata(reader);
   // Page list checksum (64-bit xxhash3)
   const pageListChecksum = reader.readU64();
   console.log('Page List Checksum:', pageListChecksum);
