@@ -364,22 +364,43 @@ _readClusterGroups(reader) {
     numClusters = reader.readU32();
 
     console.log(`Cluster Record Size: ${clusterRecordSize}`);
-    console.log(`Cluster Group ${i}: Min Entry=${minEntry}, Entry Span=${entrySpan}, Num Clusters=${numClusters}`);
+    
+    // Locator method to get the page list locator offset
+    const pageListLocator = this._readLocator(reader);
+
+  // Seek to the page list offset
+  reader.seek(pageListLocator.fOffset);
+  console.log('Page List Locator:', pageListLocator);
+  console.log(`Page List Locator Offset (hex): 0x${pageListLocator.offset.toString(16).toUpperCase()}`);
+  // Deserialize the Page List Envelope from there
+  this._readPageListEnvelope(reader);
+  
 
  const group = {
       minEntry,
       entrySpan,
       numClusters,
-    };
-    console.log(`clusterGroup[${i}]:`, group);
-
+      
+    }; 
+  
     clusterGroups.push(group);
-
-     console.log(`Reading Page List Envelope for Cluster Group ${i}`);
-    const pageList = this._readPageListEnvelope(reader);
-    group.pageList = pageList;
   }
   this.clusterGroups = clusterGroups;
+}
+
+_readLocator(reader) {
+  const sizeAndType = reader.readU32(),            // 4 bytes: size + T bit
+  type = sizeAndType & 1,                    // last bit
+  size = sizeAndType >>> 1,                 // top 31 bits
+  offset = reader.readU64();               // 8 bytes: offset
+  // TODO : need to do the case for t!=0
+  if (type !== 0)
+    throw new Error('Non-standard locators (T=1) not supported yet.');
+  return {
+    type,
+    size,
+    offset
+  };
 }
 
 _readPageListEnvelope(reader) {
@@ -390,24 +411,24 @@ _readPageListEnvelope(reader) {
   console.log('Page List Checksum:', pageListChecksum);
 
   // Cluster summary Record Frame
-  const clusterListSize = reader.readS64();
-  if (clusterListSize >= 0)
-    throw new Error('Expected list frame for cluster summary');
+  // const clusterListSize = reader.readS64();
+  // if (clusterListSize >= 0)
+  //   throw new Error('Expected list frame for cluster summary');
 
-  const clusterCount = reader.readU32();
-  console.log('Cluster Count:', clusterCount);
+  // const clusterCount = reader.readU32();
+  // console.log('Cluster Count:', clusterCount);
 
-  for (let i = 0; i < clusterCount; ++i) {
-  const recordSize = reader.readS64(),
-  firstEntry = reader.readU64(),
-  combined = reader.readU64(),
-  flags = Number(combined & 0xFFn), // lower 8 bits
-  numEntries = combined >> 8n; // higher 56 bits
+  // for (let i = 0; i < clusterCount; ++i) {
+  // const recordSize = reader.readS64(),
+  // firstEntry = reader.readU64(),
+  // combined = reader.readU64(),
+  // flags = Number(combined & 0xFFn), // lower 8 bits
+  // numEntries = combined >> 8n; // higher 56 bits
 
-  console.log(`Cluster ${i}: RecordSize=${recordSize} First=${firstEntry} Num=${numEntries} Flags=${flags} `);
-  if ((flags & 0x01) !== 0)
-    throw new Error('Reserved flag 0x01 for sharded clusters is set');
-  }
+  // console.log(`Cluster ${i}: RecordSize=${recordSize} First=${firstEntry} Num=${numEntries} Flags=${flags} `);
+  // if ((flags & 0x01) !== 0)
+  //   throw new Error('Reserved flag 0x01 for sharded clusters is set');
+  // }
   // TODO: Read top-most list frame for clusters (page locations)
 }
 
