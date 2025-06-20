@@ -374,8 +374,6 @@ _readClusterGroups(reader) {
   console.log(`Page List Locator Offset (hex): 0x${pageListLocator.offset.toString(16).toUpperCase()}`);
   // Deserialize the Page List Envelope from there
   this._readPageListEnvelope(reader);
-  
-
  const group = {
       minEntry,
       entrySpan,
