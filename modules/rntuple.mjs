@@ -20,8 +20,14 @@ class RBufferReader {
 
   // Move to a specific position in the buffer
   seek(position) {
+  if (typeof position === 'bigint') {
+    if (position > BigInt(Number.MAX_SAFE_INTEGER))
+      throw new Error(`Offset too large to seek safely: ${position}`);
+    this.offset = Number(position); 
+  } else 
     this.offset = position;
-  }
+}
+
 
   // Read unsigned 8-bit integer (1 BYTE)
   readU8() {
@@ -361,20 +367,77 @@ _readClusterGroups(reader) {
     const clusterRecordSize = reader.readS64(),
     minEntry = reader.readU64(),
     entrySpan = reader.readU64(),
-    numClusters = reader.readU32();
+    numClusters = reader.readU32(),
+    pagelength = reader.readU64();
 
     console.log(`Cluster Record Size: ${clusterRecordSize}`);
-    console.log(`Min Entry: ${minEntry}, Entry Span: ${entrySpan}, Num Clusters: ${numClusters}`);
+    
+    // Locator method to get the page list locator offset
+    const pageListLocator = this._readLocator(reader);
 
-    clusterGroups.push({
-      minEntry,
-      entrySpan,
-      numClusters,
-    });
+    // Seek to the page list offset
+     reader.seek(pageListLocator.offset);
+    console.log('Page Length', pagelength);
+    console.log('Page List Locator:', pageListLocator);  
+  console.log(`Page List Locator Offset (hex): 0x${pageListLocator.offset.toString(16).toUpperCase()}`);
+  // Deserialize the Page List Envelope from there
+  // this._readPageListEnvelope(reader);
+ const group = {
+  minEntry,
+  entrySpan,
+  numClusters,  
+    }; 
+    clusterGroups.push(group);
   }
-
   this.clusterGroups = clusterGroups;
 }
+
+_readLocator(reader) {
+  const sizeAndType = reader.readU32(),            // 4 bytes: size + T bit
+  type = sizeAndType & 1;        
+  // TODO : need to do the case for t!=0
+  if (type !== 0)
+    throw new Error('Non-standard locators (T=1) not supported yet.');
+  else {
+  const size = sizeAndType,            
+  offset = reader.readU64();               // 8 bytes: offset
+  return {
+    type,
+    size,
+    offset
+  };
+}
+}
+
+
+// _readPageListEnvelope(reader) {
+  // Read the envelope metadata
+  // this._readEnvelopeMetadata(reader);
+  // Page list checksum (64-bit xxhash3)
+  // const pageListChecksum = reader.readU64();
+  // console.log('Page List Checksum:', pageListChecksum);
+
+  // Cluster summary Record Frame
+  // const clusterListSize = reader.readS64();
+  // if (clusterListSize >= 0)
+  //   throw new Error('Expected list frame for cluster summary');
+
+  // const clusterCount = reader.readU32();
+  // console.log('Cluster Count:', clusterCount);
+
+  // for (let i = 0; i < clusterCount; ++i) {
+  // const recordSize = reader.readS64(),
+  // firstEntry = reader.readU64(),
+  // combined = reader.readU64(),
+  // flags = Number(combined & 0xFFn), // lower 8 bits
+  // numEntries = combined >> 8n; // higher 56 bits
+
+  // console.log(`Cluster ${i}: RecordSize=${recordSize} First=${firstEntry} Num=${numEntries} Flags=${flags} `);
+  // if ((flags & 0x01) !== 0)
+  //   throw new Error('Reserved flag 0x01 for sharded clusters is set');
+  // }
+  // TODO: Read top-most list frame for clusters (page locations)
+// }
 
 }
 
@@ -406,6 +469,7 @@ async function readHeaderFooter(tuple) {
          tuple.builder.deserializeHeader(header_blob);
 
          tuple.builder.deserializeFooter(footer_blob);
+
 
          return true;
       });
