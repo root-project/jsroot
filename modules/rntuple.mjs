@@ -368,7 +368,7 @@ _readClusterGroups(reader) {
     minEntry = reader.readU64(),
     entrySpan = reader.readU64(),
     numClusters = reader.readU32(),
-    pagelength = reader.readU32();
+    pagelength = reader.readU64();
 
     console.log(`Cluster Record Size: ${clusterRecordSize}`);
     
