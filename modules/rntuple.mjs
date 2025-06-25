@@ -410,8 +410,31 @@ deserializePageList(page_list_blob){
   // Page list checksum (64-bit xxhash3)
   const pageListChecksum = reader.readU64();
   console.log('Page List Checksum:', pageListChecksum);
-}
 
+  // Read cluster summaries list frame
+  const clusterSummaryListSize = reader.readS64();
+  if (clusterSummaryListSize>=0) 
+    throw new Error('Expected a list frame for cluster summaries');
+  const clusterCount = reader.readU32(),
+
+  clusterSummaries = [];
+
+  for (let i = 0; i < clusterCount; ++i) {
+  const clusterSummaryRecordSize = reader.readS64(), 
+  firstEntry = reader.readU64(),
+  combined = reader.readU64(),
+  flags = combined >> 56n;
+  if (flags & 0x01n)
+    throw new Error('Cluster summary uses unsupported sharded flag (0x01)');
+  const numEntries = Number(combined & 0x00FFFFFFFFFFFFFFn);
+  console.log(`Cluster Summary Record Size : ${clusterSummaryRecordSize}`);
+  clusterSummaries.push({
+    firstEntry,
+    numEntries,
+    flags
+  });
+}
+}
 
 }
 
