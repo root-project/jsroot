@@ -3075,7 +3075,7 @@ class HierarchyPainter extends BasePainter {
             }
          }
 
-         if (!req && getTypeForKind(item._kind))
+         if (!req && !getTypeForKind(item._kind))
            req = 'item.json.gz?compact=3';
       }
 
