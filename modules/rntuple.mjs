@@ -368,22 +368,22 @@ _readClusterGroups(reader) {
     minEntry = reader.readU64(),
     entrySpan = reader.readU64(),
     numClusters = reader.readU32(),
-    pagelength = reader.readU64();
+    pageListLength = reader.readU64();
 
     console.log(`Cluster Record Size: ${clusterRecordSize}`);
     
     // Locator method to get the page list locator offset
     const pageListLocator = this._readLocator(reader);
 
-    console.log('Page Length', pagelength);
+    console.log('Page Length', pageListLength);
   console.log(`Page List Locator Offset (hex): 0x${pageListLocator.offset.toString(16).toUpperCase()}`);
 
  const group = {
   minEntry,
   entrySpan,
   numClusters,
-  locator: pageListLocator,
-  pagelength
+  pageListLocator,
+  pageListLength
     }; 
     clusterGroups.push(group);
   }
@@ -391,27 +391,21 @@ _readClusterGroups(reader) {
 }
 
 _readLocator(reader) {
-  const sizeAndType = reader.readU32(),            // 4 bytes: size + T bit
-  type = sizeAndType & 1;        
-  // TODO : need to do the case for t!=0
-  if (type !== 0)
-    throw new Error('Non-standard locators (T=1) not supported yet.');
-  else {
+  const sizeAndType = reader.readU32();           // 4 bytes: size + T bit
+  if ((sizeAndType | 0) < 0)  // | makes the sizeAndType as signed
+    throw new Error('Non-standard locators (T=1) not supported yet');
   const size = sizeAndType,            
   offset = reader.readU64();               // 8 bytes: offset
   return {
-    type,
     size,
     offset
   };
 }
-}
 deserializePageList(page_list_blob){
-    if (!page_list_blob) return;
+    if (!page_list_blob)         
+      throw new Error('deserializePageList: received an invalid or empty page list blob');
 
-  const reader = new RBufferReader(page_list_blob);
-  console.log('hello reader ', reader.offset); 
-  
+  const reader = new RBufferReader(page_list_blob);  
   this._readEnvelopeMetadata(reader);
   // Page list checksum (64-bit xxhash3)
   const pageListChecksum = reader.readU64();
@@ -450,39 +444,21 @@ async function readHeaderFooter(tuple) {
 
          tuple.builder.deserializeFooter(footer_blob);
 
-
          const group = tuple.builder.clusterGroups?.[0];
-         if (!group || !group.locator)
-            throw new Error('No valid cluster group or locator found');
+         if (!group || !group.pageListLocator)
+            throw new Error('No valid cluster group or page list locator found');
 
-         const offset = Number(group.locator.offset),
-         size = Number(group.locator.size),
-         uncompressedSize = Number(group.pagelength);
-
-         if (!Number.isFinite(offset) || offset < 0 || !Number.isFinite(size) || size <= 0)
-            throw new Error(`Invalid PageList location or size — offset=${offset}, size=${size}`);
+         const offset = Number(group.pageListLocator.offset),
+               size = Number(group.pageListLocator.size),
+               uncompressedSize = Number(group.pageListLength);
 
          return tuple.$file.readBuffer([offset, size]).then(page_list_blob => {
-            if (page_list_blob instanceof DataView){
-               page_list_blob = new Uint8Array(
-                  page_list_blob.buffer,
-                  page_list_blob.byteOffset,
-                  page_list_blob.byteLength
-               );
-              }
+            if (!(page_list_blob instanceof DataView))
+               throw new Error(`Expected DataView from readBuffer, got ${Object.prototype.toString.call(page_list_blob)}`);
 
-            if (!(page_list_blob instanceof Uint8Array))
-               throw new Error(`Failed to read page list buffer: got ${Object.prototype.toString.call(page_list_blob)}`);
-
-            return R__unzip(
-               new DataView(page_list_blob.buffer, page_list_blob.byteOffset, page_list_blob.byteLength),
-               uncompressedSize
-            ).then(unzipped_blob => {
-               if (unzipped_blob instanceof DataView)
-                  unzipped_blob = new Uint8Array(unzipped_blob.buffer, unzipped_blob.byteOffset, unzipped_blob.byteLength);
-
-               if (!(unzipped_blob instanceof Uint8Array))
-                  throw new Error(`Unzipped page list is not a Uint8Array, got ${Object.prototype.toString.call(unzipped_blob)}`);
+            return R__unzip(page_list_blob, uncompressedSize).then(unzipped_blob => {
+               if (!(unzipped_blob instanceof DataView))
+                  throw new Error(`Unzipped page list is not a DataView, got ${Object.prototype.toString.call(unzipped_blob)}`);
 
                tuple.builder.deserializePageList(unzipped_blob);
                return true;
