@@ -383,6 +383,7 @@ _readClusterGroups(reader) {
   entrySpan,
   numClusters,
   locator: pageListLocator,
+  pagelength
     }; 
     clusterGroups.push(group);
   }
@@ -409,7 +410,9 @@ deserializePageList(page_list_blob){
     if (!page_list_blob) return;
 
   const reader = new RBufferReader(page_list_blob);
-  console.log(reader.offset); 
+  console.log('hello reader ', reader.offset); 
+  
+  this._readEnvelopeMetadata(reader);
 }
 
 
@@ -444,16 +447,29 @@ async function readHeaderFooter(tuple) {
 
          tuple.builder.deserializeFooter(footer_blob);
 
-        const group = tuple.builder.clusterGroups[0],
-offset = Number(group.locator.offset),
+const group = tuple.builder.clusterGroups?.[0];
+if (!group || !group.locator)
+  throw new Error('No valid cluster group or locator found');
+
+const offset = Number(group.locator.offset),
 size = Number(group.locator.size);
 
-return tuple.$file.readBuffer([offset, size]).then(page_list_blob => {
-   return R__unzip(page_list_blob).then(unzipped => {
-      tuple.builder.deserializePageList(unzipped);
-      return true;
-   });
-});
+if (!Number.isFinite(offset) || offset < 0 || !Number.isFinite(size) || size <= 0) 
+  throw new Error(`Invalid PageList location or size — offset=${offset}, size=${size}`);
+
+tuple.$file.readBuffer([offset, size])
+  .then(page_list_blob => {
+    if (page_list_blob instanceof DataView)
+      page_list_blob = new Uint8Array(page_list_blob.buffer, page_list_blob.byteOffset, page_list_blob.byteLength);
+
+    if (!page_list_blob || !(page_list_blob instanceof Uint8Array))
+      throw new Error(`Failed to read page list buffer: got ${Object.prototype.toString.call(page_list_blob)}`);
+
+    tuple.builder.deserializePageList(page_list_blob);
+  })
+  .catch(err => {
+    console.error('Error while reading or processing Page List:', err);
+  });
       });
    });
 }
