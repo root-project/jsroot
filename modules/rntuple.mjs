@@ -375,17 +375,14 @@ _readClusterGroups(reader) {
     // Locator method to get the page list locator offset
     const pageListLocator = this._readLocator(reader);
 
-    // Seek to the page list offset
-     reader.seek(pageListLocator.offset);
     console.log('Page Length', pagelength);
-    console.log('Page List Locator:', pageListLocator);  
   console.log(`Page List Locator Offset (hex): 0x${pageListLocator.offset.toString(16).toUpperCase()}`);
-  // Deserialize the Page List Envelope from there
-  // this._readPageListEnvelope(reader);
+
  const group = {
   minEntry,
   entrySpan,
-  numClusters,  
+  numClusters,
+  locator: pageListLocator,
     }; 
     clusterGroups.push(group);
   }
@@ -408,36 +405,13 @@ _readLocator(reader) {
   };
 }
 }
+deserializePageList(page_list_blob){
+    if (!page_list_blob) return;
 
+  const reader = new RBufferReader(page_list_blob);
+  console.log(reader.offset); 
+}
 
-// _readPageListEnvelope(reader) {
-  // Read the envelope metadata
-  // this._readEnvelopeMetadata(reader);
-  // Page list checksum (64-bit xxhash3)
-  // const pageListChecksum = reader.readU64();
-  // console.log('Page List Checksum:', pageListChecksum);
-
-  // Cluster summary Record Frame
-  // const clusterListSize = reader.readS64();
-  // if (clusterListSize >= 0)
-  //   throw new Error('Expected list frame for cluster summary');
-
-  // const clusterCount = reader.readU32();
-  // console.log('Cluster Count:', clusterCount);
-
-  // for (let i = 0; i < clusterCount; ++i) {
-  // const recordSize = reader.readS64(),
-  // firstEntry = reader.readU64(),
-  // combined = reader.readU64(),
-  // flags = Number(combined & 0xFFn), // lower 8 bits
-  // numEntries = combined >> 8n; // higher 56 bits
-
-  // console.log(`Cluster ${i}: RecordSize=${recordSize} First=${firstEntry} Num=${numEntries} Flags=${flags} `);
-  // if ((flags & 0x01) !== 0)
-  //   throw new Error('Reserved flag 0x01 for sharded clusters is set');
-  // }
-  // TODO: Read top-most list frame for clusters (page locations)
-// }
 
 }
 
@@ -470,8 +444,16 @@ async function readHeaderFooter(tuple) {
 
          tuple.builder.deserializeFooter(footer_blob);
 
+        const group = tuple.builder.clusterGroups[0],
+offset = Number(group.locator.offset),
+size = Number(group.locator.size);
 
-         return true;
+return tuple.$file.readBuffer([offset, size]).then(page_list_blob => {
+   return R__unzip(page_list_blob).then(unzipped => {
+      tuple.builder.deserializePageList(unzipped);
+      return true;
+   });
+});
       });
    });
 }
