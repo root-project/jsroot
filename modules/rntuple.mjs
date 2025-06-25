@@ -413,6 +413,9 @@ deserializePageList(page_list_blob){
   console.log('hello reader ', reader.offset); 
   
   this._readEnvelopeMetadata(reader);
+  // Page list checksum (64-bit xxhash3)
+  const pageListChecksum = reader.readU64();
+  console.log('Page List Checksum:', pageListChecksum);
 }
 
 
@@ -447,30 +450,48 @@ async function readHeaderFooter(tuple) {
 
          tuple.builder.deserializeFooter(footer_blob);
 
-const group = tuple.builder.clusterGroups?.[0];
-if (!group || !group.locator)
-  throw new Error('No valid cluster group or locator found');
 
-const offset = Number(group.locator.offset),
-size = Number(group.locator.size);
+         const group = tuple.builder.clusterGroups?.[0];
+         if (!group || !group.locator)
+            throw new Error('No valid cluster group or locator found');
 
-if (!Number.isFinite(offset) || offset < 0 || !Number.isFinite(size) || size <= 0) 
-  throw new Error(`Invalid PageList location or size — offset=${offset}, size=${size}`);
+         const offset = Number(group.locator.offset),
+         size = Number(group.locator.size),
+         uncompressedSize = Number(group.pagelength);
 
-tuple.$file.readBuffer([offset, size])
-  .then(page_list_blob => {
-    if (page_list_blob instanceof DataView)
-      page_list_blob = new Uint8Array(page_list_blob.buffer, page_list_blob.byteOffset, page_list_blob.byteLength);
+         if (!Number.isFinite(offset) || offset < 0 || !Number.isFinite(size) || size <= 0)
+            throw new Error(`Invalid PageList location or size — offset=${offset}, size=${size}`);
 
-    if (!page_list_blob || !(page_list_blob instanceof Uint8Array))
-      throw new Error(`Failed to read page list buffer: got ${Object.prototype.toString.call(page_list_blob)}`);
+         return tuple.$file.readBuffer([offset, size]).then(page_list_blob => {
+            if (page_list_blob instanceof DataView){
+               page_list_blob = new Uint8Array(
+                  page_list_blob.buffer,
+                  page_list_blob.byteOffset,
+                  page_list_blob.byteLength
+               );
+              }
 
-    tuple.builder.deserializePageList(page_list_blob);
-  })
-  .catch(err => {
-    console.error('Error while reading or processing Page List:', err);
-  });
+            if (!(page_list_blob instanceof Uint8Array))
+               throw new Error(`Failed to read page list buffer: got ${Object.prototype.toString.call(page_list_blob)}`);
+
+            return R__unzip(
+               new DataView(page_list_blob.buffer, page_list_blob.byteOffset, page_list_blob.byteLength),
+               uncompressedSize
+            ).then(unzipped_blob => {
+               if (unzipped_blob instanceof DataView)
+                  unzipped_blob = new Uint8Array(unzipped_blob.buffer, unzipped_blob.byteOffset, unzipped_blob.byteLength);
+
+               if (!(unzipped_blob instanceof Uint8Array))
+                  throw new Error(`Unzipped page list is not a Uint8Array, got ${Object.prototype.toString.call(unzipped_blob)}`);
+
+               tuple.builder.deserializePageList(unzipped_blob);
+               return true;
+            });
+         });
       });
+   }).catch(err => {
+      console.error('Error during readHeaderFooter execution:', err);
+      throw err;
    });
 }
 
