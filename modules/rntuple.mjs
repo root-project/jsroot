@@ -434,9 +434,61 @@ deserializePageList(page_list_blob){
     flags
   });
 }
+this.clusterSummaries = clusterSummaries;
+this._readNestedFrames(reader, clusterSummaries.length);
+}
+
+_readNestedFrames(reader, numClusters) {
+  const clusterPageLocations = [];
+
+  for (let i = 0; i < numClusters; ++i) {
+    const outerListSize = reader.readS64();
+    if (outerListSize >= 0)
+      throw new Error('Expected outer list frame for columns');
+
+    const numColumns = reader.readU32();
+    const columns = [];
+
+    for (let c = 0; c < numColumns; ++c) {
+      const innerListSize = reader.readS64();
+      if (innerListSize >= 0)
+        throw new Error('Expected inner list frame for pages');
+
+      const numPages = reader.readU32();
+      console.log(`Column ${c} has ${numPages} page(s)`);
+     const pages = [];
+
+      for (let p = 0; p < numPages; ++p) {
+        const numElementsWithBit = reader.readS64(),
+        hasChecksum = numElementsWithBit < 0,
+        numElements = BigInt(Math.abs(Number(numElementsWithBit))),
+
+        locator = this._readLocator(reader);
+         console.log(`Page ${p} → elements: ${numElements}, checksum: ${hasChecksum}, locator offset: ${locator.offset}, size: ${locator.size}`);
+        pages.push({ numElements, hasChecksum, locator });
+      }
+
+      const elementOffset = reader.readS64(),
+      isSuppressed = elementOffset < 0;
+
+      let compression = null;
+      if (!isSuppressed) {
+        compression = reader.readU32();
+        console.log(`Column ${c} is NOT suppressed, offset: ${elementOffset}, compression: ${compression}`);
+      } else 
+        console.log(`Column ${c} is suppressed, offset: ${elementOffset}`);
+
+      columns.push({ pages, elementOffset, isSuppressed, compression });
+    }
+
+    clusterPageLocations.push(columns);
+  }
+
+  this.pageLocations = clusterPageLocations;
 }
 
 }
+
 
 /** @summary Very preliminary function to read header/footer from RNTuple
   * @private */
