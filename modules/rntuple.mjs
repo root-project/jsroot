@@ -408,18 +408,20 @@ deserializePageList(page_list_blob){
   const reader = new RBufferReader(page_list_blob);  
   this._readEnvelopeMetadata(reader);
   // Page list checksum (64-bit xxhash3)
-  const pageListChecksum = reader.readU64();
-  console.log('Page List Checksum:', pageListChecksum);
+  const pageListHeaderChecksum = reader.readU64();
+  if (pageListHeaderChecksum !== this.headerEnvelopeChecksum)
+    throw new Error('RNTuple corrupted: header checksum does not match Page List Header checksum.');
+  
 
   // Read cluster summaries list frame
   const clusterSummaryListSize = reader.readS64();
   if (clusterSummaryListSize>=0) 
     throw new Error('Expected a list frame for cluster summaries');
-  const clusterCount = reader.readU32(),
+  const clusterSummaryCount = reader.readU32(),
 
   clusterSummaries = [];
 
-  for (let i = 0; i < clusterCount; ++i) {
+  for (let i = 0; i < clusterSummaryCount; ++i) {
   const clusterSummaryRecordSize = reader.readS64(), 
   firstEntry = reader.readU64(),
   combined = reader.readU64(),
@@ -435,23 +437,30 @@ deserializePageList(page_list_blob){
   });
 }
 this.clusterSummaries = clusterSummaries;
-this._readNestedFrames(reader, clusterSummaries.length);
+this._readNestedFrames(reader);
+
+const checksumPagelist = reader.readU64();
+console.log('Page List Checksum', checksumPagelist);
 }
 
-_readNestedFrames(reader, numClusters) {
-  const clusterPageLocations = [];
+_readNestedFrames(reader) {
+  const clusterPageLocations = [],
+ numListClusters = reader.readS64();
+ if (numListClusters>=0)
+  throw new Error('Expected list frame for clusters');
+const numRecordCluster = reader.readU32();
 
-  for (let i = 0; i < numClusters; ++i) {
+  for (let i = 0; i < numRecordCluster; ++i) {
     const outerListSize = reader.readS64();
     if (outerListSize >= 0)
       throw new Error('Expected outer list frame for columns');
 
-    const numColumns = reader.readU32();
-    const columns = [];
+    const numColumns = reader.readU32(),
+    columns = [];
 
     for (let c = 0; c < numColumns; ++c) {
       const innerListSize = reader.readS64();
-      if (innerListSize >= 0)
+      if (innerListSize >= 0)     
         throw new Error('Expected inner list frame for pages');
 
       const numPages = reader.readU32();
@@ -459,7 +468,7 @@ _readNestedFrames(reader, numClusters) {
      const pages = [];
 
       for (let p = 0; p < numPages; ++p) {
-        const numElementsWithBit = reader.readS64(),
+        const numElementsWithBit = reader.readS32(),
         hasChecksum = numElementsWithBit < 0,
         numElements = BigInt(Math.abs(Number(numElementsWithBit))),
 
