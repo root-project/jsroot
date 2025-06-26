@@ -4,10 +4,11 @@ import { readHeaderFooter } from 'jsroot/rntuple';
 
 
 console.log(`JSROOT version ${version}`);
+// let file = await openFile('https://jsroot.gsi.de/files/tmp/ntpl001_staff.root');
 
-let file = await openFile('https://jsroot.gsi.de/files/tmp/ntpl001_staff.root');
+let file = await openFile('./simple.root');
 
-let rntuple = await file.readObject('Staff');
+let rntuple = await file.readObject('myNtuple');
 
 await readHeaderFooter(rntuple);
 

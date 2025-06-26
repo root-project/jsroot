@@ -495,6 +495,15 @@ const numRecordCluster = reader.readU32();
 
   this.pageLocations = clusterPageLocations;
 }
+deserializePage(blob) {
+  const reader = new RBufferReader(blob);
+  console.log('Deserializing first 10 double values from data page ')
+  for (let i = 0; i < 10; ++i) {
+    const val = reader.readF64();
+    console.log(val);
+  }
+}
+
 
 }
 
@@ -527,7 +536,7 @@ async function readHeaderFooter(tuple) {
          tuple.builder.deserializeHeader(header_blob);
 
          tuple.builder.deserializeFooter(footer_blob);
-
+        // Deserialize the Page List Envelope
          const group = tuple.builder.clusterGroups?.[0];
          if (!group || !group.pageListLocator)
             throw new Error('No valid cluster group or page list locator found');
@@ -545,7 +554,30 @@ async function readHeaderFooter(tuple) {
                   throw new Error(`Unzipped page list is not a DataView, got ${Object.prototype.toString.call(unzipped_blob)}`);
 
                tuple.builder.deserializePageList(unzipped_blob);
-               return true;
+
+               // Read the first page data
+               const firstPage = tuple.builder?.pageLocations?.[0]?.[0]?.pages?.[0];
+               if (!firstPage || !firstPage.locator)
+                  throw new Error('No valid first page found in pageLocations');
+
+               const pageOffset = Number(firstPage.locator.offset),
+                     pageSize = Number(firstPage.locator.size),
+                     uncompressedPageSize = 8000; 
+                                  console.log('Compressed size :', pageSize);
+
+               return tuple.$file.readBuffer([pageOffset, pageSize]).then(compressedPage => {
+                  if (!(compressedPage instanceof DataView))
+                     throw new Error('Compressed page readBuffer did not return a DataView');
+
+                  return R__unzip(compressedPage, uncompressedPageSize).then(unzippedPage => {
+                     if (!(unzippedPage instanceof DataView))
+                        throw new Error('Unzipped page is not a DataView');
+
+                     tuple.builder.deserializePage(unzippedPage);
+
+                     return true;
+                  });
+                });
             });
          });
       });
