@@ -499,7 +499,7 @@ const numRecordCluster = reader.readU32();
 // Example Of Deserializing Page Content
 deserializePage(blob) {
   const reader = new RBufferReader(blob);
-  console.log('Deserializing first 10 double values from data page ')
+  console.log('Deserializing first 10 double values from data page ');
   for (let i = 0; i < 10; ++i) {
     const val = reader.readF64();
     console.log(val);
