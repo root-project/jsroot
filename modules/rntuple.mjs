@@ -497,13 +497,20 @@ const numRecordCluster = reader.readU32();
 }
 
 // Example Of Deserializing Page Content
-deserializePage(blob) {
-  const reader = new RBufferReader(blob);
-  console.log('Deserializing first 10 double values from data page ');
-  for (let i = 0; i < 10; ++i) {
-    const val = reader.readF64();
-    console.log(val);
-  }
+deserializePage(blob, columnDescriptor, fieldDescriptor) {
+   const reader = new RBufferReader(blob);
+
+   // Validate the column type before decoding
+   if (columnDescriptor.coltype !== 13)
+      throw new Error(`Expected column type 13 (kReal64), got ${columnDescriptor.coltype}`);
+
+   console.log(`Field: ${fieldDescriptor?.fieldName ?? 'undefined'} | Type: ${fieldDescriptor?.typeName ?? 'unknown'}`);
+   console.log('Deserializing first 10 double values from data page');
+
+   for (let i = 0; i < 10; ++i) {
+      const val = reader.readF64();
+      console.log(val);
+   }
 }
 
 
@@ -539,15 +546,12 @@ async function readHeaderFooter(tuple) {
 
          tuple.builder.deserializeFooter(footer_blob);
 
-         // Column Validation
+         // Extract first column and corresponding field
         const firstColumn = tuple.builder.columnDescriptors?.[0];
         if (!firstColumn)
-           throw new Error(' No column descriptor found');
-        
-        if (firstColumn.coltype !== 13)
-           throw new Error(` Expected column type 13 (kReal64), got ${firstColumn.coltype}`);
-          const field = tuple.builder.fieldDescriptors?.[firstColumn.fieldId];
-        console.log(`Field: ${field?.name ?? 'undefined'} | Type: ${field?.typeName ?? 'unknown'}`);
+          throw new Error('No column descriptor found');
+
+        const field = tuple.builder.fieldDescriptors?.[firstColumn.fieldId];
 
         // Returns the size in bytes of one value based on its type
         function getElementSize(typeName) {
@@ -589,21 +593,19 @@ async function readHeaderFooter(tuple) {
                tuple.builder.deserializePageList(unzipped_blob);
               
 
-               // Read the first page data
+               // Access first page metadata
                const firstPage = tuple.builder?.pageLocations?.[0]?.[0]?.pages?.[0];
                if (!firstPage || !firstPage.locator)
                   throw new Error('No valid first page found in pageLocations');
 
                const pageOffset = Number(firstPage.locator.offset),
                      pageSize = Number(firstPage.locator.size),
+                     elementSize = getElementSize(field?.typeName ?? ''),
+                     numElements = Number(firstPage.numElements),
+                     uncompressedPageSize = elementSize * numElements;
 
-                  // Calculate the uncompressed page size in bytes using element type size and number of elements
-                   elementSize = getElementSize(field?.typeName ?? ''),
-                   numElements = Number(firstPage.numElements),
-                    uncompressedPageSize = elementSize * numElements;
-                 console.log(`Uncompressed page size: ${uncompressedPageSize}`);
-
-                                  console.log('Compressed size :', pageSize);
+               console.log(`Uncompressed page size: ${uncompressedPageSize}`);
+               console.log(`Compressed page size: ${pageSize}`);
 
                return tuple.$file.readBuffer([pageOffset, pageSize]).then(compressedPage => {
                   if (!(compressedPage instanceof DataView))
@@ -613,8 +615,7 @@ async function readHeaderFooter(tuple) {
                      if (!(unzippedPage instanceof DataView))
                         throw new Error('Unzipped page is not a DataView');
 
-                     tuple.builder.deserializePage(unzippedPage);
-
+                    tuple.builder.deserializePage(unzippedPage, firstColumn, field);
                      return true;
                   });
                 });
