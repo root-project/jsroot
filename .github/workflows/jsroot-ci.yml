@@ -63,6 +63,7 @@ jobs:
           node demo/node/file_proxy.js multi ./hsimple.root
           node demo/node/file_proxy.js buffer ./hsimple.root
           node demo/node/buffer_test.js
+          cd demo/node; node rntuple_test.js; cd ../..
 
   tests_ubuntu:
     runs-on: ubuntu-latest
@@ -176,6 +177,8 @@ jobs:
           node demo/node/file_proxy.js multi ./hsimple.root
           node demo/node/file_proxy.js buffer ./hsimple.root
           node demo/node/buffer_test.js
+          cd demo/node; node rntuple_test.js; cd ../..
+
 
   build-windows:
     runs-on: windows-latest
@@ -223,4 +226,6 @@ jobs:
           node demo/node/file_proxy.js multi ./hsimple.root
           node demo/node/file_proxy.js buffer ./hsimple.root
           node demo/node/buffer_test.js
+          cd demo/node; node rntuple_test.js; cd ../..
+
 

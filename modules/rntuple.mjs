@@ -496,6 +496,24 @@ const numRecordCluster = reader.readU32();
   this.pageLocations = clusterPageLocations;
 }
 
+// Example Of Deserializing Page Content
+deserializePage(blob, columnDescriptor, fieldDescriptor) {
+   const reader = new RBufferReader(blob);
+
+   // Validate the column type before decoding
+   if (columnDescriptor.coltype !== 13)
+      throw new Error(`Expected column type 13 (kReal64), got ${columnDescriptor.coltype}`);
+
+   console.log(`Field: ${fieldDescriptor?.fieldName ?? 'undefined'} | Type: ${fieldDescriptor?.typeName ?? 'unknown'}`);
+   console.log('Deserializing first 10 double values from data page');
+
+   for (let i = 0; i < 10; ++i) {
+      const val = reader.readF64();
+      console.log(val);
+   }
+}
+
+
 }
 
 
@@ -528,6 +546,34 @@ async function readHeaderFooter(tuple) {
 
          tuple.builder.deserializeFooter(footer_blob);
 
+         // Extract first column and corresponding field
+        const firstColumn = tuple.builder.columnDescriptors?.[0];
+        if (!firstColumn)
+          throw new Error('No column descriptor found');
+
+        const field = tuple.builder.fieldDescriptors?.[firstColumn.fieldId];
+
+        // Returns the size in bytes of one value based on its type
+        function getElementSize(typeName) {
+           switch (typeName) {
+              case 'double': return 8;
+              case 'float': return 4;
+              case 'int32_t':
+              case 'uint32_t': return 4;
+              case 'int64_t':
+              case 'uint64_t': return 8;
+              case 'int16_t':
+              case 'uint16_t': return 2;
+              case 'bool':
+              case 'uint8_t':
+              case 'int8_t': return 1;
+              default:
+                 throw new Error(`Unknown type for uncompressed page size: ${typeName}`);
+           }
+        }
+
+
+        // Deserialize the Page List Envelope
          const group = tuple.builder.clusterGroups?.[0];
          if (!group || !group.pageListLocator)
             throw new Error('No valid cluster group or page list locator found');
@@ -545,7 +591,34 @@ async function readHeaderFooter(tuple) {
                   throw new Error(`Unzipped page list is not a DataView, got ${Object.prototype.toString.call(unzipped_blob)}`);
 
                tuple.builder.deserializePageList(unzipped_blob);
-               return true;
+              
+
+               // Access first page metadata
+               const firstPage = tuple.builder?.pageLocations?.[0]?.[0]?.pages?.[0];
+               if (!firstPage || !firstPage.locator)
+                  throw new Error('No valid first page found in pageLocations');
+
+               const pageOffset = Number(firstPage.locator.offset),
+                     pageSize = Number(firstPage.locator.size),
+                     elementSize = getElementSize(field?.typeName ?? ''),
+                     numElements = Number(firstPage.numElements),
+                     uncompressedPageSize = elementSize * numElements;
+
+               console.log(`Uncompressed page size: ${uncompressedPageSize}`);
+               console.log(`Compressed page size: ${pageSize}`);
+
+               return tuple.$file.readBuffer([pageOffset, pageSize]).then(compressedPage => {
+                  if (!(compressedPage instanceof DataView))
+                     throw new Error('Compressed page readBuffer did not return a DataView');
+
+                  return R__unzip(compressedPage, uncompressedPageSize).then(unzippedPage => {
+                     if (!(unzippedPage instanceof DataView))
+                        throw new Error('Unzipped page is not a DataView');
+
+                    tuple.builder.deserializePage(unzippedPage, firstColumn, field);
+                     return true;
+                  });
+                });
             });
          });
       });
