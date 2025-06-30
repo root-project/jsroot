@@ -540,15 +540,34 @@ async function readHeaderFooter(tuple) {
          tuple.builder.deserializeFooter(footer_blob);
 
          // Column Validation
-const firstColumn = tuple.builder.columnDescriptors?.[0];
-if (!firstColumn)
-   throw new Error(' No column descriptor found');
+        const firstColumn = tuple.builder.columnDescriptors?.[0];
+        if (!firstColumn)
+           throw new Error(' No column descriptor found');
+        
+        if (firstColumn.coltype !== 13)
+           throw new Error(` Expected column type 13 (kReal64), got ${firstColumn.coltype}`);
+          const field = tuple.builder.fieldDescriptors?.[firstColumn.fieldId];
+        console.log(`Field: ${field?.name ?? 'undefined'} | Type: ${field?.typeName ?? 'unknown'}`);
 
-if (firstColumn.coltype !== 13)
-   throw new Error(` Expected column type 13 (kReal64), got ${firstColumn.coltype}`);
+        // Returns the size in bytes of one value based on its type
+        function getElementSize(typeName) {
+           switch (typeName) {
+              case 'double': return 8;
+              case 'float': return 4;
+              case 'int32_t':
+              case 'uint32_t': return 4;
+              case 'int64_t':
+              case 'uint64_t': return 8;
+              case 'int16_t':
+              case 'uint16_t': return 2;
+              case 'bool':
+              case 'uint8_t':
+              case 'int8_t': return 1;
+              default:
+                 throw new Error(`Unknown type for uncompressed page size: ${typeName}`);
+           }
+        }
 
-const field = tuple.builder.fieldDescriptors?.[firstColumn.fieldId];
-console.log(`Field: ${field?.name ?? 'undefined'} | Type: ${field?.typeName ?? 'unknown'}`);
 
         // Deserialize the Page List Envelope
          const group = tuple.builder.clusterGroups?.[0];
@@ -577,7 +596,13 @@ console.log(`Field: ${field?.name ?? 'undefined'} | Type: ${field?.typeName ?? '
 
                const pageOffset = Number(firstPage.locator.offset),
                      pageSize = Number(firstPage.locator.size),
-                     uncompressedPageSize = 8000; 
+
+                  // Calculate the uncompressed page size in bytes using element type size and number of elements
+                   elementSize = getElementSize(field?.typeName ?? ''),
+                   numElements = Number(firstPage.numElements),
+                    uncompressedPageSize = elementSize * numElements;
+                 console.log(`Uncompressed page size: ${uncompressedPageSize}`);
+
                                   console.log('Compressed size :', pageSize);
 
                return tuple.$file.readBuffer([pageOffset, pageSize]).then(compressedPage => {
