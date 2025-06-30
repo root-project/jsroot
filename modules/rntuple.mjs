@@ -538,6 +538,18 @@ async function readHeaderFooter(tuple) {
          tuple.builder.deserializeHeader(header_blob);
 
          tuple.builder.deserializeFooter(footer_blob);
+
+         // Column Validation
+const firstColumn = tuple.builder.columnDescriptors?.[0];
+if (!firstColumn)
+   throw new Error(' No column descriptor found');
+
+if (firstColumn.coltype !== 13)
+   throw new Error(` Expected column type 7 (kReal64), got ${firstColumn.coltype}`);
+
+const field = tuple.builder.fieldDescriptors?.[firstColumn.fieldId];
+console.log(`Field: ${field?.name ?? 'undefined'} | Type: ${field?.typeName ?? 'unknown'}`);
+
         // Deserialize the Page List Envelope
          const group = tuple.builder.clusterGroups?.[0];
          if (!group || !group.pageListLocator)
