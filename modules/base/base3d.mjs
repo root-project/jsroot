@@ -349,7 +349,7 @@ const Handling3DDrawings = {
          const main = this.selectDom().node();
          let chld = main?.firstChild;
 
-         if (chld && !chld.$jsroot)
+         while (chld && !chld.$jsroot)
             chld = chld.nextSibling;
 
          if (chld?.$jsroot) {
