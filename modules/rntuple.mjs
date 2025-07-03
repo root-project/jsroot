@@ -551,30 +551,10 @@ async function readHeaderFooter(tuple) {
         if (!firstColumn)
           throw new Error('No column descriptor found');
 
-        const field = tuple.builder.fieldDescriptors?.[firstColumn.fieldId];
-
-        // Returns the size in bytes of one value based on its type
-        function getElementSize(typeName) {
-           switch (typeName) {
-              case 'double': return 8;
-              case 'float': return 4;
-              case 'int32_t':
-              case 'uint32_t': return 4;
-              case 'int64_t':
-              case 'uint64_t': return 8;
-              case 'int16_t':
-              case 'uint16_t': return 2;
-              case 'bool':
-              case 'uint8_t':
-              case 'int8_t': return 1;
-              default:
-                 throw new Error(`Unknown type for uncompressed page size: ${typeName}`);
-           }
-        }
-
+        const field = tuple.builder.fieldDescriptors?.[firstColumn.fieldId],
 
         // Deserialize the Page List Envelope
-         const group = tuple.builder.clusterGroups?.[0];
+         group = tuple.builder.clusterGroups?.[0];
          if (!group || !group.pageListLocator)
             throw new Error('No valid cluster group or page list locator found');
 
@@ -600,7 +580,7 @@ async function readHeaderFooter(tuple) {
 
                const pageOffset = Number(firstPage.locator.offset),
                      pageSize = Number(firstPage.locator.size),
-                     elementSize = getElementSize(field?.typeName ?? ''),
+                     elementSize = firstColumn.bitsOnStorage / 8,
                      numElements = Number(firstPage.numElements),
                      uncompressedPageSize = elementSize * numElements;
 
