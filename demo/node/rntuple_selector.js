@@ -1,33 +1,28 @@
 import { rntupleProcess } from '../../modules/rntuple.mjs';
-import { openFile } from 'jsroot';
+import { TSelector, openFile} from 'jsroot';
 
-// test block (runs only in node)
+const selector = new TSelector();
+selector.sum = 0;
+selector.count = 0;
+
+selector.Begin = function() {
+  console.log('Begin processing');
+};
+
+selector.Process = function() {
+  console.log('Entry : ', this.tgtobj);
+  this.sum += this.tgtobj.myDouble;
+  this.count++;
+};
+
+selector.Terminate = function() {
+  if (this.count === 0) 
+    console.error('No entries processed');
+   else 
+    console.log(`Mean = ${(this.sum / this.count).toFixed(4)} from ${this.count} entries`); 
+};
+
 if (typeof window === 'undefined') {
-  // Defining the object selector
-  const selector = {
-    tgtobj: {},
-    currentCluster: 0,
-    count: 0,
-    sum: 0,
-
-    Begin() {
-      console.log('Begin processing');
-    },
-
-    Process() {
-      console.log('Entry : ', this.tgtobj);
-      this.sum += this.tgtobj.myDouble;
-      this.count++;
-    },
-
-    Terminate() {
-      if (this.count === 0)
-        console.error('No entries processed');
-      else
-        console.log(`Mean = ${(this.sum / this.count).toFixed(4)} from ${this.count} entries`);
-    }
-  };
-
   openFile('./simple.root')
     .then(file => file.readObject('myNtuple'))
     .then(rntuple => {
