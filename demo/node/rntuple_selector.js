@@ -37,5 +37,3 @@ if (typeof window === 'undefined') {
     .then(() => console.log('RNTuple::Process finished'))
     .catch(err => console.error(err));
 }
-
-export { rntupleProcess };
