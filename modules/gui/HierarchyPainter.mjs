@@ -2353,10 +2353,8 @@ class HierarchyPainter extends BasePainter {
                }
                if (!forced && only_auto_items) return;
             }
-         } else {
-            if (arg.indexOf(itemname) < 0)
-               return;
-         }
+         } else if (arg.indexOf(itemname) < 0)
+            return;
 
          allitems.push(itemname);
          options.push('update:' + p.getItemDrawOpt());
