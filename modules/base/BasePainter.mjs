@@ -586,7 +586,8 @@ class BasePainter {
    cleanup(keep_origin) {
       this.clearTopPainter();
       const origin = this.selectDom('origin');
-      if (!origin.empty() && !keep_origin) origin.html('');
+      if (!origin.empty() && !keep_origin)
+         origin.html('');
       this.#divid = null;
       this.#selected_main = undefined;
 
