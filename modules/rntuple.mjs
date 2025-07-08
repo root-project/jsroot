@@ -217,19 +217,21 @@ class RNTupleDescriptorBuilder {
     }
 
     _readFieldDescriptors(reader) {
-        const fieldListSize = reader.readS64(), // signed 64-bit
+        const startOffset = BigInt(reader.offset),
+        fieldListSize = reader.readS64(), // signed 64-bit
             fieldListIsList = fieldListSize < 0;
 
 
         if (!fieldListIsList)
             throw new Error('Field list frame is not a list frame, which is required.');
 
-        const fieldListCount = reader.readU32(); // number of field entries
+        const fieldListCount = reader.readU32(), // number of field entries
         // List frame: list of field record frames
 
-        const fieldDescriptors = [];
+        fieldDescriptors = [];
         for (let i = 0; i < fieldListCount; ++i) {
-            const fieldRecordSize = reader.readS64(),
+            const recordStart = BigInt(reader.offset),
+                fieldRecordSize = reader.readS64(),
                 fieldVersion = reader.readU32(),
                 typeVersion = reader.readU32(),
                 parentFieldId = reader.readU32(),
@@ -262,19 +264,23 @@ class RNTupleDescriptorBuilder {
                 sourceFieldId,
                 checksum
             });
+            reader.seek(Number(recordStart + fieldRecordSize));
         }
+        reader.seek(Number(startOffset - fieldListSize));
         return fieldDescriptors;
     }
 
     _readColumnDescriptors(reader) {
-        const columnListSize = reader.readS64(),
+        const startOffset = BigInt(reader.offset),
+            columnListSize = reader.readS64(),
             columnListIsList = columnListSize < 0;
         if (!columnListIsList)
             throw new Error('Column list frame is not a list frame, which is required.');
-        const columnListCount = reader.readU32(); // number of column entries
-        const columnDescriptors = [];
+        const columnListCount = reader.readU32(), // number of column entries
+        columnDescriptors = [];
         for (let i = 0; i < columnListCount; ++i) {
-            const columnRecordSize = reader.readS64(),
+          const recordStart = BigInt(reader.offset),
+                columnRecordSize = reader.readS64(),
                 coltype = reader.readU16(),
                 bitsOnStorage = reader.readU16(),
                 fieldId = reader.readU32(),
@@ -308,70 +314,82 @@ class RNTupleDescriptorBuilder {
             };
 
             columnDescriptors.push(column);
+            reader.seek(Number(recordStart + columnRecordSize));
         }
+        reader.seek(Number(startOffset - columnListSize));
         return columnDescriptors;
     }
     _readAliasColumn(reader) {
-        const aliasColumnListSize = reader.readS64(),
+        const startOffset = BigInt(reader.offset),
+            aliasColumnListSize = reader.readS64(),
             aliasListisList = aliasColumnListSize < 0;
         if (!aliasListisList)
             throw new Error('Alias column list frame is not a list frame, which is required.');
-        const aliasColumnCount = reader.readU32(); // number of alias column entries
-        const aliasColumns = [];
+        const aliasColumnCount = reader.readU32(), // number of alias column entries
+        aliasColumns = [];
         for (let i = 0; i < aliasColumnCount; ++i) {
-            const aliasColumnRecordSize = reader.readS64(),
+            const recordStart = BigInt(reader.offset),
+                aliasColumnRecordSize = reader.readS64(),
                 physicalColumnId = reader.readU32(),
                 fieldId = reader.readU32();
             aliasColumns.push({
                 physicalColumnId,
                 fieldId
             });
+            reader.seek(Number(recordStart+aliasColumnRecordSize));
         }
+        reader.seek(Number(startOffset - aliasColumnListSize));
         return aliasColumns;
     }
     _readExtraTypeInformation(reader) {
-        const extraTypeInfoListSize = reader.readS64(),
+      const startOffset = BigInt(reader.offset),
+            extraTypeInfoListSize = reader.readS64(),
             isList = extraTypeInfoListSize < 0;
 
         if (!isList)
             throw new Error('Extra type info frame is not a list frame, which is required.');
 
-        const entryCount = reader.readU32();
+        const entryCount = reader.readU32(),
 
-        const extraTypeInfo = [];
+        extraTypeInfo = [];
         for (let i = 0; i < entryCount; ++i) {
-            const extraTypeInfoRecordSize = reader.readS64(),
+          const recordStart = BigInt(reader.offset),
+                extraTypeInfoRecordSize = reader.readS64(),
                 contentId = reader.readU32(),
                 typeVersion = reader.readU32();
             extraTypeInfo.push({
                 contentId,
                 typeVersion
             });
+            reader.seek(Number(recordStart + extraTypeInfoRecordSize));
         }
+        reader.seek(Number(startOffset - extraTypeInfoListSize));
         return extraTypeInfo;
     }
     _readClusterGroups(reader) {
-        const clusterGroupListSize = reader.readS64(),
-            isList = clusterGroupListSize < 0;
+        const startOffset = BigInt(reader.offset),
+              clusterGroupListSize = reader.readS64(),
+              isList = clusterGroupListSize < 0;
         if (!isList) throw new Error('Cluster group frame is not a list frame');
 
-        const groupCount = reader.readU32();
+        const groupCount = reader.readU32(),
 
-        const clusterGroups = [];
+        clusterGroups = [];
 
         for (let i = 0; i < groupCount; ++i) {
-            const clusterRecordSize = reader.readS64(),
+            const recordStart = BigInt(reader.offset), 
+                clusterRecordSize = reader.readS64(),
                 minEntry = reader.readU64(),
                 entrySpan = reader.readU64(),
                 numClusters = reader.readU32(),
-                pageListLength = reader.readU64();
+                pageListLength = reader.readU64(),
 
 
             // Locator method to get the page list locator offset
-            const pageListLocator = this._readLocator(reader);
+            pageListLocator = this._readLocator(reader),
 
 
-            const group = {
+            group = {
                 minEntry,
                 entrySpan,
                 numClusters,
@@ -379,7 +397,9 @@ class RNTupleDescriptorBuilder {
                 pageListLength
             };
             clusterGroups.push(group);
+            reader.seek(Number(recordStart + clusterRecordSize));
         }
+        reader.seek(Number(startOffset - clusterGroupListSize));
         this.clusterGroups = clusterGroups;
     }
 
@@ -405,9 +425,9 @@ class RNTupleDescriptorBuilder {
         if (pageListHeaderChecksum !== this.headerEnvelopeChecksum)
             throw new Error('RNTuple corrupted: header checksum does not match Page List Header checksum.');
 
-
+        const listStartOffset = BigInt(reader.offset),
         // Read cluster summaries list frame
-        const clusterSummaryListSize = reader.readS64();
+        clusterSummaryListSize = reader.readS64();
         if (clusterSummaryListSize >= 0)
             throw new Error('Expected a list frame for cluster summaries');
         const clusterSummaryCount = reader.readU32(),
@@ -415,7 +435,8 @@ class RNTupleDescriptorBuilder {
             clusterSummaries = [];
 
         for (let i = 0; i < clusterSummaryCount; ++i) {
-            const clusterSummaryRecordSize = reader.readS64(),
+            const recordStart = BigInt(reader.offset),
+                clusterSummaryRecordSize = reader.readS64(),
                 firstEntry = reader.readU64(),
                 combined = reader.readU64(),
                 flags = combined >> 56n;
@@ -427,11 +448,14 @@ class RNTupleDescriptorBuilder {
                 numEntries,
                 flags
             });
+            reader.seek(Number(recordStart + clusterSummaryRecordSize));
         }
+        reader.seek(Number(listStartOffset - clusterSummaryListSize));
         this.clusterSummaries = clusterSummaries;
         this._readNestedFrames(reader);
 
         const checksumPagelist = reader.readU64();
+        console.log(checksumPagelist);
     }
 
     _readNestedFrames(reader) {
@@ -454,8 +478,8 @@ class RNTupleDescriptorBuilder {
                 if (innerListSize >= 0)
                     throw new Error('Expected inner list frame for pages');
 
-                const numPages = reader.readU32();
-                const pages = [];
+                const numPages = reader.readU32(),
+                pages = [];
 
                 for (let p = 0; p < numPages; ++p) {
                     const numElementsWithBit = reader.readS32(),
@@ -474,9 +498,8 @@ class RNTupleDescriptorBuilder {
                     isSuppressed = elementOffset < 0;
 
                 let compression = null;
-                if (!isSuppressed) {
+                if (!isSuppressed)
                     compression = reader.readU32();
-                }
 
                 columns.push({
                     pages,
@@ -493,7 +516,7 @@ class RNTupleDescriptorBuilder {
     }
 
     // Example Of Deserializing Page Content
-    deserializePage(blob, columnDescriptor, fieldDescriptor) {
+    deserializePage(blob, columnDescriptor) {
         const reader = new RBufferReader(blob);
 
         // Validate the column type before decoding
@@ -503,6 +526,7 @@ class RNTupleDescriptorBuilder {
 
         for (let i = 0; i < 10; ++i) {
             const val = reader.readF64();
+            console.log(val);
         }
     }
 
