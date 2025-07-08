@@ -163,7 +163,6 @@ class RNTupleDescriptorBuilder {
 
         const schemaExtensionSize = reader.readS64();
 
-        console.log('Schema extension frame size:', schemaExtensionSize);
         if (schemaExtensionSize < 0)
             throw new Error('Schema extension frame is not a record frame, which is unexpected.');
 
@@ -183,8 +182,6 @@ class RNTupleDescriptorBuilder {
             envelopeType = Number(typeAndLength & 0xFFFFn),
             envelopeLength = Number((typeAndLength >> 16n) & 0xFFFFFFFFFFFFn);
 
-        console.log('Envelope Type ID:', envelopeType);
-        console.log('Envelope Length:', envelopeLength);
         return {
             envelopeType,
             envelopeLength
@@ -227,12 +224,11 @@ class RNTupleDescriptorBuilder {
         if (!fieldListIsList)
             throw new Error('Field list frame is not a list frame, which is required.');
 
-        const fieldListCount = reader.readU32(); // number of field entries
-        console.log('Field List Count:', fieldListCount);
+        const fieldListCount = reader.readU32(), // number of field entries
 
         // List frame: list of field record frames
 
-        const fieldDescriptors = [];
+        fieldDescriptors = [];
         for (let i = 0; i < fieldListCount; ++i) {
             const fieldRecordSize = reader.readS64(),
                 fieldVersion = reader.readU32(),
@@ -245,7 +241,6 @@ class RNTupleDescriptorBuilder {
                 typeName = reader.readString(),
                 typeAlias = reader.readString(),
                 description = reader.readString();
-            console.log(`Field Record Size: ${fieldRecordSize}`);
             let arraySize = null,
                 sourceFieldId = null,
                 checksum = null;
@@ -277,9 +272,8 @@ class RNTupleDescriptorBuilder {
             columnListIsList = columnListSize < 0;
         if (!columnListIsList)
             throw new Error('Column list frame is not a list frame, which is required.');
-        const columnListCount = reader.readU32(); // number of column entries
-        console.log('Column List Count:', columnListCount);
-        const columnDescriptors = [];
+        const columnListCount = reader.readU32(), // number of column entries
+        columnDescriptors = [];
         for (let i = 0; i < columnListCount; ++i) {
             const columnRecordSize = reader.readS64(),
                 coltype = reader.readU16(),
@@ -287,7 +281,6 @@ class RNTupleDescriptorBuilder {
                 fieldId = reader.readU32(),
                 flags = reader.readU16(),
                 representationIndex = reader.readU16();
-            console.log(`Column Record Size: ${columnRecordSize}`);
             let firstElementIndex = null,
                 minValue = null,
                 maxValue = null;
@@ -324,14 +317,12 @@ class RNTupleDescriptorBuilder {
             aliasListisList = aliasColumnListSize < 0;
         if (!aliasListisList)
             throw new Error('Alias column list frame is not a list frame, which is required.');
-        const aliasColumnCount = reader.readU32(); // number of alias column entries
-        console.log('Alias Column List Count:', aliasColumnCount);
-        const aliasColumns = [];
+        const aliasColumnCount = reader.readU32(), // number of alias column entries
+        aliasColumns = [];
         for (let i = 0; i < aliasColumnCount; ++i) {
             const aliasColumnRecordSize = reader.readS64(),
                 physicalColumnId = reader.readU32(),
                 fieldId = reader.readU32();
-            console.log(`Alias Column Record Size: ${aliasColumnRecordSize}`);
             aliasColumns.push({
                 physicalColumnId,
                 fieldId
@@ -346,15 +337,13 @@ class RNTupleDescriptorBuilder {
         if (!isList)
             throw new Error('Extra type info frame is not a list frame, which is required.');
 
-        const entryCount = reader.readU32();
-        console.log('Extra Type Info Count:', entryCount);
+        const entryCount = reader.readU32(),
 
-        const extraTypeInfo = [];
+        extraTypeInfo = [];
         for (let i = 0; i < entryCount; ++i) {
             const extraTypeInfoRecordSize = reader.readS64(),
                 contentId = reader.readU32(),
                 typeVersion = reader.readU32();
-            console.log(`Extra Type Info Record Size: ${extraTypeInfoRecordSize}`);
             extraTypeInfo.push({
                 contentId,
                 typeVersion
@@ -368,7 +357,6 @@ class RNTupleDescriptorBuilder {
         if (!isList) throw new Error('Cluster group frame is not a list frame');
 
         const groupCount = reader.readU32();
-        console.log('Cluster Group Count:', groupCount);
 
         const clusterGroups = [];
 
@@ -377,17 +365,14 @@ class RNTupleDescriptorBuilder {
                 minEntry = reader.readU64(),
                 entrySpan = reader.readU64(),
                 numClusters = reader.readU32(),
-                pageListLength = reader.readU64();
+                pageListLength = reader.readU64(),
 
-            console.log(`Cluster Record Size: ${clusterRecordSize}`);
 
             // Locator method to get the page list locator offset
-            const pageListLocator = this._readLocator(reader);
+            pageListLocator = this._readLocator(reader),
 
-            console.log('Page Length', pageListLength);
-            console.log(`Page List Locator Offset (hex): 0x${pageListLocator.offset.toString(16).toUpperCase()}`);
 
-            const group = {
+            group = {
                 minEntry,
                 entrySpan,
                 numClusters,
@@ -438,7 +423,6 @@ class RNTupleDescriptorBuilder {
             if (flags & 0x01n)
                 throw new Error('Cluster summary uses unsupported sharded flag (0x01)');
             const numEntries = Number(combined & 0x00FFFFFFFFFFFFFFn);
-            console.log(`Cluster Summary Record Size : ${clusterSummaryRecordSize}`);
             clusterSummaries.push({
                 firstEntry,
                 numEntries,
@@ -449,7 +433,6 @@ class RNTupleDescriptorBuilder {
         this._readNestedFrames(reader);
 
         const checksumPagelist = reader.readU64();
-        console.log('Page List Checksum', checksumPagelist);
     }
 
     _readNestedFrames(reader) {
@@ -472,9 +455,8 @@ class RNTupleDescriptorBuilder {
                 if (innerListSize >= 0)
                     throw new Error('Expected inner list frame for pages');
 
-                const numPages = reader.readU32();
-                console.log(`Column ${c} has ${numPages} page(s)`);
-                const pages = [];
+                const numPages = reader.readU32(),
+                pages = [];
 
                 for (let p = 0; p < numPages; ++p) {
                     const numElementsWithBit = reader.readS32(),
@@ -482,7 +464,6 @@ class RNTupleDescriptorBuilder {
                         numElements = BigInt(Math.abs(Number(numElementsWithBit))),
 
                         locator = this._readLocator(reader);
-                    console.log(`Page ${p} → elements: ${numElements}, checksum: ${hasChecksum}, locator offset: ${locator.offset}, size: ${locator.size}`);
                     pages.push({
                         numElements,
                         hasChecksum,
@@ -494,12 +475,10 @@ class RNTupleDescriptorBuilder {
                     isSuppressed = elementOffset < 0;
 
                 let compression = null;
-                if (!isSuppressed) {
+                if (!isSuppressed) 
                     compression = reader.readU32();
-                    console.log(`Column ${c} is NOT suppressed, offset: ${elementOffset}, compression: ${compression}`);
-                } else
-                    console.log(`Column ${c} is suppressed, offset: ${elementOffset}`);
-
+                else
+                {
                 columns.push({
                     pages,
                     elementOffset,
@@ -507,28 +486,12 @@ class RNTupleDescriptorBuilder {
                     compression
                 });
             }
+            }
 
             clusterPageLocations.push(columns);
         }
 
         this.pageLocations = clusterPageLocations;
-    }
-
-    // Example Of Deserializing Page Content
-    deserializePage(blob, columnDescriptor, fieldDescriptor) {
-        const reader = new RBufferReader(blob);
-
-        // Validate the column type before decoding
-        if (columnDescriptor.coltype !== 13)
-            throw new Error(`Expected column type 13 (kReal64), got ${columnDescriptor.coltype}`);
-
-        console.log(`Field: ${fieldDescriptor?.fieldName ?? 'undefined'} | Type: ${fieldDescriptor?.typeName ?? 'unknown'}`);
-        console.log('Deserializing first 10 double values from data page');
-
-        for (let i = 0; i < 10; ++i) {
-            const val = reader.readF64();
-            console.log(val);
-        }
     }
 
 
@@ -601,9 +564,6 @@ async function readHeaderFooter(tuple) {
                         elementSize = firstColumn.bitsOnStorage / 8,
                         numElements = Number(firstPage.numElements),
                         uncompressedPageSize = elementSize * numElements;
-
-                    console.log(`Uncompressed page size: ${uncompressedPageSize}`);
-                    console.log(`Compressed page size: ${pageSize}`);
 
                     return tuple.$file.readBuffer([pageOffset, pageSize]).then(compressedPage => {
                         if (!(compressedPage instanceof DataView))
@@ -701,9 +661,4 @@ async function tupleHierarchy(tuple_node, tuple) {
     });
 }
 
-export {
-    tupleHierarchy,
-    readHeaderFooter,
-    RBufferReader,
-    rntupleProcess
-};
+export { tupleHierarchy, readHeaderFooter, RBufferReader, rntupleProcess };
