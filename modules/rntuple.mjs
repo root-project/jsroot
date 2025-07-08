@@ -113,6 +113,18 @@ class RBufferReader {
 
 class RNTupleDescriptorBuilder {
 
+    // Envelope Types
+    static kEnvelopeTypeHeader = 0x01;
+    static kEnvelopeTypeFooter = 0x02;
+    static kEnvelopeTypePageList = 0x03;
+    // Field Flags
+    static kFlagRepetitiveField = 0x01;
+    static kFlagProjectedField = 0x02;
+    static kFlagHasTypeChecksum = 0x04;
+    // Column Flags
+    static kFlagDeferredColumn = 0x01;
+    static kFlagHasValueRange = 0x02;
+
     deserializeHeader(header_blob) {
         if (!header_blob) return;
 
@@ -246,9 +258,15 @@ class RNTupleDescriptorBuilder {
                 sourceFieldId = null,
                 checksum = null;
 
-            if (flags & 0x1) arraySize = reader.readU64();
-            if (flags & 0x2) sourceFieldId = reader.readU32();
-            if (flags & 0x4) checksum = reader.readU32();
+            if (flags & RNTupleDescriptorBuilder.kFlagRepetitiveField)
+                arraySize = reader.readU64();
+
+            if (flags & RNTupleDescriptorBuilder.kFlagProjectedField)
+                sourceFieldId = reader.readU32();
+            
+            if (flags & RNTupleDescriptorBuilder.kFlagHasTypeChecksum)
+                checksum = reader.readU32();
+
 
             fieldDescriptors.push({
                 fieldVersion,
@@ -289,8 +307,11 @@ class RNTupleDescriptorBuilder {
             let firstElementIndex = null,
                 minValue = null,
                 maxValue = null;
-            if (flags & 0x1) firstElementIndex = reader.readU64();
-            if (flags & 0x2) {
+
+            if (flags & RNTupleDescriptorBuilder.kFlagDeferredColumn)
+                firstElementIndex = reader.readU64();
+            
+            if (flags & RNTupleDescriptorBuilder.kFlagHasValueRange) {
                 minValue = reader.readF64();
                 maxValue = reader.readF64();
             }
@@ -307,7 +328,7 @@ class RNTupleDescriptorBuilder {
                 maxValue
             };
             column.isDeferred = function() {
-                return (this.flags & 0x01) !== 0;
+                return (this.flags & RNTupleDescriptorBuilder.kFlagDeferredColumn) !== 0;
             };
             column.isSuppressed = function() {
                 return this.firstElementIndex !== null && this.firstElementIndex < 0;
