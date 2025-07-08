@@ -124,6 +124,7 @@ const kFlagRepetitiveField = 0x01,
 // Column Flags
       kFlagDeferredColumn = 0x01,
       kFlagHasValueRange = 0x02;
+      
 class RNTupleDescriptorBuilder {
 
     deserializeHeader(header_blob) {
