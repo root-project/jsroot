@@ -110,20 +110,21 @@ class RBufferReader {
 
 }
 
+// Envelope Types
+// TODO: Define usage logic for envelope types in future
+// const kEnvelopeTypeHeader = 0x01,
+//       kEnvelopeTypeFooter = 0x02,
+//       kEnvelopeTypePageList = 0x03,
 
+// Field Flags
+const kFlagRepetitiveField = 0x01,
+      kFlagProjectedField = 0x02,
+      kFlagHasTypeChecksum = 0x04,
+
+// Column Flags
+      kFlagDeferredColumn = 0x01,
+      kFlagHasValueRange = 0x02;
 class RNTupleDescriptorBuilder {
-
-    // Envelope Types
-    static kEnvelopeTypeHeader = 0x01;
-    static kEnvelopeTypeFooter = 0x02;
-    static kEnvelopeTypePageList = 0x03;
-    // Field Flags
-    static kFlagRepetitiveField = 0x01;
-    static kFlagProjectedField = 0x02;
-    static kFlagHasTypeChecksum = 0x04;
-    // Column Flags
-    static kFlagDeferredColumn = 0x01;
-    static kFlagHasValueRange = 0x02;
 
     deserializeHeader(header_blob) {
         if (!header_blob) return;
@@ -258,13 +259,13 @@ class RNTupleDescriptorBuilder {
                 sourceFieldId = null,
                 checksum = null;
 
-            if (flags & RNTupleDescriptorBuilder.kFlagRepetitiveField)
+            if (flags & kFlagRepetitiveField)
                 arraySize = reader.readU64();
 
-            if (flags & RNTupleDescriptorBuilder.kFlagProjectedField)
+            if (flags & kFlagProjectedField)
                 sourceFieldId = reader.readU32();
             
-            if (flags & RNTupleDescriptorBuilder.kFlagHasTypeChecksum)
+            if (flags & kFlagHasTypeChecksum)
                 checksum = reader.readU32();
 
 
@@ -308,10 +309,10 @@ class RNTupleDescriptorBuilder {
                 minValue = null,
                 maxValue = null;
 
-            if (flags & RNTupleDescriptorBuilder.kFlagDeferredColumn)
+            if (flags & kFlagDeferredColumn)
                 firstElementIndex = reader.readU64();
             
-            if (flags & RNTupleDescriptorBuilder.kFlagHasValueRange) {
+            if (flags & kFlagHasValueRange) {
                 minValue = reader.readF64();
                 maxValue = reader.readF64();
             }
