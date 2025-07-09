@@ -304,7 +304,8 @@ class RNTupleDescriptorBuilder {
                 representationIndex,
                 firstElementIndex,
                 minValue,
-                maxValue
+                maxValue,
+                index: i
             };
             column.isDeferred = function() {
                 return (this.flags & 0x01) !== 0;
@@ -551,7 +552,7 @@ async function readHeaderFooter(tuple) {
             R__unzip(blobs[1], tuple.fLenFooter)
         ]).then(unzip_blobs => {
             const header_blob = unzip_blobs[0],
-                footer_blob = unzip_blobs[1];
+                  footer_blob = unzip_blobs[1];
             if (!header_blob || !footer_blob)
                 return false;
 
@@ -563,21 +564,24 @@ async function readHeaderFooter(tuple) {
 
             tuple.builder.deserializeFooter(footer_blob);
 
-            // Extract first column and corresponding field
-            const firstColumn = tuple.builder.columnDescriptors?.[0];
-            if (!firstColumn)
-                throw new Error('No column descriptor found');
+            // Build fieldToColumns mapping
+            tuple.fieldToColumns = {};
+            for (const colDesc of tuple.builder.columnDescriptors) {
+                const fieldDesc = tuple.builder.fieldDescriptors[colDesc.fieldId],
+                fieldName = fieldDesc.fieldName;
+                if (!tuple.fieldToColumns[fieldName])
+                    tuple.fieldToColumns[fieldName] = [];
+                tuple.fieldToColumns[fieldName].push(colDesc);
+            }
 
-            const field = tuple.builder.fieldDescriptors?.[firstColumn.fieldId],
-
-                // Deserialize the Page List Envelope
-                group = tuple.builder.clusterGroups?.[0];
+            // Deserialize Page List
+            const group = tuple.builder.clusterGroups?.[0];
             if (!group || !group.pageListLocator)
                 throw new Error('No valid cluster group or page list locator found');
 
             const offset = Number(group.pageListLocator.offset),
-                size = Number(group.pageListLocator.size),
-                uncompressedSize = Number(group.pageListLength);
+                  size = Number(group.pageListLocator.size),
+                  uncompressedSize = Number(group.pageListLength);
 
             return tuple.$file.readBuffer([offset, size]).then(page_list_blob => {
                 if (!(page_list_blob instanceof DataView))
@@ -588,32 +592,7 @@ async function readHeaderFooter(tuple) {
                         throw new Error(`Unzipped page list is not a DataView, got ${Object.prototype.toString.call(unzipped_blob)}`);
 
                     tuple.builder.deserializePageList(unzipped_blob);
-
-
-                    // Access first page metadata
-                    const firstPage = tuple.builder?.pageLocations?.[0]?.[0]?.pages?.[0];
-                    if (!firstPage || !firstPage.locator)
-                        throw new Error('No valid first page found in pageLocations');
-
-                    const pageOffset = Number(firstPage.locator.offset),
-                        pageSize = Number(firstPage.locator.size),
-                        elementSize = firstColumn.bitsOnStorage / 8,
-                        numElements = Number(firstPage.numElements),
-                        uncompressedPageSize = elementSize * numElements;
-
-
-                    return tuple.$file.readBuffer([pageOffset, pageSize]).then(compressedPage => {
-                        if (!(compressedPage instanceof DataView))
-                            throw new Error('Compressed page readBuffer did not return a DataView');
-
-                        return R__unzip(compressedPage, uncompressedPageSize).then(unzippedPage => {
-                            if (!(unzippedPage instanceof DataView))
-                                throw new Error('Unzipped page is not a DataView');
-
-                            tuple.builder.deserializePage(unzippedPage, firstColumn, field);
-                            return true;
-                        });
-                    });
+                    return true;
                 });
             });
         });
@@ -626,36 +605,47 @@ async function readHeaderFooter(tuple) {
 // Read and process the next data cluster from the RNTuple
 function readNextCluster(rntuple, selector) {
     const builder = rntuple.builder,
-        clusterSummary = builder.clusterSummaries[selector.currentCluster],
-        pages = builder.pageLocations[selector.currentCluster][0].pages;
+    clusterIndex = selector.currentCluster,
+    clusterSummary = builder.clusterSummaries[clusterIndex],
+
+    // Gather all pages for this cluster from all columns
+    pages = [];
+
+    for (const columns of Object.values(rntuple.fieldToColumns)) {
+        for (const colDesc of columns) {
+            const colPages = builder.pageLocations[clusterIndex][colDesc.index].pages;
+            for (const page of colPages)
+                pages.push({ page, colDesc });
+        }
+    }
 
     selector.currentCluster++;
 
     // Build flat array of [offset, size, offset, size, ...] to read pages
-    const dataToRead = pages.flatMap(p => [Number(p.locator.offset), Number(p.locator.size)]);
+    const dataToRead = pages
+    .filter(p => p.page && p.page.locator)  // Skip invalid ones
+    .flatMap(p => [Number(p.page.locator.offset), Number(p.page.locator.size)]);
+
 
     return rntuple.$file.readBuffer(dataToRead).then(blobsRaw => {
         const blobs = Array.isArray(blobsRaw) ? blobsRaw : [blobsRaw],
-            unzipPromises = blobs.map((blob, idx) => {
-                const numElements = Number(pages[idx].numElements);
-                return R__unzip(blob, 8 * numElements);
-            });
+        unzipPromises = blobs.map((blob, idx) => {
+            const { page, colDesc } = pages[idx],
+            numElements = Number(page.numElements),
+            elementSize = colDesc.bitsOnStorage / 8;
+            return R__unzip(blob, numElements * elementSize);
+        });
 
-        // Wait for all pages to be decompressed
         return Promise.all(unzipPromises).then(unzipBlobs => {
-            const totalSize = unzipBlobs.reduce((sum, b) => sum + b.byteLength, 0),
-                flat = new Uint8Array(totalSize);
-
-            let offset = 0;
-            for (const blob of unzipBlobs) {
-                flat.set(new Uint8Array(blob.buffer || blob), offset);
-                offset += blob.byteLength;
+            for (let i = 0; i < unzipBlobs.length; ++i) {
+                const { colDesc } = pages[i],
+                field = builder.fieldDescriptors[colDesc.fieldId];
+                rntuple.builder.deserializePage(unzipBlobs[i], colDesc, field);
             }
 
-            // Create reader and deserialize doubles from the buffer
-            const reader = new RBufferReader(flat.buffer);
+            const reader = new RBufferReader(unzipBlobs[0].buffer); // pick one column as example
             for (let i = 0; i < clusterSummary.numEntries; ++i) {
-                selector.tgtobj.myDouble = reader.readF64();
+                selector.tgtobj.myDouble = reader.readF64();  // TODO: Replace with real field extraction later
                 selector.Process();
             }
 

@@ -1,5 +1,5 @@
 import { rntupleProcess } from '../../modules/rntuple.mjs';
-import { TSelector, openFile} from 'jsroot';
+import { TSelector, openFile } from 'jsroot';
 
 const selector = new TSelector();
 selector.sum = 0;
