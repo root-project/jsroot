@@ -622,10 +622,9 @@ function readNextCluster(rntuple, selector) {
     selector.currentCluster++;
 
     // Build flat array of [offset, size, offset, size, ...] to read pages
-    const dataToRead = pages
-    .filter(p => p.page && p.page.locator)  // Skip invalid ones
-    .flatMap(p => [Number(p.page.locator.offset), Number(p.page.locator.size)]);
-
+    const dataToRead = pages.flatMap(p =>
+          [Number(p.page.locator.offset), Number(p.page.locator.size)]
+        );
 
     return rntuple.$file.readBuffer(dataToRead).then(blobsRaw => {
         const blobs = Array.isArray(blobsRaw) ? blobsRaw : [blobsRaw],
