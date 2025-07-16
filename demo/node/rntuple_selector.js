@@ -10,7 +10,7 @@ selector.Begin = function() {
 };
 
 selector.Process = function() {
-  console.log('Entry : ', this.tgtobj);
+  // console.log('Entry : ', this.tgtobj);
   this.sum += this.tgtobj.myDouble;
   this.count++;
 };

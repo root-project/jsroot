@@ -110,6 +110,40 @@ class RBufferReader {
 
 }
 
+const ENTupleColumnType = {
+  kUnknown: 0,
+  kIndex64: 1,
+  kIndex32: 2,
+  kSwitch: 3,
+  kByte: 4,
+  kChar: 5,
+  kBit: 6,
+  kReal64: 13,
+  kReal32: 14,
+  kReal16: 15,
+  kInt64: 16,
+  kUInt64: 17,
+  kInt32: 18,
+  kUInt32: 19,
+  kInt16: 20,
+  kUInt16: 21,
+  kInt8: 22,
+  kUInt8: 23,
+  kSplitIndex64: 24,
+  kSplitIndex32: 25,
+  kSplitReal64: 26,
+  kSplitReal32: 27,
+  kSplitInt64: 28,
+  kSplitUInt64: 29,
+  kSplitInt32: 30,
+  kSplitUInt32: 31,
+  kSplitInt16: 32,
+  kSplitUInt16: 33,
+  kReal32Trunc: 34,
+  kReal32Quant: 35,
+  kMax: 36
+},
+
 // Envelope Types
 // TODO: Define usage logic for envelope types in future
 // const kEnvelopeTypeHeader = 0x01,
@@ -117,7 +151,7 @@ class RBufferReader {
 //       kEnvelopeTypePageList = 0x03,
 
 // Field Flags
-const kFlagRepetitiveField = 0x01,
+      kFlagRepetitiveField = 0x01,
       kFlagProjectedField = 0x02,
       kFlagHasTypeChecksum = 0x04,
 
@@ -544,9 +578,8 @@ class RNTupleDescriptorBuilder {
         const reader = new RBufferReader(blob);
 
         // Validate the column type before decoding
-        if (columnDescriptor.coltype !== 13)
-            throw new Error(`Expected column type 13 (kReal64), got ${columnDescriptor.coltype}`);
-
+        if (columnDescriptor.coltype !== ENTupleColumnType.kReal64)
+            throw new Error(`Expected column type kReal64 (${ENTupleColumnType.kReal64}), got ${columnDescriptor.coltype}`);
 
         for (let i = 0; i < 10; ++i) {
             const val = reader.readF64();
