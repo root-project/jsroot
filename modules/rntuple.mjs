@@ -142,7 +142,31 @@ const ENTupleColumnType = {
   kReal32Trunc: 34,
   kReal32Quant: 35,
   kMax: 36
-},
+};
+
+// Determine byte size per value based on column type
+function getTypeByteSize(coltype) {
+    switch (coltype) {
+        case ENTupleColumnType.kReal64:
+        case ENTupleColumnType.kInt64:
+        case ENTupleColumnType.kUInt64:
+            return 8;
+        case ENTupleColumnType.kReal32:
+        case ENTupleColumnType.kInt32:
+        case ENTupleColumnType.kUInt32:
+            return 4;
+        case ENTupleColumnType.kInt16:
+        case ENTupleColumnType.kUInt16:
+            return 2;
+        case ENTupleColumnType.kInt8:
+        case ENTupleColumnType.kUInt8:
+        case ENTupleColumnType.kByte:
+            return 1;
+        default:
+            throw new Error(`Unsupported coltype for byte size: ${coltype}`);
+    }
+}
+
 
 // Envelope Types
 // TODO: Define usage logic for envelope types in future
@@ -151,7 +175,7 @@ const ENTupleColumnType = {
 //       kEnvelopeTypePageList = 0x03,
 
 // Field Flags
-      kFlagRepetitiveField = 0x01,
+const kFlagRepetitiveField = 0x01,
       kFlagProjectedField = 0x02,
       kFlagHasTypeChecksum = 0x04,
 
@@ -576,10 +600,11 @@ class RNTupleDescriptorBuilder {
     // Example Of Deserializing Page Content
     deserializePage(blob, columnDescriptor) {
         const reader = new RBufferReader(blob),
-            values = [];
+            values = [],
+            byteSize = getTypeByteSize(columnDescriptor.coltype),
+            numValues = blob.byteLength / byteSize;
 
-
-        for (let i = 0; i < 10; ++i) {
+        for (let i = 0; i < numValues; ++i) {
             let val;
             switch (columnDescriptor.coltype) {
                 case ENTupleColumnType.kReal64:
@@ -619,7 +644,7 @@ class RNTupleDescriptorBuilder {
             values.push(val);
         }
 
-        console.log('Deserialized first 10 values for column:', values);
+        console.log(`Deserialized ${values.length} values for column:`, values); 
     }
 
 
