@@ -575,16 +575,51 @@ class RNTupleDescriptorBuilder {
 
     // Example Of Deserializing Page Content
     deserializePage(blob, columnDescriptor) {
-        const reader = new RBufferReader(blob);
+        const reader = new RBufferReader(blob),
+            values = [];
 
-        // Validate the column type before decoding
-        if (columnDescriptor.coltype !== ENTupleColumnType.kReal64)
-            throw new Error(`Expected column type kReal64 (${ENTupleColumnType.kReal64}), got ${columnDescriptor.coltype}`);
 
         for (let i = 0; i < 10; ++i) {
-            const val = reader.readF64();
-            console.log(val);
+            let val;
+            switch (columnDescriptor.coltype) {
+                case ENTupleColumnType.kReal64:
+                    val = reader.readF64();
+                    break;
+                case ENTupleColumnType.kReal32:
+                    val = reader.readF32();
+                    break;
+                case ENTupleColumnType.kInt64:
+                    val = reader.readI64();
+                    break;
+                case ENTupleColumnType.kUInt64:
+                    val = reader.readU64();
+                    break;
+                case ENTupleColumnType.kInt32:
+                    val = reader.readI32();
+                    break;
+                case ENTupleColumnType.kUInt32:
+                    val = reader.readU32();
+                    break;
+                case ENTupleColumnType.kInt16:
+                    val = reader.readI16();
+                    break;
+                case ENTupleColumnType.kUInt16:
+                    val = reader.readU16();
+                    break;
+                case ENTupleColumnType.kInt8:
+                    val = reader.readI8();
+                    break;
+                case ENTupleColumnType.kUInt8:
+                case ENTupleColumnType.kByte:
+                    val = reader.readU8();
+                    break;
+                default:
+                    throw new Error(`Unsupported column type: ${columnDescriptor.coltype}`);
+            }
+            values.push(val);
         }
+
+        console.log('Deserialized first 10 values for column:', values);
     }
 
 
