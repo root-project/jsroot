@@ -110,6 +110,64 @@ class RBufferReader {
 
 }
 
+const ENTupleColumnType = {
+    kUnknown: 0x00,
+    kIndex64: 0x01,
+    kIndex32: 0x02,
+    kSwitch: 0x03,
+    kByte: 0x04,
+    kChar: 0x05,
+    kBit: 0x06,
+    kReal64: 0x0D,
+    kReal32: 0x0E,
+    kReal16: 0x0F,
+    kInt64: 0x10,
+    kUInt64: 0x11,
+    kInt32: 0x12,
+    kUInt32: 0x13,
+    kInt16: 0x14,
+    kUInt16: 0x15,
+    kInt8: 0x16,
+    kUInt8: 0x17,
+    kSplitIndex64: 0x18,
+    kSplitIndex32: 0x19,
+    kSplitReal64: 0x1A,
+    kSplitReal32: 0x1B,
+    kSplitInt64: 0x1C,
+    kSplitUInt64: 0x1D,
+    kSplitInt32: 0x1E,
+    kSplitUInt32: 0x1F,
+    kSplitInt16: 0x20,
+    kSplitUInt16: 0x21,
+    kReal32Trunc: 0x22,
+    kReal32Quant: 0x23,
+    kMax: 0x24
+};
+
+// Determine byte size per value based on column type
+function getTypeByteSize(coltype) {
+    switch (coltype) {
+        case ENTupleColumnType.kReal64:
+        case ENTupleColumnType.kInt64:
+        case ENTupleColumnType.kUInt64:
+            return 8;
+        case ENTupleColumnType.kReal32:
+        case ENTupleColumnType.kInt32:
+        case ENTupleColumnType.kUInt32:
+            return 4;
+        case ENTupleColumnType.kInt16:
+        case ENTupleColumnType.kUInt16:
+            return 2;
+        case ENTupleColumnType.kInt8:
+        case ENTupleColumnType.kUInt8:
+        case ENTupleColumnType.kByte:
+            return 1;
+        default:
+            throw new Error(`Unsupported coltype for byte size: ${coltype}`);
+    }
+}
+
+
 // Envelope Types
 // TODO: Define usage logic for envelope types in future
 // const kEnvelopeTypeHeader = 0x01,
@@ -541,17 +599,52 @@ class RNTupleDescriptorBuilder {
 
     // Example Of Deserializing Page Content
     deserializePage(blob, columnDescriptor) {
-        const reader = new RBufferReader(blob);
+        const reader = new RBufferReader(blob),
+            values = [],
+            byteSize = getTypeByteSize(columnDescriptor.coltype),
+            numValues = blob.byteLength / byteSize;
 
-        // Validate the column type before decoding
-        if (columnDescriptor.coltype !== 13)
-            throw new Error(`Expected column type 13 (kReal64), got ${columnDescriptor.coltype}`);
-
-
-        for (let i = 0; i < 10; ++i) {
-            const val = reader.readF64();
-            console.log(val);
+        for (let i = 0; i < numValues; ++i) {
+            let val;
+            switch (columnDescriptor.coltype) {
+                case ENTupleColumnType.kReal64:
+                    val = reader.readF64();
+                    break;
+                case ENTupleColumnType.kReal32:
+                    val = reader.readF32();
+                    break;
+                case ENTupleColumnType.kInt64:
+                    val = reader.readI64();
+                    break;
+                case ENTupleColumnType.kUInt64:
+                    val = reader.readU64();
+                    break;
+                case ENTupleColumnType.kInt32:
+                    val = reader.readI32();
+                    break;
+                case ENTupleColumnType.kUInt32:
+                    val = reader.readU32();
+                    break;
+                case ENTupleColumnType.kInt16:
+                    val = reader.readI16();
+                    break;
+                case ENTupleColumnType.kUInt16:
+                    val = reader.readU16();
+                    break;
+                case ENTupleColumnType.kInt8:
+                    val = reader.readI8();
+                    break;
+                case ENTupleColumnType.kUInt8:
+                case ENTupleColumnType.kByte:
+                    val = reader.readU8();
+                    break;
+                default:
+                    throw new Error(`Unsupported column type: ${columnDescriptor.coltype}`);
+            }
+            values.push(val);
         }
+
+        console.log(`Deserialized ${values.length} values for column:`, values); 
     }
 
 
