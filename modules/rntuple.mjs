@@ -644,7 +644,7 @@ class RNTupleDescriptorBuilder {
             values.push(val);
         }
 
-        console.log(`Deserialized ${values.length} values for column:`, values); 
+        return values; 
     }
 
 
@@ -721,11 +721,11 @@ async function readHeaderFooter(tuple) {
 // Read and process the next data cluster from the RNTuple
 function readNextCluster(rntuple, selector) {
     const builder = rntuple.builder,
-    clusterIndex = selector.currentCluster,
-    clusterSummary = builder.clusterSummaries[clusterIndex],
+        clusterIndex = selector.currentCluster,
+        clusterSummary = builder.clusterSummaries[clusterIndex],
 
-    // Gather all pages for this cluster from all columns
-    pages = [];
+        // Gather all pages for this cluster from all columns
+        pages = [];
 
     for (const columns of Object.values(rntuple.fieldToColumns)) {
         for (const colDesc of columns) {
@@ -744,23 +744,33 @@ function readNextCluster(rntuple, selector) {
 
     return rntuple.$file.readBuffer(dataToRead).then(blobsRaw => {
         const blobs = Array.isArray(blobsRaw) ? blobsRaw : [blobsRaw],
-        unzipPromises = blobs.map((blob, idx) => {
+            unzipPromises = blobs.map((blob, idx) => {
             const { page, colDesc } = pages[idx],
-            numElements = Number(page.numElements),
-            elementSize = colDesc.bitsOnStorage / 8;
-            return R__unzip(blob, numElements * elementSize);
-        });
+                    numElements = Number(page.numElements),
+                    elementSize = colDesc.bitsOnStorage / 8;
+                return R__unzip(blob, numElements * elementSize);
+            });
 
         return Promise.all(unzipPromises).then(unzipBlobs => {
+            rntuple._clusterData = {}; // store deserialized data per field
+
             for (let i = 0; i < unzipBlobs.length; ++i) {
-                const { colDesc } = pages[i],
-                field = builder.fieldDescriptors[colDesc.fieldId];
-                rntuple.builder.deserializePage(unzipBlobs[i], colDesc, field);
+                const {
+                    colDesc
+                } = pages[i],
+                    field = builder.fieldDescriptors[colDesc.fieldId],
+                    values = rntuple.builder.deserializePage(unzipBlobs[i], colDesc, field);
+
+                if (!rntuple._clusterData[field.fieldName])
+                    rntuple._clusterData[field.fieldName] = values;
             }
 
-            const reader = new RBufferReader(unzipBlobs[0].buffer); // pick one column as example
-            for (let i = 0; i < clusterSummary.numEntries; ++i) {
-                selector.tgtobj.myDouble = reader.readF64();  // TODO: Replace with real field extraction later
+            const numEntries = clusterSummary.numEntries;
+            for (let i = 0; i < numEntries; ++i) {
+                const obj = {};
+                for (const [fieldName, values] of Object.entries(rntuple._clusterData))
+                    obj[fieldName] = values[i];
+                selector.tgtobj = obj;
                 selector.Process();
             }
 
