@@ -760,17 +760,17 @@ function readNextCluster(rntuple, selector) {
                 } = pages[i],
                     field = builder.fieldDescriptors[colDesc.fieldId],
                     values = rntuple.builder.deserializePage(unzipBlobs[i], colDesc, field);
-
+                    
+                // TODO: Handle fields with multiple columns (e.g., data + metadata).
+                // For now, we only store the first column's data to avoid overwriting.
                 if (!rntuple._clusterData[field.fieldName])
                     rntuple._clusterData[field.fieldName] = values;
             }
 
             const numEntries = clusterSummary.numEntries;
             for (let i = 0; i < numEntries; ++i) {
-                const obj = {};
                 for (const [fieldName, values] of Object.entries(rntuple._clusterData))
-                    obj[fieldName] = values[i];
-                selector.tgtobj = obj;
+                    selector.tgtobj[fieldName] = values[i];
                 selector.Process();
             }
 
