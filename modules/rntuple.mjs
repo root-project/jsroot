@@ -111,38 +111,38 @@ class RBufferReader {
 }
 
 const ENTupleColumnType = {
-    kUnknown: 0x00,
-    kIndex64: 0x01,
-    kIndex32: 0x02,
-    kSwitch: 0x03,
-    kByte: 0x04,
-    kChar: 0x05,
-    kBit: 0x06,
+    kBit: 0x00,
+    kByte: 0x01,
+    kChar: 0x02,
+    kInt8: 0x03,
+    kUInt8: 0x04,
+    kInt16: 0x05,
+    kUInt16: 0x06,
+    kInt32: 0x07,
+    kUInt32: 0x08,
+    kInt64: 0x09,
+    kUInt64: 0x0A,
+    kReal16: 0x0B,
+    kReal32: 0x0C,
     kReal64: 0x0D,
-    kReal32: 0x0E,
-    kReal16: 0x0F,
-    kInt64: 0x10,
-    kUInt64: 0x11,
-    kInt32: 0x12,
-    kUInt32: 0x13,
-    kInt16: 0x14,
-    kUInt16: 0x15,
-    kInt8: 0x16,
-    kUInt8: 0x17,
-    kSplitIndex64: 0x18,
-    kSplitIndex32: 0x19,
-    kSplitReal64: 0x1A,
-    kSplitReal32: 0x1B,
-    kSplitInt64: 0x1C,
-    kSplitUInt64: 0x1D,
-    kSplitInt32: 0x1E,
-    kSplitUInt32: 0x1F,
-    kSplitInt16: 0x20,
-    kSplitUInt16: 0x21,
-    kReal32Trunc: 0x22,
-    kReal32Quant: 0x23,
-    kMax: 0x24
+    kIndex32: 0x0E,
+    kIndex64: 0x0F,
+    kSwitch: 0x10,
+    kSplitInt16: 0x11,
+    kSplitUInt16: 0x12,
+    kSplitInt32: 0x13,
+    kSplitUInt32: 0x14,
+    kSplitInt64: 0x15,
+    kSplitUInt64: 0x16,
+    kSplitReal16: 0x17,
+    kSplitReal32: 0x18,
+    kSplitReal64: 0x19,
+    kSplitIndex32: 0x1A,
+    kSplitIndex64: 0x1B,
+    kReal32Trunc: 0x1C,
+    kReal32Quant: 0x1D
 };
+
 
 // Determine byte size per value based on column type
 function getTypeByteSize(coltype) {
@@ -163,7 +163,7 @@ function getTypeByteSize(coltype) {
         case ENTupleColumnType.kByte:
             return 1;
         default:
-            throw new Error(`Unsupported coltype for byte size: ${coltype}`);
+            throw new Error(`Unsupported coltype for byte size: ${coltype} (0x${coltype.toString(16).padStart(2, '0')})`);
     }
 }
 
