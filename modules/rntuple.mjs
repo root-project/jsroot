@@ -724,18 +724,39 @@ function readNextCluster(rntuple, selector) {
         clusterIndex = selector.currentCluster,
         clusterSummary = builder.clusterSummaries[clusterIndex],
 
-        // Gather all pages for this cluster from all columns
-        pages = [];
+        // Gather all pages for this cluster from selected fields only
+        pages = [],
 
-    for (const columns of Object.values(rntuple.fieldToColumns)) {
+        // Collect only selected field names from selector
+        selectedFields = [];
+    for (let i = 0; i < selector.numBranches(); ++i)
+        selectedFields.push(selector.nameOfBranch(i));
+
+    // For each selected field, collect its columns' pages
+    for (const fieldName of selectedFields) {
+        const columns = rntuple.fieldToColumns[fieldName];
+        if (!columns)
+            throw new Error(`Selected field '${fieldName}' not found in RNTuple`);
+
         for (const colDesc of columns) {
-            const colPages = builder.pageLocations[clusterIndex][colDesc.index].pages;
-            for (const page of colPages)
+            const colEntry = builder.pageLocations[clusterIndex]?.[colDesc.index];
+
+            // When the data is missing or broken
+            if (!colEntry || !colEntry.pages) 
+                throw new Error(`No pages for column ${colDesc.index} in cluster ${clusterIndex}`);
+
+            for (const page of colEntry.pages)
                 pages.push({ page, colDesc });
         }
     }
 
     selector.currentCluster++;
+
+    // Early exit if no pages to read (i.e., no selected fields matched)
+    if (pages.length === 0) {
+        selector.Terminate();
+        return Promise.resolve();
+    }
 
     // Build flat array of [offset, size, offset, size, ...] to read pages
     const dataToRead = pages.flatMap(p =>
@@ -759,8 +780,8 @@ function readNextCluster(rntuple, selector) {
                     colDesc
                 } = pages[i],
                     field = builder.fieldDescriptors[colDesc.fieldId],
-                    values = rntuple.builder.deserializePage(unzipBlobs[i], colDesc, field);
-                    
+                    values = builder.deserializePage(unzipBlobs[i], colDesc, field);
+
                 // TODO: Handle fields with multiple columns (e.g., data + metadata).
                 // For now, we only store the first column's data to avoid overwriting.
                 if (!rntuple._clusterData[field.fieldName])
@@ -769,8 +790,13 @@ function readNextCluster(rntuple, selector) {
 
             const numEntries = clusterSummary.numEntries;
             for (let i = 0; i < numEntries; ++i) {
-                for (const [fieldName, values] of Object.entries(rntuple._clusterData))
+                for (let b = 0; b < selector.numBranches(); ++b) {
+                    const fieldName = selector.nameOfBranch(b),
+                        values = rntuple._clusterData[fieldName];
+                    if (!values) 
+                        throw new Error(`Missing values for selected field: ${fieldName}`);
                     selector.tgtobj[fieldName] = values[i];
+                }
                 selector.Process();
             }
 

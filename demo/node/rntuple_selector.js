@@ -4,7 +4,7 @@ import { TSelector, openFile } from 'jsroot';
 const selector = new TSelector();
 selector.sum = 0;
 selector.count = 0;
-
+selector.addBranch('myDouble');
 selector.Begin = function() {
   console.log('Begin processing');
 };
