@@ -154,6 +154,7 @@ function getTypeByteSize(coltype) {
         case ENTupleColumnType.kReal32:
         case ENTupleColumnType.kInt32:
         case ENTupleColumnType.kUInt32:
+        case ENTupleColumnType.kSplitIndex64:
             return 4;
         case ENTupleColumnType.kInt16:
         case ENTupleColumnType.kUInt16:
@@ -599,53 +600,91 @@ class RNTupleDescriptorBuilder {
 
     // Example Of Deserializing Page Content
     deserializePage(blob, columnDescriptor) {
-        const reader = new RBufferReader(blob),
-            values = [],
-            byteSize = getTypeByteSize(columnDescriptor.coltype),
-            numValues = blob.byteLength / byteSize;
+    const reader = new RBufferReader(blob),
+          values = [],
+          coltype = columnDescriptor.coltype;
 
-        for (let i = 0; i < numValues; ++i) {
-            let val;
-            switch (columnDescriptor.coltype) {
-                case ENTupleColumnType.kReal64:
-                    val = reader.readF64();
-                    break;
-                case ENTupleColumnType.kReal32:
-                    val = reader.readF32();
-                    break;
-                case ENTupleColumnType.kInt64:
-                    val = reader.readI64();
-                    break;
-                case ENTupleColumnType.kUInt64:
-                    val = reader.readU64();
-                    break;
-                case ENTupleColumnType.kInt32:
-                    val = reader.readI32();
-                    break;
-                case ENTupleColumnType.kUInt32:
-                    val = reader.readU32();
-                    break;
-                case ENTupleColumnType.kInt16:
-                    val = reader.readI16();
-                    break;
-                case ENTupleColumnType.kUInt16:
-                    val = reader.readU16();
-                    break;
-                case ENTupleColumnType.kInt8:
-                    val = reader.readI8();
-                    break;
-                case ENTupleColumnType.kUInt8:
-                case ENTupleColumnType.kByte:
-                    val = reader.readU8();
-                    break;
-                default:
-                    throw new Error(`Unsupported column type: ${columnDescriptor.coltype}`);
-            }
-            values.push(val);
-        }
-
-        return values; 
+    // Handle Index32 offsets (used for string fields)
+    if (coltype === ENTupleColumnType.kIndex32) {
+        const numOffsets = blob.byteLength / 4;
+        for (let i = 0; i < numOffsets; ++i)
+            values.push(reader.readU32());
+        return values;
     }
+
+    // Handle Index64 offsets (used for string fields)
+    if (coltype === ENTupleColumnType.kIndex64) {
+        const numOffsets = blob.byteLength / 8;
+        for (let i = 0; i < numOffsets; ++i)
+            values.push(reader.readU64());
+        return values;
+    }
+
+    // Handle ByteArray or IndexArrayU8 (raw payloads for strings)
+    if (coltype === ENTupleColumnType.kByteArray || coltype === ENTupleColumnType.kIndexArrayU8) {
+        for (let i = 0; i < blob.byteLength; ++i)
+            values.push(reader.readU8());
+        return values;
+    }
+
+    // Handle Char (signed bytes interpreted as characters)
+    if (coltype === ENTupleColumnType.kChar) {
+        for (let i = 0; i < blob.byteLength; ++i) {
+            const code = reader.readS8();
+            values.push(String.fromCharCode(code));
+        }
+        return values;
+    }
+
+    // Handle fixed-size numeric and primitive types
+    const byteSize = getTypeByteSize(coltype),
+          numValues = blob.byteLength / byteSize;
+
+    for (let i = 0; i < numValues; ++i) {
+        let val;
+            switch (columnDescriptor.coltype) {
+            case ENTupleColumnType.kReal64:
+                val = reader.readF64();
+                break;
+            case ENTupleColumnType.kReal32:
+                val = reader.readF32();
+                break;
+            case ENTupleColumnType.kInt64:
+                val = reader.readI64();
+                break;
+            case ENTupleColumnType.kUInt64:
+                val = reader.readU64();
+                break;
+            case ENTupleColumnType.kInt32:
+                val = reader.readI32();
+                break;
+            case ENTupleColumnType.kUInt32:
+                val = reader.readU32();
+                break;
+            case ENTupleColumnType.kInt16:
+                val = reader.readI16();
+                break;
+            case ENTupleColumnType.kUInt16:
+                val = reader.readU16();
+                break;
+            case ENTupleColumnType.kInt8:
+                val = reader.readS8();
+                break;
+            case ENTupleColumnType.kUInt8:
+            case ENTupleColumnType.kByte:
+                val = reader.readU8();
+                break;
+            case ENTupleColumnType.kSplitIndex64:
+                val = reader.readU32();  
+                break;
+            default:
+                    throw new Error(`Unsupported column type: ${columnDescriptor.coltype}`);
+        }
+        values.push(val);
+    }
+
+    return values;
+}
 
 
 }
@@ -718,6 +757,32 @@ async function readHeaderFooter(tuple) {
     });
 }
 
+function readEntry(rntuple, fieldName, entryIndex) {
+    const builder = rntuple.builder,
+        field = builder.fieldDescriptors.find(f => f.fieldName === fieldName),
+        fieldData = rntuple._clusterData[fieldName];
+
+    if (!field)
+        throw new Error(`No descriptor for field ${fieldName}`);
+    if (!fieldData)
+        throw new Error(`No data for field ${fieldName}`);
+
+    // Detect and decode string fields
+    if (Array.isArray(fieldData) && fieldData.length === 2) {
+        const [offsets, payload] = fieldData,
+        start = entryIndex === 0 ? 0 : Number(offsets[entryIndex - 1]),
+            end = Number(offsets[entryIndex]),
+            byteArray = Uint8Array.from(payload.slice(start, end)),
+            decoded = new TextDecoder('utf-8').decode(byteArray);
+        console.log(`Decoded string for field '${fieldName}' at entry ${entryIndex}:`, decoded);
+        return decoded;
+    }
+
+    // Fallback: primitive type (e.g. int, float)
+    return fieldData[0][entryIndex];
+}
+
+
 // Read and process the next data cluster from the RNTuple
 function readNextCluster(rntuple, selector) {
     const builder = rntuple.builder,
@@ -742,11 +807,11 @@ function readNextCluster(rntuple, selector) {
             const colEntry = builder.pageLocations[clusterIndex]?.[colDesc.index];
 
             // When the data is missing or broken
-            if (!colEntry || !colEntry.pages) 
+            if (!colEntry || !colEntry.pages)
                 throw new Error(`No pages for column ${colDesc.index} in cluster ${clusterIndex}`);
 
             for (const page of colEntry.pages)
-                pages.push({ page, colDesc });
+                pages.push({ page, colDesc, fieldName });
         }
     }
 
@@ -766,7 +831,7 @@ function readNextCluster(rntuple, selector) {
     return rntuple.$file.readBuffer(dataToRead).then(blobsRaw => {
         const blobs = Array.isArray(blobsRaw) ? blobsRaw : [blobsRaw],
             unzipPromises = blobs.map((blob, idx) => {
-            const { page, colDesc } = pages[idx],
+                const { page, colDesc } = pages[idx],
                     numElements = Number(page.numElements),
                     elementSize = colDesc.bitsOnStorage / 8;
                 return R__unzip(blob, numElements * elementSize);
@@ -780,12 +845,37 @@ function readNextCluster(rntuple, selector) {
                     colDesc
                 } = pages[i],
                     field = builder.fieldDescriptors[colDesc.fieldId],
-                    values = builder.deserializePage(unzipBlobs[i], colDesc, field);
+                    values = builder.deserializePage(unzipBlobs[i], colDesc);
 
-                // TODO: Handle fields with multiple columns (e.g., data + metadata).
-                // For now, we only store the first column's data to avoid overwriting.
+                // Support multiple representations (e.g., string fields with offsets + payload)
                 if (!rntuple._clusterData[field.fieldName])
-                    rntuple._clusterData[field.fieldName] = values;
+                    rntuple._clusterData[field.fieldName] = [];
+
+                // splitting string fields into offset and payload components
+                if (field.typename === 'string') {
+                    if (colDesc.type === 0x01 || colDesc.type === 0x02) // Index64/Index32
+                        rntuple._clusterData[field.fieldName][0] = values;
+                    else
+                        rntuple._clusterData[field.fieldName][1] = values;
+                } else
+                    rntuple._clusterData[field.fieldName][0] = values;
+            }
+
+            // Ensure string fields have ending offset for proper reconstruction of the last entry
+            for (const fieldName of selectedFields) {
+                const field = builder.fieldDescriptors.find(f => f.fieldName === fieldName),
+                    colData = rntuple._clusterData[fieldName];
+
+                if (field.typename === 'string') {
+                    if (!Array.isArray(colData) || colData.length !== 2)
+                        throw new Error(`String field '${fieldName}' must have 2 columns`);
+
+                    const [offsets, payload] = colData;
+
+                    // Append trailing offset if not present
+                    if (offsets.length === builder.clusterSummaries[clusterIndex].numEntries)
+                        offsets.push(BigInt(payload.length));
+                }
             }
 
             const numEntries = clusterSummary.numEntries;
@@ -793,9 +883,9 @@ function readNextCluster(rntuple, selector) {
                 for (let b = 0; b < selector.numBranches(); ++b) {
                     const fieldName = selector.nameOfBranch(b),
                         values = rntuple._clusterData[fieldName];
-                    if (!values) 
+                    if (!values)
                         throw new Error(`Missing values for selected field: ${fieldName}`);
-                    selector.tgtobj[fieldName] = values[i];
+                    selector.tgtobj[fieldName] = readEntry(rntuple, fieldName, i);
                 }
                 selector.Process();
             }
