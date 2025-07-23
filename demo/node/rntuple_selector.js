@@ -4,7 +4,7 @@ import { TSelector, openFile } from 'jsroot';
 const selector = new TSelector();
 selector.sum = 0;
 selector.count = 0;
-selector.addBranch('Division');
+selector.addBranch('Nation');
 selector.Begin = function() {
   console.log('Begin processing');
 };
@@ -23,7 +23,7 @@ selector.Terminate = function() {
 };
 
 if (typeof window === 'undefined') {
-  openFile('https://jsroot.gsi.de/files/tmp/ntpl001_staff.root')
+  openFile('./ntpl001_staff.root')
     .then(file => file.readObject('Staff'))
     .then(rntuple => {
       if (!rntuple) throw new Error('myNtuple not found');
@@ -32,3 +32,15 @@ if (typeof window === 'undefined') {
     .then(() => console.log('RNTuple::Process finished'))
     .catch(err => console.error(err));
 }
+
+
+// if (typeof window === 'undefined') {
+//   openFile('./simple.root')
+//     .then(file => file.readObject('myNtuple'))
+//     .then(rntuple => {
+//       if (!rntuple) throw new Error('myNtuple not found');
+//       return rntupleProcess(rntuple, selector);
+//     })
+//     .then(() => console.log('RNTuple::Process finished'))
+//     .catch(err => console.error(err));
+// }

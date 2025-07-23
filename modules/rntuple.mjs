@@ -153,6 +153,7 @@ function getTypeByteSize(coltype) {
             return 8;
         case ENTupleColumnType.kReal32:
         case ENTupleColumnType.kInt32:
+        case ENTupleColumnType.kIndex32: 
         case ENTupleColumnType.kUInt32:
         case ENTupleColumnType.kSplitIndex64:
             return 4;
@@ -162,6 +163,9 @@ function getTypeByteSize(coltype) {
         case ENTupleColumnType.kInt8:
         case ENTupleColumnType.kUInt8:
         case ENTupleColumnType.kByte:
+        case ENTupleColumnType.kByteArray:    
+        case ENTupleColumnType.kIndexArrayU8:
+        case ENTupleColumnType.kChar:
             return 1;
         default:
             throw new Error(`Unsupported coltype for byte size: ${coltype} (0x${coltype.toString(16).padStart(2, '0')})`);
@@ -602,47 +606,14 @@ class RNTupleDescriptorBuilder {
     deserializePage(blob, columnDescriptor) {
     const reader = new RBufferReader(blob),
           values = [],
-          coltype = columnDescriptor.coltype;
+          coltype = columnDescriptor.coltype,
+          byteSize = getTypeByteSize(coltype),
+          numValues = byteSize ? blob.byteLength / byteSize : undefined;
 
-    // Handle Index32 offsets (used for string fields)
-    if (coltype === ENTupleColumnType.kIndex32) {
-        const numOffsets = blob.byteLength / 4;
-        for (let i = 0; i < numOffsets; ++i)
-            values.push(reader.readU32());
-        return values;
-    }
-
-    // Handle Index64 offsets (used for string fields)
-    if (coltype === ENTupleColumnType.kIndex64) {
-        const numOffsets = blob.byteLength / 8;
-        for (let i = 0; i < numOffsets; ++i)
-            values.push(reader.readU64());
-        return values;
-    }
-
-    // Handle ByteArray or IndexArrayU8 (raw payloads for strings)
-    if (coltype === ENTupleColumnType.kByteArray || coltype === ENTupleColumnType.kIndexArrayU8) {
-        for (let i = 0; i < blob.byteLength; ++i)
-            values.push(reader.readU8());
-        return values;
-    }
-
-    // Handle Char (signed bytes interpreted as characters)
-    if (coltype === ENTupleColumnType.kChar) {
-        for (let i = 0; i < blob.byteLength; ++i) {
-            const code = reader.readS8();
-            values.push(String.fromCharCode(code));
-        }
-        return values;
-    }
-
-    // Handle fixed-size numeric and primitive types
-    const byteSize = getTypeByteSize(coltype),
-          numValues = blob.byteLength / byteSize;
-
-    for (let i = 0; i < numValues; ++i) {
+    for (let i = 0; i < (numValues ?? blob.byteLength); ++i) {
         let val;
-            switch (columnDescriptor.coltype) {
+
+        switch (coltype) {
             case ENTupleColumnType.kReal64:
                 val = reader.readF64();
                 break;
@@ -656,7 +627,8 @@ class RNTupleDescriptorBuilder {
                 val = reader.readU64();
                 break;
             case ENTupleColumnType.kInt32:
-                val = reader.readI32();
+            case ENTupleColumnType.kIndex32:
+                val = reader.readU32();
                 break;
             case ENTupleColumnType.kUInt32:
                 val = reader.readU32();
@@ -672,10 +644,18 @@ class RNTupleDescriptorBuilder {
                 break;
             case ENTupleColumnType.kUInt8:
             case ENTupleColumnType.kByte:
+            case ENTupleColumnType.kByteArray:
+            case ENTupleColumnType.kIndexArrayU8:
                 val = reader.readU8();
                 break;
+            case ENTupleColumnType.kChar:
+                val = String.fromCharCode(reader.readS8());
+                break;
+            case ENTupleColumnType.kIndex64:
+                val = reader.readU64();
+                break;
             case ENTupleColumnType.kSplitIndex64:
-                val = reader.readU32();  
+                val = reader.readU32();
                 break;
             default:
                     throw new Error(`Unsupported column type: ${columnDescriptor.coltype}`);
@@ -870,11 +850,8 @@ function readNextCluster(rntuple, selector) {
                     if (!Array.isArray(colData) || colData.length !== 2)
                         throw new Error(`String field '${fieldName}' must have 2 columns`);
 
-                    const [offsets, payload] = colData;
-
-                    // Append trailing offset if not present
-                    if (offsets.length === builder.clusterSummaries[clusterIndex].numEntries)
-                        offsets.push(BigInt(payload.length));
+                    if (colData[0].length !== builder.clusterSummaries[clusterIndex].numEntries + 1)
+                        throw new Error(`Malformed string field '${fieldName}': missing final offset`);
                 }
             }
 
