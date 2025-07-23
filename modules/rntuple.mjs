@@ -681,22 +681,24 @@ async function readHeaderFooter(tuple) {
         if (blobs?.length !== 2)
             return false;
 
-        // unzip both buffers
+        // Handle both compressed and uncompressed cases
+        const processBlob = (blob, uncompressedSize) => {
+            // If uncompressedSize matches blob size, it's uncompressed
+            if (blob.byteLength === uncompressedSize) 
+                return Promise.resolve(blob);
+            return R__unzip(blob, uncompressedSize);
+        };
+
         return Promise.all([
-            R__unzip(blobs[0], tuple.fLenHeader),
-            R__unzip(blobs[1], tuple.fLenFooter)
+            processBlob(blobs[0], tuple.fLenHeader),
+            processBlob(blobs[1], tuple.fLenFooter)
         ]).then(unzip_blobs => {
-            const header_blob = unzip_blobs[0],
-                  footer_blob = unzip_blobs[1];
-            if (!header_blob || !footer_blob)
+            const [header_blob, footer_blob] = unzip_blobs;
+            if (!header_blob || !footer_blob) 
                 return false;
 
-            // create builder description and decode it - dummy for the moment
-
             tuple.builder = new RNTupleDescriptorBuilder;
-
             tuple.builder.deserializeHeader(header_blob);
-
             tuple.builder.deserializeFooter(footer_blob);
 
             // Build fieldToColumns mapping
@@ -765,9 +767,14 @@ function readEntry(rntuple, fieldName, entryIndex) {
 
 // Read and process the next data cluster from the RNTuple
 function readNextCluster(rntuple, selector) {
-    const builder = rntuple.builder,
-        clusterIndex = selector.currentCluster,
-        clusterSummary = builder.clusterSummaries[clusterIndex],
+    const builder = rntuple.builder;
+    
+    // Add validation
+    if (!builder.clusterSummaries || builder.clusterSummaries.length === 0) 
+        throw new Error('No cluster summaries available - possibly incomplete file reading');
+
+    const clusterIndex = selector.currentCluster,
+          clusterSummary = builder.clusterSummaries[clusterIndex],
 
         // Gather all pages for this cluster from selected fields only
         pages = [],
