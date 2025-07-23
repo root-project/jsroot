@@ -4,16 +4,16 @@ import { TSelector, openFile } from 'jsroot';
 const selector = new TSelector();
 selector.sum = 0;
 selector.count = 0;
-selector.addBranch('myDouble');
+selector.addBranch('Division');
 selector.Begin = function() {
   console.log('Begin processing');
 };
 
 selector.Process = function() {
-  // console.log('Entry : ', this.tgtobj);
-  this.sum += this.tgtobj.myDouble;
+  console.log('Entry : ', this.tgtobj);
   this.count++;
 };
+
 
 selector.Terminate = function() {
   if (this.count === 0) 
@@ -23,8 +23,8 @@ selector.Terminate = function() {
 };
 
 if (typeof window === 'undefined') {
-  openFile('./simple.root')
-    .then(file => file.readObject('myNtuple'))
+  openFile('https://jsroot.gsi.de/files/tmp/ntpl001_staff.root')
+    .then(file => file.readObject('Staff'))
     .then(rntuple => {
       if (!rntuple) throw new Error('myNtuple not found');
       return rntupleProcess(rntuple, selector);
