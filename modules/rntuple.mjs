@@ -762,12 +762,10 @@ function readEntry(rntuple, fieldName, entryIndex) {
         const [offsets, payload] = fieldData,
         start = entryIndex === 0 ? 0 : Number(offsets[entryIndex - 1]),
             end = Number(offsets[entryIndex]),
-            byteArray = Uint8Array.from(payload.slice(start, end)),
-            decoded = new TextDecoder('utf-8').decode(byteArray);
-        console.log(`Decoded string for field '${fieldName}' at entry ${entryIndex}:`, decoded);
+            decoded = payload.slice(start, end).join(''); // Convert to string
         return decoded;
     }
-
+    
     // Fallback: primitive type (e.g. int, float)
     return fieldData[0][entryIndex];
 }
@@ -856,11 +854,13 @@ function readNextCluster(rntuple, selector) {
                     rntuple._clusterData[field.fieldName] = [];
 
                 // splitting string fields into offset and payload components
-                if (field.typename === 'string') {
-                    if (colDesc.type === 0x01 || colDesc.type === 0x02) // Index64/Index32
+                if (field.typeName === 'std::string') {
+                    if (colDesc.coltype === ENTupleColumnType.kIndex64) // Index64/Index32
                         rntuple._clusterData[field.fieldName][0] = values; // Offsets
-                    else
+                    else if (colDesc.coltype === ENTupleColumnType.kChar)      
                         rntuple._clusterData[field.fieldName][1] = values; // Payload
+                    else 
+                        throw new Error(`Unsupported column type for string field: ${colDesc.coltype}`);
                 } else
                     rntuple._clusterData[field.fieldName][0] = values;
             }
@@ -869,12 +869,10 @@ function readNextCluster(rntuple, selector) {
             for (const fieldName of selectedFields) {
                 const field = builder.fieldDescriptors.find(f => f.fieldName === fieldName),
                     colData = rntuple._clusterData[fieldName];
-
-                if (field.typename === 'string') {
+                if (field.typeName === 'std::string') {                 
                     if (!Array.isArray(colData) || colData.length !== 2)
                         throw new Error(`String field '${fieldName}' must have 2 columns`);
-
-                    if (colData[0].length !== builder.clusterSummaries[clusterIndex].numEntries + 1)
+                    if (colData[0].length !== builder.clusterSummaries[clusterIndex].numEntries)
                         throw new Error(`Malformed string field '${fieldName}': missing final offset`);
                 }
             }

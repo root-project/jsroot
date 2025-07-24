@@ -18,8 +18,6 @@ selector.Process = function() {
 selector.Terminate = function() {
   if (this.count === 0) 
     console.error('No entries processed');
-   else 
-    console.log(`Mean = ${(this.sum / this.count).toFixed(4)} from ${this.count} entries`); 
 };
 
 if (typeof window === 'undefined') {
