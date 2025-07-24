@@ -150,6 +150,7 @@ function getTypeByteSize(coltype) {
         case ENTupleColumnType.kReal64:
         case ENTupleColumnType.kInt64:
         case ENTupleColumnType.kUInt64:
+        case ENTupleColumnType.kIndex64:
             return 8;
         case ENTupleColumnType.kReal32:
         case ENTupleColumnType.kInt32:
@@ -724,13 +725,20 @@ async function readHeaderFooter(tuple) {
                 if (!(page_list_blob instanceof DataView))
                     throw new Error(`Expected DataView from readBuffer, got ${Object.prototype.toString.call(page_list_blob)}`);
 
-                return R__unzip(page_list_blob, uncompressedSize).then(unzipped_blob => {
-                    if (!(unzipped_blob instanceof DataView))
-                        throw new Error(`Unzipped page list is not a DataView, got ${Object.prototype.toString.call(unzipped_blob)}`);
-
-                    tuple.builder.deserializePageList(unzipped_blob);
+                // Check if page list data is uncompressed
+                if (page_list_blob.byteLength === uncompressedSize) {
+                    // Data is uncompressed, use directly
+                    tuple.builder.deserializePageList(page_list_blob);
                     return true;
-                });
+                }
+                    // Attempt to decompress the page list
+                    return R__unzip(page_list_blob, uncompressedSize).then(unzipped_blob => {
+                        if (!(unzipped_blob instanceof DataView)) 
+                            throw new Error(`Unzipped page list is not a DataView, got ${Object.prototype.toString.call(unzipped_blob)}`);
+
+                        tuple.builder.deserializePageList(unzipped_blob);
+                        return true;
+                    });
             });
         });
     }).catch(err => {
@@ -819,20 +827,29 @@ function readNextCluster(rntuple, selector) {
         const blobs = Array.isArray(blobsRaw) ? blobsRaw : [blobsRaw],
             unzipPromises = blobs.map((blob, idx) => {
                 const { page, colDesc } = pages[idx],
+                    colEntry = builder.pageLocations[clusterIndex][colDesc.index], // Access column entry
                     numElements = Number(page.numElements),
                     elementSize = colDesc.bitsOnStorage / 8;
-                return R__unzip(blob, numElements * elementSize);
+
+                // Check if data is compressed
+                if (colEntry.compression === 0)
+                    return Promise.resolve(blob); // Uncompressed: use blob directly
+                    return R__unzip(blob, numElements * elementSize);
             });
 
         return Promise.all(unzipPromises).then(unzipBlobs => {
             rntuple._clusterData = {}; // store deserialized data per field
 
             for (let i = 0; i < unzipBlobs.length; ++i) {
+                const blob = unzipBlobs[i];
+                // Ensure blob is a DataView
+                if (!(blob instanceof DataView))
+                    throw new Error(`Invalid blob type for page ${i}: ${Object.prototype.toString.call(blob)}`);
                 const {
                     colDesc
                 } = pages[i],
                     field = builder.fieldDescriptors[colDesc.fieldId],
-                    values = builder.deserializePage(unzipBlobs[i], colDesc);
+                    values = builder.deserializePage(blob, colDesc);
 
                 // Support multiple representations (e.g., string fields with offsets + payload)
                 if (!rntuple._clusterData[field.fieldName])
@@ -841,9 +858,9 @@ function readNextCluster(rntuple, selector) {
                 // splitting string fields into offset and payload components
                 if (field.typename === 'string') {
                     if (colDesc.type === 0x01 || colDesc.type === 0x02) // Index64/Index32
-                        rntuple._clusterData[field.fieldName][0] = values;
+                        rntuple._clusterData[field.fieldName][0] = values; // Offsets
                     else
-                        rntuple._clusterData[field.fieldName][1] = values;
+                        rntuple._clusterData[field.fieldName][1] = values; // Payload
                 } else
                     rntuple._clusterData[field.fieldName][0] = values;
             }
