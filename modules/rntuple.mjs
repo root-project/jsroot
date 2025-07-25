@@ -928,4 +928,4 @@ async function tupleHierarchy(tuple_node, tuple) {
     });
 }
 
-export { tupleHierarchy, readHeaderFooter, RBufferReader, rntupleProcess };
+export { tupleHierarchy, readHeaderFooter, RBufferReader, rntupleProcess, readEntry};
