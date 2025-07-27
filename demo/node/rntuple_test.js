@@ -89,18 +89,28 @@ selector.Terminate = () => {
 await rntupleProcess(rntuple, selector);
 
 // Now validate entry data
-const expected = {
-  0: { IntField: 0, FloatField: 0, DoubleField: 0.0, StringField: 'entry_0' },
-  9: { IntField: 9, FloatField: 81, DoubleField: 4.5, StringField: 'entry_9' }
-};
+const EPSILON = 1e-10;
 
-for (const entryIndex of [0, 9]) {
+for (let entryIndex = 0; entryIndex < 10; ++entryIndex) {
   console.log(`\nChecking entry ${entryIndex}:`);
+  
+  const expected = {
+    IntField: entryIndex,
+    FloatField: entryIndex * entryIndex,
+    DoubleField: entryIndex * 0.5,
+    StringField: `entry_${entryIndex}`
+  };
+
   for (const field of fields) {
     try {
       const value = readEntry(rntuple, field, entryIndex),
-            expectedValue = expected[entryIndex][field];
-      if (value !== expectedValue)
+            expectedValue = expected[field],
+
+      pass = typeof value === 'number'
+        ? Math.abs(value - expectedValue) < EPSILON
+        : value === expectedValue;
+
+      if (!pass)
         console.error(`FAILURE: ${field} at entry ${entryIndex} expected ${expectedValue}, got ${value}`);
       else
         console.log(`OK: ${field} at entry ${entryIndex} = ${value}`);
