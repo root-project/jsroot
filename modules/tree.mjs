@@ -505,7 +505,7 @@ class TDrawVariable {
                }
             }
 
-            br = findBranchComplex(tree, code.slice(pos, pos2));
+            br = selector.findBranch(tree, code.slice(pos, pos2));
             if (!br) { pos = pos2 + 1; continue; }
 
             // when full id includes branch name, replace only part of extracted expression
@@ -552,16 +552,9 @@ class TDrawVariable {
                if (code[pos2] === '(') { pos2 = prev - 1; break; }
 
                // this is selection of member, but probably we need to activate iterator for ROOT collection
-               if (!arriter.length) {
-                  // TODO: if selected member is simple data type - no need to make other checks - just break here
-                  if ((br.fType === kClonesNode) || (br.fType === kSTLNode))
-                     arriter.push(undefined);
-                  else {
-                     const objclass = getBranchObjectClass(br, tree, false, true);
-                     if (objclass && isRootCollection(null, objclass))
-                        arriter.push(undefined);
-                  }
-               }
+               // TODO: if selected member is simple data type - no need to make other checks - just break here
+               if (!arriter.length && selector.isArrayBranch(tree, br))
+                  arriter.push(undefined);
                arriter.push(code.slice(prev, pos2));
                continue;
             }
@@ -590,7 +583,8 @@ class TDrawVariable {
                   else {
                      // try to compile code as draw variable
                      const subvar = new TDrawVariable(this.globals);
-                     if (!subvar.parse(tree, selector, sub)) return false;
+                     if (!subvar.parse(tree, selector, sub))
+                        return false;
                      arriter.push(subvar);
                   }
             }
@@ -603,7 +597,8 @@ class TDrawVariable {
             arriter = true;
 
          let indx = selector.indexOfBranch(br);
-         if (indx < 0) indx = selector.addBranch(br, undefined, branch_mode);
+         if (indx < 0)
+            indx = selector.addBranch(br, undefined, branch_mode);
 
          branch_mode = undefined;
 
@@ -744,6 +739,21 @@ class TDrawSelector extends TSelector {
       this.aver_diff = 0;
    }
 
+   /** @summary Return number of entries in the tree */
+   getNumEntries(tree) { return tree?.fEntries || 0; }
+
+   /** @summary Find branch in the tree */
+   findBranch(tree, name) { return findBranchComplex(tree, name); }
+
+   /** @summary Returns true if one can use branch as array */
+   isArrayBranch(tree, br) {
+      if ((br.fType === kClonesNode) || (br.fType === kSTLNode))
+         return true;
+      const objclass = getBranchObjectClass(br, tree, false, true);
+      if (objclass && isRootCollection(null, objclass))
+         return true;
+   }
+
    /** @summary Set draw selector callbacks */
    setCallback(result_callback, progress_callback) {
       this.result_callback = result_callback;
@@ -810,9 +820,9 @@ class TDrawSelector extends TSelector {
             case 'num':
             case 'numentries':
                if (parvalue === 'all')
-                  args.numentries = tree.fEntries;
+                  args.numentries = this.getNumEntries(tree);
                else if (parvalue === 'half')
-                  args.numentries = Math.round(tree.fEntries / 2);
+                  args.numentries = Math.round(this.getNumEntries(tree) / 2);
                else if (intvalue !== undefined)
                   args.numentries = intvalue;
                break;
@@ -2969,4 +2979,5 @@ function treeHierarchy(tree_node, obj) {
 }
 
 export { kClonesNode, kSTLNode, clTBranchFunc,
-         TSelector, TDrawVariable, TDrawSelector, treeHierarchy, treeProcess, treeDraw, treeIOTest };
+         TSelector, TDrawVariable, TDrawSelector,
+         treeHierarchy, treeProcess, treeDraw, treeIOTest };
