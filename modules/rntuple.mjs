@@ -907,6 +907,26 @@ function rntupleProcess(rntuple, selector, args) {
     });
 }
 
+class TDrawSelectorTuple extends TDrawSelector {
+
+   /** @summary Return total number of entries ????
+    * @desc TODO: implementation missing now */
+   getNumEntries(tuple) { return tuple?.fEntries || 0; }
+
+   /** @summary Search for field in tuple
+    * @desc TODO: Can be more complex when name includes extra parts referencing member or collection size or more  */
+   findBranch(tuple, name) {
+      return tuple.builder?.fieldDescriptors.find(field => {
+         return field.fieldName === name;
+      });
+   }
+
+   /** @summary Returns true if field can be used as array */
+   isArrayBranch(/* tuple, br */) { return false; }
+
+} // class TDrawSelectorRNtuple
+
+
 /** @summary implementation of drawing for RNTuple
   * @param {object|string} args - different setting or simply draw expression
   * @param {string} args.expr - draw expression
@@ -927,7 +947,7 @@ async function rntupleDraw(rntuple, args) {
    if (!isStr(args.expr))
       args.expr = '';
 
-   const selector = new TDrawSelector();
+   const selector = new TDrawSelectorRNtuple();
 
    if (args.branch) {
       if (!selector.drawOnlyBranch(rntuple, args.branch, args.expr, args))
@@ -943,7 +963,7 @@ async function rntupleDraw(rntuple, args) {
 
       delete args.dump_entries;
 
-      const selector2 = new TDrawSelector(),
+      const selector2 = new TDrawSelectorRNtuple(),
             args2 = Object.assign({}, args);
       args2.staged = false;
       args2.elist = sel.hist; // assign entries found in first selection
