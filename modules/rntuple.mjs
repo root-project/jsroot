@@ -1,4 +1,7 @@
 import { R__unzip } from './io.mjs';
+
+import { TDrawSelector } from './tree.mjs';
+
 const LITTLE_ENDIAN = true;
 class RBufferReader {
 
@@ -154,7 +157,7 @@ function getTypeByteSize(coltype) {
             return 8;
         case ENTupleColumnType.kReal32:
         case ENTupleColumnType.kInt32:
-        case ENTupleColumnType.kIndex32: 
+        case ENTupleColumnType.kIndex32:
         case ENTupleColumnType.kUInt32:
         case ENTupleColumnType.kSplitIndex64:
             return 4;
@@ -164,7 +167,7 @@ function getTypeByteSize(coltype) {
         case ENTupleColumnType.kInt8:
         case ENTupleColumnType.kUInt8:
         case ENTupleColumnType.kByte:
-        case ENTupleColumnType.kByteArray:    
+        case ENTupleColumnType.kByteArray:
         case ENTupleColumnType.kIndexArrayU8:
         case ENTupleColumnType.kChar:
             return 1;
@@ -188,7 +191,7 @@ const kFlagRepetitiveField = 0x01,
 // Column Flags
       kFlagDeferredColumn = 0x01,
       kFlagHasValueRange = 0x02;
-      
+
 class RNTupleDescriptorBuilder {
 
     deserializeHeader(header_blob) {
@@ -329,7 +332,7 @@ class RNTupleDescriptorBuilder {
 
             if (flags & kFlagProjectedField)
                 sourceFieldId = reader.readU32();
-            
+
             if (flags & kFlagHasTypeChecksum)
                 checksum = reader.readU32();
 
@@ -376,7 +379,7 @@ class RNTupleDescriptorBuilder {
 
             if (flags & kFlagDeferredColumn)
                 firstElementIndex = reader.readU64();
-            
+
             if (flags & kFlagHasValueRange) {
                 minValue = reader.readF64();
                 maxValue = reader.readF64();
@@ -465,7 +468,7 @@ class RNTupleDescriptorBuilder {
         clusterGroups = [];
 
         for (let i = 0; i < groupCount; ++i) {
-            const recordStart = BigInt(reader.offset), 
+            const recordStart = BigInt(reader.offset),
                 clusterRecordSize = reader.readS64(),
                 minEntry = reader.readU64(),
                 entrySpan = reader.readU64(),
@@ -685,7 +688,7 @@ async function readHeaderFooter(tuple) {
         // Handle both compressed and uncompressed cases
         const processBlob = (blob, uncompressedSize) => {
             // If uncompressedSize matches blob size, it's uncompressed
-            if (blob.byteLength === uncompressedSize) 
+            if (blob.byteLength === uncompressedSize)
                 return Promise.resolve(blob);
             return R__unzip(blob, uncompressedSize);
         };
@@ -695,7 +698,7 @@ async function readHeaderFooter(tuple) {
             processBlob(blobs[1], tuple.fLenFooter)
         ]).then(unzip_blobs => {
             const [header_blob, footer_blob] = unzip_blobs;
-            if (!header_blob || !footer_blob) 
+            if (!header_blob || !footer_blob)
                 return false;
 
             tuple.builder = new RNTupleDescriptorBuilder;
@@ -733,7 +736,7 @@ async function readHeaderFooter(tuple) {
                 }
                     // Attempt to decompress the page list
                     return R__unzip(page_list_blob, uncompressedSize).then(unzipped_blob => {
-                        if (!(unzipped_blob instanceof DataView)) 
+                        if (!(unzipped_blob instanceof DataView))
                             throw new Error(`Unzipped page list is not a DataView, got ${Object.prototype.toString.call(unzipped_blob)}`);
 
                         tuple.builder.deserializePageList(unzipped_blob);
@@ -765,7 +768,7 @@ function readEntry(rntuple, fieldName, entryIndex) {
             decoded = payload.slice(start, end).join(''); // Convert to string
         return decoded;
     }
-    
+
     // Fallback: primitive type (e.g. int, float)
     return fieldData[0][entryIndex];
 }
@@ -774,9 +777,9 @@ function readEntry(rntuple, fieldName, entryIndex) {
 // Read and process the next data cluster from the RNTuple
 function readNextCluster(rntuple, selector) {
     const builder = rntuple.builder;
-    
+
     // Add validation
-    if (!builder.clusterSummaries || builder.clusterSummaries.length === 0) 
+    if (!builder.clusterSummaries || builder.clusterSummaries.length === 0)
         throw new Error('No cluster summaries available - possibly incomplete file reading');
 
     const clusterIndex = selector.currentCluster,
@@ -857,9 +860,9 @@ function readNextCluster(rntuple, selector) {
                 if (field.typeName === 'std::string') {
                     if (colDesc.coltype === ENTupleColumnType.kIndex64) // Index64/Index32
                         rntuple._clusterData[field.fieldName][0] = values; // Offsets
-                    else if (colDesc.coltype === ENTupleColumnType.kChar)      
+                    else if (colDesc.coltype === ENTupleColumnType.kChar)
                         rntuple._clusterData[field.fieldName][1] = values; // Payload
-                    else 
+                    else
                         throw new Error(`Unsupported column type for string field: ${colDesc.coltype}`);
                 } else
                     rntuple._clusterData[field.fieldName][0] = values;
@@ -869,7 +872,7 @@ function readNextCluster(rntuple, selector) {
             for (const fieldName of selectedFields) {
                 const field = builder.fieldDescriptors.find(f => f.fieldName === fieldName),
                     colData = rntuple._clusterData[fieldName];
-                if (field.typeName === 'std::string') {                 
+                if (field.typeName === 'std::string') {
                     if (!Array.isArray(colData) || colData.length !== 2)
                         throw new Error(`String field '${fieldName}' must have 2 columns`);
                     if (colData[0].length !== builder.clusterSummaries[clusterIndex].numEntries)
@@ -904,6 +907,55 @@ function rntupleProcess(rntuple, selector, args) {
     });
 }
 
+/** @summary implementation of drawing for RNTuple
+  * @param {object|string} args - different setting or simply draw expression
+  * @param {string} args.expr - draw expression
+  * @param {string} [args.cut=undefined] - cut expression (also can be part of 'expr' after '::')
+  * @param {string} [args.drawopt=undefined] - draw options for result histogram
+  * @param {number} [args.firstentry=0] - first entry to process
+  * @param {number} [args.numentries=undefined] - number of entries to process, all by default
+  * @param {Array} [args.elist=undefined] - array of entries id to process, all by default
+  * @param {boolean} [args.staged] - staged processing, first apply cut to select entries and then perform drawing for selected entries
+  * @param {object} [args.branch=undefined] - TBranch object from TTree itself for the direct drawing
+  * @param {function} [args.progress=undefined] - function called during histogram accumulation with obj argument
+  * @return {Promise} with produced object */
+
+async function rntupleDraw(rntuple, args) {
+   if (isStr(args))
+      args = { expr: args };
+
+   if (!isStr(args.expr))
+      args.expr = '';
+
+   const selector = new TDrawSelector();
+
+   if (args.branch) {
+      if (!selector.drawOnlyBranch(rntuple, args.branch, args.expr, args))
+        return Promise.reject(Error(`Fail to create draw expression ${args.expr} for branch ${args.branch.fName}`));
+   } else if (!selector.parseDrawExpression(rntuple, args))
+      return Promise.reject(Error(`Fail to create draw expression ${args.expr}`));
+
+   selector.setCallback(null, args.progress);
+
+   return rntupleProcess(rntuple, selector, args).then(sel => {
+      if (!args.staged)
+         return sel;
+
+      delete args.dump_entries;
+
+      const selector2 = new TDrawSelector(),
+            args2 = Object.assign({}, args);
+      args2.staged = false;
+      args2.elist = sel.hist; // assign entries found in first selection
+      if (!selector2.createDrawExpression(rntuple, args.staged_names, '', args2))
+         return Promise.reject(Error(`Fail to create final draw expression ${args.expr}`));
+      ['arr_limit', 'htype', 'nmatch', 'want_hist', 'hist_nbins', 'hist_name', 'hist_args', 'draw_title']
+        .forEach(name => { selector2[name] = selector[name]; });
+      return rntupleProcess(rntuple, selector2, args2);
+   }).then(sel => sel.hist);
+}
+
+
 /** @summary Create hierarchy of ROOT::RNTuple object
  * @desc Used by hierarchy painter to explore sub-elements
  * @private */
@@ -928,4 +980,4 @@ async function tupleHierarchy(tuple_node, tuple) {
     });
 }
 
-export { tupleHierarchy, readHeaderFooter, RBufferReader, rntupleProcess, readEntry };
+export { tupleHierarchy, readHeaderFooter, RBufferReader, rntupleProcess, readEntry, rntupleDraw };
