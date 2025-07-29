@@ -677,6 +677,11 @@ class RNTupleDescriptorBuilder {
 /** @summary Very preliminary function to read header/footer from RNTuple
  * @private */
 async function readHeaderFooter(tuple) {
+
+    // if already read - return immediately, make possible to call several times
+    if (tuple?.builder)
+        return true;
+
     if (!tuple.$file)
         return false;
 
@@ -941,38 +946,45 @@ class TDrawSelectorTuple extends TDrawSelector {
   * @return {Promise} with produced object */
 
 async function rntupleDraw(rntuple, args) {
-   if (isStr(args))
-      args = { expr: args };
+    if (isStr(args))
+        args = { expr: args };
 
-   if (!isStr(args.expr))
-      args.expr = '';
+    if (!isStr(args.expr))
+        args.expr = '';
 
-   const selector = new TDrawSelectorRNtuple();
+    return readHeaderFooter(rntuple).then(res_header_footer => {
 
-   if (args.branch) {
-      if (!selector.drawOnlyBranch(rntuple, args.branch, args.expr, args))
-        return Promise.reject(Error(`Fail to create draw expression ${args.expr} for branch ${args.branch.fName}`));
-   } else if (!selector.parseDrawExpression(rntuple, args))
-      return Promise.reject(Error(`Fail to create draw expression ${args.expr}`));
+        if (!res_header_footer)
+            return null;
 
-   selector.setCallback(null, args.progress);
+        const selector = new TDrawSelectorTuple();
 
-   return rntupleProcess(rntuple, selector, args).then(sel => {
-      if (!args.staged)
-         return sel;
+        if (args.branch) {
+            if (!selector.drawOnlyBranch(rntuple, args.branch, args.expr, args))
+                return Promise.reject(Error(`Fail to create draw expression ${args.expr} for branch ${args.branch.fName}`));
+        } else if (!selector.parseDrawExpression(rntuple, args))
+            return Promise.reject(Error(`Fail to create draw expression ${args.expr}`));
 
-      delete args.dump_entries;
+        selector.setCallback(null, args.progress);
 
-      const selector2 = new TDrawSelectorRNtuple(),
-            args2 = Object.assign({}, args);
-      args2.staged = false;
-      args2.elist = sel.hist; // assign entries found in first selection
-      if (!selector2.createDrawExpression(rntuple, args.staged_names, '', args2))
-         return Promise.reject(Error(`Fail to create final draw expression ${args.expr}`));
-      ['arr_limit', 'htype', 'nmatch', 'want_hist', 'hist_nbins', 'hist_name', 'hist_args', 'draw_title']
-        .forEach(name => { selector2[name] = selector[name]; });
-      return rntupleProcess(rntuple, selector2, args2);
-   }).then(sel => sel.hist);
+        return rntupleProcess(rntuple, selector, args).then(sel => {
+            if (!args.staged)
+                return sel;
+
+            delete args.dump_entries;
+
+            const selector2 = new TDrawSelectorTuple(),
+                  args2 = Object.assign({}, args);
+            args2.staged = false;
+            args2.elist = sel.hist; // assign entries found in first selection
+            if (!selector2.createDrawExpression(rntuple, args.staged_names, '', args2))
+                return Promise.reject(Error(`Fail to create final draw expression ${args.expr}`));
+            ['arr_limit', 'htype', 'nmatch', 'want_hist', 'hist_nbins', 'hist_name', 'hist_args', 'draw_title']
+                .forEach(name => { selector2[name] = selector[name]; });
+            return rntupleProcess(rntuple, selector2, args2);
+        }).then(sel => sel.hist);
+
+    });
 }
 
 
