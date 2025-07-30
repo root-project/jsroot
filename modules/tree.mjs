@@ -2747,7 +2747,12 @@ async function treeDraw(tree, args) {
    if (!isStr(args.expr))
       args.expr = '';
 
-   const selector = new TDrawSelector();
+   if (!args.SelectorClass)
+      args.SelectorClass = TDrawSelector;
+   if (!args.processFunction)
+      args.processFunction = treeProcess;
+
+   const selector = new args.SelectorClass();
 
    if (args.branch) {
       if (!selector.drawOnlyBranch(tree, args.branch, args.expr, args))
@@ -2757,13 +2762,13 @@ async function treeDraw(tree, args) {
 
    selector.setCallback(null, args.progress);
 
-   return treeProcess(tree, selector, args).then(sel => {
+   return args.processFunction(tree, selector, args).then(sel => {
       if (!args.staged)
          return sel;
 
       delete args.dump_entries;
 
-      const selector2 = new TDrawSelector(),
+      const selector2 = new args.SelectorClass(),
             args2 = Object.assign({}, args);
       args2.staged = false;
       args2.elist = sel.hist; // assign entries found in first selection
@@ -2771,7 +2776,7 @@ async function treeDraw(tree, args) {
          return Promise.reject(Error(`Fail to create final draw expression ${args.expr}`));
       ['arr_limit', 'htype', 'nmatch', 'want_hist', 'hist_nbins', 'hist_name', 'hist_args', 'draw_title']
         .forEach(name => { selector2[name] = selector[name]; });
-      return treeProcess(tree, selector2, args2);
+      return args.processFunction(tree, selector2, args2);
    }).then(sel => sel.hist);
 }
 
