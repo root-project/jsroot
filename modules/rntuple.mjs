@@ -609,76 +609,74 @@ class RNTupleDescriptorBuilder {
 
     // Example Of Deserializing Page Content
     deserializePage(blob, columnDescriptor) {
-    const reader = new RBufferReader(blob),
-          values = [],
-          coltype = columnDescriptor.coltype,
-          byteSize = getTypeByteSize(coltype),
-          numValues = byteSize ? blob.byteLength / byteSize : undefined;
+        const reader = new RBufferReader(blob),
+            values = [],
+            coltype = columnDescriptor.coltype,
+            byteSize = getTypeByteSize(coltype),
+            numValues = byteSize ? blob.byteLength / byteSize : undefined;
 
-    for (let i = 0; i < (numValues ?? blob.byteLength); ++i) {
-        let val;
+        for (let i = 0; i < (numValues ?? blob.byteLength); ++i) {
+            let val;
 
-        switch (coltype) {
-            case ENTupleColumnType.kReal64:
-                val = reader.readF64();
-                break;
-            case ENTupleColumnType.kReal32:
-                val = reader.readF32();
-                break;
-            case ENTupleColumnType.kInt64:
-                val = reader.readI64();
-                break;
-            case ENTupleColumnType.kUInt64:
-                val = reader.readU64();
-                break;
-            case ENTupleColumnType.kInt32:
-            case ENTupleColumnType.kIndex32:
-                val = reader.readU32();
-                break;
-            case ENTupleColumnType.kUInt32:
-                val = reader.readU32();
-                break;
-            case ENTupleColumnType.kInt16:
-                val = reader.readI16();
-                break;
-            case ENTupleColumnType.kUInt16:
-                val = reader.readU16();
-                break;
-            case ENTupleColumnType.kInt8:
-                val = reader.readS8();
-                break;
-            case ENTupleColumnType.kUInt8:
-            case ENTupleColumnType.kByte:
-            case ENTupleColumnType.kByteArray:
-            case ENTupleColumnType.kIndexArrayU8:
-                val = reader.readU8();
-                break;
-            case ENTupleColumnType.kChar:
-                val = String.fromCharCode(reader.readS8());
-                break;
-            case ENTupleColumnType.kIndex64:
-                val = reader.readU64();
-                break;
-            case ENTupleColumnType.kSplitIndex64:
-                val = reader.readU32();
-                break;
-            default:
-                    throw new Error(`Unsupported column type: ${columnDescriptor.coltype}`);
+            switch (coltype) {
+                case ENTupleColumnType.kReal64:
+                    val = reader.readF64();
+                    break;
+                case ENTupleColumnType.kReal32:
+                    val = reader.readF32();
+                    break;
+                case ENTupleColumnType.kInt64:
+                    val = reader.readI64();
+                    break;
+                case ENTupleColumnType.kUInt64:
+                    val = reader.readU64();
+                    break;
+                case ENTupleColumnType.kInt32:
+                case ENTupleColumnType.kIndex32:
+                    val = reader.readU32();
+                    break;
+                case ENTupleColumnType.kUInt32:
+                    val = reader.readU32();
+                    break;
+                case ENTupleColumnType.kInt16:
+                    val = reader.readI16();
+                    break;
+                case ENTupleColumnType.kUInt16:
+                    val = reader.readU16();
+                    break;
+                case ENTupleColumnType.kInt8:
+                    val = reader.readS8();
+                    break;
+                case ENTupleColumnType.kUInt8:
+                case ENTupleColumnType.kByte:
+                case ENTupleColumnType.kByteArray:
+                case ENTupleColumnType.kIndexArrayU8:
+                    val = reader.readU8();
+                    break;
+                case ENTupleColumnType.kChar:
+                    val = String.fromCharCode(reader.readS8());
+                    break;
+                case ENTupleColumnType.kIndex64:
+                    val = reader.readU64();
+                    break;
+                case ENTupleColumnType.kSplitIndex64:
+                    val = reader.readU32();
+                    break;
+                default:
+                        throw new Error(`Unsupported column type: ${columnDescriptor.coltype}`);
+            }
+            values.push(val);
         }
-        values.push(val);
+
+        return values;
     }
 
-    return values;
-}
-
-
-}
+} // class RNTupleDescriptorBuilder
 
 
 /** @summary Very preliminary function to read header/footer from RNTuple
  * @private */
 async function readHeaderFooter(tuple) {
-
     // if already read - return immediately, make possible to call several times
     if (tuple?.builder)
         return true;
@@ -729,8 +727,6 @@ async function readHeaderFooter(tuple) {
             const offset = Number(group.pageListLocator.offset),
                   size = Number(group.pageListLocator.size),
                   uncompressedSize = Number(group.pageListLength);
-
-            console.log('reading in header', offset, size)
 
             return tuple.$file.readBuffer([offset, size]).then(page_list_blob => {
                 if (!(page_list_blob instanceof DataView))

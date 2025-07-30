@@ -7,7 +7,8 @@ import { rntupleDraw } from '../rntuple.mjs';
   * Can be also used for the branch and leaf object
   * @private */
 async function drawRNTuple(dom, obj, opt) {
-   let tuple = null, args = { };
+   const args = {};
+   let tuple;
 
    if (obj?.$tuple) {
       // case of fictional ROOT::RNTupleField
