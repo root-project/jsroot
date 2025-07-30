@@ -1,10 +1,12 @@
 import { rntupleProcess } from '../../modules/rntuple.mjs';
-import { TSelector, openFile } from 'jsroot';
+import { openFile } from '../../modules/io.mjs';
+import { TSelector } from '../../modules/tree.mjs';
 
 const selector = new TSelector();
 selector.sum = 0;
 selector.count = 0;
 selector.addBranch('Nation');
+selector.addBranch('Step');
 selector.Begin = function() {
   console.log('Begin processing');
 };
@@ -16,7 +18,7 @@ selector.Process = function() {
 
 
 selector.Terminate = function() {
-  if (this.count === 0) 
+  if (this.count === 0)
     console.error('No entries processed');
 };
 
