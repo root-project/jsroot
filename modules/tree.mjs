@@ -1053,7 +1053,7 @@ class TDrawSelector extends TSelector {
       res.k = res.nbins / (res.max - res.min);
 
       res.GetBin = function(value) {
-         const bin = this.lbls?.indexOf(value) ?? Number.isFinite(value) ? Math.floor((value - this.min) * this.k) : this.nbins + 1;
+         const bin = this.lbls?.indexOf(value) ?? (Number.isFinite(value) ? Math.floor((value - this.min) * this.k) : this.nbins + 1);
          return bin < 0 ? 0 : ((bin > this.nbins) ? this.nbins + 1 : bin + 1);
       };
 
