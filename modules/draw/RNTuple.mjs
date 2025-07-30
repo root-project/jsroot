@@ -17,6 +17,9 @@ async function drawRNTuple(dom, obj, opt) {
          args.expr += '>>' + opt;
       else if (opt)
          args.expr += opt;
+   } else {
+      tuple = obj;
+      args.expr = opt;
    }
 
    if (!tuple)

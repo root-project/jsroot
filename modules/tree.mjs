@@ -982,7 +982,9 @@ class TDrawSelector extends TSelector {
       let expr = this.parseParameters(tree, args, args.expr), cut = '';
 
       // parse option for histogram creation
-      this.draw_title = `drawing '${expr}' from ${tree.fName}`;
+      this.draw_title = `drawing '${expr}'`;
+      if (tree?.fName)
+         this.draw_title += `from ${tree.fName}`;
 
       let pos;
       if (args.cut)
@@ -1062,7 +1064,7 @@ class TDrawSelector extends TSelector {
       this.vars[0] = new TDrawVariable(this.globals);
       if (!this.vars[0].parse(tree, this, expr, branch, args.direct_branch))
          return false;
-      this.draw_title = `drawing branch ${branch.fName} ${expr?' expr:'+expr:''} from ${tree.fName}`;
+      this.draw_title = `drawing branch ${branch.fName} ${expr?' expr:'+expr:''} from ${tree.fName ?? ''}`;
 
       this.cut = new TDrawVariable(this.globals);
 
