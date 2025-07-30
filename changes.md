@@ -4,6 +4,7 @@
 1. Fix - reading TLeafC leafs
 2. Fix - support BigInt in object inspector
 3. Fix - svg2pdf.js URL bounding box
+4. Fix - TTree::Draw with strings
 
 
 ## Changes in 7.9.1
