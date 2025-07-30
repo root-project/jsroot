@@ -18,7 +18,8 @@ class RBufferReader {
             throw new TypeError('Invalid buffer type');
 
         this.view = new DataView(this.buffer);
-        this.offset = 0;
+        // important - offset should start from actual place in the buffer
+        this.offset = this.byteOffset;
     }
 
     // Move to a specific position in the buffer
@@ -728,6 +729,8 @@ async function readHeaderFooter(tuple) {
             const offset = Number(group.pageListLocator.offset),
                   size = Number(group.pageListLocator.size),
                   uncompressedSize = Number(group.pageListLength);
+
+            console.log('reading in header', offset, size)
 
             return tuple.$file.readBuffer([offset, size]).then(page_list_blob => {
                 if (!(page_list_blob instanceof DataView))
