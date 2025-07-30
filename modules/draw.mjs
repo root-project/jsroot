@@ -136,7 +136,7 @@ drawFuncs = { lst: [
    { name: /^TBranch/, icon: 'img_branch', draw: () => import_tree().then(h => h.drawTree), dflt: 'expand', opt: ';dump', ctrl: 'dump', shift: kInspect, ignore_online: true, always_draw: true },
    { name: /^TLeaf/, icon: 'img_leaf', noexpand: true, draw: () => import_tree().then(h => h.drawTree), opt: ';dump', ctrl: 'dump', ignore_online: true, always_draw: true },
    { name: 'ROOT::RNTuple', icon: 'img_tree', get_expand: () => import('./rntuple.mjs').then(h => h.tupleHierarchy) },
-   { name: 'ROOT::RNTupleField', icon: 'img_leaf', opt: 'inspect', ctrl: 'inspect' },
+   { name: 'ROOT::RNTupleField', icon: 'img_leaf', draw: () => import('./draw/RNTuple.mjs').then(h => h.drawRNTuple), opt: ';dump', ctrl: 'dump', shift: kInspect, ignore_online: true, always_draw: true },
    { name: clTList, icon: 'img_list', draw: () => import_h().then(h => h.drawList), get_expand: () => import_h().then(h => h.listHierarchy), dflt: 'expand' },
    { name: clTHashList, sameas: clTList },
    { name: clTObjArray, sameas: clTList },
