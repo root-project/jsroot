@@ -6,8 +6,6 @@ import { rntupleDraw } from '../rntuple.mjs';
   * Can be also used for the branch and leaf object
   * @private */
 async function drawRNTuple(dom, obj, opt) {
-
-   console.log('drawRNTuple');
    let tuple = null, args = { };
 
    if (obj?.$tuple) {

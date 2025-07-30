@@ -828,7 +828,7 @@ function readNextCluster(rntuple, selector) {
 
     // Early exit if no pages to read (i.e., no selected fields matched)
     if (pages.length === 0) {
-        selector.Terminate();
+        selector.Terminate(false);
         return Promise.resolve();
     }
 
@@ -900,15 +900,15 @@ function readNextCluster(rntuple, selector) {
                           tgtName = selector.nameOfBranch(b),
                           values = rntuple._clusterData[fieldName];
 
-                    console.log('fieldName', fieldName, 'tgtname', tgtName);
                     if (!values)
                         throw new Error(`Missing values for selected field: ${fieldName}`);
                     selector.tgtobj[tgtName] = readEntry(rntuple, fieldName, i);
+                    // console.log('fieldName', fieldName, 'tgtname', tgtName, 'result', selector.tgtobj[tgtName]);
                 }
                 selector.Process();
             }
 
-            selector.Terminate();
+            selector.Terminate(true);
         });
     });
 }
@@ -920,7 +920,7 @@ function rntupleProcess(rntuple, selector, args) {
         selector.Begin();
         selector.currentCluster = 0;
         return readNextCluster(rntuple, selector, args);
-    });
+    }).then(() => selector);
 }
 
 class TDrawSelectorTuple extends TDrawSelector {
@@ -997,7 +997,7 @@ async function rntupleDraw(rntuple, args) {
             ['arr_limit', 'htype', 'nmatch', 'want_hist', 'hist_nbins', 'hist_name', 'hist_args', 'draw_title']
                 .forEach(name => { selector2[name] = selector[name]; });
             return rntupleProcess(rntuple, selector2, args2);
-        }).then(sel => sel.hist);
+        }).then(sel => sel?.hist);
 
     });
 }
