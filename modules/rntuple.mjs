@@ -1,6 +1,6 @@
-import { isStr } from './core.mjs';
+import { isStr, isObject } from './core.mjs';
 import { R__unzip } from './io.mjs';
-import { TDrawSelector } from './tree.mjs';
+import { TDrawSelector, treeDraw } from './tree.mjs';
 
 const LITTLE_ENDIAN = true;
 class RBufferReader {
@@ -944,7 +944,7 @@ class TDrawSelectorTuple extends TDrawSelector {
    /** @summary Returns true if field can be used as array */
    isArrayBranch(/* tuple, br */) { return false; }
 
-} // class TDrawSelectorRNtuple
+} // class TDrawSelectorTuple
 
 
 /** @summary implementation of drawing for RNTuple
@@ -963,42 +963,14 @@ class TDrawSelectorTuple extends TDrawSelector {
 async function rntupleDraw(rntuple, args) {
     if (isStr(args))
         args = { expr: args };
+    else if (!isObject(args))
+        args = {};
 
-    if (!isStr(args.expr))
-        args.expr = '';
+    args.SelectorClass = TDrawSelectorTuple;
+    args.processFunction = rntupleProcess;
 
     return readHeaderFooter(rntuple).then(res_header_footer => {
-
-        if (!res_header_footer)
-            return null;
-
-        const selector = new TDrawSelectorTuple();
-
-        if (args.branch) {
-            if (!selector.drawOnlyBranch(rntuple, args.branch, args.expr, args))
-                return Promise.reject(Error(`Fail to create draw expression ${args.expr} for branch ${args.branch.fName}`));
-        } else if (!selector.parseDrawExpression(rntuple, args))
-            return Promise.reject(Error(`Fail to create draw expression ${args.expr}`));
-
-        selector.setCallback(null, args.progress);
-
-        return rntupleProcess(rntuple, selector, args).then(sel => {
-            if (!args.staged)
-                return sel;
-
-            delete args.dump_entries;
-
-            const selector2 = new TDrawSelectorTuple(),
-                  args2 = Object.assign({}, args);
-            args2.staged = false;
-            args2.elist = sel.hist; // assign entries found in first selection
-            if (!selector2.createDrawExpression(rntuple, args.staged_names, '', args2))
-                return Promise.reject(Error(`Fail to create final draw expression ${args.expr}`));
-            ['arr_limit', 'htype', 'nmatch', 'want_hist', 'hist_nbins', 'hist_name', 'hist_args', 'draw_title']
-                .forEach(name => { selector2[name] = selector[name]; });
-            return rntupleProcess(rntuple, selector2, args2);
-        }).then(sel => sel?.hist);
-
+        return res_header_footer ? treeDraw(rntuple, args) : null;
     });
 }
 
