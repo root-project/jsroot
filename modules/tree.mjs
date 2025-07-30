@@ -984,7 +984,7 @@ class TDrawSelector extends TSelector {
       // parse option for histogram creation
       this.draw_title = `drawing '${expr}'`;
       if (tree?.fName)
-         this.draw_title += `from ${tree.fName}`;
+         this.draw_title += ` from ${tree.fName}`;
 
       let pos;
       if (args.cut)
