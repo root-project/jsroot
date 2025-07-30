@@ -1,3 +1,4 @@
+import { isStr } from '../core.mjs';
 import { treeDrawProgress } from './TTree.mjs';
 import { rntupleDraw } from '../rntuple.mjs';
 
@@ -12,6 +13,10 @@ async function drawRNTuple(dom, obj, opt) {
       // case of fictional ROOT::RNTupleField
       tuple = obj.$tuple;
       args.expr = obj._name;
+      if (isStr(opt) && opt.indexOf('dump') === 0)
+         args.expr += '>>' + opt;
+      else if (opt)
+         args.expr += opt;
    }
 
    if (!tuple)
