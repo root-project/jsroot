@@ -1,5 +1,5 @@
+import { isStr } from './core.mjs';
 import { R__unzip } from './io.mjs';
-
 import { TDrawSelector } from './tree.mjs';
 
 const LITTLE_ENDIAN = true;
@@ -778,6 +778,12 @@ function readEntry(rntuple, fieldName, entryIndex) {
     return fieldData[0][entryIndex];
 }
 
+/** @summary Return field name for specified branch index
+ * @desc API let use field name in selector or field object itself */
+function getSelectorFieldName(selector, i) {
+    const br = selector.getBranch(i);
+    return isStr(br) ? br : br?.fieldName;
+}
 
 // Read and process the next data cluster from the RNTuple
 function readNextCluster(rntuple, selector) {
@@ -796,7 +802,9 @@ function readNextCluster(rntuple, selector) {
         // Collect only selected field names from selector
         selectedFields = [];
     for (let i = 0; i < selector.numBranches(); ++i)
-        selectedFields.push(selector.nameOfBranch(i));
+        selectedFields.push(getSelectorFieldName(selector, i));
+
+    console.log('selector fields', selectedFields);
 
     // For each selected field, collect its columns' pages
     for (const fieldName of selectedFields) {
@@ -888,11 +896,14 @@ function readNextCluster(rntuple, selector) {
             const numEntries = clusterSummary.numEntries;
             for (let i = 0; i < numEntries; ++i) {
                 for (let b = 0; b < selector.numBranches(); ++b) {
-                    const fieldName = selector.nameOfBranch(b),
-                        values = rntuple._clusterData[fieldName];
+                    const fieldName = getSelectorFieldName(selector, b),
+                          tgtName = selector.nameOfBranch(b),
+                          values = rntuple._clusterData[fieldName];
+
+                    console.log('fieldName', fieldName, 'tgtname', tgtName);
                     if (!values)
                         throw new Error(`Missing values for selected field: ${fieldName}`);
-                    selector.tgtobj[fieldName] = readEntry(rntuple, fieldName, i);
+                    selector.tgtobj[tgtName] = readEntry(rntuple, fieldName, i);
                 }
                 selector.Process();
             }
@@ -914,9 +925,13 @@ function rntupleProcess(rntuple, selector, args) {
 
 class TDrawSelectorTuple extends TDrawSelector {
 
-   /** @summary Return total number of entries ????
-    * @desc TODO: implementation missing now */
-   getNumEntries(tuple) { return tuple?.fEntries || 0; }
+    /** @summary Return total number of entries
+     * @desc TODO: check implementation details !!!! */
+    getNumEntries(tuple) {
+       let cnt = 0;
+       tuple?.builder.clusterSummaries.forEach(summary => { cnt += summary.numEntries; });
+       return cnt;
+   }
 
    /** @summary Search for field in tuple
     * @desc TODO: Can be more complex when name includes extra parts referencing member or collection size or more  */
@@ -1000,12 +1015,18 @@ async function tupleHierarchy(tuple_node, tuple) {
             return res;
 
         tuple.builder?.fieldDescriptors.forEach(field => {
-            tuple_node._childs.push({
+            const item = {
                 _name: field.fieldName,
-                _kind: 'ROOT::RNTupleField', // pseudo class name, used in draw.mjs
+                _typename: 'ROOT::RNTupleField', // pseudo class name, used in draw.mjs
+                _kind: 'ROOT::RNTupleField',
                 _title: `Filed of type ${field.typeName}`,
-                _obj: field
-            });
+                $tuple: tuple, // reference on tuple, need for drawing
+                $field: field
+            };
+
+            item._obj = item;
+
+            tuple_node._childs.push(item);
         });
 
         return true;
