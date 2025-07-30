@@ -1074,7 +1074,7 @@ class TDrawSelector extends TSelector {
 
    /** @summary Begin processing */
    Begin(tree) {
-      this.globals.entries = tree.fEntries;
+      this.globals.entries = this.getNumEntries(tree);
 
       if (this.monitoring)
          this.lasttm = new Date().getTime();
