@@ -1262,7 +1262,7 @@ class HierarchyPainter extends BasePainter {
 
       if (isroot) {
          // for root node no extra code
-      } else if (has_childs && !break_list) {
+      } else if ((has_childs && !break_list) || handle?.pm) {
          icon_class = hitem._isopen ? 'img_minus' : 'img_plus';
          plusminus = true;
       } else
@@ -1657,6 +1657,7 @@ class HierarchyPainter extends BasePainter {
 
       // special case - one should expand item
       if (((place === kPM) && !('_childs' in hitem) && hitem._more) ||
+          ((place === kPM) && handle?.pm) ||
           ((place === 'item') && (dflt === kExpand)))
          return this.expandItem(itemname, d3cont);
 
