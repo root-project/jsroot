@@ -169,8 +169,6 @@ function getTypeByteSize(coltype) {
         case ENTupleColumnType.kSplitReal32:
         case ENTupleColumnType.kSplitIndex32:
         case ENTupleColumnType.kSplitIndex64:
-        case ENTupleColumnType.kReal32Trunc:
-        case ENTupleColumnType.kReal32Quant:
             return 4;
         case ENTupleColumnType.kInt16:
         case ENTupleColumnType.kUInt16:
@@ -197,34 +195,49 @@ function recontructUnsplitBuffer(blob, columnDescriptor) {
     const { coltype } = columnDescriptor;
 
     if (
+        coltype === ENTupleColumnType.kSplitUInt16 ||
+        coltype === ENTupleColumnType.kSplitUInt32 ||
         coltype === ENTupleColumnType.kSplitUInt64 ||
-        coltype === ENTupleColumnType.kSplitReal64 ||
         coltype === ENTupleColumnType.kSplitIndex64 ||
         coltype === ENTupleColumnType.kSplitUInt32
     ) {
         const byteSize = getTypeByteSize(coltype),
               splitView = new DataView(blob.buffer, blob.byteOffset, blob.byteLength),
               count = blob.byteLength / byteSize,
-              fullBuffer = new ArrayBuffer(blob.byteLength),
-              fullBytes = new Uint8Array(fullBuffer);
+              outBuffer = new ArrayBuffer(blob.byteLength),
+              outBytes = new Uint8Array(outBuffer);
 
         for (let i = 0; i < count; ++i) {
             for (let b = 0; b < byteSize; ++b) {
                 const splitIndex = b * count + i,
                 byte = splitView.getUint8(splitIndex),
-                writeIndex = i * byteSize + (LITTLE_ENDIAN ? b : byteSize - 1 - b);
-                fullBytes[writeIndex] = byte;
+                writeIndex = i * byteSize + b;
+                outBytes[writeIndex] = byte;
             }
         }
 
         // Return updated blob and remapped coltype
-        const newBlob = fullBuffer,
-              newColtype =
-            coltype === ENTupleColumnType.kSplitUInt64 ? ENTupleColumnType.kUInt64 :
-            coltype === ENTupleColumnType.kSplitReal64 ? ENTupleColumnType.kReal64 :
-            coltype === ENTupleColumnType.kSplitIndex64 ? ENTupleColumnType.kIndex64 :
-            coltype === ENTupleColumnType.kSplitUInt32 ? ENTupleColumnType.kUInt32 :
-            coltype;
+        const newBlob = outBuffer;
+        let newColtype;
+        switch (coltype) {
+                case ENTupleColumnType.kSplitUInt16:
+                  newColtype = ENTupleColumnType.kUInt16;
+                  break;
+                case ENTupleColumnType.kSplitUInt32:
+                  newColtype = ENTupleColumnType.kUInt32;
+                  break;
+                case ENTupleColumnType.kSplitUInt64:
+                  newColtype = ENTupleColumnType.kUInt64;
+                  break;
+                case ENTupleColumnType.kSplitIndex32:
+                  newColtype = ENTupleColumnType.kIndex32;
+                  break;
+                case ENTupleColumnType.kSplitIndex64:
+                  newColtype = ENTupleColumnType.kIndex64;
+                  break;
+                default:
+                  throw new Error(`Unsupported split coltype for reassembly: ${coltype}`);
+            }
 
         return { blob: newBlob, coltype: newColtype };
     }
@@ -671,8 +684,12 @@ class RNTupleDescriptorBuilder {
         } = recontructUnsplitBuffer(blob, columnDescriptor),
             byteSize = getTypeByteSize(coltype),
             reader = new RBufferReader(processedBlob),
-            values = [],
-            numValues = byteSize ? processedBlob.byteLength / byteSize : undefined;
+            values = [];
+
+        if (!byteSize)
+            throw new Error('Invalid or unsupported column type: cannot determine byte size');
+
+        const numValues = processedBlob.byteLength / byteSize;
 
         for (let i = 0; i < (numValues ?? processedBlob.byteLength); ++i) {
             let val;
