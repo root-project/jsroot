@@ -179,8 +179,6 @@ function getTypeByteSize(coltype) {
         case ENTupleColumnType.kInt8:
         case ENTupleColumnType.kUInt8:
         case ENTupleColumnType.kByte:
-        case ENTupleColumnType.kByteArray:
-        case ENTupleColumnType.kIndexArrayU8:
         case ENTupleColumnType.kChar:
             return 1;
         default:
@@ -198,8 +196,9 @@ function recontructUnsplitBuffer(blob, columnDescriptor) {
         coltype === ENTupleColumnType.kSplitUInt16 ||
         coltype === ENTupleColumnType.kSplitUInt32 ||
         coltype === ENTupleColumnType.kSplitUInt64 ||
-        coltype === ENTupleColumnType.kSplitIndex64 ||
-        coltype === ENTupleColumnType.kSplitUInt32
+        coltype === ENTupleColumnType.kSplitReal16 ||
+        coltype === ENTupleColumnType.kSplitReal32 ||
+        coltype === ENTupleColumnType.kSplitReal64
     ) {
         const byteSize = getTypeByteSize(coltype),
               splitView = new DataView(blob.buffer, blob.byteOffset, blob.byteLength),
@@ -234,6 +233,15 @@ function recontructUnsplitBuffer(blob, columnDescriptor) {
                   break;
                 case ENTupleColumnType.kSplitIndex64:
                   newColtype = ENTupleColumnType.kIndex64;
+                  break;
+                case ENTupleColumnType.kSplitReal16:
+                  newColtype = ENTupleColumnType.kReal16;
+                  break;
+                case ENTupleColumnType.kSplitReal32:
+                  newColtype = ENTupleColumnType.kReal32;
+                  break;
+                case ENTupleColumnType.kSplitReal64:
+                  newColtype = ENTupleColumnType.kReal64;
                   break;
                 default:
                   throw new Error(`Unsupported split coltype for reassembly: ${coltype}`);
