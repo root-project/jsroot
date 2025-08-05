@@ -2622,7 +2622,8 @@ class TBuffer {
 
    /** @summary Invoke streamer for specified class  */
    classStreamer(obj, classname) {
-      if (obj._typename === undefined) obj._typename = classname;
+      if (obj._typename === undefined)
+         obj._typename = classname;
 
       const direct = DirectStreamers[classname];
       if (direct) {
@@ -3568,7 +3569,8 @@ class TFile {
      * @private */
    getStreamer(clname, ver, s_i) {
       // these are special cases, which are handled separately
-      if (clname === clTQObject || clname === clTBasket) return null;
+      if (clname === clTQObject || clname === clTBasket)
+         return null;
 
       let streamer, fullname = clname;
 
@@ -3594,7 +3596,8 @@ class TFile {
       streamer = [];
 
       if (isObject(custom)) {
-         if (!custom.name && !custom.func) return custom;
+         if (!custom.name && !custom.func)
+            return custom;
          streamer.push(custom); // special read entry, add in the beginning of streamer
       }
 
