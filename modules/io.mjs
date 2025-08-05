@@ -392,7 +392,7 @@ CustomStreamers = {
          obj.fMaxBaskets = buf.ntoi4();
          if (v > 6)
             obj.fSplitLevel = buf.ntoi4();
-         obj.fEntries  = buf.ntod();
+         obj.fEntries = buf.ntod();
          obj.fTotBytes = buf.ntod();
          obj.fZipBytes = buf.ntod();
          obj.fBranches = buf.classStreamer({}, clTObjArray);
