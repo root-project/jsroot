@@ -2261,7 +2261,7 @@ class TBuffer {
    checkByteCount(ver, where) {
       if ((ver.bytecnt !== undefined) && (ver.off + ver.bytecnt !== this.o)) {
          if (where)
-            console.log(`Missmatch in ${where} bytecount expected = ${ver.bytecnt}  got = ${this.o - ver.off}`);
+            console.log(`Missmatch in ${where}:${ver.val} bytecount expected = ${ver.bytecnt}  got = ${this.o - ver.off}`);
          this.o = ver.off + ver.bytecnt;
          return false;
       }
