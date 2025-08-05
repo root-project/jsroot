@@ -376,9 +376,36 @@ CustomStreamers = {
    },
 
    TBranch(buf, obj) {
-      if (buf.last_read_version > 9)
-         buf.streamClassMembers(obj, 'TBranch', buf.last_read_version, buf.last_read_checksum);
-
+      const v = buf.last_read_version;
+      if (v > 9)
+         buf.streamClassMembers(obj, 'TBranch', v);
+      else {
+         buf.classStreamer(obj, clTNamed);
+         if (v > 7)
+            buf.classStreamer(obj, clTAttFill);
+         obj.fCompress = buf.ntoi4();
+         obj.fBasketSize = buf.ntoi4();
+         obj.fEntryOffsetLen = buf.ntoi4();
+         obj.fWriteBasket = buf.ntoi4();
+         obj.fEntryNumber = buf.ntoi4();
+         obj.fOffset = buf.ntoi4();
+         obj.fMaxBaskets = buf.ntoi4();
+         if (v > 6)
+            obj.fSplitLevel = buf.ntoi4();
+         obj.fEntries  = buf.ntod();
+         obj.fTotBytes = buf.ntod();
+         obj.fZipBytes = buf.ntod();
+         obj.fBranches = buf.classStreamer({}, clTObjArray);
+         obj.fLeaves = buf.classStreamer({}, clTObjArray);
+         obj.fBaskets = buf.classStreamer({}, clTObjArray);
+         buf.ntoi1(); // isArray
+         obj.fBasketBytes = buf.readFastArray(obj.fMaxBaskets, kInt);
+         buf.ntoi1(); // isArray
+         obj.fBasketEntry = buf.readFastArray(obj.fMaxBaskets, kInt);
+         const isArray = buf.ntoi1();
+         obj.fBasketSeek = buf.readFastArray(obj.fMaxBaskets, isArray === 2 ? kLong64 : kInt);
+         obj.fFileName = buf.readTString();
+      }
    },
 
    'ROOT::RNTuple': {
