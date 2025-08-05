@@ -375,6 +375,12 @@ CustomStreamers = {
       func(buf, obj) { obj.$kind = 'TTree'; obj.$file = buf.fFile; }
    },
 
+   TBranch(buf, obj) {
+      if (buf.last_read_version > 9)
+         buf.streamClassMembers(obj, 'TBranch', buf.last_read_version, buf.last_read_checksum);
+
+   },
+
    'ROOT::RNTuple': {
       name: '$file',
       func(buf, obj) { obj.$kind = 'ROOT::RNTuple'; obj.$file = buf.fFile; }
@@ -2649,6 +2655,17 @@ class TBuffer {
       return obj;
    }
 
+   /** @summary Stream class members using normal streamer */
+   streamClassMembers(obj, classname, version) {
+      const streamer = this.fFile.getStreamer(classname, { val: version }, undefined, true);
+      if (streamer !== null) {
+         const len = streamer.length;
+         for (let n = 0; n < len; ++n)
+            streamer[n].func(this, obj);
+      }
+      return obj;
+   }
+
 } // class TBuffer
 
 // ==============================================================================
@@ -3567,7 +3584,7 @@ class TFile {
    /** @summary Returns streamer for the class 'clname',
      * @desc From the list of streamers or generate it from the streamer infos and add it to the list
      * @private */
-   getStreamer(clname, ver, s_i) {
+   getStreamer(clname, ver, s_i, only_plain) {
       // these are special cases, which are handled separately
       if (clname === clTQObject || clname === clTBasket)
          return null;
@@ -3581,7 +3598,7 @@ class TFile {
             return streamer;
       }
 
-      const custom = CustomStreamers[clname];
+      const custom = only_plain ? null : CustomStreamers[clname];
 
       // one can define in the user streamers just aliases
       if (isStr(custom))
