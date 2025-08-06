@@ -189,7 +189,7 @@ function getTypeByteSize(coltype) {
 /**
  * @summary Rearrange bytes from split format to normal format (row-wise) for decoding
  */
-function recontructUnsplitBuffer(blob, columnDescriptor) {
+function reconstructUnsplitBuffer(blob, columnDescriptor) {
     const { coltype } = columnDescriptor;
 
     if (
@@ -198,7 +198,9 @@ function recontructUnsplitBuffer(blob, columnDescriptor) {
         coltype === ENTupleColumnType.kSplitUInt64 ||
         coltype === ENTupleColumnType.kSplitReal16 ||
         coltype === ENTupleColumnType.kSplitReal32 ||
-        coltype === ENTupleColumnType.kSplitReal64
+        coltype === ENTupleColumnType.kSplitReal64 ||
+        coltype === ENTupleColumnType.kSplitIndex32 ||
+        coltype === ENTupleColumnType.kSplitIndex64
     ) {
         const byteSize = getTypeByteSize(coltype),
               splitView = new DataView(blob.buffer, blob.byteOffset, blob.byteLength),
@@ -254,6 +256,30 @@ function recontructUnsplitBuffer(blob, columnDescriptor) {
     return { blob, coltype };
 }
 
+/**
+ * @summary Decode Delta function for index columns
+ */
+function DecodeDeltaIndex(blob, columnDescriptor) {
+    const { coltype } = columnDescriptor;
+
+    if (coltype === ENTupleColumnType.kIndex32) {
+        const deltas = new Int32Array(blob),
+              result = new Int32Array(deltas.length);
+        if (deltas.length>0) result[0] = deltas[0]; // first value is not a delta
+        for (let i = 1; i<deltas.length; ++i)
+            result[i] = result[i-1] + deltas[i];
+        return { blob: result, coltype };
+    }
+    if (coltype === ENTupleColumnType.kIndex64) {
+        const deltas = new BigInt64Array(blob),
+              result = new BigInt64Array(deltas.length);
+        if (deltas.length>0) result[0] = deltas[0]; // first value is not a delta
+        for (let i = 1; i<deltas.length; ++i)
+            result[i] = result[i-1] + deltas[i];
+        return { blob: result, coltype };
+    }
+    throw new Error(`DecodeDeltaIndex: unsupported column type ${coltype} for delta decoding`);
+}
 
 // Envelope Types
 // TODO: Define usage logic for envelope types in future
@@ -688,9 +714,15 @@ class RNTupleDescriptorBuilder {
     deserializePage(blob, columnDescriptor) {
         const {
             blob: processedBlob,
-            coltype
-        } = recontructUnsplitBuffer(blob, columnDescriptor),
-            byteSize = getTypeByteSize(coltype),
+            coltype: updatedColtype
+        } = reconstructUnsplitBuffer(blob, columnDescriptor); // handle split-to-plain coltype conversion
+
+
+        if (updatedColtype === ENTupleColumnType.kIndex32 || updatedColtype === ENTupleColumnType.kIndex64) {
+        // Pass updated coltype into the descriptor for proper decoding
+        return DecodeDeltaIndex(processedBlob, updatedColtype);
+       }
+        const byteSize = getTypeByteSize(updatedColtype),
             reader = new RBufferReader(processedBlob),
             values = [];
 
@@ -702,7 +734,7 @@ class RNTupleDescriptorBuilder {
         for (let i = 0; i < (numValues ?? processedBlob.byteLength); ++i) {
             let val;
             
-            switch (coltype) {
+            switch (updatedColtype) {
                 case ENTupleColumnType.kReal64:
                     val = reader.readF64();
                     break;
@@ -733,8 +765,6 @@ class RNTupleDescriptorBuilder {
                     break;
                 case ENTupleColumnType.kUInt8:
                 case ENTupleColumnType.kByte:
-                case ENTupleColumnType.kByteArray:
-                case ENTupleColumnType.kIndexArrayU8:
                     val = reader.readU8();
                     break;
                 case ENTupleColumnType.kChar:
@@ -742,9 +772,6 @@ class RNTupleDescriptorBuilder {
                     break;
                 case ENTupleColumnType.kIndex64:
                     val = reader.readU64();
-                    break;
-                case ENTupleColumnType.kSplitIndex64:
-                    val = reader.readU32();
                     break;
                 default:
                     throw new Error(`Unsupported column type: ${columnDescriptor.coltype}`);
