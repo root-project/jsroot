@@ -261,26 +261,22 @@ function recontructUnsplitBuffer(blob, columnDescriptor) {
  * @summary Decode a reconstructed index buffer (32- or 64-bit deltas to absolute indices)
  */
 function DecodeDeltaIndex(blob, coltype) {
+  let deltas, result;
+
   if (coltype === ENTupleColumnType.kIndex32) {
-    // create Int32Array view of the 4-byte elements
-    const deltas = new Int32Array(blob.buffer || blob, blob.byteOffset || 0, blob.byteLength/4),
-          result = new Int32Array(deltas.length);
-    if (deltas.length > 0) result[0] = deltas[0];
-    for (let i = 1; i < deltas.length; ++i)
-      result[i] = result[i - 1] + deltas[i];
-    return { blob: result, coltype };
-  }
+    deltas = new Int32Array(blob.buffer || blob, blob.byteOffset || 0, blob.byteLength / 4);
+    result = new Int32Array(deltas.length);
+  } else if (coltype === ENTupleColumnType.kIndex64) {
+    deltas = new BigInt64Array(blob.buffer || blob, blob.byteOffset || 0, blob.byteLength / 8);
+    result = new BigInt64Array(deltas.length);
+  } else
+    throw new Error(`DecodeDeltaIndex: unsupported column type ${coltype}`);
 
-  if (coltype === ENTupleColumnType.kIndex64) {
-    const deltas = new BigInt64Array(blob.buffer || blob, blob.byteOffset || 0, blob.byteLength/8),
-          result = new BigInt64Array(deltas.length);
-    if (deltas.length > 0) result[0] = deltas[0];
-    for (let i = 1; i < deltas.length; ++i)
-      result[i] = result[i - 1] + deltas[i];
-    return { blob: result, coltype };
-  }
+  if (deltas.length > 0) result[0] = deltas[0];
+  for (let i = 1; i < deltas.length; ++i)
+    result[i] = result[i - 1] + deltas[i];
 
-  throw new Error(`DecodeDeltaIndex: unsupported column type ${coltype}`);
+  return { blob: result, coltype };
 }
 
 
@@ -716,15 +712,14 @@ class RNTupleDescriptorBuilder {
     // Example Of Deserializing Page Content
     deserializePage(blob, columnDescriptor) {
         const originalColtype = columnDescriptor.coltype,
-        {
-            blob: processedBlob,
-            coltype
-        } = recontructUnsplitBuffer(blob, columnDescriptor);
+              { coltype } = recontructUnsplitBuffer(blob, columnDescriptor);
+        let { blob: processedBlob } = recontructUnsplitBuffer(blob, columnDescriptor);
+
         
         // Handle split index types
         if (originalColtype === ENTupleColumnType.kSplitIndex32 || originalColtype=== ENTupleColumnType.kSplitIndex64) {
             const { blob: decodedArray } = DecodeDeltaIndex(processedBlob, coltype);
-            return decodedArray;  
+            processedBlob = decodedArray;  
         }
 
         const byteSize = getTypeByteSize(coltype),
