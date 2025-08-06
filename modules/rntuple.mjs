@@ -158,6 +158,7 @@ function getTypeByteSize(coltype) {
         case ENTupleColumnType.kSplitInt64:
         case ENTupleColumnType.kSplitUInt64:
         case ENTupleColumnType.kSplitReal64:
+        case ENTupleColumnType.kSplitIndex64:
             return 8;
 
         case ENTupleColumnType.kReal32:
@@ -168,7 +169,6 @@ function getTypeByteSize(coltype) {
         case ENTupleColumnType.kSplitUInt32:
         case ENTupleColumnType.kSplitReal32:
         case ENTupleColumnType.kSplitIndex32:
-        case ENTupleColumnType.kSplitIndex64:
             return 4;
         case ENTupleColumnType.kInt16:
         case ENTupleColumnType.kUInt16:
@@ -712,7 +712,7 @@ class RNTupleDescriptorBuilder {
     // Example Of Deserializing Page Content
     deserializePage(blob, columnDescriptor) {
         const originalColtype = columnDescriptor.coltype,
-              { coltype } = recontructUnsplitBuffer(blob, columnDescriptor);
+        { coltype } = recontructUnsplitBuffer(blob, columnDescriptor);
         let { blob: processedBlob } = recontructUnsplitBuffer(blob, columnDescriptor);
 
         
@@ -742,20 +742,19 @@ class RNTupleDescriptorBuilder {
                     val = reader.readF32();
                     break;
                 case ENTupleColumnType.kInt64:
-                    val = reader.readI64();
+                    val = reader.readS64();
                     break;
                 case ENTupleColumnType.kUInt64:
                     val = reader.readU64();
                     break;
                 case ENTupleColumnType.kInt32:
-                case ENTupleColumnType.kIndex32:
-                    val = reader.readU32();
+                    val = reader.readS32();
                     break;
                 case ENTupleColumnType.kUInt32:
                     val = reader.readU32();
                     break;
                 case ENTupleColumnType.kInt16:
-                    val = reader.readI16();
+                    val = reader.readS16();
                     break;
                 case ENTupleColumnType.kUInt16:
                     val = reader.readU16();
@@ -770,8 +769,9 @@ class RNTupleDescriptorBuilder {
                 case ENTupleColumnType.kChar:
                     val = String.fromCharCode(reader.readS8());
                     break;
+                case ENTupleColumnType.kIndex32:
                 case ENTupleColumnType.kIndex64:
-                    val = reader.readU64();
+                    val = processedBlob[i];
                     break;
                 default:
                     throw new Error(`Unsupported column type: ${columnDescriptor.coltype}`);
@@ -981,7 +981,12 @@ function readNextCluster(rntuple, selector) {
 
                 // splitting string fields into offset and payload components
                 if (field.typeName === 'std::string') {
-                    if (colDesc.coltype === ENTupleColumnType.kIndex64) // Index64/Index32
+                    if (
+                         colDesc.coltype === ENTupleColumnType.kIndex64 ||
+                         colDesc.coltype === ENTupleColumnType.kIndex32 ||
+                         colDesc.coltype === ENTupleColumnType.kSplitIndex64 ||
+                         colDesc.coltype === ENTupleColumnType.kSplitIndex32
+                        ) // Index64/Index32
                         rntuple._clusterData[field.fieldName][0] = values; // Offsets
                     else if (colDesc.coltype === ENTupleColumnType.kChar)
                         rntuple._clusterData[field.fieldName][1] = values; // Payload
