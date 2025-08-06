@@ -198,7 +198,9 @@ function recontructUnsplitBuffer(blob, columnDescriptor) {
         coltype === ENTupleColumnType.kSplitUInt64 ||
         coltype === ENTupleColumnType.kSplitReal16 ||
         coltype === ENTupleColumnType.kSplitReal32 ||
-        coltype === ENTupleColumnType.kSplitReal64
+        coltype === ENTupleColumnType.kSplitReal64 ||
+        coltype === ENTupleColumnType.kSplitIndex32 ||
+        coltype === ENTupleColumnType.kSplitIndex64
     ) {
         const byteSize = getTypeByteSize(coltype),
               splitView = new DataView(blob.buffer, blob.byteOffset, blob.byteLength),
@@ -252,6 +254,33 @@ function recontructUnsplitBuffer(blob, columnDescriptor) {
 
     // If no split type, return original blob and coltype
     return { blob, coltype };
+}
+
+
+/**
+ * @summary Decode a reconstructed index buffer (32- or 64-bit deltas to absolute indices)
+ */
+function DecodeDeltaIndex(blob, coltype) {
+  if (coltype === ENTupleColumnType.kIndex32) {
+    // create Int32Array view of the 4-byte elements
+    const deltas = new Int32Array(blob.buffer || blob, blob.byteOffset || 0, blob.byteLength/4),
+          result = new Int32Array(deltas.length);
+    if (deltas.length > 0) result[0] = deltas[0];
+    for (let i = 1; i < deltas.length; ++i)
+      result[i] = result[i - 1] + deltas[i];
+    return { blob: result, coltype };
+  }
+
+  if (coltype === ENTupleColumnType.kIndex64) {
+    const deltas = new BigInt64Array(blob.buffer || blob, blob.byteOffset || 0, blob.byteLength/8),
+          result = new BigInt64Array(deltas.length);
+    if (deltas.length > 0) result[0] = deltas[0];
+    for (let i = 1; i < deltas.length; ++i)
+      result[i] = result[i - 1] + deltas[i];
+    return { blob: result, coltype };
+  }
+
+  throw new Error(`DecodeDeltaIndex: unsupported column type ${coltype}`);
 }
 
 
@@ -686,13 +715,21 @@ class RNTupleDescriptorBuilder {
 
     // Example Of Deserializing Page Content
     deserializePage(blob, columnDescriptor) {
-        const {
+        const originalColtype = columnDescriptor.coltype,
+        {
             blob: processedBlob,
             coltype
-        } = recontructUnsplitBuffer(blob, columnDescriptor),
-            byteSize = getTypeByteSize(coltype),
-            reader = new RBufferReader(processedBlob),
-            values = [];
+        } = recontructUnsplitBuffer(blob, columnDescriptor);
+        
+        // Handle split index types
+        if (originalColtype === ENTupleColumnType.kSplitIndex32 || originalColtype=== ENTupleColumnType.kSplitIndex64) {
+            const { blob: decodedArray } = DecodeDeltaIndex(processedBlob, coltype);
+            return decodedArray;  
+        }
+
+        const byteSize = getTypeByteSize(coltype),
+              reader = new RBufferReader(processedBlob),
+              values = [];
 
         if (!byteSize)
             throw new Error('Invalid or unsupported column type: cannot determine byte size');
@@ -733,8 +770,6 @@ class RNTupleDescriptorBuilder {
                     break;
                 case ENTupleColumnType.kUInt8:
                 case ENTupleColumnType.kByte:
-                case ENTupleColumnType.kByteArray:
-                case ENTupleColumnType.kIndexArrayU8:
                     val = reader.readU8();
                     break;
                 case ENTupleColumnType.kChar:
@@ -742,9 +777,6 @@ class RNTupleDescriptorBuilder {
                     break;
                 case ENTupleColumnType.kIndex64:
                     val = reader.readU64();
-                    break;
-                case ENTupleColumnType.kSplitIndex64:
-                    val = reader.readU32();
                     break;
                 default:
                     throw new Error(`Unsupported column type: ${columnDescriptor.coltype}`);
