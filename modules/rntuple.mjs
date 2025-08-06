@@ -770,8 +770,10 @@ class RNTupleDescriptorBuilder {
                     val = String.fromCharCode(reader.readS8());
                     break;
                 case ENTupleColumnType.kIndex32:
+                    val = reader.readS32();
+                    break;
                 case ENTupleColumnType.kIndex64:
-                    val = processedBlob[i];
+                    val = reader.readS64();
                     break;
                 default:
                     throw new Error(`Unsupported column type: ${columnDescriptor.coltype}`);
