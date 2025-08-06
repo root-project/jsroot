@@ -259,9 +259,7 @@ function reconstructUnsplitBuffer(blob, columnDescriptor) {
 /**
  * @summary Decode Delta function for index columns
  */
-function DecodeDeltaIndex(blob, columnDescriptor) {
-    const { coltype } = columnDescriptor;
-
+function DecodeDeltaIndex(blob, coltype) {
     if (coltype === ENTupleColumnType.kIndex32) {
         const deltas = new Int32Array(blob),
               result = new Int32Array(deltas.length);
