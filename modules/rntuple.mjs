@@ -200,7 +200,10 @@ function recontructUnsplitBuffer(blob, columnDescriptor) {
         coltype === ENTupleColumnType.kSplitReal32 ||
         coltype === ENTupleColumnType.kSplitReal64 ||
         coltype === ENTupleColumnType.kSplitIndex32 ||
-        coltype === ENTupleColumnType.kSplitIndex64
+        coltype === ENTupleColumnType.kSplitIndex64 ||
+        coltype === ENTupleColumnType.kSplitInt16 ||
+        coltype === ENTupleColumnType.kSplitInt32 ||
+        coltype === ENTupleColumnType.kSplitInt64
     ) {
         const byteSize = getTypeByteSize(coltype),
               splitView = new DataView(blob.buffer, blob.byteOffset, blob.byteLength),
@@ -245,6 +248,15 @@ function recontructUnsplitBuffer(blob, columnDescriptor) {
                 case ENTupleColumnType.kSplitReal64:
                   newColtype = ENTupleColumnType.kReal64;
                   break;
+                case ENTupleColumnType.kSplitInt16:
+                    newColtype = ENTupleColumnType.kInt16;
+                    break;
+                case ENTupleColumnType.kSplitInt32:
+                    newColtype = ENTupleColumnType.kInt32;
+                    break;
+                case ENTupleColumnType.kSplitInt64:
+                    newColtype = ENTupleColumnType.kInt64;
+                    break;
                 default:
                   throw new Error(`Unsupported split coltype for reassembly: ${coltype}`);
             }
@@ -279,6 +291,32 @@ function DecodeDeltaIndex(blob, coltype) {
   return { blob: result, coltype };
 }
 
+/**
+ * @summary Decode a reconstructed signed integer buffer using ZigZag encoding
+  */
+function DecodeZigZag(blob, coltype) {
+  let zigzag, result;
+
+  if (coltype === ENTupleColumnType.kInt16) {
+    zigzag = new Uint16Array(blob.buffer || blob, blob.byteOffset || 0, blob.byteLength / 2);
+    result = new Int16Array(zigzag.length);
+  } else if (coltype === ENTupleColumnType.kInt32) {
+    zigzag = new Uint32Array(blob.buffer || blob, blob.byteOffset || 0, blob.byteLength / 4);
+    result = new Int32Array(zigzag.length);
+  } else if (coltype === ENTupleColumnType.kInt64) {
+        zigzag = new BigUint64Array(blob.buffer || blob, blob.byteOffset || 0, blob.byteLength / 8);
+        result = new BigInt64Array(zigzag.length);
+  } else
+    throw new Error(`DecodeZigZag: unsupported column type ${coltype}`);
+
+  for (let i = 0; i < zigzag.length; ++i) {
+    // ZigZag decode: (x >>> 1) ^ (-(x & 1))
+    const x = zigzag[i];
+    result[i] = (x >>> 1) ^ (-(x & 1));
+  }
+
+  return { blob: result, coltype };
+}
 
 // Envelope Types
 // TODO: Define usage logic for envelope types in future
@@ -719,6 +757,12 @@ class RNTupleDescriptorBuilder {
         // Handle split index types
         if (originalColtype === ENTupleColumnType.kSplitIndex32 || originalColtype=== ENTupleColumnType.kSplitIndex64) {
             const { blob: decodedArray } = DecodeDeltaIndex(processedBlob, coltype);
+            processedBlob = decodedArray;  
+        }
+
+        // Handle Split Signed Int types
+        if (originalColtype === ENTupleColumnType.kSplitInt16 || originalColtype === ENTupleColumnType.kSplitInt32 || originalColtype === ENTupleColumnType.kSplitInt64) {
+            const { blob: decodedArray } = DecodeZigZag(processedBlob, coltype);
             processedBlob = decodedArray;  
         }
 
