@@ -307,7 +307,7 @@ function decodeZigzag(blob, coltype) {
         zigzag = new BigUint64Array(blob.buffer || blob, blob.byteOffset || 0, blob.byteLength / 8);
         result = new BigInt64Array(zigzag.length);
   } else
-    throw new Error(`DecodeZigZag: unsupported column type ${coltype}`);
+    throw new Error(`decodeZigzag: unsupported column type ${coltype}`);
 
   for (let i = 0; i < zigzag.length; ++i) {
     // ZigZag decode: (x >>> 1) ^ (-(x & 1))
