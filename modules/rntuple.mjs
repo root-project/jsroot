@@ -762,7 +762,7 @@ class RNTupleDescriptorBuilder {
 
         // Handle Split Signed Int types
         if (originalColtype === ENTupleColumnType.kSplitInt16 || originalColtype === ENTupleColumnType.kSplitInt32 || originalColtype === ENTupleColumnType.kSplitInt64) {
-            const { blob: decodedArray } = DecodeZigZag(processedBlob, coltype);
+            const { blob: decodedArray } = DecodeZigzag(processedBlob, coltype);
             processedBlob = decodedArray;  
         }
 
