@@ -294,7 +294,7 @@ function DecodeDeltaIndex(blob, coltype) {
 /**
  * @summary Decode a reconstructed signed integer buffer using ZigZag encoding
   */
-function DecodeZigZag(blob, coltype) {
+function decodeZigzag(blob, coltype) {
   let zigzag, result;
 
   if (coltype === ENTupleColumnType.kInt16) {
