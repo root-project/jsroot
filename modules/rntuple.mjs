@@ -749,33 +749,33 @@ class RNTupleDescriptorBuilder {
         this.pageLocations = clusterPageLocations;
     }
 
-    // Example Of Deserializing Page Content
-    deserializePage(blob, columnDescriptor) {
-        const originalColtype = columnDescriptor.coltype,
-        { coltype } = recontructUnsplitBuffer(blob, columnDescriptor);
-        let { blob: processedBlob } = recontructUnsplitBuffer(blob, columnDescriptor);
+// Example Of Deserializing Page Content
+deserializePage(blob, columnDescriptor) {
+    const originalColtype = columnDescriptor.coltype,
+    { coltype } = recontructUnsplitBuffer(blob, columnDescriptor);
+    let { blob: processedBlob } = recontructUnsplitBuffer(blob, columnDescriptor);
 
-        
-        // Handle split index types
+    
+    // Handle split index types
         if (originalColtype === ENTupleColumnType.kSplitIndex32 || originalColtype=== ENTupleColumnType.kSplitIndex64) {
-            const { blob: decodedArray } = DecodeDeltaIndex(processedBlob, coltype);
-            processedBlob = decodedArray;  
-        }
+        const { blob: decodedArray } = DecodeDeltaIndex(processedBlob, coltype);
+        processedBlob = decodedArray;  
+    }
 
-        // Handle Split Signed Int types
-        if (originalColtype === ENTupleColumnType.kSplitInt16 || originalColtype === ENTupleColumnType.kSplitInt32 || originalColtype === ENTupleColumnType.kSplitInt64) {
-            const { blob: decodedArray } = decodeZigzag(processedBlob, coltype);
-            processedBlob = decodedArray;  
-        }
+    // Handle Split Signed Int types
+    if (originalColtype === ENTupleColumnType.kSplitInt16 || originalColtype === ENTupleColumnType.kSplitInt32 || originalColtype === ENTupleColumnType.kSplitInt64) {
+        const { blob: decodedArray } = decodeZigzag(processedBlob, coltype);
+        processedBlob = decodedArray;  
+    }
 
-        const byteSize = getTypeByteSize(coltype),
-              reader = new RBufferReader(processedBlob),
-              values = [];
+    const byteSize = getTypeByteSize(coltype),
+          reader = new RBufferReader(processedBlob),
+          values = [];
 
-        if (!byteSize)
-            throw new Error('Invalid or unsupported column type: cannot determine byte size');
+    if (!byteSize)
+        throw new Error('Invalid or unsupported column type: cannot determine byte size');
 
-        const numValues = processedBlob.byteLength / byteSize;
+    const numValues = processedBlob.byteLength / byteSize;
 
     switch (coltype) {
         case ENTupleColumnType.kBit: {
@@ -848,8 +848,8 @@ class RNTupleDescriptorBuilder {
         }
         }
 
-        return values;
-    }
+    return values;
+}
 
 } // class RNTupleDescriptorBuilder
 
@@ -1013,16 +1013,16 @@ function readNextCluster(rntuple, selector) {
 
     // Build flat array of [offset, size, offset, size, ...] to read pages
     const dataToRead = pages.flatMap(p =>
-          [Number(p.page.locator.offset), Number(p.page.locator.size)]
-        );
+        [Number(p.page.locator.offset), Number(p.page.locator.size)]
+    );
 
     return rntuple.$file.readBuffer(dataToRead).then(blobsRaw => {
         const blobs = Array.isArray(blobsRaw) ? blobsRaw : [blobsRaw],
-            unzipPromises = blobs.map((blob, idx) => {
-                const { page, colDesc } = pages[idx],
+        unzipPromises = blobs.map((blob, idx) => {
+            const { page, colDesc } = pages[idx],
                     colEntry = builder.pageLocations[clusterIndex][colDesc.index], // Access column entry
-                    numElements = Number(page.numElements),
-                    elementSize = colDesc.bitsOnStorage / 8;
+                numElements = Number(page.numElements),
+                elementSize = colDesc.bitsOnStorage / 8;
 
                 // Check if data is compressed
                 if (colEntry.compression === 0)
@@ -1075,10 +1075,10 @@ function readNextCluster(rntuple, selector) {
                 // splitting string fields into offset and payload components
                 if (field.typeName === 'std::string') {
                     if (
-                         colDesc.coltype === ENTupleColumnType.kIndex64 ||
-                         colDesc.coltype === ENTupleColumnType.kIndex32 ||
-                         colDesc.coltype === ENTupleColumnType.kSplitIndex64 ||
-                         colDesc.coltype === ENTupleColumnType.kSplitIndex32
+                        colDesc.coltype === ENTupleColumnType.kIndex64 ||
+                        colDesc.coltype === ENTupleColumnType.kIndex32 ||
+                        colDesc.coltype === ENTupleColumnType.kSplitIndex64 ||
+                        colDesc.coltype === ENTupleColumnType.kSplitIndex32
                         ) // Index64/Index32
                         rntuple._clusterData[field.fieldName][0] = values; // Offsets
                     else if (colDesc.coltype === ENTupleColumnType.kChar)
