@@ -755,81 +755,75 @@ deserializePage(blob, columnDescriptor, pageInfo) {
           values = [],
 
     // Use numElements from pageInfo parameter
-    numValues = Number(pageInfo.numElements);
-
+    numValues = Number(pageInfo.numElements),
+    // Helper for all simple types
+    extractValues = (readFunc) => {
+        for (let i = 0; i < numValues; ++i)
+            values.push(readFunc());
+    };
     switch (coltype) {
         case ENTupleColumnType.kBit: {
             let bitCount = 0;
             const totalBitsInBuffer = processedBlob.byteLength * 8;
+            if (totalBitsInBuffer < numValues)
+                throw new Error(`kBit: Not enough bits in buffer (${totalBitsInBuffer}) for numValues (${numValues})`);
             
             for (let byteIndex = 0; byteIndex < processedBlob.byteLength; ++byteIndex) {
                 const byte = reader.readU8();
                 
                 // Extract 8 bits from this byte
-                for (let bitPos = 0; bitPos < 8 && bitCount < totalBitsInBuffer && bitCount < numValues; ++bitPos, ++bitCount) {
+                for (let bitPos = 0; bitPos < 8 && bitCount < numValues; ++bitPos, ++bitCount) {
                     const bitValue = (byte >>> bitPos) & 1,
                     boolValue = bitValue === 1;
                     values.push(boolValue);
                 }
-                
-                if (bitCount >= numValues) break;
             }
             break;
         }
 
-        default: {
-        for (let i = 0; i < numValues; ++i) {
-            let val;
-            
-            switch (coltype) {
                 case ENTupleColumnType.kReal64:
-                    val = reader.readF64();
+                    extractValues(reader.readF64.bind(reader));
                     break;
                 case ENTupleColumnType.kReal32:
-                    val = reader.readF32();
+                    extractValues(reader.readF32.bind(reader));
                     break;
                 case ENTupleColumnType.kInt64:
-                    val = reader.readS64();
+                    extractValues(reader.readS64.bind(reader));
                     break;
                 case ENTupleColumnType.kUInt64:
-                    val = reader.readU64();
+                    extractValues(reader.readU64.bind(reader));
                     break;
                 case ENTupleColumnType.kInt32:
-                    val = reader.readS32();
+                    extractValues(reader.readS32.bind(reader));
                     break;
                 case ENTupleColumnType.kUInt32:
-                    val = reader.readU32();
+                    extractValues(reader.readU32.bind(reader));
                     break;
                 case ENTupleColumnType.kInt16:
-                    val = reader.readS16();
+                    extractValues(reader.readS16.bind(reader));
                     break;
                 case ENTupleColumnType.kUInt16:
-                    val = reader.readU16();
+                    extractValues(reader.readU16.bind(reader));
                     break;
                 case ENTupleColumnType.kInt8:
-                    val = reader.readS8();
+                    extractValues(reader.readS8.bind(reader));
                     break;
                 case ENTupleColumnType.kUInt8:
                 case ENTupleColumnType.kByte:
-                    val = reader.readU8();
+                    extractValues(reader.readU8.bind(reader));
                     break;
                 case ENTupleColumnType.kChar:
-                    val = String.fromCharCode(reader.readS8());
+                    extractValues(() => String.fromCharCode(reader.readS8()));
                     break;
                 case ENTupleColumnType.kIndex32:
-                    val = reader.readS32();
+                    extractValues(reader.readS32.bind(reader));
                     break;
                 case ENTupleColumnType.kIndex64:
-                    val = reader.readS64();
+                    extractValues(reader.readS64.bind(reader));
                     break;
                 default:
                     throw new Error(`Unsupported column type: ${columnDescriptor.coltype}`);
-            }
-            values.push(val);
-            }
-        }
-        }
-
+    }       
     return values;
 }
 
