@@ -181,6 +181,8 @@ function getTypeByteSize(coltype) {
         case ENTupleColumnType.kByte:
         case ENTupleColumnType.kChar:
             return 1;
+        case ENTupleColumnType.kBit:
+            return 1/8;
         default:
             throw new Error(`Unsupported coltype for byte size: ${coltype} (0x${coltype.toString(16).padStart(2, '0')})`);
     }
@@ -775,6 +777,25 @@ class RNTupleDescriptorBuilder {
 
         const numValues = processedBlob.byteLength / byteSize;
 
+    switch (coltype) {
+        case ENTupleColumnType.kBit: {
+            let bitCount = 0;
+            const totalBitsInBuffer = processedBlob.byteLength * 8;
+            
+            for (let byteIndex = 0; byteIndex < processedBlob.byteLength; ++byteIndex) {
+                const byte = reader.readU8();
+                
+                // Extract 8 bits from this byte
+                for (let bitPos = 0; bitPos < 8 && bitCount < totalBitsInBuffer; ++bitPos, ++bitCount) {
+                    const bitValue = (byte >>> bitPos) & 1,
+                    boolValue = bitValue === 1;
+                    values.push(boolValue);
+                }
+            }
+            break;
+        }
+
+        default: {
         for (let i = 0; i < (numValues ?? processedBlob.byteLength); ++i) {
             let val;
             
@@ -823,6 +844,8 @@ class RNTupleDescriptorBuilder {
                     throw new Error(`Unsupported column type: ${columnDescriptor.coltype}`);
             }
             values.push(val);
+            }
+        }
         }
 
         return values;
@@ -1004,8 +1027,32 @@ function readNextCluster(rntuple, selector) {
                 // Check if data is compressed
                 if (colEntry.compression === 0)
                     return Promise.resolve(blob); // Uncompressed: use blob directly
-                return R__unzip(blob, numElements * elementSize);
+                const expectedSize = numElements * elementSize;
+
+            // Special handling for boolean fields
+            if (colDesc.coltype === ENTupleColumnType.kBit) {
+                const expectedBoolSize = Math.ceil(numElements / 8);
+                if (blob.byteLength === expectedBoolSize)
+                    return Promise.resolve(blob);
+                // Try decompression but catch errors for boolean fields
+                return R__unzip(blob, expectedBoolSize).catch(err => {
+                    throw new Error(`Failed to unzip boolean page ${idx}: ${err.message}`);
+                });
+            }
+
+            // If the blob is already the expected size, treat as uncompressed
+            if (blob.byteLength === expectedSize)
+                return Promise.resolve(blob);
+
+            // Try decompression
+            return R__unzip(blob, expectedSize).then(result => {
+                if (!result)
+                    return blob; // Fallback to original blob
+                return result;
+            }).catch(err => {
+                throw new Error(`Failed to unzip page ${idx}: ${err.message}`);
             });
+        });
 
         return Promise.all(unzipPromises).then(unzipBlobs => {
             rntuple._clusterData = {}; // store deserialized data per field
