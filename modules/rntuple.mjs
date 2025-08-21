@@ -148,44 +148,6 @@ const ENTupleColumnType = {
 };
 
 
-// Determine byte size per value based on column type
-function getTypeByteSize(coltype) {
-    switch (coltype) {
-        case ENTupleColumnType.kReal64:
-        case ENTupleColumnType.kInt64:
-        case ENTupleColumnType.kUInt64:
-        case ENTupleColumnType.kIndex64:
-        case ENTupleColumnType.kSplitInt64:
-        case ENTupleColumnType.kSplitUInt64:
-        case ENTupleColumnType.kSplitReal64:
-        case ENTupleColumnType.kSplitIndex64:
-            return 8;
-
-        case ENTupleColumnType.kReal32:
-        case ENTupleColumnType.kInt32:
-        case ENTupleColumnType.kIndex32:
-        case ENTupleColumnType.kUInt32:
-        case ENTupleColumnType.kSplitInt32:
-        case ENTupleColumnType.kSplitUInt32:
-        case ENTupleColumnType.kSplitReal32:
-        case ENTupleColumnType.kSplitIndex32:
-            return 4;
-        case ENTupleColumnType.kInt16:
-        case ENTupleColumnType.kUInt16:
-        case ENTupleColumnType.kSplitInt16:
-        case ENTupleColumnType.kSplitUInt16:
-        case ENTupleColumnType.kSplitReal16:
-            return 2;
-        case ENTupleColumnType.kInt8:
-        case ENTupleColumnType.kUInt8:
-        case ENTupleColumnType.kByte:
-        case ENTupleColumnType.kChar:
-            return 1;
-        default:
-            throw new Error(`Unsupported coltype for byte size: ${coltype} (0x${coltype.toString(16).padStart(2, '0')})`);
-    }
-}
-
 /**
  * @summary Rearrange bytes from split format to normal format (row-wise) for decoding
  */
@@ -205,8 +167,31 @@ function recontructUnsplitBuffer(blob, columnDescriptor) {
         coltype === ENTupleColumnType.kSplitInt32 ||
         coltype === ENTupleColumnType.kSplitInt64
     ) {
-        const byteSize = getTypeByteSize(coltype),
-              splitView = new DataView(blob.buffer, blob.byteOffset, blob.byteLength),
+        // Determine byte size based on column type
+        let byteSize;
+        switch (coltype) {
+            case ENTupleColumnType.kSplitReal64:
+            case ENTupleColumnType.kSplitInt64:
+            case ENTupleColumnType.kSplitUInt64:
+            case ENTupleColumnType.kSplitIndex64:
+                byteSize = 8;
+                break;
+            case ENTupleColumnType.kSplitReal32:
+            case ENTupleColumnType.kSplitInt32:
+            case ENTupleColumnType.kSplitIndex32:
+            case ENTupleColumnType.kSplitUInt32:
+                byteSize = 4;
+                break;
+            case ENTupleColumnType.kSplitInt16:
+            case ENTupleColumnType.kSplitUInt16:
+            case ENTupleColumnType.kSplitReal16:
+                byteSize = 2;
+                break;
+            default:
+                throw new Error(`Unsupported split coltype: ${coltype} (0x${coltype.toString(16).padStart(2, '0')})`);
+        }
+
+        const splitView = new DataView(blob.buffer, blob.byteOffset, blob.byteLength),
               count = blob.byteLength / byteSize,
               outBuffer = new ArrayBuffer(blob.byteLength),
               outBytes = new Uint8Array(outBuffer);
@@ -748,83 +733,105 @@ class RNTupleDescriptorBuilder {
     }
 
     // Example Of Deserializing Page Content
-    deserializePage(blob, columnDescriptor) {
+    deserializePage(blob, columnDescriptor, pageInfo) {
         const originalColtype = columnDescriptor.coltype,
-        { coltype } = recontructUnsplitBuffer(blob, columnDescriptor);
-        let { blob: processedBlob } = recontructUnsplitBuffer(blob, columnDescriptor);
-
-        
+            {
+                coltype
+            } = recontructUnsplitBuffer(blob, columnDescriptor);
+        let {
+            blob: processedBlob
+        } = recontructUnsplitBuffer(blob, columnDescriptor);
+    
+    
         // Handle split index types
-        if (originalColtype === ENTupleColumnType.kSplitIndex32 || originalColtype=== ENTupleColumnType.kSplitIndex64) {
-            const { blob: decodedArray } = DecodeDeltaIndex(processedBlob, coltype);
-            processedBlob = decodedArray;  
+        if (originalColtype === ENTupleColumnType.kSplitIndex32 || originalColtype === ENTupleColumnType.kSplitIndex64) {
+            const {
+                blob: decodedArray
+            } = DecodeDeltaIndex(processedBlob, coltype);
+            processedBlob = decodedArray;
         }
-
+    
         // Handle Split Signed Int types
         if (originalColtype === ENTupleColumnType.kSplitInt16 || originalColtype === ENTupleColumnType.kSplitInt32 || originalColtype === ENTupleColumnType.kSplitInt64) {
-            const { blob: decodedArray } = decodeZigzag(processedBlob, coltype);
-            processedBlob = decodedArray;  
+            const {
+                blob: decodedArray
+            } = decodeZigzag(processedBlob, coltype);
+            processedBlob = decodedArray;
         }
-
-        const byteSize = getTypeByteSize(coltype),
-              reader = new RBufferReader(processedBlob),
-              values = [];
-
-        if (!byteSize)
-            throw new Error('Invalid or unsupported column type: cannot determine byte size');
-
-        const numValues = processedBlob.byteLength / byteSize;
-
-        for (let i = 0; i < (numValues ?? processedBlob.byteLength); ++i) {
-            let val;
-            
-            switch (coltype) {
-                case ENTupleColumnType.kReal64:
-                    val = reader.readF64();
-                    break;
-                case ENTupleColumnType.kReal32:
-                    val = reader.readF32();
-                    break;
-                case ENTupleColumnType.kInt64:
-                    val = reader.readS64();
-                    break;
-                case ENTupleColumnType.kUInt64:
-                    val = reader.readU64();
-                    break;
-                case ENTupleColumnType.kInt32:
-                    val = reader.readS32();
-                    break;
-                case ENTupleColumnType.kUInt32:
-                    val = reader.readU32();
-                    break;
-                case ENTupleColumnType.kInt16:
-                    val = reader.readS16();
-                    break;
-                case ENTupleColumnType.kUInt16:
-                    val = reader.readU16();
-                    break;
-                case ENTupleColumnType.kInt8:
-                    val = reader.readS8();
-                    break;
-                case ENTupleColumnType.kUInt8:
-                case ENTupleColumnType.kByte:
-                    val = reader.readU8();
-                    break;
-                case ENTupleColumnType.kChar:
-                    val = String.fromCharCode(reader.readS8());
-                    break;
-                case ENTupleColumnType.kIndex32:
-                    val = reader.readS32();
-                    break;
-                case ENTupleColumnType.kIndex64:
-                    val = reader.readS64();
-                    break;
-                default:
-                    throw new Error(`Unsupported column type: ${columnDescriptor.coltype}`);
+    
+        const reader = new RBufferReader(processedBlob),
+            values = [],
+    
+            // Use numElements from pageInfo parameter
+            numValues = Number(pageInfo.numElements),
+            // Helper for all simple types
+            extractValues = (readFunc) => {
+                for (let i = 0; i < numValues; ++i)
+                    values.push(readFunc());
+            };
+        switch (coltype) {
+            case ENTupleColumnType.kBit: {
+                let bitCount = 0;
+                const totalBitsInBuffer = processedBlob.byteLength * 8;
+                if (totalBitsInBuffer < numValues)
+                    throw new Error(`kBit: Not enough bits in buffer (${totalBitsInBuffer}) for numValues (${numValues})`);
+    
+                for (let byteIndex = 0; byteIndex < processedBlob.byteLength; ++byteIndex) {
+                    const byte = reader.readU8();
+    
+                    // Extract 8 bits from this byte
+                    for (let bitPos = 0; bitPos < 8 && bitCount < numValues; ++bitPos, ++bitCount) {
+                        const bitValue = (byte >>> bitPos) & 1,
+                            boolValue = bitValue === 1;
+                        values.push(boolValue);
+                    }
+                }
+                break;
             }
-            values.push(val);
+    
+            case ENTupleColumnType.kReal64:
+                extractValues(reader.readF64.bind(reader));
+                break;
+            case ENTupleColumnType.kReal32:
+                extractValues(reader.readF32.bind(reader));
+                break;
+            case ENTupleColumnType.kInt64:
+                extractValues(reader.readS64.bind(reader));
+                break;
+            case ENTupleColumnType.kUInt64:
+                extractValues(reader.readU64.bind(reader));
+                break;
+            case ENTupleColumnType.kInt32:
+                extractValues(reader.readS32.bind(reader));
+                break;
+            case ENTupleColumnType.kUInt32:
+                extractValues(reader.readU32.bind(reader));
+                break;
+            case ENTupleColumnType.kInt16:
+                extractValues(reader.readS16.bind(reader));
+                break;
+            case ENTupleColumnType.kUInt16:
+                extractValues(reader.readU16.bind(reader));
+                break;
+            case ENTupleColumnType.kInt8:
+                extractValues(reader.readS8.bind(reader));
+                break;
+            case ENTupleColumnType.kUInt8:
+            case ENTupleColumnType.kByte:
+                extractValues(reader.readU8.bind(reader));
+                break;
+            case ENTupleColumnType.kChar:
+                extractValues(() => String.fromCharCode(reader.readS8()));
+                break;
+            case ENTupleColumnType.kIndex32:
+                extractValues(reader.readS32.bind(reader));
+                break;
+            case ENTupleColumnType.kIndex64:
+                extractValues(reader.readS64.bind(reader));
+                break;
+            default:
+                throw new Error(`Unsupported column type: ${columnDescriptor.coltype}`);
         }
-
         return values;
     }
 
@@ -990,22 +997,46 @@ function readNextCluster(rntuple, selector) {
 
     // Build flat array of [offset, size, offset, size, ...] to read pages
     const dataToRead = pages.flatMap(p =>
-          [Number(p.page.locator.offset), Number(p.page.locator.size)]
-        );
+        [Number(p.page.locator.offset), Number(p.page.locator.size)]
+    );
 
     return rntuple.$file.readBuffer(dataToRead).then(blobsRaw => {
         const blobs = Array.isArray(blobsRaw) ? blobsRaw : [blobsRaw],
-            unzipPromises = blobs.map((blob, idx) => {
-                const { page, colDesc } = pages[idx],
+        unzipPromises = blobs.map((blob, idx) => {
+            const { page, colDesc } = pages[idx],
                     colEntry = builder.pageLocations[clusterIndex][colDesc.index], // Access column entry
-                    numElements = Number(page.numElements),
-                    elementSize = colDesc.bitsOnStorage / 8;
+                numElements = Number(page.numElements),
+                elementSize = colDesc.bitsOnStorage / 8;
 
                 // Check if data is compressed
                 if (colEntry.compression === 0)
                     return Promise.resolve(blob); // Uncompressed: use blob directly
-                return R__unzip(blob, numElements * elementSize);
+                const expectedSize = numElements * elementSize;
+
+            // Special handling for boolean fields
+            if (colDesc.coltype === ENTupleColumnType.kBit) {
+                const expectedBoolSize = Math.ceil(numElements / 8);
+                if (blob.byteLength === expectedBoolSize)
+                    return Promise.resolve(blob);
+                // Try decompression but catch errors for boolean fields
+                return R__unzip(blob, expectedBoolSize).catch(err => {
+                    throw new Error(`Failed to unzip boolean page ${idx}: ${err.message}`);
+                });
+            }
+
+            // If the blob is already the expected size, treat as uncompressed
+            if (blob.byteLength === expectedSize)
+                return Promise.resolve(blob);
+
+            // Try decompression
+            return R__unzip(blob, expectedSize).then(result => {
+                if (!result)
+                    return blob; // Fallback to original blob
+                return result;
+            }).catch(err => {
+                throw new Error(`Failed to unzip page ${idx}: ${err.message}`);
             });
+        });
 
         return Promise.all(unzipPromises).then(unzipBlobs => {
             rntuple._clusterData = {}; // store deserialized data per field
@@ -1016,10 +1047,11 @@ function readNextCluster(rntuple, selector) {
                 if (!(blob instanceof DataView))
                     throw new Error(`Invalid blob type for page ${i}: ${Object.prototype.toString.call(blob)}`);
                 const {
+                    page,
                     colDesc
                 } = pages[i],
                     field = builder.fieldDescriptors[colDesc.fieldId],
-                    values = builder.deserializePage(blob, colDesc);
+                    values = builder.deserializePage(blob, colDesc, page);
 
                 // Support multiple representations (e.g., string fields with offsets + payload)
                 if (!rntuple._clusterData[field.fieldName])
@@ -1028,10 +1060,10 @@ function readNextCluster(rntuple, selector) {
                 // splitting string fields into offset and payload components
                 if (field.typeName === 'std::string') {
                     if (
-                         colDesc.coltype === ENTupleColumnType.kIndex64 ||
-                         colDesc.coltype === ENTupleColumnType.kIndex32 ||
-                         colDesc.coltype === ENTupleColumnType.kSplitIndex64 ||
-                         colDesc.coltype === ENTupleColumnType.kSplitIndex32
+                        colDesc.coltype === ENTupleColumnType.kIndex64 ||
+                        colDesc.coltype === ENTupleColumnType.kIndex32 ||
+                        colDesc.coltype === ENTupleColumnType.kSplitIndex64 ||
+                        colDesc.coltype === ENTupleColumnType.kSplitIndex32
                         ) // Index64/Index32
                         rntuple._clusterData[field.fieldName][0] = values; // Offsets
                     else if (colDesc.coltype === ENTupleColumnType.kChar)
