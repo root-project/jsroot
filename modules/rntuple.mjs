@@ -732,100 +732,108 @@ class RNTupleDescriptorBuilder {
         this.pageLocations = clusterPageLocations;
     }
 
-// Example Of Deserializing Page Content
-deserializePage(blob, columnDescriptor, pageInfo) {
-    const originalColtype = columnDescriptor.coltype,
-    { coltype } = recontructUnsplitBuffer(blob, columnDescriptor);
-    let { blob: processedBlob } = recontructUnsplitBuffer(blob, columnDescriptor);
-
+    // Example Of Deserializing Page Content
+    deserializePage(blob, columnDescriptor, pageInfo) {
+        const originalColtype = columnDescriptor.coltype,
+            {
+                coltype
+            } = recontructUnsplitBuffer(blob, columnDescriptor);
+        let {
+            blob: processedBlob
+        } = recontructUnsplitBuffer(blob, columnDescriptor);
     
-    // Handle split index types
-        if (originalColtype === ENTupleColumnType.kSplitIndex32 || originalColtype=== ENTupleColumnType.kSplitIndex64) {
-        const { blob: decodedArray } = DecodeDeltaIndex(processedBlob, coltype);
-        processedBlob = decodedArray;  
-    }
-
-    // Handle Split Signed Int types
-    if (originalColtype === ENTupleColumnType.kSplitInt16 || originalColtype === ENTupleColumnType.kSplitInt32 || originalColtype === ENTupleColumnType.kSplitInt64) {
-        const { blob: decodedArray } = decodeZigzag(processedBlob, coltype);
-        processedBlob = decodedArray;  
-    }
-
-    const reader = new RBufferReader(processedBlob),
-          values = [],
-
-    // Use numElements from pageInfo parameter
-    numValues = Number(pageInfo.numElements),
-    // Helper for all simple types
-    extractValues = (readFunc) => {
-        for (let i = 0; i < numValues; ++i)
-            values.push(readFunc());
-    };
-    switch (coltype) {
-        case ENTupleColumnType.kBit: {
-            let bitCount = 0;
-            const totalBitsInBuffer = processedBlob.byteLength * 8;
-            if (totalBitsInBuffer < numValues)
-                throw new Error(`kBit: Not enough bits in buffer (${totalBitsInBuffer}) for numValues (${numValues})`);
-            
-            for (let byteIndex = 0; byteIndex < processedBlob.byteLength; ++byteIndex) {
-                const byte = reader.readU8();
-                
-                // Extract 8 bits from this byte
-                for (let bitPos = 0; bitPos < 8 && bitCount < numValues; ++bitPos, ++bitCount) {
-                    const bitValue = (byte >>> bitPos) & 1,
-                    boolValue = bitValue === 1;
-                    values.push(boolValue);
-                }
-            }
-            break;
+    
+        // Handle split index types
+        if (originalColtype === ENTupleColumnType.kSplitIndex32 || originalColtype === ENTupleColumnType.kSplitIndex64) {
+            const {
+                blob: decodedArray
+            } = DecodeDeltaIndex(processedBlob, coltype);
+            processedBlob = decodedArray;
         }
-
-                case ENTupleColumnType.kReal64:
-                    extractValues(reader.readF64.bind(reader));
-                    break;
-                case ENTupleColumnType.kReal32:
-                    extractValues(reader.readF32.bind(reader));
-                    break;
-                case ENTupleColumnType.kInt64:
-                    extractValues(reader.readS64.bind(reader));
-                    break;
-                case ENTupleColumnType.kUInt64:
-                    extractValues(reader.readU64.bind(reader));
-                    break;
-                case ENTupleColumnType.kInt32:
-                    extractValues(reader.readS32.bind(reader));
-                    break;
-                case ENTupleColumnType.kUInt32:
-                    extractValues(reader.readU32.bind(reader));
-                    break;
-                case ENTupleColumnType.kInt16:
-                    extractValues(reader.readS16.bind(reader));
-                    break;
-                case ENTupleColumnType.kUInt16:
-                    extractValues(reader.readU16.bind(reader));
-                    break;
-                case ENTupleColumnType.kInt8:
-                    extractValues(reader.readS8.bind(reader));
-                    break;
-                case ENTupleColumnType.kUInt8:
-                case ENTupleColumnType.kByte:
-                    extractValues(reader.readU8.bind(reader));
-                    break;
-                case ENTupleColumnType.kChar:
-                    extractValues(() => String.fromCharCode(reader.readS8()));
-                    break;
-                case ENTupleColumnType.kIndex32:
-                    extractValues(reader.readS32.bind(reader));
-                    break;
-                case ENTupleColumnType.kIndex64:
-                    extractValues(reader.readS64.bind(reader));
-                    break;
-                default:
-                    throw new Error(`Unsupported column type: ${columnDescriptor.coltype}`);
-    }       
-    return values;
-}
+    
+        // Handle Split Signed Int types
+        if (originalColtype === ENTupleColumnType.kSplitInt16 || originalColtype === ENTupleColumnType.kSplitInt32 || originalColtype === ENTupleColumnType.kSplitInt64) {
+            const {
+                blob: decodedArray
+            } = decodeZigzag(processedBlob, coltype);
+            processedBlob = decodedArray;
+        }
+    
+        const reader = new RBufferReader(processedBlob),
+            values = [],
+    
+            // Use numElements from pageInfo parameter
+            numValues = Number(pageInfo.numElements),
+            // Helper for all simple types
+            extractValues = (readFunc) => {
+                for (let i = 0; i < numValues; ++i)
+                    values.push(readFunc());
+            };
+        switch (coltype) {
+            case ENTupleColumnType.kBit: {
+                let bitCount = 0;
+                const totalBitsInBuffer = processedBlob.byteLength * 8;
+                if (totalBitsInBuffer < numValues)
+                    throw new Error(`kBit: Not enough bits in buffer (${totalBitsInBuffer}) for numValues (${numValues})`);
+    
+                for (let byteIndex = 0; byteIndex < processedBlob.byteLength; ++byteIndex) {
+                    const byte = reader.readU8();
+    
+                    // Extract 8 bits from this byte
+                    for (let bitPos = 0; bitPos < 8 && bitCount < numValues; ++bitPos, ++bitCount) {
+                        const bitValue = (byte >>> bitPos) & 1,
+                            boolValue = bitValue === 1;
+                        values.push(boolValue);
+                    }
+                }
+                break;
+            }
+    
+            case ENTupleColumnType.kReal64:
+                extractValues(reader.readF64.bind(reader));
+                break;
+            case ENTupleColumnType.kReal32:
+                extractValues(reader.readF32.bind(reader));
+                break;
+            case ENTupleColumnType.kInt64:
+                extractValues(reader.readS64.bind(reader));
+                break;
+            case ENTupleColumnType.kUInt64:
+                extractValues(reader.readU64.bind(reader));
+                break;
+            case ENTupleColumnType.kInt32:
+                extractValues(reader.readS32.bind(reader));
+                break;
+            case ENTupleColumnType.kUInt32:
+                extractValues(reader.readU32.bind(reader));
+                break;
+            case ENTupleColumnType.kInt16:
+                extractValues(reader.readS16.bind(reader));
+                break;
+            case ENTupleColumnType.kUInt16:
+                extractValues(reader.readU16.bind(reader));
+                break;
+            case ENTupleColumnType.kInt8:
+                extractValues(reader.readS8.bind(reader));
+                break;
+            case ENTupleColumnType.kUInt8:
+            case ENTupleColumnType.kByte:
+                extractValues(reader.readU8.bind(reader));
+                break;
+            case ENTupleColumnType.kChar:
+                extractValues(() => String.fromCharCode(reader.readS8()));
+                break;
+            case ENTupleColumnType.kIndex32:
+                extractValues(reader.readS32.bind(reader));
+                break;
+            case ENTupleColumnType.kIndex64:
+                extractValues(reader.readS64.bind(reader));
+                break;
+            default:
+                throw new Error(`Unsupported column type: ${columnDescriptor.coltype}`);
+        }
+        return values;
+    }
 
 } // class RNTupleDescriptorBuilder
 
