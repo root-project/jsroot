@@ -271,6 +271,17 @@
      { "name": "expr", "asurl": true, "file": "WJets.root", "opt": "TMath::Abs(lep1_p4.M())", "item": "t", "title": "Use of expression and object methods" },
      { "name": "vect_expr", "asurl": true, "file": "WJets.root", "item": "t", "opt": "jets.M()", "title": "Use of expression for objects, stored in the vector" }
     ],
+   "RNtuple" : [
+     { "name": "uint32", "file": "rntuple/customer_Compressed.root", "item": "CustomerData", "opt": "customerId", "title": "kUInt32" },
+     { "name": "uint8", "opt": "age", "title": "kUInt8" },
+     { "name": "char32", "opt": "firstName", "title": "kSplitIndex32 + kChar" },
+     { "name": "char64", "opt": "email", "title": "kSplitIndex64 + kChar" },
+     { "name": "real64", "opt": "accountBalance", "title": "kReal64" },
+     { "name": "uint16", "opt": "creditScore", "title": "kUint16" },
+     { "name": "real32", "opt": "monthlyIncome", "title": "kReal32" },
+     { "name": "int32", "opt": "loyaltyPoints", "title": "kInt32" },
+     { "name": "bit", "opt": "isActive", "title": "kBit" }
+    ],
     "TGraph" : [
      { "opt": "", "file": "graph.root", "item": "Graph;1", "interactive": true },
      { "opt": "L" },
