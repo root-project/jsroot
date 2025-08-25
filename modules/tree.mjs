@@ -1235,12 +1235,14 @@ class TDrawSelector extends TSelector {
       hist.fXaxis.fXmax = x.max;
       hist.fXaxis.fLabels = x.fLabels;
 
-      if (this.ndim > 1) hist.fYaxis.fTitle = y.title;
+      if (this.ndim > 1) 
+         hist.fYaxis.fTitle = y.title;
       hist.fYaxis.fXmin = y.min;
       hist.fYaxis.fXmax = y.max;
       hist.fYaxis.fLabels = y.fLabels;
 
-      if (this.ndim > 2) hist.fZaxis.fTitle = z.title;
+      if (this.ndim > 2) 
+         hist.fZaxis.fTitle = z.title;
       hist.fZaxis.fXmin = z.min;
       hist.fZaxis.fXmax = z.max;
       hist.fZaxis.fLabels = z.fLabels;
