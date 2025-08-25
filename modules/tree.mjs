@@ -1107,6 +1107,8 @@ class TDrawSelector extends TSelector {
 
       res.title = this.vars[axisid].code || '';
 
+      console.log("detect type", this.vars[axisid].kind)
+
       if (this.vars[axisid].kind === 'object') {
          // this is any object type
          let typename, similar = true, maxbits = 8;
@@ -1130,25 +1132,16 @@ class TDrawSelector extends TSelector {
          }
       }
 
-      if (this.vars[axisid].kind === 'string') {
+      if (this.vars[axisid].kind === 'boolean') {
+         res.lbls = [ 'false', 'true' ];
+         this.fill1DHistogram = this.fillBooleanHistogram;
+      } else if (this.vars[axisid].kind === 'string') {
          res.lbls = []; // all labels
-
          for (let k = 0; k < arr.length; ++k) {
             if (res.lbls.indexOf(arr[k]) < 0)
                res.lbls.push(arr[k]);
          }
-
          res.lbls.sort();
-         res.max = res.nbins = res.lbls.length;
-
-         res.fLabels = create(clTHashList);
-         for (let k = 0; k < res.lbls.length; ++k) {
-            const s = create(clTObjString);
-            s.fString = res.lbls[k];
-            s.fUniqueID = k + 1;
-            if (s.fString === '') s.fString = '<empty>';
-            res.fLabels.Add(s);
-         }
       } else if ((axisid === 0) && (this.hist_name === 'bits') && (this.hist_args.length <= 1)) {
          this.fill1DHistogram = this.fillBitsHistogram;
          return this.getBitsBins(this.hist_args[0] || 32, res);
@@ -1199,6 +1192,19 @@ class TDrawSelector extends TSelector {
                if (res.min > 0) { res.min *= 0.9; res.max *= 1.1; } else { res.min *= 1.1; res.max *= 0.9; }
          } else
             res.max += (res.max - res.min) / res.nbins;
+      }
+
+      if (res.lbls) {
+         res.max = res.nbins = res.lbls.length;
+
+         res.fLabels = create(clTHashList);
+         for (let k = 0; k < res.lbls.length; ++k) {
+            const s = create(clTObjString);
+            s.fString = res.lbls[k];
+            s.fUniqueID = k + 1;
+            if (s.fString === '') s.fString = '<empty>';
+            res.fLabels.Add(s);
+         }
       }
 
       res.k = res.nbins / (res.max - res.min);
@@ -1363,6 +1369,13 @@ class TDrawSelector extends TSelector {
          if (xvalue & mask) this.hist.fArray[bit + 1] += weight;
          mask *= 2;
       }
+   }
+
+   /** @summary Fill boolean histogram */
+   fillBooleanHistogram(xvalue, weight) {
+      if (!weight) return;
+      const bin = xvalue ? 2 : 1;
+      this.hist.fArray[bin] += weight;
    }
 
    /** @summary Fill 1D histogram */
