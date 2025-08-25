@@ -1107,8 +1107,6 @@ class TDrawSelector extends TSelector {
 
       res.title = this.vars[axisid].code || '';
 
-      console.log("detect type", this.vars[axisid].kind)
-
       if (this.vars[axisid].kind === 'object') {
          // this is any object type
          let typename, similar = true, maxbits = 8;
@@ -1372,10 +1370,13 @@ class TDrawSelector extends TSelector {
    }
 
    /** @summary Fill boolean histogram */
-   fillBooleanHistogram(xvalue, weight) {
+   fillBooleanHistogram(boolvalue, weight) {
       if (!weight) return;
-      const bin = xvalue ? 2 : 1;
-      this.hist.fArray[bin] += weight;
+      const xvalue = boolvalue ? 1 : 0; 
+      this.hist.fArray[xvalue + 1] += weight;
+      this.hist.fTsumw += weight;
+      this.hist.fTsumwx += weight * xvalue;
+      this.hist.fTsumwx2 += weight * xvalue * xvalue;
    }
 
    /** @summary Fill 1D histogram */
