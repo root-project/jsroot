@@ -1131,7 +1131,7 @@ class TDrawSelector extends TSelector {
       }
 
       if (this.vars[axisid].kind === 'boolean') {
-         res.lbls = [ 'false', 'true' ];
+         res.lbls = ['false', 'true'];
          this.fill1DHistogram = this.fillBooleanHistogram;
       } else if (this.vars[axisid].kind === 'string') {
          res.lbls = []; // all labels
@@ -1235,13 +1235,13 @@ class TDrawSelector extends TSelector {
       hist.fXaxis.fXmax = x.max;
       hist.fXaxis.fLabels = x.fLabels;
 
-      if (this.ndim > 1) 
+      if (this.ndim > 1)
          hist.fYaxis.fTitle = y.title;
       hist.fYaxis.fXmin = y.min;
       hist.fYaxis.fXmax = y.max;
       hist.fYaxis.fLabels = y.fLabels;
 
-      if (this.ndim > 2) 
+      if (this.ndim > 2)
          hist.fZaxis.fTitle = z.title;
       hist.fZaxis.fXmin = z.min;
       hist.fZaxis.fXmax = z.max;
@@ -1374,7 +1374,7 @@ class TDrawSelector extends TSelector {
    /** @summary Fill boolean histogram */
    fillBooleanHistogram(boolvalue, weight) {
       if (!weight) return;
-      const xvalue = boolvalue ? 1 : 0; 
+      const xvalue = boolvalue ? 1 : 0;
       this.hist.fArray[xvalue + 1] += weight;
       this.hist.fTsumw += weight;
       this.hist.fTsumwx += weight * xvalue;
