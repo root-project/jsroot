@@ -1,7 +1,7 @@
 # JSROOT changelog
 
 ## Changes in dev
-1. Use ES6 modules to implement geoworker, enable node.js usage
+1. RNtuple support, thanks to Kriti Mahajan (https://github.com/Krmjn09)
 1. Let use hex colors in histogram draw options like "fill_00ff00" or "line_77aa1166"
 1. Let configure exact axis ticks position via draw option like "xticks:[-3,-1,1,3]"
 1. Support gStyle.fBarOffset for `TGraph` bar drawing
@@ -12,7 +12,8 @@
 1. Support reading TBranch from old ROOT files with custom streamers
 1. Upgrade three.js r174 -> r177
 1. Upgrade lil-gui.mjs 0.19.2 -> 0.20.0
-1. Remove experimental RHist classes, deprecated in ROOT
+1. Use ES6 modules to implement geoworker, enable node.js usage
+1. Remove experimental RHist classes, deprecated in ROOT 6.38
 1. Internal - ws members are private, new methods has to be used
 1. Fix - ticks size and labels with kMoreLogLabels axis bit
 1. Fix - reading TLeafC leafs
