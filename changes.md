@@ -20,7 +20,7 @@
 1. Fix - support BigInt in object inspector
 1. Fix - svg2pdf.js URL bounding box
 1. Fix - TTree::Draw with strings
-1. Fix - first color in palette drawing
+1. Fix - first color in palette drawing #365
 
 
 ## Changes in 7.9.1
