@@ -2181,7 +2181,8 @@ class THistPainter extends ObjectPainter {
    /** @summary draw color palette
      * @return {Promise} when done */
    async drawColorPalette(enabled, postpone_draw, can_move) {
-      const o = this.getOptions();
+      const o = this.getOptions(),
+            do_toggle = can_move === 'toggle';
 
       // in special cases like scatter palette drawing is ignored
       if (o.IgnorePalette)
@@ -2247,7 +2248,7 @@ class THistPainter extends ObjectPainter {
 
          // place colz in the beginning, that stat box is always drawn on the top
          this.addFunction(pal, true);
-      } else if ((pal_painter?.isPaletteVertical() !== undefined) && (can_move !== 'toggle'))
+      } else if ((pal_painter?.isPaletteVertical() !== undefined) && !do_toggle)
          o.Zvert = pal_painter.isPaletteVertical();
 
       const fp = this.getFramePainter();
@@ -2255,7 +2256,7 @@ class THistPainter extends ObjectPainter {
       // keep palette width
       if (can_move && fp && pal.$can_move) {
          if (o.Zvert) {
-            if (can_move === 'toggle') {
+            if (do_toggle) {
                const d = pal.fY2NDC - pal.fY1NDC;
                pal.fX1NDC = fp.fX2NDC + 0.005;
                pal.fX2NDC = pal.fX1NDC + d;
@@ -2270,7 +2271,7 @@ class THistPainter extends ObjectPainter {
             pal.fY1NDC = fp.fY1NDC;
             pal.fY2NDC = fp.fY2NDC;
          } else {
-            if (can_move === 'toggle') {
+            if (do_toggle) {
                const d = pal.fX2NDC - pal.fX1NDC;
                pal.fY1NDC = fp.fY2NDC + 0.005;
                pal.fY2NDC = pal.fY1NDC + d;
