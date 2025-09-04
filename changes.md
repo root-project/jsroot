@@ -5,6 +5,7 @@
 2. Fix - support BigInt in object inspector
 3. Fix - svg2pdf.js URL bounding box
 4. Fix - TTree::Draw with strings
+5. Fix - toggle vertical/horizontal palette via context menu
 
 
 ## Changes in 7.9.1
