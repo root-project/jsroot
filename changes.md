@@ -21,6 +21,7 @@
 1. Fix - svg2pdf.js URL bounding box
 1. Fix - TTree::Draw with strings
 1. Fix - first color in palette drawing #365
+1. Fix - toggle vertical/horizontal palette via context menu
 
 
 ## Changes in 7.9.1
