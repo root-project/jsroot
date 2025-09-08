@@ -1,7 +1,7 @@
 import json from '@rollup/plugin-json';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import terser from '@rollup/plugin-terser';
-import modify from 'rollup-plugin-modify';
+import replace from '@rollup/plugin-replace';
 import ascii from 'rollup-plugin-ascii';
 import ignore from 'rollup-plugin-ignore';
 import meta from '../package.json' with { type: 'json' };
@@ -78,9 +78,11 @@ const config_geom_nothreejs = {
     inlineDynamicImports: true
   },
   plugins: [
-    modify({
+    replace({
+      delimiters: ['', ''],
+      preventAssignment: true,
       "from '../three.mjs'": "from 'three'",
-      "from '../three_addons.mjs'": "from 'three/addons'"
+      "from '../three_addons.mjs'": "from 'three/addons'",
     }),
     ignore(ignore_modules),
     nodeResolve(),
