@@ -574,7 +574,7 @@ class TH1Painter extends THistPainter {
           show_line = o.Line,
           startx, startmidx, currx, curry, x, grx, y, gry, curry_min, curry_max, prevy, prevx, i, bestimin, bestimax,
           path_fill = null, path_err = null, path_marker = null, path_line = '',
-          hints_err = null, hints_marker = null, hsz = 5,
+          hints_err = null, hints_text = null, hints_marker = null, hsz = 5,
           do_marker = false, do_err = false,
           dend = 0, dlw = 0, my, yerr1, yerr2, bincont, binerr, mx1, mx2, midx, lx, ly, mmx1, mmx2,
           text_col, text_angle, text_size,
@@ -639,6 +639,9 @@ class TH1Painter extends THistPainter {
                 text_size = Math.round(space*0.7);
              }
          }
+
+         if (want_tooltip && !draw_hist)
+            hints_text = '';
 
          pr = this.startTextDrawingAsync(42, text_size, undefined, text_size);
       }
@@ -709,6 +712,8 @@ class TH1Painter extends THistPainter {
                         arg.y = Math.round(midx - text_size/2);
                      }
                      this.drawText(arg);
+                     if (hints_text !== null)
+                        hints_text += `M${mx1},${my-hsz}v${2*hsz}h${mx2-mx1}v${-2*hsz}z`;
                   }
                }
 
@@ -908,6 +913,11 @@ class TH1Painter extends THistPainter {
          if (res && draw_hist)
             add_hist();
 
+         if (hints_text)
+            this.appendPath(hints_text)
+                .style('fill', 'none')
+                .style('pointer-events', this.isBatchMode() ? null : 'visibleFill');
+
          if (show_text)
             return this.finishTextDrawing();
       });
@@ -992,7 +1002,8 @@ class TH1Painter extends THistPainter {
       const funcs = this.getHistGrFuncs(),
             histo = this.getHisto(),
             left = this.getSelectIndex('x', 'left', -1),
-            right = this.getSelectIndex('x', 'right', 2);
+            right = this.getSelectIndex('x', 'right', 2),
+            draw_hist = this.options.Hist && (!this.lineatt.empty() || !this.fillatt.empty());
       let width = funcs.getFrameWidth(),
           height = funcs.getFrameHeight(),
           show_rect, grx1, grx2, gry1, gry2, gapx = 2,
@@ -1076,7 +1087,7 @@ class TH1Painter extends THistPainter {
 
          if (!pnt.touch && (pnt.nproc === 1))
             if ((pnt_y < gry1) || (pnt_y > gry2)) findbin = null;
-      } else if ((o.Error && (o.Hist !== true)) || o.Mark || o.Line || o.Curve) {
+      } else if ((o.Error && (o.Hist !== true)) || o.Mark || o.Line || o.Curve || (o.Text && !draw_hist)) {
          show_rect = !this.isTF1();
 
          let msize = 3;
