@@ -1508,7 +1508,7 @@ function applyAttributesToMathJax(painter, mj_node, svg, arg, font_size, svg_fac
   * @private */
 async function produceMathjax(painter, mj_node, arg) {
    const mtext = translateMath(arg.text, arg.latex, arg.color, painter),
-         options = { em: arg.font.size, ex: arg.font.size/2, family: arg.font.name, scale: 1, containerWidth: -1 /*, lineWidth: 100000 */ };
+         options = { em: arg.font.size, ex: arg.font.size/2, family: arg.font.name, scale: 1, containerWidth: -1 };
 
    return loadMathjax()
           .then(mj => mj.tex2svgPromise(mtext, options))
