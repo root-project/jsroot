@@ -913,10 +913,11 @@ class TH1Painter extends THistPainter {
          if (res && draw_hist)
             add_hist();
 
-         if (hints_text)
+         if (hints_text) {
             this.appendPath(hints_text)
                 .style('fill', 'none')
                 .style('pointer-events', this.isBatchMode() ? null : 'visibleFill');
+         }
 
          if (show_text)
             return this.finishTextDrawing();
