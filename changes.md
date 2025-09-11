@@ -10,7 +10,7 @@
 1. With 'Shift' key pressed whole graph is moved by dragging action
 1. Support `Xall` and `Yall` as projections width #340
 1. Support reading TBranch from old ROOT files with custom streamers
-1. Upgrade three.js r174 -> r179
+1. Upgrade three.js r174 -> r180
 1. Upgrade lil-gui.mjs 0.19.2 -> 0.20.0
 1. Upgrade mathjax 3.2.2 -> 4.0.0
 1. Use ES6 modules to implement geoworker, enable node.js usage
