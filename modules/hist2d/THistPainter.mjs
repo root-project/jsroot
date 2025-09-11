@@ -2202,13 +2202,11 @@ class THistPainter extends ObjectPainter {
          return null;
 
       // only when create new palette, one could change frame size
-      const mp = this.getMainPainter(),
-            pp = this.getPadPainter();
-      if (mp !== this) {
-         if (mp && (mp.draw_content !== false) && mp.options.Zscale)
-            return null;
-      }
+      const mp = this.getMainPainter();
+      if (mp && (mp !== this) && (mp.draw_content !== false) && mp.options.Zscale)
+         return null;
 
+      const pp = this.getPadPainter();
       let pal = this.findFunction(clTPaletteAxis),
           pal_painter = pp?.findPainterFor(pal);
 
