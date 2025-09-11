@@ -609,7 +609,7 @@ class TGraphPainter extends ObjectPainter {
          }
 
          const path1 = buildSvgCurve(drawbins, { line: options.EF < 2, qubic: true }),
-             bins2 = [];
+               bins2 = [];
 
          for (let n = drawbins.length - 1; n >= 0; --n) {
             const bin = drawbins[n];
@@ -1049,10 +1049,13 @@ class TGraphPainter extends ObjectPainter {
 
       this.getG().selectAll('.grpoint').each(function() {
          const d = d3_select(this).datum();
-         if (d === undefined) return;
+         if (d === undefined)
+            return;
          let dist2 = (pnt.x - d.grx1) ** 2;
-         if (pnt.nproc === 1) dist2 += (pnt.y - d.gry1) ** 2;
-         if (dist2 >= best_dist2) return;
+         if (pnt.nproc === 1)
+            dist2 += (pnt.y - d.gry1) ** 2;
+         if (dist2 >= best_dist2)
+            return;
 
          let rect;
 
@@ -1062,7 +1065,10 @@ class TGraphPainter extends ObjectPainter {
                      y1: Math.min(-esz, d.gry2, -msize),
                      y2: Math.max(esz, d.gry0, msize) };
          } else if (d.bar) {
-             rect = { x1: boff - bw / 2, x2: boff + bw / 2, y1: 0, y2: height - d.gry1 };
+             rect = { x1: boff - bw / 2,
+                      x2: boff + bw / 2,
+                      y1: 0,
+                      y2: height - d.gry1 };
 
              if (isbar1) {
                 const yy0 = funcs.gry(0);
@@ -1083,7 +1089,8 @@ class TGraphPainter extends ObjectPainter {
           }
        });
 
-      if (findbin === null) return null;
+      if (findbin === null)
+         return null;
 
       const d = d3_select(findbin).datum(),
             gr = this.getGraph(),
@@ -1098,7 +1105,8 @@ class TGraphPainter extends ObjectPainter {
       if (this.fillatt?.used && !this.fillatt?.empty())
          res.color2 = this.fillatt.getFillColor();
 
-      if (best.exact) res.exact = true;
+      if (best.exact)
+         res.exact = true;
       res.menu = res.exact; // activate menu only when exactly locate bin
       res.menu_dist = 3; // distance always fixed
       res.bin = d;
@@ -1188,7 +1196,8 @@ class TGraphPainter extends ObjectPainter {
       if (!islines && (bestdist > radius))
          bestbin = null;
 
-      if (!bestbin) bestindx = -1;
+      if (!bestbin)
+         bestindx = -1;
 
       const res = { bin: bestbin, indx: bestindx, dist: bestdist, radius: Math.round(radius) };
 
@@ -1240,7 +1249,8 @@ class TGraphPainter extends ObjectPainter {
      * @desc if arg specified changes or toggles editable flag */
    testEditable(arg) {
       const obj = this.getGraph();
-      if (!obj) return false;
+      if (!obj)
+         return false;
       if ((arg === 'toggle') || (arg !== undefined))
          obj.SetBit(kNotEditable, !arg);
       return !obj.TestBit(kNotEditable);
@@ -1253,7 +1263,8 @@ class TGraphPainter extends ObjectPainter {
 
       const best = this.findBestBin(pnt);
 
-      if (!best || (!best.bin && !best.closeline)) return null;
+      if (!best || (!best.bin && !best.closeline))
+         return null;
 
       const islines = (this.#draw_kind === 'lines'),
             ismark = (this.#draw_kind === 'mark'),
@@ -1266,12 +1277,9 @@ class TGraphPainter extends ObjectPainter {
                     y: best.bin ? funcs.gry(best.bin.y) : best.liney,
                     color1: this.lineatt.color,
                     lines: this.getTooltips(best.bin),
-                    usepath: true };
+                    usepath: true, ismark, islines };
 
       res.user_info = { obj: gr, name: gr.fName, bin: 0, cont: 0, grx: res.x, gry: res.y };
-
-      res.ismark = ismark;
-      res.islines = islines;
 
       if (best.closeline) {
          res.menu = res.exact = true;
@@ -1587,9 +1595,11 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Process click on graph-defined buttons */
    clickButton(funcname) {
-      if (funcname !== 'ToggleZoom') return false;
+      if (funcname !== 'ToggleZoom')
+         return false;
 
-      if ((this.xmin === this.xmax) && (this.ymin === this.ymax)) return false;
+      if ((this.xmin === this.xmax) && (this.ymin === this.ymax))
+         return false;
 
       return this.getFramePainter()?.zoom(this.xmin, this.xmax, this.ymin, this.ymax);
    }
