@@ -75,7 +75,7 @@
     "@stylistic/eslint-plugin": "^4.4.1",
     "docdash": "^2.0.2",
     "jsdoc": "^4.0.4",
-    "rollup": "4.40.2",
+    "rollup": "4.50.1",
     "rollup-plugin-ascii": "0.0.3",
     "rollup-plugin-ignore": "1.0.10"
   },
