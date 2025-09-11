@@ -44,6 +44,7 @@ class TGraphPainter extends ObjectPainter {
    #pos_dy;        // accumulated y change
    #has_errors;    // if has errors
    #is_bent;       // if graph has bent errors
+   #draw_kind;     // way how graph is drawn
 
    constructor(dom, graph) {
       super(dom, graph);
@@ -54,6 +55,7 @@ class TGraphPainter extends ObjectPainter {
                          (graph._typename === clTGraphMultiErrors) ||
                          (graph._typename === clTGraphAsymmErrors) ||
                           this.#is_bent || graph._typename.match(/^RooHist/);
+      this.#draw_kind = '';
    }
 
    /** @summary Use in frame painter to check zoom Y is allowed
@@ -625,7 +627,7 @@ class TGraphPainter extends ObjectPainter {
          if (fillatt.empty() && fillatt.colorindx)
             area.style('stroke', this.getColor(fillatt.colorindx));
          if (main_block)
-            this.draw_kind = 'lines';
+            this.#draw_kind = 'lines';
       }
 
       if (options.Line || options.Fill) {
@@ -666,12 +668,12 @@ class TGraphPainter extends ObjectPainter {
             elem.style('fill', 'none');
 
          if (main_block)
-            this.draw_kind = 'lines';
+            this.#draw_kind = 'lines';
       }
 
       if (options.Curve) {
          let curvebins = drawbins;
-         if ((this.draw_kind !== 'lines') || !curvebins || ((options.Curve === 1) && (curvebins.length > 20000))) {
+         if ((this.#draw_kind !== 'lines') || !curvebins || ((options.Curve === 1) && (curvebins.length > 20000))) {
             curvebins = this.optimizeBins((options.Curve === 1) ? 20000 : 0);
             for (let n = 0; n < curvebins.length; ++n) {
                const bin = curvebins[n];
@@ -690,7 +692,7 @@ class TGraphPainter extends ObjectPainter {
                .style('fill', 'none')
                .style('pointer-events', line_events_handling);
          if (main_block)
-            this.draw_kind = 'lines'; // handled same way as lines
+            this.#draw_kind = 'lines'; // handled same way as lines
       }
 
       let nodes = null;
@@ -730,7 +732,7 @@ class TGraphPainter extends ObjectPainter {
          });
 
          if (main_block)
-            this.draw_kind = 'nodes';
+            this.#draw_kind = 'nodes';
 
          nodes = draw_g.selectAll('.grpoint')
                        .data(drawbins)
@@ -898,8 +900,8 @@ class TGraphPainter extends ObjectPainter {
             draw_g.append('svg:path')
                   .attr('d', path)
                   .call(this.markeratt.func);
-            if ((nodes === null) && (this.draw_kind === 'none') && main_block)
-               this.draw_kind = (options.Mark === 101) ? 'path' : 'mark';
+            if ((nodes === null) && (this.#draw_kind === 'none') && main_block)
+               this.#draw_kind = (options.Mark === 101) ? 'path' : 'mark';
          }
          if (want_tooltip && hints_marker) {
             draw_g.append('svg:path')
@@ -993,7 +995,7 @@ class TGraphPainter extends ObjectPainter {
 
       this.fillatt.used = false; // mark used only when really used
 
-      this.draw_kind = 'none'; // indicate if special svg:g were created for each bin
+      this.#draw_kind = 'none'; // indicate if special svg:g were created for each bin
       this.#marker_size = 0; // indicate if markers are drawn
       const draw_g = is_gme ? g.append('svg:g') : g;
 
@@ -1028,10 +1030,10 @@ class TGraphPainter extends ObjectPainter {
       if (!pnt)
          return null;
 
-      if ((this.draw_kind === 'lines') || (this.draw_kind === 'path') || (this.draw_kind === 'mark'))
+      if ((this.#draw_kind === 'lines') || (this.#draw_kind === 'path') || (this.#draw_kind === 'mark'))
          return this.extractTooltipForPath(pnt);
 
-      if (this.draw_kind !== 'nodes')
+      if (this.#draw_kind !== 'nodes')
          return null;
 
       const fp = this.get_fp(),
@@ -1151,7 +1153,7 @@ class TGraphPainter extends ObjectPainter {
       if (!this.#bins)
          return null;
 
-      const islines = (this.draw_kind === 'lines'),
+      const islines = (this.#draw_kind === 'lines'),
             o = this.getOptions(),
             funcs = this.get_fp().getGrFuncs(o.second_x, o.second_y);
       let bestindx = -1,
@@ -1253,8 +1255,8 @@ class TGraphPainter extends ObjectPainter {
 
       if (!best || (!best.bin && !best.closeline)) return null;
 
-      const islines = (this.draw_kind === 'lines'),
-            ismark = (this.draw_kind === 'mark'),
+      const islines = (this.#draw_kind === 'lines'),
+            ismark = (this.#draw_kind === 'mark'),
             fp = this.get_fp(),
             o = this.getOptions(),
             funcs = fp.getGrFuncs(o.second_x, o.second_y),
