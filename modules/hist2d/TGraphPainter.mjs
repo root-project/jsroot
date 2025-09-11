@@ -42,16 +42,18 @@ class TGraphPainter extends ObjectPainter {
    #move_y0;       // initial y position
    #pos_dx;        // accumulated x change
    #pos_dy;        // accumulated y change
+   #has_errors;    // if has errors
+   #is_bent;       // if graph has bent errors
 
    constructor(dom, graph) {
       super(dom, graph);
       this.axes_draw = false; // indicate if graph histogram was drawn for axes
       this.xmin = this.ymin = this.xmax = this.ymax = 0;
-      this.is_bent = (graph._typename === clTGraphBentErrors);
-      this.has_errors = (graph._typename === clTGraphErrors) ||
-                        (graph._typename === clTGraphMultiErrors) ||
-                        (graph._typename === clTGraphAsymmErrors) ||
-                         this.is_bent || graph._typename.match(/^RooHist/);
+      this.#is_bent = (graph._typename === clTGraphBentErrors);
+      this.#has_errors = (graph._typename === clTGraphErrors) ||
+                         (graph._typename === clTGraphMultiErrors) ||
+                         (graph._typename === clTGraphAsymmErrors) ||
+                          this.#is_bent || graph._typename.match(/^RooHist/);
    }
 
    /** @summary Use in frame painter to check zoom Y is allowed
@@ -162,8 +164,10 @@ class TGraphPainter extends ObjectPainter {
       let d = new DrawOptions(opt), hopt = '';
 
       PadDrawOptions.forEach(name => { if (d.check(name)) hopt += ';' + name; });
-      if (d.check('XAXIS_', true)) hopt += ';XAXIS_' + d.part;
-      if (d.check('YAXIS_', true)) hopt += ';YAXIS_' + d.part;
+      if (d.check('XAXIS_', true))
+         hopt += ';XAXIS_' + d.part;
+      if (d.check('YAXIS_', true))
+         hopt += ';YAXIS_' + d.part;
 
       if (d.empty()) {
          res.original = has_main ? 'lp' : 'alp';
@@ -184,9 +188,11 @@ class TGraphPainter extends ObjectPainter {
       if (d.check('WIDTH_', true))
          res.graphLineWidth = d.partAsInt();
 
-      if (d.check('NOOPT')) res.NoOpt = 1;
+      if (d.check('NOOPT'))
+         res.NoOpt = 1;
 
-      if (d.check('POS3D_', true)) res.pos3d = d.partAsInt() - 0.5;
+      if (d.check('POS3D_', true))
+         res.pos3d = d.partAsInt() - 0.5;
 
       if (d.check('PFC') && !res._pfc)
          res._pfc = 2;
@@ -216,7 +222,7 @@ class TGraphPainter extends ObjectPainter {
       // if (d.check('E')) res.Errors = 1; // E option only defined for TGraphPolar
 
       if (res.Errors === undefined)
-         res.Errors = this.has_errors && (!is_gme || !blocks_gme.length) ? 1 : 0;
+         res.Errors = this.#has_errors && (!is_gme || !blocks_gme.length) ? 1 : 0;
 
       // special case - one could use svg:path to draw many pixels (
       if ((res.Mark === 1) && (graph.fMarkerStyle === 1)) res.Mark = 101;
@@ -243,7 +249,8 @@ class TGraphPainter extends ObjectPainter {
          // either graph drawn directly or
          // graph is first object in list of primitives
          const pad = this.getPadPainter()?.getRootPad(true);
-         if (!pad || (pad?.fPrimitives?.arr[0] === this.getObject())) res.Axis = ' ';
+         if (!pad || (pad?.fPrimitives?.arr[0] === this.getObject()))
+            res.Axis = ' ';
       }
 
       res.Axis += hopt;
@@ -559,8 +566,8 @@ class TGraphPainter extends ObjectPainter {
              dlen = Math.sqrt(bin.dgrx**2 + bin.dgry**2);
          if (dlen > 1e-10) {
             // shift point
-            bin.grx += excl_width*bin.dgry/dlen;
-            bin.gry -= excl_width*bin.dgrx/dlen;
+            bin.grx += excl_width * bin.dgry / dlen;
+            bin.gry -= excl_width * bin.dgrx / dlen;
          }
          extrabins.push(bin);
       }
@@ -693,22 +700,24 @@ class TGraphPainter extends ObjectPainter {
             const grx = funcs.grx(pnt.x);
 
             // when drawing bars, take all points
-            if (!options.Bar && ((grx < 0) || (grx > w))) return true;
+            if (!options.Bar && ((grx < 0) || (grx > w)))
+               return true;
 
             const gry = funcs.gry(pnt.y);
 
-            if (!options.Bar && !options.OutRange && ((gry < 0) || (gry > h))) return true;
+            if (!options.Bar && !options.OutRange && ((gry < 0) || (gry > h)))
+               return true;
 
             pnt.grx1 = Math.round(grx);
             pnt.gry1 = Math.round(gry);
 
-            if (this.has_errors) {
+            if (this.#has_errors) {
                pnt.grx0 = Math.round(funcs.grx(pnt.x - options.ScaleErrX*pnt.exlow) - grx);
                pnt.grx2 = Math.round(funcs.grx(pnt.x + options.ScaleErrX*pnt.exhigh) - grx);
                pnt.gry0 = Math.round(funcs.gry(pnt.y - pnt.eylow) - gry);
                pnt.gry2 = Math.round(funcs.gry(pnt.y + pnt.eyhigh) - gry);
 
-               if (this.is_bent) {
+               if (this.#is_bent) {
                   pnt.grdx0 = Math.round(funcs.gry(pnt.y + graph.fEXlowd[i]) - gry);
                   pnt.grdx2 = Math.round(funcs.gry(pnt.y + graph.fEXhighd[i]) - gry);
                   pnt.grdy0 = Math.round(funcs.grx(pnt.x + graph.fEYlowd[i]) - grx);
