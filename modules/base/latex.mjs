@@ -1059,7 +1059,8 @@ async function loadMathjax() {
        displayIndent: '0',            // default for indentshift when set to 'auto'
        fontCache: 'local',            // or 'global' or 'none'
        localID: null,                 // ID to use for local font cache (for single equation processing)
-       blacker: 3                     // the stroke-width to use for SVG character paths
+       internalSpeechTitles: true,    // insert <title> tags with speech content
+       titleID: 0                     // initial id number to use for aria-labeledby titles
    };
 
    if (!isNodeJs()) {
@@ -1508,7 +1509,7 @@ function applyAttributesToMathJax(painter, mj_node, svg, arg, font_size, svg_fac
   * @private */
 async function produceMathjax(painter, mj_node, arg) {
    const mtext = translateMath(arg.text, arg.latex, arg.color, painter),
-         options = { em: arg.font.size, ex: arg.font.size/2, family: arg.font.name, scale: 1, containerWidth: -1 /*, lineWidth: 100000 */ };
+         options = { em: arg.font.size, ex: arg.font.size/2, family: arg.font.name, scale: 1, containerWidth: -1, lineWidth: 100000 };
 
    return loadMathjax()
           .then(mj => mj.tex2svgPromise(mtext, options))
