@@ -18,7 +18,7 @@ import { kindGeo, kindEve,
          clTGeoBBox, clTGeoCompositeShape,
          geoCfg, geoBITS, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit, setInvisibleAll,
          countNumShapes, getNodeKind, produceRenderOrder, createServerGeometry,
-         projectGeometry, countGeometryFaces, createMaterial, createFrustum, createProjectionMatrix,
+         projectGeometry, numGeometryFaces, createMaterial, createFrustum, createProjectionMatrix,
          getBoundingBox, provideObjectInfo, isSameStack, checkDuplicates, getObjectName, cleanupShape, getShapeIcon } from './geobase.mjs';
 
 
@@ -2388,7 +2388,7 @@ class TGeoPainter extends ObjectPainter {
                // only submit not-done items
                if (item.ready || item.geom) {
                   // this is place holder for existing geometry
-                  job.shapes.push({ id: item.id, ready: true, nfaces: countGeometryFaces(item.geom), refcnt: item.refcnt });
+                  job.shapes.push({ id: item.id, ready: true, nfaces: numGeometryFaces(item.geom), refcnt: item.refcnt });
                } else {
                   job.shapes.push(clone(item, null, true));
                   cnt++;

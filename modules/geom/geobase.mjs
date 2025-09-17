@@ -128,8 +128,10 @@ function getNodeKind(obj) {
   * @desc Used to count total shapes number in composites
   * @private */
 function countNumShapes(shape) {
-   if (!shape) return 0;
-   if (shape._typename !== clTGeoCompositeShape) return 1;
+   if (!shape)
+      return 0;
+   if (shape._typename !== clTGeoCompositeShape)
+      return 1;
    return countNumShapes(shape.fNode.fLeft) + countNumShapes(shape.fNode.fRight);
 }
 
@@ -152,7 +154,8 @@ function checkDuplicates(parent, chlds) {
    const names = [], cnts = [];
    for (let k = 0; k < chlds.length; ++k) {
       const chld = chlds[k];
-      if (!chld?.fName) continue;
+      if (!chld?.fName)
+         continue;
       if (!chld.$geo_suffix) {
          const indx = names.indexOf(chld.fName);
          if (indx >= 0) {
@@ -431,14 +434,11 @@ class PolygonsCreator {
      * @desc From four vertices one normally creates two faces (1,2,3) and (1,3,4)
      * if (reduce === 1), first face is reduced
      * if (reduce === 2), second face is reduced */
-   addFace4(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4, reduce) {
-      if (reduce === undefined) reduce = 0;
-
+   addFace4(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4, reduce = 0) {
       this.v1 = new CsgVertex(x1, y1, z1, 0, 0, 0);
       this.v2 = (reduce === 1) ? null : new CsgVertex(x2, y2, z2, 0, 0, 0);
       this.v3 = new CsgVertex(x3, y3, z3, 0, 0, 0);
       this.v4 = (reduce === 2) ? null : new CsgVertex(x4, y4, z4, 0, 0, 0);
-
       this.reduce = reduce;
 
       if (this.multi) {
@@ -471,19 +471,15 @@ class PolygonsCreator {
             polygon.vertices.push(this.v3);
           else
             polygon.vertices.unshift(this.v2);
-
-         return;
+      } else {
+         const polygon = new CsgPolygon();
+         switch (reduce) {
+            case 0: polygon.vertices.push(this.v1, this.v2, this.v3, this.v4); break;
+            case 1: polygon.vertices.push(this.v1, this.v3, this.v4); break;
+            case 2: polygon.vertices.push(this.v1, this.v2, this.v3); break;
+         }
+         this.polygons.push(polygon);
       }
-
-      const polygon = new CsgPolygon();
-
-      switch (reduce) {
-         case 0: polygon.vertices.push(this.v1, this.v2, this.v3, this.v4); break;
-         case 1: polygon.vertices.push(this.v1, this.v3, this.v4); break;
-         case 2: polygon.vertices.push(this.v1, this.v2, this.v3); break;
-      }
-
-      this.polygons.push(polygon);
    }
 
    /** @summary Specify normal for face with 4 vertices
@@ -491,18 +487,18 @@ class PolygonsCreator {
      * reduce has same meaning and should be the same */
    setNormal4(nx1, ny1, nz1, nx2, ny2, nz2, nx3, ny3, nz3, nx4, ny4, nz4) {
       this.v1.setnormal(nx1, ny1, nz1);
-      if (this.v2) this.v2.setnormal(nx2, ny2, nz2);
+      this.v2?.setnormal(nx2, ny2, nz2);
       this.v3.setnormal(nx3, ny3, nz3);
-      if (this.v4) this.v4.setnormal(nx4, ny4, nz4);
+      this.v4?.setnormal(nx4, ny4, nz4);
    }
 
    /** @summary Set normal
      * @desc special shortcut, when same normals can be applied for 1-2 point and 3-4 point */
    setNormal_12_34(nx12, ny12, nz12, nx34, ny34, nz34) {
       this.v1.setnormal(nx12, ny12, nz12);
-      if (this.v2) this.v2.setnormal(nx12, ny12, nz12);
+      this.v2?.setnormal(nx12, ny12, nz12);
       this.v3.setnormal(nx34, ny34, nz34);
-      if (this.v4) this.v4.setnormal(nx34, ny34, nz34);
+      this.v4?.setnormal(nx34, ny34, nz34);
    }
 
    /** @summary Calculate normal */
@@ -535,9 +531,9 @@ class PolygonsCreator {
    /** @summary Set normal */
    setNormal(nx, ny, nz) {
       this.v1.setnormal(nx, ny, nz);
-      if (this.v2) this.v2.setnormal(nx, ny, nz);
+      this.v2?.setnormal(nx, ny, nz);
       this.v3.setnormal(nx, ny, nz);
-      if (this.v4) this.v4.setnormal(nx, ny, nz);
+      this.v4?.setnormal(nx, ny, nz);
    }
 
    /** @summary Recalculate Z with provided func */
@@ -561,7 +557,8 @@ class PolygonsCreator {
 /** @summary Creates cube geometry
   * @private */
 function createCubeBuffer(shape, faces_limit) {
-   if (faces_limit < 0) return 12;
+   if (faces_limit < 0)
+      return 12;
 
    const dx = shape.fDX, dy = shape.fDY, dz = shape.fDZ,
          creator = faces_limit ? new PolygonsCreator() : new GeometryCreator(12);
@@ -608,7 +605,8 @@ function create8edgesBuffer(v, faces_limit) {
 /** @summary Creates PARA geometry
   * @private */
 function createParaBuffer(shape, faces_limit) {
-   if (faces_limit < 0) return 12;
+   if (faces_limit < 0)
+      return 12;
 
    const txy = shape.fTxy, txz = shape.fTxz, tyz = shape.fTyz, v = [
        -shape.fZ*txz-txy*shape.fY-shape.fX, -shape.fY-shape.fZ*tyz, -shape.fZ,
@@ -626,7 +624,8 @@ function createParaBuffer(shape, faces_limit) {
 /** @summary Creates trapezoid geometry
   * @private */
 function createTrapezoidBuffer(shape, faces_limit) {
-   if (faces_limit < 0) return 12;
+   if (faces_limit < 0)
+      return 12;
 
    let y1, y2;
    if (shape._typename === clTGeoTrd1)
@@ -653,7 +652,8 @@ function createTrapezoidBuffer(shape, faces_limit) {
 /** @summary Creates arb8 geometry
   * @private */
 function createArb8Buffer(shape, faces_limit) {
-   if (faces_limit < 0) return 12;
+   if (faces_limit < 0)
+      return 12;
 
    const vertices = [
       shape.fXY[0][0], shape.fXY[0][1], -shape.fDZ,
@@ -677,8 +677,10 @@ function createArb8Buffer(shape, faces_limit) {
              if ((vertices[n1] === vertices[n2]) &&
                 (vertices[n1+1] === vertices[n2+1]) &&
                 (vertices[n1+2] === vertices[n2+2])) {
-                   for (let k=0; k<indicies.length; ++k)
-                     if (indicies[k] === n2/3) indicies[k] = n1/3;
+                   for (let k = 0; k < indicies.length; ++k) {
+                     if (indicies[k] === n2 / 3)
+                        indicies[k] = n1 / 3;
+                  }
                }
          }
       }
@@ -787,12 +789,13 @@ function createSphereBuffer(shape, faces_limit) {
    const numcut = (phiLength === 360) ? 0 : heightSegments * (noInside ? 2 : 4),
          epsilon = 1e-10;
 
-   if (faces_limit < 0) return numoutside * (noInside ? 1 : 2) + numtop + numbottom + numcut;
+   if (faces_limit < 0)
+      return numoutside * (noInside ? 1 : 2) + numtop + numbottom + numcut;
 
    const _sinp = new Float32Array(widthSegments+1),
-       _cosp = new Float32Array(widthSegments+1),
-       _sint = new Float32Array(heightSegments+1),
-       _cost = new Float32Array(heightSegments+1);
+         _cosp = new Float32Array(widthSegments+1),
+         _sint = new Float32Array(heightSegments+1),
+         _cost = new Float32Array(heightSegments+1);
 
    for (let n = 0; n <= heightSegments; ++n) {
       const theta = (thetaStart + thetaLength/heightSegments*n)*Math.PI/180;
@@ -806,8 +809,14 @@ function createSphereBuffer(shape, faces_limit) {
       _cosp[n] = Math.cos(phi);
    }
 
-   if (Math.abs(_sint[0]) <= epsilon) { numoutside -= widthSegments; numtop = 0; }
-   if (Math.abs(_sint[heightSegments]) <= epsilon) { numoutside -= widthSegments; numbottom = 0; }
+   if (Math.abs(_sint[0]) <= epsilon) {
+      numoutside -= widthSegments;
+      numtop = 0;
+   }
+   if (Math.abs(_sint[heightSegments]) <= epsilon) {
+      numoutside -= widthSegments;
+      numbottom = 0;
+   }
 
    const numfaces = numoutside * (noInside ? 1 : 2) + numtop + numbottom + numcut,
          creator = faces_limit ? new PolygonsCreator() : new GeometryCreator(numfaces);
@@ -911,14 +920,17 @@ function createTubeBuffer(shape, faces_limit) {
       numfaces += radiusSegments * (((innerR[0] <= 0) || (innerR[1] <= 0)) ? 1 : 2);
 
    // upper cap
-   if (outerR[0] > 0) numfaces += radiusSegments * ((innerR[0] > 0) ? 2 : 1);
+   if (outerR[0] > 0)
+      numfaces += radiusSegments * ((innerR[0] > 0) ? 2 : 1);
    // bottom cup
-   if (outerR[1] > 0) numfaces += radiusSegments * ((innerR[1] > 0) ? 2 : 1);
+   if (outerR[1] > 0)
+      numfaces += radiusSegments * ((innerR[1] > 0) ? 2 : 1);
 
    if (thetaLength < 360)
       numfaces += ((outerR[0] > innerR[0]) ? 2 : 0) + ((outerR[1] > innerR[1]) ? 2 : 0);
 
-   if (faces_limit < 0) return numfaces;
+   if (faces_limit < 0)
+      return numfaces;
 
    const phi0 = thetaStart*Math.PI/180,
          dphi = thetaLength/radiusSegments*Math.PI/180,
@@ -963,7 +975,8 @@ function createTubeBuffer(shape, faces_limit) {
                R[0] * _cos[seg+d2], R[0] * _sin[seg+d2], shape.fDZ,
                reduce);
 
-         if (calcZ) creator.recalcZ(calcZ);
+         if (calcZ)
+            creator.recalcZ(calcZ);
 
          creator.setNormal_12_34(nxy*_cos[seg+d1], nxy*_sin[seg+d1], nz,
                                  nxy*_cos[seg+d2], nxy*_sin[seg+d2], nz,
@@ -973,11 +986,12 @@ function createTubeBuffer(shape, faces_limit) {
 
    // create upper/bottom part
    for (let side = 0; side < 2; ++side) {
-      if (outerR[side] <= 0) continue;
+      if (outerR[side] <= 0)
+         continue;
 
       const d1 = side, d2 = 1- side,
-          sign = (side === 0) ? 1 : -1,
-          reduce = (innerR[side] <= 0) ? 2 : 0;
+            sign = (side === 0) ? 1 : -1,
+            reduce = (innerR[side] <= 0) ? 2 : 0;
       if ((reduce === 2) && (thetaLength === 360) && !calcZ)
          creator.startPolygon(side === 0);
       for (let seg = 0; seg < radiusSegments; ++seg) {
@@ -1004,7 +1018,8 @@ function createTubeBuffer(shape, faces_limit) {
                        outerR[0] * _cos[0], outerR[0] * _sin[0], shape.fDZ,
                        innerR[0] * _cos[0], innerR[0] * _sin[0], shape.fDZ,
                        (outerR[0] === innerR[0]) ? 2 : ((innerR[1] === outerR[1]) ? 1 : 0));
-      if (calcZ) creator.recalcZ(calcZ);
+      if (calcZ)
+         creator.recalcZ(calcZ);
       creator.calcNormal();
 
       creator.addFace4(innerR[0] * _cos[radiusSegments], innerR[0] * _sin[radiusSegments], shape.fDZ,
@@ -1013,7 +1028,8 @@ function createTubeBuffer(shape, faces_limit) {
                        innerR[1] * _cos[radiusSegments], innerR[1] * _sin[radiusSegments], -shape.fDZ,
                        (outerR[0] === innerR[0]) ? 1 : ((innerR[1] === outerR[1]) ? 2 : 0));
 
-      if (calcZ) creator.recalcZ(calcZ);
+      if (calcZ)
+         creator.recalcZ(calcZ);
       creator.calcNormal();
    }
 
@@ -1025,7 +1041,8 @@ function createTubeBuffer(shape, faces_limit) {
 function createEltuBuffer(shape, faces_limit) {
    const radiusSegments = Math.max(4, Math.round(360 / _cfg.GradPerSegm));
 
-   if (faces_limit < 0) return radiusSegments*4;
+   if (faces_limit < 0)
+      return radiusSegments*4;
 
    // calculate all sin/cos tables in advance
    const x = new Float32Array(radiusSegments+1),
@@ -1079,7 +1096,8 @@ function createTorusBuffer(shape, faces_limit) {
        tubularSegments = Math.max(8, Math.round(shape.fDphi / _cfg.GradPerSegm)),
        numfaces = (shape.fRmin > 0 ? 4 : 2) * radialSegments * (tubularSegments + (shape.fDphi !== 360 ? 1 : 0));
 
-   if (faces_limit < 0) return numfaces;
+   if (faces_limit < 0)
+      return numfaces;
 
    if ((faces_limit > 0) && (numfaces > faces_limit)) {
       radialSegments = Math.floor(radialSegments/Math.sqrt(numfaces / faces_limit));
@@ -1206,7 +1224,6 @@ function createPolygonBuffer(shape, faces_limit) {
                 ((shape[rside][layer+1] === rad) && (shape[rside][layer-1] === rad))) {
                // same Z and R as before - ignore
                // or same R before and after
-
                continue;
             }
          }
@@ -1414,10 +1431,13 @@ function createParaboloidBuffer(shape, faces_limit) {
    const rmin = shape.fRlo, rmax = shape.fRhi;
    let numfaces = (heightSegments+1) * radiusSegments*2;
 
-   if (rmin === 0) numfaces -= radiusSegments*2; // complete layer
-   if (rmax === 0) numfaces -= radiusSegments*2; // complete layer
+   if (rmin === 0)
+      numfaces -= radiusSegments*2; // complete layer
+   if (rmax === 0)
+      numfaces -= radiusSegments*2; // complete layer
 
-   if (faces_limit < 0) return numfaces;
+   if (faces_limit < 0)
+      return numfaces;
 
    let zmin = -shape.fDZ, zmax = shape.fDZ;
 
@@ -1569,7 +1589,8 @@ function createTessellatedBuffer(shape, faces_limit) {
    let numfaces = 0;
    for (let i = 0; i < shape.fFacets.length; ++i)
       numfaces += (shape.fFacets[i].fNvert === 4) ? 2 : 1;
-   if (faces_limit < 0) return numfaces;
+   if (faces_limit < 0)
+      return numfaces;
 
    const creator = faces_limit ? new PolygonsCreator() : new GeometryCreator(numfaces);
 
@@ -1608,7 +1629,7 @@ function createMatrix(matrix) {
       // eslint-disable-next-line  no-fallthrough
       case 'TGeoCombiTrans':
          translation = matrix.fTranslation;
-         if (matrix.fRotation) rotation = matrix.fRotation.fRotationMatrix;
+         rotation = matrix.fRotation?.fRotationMatrix;
          break;
       case 'TGeoHMatrix':
          translation = matrix.fTranslation;
@@ -1621,7 +1642,8 @@ function createMatrix(matrix) {
          console.warn(`unsupported matrix ${matrix._typename}`);
    }
 
-   if (!translation && !rotation && !scale) return null;
+   if (!translation && !rotation && !scale)
+      return null;
 
    const res = new THREE.Matrix4();
 
@@ -1651,7 +1673,6 @@ function getNodeMatrix(kind, node) {
       // special handling for EVE nodes
 
       matrix = new THREE.Matrix4();
-
       if (node.fTrans) {
          matrix.set(node.fTrans[0], node.fTrans[4], node.fTrans[8], 0,
                     node.fTrans[1], node.fTrans[5], node.fTrans[9], 0,
@@ -1719,10 +1740,11 @@ function getNodeMatrix(kind, node) {
 }
 
 /** @summary Returns number of faces for provided geometry
-  * @param {Object} geom  - can be BufferGeometry, CsgGeometry or interim array of polygons
+  * @param geom  - can be BufferGeometry, CsgGeometry or interim array of polygons
   * @private */
 function numGeometryFaces(geom) {
-   if (!geom) return 0;
+   if (!geom)
+      return 0;
 
    if (geom instanceof CsgGeometry)
       return geom.tree.numPolygons();
@@ -1739,7 +1761,8 @@ function numGeometryFaces(geom) {
   * @param {Object} geom  - can be BufferGeometry, CsgGeometry or interim array of polygons
   * @private */
 function numGeometryVertices(geom) {
-   if (!geom) return 0;
+   if (!geom)
+      return 0;
 
    if (geom instanceof CsgGeometry)
       return geom.tree.numPolygons() * 3;
@@ -1753,7 +1776,8 @@ function numGeometryVertices(geom) {
 /** @summary Returns geometry bounding box
   * @private */
 function geomBoundingBox(geom) {
-   if (!geom) return null;
+   if (!geom)
+      return null;
 
    let polygons = null;
 
@@ -1782,7 +1806,8 @@ function geomBoundingBox(geom) {
   * @desc Just big-enough triangle to make BSP calculations
   * @private */
 function createHalfSpace(shape, geom) {
-   if (!shape?.fN || !shape?.fP) return null;
+   if (!shape?.fN || !shape?.fP)
+      return null;
 
    const vertex = new THREE.Vector3(shape.fP[0], shape.fP[1], shape.fP[2]),
          normal = new THREE.Vector3(shape.fN[0], shape.fN[1], shape.fN[2]);
@@ -1820,23 +1845,6 @@ function createHalfSpace(shape, geom) {
    return geometry;
 }
 
-/** @summary Returns number of faces for provided geometry
-  * @param geom  - can be BufferGeometry, CsgGeometry or interim array of polygons
-  * @private */
-function countGeometryFaces(geom) {
-   if (!geom) return 0;
-
-   if (geom instanceof CsgGeometry)
-      return geom.tree.numPolygons();
-
-   // special array of polygons
-   if (geom.polygons)
-      return geom.polygons.length;
-
-   const attr = geom.getAttribute('position');
-   return attr?.count ? Math.round(attr.count / 3) : 0;
-}
-
 let createGeometry = null;
 
 /** @summary Creates geometry for composite shape
@@ -1865,9 +1873,10 @@ function createComposite(shape, faces_limit) {
     else
       geom1 = createGeometry(shape.fNode.fLeft, faces_limit);
 
-   if (!geom1) return null;
+   if (!geom1)
+      return null;
 
-   let n1 = countGeometryFaces(geom1), n2 = 0;
+   let n1 = numGeometryFaces(geom1), n2 = 0;
    if (geom1._exceed_limit) n1 += faces_limit;
 
    if (n1 < faces_limit) {
@@ -1877,7 +1886,7 @@ function createComposite(shape, faces_limit) {
          geom2 = createGeometry(shape.fNode.fRight, faces_limit);
 
 
-      n2 = countGeometryFaces(geom2);
+      n2 = numGeometryFaces(geom2);
    }
 
    if ((n1 + n2 >= faces_limit) || !geom2) {
@@ -1903,10 +1912,10 @@ function createComposite(shape, faces_limit) {
          geoWarn('unsupported bool operation ' + shape.fNode._typename + ', use first geom');
    }
 
-   if (countGeometryFaces(bsp1) === 0) {
+   if (numGeometryFaces(bsp1) === 0) {
       geoWarn('Zero faces in comp shape' +
-             ` left: ${shape.fNode.fLeft._typename} ${countGeometryFaces(geom1)} faces` +
-             ` right: ${shape.fNode.fRight._typename} ${countGeometryFaces(geom2)} faces` +
+             ` left: ${shape.fNode.fLeft._typename} ${numGeometryFaces(geom1)} faces` +
+             ` right: ${shape.fNode.fRight._typename} ${numGeometryFaces(geom2)} faces` +
              '  use first');
       bsp1 = new CsgGeometry(geom1, matrix1);
    }
@@ -3762,7 +3771,7 @@ class ClonedNodes {
                item.geom = createGeometry(item.shape);
                if (item.geom) created++; // indicate that at least one shape was created
             }
-            item.nfaces = countGeometryFaces(item.geom);
+            item.nfaces = numGeometryFaces(item.geom);
          }
 
          res.shapes++;
@@ -3821,9 +3830,11 @@ class ClonedNodes {
   * @desc Major difference - do not traverse hierarchy, support InstancedMesh
   * @private */
 function getBoundingBox(node, box3, local_coordinates) {
-   if (!node?.geometry) return box3;
+   if (!node?.geometry)
+      return box3;
 
-   if (!box3) box3 = new THREE.Box3().makeEmpty();
+   if (!box3)
+      box3 = new THREE.Box3().makeEmpty();
 
    if (node.isInstancedMesh) {
       const m = new THREE.Matrix4(), b = new THREE.Box3().makeEmpty();
@@ -3838,7 +3849,8 @@ function getBoundingBox(node, box3, local_coordinates) {
       return box3;
    }
 
-   if (!local_coordinates) node.updateWorldMatrix(false, false);
+   if (!local_coordinates)
+      node.updateWorldMatrix(false, false);
 
    const v1 = new THREE.Vector3(), attribute = node.geometry.attributes?.position;
 
@@ -3846,7 +3858,8 @@ function getBoundingBox(node, box3, local_coordinates) {
       for (let i = 0, l = attribute.count; i < l; i++) {
          // v1.fromAttribute( attribute, i ).applyMatrix4( node.matrixWorld );
          v1.fromBufferAttribute(attribute, i);
-         if (!local_coordinates) v1.applyMatrix4(node.matrixWorld);
+         if (!local_coordinates)
+            v1.applyMatrix4(node.matrixWorld);
          box3.expandByPoint(v1);
       }
    }
@@ -3857,7 +3870,8 @@ function getBoundingBox(node, box3, local_coordinates) {
 /** @summary Cleanup shape entity
   * @private */
 function cleanupShape(shape) {
-   if (!shape) return;
+   if (!shape)
+      return;
 
    if (isFunc(shape.geom?.dispose))
       shape.geom.dispose();
@@ -3878,10 +3892,10 @@ function produceRenderOrder(toplevel, origin, method, clones) {
    const raycast = new THREE.Raycaster();
 
    function setdefaults(top) {
-      if (!top) return;
-      top.traverse(obj => {
+      top?.traverse(obj => {
          obj.renderOrder = obj.defaultOrder || 0;
-         if (obj.material) obj.material.depthWrite = true; // by default depthWriting enabled
+         if (obj.material)
+            obj.material.depthWrite = true; // by default depthWriting enabled
       });
    }
 
@@ -3889,7 +3903,8 @@ function produceRenderOrder(toplevel, origin, method, clones) {
       // traverse hierarchy and extract all children of given level
       // if (obj.$jsroot_depth === undefined) return;
 
-      if (!obj.children) return;
+      if (!obj.children)
+         return;
 
       for (let k = 0; k < obj.children.length; ++k) {
          const chld = obj.children[k];
@@ -4189,5 +4204,5 @@ export { kindGeo, kindEve, kindShape,
          geoCfg, geoBITS, ClonedNodes, isSameStack, checkDuplicates, getObjectName, testGeoBit, setGeoBit, toggleGeoBit,
          setInvisibleAll, countNumShapes, getNodeKind, produceRenderOrder, createFlippedGeom, createFlippedMesh, cleanupShape,
          createGeometry, numGeometryFaces, numGeometryVertices, createServerGeometry, createMaterial,
-         projectGeometry, countGeometryFaces, createFrustum, createProjectionMatrix,
+         projectGeometry, createFrustum, createProjectionMatrix,
          getBoundingBox, provideObjectInfo, getShapeIcon, runGeoWorker };
