@@ -6,7 +6,7 @@ import { createBufferGeometry, createNormal,
 const _cfg = {
    GradPerSegm: 6,       // grad per segment in cylinder/spherical symmetry shapes
    CompressComp: true    // use faces compression in composite shapes
-};
+}, kShapeType = '$$Shape$$';
 
 /** @summary Returns or set geometry config values
  * @desc Supported 'GradPerSegm' and 'CompressComp'
@@ -1916,14 +1916,13 @@ function createComposite(shape, faces_limit) {
 
 /** @summary Try to create projected geometry
   * @private */
-function projectGeometry(geom, matrix, projection, position, flippedMesh) {
-   if (!geom.boundingBox) geom.computeBoundingBox();
+function projectGeometry(geom, matrix, projection, position = 0, flippedMesh = false) {
+   if (!geom.boundingBox)
+      geom.computeBoundingBox();
 
    const box = geom.boundingBox.clone();
 
    box.applyMatrix4(matrix);
-
-   if (!position) position = 0;
 
    if (((box.min[projection] >= position) && (box.max[projection] >= position)) ||
        ((box.min[projection] <= position) && (box.max[projection] <= position)))
@@ -1957,9 +1956,7 @@ function projectGeometry(geom, matrix, projection, position, flippedMesh) {
   *  - if limit < 0 just returns estimated number of faces
   *  - if limit > 0 return list of CsgPolygons (used only for composite shapes)
   * @private */
-createGeometry = function(shape, limit) {
-   if (limit === undefined) limit = 0;
-
+createGeometry = function(shape, limit = 0) {
    try {
       switch (shape._typename) {
          case clTGeoBBox: return createCubeBuffer(shape, limit);
@@ -2058,8 +2055,7 @@ function makeEveGeometry(rd) {
   * @private */
 function makeViewerGeometry(rd) {
    const vtxBuff = new Float32Array(rd.raw.buffer, 0, rd.raw.buffer.byteLength/4),
-
-   body = new THREE.BufferGeometry();
+         body = new THREE.BufferGeometry();
    body.setAttribute('position', new THREE.BufferAttribute(vtxBuff, 3));
    body.setIndex(new THREE.BufferAttribute(new Uint32Array(rd.idx), 1));
    body.computeVertexNormals();
@@ -2091,7 +2087,7 @@ function createServerGeometry(rd, nsegm) {
 
    // shape handle is similar to created in TGeoPainter
    return {
-      _typename: '$$Shape$$', // indicate that shape can be used as is
+      _typename: kShapeType, // indicate that shape can be used as is
       ready: true,
       geom,
       nfaces: numGeometryFaces(geom)
@@ -2485,15 +2481,12 @@ class ClonedNodes {
 
    /** @summary Returns TGeoShape for element with given indx */
    getNodeShape(indx) {
-      if (!this.origin || !this.nodes) return null;
+      if (!this.origin || !this.nodes)
+         return null;
       const obj = this.origin[indx], clone = this.nodes[indx];
-      if (!obj || !clone) return null;
-      if (clone.kind === kindGeo) {
-         if (obj.fVolume) return obj.fVolume.fShape;
-      } else
-         return obj.fShape;
-
-      return null;
+      if (!obj || !clone)
+         return null;
+      return clone.kind === kindGeo ? obj.fVolume?.fShape : obj.fShape;
    }
 
    /** @summary function to cleanup as much as possible structures
@@ -2529,7 +2522,7 @@ class ClonedNodes {
    /** @summary Create complete description for provided Geo object */
    createClones(obj, sublevel, kind) {
       if (!sublevel) {
-         if (obj?._typename === '$$Shape$$')
+         if (obj?._typename === kShapeType)
             return this.createClonesForShape(obj);
 
          this.origin = [];
@@ -3763,7 +3756,7 @@ class ClonedNodes {
          if (res.done) { item.ready = true; continue; }
 
          if (!item.ready) {
-            item._typename = '$$Shape$$'; // let reuse item for direct drawing
+            item._typename = kShapeType; // let reuse item for direct drawing
             item.ready = true;
             if (item.geom === undefined) {
                item.geom = createGeometry(item.shape);
