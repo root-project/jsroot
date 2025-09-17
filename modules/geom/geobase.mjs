@@ -1892,7 +1892,8 @@ function createComposite(shape, faces_limit) {
    if ((n1 + n2 >= faces_limit) || !geom2) {
       if (geom1.polygons)
          geom1 = createBufferGeometry(geom1.polygons);
-      if (matrix1) geom1.applyMatrix4(matrix1);
+      if (matrix1)
+         geom1.applyMatrix4(matrix1);
       geom1._exceed_limit = true;
       return geom1;
    }
@@ -2205,7 +2206,8 @@ function createProjectionMatrix(camera) {
 /** @summary Creates frustum
   * @private */
 function createFrustum(source) {
-   if (!source) return null;
+   if (!source)
+      return null;
 
    if (source instanceof THREE.PerspectiveCamera)
       source = createProjectionMatrix(source);
@@ -2234,32 +2236,27 @@ function createFrustum(source) {
          pnt.x = corners[i] * shape.fDX;
          pnt.y = corners[i+1] * shape.fDY;
          pnt.z = corners[i+2] * shape.fDZ;
-         if (this.containsPoint(pnt.applyMatrix4(matrix))) return true;
+         if (this.containsPoint(pnt.applyMatrix4(matrix)))
+            return true;
      }
 
      return false;
    };
 
+   frustum.CheckPoint = function(x, y, z) {
+      return this.containsPoint(this.test.set(x, y, z)) ? 1 : 0;
+   };
+
    frustum.CheckBox = function(box) {
-      const pnt = this.test;
-      let cnt = 0;
-      pnt.set(box.min.x, box.min.y, box.min.z);
-      if (this.containsPoint(pnt)) cnt++;
-      pnt.set(box.min.x, box.min.y, box.max.z);
-      if (this.containsPoint(pnt)) cnt++;
-      pnt.set(box.min.x, box.max.y, box.min.z);
-      if (this.containsPoint(pnt)) cnt++;
-      pnt.set(box.min.x, box.max.y, box.max.z);
-      if (this.containsPoint(pnt)) cnt++;
-      pnt.set(box.max.x, box.max.y, box.max.z);
-      if (this.containsPoint(pnt)) cnt++;
-      pnt.set(box.max.x, box.min.y, box.max.z);
-      if (this.containsPoint(pnt)) cnt++;
-      pnt.set(box.max.x, box.max.y, box.min.z);
-      if (this.containsPoint(pnt)) cnt++;
-      pnt.set(box.max.x, box.max.y, box.max.z);
-      if (this.containsPoint(pnt)) cnt++;
-      return cnt > 5; // only if 6 edges and more are seen, we think that box is fully visible
+      // only if 6 edges and more are seen, we think that box is fully visible
+      return this.CheckPoint(box.min.x, box.min.y, box.min.z) +
+             this.CheckPoint(box.min.x, box.min.y, box.max.z) +
+             this.CheckPoint(box.min.x, box.max.y, box.min.z) +
+             this.CheckPoint(box.min.x, box.max.y, box.max.z) +
+             this.CheckPoint(box.max.x, box.max.y, box.max.z) +
+             this.CheckPoint(box.max.x, box.min.y, box.max.z) +
+             this.CheckPoint(box.max.x, box.max.y, box.min.z) +
+             this.CheckPoint(box.max.x, box.max.y, box.max.z) > 5;
    };
 
    return frustum;
@@ -2268,7 +2265,8 @@ function createFrustum(source) {
 /** @summary Create node material
   * @private */
 function createMaterial(cfg, args0) {
-   if (!cfg) cfg = { material_kind: 'lambert' };
+   if (!cfg)
+      cfg = { material_kind: 'lambert' };
 
    const args = Object.assign({}, args0);
 
