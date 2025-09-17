@@ -2277,7 +2277,8 @@ function createMaterial(cfg, args0) {
       args.opacity = Math.min(1 - cfg.transparency, args.opacity);
 
    args.wireframe = cfg.wireframe ?? false;
-   if (!args.color) args.color = 'red';
+   if (!args.color)
+      args.color = 'red';
    args.side = THREE.FrontSide;
    args.transparent = args.opacity < 1;
    args.depthWrite = args.opactity === 1;
@@ -2347,9 +2348,12 @@ function compare_stacks(stack1, stack2) {
 /** @summary Checks if two stack arrays are identical
   * @private */
 function isSameStack(stack1, stack2) {
-   if (!stack1 || !stack2) return false;
-   if (stack1 === stack2) return true;
-   if (stack1.length !== stack2.length) return false;
+   if (!stack1 || !stack2)
+      return false;
+   if (stack1 === stack2)
+      return true;
+   if (stack1.length !== stack2.length)
+      return false;
    for (let k = 0; k < stack1.length; ++k)
       if (stack1[k] !== stack2[k]) return false;
    return true;
@@ -2692,7 +2696,8 @@ class ClonedNodes {
 
                   // special handling for top node
                   if (n === 0) {
-                     if (hide_top_volume) clone.vis = 0;
+                     if (hide_top_volume)
+                        clone.vis = 0;
                      delete clone.nochlds;
                   }
                }
@@ -2707,9 +2712,11 @@ class ClonedNodes {
          }
 
          // shape with zero volume or without faces will not be observed
-         if ((clone.vol <= 0) || (clone.nfaces <= 0)) clone.vis = 0;
+         if ((clone.vol <= 0) || (clone.nfaces <= 0))
+            clone.vis = 0;
 
-         if (clone.vis) res++;
+         if (clone.vis)
+            res++;
       }
 
       return res;
@@ -2769,7 +2776,8 @@ class ClonedNodes {
          return;
       } else if (on === 'clear') {
          do_clear = true;
-         if (!this.fVisibility) return;
+         if (!this.fVisibility)
+            return;
       } else
          on = Boolean(on);
       if (!stack)
@@ -2823,13 +2831,16 @@ class ClonedNodes {
    /** @summary Scan visible nodes in hierarchy, starting from nodeid
      * @desc Each entry in hierarchy get its unique id, which is not changed with visibility flags */
    scanVisible(arg, vislvl) {
-      if (!this.nodes) return 0;
+      if (!this.nodes)
+         return 0;
 
       if (vislvl === undefined) {
-         if (!arg) arg = {};
+         if (!arg)
+            arg = {};
 
          vislvl = arg.vislvl || this.vislevel || 4; // default 3 in ROOT
-         if (vislvl > 88) vislvl = 88;
+         if (vislvl > 88)
+            vislvl = 88;
 
          arg.stack = new Array(100); // current stack
          arg.nodeid = 0;
@@ -2951,7 +2962,8 @@ class ClonedNodes {
 
       if (withmatrix) {
          res.matrix = new THREE.Matrix4();
-         if (res.node.matrix) res.matrix.fromArray(res.node.matrix);
+         if (res.node.matrix)
+            res.matrix.fromArray(res.node.matrix);
       }
 
       if (this.origin)
@@ -3004,7 +3016,8 @@ class ClonedNodes {
 
       for (let k = 1; k < ids.length; ++k) {
          const nodeid = ids[k];
-         if (!node) return null;
+         if (!node)
+            return null;
          const chindx = node.chlds.indexOf(nodeid);
          if (chindx < 0) {
             console.error(`wrong nodes ids ${ids[k]} is not child of ${ids[k-1]}`);
@@ -3071,7 +3084,8 @@ class ClonedNodes {
 
       for (let n = 1; n < names.length; ++n) {
          const node = this.nodes[currid];
-         if (!node.chlds) return null;
+         if (!node.chlds)
+            return null;
 
          for (let k = 0; k < node.chlds.length; ++k) {
             const chldid = node.chlds[k];
@@ -3127,7 +3141,7 @@ class ClonedNodes {
 
       if (clone.kind === kindShape) {
          const prop = { name: clone.name, nname: clone.name, shape: null, material: null, chlds: null },
-             opacity = entry.opacity || 1, col = entry.color || '#0000FF';
+               opacity = entry.opacity || 1, col = entry.color || '#0000FF';
          prop.fillcolor = new THREE.Color(col[0] === '#' ? col : `rgb(${col})`);
          prop.material = createMaterial(this._cfg, { opacity, color: prop.fillcolor });
          return prop;
@@ -3145,7 +3159,8 @@ class ClonedNodes {
 
          const prop = { name: getObjectName(node), nname: getObjectName(node), shape: node.fShape, material: null, chlds: null };
 
-         if (node.fElements !== null) prop.chlds = node.fElements.arr;
+         if (node.fElements !== null)
+            prop.chlds = node.fElements.arr;
 
          if (visible) {
             const opacity = Math.min(1, node.fRGBA[3]);
@@ -3163,7 +3178,8 @@ class ClonedNodes {
       if (visible) {
          // TODO: maybe correctly extract ROOT colors here?
          let opacity = 1.0;
-         if (!root_colors) root_colors = ['white', 'black', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan'];
+         if (!root_colors)
+            root_colors = ['white', 'black', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan'];
 
          if (entry.custom_color)
             prop.fillcolor = entry.custom_color;
@@ -3275,7 +3291,8 @@ class ClonedNodes {
          if (three_prnt) {
             for (let n = 0; (n < three_prnt.children.length) && !mesh; ++n) {
                const chld = three_prnt.children[n];
-               if ((chld.type === 'Mesh') && (chld.nchld === undefined)) mesh = chld;
+               if ((chld.type === 'Mesh') && (chld.nchld === undefined))
+                  mesh = chld;
             }
          }
 
@@ -3410,7 +3427,7 @@ class ClonedNodes {
          shape.used = true;
          shape.instances.forEach(instance => {
             const entry0 = instance.entries[0],
-                prop = this.getDrawEntryProperties(entry0, colors);
+                  prop = this.getDrawEntryProperties(entry0, colors);
 
             prop.material.wireframe = ctrl.wireframe;
 
@@ -3507,9 +3524,11 @@ class ClonedNodes {
 
       for (let n = 0; (n < this.sortmap.length) && (cnt < nodeslimit) && (facecnt < facelimit); ++n) {
          const id = this.sortmap[n];
-         if (viscnt[id] === 0) continue;
+         if (viscnt[id] === 0)
+            continue;
          currNode = this.nodes[id];
-         if (!maxNode) maxNode = currNode;
+         if (!maxNode)
+            maxNode = currNode;
          cnt += viscnt[id];
          facecnt += viscnt[id] * currNode.nfaces;
       }
@@ -3667,7 +3686,8 @@ class ClonedNodes {
          const entry = lst[i],
              shape = this.getNodeShape(entry.nodeid);
 
-         if (!shape) continue; // strange, but avoid misleading
+         if (!shape)
+            continue; // strange, but avoid misleading
 
          if (shape._id === undefined) {
             shape._id = shapes.length;
@@ -3767,7 +3787,8 @@ class ClonedNodes {
             item.ready = true;
             if (item.geom === undefined) {
                item.geom = createGeometry(item.shape);
-               if (item.geom) created++; // indicate that at least one shape was created
+               if (item.geom)
+                  created++; // indicate that at least one shape was created
             }
             item.nfaces = numGeometryFaces(item.geom);
          }
@@ -3780,7 +3801,8 @@ class ClonedNodes {
             res.done = true;
          else if ((created > 0.01*lst.length) && (timelimit !== undefined)) {
             const tm2 = new Date().getTime();
-            if (tm2 - tm1 > timelimit) return res;
+            if (tm2 - tm1 > timelimit)
+               return res;
          }
       }
 
@@ -4003,7 +4025,8 @@ function produceRenderOrder(toplevel, origin, method, clones) {
                if ((intersects.indexOf(mesh) < 0) && (ntry > 0))
                   console.log(`MISS ${clones?.resolveStack(mesh.stack)?.name}`);
 
-               if ((intersects.indexOf(mesh) >= 0) || (ntry > 0)) break;
+               if ((intersects.indexOf(mesh) >= 0) || (ntry > 0))
+                  break;
 
                const pos = mesh.geometry.attributes.position.array;
 
@@ -4016,7 +4039,8 @@ function produceRenderOrder(toplevel, origin, method, clones) {
             for (let k1 = 0; k1 < intersects.length - 1; ++k1) {
                const mesh1 = intersects[k1], mesh2 = intersects[k1+1],
                      i1 = mesh1.$jsroot_index, i2 = mesh2.$jsroot_index;
-               if (i1 < i2) continue;
+               if (i1 < i2)
+                  continue;
                for (let ii = i2; ii < i1; ++ii) {
                   resort[ii] = resort[ii+1];
                   resort[ii].$jsroot_index = ii;
@@ -4042,14 +4066,16 @@ function produceRenderOrder(toplevel, origin, method, clones) {
 
       traverse(obj, lvl, arr);
 
-      if (!arr.length) return;
+      if (!arr.length)
+         return;
 
       if (minorder === maxorder) {
          for (let k = 0; k < arr.length; ++k)
             arr[k].renderOrder = minorder;
       } else {
         did_sort = sort(arr, minorder, maxorder);
-        if (!did_sort) minorder = maxorder = (minorder + maxorder) / 2;
+        if (!did_sort)
+         minorder = maxorder = (minorder + maxorder) / 2;
       }
 
       for (let k = 0; k < arr.length; ++k) {
@@ -4112,10 +4138,7 @@ function runGeoWorker(ctxt, data, doPost) {
    data.tm1 = new Date().getTime();
 
    if (data.init) {
-      // console.log(`start worker ${data.tm1 -  data.tm0}`);
-
       if (data.clones) {
-         // console.log(`get clones ${nodes.length}`);
          ctxt.clones = new ClonedNodes(null, data.clones);
          ctxt.clones.setVisLevel(data.vislevel);
          ctxt.clones.setMaxVisNodes(data.maxvisnodes);
@@ -4136,7 +4159,8 @@ function runGeoWorker(ctxt, data, doPost) {
       // build all shapes up to specified limit, also limit execution time
       for (let n = 0; n < 100; ++n) {
          const res = ctxt.clones.buildShapes(shapes, data.limit, 1000);
-         if (res.done) break;
+         if (res.done)
+            break;
          doPost({ progress: `Worker creating: ${res.shapes} / ${shapes.length} shapes, ${res.faces} faces` });
       }
 
