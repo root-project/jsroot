@@ -14,7 +14,7 @@ import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { createMenu, closeMenu } from '../gui/menu.mjs';
 import { TAxisPainter } from '../gpad/TAxisPainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
-import { kindGeo, kindEve,
+import { kindGeo, kindEve, kGetMesh, kDeleteMesh,
          clTGeoBBox, clTGeoCompositeShape,
          geoCfg, geoBITS, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit, setInvisibleAll,
          countNumShapes, getNodeKind, produceRenderOrder, createServerGeometry,
@@ -1123,8 +1123,9 @@ class TGeoPainter extends ObjectPainter {
          func: (/* node */) => {
             let m2 = this.getmatrix();
             const entry = this.copyStack(),
-                  mesh = this.#clones.createObject3D(entry.stack, this.#toplevel, 'mesh');
-            if (!mesh) return true;
+                  mesh = this.#clones.createObject3D(entry.stack, this.#toplevel, kGetMesh);
+            if (!mesh)
+               return true;
 
             totalcnt++;
 
@@ -2353,7 +2354,7 @@ class TGeoPainter extends ObjectPainter {
 
             // remove should be fast, do it here
             for (let n = 0; n < del.length; ++n)
-               this.#clones.createObject3D(del[n].stack, this.#toplevel, 'delete_mesh');
+               this.#clones.createObject3D(del[n].stack, this.#toplevel, kDeleteMesh);
 
             if (del.length)
                this.#drawing_log = `Delete ${del.length} nodes`;
@@ -2516,7 +2517,7 @@ class TGeoPainter extends ObjectPainter {
       if (this.#more_nodes) {
          for (let n = 0; n < this.#more_nodes.length; ++n) {
             const entry = this.#more_nodes[n],
-                obj3d = this.#clones.createObject3D(entry.stack, this.#toplevel, 'delete_mesh');
+                obj3d = this.#clones.createObject3D(entry.stack, this.#toplevel, kDeleteMesh);
             disposeThreejsObject(obj3d);
             cleanupShape(entry.server_shape);
             delete entry.server_shape;
@@ -5114,7 +5115,7 @@ class TGeoPainter extends ObjectPainter {
       for (let n = 0; n < this.#draw_nodes.length; ++n) {
          const entry = this.#draw_nodes[n];
          if ((entry.nodeid === nodeid) || this.#clones.isIdInStack(nodeid, entry.stack))
-            this.#clones.createObject3D(entry.stack, this.#toplevel, 'delete_mesh');
+            this.#clones.createObject3D(entry.stack, this.#toplevel, kDeleteMesh);
           else
             new_nodes.push(entry);
       }

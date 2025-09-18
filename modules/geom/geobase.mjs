@@ -24,6 +24,9 @@ const kindGeo = 0,    // TGeoNode / TGeoShape
       kindEve = 1,    // TEveShape / TEveGeoShapeExtract
       kindShape = 2,  // special kind for single shape handling
 
+      kGetMesh = 'mesh',  // return mesh from createObject3D
+      kDeleteMesh = 'delete_mesh', // delete mesh in createObject3D
+
       /** @summary TGeo-related bits
        * @private */
       geoBITS = {
@@ -3288,7 +3291,7 @@ class ClonedNodes {
          three_prnt = obj3d;
       }
 
-      if ((options === 'mesh') || (options === 'delete_mesh')) {
+      if ((options === kGetMesh) || (options === kDeleteMesh)) {
          let mesh = null;
          if (three_prnt) {
             for (let n = 0; (n < three_prnt.children.length) && !mesh; ++n) {
@@ -3298,7 +3301,7 @@ class ClonedNodes {
             }
          }
 
-         if ((options === 'mesh') || !mesh)
+         if ((options === kGetMesh) || !mesh)
             return mesh;
 
          const res = three_prnt;
@@ -3329,7 +3332,7 @@ class ClonedNodes {
 
       if (!shape.geom || !shape.nfaces) {
          // node is visible, but shape does not created
-         this.createObject3D(entry.stack, toplevel, 'delete_mesh');
+         this.createObject3D(entry.stack, toplevel, kDeleteMesh);
          return null;
       }
 
@@ -4223,7 +4226,7 @@ function runGeoWorker(ctxt, data, doPost) {
    }
 }
 
-export { kindGeo, kindEve, kindShape,
+export { kindGeo, kindEve, kindShape, kGetMesh, kDeleteMesh,
          clTGeoBBox, clTGeoCompositeShape,
          geoCfg, geoBITS, ClonedNodes, isSameStack, checkDuplicates, getObjectName, testGeoBit, setGeoBit, toggleGeoBit,
          setInvisibleAll, countNumShapes, getNodeKind, produceRenderOrder, createFlippedGeom, createFlippedMesh, cleanupShape,
