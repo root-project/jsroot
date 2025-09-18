@@ -302,7 +302,7 @@ class RTreeMapPainter extends ObjectPainter {
                                    this.axisToSvg('x', rect.bottomLeft.x, this.isndc)) -
                           RTreeMapPainter.CONSTANTS.TEXT.PADDING;
 
-      while (nodeElem.getComputedTextLength() > availablePx && textContent.length > 0) {
+      while (nodeElem.getComputedTextLength && nodeElem.getComputedTextLength() > availablePx && textContent.length > 0) {
          textContent = textContent.slice(0, -1);
          nodeElem.textContent = textContent + '…';
       }
