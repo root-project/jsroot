@@ -47,13 +47,14 @@ class RTreeMapPainter extends ObjectPainter {
       this.tooltip = new RTreeMapTooltip(this);
       this.rootIndex = 0;
       this.parentIndices = [];
-      const rframe = this.getPadPainter()?.getLayerSvg('primitives_layer').select('g.root_frame path');
-      if(rframe) rframe.attr("visibility", "hidden");
    }
 
-
    cleanup() {
-      this.getPadPainter()?.getLayerSvg('primitives_layer').select('g.root_frame path').attr("visibility", "visible");
+      if(this._frame_hidden) {
+         delete this._frame_hidden;
+         this.getPadPainter()?.getFrameSvg().style('display', null);
+      }
+
       this.tooltip.cleanup();
       super.cleanup();
    }
@@ -383,6 +384,12 @@ class RTreeMapPainter extends ObjectPainter {
 
    redraw()
    {
+      const svg = this.getPadPainter().getFrameSvg();
+      if (!svg.empty()) {
+         svg.style('display', 'none');
+         this._frame_hidden = true;
+      }
+
       const obj = this.getObject();
       this.createG();
       this.isndc = true;
