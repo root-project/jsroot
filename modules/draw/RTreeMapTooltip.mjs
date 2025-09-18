@@ -82,4 +82,4 @@ class RTreeMapTooltip {
    }
 }
 
-export default RTreeMapTooltip;
+export { RTreeMapTooltip };
