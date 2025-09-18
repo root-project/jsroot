@@ -1,17 +1,18 @@
 class RTreeMapTooltip {
-   static CONSTANTS = {DELAY : 0, OFFSET_X: 10, OFFSET_Y: -10, PADDING: 8, BORDER_RADIUS: 4};
+
+   static CONSTANTS = { DELAY: 0, OFFSET_X: 10, OFFSET_Y: -10, PADDING: 8, BORDER_RADIUS: 4 };
 
    constructor(painter)
    {
       this.painter = painter;
       this.tooltip = null;
-      this.content = "";
+      this.content = '';
       this.x = 0;
       this.y = 0;
    }
 
    cleanup() {
-      if(this.tooltip !== null) document.body.removeChild(this.tooltip);
+      if (this.tooltip !== null) document.body.removeChild(this.tooltip);
    }
 
    createTooltip()
@@ -50,36 +51,36 @@ class RTreeMapTooltip {
 
    hideTooltip()
    {
-      if (this.tooltip) {
+      if (this.tooltip) 
          this.tooltip.style.opacity = '0';
-      }
    }
 
    generateTooltipContent(node)
    {
       const isLeaf = node.fNChildren === 0;
-      let content = (node.fName.length > 0) ? `<strong>${node.fName}</strong><br>` : ''
+      let content = (node.fName.length > 0) ? `<strong>${node.fName}</strong><br>` : '';
 
       content += `<i>${(isLeaf ? 'Column' : 'Field')}</i><br>`;
       content += `Size: ${this.painter.getDataStr(node.fSize)}<br>`;
 
-      if (isLeaf && node.fType !== undefined) {
+      if (isLeaf && node.fType !== undefined) 
          content += `Type: ${node.fType}<br>`;
-      }
+      
 
-      if (!isLeaf) {
+      if (!isLeaf) 
          content += `Children: ${node.fNChildren}<br>`;
-      }
+      
 
       const obj = this.painter.getObject();
       if (obj.fNodes && obj.fNodes.length > 0) {
-         const totalSize = obj.fNodes[0].fSize;
-         const percentage = ((node.fSize / totalSize) * 100).toFixed(2);
+         const totalSize = obj.fNodes[0].fSize,
+          percentage = ((node.fSize / totalSize) * 100).toFixed(2);
          content += `Disk Usage: ${percentage}%`;
       }
 
       return content;
    }
+
 }
 
 export { RTreeMapTooltip };
