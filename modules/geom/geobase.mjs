@@ -3245,11 +3245,13 @@ class ClonedNodes {
 
          if (obj3d) {
             three_prnt = obj3d;
-            if (obj3d.$jsroot_drawable) draw_depth++;
+            if (obj3d.$jsroot_drawable)
+               draw_depth++;
             continue;
          }
 
-         if (!force) return null;
+         if (!force)
+            return null;
 
          obj3d = new THREE.Object3D();
 

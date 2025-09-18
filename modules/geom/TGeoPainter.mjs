@@ -2529,8 +2529,9 @@ class TGeoPainter extends ObjectPainter {
       const real_nodes = [];
       for (let k = 0; k < nodes.length; ++k) {
          const entry = nodes[k],
-             shape = entry.server_shape;
-         if (!shape?.ready) continue;
+               shape = entry.server_shape;
+         if (!shape?.ready)
+            continue;
 
          if (this.createEntryMesh(entry, shape, this.#toplevel))
             real_nodes.push(entry);
