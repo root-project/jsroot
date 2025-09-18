@@ -1,5 +1,6 @@
-import {ObjectPainter, ensureTCanvas} from 'jsroot';
-import RTreeMapTooltip from "./RTreeMapTooltip.mjs";
+import { ObjectPainter } from '../base/ObjectPainter.mjs';
+import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
+import { RTreeMapTooltip } from './RTreeMapTooltip.mjs';
 
 function computeFnv(str)
 {
@@ -413,4 +414,4 @@ class RTreeMapPainter extends ObjectPainter {
       return ensureTCanvas(painter, false).then(() => painter.redraw());
    }
 }
-export {RTreeMapPainter};
+export { RTreeMapPainter };
