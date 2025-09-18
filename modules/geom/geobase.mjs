@@ -1,4 +1,5 @@
 import { isObject, isFunc, isStr, BIT } from '../core.mjs';
+import { getRootColors } from '../base/colors.mjs';
 import { THREE } from '../base/base3d.mjs';
 import { createBufferGeometry, createNormal,
          Vertex as CsgVertex, Geometry as CsgGeometry, Polygon as CsgPolygon } from './csg.mjs';
@@ -3176,10 +3177,9 @@ class ClonedNodes {
                      chlds: volume.fNodes?.arr, linewidth: volume.fLineWidth };
 
       if (visible) {
-         // TODO: maybe correctly extract ROOT colors here?
          let opacity = 1.0;
          if (!root_colors)
-            root_colors = ['white', 'black', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan'];
+            root_colors = getRootColors();
 
          if (entry.custom_color)
             prop.fillcolor = entry.custom_color;
