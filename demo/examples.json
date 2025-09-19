@@ -404,7 +404,7 @@
      { "name": "scatter", "file": "scatter.root", "item": "c2",  "title": "Canvas with new TScatter class, tutorials/graphs/scatter.C" },
      { "name": "ann3d", "file": "tutorials_graphs.root", "item": "annotation3d_new",  "title": "Usage of new TAnnotation class, tutorials/graphs/annotation3d.C" },
      { "name": "marker", "file": "marker_types.root", "item": "c1",  "title": "Canvases from TAttMarker documentaion with different types and lines width" },
-     { "name": "treemap", "file": "treemap.root", "item": "RTreeMapPainter",  "title": "Display of RNTuple structure in RBrowser" }
+     { "name": "treemap", "file": "rntuple/treemap.root", "item": "RTreeMapPainter",  "title": "Display of RNTuple structure in RBrowser" }
    ],
    "User" : [
       { "name": "div", "url": "nobrowser&inject=../demo/custom/divhist.mjs&file=demo/custom/divhist.root&item=DivHist", "title": "Draw division of two histograms from user class, see demo/custom/ dir for details" },
