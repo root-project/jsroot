@@ -24,6 +24,7 @@
 1. Fix - TTree::Draw with strings
 1. Fix - first color in palette drawing #365
 1. Fix - toggle vertical/horizontal palette via context menu
+1. Fix - latex parsing error of `#delta_{0}_suffix` string
 
 
 ## Changes in 7.9.1
