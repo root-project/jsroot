@@ -1249,7 +1249,7 @@ class TGraphPainter extends ObjectPainter {
      * @desc if arg specified changes or toggles editable flag */
    testEditable(arg) {
       const obj = this.getGraph();
-      if (!obj)
+      if (!isFunc(obj?.TestBit))
          return false;
       if ((arg === 'toggle') || (arg !== undefined))
          obj.SetBit(kNotEditable, !arg);
