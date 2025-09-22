@@ -1559,7 +1559,8 @@ function createHistogram(typename, nbinsx, nbinsy, nbinsz) {
  * @desc Title may include axes titles, provided with ';' symbol like "Title;x;y;z" */
 
 function setHistogramTitle(histo, title) {
-   if (!histo) return;
+   if (!histo || !isStr(title))
+      return;
    if (title.indexOf(';') < 0)
       histo.fTitle = title;
    else {
