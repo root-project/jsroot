@@ -3414,7 +3414,7 @@ class ClonedNodes {
       for (let n = 0; n < draw_nodes.length; ++n) {
          const entry = draw_nodes[n];
          if (entry.done)
-            ontinue;
+            continue;
 
          // shape can be provided with entry itself
          const shape = entry.server_shape || build_shapes[entry.shapeid];
