@@ -6,6 +6,7 @@
 3. Fix - svg2pdf.js URL bounding box
 4. Fix - TTree::Draw with strings
 5. Fix - toggle vertical/horizontal palette via context menu
+6. Fix - detect HTML element size from style attribute
 
 
 ## Changes in 7.9.1
