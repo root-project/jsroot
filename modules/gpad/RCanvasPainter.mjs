@@ -555,23 +555,25 @@ class RCanvasPainter extends RPadPainter {
    /** @summary Show online canvas status
      * @private */
    showCanvasStatus(...msgs) {
-      if (this.testUI5()) return;
+      if (this.testUI5())
+         return;
 
       const br = this.brlayout || getHPainter()?.brlayout;
-
       br?.showStatus(...msgs);
    }
 
    /** @summary Returns true if GED is present on the canvas */
    hasGed() {
-      if (this.testUI5()) return false;
+      if (this.testUI5())
+         return false;
       return this.brlayout?.hasContent() ?? false;
    }
 
    /** @summary Function used to de-activate GED
      * @private */
    removeGed() {
-      if (this.testUI5()) return;
+      if (this.testUI5())
+         return;
 
       this.registerForPadEvents(null);
 

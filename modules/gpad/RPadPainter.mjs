@@ -636,8 +636,10 @@ class RPadPainter extends RObjectPainter {
             pad_enlarged = svg_can.property('pad_enlarged');
 
       if (this.isTopPad() || (!pad_enlarged && !this.hasObjectsToDraw() && !this.#painters)) {
-         if (this.#fixed_size) return; // canvas cannot be enlarged in such mode
-         if (!this.enlargeMain(is_escape ? false : 'toggle')) return;
+         if (this.#fixed_size)
+            return; // canvas cannot be enlarged in such mode
+         if (!this.enlargeMain(is_escape ? false : 'toggle'))
+            return;
          if (this.enlargeMain('state') === 'off')
             svg_can.property('pad_enlarged', null);
          else
@@ -1612,7 +1614,8 @@ class RPadPainter extends RObjectPainter {
       if (funcname === 'PadContextMenus') {
          evnt?.preventDefault();
          evnt?.stopPropagation();
-         if (closeMenu()) return;
+         if (closeMenu())
+            return;
 
          return createMenu(evnt, this).then(menu => {
             menu.header('Menus');
@@ -1636,7 +1639,8 @@ class RPadPainter extends RObjectPainter {
                const shown = [];
                this.#painters.forEach((pp, indx) => {
                   const obj = pp?.getObject();
-                  if (!obj || (shown.indexOf(obj) >= 0) || pp.isSecondary()) return;
+                  if (!obj || (shown.indexOf(obj) >= 0) || pp.isSecondary())
+                     return;
                   let name = isFunc(pp.getClassName) ? pp.getClassName() : (obj._typename || '');
                   if (name) name += '::';
                   name += isFunc(pp.getObjectName) ? pp.getObjectName() : (obj.fName || `item${indx}`);
@@ -1679,14 +1683,17 @@ class RPadPainter extends RObjectPainter {
          this._buttons = [];
       // check if there are duplications
 
-      for (let k = 0; k < this._buttons.length; ++k)
-         if (this._buttons[k].funcname === funcname) return;
+      for (let k = 0; k < this._buttons.length; ++k) {
+         if (this._buttons[k].funcname === funcname)
+            return;
+      }
 
       this._buttons.push({ btn, tooltip, funcname, keyname });
 
       if (!this.isTopPad() && funcname.indexOf('Pad') && (funcname !== 'enlargePad')) {
          const cp = this.getCanvPainter();
-         if (cp && (cp !== this)) cp.addPadButton(btn, tooltip, funcname);
+         if (cp && (cp !== this))
+            cp.addPadButton(btn, tooltip, funcname);
       }
    }
 
@@ -1712,7 +1719,8 @@ class RPadPainter extends RObjectPainter {
    /** @summary Show pad buttons
      * @private */
    showPadButtons() {
-      if (!this._buttons) return;
+      if (!this._buttons)
+         return;
 
       PadButtonsHandler.assign(this);
       this.showPadButtons();
@@ -1762,7 +1770,8 @@ class RPadPainter extends RObjectPainter {
    /** @summary Decode pad draw options */
    decodeOptions(opt) {
       const pad = this.getObject();
-      if (!pad) return;
+      if (!pad)
+         return;
 
       const d = new DrawOptions(opt),
             o = this.setOptions({ GlobalColors: true, LocalColors: false, IgnorePalette: false, RotateFrame: false, FixFrame: false });

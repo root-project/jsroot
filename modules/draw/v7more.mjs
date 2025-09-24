@@ -231,7 +231,8 @@ class RPalettePainter extends RObjectPainter {
          addDragHandler(this, { x: palette_x, y: palette_y, width: palette_width, height: palette_height,
                                 minwidth: 20, minheight: 20, no_change_x: !vertical, no_change_y: vertical, redraw: d => this.drawPalette(d) });
 
-         if (!settings.Zooming) return;
+         if (!settings.Zooming)
+            return;
 
          let doing_zoom = false, sel1 = 0, sel2 = 0, zoom_rect, zoom_rect_visible, moving_labels, last_pos;
 
@@ -262,7 +263,8 @@ class RPalettePainter extends RObjectPainter {
             else
                zoom_rect.attr('x', Math.min(sel1, sel2)).attr('width', sz);
          }, endRectSel = evnt => {
-            if (!doing_zoom) return;
+            if (!doing_zoom)
+               return;
 
             evnt.preventDefault();
             d3_select(window).on('mousemove.colzoomRect', null)
@@ -279,7 +281,8 @@ class RPalettePainter extends RObjectPainter {
             }
          }, startRectSel = evnt => {
             // ignore when touch selection is activated
-            if (doing_zoom) return;
+            if (doing_zoom)
+               return;
             doing_zoom = true;
 
             evnt.preventDefault();

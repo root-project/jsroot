@@ -434,7 +434,8 @@ class RAxisPainter extends RObjectPainter {
 
    /** @summary Add interactive elements to draw axes title */
    addTitleDrag(title_g, side) {
-      if (!settings.MoveResize || this.isBatchMode()) return;
+      if (!settings.MoveResize || this.isBatchMode())
+         return;
 
       let drag_rect = null,
           acc_x, acc_y, new_x, new_y, alt_pos, curr_indx;
@@ -483,7 +484,8 @@ class RAxisPainter extends RObjectPainter {
                  .call(addHighlightStyle, true);
               // .style('pointer-events','none'); // let forward double click to underlying elements
           }).on('drag', evnt => {
-               if (!drag_rect) return;
+               if (!drag_rect)
+                  return;
 
                evnt.sourceEvent.preventDefault();
                evnt.sourceEvent.stopPropagation();
@@ -508,7 +510,8 @@ class RAxisPainter extends RObjectPainter {
                new_x = set_x; new_y = set_y; curr_indx = besti;
                makeTranslate(title_g, new_x, new_y);
           }).on('end', evnt => {
-               if (!drag_rect) return;
+               if (!drag_rect)
+                  return;
 
                evnt.sourceEvent.preventDefault();
                evnt.sourceEvent.stopPropagation();
@@ -913,14 +916,16 @@ class RAxisPainter extends RObjectPainter {
 
    /** @summary Draw axis with the same settings, used by interactive changes */
    drawAxisAgain() {
-      if (!this.axis_g || !this.side) return;
+      if (!this.axis_g || !this.side)
+         return;
 
       this.axis_g.selectAll('*').remove();
 
       this.extractDrawAttributes();
 
       let side = this.side;
-      if (this.ticksSide === 'invert') side = -side;
+      if (this.ticksSide === 'invert')
+         side = -side;
 
       if (this.standalone)
          this.drawMainLine(this.axis_g);
@@ -1070,11 +1075,14 @@ class RAxisPainter extends RObjectPainter {
 
    /** @summary Change axis log scale kind */
    changeAxisLog(arg) {
-      if ((this.kind === kAxisLabels) || (this.kind === kAxisTime)) return;
-      if (arg === 'toggle') arg = this.log ? 0 : 10;
+      if ((this.kind === kAxisLabels) || (this.kind === kAxisTime))
+         return;
+      if (arg === 'toggle')
+         arg = this.log ? 0 : 10;
 
       arg = parseFloat(arg);
-      if (Number.isFinite(arg)) this.changeAxisAttr(2, 'log', arg, 'symlog', 0);
+      if (Number.isFinite(arg))
+         this.changeAxisAttr(2, 'log', arg, 'symlog', 0);
    }
 
    /** @summary Provide context menu for axis */
