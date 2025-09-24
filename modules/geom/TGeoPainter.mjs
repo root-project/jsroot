@@ -2627,7 +2627,8 @@ class TGeoPainter extends ObjectPainter {
    doProjection() {
       const toplevel = this.getProjectionSource();
 
-      if (!toplevel) return false;
+      if (!toplevel)
+         return false;
 
       disposeThreejsObject(this.#toplevel, true);
 
@@ -2638,7 +2639,8 @@ class TGeoPainter extends ObjectPainter {
                min = bound.min[this.ctrl.project], max = bound.max[this.ctrl.project];
          let mean = (min + max)/2;
 
-         if ((min < 0) && (max > 0) && (Math.abs(mean) < 0.2*Math.max(-min, max))) mean = 0; // if middle is around 0, use 0
+         if ((min < 0) && (max > 0) && (Math.abs(mean) < 0.2*Math.max(-min, max)))
+            mean = 0; // if middle is around 0, use 0
 
          this.ctrl.projectPos = mean;
       }
@@ -3574,7 +3576,8 @@ class TGeoPainter extends ObjectPainter {
       let promise = false;
 
       if ((obj._typename === clTList) || (obj._typename === clTObjArray)) {
-         if (!obj.arr) return false;
+         if (!obj.arr)
+            return false;
          const parr = [];
          for (let n = 0; n < obj.arr.length; ++n) {
             const sobj = obj.arr[n];
@@ -3666,7 +3669,8 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary drawing TGeoTrack */
    drawGeoTrack(track, itemname) {
-      if (!track?.fNpoints) return false;
+      if (!track?.fNpoints)
+         return false;
 
       const linewidth = browser.isWin ? 1 : (track.fLineWidth || 1), // line width not supported on windows
             color = getColor(track.fLineColor) || '#ff00ff',
@@ -3704,7 +3708,8 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary drawing TPolyLine3D */
    drawPolyLine(line, itemname) {
-      if (!line) return false;
+      if (!line)
+         return false;
 
       const linewidth = browser.isWin ? 1 : (line.fLineWidth || 1),
             color = getColor(line.fLineColor) || '#ff00ff',
@@ -3740,7 +3745,8 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Drawing TEveTrack */
    drawEveTrack(track, itemname) {
-      if (!track || (track.fN <= 0)) return false;
+      if (!track || (track.fN <= 0))
+         return false;
 
       const linewidth = browser.isWin ? 1 : (track.fLineWidth || 1),
             color = getColor(track.fLineColor) || '#ff00ff',
@@ -3807,7 +3813,8 @@ class TGeoPainter extends ObjectPainter {
    drawExtraShape(obj, itemname) {
       // eslint-disable-next-line no-use-before-define
       const mesh = build(obj);
-      if (!mesh) return false;
+      if (!mesh)
+         return false;
 
       mesh.geo_name = itemname;
       mesh.geo_object = obj;
@@ -3972,10 +3979,8 @@ class TGeoPainter extends ObjectPainter {
 
       // array for descriptors for each node
       // if array too large (>1M), use JS object while only ~1K nodes are expected to be used
-      if (recreate) {
-         // if (draw_msg.kind !== 'draw') return false;
+      if (recreate)
          nodes = (draw_msg.numnodes > 1e6) ? { length: draw_msg.numnodes } : new Array(draw_msg.numnodes); // array for all nodes
-      }
 
       draw_msg.nodes.forEach(node => {
          node = ClonedNodes.formatServerElement(node);
@@ -5266,7 +5271,8 @@ class TGeoPainter extends ObjectPainter {
    performResize(width, height) {
       if ((this.#scene_width === width) && (this.#scene_height === height))
          return false;
-      if ((width < 10) || (height < 10)) return false;
+      if ((width < 10) || (height < 10))
+         return false;
 
       this.#scene_width = width;
       this.#scene_height = height;
@@ -5608,7 +5614,8 @@ function createGeoPainter(dom, obj, opt) {
 /** @summary provide menu for geo object
   * @private */
 function provideMenu(menu, item, hpainter) {
-   if (!item._geoobj) return false;
+   if (!item._geoobj)
+      return false;
 
    const obj = item._geoobj, vol = item._volume,
          iseve = ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract));
@@ -5768,7 +5775,8 @@ function expandGeoObject(parent, obj) {
          iseve = ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract)),
          isoverlap = (obj._typename === clTGeoOverlap);
 
-   if (!isnode && !isvolume && !ismanager && !iseve && !isoverlap) return false;
+   if (!isnode && !isvolume && !ismanager && !iseve && !isoverlap)
+      return false;
 
    if (parent._childs)
       return true;

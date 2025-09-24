@@ -253,11 +253,13 @@ class RAxisPainter extends RObjectPainter {
       };
 
       handle.next = function(doround) {
-         if (this.nminor >= this.minor.length) return false;
+         if (this.nminor >= this.minor.length)
+            return false;
 
          this.tick = this.minor[this.nminor++];
          this.grpos = this.func(this.tick);
-         if (doround) this.grpos = Math.round(this.grpos);
+         if (doround)
+            this.grpos = Math.round(this.grpos);
          this.kind = 3;
 
          if ((this.nmiddle < this.middle.length) && (Math.abs(this.grpos - this.func(this.middle[this.nmiddle])) < 1)) {
@@ -382,10 +384,12 @@ class RAxisPainter extends RObjectPainter {
    /** @summary Used to move axis labels instead of zooming
      * @private */
    processLabelsMove(arg, pos) {
-      if (this.optionUnlab || !this.axis_g) return false;
+      if (this.optionUnlab || !this.axis_g)
+         return false;
 
       const label_g = this.axis_g.select('.axis_labels');
-      if (!label_g || (label_g.size() !== 1)) return false;
+      if (!label_g || (label_g.size() !== 1))
+         return false;
 
       if (arg === 'start') {
          // no moving without labels

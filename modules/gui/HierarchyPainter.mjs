@@ -251,7 +251,8 @@ function listHierarchy(folder, lst) {
 /** @summary Create hierarchy of TKey lists in file or sub-directory
   * @private */
 function keysHierarchy(folder, keys, file, dirname) {
-   if (keys === undefined) return false;
+   if (keys === undefined)
+      return false;
 
    folder._childs = [];
 
@@ -1069,7 +1070,8 @@ class HierarchyPainter extends BasePainter {
                        : createMenu().then(menu => menu.showCommandArgsDialog(hitem._name, cmdargs));
 
       return promise.then(args => {
-         if (args === null) return false;
+         if (args === null)
+            return false;
 
          let urlargs = '';
          for (let k = 0; k < args.length; ++k)
@@ -1366,7 +1368,8 @@ class HierarchyPainter extends BasePainter {
       const hitem = h || this.h;
 
       if (hitem._childs === undefined) {
-         if (!isopen) return false;
+         if (!isopen)
+            return false;
 
          if (this.with_icons) {
             // in normal hierarchy check precisely if item can be expand
@@ -1567,7 +1570,8 @@ class HierarchyPainter extends BasePainter {
          hitem = this.findItem(hitem);
 
       const name = hitem ? this.itemFullName(hitem) : '';
-      if (!name) return false;
+      if (!name)
+         return false;
 
       let itm = hitem, need_refresh = false;
 
@@ -1583,7 +1587,8 @@ class HierarchyPainter extends BasePainter {
 
       return promise.then(() => {
          const d3cont = this.selectDom().select(`[item='${name}']`);
-         if (d3cont.empty()) return false;
+         if (d3cont.empty())
+            return false;
          d3cont.node().scrollIntoView();
          return true;
       });
@@ -2916,7 +2921,8 @@ class HierarchyPainter extends BasePainter {
    /** @summary Create list of files for specified directory */
    async listServerDir(dirname) {
       return httpRequest(dirname, 'text').then(res => {
-         if (!res) return false;
+         if (!res)
+            return false;
          const h = { _name: 'Files', _kind: kTopFolder, _childs: [], _isopen: true }, fmap = {};
          let p = 0;
          while (p < res.length) {
@@ -2938,7 +2944,8 @@ class HierarchyPainter extends BasePainter {
                   _click_action: kExpand, _more: true, _obj: {},
                   _expand: item => {
                      return openFile(item._url).then(file => {
-                        if (!file) return false;
+                        if (!file)
+                           return false;
                         delete item._exapnd;
                         delete item._more;
                         delete item._click_action;

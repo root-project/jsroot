@@ -522,7 +522,8 @@ class TCanvasPainter extends TPadPainter {
 
    /** @summary Returns true if GED is present on the canvas */
    hasGed() {
-      if (this.testUI5()) return false;
+      if (this.testUI5())
+         return false;
       return this.brlayout?.hasContent() ?? false;
    }
 

@@ -712,11 +712,13 @@ class TAxisPainter extends ObjectPainter {
       };
 
       handle.next = function(doround) {
-         if (this.nminor >= this.minor.length) return false;
+         if (this.nminor >= this.minor.length)
+            return false;
 
          this.tick = this.minor[this.nminor++];
          this.grpos = this.func(this.tick);
-         if (doround) this.grpos = Math.round(this.grpos);
+         if (doround)
+            this.grpos = Math.round(this.grpos);
          this.kind = 3;
 
          if ((this.nmiddle < this.middle.length) && (Math.abs(this.grpos - this.func(this.middle[this.nmiddle])) < 1)) {

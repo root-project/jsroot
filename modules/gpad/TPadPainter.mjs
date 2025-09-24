@@ -2301,7 +2301,8 @@ class TPadPainter extends ObjectPainter {
    /** @summary returns actual ranges in the pad, which can be applied to the server
      * @private */
    getPadRanges(r) {
-      if (!r) return false;
+      if (!r)
+         return false;
 
       const fp = this.getFramePainter(),
             p = this.getPadSvg();

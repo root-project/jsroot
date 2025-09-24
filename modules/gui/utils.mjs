@@ -495,7 +495,8 @@ function saveSettings(expires = 365, name = 'settings') {
   * @private */
 function readSettings(only_check = false, name = 'settings') {
    const s = readLocalStorage(name);
-   if (!s) return false;
+   if (!s)
+      return false;
    if (!only_check)
       Object.assign(settings, s);
    return true;
@@ -515,7 +516,8 @@ function saveStyle(expires = 365, name = 'style') {
   * @private */
 function readStyle(only_check = false, name = 'style') {
    const s = readLocalStorage(name);
-   if (!s) return false;
+   if (!s)
+      return false;
    if (!only_check)
       Object.assign(gStyle, s);
    return true;

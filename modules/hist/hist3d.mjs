@@ -1697,7 +1697,8 @@ function drawBinsLego(painter, is_v7 = false) {
       if (binz2 < binz1)
          [binz1, binz2] = [binz2, binz1];
 
-      if ((binz1 >= zmax) || (binz2 < zmin)) return false;
+      if ((binz1 >= zmax) || (binz2 < zmin))
+         return false;
 
       if (test_cutg &&
          !test_cutg.IsInside(histo.fXaxis.GetBinCoord(ii + 0.5), histo.fYaxis.GetBinCoord(jj + 0.5)))
@@ -2016,7 +2017,8 @@ function drawBinsError3D(painter, is_v7 = false) {
 
    const check_skip_min = () => {
        // return true if minimal histogram value should be skipped
-       if (painter.options.Zero || (zmin > 0)) return false;
+       if (painter.options.Zero || (zmin > 0))
+         return false;
        return !painter.options.ShowEmpty;
    };
 

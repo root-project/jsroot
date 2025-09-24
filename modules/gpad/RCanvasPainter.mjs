@@ -448,10 +448,12 @@ class RCanvasPainter extends RPadPainter {
    /** @summary Process reply from request to RDrawable */
    processDrawableReply(msg) {
       const reply = parse(msg);
-      if (!reply?.reqid) return false;
+      if (!reply?.reqid)
+         return false;
 
       const req = this.#submreq[reply.reqid];
-      if (!req) return false;
+      if (!req)
+         return false;
 
       // remove reference first
       this.#submreq[reply.reqid] = undefined;
@@ -526,7 +528,8 @@ class RCanvasPainter extends RPadPainter {
 
    /** @summary returns true when event status area exist for the canvas */
    hasEventStatus() {
-      if (this.testUI5()) return false;
+      if (this.testUI5())
+         return false;
       if (this.brlayout)
          return this.brlayout.hasStatus();
       const hp = getHPainter();

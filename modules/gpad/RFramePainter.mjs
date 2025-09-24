@@ -987,7 +987,8 @@ class RFramePainter extends RObjectPainter {
          req.values[indx*2] = req.values[indx*2+1] = -1;
       }
 
-      if (!changed) return false;
+      if (!changed)
+         return false;
 
       if (interactive)
          this.zoomChangedInteractive(name, interactive);

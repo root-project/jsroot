@@ -868,7 +868,8 @@ class FrameInteractive extends TooltipHandler {
       let key = evnt.key;
 
       if (!settings.HandleKeys || main.empty() || (this.isEnabledKeys() === false) ||
-          (getActivePad() !== pp) || (allowed.indexOf(key) < 0)) return false;
+          (getActivePad() !== pp) || (allowed.indexOf(key) < 0))
+          return false;
 
       if (evnt.shiftKey) key = `Shift ${key}`;
       if (evnt.altKey) key = `Alt ${key}`;
