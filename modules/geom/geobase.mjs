@@ -79,8 +79,8 @@ function testGeoBit(volume, f) {
 /** @summary Set fGeoAtt bit
   * @private */
 function setGeoBit(volume, f, value) {
-   if (volume.fGeoAtt === undefined) return;
-   volume.fGeoAtt = value ? (volume.fGeoAtt | f) : (volume.fGeoAtt & ~f);
+   if (volume.fGeoAtt !== undefined)
+      volume.fGeoAtt = value ? (volume.fGeoAtt | f) : (volume.fGeoAtt & ~f);
 }
 
 /** @summary Toggle fGeoAttBit
@@ -112,9 +112,10 @@ const _warn_msgs = {};
 /** @summary method used to avoid duplication of warnings
  * @private */
 function geoWarn(msg) {
-   if (_warn_msgs[msg] !== undefined) return;
-   _warn_msgs[msg] = true;
-   console.warn(msg);
+   if (_warn_msgs[msg] === undefined) {
+      _warn_msgs[msg] = true;
+      console.warn(msg);
+   }
 }
 
 /** @summary Analyze TGeo node kind
@@ -151,7 +152,8 @@ function getObjectName(obj) {
   * @private */
 function checkDuplicates(parent, chlds) {
    if (parent) {
-      if (parent.$geo_checked) return;
+      if (parent.$geo_checked)
+         return;
       parent.$geo_checked = true;
    }
 
@@ -424,7 +426,8 @@ class PolygonsCreator {
 
    /** @summary Stop polygon */
    stopPolygon() {
-      if (!this.multi) return;
+      if (!this.multi)
+         return;
       this.multi = 0;
       console.error('Polygon should be already closed at this moment');
    }
@@ -2545,7 +2548,8 @@ class ClonedNodes {
          kind = getNodeKind(obj);
       }
 
-      if ((kind < 0) || !obj || ('_refid' in obj)) return;
+      if ((kind < 0) || !obj || ('_refid' in obj))
+         return;
 
       obj._refid = this.origin.length;
       this.origin.push(obj);
@@ -3926,7 +3930,8 @@ function produceRenderOrder(toplevel, origin, method, clones) {
 
    function traverse(obj, lvl, arr) {
       // traverse hierarchy and extract all children of given level
-      // if (obj.$jsroot_depth === undefined) return;
+      // if (obj.$jsroot_depth === undefined)
+      //    return;
 
       if (!obj.children)
          return;

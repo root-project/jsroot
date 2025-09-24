@@ -184,7 +184,8 @@ function provideVisStyle(obj) {
 /** @summary update icons
   * @private */
 function updateBrowserIcons(obj, hpainter) {
-   if (!obj || !hpainter) return;
+   if (!obj || !hpainter)
+      return;
 
    hpainter.forEachItem(m => {
       // update all items with that volume
@@ -249,10 +250,11 @@ class Toolbar {
 
    /** @summary change brightness */
    changeBrightness(bright) {
-      if (this.bright === bright) return;
-      this.element.selectAll('*').remove();
-      this.bright = bright;
-      this.createButtons();
+      if (this.bright !== bright) {
+         this.element.selectAll('*').remove();
+         this.bright = bright;
+         this.createButtons();
+      }
    }
 
    /** @summary cleanup toolbar */
@@ -286,7 +288,8 @@ class GeoDrawingControl extends InteractiveControl {
    /** @summary draw special */
    drawSpecial(col, indx) {
       const c = this.mesh;
-      if (!c?.material) return;
+      if (!c?.material)
+         return;
 
       if (c.isInstancedMesh) {
          if (c._highlight_mesh) {
@@ -701,7 +704,8 @@ class TGeoPainter extends ObjectPainter {
                evnt.preventDefault();
                evnt.stopPropagation();
 
-               if (closeMenu()) return;
+               if (closeMenu())
+                  return;
 
                createMenu(evnt, this).then(menu => {
                    menu.painter.fillContextMenu(menu);
@@ -732,7 +736,8 @@ class TGeoPainter extends ObjectPainter {
 
       navigator.getVRDisplays().then(displays => {
          const vrDisplay = displays[0];
-         if (!vrDisplay) return;
+         if (!vrDisplay)
+            return;
          this.#renderer.vr.setDevice(vrDisplay);
          this.#vrDisplay = vrDisplay;
          if (vrDisplay.stageParameters)
@@ -773,7 +778,8 @@ class TGeoPainter extends ObjectPainter {
    updateVRControllersList() {
       const gamepads = navigator.getGamepads && navigator.getGamepads();
       // Has controller list changed?
-      if (this.#vrControllers && (gamepads.length === this.#vrControllers.length)) return;
+      if (this.#vrControllers && (gamepads.length === this.#vrControllers.length))
+         return;
       // Hide meshes.
       this.#controllersMeshes.forEach(mesh => { mesh.visible = false; });
       this.#vrControllers = [];
@@ -1297,7 +1303,8 @@ class TGeoPainter extends ObjectPainter {
 
       this.#toplevel?.traverse(node => {
          // ignore all kind of extra elements
-         if (node.material?.inherentArgs === undefined) return;
+         if (node.material?.inherentArgs === undefined)
+            return;
 
          if (node.material[name] !== undefined) {
             node.material[name] = value;
@@ -1315,7 +1322,8 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Method should be called when transformation parameters were changed */
    changedTransformation(arg) {
-      if (!this.#toplevel) return;
+      if (!this.#toplevel)
+         return;
 
       const ctrl = this.ctrl,
             translation = new THREE.Matrix4(),
@@ -1441,7 +1449,8 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Display control GUI */
    showControlGui(on) {
       // while complete geo drawing can be removed until dat is loaded - just check and ignore callback
-      if (!this.ctrl) return;
+      if (!this.ctrl)
+         return;
 
       if (on === 'toggle')
          on = !this.#gui;
@@ -1606,7 +1615,8 @@ class TGeoPainter extends ObjectPainter {
          material_props = [];
 
          const props = this.ctrl.getMaterialCfg()?.props;
-         if (!props) return;
+         if (!props)
+            return;
 
          props.forEach(prop => {
             const f = material.add(this.ctrl, prop.name, prop.min, prop.max, prop.step).onChange(() => {
@@ -2154,7 +2164,8 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Add orbit control */
    addOrbitControls() {
-      if (this.#controls || !this.#webgl || this.isBatchMode() || this.#superimpose || isNodeJs()) return;
+      if (this.#controls || !this.#webgl || this.isBatchMode() || this.#superimpose || isNodeJs())
+         return;
 
       if (!this.getCanvPainter())
          this.setTooltipAllowed(settings.Tooltip);
@@ -2170,7 +2181,8 @@ class TGeoPainter extends ObjectPainter {
 
       this.#controls.processMouseMove = intersects => {
          // painter already cleaned up, ignore any incoming events
-         if (!this.ctrl || !this.#controls) return;
+         if (!this.ctrl || !this.#controls)
+            return;
 
          let active_mesh = null, tooltip = null, resolve = null, names = [], geo_object, geo_index, geo_stack;
 
@@ -2230,7 +2242,8 @@ class TGeoPainter extends ObjectPainter {
 
       this.#controls.processDblClick = () => {
          // painter already cleaned up, ignore any incoming events
-         if (!this.ctrl || !this.#controls) return;
+         if (!this.ctrl || !this.#controls)
+            return;
 
          if (this.#last_manifest) {
             this.#last_manifest.wireframe = !this.#last_manifest.wireframe;
@@ -2525,7 +2538,8 @@ class TGeoPainter extends ObjectPainter {
          this.#more_nodes = undefined;
       }
 
-      if (!nodes) return;
+      if (!nodes)
+         return;
 
       const real_nodes = [];
       for (let k = 0; k < nodes.length; ++k) {
@@ -2560,7 +2574,8 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Extend custom geometry bounding box */
    extendCustomBoundingBox(box) {
-      if (!box) return;
+      if (!box)
+         return;
       if (!this.#custom_bounding_box)
          this.#custom_bounding_box = new THREE.Box3().makeEmpty();
 
@@ -2627,17 +2642,15 @@ class TGeoPainter extends ObjectPainter {
       }
 
       toplevel.traverse(mesh => {
-         if (!(mesh instanceof THREE.Mesh) || !mesh.stack) return;
+         if (!(mesh instanceof THREE.Mesh) || !mesh.stack)
+            return;
 
          const geom2 = projectGeometry(mesh.geometry, mesh.parent.absMatrix || mesh.parent.matrixWorld, this.ctrl.project, this.ctrl.projectPos, mesh._flippedMesh);
-
-         if (!geom2) return;
-
-         const mesh2 = new THREE.Mesh(geom2, mesh.material.clone());
-
-         this.#toplevel.add(mesh2);
-
-         mesh2.stack = mesh.stack;
+         if (geom2) {
+            const mesh2 = new THREE.Mesh(geom2, mesh.material.clone());
+            this.#toplevel.add(mesh2);
+            mesh2.stack = mesh.stack;
+         }
       });
 
       return true;
@@ -2903,10 +2916,12 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Create png image with drawing snapshot. */
    createSnapshot(filename) {
-      if (!this.#renderer) return;
+      if (!this.#renderer)
+         return;
       this.render3D(0);
       const dataUrl = this.#renderer.domElement.toDataURL('image/png');
-      if (filename === 'asis') return dataUrl;
+      if (filename === 'asis')
+         return dataUrl;
       dataUrl.replace('image/png', 'image/octet-stream');
       const doc = getDocument(),
             link = doc.createElement('a');
@@ -3199,7 +3214,8 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Specifies camera position as rotation around geometry center */
    setCameraPosition(rotatey, rotatez, zoom) {
-      if (!this.ctrl) return;
+      if (!this.ctrl)
+         return;
       this.ctrl.rotatey = rotatey || 0;
       this.ctrl.rotatez = rotatez || 0;
       let preserve_zoom = false;
@@ -3330,7 +3346,8 @@ class TGeoPainter extends ObjectPainter {
       let last = new Date();
 
       const animate = () => {
-         if (!this.#renderer || !this.ctrl) return;
+         if (!this.#renderer || !this.ctrl)
+            return;
 
          const current = new Date();
 
@@ -3350,8 +3367,7 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary called at the end of scene drawing */
-   completeScene() {
-   }
+   completeScene() { }
 
    /** @summary Drawing with 'count' option
      * @desc Scans hierarchy and check for unique nodes
@@ -3465,7 +3481,8 @@ class TGeoPainter extends ObjectPainter {
       const obj = hitem._obj;
 
       // let's highlight tracks and hits only for the time being
-      if (!obj || (obj._typename !== clTEveTrack && obj._typename !== clTEvePointSet && obj._typename !== clTPolyMarker3D)) return;
+      if (!obj || (obj._typename !== clTEveTrack && obj._typename !== clTEvePointSet && obj._typename !== clTPolyMarker3D))
+         return;
 
       this.highlightMesh(null, 0x00ff00, on ? obj : null);
    }
@@ -3876,7 +3893,8 @@ class TGeoPainter extends ObjectPainter {
                       setInvisibleAll(this.fVolume, flag);
                    },
                    Draw() {
-                      if (!this.found || !this.fVolume) return;
+                      if (!this.found || !this.fVolume)
+                        return;
                       result.obj = this.found.node;
                       result.prefix = this.found.item;
                       console.log(`Select volume for drawing ${this.fVolume.fName} ${result.prefix}`);
@@ -4136,7 +4154,8 @@ class TGeoPainter extends ObjectPainter {
          return;
 
       const main = this.#renderer.domElement.parentNode;
-      if (!main) return;
+      if (!main)
+         return;
 
       let info = main.querySelector('.geo_info');
 
@@ -4157,7 +4176,8 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Reentrant method to perform geometry drawing step by step */
    continueDraw() {
       // nothing to do - exit
-      if (this.isStage(stageInit)) return;
+      if (this.isStage(stageInit))
+         return;
 
       const tm0 = new Date().getTime(),
             interval = this.#first_drawing ? 1000 : 200;
@@ -4221,7 +4241,8 @@ class TGeoPainter extends ObjectPainter {
       if (!force && this.#last_camera_position) {
          // if camera position does not changed a lot, ignore such change
          const dist = this.#last_camera_position.distanceTo(origin);
-         if (dist < (this.#overall_size || 1000)*1e-4) return;
+         if (dist < (this.#overall_size || 1000)*1e-4)
+            return;
       }
 
       this.#last_camera_position = origin; // remember current camera position
@@ -4874,8 +4895,10 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Set auto rotate mode */
    setAutoRotate(on) {
-      if (this.ctrl.project) return;
-      if (on !== undefined) this.ctrl.rotate = on;
+      if (this.ctrl.project)
+         return;
+      if (on !== undefined)
+         this.ctrl.rotate = on;
       this.autorotate(2.5);
    }
 
@@ -4905,7 +4928,8 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Should be called when depth test flag is changed */
    changedDepthTest() {
-      if (!this.#toplevel) return;
+      if (!this.#toplevel)
+         return;
       const flag = this.ctrl.depthTest;
       this.#toplevel.traverse(node => {
          if (node instanceof THREE.Mesh)
@@ -4926,7 +4950,8 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Assign clipping attributes to the meshes - supported only for webgl */
    updateClipping(without_render, force_traverse) {
       // do not try clipping with SVG renderer
-      if (this.#renderer?.jsroot_render3d === constants.Render3D.SVG) return;
+      if (this.#renderer?.jsroot_render3d === constants.Render3D.SVG)
+         return;
 
       if (!this.#clip_planes) {
          this.#clip_planes = [new THREE.Plane(new THREE.Vector3(1, 0, 0), 0),
@@ -5108,7 +5133,8 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary Remove already drawn node. Used by geom viewer */
    removeDrawnNode(nodeid) {
-      if (!this.#draw_nodes) return;
+      if (!this.#draw_nodes)
+         return;
 
       const new_nodes = [];
 

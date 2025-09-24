@@ -293,7 +293,8 @@ class Node {
       this.polygons = [];
       this.front = this.back = undefined;
 
-      if (!polygons) return;
+      if (!polygons)
+         return;
 
       this.divider = polygons[0].clone();
 
@@ -621,7 +622,8 @@ class Geometry {
    }
 
    tryToCompress(polygons) {
-      if (this.maxid === undefined) return;
+      if (this.maxid === undefined)
+         return;
 
       const arr = [];
       let parts, foundpair,
