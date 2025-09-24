@@ -23,7 +23,8 @@ class TH3Painter extends THistPainter {
    /** @summary Scan TH3 histogram content */
    scanContent(when_axis_changed) {
       // no need to re-scan histogram while result does not depend from axis selection
-      if (when_axis_changed && this.nbinsx && this.nbinsy && this.nbinsz) return;
+      if (when_axis_changed && this.nbinsx && this.nbinsy && this.nbinsz)
+         return;
 
       const histo = this.getHisto();
 
@@ -666,7 +667,8 @@ class TH3Painter extends THistPainter {
    /** @summary Fill pad toolbar with TH3-related functions */
    fillToolbar() {
       const pp = this.getPadPainter();
-      if (!pp) return;
+      if (!pp)
+         return;
 
       pp.addPadButton('auto_zoom', 'Unzoom all axes', 'ToggleZoom', 'Ctrl *');
       if (this.draw_content)
@@ -693,7 +695,8 @@ class TH3Painter extends THistPainter {
             histo = this.getObject();
       let i, j, k;
 
-      if ((i1 === i2) || (j1 === j2) || (k1 === k2)) return;
+      if ((i1 === i2) || (j1 === j2) || (k1 === k2))
+         return;
 
       // first find minimum
       let min = histo.getBinContent(i1+1, j1+1, k1+1);
@@ -703,7 +706,8 @@ class TH3Painter extends THistPainter {
                min = Math.min(min, histo.getBinContent(i+1, j+1, k+1));
          }
       }
-      if (min > 0) return; // if all points positive, no chance for auto-scale
+      if (min > 0)
+         return; // if all points positive, no chance for auto-scale
 
       let ileft = i2, iright = i1, jleft = j2, jright = j1, kleft = k2, kright = k1;
 

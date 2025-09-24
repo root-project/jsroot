@@ -203,15 +203,16 @@ class JSRootMenu {
    /** @summary Add color selection menu entries
      * @protected */
    addColorMenu(name, value, set_func, fill_kind) {
-      if (value === undefined) return;
+      if (value === undefined)
+         return;
       const useid = !isStr(value);
       this.sub(name, () => {
          this.input('Enter color ' + (useid ? '(only id number)' : '(name or id)'), value, useid ? 'int' : 'text', useid ? 0 : undefined, useid ? 9999 : undefined).then(col => {
             const id = parseInt(col);
             if (Number.isInteger(id) && getColor(id))
                col = getColor(id);
-             else
-               if (useid) return;
+             else if (useid)
+               return;
 
             set_func(useid ? id : col);
          });
@@ -246,7 +247,8 @@ class JSRootMenu {
    /** @summary Add size selection menu entries
      * @protected */
    addSizeMenu(name, min, max, step, size_value, set_func, title) {
-      if (size_value === undefined) return;
+      if (size_value === undefined)
+         return;
 
       let values = [], miss_current = false;
       if (isObject(step)) {
@@ -403,7 +405,6 @@ class JSRootMenu {
    /** @summary Add RColor selection menu entries
      * @protected */
    addRColorMenu(name, value, set_func) {
-      // if (value === undefined) return;
       const colors = ['default', 'black', 'white', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan'];
 
       this.sub(name, () => {
@@ -547,7 +548,8 @@ class JSRootMenu {
       this.sub(name, () => {
          this.input('Enter align like 12 or 31', value).then(arg => {
             const id = parseInt(arg);
-            if ((id < 11) || (id > 33)) return;
+            if ((id < 11) || (id > 33))
+               return;
             const h = Math.floor(id/10), v = id % 10;
             if ((h > 0) && (h < 4) && (v > 0) && (v < 4)) set_func(id);
          });
@@ -722,7 +724,8 @@ class JSRootMenu {
 
       if (frame_painter && (axis_painter?.kind === kAxisLabels) && (faxis.fNbins > 20)) {
          this.add('Find label', () => this.input('Label id').then(id => {
-            if (!id) return;
+            if (!id)
+               return;
             for (let bin = 0; bin < faxis.fNbins; ++bin) {
                const lbl = axis_painter.formatLabels(bin);
                if (lbl === id)
@@ -1066,7 +1069,8 @@ class JSRootMenu {
 
       return new Promise(resolveFunc => {
          this.runModal(title, main_content, { btns: true, height: 150, width: 400 }).then(element => {
-            if (!element) return;
+            if (!element)
+               return;
             let val = element.querySelector('.jsroot_dlginp').value;
             if (kind === 'float') {
                val = Number.parseFloat(val);
@@ -1100,7 +1104,8 @@ class JSRootMenu {
 
       return new Promise(resolveFunc => {
          this.runModal(method.fClassName + '::' + method.fName, main_content, { btns: true, height: 100 + method.fArgs.length*60, width: 400, resizable: true }).then(element => {
-            if (!element) return;
+            if (!element)
+               return;
             let args = '';
 
             for (let k = 0; k < method.fArgs.length; ++k) {
@@ -1552,7 +1557,8 @@ class StandaloneMenu extends JSRootMenu {
          '</div></div>');
 
       modal.done = function(res) {
-         if (this._done) return;
+         if (this._done)
+            return;
          this._done = true;
          if (isFunc(this.call_back))
             this.call_back(res);

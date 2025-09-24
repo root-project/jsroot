@@ -68,9 +68,10 @@ function showProgress(msg, tmout, click_handle) {
   * therefore try several workarounds
   * @private */
 function closeCurrentWindow() {
-   if (typeof window === 'undefined') return;
-   window.close();
-   window.open('', '_self').close();
+   if (typeof window !== 'undefined') {
+      window.close();
+      window.open('', '_self').close();
+   }
 }
 
 /** @summary Tries to open ui5
@@ -290,7 +291,8 @@ const ToolbarIcons = {
   * @param {number} [delay] - one could specify delay after which resize event will be handled
   * @protected */
 function registerForResize(handle, delay) {
-   if (!handle || isBatchMode() || (typeof window === 'undefined') || (typeof document === 'undefined')) return;
+   if (!handle || isBatchMode() || (typeof window === 'undefined') || (typeof document === 'undefined'))
+      return;
 
    let myInterval = null, myDelay = delay || 300;
    if (myDelay < 20) myDelay = 20;
@@ -367,14 +369,16 @@ function addMoveHandler(painter, enabled = true, hover_handler = false) {
          if (this.moveStart)
             this.moveStart(pos[0], pos[1], evnt.sourceEvent);
       }.bind(painter)).on('drag', function(evnt) {
-         if (move_disabled) return;
+         if (move_disabled)
+            return;
          evnt.sourceEvent.preventDefault();
          evnt.sourceEvent.stopPropagation();
          not_changed = false;
          if (this.moveDrag)
             this.moveDrag(evnt.dx, evnt.dy, evnt.sourceEvent);
       }.bind(painter)).on('end', function(evnt) {
-         if (move_disabled) return;
+         if (move_disabled)
+            return;
          evnt.sourceEvent.preventDefault();
          evnt.sourceEvent.stopPropagation();
          if (this.moveEnd)

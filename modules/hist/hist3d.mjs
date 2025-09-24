@@ -187,7 +187,8 @@ function testAxisVisibility(camera, toplevel, fb = false, bb = false) {
       }
    }
 
-   if (!top) return;
+   if (!top)
+      return;
 
    if (!camera) {
       // this is case when axis drawing want to be removed
@@ -496,7 +497,8 @@ function create3DControl(fp) {
   * @private */
 function create3DScene(render3d, x3dscale, y3dscale, orthographic) {
    if (render3d === -1) {
-      if (!this.mode3d) return;
+      if (!this.mode3d)
+         return;
 
       if (!isFunc(this.clear3dCanvas)) {
          console.error(`Strange, why mode3d=${this.mode3d} is configured!!!!`);
@@ -1674,7 +1676,8 @@ function drawBinsLego(painter, is_v7 = false) {
          split_faces = (painter.options.Lego === 11) || (painter.options.Lego === 13), // split each layer on two parts
          use16indx = (histo.getBin(i2, j2) < 0xFFFF); // if bin ID fit into 16 bit, use smaller arrays for intersect indexes
 
-   if ((i1 >= i2) || (j1 >= j2)) return;
+   if ((i1 >= i2) || (j1 >= j2))
+      return;
 
    let zmin, zmax, i, j, k, vert, binz1, binz2, reduced, nobottom, notop,
        axis_zmin = fp.z_handle.getScaleMin(),
@@ -2060,7 +2063,8 @@ function drawBinsError3D(painter, is_v7 = false) {
       }
 
       if (loop === 0) {
-         if (nsegments === 0) return;
+         if (nsegments === 0)
+            return;
          lpos = new Float32Array(nsegments * 6);
          binindx = new Int32Array(nsegments / 3);
       }
@@ -2096,11 +2100,13 @@ function drawBinsContour3D(painter, realz = false, is_v7 = false) {
    buildHist2dContour(histo, handle, levels, palette,
       (colindx, xp, yp, iminus, iplus, ilevel) => {
           // ignore less than three points
-          if (iplus - iminus < 3) return;
+          if (iplus - iminus < 3)
+            return;
 
           if (realz) {
              layerz = fp.grz(levels[ilevel]);
-             if ((layerz < 0) || (layerz > 2*fp.size_z3d)) return;
+             if ((layerz < 0) || (layerz > 2*fp.size_z3d))
+               return;
           }
 
           for (let i=iminus; i<iplus; ++i) {
@@ -2125,7 +2131,8 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
    let handle = painter.prepareDraw({ rounding: false, use3d: true, extra: 1, middle: 0.5,
                                       cutg: isFunc(painter.options?.cutg?.IsInside) ? painter.options?.cutg : null });
-   if ((handle.i2 - handle.i1 < 2) || (handle.j2 - handle.j1 < 2)) return;
+   if ((handle.i2 - handle.i1 < 2) || (handle.j2 - handle.j1 < 2))
+      return;
 
    let ilevels = null, levels = null, palette = null;
 
@@ -2270,10 +2277,12 @@ function drawBinsSurf3D(painter, is_v7 = false) {
       buildHist2dContour(histo, handle, levels2, palette2,
          (colindx, xp, yp, iminus, iplus) => {
              // no need for duplicated point
-             if ((xp[iplus] === xp[iminus]) && (yp[iplus] === yp[iminus])) iplus--;
+             if ((xp[iplus] === xp[iminus]) && (yp[iplus] === yp[iminus]))
+               iplus--;
 
              // ignore less than three points
-             if (iplus - iminus < 3) return;
+             if (iplus - iminus < 3)
+               return;
 
              const pnts = [];
 

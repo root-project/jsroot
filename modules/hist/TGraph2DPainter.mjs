@@ -180,7 +180,8 @@ class TGraphDelaunay {
    // the size of the `alittlebit' parameter may help.
 
    FindAllTriangles() {
-      if (this.fAllTri) return;
+      if (this.fAllTri)
+         return;
 
       this.fAllTri = true;
 
@@ -1217,7 +1218,8 @@ class TGraph2DPainter extends ObjectPainter {
 
    drawTriangles(fp, graph, levels, palette) {
       const dulaunay = this.buildDelaunay(graph);
-      if (!dulaunay) return;
+      if (!dulaunay)
+         return;
 
       const main_grz = !fp.logz ? fp.grz : value => (value < fp.scale_zmin) ? -0.1 : fp.grz(value),
             o = this.getOptions(),
@@ -1247,9 +1249,7 @@ class TGraph2DPainter extends ObjectPainter {
 
             if (do_lines && use_triangle) {
                triangles.addLineSegment(coord[0], coord[1], coord[2], coord[3], coord[4], coord[5]);
-
                triangles.addLineSegment(coord[3], coord[4], coord[5], coord[6], coord[7], coord[8]);
-
                triangles.addLineSegment(coord[6], coord[7], coord[8], coord[0], coord[1], coord[2]);
             }
          }

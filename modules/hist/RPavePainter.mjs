@@ -245,14 +245,15 @@ class RPaveTextPainter extends RPavePainter {
    /** @summary draw RPaveText content */
    async drawContent() {
       const pavetext = this.getObject(),
-            textFont = this.v7EvalFont('text', { size: 12, color: 'black', align: 22 }),
+            nlines = pavetext?.fText.length;
+
+      if (!nlines)
+         return;
+
+      const textFont = this.v7EvalFont('text', { size: 12, color: 'black', align: 22 }),
             width = this.pave_width,
             height = this.pave_height,
-            nlines = pavetext.fText.length;
-
-      if (!nlines) return;
-
-      const stepy = height / nlines, margin_x = 0.02 * width;
+            stepy = height / nlines, margin_x = 0.02 * width;
 
       textFont.setSize(height/(nlines * 1.2));
 
