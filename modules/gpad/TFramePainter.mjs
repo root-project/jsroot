@@ -1592,7 +1592,8 @@ class FrameInteractive extends TooltipHandler {
                        .on('touchcancel.singleTouch', null)
                        .on('touchend.singleTouch', null);
 
-      if (evnt === null) return;
+      if (evnt === null)
+         return;
 
       if (Math.abs(this._shifting_dx) > 2 || Math.abs(this._shifting_dy) > 2)
          this.performScalesShift();
@@ -1745,9 +1746,9 @@ class TFramePainter extends FrameInteractive {
       if (!func) return;
 
       const pnts = [func(this.scale_xmin, this.scale_ymin),
-                   func(this.scale_xmin, this.scale_ymax),
-                   func(this.scale_xmax, this.scale_ymax),
-                   func(this.scale_xmax, this.scale_ymin)];
+                    func(this.scale_xmin, this.scale_ymax),
+                    func(this.scale_xmax, this.scale_ymax),
+                    func(this.scale_xmax, this.scale_ymin)];
       if (this.scale_xmin < 0 && this.scale_xmax > 0) {
          pnts.push(func(0, this.scale_ymin));
          pnts.push(func(0, this.scale_ymax));

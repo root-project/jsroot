@@ -35,7 +35,8 @@ class TH1Painter extends THistPainter {
    /** @summary Convert TH1K into normal binned histogram */
    convertTH1K() {
       const histo = this.getObject();
-      if (histo.fReady) return;
+      if (histo.fReady)
+         return;
 
       const arr = histo.fArray, entries = histo.fEntries; // array of values
       histo.fNcells = histo.fXaxis.fNbins + 2;

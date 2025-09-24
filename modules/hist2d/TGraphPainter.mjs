@@ -301,7 +301,8 @@ class TGraphPainter extends ObjectPainter {
    createBins() {
       const gr = this.getGraph(),
             o = this.getOptions();
-      if (!gr) return;
+      if (!gr)
+         return;
 
       let kind = 0, npoints = gr.fNpoints;
       if (this.#cutg && this.#cutg_lastsame)
@@ -603,7 +604,8 @@ class TGraphPainter extends ObjectPainter {
      * @desc Can be called several times */
    drawBins(funcs, options, draw_g, w, h, lineatt, fillatt, main_block) {
       const graph = this.getGraph();
-      if (!graph?.fNpoints) return;
+      if (!graph?.fNpoints)
+         return;
 
       let excl_width = 0, drawbins = null;
       // if markers or errors drawn - no need handle events for line drawing

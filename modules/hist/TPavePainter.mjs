@@ -1169,7 +1169,8 @@ class TPavePainter extends ObjectPainter {
       let doing_zoom = false, sel1 = 0, sel2 = 0, zoom_rect = null;
 
       const moveRectSel = evnt => {
-         if (!doing_zoom) return;
+         if (!doing_zoom)
+            return;
          evnt.preventDefault();
 
          const m = d3_pointer(evnt, this.getG().node());
@@ -1183,7 +1184,8 @@ class TPavePainter extends ObjectPainter {
                      .attr('width', Math.abs(sel2-sel1));
          }
       }, endRectSel = evnt => {
-         if (!doing_zoom) return;
+         if (!doing_zoom)
+            return;
 
          evnt.preventDefault();
          d3_select(window).on('mousemove.colzoomRect', null)
@@ -1198,7 +1200,8 @@ class TPavePainter extends ObjectPainter {
          this.getFramePainter().zoomSingle('z', Math.min(z1, z2), Math.max(z1, z2), true);
       }, startRectSel = evnt => {
          // ignore when touch selection is activated
-         if (doing_zoom) return;
+         if (doing_zoom)
+            return;
          doing_zoom = true;
 
          evnt.preventDefault();
@@ -1328,16 +1331,18 @@ class TPavePainter extends ObjectPainter {
 
          menu.add('SetStatFormat', () => {
             menu.input('Enter StatFormat', pave.fStatFormat).then(fmt => {
-               if (!fmt) return;
-               pave.fStatFormat = fmt;
-               this.interactiveRedraw(true, `exec:SetStatFormat("${fmt}")`);
+               if (fmt) {
+                  pave.fStatFormat = fmt;
+                  this.interactiveRedraw(true, `exec:SetStatFormat("${fmt}")`);
+               }
             });
          });
          menu.add('SetFitFormat', () => {
             menu.input('Enter FitFormat', pave.fFitFormat).then(fmt => {
-               if (!fmt) return;
-               pave.fFitFormat = fmt;
-               this.interactiveRedraw(true, `exec:SetFitFormat("${fmt}")`);
+               if (fmt) {
+                  pave.fFitFormat = fmt;
+                  this.interactiveRedraw(true, `exec:SetFitFormat("${fmt}")`);
+               }
             });
          });
          menu.sub('SetOptStat', () => {

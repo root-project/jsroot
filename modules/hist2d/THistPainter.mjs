@@ -1621,7 +1621,8 @@ class THistPainter extends ObjectPainter {
    /** @summary Add function to histogram list of functions */
    addFunction(obj, asfirst) {
       const histo = this.getHisto();
-      if (!histo || !obj) return;
+      if (!histo || !obj)
+         return;
 
       if (!histo.fFunctions)
          histo.fFunctions = create(clTList);
@@ -1771,14 +1772,16 @@ class THistPainter extends ObjectPainter {
    changeUserRange(menu, arg) {
       const histo = this.getHisto(),
             taxis = histo ? histo[`f${arg}axis`] : null;
-      if (!taxis) return;
+      if (!taxis)
+         return;
 
       let curr = `[1,${taxis.fNbins}]`;
       if (taxis.TestBit(EAxisBits.kAxisRange))
           curr = `[${taxis.fFirst},${taxis.fLast}]`;
 
       menu.input(`Enter user range for axis ${arg} like [1,${taxis.fNbins}]`, curr).then(res => {
-         if (!res) return;
+         if (!res)
+            return;
          res = JSON.parse(res);
          if (!res || (res.length !== 2))
             return;
@@ -1980,7 +1983,8 @@ class THistPainter extends ObjectPainter {
    /** @summary Fill pad toolbar with histogram-related functions */
    fillToolbar(not_shown) {
       const pp = this.getPadPainter();
-      if (!pp) return;
+      if (!pp)
+         return;
 
       pp.addPadButton('auto_zoom', 'Toggle between unzoom and autozoom-in', 'ToggleZoom', 'Ctrl *');
       pp.addPadButton('arrow_right', 'Toggle log x', 'ToggleLogX', 'PageDown');

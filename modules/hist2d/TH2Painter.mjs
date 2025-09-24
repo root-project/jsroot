@@ -284,7 +284,8 @@ class Triangles3DHandler {
       };
 
       this.createBuffers = function() {
-         if (!this.loop) return;
+         if (!this.loop)
+            return;
 
          for (let lvl = 1; lvl < levels.length; ++lvl) {
             if (nfaces[lvl]) {
@@ -299,7 +300,8 @@ class Triangles3DHandler {
       };
 
       this.addLineSegment = function(x1, y1, z1, x2, y2, z2) {
-         if (!this.dolines) return;
+         if (!this.dolines)
+            return;
          const side1 = checkSide(z1, this.grz_min, this.grz_max, 0),
              side2 = checkSide(z2, this.grz_min, this.grz_max, 0);
          if ((side1 === side2) && side1)
@@ -377,7 +379,8 @@ class Triangles3DHandler {
 
 
             if (side_sum === 3) continue;
-            if (side_sum === -3) return;
+            if (side_sum === -3)
+               return;
 
             if (!this.loop) {
                let npnts = Math.abs(side2-side1) + Math.abs(side3-side2) + Math.abs(side1-side3);
@@ -385,7 +388,8 @@ class Triangles3DHandler {
                if (side2 === 0) ++npnts;
                if (side3 === 0) ++npnts;
 
-               if ((npnts === 1) || (npnts === 2)) console.error(`FOUND npnts = ${npnts}`);
+               if ((npnts === 1) || (npnts === 2))
+                  console.error(`FOUND npnts = ${npnts}`);
 
                if (npnts > 2) {
                   if (nfaces[lvl] === undefined)
@@ -641,7 +645,8 @@ class TH2Painter extends THistPainter {
          return false;
 
       if (jj2 === undefined) {
-         if (!this.tt_handle) return;
+         if (!this.tt_handle)
+            return;
          ii1 = Math.round((this.tt_handle.i1 + this.tt_handle.i2)/2); ii2 = ii1+1;
          jj1 = Math.round((this.tt_handle.j1 + this.tt_handle.j2)/2); jj2 = jj1+1;
       }
@@ -2367,7 +2372,8 @@ class TH2Painter extends THistPainter {
 
        produceCandlePoint = (bin_indx, grx_left, grx_right, xindx1, xindx2) => {
          const res = extractQuantiles(xx, proj, prob);
-         if (!res) return;
+         if (!res)
+            return;
 
          const pnt = { bin: bin_indx, swapXY, fBoxDown: res.quantiles[1], fMedian: res.quantiles[2], fBoxUp: res.quantiles[3] },
                iqr = pnt.fBoxUp - pnt.fBoxDown;
