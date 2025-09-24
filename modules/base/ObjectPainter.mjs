@@ -935,7 +935,8 @@ class ObjectPainter extends BasePainter {
 
       if ((name === undefined) && (title === undefined)) {
          const obj = this.getObject();
-         if (!obj) return;
+         if (!obj)
+            return;
          name = this.getItemName() || obj.fName;
          title = obj.fTitle || obj._typename;
          info = obj._typename;
@@ -1404,7 +1405,8 @@ class ObjectPainter extends BasePainter {
                cp = execp.getCanvPainter(),
                item = menu.exec_items[parseInt(arg)];
 
-         if (!item?.fName) return;
+         if (!item?.fName)
+            return;
 
          // this is special entry, produced by TWebMenuItem, which recognizes editor entries itself
          if (item.fExec === 'Show:Editor') {
@@ -1502,7 +1504,8 @@ class ObjectPainter extends BasePainter {
          let did_resolve = false;
 
          function handleResolve(res) {
-            if (did_resolve) return;
+            if (did_resolve)
+               return;
             did_resolve = true;
             resolveFunc(res);
          }

@@ -3403,7 +3403,8 @@ class TFile {
    /** @summary extract streamer infos from the buffer
      * @private */
    extractStreamerInfos(buf) {
-      if (!buf) return;
+      if (!buf)
+         return;
 
       const lst = {};
       buf.mapObject(1, lst);

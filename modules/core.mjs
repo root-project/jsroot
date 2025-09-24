@@ -645,7 +645,8 @@ function parse(json) {
    let newfmt;
 
    const unref_value = value => {
-      if ((value === null) || (value === undefined)) return;
+      if ((value === null) || (value === undefined))
+         return;
 
       if (isStr(value)) {
          if (newfmt || (value.length < 6) || value.indexOf('$ref:'))
@@ -675,7 +676,8 @@ function parse(json) {
 
       if ((newfmt !== false) && (len === 1) && (ks[0] === '$ref')) {
          const ref = parseInt(value.$ref);
-         if (!Number.isInteger(ref) || (ref < 0) || (ref >= map.length)) return;
+         if (!Number.isInteger(ref) || (ref < 0) || (ref >= map.length))
+            return;
          newfmt = true;
          return map[ref];
       }
@@ -744,7 +746,8 @@ function parse(json) {
       }
 
      // prevent endless loop
-     if (map.indexOf(value) >= 0) return;
+     if (map.indexOf(value) >= 0)
+      return;
 
       // add object to object map
       map.push(value);
@@ -942,7 +945,8 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
       }
 
       xhr.onreadystatechange = function() {
-         if (this.did_abort) return;
+         if (this.did_abort)
+            return;
 
          if ((this.readyState === 2) && this.expected_size) {
             const len = parseInt(this.getResponseHeader('Content-Length'));
@@ -953,7 +957,8 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
             }
          }
 
-         if (this.readyState !== 4) return;
+         if (this.readyState !== 4)
+            return;
 
          if ((this.status !== 200) && (this.status !== 206) && !browser.qt6 &&
              // in these special cases browsers not always set status
@@ -1703,10 +1708,11 @@ function getMethods(typename, obj) {
 
    if ((typename.indexOf(clTF1) === 0) || (typename === clTF12) || (typename === clTF2) || (typename === clTF3)) {
       m.addFormula = function(formula) {
-         if (!formula) return;
-         if (this.formulas === undefined)
-            this.formulas = [];
-         this.formulas.push(formula);
+         if (formula) {
+            if (this.formulas === undefined)
+               this.formulas = [];
+            this.formulas.push(formula);
+         }
       };
       m.GetParName = function(n) {
          if (this.fParams?.fParNames)

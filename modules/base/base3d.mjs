@@ -378,7 +378,8 @@ const Handling3DDrawings = {
    /** @summary Add 3D canvas
      * @private */
    add3dCanvas(size, canv, webgl) {
-      if (!canv || (size.can3d < -1)) return;
+      if (!canv || (size.can3d < -1))
+         return;
 
       if (size.can3d === -1) {
          // case when 3D object drawn without canvas
@@ -597,7 +598,8 @@ async function createRender3D(width, height, render3d, args) {
 /** @summary Cleanup created renderer object
   * @private */
 function cleanupRender3D(renderer) {
-   if (!renderer) return;
+   if (!renderer)
+      return;
 
    if (isNodeJs()) {
       const ctxt = isFunc(renderer.getContext) ? renderer.getContext() : null,
@@ -821,7 +823,8 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
    let control = null;
 
    function control_mousedown(evnt) {
-      if (!control) return;
+      if (!control)
+         return;
 
       // function used to hide some events from orbit control and redirect them to zooming rect
       if (control.mouse_zoom_mesh) {
@@ -831,8 +834,10 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       }
 
       // only left-button is considered
-      if ((evnt.button !== undefined) && (evnt.button !== 0)) return;
-      if ((evnt.buttons !== undefined) && (evnt.buttons !== 1)) return;
+      if ((evnt.button !== undefined) && (evnt.button !== 0))
+         return;
+      if ((evnt.buttons !== undefined) && (evnt.buttons !== 1))
+         return;
 
       if (control.enable_zoom) {
          control.mouse_zoom_mesh = control.detectZoomMesh(evnt);
@@ -849,7 +854,8 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
    }
 
    function control_mouseup(evnt) {
-      if (!control) return;
+      if (!control)
+         return;
 
       if (control.mouse_zoom_mesh && control.mouse_zoom_mesh.point2 && control.painter.get3dZoomCoord) {
          let kind = control.mouse_zoom_mesh.object.zoom,
@@ -869,10 +875,6 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       // if selection was drawn, it should be removed and picture rendered again
       if (control.enable_zoom)
          control.removeZoomMesh();
-
-      // only left-button is considered
-      // if ((evnt.button!==undefined) && (evnt.button !== 0)) return;
-      // if ((evnt.buttons!==undefined) && (evnt.buttons !== 1)) return;
 
       if (control.enable_select && control.mouse_select_pnt) {
          const pnt = control.getMousePos(evnt, {}),
@@ -894,7 +896,8 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
    }
 
    function control_mousewheel(evnt) {
-      if (!control) return;
+      if (!control)
+         return;
 
       // try to handle zoom extra
       if (render3DFired(control.painter) || control.mouse_zoom_mesh) {
@@ -905,7 +908,8 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
       }
 
       const intersect = control.detectZoomMesh(evnt);
-      if (!intersect) return;
+      if (!intersect)
+         return;
 
       evnt.preventDefault();
       evnt.stopPropagation();
@@ -1201,7 +1205,8 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
    control.delayedProcessMouseMove = function() {
       // remove handle - allow to trigger new timeout
       delete this.tmout_handle;
-      if (!this.painter) return; // protect when cleanup
+      if (!this.painter)
+         return; // protect when cleanup
 
       const mouse = this.tmout_mouse,
             intersects = this.getMouseIntersects(mouse),
@@ -1494,7 +1499,8 @@ class PointsControl extends InteractiveControl {
 
    /** @summary cleanup object */
    cleanup() {
-      if (!this.mesh) return;
+      if (!this.mesh)
+         return;
       delete this.mesh.is_selected;
       this.createSpecial(null);
       delete this.mesh;
