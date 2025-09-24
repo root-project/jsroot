@@ -143,7 +143,8 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
                   xarr[lj-3] = xsave;
                   yarr[lj-3] = ysave;
                   itarr[lj-3] = itars;
-                  if (count > kMAXCOUNT) break;
+                  if (count > kMAXCOUNT)
+                     break;
                   count++;
                }
             }
@@ -227,7 +228,8 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
                   nadd++;
                }
             }
-            if (nadd === 0) break;
+            if (nadd === 0)
+               break;
          }
 
          if ((iminus+1 < iplus) && (iminus >= 0))
@@ -3339,7 +3341,8 @@ class TH2Painter extends THistPainter {
             match = p.swapXY
                       ? ((p.x1 <= pnt.y) && (pnt.y <= p.x2) && (p.yy1 >= pnt.x) && (pnt.x >= p.yy2))
                       : ((p.x1 <= pnt.x) && (pnt.x <= p.x2) && (p.yy1 <= pnt.y) && (pnt.y <= p.yy2));
-            if (match) break;
+            if (match)
+               break;
          }
 
          if (!match) {

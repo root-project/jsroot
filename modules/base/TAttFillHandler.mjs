@@ -247,7 +247,8 @@ class TAttFillHandler {
                      k = code % 10,
                      j = ((code - k) % 100) / 10,
                      i = (code - j * 10 - k) / 100;
-               if (!i) break;
+               if (!i)
+                  break;
 
                // use flexible hatches only possible when single pattern is used,
                // otherwise it is not possible to adjust pattern dimension that both hatches match with each other

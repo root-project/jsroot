@@ -321,7 +321,8 @@ function remapSymbolTtfCode(code) {
             if (scode > 0x80)
                symbolsPdfMap[scode] = letter;
          }
-         if (++cnt > 54 + 82) break;
+         if (++cnt > 54 + 82)
+            break;
       }
       for (let k = 0; k < symbolsMap.length; ++k) {
          const scode2 = symbolsMap[k];
@@ -1363,14 +1364,17 @@ function translateMath(str, kind, color, painter) {
          if (p) {
             const norm = (p < 0) ? str : str.slice(0, p);
             clean += norm;
-            if (p < 0) break;
+            if (p < 0)
+               break;
          }
 
          str = str.slice(p + 7);
          p = str.indexOf(']{');
-         if (p <= 0) break;
+         if (p <= 0)
+            break;
          const colindx = parseInt(str.slice(0, p));
-         if (!Number.isInteger(colindx)) break;
+         if (!Number.isInteger(colindx))
+            break;
          const col = painter.getColor(colindx);
          let cnt = 1;
          str = str.slice(p + 2);

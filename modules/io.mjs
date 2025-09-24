@@ -2200,7 +2200,8 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
 
          const reslen = (fmt === 'LZ4') ? LZ4_uncompress(uint8arr, tgt8arr) : ZIP_inflate(uint8arr, tgt8arr);
 
-         if (reslen <= 0) break;
+         if (reslen <= 0)
+            break;
          fullres += reslen;
          curr += srcsize;
       }

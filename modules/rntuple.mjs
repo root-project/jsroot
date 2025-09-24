@@ -417,7 +417,8 @@ class RNTupleDescriptorBuilder {
         while (true) {
             const val = reader.readU64();
             this.featureFlags.push(val);
-            if ((val & 0x8000000000000000n) === 0n) break; // MSB not set: end of list
+            if ((val & 0x8000000000000000n) === 0n)
+                break; // MSB not set: end of list
         }
 
         // verify all feature flags are zero

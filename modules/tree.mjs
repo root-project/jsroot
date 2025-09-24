@@ -573,15 +573,23 @@ class TDrawVariable {
                continue;
             }
 
-            if (code[pos2] !== '[') break;
+            if (code[pos2] !== '[')
+               break;
 
             // simple []
-            if (code[pos2 + 1] === ']') { arriter.push(undefined); pos2 += 2; continue; }
+            if (code[pos2 + 1] === ']') {
+               arriter.push(undefined);
+               pos2 += 2;
+               continue;
+            }
 
             const prev = pos2++;
             let cnt = 0;
             while ((pos2 < code.length) && ((code[pos2] !== ']') || (cnt > 0))) {
-               if (code[pos2] === '[') cnt++; else if (code[pos2] === ']') cnt--;
+               if (code[pos2] === '[')
+                  cnt++;
+               else if (code[pos2] === ']')
+                  cnt--;
                pos2++;
             }
             const sub = code.slice(prev + 1, pos2);

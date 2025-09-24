@@ -258,7 +258,8 @@ exports.decodeUrl = function(url) {
             val = val.slice(1, val.length - 1);
          res.opts[url.slice(0,eq)] = val;
       }
-      if ((pos >= url.length) || (url[pos] == '#')) break;
+      if ((pos >= url.length) || (url[pos] == '#'))
+         break;
       url = url.slice(pos+1);
    }
 

@@ -269,7 +269,8 @@ function getDrawSettings(kind, selector) {
 
    for (let cnt = 0; cnt < 1000; ++cnt) {
       const h = getDrawHandle(kind, cnt);
-      if (!h) break;
+      if (!h)
+         break;
       if (!res.handle)
          res.handle = h;
       if (h.noinspect)
@@ -278,7 +279,8 @@ function getDrawSettings(kind, selector) {
          res.noappend = true;
       if (h.expand || h.get_expand || h.expand_item || h.can_expand)
          canexpand = true;
-      if (!h.func && !h.class && !h.draw) break;
+      if (!h.func && !h.class && !h.draw)
+         break;
       isany = true;
       if (h.opt === undefined)
          continue;
