@@ -341,7 +341,8 @@ class TASImagePainter extends ObjectPainter {
       if (!obj)
          return false;
 
-      if (((axis === 'x') || (axis === 'y')) && (max - min > 0.01)) return true;
+      if (((axis === 'x') || (axis === 'y')) && (max - min > 0.01))
+         return true;
 
       return false;
    }

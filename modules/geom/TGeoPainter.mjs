@@ -1136,11 +1136,13 @@ class TGeoPainter extends ObjectPainter {
             totalcnt++;
 
             const m1 = mesh.matrixWorld;
-            if (m1.equals(m2)) return true;
+            if (m1.equals(m2))
+               return true;
             if ((m1.determinant() > 0) && (m2.determinant() < -0.9)) {
                const flip = new THREE.Vector3(1, 1, -1);
                m2 = m2.clone().scale(flip);
-               if (m1.equals(m2)) return true;
+               if (m1.equals(m2))
+                  return true;
             }
 
             let max = 0;
@@ -1149,7 +1151,8 @@ class TGeoPainter extends ObjectPainter {
 
             totalmax = Math.max(max, totalmax);
 
-            if (max < 1e-4) return true;
+            if (max < 1e-4)
+               return true;
 
             console.log(`${this.#clones.resolveStack(entry.stack).name} maxdiff ${max} determ ${m1.determinant()} ${m2.determinant()}`);
 
@@ -2437,7 +2440,6 @@ class TGeoPainter extends ObjectPainter {
                this.ctrl.info.num_shapes = res.shapes;
                this.#drawing_log = `Creating: ${res.shapes} / ${this.#build_shapes.length} shapes,  ${res.faces} faces`;
                return true;
-               // if (res.notusedshapes < 30) return true;
             }
          }
 
@@ -5757,7 +5759,8 @@ function createList(parent, lst, name, title) {
 function expandGeoObject(parent, obj) {
    injectGeoStyle();
 
-   if (!parent || !obj) return false;
+   if (!parent || !obj)
+      return false;
 
    const isnode = (obj._typename.indexOf(clTGeoNode) === 0),
          isvolume = (obj._typename.indexOf(clTGeoVolume) === 0),
@@ -5767,7 +5770,8 @@ function expandGeoObject(parent, obj) {
 
    if (!isnode && !isvolume && !ismanager && !iseve && !isoverlap) return false;
 
-   if (parent._childs) return true;
+   if (parent._childs)
+      return true;
 
    if (ismanager) {
       createList(parent, obj.fMaterials, 'Materials', 'list of materials');

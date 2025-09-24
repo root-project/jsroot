@@ -67,7 +67,8 @@ class TPavePainter extends ObjectPainter {
             bm = pad?.fBottomMargin ?? gStyle.fPadBottomMargin;
 
       return svgToImage(svg_code).then(canvas => {
-         if (!canvas) return false;
+         if (!canvas)
+            return false;
 
          let nX = 100, nY = 100;
          const context = canvas.getContext('2d'),
@@ -105,8 +106,10 @@ class TPavePainter extends ObjectPainter {
 
           test = (x, y) => {
             for (let ix = x; ix < x + needW; ++ix) {
-               for (let iy = y; iy < y + needH; ++iy)
-                  if (raster[iy * nX + ix]) return false;
+               for (let iy = y; iy < y + needH; ++iy) {
+                  if (raster[iy * nX + ix])
+                     return false;
+               }
             }
             return true;
          };
@@ -1552,9 +1555,7 @@ class TPavePainter extends ObjectPainter {
 
    /** @summary Is dummy pos of the pave painter */
    isDummyPos(p) {
-      if (!p) return true;
-
-      return !p.fInit && !p.fX1 && !p.fX2 && !p.fY1 && !p.fY2 && !p.fX1NDC && !p.fX2NDC && !p.fY1NDC && !p.fY2NDC;
+      return !p ? true : !p.fInit && !p.fX1 && !p.fX2 && !p.fY1 && !p.fY2 && !p.fX1NDC && !p.fX2NDC && !p.fY1NDC && !p.fY2NDC;
    }
 
    /** @summary Update TPave object  */

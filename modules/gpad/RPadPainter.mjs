@@ -348,12 +348,17 @@ class RPadPainter extends RObjectPainter {
    findPainterFor(selobj, selname, seltype) {
       return this.#painters.find(p => {
          const pobj = p.getObject();
-         if (!pobj) return false;
+         if (!pobj)
+            return false;
 
-         if (selobj && (pobj === selobj)) return true;
-         if (!selname && !seltype) return false;
-         if (selname && (pobj.fName !== selname)) return false;
-         if (seltype && (pobj._typename !== seltype)) return false;
+         if (selobj && (pobj === selobj))
+            return true;
+         if (!selname && !seltype)
+            return false;
+         if (selname && (pobj.fName !== selname))
+            return false;
+         if (seltype && (pobj._typename !== seltype))
+            return false;
          return true;
       });
    }
@@ -1009,11 +1014,14 @@ class RPadPainter extends RObjectPainter {
      * @private */
    needRedrawByResize() {
       const elem = this.getPadSvg();
-      if (!elem.empty() && elem.property('can3d') === constants.Embed3D.Overlay) return true;
+      if (!elem.empty() && elem.property('can3d') === constants.Embed3D.Overlay)
+         return true;
 
       for (let i = 0; i < this.#painters.length; ++i) {
-         if (isFunc(this.#painters[i].needRedrawByResize))
-            if (this.#painters[i].needRedrawByResize()) return true;
+         if (isFunc(this.#painters[i].needRedrawByResize)) {
+            if (this.#painters[i].needRedrawByResize())
+               return true;
+         }
       }
 
       return false;
@@ -1271,8 +1279,10 @@ class RPadPainter extends RObjectPainter {
      * @private */
    findSnap(snapid, onlyid) {
       function check(checkid) {
-         if (!checkid || !isStr(checkid)) return false;
-         if (checkid === snapid) return true;
+         if (!checkid || !isStr(checkid))
+            return false;
+         if (checkid === snapid)
+            return true;
          return onlyid && (checkid.length > snapid.length) &&
                 (checkid.indexOf(snapid) === (checkid.length - snapid.length));
       }

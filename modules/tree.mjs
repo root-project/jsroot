@@ -163,7 +163,8 @@ class ArrayIterator {
             if ((this.select[cnt] === undefined) && (++this.indx[cnt] < this.arr[cnt].length))
                break;
          }
-         if (cnt < 0) return false;
+         if (cnt < 0)
+            return false;
       }
 
       while (true) {
@@ -268,13 +269,18 @@ function findBrachStreamerElement(branch, file) {
    if (pos > 0) match_name = match_name.slice(pos + 1);
 
    function match_elem(elem) {
-      if (!elem) return false;
-      if (elem.fName !== match_name) return false;
-      if (elem.fType === branch.fStreamerType) return true;
-      if ((elem.fType === kBool) && (branch.fStreamerType === kUChar)) return true;
+      if (!elem)
+         return false;
+      if (elem.fName !== match_name)
+         return false;
+      if (elem.fType === branch.fStreamerType)
+         return true;
+      if ((elem.fType === kBool) && (branch.fStreamerType === kUChar))
+         return true;
       if (((branch.fStreamerType === kSTL) || (branch.fStreamerType === kSTL + kOffsetL) ||
            (branch.fStreamerType === kSTLp) || (branch.fStreamerType === kSTLp + kOffsetL)) &&
-          (elem.fType === kStreamer)) return true;
+          (elem.fType === kStreamer))
+          return true;
       console.warn(`Should match element ${elem.fType} with branch ${branch.fStreamerType}`);
       return false;
    }
@@ -470,12 +476,16 @@ class TDrawVariable {
      * @desc when only_branch specified, its placed in the front of the expression */
    parse(tree, selector, code, only_branch, branch_mode) {
       const is_start_symbol = symb => {
-         if ((symb >= 'A') && (symb <= 'Z')) return true;
-         if ((symb >= 'a') && (symb <= 'z')) return true;
+         if ((symb >= 'A') && (symb <= 'Z'))
+            return true;
+         if ((symb >= 'a') && (symb <= 'z'))
+            return true;
          return (symb === '_');
       }, is_next_symbol = symb => {
-         if (is_start_symbol(symb)) return true;
-         if ((symb >= '0') && (symb <= '9')) return true;
+         if (is_start_symbol(symb))
+            return true;
+         if ((symb >= '0') && (symb <= '9'))
+            return true;
          return false;
       };
 
@@ -947,8 +957,10 @@ class TDrawSelector extends TSelector {
 
       for (let n = 0; n < this.ndim; ++n) {
          this.vars[n] = new TDrawVariable(this.globals);
-         if (!this.vars[n].parse(tree, this, names[n])) return false;
-         if (!this.vars[n].direct_branch) is_direct = false;
+         if (!this.vars[n].parse(tree, this, names[n]))
+            return false;
+         if (!this.vars[n].direct_branch)
+            is_direct = false;
       }
 
       this.cut = new TDrawVariable(this.globals);
@@ -1940,7 +1952,8 @@ async function treeProcess(tree, selector, args) {
                if (pp > 0) chld_direct = detectBranchMemberClass(lst, branch.fName + '.' + subname.slice(0, pp + 1), k) || clTObject;
             }
 
-            if (!addBranchForReading(br, master_target, subname, chld_direct)) return false;
+            if (!addBranchForReading(br, master_target, subname, chld_direct))
+               return false;
          }
 
          return true;
@@ -2924,7 +2937,8 @@ function treeHierarchy(tree_node, obj) {
          _obj: branch
       };
 
-      if (!node._childs) node._childs = [];
+      if (!node._childs)
+         node._childs = [];
 
       node._childs.push(subitem);
 
@@ -2935,9 +2949,11 @@ function treeHierarchy(tree_node, obj) {
          subitem._more = true;
          subitem._expand = function(bnode, bobj) {
             // really create all sub-branch items
-            if (!bobj) return false;
+            if (!bobj)
+               return false;
 
-            if (!bnode._childs) bnode._childs = [];
+            if (!bnode._childs)
+               bnode._childs = [];
 
             if ((bobj.fLeaves?.arr?.length === 1) &&
                 ((bobj.fType === kClonesNode) || (bobj.fType === kSTLNode))) {
@@ -2960,7 +2976,8 @@ function treeHierarchy(tree_node, obj) {
 
             if (methods && bobj.fBranches.arr.length) {
                for (const key in methods) {
-                  if (!isFunc(methods[key])) continue;
+                  if (!isFunc(methods[key]))
+                     continue;
                   const s = methods[key].toString();
                   if ((s.indexOf('return') > 0) && (s.indexOf('function ()') === 0)) {
                      bnode._childs.push({

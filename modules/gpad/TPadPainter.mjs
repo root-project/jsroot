@@ -1249,12 +1249,17 @@ class TPadPainter extends ObjectPainter {
    findPainterFor(selobj, selname, seltype) {
       return this.#painters.find(p => {
          const pobj = p.getObject();
-         if (!pobj) return false;
+         if (!pobj)
+            return false;
 
-         if (selobj && (pobj === selobj)) return true;
-         if (!selname && !seltype) return false;
-         if (selname && (pobj.fName !== selname)) return false;
-         if (seltype && (pobj._typename !== seltype)) return false;
+         if (selobj && (pobj === selobj))
+            return true;
+         if (!selname && !seltype)
+            return false;
+         if (selname && (pobj.fName !== selname))
+            return false;
+         if (seltype && (pobj._typename !== seltype))
+            return false;
          return true;
       });
    }
@@ -1645,7 +1650,8 @@ class TPadPainter extends ObjectPainter {
      * @private */
    needRedrawByResize() {
       const elem = this.getPadSvg();
-      if (!elem.empty() && elem.property('can3d') === constants.Embed3D.Overlay) return true;
+      if (!elem.empty() && elem.property('can3d') === constants.Embed3D.Overlay)
+         return true;
 
       return this.#painters.findIndex(objp => {
          return isFunc(objp.needRedrawByResize) ? objp.needRedrawByResize() : false;
@@ -2323,14 +2329,18 @@ class TPadPainter extends ObjectPainter {
          }
       }
 
-      if (!r.ranges || p.empty()) return true;
+      if (!r.ranges || p.empty())
+         return true;
 
       // calculate user range for full pad
       const func = (log, value, err) => {
-         if (!log) return value;
-         if (value <= 0) return err;
+         if (!log)
+            return value;
+         if (value <= 0)
+            return err;
          value = Math.log10(value);
-         if (log > 1) value /= Math.log10(log);
+         if (log > 1)
+            value /= Math.log10(log);
          return value;
       }, frect = fp.getFrameRect();
 

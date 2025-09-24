@@ -369,8 +369,10 @@ class RAxisPainter extends RObjectPainter {
 
    /** @summary Is labels should be centered */
    isCenteredLabels() {
-      if (this.kind === kAxisLabels) return true;
-      if (this.kind === 'log') return false;
+      if (this.kind === kAxisLabels)
+         return true;
+      if (this.kind === 'log')
+         return false;
       return this.v7EvalAttr('labels_center', false);
    }
 

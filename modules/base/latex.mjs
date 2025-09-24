@@ -617,7 +617,8 @@ function parseLatex(node, arg, label, curr) {
             addSpaces(nendspaces);
       }
 
-      if (!found) return true;
+      if (!found)
+         return true;
 
       // remove preceding block and tag itself
       label = label.slice(best + found.name.length);
@@ -626,7 +627,8 @@ function parseLatex(node, arg, label, curr) {
 
       if (found.accent) {
          const sublabel = extractSubLabel();
-         if (sublabel === -1) return false;
+         if (sublabel === -1)
+            return false;
 
          const gg = createGG(),
                subpos = createSubPos(),
@@ -709,7 +711,8 @@ function parseLatex(node, arg, label, curr) {
          if (name) {
             label = '{' + label;
             res[name] = extractSubLabel(name === 'low' ? '_' : '^');
-            if (res[name] === -1) return false;
+            if (res[name] === -1)
+               return false;
          }
 
          while (label) {
@@ -734,7 +737,8 @@ function parseLatex(node, arg, label, curr) {
 
       if (found.low_up) {
          const subs = extractLowUp(found.low_up);
-         if (!subs) return false;
+         if (!subs)
+            return false;
 
          const x = curr.x, dx = 0.03*curr.fsize, ylow = 0.25*curr.fsize;
 
@@ -906,7 +910,8 @@ function parseLatex(node, arg, label, curr) {
 
       if (found.shift) {
          const sublabel = extractSubLabel();
-         if (sublabel === -1) return false;
+         if (sublabel === -1)
+            return false;
 
          const subpos = createSubPos();
 
@@ -927,7 +932,8 @@ function parseLatex(node, arg, label, curr) {
 
       if (found.name === '#url[') {
          const sublabel = extractSubLabel();
-         if (sublabel === -1) return false;
+         if (sublabel === -1)
+            return false;
 
          const gg = createGG(true),
                subpos = createSubPos();
@@ -948,7 +954,8 @@ function parseLatex(node, arg, label, curr) {
 
       if ((found.name === '#color[') || (found.name === '#scale[') || (found.name === '#font[')) {
          const sublabel = extractSubLabel();
-         if (sublabel === -1) return false;
+         if (sublabel === -1)
+            return false;
 
          const subpos = createSubPos();
 
@@ -977,7 +984,8 @@ function parseLatex(node, arg, label, curr) {
 
      if (found.sqrt) {
          const sublabel = extractSubLabel();
-         if (sublabel === -1) return false;
+         if (sublabel === -1)
+            return false;
 
          const gg = createGG(), subpos = createSubPos();
          let subpos0;

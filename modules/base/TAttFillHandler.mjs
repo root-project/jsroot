@@ -112,7 +112,8 @@ class TAttFillHandler {
    /** @summary Check if solid fill is used, also color can be checked
      * @param {string} [solid_color] - when specified, checks if fill color matches */
    isSolid(solid_color) {
-      if ((this.pattern !== 1001) || this.gradient) return false;
+      if ((this.pattern !== 1001) || this.gradient)
+         return false;
       return !solid_color || (solid_color === this.color);
    }
 
@@ -179,7 +180,8 @@ class TAttFillHandler {
          this.color = 'none';
       }
 
-      if (this.isSolid()) return true;
+      if (this.isSolid())
+         return true;
 
       if (!this.gradient) {
          if ((this.pattern >= 4000) && (this.pattern <= 4100)) {
@@ -191,7 +193,8 @@ class TAttFillHandler {
             return false;
       }
 
-      if (!svg || svg.empty()) return false;
+      if (!svg || svg.empty())
+         return false;
 
       let id, lines = '', lfill = null, fills = '', fills2 = '', w = 2, h = 2;
 
@@ -399,7 +402,8 @@ class TAttFillHandler {
             }
          }
 
-         if (!fills && !lines) return false;
+         if (!fills && !lines)
+            return false;
       }
 
       this.pattern_url = `url(#${id})`;

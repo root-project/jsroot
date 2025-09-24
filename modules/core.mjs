@@ -1117,8 +1117,7 @@ async function loadScript(url) {
 
    if (!isStr(url)) {
       const scripts = url, loadNext = () => {
-         if (!scripts.length) return true;
-         return loadScript(scripts.shift()).then(loadNext, loadNext);
+         return !scripts.length ? true : loadScript(scripts.shift()).then(loadNext, loadNext);
       };
       return loadNext();
    }
@@ -1146,7 +1145,8 @@ async function loadScript(url) {
    }
 
    const match_url = src => {
-      if (src === url) return true;
+      if (src === url)
+         return true;
       const indx = src.indexOf(url);
       return (indx > 0) && (indx + url.length === src.length) && (src[indx-1] === '/');
    };
@@ -2021,8 +2021,10 @@ function registerMethods(typename, m) {
   * @private */
 function isRootCollection(lst, typename) {
    if (isObject(lst)) {
-      if ((lst.$kind === clTList) || (lst.$kind === clTObjArray)) return true;
-      if (!typename) typename = lst._typename;
+      if ((lst.$kind === clTList) || (lst.$kind === clTObjArray))
+         return true;
+      if (!typename)
+         typename = lst._typename;
    }
    return (typename === clTList) || (typename === clTHashList) || (typename === clTMap) ||
           (typename === clTObjArray) || (typename === clTClonesArray);

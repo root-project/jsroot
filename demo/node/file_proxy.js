@@ -58,7 +58,8 @@ class FileProxyPromise extends FileProxy {
 
    async openFile() {
       return open(this.filename).then(fd => {
-         if (!fd) return false;
+         if (!fd)
+            return false;
          this.fd = fd;
 
          return stat(this.filename);

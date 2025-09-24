@@ -250,8 +250,10 @@ const AxisPainterMethods = {
          const mean = sum1/(arr.length - 1),
                dev = sum2/(arr.length - 1) - mean**2;
 
-         if (dev <= 0) return true;
-         if (Math.abs(mean) < 1e-100) return false;
+         if (dev <= 0)
+            return true;
+         if (Math.abs(mean) < 1e-100)
+            return false;
          return Math.sqrt(dev)/mean < 1e-6;
       };
 
@@ -286,11 +288,14 @@ const AxisPainterMethods = {
 
          const dom = this.func.domain(),
             check = ticks => {
-               if (ticks.length <= total) return true;
-               if (ticks.length > total + 1) return false;
+               if (ticks.length <= total)
+                  return true;
+               if (ticks.length > total + 1)
+                  return false;
                return (ticks[0] === dom[0]) || (ticks[total] === dom[1]); // special case of N+1 ticks, but match any range
             }, res1 = this.func.ticks(total);
-         if (ndiv2 || check(res1)) return res1;
+         if (ndiv2 || check(res1))
+            return res1;
 
          const res2 = this.func.ticks(Math.round(total * 0.7));
          return (res2.length > 2) && check(res2) ? res2 : res1;
@@ -829,8 +834,10 @@ class TAxisPainter extends ObjectPainter {
 
    /** @summary Is labels should be centered */
    isCenteredLabels() {
-      if (this.kind === kAxisLabels) return true;
-      if (this.log) return false;
+      if (this.kind === kAxisLabels)
+         return true;
+      if (this.log)
+         return false;
       return this.getObject()?.TestBit(EAxisBits.kCenterLabels);
    }
 

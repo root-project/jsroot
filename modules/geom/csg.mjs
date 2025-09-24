@@ -327,7 +327,8 @@ class Node {
    //   let i, j, len = polygons.length;
    //   for ( i = 0; i < len; ++i )
    //      for ( j = 0; j < len; ++j )
-   //         if ( i !== j && polygons[i].classifySide( polygons[j] ) !== BACK ) return false;
+   //         if ( i !== j && polygons[i].classifySide( polygons[j] ) !== BACK )
+   //            return false;
    //   return true;
    // }
 

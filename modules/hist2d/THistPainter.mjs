@@ -1314,7 +1314,8 @@ class THistPainter extends ObjectPainter {
       * @desc axes can be drawn only for main histogram */
    async drawAxes() {
       const fp = this.getFramePainter();
-      if (!fp) return false;
+      if (!fp)
+         return false;
 
       const histo = this.getHisto(),
             o = this.getOptions();
@@ -1720,7 +1721,8 @@ class THistPainter extends ObjectPainter {
       const histo = this.getHisto(),
             o = this.getOptions();
 
-      if (!histo) return false;
+      if (!histo)
+         return false;
 
       let res = false;
 

@@ -687,20 +687,25 @@ class BasePainter {
             origin = this.selectDom('origin'),
             doc = getDocument();
 
-      if (main.empty() || !settings.CanEnlarge || (origin.property('can_enlarge') === false)) return false;
+      if (main.empty() || !settings.CanEnlarge || (origin.property('can_enlarge') === false))
+         return false;
 
-      if ((action === undefined) || (action === 'verify')) return true;
+      if ((action === undefined) || (action === 'verify'))
+         return true;
 
       const state = origin.property('use_enlarge') ? 'on' : 'off';
 
-      if (action === 'state') return state;
+      if (action === 'state')
+         return state;
 
-      if (action === 'toggle') action = (state === 'off');
+      if (action === 'toggle')
+         action = (state === 'off');
 
       let enlarge = d3_select(doc.getElementById('jsroot_enlarge_div'));
 
       if ((action === true) && (state !== 'on')) {
-         if (!enlarge.empty()) return false;
+         if (!enlarge.empty())
+            return false;
 
          enlarge = d3_select(doc.body)
             .append('div')

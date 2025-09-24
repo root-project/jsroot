@@ -1711,7 +1711,8 @@ function drawBinsLego(painter, is_v7 = false) {
       if (basehisto)
          return false; // do not draw empty bins on top of other bins
 
-      if (painter.options.Zero || (axis_zmin > 0)) return true;
+      if (painter.options.Zero || (axis_zmin > 0))
+         return true;
 
       return painter.options.ShowEmpty;
    };

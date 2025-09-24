@@ -2479,8 +2479,10 @@ class TBuffer {
 
    /** @summary Check if provided regions can be extracted from the buffer */
    canExtract(place) {
-      for (let n = 0; n < place.length; n += 2)
-         if (place[n] + place[n + 1] > this.length) return false;
+      for (let n = 0; n < place.length; n += 2) {
+         if (place[n] + place[n + 1] > this.length)
+            return false;
+      }
       return true;
    }
 
@@ -3952,7 +3954,8 @@ class TProxyFile extends TFile {
      * @return {Promise} after file keys are read */
    async _open() {
       return this.proxy.openFile().then(res => {
-         if (!res) return false;
+         if (!res)
+            return false;
          this.fEND = this.proxy.getFileSize();
          this.fFullURL = this.fURL = this.fFileName = this.proxy.getFileName();
          if (isStr(this.fFileName)) {

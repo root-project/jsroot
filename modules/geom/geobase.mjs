@@ -2361,8 +2361,10 @@ function isSameStack(stack1, stack2) {
       return true;
    if (stack1.length !== stack2.length)
       return false;
-   for (let k = 0; k < stack1.length; ++k)
-      if (stack1[k] !== stack2[k]) return false;
+   for (let k = 0; k < stack1.length; ++k) {
+      if (stack1[k] !== stack2[k])
+         return false;
+   }
    return true;
 }
 
