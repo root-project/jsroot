@@ -735,11 +735,16 @@ class HistContour {
          return Math.floor(0.01 + (zc - this.colzmin) * (this.arr.length - 1) / (this.colzmax - this.colzmin));
 
       let l = 0, r = this.arr.length - 1;
-      if (zc < this.arr[0]) return -1;
-      if (zc >= this.arr[r]) return r;
-      while (l < r-1) {
+      if (zc < this.arr[0])
+         return -1;
+      if (zc >= this.arr[r])
+         return r;
+      while (l < r - 1) {
          const mid = Math.round((l+r)/2);
-         if (this.arr[mid] > zc) r = mid; else l = mid;
+         if (this.arr[mid] > zc)
+            r = mid;
+         else
+            l = mid;
       }
       return l;
    }
@@ -747,7 +752,8 @@ class HistContour {
    /** @summary Get palette color */
    getPaletteColor(palette, zc) {
       const zindx = this.getContourIndex(zc);
-      if (zindx < 0) return null;
+      if (zindx < 0)
+         return null;
       const pindx = palette.calcColorIndex(zindx, this.arr.length);
       return palette.getColor(pindx);
    }
@@ -962,12 +968,18 @@ class THistPainter extends ObjectPainter {
    /** @summary Returns number of histogram dimensions */
    getDimension() {
       const histo = this.getHisto();
-      if (!histo) return 0;
-      if (histo._typename.match(/^TH2/)) return 2;
-      if (histo._typename === clTProfile2D) return 2;
-      if (histo._typename.match(/^TH3/)) return 3;
-      if (histo._typename === clTProfile3D) return 3;
-      if (this.isTH2Poly()) return 2;
+      if (!histo)
+         return 0;
+      if (histo._typename.match(/^TH2/))
+         return 2;
+      if (histo._typename === clTProfile2D)
+         return 2;
+      if (histo._typename.match(/^TH3/))
+         return 3;
+      if (histo._typename === clTProfile3D)
+         return 3;
+      if (this.isTH2Poly())
+         return 2;
       return 1;
    }
 
@@ -1238,15 +1250,20 @@ class THistPainter extends ObjectPainter {
          if (axis.fXbins.length >= axis.fNbins) {
             axis.GetBinCoord = function(bin) {
                const indx = Math.round(bin);
-               if (indx <= 0) return this.fXmin;
-               if (indx > this.fNbins) return this.fXmax;
-               if (indx === bin) return this.fXbins[indx];
+               if (indx <= 0)
+                  return this.fXmin;
+               if (indx > this.fNbins)
+                  return this.fXmax;
+               if (indx === bin)
+                  return this.fXbins[indx];
                const indx2 = (bin < indx) ? indx - 1 : indx + 1;
                return this.fXbins[indx] * Math.abs(bin-indx2) + this.fXbins[indx2] * Math.abs(bin-indx);
             };
             axis.FindBin = function(x, add) {
-               for (let k = 1; k < this.fXbins.length; ++k)
-                  if (x < this.fXbins[k]) return Math.floor(k-1+add);
+               for (let k = 1; k < this.fXbins.length; ++k) {
+                  if (x < this.fXbins[k])
+                     return Math.floor(k - 1 + add);
+               }
                return this.fNbins;
             };
          } else {
@@ -1562,8 +1579,10 @@ class THistPainter extends ObjectPainter {
          return null;
 
       if (!force && !o.ForceStat) {
-         if (o.NoStat || histo.TestBit(kNoStats) || !settings.AutoStat) return null;
-         if (!this.isMainPainter()) return null;
+         if (o.NoStat || histo.TestBit(kNoStats) || !settings.AutoStat)
+            return null;
+         if (!this.isMainPainter())
+            return null;
       }
 
       const st = gStyle;
@@ -2327,7 +2346,8 @@ class THistPainter extends ObjectPainter {
       } else {
          pal_painter.Enabled = true;
          // real drawing will be perform at the end
-         if (postpone_draw) return pal_painter;
+         if (postpone_draw)
+            return pal_painter;
          pr = pal_painter.drawPave(arg);
       }
 

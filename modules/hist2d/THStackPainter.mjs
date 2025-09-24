@@ -116,7 +116,8 @@ class THStackPainter extends ObjectPainter {
             domax = false;
          }
 
-         if (!domin && !domax) return res;
+         if (!domin && !domax)
+            return res;
 
          let i1 = 1, i2 = hist.fXaxis.fNbins, j1 = 1, j2 = 1, first = true;
 

@@ -825,9 +825,11 @@ class TGraphPainter extends ObjectPainter {
          let vleft = vv, vright = vv, htop = hh, hbottom = hh, bb;
 
          const mainLine = (dx, dy) => {
-            if (!options.MainError) return `M${dx},${dy}`;
+            if (!options.MainError)
+               return `M${dx},${dy}`;
             const res = 'M0,0';
-            if (dx) return res + (dy ? `L${dx},${dy}` : `H${dx}`);
+            if (dx)
+               return res + (dy ? `L${dx},${dy}` : `H${dx}`);
             return dy ? res + `V${dy}` : res;
          };
 

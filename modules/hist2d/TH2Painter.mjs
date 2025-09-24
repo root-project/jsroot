@@ -1572,7 +1572,8 @@ class TH2Painter extends THistPainter {
             if (!cmd) {
                cmd = `M${x},${y}`; x0 = x; y0 = y;
             } else if ((i === iplus) && (iminus !== iplus) && (x === x0) && (y === y0)) {
-               if (!isany) return ''; // all same points
+               if (!isany)
+                  return ''; // all same points
                cmd += 'z'; do_close = false; matched = true;
             } else {
                const dx = x - lastx, dy = y - lasty;
@@ -1611,11 +1612,13 @@ class TH2Painter extends THistPainter {
          iminus--;
          while ((iminus < iplus - 1) && !pnt1)
             pnt1 = get_intersect(++iminus, 1);
-         if (!pnt1) return '';
+         if (!pnt1)
+            return '';
          iplus++;
          while ((iminus < iplus - 1) && !pnt2)
             pnt2 = get_intersect(--iplus, -1);
-         if (!pnt2) return '';
+         if (!pnt2)
+            return '';
 
          // TODO: now side is always same direction, could be that side should be checked more precise
 
@@ -2267,13 +2270,15 @@ class TH2Painter extends THistPainter {
          for (let j = 0; j < proj.length; ++j) {
             if (proj[j] > 0) {
                res.max = Math.max(res.max, proj[j]);
-               if (res.first < 0) res.first = j;
+               if (res.first < 0)
+                  res.first = j;
                res.last = j;
             }
             integral += proj[j];
             sum1 += proj[j]*(xx[j]+xx[j+1])/2;
          }
-         if (integral <= 0) return null;
+         if (integral <= 0)
+            return null;
 
          res.entries = integral;
          res.mean = sum1/integral;
@@ -2873,7 +2878,8 @@ class TH2Painter extends THistPainter {
                if (axis.fLabels) {
                   for (let i = 0; i < axis.fLabels.arr.length; ++i) {
                      const tstr = axis.fLabels.arr[i];
-                     if (tstr.fUniqueID === indx+1) return tstr.fString;
+                     if (tstr.fUniqueID === indx + 1)
+                        return tstr.fString;
                   }
                }
                return indx.toString();
