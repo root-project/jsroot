@@ -64,7 +64,8 @@
          makeImage({ format: 'svg', object, option, width, height })
           .then(svg => {
              // svg is just string with code which directly can be set to HTML element
-             if (!svg) return;
+             if (!svg)
+                return;
 
              document.getElementById(`draw_svg${id}`).innerHTML = svg;
              document.getElementById(`info_svg${id}`).innerHTML = `SVG image size ${svg.length}`;
@@ -72,7 +73,8 @@
          makeImage({ format: 'png', object, option, width, height })
             .then(png => {
                // png in base64 format is provided
-               if (!png) return;
+               if (!png)
+                  return;
 
                let img = new Image;
                img.src = png;
@@ -87,7 +89,8 @@
          makeImage({ format: 'jpeg', object, option, width, height })
             .then(jpeg => {
                // jpeg in base64 format provided
-               if (!jpeg) return;
+               if (!jpeg)
+                  return;
 
                let img = new Image;
                img.src = jpeg;

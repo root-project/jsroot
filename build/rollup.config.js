@@ -31,7 +31,8 @@ const config = {
     ascii()
   ],
   onwarn(message, warn) {
-    if (message.code === "CIRCULAR_DEPENDENCY") return;
+    if (message.code === "CIRCULAR_DEPENDENCY")
+      return;
     warn(message);
   }
 };

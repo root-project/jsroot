@@ -60,7 +60,8 @@
          // function demonstrate creation of three.js model
          let obj3d = build(obj, opt);
 
-         if (!obj3d) return;
+         if (!obj3d)
+            return;
          scene.remove( dummy );
          scene.add( obj3d );
 

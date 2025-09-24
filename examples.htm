@@ -610,14 +610,16 @@
             let ii = decodeUrl().get('interval');
             if (ii && Number.isInteger(parseInt(ii))) testinterval = parseInt(ii);
                                                  else testinterval = interval;
-            if (running) return;
+            if (running)
+               return;
             return runBigTest(0);
          }
 
          function TestContinue() { runBigTest(); }
          function TestFailure(err) { throw err; }
 
-         if (!keyid) return; // this is indication of test break
+         if (!keyid)
+            return; // this is indication of test break
 
          if (!Number.isInteger(interval))
             interval = testinterval;
@@ -632,7 +634,8 @@
                   if (key === keyid) found = true;
                }
             keyid = next;
-            if (!next) return; // stop condition
+            if (!next)
+               return; // stop condition
             optid = select_key && (select_id !== null) ? select_id - 1 : -1;
             testfile = testobj = null;
             return runBigTest(0);
