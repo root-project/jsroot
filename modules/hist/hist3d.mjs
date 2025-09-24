@@ -182,7 +182,8 @@ function testAxisVisibility(camera, toplevel, fb = false, bb = false) {
    if (toplevel?.children) {
       for (let n = 0; n < toplevel.children.length; ++n) {
          top = toplevel.children[n];
-         if (top.axis_draw) break;
+         if (top.axis_draw)
+            break;
          top = undefined;
       }
    }

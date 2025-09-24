@@ -929,13 +929,18 @@ class TGeoPainter extends ObjectPainter {
 
       while (true) {
          const pp = opt.indexOf('+'), pm = opt.indexOf('-');
-         if ((pp < 0) && (pm < 0)) break;
+         if ((pp < 0) && (pm < 0))
+            break;
          let p1 = pp, sign = '+';
-         if ((p1 < 0) || ((pm >= 0) && (pm < pp))) { p1 = pm; sign = '-'; }
+         if ((p1 < 0) || ((pm >= 0) && (pm < pp))) {
+            p1 = pm;
+            sign = '-';
+         }
 
          let p2 = p1+1;
          const regexp = /[,; .]/;
-         while ((p2 < opt.length) && !regexp.test(opt[p2]) && (opt[p2] !== '+') && (opt[p2] !== '-')) p2++;
+         while ((p2 < opt.length) && !regexp.test(opt[p2]) && (opt[p2] !== '+') && (opt[p2] !== '-'))
+            p2++;
 
          const name = opt.substring(p1+1, p2);
          opt = opt.slice(0, p1) + opt.slice(p2);
@@ -3869,7 +3874,8 @@ class TGeoPainter extends ObjectPainter {
       if (prnt.fVolume.fNodes) {
          for (let n = 0, len = prnt.fVolume.fNodes.arr.length; n < len; ++n) {
             res = this.findNodeWithVolume(name, action, prnt.fVolume.fNodes.arr[n], itemname, volumes);
-            if (res) break;
+            if (res)
+               break;
          }
       }
 
@@ -4209,7 +4215,8 @@ class TGeoPainter extends ObjectPainter {
 
       while (true) {
          const res = this.nextDrawAction();
-         if (!res) break;
+         if (!res)
+            break;
 
          now = new Date().getTime();
 

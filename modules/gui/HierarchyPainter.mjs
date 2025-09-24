@@ -395,11 +395,14 @@ function objectHierarchy(top, obj, args = undefined) {
 
          while (allsame) {
             allsame = true;
-            for (let d=prevk; d<nextk; ++d)
-               if (obj[k]!==obj[d]) allsame = false;
+            for (let d = prevk; d < nextk; ++d) {
+               if (obj[k] !== obj[d])
+                  allsame = false;
+            }
 
             if (allsame) {
-               if (nextk===obj.length) break;
+               if (nextk === obj.length)
+                  break;
                prevk = nextk;
                nextk = Math.min(nextk+10, obj.length);
             } else if (prevk !== k) {
@@ -1255,16 +1258,20 @@ class HierarchyPainter extends BasePainter {
       if (!can_menu && getTypeForKind(hitem._kind))
          can_menu = can_click = true;
 
-      if (!img2) img2 = img1;
-      if (!img1) img1 = (has_childs || hitem._more) ? 'img_folder' : 'img_page';
-      if (!img2) img2 = (has_childs || hitem._more) ? 'img_folderopen' : 'img_page';
+      if (!img2)
+         img2 = img1;
+      if (!img1)
+         img1 = (has_childs || hitem._more) ? 'img_folder' : 'img_page';
+      if (!img2)
+         img2 = (has_childs || hitem._more) ? 'img_folderopen' : 'img_page';
 
       if (arg === 'update') {
          d3prnt.selectAll('*').remove();
          d3cont = d3prnt;
       } else {
          d3cont = d3prnt.append('div');
-         if (arg && (arg >= (hitem._parent._show_limit || settings.HierarchyLimit))) break_list = true;
+         if (arg && (arg >= (hitem._parent._show_limit || settings.HierarchyLimit)))
+            break_list = true;
       }
 
       hitem._d3cont = d3cont.node(); // set for direct referencing
@@ -1373,7 +1380,8 @@ class HierarchyPainter extends BasePainter {
          for (let i = 0; i < hitem._childs.length; ++i) {
             const chld = hitem._childs[i];
             chld._parent = hitem;
-            if (!this.addItemHtml(chld, d3chlds, i)) break; // if too many items, skip rest
+            if (!this.addItemHtml(chld, d3chlds, i))
+               break; // if too many items, skip rest
          }
       }
 
@@ -1656,7 +1664,8 @@ class HierarchyPainter extends BasePainter {
          for (let n = indx + 1; n < prnt._childs.length; ++n) {
             const chld = prnt._childs[n];
             chld._parent = prnt;
-            if (!this.addItemHtml(chld, d3chlds, n)) break; // if too many items, skip rest
+            if (!this.addItemHtml(chld, d3chlds, n))
+               break; // if too many items, skip rest
          }
 
          return;
@@ -1664,7 +1673,8 @@ class HierarchyPainter extends BasePainter {
 
       let prnt = hitem, dflt;
       while (prnt) {
-         if ((dflt = prnt._click_action) !== undefined) break;
+         if ((dflt = prnt._click_action) !== undefined)
+            break;
          prnt = prnt._parent;
       }
 

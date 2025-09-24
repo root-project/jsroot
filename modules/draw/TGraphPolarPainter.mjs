@@ -271,7 +271,8 @@ class TGraphPolargramPainter extends TooltipHandler {
       while (indx<ticks.length) {
          const lbl = this.format(ticks[indx]);
          if (lbls.indexOf(lbl) >= 0) {
-            if (++this.ndig>10) break;
+            if (++this.ndig>10)
+               break;
             lbls = []; indx = 0; continue;
           }
          lbls.push(lbl);
@@ -324,7 +325,8 @@ class TGraphPolargramPainter extends TooltipHandler {
                const dr = (ticks[1] - ticks[0]) / nminor;
                for (let nn = 1; nn < nminor; ++nn) {
                   const gridr = ticks[n] + dr*nn;
-                  if (gridr > this.scale_rmax) break;
+                  if (gridr > this.scale_rmax)
+                     break;
                   rx = this.r(gridr);
                   ry = rx / this.szx * this.szy;
                   g.append('ellipse')

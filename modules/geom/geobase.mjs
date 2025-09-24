@@ -829,7 +829,8 @@ function createSphereBuffer(shape, faces_limit) {
          creator = faces_limit ? new PolygonsCreator() : new GeometryCreator(numfaces);
 
    for (let side = 0; side < 2; ++side) {
-      if ((side === 1) && noInside) break;
+      if ((side === 1) && noInside)
+         break;
 
       const r = radius[side],
             s = (side === 0) ? 1 : -1,
@@ -959,7 +960,8 @@ function createTubeBuffer(shape, faces_limit) {
 
    // create outer/inner tube
    for (let side = 0; side < 2; ++side) {
-      if ((side === 1) && !hasrmin) break;
+      if ((side === 1) && !hasrmin)
+         break;
 
       const R = (side === 0) ? outerR : innerR, d1 = side, d2 = 1 - side;
       let nxy = 1, nz = 0;
@@ -970,7 +972,10 @@ function createTubeBuffer(shape, faces_limit) {
          nz = Math.sin(angle);
       }
 
-      if (side === 1) { nxy *= -1; nz *= -1; }
+      if (side === 1) {
+         nxy *= -1;
+         nz *= -1;
+      }
 
       const reduce = (R[0] <= 0) ? 2 : ((R[1] <= 0) ? 1 : 0);
 
@@ -1135,7 +1140,8 @@ function createTorusBuffer(shape, faces_limit) {
          center1 = new THREE.Vector3(), center2 = new THREE.Vector3();
 
    for (let side = 0; side < 2; ++side) {
-      if ((side > 0) && (shape.fRmin <= 0)) break;
+      if ((side > 0) && (shape.fRmin <= 0))
+         break;
       const tube = (side > 0) ? shape.fRmin : shape.fRmax,
             d1 = 1 - side, d2 = 1 - d1, ns = side > 0 ? -1 : 1;
 
@@ -1554,7 +1560,8 @@ function createHypeBuffer(shape, faces_limit) {
 
    // in-out side
    for (let side = 0; side < 2; ++side) {
-      if ((side > 0) && (shape.fRmin <= 0)) break;
+      if ((side > 0) && (shape.fRmin <= 0))
+         break;
 
       const r0 = (side > 0) ? shape.fRmin : shape.fRmax,
             tsq = (side > 0) ? shape.fTinsq : shape.fToutsq,
@@ -4036,7 +4043,6 @@ function produceRenderOrder(toplevel, origin, method, clones) {
                for (let k1 = 0; k1 < intersects.length; ++k1) {
                   if (unique.indexOf(intersects[k1].object) < 0)
                      unique.push(intersects[k1].object);
-                  // if (intersects[k1].object === mesh) break; // trace until object itself
                }
 
                intersects = unique;

@@ -594,7 +594,8 @@ class TGraphDelaunay {
                      }
                   }
 
-                  if (skip_this_triangle) break;
+                  if (skip_this_triangle)
+                     break;
 
                   // is point z colinear with any pair of the triangle points?
    // L1:
@@ -642,7 +643,8 @@ class TGraphDelaunay {
                      continue; // goto L50;
                   }
 
-                  if (skip_this_triangle) break;
+                  if (skip_this_triangle)
+                     break;
 
                   /* Error("Interpolate", "Should not get to here"); */
                   // may as well soldier on

@@ -71,7 +71,8 @@ function getEarthProjectionFunc(id) {
                break;
             }
             theta -= num / den;
-            if (Math.abs(num / den) < 1e-4) break;
+            if (Math.abs(num / den) < 1e-4)
+               break;
          }
          return {
             x: l * Math.cos(theta),

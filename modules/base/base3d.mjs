@@ -478,7 +478,8 @@ const Handling3DDrawings = {
                break;
             }
             try {
-               if (getComputedStyle(prnt).position !== 'static') break;
+               if (getComputedStyle(prnt).position !== 'static')
+                  break;
             } catch {
                break;
             }
@@ -751,8 +752,10 @@ class TooltipFor3D {
          let abs_parent = this.parent;
          while (abs_parent) {
             const style = getComputedStyle(abs_parent);
-            if (!style || (style.position !== 'static')) break;
-            if (!abs_parent.parentNode || (abs_parent.parentNode.nodeType !== 1)) break;
+            if (!style || (style.position !== 'static'))
+               break;
+            if (!abs_parent.parentNode || (abs_parent.parentNode.nodeType !== 1))
+               break;
             abs_parent = abs_parent.parentNode;
          }
 

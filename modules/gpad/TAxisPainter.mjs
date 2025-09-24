@@ -498,9 +498,11 @@ class TAxisPainter extends ObjectPainter {
             let v = 0;
             for (let i = 0; i < axis.fNbins; ++i) {
                v = axis.GetBinLowEdge(i+1);
-               if (v > 0) break;
+               if (v > 0)
+                  break;
                v = axis.GetBinCenter(i+1);
-               if (v > 0) break;
+               if (v > 0)
+                  break;
             }
             if (v > 0)
                this.log_min_nz = v;
