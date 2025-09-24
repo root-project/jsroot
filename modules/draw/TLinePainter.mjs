@@ -39,7 +39,8 @@ class TLinePainter extends ObjectPainter {
 
    /** @summary Finish interactive moving */
    moveEnd(not_changed) {
-      if (not_changed) return;
+      if (not_changed)
+         return;
       const line = this.getObject();
       let exec = '',
           fx1 = this.svgToAxis('x', this.x1, this.isndc),

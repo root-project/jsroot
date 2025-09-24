@@ -22,7 +22,8 @@ class TRatioPlotPainter extends ObjectPainter {
       const ratio = this.getObject();
       if (xmin === xmax) {
          const x_handle = this.getPadPainter()?.findPainterFor(ratio.fLowerPad, k_lower_pad, clTPad)?.getFramePainter()?.x_handle;
-         if (!x_handle) return;
+         if (!x_handle)
+            return;
          if (xmin === 0) {
             // in case of unzoom full range should be used
             xmin = x_handle.full_min;
