@@ -16,7 +16,8 @@ const logminfactorX = 0.0001, logminfactorY = 3e-4;
 /** @summary Configure tooltip enable flag for painter
   * @private */
 function setPainterTooltipEnabled(painter, on) {
-   if (!painter) return;
+   if (!painter)
+      return;
 
    const fp = painter.getFramePainter();
    if (isFunc(fp?.setTooltipEnabled)) {
@@ -85,7 +86,8 @@ function getEarthProjectionFunc(id) {
   * axis range can be wider. Or for normal histogram drawing when preselected range smaller than histogram range
   * @private */
 function unzoomHistogramYRange(main) {
-    if (!isFunc(main?.getDimension) || main.getDimension() !== 1) return;
+    if (!isFunc(main?.getDimension) || main.getDimension() !== 1)
+      return;
 
     const ymin = main.draw_content ? main.hmin : main.ymin,
           ymax = main.draw_content ? main.hmax : main.ymax;
@@ -107,7 +109,8 @@ function is_dragging(painter, kind) {
 /** @summary Add drag for interactive rectangular elements for painter
   * @private */
 function addDragHandler(_painter, arg) {
-   if (!settings.MoveResize) return;
+   if (!settings.MoveResize)
+      return;
 
    const painter = _painter, pp = painter.getPadPainter();
    if (pp?.isFastDrawing() || pp?.isBatchMode())
@@ -206,8 +209,10 @@ function addDragHandler(_painter, arg) {
 
    drag_move
       .on('start', evnt => {
-         if (detectRightButton(evnt.sourceEvent) || drag_kind) return;
-         if (isFunc(arg.is_disabled) && arg.is_disabled('move')) return;
+         if (detectRightButton(evnt.sourceEvent) || drag_kind)
+            return;
+         if (isFunc(arg.is_disabled) && arg.is_disabled('move'))
+            return;
 
          closeMenu(); // close menu
          setPainterTooltipEnabled(painter, false); // disable tooltip
@@ -274,8 +279,10 @@ function addDragHandler(_painter, arg) {
 
    drag_resize
       .on('start', function(evnt) {
-         if (detectRightButton(evnt.sourceEvent) || drag_kind) return;
-         if (isFunc(arg.is_disabled) && arg.is_disabled('resize')) return;
+         if (detectRightButton(evnt.sourceEvent) || drag_kind)
+            return;
+         if (isFunc(arg.is_disabled) && arg.is_disabled('resize'))
+            return;
 
          closeMenu(); // close menu
          setPainterTooltipEnabled(painter, false); // disable tooltip
@@ -302,7 +309,8 @@ function addDragHandler(_painter, arg) {
             .property('drag_handle', handle)
             .call(addHighlightStyle, true);
       }).on('drag', function(evnt) {
-         if (!is_dragging(painter, 'resize')) return;
+         if (!is_dragging(painter, 'resize'))
+            return;
 
          evnt.sourceEvent.preventDefault();
          evnt.sourceEvent.stopPropagation();
@@ -907,7 +915,8 @@ class FrameInteractive extends TooltipHandler {
      * @desc such event can be used to select */
    processFrameClick(pnt, dblckick) {
       const pp = this.getPadPainter();
-      if (!pp) return;
+      if (!pp)
+         return;
 
       pnt.painters = true; // provide painters reference in the hints
       pnt.disabled = true; // do not invoke graphics
@@ -990,7 +999,8 @@ class FrameInteractive extends TooltipHandler {
    /** @summary Start mouse rect zooming */
    startRectSel(evnt) {
       // ignore when touch selection is activated
-      if (this.zoom_kind > 100) return;
+      if (this.zoom_kind > 100)
+         return;
 
       const frame = this.getFrameSvg(),
             pos = d3_pointer(evnt, frame.node());
@@ -1062,11 +1072,13 @@ class FrameInteractive extends TooltipHandler {
 
    /** @summary Starts labels move */
    startLabelsMove() {
-      if (this.zoom_rect) return;
+      if (this.zoom_rect)
+         return;
 
       const handle = (this.zoom_kind === 2) ? this.x_handle : this.y_handle;
 
-      if (!isFunc(handle?.processLabelsMove) || !this.zoom_lastpos) return;
+      if (!isFunc(handle?.processLabelsMove) || !this.zoom_lastpos)
+         return;
 
       if (handle.processLabelsMove('start', this.zoom_lastpos))
          this.zoom_labels = handle;
@@ -1074,7 +1086,8 @@ class FrameInteractive extends TooltipHandler {
 
    /** @summary Process mouse rect zooming */
    moveRectSel(evnt) {
-      if ((this.zoom_kind === 0) || (this.zoom_kind > 100)) return;
+      if ((this.zoom_kind === 0) || (this.zoom_kind > 100))
+         return;
 
       evnt.preventDefault();
       const m = d3_pointer(evnt, this.getFrameSvg().node());
@@ -1101,7 +1114,8 @@ class FrameInteractive extends TooltipHandler {
 
       if (!this.zoom_rect) {
          // ignore small changes, can be switching to labels move
-         if ((this.zoom_kind !== 1) && ((w < 2) || (h < 2))) return;
+         if ((this.zoom_kind !== 1) && ((w < 2) || (h < 2)))
+            return;
 
          this.zoom_rect = this.getFrameSvg()
                               .append('rect')
@@ -1114,7 +1128,8 @@ class FrameInteractive extends TooltipHandler {
 
    /** @summary Finish mouse rect zooming */
    endRectSel(evnt) {
-      if ((this.zoom_kind === 0) || (this.zoom_kind > 100)) return;
+      if ((this.zoom_kind === 0) || (this.zoom_kind > 100))
+         return;
 
       evnt.preventDefault();
 
@@ -1210,20 +1225,24 @@ class FrameInteractive extends TooltipHandler {
             valid_y = (m[1] >= 0) && (m[1] <= fh);
 
       if (valid_x && valid_y && this.getDblclickHandler())
-         if (this.processFrameClick({ x: m[0], y: m[1] }, true)) return;
+         if (this.processFrameClick({ x: m[0], y: m[1] }, true))
+            return;
 
       let kind = (this.can_zoom_x ? 'x' : '') + (this.can_zoom_y ? 'y' : '') + 'z';
       if (!valid_x) {
-         if (!this.can_zoom_y) return;
+         if (!this.can_zoom_y)
+            return;
          kind = this.swap_xy() ? 'x' : 'y';
          if ((m[0] > fw) && this[kind+'2_handle']) kind += '2'; // let unzoom second axis
       } else if (!valid_y) {
-         if (!this.can_zoom_x) return;
+         if (!this.can_zoom_x)
+            return;
          kind = this.swap_xy() ? 'y' : 'x';
          if ((m[1] < 0) && this[kind+'2_handle']) kind += '2'; // let unzoom second axis
       }
       return this.unzoom(kind).then(changed => {
-         if (changed) return;
+         if (changed)
+            return;
          const pp = this.getPadPainter(), rect = this.getFrameRect();
          return pp?.selectObjectPainter(pp, { x: m[0] + rect.x, y: m[1] + rect.y, dbl: true });
       });
@@ -1315,7 +1334,8 @@ class FrameInteractive extends TooltipHandler {
 
    /** @summary Move touch zooming */
    moveTouchZoom(evnt) {
-      if (this.zoom_kind < 100) return;
+      if (this.zoom_kind < 100)
+         return;
 
       evnt.preventDefault();
 
@@ -1348,7 +1368,8 @@ class FrameInteractive extends TooltipHandler {
 
    /** @summary End touch zooming handler */
    endTouchZoom(evnt) {
-      if (this.zoom_kind < 100) return;
+      if (this.zoom_kind < 100)
+         return;
 
       drag_kind = ''; // reset global flag
 
@@ -1453,7 +1474,8 @@ class FrameInteractive extends TooltipHandler {
          return evnt.preventDefault();
 
       // ignore context menu when touches zooming is ongoing or
-      if (('zoom_kind' in this) && (this.zoom_kind > 100)) return;
+      if (this.zoom_kind && (this.zoom_kind > 100))
+         return;
 
       let pnt, menu_painter = this, exec_painter = null,
           frame_corner = false, fp = null; // object used to show context menu
@@ -1500,7 +1522,8 @@ class FrameInteractive extends TooltipHandler {
          if (sel) menu_painter = sel;
              else kind = 'frame';
 
-         if (pnt) frame_corner = (pnt.x > 0) && (pnt.x < 20) && (pnt.y > 0) && (pnt.y < 20);
+         if (pnt)
+            frame_corner = (pnt.x > 0) && (pnt.x < 20) && (pnt.y > 0) && (pnt.y < 20);
 
          fp.setLastEventPos(pnt);
       } else if ((kind === 'x') || (kind === 'y') || (kind === 'z') || (kind === 'pal')) {
@@ -1510,9 +1533,11 @@ class FrameInteractive extends TooltipHandler {
             exec_painter = null;
       }
 
-      if (!exec_painter) exec_painter = menu_painter;
+      if (!exec_painter)
+         exec_painter = menu_painter;
 
-      if (!isFunc(menu_painter?.fillContextMenu)) return;
+      if (!isFunc(menu_painter?.fillContextMenu))
+         return;
 
       this.clearInteractiveElements();
 
@@ -1537,7 +1562,8 @@ class FrameInteractive extends TooltipHandler {
     * @private */
    startSingleTouchHandling(kind, evnt) {
       const arr = get_touch_pointers(evnt, this.getFrameSvg().node());
-      if (arr.length !== 1) return;
+      if (arr.length !== 1)
+         return;
 
       evnt.preventDefault();
       evnt.stopPropagation();
@@ -1743,7 +1769,8 @@ class TFramePainter extends FrameInteractive {
       }
 
       const func = this.getProjectionFunc();
-      if (!func) return;
+      if (!func)
+         return;
 
       const pnts = [func(this.scale_xmin, this.scale_ymin),
                     func(this.scale_xmin, this.scale_ymax),
@@ -1849,7 +1876,8 @@ class TFramePainter extends FrameInteractive {
    /** @summary Apply axis zooming from pad user range
      * @private */
    applyPadUserRange(pad, name) {
-      if (!pad) return;
+      if (!pad)
+         return;
 
       // seems to be, not always user range calculated
       let umin = pad[`fU${name}min`],
@@ -1890,7 +1918,8 @@ class TFramePainter extends FrameInteractive {
 
    /** @summary Apply zooming from TAxis attributes */
    applyAxisZoom(name) {
-      if (this.zoomChangedInteractive(name)) return;
+      if (this.zoomChangedInteractive(name))
+         return;
       this[`zoom_${name}min`] = this[`zoom_${name}max`] = 0;
 
       const axis = this.getAxis(name);
@@ -2135,7 +2164,8 @@ class TFramePainter extends FrameInteractive {
    /** @summary Set selected range back to TPad object
      * @private */
    setRootPadRange(pad, is3d) {
-      if (!pad || !this.ranges_set) return;
+      if (!pad || !this.ranges_set)
+         return;
 
       if (is3d) {
          // this is fake values, algorithm should be copied from TView3D class of ROOT
@@ -2274,7 +2304,8 @@ class TFramePainter extends FrameInteractive {
          pr = Promise.all([pr1, pr2]).then(() => {
             this.drawGrids(draw_grids);
 
-            if (!can_adjust_frame) return;
+            if (!can_adjust_frame)
+               return;
 
             let shrink = 0.0;
             const ypos = draw_vertical.position;
@@ -2287,10 +2318,10 @@ class TFramePainter extends FrameInteractive {
                this.#shrink_frame_left = 0.0;
             }
 
-            if (!shrink) return;
-
-            this.shrinkFrame(shrink, 0);
-            return this.redraw().then(() => this.drawAxes(true));
+            if (shrink) {
+               this.shrinkFrame(shrink, 0);
+               return this.redraw().then(() => this.drawAxes(true));
+            }
          });
       }
 
@@ -2596,7 +2627,8 @@ class TFramePainter extends FrameInteractive {
    changeAxisLog(axis, value) {
       const pp = this.getPadPainter(),
             pad = pp?.getRootPad(true);
-      if (!pad) return;
+      if (!pad)
+         return;
 
       pp.options._interactively_changed = true;
 
@@ -2609,7 +2641,8 @@ class TFramePainter extends FrameInteractive {
          else if (this.#swap_xy && axis === 'y')
             axis = 'x';
          const handle = this[`${axis}_handle`];
-         if (handle?.kind === kAxisLabels) return;
+         if (handle?.kind === kAxisLabels)
+            return;
       }
 
       if ((value === 'toggle') || (value === undefined))
@@ -2916,7 +2949,8 @@ class TFramePainter extends FrameInteractive {
       // first process zooming (if any)
       if (zoom_x || zoom_y || zoom_z) {
          this.forEachPainter(obj => {
-            if (!isFunc(obj.canZoomInside)) return;
+            if (!isFunc(obj.canZoomInside))
+               return;
             if (zoom_x && obj.canZoomInside('x', xmin, xmax)) {
                this.zoom_xmin = xmin;
                this.zoom_xmax = xmax;
@@ -3013,8 +3047,7 @@ class TFramePainter extends FrameInteractive {
       // first process zooming
       if (zoom_v) {
          this.forEachPainter(obj => {
-            if (!isFunc(obj.canZoomInside)) return;
-            if (zoom_v && obj.canZoomInside(name[0], vmin, vmax)) {
+            if (zoom_v && isFunc(obj.canZoomInside) && obj.canZoomInside(name[0], vmin, vmax)) {
                this[name_min] = vmin;
                this[name_max] = vmax;
                changed = true;
@@ -3094,19 +3127,17 @@ class TFramePainter extends FrameInteractive {
       if (!axis || axis === 'any')
          return this.zoom_changed_x || this.zoom_changed_y || this.zoom_changed_z;
 
-      if ((axis !== 'x') && (axis !== 'y') && (axis !== 'z')) return;
+      if ((axis !== 'x') && (axis !== 'y') && (axis !== 'z'))
+         return;
 
       const fld = 'zoom_changed_' + axis;
       if (value === undefined)
          return this[fld];
 
-      if (value === 'unzoom') {
-         // special handling of unzoom, only if was never changed before flag set to true
+      // special handling of unzoom, only if was never changed before flag set to true
+      if (value === 'unzoom')
          this[fld] = (this[fld] === undefined);
-         return;
-      }
-
-      if (value)
+      else if (value)
          this[fld] = true;
    }
 

@@ -112,7 +112,8 @@ class RFramePainter extends RObjectPainter {
       }
 
       const func = this.getProjectionFunc();
-      if (!func) return;
+      if (!func)
+         return;
 
       const pnts = [func(this.scale_xmin, this.scale_ymin),
                    func(this.scale_xmin, this.scale_ymax),
@@ -216,12 +217,15 @@ class RFramePainter extends RObjectPainter {
    /** @summary Set axis range */
    _setAxisRange(prefix, vmin, vmax) {
       const nmin = `${prefix}min`, nmax = `${prefix}max`;
-      if (this[nmin] !== this[nmax]) return;
+      if (this[nmin] !== this[nmax])
+         return;
       let min = this.v7EvalAttr(`${prefix}_min`),
           max = this.v7EvalAttr(`${prefix}_max`);
 
-      if (min !== undefined) vmin = min;
-      if (max !== undefined) vmax = max;
+      if (min !== undefined)
+         vmin = min;
+      if (max !== undefined)
+         vmax = max;
 
       if (vmin < vmax) {
          this[nmin] = vmin;
@@ -243,7 +247,8 @@ class RFramePainter extends RObjectPainter {
 
    /** @summary Set axes ranges for drawing, check configured attributes if range already specified */
    setAxesRanges(xaxis, xmin, xmax, yaxis, ymin, ymax, zaxis, zmin, zmax) {
-      if (this.#axes_drawn) return;
+      if (this.#axes_drawn)
+         return;
       this.xaxis = xaxis;
       this._setAxisRange('x', xmin, xmax);
       this.yaxis = yaxis;
@@ -268,11 +273,13 @@ class RFramePainter extends RObjectPainter {
      * @desc Must be used only for v6 objects, see TFramePainter for more details
      * @private */
    createXY(opts) {
-      if (this.self_drawaxes) return;
+      if (this.self_drawaxes)
+         return;
 
       this.cleanXY(); // remove all previous configurations
 
-      if (!opts) opts = { ndim: 1 };
+      if (!opts)
+         opts = { ndim: 1 };
 
       this.v6axes = true;
       this.#swap_xy = opts.swap_xy || false;
@@ -840,7 +847,8 @@ class RFramePainter extends RObjectPainter {
          values: [0, 0, 0, 0, 0, 0],
          flags: [false, false, false, false, false, false]
       }, checkZooming = (painter, force) => {
-         if (!force && !isFunc(painter.canZoomInside)) return;
+         if (!force && !isFunc(painter.canZoomInside))
+            return;
 
          is_any_check = true;
 
@@ -950,7 +958,8 @@ class RFramePainter extends RObjectPainter {
        },
 
        checkZooming = (painter, force) => {
-         if (!force && !isFunc(painter?.canZoomInside)) return;
+         if (!force && !isFunc(painter?.canZoomInside))
+            return;
 
          is_any_check = true;
 
@@ -1042,7 +1051,8 @@ class RFramePainter extends RObjectPainter {
       if (!axis || axis === 'any')
          return this.zoom_changed_x || this.zoom_changed_y || this.zoom_changed_z;
 
-      if ((axis !== 'x') && (axis !== 'y') && (axis !== 'z')) return;
+      if ((axis !== 'x') && (axis !== 'y') && (axis !== 'z'))
+         return;
 
       const fld = 'zoom_changed_' + axis;
       if (value === undefined) return this[fld];
@@ -1058,7 +1068,8 @@ class RFramePainter extends RObjectPainter {
 
    /** @summary Fill menu for frame when server is not there */
    fillObjectOfflineMenu(menu, kind) {
-      if ((kind !== 'x') && (kind !== 'y')) return;
+      if ((kind !== 'x') && (kind !== 'y'))
+         return;
 
       menu.add('Unzoom', () => this.unzoom(kind));
 
@@ -1076,12 +1087,14 @@ class RFramePainter extends RObjectPainter {
 
    /** @summary Fill context menu */
    fillContextMenu(menu, kind, obj) {
-      if (kind === 'pal') kind = 'z';
+      if (kind === 'pal')
+         kind = 'z';
 
       if ((kind === 'x') || (kind === 'y') || (kind === 'x2') || (kind === 'y2')) {
          const handle = this[kind+'_handle'],
                faxis = obj || this[kind+'axis'];
-         if (!handle) return false;
+         if (!handle)
+            return false;
          menu.header(`${kind.toUpperCase()} axis`, `${urlClassPrefix}ROOT_1_1Experimental_1_1RAxisBase.html`);
 
          if (isFunc(faxis?.TestBit)) {
