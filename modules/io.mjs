@@ -1549,14 +1549,12 @@ function ZIP_inflate(arr, tgt) {
          return res;
 
       // Find minimum and maximum length, bound *m by those
-      for (j = 1; j <= BMAX; ++j)
-         if (c[j]) break;
+      for (j = 1; j <= BMAX && !c[j]; ++j);
 
       k = j;         // minimum code length
       if (mm < j)
          mm = j;
-      for (i = BMAX; i; --i)
-         if (c[i]) break;
+      for (i = BMAX; i && !c[i]; --i);
 
       const g = i;         // maximum code length
       if (mm > i)
