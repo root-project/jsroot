@@ -56,7 +56,8 @@ class LongPollSocket {
          if (this.handle) url += '&' + this.handle.getConnArgs(this.counter++);
          this.connid = 'connect';
       } else if (kind === 'close') {
-         if ((this.connid === null) || (this.connid === 'close')) return;
+         if ((this.connid === null) || (this.connid === 'close'))
+            return;
          url += `?connection=${this.connid}&close`;
          if (this.handle) url += '&' + this.handle.getConnArgs(this.counter++);
          this.connid = 'close';
@@ -222,7 +223,8 @@ class FileDumpSocket {
 
    /** @summary Get stored protocol */
    getProtocol(res) {
-      if (!res) return;
+      if (!res)
+         return;
       this.protocol = JSON.parse(res);
       if (isFunc(this.onopen))
          this.onopen();
@@ -247,7 +249,8 @@ class FileDumpSocket {
       if (this.#wait_for_file)
          return;
       const fname = this.protocol[this.cnt];
-      if (!fname) return;
+      if (!fname)
+         return;
 
       if (fname === 'send') {
          if (this.sendcnt > 0) {
@@ -262,7 +265,8 @@ class FileDumpSocket {
       this.cnt++;
       httpRequest(fname, (fname.indexOf('.bin') > 0 ? 'buf' : 'text')).then(res => {
          this.#wait_for_file = false;
-         if (!res) return;
+         if (!res)
+            return;
          const p = fname.indexOf('_ch'),
                chid = (p > 0) ? Number.parseInt(fname.slice(p+3, fname.indexOf('.', p))) : 1;
          if (isFunc(this.#receiver?.provideData))

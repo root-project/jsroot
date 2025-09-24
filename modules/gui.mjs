@@ -155,7 +155,8 @@ function readStyleFromURL(url) {
    if (d.has('hlimit')) settings.HierarchyLimit = parseInt(d.get('hlimit'));
 
    function get_int_style(name, field, dflt) {
-      if (!d.has(name)) return;
+      if (!d.has(name))
+         return;
       const val = d.get(name);
       if (!val || (val === 'true') || (val === 'on'))
          gStyle[field] = dflt;
@@ -166,7 +167,8 @@ function readStyleFromURL(url) {
       return gStyle[field];
    }
    function get_float_style(name, field) {
-      if (!d.has(name)) return;
+      if (!d.has(name))
+         return;
       const val = d.get(name),
             flt = Number.parseFloat(val);
       if (Number.isFinite(flt))

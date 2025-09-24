@@ -217,14 +217,16 @@ function createTreePlayer(player) {
 
    player.getValue = function(sel) {
       const elem = this.selectDom().select(sel);
-      if (elem.empty()) return;
+      if (elem.empty())
+         return;
       const val = elem.property('value');
       if (val !== undefined) return val;
       return elem.attr('value');
    };
 
    player.performLocalDraw = function() {
-      if (!this.local_tree) return;
+      if (!this.local_tree)
+         return;
 
       const frame = this.selectDom(),
             args = { expr: this.getValue('.treedraw_varexp') };

@@ -291,20 +291,23 @@ exports.connectWebWindow = function(arg) {
 
    return _sync().then(() => {
       let prereq = '';
-      if (arg.prereq) prereq = arg.prereq;
-      if (arg.prereq2) prereq += ';' + arg.prereq2;
-      if (!prereq) return;
+      if (arg.prereq)
+         prereq = arg.prereq;
+      if (arg.prereq2)
+         prereq += ';' + arg.prereq2;
+      if (!prereq)
+         return;
 
       return v6_require(prereq).then(() => {
-            delete arg.prereq;
-            delete arg.prereq2;
+         delete arg.prereq;
+         delete arg.prereq2;
 
-            if (arg.prereq_logdiv && document) {
-               let elem = document.getElementById(arg.prereq_logdiv);
-               if (elem) elem.innerHTML = '';
-               delete arg.prereq_logdiv;
-            }
-         });
+         if (arg.prereq_logdiv && document) {
+            let elem = document.getElementById(arg.prereq_logdiv);
+            if (elem) elem.innerHTML = '';
+            delete arg.prereq_logdiv;
+         }
+      });
    }).then(() => import('../modules/webwindow.mjs')).then(h => {
       globalThis.JSROOT.WebWindowHandle = h.WebWindowHandle;
       return h.connectWebWindow(arg);

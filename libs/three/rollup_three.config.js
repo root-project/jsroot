@@ -7,7 +7,8 @@ export function glsl() {
 
 		transform( code, id ) {
 
-			if ( /\.glsl.js$/.test( id ) === false ) return;
+			if ( /\.glsl.js$/.test( id ) === false )
+				return;
 
 			code = new MagicString( code );
 

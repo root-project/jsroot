@@ -333,12 +333,15 @@ function getBranchObjectClass(branch, tree, with_clones = false, with_leafs = fa
   * @return {Object} branch
   * @private */
 function getTreeBranch(tree, id) {
-   if (!Number.isInteger(id)) return;
+   if (!Number.isInteger(id))
+      return;
    let res, seq = 0;
    function scan(obj) {
       obj?.fBranches?.arr.forEach(br => {
-         if (seq++ === id) res = br;
-         if (!res) scan(br);
+         if (seq++ === id)
+            res = br;
+         if (!res)
+            scan(br);
       });
    }
 
@@ -1344,7 +1347,8 @@ class TDrawSelector extends TSelector {
 
    /** @summary Fill TBits histogram */
    fillTBitsHistogram(xvalue, weight) {
-      if (!weight || !xvalue || !xvalue.fNbits || !xvalue.fAllBits) return;
+      if (!weight || !xvalue || !xvalue.fNbits || !xvalue.fAllBits)
+         return;
 
       const sz = Math.min(xvalue.fNbits + 1, xvalue.fNbytes * 8);
 
@@ -1363,7 +1367,8 @@ class TDrawSelector extends TSelector {
 
    /** @summary Fill bits histogram */
    fillBitsHistogram(xvalue, weight) {
-      if (!weight) return;
+      if (!weight)
+         return;
 
       for (let bit = 0, mask = 1; bit < this.x.nbins; ++bit) {
          if (xvalue & mask) this.hist.fArray[bit + 1] += weight;
@@ -1373,7 +1378,8 @@ class TDrawSelector extends TSelector {
 
    /** @summary Fill boolean histogram */
    fillBooleanHistogram(boolvalue, weight) {
-      if (!weight) return;
+      if (!weight)
+         return;
       const xvalue = boolvalue ? 1 : 0;
       this.hist.fArray[xvalue + 1] += weight;
       this.hist.fTsumw += weight;
@@ -2390,11 +2396,12 @@ async function treeProcess(tree, selector, args) {
       }
 
       function readProgress(value) {
-         if ((handle.staged_prev === handle.staged_now) ||
-            (handle.process_max <= handle.process_min)) return;
+         if ((handle.staged_prev === handle.staged_now) || (handle.process_max <= handle.process_min))
+            return;
 
          const tm = new Date().getTime();
-         if (tm - handle.progress_showtm < 500) return; // no need to show very often
+         if (tm - handle.progress_showtm < 500)
+            return; // no need to show very often
          handle.progress_showtm = tm;
 
          const portion = (handle.staged_prev + value * (handle.staged_now - handle.staged_prev)) /

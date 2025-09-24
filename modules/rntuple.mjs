@@ -321,7 +321,8 @@ const kFlagRepetitiveField = 0x01,
 class RNTupleDescriptorBuilder {
 
     deserializeHeader(header_blob) {
-        if (!header_blob) return;
+        if (!header_blob)
+            return;
 
         const reader = new RBufferReader(header_blob),
 
@@ -353,7 +354,8 @@ class RNTupleDescriptorBuilder {
     }
 
     deserializeFooter(footer_blob) {
-        if (!footer_blob) return;
+        if (!footer_blob)
+            return;
 
         const reader = new RBufferReader(footer_blob);
 
@@ -741,8 +743,8 @@ class RNTupleDescriptorBuilder {
         let {
             blob: processedBlob
         } = recontructUnsplitBuffer(blob, columnDescriptor);
-    
-    
+
+
         // Handle split index types
         if (originalColtype === ENTupleColumnType.kSplitIndex32 || originalColtype === ENTupleColumnType.kSplitIndex64) {
             const {
@@ -750,7 +752,7 @@ class RNTupleDescriptorBuilder {
             } = DecodeDeltaIndex(processedBlob, coltype);
             processedBlob = decodedArray;
         }
-    
+
         // Handle Split Signed Int types
         if (originalColtype === ENTupleColumnType.kSplitInt16 || originalColtype === ENTupleColumnType.kSplitInt32 || originalColtype === ENTupleColumnType.kSplitInt64) {
             const {
@@ -758,10 +760,10 @@ class RNTupleDescriptorBuilder {
             } = decodeZigzag(processedBlob, coltype);
             processedBlob = decodedArray;
         }
-    
+
         const reader = new RBufferReader(processedBlob),
             values = [],
-    
+
             // Use numElements from pageInfo parameter
             numValues = Number(pageInfo.numElements),
             // Helper for all simple types
@@ -775,10 +777,10 @@ class RNTupleDescriptorBuilder {
                 const totalBitsInBuffer = processedBlob.byteLength * 8;
                 if (totalBitsInBuffer < numValues)
                     throw new Error(`kBit: Not enough bits in buffer (${totalBitsInBuffer}) for numValues (${numValues})`);
-    
+
                 for (let byteIndex = 0; byteIndex < processedBlob.byteLength; ++byteIndex) {
                     const byte = reader.readU8();
-    
+
                     // Extract 8 bits from this byte
                     for (let bitPos = 0; bitPos < 8 && bitCount < numValues; ++bitPos, ++bitCount) {
                         const bitValue = (byte >>> bitPos) & 1,
@@ -788,7 +790,7 @@ class RNTupleDescriptorBuilder {
                 }
                 break;
             }
-    
+
             case ENTupleColumnType.kReal64:
                 extractValues(reader.readF64.bind(reader));
                 break;

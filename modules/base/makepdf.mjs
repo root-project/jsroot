@@ -111,10 +111,13 @@ async function makePDF(svg, args) {
    // add custom fonts to PDF document, only TTF format supported
    d3_select(svg.node).selectAll('style').each(function() {
       const fcfg = this.$fontcfg;
-      if (!fcfg?.n || !fcfg?.base64) return;
+      if (!fcfg?.n || !fcfg?.base64)
+         return;
       const name = fcfg.n;
-      if ((name === kSymbol) || (name === kWingdings)) return;
-      if (custom_fonts[name]) return;
+      if ((name === kSymbol) || (name === kWingdings))
+         return;
+      if (custom_fonts[name])
+         return;
       custom_fonts[name] = true;
 
       const filename = name.toLowerCase().replace(/\s/g, '') + '.ttf';
