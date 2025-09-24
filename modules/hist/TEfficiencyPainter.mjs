@@ -123,7 +123,8 @@ class TEfficiencyPainter extends ObjectPainter {
             plot0Bins = (opt.indexOf('e0') >= 0);
 
       for (let n = 0, j = 0; n < npoints; ++n) {
-         if (!plot0Bins && eff.fTotalHistogram.getBinContent(n+1) === 0) continue;
+         if (!plot0Bins && eff.fTotalHistogram.getBinContent(n+1) === 0)
+            continue;
 
          const value = this.getEfficiency(eff, n+1);
 

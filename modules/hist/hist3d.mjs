@@ -1752,14 +1752,17 @@ function drawBinsLego(painter, is_v7 = false) {
 
       for (i = i1; i < i2; ++i) {
          for (j = j1; j < j2; ++j) {
-            if (!getBinContent(i, j, nlevel)) continue;
+            if (!getBinContent(i, j, nlevel))
+               continue;
 
             nobottom = !reduced && (nlevel > 0);
             notop = !reduced && (binz2 > zmax) && (nlevel < levels.length - 2);
 
             numvertices += (reduced ? 12 : indicies.length);
-            if (nobottom) numvertices -= 6;
-            if (notop) numvertices -= 6;
+            if (nobottom)
+               numvertices -= 6;
+            if (notop)
+               numvertices -= 6;
 
             if (split_faces && !reduced) {
                numvertices -= 12;
@@ -1781,7 +1784,8 @@ function drawBinsLego(painter, is_v7 = false) {
          const x1 = handle.grx[i] + handle.xbar1*(handle.grx[i+1] - handle.grx[i]),
                x2 = handle.grx[i] + handle.xbar2*(handle.grx[i+1] - handle.grx[i]);
          for (j = j1; j < j2; ++j) {
-            if (!getBinContent(i, j, nlevel)) continue;
+            if (!getBinContent(i, j, nlevel))
+               continue;
 
             nobottom = !reduced && (nlevel > 0);
             notop = !reduced && (binz2 > zmax) && (nlevel < levels.length - 2);
@@ -1897,7 +1901,8 @@ function drawBinsLego(painter, is_v7 = false) {
 
    for (i = i1; i < i2; ++i) {
       for (j = j1; j < j2; ++j) {
-         if (!getBinContent(i, j, 0)) continue;
+         if (!getBinContent(i, j, 0))
+            continue;
 
          // calculate required buffer size for line segments
          numlinevertices += (reduced ? rvertices.length : vertices.length);
@@ -1923,7 +1928,8 @@ function drawBinsLego(painter, is_v7 = false) {
       const x1 = handle.grx[i] + handle.xbar1*(handle.grx[i+1] - handle.grx[i]),
             x2 = handle.grx[i] + handle.xbar2*(handle.grx[i+1] - handle.grx[i]);
       for (j = j1; j < j2; ++j) {
-         if (!getBinContent(i, j, 0)) continue;
+         if (!getBinContent(i, j, 0))
+            continue;
 
          const y1 = handle.gry[j] + handle.ybar1*(handle.gry[j+1] - handle.gry[j]),
                y2 = handle.gry[j] + handle.ybar2*(handle.gry[j+1] - handle.gry[j]),
@@ -2029,14 +2035,19 @@ function drawBinsError3D(painter, is_v7 = false) {
          x2 = handle.grx[i + 1];
          for (j = handle.j1; j < handle.j2; ++j) {
             binz = histo.getBinContent(i + 1, j + 1);
-            if ((binz < zmin) || (binz > zmax)) continue;
-            if ((binz === zmin) && check_skip_min()) continue;
+            if ((binz < zmin) || (binz > zmax))
+               continue;
+            if ((binz === zmin) && check_skip_min())
+               continue;
 
-            if (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i + 0.5),
-                 histo.fYaxis.GetBinCoord(j + 0.5))) continue;
+            if (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i + 0.5), histo.fYaxis.GetBinCoord(j + 0.5)))
+               continue;
 
             // just count number of segments
-            if (loop === 0) { nsegments += 3; continue; }
+            if (loop === 0) {
+               nsegments += 3;
+               continue;
+            }
 
             bin = histo.getBin(i + 1, j + 1);
             errs = painter.getBinErrors(histo, bin, binz);

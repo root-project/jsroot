@@ -26,14 +26,17 @@ function drawTH2PolyLego(painter) {
 
    for (i = 0; i < len; ++i) {
       bin = histo.fBins.arr[i];
-      if (bin.fContent < axis_zmin) continue;
+      if (bin.fContent < axis_zmin)
+         continue;
 
       colindx = cntr.getPaletteIndex(palette, bin.fContent);
-      if (colindx === null) continue;
+      if (colindx === null)
+         continue;
 
       // check if bin outside visible range
       if ((bin.fXmin > fp.scale_xmax) || (bin.fXmax < fp.scale_xmin) ||
-          (bin.fYmin > fp.scale_ymax) || (bin.fYmax < fp.scale_ymin)) continue;
+          (bin.fYmin > fp.scale_ymax) || (bin.fYmax < fp.scale_ymin))
+          continue;
 
       z1 = fp.grz((bin.fContent > axis_zmax) ? axis_zmax : bin.fContent);
 

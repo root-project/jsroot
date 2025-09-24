@@ -244,7 +244,8 @@ class TGraphDelaunay {
             }
             // if t1 shares all its sides with other Delaunay triangles then
             // forget about it
-            if (s[0] && s[1] && s[2]) continue;
+            if (s[0] && s[1] && s[2])
+               continue;
          }
          // Looks like t1 is missing a neighbor on at least one side.
          // For each side, take a point a little bit beyond it and calculate
@@ -738,7 +739,8 @@ class TGraphDelaunay {
                   // L50: continue;
                } // end of for ( z = 1 ...) loop
 
-               if (skip_this_triangle) continue;
+               if (skip_this_triangle)
+                  continue;
 
                // This is a good triangle
                if (ndegen > 0) {
@@ -906,13 +908,15 @@ class TGraphDelaunay {
           findNew, s0, s1, is, js;
 
       for (is = 0; is < nbSeg; is++) {
-         if (segUsed[is]) continue;
+         if (segUsed[is])
+            continue;
          s0 = s1 = false;
 
          // Find to which segment is is connected. It can be connected
          // via 0, 1 or 2 vertices.
          for (js = 0; js < nbSeg; js++) {
-            if (is === js) continue;
+            if (is === js)
+               continue;
             if (xs0[is] === xs0[js] && ys0[is] === ys0[js]) s0 = true;
             if (xs0[is] === xs1[js] && ys0[is] === ys1[js]) s0 = true;
             if (xs1[is] === xs0[js] && ys1[is] === ys0[js]) s1 = true;
@@ -970,7 +974,8 @@ class TGraphDelaunay {
       // Find the closed graphs. At this point all the remaining graphs
       // are closed. Any segment can be used to start the search.
       for (is = 0; is < nbSeg; is++) {
-         if (segUsed[is]) continue;
+         if (segUsed[is])
+            continue;
 
          // Find all the segments connected to segment is
          graph = [];
@@ -1436,11 +1441,13 @@ class TGraph2DPainter extends ObjectPainter {
          for (let i = 0; i < graph.fNpoints; ++i) {
             if ((graph.fX[i] < fp.scale_xmin) || (graph.fX[i] > fp.scale_xmax) ||
                 (graph.fY[i] < fp.scale_ymin) || (graph.fY[i] > fp.scale_ymax) ||
-                (graph.fZ[i] < lvl_zmin) || (graph.fZ[i] >= lvl_zmax)) continue;
+                (graph.fZ[i] < lvl_zmin) || (graph.fZ[i] >= lvl_zmax))
+                continue;
 
             if (step > 1) {
                select = (select+1) % step;
-               if (select) continue;
+               if (select)
+                  continue;
             }
 
             index[icnt++] = i; // remember point index for tooltip

@@ -91,7 +91,8 @@ class TH3Painter extends THistPainter {
                zz = zaxis.GetBinCoord(zi - 0.5);
                zside = (zi < k1) ? 0 : (zi > k2 ? 2 : 1);
 
-               if (cond && !cond(xx, yy, zz)) continue;
+               if (cond && !cond(xx, yy, zz))
+                  continue;
 
                cont = histo.getBinContent(xi, yi, zi);
                res.entries += cont;
@@ -145,7 +146,8 @@ class TH3Painter extends THistPainter {
                yy = yaxis.GetBinCoord(yi + 0.5);
                for (zi = k1; zi < k2; ++zi) {
                   zz = zaxis.GetBinCoord(zi + 0.5);
-                  if (cond && !cond(xx, yy, zz)) continue;
+                  if (cond && !cond(xx, yy, zz))
+                     continue;
                   const w = histo.getBinContent(xi + 1, yi + 1, zi + 1);
                   np += w;
                   sumx3 += w * Math.pow(xx - res.meanx, 3);
@@ -300,8 +302,8 @@ class TH3Painter extends THistPainter {
             for (k = k1; k < k2; ++k) {
                bin_content = histo.getBinContent(i+1, j+1, k+1);
                sumz += bin_content;
-               if (bin_content <= content_lmt) continue;
-               numpixels += Math.round(bin_content*coef);
+               if (bin_content > content_lmt)
+                  numpixels += Math.round(bin_content*coef);
             }
          }
       }
@@ -319,7 +321,8 @@ class TH3Painter extends THistPainter {
          for (j = j1; j < j2; ++j) {
             for (k = k1; k < k2; ++k) {
                bin_content = histo.getBinContent(i+1, j+1, k+1);
-               if (bin_content <= content_lmt) continue;
+               if (bin_content <= content_lmt)
+                  continue;
                const num = Math.round(bin_content*coef);
 
                for (let n = 0; n < num; ++n) {
@@ -489,10 +492,12 @@ class TH3Painter extends THistPainter {
                   gry2 = fp.gry(histo.fYaxis.GetBinLowEdge(j+2));
             for (let k = k1; k < k2; ++k) {
                const bin_content = histo.getBinContent(i+1, j+1, k+1);
-               if (!o.GLColor && ((bin_content === 0) || (bin_content < this.gminbin))) continue;
+               if (!o.GLColor && ((bin_content === 0) || (bin_content < this.gminbin)))
+                  continue;
 
                const wei = get_bin_weight(bin_content);
-               if (wei < 1e-3) continue; // do not show very small bins
+               if (wei < 1e-3)
+                  continue; // do not show very small bins
 
                if (use_colors) {
                   const colindx = cntr.getPaletteIndex(palette, bin_content);

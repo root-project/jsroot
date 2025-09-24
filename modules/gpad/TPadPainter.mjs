@@ -1803,9 +1803,10 @@ class TPadPainter extends ObjectPainter {
          entry.fObject = obj;
          entry.fLabel = painter.getItemName();
          if ((opt === 'all') || !entry.fLabel)
-             entry.fLabel = obj.fName;
+            entry.fLabel = obj.fName;
          entry.fOption = '';
-         if (!entry.fLabel) continue;
+         if (!entry.fLabel)
+            continue;
 
          if (painter.lineatt?.used)
             entry.fOption += 'l';

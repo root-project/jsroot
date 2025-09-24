@@ -187,9 +187,11 @@ function listHierarchy(folder, lst) {
 
    for (let i = 0; i < lst.arr.length; ++i) {
       const obj = ismap ? lst.arr[i].first : lst.arr[i];
-      if (!obj) continue; // for such objects index will be used as name
+      if (!obj)
+         continue; // for such objects index will be used as name
       const objname = obj.fName || obj.name;
-      if (!objname) continue;
+      if (!objname)
+         continue;
       const indx = names.indexOf(objname);
       if (indx >= 0)
          cnt[indx]++;
@@ -259,7 +261,8 @@ function keysHierarchy(folder, keys, file, dirname) {
    for (let i = 0; i < keys.length; ++i) {
       const key = keys[i];
 
-      if (settings.OnlyLastCycle && (i > 0) && (key.fName === keys[i-1].fName) && (key.fCycle < keys[i-1].fCycle)) continue;
+      if (settings.OnlyLastCycle && (i > 0) && (key.fName === keys[i-1].fName) && (key.fCycle < keys[i-1].fCycle))
+         continue;
 
       const item = {
          _name: key.fName + ';' + key.fCycle,
@@ -288,7 +291,8 @@ function keysHierarchy(folder, keys, file, dirname) {
             };
          }
       } else if ((key.fClassName === clTList) && (key.fName === nameStreamerInfo)) {
-         if (settings.SkipStreamerInfos) continue;
+         if (settings.SkipStreamerInfos)
+            continue;
          item._name = nameStreamerInfo;
          item._kind = getKindForType(clTStreamerInfoList);
          item._title = 'List of streamer infos for binary I/O';
@@ -367,7 +371,8 @@ function objectHierarchy(top, obj, args = undefined) {
       arrcompress = true;
       for (let k = 0; k < obj.length; ++k) {
          const typ = typeof obj[k];
-         if ((typ === 'number') || (typ === 'boolean') || ((typ === 'string') && (obj[k].length < 16))) continue;
+         if ((typ === 'number') || (typ === 'boolean') || ((typ === 'string') && (obj[k].length < 16)))
+            continue;
          arrcompress = false; break;
       }
    }
@@ -426,23 +431,37 @@ function objectHierarchy(top, obj, args = undefined) {
    let lastitem, lastkey, lastfield, cnt;
 
    for (const key in obj) {
-      if ((key === '_typename') || (key[0] === '$')) continue;
+      if ((key === '_typename') || (key[0] === '$'))
+         continue;
       const fld = obj[key];
-      if (isFunc(fld)) continue;
-      if (args?.exclude && (args.exclude.indexOf(key) >= 0)) continue;
+      if (isFunc(fld))
+         continue;
+      if (args?.exclude && (args.exclude.indexOf(key) >= 0))
+         continue;
 
       if (compress && lastitem) {
-         if (lastfield===fld) { ++cnt; lastkey = key; continue; }
-         if (cnt > 0) lastitem._name += '..' + lastkey;
+         if (lastfield === fld) {
+            ++cnt;
+            lastkey = key;
+            continue;
+         }
+         if (cnt > 0)
+            lastitem._name += '..' + lastkey;
       }
 
       const item = { _parent: top, _name: key };
 
-      if (compress) { lastitem = item; lastkey = key; lastfield = fld; cnt = 0; }
+      if (compress) {
+         lastitem = item;
+         lastkey = key;
+         lastfield = fld;
+         cnt = 0;
+      }
 
       if (fld === null) {
          item._value = item._title = 'null';
-         if (!nosimple) top._childs.push(item);
+         if (!nosimple)
+            top._childs.push(item);
          continue;
       }
 
@@ -606,7 +625,8 @@ function createStreamerInfoContent(lst) {
          continue;
       for (let l = 0; l < entry.fElements.arr.length; ++l) {
          const elem = entry.fElements.arr[l];
-         if (!elem?.fName) continue;
+         if (!elem?.fName)
+            continue;
          let _name = `${elem.fTypeName} ${elem.fName}`;
          const _title = `${elem.fTypeName} type:${elem.fType}`;
          if (elem.fArrayDim === 1)
@@ -2482,9 +2502,11 @@ class HierarchyPainter extends BasePainter {
 
       // now check that items can be displayed
       for (let n = items.length - 1; n >= 0; --n) {
-         if (images[n]) continue;
+         if (images[n])
+            continue;
          const hitem = h.findItem(items[n]);
-         if (!hitem || h.canDisplay(hitem, options[n])) continue;
+         if (!hitem || h.canDisplay(hitem, options[n]))
+            continue;
          // try to expand specified item
          h.expandItem(items[n], null, true);
          items.splice(n, 1);
@@ -2550,7 +2572,8 @@ class HierarchyPainter extends BasePainter {
             items[indx] = null; // mark item as ready
 
             for (let cnt = 0; cnt < items.length; ++cnt) {
-               if (items[cnt] === null) continue; // ignore completed item
+               if (items[cnt] === null)
+                  continue; // ignore completed item
                if (items_wait[cnt] && items.indexOf(items[cnt]) === cnt) {
                   items_wait[cnt] = false;
                   return h.display(items[cnt], options[cnt], doms[cnt]).then(drop_painter => dropNextItem(cnt, drop_painter));
@@ -2927,15 +2950,18 @@ class HierarchyPainter extends BasePainter {
          let p = 0;
          while (p < res.length) {
             p = res.indexOf('a href="', p+1);
-            if (p < 0) break;
+            if (p < 0)
+               break;
             p += 8;
             const p2 = res.indexOf('"', p+1);
-            if (p2 < 0) break;
+            if (p2 < 0)
+               break;
 
             const fname = res.slice(p, p2);
             p = p2 + 1;
 
-            if (fmap[fname]) continue;
+            if (fmap[fname])
+               continue;
             fmap[fname] = true;
 
             if ((fname.lastIndexOf('.root') === fname.length - 5) && (fname.length > 5)) {
@@ -4005,7 +4031,8 @@ class HierarchyPainter extends BasePainter {
          let found = false;
          for (const i in selects.options) {
             const s = selects.options[i].text;
-            if (!isStr(s)) continue;
+            if (!isStr(s))
+               continue;
             if ((s === this.getLayout()) || (s.replace(/ /g, '') === this.getLayout())) {
                selects.selectedIndex = i; found = true;
                break;

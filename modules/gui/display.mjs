@@ -442,7 +442,8 @@ class GridDisplay extends MDIDisplay {
 
       for (let k = 0; k < handle.parent.groups.length; ++k) {
          const hh = handle.parent.groups[k];
-         if ((hh === handle) || !hh.node) continue;
+         if ((hh === handle) || !hh.node)
+            continue;
          hh.groups[id].size = handle.groups[id].size;
          hh.groups[id].position = handle.groups[id].position;
          hh.groups[id-1].size = handle.groups[id-1].size;
