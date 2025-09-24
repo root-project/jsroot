@@ -1154,7 +1154,8 @@ async function loadScript(url) {
    if (isstyle) {
       const styles = document.getElementsByTagName('link');
       for (let n = 0; n < styles.length; ++n) {
-         if (!styles[n].href || (styles[n].type !== 'text/css') || (styles[n].rel !== 'stylesheet')) continue;
+         if (!styles[n].href || (styles[n].type !== 'text/css') || (styles[n].rel !== 'stylesheet'))
+            continue;
          if (match_url(styles[n].href))
             return true;
       }
@@ -1831,11 +1832,13 @@ function getMethods(typename, obj) {
             const y2 = 1 - iy*dy - ymargin;
             let y1 = y2 - dy + 2*ymargin;
             if (y1 < 0) y1 = 0;
-            if (y1 > y2) continue;
+            if (y1 > y2)
+               continue;
             for (let ix = 0; ix < nx; ix++) {
                const x1 = ix*dx + xmargin,
                      x2 = x1 + dx -2*xmargin;
-               if (x1 > x2) continue;
+               if (x1 > x2)
+                  continue;
                n++;
                const pad = create(clTPad);
                pad.fName = pad.fTitle = `${this.fName}_${n}`;

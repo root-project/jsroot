@@ -354,7 +354,8 @@ class TGraphPolargramPainter extends TooltipHandler {
 
          if (nminor > 1) {
             for (let n = 0; n < nmajor * nminor; ++n) {
-               if (n % nminor === 0) continue;
+               if (n % nminor === 0)
+                  continue;
                const angle = -n*2*Math.PI/nmajor/nminor;
                g.append('svg:path')
                 .attr('d', `M0,0L${Math.round(this.szx*Math.cos(angle))},${Math.round(this.szy*Math.sin(angle))}`)

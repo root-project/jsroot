@@ -312,7 +312,8 @@ class RAxisPainter extends RObjectPainter {
          let bestorder = 0, bestndig = this.ndig, bestlen = 1e10;
 
          for (let order = minorder; order <= maxorder; order+=3) {
-            if (exclorder3 && (order===3)) continue;
+            if (exclorder3 && (order===3))
+               continue;
             this.order = order;
             this.ndig = 0;
             let lbls = [], indx = 0, totallen = 0;
@@ -610,7 +611,8 @@ class RAxisPainter extends RObjectPainter {
 
          const grpos = this.handle.grpos - this.axis_shift;
 
-         if ((this.startingSize || this.endingSize) && !this.isInsideGrRange(grpos, -Math.abs(this.startingSize), -Math.abs(this.endingSize))) continue;
+         if ((this.startingSize || this.endingSize) && !this.isInsideGrRange(grpos, -Math.abs(this.startingSize), -Math.abs(this.endingSize)))
+            continue;
 
          if (this.handle.kind === 1) {
             // if not showing labels, not show large tick
@@ -685,7 +687,8 @@ class RAxisPainter extends RObjectPainter {
       return this.startTextDrawingAsync(this.labelsFont, 'font', label_g).then(() => {
          for (let nmajor = 0; nmajor < lbl_pos.length; ++nmajor) {
             const lbl = this.format(lbl_pos[nmajor], true);
-            if (lbl === null) continue;
+            if (lbl === null)
+               continue;
 
             const arg = { text: lbl, latex: 1, draw_g: label_g };
             let pos = Math.round(this.func(lbl_pos[nmajor]));
@@ -696,14 +699,16 @@ class RAxisPainter extends RObjectPainter {
             if (center_lbls) {
                const gap = arg.gap_after || arg.gap_before;
                pos = Math.round(pos - (this.vertical ? 0.5*gap : -0.5*gap));
-               if (!this.isInsideGrRange(pos, 5)) continue;
+               if (!this.isInsideGrRange(pos, 5))
+                  continue;
             }
 
             maxtextlen = Math.max(maxtextlen, lbl.length);
 
             pos -= this.axis_shift;
 
-            if ((this.startingSize || this.endingSize) && !this.isInsideGrRange(pos, -Math.abs(this.startingSize), -Math.abs(this.endingSize))) continue;
+            if ((this.startingSize || this.endingSize) && !this.isInsideGrRange(pos, -Math.abs(this.startingSize), -Math.abs(this.endingSize)))
+               continue;
 
             if (this.vertical) {
                arg.x = fix_coord;

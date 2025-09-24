@@ -109,7 +109,8 @@ function getGrayColors(rgb_array) {
       rgb_array = getRootColors();
 
    for (let n = 0; n < rgb_array.length; ++n) {
-      if (!rgb_array[n]) continue;
+      if (!rgb_array[n])
+         continue;
       const rgb = d3_color(rgb_array[n]),
             gray = 0.299*rgb.r + 0.587*rgb.g + 0.114*rgb.b;
       rgb.r = rgb.g = rgb.b = gray;
@@ -451,7 +452,8 @@ function decodeWebCanvasColors(oper) {
          continue;
       }
       p = name.indexOf('#');
-      if (p < 0) continue;
+      if (p < 0)
+         continue;
 
       const colindx = parseInt(name.slice(0, p)),
             data = JSON.parse(name.slice(p+1)),

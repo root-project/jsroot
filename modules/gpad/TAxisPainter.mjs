@@ -1137,13 +1137,17 @@ class TAxisPainter extends ObjectPainter {
 
             for (let nmajor = 0; nmajor < lbl_pos.length; ++nmajor) {
                let text = this.format(lbl_pos[nmajor], true);
-               if (text === null) continue;
+               if (text === null)
+                  continue;
 
                const mod = this.findLabelModifier(axis, nmajor, lbl_pos);
-               if (mod?.fTextSize === 0) continue;
+               if (mod?.fTextSize === 0)
+                  continue;
 
-               if (mod) any_modified = true;
-               if (mod?.fLabText) text = mod.fLabText;
+               if (mod)
+                  any_modified = true;
+               if (mod?.fLabText)
+                  text = mod.fLabText;
 
                const arg = { text, color: labelsFont.color, latex: 1, draw_g: label_g[lcnt], normal_side: (lcnt === 0) };
                let pos = Math.round(this.func(lbl_pos[nmajor]));
@@ -1164,7 +1168,8 @@ class TAxisPainter extends ObjectPainter {
                if (center_lbls) {
                   const gap = arg.gap_after || arg.gap_before;
                   pos = Math.round(pos - ((this.vertical !== this.reverse) ? 0.5 * gap : -0.5 * gap));
-                  if ((pos < -5) || (pos > (this.vertical ? h : w) + 5)) continue;
+                  if ((pos < -5) || (pos > (this.vertical ? h : w) + 5))
+                     continue;
                }
 
                maxtextlen = Math.max(maxtextlen, text.length);
@@ -1175,7 +1180,8 @@ class TAxisPainter extends ObjectPainter {
                   arg.align = rotate_lbls ? (this.optionLeft || this.reverseAlign ? 23 : 21) : (this.optionLeft || this.reverseAlign ? 12 : 32);
                   if (this.cutLabels()) {
                      const gap = labelsFont.size * (rotate_lbls ? 1.5 : 0.6);
-                     if ((pos < gap) || (pos > h - gap)) continue;
+                     if ((pos < gap) || (pos > h - gap))
+                        continue;
                   }
                } else {
                   arg.x = pos;
@@ -1189,7 +1195,8 @@ class TAxisPainter extends ObjectPainter {
 
                   if (this.cutLabels()) {
                      const gap = labelsFont.size * (rotate_lbls ? 0.4 : 1.5);
-                     if ((pos < gap) || (pos > w - gap)) continue;
+                     if ((pos < gap) || (pos > w - gap))
+                        continue;
                   }
                }
 

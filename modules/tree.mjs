@@ -668,7 +668,8 @@ class TDrawVariable {
             this.brarray[n] = (checkArrayPrototype(arg[name]) > 0) || isRootCollection(arg[name]);
 
          // no array - no pain
-         if (this.brarray[n] === false) continue;
+         if (this.brarray[n] === false)
+            continue;
 
          // check if array can be used as is - one dimension and normal values
          if ((this.brarray[n] === true) && (checkArrayPrototype(arg[name], true) === 2)) {
@@ -1127,10 +1128,14 @@ class TDrawSelector extends TSelector {
          // this is any object type
          let typename, similar = true, maxbits = 8;
          for (let k = 0; k < arr.length; ++k) {
-            if (!arr[k]) continue;
-            if (!typename) typename = arr[k]._typename;
-            if (typename !== arr[k]._typename) similar = false; // check all object types
-            if (arr[k].fNbits) maxbits = Math.max(maxbits, arr[k].fNbits + 1);
+            if (!arr[k])
+               continue;
+            if (!typename)
+               typename = arr[k]._typename;
+            if (typename !== arr[k]._typename)
+               similar = false; // check all object types
+            if (arr[k].fNbits)
+               maxbits = Math.max(maxbits, arr[k].fNbits + 1);
          }
 
          if (typename && similar) {
@@ -1167,7 +1172,8 @@ class TDrawSelector extends TSelector {
          let is_any = false;
          for (let i = 1; i < arr.length; ++i) {
             const v = arr[i];
-            if (!Number.isFinite(v)) continue;
+            if (!Number.isFinite(v))
+               continue;
             if (is_any) {
                res.min = Math.min(res.min, v);
                res.max = Math.max(res.max, v);
@@ -1917,7 +1923,8 @@ async function treeProcess(tree, selector, args) {
 
          for (let k = 0; k < lst.arr.length; ++k) {
             const br = lst.arr[k];
-            if ((chld_kind > 0) && (br.fType !== chld_kind)) continue;
+            if ((chld_kind > 0) && (br.fType !== chld_kind))
+               continue;
 
             if (br.fType === kBaseClassNode) {
                if (!scanBranches(br.fBranches, master_target, chld_kind))
@@ -2392,7 +2399,8 @@ async function treeProcess(tree, selector, args) {
          let filename = '';
 
          for (let n = 0; n < bitems.length; ++n) {
-            if (bitems[n].done) continue;
+            if (bitems[n].done)
+               continue;
 
             const branch = bitems[n].branch;
 
@@ -2432,7 +2440,8 @@ async function treeProcess(tree, selector, args) {
 
          function doProcessing(k) {
             for (; k < bitems.length; ++k) {
-               if (!bitems[k].selected) continue;
+               if (!bitems[k].selected)
+                  continue;
 
                bitems[k].selected = false;
                bitems[k].done = true;

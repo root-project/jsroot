@@ -1262,7 +1262,8 @@ function createPolygonBuffer(shape, faces_limit) {
          // special case - all layers are there, create faces ourself
          cut_faces = [];
          for (let layer = shape.fNz-1; layer > 0; --layer) {
-            if (shape.fZ[layer] === shape.fZ[layer-1]) continue;
+            if (shape.fZ[layer] === shape.fZ[layer-1])
+               continue;
             const right = 2*shape.fNz - 1 - layer;
             cut_faces.push([right, layer - 1, layer]);
             cut_faces.push([right, right + 1, layer-1]);
@@ -1293,7 +1294,8 @@ function createPolygonBuffer(shape, faces_limit) {
       let z1 = shape.fZ[0], r1 = factor*shape[rside][0];
 
       for (let layer = 0; layer < shape.fNz; ++layer) {
-         if (usage[layer*2+side] === 0) continue;
+         if (usage[layer*2+side] === 0)
+            continue;
 
          const z2 = shape.fZ[layer], r2 = factor*shape[rside][layer];
          let nxy = 1, nz = 0;
@@ -1304,7 +1306,10 @@ function createPolygonBuffer(shape, faces_limit) {
             nz = Math.sin(angle);
          }
 
-         if (side > 0) { nxy*=-1; nz*=-1; }
+         if (side > 0) {
+            nxy *= -1;
+            nz *= -1;
+         }
 
          for (let seg = 0; seg < radiusSegments; ++seg) {
             creator.addFace4(r1 * _cos[seg+d1], r1 * _sin[seg+d1], z1,
@@ -1322,7 +1327,8 @@ function createPolygonBuffer(shape, faces_limit) {
    for (let layer = 0; layer < shape.fNz; layer += (shape.fNz-1)) {
       const rmin = factor*shape.fRmin[layer], rmax = factor*shape.fRmax[layer];
 
-      if (rmin === rmax) continue;
+      if (rmin === rmax)
+         continue;
 
       const layerz = shape.fZ[layer],
             d1 = (layer === 0) ? 1 : 0, d2 = 1 - d1,
@@ -3400,7 +3406,8 @@ class ClonedNodes {
 
       for (let n = 0; n < draw_nodes.length; ++n) {
          const entry = draw_nodes[n];
-         if (entry.done) continue;
+         if (entry.done)
+            ontinue;
 
          // shape can be provided with entry itself
          const shape = entry.server_shape || build_shapes[entry.shapeid];

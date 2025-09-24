@@ -431,7 +431,8 @@ class TooltipHandler extends ObjectPainter {
 
       for (let n = 0; n < hints.length; ++n) {
          const hint = hints[n];
-         if (!hint) continue;
+         if (!hint)
+            continue;
 
          if (hint.user_info !== undefined)
             hint.painter?.provideUserTooltip(hint.user_info);
@@ -445,12 +446,17 @@ class TooltipHandler extends ObjectPainter {
          for (let k = 0; k < n; ++k) {
             const hprev = hints[k];
             let diff = false;
-            if (!hprev || (hprev.lines.length !== hint.lines.length)) continue;
+            if (!hprev || (hprev.lines.length !== hint.lines.length))
+               continue;
             for (let l = 0; l < hint.lines.length && !diff; ++l)
                if (hprev.lines[l] !== hint.lines[l]) diff = true;
-            if (!diff) { hints[n] = null; break; }
+            if (!diff) {
+               hints[n] = null;
+               break;
+            }
          }
-         if (!hints[n]) continue;
+         if (!hints[n])
+            continue;
 
          nhints++;
 

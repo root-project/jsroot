@@ -634,15 +634,18 @@ class Geometry {
       // sort out polygons
       for (n = 0; n < len; ++n) {
          p = polygons[n];
-         if (p.id === undefined) continue;
-         if (arr[p.id] === undefined) arr[p.id] = [];
+         if (p.id === undefined)
+            continue;
+         if (arr[p.id] === undefined)
+            arr[p.id] = [];
 
          arr[p.id].push(p);
       }
 
       for (n = 0; n < arr.length; ++n) {
          parts = arr[n];
-         if (parts === undefined) continue;
+         if (parts === undefined)
+            continue;
 
          len = parts.length;
 
@@ -653,7 +656,8 @@ class Geometry {
 
             for (i1 = 0; i1 < len-1; ++i1) {
                p1 = parts[i1];
-               if (!p1?.parent) continue;
+               if (!p1?.parent)
+                  continue;
                for (i2 = i1+1; i2 < len; ++i2) {
                   p2 = parts[i2];
                   if (p2 && (p1.parent === p2.parent) && (p1.nsign === p2.nsign)) {

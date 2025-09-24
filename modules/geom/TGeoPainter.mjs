@@ -784,7 +784,8 @@ class TGeoPainter extends ObjectPainter {
       this.#controllersMeshes.forEach(mesh => { mesh.visible = false; });
       this.#vrControllers = [];
       for (let i = 0; i < gamepads.length; ++i) {
-         if (!gamepads[i] || !gamepads[i].pose) continue;
+         if (!gamepads[i] || !gamepads[i].pose)
+            continue;
          this.#vrControllers.push({
             gamepad: gamepads[i],
             mesh: this.#controllersMeshes[i]
@@ -2192,13 +2193,15 @@ class TGeoPainter extends ObjectPainter {
          // try to find mesh from intersections
          for (let k = 0; k < intersects.length; ++k) {
             const obj = intersects[k].object, stack = getIntersectStack(intersects[k]);
-            if (!obj || !obj.visible) continue;
+            if (!obj || !obj.visible)
+               continue;
             let info = null;
             if (obj.geo_object)
                info = obj.geo_name;
             else if (stack)
                info = this.getStackFullName(stack);
-            if (!info) continue;
+            if (!info)
+               continue;
 
             if (info.indexOf('<prnt>') === 0)
                info = this.getItemName() + info.slice(6);
@@ -2455,7 +2458,8 @@ class TGeoPainter extends ObjectPainter {
          if (!build_instanced) {
             for (let n = 0; n < this.#draw_nodes.length; ++n) {
                const entry = this.#draw_nodes[n];
-               if (entry.done) continue;
+               if (entry.done)
+                  continue;
 
                // shape can be provided with entry itself
                const shape = entry.server_shape || this.#build_shapes[entry.shapeid];
@@ -2463,7 +2467,10 @@ class TGeoPainter extends ObjectPainter {
                this.createEntryMesh(entry, shape, toplevel);
 
                const tm1 = new Date().getTime();
-               if (tm1 - tm0 > 500) { ready = false; break; }
+               if (tm1 - tm0 > 500) {
+                  ready = false;
+                  break;
+               }
             }
          }
 
@@ -2701,7 +2708,8 @@ class TGeoPainter extends ObjectPainter {
             light.intensity = p;
             continue;
          }
-         if (!light.isDirectionalLight) continue;
+         if (!light.isDirectionalLight)
+            continue;
          switch (light._id) {
             case 0: light.position.set(sizex/5, sizey/5, sizez/5); enabled = this.ctrl.light.specular; break;
             case 1: light.position.set(0, 0, sizez/2); enabled = this.ctrl.light.front; break;
@@ -3629,9 +3637,16 @@ class TGeoPainter extends ObjectPainter {
       const lst = [];
       for (let n = 0; n < this.#toplevel.children.length; ++n) {
          const chld = this.#toplevel.children[n];
-         if (!chld._extras) continue;
-         if (action === 'collect') { lst.push(chld); continue; }
-         if (chld._extras === name) { extras = chld; break; }
+         if (!chld._extras)
+            continue;
+         if (action === 'collect') {
+            lst.push(chld);
+            continue;
+         }
+         if (chld._extras === name) {
+            extras = chld;
+            break;
+         }
       }
 
       if (action === 'collect') {
@@ -3641,7 +3656,8 @@ class TGeoPainter extends ObjectPainter {
       }
 
       if (action === 'delete') {
-         if (extras) this.#toplevel.remove(extras);
+         if (extras)
+            this.#toplevel.remove(extras);
          disposeThreejsObject(extras);
          return null;
       }
@@ -3945,7 +3961,8 @@ class TGeoPainter extends ObjectPainter {
             if (line.indexOf('//') === 0)
                continue;
 
-            if (line.indexOf('gGeoManager') < 0) continue;
+            if (line.indexOf('gGeoManager') < 0)
+               continue;
             line = line.replace('->GetVolume', '.GetVolume');
             line = line.replace('->InvisibleAll', '.InvisibleAll');
             line = line.replace('->SetMaxVisNodes', '.SetMaxVisNodes');
@@ -4620,7 +4637,8 @@ class TGeoPainter extends ObjectPainter {
 
             container.add(createLineSegments(buf, lineMaterial));
 
-            if (xticks.kind !== 1) continue;
+            if (xticks.kind !== 1)
+               continue;
 
             const text3d = createText(x_handle.format(x, true), text_size);
 
@@ -4649,7 +4667,8 @@ class TGeoPainter extends ObjectPainter {
 
             container.add(createLineSegments(buf, lineMaterial));
 
-            if (yticks.kind !== 1) continue;
+            if (yticks.kind !== 1)
+               continue;
 
             const text3d = createText(y_handle.format(y, true), text_size);
 
@@ -4684,21 +4703,24 @@ class TGeoPainter extends ObjectPainter {
       if (this.ctrl._axis === 2) {
          for (let naxis = 0; naxis < 3; ++naxis) {
             const name = names[naxis];
-            if ((box.min[name] <= 0) && (box.max[name] >= 0)) continue;
+            if ((box.min[name] <= 0) && (box.max[name] >= 0))
+               continue;
             center[naxis] = (box.min[name] + box.max[name])/2;
          }
       }
 
       for (let naxis = 0; naxis < 3; ++naxis) {
          // exclude axis which is not seen
-         if (ortho && ckind.indexOf(labels[naxis]) < 0) continue;
+         if (ortho && ckind.indexOf(labels[naxis]) < 0)
+            continue;
 
          const buf = new Float32Array(6),
                color = colors[naxis],
                name = names[naxis],
 
           valueToString = val => {
-            if (!val) return '0';
+            if (!val)
+               return '0';
             const lg = Math.log10(Math.abs(val));
             if (lg < 0) {
                if (lg > -1) return val.toFixed(2);
@@ -6096,7 +6118,8 @@ function build(obj, opt) {
 
    for (let n = 0; n < visibles.length; ++n) {
       const entry = visibles[n];
-      if (entry.done) continue;
+      if (entry.done)
+         continue;
 
       const shape = entry.server_shape || shapes[entry.shapeid];
       if (!shape.ready) {
