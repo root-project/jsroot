@@ -49,7 +49,8 @@ class TGaxisPainter extends TAxisPainter {
 
    /** @summary Drag end handle */
    moveEnd(not_changed) {
-      if (not_changed) return;
+      if (not_changed)
+         return;
 
       const gaxis = this.getObject();
 

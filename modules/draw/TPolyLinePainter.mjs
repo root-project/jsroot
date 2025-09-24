@@ -30,7 +30,8 @@ class TPolyLinePainter extends ObjectPainter {
    /** @summary End dragging object
     * @private */
    moveEnd(not_changed) {
-      if (not_changed) return;
+      if (not_changed)
+         return;
       const polyline = this.getObject(),
             func = this.getAxisToSvgFunc(this.#isndc);
       let exec = '';

@@ -317,7 +317,8 @@ const AxisPainterMethods = {
        else if (evnt)
          delta = evnt.wheelDelta ? -evnt.wheelDelta : (evnt.deltaY || evnt.detail);
 
-      if (!delta || (test_ignore && item.ignore)) return;
+      if (!delta || (test_ignore && item.ignore))
+         return;
 
       delta = (delta < 0) ? -0.2 : 0.2;
       delta_left *= delta;
@@ -333,7 +334,8 @@ const AxisPainterMethods = {
          item.max = gmax;
       }
 
-      if (item.min >= item.max) return;
+      if (item.min >= item.max)
+         return;
 
       if (item.reverse) dmin = 1 - dmin;
 
@@ -844,7 +846,8 @@ class TAxisPainter extends ObjectPainter {
 
    /** @summary Add interactive elements to draw axes title */
    addTitleDrag(title_g, vertical, offset_k, reverse, axis_length) {
-      if (!settings.MoveResize || this.isBatchMode()) return;
+      if (!settings.MoveResize || this.isBatchMode())
+         return;
 
       let drag_rect = null, x_0, y_0, i_0,
           acc_x, acc_y, new_x, new_y, sign_0, alt_pos, curr_indx, can_indx0 = true;
@@ -895,7 +898,8 @@ class TAxisPainter extends ObjectPainter {
             .call(addHighlightStyle, true);
          //   .style('pointer-events','none'); // let forward double click to underlying elements
       }).on('drag', evnt => {
-         if (!drag_rect) return;
+         if (!drag_rect)
+            return;
 
          evnt.sourceEvent.preventDefault();
          evnt.sourceEvent.stopPropagation();
@@ -926,7 +930,8 @@ class TAxisPainter extends ObjectPainter {
             makeTranslate(title_g, new_x, new_y);
          }
       }).on('end', evnt => {
-         if (!drag_rect) return;
+         if (!drag_rect)
+            return;
 
          evnt.sourceEvent.preventDefault();
          evnt.sourceEvent.stopPropagation();

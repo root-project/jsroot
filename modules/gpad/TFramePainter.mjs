@@ -1224,9 +1224,10 @@ class FrameInteractive extends TooltipHandler {
       const valid_x = (m[0] >= 0) && (m[0] <= fw),
             valid_y = (m[1] >= 0) && (m[1] <= fh);
 
-      if (valid_x && valid_y && this.getDblclickHandler())
+      if (valid_x && valid_y && this.getDblclickHandler()) {
          if (this.processFrameClick({ x: m[0], y: m[1] }, true))
             return;
+      }
 
       let kind = (this.can_zoom_x ? 'x' : '') + (this.can_zoom_y ? 'y' : '') + 'z';
       if (!valid_x) {

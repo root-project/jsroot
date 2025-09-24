@@ -87,7 +87,8 @@ async function drawText() {
 
       if (!this.moveEnd) {
          this.moveEnd = function(not_changed) {
-            if (not_changed) return;
+            if (not_changed)
+               return;
             const txt = this.getObject();
             let fx = this.svgToAxis('x', this.pos_x + this.pos_dx, this.isndc),
                 fy = this.svgToAxis('y', this.pos_y + this.pos_dy, this.isndc);
@@ -225,7 +226,8 @@ function drawEllipse() {
    };
 
    this.moveEnd = function(not_changed) {
-      if (not_changed) return;
+      if (not_changed)
+         return;
       const ell = this.getObject();
       ell.fX1 = this.svgToAxis('x', this.x);
       ell.fY1 = this.svgToAxis('y', this.y);

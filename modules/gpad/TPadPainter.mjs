@@ -2652,9 +2652,10 @@ class TPadPainter extends ObjectPainter {
          this._buttons = [];
       // check if there are duplications
 
-      for (let k = 0; k < this._buttons.length; ++k)
+      for (let k = 0; k < this._buttons.length; ++k) {
          if (this._buttons[k].funcname === funcname)
             return;
+      }
 
       this._buttons.push({ btn, tooltip, funcname, keyname });
 
