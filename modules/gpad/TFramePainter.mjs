@@ -1615,7 +1615,7 @@ class FrameInteractive extends TooltipHandler {
       setPainterTooltipEnabled(this, true);
    }
 
-   /** @summary Assign interactive methods to RFrame painter */
+   /** @summary Assign interactive methods to frame painter */
    static assign(fpainter) {
       const src = FrameInteractive.prototype,
             src2 = TooltipHandler.prototype;
@@ -2150,12 +2150,9 @@ class TFramePainter extends FrameInteractive {
       }
 
       const rx = pad.fUxmax - pad.fUxmin,
-            ry = pad.fUymax - pad.fUymin;
-      let mx = 1 - pad.fLeftMargin - pad.fRightMargin,
-          my = 1 - pad.fBottomMargin - pad.fTopMargin;
-
-      if (mx <= 0) mx = 0.01; // to prevent overflow
-      if (my <= 0) my = 0.01;
+            ry = pad.fUymax - pad.fUymin,
+            mx = Math.max(0.001, 1 - pad.fLeftMargin - pad.fRightMargin),
+            my = Math.max(0.001, 1 - pad.fBottomMargin - pad.fTopMargin);
 
       pad.fX1 = pad.fUxmin - rx/mx*pad.fLeftMargin;
       pad.fX2 = pad.fUxmax + rx/mx*pad.fRightMargin;
