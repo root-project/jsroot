@@ -106,11 +106,13 @@ class MDIDisplay extends BasePainter {
       let resized_frame = null;
 
       this.forEachPainter((painter, frame) => {
-         if (only_frame_id && (d3_select(frame).attr('id') !== only_frame_id)) return;
+         if (only_frame_id && (d3_select(frame).attr('id') !== only_frame_id))
+            return;
 
          if ((painter.getItemName() !== null) && isFunc(painter.checkResize)) {
             // do not call resize for many painters on the same frame
-            if (resized_frame === frame) return;
+            if (resized_frame === frame)
+               return;
             painter.checkResize(size);
             resized_frame = frame;
          }
@@ -411,11 +413,8 @@ class GridDisplay extends MDIDisplay {
          }
 
          const diff = group.position - pos;
-
-         if (Math.abs(diff) < 0.3) return; // if no significant change, do nothing
-
-         // do not change if size too small
-         if (Math.min(handle.groups[id-1].size - diff, group.size + diff) < 3) return;
+         if ((Math.abs(diff) < 0.3) || (Math.min(handle.groups[id-1].size - diff, group.size + diff) < 3))
+            return; // if no significant change, do nothing
 
          handle.groups[id-1].size -= diff;
          group.size += diff;
@@ -625,7 +624,8 @@ class TabsDisplay extends MDIDisplay {
             d3_select(this).style('background', settings.DarkMode ? 'black' : 'white');
       });
 
-      if (!selected_frame) return;
+      if (!selected_frame)
+         return;
 
       if (action === 'activate')
          selected_frame.parentNode.appendChild(selected_frame);
@@ -747,13 +747,15 @@ class FlexibleDisplay extends MDIDisplay {
 
    /** @summary call function for each frame */
    forEachFrame(userfunc, only_visible) {
-      if (!isFunc(userfunc)) return;
+      if (!isFunc(userfunc))
+         return;
 
       const mdi = this, top = this.selectDom().select('.jsroot_flex_top');
 
       top.selectAll('.jsroot_flex_draw').each(function() {
          // check if only visible specified
-         if (only_visible && (mdi.getFrameState(this) === 'min')) return;
+         if (only_visible && (mdi.getFrameState(this) === 'min'))
+            return;
 
          userfunc(this);
       });
@@ -776,10 +778,8 @@ class FlexibleDisplay extends MDIDisplay {
          this.forEachFrame(f => { if (frame === 'last' || !res) res = f; }, true);
          frame = res;
       }
-      if (!frame) return;
-      if (frame.getAttribute('class') !== 'jsroot_flex_draw') return;
-
-      if (this.getActiveFrame() === frame) return;
+      if ((frame?.getAttribute('class') !== 'jsroot_flex_draw') || (this.getActiveFrame() === frame))
+         return;
 
       super.activateFrame(frame);
 
@@ -962,14 +962,16 @@ class FlexibleDisplay extends MDIDisplay {
          if (evnt.sourceEvent.target.type === 'button')
             return mdi._clickButton(evnt.sourceEvent.target);
 
-         if (detectRightButton(evnt.sourceEvent)) return;
+         if (detectRightButton(evnt.sourceEvent))
+            return;
 
          const mframe = d3_select(this.parentNode);
          if (!mframe.classed('jsroot_flex_frame') || (mframe.property('state') === 'max'))
             return;
 
          doing_move = !d3_select(this).classed('jsroot_flex_resize');
-         if (!doing_move && (mframe.property('state') === 'min')) return;
+         if (!doing_move && (mframe.property('state') === 'min'))
+            return;
 
          mdi.activateFrame(mframe.select('.jsroot_flex_draw').node());
 
@@ -986,7 +988,8 @@ class FlexibleDisplay extends MDIDisplay {
          moving_frame = mframe;
          current = [];
       }).on('drag', evnt => {
-         if (!moving_div) return;
+         if (!moving_div)
+            return;
          evnt.sourceEvent.preventDefault();
          evnt.sourceEvent.stopPropagation();
          const changeProp = (i, name, dd) => {
@@ -1005,7 +1008,8 @@ class FlexibleDisplay extends MDIDisplay {
             changeProp(1, 'height', evnt.dy);
          }
       }).on('end', evnt => {
-         if (!moving_div) return;
+         if (!moving_div)
+            return;
          evnt.sourceEvent.preventDefault();
          evnt.sourceEvent.stopPropagation();
          if (doing_move) {
@@ -1060,8 +1064,10 @@ class FlexibleDisplay extends MDIDisplay {
       const arr = [];
       this.forEachFrame(frame => {
          const state = this.getFrameState(frame);
-         if (state === 'min') return;
-         if (state === 'max') this.changeFrameState(frame, 'normal', true);
+         if (state === 'min')
+            return;
+         if (state === 'max')
+            this.changeFrameState(frame, 'normal', true);
          arr.push(frame);
       });
 
@@ -1208,7 +1214,8 @@ class BatchDisplay extends MDIDisplay {
      * @desc Now works only for inspector, can be called once */
    makeJSON(id, spacing, keep_frame) {
       const frame = this.frames[id];
-      if (!frame) return;
+      if (!frame)
+         return;
       const obj = d3_select(frame).property('_json_object_');
       if (obj) {
          d3_select(frame).property('_json_object_', null);
@@ -1222,7 +1229,8 @@ class BatchDisplay extends MDIDisplay {
    /** @summary Create SVG for specified frame id - used in testing */
    makeSVG(id, keep_frame) {
       const frame = this.frames[id];
-      if (!frame) return;
+      if (!frame)
+         return;
       const main = d3_select(frame),
             mainsvg = main.select('svg');
       if (mainsvg.empty())
@@ -1361,7 +1369,8 @@ class BrowserLayout {
    /** @summary Create buttons in the layout */
    createBrowserBtns() {
       const br = this.browser();
-      if (br.empty()) return;
+      if (br.empty())
+         return;
       let btns = br.select('.jsroot_browser_btns');
       if (btns.empty()) {
          btns = br.append('div')
@@ -1380,7 +1389,8 @@ class BrowserLayout {
    /** @summary Set browser content */
    setBrowserContent(guiCode) {
       const main = this.browser();
-      if (main.empty()) return;
+      if (main.empty())
+         return;
 
       main.insert('div', '.jsroot_browser_btns').classed('jsroot_browser_area', true)
            .style('position', 'absolute').style('left', '0px').style('top', '0px').style('bottom', '0px').style('width', '250px')
@@ -1399,7 +1409,8 @@ class BrowserLayout {
    /** @summary Delete content */
    deleteContent(keep_status) {
       const main = this.browser();
-      if (main.empty()) return;
+      if (main.empty())
+         return;
 
       if (!keep_status)
          this.createStatusLine(0, 'delete');
@@ -1541,7 +1552,8 @@ class BrowserLayout {
 
    /** @summary Adjust separator positions */
    adjustSeparators(vsepar, hsepar, redraw, first_time) {
-      if (!this.gui_div) return;
+      if (!this.gui_div)
+         return;
 
       const main = this.browser(), w = 5;
 
@@ -1560,12 +1572,15 @@ class BrowserLayout {
          let hlimit = 0;
 
          if (!elem.empty()) {
-            if (hsepar < 5) hsepar = 5;
+            if (hsepar < 5)
+               hsepar = 5;
 
             const maxh = main.node().clientHeight - w;
             if (maxh > 0) {
-               if (hsepar < 0) hsepar += maxh;
-               if (hsepar > maxh) hsepar = maxh;
+               if (hsepar < 0)
+                  hsepar += maxh;
+               if (hsepar > maxh)
+                  hsepar = maxh;
             }
 
             this.last_hsepar_height = hsepar;
@@ -1594,7 +1609,8 @@ class BrowserLayout {
 
    /** @summary Show status information inside special fields of browser layout */
    showStatus(...msgs) {
-      if (!isObject(this.status_layout) || !isFunc(this.status_layout.getGridFrame)) return;
+      if (!isObject(this.status_layout) || !isFunc(this.status_layout.getGridFrame))
+         return;
 
       let maxh = 0;
       for (let n = 0; n < 4; ++n) {
@@ -1612,11 +1628,13 @@ class BrowserLayout {
 
    /** @summary Toggle browser visibility */
    toggleBrowserVisisbility(fast_close) {
-      if (!this.gui_div || isStr(this.browser_visible)) return;
+      if (!this.gui_div || isStr(this.browser_visible))
+         return;
 
-      const main = this.browser(), area = main.select('.jsroot_browser_area');
-
-      if (area.empty()) return;
+      const main = this.browser(),
+            area = main.select('.jsroot_browser_area');
+      if (area.empty())
+         return;
 
       const vsepar = main.select('.jsroot_v_separator'),
             drawing = d3_select(`#${this.gui_div}_drawing`);
@@ -1625,7 +1643,8 @@ class BrowserLayout {
           tgt_drawing = area.property('last_drawing');
 
       if (!this.browser_visible) {
-         if (fast_close) return;
+         if (fast_close)
+            return;
          area.property('last_left', null).property('last_vsepar', null).property('last_drawing', null);
       } else {
          area.property('last_left', area.style('left'));
@@ -1649,9 +1668,11 @@ class BrowserLayout {
       this.browser_visible = 'changing';
 
       area.transition().style('left', tgt).duration(_duration).on('end', () => {
-         if (fast_close) return;
+         if (fast_close)
+            return;
          this.browser_visible = visible_at_the_end;
-         if (visible_at_the_end) this.setButtonsPosition();
+         if (visible_at_the_end)
+            this.setButtonsPosition();
       });
 
       if (!visible_at_the_end)
@@ -1670,10 +1691,12 @@ class BrowserLayout {
 
    /** @summary Adjust browser size */
    adjustBrowserSize(onlycheckmax) {
-      if (!this.gui_div || (this.browser_kind !== 'float')) return;
+      if (!this.gui_div || (this.browser_kind !== 'float'))
+         return;
 
       const main = this.browser();
-      if (main.empty()) return;
+      if (main.empty())
+         return;
 
       const area = main.select('.jsroot_browser_area'),
             cont = main.select('.jsroot_browser_hierarchy'),
@@ -1685,20 +1708,24 @@ class BrowserLayout {
          return;
       }
 
-      if (chld.empty()) return;
+      if (chld.empty())
+         return;
+
       const h1 = cont.node().clientHeight,
             h2 = chld.node().clientHeight;
-
-      if ((h2 !== undefined) && (h2 < h1*0.7)) area.style('bottom', '');
+      if ((h2 !== undefined) && (h2 < h1*0.7))
+         area.style('bottom', '');
    }
 
    /** @summary Set buttons position */
    setButtonsPosition() {
-      if (!this.gui_div) return;
+      if (!this.gui_div)
+         return;
 
       const main = this.browser(),
             btns = main.select('.jsroot_browser_btns');
-      if (btns.empty()) return;
+      if (btns.empty())
+         return;
 
       let top = 7, left = 7;
       if (this.browser_visible) {
