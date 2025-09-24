@@ -794,8 +794,10 @@ class FunctionsHandler {
 
       for (let n = 0; n < funcs?.arr.length; ++n) {
          const func = funcs.arr[n], fopt = funcs.opt[n];
-         if (!func?._typename) continue;
-         if (isFunc(painter.needDrawFunc) && !painter.needDrawFunc(painter.getObject(), func)) continue;
+         if (!func?._typename)
+            continue;
+         if (isFunc(painter.needDrawFunc) && !painter.needDrawFunc(painter.getObject(), func))
+            continue;
 
          let funcpainter = null, func_indx = -1;
 
@@ -1611,7 +1613,8 @@ class THistPainter extends ObjectPainter {
 
       for (let i = 0; i < funcs.length; ++i) {
          const f = funcs[i];
-         if (obj_name && (f.fName !== obj_name)) continue;
+         if (obj_name && (f.fName !== obj_name))
+            continue;
          if (f._typename === type_name)
             return f;
       }
@@ -2594,7 +2597,8 @@ class THistPainter extends ObjectPainter {
             res.sumz += binz;
             if (args.pixel_density) {
                binarea = (res.grx[i+1] - res.grx[i]) * (res.gry[j] - res.gry[j+1]);
-               if (binarea <= 0) continue;
+               if (binarea <= 0)
+                  continue;
                res.max = Math.max(res.max, binz);
                if ((binz > 0) && ((binz < res.min) || (res.min === 0)))
                   res.min = binz;

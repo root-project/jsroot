@@ -590,7 +590,8 @@
          for (let n = 0; n < opts.length; ++n) {
             let entry = opts[n];
 
-            if (!('name' in entry)) continue;
+            if (!('name' in entry))
+               continue;
 
             let shortname = MakeShortName(key, entry.name);
 

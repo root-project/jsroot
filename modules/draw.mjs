@@ -204,7 +204,8 @@ function getDrawHandle(kind, selector) {
    for (let i = 0; i < drawFuncs.lst.length; ++i) {
       const h = drawFuncs.lst[i];
       if (isStr(h.name)) {
-         if (h.name !== search) continue;
+         if (h.name !== search)
+            continue;
       } else if (!search.match(h.name))
          continue;
 
@@ -269,13 +270,18 @@ function getDrawSettings(kind, selector) {
    for (let cnt = 0; cnt < 1000; ++cnt) {
       const h = getDrawHandle(kind, cnt);
       if (!h) break;
-      if (!res.handle) res.handle = h;
-      if (h.noinspect) noinspect = true;
-      if (h.noappend) res.noappend = true;
-      if (h.expand || h.get_expand || h.expand_item || h.can_expand) canexpand = true;
+      if (!res.handle)
+         res.handle = h;
+      if (h.noinspect)
+         noinspect = true;
+      if (h.noappend)
+         res.noappend = true;
+      if (h.expand || h.get_expand || h.expand_item || h.can_expand)
+         canexpand = true;
       if (!h.func && !h.class && !h.draw) break;
       isany = true;
-      if (h.opt === undefined) continue;
+      if (h.opt === undefined)
+         continue;
       let opt = h.opt;
       if (isStr(h.opt2)) opt += h.opt2;
       const opts = opt.split(';');
@@ -292,7 +298,8 @@ function getDrawSettings(kind, selector) {
          if (res.opts.indexOf(opts[i]) < 0)
             res.opts.push(opts[i]);
       }
-      if (h.theonly) break;
+      if (h.theonly)
+         break;
    }
 
    if (selector.indexOf('noinspect') >= 0)

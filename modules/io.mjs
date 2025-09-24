@@ -2776,7 +2776,8 @@ class TDirectory {
       let bestkey = null;
       for (let i = 0; i < this.fKeys.length; ++i) {
          const key = this.fKeys[i];
-         if (!key || (key.fName !== keyname)) continue;
+         if (!key || (key.fName !== keyname))
+            continue;
          if (key.fCycle === cycle) { bestkey = key; break; }
          if ((cycle < 0) && (!bestkey || (key.fCycle > bestkey.fCycle))) bestkey = key;
       }
@@ -3265,8 +3266,10 @@ class TFile {
 
       for (let j = 0; j < this.fDirectories.length; ++j) {
          const dir = this.fDirectories[j];
-         if (dir.dir_name !== dirname) continue;
-         if ((cycle !== undefined) && (dir.dir_cycle !== cycle)) continue;
+         if (dir.dir_name !== dirname)
+            continue;
+         if ((cycle !== undefined) && (dir.dir_cycle !== cycle))
+            continue;
          return dir;
       }
       return null;
@@ -3280,8 +3283,12 @@ class TFile {
       let bestkey = null;
       for (let i = 0; i < this.fKeys.length; ++i) {
          const key = this.fKeys[i];
-         if (!key || (key.fName !== keyname)) continue;
-         if (key.fCycle === cycle) { bestkey = key; break; }
+         if (!key || (key.fName !== keyname))
+            continue;
+         if (key.fCycle === cycle) {
+            bestkey = key;
+            break;
+         }
          if ((cycle < 0) && (!bestkey || (key.fCycle > bestkey.fCycle))) bestkey = key;
       }
       if (bestkey)
@@ -3427,7 +3434,8 @@ class TFile {
 
       for (let k = 0; k < lst.arr.length; ++k) {
          const si = lst.arr[k];
-         if (!si.fElements) continue;
+         if (!si.fElements)
+            continue;
          for (let l = 0; l < si.fElements.arr.length; ++l) {
             const elem = si.fElements.arr[l];
             if (!elem.fTypeName || !elem.fType)

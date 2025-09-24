@@ -398,7 +398,8 @@ function findBranchComplex(tree, name, lst = undefined, only_search = false) {
       // check where point is
       let pnt = brname.length;
       if (brname[pnt - 1] === '.') pnt--;
-      if (search[pnt] !== '.') continue;
+      if (search[pnt] !== '.')
+         continue;
 
       res = findBranchComplex(tree, search, lst.arr[n].fBranches) ||
             findBranchComplex(tree, search.slice(pnt + 1), lst.arr[n].fBranches) ||

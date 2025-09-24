@@ -194,7 +194,8 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
    for (k = 0; k < levels.length; ++k) {
       ipoly = polysort[k];
       poly = polys[ipoly];
-      if (!poly) continue;
+      if (!poly)
+         continue;
 
       const colindx = has_func ? palette.calcColorIndex(ipoly, levels.length) : ipoly,
             xx = poly.fX, yy = poly.fY, np2 = poly.fLastPoint+1,
@@ -378,15 +379,19 @@ class Triangles3DHandler {
                side1 = side2 = side3 = side_sum = 0;
 
 
-            if (side_sum === 3) continue;
+            if (side_sum === 3)
+               continue;
             if (side_sum === -3)
                return;
 
             if (!this.loop) {
                let npnts = Math.abs(side2-side1) + Math.abs(side3-side2) + Math.abs(side1-side3);
-               if (side1 === 0) ++npnts;
-               if (side2 === 0) ++npnts;
-               if (side3 === 0) ++npnts;
+               if (side1 === 0)
+                  ++npnts;
+               if (side2 === 0)
+                  ++npnts;
+               if (side3 === 0)
+                  ++npnts;
 
                if ((npnts === 1) || (npnts === 2))
                   console.error(`FOUND npnts = ${npnts}`);
@@ -440,8 +445,12 @@ class Triangles3DHandler {
                if ((side3 > 0) || (side1 > 0)) addCrossingPoint(x3, y3, z3, x1, y1, z1, levels[lvl], true);
             }
 
-            if (pntindx === 0) continue;
-            if (pntindx < 9) { console.log(`found ${pntindx/3} points, must be at least 3`); continue; }
+            if (pntindx === 0)
+               continue;
+            if (pntindx < 9) {
+               console.log(`found ${pntindx/3} points, must be at least 3`);
+               continue;
+            }
 
             if (grid && (gridcnt === 6)) {
                for (let jj = 0; jj < 6; ++jj)
@@ -1055,7 +1064,8 @@ class TH2Painter extends THistPainter {
 
             res.matrix[yside * 3 + xside] += zz;
 
-            if ((xside !== 1) || (yside !== 1) || (cond && !cond(xx, yy))) continue;
+            if ((xside !== 1) || (yside !== 1) || (cond && !cond(xx, yy)))
+               continue;
 
             if ((res.wmax === null) || (zz > res.wmax)) {
                res.wmax = zz;
@@ -1092,7 +1102,8 @@ class TH2Painter extends THistPainter {
 
                res.matrix[yside * 3 + xside] += zz;
 
-               if ((xside !== 1) || (yside !== 1) || (cond && !cond(xx, yy))) continue;
+               if ((xside !== 1) || (yside !== 1) || (cond && !cond(xx, yy)))
+                  continue;
 
                if ((res.wmax === null) || (zz > res.wmax)) {
                   res.wmax = zz;
@@ -1143,7 +1154,8 @@ class TH2Painter extends THistPainter {
             xx = xaxis.GetBinCoord(xi + 0.5);
             for (let yi = yleft; yi < yright; ++yi) {
                yy = yaxis.GetBinCoord(yi + 0.5);
-               if (cond && !cond(xx, yy)) continue;
+               if (cond && !cond(xx, yy))
+                  continue;
                w = histo.getBinContent(xi + 1, yi + 1);
                np += w;
                sumx3 += w * Math.pow(xx - res.meanx, 3);
@@ -1454,7 +1466,8 @@ class TH2Painter extends THistPainter {
             }
 
             const cmd = handle.getBinPath(i, j);
-            if (!cmd) continue;
+            if (!cmd)
+               continue;
 
             const entry = entries[colindx];
             if (!entry)
@@ -1753,7 +1766,8 @@ class TH2Painter extends THistPainter {
       // check if similar fill attributes
       for (i = 0; i < len; ++i) {
          bin = histo.fBins.arr[i];
-         if (rejectBin(bin)) continue;
+         if (rejectBin(bin))
+            continue;
 
          const arr = (bin.fPoly._typename === clTMultiGraph) ? bin.fPoly.fGraphs.arr : [bin.fPoly];
          for (let k = 0; k < arr.length; ++k) {
@@ -1838,7 +1852,8 @@ class TH2Painter extends THistPainter {
       } else if (draw_mark) {
          for (i = 0; i < len; ++i) {
             bin = histo.fBins.arr[i];
-            if (rejectBin(bin)) continue;
+            if (rejectBin(bin))
+               continue;
 
             const arr = (bin.fPoly._typename === clTMultiGraph) ? bin.fPoly.fGraphs.arr : [bin.fPoly];
 
@@ -2472,8 +2487,10 @@ class TH2Painter extends THistPainter {
                const bin_content = proj[ii], binx = (xx[ii] + xx[ii+1])/2;
                let marker_x = center, marker_y;
 
-               if (!bin_content) continue;
-               if (!show_all && (binx >= fWhiskerDown) && (binx <= fWhiskerUp)) continue;
+               if (!bin_content)
+                  continue;
+               if (!show_all && (binx >= fWhiskerDown) && (binx <= fWhiskerUp))
+                  continue;
 
                for (let k = 0; k < bin_content; k++) {
                   if (show_scat)
@@ -2691,17 +2708,20 @@ class TH2Painter extends THistPainter {
       for (i = handle.i1; i < handle.i2; ++i) {
          for (j = handle.j1; j < handle.j2; ++j) {
             binz = histo.getBinContent(i + 1, j + 1);
-            if ((binz <= 0) || (binz < this.minbin)) continue;
+            if ((binz <= 0) || (binz < this.minbin))
+               continue;
 
             cw = handle.grx[i+1] - handle.grx[i];
             ch = handle.gry[j] - handle.gry[j+1];
-            if (cw*ch <= 0) continue;
+            if (cw * ch <= 0)
+               continue;
 
             colindx = cntr.getContourIndex(binz/cw/ch);
-            if (colindx < 0) continue;
+            if (colindx < 0)
+               continue;
 
-            if (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i + 0.5),
-                     histo.fYaxis.GetBinCoord(j + 0.5))) continue;
+            if (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i + 0.5), histo.fYaxis.GetBinCoord(j + 0.5)))
+               continue;
 
             cmd1 = `M${handle.grx[i]},${handle.gry[j+1]}`;
             if (colPaths[colindx] === undefined) {
@@ -2913,7 +2933,8 @@ class TH2Painter extends THistPainter {
 
             for (let j = i+1; j < nbins; ++j) {
                const cont = hist.getBinContent(i+1, j+1);
-               if (cont <= 0) continue;
+               if (cont <= 0)
+                  continue;
 
                const pj = pnts[j],
                      a = (pi.a + pj.a)/2,
@@ -3245,17 +3266,22 @@ class TH2Painter extends THistPainter {
                bin = histo.fBins.arr[i];
 
                // found potential bins candidate
-               if ((realx < bin.fXmin) || (realx > bin.fXmax) ||
-                   (realy < bin.fYmin) || (realy > bin.fYmax)) continue;
+               if ((realx < bin.fXmin) || (realx > bin.fXmax) || (realy < bin.fYmin) || (realy > bin.fYmax))
+                  continue;
 
                // ignore empty bins with col0 option
-               if (!bin.fContent && !o.Zero) continue;
+               if (!bin.fContent && !o.Zero)
+                  continue;
 
                let gr = bin.fPoly, numgraphs = 1;
-               if (gr._typename === clTMultiGraph) { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }
+               if (gr._typename === clTMultiGraph) {
+                  numgraphs = bin.fPoly.fGraphs.arr.length;
+                  gr = null;
+               }
 
                for (let ngr = 0; ngr < numgraphs; ++ngr) {
-                  if (!gr || (ngr > 0)) gr = bin.fPoly.fGraphs.arr[ngr];
+                  if (!gr || (ngr > 0))
+                     gr = bin.fPoly.fGraphs.arr[ngr];
                   if (gr.IsInside(realx, realy)) {
                      foundindx = i;
                      break;

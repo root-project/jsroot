@@ -29,7 +29,8 @@ globalThis.extract_tracks = async function(tree, opt) {
       for (let p = 0; p < pnts.length; ++p) {
          numtracks++;
          const arr = pnts[p];
-         if (!arr.fNPoints) continue;
+         if (!arr.fNPoints)
+            continue;
          const track = create('TGeoTrack');
          track.fNpoints = arr.fNPoints*4;
          track.fPoints = new Float32Array(track.fNpoints*4);

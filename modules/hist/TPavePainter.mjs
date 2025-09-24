@@ -481,7 +481,8 @@ class TPavePainter extends ObjectPainter {
       for (let j = 0; j < nlines; ++j) {
          const line = lines[j];
          if (j > 0) maxlen = Math.max(maxlen, line.length);
-         if ((j === 0) || (line.indexOf('|') < 0)) continue;
+         if ((j === 0) || (line.indexOf('|') < 0))
+            continue;
          if (first_stat === 0) first_stat = j;
          const parts = line.split('|');
          if (parts.length > num_cols)
@@ -612,7 +613,8 @@ class TPavePainter extends ObjectPainter {
             switch (entry._typename) {
                case clTText:
                case clTLatex: {
-                  if (!entry.fTitle || !entry.fTitle.trim()) continue;
+                  if (!entry.fTitle || !entry.fTitle.trim())
+                     continue;
 
                   let color = entry.fTextColor ? this.getColor(entry.fTextColor) : '';
                   if (!color) color = this.textatt.color;
@@ -786,7 +788,8 @@ class TPavePainter extends ObjectPainter {
 
          for (let ii = 0; ii < nlines; ++ii) {
             const entry = legend.fPrimitives.arr[ii];
-            if (isEmpty(entry)) continue; // let discard empty entry
+            if (isEmpty(entry))
+               continue; // let discard empty entry
             const icol = ii % ncols;
             column_weight[icol] = Math.max(column_weight[icol], entry.fLabel.length);
          }
@@ -1095,7 +1098,8 @@ class TPavePainter extends ObjectPainter {
 
             const lvl = levels[i] * portion + levels[i+1] * (1 - portion),
                   col = contour.getPaletteColor(draw_palette, lvl);
-            if (!col) continue;
+            if (!col)
+               continue;
 
             // console.log('z0, z1', z0, z1, 'height', s_height, 'col', col, 'portion', portion)
 

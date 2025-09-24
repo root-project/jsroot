@@ -330,7 +330,8 @@ class TH1Painter extends THistPainter {
          let sum3 = 0, sum4 = 0, np = 0;
          for (i = left; i < right; ++i) {
             xx = xaxis.GetBinCoord(i + 0.5);
-            if (cond && !cond(xx)) continue;
+            if (cond && !cond(xx))
+               continue;
             w = profile ? histo.fBinEntries[i + 1] : histo.getBinContent(i + 1);
             np += w;
             sum3 += w * Math.pow(xx - res.meanx, 3);
@@ -774,7 +775,8 @@ class TH1Painter extends THistPainter {
          for (i = left; i <= right; ++i) {
             x = xaxis.GetBinLowEdge(i+1);
 
-            if (this.logx && (x <= 0)) continue;
+            if (this.logx && (x <= 0))
+               continue;
 
             grx = Math.round(funcs.grx(x));
 
