@@ -30,8 +30,8 @@ PadButtonsHandler = {
 
       const group = this.getLayerSvg('btns_layer'),
             btn = group.select('[name=\'Toggle\']');
-
-      if (btn.empty()) return;
+      if (btn.empty())
+         return;
 
       let state = btn.property('buttons_state');
 
@@ -109,11 +109,13 @@ PadButtonsHandler = {
 
    showPadButtons() {
       const group = this.getLayerSvg('btns_layer');
-      if (group.empty()) return;
+      if (group.empty())
+         return;
 
       // clean all previous buttons
       group.selectAll('*').remove();
-      if (!this._buttons) return;
+      if (!this._buttons)
+         return;
 
       const istop = this.isTopPad(), y = 0;
       let ctrl, x = group.property('leftside') ? this.getButtonSize(1.25) : 0;
@@ -659,7 +661,8 @@ class TPadPainter extends ObjectPainter {
     * @private */
    drawActiveBorder(svg_rect, is_active) {
       if (is_active !== undefined) {
-         if (this.is_active_pad === is_active) return;
+         if (this.is_active_pad === is_active)
+            return;
          this.is_active_pad = is_active;
       }
 
@@ -672,8 +675,8 @@ class TPadPainter extends ObjectPainter {
       const cp = this.getCanvPainter();
 
       let lineatt = this.is_active_pad && cp?.highlight_gpad ? new TAttLineHandler({ style: 1, width: 1, color: 'red' }) : this.lineatt;
-
-      if (!lineatt) lineatt = new TAttLineHandler({ color: 'none' });
+      if (!lineatt)
+         lineatt = new TAttLineHandler({ color: 'none' });
 
       svg_rect.call(lineatt.func);
    }
@@ -943,7 +946,8 @@ class TPadPainter extends ObjectPainter {
       if (this.isTopPad() || (!pad_enlarged && !this.hasObjectsToDraw() && !this.#painters)) {
          if (this.#fixed_size)
             return; // canvas cannot be enlarged in such mode
-         if (!this.enlargeMain(is_escape ? false : 'toggle')) return;
+         if (!this.enlargeMain(is_escape ? false : 'toggle'))
+            return;
          if (this.enlargeMain('state') === 'off')
             svg_can.property('pad_enlarged', null);
          else
@@ -2458,8 +2462,8 @@ class TPadPainter extends ObjectPainter {
             active_pp = pp;
             active_pp.drawActiveBorder(null, false);
          }
-
-         if (use_frame) return; // do not make transformations for the frame
+         if (use_frame)
+            return; // do not make transformations for the frame
 
          const item = { prnt: pp.getPadSvg() };
          items.push(item);
@@ -2574,7 +2578,8 @@ class TPadPainter extends ObjectPainter {
       if (funcname === 'PadContextMenus') {
          evnt?.preventDefault();
          evnt?.stopPropagation();
-         if (closeMenu()) return;
+         if (closeMenu())
+            return;
 
          return createMenu(evnt, this).then(menu => {
             menu.header('Menus');
@@ -2640,13 +2645,16 @@ class TPadPainter extends ObjectPainter {
    /** @summary Add button to the pad
      * @private */
    addPadButton(btn, tooltip, funcname, keyname) {
-      if (!settings.ToolBar || this.isBatchMode()) return;
+      if (!settings.ToolBar || this.isBatchMode())
+         return;
 
-      if (!this._buttons) this._buttons = [];
+      if (!this._buttons)
+         this._buttons = [];
       // check if there are duplications
 
       for (let k = 0; k < this._buttons.length; ++k)
-         if (this._buttons[k].funcname === funcname) return;
+         if (this._buttons[k].funcname === funcname)
+            return;
 
       this._buttons.push({ btn, tooltip, funcname, keyname });
 
@@ -2690,7 +2698,8 @@ class TPadPainter extends ObjectPainter {
      * @private */
    decodeOptions(opt) {
       const pad = this.getObject();
-      if (!pad) return;
+      if (!pad)
+         return;
 
       const d = new DrawOptions(opt),
             o = this.setOptions({ GlobalColors: true, LocalColors: false, CreatePalette: 0, IgnorePalette: false, RotateFrame: false, FixFrame: false }, opt);

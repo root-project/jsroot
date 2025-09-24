@@ -513,10 +513,10 @@ class TCanvasPainter extends TPadPainter {
    /** @summary Show online canvas status
      * @private */
    showCanvasStatus(...msgs) {
-      if (this.testUI5()) return;
+      if (this.testUI5())
+         return;
 
       const br = this.brlayout || getHPainter()?.brlayout;
-
       br?.showStatus(...msgs);
    }
 
@@ -529,7 +529,8 @@ class TCanvasPainter extends TPadPainter {
    /** @summary Function used to de-activate GED
      * @private */
    removeGed() {
-      if (this.testUI5()) return;
+      if (this.testUI5())
+         return;
 
       this.registerForPadEvents(null);
 
@@ -654,7 +655,8 @@ class TCanvasPainter extends TPadPainter {
       if ((typeof document !== 'undefined') && !this.embed_canvas && this.getWebsocket())
          document.title = pad.fTitle;
 
-      if (this.#all_sections_showed) return;
+      if (this.#all_sections_showed)
+         return;
       this.#all_sections_showed = true;
 
       // used in Canvas.controller.js to avoid browser resize because of initial sections show/hide
@@ -673,7 +675,8 @@ class TCanvasPainter extends TPadPainter {
      * @private */
    processHighlightConnect(hints) {
       if (!hints?.length || !this._highlight_connect ||
-          this.doingDraw() || !this.canSendWebsocket(2)) return;
+          this.doingDraw() || !this.canSendWebsocket(2))
+          return;
 
       const hint = hints[0] || hints[1];
       if (!hint || !hint.painter?.getSnapId() || !hint.user_info)
@@ -689,7 +692,6 @@ class TCanvasPainter extends TPadPainter {
          arr[3] = hint.user_info.biny.toString();
       } else if (hint.user_info.bin !== undefined)
          arr[2] = hint.user_info.bin.toString();
-
 
       const msg = JSON.stringify(arr);
 
