@@ -4,7 +4,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '24/09/2025',
+version_date = '25/09/2025',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -142,7 +142,8 @@ if ((typeof document !== 'undefined') && (typeof window !== 'undefined') && (typ
   * @return {Number} 0 - not array, 1 - regular array, 2 - typed array
   * @private */
 function isArrayProto(proto) {
-    if ((proto.length < 14) || proto.indexOf('[object ')) return 0;
+    if ((proto.length < 14) || proto.indexOf('[object '))
+      return 0;
     const p = proto.indexOf('Array]');
     if ((p < 0) || (p !== proto.length - 6))
       return 0;
@@ -165,9 +166,12 @@ const constants = {
       /** @summary Use SVG rendering, slow, imprecise and not interactive, not recommended */
       SVG: 3,
       fromString(s) {
-         if ((s === 'webgl') || (s === 'gl')) return this.WebGL;
-         if (s === 'img') return this.WebGLImage;
-         if (s === 'svg') return this.SVG;
+         if ((s === 'webgl') || (s === 'gl'))
+            return this.WebGL;
+         if (s === 'img')
+            return this.WebGLImage;
+         if (s === 'svg')
+            return this.SVG;
          return this.Default;
       }
    },
@@ -186,8 +190,10 @@ const constants = {
       EmbedSVG: 3,
       /** @summary Convert string values into number  */
       fromString(s) {
-         if (s === 'embed') return this.Embed;
-         if (s === 'overlay') return this.Overlay;
+         if (s === 'embed')
+            return this.Embed;
+         if (s === 'overlay')
+            return this.Overlay;
          return this.Default;
       }
    },
@@ -577,13 +583,15 @@ function BIT(n) { return 1 << n; }
   * @return {object} cloned object
   * @private */
 function clone(src, map, nofunc) {
-   if (!src) return null;
+   if (!src)
+      return null;
 
    if (!map)
       map = { obj: [], clones: [], nofunc };
    else {
       const i = map.obj.indexOf(src);
-      if (i >= 0) return map.clones[i];
+      if (i >= 0)
+         return map.clones[i];
    }
 
    const arr_kind = isArrayProto(Object.prototype.toString.apply(src));
@@ -639,7 +647,8 @@ let addMethods = null;
   * @param {object|string} json  object where references will be replaced
   * @return {object} parsed object */
 function parse(json) {
-   if (!json) return null;
+   if (!json)
+      return null;
 
    const obj = isStr(json) ? JSON.parse(json) : json, map = [];
    let newfmt;
@@ -771,7 +780,8 @@ function parse(json) {
   * @param {string} json string to parse
   * @return {Array} array of parsed elements */
 function parseMulti(json) {
-   if (!json) return null;
+   if (!json)
+      return null;
    const arr = JSON.parse(json);
    if (arr?.length) {
       for (let i = 0; i < arr.length; ++i)
@@ -793,13 +803,16 @@ function parseMulti(json) {
   * obj.fTitle = 'New histogram title';
   * let json = toJSON(obj); */
 function toJSON(obj, spacing) {
-   if (!isObject(obj)) return '';
+   if (!isObject(obj))
+      return '';
 
    const map = [], // map of stored objects
    copy_value = value => {
-      if (isFunc(value)) return undefined;
+      if (isFunc(value))
+         return undefined;
 
-      if ((value === undefined) || (value === null) || !isObject(value)) return value;
+      if ((value === undefined) || (value === null) || !isObject(value))
+         return value;
 
       // typed array need to be converted into normal array, otherwise looks strange
       if (isArrayProto(Object.prototype.toString.apply(value)) > 0) {
@@ -811,7 +824,8 @@ function toJSON(obj, spacing) {
 
       // this is how reference is code
       const refid = map.indexOf(value);
-      if (refid >= 0) return { $ref: refid };
+      if (refid >= 0)
+         return { $ref: refid };
 
       const ks = Object.keys(value), len = ks.length, tgt = {};
 
@@ -857,13 +871,15 @@ function decodeUrl(url) {
    };
 
    if (!url || !isStr(url)) {
-      if (settings.IgnoreUrlOptions || (typeof document === 'undefined')) return res;
+      if (settings.IgnoreUrlOptions || (typeof document === 'undefined'))
+         return res;
       url = document.URL;
    }
    res.url = url;
 
    const p1 = url.indexOf('?');
-   if (p1 < 0) return res;
+   if (p1 < 0)
+      return res;
    url = decodeURI(url.slice(p1+1));
 
    while (url) {
@@ -899,8 +915,10 @@ function decodeUrl(url) {
 /** @summary Find function with given name
   * @private */
 function findFunction(name) {
-   if (isFunc(name)) return name;
-   if (!isStr(name)) return null;
+   if (isFunc(name))
+      return name;
+   if (!isStr(name))
+      return null;
    const names = name.split('.');
    let elem = globalThis;
 
@@ -1537,11 +1555,15 @@ function create(typename, target) {
   * h1.fXaxis.fLabelSize = 0.02; */
 function createHistogram(typename, nbinsx, nbinsy, nbinsz) {
    const histo = create(typename);
-   if (!histo.fXaxis || !histo.fYaxis || !histo.fZaxis) return null;
+   if (!histo.fXaxis || !histo.fYaxis || !histo.fZaxis)
+      return null;
    histo.fName = 'hist'; histo.fTitle = 'title';
-   if (nbinsx) extend(histo.fXaxis, { fNbins: nbinsx, fXmin: 0, fXmax: nbinsx });
-   if (nbinsy) extend(histo.fYaxis, { fNbins: nbinsy, fXmin: 0, fXmax: nbinsy });
-   if (nbinsz) extend(histo.fZaxis, { fNbins: nbinsz, fXmin: 0, fXmax: nbinsz });
+   if (nbinsx)
+      extend(histo.fXaxis, { fNbins: nbinsx, fXmin: 0, fXmax: nbinsx });
+   if (nbinsy)
+      extend(histo.fYaxis, { fNbins: nbinsy, fXmin: 0, fXmax: nbinsy });
+   if (nbinsz)
+      extend(histo.fZaxis, { fNbins: nbinsz, fXmin: 0, fXmax: nbinsz });
    switch (parseInt(typename[2])) {
       case 1: if (nbinsx) histo.fNcells = nbinsx+2; break;
       case 2: if (nbinsx && nbinsy) histo.fNcells = (nbinsx+2) * (nbinsy+2); break;
@@ -1573,9 +1595,12 @@ function setHistogramTitle(histo, title) {
    else {
       const arr = title.split(';');
       histo.fTitle = arr[0];
-      if (arr.length > 1) histo.fXaxis.fTitle = arr[1];
-      if (arr.length > 2) histo.fYaxis.fTitle = arr[2];
-      if (arr.length > 3) histo.fZaxis.fTitle = arr[3];
+      if (arr.length > 1)
+         histo.fXaxis.fTitle = arr[1];
+      if (arr.length > 2)
+         histo.fYaxis.fTitle = arr[2];
+      if (arr.length > 3)
+         histo.fZaxis.fTitle = arr[3];
    }
 }
 
@@ -1660,7 +1685,8 @@ const methodsCache = {};
 function getMethods(typename, obj) {
    let m = methodsCache[typename];
    const has_methods = (m !== undefined);
-   if (!has_methods) m = {};
+   if (!has_methods)
+      m = {};
 
    // Due to binary I/O such TObject methods may not be set for derived classes
    // Therefore when methods requested for given object, check also that basic methods are there
@@ -1672,7 +1698,8 @@ function getMethods(typename, obj) {
       }
    }
 
-   if (has_methods) return m;
+   if (has_methods)
+      return m;
 
    if ((typename === clTList) || (typename === clTHashList)) {
       m.Clear = function() {
@@ -1728,10 +1755,11 @@ function getMethods(typename, obj) {
          return (this.fNames && this.fNames[n]) ? this.fNames[n] : `p${n}`;
       };
       m.GetParValue = function(n) {
-         if (this.fParams?.fParameters) return this.fParams.fParameters[n];
-         if (this.fFormula?.fClingParameters) return this.fFormula.fClingParameters[n];
-         if (this.fParams) return this.fParams[n];
-         return undefined;
+         if (this.fParams?.fParameters)
+            return this.fParams.fParameters[n];
+         if (this.fFormula?.fClingParameters)
+            return this.fFormula.fClingParameters[n];
+         return this.fParams ? this.fParams[n] : undefined;
       };
       m.GetParError = function(n) {
          return this.fParErrors ? this.fParErrors[n] : undefined;
@@ -1820,11 +1848,12 @@ function getMethods(typename, obj) {
       m.Divide = function(nx, ny, xmargin = 0.01, ymargin = 0.01, color = 0) {
          if (!ny) {
             const ndiv = nx;
-            if (ndiv < 2) return this;
+            if (ndiv < 2)
+               return this;
             nx = ny = Math.round(Math.sqrt(ndiv));
             if (nx * ny < ndiv) nx += 1;
          }
-         if (nx*ny < 2)
+         if (nx * ny < 2)
             return 0;
          this.fPrimitives.Clear();
          const dy = 1/ny, dx = 1/nx;
@@ -1873,7 +1902,8 @@ function getMethods(typename, obj) {
          m.getBin = function(x, y, z) { return (x + (this.fXaxis.fNbins+2) * (y + (this.fYaxis.fNbins+2) * z)); };
          m.getBinContent = function(x, y, z) {
             const bin = this.getBin(x, y, z);
-            if (bin < 0 || bin >= this.fNcells || this.fBinEntries[bin] < 1e-300) return 0;
+            if (bin < 0 || bin >= this.fNcells || this.fBinEntries[bin] < 1e-300)
+               return 0;
             return this.fArray ? this.fArray[bin]/this.fBinEntries[bin] : 0;
          };
          m.getBinEntries = function(x, y, z) {
@@ -1884,7 +1914,8 @@ function getMethods(typename, obj) {
          m.getBin = function(x, y) { return (x + (this.fXaxis.fNbins+2) * y); };
          m.getBinContent = function(x, y) {
             const bin = this.getBin(x, y);
-            if (bin < 0 || bin >= this.fNcells || this.fBinEntries[bin] < 1e-300) return 0;
+            if (bin < 0 || bin >= this.fNcells || this.fBinEntries[bin] < 1e-300)
+               return 0;
             return this.fArray ? this.fArray[bin]/this.fBinEntries[bin] : 0;
          };
          m.getBinEntries = function(x, y) {
@@ -1894,7 +1925,8 @@ function getMethods(typename, obj) {
       } else {
          m.getBin = function(x) { return x; };
          m.getBinContent = function(bin) {
-            if (bin < 0 || bin >= this.fNcells || this.fBinEntries[bin] < 1e-300) return 0;
+            if (bin < 0 || bin >= this.fNcells || this.fBinEntries[bin] < 1e-300)
+               return 0;
             return this.fArray ? this.fArray[bin]/this.fBinEntries[bin] : 0;
          };
          m.getBinEntries = function(bin) {
@@ -1902,7 +1934,8 @@ function getMethods(typename, obj) {
          };
       }
       m.getBinEffectiveEntries = function(bin) {
-         if (bin < 0 || bin >= this.fNcells) return 0;
+         if (bin < 0 || bin >= this.fNcells)
+            return 0;
          const sumOfWeights = this.fBinEntries[bin];
          if (!this.fBinSumw2 || this.fBinSumw2.length !== this.fNcells)
             // this can happen  when reading an old file
@@ -1911,12 +1944,14 @@ function getMethods(typename, obj) {
          return (sumOfWeightsSquare > 0) ? sumOfWeights * sumOfWeights / sumOfWeightsSquare : 0;
       };
       m.getBinError = function(bin) {
-         if (bin < 0 || bin >= this.fNcells) return 0;
+         if (bin < 0 || bin >= this.fNcells)
+            return 0;
          const cont = this.fArray[bin],               // sum of bin w *y
                sum = this.fBinEntries[bin],          // sum of bin weights
                err2 = this.fSumw2[bin],               // sum of bin w * y^2
                neff = this.getBinEffectiveEntries(bin);  // (sum of w)^2 / (sum of w^2)
-         if (sum < 1e-300) return 0;                  // for empty bins
+         if (sum < 1e-300)
+            return 0;                  // for empty bins
          const EErrorType = { kERRORMEAN: 0, kERRORSPREAD: 1, kERRORSPREADI: 2, kERRORSPREADG: 3 };
          // case the values y are gaussian distributed y +/- sigma and w = 1/sigma^2
          if (this.fErrorMode === EErrorType.kERRORSPREADG)
@@ -1924,7 +1959,8 @@ function getMethods(typename, obj) {
          // compute variance in y (eprim2) and standard deviation in y (eprim)
          const contsum = cont/sum, eprim = Math.sqrt(Math.abs(err2/sum - contsum**2));
          if (this.fErrorMode === EErrorType.kERRORSPREADI) {
-            if (eprim) return eprim / Math.sqrt(neff);
+            if (eprim)
+               return eprim / Math.sqrt(neff);
             // in case content y is an integer (so each my has an error +/- 1/sqrt(12)
             // when the std(y) is zero
             return 1.0 / Math.sqrt(12*neff);
@@ -1932,7 +1968,8 @@ function getMethods(typename, obj) {
          // if approximate compute the sums (of w, wy and wy2) using all the bins
          //  when the variance in y is zero
          // case option 'S' return standard deviation in y
-         if (this.fErrorMode === EErrorType.kERRORSPREAD) return eprim;
+         if (this.fErrorMode === EErrorType.kERRORSPREAD)
+            return eprim;
          // default case : fErrorMode = kERRORMEAN
          // return standard error on the mean of y
          return eprim/Math.sqrt(neff);
