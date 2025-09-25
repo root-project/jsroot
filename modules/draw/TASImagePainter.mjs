@@ -31,7 +31,8 @@ class TASImagePainter extends ObjectPainter {
    createRGBA(nlevels) {
       const obj = this.getObject(),
             pal = obj?.fPalette;
-      if (!pal) return null;
+      if (!pal)
+         return null;
 
       const rgba = new Array((nlevels+1) * 4).fill(0); // precalculated colors
 
@@ -132,7 +133,8 @@ class TASImagePainter extends ObjectPainter {
 
    getImageZoomRange(fp, constRatio, width, height) {
       const res = { xmin: 0, xmax: width, ymin: 0, ymax: height };
-      if (!fp) return res;
+      if (!fp)
+         return res;
 
       let offx = 0, offy = 0, sizex = width, sizey = height;
 

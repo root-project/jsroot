@@ -1408,7 +1408,8 @@ function translateMath(str, kind, color, painter) {
          str = str.replace(new RegExp(`\\\\\\b${x}\\b`, 'g'), `\\${mathjax_remap[x]}`);
    }
 
-   if (!isStr(color)) return str;
+   if (!isStr(color))
+      return str;
 
    // MathJax SVG converter use colors in normal form
    // if (color.indexOf('rgb(') >= 0)
@@ -1422,9 +1423,11 @@ function translateMath(str, kind, color, painter) {
   * @private */
 function repairMathJaxSvgSize(painter, mj_node, svg, arg) {
    const transform = value => {
-      if (!value || !isStr(value) || (value.length < 3)) return null;
+      if (!value || !isStr(value) || (value.length < 3))
+         return null;
       const p = value.indexOf('ex');
-      if ((p < 0) || (p !== value.length - 2)) return null;
+      if ((p < 0) || (p !== value.length - 2))
+         return null;
       value = parseFloat(value.slice(0, p));
       return Number.isFinite(value) ? value * arg.font.size * 0.5 : null;
    };

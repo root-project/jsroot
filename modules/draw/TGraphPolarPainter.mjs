@@ -82,8 +82,10 @@ class TGraphPolargramPainter extends TooltipHandler {
 
    /** @summary format label for radius ticks */
    format(radius) {
-      if (radius === Math.round(radius)) return radius.toString();
-      if (this.ndig > 10) return radius.toExponential(4);
+      if (radius === Math.round(radius))
+         return radius.toString();
+      if (this.ndig > 10)
+         return radius.toExponential(4);
       return radius.toFixed((this.ndig > 0) ? this.ndig : 0);
    }
 
@@ -611,7 +613,8 @@ class TGraphPolarPainter extends ObjectPainter {
 
    /** @summary Provide tooltip at specified point */
    extractTooltip(pnt) {
-      if (!pnt) return null;
+      if (!pnt)
+         return null;
 
       const graph = this.getObject(),
             main = this.getMainPainter();

@@ -129,7 +129,8 @@ function extendRootColors(jsarr, objarr, grayscale) {
          jsarr[n] = gbl_colors_list[n];
    }
 
-   if (!objarr) return jsarr;
+   if (!objarr)
+      return jsarr;
 
    let rgb_array = objarr;
    if (objarr._typename && objarr.arr) {
@@ -178,7 +179,8 @@ function getColor(indx) {
   * @return Color index or -1 if fails
   * @private */
 function findColor(name) {
-   if (!name) return -1;
+   if (!name)
+      return -1;
    for (let indx = 0; indx < gbl_colors_list.length; ++indx) {
       if (gbl_colors_list[indx] === name)
          return indx;
@@ -236,11 +238,16 @@ class ColorPalette {
 
 function createDefaultPalette(grayscale) {
    const hue2rgb = (p, q, t) => {
-      if (t < 0) t += 1;
-      if (t > 1) t -= 1;
-      if (t < 1 / 6) return p + (q - p) * 6 * t;
-      if (t < 1 / 2) return q;
-      if (t < 2 / 3) return p + (q - p) * (2/3 - t) * 6;
+      if (t < 0)
+         t += 1;
+      if (t > 1)
+         t -= 1;
+      if (t < 1 / 6)
+         return p + (q - p) * 6 * t;
+      if (t < 1 / 2)
+         return q;
+      if (t < 2 / 3)
+         return p + (q - p) * (2/3 - t) * 6;
       return p;
    }, HLStoRGB = (h, l, s) => {
       const q = (l < 0.5) ? l * (1 + s) : l + s - l * s,

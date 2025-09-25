@@ -31,13 +31,17 @@ class RObjectPainter extends ObjectPainter {
    /** @summary Evaluate v7 attributes using fAttr storage and configured RStyle */
    v7EvalAttr(name, dflt) {
       const obj = this.getObject();
-      if (!obj) return dflt;
-      if (this.cssprefix) name = this.cssprefix + name;
+      if (!obj)
+         return dflt;
+      if (this.cssprefix)
+         name = this.cssprefix + name;
 
       const type_check = res => {
-         if (dflt === undefined) return res;
+         if (dflt === undefined)
+            return res;
          const typ1 = typeof dflt, typ2 = typeof res;
-         if (typ1 === typ2) return res;
+         if (typ1 === typ2)
+            return res;
          if (typ1 === 'boolean') {
             if (typ2 === 'string')
                return (res !== '') && (res !== '0') && (res !== 'no') && (res !== 'off');
@@ -50,7 +54,8 @@ class RObjectPainter extends ObjectPainter {
 
       if (obj.fAttr?.m) {
          const value = obj.fAttr.m[name];
-         if (value) return type_check(value.v); // found value direct in attributes
+         if (value)
+            return type_check(value.v); // found value direct in attributes
       }
 
       if (this.rstyle?.fBlocks) {
@@ -63,7 +68,8 @@ class RObjectPainter extends ObjectPainter {
 
             if (match && block.map?.m) {
                const value = block.map.m[name.toLowerCase()];
-               if (value) return type_check(value.v);
+               if (value)
+                  return type_check(value.v);
             }
          }
       }
@@ -146,7 +152,8 @@ class RObjectPainter extends ObjectPainter {
    /** @summary Evaluate RColor using attribute storage and configured RStyle */
    v7EvalColor(name, dflt) {
       let val = this.v7EvalAttr(name, '');
-      if (!val || !isStr(val)) return dflt;
+      if (!val || !isStr(val))
+         return dflt;
 
       if (val === 'auto') {
          const pp = this.getPadPainter();

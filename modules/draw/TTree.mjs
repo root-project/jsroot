@@ -219,9 +219,7 @@ function createTreePlayer(player) {
       const elem = this.selectDom().select(sel);
       if (elem.empty())
          return;
-      const val = elem.property('value');
-      if (val !== undefined) return val;
-      return elem.attr('value');
+      return elem.property('value') ?? elem.attr('value');
    };
 
    player.performLocalDraw = function() {
@@ -233,17 +231,24 @@ function createTreePlayer(player) {
 
       if (frame.select('.treedraw_more').empty()) {
          args.cut = this.getValue('.treedraw_cut');
-         if (!args.cut) delete args.cut;
+         if (!args.cut)
+            delete args.cut;
 
          args.drawopt = this.getValue('.treedraw_opt');
-         if (args.drawopt === 'dump') { args.dump = true; args.drawopt = ''; }
-         if (!args.drawopt) delete args.drawopt;
+         if (args.drawopt === 'dump') {
+            args.dump = true;
+            args.drawopt = '';
+         }
+         if (!args.drawopt)
+            delete args.drawopt;
 
          args.numentries = parseInt(this.getValue('.treedraw_number'));
-         if (!Number.isInteger(args.numentries)) delete args.numentries;
+         if (!Number.isInteger(args.numentries))
+            delete args.numentries;
 
          args.firstentry = parseInt(this.getValue('.treedraw_first'));
-         if (!Number.isInteger(args.firstentry)) delete args.firstentry;
+         if (!Number.isInteger(args.firstentry))
+            delete args.firstentry;
       }
 
       cleanup(this.drawid);
@@ -258,7 +263,8 @@ function createTreePlayer(player) {
    player.getDrawOpt = function() {
       let res = 'player';
       const expr = this.getValue('.treedraw_varexp');
-      if (expr) res += ':' + expr;
+      if (expr)
+         res += ':' + expr;
       return res;
    };
 
@@ -276,9 +282,11 @@ function createTreePlayer(player) {
          expr += `>>${hname}`;
        else {
          hname = expr.slice(pos+2);
-         if (hname[0] === '+') hname = hname.slice(1);
+         if (hname[0] === '+')
+            hname = hname.slice(1);
          const pos2 = hname.indexOf('(');
-         if (pos2 > 0) hname = hname.slice(0, pos2);
+         if (pos2 > 0)
+            hname = hname.slice(0, pos2);
       }
 
       if (frame.select('.treedraw_more').empty()) {
@@ -330,25 +338,30 @@ function drawTreePlayer(hpainter, itemname, askey, asleaf) {
    let item = hpainter.findItem(itemname),
        expr = '', leaf_cnt = 0;
    const top = hpainter.getTopOnlineItem(item);
-   if (!item || !top) return null;
+   if (!item || !top)
+      return null;
 
    if (asleaf) {
       expr = item._name;
       while (item && !item._ttree) item = item._parent;
-      if (!item) return null;
+      if (!item)
+         return null;
       itemname = hpainter.itemFullName(item);
    }
 
    const url = hpainter.getOnlineItemUrl(itemname);
-   if (!url) return null;
+   if (!url)
+      return null;
 
    const root_version = top._root_version || 400129, // by default use version number 6-27-01
 
     mdi = hpainter.getDisplay();
-   if (!mdi) return null;
+   if (!mdi)
+      return null;
 
    const frame = mdi.findFrame(itemname, true);
-   if (!frame) return null;
+   if (!frame)
+      return null;
 
    const divid = d3_select(frame).attr('id'),
        player = new BasePainter(divid);
