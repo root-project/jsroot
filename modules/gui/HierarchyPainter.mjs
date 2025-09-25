@@ -3613,7 +3613,10 @@ class HierarchyPainter extends BasePainter {
             opt = (separ > 0) ? opt.slice(separ+1) : '';
 
             let canarray = true;
-            if (part[0] === '#') { part = part.slice(1); canarray = false; }
+            if (part[0] === '#') {
+               part = part.slice(1);
+               canarray = false;
+            }
 
             const val = d.get(part, null);
 

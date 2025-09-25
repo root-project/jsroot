@@ -618,9 +618,11 @@ class RAxisPainter extends RObjectPainter {
 
          if (this.handle.kind === 1) {
             // if not showing labels, not show large tick
-            if ((this.kind === kAxisLabels) || (this.format(this.handle.tick, true) !== null)) h1 = this.ticksSize;
+            if ((this.kind === kAxisLabels) || (this.format(this.handle.tick, true) !== null))
+               h1 = this.ticksSize;
 
-            if (main_draw) this.ticks.push(grpos); // keep graphical positions of major ticks
+            if (main_draw)
+               this.ticks.push(grpos); // keep graphical positions of major ticks
          }
 
          if (ticks_plusminus > 0)

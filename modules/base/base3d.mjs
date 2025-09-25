@@ -385,7 +385,7 @@ const Handling3DDrawings = {
          // case when 3D object drawn without canvas
 
          const main = this.selectDom().node();
-         if (main !== null) {
+         if (main) {
             main.appendChild(canv);
             canv.painter = this;
             canv.$jsroot = '3d'; // mark canvas as added by jsroot
@@ -808,7 +808,7 @@ class TooltipFor3D {
 
    /** @summary Hide tooltip */
    hide() {
-      if (this.tt !== null)
+      if (this.tt)
          this.parent.removeChild(this.tt);
 
       this.tt = null;

@@ -1417,11 +1417,15 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       let is_major = (zticks.kind === 1),
           lbl = this.z_handle.format(zticks.tick, 2);
 
-      if (lbl === null) { is_major = false; lbl = ''; }
+      if (lbl === null) {
+         is_major = false;
+         lbl = '';
+      }
 
       if (is_major && lbl && opts.draw && (!center_z || !zticks.last_major())) {
          const mod = zticks.get_modifier();
-         if (mod?.fLabText) lbl = mod.fLabText;
+         if (mod?.fLabText)
+            lbl = mod.fLabText;
 
          const text3d = createLatexGeometry(this, lbl, this.z_handle.labelsFont.size);
          text3d.computeBoundingBox();
@@ -1429,7 +1433,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
                draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
          text3d.translate(-draw_width, -draw_height/2, 0);
 
-        if (mod?.fTextColor) text3d.color = this.getColor(mod.fTextColor);
+         if (mod?.fTextColor)
+            text3d.color = this.getColor(mod.fTextColor);
          text3d.grz = grz;
          lbls.push(text3d);
 

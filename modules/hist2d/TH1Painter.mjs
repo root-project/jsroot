@@ -274,7 +274,8 @@ class TH1Painter extends THistPainter {
       let stat_sumw = 0, stat_sumw2 = 0, stat_sumwx = 0, stat_sumwx2 = 0, stat_sumwy = 0, stat_sumwy2 = 0,
           i, xx, w, xmax = null, wmax = null;
 
-      if (!isFunc(cond)) cond = null;
+      if (!isFunc(cond))
+         cond = null;
 
       for (i = left; i < right; ++i) {
          xx = xaxis.GetBinCoord(i + 0.5);

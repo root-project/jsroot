@@ -294,8 +294,7 @@ function registerForResize(handle, delay) {
    if (!handle || isBatchMode() || (typeof window === 'undefined') || (typeof document === 'undefined'))
       return;
 
-   let myInterval = null, myDelay = delay || 300;
-   if (myDelay < 20) myDelay = 20;
+   let myInterval = null;
 
    function ResizeTimer() {
       myInterval = null;
@@ -319,8 +318,9 @@ function registerForResize(handle, delay) {
    }
 
    window.addEventListener('resize', () => {
-      if (myInterval !== null) clearTimeout(myInterval);
-      myInterval = setTimeout(ResizeTimer, myDelay);
+      if (myInterval)
+         clearTimeout(myInterval);
+      myInterval = setTimeout(ResizeTimer, Math.max(20, delay || 300));
    });
 }
 

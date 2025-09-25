@@ -95,10 +95,12 @@ class TAttMarkerHandler {
             mv = ''; // pathological case, but let exclude it
          else {
             const m2 = `m${xx-this.lastx},${yy - this.lasty}`;
-            if (m2.length < mv.length) mv = m2;
+            if (m2.length < mv.length)
+               mv = m2;
          }
       }
-      this.lastx = xx + 1; this.lasty = yy;
+      this.lastx = xx + 1;
+      this.lasty = yy;
       return mv + 'h1';
    }
 
