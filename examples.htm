@@ -475,9 +475,9 @@
                });
 
          return draw('plaindraw', object, option).then(res => {
-             if (!test_interactivity && (!keyid || (entry?.interactive !== true))) return res;
-
-             return testInteractivity({ dom: document.getElementById('plaindraw'), timeout: testinterval, debug: show_debug });
+            if (!test_interactivity && (!keyid || (entry?.interactive !== true)))
+               return res;
+            return testInteractivity({ dom: document.getElementById('plaindraw'), timeout: testinterval, debug: show_debug });
          })
       }
 
@@ -515,7 +515,8 @@
             if (latex !== null)
                settings.Latex = prev_latex;
 
-            if (!test_interactivity) return res;
+            if (!test_interactivity)
+               return res;
 
             const prs = [];
 
@@ -693,9 +694,6 @@
             url += tz(entry);;
          }
 
-         // console.log(`KEY ${keyid} opt ${opt}`);
-         // if ((url.length == 0) || (keyid != 'Misc')) return runBigTest(0);
-
          hpainter?.cleanup();
          hpainter = null;
          cleanup('plaindraw');
@@ -707,7 +705,6 @@
                url += '&interactive=0';
 
             testfile = testobj = null;
-            // if (keyid == 'TGeo') return runBigTest(0);  // ignore TGeo URLs - too complex
 
             drawUrl(url).then(TestContinue, TestFailure);
          } else if (jsonname) {

@@ -381,9 +381,11 @@
       }
 
       function GetGithubBrunch(is_test) {
-          if (source_dir.indexOf('/dev/') > 0 && !is_test) return 'dev/';
-          if (source_dir.indexOf('/v6/') > 0) return 'v6/';
-          return 'master/';
+         if (source_dir.indexOf('/dev/') > 0 && !is_test)
+            return 'dev/';
+         if (source_dir.indexOf('/v6/') > 0)
+            return 'v6/';
+         return 'master/';
        }
 
       let examples = {

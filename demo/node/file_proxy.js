@@ -22,7 +22,8 @@ class FileProxySync extends FileProxy {
 
    openFile() {
       this.fd = openSync(this.filename);
-      if (!this.fd) return Promise.resolve(false);
+      if (!this.fd)
+         return Promise.resolve(false);
       let stats = statSync(this.filename);
       this.size = stats.size;
       return Promise.resolve(true);
