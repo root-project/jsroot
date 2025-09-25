@@ -204,10 +204,12 @@ class RAxisPainter extends RObjectPainter {
    formatLabels(d) {
       const indx = Math.round(d);
       if (this.axis?.fLabelsIndex) {
-         if ((indx < 0) || (indx >= this.axis.fNBinsNoOver)) return null;
+         if ((indx < 0) || (indx >= this.axis.fNBinsNoOver))
+            return null;
          for (let i = 0; i < this.axis.fLabelsIndex.length; ++i) {
             const pair = this.axis.fLabelsIndex[i];
-            if (pair.second === indx) return pair.first;
+            if (pair.second === indx)
+               return pair.first;
          }
       } else {
          const labels = this.getObject().fLabels;
@@ -279,8 +281,7 @@ class RAxisPainter extends RObjectPainter {
       };
 
       handle.next_major_grpos = function() {
-         if (this.nmajor >= this.major.length) return null;
-         return this.func(this.major[this.nmajor]);
+         return this.nmajor >= this.major.length ? null : this.func(this.major[this.nmajor]);
       };
 
       handle.get_modifier = function() { return null; };
@@ -1014,7 +1015,8 @@ class RAxisPainter extends RObjectPainter {
 
       const promise = this.drawAxis(g, makeTranslate(pos.x, pos.y));
 
-      if (this.isBatchMode()) return promise;
+      if (this.isBatchMode())
+         return promise;
 
       return promise.then(() => {
          if (settings.ContextMenu) {

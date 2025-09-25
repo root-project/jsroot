@@ -127,10 +127,13 @@ function addDragHandler(_painter, arg) {
       function addElement(cursor, d) {
          const clname = 'js_' + cursor.replace(/[-]/g, '_');
          let elem = group.selectChild('.' + clname);
-         if (arg.cleanup) return elem.remove();
-         if (elem.empty()) elem = group.append('path').classed(clname, true);
+         if (arg.cleanup)
+            return elem.remove();
+         if (elem.empty())
+            elem = group.append('path').classed(clname, true);
          elem.style('opacity', 0).style('cursor', cursor).attr('d', d);
-         if (handler) elem.call(handler);
+         if (handler)
+            elem.call(handler);
       }
 
       addElement('nw-resize', 'M2,2h15v-5h-20v20h5Z');
@@ -1723,8 +1726,10 @@ class TFramePainter extends FrameInteractive {
 
    /** @summary Returns frame or sub-objects, used in GED editor */
    getObject(place) {
-      if (place === 'xaxis') return this.xaxis;
-      if (place === 'yaxis') return this.yaxis;
+      if (place === 'xaxis')
+         return this.xaxis;
+      if (place === 'yaxis')
+         return this.yaxis;
       return super.getObject();
    }
 
@@ -2157,8 +2162,10 @@ class TFramePainter extends FrameInteractive {
          scale_ymax: use_y2 ? this.scale_y2max : this.scale_ymax,
          fp: this,
          _remap(name) {
-            if ((name === 'x') && this.use_x2) return 'x2';
-            if ((name === 'y') && this.use_y2) return 'y2';
+            if ((name === 'x') && this.use_x2)
+               return 'x2';
+            if ((name === 'y') && this.use_y2)
+               return 'y2';
             return name;
          },
          swap_xy() { return this.fp.swap_xy(); },

@@ -696,10 +696,12 @@ function createInspectorContent(obj) {
 function parseAsArray(val) {
    const res = [];
 
-   if (!isStr(val)) return res;
+   if (!isStr(val))
+      return res;
 
    val = val.trim();
-   if (!val) return res;
+   if (!val)
+      return res;
 
    // return as array with single element
    if ((val.length < 2) || (val.at(0) !== '[') || (val.at(-1) !== ']')) {
@@ -712,11 +714,13 @@ function parseAsArray(val) {
 
    for (let indx = 1; indx < val.length; ++indx) {
       if (nquotes > 0) {
-         if (val[indx] === '\'') nquotes--;
+         if (val[indx] === '\'')
+            nquotes--;
          continue;
       }
       if (ndouble > 0) {
-         if (val[indx] === '"') ndouble--;
+         if (val[indx] === '"')
+            ndouble--;
          continue;
       }
       switch (val[indx]) {
@@ -890,9 +894,12 @@ class HierarchyPainter extends BasePainter {
             });
          };
 
-         if (this._file) return readFileObject(this._file);
-         if (this._localfile) return openFile(this._localfile).then(f => readFileObject(f));
-         if (this._fullurl) return openFile(this._fullurl).then(f => readFileObject(f));
+         if (this._file)
+            return readFileObject(this._file);
+         if (this._localfile)
+            return openFile(this._localfile).then(f => readFileObject(f));
+         if (this._fullurl)
+            return openFile(this._fullurl).then(f => readFileObject(f));
          return Promise.resolve(null);
       };
 
@@ -989,7 +996,8 @@ class HierarchyPainter extends BasePainter {
                           newest = top._childs[i];
                     }
                   }
-                  if (newest) return process_child(newest);
+                  if (newest)
+                     return process_child(newest);
                }
 
                let allow_index = arg.allow_index;
@@ -1107,7 +1115,8 @@ class HierarchyPainter extends BasePainter {
          }
 
          return httpRequest(url + urlargs, 'text').then(res => {
-            if (d3node.empty()) return res;
+            if (d3node.empty())
+               return res;
             const col = (res && (res !== 'false')) ? 'green' : 'red';
             d3node.style('background', col);
             if (hitem._title)
@@ -1180,9 +1189,11 @@ class HierarchyPainter extends BasePainter {
          }
 
          return this.expandItem(parentname, undefined, options !== 'hierarchy_expand_verbose').then(res => {
-            if (!res) return result;
+            if (!res)
+               return result;
             let newparentname = this.itemFullName(d.last);
-            if (newparentname) newparentname += '/';
+            if (newparentname)
+               newparentname += '/';
             return this.getObject({ name: newparentname + d.rest, rest: d.rest }, options);
          });
       }
@@ -2190,9 +2201,11 @@ class HierarchyPainter extends BasePainter {
             if (!item) item = result.item;
             let obj = result.obj;
 
-            if (!obj) return complete();
+            if (!obj)
+               return complete();
 
-            if (!updating) showProgress(`Drawing ${display_itemname} ...`);
+            if (!updating)
+               showProgress(`Drawing ${display_itemname} ...`);
 
             let handle = obj._typename ? getDrawHandle(getKindForType(obj._typename)) : null;
 
@@ -2335,7 +2348,8 @@ class HierarchyPainter extends BasePainter {
       }
 
       return this.getObject(itemname).then(res => {
-         if (!res.obj) return null;
+         if (!res.obj)
+            return null;
 
          const mp = getElementMainPainter(dom);
 
@@ -2664,9 +2678,11 @@ class HierarchyPainter extends BasePainter {
                   return find_next();
 
                return this.expandItem(d.now_found).then(res => {
-                  if (!res) return find_next();
+                  if (!res)
+                     return find_next();
                   let newname = this.itemFullName(d.last);
-                  if (newname) newname += '/';
+                  if (newname)
+                     newname += '/';
                   find_next(newname + d.rest, d.now_found);
                });
             }

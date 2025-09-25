@@ -352,11 +352,13 @@ class TPadPainter extends ObjectPainter {
      * @protected */
    getFrameSvg() {
       const layer = this.getLayerSvg('primitives_layer');
-      if (layer.empty()) return layer;
+      if (layer.empty())
+         return layer;
       let node = layer.node().firstChild;
       while (node) {
          const elem = d3_select(node);
-         if (elem.classed('root_frame')) return elem;
+         if (elem.classed('root_frame'))
+            return elem;
          node = node.nextSibling;
       }
       return d3_select(null);
@@ -452,7 +454,8 @@ class TPadPainter extends ObjectPainter {
    /** @summary Returns frame coordinates - also when frame is not drawn */
    getFrameRect() {
       const fp = this.getFramePainter();
-      if (fp) return fp.getFrameRect();
+      if (fp)
+         return fp.getFrameRect();
 
       const w = this.getPadWidth(),
             h = this.getPadHeight(),
@@ -1826,8 +1829,10 @@ class TPadPainter extends ObjectPainter {
       const szx = 0.4;
       let szy = leg.fPrimitives.arr.length;
       // no entries - no need to draw legend
-      if (!szy) return null;
-      if (szy > 8) szy = 8;
+      if (!szy)
+         return null;
+      if (szy > 8)
+         szy = 8;
       szy *= 0.1;
 
       if ((x1 === x2) || (y1 === y2)) {
@@ -2219,12 +2224,12 @@ class TPadPainter extends ObjectPainter {
    async createImage(format) {
       if ((format === 'png') || (format === 'jpeg') || (format === 'svg') || (format === 'webp') || (format === 'pdf')) {
          return this.produceImage(true, format).then(res => {
-            if (!res || (format === 'svg')) return res;
+            if (!res || (format === 'svg'))
+               return res;
             const separ = res.indexOf('base64,');
             return (separ > 0) ? res.slice(separ+7) : '';
          });
       }
-
       return '';
    }
 
@@ -2296,7 +2301,8 @@ class TPadPainter extends ObjectPainter {
          }
       });
 
-      if (is_top) return toJSON(arg);
+      if (is_top)
+         return toJSON(arg);
    }
 
    /** @summary returns actual ranges in the pad, which can be applied to the server

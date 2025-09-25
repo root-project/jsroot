@@ -145,11 +145,13 @@ class RPadPainter extends RObjectPainter {
      * @protected */
    getFrameSvg() {
       const layer = this.getLayerSvg('primitives_layer');
-      if (layer.empty()) return layer;
+      if (layer.empty())
+         return layer;
       let node = layer.node().firstChild;
       while (node) {
          const elem = d3_select(node);
-         if (elem.classed('root_frame')) return elem;
+         if (elem.classed('root_frame'))
+            return elem;
          node = node.nextSibling;
       }
       return d3_select(null);
@@ -235,7 +237,8 @@ class RPadPainter extends RObjectPainter {
    /** @summary Returns frame coordinates - also when frame is not drawn */
    getFrameRect() {
       const fp = this.getFramePainter();
-      if (fp) return fp.getFrameRect();
+      if (fp)
+         return fp.getFrameRect();
 
       const w = this.getPadWidth(),
             h = this.getPadHeight(),
@@ -368,7 +371,8 @@ class RPadPainter extends RObjectPainter {
    getHistPalette() {
       const pp = this.findPainterFor(undefined, undefined, `${nsREX}RPaletteDrawable`);
 
-      if (pp) return pp.getHistPalette();
+      if (pp)
+         return pp.getHistPalette();
 
       if (!this.fDfltPalette) {
          this.fDfltPalette = {
@@ -1293,7 +1297,7 @@ class RPadPainter extends RObjectPainter {
       if (!this.#painters)
          return null;
 
-      for (let k=0; k < this.#painters.length; ++k) {
+      for (let k = 0; k < this.#painters.length; ++k) {
          let sub = this.#painters[k];
 
          if (!onlyid && isFunc(sub.findSnap))
@@ -1301,7 +1305,8 @@ class RPadPainter extends RObjectPainter {
          else if (!check(sub.getSnapId()))
             sub = null;
 
-         if (sub) return sub;
+         if (sub)
+            return sub;
       }
 
       return null;
@@ -1425,12 +1430,12 @@ class RPadPainter extends RObjectPainter {
    async createImage(format) {
       if ((format === 'png') || (format === 'jpeg') || (format === 'svg') || (format === 'webp') || (format === 'pdf')) {
          return this.produceImage(true, format).then(res => {
-            if (!res || (format === 'svg')) return res;
+            if (!res || (format === 'svg'))
+               return res;
             const separ = res.indexOf('base64,');
             return (separ > 0) ? res.slice(separ+7) : '';
          });
       }
-
       return '';
    }
 

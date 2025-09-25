@@ -12,9 +12,11 @@ import { FontHandler } from '../base/FontHandler.mjs';
 function getTimeOffset(axis) {
    const dflt_time_offset = 788918400000;
 
-   if (!axis) return dflt_time_offset;
+   if (!axis)
+      return dflt_time_offset;
    const idF = axis.fTimeFormat.indexOf('%F');
-   if (idF < 0) return gStyle.fTimeOffset * 1000;
+   if (idF < 0)
+      return gStyle.fTimeOffset * 1000;
    let sof = axis.fTimeFormat.slice(idF + 2);
    // default string in axis offset
    if (sof.indexOf('1995-01-01 00:00:00s0') === 0)
@@ -23,15 +25,18 @@ function getTimeOffset(axis) {
    if (sof.indexOf('1970-01-01 00:00:00s0') === 0)
       return 0;
    // special case, used from DABC painters
-   if ((sof === '0') || (sof === '')) return 0;
+   if ((sof === '0') || (sof === ''))
+      return 0;
 
    // decode time from ROOT string
    const next = (separ, min, max) => {
       const pos = sof.indexOf(separ);
-      if (pos < 0) return min;
+      if (pos < 0)
+         return min;
       const val = parseInt(sof.slice(0, pos));
       sof = sof.slice(pos + 1);
-      if (!Number.isInteger(val) || (val < min) || (val > max)) return min;
+      if (!Number.isInteger(val) || (val < min) || (val > max))
+         return min;
       return val;
    }, year = next('-', 1900, 2900),
       month = next('-', 1, 12) - 1,
@@ -68,13 +73,25 @@ function getTimeGMT(axis) {
 /** @summary Tries to choose time format for provided time interval
   * @private */
 function chooseTimeFormat(awidth, ticks) {
-   if (awidth < 0.5) return ticks ? '%S.%L' : '%H:%M:%S.%L';
-   if (awidth < 30) return ticks ? '%Mm%S' : '%H:%M:%S';
-   awidth /= 60; if (awidth < 30) return ticks ? '%Hh%M' : '%d/%m %H:%M';
-   awidth /= 60; if (awidth < 12) return ticks ? '%d-%Hh' : '%d/%m/%y %Hh';
-   awidth /= 24; if (awidth < 15.218425) return ticks ? '%d/%m' : '%d/%m/%y';
-   awidth /= 30.43685; if (awidth < 6) return '%d/%m/%y';
-   awidth /= 12; if (awidth < 2) return ticks ? '%m/%y' : '%d/%m/%y';
+   if (awidth < 0.5)
+      return ticks ? '%S.%L' : '%H:%M:%S.%L';
+   if (awidth < 30)
+      return ticks ? '%Mm%S' : '%H:%M:%S';
+   awidth /= 60;
+   if (awidth < 30)
+      return ticks ? '%Hh%M' : '%d/%m %H:%M';
+   awidth /= 60;
+   if (awidth < 12)
+      return ticks ? '%d-%Hh' : '%d/%m/%y %Hh';
+   awidth /= 24;
+   if (awidth < 15.218425)
+      return ticks ? '%d/%m' : '%d/%m/%y';
+   awidth /= 30.43685;
+   if (awidth < 6)
+      return '%d/%m/%y';
+   awidth /= 12;
+   if (awidth < 2)
+      return ticks ? '%m/%y' : '%d/%m/%y';
    return '%Y';
 }
 
@@ -149,7 +166,8 @@ const AxisPainterMethods = {
       const val = parseFloat(d), rnd = Math.round(val);
       if (!asticks)
          return ((rnd === val) && (Math.abs(rnd) < 1e9)) ? rnd.toString() : floatToString(val, fmt || gStyle.fStatFormat);
-      if (val <= 0) return null;
+      if (val <= 0)
+         return null;
       let vlog = Math.log10(val);
       const base = this.logbase;
       if (base !== 10)
@@ -740,8 +758,7 @@ class TAxisPainter extends ObjectPainter {
       };
 
       handle.next_major_grpos = function() {
-         if (this.nmajor >= this.major.length) return null;
-         return this.func(this.major[this.nmajor]);
+         return this.nmajor >= this.major.length ? null : this.func(this.major[this.nmajor]);
       };
 
       handle.get_modifier = function() {
@@ -1038,7 +1055,8 @@ class TAxisPainter extends ObjectPainter {
 
    /** @summary Returns modifier for axis label */
    findLabelModifier(axis, nlabel, positions) {
-      if (!axis.fModLabs) return null;
+      if (!axis.fModLabs)
+         return null;
       for (let n = 0; n < axis.fModLabs.arr.length; ++n) {
          const mod = axis.fModLabs.arr[n];
 

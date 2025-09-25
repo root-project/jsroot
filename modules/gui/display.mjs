@@ -765,7 +765,8 @@ class FlexibleDisplay extends MDIDisplay {
    /** @summary return active frame */
    getActiveFrame() {
       let found = super.getActiveFrame();
-      if (found && d3_select(found.parentNode).property('state') !== 'min') return found;
+      if (found && d3_select(found.parentNode).property('state') !== 'min')
+         return found;
 
       found = null;
       this.forEachFrame(frame => { found = frame; }, true);

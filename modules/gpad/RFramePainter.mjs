@@ -531,7 +531,8 @@ class RFramePainter extends RObjectPainter {
    getGrFuncs(second_x, second_y) {
       const use_x2 = second_x && this.grx2,
           use_y2 = second_y && this.gry2;
-      if (!use_x2 && !use_y2) return this;
+      if (!use_x2 && !use_y2)
+         return this;
 
       return {
          use_x2,
@@ -1056,7 +1057,8 @@ class RFramePainter extends RObjectPainter {
          return;
 
       const fld = 'zoom_changed_' + axis;
-      if (value === undefined) return this[fld];
+      if (value === undefined)
+         return this[fld];
 
       if (value === 'unzoom') {
          // special handling of unzoom, only if was never changed before flag set to true
@@ -1064,7 +1066,8 @@ class RFramePainter extends RObjectPainter {
          return;
       }
 
-      if (value) this[fld] = true;
+      if (value)
+         this[fld] = true;
    }
 
    /** @summary Fill menu for frame when server is not there */
