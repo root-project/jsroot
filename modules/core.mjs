@@ -867,7 +867,7 @@ function decodeUrl(url) {
    const res = {
       opts: {},
       has(opt) { return this.opts[opt] !== undefined; },
-      get(opt, dflt) { const v = this.opts[opt]; return v !== undefined ? v : dflt; }
+      get(opt, dflt) { return this.opts[opt] ?? dflt; }
    };
 
    if (!url || !isStr(url)) {

@@ -229,7 +229,7 @@ exports.decodeUrl = function(url) {
    let res = {
       opts: {},
       has(opt) { return this.opts[opt] !== undefined; },
-      get(opt,dflt) { let v = this.opts[opt]; return v !== undefined ? v : dflt; }
+      get(opt,dflt) { return this.opts[opt] ?? dflt; }
    };
 
    if (!url || (typeof url !== 'string')) {

@@ -1510,9 +1510,7 @@ class PointsControl extends InteractiveControl {
    }
 
    /** @summary extract intersect index */
-   extractIndex(intersect) {
-      return intersect && intersect.index!==undefined ? intersect.index : undefined;
-   }
+   extractIndex(intersect) { return intersect?.index; }
 
    /** @summary set selection */
    setSelected(col, indx) {
