@@ -201,7 +201,8 @@ function updateBrowserIcons(obj, hpainter) {
   * @private */
 function getIntersectStack(item) {
    const obj = item?.object;
-   if (!obj) return null;
+   if (!obj)
+      return null;
    if (obj.stack)
       return obj.stack;
    if (obj.stacks && item.instanceId !== undefined && item.instanceId < obj.stacks.length)
@@ -2923,7 +2924,8 @@ class TGeoPainter extends ObjectPainter {
          const box = this.getGeomBoundingBox();
 
          // if detect of coordinates fails - ignore
-         if (!Number.isFinite(box.min.x)) return 1000;
+         if (!Number.isFinite(box.min.x))
+            return 1000;
 
          this.#overall_size = 2 * Math.max(box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z);
       }
@@ -2968,7 +2970,8 @@ class TGeoPainter extends ObjectPainter {
 
       if (arg === true) {
          const p = this.#camera.position, t = this.#controls?.target;
-         if (!p || !t) return '';
+         if (!p || !t)
+            return '';
 
          const conv = v => {
             let s = '';
@@ -2977,7 +2980,8 @@ class TGeoPainter extends ObjectPainter {
          };
 
          let res = `${kind}camx${conv(p.x)},camy${conv(p.y)},camz${conv(p.z)}`;
-         if (t.x || t.y || t.z) res += `,camlx${conv(t.x)},camly${conv(t.y)},camlz${conv(t.z)}`;
+         if (t.x || t.y || t.z)
+            res += `,camlx${conv(t.x)},camly${conv(t.y)},camlz${conv(t.z)}`;
          return res;
       }
 
@@ -3468,10 +3472,12 @@ class TGeoPainter extends ObjectPainter {
 
          const func = findFunction(funcname);
 
-         if (!func) return Promise.reject(Error(`Function ${funcname} not found`));
+         if (!func)
+            return Promise.reject(Error(`Function ${funcname} not found`));
 
          return func(obj, opt).then(tracks => {
-            if (!tracks) return this;
+            if (!tracks)
+               return this;
 
             // FIXME: probably tracks should be remembered?
             return this.drawExtras(tracks, '', false).then(() => {
@@ -3482,9 +3488,11 @@ class TGeoPainter extends ObjectPainter {
       }
 
       return this.drawExtras(obj, itemname).then(is_any => {
-         if (!is_any) return this;
+         if (!is_any)
+            return this;
 
-         if (hitem) hitem._painter = this; // set for the browser item back pointer
+         if (hitem)
+            hitem._painter = this; // set for the browser item back pointer
 
          return this.render3D(100);
       });
@@ -3634,9 +3642,11 @@ class TGeoPainter extends ObjectPainter {
 
    /** @summary returns container for extra objects */
    getExtrasContainer(action, name) {
-      if (!this.#toplevel) return null;
+      if (!this.#toplevel)
+         return null;
 
-      if (!name) name = 'tracks';
+      if (!name)
+         name = 'tracks';
 
       let extras = null;
       const lst = [];
@@ -3861,11 +3871,13 @@ class TGeoPainter extends ObjectPainter {
          itemname += prnt.fName;
       }
 
-      if (!prnt.fVolume || prnt.fVolume._searched) return null;
+      if (!prnt.fVolume || prnt.fVolume._searched)
+         return null;
 
       if (name.test(prnt.fVolume.fName)) {
          res = action({ node: prnt, item: itemname });
-         if (res) return res;
+         if (res)
+            return res;
       }
 
       prnt.fVolume._searched = true;
@@ -4730,11 +4742,15 @@ class TGeoPainter extends ObjectPainter {
                return '0';
             const lg = Math.log10(Math.abs(val));
             if (lg < 0) {
-               if (lg > -1) return val.toFixed(2);
-               if (lg > -2) return val.toFixed(3);
+               if (lg > -1)
+                  return val.toFixed(2);
+               if (lg > -2)
+                  return val.toFixed(3);
             } else {
-               if (lg < 2) return val.toFixed(1);
-               if (lg < 4) return val.toFixed(0);
+               if (lg < 2)
+                  return val.toFixed(1);
+               if (lg < 4)
+                  return val.toFixed(0);
             }
             return val.toExponential(2);
          },
@@ -5461,7 +5477,8 @@ class TGeoPainter extends ObjectPainter {
 
   /** @summary draw TGeo object */
    static async draw(dom, obj, opt) {
-      if (!obj) return null;
+      if (!obj)
+         return null;
 
       let shape = null, extras = null, extras_path = '', is_eve = false;
 
@@ -6007,12 +6024,17 @@ function drawAxis3D() {
   * // this is three.js object and can be now inserted in the scene
   */
 function build(obj, opt) {
-   if (!obj) return null;
+   if (!obj)
+      return null;
 
-   if (!opt) opt = {};
-   if (!opt.numfaces) opt.numfaces = 100000;
-   if (!opt.numnodes) opt.numnodes = 1000;
-   if (!opt.frustum) opt.frustum = null;
+   if (!opt)
+      opt = {};
+   if (!opt.numfaces)
+      opt.numfaces = 100000;
+   if (!opt.numnodes)
+      opt.numnodes = 1000;
+   if (!opt.frustum)
+      opt.frustum = null;
 
    opt.res_mesh = opt.res_faces = 0;
 
@@ -6077,7 +6099,8 @@ function build(obj, opt) {
       if (!obj && shape)
          obj = Object.assign(create(clTNamed), { _typename: clTEveGeoShapeExtract, fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
 
-      if (!obj) return null;
+      if (!obj)
+         return null;
 
       if (obj._typename.indexOf(clTGeoVolume) === 0)
          obj = { _typename: clTGeoNode, fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };

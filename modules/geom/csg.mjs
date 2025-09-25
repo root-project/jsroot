@@ -209,9 +209,10 @@ class Polygon {
 
    classifyVertex(vertex) {
       const side_value = this.nsign * (this.normal.dot(vertex) - this.w);
-
-      if (side_value < -EPSILON) return BACK;
-      if (side_value > EPSILON) return FRONT;
+      if (side_value < -EPSILON)
+         return BACK;
+      if (side_value > EPSILON)
+         return FRONT;
       return COPLANAR;
    }
 
@@ -227,9 +228,12 @@ class Polygon {
             ++num_negative;
       }
 
-      if (num_positive > 0 && num_negative === 0) return FRONT;
-      if (num_positive === 0 && num_negative > 0) return BACK;
-      if (num_positive === 0 && num_negative === 0) return COPLANAR;
+      if (num_positive > 0 && num_negative === 0)
+         return FRONT;
+      if (num_positive === 0 && num_negative > 0)
+         return BACK;
+      if (num_positive === 0 && num_negative === 0)
+         return COPLANAR;
       return SPANNING;
    }
 
@@ -403,7 +407,8 @@ class Node {
    }
 
    clipPolygons(polygons) {
-      if (!this.divider) return polygons.slice();
+      if (!this.divider)
+         return polygons.slice();
 
       const polygon_count = polygons.length;
       let front = [], back = [];
@@ -411,9 +416,10 @@ class Node {
       for (let i = 0; i < polygon_count; ++i)
          this.divider.splitPolygon(polygons[i], front, back, front, back);
 
-      if (this.front) front = this.front.clipPolygons(front);
-      if (this.back) back = this.back.clipPolygons(back);
-                else back = [];
+      if (this.front)
+         front = this.front.clipPolygons(front);
+
+      back = this.back?.clipPolygons(back) ?? [];
 
       return front.concat(back);
    }

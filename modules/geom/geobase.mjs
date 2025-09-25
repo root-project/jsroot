@@ -125,7 +125,8 @@ function geoWarn(msg) {
  * @return detected node kind
  * @private */
 function getNodeKind(obj) {
-   if (!isObject(obj)) return -1;
+   if (!isObject(obj))
+      return -1;
    return ('fShape' in obj) && ('fTrans' in obj) ? kindEve : kindGeo;
 }
 
@@ -1636,7 +1637,8 @@ function createTessellatedBuffer(shape, faces_limit) {
 /** @summary Creates Matrix4 from TGeoMatrix
   * @private */
 function createMatrix(matrix) {
-   if (!matrix) return null;
+   if (!matrix)
+      return null;
 
    let translation, rotation, scale;
 
@@ -1982,7 +1984,7 @@ function projectGeometry(geom, matrix, projection, position = 0, flippedMesh = f
   * @param {Object} shape - instance of TGeoShape object
   * @param {Number} limit - defines return value, see details
   * @desc
-  *  - if limit === 0 (or undefined) returns BufferGeometry
+  *  - if limit === 0 returns BufferGeometry
   *  - if limit < 0 just returns estimated number of faces
   *  - if limit > 0 return list of CsgPolygons (used only for composite shapes)
   * @private */
@@ -2145,8 +2147,10 @@ function provideObjectInfo(obj) {
    const sz = Math.max(shape.fDX, shape.fDY, shape.fDZ),
          useexp = (sz > 1e7) || (sz < 1e-7),
          conv = (v) => {
-            if (v === undefined) return '???';
-            if ((v === Math.round(v) && v < 1e7)) return Math.round(v);
+            if (v === undefined)
+               return '???';
+            if ((v === Math.round(v) && v < 1e7))
+               return Math.round(v);
             return useexp ? v.toExponential(4) : v.toPrecision(7);
          };
 
@@ -3755,7 +3759,8 @@ class ClonedNodes {
 
    /** @summary Merge shape lists */
    mergeShapesLists(oldlst, newlst) {
-      if (!oldlst) return newlst;
+      if (!oldlst)
+         return newlst;
 
       // set geometry to shape object itself
       for (let n = 0; n < oldlst.length; ++n) {
@@ -3840,10 +3845,11 @@ class ClonedNodes {
      * @private */
    static formatServerElement(elem) {
       elem.kind = 2; // special element for geom viewer, used in TGeoPainter
-      elem.vis = 2; // visibility is alwys on
+      elem.vis = 2; // visibility is always on
       const m = elem.matr;
       delete elem.matr;
-      if (!m?.length) return elem;
+      if (!m?.length)
+         return elem;
 
       if (m.length === 16)
          elem.matrix = m;
