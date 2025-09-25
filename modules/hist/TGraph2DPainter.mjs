@@ -1159,7 +1159,8 @@ class TGraph2DPainter extends ObjectPainter {
       }
 
       function calc_delta(min, max, margin) {
-         if (min < max) return margin * (max - min);
+         if (min < max)
+            return margin * (max - min);
          return Math.abs(min) < 1e5 ? 0.02 : 0.02 * Math.abs(min);
       }
       const dx = calc_delta(xmin, xmax, gr.fMargin),

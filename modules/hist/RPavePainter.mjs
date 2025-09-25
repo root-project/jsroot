@@ -168,9 +168,11 @@ class RLegendPainter extends RPavePainter {
             pp = this.getPadPainter();
 
       let nlines = legend.fEntries.length;
-      if (legend.fTitle) nlines++;
+      if (legend.fTitle)
+         nlines++;
 
-      if (!nlines || !pp) return this;
+      if (!nlines || !pp)
+         return this;
 
       const stepy = height / nlines, margin_x = 0.02 * width;
 

@@ -160,8 +160,10 @@ class TF2Painter extends TH2Painter {
          ymin = func.fSave[nsave+2];
          ymax = func.fSave[nsave+3];
          const dx = (xmax - xmin) / npx, dy = (ymax - ymin) / npy, getSave = (x, y) => {
-            if (x < xmin || x > xmax || dx <= 0) return 0;
-            if (y < ymin || y > ymax || dy <= 0) return 0;
+            if (x < xmin || x > xmax || dx <= 0)
+               return 0;
+            if (y < ymin || y > ymax || dy <= 0)
+               return 0;
             const ibin = Math.min(npx-1, Math.floor((x-xmin)/dx)),
                   jbin = Math.min(npy-1, Math.floor((y-ymin)/dy)),
                   xlow = xmin + ibin*dx,

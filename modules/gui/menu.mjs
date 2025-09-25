@@ -261,9 +261,12 @@ class JSRootMenu {
 
       const match = v => Math.abs(v-size_value) < (max - min)*1e-5,
             conv = (v, more) => {
-               if ((v === size_value) && miss_current) more = true;
-               if (step >= 1) return v.toFixed(0);
-               if (step >= 0.1) return v.toFixed(more ? 2 : 1);
+               if ((v === size_value) && miss_current)
+                  more = true;
+               if (step >= 1)
+                  return v.toFixed(0);
+               if (step >= 0.1)
+                  return v.toFixed(more ? 2 : 1);
                return v.toFixed(more ? 4 : 2);
            };
 

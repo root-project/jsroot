@@ -348,7 +348,8 @@ class TH3Painter extends THistPainter {
 
          mesh.tooltip = function(intersect) {
             const indx = Math.floor(intersect.index / this.nvertex);
-            if ((indx < 0) || (indx >= this.bins.length)) return null;
+            if ((indx < 0) || (indx >= this.bins.length))
+               return null;
 
             const p = this.painter,
                   thisto = p.getHisto(),
@@ -381,7 +382,8 @@ class TH3Painter extends THistPainter {
 
       if (!box_option && o.Scat) {
          const promise = this.draw3DScatter();
-         if (promise !== false) return promise;
+         if (promise !== false)
+            return promise;
          box_option = 12; // fall back to box2 draw option
       } else if (!box_option && !o.GLBox && !o.GLColor && !o.Lego)
          box_option = 12; // default draw option
@@ -462,10 +464,13 @@ class TH3Painter extends THistPainter {
          use_scale = (this.gminbin || this.gmaxbin) ? 1 / Math.max(Math.abs(this.gminbin), Math.abs(this.gmaxbin)) : 1;
 
       const get_bin_weight = content => {
-         if ((exclude_content >= 0) && (content < exclude_content)) return 0;
-         if (!use_scale) return 1;
+         if ((exclude_content >= 0) && (content < exclude_content))
+            return 0;
+         if (!use_scale)
+            return 1;
          if (logv) {
-            if (content <= 0) return 0;
+            if (content <= 0)
+               return 0;
             content = Math.log(content) - scale_offset;
          }
          return Math.pow(Math.abs(content*use_scale), 0.3333);

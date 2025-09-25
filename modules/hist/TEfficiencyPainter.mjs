@@ -27,11 +27,15 @@ class TEfficiencyPainter extends ObjectPainter {
    getEfficiency(obj, bin) {
       const BetaMean = (a, b) => (a <= 0 || b <= 0) ? 0 : a / (a + b),
             BetaMode = (a, b) => {
-         if (a <= 0 || b <= 0) return 0;
+         if (a <= 0 || b <= 0)
+            return 0;
          if (a <= 1 || b <= 1) {
-            if (a < b) return 0;
-            if (a > b) return 1;
-            if (a === b) return 0.5; // cannot do otherwise
+            if (a < b)
+               return 0;
+            if (a > b)
+               return 1;
+            if (a === b)
+               return 0.5; // cannot do otherwise
          }
          return (a - 1.0) / (a + b -2.0);
       },
@@ -46,10 +50,11 @@ class TEfficiencyPainter extends ObjectPainter {
          let aa, bb;
          if (obj.TestBit(kUseWeights)) {
             const tw = total, // fTotalHistogram->GetBinContent(bin);
-                tw2 = obj.fTotalHistogram.fSumw2 ? obj.fTotalHistogram.fSumw2[bin] : Math.abs(total),
-                pw = passed; // fPassedHistogram->GetBinContent(bin);
+                  tw2 = obj.fTotalHistogram.fSumw2 ? obj.fTotalHistogram.fSumw2[bin] : Math.abs(total),
+                  pw = passed; // fPassedHistogram->GetBinContent(bin);
 
-            if (tw2 <= 0) return pw/tw;
+            if (tw2 <= 0)
+               return pw/tw;
 
             // tw/tw2 re-normalize the weights
             const norm = tw/tw2;

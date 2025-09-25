@@ -11,12 +11,13 @@ function findZValue(arrz, arrv, cross = 0) {
    for (let i = arrz.length - 2; i >= 0; --i) {
       const v1 = arrv[i], v2 = arrv[i + 1],
             z1 = arrz[i], z2 = arrz[i + 1];
-      if (v1 === cross) return z1;
-      if (v2 === cross) return z2;
+      if (v1 === cross)
+         return z1;
+      if (v2 === cross)
+         return z2;
       if ((v1 < cross) !== (v2 < cross))
          return z1 + (cross - v1) / (v2 - v1) * (z2 - z1);
    }
-
    return arrz[0] - 1;
 }
 

@@ -65,16 +65,19 @@ function createLatexGeometry(painter, lbl, size) {
 
       attr(name, value) {
          const get = () => {
-                  if (!value) return '';
+                  if (!value)
+                     return '';
                   const res = value[0];
                   value = value.slice(1);
                   return res;
-               }, getN = (skip) => {
+               }, getN = skip => {
                   let p = 0;
-                  while (((value[p] >= '0') && (value[p] <= '9')) || (value[p] === '-')) p++;
+                  while (((value[p] >= '0') && (value[p] <= '9')) || (value[p] === '-'))
+                     p++;
                   const res = Number.parseInt(value.slice(0, p));
                   value = value.slice(p);
-                  if (skip) get();
+                  if (skip)
+                     get();
                   return res;
                };
 
@@ -89,7 +92,8 @@ function createLatexGeometry(painter, lbl, size) {
          else if ((name === 'y') && (this.kind === 'text'))
             this.y -= Number.parseInt(value)*0.01;
          else if ((name === 'd') && (this.kind === 'path')) {
-            if (get() !== 'M') return console.error('Not starts with M');
+            if (get() !== 'M')
+               return console.error('Not starts with M');
             const pnts = [];
             let x1 = getN(true), y1 = getN(), next;
 
@@ -1099,7 +1103,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       mesh.v3 = new THREE.Vector3(positions[3], positions[4], positions[5]);
 
       mesh.globalIntersect = function(raycaster) {
-         if (!this.v1 || !this.v2 || !this.v3) return undefined;
+         if (!this.v1 || !this.v2 || !this.v3)
+            return undefined;
 
          const plane = new THREE.Plane();
          plane.setFromCoplanarPoints(this.v1, this.v2, this.v3);
@@ -1109,10 +1114,14 @@ function drawXYZ(toplevel, AxisPainter, opts) {
              v2 = v1.clone().addScaledVector(raycaster.ray.direction, 1e10),
              pnt = plane.intersectLine(new THREE.Line3(v1, v2), new THREE.Vector3());
 
-         if (!pnt) return undefined;
+         if (!pnt)
+            return undefined;
 
          let min = -this.size_3d, max = this.size_3d;
-         if (this.zoom === 'z') { min = 0; max = 2*this.size_3d; }
+         if (this.zoom === 'z') {
+            min = 0;
+            max = 2*this.size_3d;
+         }
 
          if (pnt[this.zoom] < min)
             pnt[this.zoom] = min;
@@ -1976,7 +1985,8 @@ function drawBinsLego(painter, is_v7 = false) {
    line.painter = painter;
    line.intersect_index = intersect_index;
    line.tooltip = function(intersect) {
-      if ((intersect.index < 0) || (intersect.index >= this.intersect_index.length)) return null;
+      if ((intersect.index < 0) || (intersect.index >= this.intersect_index.length))
+         return null;
       return this.painter.get3DToolTip(this.intersect_index[intersect.index]);
    }
    */
@@ -2215,7 +2225,8 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
                for (let kk = beg; kk < end; ++kk) {
                   const indx = normindx[kk];
-                  if (indx < 0) return console.error('FAILURE in NORMALS RECALCULATIONS');
+                  if (indx < 0)
+                     return console.error('FAILURE in NORMALS RECALCULATIONS');
                   sumx += normals[indx];
                   sumy += normals[indx+1];
                   sumz += normals[indx+2];
