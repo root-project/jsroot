@@ -464,7 +464,8 @@ class TooltipHandler extends ObjectPainter {
 
          nhints++;
 
-         if (hint.exact) nexact++;
+         if (hint.exact)
+            nexact++;
 
          hint.lines.forEach(line => { maxlen = Math.max(maxlen, line.length); });
 

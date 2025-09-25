@@ -1293,9 +1293,7 @@ class TPadPainter extends ObjectPainter {
 
    /** @summary indicates if painter performing objects draw
      * @private */
-   doingDraw() {
-      return this.#doing_draw !== undefined;
-   }
+   doingDraw() { return this.#doing_draw !== undefined; }
 
    /** @summary confirms that drawing is completed, may trigger next drawing immediately
      * @private */

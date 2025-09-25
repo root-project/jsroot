@@ -115,9 +115,12 @@ class TAttMarkerHandler {
    change(color, style, size) {
       this.changed = true;
 
-      if (color !== undefined) this.color = color;
-      if ((style !== undefined) && (style >= 0)) this.style = style;
-      if (size !== undefined) this.size = size;
+      if (color !== undefined)
+         this.color = color;
+      if ((style !== undefined) && (style >= 0))
+         this.style = style;
+      if (size !== undefined)
+         this.size = size;
 
       this._configure();
    }

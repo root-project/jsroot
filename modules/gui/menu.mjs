@@ -1061,8 +1061,10 @@ class JSRootMenu {
       let ranges = '';
       if ((value === undefined) || (value === null)) value = '';
       if (kind === 'int') {
-          if (min !== undefined) ranges += ` min="${min}"`;
-          if (max !== undefined) ranges += ` max="${max}"`;
+          if (min !== undefined)
+            ranges += ` min="${min}"`;
+          if (max !== undefined)
+            ranges += ` max="${max}"`;
        }
 
       const main_content =

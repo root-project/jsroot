@@ -22,7 +22,8 @@ class TAttTextHandler {
      * @param {object} attr - attributes, see {@link TAttTextHandler#setArgs} */
    constructor(args) {
       this.used = true;
-      if (args._typename && (args.fTextFont !== undefined)) args = { attr: args };
+      if (args._typename && (args.fTextFont !== undefined))
+         args = { attr: args };
       this.setArgs(args);
    }
 

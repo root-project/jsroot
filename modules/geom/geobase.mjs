@@ -2031,8 +2031,7 @@ createGeometry = function(shape, limit = 0) {
       let place = '';
       if (e.stack !== undefined) {
          place = e.stack.split('\n')[0];
-         if (place.indexOf(e.message) >= 0) place = e.stack.split('\n')[1];
-                                       else place = 'at: ' + place;
+         place = place.indexOf(e.message) >= 0 ? e.stack.split('\n')[1] : 'at: ' + place;
       }
       geoWarn(`${shape._typename} err: ${e.message} ${place}`);
    }

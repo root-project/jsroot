@@ -318,7 +318,8 @@ class Node {
             this.divider.splitPolygon(polygons[i], this.polygons, this.polygons, front, back);
       }
 
-      if (nodeid !== undefined) this.maxnodeid = nodeid;
+      if (nodeid !== undefined)
+         this.maxnodeid = nodeid;
 
       if (front.length)
          this.front = new Node(front);
@@ -577,7 +578,8 @@ class Geometry {
       }
 
       this.tree = new Node(polygons, nodeid);
-      if (nodeid !== undefined) this.maxid = this.tree.maxnodeid;
+      if (nodeid !== undefined)
+         this.maxid = this.tree.maxnodeid;
    }
 
    subtract(other_tree) {

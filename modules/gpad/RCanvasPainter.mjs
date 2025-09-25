@@ -259,7 +259,10 @@ class RCanvasPainter extends RPadPainter {
          return handle !== undefined;
 
       if (tm === 'reset') {
-         if (handle) { clearTimeout(handle); delete this.#websocket._tmouts[name]; }
+         if (handle) {
+            clearTimeout(handle);
+            delete this.#websocket._tmouts[name];
+         }
       } else if (!handle && Number.isInteger(tm))
          this.#websocket._tmouts[name] = setTimeout(() => { delete this.#websocket._tmouts[name]; }, tm);
    }

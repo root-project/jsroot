@@ -662,7 +662,8 @@
              if ((filename.indexOf('http:') < 0) && (filename.indexOf('https:') < 0))
                 filename = filepath + filename;
          }
-         if (entry.item) itemname = entry.item;
+         if (entry.item)
+            itemname = entry.item;
          if (entry.testopt !== undefined)
             opt = entry.testopt;
          else if (entry.opt)

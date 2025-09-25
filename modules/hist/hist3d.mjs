@@ -927,7 +927,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    this.lego_zmin = zmin; this.lego_zmax = zmax;
 
    // factor 1.1 used in ROOT for lego plots
-   if ((opts.zmult !== undefined) && !z_zoomed) zmax *= opts.zmult;
+   if ((opts.zmult !== undefined) && !z_zoomed)
+      zmax *= opts.zmult;
 
    this.x_handle = new AxisPainter(null, this.xaxis);
    if (opts.v7) {

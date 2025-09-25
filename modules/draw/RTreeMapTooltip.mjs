@@ -69,10 +69,8 @@ class RTreeMapTooltip {
       if (isLeaf && node.fType !== undefined)
          content += `Type: ${node.fType}<br>`;
 
-
       if (!isLeaf)
          content += `Children: ${node.fNChildren}<br>`;
-
 
       const obj = this.painter.getObject();
       if (obj.fNodes && obj.fNodes.length > 0) {

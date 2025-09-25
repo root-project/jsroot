@@ -676,7 +676,8 @@ function parse(json) {
       if (isArrayProto(proto) > 0) {
           for (let i = 0; i < value.length; ++i) {
              const res = unref_value(value[i]);
-             if (res !== undefined) value[i] = res;
+             if (res !== undefined)
+               value[i] = res;
           }
           return;
       }
@@ -724,8 +725,10 @@ function parse(json) {
             // compressed coding
             let nkey = 2, p = 0;
             while (nkey < len) {
-               if (ks[nkey][0] === 'p') p = value[ks[nkey++]]; // position
-               if (ks[nkey][0] !== 'v') throw new Error(`Unexpected member ${ks[nkey]} in array decoding`);
+               if (ks[nkey][0] === 'p')
+                  p = value[ks[nkey++]]; // position
+               if (ks[nkey][0] !== 'v')
+                  throw new Error(`Unexpected member ${ks[nkey]} in array decoding`);
                const v = value[ks[nkey++]]; // value
                if (typeof v === 'object') {
                   for (let k = 0; k < v.length; ++k)
@@ -747,8 +750,10 @@ function parse(json) {
          newfmt = true;
          const f1 = unref_value(value.first),
                s1 = unref_value(value.second);
-         if (f1 !== undefined) value.first = f1;
-         if (s1 !== undefined) value.second = s1;
+         if (f1 !== undefined)
+            value.first = f1;
+         if (s1 !== undefined)
+            value.second = s1;
          value._typename = value.$pair;
          delete value.$pair;
          return; // pair object is not counted in the objects map
@@ -762,11 +767,13 @@ function parse(json) {
       map.push(value);
 
       // add methods to all objects, where _typename is specified
-      if (value._typename) addMethods(value);
+      if (value._typename)
+         addMethods(value);
 
       for (let k = 0; k < len; ++k) {
          const i = ks[k], res = unref_value(value[i]);
-         if (res !== undefined) value[i] = res;
+         if (res !== undefined)
+            value[i] = res;
       }
    };
 

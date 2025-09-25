@@ -1973,17 +1973,19 @@ class TGeoPainter extends ObjectPainter {
          const obj = intersects[n].object;
          let unique = obj.visible && (getIntersectStack(intersects[n]) || (obj.geo_name !== undefined));
 
-         if (unique && obj.material && (obj.material.opacity !== undefined))
-            unique = (obj.material.opacity >= 0.1);
+         if (unique && (obj.material?.opacity !== undefined))
+            unique = obj.material.opacity >= 0.1;
 
-         if (obj.jsroot_special) unique = false;
+         if (obj.jsroot_special)
+            unique = false;
 
          for (let k = 0; (k < n) && unique; ++k) {
             if (intersects[k].object === obj)
                unique = false;
          }
 
-         if (!unique) intersects.splice(n, 1);
+         if (!unique)
+            intersects.splice(n, 1);
       }
 
       const clip = this.ctrl.clip;

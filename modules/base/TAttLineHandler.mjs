@@ -20,7 +20,8 @@ class TAttLineHandler {
    constructor(args) {
       this.func = this.apply.bind(this);
       this.used = true;
-      if (args._typename && (args.fLineStyle !== undefined)) args = { attr: args };
+      if (args._typename && (args.fLineStyle !== undefined))
+         args = { attr: args };
       this.setArgs(args);
    }
 

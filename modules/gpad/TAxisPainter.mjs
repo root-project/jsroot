@@ -416,8 +416,7 @@ const AxisPainterMethods = {
       } else
          item.min = item.max = undefined;
 
-
-      item.changed = ((item.min !== undefined) && (item.max !== undefined));
+      item.changed = (item.min !== undefined) && (item.max !== undefined);
 
       return item;
    }

@@ -735,11 +735,11 @@ class TooltipFor3D {
          const rect1 = this.parent.getBoundingClientRect(),
                rect2 = this.canvas.getBoundingClientRect();
 
-         if ((rect1.left !== undefined) && (rect2.left!== undefined))
-            pos.l += (rect2.left-rect1.left);
+         if ((rect1.left !== undefined) && (rect2.left !== undefined))
+            pos.l += (rect2.left - rect1.left);
 
-         if ((rect1.top !== undefined) && (rect2.top!== undefined))
-            pos.u += rect2.top-rect1.top;
+         if ((rect1.top !== undefined) && (rect2.top !== undefined))
+            pos.u += rect2.top - rect1.top;
 
          if (pos.l + this.tt.offsetWidth + 3 >= this.parent.offsetWidth)
             pos.l = this.parent.offsetWidth - this.tt.offsetWidth - 3;
@@ -1560,7 +1560,8 @@ class PointsControl extends InteractiveControl {
       }
 
       m.js_special.material.color = new THREE.Color(color);
-      if (index !== undefined) m.js_special.geometry.setDrawRange(index, 1);
+      if (index !== undefined)
+         m.js_special.geometry.setDrawRange(index, 1);
    }
 
 } // class PointsControl

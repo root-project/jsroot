@@ -866,7 +866,7 @@ class TDrawSelector extends TSelector {
                break;
             case 'mon':
             case 'monitor':
-               args.monitoring = (intvalue !== undefined) ? intvalue : 5000;
+               args.monitoring = intvalue ?? 5000;
                break;
             case 'player':
                args.player = true;

@@ -88,7 +88,8 @@ class RAxisPainter extends RObjectPainter {
          let toffset = this.v7EvalAttr('timeOffset');
          if (toffset !== undefined) {
             toffset = parseFloat(toffset);
-            if (Number.isFinite(toffset)) this.timeoffset = toffset*1000;
+            if (Number.isFinite(toffset))
+               this.timeoffset = toffset*1000;
          }
       } else if (this.axis?.fLabelsIndex) {
          this.kind = kAxisLabels;
