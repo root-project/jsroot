@@ -1080,7 +1080,8 @@ class ObjectPainter extends BasePainter {
             txt = arg.txt_node;
             delete arg.txt_node;
             is_txt = true;
-            if (optimize_arr !== null) optimize_arr.push(txt);
+            if (optimize_arr !== null)
+               optimize_arr.push(txt);
          } else if (arg.txt_g) {
             txt = arg.txt_g;
             delete arg.txt_g;

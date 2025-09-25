@@ -1005,7 +1005,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
           lbl = this.x_handle.format(xticks.tick, 2);
 
       if (xticks.last_major()) {
-         if (!this.x_handle.fTitle) lbl = 'x';
+         if (!this.x_handle.fTitle)
+            lbl = 'x';
       } else if (lbl === null) {
          is_major = false; lbl = '';
       }
@@ -1273,7 +1274,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
           lbl = this.y_handle.format(yticks.tick, 2);
 
       if (yticks.last_major()) {
-         if (!this.y_handle.fTitle) lbl = 'y';
+         if (!this.y_handle.fTitle)
+            lbl = 'y';
       } else if (lbl === null) {
          is_major = false; lbl = '';
       }
