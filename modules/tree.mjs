@@ -106,7 +106,8 @@ class TSelector {
   * 2 - when plain (1-dim) array with same-type content
   * @private */
 function checkArrayPrototype(arr, check_content) {
-   if (!isObject(arr)) return 0;
+   if (!isObject(arr))
+      return 0;
 
    const arr_kind = isArrayProto(Object.prototype.toString.apply(arr));
    if (!check_content || (arr_kind !== 1))
@@ -256,17 +257,21 @@ class ArrayIterator {
   * @desc unfortunately, branch.fID is not number of element in streamer info
   * @private */
 function findBrachStreamerElement(branch, file) {
-   if (!branch || !file || (branch._typename !== clTBranchElement) || (branch.fID < 0) || (branch.fStreamerType < 0)) return null;
+   if (!branch || !file || (branch._typename !== clTBranchElement) || (branch.fID < 0) || (branch.fStreamerType < 0))
+      return null;
 
    const s_i = file.findStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum),
          arr = (s_i && s_i.fElements) ? s_i.fElements.arr : null;
-   if (!arr) return null;
+   if (!arr)
+      return null;
 
    let match_name = branch.fName,
       pos = match_name.indexOf('[');
-   if (pos > 0) match_name = match_name.slice(0, pos);
+   if (pos > 0)
+      match_name = match_name.slice(0, pos);
    pos = match_name.lastIndexOf('.');
-   if (pos > 0) match_name = match_name.slice(pos + 1);
+   if (pos > 0)
+      match_name = match_name.slice(pos + 1);
 
    function match_elem(elem) {
       if (!elem)
@@ -303,7 +308,8 @@ function findBrachStreamerElement(branch, file) {
 /** @summary return class name of the object, stored in the branch
   * @private */
 function getBranchObjectClass(branch, tree, with_clones = false, with_leafs = false) {
-   if (!branch || (branch._typename !== clTBranchElement)) return '';
+   if (!branch || (branch._typename !== clTBranchElement))
+      return '';
 
    if ((branch.fType === kLeafNode) && (branch.fID === -2) && (branch.fStreamerType === -1)) {
       // object where all sub-branches will be collected
@@ -441,7 +447,8 @@ function findBranch(tree, name) {
   * private
 function getNumBranches(tree) {
    function count(obj) {
-      if (!obj?.fBranches) return 0;
+      if (!obj?.fBranches)
+         return 0;
       let nchld = 0;
       obj.fBranches.arr.forEach(sub => { nchld += count(sub); });
       return obj.fBranches.arr.length + nchld;
@@ -1126,7 +1133,8 @@ class TDrawSelector extends TSelector {
    /** @summary Get min.max bins */
    getMinMaxBins(axisid, nbins) {
       const res = { min: 0, max: 0, nbins, k: 1, fLabels: null, title: '' };
-      if (axisid >= this.ndim) return res;
+      if (axisid >= this.ndim)
+         return res;
 
       const arr = this.vars[axisid].buf;
 
@@ -1149,7 +1157,8 @@ class TDrawSelector extends TSelector {
          if (typename && similar) {
             if ((typename === 'TBits') && (axisid === 0)) {
                this.fill1DHistogram = this.fillTBitsHistogram;
-               if (maxbits % 8) maxbits = (maxbits & 0xfff0) + 8;
+               if (maxbits % 8)
+                  maxbits = (maxbits & 0xfff0) + 8;
 
                if ((this.hist_name === 'bits') && (this.hist_args.length === 1) && this.hist_args[0])
                   maxbits = this.hist_args[0];
@@ -1824,15 +1833,18 @@ async function treeProcess(tree, selector, args) {
          staged_now: 0, // entry limit of current I/O request
          progress_showtm: 0, // last time when progress was showed
          getBasketEntry(k) {
-            if (!this.branch || (k > this.branch.fMaxBaskets)) return 0;
+            if (!this.branch || (k > this.branch.fMaxBaskets))
+               return 0;
             const res = (k < this.branch.fMaxBaskets) ? this.branch.fBasketEntry[k] : 0;
-            if (res) return res;
+            if (res)
+               return res;
             const bskt = (k > 0) ? this.branch.fBaskets.arr[k - 1] : null;
             return bskt ? (this.branch.fBasketEntry[k - 1] + bskt.fNevBuf) : 0;
          },
          getTarget(tgtobj) {
             // returns target object which should be used for the branch reading
-            if (!this.tgt) return tgtobj;
+            if (!this.tgt)
+               return tgtobj;
             for (let k = 0; k < this.tgt.length; ++k) {
                const sub = this.tgt[k];
                if (!tgtobj[sub.name])
@@ -2301,8 +2313,8 @@ async function treeProcess(tree, selector, args) {
       handle.arr.push(item);
 
       // now one should add all other child branches
-      if (child_scan)
-         if (!scanBranches(branch.fBranches, target_object, child_scan)) return null;
+      if (child_scan && !scanBranches(branch.fBranches, target_object, child_scan))
+         return null;
 
       return item;
    }

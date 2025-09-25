@@ -1672,7 +1672,8 @@ class PointsCreator {
   * @desc Takes into account dashed properties
   * @private */
 function create3DLineMaterial(painter, arg, is_v7 = false) {
-   if (!painter || !arg) return null;
+   if (!painter || !arg)
+      return null;
 
    let color, lstyle, lwidth;
    if (isStr(arg) || is_v7) {
@@ -1691,7 +1692,8 @@ function create3DLineMaterial(painter, arg, is_v7 = false) {
             ? new THREE.LineDashedMaterial({ color, dashSize: parseInt(dash[0]), gapSize: parseInt(dash[1]) })
             : new THREE.LineBasicMaterial({ color });
 
-   if (lwidth && (lwidth > 1)) material.linewidth = lwidth;
+   if (lwidth && (lwidth > 1))
+      material.linewidth = lwidth;
 
    return material;
 }

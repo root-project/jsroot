@@ -650,7 +650,8 @@ function getTypeId(typname, norecursion) {
 
    if (!norecursion) {
       const replace = CustomStreamers[typname];
-      if (isStr(replace)) return getTypeId(replace, true);
+      if (isStr(replace))
+         return getTypeId(replace, true);
    }
 
    return -1;
@@ -844,7 +845,8 @@ function getPairStreamer(si, typname, file) {
       si = createPairStreamer(typname, file);
 
    const streamer = file.getStreamer(typname, null, si);
-   if (!streamer) return null;
+   if (!streamer)
+      return null;
 
    if (streamer.length !== 2) {
       console.error(`Streamer for pair class contains ${streamer.length} elements`);
@@ -1339,7 +1341,8 @@ function createMemberStreamer(element, file) {
          } else
             if (!element.$fictional) {
                member.read_version = function(buf, cnt) {
-                  if (cnt === 0) return null;
+                  if (cnt === 0)
+                     return null;
                   const ver = buf.readVersion();
                   this.member_wise = Boolean(ver.val & kStreamedMemberWise);
 
@@ -1347,7 +1350,8 @@ function createMemberStreamer(element, file) {
                   if (this.member_wise) {
                      ver.val &= ~kStreamedMemberWise;
                      this.stl_version = { val: buf.ntoi2() };
-                     if (this.stl_version.val <= 0) this.stl_version.checksum = buf.ntou4();
+                     if (this.stl_version.val <= 0)
+                        this.stl_version.checksum = buf.ntou4();
                   }
                   return ver;
                };
@@ -1413,7 +1417,8 @@ function createMemberStreamer(element, file) {
 /** @summary Let directly assign methods when doing I/O
   * @private */
 function addClassMethods(clname, streamer) {
-   if (streamer === null) return streamer;
+   if (streamer === null)
+      return streamer;
 
    const methods = getMethods(clname);
 
@@ -1699,7 +1704,8 @@ function ZIP_inflate(arr, tgt) {
    /* routines (inflate) */
 
    function zip_inflate_codes(buff, off, size) {
-      if (size === 0) return 0;
+      if (size === 0)
+         return 0;
 
       /* inflate (decompress) the codes in a deflated (compressed) block.
          Return an error code or zero if it all goes ok. */
@@ -2080,10 +2086,12 @@ function LZ4_uncompress(input, output, sIdx, eIdx) {
 
          // Copy the literals
          const end = i + literals_length;
-         while (i < end) output[j++] = input[i++];
+         while (i < end)
+            output[j++] = input[i++];
 
          // End of buffer?
-         if (i === n) return j;
+         if (i === n)
+            return j;
       }
 
       // Match copy
@@ -2091,7 +2099,8 @@ function LZ4_uncompress(input, output, sIdx, eIdx) {
       const offset = input[i++] | (input[i++] << 8);
 
       // 0 is an invalid offset value
-      if (offset === 0 || offset > j) return -(i-2);
+      if (offset === 0 || offset > j)
+         return -(i-2);
 
       // length of match copy
       let match_length = (token & 0xf),
@@ -2514,10 +2523,15 @@ class TBuffer {
    /** @summary Read buffer as N-dim array */
    readNdimArray(handle, func) {
       let ndim = handle.fArrayDim, maxindx = handle.fMaxIndex, res;
-      if ((ndim < 1) && (handle.fArrayLength > 0)) { ndim = 1; maxindx = [handle.fArrayLength]; }
-      if (handle.minus1) --ndim;
+      if ((ndim < 1) && (handle.fArrayLength > 0)) {
+         ndim = 1;
+         maxindx = [handle.fArrayLength];
+      }
+      if (handle.minus1)
+         --ndim;
 
-      if (ndim < 1) return func(this, handle);
+      if (ndim < 1)
+         return func(this, handle);
 
       if (ndim === 1) {
          res = new Array(maxindx[0]);
@@ -3102,7 +3116,8 @@ class TFile {
          // if only single segment requested, return result as is
          if (last - first === 2) {
             const b = new DataView(res);
-            if (place.length === 2) return resolveFunc(b);
+            if (place.length === 2)
+               return resolveFunc(b);
             blobs.push(b);
             return send_new_request(true);
          }
@@ -3300,7 +3315,8 @@ class TFile {
                subname = keyname.slice(pos + 1),
                dir = this.getDir(dirname);
 
-         if (dir) return dir.getKey(subname, cycle, only_direct);
+         if (dir)
+            return dir.getKey(subname, cycle, only_direct);
 
          const dirkey = this.getKey(dirname, undefined, true);
          if (dirkey && !only_direct && (dirkey.fClassName.indexOf(clTDirectory) === 0))
@@ -3367,7 +3383,8 @@ class TFile {
 
          if ((key.fClassName === clTDirectory || key.fClassName === clTDirectoryFile)) {
             const dir = this.getDir(obj_name, cycle);
-            if (dir) return dir;
+            if (dir)
+               return dir;
             isdir = true;
          }
 

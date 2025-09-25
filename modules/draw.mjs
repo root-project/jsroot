@@ -191,8 +191,10 @@ function addDrawFunc(args) {
   * or just sequence id
   * @private */
 function getDrawHandle(kind, selector) {
-   if (!isStr(kind)) return null;
-   if (selector === '') selector = null;
+   if (!isStr(kind))
+      return null;
+   if (selector === '')
+      selector = null;
 
    let first = null;
 
@@ -231,7 +233,8 @@ function getDrawHandle(kind, selector) {
          // if draw option specified, check it present in the list
 
          if (selector === '::expand') {
-            if (('expand' in h) || ('expand_item' in h)) return h;
+            if (('expand' in h) || ('expand_item' in h))
+               return h;
          } else if ('opt' in h) {
             const opts = h.opt.split(';');
             for (let j = 0; j < opts.length; ++j) {
