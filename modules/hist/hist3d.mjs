@@ -5,6 +5,7 @@ import { THREE, assign3DHandler, disposeThreejsObject, createOrbitControl,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind,
          cleanupRender3D, getHelveticaFont, createSVGRenderer, create3DLineMaterial } from '../base/base3d.mjs';
 import { isPlainText, translateLaTeX, produceLatex } from '../base/latex.mjs';
+import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { kCARTESIAN, kPOLAR, kCYLINDRICAL, kSPHERICAL, kRAPIDITY } from '../hist2d/THistPainter.mjs';
 import { buildHist2dContour, buildSurf3D } from '../hist2d/TH2Painter.mjs';
 
@@ -181,16 +182,34 @@ function createLatexGeometry(painter, lbl, size) {
 
 /** @summary Build three.js object for the TLatex
   * @private */
-function build3dlatex(obj, opt) {
-   let geom = createLatexGeometry(null, obj.fName, 20);
+function build3dlatex(obj) {
+   const painter = new ObjectPainter(null, obj),
+         handle = painter.createAttText({ attr: obj }),
+         valign = handle.align % 10,
+         halign = handle.align - valign,
+         text3d = createLatexGeometry(painter, obj.fTitle, handle.getSize() || 10);
 
-   let material = new THREE.MeshBasicMaterial(getMaterialArgs('blue', { vertexColors: false }));
+   text3d.computeBoundingBox();
 
-   const mesh = new THREE.Mesh(geom, material);
+   let width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
+       height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
 
-   return mesh;
+   if (halign === 1)
+      width = 0;
+   else if (halign === 2)
+      width *= 0.5;
+
+   if (valign === 1)
+      height = 0;
+   else if (valign === 2)
+      height *= 0.5;
+
+   text3d.translate(-width, -height, 0);
+
+   const material = new THREE.MeshBasicMaterial(getMaterialArgs(handle.color || 'black', { vertexColors: false }));
+
+   return new THREE.Mesh(text3d, material);
 }
-
 
 /** @summary Text 3d axis visibility
   * @private */
