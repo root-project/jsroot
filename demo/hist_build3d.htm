@@ -23,7 +23,7 @@
 
    <script type='module'>
 
-      import { decodeUrl, httpRequest, openFile, treeDraw, build3d } from 'jsroot';
+      import { decodeUrl, httpRequest, create, openFile, treeDraw, build3d } from 'jsroot';
 
       import { Box3, Vector3, PerspectiveCamera, Scene, AmbientLight, DirectionalLight, DoubleSide,
                MeshLambertMaterial, Mesh, TetrahedronGeometry, WebGLRenderer } from 'three';
@@ -46,13 +46,7 @@
       }
 
       function render() {
-
          let timer = Date.now() * 0.0001;
-
-         //camera.position.x = Math.cos(timer)*draw_size;
-         //camera.position.z = Math.sin(timer)*draw_size;
-         //camera.position.y = draw_size;
-
          camera.lookAt( scene.position );
 
          for (let i = 0, l = scene.children.length; i < l; i++) {
@@ -63,67 +57,77 @@
          renderer.render( scene, camera );
       }
 
-       container = document.createElement('div');
-       document.body.appendChild(container);
+      async function create3d(obj, opt, x = 0, lbl = '') {
+         return build3d(obj, opt).then(obj3d => {
+            obj3d.position.x = x;
 
-       camera = new PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, draw_size*5 );
-       camera.position.y = draw_size*2;
-       camera.position.z = draw_size/2;
-       camera.far = draw_size * 5;
-       camera.up.set(0, 0, 1); // z scale up
+            scene.add(obj3d);
 
-       scene = new Scene();
-       scene.add(new AmbientLight(0x404040));
+            const latex = create('TLatex');
+            latex.fTitle = lbl;
+            latex.fTextAlign = 22; // center of text
+            latex.fTextColor = 3; // green
+            latex.fTextSize = 10; // absolute size
 
-       let light = new DirectionalLight( 0xffffff );
-       light.position.set(0, 1, 0);
-       scene.add( light );
+            return build3d(latex);
+         }).then(obj3d => {
+            // latex created in X/Y coordinates
+            obj3d.geometry.rotateX(Math.PI / 2);
 
-       renderer = new WebGLRenderer({ antialias: true });
-       renderer.setPixelRatio( window.devicePixelRatio );
-       renderer.setSize( window.innerWidth, window.innerHeight );
-       renderer.setClearColor('white', 1);
+            obj3d.position.x = x;
+            obj3d.position.z = -100;
+            scene.add(obj3d);
+         });
+      }
 
-       container.appendChild( renderer.domElement );
+      container = document.createElement('div');
+      document.body.appendChild(container);
 
-       stats = new Stats();
-       container.appendChild( stats.dom );
+      camera = new PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, draw_size*5 );
+      camera.position.y = draw_size*2;
+      camera.position.z = draw_size/2;
+      camera.far = draw_size * 5;
+      camera.up.set(0, 0, 1); // z scale up
 
-       window.addEventListener( 'resize', onWindowResize, false );
+      scene = new Scene();
+      scene.add(new AmbientLight(0x404040));
 
-       let filename = 'https://root.cern/js/files/hsimple.root';
+      let light = new DirectionalLight( 0xffffff );
+      light.position.set(0, 1, 0);
+      scene.add( light );
 
-       let file = await openFile(filename);
-       let hist2 = await file.readObject('hpxpy');
-       let obj3d = await build3d(hist2, 'lego2');
+      renderer = new WebGLRenderer({ antialias: true });
+      renderer.setPixelRatio( window.devicePixelRatio );
+      renderer.setSize( window.innerWidth, window.innerHeight );
+      renderer.setClearColor('white', 1);
 
-       if (obj3d) {
-          scene.add( obj3d );
-          obj3d.position.x = 0;
-          camera.updateProjectionMatrix();
-       }
+      container.appendChild( renderer.domElement );
 
-       let tuple = await file.readObject('ntuple');
-       let hist3 = await treeDraw(tuple, 'px:py:pz;hbins:15');
+      stats = new Stats();
+      container.appendChild( stats.dom );
 
-       obj3d = await build3d(hist3, 'box3');
+      window.addEventListener( 'resize', onWindowResize, false );
 
-       if (obj3d) {
-          scene.add( obj3d );
-          obj3d.position.x = -400;
-          camera.updateProjectionMatrix();
-       }
+      let filename = 'https://root.cern/js/files/hsimple.root';
 
-       let hist1 = await file.readObject('hpx');
-       obj3d = await build3d(hist1, 'lego2');
-       if (obj3d) {
-          scene.add( obj3d );
-          obj3d.position.x = 400;
-          camera.updateProjectionMatrix();
-       }
+      let file = await openFile(filename);
+      let hist2 = await file.readObject('hpxpy');
+
+      await create3d(hist2, 'lego2', 0, 'TH2 lego plot');
+
+      let tuple = await file.readObject('ntuple');
+      let hist3 = await treeDraw(tuple, 'px:py:pz;hbins:15');
+
+      await create3d(hist3, 'box3', -400, 'TH3 box plot');
+
+      let hist1 = await file.readObject('hpx');
+
+      await create3d(hist1, 'lego2', 400, 'TH1 lego plot');
 
 
-       animate();
+      camera.updateProjectionMatrix();
+
+      animate();
 
    </script>
 
