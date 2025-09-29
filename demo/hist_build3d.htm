@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <title>three.js model for histogram objects</title>
+      <meta charset="utf-8">
+      <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+      <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+      <style>
+         body {
+            font-family: Monospace;
+            background-color: #000;
+            margin: 0px;
+            overflow: hidden;
+         }
+      </style>
+      <script type="importmap">
+         { "imports": { "jsroot": "../modules/main.mjs", "jsroot/hist2": "../modules/hist/TH2Painter.mjs", "three": "../modules/three.mjs" } }
+      </script>
+   </head>
+
+   <body>
+   </body>
+
+   <script type='module'>
+
+      import { decodeUrl, httpRequest, openFile } from 'jsroot';
+
+      import { Box3, Vector3, PerspectiveCamera, Scene, AmbientLight, DirectionalLight, DoubleSide,
+               MeshLambertMaterial, Mesh, TetrahedronGeometry, WebGLRenderer } from 'three';
+
+      import { TH2Painter } from 'jsroot/hist2';
+
+      import Stats from 'https://threejs.org/examples/jsm/libs/stats.module.js';
+
+      let container, stats,  camera, scene, renderer, draw_size = 400, dummy = null,
+         d = decodeUrl();
+
+      function onWindowResize() {
+         camera.aspect = window.innerWidth / window.innerHeight;
+         camera.updateProjectionMatrix();
+         renderer.setSize( window.innerWidth, window.innerHeight );
+      }
+
+      function animate() {
+         requestAnimationFrame( animate );
+         render();
+         stats.update();
+      }
+
+      function render() {
+
+         let timer = Date.now() * 0.0001;
+
+         //camera.position.x = Math.cos(timer)*draw_size;
+         //camera.position.z = Math.sin(timer)*draw_size;
+         //camera.position.y = draw_size;
+
+         camera.lookAt( scene.position );
+
+         for (let i = 0, l = scene.children.length; i < l; i++) {
+            let object = scene.children[ i ];
+            object.rotation.z = timer * 5;
+         }
+
+         renderer.render( scene, camera );
+      }
+
+       container = document.createElement('div');
+       document.body.appendChild(container);
+
+       camera = new PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, draw_size*5 );
+       camera.position.y = draw_size*2;
+       camera.position.z = draw_size/2;
+       camera.up.set(0, 0, 1); // z scale up
+
+       scene = new Scene();
+       scene.add(new AmbientLight(0x404040));
+
+       let light = new DirectionalLight( 0xffffff );
+       light.position.set(0, 1, 0);
+       scene.add( light );
+
+       // first draw dummy object, seen in the beginning
+       let material = new MeshLambertMaterial({side: DoubleSide, color: 'red', vertexColors: false});
+       dummy = new Mesh(new TetrahedronGeometry(75, 0), material);
+       // object.position.set( 200, 0, 200 );
+       scene.add( dummy );
+
+       renderer = new WebGLRenderer({ antialias: true });
+       renderer.setPixelRatio( window.devicePixelRatio );
+       renderer.setSize( window.innerWidth, window.innerHeight );
+       renderer.setClearColor('white', 1);
+
+       container.appendChild( renderer.domElement );
+
+       stats = new Stats();
+       container.appendChild( stats.dom );
+
+       window.addEventListener( 'resize', onWindowResize, false );
+
+       let filename = 'https://root.cern/js/files/hsimple.root';
+
+       let file = await openFile(filename);
+       let obj = await file.readObject('hpxpy');
+
+       let obj3d = await TH2Painter.build3d(obj, 'lego2');
+
+       if (obj3d) {
+          scene.remove( dummy );
+          scene.add( obj3d );
+
+          let box3 = new Box3().setFromObject(obj3d);
+
+          draw_size = box3.getSize(new Vector3()).length();
+
+          scene.position.set(0,0, 0 );
+
+          camera.far = draw_size * 5;
+          camera.updateProjectionMatrix();
+       }
+
+       animate();
+
+   </script>
+
+</html>
