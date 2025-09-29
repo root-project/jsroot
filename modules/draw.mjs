@@ -548,6 +548,27 @@ async function redraw(dom, obj, opt) {
    return draw(dom, obj, opt);
 }
 
+/** @summary Create three.js model for object
+  * @param {object} obj - object
+  * @param {string} opt - draw options
+  * @return {Promise} with three.js model */
+
+async function build3d(obj, opt) {
+   if (!isObject(obj) || !obj?._typename)
+      return Promise.reject(Error('not an object in build3d'));
+
+   const handle = getDrawHandle(getKindForType(obj._typename));
+   if (!handle?.class)
+      return Promise.reject(Error(`not able to create three.js for ${obj._typename}`));
+
+   return handle.class().then(cl => {
+      if (!isFunc(cl?.build3d))
+        return Promise.reject(Error(`painter class for ${obj._typename} does not implement build3d method`));
+
+      return cl.build3d(obj, opt);
+   });
+}
+
 /** @summary Scan streamer infos for derived classes
   * @desc Assign draw functions for such derived classes
   * @private */
@@ -756,4 +777,4 @@ Object.assign(internals, { addStreamerInfosForPainter, addDrawFunc, setDefaultDr
 Object.assign(internals.jsroot, { draw, redraw, makeSVG, makeImage, addDrawFunc });
 
 export { addDrawFunc, getDrawHandle, canDrawHandle, getDrawSettings, setDefaultDrawOpt,
-         draw, redraw, cleanup, makeSVG, makeImage, assignPadPainterDraw };
+         draw, redraw,cleanup,  build3d, makeSVG, makeImage, assignPadPainterDraw };
