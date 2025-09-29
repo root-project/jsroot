@@ -99,7 +99,7 @@
 
        if (obj3d) {
           scene.add( obj3d );
-          obj3d.position.x = 300;
+          obj3d.position.x = 0;
           camera.updateProjectionMatrix();
        }
 
@@ -110,9 +110,18 @@
 
        if (obj3d) {
           scene.add( obj3d );
-          obj3d.position.x = -300;
+          obj3d.position.x = -400;
           camera.updateProjectionMatrix();
        }
+
+       let hist1 = await file.readObject('hpx');
+       obj3d = await build3d(hist1, 'lego2');
+       if (obj3d) {
+          scene.add( obj3d );
+          obj3d.position.x = 400;
+          camera.updateProjectionMatrix();
+       }
+
 
        animate();
 
