@@ -1,6 +1,6 @@
 import { settings, constants, gStyle, clTMultiGraph, kNoZoom } from '../core.mjs';
 import { getMaterialArgs, THREE } from '../base/base3d.mjs';
-import { assignFrame3DMethods, drawBinsLego, drawBinsError3D, drawBinsContour3D, drawBinsSurf3D } from './hist3d.mjs';
+import { crete3DFrame, drawBinsLego, drawBinsError3D, drawBinsContour3D, drawBinsSurf3D } from './hist3d.mjs';
 import { TAxisPainter } from '../gpad/TAxisPainter.mjs';
 import { TFramePainter } from '../gpad/TFramePainter.mjs';
 import { THistPainter } from '../hist2d/THistPainter.mjs';
@@ -231,22 +231,6 @@ class TH2Painter extends TH2Painter2D {
       return zmult;
    }
 
-   /** @summary Create frame with axes drawing
-    * @private */
-   async crete3DFrame(fp, render3d, o, histo, zmult) {
-      assignFrame3DMethods(fp);
-      return fp.create3DScene(render3d, o.x3dscale, o.y3dscale, o.Ortho).then(() => {
-         fp.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax, this);
-         fp.set3DOptions(o);
-         fp.drawXYZ(fp.toplevel, TAxisPainter, {
-            ndim: 2, hist_painter: this, zmult, zoom: settings.Zooming,
-            draw: o.Axis !== -1, drawany: o.isCartesian(),
-            reverse_x: o.RevX, reverse_y: o.RevY
-         });
-         return fp;
-      });
-   }
-
    /** @summary Create 3D object for histogram bins
     * @private */
    draw3DBins(o) {
@@ -284,10 +268,10 @@ class TH2Painter extends TH2Painter2D {
       }
 
       if (full_draw) {
-         const zmult = this.checkRangeFor3D(o);
+         o.zmult = this.checkRangeFor3D(o);
 
          if (is_main)
-            pr = this.crete3DFrame(fp, o.Render3D, o, histo, zmult);
+            pr = crete3DFrame(this, TAxisPainter, o.Render3D);
 
          if (fp.mode3d) {
             pr = pr.then(() => {
@@ -325,15 +309,13 @@ class TH2Painter extends TH2Painter2D {
          o.Lego = 12;
       painter.scanContent();
 
-      const zmult = painter.checkRangeFor3D(o);
+      o.zmult = painter.checkRangeFor3D(o);
 
       const fp = new TFramePainter(null, null);
-      assignFrame3DMethods(fp);
-
       // return dummy frame painter as result
       painter.getFramePainter = () => fp;
 
-      return painter.crete3DFrame(fp, constants.Render3D.None, o, histo, zmult).then(() => {
+      return crete3DFrame(painter, TAxisPainter).then(() => {
          if (painter.draw_content)
             painter.draw3DBins(o);
 

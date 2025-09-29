@@ -2,9 +2,10 @@ import { gStyle, settings, kInspect, clTF1, clTF3, clTProfile3D, BIT, isFunc } f
 import { TRandom, floatToString } from '../base/BasePainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { TAxisPainter } from '../gpad/TAxisPainter.mjs';
+import { TFramePainter } from '../gpad/TFramePainter.mjs';
 import { createLineSegments, PointsCreator, Box3D, THREE } from '../base/base3d.mjs';
 import { THistPainter } from '../hist2d/THistPainter.mjs';
-import { assignFrame3DMethods } from './hist3d.mjs';
+import { crete3DFrame } from './hist3d.mjs';
 import { proivdeEvalPar, getTF1Value } from '../base/func.mjs';
 
 
@@ -650,20 +651,13 @@ class TH3Painter extends THistPainter {
       }
 
       if (full_draw) {
-         assignFrame3DMethods(fp);
-         pr = fp.create3DScene(o.Render3D, o.x3dscale, o.y3dscale, o.Ortho).then(() => {
-            fp.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax, this);
-            fp.set3DOptions(o);
-            fp.drawXYZ(fp.toplevel, TAxisPainter, {
-               ndim: 3, hist_painter: this, zoom: settings.Zooming,
-               draw: o.Axis !== -1, drawany: o.isCartesian()
-            });
-            return this.draw3DBins();
-         }).then(() => {
-            fp.render3D();
-            this.updateStatWebCanvas();
-            fp.addKeysHandler();
-         });
+         pr = crete3DFrame(this, TAxisPainter, o.Render3D)
+              .then(() => this.draw3DBins())
+              .then(() => {
+                fp.render3D();
+                this.updateStatWebCanvas();
+                fp.addKeysHandler();
+              });
       }
 
       if (this.isMainPainter())
@@ -776,6 +770,21 @@ class TH3Painter extends THistPainter {
 
          this.interactiveRedraw(true, 'drawopt');
       });
+   }
+
+   /** @summary Build three.js object for the histogram */
+   static async build3d(histo, opt) {
+      const painter = new TH3Painter(null, histo);
+      painter.mode3d = true;
+      painter.decodeOptions(opt);
+      painter.scanContent();
+
+      const fp = new TFramePainter(null, null);
+      painter.getFramePainter = () => fp;
+
+      return crete3DFrame(painter, TAxisPainter)
+             .then(() => painter.draw3DBins())
+             .then(() => fp.create3DScene(-1, true));
    }
 
    /** @summary draw TH3 object */
