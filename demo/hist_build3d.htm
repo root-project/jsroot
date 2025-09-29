@@ -14,7 +14,7 @@
          }
       </style>
       <script type="importmap">
-         { "imports": { "jsroot": "../modules/main.mjs", "jsroot/hist2": "../modules/hist/TH2Painter.mjs", "three": "../modules/three.mjs" } }
+         { "imports": { "jsroot": "../modules/main.mjs", "three": "../modules/three.mjs" } }
       </script>
    </head>
 
@@ -23,12 +23,10 @@
 
    <script type='module'>
 
-      import { decodeUrl, httpRequest, openFile } from 'jsroot';
+      import { decodeUrl, httpRequest, openFile, build3d } from 'jsroot';
 
       import { Box3, Vector3, PerspectiveCamera, Scene, AmbientLight, DirectionalLight, DoubleSide,
                MeshLambertMaterial, Mesh, TetrahedronGeometry, WebGLRenderer } from 'three';
-
-      import { TH2Painter } from 'jsroot/hist2';
 
       import Stats from 'https://threejs.org/examples/jsm/libs/stats.module.js';
 
@@ -103,7 +101,7 @@
        let file = await openFile(filename);
        let obj = await file.readObject('hpxpy');
 
-       let obj3d = await TH2Painter.build3d(obj, 'lego2');
+       let obj3d = await build3d(obj, 'lego2');
 
        if (obj3d) {
           scene.remove( dummy );
