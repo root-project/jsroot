@@ -510,6 +510,12 @@ function create3DScene(render3d, x3dscale, y3dscale, orthographic) {
          return;
       }
 
+      const res = x3dscale ? this.toplevel : null;
+      if (res) {
+         this.scene?.remove(res);
+         this.toplevel = null;
+      }
+
       testAxisVisibility(null, this.toplevel);
 
       this.clear3dCanvas();
@@ -536,10 +542,10 @@ function create3DScene(render3d, x3dscale, y3dscale, orthographic) {
 
       this.mode3d = false;
 
-      if (this.getG())
+      if (this.getG() && !x3dscale)
          this.createFrameG();
 
-      return;
+      return res;
    }
 
    this.mode3d = true; // indicate 3d mode as hist painter does
