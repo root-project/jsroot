@@ -562,7 +562,7 @@ async function build3d(obj, opt) {
       return Promise.reject(Error(`not able to create three.js for ${obj._typename}`));
 
    if (handle.build3d)
-      return handle.build3d().then(func => func(obj, opt))
+      return handle.build3d().then(func => func(obj, opt));
 
    return handle.class().then(cl => {
       if (!isFunc(cl?.build3d))
@@ -780,4 +780,4 @@ Object.assign(internals, { addStreamerInfosForPainter, addDrawFunc, setDefaultDr
 Object.assign(internals.jsroot, { draw, redraw, makeSVG, makeImage, addDrawFunc });
 
 export { addDrawFunc, getDrawHandle, canDrawHandle, getDrawSettings, setDefaultDrawOpt,
-         draw, redraw,cleanup, build3d, makeSVG, makeImage, assignPadPainterDraw };
+         draw, redraw, cleanup, build3d, makeSVG, makeImage, assignPadPainterDraw };

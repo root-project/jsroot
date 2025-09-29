@@ -17,7 +17,6 @@ class TH1Painter extends TH1Painter2D {
 
       const fp = this.getFramePainter(), // who makes axis drawing
             is_main = this.isMainPainter(), // is main histogram
-            histo = this.getHisto(),
             o = this.getOptions();
 
       o.zmult = 1 + 2*gStyle.fHistTopMargin;

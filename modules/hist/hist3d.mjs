@@ -204,7 +204,7 @@ function build3dlatex(obj) {
       geom.computeBoundingBox();
       bb.expandByPoint(geom.boundingBox.max);
       bb.expandByPoint(geom.boundingBox.min);
-   })
+   });
 
    let width = bb.max.x - bb.min.x,
        height = bb.max.y - bb.min.y;
@@ -219,7 +219,8 @@ function build3dlatex(obj) {
    else if (valign === 2)
       height *= 0.5;
 
-   const materials = [],
+   const obj3d = new THREE.Object3D(),
+         materials = [],
          getMaterial = color => {
             if (!color)
                color = 'black';
@@ -227,11 +228,6 @@ function build3dlatex(obj) {
                materials[color] = new THREE.MeshBasicMaterial(getMaterialArgs(color, { vertexColors: false }));
             return materials[color];
          };
-
-
-   const material0 = new THREE.MeshBasicMaterial(getMaterialArgs(handle.color || 'black', { vertexColors: false }));
-
-   const obj3d = new THREE.Object3D();
 
    arr3d.forEach(geom => {
       geom.translate(-width, -height, 0);

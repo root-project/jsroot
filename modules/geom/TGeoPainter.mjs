@@ -5481,15 +5481,14 @@ class TGeoPainter extends ObjectPainter {
       if (!obj)
          return null;
 
-      let opt = null;
+      let opt = sopt || {};
       if (isStr(sopt)) {
          const painter = new TGeoPainter(null, obj);
          painter.decodeOptions(sopt);
          opt = painter.ctrl;
          opt.numfaces = opt.maxfaces;
          opt.numnodes = opt.maxnodes;
-      } else
-         opt = sopt || {};
+      }
 
       if (!opt.numfaces)
          opt.numfaces = 100000;
