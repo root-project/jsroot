@@ -10,15 +10,17 @@ import { kCARTESIAN, kPOLAR, kCYLINDRICAL, kSPHERICAL, kRAPIDITY } from '../hist
 import { buildHist2dContour, buildSurf3D } from '../hist2d/TH2Painter.mjs';
 
 
-function createLatexGeometry(painter, lbl, size) {
+function createLatexGeometry(painter, lbl, size, as_array) {
    const geom_args = { font: getHelveticaFont(), size, height: 0, curveSegments: 5 };
    if (THREE.REVISION > 162)
       geom_args.depth = 0;
    else
       geom_args.height = 0;
 
-   if (isPlainText(lbl))
-      return new THREE.TextGeometry(translateLaTeX(lbl), geom_args);
+   if (isPlainText(lbl)) {
+      const res = new THREE.TextGeometry(translateLaTeX(lbl), geom_args);
+      return as_array ? [res] : res;
+   }
 
    const font_size = size * 100, geoms = [];
    let stroke_width = 5;
@@ -92,6 +94,8 @@ function createLatexGeometry(painter, lbl, size) {
             this.x += Number.parseInt(value)*0.01;
          else if ((name === 'y') && (this.kind === 'text'))
             this.y -= Number.parseInt(value)*0.01;
+         else if ((name === 'fill') && (this.kind === 'text'))
+            this.fill = value;
          else if ((name === 'd') && (this.kind === 'path')) {
             if (get() !== 'M')
                return console.error('Not starts with M');
@@ -122,6 +126,7 @@ function createLatexGeometry(painter, lbl, size) {
             const pos = new Float32Array(pnts);
 
             this.geom = new THREE.BufferGeometry();
+            this.geom._fill = this.fill;
             this.geom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
             this.geom.scale(0.01, -0.01, 0.01);
             this.geom.computeVertexNormals();
@@ -135,6 +140,7 @@ function createLatexGeometry(painter, lbl, size) {
          if (this.kind === 'text') {
             geom_args.size = Math.round(0.01*this.font_size);
             this.geom = new THREE.TextGeometry(v, geom_args);
+            this.geom._fill = this.fill;
             geoms.push(this.geom);
          }
       }
@@ -148,10 +154,14 @@ function createLatexGeometry(painter, lbl, size) {
 
    if (!geoms.length) {
       geom_args.size = size;
-      return new THREE.TextGeometry(translateLaTeX(lbl), geom_args);
+      const res = new THREE.TextGeometry(translateLaTeX(lbl), geom_args);
+      return as_array ? [res] : res;
    }
 
    node.translate(); // apply translate attributes
+
+   if (as_array)
+      return geoms;
 
    if (geoms.length === 1)
       return geoms[0];
@@ -187,12 +197,17 @@ function build3dlatex(obj) {
          handle = painter.createAttText({ attr: obj }),
          valign = handle.align % 10,
          halign = handle.align - valign,
-         text3d = createLatexGeometry(painter, obj.fTitle, handle.getSize() || 10);
+         arr3d = createLatexGeometry(painter, obj.fTitle, handle.getSize() || 10, true),
+         bb = new THREE.Box3().makeEmpty();
 
-   text3d.computeBoundingBox();
+   arr3d.forEach(geom => {
+      geom.computeBoundingBox();
+      bb.expandByPoint(geom.boundingBox.max);
+      bb.expandByPoint(geom.boundingBox.min);
+   })
 
-   let width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
-       height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
+   let width = bb.max.x - bb.min.x,
+       height = bb.max.y - bb.min.y;
 
    if (halign === 1)
       width = 0;
@@ -204,11 +219,26 @@ function build3dlatex(obj) {
    else if (valign === 2)
       height *= 0.5;
 
-   text3d.translate(-width, -height, 0);
+   const materials = [],
+         getMaterial = color => {
+            if (!color)
+               color = 'black';
+            if (!materials[color])
+               materials[color] = new THREE.MeshBasicMaterial(getMaterialArgs(color, { vertexColors: false }));
+            return materials[color];
+         };
 
-   const material = new THREE.MeshBasicMaterial(getMaterialArgs(handle.color || 'black', { vertexColors: false }));
 
-   return new THREE.Mesh(text3d, material);
+   const material0 = new THREE.MeshBasicMaterial(getMaterialArgs(handle.color || 'black', { vertexColors: false }));
+
+   const obj3d = new THREE.Object3D();
+
+   arr3d.forEach(geom => {
+      geom.translate(-width, -height, 0);
+      obj3d.add(new THREE.Mesh(geom, getMaterial(geom._fill || handle.color)));
+   });
+
+   return arr3d.length === 1 ? obj3d.children[0] : obj3d;
 }
 
 /** @summary Text 3d axis visibility
