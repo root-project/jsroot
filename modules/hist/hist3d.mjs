@@ -883,7 +883,8 @@ function set3DOptions(hopt) {
 /** @summary Draw axes in 3D mode
   * @private */
 function drawXYZ(toplevel, AxisPainter, opts) {
-   if (!opts) opts = { ndim: 2 };
+   if (!opts)
+      opts = { ndim: 2 };
 
    if (opts.drawany === false)
       opts.draw = false;
@@ -1718,8 +1719,7 @@ function drawBinsLego(painter, is_v7 = false) {
       if ((binz1 >= zmax) || (binz2 < zmin))
          return false;
 
-      if (test_cutg &&
-         !test_cutg.IsInside(histo.fXaxis.GetBinCoord(ii + 0.5), histo.fYaxis.GetBinCoord(jj + 0.5)))
+      if (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(ii + 0.5), histo.fYaxis.GetBinCoord(jj + 0.5)))
          return false;
 
       reduced = (binz2 === zmin) || (binz1 >= binz2);
@@ -1761,7 +1761,8 @@ function drawBinsLego(painter, is_v7 = false) {
       zmax = levels[nlevel+1];
 
       // artificially extend last level of color palette to maximal visible value
-      if (palette && (nlevel === levels.length - 2) && zmax < axis_zmax) zmax = axis_zmax;
+      if (palette && (nlevel === levels.length - 2) && zmax < axis_zmax)
+         zmax = axis_zmax;
 
       const grzmin = fp.grz(zmin), grzmax = fp.grz(zmax);
       let numvertices = 0, num2vertices = 0;
