@@ -179,6 +179,19 @@ function createLatexGeometry(painter, lbl, size) {
    return fullgeom;
 }
 
+/** @summary Build three.js object for the TLatex
+  * @private */
+function build3dlatex(obj, opt) {
+   let geom = createLatexGeometry(null, obj.fName, 20);
+
+   let material = new THREE.MeshBasicMaterial(getMaterialArgs('blue', { vertexColors: false }));
+
+   const mesh = new THREE.Mesh(geom, material);
+
+   return mesh;
+}
+
+
 /** @summary Text 3d axis visibility
   * @private */
 function testAxisVisibility(camera, toplevel, fb = false, bb = false) {
@@ -2402,6 +2415,6 @@ function drawBinsSurf3D(painter, is_v7 = false) {
    }
 }
 
-export { assignFrame3DMethods, crete3DFrame,
+export { assignFrame3DMethods, crete3DFrame, build3dlatex,
          drawBinsLego, drawBinsError3D, drawBinsContour3D,
          drawBinsSurf3D, convertLegoBuf, createLegoGeom };

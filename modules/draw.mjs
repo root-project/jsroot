@@ -49,7 +49,7 @@ drawFuncs = { lst: [
    { name: clTDiamond, sameas: clTPave },
    { name: clTLegend, icon: 'img_pavelabel', sameas: clTPave },
    { name: clTPaletteAxis, icon: 'img_colz', sameas: clTPave },
-   { name: clTLatex, icon: 'img_text', draw: () => import_more().then(h => h.drawText), direct: true },
+   { name: clTLatex, icon: 'img_text', draw: () => import_more().then(h => h.drawText), build3d: () => import('./hist/hist3d.mjs').then(h => h.build3dlatex), direct: true },
    { name: clTMathText, sameas: clTLatex },
    { name: clTText, sameas: clTLatex },
    { name: clTLink, sameas: clTText },
@@ -558,8 +558,11 @@ async function build3d(obj, opt) {
       return Promise.reject(Error('not an object in build3d'));
 
    const handle = getDrawHandle(getKindForType(obj._typename));
-   if (!handle?.class)
+   if (!handle?.class && !handle.build3d)
       return Promise.reject(Error(`not able to create three.js for ${obj._typename}`));
+
+   if (handle.build3d)
+      return handle.build3d().then(func => func(obj, opt))
 
    return handle.class().then(cl => {
       if (!isFunc(cl?.build3d))
@@ -777,4 +780,4 @@ Object.assign(internals, { addStreamerInfosForPainter, addDrawFunc, setDefaultDr
 Object.assign(internals.jsroot, { draw, redraw, makeSVG, makeImage, addDrawFunc });
 
 export { addDrawFunc, getDrawHandle, canDrawHandle, getDrawSettings, setDefaultDrawOpt,
-         draw, redraw,cleanup,  build3d, makeSVG, makeImage, assignPadPainterDraw };
+         draw, redraw,cleanup, build3d, makeSVG, makeImage, assignPadPainterDraw };
