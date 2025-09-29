@@ -598,6 +598,8 @@ function create3DScene(render3d, x3dscale, y3dscale, orthographic) {
       return createRender3D(this.scene_width, this.scene_height, render3d);
    }).then(r => {
       this.renderer = r;
+      if (!r)
+         return this;
 
       this.webgl = r.jsroot_render3d === constants.Render3D.WebGL;
       this.add3dCanvas(sz, r.jsroot_dom, this.webgl);
