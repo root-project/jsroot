@@ -205,6 +205,64 @@ function drawTH2PolyLego(painter) {
   * @private */
 class TH2Painter extends TH2Painter2D {
 
+   /** @summary Check range for 3D
+    * @private */
+   checkRangeFor3D(o) {
+      const pad = this.getPadPainter()?.getRootPad(true),
+            logz = pad?.fLogv ?? pad?.fLogz;
+      let zmult = 1;
+
+      if (o.ohmin && o.ohmax) {
+         this.zmin = o.hmin;
+         this.zmax = o.hmax;
+      } else if (o.minimum !== kNoZoom && o.maximum !== kNoZoom) {
+         this.zmin = o.minimum;
+         this.zmax = o.maximum;
+      } else if (this.draw_content || this.gmaxbin) {
+         this.zmin = logz ? this.gminposbin * 0.3 : this.gminbin;
+         this.zmax = this.gmaxbin;
+         zmult = 1 + 2*gStyle.fHistTopMargin;
+      }
+
+      if (logz && (this.zmin <= 0))
+         this.zmin = this.zmax * 1e-5;
+
+      this.createHistDrawAttributes(true);
+      return zmult;
+   }
+
+   /** @summary Create frame with axes drawing
+    * @private */
+   async crete3DFrame(fp, render3d, o, histo, zmult) {
+      assignFrame3DMethods(fp);
+      return fp.create3DScene(render3d, o.x3dscale, o.y3dscale, o.Ortho).then(() => {
+         fp.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax, this);
+         fp.set3DOptions(o);
+         fp.drawXYZ(fp.toplevel, TAxisPainter, {
+            ndim: 2, hist_painter: this, zmult, zoom: settings.Zooming,
+            draw: o.Axis !== -1, drawany: o.isCartesian(),
+            reverse_x: o.RevX, reverse_y: o.RevY
+         });
+         return fp;
+      });
+   }
+
+   /** @summary Create 3D object for histogram bins
+    * @private */
+   draw3DBins(o) {
+      if (this.isTH2Poly())
+         drawTH2PolyLego(this);
+      else if (o.Contour)
+         drawBinsContour3D(this, true);
+      else if (o.Surf)
+         drawBinsSurf3D(this);
+      else if (o.Error)
+         drawBinsError3D(this);
+      else
+         drawBinsLego(this);
+
+   }
+
    /** @summary draw TH2 object in 3D mode */
    async draw3D(reason) {
       this.mode3d = true;
@@ -226,54 +284,16 @@ class TH2Painter extends TH2Painter2D {
       }
 
       if (full_draw) {
-         const pad = this.getPadPainter().getRootPad(true),
-               logz = pad?.fLogv ?? pad?.fLogz;
-         let zmult = 1;
+         const zmult = this.checkRangeFor3D(o);
 
-         if (o.ohmin && o.ohmax) {
-            this.zmin = o.hmin;
-            this.zmax = o.hmax;
-         } else if (o.minimum !== kNoZoom && o.maximum !== kNoZoom) {
-            this.zmin = o.minimum;
-            this.zmax = o.maximum;
-         } else if (this.draw_content || this.gmaxbin) {
-            this.zmin = logz ? this.gminposbin * 0.3 : this.gminbin;
-            this.zmax = this.gmaxbin;
-            zmult = 1 + 2*gStyle.fHistTopMargin;
-         }
-
-         if (logz && (this.zmin <= 0))
-            this.zmin = this.zmax * 1e-5;
-
-         this.createHistDrawAttributes(true);
-
-         if (is_main) {
-            assignFrame3DMethods(fp);
-            pr = fp.create3DScene(o.Render3D, o.x3dscale, o.y3dscale, o.Ortho).then(() => {
-               fp.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax, this);
-               fp.set3DOptions(o);
-               fp.drawXYZ(fp.toplevel, TAxisPainter, {
-                  ndim: 2, hist_painter: this, zmult, zoom: settings.Zooming,
-                  draw: o.Axis !== -1, drawany: o.isCartesian(),
-                  reverse_x: o.RevX, reverse_y: o.RevY
-               });
-            });
-         }
+         if (is_main)
+            pr = this.crete3DFrame(fp, o.Render3D, o, histo, zmult);
 
          if (fp.mode3d) {
             pr = pr.then(() => {
-               if (this.draw_content) {
-                  if (this.isTH2Poly())
-                     drawTH2PolyLego(this);
-                  else if (o.Contour)
-                     drawBinsContour3D(this, true);
-                  else if (o.Surf)
-                     drawBinsSurf3D(this);
-                  else if (o.Error)
-                     drawBinsError3D(this);
-                  else
-                     drawBinsLego(this);
-               } else if (o.Axis && o.Zscale) {
+               if (this.draw_content)
+                  this.draw3DBins(o);
+               else if (o.Axis && o.Zscale) {
                   this.getContourLevels(true);
                   this.getHistPalette();
                }
@@ -305,24 +325,7 @@ class TH2Painter extends TH2Painter2D {
          o.Lego = 12;
       painter.scanContent();
 
-      let zmult = 1;
-
-      if (o.ohmin && o.ohmax) {
-         painter.zmin = o.hmin;
-         painter.zmax = o.hmax;
-      } else if (o.minimum !== kNoZoom && o.maximum !== kNoZoom) {
-         painter.zmin = o.minimum;
-         painter.zmax = o.maximum;
-      } else if (painter.draw_content || painter.gmaxbin) {
-         painter.zmin = logz ? painter.gminposbin * 0.3 : painter.gminbin;
-         painter.zmax = painter.gmaxbin;
-         zmult = 1 + 2*gStyle.fHistTopMargin;
-      }
-
-      if (logz && (painter.zmin <= 0))
-         painter.zmin = painter.zmax * 1e-5;
-
-      painter.createHistDrawAttributes(true);
+      const zmult = painter.checkRangeFor3D(o);
 
       const fp = new TFramePainter(null, null);
       assignFrame3DMethods(fp);
@@ -330,26 +333,9 @@ class TH2Painter extends TH2Painter2D {
       // return dummy frame painter as result
       painter.getFramePainter = () => fp;
 
-      return fp.create3DScene(constants.Render3D.None, o.x3dscale, o.y3dscale, o.Ortho).then(() => {
-         fp.setAxesRanges(histo.fXaxis, painter.xmin, painter.xmax, histo.fYaxis, painter.ymin, painter.ymax, histo.fZaxis, painter.zmin, painter.zmax, painter);
-         fp.set3DOptions(o);
-         fp.drawXYZ(fp.toplevel, TAxisPainter, {
-            ndim: 2, hist_painter: painter, zmult, zoom: false,
-            draw: o.Axis !== -1, drawany: o.isCartesian(),
-            reverse_x: o.RevX, reverse_y: o.RevY
-         });
-         if (painter.isTH2Poly())
-            drawTH2PolyLego(painter);
-         else if (o.Contour)
-            drawBinsContour3D(painter, true);
-         else if (o.Surf)
-            drawBinsSurf3D(painter);
-         else if (o.Error)
-            drawBinsError3D(painter);
-         else
-            drawBinsLego(painter);
-
-
+      return painter.crete3DFrame(fp, constants.Render3D.None, o, histo, zmult).then(() => {
+         if (painter.draw_content)
+            painter.draw3DBins(o);
          // correctly cleanup all objects
          const res3d = fp.toplevel;
          fp.scene.remove(res3d);
