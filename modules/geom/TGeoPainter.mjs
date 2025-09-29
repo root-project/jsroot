@@ -917,9 +917,8 @@ class TGeoPainter extends ObjectPainter {
       if (this.#superimpose && (opt.indexOf('same') === 0))
          opt = opt.slice(4);
 
-      const res = this.ctrl,
+      const res = this.ctrl, macro = opt.indexOf('macro:');
 
-       macro = opt.indexOf('macro:');
       if (macro >= 0) {
          let separ = opt.indexOf(';', macro+6);
          if (separ < 0) separ = opt.length;
@@ -5477,6 +5476,154 @@ class TGeoPainter extends ObjectPainter {
       return this.prepareObjectDraw(draw_obj, name_prefix);
    }
 
+   /** @summary Build three.js object */
+   static build3d(obj, sopt) {
+      if (!obj)
+         return null;
+
+      let opt = null;
+      if (isStr(sopt)) {
+         const painter = new TGeoPainter(null, obj);
+         painter.decodeOptions(sopt);
+         opt = painter.ctrl;
+         opt.numfaces = opt.maxfaces;
+         opt.numnodes = opt.maxnodes;
+      } else
+         opt = sopt || {};
+
+      if (!opt.numfaces)
+         opt.numfaces = 100000;
+      if (!opt.numnodes)
+         opt.numnodes = 1000;
+      if (!opt.frustum)
+         opt.frustum = null;
+
+      opt.res_mesh = opt.res_faces = 0;
+
+      if (opt.instancing === undefined)
+         opt.instancing = -1;
+
+      opt.info = { num_meshes: 0, num_faces: 0 };
+
+      let clones, visibles;
+
+      if (obj.visibles && obj.nodes && obj.numnodes) {
+         // case of draw message from geometry viewer
+
+         const nodes = obj.numnodes > 1e6 ? { length: obj.numnodes } : new Array(obj.numnodes);
+
+         obj.nodes.forEach(node => {
+            nodes[node.id] = ClonedNodes.formatServerElement(node);
+         });
+
+         clones = new ClonedNodes(null, nodes);
+         clones.name_prefix = clones.getNodeName(0);
+
+         // normally only need when making selection, not used in geo viewer
+         // this.geo_clones.setMaxVisNodes(draw_msg.maxvisnodes);
+         // this.geo_clones.setVisLevel(draw_msg.vislevel);
+         // TODO: provide from server
+         clones.maxdepth = 20;
+
+         const nsegm = obj.cfg?.nsegm || 30;
+
+         for (let cnt = 0; cnt < obj.visibles.length; ++cnt) {
+            const item = obj.visibles[cnt], rd = item.ri;
+
+            // entry may be provided without shape - it is ok
+            if (rd)
+               item.server_shape = rd.server_shape = createServerGeometry(rd, nsegm);
+         }
+
+         visibles = obj.visibles;
+      } else {
+         let shape = null, hide_top = false;
+
+         if (('fShapeBits' in obj) && ('fShapeId' in obj)) {
+            shape = obj; obj = null;
+         } else if ((obj._typename === clTGeoVolumeAssembly) || (obj._typename === clTGeoVolume))
+            shape = obj.fShape;
+         else if ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract))
+            shape = obj.fShape;
+         else if (obj._typename === clTGeoManager) {
+            obj = obj.fMasterVolume;
+            hide_top = !opt.showtop;
+            shape = obj.fShape;
+         } else if (obj.fVolume)
+            shape = obj.fVolume.fShape;
+         else
+            obj = null;
+
+         if (opt.composite && shape && (shape._typename === clTGeoCompositeShape) && shape.fNode)
+            obj = buildCompositeVolume(shape);
+
+         if (!obj && shape)
+            obj = Object.assign(create(clTNamed), { _typename: clTEveGeoShapeExtract, fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
+
+         if (!obj)
+            return null;
+
+         if (obj._typename.indexOf(clTGeoVolume) === 0)
+            obj = { _typename: clTGeoNode, fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
+
+         clones = new ClonedNodes(obj);
+         clones.setVisLevel(opt.vislevel);
+         clones.setMaxVisNodes(opt.numnodes);
+
+         if (opt.dflt_colors)
+            clones.setDefaultColors(true);
+
+         const uniquevis = opt.no_screen ? 0 : clones.markVisibles(true);
+         if (uniquevis <= 0)
+            clones.markVisibles(false, false, hide_top);
+         else
+            clones.markVisibles(true, true, hide_top); // copy bits once and use normal visibility bits
+
+         clones.produceIdShifts();
+
+         // collect visible nodes
+         const res = clones.collectVisibles(opt.numfaces, opt.frustum);
+
+         visibles = res.lst;
+      }
+
+      if (!opt.material_kind)
+         opt.material_kind = 'lambert';
+      if (opt.set_names === undefined)
+         opt.set_names = true;
+
+      clones.setConfig(opt);
+
+      // collect shapes
+      const shapes = clones.collectShapes(visibles);
+
+      clones.buildShapes(shapes, opt.numfaces);
+
+      const toplevel = new THREE.Object3D();
+      toplevel.clones = clones; // keep reference on JSROOT data
+
+      const colors = getRootColors();
+
+      if (clones.createInstancedMeshes(opt, toplevel, visibles, shapes, colors))
+         return toplevel;
+
+      for (let n = 0; n < visibles.length; ++n) {
+         const entry = visibles[n];
+         if (entry.done)
+            continue;
+
+         const shape = entry.server_shape || shapes[entry.shapeid];
+         if (!shape.ready) {
+            console.warn('shape marked as not ready when it should');
+            break;
+         }
+
+         clones.createEntryMesh(opt, toplevel, entry, shape, colors);
+      }
+
+      return toplevel;
+   }
+
   /** @summary draw TGeo object */
    static async draw(dom, obj, opt) {
       if (!obj)
@@ -6026,143 +6173,7 @@ function drawAxis3D() {
   * // this is three.js object and can be now inserted in the scene
   */
 function build(obj, opt) {
-   if (!obj)
-      return null;
-
-   if (!opt)
-      opt = {};
-   if (!opt.numfaces)
-      opt.numfaces = 100000;
-   if (!opt.numnodes)
-      opt.numnodes = 1000;
-   if (!opt.frustum)
-      opt.frustum = null;
-
-   opt.res_mesh = opt.res_faces = 0;
-
-   if (opt.instancing === undefined)
-      opt.instancing = -1;
-
-   opt.info = { num_meshes: 0, num_faces: 0 };
-
-   let clones, visibles;
-
-   if (obj.visibles && obj.nodes && obj.numnodes) {
-      // case of draw message from geometry viewer
-
-      const nodes = obj.numnodes > 1e6 ? { length: obj.numnodes } : new Array(obj.numnodes);
-
-      obj.nodes.forEach(node => {
-         nodes[node.id] = ClonedNodes.formatServerElement(node);
-      });
-
-      clones = new ClonedNodes(null, nodes);
-      clones.name_prefix = clones.getNodeName(0);
-
-      // normally only need when making selection, not used in geo viewer
-      // this.geo_clones.setMaxVisNodes(draw_msg.maxvisnodes);
-      // this.geo_clones.setVisLevel(draw_msg.vislevel);
-      // TODO: provide from server
-      clones.maxdepth = 20;
-
-      const nsegm = obj.cfg?.nsegm || 30;
-
-      for (let cnt = 0; cnt < obj.visibles.length; ++cnt) {
-         const item = obj.visibles[cnt], rd = item.ri;
-
-         // entry may be provided without shape - it is ok
-         if (rd)
-            item.server_shape = rd.server_shape = createServerGeometry(rd, nsegm);
-      }
-
-      visibles = obj.visibles;
-   } else {
-      let shape = null, hide_top = false;
-
-      if (('fShapeBits' in obj) && ('fShapeId' in obj)) {
-         shape = obj; obj = null;
-      } else if ((obj._typename === clTGeoVolumeAssembly) || (obj._typename === clTGeoVolume))
-         shape = obj.fShape;
-       else if ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract))
-         shape = obj.fShape;
-       else if (obj._typename === clTGeoManager) {
-         obj = obj.fMasterVolume;
-         hide_top = !opt.showtop;
-         shape = obj.fShape;
-      } else if (obj.fVolume)
-         shape = obj.fVolume.fShape;
-       else
-         obj = null;
-
-
-      if (opt.composite && shape && (shape._typename === clTGeoCompositeShape) && shape.fNode)
-         obj = buildCompositeVolume(shape);
-
-      if (!obj && shape)
-         obj = Object.assign(create(clTNamed), { _typename: clTEveGeoShapeExtract, fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
-
-      if (!obj)
-         return null;
-
-      if (obj._typename.indexOf(clTGeoVolume) === 0)
-         obj = { _typename: clTGeoNode, fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
-
-      clones = new ClonedNodes(obj);
-      clones.setVisLevel(opt.vislevel);
-      clones.setMaxVisNodes(opt.numnodes);
-
-      if (opt.dflt_colors)
-         clones.setDefaultColors(true);
-
-      const uniquevis = opt.no_screen ? 0 : clones.markVisibles(true);
-      if (uniquevis <= 0)
-         clones.markVisibles(false, false, hide_top);
-      else
-         clones.markVisibles(true, true, hide_top); // copy bits once and use normal visibility bits
-
-      clones.produceIdShifts();
-
-      // collect visible nodes
-      const res = clones.collectVisibles(opt.numfaces, opt.frustum);
-
-      visibles = res.lst;
-   }
-
-   if (!opt.material_kind)
-      opt.material_kind = 'lambert';
-   if (opt.set_names === undefined)
-      opt.set_names = true;
-
-   clones.setConfig(opt);
-
-   // collect shapes
-   const shapes = clones.collectShapes(visibles);
-
-   clones.buildShapes(shapes, opt.numfaces);
-
-   const toplevel = new THREE.Object3D();
-   toplevel.clones = clones; // keep reference on JSROOT data
-
-   const colors = getRootColors();
-
-   if (clones.createInstancedMeshes(opt, toplevel, visibles, shapes, colors))
-      return toplevel;
-
-   for (let n = 0; n < visibles.length; ++n) {
-      const entry = visibles[n];
-      if (entry.done)
-         continue;
-
-      const shape = entry.server_shape || shapes[entry.shapeid];
-      if (!shape.ready) {
-         console.warn('shape marked as not ready when it should');
-         break;
-      }
-
-      clones.createEntryMesh(opt, toplevel, entry, shape, colors);
-   }
-
-   return toplevel;
+   return TGeoPainter.build3d(obj, opt);
 }
 
 export { ClonedNodes, build, TGeoPainter, GeoDrawingControl,
