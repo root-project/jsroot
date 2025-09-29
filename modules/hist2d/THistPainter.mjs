@@ -2064,7 +2064,7 @@ class THistPainter extends ObjectPainter {
       else {
          if (nlevels < 2)
             nlevels = gStyle.fNumberContours;
-         const pad = this.getPadPainter().getRootPad(true),
+         const pad = this.getPadPainter()?.getRootPad(true),
                logv = pad?.fLogv ?? ((ndim === 2) && pad?.fLogz);
 
          cntr.createNormal(nlevels, logv ?? 0, zminpositive);

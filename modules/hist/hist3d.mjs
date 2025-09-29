@@ -338,7 +338,7 @@ function create3DCamera(fp, orthographic) {
 /** @summary Returns camera default position
   * @private */
 function getCameraDefaultPosition(fp, first_time) {
-   const pad = fp.getPadPainter().getRootPad(true),
+   const pad = fp.getPadPainter()?.getRootPad(true),
          kz = fp.camera.isOrthographicCamera ? 1 : 1.4;
    let max3dx = Math.max(0.75*fp.size_x3d, fp.size_z3d),
        max3dy = Math.max(0.75*fp.size_y3d, fp.size_z3d),
@@ -891,7 +891,7 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    else
       opts.drawany = true;
 
-   const pad = opts.v7 ? null : this.getPadPainter().getRootPad(true);
+   const pad = opts.v7 ? null : this.getPadPainter()?.getRootPad(true);
    let grminx = -this.size_x3d, grmaxx = this.size_x3d,
        grminy = -this.size_y3d, grmaxy = this.size_y3d,
        grminz = 0, grmaxz = 2*this.size_z3d,
