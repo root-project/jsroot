@@ -1124,9 +1124,8 @@ class TGraph2DPainter extends ObjectPainter {
          res.Axis = 'lego2';
          if (res.Zscale)
             res.Axis += 'z';
-      } else {
+      } else
          res.Axis = opt;
-      }
 
       this.storeDrawOpt(opt);
    }
@@ -1599,8 +1598,8 @@ class TGraph2DPainter extends ObjectPainter {
          painter.getFramePainter = () => fp;
          painter.getMainPainter = () => hist_painter;
 
-         return painter.drawGraph2D().then(() => fp.create3DScene(-1, true))
-      })
+         return painter.drawGraph2D().then(() => fp.create3DScene(-1, true));
+      });
    }
 
    /** @summary draw TGraph2D object */

@@ -1,4 +1,4 @@
-import { gStyle, settings, kInspect, clTF1, clTF3, clTProfile3D, BIT, isFunc } from '../core.mjs';
+import { gStyle, kInspect, clTF1, clTF3, clTProfile3D, BIT, isFunc } from '../core.mjs';
 import { TRandom, floatToString } from '../base/BasePainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { TAxisPainter } from '../gpad/TAxisPainter.mjs';
@@ -636,7 +636,6 @@ class TH3Painter extends THistPainter {
    /** @summary Redraw TH3 histogram */
    async redraw(reason) {
       const fp = this.getFramePainter(), // who makes axis and 3D drawing
-            histo = this.getHisto(),
             o = this.getOptions();
 
       let pr = Promise.resolve(true), full_draw = true;

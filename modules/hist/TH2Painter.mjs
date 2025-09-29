@@ -1,4 +1,4 @@
-import { settings, constants, gStyle, clTMultiGraph, kNoZoom } from '../core.mjs';
+import { gStyle, clTMultiGraph, kNoZoom } from '../core.mjs';
 import { getMaterialArgs, THREE } from '../base/base3d.mjs';
 import { crete3DFrame, drawBinsLego, drawBinsError3D, drawBinsContour3D, drawBinsSurf3D } from './hist3d.mjs';
 import { TAxisPainter } from '../gpad/TAxisPainter.mjs';
@@ -244,7 +244,6 @@ class TH2Painter extends TH2Painter2D {
          drawBinsError3D(this);
       else
          drawBinsLego(this);
-
    }
 
    /** @summary draw TH2 object in 3D mode */
@@ -253,7 +252,6 @@ class TH2Painter extends TH2Painter2D {
 
       const fp = this.getFramePainter(), // who makes axis drawing
             is_main = this.isMainPainter(), // is main histogram
-            histo = this.getHisto(),
             o = this.getOptions();
 
       let pr = Promise.resolve(true), full_draw = true;
@@ -304,7 +302,7 @@ class TH2Painter extends TH2Painter2D {
       const painter = new TH2Painter(null, histo);
       painter.decodeOptions(opt);
 
-      const o = painter.getOptions(), logz = false;
+      const o = painter.getOptions();
       if (painter.isTH2Poly())
          o.Lego = 12;
       painter.scanContent();
