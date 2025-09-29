@@ -1,4 +1,4 @@
-import { constants, isFunc, isStr, getDocument, isNodeJs } from '../core.mjs';
+import { constants, settings, isFunc, isStr, getDocument, isNodeJs } from '../core.mjs';
 import { rgb as d3_rgb } from '../d3.mjs';
 import { THREE, assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, Box3D, getMaterialArgs, importThreeJs,
@@ -1645,6 +1645,33 @@ function assignFrame3DMethods(fp) {
    Object.assign(fp, { create3DScene, add3DMesh, remove3DMeshes, getRenderer, render3D, resize3D, change3DCamera, highlightBin3D, set3DOptions, drawXYZ, convert3DtoPadNDC });
 }
 
+
+/** @summary Create 3D objects in the frame
+  * @private */
+async function crete3DFrame(painter, AxisPainterClass, render3d = constants.Render3D.None) {
+   const fp = painter.getFramePainter(),
+         o = painter.getOptions(),
+         histo = painter.getHisto();
+
+   assignFrame3DMethods(fp);
+
+   return fp.create3DScene(render3d, o.x3dscale, o.y3dscale, o.Ortho).then(() => {
+      fp.setAxesRanges(histo.fXaxis, painter.xmin, painter.xmax, histo.fYaxis, painter.ymin, painter.ymax, histo.fZaxis, painter.zmin, painter.zmax, painter);
+      fp.set3DOptions(o);
+      fp.drawXYZ(fp.toplevel, AxisPainterClass, {
+         ndim: painter.getDimension(),
+         hist_painter: painter,
+         zmult: o.zmult ?? 1,
+         zoom: (render3d !== constants.Render3D.None) && settings.Zooming,
+         draw: o.Axis !== -1,
+         drawany: o.isCartesian(),
+         reverse_x: o.RevX,
+         reverse_y: o.RevY
+      });
+      return fp;
+   });
+}
+
 function _meshLegoToolTip(intersect) {
    if ((intersect.faceIndex < 0) || (intersect.faceIndex >= this.face_to_bins_index.length))
       return null;
@@ -2373,4 +2400,6 @@ function drawBinsSurf3D(painter, is_v7 = false) {
    }
 }
 
-export { assignFrame3DMethods, drawBinsLego, drawBinsError3D, drawBinsContour3D, drawBinsSurf3D, convertLegoBuf, createLegoGeom };
+export { assignFrame3DMethods, crete3DFrame,
+         drawBinsLego, drawBinsError3D, drawBinsContour3D,
+         drawBinsSurf3D, convertLegoBuf, createLegoGeom };
