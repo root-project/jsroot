@@ -336,13 +336,8 @@ class TH2Painter extends TH2Painter2D {
       return painter.crete3DFrame(fp, constants.Render3D.None, o, histo, zmult).then(() => {
          if (painter.draw_content)
             painter.draw3DBins(o);
-         // correctly cleanup all objects
-         const res3d = fp.toplevel;
-         fp.scene.remove(res3d);
-         fp.toplevel = null;
-         fp.create3DScene(-1);
 
-         return res3d;
+         return fp.create3DScene(-1, true);
       });
    }
 
