@@ -23,7 +23,7 @@
 
    <script type='module'>
 
-      import { decodeUrl, httpRequest, openFile, build3d } from 'jsroot';
+      import { decodeUrl, httpRequest, openFile, treeDraw, build3d } from 'jsroot';
 
       import { Box3, Vector3, PerspectiveCamera, Scene, AmbientLight, DirectionalLight, DoubleSide,
                MeshLambertMaterial, Mesh, TetrahedronGeometry, WebGLRenderer } from 'three';
@@ -69,6 +69,7 @@
        camera = new PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, draw_size*5 );
        camera.position.y = draw_size*2;
        camera.position.z = draw_size/2;
+       camera.far = draw_size * 5;
        camera.up.set(0, 0, 1); // z scale up
 
        scene = new Scene();
@@ -77,12 +78,6 @@
        let light = new DirectionalLight( 0xffffff );
        light.position.set(0, 1, 0);
        scene.add( light );
-
-       // first draw dummy object, seen in the beginning
-       let material = new MeshLambertMaterial({side: DoubleSide, color: 'red', vertexColors: false});
-       dummy = new Mesh(new TetrahedronGeometry(75, 0), material);
-       // object.position.set( 200, 0, 200 );
-       scene.add( dummy );
 
        renderer = new WebGLRenderer({ antialias: true });
        renderer.setPixelRatio( window.devicePixelRatio );
@@ -99,21 +94,23 @@
        let filename = 'https://root.cern/js/files/hsimple.root';
 
        let file = await openFile(filename);
-       let obj = await file.readObject('hpxpy');
-
-       let obj3d = await build3d(obj, 'lego2');
+       let hist2 = await file.readObject('hpxpy');
+       let obj3d = await build3d(hist2, 'lego2');
 
        if (obj3d) {
-          scene.remove( dummy );
           scene.add( obj3d );
+          obj3d.position.x = 300;
+          camera.updateProjectionMatrix();
+       }
 
-          let box3 = new Box3().setFromObject(obj3d);
+       let tuple = await file.readObject('ntuple');
+       let hist3 = await treeDraw(tuple, 'px:py:pz;hbins:15');
 
-          draw_size = box3.getSize(new Vector3()).length();
+       obj3d = await build3d(hist3, 'box3');
 
-          scene.position.set(0,0, 0 );
-
-          camera.far = draw_size * 5;
+       if (obj3d) {
+          scene.add( obj3d );
+          obj3d.position.x = -300;
           camera.updateProjectionMatrix();
        }
 
