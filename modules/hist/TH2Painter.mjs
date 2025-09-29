@@ -1,4 +1,4 @@
-import { settings, gStyle, clTMultiGraph, kNoZoom } from '../core.mjs';
+import { settings, constants, gStyle, clTMultiGraph, kNoZoom } from '../core.mjs';
 import { getMaterialArgs, THREE } from '../base/base3d.mjs';
 import { assignFrame3DMethods, drawBinsLego, drawBinsError3D, drawBinsContour3D, drawBinsSurf3D } from './hist3d.mjs';
 import { TAxisPainter } from '../gpad/TAxisPainter.mjs';
@@ -330,12 +330,12 @@ class TH2Painter extends TH2Painter2D {
       // return dummy frame painter as result
       painter.getFramePainter = () => fp;
 
-      return fp.create3DScene(o.Render3D, o.x3dscale, o.y3dscale, o.Ortho).then(() => {
+      return fp.create3DScene(constants.Render3D.None, o.x3dscale, o.y3dscale, o.Ortho).then(() => {
          fp.setAxesRanges(histo.fXaxis, painter.xmin, painter.xmax, histo.fYaxis, painter.ymin, painter.ymax, histo.fZaxis, painter.zmin, painter.zmax, painter);
          fp.set3DOptions(o);
          fp.drawXYZ(fp.toplevel, TAxisPainter, {
             ndim: 2, hist_painter: painter, zmult, zoom: false,
-            draw: true, drawany: o.isCartesian(),
+            draw: o.Axis !== -1, drawany: o.isCartesian(),
             reverse_x: o.RevX, reverse_y: o.RevY
          });
          if (painter.isTH2Poly())
@@ -349,7 +349,14 @@ class TH2Painter extends TH2Painter2D {
          else
             drawBinsLego(painter);
 
-         return fp.toplevel;
+
+         // correctly cleanup all objects
+         const res3d = fp.toplevel;
+         fp.scene.remove(res3d);
+         fp.toplevel = null;
+         fp.create3DScene(-1);
+
+         return res3d;
       });
    }
 

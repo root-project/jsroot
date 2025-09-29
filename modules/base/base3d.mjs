@@ -229,11 +229,14 @@ function getRender3DKind(render3d, is_batch) {
    if (is_batch === undefined)
       is_batch = isBatchMode();
 
-   if (!render3d) render3d = is_batch ? settings.Render3DBatch : settings.Render3D;
+   if (!render3d)
+      render3d = is_batch ? settings.Render3DBatch : settings.Render3D;
    const rc = constants.Render3D;
 
-   if (render3d === rc.Default) render3d = is_batch ? rc.WebGLImage : rc.WebGL;
-   if (is_batch && (render3d === rc.WebGL)) render3d = rc.WebGLImage;
+   if (render3d === rc.Default)
+      render3d = is_batch ? rc.WebGLImage : rc.WebGL;
+   if (is_batch && (render3d === rc.WebGL))
+      render3d = rc.WebGLImage;
 
    return render3d;
 }
@@ -518,11 +521,14 @@ async function createRender3D(width, height, render3d, args) {
 
    render3d = getRender3DKind(render3d);
 
-   if (!args) args = { antialias: true, alpha: true };
+   if (!args)
+      args = { antialias: true, alpha: true };
 
    let promise;
 
-   if (render3d === rc.SVG) {
+   if (render3d === rc.None)
+      promise = Promise.resolve(null);
+   else if (render3d === rc.SVG) {
       // SVG rendering
       const r = createSVGRenderer(false, 0, doc);
       r.jsroot_dom = doc.createElementNS(nsSVG, 'svg');
@@ -565,6 +571,9 @@ async function createRender3D(width, height, render3d, args) {
    }
 
    return promise.then(renderer => {
+      if (!renderer)
+         return renderer;
+
       if (!renderer.jsroot_dom)
          renderer.jsroot_dom = renderer.domElement;
       else

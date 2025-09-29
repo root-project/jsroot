@@ -165,6 +165,8 @@ const constants = {
       WebGLImage: 2,
       /** @summary Use SVG rendering, slow, imprecise and not interactive, not recommended */
       SVG: 3,
+      /** @summary Disable renderer, used for three.js model creation, only for internal use recommended */
+      None: 4,
       fromString(s) {
          if ((s === 'webgl') || (s === 'gl'))
             return this.WebGL;
@@ -172,6 +174,8 @@ const constants = {
             return this.WebGLImage;
          if (s === 'svg')
             return this.SVG;
+         if (s === 'none')
+            return this.None;
          return this.Default;
       }
    },
