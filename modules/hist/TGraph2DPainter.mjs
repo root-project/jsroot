@@ -1122,9 +1122,11 @@ class TGraph2DPainter extends ObjectPainter {
          res.Axis = '';
       else if (res.isAny()) {
          res.Axis = 'lego2';
-         if (res.Zscale) res.Axis += 'z';
-      } else
+         if (res.Zscale)
+            res.Axis += 'z';
+      } else {
          res.Axis = opt;
+      }
 
       this.storeDrawOpt(opt);
    }
@@ -1415,7 +1417,10 @@ class TGraph2DPainter extends ObjectPainter {
       if (fp.usesvg)
          scale *= 0.3;
 
-      scale *= 7 * Math.max(fp.size_x3d / fp.getFrameWidth(), fp.size_z3d / fp.getFrameHeight());
+      const fw = fp.getFrameWidth(), fh = fp.getFrameHeight();
+
+      if ((fw > 10) && (fh > 10))
+         scale *= 7 * Math.max(fp.size_x3d / fw, fp.size_z3d / fh);
 
       if (o.Color || (o.Triangles >= 10)) {
          levels = main.getContourLevels(true);
@@ -1575,6 +1580,27 @@ class TGraph2DPainter extends ObjectPainter {
          fp.render3D(100);
          return this;
       });
+   }
+
+   /** @summary Build three.js of TGraph2D object */
+   static async build3d(gr, opt) {
+      const painter = new TGraph2DPainter(null, gr);
+      painter.decodeOptions(opt, gr);
+
+      if (painter.options.Contour) {
+         console.error('Contour plot is not 3d');
+         return null;
+      }
+
+      return TH2Painter.build3d(painter.createHistogram(), painter.options.Axis, true).then(hist_painter => {
+         painter.axes_draw = true;
+         const fp = hist_painter.getFramePainter();
+
+         painter.getFramePainter = () => fp;
+         painter.getMainPainter = () => hist_painter;
+
+         return painter.drawGraph2D().then(() => fp.create3DScene(-1, true))
+      })
    }
 
    /** @summary draw TGraph2D object */

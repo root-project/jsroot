@@ -300,7 +300,7 @@ class TH2Painter extends TH2Painter2D {
    }
 
    /** @summary Build three.js object for the histogram */
-   static async build3d(histo, opt) {
+   static async build3d(histo, opt, get_painter) {
       const painter = new TH2Painter(null, histo);
       painter.decodeOptions(opt);
 
@@ -319,7 +319,7 @@ class TH2Painter extends TH2Painter2D {
          if (painter.draw_content)
             painter.draw3DBins(o);
 
-         return fp.create3DScene(-1, true);
+         return get_painter ? painter : fp.create3DScene(-1, true);
       });
    }
 
