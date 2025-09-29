@@ -1651,7 +1651,8 @@ function assignFrame3DMethods(fp) {
 async function crete3DFrame(painter, AxisPainterClass, render3d = constants.Render3D.None) {
    const fp = painter.getFramePainter(),
          o = painter.getOptions(),
-         histo = painter.getHisto();
+         histo = painter.getHisto(),
+         ndim = painter.getDimension();
 
    assignFrame3DMethods(fp);
 
@@ -1659,7 +1660,8 @@ async function crete3DFrame(painter, AxisPainterClass, render3d = constants.Rend
       fp.setAxesRanges(histo.fXaxis, painter.xmin, painter.xmax, histo.fYaxis, painter.ymin, painter.ymax, histo.fZaxis, painter.zmin, painter.zmax, painter);
       fp.set3DOptions(o);
       fp.drawXYZ(fp.toplevel, AxisPainterClass, {
-         ndim: painter.getDimension(),
+         ndim,
+         use_y_for_z: ndim === 1,
          hist_painter: painter,
          zmult: o.zmult ?? 1,
          zoom: (render3d !== constants.Render3D.None) && settings.Zooming,
