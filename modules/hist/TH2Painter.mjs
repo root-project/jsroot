@@ -2,6 +2,7 @@ import { settings, gStyle, clTMultiGraph, kNoZoom } from '../core.mjs';
 import { getMaterialArgs, THREE } from '../base/base3d.mjs';
 import { assignFrame3DMethods, drawBinsLego, drawBinsError3D, drawBinsContour3D, drawBinsSurf3D } from './hist3d.mjs';
 import { TAxisPainter } from '../gpad/TAxisPainter.mjs';
+import { TFramePainter } from '../gpad/TFramePainter.mjs';
 import { THistPainter } from '../hist2d/THistPainter.mjs';
 import { TH2Painter as TH2Painter2D } from '../hist2d/TH2Painter.mjs';
 
@@ -292,6 +293,64 @@ class TH2Painter extends TH2Painter2D {
       return pr.then(() => this.updateFunctions())
                .then(() => this.updateHistTitle())
                .then(() => this);
+   }
+
+   /** @summary Build three.js object for the histogram */
+   static async build3d(histo, opt) {
+      const painter = new TH2Painter(null, histo);
+      painter.decodeOptions(opt);
+
+      const o = painter.getOptions(), logz = false;
+      if (painter.isTH2Poly())
+         o.Lego = 12;
+      painter.scanContent();
+
+      let zmult = 1;
+
+      if (o.ohmin && o.ohmax) {
+         painter.zmin = o.hmin;
+         painter.zmax = o.hmax;
+      } else if (o.minimum !== kNoZoom && o.maximum !== kNoZoom) {
+         painter.zmin = o.minimum;
+         painter.zmax = o.maximum;
+      } else if (painter.draw_content || painter.gmaxbin) {
+         painter.zmin = logz ? painter.gminposbin * 0.3 : painter.gminbin;
+         painter.zmax = painter.gmaxbin;
+         zmult = 1 + 2*gStyle.fHistTopMargin;
+      }
+
+      if (logz && (painter.zmin <= 0))
+         painter.zmin = painter.zmax * 1e-5;
+
+      painter.createHistDrawAttributes(true);
+
+      const fp = new TFramePainter(null, null);
+      assignFrame3DMethods(fp);
+
+      // return dummy frame painter as result
+      painter.getFramePainter = () => fp;
+
+      return fp.create3DScene(o.Render3D, o.x3dscale, o.y3dscale, o.Ortho).then(() => {
+         fp.setAxesRanges(histo.fXaxis, painter.xmin, painter.xmax, histo.fYaxis, painter.ymin, painter.ymax, histo.fZaxis, painter.zmin, painter.zmax, painter);
+         fp.set3DOptions(o);
+         fp.drawXYZ(fp.toplevel, TAxisPainter, {
+            ndim: 2, hist_painter: painter, zmult, zoom: false,
+            draw: true, drawany: o.isCartesian(),
+            reverse_x: o.RevX, reverse_y: o.RevY
+         });
+         if (painter.isTH2Poly())
+            drawTH2PolyLego(painter);
+         else if (o.Contour)
+            drawBinsContour3D(painter, true);
+         else if (o.Surf)
+            drawBinsSurf3D(painter);
+         else if (o.Error)
+            drawBinsError3D(painter);
+         else
+            drawBinsLego(painter);
+
+         return fp.toplevel;
+      });
    }
 
    /** @summary draw TH2 object */
