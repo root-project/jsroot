@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
    <head>
-      <title>three.js model for histogram objects</title>
+      <title>Building three.js model for supported classes</title>
       <meta charset="utf-8">
       <link rel="shortcut icon" href="../img/RootIcon.ico"/>
       <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
@@ -23,15 +23,14 @@
 
    <script type='module'>
 
-      import { decodeUrl, httpRequest, create, openFile, treeDraw, build3d } from 'jsroot';
+      import { httpRequest, create, openFile, treeDraw, build3d } from 'jsroot';
 
       import { Box3, Vector3, PerspectiveCamera, Scene, AmbientLight, DirectionalLight, DoubleSide,
                MeshLambertMaterial, Mesh, TetrahedronGeometry, WebGLRenderer } from 'three';
 
       import Stats from 'https://threejs.org/examples/jsm/libs/stats.module.js';
 
-      let container, stats,  camera, scene, renderer, draw_size = 400, dummy = null,
-         d = decodeUrl();
+      let container, stats,  camera, scene, renderer, draw_size = 400;
 
       function onWindowResize() {
          camera.aspect = window.innerWidth / window.innerHeight;
@@ -60,7 +59,9 @@
       async function create3d(obj, opt, x = 0, lbl = '', scale = 1) {
          return build3d(obj, opt).then(obj3d => {
             obj3d.position.x = x;
-            if (scale !== 1)
+            if (scale === 'rotate')
+               obj3d.traverse(o => o.geometry?.rotateX(Math.PI / 2));
+            else if (scale !== 1)
                obj3d.scale.set(scale, scale, scale);
 
             scene.add(obj3d);
@@ -74,7 +75,7 @@
             return build3d(latex);
          }).then(text3d => {
             // latex created in X/Y coordinates,
-            text3d.traverse(obj3d => obj3d.geometry?.rotateX(Math.PI / 2));
+            text3d.traverse(o => o.geometry?.rotateX(Math.PI / 2));
 
             text3d.position.x = x;
             text3d.position.z = -100;
@@ -110,8 +111,10 @@
 
       window.addEventListener( 'resize', onWindowResize, false );
 
-      let filename = 'https://root.cern/js/files/hsimple.root',
-          filename2 = 'https://jsroot.gsi.de/files/graph2d.root';
+      let server = 'https://root.cern/js/files/',
+          filename = server + 'hsimple.root',
+          filename2 = server + 'graph2d.root',
+          filename3 = server + 'geom/simple_alice.json.gz';
 
       let file = await openFile(filename);
       let hist2 = await file.readObject('hpxpy');
@@ -127,13 +130,20 @@
 
       await create3d(hist1, 'lego2', 400, '#color[2]{TH1} #color[4]{lego} plot');
 
-      let geom = await httpRequest('https://root.cern/js/files/geom/simple_alice.json.gz', 'object');
+      let geom = await httpRequest(filename3, 'object');
       await create3d(geom, '', -400, '#color[2]{Geometry} build', 0.2);
 
       let file2 = await openFile(filename2);
       let gr2 = await file2.readObject('Graph2D');
 
       await create3d(gr2, 'p', 650, '#color[2]{TGraph2D} drawing with #color[4]{p}');
+
+      let latex = create('TLatex');
+      latex.fTitle = 'F(t) = V^{i}_{t,j}';
+      latex.fTextAlign = 22;
+      latex.fTextColor = 9;
+      latex.fTextSize = 10;
+      await create3d(latex, 'p', -650, '#color[2]{TLatex} drawing', 'rotate');
 
       camera.updateProjectionMatrix();
 
