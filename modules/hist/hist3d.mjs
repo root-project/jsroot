@@ -97,7 +97,8 @@ function createLatexGeometry(painter, lbl, size, as_array, use_latex = true) {
          else if ((name === 'd') && (this.kind === 'path') && (value !== 'M0,0')) {
             if (get() !== 'M')
                return console.error('Not starts with M');
-            const pnts = [], add_line = (x1, y1, x2, y2) => {
+            let x1 = getN(true), y1 = getN(), next;
+            const pnts = [], add_line = (x2, y2) => {
                const angle = Math.atan2(y2 - y1, x2 - x1),
                      dx = 0.5 * this.stroke_width * Math.sin(angle),
                      dy = -0.5 * this.stroke_width * Math.cos(angle);
@@ -105,29 +106,25 @@ function createLatexGeometry(painter, lbl, size, as_array, use_latex = true) {
                pnts.push(x1-dx, y1-dy, 0, x2-dx, y2-dy, 0, x2+dx, y2+dy, 0, x1-dx, y1-dy, 0, x2+dx, y2+dy, 0, x1+dx, y1+dy, 0);
                // back side
                pnts.push(x1-dx, y1-dy, 0, x2+dx, y2+dy, 0, x2-dx, y2-dy, 0, x1-dx, y1-dy, 0, x1+dx, y1+dy, 0, x2+dx, y2+dy, 0);
+               x1 = x2;
+               y1 = y2;
             };
 
-            let x1 = getN(true), y1 = getN(), next;
             while ((next = get())) {
-               let x2 = x1, y2 = y1;
-
                switch (next) {
-                   case 'L': x2 = getN(true); y2 = getN(); break;
-                   case 'l': x2 += getN(true); y2 += getN(); break;
-                   case 'H': x2 = getN(); break;
-                   case 'h': x2 += getN(); break;
-                   case 'V': y2 = getN(); break;
-                   case 'v': y2 += getN(); break;
+                   case 'L': add_line(getN(true), getN()); continue;
+                   case 'l': add_line(x1 + getN(true), y1 + getN()); continue;
+                   case 'H': add_line(getN(), y1); continue;
+                   case 'h': add_line(x1 + getN(), y1); continue;
+                   case 'V': add_line(x1, getN()); continue;
+                   case 'v': add_line(x1, y1 + getN()); continue;
                    case 'a': {
                      const rx = getN(true), ry = getN(true),
                            angle = getN(true)/180*Math.PI, flag1 = getN(true);
                      getN(true); // skip unused flag2
-
-                     // this is last point
-                     x2 = x1 + getN(true);
-                     y2 = y1 + getN();
-
-                     const x0 = x1 + rx*Math.cos(angle),
+                     const x2 = x1 + getN(true),
+                           y2 = y1 + getN(),
+                           x0 = x1 + rx*Math.cos(angle),
                            y0 = y1 + ry*Math.sin(angle);
                      let angle2 = Math.atan2(y0 - y2, x0 - x2);
                      if (flag1 && (angle2 < angle))
@@ -136,18 +133,13 @@ function createLatexGeometry(painter, lbl, size, as_array, use_latex = true) {
                         angle2 -= 2*Math.PI;
 
                      for (let cnt = 0; cnt < 10; ++cnt) {
-                        const a = angle + (angle2 - angle)/ 10 * (cnt + 1),
-                              x = x0 - rx*Math.cos(a),
-                              y = y0 - ry*Math.sin(a);
-                        add_line(x1, y1, x, y);
-                        x1 = x; y1 = y;
+                        const a = angle + (angle2 - angle)/ 10 * (cnt + 1);
+                        add_line(x0 - rx * Math.cos(a), y0 - ry * Math.sin(a));
                      }
                      continue;
                    }
                    default: console.log('not supported path operator', next);
                }
-               add_line(x1, y1, x2, y2);
-               x1 = x2; y1 = y2;
             }
 
             if (pnts.length) {
