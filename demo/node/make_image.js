@@ -9,27 +9,30 @@ const width = 1200, height = 800;
 
 console.log(`JSROOT version ${version}`);
 
+let outdir = '';
+if (process?.argv && process.argv[2])
+  outdir = process.argv[2];
 
 function processResults(name, title, svg, pdf, png, jpeg) {
    console.log(`${title} ${name}.svg ${svg.length} ${name}.pdf ${pdf.byteLength} ${name}.png ${png.byteLength} ${name}.jpeg ${jpeg.byteLength}`);
 
    if (svg.length)
-      writeFileSync(`${name}.svg`, svg);
+      writeFileSync(`${outdir+name}.svg`, svg);
    else
       console.error(`Fail to create SVG for ${title}`);
 
    if (pdf.byteLength)
-      writeFileSync(`${name}.pdf`, pdf);
+      writeFileSync(`${outdir+name}.pdf`, pdf);
    else
       console.error(`Fail to create PDF for ${title}`);
 
    if (png.byteLength)
-      writeFileSync(`${name}.png`, png);
+      writeFileSync(`${outdir+name}.png`, png);
    else
       console.error(`Fail to create PNG for ${title}`);
 
    if (jpeg.byteLength)
-      writeFileSync(`${name}.jpeg`, jpeg);
+      writeFileSync(`${outdir+name}.jpeg`, jpeg);
    else
       console.error(`Fail to create JPEG for ${title}`);
 }
