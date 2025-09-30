@@ -3,10 +3,14 @@ import { version, openFile, TSelector } from 'jsroot';
 import { readHeaderFooter, readEntry, rntupleProcess } from 'jsroot/rntuple';
 
 console.log(`JSROOT version ${version}`);
-// const file = await openFile('https://jsroot.gsi.de/files/tmp/ntpl001_staff.root'),
-// rntuple = await file.readObject('Staff');
-const file = await openFile('./rntuple_test.root'),
-rntuple = await file.readObject('Data');
+
+
+let filename = './rntuple_test.root';
+if (process?.argv && process.argv[2])
+  filename = process.argv[2];
+
+const file = await openFile(filename),
+      rntuple = await file.readObject('Data');
 
 await readHeaderFooter(rntuple);
 
@@ -41,11 +45,11 @@ else {
     else
       console.log(`OK: Field ${i}: ${field.fieldName} (${field.typeName})`);
     if (i === 0) {
-      if (field.fieldName !== 'IntField' || field.typeName !== 'std::int32_t') 
-        console.error(`FAILURE: First field should be 'IntField (std::int32_t)' but got '${field.fieldName} (${field.typeName})'`);     
+      if (field.fieldName !== 'IntField' || field.typeName !== 'std::int32_t')
+        console.error(`FAILURE: First field should be 'IntField (std::int32_t)' but got '${field.fieldName} (${field.typeName})'`);
     } else if (i === rntuple.builder.fieldDescriptors.length - 1){
       if (field.fieldName !== 'StringField' || field.typeName !== 'std::string')
-        console.error(`FAILURE: Last field should be 'StringField (std::string)' but got '${field.fieldName} (${field.typeName})'`);      
+        console.error(`FAILURE: Last field should be 'StringField (std::string)' but got '${field.fieldName} (${field.typeName})'`);
     }
   }
 }
@@ -93,7 +97,7 @@ const EPSILON = 1e-10;
 
 for (let entryIndex = 0; entryIndex < 10; ++entryIndex) {
   console.log(`\nChecking entry ${entryIndex}:`);
-  
+
   const expected = {
     IntField: entryIndex,
     FloatField: entryIndex * entryIndex,
