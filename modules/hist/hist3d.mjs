@@ -196,7 +196,7 @@ function build3dlatex(obj) {
    const painter = new ObjectPainter(null, obj),
          handle = painter.createAttText({ attr: obj }),
          valign = handle.align % 10,
-         halign = handle.align - valign,
+         halign = (handle.align - valign) / 10,
          arr3d = createLatexGeometry(painter, obj.fTitle, handle.getSize() || 10, true),
          bb = new THREE.Box3().makeEmpty();
 
