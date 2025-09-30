@@ -37,14 +37,13 @@ function createLatexGeometry(painter, lbl, size, as_array, use_latex = true) {
       }
 
       append(kind) {
-         console.log('append', kind)
          if (kind === 'svg:g')
             return new TextParseWrapper('g', this);
          if (kind === 'svg:text')
             return new TextParseWrapper('text', this);
          if (kind === 'svg:path')
             return new TextParseWrapper('path', this);
-         console.log('should create', kind);
+         console.warn('missing handle for svg', kind);
       }
 
       style(name, value) {
@@ -66,7 +65,6 @@ function createLatexGeometry(painter, lbl, size, as_array, use_latex = true) {
       }
 
       attr(name, value) {
-         console.log('attr', name, value)
          const get = () => {
                   if (!value)
                      return '';
@@ -96,24 +94,10 @@ function createLatexGeometry(painter, lbl, size, as_array, use_latex = true) {
             this.y -= Number.parseInt(value)*0.01;
          else if ((name === 'fill') && (this.kind === 'text'))
             this.fill = value;
-         else if ((name === 'd') && (this.kind === 'path')) {
+         else if ((name === 'd') && (this.kind === 'path') && (value !== 'M0,0')) {
             if (get() !== 'M')
                return console.error('Not starts with M');
-            const pnts = [];
-            let x1 = getN(true), y1 = getN(), next;
-
-            while ((next = get())) {
-               let x2 = x1, y2 = y1;
-               switch (next) {
-                   case 'L': x2 = getN(true); y2 = getN(); break;
-                   case 'l': x2 += getN(true); y2 += getN(); break;
-                   case 'H': x2 = getN(); break;
-                   case 'h': x2 += getN(); break;
-                   case 'V': y2 = getN(); break;
-                   case 'v': y2 += getN(); break;
-                   default: console.log('not supported operator', next);
-               }
-
+            const pnts = [], add_line = (x1,y1,x2,y2) => {
                const angle = Math.atan2(y2-y1, x2-x1),
                      dx = 0.5 * this.stroke_width * Math.sin(angle),
                      dy = -0.5 * this.stroke_width * Math.cos(angle);
@@ -122,7 +106,29 @@ function createLatexGeometry(painter, lbl, size, as_array, use_latex = true) {
                pnts.push(x1-dx, y1-dy, 0, x2-dx, y2-dy, 0, x2+dx, y2+dy, 0, x1-dx, y1-dy, 0, x2+dx, y2+dy, 0, x1+dx, y1+dy, 0);
                // back side
                pnts.push(x1-dx, y1-dy, 0, x2+dx, y2+dy, 0, x2-dx, y2-dy, 0, x1-dx, y1-dy, 0, x1+dx, y1+dy, 0, x2+dx, y2+dy, 0);
+            };
 
+            let x1 = getN(true), y1 = getN(), next;
+            while ((next = get())) {
+               let x2 = x1, y2 = y1;
+
+               switch (next) {
+                   case 'L': x2 = getN(true); y2 = getN(); break;
+                   case 'l': x2 += getN(true); y2 += getN(); break;
+                   case 'H': x2 = getN(); break;
+                   case 'h': x2 += getN(); break;
+                   case 'V': y2 = getN(); break;
+                   case 'v': y2 += getN(); break;
+                   case 'a': {
+                     const rx = getN(true), ry = getN(true), angle = getN(true),
+                           flag1 = getN(true), flag2 = getN(true), dx = getN(true), dy = getN();
+                     x2 = x1 + dx;
+                     y2 = y1 + dy;
+                     break;
+                   }
+                   default: console.log('not supported operator', next);
+               }
+               add_line(x1,y1,x2,y2);
                x1 = x2; y1 = y2;
             }
 
