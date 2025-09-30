@@ -139,11 +139,11 @@
       await create3d(gr2, 'p', 650, '#color[2]{TGraph2D} drawing with #color[4]{p}');
 
       let latex = create('TLatex');
-      latex.fTitle = 'F(t) = V^{i}_{t,j}';
+      latex.fTitle = 'C(x) = d #sqrt{#frac{2}{#lambdaD}}  #int^{x}_{0}cos(#frac{#pi}{2}t^{2})dt';
       latex.fTextAlign = 22;
       latex.fTextColor = 9;
       latex.fTextSize = 10;
-      await create3d(latex, 'p', -650, '#color[2]{TLatex} drawing', 'rotate');
+      await create3d(latex, 'p', -600, '#color[2]{TLatex} drawing', 'rotate');
 
       camera.updateProjectionMatrix();
 

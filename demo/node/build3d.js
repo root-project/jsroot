@@ -54,9 +54,9 @@ let gr2 = await file2.readObject('Graph2D');
 await test3d(gr2, 'p', 'TGraph2D drawing with p');
 
 let latex = create('TLatex');
-latex.fTitle = 'F(t) = V^{i}_{t,j}';
+latex.fTitle = 'C(x) = d #sqrt{#frac{2}{#lambdaD}}  #int^{x}_{0}cos(#frac{#pi}{2}t^{2})dt';
 latex.fTextAlign = 22;
 latex.fTextColor = 3;
 latex.fTextSize = 10;
 
-await test3d(latex, '', 'TLatex drawing', 457275);
+await test3d(latex, '', 'TLatex drawing', 1742042);
