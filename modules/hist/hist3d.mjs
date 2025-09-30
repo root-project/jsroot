@@ -101,7 +101,6 @@ function createLatexGeometry(painter, lbl, size, as_array, use_latex = true) {
                const angle = Math.atan2(y2-y1, x2-x1),
                      dx = 0.5 * this.stroke_width * Math.sin(angle),
                      dy = -0.5 * this.stroke_width * Math.cos(angle);
-
                // front side
                pnts.push(x1-dx, y1-dy, 0, x2-dx, y2-dy, 0, x2+dx, y2+dy, 0, x1-dx, y1-dy, 0, x2+dx, y2+dy, 0, x1+dx, y1+dy, 0);
                // back side
@@ -120,13 +119,33 @@ function createLatexGeometry(painter, lbl, size, as_array, use_latex = true) {
                    case 'V': y2 = getN(); break;
                    case 'v': y2 += getN(); break;
                    case 'a': {
-                     const rx = getN(true), ry = getN(true), angle = getN(true),
-                           flag1 = getN(true), flag2 = getN(true), dx = getN(true), dy = getN();
+                     const rx = getN(true), ry = getN(true),
+                           angle = getN(true)/180*Math.PI,
+                           flag1 = getN(true), flag2 = getN(true),
+                           dx = getN(true), dy = getN();
+
+                     // this is last point
                      x2 = x1 + dx;
                      y2 = y1 + dy;
-                     break;
+
+                     const x0 = x1 + rx*Math.cos(angle),
+                           y0 = y1 + ry*Math.sin(angle);
+                     let angle2 = Math.atan2(y0 - y2, x0 - x2);
+                     if (flag1 && (angle2 < angle))
+                        angle2 += 2*Math.PI;
+                     else if (!flag1 && (angle2 > angle))
+                        angle2 -= 2*Math.PI;
+
+                     for (let cnt = 0; cnt < 10; ++cnt) {
+                        const a = angle + (angle2 - angle)/ 10 * (cnt + 1),
+                              x = x0 - rx*Math.cos(a),
+                              y = y0 - ry*Math.sin(a);
+                        add_line(x1,y1,x,y);
+                        x1 = x; y1 = y;
+                     }
+                     continue;
                    }
-                   default: console.log('not supported operator', next);
+                   default: console.log('not supported path operator', next);
                }
                add_line(x1,y1,x2,y2);
                x1 = x2; y1 = y2;
