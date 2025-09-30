@@ -23,7 +23,6 @@ function createLatexGeometry(painter, lbl, size, as_array, use_latex = true) {
    }
 
    const font_size = size * 100, geoms = [];
-   let stroke_width = 5;
 
    class TextParseWrapper {
 
@@ -33,6 +32,7 @@ function createLatexGeometry(painter, lbl, size, as_array, use_latex = true) {
          this.x = 0;
          this.y = 0;
          this.font_size = parent?.font_size ?? font_size;
+         this.stroke_width = parent?.stroke_width ?? 5;
          parent?.childs.push(this);
       }
 
@@ -48,9 +48,8 @@ function createLatexGeometry(painter, lbl, size, as_array, use_latex = true) {
       }
 
       style(name, value) {
-         console.log(`style ${name} = ${value}`);
          if ((name === 'stroke-width') && value)
-            stroke_width = Number.parseInt(value);
+            this.stroke_width = Number.parseInt(value);
          return this;
       }
 
@@ -117,8 +116,8 @@ function createLatexGeometry(painter, lbl, size, as_array, use_latex = true) {
                }
 
                const angle = Math.atan2(y2-y1, x2-x1),
-                     dx = 0.5 * stroke_width * Math.sin(angle),
-                     dy = -0.5 * stroke_width * Math.cos(angle);
+                     dx = 0.5 * this.stroke_width * Math.sin(angle),
+                     dy = -0.5 * this.stroke_width * Math.cos(angle);
 
                // front side
                pnts.push(x1-dx, y1-dy, 0, x2-dx, y2-dy, 0, x2+dx, y2+dy, 0, x1-dx, y1-dy, 0, x2+dx, y2+dy, 0, x1+dx, y1+dy, 0);
