@@ -54,11 +54,10 @@ function createLatexGeometry(painter, lbl, size, as_array, use_latex = true) {
       }
 
       translate() {
-         if (this.geom) {
-            // special workaround for path elements, while 3d font is exact height, keep some space on the top
-            // let dy = this.kind === 'path' ? this.font_size*0.002 : 0;
-            this.geom.translate(this.x, this.y, 0);
-         }
+         // special workaround for path elements, while 3d font is exact height, keep some space on the top
+         // let dy = this.kind === 'path' ? this.font_size*0.002 : 0;
+         this.geom?.translate(this.x, this.y, 0);
+
          this.childs.forEach(chld => {
             chld.x += this.x;
             chld.y += this.y;
@@ -144,6 +143,12 @@ function createLatexGeometry(painter, lbl, size, as_array, use_latex = true) {
          if (this.kind === 'text') {
             geom_args.size = Math.round(0.01*this.font_size);
             this.geom = new THREE.TextGeometry(v, geom_args);
+            if (as_array) {
+               // this is latex parsing
+               // while three.js uses full height, make it more like normal fonts
+               this.geom.scale(1, 0.9, 1);
+               this.geom.translate(0, 0.0005*this.font_size, 0);
+            }
             this.geom._fill = this.fill;
             geoms.push(this.geom);
          }
