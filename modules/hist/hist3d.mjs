@@ -97,8 +97,8 @@ function createLatexGeometry(painter, lbl, size, as_array, use_latex = true) {
          else if ((name === 'd') && (this.kind === 'path') && (value !== 'M0,0')) {
             if (get() !== 'M')
                return console.error('Not starts with M');
-            const pnts = [], add_line = (x1,y1,x2,y2) => {
-               const angle = Math.atan2(y2-y1, x2-x1),
+            const pnts = [], add_line = (x1, y1, x2, y2) => {
+               const angle = Math.atan2(y2 - y1, x2 - x1),
                      dx = 0.5 * this.stroke_width * Math.sin(angle),
                      dy = -0.5 * this.stroke_width * Math.cos(angle);
                // front side
@@ -120,13 +120,12 @@ function createLatexGeometry(painter, lbl, size, as_array, use_latex = true) {
                    case 'v': y2 += getN(); break;
                    case 'a': {
                      const rx = getN(true), ry = getN(true),
-                           angle = getN(true)/180*Math.PI,
-                           flag1 = getN(true), flag2 = getN(true),
-                           dx = getN(true), dy = getN();
+                           angle = getN(true)/180*Math.PI, flag1 = getN(true);
+                     getN(true); // skip unused flag2
 
                      // this is last point
-                     x2 = x1 + dx;
-                     y2 = y1 + dy;
+                     x2 = x1 + getN(true);
+                     y2 = y1 + getN();
 
                      const x0 = x1 + rx*Math.cos(angle),
                            y0 = y1 + ry*Math.sin(angle);
@@ -140,14 +139,14 @@ function createLatexGeometry(painter, lbl, size, as_array, use_latex = true) {
                         const a = angle + (angle2 - angle)/ 10 * (cnt + 1),
                               x = x0 - rx*Math.cos(a),
                               y = y0 - ry*Math.sin(a);
-                        add_line(x1,y1,x,y);
+                        add_line(x1, y1, x, y);
                         x1 = x; y1 = y;
                      }
                      continue;
                    }
                    default: console.log('not supported path operator', next);
                }
-               add_line(x1,y1,x2,y2);
+               add_line(x1, y1, x2, y2);
                x1 = x2; y1 = y2;
             }
 
