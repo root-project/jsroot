@@ -1,4 +1,4 @@
-import { constants, settings, isFunc, isStr, getDocument, isNodeJs } from '../core.mjs';
+import { constants, settings, isFunc, isStr, getDocument, isNodeJs, clTLatex } from '../core.mjs';
 import { rgb as d3_rgb } from '../d3.mjs';
 import { THREE, assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, Box3D, getMaterialArgs, importThreeJs,
@@ -10,7 +10,7 @@ import { kCARTESIAN, kPOLAR, kCYLINDRICAL, kSPHERICAL, kRAPIDITY } from '../hist
 import { buildHist2dContour, buildSurf3D } from '../hist2d/TH2Painter.mjs';
 
 
-function createLatexGeometry(painter, lbl, size, as_array) {
+function createLatexGeometry(painter, lbl, size, as_array, use_latex = true) {
    const geom_args = { font: getHelveticaFont(), size, height: 0, curveSegments: 5 };
    if (THREE.REVISION > 162)
       geom_args.depth = 0;
@@ -148,7 +148,7 @@ function createLatexGeometry(painter, lbl, size, as_array) {
    } // class TextParseWrapper
 
    const node = new TextParseWrapper(),
-         arg = { font_size, latex: 1, x: 0, y: 0, text: lbl, align: ['start', 'top'], fast: true, font: { size: font_size, isMonospace: () => false, aver_width: 0.9 } };
+         arg = { font_size, latex: use_latex ? 1 : 0, x: 0, y: 0, text: lbl, align: ['start', 'top'], fast: true, font: { size: font_size, isMonospace: () => false, aver_width: 0.9 } };
 
    produceLatex(painter, node, arg);
 
@@ -197,7 +197,7 @@ function build3dlatex(obj) {
          handle = painter.createAttText({ attr: obj }),
          valign = handle.align % 10,
          halign = (handle.align - valign) / 10,
-         arr3d = createLatexGeometry(painter, obj.fTitle, handle.getSize() || 10, true),
+         arr3d = createLatexGeometry(painter, obj.fTitle, handle.getSize() || 10, true, obj._typename === clTLatex),
          bb = new THREE.Box3().makeEmpty();
 
    arr3d.forEach(geom => {
