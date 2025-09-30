@@ -171,7 +171,7 @@ jobs:
           node demo/node/tree_dump.js
           node demo/node/tree_draw.js
           node demo/node/selector.js
-          node make_image.js demo/node/
+          node demo/node/make_image.js demo/node/
           wget https://root.cern/js/files/hsimple.root
           node demo/node/file_proxy.js sync ./hsimple.root
           node demo/node/file_proxy.js promise ./hsimple.root
@@ -220,7 +220,7 @@ jobs:
           node demo/node/tree_draw.js
           node demo/node/geomsvg.js
           node demo/node/selector.js
-          node make_image.js demo/node/
+          node demo/node/make_image.js demo/node/
           curl https://root.cern/js/files/hsimple.root --output hsimple.root
           node demo/node/file_proxy.js sync ./hsimple.root
           node demo/node/file_proxy.js promise ./hsimple.root
