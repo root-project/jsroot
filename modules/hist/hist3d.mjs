@@ -122,6 +122,8 @@ function createLatexGeometry(painter, lbl, size, as_array, use_latex = true) {
 
                // front side
                pnts.push(x1-dx, y1-dy, 0, x2-dx, y2-dy, 0, x2+dx, y2+dy, 0, x1-dx, y1-dy, 0, x2+dx, y2+dy, 0, x1+dx, y1+dy, 0);
+               // back side
+               pnts.push(x1-dx, y1-dy, 0, x2+dx, y2+dy, 0, x2-dx, y2-dy, 0, x1-dx, y1-dy, 0, x1+dx, y1+dy, 0, x2+dx, y2+dy, 0);
 
                x1 = x2; y1 = y2;
             }
