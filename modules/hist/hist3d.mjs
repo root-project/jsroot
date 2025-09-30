@@ -37,6 +37,7 @@ function createLatexGeometry(painter, lbl, size, as_array, use_latex = true) {
       }
 
       append(kind) {
+         console.log('append', kind)
          if (kind === 'svg:g')
             return new TextParseWrapper('g', this);
          if (kind === 'svg:text')
@@ -47,7 +48,7 @@ function createLatexGeometry(painter, lbl, size, as_array, use_latex = true) {
       }
 
       style(name, value) {
-         // console.log(`style ${name} = ${value}`);
+         console.log(`style ${name} = ${value}`);
          if ((name === 'stroke-width') && value)
             stroke_width = Number.parseInt(value);
          return this;
@@ -67,6 +68,7 @@ function createLatexGeometry(painter, lbl, size, as_array, use_latex = true) {
       }
 
       attr(name, value) {
+         console.log('attr', name, value)
          const get = () => {
                   if (!value)
                      return '';
@@ -118,20 +120,21 @@ function createLatexGeometry(painter, lbl, size, as_array, use_latex = true) {
                      dx = 0.5 * stroke_width * Math.sin(angle),
                      dy = -0.5 * stroke_width * Math.cos(angle);
 
+               // front side
                pnts.push(x1-dx, y1-dy, 0, x2-dx, y2-dy, 0, x2+dx, y2+dy, 0, x1-dx, y1-dy, 0, x2+dx, y2+dy, 0, x1+dx, y1+dy, 0);
 
                x1 = x2; y1 = y2;
             }
 
-            const pos = new Float32Array(pnts);
-
-            this.geom = new THREE.BufferGeometry();
-            this.geom._fill = this.fill;
-            this.geom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-            this.geom.scale(0.01, -0.01, 0.01);
-            this.geom.computeVertexNormals();
-
-            geoms.push(this.geom);
+            if (pnts.length) {
+               const pos = new Float32Array(pnts);
+               this.geom = new THREE.BufferGeometry();
+               this.geom._fill = this.fill;
+               this.geom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+               this.geom.scale(0.01, -0.01, 0.01);
+               this.geom.computeVertexNormals();
+               geoms.push(this.geom);
+            }
          }
          return this;
       }
