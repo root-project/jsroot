@@ -674,8 +674,7 @@ class RNTupleDescriptorBuilder {
         this.clusterSummaries = clusterSummaries;
         this._readNestedFrames(reader);
 
-        const checksumPagelist = reader.readU64();
-        console.log(checksumPagelist);
+        /* const checksumPagelist = */ reader.readU64();
     }
 
     _readNestedFrames(reader) {
@@ -961,16 +960,13 @@ function readNextCluster(rntuple, selector) {
 
     const clusterIndex = selector.currentCluster,
         clusterSummary = builder.clusterSummaries[clusterIndex],
-
         // Gather all pages for this cluster from selected fields only
         pages = [],
-
         // Collect only selected field names from selector
         selectedFields = [];
+
     for (let i = 0; i < selector.numBranches(); ++i)
         selectedFields.push(getSelectorFieldName(selector, i));
-
-    console.log('selector fields', selectedFields);
 
     // For each selected field, collect its columns' pages
     for (const fieldName of selectedFields) {
@@ -1093,13 +1089,12 @@ function readNextCluster(rntuple, selector) {
             for (let i = 0; i < numEntries; ++i) {
                 for (let b = 0; b < selector.numBranches(); ++b) {
                     const fieldName = getSelectorFieldName(selector, b),
-                        tgtName = selector.nameOfBranch(b),
-                        values = rntuple._clusterData[fieldName];
+                          tgtName = selector.nameOfBranch(b),
+                          values = rntuple._clusterData[fieldName];
 
                     if (!values)
                         throw new Error(`Missing values for selected field: ${fieldName}`);
                     selector.tgtobj[tgtName] = readEntry(rntuple, fieldName, i);
-                    // console.log('fieldName', fieldName, 'tgtname', tgtName, 'result', selector.tgtobj[tgtName]);
                 }
                 selector.Process();
             }
