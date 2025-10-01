@@ -60,12 +60,14 @@ CustomStreamers = {
    TObject(buf, obj) {
       obj.fUniqueID = buf.ntou4();
       obj.fBits = buf.ntou4();
-      if (obj.fBits & kIsReferenced) buf.ntou2(); // skip pid
+      if (obj.fBits & kIsReferenced)
+         buf.ntou2(); // skip pid
    },
 
    TNamed: [{
       basename: clTObject, base: 1, func(buf, obj) {
-         if (!obj._typename) obj._typename = clTNamed;
+         if (!obj._typename)
+            obj._typename = clTNamed;
          buf.classStreamer(obj, clTObject);
       }
      },
@@ -75,7 +77,8 @@ CustomStreamers = {
 
    TObjString: [{
       basename: clTObject, base: 1, func(buf, obj) {
-         if (!obj._typename) obj._typename = clTObjString;
+         if (!obj._typename)
+            obj._typename = clTObjString;
          buf.classStreamer(obj, clTObject);
       }
      },
@@ -83,12 +86,15 @@ CustomStreamers = {
    ],
 
    TClonesArray(buf, list) {
-      if (!list._typename) list._typename = clTClonesArray;
+      if (!list._typename)
+         list._typename = clTClonesArray;
       list.$kind = clTClonesArray;
       list.name = '';
       const ver = buf.last_read_version;
-      if (ver > 2) buf.classStreamer(list, clTObject);
-      if (ver > 1) list.name = buf.readTString();
+      if (ver > 2)
+         buf.classStreamer(list, clTObject);
+      if (ver > 1)
+         list.name = buf.readTString();
       let classv = buf.readTString(), clv = 0;
       const pos = classv.lastIndexOf(';');
 
@@ -98,7 +104,8 @@ CustomStreamers = {
       }
 
       let nobjects = buf.ntou4();
-      if (nobjects < 0) nobjects = -nobjects;  // for backward compatibility
+      if (nobjects < 0)
+         nobjects = -nobjects;  // for backward compatibility
 
       list.arr = new Array(nobjects);
       list.fLast = nobjects - 1;
@@ -123,12 +130,15 @@ CustomStreamers = {
    },
 
    TMap(buf, map) {
-      if (!map._typename) map._typename = clTMap;
+      if (!map._typename)
+         map._typename = clTMap;
       map.name = '';
       map.arr = [];
       const ver = buf.last_read_version;
-      if (ver > 2) buf.classStreamer(map, clTObject);
-      if (ver > 1) map.name = buf.readTString();
+      if (ver > 2)
+         buf.classStreamer(map, clTObject);
+      if (ver > 1)
+         map.name = buf.readTString();
 
       const nobjects = buf.ntou4();
       // create objects
@@ -136,7 +146,8 @@ CustomStreamers = {
          const obj = { _typename: 'TPair' };
          obj.first = buf.readObjectAny();
          obj.second = buf.readObjectAny();
-         if (obj.first) map.arr.push(obj);
+         if (obj.first)
+            map.arr.push(obj);
       }
    },
 
@@ -148,7 +159,8 @@ CustomStreamers = {
       obj.fMinorName = buf.readTString();
       obj.fN = buf.ntoi8();
       obj.fIndexValues = buf.readFastArray(obj.fN, kLong64);
-      if (ver > 1) obj.fIndexValuesMinor = buf.readFastArray(obj.fN, kLong64);
+      if (ver > 1)
+         obj.fIndexValuesMinor = buf.readFastArray(obj.fN, kLong64);
       obj.fIndex = buf.readFastArray(obj.fN, kLong64);
    },
 
@@ -262,8 +274,10 @@ CustomStreamers = {
             if (!arr || arr.length < 2)
                throw new Error(`Problem to decode range setting from streamer element title ${element.fTitle}`);
 
-            if (arr.length === 3) nbits = parseInt(arr[2]);
-            if (!Number.isInteger(nbits) || (nbits < 2) || (nbits > 32)) nbits = 32;
+            if (arr.length === 3)
+               nbits = parseInt(arr[2]);
+            if (!Number.isInteger(nbits) || (nbits < 2) || (nbits > 32))
+               nbits = 32;
 
             const parse_range = val => {
                if (!val)
@@ -323,7 +337,8 @@ CustomStreamers = {
 
    TList(buf, obj) {
       // stream all objects in the list from the I/O buffer
-      if (!obj._typename) obj._typename = this.typename;
+      if (!obj._typename)
+         obj._typename = this.typename;
       obj.$kind = clTList; // all derived classes will be marked as well
       if (buf.last_read_version > 3) {
          buf.classStreamer(obj, clTObject);
@@ -416,13 +431,21 @@ CustomStreamers = {
    RooRealVar(buf, obj) {
       const v = buf.last_read_version;
       buf.classStreamer(obj, 'RooAbsRealLValue');
-      if (v === 1) { buf.ntod(); buf.ntod(); buf.ntoi4(); } // skip fitMin, fitMax, fitBins
+      if (v === 1) {
+         // skip fitMin, fitMax, fitBins
+         buf.ntod();
+         buf.ntod();
+         buf.ntoi4();
+      }
       obj._error = buf.ntod();
       obj._asymErrLo = buf.ntod();
       obj._asymErrHi = buf.ntod();
-      if (v >= 2) obj._binning = buf.readObjectAny();
-      if (v === 3) obj._sharedProp = buf.readObjectAny();
-      if (v >= 4) obj._sharedProp = buf.classStreamer({}, 'RooRealVarSharedProperties');
+      if (v >= 2)
+         obj._binning = buf.readObjectAny();
+      if (v === 3)
+         obj._sharedProp = buf.readObjectAny();
+      if (v >= 4)
+         obj._sharedProp = buf.classStreamer({}, 'RooRealVarSharedProperties');
    },
 
    RooAbsBinning(buf, obj) {
@@ -601,7 +624,6 @@ const DirectStreamers = {
       }
    }
 };
-
 
 /** @summary Returns type id by its name
   * @private */
@@ -1068,7 +1090,8 @@ function createMemberStreamer(element, file) {
 
          member.readarr = function(buf, len) {
             const arr = this.double32 ? new Float64Array(len) : new Float32Array(len);
-            for (let n = 0; n < len; ++n) arr[n] = this.read(buf);
+            for (let n = 0; n < len; ++n)
+               arr[n] = this.read(buf);
             return arr;
          };
 
@@ -1296,7 +1319,8 @@ function createMemberStreamer(element, file) {
                   member.conttype = member.conttype.slice(0, member.conttype.length - 1);
                }
 
-               if (element.fCtype === kObjectp) member.isptr = true;
+               if (element.fCtype === kObjectp)
+                  member.isptr = true;
 
                member.arrkind = getArrayKind(member.conttype);
 
@@ -1327,7 +1351,8 @@ function createMemberStreamer(element, file) {
                delete member.streamer;
             }
 
-            if (member.streamer) member.readelem = readMapElement;
+            if (member.streamer)
+               member.readelem = readMapElement;
          } else if (stl === kSTLbitset)
             member.readelem = (buf /* , obj */) => buf.readFastArray(buf.ntou4(), kBool);
 
@@ -1361,7 +1386,8 @@ function createMemberStreamer(element, file) {
 
                   let res = buf.readNdimArray(this, (buf2, member2) => member2.readelem(buf2));
 
-                  if (!buf.checkByteCount(ver, this.typename)) res = null;
+                  if (!buf.checkByteCount(ver, this.typename))
+                     res = null;
                   obj[this.name] = res;
                };
 
@@ -1374,7 +1400,8 @@ function createMemberStreamer(element, file) {
                   for (let n = 0; n < cnt; ++n)
                      arr[n] = buf.readNdimArray(this, (buf2, member2) => member2.readelem(buf2));
 
-                  if (ver) buf.checkByteCount(ver, `branch ${this.typename}`);
+                  if (ver)
+                     buf.checkByteCount(ver, `branch ${this.typename}`);
 
                   obj[this.name] = arr;
                };
@@ -1398,7 +1425,8 @@ function createMemberStreamer(element, file) {
                      obj1[this.name] = buf.readNdimArray(this, (buf2, member2) => member2.readelem(buf2));
                   }
 
-                  if (ver) buf.checkByteCount(ver, `branch ${this.typename}`);
+                  if (ver)
+                     buf.checkByteCount(ver, `branch ${this.typename}`);
                };
             }
          break;
@@ -2508,9 +2536,7 @@ class TBuffer {
    }
 
    /** @summary Get code at buffer position */
-   codeAt(pos) {
-      return this.arr.getUint8(pos);
-   }
+   codeAt(pos) { return this.arr.getUint8(pos); }
 
    /** @summary Get part of buffer as string */
    substring(beg, end) {
@@ -2568,7 +2594,8 @@ class TBuffer {
 
    /** @summary read TKey data */
    readTKey(key) {
-      if (!key) key = {};
+      if (!key)
+         key = {};
       this.classStreamer(key, clTKey);
       const name = key.fName.replace(/['"]/g, '');
       if (name !== key.fName) {
@@ -2585,8 +2612,10 @@ class TBuffer {
       this.locate(basket.fLast - offset);
 
       if (this.remain() <= 0) {
-         if (!basket.fEntryOffset && (basket.fNevBuf <= 1)) basket.fEntryOffset = [basket.fKeylen];
-         if (!basket.fEntryOffset) console.warn(`No fEntryOffset when expected for basket with ${basket.fNevBuf} entries`);
+         if (!basket.fEntryOffset && (basket.fNevBuf <= 1))
+            basket.fEntryOffset = [basket.fKeylen];
+         if (!basket.fEntryOffset)
+            console.warn(`No fEntryOffset when expected for basket with ${basket.fNevBuf} entries`);
          return;
       }
 
@@ -2595,12 +2624,14 @@ class TBuffer {
       // it is workaround, but normally I/O should fail here
       if ((nentries < 0) || (nentries > this.remain() * 4)) {
          console.error(`Error when reading entries offset from basket fNevBuf ${basket.fNevBuf} remains ${this.remain()} want to read ${nentries}`);
-         if (basket.fNevBuf <= 1) basket.fEntryOffset = [basket.fKeylen];
+         if (basket.fNevBuf <= 1)
+            basket.fEntryOffset = [basket.fKeylen];
          return;
       }
 
       basket.fEntryOffset = this.readFastArray(nentries, kInt);
-      if (!basket.fEntryOffset) basket.fEntryOffset = [basket.fKeylen];
+      if (!basket.fEntryOffset)
+         basket.fEntryOffset = [basket.fKeylen];
 
       if (this.remain() > 0)
          basket.fDisplacement = this.readFastArray(this.ntoi4(), kInt);
@@ -2785,14 +2816,19 @@ class TDirectory {
 
    /** @summary retrieve a key by its name and cycle in the list of keys */
    getKey(keyname, cycle, only_direct) {
-      if (typeof cycle !== 'number') cycle = -1;
+      if (typeof cycle !== 'number')
+         cycle = -1;
       let bestkey = null;
       for (let i = 0; i < this.fKeys.length; ++i) {
          const key = this.fKeys[i];
          if (!key || (key.fName !== keyname))
             continue;
-         if (key.fCycle === cycle) { bestkey = key; break; }
-         if ((cycle < 0) && (!bestkey || (key.fCycle > bestkey.fCycle))) bestkey = key;
+         if (key.fCycle === cycle) {
+            bestkey = key;
+            break;
+         }
+         if ((cycle < 0) && (!bestkey || (key.fCycle > bestkey.fCycle)))
+            bestkey = key;
       }
       if (bestkey)
          return only_direct ? bestkey : Promise.resolve(bestkey);
@@ -3015,8 +3051,10 @@ class TFile {
                let sum1 = 0, sum2 = 0, sum_total = 0;
                for (let n = 1; n < place.length; n += 2) {
                   sum_total += place[n];
-                  if (n < first) sum1 += place[n];
-                  if (n < last) sum2 += place[n];
+                  if (n < first)
+                     sum1 += place[n];
+                  if (n < last)
+                     sum2 += place[n];
                }
                if (!sum_total) sum_total = 1;
 
@@ -3179,7 +3217,7 @@ class TFile {
 
          while (n < last) {
             let code1, code2 = view.getUint8(o), nline = 0, line = '',
-               finish_header = false, segm_start = 0, segm_last = -1;
+                finish_header = false, segm_start = 0, segm_last = -1;
 
             while ((o < view.byteLength - 1) && !finish_header && (nline < 5)) {
                code1 = code2;
@@ -3739,7 +3777,8 @@ class TFile {
          }
 
          const parent = this.getStreamer(elem.basename, ver);
-         if (parent) this.getSplittedStreamer(parent, tgt);
+         if (parent)
+            this.getSplittedStreamer(parent, tgt);
       }
 
       return tgt;
