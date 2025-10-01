@@ -21,7 +21,7 @@ function compareArrays(arr1, arr2) {
 // open file
 const file = await openFile('https://root.cern/js/files/hsimple.root');
 
-// now read ntuple, perform Draw operation, create SVG file and save to the disk
+// read ntuple
 const ntuple = await file.readObject('ntuple');
 
 // use treeDraw to extract array of entries which match condition 'pz>5'
@@ -50,6 +50,12 @@ if (!compareArrays(entries1, entries3))
 if (!compareArrays(entries2, entries3))
    console.error('Entries 2 and 3 differs');
 
+
+// And in the second stage extract values of 'px' branch only for
+// selected entries. Again three different approaches are used:
+// 1. Use string expression for treeDraw
+// 2. Use object as argument for treeDraw
+// 3. Use selector with treeProcess and elist options
 
 // now use these selected entries to dump values of px branch
 const pxarr1 = await treeDraw(ntuple, `px;dump;elist:[${entries1}]`);
