@@ -885,14 +885,14 @@ In some applications access to TTree can be optimized using 'staged' approach.
 It means that on the first stage interesting entries identified in the TTree and
 on the second stage data only for these entries are read. This can boost performance a lot.
 
-To get list of entries which a match to some condition, one can use `>>elist` redirection in draw expression.
+To get list of entries which match to some condition, one can use `>>elist` redirection in draw expression.
 
 ```javascript
 const entries = await treeDraw(tree, '::pz>5>>elist');
 ```
 
-Here entires ids for all entries where `pz>5` will be stored.
-And then on the second stage one simply use entries for drawing. Like:
+Here only cut condition `pz>5` is specified - no any normal draw expression is configured.
+On the second stage one simply use entries for drawing. Like:
 
 ```javascript
 const hist = await treeDraw(tree, `px:py;elist:[${entries}]`);

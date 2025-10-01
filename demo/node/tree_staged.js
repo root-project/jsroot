@@ -18,7 +18,6 @@ function compareArrays(arr1, arr2) {
    return true;
 }
 
-
 // open file
 const file = await openFile('https://root.cern/js/files/hsimple.root');
 
@@ -27,13 +26,10 @@ const ntuple = await file.readObject('ntuple');
 
 // use treeDraw to extract array of entries which match condition 'pz>5'
 const entries1 = await treeDraw(ntuple, '::pz>5>>elist');
-
 console.log('entries1', entries1.length);
 
 // same can be achieved when specify draw expression as args
-
 const entries2 = await treeDraw(ntuple, { cut: 'pz>5', dump_entries: true });
-
 console.log('entries2', entries2.length);
 
 const selector = new TSelector, entries3 = [];
@@ -43,7 +39,6 @@ selector.Process = function(entry) {
       entries3.push(entry);
 }
 await treeProcess(ntuple, selector);
-
 console.log('entries3', entries3.length);
 
 if (!compareArrays(entries1, entries2))
@@ -56,23 +51,21 @@ if (!compareArrays(entries2, entries3))
    console.error('Entries 2 and 3 differs');
 
 
-// now use selected entries to process only requested entries
+// now use these selected entries to dump values of px branch
 const pxarr1 = await treeDraw(ntuple, `px;dump;elist:[${entries1}]`);
 console.log('pxarr1', pxarr1.length);
 
-
-// same draw expression, but provide options as argument
+// same expression, but provided as object
 const pxarr2 = await treeDraw(ntuple, { expr: 'px', dump: true, elist: entries2});
 console.log('pxarr2', pxarr2.length);
 
 // and use entries list as argument for treeProcess
 const selector2 = new TSelector, pxarr3 = [];
 selector2.addBranch('px');
-selector2.Process = function(entry) {
+selector2.Process = function() {
    pxarr3.push(this.tgtobj.px);
 }
 await treeProcess(ntuple, selector2, { elist: entries3 });
-
 console.log('pxarr3', pxarr3.length);
 
 if (!compareArrays(pxarr1, pxarr2))
