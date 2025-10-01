@@ -1,0 +1,85 @@
+import { version, openFile, treeDraw, treeProcess, TSelector } from 'jsroot';
+
+console.log(`JSROOT version ${version}`);
+
+// Macro demonstrates three different methods to produce entries list which match
+// specific cut condition. It is:
+// 1. Use of string draw expression for treeDraw function
+// 2. Use object as option for treeDraw operation
+// 3. Direct use of TSelector to process tree and select entries
+
+function compareArrays(arr1, arr2) {
+   if (arr1.length !== arr2.length)
+      return false;
+   for (let i = 0; i < arr1.length; ++i) {
+      if (arr1[i] !== arr2[i])
+         return false;
+   }
+   return true;
+}
+
+
+// open file
+const file = await openFile('https://root.cern/js/files/hsimple.root');
+
+// now read ntuple, perform Draw operation, create SVG file and save to the disk
+const ntuple = await file.readObject('ntuple');
+
+// use treeDraw to extract array of entries which match condition 'pz>5'
+const entries1 = await treeDraw(ntuple, '::pz>5>>elist');
+
+console.log('entries1', entries1.length);
+
+// same can be achieved when specify draw expression as args
+
+const entries2 = await treeDraw(ntuple, { cut: 'pz>5', dump_entries: true });
+
+console.log('entries2', entries2.length);
+
+const selector = new TSelector, entries3 = [];
+selector.addBranch('pz');
+selector.Process = function(entry) {
+   if (this.tgtobj.pz > 5)
+      entries3.push(entry);
+}
+await treeProcess(ntuple, selector);
+
+console.log('entries3', entries3.length);
+
+if (!compareArrays(entries1, entries2))
+   console.error('Entries 1 and 2 differs');
+
+if (!compareArrays(entries1, entries3))
+   console.error('Entries 1 and 3 differs');
+
+if (!compareArrays(entries2, entries3))
+   console.error('Entries 2 and 3 differs');
+
+
+// now use selected entries to process only requested entries
+const pxarr1 = await treeDraw(ntuple, `px;dump;elist:[${entries1}]`);
+console.log('pxarr1', pxarr1.length);
+
+
+// same draw expression, but provide options as argument
+const pxarr2 = await treeDraw(ntuple, { expr: 'px', dump: true, elist: entries2});
+console.log('pxarr2', pxarr2.length);
+
+// and use entries list as argument for treeProcess
+const selector2 = new TSelector, pxarr3 = [];
+selector2.addBranch('px');
+selector2.Process = function(entry) {
+   pxarr3.push(this.tgtobj.px);
+}
+await treeProcess(ntuple, selector2, { elist: entries3 });
+
+console.log('pxarr3', pxarr3.length);
+
+if (!compareArrays(pxarr1, pxarr2))
+   console.error('px arrays 1 and 2 differs');
+
+if (!compareArrays(pxarr1, pxarr3))
+   console.error('px arrays 1 and 3 differs');
+
+if (!compareArrays(pxarr2, pxarr3))
+   console.error('px arrays 2 and 3 differs');
