@@ -11,7 +11,7 @@ class TAnnotation3DPainter extends TTextPainter {
          return super.redraw();
 
       const text = this.getObject(),
-            mesh = build3dlatex(text);
+            mesh = build3dlatex(text, '', this);
 
       mesh.traverse(o => o.geometry?.rotateX(Math.PI / 2));
       mesh.position.x = fp.grx(text.fX);
