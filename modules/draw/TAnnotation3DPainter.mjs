@@ -1,7 +1,7 @@
 import { isFunc } from '../core.mjs';
 import { makeTranslate } from '../base/BasePainter.mjs';
 import { TTextPainter } from './TTextPainter.mjs';
-import { build3dlatex } from '../hist/hist3d.mjs';
+import { build3dlatex } from '../base/latex3d.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
 function getRotation(camera, mesh) {
@@ -56,9 +56,7 @@ class TAnnotation3DPainter extends TTextPainter {
                new_y = this.axisToSvg('y', pos.y, true);
          makeTranslate(this.getG(), new_x - this.pos_x, new_y - this.pos_y);
       } else
-         fp.get3DMeshes(this).forEach(mesh => {
-            mesh.rotation.set(0, 0, getRotation(fp.camera, mesh));
-         });
+         fp.get3DMeshes(this).forEach(mesh => mesh.rotation.set(0, 0, getRotation(fp.camera, mesh)));
    }
 
    /** @summary draw TAnnotation3D object */
