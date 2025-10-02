@@ -4,6 +4,12 @@ import { TTextPainter } from './TTextPainter.mjs';
 import { build3dlatex } from '../hist/hist3d.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
+function getRotation(camera, mesh) {
+   const dx = camera.position.x - mesh.position.x,
+         dy = camera.position.y - mesh.position.y;
+   return Math.atan2(dy, dx) + Math.PI/2;
+}
+
 class TAnnotation3DPainter extends TTextPainter {
 
    /** @summary Redraw annotation
@@ -20,8 +26,8 @@ class TAnnotation3DPainter extends TTextPainter {
          mesh.position.x = fp.grx(text.fX);
          mesh.position.y = fp.gry(text.fY);
          mesh.position.z = fp.grz(text.fZ);
+         mesh.rotation.z = getRotation(fp.camera, mesh);
 
-         this._mesh = mesh;
          fp.processRender3D = true;
          fp.add3DMesh(mesh, this, true);
          fp.render3D(100);
@@ -54,11 +60,7 @@ class TAnnotation3DPainter extends TTextPainter {
                new_y = this.axisToSvg('y', pos.y, true);
          makeTranslate(this.getG(), new_x - this.pos_x, new_y - this.pos_y);
       } else {
-         const dx = fp.camera.position.x - fp.grx(text.fX),
-               dy = fp.camera.position.y - fp.grx(text.fY),
-               angle = Math.atan2(dy, dx);
-
-         this._mesh.rotation.z = angle + Math.PI/2;
+         fp.get3DMeshes(this).forEach(mesh => { mesh.rotation.z = getRotation(fp.camera, mesh); });
       }
    }
 
