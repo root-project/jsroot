@@ -21,13 +21,9 @@ class TAnnotation3DPainter extends TTextPainter {
 
       if (fp?.mode3d && !this.use_2d) {
          const mesh = build3dlatex(text, '', this, fp);
-
          mesh.traverse(o => o.geometry?.rotateX(Math.PI / 2));
-         mesh.position.x = fp.grx(text.fX);
-         mesh.position.y = fp.gry(text.fY);
-         mesh.position.z = fp.grz(text.fZ);
-         mesh.rotation.z = getRotation(fp.camera, mesh);
-
+         mesh.position.set(fp.grx(text.fX), fp.gry(text.fY), fp.grz(text.fZ));
+         mesh.rotation.set(0, 0, getRotation(fp.camera, mesh));
          fp.processRender3D = true;
          fp.add3DMesh(mesh, this, true);
          fp.render3D(100);
@@ -60,7 +56,9 @@ class TAnnotation3DPainter extends TTextPainter {
                new_y = this.axisToSvg('y', pos.y, true);
          makeTranslate(this.getG(), new_x - this.pos_x, new_y - this.pos_y);
       } else
-         fp.get3DMeshes(this).forEach(mesh => { mesh.rotation.z = getRotation(fp.camera, mesh); });
+         fp.get3DMeshes(this).forEach(mesh => {
+            mesh.rotation.set(0, 0, getRotation(fp.camera, mesh));
+         });
    }
 
    /** @summary draw TAnnotation3D object */
