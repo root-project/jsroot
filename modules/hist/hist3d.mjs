@@ -255,7 +255,7 @@ function build3dlatex(obj) {
          };
 
    arr3d.forEach(geom => {
-      geom.translate(-width, -height, 0);
+      geom.translate(-width, height, 0);
       obj3d.add(new THREE.Mesh(geom, getMaterial(geom._fill || handle.color)));
    });
 
