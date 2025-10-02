@@ -59,9 +59,8 @@ class TAnnotation3DPainter extends TTextPainter {
                new_x = this.axisToSvg('x', pos.x, true),
                new_y = this.axisToSvg('y', pos.y, true);
          makeTranslate(this.getG(), new_x - this.pos_x, new_y - this.pos_y);
-      } else {
+      } else
          fp.get3DMeshes(this).forEach(mesh => { mesh.rotation.z = getRotation(fp.camera, mesh); });
-      }
    }
 
    /** @summary draw TAnnotation3D object */

@@ -739,11 +739,9 @@ function add3DMesh(mesh, painter, the_only) {
   * @private */
 function get3DMeshes(painter) {
    const arr = [];
-
    if (!painter || !this.toplevel)
       return arr;
-
-   for(let i = 0; i < this.toplevel.children.length; ++i) {
+   for (let i = 0; i < this.toplevel.children.length; ++i) {
       const mesh = this.toplevel.children[i];
       if (mesh.painter === painter)
          arr.push(mesh);

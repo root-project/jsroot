@@ -4,6 +4,7 @@
 1. `RNtuple` support, thanks to Kriti Mahajan https://github.com/Krmjn09
 1. Implement `RTreeMapPainter` to display `RNTuple` structure, thanks to Patryk Pilichowski https://github.com/magnustymoteus
 1. Implement `build3d` function for building three.js objects for `TH1/2/3`, `TLatex` `TGeo`, `TGraph2D` classes #368
+1. Draw `TAnnotation3D` in real 3D with handling scene rotation
 1. Let use hex colors in histogram draw options like "fill_00ff00" or "line_77aa1166"
 1. Let configure exact axis ticks position via draw option like "xticks:[-3,-1,1,3]"
 1. Support gStyle.fBarOffset for `TGraph` bar drawing
