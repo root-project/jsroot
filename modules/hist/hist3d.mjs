@@ -231,18 +231,16 @@ function build3dlatex(obj) {
       bb.expandByPoint(geom.boundingBox.min);
    });
 
-   let width = bb.max.x - bb.min.x,
-       height = bb.max.y - bb.min.y;
+   let dx = 0, dy = 0;
+   if (halign === 2)
+      dx = 0.5 * (bb.max.x + bb.min.x);
+   else if (halign === 3)
+      dx = bb.max.x;
 
-   if (halign === 1)
-      width = 0;
-   else if (halign === 2)
-      width *= 0.5;
-
-   if (valign === 1)
-      height = 0;
-   else if (valign === 2)
-      height *= 0.5;
+   if (valign === 2)
+      dy = 0.5 * (bb.max.y + bb.min.y);
+   else if (valign === 3)
+      dy = bb.max.y;
 
    const obj3d = new THREE.Object3D(),
          materials = [],
@@ -255,7 +253,7 @@ function build3dlatex(obj) {
          };
 
    arr3d.forEach(geom => {
-      geom.translate(-width, height, 0);
+      geom.translate(-dx, -dy, 0);
       obj3d.add(new THREE.Mesh(geom, getMaterial(geom._fill || handle.color)));
    });
 
