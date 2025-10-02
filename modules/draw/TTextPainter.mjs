@@ -1,4 +1,4 @@
-import { clTAnnotation, clTLink, clTLatex, clTMathText, BIT, isFunc } from '../core.mjs';
+import { clTLink, clTLatex, clTMathText, BIT } from '../core.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { makeTranslate, DrawOptions } from '../base/BasePainter.mjs';
 import { addMoveHandler } from '../gui/utils.mjs';
@@ -10,34 +10,25 @@ const kTextNDC = BIT(14);
 
 class TTextPainter extends ObjectPainter {
 
-   async redraw() {
+   async _redrawText(x, y, annot) {
       const text = this.getObject(),
             pp = this.getPadPainter(),
             fp = this.getFramePainter(),
             is_url = text.fName.startsWith('http://') || text.fName.startsWith('https://');
-      let pos_x = text.fX, pos_y = text.fY,
-          fact = 1, use_frame = false,
-          annot = this.matchObjectType(clTAnnotation);
+      let fact = 1, use_frame = false;
 
       this.createAttText({ attr: text });
 
-      if (annot && fp?.mode3d && isFunc(fp?.convert3DtoPadNDC)) {
-         const pos = fp.convert3DtoPadNDC(text.fX, text.fY, text.fZ);
-         pos_x = pos.x;
-         pos_y = pos.y;
+      if ((annot === '3d') || text.TestBit(kTextNDC))
          this.isndc = true;
-         annot = '3d';
-      } else if (text.TestBit(kTextNDC)) {
-         // NDC coordinates
-         this.isndc = true;
-      } else if (pp.getRootPad(true)) {
+      else if (!annot && pp?.getRootPad(true)) {
          // force pad coordinates
          const d = new DrawOptions(this.getDrawOpt());
          use_frame = d.check('FRAME');
-      } else {
+      } else if (!annot) {
          // place in the middle
          this.isndc = true;
-         pos_x = pos_y = 0.5;
+         x = y = 0.5;
          text.fTextAlign = 22;
       }
 
@@ -45,18 +36,18 @@ class TTextPainter extends ObjectPainter {
 
       g.attr('transform', null); // remove transform from interactive changes
 
-      pos_x = this.axisToSvg('x', pos_x, this.isndc);
-      pos_y = this.axisToSvg('y', pos_y, this.isndc);
+      x = this.axisToSvg('x', x, this.isndc);
+      y = this.axisToSvg('y', y, this.isndc);
       this.swap_xy = use_frame && fp?.swap_xy();
 
       if (this.swap_xy)
-         [pos_x, pos_y] = [pos_y, pos_x];
+         [x, y] = [y, x];
 
-      const arg = this.textatt.createArg({ x: pos_x, y: pos_y, text: text.fTitle, latex: 0 });
+      const arg = this.textatt.createArg({ x, y, text: text.fTitle, latex: 0 });
 
-      if ((text._typename === clTLatex) || annot)
+      if (this.matchObjectType(clTLatex) || annot)
          arg.latex = 1;
-      else if (text._typename === clTMathText) {
+      else if (this.matchObjectType(clTMathText)) {
          arg.latex = 2;
          fact = 0.8;
       }
@@ -79,12 +70,10 @@ class TTextPainter extends ObjectPainter {
             return this;
          }
 
-         Object.assign(this, { pos_x, pos_y, pos_dx: 0, pos_dy: 0 });
+         Object.assign(this, { pos_x: x, pos_y: y, pos_dx: 0, pos_dy: 0 });
 
          if (annot !== '3d')
             addMoveHandler(this, true, is_url);
-         else
-            fp.processRender3D = true;
 
          assignContextMenu(this);
 
@@ -93,6 +82,10 @@ class TTextPainter extends ObjectPainter {
 
          return this;
       });
+   }
+
+   async redraw() {
+      return this._redrawText(this.getObject().fX, this.getObject().fY);
    }
 
    moveDrag(dx, dy) {
@@ -106,7 +99,7 @@ class TTextPainter extends ObjectPainter {
          return;
       const txt = this.getObject();
       let fx = this.svgToAxis('x', this.pos_x + this.pos_dx, this.isndc),
-            fy = this.svgToAxis('y', this.pos_y + this.pos_dy, this.isndc);
+          fy = this.svgToAxis('y', this.pos_y + this.pos_dy, this.isndc);
       if (this.swap_xy)
          [fx, fy] = [fy, fx];
 
@@ -121,14 +114,6 @@ class TTextPainter extends ObjectPainter {
          text.fTitle = t;
          this.interactiveRedraw('pad', `exec:SetTitle("${t}")`);
       }));
-   }
-
-   handleRender3D() {
-      const text = this.getObject(),
-            pos = this.getFramePainter().convert3DtoPadNDC(text.fX, text.fY, text.fZ),
-            new_x = this.axisToSvg('x', pos.x, true),
-            new_y = this.axisToSvg('y', pos.y, true);
-      makeTranslate(this.getG(), new_x - this.pos_x, new_y - this.pos_y);
    }
 
    /** @summary draw TText-derived object */

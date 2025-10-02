@@ -1,26 +1,56 @@
+import { isFunc } from '../core.mjs';
+import { makeTranslate } from '../base/BasePainter.mjs';
 import { TTextPainter } from './TTextPainter.mjs';
 import { build3dlatex } from '../hist/hist3d.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
 class TAnnotation3DPainter extends TTextPainter {
 
+   /** @summary Redraw annotation
+    * @desc handle 3d and 2d mode */
+
    async redraw() {
-      const fp = this.getFramePainter();
+      const fp = this.getFramePainter(),
+            text = this.getObject();
 
-      if (!fp?.mode3d || this.use_2d)
-         return super.redraw();
+      if (fp?.mode3d && !this.use_2d) {
+         const mesh = build3dlatex(text, '', this, fp);
 
+         mesh.traverse(o => o.geometry?.rotateX(Math.PI / 2));
+         mesh.position.x = fp.grx(text.fX);
+         mesh.position.y = fp.gry(text.fY);
+         mesh.position.z = fp.grz(text.fZ);
+
+         fp.add3DMesh(mesh, this, true);
+         fp.render3D(100);
+         return this;
+      }
+
+      const mode = fp?.mode3d && isFunc(fp?.convert3DtoPadNDC) ? '3d' : '2d';
+      let x = text.fX, y = text.fY;
+
+      if (mode === '3d') {
+         const pos = fp.convert3DtoPadNDC(text.fX, text.fY, text.fZ);
+         x = pos.x;
+         y = pos.y;
+      }
+
+      return this._redrawText(x, y, mode).then(() => {
+         fp.processRender3D = mode === '3d';
+         return this;
+      });
+   }
+
+   /** @summary Extra handling during 3d rendering
+     * @desc Allows to reposition annotation when rotate/zoom drawing */
+   handleRender3D() {
+      if (!this.use_2d)
+         return;
       const text = this.getObject(),
-            mesh = build3dlatex(text, '', this, fp);
-
-      mesh.traverse(o => o.geometry?.rotateX(Math.PI / 2));
-      mesh.position.x = fp.grx(text.fX);
-      mesh.position.y = fp.gry(text.fY);
-      mesh.position.z = fp.grz(text.fZ);
-
-      fp.add3DMesh(mesh, this, true);
-      fp.render3D(100);
-      return this;
+            pos = this.getFramePainter().convert3DtoPadNDC(text.fX, text.fY, text.fZ),
+            new_x = this.axisToSvg('x', pos.x, true),
+            new_y = this.axisToSvg('y', pos.y, true);
+      makeTranslate(this.getG(), new_x - this.pos_x, new_y - this.pos_y);
    }
 
    /** @summary draw TAnnotation3D object */
