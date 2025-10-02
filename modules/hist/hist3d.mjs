@@ -217,14 +217,14 @@ function createLatexGeometry(painter, lbl, size, as_array, use_latex = true) {
 
 /** @summary Build three.js object for the TLatex
   * @private */
-function build3dlatex(obj, opt, painter) {
+function build3dlatex(obj, opt, painter, fp) {
    if (!painter)
       painter = new ObjectPainter(null, obj, opt);
    const handle = painter.createAttText({ attr: obj }),
          valign = handle.align % 10,
          halign = (handle.align - valign) / 10,
-         text_size = handle.size > 1 ? handle.size : 2 * handle.size * (painter.getFramePainter()?.size_z3d || 100),
-         arr3d = createLatexGeometry(painter, obj.fTitle, text_size || 10, true, obj._typename === clTLatex),
+         text_size = handle.size > 1 ? handle.size : 2 * handle.size * (fp?.size_z3d || 100),
+         arr3d = createLatexGeometry(painter, obj.fTitle, text_size || 10, true, fp || (obj._typename === clTLatex)),
          bb = new THREE.Box3().makeEmpty();
 
    arr3d.forEach(geom => {
