@@ -6,14 +6,9 @@ import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { assignContextMenu } from '../gui/menu.mjs';
 
 
-class TTextPainter extends ObjectPainter {
+const kTextNDC = BIT(14);
 
-   constructor(dom, obj, opt) {
-      super(dom, obj, opt);
-      const d = new DrawOptions(opt);
-      this.use_frame = d.check('FRAME');
-      this.use_3d = d.check('3D'); // used for annotation
-   }
+class TTextPainter extends ObjectPainter {
 
    async redraw() {
       const text = this.getObject(),
@@ -21,7 +16,7 @@ class TTextPainter extends ObjectPainter {
             fp = this.getFramePainter(),
             is_url = text.fName.startsWith('http://') || text.fName.startsWith('https://');
       let pos_x = text.fX, pos_y = text.fY,
-          fact = 1,
+          fact = 1, use_frame = false,
           annot = this.matchObjectType(clTAnnotation);
 
       this.createAttText({ attr: text });
@@ -32,13 +27,13 @@ class TTextPainter extends ObjectPainter {
          pos_y = pos.y;
          this.isndc = true;
          annot = '3d';
-      } else if (text.TestBit(BIT(14))) {
+      } else if (text.TestBit(kTextNDC)) {
          // NDC coordinates
          this.isndc = true;
       } else if (pp.getRootPad(true)) {
          // force pad coordinates
-         // const d = new DrawOptions(this.getDrawOpt());
-         // use_frame = d.check('FRAME');
+         const d = new DrawOptions(this.getDrawOpt());
+         use_frame = d.check('FRAME');
       } else {
          // place in the middle
          this.isndc = true;
@@ -46,18 +41,18 @@ class TTextPainter extends ObjectPainter {
          text.fTextAlign = 22;
       }
 
-      const g = this.createG(this.use_frame ? 'frame2d' : undefined, is_url);
+      const g = this.createG(use_frame ? 'frame2d' : undefined, is_url);
 
       g.attr('transform', null); // remove transform from interactive changes
 
-      this.pos_x = this.axisToSvg('x', pos_x, this.isndc);
-      this.pos_y = this.axisToSvg('y', pos_y, this.isndc);
-      this.swap_xy = this.use_frame && fp?.swap_xy();
+      pos_x = this.axisToSvg('x', pos_x, this.isndc);
+      pos_y = this.axisToSvg('y', pos_y, this.isndc);
+      this.swap_xy = use_frame && fp?.swap_xy();
 
       if (this.swap_xy)
-         [this.pos_x, this.pos_y] = [this.pos_y, this.pos_x];
+         [pos_x, pos_y] = [pos_y, pos_x];
 
-      const arg = this.textatt.createArg({ x: this.pos_x, y: this.pos_y, text: text.fTitle, latex: 0 });
+      const arg = this.textatt.createArg({ x: pos_x, y: pos_y, text: text.fTitle, latex: 0 });
 
       if ((text._typename === clTLatex) || annot)
          arg.latex = 1;
@@ -84,7 +79,7 @@ class TTextPainter extends ObjectPainter {
             return this;
          }
 
-         this.pos_dx = this.pos_dy = 0;
+         Object.assign(this, { pos_x, pos_y, pos_dx: 0, pos_dy: 0 });
 
          if (annot !== '3d')
             addMoveHandler(this, true, is_url);
