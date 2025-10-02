@@ -5,16 +5,13 @@ import { ObjectPainter } from './ObjectPainter.mjs';
 
 class TextParseWrapper {
 
-   constructor(kind, parent, font_size, geom_args, as_array) {
+   constructor(kind, parent, font_size) {
       this.kind = kind ?? 'g';
       this.childs = [];
       this.x = 0;
       this.y = 0;
       this.font_size = parent?.font_size ?? font_size;
-      this.geom_args = parent?.geom_args ?? geom_args;
-      this.as_array = parent?.as_array ?? false;
       this.stroke_width = parent?.stroke_width ?? 5;
-      this.geoms = parent?.geoms ?? [];
       parent?.childs.push(this);
    }
 
@@ -32,18 +29,6 @@ class TextParseWrapper {
       if ((name === 'stroke-width') && value)
          this.stroke_width = Number.parseInt(value);
       return this;
-   }
-
-   translate() {
-      // special workaround for path elements, while 3d font is exact height, keep some space on the top
-      // let dy = this.kind === 'path' ? this.font_size*0.002 : 0;
-      this.geom?.translate(this.x, this.y, 0);
-
-      this.childs.forEach(chld => {
-         chld.x += this.x;
-         chld.y += this.y;
-         chld.translate();
-      });
    }
 
    attr(name, value) {
@@ -127,30 +112,46 @@ class TextParseWrapper {
          if (pnts.length) {
             const pos = new Float32Array(pnts);
             this.geom = new THREE.BufferGeometry();
-            this.geom._fill = this.fill;
             this.geom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
             this.geom.scale(0.01, -0.01, 0.01);
             this.geom.computeVertexNormals();
-            this.geoms.push(this.geom);
          }
       }
       return this;
    }
 
    text(v) {
-      if (this.kind === 'text') {
-         this.geom_args.size = Math.round(0.01*this.font_size);
-         this.geom = new THREE.TextGeometry(v, this.geom_args);
-         if (this.as_array) {
+      if (this.kind === 'text')
+         this._text = v;
+   }
+
+   collect(geoms, geom_args, as_array) {
+      if (this._text) {
+         geom_args.size = Math.round(0.01*this.font_size);
+         const geom = new THREE.TextGeometry(this._text, geom_args);
+         if (as_array) {
             // this is latex parsing
             // while three.js uses full height, make it more like normal fonts
-            this.geom.scale(1, 0.9, 1);
-            this.geom.translate(0, 0.0005*this.font_size, 0);
+            geom.scale(1, 0.9, 1);
+            geom.translate(0, 0.0005*this.font_size, 0);
          }
-         this.geom._fill = this.fill;
-         this.geoms.push(this.geom);
+         geom.translate(this.x, this.y, 0);
+         geom._fill = this.fill;
+         geoms.push(geom);
       }
+      if (this.geom) {
+         this.geom.translate(this.x, this.y, 0);
+         this.geom._fill = this.fill;
+         geoms.push(this.geom);
+      }
+
+      this.childs.forEach(chld => {
+         chld.x += this.x;
+         chld.y += this.y;
+         chld.collect(geoms, geom_args, as_array);
+      });
    }
+
 
 } // class TextParseWrapper
 
@@ -158,33 +159,35 @@ class TextParseWrapper {
 function createLatexGeometry(painter, lbl, size, as_array, use_latex = true) {
    const geom_args = { font: getHelveticaFont(), size, height: 0, curveSegments: 5 },
          font_size = size * 100,
-         node = new TextParseWrapper('g', null, font_size, geom_args, as_array),
-         arg = { font_size, latex: use_latex ? 1 : 0, x: 0, y: 0, text: lbl, align: ['start', 'top'], fast: true, font: { size: font_size, isMonospace: () => false, aver_width: 0.9 } };
+         node = new TextParseWrapper('g', null, font_size),
+         arg = { font_size, latex: use_latex ? 1 : 0, x: 0, y: 0, text: lbl, align: ['start', 'top'], fast: true, font: { size: font_size, isMonospace: () => false, aver_width: 0.9 } },
+         geoms = [];
 
    if (THREE.REVISION > 162)
       geom_args.depth = 0;
    else
       geom_args.height = 0;
 
-   if (!isPlainText(lbl))
+   if (!isPlainText(lbl)) {
       produceLatex(painter, node, arg);
+      node.collect(geoms, geom_args, as_array);
+   }
 
-   if (!node.geoms.length) {
+
+   if (!geoms.length) {
       geom_args.size = size;
       const res = new THREE.TextGeometry(translateLaTeX(lbl), geom_args);
       return as_array ? [res] : res;
    }
 
-   node.translate(); // apply translate attributes
-
    if (as_array)
-      return node.geoms;
+      return geoms;
 
-   if (node.geoms.length === 1)
-      return node.geoms[0];
+   if (geoms.length === 1)
+      return geoms[0];
 
    let total_size = 0;
-   node.geoms.forEach(geom => {
+   geoms.forEach(geom => {
       total_size += geom.getAttribute('position').array.length;
    });
 
@@ -192,7 +195,7 @@ function createLatexGeometry(painter, lbl, size, as_array, use_latex = true) {
          norm = new Float32Array(total_size);
    let indx = 0;
 
-   node.geoms.forEach(geom => {
+   geoms.forEach(geom => {
       const p1 = geom.getAttribute('position').array,
             n1 = geom.getAttribute('normal').array;
       for (let i = 0; i < p1.length; ++i, ++indx) {
