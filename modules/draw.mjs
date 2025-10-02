@@ -49,7 +49,7 @@ drawFuncs = { lst: [
    { name: clTDiamond, sameas: clTPave },
    { name: clTLegend, icon: 'img_pavelabel', sameas: clTPave },
    { name: clTPaletteAxis, icon: 'img_colz', sameas: clTPave },
-   { name: clTLatex, icon: 'img_text', draw: () => import_more().then(h => h.drawText), build3d: () => import('./hist/hist3d.mjs').then(h => h.build3dlatex), direct: true },
+   { name: clTLatex, icon: 'img_text', class: () => import('./draw/TTextPainter.mjs').then(h => h.TTextPainter), build3d: () => import('./hist/hist3d.mjs').then(h => h.build3dlatex) },
    { name: clTMathText, sameas: clTLatex },
    { name: clTText, sameas: clTLatex },
    { name: clTLink, sameas: clTText },
