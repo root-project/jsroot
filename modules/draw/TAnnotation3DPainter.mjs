@@ -21,6 +21,8 @@ class TAnnotation3DPainter extends TTextPainter {
          mesh.position.y = fp.gry(text.fY);
          mesh.position.z = fp.grz(text.fZ);
 
+         this._mesh = mesh;
+         fp.processRender3D = true;
          fp.add3DMesh(mesh, this, true);
          fp.render3D(100);
          return this;
@@ -44,13 +46,20 @@ class TAnnotation3DPainter extends TTextPainter {
    /** @summary Extra handling during 3d rendering
      * @desc Allows to reposition annotation when rotate/zoom drawing */
    handleRender3D() {
-      if (!this.use_2d)
-         return;
       const text = this.getObject(),
-            pos = this.getFramePainter().convert3DtoPadNDC(text.fX, text.fY, text.fZ),
-            new_x = this.axisToSvg('x', pos.x, true),
-            new_y = this.axisToSvg('y', pos.y, true);
-      makeTranslate(this.getG(), new_x - this.pos_x, new_y - this.pos_y);
+            fp = this.getFramePainter();
+      if (this.use_2d) {
+         const pos = fp.convert3DtoPadNDC(text.fX, text.fY, text.fZ),
+               new_x = this.axisToSvg('x', pos.x, true),
+               new_y = this.axisToSvg('y', pos.y, true);
+         makeTranslate(this.getG(), new_x - this.pos_x, new_y - this.pos_y);
+      } else {
+         const dx = fp.camera.position.x - fp.grx(text.fX),
+               dy = fp.camera.position.y - fp.grx(text.fY),
+               angle = Math.atan2(dy, dx);
+
+         this._mesh.rotation.z = angle + Math.PI/2;
+      }
    }
 
    /** @summary draw TAnnotation3D object */
