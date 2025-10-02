@@ -732,25 +732,34 @@ function add3DMesh(mesh, painter, the_only) {
    if (painter && the_only)
       this.remove3DMeshes(painter);
    this.toplevel.add(mesh);
-   mesh._painter = painter;
+   mesh.painter = painter;
+}
+
+/** @summary Returns all 3D meshed for specific
+  * @private */
+function get3DMeshes(painter) {
+   const arr = [];
+
+   if (!painter || !this.toplevel)
+      return arr;
+
+   for(let i = 0; i < this.toplevel.children.length; ++i) {
+      const mesh = this.toplevel.children[i];
+      if (mesh.painter === painter)
+         arr.push(mesh);
+   }
+   return arr;
 }
 
 /** @summary Remove 3D meshed for specified painter
   * @private */
 function remove3DMeshes(painter) {
-   if (!painter || !this.toplevel)
-      return;
-   let i = this.toplevel.children.length;
-
-   while (i > 0) {
-      const mesh = this.toplevel.children[--i];
-      if (mesh._painter === painter) {
-         this.toplevel.remove(mesh);
-         disposeThreejsObject(mesh);
-      }
-   }
+   const arr = this.get3DMeshes(painter);
+   arr.forEach(mesh => {
+      this.toplevel.remove(mesh);
+      disposeThreejsObject(mesh);
+   });
 }
-
 
 /** @summary call 3D rendering of the frame
   * @param {number} tmout - specifies delay, after which actual rendering will be invoked
@@ -1725,7 +1734,7 @@ function convert3DtoPadNDC(x, y, z) {
 /** @summary Assign 3D methods for frame painter
   * @private */
 function assignFrame3DMethods(fp) {
-   Object.assign(fp, { create3DScene, add3DMesh, remove3DMeshes, getRenderer, render3D, resize3D, change3DCamera, highlightBin3D, set3DOptions, drawXYZ, convert3DtoPadNDC });
+   Object.assign(fp, { create3DScene, add3DMesh, get3DMeshes, remove3DMeshes, getRenderer, render3D, resize3D, change3DCamera, highlightBin3D, set3DOptions, drawXYZ, convert3DtoPadNDC });
 }
 
 
