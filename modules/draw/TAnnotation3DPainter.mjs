@@ -1,5 +1,6 @@
 import { TTextPainter } from './TTextPainter.mjs';
 import { build3dlatex } from '../hist/hist3d.mjs';
+import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 
 class TAnnotation3DPainter extends TTextPainter {
 
@@ -12,16 +13,13 @@ class TAnnotation3DPainter extends TTextPainter {
       const text = this.getObject(),
             mesh = build3dlatex(text);
 
-      console.log('align', text.fTextAlign);
-
       mesh.traverse(o => o.geometry?.rotateX(Math.PI / 2));
       mesh.position.x = fp.grx(text.fX);
       mesh.position.y = fp.gry(text.fY);
       mesh.position.z = fp.grz(text.fZ);
 
-      console.log('text coordinates', text.fX, text.fY, text.fZ, text.fTitle)
-
-      fp.add3DMesh(mesh);
+      fp.add3DMesh(mesh, this, true);
+      fp.render3D(100);
       return this;
    }
 
@@ -29,7 +27,7 @@ class TAnnotation3DPainter extends TTextPainter {
    static async draw(dom, obj, opt) {
       const painter = new TAnnotation3DPainter(dom, obj, opt);
       painter.use_2d = (opt === '2d') || (opt === '2D');
-      return painter.redraw();
+      return ensureTCanvas(painter, painter.use_2d ? true : '3d').then(() => painter.redraw());
    }
 
 } // class TAnnotation3DPainter
