@@ -8,6 +8,13 @@ import { assignContextMenu } from '../gui/menu.mjs';
 
 class TTextPainter extends ObjectPainter {
 
+   constructor(dom, obj, opt) {
+      super(dom, obj, opt);
+      const d = new DrawOptions(opt);
+      this.use_frame = d.check('FRAME');
+      this.use_3d = d.check('3D'); // used for annotation
+   }
+
    async redraw() {
       const text = this.getObject(),
             pp = this.getPadPainter(),
@@ -81,15 +88,8 @@ class TTextPainter extends ObjectPainter {
 
          if (annot !== '3d')
             addMoveHandler(this, true, is_url);
-         else {
+         else
             fp.processRender3D = true;
-            this.handleRender3D = () => {
-               const pos = fp.convert3DtoPadNDC(text.fX, text.fY, text.fZ),
-                     new_x = this.axisToSvg('x', pos.x, true),
-                     new_y = this.axisToSvg('y', pos.y, true);
-               makeTranslate(this.getG(), new_x - this.pos_x, new_y - this.pos_y);
-            };
-         }
 
          assignContextMenu(this);
 
@@ -138,10 +138,7 @@ class TTextPainter extends ObjectPainter {
 
    /** @summary draw TText-derived object */
    static async draw(dom, obj, opt) {
-      const painter = new TTextPainter(dom, obj, opt),
-            d = new DrawOptions(opt);
-      painter.use_frame = d.check('FRAME');
-      painter.use_3d = d.check('3D'); // used for annotation
+      const painter = new TTextPainter(dom, obj, opt);
       return ensureTCanvas(painter, false).then(() => painter.redraw());
    }
 
