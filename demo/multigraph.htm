@@ -24,10 +24,13 @@
          const npoints = 20;
          let xpts = [], ypts = [];
          for (let i=0; i < npoints; i++) {
-             switch(cnt%2) {
-                 case 1 : xpts.push(i); ypts.push(5*i); break;
-                 default: xpts.push(i); ypts.push(i); break;
-             }
+            if(cnt % 2 === 1) {
+               xpts.push(i);
+               ypts.push(5*i);
+            } else {
+               xpts.push(i);
+               ypts.push(i);
+            }
          }
          let graph1 = createTGraph(npoints, xpts, ypts);
          graph1.fLineColor = 2;
@@ -35,10 +38,13 @@
          xpts = [];
          ypts = [];
          for (let i = 0; i < npoints; i++) {
-             switch(cnt%2) {
-                 case 1 : xpts.push(i); ypts.push(i*i); break;
-                 default: xpts.push(i); ypts.push(Math.sqrt(i)); break;
-             }
+            if(cnt%2 === 1) {
+               xpts.push(i);
+               ypts.push(i*i);
+            } else {
+               xpts.push(i);
+               ypts.push(Math.sqrt(i));
+            }
          }
          let graph2 = createTGraph(npoints, xpts, ypts);
          graph2.fLineColor = 3;

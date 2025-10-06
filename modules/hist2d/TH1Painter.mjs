@@ -23,10 +23,18 @@ class TH1Painter extends THistPainter {
          if (!histo.$getBinContent)
             histo.$getBinContent = histo.getBinContent;
          switch (this.getOptions().ProfileProj) {
-            case 'B': histo.getBinContent = histo.getBinEntries; break;
-            case 'C=E': histo.getBinContent = histo.getBinError; break;
-            case 'W': histo.getBinContent = function(i) { return this.$getBinContent(i) * this.getBinEntries(i); }; break;
-            default: histo.getBinContent = histo.$getBinContent; break;
+            case 'B':
+               histo.getBinContent = histo.getBinEntries;
+               break;
+            case 'C=E':
+               histo.getBinContent = histo.getBinError;
+               break;
+            case 'W':
+               histo.getBinContent = function(i) { return this.$getBinContent(i) * this.getBinEntries(i); };
+               break;
+            default:
+               histo.getBinContent = histo.$getBinContent;
+               break;
          }
       }
       return histo;

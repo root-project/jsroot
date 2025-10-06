@@ -605,10 +605,18 @@ class TH2Painter extends THistPainter {
          if (!histo.$getBinContent)
             histo.$getBinContent = histo.getBinContent;
          switch (this.getOptions().Profile2DProj) {
-            case 'B': histo.getBinContent = histo.getBinEntries; break;
-            case 'C=E': histo.getBinContent = function(i, j) { return this.getBinError(this.getBin(i, j)); }; break;
-            case 'W': histo.getBinContent = function(i, j) { return this.$getBinContent(i, j) * this.getBinEntries(i, j); }; break;
-            default: histo.getBinContent = histo.$getBinContent; break;
+            case 'B':
+               histo.getBinContent = histo.getBinEntries;
+               break;
+            case 'C=E':
+               histo.getBinContent = function(i, j) { return this.getBinError(this.getBin(i, j)); };
+               break;
+            case 'W':
+               histo.getBinContent = function(i, j) { return this.$getBinContent(i, j) * this.getBinEntries(i, j); };
+               break;
+            default:
+               histo.getBinContent = histo.$getBinContent;
+               break;
          }
       }
       return histo;

@@ -736,8 +736,12 @@ class TPavePainter extends ObjectPainter {
       const pave = this.getObject();
 
       switch (fmt) {
-         case 'stat' : fmt = pave.fStatFormat || gStyle.fStatFormat; break;
-         case 'fit': fmt = pave.fFitFormat || gStyle.fFitFormat; break;
+         case 'stat':
+            fmt = pave.fStatFormat || gStyle.fStatFormat;
+            break;
+         case 'fit':
+            fmt = pave.fFitFormat || gStyle.fFitFormat;
+            break;
          case 'entries':
             if ((Math.abs(value) < 1e9) && (Math.round(value) === value))
                return value.toFixed(0);
