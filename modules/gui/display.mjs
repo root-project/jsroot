@@ -508,8 +508,10 @@ class GridDisplay extends MDIDisplay {
          return this.getGridFrame();
 
       let found = super.getActiveFrame();
-      if (!found)
-         this.forEachFrame(frame => { if (!found) found = frame; });
+      this.forEachFrame(frame => {
+         if (!found)
+            found = frame;
+      });
 
       return found;
    }
@@ -540,7 +542,8 @@ class GridDisplay extends MDIDisplay {
          if (!this.simple_layout && this.framecnt)
             this.getcnt = (this.getcnt+1) % this.framecnt;
 
-         if (d3_select(frame).classed('jsroot_fixed_frame')) frame = null;
+         if (d3_select(frame).classed('jsroot_fixed_frame'))
+            frame = null;
       }
 
       if (frame) {

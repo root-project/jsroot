@@ -1093,16 +1093,12 @@ class TH1Painter extends THistPainter {
 
       if (o.Bar) {
          show_rect = true;
-
          gapx = 0;
-
          gry1 = this.getBarBaseline(funcs, height);
-
          if (gry1 > gry2)
             [gry1, gry2] = [gry2, gry1];
-
-         if (!pnt.touch && (pnt.nproc === 1))
-            if ((pnt_y < gry1) || (pnt_y > gry2)) findbin = null;
+         if (!pnt.touch && (pnt.nproc === 1) && ((pnt_y < gry1) || (pnt_y > gry2)))
+            findbin = null;
       } else if ((o.Error && (o.Hist !== true)) || o.Mark || o.Line || o.Curve || (o.Text && !draw_hist)) {
          show_rect = !this.isTF1();
 
@@ -1150,7 +1146,8 @@ class TH1Painter extends THistPainter {
             }
 
             // for mouse events pointer should be between y1 and y2
-            if (((pnt.y < gry1) || (pnt.y > gry2)) && !pnt.touch) findbin = null;
+            if (((pnt.y < gry1) || (pnt.y > gry2)) && !pnt.touch)
+               findbin = null;
          }
       }
 

@@ -1350,7 +1350,8 @@ class TH2Painter extends THistPainter {
                   entry.path += (cmd2.length < cmd1.length) ? cmd2 : cmd1;
                }
             }
-            if (last_entry) flush_last_entry();
+            if (last_entry)
+               flush_last_entry();
 
             entry.x1 = x1;
             entry.y2 = y2;
@@ -1361,7 +1362,8 @@ class TH2Painter extends THistPainter {
             } else
                entry.path += `h${dx}v${dy}h${-dx}z`;
          }
-         if (last_entry) flush_last_entry();
+         if (last_entry)
+            flush_last_entry();
       }
 
       entries.forEach((entry, ecolindx) => {

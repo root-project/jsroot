@@ -840,7 +840,8 @@ class HierarchyPainter extends BasePainter {
      * @private */
    fileHierarchy(file, folder) {
       const painter = this;
-      if (!folder) folder = {};
+      if (!folder)
+         folder = {};
 
       folder._name = file.fFileName;
       folder._title = (file.fTitle ? file.fTitle + ', path: ' : '') + file.fFullURL + `, size: ${getSizeStr(file.fEND)}, version: ${getVersionStr(file.fVersion)}, modified: ${convertDate(getTDatime(file.fDatimeM))}`;
@@ -1561,7 +1562,8 @@ class HierarchyPainter extends BasePainter {
          const func = findFunction(status_item._status);
          if (isFunc(func)) {
             return this.createStatusLine().then(sdiv => {
-               if (sdiv) func(sdiv, this.itemFullName(status_item));
+               if (sdiv)
+                  func(sdiv, this.itemFullName(status_item));
             });
          }
       }
@@ -2421,7 +2423,8 @@ class HierarchyPainter extends BasePainter {
                if (handle?.monitor !== undefined) {
                   if ((handle.monitor === false) || (handle.monitor === 'never'))
                      return;
-                  if (handle.monitor === 'always') forced = true;
+                  if (handle.monitor === 'always')
+                     forced = true;
                }
                if (!forced && only_auto_items)
                   return;
@@ -4095,7 +4098,10 @@ class HierarchyPainter extends BasePainter {
             });
       } else if (!this.no_select) {
          let fname = '';
-         this.forEachRootFile(item => { if (!fname) fname = item._fullurl; });
+         this.forEachRootFile(item => {
+            if (!fname)
+               fname = item._fullurl;
+         });
          main.select('.gui_urlToLoad').property('value', fname);
       }
    }

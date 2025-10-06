@@ -1716,7 +1716,8 @@ function drawBinsLego(painter, is_v7 = false) {
                   norm2[v2] = vnormals[nn];
                   norm2[v2+1] = vnormals[nn+1];
                   norm2[v2+2] = vnormals[nn+2];
-                  if (v2 % 9 === 0) face_to_bins_indx2[v2/9] = bin_index; // remember which bin corresponds to the face
+                  if (v2 % 9 === 0)
+                     face_to_bins_indx2[v2/9] = bin_index; // remember which bin corresponds to the face
                   v2 += 3;
                } else {
                   positions[v] = x1 + vert.x * (x2 - x1);
@@ -1726,7 +1727,8 @@ function drawBinsLego(painter, is_v7 = false) {
                   normals[v] = vnormals[nn];
                   normals[v+1] = vnormals[nn+1];
                   normals[v+2] = vnormals[nn+2];
-                  if (v % 9 === 0) face_to_bins_index[v/9] = bin_index; // remember which bin corresponds to the face
+                  if (v % 9 === 0)
+                     face_to_bins_index[v/9] = bin_index; // remember which bin corresponds to the face
                   v += 3;
                }
 

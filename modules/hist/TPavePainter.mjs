@@ -482,10 +482,12 @@ class TPavePainter extends ObjectPainter {
       // adjust font size
       for (let j = 0; j < nlines; ++j) {
          const line = lines[j];
-         if (j > 0) maxlen = Math.max(maxlen, line.length);
+         if (j > 0)
+            maxlen = Math.max(maxlen, line.length);
          if ((j === 0) || (line.indexOf('|') < 0))
             continue;
-         if (first_stat === 0) first_stat = j;
+         if (first_stat === 0)
+            first_stat = j;
          const parts = line.split('|');
          if (parts.length > num_cols)
             num_cols = parts.length;
@@ -722,7 +724,8 @@ class TPavePainter extends ObjectPainter {
    /** @summary Method used to convert value to string according specified format
      * @desc format can be like 5.4g or 4.2e or 6.4f or 'stat' or 'fit' or 'entries' */
    format(value, fmt) {
-      if (!fmt) fmt = 'stat';
+      if (!fmt)
+         fmt = 'stat';
 
       const pave = this.getObject();
 

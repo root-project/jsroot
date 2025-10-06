@@ -251,13 +251,15 @@ const ToolbarIcons = {
                         const elem = d3_select(this);
                         elem.style('opacity', elem.property('opacity1'));
                         const func = elem.node()._mouseenter;
-                        if (isFunc(func)) func();
+                        if (isFunc(func))
+                           func();
                      })
                      .on('mouseleave', function() {
                         const elem = d3_select(this);
                         elem.style('opacity', elem.property('opacity0'));
                         const func = elem.node()._mouseleave;
-                        if (isFunc(func)) func();
+                        if (isFunc(func))
+                           func();
                      });
 
       if ('recs' in btn) {

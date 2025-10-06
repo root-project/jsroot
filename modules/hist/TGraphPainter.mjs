@@ -21,8 +21,10 @@ class TGraphPainter extends TGraphPainter2D {
       let first = 0, last = drawbins.length - 1;
 
       if (fp.zoom_ymin !== fp.zoom_ymax) {
-         while ((first < last) && (drawbins[first].x < fp.zoom_ymin)) first++;
-         while ((first < last) && (drawbins[last].x > fp.zoom_ymax)) last--;
+         while ((first < last) && (drawbins[first].x < fp.zoom_ymin))
+            first++;
+         while ((first < last) && (drawbins[last].x > fp.zoom_ymax))
+            last--;
       }
 
       if (first === last)
