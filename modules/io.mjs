@@ -202,7 +202,8 @@ CustomStreamers = {
    },
 
    TObjArray(buf, list) {
-      if (!list._typename) list._typename = clTObjArray;
+      if (!list._typename)
+         list._typename = clTObjArray;
       list.$kind = clTObjArray;
       list.name = '';
       const ver = buf.last_read_version;

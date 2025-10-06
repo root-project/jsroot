@@ -303,9 +303,12 @@ function remapSymbolTtfCode(code) {
                const opGreek = cnt;
                // see code in TLatex.cxx, line 1302
                letter = 97 + opGreek;
-               if (opGreek > 25) letter -= 58;
-               if (opGreek === 52) letter = 0o241; // varUpsilon
-               if (opGreek === 53) letter = 0o316; // epsilon
+               if (opGreek > 25)
+                  letter -= 58;
+               if (opGreek === 52)
+                  letter = 0o241; // varUpsilon
+               if (opGreek === 53)
+                  letter = 0o316; // epsilon
             } else {
                // see code in TLatex.cxx, line 1323
                const opSpec = cnt - 54;
@@ -479,8 +482,10 @@ function parseLatex(node, arg, label, curr) {
 
    extractSubLabel = (check_first, lbrace, rbrace) => {
       let pos = 0, n = 1, extra_braces = false;
-      if (!lbrace) lbrace = '{';
-      if (!rbrace) rbrace = '}';
+      if (!lbrace)
+         lbrace = '{';
+      if (!rbrace)
+         rbrace = '}';
 
       const match = br => (pos + br.length <= label.length) && (label.slice(pos, pos+br.length) === br);
 

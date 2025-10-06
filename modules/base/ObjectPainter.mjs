@@ -1783,7 +1783,10 @@ function resize(dom, arg) {
   * cleanup(document.querySelector('#drawing')); */
 function cleanup(dom) {
    const dummy = new ObjectPainter(dom), lst = [];
-   dummy.forEachPainter(p => { if (lst.indexOf(p) < 0) lst.push(p); });
+   dummy.forEachPainter(p => {
+      if (lst.indexOf(p) < 0)
+         lst.push(p);
+   });
    lst.forEach(p => p.cleanup());
    dummy.selectDom().html('');
    return lst;

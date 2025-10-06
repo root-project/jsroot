@@ -1043,21 +1043,34 @@ class TH1Painter extends THistPainter {
       while (l < r-1) {
          const m = Math.round((l+r)*0.5), xx = GetBinGrX(m);
          if ((xx === null) || (xx < pnt_x - 0.5))
-            if (descent_order) r = m; else l = m;
-          else if (xx > pnt_x + 0.5)
-            if (descent_order) l = m; else r = m;
-          else { l++; r--; }
+            if (descent_order)
+               r = m;
+            else
+               l = m;
+          else if (xx > pnt_x + 0.5) {
+            if (descent_order)
+               l = m;
+            else
+               r = m;
+          } else {
+            l++;
+            r--;
+         }
       }
 
       let findbin = r = l;
       grx1 = GetBinGrX(findbin);
 
       if (descent_order) {
-         while ((l > left) && (GetBinGrX(l-1) < grx1 + 2)) --l;
-         while ((r < right) && (GetBinGrX(r+1) > grx1 - 2)) ++r;
+         while ((l > left) && (GetBinGrX(l-1) < grx1 + 2))
+            --l;
+         while ((r < right) && (GetBinGrX(r+1) > grx1 - 2))
+            ++r;
       } else {
-         while ((l > left) && (GetBinGrX(l-1) > grx1 - 2)) --l;
-         while ((r < right) && (GetBinGrX(r+1) < grx1 + 2)) ++r;
+         while ((l > left) && (GetBinGrX(l-1) > grx1 - 2))
+            --l;
+         while ((r < right) && (GetBinGrX(r+1) < grx1 + 2))
+            ++r;
       }
 
       if (l < r) {

@@ -874,12 +874,14 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          if (!this.x_handle.fTitle)
             lbl = 'x';
       } else if (lbl === null) {
-         is_major = false; lbl = '';
+         is_major = false;
+         lbl = '';
       }
 
       if (is_major && lbl && opts.draw && (!center_x || !xticks.last_major())) {
          const mod = xticks.get_modifier();
-         if (mod?.fLabText) lbl = mod.fLabText;
+         if (mod?.fLabText)
+            lbl = mod.fLabText;
 
          const text3d = createLatexGeometry(this, lbl, this.x_handle.labelsFont.size);
          text3d.computeBoundingBox();
@@ -1148,7 +1150,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
 
       if (is_major && lbl && opts.draw && (!center_y || !yticks.last_major())) {
          const mod = yticks.get_modifier();
-         if (mod?.fLabText) lbl = mod.fLabText;
+         if (mod?.fLabText)
+            lbl = mod.fLabText;
 
          const text3d = createLatexGeometry(this, lbl, this.y_handle.labelsFont.size);
          text3d.computeBoundingBox();

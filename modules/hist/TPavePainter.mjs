@@ -866,7 +866,8 @@ class TPavePainter extends ObjectPainter {
                let lineatt;
                if (!draw_line && !draw_error && !draw_marker) {
                   lineatt = painter?.lineatt?.used ? painter.lineatt : this.createAttLine(o_line);
-                  if (lineatt.empty()) lineatt = null;
+                  if (lineatt.empty())
+                     lineatt = null;
                }
 
                if (!fillatt.empty() || lineatt) {

@@ -194,7 +194,8 @@ function findColor(name) {
   * @return {number} index of new color
   * @private */
 function addColor(rgb, lst) {
-   if (!lst) lst = gbl_colors_list;
+   if (!lst)
+      lst = gbl_colors_list;
 
    if ((rgb[0] === '#') && (isNodeJs() || (isBatchMode() && settings.ApproxTextSize)))
       rgb = d3_color(rgb).formatRgb();
