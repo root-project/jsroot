@@ -151,13 +151,19 @@ class TGraphDelaunay {
    // expanded.
 
    FileIt(p, n, m) {
-      let swap, tmp, ps = p, ns = n, ms = m;
+      let swap, ps = p, ns = n, ms = m;
 
       // order the vertices before storing them
       do {
          swap = false;
-         if (ns > ps) { tmp = ps; ps = ns; ns = tmp; swap = true; }
-         if (ms > ns) { tmp = ns; ns = ms; ms = tmp; swap = true; }
+         if (ns > ps) {
+            [ns, ps] = [ps, ns];
+            swap = true;
+         }
+         if (ms > ns) {
+            [ms, ns] = [ns, ms];
+            swap = true;
+         }
       } while (swap);
 
       // store a new Delaunay triangle
@@ -440,13 +446,19 @@ class TGraphDelaunay {
    // on the plane defined by t1,t2,t3
 
    InterpolateOnPlane(TI1, TI2, TI3, e) {
-      let tmp, swap, t1 = TI1, t2 = TI2, t3 = TI3;
+      let swap, t1 = TI1, t2 = TI2, t3 = TI3;
 
       // order the vertices
       do {
          swap = false;
-         if (t2 > t1) { tmp = t1; t1 = t2; t2 = tmp; swap = true; }
-         if (t3 > t2) { tmp = t2; t2 = t3; t3 = tmp; swap = true; }
+         if (t2 > t1) {
+            [t1, t2] = [t2, t1];
+            swap = true;
+         }
+         if (t3 > t2) {
+            [t2, t3] = [t3, t2];
+            swap = true;
+         }
       } while (swap);
 
       const x1 = this.fXN[t1],
@@ -588,7 +600,10 @@ class TGraphDelaunay {
                            // triangle so call enclose to find out
 
                            // if it is inside the triangle this can't be a Delaunay triangle
-                           if (this.Enclose(p, n, m, z)) { skip_this_triangle = true; break; } // goto L90;
+                           if (this.Enclose(p, n, m, z)) {
+                              skip_this_triangle = true;
+                              break;
+                           } // goto L90;
                         } else {
                            // there's no way it could be in the triangle so there's no point
                            // calling enclose
@@ -863,10 +878,30 @@ class TGraphDelaunay {
          // After this z0 < z1 < z2
          /* eslint-disable-next-line no-useless-assignment */
          i0 = i1 = i2 = 0;
-         if (this.fZ[p1] <= z0) { z0 = this.fZ[p1]; x0 = this.fX[p1]; y0 = this.fY[p1]; i0 = 1; }
-         if (this.fZ[p1] > z2) { z2 = this.fZ[p1]; x2 = this.fX[p1]; y2 = this.fY[p1]; i2 = 1; }
-         if (this.fZ[p2] <= z0) { z0 = this.fZ[p2]; x0 = this.fX[p2]; y0 = this.fY[p2]; i0 = 2; }
-         if (this.fZ[p2] > z2) { z2 = this.fZ[p2]; x2 = this.fX[p2]; y2 = this.fY[p2]; i2 = 2; }
+         if (this.fZ[p1] <= z0) {
+            z0 = this.fZ[p1];
+            x0 = this.fX[p1];
+            y0 = this.fY[p1];
+            i0 = 1;
+         }
+         if (this.fZ[p1] > z2) {
+            z2 = this.fZ[p1];
+            x2 = this.fX[p1];
+            y2 = this.fY[p1];
+            i2 = 1;
+         }
+         if (this.fZ[p2] <= z0) {
+            z0 = this.fZ[p2];
+            x0 = this.fX[p2];
+            y0 = this.fY[p2];
+            i0 = 2;
+         }
+         if (this.fZ[p2] > z2) {
+            z2 = this.fZ[p2];
+            x2 = this.fX[p2];
+            y2 = this.fY[p2];
+            i2 = 2;
+         }
          if (i0 === 0 && i2 === 0) {
             console.error('GetContourList: wrong vertices ordering');
             return null;
@@ -944,8 +979,18 @@ class TGraphDelaunay {
          if (!s0 || !s1) {
             // Find all the segments connected to segment is
             graph = [];
-            if (s0) { xc = xs0[is]; yc = ys0[is]; xnc = xs1[is]; ync = ys1[is]; }
-            if (s1) { xc = xs1[is]; yc = ys1[is]; xnc = xs0[is]; ync = ys0[is]; }
+            if (s0) {
+               xc = xs0[is];
+               yc = ys0[is];
+               xnc = xs1[is];
+               ync = ys1[is];
+            }
+            if (s1) {
+               xc = xs1[is];
+               yc = ys1[is];
+               xnc = xs0[is];
+               ync = ys0[is];
+            }
             graph.push(xnc, ync);
             segUsed[is] = true;
             js = 0;

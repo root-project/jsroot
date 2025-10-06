@@ -887,7 +887,10 @@ class FlexibleDisplay extends MDIDisplay {
             });
             if (iscrossed) rect.x = maxx;
          } while ((rect.x + rect.w > ww - step) && (rect.y > 0));
-         if (rect.y < 0) { rect.x = step; rect.y = hh - rect.h - step; }
+         if (rect.y < 0) {
+            rect.x = step;
+            rect.y = hh - rect.h - step;
+         }
 
          main.style('left', rect.x + 'px').style('top', rect.y + 'px');
       } else if (!no_redraw)

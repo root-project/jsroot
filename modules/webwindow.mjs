@@ -191,11 +191,12 @@ class LongPollSocket {
          this.onmessage({ data: res, offset: _offset });
 
       // minimal timeout to reduce load, generate dummy only if client not submit new request immediately
-      if (!this.req)
+      if (!this.req) {
          setTimeout(() => {
            if (!this.req)
             this.nextRequest('', 'dummy');
          }, dummy_tmout);
+      }
    }
 
    /** @summary Send data */

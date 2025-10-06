@@ -59,17 +59,26 @@ function testAxisVisibility(camera, toplevel, fb = false, bb = false) {
          handleZoomMesh(chld);
       } else if (chld.xyboxid) {
          let range = 5, shift = 0;
-         if (bb && !fb) { range = 3; shift = -2; } else
-         if (fb && !bb) range = 3; else
-         if (!fb && !bb) range = (chld.bottom ? 3 : 0);
+         if (bb && !fb) {
+            range = 3;
+            shift = -2;
+         } else if (fb && !bb)
+            range = 3;
+         else if (!fb && !bb)
+            range = chld.bottom ? 3 : 0;
          chld.visible = testVisible(chld.xyboxid + shift, range);
          if (!chld.visible && chld.bottom && bb)
             chld.visible = testVisible(chld.xyboxid, 3);
       } else if (chld.zboxid) {
          let range = 2, shift = 0;
-         if (fb && bb) range = 5; else
-         if (bb && !fb) range = 4; else
-         if (!bb && fb) { shift = -2; range = 4; }
+         if (fb && bb)
+            range = 5;
+         else if (bb && !fb)
+            range = 4;
+         else if (!bb && fb) {
+            shift = -2;
+            range = 4;
+         }
          chld.visible = testVisible(chld.zboxid + shift, range);
       }
    }
@@ -271,7 +280,10 @@ function create3DControl(fp) {
       for (let i = 0; i < intersects.length; ++i) {
          if (handle_tooltip && isFunc(intersects[i].object?.tooltip)) {
             tip = intersects[i].object.tooltip(intersects[i]);
-            if (tip) { mesh = intersects[i].object; break; }
+            if (tip) {
+               mesh = intersects[i].object;
+               break;
+            }
          } else if (intersects[i].object?.zoom && !zoom_mesh)
             zoom_mesh = intersects[i].object;
       }
@@ -315,9 +327,14 @@ function create3DControl(fp) {
       if (intersects) {
          for (let n = 0; n < intersects.length; ++n) {
             const mesh = intersects[n].object;
-            if (mesh.zoom) { kind = mesh.zoom; p = null; break; }
+            if (mesh.zoom) {
+               kind = mesh.zoom;
+               p = null;
+               break;
+            }
             if (isFunc(mesh.painter?.fillContextMenu)) {
-               p = mesh.painter; break;
+               p = mesh.painter;
+               break;
             }
          }
       }

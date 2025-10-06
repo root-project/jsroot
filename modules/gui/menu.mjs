@@ -525,14 +525,21 @@ class JSRootMenu {
                handler = new FontHandler(id, 14),
                txt = d3_select(doc.createElementNS(nsSVG, 'text'));
          let fullname = handler.getFontName(), qual = '';
-         if (handler.weight) { qual += 'b'; fullname += ' ' + handler.weight; }
-         if (handler.style) { qual += handler.style[0]; fullname += ' ' + handler.style; }
-         if (qual) qual = ' ' + qual;
+         if (handler.weight) {
+             qual += 'b';
+             fullname += ' ' + handler.weight;
+            }
+         if (handler.style) {
+            qual += handler.style[0];
+            fullname += ' ' + handler.style;
+         }
+         if (qual)
+            qual = ' ' + qual;
          txt.attr('x', 1).attr('y', 15).text(fullname.split(' ')[0] + qual);
          handler.setFont(txt);
 
          const rect = (value !== id) ? '' : '<rect width=\'90\' height=\'18\' style=\'fill:none;stroke:black\'></rect>',
-             svg = `<svg width='90' height='18'>${txt.node().outerHTML}${rect}</svg>`;
+               svg = `<svg width='90' height='18'>${txt.node().outerHTML}${rect}</svg>`;
          this.add(svg, id, arg => set_func(parseInt(arg)), `${id}: ${fullname}`);
 
          if (n === 10) {
@@ -1017,7 +1024,10 @@ class JSRootMenu {
 
       this.add('Save settings', () => {
          const promise = readSettings(true) ? Promise.resolve(true) : this.confirm('Save settings', 'Pressing OK one agreess that JSROOT will store settings in browser local storage');
-         promise.then(res => { if (res) { saveSettings(); saveStyle(); } });
+         promise.then(res => { if (res) {
+            saveSettings();
+            saveStyle();
+         }});
       }, 'Store settings and gStyle in browser local storage');
       this.add('Delete settings', () => { saveSettings(-1); saveStyle(-1); }, 'Delete settings and gStyle from browser local storage');
 
@@ -1213,7 +1223,11 @@ class StandaloneMenu extends JSRootMenu {
       if (name === sEndcolumn)
          return this.stack.pop();
 
-      if (isFunc(arg)) { title = func; func = arg; arg = name; }
+      if (isFunc(arg)) {
+         title = func;
+         func = arg;
+         arg = name;
+      }
 
       const elem = {};
       curr.push(elem);

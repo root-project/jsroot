@@ -56,11 +56,12 @@ class THistDrawOptions {
    decodeSumw2(histo, force) {
       const len = histo.fSumw2?.length ?? 0;
       let isany = false;
-      for (let n = 0; n < len; ++n)
+      for (let n = 0; n < len; ++n) {
          if (histo.fSumw2[n] > 0) {
             isany = true;
             break;
          }
+      }
 
       if (Number.isInteger(this.Error) || force)
          this.Error = isany ? 1 : 0;

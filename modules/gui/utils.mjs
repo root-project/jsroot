@@ -617,8 +617,12 @@ function getColorId(col) {
       if (!col || (col === 'none'))
          id = 0;
        else {
-         for (let k = 1; k < arr.length; ++k)
-            if (arr[k] === col) { id = k; break; }
+         for (let k = 1; k < arr.length; ++k) {
+            if (arr[k] === col) {
+               id = k;
+               break;
+            }
+         }
       }
       if ((id < 0) && (col.indexOf('rgb') === 0))
          id = 9999;

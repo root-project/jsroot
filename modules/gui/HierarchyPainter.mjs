@@ -725,10 +725,20 @@ function parseAsArray(val) {
          continue;
       }
       switch (val[indx]) {
-         case '\'': nquotes++; break;
-         case '"': ndouble++; break;
-         case '[': nbr++; break;
-         case ']': if (indx < val.length - 1) { nbr--; break; }
+         case '\'':
+            nquotes++;
+            break;
+         case '"':
+            ndouble++;
+            break;
+         case '[':
+            nbr++;
+            break;
+         case ']':
+            if (indx < val.length - 1) {
+               nbr--;
+               break;
+            }
          // eslint-disable-next-line  no-fallthrough
          case ',':
             if (nbr === 0) {
@@ -2485,7 +2495,10 @@ class HierarchyPainter extends BasePainter {
          const item = items[i];
          let can_split = true;
 
-         if (item?.indexOf('img:') === 0) { images[i] = true; continue; }
+         if (item?.indexOf('img:') === 0) {
+            images[i] = true;
+            continue;
+         }
 
          if ((item?.length > 1) && (item.at(0) === '\'') && (item.at(-1) === '\'')) {
             items[i] = item.slice(1, item.length - 1);
@@ -2493,7 +2506,10 @@ class HierarchyPainter extends BasePainter {
          }
 
          let elem = h.findItem({ name: items[i], check_keys: true });
-         if (elem) { items[i] = h.itemFullName(elem); continue; }
+         if (elem) {
+            items[i] = h.itemFullName(elem);
+            continue;
+         }
 
          if (can_split && (items[i].at(0) === '[') && (items[i].at(-1) === ']')) {
             dropitems[i] = parseAsArray(items[i]);
@@ -2665,7 +2681,12 @@ class HierarchyPainter extends BasePainter {
 
       const active = [], // array of elements to activate
             update = []; // array of elements to update
-      this.forEachItem(item => { if (item._background) { active.push(item); delete item._background; } });
+      this.forEachItem(item => {
+         if (item._background) {
+            active.push(item);
+            delete item._background;
+         }
+      });
 
       const find_next = (itemname, prev_found) => {
          if (itemname === undefined) {
