@@ -519,7 +519,10 @@ class TooltipHandler extends ObjectPainter {
             continue;
 
          const dist2 = (pnt.x - hints[k].x) ** 2 + (pnt.y - hints[k].y) ** 2;
-         if (dist2 < best_dist2) { best_dist2 = dist2; best_hint = hints[k]; }
+         if (dist2 < best_dist2) {
+            best_dist2 = dist2;
+            best_hint = hints[k];
+         }
       }
 
       if ((!hint0 || !hint0.exact) && (best_dist2 < 400))
@@ -1535,7 +1538,10 @@ class FrameInteractive extends TooltipHandler {
             for (let n = 0; n < hints.length; ++n) {
                if (hints[n]?.menu) {
                   const dist = hints[n].menu_dist ?? 7;
-                  if (dist < bestdist) { sel = hints[n].painter; bestdist = dist; }
+                  if (dist < bestdist) {
+                     sel = hints[n].painter;
+                     bestdist = dist;
+                  }
                }
             }
          }
@@ -2946,17 +2952,32 @@ class TFramePainter extends FrameInteractive {
       if (zoom_x) {
          let cnt = 0;
          xmin = this.x_handle?.checkZoomMin(xmin) ?? xmin;
-         if (xmin <= this.xmin) { xmin = this.xmin; cnt++; }
-         if (xmax >= this.xmax) { xmax = this.xmax; cnt++; }
-         if (cnt === 2) { zoom_x = false; unzoom_x = true; }
+         if (xmin <= this.xmin) {
+            xmin = this.xmin;
+            cnt++;
+         }
+         if (xmax >= this.xmax) {
+            xmax = this.xmax;
+            cnt++;
+         }
+         if (cnt === 2) {
+            zoom_x = false;
+            unzoom_x = true;
+         }
       } else
          unzoom_x = (xmin === xmax) && (xmin === 0);
 
       if (zoom_y) {
          let cnt = 0;
          ymin = this.y_handle?.checkZoomMin(ymin) ?? ymin;
-         if (ymin <= this.ymin) { ymin = this.ymin; cnt++; }
-         if (ymax >= this.ymax) { ymax = this.ymax; cnt++; }
+         if (ymin <= this.ymin) {
+            ymin = this.ymin;
+            cnt++;
+         }
+         if (ymax >= this.ymax) {
+            ymax = this.ymax;
+            cnt++;
+         }
          if ((cnt === 2) && (this.scales_ndim !== 1)) {
             zoom_y = false;
             unzoom_y = true;
@@ -2967,9 +2988,18 @@ class TFramePainter extends FrameInteractive {
       if (zoom_z) {
          let cnt = 0;
          zmin = this.z_handle?.checkZoomMin(zmin) ?? zmin;
-         if (zmin <= this.zmin) { zmin = this.zmin; cnt++; }
-         if (zmax >= this.zmax) { zmax = this.zmax; cnt++; }
-         if ((cnt === 2) && (this.scales_ndim > 2)) { zoom_z = false; unzoom_z = true; }
+         if (zmin <= this.zmin) {
+            zmin = this.zmin;
+            cnt++;
+         }
+         if (zmax >= this.zmax) {
+            zmax = this.zmax;
+            cnt++;
+         }
+         if ((cnt === 2) && (this.scales_ndim > 2)) {
+            zoom_z = false;
+            unzoom_z = true;
+         }
       } else
          unzoom_z = (zmin === zmax) && (zmin === 0);
 
@@ -3065,9 +3095,18 @@ class TFramePainter extends FrameInteractive {
       if (zoom_v) {
          let cnt = 0;
          vmin = handle?.checkZoomMin(vmin) ?? vmin;
-         if (vmin <= this[name+'min']) { vmin = this[name+'min']; cnt++; }
-         if (vmax >= this[name+'max']) { vmax = this[name+'max']; cnt++; }
-         if (cnt === 2) { zoom_v = false; unzoom_v = true; }
+         if (vmin <= this[name+'min']) {
+            vmin = this[name+'min'];
+            cnt++;
+         }
+         if (vmax >= this[name+'max']) {
+            vmax = this[name+'max'];
+            cnt++;
+         }
+         if (cnt === 2) {
+            zoom_v = false;
+            unzoom_v = true;
+         }
       } else
          unzoom_v = (vmin === vmax) && (vmin === 0);
 

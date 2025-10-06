@@ -55,7 +55,10 @@ function getTimeOffset(axis) {
       sof = sof.slice(4).trim();
       if (sof.length > 3) {
          let p = 0, sign = 1000;
-         if (sof[0] === '-') { p = 1; sign = -1000; }
+         if (sof[0] === '-') {
+            p = 1;
+            sign = -1000;
+         }
          offset -= sign * (parseInt(sof.slice(p, p + 2)) * 3600 + parseInt(sof.slice(p + 2, p + 4)) * 60);
       }
    }
@@ -333,8 +336,14 @@ const AxisPainterMethods = {
 
       let delta = 0, delta_left = 1, delta_right = 1;
 
-      if ('dleft' in item) { delta_left = item.dleft; delta = 1; }
-      if ('dright' in item) { delta_right = item.dright; delta = 1; }
+      if ('dleft' in item) {
+         delta_left = item.dleft;
+         delta = 1;
+      }
+      if ('dright' in item) {
+         delta_right = item.dright;
+         delta = 1;
+      }
 
       if (item.delta)
          delta = item.delta;

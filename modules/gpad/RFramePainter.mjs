@@ -820,25 +820,52 @@ class RFramePainter extends RObjectPainter {
 
       if (zoom_x) {
          let cnt = 0;
-         if (xmin <= this.xmin) { xmin = this.xmin; cnt++; }
-         if (xmax >= this.xmax) { xmax = this.xmax; cnt++; }
-         if (cnt === 2) { zoom_x = false; unzoom_x = true; }
+         if (xmin <= this.xmin) {
+            xmin = this.xmin;
+            cnt++;
+         }
+         if (xmax >= this.xmax) {
+            xmax = this.xmax;
+            cnt++;
+         }
+         if (cnt === 2) {
+            zoom_x = false;
+            unzoom_x = true;
+         }
       } else
          unzoom_x = (xmin === xmax) && (xmin === 0);
 
       if (zoom_y) {
          let cnt = 0;
-         if (ymin <= this.ymin) { ymin = this.ymin; cnt++; }
-         if (ymax >= this.ymax) { ymax = this.ymax; cnt++; }
-         if (cnt === 2) { zoom_y = false; unzoom_y = true; }
+         if (ymin <= this.ymin) {
+            ymin = this.ymin;
+            cnt++;
+         }
+         if (ymax >= this.ymax) {
+            ymax = this.ymax;
+            cnt++;
+         }
+         if (cnt === 2) {
+            zoom_y = false;
+            unzoom_y = true;
+         }
       } else
          unzoom_y = (ymin === ymax) && (ymin === 0);
 
       if (zoom_z) {
          let cnt = 0;
-         if (zmin <= this.zmin) { zmin = this.zmin; cnt++; }
-         if (zmax >= this.zmax) { zmax = this.zmax; cnt++; }
-         if (cnt === 2) { zoom_z = false; unzoom_z = true; }
+         if (zmin <= this.zmin) {
+            zmin = this.zmin;
+            cnt++;
+         }
+         if (zmax >= this.zmax) {
+            zmax = this.zmax;
+            cnt++;
+         }
+         if (cnt === 2) {
+            zoom_z = false;
+            unzoom_z = true;
+         }
       } else
          unzoom_z = (zmin === zmax) && (zmin === 0);
 
@@ -896,21 +923,30 @@ class RFramePainter extends RObjectPainter {
       // and process unzoom, if any
       if (unzoom_x || unzoom_y || unzoom_z) {
          if (unzoom_x) {
-            if (this.zoom_xmin !== this.zoom_xmax) { changed = true; r_x = '0'; }
+            if (this.zoom_xmin !== this.zoom_xmax) {
+               changed = true;
+               r_x = '0';
+            }
             this.zoom_xmin = this.zoom_xmax = 0;
             req.values[0] = req.values[1] = -1;
             if (interactive)
                this.zoomChangedInteractive('x', interactive);
          }
          if (unzoom_y) {
-            if (this.zoom_ymin !== this.zoom_ymax) { changed = true; r_y = '1'; }
+            if (this.zoom_ymin !== this.zoom_ymax) {
+               changed = true;
+               r_y = '1';
+            }
             this.zoom_ymin = this.zoom_ymax = 0;
             req.values[2] = req.values[3] = -1;
             if (interactive)
                this.zoomChangedInteractive('y', interactive);
          }
          if (unzoom_z) {
-            if (this.zoom_zmin !== this.zoom_zmax) { changed = true; r_z = '2'; }
+            if (this.zoom_zmin !== this.zoom_zmax) {
+               changed = true;
+               r_z = '2';
+            }
             this.zoom_zmin = this.zoom_zmax = 0;
             req.values[4] = req.values[5] = -1;
             if (interactive)
@@ -944,9 +980,18 @@ class RFramePainter extends RObjectPainter {
 
       if (zoom_v) {
          let cnt = 0;
-         if (vmin <= this[name+'min']) { vmin = this[name+'min']; cnt++; }
-         if (vmax >= this[name+'max']) { vmax = this[name+'max']; cnt++; }
-         if (cnt === 2) { zoom_v = false; unzoom_v = true; }
+         if (vmin <= this[name+'min']) {
+            vmin = this[name+'min'];
+            cnt++;
+         }
+         if (vmax >= this[name+'max']) {
+            vmax = this[name+'max'];
+            cnt++;
+         }
+         if (cnt === 2) {
+            zoom_v = false;
+            unzoom_v = true;
+         }
       } else
          unzoom_v = (vmin === vmax) && (vmin === 0);
 

@@ -1176,7 +1176,11 @@ class TPadPainter extends ObjectPainter {
             let arr = [];
             for (let n = obj.arr.length - o.CreatePalette; n < obj.arr.length; ++n) {
                const col = getRGBfromTColor(obj.arr[n]);
-               if (!col) { console.log('Fail to create color for palette'); arr = null; break; }
+               if (!col) {
+                  console.log('Fail to create color for palette');
+                  arr = null;
+                  break;
+               }
                arr.push(col);
             }
             if (arr.length)
@@ -1306,7 +1310,10 @@ class TPadPainter extends ObjectPainter {
          this.#doing_draw = undefined;
        else {
          const entry = this.#doing_draw[0];
-         if (entry.func) { entry.func(); delete entry.func; }
+         if (entry.func) {
+            entry.func();
+            delete entry.func;
+         }
       }
    }
 
@@ -2089,7 +2096,10 @@ class TPadPainter extends ObjectPainter {
          // this._setFixedSize(true);
 
          // if canvas size not specified in batch mode, temporary use 900x700 size
-         if (this.isBatchMode() && (!first.fCw || !first.fCh)) { first.fCw = 900; first.fCh = 700; }
+         if (this.isBatchMode() && (!first.fCw || !first.fCh)) {
+            first.fCw = 900;
+            first.fCh = 700;
+         }
 
          // case of ROOT7 with always dummy TPad as first entry
          if (!first.fCw || !first.fCh)

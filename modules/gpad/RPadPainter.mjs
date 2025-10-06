@@ -1800,23 +1800,41 @@ class RPadPainter extends RObjectPainter {
       const d = new DrawOptions(opt),
             o = this.setOptions({ GlobalColors: true, LocalColors: false, IgnorePalette: false, RotateFrame: false, FixFrame: false });
 
-      if (d.check('NOCOLORS') || d.check('NOCOL')) o.GlobalColors = o.LocalColors = false;
-      if (d.check('LCOLORS') || d.check('LCOL')) { o.GlobalColors = false; o.LocalColors = true; }
-      if (d.check('NOPALETTE') || d.check('NOPAL')) o.IgnorePalette = true;
-      if (d.check('ROTATE')) o.RotateFrame = true;
-      if (d.check('FIXFRAME')) o.FixFrame = true;
+      if (d.check('NOCOLORS') || d.check('NOCOL'))
+         o.GlobalColors = o.LocalColors = false;
+      if (d.check('LCOLORS') || d.check('LCOL')) {
+         o.GlobalColors = false;
+         o.LocalColors = true;
+      }
+      if (d.check('NOPALETTE') || d.check('NOPAL'))
+         o.IgnorePalette = true;
+      if (d.check('ROTATE'))
+         o.RotateFrame = true;
+      if (d.check('FIXFRAME'))
+         o.FixFrame = true;
 
-      if (d.check('WHITE')) pad.fFillColor = 0;
-      if (d.check('LOGX')) pad.fLogx = 1;
-      if (d.check('LOGY')) pad.fLogy = 1;
-      if (d.check('LOGZ')) pad.fLogz = 1;
-      if (d.check('LOG')) pad.fLogx = pad.fLogy = pad.fLogz = 1;
-      if (d.check('GRIDX')) pad.fGridx = 1;
-      if (d.check('GRIDY')) pad.fGridy = 1;
-      if (d.check('GRID')) pad.fGridx = pad.fGridy = 1;
-      if (d.check('TICKX')) pad.fTickx = 1;
-      if (d.check('TICKY')) pad.fTicky = 1;
-      if (d.check('TICK')) pad.fTickx = pad.fTicky = 1;
+      if (d.check('WHITE'))
+         pad.fFillColor = 0;
+      if (d.check('LOGX'))
+         pad.fLogx = 1;
+      if (d.check('LOGY'))
+         pad.fLogy = 1;
+      if (d.check('LOGZ'))
+         pad.fLogz = 1;
+      if (d.check('LOG'))
+         pad.fLogx = pad.fLogy = pad.fLogz = 1;
+      if (d.check('GRIDX'))
+         pad.fGridx = 1;
+      if (d.check('GRIDY'))
+         pad.fGridy = 1;
+      if (d.check('GRID'))
+         pad.fGridx = pad.fGridy = 1;
+      if (d.check('TICKX'))
+         pad.fTickx = 1;
+      if (d.check('TICKY'))
+         pad.fTicky = 1;
+      if (d.check('TICK'))
+         pad.fTickx = pad.fTicky = 1;
    }
 
    /** @summary draw RPad object */
