@@ -404,13 +404,16 @@ function buildSvgCurve(p, args) {
             flush();
             path += `l${dx},${dy}`;
          } else if (!dx && dy) {
-            if ((acc_y === 0) || ((dy < 0) !== (acc_y < 0))) flush();
+            if ((acc_y === 0) || ((dy < 0) !== (acc_y < 0)))
+               flush();
             acc_y += dy;
          } else if (dx && !dy) {
-            if ((acc_x === 0) || ((dx < 0) !== (acc_x < 0))) flush();
+            if ((acc_x === 0) || ((dx < 0) !== (acc_x < 0)))
+               flush();
             acc_x += dx;
          }
-         currx += dx; curry += dy;
+         currx += dx;
+         curry += dy;
       }
 
       flush();

@@ -301,8 +301,10 @@ function createTreePlayer(player) {
          url += `&prototype="const char*,const char*,Option_t*,Long64_t,Long64_t"&varexp="${expr}"&selection="${cut}"`;
 
          // provide all optional arguments - default value kMaxEntries not works properly in ROOT6
-         if (!nentries) nentries = 'TTree::kMaxEntries'; // kMaxEntries available since ROOT 6.05/03
-         if (!firstentry) firstentry = '0';
+         if (!nentries)
+            nentries = 'TTree::kMaxEntries'; // kMaxEntries available since ROOT 6.05/03
+         if (!firstentry)
+            firstentry = '0';
          url += `&option="${option}"&nentries=${nentries}&firstentry=${firstentry}`;
       } else
          url += `&prototype="Option_t*"&opt="${expr}"`;

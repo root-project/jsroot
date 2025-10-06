@@ -267,8 +267,10 @@ class Polygon {
             ti = this.classifyVertex(vi);
             tj = this.classifyVertex(vj);
 
-            if (ti !== BACK) f.push(vi);
-            if (ti !== FRONT) b.push(vi);
+            if (ti !== BACK)
+               f.push(vi);
+            if (ti !== FRONT)
+               b.push(vi);
             if ((ti | tj) === SPANNING) {
                // t = (this.w - this.normal.dot(vi))/this.normal.dot(vj.clone().subtract(vi));
                // v = vi.clone().lerp( vj, t );
@@ -281,10 +283,14 @@ class Polygon {
             }
          }
 
-         // if ( f.length >= 3 ) front.push(new Polygon(f).calculateProperties());
-         // if ( b.length >= 3 ) back.push(new Polygon(b).calculateProperties());
-         if (f.length >= 3) front.push(new Polygon(f, polygon, true));
-         if (b.length >= 3) back.push(new Polygon(b, polygon, true));
+         // if ( f.length >= 3 )
+         //    front.push(new Polygon(f).calculateProperties());
+         // if ( b.length >= 3 )
+         //    back.push(new Polygon(b).calculateProperties());
+         if (f.length >= 3)
+            front.push(new Polygon(f, polygon, true));
+         if (b.length >= 3)
+            back.push(new Polygon(b, polygon, true));
       }
    }
 

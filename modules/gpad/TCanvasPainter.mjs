@@ -22,7 +22,8 @@ const kShowEventStatus = BIT(15),
 function directDrawTFrame(dom, obj, opt) {
    const fp = new TFramePainter(dom, obj);
    fp.addToPadPrimitives();
-   if (opt === '3d') fp.mode3d = true;
+   if (opt === '3d')
+      fp.mode3d = true;
    return fp.redraw();
 }
 

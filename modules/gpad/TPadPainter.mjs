@@ -812,7 +812,8 @@ class TPadPainter extends ObjectPainter {
          factor = 0.66;
          if (this.#pad?.fCw && this.#pad?.fCh && (this.#pad?.fCw > 0)) {
             factor = this.#pad.fCh / this.#pad.fCw;
-            if ((factor < 0.1) || (factor > 10)) factor = 0.66;
+            if ((factor < 0.1) || (factor > 10))
+               factor = 0.66;
          }
 
          if (this.#fixed_size) {
@@ -1568,7 +1569,8 @@ class TPadPainter extends ObjectPainter {
       const fname = this.#pad_name || (this.isCanvas() ? 'canvas' : 'pad');
       menu.sub('Save as');
       const fmts = ['svg', 'png', 'jpeg', 'webp'];
-      if (internals.makePDF) fmts.push('pdf');
+      if (internals.makePDF)
+         fmts.push('pdf');
       fmts.forEach(fmt => menu.add(`${fname}.${fmt}`, () => this.saveAs(fmt, this.isCanvas(), `${fname}.${fmt}`)));
       if (this.isCanvas()) {
          menu.separator();
@@ -1669,11 +1671,16 @@ class TPadPainter extends ObjectPainter {
       if (sync_promise === false)
          return false;
 
-      if ((size === true) || (size === false)) { force = size; size = null; }
+      if ((size === true) || (size === false)) {
+         force = size;
+         size = null;
+      }
 
-      if (isObject(size) && size.force) force = true;
+      if (isObject(size) && size.force)
+         force = true;
 
-      if (!force) force = this.needRedrawByResize();
+      if (!force)
+         force = this.needRedrawByResize();
 
       let changed = false;
       const redrawNext = indx => {

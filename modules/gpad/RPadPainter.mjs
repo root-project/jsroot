@@ -555,7 +555,8 @@ class RPadPainter extends RObjectPainter {
          factor = 0.66;
          if (this.#pad?.fWinSize[0] && this.#pad.fWinSize[1]) {
             factor = this.#pad.fWinSize[1] / this.#pad.fWinSize[0];
-            if ((factor < 0.1) || (factor > 10)) factor = 0.66;
+            if ((factor < 0.1) || (factor > 10))
+               factor = 0.66;
          }
 
          if (this.#fixed_size) {
@@ -1041,11 +1042,16 @@ class RPadPainter extends RObjectPainter {
       if (sync_promise === false)
          return false;
 
-      if ((size === true) || (size === false)) { force = size; size = null; }
+      if ((size === true) || (size === false)) {
+         force = size;
+         size = null;
+      }
 
-      if (isObject(size) && size.force) force = true;
+      if (isObject(size) && size.force)
+         force = true;
 
-      if (!force) force = this.needRedrawByResize();
+      if (!force)
+         force = this.needRedrawByResize();
 
       let changed = false;
       const redrawNext = indx => {

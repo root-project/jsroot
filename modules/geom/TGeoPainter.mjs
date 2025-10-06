@@ -3359,7 +3359,8 @@ class TGeoPainter extends ObjectPainter {
             this.render3D(0);
 
          const tm2 = new Date().getTime();
-         if ((step === 0) && (tm2-tm1 > 200)) frames = 20;
+         if ((step === 0) && (tm2-tm1 > 200))
+            frames = 20;
          step++;
          this.#animating = step < frames;
       };

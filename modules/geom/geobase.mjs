@@ -92,9 +92,7 @@ function toggleGeoBit(volume, f) {
 
 /** @summary Implementation of TGeoVolume::InvisibleAll
   * @private */
-function setInvisibleAll(volume, flag) {
-   if (flag === undefined) flag = true;
-
+function setInvisibleAll(volume, flag = true) {
    setGeoBit(volume, geoBITS.kVisThis, !flag);
    // setGeoBit(this, geoBITS.kVisDaughters, !flag);
 
@@ -1881,8 +1879,10 @@ function createComposite(shape, faces_limit) {
    const matrix1 = createMatrix(shape.fNode.fLeftMat),
          matrix2 = createMatrix(shape.fNode.fRightMat);
 
-   if (faces_limit === 0) faces_limit = 4000;
-                     else return_bsp = true;
+   if (faces_limit === 0)
+      faces_limit = 4000;
+   else
+      return_bsp = true;
 
    if (matrix1 && (matrix1.determinant() < -0.9))
       geoWarn('Axis reflection in left composite shape - not supported');

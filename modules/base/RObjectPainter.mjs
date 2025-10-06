@@ -206,16 +206,22 @@ class RObjectPainter extends ObjectPainter {
             font_weight = this.v7EvalAttr(name + '_font_weight', rfont.fWeight || '');
        let text_size = this.v7EvalAttr(name + '_size', dflts.size || 12);
 
-       if (isStr(text_size)) text_size = parseFloat(text_size);
-       if (!Number.isFinite(text_size) || (text_size <= 0)) text_size = 12;
-       if (!fontScale) fontScale = pp?.getPadHeight() || 100;
+       if (isStr(text_size))
+         text_size = parseFloat(text_size);
+       if (!Number.isFinite(text_size) || (text_size <= 0))
+         text_size = 12;
+       if (!fontScale)
+         fontScale = pp?.getPadHeight() || 100;
 
        const handler = new FontHandler(null, text_size, fontScale);
        handler.setNameStyleWeight(font_family, font_style, font_weight);
 
-       if (text_angle) handler.setAngle(360 - text_angle);
-       if (text_align !== 'none') handler.setAlign(text_align);
-       if (text_color !== 'none') handler.setColor(text_color);
+       if (text_angle)
+         handler.setAngle(360 - text_angle);
+       if (text_align !== 'none')
+         handler.setAlign(text_align);
+       if (text_color !== 'none')
+         handler.setColor(text_color);
 
        return handler;
     }

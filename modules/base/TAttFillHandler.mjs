@@ -396,8 +396,10 @@ class TAttFillHandler {
                   case 9: vertical = true; break;
                }
 
-               if (horiz) func(0, false, 0);
-               if (vertical) func(0, true, 90);
+               if (horiz)
+                  func(0, false, 0);
+               if (vertical)
+                  func(0, true, 90);
 
                break;
             }

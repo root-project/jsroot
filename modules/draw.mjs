@@ -229,7 +229,8 @@ function getDrawHandle(kind, selector) {
             drawFuncs.cache[kind] = h;
          return h;
       } else if (isStr(selector)) {
-         if (!first) first = h;
+         if (!first)
+            first = h;
          // if draw option specified, check it present in the list
 
          if (selector === '::expand') {

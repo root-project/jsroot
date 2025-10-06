@@ -631,8 +631,12 @@
             let found = false, next = null;
             if (!select_key)
                for (let key in examples_main) {
-                  if (found) { next = key; break; }
-                  if (key === keyid) found = true;
+                  if (found) {
+                     next = key;
+                     break;
+                  }
+                  if (key === keyid)
+                     found = true;
                }
             keyid = next;
             if (!next)

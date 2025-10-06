@@ -178,7 +178,8 @@ class TRatioPlotPainter extends ObjectPainter {
             ratio.fGridlinePositions.forEach(gridy => {
                let found = false;
                ratio.fGridlines.forEach(line => {
-                  if ((line.fY1 === line.fY2) && (Math.abs(line.fY1 - gridy) < 1e-6)) found = true;
+                  if ((line.fY1 === line.fY2) && (Math.abs(line.fY1 - gridy) < 1e-6))
+                     found = true;
                });
                if (!found) {
                   const line = create(clTLine);
