@@ -991,30 +991,40 @@ function createMemberStreamer(element, file) {
          member.func = function(buf, obj) { buf.classStreamer(obj, this.basename); };
          break;
       case kShort:
-         member.func = function(buf, obj) { obj[this.name] = buf.ntoi2(); }; break;
+         member.func = function(buf, obj) { obj[this.name] = buf.ntoi2(); };
+         break;
       case kInt:
       case kCounter:
-         member.func = function(buf, obj) { obj[this.name] = buf.ntoi4(); }; break;
+         member.func = function(buf, obj) { obj[this.name] = buf.ntoi4(); };
+         break;
       case kLong:
       case kLong64:
-         member.func = function(buf, obj) { obj[this.name] = buf.ntoi8(); }; break;
+         member.func = function(buf, obj) { obj[this.name] = buf.ntoi8(); };
+         break;
       case kDouble:
-         member.func = function(buf, obj) { obj[this.name] = buf.ntod(); }; break;
+         member.func = function(buf, obj) { obj[this.name] = buf.ntod(); };
+         break;
       case kFloat:
-         member.func = function(buf, obj) { obj[this.name] = buf.ntof(); }; break;
+         member.func = function(buf, obj) { obj[this.name] = buf.ntof(); };
+         break;
       case kLegacyChar:
       case kUChar:
-         member.func = function(buf, obj) { obj[this.name] = buf.ntou1(); }; break;
+         member.func = function(buf, obj) { obj[this.name] = buf.ntou1(); };
+         break;
       case kUShort:
-         member.func = function(buf, obj) { obj[this.name] = buf.ntou2(); }; break;
+         member.func = function(buf, obj) { obj[this.name] = buf.ntou2(); };
+         break;
       case kBits:
       case kUInt:
-         member.func = function(buf, obj) { obj[this.name] = buf.ntou4(); }; break;
+         member.func = function(buf, obj) { obj[this.name] = buf.ntou4(); };
+         break;
       case kULong64:
       case kULong:
-         member.func = function(buf, obj) { obj[this.name] = buf.ntou8(); }; break;
+         member.func = function(buf, obj) { obj[this.name] = buf.ntou8(); };
+         break;
       case kBool:
-         member.func = function(buf, obj) { obj[this.name] = buf.ntobool(); }; break;
+         member.func = function(buf, obj) { obj[this.name] = buf.ntobool(); };
+         break;
       case kOffsetL + kBool:
       case kOffsetL + kInt:
       case kOffsetL + kCounter:
