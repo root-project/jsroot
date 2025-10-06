@@ -741,7 +741,8 @@ function createArb8Buffer(shape, faces_limit) {
 
             norm2.normalize();
 
-            if (norm1.distanceToSquared(norm2) < 1e-12) norm = norm1;
+            if (norm1.distanceToSquared(norm2) < 1e-12)
+               norm = norm1;
          }
       }
 
@@ -1901,7 +1902,8 @@ function createComposite(shape, faces_limit) {
       return null;
 
    let n1 = numGeometryFaces(geom1), n2 = 0;
-   if (geom1._exceed_limit) n1 += faces_limit;
+   if (geom1._exceed_limit)
+      n1 += faces_limit;
 
    if (n1 < faces_limit) {
       if (shape.fNode.fRight._typename === clTGeoHalfSpace)

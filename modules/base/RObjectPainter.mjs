@@ -80,7 +80,8 @@ class RObjectPainter extends ObjectPainter {
    /** @summary Set v7 attributes value */
    v7SetAttr(name, value) {
       const obj = this.getObject();
-      if (this.cssprefix) name = this.cssprefix + name;
+      if (this.cssprefix)
+         name = this.cssprefix + name;
 
       if (obj?.fAttr?.m)
          obj.fAttr.m[name] = { v: value };
@@ -283,7 +284,8 @@ class RObjectPainter extends ObjectPainter {
          req.update = true;
       }
 
-      if (this.cssprefix) name = this.cssprefix + name;
+      if (this.cssprefix)
+         name = this.cssprefix + name;
       req.ids.push(this.getSnapId());
       req.names.push(name);
 

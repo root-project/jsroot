@@ -96,7 +96,8 @@ function drawTH2PolyLego(painter) {
             all_faces.push(faces);
 
             nfaces += faces.length * 2;
-            if (z1 > z0) nfaces += pnts.length*2;
+            if (z1 > z0)
+               nfaces += pnts.length * 2;
          }
       }
 

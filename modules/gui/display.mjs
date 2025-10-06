@@ -1098,8 +1098,12 @@ class FlexibleDisplay extends MDIDisplay {
       let nx = Math.ceil(Math.sqrt(arr.length)), ny = nx;
 
       // calculate number of divisions for 'tile' sorting
-      if ((nx > 1) && (nx*(nx-1) >= arr.length))
-        if (w > h) ny--; else nx--;
+      if ((nx > 1) && (nx*(nx-1) >= arr.length)) {
+         if (w > h)
+            ny--;
+         else
+            nx--;
+      }
 
       arr.forEach((frame, i) => {
          const main = d3_select(frame.parentNode);
@@ -1133,7 +1137,8 @@ class FlexibleDisplay extends MDIDisplay {
       let nummin = 0;
       this.forEachFrame(f => {
          arr.push(f);
-         if (this.getFrameState(f) === 'min') nummin++;
+         if (this.getFrameState(f) === 'min')
+            nummin++;
       });
       const active = this.getActiveFrame();
 

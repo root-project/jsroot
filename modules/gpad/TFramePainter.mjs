@@ -166,8 +166,10 @@ function addDragHandler(_painter, arg) {
 
       const oldx = arg.x, oldy = arg.y;
 
-      if (arg.minwidth && newwidth < arg.minwidth) newwidth = arg.minwidth;
-      if (arg.minheight && newheight < arg.minheight) newheight = arg.minheight;
+      if (arg.minwidth && newwidth < arg.minwidth)
+         newwidth = arg.minwidth;
+      if (arg.minheight && newheight < arg.minheight)
+         newheight = arg.minheight;
 
       const change_size = (newwidth !== arg.width) || (newheight !== arg.height),
             change_pos = (newx !== oldx) || (newy !== oldy);
@@ -1442,14 +1444,16 @@ class FrameInteractive extends TooltipHandler {
          changed[0] = false;
 
       if (changed[xid] && (Math.abs(this.zoom_curr[xid] - this.zoom_origin[xid]) > 10)) {
-         if (this.zoom_second && (this.zoom_kind === 102)) namex = 'x2';
+         if (this.zoom_second && (this.zoom_kind === 102))
+            namex = 'x2';
          xmin = Math.min(this.revertAxis(namex, this.zoom_origin[xid]), this.revertAxis(namex, this.zoom_curr[xid]));
          xmax = Math.max(this.revertAxis(namex, this.zoom_origin[xid]), this.revertAxis(namex, this.zoom_curr[xid]));
          isany = true;
       }
 
       if (changed[yid] && (Math.abs(this.zoom_curr[yid] - this.zoom_origin[yid]) > 10)) {
-         if (this.zoom_second && (this.zoom_kind === 103)) namey = 'y2';
+         if (this.zoom_second && (this.zoom_kind === 103))
+            namey = 'y2';
          ymin = Math.min(this.revertAxis(namey, this.zoom_origin[yid]), this.revertAxis(namey, this.zoom_curr[yid]));
          ymax = Math.max(this.revertAxis(namey, this.zoom_origin[yid]), this.revertAxis(namey, this.zoom_curr[yid]));
          isany = true;

@@ -426,7 +426,8 @@ class TH3Painter extends THistPainter {
             single_bin_verts[k*3+1] = vert.y-0.5;
             single_bin_verts[k*3+2] = vert.z-0.5;
 
-            if (k%6 === 0) nn+=3;
+            if (k%6 === 0)
+               nn += 3;
             single_bin_norms[k*3] = normals[nn];
             single_bin_norms[k*3+1] = normals[nn+1];
             single_bin_norms[k*3+2] = normals[nn+2];

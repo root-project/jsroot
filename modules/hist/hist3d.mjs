@@ -710,7 +710,8 @@ function highlightBin3D(tip, selfmesh) {
          pos[k*3+2] = tip.z1 + vert.z * (tip.z2 - tip.z1);
 
          if (norm) {
-            if (k % 6 === 0) nn += 3;
+            if (k % 6 === 0)
+               nn += 3;
             norm[k*3] = normals[nn];
             norm[k*3+1] = normals[nn+1];
             norm[k*3+2] = normals[nn+2];

@@ -324,7 +324,8 @@ const AxisPainterMethods = {
       }
 
       const dom = this.func.domain(), ticks = [];
-      if (ndiv2) ndiv = (ndiv-1) * ndiv2;
+      if (ndiv2)
+         ndiv = (ndiv - 1) * ndiv2;
       for (let n = 0; n <= ndiv; ++n)
          ticks.push((dom[0]*(ndiv-n) + dom[1]*n)/ndiv);
       return ticks;

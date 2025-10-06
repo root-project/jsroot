@@ -2646,7 +2646,8 @@ class TPadPainter extends ObjectPainter {
                      name = pp.getMenuHeader();
                   else {
                      name = isFunc(pp.getClassName) ? pp.getClassName() : (obj._typename || '');
-                     if (name) name += '::';
+                     if (name)
+                        name += '::';
                      name += isFunc(pp.getObjectName) ? pp.getObjectName() : (obj.fName || `item${indx}`);
                   }
                   menu.add(name, indx, this.itemContextMenu);

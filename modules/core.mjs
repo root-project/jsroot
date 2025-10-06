@@ -1882,7 +1882,8 @@ function getMethods(typename, obj) {
             if (ndiv < 2)
                return this;
             nx = ny = Math.round(Math.sqrt(ndiv));
-            if (nx * ny < ndiv) nx += 1;
+            if (nx * ny < ndiv)
+               nx += 1;
          }
          if (nx * ny < 2)
             return 0;

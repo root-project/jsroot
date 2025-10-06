@@ -1921,8 +1921,10 @@ class TGeoPainter extends ObjectPainter {
          let numitems = 0, numnodes = 0, cnt = 0;
          if (intersects) {
             for (let n = 0; n < intersects.length; ++n) {
-               if (getIntersectStack(intersects[n])) numnodes++;
-               if (intersects[n].geo_name) numitems++;
+               if (getIntersectStack(intersects[n]))
+                  numnodes++;
+               if (intersects[n].geo_name)
+                  numitems++;
             }
          }
 
@@ -1944,7 +1946,8 @@ class TGeoPainter extends ObjectPainter {
                   if (itemname.indexOf('<prnt>') === 0)
                      itemname = (this.getItemName() || 'top') + itemname.slice(6);
                   name = itemname.slice(itemname.lastIndexOf('/')+1);
-                  if (!name) name = itemname;
+                  if (!name)
+                     name = itemname;
                   hdr = name;
                } else if (stack) {
                   name = this.#clones.getStackName(stack);
@@ -2354,7 +2357,8 @@ class TGeoPainter extends ObjectPainter {
          this.highlightMesh(active_mesh, undefined, geo_object, geo_index);
 
          if (this.ctrl.update_browser) {
-            if (this.ctrl.highlight && tooltip) names = [tooltip];
+            if (this.ctrl.highlight && tooltip)
+               names = [tooltip];
             this.activateInBrowser(names);
          }
 

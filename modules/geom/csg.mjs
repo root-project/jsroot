@@ -561,21 +561,24 @@ class Geometry {
          useVertexNormals = face.vertexNormals && (face.vertexNormals.length === 3);
 
          vertex = geometry.vertices[face.a];
-         if (useVertexNormals) normal = face.vertexNormals[0];
+         if (useVertexNormals)
+            normal = face.vertexNormals[0];
          // uvs = faceVertexUvs ? new THREE.Vector2( faceVertexUvs[0].x, faceVertexUvs[0].y ) : null;
          vertex = new Vertex(vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z /* face.normal, uvs */);
          if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
          polygon.vertices.push(vertex);
 
          vertex = geometry.vertices[face.b];
-         if (useVertexNormals) normal = face.vertexNormals[1];
+         if (useVertexNormals)
+            normal = face.vertexNormals[1];
          // uvs = faceVertexUvs ? new THREE.Vector2( faceVertexUvs[1].x, faceVertexUvs[1].y ) : null;
          vertex = new Vertex(vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z /* face.normal, uvs */);
          if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
          polygon.vertices.push(vertex);
 
          vertex = geometry.vertices[face.c];
-         if (useVertexNormals) normal = face.vertexNormals[2];
+         if (useVertexNormals)
+            normal = face.vertexNormals[2];
          // uvs = faceVertexUvs ? new THREE.Vector2( faceVertexUvs[2].x, faceVertexUvs[2].y ) : null;
          vertex = new Vertex(vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z /* face.normal, uvs */);
          if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);

@@ -2028,7 +2028,8 @@ class HierarchyPainter extends BasePainter {
                filepath = `${fileprop.kind}=${filepath}`;
                if (fileprop.itemname) {
                   let name = fileprop.itemname;
-                  if (name.search(/\+| |,/) >= 0) name = `'${name}'`;
+                  if (name.search(/\+| |,/) >= 0)
+                     name = `'${name}'`;
                   filepath += `&item=${name}`;
                }
 

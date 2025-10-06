@@ -550,13 +550,17 @@ class RFramePainter extends RObjectPainter {
          fp: this,
          swap_xy() { return this.fp.swap_xy(); },
          revertAxis(name, v) {
-            if ((name === 'x') && this.use_x2) name = 'x2';
-            if ((name === 'y') && this.use_y2) name = 'y2';
+            if ((name === 'x') && this.use_x2)
+               name = 'x2';
+            if ((name === 'y') && this.use_y2)
+               name = 'y2';
             return this.fp.revertAxis(name, v);
          },
          axisAsText(name, v) {
-            if ((name === 'x') && this.use_x2) name = 'x2';
-            if ((name === 'y') && this.use_y2) name = 'y2';
+            if ((name === 'x') && this.use_x2)
+               name = 'x2';
+            if ((name === 'y') && this.use_y2)
+               name = 'y2';
             return this.fp.axisAsText(name, v);
          }
       };

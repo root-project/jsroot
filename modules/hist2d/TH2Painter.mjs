@@ -2852,7 +2852,7 @@ class TH2Painter extends THistPainter {
                pattern.selectAll('*').remove();
 
             let npix = Math.round(factor*cntr.arr[colindx]*cell_w[colindx]*cell_h[colindx]);
-            if (npix < 1) npix = 1;
+            npix = Math.max(1, npix);
 
             const arrx = new Float32Array(npix), arry = new Float32Array(npix);
 

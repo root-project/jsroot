@@ -1666,7 +1666,8 @@ class RPadPainter extends RObjectPainter {
                   if (!obj || (shown.indexOf(obj) >= 0) || pp.isSecondary())
                      return;
                   let name = isFunc(pp.getClassName) ? pp.getClassName() : (obj._typename || '');
-                  if (name) name += '::';
+                  if (name)
+                     name += '::';
                   name += isFunc(pp.getObjectName) ? pp.getObjectName() : (obj.fName || `item${indx}`);
                   menu.add(name, indx, this.itemContextMenu);
                   shown.push(obj);

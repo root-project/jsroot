@@ -253,7 +253,8 @@ class TPavePainter extends ObjectPainter {
                   const set_default = (nlines > 0) && !this.moved_interactive && isDefaultStatPosition(pt),
                         // in ROOT TH2 and TH3 always add full stats for fit parameters
                         extrah = this.#has_fit && (this.#fit_dim > 1) ? gStyle.fStatH : 0;
-                  if (extrah) nlines -= this.#fit_cnt;
+                  if (extrah)
+                     nlines -= this.#fit_cnt;
                   let stath = gStyle.fStatH, statw = gStyle.fStatW;
                   if (this.#has_fit)
                      statw = 1.8 * gStyle.fStatW;
