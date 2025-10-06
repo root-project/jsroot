@@ -57,7 +57,10 @@ class THistDrawOptions {
       const len = histo.fSumw2?.length ?? 0;
       let isany = false;
       for (let n = 0; n < len; ++n)
-         if (histo.fSumw2[n] > 0) { isany = true; break; }
+         if (histo.fSumw2[n] > 0) {
+            isany = true;
+            break;
+         }
 
       if (Number.isInteger(this.Error) || force)
          this.Error = isany ? 1 : 0;
@@ -1250,9 +1253,24 @@ class THistPainter extends ObjectPainter {
          if (isFunc(pp?.getAutoColor)) {
             const icolor = pp.getAutoColor(histo.$num_histos);
             this.#auto_exec = '';
-            if (o._pfc > 1) { o._pfc = 1; histo.fFillColor = icolor; this.#auto_exec += `SetFillColor(${icolor});;`; this.deleteAttr('fill'); }
-            if (o._plc > 1) { o._plc = 1; histo.fLineColor = icolor; this.#auto_exec += `SetLineColor(${icolor});;`; this.deleteAttr('line'); }
-            if (o._pmc > 1) { o._pmc = 1; histo.fMarkerColor = icolor; this.#auto_exec += `SetMarkerColor(${icolor});;`; this.deleteAttr('marker'); }
+            if (o._pfc > 1) {
+               o._pfc = 1;
+               histo.fFillColor = icolor;
+               this.#auto_exec += `SetFillColor(${icolor});;`;
+               this.deleteAttr('fill');
+            }
+            if (o._plc > 1) {
+               o._plc = 1;
+               histo.fLineColor = icolor;
+               this.#auto_exec += `SetLineColor(${icolor});;`;
+               this.deleteAttr('line');
+            }
+            if (o._pmc > 1) {
+               o._pmc = 1;
+               histo.fMarkerColor = icolor;
+               this.#auto_exec += `SetMarkerColor(${icolor});;`;
+               this.deleteAttr('marker');
+            }
          }
       }
 
@@ -2294,8 +2312,16 @@ class THistPainter extends ObjectPainter {
       }
 
       let gzmin = zmin, gzmax = zmax;
-      if (o.minimum !== kNoZoom) { zmin = o.minimum; gzmin = Math.min(gzmin, zmin); apply_min = true; }
-      if (o.maximum !== kNoZoom) { zmax = o.maximum; gzmax = Math.max(gzmax, zmax); apply_min = false; }
+      if (o.minimum !== kNoZoom) {
+         zmin = o.minimum;
+         gzmin = Math.min(gzmin, zmin);
+         apply_min = true;
+      }
+      if (o.maximum !== kNoZoom) {
+         zmax = o.maximum;
+         gzmax = Math.max(gzmax, zmax);
+         apply_min = false;
+      }
 
       if (zmin >= zmax) {
          if (apply_min || !zmin)

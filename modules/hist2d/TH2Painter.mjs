@@ -180,13 +180,19 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
    const polysort = new Int32Array(levels.length);
    let first = 0;
    // find first positive contour
-   for (ipoly = 0; ipoly < levels.length; ipoly++)
-      if (levels[ipoly] >= 0) { first = ipoly; break; }
+   for (ipoly = 0; ipoly < levels.length; ipoly++) {
+      if (levels[ipoly] >= 0) {
+         first = ipoly;
+         break;
+      }
+   }
 
    // store negative contours from 0 to minimum, then all positive contours
    k = 0;
-   for (ipoly = first-1; ipoly >= 0; ipoly--) { polysort[k] = ipoly; k++; }
-   for (ipoly = first; ipoly < levels.length; ipoly++) { polysort[k] = ipoly; k++; }
+   for (ipoly = first-1; ipoly >= 0; ipoly--)
+      polysort[k++] = ipoly;
+   for (ipoly = first; ipoly < levels.length; ipoly++)
+      polysort[k++] = ipoly;
 
    const xp = new Float32Array(2*npmax),
          yp = new Float32Array(2*npmax),
@@ -431,7 +437,12 @@ class Triangles3DHandler {
                   addCrossingPoint(x1, y1, z1, x2, y2, z2, levels[lvl], true);
             }
 
-            if (side2 === 0) { pntbuf[pntindx] = x2; pntbuf[pntindx+1] = y2; pntbuf[pntindx+2] = z2; pntindx += 3; }
+            if (side2 === 0) {
+               pntbuf[pntindx] = x2;
+               pntbuf[pntindx+1] = y2;
+               pntbuf[pntindx+2] = z2;
+               pntindx += 3;
+            }
 
             if (side2 !== side3) {
                // order is important, should move from 2->3 point, checked via lastpart
@@ -442,7 +453,12 @@ class Triangles3DHandler {
                   addCrossingPoint(x2, y2, z2, x3, y3, z3, levels[lvl], true);
             }
 
-            if (side3 === 0) { pntbuf[pntindx] = x3; pntbuf[pntindx+1] = y3; pntbuf[pntindx+2] = z3; pntindx += 3; }
+            if (side3 === 0) {
+               pntbuf[pntindx] = x3;
+               pntbuf[pntindx+1] = y3;
+               pntbuf[pntindx+2] = z3;
+               pntindx += 3;
+            }
 
             if (side3 !== side1) {
                // order is important, should move from 3->1 point, checked via lastpart
@@ -713,7 +729,10 @@ class TH2Painter extends THistPainter {
                p.setBinContent(i+1, sum);
             }
             p.fTitle = 'X projection ' + (jj1+1 === jj2 ? `bin ${jj2}` : `bins [${jj1+1} .. ${jj2}]`);
-            if (this.tt_handle) { first = this.tt_handle.i1+1; last = this.tt_handle.i2; }
+            if (this.tt_handle) {
+               first = this.tt_handle.i1+1;
+               last = this.tt_handle.i2;
+            }
          } else {
             for (let j = 0; j < this.nbinsy; ++j) {
                let sum = 0;
@@ -722,7 +741,10 @@ class TH2Painter extends THistPainter {
                p.setBinContent(j+1, sum);
             }
             p.fTitle = 'Y projection ' + (ii1+1 === ii2 ? `bin ${ii2}` : `bins [${ii1+1} .. ${ii2}]`);
-            if (this.tt_handle) { first = this.tt_handle.j1+1; last = this.tt_handle.j2; }
+            if (this.tt_handle) {
+               first = this.tt_handle.j1+1;
+               last = this.tt_handle.j2;
+            }
          }
 
          if (first < last) {
@@ -906,18 +928,28 @@ class TH2Painter extends THistPainter {
       for (let i = i1; i < i2; ++i) {
          for (let j = j1; j < j2; ++j) {
             if (histo.getBinContent(i + 1, j + 1) > min) {
-               if (i < ileft) ileft = i;
-               if (i >= iright) iright = i + 1;
-               if (j < jleft) jleft = j;
-               if (j >= jright) jright = j + 1;
+               if (i < ileft)
+                  ileft = i;
+               if (i >= iright)
+                  iright = i + 1;
+               if (j < jleft)
+                  jleft = j;
+               if (j >= jright)
+                  jright = j + 1;
             }
          }
       }
 
       let xmin, xmax, ymin, ymax, isany = false;
 
-      if ((ileft === iright-1) && (ileft > i1+1) && (iright < i2-1)) { ileft--; iright++; }
-      if ((jleft === jright-1) && (jleft > j1+1) && (jright < j2-1)) { jleft--; jright++; }
+      if ((ileft === iright-1) && (ileft > i1+1) && (iright < i2-1)) {
+         ileft--;
+         iright++;
+      }
+      if ((jleft === jright-1) && (jleft > j1+1) && (jright < j2-1)) {
+         jleft--;
+         jright++;
+      }
 
       if ((ileft > i1 || iright < i2) && (ileft < iright - 1)) {
          xmin = histo.fXaxis.GetBinLowEdge(ileft+1);
@@ -1693,8 +1725,14 @@ class TH2Painter extends THistPainter {
 
       const x = gr.fX, y = gr.fY,
          flush = () => {
-            if (acc_x) { grcmd += 'h' + acc_x; acc_x = 0; }
-            if (acc_y) { grcmd += 'v' + acc_y; acc_y = 0; }
+            if (acc_x) {
+               grcmd += 'h' + acc_x;
+               acc_x = 0;
+            }
+            if (acc_y) {
+               grcmd += 'v' + acc_y;
+               acc_y = 0;
+            }
          }, addPoint = (x1, y1, x2, y2) => {
             const len = Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
             textbin.sumx += (x1 + x2) * len / 2;
@@ -1793,7 +1831,10 @@ class TH2Painter extends THistPainter {
          const arr = (bin.fPoly._typename === clTMultiGraph) ? bin.fPoly.fGraphs.arr : [bin.fPoly];
          for (let k = 0; k < arr.length; ++k) {
             const gr = arr[k];
-            if (!gr0) { gr0 = gr; continue; }
+            if (!gr0) {
+               gr0 = gr;
+               continue;
+            }
             if (lineatt_match && ((gr0.fLineColor !== gr.fLineColor) || (gr0.fLineWidth !== gr.fLineWidth) || (gr0.fLineStyle !== gr.fLineStyle)))
                lineatt_match = false;
             if (fillatt_match && ((gr0.fFillColor !== gr.fFillColor) || (gr0.fFillStyle !== gr.fFillStyle)))
@@ -2369,10 +2410,24 @@ class TH2Painter extends THistPainter {
              res = swapXY ? `M${yy},${xx}` : `M${xx},${yy}`;
          while (i < l) {
             switch (a[i]) {
-               case 'Z': return res + 'z';
-               case 'V': if (yy !== a[i+1]) { res += (swapXY ? 'h' : 'v') + (a[i+1] - yy); yy = a[i+1]; } break;
-               case 'H': if (xx !== a[i+1]) { res += (swapXY ? 'v' : 'h') + (a[i+1] - xx); xx = a[i+1]; } break;
-               default: res += swapXY ? `l${a[i+1]-yy},${a[i]-xx}` : `l${a[i]-xx},${a[i+1]-yy}`; xx = a[i]; yy = a[i+1];
+               case 'Z':
+                  return res + 'z';
+               case 'V':
+                  if (yy !== a[i+1]) {
+                     res += (swapXY ? 'h' : 'v') + (a[i+1] - yy);
+                     yy = a[i+1];
+                  }
+                  break;
+               case 'H':
+                  if (xx !== a[i+1]) {
+                     res += (swapXY ? 'v' : 'h') + (a[i+1] - xx);
+                     xx = a[i+1];
+                  }
+                  break;
+               default:
+                  res += swapXY ? `l${a[i+1]-yy},${a[i]-xx}` : `l${a[i]-xx},${a[i+1]-yy}`;
+                  xx = a[i];
+                  yy = a[i+1];
             }
             i += 2;
          }
