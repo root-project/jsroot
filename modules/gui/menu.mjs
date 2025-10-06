@@ -1357,7 +1357,8 @@ class StandaloneMenu extends JSRootMenu {
          if (d.title) hovArea.setAttribute('title', d.title);
 
          item.appendChild(hovArea);
-         if (!d.text) d.text = 'item';
+         if (!d.text)
+            d.text = 'item';
 
          const text = doc.createElement('div');
          text.style = 'margin: 0; padding: 3px 7px; pointer-events: none; white-space: nowrap';

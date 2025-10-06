@@ -2614,7 +2614,8 @@ class ClonedNodes {
                let issimple = true;
                for (let k = 1; (k < clone.matrix.length) && issimple; ++k)
                   issimple = (clone.matrix[k] === ((k === 5) || (k === 10) || (k === 15) ? 1 : 0));
-               if (issimple) delete clone.matrix;
+               if (issimple)
+                  delete clone.matrix;
             }
             if (clone.matrix && (kind === kindEve))
                clone.abs_matrix = true;

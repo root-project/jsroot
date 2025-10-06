@@ -554,8 +554,10 @@ class RAxisPainter extends RObjectPainter {
 
    /** @summary checks if value inside graphical range, taking into account delta */
    isInsideGrRange(pos, delta1, delta2) {
-      if (!delta1) delta1 = 0;
-      if (delta2 === undefined) delta2 = delta1;
+      if (!delta1)
+         delta1 = 0;
+      if (delta2 === undefined)
+         delta2 = delta1;
       if (this.gr_range < 0)
          return (pos >= this.gr_range - delta2) && (pos <= delta1);
       return (pos >= -delta1) && (pos <= this.gr_range + delta2);
@@ -563,7 +565,8 @@ class RAxisPainter extends RObjectPainter {
 
    /** @summary returns graphical range */
    getGrRange(delta) {
-      if (!delta) delta = 0;
+      if (!delta)
+         delta = 0;
       if (this.gr_range < 0)
          return this.gr_range - delta;
       return this.gr_range + delta;

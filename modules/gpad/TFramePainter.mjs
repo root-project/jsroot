@@ -320,20 +320,22 @@ function addDragHandler(_painter, arg) {
          evnt.sourceEvent.stopPropagation();
 
          const handle = drag_rect.property('drag_handle'),
-               elem = d3_select(this);
-         let dx = evnt.dx, dy = evnt.dy;
-
-         if (arg.no_change_x) dx = 0;
-         if (arg.no_change_y) dy = 0;
+               elem = d3_select(this),
+               dx = arg.no_change_x ? 0 : evnt.dx,
+               dy = arg.no_change_y ? 0 : evnt.dy;
 
          if (elem.classed('js_nw_resize')) {
-            handle.acc_x1 += dx; handle.acc_y1 += dy;
+            handle.acc_x1 += dx;
+            handle.acc_y1 += dy;
          } else if (elem.classed('js_ne_resize')) {
-            handle.acc_x2 += dx; handle.acc_y1 += dy;
+            handle.acc_x2 += dx;
+            handle.acc_y1 += dy;
          } else if (elem.classed('js_sw_resize')) {
-            handle.acc_x1 += dx; handle.acc_y2 += dy;
+            handle.acc_x1 += dx;
+            handle.acc_y2 += dy;
          } else if (elem.classed('js_se_resize')) {
-            handle.acc_x2 += dx; handle.acc_y2 += dy;
+            handle.acc_x2 += dx;
+            handle.acc_y2 += dy;
          } else if (elem.classed('js_w_resize'))
             handle.acc_x1 += dx;
          else if (elem.classed('js_n_resize'))
@@ -452,8 +454,10 @@ class TooltipHandler extends ObjectPainter {
             let diff = false;
             if (!hprev || (hprev.lines.length !== hint.lines.length))
                continue;
-            for (let l = 0; l < hint.lines.length && !diff; ++l)
-               if (hprev.lines[l] !== hint.lines[l]) diff = true;
+            for (let l = 0; l < hint.lines.length && !diff; ++l) {
+               if (hprev.lines[l] !== hint.lines[l])
+                  diff = true;
+            }
             if (!diff) {
                hints[n] = null;
                break;

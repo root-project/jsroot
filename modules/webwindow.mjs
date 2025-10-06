@@ -63,7 +63,8 @@ class LongPollSocket {
          this.connid = 'close';
          reqmode = 'text;sync'; // use sync mode to close connection before browser window closed
       } else if ((this.connid === null) || (typeof this.connid !== 'number')) {
-         if (!browser.qt6) console.error('No connection');
+         if (!browser.qt6)
+            console.error('No connection');
       } else {
          url += '?connection=' + this.connid;
          if (this.handle) url += '&' + this.handle.getConnArgs(this.counter++);
@@ -99,7 +100,8 @@ class LongPollSocket {
             const u8Arr = new Uint8Array(res);
             let str = '', i = 0, offset = u8Arr.length;
             if (offset < 4) {
-               if (!browser.qt6) console.error(`longpoll got short message in raw mode ${offset}`);
+               if (!browser.qt6)
+                  console.error(`longpoll got short message in raw mode ${offset}`);
                return this.handle.processRequest(null);
             }
 
@@ -512,7 +514,8 @@ class WebWindowHandle {
      * @private */
    sendLast(kind, tmout, msg) {
       let d = this._delayed;
-      if (!d) d = this._delayed = {};
+      if (!d)
+         d = this._delayed = {};
       d[kind] = msg;
       if (!d[`${kind}_handler`])
          d[`${kind}_handler`] = setTimeout(() => { delete d[`${kind}_handler`]; this.send(d[kind]); }, tmout);

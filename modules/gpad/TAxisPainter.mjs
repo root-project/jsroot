@@ -361,7 +361,8 @@ const AxisPainterMethods = {
       if (item.min >= item.max)
          return;
 
-      if (item.reverse) dmin = 1 - dmin;
+      if (item.reverse)
+         dmin = 1 - dmin;
 
       if ((dmin > 0) && (dmin < 1)) {
          if (this.log) {

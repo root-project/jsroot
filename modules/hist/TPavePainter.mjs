@@ -241,8 +241,10 @@ class TPavePainter extends ObjectPainter {
 
             if (isFunc(main?.fillStatistic)) {
                let dostat = pt.fOptStat, dofit = pt.fOptFit;
-               if (pt.TestBit(kTakeStyle) || !Number.isInteger(dostat)) dostat = gStyle.fOptStat;
-               if (pt.TestBit(kTakeStyle) || !Number.isInteger(dofit)) dofit = gStyle.fOptFit;
+               if (pt.TestBit(kTakeStyle) || !Number.isInteger(dostat))
+                  dostat = gStyle.fOptStat;
+               if (pt.TestBit(kTakeStyle) || !Number.isInteger(dofit))
+                  dofit = gStyle.fOptFit;
 
                // we take statistic from main painter
                if (main.fillStatistic(this, dostat, dofit)) {

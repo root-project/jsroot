@@ -147,7 +147,8 @@ function floatToString(value, fmt, ret_fmt) {
          l++;
 
       let diff = sg.length - l - prec;
-      if (sg.indexOf('.') > l) diff--;
+      if (sg.indexOf('.') > l)
+         diff--;
 
       if (diff) {
          prec -= diff;
@@ -629,10 +630,12 @@ class BasePainter {
       let do_resize = false;
 
       if (can_resize === 'height')
-         if (height_factor && Math.abs(rect_origin.width * height_factor - rect_origin.height) > 0.1 * rect_origin.width) do_resize = true;
+         if (height_factor && Math.abs(rect_origin.width * height_factor - rect_origin.height) > 0.1 * rect_origin.width)
+            do_resize = true;
 
       if (((rect_origin.height <= lmt) || (rect_origin.width <= lmt)) &&
-         can_resize && can_resize !== 'false') do_resize = true;
+         can_resize && can_resize !== 'false')
+         do_resize = true;
 
       if (do_resize && (enlarge !== 'on')) {
          // if zero size and can_resize attribute set, change container size

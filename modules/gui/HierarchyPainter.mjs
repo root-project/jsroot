@@ -1384,13 +1384,16 @@ class HierarchyPainter extends BasePainter {
 
       if ('_value' in hitem) {
          const d3p = d3line.append('p');
-         if ('_vclass' in hitem) d3p.attr('class', hitem._vclass);
-         if (!hitem._isopen) d3p.html(hitem._value);
+         if ('_vclass' in hitem)
+            d3p.attr('class', hitem._vclass);
+         if (!hitem._isopen)
+            d3p.html(hitem._value);
       }
 
       if (has_childs && (isroot || hitem._isopen)) {
          const d3chlds = d3cont.append('div').attr('class', 'h_childs');
-         if (this.show_overflow) d3chlds.style('overflow', 'initial');
+         if (this.show_overflow)
+            d3chlds.style('overflow', 'initial');
          for (let i = 0; i < hitem._childs.length; ++i) {
             const chld = hitem._childs[i];
             chld._parent = hitem;
@@ -2215,7 +2218,8 @@ class HierarchyPainter extends BasePainter {
 
             if (handle?.draw_field && obj[handle.draw_field]) {
                obj = obj[handle.draw_field];
-               if (!drawopt) drawopt = handle.draw_field_opt || '';
+               if (!drawopt)
+                  drawopt = handle.draw_field_opt || '';
                handle = obj._typename ? getDrawHandle(getKindForType(obj._typename)) : null;
             }
 
@@ -2502,7 +2506,8 @@ class HierarchyPainter extends BasePainter {
                   dropitems[i][j] = dropitems[i][j].slice(0, pos) + items[i].slice(pos);
 
                elem = h.findItem({ name: dropitems[i][j], check_keys: true });
-               if (elem) dropitems[i][j] = h.itemFullName(elem);
+               if (elem)
+                  dropitems[i][j] = h.itemFullName(elem);
             }
 
             if ((options[i].at(0) === '[') && (options[i].at(-1) === ']')) {

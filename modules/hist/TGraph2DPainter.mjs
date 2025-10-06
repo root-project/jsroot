@@ -376,7 +376,8 @@ class TGraphDelaunay {
       phi1 = Math.atan2(dy1, dx1);
       phi2 = Math.atan2(dy2, dx2);
       dphi = (phi1-phi2)-(Math.floor((phi1-phi2)/(Math.PI*2))*Math.PI*2);
-      if (dphi < 0) dphi += Math.PI*2;
+      if (dphi < 0)
+         dphi += Math.PI*2;
       lastdphi = dphi;
       for (n=1; n<=ntry; n++) {
          if (this.fNhull > 0) {
@@ -418,7 +419,8 @@ class TGraphDelaunay {
                      phi2 = Math.atan2(dy3, dx3);
                   }
                   dphi = (phi1-phi2)-(Math.floor((phi1-phi2)/(Math.PI*2))*Math.PI*2);
-                  if (dphi < 0) dphi += Math.PI*2;
+                  if (dphi < 0)
+                     dphi += Math.PI*2;
                   if ((dphi - Math.PI)*(lastdphi - Math.PI) < 0) {
                      // The addition of point m means the angle n1-e-n2 has risen
                      // above 180 degrees, the point is in the hull.
