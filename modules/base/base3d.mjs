@@ -549,7 +549,8 @@ async function createRender3D(width, height, render3d, args) {
       }).then(node_gl => {
          internals._node_gl = node_gl;
          const gl = node_gl?.default(width, height, { preserveDrawingBuffer: true });
-         if (!gl) throw Error('Fail to create headless-gl');
+         if (!gl)
+            throw Error('Fail to create headless-gl');
          args.context = gl;
          gl.canvas = args.canvas;
 

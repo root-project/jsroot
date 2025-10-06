@@ -595,7 +595,8 @@ class TabsDisplay extends MDIDisplay {
 
       if (only_visible) {
          const active = this.getActiveFrame();
-         if (active) userfunc(active);
+         if (active)
+            userfunc(active);
          return;
       }
 

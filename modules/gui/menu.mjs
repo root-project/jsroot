@@ -289,7 +289,8 @@ class JSRootMenu {
             name = `pal ${id}`;
          else if (!title)
             title = name;
-         if (title) title += `, code ${id}`;
+         if (title)
+            title += `, code ${id}`;
          this.addchk((id === curr) || more, '<nobr>' + name + '</nobr>', id, set_func, title || name);
       };
 

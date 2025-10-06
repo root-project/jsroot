@@ -3168,7 +3168,8 @@ class TFramePainter extends FrameInteractive {
       if (unzoom_v) {
          if (this[name_min] !== this[name_max]) {
             changed = true;
-            if (name === 'y') unzoomHistogramYRange(this.getMainPainter());
+            if (name === 'y')
+               unzoomHistogramYRange(this.getMainPainter());
          }
          this[name_min] = this[name_max] = 0;
       }

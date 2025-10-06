@@ -2762,7 +2762,8 @@ class HierarchyPainter extends BasePainter {
                if (!prnt._isopen) {
                   if (force) {
                      prnt._isopen = true;
-                     if (update.indexOf(prnt) < 0) update.push(prnt);
+                     if (update.indexOf(prnt) < 0)
+                        update.push(prnt);
                   } else {
                      hitem = prnt; break;
                   }
@@ -3245,7 +3246,8 @@ class HierarchyPainter extends BasePainter {
       if (!req)
          req = 'root.json.gz?compact=23';
 
-      if (url) url += '/';
+      if (url)
+         url += '/';
       url += req;
 
       return new Promise(resolveFunc => {

@@ -53,13 +53,15 @@ class LongPollSocket {
       let url = this.path, reqmode = 'buf', post = null;
       if (kind === 'connect') {
          url += this.raw ? '?raw_connect' : '?txt_connect';
-         if (this.handle) url += '&' + this.handle.getConnArgs(this.counter++);
+         if (this.handle)
+            url += '&' + this.handle.getConnArgs(this.counter++);
          this.connid = 'connect';
       } else if (kind === 'close') {
          if ((this.connid === null) || (this.connid === 'close'))
             return;
          url += `?connection=${this.connid}&close`;
-         if (this.handle) url += '&' + this.handle.getConnArgs(this.counter++);
+         if (this.handle)
+            url += '&' + this.handle.getConnArgs(this.counter++);
          this.connid = 'close';
          reqmode = 'text;sync'; // use sync mode to close connection before browser window closed
       } else if ((this.connid === null) || (typeof this.connid !== 'number')) {
@@ -67,8 +69,10 @@ class LongPollSocket {
             console.error('No connection');
       } else {
          url += '?connection=' + this.connid;
-         if (this.handle) url += '&' + this.handle.getConnArgs(this.counter++);
-         if (kind === 'dummy') url += '&dummy';
+         if (this.handle)
+            url += '&' + this.handle.getConnArgs(this.counter++);
+         if (kind === 'dummy')
+            url += '&dummy';
       }
 
       if (data) {

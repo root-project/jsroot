@@ -685,20 +685,28 @@
             url = '?' + entry.url.replace(/\$\$\$/g, filepath);
          } else if (entry.items) {
             url = `?nobrowser&file=${filename}`;
-            if (entry.layout) url += `&layout=${entry.layout}`;
+            if (entry.layout)
+               url += `&layout=${entry.layout}`;
             url += `&items=[${entry.items.join(',')}]`;
-            if (entry.opts) url += `&opts=[${entry.opts.join(',')}]`;
-            if (entry.mathjax) url += '&mathjax';
-            if (entry.latex) url += `&latex=${entry.latex}`;
-            if (entry.style) url += `&style=${entry.style}`;
+            if (entry.opts)
+               url += `&opts=[${entry.opts.join(',')}]`;
+            if (entry.mathjax)
+               url += '&mathjax';
+            if (entry.latex)
+               url += `&latex=${entry.latex}`;
+            if (entry.style)
+               url += `&style=${entry.style}`;
             url += tz(entry);
          } else if (entry.asurl) {
             url = (entry.asurl === 'browser') ? '?' : '?nobrowser&';
             url += jsonname ? `json=${jsonname}` : `file=${filename}&item=${itemname}`;
             url += `&opt=${opt}`;
-            if (entry.mathjax) url += '&mathjax';
-            if (entry.latex) url += `&latex=${entry.latex}`;
-            if (entry.style) url += `&style=${entry.style}`;
+            if (entry.mathjax)
+               url += '&mathjax';
+            if (entry.latex)
+               url += `&latex=${entry.latex}`;
+            if (entry.style)
+               url += `&style=${entry.style}`;
             url += tz(entry);;
          }
 
@@ -799,12 +807,17 @@
                   style = entry.style;
                } else if ('items' in entry) {
                   url = `?nobrowser&file=${filename}`;
-                  if (entry.layout) url += `&layout=${entry.layout}`;
+                  if (entry.layout)
+                     url += `&layout=${entry.layout}`;
                   url += `&items=[${entry.items.join(',')}]`;
-                  if (entry.opts) url += `&opts=[${entry.opts.join(',')}]`;
-                  if (entry.mathjax) url += '&mathjax';
-                  if (entry.latex) url += `&latex=${entry.latex}`;
-                  if (entry.style) url += `&style=${entry.style}`;
+                  if (entry.opts)
+                     url += `&opts=[${entry.opts.join(',')}]`;
+                  if (entry.mathjax)
+                     url += '&mathjax';
+                  if (entry.latex)
+                     url += `&latex=${entry.latex}`;
+                  if (entry.style)
+                     url += `&style=${entry.style}`;
                }
             }
 
@@ -830,9 +843,12 @@
                   url = prefix + `json=${jsonname}`;
                else
                   url = prefix + `file=${filename}&item=${itemname}`;
-               if (entry.mathjax) url += '&mathjax';
-               if (entry.latex) url += `&latex=${entry.latex}`;
-               if (entry.style) url += `&style=${entry.style}`;
+               if (entry.mathjax)
+                  url += '&mathjax';
+               if (entry.latex)
+                  url += `&latex=${entry.latex}`;
+               if (entry.style)
+                  url += `&style=${entry.style}`;
             }
 
             if (url)
@@ -850,7 +866,8 @@
 
             if (settings.DarkMode) {
                aaa.href += '&dark';
-               if (url) url += '&dark';
+               if (url)
+                  url += '&dark';
             }
 
             if (extra_opts)

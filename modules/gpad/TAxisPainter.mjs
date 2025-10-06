@@ -698,7 +698,8 @@ class TAxisPainter extends ObjectPainter {
 
       if (this.fixed_ticks) {
          this.fixed_ticks.forEach(v => {
-            if ((v >= this.scale_min) && (v <= this.scale_max)) ticks.push(v);
+            if ((v >= this.scale_min) && (v <= this.scale_max))
+               ticks.push(v);
          });
       } else if (this.kind === kAxisLabels) {
          handle.lbl_pos = [];
@@ -1157,7 +1158,8 @@ class TAxisPainter extends ObjectPainter {
          let tlen = 0;
          for (let nmajor = 0; nmajor < lbl_pos.length; ++nmajor) {
             const text = this.format(lbl_pos[nmajor], true);
-            if (text) tlen = Math.max(tlen, text.length);
+            if (text)
+               tlen = Math.max(tlen, text.length);
          }
 
          if ((tlen > 2) && (tlen <= 5) && (lbl_pos.length * labelsFont.size > w / 2)) {

@@ -3109,7 +3109,8 @@ class TH2Painter extends THistPainter {
                   isint = false;
             }
          }
-         if (sum > 0) used.push(i);
+         if (sum > 0)
+            used.push(i);
          fullsum += sum;
       }
 

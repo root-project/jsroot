@@ -422,7 +422,8 @@ class RPadPainter extends RObjectPainter {
    forEachPainterInPad(userfunc, kind) {
       if (!kind)
          kind = 'all';
-      if (kind !== 'objects') userfunc(this);
+      if (kind !== 'objects')
+         userfunc(this);
       for (let k = 0; k < this.#painters.length; ++k) {
          const sub = this.#painters[k];
          if (isFunc(sub.forEachPainterInPad)) {
