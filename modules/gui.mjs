@@ -129,11 +129,22 @@ function readStyleFromURL(url) {
    if (has_toolbar) {
       const toolbar = d.get('toolbar', '');
       let val = null;
-      if (toolbar.indexOf('popup') >= 0) val = 'popup';
-      if (toolbar.indexOf('left') >= 0) { settings.ToolBarSide = 'left'; val = 'popup'; }
-      if (toolbar.indexOf('right') >= 0) { settings.ToolBarSide = 'right'; val = 'popup'; }
-      if (toolbar.indexOf('vert') >= 0) { settings.ToolBarVert = true; val = 'popup'; }
-      if (toolbar.indexOf('show') >= 0) val = true;
+      if (toolbar.indexOf('popup') >= 0)
+         val = 'popup';
+      if (toolbar.indexOf('left') >= 0) {
+         settings.ToolBarSide = 'left';
+         val = 'popup';
+      }
+      if (toolbar.indexOf('right') >= 0) {
+         settings.ToolBarSide = 'right';
+         val = 'popup';
+      }
+      if (toolbar.indexOf('vert') >= 0) {
+         settings.ToolBarVert = true;
+         val = 'popup';
+      }
+      if (toolbar.indexOf('show') >= 0)
+         val = true;
       settings.ToolBar = val || ((toolbar.indexOf('0') < 0) && (toolbar.indexOf('false') < 0) && (toolbar.indexOf('off') < 0));
    }
 

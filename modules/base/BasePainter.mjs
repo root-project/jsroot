@@ -392,8 +392,14 @@ function buildSvgCurve(p, args) {
       let acc_x = 0, acc_y = 0, currx = Math.round(p[0].grx), curry = Math.round(p[0].gry);
 
       const flush = () => {
-         if (acc_x) { path += 'h' + acc_x; acc_x = 0; }
-         if (acc_y) { path += 'v' + acc_y; acc_y = 0; }
+         if (acc_x) {
+            path += 'h' + acc_x;
+            acc_x = 0;
+         }
+         if (acc_y) {
+            path += 'v' + acc_y;
+            acc_y = 0;
+         }
       };
 
       for (let n = 1; n < npnts; ++n) {

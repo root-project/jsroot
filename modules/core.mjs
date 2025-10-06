@@ -964,7 +964,10 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
 
       let method = 'GET', is_async = true;
       const p = kind.indexOf(';sync');
-      if (p > 0) { kind = kind.slice(0, p); is_async = false; }
+      if (p > 0) {
+         kind = kind.slice(0, p);
+         is_async = false;
+      }
       switch (kind) {
          case 'head': method = 'HEAD'; break;
          case 'posttext': method = 'POST'; kind = 'text'; break;

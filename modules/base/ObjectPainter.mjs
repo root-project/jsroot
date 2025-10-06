@@ -1119,7 +1119,10 @@ class ObjectPainter extends BasePainter {
             // handle simple text drawing
 
             if (isNodeJs()) {
-               if (arg.scale && (f > 0)) { arg.box.width *= 1/f; arg.box.height *= 1/f; }
+               if (arg.scale && (f > 0)) {
+                  arg.box.width *= 1/f;
+                  arg.box.height *= 1/f;
+               }
             } else if (!arg.plain && !arg.fast) {
                // exact box dimension only required when complex text was build
                arg.box = getElementRect(txt, 'bbox');

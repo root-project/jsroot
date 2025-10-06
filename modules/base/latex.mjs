@@ -539,7 +539,10 @@ function parseLatex(node, arg, label, curr) {
 
       for (let n = 0; n < latex_features.length; ++n) {
          const pos = label.indexOf(latex_features[n].name);
-         if ((pos >= 0) && (pos < best)) { best = pos; found = latex_features[n]; }
+         if ((pos >= 0) && (pos < best)) {
+            best = pos;
+            found = latex_features[n];
+         }
       }
 
       if (best > 0) {
@@ -903,14 +906,23 @@ function parseLatex(node, arg, label, curr) {
 
       if (found.arg) {
          const pos = label.indexOf(']{');
-         if (pos < 0) { console.log('missing argument for ', found.name); return false; }
+         if (pos < 0) {
+            console.log('missing argument for ', found.name);
+            return false;
+         }
          foundarg = label.slice(0, pos);
          if (found.arg === 'int') {
             foundarg = parseInt(foundarg);
-            if (!Number.isInteger(foundarg)) { console.log('wrong int argument', label.slice(0, pos)); return false; }
+            if (!Number.isInteger(foundarg)) {
+               console.log('wrong int argument', label.slice(0, pos));
+               return false;
+            }
          } else if (found.arg === 'float') {
             foundarg = parseFloat(foundarg);
-            if (!Number.isFinite(foundarg)) { console.log('wrong float argument', label.slice(0, pos)); return false; }
+            if (!Number.isFinite(foundarg)) {
+               console.log('wrong float argument', label.slice(0, pos));
+               return false;
+            }
          }
          label = label.slice(pos + 2);
       }
@@ -1365,7 +1377,10 @@ function translateMath(str, kind, color, painter) {
       let clean = '', first = true;
       while (str) {
          let p = str.indexOf('#color[');
-         if ((p < 0) && first) { clean = str; break; }
+         if ((p < 0) && first) {
+            clean = str;
+            break;
+         }
          first = false;
          if (p) {
             const norm = (p < 0) ? str : str.slice(0, p);

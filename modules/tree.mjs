@@ -1057,13 +1057,25 @@ class TDrawSelector extends TSelector {
       let names = [], nbr1 = 0, nbr2 = 0, prev = 0;
       for (pos = 0; pos < expr.length; ++pos) {
          switch (expr[pos]) {
-            case '(': nbr1++; break;
-            case ')': nbr1--; break;
-            case '[': nbr2++; break;
-            case ']': nbr2--; break;
+            case '(':
+               nbr1++;
+               break;
+            case ')':
+               nbr1--;
+               break;
+            case '[':
+               nbr2++;
+               break;
+            case ']':
+               nbr2--;
+               break;
             case ':':
-               if (expr[pos + 1] === ':') { pos++; continue; }
-               if (!nbr1 && !nbr2 && (pos > prev)) names.push(expr.slice(prev, pos));
+               if (expr[pos + 1] === ':') {
+                   pos++;
+                   continue;
+                  }
+               if (!nbr1 && !nbr2 && (pos > prev))
+                  names.push(expr.slice(prev, pos));
                prev = pos + 1;
                break;
          }
@@ -1433,7 +1445,10 @@ class TDrawSelector extends TSelector {
          }
 
          mask *= 2;
-         if (mask >= 0x100) { mask = 1; ++b; }
+         if (mask >= 0x100) {
+            mask = 1;
+            ++b;
+         }
       }
    }
 
