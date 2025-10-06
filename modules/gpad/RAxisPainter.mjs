@@ -505,8 +505,10 @@ class RAxisPainter extends RObjectPainter {
                const p = this.vertical ? acc_y : acc_x;
                let set_x, set_y, besti = 0;
 
-               for (let i = 1; i < 3; ++i)
-                  if (Math.abs(p - alt_pos[i]) < Math.abs(p - alt_pos[besti])) besti = i;
+               for (let i = 1; i < 3; ++i) {
+                  if (Math.abs(p - alt_pos[i]) < Math.abs(p - alt_pos[besti]))
+                     besti = i;
+               }
 
                if (this.vertical) {
                   set_x = acc_x;

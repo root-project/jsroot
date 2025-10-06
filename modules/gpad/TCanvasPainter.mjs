@@ -800,10 +800,14 @@ class TCanvasPainter extends TPadPainter {
    /** @summary Return actual TCanvas status bits  */
    getStatusBits() {
       let bits = 0;
-      if (this.hasEventStatus()) bits |= kShowEventStatus;
-      if (this.hasGed()) bits |= kShowEditor;
-      if (this.isTooltipAllowed()) bits |= kShowToolTips;
-      if (this.use_openui) bits |= kMenuBar;
+      if (this.hasEventStatus())
+         bits |= kShowEventStatus;
+      if (this.hasGed())
+         bits |= kShowEditor;
+      if (this.isTooltipAllowed())
+         bits |= kShowToolTips;
+      if (this.use_openui)
+         bits |= kMenuBar;
       return bits;
    }
 

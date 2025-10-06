@@ -120,8 +120,10 @@ function readStyleFromURL(url) {
    else
       get_bool('progress', 'ProgressBox', 'modal');
 
-   if (d.has('notouch')) browser.touches = false;
-   if (d.has('adjframe')) settings.CanAdjustFrame = true;
+   if (d.has('notouch'))
+      browser.touches = false;
+   if (d.has('adjframe'))
+      settings.CanAdjustFrame = true;
 
    const has_toolbar = d.has('toolbar');
    if (has_toolbar) {

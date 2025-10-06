@@ -1532,8 +1532,10 @@ function _meshLegoToolTip(intersect) {
    tip.y2 = Math.max(y1, y2);
 
    let binz1 = this.baseline, binz2 = tip.value;
-   if (histo.$baseh) binz1 = histo.$baseh.getBinContent(tip.ix, tip.iy);
-   if (binz2 < binz1) [binz1, binz2] = [binz2, binz1];
+   if (histo.$baseh)
+      binz1 = histo.$baseh.getBinContent(tip.ix, tip.iy);
+   if (binz2 < binz1)
+      [binz1, binz2] = [binz2, binz1];
 
    tip.z1 = fp.grz(Math.max(this.zmin, binz1));
    tip.z2 = fp.grz(Math.min(this.zmax, binz2));

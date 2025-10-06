@@ -2681,7 +2681,8 @@ class TGeoPainter extends ObjectPainter {
 
       const need_render = !box;
 
-      if (!box) box = this.getGeomBoundingBox();
+      if (!box)
+         box = this.getGeomBoundingBox();
 
       const sizex = box.max.x - box.min.x,
           sizey = box.max.y - box.min.y,
@@ -4774,8 +4775,10 @@ class TGeoPainter extends ObjectPainter {
          }
 
          if (this.ctrl._axis === 2) {
-            for (let k = 0; k < 6; ++k)
-               if ((k % 3) !== naxis) buf[k] = center[k%3];
+            for (let k = 0; k < 6; ++k) {
+               if ((k % 3) !== naxis)
+                  buf[k] = center[k%3];
+            }
          }
 
          const lineMaterial = new THREE.LineBasicMaterial({ color });

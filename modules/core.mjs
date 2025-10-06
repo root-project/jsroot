@@ -1805,8 +1805,10 @@ function getMethods(typename, obj) {
          //    if the sum of squares of weights has been defined (via Sumw2),
          //    this function returns the sqrt(sum of w2).
          //    otherwise it returns the sqrt(contents) for this bin.
-         if (bin >= this.fNcells) bin = this.fNcells - 1;
-         if (bin < 0) bin = 0;
+         if (bin >= this.fNcells)
+            bin = this.fNcells - 1;
+         if (bin < 0)
+            bin = 0;
          if (bin < this.fSumw2.length)
             return Math.sqrt(this.fSumw2[bin]);
          return Math.sqrt(Math.abs(this.fArray[bin]));
