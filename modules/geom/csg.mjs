@@ -403,8 +403,10 @@ class Node {
          this.polygons[i].flip();
 
       this.divider.flip();
-      if (this.front) this.front.invert();
-      if (this.back) this.back.invert();
+      if (this.front)
+         this.front.invert();
+      if (this.back)
+         this.back.invert();
 
       const temp = this.front;
       this.front = this.back;

@@ -316,12 +316,18 @@ class TMultiGraphPainter extends ObjectPainter {
       this.#is3d = d.check('3D');
       this.#auto = '';
       this.#pads = d.check('PADS');
-      ['PFC', 'PLC', 'PMC'].forEach(f => { if (d.check(f)) this.#auto += ' ' + f; });
+      ['PFC', 'PLC', 'PMC'].forEach(f => {
+         if (d.check(f))
+            this.#auto += ' ' + f;
+      });
 
       let hopt = '', pad_painter = null;
       if (d.check('FB') && this.is3d())
          hopt += 'FB'; // will be directly combined with LEGO
-      PadDrawOptions.forEach(name => { if (d.check(name)) hopt += ';' + name; });
+      PadDrawOptions.forEach(name => {
+         if (d.check(name))
+            hopt += ';' + name;
+      });
 
       this.#restopt = d.remain();
 

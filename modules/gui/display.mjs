@@ -1462,8 +1462,10 @@ class BrowserLayout {
      * @desc used together with browser buttons */
    toggleKind(browser_kind) {
       if (this.browser_visible !== 'changing') {
-         if (browser_kind === this.browser_kind) this.toggleBrowserVisisbility();
-                                            else this.toggleBrowserKind(browser_kind);
+         if (browser_kind === this.browser_kind)
+            this.toggleBrowserVisisbility();
+         else
+            this.toggleBrowserKind(browser_kind);
       }
    }
 
@@ -1616,7 +1618,8 @@ class BrowserLayout {
          main.select('.jsroot_v_separator').style('left', vsepar+'px').style('width', w+'px');
       }
 
-      if (redraw) this.checkResize();
+      if (redraw)
+         this.checkResize();
    }
 
    /** @summary Show status information inside special fields of browser layout */

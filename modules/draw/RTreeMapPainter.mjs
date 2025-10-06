@@ -119,12 +119,14 @@ class RTreeMapPainter extends ObjectPainter {
       },
        click = () => {
          const obj = this.getObject(), nodeIndex = obj.fNodes.findIndex((elem) => elem === node);
-         if (nodeIndex === this.rootIndex) this.rootIndex = this.parentIndices[nodeIndex];
+         if (nodeIndex === this.rootIndex)
+            this.rootIndex = this.parentIndices[nodeIndex];
          else {
             let parentIndex = nodeIndex;
             while (this.parentIndices[parentIndex] !== this.rootIndex) parentIndex = this.parentIndices[parentIndex];
             this.rootIndex = parentIndex;
-            if (obj.fNodes[parentIndex].fNChildren === 0) this.rootIndex = this.parentIndices[nodeIndex];
+            if (obj.fNodes[parentIndex].fNChildren === 0)
+               this.rootIndex = this.parentIndices[nodeIndex];
          }
          this.redraw();
       };
@@ -147,7 +149,7 @@ class RTreeMapPainter extends ObjectPainter {
 
    attachPointerEvents(element, events)
    {
-      for (const [key, value] of Object.entries(events)) 
+      for (const [key, value] of Object.entries(events))
          element.on(key, value);
    }
 
@@ -354,7 +356,7 @@ class RTreeMapPainter extends ObjectPainter {
       const obj = this.getObject();
       this.parentIndices = new Array(obj.fNodes.length).fill(0);
       obj.fNodes.forEach((node, index) => {
-         for (let i = node.fChildrenIdx; i < node.fChildrenIdx + node.fNChildren; i++) 
+         for (let i = node.fChildrenIdx; i < node.fChildrenIdx + node.fNChildren; i++)
             this.parentIndices[i] = index;
       });
    }

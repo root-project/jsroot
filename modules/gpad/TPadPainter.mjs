@@ -1548,7 +1548,8 @@ class TPadPainter extends ObjectPainter {
 
          if (this.isCanvas()) {
             menu.addSettingsMenu(false, false, arg => {
-               if (arg === 'dark') this.changeDarkMode();
+               if (arg === 'dark')
+                  this.changeDarkMode();
             });
          }
       }

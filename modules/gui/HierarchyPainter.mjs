@@ -114,7 +114,7 @@ function getVersionStr(v) {
   * @desc used to draw all items from TList or TObjArray inserted into the TCanvas list of primitives
   * @private */
 async function drawList(dom, lst, opt) {
-   if (!lst || !lst.arr)
+   if (!lst?.arr)
       return null;
 
    const handle = {
@@ -127,7 +127,8 @@ async function drawList(dom, lst, opt) {
             if (!item)
                continue;
             return draw(this.dom, item, opt2).then(p => {
-               if (p && !this.painter) this.painter = p;
+               if (p && !this.painter)
+                  this.painter = p;
                return this.draw_next(); // reenter loop
             });
          }
@@ -1449,7 +1450,8 @@ class HierarchyPainter extends BasePainter {
          return true;
       }
 
-      if (!h) this.refreshHtml();
+      if (!h)
+         this.refreshHtml();
       return false;
    }
 
@@ -2824,7 +2826,8 @@ class HierarchyPainter extends BasePainter {
 
          if (hitem._childs && hitem._isopen) {
             hitem._isopen = false;
-            if (!silent) this.updateTreeNode(hitem, d3cont);
+            if (!silent)
+               this.updateTreeNode(hitem, d3cont);
             return;
          }
 
@@ -3749,10 +3752,12 @@ class HierarchyPainter extends BasePainter {
          status = true;
       else if (status !== null) {
          statush = parseInt(status);
-         if (!Number.isInteger(statush) || (statush < 5)) statush = 0;
+         if (!Number.isInteger(statush) || (statush < 5))
+            statush = 0;
          status = true;
       }
-      if (this.no_select === '') this.no_select = true;
+      if (this.no_select === '')
+         this.no_select = true;
 
       if (!browser_kind)
          browser_kind = 'fix';
@@ -3946,7 +3951,8 @@ class HierarchyPainter extends BasePainter {
          // this is case when browser created,
          // if update_html specified, hidden state will be toggled
 
-         if (update_html) this.brlayout.toggleKind(browser_kind);
+         if (update_html)
+            this.brlayout.toggleKind(browser_kind);
 
          return true;
       }
@@ -4022,7 +4028,8 @@ class HierarchyPainter extends BasePainter {
          main.select('.gui_ResetUIBtn').on('click', () => this.clearHierarchy(true));
 
          main.select('.gui_urlToLoad').on('keyup', evnt => {
-            if (evnt.code === 'Enter') this.readSelectedFile();
+            if (evnt.code === 'Enter')
+               this.readSelectedFile();
          });
 
          main.select('.gui_localFile').on('change', evnt => {

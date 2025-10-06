@@ -745,7 +745,8 @@ class TDrawVariable {
          }
       }
 
-      if (!this.kind) this.kind = typeof this.value[0];
+      if (!this.kind)
+         this.kind = typeof this.value[0];
    }
 
    /** @summary Get variable */

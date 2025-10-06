@@ -87,7 +87,8 @@ class TF1Painter extends TH1Painter {
 
       if (this._webcanv_hist) {
          const h0 = this.getPadPainter()?.findInPrimitives('Func', clTH1D);
-         if (h0) this.updateAxes(histo, h0, this.getFramePainter());
+         if (h0)
+            this.updateAxes(histo, h0, this.getFramePainter());
       }
 
       this.setFunc(obj);

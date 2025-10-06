@@ -147,12 +147,12 @@ class RAxisPainter extends RObjectPainter {
       this.nticks2 = (ndiv % 10000 - this.nticks) / 100;
       this.nticks3 = Math.floor(ndiv/10000);
 
-      if (this.nticks > 20) this.nticks = 20;
+      this.nticks = Math.min(this.nticks, 20);
 
       const gr_range = Math.abs(this.gr_range) || 100;
 
       if (this.kind === kAxisTime) {
-         if (this.nticks > 8) this.nticks = 8;
+         this.nticks = Math.min(this.nticks, 8);
 
          const scale_range = this.scale_max - this.scale_min,
                tf2 = chooseTimeFormat(scale_range / gr_range, false);
@@ -172,7 +172,8 @@ class RAxisPainter extends RObjectPainter {
             this.nticks2 = 1;
          }
          this.noexp = this.v7EvalAttr('noexp', false);
-         if ((this.scale_max < 300) && (this.scale_min > 0.3) && (this.logbase === 10)) this.noexp = true;
+         if ((this.scale_max < 300) && (this.scale_min > 0.3) && (this.logbase === 10))
+            this.noexp = true;
          this.moreloglabels = this.v7EvalAttr('moreloglbls', false);
 
          this.format = this.formatLog;
@@ -222,7 +223,8 @@ class RAxisPainter extends RObjectPainter {
 
    /** @summary Creates array with minor/middle/major ticks */
    createTicks(only_major_as_array, optionNoexp, optionNoopt, optionInt) {
-      if (optionNoopt && this.nticks && (this.kind === kAxisNormal)) this.noticksopt = true;
+      if (optionNoopt && this.nticks && (this.kind === kAxisNormal))
+         this.noticksopt = true;
 
       const ticks = this.produceTicks(this.nticks),
             handle = { nminor: 0, nmiddle: 0, nmajor: 0, func: this.func, minor: ticks, middle: ticks, major: ticks };
@@ -602,7 +604,8 @@ class RAxisPainter extends RObjectPainter {
      * @return {Object} with gaps on left and right side
      * @private */
    drawTicks(axis_g, side, main_draw) {
-      if (main_draw) this.ticks = [];
+      if (main_draw)
+         this.ticks = [];
 
       this.handle.reset();
 
@@ -874,10 +877,12 @@ class RAxisPainter extends RObjectPainter {
       // TODO: remove old scaling factors for labels and ticks
       this.labelsFont = this.v7EvalFont('labels', { size: scalingSize ? 0.05 : 0.03 });
       this.labelsFont.roundAngle(180);
-      if (this.labelsFont.angle) this.labelsFont.angle = 270;
+      if (this.labelsFont.angle)
+         this.labelsFont.angle = 270;
       this.labelsOffset = this.v7EvalLength('labels_offset', this.scalingSize, 0);
 
-      if (scalingSize) this.ticksSize = this.labelsFont.size*0.5; // old lego scaling factor
+      if (scalingSize)
+         this.ticksSize = this.labelsFont.size*0.5; // old lego scaling factor
 
       if (this.maxTickSize && (this.ticksSize > this.maxTickSize))
          this.ticksSize = this.maxTickSize;

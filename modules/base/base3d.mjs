@@ -1191,7 +1191,8 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
          const zoom2 = this.detectZoomMesh(evnt),
                pnt2 = (zoom2?.object === this.mouse_zoom_mesh.object) ? zoom2.point : this.mouse_zoom_mesh.object.globalIntersect(this.raycaster);
 
-         if (pnt2) this.mouse_zoom_mesh.point2 = pnt2;
+         if (pnt2)
+            this.mouse_zoom_mesh.point2 = pnt2;
 
          if (pnt2 && this.painter.enable_highlight) {
             if (this.mouse_zoom_mesh.object.showSelection(this.mouse_zoom_mesh.point, pnt2))

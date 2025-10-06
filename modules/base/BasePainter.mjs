@@ -505,7 +505,8 @@ class BasePainter {
      * @param {object|string} [dom] - dom element or id of dom element */
    constructor(dom) {
       this.#divid = null; // either id of DOM element or element itself
-      if (dom) this.setDom(dom);
+      if (dom)
+         this.setDom(dom);
    }
 
    /** @summary Assign painter to specified DOM element

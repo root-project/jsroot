@@ -58,7 +58,8 @@ class TF3Painter extends TH2Painter {
 
       if (this._webcanv_hist) {
          const h0 = this.getPadPainter()?.findInPrimitives('Func', clTH2F);
-         if (h0) this.updateAxes(histo, h0, this.getFramePainter());
+         if (h0)
+            this.updateAxes(histo, h0, this.getFramePainter());
       }
 
       this.setFunc(obj);

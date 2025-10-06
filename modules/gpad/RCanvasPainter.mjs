@@ -145,7 +145,8 @@ class RCanvasPainter extends RPadPainter {
    async toggleProjection(kind) {
       delete this.proj_painter;
 
-      if (kind) this.proj_painter = { X: false, Y: false }; // just indicator that drawing can be preformed
+      if (kind)
+         this.proj_painter = { X: false, Y: false }; // just indicator that drawing can be preformed
 
       if (isFunc(this.showUI5ProjectionArea))
          return this.showUI5ProjectionArea(kind);
@@ -398,7 +399,8 @@ class RCanvasPainter extends RPadPainter {
       req.id = painter.getSnapId();
 
       if (method) {
-         if (!this.#nextreqid) this.#nextreqid = 1;
+         if (!this.#nextreqid)
+            this.#nextreqid = 1;
          req.reqid = this.#nextreqid++;
       } else
          req.reqid = 0; // request will not be replied
@@ -908,7 +910,8 @@ registerMethods(`${nsREX}RPalette`, {
       this.colzmax = zmax;
 
       if (logz) {
-         if (this.colzmax <= 0) this.colzmax = 1.0;
+         if (this.colzmax <= 0)
+            this.colzmax = 1.0;
          if (this.colzmin <= 0) {
             if ((zminpositive === undefined) || (zminpositive <= 0))
                this.colzmin = 0.0001*this.colzmax;

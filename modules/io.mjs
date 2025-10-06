@@ -2297,7 +2297,10 @@ class TBuffer {
    getMappedObject(tag) { return this.fObjectMap[tag]; }
 
    /** @summary Map object */
-   mapObject(tag, obj) { if (obj !== null) this.fObjectMap[tag] = obj; }
+   mapObject(tag, obj) {
+      if (obj !== null)
+         this.fObjectMap[tag] = obj;
+   }
 
    /** @summary Map class */
    mapClass(tag, classname) { this.fClassMap[tag] = classname; }

@@ -162,7 +162,8 @@ class TAttMarkerHandler {
       const size = this.getFullSize();
 
       this.ndig = (size > 7) ? 0 : ((size > 2) ? 1 : 2);
-      if (shape === 30) this.ndig++; // increase precision for star
+      if (shape === 30)
+         this.ndig++; // increase precision for star
       let s1 = size.toFixed(this.ndig);
       const s2 = (size/2).toFixed(this.ndig),
             s3 = (size/3).toFixed(this.ndig),

@@ -771,7 +771,8 @@ class RPadPainter extends RObjectPainter {
              .style('display', pad_visible ? '' : 'none');
       }
 
-      if (this.alignButtons && btns) this.alignButtons(btns, w, h);
+      if (this.alignButtons && btns)
+         this.alignButtons(btns, w, h);
 
       return pad_visible;
    }
@@ -918,7 +919,8 @@ class RPadPainter extends RObjectPainter {
          menu.addAttributesMenu(this);
          if (this.isCanvas()) {
             menu.addSettingsMenu(false, false, arg => {
-               if (arg === 'dark') this.changeDarkMode();
+               if (arg === 'dark')
+                  this.changeDarkMode();
             });
          }
       }

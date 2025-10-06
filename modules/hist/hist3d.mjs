@@ -707,7 +707,8 @@ function highlightBin3D(tip, selfmesh) {
       }
    }
 
-   if (changed) this.render3D();
+   if (changed)
+      this.render3D();
 
    if (changed && tip.$projection && isFunc(tip.$painter?.redrawProjection))
       tip.$painter.redrawProjection(tip.ix-1, tip.ix, tip.iy-1, tip.iy);

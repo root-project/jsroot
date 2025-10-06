@@ -128,7 +128,8 @@ class LongPollSocket {
          } else if (this.getResponseHeader('Content-Type') === 'application/x-binary') {
             // binary reply with optional header
             const extra_hdr = this.getResponseHeader('LongpollHeader');
-            if (extra_hdr) this.handle.processRequest(extra_hdr);
+            if (extra_hdr)
+               this.handle.processRequest(extra_hdr);
             this.handle.processRequest(res, 0);
          } else {
             // text reply
@@ -191,7 +192,10 @@ class LongPollSocket {
 
       // minimal timeout to reduce load, generate dummy only if client not submit new request immediately
       if (!this.req)
-         setTimeout(() => { if (!this.req) this.nextRequest('', 'dummy'); }, dummy_tmout);
+         setTimeout(() => {
+           if (!this.req)
+            this.nextRequest('', 'dummy');
+         }, dummy_tmout);
    }
 
    /** @summary Send data */

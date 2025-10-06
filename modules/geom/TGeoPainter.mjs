@@ -861,7 +861,8 @@ class TGeoPainter extends ObjectPainter {
 
       window.addEventListener('keydown', evnt => {
          // Esc Key turns VR mode off
-         if (evnt.code === 'Escape') this.exitVRMode();
+         if (evnt.code === 'Escape')
+            this.exitVRMode();
       });
    }
 
@@ -1183,7 +1184,8 @@ class TGeoPainter extends ObjectPainter {
 
       menu.addchk(this.ctrl.update_browser, 'Browser update', () => {
          this.ctrl.update_browser = !this.ctrl.update_browser;
-         if (!this.ctrl.update_browser) this.activateInBrowser([]);
+         if (!this.ctrl.update_browser)
+            this.activateInBrowser([]);
       });
       menu.addchk(this.ctrl.show_controls, 'Show Controls', () => this.showControlGui('toggle'));
 
@@ -1265,7 +1267,8 @@ class TGeoPainter extends ObjectPainter {
 
       menu.addchk(this.ctrl.select_in_view, 'Select in view', () => {
          this.ctrl.select_in_view = !this.ctrl.select_in_view;
-         if (this.ctrl.select_in_view) this.startDrawGeometry();
+         if (this.ctrl.select_in_view)
+            this.startDrawGeometry();
       });
    }
 
@@ -2329,7 +2332,8 @@ class TGeoPainter extends ObjectPainter {
          }
 
          this.#current_face_limit = this.ctrl.maxfaces;
-         if (matrix) this.#current_face_limit *= 1.25;
+         if (matrix)
+            this.#current_face_limit *= 1.25;
 
          // here we decide if we need worker for the drawings
          // main reason - too large geometry and large time to scan all camera positions
@@ -2742,7 +2746,8 @@ class TGeoPainter extends ObjectPainter {
       // keep light power of all sources constant
       plights.forEach(ll => { ll.power = p*4*Math.PI/plights.length; });
 
-      if (need_render) this.render3D();
+      if (need_render)
+         this.render3D();
    }
 
    /** @summary Returns true if orthographic camera is used */
@@ -3147,7 +3152,8 @@ class TGeoPainter extends ObjectPainter {
          this.#camera.right = box.max.x + more*sizex;
          this.#camera.top = box.max.y + more*sizey;
          this.#camera.bottom = box.min.y - more*sizey;
-         if (!keep_zoom) this.#camera.zoom = this.ctrl.zoom || 1;
+         if (!keep_zoom)
+            this.#camera.zoom = this.ctrl.zoom || 1;
          this.#camera.orthoSign = sign;
          this.#camera.orthoZ = [midz, sizez/2];
       } else if ((this.ctrl.camera_kind === 'orthoXOZ') || (this.ctrl.camera_kind === 'orthoXNOZ')) {
@@ -3158,7 +3164,8 @@ class TGeoPainter extends ObjectPainter {
          this.#camera.right = box.max.x + more*sizex;
          this.#camera.top = box.max.z + more*sizez;
          this.#camera.bottom = box.min.z - more*sizez;
-         if (!keep_zoom) this.#camera.zoom = this.ctrl.zoom || 1;
+         if (!keep_zoom)
+            this.#camera.zoom = this.ctrl.zoom || 1;
          this.#camera.orthoIndicies = [0, 2, 1];
          this.#camera.orthoRotation = geom => geom.rotateX(Math.PI/2);
          this.#camera.orthoSign = sign;
@@ -3171,7 +3178,8 @@ class TGeoPainter extends ObjectPainter {
          this.#camera.right = box.max.z + more*sizez;
          this.#camera.top = box.max.y + more*sizey;
          this.#camera.bottom = box.min.y - more*sizey;
-         if (!keep_zoom) this.#camera.zoom = this.ctrl.zoom || 1;
+         if (!keep_zoom)
+            this.#camera.zoom = this.ctrl.zoom || 1;
          this.#camera.orthoIndicies = [2, 1, 0];
          this.#camera.orthoRotation = geom => geom.rotateY(-Math.PI/2);
          this.#camera.orthoSign = sign;
@@ -3184,7 +3192,8 @@ class TGeoPainter extends ObjectPainter {
          this.#camera.right = box.max.z + more*sizez;
          this.#camera.top = box.max.x + more*sizex;
          this.#camera.bottom = box.min.x - more*sizex;
-         if (!keep_zoom) this.#camera.zoom = this.ctrl.zoom || 1;
+         if (!keep_zoom)
+            this.#camera.zoom = this.ctrl.zoom || 1;
          this.#camera.orthoIndicies = [2, 0, 1];
          this.#camera.orthoRotation = geom => geom.rotateX(Math.PI/2).rotateY(Math.PI/2);
          this.#camera.orthoSign = sign;
@@ -3236,7 +3245,8 @@ class TGeoPainter extends ObjectPainter {
 
       if (this.#controls) {
          this.#controls.target.copy(this.#lookat);
-         if (!only_set) this.#controls.update();
+         if (!only_set)
+            this.#controls.update();
       }
 
       // recheck which elements to draw
@@ -3561,7 +3571,8 @@ class TGeoPainter extends ObjectPainter {
       if ((indx < 0) && hitem._obj) {
          indx = this.#extra_objects.arr.indexOf(hitem._obj);
          // workaround - if object found, replace its name
-         if (indx >= 0) this.#extra_objects.opt[indx] = itemname;
+         if (indx >= 0)
+            this.#extra_objects.opt[indx] = itemname;
       }
 
       if (indx < 0)
@@ -3961,7 +3972,8 @@ class TGeoPainter extends ObjectPainter {
                      this.fVolume.fMedium.fMaterial.fFillStyle = 3000 + lvl;
                   },
                   SetLineColor(col) {
-                     if (this.fVolume) this.fVolume.fLineColor = col;
+                     if (this.fVolume)
+                        this.fVolume.fLineColor = col;
                   }
                };
          },
@@ -5082,7 +5094,8 @@ class TGeoPainter extends ObjectPainter {
 
       this.ctrl.doubleside = any_clipping;
 
-      if (!without_render) this.render3D(0);
+      if (!without_render)
+         this.render3D(0);
 
       return changed;
    }

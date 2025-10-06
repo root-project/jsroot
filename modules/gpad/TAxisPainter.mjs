@@ -577,15 +577,15 @@ class TAxisPainter extends ObjectPainter {
       this.nticks2 = (ndiv % 10000 - this.nticks) / 100;
       this.nticks3 = Math.floor(ndiv/10000);
 
-      if (axis && !this.is_gaxis && (this.nticks > 20))
-         this.nticks = 20;
+      if (axis && !this.is_gaxis)
+         this.nticks = Math.min(this.nticks, 20);
 
       let gr_range = Math.abs(this.func.range()[1] - this.func.range()[0]);
       if (gr_range <= 0)
          gr_range = 100;
 
       if (this.kind === kAxisTime) {
-         if (this.nticks > 8) this.nticks = 8;
+         this.nticks = Math.min(this.nticks, 8);
 
          const scale_range = this.scale_max - this.scale_min,
                idF = axis.fTimeFormat.indexOf('%F'),
@@ -1360,7 +1360,8 @@ class TAxisPainter extends ObjectPainter {
       if (scalingSize && (this.ticksSize < 0))
          this.ticksSize = -this.ticksSize;
 
-      if (this.maxTickSize && (this.ticksSize > this.maxTickSize)) this.ticksSize = this.maxTickSize;
+      if (this.maxTickSize && (this.ticksSize > this.maxTickSize))
+         this.ticksSize = this.maxTickSize;
 
       // now used only in 3D drawing
       this.ticksColor = this.lineatt.color;
@@ -1370,7 +1371,8 @@ class TAxisPainter extends ObjectPainter {
       this.labelSize = Math.round((axis.fLabelSize < 1) ? k * axis.fLabelSize * this.scalingSize : k * axis.fLabelSize);
       this.labelsOffset = Math.round(offset * this.scalingSize);
       this.labelsFont = new FontHandler(axis.fLabelFont, this.labelSize, scalingSize);
-      if ((this.labelSize <= 0) || (Math.abs(axis.fLabelOffset) > 1.1)) this.optionUnlab = true; // disable labels when size not specified
+      if ((this.labelSize <= 0) || (Math.abs(axis.fLabelOffset) > 1.1))
+         this.optionUnlab = true; // disable labels when size not specified
       this.labelsFont.setColor(this.getColor(axis.fLabelColor));
 
       this.fTitle = axis.fTitle;

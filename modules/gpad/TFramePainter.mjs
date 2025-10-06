@@ -828,8 +828,10 @@ class FrameInteractive extends TooltipHandler {
       this.can_zoom_x = this.can_zoom_y = settings.Zooming;
 
       if (pp?.options) {
-         if (pp.options.NoZoomX) this.can_zoom_x = false;
-         if (pp.options.NoZoomY) this.can_zoom_y = false;
+         if (pp.options.NoZoomX)
+            this.can_zoom_x = false;
+         if (pp.options.NoZoomY)
+            this.can_zoom_y = false;
       }
 
       if (!svg.property('interactive_set')) {
@@ -1863,7 +1865,7 @@ class TFramePainter extends FrameInteractive {
          }
          if (hpainter.options.maximum !== kNoZoom) {
             this.zoom_zmax = hpainter.options.maximum;
-            if (this.zoom_zmin === undefined) this.zoom_zmin = this.zmin;
+            this.zoom_zmin ??= this.zmin;
          }
       }
    }
@@ -1999,8 +2001,10 @@ class TFramePainter extends FrameInteractive {
       if (opts.check_pad_range) {
          // take zooming out of pad or axis attributes
          this.applyAxisZoom('x');
-         if (opts.ndim > 1) this.applyAxisZoom('y');
-         if (opts.ndim > 2) this.applyAxisZoom('z');
+         if (opts.ndim > 1)
+            this.applyAxisZoom('y');
+         if (opts.ndim > 2)
+            this.applyAxisZoom('z');
 
          // Use configured pad range - only when main histogram drawn with SAME draw option
          if (opts.check_pad_range === 'pad_range') {

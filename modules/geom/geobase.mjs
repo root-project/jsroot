@@ -545,9 +545,11 @@ class PolygonsCreator {
    /** @summary Recalculate Z with provided func */
    recalcZ(func) {
       this.v1.z = func(this.v1.x, this.v1.y, this.v1.z);
-      if (this.v2) this.v2.z = func(this.v2.x, this.v2.y, this.v2.z);
+      if (this.v2)
+         this.v2.z = func(this.v2.x, this.v2.y, this.v2.z);
       this.v3.z = func(this.v3.x, this.v3.y, this.v3.z);
-      if (this.v4) this.v4.z = func(this.v4.x, this.v4.y, this.v4.z);
+      if (this.v4)
+         this.v4.z = func(this.v4.x, this.v4.y, this.v4.z);
    }
 
    /** @summary Create geometry
@@ -2475,7 +2477,8 @@ class ClonedNodes {
       this.maxnodes = 10000; // maximal number of visible nodes aka gGeoManager->fMaxVisNodes
 
       if (obj) {
-         if (obj.$geoh) this.toplevel = false;
+         if (obj.$geoh)
+            this.toplevel = false;
          this.createClones(obj);
       } else if (clones)
          this.nodes = clones;
@@ -2571,7 +2574,7 @@ class ClonedNodes {
 
       obj._refid = this.origin.length;
       this.origin.push(obj);
-      if (sublevel > this.maxdepth) this.maxdepth = sublevel;
+      this.maxdepth = Math.max(this.maxdepth, sublevel);
 
       let chlds;
       if (kind === kindGeo)

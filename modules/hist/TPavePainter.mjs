@@ -556,7 +556,8 @@ class TPavePainter extends ObjectPainter {
                lpath += `M${Math.round(width / num_cols * (ncol + 1))},${Math.round(first_stat * stepy)}V${height}`;
          }
 
-         if (lpath) this.appendPath(lpath).call(this.lineatt.func);
+         if (lpath)
+            this.appendPath(lpath).call(this.lineatt.func);
 
          // this.getG().classed('most_upper_primitives', true); // this primitive will remain on top of list
 
@@ -1440,7 +1441,8 @@ class TPavePainter extends ObjectPainter {
          menu.sub('Legend');
          menu.add('Autoplace', () => {
             this.autoPlaceLegend(pave, this.getPadPainter()?.getRootPad(true), true).then(res => {
-               if (res) this.interactiveRedraw(true, 'pave_moved');
+               if (res)
+                  this.interactiveRedraw(true, 'pave_moved');
             });
          });
          menu.addSizeMenu('Entry separation', 0, 1, 0.1, pave.fEntrySeparation, v => {

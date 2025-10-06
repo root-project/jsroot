@@ -534,7 +534,8 @@ class TGraphDelaunay {
 
       // sort array 'fDist' to find closest points
       TMath_Sort(this.fNpoints, this.fDist, this.fOrder /* , false */);
-      for (it=0; it<this.fNpoints; it++) this.fOrder[it]++;
+      for (it = 0; it < this.fNpoints; it++)
+         this.fOrder[it]++;
 
       // loop over triplets of close points to try to find a triangle that
       // encloses the point.

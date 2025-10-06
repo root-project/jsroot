@@ -953,7 +953,8 @@ class TH2Painter extends THistPainter {
 
          for (let n = 0, len = histo.fBins.arr.length; n < len; ++n) {
             const bin_content = histo.fBins.arr[n].fContent;
-            if (n === 0) this.gminbin = this.gmaxbin = bin_content;
+            if (n === 0)
+               this.gminbin = this.gmaxbin = bin_content;
 
             if (bin_content < this.gminbin)
                this.gminbin = bin_content;

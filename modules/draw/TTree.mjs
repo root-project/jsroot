@@ -25,7 +25,8 @@ TDrawSelector.prototype.ShowProgress = function(value) {
    } else {
       if (this.last_progress !== value) {
          const diff = value - this.last_progress;
-         if (!this.aver_diff) this.aver_diff = diff;
+         if (!this.aver_diff)
+            this.aver_diff = diff;
          this.aver_diff = diff * 0.3 + this.aver_diff * 0.7;
       }
 

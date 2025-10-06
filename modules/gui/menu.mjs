@@ -1286,14 +1286,17 @@ class StandaloneMenu extends JSRootMenu {
 
       let need_check_area = false, ncols = 0;
       menu.forEach(d => {
-         if (d.checked) need_check_area = true;
-         if (d.column) ncols++;
+         if (d.checked)
+            need_check_area = true;
+         if (d.column)
+            ncols++;
       });
 
       menu.forEach(d => {
          if (ncols > 0) {
             outer.style.display = 'flex';
-            if (d.column) this._buildContextmenu(d.sub, -ncols, -ncols, outer);
+            if (d.column)
+               this._buildContextmenu(d.sub, -ncols, -ncols, outer);
             return;
          }
 
