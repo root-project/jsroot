@@ -855,9 +855,12 @@ class TPavePainter extends ObjectPainter {
                 painter = null, isany = false;
 
             if (isObject(mo)) {
-               if ('fLineColor' in mo) o_line = mo;
-               if ('fFillColor' in mo) o_fill = mo;
-               if ('fMarkerColor' in mo) o_marker = mo;
+               if ('fLineColor' in mo)
+                  o_line = mo;
+               if ('fFillColor' in mo)
+                  o_fill = mo;
+               if ('fMarkerColor' in mo)
+                  o_marker = mo;
                painter = pp.findPainterFor(mo);
             }
 

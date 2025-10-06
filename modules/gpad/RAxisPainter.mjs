@@ -71,7 +71,8 @@ class RAxisPainter extends RObjectPainter {
      * Therefore one should distinguish when calculated coordinates used for axis drawing itself or for calculation of frame coordinates
      * @private */
    configureAxis(name, min, max, smin, smax, vertical, frame_range, axis_range, opts) {
-      if (!opts) opts = {};
+      if (!opts)
+         opts = {};
       this.name = name;
       this.full_min = min;
       this.full_max = max;

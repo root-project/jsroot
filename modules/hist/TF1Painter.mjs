@@ -28,7 +28,8 @@ function produceTAxisLogScale(axis, num, min, max) {
 }
 
 function scanTF1Options(opt) {
-   if (!isStr(opt)) opt = '';
+   if (!isStr(opt))
+      opt = '';
    let p = opt.indexOf(';webcanv_hist'), _webcanv_hist = false, _use_saved = 0;
    if (p >= 0) {
       _webcanv_hist = true;

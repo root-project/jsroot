@@ -2377,7 +2377,8 @@ class HierarchyPainter extends BasePainter {
     * @return {Promise} when completed
     * @private */
    async dropItem(itemname, dom, opt) {
-      if (!opt || !isStr(opt)) opt = '';
+      if (!opt || !isStr(opt))
+         opt = '';
 
       const drop_complete = (drop_painter, is_main) => {
          if (!is_main && isFunc(drop_painter?.setItemName))
@@ -2492,7 +2493,8 @@ class HierarchyPainter extends BasePainter {
 
       const h = this;
 
-      if (!options) options = [];
+      if (!options)
+         options = [];
       while (options.length < items.length)
          options.push(kDfltDrawOpt);
 
@@ -3248,7 +3250,8 @@ class HierarchyPainter extends BasePainter {
             const handleAfterRequest = func => {
                if (isFunc(func)) {
                   const res = func(this, item, obj, option, itemreq);
-                  if (isObject(res)) obj = res;
+                  if (isObject(res))
+                     obj = res;
                }
                resolveFunc(obj);
             };

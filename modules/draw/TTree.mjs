@@ -431,7 +431,8 @@ async function drawTree(dom, obj, opt) {
 
       // if generic object tried to be drawn without specifying any options, it will be just dump
       if (!opt && obj.fStreamerType && (obj.fStreamerType !== kTString) &&
-          (obj.fStreamerType >= kObject) && (obj.fStreamerType <= kAnyP)) opt = 'dump';
+          (obj.fStreamerType >= kObject) && (obj.fStreamerType <= kAnyP))
+          opt = 'dump';
 
       args = { expr: opt, branch: obj };
       tree = obj.$tree;

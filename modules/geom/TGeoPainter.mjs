@@ -5794,7 +5794,8 @@ class TGeoPainter extends ObjectPainter {
          extras = obj.fMarker;
          extras_path = '<prnt>/Marker';
          obj = buildOverlapVolume(obj);
-         if (!opt) opt = 'wire';
+         if (!opt)
+            opt = 'wire';
       } else if ('fVolume' in obj) {
          if (obj.fVolume) shape = obj.fVolume.fShape;
       } else

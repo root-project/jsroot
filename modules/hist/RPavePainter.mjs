@@ -195,9 +195,12 @@ class RLegendPainter extends RPavePainter {
                objp = pp.findSnap(entry.fDrawableId, true);
             else if (entry.fDrawable.fIO) {
                objp = new RObjectPainter(this.getPadPainter(), entry.fDrawable.fIO);
-               if (entry.fLine) objp.createv7AttLine();
-               if (entry.fFill) objp.createv7AttFill();
-               if (entry.fMarker) objp.createv7AttMarker();
+               if (entry.fLine)
+                  objp.createv7AttLine();
+               if (entry.fFill)
+                  objp.createv7AttFill();
+               if (entry.fMarker)
+                  objp.createv7AttMarker();
             }
 
             if (entry.fFill && objp?.fillatt) {

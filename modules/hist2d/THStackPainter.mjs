@@ -302,10 +302,14 @@ class THStackPainter extends ObjectPainter {
 
       d.check('NOCLEAR'); // ignore option
 
-      ['PFC', 'PLC', 'PMC'].forEach(f => { if (d.check(f)) o.auto += ' ' + f; });
+      ['PFC', 'PLC', 'PMC'].forEach(f => {
+         if (d.check(f))
+            o.auto += ' ' + f;
+      });
 
       o.pads = d.check('PADS');
-      if (o.pads) o.nostack = true;
+      if (o.pads)
+         o.nostack = true;
 
       o.hopt = d.remain().trim(); // use remaining draw options for histogram draw
 

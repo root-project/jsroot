@@ -477,13 +477,15 @@ CustomStreamers = {
       obj.arr = create(clTList);
       while (size--)
          obj.arr.Add(buf.readObjectAny());
-      if (v > 1) obj._name = buf.readTString();
+      if (v > 1)
+         obj._name = buf.readTString();
    },
 
    TImagePalette: [
       {
          basename: clTObject, base: 1, func(buf, obj) {
-            if (!obj._typename) obj._typename = clTImagePalette;
+            if (!obj._typename)
+               obj._typename = clTImagePalette;
             buf.classStreamer(obj, clTObject);
          }
       },
@@ -2153,7 +2155,8 @@ function LZ4_uncompress(input, output, sIdx, eIdx) {
       // Copy the match
       let pos = j - offset; // position of the match copy in the current output
       const end = j + match_length + 4; // minmatch = 4;
-      while (j < end) output[j++] = output[pos++];
+      while (j < end)
+         output[j++] = output[pos++];
    }
 
    return j;

@@ -1142,7 +1142,8 @@ class RPadPainter extends RObjectPainter {
 
       const extract_color = (member_name, attr_name) => {
          const col = pattr.v7EvalColor(attr_name, '');
-         if (col) obj[member_name] = addColor(col, this.getColors());
+         if (col)
+            obj[member_name] = addColor(col, this.getColors());
       };
 
       // handle TAttLine

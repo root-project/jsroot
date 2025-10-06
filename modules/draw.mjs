@@ -289,7 +289,8 @@ function getDrawSettings(kind, selector) {
       if (h.opt === undefined)
          continue;
       let opt = h.opt;
-      if (isStr(h.opt2)) opt += h.opt2;
+      if (isStr(h.opt2))
+         opt += h.opt2;
       const opts = opt.split(';');
       for (let i = 0; i < opts.length; ++i) {
          opts[i] = opts[i].toLowerCase();

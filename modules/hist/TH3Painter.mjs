@@ -685,7 +685,8 @@ class TH3Painter extends THistPainter {
    /** @summary Checks if it makes sense to zoom inside specified axis range */
    canZoomInside(axis, min, max) {
       let obj = this.getHisto();
-      if (obj) obj = obj[`f${axis.toUpperCase()}axis`];
+      if (obj)
+         obj = obj[`f${axis.toUpperCase()}axis`];
       return !obj || (obj.FindBin(max, 0.5) - obj.FindBin(min, 0) > 1);
    }
 

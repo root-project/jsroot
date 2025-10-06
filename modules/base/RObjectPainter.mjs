@@ -138,7 +138,8 @@ class RObjectPainter extends ObjectPainter {
 
          val = val.slice(pos);
          pos = 0;
-         if (!operand) operand = 1;
+         if (!operand)
+            operand = 1;
          if (val && (val[0] === '%')) {
             val = val.slice(1);
             norm += operand*v*0.01;

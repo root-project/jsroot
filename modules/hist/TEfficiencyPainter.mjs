@@ -189,7 +189,8 @@ class TEfficiencyPainter extends ObjectPainter {
       if (!skip_cleanup)
          this.getPadPainter()?.removePrimitive(this, true);
 
-      if (!opt || !isStr(opt)) opt = '';
+      if (!opt || !isStr(opt))
+         opt = '';
       opt = opt.toLowerCase();
 
       let promise, draw_total = false;
@@ -201,15 +202,19 @@ class TEfficiencyPainter extends ObjectPainter {
          draw_total = true;
          promise = (this.ndim === 1 ? TH1Painter : TH2Painter).draw(dom, eff.fTotalHistogram, opt.slice(1));
       } else if (this.ndim === 1) {
-         if (!opt) opt = 'ap';
-         if ((opt.indexOf('same') < 0) && (opt.indexOf('a') < 0)) opt += 'a';
-         if (opt.indexOf('p') < 0) opt += 'p';
+         if (!opt)
+            opt = 'ap';
+         if ((opt.indexOf('same') < 0) && (opt.indexOf('a') < 0))
+            opt += 'a';
+         if (opt.indexOf('p') < 0)
+            opt += 'p';
 
          const gr = this.createGraph(eff);
          this.fillGraph(gr, opt);
          promise = TGraphPainter.draw(dom, gr, opt);
       } else {
-         if (!opt) opt = 'col';
+         if (!opt)
+            opt = 'col';
          const hist = this.createHisto(eff);
          this.fillHisto(hist, opt);
          promise = TH2Painter.draw(dom, hist, opt);

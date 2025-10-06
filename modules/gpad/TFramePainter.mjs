@@ -2012,7 +2012,8 @@ class TFramePainter extends FrameInteractive {
    createXY(opts) {
       this.cleanXY(); // remove all previous configurations
 
-      if (!opts) opts = { ndim: 1 };
+      if (!opts)
+         opts = { ndim: 1 };
 
       this.#swap_xy = opts.swap_xy || false;
       this.#reverse_x = opts.reverse_x || false;
@@ -2122,7 +2123,8 @@ class TFramePainter extends FrameInteractive {
    /** @summary Create x,y objects for drawing of second axes
      * @private */
    createXY2(opts) {
-      if (!opts) opts = { ndim: this.scales_ndim ?? 1 };
+      if (!opts)
+         opts = { ndim: this.scales_ndim ?? 1 };
 
       this.#reverse_x2 = opts.reverse_x || false;
       this.#reverse_y2 = opts.reverse_y || false;

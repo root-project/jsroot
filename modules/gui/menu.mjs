@@ -435,7 +435,8 @@ class JSRootMenu {
    /** @summary Add items to change RAttrText
      * @protected */
    addRAttrTextItems(fontHandler, opts, set_func) {
-      if (!opts) opts = {};
+      if (!opts)
+         opts = {};
       this.addRColorMenu('color', fontHandler.color, value => set_func({ name: 'color', value }));
       if (fontHandler.scaled)
          this.addSizeMenu('size', 0.01, 0.10, 0.01, fontHandler.size /fontHandler.scale, value => set_func({ name: 'size', value }));

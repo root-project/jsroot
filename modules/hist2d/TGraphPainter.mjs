@@ -89,7 +89,8 @@ class TGraphPainter extends ObjectPainter {
    /** @summary Set histogram object to graph */
    setHistogram(histo) {
       const obj = this.getObject();
-      if (obj) obj.fHistogram = histo;
+      if (obj)
+         obj.fHistogram = histo;
    }
 
    /** @summary Is TScatter object */
@@ -710,7 +711,8 @@ class TGraphPainter extends ObjectPainter {
          let close_symbol = '';
          if (this.#cutg) {
             close_symbol = 'Z';
-            if (!options.original) options.Fill = 1;
+            if (!options.original)
+               options.Fill = 1;
          }
 
          if (options.Fill) {
