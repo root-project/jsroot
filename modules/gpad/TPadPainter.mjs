@@ -730,8 +730,12 @@ class TPadPainter extends ObjectPainter {
          changed = true;
       }
 
-      if (changed)
-         this.forEachPainter(p => { if (isFunc(p.clearHistPalette)) p.clearHistPalette(); });
+      if (changed) {
+         this.forEachPainter(p => {
+            if (isFunc(p.clearHistPalette))
+               p.clearHistPalette();
+         });
+      }
 
       this.setColors(flag ? getGrayColors(this.#custom_colors) : this.#custom_colors);
 
@@ -1427,7 +1431,8 @@ class TPadPainter extends ObjectPainter {
             painters.push(obj);
       });
 
-      if (pnt) pnt.nproc = painters.length;
+      if (pnt)
+         pnt.nproc = painters.length;
 
       painters.forEach(obj => {
          const hint = obj.processTooltipEvent(pnt) || { user_info: null };
@@ -2672,7 +2677,8 @@ class TPadPainter extends ObjectPainter {
 
          if (!done && isFunc(pp.clickButton)) {
             done = pp.clickButton(funcname);
-            if (isPromise(done)) prs.push(done);
+            if (isPromise(done))
+               prs.push(done);
          }
       }
 

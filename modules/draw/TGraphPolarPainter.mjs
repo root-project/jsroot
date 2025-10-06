@@ -677,7 +677,8 @@ class TGraphPolarPainter extends ObjectPainter {
             draw_title = !gr.TestBit(kNoTitle) && (gStyle.fOptTitle > 0);
 
       pt.Clear();
-      if (draw_title) pt.AddText(gr.fTitle);
+      if (draw_title)
+         pt.AddText(gr.fTitle);
       return tpainter.redraw().then(() => this);
    }
 

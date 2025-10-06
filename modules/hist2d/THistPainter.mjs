@@ -1034,7 +1034,8 @@ class FunctionsHandler {
       // stat painter has to be kept even when no object exists in the list
       if (isObject(statpainter)) {
          const indx = painters.indexOf(statpainter);
-         if (indx >= 0) painters.splice(indx, 1);
+         if (indx >= 0)
+            painters.splice(indx, 1);
       }
 
       // remove all function which are not found in new list of functions

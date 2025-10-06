@@ -123,7 +123,8 @@ class RTreeMapPainter extends ObjectPainter {
             this.rootIndex = this.parentIndices[nodeIndex];
          else {
             let parentIndex = nodeIndex;
-            while (this.parentIndices[parentIndex] !== this.rootIndex) parentIndex = this.parentIndices[parentIndex];
+            while (this.parentIndices[parentIndex] !== this.rootIndex)
+               parentIndex = this.parentIndices[parentIndex];
             this.rootIndex = parentIndex;
             if (obj.fNodes[parentIndex].fNChildren === 0)
                this.rootIndex = this.parentIndices[nodeIndex];

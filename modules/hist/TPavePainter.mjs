@@ -204,12 +204,16 @@ class TPavePainter extends ObjectPainter {
             pt.fX2NDC = pt.fY2NDC = 1;
          } else if (pad) {
             if (pad.fLogx) {
-               if (pt.fX1 > 0) pt.fX1 = Math.log10(pt.fX1);
-               if (pt.fX2 > 0) pt.fX2 = Math.log10(pt.fX2);
+               if (pt.fX1 > 0)
+                  pt.fX1 = Math.log10(pt.fX1);
+               if (pt.fX2 > 0)
+                  pt.fX2 = Math.log10(pt.fX2);
             }
             if (pad.fLogy) {
-               if (pt.fY1 > 0) pt.fY1 = Math.log10(pt.fY1);
-               if (pt.fY2 > 0) pt.fY2 = Math.log10(pt.fY2);
+               if (pt.fY1 > 0)
+                  pt.fY1 = Math.log10(pt.fY1);
+               if (pt.fY2 > 0)
+                  pt.fY2 = Math.log10(pt.fY2);
             }
             pt.fX1NDC = (pt.fX1 - pad.fX1) / (pad.fX2 - pad.fX1);
             pt.fY1NDC = (pt.fY1 - pad.fY1) / (pad.fY2 - pad.fY1);
@@ -1597,10 +1601,14 @@ class TPavePainter extends ObjectPainter {
              (this.stored.fX2 === obj.fX2) && (this.stored.fY1 === obj.fY1) && (this.stored.fY2 === obj.fY2)) {
             // case when source object not initialized and original coordinates are not changed
             // take over only modified NDC coordinate, used in tutorials/graphics/canvas.C
-            if (this.stored.fX1NDC !== obj.fX1NDC) pave.fX1NDC = obj.fX1NDC;
-            if (this.stored.fX2NDC !== obj.fX2NDC) pave.fX2NDC = obj.fX2NDC;
-            if (this.stored.fY1NDC !== obj.fY1NDC) pave.fY1NDC = obj.fY1NDC;
-            if (this.stored.fY2NDC !== obj.fY2NDC) pave.fY2NDC = obj.fY2NDC;
+            if (this.stored.fX1NDC !== obj.fX1NDC)
+               pave.fX1NDC = obj.fX1NDC;
+            if (this.stored.fX2NDC !== obj.fX2NDC)
+               pave.fX2NDC = obj.fX2NDC;
+            if (this.stored.fY1NDC !== obj.fY1NDC)
+               pave.fY1NDC = obj.fY1NDC;
+            if (this.stored.fY2NDC !== obj.fY2NDC)
+               pave.fY2NDC = obj.fY2NDC;
          } else {
             pave.fInit = obj.fInit;
             pave.fX1 = obj.fX1; pave.fX2 = obj.fX2;
@@ -1750,9 +1758,12 @@ class TPavePainter extends ObjectPainter {
 
             // check some default values of TGaxis object, otherwise axis will not be drawn
             if (pave.fAxis) {
-               if (!pave.fAxis.fChopt) pave.fAxis.fChopt = '+';
-               if (!pave.fAxis.fNdiv) pave.fAxis.fNdiv = 12;
-               if (!pave.fAxis.fLabelOffset) pave.fAxis.fLabelOffset = 0.005;
+               if (!pave.fAxis.fChopt)
+                  pave.fAxis.fChopt = '+';
+               if (!pave.fAxis.fNdiv)
+                  pave.fAxis.fNdiv = 12;
+               if (!pave.fAxis.fLabelOffset)
+                  pave.fAxis.fLabelOffset = 0.005;
             }
 
             painter.z_handle = new TAxisPainter(painter.getPadPainter(), pave.fAxis, true);

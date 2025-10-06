@@ -62,7 +62,8 @@ function drawEllipse() {
             np = 200,
             dphi = (phi2-phi1) / (np - (closed_ellipse ? 0 : 1));
       let lastx = 0, lasty = 0;
-      if (!closed_ellipse) path = 'M0,0';
+      if (!closed_ellipse)
+         path = 'M0,0';
       for (let n = 0; n < np; ++n) {
          const angle = phi1 + n*dphi,
                dx = ellipse.fR1 * Math.cos(angle),

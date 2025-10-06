@@ -1898,8 +1898,7 @@ class HierarchyPainter extends BasePainter {
       if (isFunc(this.disp?.changeDarkMode))
          this.disp.changeDarkMode();
       this.disp?.forEachFrame(frame => {
-         let p = getElementCanvPainter(frame);
-         if (!p) p = getElementMainPainter(frame);
+         const p = getElementCanvPainter(frame) || getElementMainPainter(frame);
          if (isFunc(p?.changeDarkMode) && (p !== this))
             p.changeDarkMode();
       });

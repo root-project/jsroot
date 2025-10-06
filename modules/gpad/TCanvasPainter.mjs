@@ -718,7 +718,8 @@ class TCanvasPainter extends TPadPainter {
          return;
 
       let msg = '';
-      if (!painter) painter = this;
+      if (!painter)
+         painter = this;
       switch (kind) {
          case 'sbits':
             msg = 'STATUSBITS:' + this.getStatusBits();

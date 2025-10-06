@@ -450,8 +450,10 @@ class TAttFillHandler {
                col.r = Math.round((col.r + 255) / 2); col.g = Math.round((col.g + 255) / 2); col.b = Math.round((col.b + 255) / 2);
                patt.append('svg:path').attr('d', fills2).style('fill', col);
             }
-            if (fills) patt.append('svg:path').attr('d', fills).style('fill', this.color);
-            if (lines) patt.append('svg:path').attr('d', lines).style('stroke', this.color).style('stroke-width', gStyle.fHatchesLineWidth || 1).style('fill', lfill);
+            if (fills)
+               patt.append('svg:path').attr('d', fills).style('fill', this.color);
+            if (lines)
+               patt.append('svg:path').attr('d', lines).style('stroke', this.color).style('stroke-width', gStyle.fHatchesLineWidth || 1).style('fill', lfill);
          }
       }
 

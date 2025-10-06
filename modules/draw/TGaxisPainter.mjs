@@ -223,7 +223,8 @@ class TGaxisPainter extends TAxisPainter {
       const painter = new TGaxisPainter(dom, obj, false);
 
       return ensureTCanvas(painter, false).then(() => {
-         if (opt) painter.convertTo(opt);
+         if (opt)
+            painter.convertTo(opt);
          return painter.checkFuncion();
       }).then(() => painter.redraw());
    }

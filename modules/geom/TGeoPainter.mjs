@@ -2842,15 +2842,34 @@ class TGeoPainter extends ObjectPainter {
          if (!light.isDirectionalLight)
             continue;
          switch (light._id) {
-            case 0: light.position.set(sizex/5, sizey/5, sizez/5); enabled = this.ctrl.light.specular; break;
-            case 1: light.position.set(0, 0, sizez/2); enabled = this.ctrl.light.front; break;
-            case 2: light.position.set(0, 2*sizey, 0); enabled = this.ctrl.light.top; break;
-            case 3: light.position.set(0, -2*sizey, 0); enabled = this.ctrl.light.bottom; break;
-            case 4: light.position.set(-2*sizex, 0, 0); enabled = this.ctrl.light.left; break;
-            case 5: light.position.set(2*sizex, 0, 0); enabled = this.ctrl.light.right; break;
+            case 0:
+               light.position.set(sizex/5, sizey/5, sizez/5);
+               enabled = this.ctrl.light.specular;
+               break;
+            case 1:
+               light.position.set(0, 0, sizez/2);
+               enabled = this.ctrl.light.front;
+               break;
+            case 2:
+               light.position.set(0, 2*sizey, 0);
+               enabled = this.ctrl.light.top;
+               break;
+            case 3:
+               light.position.set(0, -2*sizey, 0);
+               enabled = this.ctrl.light.bottom;
+               break;
+            case 4:
+               light.position.set(-2*sizex, 0, 0);
+               enabled = this.ctrl.light.left;
+               break;
+            case 5:
+               light.position.set(2*sizex, 0, 0);
+               enabled = this.ctrl.light.right;
+               break;
          }
          light.power = enabled ? p*Math.PI*4 : 0;
-         if (enabled) plights.push(light);
+         if (enabled)
+            plights.push(light);
       }
 
       // keep light power of all sources constant

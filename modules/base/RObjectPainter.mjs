@@ -234,7 +234,8 @@ class RObjectPainter extends ObjectPainter {
 
    /** @summary Create this.fillatt object based on v7 fill attributes */
    createv7AttFill(prefix) {
-      if (!prefix || !isStr(prefix)) prefix = 'fill_';
+      if (!prefix || !isStr(prefix))
+         prefix = 'fill_';
 
       const color = this.v7EvalColor(prefix + 'color', ''),
             pattern = this.v7EvalAttr(prefix + 'style', 0);
@@ -244,7 +245,8 @@ class RObjectPainter extends ObjectPainter {
 
    /** @summary Create this.lineatt object based on v7 line attributes */
    createv7AttLine(prefix) {
-      if (!prefix || !isStr(prefix)) prefix = 'line_';
+      if (!prefix || !isStr(prefix))
+         prefix = 'line_';
 
       const color = this.v7EvalColor(prefix + 'color', 'black'),
             width = this.v7EvalAttr(prefix + 'width', 1),
@@ -261,7 +263,8 @@ class RObjectPainter extends ObjectPainter {
 
     /** @summary Create this.markeratt object based on v7 attributes */
    createv7AttMarker(prefix) {
-      if (!prefix || !isStr(prefix)) prefix = 'marker_';
+      if (!prefix || !isStr(prefix))
+         prefix = 'marker_';
 
       const color = this.v7EvalColor(prefix + 'color', 'black'),
             size = this.v7EvalAttr(prefix + 'size', 0.01),

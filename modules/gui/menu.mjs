@@ -584,7 +584,8 @@ class JSRootMenu {
       const is_frame = painter === painter.getFramePainter(),
             pp = is_frame ? painter.getPadPainter() : null,
             redraw_arg = !preffix && !is_frame ? 'attribute' : true;
-      if (!preffix) preffix = '';
+      if (!preffix)
+         preffix = '';
 
       if (painter.lineatt?.used) {
          this.sub(`${preffix}Line att`);

@@ -506,16 +506,21 @@ class Geometry {
             polygon = new Polygon();
 
             vert1 = new Vertex(pos_buf[i], pos_buf[i+1], pos_buf[i+2], norm_buf[i], norm_buf[i+1], norm_buf[i+2]);
-            if (transfer_matrix) vert1.applyMatrix4(transfer_matrix);
+            if (transfer_matrix)
+               vert1.applyMatrix4(transfer_matrix);
 
             vert2 = new Vertex(pos_buf[i+3], pos_buf[i+4], pos_buf[i+5], norm_buf[i+3], norm_buf[i+4], norm_buf[i+5]);
-            if (transfer_matrix) vert2.applyMatrix4(transfer_matrix);
+            if (transfer_matrix)
+               vert2.applyMatrix4(transfer_matrix);
 
             vert3 = new Vertex(pos_buf[i+6], pos_buf[i+7], pos_buf[i+8], norm_buf[i+6], norm_buf[i+7], norm_buf[i+8]);
-            if (transfer_matrix) vert3.applyMatrix4(transfer_matrix);
+            if (transfer_matrix)
+               vert3.applyMatrix4(transfer_matrix);
 
-            if (flippedMesh) polygon.vertices.push(vert1, vert3, vert2);
-                        else polygon.vertices.push(vert1, vert2, vert3);
+            if (flippedMesh)
+               polygon.vertices.push(vert1, vert3, vert2);
+            else
+               polygon.vertices.push(vert1, vert2, vert3);
 
             polygon.calculateProperties(true);
             polygons.push(polygon);
@@ -701,8 +706,10 @@ class Geometry {
          for (n = 0; n < arr.length; ++n) {
             parts = arr[n];
             if (parts !== undefined) {
-               for (i1 = 0, len = parts.length; i1 < len; ++i1)
-                  if (parts[i1]) polygons.push(parts[i1]);
+               for (i1 = 0, len = parts.length; i1 < len; ++i1) {
+                  if (parts[i1])
+                     polygons.push(parts[i1]);
+               }
             }
          }
       }

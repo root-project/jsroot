@@ -381,7 +381,8 @@ class RCanvasPainter extends RPadPainter {
 
       if (kind && method) {
          // if kind specified - check if such request already was submitted
-         if (!painter._requests) painter._requests = {};
+         if (!painter._requests)
+            painter._requests = {};
 
          const prevreq = painter._requests[kind];
 
@@ -499,7 +500,8 @@ class RCanvasPainter extends RPadPainter {
          return;
 
       const msg = '';
-      if (!painter) painter = this;
+      if (!painter)
+         painter = this;
       switch (kind) {
          case 'sbits':
             console.log('Status bits in RCanvas are changed - that to do?');
@@ -994,7 +996,8 @@ function drawRAxis(dom, obj, opt) {
   * @private */
 function drawRFrame(dom, obj, opt) {
    const p = new RFramePainter(dom, obj);
-   if (opt === '3d') p.mode3d = true;
+   if (opt === '3d')
+      p.mode3d = true;
    return ensureRCanvas(p, false).then(() => p.redraw());
 }
 

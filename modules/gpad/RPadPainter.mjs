@@ -695,10 +695,18 @@ class RPadPainter extends RObjectPainter {
          pad_visible = false;
          if (pad_enlarged === this.#pad)
             pad_visible = true;
-         else
-            this.forEachPainterInPad(pp => { if (pp.getObject() === pad_enlarged) pad_visible = true; }, 'pads');
+         else {
+            this.forEachPainterInPad(pp => {
+               if (pp.getObject() === pad_enlarged)
+                  pad_visible = true;
+            }, 'pads');
+         }
 
-         if (pad_visible) { w = width; h = height; x = y = 0; }
+         if (pad_visible) {
+            w = width;
+            h = height;
+            x = y = 0;
+         }
       }
 
       if (only_resize) {
@@ -884,10 +892,12 @@ class RPadPainter extends RObjectPainter {
 
       // first count - how many processors are there
       this.#painters?.forEach(obj => {
-         if (isFunc(obj.processTooltipEvent)) painters.push(obj);
+         if (isFunc(obj.processTooltipEvent))
+            painters.push(obj);
       });
 
-      if (pnt) pnt.nproc = painters.length;
+      if (pnt)
+         pnt.nproc = painters.length;
 
       painters.forEach(obj => {
          const hint = obj.processTooltipEvent(pnt) || { user_info: null };
@@ -1692,7 +1702,8 @@ class RPadPainter extends RObjectPainter {
 
          if (!done && isFunc(pp.clickButton)) {
             done = pp.clickButton(funcname);
-            if (isPromise(done)) prs.push(done);
+            if (isPromise(done))
+               prs.push(done);
          }
       }
 
