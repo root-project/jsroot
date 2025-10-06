@@ -33,7 +33,8 @@ const kMACHEP = 1.11022302462515654042363166809e-16,
   * a[0]x^N+a[1]x^(N-1) + ... + a[N]
   * @memberof Math */
 function Polynomialeval(x, a, N) {
-   if (!N) return a[0];
+   if (!N)
+      return a[0];
 
    let pom = a[0];
    for (let i = 1; i <= N; ++i)
@@ -46,7 +47,8 @@ function Polynomialeval(x, a, N) {
   * x^N+a[0]x^(N-1) + ... + a[N-1]
   * @memberof Math */
 function Polynomial1eval(x, a, N) {
-   if (!N) return a[0];
+   if (!N)
+      return a[0];
 
    let pom = x + a[0];
    for (let i = 1; i < N; ++i)
@@ -281,32 +283,40 @@ function erf(x) {
 function lognormal_cdf_c(x, m, s, x0) {
    if (x0 === undefined) x0 = 0;
    const z = (Math.log((x-x0))-m)/(s*kSqrt2);
-   if (z > 1.) return 0.5*erfc(z);
-   else return 0.5*(1.0 - erf(z));
+   if (z > 1.)
+      return 0.5*erfc(z);
+   else
+      return 0.5*(1.0 - erf(z));
 }
 
 /** @summary lognormal_cdf_c function
   * @memberof Math */
 function lognormal_cdf(x, m, s, x0 = 0) {
    const z = (Math.log((x-x0))-m)/(s*kSqrt2);
-   if (z < -1.) return 0.5*erfc(-z);
-   else return 0.5*(1.0 + erf(z));
+   if (z < -1.)
+      return 0.5*erfc(-z);
+   else
+      return 0.5*(1.0 + erf(z));
 }
 
 /** @summary normal_cdf_c function
   * @memberof Math */
 function normal_cdf_c(x, sigma, x0 = 0) {
    const z = (x-x0)/(sigma*kSqrt2);
-   if (z > 1.) return 0.5*erfc(z);
-   else return 0.5*(1.-erf(z));
+   if (z > 1.)
+      return 0.5*erfc(z);
+   else
+      return 0.5*(1.-erf(z));
 }
 
 /** @summary normal_cdf function
   * @memberof Math */
 function normal_cdf(x, sigma, x0 = 0) {
    const z = (x-x0)/(sigma*kSqrt2);
-   if (z < -1.) return 0.5*erfc(-z);
-   else return 0.5*(1.0 + erf(z));
+   if (z < -1.)
+      return 0.5*erfc(-z);
+   else
+      return 0.5*(1.0 + erf(z));
 }
 
 /** @summary log normal pdf
@@ -532,9 +542,11 @@ function normal_quantile_c(z, sigma) {
 function igamc(a,x) {
    // LM: for negative values returns 0.0
    // This is correct if a is a negative integer since Gamma(-n) = +/- inf
-   if (a <= 0) return 0.0;
+   if (a <= 0)
+      return 0.0;
 
-   if (x <= 0) return 1.0;
+   if (x <= 0)
+      return 1.0;
 
    if ((x < 1.0) || (x < a))
       return (1.0 - igam(a,x));
@@ -592,9 +604,11 @@ function igamc(a,x) {
 function igam(a, x) {
    // LM: for negative values returns 1.0 instead of zero
    // This is correct if a is a negative integer since Gamma(-n) = +/- inf
-   if (a <= 0) return 1.0;
+   if (a <= 0)
+      return 1.0;
 
-   if (x <= 0) return 0.0;
+   if (x <= 0)
+      return 0.0;
 
    if ((x > 1.0) && (x > a))
       return 1.0 - igamc(a,x);
@@ -733,7 +747,8 @@ function igami(a, y0) {
   *  same algorithm is used in GSL
   * @memberof Math */
 function landau_pdf(x, xi, x0 = 0) {
-   if (xi <= 0) return 0;
+   if (xi <= 0)
+      return 0;
    const v = (x - x0)/xi;
    let u, ue, us, denlan;
    const p1 = [0.4259894875,-0.1249762550, 0.03984243700, -0.006298287635, 0.001511162253],
@@ -753,7 +768,8 @@ function landau_pdf(x, xi, x0 = 0) {
 
    if (v < -5.5) {
       u = Math.exp(v+1.0);
-      if (u < 1e-10) return 0.0;
+      if (u < 1e-10)
+         return 0.0;
       ue = Math.exp(-1/u);
       us = Math.sqrt(u);
       denlan = 0.3989422803*(ue/us)*(1+(a1[0]+(a1[1]+a1[2]*u)*u)*u);
@@ -790,9 +806,11 @@ function landau_pdf(x, xi, x0 = 0) {
 /** @summary Landau function
   * @memberof Math */
 function Landau(x, mpv, sigma, norm) {
-   if (sigma <= 0) return 0;
+   if (sigma <= 0)
+      return 0;
    const den = landau_pdf((x - mpv) / sigma, 1, 0);
-   if (!norm) return den;
+   if (!norm)
+      return den;
    return den/sigma;
 }
 
@@ -817,16 +835,23 @@ function lgamma(z) {
 /** @summary Probability density function of the beta distribution.
   * @memberof Math */
 function beta_pdf(x, a, b) {
-  if (x < 0 || x > 1.0) return 0;
+  if (x < 0 || x > 1.0)
+   return 0;
   if (x == 0 ) {
-     if (a < 1) return Number.POSITIVE_INFINITY;
-     else if (a > 1) return 0;
-     else if ( a == 1) return b; // to avoid a nan from log(0)*0
+     if (a < 1)
+        return Number.POSITIVE_INFINITY;
+     else if (a > 1)
+        return 0;
+     else if ( a == 1)
+         return b; // to avoid a nan from log(0)*0
    }
    if (x == 1 ) {
-      if (b < 1) return Number.POSITIVE_INFINITY;
-      else if (b > 1) return 0;
-      else if ( b == 1) return a; // to avoid a nan from log(0)*0
+      if (b < 1)
+         return Number.POSITIVE_INFINITY;
+      else if (b > 1)
+         return 0;
+      else if ( b == 1)
+         return a; // to avoid a nan from log(0)*0
    }
    return Math.exp(lgamma(a + b) - lgamma(a) - lgamma(b) +
                     Math.log(x) * (a -1.) + Math.log1p(-x) * (b - 1.));
@@ -1059,8 +1084,10 @@ function incbet(aa,bb,xx) {
       return 0.0;
 
    // LM: changed: for X > 1 return 1.
-   if (xx <= 0.0) return 0.0;
-   if ( xx >= 1.0) return 1.0;
+   if (xx <= 0.0)
+      return 0.0;
+   if (xx >= 1.0)
+      return 1.0;
 
    flag = 0;
 
@@ -1536,10 +1563,12 @@ function exponential_cdf(x, lambda, x0 = 0) {
 /** @summary chisquared_pdf
   * @memberof Math */
 function chisquared_pdf(x, r, x0 = 0) {
-   if ((x-x0) < 0) return 0.0;
+   if ((x-x0) < 0)
+      return 0.0;
    const a = r/2 -1.;
    // let return inf for case x  = x0 and treat special case of r = 2 otherwise will return nan
-   if (x == x0 && a == 0) return 0.5;
+   if (x == x0 && a == 0)
+      return 0.5;
 
    return Math.exp((r/2 - 1) * Math.log((x-x0)/2) - (x-x0)/2 - lgamma(r/2))/2;
 }
@@ -1559,11 +1588,13 @@ function fdistribution_pdf(x, n, m, x0 = 0) {
 /** @summary fdistribution_cdf_c function
   * @memberof Math */
 function fdistribution_cdf_c(x, n, m, x0 = 0) {
-   if (n < 0 || m < 0) return Number.NaN;
+   if (n < 0 || m < 0)
+      return Number.NaN;
 
    const z = m / (m + n * (x - x0));
    // fox z->1 and large a and b IB looses precision use complement function
-   if (z > 0.9 && n > 1 && m > 1) return 1. - fdistribution_cdf(x, n, m, x0);
+   if (z > 0.9 && n > 1 && m > 1)
+      return 1. - fdistribution_cdf(x, n, m, x0);
 
    // for the complement use the fact that IB(x,a,b) = 1. - IB(1-x,b,a)
    return inc_beta(m / (m + n * (x - x0)), .5 * m, .5 * n);
@@ -1572,7 +1603,8 @@ function fdistribution_cdf_c(x, n, m, x0 = 0) {
 /** @summary fdistribution_cdf function
   * @memberof Math */
 function fdistribution_cdf(x, n, m, x0 = 0) {
-   if (n < 0 || m < 0) return Number.NaN;
+   if (n < 0 || m < 0)
+      return Number.NaN;
 
    const z = n * (x - x0) / (m + n * (x - x0));
    // fox z->1 and large a and b IB looses precision use complement function
@@ -1585,11 +1617,14 @@ function fdistribution_cdf(x, n, m, x0 = 0) {
 /** @summary Prob function
   * @memberof Math */
 function Prob(chi2, ndf) {
-   if (ndf <= 0) return 0; // Set CL to zero in case ndf <= 0
+   if (ndf <= 0)
+      return 0; // Set CL to zero in case ndf <= 0
 
    if (chi2 <= 0) {
-      if (chi2 < 0) return 0;
-      else return 1;
+      if (chi2 < 0)
+         return 0;
+      else
+         return 1;
    }
 
    return chisquared_cdf_c(chi2,ndf,0);
@@ -1598,9 +1633,11 @@ function Prob(chi2, ndf) {
 /** @summary Gaus function
   * @memberof Math */
 function Gaus(x, mean, sigma, norm) {
-   if (!sigma) return 1e30;
+   if (!sigma)
+      return 1e30;
    const arg = (x - mean) / sigma;
-   if (arg < -39 || arg > 39) return 0;
+   if (arg < -39 || arg > 39)
+      return 0;
    const res = Math.exp(-0.5*arg*arg);
    return norm ? res/(2.50662827463100024*sigma) : res; // sqrt(2*Pi)=2.50662827463100024
 }
@@ -1620,7 +1657,8 @@ function Beta(x,y) {
 /** @summary GammaDist function
   * @memberof Math */
 function GammaDist(x, gamma, mu = 0, beta = 1) {
-   if ((x < mu) || (gamma <= 0) || (beta <= 0)) return 0;
+   if ((x < mu) || (gamma <= 0) || (beta <= 0))
+      return 0;
    return gamma_pdf(x, gamma, beta, mu);
 }
 
@@ -1639,7 +1677,8 @@ function LaplaceDistI(x, alpha = 0, beta = 1) {
 /** @summary density function for Student's t- distribution
   * @memberof Math */
 function Student(T, ndf) {
-   if (ndf < 1) return 0;
+   if (ndf < 1)
+      return 0;
 
    const r = ndf,
          rh = 0.5*r,
@@ -1661,7 +1700,8 @@ function StudentI(T, ndf) {
 /** @summary LogNormal function
   * @memberof Math */
 function LogNormal(x, sigma, theta = 0, m = 1) {
-   if ((x < theta) || (sigma <= 0) || (m <= 0)) return 0;
+   if ((x < theta) || (sigma <= 0) || (m <= 0))
+      return 0;
    return lognormal_pdf(x, Math.log(m), sigma, theta);
 }
 
@@ -1677,7 +1717,8 @@ function BetaDist(x, p, q) {
 /** @summary Computes the distribution function of the Beta distribution.
   * @memberof Math */
 function BetaDistI(x, p, q) {
-   if ((x < 0) || (x > 1) || (p <= 0) || (q <= 0)) return 0;
+   if ((x < 0) || (x > 1) || (p <= 0) || (q <= 0))
+      return 0;
    return BetaIncomplete(x, p, q);
 }
 
@@ -1721,7 +1762,8 @@ function landaun(f, x, i) {
 /** @summary Crystal ball function
   * @memberof Math */
 function crystalball_function(x, alpha, n, sigma, mean = 0) {
-   if (sigma < 0.) return 0.;
+   if (sigma < 0.)
+      return 0.;
    let z = (x - mean)/sigma;
    if (alpha < 0) z = -z;
    const abs_alpha = Math.abs(alpha);
@@ -1737,8 +1779,10 @@ function crystalball_function(x, alpha, n, sigma, mean = 0) {
 /** @summary pdf definition of the crystal_ball which is defined only for n > 1 otherwise integral is diverging
   * @memberof Math */
 function crystalball_pdf(x, alpha, n, sigma, mean = 0) {
-   if (sigma < 0.) return 0.;
-   if (n <= 1) return Number.NaN;  // pdf is not normalized for n <=1
+   if (sigma < 0.)
+      return 0.;
+   if (n <= 1)
+      return Number.NaN;  // pdf is not normalized for n <=1
    const abs_alpha = Math.abs(alpha),
          C = n/abs_alpha * 1./(n-1.) * Math.exp(-alpha*alpha/2.),
          D = Math.sqrt(M_PI/2.)*(1.+erf(abs_alpha/Math.sqrt(2.))),
@@ -1749,8 +1793,10 @@ function crystalball_pdf(x, alpha, n, sigma, mean = 0) {
 /** @summary compute the integral of the crystal ball function
   * @memberof Math */
 function crystalball_integral(x, alpha, n, sigma, mean = 0) {
-   if (sigma == 0) return 0;
-   if (alpha == 0) return 0.;
+   if (sigma == 0)
+      return 0;
+   if (alpha == 0)
+      return 0.;
    const useLog = (n == 1.0),
          abs_alpha = Math.abs(alpha);
 
@@ -1907,7 +1953,8 @@ function eff_ClopperPearson(total,passed,level,bUpper) {
 /** @summary Calculate normal
   * @memberof Math */
 function eff_Normal(total,passed,level,bUpper) {
-   if (total == 0) return bUpper ? 1 : 0;
+   if (total == 0)
+      return bUpper ? 1 : 0;
 
    const alpha = (1.0 - level)/2,
          average = passed / total,
@@ -1924,7 +1971,8 @@ function eff_Normal(total,passed,level,bUpper) {
   * @memberof Math */
 function eff_Wilson(total,passed,level,bUpper) {
    const alpha = (1.0 - level)/2;
-   if (total == 0) return bUpper ? 1 : 0;
+   if (total == 0)
+      return bUpper ? 1 : 0;
    const average = passed / total,
          kappa = normal_quantile(1 - alpha,1),
          mode = (passed + 0.5 * kappa * kappa) / (total + kappa * kappa),
