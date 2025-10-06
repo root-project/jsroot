@@ -423,7 +423,8 @@ function injectStyle(code, node, tag) {
    }
 
    const element = document.createElement('style');
-   if (tag) element.setAttribute('tag', tag);
+   if (tag)
+      element.setAttribute('tag', tag);
    element.innerHTML = code;
    (node || document.head).appendChild(element);
    return true;

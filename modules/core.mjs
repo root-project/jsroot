@@ -899,9 +899,22 @@ function decodeUrl(url) {
       let pos = 0, nq = 0, eq = -1, firstq = -1;
       while ((pos < url.length) && (nq || ((url[pos] !== '&') && (url[pos] !== '#')))) {
          switch (url[pos]) {
-            case '\'': if (nq >= 0) nq = (nq+1) % 2; if (firstq < 0) firstq = pos; break;
-            case '"': if (nq <= 0) nq = (nq-1) % 2; if (firstq < 0) firstq = pos; break;
-            case '=': if ((firstq < 0) && (eq < 0)) eq = pos; break;
+            case '\'':
+               if (nq >= 0)
+                  nq = (nq+1) % 2;
+               if (firstq < 0)
+                  firstq = pos;
+               break;
+            case '"':
+               if (nq <= 0)
+                  nq = (nq-1) % 2;
+               if (firstq < 0)
+                  firstq = pos;
+               break;
+            case '=':
+               if ((firstq < 0) && (eq < 0))
+                  eq = pos;
+               break;
          }
          pos++;
       }

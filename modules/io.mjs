@@ -313,7 +313,8 @@ CustomStreamers = {
    TStreamerBase(buf, elem) {
       const ver = buf.last_read_version;
       buf.classStreamer(elem, clTStreamerElement);
-      if (ver > 2) elem.fBaseVersion = buf.ntou4();
+      if (ver > 2)
+         elem.fBaseVersion = buf.ntou4();
    },
 
    TStreamerSTL(buf, elem) {
@@ -322,12 +323,12 @@ CustomStreamers = {
       elem.fCtype = buf.ntou4();
 
       if ((elem.fSTLtype === kSTLmultimap) &&
-         ((elem.fTypeName.indexOf('std::set') === 0) ||
-            (elem.fTypeName.indexOf('set') === 0))) elem.fSTLtype = kSTLset;
+          ((elem.fTypeName.indexOf('std::set') === 0) || (elem.fTypeName.indexOf('set') === 0)))
+            elem.fSTLtype = kSTLset;
 
       if ((elem.fSTLtype === kSTLset) &&
-         ((elem.fTypeName.indexOf('std::multimap') === 0) ||
-            (elem.fTypeName.indexOf('multimap') === 0))) elem.fSTLtype = kSTLmultimap;
+          ((elem.fTypeName.indexOf('std::multimap') === 0) || (elem.fTypeName.indexOf('multimap') === 0)))
+            elem.fSTLtype = kSTLmultimap;
    },
 
    TStreamerSTLstring(buf, elem) {
@@ -3738,7 +3739,8 @@ class TFile {
       // special handling for TStyle which has duplicated member name fLineStyle
       if ((s_i.fName === clTStyle) && s_i.fElements) {
          s_i.fElements.arr.forEach(elem => {
-            if (elem.fName === 'fLineStyle') elem.fName = 'fLineStyles'; // like in ROOT JSON now
+            if (elem.fName === 'fLineStyle')
+               elem.fName = 'fLineStyles'; // like in ROOT JSON now
          });
       }
 

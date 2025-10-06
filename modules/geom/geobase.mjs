@@ -2879,7 +2879,8 @@ class ClonedNodes {
          arg.last = 0;
          arg.copyStack = function(factor) {
             const entry = { nodeid: this.nodeid, seqid: this.counter, stack: new Array(this.last) };
-            if (factor) entry.factor = factor; // factor used to indicate importance of entry, will be built as first
+            if (factor)
+               entry.factor = factor; // factor used to indicate importance of entry, will be built as first
             for (let n = 0; n < this.last; ++n)
                entry.stack[n] = this.stack[n+1]; // copy stack
             return entry;

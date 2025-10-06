@@ -53,8 +53,10 @@ class TLinePainter extends ObjectPainter {
       line.fX2 = fx2;
       line.fY1 = fy1;
       line.fY2 = fy2;
-      if (this.#side !== 1) exec += `SetX1(${fx1});;SetY1(${fy1});;`;
-      if (this.#side !== -1) exec += `SetX2(${fx2});;SetY2(${fy2});;`;
+      if (this.#side !== 1)
+         exec += `SetX1(${fx1});;SetY1(${fy1});;`;
+      if (this.#side !== -1)
+         exec += `SetX2(${fx2});;SetY2(${fy2});;`;
       this.submitCanvExec(exec + 'Notify();;');
    }
 

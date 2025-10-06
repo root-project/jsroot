@@ -601,8 +601,10 @@ function parseLatex(node, arg, label, curr) {
                           ? getElementRect(elem, 'nopadding')
                           : { height: curr.fsize * 1.2, width: approximateLabelWidth(s, curr.font, curr.fsize) };
 
-            if (curr.x) elem.attr('x', curr.x);
-            if (curr.y) elem.attr('y', curr.y);
+            if (curr.x)
+               elem.attr('x', curr.x);
+            if (curr.y)
+               elem.attr('y', curr.y);
 
             // for single symbols like f,l.i one gets wrong estimation of total width, use it in sup/sub-scripts
             const xgap = (s.length === 1) && !curr.font.isMonospace() && ('lfij'.indexOf(s) >= 0) ? 0.1*curr.fsize : 0;

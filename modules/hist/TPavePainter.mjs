@@ -890,7 +890,8 @@ class TPavePainter extends ObjectPainter {
                      else if (isFunc(painter?.getGraph) && mo?.fLineWidth !== undefined && mo?.fMarkerSize !== undefined) {
                         endcaps = painter.options?.Ends ?? 1; // default is 1
                         edx = mo.fLineWidth + gStyle.fEndErrorSize;
-                        if (endcaps > 1) edx = Math.max(edx, mo.fMarkerSize*8*0.66);
+                        if (endcaps > 1)
+                           edx = Math.max(edx, mo.fMarkerSize*8*0.66);
                      }
 
                      const eoff = (endcaps === 3) ? 0.2 : 0,

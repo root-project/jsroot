@@ -356,8 +356,7 @@ function drawTreePlayer(hpainter, itemname, askey, asleaf) {
       return null;
 
    const root_version = top._root_version || 400129, // by default use version number 6-27-01
-
-    mdi = hpainter.getDisplay();
+         mdi = hpainter.getDisplay();
    if (!mdi)
       return null;
 
@@ -366,13 +365,14 @@ function drawTreePlayer(hpainter, itemname, askey, asleaf) {
       return null;
 
    const divid = d3_select(frame).attr('id'),
-       player = new BasePainter(divid);
+         player = new BasePainter(divid);
 
    if (item._childs && !asleaf) {
       for (let n = 0; n < item._childs.length; ++n) {
          const leaf = item._childs[n];
          if (isStr(leaf?._kind) && (leaf._kind.indexOf(getKindForType('TLeaf')) === 0) && (leaf_cnt < 2)) {
-            if (leaf_cnt++ > 0) expr += ':';
+            if (leaf_cnt++ > 0)
+               expr += ':';
             expr += leaf._name;
          }
       }
