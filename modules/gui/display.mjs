@@ -319,7 +319,8 @@ class GridDisplay extends MDIDisplay {
 
       for (let cnt = 0; cnt < num; ++cnt) {
          const group = { id: cnt, drawid: -1, position: 0, size: sizes[cnt], parent: handle };
-         if (cnt > 0) group.position = handle.groups[cnt-1].position + handle.groups[cnt-1].size;
+         if (cnt > 0)
+            group.position = handle.groups[cnt-1].position + handle.groups[cnt-1].size;
          group.position0 = group.position;
 
          if (!childs || !childs[cnt] || childs[cnt] < 2)

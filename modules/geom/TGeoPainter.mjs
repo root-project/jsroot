@@ -2092,8 +2092,10 @@ class TGeoPainter extends ObjectPainter {
          // check all other painters
 
          if (active_mesh) {
-            if (!geo_object) geo_object = active_mesh[0].geo_object;
-            if (!geo_stack) geo_stack = active_mesh[0].stack;
+            if (!geo_object)
+               geo_object = active_mesh[0].geo_object;
+            if (!geo_stack)
+               geo_stack = active_mesh[0].stack;
          }
 
          const lst = this.#highlight_handlers || this.getCentral()?.getSubordinates().concat([this.getCentral()]) || this.getSubordinates();
@@ -2234,7 +2236,8 @@ class TGeoPainter extends ObjectPainter {
 
                if (geo_stack) {
                   resolve = this.resolveStack(geo_stack);
-                  if (obj.stacks) geo_index = intersects[k].instanceId;
+                  if (obj.stacks)
+                     geo_index = intersects[k].instanceId;
                }
             }
          }

@@ -177,8 +177,10 @@ function readStyleFromURL(url) {
          gStyle[field] = flt;
    }
 
-   if (d.has('histzero')) gStyle.fHistMinimumZero = true;
-   if (d.has('histmargin')) gStyle.fHistTopMargin = parseFloat(d.get('histmargin'));
+   if (d.has('histzero'))
+      gStyle.fHistMinimumZero = true;
+   if (d.has('histmargin'))
+      gStyle.fHistTopMargin = parseFloat(d.get('histmargin'));
    get_int_style('optstat', 'fOptStat', 1111);
    get_int_style('optfit', 'fOptFit', 0);
    const has_date = get_int_style('optdate', 'fOptDate', 1),

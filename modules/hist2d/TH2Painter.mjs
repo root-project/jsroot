@@ -1049,10 +1049,14 @@ class TH2Painter extends THistPainter {
 
             xx = yy = numpoints = 0;
             gr = bin.fPoly; numgraphs = 1;
-            if (gr._typename === clTMultiGraph) { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }
+            if (gr._typename === clTMultiGraph) {
+               numgraphs = bin.fPoly.fGraphs.arr.length;
+               gr = null;
+            }
 
             for (ngr = 0; ngr < numgraphs; ++ngr) {
-               if (!gr || (ngr > 0)) gr = bin.fPoly.fGraphs.arr[ngr];
+               if (!gr || (ngr > 0))
+                  gr = bin.fPoly.fGraphs.arr[ngr];
 
                for (n = 0; n < gr.fNpoints; ++n) {
                   ++numpoints;
@@ -3230,10 +3234,14 @@ class TH2Painter extends THistPainter {
       if ((realx === undefined) && (realy === undefined)) {
          realx = realy = 0;
          let gr = bin.fPoly, numgraphs = 1;
-         if (gr._typename === clTMultiGraph) { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }
+         if (gr._typename === clTMultiGraph) {
+            numgraphs = bin.fPoly.fGraphs.arr.length;
+            gr = null;
+         }
 
          for (let ngr = 0; ngr < numgraphs; ++ngr) {
-            if (!gr || (ngr > 0)) gr = bin.fPoly.fGraphs.arr[ngr];
+            if (!gr || (ngr > 0))
+               gr = bin.fPoly.fGraphs.arr[ngr];
 
             for (let n = 0; n < gr.fNpoints; ++n) {
                ++numpoints;

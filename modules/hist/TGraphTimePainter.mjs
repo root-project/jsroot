@@ -142,8 +142,10 @@ class TGraphTimePainter extends ObjectPainter {
       if (!gr.fFrame.fTitle && gr.fTitle) {
          const arr = gr.fTitle.split(';');
          gr.fFrame.fTitle = arr[0];
-         if (arr[1]) gr.fFrame.fXaxis.fTitle = arr[1];
-         if (arr[2]) gr.fFrame.fYaxis.fTitle = arr[2];
+         if (arr[1])
+            gr.fFrame.fXaxis.fTitle = arr[1];
+         if (arr[2])
+            gr.fFrame.fYaxis.fTitle = arr[2];
       }
 
       return TH1Painter.draw(dom, gr.fFrame, '').then(() => {

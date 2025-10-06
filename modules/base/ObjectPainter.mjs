@@ -408,7 +408,8 @@ class ObjectPainter extends BasePainter {
             console.error('Not found frame to create g element inside');
             return frame;
          }
-         if (!isStr(frame_layer)) frame_layer = 'main_layer';
+         if (!isStr(frame_layer))
+            frame_layer = 'main_layer';
          layer = frame.selectChild('.' + frame_layer);
       } else
          layer = pp.getLayerSvg('primitives_layer');
@@ -1185,7 +1186,8 @@ class ObjectPainter extends BasePainter {
             let first = optimize_arr[0].attr(name);
             optimize_arr.forEach(txt_node => {
                const value = txt_node.attr(name);
-               if (!value || (value !== first)) first = undefined;
+               if (!value || (value !== first))
+                  first = undefined;
             });
             if (first) {
                draw_g.attr(name, first);

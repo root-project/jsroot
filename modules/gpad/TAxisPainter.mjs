@@ -570,21 +570,19 @@ class TAxisPainter extends ObjectPainter {
       let ndiv = 508;
       if (this.is_gaxis)
          ndiv = axis.fNdiv;
-      else if (axis) {
-         if (!axis.fNdivisions)
-            ndiv = 0;
-         else
-            ndiv = Math.max(axis.fNdivisions, 4);
-      }
+      else if (axis)
+         ndiv = axis.fNdivisions ? Math.max(axis.fNdivisions, 4) : 0;
 
       this.nticks = ndiv % 100;
       this.nticks2 = (ndiv % 10000 - this.nticks) / 100;
       this.nticks3 = Math.floor(ndiv/10000);
 
-      if (axis && !this.is_gaxis && (this.nticks > 20)) this.nticks = 20;
+      if (axis && !this.is_gaxis && (this.nticks > 20))
+         this.nticks = 20;
 
       let gr_range = Math.abs(this.func.range()[1] - this.func.range()[0]);
-      if (gr_range <= 0) gr_range = 100;
+      if (gr_range <= 0)
+         gr_range = 100;
 
       if (this.kind === kAxisTime) {
          if (this.nticks > 8) this.nticks = 8;

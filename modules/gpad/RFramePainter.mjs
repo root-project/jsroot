@@ -1164,7 +1164,8 @@ class RFramePainter extends RObjectPainter {
 
       menu.sub('Save as');
       const fmts = ['svg', 'png', 'jpeg', 'webp'];
-      if (internals.makePDF) fmts.push('pdf');
+      if (internals.makePDF)
+         fmts.push('pdf');
       fmts.forEach(fmt => menu.add(`frame.${fmt}`, () => this.getPadPainter().saveAs(fmt, 'frame', `frame.${fmt}`)));
       menu.endsub();
 

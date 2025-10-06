@@ -1417,7 +1417,8 @@ function createLineSegments(arr, material, index = undefined, only_geometry = fa
    const geom = new THREE.BufferGeometry();
 
    geom.setAttribute('position', arr instanceof Float32Array ? new THREE.BufferAttribute(arr, 3) : new THREE.Float32BufferAttribute(arr, 3));
-   if (index) geom.setIndex(new THREE.BufferAttribute(index, 1));
+   if (index)
+      geom.setIndex(new THREE.BufferAttribute(index, 1));
 
    if (material.isLineDashedMaterial) {
       const v1 = new THREE.Vector3(),

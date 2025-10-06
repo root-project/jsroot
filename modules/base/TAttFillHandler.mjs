@@ -475,7 +475,8 @@ class TAttFillHandler {
    saveToStyle(name_color, name_pattern) {
       if (name_color) {
          const indx = this.colorindx ?? findColor(this.color);
-         if (indx >= 0) gStyle[name_color] = indx;
+         if (indx >= 0)
+            gStyle[name_color] = indx;
       }
       if (name_pattern)
          gStyle[name_pattern] = this.pattern;

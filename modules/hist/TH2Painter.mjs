@@ -50,7 +50,8 @@ function drawTH2PolyLego(painter) {
       }
 
       for (let ngr = 0; ngr < ngraphs; ++ngr) {
-         if (!gr || (ngr > 0)) gr = bin.fPoly.fGraphs.arr[ngr];
+         if (!gr || (ngr > 0))
+            gr = bin.fPoly.fGraphs.arr[ngr];
 
          const x = gr.fX, y = gr.fY;
          let npnts = gr.fNpoints;
