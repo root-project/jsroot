@@ -629,12 +629,10 @@ class BasePainter {
             can_resize = origin.attr('can_resize');
       let do_resize = false;
 
-      if (can_resize === 'height')
-         if (height_factor && Math.abs(rect_origin.width * height_factor - rect_origin.height) > 0.1 * rect_origin.width)
-            do_resize = true;
+      if ((can_resize === 'height') && height_factor && Math.abs(rect_origin.width * height_factor - rect_origin.height) > 0.1 * rect_origin.width)
+         do_resize = true;
 
-      if (((rect_origin.height <= lmt) || (rect_origin.width <= lmt)) &&
-         can_resize && can_resize !== 'false')
+      if (((rect_origin.height <= lmt) || (rect_origin.width <= lmt)) && can_resize && (can_resize !== 'false'))
          do_resize = true;
 
       if (do_resize && (enlarge !== 'on')) {
