@@ -344,7 +344,8 @@ class TAttFillHandler {
 
                   let yy = nsteps * dyreal;
 
-                  while (Math.abs(yy-h) < 0.1) yy -= dyreal;
+                  while (Math.abs(yy - h) < 0.1)
+                     yy -= dyreal;
 
                   while (yy + hside > 0) {
                      let x1 = 0, y1 = yy, x2 = w, y2 = yy + hside;

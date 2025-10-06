@@ -1891,9 +1891,8 @@ function getMethods(typename, obj) {
          const dy = 1/ny, dx = 1/nx;
          let n = 0;
          for (let iy = 0; iy < ny; iy++) {
-            const y2 = 1 - iy*dy - ymargin;
-            let y1 = y2 - dy + 2*ymargin;
-            if (y1 < 0) y1 = 0;
+            const y2 = 1 - iy*dy - ymargin,
+                  y1 = Math.max(0, y2 - dy + 2*ymargin);
             if (y1 > y2)
                continue;
             for (let ix = 0; ix < nx; ix++) {

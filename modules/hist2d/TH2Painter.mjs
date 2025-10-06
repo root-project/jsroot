@@ -2199,7 +2199,8 @@ class TH2Painter extends THistPainter {
             // area of the box should be proportional to absolute bin content
             zdiff = 0.5 * ((zdiff < 0) ? 1 : (1 - Math.sqrt(zdiff * xyfactor)));
             // avoid oversized bins
-            if (zdiff < 0) zdiff = 0;
+            if (zdiff < 0)
+               zdiff = 0;
 
             ww = handle.grx[i+1] - handle.grx[i];
             hh = handle.gry[j] - handle.gry[j+1];

@@ -1766,7 +1766,8 @@ function crystalball_function(x, alpha, n, sigma, mean = 0) {
    if (sigma < 0.)
       return 0.;
    let z = (x - mean)/sigma;
-   if (alpha < 0) z = -z;
+   if (alpha < 0)
+      z = -z;
    const abs_alpha = Math.abs(alpha);
    if (z > -abs_alpha)
       return Math.exp(-0.5 * z * z);
@@ -1802,7 +1803,8 @@ function crystalball_integral(x, alpha, n, sigma, mean = 0) {
          abs_alpha = Math.abs(alpha);
 
    let z = (x-mean)/sigma, intgaus = 0., intpow = 0.;
-   if (alpha < 0 ) z = -z;
+   if (alpha < 0 )
+      z = -z;
 
    const sqrtpiover2 = Math.sqrt(M_PI/2.),
          sqrt2pi = Math.sqrt( 2.*M_PI),

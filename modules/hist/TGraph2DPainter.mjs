@@ -87,7 +87,8 @@ class TGraphDelaunay {
 
       // Wrong zeros may appear when points sit on a regular grid.
       // The following line try to avoid this problem.
-      if (zz === 0) zz = this.Interpolate(xx+0.0001, yy);
+      if (zz === 0)
+         zz = this.Interpolate(xx + 0.0001, yy);
 
       return zz;
    }
