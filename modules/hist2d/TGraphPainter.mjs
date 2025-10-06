@@ -532,9 +532,10 @@ class TGraphPainter extends ObjectPainter {
       if (isFunc(filter_func)) {
          for (let n = 0; n < this.#bins.length; ++n) {
             if (filter_func(this.#bins[n], n)) {
-               if (!selbins) selbins = (n === 0) ? [] : this.#bins.slice(0, n);
-            } else
-               if (selbins) selbins.push(this.#bins[n]);
+               if (!selbins)
+                  selbins = (n === 0) ? [] : this.#bins.slice(0, n);
+            } else if (selbins)
+               selbins.push(this.#bins[n]);
          }
       }
       if (!selbins)

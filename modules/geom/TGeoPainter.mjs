@@ -79,7 +79,8 @@ function buildCompositeVolume(comp, maxlvl, side) {
       return vol;
    }
 
-   if (side) side += '/';
+   if (side)
+      side += '/';
    vol.$geoh = true; // workaround, let know browser that we are in volumes hierarchy
    vol.fName = '';
 
@@ -3201,7 +3202,8 @@ class TGeoPainter extends ObjectPainter {
 
       if (this.#scene_size && !force) {
          function test(v1, v2, scale) {
-            if (!scale) scale = Math.abs((v1+v2)/2);
+            if (!scale)
+               scale = Math.abs((v1+v2)/2);
             return scale <= 1e-20 ? true : Math.abs(v2-v1)/scale > 0.01;
          };
          const d = this.#scene_size;
@@ -3768,7 +3770,8 @@ class TGeoPainter extends ObjectPainter {
          for (let n = 0; n < obj.arr.length; ++n) {
             const sobj = obj.arr[n];
             let sname = obj.opt ? obj.opt[n] : '';
-            if (!sname) sname = (itemname || '<prnt>') + `/[${n}]`;
+            if (!sname)
+               sname = (itemname || '<prnt>') + `/[${n}]`;
             parr.push(this.drawExtras(sobj, sname, add_objects));
          }
          promise = Promise.all(parr).then(ress => ress.indexOf(true) >= 0);
@@ -5818,7 +5821,8 @@ class TGeoPainter extends ObjectPainter {
          if (!opt)
             opt = 'wire';
       } else if ('fVolume' in obj) {
-         if (obj.fVolume) shape = obj.fVolume.fShape;
+         if (obj.fVolume)
+            shape = obj.fVolume.fShape;
       } else
          obj = null;
 
@@ -6227,7 +6231,8 @@ createItem = function(node, obj, name) {
       sub._icon = 'img_geomixture';
    else if ((obj._typename.indexOf(clTGeoNode) === 0) && obj.fVolume) {
       sub._title = 'node:' + obj._typename;
-      if (obj.fTitle) sub._title += ' ' + obj.fTitle;
+      if (obj.fTitle)
+         sub._title += ' ' + obj.fTitle;
       volume = obj.fVolume;
    } else if (obj._typename.indexOf(clTGeoVolume) === 0)
       volume = obj;
@@ -6244,7 +6249,8 @@ createItem = function(node, obj, name) {
    }
 
    if (volume || shape || subnodes) {
-      if (volume) sub._volume = volume;
+      if (volume)
+         sub._volume = volume;
 
       if (subnodes) {
          sub._more = true;

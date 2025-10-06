@@ -597,8 +597,10 @@ class TH1Painter extends THistPainter {
          show_markers = true;
 
       if (o.ErrorKind === 2) {
-         if (this.fillatt.empty()) show_markers = true;
-                              else path_fill = '';
+         if (this.fillatt.empty())
+            show_markers = true;
+         else
+            path_fill = '';
       } else if (show_errors) {
          show_line = false;
          path_err = '';

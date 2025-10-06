@@ -89,7 +89,8 @@ class RObjectPainter extends ObjectPainter {
 
    /** @summary Decode pad length from string, return pixel value */
    v7EvalLength(name, sizepx, dflt) {
-      if (sizepx <= 0) sizepx = 1;
+      if (sizepx <= 0)
+         sizepx = 1;
 
       const value = this.v7EvalAttr(name);
 

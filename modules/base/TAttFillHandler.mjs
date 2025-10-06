@@ -464,7 +464,8 @@ class TAttFillHandler {
      * @private */
    createSample(svg, width, height, plain) {
       // we need to create extra handle to change
-      if (plain) svg = d3_select(svg);
+      if (plain)
+         svg = d3_select(svg);
 
       const sample = new TAttFillHandler({ svg, pattern: this.pattern, color: this.color, color_as_svg: true });
 

@@ -957,10 +957,14 @@ class TGraphDelaunay {
          for (js = 0; js < nbSeg; js++) {
             if (is === js)
                continue;
-            if (xs0[is] === xs0[js] && ys0[is] === ys0[js]) s0 = true;
-            if (xs0[is] === xs1[js] && ys0[is] === ys1[js]) s0 = true;
-            if (xs1[is] === xs0[js] && ys1[is] === ys0[js]) s1 = true;
-            if (xs1[is] === xs1[js] && ys1[is] === ys1[js]) s1 = true;
+            if (xs0[is] === xs0[js] && ys0[is] === ys0[js])
+               s0 = true;
+            if (xs0[is] === xs1[js] && ys0[is] === ys1[js])
+               s0 = true;
+            if (xs1[is] === xs0[js] && ys1[is] === ys0[js])
+               s1 = true;
+            if (xs1[is] === xs1[js] && ys1[is] === ys1[js])
+               s1 = true;
          }
 
          // Segment is is alone, not connected. It is stored in the
@@ -1444,12 +1448,10 @@ class TGraph2DPainter extends ObjectPainter {
       let step = 1;
       if ((settings.OptimizeDraw > 0) && !fp.webgl) {
          const numselected = countSelected(fp.scale_zmin, fp.scale_zmax),
-             sizelimit = 50000;
+               sizelimit = 50000;
 
-         if (numselected > sizelimit) {
-            step = Math.floor(numselected / sizelimit);
-            if (step <= 2) step = 2;
-         }
+         if (numselected > sizelimit)
+            step = Math.max(2, Math.floor(numselected / sizelimit));
       }
 
       const markeratt = this.createAttMarker({ attr: graph, std: false }),

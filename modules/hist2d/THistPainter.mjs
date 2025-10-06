@@ -1821,13 +1821,15 @@ class THistPainter extends ObjectPainter {
           optfit = o.optfit;
 
       if (optstat !== undefined) {
-         if (stats) stats.fOptStat = optstat;
+         if (stats)
+            stats.fOptStat = optstat;
          o.optstat = undefined;
       } else
          optstat = histo.$custom_stat || st.fOptStat;
 
       if (optfit !== undefined) {
-         if (stats) stats.fOptFit = optfit;
+         if (stats)
+            stats.fOptFit = optfit;
          o.optfit = undefined;
       } else
          optfit = st.fOptFit;

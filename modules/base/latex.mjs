@@ -520,7 +520,8 @@ function parseLatex(node, arg, label, curr) {
 
       let sublabel = label.slice(0, pos - rbrace.length);
 
-      if (extra_braces) sublabel = lbrace + sublabel + rbrace;
+      if (extra_braces)
+         sublabel = lbrace + sublabel + rbrace;
 
       label = label.slice(pos);
 
@@ -1422,8 +1423,10 @@ function translateMath(str, kind, color, painter) {
 
       str = clean;
    } else {
-      if (str === '\\^') str = '\\unicode{0x5E}';
-      if (str === '\\vec') str = '\\unicode{0x2192}';
+      if (str === '\\^')
+         str = '\\unicode{0x5E}';
+      if (str === '\\vec')
+         str = '\\unicode{0x2192}';
       str = str.replace(/\\\./g, '\\unicode{0x2E}').replace(/\\\^/g, '\\hat');
       for (const x in mathjax_unicode)
          str = str.replace(new RegExp(`\\\\\\b${x}\\b`, 'g'), `\\unicode{0x${mathjax_unicode[x].toString(16)}}`);

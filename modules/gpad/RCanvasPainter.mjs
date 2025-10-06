@@ -439,9 +439,12 @@ class RCanvasPainter extends RPadPainter {
    submitExec(painter, exec, subelem) {
       if (subelem && isStr(subelem)) {
          const len = subelem.length;
-         if ((len > 2) && (subelem.indexOf('#x') === len - 2)) subelem = 'x'; else
-         if ((len > 2) && (subelem.indexOf('#y') === len - 2)) subelem = 'y'; else
-         if ((len > 2) && (subelem.indexOf('#z') === len - 2)) subelem = 'z';
+         if ((len > 2) && (subelem.indexOf('#x') === len - 2))
+            subelem = 'x';
+         else if ((len > 2) && (subelem.indexOf('#y') === len - 2))
+            subelem = 'y';
+         else if ((len > 2) && (subelem.indexOf('#z') === len - 2))
+            subelem = 'z';
 
          if ((subelem === 'x') || (subelem === 'y') || (subelem === 'z'))
             exec = subelem + 'axis#' + exec;

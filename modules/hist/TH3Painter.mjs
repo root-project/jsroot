@@ -249,7 +249,8 @@ class TH3Painter extends THistPainter {
          stat.addText(`Kurtosis z = ${stat.format(data.kurtz)}`);
       }
 
-      if (dofit) stat.fillFunctionStat(this.findFunction(clTF3), dofit, 3);
+      if (dofit)
+         stat.fillFunctionStat(this.findFunction(clTF3), dofit, 3);
 
       return true;
    }

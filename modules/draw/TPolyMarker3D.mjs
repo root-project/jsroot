@@ -22,10 +22,8 @@ async function drawPolyMarker3D() {
       ++numselect;
    }
 
-   if ((settings.OptimizeDraw > 0) && (numselect > sizelimit)) {
-      step = Math.floor(numselect/sizelimit);
-      if (step <= 2) step = 2;
-   }
+   if ((settings.OptimizeDraw > 0) && (numselect > sizelimit))
+      step = Math.max(2, Math.floor(numselect/sizelimit));
 
    const size = Math.floor(numselect/step),
          pnts = new PointsCreator(size, fp.webgl, fp.size_x3d/100),

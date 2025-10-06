@@ -368,13 +368,12 @@ class RFramePainter extends RObjectPainter {
          return this.#axes_drawn;
 
       const ticksx = this.v7EvalAttr('ticksX', 1),
-            ticksy = this.v7EvalAttr('ticksY', 1);
-      let sidex = 1, sidey = 1;
-
-      if (this.v7EvalAttr('swapX', false)) sidex = -1;
-      if (this.v7EvalAttr('swapY', false)) sidey = -1;
-
-      const w = this.getFrameWidth(), h = this.getFrameHeight(), pp = this.getPadPainter();
+            ticksy = this.v7EvalAttr('ticksY', 1),
+            sidex = this.v7EvalAttr('swapX', false) ? -1 : 1,
+            sidey = this.v7EvalAttr('swapY', false) ? -1 : 1,
+            w = this.getFrameWidth(),
+            h = this.getFrameHeight(),
+            pp = this.getPadPainter();
 
       if (!this.v6axes) {
          // this is partially same as v6 createXY method

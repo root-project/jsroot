@@ -840,8 +840,10 @@ function createSphereBuffer(shape, faces_limit) {
       for (let k = 0; k < heightSegments; ++k) {
          const k1 = k + d1, k2 = k + d2;
          let skip = 0;
-         if (Math.abs(_sint[k1]) <= epsilon) skip = 1; else
-         if (Math.abs(_sint[k2]) <= epsilon) skip = 2;
+         if (Math.abs(_sint[k1]) <= epsilon)
+            skip = 1;
+         else if (Math.abs(_sint[k2]) <= epsilon)
+            skip = 2;
 
          for (let n = 0; n < widthSegments; ++n) {
             creator.addFace4(
@@ -1840,7 +1842,8 @@ function createHalfSpace(shape, geom) {
    if (geom) {
       // using real size of other geometry, we probably improve precision
       const box = geomBoundingBox(geom);
-      if (box) sz = box.getSize(new THREE.Vector3()).length() * 1000;
+      if (box)
+         sz = box.getSize(new THREE.Vector3()).length() * 1000;
    }
 
    const v0 = new THREE.Vector3(-sz, -sz/2, 0),
@@ -2432,7 +2435,9 @@ function createFlippedGeom(geom) {
       newnorm[n+1] = norm[n+1+shift];
       newnorm[n+2] = -norm[n+2+shift];
 
-      shift+=3; if (shift===6) shift=-3; // values 0,3,-3
+      shift+=3;
+      if (shift===6)
+         shift=-3; // values 0,3,-3
    }
 
    const geomZ = new THREE.BufferGeometry();

@@ -248,8 +248,10 @@ class GridDisplay extends MDIDisplay {
          } else
             sizex = sizey = parseInt(kind);
 
-         if (!Number.isInteger(sizex)) sizex = 3;
-         if (!Number.isInteger(sizey)) sizey = 3;
+         if (!Number.isInteger(sizex))
+            sizex = 3;
+         if (!Number.isInteger(sizey))
+            sizey = 3;
 
          if (sizey > 1) {
             this.vertical = true;
@@ -276,7 +278,8 @@ class GridDisplay extends MDIDisplay {
             while (arg > 0) {
                sizes.unshift(Math.max(arg % 10, 1));
                arg = Math.round((arg-sizes[0])/10);
-               if (sizes[0] === 0) sizes[0] = 1;
+               if (sizes[0] === 0)
+                  sizes[0] = 1;
             }
          }
       }
@@ -309,14 +312,16 @@ class GridDisplay extends MDIDisplay {
    /** @summary Create frames group
      * @private */
    createGroup(handle, main, num, childs, sizes, childs_sizes) {
-      if (!sizes) sizes = new Array(num);
+      if (!sizes)
+         sizes = new Array(num);
       let sum1 = 0, sum2 = 0;
       for (let n = 0; n < num; ++n)
          sum1 += (sizes[n] || 1);
       for (let n = 0; n < num; ++n) {
          sizes[n] = Math.round(100 * (sizes[n] || 1) / sum1);
          sum2 += sizes[n];
-         if (n === num-1) sizes[n] += (100-sum2); // make 100%
+         if (n === num-1)
+            sizes[n] += (100-sum2); // make 100%
       }
 
       for (let cnt = 0; cnt < num; ++cnt) {

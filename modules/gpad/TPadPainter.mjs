@@ -2317,7 +2317,8 @@ class TPadPainter extends ObjectPainter {
 
       this.#painters.forEach(sub => {
          if (isFunc(sub.getWebPadOptions)) {
-            if (scan_subpads) sub.getWebPadOptions(arg, cp);
+            if (scan_subpads)
+               sub.getWebPadOptions(arg, cp);
          } else {
             const opt = createWebObjectOptions(sub);
             if (opt)

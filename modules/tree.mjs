@@ -1287,7 +1287,8 @@ class TDrawSelector extends TSelector {
             const s = create(clTObjString);
             s.fString = res.lbls[k];
             s.fUniqueID = k + 1;
-            if (s.fString === '') s.fString = '<empty>';
+            if (s.fString === '')
+               s.fString = '<empty>';
             res.fLabels.Add(s);
          }
       }

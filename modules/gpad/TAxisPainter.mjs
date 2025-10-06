@@ -1169,7 +1169,8 @@ class TAxisPainter extends ObjectPainter {
       let pr = Promise.resolve();
 
       for (let lcnt = 0; lcnt < label_g.length; ++lcnt) {
-         if (lcnt > 0) side = -side;
+         if (lcnt > 0)
+            side = -side;
 
          pr = pr.then(() => this.startTextDrawingAsync(labelsFont, 'font', label_g[lcnt])).then(() => {
             let lastpos = 0;

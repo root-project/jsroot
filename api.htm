@@ -521,7 +521,8 @@
                 return window.open(elem.href.replace('?nobrowser&', '?'), '_blank');
 
              window.location.hash = shortname;
-             if (elem.title) SetPageTitle(elem.title);
+             if (elem.title)
+                SetPageTitle(elem.title);
              ProcessClick(durl).then(() => document.getElementById('panel').classList.toggle('open'));
           });
       }
@@ -638,7 +639,8 @@
 
                if ((window.location.hash == '#' + shortname + '_src') || (entry.syn && window.location.hash == '#' + entry.syn + '_src')) {
                   saaa.focus();
-                  if (entry.title) SetPageTitle(entry.title);
+                  if (entry.title)
+                     SetPageTitle(entry.title);
                   ProcessSourceClick(entry).then(() => document.getElementById('panel').classList.toggle('open'));
                }
             }

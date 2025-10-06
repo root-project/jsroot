@@ -305,7 +305,8 @@ class TAttMarkerHandler {
      * @param {number} height - height of sample SVG
      * @private */
    createSample(svg, width, height, plain) {
-      if (plain) svg = d3_select(svg);
+      if (plain)
+         svg = d3_select(svg);
       this.resetPos();
       svg.append('path')
          .attr('d', this.create(width / 2, height / 2))

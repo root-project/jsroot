@@ -106,7 +106,8 @@ class RAxisPainter extends RObjectPainter {
          this.symlog = _symlog;
          this.func = d3_scaleSymlog().constant(_symlog).domain([smin, smax]);
       } else if (_log) {
-         if (smax <= 0) smax = 1;
+         if (smax <= 0)
+            smax = 1;
          if ((smin <= 0) || (smin >= smax))
             smin = smax * 0.0001;
          this.log = true;
@@ -913,7 +914,8 @@ class RAxisPainter extends RObjectPainter {
       this.axis_g = axis_g;
       this.side = side;
 
-      if (this.ticksSide === 'invert') side = -side;
+      if (this.ticksSide === 'invert')
+         side = -side;
 
       if (this.standalone)
          this.drawMainLine(axis_g);

@@ -459,7 +459,8 @@ class JSRootMenu {
      * @private */
    addLineStyleMenu(name, value, set_func) {
       this.sub(name, () => this.input('Enter line style id (1-solid)', value, 'int', 1, 11).then(val => {
-         if (getSvgLineStyle(val)) set_func(val);
+         if (getSvgLineStyle(val))
+            set_func(val);
       }));
       for (let n = 1; n < 11; ++n) {
          const dash = getSvgLineStyle(n),
@@ -475,7 +476,8 @@ class JSRootMenu {
    addFillStyleMenu(name, value, color_index, set_func) {
       this.sub(name, () => {
          this.input('Enter fill style id (1001-solid, 3100..4000)', value, 'int', 0, 4000).then(id => {
-            if ((id >= 0) && (id <= 4000)) set_func(id);
+            if ((id >= 0) && (id <= 4000))
+               set_func(id);
          });
       });
 
@@ -513,7 +515,8 @@ class JSRootMenu {
 
       this.sub(name, () => {
          this.input('Enter font id from [0..20]', Math.floor(value/10), 'int', 0, 20).then(id => {
-            if ((id >= 0) && (id <= 20)) set_func(id*10 + prec);
+            if ((id >= 0) && (id <= 20))
+               set_func(id*10 + prec);
          });
       });
 
@@ -562,7 +565,8 @@ class JSRootMenu {
             if ((id < 11) || (id > 33))
                return;
             const h = Math.floor(id/10), v = id % 10;
-            if ((h > 0) && (h < 4) && (v > 0) && (v < 4)) set_func(id);
+            if ((h > 0) && (h < 4) && (v > 0) && (v < 4))
+               set_func(id);
          });
       });
 

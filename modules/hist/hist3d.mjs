@@ -909,7 +909,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
             text3d.rotate = 1;
 
          if (center_x) {
-            if (!space) space = Math.min(grx - grminx, grmaxx - grx);
+            if (!space)
+               space = Math.min(grx - grminx, grmaxx - grx);
             text3d.grx += space/2;
          }
       }
@@ -1175,7 +1176,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
                text_scale = Math.min(text_scale, 0.9*space/draw_width);
          }
          if (center_y) {
-            if (!space) space = Math.min(gry - grminy, grmaxy - gry);
+            if (!space)
+               space = Math.min(gry - grminy, grmaxy - gry);
             text3d.gry += space/2;
          }
          if (rotate_y)
@@ -1726,7 +1728,8 @@ function drawBinsLego(painter, is_v7 = false) {
 
             const bin_index = histo.getBin(i+1, j+1);
             let size = indicies.length;
-            if (nobottom) size -= 6;
+            if (nobottom)
+               size -= 6;
 
             // array over all vertices of the single bin
             while (k < size) {

@@ -940,7 +940,8 @@ function readMapElement(buf) {
    for (let i = 0; i < n; ++i) {
       res[i] = { _typename: this.pairtype };
       streamer[0].func(buf, res[i]);
-      if (!this.member_wise) streamer[1].func(buf, res[i]);
+      if (!this.member_wise)
+         streamer[1].func(buf, res[i]);
    }
 
    // due-to member-wise streaming second element read after first is completed
@@ -3084,7 +3085,8 @@ class TFile {
                   if (n < last)
                      sum2 += place[n];
                }
-               if (!sum_total) sum_total = 1;
+               if (!sum_total)
+                  sum_total = 1;
 
                const progress_offest = sum1 / sum_total, progress_this = (sum2 - sum1) / sum_total;
                xhr.addEventListener('progress', oEvent => {

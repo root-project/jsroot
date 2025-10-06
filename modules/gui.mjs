@@ -62,7 +62,8 @@ function readStyleFromURL(url) {
    let mr = d.get('maxranges');
    if (mr) {
       mr = parseInt(mr);
-      if (Number.isInteger(mr)) settings.MaxRanges = mr;
+      if (Number.isInteger(mr))
+         settings.MaxRanges = mr;
    }
 
    if (d.has('wrong_http_response'))
@@ -114,7 +115,8 @@ function readStyleFromURL(url) {
    if (latex !== null)
       settings.Latex = constants.Latex.fromString(latex);
 
-   if (d.has('nomenu')) settings.ContextMenu = false;
+   if (d.has('nomenu'))
+      settings.ContextMenu = false;
    if (d.has('noprogress'))
       settings.ProgressBox = false;
    else
@@ -156,16 +158,21 @@ function readStyleFromURL(url) {
 
    if (d.has('palette')) {
       const palette = parseInt(d.get('palette'));
-      if (Number.isInteger(palette) && (palette > 0) && (palette < 113)) settings.Palette = palette;
+      if (Number.isInteger(palette) && (palette > 0) && (palette < 113))
+         settings.Palette = palette;
    }
 
    const render3d = d.get('render3d'), embed3d = d.get('embed3d'), geosegm = d.get('geosegm');
-   if (render3d) settings.Render3D = constants.Render3D.fromString(render3d);
-   if (embed3d) settings.Embed3D = constants.Embed3D.fromString(embed3d);
-   if (geosegm) settings.GeoGradPerSegm = Math.max(2, parseInt(geosegm));
+   if (render3d)
+      settings.Render3D = constants.Render3D.fromString(render3d);
+   if (embed3d)
+      settings.Embed3D = constants.Embed3D.fromString(embed3d);
+   if (geosegm)
+      settings.GeoGradPerSegm = Math.max(2, parseInt(geosegm));
    get_bool('geocomp', 'GeoCompressComp');
 
-   if (d.has('hlimit')) settings.HierarchyLimit = parseInt(d.get('hlimit'));
+   if (d.has('hlimit'))
+      settings.HierarchyLimit = parseInt(d.get('hlimit'));
 
    function get_int_style(name, field, dflt) {
       if (!d.has(name))

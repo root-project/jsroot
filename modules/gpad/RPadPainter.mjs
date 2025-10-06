@@ -179,7 +179,8 @@ class RPadPainter extends RObjectPainter {
       const svg_p = this.getPadSvg();
       if (!svg_p.empty()) {
          svg_p.property('pad_painter', null);
-         if (!this.isCanvas()) svg_p.remove();
+         if (!this.isCanvas())
+            svg_p.remove();
       }
 
       this.#main_painter_ref = undefined;
@@ -425,8 +426,10 @@ class RPadPainter extends RObjectPainter {
       for (let k = 0; k < this.#painters.length; ++k) {
          const sub = this.#painters[k];
          if (isFunc(sub.forEachPainterInPad)) {
-            if (kind !== 'objects') sub.forEachPainterInPad(userfunc, kind);
-         } else if (kind !== 'pads') userfunc(sub);
+            if (kind !== 'objects')
+               sub.forEachPainterInPad(userfunc, kind);
+         } else if (kind !== 'pads')
+            userfunc(sub);
       }
    }
 

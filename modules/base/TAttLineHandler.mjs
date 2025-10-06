@@ -154,7 +154,8 @@ class TAttLineHandler {
 
    /** @summary Create sample element inside primitive SVG - used in context menu */
    createSample(svg, width, height, plain) {
-      if (plain) svg = d3_select(svg);
+      if (plain)
+         svg = d3_select(svg);
       svg.append('path')
          .attr('d', `M0,${height/2}h${width}`)
          .call(this.func);

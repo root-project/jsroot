@@ -2003,7 +2003,8 @@ class HierarchyPainter extends BasePainter {
 
             // allow to draw item even if draw function is not defined
             if (hitem._can_draw) {
-               if (!sett.opts) sett.opts = [''];
+               if (!sett.opts)
+                  sett.opts = [''];
                if (sett.opts.indexOf('') < 0)
                   sett.opts.unshift('');
             }
@@ -3301,9 +3302,11 @@ class HierarchyPainter extends BasePainter {
                   if ((name.length > 4) && (name.lastIndexOf('.mjs') === name.length - 4))
                      v7_imports.push(this.importModule(name));
                    else if ((name.length > 3) && (name.lastIndexOf('.js') === name.length - 3)) {
-                     if (!scripts.find(elem => elem === name)) scripts.push(name);
+                     if (!scripts.find(elem => elem === name))
+                        scripts.push(name);
                   } else if ((name.length > 4) && (name.lastIndexOf('.css') === name.length - 4)) {
-                     if (!styles.find(elem => elem === name)) styles.push(name);
+                     if (!styles.find(elem => elem === name))
+                        styles.push(name);
                   } else if (name && !v6_modules.find(elem => elem === name))
                      v6_modules.push(name);
                });
@@ -3327,7 +3330,8 @@ class HierarchyPainter extends BasePainter {
                });
       };
 
-      if (!server_address) server_address = '';
+      if (!server_address)
+         server_address = '';
 
       if (isObject(server_address)) {
          const h = server_address;

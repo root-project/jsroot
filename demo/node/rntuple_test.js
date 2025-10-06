@@ -79,7 +79,8 @@ else {
 // Setup selector to process all fields (so cluster gets loaded)
 const selector = new TSelector(),
       fields = ['IntField', 'FloatField', 'DoubleField', 'StringField'];
-for (const f of fields) selector.addBranch(f);
+for (const f of fields)
+   selector.addBranch(f);
 
 selector.Begin = () => {
   console.log('\nBegin processing to load cluster data...');

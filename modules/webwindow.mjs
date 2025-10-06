@@ -105,7 +105,8 @@ class LongPollSocket {
                return this.handle.processRequest(null);
             }
 
-            while (i < 4) str += String.fromCharCode(u8Arr[i++]);
+            while (i < 4)
+               str += String.fromCharCode(u8Arr[i++]);
             if (str !== 'txt:') {
                str = '';
                while ((i < offset) && (String.fromCharCode(u8Arr[i]) !== ':'))
@@ -115,7 +116,8 @@ class LongPollSocket {
             }
 
             str = '';
-            while (i < offset) str += String.fromCharCode(u8Arr[i++]);
+            while (i < offset)
+               str += String.fromCharCode(u8Arr[i++]);
 
             if (str) {
                if (str === '<<nope>>')
@@ -718,7 +720,8 @@ class WebWindowHandle {
             return;
 
          this.#ws.onopen = () => {
-            if (ntry > 2) showProgress();
+            if (ntry > 2)
+               showProgress();
             this.#state = 1;
 
             const reply = (this.#secondary ? '' : 'generate_key;') + (this.#key || '');
