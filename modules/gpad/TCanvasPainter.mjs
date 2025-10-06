@@ -739,7 +739,8 @@ class TCanvasPainter extends TPadPainter {
             break;
          case 'pave_moved': {
             const info = createWebObjectOptions(painter);
-            if (info) msg = 'PRIMIT6:' + toJSON(info);
+            if (info)
+               msg = 'PRIMIT6:' + toJSON(info);
             break;
          }
          case 'logx':

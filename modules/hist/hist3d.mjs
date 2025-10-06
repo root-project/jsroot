@@ -1401,7 +1401,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
                          0, text_scale, 0, posz);
          const mesh = new THREE.Mesh(text3d, getTextMaterial(this.z_handle, 'title'));
          mesh.rotateZ(Math.PI*(rotate ? 1.5 : 0.5));
-         if (rotate) mesh.translateY(-dy);
+         if (rotate)
+            mesh.translateY(-dy);
 
          mesh.applyMatrix4(m);
          zcont[n].add(mesh);

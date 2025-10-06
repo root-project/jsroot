@@ -103,11 +103,12 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
             x[3] = x[0] = (arrx[i] + arrx[i+1])/2;
             x[2] = x[1] = (arrx[i+1] + arrx[i+2])/2;
 
-            if (zc[0] <= zc[1]) n = 0; else n = 1;
-            if (zc[2] <= zc[3]) m = 2; else m = 3;
-            if (zc[n] > zc[m]) n = m;
+            n = zc[0] <= zc[1] ? 0 : 1;
+            m = zc[2] <= zc[3] ? 2 : 3;
+            if (zc[n] > zc[m])
+               n = m;
             n++;
-            lj=1;
+            lj = 1;
             for (ix=1; ix<=4; ix++) {
                m = n%4 + 1;
                ljfill = PaintContourLine(zc[n-1], ir[n-1], x[n-1], y[n-1], zc[m-1], ir[m-1], x[m-1], y[m-1]);
@@ -115,11 +116,12 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
                n = m;
             }
 
-            if (zc[0] <= zc[1]) n = 0; else n = 1;
-            if (zc[2] <= zc[3]) m = 2; else m = 3;
-            if (zc[n] > zc[m]) n = m;
+            n = zc[0] <= zc[1] ? 0 : 1;
+            m = zc[2] <= zc[3] ? 2 : 3;
+            if (zc[n] > zc[m])
+               n = m;
             n++;
-            lj=2;
+            lj = 2;
             for (ix=1; ix<=4; ix++) {
                m = (n === 1) ? 4 : n-1;
                ljfill = PaintContourLine(zc[n-1], ir[n-1], x[n-1], y[n-1], zc[m-1], ir[m-1], x[m-1], y[m-1]);
@@ -2280,7 +2282,8 @@ class TH2Painter extends THistPainter {
 
       const o = this.getOptions(), isOption = opt => {
          let mult = 1;
-         while (opt >= mult) mult *= 10;
+         while (opt >= mult)
+            mult *= 10;
          mult /= 10;
          return Math.floor(fOption/mult) % 10 === Math.floor(opt/mult);
       }, parseOption = (opt, is_candle) => {

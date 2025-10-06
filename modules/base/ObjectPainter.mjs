@@ -1030,7 +1030,10 @@ class ObjectPainter extends BasePainter {
       const all_args = draw_g.property('all_args') || [];
       let missing = 0;
 
-      all_args.forEach(arg => { if (!arg.ready) missing++; });
+      all_args.forEach(arg => {
+         if (!arg.ready)
+            missing++;
+      });
 
       if (missing > 0) {
          if (isFunc(resolveFunc)) {

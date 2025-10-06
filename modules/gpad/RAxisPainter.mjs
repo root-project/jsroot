@@ -676,8 +676,10 @@ class RAxisPainter extends RObjectPainter {
 
          if (textwidth && ((!painter.vertical && !rotate_lbls) || (painter.vertical && rotate_lbls)) && !painter.log) {
             let maxwidth = this.gap_before*0.45 + this.gap_after*0.45;
-            if (!this.gap_before) maxwidth = 0.9*this.gap_after; else
-            if (!this.gap_after) maxwidth = 0.9*this.gap_before;
+            if (!this.gap_before)
+               maxwidth = 0.9*this.gap_after; else
+            if (!this.gap_after)
+               maxwidth = 0.9*this.gap_before;
             textscale = Math.min(textscale, maxwidth / textwidth);
          }
 
@@ -1115,7 +1117,8 @@ class RAxisPainter extends RObjectPainter {
 
    /** @summary Provide context menu for axis */
    fillAxisContextMenu(menu, kind) {
-      if (kind) menu.add('Unzoom', () => this.getFramePainter().unzoom(kind));
+      if (kind)
+         menu.add('Unzoom', () => this.getFramePainter().unzoom(kind));
 
       menu.sub('Log scale', () => this.changeAxisLog('toggle'));
       menu.addchk(!this.log && !this.symlog, 'linear', 0, arg => this.changeAxisLog(arg));

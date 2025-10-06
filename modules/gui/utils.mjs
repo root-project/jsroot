@@ -20,7 +20,8 @@ function showProgress(msg, tmout, click_handle) {
    let box = d3_select('#' + id);
 
    if (!settings.ProgressBox) {
-      if (modal) modal();
+      if (modal)
+         modal();
       return box.remove();
    }
 

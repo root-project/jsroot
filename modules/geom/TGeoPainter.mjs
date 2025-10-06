@@ -61,7 +61,8 @@ let $comp_col_cnt = 0;
 /** @summary Function used to build hierarchy of elements of composite shapes
   * @private */
 function buildCompositeVolume(comp, maxlvl, side) {
-   if (maxlvl === undefined) maxlvl = 1;
+   if (maxlvl === undefined)
+      maxlvl = 1;
    if (!side) {
       $comp_col_cnt = 0;
       side = '';
@@ -1930,7 +1931,8 @@ class TGeoPainter extends ObjectPainter {
           else {
             const many = (numnodes + numitems) > 1;
 
-            if (many) menu.header((numitems > 0) ? 'Items' : 'Nodes');
+            if (many)
+               menu.header((numitems > 0) ? 'Items' : 'Nodes');
 
             for (let n = 0; n < intersects.length; ++n) {
                const obj = intersects[n].object,
@@ -1984,11 +1986,13 @@ class TGeoPainter extends ObjectPainter {
                   menu.add('Hide', n, indx => {
                      const mesh = intersects[indx].object;
                      mesh.visible = false; // just disable mesh
-                     if (mesh.geo_object) mesh.geo_object.$hidden_via_menu = true; // and hide object for further redraw
+                     if (mesh.geo_object)
+                        mesh.geo_object.$hidden_via_menu = true; // and hide object for further redraw
                      menu.painter.render3D();
                   }, 'Hide this physical node');
 
-                  if (many) menu.endsub();
+                  if (many)
+                     menu.endsub();
 
                   continue;
                }
@@ -2054,7 +2058,8 @@ class TGeoPainter extends ObjectPainter {
                   }
                }
 
-               if (many) menu.endsub();
+               if (many)
+                  menu.endsub();
             }
          }
          menu.show();
@@ -3695,7 +3700,10 @@ class TGeoPainter extends ObjectPainter {
 
          let mesh = null;
          // either found painted object or just draw once again
-         this.#toplevel.traverse(node => { if (node.geo_object === obj) mesh = node; });
+         this.#toplevel.traverse(node => {
+            if (node.geo_object === obj)
+               mesh = node;
+         });
 
          if (mesh) {
             mesh.visible = res;
@@ -5005,7 +5013,8 @@ class TGeoPainter extends ObjectPainter {
                const zox = ortho && (ckind.indexOf('ZOX') > 0 || ckind.indexOf('ZNOX') > 0);
                setSideRotation(mesh, zox ? new THREE.Vector3(0, -1, 0) : undefined);
                mesh.rotateY(-Math.PI/2);
-               if (zox) mesh.rotateX(-Math.PI/2);
+               if (zox)
+                  mesh.rotateX(-Math.PI/2);
             } else {
                setTopRotation(mesh);
                mesh.rotateX(Math.PI/2);
@@ -5057,7 +5066,8 @@ class TGeoPainter extends ObjectPainter {
                const zox = ortho && (ckind.indexOf('ZOX') > 0 || ckind.indexOf('ZNOX') > 0);
                setSideRotation(mesh, zox ? new THREE.Vector3(0, -1, 0) : undefined);
                mesh.rotateY(-Math.PI/2);
-               if (zox) mesh.rotateX(-Math.PI/2);
+               if (zox)
+                  mesh.rotateX(-Math.PI/2);
             } else {
                setTopRotation(mesh);
                mesh.rotateX(Math.PI/2);

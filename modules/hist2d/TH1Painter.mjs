@@ -1040,14 +1040,14 @@ class TH1Painter extends THistPainter {
 
       const descent_order = funcs.x_handle && (funcs.swap_xy() !== funcs.x_handle.reverse);
 
-      while (l < r-1) {
-         const m = Math.round((l+r)*0.5), xx = GetBinGrX(m);
-         if ((xx === null) || (xx < pnt_x - 0.5))
+      while (l < r - 1) {
+         const m = Math.round((l + r)*0.5), xx = GetBinGrX(m);
+         if ((xx === null) || (xx < pnt_x - 0.5)) {
             if (descent_order)
                r = m;
             else
                l = m;
-          else if (xx > pnt_x + 0.5) {
+         } else if (xx > pnt_x + 0.5) {
             if (descent_order)
                l = m;
             else

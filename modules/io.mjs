@@ -1089,7 +1089,8 @@ function createMemberStreamer(element, file) {
                member.read = function(buf) { return buf.ntof(); };
             else {
                member.nbits = Math.round(element.fXmin);
-               if (member.nbits === 0) member.nbits = 12;
+               if (member.nbits === 0)
+                  member.nbits = 12;
                member.dv = new DataView(new ArrayBuffer(8), 0); // used to cast from uint32 to float32
                member.read = function(buf) {
                   const theExp = buf.ntou1(), theMan = buf.ntou2();
@@ -1172,7 +1173,8 @@ function createMemberStreamer(element, file) {
             classname = classname.slice(0, classname.length - 1);
 
          member.arrkind = getArrayKind(classname);
-         if (member.arrkind < 0) member.classname = classname;
+         if (member.arrkind < 0)
+            member.classname = classname;
          member.func = function(buf, obj) {
             obj[this.name] = buf.readNdimArray(this, (buf2, handle) => {
                if (handle.arrkind > 0)

@@ -2107,7 +2107,8 @@ class HierarchyPainter extends BasePainter {
 
          if (menu.size() > 0) {
             menu.tree_node = elem.parentNode;
-            if (menu.separ) menu.separator(); // add separator at the end
+            if (menu.separ)
+               menu.separator(); // add separator at the end
             menu.add('Close');
             menu.show();
          }

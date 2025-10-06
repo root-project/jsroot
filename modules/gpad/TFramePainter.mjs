@@ -1577,8 +1577,10 @@ class FrameInteractive extends TooltipHandler {
             }
          }
 
-         if (sel) menu_painter = sel;
-             else kind = 'frame';
+         if (sel)
+            menu_painter = sel;
+         else
+            kind = 'frame';
 
          if (pnt)
             frame_corner = (pnt.x > 0) && (pnt.x < 20) && (pnt.y > 0) && (pnt.y < 20);

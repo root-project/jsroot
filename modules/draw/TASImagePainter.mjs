@@ -96,7 +96,8 @@ class TASImagePainter extends ObjectPainter {
       for (let k = 0; k < 200; k++)
          this.#contour.arr[k] = min + (max-min)/(200-1)*k;
 
-      if (min >= max) max = min + 1;
+      if (min >= max)
+         max = min + 1;
 
       const z = this.getImageZoomRange(fp, obj.fConstRatio, obj.fWidth, obj.fHeight),
             pr = isNodeJs()
