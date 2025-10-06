@@ -3819,7 +3819,10 @@ class ClonedNodes {
          const item = lst[n];
 
          // if enough faces are produced, nothing else is required
-         if (res.done) { item.ready = true; continue; }
+         if (res.done) {
+            item.ready = true;
+            continue;
+         }
 
          if (!item.ready) {
             item._typename = kShapeType; // let reuse item for direct drawing

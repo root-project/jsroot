@@ -32,8 +32,14 @@ class TLinePainter extends ObjectPainter {
 
    /** @summary Continue interactive moving */
    moveDrag(dx, dy) {
-      if (this.#side !== 1) { this.x1 += dx; this.y1 += dy; }
-      if (this.#side !== -1) { this.x2 += dx; this.y2 += dy; }
+      if (this.#side !== 1) {
+         this.x1 += dx;
+         this.y1 += dy;
+      }
+      if (this.#side !== -1) {
+         this.x2 += dx;
+         this.y2 += dy;
+      }
       this.getG().select('path').attr('d', this.createPath());
    }
 

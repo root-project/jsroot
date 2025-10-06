@@ -51,10 +51,26 @@ class TBoxPainter extends ObjectPainter {
          return;
       const box = this.getObject(), X = this.swap_xy ? 'Y' : 'X', Y = this.swap_xy ? 'X' : 'Y';
       let exec = '';
-      if (this.c_x1) { const v = this.svgToAxis('x', this.x1); box[`f${X}1`] = v; exec += `Set${X}1(${v});;`; }
-      if (this.c_x2) { const v = this.svgToAxis('x', this.x2); box[`f${X}2`] = v; exec += `Set${X}2(${v});;`; }
-      if (this.c_y1) { const v = this.svgToAxis('y', this.y1); box[`f${Y}1`] = v; exec += `Set${Y}1(${v});;`; }
-      if (this.c_y2) { const v = this.svgToAxis('y', this.y2); box[`f${Y}2`] = v; exec += `Set${Y}2(${v});;`; }
+      if (this.c_x1) {
+         const v = this.svgToAxis('x', this.x1);
+         box[`f${X}1`] = v;
+         exec += `Set${X}1(${v});;`;
+      }
+      if (this.c_x2) {
+         const v = this.svgToAxis('x', this.x2);
+         box[`f${X}2`] = v;
+         exec += `Set${X}2(${v});;`;
+      }
+      if (this.c_y1) {
+         const v = this.svgToAxis('y', this.y1);
+         box[`f${Y}1`] = v;
+         exec += `Set${Y}1(${v});;`;
+      }
+      if (this.c_y2) {
+         const v = this.svgToAxis('y', this.y2);
+         box[`f${Y}2`] = v;
+         exec += `Set${Y}2(${v});;`;
+      }
       this.submitCanvExec(exec + 'Notify();;');
    }
 

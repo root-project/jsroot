@@ -923,10 +923,11 @@ class TGeoPainter extends ObjectPainter {
       const res = this.ctrl, macro = opt.indexOf('macro:');
 
       if (macro >= 0) {
-         let separ = opt.indexOf(';', macro+6);
-         if (separ < 0) separ = opt.length;
-         res.script_name = opt.slice(macro+6, separ);
-         opt = opt.slice(0, macro) + opt.slice(separ+1);
+         let separ = opt.indexOf(';', macro + 6);
+         if (separ < 0)
+            separ = opt.length;
+         res.script_name = opt.slice(macro + 6, separ);
+         opt = opt.slice(0, macro) + opt.slice(separ + 1);
          console.log(`script ${res.script_name} rest ${opt}`);
       }
 
@@ -953,41 +954,76 @@ class TGeoPainter extends ObjectPainter {
 
       const d = new DrawOptions(opt);
 
-      if (d.check('MAIN')) res.is_main = true;
+      if (d.check('MAIN'))
+         res.is_main = true;
 
-      if (d.check('DUMMY')) res.dummy = true;
+      if (d.check('DUMMY'))
+         res.dummy = true;
 
-      if (d.check('TRACKS')) res.tracks = true; // only for TGeoManager
-      if (d.check('SHOWTOP')) res.showtop = true; // only for TGeoManager
-      if (d.check('NO_SCREEN')) res.no_screen = true; // ignore kVisOnScreen bits for visibility
+      if (d.check('TRACKS'))
+         res.tracks = true; // only for TGeoManager
+      if (d.check('SHOWTOP'))
+         res.showtop = true; // only for TGeoManager
+      if (d.check('NO_SCREEN'))
+         res.no_screen = true; // ignore kVisOnScreen bits for visibility
 
-      if (d.check('NOINSTANCING')) res.instancing = -1; // disable usage of InstancedMesh
-      if (d.check('INSTANCING')) res.instancing = 1; // force usage of InstancedMesh
+      if (d.check('NOINSTANCING'))
+         res.instancing = -1; // disable usage of InstancedMesh
+      if (d.check('INSTANCING'))
+         res.instancing = 1; // force usage of InstancedMesh
 
-      if (d.check('ORTHO_CAMERA')) { res.camera_kind = 'orthoXOY'; res.can_rotate = 0; }
-      if (d.check('ORTHO', true)) { res.camera_kind = 'ortho' + d.part; res.can_rotate = 0; }
-      if (d.check('OVERLAY', true)) res.camera_overlay = d.part.toLowerCase();
-      if (d.check('CAN_ROTATE')) res.can_rotate = true;
-      if (d.check('PERSPECTIVE')) { res.camera_kind = 'perspective'; res.can_rotate = true; }
-      if (d.check('PERSP', true)) { res.camera_kind = 'persp' + d.part; res.can_rotate = true; }
-      if (d.check('MOUSE_CLICK')) res.mouse_click = true;
+      if (d.check('ORTHO_CAMERA')) {
+         res.camera_kind = 'orthoXOY';
+         res.can_rotate = 0;
+      }
+      if (d.check('ORTHO', true)) {
+         res.camera_kind = 'ortho' + d.part;
+         res.can_rotate = 0;
+      }
+      if (d.check('OVERLAY', true))
+         res.camera_overlay = d.part.toLowerCase();
+      if (d.check('CAN_ROTATE'))
+         res.can_rotate = true;
+      if (d.check('PERSPECTIVE')) {
+         res.camera_kind = 'perspective';
+         res.can_rotate = true;
+      }
+      if (d.check('PERSP', true)) {
+         res.camera_kind = 'persp' + d.part;
+         res.can_rotate = true;
+      }
+      if (d.check('MOUSE_CLICK'))
+         res.mouse_click = true;
 
-      if (d.check('DEPTHRAY') || d.check('DRAY')) res.depthMethod = 'ray';
-      if (d.check('DEPTHBOX') || d.check('DBOX')) res.depthMethod = 'box';
-      if (d.check('DEPTHPNT') || d.check('DPNT')) res.depthMethod = 'pnt';
-      if (d.check('DEPTHSIZE') || d.check('DSIZE')) res.depthMethod = 'size';
-      if (d.check('DEPTHDFLT') || d.check('DDFLT')) res.depthMethod = 'dflt';
+      if (d.check('DEPTHRAY') || d.check('DRAY'))
+         res.depthMethod = 'ray';
+      if (d.check('DEPTHBOX') || d.check('DBOX'))
+         res.depthMethod = 'box';
+      if (d.check('DEPTHPNT') || d.check('DPNT'))
+         res.depthMethod = 'pnt';
+      if (d.check('DEPTHSIZE') || d.check('DSIZE'))
+         res.depthMethod = 'size';
+      if (d.check('DEPTHDFLT') || d.check('DDFLT'))
+         res.depthMethod = 'dflt';
 
-      if (d.check('ZOOM', true)) res.zoom = d.partAsFloat(0, 100) / 100;
-      if (d.check('ROTY', true)) res.rotatey = d.partAsFloat();
-      if (d.check('ROTZ', true)) res.rotatez = d.partAsFloat();
+      if (d.check('ZOOM', true))
+         res.zoom = d.partAsFloat(0, 100) / 100;
+      if (d.check('ROTY', true))
+         res.rotatey = d.partAsFloat();
+      if (d.check('ROTZ', true))
+         res.rotatez = d.partAsFloat();
 
-      if (d.check('PHONG')) res.material_kind = 'phong';
-      if (d.check('LAMBERT')) res.material_kind = 'lambert';
-      if (d.check('MATCAP')) res.material_kind = 'matcap';
-      if (d.check('TOON')) res.material_kind = 'toon';
+      if (d.check('PHONG'))
+         res.material_kind = 'phong';
+      if (d.check('LAMBERT'))
+         res.material_kind = 'lambert';
+      if (d.check('MATCAP'))
+         res.material_kind = 'matcap';
+      if (d.check('TOON'))
+         res.material_kind = 'toon';
 
-      if (d.check('AMBIENT')) res.light.kind = 'ambient';
+      if (d.check('AMBIENT'))
+         res.light.kind = 'ambient';
 
       const getCamPart = () => {
          let neg = 1;
@@ -998,15 +1034,23 @@ class TGeoPainter extends ObjectPainter {
          return neg * d.partAsFloat();
       };
 
-      if (d.check('CAMX', true)) res.camx = getCamPart();
-      if (d.check('CAMY', true)) res.camy = getCamPart();
-      if (d.check('CAMZ', true)) res.camz = getCamPart();
-      if (d.check('CAMLX', true)) res.camlx = getCamPart();
-      if (d.check('CAMLY', true)) res.camly = getCamPart();
-      if (d.check('CAMLZ', true)) res.camlz = getCamPart();
+      if (d.check('CAMX', true))
+         res.camx = getCamPart();
+      if (d.check('CAMY', true))
+         res.camy = getCamPart();
+      if (d.check('CAMZ', true))
+         res.camz = getCamPart();
+      if (d.check('CAMLX', true))
+         res.camlx = getCamPart();
+      if (d.check('CAMLY', true))
+         res.camly = getCamPart();
+      if (d.check('CAMLZ', true))
+         res.camlz = getCamPart();
 
-      if (d.check('BLACK')) res.background = '#000000';
-      if (d.check('WHITE')) res.background = '#FFFFFF';
+      if (d.check('BLACK'))
+         res.background = '#000000';
+      if (d.check('WHITE'))
+         res.background = '#FFFFFF';
 
       if (d.check('BKGR_', true)) {
          let bckgr = null;
@@ -1018,57 +1062,107 @@ class TGeoPainter extends ObjectPainter {
                   bckgr = getColor(col);
             }
          }
-         if (bckgr) res.background = '#' + new THREE.Color(bckgr).getHexString();
+         if (bckgr)
+            res.background = '#' + new THREE.Color(bckgr).getHexString();
       }
 
       if (d.check('R3D_', true))
          res.Render3D = constants.Render3D.fromString(d.part.toLowerCase());
 
-      if (d.check('MORE', true)) res.more = d.partAsInt(0, 2) ?? 2;
-      if (d.check('ALL')) { res.more = 100; res.vislevel = 99; }
+      if (d.check('MORE', true))
+         res.more = d.partAsInt(0, 2) ?? 2;
+      if (d.check('ALL')) {
+         res.more = 100;
+         res.vislevel = 99;
+      }
 
-      if (d.check('VISLVL', true)) res.vislevel = d.partAsInt();
-      if (d.check('MAXNODES', true)) res.maxnodes = d.partAsInt();
-      if (d.check('MAXFACES', true)) res.maxfaces = d.partAsInt();
+      if (d.check('VISLVL', true))
+         res.vislevel = d.partAsInt();
+      if (d.check('MAXNODES', true))
+         res.maxnodes = d.partAsInt();
+      if (d.check('MAXFACES', true))
+         res.maxfaces = d.partAsInt();
 
-      if (d.check('CONTROLS') || d.check('CTRL')) res.show_controls = true;
+      if (d.check('CONTROLS') || d.check('CTRL'))
+         res.show_controls = true;
 
-      if (d.check('CLIPXYZ')) res.clip[0].enabled = res.clip[1].enabled = res.clip[2].enabled = true;
-      if (d.check('CLIPX')) res.clip[0].enabled = true;
-      if (d.check('CLIPY')) res.clip[1].enabled = true;
-      if (d.check('CLIPZ')) res.clip[2].enabled = true;
-      if (d.check('CLIP')) res.clip[0].enabled = res.clip[1].enabled = res.clip[2].enabled = true;
+      if (d.check('CLIPXYZ'))
+         res.clip[0].enabled = res.clip[1].enabled = res.clip[2].enabled = true;
+      if (d.check('CLIPX'))
+         res.clip[0].enabled = true;
+      if (d.check('CLIPY'))
+         res.clip[1].enabled = true;
+      if (d.check('CLIPZ'))
+         res.clip[2].enabled = true;
+      if (d.check('CLIP'))
+         res.clip[0].enabled = res.clip[1].enabled = res.clip[2].enabled = true;
 
-      if (d.check('PROJX', true)) { res.project = 'x'; if (d.partAsInt(1) > 0) res.projectPos = d.partAsInt(); res.can_rotate = 0; }
-      if (d.check('PROJY', true)) { res.project = 'y'; if (d.partAsInt(1) > 0) res.projectPos = d.partAsInt(); res.can_rotate = 0; }
-      if (d.check('PROJZ', true)) { res.project = 'z'; if (d.partAsInt(1) > 0) res.projectPos = d.partAsInt(); res.can_rotate = 0; }
+      if (d.check('PROJX', true)) {
+         res.project = 'x';
+         if (d.partAsInt(1) > 0)
+            res.projectPos = d.partAsInt();
+         res.can_rotate = 0;
+      }
+      if (d.check('PROJY', true)) {
+         res.project = 'y';
+         if (d.partAsInt(1) > 0)
+            res.projectPos = d.partAsInt();
+         res.can_rotate = 0;
+      }
+      if (d.check('PROJZ', true)) {
+         res.project = 'z';
+         if (d.partAsInt(1) > 0)
+            res.projectPos = d.partAsInt();
+         res.can_rotate = 0;
+      }
 
-      if (d.check('DFLT_COLORS') || d.check('DFLT')) res.dflt_colors = true;
+      if (d.check('DFLT_COLORS') || d.check('DFLT'))
+         res.dflt_colors = true;
       d.check('SSAO'); // deprecated
-      if (d.check('NOBLOOM')) res.highlight_bloom = false;
-      if (d.check('BLOOM')) res.highlight_bloom = true;
-      if (d.check('OUTLINE')) res.outline = true;
+      if (d.check('NOBLOOM'))
+         res.highlight_bloom = false;
+      if (d.check('BLOOM'))
+         res.highlight_bloom = true;
+      if (d.check('OUTLINE'))
+         res.outline = true;
 
-      if (d.check('NOWORKER')) res.use_worker = -1;
-      if (d.check('WORKER')) res.use_worker = 1;
+      if (d.check('NOWORKER'))
+         res.use_worker = -1;
+      if (d.check('WORKER'))
+         res.use_worker = 1;
 
-      if (d.check('NOFOG')) res.use_fog = false;
-      if (d.check('FOG')) res.use_fog = true;
+      if (d.check('NOFOG'))
+         res.use_fog = false;
+      if (d.check('FOG'))
+         res.use_fog = true;
 
-      if (d.check('NOHIGHLIGHT') || d.check('NOHIGH')) res.highlight_scene = res.highlight = false;
-      if (d.check('HIGHLIGHT')) res.highlight_scene = res.highlight = true;
-      if (d.check('HSCENEONLY')) { res.highlight_scene = true; res.highlight = false; }
-      if (d.check('NOHSCENE')) res.highlight_scene = false;
-      if (d.check('HSCENE')) res.highlight_scene = true;
+      if (d.check('NOHIGHLIGHT') || d.check('NOHIGH'))
+         res.highlight_scene = res.highlight = false;
+      if (d.check('HIGHLIGHT'))
+         res.highlight_scene = res.highlight = true;
+      if (d.check('HSCENEONLY')) {
+         res.highlight_scene = true;
+         res.highlight = false;
+      }
+      if (d.check('NOHSCENE'))
+         res.highlight_scene = false;
+      if (d.check('HSCENE'))
+         res.highlight_scene = true;
 
-      if (d.check('WIREFRAME') || d.check('WIRE')) res.wireframe = true;
-      if (d.check('ROTATE')) res.rotate = true;
+      if (d.check('WIREFRAME') || d.check('WIRE'))
+         res.wireframe = true;
+      if (d.check('ROTATE'))
+         res.rotate = true;
 
-      if (d.check('INVX') || d.check('INVERTX')) res.scale.x = -1;
-      if (d.check('INVY') || d.check('INVERTY')) res.scale.y = -1;
-      if (d.check('INVZ') || d.check('INVERTZ')) res.scale.z = -1;
+      if (d.check('INVX') || d.check('INVERTX'))
+         res.scale.x = -1;
+      if (d.check('INVY') || d.check('INVERTY'))
+         res.scale.y = -1;
+      if (d.check('INVZ') || d.check('INVERTZ'))
+         res.scale.z = -1;
 
-      if (d.check('COUNT')) res._count = true;
+      if (d.check('COUNT'))
+         res._count = true;
 
       if (d.check('TRANSP', true))
          res.transparency = d.partAsInt(0, 100)/100;
@@ -1076,16 +1170,22 @@ class TGeoPainter extends ObjectPainter {
       if (d.check('OPACITY', true))
          res.transparency = 1 - d.partAsInt(0, 100)/100;
 
-      if (d.check('AXISCENTER') || d.check('AXISC') || d.check('AC')) res._axis = 2;
-      if (d.check('AXIS') || d.check('A')) res._axis = 1;
+      if (d.check('AXISCENTER') || d.check('AXISC') || d.check('AC'))
+         res._axis = 2;
+      if (d.check('AXIS') || d.check('A'))
+         res._axis = 1;
 
-      if (d.check('TRR', true)) res.trans_radial = d.partAsInt()/100;
-      if (d.check('TRZ', true)) res.trans_z = d.partAsInt()/100;
+      if (d.check('TRR', true))
+         res.trans_radial = d.partAsInt()/100;
+      if (d.check('TRZ', true))
+         res.trans_z = d.partAsInt()/100;
 
-
-      if (d.check('W')) res.wireframe = true;
-      if (d.check('Y')) res._yup = true;
-      if (d.check('Z')) res._yup = false;
+      if (d.check('W'))
+         res.wireframe = true;
+      if (d.check('Y'))
+         res._yup = true;
+      if (d.check('Z'))
+         res._yup = false;
 
       // when drawing geometry without TCanvas, yup = true by default
       if (res._yup === undefined)
@@ -2991,7 +3091,10 @@ class TGeoPainter extends ObjectPainter {
 
          const conv = v => {
             let s = '';
-            if (v < 0) { s = 'n'; v = -v; }
+            if (v < 0) {
+               s = 'n';
+               v = -v;
+            }
             return s + v.toFixed(0);
          };
 
@@ -3340,7 +3443,10 @@ class TGeoPainter extends ObjectPainter {
       if (autoClip) {
          for (let axis = 0; axis < 3; ++axis) {
             const cc = this.ctrl.clip[axis];
-            if (!cc.enabled) { cc.value = cc.min; cc.enabled = true; }
+            if (!cc.enabled) {
+               cc.value = cc.min;
+               cc.enabled = true;
+            }
             cc.inc = ((cc.min + cc.max) / 2 - cc.value) / frames;
          }
          this.updateClipping();
@@ -3411,7 +3517,7 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary called at the end of scene drawing */
-   completeScene() { }
+   completeScene() {}
 
    /** @summary Drawing with 'count' option
      * @desc Scans hierarchy and check for unique nodes
@@ -5680,7 +5786,10 @@ class TGeoPainter extends ObjectPainter {
       if (isStr(opt) && opt.indexOf('comp') === 0 && shape && (shape._typename === clTGeoCompositeShape) && shape.fNode) {
          let maxlvl = 1;
          opt = opt.slice(4);
-         if (opt[0] === 'x') { maxlvl = 999; opt = opt.slice(1) + '_vislvl999'; }
+         if (opt[0] === 'x') {
+            maxlvl = 999;
+            opt = opt.slice(1) + '_vislvl999';
+         }
          obj = buildCompositeVolume(shape, maxlvl);
       }
 

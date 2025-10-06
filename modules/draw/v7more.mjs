@@ -173,7 +173,10 @@ class RPalettePainter extends RObjectPainter {
           .style('stroke', 'black')
           .style('fill', 'none');
 
-      if ((gmin === undefined) || (gmax === undefined)) { gmin = zmin; gmax = zmax; }
+      if ((gmin === undefined) || (gmax === undefined)) {
+         gmin = zmin;
+         gmax = zmax;
+      }
 
       if (vertical)
          fp.z_handle.configureAxis('zaxis', gmin, gmax, zmin, zmax, true, [palette_height, 0], -palette_height, { reverse: false });

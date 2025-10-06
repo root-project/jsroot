@@ -288,8 +288,14 @@ class TSplinePainter extends ObjectPainter {
       if (!o.Line && !o.Curve && !o.Mark)
          o.Curve = true;
 
-      if (d.check('X+')) { o.Hopt += 'X+'; o.second_x = Boolean(this.getMainPainter()); }
-      if (d.check('Y+')) { o.Hopt += 'Y+'; o.second_y = Boolean(this.getMainPainter()); }
+      if (d.check('X+')) {
+         o.Hopt += 'X+';
+         o.second_x = Boolean(this.getMainPainter());
+      }
+      if (d.check('Y+')) {
+         o.Hopt += 'Y+';
+         o.second_y = Boolean(this.getMainPainter());
+      }
 
       this.storeDrawOpt(opt);
    }
