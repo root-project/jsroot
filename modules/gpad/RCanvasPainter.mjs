@@ -66,7 +66,8 @@ class RCanvasPainter extends RPadPainter {
    setLayoutKind(kind, main_selector) {
       const origin = this.selectDom('origin');
       if (!origin.empty()) {
-         if (!kind) kind = 'simple';
+         if (!kind)
+            kind = 'simple';
          origin.property('layout', kind);
          origin.property('layout_selector', (kind !== 'simple') && main_selector ? main_selector : null);
          this.#changed_layout = (kind !== 'simple'); // use in cleanup

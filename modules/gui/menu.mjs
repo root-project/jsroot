@@ -1066,7 +1066,8 @@ class JSRootMenu {
      * @param {string} [kind] - use 'text' (default), 'number', 'float' or 'int'
      * @protected */
    async input(title, value, kind, min, max) {
-      if (!kind) kind = 'text';
+      if (!kind)
+         kind = 'text';
       const inp_type = (kind === 'int') ? 'number' : 'text';
       let ranges = '';
       if ((value === undefined) || (value === null))

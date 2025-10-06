@@ -3228,7 +3228,8 @@ class TGeoPainter extends ObjectPainter {
 
       if ((this.ctrl.rotatey || this.ctrl.rotatez) && this.ctrl.can_rotate) {
          const prev_zoom = this.calculateZoom();
-         if (keep_zoom && prev_zoom) k = 2*prev_zoom;
+         if (keep_zoom && prev_zoom)
+            k = 2*prev_zoom;
 
          const euler = new THREE.Euler(0, this.ctrl.rotatey/180*Math.PI, this.ctrl.rotatez/180*Math.PI, 'YZX');
 

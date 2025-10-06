@@ -808,12 +808,14 @@ class TH2Painter extends THistPainter {
    fillHistContextMenu(menu) {
       if (!this.isTH2Poly() && this.getPadPainter()?.isCanvas()) {
          let kind = this.#projection_kind || '';
-         if (kind) kind += this.#projection_widthX;
+         if (kind)
+            kind += this.#projection_widthX;
          if ((this.#projection_widthX !== this.#projection_widthY) && (this.#projection_kind === 'XY'))
             kind = `X${this.#projection_widthX}_Y${this.#projection_widthY}`;
 
          const sizes = ['1', '2', '3', '5', '10', 'all'];
-         if (kind) sizes.unshift('');
+         if (kind)
+            sizes.unshift('');
 
          menu.sub('Projections', () => menu.input('Input projection kind X1 or XY2 or X3_Y4', kind, 'string').then(val => this.toggleProjection(val)));
          ['X', 'Y', 'XY'].forEach(name => {

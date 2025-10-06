@@ -72,7 +72,8 @@ class TCanvasPainter extends TPadPainter {
    setLayoutKind(kind, main_selector) {
       const origin = this.selectDom('origin');
       if (!origin.empty()) {
-         if (!kind) kind = 'simple';
+         if (!kind)
+            kind = 'simple';
          origin.property('layout', kind);
          origin.property('layout_selector', (kind !== 'simple') && main_selector ? main_selector : null);
          this.#changed_layout = (kind !== 'simple'); // use in cleanup
@@ -180,7 +181,8 @@ class TCanvasPainter extends TPadPainter {
 
       if (hopt === undefined)
          hopt = 'hist';
-      if (!kind) kind = 'X';
+      if (!kind)
+         kind = 'X';
 
       if (!this.proj_painter[kind]) {
          this.proj_painter[kind] = 'init';

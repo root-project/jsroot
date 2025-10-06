@@ -891,22 +891,51 @@ class FrameInteractive extends TooltipHandler {
           (getActivePad() !== pp) || (allowed.indexOf(key) < 0))
           return false;
 
-      if (evnt.shiftKey) key = `Shift ${key}`;
-      if (evnt.altKey) key = `Alt ${key}`;
-      if (evnt.ctrlKey) key = `Ctrl ${key}`;
+      if (evnt.shiftKey)
+         key = `Shift ${key}`;
+      if (evnt.altKey)
+         key = `Alt ${key}`;
+      if (evnt.ctrlKey)
+         key = `Ctrl ${key}`;
 
       const zoom = { name: 'x', dleft: 0, dright: 0 };
 
       switch (key) {
-         case 'ArrowLeft': zoom.dleft = -1; zoom.dright = 1; break;
-         case 'ArrowRight': zoom.dleft = 1; zoom.dright = -1; break;
-         case 'Ctrl ArrowLeft': zoom.dleft = zoom.dright = -1; break;
-         case 'Ctrl ArrowRight': zoom.dleft = zoom.dright = 1; break;
-         case 'ArrowUp': zoom.name = 'y'; zoom.dleft = 1; zoom.dright = -1; break;
-         case 'ArrowDown': zoom.name = 'y'; zoom.dleft = -1; zoom.dright = 1; break;
-         case 'Ctrl ArrowUp': zoom.name = 'y'; zoom.dleft = zoom.dright = 1; break;
-         case 'Ctrl ArrowDown': zoom.name = 'y'; zoom.dleft = zoom.dright = -1; break;
-         case 'Escape': pp?.enlargePad(null, false, true); return true;
+         case 'ArrowLeft':
+            zoom.dleft = -1;
+            zoom.dright = 1;
+            break;
+         case 'ArrowRight':
+            zoom.dleft = 1;
+            zoom.dright = -1;
+            break;
+         case 'Ctrl ArrowLeft':
+            zoom.dleft = zoom.dright = -1;
+            break;
+         case 'Ctrl ArrowRight':
+            zoom.dleft = zoom.dright = 1;
+            break;
+         case 'ArrowUp':
+            zoom.name = 'y';
+            zoom.dleft = 1;
+            zoom.dright = -1;
+            break;
+         case 'ArrowDown':
+            zoom.name = 'y';
+            zoom.dleft = -1;
+            zoom.dright = 1;
+            break;
+         case 'Ctrl ArrowUp':
+            zoom.name = 'y';
+            zoom.dleft = zoom.dright = 1;
+            break;
+         case 'Ctrl ArrowDown':
+            zoom.name = 'y';
+            zoom.dleft = zoom.dright = -1;
+            break;
+         case 'Escape':
+            pp?.enlargePad(null, false, true);
+            return true;
       }
 
       if (zoom.dleft || zoom.dright) {
@@ -1255,12 +1284,14 @@ class FrameInteractive extends TooltipHandler {
          if (!this.can_zoom_y)
             return;
          kind = this.swap_xy() ? 'x' : 'y';
-         if ((m[0] > fw) && this[kind+'2_handle']) kind += '2'; // let unzoom second axis
+         if ((m[0] > fw) && this[kind+'2_handle'])
+            kind += '2'; // let unzoom second axis
       } else if (!valid_y) {
          if (!this.can_zoom_x)
             return;
          kind = this.swap_xy() ? 'y' : 'x';
-         if ((m[1] < 0) && this[kind+'2_handle']) kind += '2'; // let unzoom second axis
+         if ((m[1] < 0) && this[kind+'2_handle'])
+            kind += '2'; // let unzoom second axis
       }
       return this.unzoom(kind).then(changed => {
          if (changed)
@@ -2702,7 +2733,8 @@ class TFramePainter extends FrameInteractive {
             pad = pp?.getRootPad(true),
             is_pal = kind === 'pal';
 
-      if (is_pal) kind = 'z';
+      if (is_pal)
+         kind = 'z';
 
       if ((kind === 'x') || (kind === 'y') || (kind === 'z') || (kind === 'x2') || (kind === 'y2')) {
          const faxis = obj || this[kind+'axis'],

@@ -960,7 +960,8 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
       xhr.http_callback = isFunc(user_accept_callback) ? user_accept_callback.bind(xhr) : () => {};
       xhr.error_callback = isFunc(user_reject_callback) ? user_reject_callback.bind(xhr) : function(err) { console.warn(err.message); this.http_callback(null); }.bind(xhr);
 
-      if (!kind) kind = 'buf';
+      if (!kind)
+         kind = 'buf';
 
       let method = 'GET', is_async = true;
       const p = kind.indexOf(';sync');

@@ -229,8 +229,10 @@ class GridDisplay extends MDIDisplay {
          kind = '';
          this.match_sizes = true;
       } else if ((kind.indexOf('grid') === 0) || kind2) {
-         if (kind2) kind = kind + 'x' + kind2;
-               else kind = kind.slice(4).trim();
+         if (kind2)
+            kind = kind + 'x' + kind2;
+         else
+            kind = kind.slice(4).trim();
          this.use_separarators = false;
          if (kind[0] === 'i') {
             this.use_separarators = true;

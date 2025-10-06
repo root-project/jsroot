@@ -882,7 +882,8 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
          if (pos1 > pos2)
             [pos1, pos2] = [pos2, pos1];
 
-         if ((kind === 'z') && control.mouse_zoom_mesh.object.use_y_for_z) kind = 'y';
+         if ((kind === 'z') && control.mouse_zoom_mesh.object.use_y_for_z)
+            kind = 'y';
 
          // try to zoom
          if ((pos1 < pos2) && control.painter.zoom(kind, pos1, pos2))
@@ -939,14 +940,21 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
 
          // z changes from 0..2*size_z3d, others -size_x3d..+size_x3d
          switch (kind) {
-            case 'x': position = (position + control.painter.size_x3d)/2/control.painter.size_x3d; break;
-            case 'y': position = (position + control.painter.size_y3d)/2/control.painter.size_y3d; break;
-            case 'z': position = position/2/control.painter.size_z3d; break;
+            case 'x':
+               position = (position + control.painter.size_x3d)/2/control.painter.size_x3d;
+               break;
+            case 'y':
+               position = (position + control.painter.size_y3d)/2/control.painter.size_y3d;
+               break;
+            case 'z':
+               position = position/2/control.painter.size_z3d;
+               break;
          }
 
          control.painter.analyzeMouseWheelEvent(evnt, item, position, false);
 
-         if ((kind === 'z') && intersect.object.use_y_for_z) kind = 'y';
+         if ((kind === 'z') && intersect.object.use_y_for_z)
+            kind = 'y';
 
          control.painter.zoom(kind, item.min, item.max);
       }
