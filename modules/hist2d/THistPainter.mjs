@@ -732,18 +732,24 @@ class THistDrawOptions {
       if (this.Mode3D) {
          if (this.Lego) {
             res = 'LEGO';
-            if (!this.Zero) res += '0';
-            if (this.Lego > 10) res += (this.Lego-10);
+            if (!this.Zero)
+               res += '0';
+            if (this.Lego > 10)
+               res += (this.Lego-10);
             res += zopt;
          } else if (this.Surf) {
             res = 'SURF' + (this.Surf-10);
             res += zopt;
          }
-         if (!this.FrontBox) res += 'FB';
-         if (!this.BackBox) res += 'BB';
+         if (!this.FrontBox)
+            res += 'FB';
+         if (!this.BackBox)
+            res += 'BB';
 
-         if (this.x3dscale !== 1) res += `_X3DSC${Math.round(this.x3dscale * 100)}`;
-         if (this.y3dscale !== 1) res += `_Y3DSC${Math.round(this.y3dscale * 100)}`;
+         if (this.x3dscale !== 1)
+            res += `_X3DSC${Math.round(this.x3dscale * 100)}`;
+         if (this.y3dscale !== 1)
+            res += `_Y3DSC${Math.round(this.y3dscale * 100)}`;
       } else {
          if (this.Candle)
             res = 'CANDLE' + this.Candle;
@@ -753,12 +759,15 @@ class THistDrawOptions {
             res = 'SCAT';
           else if (this.Color) {
             res = 'COL';
-            if (!this.Zero) res += '0';
+            if (!this.Zero)
+               res += '0';
             res += zopt;
-            if (this.Axis < 0) res += 'A';
+            if (this.Axis < 0)
+               res += 'A';
          } else if (this.Contour) {
             res = 'CONT';
-            if (this.Contour > 10) res += (this.Contour-10);
+            if (this.Contour > 10)
+               res += (this.Contour-10);
             res += zopt;
          } else if (this.Bar)
             res = (this.BaseLine === false) ? 'B' : 'B1';
@@ -766,7 +775,8 @@ class THistDrawOptions {
             res = this.Zero ? 'P0' : 'P'; // here invert logic with 0
           else if (this.Line) {
             res += 'L';
-            if (this.Fill) res += 'F';
+            if (this.Fill)
+               res += 'F';
          } else if (this.Off)
             res = '][';
 
@@ -786,7 +796,8 @@ class THistDrawOptions {
 
          if (this.Text) {
             res += 'TEXT';
-            if (this.TextAngle) res += this.TextAngle;
+            if (this.TextAngle)
+               res += this.TextAngle;
             res += this.TextKind;
          }
       }
@@ -831,11 +842,16 @@ class THistDrawOptions {
             res += '_LOG2Z';
          else if (pad.fLogz)
             res += '_LOGZ';
-         if (pad.fGridx) res += '_GRIDX';
-         if (pad.fGridy) res += '_GRIDY';
-         if (pad.fTickx) res += '_TICKX';
-         if (pad.fTicky) res += '_TICKY';
-         if (pad.fTickz) res += '_TICKZ';
+         if (pad.fGridx)
+            res += '_GRIDX';
+         if (pad.fGridy)
+            res += '_GRIDY';
+         if (pad.fTickx)
+            res += '_TICKX';
+         if (pad.fTicky)
+            res += '_TICKY';
+         if (pad.fTickz)
+            res += '_TICKZ';
       }
 
       if (this.cutg_name)
@@ -2790,13 +2806,17 @@ class THistPainter extends ObjectPainter {
          if (args.use3d) {
             if (res.grx[i] < -funcs.size_x3d) {
                res.grx[i] = -funcs.size_x3d;
-               if (o.RevX) res.i2 = i;
-                      else res.i1 = i;
+               if (o.RevX)
+                  res.i2 = i;
+               else
+                  res.i1 = i;
             }
             if (res.grx[i] > funcs.size_x3d) {
                res.grx[i] = funcs.size_x3d;
-               if (o.RevX) res.i1 = i;
-                      else res.i2 = i;
+               if (o.RevX)
+                  res.i1 = i;
+               else
+                  res.i2 = i;
             }
          }
       }
@@ -2820,13 +2840,17 @@ class THistPainter extends ObjectPainter {
             if (args.use3d) {
                if (res.gry[j] < -funcs.size_y3d) {
                   res.gry[j] = -funcs.size_y3d;
-                  if (o.RevY) res.j2 = j;
-                         else res.j1 = j;
+                  if (o.RevY)
+                     res.j2 = j;
+                  else
+                     res.j1 = j;
                }
                if (res.gry[j] > funcs.size_y3d) {
                   res.gry[j] = funcs.size_y3d;
-                  if (o.RevY) res.j1 = j;
-                         else res.j2 = j;
+                  if (o.RevY)
+                     res.j1 = j;
+                  else
+                     res.j2 = j;
                }
             }
          }

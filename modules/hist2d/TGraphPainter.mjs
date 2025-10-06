@@ -141,7 +141,8 @@ class TGraphPainter extends ObjectPainter {
       function decodeBlock(d, res) {
          Object.assign(res, { Line: 0, Curve: 0, Rect: 0, Mark: 0, Bar: 0, OutRange: 0, EF: 0, Fill: 0, MainError: 1, Ends: 1, ScaleErrX: 1 });
 
-         if (is_gme && d.check('S=', true)) res.ScaleErrX = d.partAsFloat();
+         if (is_gme && d.check('S=', true))
+            res.ScaleErrX = d.partAsFloat();
 
          if (d.check('L'))
             res.Line = 1;
@@ -296,17 +297,16 @@ class TGraphPainter extends ObjectPainter {
       if (is_gme && d.check('S'))
          res.individual_styles = true;
 
-      // if (d.check('E')) res.Errors = 1; // E option only defined for TGraphPolar
-
       if (res.Errors === undefined)
          res.Errors = this.#has_errors && (!is_gme || !blocks_gme.length) ? 1 : 0;
 
       // special case - one could use svg:path to draw many pixels (
-      if ((res.Mark === 1) && (graph.fMarkerStyle === 1)) res.Mark = 101;
+      if ((res.Mark === 1) && (graph.fMarkerStyle === 1))
+         res.Mark = 101;
 
       // if no drawing option is selected and if opt === '' nothing is done.
-      if (res.Line + res.Fill + res.Curve + res.Mark + res.Bar + res.EF + res.Rect + res.Errors === 0)
-         if (d.empty()) res.Line = 1;
+      if ((res.Line + res.Fill + res.Curve + res.Mark + res.Bar + res.EF + res.Rect + res.Errors === 0) && d.empty())
+         res.Line = 1;
 
       if (this.matchObjectType(clTGraphErrors)) {
          const len = graph.fEX.length;
@@ -1405,7 +1405,8 @@ class TGraphPainter extends ObjectPainter {
 
       if (!islines) {
          res.color1 = this.getColor(gr.fMarkerColor);
-         if (!res.color2) res.color2 = res.color1;
+         if (!res.color2)
+            res.color2 = res.color1;
       }
 
       return res;

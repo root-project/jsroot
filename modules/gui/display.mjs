@@ -784,7 +784,10 @@ class FlexibleDisplay extends MDIDisplay {
    activateFrame(frame) {
       if ((frame === 'first') || (frame === 'last')) {
          let res = null;
-         this.forEachFrame(f => { if (frame === 'last' || !res) res = f; }, true);
+         this.forEachFrame(f => {
+            if (frame === 'last' || !res)
+               res = f;
+         }, true);
          frame = res;
       }
       if ((frame?.getAttribute('class') !== 'jsroot_flex_draw') || (this.getActiveFrame() === frame))
@@ -888,7 +891,8 @@ class FlexibleDisplay extends MDIDisplay {
                      iscrossed = true;
                }
             });
-            if (iscrossed) rect.x = maxx;
+            if (iscrossed)
+               rect.x = maxx;
          } while ((rect.x + rect.w > ww - step) && (rect.y > 0));
          if (rect.y < 0) {
             rect.x = step;

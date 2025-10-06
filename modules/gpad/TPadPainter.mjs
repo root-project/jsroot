@@ -537,7 +537,8 @@ class TPadPainter extends ObjectPainter {
             if (this.#painters[k].isSecondary(arr[len0])) {
                arr.push(this.#painters[k]);
                this.#painters.splice(k, 1);
-               if (k < indx) resindx--;
+               if (k < indx)
+                  resindx--;
             }
          }
          len0++;

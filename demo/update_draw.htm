@@ -45,7 +45,8 @@
             // redraw histogram at specified frame
             redraw(frame, histo, drawopt).then(() => {
                // let adjust drawing when browser will be resized
-               if (!request_count) registerForResize('drawing');
+               if (!request_count)
+                  registerForResize('drawing');
             });
          }).catch(() => { document.getElementById('drawing').innerHTML = `"<h3>Can not get ${request_addr} from the server</h3>`;});
       }

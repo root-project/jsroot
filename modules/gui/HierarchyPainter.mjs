@@ -1102,7 +1102,8 @@ class HierarchyPainter extends BasePainter {
             break;
          if (compact && !node._parent)
             break; // in compact form top-parent is not included
-         if (res) res = '/' + res;
+         if (res)
+            res = '/' + res;
          res = node._name + res;
          node = node._parent;
       }
@@ -3219,8 +3220,10 @@ class HierarchyPainter extends BasePainter {
                if (isStr(dreq))
                   req = dreq;
                 else {
-                  if (dreq.req) req = dreq.req;
-                  if (dreq.kind) req_kind = dreq.kind;
+                  if (dreq.req)
+                     req = dreq.req;
+                  if (dreq.kind)
+                     req_kind = dreq.kind;
                }
             }
          }

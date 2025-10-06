@@ -1160,10 +1160,12 @@ class TPavePainter extends ObjectPainter {
                if (this.#palette_vertical) {
                   const dx = (this.z_handle._maxlbllen || 3) * 0.6 * fsz;
                   rect.width += dx;
-                  if (this.#swap_side) rect.x -= dx;
+                  if (this.#swap_side)
+                     rect.x -= dx;
                } else {
                   rect.height += fsz;
-                  if (this.#swap_side) rect.y -= fsz;
+                  if (this.#swap_side)
+                     rect.y -= fsz;
                }
             } else if ('getBoundingClientRect' in g.node())
                rect = g.node().getBoundingClientRect();

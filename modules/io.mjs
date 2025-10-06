@@ -822,16 +822,22 @@ function readVectorElement(buf) {
       return res;
    }
 
-   if (this.arrkind > 0)
-      while (i < n) res[i++] = buf.readFastArray(buf.ntou4(), this.arrkind);
-   else if (this.arrkind === 0)
-      while (i < n) res[i++] = buf.readTString();
-   else if (this.isptr)
-      while (i < n) res[i++] = buf.readObjectAny();
-   else if (this.submember)
-      while (i < n) res[i++] = this.submember.readelem(buf);
-   else
-      while (i < n) res[i++] = buf.classStreamer({}, this.conttype);
+   if (this.arrkind > 0) {
+      while (i < n)
+         res[i++] = buf.readFastArray(buf.ntou4(), this.arrkind);
+   } else if (this.arrkind === 0) {
+      while (i < n)
+         res[i++] = buf.readTString();
+   } else if (this.isptr) {
+      while (i < n)
+         res[i++] = buf.readObjectAny();
+   } else if (this.submember) {
+      while (i < n)
+         res[i++] = this.submember.readelem(buf);
+   } else {
+      while (i < n)
+         res[i++] = buf.classStreamer({}, this.conttype);
+   }
 
    return res;
 }
@@ -859,7 +865,8 @@ createPairStreamer = function(typename, file) {
                cnt--;
                break;
          }
-         if (cnt >= 0) res += typename[p];
+         if (cnt >= 0)
+            res += typename[p];
          p++;
       }
       p1 = p - 1;

@@ -3151,8 +3151,10 @@ class TGeoPainter extends ObjectPainter {
       let roty = euler.y / Math.PI * 180,
           rotz = euler.z / Math.PI * 180;
 
-      if (roty < 0) roty += 360;
-      if (rotz < 0) rotz += 360;
+      if (roty < 0)
+         roty += 360;
+      if (rotz < 0)
+         rotz += 360;
       return `${kind}roty${roty.toFixed(0)},rotz${rotz.toFixed(0)},zoom${zoom.toFixed(0)}`;
    }
 

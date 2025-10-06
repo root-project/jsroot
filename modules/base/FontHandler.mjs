@@ -241,8 +241,10 @@ class FontHandler {
      * @private */
    getFontHtml() {
       let res = Math.round(this.size) + 'pt ' + this.name;
-      if (this.weight) res += ' ' + this.weight;
-      if (this.style) res += ' ' + this.style;
+      if (this.weight)
+         res += ' ' + this.weight;
+      if (this.style)
+         res += ' ' + this.style;
       return res;
    }
 

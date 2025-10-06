@@ -1203,7 +1203,8 @@ class ObjectPainter extends BasePainter {
       }
 
       // if specified, call resolve function
-      if (resolveFunc) resolveFunc(this); // IMPORTANT - return painter, may use in draw methods
+      if (resolveFunc)
+         resolveFunc(this); // IMPORTANT - return painter, may use in draw methods
    }
 
    /** @summary Post-process plain text drawing

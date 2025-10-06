@@ -269,7 +269,8 @@ function DecodeDeltaIndex(blob, coltype) {
   } else
     throw new Error(`DecodeDeltaIndex: unsupported column type ${coltype}`);
 
-  if (deltas.length > 0) result[0] = deltas[0];
+  if (deltas.length > 0)
+    result[0] = deltas[0];
   for (let i = 1; i < deltas.length; ++i)
     result[i] = result[i - 1] + deltas[i];
 

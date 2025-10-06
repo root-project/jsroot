@@ -382,7 +382,8 @@ class TCanvasPainter extends TPadPainter {
              .then(() => {
                 this.completeCanvasSnapDrawing();
                 let ranges = this.getWebPadOptions(); // all data, including sub-pads
-                if (ranges) ranges = ':' + ranges;
+                if (ranges)
+                  ranges = ':' + ranges;
                 handle.send(`READY6:${version}${ranges}`); // send ready message back when drawing completed
                 this.confirmDraw();
              }).catch(err => {

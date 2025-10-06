@@ -812,8 +812,10 @@ function makeTranslate(g, x, y, scale = 1) {
    }
    let res = y ? `translate(${x},${y})` : (x ? `translate(${x})` : null);
    if (scale && scale !== 1) {
-      if (res) res += ' ';
-          else res = '';
+      if (res)
+         res += ' ';
+      else
+         res = '';
       res += `scale(${scale.toFixed(3)})`;
    }
 

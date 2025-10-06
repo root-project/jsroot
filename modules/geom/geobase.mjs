@@ -358,9 +358,7 @@ class GeometryCreator {
 
    /** @summary Set normal
      * @desc special shortcut, when same normals can be applied for 1-2 point and 3-4 point */
-   setNormal_12_34(nx12, ny12, nz12, nx34, ny34, nz34, reduce) {
-      if (reduce === undefined) reduce = 0;
-
+   setNormal_12_34(nx12, ny12, nz12, nx34, ny34, nz34, reduce = 0) {
       let indx = this.indx - ((reduce > 0) ? 9 : 18);
       const norm = this.norm;
 
@@ -1498,7 +1496,8 @@ function createParaboloidBuffer(shape, faces_limit) {
             const tt = Math.tan(ttmin + (ttmax-ttmin) * layer / heightSegments),
                   delta = tt**2 - 4*shape.fA*shape.fB; // should be always positive (a*b < 0)
             radius = 0.5*(tt+Math.sqrt(delta))/shape.fA;
-            if (radius < 1e-6) radius = 0;
+            if (radius < 1e-6)
+               radius = 0;
             layerz = radius*tt;
          }
       }
@@ -2799,7 +2798,8 @@ class ClonedNodes {
          const clone = this.nodes[n];
          clone.vis = flags[n].vis;
          clone.nochlds = flags[n].nochlds;
-         if (clone.vis) res++;
+         if (clone.vis)
+            res++;
       }
 
       return res;
@@ -3021,7 +3021,8 @@ class ClonedNodes {
 
             const subname = this.getNodeName(res.id);
             if (subname) {
-               if (res.name) res.name += '/';
+               if (res.name)
+                  res.name += '/';
                res.name += subname;
             }
 
@@ -3840,7 +3841,8 @@ class ClonedNodes {
          }
 
          res.shapes++;
-         if (!item.used) res.notusedshapes++;
+         if (!item.used)
+            res.notusedshapes++;
          res.faces += item.nfaces * item.refcnt;
 
          if (res.faces >= limit)
