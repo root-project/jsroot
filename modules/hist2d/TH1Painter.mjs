@@ -1066,12 +1066,15 @@ class TH1Painter extends THistPainter {
          let best = height;
          for (let m = l; m <= r; m++) {
             const dist = Math.abs(GetBinGrY(m) - pnt_y);
-            if (dist < best) { best = dist; findbin = m; }
+            if (dist < best) {
+               best = dist;
+               findbin = m;
+            }
          }
 
          // if best distance still too far from mouse position, just take from between
          if (best > height/10)
-            findbin = Math.round(l + (r-l) / height * pnt_y);
+            findbin = Math.round(l + (r - l) / height * pnt_y);
 
          grx1 = GetBinGrX(findbin);
       }
@@ -1122,7 +1125,10 @@ class TH1Painter extends THistPainter {
          }
 
          // show at least 6 pixels as tooltip rect
-         if (grx2 - grx1 < 2*msize) { grx1 = midx-msize; grx2 = midx+msize; }
+         if (grx2 - grx1 < 2*msize) {
+            grx1 = midx - msize;
+            grx2 = midx + msize;
+         }
 
          gry1 = Math.min(gry1, midy - msize);
          gry2 = Math.max(gry2, midy + msize);

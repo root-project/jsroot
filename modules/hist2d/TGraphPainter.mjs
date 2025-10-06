@@ -142,26 +142,71 @@ class TGraphPainter extends ObjectPainter {
 
          if (is_gme && d.check('S=', true)) res.ScaleErrX = d.partAsFloat();
 
-         if (d.check('L')) res.Line = 1;
-         if (d.check('F')) res.Fill = 1;
-         if (d.check('CC')) res.Curve = 2; // draw all points without reduction
-         if (d.check('C')) res.Curve = 1;
-         if (d.check('*')) res.Mark = 103;
-         if (d.check('P0')) res.Mark = 104;
-         if (d.check('P')) res.Mark = 1;
-         if (d.check('B')) { res.Bar = 1; res.Errors = 0; }
-         if (d.check('Z')) { res.Errors = 1; res.Ends = 0; }
-         if (d.check('||')) { res.Errors = 1; res.MainError = 0; res.Ends = 1; }
-         if (d.check('[]')) { res.Errors = 1; res.MainError = 0; res.Ends = 2; }
-         if (d.check('|>')) { res.Errors = 1; res.Ends = 3; }
-         if (d.check('>')) { res.Errors = 1; res.Ends = 4; }
-         if (d.check('0')) { res.Mark = 1; res.Errors = 1; res.OutRange = 1; }
-         if (d.check('1')) if (res.Bar === 1) res.Bar = 2;
-         if (d.check('2')) { res.Rect = 1; res.Errors = 0; }
-         if (d.check('3')) { res.EF = 1; res.Errors = 0; }
-         if (d.check('4')) { res.EF = 2; res.Errors = 0; }
-         if (d.check('5')) { res.Rect = 2; res.Errors = 0; }
-         if (d.check('X')) res.Errors = 0;
+         if (d.check('L'))
+            res.Line = 1;
+         if (d.check('F'))
+            res.Fill = 1;
+         if (d.check('CC'))
+            res.Curve = 2; // draw all points without reduction
+         if (d.check('C'))
+            res.Curve = 1;
+         if (d.check('*'))
+            res.Mark = 103;
+         if (d.check('P0'))
+            res.Mark = 104;
+         if (d.check('P'))
+            res.Mark = 1;
+         if (d.check('B')) {
+            res.Bar = 1;
+            res.Errors = 0;
+         }
+         if (d.check('Z')) {
+            res.Errors = 1;
+            res.Ends = 0;
+         }
+         if (d.check('||')) {
+            res.Errors = 1;
+            res.MainError = 0;
+            res.Ends = 1;
+         }
+         if (d.check('[]')) {
+            res.Errors = 1;
+            res.MainError = 0;
+            res.Ends = 2;
+         }
+         if (d.check('|>')) {
+            res.Errors = 1;
+            res.Ends = 3;
+         }
+         if (d.check('>')) {
+            res.Errors = 1;
+            res.Ends = 4;
+         }
+         if (d.check('0')) {
+            res.Mark = 1;
+            res.Errors = 1;
+            res.OutRange = 1;
+         }
+         if (d.check('1') && (res.Bar === 1))
+            res.Bar = 2;
+         if (d.check('2')) {
+            res.Rect = 1;
+            res.Errors = 0;
+         }
+         if (d.check('3')) {
+            res.EF = 1;
+            res.Errors = 0;
+         }
+         if (d.check('4')) {
+            res.EF = 2;
+            res.Errors = 0;
+         }
+         if (d.check('5')) {
+            res.Rect = 2;
+            res.Errors = 0;
+         }
+         if (d.check('X'))
+            res.Errors = 0;
       };
 
       const res = this.setOptions({
@@ -221,17 +266,28 @@ class TGraphPainter extends ObjectPainter {
       if (d.check('PMC') && !res._pmc)
          res._pmc = 2;
 
-      if (d.check('A')) res.Axis = d.check('I') ? 'A;' : ' '; // I means invisible axis
-      if (d.check('X+')) { res.Axis += 'X+'; res.second_x = has_main; }
-      if (d.check('Y+')) { res.Axis += 'Y+'; res.second_y = has_main; }
-      if (d.check('RX')) res.Axis += 'RX';
-      if (d.check('RY')) res.Axis += 'RY';
+      if (d.check('A'))
+         res.Axis = d.check('I') ? 'A;' : ' '; // I means invisible axis
+      if (d.check('X+')) {
+         res.Axis += 'X+';
+         res.second_x = has_main;
+      }
+      if (d.check('Y+')) {
+         res.Axis += 'Y+';
+         res.second_y = has_main;
+      }
+      if (d.check('RX'))
+         res.Axis += 'RX';
+      if (d.check('RY'))
+         res.Axis += 'RY';
 
       if (is_gme) {
          res.blocks = [];
          res.skip_errors_x0 = res.skip_errors_y0 = false;
-         if (d.check('X0')) res.skip_errors_x0 = true;
-         if (d.check('Y0')) res.skip_errors_y0 = true;
+         if (d.check('X0'))
+            res.skip_errors_x0 = true;
+         if (d.check('Y0'))
+            res.skip_errors_y0 = true;
       }
 
       decodeBlock(d, res);
@@ -981,9 +1037,24 @@ class TGraphPainter extends ObjectPainter {
          if (isFunc(pp?.getAutoColor)) {
             const icolor = pp.getAutoColor(graph.$num_graphs);
             this.#auto_exec = ''; // can be reused when sending option back to server
-            if (o._pfc > 1) { o._pfc = 1; graph.fFillColor = icolor; this.#auto_exec += `SetFillColor(${icolor});;`; this.deleteAttr('fill'); }
-            if (o._plc > 1) { o._plc = 1; graph.fLineColor = icolor; this.#auto_exec += `SetLineColor(${icolor});;`; this.deleteAttr('line'); }
-            if (o._pmc > 1) { o._pmc = 1; graph.fMarkerColor = icolor; this.#auto_exec += `SetMarkerColor(${icolor});;`; this.deleteAttr('marker'); }
+            if (o._pfc > 1) {
+               o._pfc = 1;
+               graph.fFillColor = icolor;
+               this.#auto_exec += `SetFillColor(${icolor});;`;
+               this.deleteAttr('fill');
+            }
+            if (o._plc > 1) {
+               o._plc = 1;
+               graph.fLineColor = icolor;
+               this.#auto_exec += `SetLineColor(${icolor});;`;
+               this.deleteAttr('line');
+            }
+            if (o._pmc > 1) {
+               o._pmc = 1;
+               graph.fMarkerColor = icolor;
+               this.#auto_exec += `SetMarkerColor(${icolor});;`;
+               this.deleteAttr('marker');
+            }
          }
       }
 

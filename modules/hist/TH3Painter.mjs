@@ -719,12 +719,18 @@ class TH3Painter extends THistPainter {
          for (j = j1; j < j2; ++j) {
             for (k = k1; k < k2; ++k) {
                if (histo.getBinContent(i+1, j+1, k+1) > min) {
-                  if (i < ileft) ileft = i;
-                  if (i >= iright) iright = i + 1;
-                  if (j < jleft) jleft = j;
-                  if (j >= jright) jright = j + 1;
-                  if (k < kleft) kleft = k;
-                  if (k >= kright) kright = k + 1;
+                  if (i < ileft)
+                     ileft = i;
+                  if (i >= iright)
+                     iright = i + 1;
+                  if (j < jleft)
+                     jleft = j;
+                  if (j >= jright)
+                     jright = j + 1;
+                  if (k < kleft)
+                     kleft = k;
+                  if (k >= kright)
+                     kright = k + 1;
                }
             }
          }
@@ -732,9 +738,18 @@ class TH3Painter extends THistPainter {
 
       let xmin, xmax, ymin, ymax, zmin, zmax, isany = false;
 
-      if ((ileft === iright-1) && (ileft > i1+1) && (iright < i2-1)) { ileft--; iright++; }
-      if ((jleft === jright-1) && (jleft > j1+1) && (jright < j2-1)) { jleft--; jright++; }
-      if ((kleft === kright-1) && (kleft > k1+1) && (kright < k2-1)) { kleft--; kright++; }
+      if ((ileft === iright-1) && (ileft > i1+1) && (iright < i2-1)) {
+         ileft--;
+         iright++;
+      }
+      if ((jleft === jright-1) && (jleft > j1+1) && (jright < j2-1)) {
+         jleft--;
+         jright++;
+      }
+      if ((kleft === kright-1) && (kleft > k1+1) && (kright < k2-1)) {
+         kleft--;
+         kright++;
+      }
 
       if ((ileft > i1 || iright < i2) && (ileft < iright - 1)) {
          xmin = histo.fXaxis.GetBinLowEdge(ileft+1);

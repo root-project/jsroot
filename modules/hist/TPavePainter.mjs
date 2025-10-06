@@ -1021,7 +1021,10 @@ class TPavePainter extends ObjectPainter {
             gzmax = fp.zmax;
             zmin = fp.zoom_zmin;
             zmax = fp.zoom_zmax;
-            if (zmin === zmax) { zmin = gzmin; zmax = gzmax; }
+            if (zmin === zmax) {
+               zmin = gzmin;
+               zmax = gzmax;
+            }
          } else {
             zmin = levels.at(0);
             zmax = levels.at(-1);
