@@ -463,7 +463,8 @@ CustomStreamers = {
       const sz = (buf.last_read_version === 2) ? 3 : 2;
       for (let i = 0; i < sz; ++i) {
          let cnt = buf.ntoi4() * ((i === 0) ? 4 : 3);
-         while (cnt--) buf.readTString();
+         while (cnt--)
+            buf.readTString();
       }
    },
 
@@ -843,9 +844,16 @@ createPairStreamer = function(typename, file) {
       let res = '', p = p1 + 1, cnt = 0;
       while ((p < p2) && (cnt >= 0)) {
          switch (typename[p]) {
-            case '<': cnt++; break;
-            case ',': if (cnt === 0) cnt--; break;
-            case '>': cnt--; break;
+            case '<':
+               cnt++;
+               break;
+            case ',':
+               if (cnt === 0)
+                  cnt--;
+               break;
+            case '>':
+               cnt--;
+               break;
          }
          if (cnt >= 0) res += typename[p];
          p++;
@@ -2161,7 +2169,8 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
          let fmt = 'unknown', off = 0, CHKSUM = 0;
 
          if (curr + HDRSIZE >= totallen) {
-            if (!noalert) console.error('Error R__unzip: header size exceeds buffer size');
+            if (!noalert)
+               console.error('Error R__unzip: header size exceeds buffer size');
             return Promise.resolve(null);
          }
 
@@ -2184,7 +2193,8 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
 
          /*   C H E C K   H E A D E R   */
          if ((fmt !== 'new') && (fmt !== 'old') && (fmt !== 'LZ4') && (fmt !== 'ZSTD') && (fmt !== 'LZMA')) {
-            if (!noalert) console.error(`R__unzip: ${fmt} format is not supported!`);
+            if (!noalert)
+               console.error(`R__unzip: ${fmt} format is not supported!`);
             return Promise.resolve(null);
          }
 
@@ -2242,7 +2252,8 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
       }
 
       if (fullres !== tgtsize) {
-         if (!noalert) console.error(`R__unzip: fail to unzip data expects ${tgtsize}, got ${fullres}`);
+         if (!noalert)
+            console.error(`R__unzip: fail to unzip data expects ${tgtsize}, got ${fullres}`);
          return Promise.resolve(null);
       }
 
@@ -3331,7 +3342,8 @@ class TFile {
     * @desc If only_direct not specified, returns Promise while key keys must be read first from the directory
     * @private */
    getKey(keyname, cycle, only_direct) {
-      if (typeof cycle !== 'number') cycle = -1;
+      if (typeof cycle !== 'number')
+         cycle = -1;
       let bestkey = null;
       for (let i = 0; i < this.fKeys.length; ++i) {
          const key = this.fKeys[i];
@@ -3341,7 +3353,8 @@ class TFile {
             bestkey = key;
             break;
          }
-         if ((cycle < 0) && (!bestkey || (key.fCycle > bestkey.fCycle))) bestkey = key;
+         if ((cycle < 0) && (!bestkey || (key.fCycle > bestkey.fCycle)))
+            bestkey = key;
       }
       if (bestkey)
          return only_direct ? bestkey : Promise.resolve(bestkey);
@@ -3646,7 +3659,8 @@ class TFile {
 
       if (checksum !== undefined) {
          let cache = this.fStreamerInfos.cache;
-         if (!cache) cache = this.fStreamerInfos.cache = {};
+         if (!cache)
+            cache = this.fStreamerInfos.cache = {};
          let si = cache[checksum];
          if (si && (!clname || (si.fName === clname)))
             return si;

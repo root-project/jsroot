@@ -617,7 +617,8 @@ class TPavePainter extends ObjectPainter {
                      continue;
 
                   let color = entry.fTextColor ? this.getColor(entry.fTextColor) : '';
-                  if (!color) color = this.textatt.color;
+                  if (!color)
+                     color = this.textatt.color;
                   const align = entry.fTextAlign || this.textatt.align,
                         valign = align % 10,
                         halign = (align - valign) / 10;

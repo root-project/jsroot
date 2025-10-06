@@ -305,11 +305,14 @@ class THistDrawOptions {
          if (d.part.indexOf('H') >= 0) this.Zvert = false;
       }
 
-      if (d.check('TF3', true)) check3dbox = d.part;
+      if (d.check('TF3', true))
+         check3dbox = d.part;
 
-      if (d.check('ISO', true)) check3dbox = d.part;
+      if (d.check('ISO', true))
+         check3dbox = d.part;
 
-      if (d.check('LIST')) this.List = true; // not used
+      if (d.check('LIST'))
+         this.List = true; // not used
 
       if (d.check('CONT', true) && (hdim > 1)) {
          this.Contour = 1;

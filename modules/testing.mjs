@@ -68,7 +68,8 @@ async function testZooming(node, args, pp) {
 
    const xmin = fp.scale_xmin, xmax = fp.scale_xmax, ymin = fp.scale_ymin, ymax = fp.scale_ymax;
 
-   if (args.debug) console.log(`test zooming in range: ${xmin} ${xmax} ${ymin} ${ymax}`);
+   if (args.debug)
+      console.log(`test zooming in range: ${xmin} ${xmax} ${ymin} ${ymax}`);
 
    await fp.zoom(xmin + 0.2*(xmax - xmin), xmin + 0.8*(xmax - xmin), ymin + 0.2*(ymax - ymin), ymin + 0.8*(ymax - ymin));
    await _test_timeout(args);
@@ -108,7 +109,8 @@ async function testMouseZooming(node, args, pp) {
          evnt = new EmulationMouseEvent(),
          rect = fp.getFrameSvg().node().getBoundingClientRect();
 
-   if (args.debug) console.log(`test mouse zooming in frame: ${fw} ${fh}`);
+   if (args.debug)
+      console.log(`test mouse zooming in frame: ${fw} ${fh}`);
 
    // region zooming
 
@@ -155,7 +157,8 @@ async function testTouchZooming(node, args, pp) {
    const fw = fp.getFrameWidth(), fh = fp.getFrameHeight(),
          evnt = new EmulationMouseEvent();
 
-   if (args.debug) console.log(`test touch zooming in frame: ${fw} ${fh}`);
+   if (args.debug)
+      console.log(`test touch zooming in frame: ${fw} ${fh}`);
 
    evnt.setTouch(fw*0.4, fh*0.4, fw*0.6, fh*0.6);
 

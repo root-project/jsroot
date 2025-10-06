@@ -983,7 +983,8 @@ class RFramePainter extends RObjectPainter {
          checkZooming(null, true);
 
       if (unzoom_v) {
-         if (this[`zoom_${name}min`] !== this[`zoom_${name}max`]) changed = true;
+         if (this[`zoom_${name}min`] !== this[`zoom_${name}max`])
+            changed = true;
          this[`zoom_${name}min`] = this[`zoom_${name}max`] = 0;
          req.values[indx*2] = req.values[indx*2+1] = -1;
       }

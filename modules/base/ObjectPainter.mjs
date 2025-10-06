@@ -170,8 +170,10 @@ class ObjectPainter extends BasePainter {
       if (this._no_default_title || !name)
          return;
       const can = this.getCanvSvg();
-      if (!can.empty()) can.select('title').text(name);
-                   else this.selectDom().attr('title', name);
+      if (!can.empty())
+         can.select('title').text(name);
+      else
+         this.selectDom().attr('title', name);
       const cp = this.getCanvPainter();
       if (cp && ((cp === this) || (this.isMainPainter() && (cp === this.getPadPainter()))))
          cp.drawItemNameOnCanvas(name);

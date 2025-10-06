@@ -821,8 +821,10 @@ class TGeoPainter extends ObjectPainter {
                orientation = controller.gamepad.pose.orientation,
                position = controller.gamepad.pose.position,
                controllerMesh = controller.mesh;
-         if (orientation) controllerMesh.quaternion.fromArray(orientation);
-         if (position) controllerMesh.position.fromArray(position);
+         if (orientation)
+            controllerMesh.quaternion.fromArray(orientation);
+         if (position)
+            controllerMesh.position.fromArray(position);
          controllerMesh.updateMatrix();
          controllerMesh.applyMatrix4(this.#standingMatrix);
          controllerMesh.matrixWorldNeedsUpdate = true;
@@ -1996,11 +1998,15 @@ class TGeoPainter extends ObjectPainter {
             const point = intersects[i].point, special = (intersects[i].object.type === 'Points');
             let clipped = true;
 
-            if (clip[0].enabled && ((this.#clip_planes[0].normal.dot(point) > this.#clip_planes[0].constant) ^ special)) clipped = false;
-            if (clip[1].enabled && ((this.#clip_planes[1].normal.dot(point) > this.#clip_planes[1].constant) ^ special)) clipped = false;
-            if (clip[2].enabled && (this.#clip_planes[2].normal.dot(point) > this.#clip_planes[2].constant)) clipped = false;
+            if (clip[0].enabled && ((this.#clip_planes[0].normal.dot(point) > this.#clip_planes[0].constant) ^ special))
+               clipped = false;
+            if (clip[1].enabled && ((this.#clip_planes[1].normal.dot(point) > this.#clip_planes[1].constant) ^ special))
+               clipped = false;
+            if (clip[2].enabled && (this.#clip_planes[2].normal.dot(point) > this.#clip_planes[2].constant))
+               clipped = false;
 
-            if (!clipped) clippedIntersects.push(intersects[i]);
+            if (!clipped)
+               clippedIntersects.push(intersects[i]);
          }
 
          intersects = clippedIntersects;
@@ -3925,50 +3931,51 @@ class TGeoPainter extends ObjectPainter {
          return result;
 
       const mgr = {
-            GetVolume: name => {
-               const regexp = new RegExp('^'+name+'$'),
-                   currnode = this.findNodeWithVolume(regexp, arg => arg);
+         GetVolume: name => {
+            const regexp = new RegExp('^'+name+'$'),
+                  currnode = this.findNodeWithVolume(regexp, arg => arg);
 
-               if (!currnode) console.log(`Did not found ${name} volume`);
+            if (!currnode)
+               console.log(`Did not found ${name} volume`);
 
-               // return proxy object with several methods, typically used in ROOT geom scripts
-               return {
-                   found: currnode,
-                   fVolume: currnode?.node?.fVolume,
-                   InvisibleAll(flag) {
-                      setInvisibleAll(this.fVolume, flag);
-                   },
-                   Draw() {
-                      if (!this.found || !this.fVolume)
-                        return;
-                      result.obj = this.found.node;
-                      result.prefix = this.found.item;
-                      console.log(`Select volume for drawing ${this.fVolume.fName} ${result.prefix}`);
-                   },
-                   SetTransparency(lvl) {
-                     if (this.fVolume?.fMedium?.fMaterial)
-                        this.fVolume.fMedium.fMaterial.fFillStyle = 3000 + lvl;
-                   },
-                   SetLineColor(col) {
-                      if (this.fVolume) this.fVolume.fLineColor = col;
-                   }
-                };
-            },
+            // return proxy object with several methods, typically used in ROOT geom scripts
+            return {
+                  found: currnode,
+                  fVolume: currnode?.node?.fVolume,
+                  InvisibleAll(flag) {
+                     setInvisibleAll(this.fVolume, flag);
+                  },
+                  Draw() {
+                     if (!this.found || !this.fVolume)
+                     return;
+                     result.obj = this.found.node;
+                     result.prefix = this.found.item;
+                     console.log(`Select volume for drawing ${this.fVolume.fName} ${result.prefix}`);
+                  },
+                  SetTransparency(lvl) {
+                  if (this.fVolume?.fMedium?.fMaterial)
+                     this.fVolume.fMedium.fMaterial.fFillStyle = 3000 + lvl;
+                  },
+                  SetLineColor(col) {
+                     if (this.fVolume) this.fVolume.fLineColor = col;
+                  }
+               };
+         },
 
-            DefaultColors: () => {
-               this.ctrl.dflt_colors = true;
-            },
+         DefaultColors: () => {
+            this.ctrl.dflt_colors = true;
+         },
 
-            SetMaxVisNodes: limit => {
-               if (!this.ctrl.maxnodes)
-                  this.ctrl.maxnodes = parseInt(limit) || 0;
-            },
+         SetMaxVisNodes: limit => {
+            if (!this.ctrl.maxnodes)
+               this.ctrl.maxnodes = parseInt(limit) || 0;
+         },
 
-            SetVisLevel: limit => {
-               if (!this.ctrl.vislevel)
-                  this.ctrl.vislevel = parseInt(limit) || 0;
-            }
-          };
+         SetVisLevel: limit => {
+            if (!this.ctrl.vislevel)
+               this.ctrl.vislevel = parseInt(limit) || 0;
+         }
+      };
 
       showProgress(`Loading macro ${script_name}`);
 
@@ -5026,7 +5033,8 @@ class TGeoPainter extends ObjectPainter {
          if (clip[k].enabled)
             clip_cfg += 2 << k;
          if (this.#clip_planes[k].constant !== clip_constants[k]) {
-            if (clip[k].enabled) changed = true;
+            if (clip[k].enabled)
+               changed = true;
             this.#clip_planes[k].constant = clip_constants[k];
          }
          if (clip[k].enabled)

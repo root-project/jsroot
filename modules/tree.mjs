@@ -502,7 +502,8 @@ class TDrawVariable {
          return false;
       };
 
-      if (!code) code = ''; // should be empty string at least
+      if (!code)
+         code = ''; // should be empty string at least
 
       this.code = (only_branch?.fName ?? '') + code;
 
@@ -1953,7 +1954,8 @@ async function treeProcess(tree, selector, args) {
                }
             }
 
-            if (!BranchCount2) console.error('Did not found branch for second counter of kStreamLoop element');
+            if (!BranchCount2)
+               console.error('Did not found branch for second counter of kStreamLoop element');
          }
 
          if (BranchCount2) {

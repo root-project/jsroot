@@ -674,7 +674,8 @@ class Geometry {
                      nreduce++;
                      parts[i1] = p1.parent;
                      parts[i2] = null;
-                     if (p1.parent.vertices.length < 3) console.log('something wrong with parent');
+                     if (p1.parent.vertices.length < 3)
+                        console.log('something wrong with parent');
                      foundpair = true;
                      break;
                   }

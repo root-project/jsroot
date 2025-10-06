@@ -848,7 +848,8 @@ class RPadPainter extends RObjectPainter {
 
          if (this.#start_draw_tm) {
             const spenttm = new Date().getTime() - this.#start_draw_tm;
-            if (spenttm > 3000) console.log(`Canvas drawing took ${(spenttm*1e-3).toFixed(2)}s`);
+            if (spenttm > 3000)
+               console.log(`Canvas drawing took ${(spenttm*1e-3).toFixed(2)}s`);
             this.#start_draw_tm = undefined;
          }
 

@@ -909,7 +909,8 @@ class TCanvasPainter extends TPadPainter {
    /** @summary draw TCanvas */
    static async draw(dom, can, opt) {
       const nocanvas = !can;
-      if (nocanvas) can = create(clTCanvas);
+      if (nocanvas)
+         can = create(clTCanvas);
 
       const painter = new TCanvasPainter(dom, can, opt, nocanvas ? 'auto' : true);
       painter.checkSpecialsInPrimitives(can, true);

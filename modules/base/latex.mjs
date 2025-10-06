@@ -417,7 +417,11 @@ function isPlainText(txt) {
 function parseLatex(node, arg, label, curr) {
    let nelements = 0;
 
-   const currG = () => { if (!curr.g) curr.g = node.append('svg:g'); return curr.g; },
+   const currG = () => {
+      if (!curr.g)
+         curr.g = node.append('svg:g');
+      return curr.g;
+   },
 
    shiftX = dx => { curr.x += Math.round(dx); },
 

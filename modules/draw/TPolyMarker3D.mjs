@@ -17,7 +17,8 @@ async function drawPolyMarker3D() {
    for (let i = 0; i < fP.length; i += 3) {
       if ((fP[i] < fp.scale_xmin) || (fP[i] > fp.scale_xmax) ||
           (fP[i+1] < fp.scale_ymin) || (fP[i+1] > fp.scale_ymax) ||
-          (fP[i+2] < fp.scale_zmin) || (fP[i+2] > fp.scale_zmax)) continue;
+          (fP[i+2] < fp.scale_zmin) || (fP[i+2] > fp.scale_zmax))
+          continue;
       ++numselect;
    }
 

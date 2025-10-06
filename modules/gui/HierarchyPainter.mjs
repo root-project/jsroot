@@ -1245,12 +1245,15 @@ class HierarchyPainter extends BasePainter {
       let img1 = '', img2 = '', can_click = false, break_list = false, d3cont;
 
       if (handle) {
-         if ('icon' in handle) img1 = handle.icon;
-         if ('icon2' in handle) img2 = handle.icon2;
+         if ('icon' in handle)
+            img1 = handle.icon;
+         if ('icon2' in handle)
+            img2 = handle.icon2;
          if (!img1 && isFunc(handle.icon_get))
             img1 = handle.icon_get(hitem, this);
          if (canDrawHandle(handle) || ('execute' in handle) || ('aslink' in handle) ||
-             (canExpandHandle(handle) && (hitem._more !== false))) can_click = true;
+             (canExpandHandle(handle) && (hitem._more !== false)))
+             can_click = true;
       }
 
       if ('_icon' in hitem)
@@ -1763,7 +1766,8 @@ class HierarchyPainter extends BasePainter {
          if (can_draw && can_expand && !drawopt) {
             // if default action specified as expand, disable drawing
             // if already displayed, try to expand
-            if (dflt_expand || (handle?.dflt === kExpand) || (handle?.exapnd_after_draw && this.isItemDisplayed(itemname))) can_draw = false;
+            if (dflt_expand || (handle?.dflt === kExpand) || (handle?.exapnd_after_draw && this.isItemDisplayed(itemname)))
+               can_draw = false;
          }
 
          if (can_draw && !drawopt)

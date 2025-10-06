@@ -1396,8 +1396,10 @@ class FrameInteractive extends TooltipHandler {
       let xmin, xmax, ymin, ymax, isany = false, namex = 'x', namey = 'y';
       const xid = this.swap_xy() ? 1 : 0, yid = 1 - xid, changed = [true, true];
 
-      if (this.zoom_kind === 102) changed[1] = false;
-      if (this.zoom_kind === 103) changed[0] = false;
+      if (this.zoom_kind === 102)
+         changed[1] = false;
+      if (this.zoom_kind === 103)
+         changed[0] = false;
 
       if (changed[xid] && (Math.abs(this.zoom_curr[xid] - this.zoom_origin[xid]) > 10)) {
          if (this.zoom_second && (this.zoom_kind === 102)) namex = 'x2';

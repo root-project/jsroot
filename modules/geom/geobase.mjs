@@ -2675,8 +2675,10 @@ class ClonedNodes {
    countVisibles() {
       const len = this.nodes?.length || 0;
       let cnt = 0;
-      for (let k = 0; k < len; ++k)
-         if (this.nodes[k].vis) cnt++;
+      for (let k = 0; k < len; ++k) {
+         if (this.nodes[k].vis)
+            cnt++;
+      }
       return cnt;
    }
 
@@ -2702,7 +2704,8 @@ class ClonedNodes {
                   // on screen bits used always, childs always checked
                   clone.vis = testGeoBit(obj.fVolume, geoBITS.kVisOnScreen) ? 99 : 0;
 
-                  if ((n === 0) && clone.vis && hide_top_volume) clone.vis = 0;
+                  if ((n === 0) && clone.vis && hide_top_volume)
+                     clone.vis = 0;
 
                   if (copy_bits) {
                      setGeoBit(obj.fVolume, geoBITS.kVisNone, false);
@@ -2732,7 +2735,8 @@ class ClonedNodes {
             clone.vis = obj.fRnrSelf ? 99 : 0;
 
             // when the only node is selected, draw it
-            if ((n === 0) && (this.nodes.length === 1)) clone.vis = 99;
+            if ((n === 0) && (this.nodes.length === 1))
+               clone.vis = 99;
 
             this.vislevel = 9999; // automatically take all volumes
          }
@@ -3689,7 +3693,8 @@ class ClonedNodes {
 
 
          if ((indx2 < prev.length) && (prev[indx2].seqid === current[indx1].seqid)) {
-            if (prev[indx2].done) current[indx1].done = true; // copy ready flag
+            if (prev[indx2].done)
+               current[indx1].done = true; // copy ready flag
             indx2++;
          }
       }

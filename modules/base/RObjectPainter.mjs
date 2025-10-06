@@ -278,8 +278,10 @@ class RObjectPainter extends ObjectPainter {
       req.names.push(name);
 
       if ((value === null) || (value === undefined)) {
-        if (!kind) kind = 'none';
-        if (kind !== 'none') console.error(`Trying to set ${kind} for none value`);
+        if (!kind)
+         kind = 'none';
+        if (kind !== 'none')
+         console.error(`Trying to set ${kind} for none value`);
       }
 
       if (!kind) {

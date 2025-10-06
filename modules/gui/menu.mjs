@@ -223,11 +223,11 @@ class JSRootMenu {
 
          for (let nrow = 0; nrow < 10; nrow++) {
             let n = ncolumn*10 + nrow;
-            if (!useid) --n; // use -1 as none color
+            if (!useid)
+               --n; // use -1 as none color
 
-            let col = (n < 0) ? 'none' : getColor(n);
-            if ((n === 0) && (fill_kind === 1)) col = 'none';
-            const lbl = (n <= 0) || ((col[0] !== '#') && (col.indexOf('rgb') < 0)) ? col : `col ${n}`,
+            const col = (n < 0) || ((n === 0) && (fill_kind === 1)) ? 'none' : getColor(n),
+                  lbl = (n <= 0) || ((col[0] !== '#') && (col.indexOf('rgb') < 0)) ? col : `col ${n}`,
                   fill = (n === 1) ? 'white' : 'black',
                   stroke = (n === 1) ? 'red' : 'black',
                   rect = (value === (useid ? n : col)) ? `<rect width="50" height="18" style="fill:none;stroke-width:3px;stroke:${stroke}"></rect>` : '',
@@ -583,21 +583,21 @@ class JSRootMenu {
          this.addSizeMenu('width', 1, 10, 1, painter.lineatt.width, arg => {
             painter.lineatt.change(undefined, arg);
             changeObjectMember(painter, 'fLineWidth', arg);
-            if (pp) changeObjectMember(pp, 'fFrameLineWidth', arg);
+            changeObjectMember(pp, 'fFrameLineWidth', arg);
             painter.interactiveRedraw(redraw_arg, `exec:SetLineWidth(${arg})`);
          });
          if (!painter.lineatt.nocolor) {
             this.addColorMenu('color', painter.lineatt.color, arg => {
                painter.lineatt.change(arg);
                changeObjectMember(painter, 'fLineColor', arg, true);
-               if (pp) changeObjectMember(pp, 'fFrameLineColor', arg, true);
+               changeObjectMember(pp, 'fFrameLineColor', arg, true);
                painter.interactiveRedraw(redraw_arg, getColorExec(arg, 'SetLineColor'));
             });
          }
          this.addLineStyleMenu('style', painter.lineatt.style, id => {
             painter.lineatt.change(undefined, undefined, id);
             changeObjectMember(painter, 'fLineStyle', id);
-            if (pp) changeObjectMember(pp, 'fFrameLineStyle', id);
+            changeObjectMember(pp, 'fFrameLineStyle', id);
             painter.interactiveRedraw(redraw_arg, `exec:SetLineStyle(${id})`);
          });
          this.endsub();
@@ -623,13 +623,13 @@ class JSRootMenu {
          this.addColorMenu('color', painter.fillatt.colorindx, arg => {
             painter.fillatt.change(arg, undefined, painter.getCanvSvg());
             changeObjectMember(painter, 'fFillColor', arg, true);
-            if (pp) changeObjectMember(pp, 'fFrameFillColor', arg, true);
+            changeObjectMember(pp, 'fFrameFillColor', arg, true);
             painter.interactiveRedraw(redraw_arg, getColorExec(arg, 'SetFillColor'));
          }, painter.fillatt.kind);
          this.addFillStyleMenu('style', painter.fillatt.pattern, painter.fillatt.colorindx, id => {
             painter.fillatt.change(undefined, id, painter.getCanvSvg());
             changeObjectMember(painter, 'fFillStyle', id);
-            if (pp) changeObjectMember(pp, 'fFrameFillStyle', id);
+            changeObjectMember(pp, 'fFrameFillStyle', id);
             painter.interactiveRedraw(redraw_arg, `exec:SetFillStyle(${id})`);
          });
          this.endsub();
