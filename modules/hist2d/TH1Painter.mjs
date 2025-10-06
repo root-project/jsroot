@@ -989,7 +989,8 @@ class TH1Painter extends THistPainter {
       if (o.Error || o.Mark || this.isTF1()) {
          tips.push(`x = ${xlbl}`, `y = ${funcs.axisAsText('y', cont)}`);
          if (o.Error) {
-            if (xlbl[0] === '[') tips.push(`error x = ${((x2 - x1) / 2).toPrecision(4)}`);
+            if (xlbl[0] === '[')
+               tips.push(`error x = ${((x2 - x1) / 2).toPrecision(4)}`);
             const errs = this.getBinErrors(histo, bin + 1, cont);
             if (errs.poisson)
                tips.push(`error low = ${errs.low.toPrecision(4)}`, `error up = ${errs.up.toPrecision(4)}`);

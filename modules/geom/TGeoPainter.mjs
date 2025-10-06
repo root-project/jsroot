@@ -1804,8 +1804,8 @@ class TGeoPainter extends ObjectPainter {
                   .listen().onChange(() => this.changedTransformation());
 
          transform.add(this, 'resetTransformation').name('Reset');
-
-         if (this.ctrl.trans_z || this.ctrl.trans_radial) transform.open();
+         if (this.ctrl.trans_z || this.ctrl.trans_radial)
+            transform.open();
       }
    }
 

@@ -375,7 +375,8 @@ function objectHierarchy(top, obj, args = undefined) {
          compress = isarray && (obj.length > settings.HierarchyLimit);
    let arrcompress = false;
 
-   if (isarray && (top._name === 'Object') && !top._parent) top._name = 'Array';
+   if (isarray && (top._name === 'Object') && !top._parent)
+      top._name = 'Array';
 
    if (compress) {
       arrcompress = true;
@@ -1050,7 +1051,8 @@ class HierarchyPainter extends BasePainter {
 
          if (arg.force) {
              // if did not found element with given name we just generate it
-             if (top._childs === undefined) top._childs = [];
+             if (top._childs === undefined)
+               top._childs = [];
              pos = fullname.indexOf('/');
              const child = { _name: ((pos < 0) ? fullname : fullname.slice(0, pos)) };
              top._childs.push(child);

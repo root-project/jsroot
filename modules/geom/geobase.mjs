@@ -3241,7 +3241,8 @@ class ClonedNodes {
             if (this.use_dflt_colors) {
                const matZ = Math.round(mat.fZ), icol = this.dflt_table[matZ];
                prop.fillcolor = root_colors[icol];
-               if (mat.fDensity < 0.1) transparency = 60;
+               if (mat.fDensity < 0.1)
+                  transparency = 60;
             }
 
             if (transparency > 0)

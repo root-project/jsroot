@@ -2216,7 +2216,8 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
          const srcsize = HDRSIZE + ((getCode(curr + 3) & 0xff) | ((getCode(curr + 4) & 0xff) << 8) | ((getCode(curr + 5) & 0xff) << 16)),
                uint8arr = new Uint8Array(arr.buffer, arr.byteOffset + curr + HDRSIZE + off + CHKSUM, Math.min(arr.byteLength - curr - HDRSIZE - off - CHKSUM, srcsize - HDRSIZE - CHKSUM));
 
-         if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
+         if (!tgtbuf)
+            tgtbuf = new ArrayBuffer(tgtsize);
          const tgt8arr = new Uint8Array(tgtbuf, fullres);
 
          if (fmt === 'ZSTD') {

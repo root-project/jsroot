@@ -701,7 +701,8 @@ function highlightBin3D(tip, selfmesh) {
          console.warn(`same tip X ${tip.x1} ${tip.x2}`);
       if (tip.y1 === tip.y2)
          console.warn(`same tip Y ${tip.y1} ${tip.y2}`);
-      if (tip.z1 === tip.z2) tip.z2 = tip.z1 + 0.0001;  // avoid zero faces
+      if (tip.z1 === tip.z2)
+         tip.z2 = tip.z1 + 0.0001;  // avoid zero faces
 
       for (let k = 0, nn = -3; k < indicies.length; ++k) {
          const vert = vertices[indicies[k]];
@@ -895,7 +896,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          maxtextwidth = Math.max(maxtextwidth, draw_width);
          maxtextheight = Math.max(maxtextheight, draw_height);
 
-         if (mod?.fTextColor) text3d.color = this.getColor(mod.fTextColor);
+         if (mod?.fTextColor)
+            text3d.color = this.getColor(mod.fTextColor);
          text3d.grx = grx;
          lbls.push(text3d);
 
@@ -1164,7 +1166,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          maxtextwidth = Math.max(maxtextwidth, draw_width);
          maxtextheight = Math.max(maxtextheight, draw_height);
 
-         if (mod?.fTextColor) text3d.color = this.getColor(mod.fTextColor);
+         if (mod?.fTextColor)
+            text3d.color = this.getColor(mod.fTextColor);
          text3d.gry = gry;
          text3d.offsetx = this.y_handle.labelsOffset + (grmaxx - grminx) * 0.005;
          lbls.push(text3d);

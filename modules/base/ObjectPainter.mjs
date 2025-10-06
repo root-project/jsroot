@@ -1170,7 +1170,11 @@ class ObjectPainter extends BasePainter {
          // use translate and then rotate to avoid complex sign calculations
          let trans = makeTranslate(Math.round(arg.x), Math.round(arg.y)) || '';
          const dtrans = makeTranslate(Math.round(dx), Math.round(dy)),
-               append = aaa => { if (trans) trans += ' '; trans += aaa; };
+               append = aaa => {
+                  if (trans)
+                     trans += ' ';
+                  trans += aaa;
+               };
 
          if (arg.rotate)
             append(`rotate(${Math.round(arg.rotate)})`);

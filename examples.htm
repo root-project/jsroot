@@ -610,8 +610,10 @@
             testfile = testobj = null;
             test_interactivity = (doinit === 'full');
             let ii = decodeUrl().get('interval');
-            if (ii && Number.isInteger(parseInt(ii))) testinterval = parseInt(ii);
-                                                 else testinterval = interval;
+            if (ii && Number.isInteger(parseInt(ii)))
+               testinterval = parseInt(ii);
+            else
+               testinterval = interval;
             if (running)
                return;
             return runBigTest(0);

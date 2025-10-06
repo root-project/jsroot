@@ -591,7 +591,8 @@ class RNTupleDescriptorBuilder {
         const startOffset = BigInt(reader.offset),
             clusterGroupListSize = reader.readS64(),
             isList = clusterGroupListSize < 0;
-        if (!isList) throw new Error('Cluster group frame is not a list frame');
+        if (!isList)
+            throw new Error('Cluster group frame is not a list frame');
 
         const groupCount = reader.readU32(),
 
