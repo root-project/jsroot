@@ -53,11 +53,13 @@ class TAttMarkerHandler {
      * @param {number} args.size - marker size
      * @param {number} [args.refsize] - when specified and marker size < 1, marker size will be calculated relative to that size */
    setArgs(args) {
-      if (isObject(args) && (typeof args.fMarkerStyle === 'number')) args = { attr: args };
+      if (isObject(args) && (typeof args.fMarkerStyle === 'number'))
+         args = { attr: args };
 
       if (args.attr) {
          args.color ??= args.painter ? args.painter.getColor(args.attr.fMarkerColor) : getColor(args.attr.fMarkerColor);
-         if (!args.style || (args.style < 0)) args.style = args.attr.fMarkerStyle;
+         if (!args.style || (args.style < 0))
+            args.style = args.attr.fMarkerStyle;
          args.size ??= args.attr.fMarkerSize;
       }
 

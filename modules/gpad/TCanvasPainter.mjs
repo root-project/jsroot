@@ -789,7 +789,8 @@ class TCanvasPainter extends TPadPainter {
          ischanged = true;
          arg.x = Math.round(click_pos.x || 0);
          arg.y = Math.round(click_pos.y || 0);
-         if (click_pos.dbl) arg.dbl = true;
+         if (click_pos.dbl)
+            arg.dbl = true;
       }
 
       if (arg && (ischanged || is_button))

@@ -706,7 +706,8 @@ class TDrawVariable {
          } else {
             const iter = new ArrayIterator(arg[name], this.brarray[n], obj);
             arrs[n] = [];
-            while (iter.next()) arrs[n].push(iter.value);
+            while (iter.next())
+               arrs[n].push(iter.value);
          }
          if ((usearrlen < 0) || (usearrlen < arrs[n].length))
             usearrlen = arrs[n].length;

@@ -430,8 +430,10 @@ async function drawTree(dom, obj, opt) {
       args = { expr: opt, branch: obj };
       tree = obj.$tree;
    } else {
-      if (!args) args = 'player';
-      if (isStr(args)) args = { expr: args };
+      if (!args)
+         args = 'player';
+      if (isStr(args))
+         args = { expr: args };
    }
 
    if (!tree)
@@ -447,7 +449,8 @@ async function drawTree(dom, obj, opt) {
       } else if ((p >= 0) && (p === args.expr.length - 6)) {
          args.player = true;
          args.expr = args.expr.slice(0, p);
-         if ((p > 0) && (args.expr[p-1] === ';')) args.expr = args.expr.slice(0, p-1);
+         if ((p > 0) && (args.expr[p-1] === ';'))
+            args.expr = args.expr.slice(0, p-1);
       }
    }
 

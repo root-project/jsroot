@@ -89,7 +89,8 @@ class TAttTextHandler {
 
    /** @summary Create argument for drawText method */
    createArg(arg) {
-      if (!arg) arg = {};
+      if (!arg)
+         arg = {};
       this.align_used = !arg.noalign && !arg.align;
       if (this.align_used)
          arg.align = this.align;

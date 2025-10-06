@@ -83,7 +83,8 @@ const cssFontWeight='normal', ascender=1189, underlinePosition=-100, cssFontStyl
 /** @summary Create three.js Color instance, handles optional opacity
   * @private */
 function getMaterialArgs(color, args) {
-   if (!args || !isObject(args)) args = {};
+   if (!args || !isObject(args))
+      args = {};
 
    if (isStr(color) && (((color[0] === '#') && (color.length === 9)) || (color.indexOf('rgba') >= 0))) {
       const col = d3_color(color);

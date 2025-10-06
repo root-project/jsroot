@@ -586,10 +586,12 @@ class ObjectPainter extends BasePainter {
       if (pad) {
          if (axis === 'y') {
             value = pad.fY1 + value * (pad.fY2 - pad.fY1);
-            if (pad.fLogy) value = Math.pow(10, value);
+            if (pad.fLogy)
+               value = Math.pow(10, value);
          } else {
             value = pad.fX1 + value * (pad.fX2 - pad.fX1);
-            if (pad.fLogx) value = Math.pow(10, value);
+            if (pad.fLogx)
+               value = Math.pow(10, value);
          }
       }
 

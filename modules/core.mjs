@@ -741,7 +741,8 @@ function parse(json) {
                   arr[p++] = v;
                   if ((nkey < len) && (ks[nkey][0] === 'n')) {
                      let cnt = value[ks[nkey++]]; // counter
-                     while (--cnt) arr[p++] = v;
+                     while (--cnt)
+                        arr[p++] = v;
                   }
                }
             }

@@ -107,7 +107,8 @@ class TWebPaintingPainter extends ObjectPainter {
                   continue;
                case 'o':
                   attr = read_attr(arr[k], ['fTextColor', 'fTextFont', 'fTextSize', 'fTextAlign', 'fTextAngle']);
-                  if (attr.fTextSize < 0) attr.fTextSize *= -0.001;
+                  if (attr.fTextSize < 0)
+                     attr.fTextSize *= -0.001;
                   check_attributes();
                   continue;
                case 'r':

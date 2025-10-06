@@ -637,7 +637,8 @@ class WebWindowHandle {
          args += `key=${k}&ntry=${ntry}`;
       }
       if (this.#token) {
-         if (args) args += '&';
+         if (args)
+            args += '&';
          args += `token=${this.#token}`;
       }
       return args;

@@ -1029,7 +1029,8 @@ class TPavePainter extends ObjectPainter {
       g.selectAll('rect').style('fill', 'white');
 
       if ((gzmin === undefined) || (gzmax === undefined) || (gzmin === gzmax)) {
-         gzmin = zmin; gzmax = zmax;
+         gzmin = zmin;
+         gzmax = zmax;
       }
 
       if (this.#palette_vertical) {
@@ -1037,13 +1038,15 @@ class TPavePainter extends ObjectPainter {
          axis.fChopt = 'S+' + (this.#swap_side ? 'R' : 'L'); // clearly configure text align
          this.z_handle.configureAxis('zaxis', gzmin, gzmax, zmin, zmax, true, [0, s_height], { log, fixed_ticks: cjust ? levels : null, maxTickSize: Math.round(s_width*sizek), swap_side: this.#swap_side, minposbin: main.gminposbin });
          axis_transform = this.#swap_side ? null : `translate(${s_width})`;
-         if (pad?.fTickz) axis_second = this.#swap_side ? s_width : -s_width;
+         if (pad?.fTickz)
+            axis_second = this.#swap_side ? s_width : -s_width;
       } else {
          this.#swap_side = palette.fY1NDC > 0.5;
          axis.fChopt = 'S+';
          this.z_handle.configureAxis('zaxis', gzmin, gzmax, zmin, zmax, false, [0, s_width], { log, fixed_ticks: cjust ? levels : null, maxTickSize: Math.round(s_height*sizek), swap_side: this.#swap_side, minposbin: main.gminposbin });
          axis_transform = this.#swap_side ? null : `translate(0,${s_height})`;
-         if (pad?.fTickz) axis_second = this.#swap_side ? s_height : -s_height;
+         if (pad?.fTickz)
+            axis_second = this.#swap_side ? s_height : -s_height;
       }
 
       if (!contour || !draw_palette || postpone_draw) {

@@ -2246,7 +2246,8 @@ class TPadPainter extends ObjectPainter {
          is_top = true;
          scan_subpads = true;
       }
-      if (is_top) arg = [];
+      if (is_top)
+         arg = [];
       if (!cp)
          cp = this.isCanvas() ? this : this.getCanvPainter();
 

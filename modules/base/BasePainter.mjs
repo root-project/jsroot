@@ -319,7 +319,8 @@ function buildSvgCurve(p, args) {
       args.ndig = 0;
 
    let npnts = p.length;
-   if (npnts < 3) args.line = true;
+   if (npnts < 3)
+      args.line = true;
 
    args.t = args.t ?? 0.2;
 

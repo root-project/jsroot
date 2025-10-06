@@ -640,7 +640,8 @@ function addStreamerInfosForPainter(lst) {
   * let png64 = await makeImage({ format: 'png', object, option: 'colz', width: 1200, height: 800 });
   * let pngbuf = await makeImage({ format: 'png', as_buffer: true, object, option: 'colz', width: 1200, height: 800 }); */
 async function makeImage(args) {
-   if (!args) args = {};
+   if (!args)
+      args = {};
 
    if (!isObject(args.object))
       return Promise.reject(Error('No object specified to generate SVG'));
@@ -740,7 +741,8 @@ async function makeImage(args) {
   * let object = await file.readObject('hpxpy;1');
   * let svg = await makeSVG({ object, option: 'lego2,pal50', width: 1200, height: 800 }); */
 async function makeSVG(args) {
-   if (!args) args = {};
+   if (!args)
+      args = {};
    args.format = 'svg';
    return makeImage(args);
 }

@@ -2278,7 +2278,8 @@ class TFramePainter extends FrameInteractive {
       if ((this.xmin === this.xmax) || (this.ymin === this.ymax))
          return false;
 
-      if (AxisPos === undefined) AxisPos = 0;
+      if (AxisPos === undefined)
+         AxisPos = 0;
 
       const layer = this.getFrameSvg().selectChild('.axis_layer'),
             w = this.getFrameWidth(),

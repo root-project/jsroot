@@ -294,7 +294,8 @@ function create3DControl(fp) {
          const pnt = zoom_mesh.globalIntersect(this.raycaster),
                axis_value = frame_painter.get3dZoomCoord(pnt, axis_name);
 
-         if ((axis_name === 'z') && zoom_mesh.use_y_for_z) axis_name = 'y';
+         if ((axis_name === 'z') && zoom_mesh.use_y_for_z)
+            axis_name = 'y';
 
          return { name: axis_name,
                   title: 'axis object',

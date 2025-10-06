@@ -425,8 +425,10 @@ class Triangles3DHandler {
             if (side1 !== side2) {
                // order is important, should move from 1->2 point, checked via lastpart
                lastpart = 0;
-               if ((side1 < 0) || (side2 < 0)) addCrossingPoint(x1, y1, z1, x2, y2, z2, levels[lvl-1]);
-               if ((side1 > 0) || (side2 > 0)) addCrossingPoint(x1, y1, z1, x2, y2, z2, levels[lvl], true);
+               if ((side1 < 0) || (side2 < 0))
+                  addCrossingPoint(x1, y1, z1, x2, y2, z2, levels[lvl-1]);
+               if ((side1 > 0) || (side2 > 0))
+                  addCrossingPoint(x1, y1, z1, x2, y2, z2, levels[lvl], true);
             }
 
             if (side2 === 0) { pntbuf[pntindx] = x2; pntbuf[pntindx+1] = y2; pntbuf[pntindx+2] = z2; pntindx += 3; }
@@ -434,8 +436,10 @@ class Triangles3DHandler {
             if (side2 !== side3) {
                // order is important, should move from 2->3 point, checked via lastpart
                lastpart = 0;
-               if ((side2 < 0) || (side3 < 0)) addCrossingPoint(x2, y2, z2, x3, y3, z3, levels[lvl-1]);
-               if ((side2 > 0) || (side3 > 0)) addCrossingPoint(x2, y2, z2, x3, y3, z3, levels[lvl], true);
+               if ((side2 < 0) || (side3 < 0))
+                  addCrossingPoint(x2, y2, z2, x3, y3, z3, levels[lvl-1]);
+               if ((side2 > 0) || (side3 > 0))
+                  addCrossingPoint(x2, y2, z2, x3, y3, z3, levels[lvl], true);
             }
 
             if (side3 === 0) { pntbuf[pntindx] = x3; pntbuf[pntindx+1] = y3; pntbuf[pntindx+2] = z3; pntindx += 3; }
@@ -443,8 +447,10 @@ class Triangles3DHandler {
             if (side3 !== side1) {
                // order is important, should move from 3->1 point, checked via lastpart
                lastpart = 0;
-               if ((side3 < 0) || (side1 < 0)) addCrossingPoint(x3, y3, z3, x1, y1, z1, levels[lvl-1]);
-               if ((side3 > 0) || (side1 > 0)) addCrossingPoint(x3, y3, z3, x1, y1, z1, levels[lvl], true);
+               if ((side3 < 0) || (side1 < 0))
+                  addCrossingPoint(x3, y3, z3, x1, y1, z1, levels[lvl-1]);
+               if ((side3 > 0) || (side1 > 0))
+                  addCrossingPoint(x3, y3, z3, x1, y1, z1, levels[lvl], true);
             }
 
             if (pntindx === 0)
@@ -1702,13 +1708,16 @@ class TH2Painter extends THistPainter {
                dx = nextx - grx,
                dy = nexty - gry;
 
-         if (textbin) addPoint(grx, gry, nextx, nexty);
+         if (textbin)
+            addPoint(grx, gry, nextx, nexty);
          if (dx || dy) {
             if (dx === 0) {
-               if ((acc_y === 0) || ((dy < 0) !== (acc_y < 0))) flush();
+               if ((acc_y === 0) || ((dy < 0) !== (acc_y < 0)))
+                  flush();
                acc_y += dy;
             } else if (dy === 0) {
-               if ((acc_x === 0) || ((dx < 0) !== (acc_x < 0))) flush();
+               if ((acc_x === 0) || ((dx < 0) !== (acc_x < 0)))
+                  flush();
                acc_x += dx;
             } else {
                flush();
@@ -2346,7 +2355,8 @@ class TH2Painter extends THistPainter {
       }
 
       const make_path = (...a) => {
-         if (a[1] === 'array') a = a[0];
+         if (a[1] === 'array')
+            a = a[0];
          const l = a.length;
          let i = 2, xx = a[0], yy = a[1],
              res = swapXY ? `M${yy},${xx}` : `M${xx},${yy}`;
@@ -2524,9 +2534,10 @@ class TH2Painter extends THistPainter {
                arr.push(prev_x, prev_y);
                for (let ii = xindx1; ii <= xindx2; ii++) {
                   const curr_x = Math.round(center + scale*proj[ii]),
-                      curr_y = Math.round(ff(xx[ii+1]));
+                        curr_y = Math.round(ff(xx[ii+1]));
                   if (curr_x !== prev_x) {
-                     if (ii !== xindx1) arr.push('V', prev_y);
+                     if (ii !== xindx1)
+                        arr.push('V', prev_y);
                      arr.push('H', curr_x);
                   }
                   prev_x = curr_x;

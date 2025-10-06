@@ -287,7 +287,8 @@ const AxisPainterMethods = {
          const arr2 = [];
          arr.forEach(val => {
             const pow = Math.log10(val) / Math.log10(this.logbase);
-            if (Math.abs(Math.round(pow) - pow) < 0.01) arr2.push(val);
+            if (Math.abs(Math.round(pow) - pow) < 0.01)
+               arr2.push(val);
          });
          if (arr2.length)
             arr = arr2;
@@ -974,18 +975,26 @@ class TAxisPainter extends ObjectPainter {
 
          this.titleOffset = (vertical ? new_x : new_y) / offset_k;
          const offset = this.titleOffset / this.offsetScaling / this.titleSize;
-         if (axis) axis.fTitleOffset = offset;
-         if (axis2) axis2.fTitleOffset = offset;
+         if (axis)
+            axis.fTitleOffset = offset;
+         if (axis2)
+            axis2.fTitleOffset = offset;
 
          if (curr_indx === 1) {
-            setBit(EAxisBits.kCenterTitle, true); this.titleCenter = true;
-            setBit(EAxisBits.kOppositeTitle, false); this.titleOpposite = false;
+            setBit(EAxisBits.kCenterTitle, true);
+            this.titleCenter = true;
+            setBit(EAxisBits.kOppositeTitle, false);
+            this.titleOpposite = false;
          } else if (curr_indx === 0) {
-            setBit(EAxisBits.kCenterTitle, false); this.titleCenter = false;
-            setBit(EAxisBits.kOppositeTitle, true); this.titleOpposite = true;
+            setBit(EAxisBits.kCenterTitle, false);
+            this.titleCenter = false;
+            setBit(EAxisBits.kOppositeTitle, true);
+            this.titleOpposite = true;
          } else {
-            setBit(EAxisBits.kCenterTitle, false); this.titleCenter = false;
-            setBit(EAxisBits.kOppositeTitle, false); this.titleOpposite = false;
+            setBit(EAxisBits.kCenterTitle, false);
+            this.titleCenter = false;
+            setBit(EAxisBits.kOppositeTitle, false);
+            this.titleOpposite = false;
          }
 
          drag_rect.remove();

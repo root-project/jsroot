@@ -1059,7 +1059,8 @@ class JSRootMenu {
       if (!kind) kind = 'text';
       const inp_type = (kind === 'int') ? 'number' : 'text';
       let ranges = '';
-      if ((value === undefined) || (value === null)) value = '';
+      if ((value === undefined) || (value === null))
+         value = '';
       if (kind === 'int') {
           if (min !== undefined)
             ranges += ` min="${min}"`;
@@ -1100,7 +1101,8 @@ class JSRootMenu {
       for (let n = 0; n < method.fArgs.length; ++n) {
          const arg = method.fArgs[n];
          arg.fValue = arg.fDefault;
-         if (arg.fValue === '""') arg.fValue = '';
+         if (arg.fValue === '""')
+            arg.fValue = '';
          main_content += `<label for="${dlg_id}_inp${n}">${arg.fName}</label>
                           <input type='text' tabindex="${n+1}" id="${dlg_id}_inp${n}" value="${arg.fValue}" style="width:100%;display:block"/>`;
       }
@@ -1116,7 +1118,8 @@ class JSRootMenu {
             for (let k = 0; k < method.fArgs.length; ++k) {
                const arg = method.fArgs[k];
                let value = element.querySelector(`#${dlg_id}_inp${k}`).value;
-               if (value === '') value = arg.fDefault;
+               if (value === '')
+                  value = arg.fDefault;
                if ((arg.fTitle === 'Option_t*') || (arg.fTitle === 'const char*')) {
                   // check quotes,
                   // TODO: need to make more precise checking of escape characters

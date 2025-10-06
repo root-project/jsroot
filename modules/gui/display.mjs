@@ -288,7 +288,8 @@ class GridDisplay extends MDIDisplay {
             while (kind > 0) {
                arr.unshift(kind % 10);
                kind = Math.round((kind-arr[0])/10);
-               if (arr[0] === 0) arr[0] = 1;
+               if (arr[0] === 0)
+                  arr[0] = 1;
             }
             num = arr.length;
          }
@@ -864,7 +865,10 @@ class FlexibleDisplay extends MDIDisplay {
                crossX = (r1, r2) => ((r1.x <= r2.x) && (r1.x + r1.w >= r2.x)) || ((r2.x <= r1.x) && (r2.x + r2.w >= r1.x)),
                crossY = (r1, r2) => ((r1.y <= r2.y) && (r1.y + r1.h >= r2.y)) || ((r2.y <= r1.y) && (r2.y + r2.h >= r1.y));
 
-         this.forEachFrame(f => { if ((f!==frame) && (this.getFrameState(f) === 'min')) arr.push(this.getFrameRect(f)); });
+         this.forEachFrame(f => {
+            if ((f !== frame) && (this.getFrameState(f) === 'min'))
+               arr.push(this.getFrameRect(f));
+         });
 
          rect.y = hh;
          do {

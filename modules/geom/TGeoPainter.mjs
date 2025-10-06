@@ -3385,7 +3385,8 @@ class TGeoPainter extends ObjectPainter {
          this.render3D(0);
       };
 
-      if (this.#webgl) animate();
+      if (this.#webgl)
+         animate();
    }
 
    /** @summary called at the end of scene drawing */
@@ -5820,7 +5821,8 @@ function provideMenu(menu, item, hpainter) {
    menu.separator();
 
    const scanEveVisible = (obj2, arg, skip_this) => {
-      if (!arg) arg = { visible: 0, hidden: 0 };
+      if (!arg)
+         arg = { visible: 0, hidden: 0 };
 
       if (!skip_this) {
          if (arg.assign !== undefined)

@@ -1522,7 +1522,8 @@ class THistPainter extends ObjectPainter {
       const pp = this.getPadPainter();
       let stat = this.findStat(), statpainter;
 
-      if (!arg) arg = '';
+      if (!arg)
+         arg = '';
 
       if (!stat) {
          if (arg.indexOf('-check') > 0)
@@ -2333,9 +2334,12 @@ class THistPainter extends ObjectPainter {
       pal.$main_painter = this;
 
       let arg = 'bring_stats_front', pr;
-      if (postpone_draw) arg += ';postpone';
-      if (can_move && !this.#doing_redraw_palette) arg += ';can_move';
-      if (o.Cjust) arg += ';cjust';
+      if (postpone_draw)
+         arg += ';postpone';
+      if (can_move && !this.#doing_redraw_palette)
+         arg += ';can_move';
+      if (o.Cjust)
+         arg += ';cjust';
 
       if (!pal_painter) {
          // when histogram drawn on sub pad, let draw new axis object on the same pad
