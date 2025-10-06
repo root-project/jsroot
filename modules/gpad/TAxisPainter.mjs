@@ -1274,8 +1274,10 @@ class TAxisPainter extends ObjectPainter {
                   yoff = gStyle.fYAxisExpYOffset || 0;
                }
 
-               if (xoff) xoff = Math.round(xoff * (this.getPadPainter()?.getPadWidth() ?? 0));
-               if (yoff) yoff = Math.round(yoff * (this.getPadPainter()?.getPadHeight() ?? 0));
+               if (xoff)
+                  xoff = Math.round(xoff * (this.getPadPainter()?.getPadWidth() ?? 0));
+               if (yoff)
+                  yoff = Math.round(yoff * (this.getPadPainter()?.getPadHeight() ?? 0));
 
                this.drawText({ color: labelsFont.color,
                               x: xoff + (this.vertical ? side*5 : w+5),

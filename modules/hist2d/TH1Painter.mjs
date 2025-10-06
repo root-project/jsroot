@@ -1299,7 +1299,8 @@ class TH1Painter extends THistPainter {
       let indx = 1;
 
       for (let i = 1; i <= nbins; ++i) {
-         if (xbins) xbins[i-1] = xaxis.fXbins[indx-1];
+         if (xbins)
+            xbins[i-1] = xaxis.fXbins[indx-1];
          let sum = 0;
          for (let k = 0; k < sz; ++k)
            sum += histo.fArray[indx++];

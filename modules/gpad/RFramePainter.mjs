@@ -328,8 +328,10 @@ class RFramePainter extends RObjectPainter {
       }
 
       let xaxis = this.xaxis, yaxis = this.yaxis;
-      if (xaxis?._typename !== clTAxis) xaxis = create(clTAxis);
-      if (yaxis?._typename !== clTAxis) yaxis = create(clTAxis);
+      if (xaxis?._typename !== clTAxis)
+         xaxis = create(clTAxis);
+      if (yaxis?._typename !== clTAxis)
+         yaxis = create(clTAxis);
 
       this.x_handle = new TAxisPainter(pp, xaxis, true);
       this.x_handle.optionUnlab = this.v7EvalAttr('x_labels_hide', false);

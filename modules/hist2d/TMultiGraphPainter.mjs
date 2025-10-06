@@ -218,8 +218,10 @@ class TMultiGraphPainter extends ObjectPainter {
          if (histo.fTitle.indexOf(';') >= 0) {
             const t = histo.fTitle.split(';');
             histo.fTitle = t[0];
-            if (t[1]) xaxis.fTitle = t[1];
-            if (t[2]) yaxis.fTitle = t[2];
+            if (t[1])
+               xaxis.fTitle = t[1];
+            if (t[2])
+               yaxis.fTitle = t[2];
          }
          if (!xaxis.fLabels) {
             xaxis.fXmin = uxmin;

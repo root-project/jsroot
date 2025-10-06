@@ -350,7 +350,8 @@ function objectHierarchy(top, obj, args = undefined) {
          }
 
          let val = obj.getUint8(k).toString(16);
-         while (val.length < 2) val = '0'+val;
+         while (val.length < 2)
+            val = '0'+val;
          if (item._value)
             item._value += (k % 4 === 0) ? ' | ' : ' ';
 

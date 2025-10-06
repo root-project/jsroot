@@ -281,7 +281,8 @@ function erf(x) {
 /** @summary lognormal_cdf_c function
   * @memberof Math */
 function lognormal_cdf_c(x, m, s, x0) {
-   if (x0 === undefined) x0 = 0;
+   if (x0 === undefined)
+      x0 = 0;
    const z = (Math.log((x-x0))-m)/(s*kSqrt2);
    if (z > 1.)
       return 0.5*erfc(z);
@@ -2018,9 +2019,11 @@ function eff_MidPInterval(total,passed,level,bUpper) {
       // double v = 0.5 * ROOT::Math::binomial_pdf(int(passed), p, int(total));
       // make it work for non integer using the binomial - beta relationship
       let v = 0.5 * beta_pdf(p, passed+1., total-passed+1)/(total+1);
-      // if (passed > 0) v += ROOT::Math::binomial_cdf(int(passed - 1), p, int(total));
+      // if (passed > 0)
+      //    v += ROOT::Math::binomial_cdf(int(passed - 1), p, int(total));
       // compute the binomial cdf at passed -1
-      if ( (passed-1) >= 0) v += beta_cdf_c(p, passed, total-passed+1);
+      if ((passed-1) >= 0)
+         v += beta_cdf_c(p, passed, total-passed+1);
 
       const vmin = bUpper ? alpha_min : 1.- alpha_min;
       if (v > vmin)

@@ -180,7 +180,8 @@ class RObjectPainter extends ObjectPainter {
          val = 'black';
          if (Number.isFinite(ordinal)) {
              const pal = this.getPadPainter()?.getHistPalette();
-             if (pal) val = pal.getColorOrdinal(ordinal);
+             if (pal)
+               val = pal.getColorOrdinal(ordinal);
          }
       }
 

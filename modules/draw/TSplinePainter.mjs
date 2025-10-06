@@ -222,9 +222,11 @@ class TSplinePainter extends ObjectPainter {
 
          for (let n = 0; n < npx; ++n) {
             let x = xmin + (xmax-xmin)/npx*(n-1);
-            if (funcs.logx) x = Math.exp(x);
+            if (funcs.logx)
+               x = Math.exp(x);
 
-            while ((indx < spline.fNp-1) && (x > spline.fPoly[indx+1].fX)) ++indx;
+            while ((indx < spline.fNp-1) && (x > spline.fPoly[indx+1].fX))
+               ++indx;
 
             const y = this.eval(spline.fPoly[indx], x);
 

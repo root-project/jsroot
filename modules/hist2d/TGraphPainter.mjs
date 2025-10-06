@@ -433,8 +433,10 @@ class TGraphPainter extends ObjectPainter {
             margin = this.getHistRangeMargin();
       let xmax = this.xmax, ymin = this.ymin, ymax = this.ymax;
 
-      if (xmin >= xmax) xmax = xmin + 1;
-      if (ymin >= ymax) ymax = ymin + 1;
+      if (xmin >= xmax)
+         xmax = xmin + 1;
+      if (ymin >= ymax)
+         ymax = ymin + 1;
       const dx = (xmax - xmin) * margin, dy = (ymax - ymin) * margin;
       let uxmin = xmin - dx, uxmax = xmax + dx,
           minimum = ymin - dy, maximum = ymax + dy;
