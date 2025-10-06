@@ -38,7 +38,8 @@ class TASImagePainter extends ObjectPainter {
 
       for (let lvl = 0, indx = 1; lvl <= nlevels; ++lvl) {
          const l = lvl/nlevels;
-         while ((pal.fPoints[indx] < l) && (indx < pal.fPoints.length - 1)) indx++;
+         while ((pal.fPoints[indx] < l) && (indx < pal.fPoints.length - 1))
+            indx++;
 
          const r1 = (pal.fPoints[indx] - l) / (pal.fPoints[indx] - pal.fPoints[indx-1]),
                r2 = (l - pal.fPoints[indx-1]) / (pal.fPoints[indx] - pal.fPoints[indx-1]);

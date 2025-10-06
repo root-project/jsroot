@@ -2397,9 +2397,11 @@ function createFlippedGeom(geom) {
       const arr = index.array,
             i0 = geom.drawRange.start;
       let ilen = geom.drawRange.count;
-      if (i0 + ilen > arr.length) ilen = arr.length - i0;
+      if (i0 + ilen > arr.length)
+         ilen = arr.length - i0;
 
-      const dpos = new Float32Array(ilen*3), dnorm = new Float32Array(ilen*3);
+      const dpos = new Float32Array(ilen*3),
+            dnorm = new Float32Array(ilen*3);
       for (let ii = 0; ii < ilen; ++ii) {
          const k = arr[i0 + ii];
          if ((k < 0) || (k*3 >= pos.length))

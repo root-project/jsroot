@@ -332,7 +332,8 @@ const AxisPainterMethods = {
 
    /** @summary Method analyze mouse wheel event and returns item with suggested zooming range */
    analyzeWheelEvent(evnt, dmin, item, test_ignore) {
-      if (!item) item = {};
+      if (!item)
+         item = {};
 
       let delta = 0, delta_left = 1, delta_right = 1;
 

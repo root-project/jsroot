@@ -2348,7 +2348,8 @@ class TH2Painter extends THistPainter {
 
             // special case - flat integral with const value
             if ((v === prob[cnt]) && (proj[j] === 0) && (v < 0.99)) {
-               while ((proj[j] === 0) && (j < proj.length)) j++;
+               while ((proj[j] === 0) && (j < proj.length))
+                  j++;
                x = (xx[j] + x) / 2; // this will be mid value
             }
 
@@ -2475,12 +2476,16 @@ class TH2Painter extends THistPainter {
 
          if (isOption(kWhisker15)) { // Improved whisker definition, with 1.5*iqr
             let pos = pnt.fBoxDown-1.5*iqr, indx = res.indx[1];
-            while ((xx[indx] > pos) && (indx > 0)) indx--;
-            while (!proj[indx]) indx++;
+            while ((xx[indx] > pos) && (indx > 0))
+               indx--;
+            while (!proj[indx])
+               indx++;
             fWhiskerDown = xx[indx]; // use lower edge here
             pos = pnt.fBoxUp+1.5*iqr; indx = res.indx[3];
-            while ((xx[indx] < pos) && (indx < proj.length)) indx++;
-            while (!proj[indx]) indx--;
+            while ((xx[indx] < pos) && (indx < proj.length))
+               indx++;
+            while (!proj[indx])
+               indx--;
             fWhiskerUp = xx[indx+1]; // use upper index edge here
          }
 
@@ -3095,7 +3100,8 @@ class TH2Painter extends THistPainter {
             const cont = hist.getBinContent(i+1, j+1);
             if (cont > 0) {
                sum += cont;
-               if (isint && (Math.round(cont) !== cont)) isint = false;
+               if (isint && (Math.round(cont) !== cont))
+                  isint = false;
             }
          }
          if (sum > 0) used.push(i);

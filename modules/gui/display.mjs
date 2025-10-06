@@ -882,7 +882,8 @@ class FlexibleDisplay extends MDIDisplay {
             arr.forEach(r => {
                if (crossY(r, rect)) {
                   maxx = Math.max(maxx, r.x + r.w + step);
-                  if (crossX(r, rect)) iscrossed = true;
+                  if (crossX(r, rect))
+                     iscrossed = true;
                }
             });
             if (iscrossed) rect.x = maxx;

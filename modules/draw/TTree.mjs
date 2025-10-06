@@ -348,7 +348,8 @@ function drawTreePlayer(hpainter, itemname, askey, asleaf) {
 
    if (asleaf) {
       expr = item._name;
-      while (item && !item._ttree) item = item._parent;
+      while (item && !item._ttree)
+         item = item._parent;
       if (!item)
          return null;
       itemname = hpainter.itemFullName(item);

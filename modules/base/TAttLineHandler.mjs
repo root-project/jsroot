@@ -178,7 +178,8 @@ class TAttLineHandler {
 /** @summary Get svg string for specified line style
   * @private */
 function getSvgLineStyle(indx) {
-   if ((indx < 0) || (indx >= root_line_styles.length)) indx = 11;
+   if ((indx < 0) || (indx >= root_line_styles.length))
+      indx = 11;
    return root_line_styles[indx];
 }
 

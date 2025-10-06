@@ -38,7 +38,8 @@ function testAxisVisibility(camera, toplevel, fb = false, bb = false) {
    if ((pos.x >= 0) && (pos.y < 0)) qudrant = 4;
 
    const testVisible = (id, range) => {
-      if (id <= qudrant) id += 4;
+      if (id <= qudrant)
+         id += 4;
       return (id > qudrant) && (id < qudrant+range);
    }, handleZoomMesh = obj3d => {
       for (let k = 0; k < obj3d.children?.length; ++k) {

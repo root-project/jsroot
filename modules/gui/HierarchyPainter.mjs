@@ -223,14 +223,23 @@ function listHierarchy(folder, lst) {
          };
 
          switch (obj._typename) {
-            case clTColor: item._value = getRGBfromTColor(obj); break;
+            case clTColor:
+               item._value = getRGBfromTColor(obj);
+               break;
             case clTText:
-            case clTLatex: item._value = obj.fTitle; break;
-            case clTObjString: item._value = obj.fString; break;
-            default: if (lst.opt && lst.opt[i] && lst.opt[i].length) item._value = lst.opt[i];
+            case clTLatex:
+               item._value = obj.fTitle;
+               break;
+            case clTObjString:
+               item._value = obj.fString;
+               break;
+            default:
+               if (lst.opt && lst.opt[i] && lst.opt[i].length)
+                  item._value = lst.opt[i];
          }
 
-         if (do_context && canDrawHandle(obj._typename)) item._direct_context = true;
+         if (do_context && canDrawHandle(obj._typename))
+            item._direct_context = true;
 
          // if name is integer value, it should match array index
          if (!item._name || (Number.isInteger(parseInt(item._name)) && (parseInt(item._name) !== i)) || (lst.arr.indexOf(obj) < i))
@@ -503,7 +512,8 @@ function objectHierarchy(top, obj, args = undefined) {
 
             if (fld._typename) {
                item._title = fld._typename;
-               if (do_context && canDrawHandle(fld._typename)) item._direct_context = true;
+               if (do_context && canDrawHandle(fld._typename))
+                  item._direct_context = true;
             }
 
             // check if object already shown in hierarchy (circular dependency)
@@ -523,15 +533,22 @@ function objectHierarchy(top, obj, args = undefined) {
                item._more = false;
 
                switch (fld._typename) {
-                  case clTColor: item._value = getRGBfromTColor(fld); break;
+                  case clTColor:
+                     item._value = getRGBfromTColor(fld);
+                     break;
                   case clTText:
-                  case clTLatex: item._value = fld.fTitle; break;
-                  case clTObjString: item._value = fld.fString; break;
+                  case clTLatex:
+                     item._value = fld.fTitle;
+                     break;
+                  case clTObjString:
+                     item._value = fld.fString;
+                     break;
                   default:
                      if (isRootCollection(fld) && isObject(fld.arr)) {
                         item._value = fld.arr.length ? '[...]' : '[]';
                         item._title += ', size:' + fld.arr.length;
-                        if (fld.arr.length) item._more = true;
+                        if (fld.arr.length)
+                           item._more = true;
                      } else {
                         item._more = true;
                         item._value = '{ }';
@@ -899,7 +916,8 @@ class HierarchyPainter extends BasePainter {
                if (item) {
                   item._readobj = obj;
                   // remove cycle number for objects supporting expand
-                  if ('_expand' in item) item._name = item._keyname;
+                  if ('_expand' in item)
+                     item._name = item._keyname;
                }
 
                return obj;
@@ -1181,8 +1199,10 @@ class HierarchyPainter extends BasePainter {
          return result;
       }
 
-      if (item) itemname = this.itemFullName(item);
-           else item = this.findItem({ name: itemname, allow_index: true, check_keys: true });
+      if (item)
+         itemname = this.itemFullName(item);
+      else
+         item = this.findItem({ name: itemname, allow_index: true, check_keys: true });
 
       // if item not found, try to find nearest parent which could allow us to get inside
 
@@ -1327,7 +1347,8 @@ class HierarchyPainter extends BasePainter {
          icon_class = 'img_join';
 
       if (icon_class) {
-         if (break_list || this.isLastSibling(hitem)) icon_class += 'bottom';
+         if (break_list || this.isLastSibling(hitem))
+            icon_class += 'bottom';
          const d3icon = d3line.append('div').attr('class', icon_class);
          if (plusminus)
             d3icon.style('cursor', 'pointer').on('click', function(evnt) { h.tree_click(evnt, this, kPM); });
@@ -2219,7 +2240,8 @@ class HierarchyPainter extends BasePainter {
             if (!updating)
                showProgress();
 
-            if (!item) item = result.item;
+            if (!item)
+               item = result.item;
             let obj = result.obj;
 
             if (!obj)
@@ -2551,7 +2573,8 @@ class HierarchyPainter extends BasePainter {
             items[i] = items[i].slice(0, pos) + items[0].slice(pos);
 
          elem = h.findItem({ name: items[i], check_keys: true });
-         if (elem) items[i] = h.itemFullName(elem);
+         if (elem)
+            items[i] = h.itemFullName(elem);
       }
 
       // now check that items can be displayed
@@ -2908,7 +2931,10 @@ class HierarchyPainter extends BasePainter {
      * @return {Promise} when object ready */
    async openJsonFile(filepath) {
       let isfileopened = false;
-      this.forEachJsonFile(item => { if (item._jsonfile === filepath) isfileopened = true; });
+      this.forEachJsonFile(item => {
+         if (item._jsonfile === filepath)
+            isfileopened = true;
+      });
       if (isfileopened)
          return;
 
@@ -2971,7 +2997,10 @@ class HierarchyPainter extends BasePainter {
      * @return {Promise} when file is opened */
    async openRootFile(filepath) {
       let isfileopened = false;
-      this.forEachRootFile(item => { if (item._fullurl === filepath) isfileopened = true; });
+      this.forEachRootFile(item => {
+         if (item._fullurl === filepath)
+            isfileopened = true;
+      });
       if (isfileopened)
          return;
 
@@ -3454,7 +3483,8 @@ class HierarchyPainter extends BasePainter {
             // delete painter reference
             delete item._painter;
             // also clear data which could be associated with item
-            if (isFunc(item.clear)) item.clear();
+            if (isFunc(item.clear))
+               item.clear();
          }
       });
    }
@@ -3472,8 +3502,10 @@ class HierarchyPainter extends BasePainter {
       this.forEachItem(item => {
          delete item._painter; // remove reference on the painter
          // when only display cleared, try to clear all browser items
-         if (!withbrowser && isFunc(item.clear)) item.clear();
-         if (withbrowser) plainarr.push(item);
+         if (!withbrowser && isFunc(item.clear))
+            item.clear();
+         if (withbrowser)
+            plainarr.push(item);
       });
 
       if (withbrowser) {

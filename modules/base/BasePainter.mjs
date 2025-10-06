@@ -544,7 +544,8 @@ class BasePainter {
       if (!res) {
          if (isStr(this.#divid)) {
             let id = this.#divid;
-            if (id[0] !== '#') id = '#' + id;
+            if (id[0] !== '#')
+               id = '#' + id;
             res = d3_select(id);
             if (!res.empty())
                this.#divid = res.node();

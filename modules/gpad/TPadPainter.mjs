@@ -575,7 +575,8 @@ class TPadPainter extends ObjectPainter {
 
       let indx = this.#auto_color_cnt ?? 0;
       this.#auto_color_cnt = (indx + 1) % numprimitives;
-      if (indx >= numprimitives) indx = numprimitives - 1;
+      if (indx >= numprimitives)
+         indx = numprimitives - 1;
 
       let indexes = this._getCustomPaletteIndexes();
       if (!indexes) {

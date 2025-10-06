@@ -1974,7 +1974,8 @@ class TGeoPainter extends ObjectPainter {
                         const items = [];
                         for (let i = 0; i < indx; ++i) {
                            const stack2 = getIntersectStack(intersects[i]);
-                           if (stack2) items.push(this.getStackFullName(stack2));
+                           if (stack2)
+                              items.push(this.getStackFullName(stack2));
                         }
                         this.hidePhysicalNode(items);
                      });
@@ -3997,7 +3998,8 @@ class TGeoPainter extends ObjectPainter {
          first_level = true;
          volumes = [];
       } else {
-         if (itemname) itemname += '/';
+         if (itemname)
+            itemname += '/';
          itemname += prnt.fName;
       }
 
@@ -6173,7 +6175,8 @@ createItem = function(node, obj, name) {
       _geoobj: obj,
       _get(item /* ,itemname */) {
           // mark object as belong to the hierarchy, require to
-          if (item._geoobj) item._geoobj.$geoh = true;
+          if (item._geoobj)
+            item._geoobj.$geoh = true;
           return Promise.resolve(item._geoobj);
       }
    };

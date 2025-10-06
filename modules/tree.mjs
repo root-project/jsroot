@@ -954,7 +954,8 @@ class TDrawSelector extends TSelector {
             let isok = true;
             for (let n = 0; n < harg.length; ++n) {
                harg[n] = (n % 3 === 0) ? parseInt(harg[n]) : parseFloat(harg[n]);
-               if (!Number.isFinite(harg[n])) isok = false;
+               if (!Number.isFinite(harg[n]))
+                  isok = false;
             }
             if (isok)
                this.hist_args = harg;
@@ -2167,7 +2168,8 @@ async function treeProcess(tree, selector, args) {
          let isok = true;
          for (let l = 0; l < nb_leaves; ++l) {
             leaves[l] = createMemberStreamer(createLeafElem(branch.fLeaves.arr[l]), handle.file);
-            if (!leaves[l]) isok = false;
+            if (!leaves[l])
+               isok = false;
          }
 
          if (isok) {
