@@ -1124,7 +1124,8 @@ class TH2Painter extends THistPainter {
             yside = (bin.fYmin > funcs.scale_ymax) ? 2 : (bin.fYmax < funcs.scale_ymin ? 0 : 1);
 
             xx = yy = numpoints = 0;
-            gr = bin.fPoly; numgraphs = 1;
+            gr = bin.fPoly;
+            numgraphs = 1;
             if (gr._typename === clTMultiGraph) {
                numgraphs = bin.fPoly.fGraphs.arr.length;
                gr = null;

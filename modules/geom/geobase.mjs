@@ -1085,7 +1085,8 @@ function createEltuBuffer(shape, faces_limit) {
                        x[seg+1], y[seg+1], shape.fDZ);
 
       // calculate normals ourself
-      nx1 = nx2; ny1 = ny2;
+      nx1 = nx2;
+      ny1 = ny2;
       nx2 = x[seg+1] * shape.fRmax / shape.fRmin;
       ny2 = y[seg+1] * shape.fRmin / shape.fRmax;
       const dist = Math.sqrt(nx2**2 + ny2**2);
@@ -2482,7 +2483,8 @@ function createFlippedGeom(geom) {
          dnorm[ii*3+2] = norm[k*3+2];
       }
 
-      pos = dpos; norm = dnorm;
+      pos = dpos;
+      norm = dnorm;
    }
 
    const len = pos.length,
@@ -3948,15 +3950,26 @@ class ClonedNodes {
 
          if (m.length === 3) {
             // translation matrix
-            nm[12] = m[0]; nm[13] = m[1]; nm[14] = m[2];
+            nm[12] = m[0];
+            nm[13] = m[1];
+            nm[14] = m[2];
          } else if (m.length === 4) {
             // scale matrix
-            nm[0] = m[0]; nm[5] = m[1]; nm[10] = m[2]; nm[15] = m[3];
+            nm[0] = m[0];
+            nm[5] = m[1];
+            nm[10] = m[2];
+            nm[15] = m[3];
          } else if (m.length === 9) {
             // rotation matrix
-            nm[0] = m[0]; nm[4] = m[1]; nm[8] = m[2];
-            nm[1] = m[3]; nm[5] = m[4]; nm[9] = m[5];
-            nm[2] = m[6]; nm[6] = m[7]; nm[10] = m[8];
+            nm[0] = m[0];
+            nm[4] = m[1];
+            nm[8] = m[2];
+            nm[1] = m[3];
+            nm[5] = m[4];
+            nm[9] = m[5];
+            nm[2] = m[6];
+            nm[6] = m[7];
+            nm[10] = m[8];
          } else
             console.error(`wrong number of elements ${m.length} in the matrix`);
       }

@@ -1529,7 +1529,8 @@ function applyAttributesToMathJax(painter, mj_node, svg, arg, font_size, svg_fac
    else if ((arg.rotate === 270) || (arg.rotate === 90)) {
       sign.x = (arg.rotate === 270) ? -1 : 1;
       sign.y = -sign.x;
-      nx = 'y'; ny = 'x'; // replace names to which align applied
+      nx = 'y';
+      ny = 'x'; // replace names to which align applied
    }
 
    if (arg.align[0] === 'middle')

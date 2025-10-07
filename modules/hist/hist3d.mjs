@@ -1791,7 +1791,8 @@ function drawBinsLego(painter, is_v7 = false) {
                if (k % 6 === 0) {
                   nn += 3;
                   if (notop && (k === indicies.length - 12)) {
-                     k += 6; nn += 3; // jump over no-top indexes
+                     k += 6;
+                     nn += 3; // jump over no-top indexes
                   }
                }
             }
