@@ -5807,11 +5807,13 @@ class TGeoPainter extends ObjectPainter {
       let shape = null, extras = null, extras_path = '', is_eve = false;
 
       if (('fShapeBits' in obj) && ('fShapeId' in obj)) {
-         shape = obj; obj = null;
+         shape = obj;
+         obj = null;
       } else if ((obj._typename === clTGeoVolumeAssembly) || (obj._typename === clTGeoVolume))
          shape = obj.fShape;
       else if ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract)) {
-         shape = obj.fShape; is_eve = true;
+         shape = obj.fShape;
+         is_eve = true;
       } else if (obj._typename === clTGeoManager)
          shape = obj.fMasterVolume.fShape;
       else if (obj._typename === clTGeoOverlap) {
@@ -5820,10 +5822,9 @@ class TGeoPainter extends ObjectPainter {
          obj = buildOverlapVolume(obj);
          if (!opt)
             opt = 'wire';
-      } else if ('fVolume' in obj) {
-         if (obj.fVolume)
-            shape = obj.fVolume.fShape;
-      } else
+      } else if ('fVolume' in obj)
+         shape = obj.fVolume?.fShape;
+      else
          obj = null;
 
       if (isStr(opt) && opt.indexOf('comp') === 0 && shape && (shape._typename === clTGeoCompositeShape) && shape.fNode) {

@@ -1091,7 +1091,10 @@ function graph2DTooltip(intersect) {
           gry1 = fp.gry(gr.fY[indx+1]),
           grz1 = fp.grz(gr.fZ[indx+1]);
       if (sqr(d.x-grx1)+sqr(d.y-gry1)+sqr(d.z-grz1) < sqr(d.x-grx)+sqr(d.y-gry)+sqr(d.z-grz)) {
-         grx = grx1; gry = gry1; grz = grz1; indx++;
+         grx = grx1;
+         gry = gry1;
+         grz = grz1;
+         indx++;
       }
    }
 

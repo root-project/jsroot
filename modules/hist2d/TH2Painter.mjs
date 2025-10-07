@@ -697,8 +697,10 @@ class TH2Painter extends THistPainter {
       if (jj2 === undefined) {
          if (!this.tt_handle)
             return;
-         ii1 = Math.round((this.tt_handle.i1 + this.tt_handle.i2)/2); ii2 = ii1+1;
-         jj1 = Math.round((this.tt_handle.j1 + this.tt_handle.j2)/2); jj2 = jj1+1;
+         ii1 = Math.round((this.tt_handle.i1 + this.tt_handle.i2)/2);
+         ii2 = ii1 + 1;
+         jj1 = Math.round((this.tt_handle.j1 + this.tt_handle.j2)/2);
+         jj2 = jj1 + 1;
       }
 
       const canp = this.getCanvPainter();
@@ -3533,7 +3535,10 @@ class TH2Painter extends THistPainter {
       }
 
       if ((i < h.i2) && (j < h.j2)) {
-         i1 = i; i2 = i+1; j1 = j; j2 = j+1;
+         i1 = i;
+         i2 = i + 1;
+         j1 = j;
+         j2 = j + 1;
          x1 = h.grx[i1];
          x2 = h.grx[i2];
          y1 = h.gry[j2];

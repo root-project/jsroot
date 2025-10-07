@@ -1341,7 +1341,8 @@ class HierarchyPainter extends BasePainter {
                d3icon = d3line.insert('div', ':first-child').attr('class', is_last ? 'img_empty' : 'img_line');
          if (!is_last)
             d3icon.style('cursor', 'pointer').property('upcnt', upcnt).on('click', function(evnt) { h.tree_click(evnt, this, 'parentminus'); });
-         prnt = prnt._parent; upcnt++;
+         prnt = prnt._parent;
+         upcnt++;
       }
 
       let icon_class = '', plusminus = false;
@@ -3853,19 +3854,24 @@ class HierarchyPainter extends BasePainter {
          let promise;
 
          if (load || prereq) {
-            promise = this.loadScripts(load, prereq); load = ''; prereq = '';
+            promise = this.loadScripts(load, prereq);
+            load = prereq = '';
          } else if (inject) {
-            promise = this.loadScripts(inject, '', true); inject = '';
+            promise = this.loadScripts(inject, '', true);
+            inject = '';
          } else if (browser_kind) {
-            promise = this.createBrowser(browser_kind); browser_kind = '';
+            promise = this.createBrowser(browser_kind);
+            browser_kind = '';
          } else if (status !== null) {
-            promise = this.createStatusLine(statush, status); status = null;
+            promise = this.createStatusLine(statush, status);
+            status = null;
          } else if (jsonarr.length)
             promise = this.openJsonFile(jsonarr.shift());
          else if (filesarr.length)
             promise = this.openRootFile(filesarr.shift());
          else if (dir) {
-            promise = this.listServerDir(dir); dir = '';
+            promise = this.listServerDir(dir);
+            dir = '';
          } else if (expanditems.length)
             promise = this.expandItem(expanditems.shift());
          else if (style.length)
