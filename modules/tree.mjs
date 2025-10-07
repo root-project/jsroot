@@ -203,8 +203,12 @@ class ArrayIterator {
          if ((typ === 'array') && (obj.length || (this.select[cnt + 1] === '$size$'))) {
             this.arr[++cnt] = obj;
             switch (this.select[cnt]) {
-               case undefined: this.indx[cnt] = 0; break;
-               case '$last$': this.indx[cnt] = obj.length - 1; break;
+               case undefined:
+                  this.indx[cnt] = 0;
+                  break;
+               case '$last$':
+                  this.indx[cnt] = obj.length - 1;
+                  break;
                case '$size$':
                   this.value = obj.length;
                   this.fastindx = this.fastlimit = 0;

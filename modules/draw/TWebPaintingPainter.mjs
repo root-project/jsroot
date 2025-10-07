@@ -76,16 +76,22 @@ class TWebPaintingPainter extends ObjectPainter {
          lastkind = kind;
          lastpath = g.append('svg:path').attr('d', ''); // placeholder for 'd' to have it always in front
          switch (kind) {
-            case 'f': lastpath.call(this.fillatt.func); break;
-            case 'l': lastpath.call(this.lineatt.func).style('fill', 'none'); break;
-            case 'm': lastpath.call(this.markeratt.func); break;
+            case 'f':
+               lastpath.call(this.fillatt.func);
+               break;
+            case 'l':
+               lastpath.call(this.lineatt.func).style('fill', 'none');
+               break;
+            case 'm':
+               lastpath.call(this.markeratt.func);
+               break;
          }
       }, read_attr = (str, names) => {
          let lastp = 0;
          const obj2 = { _typename: 'any' };
          for (let k = 0; k < names.length; ++k) {
             const p = str.indexOf(':', lastp+1);
-            obj2[names[k]] = parseInt(str.slice(lastp+1, (p > lastp) ? p : undefined));
+            obj2[names[k]] = parseInt(str.slice(lastp + 1, p > lastp ? p : undefined));
             lastp = p;
          }
          return obj2;

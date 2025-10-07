@@ -738,7 +738,8 @@ function createStreamerElement(name, typename, file) {
    if ((pos > 0) && (typename.indexOf('>') > pos + 2)) {
       for (let stl = 1; stl < StlNames.length; ++stl) {
          if (typename.slice(0, pos) === StlNames[stl]) {
-            stltype = stl; break;
+            stltype = stl;
+            break;
          }
       }
    }
@@ -1207,7 +1208,8 @@ function createMemberStreamer(element, file) {
          break;
       }
       case kChar:
-         member.func = function(buf, obj) { obj[this.name] = buf.ntoi1(); }; break;
+         member.func = function(buf, obj) { obj[this.name] = buf.ntoi1(); };
+         break;
       case kCharStar:
          member.func = function(buf, obj) {
             const len = buf.ntoi4();

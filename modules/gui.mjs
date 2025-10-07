@@ -91,9 +91,15 @@ function readStyleFromURL(url) {
          inter = '000000';
       if (inter.length === 6) {
          switch (inter[0]) {
-            case '0': settings.ToolBar = false; break;
-            case '1': settings.ToolBar = 'popup'; break;
-            case '2': settings.ToolBar = true; break;
+            case '0':
+               settings.ToolBar = false;
+               break;
+            case '1':
+               settings.ToolBar = 'popup';
+               break;
+            case '2':
+               settings.ToolBar = true;
+               break;
          }
          inter = inter.slice(1);
       }
