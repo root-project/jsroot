@@ -59,7 +59,7 @@ latex.fTextAlign = 22;
 latex.fTextColor = 3;
 latex.fTextSize = 10;
 
-await test3d(latex, '', 'TLatex integral and sqrt drawing', 1742042);
+await test3d(latex, '', 'TLatex integral and sqrt drawing', 1746096);
 
 latex.fTitle = 'F(t) = #sum_{i=-#infty}^{#infty}A(i)cos#[]{#frac{i}{t+i}}';
-await test3d(latex, '', 'TLatex infinity drawing', 975933);
+await test3d(latex, '', 'TLatex infinity drawing', 975849);
