@@ -1,11 +1,11 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 2.5.2
+ * Version 3.0.3
  *
- * Copyright (c) 2010-2021 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
- *               2015-2021 yWorks GmbH, http://www.yworks.com
- *               2015-2021 Lukas Holländer <lukas.hollaender@yworks.com>, https://github.com/HackbrettXXX
+ * Copyright (c) 2010-2025 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
+ *               2015-2025 yWorks GmbH, http://www.yworks.com
+ *               2015-2025 Lukas Holländer <lukas.hollaender@yworks.com>, https://github.com/HackbrettXXX
  *               2016-2018 Aras Abbasi <aras.abbasi@gmail.com>
  *               2010 Aaron Spike, https://github.com/acspike
  *               2012 Willow Systems Corporation, https://github.com/willowsystems
@@ -4426,7 +4426,7 @@ function jsPDF(options) {
 
     //lang
 
-    var lang = options.lang;
+    options.lang;
 
     //renderingMode
     var renderingMode = -1;
@@ -4605,14 +4605,13 @@ function jsPDF(options) {
         for (var l = 0; l < len; l++) {
           newY = l === 0 ? getVerticalCoordinate(y) : -leading;
           newX = l === 0 ? getHorizontalCoordinate(x) : 0;
+
+          const numSpaces = da[l].split(" ").length - 1;
+          const spacing =
+            numSpaces > 0 ? (maxWidth - lineWidths[l]) / numSpaces : 0;
+
           if (l < len - 1) {
-            wordSpacingPerLine.push(
-              hpf(
-                scale(
-                  (maxWidth - lineWidths[l]) / (da[l].split(" ").length - 1)
-                )
-              )
-            );
+            wordSpacingPerLine.push(hpf(scale(spacing)));
           } else {
             wordSpacingPerLine.push(0);
           }
@@ -6408,8 +6407,8 @@ function jsPDF(options) {
     this.x = pageX;
     this.y = pageY;
     this.matrix = pageMatrix;
-    this.width = getPageWidth(currentPage);
-    this.height = getPageHeight(currentPage);
+    this.width = getUnscaledPageWidth(currentPage);
+    this.height = getUnscaledPageHeight(currentPage);
     this.outputDestination = outputDestination;
 
     this.id = ""; // set by endFormObject()
@@ -6424,8 +6423,8 @@ function jsPDF(options) {
     pageX = this.x;
     pageY = this.y;
     pageMatrix = this.matrix;
-    setPageWidth(currentPage, this.width);
-    setPageHeight(currentPage, this.height);
+    setPageWidthWithoutScaling(currentPage, this.width);
+    setPageHeightWithoutScaling(currentPage, this.height);
     outputDestination = this.outputDestination;
   };
 
@@ -6606,32 +6605,46 @@ function jsPDF(options) {
     }
   }
 
+  function getUnscaledPageWidth(pageNumber) {
+    return (
+      pagesContext[pageNumber].mediaBox.topRightX -
+      pagesContext[pageNumber].mediaBox.bottomLeftX
+    );
+  }
+
+  function setPageWidthWithoutScaling(pageNumber, value) {
+    pagesContext[pageNumber].mediaBox.topRightX =
+      value + pagesContext[pageNumber].mediaBox.bottomLeftX;
+  }
+
+  function getUnscaledPageHeight(pageNumber) {
+    return (
+      pagesContext[pageNumber].mediaBox.topRightY -
+      pagesContext[pageNumber].mediaBox.bottomLeftY
+    );
+  }
+
+  function setPageHeightWithoutScaling(pageNumber, value) {
+    pagesContext[pageNumber].mediaBox.topRightY =
+      value + pagesContext[pageNumber].mediaBox.bottomLeftY;
+  }
+
   var getPageWidth = (API.getPageWidth = function(pageNumber) {
     pageNumber = pageNumber || currentPage;
-    return (
-      (pagesContext[pageNumber].mediaBox.topRightX -
-        pagesContext[pageNumber].mediaBox.bottomLeftX) /
-      scaleFactor
-    );
+    return getUnscaledPageWidth(pageNumber) / scaleFactor;
   });
 
   var setPageWidth = (API.setPageWidth = function(pageNumber, value) {
-    pagesContext[pageNumber].mediaBox.topRightX =
-      value * scaleFactor + pagesContext[pageNumber].mediaBox.bottomLeftX;
+    setPageWidthWithoutScaling(pageNumber, value * scaleFactor);
   });
 
   var getPageHeight = (API.getPageHeight = function(pageNumber) {
     pageNumber = pageNumber || currentPage;
-    return (
-      (pagesContext[pageNumber].mediaBox.topRightY -
-        pagesContext[pageNumber].mediaBox.bottomLeftY) /
-      scaleFactor
-    );
+    return getUnscaledPageHeight(pageNumber) / scaleFactor;
   });
 
   var setPageHeight = (API.setPageHeight = function(pageNumber, value) {
-    pagesContext[pageNumber].mediaBox.topRightY =
-      value * scaleFactor + pagesContext[pageNumber].mediaBox.bottomLeftY;
+    setPageHeightWithoutScaling(pageNumber, value * scaleFactor);
   });
 
   /**
@@ -6761,7 +6774,7 @@ jsPDF.API = {
  * @type {string}
  * @memberof jsPDF#
  */
-jsPDF.version = "2.5.2";
+jsPDF.version = "3.0.3";
 
 /* global jsPDF */
 
@@ -10157,7 +10170,11 @@ var AcroForm = jsPDF.AcroForm;
         value: "<<" + image.decodeParameters + ">>"
       });
     }
-    if ("transparency" in image && Array.isArray(image.transparency)) {
+    if (
+      "transparency" in image &&
+      Array.isArray(image.transparency) &&
+      image.transparency.length > 0
+    ) {
       var transparency = "",
         i = 0,
         len = image.transparency.length;
@@ -10191,22 +10208,17 @@ var AcroForm = jsPDF.AcroForm;
 
     // Soft mask
     if ("sMask" in image && typeof image.sMask !== "undefined") {
-      var decodeParameters =
-        "/Predictor " +
-        image.predictor +
-        " /Colors 1 /BitsPerComponent " +
-        image.bitsPerComponent +
-        " /Columns " +
-        image.width;
-      var sMask = {
+      const sMaskBitsPerComponent =
+        image.sMaskBitsPerComponent ?? image.bitsPerComponent;
+      const sMask = {
         width: image.width,
         height: image.height,
         colorSpace: "DeviceGray",
-        bitsPerComponent: image.bitsPerComponent,
-        decodeParameters: decodeParameters,
+        bitsPerComponent: sMaskBitsPerComponent,
         data: image.sMask
       };
       if ("filter" in image) {
+        sMask.decodeParameters = `/Predictor ${image.predictor} /Colors 1 /BitsPerComponent ${sMaskBitsPerComponent} /Columns ${image.width}`;
         sMask.filter = image.filter;
       }
       putImage.call(this, sMask);
@@ -10547,45 +10559,34 @@ var AcroForm = jsPDF.AcroForm;
    * @name extractImageFromDataUrl
    * @function
    * @param {string} dataUrl a valid data URI of format 'data:[<MIME-type>][;base64],<data>'
-   * @returns {Array}an Array containing the following
-   * [0] the complete data URI
-   * [1] <MIME-type>
-   * [2] format - the second part of the mime-type i.e 'png' in 'image/png'
-   * [4] <data>
+   * @returns {string} The raw Base64-encoded data.
    */
   var extractImageFromDataUrl = (jsPDFAPI.__addimage__.extractImageFromDataUrl = function(
     dataUrl
   ) {
-    dataUrl = dataUrl || "";
-    var dataUrlParts = dataUrl.split("base64,");
-    var result = null;
-
-    if (dataUrlParts.length === 2) {
-      var extractedInfo = /^data:(\w*\/\w*);*(charset=(?!charset=)[\w=-]*)*;*$/.exec(
-        dataUrlParts[0]
-      );
-      if (Array.isArray(extractedInfo)) {
-        result = {
-          mimeType: extractedInfo[1],
-          charset: extractedInfo[2],
-          data: dataUrlParts[1]
-        };
-      }
+    if (dataUrl == null) {
+      return null;
     }
-    return result;
-  });
 
-  /**
-   * Check to see if ArrayBuffer is supported
-   *
-   * @name supportsArrayBuffer
-   * @function
-   * @returns {boolean}
-   */
-  var supportsArrayBuffer = (jsPDFAPI.__addimage__.supportsArrayBuffer = function() {
-    return (
-      typeof ArrayBuffer !== "undefined" && typeof Uint8Array !== "undefined"
-    );
+    // avoid using a regexp for parsing because it might be vulnerable against ReDoS attacks
+
+    dataUrl = dataUrl.trim();
+
+    if (!dataUrl.startsWith("data:")) {
+      return null;
+    }
+
+    const commaIndex = dataUrl.indexOf(",");
+    if (commaIndex < 0) {
+      return null;
+    }
+
+    const dataScheme = dataUrl.substring(0, commaIndex).trim();
+    if (!dataScheme.endsWith("base64")) {
+      return null;
+    }
+
+    return dataUrl.substring(commaIndex + 1);
   });
 
   /**
@@ -10598,7 +10599,7 @@ var AcroForm = jsPDF.AcroForm;
    * @returns {boolean}
    */
   jsPDFAPI.__addimage__.isArrayBuffer = function(object) {
-    return supportsArrayBuffer() && object instanceof ArrayBuffer;
+    return object instanceof ArrayBuffer;
   };
 
   /**
@@ -10613,18 +10614,15 @@ var AcroForm = jsPDF.AcroForm;
     object
   ) {
     return (
-      supportsArrayBuffer() &&
-      typeof Uint32Array !== "undefined" &&
-      (object instanceof Int8Array ||
-        object instanceof Uint8Array ||
-        (typeof Uint8ClampedArray !== "undefined" &&
-          object instanceof Uint8ClampedArray) ||
-        object instanceof Int16Array ||
-        object instanceof Uint16Array ||
-        object instanceof Int32Array ||
-        object instanceof Uint32Array ||
-        object instanceof Float32Array ||
-        object instanceof Float64Array)
+      object instanceof Int8Array ||
+      object instanceof Uint8Array ||
+      object instanceof Uint8ClampedArray ||
+      object instanceof Int16Array ||
+      object instanceof Uint16Array ||
+      object instanceof Int32Array ||
+      object instanceof Uint32Array ||
+      object instanceof Float32Array ||
+      object instanceof Float64Array
     );
   });
 
@@ -10814,12 +10812,10 @@ var AcroForm = jsPDF.AcroForm;
     result = checkImagesForAlias.call(this, alias);
 
     if (!result) {
-      if (supportsArrayBuffer()) {
-        // no need to convert if imageData is already uint8array
-        if (!(imageData instanceof Uint8Array) && format !== "RGBA") {
-          dataAsBinaryString = imageData;
-          imageData = binaryStringToUint8Array(imageData);
-        }
+      // no need to convert if imageData is already uint8array
+      if (!(imageData instanceof Uint8Array) && format !== "RGBA") {
+        dataAsBinaryString = imageData;
+        imageData = binaryStringToUint8Array(imageData);
       }
 
       result = this["process" + format.toUpperCase()](
@@ -10848,13 +10844,11 @@ var AcroForm = jsPDF.AcroForm;
     throwError
   ) {
     throwError = typeof throwError === "boolean" ? throwError : true;
-    var base64Info;
     var imageData = "";
     var rawData;
 
     if (typeof stringData === "string") {
-      base64Info = extractImageFromDataUrl(stringData);
-      rawData = base64Info !== null ? base64Info.data : stringData;
+      rawData = extractImageFromDataUrl(stringData) ?? stringData;
 
       try {
         imageData = atob(rawData);
@@ -10913,7 +10907,7 @@ var AcroForm = jsPDF.AcroForm;
       );
     }
 
-    if (supportsArrayBuffer() && !(imageData instanceof Uint8Array)) {
+    if (!(imageData instanceof Uint8Array)) {
       imageData = binaryStringToUint8Array(imageData);
     }
 
@@ -13463,10 +13457,10 @@ function parseFontFamily(input) {
         matches = rx.exec(value);
         if (matches !== null) {
           var fontStyle = matches[1];
-          var fontVariant = matches[2];
+          matches[2];
           var fontWeight = matches[3];
           var fontSize = matches[4];
-          var lineHeight = matches[5];
+          matches[5];
           var fontFamily = matches[6];
         } else {
           return;
@@ -15554,23 +15548,12 @@ function parseFontFamily(input) {
 })(jsPDF.API);
 
 // DEFLATE is a complex format; to read this code, you should probably check the RFC first:
-// https://tools.ietf.org/html/rfc1951
-// You may also wish to take a look at the guide I made about this program:
-// https://gist.github.com/101arrowz/253f31eb5abc3d9275ab943003ffecad
-// Much of the following code is similar to that of UZIP.js:
-// https://github.com/photopea/UZIP.js
-// Many optimizations have been made, so the bundle size is ultimately smaller but performance is similar.
-// Sometimes 0 will appear where -1 would be more appropriate. This is because using a uint
-// is better for memory in most engines (I *think*).
-// Mediocre shim
-
 
 // aliases for shorter compressed code (most minifers don't do this)
-var u8 = Uint8Array, u16 = Uint16Array, u32 = Uint32Array;
+var u8 = Uint8Array, u16 = Uint16Array, i32 = Int32Array;
 // fixed length extra bits
 var fleb = new u8([0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0, /* unused */ 0, 0, /* impossible */ 0]);
 // fixed distance extra bits
-// see fleb note
 var fdeb = new u8([0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, /* unused */ 0, 0]);
 // code length index map
 var clim = new u8([16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]);
@@ -15581,26 +15564,26 @@ var freb = function (eb, start) {
         b[i] = start += 1 << eb[i - 1];
     }
     // numbers here are at max 18 bits
-    var r = new u32(b[30]);
+    var r = new i32(b[30]);
     for (var i = 1; i < 30; ++i) {
         for (var j = b[i]; j < b[i + 1]; ++j) {
             r[j] = ((j - b[i]) << 5) | i;
         }
     }
-    return [b, r];
+    return { b: b, r: r };
 };
-var _a = freb(fleb, 2), fl = _a[0], revfl = _a[1];
+var _a = freb(fleb, 2), fl = _a.b, revfl = _a.r;
 // we can ignore the fact that the other numbers are wrong; they never happen anyway
 fl[28] = 258, revfl[258] = 28;
-var _b = freb(fdeb, 0), fd = _b[0], revfd = _b[1];
+var _b = freb(fdeb, 0), revfd = _b.r;
 // map of value to reverse (assuming 16 bits)
 var rev = new u16(32768);
 for (var i = 0; i < 32768; ++i) {
     // reverse table algorithm from SO
-    var x = ((i & 0xAAAA) >>> 1) | ((i & 0x5555) << 1);
-    x = ((x & 0xCCCC) >>> 2) | ((x & 0x3333) << 2);
-    x = ((x & 0xF0F0) >>> 4) | ((x & 0x0F0F) << 4);
-    rev[i] = (((x & 0xFF00) >>> 8) | ((x & 0x00FF) << 8)) >>> 1;
+    var x = ((i & 0xAAAA) >> 1) | ((i & 0x5555) << 1);
+    x = ((x & 0xCCCC) >> 2) | ((x & 0x3333) << 2);
+    x = ((x & 0xF0F0) >> 4) | ((x & 0x0F0F) << 4);
+    rev[i] = (((x & 0xFF00) >> 8) | ((x & 0x00FF) << 8)) >> 1;
 }
 // create huffman tree from u8 "map": index -> code length for code index
 // mb (max bits) must be at most 15
@@ -15612,11 +15595,13 @@ var hMap = (function (cd, mb, r) {
     // u16 "map": index -> # of codes with bit length = index
     var l = new u16(mb);
     // length of cd must be 288 (total # of codes)
-    for (; i < s; ++i)
-        ++l[cd[i] - 1];
+    for (; i < s; ++i) {
+        if (cd[i])
+            ++l[cd[i] - 1];
+    }
     // u16 "map": index -> minimum code for bit length = index
     var le = new u16(mb);
-    for (i = 0; i < mb; ++i) {
+    for (i = 1; i < mb; ++i) {
         le[i] = (le[i - 1] + l[i - 1]) << 1;
     }
     var co;
@@ -15637,15 +15622,18 @@ var hMap = (function (cd, mb, r) {
                 // m is end value
                 for (var m = v | ((1 << r_1) - 1); v <= m; ++v) {
                     // every 16 bit value starting with the code yields the same result
-                    co[rev[v] >>> rvb] = sv;
+                    co[rev[v] >> rvb] = sv;
                 }
             }
         }
     }
     else {
         co = new u16(s);
-        for (i = 0; i < s; ++i)
-            co[i] = rev[le[cd[i] - 1]++] >>> (15 - cd[i]);
+        for (i = 0; i < s; ++i) {
+            if (cd[i]) {
+                co[i] = rev[le[cd[i] - 1]++] >> (15 - cd[i]);
+            }
+        }
     }
     return co;
 });
@@ -15664,30 +15652,11 @@ var fdt = new u8(32);
 for (var i = 0; i < 32; ++i)
     fdt[i] = 5;
 // fixed length map
-var flm = /*#__PURE__*/ hMap(flt, 9, 0), flrm = /*#__PURE__*/ hMap(flt, 9, 1);
+var flm = /*#__PURE__*/ hMap(flt, 9, 0);
 // fixed distance map
-var fdm = /*#__PURE__*/ hMap(fdt, 5, 0), fdrm = /*#__PURE__*/ hMap(fdt, 5, 1);
-// find max of array
-var max = function (a) {
-    var m = a[0];
-    for (var i = 1; i < a.length; ++i) {
-        if (a[i] > m)
-            m = a[i];
-    }
-    return m;
-};
-// read d, starting at bit p and mask with m
-var bits = function (d, p, m) {
-    var o = (p / 8) >> 0;
-    return ((d[o] | (d[o + 1] << 8)) >>> (p & 7)) & m;
-};
-// read d, starting at bit p continuing for at least 16 bits
-var bits16 = function (d, p) {
-    var o = (p / 8) >> 0;
-    return ((d[o] | (d[o + 1] << 8) | (d[o + 2] << 16)) >>> (p & 7));
-};
+var fdm = /*#__PURE__*/ hMap(fdt, 5, 0);
 // get end of byte
-var shft = function (p) { return ((p / 8) >> 0) + (p & 7 && 1); };
+var shft = function (p) { return ((p + 7) / 8) | 0; };
 // typed array slice - allows garbage collector to free original reference,
 // while being more compatible than .slice
 var slc = function (v, s, e) {
@@ -15696,194 +15665,22 @@ var slc = function (v, s, e) {
     if (e == null || e > v.length)
         e = v.length;
     // can't use .constructor in case user-supplied
-    var n = new (v instanceof u16 ? u16 : v instanceof u32 ? u32 : u8)(e - s);
-    n.set(v.subarray(s, e));
-    return n;
-};
-// expands raw DEFLATE data
-var inflt = function (dat, buf, st) {
-    // source length
-    var sl = dat.length;
-    // have to estimate size
-    var noBuf = !buf || st;
-    // no state
-    var noSt = !st || st.i;
-    if (!st)
-        st = {};
-    // Assumes roughly 33% compression ratio average
-    if (!buf)
-        buf = new u8(sl * 3);
-    // ensure buffer can fit at least l elements
-    var cbuf = function (l) {
-        var bl = buf.length;
-        // need to increase size to fit
-        if (l > bl) {
-            // Double or set to necessary, whichever is greater
-            var nbuf = new u8(Math.max(bl * 2, l));
-            nbuf.set(buf);
-            buf = nbuf;
-        }
-    };
-    //  last chunk         bitpos           bytes
-    var final = st.f || 0, pos = st.p || 0, bt = st.b || 0, lm = st.l, dm = st.d, lbt = st.m, dbt = st.n;
-    // total bits
-    var tbts = sl * 8;
-    do {
-        if (!lm) {
-            // BFINAL - this is only 1 when last chunk is next
-            st.f = final = bits(dat, pos, 1);
-            // type: 0 = no compression, 1 = fixed huffman, 2 = dynamic huffman
-            var type = bits(dat, pos + 1, 3);
-            pos += 3;
-            if (!type) {
-                // go to end of byte boundary
-                var s = shft(pos) + 4, l = dat[s - 4] | (dat[s - 3] << 8), t = s + l;
-                if (t > sl) {
-                    if (noSt)
-                        throw 'unexpected EOF';
-                    break;
-                }
-                // ensure size
-                if (noBuf)
-                    cbuf(bt + l);
-                // Copy over uncompressed data
-                buf.set(dat.subarray(s, t), bt);
-                // Get new bitpos, update byte count
-                st.b = bt += l, st.p = pos = t * 8;
-                continue;
-            }
-            else if (type == 1)
-                lm = flrm, dm = fdrm, lbt = 9, dbt = 5;
-            else if (type == 2) {
-                //  literal                            lengths
-                var hLit = bits(dat, pos, 31) + 257, hcLen = bits(dat, pos + 10, 15) + 4;
-                var tl = hLit + bits(dat, pos + 5, 31) + 1;
-                pos += 14;
-                // length+distance tree
-                var ldt = new u8(tl);
-                // code length tree
-                var clt = new u8(19);
-                for (var i = 0; i < hcLen; ++i) {
-                    // use index map to get real code
-                    clt[clim[i]] = bits(dat, pos + i * 3, 7);
-                }
-                pos += hcLen * 3;
-                // code lengths bits
-                var clb = max(clt), clbmsk = (1 << clb) - 1;
-                if (!noSt && pos + tl * (clb + 7) > tbts)
-                    break;
-                // code lengths map
-                var clm = hMap(clt, clb, 1);
-                for (var i = 0; i < tl;) {
-                    var r = clm[bits(dat, pos, clbmsk)];
-                    // bits read
-                    pos += r & 15;
-                    // symbol
-                    var s = r >>> 4;
-                    // code length to copy
-                    if (s < 16) {
-                        ldt[i++] = s;
-                    }
-                    else {
-                        //  copy   count
-                        var c = 0, n = 0;
-                        if (s == 16)
-                            n = 3 + bits(dat, pos, 3), pos += 2, c = ldt[i - 1];
-                        else if (s == 17)
-                            n = 3 + bits(dat, pos, 7), pos += 3;
-                        else if (s == 18)
-                            n = 11 + bits(dat, pos, 127), pos += 7;
-                        while (n--)
-                            ldt[i++] = c;
-                    }
-                }
-                //    length tree                 distance tree
-                var lt = ldt.subarray(0, hLit), dt = ldt.subarray(hLit);
-                // max length bits
-                lbt = max(lt);
-                // max dist bits
-                dbt = max(dt);
-                lm = hMap(lt, lbt, 1);
-                dm = hMap(dt, dbt, 1);
-            }
-            else
-                throw 'invalid block type';
-            if (pos > tbts)
-                throw 'unexpected EOF';
-        }
-        // Make sure the buffer can hold this + the largest possible addition
-        // Maximum chunk size (practically, theoretically infinite) is 2^17;
-        if (noBuf)
-            cbuf(bt + 131072);
-        var lms = (1 << lbt) - 1, dms = (1 << dbt) - 1;
-        var mxa = lbt + dbt + 18;
-        while (noSt || pos + mxa < tbts) {
-            // bits read, code
-            var c = lm[bits16(dat, pos) & lms], sym = c >>> 4;
-            pos += c & 15;
-            if (pos > tbts)
-                throw 'unexpected EOF';
-            if (!c)
-                throw 'invalid length/literal';
-            if (sym < 256)
-                buf[bt++] = sym;
-            else if (sym == 256) {
-                lm = null;
-                break;
-            }
-            else {
-                var add = sym - 254;
-                // no extra bits needed if less
-                if (sym > 264) {
-                    // index
-                    var i = sym - 257, b = fleb[i];
-                    add = bits(dat, pos, (1 << b) - 1) + fl[i];
-                    pos += b;
-                }
-                // dist
-                var d = dm[bits16(dat, pos) & dms], dsym = d >>> 4;
-                if (!d)
-                    throw 'invalid distance';
-                pos += d & 15;
-                var dt = fd[dsym];
-                if (dsym > 3) {
-                    var b = fdeb[dsym];
-                    dt += bits16(dat, pos) & ((1 << b) - 1), pos += b;
-                }
-                if (pos > tbts)
-                    throw 'unexpected EOF';
-                if (noBuf)
-                    cbuf(bt + 131072);
-                var end = bt + add;
-                for (; bt < end; bt += 4) {
-                    buf[bt] = buf[bt - dt];
-                    buf[bt + 1] = buf[bt + 1 - dt];
-                    buf[bt + 2] = buf[bt + 2 - dt];
-                    buf[bt + 3] = buf[bt + 3 - dt];
-                }
-                bt = end;
-            }
-        }
-        st.l = lm, st.p = pos, st.b = bt;
-        if (lm)
-            final = 1, st.m = lbt, st.d = dm, st.n = dbt;
-    } while (!final);
-    return bt == buf.length ? buf : slc(buf, 0, bt);
+    return new u8(v.subarray(s, e));
 };
 // starting at p, write the minimum number of bits that can hold v to d
 var wbits = function (d, p, v) {
     v <<= p & 7;
-    var o = (p / 8) >> 0;
+    var o = (p / 8) | 0;
     d[o] |= v;
-    d[o + 1] |= v >>> 8;
+    d[o + 1] |= v >> 8;
 };
 // starting at p, write the minimum number of bits (>8) that can hold v to d
 var wbits16 = function (d, p, v) {
     v <<= p & 7;
-    var o = (p / 8) >> 0;
+    var o = (p / 8) | 0;
     d[o] |= v;
-    d[o + 1] |= v >>> 8;
-    d[o + 2] |= v >>> 16;
+    d[o + 1] |= v >> 8;
+    d[o + 2] |= v >> 16;
 };
 // creates code lengths from a frequency table
 var hTree = function (d, mb) {
@@ -15896,11 +15693,11 @@ var hTree = function (d, mb) {
     var s = t.length;
     var t2 = t.slice();
     if (!s)
-        return [new u8(0), 0];
+        return { t: et, l: 0 };
     if (s == 1) {
         var v = new u8(t[0].s + 1);
         v[t[0].s] = 1;
-        return [v, 1];
+        return { t: v, l: 1 };
     }
     t.sort(function (a, b) { return a.f - b.f; });
     // after i2 reaches last ind, will be stopped
@@ -15944,7 +15741,7 @@ var hTree = function (d, mb) {
             else
                 break;
         }
-        dt >>>= lft;
+        dt >>= lft;
         while (dt > 0) {
             var i2_2 = t2[i].s;
             if (tr[i2_2] < mb)
@@ -15961,7 +15758,7 @@ var hTree = function (d, mb) {
         }
         mbt = mb;
     }
-    return [new u8(tr), mbt];
+    return { t: new u8(tr), l: mbt };
 };
 // get the max length and assign length codes
 var ln = function (n, l, d) {
@@ -16004,7 +15801,7 @@ var lc = function (c) {
             cln = c[i];
         }
     }
-    return [cl.subarray(0, cli), s];
+    return { c: cl.subarray(0, cli), n: s };
 };
 // calculate the length of output from tree, code lengths
 var clen = function (cf, cl) {
@@ -16020,7 +15817,7 @@ var wfblk = function (out, pos, dat) {
     var s = dat.length;
     var o = shft(pos + 2);
     out[o] = s & 255;
-    out[o + 1] = s >>> 8;
+    out[o + 1] = s >> 8;
     out[o + 2] = out[o] ^ 255;
     out[o + 3] = out[o + 1] ^ 255;
     for (var i = 0; i < s; ++i)
@@ -16031,23 +15828,23 @@ var wfblk = function (out, pos, dat) {
 var wblk = function (dat, out, final, syms, lf, df, eb, li, bs, bl, p) {
     wbits(out, p++, final);
     ++lf[256];
-    var _a = hTree(lf, 15), dlt = _a[0], mlb = _a[1];
-    var _b = hTree(df, 15), ddt = _b[0], mdb = _b[1];
-    var _c = lc(dlt), lclt = _c[0], nlc = _c[1];
-    var _d = lc(ddt), lcdt = _d[0], ndc = _d[1];
+    var _a = hTree(lf, 15), dlt = _a.t, mlb = _a.l;
+    var _b = hTree(df, 15), ddt = _b.t, mdb = _b.l;
+    var _c = lc(dlt), lclt = _c.c, nlc = _c.n;
+    var _d = lc(ddt), lcdt = _d.c, ndc = _d.n;
     var lcfreq = new u16(19);
     for (var i = 0; i < lclt.length; ++i)
-        lcfreq[lclt[i] & 31]++;
+        ++lcfreq[lclt[i] & 31];
     for (var i = 0; i < lcdt.length; ++i)
-        lcfreq[lcdt[i] & 31]++;
-    var _e = hTree(lcfreq, 7), lct = _e[0], mlcb = _e[1];
+        ++lcfreq[lcdt[i] & 31];
+    var _e = hTree(lcfreq, 7), lct = _e.t, mlcb = _e.l;
     var nlcc = 19;
     for (; nlcc > 4 && !lct[clim[nlcc - 1]]; --nlcc)
         ;
     var flen = (bl + 5) << 3;
     var ftlen = clen(lf, flt) + clen(df, fdt) + eb;
-    var dtlen = clen(lf, dlt) + clen(df, ddt) + eb + 14 + 3 * nlcc + clen(lcfreq, lct) + (2 * lcfreq[16] + 3 * lcfreq[17] + 7 * lcfreq[18]);
-    if (flen <= ftlen && flen <= dtlen)
+    var dtlen = clen(lf, dlt) + clen(df, ddt) + eb + 14 + 3 * nlcc + clen(lcfreq, lct) + 2 * lcfreq[16] + 3 * lcfreq[17] + 7 * lcfreq[18];
+    if (bs >= 0 && flen <= ftlen && flen <= dtlen)
         return wfblk(out, p, dat.subarray(bs, bs + bl));
     var lm, ll, dm, dl;
     wbits(out, p, 1 + (dtlen < ftlen)), p += 2;
@@ -16068,7 +15865,7 @@ var wblk = function (dat, out, final, syms, lf, df, eb, li, bs, bl, p) {
                 var len = clct[i] & 31;
                 wbits(out, p, llm[len]), p += lct[len];
                 if (len > 15)
-                    wbits(out, p, (clct[i] >>> 5) & 127), p += clct[i] >>> 12;
+                    wbits(out, p, (clct[i] >> 5) & 127), p += clct[i] >> 12;
             }
         }
     }
@@ -16076,71 +15873,58 @@ var wblk = function (dat, out, final, syms, lf, df, eb, li, bs, bl, p) {
         lm = flm, ll = flt, dm = fdm, dl = fdt;
     }
     for (var i = 0; i < li; ++i) {
-        if (syms[i] > 255) {
-            var len = (syms[i] >>> 18) & 31;
+        var sym = syms[i];
+        if (sym > 255) {
+            var len = (sym >> 18) & 31;
             wbits16(out, p, lm[len + 257]), p += ll[len + 257];
             if (len > 7)
-                wbits(out, p, (syms[i] >>> 23) & 31), p += fleb[len];
-            var dst = syms[i] & 31;
+                wbits(out, p, (sym >> 23) & 31), p += fleb[len];
+            var dst = sym & 31;
             wbits16(out, p, dm[dst]), p += dl[dst];
             if (dst > 3)
-                wbits16(out, p, (syms[i] >>> 5) & 8191), p += fdeb[dst];
+                wbits16(out, p, (sym >> 5) & 8191), p += fdeb[dst];
         }
         else {
-            wbits16(out, p, lm[syms[i]]), p += ll[syms[i]];
+            wbits16(out, p, lm[sym]), p += ll[sym];
         }
     }
     wbits16(out, p, lm[256]);
     return p + ll[256];
 };
 // deflate options (nice << 13) | chain
-var deo = /*#__PURE__*/ new u32([65540, 131080, 131088, 131104, 262176, 1048704, 1048832, 2114560, 2117632]);
+var deo = /*#__PURE__*/ new i32([65540, 131080, 131088, 131104, 262176, 1048704, 1048832, 2114560, 2117632]);
 // empty
 var et = /*#__PURE__*/ new u8(0);
 // compresses data into a raw DEFLATE buffer
-var dflt = function (dat, lvl, plvl, pre, post, lst) {
-    var s = dat.length;
-    var o = new u8(pre + s + 5 * (1 + Math.floor(s / 7000)) + post);
+var dflt = function (dat, lvl, plvl, pre, post, st) {
+    var s = st.z || dat.length;
+    var o = new u8(pre + s + 5 * (1 + Math.ceil(s / 7000)) + post);
     // writing to this writes to the output buffer
     var w = o.subarray(pre, o.length - post);
-    var pos = 0;
-    if (!lvl || s < 8) {
-        for (var i = 0; i <= s; i += 65535) {
-            // end
-            var e = i + 65535;
-            if (e < s) {
-                // write full block
-                pos = wfblk(w, pos, dat.subarray(i, e));
-            }
-            else {
-                // write final block
-                w[i] = lst;
-                pos = wfblk(w, pos, dat.subarray(i, s));
-            }
-        }
-    }
-    else {
+    var lst = st.l;
+    var pos = (st.r || 0) & 7;
+    if (lvl) {
+        if (pos)
+            w[0] = st.r >> 3;
         var opt = deo[lvl - 1];
-        var n = opt >>> 13, c = opt & 8191;
+        var n = opt >> 13, c = opt & 8191;
         var msk_1 = (1 << plvl) - 1;
         //    prev 2-byte val map    curr 2-byte val map
-        var prev = new u16(32768), head = new u16(msk_1 + 1);
+        var prev = st.p || new u16(32768), head = st.h || new u16(msk_1 + 1);
         var bs1_1 = Math.ceil(plvl / 3), bs2_1 = 2 * bs1_1;
         var hsh = function (i) { return (dat[i] ^ (dat[i + 1] << bs1_1) ^ (dat[i + 2] << bs2_1)) & msk_1; };
         // 24576 is an arbitrary number of maximum symbols per block
         // 424 buffer for last block
-        var syms = new u32(25000);
+        var syms = new i32(25000);
         // length/literal freq   distance freq
         var lf = new u16(288), df = new u16(32);
-        //  l/lcnt  exbits  index  l/lind  waitdx  bitpos
-        var lc_1 = 0, eb = 0, i = 0, li = 0, wi = 0, bs = 0;
-        for (; i < s; ++i) {
+        //  l/lcnt  exbits  index          l/lind  waitdx          blkpos
+        var lc_1 = 0, eb = 0, i = st.i || 0, li = 0, wi = st.w || 0, bs = 0;
+        for (; i + 2 < s; ++i) {
             // hash value
             var hv = hsh(i);
-            // index mod 32768
-            var imod = i & 32767;
-            // previous index with this value
-            var pimod = head[hv];
+            // index mod 32768    previous index mod
+            var imod = i & 32767, pimod = head[hv];
             prev[imod] = pimod;
             head[hv] = imod;
             // We always should modify head and prev, but only add symbols if
@@ -16148,7 +15932,7 @@ var dflt = function (dat, lvl, plvl, pre, post, lst) {
             if (wi <= i) {
                 // bytes remaining
                 var rem = s - i;
-                if ((lc_1 > 7000 || li > 24576) && rem > 423) {
+                if ((lc_1 > 7000 || li > 24576) && (rem > 423 || !lst)) {
                     pos = wblk(dat, w, 0, syms, lf, df, eb, li, bs, i - bs, pos);
                     li = lc_1 = eb = 0, bs = i;
                     for (var j = 0; j < 286; ++j)
@@ -16157,7 +15941,7 @@ var dflt = function (dat, lvl, plvl, pre, post, lst) {
                         df[j] = 0;
                 }
                 //  len    dist   chain
-                var l = 2, d = 0, ch_1 = c, dif = (imod - pimod) & 32767;
+                var l = 2, d = 0, ch_1 = c, dif = imod - pimod & 32767;
                 if (rem > 2 && hv == hsh(i - dif)) {
                     var maxn = Math.min(n, rem) - 1;
                     var maxd = Math.min(32767, i);
@@ -16180,9 +15964,9 @@ var dflt = function (dat, lvl, plvl, pre, post, lst) {
                                 var mmd = Math.min(dif, nl - 2);
                                 var md = 0;
                                 for (var j = 0; j < mmd; ++j) {
-                                    var ti = (i - dif + j + 32768) & 32767;
+                                    var ti = i - dif + j & 32767;
                                     var pti = prev[ti];
-                                    var cd = (ti - pti + 32768) & 32767;
+                                    var cd = ti - pti & 32767;
                                     if (cd > md)
                                         md = cd, pimod = ti;
                                 }
@@ -16190,12 +15974,12 @@ var dflt = function (dat, lvl, plvl, pre, post, lst) {
                         }
                         // check the previous match
                         imod = pimod, pimod = prev[imod];
-                        dif += (imod - pimod + 32768) & 32767;
+                        dif += imod - pimod & 32767;
                     }
                 }
                 // d will be nonzero only when a match was found
                 if (d) {
-                    // store both dist and len data in one Uint32
+                    // store both dist and len data in one int32
                     // Make sure this is recognized as a len/dist with 28th bit (2^28)
                     syms[li++] = 268435456 | (revfl[l] << 18) | revfd[d];
                     var lin = revfl[l] & 31, din = revfd[d] & 31;
@@ -16211,35 +15995,69 @@ var dflt = function (dat, lvl, plvl, pre, post, lst) {
                 }
             }
         }
+        for (i = Math.max(i, wi); i < s; ++i) {
+            syms[li++] = dat[i];
+            ++lf[dat[i]];
+        }
         pos = wblk(dat, w, lst, syms, lf, df, eb, li, bs, i - bs, pos);
-        // this is the easiest way to avoid needing to maintain state
-        if (!lst)
-            pos = wfblk(w, pos, et);
+        if (!lst) {
+            st.r = (pos & 7) | w[(pos / 8) | 0] << 3;
+            // shft(pos) now 1 less if pos & 7 != 0
+            pos -= 7;
+            st.h = head, st.p = prev, st.i = i, st.w = wi;
+        }
+    }
+    else {
+        for (var i = st.w || 0; i < s + lst; i += 65535) {
+            // end
+            var e = i + 65535;
+            if (e >= s) {
+                // write final block
+                w[(pos / 8) | 0] = lst;
+                e = s;
+            }
+            pos = wfblk(w, pos + 1, dat.subarray(i, e));
+        }
+        st.i = s;
     }
     return slc(o, 0, pre + shft(pos) + post);
 };
-// Alder32
+// Adler32
 var adler = function () {
     var a = 1, b = 0;
     return {
         p: function (d) {
             // closures have awful performance
             var n = a, m = b;
-            var l = d.length;
+            var l = d.length | 0;
             for (var i = 0; i != l;) {
-                var e = Math.min(i + 5552, l);
+                var e = Math.min(i + 2655, l);
                 for (; i < e; ++i)
-                    n += d[i], m += n;
-                n %= 65521, m %= 65521;
+                    m += n += d[i];
+                n = (n & 65535) + 15 * (n >> 16), m = (m & 65535) + 15 * (m >> 16);
             }
             a = n, b = m;
         },
-        d: function () { return ((a >>> 8) << 16 | (b & 255) << 8 | (b >>> 8)) + ((a & 255) << 23) * 2; }
+        d: function () {
+            a %= 65521, b %= 65521;
+            return (a & 255) << 24 | (a & 0xFF00) << 8 | (b & 255) << 8 | (b >> 8);
+        }
     };
 };
 // deflate with opts
 var dopt = function (dat, opt, pre, post, st) {
-    return dflt(dat, opt.level == null ? 6 : opt.level, opt.mem == null ? Math.ceil(Math.max(8, Math.min(13, Math.log(dat.length))) * 1.5) : (12 + opt.mem), pre, post, !st);
+    if (!st) {
+        st = { l: 1 };
+        if (opt.dictionary) {
+            var dict = opt.dictionary.subarray(-32768);
+            var newDat = new u8(dict.length + dat.length);
+            newDat.set(dict);
+            newDat.set(dat, dict.length);
+            dat = newDat;
+            st.w = dict.length;
+        }
+    }
+    return dflt(dat, opt.level == null ? 6 : opt.level, opt.mem == null ? Math.ceil(Math.max(8, Math.min(13, Math.log(dat.length))) * 1.5) : (12 + opt.mem), pre, post, st);
 };
 // write bytes
 var wbytes = function (d, b, v) {
@@ -16249,14 +16067,13 @@ var wbytes = function (d, b, v) {
 // zlib header
 var zlh = function (c, o) {
     var lv = o.level, fl = lv == 0 ? 0 : lv < 6 ? 1 : lv == 9 ? 3 : 2;
-    c[0] = 120, c[1] = (fl << 6) | (fl ? (32 - 2 * fl) : 1);
-};
-// zlib valid
-var zlv = function (d) {
-    if ((d[0] & 15) != 8 || (d[0] >>> 4) > 7 || ((d[0] << 8 | d[1]) % 31))
-        throw 'invalid zlib data';
-    if (d[1] & 32)
-        throw 'invalid zlib data: preset dictionaries not supported';
+    c[0] = 120, c[1] = (fl << 6) | (o.dictionary && 32);
+    c[1] |= 31 - ((c[0] << 8) | c[1]) % 31;
+    if (o.dictionary) {
+        var h = adler();
+        h.p(o.dictionary);
+        wbytes(c, 2, h.d());
+    }
 };
 /**
  * Compress data with Zlib
@@ -16265,21 +16082,22 @@ var zlv = function (d) {
  * @returns The zlib-compressed version of the data
  */
 function zlibSync(data, opts) {
-    if (opts === void 0) { opts = {}; }
+    if (!opts)
+        opts = {};
     var a = adler();
     a.p(data);
-    var d = dopt(data, opts, 2, 4);
+    var d = dopt(data, opts, opts.dictionary ? 6 : 2, 4);
     return zlh(d, opts), wbytes(d, d.length - 4, a.d()), d;
 }
-/**
- * Expands Zlib data
- * @param data The data to decompress
- * @param out Where to write the data. Saves memory if you know the decompressed size and provide an output buffer of that length.
- * @returns The decompressed version of the data
- */
-function unzlibSync(data, out) {
-    return inflt((zlv(data), data.subarray(2, -4)), out);
+// text decoder
+var td = typeof TextDecoder != 'undefined' && /*#__PURE__*/ new TextDecoder();
+// text decoder stream
+var tds = 0;
+try {
+    td.decode(et, { stream: true });
+    tds = 1;
 }
+catch (e) { }
 
 /**
  * @license
@@ -16920,1059 +16738,6 @@ function unzlibSync(data, out) {
   };
 })(jsPDF.API);
 
-// Generated by CoffeeScript 1.4.0
-
-var PNG = (function() {
-  var APNG_BLEND_OP_SOURCE,
-    APNG_DISPOSE_OP_BACKGROUND,
-    APNG_DISPOSE_OP_PREVIOUS,
-    makeImage,
-    scratchCanvas,
-    scratchCtx;
-
-  APNG_DISPOSE_OP_BACKGROUND = 1;
-
-  APNG_DISPOSE_OP_PREVIOUS = 2;
-
-  APNG_BLEND_OP_SOURCE = 0;
-
-  function PNG(data) {
-    var chunkSize,
-      colors,
-      palLen,
-      delayDen,
-      delayNum,
-      frame,
-      i,
-      index,
-      key,
-      section,
-      palShort,
-      text,
-      _i,
-      _j,
-      _ref;
-    this.data = data;
-    this.pos = 8;
-    this.palette = [];
-    this.imgData = [];
-    this.transparency = {};
-    this.animation = null;
-    this.text = {};
-    frame = null;
-    while (true) {
-      chunkSize = this.readUInt32();
-      section = function() {
-        var _i, _results;
-        _results = [];
-        for (i = _i = 0; _i < 4; i = ++_i) {
-          _results.push(String.fromCharCode(this.data[this.pos++]));
-        }
-        return _results;
-      }
-        .call(this)
-        .join("");
-      switch (section) {
-        case "IHDR":
-          this.width = this.readUInt32();
-          this.height = this.readUInt32();
-          this.bits = this.data[this.pos++];
-          this.colorType = this.data[this.pos++];
-          this.compressionMethod = this.data[this.pos++];
-          this.filterMethod = this.data[this.pos++];
-          this.interlaceMethod = this.data[this.pos++];
-          break;
-        case "acTL":
-          this.animation = {
-            numFrames: this.readUInt32(),
-            numPlays: this.readUInt32() || Infinity,
-            frames: []
-          };
-          break;
-        case "PLTE":
-          this.palette = this.read(chunkSize);
-          break;
-        case "fcTL":
-          if (frame) {
-            this.animation.frames.push(frame);
-          }
-          this.pos += 4;
-          frame = {
-            width: this.readUInt32(),
-            height: this.readUInt32(),
-            xOffset: this.readUInt32(),
-            yOffset: this.readUInt32()
-          };
-          delayNum = this.readUInt16();
-          delayDen = this.readUInt16() || 100;
-          frame.delay = (1000 * delayNum) / delayDen;
-          frame.disposeOp = this.data[this.pos++];
-          frame.blendOp = this.data[this.pos++];
-          frame.data = [];
-          break;
-        case "IDAT":
-        case "fdAT":
-          if (section === "fdAT") {
-            this.pos += 4;
-            chunkSize -= 4;
-          }
-          data = (frame != null ? frame.data : void 0) || this.imgData;
-          for (
-            i = _i = 0;
-            0 <= chunkSize ? _i < chunkSize : _i > chunkSize;
-            i = 0 <= chunkSize ? ++_i : --_i
-          ) {
-            data.push(this.data[this.pos++]);
-          }
-          break;
-        case "tRNS":
-          this.transparency = {};
-          switch (this.colorType) {
-            case 3:
-              palLen = this.palette.length / 3;
-              this.transparency.indexed = this.read(chunkSize);
-              if (this.transparency.indexed.length > palLen)
-                throw new Error("More transparent colors than palette size");
-              /*
-               * According to the PNG spec trns should be increased to the same size as palette if shorter
-               */
-              //palShort = 255 - this.transparency.indexed.length;
-              palShort = palLen - this.transparency.indexed.length;
-              if (palShort > 0) {
-                for (
-                  i = _j = 0;
-                  0 <= palShort ? _j < palShort : _j > palShort;
-                  i = 0 <= palShort ? ++_j : --_j
-                ) {
-                  this.transparency.indexed.push(255);
-                }
-              }
-              break;
-            case 0:
-              this.transparency.grayscale = this.read(chunkSize)[0];
-              break;
-            case 2:
-              this.transparency.rgb = this.read(chunkSize);
-          }
-          break;
-        case "tEXt":
-          text = this.read(chunkSize);
-          index = text.indexOf(0);
-          key = String.fromCharCode.apply(String, text.slice(0, index));
-          this.text[key] = String.fromCharCode.apply(
-            String,
-            text.slice(index + 1)
-          );
-          break;
-        case "IEND":
-          if (frame) {
-            this.animation.frames.push(frame);
-          }
-          this.colors = function() {
-            switch (this.colorType) {
-              case 0:
-              case 3:
-              case 4:
-                return 1;
-              case 2:
-              case 6:
-                return 3;
-            }
-          }.call(this);
-          this.hasAlphaChannel = (_ref = this.colorType) === 4 || _ref === 6;
-          colors = this.colors + (this.hasAlphaChannel ? 1 : 0);
-          this.pixelBitlength = this.bits * colors;
-          this.colorSpace = function() {
-            switch (this.colors) {
-              case 1:
-                return "DeviceGray";
-              case 3:
-                return "DeviceRGB";
-            }
-          }.call(this);
-          this.imgData = new Uint8Array(this.imgData);
-          return;
-        default:
-          this.pos += chunkSize;
-      }
-      this.pos += 4;
-      if (this.pos > this.data.length) {
-        throw new Error("Incomplete or corrupt PNG file");
-      }
-    }
-  }
-
-  PNG.prototype.read = function(bytes) {
-    var i, _i, _results;
-    _results = [];
-    for (
-      i = _i = 0;
-      0 <= bytes ? _i < bytes : _i > bytes;
-      i = 0 <= bytes ? ++_i : --_i
-    ) {
-      _results.push(this.data[this.pos++]);
-    }
-    return _results;
-  };
-
-  PNG.prototype.readUInt32 = function() {
-    var b1, b2, b3, b4;
-    b1 = this.data[this.pos++] << 24;
-    b2 = this.data[this.pos++] << 16;
-    b3 = this.data[this.pos++] << 8;
-    b4 = this.data[this.pos++];
-    return b1 | b2 | b3 | b4;
-  };
-
-  PNG.prototype.readUInt16 = function() {
-    var b1, b2;
-    b1 = this.data[this.pos++] << 8;
-    b2 = this.data[this.pos++];
-    return b1 | b2;
-  };
-
-  PNG.prototype.decodePixels = function(data) {
-    var pixelBytes = this.pixelBitlength / 8;
-    var fullPixels = new Uint8Array(this.width * this.height * pixelBytes);
-    var pos = 0;
-    var _this = this;
-
-    if (data == null) {
-      data = this.imgData;
-    }
-    if (data.length === 0) {
-      return new Uint8Array(0);
-    }
-
-    data = unzlibSync(data);
-    function pass(x0, y0, dx, dy) {
-      var abyte,
-        c,
-        col,
-        i,
-        left,
-        length,
-        p,
-        pa,
-        paeth,
-        pb,
-        pc,
-        pixels,
-        row,
-        scanlineLength,
-        upper,
-        upperLeft,
-        _i,
-        _j,
-        _k,
-        _l,
-        _m;
-      var w = Math.ceil((_this.width - x0) / dx),
-        h = Math.ceil((_this.height - y0) / dy);
-      var isFull = _this.width == w && _this.height == h;
-      scanlineLength = pixelBytes * w;
-      pixels = isFull ? fullPixels : new Uint8Array(scanlineLength * h);
-      length = data.length;
-      row = 0;
-      c = 0;
-      while (row < h && pos < length) {
-        switch (data[pos++]) {
-          case 0:
-            for (i = _i = 0; _i < scanlineLength; i = _i += 1) {
-              pixels[c++] = data[pos++];
-            }
-            break;
-          case 1:
-            for (i = _j = 0; _j < scanlineLength; i = _j += 1) {
-              abyte = data[pos++];
-              left = i < pixelBytes ? 0 : pixels[c - pixelBytes];
-              pixels[c++] = (abyte + left) % 256;
-            }
-            break;
-          case 2:
-            for (i = _k = 0; _k < scanlineLength; i = _k += 1) {
-              abyte = data[pos++];
-              col = (i - (i % pixelBytes)) / pixelBytes;
-              upper =
-                row &&
-                pixels[
-                  (row - 1) * scanlineLength +
-                    col * pixelBytes +
-                    (i % pixelBytes)
-                ];
-              pixels[c++] = (upper + abyte) % 256;
-            }
-            break;
-          case 3:
-            for (i = _l = 0; _l < scanlineLength; i = _l += 1) {
-              abyte = data[pos++];
-              col = (i - (i % pixelBytes)) / pixelBytes;
-              left = i < pixelBytes ? 0 : pixels[c - pixelBytes];
-              upper =
-                row &&
-                pixels[
-                  (row - 1) * scanlineLength +
-                    col * pixelBytes +
-                    (i % pixelBytes)
-                ];
-              pixels[c++] = (abyte + Math.floor((left + upper) / 2)) % 256;
-            }
-            break;
-          case 4:
-            for (i = _m = 0; _m < scanlineLength; i = _m += 1) {
-              abyte = data[pos++];
-              col = (i - (i % pixelBytes)) / pixelBytes;
-              left = i < pixelBytes ? 0 : pixels[c - pixelBytes];
-              if (row === 0) {
-                upper = upperLeft = 0;
-              } else {
-                upper =
-                  pixels[
-                    (row - 1) * scanlineLength +
-                      col * pixelBytes +
-                      (i % pixelBytes)
-                  ];
-                upperLeft =
-                  col &&
-                  pixels[
-                    (row - 1) * scanlineLength +
-                      (col - 1) * pixelBytes +
-                      (i % pixelBytes)
-                  ];
-              }
-              p = left + upper - upperLeft;
-              pa = Math.abs(p - left);
-              pb = Math.abs(p - upper);
-              pc = Math.abs(p - upperLeft);
-              if (pa <= pb && pa <= pc) {
-                paeth = left;
-              } else if (pb <= pc) {
-                paeth = upper;
-              } else {
-                paeth = upperLeft;
-              }
-              pixels[c++] = (abyte + paeth) % 256;
-            }
-            break;
-          default:
-            throw new Error("Invalid filter algorithm: " + data[pos - 1]);
-        }
-        if (!isFull) {
-          var fullPos = ((y0 + row * dy) * _this.width + x0) * pixelBytes;
-          var partPos = row * scanlineLength;
-          for (i = 0; i < w; i += 1) {
-            for (var j = 0; j < pixelBytes; j += 1)
-              fullPixels[fullPos++] = pixels[partPos++];
-            fullPos += (dx - 1) * pixelBytes;
-          }
-        }
-        row++;
-      }
-    }
-    if (_this.interlaceMethod == 1) {
-      /*
-          1 6 4 6 2 6 4 6
-          7 7 7 7 7 7 7 7
-          5 6 5 6 5 6 5 6
-          7 7 7 7 7 7 7 7
-          3 6 4 6 3 6 4 6
-          7 7 7 7 7 7 7 7
-          5 6 5 6 5 6 5 6
-          7 7 7 7 7 7 7 7
-        */
-      pass(0, 0, 8, 8); // 1
-      /* NOTE these seem to follow the pattern:
-       * pass(x, 0, 2*x, 2*x);
-       * pass(0, x,   x, 2*x);
-       * with x being 4, 2, 1.
-       */
-      pass(4, 0, 8, 8); // 2
-      pass(0, 4, 4, 8); // 3
-
-      pass(2, 0, 4, 4); // 4
-      pass(0, 2, 2, 4); // 5
-
-      pass(1, 0, 2, 2); // 6
-      pass(0, 1, 1, 2); // 7
-    } else {
-      pass(0, 0, 1, 1);
-    }
-    return fullPixels;
-  };
-
-  PNG.prototype.decodePalette = function() {
-    var c, i, length, palette, pos, ret, transparency, _i, _ref, _ref1;
-    palette = this.palette;
-    transparency = this.transparency.indexed || [];
-    ret = new Uint8Array((transparency.length || 0) + palette.length);
-    pos = 0;
-    length = palette.length;
-    c = 0;
-    for (i = _i = 0, _ref = length; _i < _ref; i = _i += 3) {
-      ret[pos++] = palette[i];
-      ret[pos++] = palette[i + 1];
-      ret[pos++] = palette[i + 2];
-      ret[pos++] = (_ref1 = transparency[c++]) != null ? _ref1 : 255;
-    }
-    return ret;
-  };
-
-  PNG.prototype.copyToImageData = function(imageData, pixels) {
-    var alpha, colors, data, i, input, j, k, length, palette, v, _ref;
-    colors = this.colors;
-    palette = null;
-    alpha = this.hasAlphaChannel;
-    if (this.palette.length) {
-      palette =
-        (_ref = this._decodedPalette) != null
-          ? _ref
-          : (this._decodedPalette = this.decodePalette());
-      colors = 4;
-      alpha = true;
-    }
-    data = imageData.data || imageData;
-    length = data.length;
-    input = palette || pixels;
-    i = j = 0;
-    if (colors === 1) {
-      while (i < length) {
-        k = palette ? pixels[i / 4] * 4 : j;
-        v = input[k++];
-        data[i++] = v;
-        data[i++] = v;
-        data[i++] = v;
-        data[i++] = alpha ? input[k++] : 255;
-        j = k;
-      }
-    } else {
-      while (i < length) {
-        k = palette ? pixels[i / 4] * 4 : j;
-        data[i++] = input[k++];
-        data[i++] = input[k++];
-        data[i++] = input[k++];
-        data[i++] = alpha ? input[k++] : 255;
-        j = k;
-      }
-    }
-  };
-
-  PNG.prototype.decode = function() {
-    var ret;
-    ret = new Uint8Array(this.width * this.height * 4);
-    this.copyToImageData(ret, this.decodePixels());
-    return ret;
-  };
-
-  var hasBrowserCanvas = function() {
-    if (Object.prototype.toString.call(globalObject) === "[object Window]") {
-      try {
-        scratchCanvas = globalObject.document.createElement("canvas");
-        scratchCtx = scratchCanvas.getContext("2d");
-      } catch (e) {
-        return false;
-      }
-      return true;
-    }
-    return false;
-  };
-
-  hasBrowserCanvas();
-
-  makeImage = function(imageData) {
-    if (hasBrowserCanvas() === true) {
-      var img;
-      scratchCtx.width = imageData.width;
-      scratchCtx.height = imageData.height;
-      scratchCtx.clearRect(0, 0, imageData.width, imageData.height);
-      scratchCtx.putImageData(imageData, 0, 0);
-      img = new Image();
-      img.src = scratchCanvas.toDataURL();
-      return img;
-    }
-    throw new Error("This method requires a Browser with Canvas-capability.");
-  };
-
-  PNG.prototype.decodeFrames = function(ctx) {
-    var frame, i, imageData, pixels, _i, _len, _ref, _results;
-    if (!this.animation) {
-      return;
-    }
-    _ref = this.animation.frames;
-    _results = [];
-    for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
-      frame = _ref[i];
-      imageData = ctx.createImageData(frame.width, frame.height);
-      pixels = this.decodePixels(new Uint8Array(frame.data));
-      this.copyToImageData(imageData, pixels);
-      frame.imageData = imageData;
-      _results.push((frame.image = makeImage(imageData)));
-    }
-    return _results;
-  };
-
-  PNG.prototype.renderFrame = function(ctx, number) {
-    var frame, frames, prev;
-    frames = this.animation.frames;
-    frame = frames[number];
-    prev = frames[number - 1];
-    if (number === 0) {
-      ctx.clearRect(0, 0, this.width, this.height);
-    }
-    if (
-      (prev != null ? prev.disposeOp : void 0) === APNG_DISPOSE_OP_BACKGROUND
-    ) {
-      ctx.clearRect(prev.xOffset, prev.yOffset, prev.width, prev.height);
-    } else if (
-      (prev != null ? prev.disposeOp : void 0) === APNG_DISPOSE_OP_PREVIOUS
-    ) {
-      ctx.putImageData(prev.imageData, prev.xOffset, prev.yOffset);
-    }
-    if (frame.blendOp === APNG_BLEND_OP_SOURCE) {
-      ctx.clearRect(frame.xOffset, frame.yOffset, frame.width, frame.height);
-    }
-    return ctx.drawImage(frame.image, frame.xOffset, frame.yOffset);
-  };
-
-  PNG.prototype.animate = function(ctx) {
-    var doFrame,
-      frameNumber,
-      frames,
-      numFrames,
-      numPlays,
-      _ref,
-      _this = this;
-    frameNumber = 0;
-    (_ref = this.animation),
-      (numFrames = _ref.numFrames),
-      (frames = _ref.frames),
-      (numPlays = _ref.numPlays);
-    return (doFrame = function() {
-      var f, frame;
-      f = frameNumber++ % numFrames;
-      frame = frames[f];
-      _this.renderFrame(ctx, f);
-      if (numFrames > 1 && frameNumber / numFrames < numPlays) {
-        return (_this.animation._timeout = setTimeout(doFrame, frame.delay));
-      }
-    })();
-  };
-
-  PNG.prototype.stopAnimation = function() {
-    var _ref;
-    return clearTimeout(
-      (_ref = this.animation) != null ? _ref._timeout : void 0
-    );
-  };
-
-  PNG.prototype.render = function(canvas) {
-    var ctx, data;
-    if (canvas._png) {
-      canvas._png.stopAnimation();
-    }
-    canvas._png = this;
-    canvas.width = this.width;
-    canvas.height = this.height;
-    ctx = canvas.getContext("2d");
-    if (this.animation) {
-      this.decodeFrames(ctx);
-      return this.animate(ctx);
-    } else {
-      data = ctx.createImageData(this.width, this.height);
-      this.copyToImageData(data, this.decodePixels());
-      return ctx.putImageData(data, 0, 0);
-    }
-  };
-
-  return PNG;
-})();
-
-/**
- * @license
- *
- * Copyright (c) 2014 James Robb, https://github.com/jamesbrobb
- *
- * Permission is hereby granted, free of charge, to any person obtaining
- * a copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
- *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * ====================================================================
- */
-
-/**
- * jsPDF PNG PlugIn
- * @name png_support
- * @module
- */
-(function(jsPDFAPI) {
-
-  /*
-   * @see http://www.w3.org/TR/PNG-Chunks.html
-   *
-   Color    Allowed      Interpretation
-   Type     Bit Depths
-
-     0       1,2,4,8,16  Each pixel is a grayscale sample.
-
-     2       8,16        Each pixel is an R,G,B triple.
-
-     3       1,2,4,8     Each pixel is a palette index;
-                         a PLTE chunk must appear.
-
-     4       8,16        Each pixel is a grayscale sample,
-                         followed by an alpha sample.
-
-     6       8,16        Each pixel is an R,G,B triple,
-                         followed by an alpha sample.
-  */
-
-  /*
-   * PNG filter method types
-   *
-   * @see http://www.w3.org/TR/PNG-Filters.html
-   * @see http://www.libpng.org/pub/png/book/chapter09.html
-   *
-   * This is what the value 'Predictor' in decode params relates to
-   *
-   * 15 is "optimal prediction", which means the prediction algorithm can change from line to line.
-   * In that case, you actually have to read the first byte off each line for the prediction algorthim (which should be 0-4, corresponding to PDF 10-14) and select the appropriate unprediction algorithm based on that byte.
-   *
-     0       None
-     1       Sub
-     2       Up
-     3       Average
-     4       Paeth
-   */
-
-  var canCompress = function(value) {
-    return value !== jsPDFAPI.image_compression.NONE && hasCompressionJS();
-  };
-
-  var hasCompressionJS = function() {
-    return typeof zlibSync === "function";
-  };
-  var compressBytes = function(bytes, lineLength, colorsPerPixel, compression) {
-    var level = 4;
-    var filter_method = filterUp;
-
-    switch (compression) {
-      case jsPDFAPI.image_compression.FAST:
-        level = 1;
-        filter_method = filterSub;
-        break;
-
-      case jsPDFAPI.image_compression.MEDIUM:
-        level = 6;
-        filter_method = filterAverage;
-        break;
-
-      case jsPDFAPI.image_compression.SLOW:
-        level = 9;
-        filter_method = filterPaeth;
-        break;
-    }
-
-    bytes = applyPngFilterMethod(
-      bytes,
-      lineLength,
-      colorsPerPixel,
-      filter_method
-    );
-    var dat = zlibSync(bytes, { level: level });
-    return jsPDFAPI.__addimage__.arrayBufferToBinaryString(dat);
-  };
-
-  var applyPngFilterMethod = function(
-    bytes,
-    lineLength,
-    colorsPerPixel,
-    filter_method
-  ) {
-    var lines = bytes.length / lineLength,
-      result = new Uint8Array(bytes.length + lines),
-      filter_methods = getFilterMethods(),
-      line,
-      prevLine,
-      offset;
-
-    for (var i = 0; i < lines; i += 1) {
-      offset = i * lineLength;
-      line = bytes.subarray(offset, offset + lineLength);
-
-      if (filter_method) {
-        result.set(filter_method(line, colorsPerPixel, prevLine), offset + i);
-      } else {
-        var len = filter_methods.length,
-          results = [];
-
-        for (var j; j < len; j += 1) {
-          results[j] = filter_methods[j](line, colorsPerPixel, prevLine);
-        }
-
-        var ind = getIndexOfSmallestSum(results.concat());
-
-        result.set(results[ind], offset + i);
-      }
-
-      prevLine = line;
-    }
-
-    return result;
-  };
-
-  var filterNone = function(line) {
-    /*var result = new Uint8Array(line.length + 1);
-    result[0] = 0;
-    result.set(line, 1);*/
-
-    var result = Array.apply([], line);
-    result.unshift(0);
-
-    return result;
-  };
-
-  var filterSub = function(line, colorsPerPixel) {
-    var result = [],
-      len = line.length,
-      left;
-
-    result[0] = 1;
-
-    for (var i = 0; i < len; i += 1) {
-      left = line[i - colorsPerPixel] || 0;
-      result[i + 1] = (line[i] - left + 0x0100) & 0xff;
-    }
-
-    return result;
-  };
-
-  var filterUp = function(line, colorsPerPixel, prevLine) {
-    var result = [],
-      len = line.length,
-      up;
-
-    result[0] = 2;
-
-    for (var i = 0; i < len; i += 1) {
-      up = (prevLine && prevLine[i]) || 0;
-      result[i + 1] = (line[i] - up + 0x0100) & 0xff;
-    }
-
-    return result;
-  };
-
-  var filterAverage = function(line, colorsPerPixel, prevLine) {
-    var result = [],
-      len = line.length,
-      left,
-      up;
-
-    result[0] = 3;
-
-    for (var i = 0; i < len; i += 1) {
-      left = line[i - colorsPerPixel] || 0;
-      up = (prevLine && prevLine[i]) || 0;
-      result[i + 1] = (line[i] + 0x0100 - ((left + up) >>> 1)) & 0xff;
-    }
-
-    return result;
-  };
-
-  var filterPaeth = function(line, colorsPerPixel, prevLine) {
-    var result = [],
-      len = line.length,
-      left,
-      up,
-      upLeft,
-      paeth;
-
-    result[0] = 4;
-
-    for (var i = 0; i < len; i += 1) {
-      left = line[i - colorsPerPixel] || 0;
-      up = (prevLine && prevLine[i]) || 0;
-      upLeft = (prevLine && prevLine[i - colorsPerPixel]) || 0;
-      paeth = paethPredictor(left, up, upLeft);
-      result[i + 1] = (line[i] - paeth + 0x0100) & 0xff;
-    }
-
-    return result;
-  };
-
-  var paethPredictor = function(left, up, upLeft) {
-    if (left === up && up === upLeft) {
-      return left;
-    }
-    var pLeft = Math.abs(up - upLeft),
-      pUp = Math.abs(left - upLeft),
-      pUpLeft = Math.abs(left + up - upLeft - upLeft);
-    return pLeft <= pUp && pLeft <= pUpLeft
-      ? left
-      : pUp <= pUpLeft
-      ? up
-      : upLeft;
-  };
-
-  var getFilterMethods = function() {
-    return [filterNone, filterSub, filterUp, filterAverage, filterPaeth];
-  };
-
-  var getIndexOfSmallestSum = function(arrays) {
-    var sum = arrays.map(function(value) {
-      return value.reduce(function(pv, cv) {
-        return pv + Math.abs(cv);
-      }, 0);
-    });
-    return sum.indexOf(Math.min.apply(null, sum));
-  };
-
-  var getPredictorFromCompression = function(compression) {
-    var predictor;
-    switch (compression) {
-      case jsPDFAPI.image_compression.FAST:
-        predictor = 11;
-        break;
-
-      case jsPDFAPI.image_compression.MEDIUM:
-        predictor = 13;
-        break;
-
-      case jsPDFAPI.image_compression.SLOW:
-        predictor = 14;
-        break;
-
-      default:
-        predictor = 12;
-        break;
-    }
-    return predictor;
-  };
-
-  /**
-   * @name processPNG
-   * @function
-   * @ignore
-   */
-  jsPDFAPI.processPNG = function(imageData, index, alias, compression) {
-
-    var colorSpace,
-      filter = this.decode.FLATE_DECODE,
-      bitsPerComponent,
-      image,
-      decodeParameters = "",
-      trns,
-      colors,
-      pal,
-      smask,
-      pixels,
-      len,
-      alphaData,
-      imgData,
-      hasColors,
-      pixel,
-      i,
-      n;
-
-    if (this.__addimage__.isArrayBuffer(imageData))
-      imageData = new Uint8Array(imageData);
-
-    if (this.__addimage__.isArrayBufferView(imageData)) {
-      image = new PNG(imageData);
-      imageData = image.imgData;
-      bitsPerComponent = image.bits;
-      colorSpace = image.colorSpace;
-      colors = image.colors;
-
-      /*
-       * colorType 6 - Each pixel is an R,G,B triple, followed by an alpha sample.
-       *
-       * colorType 4 - Each pixel is a grayscale sample, followed by an alpha sample.
-       *
-       * Extract alpha to create two separate images, using the alpha as a sMask
-       */
-      if ([4, 6].indexOf(image.colorType) !== -1) {
-        /*
-         * processes 8 bit RGBA and grayscale + alpha images
-         */
-        if (image.bits === 8) {
-          pixels =
-            image.pixelBitlength == 32
-              ? new Uint32Array(image.decodePixels().buffer)
-              : image.pixelBitlength == 16
-              ? new Uint16Array(image.decodePixels().buffer)
-              : new Uint8Array(image.decodePixels().buffer);
-          len = pixels.length;
-          imgData = new Uint8Array(len * image.colors);
-          alphaData = new Uint8Array(len);
-          var pDiff = image.pixelBitlength - image.bits;
-          i = 0;
-          n = 0;
-          var pbl;
-
-          for (; i < len; i++) {
-            pixel = pixels[i];
-            pbl = 0;
-
-            while (pbl < pDiff) {
-              imgData[n++] = (pixel >>> pbl) & 0xff;
-              pbl = pbl + image.bits;
-            }
-
-            alphaData[i] = (pixel >>> pbl) & 0xff;
-          }
-        }
-
-        /*
-         * processes 16 bit RGBA and grayscale + alpha images
-         */
-        if (image.bits === 16) {
-          pixels = new Uint32Array(image.decodePixels().buffer);
-          len = pixels.length;
-          imgData = new Uint8Array(
-            len * (32 / image.pixelBitlength) * image.colors
-          );
-          alphaData = new Uint8Array(len * (32 / image.pixelBitlength));
-          hasColors = image.colors > 1;
-          i = 0;
-          n = 0;
-          var a = 0;
-
-          while (i < len) {
-            pixel = pixels[i++];
-
-            imgData[n++] = (pixel >>> 0) & 0xff;
-
-            if (hasColors) {
-              imgData[n++] = (pixel >>> 16) & 0xff;
-
-              pixel = pixels[i++];
-              imgData[n++] = (pixel >>> 0) & 0xff;
-            }
-
-            alphaData[a++] = (pixel >>> 16) & 0xff;
-          }
-          bitsPerComponent = 8;
-        }
-
-        if (canCompress(compression)) {
-          imageData = compressBytes(
-            imgData,
-            image.width * image.colors,
-            image.colors,
-            compression
-          );
-          smask = compressBytes(alphaData, image.width, 1, compression);
-        } else {
-          imageData = imgData;
-          smask = alphaData;
-          filter = undefined;
-        }
-      }
-
-      /*
-       * Indexed png. Each pixel is a palette index.
-       */
-      if (image.colorType === 3) {
-        colorSpace = this.color_spaces.INDEXED;
-        pal = image.palette;
-
-        if (image.transparency.indexed) {
-          var trans = image.transparency.indexed;
-          var total = 0;
-          i = 0;
-          len = trans.length;
-
-          for (; i < len; ++i) {
-            total += trans[i];
-          }
-
-          total = total / 255;
-
-          /*
-           * a single color is specified as 100% transparent (0),
-           * so we set trns to use a /Mask with that index
-           */
-          if (total === len - 1 && trans.indexOf(0) !== -1) {
-            trns = [trans.indexOf(0)];
-
-            /*
-             * there's more than one colour within the palette that specifies
-             * a transparency value less than 255, so we unroll the pixels to create an image sMask
-             */
-          } else if (total !== len) {
-            pixels = image.decodePixels();
-            alphaData = new Uint8Array(pixels.length);
-            i = 0;
-            len = pixels.length;
-
-            for (; i < len; i++) {
-              alphaData[i] = trans[pixels[i]];
-            }
-
-            smask = compressBytes(alphaData, image.width, 1);
-          }
-        }
-      }
-
-      var predictor = getPredictorFromCompression(compression);
-
-      if (filter === this.decode.FLATE_DECODE) {
-        decodeParameters = "/Predictor " + predictor + " ";
-      }
-      decodeParameters +=
-        "/Colors " +
-        colors +
-        " /BitsPerComponent " +
-        bitsPerComponent +
-        " /Columns " +
-        image.width;
-
-      if (
-        this.__addimage__.isArrayBuffer(imageData) ||
-        this.__addimage__.isArrayBufferView(imageData)
-      ) {
-        imageData = this.__addimage__.arrayBufferToBinaryString(imageData);
-      }
-
-      if (
-        (smask && this.__addimage__.isArrayBuffer(smask)) ||
-        this.__addimage__.isArrayBufferView(smask)
-      ) {
-        smask = this.__addimage__.arrayBufferToBinaryString(smask);
-      }
-
-      return {
-        alias: alias,
-        data: imageData,
-        index: index,
-        filter: filter,
-        decodeParameters: decodeParameters,
-        transparency: trns,
-        palette: pal,
-        sMask: smask,
-        predictor: predictor,
-        width: image.width,
-        height: image.height,
-        bitsPerComponent: bitsPerComponent,
-        colorSpace: colorSpace
-      };
-    }
-  };
-})(jsPDF.API);
-
 /**
  * @license
  * (c) Dean McNamee <dean@gmail.com>, 2013.
@@ -18024,7 +16789,7 @@ function GifReader(buf) {
   var global_palette_flag = pf0 >> 7;
   var num_global_colors_pow2 = pf0 & 0x7;
   var num_global_colors = 1 << (num_global_colors_pow2 + 1);
-  var background = buf[p++];
+  buf[p++];
   buf[p++]; // Pixel aspect ratio (unused?).
 
   var global_palette_offset = null;
@@ -18485,25 +17250,25 @@ function GifReaderLZWOutputIndexStream(code_stream, p, output, output_length) {
   Copyright (c) 2008, Adobe Systems Incorporated
   All rights reserved.
 
-  Redistribution and use in source and binary forms, with or without
+  Redistribution and use in source and binary forms, with or without 
   modification, are permitted provided that the following conditions are
   met:
 
-  * Redistributions of source code must retain the above copyright notice,
+  * Redistributions of source code must retain the above copyright notice, 
     this list of conditions and the following disclaimer.
-
+  
   * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
+    notice, this list of conditions and the following disclaimer in the 
     documentation and/or other materials provided with the distribution.
-
-  * Neither the name of Adobe Systems Incorporated nor the names of its
-    contributors may be used to endorse or promote products derived from
+  
+  * Neither the name of Adobe Systems Incorporated nor the names of its 
+    contributors may be used to endorse or promote products derived from 
     this software without specific prior written permission.
 
   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
   IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
   THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR 
   CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
   EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
   PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
@@ -25345,7 +24110,7 @@ WebPRiffParser dominikhlbg@gmail.com
     imagearray["frames"] = [];
     if (memcmp(src, src_off, "RIFF", 4)) return;
     src_off += 4;
-    var riff_size = GetLE32(src, src_off) + 8;
+    GetLE32(src, src_off) + 8;
     src_off += 8;
 
     while (src_off < src.length) {
@@ -25362,8 +24127,6 @@ WebPRiffParser dominikhlbg@gmail.com
           if (typeof imagearray["frames"][i] === "undefined")
             imagearray["frames"][i] = {};
           var obj = imagearray["frames"][i];
-          var height = [0];
-          var width = [0];
           obj["src_off"] = alpha_chunk ? alpha_offset : src_off - 8;
           obj["src_size"] = alpha_size + payload_size + 8;
           //var rgba = webpdecoder.WebPDecodeRGBA(src,(alpha_chunk?alpha_offset:src_off-8),alpha_size+payload_size+8,width,height);
@@ -25377,11 +24140,11 @@ WebPRiffParser dominikhlbg@gmail.com
           break;
         case "VP8X":
           var obj = (imagearray["header"] = {});
-          var feature_flags = (obj["feature_flags"] = src[src_off]);
+          (obj["feature_flags"] = src[src_off]);
           var src_off_ = src_off + 4;
-          var canvas_width = (obj["canvas_width"] = 1 + GetLE24(src, src_off_));
+          (obj["canvas_width"] = 1 + GetLE24(src, src_off_));
           src_off_ += 3;
-          var canvas_height = (obj["canvas_height"] =
+          (obj["canvas_height"] =
             1 + GetLE24(src, src_off_));
           src_off_ += 3;
           break;
@@ -25393,35 +24156,28 @@ WebPRiffParser dominikhlbg@gmail.com
 
         case "ANIM":
           var obj = imagearray["header"];
-          var bgcolor = (obj["bgcolor"] = GetLE32(src, src_off));
+          (obj["bgcolor"] = GetLE32(src, src_off));
           src_off_ = src_off + 4;
 
-          var loop_count = (obj["loop_count"] = GetLE16(src, src_off_));
+          (obj["loop_count"] = GetLE16(src, src_off_));
           src_off_ += 2;
           break;
         case "ANMF":
-          var offset_x = 0,
-            offset_y = 0,
-            width = 0,
-            height = 0,
-            duration = 0,
-            blend = 0,
-            dispose = 0,
-            temp = 0;
+          var temp = 0;
           var obj = (imagearray["frames"][i] = {});
-          obj["offset_x"] = offset_x = 2 * GetLE24(src, src_off);
+          obj["offset_x"] = 2 * GetLE24(src, src_off);
           src_off += 3;
-          obj["offset_y"] = offset_y = 2 * GetLE24(src, src_off);
+          obj["offset_y"] = 2 * GetLE24(src, src_off);
           src_off += 3;
-          obj["width"] = width = 1 + GetLE24(src, src_off);
+          obj["width"] = 1 + GetLE24(src, src_off);
           src_off += 3;
-          obj["height"] = height = 1 + GetLE24(src, src_off);
+          obj["height"] = 1 + GetLE24(src, src_off);
           src_off += 3;
-          obj["duration"] = duration = GetLE24(src, src_off);
+          obj["duration"] = GetLE24(src, src_off);
           src_off += 3;
           temp = src[src_off++];
-          obj["dispose"] = dispose = temp & 1;
-          obj["blend"] = blend = (temp >> 1) & 1;
+          obj["dispose"] = temp & 1;
+          obj["blend"] = (temp >> 1) & 1;
           break;
       }
       if (fourcc != "ANMF") src_off += payload_size_padded;
@@ -25496,7 +24252,7 @@ WebPDecoder.prototype.getData = function() {
 (function(jsPDFAPI) {
 
   jsPDFAPI.processWEBP = function(imageData, index, alias, compression) {
-    var reader = new WebPDecoder(imageData, false);
+    var reader = new WebPDecoder(imageData);
     var width = reader.width,
       height = reader.height;
     var qu = 100;
@@ -25947,7 +24703,7 @@ WebPDecoder.prototype.getData = function() {
    * of the string will be that much.
    *
    * Multiply by font size to get actual width in *points*
-   * Then divide by 72 to get inches or divide by (72/25.6) to get 'mm' etc.
+   * Then divide by 72 to get inches or divide by (72/25.4) to get 'mm' etc.
    *
    * @name getStringUnitWidth
    * @public
@@ -26243,10 +24999,10 @@ WebPDecoder.prototype.getData = function() {
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -30250,11 +29006,11 @@ WebPDecoder.prototype.getData = function() {
 
   var bidiEngineFunction = function(args) {
     var text = args.text;
-    var x = args.x;
-    var y = args.y;
+    args.x;
+    args.y;
     var options = args.options || {};
-    var mutex = args.mutex || {};
-    var lang = options.lang;
+    args.mutex || {};
+    options.lang;
     var tmpText = [];
 
     options.isInputVisual =
@@ -32157,5 +30913,4 @@ jsPDF.API.PDFObject = (function() {
   return PDFObject;
 })();
 
-export default jsPDF;
-export { AcroForm, AcroFormAppearance, AcroFormButton, AcroFormCheckBox, AcroFormChoiceField, AcroFormComboBox, AcroFormEditBox, AcroFormListBox, AcroFormPasswordField, AcroFormPushButton, AcroFormRadioButton, AcroFormTextField, GState, ShadingPattern, TilingPattern, jsPDF };
+export { AcroForm, AcroFormAppearance, AcroFormButton, AcroFormCheckBox, AcroFormChoiceField, AcroFormComboBox, AcroFormEditBox, AcroFormListBox, AcroFormPasswordField, AcroFormPushButton, AcroFormRadioButton, AcroFormTextField, GState, ShadingPattern, TilingPattern, jsPDF as default, jsPDF };
