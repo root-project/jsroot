@@ -3668,7 +3668,8 @@ class TH2Painter extends THistPainter {
          if (is_pol)
             path = h.getBinPath(i, j);
          else if (this.#projection_kind === 'X') {
-            x1 = 0; x2 = fp.getFrameWidth();
+            x1 = 0;
+            x2 = fp.getFrameWidth();
             y1 = h.gry[j2];
             y2 = h.gry[j1];
             binid = j1*777 + j2*333;

@@ -3277,7 +3277,10 @@ class HierarchyPainter extends BasePainter {
                   handleAfterRequest(findFunction(item._after_request)); // v6 support
             } else
                handleAfterRequest(draw_handle?.after_request);
-         }, undefined, true).then(xhr => { itemreq = xhr; xhr.send(null); });
+         }, undefined, true).then(xhr => {
+            itemreq = xhr;
+            xhr.send(null);
+         });
       });
    }
 

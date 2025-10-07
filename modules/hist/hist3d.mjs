@@ -1305,7 +1305,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          rotate_z = this.z_handle.isRotateLabels();
 
    if (this.size_z3d && opts.drawany) {
-      zgridx = []; zgridy = [];
+      zgridx = [];
+      zgridy = [];
    }
 
    while (zticks.next()) {
@@ -1848,7 +1849,8 @@ function drawBinsLego(painter, is_v7 = false) {
 
    let numlinevertices = 0, numsegments = 0;
 
-   zmax = axis_zmax; zmin = axis_zmin;
+   zmax = axis_zmax;
+   zmin = axis_zmin;
 
    for (i = i1; i < i2; ++i) {
       for (j = j1; j < j2; ++j) {

@@ -1051,10 +1051,12 @@ class TPavePainter extends ObjectPainter {
          }
       } else if ((main.gmaxbin !== undefined) && (main.gminbin !== undefined)) {
          // this is case of TH2 (needs only for size adjustment)
-         zmin = main.gminbin; zmax = main.gmaxbin;
+         zmin = main.gminbin;
+         zmax = main.gmaxbin;
       } else if ((main.hmin !== undefined) && (main.hmax !== undefined)) {
          // this is case of TH1
-         zmin = main.hmin; zmax = main.hmax;
+         zmin = main.hmin;
+         zmax = main.hmax;
       }
 
       g.selectAll('rect').style('fill', 'white');

@@ -799,7 +799,8 @@ function parseLatex(node, arg, label, curr) {
             x_up = x_low = w/2;
             path.attr('d', `M${w},${Math.round(-0.75*h)}h${-w}l${Math.round(0.4*w)},${Math.round(0.3*h)}l${Math.round(-0.4*w)},${Math.round(0.7*h)}h${w}`);
          } else {
-            x_up = 3*r; x_low = r;
+            x_up = 3*r;
+            x_low = r;
             path.attr('d', `M0,${Math.round(0.25*h-r)}a${r},${r},0,0,0,${2*r},0v${2*r-h}a${r},${r},0,1,1,${2*r},0`);
             // path.attr('transform','skewX(-3)'); could use skewX for italic-like style
          }
