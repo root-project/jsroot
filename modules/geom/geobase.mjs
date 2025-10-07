@@ -1491,16 +1491,26 @@ function createParaboloidBuffer(shape, faces_limit) {
       let layerz, radius;
 
       switch (layer) {
-         case 0: layerz = zmin; radius = rmin; break;
-         case heightSegments: layerz = zmax; radius = rmax; break;
-         case heightSegments + 1: layerz = zmax; radius = 0; break;
+         case 0:
+            layerz = zmin;
+            radius = rmin;
+            break;
+         case heightSegments:
+            layerz = zmax;
+            radius = rmax;
+            break;
+         case heightSegments + 1:
+            layerz = zmax;
+            radius = 0;
+            break;
          default: {
             const tt = Math.tan(ttmin + (ttmax-ttmin) * layer / heightSegments),
                   delta = tt**2 - 4*shape.fA*shape.fB; // should be always positive (a*b < 0)
             radius = 0.5*(tt+Math.sqrt(delta))/shape.fA;
             if (radius < 1e-6)
                radius = 0;
-            layerz = radius*tt;
+            layerz = radius * tt;
+            break;
          }
       }
 
@@ -1645,9 +1655,15 @@ function createMatrix(matrix) {
    let translation, rotation, scale;
 
    switch (matrix._typename) {
-      case 'TGeoTranslation': translation = matrix.fTranslation; break;
-      case 'TGeoRotation': rotation = matrix.fRotationMatrix; break;
-      case 'TGeoScale': scale = matrix.fScale; break;
+      case 'TGeoTranslation':
+         translation = matrix.fTranslation;
+         break;
+      case 'TGeoRotation':
+         rotation = matrix.fRotationMatrix;
+         break;
+      case 'TGeoScale':
+         scale = matrix.fScale;
+         break;
       case 'TGeoGenTrans':
          scale = matrix.fScale; // no break, translation and rotation follows
       // eslint-disable-next-line  no-fallthrough
@@ -1934,11 +1950,18 @@ function createComposite(shape, faces_limit) {
    bsp1.maxid = bsp2.maxid;
 
    switch (shape.fNode._typename) {
-      case 'TGeoIntersection': bsp1.direct_intersect(bsp2); break; // '*'
-      case 'TGeoUnion': bsp1.direct_union(bsp2); break;   // '+'
-      case 'TGeoSubtraction': bsp1.direct_subtract(bsp2); break; // '/'
+      case 'TGeoIntersection': // '*'
+         bsp1.direct_intersect(bsp2);
+         break;
+      case 'TGeoUnion':  // '+'
+         bsp1.direct_union(bsp2);
+         break;
+      case 'TGeoSubtraction': // '/'
+         bsp1.direct_subtract(bsp2);
+         break;
       default:
-         geoWarn('unsupported bool operation ' + shape.fNode._typename + ', use first geom');
+         geoWarn(`unsupported bool operation ${shape.fNode._typename}, use first geom`);
+         break;
    }
 
    if (numGeometryFaces(bsp1) === 0) {
@@ -2164,14 +2187,15 @@ function provideObjectInfo(obj) {
    info.push(`DX=${conv(shape.fDX)} DY=${conv(shape.fDY)} DZ=${conv(shape.fDZ)}`);
 
    switch (shape._typename) {
-      case clTGeoBBox: break;
-      case clTGeoPara: info.push(`Alpha=${shape.fAlpha} Phi=${shape.fPhi} Theta=${shape.fTheta}`); break;
-      case clTGeoTrd2: info.push(`Dy1=${conv(shape.fDy1)} Dy2=${conv(shape.fDy1)}`); // no break
+      case clTGeoPara:
+         info.push(`Alpha=${shape.fAlpha} Phi=${shape.fPhi} Theta=${shape.fTheta}`);
+         break;
+      case clTGeoTrd2:
+         info.push(`Dy1=${conv(shape.fDy1)} Dy2=${conv(shape.fDy1)}`); // no break
       // eslint-disable-next-line  no-fallthrough
-      case clTGeoTrd1: info.push(`Dx1=${conv(shape.fDx1)} Dx2=${conv(shape.fDx1)}`); break;
-      case clTGeoArb8: break;
-      case clTGeoTrap: break;
-      case clTGeoGtra: break;
+      case clTGeoTrd1:
+         info.push(`Dx1=${conv(shape.fDx1)} Dx2=${conv(shape.fDx1)}`);
+         break;
       case clTGeoSphere:
          info.push(`Rmin=${conv(shape.fRmin)} Rmax=${conv(shape.fRmax)}`,
                    `Phi1=${shape.fPhi1} Phi2=${shape.fPhi2}`,
@@ -2196,9 +2220,6 @@ function provideObjectInfo(obj) {
          info.push(`Rmin=${conv(shape.fRmin)} Rmax=${conv(shape.fRmax)}`,
                    `Phi1=${shape.fPhi1} Dphi=${shape.fDphi}`);
          break;
-      case clTGeoPcon:
-      case clTGeoPgon: break;
-      case clTGeoXtru: break;
       case clTGeoParaboloid:
          info.push(`Rlo=${conv(shape.fRlo)} Rhi=${conv(shape.fRhi)}`,
                    `A=${conv(shape.fA)} B=${conv(shape.fB)}`);
@@ -2207,13 +2228,20 @@ function provideObjectInfo(obj) {
          info.push(`Rmin=${conv(shape.fRmin)} Rmax=${conv(shape.fRmax)}`,
                    `StIn=${conv(shape.fStIn)} StOut=${conv(shape.fStOut)}`);
          break;
-      case clTGeoCompositeShape: break;
-      case clTGeoShapeAssembly: break;
       case clTGeoScaledShape:
          info = provideObjectInfo(shape.fShape);
          if (shape.fScale)
             info.unshift(`Scale X=${shape.fScale.fScale[0]} Y=${shape.fScale.fScale[1]} Z=${shape.fScale.fScale[2]}`);
          break;
+      case clTGeoPcon:
+      case clTGeoPgon: break;
+      case clTGeoXtru: break;
+      case clTGeoCompositeShape: break;
+      case clTGeoShapeAssembly: break;
+      case clTGeoBBox: break;
+      case clTGeoArb8: break;
+      case clTGeoTrap: break;
+      case clTGeoGtra: break;
    }
 
    return info;
