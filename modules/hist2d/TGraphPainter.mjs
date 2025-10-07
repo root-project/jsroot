@@ -341,15 +341,6 @@ class TGraphPainter extends ObjectPainter {
       }
    }
 
-   /** @summary Extract errors for TGraphMultiErrors */
-   extractGmeErrors(nblock) {
-      const gr = this.getGraph();
-      this.#bins?.forEach(bin => {
-         bin.eylow = gr.fEyL[nblock][bin.indx];
-         bin.eyhigh = gr.fEyH[nblock][bin.indx];
-      });
-   }
-
    /** @summary Return prepared graph bins
     * @protected */
    _getBins() { return this.#bins; }
@@ -1103,18 +1094,22 @@ class TGraphPainter extends ObjectPainter {
          this.appendQQ(funcs, graph);
 
       if (is_gme) {
+         const extract_gme_errors = nblock => {
+            this.#bins?.forEach(bin => {
+               bin.eylow = graph.fEyL[nblock][bin.indx];
+               bin.eyhigh = graph.fEyH[nblock][bin.indx];
+            });
+         };
+
          for (let k = 0; k < graph.fNYErrors; ++k) {
-            let lineatt = this.lineatt, fillatt = this.fillatt;
-            if (o.individual_styles) {
-               lineatt = this.createAttLine({ attr: graph.fAttLine[k], std: false });
-               fillatt = this.createAttFill({ attr: graph.fAttFill[k], std: false });
-            }
-            const sub_g = g.append('svg:g'),
-                  options = (k < o.blocks.length) ? o.blocks[k] : o;
-            this.extractGmeErrors(k);
+            const lineatt = !o.individual_styles ? this.lineatt : this.createAttLine({ attr: graph.fAttLine[k], std: false }),
+                  fillatt = !o.individual_styles ? this.fillatt : this.createAttFill({ attr: graph.fAttFill[k], std: false }),
+                  sub_g = g.append('svg:g'),
+                  options = k < o.blocks.length ? o.blocks[k] : o;
+            extract_gme_errors(k);
             this.drawBins(funcs, options, sub_g, w, h, lineatt, fillatt);
          }
-         this.extractGmeErrors(0); // ensure that first block kept at the end
+         extract_gme_errors(0); // ensure that first block kept at the end
       }
 
       if (!this.isBatchMode()) {
@@ -1170,8 +1165,8 @@ class TGraphPainter extends ObjectPainter {
 
              if (isbar1) {
                 const yy0 = funcs.gry(0);
-                rect.y1 = (d.gry1 > yy0) ? yy0-d.gry1 : 0;
-                rect.y2 = (d.gry1 > yy0) ? 0 : yy0-d.gry1;
+                rect.y1 = (d.gry1 > yy0) ? yy0 - d.gry1 : 0;
+                rect.y2 = (d.gry1 > yy0) ? 0 : yy0 - d.gry1;
              }
           } else
              rect = { x1: -5, x2: 5, y1: -5, y2: 5 };
@@ -1302,14 +1297,14 @@ class TGraphPainter extends ObjectPainter {
       if (!bestbin && islines) {
          bestdist = 1e10;
 
-         const IsInside = (x, x1, x2) => ((x1 >= x) && (x >= x2)) || ((x1 <= x) && (x <= x2));
+         const is_inside = (x, x1, x2) => ((x1 >= x) && (x >= x2)) || ((x1 <= x) && (x <= x2));
 
          let bin0 = this.#bins[0], grx0 = funcs.grx(bin0.x), gry0, posy;
          for (n = 1; n < this.#bins.length; ++n) {
             bin = this.#bins[n];
             grx = funcs.grx(bin.x);
 
-            if (IsInside(pnt.x, grx0, grx)) {
+            if (is_inside(pnt.x, grx0, grx)) {
                // if inside interval, check Y distance
                gry0 = funcs.gry(bin0.y);
                gry = funcs.gry(bin.y);
@@ -1317,7 +1312,7 @@ class TGraphPainter extends ObjectPainter {
                if (Math.abs(grx - grx0) < 1) {
                   // very close x - check only y
                   posy = pnt.y;
-                  dist = IsInside(pnt.y, gry0, gry) ? 0 : Math.min(Math.abs(pnt.y-gry0), Math.abs(pnt.y-gry));
+                  dist = is_inside(pnt.y, gry0, gry) ? 0 : Math.min(Math.abs(pnt.y-gry0), Math.abs(pnt.y-gry));
                } else {
                   posy = gry0 + (pnt.x - grx0) / (grx - grx0) * (gry - gry0);
                   dist = Math.abs(posy - pnt.y);
