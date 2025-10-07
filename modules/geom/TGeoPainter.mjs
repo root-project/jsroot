@@ -1,6 +1,6 @@
 import { httpRequest, browser, source_dir, settings, internals, constants, create, clone,
          findFunction, isBatchMode, isNodeJs, getDocument, isObject, isFunc, isStr, postponePromise, getPromise,
-         getKindForType, clTNamed, clTList, clTAxis, clTObjArray, clTPolyMarker3D, clTPolyLine3D,
+         getKindForType, clTTree, clTNamed, clTList, clTAxis, clTObjArray, clTPolyMarker3D, clTPolyLine3D,
          clTGeoVolume, clTGeoNode, clTGeoNodeMatrix, nsREX, nsSVG, kInspect } from '../core.mjs';
 import { showProgress, injectStyle, ToolbarIcons } from '../gui/utils.mjs';
 import { GUI } from '../gui/lil-gui.mjs';
@@ -3623,7 +3623,7 @@ class TGeoPainter extends ObjectPainter {
      * By default function with name 'extract_geo_tracks' is checked
      * @return {Promise} handling of drop operation */
    async performDrop(obj, itemname, hitem, opt) {
-      if (obj?.$kind === 'TTree') {
+      if (obj?.$kind === clTTree) {
          // drop tree means function call which must extract tracks from provided tree
 
          let funcname = 'extract_geo_tracks';

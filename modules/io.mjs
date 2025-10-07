@@ -1,6 +1,6 @@
 import { createHttpRequest, BIT, internals, settings, browser,
          create, getMethods, addMethods, isNodeJs, isObject, isFunc, isStr,
-         clTObject, clTNamed, clTString, clTObjString, clTKey, clTFile, clTList, clTMap, clTObjArray, clTClonesArray,
+         clTObject, clTNamed, clTString, clTObjString, clTKey, clTFile, clTTree, clTList, clTMap, clTObjArray, clTClonesArray,
          clTAttLine, clTAttFill, clTAttMarker, clTStyle, clTImagePalette, atob_func,
          clTPad, clTCanvas, clTAttCanvas, clTPolyMarker3D, clTF1, clTF12, clTF2, clTF3 } from './core.mjs';
 
@@ -389,7 +389,10 @@ CustomStreamers = {
 
    TTree: {
       name: '$file',
-      func(buf, obj) { obj.$kind = 'TTree'; obj.$file = buf.fFile; }
+      func(buf, obj) {
+         obj.$kind = clTTree;
+         obj.$file = buf.fFile;
+      }
    },
 
    TBranch(buf, obj) {

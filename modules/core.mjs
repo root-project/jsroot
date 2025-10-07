@@ -1245,7 +1245,7 @@ _ensureJSROOT = async function() {
 
 
 const prROOT = 'ROOT.', clTObject = 'TObject', clTNamed = 'TNamed', clTString = 'TString', clTObjString = 'TObjString',
-      clTKey = 'TKey', clTFile = 'TFile',
+      clTKey = 'TKey', clTFile = 'TFile', clTTree = 'TTree',
       clTList = 'TList', clTHashList = 'THashList', clTMap = 'TMap', clTObjArray = 'TObjArray', clTClonesArray = 'TClonesArray',
       clTAttLine = 'TAttLine', clTAttFill = 'TAttFill', clTAttMarker = 'TAttMarker', clTAttText = 'TAttText',
       clTHStack = 'THStack', clTGraph = 'TGraph', clTMultiGraph = 'TMultiGraph', clTCutG = 'TCutG',
@@ -2129,7 +2129,7 @@ internals.jsroot = { version, source_dir, settings, gStyle, parse, isBatchMode }
 export { version_id, version_date, version, source_dir, isNodeJs, isBatchMode, setBatchMode,
          browser, internals, constants, settings, gStyle, atob_func, btoa_func, prROOT,
          clTObject, clTNamed, clTString, clTObjString,
-         clTKey, clTFile,
+         clTKey, clTFile, clTTree,
          clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
          clTAttLine, clTAttFill, clTAttMarker, clTAttText,
          clTPave, clTPaveText, clTPavesText, clTPaveStats, clTPaveLabel, clTPaveClass, clTDiamond,

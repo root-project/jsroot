@@ -5,7 +5,7 @@ import { loadScript, loadModules, findFunction, internals, settings, getPromise,
          clTObjString, clTFile, clTList, clTHashList, clTMap, clTObjArray, clTClonesArray,
          clTPave, clTPaveText, clTPavesText, clTPaveStats, clTPaveLabel, clTPaveClass, clTDiamond, clTLegend, clTPaletteAxis,
          clTText, clTLink, clTLine, clTMarker, clTBox, clTLatex, clTMathText, clTAnnotation, clTMultiGraph, clTH2, clTF1, clTF12, clTF2, clTF3, clTH3,
-         clTProfile, clTProfile2D, clTProfile3D, clTFrame,
+         clTProfile, clTProfile2D, clTProfile3D, clTFrame, clTTree,
          clTColor, clTHStack, clTGraph, clTGraph2DErrors, clTGraph2DAsymmErrors,
          clTGraphPolar, clTGraphPolargram, clTGraphTime, clTCutG, clTPolyLine, clTPolyLine3D, clTPolyMarker3D,
          clTPad, clTStyle, clTCanvas, clTGaxis, clTGeoVolume, kInspect, nsREX, nsSVG, atob_func } from './core.mjs';
@@ -28,7 +28,7 @@ async function import_h() { return import('./gui/HierarchyPainter.mjs'); }
 let import_v7 = null, import_geo = null;
 
 const clTGraph2D = 'TGraph2D', clTH2Poly = 'TH2Poly', clTEllipse = 'TEllipse',
-      clTSpline3 = 'TSpline3', clTTree = 'TTree', clTCanvasWebSnapshot = 'TCanvasWebSnapshot',
+      clTSpline3 = 'TSpline3', clTCanvasWebSnapshot = 'TCanvasWebSnapshot',
       fPrimitives = 'fPrimitives', fFunctions = 'fFunctions',
 
 /** @summary list of registered draw functions
