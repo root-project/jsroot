@@ -2174,7 +2174,7 @@ function provideObjectInfo(obj) {
 
    const sz = Math.max(shape.fDX, shape.fDY, shape.fDZ),
          useexp = (sz > 1e7) || (sz < 1e-7),
-         conv = (v) => {
+         conv = v => {
             if (v === undefined)
                return '???';
             if ((v === Math.round(v) && v < 1e7))
@@ -2234,14 +2234,30 @@ function provideObjectInfo(obj) {
             info.unshift(`Scale X=${shape.fScale.fScale[0]} Y=${shape.fScale.fScale[1]} Z=${shape.fScale.fScale[2]}`);
          break;
       case clTGeoPcon:
-      case clTGeoPgon: break;
-      case clTGeoXtru: break;
-      case clTGeoCompositeShape: break;
-      case clTGeoShapeAssembly: break;
-      case clTGeoBBox: break;
-      case clTGeoArb8: break;
-      case clTGeoTrap: break;
-      case clTGeoGtra: break;
+      case clTGeoPgon:
+         info.push(`Phi1=${conv(shape.fPhi1)} Dphi=${conv(shape.fDphi)}`,
+                   `Nz=${shape.fNz}`);
+         break;
+      case clTGeoXtru:
+         info.push(`Nz=${shape.fNz} Nvert=${shape.fNvert}`);
+         break;
+      case clTGeoCompositeShape:
+         info.push(`Type ${shape.fNode?._typename}`,
+                   `Left=${shape.fNode?.fLeft?._typename} Right=${shape.fNode?.fRight?._typename}`);
+         break;
+      case clTGeoBBox:
+         info.push(`Origin=[${conv(shape.fOrigin[0])},${conv(shape.fOrigin[1])},${conv(shape.fOrigin[2])}]`);
+         break;
+      case clTGeoArb8:
+         break;
+      case clTGeoGtra:
+         info.push(`TwistAngle=${conv(shape.fTwistAngle)}`);
+      // eslint-disable-next-line  no-fallthrough
+      case clTGeoTrap:
+         info.push(`Phi=${conv(shape.fPhi)} Theta=${conv(shape.fTheta)}`);
+         break;
+      case clTGeoShapeAssembly:
+         break;
    }
 
    return info;
