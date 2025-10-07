@@ -1330,7 +1330,7 @@ function createMemberStreamer(element, file) {
             member.typeid = getTypeId(member.conttype);
             if ((member.typeid < 0) && file.fBasicTypes[member.conttype]) {
                member.typeid = file.fBasicTypes[member.conttype];
-               console.log(`!!! Reuse basic type ${member.conttype} from file streamer infos`);
+               console.log(`Reuse basic type ${member.conttype} from file streamer infos`);
             }
 
             // check

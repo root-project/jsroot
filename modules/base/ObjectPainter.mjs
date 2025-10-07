@@ -415,7 +415,7 @@ class ObjectPainter extends BasePainter {
          layer = pp.getLayerSvg('primitives_layer');
 
       if (this.#draw_g && this.#draw_g.node().parentNode !== layer.node()) {
-         console.log('g element changes its layer!!');
+         console.log('g element changes its layer!');
          this.removeG();
       }
 

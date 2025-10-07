@@ -355,7 +355,7 @@ function create3DScene(render3d, x3dscale, y3dscale, orthographic) {
          return;
 
       if (!isFunc(this.clear3dCanvas)) {
-         console.error(`Strange, why mode3d=${this.mode3d} is configured!!!!`);
+         console.error(`Strange, why mode3d=${this.mode3d} is configured!`);
          return;
       }
 

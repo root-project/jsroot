@@ -1119,7 +1119,7 @@ function rntupleProcess(rntuple, selector, args) {
 class TDrawSelectorTuple extends TDrawSelector {
 
     /** @summary Return total number of entries
-     * @desc TODO: check implementation details !!!! */
+     * @desc TODO: check implementation details ! */
     getNumEntries(tuple) {
         let cnt = 0;
        tuple?.builder.clusterSummaries.forEach(summary => { cnt += summary.numEntries; });
