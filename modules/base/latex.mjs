@@ -470,7 +470,7 @@ function parseLatex(node, arg, label, curr) {
    },
 
    /** Create special sub-container for elements like sqrt or braces  */
-   createGG = (is_a) => {
+   createGG = is_a => {
       const gg = currG();
 
       // this is indicator that gg element will be the only one, one can use directly main container

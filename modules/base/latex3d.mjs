@@ -165,7 +165,6 @@ class TextParseWrapper {
       });
    }
 
-
 } // class TextParseWrapper
 
 
@@ -185,7 +184,6 @@ function createLatexGeometry(painter, lbl, size, as_array, use_latex = true) {
       produceLatex(painter, node, arg);
       node.collect(geoms, geom_args, as_array);
    }
-
 
    if (!geoms.length) {
       geom_args.size = size;
