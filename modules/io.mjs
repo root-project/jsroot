@@ -2,7 +2,7 @@ import { createHttpRequest, BIT, internals, settings, browser,
          create, getMethods, addMethods, isNodeJs, isObject, isFunc, isStr,
          clTObject, clTNamed, clTString, clTObjString, clTKey, clTFile, clTList, clTMap, clTObjArray, clTClonesArray,
          clTAttLine, clTAttFill, clTAttMarker, clTStyle, clTImagePalette, atob_func,
-         clTPad, clTCanvas, clTAttCanvas, clTPolyMarker3D, clTF1, clTF12, clTF2 } from './core.mjs';
+         clTPad, clTCanvas, clTAttCanvas, clTPolyMarker3D, clTF1, clTF12, clTF2, clTF3 } from './core.mjs';
 
 const clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObject',
       clTStreamerSTL = 'TStreamerSTL', clTStreamerInfoList = 'TStreamerInfoList',
@@ -3476,7 +3476,7 @@ class TFile {
             buf.mapObject(1, obj); // tag object itself with id == 1
             buf.classStreamer(obj, key.fClassName);
 
-            if ((key.fClassName === clTF1) || (key.fClassName === clTF12) || (key.fClassName === clTF2))
+            if ((key.fClassName === clTF1) || (key.fClassName === clTF12) || (key.fClassName === clTF2) || (key.fClassName === clTF3))
                return this._readFormulas(obj);
 
             return obj;
