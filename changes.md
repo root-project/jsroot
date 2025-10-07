@@ -16,6 +16,8 @@
 1. Support reading `TBranch` from old ROOT files with custom streamers
 1. Upgrade three.js r174 -> r180
 1. Upgrade lil-gui.mjs 0.19.2 -> 0.20.0
+1. Upgrade svg2pdf.js 2.3.0 -> 2.6.0
+1. Upgrade jsPDF 2.5.2 -> 3.0.3
 1. Use ES6 modules to implement geoworker, enable node.js usage
 1. Remove countGeometryFaces function - use numGeometryFaces instead
 1. Remove experimental RHist classes, deprecated in ROOT 6.38
