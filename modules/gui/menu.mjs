@@ -1035,12 +1035,17 @@ class JSRootMenu {
 
       this.add('Save settings', () => {
          const promise = readSettings(true) ? Promise.resolve(true) : this.confirm('Save settings', 'Pressing OK one agreess that JSROOT will store settings in browser local storage');
-         promise.then(res => { if (res) {
-            saveSettings();
-            saveStyle();
-         }});
+         promise.then(res => {
+            if (res) {
+               saveSettings();
+               saveStyle();
+            }
+         });
       }, 'Store settings and gStyle in browser local storage');
-      this.add('Delete settings', () => { saveSettings(-1); saveStyle(-1); }, 'Delete settings and gStyle from browser local storage');
+      this.add('Delete settings', () => {
+         saveSettings(-1);
+         saveStyle(-1);
+      }, 'Delete settings and gStyle from browser local storage');
 
       if (!alone)
          this.endsub();

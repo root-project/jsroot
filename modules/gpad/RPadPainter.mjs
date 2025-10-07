@@ -837,7 +837,10 @@ class RPadPainter extends RObjectPainter {
          this.#doing_draw = undefined;
       else {
          const entry = this.#doing_draw[0];
-         if (entry.func) { entry.func(); delete entry.func; }
+         if (entry.func) {
+            entry.func();
+            delete entry.func;
+         }
       }
    }
 

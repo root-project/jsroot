@@ -2193,7 +2193,8 @@ class HierarchyPainter extends BasePainter {
 
       // only to support old API where dom was not there
       if ((dom === true) || (dom === false)) {
-         interactive = dom; dom = null;
+         interactive = dom;
+         dom = null;
       }
 
       if (isStr(dom) && (dom.indexOf('frame:') === 0)) {
@@ -3534,7 +3535,12 @@ class HierarchyPainter extends BasePainter {
          this.enableMonitoring(false);
          // simplify work for javascript and delete all (ok, most of) cross-references
          this.selectDom().html('');
-         plainarr.forEach(d => { delete d._parent; delete d._childs; delete d._obj; delete d._d3cont; });
+         plainarr.forEach(d => {
+            delete d._parent;
+            delete d._childs;
+            delete d._obj;
+            delete d._d3cont;
+         });
          delete this.h;
       }
    }

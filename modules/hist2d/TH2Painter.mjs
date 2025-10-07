@@ -352,7 +352,8 @@ class Triangles3DHandler {
             pntbuf[pntindx] = pntbuf[pntindx-3];
             pntbuf[pntindx+1] = pntbuf[pntindx-2];
             pntbuf[pntindx+2] = pntbuf[pntindx-1];
-            pntindx-=3; shift = 6;
+            pntindx-=3;
+            shift = 6;
          }
 
          pntbuf[pntindx] = xx1 + part*(xx2-xx1);
@@ -499,9 +500,18 @@ class Triangles3DHandler {
             }
 
             for (let k1 = 3; k1 < pntindx - 3; k1 += 3) {
-               buf[s] = pntbuf[0]; buf[s+1] = pntbuf[1]; buf[s+2] = pntbuf[2]; s+=3;
-               buf[s] = pntbuf[k1]; buf[s+1] = pntbuf[k1+1]; buf[s+2] = pntbuf[k1+2]; s+=3;
-               buf[s] = pntbuf[k1+3]; buf[s+1] = pntbuf[k1+4]; buf[s+2] = pntbuf[k1+5]; s+=3;
+               buf[s] = pntbuf[0];
+               buf[s+1] = pntbuf[1];
+               buf[s+2] = pntbuf[2];
+               s+=3;
+               buf[s] = pntbuf[k1];
+               buf[s+1] = pntbuf[k1+1];
+               buf[s+2] = pntbuf[k1+2];
+               s+=3;
+               buf[s] = pntbuf[k1+3];
+               buf[s+1] = pntbuf[k1+4];
+               buf[s+2] = pntbuf[k1+5];
+               s+=3;
             }
             posbufindx[lvl] = s;
          }
@@ -1648,7 +1658,9 @@ class TH2Painter extends THistPainter {
             } else if ((i === iplus) && (iminus !== iplus) && (x === x0) && (y === y0)) {
                if (!isany)
                   return ''; // all same points
-               cmd += 'z'; do_close = false; matched = true;
+               cmd += 'z';
+               do_close = false;
+               matched = true;
             } else {
                const dx = x - lastx, dy = y - lasty;
                if (dx) {
@@ -1660,7 +1672,8 @@ class TH2Painter extends THistPainter {
                }
             }
 
-            lastx = x; lasty = y;
+            lastx = x;
+            lasty = y;
          }
 
          if (!do_close || matched || !check_rapair)

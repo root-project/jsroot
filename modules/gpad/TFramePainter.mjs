@@ -174,7 +174,10 @@ function addDragHandler(_painter, arg) {
       const change_size = (newwidth !== arg.width) || (newheight !== arg.height),
             change_pos = (newx !== oldx) || (newy !== oldy);
 
-      arg.x = newx; arg.y = newy; arg.width = newwidth; arg.height = newheight;
+      arg.x = newx;
+      arg.y = newy;
+      arg.width = newwidth;
+      arg.height = newheight;
 
       if (!arg.no_transform)
          makeTranslate(draw_g, newx, newy);

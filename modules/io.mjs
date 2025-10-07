@@ -3234,7 +3234,8 @@ class TFile {
                   segm_start = Number.parseInt(parts[0]);
                   segm_last = Number.parseInt(parts[1]);
                   if (!Number.isInteger(segm_start) || !Number.isInteger(segm_last) || (segm_start > segm_last)) {
-                     segm_start = 0; segm_last = -1;
+                     segm_start = 0;
+                     segm_last = -1;
                   }
                }
             }
@@ -3292,7 +3293,8 @@ class TFile {
                         segm_start = Number.parseInt(parts[0]);
                         segm_last = Number.parseInt(parts[1]);
                         if (!Number.isInteger(segm_start) || !Number.isInteger(segm_last) || (segm_start > segm_last)) {
-                           segm_start = 0; segm_last = -1;
+                           segm_start = 0;
+                           segm_last = -1;
                         }
                      } else
                         console.error(`Fail to decode content-range ${line} ${parts}`);
@@ -3301,9 +3303,11 @@ class TFile {
                   if ((nline > 1) && !line)
                      finish_header = true;
 
-                  nline++; line = '';
+                  nline++;
+                  line = '';
                   if (code1 !== 10) {
-                     o++; code2 = view.getUint8(o + 1);
+                     o++;
+                     code2 = view.getUint8(o + 1);
                   }
                } else
                   line += String.fromCharCode(code1);
