@@ -300,9 +300,11 @@ class RPadPainter extends RObjectPainter {
    removePrimitive(arg, clean_only_secondary) {
       let indx, prim = null;
       if (Number.isInteger(arg)) {
-         indx = arg; prim = this.#painters[indx];
+         indx = arg;
+         prim = this.#painters[indx];
       } else {
-         indx = this.#painters.indexOf(arg); prim = arg;
+         indx = this.#painters.indexOf(arg);
+         prim = arg;
       }
       if (indx < 0)
          return indx;

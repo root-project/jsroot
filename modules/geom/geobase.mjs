@@ -1154,10 +1154,18 @@ function createTorusBuffer(shape, faces_limit) {
          center2.x = radius * _cost[t2]; center2.y = radius * _sint[t2];
 
          for (let n = 0; n < radialSegments; ++n) {
-            p1.x = (radius + tube * _cosr[n]) * _cost[t1]; p1.y = (radius + tube * _cosr[n]) * _sint[t1]; p1.z = tube*_sinr[n];
-            p2.x = (radius + tube * _cosr[n+1]) * _cost[t1]; p2.y = (radius + tube * _cosr[n+1]) * _sint[t1]; p2.z = tube*_sinr[n+1];
-            p3.x = (radius + tube * _cosr[n+1]) * _cost[t2]; p3.y = (radius + tube * _cosr[n+1]) * _sint[t2]; p3.z = tube*_sinr[n+1];
-            p4.x = (radius + tube * _cosr[n]) * _cost[t2]; p4.y = (radius + tube * _cosr[n]) * _sint[t2]; p4.z = tube*_sinr[n];
+            p1.x = (radius + tube * _cosr[n]) * _cost[t1];
+            p1.y = (radius + tube * _cosr[n]) * _sint[t1];
+            p1.z = tube*_sinr[n];
+            p2.x = (radius + tube * _cosr[n+1]) * _cost[t1];
+            p2.y = (radius + tube * _cosr[n+1]) * _sint[t1];
+            p2.z = tube*_sinr[n+1];
+            p3.x = (radius + tube * _cosr[n+1]) * _cost[t2];
+            p3.y = (radius + tube * _cosr[n+1]) * _sint[t2];
+            p3.z = tube*_sinr[n+1];
+            p4.x = (radius + tube * _cosr[n]) * _cost[t2];
+            p4.y = (radius + tube * _cosr[n]) * _sint[t2];
+            p4.z = tube*_sinr[n];
 
             creator.addFace4(p1.x, p1.y, p1.z,
                              p2.x, p2.y, p2.z,

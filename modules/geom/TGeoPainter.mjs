@@ -4813,13 +4813,15 @@ class TGeoPainter extends ObjectPainter {
             const x = xticks.tick, k = (xticks.kind === 1) ? 1.0 : 0.6;
 
             if (show_grid) {
-               buf = new Float32Array(2*3); pos = 0;
+               buf = new Float32Array(2*3);
+               pos = 0;
                addPoint(x, ymax - k*tick_size - grid_gap);
                addPoint(x, ymin + k*tick_size + grid_gap);
                container.add(createLineSegments(buf, xticks.kind === 1 ? gridMaterial1 : gridMaterial2));
             }
 
-            buf = new Float32Array(4*3); pos = 0;
+            buf = new Float32Array(4*3);
+            pos = 0;
             addPoint(x, ymax);
             addPoint(x, ymax - k*tick_size);
             addPoint(x, ymin);
@@ -4843,13 +4845,15 @@ class TGeoPainter extends ObjectPainter {
             const y = yticks.tick, k = (yticks.kind === 1) ? 1.0 : 0.6;
 
             if (show_grid) {
-               buf = new Float32Array(2*3); pos = 0;
+               buf = new Float32Array(2*3);
+               pos = 0;
                addPoint(xmin + k*tick_size + grid_gap, y);
                addPoint(xmax - k*tick_size - grid_gap, y);
                container.add(createLineSegments(buf, yticks.kind === 1 ? gridMaterial1 : gridMaterial2));
             }
 
-            buf = new Float32Array(4*3); pos = 0;
+            buf = new Float32Array(4*3);
+            pos = 0;
             addPoint(xmin, y);
             addPoint(xmin + k*tick_size, y);
             addPoint(xmax, y);

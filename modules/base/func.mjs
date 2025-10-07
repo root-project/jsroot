@@ -8,10 +8,12 @@ function proivdeEvalPar(obj, check_save) {
    obj.$math = jsroot_math;
 
    let _func = obj.fTitle, isformula = false, pprefix = '[';
-   if (_func === 'gaus') _func = 'gaus(0)';
+   if (_func === 'gaus')
+      _func = 'gaus(0)';
    if (isStr(obj.fFormula?.fFormula)) {
      if (obj.fFormula.fFormula.indexOf('[](double*x,double*p)') === 0) {
-        isformula = true; pprefix = 'p[';
+        isformula = true;
+        pprefix = 'p[';
         _func = obj.fFormula.fFormula.slice(21);
      } else {
         _func = obj.fFormula.fFormula;
@@ -21,7 +23,7 @@ function proivdeEvalPar(obj, check_save) {
      if (obj.fFormula.fClingParameters && obj.fFormula.fParams) {
         obj.fFormula.fParams.forEach(pair => {
            const regex = new RegExp(`(\\[${pair.first}\\])`, 'g'),
-               parvalue = obj.fFormula.fClingParameters[pair.second];
+                 parvalue = obj.fFormula.fClingParameters[pair.second];
            _func = _func.replace(regex, (parvalue < 0) ? `(${parvalue})` : parvalue);
         });
       }

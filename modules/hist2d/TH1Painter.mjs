@@ -896,7 +896,7 @@ class TH1Painter extends THistPainter {
          if (draw_markers || show_line || show_curve) {
             if (!path_line && grpnts.length) {
                if (funcs.swap_xy())
-                  grpnts.forEach(pnt => { const d = pnt.grx; pnt.grx = pnt.gry; pnt.gry = d; });
+                  grpnts.forEach(pnt => { [pnt.grx, pnt.gry] = [pnt.gry, pnt.grx]; });
                path_line = buildSvgCurve(grpnts);
             }
 

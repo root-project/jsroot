@@ -666,7 +666,9 @@ function afterRender3D(renderer) {
       let indx1 = 0, indx2 = (canvas.height - 1) * 4 * canvas.width, k, d;
       while (indx1 < indx2) {
          for (k = 0; k < 4 * canvas.width; ++k) {
-            d = pixels[indx1 + k]; pixels[indx1 + k] = pixels[indx2 + k]; pixels[indx2 + k] = d;
+            d = pixels[indx1 + k];
+            pixels[indx1 + k] = pixels[indx2 + k];
+            pixels[indx2 + k] = d;
          }
          indx1 += 4 * canvas.width;
          indx2 -= 4 * canvas.width;

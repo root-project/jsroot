@@ -231,8 +231,10 @@ class TPavePainter extends ObjectPainter {
          promise = this.autoPlaceLegend(pt, pad).then(res => {
             delete this.AutoPlace;
             if (!res) {
-               pt.fX1NDC = fp.fX2NDC - 0.2; pt.fX2NDC = fp.fX2NDC;
-               pt.fY1NDC = fp.fY2NDC - 0.1; pt.fY2NDC = fp.fY2NDC;
+               pt.fX1NDC = fp.fX2NDC - 0.2;
+               pt.fX2NDC = fp.fX2NDC;
+               pt.fY1NDC = fp.fY2NDC - 0.1;
+               pt.fY2NDC = fp.fY2NDC;
             }
             return res;
          });
@@ -1623,10 +1625,14 @@ class TPavePainter extends ObjectPainter {
                pave.fY2NDC = obj.fY2NDC;
          } else {
             pave.fInit = obj.fInit;
-            pave.fX1 = obj.fX1; pave.fX2 = obj.fX2;
-            pave.fY1 = obj.fY1; pave.fY2 = obj.fY2;
-            pave.fX1NDC = obj.fX1NDC; pave.fX2NDC = obj.fX2NDC;
-            pave.fY1NDC = obj.fY1NDC; pave.fY2NDC = obj.fY2NDC;
+            pave.fX1 = obj.fX1;
+            pave.fX2 = obj.fX2;
+            pave.fY1 = obj.fY1;
+            pave.fY2 = obj.fY2;
+            pave.fX1NDC = obj.fX1NDC;
+            pave.fX2NDC = obj.fX2NDC;
+            pave.fY1NDC = obj.fY1NDC;
+            pave.fY2NDC = obj.fY2NDC;
          }
 
          this.stored = Object.assign({}, obj); // store latest coordinates

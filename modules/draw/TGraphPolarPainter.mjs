@@ -247,11 +247,14 @@ class TGraphPolargramPainter extends TooltipHandler {
       this.r = scaleLinear().domain([this.scale_rmin, this.scale_rmax]).range([0, this.szx]);
 
       if (polar.fRadian) {
-         polar.fRwtmin = 0; polar.fRwtmax = 2*Math.PI;
+         polar.fRwtmin = 0;
+         polar.fRwtmax = 2*Math.PI;
       } else if (polar.fDegree) {
-         polar.fRwtmin = 0; polar.fRwtmax = 360;
+         polar.fRwtmin = 0;
+         polar.fRwtmax = 360;
       } else if (polar.fGrad) {
-         polar.fRwtmin = 0; polar.fRwtmax = 200;
+         polar.fRwtmin = 0;
+         polar.fRwtmax = 200;
       }
 
       this.setAnglesRange(polar.fRwtmin, polar.fRwtmax);

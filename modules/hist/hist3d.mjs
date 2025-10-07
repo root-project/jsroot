@@ -2116,13 +2116,30 @@ function drawBinsSurf3D(painter, is_v7 = false) {
       }
    } else {
       switch (painter.options.Surf) {
-         case 11: ilevels = painter.getContourLevels(); palette = painter.getHistPalette(); break;
+         case 11:
+            ilevels = painter.getContourLevels();
+            palette = painter.getHistPalette();
+            break;
          case 12:
          case 15: // make surf5 same as surf2
-         case 17: ilevels = painter.getContourLevels(); palette = painter.getHistPalette(); handle.dolines = false; break;
-         case 14: handle.dolines = false; handle.donormals = true; break;
-         case 16: ilevels = painter.getContourLevels(); handle.dogrid = true; handle.dolines = false; break;
-         default: ilevels = fp.z_handle.createTicks(true); handle.dogrid = true; break;
+         case 17:
+            ilevels = painter.getContourLevels();
+            palette = painter.getHistPalette();
+            handle.dolines = false;
+            break;
+         case 14:
+            handle.dolines = false;
+            handle.donormals = true;
+            break;
+         case 16:
+            ilevels = painter.getContourLevels();
+            handle.dogrid = true;
+            handle.dolines = false;
+            break;
+         default:
+            ilevels = fp.z_handle.createTicks(true);
+            handle.dogrid = true;
+            break;
       }
    }
 

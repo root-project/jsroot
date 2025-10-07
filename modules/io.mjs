@@ -1650,7 +1650,8 @@ function ZIP_inflate(arr, tgt) {
          x[xp++] = (j += p[pidx++]);
 
       // Make a table of values in order of bit lengths
-      p = b; pidx = 0;
+      p = b;
+      pidx = 0;
       i = 0;
       do {
          if ((j = p[pidx++]))
@@ -1660,7 +1661,8 @@ function ZIP_inflate(arr, tgt) {
 
       // Generate the Huffman codes and for each, make the table entries
       x[0] = i = 0;     // first Huffman code is zero
-      p = v; pidx = 0;     // grab values in bit order
+      p = v;
+      pidx = 0;     // grab values in bit order
       h = -1;        // no tables yet--level -1
       w = lx[0] = 0;    // no bits decoded yet
       q = null;         // ditto
