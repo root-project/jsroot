@@ -809,7 +809,7 @@ class TooltipFor3D {
          this.tt = doc.createElement('div');
          this.tt.setAttribute('style', 'opacity: 1; filter: alpha(opacity=1); position: absolute; display: block; overflow: hidden; z-index: 101;');
          this.cont = doc.createElement('div');
-         this.cont.setAttribute('style', 'display: block; padding: 2px 12px 3px 7px; margin-left: 5px; font-size: 11px; background: #777; color: #fff;');
+         this.cont.setAttribute('style', 'display: block; padding: 5px; margin-left: 5px; font-size: 11px; line-height: 18px; background: #777; color: #fff;');
          this.tt.appendChild(this.cont);
          this.parent.appendChild(this.tt);
       }
