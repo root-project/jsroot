@@ -79,33 +79,46 @@ class TextParseWrapper {
 
          while ((next = get())) {
             switch (next) {
-                  case 'L': add_line(getN(true), getN()); continue;
-                  case 'l': add_line(x1 + getN(true), y1 + getN()); continue;
-                  case 'H': add_line(getN(), y1); continue;
-                  case 'h': add_line(x1 + getN(), y1); continue;
-                  case 'V': add_line(x1, getN()); continue;
-                  case 'v': add_line(x1, y1 + getN()); continue;
+                  case 'L':
+                     add_line(getN(true), getN());
+                     continue;
+                  case 'l':
+                     add_line(x1 + getN(true), y1 + getN());
+                     continue;
+                  case 'H':
+                     add_line(getN(), y1);
+                     continue;
+                  case 'h':
+                     add_line(x1 + getN(), y1);
+                     continue;
+                  case 'V':
+                     add_line(x1, getN());
+                     continue;
+                  case 'v':
+                     add_line(x1, y1 + getN());
+                     continue;
                   case 'a': {
-                  const rx = getN(true), ry = getN(true),
-                        angle = getN(true)/180*Math.PI, flag1 = getN(true);
-                  getN(true); // skip unused flag2
-                  const x2 = x1 + getN(true),
-                        y2 = y1 + getN(),
-                        x0 = x1 + rx*Math.cos(angle),
-                        y0 = y1 + ry*Math.sin(angle);
-                  let angle2 = Math.atan2(y0 - y2, x0 - x2);
-                  if (flag1 && (angle2 < angle))
-                     angle2 += 2*Math.PI;
-                  else if (!flag1 && (angle2 > angle))
-                     angle2 -= 2*Math.PI;
+                     const rx = getN(true), ry = getN(true),
+                           angle = getN(true)/180*Math.PI, flag1 = getN(true);
+                     getN(true); // skip unused flag2
+                     const x2 = x1 + getN(true),
+                           y2 = y1 + getN(),
+                           x0 = x1 + rx*Math.cos(angle),
+                           y0 = y1 + ry*Math.sin(angle);
+                     let angle2 = Math.atan2(y0 - y2, x0 - x2);
+                     if (flag1 && (angle2 < angle))
+                        angle2 += 2*Math.PI;
+                     else if (!flag1 && (angle2 > angle))
+                        angle2 -= 2*Math.PI;
 
-                  for (let cnt = 0; cnt < 10; ++cnt) {
-                     const a = angle + (angle2 - angle)/ 10 * (cnt + 1);
-                     add_line(x0 - rx * Math.cos(a), y0 - ry * Math.sin(a));
+                     for (let cnt = 0; cnt < 10; ++cnt) {
+                        const a = angle + (angle2 - angle)/ 10 * (cnt + 1);
+                        add_line(x0 - rx * Math.cos(a), y0 - ry * Math.sin(a));
+                     }
+                     continue;
                   }
-                  continue;
-                  }
-                  default: console.log('not supported path operator', next);
+                  default:
+                     console.log('not supported path operator', next);
             }
          }
 

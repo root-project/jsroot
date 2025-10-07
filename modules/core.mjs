@@ -1905,8 +1905,8 @@ function getMethods(typename, obj) {
                pad.fName = pad.fTitle = `${this.fName}_${n}`;
                pad.fNumber = n;
                if (this._typename !== clTCanvas) {
-                  pad.fAbsWNDC = (x2-x1) * this.fAbsWNDC;
-                  pad.fAbsHNDC = (y2-y1) * this.fAbsHNDC;
+                  pad.fAbsWNDC = (x2 - x1) * this.fAbsWNDC;
+                  pad.fAbsHNDC = (y2 - y1) * this.fAbsHNDC;
                   pad.fAbsXlowNDC = this.fAbsXlowNDC + x1 * this.fAbsWNDC;
                   pad.fAbsYlowNDC = this.fAbsYlowNDC + y1 * this.fAbsHNDC;
                } else {

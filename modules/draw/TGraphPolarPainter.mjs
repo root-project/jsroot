@@ -270,12 +270,14 @@ class TGraphPolargramPainter extends TooltipHandler {
 
       // verify that all radius labels are unique
       let lbls = [], indx = 0;
-      while (indx<ticks.length) {
+      while (indx < ticks.length) {
          const lbl = this.format(ticks[indx]);
          if (lbls.indexOf(lbl) >= 0) {
-            if (++this.ndig>10)
+            if (++this.ndig > 10)
                break;
-            lbls = []; indx = 0; continue;
+            lbls = [];
+            indx = 0;
+            continue;
           }
          lbls.push(lbl);
          indx++;
