@@ -2419,20 +2419,24 @@ class TBuffer {
 
    /** @summary read uint16_t */
    ntou2() {
-      const o = this.o; this.o += 2;
+      const o = this.o;
+      this.o += 2;
       return this.arr.getUint16(o);
    }
 
    /** @summary read uint32_t */
    ntou4() {
-      const o = this.o; this.o += 4;
+      const o = this.o;
+      this.o += 4;
       return this.arr.getUint32(o);
    }
 
    /** @summary read uint64_t */
    ntou8() {
-      const high = this.arr.getUint32(this.o); this.o += 4;
-      const low = this.arr.getUint32(this.o); this.o += 4;
+      const high = this.arr.getUint32(this.o);
+      this.o += 4;
+      const low = this.arr.getUint32(this.o);
+      this.o += 4;
       return (high < 0x200000) ? (high * 0x100000000 + low) : (BigInt(high) * BigInt(0x100000000) + BigInt(low));
    }
 
@@ -2441,20 +2445,24 @@ class TBuffer {
 
    /** @summary read int16_t */
    ntoi2() {
-      const o = this.o; this.o += 2;
+      const o = this.o;
+      this.o += 2;
       return this.arr.getInt16(o);
    }
 
    /** @summary read int32_t */
    ntoi4() {
-      const o = this.o; this.o += 4;
+      const o = this.o;
+      this.o += 4;
       return this.arr.getInt32(o);
    }
 
    /** @summary read int64_t */
    ntoi8() {
-      const high = this.arr.getUint32(this.o); this.o += 4;
-      const low = this.arr.getUint32(this.o); this.o += 4;
+      const high = this.arr.getUint32(this.o);
+      this.o += 4;
+      const low = this.arr.getUint32(this.o);
+      this.o += 4;
       if (high < 0x80000000)
          return (high < 0x200000) ? (high * 0x100000000 + low) : (BigInt(high) * BigInt(0x100000000) + BigInt(low));
       return (~high < 0x200000) ? (-1 - ((~high) * 0x100000000 + ~low)) : (BigInt(-1) - (BigInt(~high) * BigInt(0x100000000) + BigInt(~low)));
@@ -2462,13 +2470,15 @@ class TBuffer {
 
    /** @summary read float */
    ntof() {
-      const o = this.o; this.o += 4;
+      const o = this.o;
+      this.o += 4;
       return this.arr.getFloat32(o);
    }
 
    /** @summary read double */
    ntod() {
-      const o = this.o; this.o += 8;
+      const o = this.o;
+      this.o += 8;
       return this.arr.getFloat64(o);
    }
 

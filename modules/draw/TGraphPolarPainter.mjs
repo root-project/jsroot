@@ -383,9 +383,21 @@ class TGraphPolargramPainter extends TooltipHandler {
    fillContextMenuItems(menu) {
       const pp = this.getObject(), o = this.getOptions();
       menu.sub('Axis range');
-      menu.addchk(pp.fRadian, 'Radian', flag => { pp.fRadian = flag; pp.fDegree = pp.fGrad = false; this.interactiveRedraw('pad', flag ? 'exec:SetToRadian()' : 'exec:SetTwoPi()'); }, 'Handle data angles as radian range 0..2*Pi');
-      menu.addchk(pp.fDegree, 'Degree', flag => { pp.fDegree = flag; pp.fRadian = pp.fGrad = false; this.interactiveRedraw('pad', flag ? 'exec:SetToDegree()' : 'exec:SetTwoPi()'); }, 'Handle data angles as degree range 0..360');
-      menu.addchk(pp.fGrad, 'Grad', flag => { pp.fGrad = flag; pp.fRadian = pp.fDegree = false; this.interactiveRedraw('pad', flag ? 'exec:SetToGrad()' : 'exec:SetTwoPi()'); }, 'Handle data angles as grad range 0..200');
+      menu.addchk(pp.fRadian, 'Radian', flag => {
+         pp.fRadian = flag;
+         pp.fDegree = pp.fGrad = false;
+         this.interactiveRedraw('pad', flag ? 'exec:SetToRadian()' : 'exec:SetTwoPi()');
+      }, 'Handle data angles as radian range 0..2*Pi');
+      menu.addchk(pp.fDegree, 'Degree', flag => {
+         pp.fDegree = flag;
+         pp.fRadian = pp.fGrad = false;
+         this.interactiveRedraw('pad', flag ? 'exec:SetToDegree()' : 'exec:SetTwoPi()');
+      }, 'Handle data angles as degree range 0..360');
+      menu.addchk(pp.fGrad, 'Grad', flag => {
+         pp.fGrad = flag;
+         pp.fRadian = pp.fDegree = false;
+         this.interactiveRedraw('pad', flag ? 'exec:SetToGrad()' : 'exec:SetTwoPi()');
+      }, 'Handle data angles as grad range 0..200');
       menu.endsub();
       menu.addSizeMenu('Axis angle', 0, 315, 45, o.rangle || pp.fAxisAngle, v => {
          o.rangle = pp.fAxisAngle = v;

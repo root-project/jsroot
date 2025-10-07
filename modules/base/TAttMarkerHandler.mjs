@@ -240,11 +240,13 @@ class TAttMarkerHandler {
             this.marker = `h${s1}l-${s4},-${s2}l-${s2},${s1}h${s2}l-${s2},-${s1}z`;
             break;
          case 38:
-            this.x0 = -size/4; this.y0 = -size/2;
+            this.x0 = -size/4;
+            this.y0 = -size/2;
             this.marker = `h${s2}l${s4},${s4}v${s2}l-${s4},${s4}h-${s2}l-${s4},-${s4}v-${s2}zm${s4},0v${s1}m-${s2},-${s2}h${s1}`;
             break;
          case 40:
-            this.x0 = -size/4; this.y0 = -size/2;
+            this.x0 = -size/4;
+            this.y0 = -size/2;
             this.marker = `l${s2},${s1}l${s4},-${s4}l-${s1},-${s2}zm${s2},0l-${s2},${s1}l-${s4},-${s4}l${s1},-${s2}z`;
             break;
          case 42:
@@ -252,19 +254,23 @@ class TAttMarkerHandler {
             this.marker = `l${s8},${s38}l${s38},${s8}l-${s38},${s8}l-${s8},${s38}l-${s8},-${s38}l-${s38},-${s8}l${s38},-${s8}z`;
             break;
          case 44:
-            this.x0 = -size/4; this.y0 = -size/2;
+            this.x0 = -size/4;
+            this.y0 = -size/2;
             this.marker = `h${s2}l-${s8},${s38}l${s38},-${s8}v${s2}l-${s38},-${s8}l${s8},${s38}h-${s2}l${s8},-${s38}l-${s38},${s8}v-${s2}l${s38},${s8}z`;
             break;
          case 46:
-            this.x0 = -size/4; this.y0 = -size/2;
+            this.x0 = -size/4;
+            this.y0 = -size/2;
             this.marker = `l${s4},${s4}l${s4},-${s4}l${s4},${s4}l-${s4},${s4}l${s4},${s4}l-${s4},${s4}l-${s4},-${s4}l-${s4},${s4}l-${s4},-${s4}l${s4},-${s4}l-${s4},-${s4}z`;
             break;
          case 48:
-            this.x0 = -size/4; this.y0 = -size/2;
+            this.x0 = -size/4;
+            this.y0 = -size/2;
             this.marker = `l${s4},${s4}l-${s4},${s4}l-${s4},-${s4}zm${s2},0l${s4},${s4}l-${s4},${s4}l-${s4},-${s4}zm0,${s2}l${s4},${s4}l-${s4},${s4}l-${s4},-${s4}zm-${s2},0l${s4},${s4}l-${s4},${s4}l-${s4},-${s4}z`;
             break;
          case 49:
-            this.x0 = -size/6; this.y0 = -size/2;
+            this.x0 = -size/6;
+            this.y0 = -size/2;
             this.marker = `h${s3}v${s3}h-${s3}zm${s3},${s3}h${s3}v${s3}h-${s3}zm-${s3},${s3}h${s3}v${s3}h-${s3}zm-${s3},-${s3}h${s3}v${s3}h-${s3}z`;
             break;
          default: // diamond

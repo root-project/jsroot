@@ -224,7 +224,10 @@ class RPalettePainter extends RObjectPainter {
                evnt.preventDefault();  // disable browser context menu
                createMenu(evnt, this).then(menu => {
                   menu.header('Palette');
-                  menu.addchk(vertical, 'Vertical', flag => { this.v7SetAttr('vertical', flag); this.redrawPad(); });
+                  menu.addchk(vertical, 'Vertical', flag => {
+                     this.v7SetAttr('vertical', flag);
+                     this.redrawPad();
+                  });
                   fp.z_handle.fillAxisContextMenu(menu, 'z');
                   menu.show();
                });

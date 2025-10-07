@@ -528,8 +528,12 @@ class WebWindowHandle {
       if (!d)
          d = this._delayed = {};
       d[kind] = msg;
-      if (!d[`${kind}_handler`])
-         d[`${kind}_handler`] = setTimeout(() => { delete d[`${kind}_handler`]; this.send(d[kind]); }, tmout);
+      if (!d[`${kind}_handler`]) {
+         d[`${kind}_handler`] = setTimeout(() => {
+           delete d[`${kind}_handler`];
+           this.send(d[kind]);
+         }, tmout);
+      }
    }
 
    /** @summary Inject message(s) into input queue, for debug purposes only

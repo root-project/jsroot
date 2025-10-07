@@ -1449,9 +1449,9 @@ class TAxisPainter extends ObjectPainter {
 
       let side = 1, ticksPlusMinus = 0;
 
-      if (this.optionPlus && this.optionMinus) {
-         side = 1; ticksPlusMinus = 1;
-      } else if (this.optionMinus)
+      if (this.optionPlus && this.optionMinus)
+         side = ticksPlusMinus = 1;
+      else if (this.optionMinus)
          side = (swap_side ^ this.vertical) ? 1 : -1;
       else if (this.optionPlus)
          side = (swap_side ^ this.vertical) ? -1 : 1;
