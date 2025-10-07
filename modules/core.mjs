@@ -1586,7 +1586,8 @@ function createHistogram(typename, nbinsx, nbinsy, nbinsz) {
    const histo = create(typename);
    if (!histo.fXaxis || !histo.fYaxis || !histo.fZaxis)
       return null;
-   histo.fName = 'hist'; histo.fTitle = 'title';
+   histo.fName = 'hist';
+   histo.fTitle = 'title';
    if (nbinsx)
       extend(histo.fXaxis, { fNbins: nbinsx, fXmin: 0, fXmax: nbinsx });
    if (nbinsy)

@@ -1502,10 +1502,13 @@ class BrowserLayout {
 
       if (mode === 'toggle')
          mode = !is_visible;
-       else if (mode === 'delete') {
-         mode = false; height = 0; delete this.status_layout;
+      else if (mode === 'delete') {
+         mode = false;
+         height = 0;
+         delete this.status_layout;
       } else if (mode === undefined) {
-         mode = true; this.status_layout = 'app';
+         mode = true;
+         this.status_layout = 'app';
       }
 
       if (is_visible) {

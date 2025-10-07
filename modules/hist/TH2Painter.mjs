@@ -66,7 +66,8 @@ function drawTH2PolyLego(painter) {
                 dist2 = fp.size_x3d * fp.size_z3d;
             const dist2limit = (ntry > 0) ? 0 : dist2/1e6;
 
-            pnts = []; faces = null;
+            pnts = [];
+            faces = null;
 
             for (let vert = 0; vert < npnts; ++vert) {
                currx = fp.grx(x[vert]);

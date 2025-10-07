@@ -1811,7 +1811,8 @@ class TH2Painter extends THistPainter {
                grcmd += `l${dx},${dy}`;
             }
 
-            grx = nextx; gry = nexty;
+            grx = nextx;
+            gry = nexty;
          }
       }
 

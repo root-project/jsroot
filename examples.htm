@@ -797,7 +797,8 @@
                   jsonname = filepath + jsonname;
             } else {
                if ('file' in entry) {
-                  url = ''; filename = entry.file;
+                  url = '';
+                  filename = entry.file;
                   if ((filename.indexOf('http:') < 0) && (filename.indexOf('https:') < 0))
                      filename = filepath + filename;
                }

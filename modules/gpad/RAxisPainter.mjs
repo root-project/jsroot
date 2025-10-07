@@ -640,7 +640,8 @@ class RAxisPainter extends RObjectPainter {
          if (ticks_plusminus > 0)
             h2 = -h1;
          else if (side < 0) {
-            h2 = -h1; h1 = 0;
+            h2 = -h1;
+            h1 = 0;
          } else
             h2 = 0;
 

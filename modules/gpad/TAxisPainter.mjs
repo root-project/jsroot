@@ -1061,7 +1061,8 @@ class TAxisPainter extends ObjectPainter {
          if (ticksPlusMinus > 0)
             h2 = -h1;
           else if (side < 0) {
-            h2 = -h1; h1 = 0;
+            h2 = -h1;
+            h1 = 0;
          }
 
          path1 += this.vertical ? `M${h1},${handle.grpos}H${h2}` : `M${handle.grpos},${-h1}V${-h2}`;

@@ -772,9 +772,12 @@ function drawXYZ(toplevel, AxisPainter, opts) {
        y_zoomed = false, z_zoomed = false;
 
    if (!this.size_z3d) {
-      grminx = this.xmin; grmaxx = this.xmax;
-      grminy = this.ymin; grmaxy = this.ymax;
-      grminz = this.zmin; grmaxz = this.zmax;
+      grminx = this.xmin;
+      grmaxx = this.xmax;
+      grminy = this.ymin;
+      grmaxy = this.ymax;
+      grminz = this.zmin;
+      grmaxz = this.zmax;
       scalingSize = (grmaxz - grminz);
    }
 
@@ -2099,13 +2102,28 @@ function drawBinsSurf3D(painter, is_v7 = false) {
    if (is_v7) {
       let need_palette = 0;
       switch (painter.options.Surf) {
-         case 11: need_palette = 2; break;
+         case 11:
+            need_palette = 2;
+            break;
          case 12:
          case 15: // make surf5 same as surf2
-         case 17: need_palette = 2; handle.dolines = false; break;
-         case 14: handle.dolines = false; handle.donormals = true; break;
-         case 16: need_palette = 1; handle.dogrid = true; handle.dolines = false; break;
-         default: ilevels = fp.z_handle.createTicks(true); handle.dogrid = true; break;
+         case 17:
+            need_palette = 2;
+            handle.dolines = false;
+            break;
+         case 14:
+            handle.dolines = false;
+            handle.donormals = true;
+            break;
+         case 16:
+            need_palette = 1;
+            handle.dogrid = true;
+            handle.dolines = false;
+            break;
+         default:
+            ilevels = fp.z_handle.createTicks(true);
+            handle.dogrid = true;
+            break;
       }
 
       if (need_palette > 0) {

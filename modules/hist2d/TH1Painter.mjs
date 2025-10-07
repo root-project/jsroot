@@ -167,10 +167,11 @@ class TH1Painter extends THistPainter {
 
       if ((hmin === hmax) && (hmin !== kNoZoom)) {
          if (hmin < 0) {
-            hmin *= 2; hmax = 0;
+            hmin *= 2;
+            hmax = 0;
          } else {
-            hmin = 0; hmax *= 2;
-            if (!hmax) hmax = 1;
+            hmin = 0;
+            hmax = 2 * hmax || 1;
          }
       }
 

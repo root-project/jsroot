@@ -4167,7 +4167,8 @@ class HierarchyPainter extends BasePainter {
             if (!isStr(s))
                continue;
             if ((s === this.getLayout()) || (s.replace(/ /g, '') === this.getLayout())) {
-               selects.selectedIndex = i; found = true;
+               selects.selectedIndex = i;
+               found = true;
                break;
             }
          }
