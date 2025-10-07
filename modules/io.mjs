@@ -1395,72 +1395,65 @@ function createMemberStreamer(element, file) {
                buf.checkByteCount(ver);
                obj[this.name] = null;
             };
-         } else
-            if (!element.$fictional) {
-               member.read_version = function(buf, cnt) {
-                  if (cnt === 0)
-                     return null;
-                  const ver = buf.readVersion();
-                  this.member_wise = Boolean(ver.val & kStreamedMemberWise);
+         } else if (!element.$fictional) {
+            member.read_version = function(buf, cnt) {
+               if (cnt === 0)
+                  return null;
+               const ver = buf.readVersion();
+               this.member_wise = Boolean(ver.val & kStreamedMemberWise);
 
-                  this.stl_version = undefined;
-                  if (this.member_wise) {
-                     ver.val &= ~kStreamedMemberWise;
-                     this.stl_version = { val: buf.ntoi2() };
-                     if (this.stl_version.val <= 0)
-                        this.stl_version.checksum = buf.ntou4();
-                  }
-                  return ver;
-               };
+               this.stl_version = undefined;
+               if (this.member_wise) {
+                  ver.val &= ~kStreamedMemberWise;
+                  this.stl_version = { val: buf.ntoi2() };
+                  if (this.stl_version.val <= 0)
+                     this.stl_version.checksum = buf.ntou4();
+               }
+               return ver;
+            };
+            member.func = function(buf, obj) {
+               const ver = this.read_version(buf),
+                     res = buf.readNdimArray(this, (buf2, member2) => member2.readelem(buf2));
+               obj[this.name] = buf.checkByteCount(ver, this.typename) ? res : null;
+            };
+            member.branch_func = function(buf, obj) {
+               // special function to read data from STL branch
+               const cnt = obj[this.stl_size],
+                     ver = this.read_version(buf, cnt),
+                     arr = new Array(cnt);
 
-               member.func = function(buf, obj) {
-                  const ver = this.read_version(buf);
+               for (let n = 0; n < cnt; ++n)
+                  arr[n] = buf.readNdimArray(this, (buf2, member2) => member2.readelem(buf2));
 
-                  let res = buf.readNdimArray(this, (buf2, member2) => member2.readelem(buf2));
+               if (ver)
+                  buf.checkByteCount(ver, `branch ${this.typename}`);
 
-                  if (!buf.checkByteCount(ver, this.typename))
-                     res = null;
-                  obj[this.name] = res;
-               };
+               obj[this.name] = arr;
+            };
+            member.split_func = function(buf, arr, n) {
+               // function to read array from member-wise streaming
+               const ver = this.read_version(buf);
+               for (let i = 0; i < n; ++i)
+                  arr[i][this.name] = buf.readNdimArray(this, (buf2, member2) => member2.readelem(buf2));
+               buf.checkByteCount(ver, this.typename);
+            };
+            member.objs_branch_func = function(buf, obj) {
+               // special function when branch read as part of complete object
+               // objects already preallocated and only appropriate member must be set
+               // see code in JSRoot.tree.js for reference
 
-               member.branch_func = function(buf, obj) {
-                  // special function to read data from STL branch
-                  const cnt = obj[this.stl_size],
-                        ver = this.read_version(buf, cnt),
-                        arr = new Array(cnt);
+               const arr = obj[this.name0], // objects array where reading is done
+                     ver = this.read_version(buf, arr.length);
 
-                  for (let n = 0; n < cnt; ++n)
-                     arr[n] = buf.readNdimArray(this, (buf2, member2) => member2.readelem(buf2));
+               for (let n = 0; n < arr.length; ++n) {
+                  const obj1 = this.get(arr, n);
+                  obj1[this.name] = buf.readNdimArray(this, (buf2, member2) => member2.readelem(buf2));
+               }
 
-                  if (ver)
-                     buf.checkByteCount(ver, `branch ${this.typename}`);
-
-                  obj[this.name] = arr;
-               };
-               member.split_func = function(buf, arr, n) {
-                  // function to read array from member-wise streaming
-                  const ver = this.read_version(buf);
-                  for (let i = 0; i < n; ++i)
-                     arr[i][this.name] = buf.readNdimArray(this, (buf2, member2) => member2.readelem(buf2));
-                  buf.checkByteCount(ver, this.typename);
-               };
-               member.objs_branch_func = function(buf, obj) {
-                  // special function when branch read as part of complete object
-                  // objects already preallocated and only appropriate member must be set
-                  // see code in JSRoot.tree.js for reference
-
-                  const arr = obj[this.name0], // objects array where reading is done
-                        ver = this.read_version(buf, arr.length);
-
-                  for (let n = 0; n < arr.length; ++n) {
-                     const obj1 = this.get(arr, n);
-                     obj1[this.name] = buf.readNdimArray(this, (buf2, member2) => member2.readelem(buf2));
-                  }
-
-                  if (ver)
-                     buf.checkByteCount(ver, `branch ${this.typename}`);
-               };
-            }
+               if (ver)
+                  buf.checkByteCount(ver, `branch ${this.typename}`);
+            };
+         }
          break;
       }
 
