@@ -815,8 +815,7 @@ class TooltipFor3D {
       }
 
       if (this.lastlbl !== v) {
-         this.cont.innerHTML = v;
-         this.lastlbl = v;
+         this.cont.innerHTML = this.lastlbl = v;
          this.tt.style.width = 'auto'; // let it be automatically resizing...
       }
    }
