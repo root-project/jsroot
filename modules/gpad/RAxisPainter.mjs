@@ -524,7 +524,9 @@ class RAxisPainter extends RObjectPainter {
                   set_y = acc_y;
                }
 
-               new_x = set_x; new_y = set_y; curr_indx = besti;
+               new_x = set_x;
+               new_y = set_y;
+               curr_indx = besti;
                makeTranslate(title_g, new_x, new_y);
           }).on('end', evnt => {
                if (!drag_rect)

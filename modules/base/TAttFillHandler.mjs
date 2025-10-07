@@ -538,7 +538,9 @@ class TAttFillHandler {
 
             if (fills2) {
                const col = d3_rgb(this.color);
-               col.r = Math.round((col.r + 255) / 2); col.g = Math.round((col.g + 255) / 2); col.b = Math.round((col.b + 255) / 2);
+               col.r = Math.round((col.r + 255) / 2);
+               col.g = Math.round((col.g + 255) / 2);
+               col.b = Math.round((col.b + 255) / 2);
                patt.append('svg:path').attr('d', fills2).style('fill', col);
             }
             if (fills)

@@ -287,7 +287,10 @@ CustomStreamers = {
                   return parseFloat(val);
                val = val.trim();
                let sign = 1;
-               if (val[0] === '-') { sign = -1; val = val.slice(1); }
+               if (val[0] === '-') {
+                  sign = -1;
+                  val = val.slice(1);
+               }
                switch (val) {
                   case '2pi':
                   case '2*pi':
@@ -2216,7 +2219,8 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
          else if (checkFmt('Z', 'S', 1))
             fmt = 'ZSTD';
          else if (checkChar(curr, 'L') && checkChar(curr + 1, '4')) {
-            fmt = 'LZ4'; CHKSUM = 8;
+            fmt = 'LZ4';
+            CHKSUM = 8;
          }
 
          /*   C H E C K   H E A D E R   */

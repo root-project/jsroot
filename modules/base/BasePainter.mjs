@@ -456,7 +456,8 @@ function buildSvgCurve(p, args) {
             path += `l${dx},${dy}`;
          else
             path += `h${dx}`;
-         currx = lastx; curry = lasty;
+         currx = lastx;
+         curry = lasty;
          prevy = cminy = cmaxy = lasty;
       }
 

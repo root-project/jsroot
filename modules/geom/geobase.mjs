@@ -569,17 +569,23 @@ function createCubeBuffer(shape, faces_limit) {
    const dx = shape.fDX, dy = shape.fDY, dz = shape.fDZ,
          creator = faces_limit ? new PolygonsCreator() : new GeometryCreator(12);
 
-   creator.addFace4(dx, dy, dz, dx, -dy, dz, dx, -dy, -dz, dx, dy, -dz); creator.setNormal(1, 0, 0);
+   creator.addFace4(dx, dy, dz, dx, -dy, dz, dx, -dy, -dz, dx, dy, -dz);
+   creator.setNormal(1, 0, 0);
 
-   creator.addFace4(-dx, dy, -dz, -dx, -dy, -dz, -dx, -dy, dz, -dx, dy, dz); creator.setNormal(-1, 0, 0);
+   creator.addFace4(-dx, dy, -dz, -dx, -dy, -dz, -dx, -dy, dz, -dx, dy, dz);
+   creator.setNormal(-1, 0, 0);
 
-   creator.addFace4(-dx, dy, -dz, -dx, dy, dz, dx, dy, dz, dx, dy, -dz); creator.setNormal(0, 1, 0);
+   creator.addFace4(-dx, dy, -dz, -dx, dy, dz, dx, dy, dz, dx, dy, -dz);
+   creator.setNormal(0, 1, 0);
 
-   creator.addFace4(-dx, -dy, dz, -dx, -dy, -dz, dx, -dy, -dz, dx, -dy, dz); creator.setNormal(0, -1, 0);
+   creator.addFace4(-dx, -dy, dz, -dx, -dy, -dz, dx, -dy, -dz, dx, -dy, dz);
+   creator.setNormal(0, -1, 0);
 
-   creator.addFace4(-dx, dy, dz, -dx, -dy, dz, dx, -dy, dz, dx, dy, dz); creator.setNormal(0, 0, 1);
+   creator.addFace4(-dx, dy, dz, -dx, -dy, dz, dx, -dy, dz, dx, dy, dz);
+   creator.setNormal(0, 0, 1);
 
-   creator.addFace4(dx, dy, -dz, dx, -dy, -dz, -dx, -dy, -dz, -dx, dy, -dz); creator.setNormal(0, 0, -1);
+   creator.addFace4(dx, dy, -dz, dx, -dy, -dz, -dx, -dy, -dz, -dx, dy, -dz);
+   creator.setNormal(0, 0, -1);
 
    return creator.create();
 }
@@ -1150,8 +1156,10 @@ function createTorusBuffer(shape, faces_limit) {
 
       for (let t = 0; t < tubularSegments; ++t) {
          const t1 = t + d1, t2 = t + d2;
-         center1.x = radius * _cost[t1]; center1.y = radius * _sint[t1];
-         center2.x = radius * _cost[t2]; center2.y = radius * _sint[t2];
+         center1.x = radius * _cost[t1];
+         center1.y = radius * _sint[t1];
+         center2.x = radius * _cost[t2];
+         center2.y = radius * _sint[t2];
 
          for (let n = 0; n < radialSegments; ++n) {
             p1.x = (radius + tube * _cosr[n]) * _cost[t1];

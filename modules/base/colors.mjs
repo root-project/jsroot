@@ -471,8 +471,10 @@ function decodeWebCanvasColors(oper) {
 
       grad.fCoordinateMode = Math.round(data[cnt++]);
       const nsteps = Math.round(data[cnt++]);
-      grad.fColorPositions = data.slice(cnt, cnt + nsteps); cnt += nsteps;
-      grad.fColors = data.slice(cnt, cnt + 4*nsteps); cnt += 4*nsteps;
+      grad.fColorPositions = data.slice(cnt, cnt + nsteps);
+      cnt += nsteps;
+      grad.fColors = data.slice(cnt, cnt + 4*nsteps);
+      cnt += 4*nsteps;
       grad.fStart = { fX: data[cnt++], fY: data[cnt++] };
       grad.fEnd = { fX: data[cnt++], fY: data[cnt++] };
       if (grad._typename === clTRadialGradient && cnt < data.length) {
