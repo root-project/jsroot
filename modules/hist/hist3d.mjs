@@ -1165,7 +1165,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
          if (!this.y_handle.fTitle)
             lbl = 'y';
       } else if (lbl === null) {
-         is_major = false; lbl = '';
+         is_major = false;
+         lbl = '';
       }
 
       if (is_major && lbl && opts.draw && (!center_y || !yticks.last_major())) {
@@ -1463,12 +1464,14 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    for (let n = 0; n < 2; ++n) {
       let line = new THREE.LineSegments(linex_geom, linex_material);
       line.position.set(0, grminy, n === 0 ? grminz : grmaxz);
-      line.xyboxid = 2; line.bottom = (n === 0);
+      line.xyboxid = 2;
+      line.bottom = (n === 0);
       top.add(line);
 
       line = new THREE.LineSegments(linex_geom, linex_material);
       line.position.set(0, grmaxy, n === 0 ? grminz : grmaxz);
-      line.xyboxid = 4; line.bottom = (n === 0);
+      line.xyboxid = 4;
+      line.bottom = (n === 0);
       top.add(line);
    }
 
@@ -1477,12 +1480,14 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    for (let n = 0; n < 2; ++n) {
       let line = new THREE.LineSegments(liney_geom, liney_material);
       line.position.set(grminx, 0, n === 0 ? grminz : grmaxz);
-      line.xyboxid = 3; line.bottom = (n === 0);
+      line.xyboxid = 3;
+      line.bottom = n === 0;
       top.add(line);
 
       line = new THREE.LineSegments(liney_geom, liney_material);
       line.position.set(grmaxx, 0, n === 0 ? grminz : grmaxz);
-      line.xyboxid = 1; line.bottom = (n === 0);
+      line.xyboxid = 1;
+      line.bottom = n === 0;
       top.add(line);
    }
 
@@ -2006,19 +2011,22 @@ function drawBinsError3D(painter, is_v7 = false) {
             z1 = fp.grz((binz - errs.low < zmin) ? zmin : binz - errs.low);
             z2 = fp.grz((binz + errs.up > zmax) ? zmax : binz + errs.up);
 
-            lpos[lindx] = x1; lpos[lindx + 3] = x2;
+            lpos[lindx] = x1;
+            lpos[lindx + 3] = x2;
             lpos[lindx + 1] = lpos[lindx + 4] = (y1 + y2) / 2;
             lpos[lindx + 2] = lpos[lindx + 5] = (z1 + z2) / 2;
             lindx += 6;
 
             lpos[lindx] = lpos[lindx + 3] = (x1 + x2) / 2;
-            lpos[lindx + 1] = y1; lpos[lindx + 4] = y2;
+            lpos[lindx + 1] = y1;
+            lpos[lindx + 4] = y2;
             lpos[lindx + 2] = lpos[lindx + 5] = (z1 + z2) / 2;
             lindx += 6;
 
             lpos[lindx] = lpos[lindx + 3] = (x1 + x2) / 2;
             lpos[lindx + 1] = lpos[lindx + 4] = (y1 + y2) / 2;
-            lpos[lindx + 2] = z1; lpos[lindx + 5] = z2;
+            lpos[lindx + 2] = z1;
+            lpos[lindx + 5] = z2;
             lindx += 6;
          }
       }

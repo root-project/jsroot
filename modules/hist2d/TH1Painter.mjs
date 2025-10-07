@@ -755,7 +755,8 @@ class TH1Painter extends THistPainter {
                      path_line += `h${midx-lx}`;
                   else
                      path_line += `l${midx-lx},${my-ly}`;
-                  lx = midx; ly = my;
+                  lx = midx;
+                  ly = my;
                } else if (show_curve)
                   grpnts.push({ grx: (mx1 + mx2) / 2, gry: funcs.gry(bincont) });
 

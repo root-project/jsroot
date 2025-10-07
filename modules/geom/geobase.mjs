@@ -1545,8 +1545,10 @@ function createParaboloidBuffer(shape, faces_limit) {
             creator.setNormal(0, 0, (layer < heightSegments) ? -1 : 1);
       }
 
-      lastz = layerz; lastr = radius;
-      lastnxy = nxy; lastnz = nz;
+      lastz = layerz;
+      lastr = radius;
+      lastnxy = nxy;
+      lastnz = nz;
    }
 
    return creator.create();

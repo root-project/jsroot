@@ -78,7 +78,8 @@ function drawEllipse() {
             path += `h${px-lastx}`;
          else
             path += `l${px-lastx},${py-lasty}`;
-         lastx = px; lasty = py;
+         lastx = px;
+         lasty = py;
       }
       path += 'Z';
    }

@@ -337,8 +337,14 @@ class Triangles3DHandler {
             y2 = y1 - (y1 - y2) / diff * (z1 - z2);
          }
 
-         lpos[lindx] = x1; lpos[lindx+1] = y1; lpos[lindx+2] = z1; lindx+=3;
-         lpos[lindx] = x2; lpos[lindx+1] = y2; lpos[lindx+2] = z2; lindx+=3;
+         lpos[lindx] = x1;
+         lpos[lindx+1] = y1;
+         lpos[lindx+2] = z1;
+         lindx+=3;
+         lpos[lindx] = x2;
+         lpos[lindx+1] = y2;
+         lpos[lindx+2] = z2;
+         lindx+=3;
       };
 
       function addCrossingPoint(xx1, yy1, zz1, xx2, yy2, zz2, crossz, with_grid) {
@@ -1604,7 +1610,8 @@ class TH2Painter extends THistPainter {
                   dd += `l${x-lastx},${y-lasty}`;
             }
 
-            lastx = x; lasty = y;
+            lastx = x;
+            lasty = y;
          }
 
          this.appendPath(dd)
@@ -1733,11 +1740,22 @@ class TH2Painter extends THistPainter {
          let fillcolor = icol, lineatt;
 
          switch (o.Contour) {
-            case 1: break;
-            case 11: fillcolor = 'none'; lineatt = this.createAttLine({ color: icol, std: false }); break;
-            case 12: fillcolor = 'none'; lineatt = this.createAttLine({ color: 1, style: (ipoly%5 + 1), width: 1, std: false }); break;
-            case 13: fillcolor = 'none'; lineatt = this.lineatt; break;
-            case 14: break;
+            case 1:
+               break;
+            case 11:
+               fillcolor = 'none';
+               lineatt = this.createAttLine({ color: icol, std: false });
+               break;
+            case 12:
+               fillcolor = 'none';
+               lineatt = this.createAttLine({ color: 1, style: (ipoly%5 + 1), width: 1, std: false });
+               break;
+            case 13:
+               fillcolor = 'none';
+               lineatt = this.lineatt;
+               break;
+            case 14:
+               break;
          }
 
          const dd = buildPath(xp, yp, iminus, iplus, fillcolor !== 'none', true);

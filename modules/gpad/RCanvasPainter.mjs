@@ -931,7 +931,7 @@ registerMethods(`${nsREX}RPalette`, {
              logmax = Math.log(this.colzmax)/Math.log(10),
              dz = (logmax-logmin)/nlevels;
          this.fContour.push(this.colzmin);
-         for (let level=1; level<nlevels; level++)
+         for (let level = 1; level < nlevels; level++)
             this.fContour.push(Math.exp((logmin + dz*level)*Math.log(10)));
          this.fContour.push(this.colzmax);
          this.fCustomContour = true;
@@ -940,8 +940,8 @@ registerMethods(`${nsREX}RPalette`, {
             this.colzmax += 0.01*Math.abs(this.colzmax);
             this.colzmin -= 0.01*Math.abs(this.colzmin);
          }
-         const dz = (this.colzmax-this.colzmin)/nlevels;
-         for (let level=0; level<=nlevels; level++)
+         const dz = (this.colzmax - this.colzmin)/nlevels;
+         for (let level = 0; level <= nlevels; level++)
             this.fContour.push(this.colzmin + dz*level);
       }
 
