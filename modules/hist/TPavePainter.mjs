@@ -371,10 +371,15 @@ class TPavePainter extends ObjectPainter {
          interactive_element?.style('pointer-events', 'visibleFill')
                              .on('mouseenter', () => this.showObjectStatus());
 
-         addDragHandler(this, { obj: pt, x: this.#pave_x, y: this.#pave_y, width, height,
-                                minwidth: 10, minheight: 20, canselect: true,
-                        redraw: () => { this.moved_interactive = true; this.interactiveRedraw(false, 'pave_moved'); this.drawPave(); },
-                        ctxmenu: browser.touches && settings.ContextMenu && this.UseContextMenu });
+         addDragHandler(this, {
+            obj: pt, x: this.#pave_x, y: this.#pave_y, width, height,
+            minwidth: 10, minheight: 20, canselect: true,
+            ctxmenu: browser.touches && settings.ContextMenu && this.UseContextMenu,
+            redraw: () => {
+               this.moved_interactive = true;
+               this.interactiveRedraw(false, 'pave_moved').then(() => this.drawPave());
+            }
+         });
 
          if (this.UseContextMenu && settings.ContextMenu)
             this.getG().on('contextmenu', evnt => this.paveContextMenu(evnt));
