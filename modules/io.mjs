@@ -3477,7 +3477,7 @@ class TFile {
             buf.classStreamer(obj, key.fClassName);
 
             if ((key.fClassName === clTF1) || (key.fClassName === clTF12) || (key.fClassName === clTF2) || (key.fClassName === clTF3))
-               return this._readFormulas(obj);
+               return this.#readFormulas(obj);
 
             return obj;
          });
@@ -3486,7 +3486,7 @@ class TFile {
 
    /** @summary read formulas from the file and add them to TF1/TF2 objects
      * @private */
-   async _readFormulas(tf1) {
+   async #readFormulas(tf1) {
       const arr = [];
       for (let indx = 0; indx < this.fKeys.length; ++indx) {
          if (this.fKeys[indx].fClassName === 'TFormula')
@@ -3558,8 +3558,8 @@ class TFile {
 
             const kind = getTypeId(typname);
             if ((kind === typ) ||
-               ((typ === kBits) && (kind === kUInt)) ||
-               ((typ === kCounter) && (kind === kInt)))
+                ((typ === kBits) && (kind === kUInt)) ||
+                ((typ === kCounter) && (kind === kInt)))
                continue;
 
             if (typname && typ && (this.fBasicTypes[typname] !== typ))
@@ -3718,11 +3718,11 @@ class TFile {
       if (clname === clTQObject || clname === clTBasket)
          return null;
 
-      let streamer, fullname = clname;
+      let fullname = clname;
 
       if (ver) {
          fullname += (ver.checksum ? `$chksum${ver.checksum}` : `$ver${ver.val}`);
-         streamer = this.fStreamers[fullname];
+         const streamer = this.fStreamers[fullname];
          if (streamer !== undefined)
             return streamer;
       }
@@ -3734,12 +3734,10 @@ class TFile {
          return this.getStreamer(custom, ver, s_i);
 
       // streamer is just separate function
-      if (isFunc(custom)) {
-         streamer = [{ typename: clname, func: custom }];
-         return addClassMethods(clname, streamer);
-      }
+      if (isFunc(custom))
+         return addClassMethods(clname, [{ typename: clname, func: custom }]);
 
-      streamer = [];
+      const streamer = [];
 
       if (isObject(custom)) {
          if (!custom.name && !custom.func)
@@ -3759,18 +3757,15 @@ class TFile {
       }
 
       // special handling for TStyle which has duplicated member name fLineStyle
-      if ((s_i.fName === clTStyle) && s_i.fElements) {
-         s_i.fElements.arr.forEach(elem => {
+      if (s_i.fName === clTStyle) {
+         s_i.fElements?.arr.forEach(elem => {
             if (elem.fName === 'fLineStyle')
                elem.fName = 'fLineStyles'; // like in ROOT JSON now
          });
       }
 
       // for each entry in streamer info produce member function
-      if (s_i.fElements) {
-         for (let j = 0; j < s_i.fElements.arr.length; ++j)
-            streamer.push(createMemberStreamer(s_i.fElements.arr[j], this));
-      }
+      s_i.fElements?.arr.forEach(elem => streamer.push(createMemberStreamer(elem, this)));
 
       this.fStreamers[fullname] = streamer;
 
