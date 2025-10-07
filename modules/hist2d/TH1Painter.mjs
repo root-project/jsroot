@@ -144,11 +144,14 @@ class TH1Painter extends THistPainter {
       if (this.draw_content || (this.isMainPainter() && (o.Axis > 0) && !o.ohmin && !o.ohmax && (histo.fMinimum === kNoZoom) && (histo.fMaximum === kNoZoom))) {
          if (hmin >= hmax) {
             if (hmin === 0) {
-               this.ymin = 0; this.ymax = 1;
+               this.ymin = 0;
+               this.ymax = 1;
             } else if (hmin < 0) {
-               this.ymin = 2 * hmin; this.ymax = 0;
+               this.ymin = 2 * hmin;
+               this.ymax = 0;
             } else {
-               this.ymin = 0; this.ymax = hmin * 2;
+               this.ymin = 0;
+               this.ymax = hmin * 2;
             }
          } else if (pad_logy) {
             this.ymin = (hmin_nz || hmin) * 0.5;

@@ -295,9 +295,12 @@ function create3DControl(fp) {
                delta_z = 1e-4*frame_painter.size_z3d;
          if ((tip.x1 > tip.x2) || (tip.y1 > tip.y2) || (tip.z1 > tip.z2))
             console.warn('check 3D hints coordinates');
-         tip.x1 -= delta_x; tip.x2 += delta_x;
-         tip.y1 -= delta_y; tip.y2 += delta_y;
-         tip.z1 -= delta_z; tip.z2 += delta_z;
+         tip.x1 -= delta_x;
+         tip.x2 += delta_x;
+         tip.y1 -= delta_y;
+         tip.y2 += delta_y;
+         tip.z1 -= delta_z;
+         tip.z2 += delta_z;
       }
 
       frame_painter.highlightBin3D(tip, mesh);
@@ -786,13 +789,17 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    }
 
    if (opts.use_y_for_z) {
-      this.zmin = this.ymin; this.zmax = this.ymax;
-      zmin = ymin; zmax = ymax; z_zoomed = y_zoomed;
+      this.zmin = this.ymin;
+      this.zmax = this.ymax;
+      zmin = ymin;
+      zmax = ymax;
+      z_zoomed = y_zoomed;
       ymin = 0; ymax = 1;
    }
 
    // z axis range used for lego plot
-   this.lego_zmin = zmin; this.lego_zmax = zmax;
+   this.lego_zmin = zmin;
+   this.lego_zmax = zmax;
 
    // factor 1.1 used in ROOT for lego plots
    if ((opts.zmult !== undefined) && !z_zoomed)
@@ -1278,7 +1285,9 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       top.add(ycont);
    }
 
-   lbls = []; text_scale = 1; ticks = []; // just array, will be used for the buffer geometry
+   lbls = [];
+   text_scale = 1;
+   ticks = []; // just array, will be used for the buffer geometry
 
    let zgridx = null, zgridy = null, lastmajorz = null, maxzlblwidth = 0;
 

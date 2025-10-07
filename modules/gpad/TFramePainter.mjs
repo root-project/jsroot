@@ -1154,9 +1154,16 @@ class FrameInteractive extends TooltipHandler {
       m[1] = Math.max(0, Math.min(this.getFrameHeight(), m[1]));
 
       switch (this.zoom_kind) {
-         case 1: this.zoom_curr[0] = m[0]; this.zoom_curr[1] = m[1]; break;
-         case 2: this.zoom_curr[0] = m[0]; break;
-         case 3: this.zoom_curr[1] = m[1]; break;
+         case 1:
+            this.zoom_curr[0] = m[0];
+            this.zoom_curr[1] = m[1];
+            break;
+         case 2:
+            this.zoom_curr[0] = m[0];
+            break;
+         case 3:
+            this.zoom_curr[1] = m[1];
+            break;
       }
 
       const x = Math.min(this.zoom_origin[0], this.zoom_curr[0]),

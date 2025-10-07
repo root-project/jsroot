@@ -231,7 +231,7 @@ class TGraphDelaunay {
          s[1] = false;
          s[2] = false;
          // loop over all other Delaunay triangles
-         for (t2=1; t2<=this.fNdt; t2++) {
+         for (t2 = 1; t2 <= this.fNdt; t2++) {
             if (t2 !== t1) {
                // get the points that make up this triangle
                pb = this.fPTried[t2-1];

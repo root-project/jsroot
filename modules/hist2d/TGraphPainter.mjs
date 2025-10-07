@@ -1552,7 +1552,10 @@ class TGraphPainter extends ObjectPainter {
    /** @summary Fill context menu */
    fillContextMenuItems(menu) {
       if (!this.hasSnapId()) {
-         menu.addchk(this.testEditable(), 'Editable', () => { this.testEditable('toggle'); this.drawGraph(); });
+         menu.addchk(this.testEditable(), 'Editable', () => {
+            this.testEditable('toggle');
+            this.drawGraph();
+         });
          if (this.axes_draw) {
             menu.add('Title', () => menu.input('Enter graph title', this.getObject().fTitle).then(res => {
                this.getObject().fTitle = res;

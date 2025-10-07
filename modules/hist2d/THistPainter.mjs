@@ -2261,7 +2261,8 @@ class THistPainter extends ObjectPainter {
             tip = { bin: indx, name: histo.fName, title: histo.fTitle };
       switch (this.getDimension()) {
          case 1:
-            tip.ix = indx; tip.iy = 1;
+            tip.ix = indx;
+            tip.iy = 1;
             tip.value = histo.getBinContent(tip.ix);
             tip.error = histo.getBinError(indx);
             tip.lines = this.getBinTooltips(indx-1);
