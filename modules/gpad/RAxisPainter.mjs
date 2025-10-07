@@ -677,11 +677,7 @@ class RAxisPainter extends RObjectPainter {
          const textwidth = this.result_width;
 
          if (textwidth && ((!painter.vertical && !rotate_lbls) || (painter.vertical && rotate_lbls)) && !painter.log) {
-            let maxwidth = this.gap_before*0.45 + this.gap_after*0.45;
-            if (!this.gap_before)
-               maxwidth = 0.9*this.gap_after; else
-            if (!this.gap_after)
-               maxwidth = 0.9*this.gap_before;
+            const maxwidth = !this.gap_before ? 0.9*this.gap_after : (!this.gap_after ? 0.9*this.gap_before : this.gap_before*0.45 + this.gap_after*0.45);
             textscale = Math.min(textscale, maxwidth / textwidth);
          }
 
