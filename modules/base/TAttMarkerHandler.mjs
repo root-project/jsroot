@@ -68,7 +68,7 @@ class TAttMarkerHandler {
       this.size = args.size;
       this.refsize = args.refsize;
 
-      this._configure();
+      this.#configure();
    }
 
    /** @summary Set usage flag of attribute */
@@ -126,12 +126,12 @@ class TAttMarkerHandler {
       if (size !== undefined)
          this.size = size;
 
-      this._configure();
+      this.#configure();
    }
 
    /** @summary Prepare object to create marker
      * @private */
-   _configure() {
+   #configure() {
       this.x0 = this.y0 = 0;
 
       if ((this.style === 1) || (this.style === 777)) {
