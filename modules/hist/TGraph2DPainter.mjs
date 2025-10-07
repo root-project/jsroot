@@ -701,11 +701,17 @@ class TGraphDelaunay {
                         // vector (dx3,dy3) is expressible as a sum of the other two vectors
                         // with positive coefficients -> i.e. it lies between the other two vectors
                         if (l === 1) {
-                           f = m; o1 = p; o2 = n;
+                           f = m;
+                           o1 = p;
+                           o2 = n;
                         } else if (l === 2) {
-                           f = p; o1 = n; o2 = m;
+                           f = p;
+                           o1 = n;
+                           o2 = m;
                         } else {
-                           f = n; o1 = m; o2 = p;
+                           f = n;
+                           o1 = m;
+                           o2 = p;
                         }
                         break; // goto L2;
                      }

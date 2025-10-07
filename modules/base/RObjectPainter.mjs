@@ -311,11 +311,25 @@ class RObjectPainter extends ObjectPainter {
 
       const obj = { _typename: `${nsREX}RAttrMap::` };
       switch (kind) {
-         case 'none': obj._typename += 'NoValue_t'; break;
-         case 'boolean': obj._typename += 'BoolValue_t'; obj.v = Boolean(value); break;
-         case 'int': obj._typename += 'IntValue_t'; obj.v = parseInt(value); break;
-         case 'double': obj._typename += 'DoubleValue_t'; obj.v = parseFloat(value); break;
-         default: obj._typename += 'StringValue_t'; obj.v = isStr(value) ? value : JSON.stringify(value); break;
+         case 'none':
+            obj._typename += 'NoValue_t';
+            break;
+         case 'boolean':
+            obj._typename += 'BoolValue_t';
+            obj.v = Boolean(value);
+            break;
+         case 'int':
+            obj._typename += 'IntValue_t';
+            obj.v = parseInt(value);
+            break;
+         case 'double':
+            obj._typename += 'DoubleValue_t';
+            obj.v = parseFloat(value);
+            break;
+         default:
+            obj._typename += 'StringValue_t';
+            obj.v = isStr(value) ? value : JSON.stringify(value);
+            break;
       }
 
       req.values.push(obj);

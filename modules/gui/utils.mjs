@@ -156,11 +156,23 @@ async function loadOpenui5(args) {
 
    if (isStr(args.openui5src)) {
       switch (args.openui5src) {
-         case 'nodefault': openui5_dflt = ''; break;
-         case 'default': openui5_sources.push(openui5_dflt); openui5_dflt = ''; break;
-         case 'nojsroot': /* openui5_root = ''; */ break;
-         case 'jsroot': openui5_sources.push(openui5_root); openui5_root = ''; break;
-         default: openui5_sources.push(args.openui5src); break;
+         case 'nodefault':
+            openui5_dflt = '';
+            break;
+         case 'default':
+            openui5_sources.push(openui5_dflt);
+            openui5_dflt = '';
+            break;
+         case 'nojsroot':
+            /* openui5_root = ''; */
+            break;
+         case 'jsroot':
+            openui5_sources.push(openui5_root);
+            openui5_root = '';
+            break;
+         default:
+            openui5_sources.push(args.openui5src);
+            break;
       }
    } else if (args.ui5dbg)
       openui5_root = ''; // exclude ROOT version in debug mode

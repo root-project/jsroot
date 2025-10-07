@@ -5715,7 +5715,8 @@ class TGeoPainter extends ObjectPainter {
          let shape = null, hide_top = false;
 
          if (('fShapeBits' in obj) && ('fShapeId' in obj)) {
-            shape = obj; obj = null;
+            shape = obj;
+            obj = null;
          } else if ((obj._typename === clTGeoVolumeAssembly) || (obj._typename === clTGeoVolume))
             shape = obj.fShape;
          else if ((obj._typename === clTEveGeoShapeExtract) || (obj._typename === clREveGeoShapeExtract))
