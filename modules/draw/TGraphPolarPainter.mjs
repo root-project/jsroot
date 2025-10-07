@@ -204,7 +204,8 @@ class TGraphPolargramPainter extends TooltipHandler {
             if (o.OrthoLabels) {
                rotate = -n/nmajor*360;
                if ((rotate > -271) && (rotate < -91)) {
-                  align = 32; rotate += 180;
+                  align = 32;
+                  rotate += 180;
                }
             } else {
                const aindx = Math.round(16 - angle/Math.PI*4) % 8; // index in align table, here absolute angle is important
@@ -712,8 +713,10 @@ class TGraphPolarPainter extends ObjectPainter {
 
       if (draw_title)
          pt.AddText(gr.fTitle);
-      return TPavePainter.draw(pp, pt, kPosTitle)
-                         .then(p => { p?.setSecondaryId(this, kTitle); return this; });
+      return TPavePainter.draw(pp, pt, kPosTitle).then(p => {
+         p?.setSecondaryId(this, kTitle);
+         return this;
+      });
    }
 
    /** @summary Show tooltip */

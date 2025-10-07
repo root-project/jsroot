@@ -679,7 +679,10 @@ class TH2Painter extends THistPainter {
       this.#projection_widthY = widthY;
       this.#projection_kind = ''; // avoid projection handling until area is created
 
-      return this.provideSpecialDrawArea(new_proj).then(() => { this.#projection_kind = new_proj; return this.redrawProjection(); });
+      return this.provideSpecialDrawArea(new_proj).then(() => {
+         this.#projection_kind = new_proj;
+         return this.redrawProjection();
+      });
    }
 
    /** @summary Redraw projection */
@@ -787,12 +790,18 @@ class TH2Painter extends THistPainter {
          fillProjectHist('Y', this.proj_hist2);
          return this.drawInSpecialArea(this.proj_hist, '', 'X')
                     .then(() => this.drawInSpecialArea(this.proj_hist2, '', 'Y'))
-                    .then(res => { delete this.doing_projection; return res; });
+                    .then(res => {
+                        delete this.doing_projection;
+                        return res;
+                     });
       }
 
       fillProjectHist(this.#projection_kind, this.proj_hist);
 
-      return this.drawInSpecialArea(this.proj_hist).then(res => { delete this.doing_projection; return res; });
+      return this.drawInSpecialArea(this.proj_hist).then(res => {
+         delete this.doing_projection;
+         return res;
+      });
    }
 
    /** @summary Execute TH2 menu command

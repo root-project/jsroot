@@ -214,7 +214,10 @@ class TCanvasPainter extends TPadPainter {
                           ? this.drawInUI5ProjectionArea(canv, drawopt, kind)
                           : this.drawInSidePanel(canv, drawopt, kind);
 
-         return promise.then(painter => { this.proj_painter[kind] = painter; return painter; });
+         return promise.then(painter => {
+            this.proj_painter[kind] = painter;
+            return painter;
+         });
       } else if (isStr(this.proj_painter[kind])) {
          console.log('Not ready with first painting', kind);
          return true;

@@ -297,7 +297,9 @@ const Handling3DDrawings = {
             rect.height = Math.round(0.66 * rect.width);
             this.selectDom().style('height', rect.height + 'px');
          }
-         rect.x = 0; rect.y = 0; rect.clname = clname; rect.can3d = -1;
+         rect.x = rect.y = 0;
+         rect.clname = clname;
+         rect.can3d = -1;
          return rect;
       }
 

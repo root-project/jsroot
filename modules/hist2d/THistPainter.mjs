@@ -1705,7 +1705,10 @@ class THistPainter extends ObjectPainter {
       if (draw_title)
          pt.AddText(histo.fTitle);
 
-      return TPavePainter.draw(pp, pt, kPosTitle).then(p => { p?.setSecondaryId(this, kTitle); return this; });
+      return TPavePainter.draw(pp, pt, kPosTitle).then(p => {
+         p?.setSecondaryId(this, kTitle);
+         return this;
+      });
    }
 
    /** @summary Live change and update of title drawing
@@ -2754,14 +2757,14 @@ class THistPainter extends ObjectPainter {
             for (let jj = res.j1; jj < res.j2; ++jj) {
                if (args.cutg.IsInside(xaxis.GetBinCoord(ii + args.middle), yaxis.GetBinCoord(jj + args.middle))) {
                   i1 = Math.min(i1, ii);
-                  i2 = Math.max(i2, ii+1);
+                  i2 = Math.max(i2, ii + 1);
                   j1 = Math.min(j1, jj);
-                  j2 = Math.max(j2, jj+1);
+                  j2 = Math.max(j2, jj + 1);
                }
             }
          }
 
-         res.i1 = i1; res.i2 = i2; res.j1 = j1; res.j2 = j2;
+         Object.assign(res, { i1, i2, j1, j2 });
       }
 
       let i, j, x, y, binz, binarea;

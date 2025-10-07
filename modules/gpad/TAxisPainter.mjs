@@ -560,9 +560,8 @@ class TAxisPainter extends ObjectPainter {
        else
          this.func = d3_scaleLinear().domain([smin, smax]);
 
-      if (this.vertical ^ this.reverse) {
-         const d = range[0]; range[0] = range[1]; range[1] = d;
-      }
+      if (this.vertical ^ this.reverse)
+         [range[0], range[1]] = [range[1], range[0]];
 
       this.func.range(range);
 

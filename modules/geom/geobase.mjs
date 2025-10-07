@@ -1327,7 +1327,8 @@ function createPolygonBuffer(shape, faces_limit) {
             creator.setNormal_12_34(nxy*_cos[seg+d1], nxy*_sin[seg+d1], nz, nxy*_cos[seg+d2], nxy*_sin[seg+d2], nz);
          }
 
-         z1 = z2; r1 = r2;
+         z1 = z2;
+         r1 = r2;
       }
    }
 

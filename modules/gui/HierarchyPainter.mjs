@@ -1244,9 +1244,13 @@ class HierarchyPainter extends BasePainter {
       // normally search _get method in the parent items
       let curr = item;
       while (curr) {
-         if (isFunc(curr._get))
-            return curr._get(item, null, options).then(obj => { result.obj = obj; return result; });
-         curr = ('_parent' in curr) ? curr._parent : null;
+         if (isFunc(curr._get)) {
+            return curr._get(item, null, options).then(obj => {
+               result.obj = obj;
+               return result;
+            });
+         }
+         curr = curr._parent;
       }
 
       return result;

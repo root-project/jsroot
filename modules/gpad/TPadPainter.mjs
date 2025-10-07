@@ -2350,15 +2350,18 @@ class TPadPainter extends ObjectPainter {
 
       if (fp) {
          if (fp.zoom_xmin !== fp.zoom_xmax) {
-            r.zx1 = fp.zoom_xmin; r.zx2 = fp.zoom_xmax;
+            r.zx1 = fp.zoom_xmin;
+            r.zx2 = fp.zoom_xmax;
          }
 
          if (fp.zoom_ymin !== fp.zoom_ymax) {
-            r.zy1 = fp.zoom_ymin; r.zy2 = fp.zoom_ymax;
+            r.zy1 = fp.zoom_ymin;
+            r.zy2 = fp.zoom_ymax;
          }
 
          if (fp.zoom_zmin !== fp.zoom_zmax) {
-            r.zz1 = fp.zoom_zmin; r.zz2 = fp.zoom_zmax;
+            r.zz1 = fp.zoom_zmin;
+            r.zz2 = fp.zoom_zmax;
          }
       }
 

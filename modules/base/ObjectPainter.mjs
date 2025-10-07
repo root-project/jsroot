@@ -381,7 +381,10 @@ class ObjectPainter extends BasePainter {
 
    /** @summary Assign G element used for object drawing
      * @protected */
-   setG(g) { this.#draw_g = g; return g; }
+   setG(g) {
+      this.#draw_g = g;
+      return g;
+   }
 
    /** @summary Append svg::path to G
      * @protected */

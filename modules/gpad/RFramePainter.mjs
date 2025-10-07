@@ -888,9 +888,11 @@ class RFramePainter extends RObjectPainter {
          if (zoom_x && (force || painter.canZoomInside('x', xmin, xmax))) {
             this.zoom_xmin = xmin;
             this.zoom_xmax = xmax;
-            changed = true; r_x = '0';
+            changed = true;
+            r_x = '0';
             zoom_x = false;
-            req.values[0] = xmin; req.values[1] = xmax;
+            req.values[0] = xmin;
+            req.values[1] = xmax;
             req.flags[0] = req.flags[1] = true;
             if (interactive)
                this.zoomChangedInteractive('x', interactive);
@@ -898,9 +900,11 @@ class RFramePainter extends RObjectPainter {
          if (zoom_y && (force || painter.canZoomInside('y', ymin, ymax))) {
             this.zoom_ymin = ymin;
             this.zoom_ymax = ymax;
-            changed = true; r_y = '1';
+            changed = true;
+            r_y = '1';
             zoom_y = false;
-            req.values[2] = ymin; req.values[3] = ymax;
+            req.values[2] = ymin;
+            req.values[3] = ymax;
             req.flags[2] = req.flags[3] = true;
             if (interactive)
                this.zoomChangedInteractive('y', interactive);
@@ -908,9 +912,11 @@ class RFramePainter extends RObjectPainter {
          if (zoom_z && (force || painter.canZoomInside('z', zmin, zmax))) {
             this.zoom_zmin = zmin;
             this.zoom_zmax = zmax;
-            changed = true; r_z = '2';
+            changed = true;
+            r_z = '2';
             zoom_z = false;
-            req.values[4] = zmin; req.values[5] = zmax;
+            req.values[4] = zmin;
+            req.values[5] = zmax;
             req.flags[4] = req.flags[5] = true;
             if (interactive)
                this.zoomChangedInteractive('z', interactive);
@@ -1019,7 +1025,8 @@ class RFramePainter extends RObjectPainter {
             this[`zoom_${name}max`] = vmax;
             changed = true;
             zoom_v = false;
-            req.values[indx*2] = vmin; req.values[indx*2+1] = vmax;
+            req.values[indx*2] = vmin;
+            req.values[indx*2+1] = vmax;
             req.flags[indx*2] = req.flags[indx*2+1] = true;
          }
       };

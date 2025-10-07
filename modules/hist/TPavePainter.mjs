@@ -1301,7 +1301,8 @@ class TPavePainter extends ObjectPainter {
       posarr.forEach(nn => {
          const p = remain.indexOf(nn);
          if ((p >= 0) && !value) {
-            value = nn; remain = remain.slice(0, p) + remain.slice(p + nn.length);
+            value = nn;
+            remain = remain.slice(0, p) + remain.slice(p + nn.length);
          }
       });
       menu.addSelectMenu('positon', posarr, value || 'nb', arg => {

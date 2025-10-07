@@ -3027,7 +3027,10 @@ class TFile {
 
       const file = this, first_block = (place[0] === 0) && (place.length === 2),
             blobs = [], // array of requested segments
-            promise = new Promise((resolve, reject) => { resolveFunc = resolve; rejectFunc = reject; });
+            promise = new Promise((resolve, reject) => {
+               resolveFunc = resolve;
+               rejectFunc = reject;
+            });
 
       let fileurl, first = 0, last = 0,
           // eslint-disable-next-line prefer-const
