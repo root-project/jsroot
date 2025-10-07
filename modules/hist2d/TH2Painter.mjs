@@ -214,8 +214,10 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
       while (true) {
          iminus = npmax;
          iplus = iminus+1;
-         xp[iminus]= xx[istart]; yp[iminus] = yy[istart];
-         xp[iplus] = xx[istart+1]; yp[iplus] = yy[istart+1];
+         xp[iminus]= xx[istart];
+         yp[iminus] = yy[istart];
+         xp[iplus] = xx[istart+1];
+         yp[iplus] = yy[istart+1];
          xx[istart] = xx[istart+1] = xmin;
          yy[istart] = yy[istart+1] = ymin;
          while (true) {
@@ -223,14 +225,16 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
             for (i = 2; i < np2; i += 2) {
                if ((iplus < 2*npmax-1) && (xx[i] === xp[iplus]) && (yy[i] === yp[iplus])) {
                   iplus++;
-                  xp[iplus] = xx[i+1]; yp[iplus] = yy[i+1];
+                  xp[iplus] = xx[i+1];
+                  yp[iplus] = yy[i+1];
                   xx[i] = xx[i+1] = xmin;
                   yy[i] = yy[i+1] = ymin;
                   nadd++;
                }
                if ((iminus > 0) && (xx[i+1] === xp[iminus]) && (yy[i+1] === yp[iminus])) {
                   iminus--;
-                  xp[iminus] = xx[i]; yp[iminus] = yy[i];
+                  xp[iminus] = xx[i];
+                  yp[iminus] = yy[i];
                   xx[i] = xx[i+1] = xmin;
                   yy[i] = yy[i+1] = ymin;
                   nadd++;
@@ -1636,7 +1640,9 @@ class TH2Painter extends THistPainter {
             x = Math.round(xp[i]);
             y = Math.round(yp[i]);
             if (!cmd) {
-               cmd = `M${x},${y}`; x0 = x; y0 = y;
+               cmd = `M${x},${y}`;
+               x0 = x;
+               y0 = y;
             } else if ((i === iplus) && (iminus !== iplus) && (x === x0) && (y === y0)) {
                if (!isany)
                   return ''; // all same points
@@ -3528,8 +3534,10 @@ class TH2Painter extends THistPainter {
 
       if ((i < h.i2) && (j < h.j2)) {
          i1 = i; i2 = i+1; j1 = j; j2 = j+1;
-         x1 = h.grx[i1]; x2 = h.grx[i2];
-         y1 = h.gry[j2]; y2 = h.gry[j1];
+         x1 = h.grx[i1];
+         x2 = h.grx[i2];
+         y1 = h.gry[j2];
+         y2 = h.gry[j1];
 
          let match = true;
 
@@ -3624,15 +3632,20 @@ class TH2Painter extends THistPainter {
             path = h.getBinPath(i, j);
          else if (this.#projection_kind === 'X') {
             x1 = 0; x2 = fp.getFrameWidth();
-            y1 = h.gry[j2]; y2 = h.gry[j1];
+            y1 = h.gry[j2];
+            y2 = h.gry[j1];
             binid = j1*777 + j2*333;
          } else if (this.#projection_kind === 'Y') {
-            y1 = 0; y2 = fp.getFrameHeight();
-            x1 = h.grx[i1]; x2 = h.grx[i2];
+            y1 = 0;
+            y2 = fp.getFrameHeight();
+            x1 = h.grx[i1];
+            x2 = h.grx[i2];
             binid = i1*777 + i2*333;
          } else if (this.#projection_kind === 'XY') {
-            y1 = h.gry[j2]; y2 = h.gry[j1];
-            x1 = h.grx[i1]; x2 = h.grx[i2];
+            y1 = h.gry[j2];
+            y2 = h.gry[j1];
+            x1 = h.grx[i1];
+            x2 = h.grx[i2];
             binid = i1*789 + i2*653 + j1*12345 + j2*654321;
             path = `M${x1},0H${x2}V${y1}H${fp.getFrameWidth()}V${y2}H${x2}V${fp.getFrameHeight()}H${x1}V${y2}H0V${y1}H${x1}Z`;
          }

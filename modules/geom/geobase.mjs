@@ -637,7 +637,8 @@ function createTrapezoidBuffer(shape, faces_limit) {
    if (shape._typename === clTGeoTrd1)
       y1 = y2 = shape.fDY;
    else {
-      y1 = shape.fDy1; y2 = shape.fDy2;
+      y1 = shape.fDy1;
+      y2 = shape.fDy2;
    }
 
    const v = [

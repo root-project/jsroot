@@ -133,7 +133,9 @@ class Vertex {
       this.y = e[1] * x + e[5] * y + e[9] * z + e[13];
       this.z = e[2] * x + e[6] * y + e[10] * z + e[14];
 
-      x = this.nx; y = this.ny; z = this.nz;
+      x = this.nx;
+      y = this.ny;
+      z = this.nz;
 
       this.nx = e[0] * x + e[4] * y + e[8] * z;
       this.ny = e[1] * x + e[5] * y + e[9] * z;

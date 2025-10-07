@@ -147,7 +147,8 @@ function drawPie() {
        .attr('d', `M0,0L${x1},${y1}A${rx},${ry},0,0,0,${x2},${y2}z`)
        .call(this.lineatt.func)
        .call(this.fillatt.func);
-      x1 = x2; y1 = y2;
+      x1 = x2;
+      y1 = y2;
    }
 }
 

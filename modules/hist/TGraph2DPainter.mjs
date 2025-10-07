@@ -871,9 +871,12 @@ class TGraphDelaunay {
          p0 = t[0] - 1;
          p1 = t[1] - 1;
          p2 = t[2] - 1;
-         x0 = this.fX[p0]; x2 = this.fX[p0];
-         y0 = this.fY[p0]; y2 = this.fY[p0];
-         z0 = this.fZ[p0]; z2 = this.fZ[p0];
+         x0 = this.fX[p0];
+         x2 = this.fX[p0];
+         y0 = this.fY[p0];
+         y2 = this.fY[p0];
+         z0 = this.fZ[p0];
+         z2 = this.fZ[p0];
 
          // Order along Z axis the points (xi,yi,zi) where "i" belongs to {0,1,2}
          // After this z0 < z1 < z2

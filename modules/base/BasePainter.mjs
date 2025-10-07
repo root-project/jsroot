@@ -808,7 +808,10 @@ async function _loadJSDOM() {
   * @private */
 function makeTranslate(g, x, y, scale = 1) {
    if (!isObject(g)) {
-      scale = y; y = x; x = g; g = null;
+      scale = y;
+      y = x;
+      x = g;
+      g = null;
    }
    let res = y ? `translate(${x},${y})` : (x ? `translate(${x})` : null);
    if (scale && scale !== 1) {

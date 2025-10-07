@@ -186,9 +186,12 @@ class TF3Painter extends TH2Painter {
       }
 
       if (this.#use_saved_points) {
-         xmin = func.fSave[nsave]; xmax = func.fSave[nsave+1];
-         ymin = func.fSave[nsave+2]; ymax = func.fSave[nsave+3];
-         zmin = func.fSave[nsave+4]; zmax = func.fSave[nsave+5];
+         xmin = func.fSave[nsave];
+         xmax = func.fSave[nsave+1];
+         ymin = func.fSave[nsave+2];
+         ymax = func.fSave[nsave+3];
+         zmin = func.fSave[nsave+4];
+         zmax = func.fSave[nsave+5];
          npx = Math.round(func.fSave[nsave+6]);
          npy = Math.round(func.fSave[nsave+7]);
          npz = Math.round(func.fSave[nsave+8]);
@@ -197,7 +200,8 @@ class TF3Painter extends TH2Painter {
 
          ensureBins(npx + 1, npy + 1);
 
-         const arrv = new Array(npz + 1), arrz = new Array(npz + 1);
+         const arrv = new Array(npz + 1),
+               arrz = new Array(npz + 1);
          for (let k = 0; k <= npz; k++)
             arrz[k] = zmin + k*dz;
 

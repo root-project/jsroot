@@ -123,11 +123,15 @@ function _getTF1Save(func, x) {
         yup = func.fSave[bin + 1];
 
     if (!Number.isFinite(ylow) && (bin < np - 1)) {
-       xlow += dx; xup += dx;
-       ylow = yup; yup = func.fSave[bin + 2];
+       xlow += dx;
+       xup += dx;
+       ylow = yup;
+       yup = func.fSave[bin + 2];
     } else if (!Number.isFinite(yup) && (bin > 0)) {
-       xup -= dx; xlow -= dx;
-       yup = ylow; ylow = func.fSave[bin - 1];
+       xup -= dx;
+       xlow -= dx;
+       yup = ylow;
+       ylow = func.fSave[bin - 1];
     }
 
     return ((xup * ylow - xlow * yup) + x * (yup - ylow)) / dx;

@@ -136,10 +136,12 @@ class TSplinePainter extends ObjectPainter {
             knot = spline.fPoly[++indx];
 
          if (Math.abs(funcs.grx(knot.fX) - pnt.x) < 0.5*this.#knot_size) {
-            xx = knot.fX; yy = knot.fY;
+            xx = knot.fX;
+            yy = knot.fY;
          } else {
             knot = null;
-            if ((xx < spline.fXmin) || (xx > spline.fXmax)) cleanup = true;
+            if ((xx < spline.fXmin) || (xx > spline.fXmax))
+               cleanup = true;
          }
       }
 

@@ -813,11 +813,20 @@ class RFramePainter extends RObjectPainter {
          return false;
 
       if (xmin === 'x') {
-         xmin = xmax; xmax = ymin; interactive = ymax; ymin = ymax = undefined;
+         xmin = xmax;
+         xmax = ymin;
+         interactive = ymax;
+         ymin = ymax = undefined;
       } else if (xmin === 'y') {
-         interactive = ymax; ymax = ymin; ymin = xmax; xmin = xmax = undefined;
+         interactive = ymax;
+         ymax = ymin;
+         ymin = xmax;
+         xmin = xmax = undefined;
       } else if (xmin === 'z') {
-         interactive = ymax; zmin = xmax; zmax = ymin; xmin = xmax = ymin = ymax = undefined;
+         interactive = ymax;
+         zmin = xmax;
+         zmax = ymin;
+         xmin = xmax = ymin = ymax = undefined;
       }
 
       let zoom_x = (xmin !== xmax), zoom_y = (ymin !== ymax), zoom_z = (zmin !== zmax),

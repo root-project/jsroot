@@ -779,13 +779,18 @@ function drawXYZ(toplevel, AxisPainter, opts) {
    }
 
    if (('zoom_xmin' in this) && ('zoom_xmax' in this) && (this.zoom_xmin !== this.zoom_xmax)) {
-      xmin = this.zoom_xmin; xmax = this.zoom_xmax;
+      xmin = this.zoom_xmin;
+      xmax = this.zoom_xmax;
    }
    if (('zoom_ymin' in this) && ('zoom_ymax' in this) && (this.zoom_ymin !== this.zoom_ymax)) {
-      ymin = this.zoom_ymin; ymax = this.zoom_ymax; y_zoomed = true;
+      ymin = this.zoom_ymin;
+      ymax = this.zoom_ymax;
+      y_zoomed = true;
    }
    if (('zoom_zmin' in this) && ('zoom_zmax' in this) && (this.zoom_zmin !== this.zoom_zmax)) {
-      zmin = this.zoom_zmin; zmax = this.zoom_zmax; z_zoomed = true;
+      zmin = this.zoom_zmin;
+      zmax = this.zoom_zmax;
+      z_zoomed = true;
    }
 
    if (opts.use_y_for_z) {
@@ -794,7 +799,8 @@ function drawXYZ(toplevel, AxisPainter, opts) {
       zmin = ymin;
       zmax = ymax;
       z_zoomed = y_zoomed;
-      ymin = 0; ymax = 1;
+      ymin = 0;
+      ymax = 1;
    }
 
    // z axis range used for lego plot
