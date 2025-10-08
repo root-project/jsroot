@@ -1739,7 +1739,7 @@ class FrameInteractive extends TooltipHandler {
       });
    }
 
-}; // class FrameInteractive
+} // class FrameInteractive
 
 /**
  * @summary Painter class for TFrame, main handler for interactivity
