@@ -40,21 +40,21 @@ class TextParseWrapper {
 
    attr(name, value) {
       const get = () => {
-               if (!value)
-                  return '';
-               const res = value[0];
-               value = value.slice(1);
-               return res;
-            }, getN = skip => {
-               let p = 0;
-               while (((value[p] >= '0') && (value[p] <= '9')) || (value[p] === '-'))
-                  p++;
-               const res = Number.parseInt(value.slice(0, p));
-               value = value.slice(p);
-               if (skip)
-                  get();
-               return res;
-            };
+         if (!value)
+            return '';
+         const res = value[0];
+         value = value.slice(1);
+         return res;
+      }, getN = skip => {
+         let p = 0;
+         while (((value[p] >= '0') && (value[p] <= '9')) || (value[p] === '-'))
+            p++;
+         const res = Number.parseInt(value.slice(0, p));
+         value = value.slice(p);
+         if (skip)
+            get();
+         return res;
+      };
 
       if ((name === 'font-size') && value)
          this.font_size = Number.parseInt(value);
@@ -86,46 +86,46 @@ class TextParseWrapper {
 
          while ((next = get())) {
             switch (next) {
-                  case 'L':
-                     add_line(getN(true), getN());
-                     continue;
-                  case 'l':
-                     add_line(x1 + getN(true), y1 + getN());
-                     continue;
-                  case 'H':
-                     add_line(getN(), y1);
-                     continue;
-                  case 'h':
-                     add_line(x1 + getN(), y1);
-                     continue;
-                  case 'V':
-                     add_line(x1, getN());
-                     continue;
-                  case 'v':
-                     add_line(x1, y1 + getN());
-                     continue;
-                  case 'a': {
-                     const rx = getN(true), ry = getN(true),
-                           angle = getN(true)/180*Math.PI, flag1 = getN(true);
-                     getN(true); // skip unused flag2
-                     const x2 = x1 + getN(true),
-                           y2 = y1 + getN(),
-                           x0 = x1 + rx*Math.cos(angle),
-                           y0 = y1 + ry*Math.sin(angle);
-                     let angle2 = Math.atan2(y0 - y2, x0 - x2);
-                     if (flag1 && (angle2 < angle))
-                        angle2 += 2*Math.PI;
-                     else if (!flag1 && (angle2 > angle))
-                        angle2 -= 2*Math.PI;
+               case 'L':
+                  add_line(getN(true), getN());
+                  continue;
+               case 'l':
+                  add_line(x1 + getN(true), y1 + getN());
+                  continue;
+               case 'H':
+                  add_line(getN(), y1);
+                  continue;
+               case 'h':
+                  add_line(x1 + getN(), y1);
+                  continue;
+               case 'V':
+                  add_line(x1, getN());
+                  continue;
+               case 'v':
+                  add_line(x1, y1 + getN());
+                  continue;
+               case 'a': {
+                  const rx = getN(true), ry = getN(true),
+                        angle = getN(true)/180*Math.PI, flag1 = getN(true);
+                  getN(true); // skip unused flag2
+                  const x2 = x1 + getN(true),
+                        y2 = y1 + getN(),
+                        x0 = x1 + rx*Math.cos(angle),
+                        y0 = y1 + ry*Math.sin(angle);
+                  let angle2 = Math.atan2(y0 - y2, x0 - x2);
+                  if (flag1 && (angle2 < angle))
+                     angle2 += 2*Math.PI;
+                  else if (!flag1 && (angle2 > angle))
+                     angle2 -= 2*Math.PI;
 
-                     for (let cnt = 0; cnt < 10; ++cnt) {
-                        const a = angle + (angle2 - angle)/ 10 * (cnt + 1);
-                        add_line(x0 - rx * Math.cos(a), y0 - ry * Math.sin(a));
-                     }
-                     continue;
+                  for (let cnt = 0; cnt < 10; ++cnt) {
+                     const a = angle + (angle2 - angle)/ 10 * (cnt + 1);
+                     add_line(x0 - rx * Math.cos(a), y0 - ry * Math.sin(a));
                   }
-                  default:
-                     console.log('not supported path operator', next);
+                  continue;
+               }
+               default:
+                  console.log('not supported path operator', next);
             }
          }
 
@@ -205,9 +205,7 @@ function createLatexGeometry(painter, lbl, size, as_array, use_latex = true) {
       return geoms[0];
 
    let total_size = 0;
-   geoms.forEach(geom => {
-      total_size += geom.getAttribute('position').array.length;
-   });
+   geoms.forEach(geom => { total_size += geom.getAttribute('position').array.length; });
 
    const pos = new Float32Array(total_size),
          norm = new Float32Array(total_size);
