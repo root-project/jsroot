@@ -94,7 +94,10 @@ export default [
            ignoreTemplateLiterals: true,
            tabWidth: 3
         }],
-        '@stylistic/js/max-statements-per-line' : ['warn', { max: 2 }],
+        '@stylistic/js/max-statements-per-line' : ['warn', {
+           max: 2,
+           ignoredNodes: ['BreakStatement']
+        }],
         '@stylistic/js/keyword-spacing': 'warn',
         '@stylistic/js/semi-spacing': 'warn',
         '@stylistic/js/no-floating-decimal': 'warn',
