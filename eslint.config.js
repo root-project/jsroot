@@ -103,8 +103,11 @@ export default [
         '@stylistic/js/no-floating-decimal': 'warn',
         '@stylistic/js/no-confusing-arrow': 'warn',
         '@stylistic/js/no-extra-semi': 'warn',
+        '@stylistic/js/no-mixed-spaces-and-tabs': 'warn',
         '@stylistic/js/no-multi-spaces': ['warn', { ignoreEOLComments: true }],
         '@stylistic/js/no-multiple-empty-lines': ['warn', { max: 2, maxEOF: 0 }],
+        '@stylistic/js/no-trailing-spaces': 'warn',
+        '@stylistic/js/no-whitespace-before-property': 'warn',
         '@stylistic/js/object-curly-spacing': ['warn', 'always'],
         '@stylistic/js/space-in-parens': 'warn',
         '@stylistic/js/key-spacing': 'warn',
@@ -117,6 +120,7 @@ export default [
           ImportDeclaration: 'never',
           ExportDeclaration: 'never'
         }],
+        '@stylistic/js/quote-props': ['warn', 'as-needed'],
         '@stylistic/js/padded-blocks': ['warn', { blocks: 'never', classes: 'always', switches: 'never' }],
         '@stylistic/js/space-infix-ops': 'off',
         '@stylistic/js/space-before-function-paren': ['warn', 'never']
