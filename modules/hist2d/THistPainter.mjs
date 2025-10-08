@@ -25,27 +25,28 @@ class THistDrawOptions {
 
    /** @summary Reset hist draw options */
    reset() {
-      Object.assign(this,
-            { Axis: 0, RevX: false, RevY: false, SymlogX: 0, SymlogY: 0, xticks: null, yticks: null,
-              Bar: false, BarStyle: 0, Curve: false,
-              Hist: 1, Line: false, Fill: false,
-              Error: 0, ErrorKind: -1, errorX: gStyle.fErrorX,
-              Mark: false, Same: false, Scat: false, ScatCoef: 1.0, Func: true, AllFunc: false,
-              Arrow: false, Box: false, BoxStyle: 0,
-              Text: false, TextAngle: 0, TextKind: '', Char: 0, Color: false, Contour: 0, Cjust: false,
-              Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0, Ortho: gStyle.fOrthoCamera,
-              Spec: false, Pie: false, List: false, Zscale: false, Zvert: true, PadPalette: false,
-              Candle: '', Violin: '', Scaled: null, Circular: 0, Poisson: kNormal,
-              GLBox: 0, GLColor: false, Project: '', ProfileProj: '', Profile2DProj: '', System: kCARTESIAN,
-              AutoColor: false, NoStat: false, ForceStat: false, PadStats: false, PadTitle: false, AutoZoom: false,
-              HighRes: 0, Zero: 1, Palette: 0, BaseLine: false, ShowEmpty: false,
-              Optimize: settings.OptimizeDraw,
-              Mode3D: false, x3dscale: 1, y3dscale: 1, SwapXY: false,
-              Render3D: constants.Render3D.Default,
-              FrontBox: true, BackBox: true,
-              need_fillcol: false,
-              minimum: kNoZoom, maximum: kNoZoom, ymin: 0, ymax: 0, cutg: null,
-              IgnoreMainScale: false, IgnorePalette: false });
+      Object.assign(this, {
+         Axis: 0, RevX: false, RevY: false, SymlogX: 0, SymlogY: 0, xticks: null, yticks: null,
+         Bar: false, BarStyle: 0, Curve: false,
+         Hist: 1, Line: false, Fill: false,
+         Error: 0, ErrorKind: -1, errorX: gStyle.fErrorX,
+         Mark: false, Same: false, Scat: false, ScatCoef: 1.0, Func: true, AllFunc: false,
+         Arrow: false, Box: false, BoxStyle: 0,
+         Text: false, TextAngle: 0, TextKind: '', Char: 0, Color: false, Contour: 0, Cjust: false,
+         Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0, Ortho: gStyle.fOrthoCamera,
+         Spec: false, Pie: false, List: false, Zscale: false, Zvert: true, PadPalette: false,
+         Candle: '', Violin: '', Scaled: null, Circular: 0, Poisson: kNormal,
+         GLBox: 0, GLColor: false, Project: '', ProfileProj: '', Profile2DProj: '', System: kCARTESIAN,
+         AutoColor: false, NoStat: false, ForceStat: false, PadStats: false, PadTitle: false, AutoZoom: false,
+         HighRes: 0, Zero: 1, Palette: 0, BaseLine: false, ShowEmpty: false,
+         Optimize: settings.OptimizeDraw,
+         Mode3D: false, x3dscale: 1, y3dscale: 1, SwapXY: false,
+         Render3D: constants.Render3D.Default,
+         FrontBox: true, BackBox: true,
+         need_fillcol: false,
+         minimum: kNoZoom, maximum: kNoZoom, ymin: 0, ymax: 0, cutg: null,
+         IgnoreMainScale: false, IgnorePalette: false
+      });
    }
 
    isCartesian() { return this.System === kCARTESIAN; }
@@ -707,7 +708,7 @@ class THistDrawOptions {
 
       // flag identifies 3D drawing mode for histogram
       if ((this.Lego > 0) || (hdim === 3) || (((this.Surf > 0) || this.Error) && (hdim === 2)))
-          this.Mode3D = true;
+         this.Mode3D = true;
 
       // default draw options for TF1 is line and fill
       if (painter?.isTF1() && (hdim === 1) && (this.Hist === 1) && !this.Line && !this.Fill && !this.Curve && !this.Mark) {
@@ -753,11 +754,11 @@ class THistDrawOptions {
       } else {
          if (this.Candle)
             res = 'CANDLE' + this.Candle;
-          else if (this.Violin)
+         else if (this.Violin)
             res = 'VIOLIN' + this.Violin;
-          else if (this.Scat)
+         else if (this.Scat)
             res = 'SCAT';
-          else if (this.Color) {
+         else if (this.Color) {
             res = 'COL';
             if (!this.Zero)
                res += '0';
@@ -771,9 +772,9 @@ class THistDrawOptions {
             res += zopt;
          } else if (this.Bar)
             res = (this.BaseLine === false) ? 'B' : 'B1';
-          else if (this.Mark)
+         else if (this.Mark)
             res = this.Zero ? 'P0' : 'P'; // here invert logic with 0
-          else if (this.Line) {
+         else if (this.Line) {
             res += 'L';
             if (this.Fill)
                res += 'F';
@@ -1039,7 +1040,7 @@ class FunctionsHandler {
             if (func_indx >= 0) {
                painters.splice(func_indx, 1);
                update_painters.push(funcpainter);
-             }
+            }
          } else {
             // use arrays index while index is important
             this.#newfuncs[n] = func;
@@ -1424,7 +1425,7 @@ class THistPainter extends ObjectPainter {
 
          if (this.isTProfile())
             histo.fBinEntries = obj.fBinEntries;
-          else if (this.isTH1K()) {
+         else if (this.isTH1K()) {
             histo.fNIn = obj.fNIn;
             histo.fReady = 0;
          } else if (this.isTH2Poly())
@@ -1555,10 +1556,10 @@ class THistPainter extends ObjectPainter {
                this.zmax = histo.fZaxis.GetBinLowEdge(this.nbinsz + 2);
          }
          assignTAxisFuncs(histo.fZaxis);
-       }
+      }
    }
 
-    /** @summary Draw axes for histogram
+   /** @summary Draw axes for histogram
       * @desc axes can be drawn only for main histogram */
    async drawAxes() {
       const fp = this.getFramePainter();
@@ -1591,24 +1592,26 @@ class THistPainter extends ObjectPainter {
 
       fp.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
 
-      fp.createXY({ ndim: this.getDimension(),
-                    check_pad_range: this.check_pad_range,
-                    zoom_xmin: this.zoom_xmin,
-                    zoom_xmax: this.zoom_xmax,
-                    zoom_ymin: this.zoom_ymin,
-                    zoom_ymax: this.zoom_ymax,
-                    xmin_nz: histo.$xmin_nz,
-                    ymin_nz: this.ymin_nz ?? histo.$ymin_nz,
-                    swap_xy: o.swap_xy(),
-                    xticks: o.xticks,
-                    yticks: o.yticks,
-                    reverse_x: o.RevX,
-                    reverse_y: o.RevY,
-                    symlog_x: o.SymlogX,
-                    symlog_y: o.SymlogY,
-                    Proj: o.Proj,
-                    extra_y_space: o.Text && (o.BarStyle > 0),
-                    hist_painter: this });
+      fp.createXY({
+         ndim: this.getDimension(),
+         check_pad_range: this.check_pad_range,
+         zoom_xmin: this.zoom_xmin,
+         zoom_xmax: this.zoom_xmax,
+         zoom_ymin: this.zoom_ymin,
+         zoom_ymax: this.zoom_ymax,
+         xmin_nz: histo.$xmin_nz,
+         ymin_nz: this.ymin_nz ?? histo.$ymin_nz,
+         swap_xy: o.swap_xy(),
+         xticks: o.xticks,
+         yticks: o.yticks,
+         reverse_x: o.RevX,
+         reverse_y: o.RevY,
+         symlog_x: o.SymlogX,
+         symlog_y: o.SymlogY,
+         Proj: o.Proj,
+         extra_y_space: o.Text && (o.BarStyle > 0),
+         hist_painter: this
+      });
 
       delete this.check_pad_range;
       delete this.zoom_xmin;
@@ -1699,8 +1702,10 @@ class THistPainter extends ObjectPainter {
       }
 
       pt = create(clTPaveText);
-      Object.assign(pt, { fName: kTitle, fOption: 'blNDC', fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
-                          fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: 22 });
+      Object.assign(pt, {
+         fName: kTitle, fOption: 'blNDC', fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
+         fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: 22
+      });
 
       if (draw_title)
          pt.AddText(histo.fTitle);
@@ -1896,15 +1901,15 @@ class THistPainter extends ObjectPainter {
       const o = this.getOptions();
 
       if (func._typename === clTPaveStats)
-          return (func.fName !== 'stats') || (!histo.TestBit(kNoStats) && !o.NoStat); // && (!o.Same || o.ForceStat))
+         return (func.fName !== 'stats') || (!histo.TestBit(kNoStats) && !o.NoStat); // && (!o.Same || o.ForceStat))
 
-       if ((func._typename === clTF1) || (func._typename === clTF2))
-          return o.AllFunc || !func.TestBit(BIT(9)); // TF1::kNotDraw
+      if ((func._typename === clTF1) || (func._typename === clTF2))
+         return o.AllFunc || !func.TestBit(BIT(9)); // TF1::kNotDraw
 
-       if ((func._typename === 'TGraphDelaunay') || (func._typename === 'TGraphDelaunay2D'))
-          return false; // do not try to draw delaunay classes
+      if ((func._typename === 'TGraphDelaunay') || (func._typename === 'TGraphDelaunay2D'))
+         return false; // do not try to draw delaunay classes
 
-       return func._typename !== clTPaletteAxis;
+      return func._typename !== clTPaletteAxis;
    }
 
    /** @summary Method draws functions from the histogram list of functions
@@ -1953,7 +1958,7 @@ class THistPainter extends ObjectPainter {
       if (taxis) {
          if ((taxis.fFirst === taxis.fLast) || !taxis.TestBit(EAxisBits.kAxisRange) ||
              ((taxis.fFirst === 1) && (taxis.fLast === nbin)))
-               taxis = null;
+            taxis = null;
       }
 
       if (side === 'left') {
@@ -1992,9 +1997,7 @@ class THistPainter extends ObjectPainter {
             return false;
          obj.InvertBit(EAxisBits.kAxisRange);
          return true;
-      },
-
-      uzoomMinMax = ndim => {
+      }, uzoomMinMax = ndim => {
          if (this.getDimension() !== ndim)
             return false;
          if ((o.minimum === kNoZoom) && (o.maximum === kNoZoom))
@@ -2036,7 +2039,7 @@ class THistPainter extends ObjectPainter {
 
       let curr = `[1,${taxis.fNbins}]`;
       if (taxis.TestBit(EAxisBits.kAxisRange))
-          curr = `[${taxis.fFirst},${taxis.fLast}]`;
+         curr = `[${taxis.fFirst},${taxis.fLast}]`;
 
       menu.input(`Enter user range for axis ${arg} like [1,${taxis.fNbins}]`, curr).then(res => {
          if (!res)
@@ -2071,13 +2074,13 @@ class THistPainter extends ObjectPainter {
 
          if (!isObject(res) || (res.length !== 2) || !Number.isFinite(res[0]) || !Number.isFinite(res[1]))
             o.minimum = o.maximum = kNoZoom;
-          else {
+         else {
             o.minimum = res[0];
             o.maximum = res[1];
-          }
+         }
 
          this.interactiveRedraw();
-       });
+      });
    }
 
    /** @summary Execute histogram menu command
@@ -2134,7 +2137,7 @@ class THistPainter extends ObjectPainter {
       if (this.draw_content) {
          if (this.getDimension() === 1)
             menu.add('User range X', () => this.changeUserRange(menu, 'X'));
-          else {
+         else {
             menu.sub('User ranges');
             menu.add('X', () => this.changeUserRange(menu, 'X'));
             menu.add('Y', () => this.changeUserRange(menu, 'Y'));
@@ -2447,8 +2450,8 @@ class THistPainter extends ObjectPainter {
       });
       if (!only_palette) {
          menu.add('Default position', () => {
-             this.drawColorPalette(o.Zscale, false, true)
-                     .then(() => this.processOnlineChange('drawopt'));
+            this.drawColorPalette(o.Zscale, false, true)
+                .then(() => this.processOnlineChange('drawopt'));
          }, 'Set default position for palette');
 
          const pal = this.findFunction(clTPaletteAxis),
@@ -2522,11 +2525,13 @@ class THistPainter extends ObjectPainter {
 
          if (this.getDimension() === 2) {
             const zaxis = this.getHisto().fZaxis;
-            Object.assign(pal.fAxis, { fTitle: zaxis.fTitle, fTitleSize: zaxis.fTitleSize,
-                                       fTitleOffset: zaxis.fTitleOffset, fTitleColor: zaxis.fTitleColor,
-                                       fLineColor: zaxis.fAxisColor, fTextSize: zaxis.fLabelSize,
-                                       fTextColor: zaxis.fLabelColor, fTextFont: zaxis.fLabelFont,
-                                       fLabelOffset: zaxis.fLabelOffset });
+            Object.assign(pal.fAxis, {
+               fTitle: zaxis.fTitle, fTitleSize: zaxis.fTitleSize,
+               fTitleOffset: zaxis.fTitleOffset, fTitleColor: zaxis.fTitleColor,
+               fLineColor: zaxis.fAxisColor, fTextSize: zaxis.fLabelSize,
+               fTextColor: zaxis.fLabelColor, fTextFont: zaxis.fLabelFont,
+               fLabelOffset: zaxis.fLabelOffset
+            });
          }
 
          // place colz in the beginning, that stat box is always drawn on the top
@@ -2618,16 +2623,16 @@ class THistPainter extends ObjectPainter {
 
                   if (fp.fX1NDC > fp.fX2NDC - 0.1)
                      fp.fX1NDC = Math.max(0, fp.fX2NDC - 0.1);
-                } else if ((pal.fX2NDC < 0.5) && (fp.fX1NDC < pal.fX2NDC)) {
+               } else if ((pal.fX2NDC < 0.5) && (fp.fX1NDC < pal.fX2NDC)) {
                   need_redraw = true;
                   fp.fX1NDC = pal.fX2NDC + 0.05;
                   if (fp.fX2NDC < fp.fX1NDC + 0.1)
                      fp.fX2NDC = Math.min(1, fp.fX1NDC + 0.1);
-                }
-                if (need_redraw && pad) {
-                   pad.fLeftMargin = fp.fX1NDC;
-                   pad.fRightMargin = 1 - fp.fX2NDC;
-                }
+               }
+               if (need_redraw && pad) {
+                  pad.fLeftMargin = fp.fX1NDC;
+                  pad.fRightMargin = 1 - fp.fX2NDC;
+               }
             } else {
                if ((pal.fY1NDC > 0.5) && (fp.fY2NDC > pal.fY1NDC)) {
                   need_redraw = true;
@@ -2656,8 +2661,8 @@ class THistPainter extends ObjectPainter {
 
          const pr2 = !postpone_draw ? this.redraw() : Promise.resolve(true);
          return pr2.then(() => {
-             this.#doing_redraw_palette = undefined;
-             return pal_painter;
+            this.#doing_redraw_palette = undefined;
+            return pal_painter;
          });
       });
    }
@@ -2983,10 +2988,10 @@ class THistPainter extends ObjectPainter {
             return painter.autoZoom();
       }).then(() => {
          if (painter.options.Project && !painter.mode3d && isFunc(painter.toggleProjection))
-             return painter.toggleProjection(painter.options.Project);
+            return painter.toggleProjection(painter.options.Project);
       }).then(() => {
-          painter.fillToolbar();
-          return painter;
+         painter.fillToolbar();
+         return painter;
       });
    }
 

@@ -146,7 +146,7 @@ class THStackPainter extends ObjectPainter {
                if (domax && (first || (val + err > res.max)))
                   res.max = val + err;
                first = false;
-           }
+            }
          }
 
          return res;
@@ -158,7 +158,7 @@ class THStackPainter extends ObjectPainter {
             if (i === 0) {
                themin = resh.min;
                themax = resh.max;
-             } else {
+            } else {
                themin = Math.min(themin, resh.min);
                themax = Math.max(themax, resh.max);
             }
@@ -261,9 +261,9 @@ class THStackPainter extends ObjectPainter {
       const dom = this.#firstpainter?.getPadPainter() || this.getDrawDom();
 
       return this.drawHist(dom, hist, hopt).then(subp => {
-          subp.setSecondaryId(this, subid);
-          this.#painters.push(subp);
-          return this.drawNextHisto(indx+1, pad_painter);
+         subp.setSecondaryId(this, subid);
+         this.#painters.push(subp);
+         return this.drawNextHisto(indx+1, pad_painter);
       });
    }
 
@@ -528,7 +528,7 @@ class THStackPainter extends ObjectPainter {
          });
       } else {
          if (!o.nostack)
-             o.nostack = !this.buildStack(stack, pp);
+            o.nostack = !this.buildStack(stack, pp);
 
          if (!o.same && stack.fHists?.arr.length) {
             if (!stack.fHistogram)
