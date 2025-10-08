@@ -199,7 +199,7 @@ class TH1Painter extends THistPainter {
             fix_min = true;
             if (hmin < this.ymin)
                this.ymin = hmin;
-             set_zoom = true;
+            set_zoom = true;
          }
          if (hmax !== kNoZoom) {
             fix_max = true;
@@ -279,9 +279,11 @@ class TH1Painter extends THistPainter {
             left = this.getSelectIndex('x', 'left'),
             right = this.getSelectIndex('x', 'right'),
             fp = this.getFramePainter(),
-            res = { name: histo.fName, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, integral: 0,
-                    entries: (histo.fEntries > 0) ? histo.fEntries : this.stat_entries,
-                    eff_entries: 0, xmax: 0, wmax: 0, skewx: 0, skewd: 0, kurtx: 0, kurtd: 0 },
+            res = {
+               name: histo.fName, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, integral: 0,
+               entries: (histo.fEntries > 0) ? histo.fEntries : this.stat_entries,
+               eff_entries: 0, xmax: 0, wmax: 0, skewx: 0, skewd: 0, kurtx: 0, kurtd: 0
+            },
             has_counted_stat = !fp?.isAxisZoomed('x') && (Math.abs(histo.fTsumw) > 1e-300);
       let stat_sumw = 0, stat_sumw2 = 0, stat_sumwx = 0, stat_sumwx2 = 0, stat_sumwy = 0, stat_sumwy2 = 0,
           i, xx, w, xmax = null, wmax = null;
@@ -635,7 +637,7 @@ class TH1Painter extends THistPainter {
             if ((hints_err === null) && want_tooltip && (!this.markeratt.fill || (this.markeratt.getFullSize() < 7))) {
                hints_marker = '';
                hsz = Math.max(5, Math.round(this.markeratt.getFullSize()*0.7));
-             }
+            }
          } else
             show_markers = false;
       }
@@ -660,11 +662,11 @@ class TH1Painter extends THistPainter {
             text_size = 0.02*height*histo.fMarkerSize;
 
          if (!text_angle && !o.TextKind) {
-             const space = width / (right - left + 1);
-             if (space < 3 * text_size) {
-                text_angle = 270;
-                text_size = Math.round(space*0.7);
-             }
+            const space = width / (right - left + 1);
+            if (space < 3 * text_size) {
+               text_angle = 270;
+               text_size = Math.round(space*0.7);
+            }
          }
 
          if (want_tooltip && !draw_hist)
@@ -849,7 +851,7 @@ class TH1Painter extends THistPainter {
                         if (curry_max !== curry_min)
                            res += 'v' + (curry_max - curry_min);
                         if (curry !== curry_max)
-                        res += 'v' + (curry - curry_max);
+                           res += 'v' + (curry - curry_max);
                      }
 
                      prevx = currx;
@@ -1068,7 +1070,7 @@ class TH1Painter extends THistPainter {
                l = m;
             else
                r = m;
-          } else {
+         } else {
             l++;
             r--;
          }
@@ -1121,7 +1123,7 @@ class TH1Painter extends THistPainter {
          [grx1, grx2] = [grx2, grx1];
 
       const midx = Math.round((grx1 + grx2) / 2),
-         midy = gry1 = gry2 = GetBinGrY(findbin);
+            midy = gry1 = gry2 = GetBinGrY(findbin);
 
       if (o.Bar) {
          show_rect = true;
@@ -1177,7 +1179,7 @@ class TH1Painter extends THistPainter {
             if (!this.fillatt.empty()) {
                gry2 = Math.min(height, Math.max(0, Math.round(funcs.gry(0))));
                if (gry2 < gry1)
-                 [gry1, gry2] = [gry2, gry1];
+                  [gry1, gry2] = [gry2, gry1];
             }
 
             // for mouse events pointer should be between y1 and y2
@@ -1205,11 +1207,13 @@ class TH1Painter extends THistPainter {
          return null;
       }
 
-      const res = { name: this.getObjectName(), title: histo.fTitle,
-                    x: midx, y: midy, exact: true,
-                    color1: this.lineatt?.color ?? 'green',
-                    color2: this.fillatt?.getFillColorAlt('blue') ?? 'blue',
-                    lines: this.getBinTooltips(findbin) };
+      const res = {
+         name: this.getObjectName(), title: histo.fTitle,
+         x: midx, y: midy, exact: true,
+         color1: this.lineatt?.color ?? 'green',
+         color2: this.fillatt?.getFillColorAlt('blue') ?? 'blue',
+         lines: this.getBinTooltips(findbin)
+      };
 
       if (pnt.disabled) {
          // case when tooltip should not highlight bin
@@ -1266,9 +1270,11 @@ class TH1Painter extends THistPainter {
       }
 
       if (res.changed) {
-         res.user_info = { obj: histo, name: histo.fName,
-                           bin: findbin, cont: histo.getBinContent(findbin+1),
-                           grx: midx, gry: midy };
+         res.user_info = {
+            obj: histo, name: histo.fName,
+            bin: findbin, cont: histo.getBinContent(findbin+1),
+            grx: midx, gry: midy
+         };
       }
 
       return res;
@@ -1316,7 +1322,7 @@ class TH1Painter extends THistPainter {
             xbins[i-1] = xaxis.fXbins[indx-1];
          let sum = 0;
          for (let k = 0; k < sz; ++k)
-           sum += histo.fArray[indx++];
+            sum += histo.fArray[indx++];
          arr[i] = sum;
       }
 
@@ -1399,8 +1405,8 @@ class TH1Painter extends THistPainter {
                .then(() => this.updateFunctions())
                .then(() => this.updateHistTitle())
                .then(() => {
-                   this.updateStatWebCanvas();
-                   return this.addInteractivity();
+                  this.updateStatWebCanvas();
+                  return this.addInteractivity();
                });
    }
 
