@@ -126,7 +126,8 @@ export default [
         '@stylistic/js/space-in-parens': 'warn',
         '@stylistic/js/space-before-blocks': 'warn',
         '@stylistic/js/space-before-function-paren': ['warn', 'never'],
-        '@stylistic/js/switch-colon-spacing': 'warn'
+        '@stylistic/js/switch-colon-spacing': 'warn',
+        '@stylistic/js/template-curly-spacing': 'error'
     }
   }
 ];
