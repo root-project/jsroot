@@ -427,13 +427,13 @@ class TPavePainter extends ObjectPainter {
          let spath;
 
          if ((dx < 0) && (dy < 0))
-            spath = `M0,0v${height-brd-1}h${-brd+1}v${-height+2}h${width-2}v${brd-1}z`;
+            spath = `M0,0v${height-brd-1}h${1-brd}v${2-height}h${width-2}v${brd-1}z`;
          else if ((dx < 0) && (dy > 0))
-            spath = `M0,${height}v${brd+1-height}h${-brd+1}v${height-2}h${width-2}v${-brd+1}z`;
+            spath = `M0,${height}v${brd+1-height}h${1-brd}v${height-2}h${width-2}v${1-brd}z`;
          else if ((dx > 0) && (dy < 0))
-            spath = `M${brd+1},0v${-brd+1}h${width-2}v${height-2}h${-brd+1}v${brd+1-height}z`;
+            spath = `M${brd+1},0v${1-brd}h${width-2}v${height-2}h${1-brd}v${brd+1-height}z`;
          else
-            spath = `M${width},${brd+1}h${brd-1}v${height-2}h${-width+2}v${-brd+1}h${width-brd-2}z`;
+            spath = `M${width},${brd+1}h${brd-1}v${height-2}h${2-width}v${1-brd}h${width-brd-2}z`;
 
          draw_g.append('svg:path')
                .attr('d', spath)
