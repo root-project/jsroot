@@ -211,7 +211,7 @@ class JSRootMenu {
             const id = parseInt(col);
             if (Number.isInteger(id) && getColor(id))
                col = getColor(id);
-             else if (useid)
+            else if (useid)
                return;
 
             set_func(useid ? id : col);
@@ -268,7 +268,7 @@ class JSRootMenu {
                if (step >= 0.1)
                   return v.toFixed(more ? 2 : 1);
                return v.toFixed(more ? 4 : 2);
-           };
+            };
 
       if (values.findIndex(match) < 0) {
          miss_current = true;
@@ -465,7 +465,7 @@ class JSRootMenu {
       }));
       for (let n = 1; n < 11; ++n) {
          const dash = getSvgLineStyle(n),
-             svg = `<svg width='100' height='14'><text x='2' y='13' style='font-size:12px'>${n}</text><line x1='30' y1='7' x2='100' y2='7' stroke='black' stroke-width='3' stroke-dasharray='${dash}'></line></svg>`;
+               svg = `<svg width='100' height='14'><text x='2' y='13' style='font-size:12px'>${n}</text><line x1='30' y1='7' x2='100' y2='7' stroke='black' stroke-width='3' stroke-dasharray='${dash}'></line></svg>`;
 
          this.addchk((value === n), svg, n, arg => set_func(parseInt(arg)));
       }
@@ -531,9 +531,9 @@ class JSRootMenu {
                txt = d3_select(doc.createElementNS(nsSVG, 'text'));
          let fullname = handler.getFontName(), qual = '';
          if (handler.weight) {
-             qual += 'b';
-             fullname += ' ' + handler.weight;
-            }
+            qual += 'b';
+            fullname += ' ' + handler.weight;
+         }
          if (handler.style) {
             qual += handler.style[0];
             fullname += ' ' + handler.style;
@@ -621,12 +621,12 @@ class JSRootMenu {
             this.sub('side');
             for (let side = -1; side <= 1; ++side) {
                this.addchk((painter.lineatt.excl_side === side), side, side,
-                  arg => { painter.lineatt.changeExcl(parseInt(arg)); painter.interactiveRedraw(); });
+                           arg => { painter.lineatt.changeExcl(parseInt(arg)); painter.interactiveRedraw(); });
             }
             this.endsub();
 
             this.addSizeMenu('width', 10, 100, 10, painter.lineatt.excl_width,
-               arg => { painter.lineatt.changeExcl(undefined, arg); painter.interactiveRedraw(); });
+                             arg => { painter.lineatt.changeExcl(undefined, arg); painter.interactiveRedraw(); });
 
             this.endsub();
          }
@@ -667,10 +667,10 @@ class JSRootMenu {
 
          for (let n = 0; n < supported.length; ++n) {
             const clone = new TAttMarkerHandler({ style: supported[n], color: painter.markeratt.color, size: 1.7 }),
-                svg = `<svg width='60' height='18'><text x='1' y='12' style='font-size:12px'>${supported[n].toString()}</text><path stroke='black' fill='${clone.fill?'black':'none'}' d='${clone.create(40, 8)}'></path></svg>`;
+                  svg = `<svg width='60' height='18'><text x='1' y='12' style='font-size:12px'>${supported[n].toString()}</text><path stroke='black' fill='${clone.fill?'black':'none'}' d='${clone.create(40, 8)}'></path></svg>`;
 
             this.addchk(painter.markeratt.style === supported[n], svg, supported[n],
-               arg => { painter.markeratt.change(undefined, parseInt(arg)); painter.interactiveRedraw(redraw_arg, `exec:SetMarkerStyle(${arg})`); });
+                        arg => { painter.markeratt.change(undefined, parseInt(arg)); painter.interactiveRedraw(redraw_arg, `exec:SetMarkerStyle(${arg})`); });
          }
          this.endsub();
          this.endsub();
@@ -728,16 +728,16 @@ class JSRootMenu {
 
       this.sub('Labels');
       this.addchk(faxis.TestBit(EAxisBits.kCenterLabels), 'Center',
-            arg => { faxis.SetBit(EAxisBits.kCenterLabels, arg); painter.interactiveRedraw('pad', `exec:CenterLabels(${arg})`, kind); });
+                  arg => { faxis.SetBit(EAxisBits.kCenterLabels, arg); painter.interactiveRedraw('pad', `exec:CenterLabels(${arg})`, kind); });
       this.addchk(faxis.TestBit(EAxisBits.kLabelsVert), 'Rotate',
-            arg => { faxis.SetBit(EAxisBits.kLabelsVert, arg); painter.interactiveRedraw('pad', `exec:SetBit(TAxis::kLabelsVert,${arg})`, kind); });
+                  arg => { faxis.SetBit(EAxisBits.kLabelsVert, arg); painter.interactiveRedraw('pad', `exec:SetBit(TAxis::kLabelsVert,${arg})`, kind); });
       this.addColorMenu('Color', faxis.fLabelColor,
-            arg => { faxis.fLabelColor = arg; painter.interactiveRedraw('pad', getColorExec(arg, 'SetLabelColor'), kind); });
+                        arg => { faxis.fLabelColor = arg; painter.interactiveRedraw('pad', getColorExec(arg, 'SetLabelColor'), kind); });
       this.addSizeMenu('Offset', -0.02, 0.1, 0.01, faxis.fLabelOffset,
-            arg => { faxis.fLabelOffset = arg; painter.interactiveRedraw('pad', `exec:SetLabelOffset(${arg})`, kind); });
+                       arg => { faxis.fLabelOffset = arg; painter.interactiveRedraw('pad', `exec:SetLabelOffset(${arg})`, kind); });
       let a = faxis.fLabelSize >= 1;
       this.addSizeMenu('Size', a ? 2 : 0.02, a ? 30 : 0.11, a ? 2 : 0.01, faxis.fLabelSize,
-            arg => { faxis.fLabelSize = arg; painter.interactiveRedraw('pad', `exec:SetLabelSize(${arg})`, kind); });
+                       arg => { faxis.fLabelSize = arg; painter.interactiveRedraw('pad', `exec:SetLabelSize(${arg})`, kind); });
 
       if (frame_painter && (axis_painter?.kind === kAxisLabels) && (faxis.fNbins > 20)) {
          this.add('Find label', () => this.input('Label id').then(id => {
@@ -767,13 +767,13 @@ class JSRootMenu {
          });
       });
       this.addchk(faxis.TestBit(EAxisBits.kCenterTitle), 'Center',
-            arg => { faxis.SetBit(EAxisBits.kCenterTitle, arg); painter.interactiveRedraw('pad', `exec:CenterTitle(${arg})`, kind); });
+                  arg => { faxis.SetBit(EAxisBits.kCenterTitle, arg); painter.interactiveRedraw('pad', `exec:CenterTitle(${arg})`, kind); });
       if (!painter?.hasSnapId()) {
          this.addchk(faxis.TestBit(EAxisBits.kOppositeTitle), 'Opposite',
-                arg => { faxis.SetBit(EAxisBits.kOppositeTitle, arg); painter.redrawPad(); });
+                     arg => { faxis.SetBit(EAxisBits.kOppositeTitle, arg); painter.redrawPad(); });
       }
       this.addchk(faxis.TestBit(EAxisBits.kRotateTitle), 'Rotate',
-            arg => { faxis.SetBit(EAxisBits.kRotateTitle, arg); painter.interactiveRedraw('pad', is_gaxis ? `exec:SetBit(TAxis::kRotateTitle, ${arg})` : `exec:RotateTitle(${arg})`, kind); });
+                  arg => { faxis.SetBit(EAxisBits.kRotateTitle, arg); painter.interactiveRedraw('pad', is_gaxis ? `exec:SetBit(TAxis::kRotateTitle, ${arg})` : `exec:RotateTitle(${arg})`, kind); });
       this.addColorMenu('Color', is_gaxis ? faxis.fTextColor : faxis.fTitleColor, arg => {
          if (is_gaxis)
             faxis.fTextColor = arg;
@@ -783,29 +783,30 @@ class JSRootMenu {
          painter.interactiveRedraw('pad', getColorExec(arg, 'SetTitleColor'), kind);
       });
       this.addSizeMenu('Offset', 0, 3, 0.2, faxis.fTitleOffset,
-                      arg => { faxis.fTitleOffset = arg; painter.interactiveRedraw('pad', `exec:SetTitleOffset(${arg})`, kind); });
+                       arg => { faxis.fTitleOffset = arg; painter.interactiveRedraw('pad', `exec:SetTitleOffset(${arg})`, kind); });
       a = faxis.fTitleSize >= 1;
       this.addSizeMenu('Size', a ? 2 : 0.02, a ? 30 : 0.11, a ? 2 : 0.01, faxis.fTitleSize,
-                      arg => { faxis.fTitleSize = arg; painter.interactiveRedraw('pad', `exec:SetTitleSize(${arg})`, kind); });
+                       arg => { faxis.fTitleSize = arg; painter.interactiveRedraw('pad', `exec:SetTitleSize(${arg})`, kind); });
       this.endsub();
 
       this.sub('Ticks');
       if (is_gaxis) {
          this.addColorMenu('Color', faxis.fLineColor,
-                  arg => { faxis.fLineColor = arg; painter.interactiveRedraw('pad', getColorExec(arg, 'SetLineColor'), kind); });
+                           arg => { faxis.fLineColor = arg; painter.interactiveRedraw('pad', getColorExec(arg, 'SetLineColor'), kind); });
          this.addSizeMenu('Size', -0.05, 0.055, 0.01, faxis.fTickSize,
-                  arg => { faxis.fTickSize = arg; painter.interactiveRedraw('pad', `exec:SetTickLength(${arg})`, kind); });
+                          arg => { faxis.fTickSize = arg; painter.interactiveRedraw('pad', `exec:SetTickLength(${arg})`, kind); });
       } else {
          this.addColorMenu('Color', faxis.fAxisColor,
-                  arg => { faxis.fAxisColor = arg; painter.interactiveRedraw('pad', getColorExec(arg, 'SetAxisColor'), kind); });
+                           arg => { faxis.fAxisColor = arg; painter.interactiveRedraw('pad', getColorExec(arg, 'SetAxisColor'), kind); });
          this.addSizeMenu('Size', -0.05, 0.055, 0.01, faxis.fTickLength,
-                  arg => { faxis.fTickLength = arg; painter.interactiveRedraw('pad', `exec:SetTickLength(${arg})`, kind); });
+                          arg => { faxis.fTickLength = arg; painter.interactiveRedraw('pad', `exec:SetTickLength(${arg})`, kind); });
       }
       this.endsub();
 
       if (is_gaxis) {
          this.add('Options', () => this.input('Enter TGaxis options like +L or -G', faxis.fChopt, 'string').then(arg => {
-             faxis.fChopt = arg; painter.interactiveRedraw('pad', `exec:SetOption("${arg}")`, kind);
+            faxis.fChopt = arg;
+            painter.interactiveRedraw('pad', `exec:SetOption("${arg}")`, kind);
          }));
       }
    }
@@ -921,12 +922,12 @@ class JSRootMenu {
 
       const setStyleField = arg => { gStyle[arg.slice(1)] = parseInt(arg[0]); },
             addStyleIntField = (name, field, arr) => {
-         this.sub(name);
-         const curr = gStyle[field] >= arr.length ? 1 : gStyle[field];
-         for (let v = 0; v < arr.length; ++v)
-            this.addchk(curr === v, arr[v], `${v}${field}`, setStyleField);
-         this.endsub();
-      };
+               this.sub(name);
+               const curr = gStyle[field] >= arr.length ? 1 : gStyle[field];
+               for (let v = 0; v < arr.length; ++v)
+                  this.addchk(curr === v, arr[v], `${v}${field}`, setStyleField);
+               this.endsub();
+            };
 
       this.sub('gStyle');
 
@@ -1089,11 +1090,11 @@ class JSRootMenu {
       if ((value === undefined) || (value === null))
          value = '';
       if (kind === 'int') {
-          if (min !== undefined)
+         if (min !== undefined)
             ranges += ` min="${min}"`;
-          if (max !== undefined)
+         if (max !== undefined)
             ranges += ` max="${max}"`;
-       }
+      }
 
       const main_content =
          '<form><fieldset style="padding:0; border:0">'+
@@ -1589,15 +1590,17 @@ class StandaloneMenu extends JSRootMenu {
                       .style('left', '50%')
                       .style('top', '50%')
                       .style('z-index', 100001)
-                      .attr('tabindex', '0')
-                      .html(
+                      .attr('tabindex', '0');
+
+      modal.element.html(
          '<div style=\'position: relative; left: -50%; top: -50%; border: solid green 3px; padding: 5px; display: flex; flex-flow: column; background-color: white\'>'+
            `<div style='flex: 0 1 auto; padding: 5px'>${title}</div>`+
            `<div class='jsroot_dialog_content' style='flex: 1 1 auto; padding: 5px'>${main_content}</div>`+
            '<div class=\'jsroot_dialog_footer\' style=\'flex: 0 1 auto; padding: 5px\'>'+
               `<button class='jsroot_dialog_button' style='float: right; width: fit-content; margin-right: 1em'>${args.Ok}</button>`+
               (args.btns ? '<button class=\'jsroot_dialog_button\' style=\'float: right; width: fit-content; margin-right: 1em\'>Cancel</button>' : '') +
-         '</div></div>');
+         '</div></div>'
+      );
 
       modal.done = function(res) {
          if (this._done)

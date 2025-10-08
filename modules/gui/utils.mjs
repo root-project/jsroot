@@ -249,8 +249,8 @@ const ToolbarIcons = {
 
    createSVG(group, btn, size, title, arg) {
       const use_dark = (arg === true) || (arg === false) ? arg : settings.DarkMode,
-          opacity0 = (arg === 'browser') ? (browser.touches ? 0.2 : 0) : (use_dark ? 0.8 : 0.2),
-          svg = group.append('svg:svg')
+            opacity0 = (arg === 'browser') ? (browser.touches ? 0.2 : 0) : (use_dark ? 0.8 : 0.2),
+            svg = group.append('svg:svg')
                      .attr('width', size + 'px')
                      .attr('height', size + 'px')
                      .attr('viewBox', '0 0 512 512')
@@ -629,7 +629,7 @@ function getColorId(col) {
    if (isStr(col)) {
       if (!col || (col === 'none'))
          id = 0;
-       else {
+      else {
          for (let k = 1; k < arr.length; ++k) {
             if (arr[k] === col) {
                id = k;
@@ -661,7 +661,7 @@ function getColorExec(col, method) {
    if (d.id >= 50) {
       const c = d3_color(d.col);
       d.id = `TColor::GetColor(${c.r},${c.g},${c.b})`;
-    }
+   }
 
    return `exec:${method}(${d.id})`;
 }
