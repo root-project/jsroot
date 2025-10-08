@@ -22,7 +22,6 @@ const clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObj
       /* kAnyPnoVT: 70, */
       kSTLp = 71,
       /* kSkip = 100, kSkipL = 120, kSkipP = 140, kConv = 200, kConvL = 220, kConvP = 240, */
-
       kSTL = 300, /* kSTLstring = 365, */
 
       kStreamer = 500, kStreamLoop = 501,
@@ -37,7 +36,6 @@ const clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObj
       kSTLset = 6, kSTLmultiset = 7, kSTLbitset = 8,
       // kSTLforwardlist = 9, kSTLunorderedset = 10, kSTLunorderedmultiset = 11, kSTLunorderedmap = 12,
       // kSTLunorderedmultimap = 13, kSTLend = 14
-
       kBaseClass = 'BASE',
 
       // name of base IO types
@@ -48,7 +46,7 @@ const clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObj
       StlNames = ['', 'vector', 'list', 'deque', 'map', 'multimap', 'set', 'multiset', 'bitset'],
 
       // TObject bits
-      kIsReferenced = BIT(4), kHasUUID = BIT(5),
+      kIsReferenced = BIT(4), kHasUUID = BIT(5);
 
 
 /** @summary Custom streamers for root classes
@@ -56,7 +54,8 @@ const clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObj
   * or alias (classname) which can be used to read that function
   * or list of read functions
   * @private */
-CustomStreamers = {
+/* eslint-disable one-var */
+const CustomStreamers = {
    TObject(buf, obj) {
       obj.fUniqueID = buf.ntou4();
       obj.fBits = buf.ntou4();
@@ -64,25 +63,29 @@ CustomStreamers = {
          buf.ntou2(); // skip pid
    },
 
-   TNamed: [{
-      basename: clTObject, base: 1, func(buf, obj) {
-         if (!obj._typename)
-            obj._typename = clTNamed;
-         buf.classStreamer(obj, clTObject);
-      }
-     },
-     { name: 'fName', func(buf, obj) { obj.fName = buf.readTString(); } },
-     { name: 'fTitle', func(buf, obj) { obj.fTitle = buf.readTString(); } }
+   TNamed: [
+      {
+         basename: clTObject, base: 1,
+         func(buf, obj) {
+            if (!obj._typename)
+               obj._typename = clTNamed;
+            buf.classStreamer(obj, clTObject);
+         }
+      },
+      { name: 'fName', func(buf, obj) { obj.fName = buf.readTString(); } },
+      { name: 'fTitle', func(buf, obj) { obj.fTitle = buf.readTString(); } }
    ],
 
-   TObjString: [{
-      basename: clTObject, base: 1, func(buf, obj) {
-         if (!obj._typename)
-            obj._typename = clTObjString;
-         buf.classStreamer(obj, clTObject);
-      }
-     },
-     { name: 'fString', func(buf, obj) { obj.fString = buf.readTString(); } }
+   TObjString: [
+      {
+         basename: clTObject, base: 1,
+         func(buf, obj) {
+            if (!obj._typename)
+               obj._typename = clTObjString;
+            buf.classStreamer(obj, clTObject);
+         }
+      },
+      { name: 'fString', func(buf, obj) { obj.fString = buf.readTString(); } }
    ],
 
    TClonesArray(buf, list) {
@@ -328,11 +331,11 @@ CustomStreamers = {
 
       if ((elem.fSTLtype === kSTLmultimap) &&
           ((elem.fTypeName.indexOf('std::set') === 0) || (elem.fTypeName.indexOf('set') === 0)))
-            elem.fSTLtype = kSTLset;
+         elem.fSTLtype = kSTLset;
 
       if ((elem.fSTLtype === kSTLset) &&
           ((elem.fTypeName.indexOf('std::multimap') === 0) || (elem.fTypeName.indexOf('multimap') === 0)))
-            elem.fSTLtype = kSTLmultimap;
+         elem.fSTLtype = kSTLmultimap;
    },
 
    TStreamerSTLstring(buf, elem) {
@@ -1504,36 +1507,34 @@ function addClassMethods(clname, streamer) {
  */
 
 /* constant parameters */
-const zip_WSIZE = 32768,       // Sliding Window size
+const
+   zip_WSIZE = 32768,       // Sliding Window size
 
-/* constant tables (inflate) */
-zip_MASK_BITS = [
-   0x0000,
-   0x0001, 0x0003, 0x0007, 0x000f, 0x001f, 0x003f, 0x007f, 0x00ff,
-   0x01ff, 0x03ff, 0x07ff, 0x0fff, 0x1fff, 0x3fff, 0x7fff, 0xffff],
+   /* constant tables (inflate) */
+   zip_MASK_BITS = [0x0000, 0x0001, 0x0003, 0x0007, 0x000f, 0x001f, 0x003f, 0x007f, 0x00ff,
+                    0x01ff, 0x03ff, 0x07ff, 0x0fff, 0x1fff, 0x3fff, 0x7fff, 0xffff],
 
-// Tables for deflate from PKZIP's appnote.txt.
-   zip_cplens = [ // Copy lengths for literal codes 257..285
-   3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31,
-   35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258, 0, 0],
+   // Tables for deflate from PKZIP's appnote.txt.
+   // Copy lengths for literal codes 257..285
+   zip_cplens = [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31,
+                 35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258, 0, 0],
 
-/* note: see note #13 above about the 258 in this list. */
-   zip_cplext = [ // Extra bits for literal codes 257..285
-   0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2,
-   3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0, 99, 99], // 99==invalid
+   /* note: see note #13 above about the 258 in this list. */
+   // Extra bits for literal codes 257..285
+   zip_cplext = [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2,
+                 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0, 99, 99], // 99==invalid
 
-   zip_cpdist = [ // Copy offsets for distance codes 0..29
-   1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193,
-   257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145,
-   8193, 12289, 16385, 24577],
+   // Copy offsets for distance codes 0..29
+   zip_cpdist = [1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193,
+                 257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145,
+                 8193, 12289, 16385, 24577],
 
-   zip_cpdext = [ // Extra bits for distance codes
-   0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6,
-   7, 7, 8, 8, 9, 9, 10, 10, 11, 11,
-   12, 12, 13, 13],
+   // Extra bits for distance codes
+   zip_cpdext = [0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6,
+                 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13],
 
-   zip_border = [  // Order of the bit length code lengths
-   16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15];
+   // Order of the bit length code lengths
+   zip_border = [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15];
 
 function ZIP_inflate(arr, tgt) {
    /* variables (inflate) */
@@ -1578,20 +1579,20 @@ function ZIP_inflate(arr, tgt) {
                           d,     // list of base values for non-simple codes
                           e,     // list of extra bits for non-simple codes
                           mm) {  // maximum lookup bits
-      const res = {
-         status: 0,    // 0: success, 1: incomplete table, 2: bad input
-         root: null,   // (zip_HuftList) starting table
-         m: 0          // maximum lookup bits, returns actual
-      },
-      BMAX = 16,      // maximum bit length of any code
-      N_MAX = 288,    // maximum number of codes in any set
-      c = Array(BMAX+1).fill(0),  // bit length count table
-      lx = Array(BMAX+1).fill(0), // stack of bits per table
-      u = Array(BMAX).fill(null), // zip_HuftNode[BMAX][]  table stack
-      v = Array(N_MAX).fill(0), // values in order of bit length
-      x = Array(BMAX+1).fill(0), // bit offsets, then code stack
-      r = { e: 0, b: 0, n: 0, t: null }, // new zip_HuftNode(), // table entry for structure assignment
-      el = (n > 256) ? b[256] : BMAX; // set length of EOB code, if any
+      const BMAX = 16,      // maximum bit length of any code
+            N_MAX = 288,    // maximum number of codes in any set
+            c = Array(BMAX+1).fill(0),  // bit length count table
+            lx = Array(BMAX+1).fill(0), // stack of bits per table
+            u = Array(BMAX).fill(null), // zip_HuftNode[BMAX][]  table stack
+            v = Array(N_MAX).fill(0), // values in order of bit length
+            x = Array(BMAX+1).fill(0), // bit offsets, then code stack
+            r = { e: 0, b: 0, n: 0, t: null }, // new zip_HuftNode(), // table entry for structure assignment
+            el = (n > 256) ? b[256] : BMAX, // set length of EOB code, if any
+            res = {
+               status: 0,    // 0: success, 1: incomplete table, 2: bad input
+               root: null,   // (zip_HuftList) starting table
+               m: 0          // maximum lookup bits, returns actual
+            };
       let rr,        // temporary variable, use in assignment
           a,         // counter for codes of length k
           f,         // i repeats in table every f entries
@@ -2246,8 +2247,8 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
             else {
                internals._ZstdInit = [];
                promise = (isNodeJs() ? import('@oneidentity/zstd-js') : import('./base/zstd.mjs'))
-                   .then(({ ZstdInit }) => ZstdInit())
-                   .then(({ ZstdStream }) => {
+                  .then(({ ZstdInit }) => ZstdInit())
+                  .then(({ ZstdStream }) => {
                      internals._ZstdStream = ZstdStream;
                      internals._ZstdInit.forEach(func => func(ZstdStream));
                      delete internals._ZstdInit;
@@ -2260,7 +2261,7 @@ async function R__unzip(arr, tgtsize, noalert, src_shift) {
                      reslen = data2.length;
 
                for (let i = 0; i < reslen; ++i)
-                   tgt8arr[i] = data2[i];
+                  tgt8arr[i] = data2[i];
 
                fullres += reslen;
                curr += srcsize;
@@ -2400,16 +2401,16 @@ class TBuffer {
       return (this.codeAt(pos) === 0) ? '' : this.substring(pos, pos + len);
    }
 
-    /** @summary read Char_t array as string
-      * @desc stops when 0 is found */
-    readNullTerminatedString() {
+   /** @summary read Char_t array as string
+     * @desc stops when 0 is found */
+   readNullTerminatedString() {
       let res = '', code;
       while ((code = this.ntou1()))
          res += String.fromCharCode(code);
       return res;
    }
 
-    /** @summary read Char_t array as string */
+   /** @summary read Char_t array as string */
    readFastString(n) {
       let res = '', reading = true;
       for (let i = 0; i < n; ++i) {
@@ -3685,8 +3686,8 @@ class TFile {
          this.fKeys.push(si_key);
          return this.readObjBuffer(si_key);
       }).then(blob6 => {
-          this.extractStreamerInfos(blob6);
-          return this;
+         this.extractStreamerInfos(blob6);
+         return this;
       });
    }
 
