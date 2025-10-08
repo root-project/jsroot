@@ -626,7 +626,7 @@ function parseLatex(node, arg, label, curr) {
                curr.xgap = 0;
             } else if (curr.deco) {
                elem.attr('text-decoration', curr.deco);
-               delete curr.deco; // inform that decoration was applied
+               curr.deco = ''; // inform that decoration was applied
             } else
                curr.xgap = xgap; // may be used in accent or somewhere else
          } else
@@ -689,7 +689,8 @@ function parseLatex(node, arg, label, curr) {
       if (found.twolines) {
          curr.twolines = true;
 
-         const line1 = extractSubLabel(), line2 = extractSubLabel(true);
+         const line1 = extractSubLabel(),
+               line2 = extractSubLabel(true);
          if ((line1 === -1) || (line2 === -1))
             return false;
 
@@ -757,7 +758,6 @@ function parseLatex(node, arg, label, curr) {
             return false;
 
          const x = curr.x, dx = 0.03*curr.fsize, ylow = 0.25*curr.fsize;
-
          let pos_up, pos_low, w1 = 0, w2 = 0, yup = -curr.fsize;
 
          if (subs.up) {
@@ -876,18 +876,20 @@ function parseLatex(node, arg, label, curr) {
          parseLatex(gg, arg, sublabel, subpos);
 
          const r = subpos.rect;
-         if (subpos.deco) {
-            switch (subpos.deco) {
-               case 'underline': createPath(gg, `M0,${Math.round(r.y2)}h${Math.round(r.width)}`); break;
-               case 'overline': createPath(gg, `M0,${Math.round(r.y1)}h${Math.round(r.width)}`); break;
-               case 'line-through': createPath(gg, `M0,${Math.round(0.45*r.y1+0.55*r.y2)}h${Math.round(r.width)}`); break;
-            }
+         switch (subpos.deco) {
+            case 'underline':
+               createPath(gg, `M0,${Math.round(r.y2)}h${Math.round(r.width)}`);
+               break;
+            case 'overline':
+               createPath(gg, `M0,${Math.round(r.y1)}h${Math.round(r.width)}`);
+               break;
+            case 'line-through':
+               createPath(gg, `M0,${Math.round(0.45*r.y1+0.55*r.y2)}h${Math.round(r.width)}`);
+               break;
          }
 
          positionGNode(subpos, 0, 0, true);
-
          shiftX(r.width);
-
          continue;
       }
 
