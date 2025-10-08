@@ -38,13 +38,15 @@ function getTimeOffset(axis) {
       if (!Number.isInteger(val) || (val < min) || (val > max))
          return min;
       return val;
-   }, year = next('-', 1900, 2900),
-      month = next('-', 1, 12) - 1,
-      day = next(' ', 1, 31),
-      hour = next(':', 0, 23),
-      min = next(':', 0, 59),
-      sec = next('s', 0, 59),
-      msec = next(' ', 0, 999);
+   };
+   // eslint-disable-next-line one-var
+   const year = next('-', 1900, 2900),
+         month = next('-', 1, 12) - 1,
+         day = next(' ', 1, 31),
+         hour = next(':', 0, 23),
+         min = next(':', 0, 59),
+         sec = next('s', 0, 59),
+         msec = next(' ', 0, 999);
 
    let offset = Date.UTC(year, month, day, hour, min, sec, msec);
 
@@ -239,8 +241,8 @@ const AxisPainterMethods = {
       if (settings.Latex > constants.Latex.Symbols)
          return res + `^{${order}}`;
       const superscript_symbols = {
-            0: '\u2070', 1: '\xB9', 2: '\xB2', 3: '\xB3', 4: '\u2074', 5: '\u2075',
-            6: '\u2076', 7: '\u2077', 8: '\u2078', 9: '\u2079', '-': '\u207B'
+         0: '\u2070', 1: '\xB9', 2: '\xB2', 3: '\xB3', 4: '\u2074', 5: '\u2075',
+         6: '\u2076', 7: '\u2077', 8: '\u2078', 9: '\u2079', '-': '\u207B'
       }, str = order.toString();
       for (let n = 0; n < str.length; ++n)
          res += superscript_symbols[str[n]];
@@ -309,13 +311,13 @@ const AxisPainterMethods = {
             return this.poduceLogTicks(this.func, total);
 
          const dom = this.func.domain(),
-            check = ticks => {
-               if (ticks.length <= total)
-                  return true;
-               if (ticks.length > total + 1)
-                  return false;
-               return (ticks[0] === dom[0]) || (ticks[total] === dom[1]); // special case of N+1 ticks, but match any range
-            }, res1 = this.func.ticks(total);
+               check = ticks => {
+                  if (ticks.length <= total)
+                     return true;
+                  if (ticks.length > total + 1)
+                     return false;
+                  return (ticks[0] === dom[0]) || (ticks[total] === dom[1]); // special case of N+1 ticks, but match any range
+               }, res1 = this.func.ticks(total);
          if (ndiv2 || check(res1))
             return res1;
 
@@ -349,7 +351,7 @@ const AxisPainterMethods = {
 
       if (item.delta)
          delta = item.delta;
-       else if (evnt)
+      else if (evnt)
          delta = evnt.wheelDelta ? -evnt.wheelDelta : (evnt.deltaY || evnt.detail);
 
       if (!delta || (test_ignore && item.ignore))
@@ -402,7 +404,7 @@ const AxisPainterMethods = {
             if (delta_shift) {
                item.min += delta_shift;
                item.max += delta_shift;
-             } else {
+            } else {
                delete item.min;
                delete item.max;
             }
@@ -417,11 +419,11 @@ const AxisPainterMethods = {
          }
          if (item.min >= item.max)
             item.min = item.max = undefined;
-          else if (delta_left !== delta_right) {
+         else if (delta_left !== delta_right) {
             // extra check case when moving left or right
             if (((item.min < gmin) && (lmin === gmin)) ||
                 ((item.max > gmax) && (lmax === gmax)))
-                   item.min = item.max = undefined;
+               item.min = item.max = undefined;
          } else {
             item.min = Math.max(item.min, gmin);
             item.max = Math.min(item.max, gmax);
@@ -557,7 +559,7 @@ class TAxisPainter extends ObjectPainter {
          this.func = d3_scaleSymlog().constant(v).domain([smin, smax]);
       } else if (this.kind === kAxisFunc)
          this.func = this.createFuncHandle(opts.axis_func, 0, smin, smax);
-       else
+      else
          this.func = d3_scaleLinear().domain([smin, smax]);
 
       if (this.vertical ^ this.reverse)
@@ -730,7 +732,7 @@ class TAxisPainter extends ObjectPainter {
          // avoid black filling by middle-size
          if ((handle.middle.length <= handle.major.length) || (handle.middle.length > gr_range))
             handle.minor = handle.middle = handle.major;
-          else if ((this.nticks3 > 1) && !this.log) {
+         else if ((this.nticks3 > 1) && !this.log) {
             handle.minor = this.produceTicks(handle.middle.length, this.nticks3);
             if ((handle.minor.length <= handle.middle.length) || (handle.minor.length > gr_range))
                handle.minor = handle.middle;
@@ -788,12 +790,12 @@ class TAxisPainter extends ObjectPainter {
                   ord1 = (maxtick > 0) ? Math.round(Math.log10(maxtick)/3)*3 : 0,
                   ord2 = (mintick > 0) ? Math.round(Math.log10(mintick)/3)*3 : 0;
 
-             exclorder3 = (maxtick < 2e4); // do not show 10^3 for values below 20000
+            exclorder3 = (maxtick < 2e4); // do not show 10^3 for values below 20000
 
-             if (maxtick || mintick) {
-                maxorder = Math.max(ord1, ord2) + 3;
-                minorder = Math.min(ord1, ord2) - 3;
-             }
+            if (maxtick || mintick) {
+               maxorder = Math.max(ord1, ord2) + 3;
+               minorder = Math.min(ord1, ord2) - 3;
+            }
          }
 
          // now try to find best combination of order and ndig for labels
@@ -898,7 +900,7 @@ class TAxisPainter extends ObjectPainter {
          evnt.sourceEvent.stopPropagation();
 
          const box = title_g.node().getBBox(), // check that elements visible, request precise value
-             title_length = vertical ? box.height : box.width;
+               title_length = vertical ? box.height : box.width;
 
          x_0 = new_x = acc_x = title_g.property('shift_x');
          y_0 = new_y = acc_y = title_g.property('shift_y');
@@ -1060,7 +1062,7 @@ class TAxisPainter extends ObjectPainter {
 
          if (ticksPlusMinus > 0)
             h2 = -h1;
-          else if (side < 0) {
+         else if (side < 0) {
             h2 = -h1;
             h1 = 0;
          }
@@ -1089,7 +1091,7 @@ class TAxisPainter extends ObjectPainter {
 
          if ((mod.fLabNum === nlabel + 1) ||
              ((mod.fLabNum < 0) && (nlabel === positions.length + mod.fLabNum)))
-                return mod;
+            return mod;
       }
       return null;
    }
@@ -1129,9 +1131,9 @@ class TAxisPainter extends ObjectPainter {
 
          if ((textscale > 0.0001) && (textscale < 0.7) && !any_modified &&
               !painter.vertical && !rotate_lbls && (label_g.length === 1) && (lbl_tilt === false)) {
-                 if (maxtextlen > 5)
-                    lbl_tilt = true;
-              }
+            if (maxtextlen > 5)
+               lbl_tilt = true;
+         }
 
          let scale = textscale;
 
@@ -1279,13 +1281,15 @@ class TAxisPainter extends ObjectPainter {
                if (yoff)
                   yoff = Math.round(yoff * (this.getPadPainter()?.getPadHeight() ?? 0));
 
-               this.drawText({ color: labelsFont.color,
-                              x: xoff + (this.vertical ? side*5 : w+5),
-                              y: yoff + (this.has_obstacle ? fix_coord : (this.vertical ? -3 : -3*side)),
-                              align: this.vertical ? ((side < 0) ? 30 : 10) : ((this.has_obstacle ^ (side < 0)) ? 13 : 10),
-                              latex: 1,
-                              text: '#times' + this.formatExp(10, this.order),
-                              draw_g: label_g[lcnt] });
+               this.drawText({
+                  color: labelsFont.color,
+                  x: xoff + (this.vertical ? side*5 : w+5),
+                  y: yoff + (this.has_obstacle ? fix_coord : (this.vertical ? -3 : -3*side)),
+                  align: this.vertical ? ((side < 0) ? 30 : 10) : ((this.has_obstacle ^ (side < 0)) ? 13 : 10),
+                  latex: 1,
+                  text: '#times' + this.formatExp(10, this.order),
+                  draw_g: label_g[lcnt]
+               });
             }
 
             if ((lcnt > 1) && applied_scale)
@@ -1533,17 +1537,21 @@ class TAxisPainter extends ObjectPainter {
 
             title_shift_y = Math.round(this.titleCenter ? h/2 : (xor_reverse ? h : 0));
 
-            this.drawText({ align: this.title_align+';middle',
-                           rotate: (rotate < 0) ? 90 : 270,
-                           text: this.fTitle, color: this.titleFont.color, draw_g: title_g });
+            this.drawText({
+               align: this.title_align+';middle',
+               rotate: (rotate < 0) ? 90 : 270,
+               text: this.fTitle, color: this.titleFont.color, draw_g: title_g
+            });
          } else {
             title_offest_k *= 1.6;
 
             title_shift_x = Math.round(this.titleCenter ? w/2 : (xor_reverse ? 0 : w));
             title_shift_y = Math.round(title_offest_k * this.titleOffset);
-            this.drawText({ align: this.title_align+';middle',
-                           rotate: (rotate < 0) ? 180 : 0,
-                           text: this.fTitle, color: this.titleFont.color, draw_g: title_g });
+            this.drawText({
+               align: this.title_align+';middle',
+               rotate: (rotate < 0) ? 180 : 0,
+               text: this.fTitle, color: this.titleFont.color, draw_g: title_g
+            });
          }
 
          this.addTitleDrag(title_g, this.vertical, title_offest_k, swap_side, this.vertical ? h : w);

@@ -58,7 +58,7 @@ class RCanvasPainter extends RPadPainter {
    /** @summary Returns layout kind */
    getLayoutKind() {
       const origin = this.selectDom('origin'),
-         layout = origin.empty() ? '' : origin.property('layout');
+            layout = origin.empty() ? '' : origin.property('layout');
       return layout || 'simple';
    }
 
@@ -307,41 +307,41 @@ class RCanvasPainter extends RPadPainter {
       } else if (msg.slice(0, 5) === 'SNAP:') {
          msg = msg.slice(5);
          const p1 = msg.indexOf(':'),
-             snapid = msg.slice(0, p1),
-             snap = parse(msg.slice(p1+1));
+               snapid = msg.slice(0, p1),
+               snap = parse(msg.slice(p1+1));
          this.syncDraw(true)
              .then(() => {
                 if (!this.getSnapId() && snap?.fWinSize)
                    this.resizeBrowser(snap.fWinSize[0], snap.fWinSize[1]);
              }).then(() => this.redrawPadSnap(snap))
              .then(() => {
-                 this.addPadInteractive();
-                 handle.send(`SNAPDONE:${snapid}`); // send ready message back when drawing completed
-                 this.confirmDraw();
+                this.addPadInteractive();
+                handle.send(`SNAPDONE:${snapid}`); // send ready message back when drawing completed
+                this.confirmDraw();
              }).catch(err => {
-               if (isFunc(this.showConsoleError))
-                  this.showConsoleError(err);
-               else
-                  console.log(err);
+                if (isFunc(this.showConsoleError))
+                   this.showConsoleError(err);
+                else
+                   console.log(err);
              });
       } else if (msg.slice(0, 4) === 'JSON') {
          const obj = parse(msg.slice(4));
          this.redrawObject(obj);
       } else if (msg.slice(0, 9) === 'REPL_REQ:')
          this.processDrawableReply(msg.slice(9));
-       else if (msg.slice(0, 4) === 'CMD:') {
+      else if (msg.slice(0, 4) === 'CMD:') {
          msg = msg.slice(4);
          const p1 = msg.indexOf(':'),
-             cmdid = msg.slice(0, p1),
-             cmd = msg.slice(p1+1),
-             reply = `REPLY:${cmdid}:`;
+               cmdid = msg.slice(0, p1),
+               cmd = msg.slice(p1+1),
+               reply = `REPLY:${cmdid}:`;
          if ((cmd === 'SVG') || (cmd === 'PNG') || (cmd === 'JPEG') || (cmd === 'WEBP') || (cmd === 'PDF')) {
             this.createImage(cmd.toLowerCase())
                 .then(res => handle.send(reply + res));
          } else if (cmd.indexOf('ADDPANEL:') === 0) {
             if (!isFunc(this.showUI5Panel))
                handle.send(reply + 'false');
-             else {
+            else {
                const window_path = cmd.slice(9),
                      conn = handle.createNewInstance(window_path);
 
@@ -379,11 +379,11 @@ class RCanvasPainter extends RPadPainter {
          }
       } else if ((msg.slice(0, 7) === 'DXPROJ:') || (msg.slice(0, 7) === 'DYPROJ:')) {
          const kind = msg[1],
-             hist = parse(msg.slice(7));
+               hist = parse(msg.slice(7));
          this.drawProjection(kind, hist);
       } else if (msg.slice(0, 5) === 'SHOW:') {
          const that = msg.slice(5),
-             on = that.at(-1) === '1';
+               on = that.at(-1) === '1';
          this.showSection(that.slice(0, that.length - 2), on);
       } else
          console.log(`unrecognized msg len: ${msg.length} msg: ${msg.slice(0, 30)}`);
@@ -465,7 +465,7 @@ class RCanvasPainter extends RPadPainter {
             exec = subelem + 'axis#' + exec;
          else
             return console.log(`not recoginzed subelem ${subelem} in submitExec`);
-       }
+      }
 
       this.submitDrawableRequest('', { _typename: `${nsREX}RDrawableExecRequest`, exec }, painter);
    }
@@ -795,8 +795,10 @@ function drawRFrameTitle(reason, drag) {
       this.drawText({ x: title_width/2, y: title_height/2, text: title.fText, latex: 1 });
       return this.finishTextDrawing();
    }).then(() => {
-      addDragHandler(this, { x: fx, y: Math.round(fy-title_margin-title_height), width: title_width, height: title_height,
-                             minwidth: 20, minheight: 20, no_change_x: true, redraw: d => this.redraw('drag', d) });
+      addDragHandler(this, {
+         x: fx, y: Math.round(fy-title_margin-title_height), width: title_width, height: title_height,
+         minwidth: 20, minheight: 20, no_change_x: true, redraw: d => this.redraw('drag', d)
+      });
    });
 }
 
@@ -874,8 +876,7 @@ registerMethods(`${nsREX}RPalette`, {
 
       while (arr.length < len) {
          const value = arr.length / (len-1),
-
-          entry = this.fColors[indx];
+               entry = this.fColors[indx];
 
          if ((Math.abs(entry.fOrdinal - value) < 0.0001) || (indx === this.fColors.length - 1)) {
             arr.push(this.extractRColor(entry.fColor));
@@ -943,8 +944,8 @@ registerMethods(`${nsREX}RPalette`, {
             this.colzmin = 0.0001*this.colzmax;
 
          const logmin = Math.log(this.colzmin)/Math.log(10),
-             logmax = Math.log(this.colzmax)/Math.log(10),
-             dz = (logmax-logmin)/nlevels;
+               logmax = Math.log(this.colzmax)/Math.log(10),
+               dz = (logmax-logmin)/nlevels;
          this.fContour.push(this.colzmin);
          for (let level = 1; level < nlevels; level++)
             this.fContour.push(Math.exp((logmin + dz*level)*Math.log(10)));

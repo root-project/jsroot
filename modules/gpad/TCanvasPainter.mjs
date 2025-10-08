@@ -7,13 +7,13 @@ import { TFramePainter } from './TFramePainter.mjs';
 import { TPadPainter, clTButton, createWebObjectOptions } from './TPadPainter.mjs';
 
 const kShowEventStatus = BIT(15),
-     // kAutoExec = BIT(16),
+   // kAutoExec = BIT(16),
       kMenuBar = BIT(17),
       kShowToolBar = BIT(18),
       kShowEditor = BIT(19),
-     // kMoveOpaque = BIT(20),
-     // kResizeOpaque = BIT(21),
-     // kIsGrayscale = BIT(22),
+   // kMoveOpaque = BIT(20),
+   // kResizeOpaque = BIT(21),
+   // kIsGrayscale = BIT(22),
       kShowToolTips = BIT(23);
 
 /** @summary direct draw of TFrame object,
@@ -401,14 +401,14 @@ class TCanvasPainter extends TPadPainter {
                 this.completeCanvasSnapDrawing();
                 let ranges = this.getWebPadOptions(); // all data, including sub-pads
                 if (ranges)
-                  ranges = ':' + ranges;
+                   ranges = ':' + ranges;
                 handle.send(`READY6:${version}${ranges}`); // send ready message back when drawing completed
                 this.confirmDraw();
              }).catch(err => {
-               if (isFunc(this.showConsoleError))
-                  this.showConsoleError(err);
-               else
-                  console.log(err);
+                if (isFunc(this.showConsoleError))
+                   this.showConsoleError(err);
+                else
+                   console.log(err);
              });
       } else if (msg.slice(0, 5) === 'MENU:') {
          // this is menu with exact identifier for object
@@ -703,7 +703,7 @@ class TCanvasPainter extends TPadPainter {
    processHighlightConnect(hints) {
       if (!hints?.length || !this._highlight_connect ||
           this.doingDraw() || !this.canSendWebsocket(2))
-          return;
+         return;
 
       const hint = hints[0] || hints[1];
       if (!hint || !hint.painter?.getSnapId() || !hint.user_info)
@@ -780,8 +780,10 @@ class TCanvasPainter extends TPadPainter {
       if (!msg && isFunc(painter?.getSnapId) && (kind.slice(0, 5) === 'exec:')) {
          const snapid = painter.getSnapId(subelem);
          if (snapid) {
-            msg = 'PRIMIT6:' + toJSON({ _typename: 'TWebObjectOptions',
-                     snapid, opt: kind.slice(5), fcust: 'exec', fopt: [] });
+            msg = 'PRIMIT6:' + toJSON({
+               _typename: 'TWebObjectOptions',
+               snapid, opt: kind.slice(5), fcust: 'exec', fopt: []
+            });
          }
       }
 

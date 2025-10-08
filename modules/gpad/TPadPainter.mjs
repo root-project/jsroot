@@ -17,7 +17,11 @@ import { BrowserLayout, getHPainter } from '../gui/display.mjs';
 
 
 const clTButton = 'TButton', kIsGrayscale = BIT(22),
-PadButtonsHandler = {
+      // identifier used in TWebCanvas painter
+      webSnapIds = { kNone: 0, kObject: 1, kSVG: 2, kSubPad: 3, kColors: 4, kStyle: 5, kFont: 6 };
+
+// eslint-disable-next-line one-var
+const PadButtonsHandler = {
 
    getButtonSize(fact) {
       const cp = this.getCanvPainter();
@@ -142,7 +146,7 @@ PadButtonsHandler = {
                btn = ToolbarIcons.circle;
 
             const svg = ToolbarIcons.createSVG(group, btn, this.getButtonSize(),
-                        item.tooltip + (istop ? '' : (` on pad ${this.getPadName()}`)) + (item.keyname ? ` (keyshortcut ${item.keyname})` : ''), false);
+                                               item.tooltip + (istop ? '' : (` on pad ${this.getPadName()}`)) + (item.keyname ? ` (keyshortcut ${item.keyname})` : ''), false);
 
             if (group.property('vertical'))
                svg.attr('x', y).attr('y', x);
@@ -175,10 +179,7 @@ PadButtonsHandler = {
       Object.assign(painter, this);
    }
 
-}, // PadButtonsHandler
-
-// identifier used in TWebCanvas painter
-webSnapIds = { kNone: 0, kObject: 1, kSVG: 2, kSubPad: 3, kColors: 4, kStyle: 5, kFont: 6 };
+}; // PadButtonsHandler
 
 
 /** @summary Fill TWebObjectOptions for painter
@@ -277,7 +278,7 @@ class TPadPainter extends ObjectPainter {
          this.#pad_draw_disabled = true;
    }
 
-  /** @summary returns pad painter
+   /** @summary returns pad painter
     * @protected */
    getPadPainter() { return this.isTopPad() ? null : super.getPadPainter(); }
 
@@ -560,7 +561,7 @@ class TPadPainter extends ObjectPainter {
       return resindx;
    }
 
-  /** @summary returns custom palette associated with pad or top canvas
+   /** @summary returns custom palette associated with pad or top canvas
     * @private */
    getCustomPalette(no_recursion) {
       return this.#custom_palette || (no_recursion ? null : this.getCanvPainter()?.getCustomPalette(true));
@@ -885,7 +886,7 @@ class TPadPainter extends ObjectPainter {
       let dt = info.selectChild('.canvas_date');
       if (!gStyle.fOptDate)
          dt.remove();
-       else {
+      else {
          if (dt.empty())
             dt = info.append('text').attr('class', 'canvas_date');
          const posy = Math.round(this.#pad_height * (1 - gStyle.fDateY)),
@@ -920,7 +921,7 @@ class TPadPainter extends ObjectPainter {
 
       if (!gStyle.fOptFile || !fname)
          df.remove();
-       else {
+      else {
          if (df.empty())
             df = info.append('text').attr('class', 'canvas_item');
          const rect = this.getPadRect();
@@ -1314,7 +1315,7 @@ class TPadPainter extends ObjectPainter {
       this.#doing_draw.shift();
       if (!this.#doing_draw.length)
          this.#doing_draw = undefined;
-       else {
+      else {
          const entry = this.#doing_draw[0];
          if (entry.func) {
             entry.func();
@@ -2158,7 +2159,7 @@ class TPadPainter extends ObjectPainter {
       // apply all changes in the object (pad or canvas)
       if (this.isCanvas())
          this.createCanvasSvg(2);
-       else
+      else
          this.createPadSvg(true);
 
       let missmatch = false;
@@ -2277,17 +2278,19 @@ class TPadPainter extends ObjectPainter {
          cp = this.isCanvas() ? this : this.getCanvPainter();
 
       if (this.getSnapId()) {
-         elem = { _typename: 'TWebPadOptions', snapid: this.getSnapId(),
-                  active: Boolean(this.is_active_pad),
-                  cw: 0, ch: 0, w: [],
-                  bits: 0, primitives: [],
-                  logx: this.#pad.fLogx, logy: this.#pad.fLogy, logz: this.#pad.fLogz,
-                  gridx: this.#pad.fGridx, gridy: this.#pad.fGridy,
-                  tickx: this.#pad.fTickx, ticky: this.#pad.fTicky,
-                  mleft: this.#pad.fLeftMargin, mright: this.#pad.fRightMargin,
-                  mtop: this.#pad.fTopMargin, mbottom: this.#pad.fBottomMargin,
-                  xlow: 0, ylow: 0, xup: 1, yup: 1,
-                  zx1: 0, zx2: 0, zy1: 0, zy2: 0, zz1: 0, zz2: 0, phi: 0, theta: 0 };
+         elem = {
+            _typename: 'TWebPadOptions', snapid: this.getSnapId(),
+            active: Boolean(this.is_active_pad),
+            cw: 0, ch: 0, w: [],
+            bits: 0, primitives: [],
+            logx: this.#pad.fLogx, logy: this.#pad.fLogy, logz: this.#pad.fLogz,
+            gridx: this.#pad.fGridx, gridy: this.#pad.fGridy,
+            tickx: this.#pad.fTickx, ticky: this.#pad.fTicky,
+            mleft: this.#pad.fLeftMargin, mright: this.#pad.fRightMargin,
+            mtop: this.#pad.fTopMargin, mbottom: this.#pad.fBottomMargin,
+            xlow: 0, ylow: 0, xup: 1, yup: 1,
+            zx1: 0, zx2: 0, zy1: 0, zy2: 0, zz1: 0, zz2: 0, phi: 0, theta: 0
+         };
 
          if (this.isCanvas()) {
             elem.bits = this.getStatusBits();
@@ -2461,7 +2464,7 @@ class TPadPainter extends ObjectPainter {
                res = (separ > 0) ? res.slice(separ+7) : '';
             }
             if (res)
-              this.getCanvPainter()?.sendWebsocket(`SAVE:${filename}:${res}`);
+               this.getCanvPainter()?.sendWebsocket(`SAVE:${filename}:${res}`);
          } else {
             const prefix = (kind === 'svg') ? prSVG : (kind === 'json' ? prJSON : '');
             saveFile(filename, prefix ? prefix + encodeURIComponent(imgdata) : imgdata);

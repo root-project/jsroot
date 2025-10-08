@@ -390,8 +390,8 @@ class RPadPainter extends RObjectPainter {
                       { fOrdinal: 0.75, fColor: { fColor: 'rgb(209, 187, 89)' } },
                       { fOrdinal: 0.875, fColor: { fColor: 'rgb(254, 200, 50)' } },
                       { fOrdinal: 1, fColor: { fColor: 'rgb(249, 251, 14)' } }],
-             fInterpolate: true,
-             fNormalized: true
+            fInterpolate: true,
+            fNormalized: true
          };
          addMethods(this.fDfltPalette, `${nsREX}RPalette`);
       }
@@ -601,12 +601,12 @@ class RPadPainter extends RObjectPainter {
             .attr('height', rect.height)
             .style('position', 'absolute');
       } else {
-        svg.attr('x', 0)
-           .attr('y', 0)
-           .style('width', '100%')
-           .style('height', '100%')
-           .style('position', 'absolute')
-           .style('left', 0).style('top', 0).style('bottom', 0).style('right', 0);
+         svg.attr('x', 0)
+            .attr('y', 0)
+            .style('width', '100%')
+            .style('height', '100%')
+            .style('position', 'absolute')
+            .style('left', 0).style('top', 0).style('bottom', 0).style('right', 0);
       }
 
       svg.style('filter', settings.DarkMode ? 'invert(100%)' : null);
@@ -1019,7 +1019,7 @@ class RPadPainter extends RObjectPainter {
       return sync_promise.then(() => {
          if (this.isCanvas())
             this.createCanvasSvg(2);
-          else
+         else
             showsubitems = this.createPadSvg(true);
 
          return redrawNext(0);
@@ -1150,7 +1150,7 @@ class RPadPainter extends RObjectPainter {
          const colors = this.getColors() || getRootColors();
          for (let k = 0; k < snap.fColIndex.length; ++k)
             colors[snap.fColIndex[k]] = convertColor(snap.fColValue[k]);
-       }
+      }
 
       // painter used only for evaluation of attributes
       const pattr = new RObjectPainter(), obj = snap.fObject;
@@ -1363,7 +1363,7 @@ class RPadPainter extends RObjectPainter {
          this.#pad = snap;
 
          if (this.isBatchMode() && this.isCanvas())
-             this.#fixed_size = true;
+            this.#fixed_size = true;
 
          const mainid = this.selectDom().attr('id');
 
@@ -1390,7 +1390,7 @@ class RPadPainter extends RObjectPainter {
       // apply all changes in the object (pad or canvas)
       if (this.isCanvas())
          this.createCanvasSvg(2);
-       else
+      else
          this.createPadSvg(true);
 
       let missmatch = false, i = 0, k = 0;
@@ -1526,7 +1526,7 @@ class RPadPainter extends RObjectPainter {
                res = (separ > 0) ? res.slice(separ+7) : '';
             }
             if (res)
-              this.getCanvPainter()?.sendWebsocket(`SAVE:${filename}:${res}`);
+               this.getCanvPainter()?.sendWebsocket(`SAVE:${filename}:${res}`);
          } else
             saveFile(filename, (kind !== 'svg') ? imgdata : prSVG + encodeURIComponent(imgdata));
       });

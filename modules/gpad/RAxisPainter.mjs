@@ -97,7 +97,7 @@ class RAxisPainter extends RObjectPainter {
          delete this.own_labels;
       } else if (opts.labels)
          this.kind = kAxisLabels;
-       else
+      else
          this.kind = kAxisNormal;
 
       if (this.kind === kAxisTime)
@@ -248,7 +248,7 @@ class RAxisPainter extends RObjectPainter {
          // avoid black filling by middle-size
          if ((handle.middle.length <= handle.major.length) || (handle.middle.length > gr_range))
             handle.minor = handle.middle = handle.major;
-          else if ((this.nticks3 > 1) && !this.log) {
+         else if ((this.nticks3 > 1) && !this.log) {
             handle.minor = this.produceTicks(handle.middle.length, this.nticks3);
             if ((handle.minor.length <= handle.middle.length) || (handle.minor.length > gr_range))
                handle.minor = handle.middle;
@@ -305,12 +305,12 @@ class RAxisPainter extends RObjectPainter {
                   ord1 = (maxtick > 0) ? Math.round(Math.log10(maxtick)/3)*3 : 0,
                   ord2 = (mintick > 0) ? Math.round(Math.log10(mintick)/3)*3 : 0;
 
-             exclorder3 = (maxtick < 2e4); // do not show 10^3 for values below 20000
+            exclorder3 = (maxtick < 2e4); // do not show 10^3 for values below 20000
 
-             if (maxtick || mintick) {
-                maxorder = Math.max(ord1, ord2) + 3;
-                minorder = Math.min(ord1, ord2) - 3;
-             }
+            if (maxtick || mintick) {
+               maxorder = Math.max(ord1, ord2) + 3;
+               minorder = Math.min(ord1, ord2) - 3;
+            }
          }
 
          // now try to find best combination of order and ndig for labels
@@ -414,7 +414,7 @@ class RAxisPainter extends RObjectPainter {
                  .call(addHighlightStyle, true);
          if (this.vertical)
             this.drag_pos0 = pos[0];
-          else
+         else
             this.drag_pos0 = pos[1];
 
 
@@ -463,7 +463,7 @@ class RAxisPainter extends RObjectPainter {
             evnt.sourceEvent.stopPropagation();
 
             const box = title_g.node().getBBox(), // check that elements visible, request precise value
-                title_length = this.vertical ? box.height : box.width;
+                  title_length = this.vertical ? box.height : box.width;
 
             new_x = acc_x = title_g.property('shift_x');
             new_y = acc_y = title_g.property('shift_y');
@@ -476,7 +476,7 @@ class RAxisPainter extends RObjectPainter {
             // let d = ((this.gr_range > 0) && this.vertical) ? title_length : 0;
             alt_pos = [0, this.gr_range/2, this.gr_range]; // possible positions
             const off = this.vertical ? -title_length : title_length,
-                swap = this.isReverseAxis() ? 2 : 0;
+                  swap = this.isReverseAxis() ? 2 : 0;
             if (this.title_align === 'middle') {
                alt_pos[swap] += off/2;
                alt_pos[2-swap] -= off/2;
@@ -497,63 +497,63 @@ class RAxisPainter extends RObjectPainter {
                  .attr('height', box.height)
                  .style('cursor', 'move')
                  .call(addHighlightStyle, true);
-              // .style('pointer-events','none'); // let forward double click to underlying elements
-          }).on('drag', evnt => {
-               if (!drag_rect)
-                  return;
+            // .style('pointer-events','none'); // let forward double click to underlying elements
+         }).on('drag', evnt => {
+            if (!drag_rect)
+               return;
 
-               evnt.sourceEvent.preventDefault();
-               evnt.sourceEvent.stopPropagation();
+            evnt.sourceEvent.preventDefault();
+            evnt.sourceEvent.stopPropagation();
 
-               acc_x += evnt.dx;
-               acc_y += evnt.dy;
+            acc_x += evnt.dx;
+            acc_y += evnt.dy;
 
-               const p = this.vertical ? acc_y : acc_x;
-               let set_x, set_y, besti = 0;
+            const p = this.vertical ? acc_y : acc_x;
+            let set_x, set_y, besti = 0;
 
-               for (let i = 1; i < 3; ++i) {
-                  if (Math.abs(p - alt_pos[i]) < Math.abs(p - alt_pos[besti]))
-                     besti = i;
-               }
+            for (let i = 1; i < 3; ++i) {
+               if (Math.abs(p - alt_pos[i]) < Math.abs(p - alt_pos[besti]))
+                  besti = i;
+            }
 
-               if (this.vertical) {
-                  set_x = acc_x;
-                  set_y = alt_pos[besti];
-               } else {
-                  set_x = alt_pos[besti];
-                  set_y = acc_y;
-               }
+            if (this.vertical) {
+               set_x = acc_x;
+               set_y = alt_pos[besti];
+            } else {
+               set_x = alt_pos[besti];
+               set_y = acc_y;
+            }
 
-               new_x = set_x;
-               new_y = set_y;
-               curr_indx = besti;
-               makeTranslate(title_g, new_x, new_y);
-          }).on('end', evnt => {
-               if (!drag_rect)
-                  return;
+            new_x = set_x;
+            new_y = set_y;
+            curr_indx = besti;
+            makeTranslate(title_g, new_x, new_y);
+         }).on('end', evnt => {
+            if (!drag_rect)
+               return;
 
-               evnt.sourceEvent.preventDefault();
-               evnt.sourceEvent.stopPropagation();
+            evnt.sourceEvent.preventDefault();
+            evnt.sourceEvent.stopPropagation();
 
-               const basepos = title_g.property('basepos') || 0;
+            const basepos = title_g.property('basepos') || 0;
 
-               title_g.property('shift_x', new_x)
+            title_g.property('shift_x', new_x)
                       .property('shift_y', new_y);
 
-               this.titleOffset = (this.vertical ? basepos - new_x : new_y - basepos) * side;
+            this.titleOffset = (this.vertical ? basepos - new_x : new_y - basepos) * side;
 
-               if (curr_indx === 1)
-                  this.titlePos = 'center';
-                else if (curr_indx === 0)
-                  this.titlePos = 'left';
-                else
-                  this.titlePos = 'right';
+            if (curr_indx === 1)
+               this.titlePos = 'center';
+            else if (curr_indx === 0)
+               this.titlePos = 'left';
+            else
+               this.titlePos = 'right';
 
-               this.changeAxisAttr(0, 'title_position', this.titlePos, 'title_offset', this.titleOffset / this.scalingSize);
+            this.changeAxisAttr(0, 'title_position', this.titlePos, 'title_offset', this.titleOffset / this.scalingSize);
 
-               drag_rect.remove();
-               drag_rect = null;
-            });
+            drag_rect.remove();
+            drag_rect = null;
+         });
 
       title_g.style('cursor', 'move').call(drag_move);
    }
@@ -655,11 +655,13 @@ class RAxisPainter extends RObjectPainter {
                .attr('d', res)
                .style('stroke', this.ticksColor || this.lineatt.color)
                .style('stroke-width', !this.ticksWidth || (this.ticksWidth === 1) ? null : this.ticksWidth);
-       }
+      }
 
-       const gap0 = Math.round(0.25*this.ticksSize), gap = Math.round(1.25*this.ticksSize);
-       return { '-1': (side > 0) || ticks_plusminus ? gap : gap0,
-                  1: (side < 0) || ticks_plusminus ? gap : gap0 };
+      const gap0 = Math.round(0.25*this.ticksSize), gap = Math.round(1.25*this.ticksSize);
+      return {
+         '-1': (side > 0) || ticks_plusminus ? gap : gap0,
+         1: (side < 0) || ticks_plusminus ? gap : gap0
+      };
    }
 
    /** @summary Performs labels drawing
@@ -755,20 +757,20 @@ class RAxisPainter extends RObjectPainter {
 
          if (this.order) {
             this.drawText({ x: this.vertical ? side*5 : this.getGrRange(5),
-                           y: this.has_obstacle ? fix_coord : (this.vertical ? this.getGrRange(3) : -3*side),
-                           align: this.vertical ? ((side < 0) ? 30 : 10) : ((this.has_obstacle ^ (side < 0)) ? 13 : 10),
-                           latex: 1,
-                           text: '#times' + this.formatExp(10, this.order),
-                           draw_g: label_g });
+               y: this.has_obstacle ? fix_coord : (this.vertical ? this.getGrRange(3) : -3*side),
+               align: this.vertical ? ((side < 0) ? 30 : 10) : ((this.has_obstacle ^ (side < 0)) ? 13 : 10),
+               latex: 1,
+               text: '#times' + this.formatExp(10, this.order),
+               draw_g: label_g });
          }
 
          return this.finishTextDrawing(label_g);
       }).then(() => {
          if (lbls_tilt) {
-           label_g.selectAll('text').each(function() {
+            label_g.selectAll('text').each(function() {
                const txt = d3_select(this), tr = txt.attr('transform');
                txt.attr('transform', tr + ' rotate(25)').style('text-anchor', 'start');
-           });
+            });
          }
 
          if (this.vertical)
@@ -818,14 +820,18 @@ class RAxisPainter extends RObjectPainter {
             title_basepos = Math.round(-side*(lgaps[side]));
             title_shift_x = title_basepos + Math.round(-side*this.titleOffset);
             title_shift_y = Math.round(this.titleCenter ? this.gr_range/2 : (this.titleOpposite ? 0 : this.gr_range));
-            this.drawText({ align: [this.title_align, ((side < 0) ^ rotated ? 'top' : 'bottom')],
-                           text: this.fTitle, draw_g: title_g });
+            this.drawText({
+               align: [this.title_align, ((side < 0) ^ rotated ? 'top' : 'bottom')],
+               text: this.fTitle, draw_g: title_g
+            });
          } else {
             title_shift_x = Math.round(this.titleCenter ? this.gr_range/2 : (this.titleOpposite ? 0 : this.gr_range));
             title_basepos = Math.round(side*lgaps[side]);
             title_shift_y = title_basepos + Math.round(side*this.titleOffset);
-            this.drawText({ align: [this.title_align, ((side > 0) ^ rotated ? 'top' : 'bottom')],
-                           text: this.fTitle, draw_g: title_g });
+            this.drawText({
+               align: [this.title_align, ((side > 0) ^ rotated ? 'top' : 'bottom')],
+               text: this.fTitle, draw_g: title_g
+            });
          }
 
          makeTranslate(title_g, title_shift_x, title_shift_y)
@@ -843,7 +849,7 @@ class RAxisPainter extends RObjectPainter {
      * @private  */
    extractDrawAttributes(scalingSize) {
       const pp = this.getPadPainter(),
-          rect = pp?.getPadRect() || { width: 10, height: 10 };
+            rect = pp?.getPadRect() || { width: 10, height: 10 };
 
       this.scalingSize = scalingSize || (this.vertical ? rect.width : rect.height);
 
@@ -927,8 +933,7 @@ class RAxisPainter extends RObjectPainter {
 
       // first draw ticks
       const tgaps = this.drawTicks(axis_g, side, true),
-             // draw labels
-            labelsPromise = this.optionUnlab ? Promise.resolve(tgaps) : this.drawLabels(axis_g, side, tgaps);
+            labelsPromise = this.optionUnlab ? Promise.resolve(tgaps) : this.drawLabels(axis_g, side, tgaps); // draw labels
 
       return labelsPromise.then(lgaps => {
          // when drawing axis on frame, zoom rect should be always outside
@@ -1043,16 +1048,18 @@ class RAxisPainter extends RObjectPainter {
                evnt.stopPropagation(); // disable main context menu
                evnt.preventDefault();  // disable browser context menu
                createMenu(evnt, this).then(menu => {
-                 menu.header('RAxisDrawable', `${urlClassPrefix}ROOT_1_1Experimental_1_1RAxisBase.html`);
-                 menu.add('Unzoom', () => this.zoomStandalone());
-                 this.fillAxisContextMenu(menu, '');
-                 menu.show();
+                  menu.header('RAxisDrawable', `${urlClassPrefix}ROOT_1_1Experimental_1_1RAxisBase.html`);
+                  menu.add('Unzoom', () => this.zoomStandalone());
+                  this.fillAxisContextMenu(menu, '');
+                  menu.show();
                });
             });
          }
 
-         addDragHandler(this, { x: pos.x, y: pos.y, width: this.vertical ? 10 : len, height: this.vertical ? len : 10,
-                                only_move: true, redraw: d => this.positionChanged(d) });
+         addDragHandler(this, {
+            x: pos.x, y: pos.y, width: this.vertical ? 10 : len, height: this.vertical ? len : 10,
+            only_move: true, redraw: d => this.positionChanged(d)
+         });
 
          g.on('dblclick', () => this.zoomStandalone());
 
@@ -1075,9 +1082,9 @@ class RAxisPainter extends RObjectPainter {
    /** @summary Process interactive moving of the axis drawing */
    positionChanged(drag) {
       const drawable = this.getObject(),
-          rect = this.getPadPainter().getPadRect(),
-          xn = drag.x / rect.width,
-          yn = 1 - drag.y / rect.height;
+            rect = this.getPadPainter().getPadRect(),
+            xn = drag.x / rect.width,
+            yn = 1 - drag.y / rect.height;
 
       drawable.fPos.fHoriz.fArr = [xn];
       drawable.fPos.fVert.fArr = [yn];
@@ -1142,9 +1149,9 @@ class RAxisPainter extends RObjectPainter {
       if (!this.optionUnlab && this.labelsFont) {
          menu.sub('Labels');
          menu.addSizeMenu('offset', -0.05, 0.05, 0.01, this.labelsOffset/this.scalingSize,
-                         offset => this.changeAxisAttr(1, 'labels_offset', offset));
+                          offset => this.changeAxisAttr(1, 'labels_offset', offset));
          menu.addRAttrTextItems(this.labelsFont, { noangle: 1, noalign: 1 },
-               change => this.changeAxisAttr(1, 'labels_' + change.name, change.value));
+                                change => this.changeAxisAttr(1, 'labels_' + change.name, change.value));
          menu.addchk(this.labelsFont.angle, 'rotate', res => this.changeAxisAttr(1, 'labels_angle', res ? 180 : 0));
          menu.endsub();
       }
@@ -1153,7 +1160,7 @@ class RAxisPainter extends RObjectPainter {
 
       if (this.fTitle) {
          menu.addSizeMenu('offset', -0.05, 0.05, 0.01, this.titleOffset/this.scalingSize,
-                           offset => this.changeAxisAttr(1, 'title_offset', offset));
+                          offset => this.changeAxisAttr(1, 'title_offset', offset));
 
          menu.addSelectMenu('position', ['left', 'center', 'right'], this.titlePos,
                             pos => this.changeAxisAttr(1, 'title_position', pos));
