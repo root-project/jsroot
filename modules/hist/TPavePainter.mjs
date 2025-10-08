@@ -95,8 +95,8 @@ class TPavePainter extends ObjectPainter {
                         break;
                      }
                   }
-                }
-                raster[iy * nX + ix] = filled;
+               }
+               raster[iy * nX + ix] = filled;
             }
          }
 
@@ -104,15 +104,15 @@ class TPavePainter extends ObjectPainter {
                legHeight = Math.min(0.5, Math.max(0.1, pt.fPrimitives.arr.length*0.05)) / Math.max(0.2, (1 - tm - bm)),
                needW = Math.round(legWidth * nX), needH = Math.round(legHeight * nY),
 
-          test = (x, y) => {
-            for (let ix = x; ix < x + needW; ++ix) {
-               for (let iy = y; iy < y + needH; ++iy) {
-                  if (raster[iy * nX + ix])
-                     return false;
-               }
-            }
-            return true;
-         };
+               test = (x, y) => {
+                  for (let ix = x; ix < x + needW; ++ix) {
+                     for (let iy = y; iy < y + needH; ++iy) {
+                        if (raster[iy * nX + ix])
+                           return false;
+                     }
+                  }
+                  return true;
+               };
 
          for (let ix = 0; ix < (nX - needW); ++ix) {
             for (let iy = nY-needH - 1; iy >= 0; --iy) {
@@ -452,10 +452,10 @@ class TPavePainter extends ObjectPainter {
          res.fopt = [pave.fX1NDC, pave.fY1NDC, pave.fX2NDC, pave.fY2NDC];
 
          if ((pave.fName === 'stats') && this.isStats()) {
-             pave.fLines.arr.forEach(entry => {
-                if ((entry._typename === clTText) || (entry._typename === clTLatex))
-                   res.fcust += `;;${entry.fTitle}`;
-             });
+            pave.fLines.arr.forEach(entry => {
+               if ((entry._typename === clTText) || (entry._typename === clTLatex))
+                  res.fcust += `;;${entry.fTitle}`;
+            });
          }
       }
 
@@ -486,7 +486,7 @@ class TPavePainter extends ObjectPainter {
          if ((entry._typename === clTText) || (entry._typename === clTLatex)) {
             lines.push(entry.fTitle);
             colors.push(entry.fTextColor);
-          }
+         }
       }
 
       const nlines = lines.length;
@@ -522,8 +522,10 @@ class TPavePainter extends ObjectPainter {
                if (first_stat && (j >= first_stat)) {
                   const parts = lines[j].split('|');
                   for (let n = 0; n < parts.length; ++n) {
-                     this.drawText({ align: 'middle', x: width * n / num_cols, y, latex: 0,
-                                    width: width/num_cols, height: stepy, text: parts[n], color });
+                     this.drawText({
+                        align: 'middle', x: width * n / num_cols, y, latex: 0,
+                        width: width/num_cols, height: stepy, text: parts[n], color
+                     });
                   }
                } else if (lines[j].indexOf('=') < 0) {
                   if (j === 0) {
@@ -532,8 +534,10 @@ class TPavePainter extends ObjectPainter {
                      if (lines[j].length > max_hlen + 5)
                         lines[j] = lines[j].slice(0, max_hlen+2) + '...';
                   }
-                  this.drawText({ align: (j === 0) ? 'middle' : 'start', x: margin_x, y,
-                                 width: width-2*margin_x, height: stepy, text: lines[j], color });
+                  this.drawText({
+                     align: (j === 0) ? 'middle' : 'start', x: margin_x, y,
+                     width: width-2*margin_x, height: stepy, text: lines[j], color
+                  });
                } else {
                   const parts = lines[j].split('='), args = [];
 
@@ -647,13 +651,17 @@ class TPavePainter extends ObjectPainter {
                            draw_g = text_g.append('svg:g');
 
                      promises.push(this.startTextDrawingAsync(this.textatt.font, this.textatt.getAltSize(entry.fTextSize, pp) || alt_text_size, draw_g)
-                                       .then(() => this.drawText({ align, x, y, text: entry.fTitle, color,
-                                                                   latex: (entry._typename === clTText) ? 0 : 1, draw_g, fast }))
+                                       .then(() => this.drawText({
+                                          align, x, y, text: entry.fTitle, color,
+                                          latex: (entry._typename === clTText) ? 0 : 1, draw_g, fast
+                                       }))
                                        .then(() => this.finishTextDrawing(draw_g)));
                   } else {
-                     const arg = { x: 0, y: texty, draw_g: text_g,
-                                   latex: (entry._typename === clTText) ? 0 : 1,
-                                   text: entry.fTitle, color, fast };
+                     const arg = {
+                        x: 0, y: texty, draw_g: text_g,
+                        latex: (entry._typename === clTText) ? 0 : 1,
+                        text: entry.fTitle, color, fast
+                     };
 
                      if (this.$postitle) {
                         // remember box produced by title text
@@ -782,7 +790,7 @@ class TPavePainter extends ObjectPainter {
             any_text = true;
             if ((entry.fTextFont && (entry.fTextFont !== legend.fTextFont)) ||
                 (entry.fTextSize && (entry.fTextSize !== legend.fTextSize)))
-                   custom_textg = true;
+               custom_textg = true;
          }
       }
 
@@ -962,11 +970,13 @@ class TPavePainter extends ObjectPainter {
 
             if (entry.fLabel) {
                const textatt = this.createAttText({ attr: entry, std: false, attr_alt: legend }),
-                     arg = { draw_g: this.getG(), align: textatt.align,
-                             x: pos_x, width: Math.round(column_pos[icol + 1] - pos_x),
-                             y: y0, height: Math.round(row_height),
-                             scale: (custom_textg && !entry.fTextSize) || !legend.fTextSize,
-                             text: entry.fLabel, color: textatt.color };
+                     arg = {
+                        draw_g: this.getG(), align: textatt.align,
+                        x: pos_x, width: Math.round(column_pos[icol + 1] - pos_x),
+                        y: y0, height: Math.round(row_height),
+                        scale: (custom_textg && !entry.fTextSize) || !legend.fTextSize,
+                        text: entry.fLabel, color: textatt.color
+                     };
                if (custom_textg) {
                   arg.draw_g = this.getG().append('svg:g');
                   text_promises.push(this.startTextDrawingAsync(textatt.font, textatt.getSize(pp), arg.draw_g, max_font_size)
@@ -1288,7 +1298,7 @@ class TPavePainter extends ObjectPainter {
             if (item?.changed)
                this.getFramePainter().zoomSingle('z', item.min, item.max, true);
          });
-       }
+      }
    }
 
    /** @summary Fill context menu items for the TPave object */
@@ -1494,7 +1504,7 @@ class TPavePainter extends ObjectPainter {
       if (this.z_handle) {
          const fp = this.getFramePainter();
          if (isFunc(fp?.showContextMenu))
-             fp.showContextMenu('pal', evnt);
+            fp.showContextMenu('pal', evnt);
       } else
          showPainterMenu(evnt, this);
    }
