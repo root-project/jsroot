@@ -32,8 +32,8 @@ class EmulationMouseEvent {
       this.$touch_arr = [[Math.round(x1), Math.round(y1)], [Math.round(x2), Math.round(y2)]];
    }
 
-  preventDefault() {}
-  stopPropagation() {}
+   preventDefault() {}
+   stopPropagation() {}
 
 } // class EmulationMouseEvent
 
@@ -103,7 +103,7 @@ async function testMouseZooming(node, args, pp) {
    if ((typeof fp?.startRectSel !== 'function') ||
        (typeof fp?.moveRectSel !== 'function') ||
        (typeof fp?.endRectSel !== 'function'))
-       return;
+      return;
 
    const fw = fp.getFrameWidth(), fh = fp.getFrameHeight(),
          evnt = new EmulationMouseEvent(),
@@ -446,7 +446,7 @@ async function testInteractivity(args) {
                 main.remove();
                 setBatchMode(flag);
                 return true;
-              });
+             });
    });
 }
 
