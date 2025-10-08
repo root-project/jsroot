@@ -100,6 +100,7 @@ export default [
         }],
         '@stylistic/js/keyword-spacing': 'warn',
         '@stylistic/js/semi-spacing': 'warn',
+        '@stylistic/js/semi-style': ['warn', 'last'],
         '@stylistic/js/no-floating-decimal': 'warn',
         '@stylistic/js/no-confusing-arrow': 'warn',
         '@stylistic/js/no-extra-semi': 'warn',
@@ -109,7 +110,6 @@ export default [
         '@stylistic/js/no-trailing-spaces': 'warn',
         '@stylistic/js/no-whitespace-before-property': 'warn',
         '@stylistic/js/object-curly-spacing': ['warn', 'always'],
-        '@stylistic/js/space-in-parens': 'warn',
         '@stylistic/js/key-spacing': 'warn',
         '@stylistic/js/object-property-newline': 'off',
         '@stylistic/js/spaced-comment': 'warn',
@@ -123,7 +123,10 @@ export default [
         '@stylistic/js/quote-props': ['warn', 'as-needed'],
         '@stylistic/js/padded-blocks': ['warn', { blocks: 'never', classes: 'always', switches: 'never' }],
         '@stylistic/js/space-infix-ops': 'off',
-        '@stylistic/js/space-before-function-paren': ['warn', 'never']
+        '@stylistic/js/space-in-parens': 'warn',
+        '@stylistic/js/space-before-blocks': 'warn',
+        '@stylistic/js/space-before-function-paren': ['warn', 'never'],
+        '@stylistic/js/switch-colon-spacing': 'warn'
     }
   }
 ];
