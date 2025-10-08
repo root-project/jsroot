@@ -1037,7 +1037,7 @@ function parseLatex(node, arg, label, curr) {
          if (subpos0)
             positionGNode(subpos0, 0, midy - subpos0.fsize*0.3, true);
 
-         path.attr('d', `M0,${midy}h${h1}l${h1},${r_y2-midy-f2}l${h1},${-h+f2}h${Math.round(h*0.2+w)}v${h1}`);
+         path.attr('d', `M0,${midy}h${h1}l${h1},${r_y2-midy-f2}l${h1},${f2-h}h${Math.round(h*0.2+w)}v${h1}`);
 
          positionGNode(subpos, h*0.4, 0, true);
 
