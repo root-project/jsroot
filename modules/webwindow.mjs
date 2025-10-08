@@ -127,7 +127,7 @@ class LongPollSocket {
                if (str === '<<nope>>')
                   this.handle.processRequest(-1111);
                else
-                   this.handle.processRequest(str);
+                  this.handle.processRequest(str);
             }
             if (offset < u8Arr.length)
                this.handle.processRequest(res, offset);
@@ -199,8 +199,8 @@ class LongPollSocket {
       // minimal timeout to reduce load, generate dummy only if client not submit new request immediately
       if (!this.req) {
          setTimeout(() => {
-           if (!this.req)
-            this.nextRequest('', 'dummy');
+            if (!this.req)
+               this.nextRequest('', 'dummy');
          }, dummy_tmout);
       }
    }
@@ -530,8 +530,8 @@ class WebWindowHandle {
       d[kind] = msg;
       if (!d[`${kind}_handler`]) {
          d[`${kind}_handler`] = setTimeout(() => {
-           delete d[`${kind}_handler`];
-           this.send(d[kind]);
+            delete d[`${kind}_handler`];
+            this.send(d[kind]);
          }, tmout);
       }
    }
@@ -571,8 +571,8 @@ class WebWindowHandle {
          window.resizeTo(w, h);
    }
 
-      /** @summary Remove existing channel.
-    * @private */
+   /** @summary Remove existing channel.
+     * @private */
    removeChannel(chid) {
       if (this.#channels)
          this.#channels[chid] = undefined;
@@ -892,7 +892,7 @@ class WebWindowHandle {
             evnt.preventDefault();
             console.log('Prevent Ctrl-R propogation - ask reload RWebWindow!');
             this.askReload();
-          }
+         }
       });
    }
 
