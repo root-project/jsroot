@@ -2820,9 +2820,14 @@ class TGeoPainter extends ObjectPainter {
          this.#camera._lights = this.ctrl.light.kind;
 
          switch (this.#camera._lights) {
-            case 'ambient' : this.#camera.add(new THREE.AmbientLight(0xefefef, p)); break;
-            case 'hemisphere' : this.#camera.add(new THREE.HemisphereLight(0xffffbb, 0x080820, p)); break;
-            case 'mix': this.#camera.add(new THREE.AmbientLight(0xefefef, p));
+            case 'ambient':
+               this.#camera.add(new THREE.AmbientLight(0xefefef, p));
+               break;
+            case 'hemisphere':
+               this.#camera.add(new THREE.HemisphereLight(0xffffbb, 0x080820, p));
+               break;
+            case 'mix':
+               this.#camera.add(new THREE.AmbientLight(0xefefef, p));
             // eslint-disable-next-line  no-fallthrough
             default: // 6 point lights
                for (let n = 0; n < 6; ++n) {
