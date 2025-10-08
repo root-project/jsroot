@@ -201,7 +201,7 @@ class ObjectPainter extends BasePainter {
    }
 
    /** @summary Emulate old options property */
-   get options() { return this.getOptions(); };
+   get options() { return this.getOptions(); }
 
    /** @summary Store actual options together with original string
      * @private */

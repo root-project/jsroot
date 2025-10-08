@@ -528,7 +528,7 @@ async function redraw(dom, obj, opt) {
                redraw_res = painter.redrawObject(obj, opt);
                if (redraw_res)
                   res_painter = painter;
-            };
+            }
          }, 'objects');
       }
    } else {

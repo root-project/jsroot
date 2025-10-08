@@ -209,7 +209,7 @@ class TGraphPainter extends ObjectPainter {
          }
          if (d.check('X'))
             res.Errors = 0;
-      };
+      }
 
       const res = this.setOptions({
                Axis: '', NoOpt: 0, PadStats: false, PadPalette: false, original: opt,

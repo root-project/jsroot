@@ -1304,7 +1304,7 @@ class RPadPainter extends RObjectPainter {
          // TODO - fDrawable is v7, fObject from v6, maybe use same data member?
          promise = this.drawObject(this, snap.fDrawable || snap.fObject || snap, snap.fOption || '')
                        .then(objp => this.addObjectPainter(objp, lst, indx));
-      };
+      }
 
       return getPromise(promise).then(() => this.drawNextSnap(lst, pindx, indx)); // call next
    }

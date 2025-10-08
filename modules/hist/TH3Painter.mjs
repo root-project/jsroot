@@ -626,7 +626,7 @@ class TH3Painter extends THistPainter {
                }
             }
             fp.add3DMesh(createLineSegments(positions, helper_material));
-         };
+         }
 
          addLines(Box3D.Segments, bins_matrixes);
          addLines(Box3D.Crosses, negative_matrixes);

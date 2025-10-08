@@ -3201,12 +3201,11 @@ class TGeoPainter extends ObjectPainter {
             more = this.ctrl._axis || (this.ctrl.camera_overlay === 'bar') ? 0.2 : 0.1;
 
       if (this.#scene_size && !force) {
-         function test(v1, v2, scale) {
+         const test = (v1, v2, scale) => {
             if (!scale)
                scale = Math.abs((v1+v2)/2);
             return scale <= 1e-20 ? true : Math.abs(v2-v1)/scale > 0.01;
-         };
-         const d = this.#scene_size;
+         }, d = this.#scene_size;
          if (!test(sizex, d.sizex) && !test(sizey, d.sizey) && !test(sizez, d.sizez) &&
              !test(midx, d.midx, d.sizex) && !test(midy, d.midy, d.sizey) && !test(midz, d.midz, d.sizez)) {
                if (this.ctrl.select_in_view)
