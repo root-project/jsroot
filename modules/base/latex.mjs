@@ -537,7 +537,11 @@ function parseLatex(node, arg, label, curr) {
    },
 
    createSubPos = fscale => {
-      return { lvl: curr.lvl + 1, x: 0, y: 0, fsize: curr.fsize*(fscale || 1), color: curr.color, font: curr.font, parent: curr, painter: curr.painter, italic: curr.italic, bold: curr.bold };
+      return {
+         lvl: curr.lvl + 1, x: 0, y: 0, fsize: curr.fsize*(fscale || 1),
+         color: curr.color, font: curr.font, parent: curr,
+         painter: curr.painter, italic: curr.italic, bold: curr.bold
+      };
    };
 
    while (label) {
