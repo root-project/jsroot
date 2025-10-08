@@ -85,6 +85,7 @@ export default [
         '@stylistic/js/semi': 'warn',
         '@stylistic/js/quotes': ['warn', 'single'],
         '@stylistic/js/indent': 'off',
+        '@stylistic/js/eol-last': ['warn', 'always' ],
         '@stylistic/js/array-bracket-spacing': 'warn',
         '@stylistic/js/comma-spacing': 'warn',
         '@stylistic/js/keyword-spacing': 'warn',
