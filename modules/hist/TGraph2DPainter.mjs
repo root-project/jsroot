@@ -1303,7 +1303,7 @@ class TGraph2DPainter extends ObjectPainter {
       if (!dulaunay)
          return;
 
-      const main_grz = !fp.logz ? fp.grz : value => (value < fp.scale_zmin) ? -0.1 : fp.grz(value),
+      const main_grz = !fp.logz ? fp.grz : value => { return (value < fp.scale_zmin) ? -0.1 : fp.grz(value); },
             o = this.getOptions(),
             plain_mode = o.Triangles === 2,
             do_faces = (o.Triangles >= 10) || plain_mode,

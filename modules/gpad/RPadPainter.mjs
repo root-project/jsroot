@@ -1777,7 +1777,7 @@ class RPadPainter extends RObjectPainter {
    getPadLength(vertical, len, frame_painter) {
       let rect, res;
       const sign = vertical ? -1 : 1,
-            getV = (indx, dflt) => (indx < len.fArr.length) ? len.fArr[indx] : dflt,
+            getV = (indx, dflt) => { return (indx < len.fArr.length) ? len.fArr[indx] : dflt; },
             getRect = () => {
                if (!rect)
                   rect = frame_painter ? frame_painter.getFrameRect() : this.getPadRect();

@@ -2223,7 +2223,7 @@ class TGeoPainter extends ObjectPainter {
       if (!curr_mesh && !active_mesh)
          return false;
 
-      const get_ctrl = mesh => mesh.get_ctrl ? mesh.get_ctrl() : new GeoDrawingControl(mesh, this.ctrl.highlight_bloom && this.#bloomComposer);
+      const get_ctrl = mesh => { return mesh.get_ctrl ? mesh.get_ctrl() : new GeoDrawingControl(mesh, this.ctrl.highlight_bloom && this.#bloomComposer); };
 
       let same = false;
 

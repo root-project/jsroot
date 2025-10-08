@@ -1942,7 +1942,7 @@ class HierarchyPainter extends BasePainter {
       createMenu(evnt, this).then(menu => {
          if ((!itemname || !hitem._parent) && !('_jsonfile' in hitem)) {
             let addr = '', cnt = 0;
-            const files = [], separ = () => (cnt++ > 0) ? '&' : '?';
+            const files = [], separ = () => { return (cnt++ > 0) ? '&' : '?'; };
 
             this.forEachRootFile(item => files.push(item._file.fFullURL));
 
@@ -3888,7 +3888,7 @@ class HierarchyPainter extends BasePainter {
          else {
             return this.refreshHtml()
                    .then(() => this.displayItems(itemsarr, optionsarr))
-                   .then(() => focusitem ? this.focusOnItem(focusitem) : this)
+                   .then(() => { return focusitem ? this.focusOnItem(focusitem) : this; })
                    .then(() => {
                       this.setMonitoring(monitor);
                       return itemsarr ? this.refreshHtml() : this; // this is final return

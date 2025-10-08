@@ -101,6 +101,7 @@ export default [
         '@stylistic/js/keyword-spacing': 'warn',
         '@stylistic/js/semi-spacing': 'warn',
         '@stylistic/js/no-floating-decimal': 'warn',
+        '@stylistic/js/no-confusing-arrow': 'warn',
         '@stylistic/js/no-multi-spaces': ['warn', { ignoreEOLComments: true }],
         '@stylistic/js/no-multiple-empty-lines': ['warn', { max: 2, maxEOF: 0 }],
         '@stylistic/js/object-curly-spacing': ['warn', 'always'],

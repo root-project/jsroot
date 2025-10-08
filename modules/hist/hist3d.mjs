@@ -2101,7 +2101,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
    const histo = painter.getHisto(),
          fp = painter.getFramePainter(),
          axis_zmin = fp.z_handle.getScaleMin(),
-         main_grz = !fp.logz ? fp.grz : value => (value < axis_zmin) ? -0.1 : fp.grz(value),
+         main_grz = !fp.logz ? fp.grz : value => { return (value < axis_zmin) ? -0.1 : fp.grz(value); },
          main_grz_min = 0, main_grz_max = 2*fp.size_z3d;
 
    let handle = painter.prepareDraw({ rounding: false, use3d: true, extra: 1, middle: 0.5,

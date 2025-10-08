@@ -77,7 +77,7 @@ async function loadFontFile(fname) {
          return fs.readFileSync(path).toString('base64');
       }) : httpRequest(path, 'bin').then(buf => btoa_func(buf));
 
-      return pr.then(res => res ? completeReading(res) : tryNext()).catch(() => tryNext());
+      return pr.then(res => { return res ? completeReading(res) : tryNext();}).catch(() => tryNext());
    }
 
    return tryNext();

@@ -12,8 +12,8 @@ const kIsBayesian = BIT(14),  // Bayesian statistics are used
  //   kShortestInterval = BIT(16),  // Use shortest interval, not implemented - too complicated
       kUseBinPrior = BIT(17),  // Use a different prior for each bin
       kUseWeights = BIT(18),  // Use weights
-      getBetaAlpha = (obj, bin) => (obj.fBeta_bin_params.length > bin) ? obj.fBeta_bin_params[bin].first : obj.fBeta_alpha,
-      getBetaBeta = (obj, bin) => (obj.fBeta_bin_params.length > bin) ? obj.fBeta_bin_params[bin].second : obj.fBeta_beta;
+      getBetaAlpha = (obj, bin) => { return (obj.fBeta_bin_params.length > bin) ? obj.fBeta_bin_params[bin].first : obj.fBeta_alpha; },
+      getBetaBeta = (obj, bin) => { return (obj.fBeta_bin_params.length > bin) ? obj.fBeta_bin_params[bin].second : obj.fBeta_beta; };
 
 /**
  * @summary Painter for TEfficiency object
@@ -25,7 +25,7 @@ class TEfficiencyPainter extends ObjectPainter {
 
    /** @summary Calculate efficiency */
    getEfficiency(obj, bin) {
-      const BetaMean = (a, b) => (a <= 0 || b <= 0) ? 0 : a / (a + b),
+      const BetaMean = (a, b) => { return (a <= 0 || b <= 0) ? 0 : a / (a + b); },
             BetaMode = (a, b) => {
          if (a <= 0 || b <= 0)
             return 0;

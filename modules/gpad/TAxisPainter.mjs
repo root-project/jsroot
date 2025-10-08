@@ -571,7 +571,7 @@ class TAxisPainter extends ObjectPainter {
       if (this.kind === kAxisTime)
          this.gr = val => this.func(this.convertDate(val));
       else if (this.log)
-         this.gr = val => (val < this.scale_min) ? (this.vertical ? this.func.range()[0]+5 : -5) : this.func(val);
+         this.gr = val => { return (val < this.scale_min) ? (this.vertical ? this.func.range()[0]+5 : -5) : this.func(val); };
       else
          this.gr = this.func;
 

@@ -2121,7 +2121,7 @@ class TH2Painter extends THistPainter {
             palette = o.Color ? this.getHistPalette() : null,
             scale_x = (handle.grx[handle.i2] - handle.grx[handle.i1])/(handle.i2 - handle.i1 + 1)/2,
             scale_y = (handle.gry[handle.j2] - handle.gry[handle.j1])/(handle.j2 - handle.j1 + 1)/2,
-            makeLine = (dx, dy) => dx ? (dy ? `l${dx},${dy}` : `h${dx}`) : (dy ? `v${dy}` : ''),
+            makeLine = (dx, dy) => { return dx ? (dy ? `l${dx},${dy}` : `h${dx}`) : (dy ? `v${dy}` : ''); },
             entries = [];
       let dn = 1e-30, dx, dy, xc, yc, plain = '',
           dxn, dyn, x1, x2, y1, y2;
@@ -3186,7 +3186,7 @@ class TH2Painter extends THistPainter {
             innerRadius = Math.max(2, outerRadius - 10),
             data = [], labels = [],
             formatValue = v => v.toString(),
-            formatTicks = v => ndig > 3 ? v.toExponential(0) : v.toFixed(ndig),
+            formatTicks = v => { return (ndig > 3) ? v.toExponential(0) : v.toFixed(ndig); },
             d3_descending = (a, b) => { return b < a ? -1 : b > a ? 1 : b >= a ? 0 : Number.NaN; };
 
       if (!isint && fullsum < 10) {
@@ -3265,8 +3265,8 @@ class TH2Painter extends THistPainter {
       groupTick.append('text')
          .attr('x', 8)
          .attr('dy', '0.35em')
-         .attr('transform', d => d.angle > Math.PI ? 'rotate(180) translate(-16)' : null)
-         .attr('text-anchor', d => d.angle > Math.PI ? 'end' : null)
+         .attr('transform', d => { return (d.angle > Math.PI) ? 'rotate(180) translate(-16)' : null; })
+         .attr('text-anchor', d => { return (d.angle > Math.PI) ? 'end' : null; })
          .text(d => formatTicks(d.value));
 
       group.select('text')
