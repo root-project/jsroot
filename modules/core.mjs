@@ -958,7 +958,10 @@ function findFunction(name) {
 function createHttpRequest(url, kind, user_accept_callback, user_reject_callback, use_promise) {
    function configureXhr(xhr) {
       xhr.http_callback = isFunc(user_accept_callback) ? user_accept_callback.bind(xhr) : () => {};
-      xhr.error_callback = isFunc(user_reject_callback) ? user_reject_callback.bind(xhr) : function(err) { console.warn(err.message); this.http_callback(null); }.bind(xhr);
+      xhr.error_callback = isFunc(user_reject_callback) ? user_reject_callback.bind(xhr) : function(err) {
+         console.warn(err.message);
+         this.http_callback(null);
+      }.bind(xhr);
 
       if (!kind)
          kind = 'buf';
@@ -970,11 +973,21 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
          is_async = false;
       }
       switch (kind) {
-         case 'head': method = 'HEAD'; break;
-         case 'posttext': method = 'POST'; kind = 'text'; break;
-         case 'postbuf': method = 'POST'; kind = 'buf'; break;
+         case 'head':
+            method = 'HEAD';
+            break;
+         case 'posttext':
+            method = 'POST';
+            kind = 'text';
+            break;
+         case 'postbuf':
+            method = 'POST';
+            kind = 'buf';
+            break;
          case 'post':
-         case 'multi': method = 'POST'; break;
+         case 'multi':
+            method = 'POST';
+            break;
       }
 
       xhr.kind = kind;
@@ -1229,7 +1242,10 @@ async function loadScript(url) {
 
    return new Promise((resolveFunc, rejectFunc) => {
       element.onload = () => resolveFunc(true);
-      element.onerror = () => { element.remove(); rejectFunc(Error(`Fail to load ${url}`)); };
+      element.onerror = () => {
+         element.remove();
+         rejectFunc(Error(`Fail to load ${url}`));
+      };
       document.head.appendChild(element);
    });
 }

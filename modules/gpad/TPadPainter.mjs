@@ -2790,6 +2790,7 @@ class TPadPainter extends ObjectPainter {
             forEach(func, pad);
       }
 
+      /* eslint-disable @stylistic/js/max-statements-per-line */
       padOpt('NOMARGINS', p => { p.fLeftMargin = p.fRightMargin = p.fBottomMargin = p.fTopMargin = 0; });
       padOpt('WHITE', p => { p.fFillColor = 0; });
       padOpt('LOG2X', p => { p.fLogx = 2; p.fUxmin = 0; p.fUxmax = 1; p.fX1 = 0; p.fX2 = 1; });
