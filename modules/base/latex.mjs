@@ -967,7 +967,7 @@ function parseLatex(node, arg, label, curr) {
                subpos = createSubPos();
 
          gg.attr('href', foundarg);
-         if (!isBatchMode()) {
+         if (!isBatchMode() && !curr.painter?.isBatchMode()) {
             gg.on('mouseenter', () => gg.style('text-decoration', 'underline'))
               .on('mouseleave', () => gg.style('text-decoration', null))
               .append('svg:title').text(`link on ${foundarg}`);
