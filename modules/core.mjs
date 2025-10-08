@@ -803,8 +803,8 @@ function parseMulti(json) {
 }
 
 /** @summary Method converts JavaScript object into ROOT-like JSON
-  * @desc When performed properly, JSON can be used in [TBufferJSON::fromJSON()]{@link https://root.cern/doc/master/classTBufferJSON.html#a2ecf0daacdad801e60b8093a404c897d} method to read data back with C++
-  * Or one can again parse json with {@link parse} function
+  * @desc When performed properly, JSON can be used in [TBufferJSON::fromJSON()]{@link https://root.cern/doc/master/classTBufferJSON.html}
+  * method to read data back with C++. Or one can again parse json with {@link parse} function
   * @param {object} obj - JavaScript object to convert
   * @param {number} [spacing] - optional line spacing in JSON
   * @return {string} produced JSON code

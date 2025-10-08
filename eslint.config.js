@@ -88,6 +88,12 @@ export default [
         '@stylistic/js/eol-last': ['warn', 'always' ],
         '@stylistic/js/array-bracket-spacing': 'warn',
         '@stylistic/js/comma-spacing': 'warn',
+        '@stylistic/js/max-len': ['warn', {
+           code: 200,
+           ignoreStrings: true,
+           ignoreTemplateLiterals: true,
+           tabWidth: 3
+        }],
         '@stylistic/js/keyword-spacing': 'warn',
         '@stylistic/js/semi-spacing': 'warn',
         '@stylistic/js/no-floating-decimal': 'warn',

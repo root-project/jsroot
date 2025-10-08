@@ -525,7 +525,7 @@ class TH1Painter extends THistPainter {
                else if (text_angle)
                   this.drawText({ align: 12, x: grx1+w/2, y: Math.round(gry1 - 2 - text_size/5), width: 0, height: 0, rotate: text_angle, text, color: text_col, latex: 0 });
                else
-                  this.drawText({ align: 22, x: Math.round(grx1 + w*0.1), y: Math.round(gry1 - 2 - text_size), width: Math.round(w*0.8), height: text_size, text, color: text_col, latex: 0 });
+                  this.drawText({ align: 22, x: Math.round(grx1+w*0.1), y: Math.round(gry1-2-text_size), width: Math.round(w*0.8), height: text_size, text, color: text_col, latex: 0 });
             }
          }
 

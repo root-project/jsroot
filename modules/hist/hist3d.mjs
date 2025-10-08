@@ -1533,7 +1533,10 @@ function convert3DtoPadNDC(x, y, z) {
 /** @summary Assign 3D methods for frame painter
   * @private */
 function assignFrame3DMethods(fp) {
-   Object.assign(fp, { create3DScene, add3DMesh, get3DMeshes, remove3DMeshes, getRenderer, render3D, resize3D, change3DCamera, highlightBin3D, set3DOptions, drawXYZ, convert3DtoPadNDC });
+   Object.assign(fp, {
+      create3DScene, add3DMesh, get3DMeshes, remove3DMeshes, getRenderer,
+      render3D, resize3D, change3DCamera, highlightBin3D, set3DOptions, drawXYZ, convert3DtoPadNDC
+   });
 }
 
 
