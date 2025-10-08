@@ -212,9 +212,9 @@ class TGraphPainter extends ObjectPainter {
       }
 
       const res = this.setOptions({
-               Axis: '', NoOpt: 0, PadStats: false, PadPalette: false, original: opt,
-               second_x: false, second_y: false, individual_styles: false
-            });
+         Axis: '', NoOpt: 0, PadStats: false, PadPalette: false, original: opt,
+         second_x: false, second_y: false, individual_styles: false
+      });
 
       let blocks_gme = [];
 
@@ -635,7 +635,7 @@ class TGraphPainter extends ObjectPainter {
       const extrabins = [];
       for (let n = drawbins.length - 1; n >= 0; --n) {
          const bin = drawbins[n],
-             dlen = Math.sqrt(bin.dgrx**2 + bin.dgry**2);
+               dlen = Math.sqrt(bin.dgrx**2 + bin.dgry**2);
          if (dlen > 1e-10) {
             // shift point
             bin.grx += excl_width * bin.dgry / dlen;
@@ -690,9 +690,9 @@ class TGraphPainter extends ObjectPainter {
 
          // build upper part (in reverse direction)
          const path2 = buildSvgCurve(bins2, { line: options.EF < 2, cmd: 'L', qubic: true }),
-            area = draw_g.append('svg:path')
-               .attr('d', path1 + path2 + 'Z')
-               .call(fillatt.func);
+               area = draw_g.append('svg:path')
+                            .attr('d', path1 + path2 + 'Z')
+                            .call(fillatt.func);
 
          // Let behaves as ROOT - see JIRA ROOT-8131
          if (fillatt.empty() && fillatt.colorindx)
@@ -726,7 +726,7 @@ class TGraphPainter extends ObjectPainter {
          const path = buildSvgCurve(drawbins, { line: true, calc: excl_width });
 
          if (excl_width)
-             this.appendExclusion(false, path, drawbins, excl_width);
+            this.appendExclusion(false, path, drawbins, excl_width);
 
          const elem = draw_g.append('svg:path')
                             .attr('d', path + close_symbol)
@@ -860,9 +860,9 @@ class TGraphPainter extends ObjectPainter {
          nodes.filter(d => (d.exlow > 0) && (d.exhigh > 0) && (d.eylow > 0) && (d.eyhigh > 0))
            .append('svg:path')
            .attr('d', d => {
-               d.rect = true;
-               return `M${d.grx0},${d.gry0}H${d.grx2}V${d.gry2}H${d.grx0}Z`;
-            })
+              d.rect = true;
+              return `M${d.grx0},${d.gry0}H${d.grx2}V${d.gry2}H${d.grx0}Z`;
+           })
            .call(fillatt.func)
            .call(options.Rect === 2 ? lineatt.func : () => {});
       }
@@ -1153,47 +1153,53 @@ class TGraphPainter extends ObjectPainter {
          let rect;
 
          if (d.error || d.rect || d.marker) {
-            rect = { x1: Math.min(-esz, d.grx0, -msize),
-                     x2: Math.max(esz, d.grx2, msize),
-                     y1: Math.min(-esz, d.gry2, -msize),
-                     y2: Math.max(esz, d.gry0, msize) };
+            rect = {
+               x1: Math.min(-esz, d.grx0, -msize),
+               x2: Math.max(esz, d.grx2, msize),
+               y1: Math.min(-esz, d.gry2, -msize),
+               y2: Math.max(esz, d.gry0, msize)
+            };
          } else if (d.bar) {
-             rect = { x1: boff - bw / 2,
-                      x2: boff + bw / 2,
-                      y1: 0,
-                      y2: height - d.gry1 };
+            rect = {
+               x1: boff - bw / 2,
+               x2: boff + bw / 2,
+               y1: 0,
+               y2: height - d.gry1
+            };
 
-             if (isbar1) {
-                const yy0 = funcs.gry(0);
-                rect.y1 = (d.gry1 > yy0) ? yy0 - d.gry1 : 0;
-                rect.y2 = (d.gry1 > yy0) ? 0 : yy0 - d.gry1;
-             }
-          } else
-             rect = { x1: -5, x2: 5, y1: -5, y2: 5 };
+            if (isbar1) {
+               const yy0 = funcs.gry(0);
+               rect.y1 = (d.gry1 > yy0) ? yy0 - d.gry1 : 0;
+               rect.y2 = (d.gry1 > yy0) ? 0 : yy0 - d.gry1;
+            }
+         } else
+            rect = { x1: -5, x2: 5, y1: -5, y2: 5 };
 
-          const matchx = (pnt.x >= d.grx1 + rect.x1) && (pnt.x <= d.grx1 + rect.x2),
-                matchy = (pnt.y >= d.gry1 + rect.y1) && (pnt.y <= d.gry1 + rect.y2);
+         const matchx = (pnt.x >= d.grx1 + rect.x1) && (pnt.x <= d.grx1 + rect.x2),
+               matchy = (pnt.y >= d.gry1 + rect.y1) && (pnt.y <= d.gry1 + rect.y2);
 
-          if (matchx && (matchy || (pnt.nproc > 1))) {
-             best_dist2 = dist2;
-             findbin = this;
-             best = rect;
-             best.exact = /* matchx && */ matchy;
-          }
-       });
+         if (matchx && (matchy || (pnt.nproc > 1))) {
+            best_dist2 = dist2;
+            findbin = this;
+            best = rect;
+            best.exact = /* matchx && */ matchy;
+         }
+      });
 
       if (findbin === null)
          return null;
 
       const d = d3_select(findbin).datum(),
             gr = this.getGraph(),
-            res = { name: gr.fName, title: gr.fTitle,
-                    x: d.grx1, y: d.gry1,
-                    color1: this.lineatt.color,
-                    lines: this.getTooltips(d),
-                    rect: best, d3bin: findbin };
+            res = {
+               name: gr.fName, title: gr.fTitle,
+               x: d.grx1, y: d.gry1,
+               color1: this.lineatt.color,
+               lines: this.getTooltips(d),
+               rect: best, d3bin: findbin
+            };
 
-       res.user_info = { obj: gr, name: gr.fName, bin: d.indx, cont: d.y, grx: d.grx1, gry: d.gry1 };
+      res.user_info = { obj: gr, name: gr.fName, bin: d.indx, cont: d.y, grx: d.grx1, gry: d.gry1 };
 
       if (this.fillatt?.used && !this.fillatt?.empty())
          res.color2 = this.fillatt.getFillColor();
@@ -1365,12 +1371,14 @@ class TGraphPainter extends ObjectPainter {
             o = this.getOptions(),
             funcs = fp.getGrFuncs(o.second_x, o.second_y),
             gr = this.getGraph(),
-            res = { name: gr.fName, title: gr.fTitle,
-                    x: best.bin ? funcs.grx(best.bin.x) : best.linex,
-                    y: best.bin ? funcs.gry(best.bin.y) : best.liney,
-                    color1: this.lineatt.color,
-                    lines: this.getTooltips(best.bin),
-                    usepath: true, ismark, islines };
+            res = {
+               name: gr.fName, title: gr.fTitle,
+               x: best.bin ? funcs.grx(best.bin.x) : best.linex,
+               y: best.bin ? funcs.gry(best.bin.y) : best.liney,
+               color1: this.lineatt.color,
+               lines: this.getTooltips(best.bin),
+               usepath: true, ismark, islines
+            };
 
       res.user_info = { obj: gr, name: gr.fName, bin: 0, cont: 0, grx: res.x, gry: res.y };
 
@@ -1449,7 +1457,7 @@ class TGraphPainter extends ObjectPainter {
 
             if (!hint.islines)
                elem.style('stroke', hint.color1 === 'black' ? 'green' : 'black').style('fill', 'none');
-             else {
+            else {
                if (o.Line || o.Curve)
                   elem.call(this.lineatt.func);
                else
@@ -1490,7 +1498,7 @@ class TGraphPainter extends ObjectPainter {
 
       if (this.#move_binindx === undefined)
          makeTranslate(this.getG(), this.#pos_dx, this.#pos_dy);
-       else if (this.#move_funcs && this.#move_bin) {
+      else if (this.#move_funcs && this.#move_bin) {
          this.#move_bin.x = this.#move_funcs.revertAxis('x', this.#move_x0 + this.#pos_dx);
          this.#move_bin.y = this.#move_funcs.revertAxis('y', this.#move_y0 + this.#pos_dy);
          this.drawGraph();
@@ -1610,7 +1618,7 @@ class TGraphPainter extends ObjectPainter {
       graph.fX = obj.fX;
       graph.fY = obj.fY;
       ['fEX', 'fEY', 'fExL', 'fExH', 'fEXlow', 'fEXhigh', 'fEYlow', 'fEYhigh',
-        'fEXlowd', 'fEXhighd', 'fEYlowd', 'fEYhighd'].forEach(member => {
+       'fEXlowd', 'fEXhighd', 'fEYlowd', 'fEYhighd'].forEach(member => {
          if (obj[member] !== undefined)
             graph[member] = obj[member];
       });
@@ -1730,9 +1738,11 @@ class TGraphPainter extends ObjectPainter {
       this.create_stats = true;
 
       stats = create(clTPaveStats);
-      Object.assign(stats, { fName: 'stats', fOptStat: 0, fOptFit: st.fOptFit, fBorderSize: 1,
-                             fX1NDC: st.fStatX - st.fStatW, fY1NDC: st.fStatY - st.fStatH, fX2NDC: st.fStatX, fY2NDC: st.fStatY,
-                             fFillColor: st.fStatColor, fFillStyle: st.fStatStyle });
+      Object.assign(stats, {
+         fName: 'stats', fOptStat: 0, fOptFit: st.fOptFit, fBorderSize: 1,
+         fX1NDC: st.fStatX - st.fStatW, fY1NDC: st.fStatY - st.fStatH, fX2NDC: st.fStatX, fY2NDC: st.fStatY,
+         fFillColor: st.fStatColor, fFillStyle: st.fStatStyle
+      });
 
       stats.fTextAngle = 0;
       stats.fTextSize = st.fStatFontSize; // 9 ??
