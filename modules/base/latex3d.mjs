@@ -31,6 +31,13 @@ class TextParseWrapper {
       return this;
    }
 
+   property(name, value) {
+      if (value === undefined)
+         return this[name];
+      this[name] = value;
+      return this;
+   }
+
    attr(name, value) {
       const get = () => {
                if (!value)
