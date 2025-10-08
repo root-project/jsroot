@@ -4,7 +4,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '7/10/2025',
+version_date = '8/10/2025',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -1595,19 +1595,39 @@ function createHistogram(typename, nbinsx, nbinsy, nbinsz) {
    if (nbinsz)
       extend(histo.fZaxis, { fNbins: nbinsz, fXmin: 0, fXmax: nbinsz });
    switch (parseInt(typename[2])) {
-      case 1: if (nbinsx) histo.fNcells = nbinsx+2; break;
-      case 2: if (nbinsx && nbinsy) histo.fNcells = (nbinsx+2) * (nbinsy+2); break;
-      case 3: if (nbinsx && nbinsy && nbinsz) histo.fNcells = (nbinsx+2) * (nbinsy+2) * (nbinsz+2); break;
+      case 1:
+         if (nbinsx)
+            histo.fNcells = nbinsx + 2;
+         break;
+      case 2:
+         if (nbinsx && nbinsy)
+            histo.fNcells = (nbinsx + 2) * (nbinsy + 2);
+         break;
+      case 3:
+         if (nbinsx && nbinsy && nbinsz)
+            histo.fNcells = (nbinsx + 2) * (nbinsy + 2) * (nbinsz + 2);
+         break;
    }
    if (histo.fNcells > 0) {
       switch (typename[3]) {
-         case 'C': histo.fArray = new Int8Array(histo.fNcells); break;
-         case 'S': histo.fArray = new Int16Array(histo.fNcells); break;
-         case 'I': histo.fArray = new Int32Array(histo.fNcells); break;
-         case 'F': histo.fArray = new Float32Array(histo.fNcells); break;
+         case 'C':
+            histo.fArray = new Int8Array(histo.fNcells);
+            break;
+         case 'S':
+            histo.fArray = new Int16Array(histo.fNcells);
+            break;
+         case 'I':
+            histo.fArray = new Int32Array(histo.fNcells);
+            break;
+         case 'F':
+            histo.fArray = new Float32Array(histo.fNcells);
+            break;
          case 'L':
-         case 'D': histo.fArray = new Float64Array(histo.fNcells); break;
-         default: histo.fArray = new Array(histo.fNcells);
+         case 'D':
+            histo.fArray = new Float64Array(histo.fNcells);
+            break;
+         default:
+            histo.fArray = new Array(histo.fNcells);
       }
       histo.fArray.fill(0);
    }
