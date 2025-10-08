@@ -617,7 +617,7 @@ class TGraphDelaunay {
                      break;
 
                   // is point z colinear with any pair of the triangle points?
-   // L1:
+                  // L1:
                   if (((this.fXN[p]-this.fXN[z])*(this.fYN[p]-this.fYN[n])) === ((this.fYN[p]-this.fYN[z])*(this.fXN[p]-this.fXN[n]))) {
                      // z is colinear with p and n
                      a = p;
@@ -716,7 +716,7 @@ class TGraphDelaunay {
                         break; // goto L2;
                      }
                   }
-   // L2:
+                  // L2:
                   // this is not a valid quadrilateral if the diagonals don't cross,
                   // check that points f and z lie on opposite side of the line o1-o2,
                   // this is true if the angle f-o1-z is greater than o2-o1-z and o2-o1-f
@@ -805,7 +805,7 @@ class TGraphDelaunay {
                      t2 = d;
                      if (this.Enclose(f, d, o1, 0))
                         t3 = o1;
-                      else
+                     else
                         t3 = o2;
 
                      // file the good triangles
@@ -823,7 +823,7 @@ class TGraphDelaunay {
                thevalue = this.InterpolateOnPlane(t1, t2, t3, 0);
                return thevalue;
 
-   // L90:      continue;
+               // L90:      continue;
             }
          }
       }
@@ -1077,7 +1077,7 @@ class TGraphDelaunay {
 
 } // class TGraphDelaunay
 
-   /** @summary Function handles tooltips in the mesh */
+/** @summary Function handles tooltips in the mesh */
 function graph2DTooltip(intersect) {
    let indx = Math.floor(intersect.index / this.nvertex);
    if ((indx < 0) || (indx >= this.index.length))
@@ -1093,9 +1093,9 @@ function graph2DTooltip(intersect) {
 
    if (this.check_next && indx+1<gr.fX.length) {
       const d = intersect.point,
-          grx1 = fp.grx(gr.fX[indx+1]),
-          gry1 = fp.gry(gr.fY[indx+1]),
-          grz1 = fp.grz(gr.fZ[indx+1]);
+            grx1 = fp.grx(gr.fX[indx+1]),
+            gry1 = fp.gry(gr.fY[indx+1]),
+            grz1 = fp.grz(gr.fZ[indx+1]);
       if (sqr(d.x-grx1)+sqr(d.y-gry1)+sqr(d.z-grz1) < sqr(d.x-grx)+sqr(d.y-gry)+sqr(d.z-grz)) {
          grx = grx1;
          gry = gry1;
@@ -1113,11 +1113,10 @@ function graph2DTooltip(intersect) {
       z2: grz + this.scale0,
       color: this.tip_color,
       lines: [this.tip_name,
-               'pnt: ' + indx,
-               'x: ' + fp.axisAsText('x', gr.fX[indx]),
-               'y: ' + fp.axisAsText('y', gr.fY[indx]),
-               'z: ' + fp.axisAsText('z', gr.fZ[indx])
-             ]
+              'pnt: ' + indx,
+              'x: ' + fp.axisAsText('x', gr.fX[indx]),
+              'y: ' + fp.axisAsText('y', gr.fY[indx]),
+              'z: ' + fp.axisAsText('z', gr.fZ[indx])]
    };
 }
 
@@ -1167,7 +1166,7 @@ class TGraph2DPainter extends ObjectPainter {
 
       if (d.check('P0COL'))
          res.Color = res.Circles = res.Markers = true;
-       else {
+      else {
          res.Color = d.check('COL');
          res.Circles = d.check('P0');
          res.Markers = d.check('P');
@@ -1321,7 +1320,7 @@ class TGraph2DPainter extends ObjectPainter {
                const pnt = points[i] - 1;
                coord.push(fp.grx(graph.fX[pnt]), fp.gry(graph.fY[pnt]), main_grz(graph.fZ[pnt]));
 
-                if ((graph.fX[pnt] < fp.scale_xmin) || (graph.fX[pnt] > fp.scale_xmax) ||
+               if ((graph.fX[pnt] < fp.scale_xmin) || (graph.fX[pnt] > fp.scale_xmax) ||
                     (graph.fY[pnt] < fp.scale_ymin) || (graph.fY[pnt] > fp.scale_ymax))
                   use_triangle = false;
             }
@@ -1348,8 +1347,8 @@ class TGraph2DPainter extends ObjectPainter {
          mesh.painter = this; // to let use it with context menu
       }, (_isgrid, lpos) => {
          const lcolor = this.getColor(graph.fLineColor),
-              material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: graph.fLineWidth }),
-              linemesh = createLineSegments(convertLegoBuf(this.getMainPainter(), lpos, 100, 100), material);
+               material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: graph.fLineWidth }),
+               linemesh = createLineSegments(convertLegoBuf(this.getMainPainter(), lpos, 100, 100), material);
          fp.add3DMesh(linemesh, this);
       });
    }
@@ -1520,7 +1519,7 @@ class TGraph2DPainter extends ObjectPainter {
             if ((graph.fX[i] < fp.scale_xmin) || (graph.fX[i] > fp.scale_xmax) ||
                 (graph.fY[i] < fp.scale_ymin) || (graph.fY[i] > fp.scale_ymax) ||
                 (graph.fZ[i] < lvl_zmin) || (graph.fZ[i] >= lvl_zmax))
-                continue;
+               continue;
 
             if (step > 1) {
                select = (select+1) % step;

@@ -165,7 +165,7 @@ class TF1Painter extends TH1Painter {
 
          if (logx)
             produceTAxisLogScale(hist.fXaxis, np, xmin, xmax);
-          else {
+         else {
             hist.fXaxis.fXmin = xmin;
             hist.fXaxis.fXmax = xmax;
          }
@@ -263,8 +263,8 @@ class TF1Painter extends TH1Painter {
          // in the case where the points have been saved, useful for example
          // if we don't have the user's function
          const nb_points = nsave - 2,
-             xmin = this.#func.fSave[nsave - 2],
-             xmax = this.#func.fSave[nsave - 1];
+               xmin = this.#func.fSave[nsave - 2],
+               xmax = this.#func.fSave[nsave - 1];
 
          return Math.abs(xmax - xmin) / nb_points < Math.abs(max - min);
       }
@@ -315,11 +315,13 @@ class TF1Painter extends TH1Painter {
          return null;
       }
 
-      const res = { name: this.#func?.fName, title: this.#func?.fTitle,
-                    x: pnt.x, y: pnt.y,
-                    color1: this.lineatt?.color ?? 'green',
-                    color2: this.fillatt?.getFillColorAlt('blue') ?? 'blue',
-                    lines: this.getTF1Tooltips(pnt), exact: true, menu: true };
+      const res = {
+         name: this.#func?.fName, title: this.#func?.fTitle,
+         x: pnt.x, y: pnt.y,
+         color1: this.lineatt?.color ?? 'green',
+         color2: this.fillatt?.getFillColorAlt('blue') ?? 'blue',
+         lines: this.getTF1Tooltips(pnt), exact: true, menu: true
+      };
 
       if (pnt.disabled)
          ttrect.remove();

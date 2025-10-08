@@ -247,11 +247,11 @@ class TF2Painter extends TH2Painter {
             y = funcs.revertAxis('y', pnt.y);
       let z = 0, iserror = false;
 
-       try {
-          z = this.#func.evalPar(x, y);
-       } catch {
-          iserror = true;
-       }
+      try {
+         z = this.#func.evalPar(x, y);
+      } catch {
+         iserror = true;
+      }
 
       lines.push('x = ' + funcs.axisAsText('x', x),
                  'y = ' + funcs.axisAsText('y', y),
@@ -271,11 +271,13 @@ class TF2Painter extends TH2Painter {
          return null;
       }
 
-      const res = { name: this.#func?.fName, title: this.#func?.fTitle,
-                  x: pnt.x, y: pnt.y,
-                  color1: this.lineatt?.color ?? 'green',
-                  color2: this.fillatt?.getFillColorAlt('blue') ?? 'blue',
-                  lines: this.getTF2Tooltips(pnt), exact: true, menu: true };
+      const res = {
+         name: this.#func?.fName, title: this.#func?.fTitle,
+         x: pnt.x, y: pnt.y,
+         color1: this.lineatt?.color ?? 'green',
+         color2: this.fillatt?.getFillColorAlt('blue') ?? 'blue',
+         lines: this.getTF2Tooltips(pnt), exact: true, menu: true
+      };
 
       if (pnt.disabled)
          ttrect.remove();

@@ -69,9 +69,11 @@ class TH3Painter extends THistPainter {
             k1 = this.getSelectIndex('z', 'left'),
             k2 = this.getSelectIndex('z', 'right'),
             fp = this.getFramePainter(),
-            res = { name: histo.fName, entries: 0, eff_entries: 0, integral: 0,
-                    meanx: 0, meany: 0, meanz: 0, rmsx: 0, rmsy: 0, rmsz: 0,
-                    skewx: 0, skewy: 0, skewz: 0, skewd: 0, kurtx: 0, kurty: 0, kurtz: 0, kurtd: 0 },
+            res = {
+               name: histo.fName, entries: 0, eff_entries: 0, integral: 0,
+               meanx: 0, meany: 0, meanz: 0, rmsx: 0, rmsy: 0, rmsz: 0,
+               skewx: 0, skewy: 0, skewz: 0, skewd: 0, kurtx: 0, kurty: 0, kurtz: 0, kurtd: 0
+            },
             has_counted_stat = (Math.abs(histo.fTsumw) > 1e-300) && !fp.isAxisZoomed('x') && !fp.isAxisZoomed('y') && !fp.isAxisZoomed('z');
       let xi, yi, zi, xx, xside, yy, yside, zz, zside, cont,
           stat_sum0 = 0, stat_sumw2 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
@@ -330,8 +332,8 @@ class TH3Painter extends THistPainter {
 
                for (let n = 0; n < num; ++n) {
                   const binx = histo.fXaxis.GetBinCoord(i + rnd.random()),
-                      biny = histo.fYaxis.GetBinCoord(j + rnd.random()),
-                      binz = histo.fZaxis.GetBinCoord(k + rnd.random());
+                        biny = histo.fYaxis.GetBinCoord(j + rnd.random()),
+                        binz = histo.fZaxis.GetBinCoord(k + rnd.random());
 
                   // remember bin index for tooltip
                   bins[nbin++] = histo.getBin(i+1, j+1, k+1);
@@ -478,12 +480,14 @@ class TH3Painter extends THistPainter {
             content = Math.log(content) - scale_offset;
          }
          return Math.pow(Math.abs(content*use_scale), 0.3333);
-      }, i1 = this.getSelectIndex('x', 'left', 0.5),
-         i2 = this.getSelectIndex('x', 'right', 0),
-         j1 = this.getSelectIndex('y', 'left', 0.5),
-         j2 = this.getSelectIndex('y', 'right', 0),
-         k1 = this.getSelectIndex('z', 'left', 0.5),
-         k2 = this.getSelectIndex('z', 'right', 0);
+      };
+      // eslint-disable-next-line one-var
+      const i1 = this.getSelectIndex('x', 'left', 0.5),
+            i2 = this.getSelectIndex('x', 'right', 0),
+            j1 = this.getSelectIndex('y', 'left', 0.5),
+            j2 = this.getSelectIndex('y', 'right', 0),
+            k1 = this.getSelectIndex('z', 'left', 0.5),
+            k2 = this.getSelectIndex('z', 'right', 0);
 
       if ((i2 <= i1) || (j2 <= j1) || (k2 <= k1))
          return false;
@@ -656,14 +660,14 @@ class TH3Painter extends THistPainter {
          pr = crete3DFrame(this, TAxisPainter, o.Render3D)
               .then(() => this.draw3DBins())
               .then(() => {
-                fp.render3D();
-                this.updateStatWebCanvas();
-                fp.addKeysHandler();
+                 fp.render3D();
+                 this.updateStatWebCanvas();
+                 fp.addKeysHandler();
               });
       }
 
       if (this.isMainPainter())
-        pr = pr.then(() => this.drawColorPalette(o.Zscale && (this.#box_option === 12 || this.#box_option === 13 || o.GLBox === 12)));
+         pr = pr.then(() => this.drawColorPalette(o.Zscale && (this.#box_option === 12 || this.#box_option === 13 || o.GLBox === 12)));
 
       return pr.then(() => this.updateFunctions())
                .then(() => this.updateHistTitle())

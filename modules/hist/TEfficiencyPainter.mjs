@@ -9,7 +9,7 @@ import { getTEfficiencyBoundaryFunc } from '../base/math.mjs';
 
 const kIsBayesian = BIT(14),  // Bayesian statistics are used
       kPosteriorMode = BIT(15),  // Use posterior mean for best estimate (Bayesian statistics)
- //   kShortestInterval = BIT(16),  // Use shortest interval, not implemented - too complicated
+   //   kShortestInterval = BIT(16),  // Use shortest interval, not implemented - too complicated
       kUseBinPrior = BIT(17),  // Use a different prior for each bin
       kUseWeights = BIT(18),  // Use weights
       getBetaAlpha = (obj, bin) => { return (obj.fBeta_bin_params.length > bin) ? obj.fBeta_bin_params[bin].first : obj.fBeta_alpha; },
@@ -27,20 +27,20 @@ class TEfficiencyPainter extends ObjectPainter {
    getEfficiency(obj, bin) {
       const BetaMean = (a, b) => { return (a <= 0 || b <= 0) ? 0 : a / (a + b); },
             BetaMode = (a, b) => {
-         if (a <= 0 || b <= 0)
-            return 0;
-         if (a <= 1 || b <= 1) {
-            if (a < b)
-               return 0;
-            if (a > b)
-               return 1;
-            if (a === b)
-               return 0.5; // cannot do otherwise
-         }
-         return (a - 1.0) / (a + b -2.0);
-      },
-      total = obj.fTotalHistogram.fArray[bin], // should work for both 1-d and 2-d
-      passed = obj.fPassedHistogram.fArray[bin]; // should work for both 1-d and 2-d
+               if (a <= 0 || b <= 0)
+                  return 0;
+               if (a <= 1 || b <= 1) {
+                  if (a < b)
+                     return 0;
+                  if (a > b)
+                     return 1;
+                  if (a === b)
+                     return 0.5; // cannot do otherwise
+               }
+               return (a - 1.0) / (a + b -2.0);
+            },
+            total = obj.fTotalHistogram.fArray[bin], // should work for both 1-d and 2-d
+            passed = obj.fPassedHistogram.fArray[bin]; // should work for both 1-d and 2-d
 
       if (obj.TestBit(kIsBayesian)) {
          // parameters for the beta prior distribution

@@ -37,7 +37,7 @@ function drawTH2PolyLego(painter) {
       // check if bin outside visible range
       if ((bin.fXmin > fp.scale_xmax) || (bin.fXmax < fp.scale_xmin) ||
           (bin.fYmin > fp.scale_ymax) || (bin.fYmax < fp.scale_ymin))
-          continue;
+         continue;
 
       z1 = fp.grz((bin.fContent > axis_zmax) ? axis_zmax : bin.fContent);
 
@@ -111,9 +111,9 @@ function drawTH2PolyLego(painter) {
          for (let layer = 0; layer < 2; ++layer) {
             for (let n = 0; n < faces.length; ++n) {
                const face = faces[n],
-                   pnt1 = pnts[face[0]],
-                   pnt2 = pnts[face[layer === 0 ? 2 : 1]],
-                   pnt3 = pnts[face[layer === 0 ? 1 : 2]];
+                     pnt1 = pnts[face[0]],
+                     pnt2 = pnts[face[layer === 0 ? 2 : 1]],
+                     pnt3 = pnts[face[layer === 0 ? 1 : 2]];
 
                pos[indx] = pnt1.x;
                pos[indx+1] = pnt1.y;

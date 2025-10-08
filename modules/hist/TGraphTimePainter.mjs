@@ -128,8 +128,8 @@ class TGraphTimePainter extends ObjectPainter {
    /** @summary Draw TGraphTime object */
    static async draw(dom, gr, opt) {
       if (!gr.fFrame) {
-        console.error('Frame histogram not exists');
-        return null;
+         console.error('Frame histogram not exists');
+         return null;
       }
 
       const painter = new TGraphTimePainter(dom, gr, opt);

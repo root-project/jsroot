@@ -85,8 +85,10 @@ class RPavePainter extends RObjectPainter {
             if (settings.ContextMenu && this.paveContextMenu)
                g.on('contextmenu', evnt => this.paveContextMenu(evnt));
 
-            addDragHandler(this, { x: pave_x, y: pave_y, width: pave_width, height: pave_height,
-                                   minwidth: 20, minheight: 20, redraw: d => this.sizeChanged(d) });
+            addDragHandler(this, {
+               x: pave_x, y: pave_y, width: pave_width, height: pave_height,
+               minwidth: 20, minheight: 20, redraw: d => this.sizeChanged(d)
+            });
          }
 
          return this;
