@@ -88,14 +88,14 @@ class Vertex {
 
    diff(vertex) {
       const dx = (this.x - vertex.x),
-          dy = (this.y - vertex.y),
-          dz = (this.z - vertex.z),
-          len2 = this.x**2 + this.y**2 + this.z**2;
+            dy = (this.y - vertex.y),
+            dz = (this.z - vertex.z),
+            len2 = this.x**2 + this.y**2 + this.z**2;
 
       return (dx**2 + dy**2 + dz**2) / (len2 > 0 ? len2 : 1e-10);
    }
 
-/*
+   /*
    lerp( a, t ) {
       this.add(
          a.clone().subtract( this ).multiplyScalar( t )
@@ -189,7 +189,7 @@ class Polygon {
 
    clone() {
       const vertice_count = this.vertices.length,
-          vertices = [];
+            vertices = [];
 
       for (let i = 0; i < vertice_count; ++i)
          vertices.push(this.vertices[i].clone());
@@ -226,7 +226,7 @@ class Polygon {
          const classification = this.classifyVertex(polygon.vertices[i]);
          if (classification === FRONT)
             ++num_positive;
-          else if (classification === BACK)
+         else if (classification === BACK)
             ++num_negative;
       }
 
@@ -260,7 +260,7 @@ class Polygon {
                nny = this.normal.y,
                nnz = this.normal.z,
                f = [], b = [];
-          let i, j, ti, tj, vi, vj, t, v;
+         let i, j, ti, tj, vi, vj, t, v;
 
          for (i = 0; i < vertice_count; ++i) {
             j = (i + 1) % vertice_count;
@@ -311,7 +311,7 @@ class Node {
       this.divider = polygons[0].clone();
 
       const polygon_count = polygons.length,
-          front = [], back = [];
+            front = [], back = [];
 
       for (let i = 0; i < polygon_count; ++i) {
          if (nodeid !== undefined) {
@@ -441,7 +441,7 @@ class Node {
       this.back?.clipTo(node);
    }
 
- } // class Node
+} // class Node
 
 
 function createBufferGeometry(polygons) {
