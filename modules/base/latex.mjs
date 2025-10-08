@@ -615,7 +615,7 @@ function parseLatex(node, arg, label, curr) {
             if (curr.y)
                elem.attr('y', curr.y);
 
-            // for single symbols like f,l.i one gets wrong estimation of total width, use it in sup/sub-scripts
+            // for single symbols like f,l,i,j one gets wrong estimation of total width, use it in sup/sub-scripts
             const xgap = (s.length === 1) && !curr.font.isMonospace() && ('lfij'.indexOf(s) >= 0) ? 0.1*curr.fsize : 0;
 
             extendPosition(curr.x, curr.y - rect.height*0.8, curr.x + rect.width, curr.y + rect.height*0.2);
