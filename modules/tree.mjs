@@ -271,7 +271,7 @@ function findBrachStreamerElement(branch, file) {
       return null;
 
    let match_name = branch.fName,
-      pos = match_name.indexOf('[');
+       pos = match_name.indexOf('[');
    if (pos > 0)
       match_name = match_name.slice(0, pos);
    pos = match_name.lastIndexOf('.');
@@ -290,7 +290,7 @@ function findBrachStreamerElement(branch, file) {
       if (((branch.fStreamerType === kSTL) || (branch.fStreamerType === kSTL + kOffsetL) ||
            (branch.fStreamerType === kSTLp) || (branch.fStreamerType === kSTLp + kOffsetL)) &&
           (elem.fType === kStreamer))
-          return true;
+         return true;
       console.warn(`Should match element ${elem.fType} with branch ${branch.fStreamerType}`);
       return false;
    }
@@ -1076,9 +1076,9 @@ class TDrawSelector extends TSelector {
                break;
             case ':':
                if (expr[pos + 1] === ':') {
-                   pos++;
-                   continue;
-                  }
+                  pos++;
+                  continue;
+               }
                if (!nbr1 && !nbr2 && (pos > prev))
                   names.push(expr.slice(prev, pos));
                prev = pos + 1;
@@ -1549,8 +1549,8 @@ class TDrawSelector extends TSelector {
       this.hist.push(obj);
    }
 
-    /** @summary function used when all branches can be read as array
-      * @desc most typical usage - histogram filling of single branch */
+   /** @summary function used when all branches can be read as array
+     * @desc most typical usage - histogram filling of single branch */
    ProcessArraysFunc(/* entry */) {
       if (this.arr_limit || this.graph) {
          const var0 = this.vars[0],
@@ -1752,8 +1752,7 @@ function defineMemberTypeName(file, parent_class, member_name) {
 /** @summary create fast list to assign all methods to the object
   * @private */
 function makeMethodsList(typename) {
-   const methods = getMethods(typename),
-   res = {
+   const methods = getMethods(typename), res = {
       names: [],
       values: [],
       Create() {
@@ -1835,7 +1834,7 @@ async function treeProcess(tree, selector, args) {
    }, findInHandle = branch => {
       for (let k = 0; k < handle.arr.length; ++k) {
          if (handle.arr[k].branch === branch)
-             return handle.arr[k];
+            return handle.arr[k];
       }
       return null;
    };
@@ -2137,7 +2136,7 @@ async function treeProcess(tree, selector, args) {
             if (!streamer) {
                elem = null;
                console.warn('not found streamer!');
-             } else {
+            } else {
                member = {
                   name: target_name,
                   typename: branch.fClassName,
@@ -2533,7 +2532,7 @@ async function treeProcess(tree, selector, args) {
 
          const portion = (handle.staged_prev + value * (handle.staged_now - handle.staged_prev)) /
                          (handle.process_max - handle.process_min);
-        return handle.selector.ShowProgress(portion);
+         return handle.selector.ShowProgress(portion);
       }
 
       function processBlobs(blobs, places) {
@@ -2568,10 +2567,10 @@ async function treeProcess(tree, selector, args) {
 
                   bitems[k].raw = buf; // here already unpacked buffer
 
-                 if (bitems[k].branch.fEntryOffsetLen > 0)
+                  if (bitems[k].branch.fEntryOffsetLen > 0)
                      buf.readBasketEntryOffset(basket, buf.raw_shift);
 
-                 continue;
+                  continue;
                }
 
                // unpack data and create new blob
@@ -2597,9 +2596,9 @@ async function treeProcess(tree, selector, args) {
                return handle.file.readBuffer(req.places, req.filename, readProgress).then(blobs2 => processBlobs(blobs2)).catch(() => null);
 
             return Promise.resolve(bitems);
-          }
+         }
 
-          return doProcessing(0);
+         return doProcessing(0);
       }
 
       const req = extractPlaces();
@@ -2650,7 +2649,7 @@ async function treeProcess(tree, selector, args) {
 
                   // check if this basket required
                   if ((handle.process_entries[elem.eindx] < bskt_emin) || (handle.process_entries[elem.eindx] >= bskt_emax))
-                      continue;
+                     continue;
 
                   // when all previous baskets were processed, continue with selected
                   if (elem.curr_basket < 0)
@@ -2911,7 +2910,7 @@ async function treeDraw(tree, args) {
 
    if (args.branch) {
       if (!selector.drawOnlyBranch(tree, args.branch, args.expr, args))
-        return Promise.reject(Error(`Fail to create draw expression ${args.expr} for branch ${args.branch.fName}`));
+         return Promise.reject(Error(`Fail to create draw expression ${args.expr} for branch ${args.branch.fName}`));
    } else if (!selector.parseDrawExpression(tree, args))
       return Promise.reject(Error(`Fail to create draw expression ${args.expr}`));
 
@@ -3076,16 +3075,16 @@ function treeHierarchy(tree_node, obj) {
 
             if ((bobj.fLeaves?.arr?.length === 1) &&
                 ((bobj.fType === kClonesNode) || (bobj.fType === kSTLNode))) {
-                 bobj.fLeaves.arr[0].$branch = bobj;
-                 bnode._childs.push({
-                    _name: '@size',
-                    _title: 'container size',
-                    _kind: getKindForType('TLeafElement'),
-                    _icon: 'img_leaf',
-                    _obj: bobj.fLeaves.arr[0],
-                    _more: false
-                 });
-              }
+               bobj.fLeaves.arr[0].$branch = bobj;
+               bnode._childs.push({
+                  _name: '@size',
+                  _title: 'container size',
+                  _kind: getKindForType('TLeafElement'),
+                  _icon: 'img_leaf',
+                  _obj: bobj.fLeaves.arr[0],
+                  _more: false
+               });
+            }
 
             for (let i = 0; i < bobj.fBranches.arr.length; ++i)
                createBranchItem(bnode, bobj.fBranches.arr[i], bobj.$tree, bobj);
