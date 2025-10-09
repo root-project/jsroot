@@ -75,7 +75,7 @@ class RTreeMapTooltip {
       const obj = this.painter.getObject();
       if (obj.fNodes && obj.fNodes.length > 0) {
          const totalSize = obj.fNodes[0].fSize,
-          percentage = ((node.fSize / totalSize) * 100).toFixed(2);
+               percentage = ((node.fSize / totalSize) * 100).toFixed(2);
          content += `Disk Usage: ${percentage}%`;
       }
 
