@@ -273,7 +273,7 @@ const CustomStreamers = {
          const p2 = element.fTitle.indexOf(']', p1 + 1);
 
          if ((p1 >= 0) && (p2 >= p1 + 2)) {
-            const arr = element.fTitle.slice(p1+1, p2).split(',');
+            const arr = element.fTitle.slice(p1 + 1, p2).split(',');
             let nbits = 32;
             if (!arr || arr.length < 2)
                throw new Error(`Problem to decode range setting from streamer element title ${element.fTitle}`);
@@ -1581,11 +1581,11 @@ function ZIP_inflate(arr, tgt) {
                           mm) {  // maximum lookup bits
       const BMAX = 16,      // maximum bit length of any code
             N_MAX = 288,    // maximum number of codes in any set
-            c = Array(BMAX+1).fill(0),  // bit length count table
-            lx = Array(BMAX+1).fill(0), // stack of bits per table
+            c = Array(BMAX + 1).fill(0),  // bit length count table
+            lx = Array(BMAX + 1).fill(0), // stack of bits per table
             u = Array(BMAX).fill(null), // zip_HuftNode[BMAX][]  table stack
             v = Array(N_MAX).fill(0), // values in order of bit length
-            x = Array(BMAX+1).fill(0), // bit offsets, then code stack
+            x = Array(BMAX + 1).fill(0), // bit offsets, then code stack
             r = { e: 0, b: 0, n: 0, t: null }, // new zip_HuftNode(), // table entry for structure assignment
             el = (n > 256) ? b[256] : BMAX, // set length of EOB code, if any
             res = {
@@ -1718,7 +1718,7 @@ function ZIP_inflate(arr, tgt) {
                   r.e = 16 + j;  // bits in this table
                   r.t = q;    // pointer to this table
                   j = (i & ((1 << w) - 1)) >> (w - lx[h]);
-                  rr = u[h-1][j];
+                  rr = u[h - 1][j];
                   rr.e = r.e;
                   rr.b = r.b;
                   rr.n = r.n;
@@ -1909,7 +1909,7 @@ function ZIP_inflate(arr, tgt) {
          h = zip_HuftBuild(l, 30, 0, zip_cpdist, zip_cpdext, zip_fixed_bd);
          if (h.status > 1) {
             zip_fixed_tl = null;
-            throw new Error('HufBuild error: '+h.status);
+            throw new Error('HufBuild error: ' + h.status);
          }
          zip_fixed_td = h.root;
          zip_fixed_bd = h.m;
@@ -1928,7 +1928,7 @@ function ZIP_inflate(arr, tgt) {
           l,     // last length
           t,     // (zip_HuftNode) literal/length code table
           h;     // (zip_HuftBuild)
-      const ll = new Array(286+30).fill(0); // literal/length and distance code lengths
+      const ll = new Array(286 + 30).fill(0); // literal/length and distance code lengths
 
       // read in table lengths
       zip_NEEDBITS(5);
@@ -2109,7 +2109,7 @@ function ZIP_inflate(arr, tgt) {
    }
 
    let i, cnt = 0;
-   while ((i = zip_inflate_internal(tgt, cnt, Math.min(1024, tgt.byteLength-cnt))) > 0)
+   while ((i = zip_inflate_internal(tgt, cnt, Math.min(1024, tgt.byteLength - cnt))) > 0)
       cnt += i;
 
    return cnt;
@@ -2167,7 +2167,7 @@ function LZ4_uncompress(input, output, sIdx, eIdx) {
 
       // 0 is an invalid offset value
       if (offset === 0 || offset > j)
-         return -(i-2);
+         return -(i - 2);
 
       // length of match copy
       let match_length = (token & 0xf),
@@ -2895,7 +2895,7 @@ class TDirectory {
       // try to handle situation when object name contains slashed (bad practice anyway)
       while (pos > 0) {
          const dirname = keyname.slice(0, pos),
-               subname = keyname.slice(pos+1),
+               subname = keyname.slice(pos + 1),
                dirkey = this.getKey(dirname, undefined, true);
 
          if (dirkey && !only_direct && (dirkey.fClassName.indexOf(clTDirectory) === 0)) {
@@ -2903,7 +2903,7 @@ class TDirectory {
                              .then(newdir => newdir.getKey(subname, cycle));
          }
 
-         pos = keyname.lastIndexOf('/', pos-1);
+         pos = keyname.lastIndexOf('/', pos - 1);
       }
 
       return only_direct ? null : Promise.reject(Error(`Key not found ${keyname}`));
@@ -3089,7 +3089,7 @@ class TFile {
             fullurl += ((fullurl.indexOf('?') < 0) ? '?' : '&') + file.fUseStampPar;
 
          for (let n = first; n < last; n += 2) {
-            ranges += (n > first ? ',' : '=') + `${place[n]}-${place[n]+place[n+1]-1}`;
+            ranges += (n > first ? ',' : '=') + `${place[n]}-${place[n] + place[n + 1] - 1}`;
             totalsz += place[n + 1]; // accumulated total size
          }
          if (last - first > 2)
@@ -3210,7 +3210,7 @@ class TFile {
                last = Math.min(last, file.fMaxRanges * 2);
                return send_new_request();
             }
-            return rejectFunc(Error(`Fail to read with ${place.length/2} ranges max = ${file.fMaxRanges}`));
+            return rejectFunc(Error(`Fail to read with ${place.length / 2} ranges max = ${file.fMaxRanges}`));
          }
 
          // if only single segment requested, return result as is
@@ -3345,14 +3345,14 @@ class TFile {
                let isany = false;
                for (let n1 = n; n1 < last; n1 += 2) {
                   if ((place[n1] >= segm_start) && (place[n1] + place[n1 + 1] - 1 <= segm_last)) {
-                     blobs[n1/2] = new DataView(res, o + place[n1] - segm_start, place[n1 + 1]);
+                     blobs[n1 / 2] = new DataView(res, o + place[n1] - segm_start, place[n1 + 1]);
                      isany = true;
                   }
                }
                if (!isany)
                   return rejectFunc(Error(`Provided fragment ${segm_start} - ${segm_last} out of requested multi-range request`));
 
-               while (blobs[n/2])
+               while (blobs[n / 2])
                   n += 2;
 
                o += (segm_last - segm_start + 1);
@@ -4089,7 +4089,7 @@ class TProxyFile extends TFile {
          if (isStr(this.fFileName)) {
             const p = this.fFileName.lastIndexOf('/');
             if ((p > 0) && (p < this.fFileName.length - 4))
-               this.fFileName = this.fFileName.slice(p+1);
+               this.fFileName = this.fFileName.slice(p + 1);
          }
          return this.readKeys();
       });

@@ -71,13 +71,13 @@ async function testZooming(node, args, pp) {
    if (args.debug)
       console.log(`test zooming in range: ${xmin} ${xmax} ${ymin} ${ymax}`);
 
-   await fp.zoom(xmin + 0.2*(xmax - xmin), xmin + 0.8*(xmax - xmin), ymin + 0.2*(ymax - ymin), ymin + 0.8*(ymax - ymin));
+   await fp.zoom(xmin + 0.2 * (xmax - xmin), xmin + 0.8 * (xmax - xmin), ymin + 0.2 * (ymax - ymin), ymin + 0.8 * (ymax - ymin));
    await _test_timeout(args);
    await fp.unzoom();
    await _test_timeout(args);
-   await fp.zoomSingle('x', xmin + 0.22*(xmax - xmin), xmin + 0.25*(xmax - xmin));
+   await fp.zoomSingle('x', xmin + 0.22 * (xmax - xmin), xmin + 0.25 * (xmax - xmin));
    await _test_timeout(args);
-   await fp.zoomSingle('y', ymin + 0.12*(ymax - ymin), ymin + 0.43*(ymax - ymin));
+   await fp.zoomSingle('y', ymin + 0.12 * (ymax - ymin), ymin + 0.43 * (ymax - ymin));
    await _test_timeout(args);
    await fp.unzoom();
 }
@@ -115,14 +115,14 @@ async function testMouseZooming(node, args, pp) {
    // region zooming
 
    for (let side = -1; side <= 1; side++) {
-      evnt.set(rect.x + (side > 0 ? -25 : fw*0.1), rect.y + (side < 0 ? fh + 25 : fh*0.1));
+      evnt.set(rect.x + (side > 0 ? -25 : fw * 0.1), rect.y + (side < 0 ? fh + 25 : fh * 0.1));
 
       fp.startRectSel(evnt);
 
       await _test_timeout(args);
 
       for (let i = 2; i < 10; ++i) {
-         evnt.set(rect.x + (side > 0 ? -5 : fw*0.1*i), rect.y + (side < 0 ? fh + 25 : fh*0.1*i));
+         evnt.set(rect.x + (side > 0 ? -5 : fw * 0.1 * i), rect.y + (side < 0 ? fh + 25 : fh * 0.1 * i));
          fp.moveRectSel(evnt);
          await _test_timeout(args, 0.2);
       }
@@ -160,14 +160,14 @@ async function testTouchZooming(node, args, pp) {
    if (args.debug)
       console.log(`test touch zooming in frame: ${fw} ${fh}`);
 
-   evnt.setTouch(fw*0.4, fh*0.4, fw*0.6, fh*0.6);
+   evnt.setTouch(fw * 0.4, fh * 0.4, fw * 0.6, fh * 0.6);
 
    fp.startTouchZoom(evnt);
 
    await _test_timeout(args);
 
    for (let i = 2; i < 9; ++i) {
-      evnt.setTouch(fw*0.05*(10 - i), fh*0.05*(10 - i), fw*0.05*(10 + i), fh*0.05*(10 + i));
+      evnt.setTouch(fw * 0.05 * (10 - i), fh * 0.05 * (10 - i), fw * 0.05 * (10 + i), fh * 0.05 * (10 + i));
       fp.moveTouchZoom(evnt);
       await _test_timeout(args, 0.2);
    }
@@ -202,7 +202,7 @@ async function testMouseWheel(node, args, pp) {
          evnt = new EmulationMouseEvent(),
          rect = fp.getFrameSvg().node().getBoundingClientRect();
 
-   evnt.set(rect.x + fw*0.4, rect.y + fh*0.4);
+   evnt.set(rect.x + fw * 0.4, rect.y + fh * 0.4);
 
    // zoom inside
    for (let i = 0; i < 7; ++i) {
@@ -245,7 +245,7 @@ async function testFrameClick(node, pp) {
 
    for (let i = 1; i < 15; i++) {
       for (let j = 1; j < 15; j++) {
-         const pnt = { x: Math.round(i/15*fw), y: Math.round(j/15*fh) };
+         const pnt = { x: Math.round(i / 15 * fw), y: Math.round(j / 15 * fh) };
          fp.processFrameClick(pnt);
       }
    }
@@ -274,7 +274,7 @@ async function testFrameMouseDoubleClick(node, pp) {
 
    for (let i = -2; i < 14; i++) {
       for (let j = -2; j < 14; j++) {
-         evnt.set(rect.x + i/10*fw, rect.y + j/10*fh);
+         evnt.set(rect.x + i / 10 * fw, rect.y + j / 10 * fh);
          await fp.mouseDoubleClick(evnt);
       }
    }
@@ -303,7 +303,7 @@ async function testFrameContextMenu(node, args, pp) {
 
    for (let i = 1; i < 10; i++) {
       for (let j = 1; j < 10; j++) {
-         evnt.set(rect.x + i/10*fw, rect.y + j/10*fh);
+         evnt.set(rect.x + i / 10 * fw, rect.y + j / 10 * fh);
          await fp.showContextMenu('', evnt);
          await _test_timeout(args, 0.03);
          closeMenu();
@@ -339,7 +339,7 @@ async function testPadContextMenu(node, args, pp) {
 
    for (let i = 1; i < 10; i++) {
       for (let j = 1; j < 10; j++) {
-         evnt.set(rect.x + i/10*pw, rect.y + j/10*ph);
+         evnt.set(rect.x + i / 10 * pw, rect.y + j / 10 * ph);
          await cp.padContextMenu(evnt);
          await _test_timeout(args, 0.03);
          closeMenu();
@@ -363,7 +363,7 @@ async function testPadItemContextMenu(node, args, pp) {
          names = ['xaxis', 'yaxis', 'zaxis', 'pad', 'frame'];
 
    for (let i = -names.length; i < nprimitives; ++i) {
-      const name = (i < 0) ? names[i+names.length] : i.toString();
+      const name = (i < 0) ? names[i + names.length] : i.toString();
       await cp.itemContextMenu(name);
       await _test_timeout(args, 0.1);
       closeMenu();

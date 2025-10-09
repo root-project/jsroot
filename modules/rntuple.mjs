@@ -557,7 +557,7 @@ class RNTupleDescriptorBuilder {
             physicalColumnId,
             fieldId
          });
-         reader.seek(Number(recordStart+aliasColumnRecordSize));
+         reader.seek(Number(recordStart + aliasColumnRecordSize));
       }
       reader.seek(Number(startOffset - aliasColumnListSize));
       return aliasColumns;

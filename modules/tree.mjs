@@ -1133,7 +1133,7 @@ class TDrawSelector extends TSelector {
       this.vars[0] = new TDrawVariable(this.globals);
       if (!this.vars[0].parse(tree, this, expr, branch, args.direct_branch))
          return false;
-      this.draw_title = `drawing branch ${branch.fName} ${expr?' expr:'+expr:''} from ${tree.fName ?? ''}`;
+      this.draw_title = `drawing branch ${branch.fName} ${expr ? ' expr:' + expr : ''} from ${tree.fName ?? ''}`;
 
       this.cut = new TDrawVariable(this.globals);
 
@@ -1385,11 +1385,11 @@ class TDrawSelector extends TSelector {
             res = create(clTPolyMarker3D);
             res.fN = N;
             res.fLastPoint = N - 1;
-            const arr = new Array(N*3);
-            for (let k = 0; k< N; ++k) {
-               arr[k*3] = this.vars[0].buf[k];
-               arr[k*3+1] = this.vars[1].buf[k];
-               arr[k*3+2] = this.vars[2].buf[k];
+            const arr = new Array(N * 3);
+            for (let k = 0; k < N; ++k) {
+               arr[k * 3] = this.vars[0].buf[k];
+               arr[k * 3 + 1] = this.vars[1].buf[k];
+               arr[k * 3 + 2] = this.vars[2].buf[k];
             }
             res.fP = arr;
             res.$hist = this.createHistogram(10);
@@ -2587,7 +2587,7 @@ async function treeProcess(tree, selector, args) {
                   if (bitems[k].branch.fEntryOffsetLen > 0)
                      buf.readBasketEntryOffset(basket, buf.raw_shift);
 
-                  return doProcessing(k+1);  // continue processing
+                  return doProcessing(k + 1);  // continue processing
                });
             }
 
@@ -2996,7 +2996,7 @@ function treeIOTest(tree, args) {
             skip_branch = object_class ? (nchilds[nbr] > 100) : !br.fLeaves?.arr?.length;
 
       if (skip_branch || (num <= 0))
-         return testBranch(nbr+1);
+         return testBranch(nbr + 1);
 
       const drawargs = { numentries: 10 },
             first = br.fFirstEntry || 0,
@@ -3013,7 +3013,7 @@ function treeIOTest(tree, args) {
       if (isFunc(args.showProgress))
          args.showProgress(`br ${nbr}/${branches.length} ${br.fName}`);
 
-      return treeProcess(tree, selector, drawargs).then(() => testBranch(nbr+1));
+      return treeProcess(tree, selector, drawargs).then(() => testBranch(nbr + 1));
    }
 
    return testBranch(0).then(() => {
@@ -3099,7 +3099,7 @@ function treeHierarchy(tree_node, obj) {
                   const s = methods[key].toString();
                   if ((s.indexOf('return') > 0) && (s.indexOf('function ()') === 0)) {
                      bnode._childs.push({
-                        _name: key+'()',
+                        _name: key + '()',
                         _title: `function ${key} of class ${object_class}`,
                         _kind: getKindForType(clTBranchFunc), // fictional class, only for drawing
                         _obj: { _typename: clTBranchFunc, branch: bobj, func: key },

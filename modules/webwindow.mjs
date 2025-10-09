@@ -281,7 +281,7 @@ class FileDumpSocket {
          if (!res)
             return;
          const p = fname.indexOf('_ch'),
-               chid = (p > 0) ? Number.parseInt(fname.slice(p+3, fname.indexOf('.', p))) : 1;
+               chid = (p > 0) ? Number.parseInt(fname.slice(p + 3, fname.indexOf('.', p))) : 1;
          if (isFunc(this.#receiver?.provideData))
             this.#receiver.provideData(chid, res, 0);
          setTimeout(() => this.nextOperation(), 10);
@@ -796,7 +796,7 @@ class WebWindowHandle {
             // HMAC used to authenticate server
             // sequence id is necessary to exclude submission of same packet again
             if (this.#key && sessionKey) {
-               const client_hash = HMAC(this.#key, msg.slice(i0+1));
+               const client_hash = HMAC(this.#key, msg.slice(i0 + 1));
                if (server_hash !== client_hash)
                   return console.log(`Failure checking server HMAC sum ${server_hash}`);
             }
@@ -912,7 +912,7 @@ class WebWindowHandle {
             p = href.indexOf(prefix);
          }
          if ((p > 0) && this.#new_key) {
-            const p1 = href.indexOf('#', p+1), p2 = href.indexOf('&', p+1),
+            const p1 = href.indexOf('#', p + 1), p2 = href.indexOf('&', p + 1),
                   pp = (p1 < 0) ? p2 : (p2 < 0 ? p1 : Math.min(p1, p2));
             href = href.slice(0, p) + prefix + this.#new_key + (pp < 0 ? '' : href.slice(pp));
             window.history?.replaceState(window.history.state, undefined, href);

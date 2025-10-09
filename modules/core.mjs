@@ -894,7 +894,7 @@ function decodeUrl(url) {
    const p1 = url.indexOf('?');
    if (p1 < 0)
       return res;
-   url = decodeURI(url.slice(p1+1));
+   url = decodeURI(url.slice(p1 + 1));
 
    while (url) {
       // try to correctly handle quotes in the URL
@@ -903,13 +903,13 @@ function decodeUrl(url) {
          switch (url[pos]) {
             case '\'':
                if (nq >= 0)
-                  nq = (nq+1) % 2;
+                  nq = (nq + 1) % 2;
                if (firstq < 0)
                   firstq = pos;
                break;
             case '"':
                if (nq <= 0)
-                  nq = (nq-1) % 2;
+                  nq = (nq - 1) % 2;
                if (firstq < 0)
                   firstq = pos;
                break;
@@ -933,7 +933,7 @@ function decodeUrl(url) {
       if ((pos >= url.length) || (url[pos] === '#'))
          break;
 
-      url = url.slice(pos+1);
+      url = url.slice(pos + 1);
    }
 
    return res;
@@ -1211,7 +1211,7 @@ async function loadScript(url) {
       if (src === url)
          return true;
       const indx = src.indexOf(url);
-      return (indx > 0) && (indx + url.length === src.length) && (src[indx-1] === '/');
+      return (indx > 0) && (indx + url.length === src.length) && (src[indx - 1] === '/');
    };
 
    if (isstyle) {
@@ -1478,7 +1478,7 @@ function create(typename, target) {
          create(clTAttLine, obj);
          extend(obj, { fRadian: false, fDegree: false, fGrad: false, fPolarLabelColor: 1, fRadialLabelColor: 1,
                        fAxisAngle: 0, fPolarOffset: 0.04, fPolarTextSize: 0.04, fRadialOffset: 0.025, fRadialTextSize: 0.035,
-                       fRwrmin: 0, fRwrmax: 1, fRwtmin: 0, fRwtmax: 2*Math.PI, fTickpolarSize: 0.02,
+                       fRwrmin: 0, fRwrmax: 1, fRwtmin: 0, fRwtmax: 2 * Math.PI, fTickpolarSize: 0.02,
                        fPolarLabelFont: 62, fRadialLabelFont: 62, fCutRadial: 0, fNdivRad: 508, fNdivPol: 508 });
          break;
       case clTPolyLine:
@@ -1705,8 +1705,8 @@ function createTGraph(npoints, xpts, ypts) {
             usey = isObject(ypts) && (ypts.length === npoints);
 
       for (let i = 0; i < npoints; ++i) {
-         graph.fX.push(usex ? xpts[i] : i/npoints);
-         graph.fY.push(usey ? ypts[i] : i/npoints);
+         graph.fX.push(usex ? xpts[i] : i / npoints);
+         graph.fY.push(usey ? ypts[i] : i / npoints);
       }
    }
 
@@ -1845,7 +1845,7 @@ function getMethods(typename, obj) {
 
          for (; i < this.fNpoints; ++i) {
             if ((y[i] < yp && y[j] >= yp) || (y[j] < yp && y[i] >= yp)) {
-               if (x[i] + (yp - y[i])/(y[j] - y[i])*(x[j] - x[i]) < xp)
+               if (x[i] + (yp - y[i]) / (y[j] - y[i]) * (x[j] - x[i]) < xp)
                   oddNodes = !oddNodes;
             }
             j = i;
@@ -1890,26 +1890,26 @@ function getMethods(typename, obj) {
    }
 
    if (typename.indexOf(clTH2) === 0) {
-      m.getBin = function(x, y) { return (x + (this.fXaxis.fNbins+2) * y); };
+      m.getBin = function(x, y) { return (x + (this.fXaxis.fNbins + 2) * y); };
       m.getBinContent = function(x, y) { return this.fArray[this.getBin(x, y)]; };
       m.Fill = function(x, y, weight) {
          const a1 = this.fXaxis, a2 = this.fYaxis,
                bin1 = Math.max(0, 1 + Math.min(a1.fNbins, Math.floor((x - a1.fXmin) / (a1.fXmax - a1.fXmin) * a1.fNbins))),
                bin2 = Math.max(0, 1 + Math.min(a2.fNbins, Math.floor((y - a2.fXmin) / (a2.fXmax - a2.fXmin) * a2.fNbins)));
-         this.fArray[bin1 + (a1.fNbins + 2)*bin2] += weight ?? 1;
+         this.fArray[bin1 + (a1.fNbins + 2) * bin2] += weight ?? 1;
          this.fEntries++;
       };
    }
 
    if (typename.indexOf(clTH3) === 0) {
-      m.getBin = function(x, y, z) { return (x + (this.fXaxis.fNbins+2) * (y + (this.fYaxis.fNbins+2) * z)); };
+      m.getBin = function(x, y, z) { return (x + (this.fXaxis.fNbins + 2) * (y + (this.fYaxis.fNbins + 2) * z)); };
       m.getBinContent = function(x, y, z) { return this.fArray[this.getBin(x, y, z)]; };
       m.Fill = function(x, y, z, weight) {
          const a1 = this.fXaxis, a2 = this.fYaxis, a3 = this.fZaxis,
                bin1 = Math.max(0, 1 + Math.min(a1.fNbins, Math.floor((x - a1.fXmin) / (a1.fXmax - a1.fXmin) * a1.fNbins))),
                bin2 = Math.max(0, 1 + Math.min(a2.fNbins, Math.floor((y - a2.fXmin) / (a2.fXmax - a2.fXmin) * a2.fNbins))),
                bin3 = Math.max(0, 1 + Math.min(a3.fNbins, Math.floor((z - a3.fXmin) / (a3.fXmax - a3.fXmin) * a3.fNbins)));
-         this.fArray[bin1 + (a1.fNbins + 2) * (bin2 + (a2.fNbins + 2)*bin3)] += weight ?? 1;
+         this.fArray[bin1 + (a1.fNbins + 2) * (bin2 + (a2.fNbins + 2) * bin3)] += weight ?? 1;
          this.fEntries++;
       };
    }
@@ -1927,16 +1927,16 @@ function getMethods(typename, obj) {
          if (nx * ny < 2)
             return 0;
          this.fPrimitives.Clear();
-         const dy = 1/ny, dx = 1/nx;
+         const dy = 1 / ny, dx = 1 / nx;
          let n = 0;
          for (let iy = 0; iy < ny; iy++) {
-            const y2 = 1 - iy*dy - ymargin,
-                  y1 = Math.max(0, y2 - dy + 2*ymargin);
+            const y2 = 1 - iy * dy - ymargin,
+                  y1 = Math.max(0, y2 - dy + 2 * ymargin);
             if (y1 > y2)
                continue;
             for (let ix = 0; ix < nx; ix++) {
-               const x1 = ix*dx + xmargin,
-                     x2 = x1 + dx -2*xmargin;
+               const x1 = ix * dx + xmargin,
+                     x2 = x1 + dx - 2 * xmargin;
                if (x1 > x2)
                   continue;
                n++;
@@ -1969,24 +1969,24 @@ function getMethods(typename, obj) {
 
    if (typename.indexOf(clTProfile) === 0) {
       if (typename === clTProfile3D) {
-         m.getBin = function(x, y, z) { return (x + (this.fXaxis.fNbins+2) * (y + (this.fYaxis.fNbins+2) * z)); };
+         m.getBin = function(x, y, z) { return (x + (this.fXaxis.fNbins + 2) * (y + (this.fYaxis.fNbins + 2) * z)); };
          m.getBinContent = function(x, y, z) {
             const bin = this.getBin(x, y, z);
             if (bin < 0 || bin >= this.fNcells || this.fBinEntries[bin] < 1e-300)
                return 0;
-            return this.fArray ? this.fArray[bin]/this.fBinEntries[bin] : 0;
+            return this.fArray ? this.fArray[bin] / this.fBinEntries[bin] : 0;
          };
          m.getBinEntries = function(x, y, z) {
             const bin = this.getBin(x, y, z);
             return (bin < 0) || (bin >= this.fNcells) ? 0 : this.fBinEntries[bin];
          };
       } else if (typename === clTProfile2D) {
-         m.getBin = function(x, y) { return (x + (this.fXaxis.fNbins+2) * y); };
+         m.getBin = function(x, y) { return (x + (this.fXaxis.fNbins + 2) * y); };
          m.getBinContent = function(x, y) {
             const bin = this.getBin(x, y);
             if (bin < 0 || bin >= this.fNcells || this.fBinEntries[bin] < 1e-300)
                return 0;
-            return this.fArray ? this.fArray[bin]/this.fBinEntries[bin] : 0;
+            return this.fArray ? this.fArray[bin] / this.fBinEntries[bin] : 0;
          };
          m.getBinEntries = function(x, y) {
             const bin = this.getBin(x, y);
@@ -1997,7 +1997,7 @@ function getMethods(typename, obj) {
          m.getBinContent = function(bin) {
             if (bin < 0 || bin >= this.fNcells || this.fBinEntries[bin] < 1e-300)
                return 0;
-            return this.fArray ? this.fArray[bin]/this.fBinEntries[bin] : 0;
+            return this.fArray ? this.fArray[bin] / this.fBinEntries[bin] : 0;
          };
          m.getBinEntries = function(bin) {
             return (bin < 0) || (bin >= this.fNcells) ? 0 : this.fBinEntries[bin];
@@ -2025,15 +2025,15 @@ function getMethods(typename, obj) {
          const EErrorType = { kERRORMEAN: 0, kERRORSPREAD: 1, kERRORSPREADI: 2, kERRORSPREADG: 3 };
          // case the values y are gaussian distributed y +/- sigma and w = 1/sigma^2
          if (this.fErrorMode === EErrorType.kERRORSPREADG)
-            return 1.0/Math.sqrt(sum);
+            return 1.0 / Math.sqrt(sum);
          // compute variance in y (eprim2) and standard deviation in y (eprim)
-         const contsum = cont/sum, eprim = Math.sqrt(Math.abs(err2/sum - contsum**2));
+         const contsum = cont / sum, eprim = Math.sqrt(Math.abs(err2 / sum - contsum ** 2));
          if (this.fErrorMode === EErrorType.kERRORSPREADI) {
             if (eprim)
                return eprim / Math.sqrt(neff);
             // in case content y is an integer (so each my has an error +/- 1/sqrt(12)
             // when the std(y) is zero
-            return 1.0 / Math.sqrt(12*neff);
+            return 1.0 / Math.sqrt(12 * neff);
          }
          // if approximate compute the sums (of w, wy and wy2) using all the bins
          //  when the variance in y is zero
@@ -2042,7 +2042,7 @@ function getMethods(typename, obj) {
             return eprim;
          // default case : fErrorMode = kERRORMEAN
          // return standard error on the mean of y
-         return eprim/Math.sqrt(neff);
+         return eprim / Math.sqrt(neff);
       };
    }
 
@@ -2088,7 +2088,7 @@ function getMethods(typename, obj) {
       m.P2 = function() { return this.P() * this.P(); };
       m.Pt = m.pt = function() { return Math.sqrt(this.P2()); };
       m.Phi = m.phi = function() { return Math.atan2(this.fCoordinates.Py(), this.fCoordinates.Px()); };
-      m.Eta = m.eta = function() { return Math.atanh(this.Pz()/this.P()); };
+      m.Eta = m.eta = function() { return Math.atanh(this.Pz() / this.P()); };
    }
 
    if (typename.indexOf(nsROOT + 'Math::PxPyPzE4D') === 0) {
@@ -2096,14 +2096,14 @@ function getMethods(typename, obj) {
       m.Py = m.Y = function() { return this.fY; };
       m.Pz = m.Z = function() { return this.fZ; };
       m.E = m.T = function() { return this.fT; };
-      m.P2 = function() { return this.fX**2 + this.fY**2 + this.fZ**2; };
+      m.P2 = function() { return this.fX ** 2 + this.fY ** 2 + this.fZ ** 2; };
       m.R = m.P = function() { return Math.sqrt(this.P2()); };
-      m.Mag2 = m.M2 = function() { return this.fT**2 - this.fX**2 - this.fY**2 - this.fZ**2; };
+      m.Mag2 = m.M2 = function() { return this.fT ** 2 - this.fX ** 2 - this.fY ** 2 - this.fZ ** 2; };
       m.Mag = m.M = function() { return (this.M2() >= 0) ? Math.sqrt(this.M2()) : -Math.sqrt(-this.M2()); };
-      m.Perp2 = m.Pt2 = function() { return this.fX**2 + this.fY**2; };
+      m.Perp2 = m.Pt2 = function() { return this.fX ** 2 + this.fY ** 2; };
       m.Pt = m.pt = function() { return Math.sqrt(this.P2()); };
       m.Phi = m.phi = function() { return Math.atan2(this.fY, this.fX); };
-      m.Eta = m.eta = function() { return Math.atanh(this.Pz/this.P()); };
+      m.Eta = m.eta = function() { return Math.atanh(this.Pz / this.P()); };
    }
 
    methodsCache[typename] = m;
